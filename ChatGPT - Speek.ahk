@@ -3,9 +3,37 @@
 
 #include UIA-v2\Lib\UIA.ahk
 #include UIA-v2\Lib\UIA_Browser.ahk
+#include %A_ScriptDir%\\env.ahk ; Include environment configuration
 
 CapsLock & 7::
 {
+    ; Define button names for both languages
+    pt_dictateName := "Botão de ditado"
+    en_dictateName := "Dictate button"
+    pt_submitName := "Enviar ditado"
+    en_submitName := "Submit dictation"
+    pt_transcribingName := "Interromper ditado"
+    en_transcribingName := "Stop dictation"
+    pt_sendPromptName := "Enviar prompt"
+    en_sendPromptName := "Send prompt"
+    pt_stopStreamingName := "Interromper transmissão"
+    en_stopStreamingName := "Stop streaming" ; Corrected from "Stop streaming" to "Stop streaming"
+
+    ; Select names based on environment (IS_WORK_ENVIRONMENT is true for Work/Portuguese)
+    currentDictateName := IS_WORK_ENVIRONMENT ? pt_dictateName : en_dictateName
+    currentSubmitName := IS_WORK_ENVIRONMENT ? pt_submitName : en_submitName
+    currentTranscribingName := IS_WORK_ENVIRONMENT ? pt_transcribingName : en_transcribingName
+    currentSendPromptName := IS_WORK_ENVIRONMENT ? pt_sendPromptName : en_sendPromptName
+    currentStopStreamingName := IS_WORK_ENVIRONMENT ? pt_stopStreamingName : en_stopStreamingName
+
+    ; Create regex patterns for names to handle both languages if IS_WORK_ENVIRONMENT is not strictly one or the other
+    ; Or if we want to be more robust to slight variations.
+    ; For now, we'll use the selected name. A more robust solution could be:
+    dictateNamePattern := IS_WORK_ENVIRONMENT ? pt_dictateName : en_dictateName
+    submitNamePattern := IS_WORK_ENVIRONMENT ? pt_submitName : en_submitName
+    sendPromptNamePattern := IS_WORK_ENVIRONMENT ? pt_sendPromptName : en_sendPromptName
+    ; For buttons that might show one name OR the other depending on state, we can use regex
+    ; Example: dictatingOrSubmitPattern := "(" . pt_submitName . "|" . en_submitName . "|" . pt_transcribingName . "|" . en_transcribingName . ")"
 
     static isDictating := false ; State variable
     static submitFailCount := 0 ; Counter for consecutive submit failures
@@ -21,14 +49,14 @@ CapsLock & 7::
 
     if !isDictating { ; If not currently dictating, prepare field, paste prompt and start it
         try {
-            ; Find and click the Botão de ditado
-            dictateBtn := cUIA.FindElement({ Name: "Botão de ditado", Type: "Button" })
+            ; Find and click the Dictate button
+            dictateBtn := cUIA.FindElement({ Name: currentDictateName, Type: "Button" })
             if dictateBtn {
                 dictateBtn.Click()
                 isDictating := true ; Update state
                 submitFailCount := 0 ; Reset fail counter on successful start
             } else {
-                MsgBox "Botão de ditado not found."
+                MsgBox currentDictateName . " not found."
             }
         } catch Error as e {
             MsgBox "Error during pre-dictation or starting dictation: " e.Message
@@ -37,7 +65,15 @@ CapsLock & 7::
     } else { ; If already dictating, stop it (click Submit dictation)
         try {
             ; Find the Submit dictation button using its Name and Type
-            submitBtn := cUIA.FindElement({ Name: "Enviar ditado", Type: "Button" })
+            ; The button to stop dictation might be "Interromper ditado" or "Stop dictation" (currentTranscribingName)
+            ; or "Enviar ditado" / "Submit dictation" (currentSubmitName) if it changes name.
+            ; We will try currentSubmitName first, as per original logic, then currentTranscribingName as an alternative.
+
+            submitBtn := cUIA.FindElement({ Name: currentSubmitName, Type: "Button" })
+            if !submitBtn { ; If submitName is not found, try transcribingName
+                submitBtn := cUIA.FindElement({ Name: currentTranscribingName, Type: "Button" })
+            }
+
             if submitBtn {
                 submitBtn.Click()
                 isDictating := false ; Update state
@@ -47,25 +83,26 @@ CapsLock & 7::
                 try {
                     Sleep 200 ; Small pause after clicking submit
                     ; Wait for the button to reappear/enable (Timeout 10 seconds)
-                    finalSendBtn := cUIA.WaitElement({ Name: "Enviar prompt", AutomationId: "composer-submit-button" },
+                    finalSendBtn := cUIA.WaitElement({ Name: currentSendPromptName, AutomationId: "composer-submit-button" },
                     10000)
                     if finalSendBtn {
                         SendInput "{Enter}"
 
                     } else {
-                        MsgBox "Timeout: 'Send prompt' button did not reappear after submitting dictation."
+                        MsgBox "Timeout: '" . currentSendPromptName .
+                            "' button did not reappear after submitting dictation."
                     }
                 } catch Error as e_wait {
-                    MsgBox "Error waiting for/clicking final Send Prompt button: " e_wait.Message
+                    MsgBox "Error waiting for/clicking final " . currentSendPromptName . " button: " e_wait.Message
                 }
                 ; >>> End NEW <<<
 
             } else {
-                MsgBox "Submit dictation button not found."
+                MsgBox currentSubmitName . " or " . currentTranscribingName . " button not found."
                 submitFailCount++ ; Increment fail counter
             }
         } catch Error as e {
-            MsgBox "Error finding or clicking Submit dictation button: " e.Message
+            MsgBox "Error finding or clicking Submit/Stop dictation button: " e.Message
             submitFailCount++ ; Increment fail counter
             ; Decide if state should be reset here? Maybe not, user might want to try again.
         }
