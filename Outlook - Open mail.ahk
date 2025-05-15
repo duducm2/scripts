@@ -1,10 +1,11 @@
-#Requires AutoHotkey v2
+#Requires AutoHotkey v2.0+
 
-#include C:\Users\fie7ca\Documents\UIA-v2\Lib\UIA.ahk
+#include UIA-v2\Lib\UIA.ahk
 
-F12 & a::
+; Win+Alt+Shift+A to open Outlook inbox
+#!+a::
 {
-    ; Activate the "Google Tradutor" window
+    ; Activate the inbox window
     SetTitleMatchMode 1
     WinActivate "Inbox - Eduardo"
 }

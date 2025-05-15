@@ -1,10 +1,10 @@
-#Requires AutoHotkey v2
+#Requires AutoHotkey v2.0+
 
-#include C:\Users\fie7ca\Documents\UIA-v2\Lib\UIA.ahk
+#include UIA-v2\Lib\UIA.ahk
 
-F12 & m::
+; Win+Alt+Shift+M to start new Teams conversation
+#!+m::
 {
-
     MyGui := Gui(, "Enter a name:")
     MyGui.Add("Text", , "Name:")
     MyGui.Add("Edit", "vName ym")  ; The ym option starts a new column of controls.
@@ -46,7 +46,5 @@ F12 & m::
 
             Send "^+x"
         }
-
     }
-
 }

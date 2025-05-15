@@ -1,12 +1,16 @@
-#Requires AutoHotkey v2.0
+#Requires AutoHotkey v2.0+
 #SingleInstance Force ; Good practice to add
 
 #include UIA-v2\Lib\UIA.ahk
 #include UIA-v2\Lib\UIA_Browser.ahk
 #include %A_ScriptDir%\\env.ahk ; Include environment configuration
 
-F12 & 7::
+; Win+Alt+Shift+7 to toggle dictation to ChatGPT
+#!+7::
 {
+    static isDictating := false ; State variable
+    static submitFailCount := 0 ; Counter for consecutive submit failures
+
     ; Define button names for both languages
     pt_dictateName := "Botão de ditado"
     en_dictateName := "Dictate button"
@@ -114,5 +118,4 @@ F12 & 7::
             submitFailCount := 0 ; Reset counter
         }
     }
-
 }

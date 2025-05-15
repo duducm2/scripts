@@ -1,8 +1,8 @@
-#Requires AutoHotkey v2
+#Requires AutoHotkey v2.0+
 
-F12 & 6::
+; Win+Alt+Shift+6 to get pronunciation
+#!+6::
 {
-
     A_Clipboard := ""  ; Start off empty to allow ClipWait to detect when the text has arrived.
 
     ; Copy content
@@ -40,5 +40,4 @@ F12 & 6::
 
     ; Back to previous window
     Send "!{Tab}"
-
 }

@@ -1,7 +1,7 @@
-; AutoHotkey Version: 2
-; Script to trigger three tab presses when pressing Control + Shift + Right Arrow
+#Requires AutoHotkey v2.0+
 
-F12 & Up:: ; This is the hotkey definition for Control + Shift + Right Arrow
+; Win+Alt+Shift+[Arrow keys] for fast movement
+#!+Up::
 {
     Send "{Up}"
     Send "{Up}"
@@ -10,7 +10,7 @@ F12 & Up:: ; This is the hotkey definition for Control + Shift + Right Arrow
     Send "{Up}"
 }
 
-F12 & Down:: ; This is the hotkey definition for Control + Shift + Right Arrow
+#!+Down::
 {
     Send "{Down}"
     Send "{Down}"
@@ -19,7 +19,7 @@ F12 & Down:: ; This is the hotkey definition for Control + Shift + Right Arrow
     Send "{Down}"
 }
 
-F12 & Right:: ; This is the hotkey definition for Control + Shift + Right Arrow
+#!+Right::
 {
     Send "{Right}"
     Send "{Right}"
@@ -28,7 +28,7 @@ F12 & Right:: ; This is the hotkey definition for Control + Shift + Right Arrow
     Send "{Right}"
 }
 
-F12 & Left:: ; This is the hotkey definition for Control + Shift + Right Arrow
+#!+Left::
 {
     Send "{Left}"
     Send "{Left}"

@@ -1,8 +1,8 @@
-#Requires AutoHotkey v2
+#Requires AutoHotkey v2.0+
 
-F12 & 5::
+; Win+Alt+Shift+5 to check grammar
+#!+5::
 {
-
     A_Clipboard := ""  ; Start off empty to allow ClipWait to detect when the text has arrived.
 
     ; Copy content
@@ -37,5 +37,4 @@ F12 & 5::
     Send("{Enter}")
 
     Sleep 500
-
 }

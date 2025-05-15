@@ -1,9 +1,19 @@
-#Requires AutoHotkey v2.0
+/********************************************************************
+ *   Win+Alt+Shift symbol layer shortcuts (AHK v2)
+ *   • Provides system-wide symbol shortcuts
+ ********************************************************************/
 
-; Remap keys to their Shift symbols
-F12 & y::?  ; Remap Y to question mark
-F12 & u::[  ; Remap U to left bracket
-F12 & i::]  ; Remap I to right bracket
-F12 & o::|  ; Remap O to pipe/vertical bar
-F12 & h::/  ; Remap H to forward slash
-F12 & j::\  ; Remap J to backslash
+#Requires AutoHotkey v2.0+
+
+; Function to send symbol characters
+SendSymbol(sym) {
+    SendText(sym)
+}
+
+; Symbol shortcuts using Win+Alt+Shift combinations
+#!+y:: SendSymbol("?")   ; Win+Alt+Shift+Y → ?
+#!+u:: SendSymbol("[")   ; Win+Alt+Shift+U → [
+#!+i:: SendSymbol("]")   ; Win+Alt+Shift+I → ]
+#!+o:: SendSymbol("|")   ; Win+Alt+Shift+O → |
+#!+h:: SendSymbol("/")   ; Win+Alt+Shift+H → /
+#!+j:: SendSymbol("\")   ; Win+Alt+Shift+J → \

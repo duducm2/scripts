@@ -1,8 +1,9 @@
-#Requires AutoHotkey v2
+#Requires AutoHotkey v2.0+
 
-#include C:\Users\fie7ca\Documents\UIA-v2\Lib\UIA.ahk
+#include UIA-v2\Lib\UIA.ahk
 
-F12 & 9::
+; Win+Alt+Shift+9 to send to newsletter in Outlook
+#!+9::
 {
     Send "^+v"
     Send "{Home}"

@@ -1,8 +1,4 @@
-;─────────────────────────────────────────────────────────────────────────────
-;  ChatGPT Dictation → Transcript → Grammar-correction macro
-;  Alt + Shift + B  to start / stop dictation
-;─────────────────────────────────────────────────────────────────────────────
-#Requires AutoHotkey v2.0
+#Requires AutoHotkey v2.0+
 #SingleInstance Force
 
 ; Assuming UIA-v2 folder is now a subfolder in the same directory as this script.
@@ -23,8 +19,9 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
     return false
 }
 
-;─────────────────────────────────────────────────────────────────────────────
-F12 & 3:: {                                                 ; Alt + Shift + B
+; Win+Alt+Shift+3 to toggle microphone
+#!+3::
+{
     static isDictating := false
 
     ; Define button names for both languages
@@ -51,10 +48,6 @@ F12 & 3:: {                                                 ; Alt + Shift + B
     WinWaitActive "ahk_exe chrome.exe"
     cUIA := UIA_Browser()
     Sleep 300
-
-    ; UI labels (Portuguese only) ; These specific lines are now replaced by the dynamic logic above
-    ; dictateNames := ["Botão de ditado"]
-    ; submitNames := ["Enviar ditado"]
 
     ;───────────────────────────── START DICTATION ───────────────────────────────
     if !isDictating {
@@ -86,5 +79,4 @@ F12 & 3:: {                                                 ; Alt + Shift + B
         MsgBox (IS_WORK_ENVIRONMENT ? "Erro ao finalizar ditado:`n" : "Error stopping dictation:`n") e.Message
         isDictating := false
     }
-
 }

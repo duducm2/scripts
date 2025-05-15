@@ -1,11 +1,8 @@
-#Requires AutoHotkey v2
+#Requires AutoHotkey v2.0+
 
-F12 & n:: {
-    ; Try to find the existing OneNote window
-    oneNoteWin := WinExist("ahk_exe ONENOTE.EXE")
-
-    if (oneNoteWin) {
-        ; If found, activate the window
+; Win+Alt+Shift+N to activate OneNote
+#!+n::
+{
+    if oneNoteWin := WinExist("ahk_exe ONENOTE.EXE")
         WinActivate(oneNoteWin)
-    }
 }

@@ -1,4 +1,10 @@
+#Requires AutoHotkey v2.0+
+#InputLevel 2
+#SingleInstance Ignore
+
 #Include %A_ScriptDir%\env.ahk
+
+; Win+E hotkey to open Desktop folder (original)
 #e:: {
     SetTitleMatchMode 2  ; Match anywhere in the title
 

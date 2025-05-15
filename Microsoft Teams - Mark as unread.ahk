@@ -1,6 +1,7 @@
-#Requires AutoHotkey v2
+#Requires AutoHotkey v2.0+
 
-F12 & y::
+; Win+Alt+Shift+U to mark Teams message as unread
+#!+y::
 {
     Send "^1"
     Sleep "200"

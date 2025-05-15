@@ -1,8 +1,9 @@
-#Requires AutoHotkey v2
+#Requires AutoHotkey v2.0+
 
-#include C:\Users\fie7ca\Documents\UIA-v2\Lib\UIA.ahk
+#include UIA-v2\Lib\UIA.ahk
 
-F12 & 8::
+; Win+Alt+Shift+8 to send to general in Outlook
+#!+8::
 {
     Send "^+v"
     Send "{Home}"

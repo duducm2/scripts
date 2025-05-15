@@ -1,10 +1,24 @@
-#Requires AutoHotkey v2
+#Requires AutoHotkey v2.0+
+#UseHook                                   ; grab the key before Windows/apps do
 
-#include C:\Users\eduev\Documents\UIA-v2\Lib\UIA.ahk
-#include C:\Users\eduev\Documents\UIA-v2\Lib\UIA_Browser.ahk
+#include UIA-v2\Lib\UIA.ahk
+#include UIA-v2\Lib\UIA_Browser.ahk
 
-!+d::
-{
+;--------------------------------------------------------------------
+; 1.  Block F20 by itself so it never leaks through
+;--------------------------------------------------------------------
+F20:: return            ; by virtual-key
+sc06B:: return          ; by scan-code  (F20 = sc06B)
+
+;--------------------------------------------------------------------
+; 2.  Alt + Shift + D  ⇒  navigate Overleaf PDF pages
+;--------------------------------------------------------------------
+!+d:: NavigateOverleafPages()
+
+;--------------------------------------------------------------------
+; 3.  Helper function
+;--------------------------------------------------------------------
+NavigateOverleafPages() {
     ; Activate Overleaf window
     SetTitleMatchMode 2
     WinActivate "[PDF] Online LaTeX Editor Overleaf"

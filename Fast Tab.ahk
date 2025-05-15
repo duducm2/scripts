@@ -1,5 +1,10 @@
-; AutoHotkey Version: 2
-; Script to trigger three tab presses when pressing Control + Shift + Right Arrow
+#Requires AutoHotkey v2.0+
+#InputLevel 2
+#UseHook
+#SingleInstance Ignore
+
+; #UseHook                                   ; grab the key before Windows/apps do
+; #SingleInstance Force
 
 #!Right:: ; This is the hotkey definition for Control + Shift + Right Arrow
 {
