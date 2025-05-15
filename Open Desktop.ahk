@@ -1,7 +1,7 @@
 #e:: {
     SetTitleMatchMode 2  ; Match anywhere in the title
 
-    personalDesktopPath := "C:\Users\eduev\OneDrive\Desktop"
+    personalDesktopPath := "C:\Users\fie7ca\Documents\Atalhos\Desktop"
     workDesktopPath := "C:\Users\fie7ca\Desktop"
 
     chosenDesktopPath := ""
