@@ -17,6 +17,9 @@ if (IS_WORK_ENVIRONMENT) {
     Run "C:\Users\fie7ca\Documents\Caffeine\caffeine64.exe"
     Run "C:\Users\fie7ca\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\apps do Chrome\Mobills"
     Run "C:\Users\fie7ca\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\apps do Chrome\Gmail"
+    Run "C:\Users\fie7ca\Documents\HuntAndPack\hap.exe"
+} else {
+    Run "C:\Users\eduev\OneDrive\Documentos\HuntAndPeck\hap.exe"
 }
 
 ; Open ChatGPT
