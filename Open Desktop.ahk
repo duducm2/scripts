@@ -33,10 +33,4 @@
         Sleep 500  ; Give Windows time to start the process
         WinWaitActive(windowTitle, , 5)  ; Wait up to 5 seconds for the window with the specific title
     }
-
-    ; Final check - if a window with the title is still not active, try one last time to activate it
-    if !WinActive(windowTitle) {
-        Sleep 1000  ; Wait a full second
-        WinActivate(windowTitle)
-    }
 }
