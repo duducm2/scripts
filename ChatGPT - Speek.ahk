@@ -1,10 +1,10 @@
 #Requires AutoHotkey v2.0
 #SingleInstance Force ; Good practice to add
 
-#include C:\Users\eduev\Documents\UIA-v2\Lib\UIA.ahk
-#include C:\Users\eduev\Documents\UIA-v2\Lib\UIA_Browser.ahk
+#include UIA-v2\Lib\UIA.ahk
+#include UIA-v2\Lib\UIA_Browser.ahk
 
-!+7::
+CapsLock & 7::
 {
 
     static isDictating := false ; State variable
@@ -21,14 +21,14 @@
 
     if !isDictating { ; If not currently dictating, prepare field, paste prompt and start it
         try {
-            ; Find and click the Dictate button
-            dictateBtn := cUIA.FindElement({ Name: "Dictate button", Type: "Button" })
+            ; Find and click the Botão de ditado
+            dictateBtn := cUIA.FindElement({ Name: "Botão de ditado", Type: "Button" })
             if dictateBtn {
                 dictateBtn.Click()
                 isDictating := true ; Update state
                 submitFailCount := 0 ; Reset fail counter on successful start
             } else {
-                MsgBox "Dictate button not found."
+                MsgBox "Botão de ditado not found."
             }
         } catch Error as e {
             MsgBox "Error during pre-dictation or starting dictation: " e.Message
@@ -37,7 +37,7 @@
     } else { ; If already dictating, stop it (click Submit dictation)
         try {
             ; Find the Submit dictation button using its Name and Type
-            submitBtn := cUIA.FindElement({ Name: "Submit dictation", Type: "Button" })
+            submitBtn := cUIA.FindElement({ Name: "Enviar ditado", Type: "Button" })
             if submitBtn {
                 submitBtn.Click()
                 isDictating := false ; Update state
@@ -45,12 +45,11 @@
 
                 ; >>> NEW: Wait for Send prompt button and press Enter <<<
                 try {
-                    Sleep 300 ; Small pause after clicking submit
+                    Sleep 200 ; Small pause after clicking submit
                     ; Wait for the button to reappear/enable (Timeout 10 seconds)
-                    finalSendBtn := cUIA.WaitElement({ Name: "Send prompt", AutomationId: "composer-submit-button" },
+                    finalSendBtn := cUIA.WaitElement({ Name: "Enviar prompt", AutomationId: "composer-submit-button" },
                     10000)
                     if finalSendBtn {
-                        Sleep 100 ; Small pause after clicking submit
                         SendInput "{Enter}"
 
                     } else {
@@ -78,4 +77,6 @@
             submitFailCount := 0 ; Reset counter
         }
     }
+
+    Send("{CapsLock}")
 }

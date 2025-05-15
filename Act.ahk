@@ -67,15 +67,8 @@ Run GetScriptPath("ChatGPT - Speek.ahk")
 
 ; CapsLock + C : Opens ChatGPT
 Run GetScriptPath("Open ChatGPT.ahk")
-
-; CapsLock + E : Opens EdrawMind
-Run GetScriptPath("Open EdrawMind.ahk")
-
 ; CapsLock + G : Opens Google
 Run GetScriptPath("Open Google.ahk")
-
-; CapsLock + T : Opens Google Translate in incognito mode
-Run GetScriptPath("Open Google Translate.ahk")
 
 ; CapsLock + Z : Opens WhatsApp
 Run GetScriptPath("Open WhatsApp.ahk")
@@ -89,44 +82,54 @@ Run GetScriptPath("Hunt and Peck.ahk")
 ; CapsLock + ] : Minimizes windows
 Run GetScriptPath("Minimize.ahk")
 
-; CapsLock + 2
-; Run "C:\Users\fie7ca\OneDrive - Bosch Group\07 - Scripts\Windows Explorer - Copy path.ahk" ❌
+if (!IS_WORK_ENVIRONMENT) {
+    Run GetScriptPath("Overleaf - Pages interaction.ahk")
+}
 
-; CapsLock + 8
-Run GetScriptPath("Outlook - Send to general.ahk")
+if (IS_WORK_ENVIRONMENT) {
+    ; CapsLock + 2
+    ; Run "C:\Users\fie7ca\OneDrive - Bosch Group\07 - Scripts\Windows Explorer - Copy path.ahk" ❌
 
-; CapsLock + 9
-Run GetScriptPath("Outlook - Send to newsletter.ahk")
+    ; CapsLock + 8
+    Run GetScriptPath("Outlook - Send to general.ahk")
 
-; CapsLock + A
-Run GetScriptPath("Outlook - Open mail.ahk")
+    ; CapsLock + 9
+    Run GetScriptPath("Outlook - Send to newsletter.ahk")
 
-; CapsLock + R
-Run GetScriptPath("Outlook - Open Reminder.ahk")
+    ; CapsLock + A
+    Run GetScriptPath("Outlook - Open mail.ahk")
 
-; CapsLock + Y
-Run GetScriptPath("Microsoft Teams - Mark as unread.ahk")
+    ; CapsLock + R
+    Run GetScriptPath("Outlook - Open Reminder.ahk")
 
-; CapsLock + M
-Run GetScriptPath("Microsoft Teams - New conversation.ahk")
+    ; CapsLock + X
+    Run GetScriptPath("Outlook - Open calendar.ahk")
 
-; CapsLock + I
-Run GetScriptPath("Microsoft Teams - Laugh.ahk")
+    ; CapsLock + Y
+    Run GetScriptPath("Microsoft Teams - Mark as unread.ahk")
 
-; CapsLock + O
-Run GetScriptPath("Microsoft Teams - Like.ahk")
+    ; CapsLock + M
+    Run GetScriptPath("Microsoft Teams - New conversation.ahk")
 
-; CapsLock + P
-Run GetScriptPath("Microsoft Teams - Heart.ahk")
+    ; CapsLock + I
+    Run GetScriptPath("Microsoft Teams - Laugh.ahk")
 
-; CapsLock + H
-Run GetScriptPath("Microsoft Teams - Reply Message.ahk")
+    ; CapsLock + O
+    Run GetScriptPath("Microsoft Teams - Like.ahk")
 
-; CapsLock + J
-Run GetScriptPath("Microsoft Teams - Pin.ahk")
+    ; CapsLock + P
+    Run GetScriptPath("Microsoft Teams - Heart.ahk")
 
-; CapsLock + K
-Run GetScriptPath("Microsoft Teams - Remove pin.ahk")
+    ; CapsLock + H
+    Run GetScriptPath("Microsoft Teams - Reply Message.ahk")
 
-; CapsLock + X
-Run GetScriptPath("Outlook - Open calendar.ahk")
+    ; CapsLock + J
+    Run GetScriptPath("Microsoft Teams - Pin.ahk")
+
+    ; CapsLock + K
+    Run GetScriptPath("Microsoft Teams - Remove pin.ahk")
+
+    ; CapsLock + X
+    Run GetScriptPath("Outlook - Open calendar.ahk")
+
+}
