@@ -132,7 +132,4 @@ if (IS_WORK_ENVIRONMENT) {
     ; CapsLock + K
     Run GetScriptPath("Microsoft Teams - Remove pin.ahk")
 
-    ; CapsLock + X
-    Run GetScriptPath("Outlook - Open calendar.ahk")
-
 }
