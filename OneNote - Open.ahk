@@ -1,6 +1,6 @@
 #Requires AutoHotkey v2
 
-CapsLock & n:: {
+F12 & n:: {
     ; Try to find the existing OneNote window
     oneNoteWin := WinExist("ahk_exe ONENOTE.EXE")
 
@@ -8,5 +8,4 @@ CapsLock & n:: {
         ; If found, activate the window
         WinActivate(oneNoteWin)
     }
-    Send("{CapsLock}")
 }

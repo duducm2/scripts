@@ -1,11 +1,10 @@
-CapsLock & h::
+F12 & h::
 {
-	Send "{Enter}"
+    Send "{Enter}"
     Send "{Down}"
     Send "{Down}"
     Send "{Down}"
     Send "{Down}"
     Send "{Down}"
-	Send "{Enter}"
-    Send("{CapsLock}")
+    Send "{Enter}"
 }

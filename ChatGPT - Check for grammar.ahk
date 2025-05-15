@@ -1,6 +1,6 @@
 #Requires AutoHotkey v2
 
-CapsLock & 5::
+F12 & 5::
 {
 
     A_Clipboard := ""  ; Start off empty to allow ClipWait to detect when the text has arrived.
@@ -38,7 +38,4 @@ CapsLock & 5::
 
     Sleep 500
 
-    ; Back to previous window
-    ; Send "!{Tab}"
-    Send("{CapsLock}")
 }

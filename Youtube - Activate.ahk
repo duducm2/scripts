@@ -1,6 +1,6 @@
 #Requires AutoHotkey v2
 
-CapsLock & 4:: {  ; Win + A hotkey
+F12 & 4:: {  ; Win + A hotkey
     ; Set title match mode to find the word anywhere in the title
     SetTitleMatchMode 2  ; Mode 2 means the WinTitle can contain the title anywhere
 
@@ -12,5 +12,4 @@ CapsLock & 4:: {  ; Win + A hotkey
         Run "chrome.exe https://www.youtube.com"
         WinWaitActive "ahk_exe chrome.exe", , 10  ; Wait up to 10 seconds for Chrome
     }
-    Send("{CapsLock}")
 }

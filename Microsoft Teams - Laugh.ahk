@@ -1,9 +1,8 @@
-CapsLock & i::
+F12 & i::
 {
-	Send "{Enter}"
-	Send "{Down}"
-	Send "{Down}"
-	Send "{Enter}"
-	Send "{Esc}"
-	Send("{CapsLock}")
+    Send "{Enter}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
+    Send "{Esc}"
 }

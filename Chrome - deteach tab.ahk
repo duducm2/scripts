@@ -1,6 +1,6 @@
 #Requires AutoHotkey v2
 
-#w::
+F12 & w::
 {
     Send "{Esc}"
     Sleep "50"

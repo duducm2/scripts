@@ -1,7 +1,6 @@
-CapsLock & o::
+F12 & o::
 {
-	Send "{Enter}"
-	Send "{Enter}"
-	Send "{Esc}"
-	Send("{CapsLock}")
+    Send "{Enter}"
+    Send "{Enter}"
+    Send "{Esc}"
 }

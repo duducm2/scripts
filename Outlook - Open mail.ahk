@@ -2,10 +2,9 @@
 
 #include C:\Users\fie7ca\Documents\UIA-v2\Lib\UIA.ahk
 
-CapsLock & a::
+F12 & a::
 {
     ; Activate the "Google Tradutor" window
     SetTitleMatchMode 1
     WinActivate "Inbox - Eduardo"
-    Send("{CapsLock}")
 }

@@ -24,7 +24,7 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
 }
 
 ;─────────────────────────────────────────────────────────────────────────────
-CapsLock & 3:: {                                                 ; Alt + Shift + B
+F12 & 3:: {                                                 ; Alt + Shift + B
     static isDictating := false
 
     ; Define button names for both languages
@@ -87,5 +87,4 @@ CapsLock & 3:: {                                                 ; Alt + Shift +
         isDictating := false
     }
 
-    Send("{CapsLock}")
 }

@@ -1,8 +1,7 @@
-CapsLock & p::
+F12 & p::
 {
-	Send "{Enter}"
-	Send "{Down}"
-	Send "{Enter}"
-	Send "{Esc}"
-	Send("{CapsLock}")
+    Send "{Enter}"
+    Send "{Down}"
+    Send "{Enter}"
+    Send "{Esc}"
 }

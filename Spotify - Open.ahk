@@ -1,6 +1,6 @@
 #Requires AutoHotkey v2
 
-CapsLock & s:: {
+F12 & s:: {
     ; Try to find the existing Spotify window
     spotifyWin := WinExist("ahk_exe Spotify.exe")
 
@@ -8,5 +8,4 @@ CapsLock & s:: {
         ; If found, activate the window
         WinActivate(spotifyWin)
     }
-    Send("{CapsLock}")
 }

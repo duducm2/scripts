@@ -5,7 +5,7 @@
 #include UIA-v2\Lib\UIA_Browser.ahk
 #include %A_ScriptDir%\\env.ahk ; Include environment configuration
 
-CapsLock & 7::
+F12 & 7::
 {
     ; Define button names for both languages
     pt_dictateName := "Botão de ditado"
@@ -115,5 +115,4 @@ CapsLock & 7::
         }
     }
 
-    Send("{CapsLock}")
 }

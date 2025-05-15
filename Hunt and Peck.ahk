@@ -3,7 +3,6 @@
 #UseHook  ; <-- This is important
 
 ; Change the default shortcuts (Let's say you want ctrl + , instead of ctrl + ;)
-CapsLock & 0:: {
+F12 & 0:: {
     Send "!ç"
-    Send("{CapsLock}")
 }

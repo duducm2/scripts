@@ -2,9 +2,8 @@
 
 #include C:\Users\fie7ca\Documents\UIA-v2\Lib\UIA.ahk
 
-CapsLock & r::
+F12 & r::
 {
     SetTitleMatchMode 2
     WinActivate "Reminder"
-    Send("{CapsLock}")
 }

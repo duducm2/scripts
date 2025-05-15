@@ -1,15 +1,13 @@
 #Requires AutoHotkey v2
 
-
-CapsLock & k::
+F12 & k::
 {
-	Send "^1"
+    Send "^1"
     Sleep "200"
     Send("{AppsKey}")
     Sleep "200"
-	Send "{Down}"
-	Send "{Down}"
-	Send "{Down}"
-	Send "{Enter}"
-	Send("{CapsLock}")
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
 }

@@ -2,21 +2,21 @@
 
 #include C:\Users\fie7ca\Documents\UIA-v2\Lib\UIA.ahk
 
-CapsLock & m::
+F12 & m::
 {
 
     MyGui := Gui(, "Enter a name:")
-    MyGui.Add("Text",, "Name:")
+    MyGui.Add("Text", , "Name:")
     MyGui.Add("Edit", "vName ym")  ; The ym option starts a new column of controls.
     MyGui.Add("Button", "default", "OK").OnEvent("Click", ProcessUserInput)
     MyGui.OnEvent("Close", ProcessUserInput)
     MyGui.Show()
 
-    ProcessUserInput(*)
-    {
+    ProcessUserInput(*) {
         Saved := MyGui.Submit()  ; Save the contents of named controls into an object.
 
-        If WinExist("Chat |") || WinExist("Activity |") || WinExist("Teams and Channels |") || WinExist("Calls |") || WinExist("Search |"){
+        if WinExist("Chat |") || WinExist("Activity |") || WinExist("Teams and Channels |") || WinExist("Calls |") ||
+        WinExist("Search |") {
 
             WinActivate
 
@@ -48,5 +48,5 @@ CapsLock & m::
         }
 
     }
-    Send("{CapsLock}")
+
 }
