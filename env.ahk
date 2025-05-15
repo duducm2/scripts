@@ -6,7 +6,7 @@ global WORK_SCRIPTS_PATH := "C:\Users\fie7ca\Documents\01 - Scripts"
 global PERSONAL_SCRIPTS_PATH := "G:\Meu Drive\12 - Scripts"
 
 ; Environment detection
-global IS_WORK_ENVIRONMENT := false  ; Set this to false for personal environment
+global IS_WORK_ENVIRONMENT := true  ; Set this to false for personal environment
 
 ; Function to get the correct path based on environment
 GetScriptPath(scriptName) {
