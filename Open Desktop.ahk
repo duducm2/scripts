@@ -1,7 +1,8 @@
+#Include %A_ScriptDir%\env.ahk
 #e:: {
     SetTitleMatchMode 2  ; Match anywhere in the title
 
-    personalDesktopPath := "C:\Users\fie7ca\Documents\Atalhos\Desktop"
+    personalDesktopPath := "C:\Users\eduev\OneDrive\Desktop"
     workDesktopPath := "C:\Users\fie7ca\Desktop"
 
     chosenDesktopPath := ""
@@ -9,12 +10,10 @@
     ; If your "Work" environment uses a different title (e.g., "Desktop"),
     ; you may need to adjust this or make it dynamic.
 
-    ; Determine the correct desktop path based on the DESKTOP_MODE environment variable
-    envDesktopMode := EnvGet("DESKTOP_MODE")
-
-    if (envDesktopMode = "Work") {
+    ; Determine the correct desktop path based on the IS_WORK_ENVIRONMENT variable from env.ahk
+    if (IS_WORK_ENVIRONMENT) {
         chosenDesktopPath := workDesktopPath
-    } else { ; Default to Personal if DESKTOP_MODE is not "Work" (e.g., "Personal", empty, or any other value)
+    } else { ; Default to Personal if IS_WORK_ENVIRONMENT is false
         chosenDesktopPath := personalDesktopPath
     }
 
