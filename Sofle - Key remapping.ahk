@@ -11,9 +11,9 @@ SendSymbol(sym) {
 }
 
 ; Symbol shortcuts using Win+Alt+Shift combinations
-#!+y:: SendSymbol("?")   ; Win+Alt+Shift+Y → ?
-#!+u:: SendSymbol("[")   ; Win+Alt+Shift+U → [
-#!+i:: SendSymbol("]")   ; Win+Alt+Shift+I → ]
-#!+o:: SendSymbol("|")   ; Win+Alt+Shift+O → |
-#!+h:: SendSymbol("/")   ; Win+Alt+Shift+H → /
-#!+j:: SendSymbol("\")   ; Win+Alt+Shift+J → \
++y:: SendSymbol("?")   ; Win+Alt+Shift+Y → ?
++u:: SendSymbol("[")   ; Win+Alt+Shift+U → [
++i:: SendSymbol("]")   ; Win+Alt+Shift+I → ]
++o:: SendSymbol("|")   ; Win+Alt+Shift+O → |
++h:: SendSymbol("/")   ; Win+Alt+Shift+H → /
++j:: SendSymbol("\")   ; Win+Alt+Shift+J → \

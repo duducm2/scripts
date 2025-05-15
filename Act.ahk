@@ -23,7 +23,7 @@ if (IS_WORK_ENVIRONMENT) {
 }
 
 ; Open ChatGPT
-Send "#!+c"
+Send "^!c"
 
 ;============ Win + keys ============
 
@@ -47,7 +47,7 @@ Run GetScriptPath("Fast Tab.ahk")
 ; CapsLock + N : Opens or activates OneNote
 Run GetScriptPath("OneNote - Open.ahk")
 
-; ; CapsLock + S : Opens or activates Spotify
+; CapsLock + S : Opens or activates Spotify
 Run GetScriptPath("Spotify - Open.ahk")
 
 ; CapsLock + 6 : Get word pronunciation, definition, and Portuguese translation from ChatGPT
@@ -131,4 +131,5 @@ if (IS_WORK_ENVIRONMENT) {
 
     ; CapsLock + K
     Run GetScriptPath("Microsoft Teams - Remove pin.ahk")
+
 }
