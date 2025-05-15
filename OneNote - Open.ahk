@@ -1,7 +1,6 @@
 #Requires AutoHotkey v2
-#include C:\Users\eduev\Documents\UIA-v2\Lib\UIA.ahk
 
-!+n:: {
+CapsLock & n:: {
     ; Try to find the existing OneNote window
     oneNoteWin := WinExist("ahk_exe ONENOTE.EXE")
 
@@ -9,4 +8,5 @@
         ; If found, activate the window
         WinActivate(oneNoteWin)
     }
+    Send("{CapsLock}")
 }

@@ -5,8 +5,9 @@
 #Requires AutoHotkey v2.0
 #SingleInstance Force
 
-#include C:\Users\eduev\Documents\UIA-v2\Lib\UIA.ahk
-#include C:\Users\eduev\Documents\UIA-v2\Lib\UIA_Browser.ahk
+; Assuming UIA-v2 folder is now a subfolder in the same directory as this script.
+#include UIA-v2\Lib\UIA.ahk
+#include UIA-v2\Lib\UIA_Browser.ahk
 
 ;─────────────────────────────────────────────────────────────────────────────
 ; Helper: find the first UIA element whose Name matches any string in array
@@ -22,7 +23,7 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
 }
 
 ;─────────────────────────────────────────────────────────────────────────────
-!+3:: {                                                 ; Alt + Shift + B
+CapsLock & 3:: {                                                 ; Alt + Shift + B
     static isDictating := false
 
     ; Activate ChatGPT window
@@ -33,8 +34,8 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
     Sleep 300
 
     ; UI labels (Portuguese only)
-    dictateNames := ["Dictate button"]
-    submitNames := ["Submit dictation"]
+    dictateNames := ["Botão de ditado"]
+    submitNames := ["Enviar ditado"]
 
     ;───────────────────────────── START DICTATION ───────────────────────────────
     if !isDictating {
@@ -63,4 +64,6 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
         MsgBox "Erro ao finalizar ditado:`n" e.Message
         isDictating := false
     }
+
+    Send("{CapsLock}")
 }

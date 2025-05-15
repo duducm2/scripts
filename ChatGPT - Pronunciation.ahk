@@ -1,6 +1,6 @@
 #Requires AutoHotkey v2
 
-!+6::
+CapsLock & 6::
 {
 
     A_Clipboard := ""  ; Start off empty to allow ClipWait to detect when the text has arrived.
@@ -40,4 +40,6 @@
 
     ; Back to previous window
     Send "!{Tab}"
+
+    Send("{CapsLock}")
 }

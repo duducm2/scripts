@@ -19,8 +19,7 @@ if (IS_WORK_ENVIRONMENT) {
     Run "C:\Users\fie7ca\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\apps do Chrome\Gmail"
 }
 
-; test
-
+; Open ChatGPT
 Send "^!c"
 
 ;============ Win + keys ============
@@ -29,64 +28,105 @@ Send "^!c"
 Run GetScriptPath("Open Desktop.ahk")
 
 ;============ Alt + Shift + keys ============
-;Alt + Shift + 1: power toys command palette
+;Alt + Shift + Q: power toys command palette
+;Alt + Shift + W: open file explorer
+;Alt + Shift + Z: Bookmarks
+; Alt + Shift + S: Windows
+; Alt + Shift + A: Web
 
-; Alt + Shift + N : Opens or activates OneNote
-Run GetScriptPath("OneNote - Open.ahk")
+;============ Win + Alt + keys ============
 
-; Alt + Shift + S : Opens or activates Spotify
-Run GetScriptPath("Spotify - Open.ahk")
-
-; Alt + Shift + 6 : Get word pronunciation, definition, and Portuguese translation from ChatGPT
-Run GetScriptPath("ChatGPT - Pronunciation.ahk")
-
-; Alt + Shift + B : Shows notification for dictation mode status
-; Run GetScriptPath("ChatGPT - Dictator.ahk")
-
-; Alt + Shift + 3 : Toggles the microphone
-Run GetScriptPath("ChatGPT - Toggle microphone.ahk")
-
-; Alt + Shift + 4 : Activates Youtube
-Run GetScriptPath("Youtube - Activate.ahk")
-
-; Alt + Shift + 5 : Check grammar and improve text in both English and Portuguese
-Run GetScriptPath("ChatGPT - Check for grammar.ahk")
-
-; Alt + Shift + W : Clear ChatGPT input field for new conversation
-Run GetScriptPath("ChatGPT - Free Speach.ahk")
-
-; Alt + Shift + 7: Speek with ChatGPT
-Run GetScriptPath("ChatGPT - Speek.ahk")
-
-; Alt + Shift + C : Opens ChatGPT
-Run GetScriptPath("Open ChatGPT.ahk")
-
-; Alt + Shift + E : Opens EdrawMind
-Run GetScriptPath("Open EdrawMind.ahk")
-
-; Alt + Shift + F : Opens Figma
-Run GetScriptPath("Open Figma.ahk")
-
-; Alt + Shift + G : Opens Google
-Run GetScriptPath("Open Google.ahk")
-
-; Alt + Shift + T : Opens Google Translate in incognito mode
-Run GetScriptPath("Open Google Translate.ahk")
-
-; Alt + Shift + Z : Opens WhatsApp
-Run GetScriptPath("Open WhatsApp.ahk")
-
-; Alt + Shift + D : Controls Overleaf PDF viewer page navigation
-Run GetScriptPath("Overleaf - Pages interaction.ahk")
-
-; Alt + Shift + Alt + Right/Left/Up/Down : Fast tab navigation
+; Win + Alt + Right/Left/Up/Down : Fast tab navigation
 Run GetScriptPath("Fast Tab.ahk")
 
-; Alt + Shift + Alt + Up/Down/Left/Right : Fast scrolling
+;============ CapsLock + keys ============
+
+; CapsLock + N : Opens or activates OneNote
+Run GetScriptPath("OneNote - Open.ahk")
+
+; CapsLock + S : Opens or activates Spotify
+Run GetScriptPath("Spotify - Open.ahk")
+
+; CapsLock + 6 : Get word pronunciation, definition, and Portuguese translation from ChatGPT
+Run GetScriptPath("ChatGPT - Pronunciation.ahk")
+
+; CapsLock + 3 : Toggles the
+Run GetScriptPath("ChatGPT - Toggle microphone.ahk")
+
+; CapsLock + 4 : Activates Youtube
+Run GetScriptPath("Youtube - Activate.ahk")
+
+; CapsLock + 5 : Check grammar and improve text in both English and Portuguese
+Run GetScriptPath("ChatGPT - Check for grammar.ahk")
+
+; CapsLock + W : Clear ChatGPT input field for new conversation
+Run GetScriptPath("ChatGPT - Free Speach.ahk")
+
+; CapsLock + 7: Speek with ChatGPT
+Run GetScriptPath("ChatGPT - Speek.ahk")
+
+; CapsLock + C : Opens ChatGPT
+Run GetScriptPath("Open ChatGPT.ahk")
+
+; CapsLock + E : Opens EdrawMind
+Run GetScriptPath("Open EdrawMind.ahk")
+
+; CapsLock + G : Opens Google
+Run GetScriptPath("Open Google.ahk")
+
+; CapsLock + T : Opens Google Translate in incognito mode
+Run GetScriptPath("Open Google Translate.ahk")
+
+; CapsLock + Z : Opens WhatsApp
+Run GetScriptPath("Open WhatsApp.ahk")
+
+; CapsLock + Alt + Up/Down/Left/Right : Fast scrolling
 Run GetScriptPath("Fast Up and Down.ahk")
 
-; Alt + Shift + 0 : Hunt and Peck
+; CapsLock + 0 : Hunt and Peck
 Run GetScriptPath("Hunt and Peck.ahk")
 
-; Alt + Shift + ] : Minimizes windows
+; CapsLock + ] : Minimizes windows
 Run GetScriptPath("Minimize.ahk")
+
+; CapsLock + 2
+; Run "C:\Users\fie7ca\OneDrive - Bosch Group\07 - Scripts\Windows Explorer - Copy path.ahk" ❌
+
+; CapsLock + 8
+Run GetScriptPath("Outlook - Send to general.ahk")
+
+; CapsLock + 9
+Run GetScriptPath("Outlook - Send to newsletter.ahk")
+
+; CapsLock + A
+Run GetScriptPath("Outlook - Open mail.ahk")
+
+; CapsLock + R
+Run GetScriptPath("Outlook - Open Reminder.ahk")
+
+; CapsLock + Y
+Run GetScriptPath("Microsoft Teams - Mark as unread.ahk")
+
+; CapsLock + M
+Run GetScriptPath("Microsoft Teams - New conversation.ahk")
+
+; CapsLock + I
+Run GetScriptPath("Microsoft Teams - Laugh.ahk")
+
+; CapsLock + O
+Run GetScriptPath("Microsoft Teams - Like.ahk")
+
+; CapsLock + P
+Run GetScriptPath("Microsoft Teams - Heart.ahk")
+
+; CapsLock + H
+Run GetScriptPath("Microsoft Teams - Reply Message.ahk")
+
+; CapsLock + J
+Run GetScriptPath("Microsoft Teams - Pin.ahk")
+
+; CapsLock + K
+Run GetScriptPath("Microsoft Teams - Remove pin.ahk")
+
+; CapsLock + X
+Run GetScriptPath("Outlook - Open calendar.ahk")
