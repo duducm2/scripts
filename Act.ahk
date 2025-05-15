@@ -19,6 +19,8 @@ if (IS_WORK_ENVIRONMENT) {
     Run "C:\Users\fie7ca\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\apps do Chrome\Gmail"
 }
 
+; test
+
 Send "^!c"
 
 ;============ Win + keys ============
