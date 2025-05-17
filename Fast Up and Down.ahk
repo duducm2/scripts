@@ -1,38 +1,58 @@
 #Requires AutoHotkey v2.0+
 
-; Win+Alt+Shift+[Arrow keys] for fast movement
-#!+Up::
+; CapsLock+Win+[Arrow keys] for fast movement
+CapsLock & Up::
 {
-    Send "{Up}"
-    Send "{Up}"
-    Send "{Up}"
-    Send "{Up}"
-    Send "{Up}"
+    if GetKeyState("LWin", "P") || GetKeyState("RWin", "P") {
+        Send "{Up}"
+        Send "{Up}"
+        Send "{Up}"
+        Send "{Up}"
+        Send "{Up}"
+        Send "{CapsLock}"
+    }
+    else
+        Send "{Blind}{Up}"
 }
 
-#!+Down::
+CapsLock & Down::
 {
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
+    if GetKeyState("LWin", "P") || GetKeyState("RWin", "P") {
+        Send "{Down}"
+        Send "{Down}"
+        Send "{Down}"
+        Send "{Down}"
+        Send "{Down}"
+        Send "{CapsLock}"
+    }
+    else
+        Send "{Blind}{Down}"
 }
 
-#!+Right::
+CapsLock & Right::
 {
-    Send "{Right}"
-    Send "{Right}"
-    Send "{Right}"
-    Send "{Right}"
-    Send "{Right}"
+    if GetKeyState("LWin", "P") || GetKeyState("RWin", "P") {
+        Send "{Right}"
+        Send "{Right}"
+        Send "{Right}"
+        Send "{Right}"
+        Send "{Right}"
+        Send "{CapsLock}"
+    }
+    else
+        Send "{Blind}{Right}"
 }
 
-#!+Left::
+CapsLock & Left::
 {
-    Send "{Left}"
-    Send "{Left}"
-    Send "{Left}"
-    Send "{Left}"
-    Send "{Left}"
+    if GetKeyState("LWin", "P") || GetKeyState("RWin", "P") {
+        Send "{Left}"
+        Send "{Left}"
+        Send "{Left}"
+        Send "{Left}"
+        Send "{Left}"
+        Send "{CapsLock}"
+    }
+    else
+        Send "{Blind}{Left}"
 }
