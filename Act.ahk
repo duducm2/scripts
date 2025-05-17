@@ -51,15 +51,7 @@
 ; Ctrl + Shift + 8 : Fold/unfold (VS Code)
 ; Ctrl + Shift + 9 : Fold/unfold (VS Code)
 
-;============ Software changed shortcuts ======================================================================================================================================================
-; VS Code
-; Ctrl + Shift + 8: fold/unfold
-; Ctrl + Shift + 9: fold/unfold
-
 #Include env.ahk
-
-; Sofle - Key remapping
-Run GetScriptPath("Sofle - Key remapping.ahk")
 
 ;============ softwares =======================================================================================================================================================================
 
