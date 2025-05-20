@@ -69,6 +69,9 @@ if (IS_WORK_ENVIRONMENT) {
 ; Open ChatGPT
 Send "^!c"
 
+; Sofle - Key remapping
+Run GetScriptPath("Sofle - Key remapping.ahk")
+
 ;============ Win + keys =====================================================================================================================================================================
 
 ; Win + E : Opens Desktop
