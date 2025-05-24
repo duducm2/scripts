@@ -7,49 +7,50 @@
 ; Win + E : Opens Desktop
 
 ;----- Alt + Shift + keys -----
-; Alt + Shift + Q : Power toys command palette
-; Alt + Shift + W : Open file explorer
-; Alt + Shift + Z : Bookmarks
-; Alt + Shift + S : Windows
-; Alt + Shift + A : Web
+;     Alt + Shift + Q : Power toys command palette
+;     Alt + Shift + W : Open file explorer
+;     Alt + Shift + Z : Bookmarks
+;     Alt + Shift + S : Windows
+;     Alt + Shift + A : Web
 
 ;----- Win + Alt + keys -----
-; Win + Alt + Right/Left/Up/Down : Fast tab navigation
+;     Win + Alt + Right/Left/Up/Down : Fast tab navigation
 
 ;----- Win + Alt + Shift + keys -----
-; Win + Alt + Shift + N : Opens or activates OneNote
-; Win + Alt + Shift + S : Opens or activates Spotify
-; Win + Alt + Shift + 6 : Get word pronunciation, definition, and Portuguese translation from ChatGPT
-; Win + Alt + Shift + 3 : Toggles the microphone (ChatGPT)
-; Win + Alt + Shift + 4 : Activates Youtube
-; Win + Alt + Shift + 5 : Check grammar and improve text in both English and Portuguese
-; Win + Alt + Shift + W : Clear ChatGPT input field for new conversation
-; Win + Alt + Shift + 7 : Speak with ChatGPT
-; Win + Alt + Shift + C : Opens ChatGPT
-; Win + Alt + Shift + G : Opens Google
-; Win + Alt + Shift + Z : Opens WhatsApp
-; Win + Alt + Shift + Up/Down/Left/Right : Fast scrolling
-; Win + Alt + Shift + 0 : Hunt and Peck
-; Win + Alt + Shift + ] : Minimizes windows
+;     Win + Alt + Shift + N : Opens or activates OneNote
+;     Win + Alt + Shift + S : Opens or activates Spotify
+;     Win + Alt + Shift + 6 : Get word pronunciation, definition, and Portuguese translation from ChatGPT
+;     Win + Alt + Shift + 3 : Toggles the microphone (ChatGPT)
+;     Win + Alt + Shift + T : Clicks on the last microphone icon in the ChatGPT
+;     Win + Alt + Shift + 4 : Activates Youtube
+;     Win + Alt + Shift + 5 : Check grammar and improve text in both English and Portuguese
+;     Win + Alt + Shift + W : Clear ChatGPT input field for new conversation
+;     Win + Alt + Shift + 7 : Speak with ChatGPT
+;     Win + Alt + Shift + C : Opens ChatGPT
+;     Win + Alt + Shift + G : Opens Google
+;     Win + Alt + Shift + Z : Opens WhatsApp
+;     Win + Alt + Shift + Up/Down/Left/Right : Fast scrolling
+;     Win + Alt + Shift + 0 : Hunt and Peck
+;     Win + Alt + Shift + ] : Minimizes windows
 
-;----- Work Environment Shortcuts -----
-; Win + Alt + Shift + 8 : Outlook - Send to general
-; Win + Alt + Shift + 9 : Outlook - Send to newsletter
-; Win + Alt + Shift + A : Outlook - Open mail
-; Win + Alt + Shift + R : Outlook - Open Reminder
-; Win + Alt + Shift + X : Outlook - Open calendar
-; Win + Alt + Shift + Y : Microsoft Teams - Mark as unread
-; Win + Alt + Shift + M : Microsoft Teams - New conversation
-; Win + Alt + Shift + I : Microsoft Teams - Laugh
-; Win + Alt + Shift + O : Microsoft Teams - Like
-; Win + Alt + Shift + P : Microsoft Teams - Heart
-; Win + Alt + Shift + H : Microsoft Teams - Reply Message
-; Win + Alt + Shift + J : Microsoft Teams - Pin
-; Win + Alt + Shift + K : Microsoft Teams - Remove pin
+;    ----- Work Environment Shortcuts -----
+;     Win + Alt + Shift + 8 : Outlook - Send to general
+;     Win + Alt + Shift + 9 : Outlook - Send to newsletter
+;     Win + Alt + Shift + A : Outlook - Open mail
+;     Win + Alt + Shift + R : Outlook - Open Reminder
+;     Win + Alt + Shift + X : Outlook - Open calendar
+;     Win + Alt + Shift + Y : Microsoft Teams - Mark as unread
+;     Win + Alt + Shift + M : Microsoft Teams - New conversation
+;     Win + Alt + Shift + I : Microsoft Teams - Laugh
+;     Win + Alt + Shift + O : Microsoft Teams - Like
+;     Win + Alt + Shift + P : Microsoft Teams - Heart
+;     Win + Alt + Shift + H : Microsoft Teams - Reply Message
+;     Win + Alt + Shift + J : Microsoft Teams - Pin
+;     Win + Alt + Shift + K : Microsoft Teams - Remove pin
 
 ;----- Other Shortcuts -----
-; Ctrl + Shift + 8 : Fold/unfold (VS Code)
-; Ctrl + Shift + 9 : Fold/unfold (VS Code)
+;     Ctrl + Shift + 8 : Fold/unfold (VS Code)
+;     Ctrl + Shift + 9 : Fold/unfold (VS Code)
 
 #Include env.ahk
 
@@ -102,6 +103,9 @@ Run GetScriptPath("ChatGPT - Pronunciation.ahk")
 
 ; Win + Alt + Shift + 3 : Toggles the
 Run GetScriptPath("ChatGPT - Toggle microphone.ahk")
+
+; Win + Alt + Shift + T : Click on the last microphone icon in ChatGPT
+Run GetScriptPath("ChatGPT - Click last microphone.ahk")
 
 ; Win + Alt + Shift + 4 : Activates Youtube
 Run GetScriptPath("Youtube - Activate.ahk")
