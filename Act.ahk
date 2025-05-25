@@ -32,6 +32,7 @@
 ;     Win + Alt + Shift + Up/Down/Left/Right : Fast scrolling
 ;     Win + Alt + Shift + 0 : Hunt and Peck
 ;     Win + Alt + Shift + ] : Minimizes windows
+;     Win + Alt + Shift + L : Pop up the current tab
 
 ;    ----- Work Environment Shortcuts -----
 ;     Win + Alt + Shift + 8 : Outlook - Send to general
@@ -135,6 +136,9 @@ Run GetScriptPath("Hunt and Peck.ahk")
 
 ; Win + Alt + Shift + ] : Minimizes windows
 Run GetScriptPath("Minimize.ahk")
+
+; Win + Alt + Shift + L : Pop up the current tab
+Run GetScriptPath("Google Chrome - pop out tab.ahk")
 
 if (!IS_WORK_ENVIRONMENT) {
     Run GetScriptPath("Overleaf - Pages interaction.ahk")
