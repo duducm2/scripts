@@ -11,7 +11,7 @@
     ClipWait  ; Wait for the clipboard to contain text.
 
     SetTitleMatchMode 2
-    WinActivate "chatgpt - transcription"
+    WinActivate "chatgpt"
 
     Sleep 250
     Send "{Esc}" ; Focus main area

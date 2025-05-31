@@ -114,11 +114,8 @@ Run GetScriptPath("Youtube - Activate.ahk")
 ; Win + Alt + Shift + 5 : Check grammar and improve text in both English and Portuguese
 Run GetScriptPath("ChatGPT - Check for grammar.ahk")
 
-; Win + Alt + Shift + W : Clear ChatGPT input field for new conversation
-Run GetScriptPath("ChatGPT - Free Speach.ahk")
-
-; Win + Alt + Shift + 7: Speek with ChatGPT
-Run GetScriptPath("ChatGPT - Speek.ahk")
+; Win + Alt + Shift + 7: Speak with ChatGPT
+Run GetScriptPath("ChatGPT - Speak.ahk")
 
 ; Win + Alt + Shift + C : Opens ChatGPT
 Run GetScriptPath("Open ChatGPT.ahk")

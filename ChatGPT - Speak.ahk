@@ -42,9 +42,9 @@
     static isDictating := false ; State variable
     static submitFailCount := 0 ; Counter for consecutive submit failures
 
-    ; Activate the window containing "chatgpt - transcription"
+    ; Activate the window containing "chatgpt"
     SetTitleMatchMode 2
-    WinActivate "chatgpt - transcription"
+    WinActivate "chatgpt"
     WinWaitActive "ahk_exe chrome.exe" ; Ensure the correct window is active
 
     ; Initialize UIA Browser for the active window

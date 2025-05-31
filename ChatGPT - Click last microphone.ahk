@@ -6,7 +6,7 @@
 #!+t::
 {
     SetTitleMatchMode 2
-    winTitle := "chatgpt - transcription"
+    winTitle := "chatgpt"
     WinActivate winTitle
     WinWaitActive "ahk_exe chrome.exe"
 

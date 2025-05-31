@@ -44,7 +44,7 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
 
     ; Activate ChatGPT window
     SetTitleMatchMode 2
-    WinActivate "chatgpt - transcription"
+    WinActivate "chatgpt"
     WinWaitActive "ahk_exe chrome.exe"
     cUIA := UIA_Browser()
     Sleep 300
