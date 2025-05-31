@@ -3,6 +3,11 @@
 ; Win+Alt+Shift+N to activate OneNote
 #!+n::
 {
-    if oneNoteWin := WinExist("ahk_exe ONENOTE.EXE")
+    if oneNoteWin := WinExist("ahk_exe ONENOTE.EXE") {
         WinActivate(oneNoteWin)
+    } else {
+        Send("#!n")
+        Sleep(700)
+        Send("#!+n")
+    }
 }
