@@ -7,7 +7,7 @@
         WinActivate(oneNoteWin)
     } else {
         Send("#!n")
-        Sleep(700)
+        Sleep(1000)
         Send("#!+n")
     }
 }
