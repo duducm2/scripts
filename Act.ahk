@@ -52,6 +52,7 @@
 ;----- Other Shortcuts -----
 ;     Ctrl + Shift + 8 : Fold/unfold (VS Code)
 ;     Ctrl + Shift + 9 : Fold/unfold (VS Code)
+;     Ctrl + Shift + W : Remove unecessary keys
 
 #Include env.ahk
 
@@ -73,6 +74,10 @@ Send "^!c"
 
 ; Sofle - Key remapping
 Run GetScriptPath("Sofle - Key remapping.ahk")
+
+;============ Ctrl + Shift + keys =====================================================================================================================================================================
+; Ctrl + Shift + W : Remove unecessary keys
+Run GetScriptPath("Remove unecessary keys.ahk")
 
 ;============ Win + keys =====================================================================================================================================================================
 
