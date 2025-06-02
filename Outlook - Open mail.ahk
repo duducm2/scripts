@@ -1,11 +1,21 @@
 #Requires AutoHotkey v2.0+
+#include UIA-v2\Lib\UIA.ahk   ; keep if you need UIA elsewhere
 
-#include UIA-v2\Lib\UIA.ahk
-
-; Win+Alt+Shift+A to open Outlook inbox
+; Win+Alt+Shift+A → activate any Outlook window with your e-mail
+; (except the Calendar window)
 #!+a::
 {
-    ; Activate the inbox window
-    SetTitleMatchMode 1
-    WinActivate "Inbox - Eduardo"
+    email     := "Eduardo.Figueiredo@br.bosch.com"
+    exclusion := "Calendar"
+
+    ; Grab every Outlook window
+    for hwnd in WinGetList("ahk_exe OUTLOOK.EXE")
+    {
+        title := WinGetTitle(hwnd)
+        if InStr(title, email) && !InStr(title, exclusion)
+        {
+            WinActivate(hwnd)
+            return                       ; stop after the first suitable window
+        }
+    }
 }
