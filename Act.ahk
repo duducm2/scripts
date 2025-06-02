@@ -45,6 +45,7 @@
 ;     Win + Alt + Shift + I : Microsoft Teams - Laugh
 ;     Win + Alt + Shift + O : Microsoft Teams - Like
 ;     Win + Alt + Shift + P : Microsoft Teams - Heart
+;     Win + Alt + Shift + ´ : Microsoft Teams - Edit message
 ;     Win + Alt + Shift + H : Microsoft Teams - Reply Message
 ;     Win + Alt + Shift + J : Microsoft Teams - Pin
 ;     Win + Alt + Shift + K : Microsoft Teams - Remove pin
@@ -180,6 +181,9 @@ if (IS_WORK_ENVIRONMENT) {
     ; Win + Alt + Shift + P
     Run GetScriptPath("Microsoft Teams - Heart.ahk")
 
+    ; Win + Alt + Shift + ´
+    Run GetScriptPath("Microsoft Teams - Edit message.ahk")
+
     ; Win + Alt + Shift + H
     Run GetScriptPath("Microsoft Teams - Reply Message.ahk")
 
@@ -188,5 +192,7 @@ if (IS_WORK_ENVIRONMENT) {
 
     ; Win + Alt + Shift + K
     Run GetScriptPath("Microsoft Teams - Remove pin.ahk")
+
+
 
 }
