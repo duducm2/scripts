@@ -17,5 +17,5 @@
     Sleep 100
     Send "{Down}"
     Sleep 100
-    Send "{Enter}"
+    Send "{Down}"
 }
