@@ -27,6 +27,7 @@
 ;     Win + Alt + Shift + W : Clear ChatGPT input field for new conversation
 ;     Win + Alt + Shift + 7 : Speak with ChatGPT
 ;     Win + Alt + Shift + C : Opens ChatGPT
+;     Win + Alt + Shift + B : Copy last ChatGPT prompt
 ;     Win + Alt + Shift + G : Opens Google
 ;     Win + Alt + Shift + Z : Opens WhatsApp
 ;     Win + Alt + Shift + Up/Down/Left/Right : Fast scrolling
@@ -125,6 +126,10 @@ Run GetScriptPath("ChatGPT - Speak.ahk")
 
 ; Win + Alt + Shift + C : Opens ChatGPT
 Run GetScriptPath("Open ChatGPT.ahk")
+
+; Win + Alt + Shift + B : Copy last ChatGPT prompt
+Run GetScriptPath("ChatGPT - Copy last message.ahk")
+
 ; Win + Alt + Shift + G : Opens Google
 Run GetScriptPath("Open Google.ahk")
 
