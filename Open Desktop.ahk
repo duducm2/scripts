@@ -2,51 +2,39 @@
 #InputLevel 2
 #SingleInstance Ignore
 
-#Include %A_ScriptDir%\env.ahk
+#Include %A_ScriptDir%\env.ahk  ; IS_WORK_ENVIRONMENT (true/false)
 
-; Win+E hotkey to open Desktop folder (original)
-#e:: {
-    SetTitleMatchMode 2  ; Match anywhere in the title
+; Win + E  →  abrir ou ativar janela do Desktop
+#e:: OpenDesktop()
 
-    personalDesktopPath := "C:\Users\eduev\OneDrive\Desktop"
-    workDesktopPath := "C:\Users\fie7ca\Desktop"
+OpenDesktop() {
+    SetTitleMatchMode 2
+    desktopTitles := ["Desktop", "Área de Trabalho"]
 
-    chosenDesktopPath := ""
-    possibleTitles := ["Área de Trabalho", "Desktop", "Volume"]
-
-    ; Determine the correct desktop path based on the IS_WORK_ENVIRONMENT variable from env.ahk
-    if (IS_WORK_ENVIRONMENT) {
-        chosenDesktopPath := workDesktopPath
-    } else { ; Default to Personal if IS_WORK_ENVIRONMENT is false
-        chosenDesktopPath := personalDesktopPath
+    ; 1. Tenta ativar qualquer Explorer já aberto que tenha “Desktop” no título
+    for title in desktopTitles {
+        if WinExist(title " ahk_class CabinetWClass") {
+            WinRestore
+            WinActivate
+            return
+        }
     }
 
-    ; Try to activate existing Desktop window matching any possible title
-    found := false
-    for title in possibleTitles {
-        if WinExist(title) {
-            WinActivate(title)
-            if WinWaitActive(title, , 2) {
-                found := true
-                break
+    ; 2. Se não existe, abre Desktop (work ou pessoal)
+    personal := A_Desktop
+    work     := "C:\Users\fie7ca\Desktop"
+    target   := IS_WORK_ENVIRONMENT ? work : personal
+    Run 'explorer.exe "' target '"'
+
+    ; 3. Espera a janela aparecer e ativa
+    Loop 50 {                      ; até 10 s (50 × 200 ms)
+        Sleep 200
+        for title in desktopTitles {
+            if WinExist(title " ahk_class CabinetWClass") {
+                WinRestore
+                WinActivate
+                return
             }
         }
     }
-    if !found {
-        ; If not found or not activated, open the folder and activate when ready
-        Run chosenDesktopPath
-        Sleep 500
-        ActivateDesktopWindow(possibleTitles)
-    }
-}
-
-ActivateDesktopWindow(possibleTitles) {
-    for title in possibleTitles {
-        if WinWait(title, , 5) { ; Wait up to 5 seconds for any title
-            WinActivate(title)
-            WinWaitActive(title, , 2)
-            return true
-        }
-    }
-    return false
 }
