@@ -22,6 +22,10 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
 ; Win+Alt+Shift+3 to toggle microphone
 #!+3::
 {
+    ToggleDictation()
+}
+
+ToggleDictation(triedFallback := false, forceAction := "") {
     static isDictating := false
 
     ; Define button names for both languages
@@ -39,7 +43,6 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
 
     ; Prepare arrays for FindButton
     dictateNames_to_find := [currentDictateName]
-    ; When stopping, the button might be the "submit" one or the "stop dictation/transcribing" one
     submitOrStopNames_to_find := [currentSubmitName, currentTranscribingName]
 
     ; Activate ChatGPT window
@@ -49,34 +52,54 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
     cUIA := UIA_Browser()
     Sleep 300
 
-    ;───────────────────────────── START DICTATION ───────────────────────────────
-    if !isDictating {
+    ; Determine action: start or stop dictation
+    action := forceAction ? forceAction : (!isDictating ? "start" : "stop")
+
+    if (action = "start") {
         try {
             if btn := FindButton(cUIA, dictateNames_to_find) {
                 btn.Click()
                 isDictating := true
-            } else
-                MsgBox (IS_WORK_ENVIRONMENT ? "'" . currentDictateName . "' não encontrado." : "'" . currentDictateName .
-                    "' not found.")
+                return
+            } else if !triedFallback {
+                ; Try the opposite action (stop) if start failed
+                ToggleDictation(true, "stop")
+                return
+            } else {
+                MsgBox (IS_WORK_ENVIRONMENT ? "Não foi possível iniciar ou parar o ditado. Nenhum botão encontrado." :
+                    "Could not start or stop dictation. No button found.")
+            }
         } catch as e {
-            MsgBox (IS_WORK_ENVIRONMENT ? "Erro ao iniciar ditado:`n" : "Error starting dictation:`n") e.Message
-            isDictating := false
+            if !triedFallback {
+                ToggleDictation(true, "stop")
+                return
+            } else {
+                MsgBox (IS_WORK_ENVIRONMENT ? "Erro ao iniciar/parar ditado:`n" :
+                    "Error starting/stopping dictation:`n") e.Message
+            }
         }
-        return
-    }
-
-    ;───────────────────────────── STOP DICTATION ────────────────────────────────
-    try {
-        if btn := FindButton(cUIA, submitOrStopNames_to_find) { ; Use the array with both possibilities
-            btn.Click()                 ; stop recording / start transcription
-            isDictating := false
-        } else {
-            MsgBox (IS_WORK_ENVIRONMENT ? "Botão para parar/enviar ditado ('" . currentSubmitName . "' ou '" .
-                currentTranscribingName . "') não encontrado." : "Button to stop/submit dictation ('" .
-                    currentSubmitName . "' or '" . currentTranscribingName . "') not found.")
+    } else if (action = "stop") {
+        try {
+            if btn := FindButton(cUIA, submitOrStopNames_to_find) {
+                btn.Click()                 ; stop recording / start transcription
+                isDictating := false
+                return
+            } else if !triedFallback {
+                ; Try the opposite action (start) if stop failed
+                ToggleDictation(true, "start")
+                return
+            } else {
+                MsgBox (IS_WORK_ENVIRONMENT ? "Não foi possível parar ou iniciar o ditado. Nenhum botão encontrado." :
+                    "Could not stop or start dictation. No button found.")
+            }
+        } catch as e {
+            if !triedFallback {
+                ToggleDictation(true, "start")
+                return
+            } else {
+                MsgBox (IS_WORK_ENVIRONMENT ? "Erro ao parar/iniciar ditado:`n" :
+                    "Error stopping/starting dictation:`n") e.Message
+            }
         }
-    } catch as e {
-        MsgBox (IS_WORK_ENVIRONMENT ? "Erro ao finalizar ditado:`n" : "Error stopping dictation:`n") e.Message
-        isDictating := false
     }
 }
