@@ -4,9 +4,9 @@
 #!+y::
 {
     Send "^1"
-    Sleep "200"
+    Sleep "400"
     Send("{AppsKey}")
-    Sleep "200"
+    Sleep "400"
     Send "{Down}"
     Send "{Enter}"
 }
