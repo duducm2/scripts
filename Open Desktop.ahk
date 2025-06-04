@@ -12,9 +12,7 @@
     workDesktopPath := "C:\Users\fie7ca\Desktop"
 
     chosenDesktopPath := ""
-    windowTitle := "Área de Trabalho" ; Assuming this title is consistent for both paths.
-    ; If your "Work" environment uses a different title (e.g., "Desktop"),
-    ; you may need to adjust this or make it dynamic.
+    possibleTitles := ["Área de Trabalho", "Desktop", "Volume"]
 
     ; Determine the correct desktop path based on the IS_WORK_ENVIRONMENT variable from env.ahk
     if (IS_WORK_ENVIRONMENT) {
@@ -23,20 +21,32 @@
         chosenDesktopPath := personalDesktopPath
     }
 
-    ; Try to activate existing Desktop window matching the title
-    if WinExist(windowTitle) {
-        WinActivate(windowTitle)
-        ; Wait to confirm activation (up to 2 seconds)
-        if !WinWaitActive(windowTitle, , 2) {
-            ; If activation failed, try to open a new window using the chosen path
-            Run chosenDesktopPath
-            Sleep 500  ; Give Windows time to start the process
-            WinWaitActive(windowTitle, , 5)  ; Wait up to 5 seconds for the window with the specific title
+    ; Try to activate existing Desktop window matching any possible title
+    found := false
+    for title in possibleTitles {
+        if WinExist(title) {
+            WinActivate(title)
+            if WinWaitActive(title, , 2) {
+                found := true
+                break
+            }
         }
-    } else {
-        ; If no window exists, open a new one using the chosen path
-        Run chosenDesktopPath
-        Sleep 500  ; Give Windows time to start the process
-        WinWaitActive(windowTitle, , 5)  ; Wait up to 5 seconds for the window with the specific title
     }
+    if !found {
+        ; If not found or not activated, open the folder and activate when ready
+        Run chosenDesktopPath
+        Sleep 500
+        ActivateDesktopWindow(possibleTitles)
+    }
+}
+
+ActivateDesktopWindow(possibleTitles) {
+    for title in possibleTitles {
+        if WinWait(title, , 5) { ; Wait up to 5 seconds for any title
+            WinActivate(title)
+            WinWaitActive(title, , 2)
+            return true
+        }
+    }
+    return false
 }
