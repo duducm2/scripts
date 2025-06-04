@@ -5,9 +5,15 @@
 ; Win+Alt+Shift+W to open WhatsApp
 #!+z::
 {
-    if (IS_WORK_ENVIRONMENT) {
-        Run "C:\Users\fie7ca\Documents\Atalhos\WhatsApp.lnk"
-    } else { ; Personal Environment
-        Run "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\apps do Chrome\WhatsApp Web.lnk" ; Assuming .lnk for personal too, adjust if not
+    SetTitleMatchMode(2)
+    if WinExist("WhatsApp") {
+        WinActivate("WhatsApp")
+        Send("{Esc}")
+    } else {
+        if (IS_WORK_ENVIRONMENT) {
+            Run "C:\Users\fie7ca\Documents\Atalhos\WhatsApp.lnk"
+        } else { ; Personal Environment
+            Run "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\apps do Chrome\WhatsApp Web.lnk"
+        }
     }
 }
