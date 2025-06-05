@@ -3,14 +3,10 @@
 ; Win+Alt+Shift+S to activate Spotify
 #!+s::
 {
-    ; Try to find the existing Spotify window
-    spotifyWin := WinExist("ahk_exe Spotify.exe")
-
-    if (spotifyWin) {
-        ; If found, activate the window
-        WinActivate(spotifyWin)
+    SetTitleMatchMode(2)
+    if WinExist("Spotify") {
+        WinActivate("Spotify")
     } else {
-        ; If not found, try to run Spotify
         Run "spotify"
     }
 }
