@@ -83,7 +83,7 @@ ToggleDictationSpeak(triedFallback := false, forceAction := "") {
                 try {
                     Sleep 200
                     finalSendBtn := cUIA.WaitElement({ Name: currentSendPromptName, AutomationId: "composer-submit-button" },
-                    10000)
+                    13000)
                     if finalSendBtn {
                         SendInput "{Enter}"
                     } else {
