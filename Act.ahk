@@ -3,8 +3,8 @@
 
 ;============ Keysmap ========================================================================================================================================================================
 
-;----- Win + keys -----
-; Win + E : Opens Desktop
+;----- Win + Shift + keys -----
+; Win + Shift + E : Opens Desktop
 
 ;----- Alt + Shift + keys -----
 ;     Alt + Shift + Q : Power toys command palette
@@ -83,7 +83,7 @@ Run GetScriptPath("Remove unecessary keys.ahk")
 
 ;============ Win + keys =====================================================================================================================================================================
 
-; Win + E : Opens Desktop
+; Shift + Win + E : Opens Desktop
 Run GetScriptPath("Open Desktop.ahk")
 
 ;============ Alt + Shift + keys =============================================================================================================================================================
@@ -197,7 +197,5 @@ if (IS_WORK_ENVIRONMENT) {
 
     ; Win + Alt + Shift + K
     Run GetScriptPath("Microsoft Teams - Remove pin.ahk")
-
-
 
 }
