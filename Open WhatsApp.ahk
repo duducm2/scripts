@@ -8,7 +8,6 @@
     SetTitleMatchMode(2)
     if WinExist("WhatsApp") {
         WinActivate("WhatsApp")
-        Send("{Esc}")
     } else {
         if (IS_WORK_ENVIRONMENT) {
             Run "C:\Users\fie7ca\Documents\Atalhos\WhatsApp.lnk"
