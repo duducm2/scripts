@@ -54,8 +54,10 @@
 ;----- Shift + keys -----
 ;     Shift + Y : ?
 ;     Shift + U : Onenote: select line and children
-;     Shift + I : Onenote: expand all
-;     Shift + O : Onenote: collapse all
+;     Shift + I : Onenote: collapse current
+;     Shift + O : Onenote: expand current
+;     Shift + K : Onenote: collapse all
+;     Shift + L : Onenote: expand all
 
 ;----- Other Shortcuts -----
 ;     Ctrl + Shift + 8 : Fold/unfold (VS Code)

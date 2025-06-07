@@ -22,9 +22,15 @@ SendSymbol(sym) {
 +u:: Send("^+-") ; Remaps to Ctrl + Shift + -
 
 ; Shift + I : Onenote: expand all
-+i:: Send("!+0")     ; Remaps to Alt + Shift + 0
++i:: Send("!+-")     ; Remaps to Alt + Shift + 0
 
 ; Shift + O : Onenote: collapse all
-+o:: Send("!+1")     ; Remaps to Alt + Shift + 1
++o:: Send("!+{+}")     ; Remaps to Alt + Shift + 1
+
+; Shift + I : Onenote: expand all
++k:: Send("!+1")     ; Remaps to Alt + Shift + 0
+
+; Shift + O : Onenote: collapse all
++l:: Send("!+0")     ; Remaps to Alt + Shift + 1
 
 #HotIf
