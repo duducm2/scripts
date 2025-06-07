@@ -51,6 +51,12 @@
 ;     Win + Alt + Shift + J : Microsoft Teams - Pin
 ;     Win + Alt + Shift + K : Microsoft Teams - Remove pin
 
+;----- Shift + keys -----
+;     Shift + Y : ?
+;     Shift + U : Onenote: select line and children
+;     Shift + I : Onenote: expand all
+;     Shift + O : Onenote: collapse all
+
 ;----- Other Shortcuts -----
 ;     Ctrl + Shift + 8 : Fold/unfold (VS Code)
 ;     Ctrl + Shift + 9 : Fold/unfold (VS Code)

@@ -12,3 +12,19 @@ SendSymbol(sym) {
 
 ; Symbol shortcuts using Win+Alt+Shift combinations
 +y:: SendSymbol("?")   ; Win+Alt+Shift+Y → ?
+
+;-------------------------------------------------------------------
+; OneNote Shortcuts
+;-------------------------------------------------------------------
+#HotIf WinActive("ahk_exe onenote.exe")
+
+; Shift + U : Onenote: select line and children
++u:: Send("^+-") ; Remaps to Ctrl + Shift + -
+
+; Shift + I : Onenote: expand all
++i:: Send("!+0")     ; Remaps to Alt + Shift + 0
+
+; Shift + O : Onenote: collapse all
++o:: Send("!+1")     ; Remaps to Alt + Shift + 1
+
+#HotIf
