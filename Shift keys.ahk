@@ -34,3 +34,18 @@ SendSymbol(sym) {
 +l:: Send("!+0")     ; Remaps to Alt + Shift + 1
 
 #HotIf
+
+;-------------------------------------------------------------------
+; WhatsApp Shortcuts
+;-------------------------------------------------------------------
+#HotIf WinActive("WhatsApp")
+
+; Shift + h: Trigger 10 tabs backwards
++h::
+{
+    loop 10 {
+        Send "+{Tab}"
+    }
+}
+
+#HotIf

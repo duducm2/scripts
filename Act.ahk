@@ -56,6 +56,7 @@
 ;     Shift + O : Onenote: expand current
 ;     Shift + K : Onenote: collapse all
 ;     Shift + L : Onenote: expand all
+;     Shift + H : What's app - Go to current chat
 
 ;----- Other Shortcuts -----
 ;     Ctrl + Shift + 8 : Fold/unfold (VS Code)
@@ -80,8 +81,8 @@ if (IS_WORK_ENVIRONMENT) {
 ; Open ChatGPT
 Send "^!c"
 
-; Sofle - Key remapping
-Run GetScriptPath("Sofle - Key remapping.ahk")
+; Shift + keys
+Run GetScriptPath("Shift + keys.ahk")
 
 ;============ Ctrl + Shift + keys =====================================================================================================================================================================
 ; Ctrl + Shift + W : Remove unecessary keys
