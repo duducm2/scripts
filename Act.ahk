@@ -13,9 +13,6 @@
 ;     Alt + Shift + S : Windows
 ;     Alt + Shift + A : Web
 
-;----- Win + Alt + keys -----
-;     Win + Alt + Right/Left/Up/Down : Fast up and down navigation
-
 ;----- Win + Alt + Shift + keys -----
 ;     Win + Alt + Shift + N : Opens or activates OneNote
 ;     Win + Alt + Shift + S : Opens or activates Spotify
@@ -142,9 +139,6 @@ Run GetScriptPath("Open Google.ahk")
 
 ; Win + Alt + Shift + Z : Opens WhatsApp
 Run GetScriptPath("Open WhatsApp.ahk")
-
-; Win + Alt + Shift + Alt + Up/Down/Left/Right : Fast scrolling
-Run GetScriptPath("Fast Up and Down.ahk")
 
 ; Win + Alt + Shift + 0 : Hunt and Peck
 Run GetScriptPath("Hunt and Peck.ahk")
