@@ -34,6 +34,7 @@
 ;     Win + Alt + Shift + 0 : Hunt and Peck
 ;     Win + Alt + Shift + ] : Minimizes windows
 ;     Win + Alt + Shift + L : Pop up the current tab
+;     Win + Alt + Shift + D : Spotify - Go to library
 
 ;    ----- Work Environment Shortcuts -----
 ;     Win + Alt + Shift + 8 : Outlook - Send to general
@@ -108,6 +109,9 @@ Run GetScriptPath("OneNote - Open.ahk")
 
 ; Win + Alt + Shift + S : Opens or activates Spotify
 Run GetScriptPath("Spotify - Open.ahk")
+
+; Win + Alt + Shift + D : Spotify - Go to library
+Run GetScriptPath("Spotify - Go to library.ahk")
 
 ; Win + Alt + Shift + 6 : Get word pronunciation, definition, and Portuguese translation from ChatGPT
 Run GetScriptPath("ChatGPT - Pronunciation.ahk")
