@@ -14,7 +14,7 @@
 ;     Alt + Shift + A : Web
 
 ;----- Win + Alt + keys -----
-;     Win + Alt + Right/Left/Up/Down : Fast tab navigation
+;     Win + Alt + Right/Left/Up/Down : Fast up and down navigation
 
 ;----- Win + Alt + Shift + keys -----
 ;     Win + Alt + Shift + N : Opens or activates OneNote
@@ -100,11 +100,6 @@ Run GetScriptPath("Open Desktop.ahk")
 ;Alt + Shift + Z: Bookmarks
 ; Alt + Shift + S: Windows
 ; Alt + Shift + A: Web
-
-;============ Win + Alt + keys ================================================================================================================================================================
-
-; Win + Alt + Right/Left/Up/Down : Fast tab navigation
-Run GetScriptPath("Fast Tab.ahk")
 
 ;============ Win + Alt + Shift + keys =================================================================================================================================================================
 
