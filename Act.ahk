@@ -48,6 +48,10 @@
 ;     Win + Alt + Shift + H : Microsoft Teams - Reply Message
 ;     Win + Alt + Shift + J : Microsoft Teams - Pin
 ;     Win + Alt + Shift + K : Microsoft Teams - Remove pin
+;     Win + Alt + Shift + Q : Microsoft Teams meeting - Toggle Mute
+;     Win + Alt + Shift + F : Microsoft Teams meeting - Toggle camera
+;     Win + Alt + Shift + E : Microsoft Teams meeting - Screen share
+;     Win + Alt + Shift + U : Microsoft Teams meeting - Exit meeting
 
 ;----- Shift + keys -----
 ;     Shift + Y : ?
@@ -155,11 +159,15 @@ if (!IS_WORK_ENVIRONMENT) {
 }
 
 if (IS_WORK_ENVIRONMENT) {
-    ; Win + Alt + Shift + 2
-    ; Run "C:\Users\fie7ca\OneDrive - Bosch Group\07 - Scripts\Windows Explorer - Copy path.ahk" ❌
 
     ; Win + Alt + Shift + 8
     Run GetScriptPath("Outlook - Send to general.ahk")
+
+    ; Win + Alt + Shift + Q
+    ; Win + Alt + Shift + F
+    ; Win + Alt + Shift + E
+    ; Win + Alt + Shift + U
+    Run GetScriptPath("Microsoft Teams - meeting shortcuts.ahk")
 
     ; Win + Alt + Shift + 9
     Run GetScriptPath("Outlook - Send to newsletter.ahk")
