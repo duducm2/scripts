@@ -5,7 +5,8 @@
 ; Win+Alt+Shift+8 to send to general in Outlook
 +^8::
 {
-    Send "^+v"
+    Send "!5"
+    Send "O"
     Send "{Home}"
     Send "00"
     Send "{Enter}"

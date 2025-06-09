@@ -5,7 +5,8 @@
 ; Win+Alt+Shift+9 to send to newsletter in Outlook
 +^9::
 {
-    Send "^+v"
+    Send "!5"
+    Send "O"
     Send "{Home}"
     Send "01"
     Send "{Enter}"
