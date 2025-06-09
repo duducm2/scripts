@@ -82,7 +82,7 @@ if (IS_WORK_ENVIRONMENT) {
 Send "^!c"
 
 ; Shift + keys
-Run GetScriptPath("Shift + keys.ahk")
+Run GetScriptPath("Shift keys.ahk")
 
 ;============ Ctrl + Shift + keys =====================================================================================================================================================================
 ; Ctrl + Shift + W : Remove unecessary keys
