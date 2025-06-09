@@ -4,7 +4,7 @@
 
 ; -----------------------------------------------------------------
 ; Função utilitária – ativa a janela da reunião do Microsoft Teams
-; (ignora janelas de chat)
+; (ignora janelas de chat e barra de compartilhamento)
 ; Compatível com o Teams "clássico" (Teams.exe) e o novo Teams
 ; (ms-teams.exe / MSTeams.exe)
 ; -----------------------------------------------------------------
@@ -15,7 +15,14 @@ ActivateTeamsMeetingWindow() {
     for proc in processes {
         for hwnd in WinGetList("ahk_exe " proc) {
             title := WinGetTitle(hwnd)
-            if InStr(title, "Microsoft Teams meeting") && !InStr(title, "Chat |") {
+            if (
+                (InStr(title, "Microsoft Teams meeting") 
+                || RegExMatch(title, "^[^|]+\| Microsoft Teams$")
+                || RegExMatch(title, "^.*\(.*\) \| Microsoft Teams$")
+                )
+                && !InStr(title, "Chat |")
+                && !InStr(title, "Sharing control bar |")
+            ) {
                 WinActivate(hwnd)
                 return true
             }
@@ -54,10 +61,19 @@ ActivateTeamsMeetingWindow() {
 #!+e::                       ; E
 {
     if ActivateTeamsMeetingWindow() {
+        ; garante que o foco não fique preso em menus anteriores
         Send "{Esc}"
-        Send "^+e"           ; Ctrl+Shift+E abre o menu de compartilhamento
-        Sleep 300            ; aguarda menu abrir
-        Send "{Tab 4}"       ; quatro TABs para selecionar a primeira opção
+        Sleep 200
+
+        ; abre o menu de compartilhamento
+        Send "^+e"           ; Ctrl+Shift+E
+        Sleep 800            ; aguarda o menu carregar
+
+        ; navega lentamente pelas opções (4 TABs)
+        Loop 4 {
+            Send "{Tab}"
+            Sleep 200        ; deixa tempo para o Teams responder
+        }
     }
 }
 
