@@ -16,12 +16,11 @@ ActivateTeamsMeetingWindow() {
         for hwnd in WinGetList("ahk_exe " proc) {
             title := WinGetTitle(hwnd)
             if (
-                (InStr(title, "Microsoft Teams meeting") 
-                || RegExMatch(title, "^[^|]+\| Microsoft Teams$")
-                || RegExMatch(title, "^.*\(.*\) \| Microsoft Teams$")
+                ( InStr(title, "Microsoft Teams meeting")                 ; Janela “Microsoft Teams meeting”
+               || RegExMatch(title, ".*\| Microsoft Teams$")              ; Qualquer coisa terminando em “ | Microsoft Teams”
                 )
-                && !InStr(title, "Chat |")
-                && !InStr(title, "Sharing control bar |")
+                && !InStr(title, "Chat |")                                ; Ignora janelas de chat
+                && !InStr(title, "Sharing control bar |")                 ; Ignora barra de compartilhamento
             ) {
                 WinActivate(hwnd)
                 return true
@@ -29,8 +28,8 @@ ActivateTeamsMeetingWindow() {
         }
     }
 
-    ; Fallback: busca genérica por título caso o exe mude
-    if hwnd := WinExist("Microsoft Teams meeting | Microsoft Teams") {
+    ; Fallback genérico caso o nome do executável mude
+    if hwnd := WinExist(".*\| Microsoft Teams") {                         ; Mesmo critério amplo
         WinActivate(hwnd)
         return true
     }
