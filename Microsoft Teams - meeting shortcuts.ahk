@@ -1,87 +1,92 @@
 #Requires AutoHotkey v2.0+
 
-#include UIA-v2\Lib\UIA.ahk      ; ajuste o caminho se necessário
+#include UIA-v2\Lib\UIA.ahk
 
-; -----------------------------------------------------------------
-; Função utilitária – ativa a janela da reunião do Microsoft Teams
-; (ignora janelas de chat e barra de compartilhamento)
-; Compatível com o Teams "clássico" (Teams.exe) e o novo Teams
-; (ms-teams.exe / MSTeams.exe)
-; -----------------------------------------------------------------
 ActivateTeamsMeetingWindow() {
     static processes := ["ms-teams.exe", "Teams.exe", "MSTeams.exe"]
-
-    ; Procura entre todos os processos candidatos
     for proc in processes {
         for hwnd in WinGetList("ahk_exe " proc) {
             title := WinGetTitle(hwnd)
             if (
-                ( InStr(title, "Microsoft Teams meeting")                 ; Janela “Microsoft Teams meeting”
-               || RegExMatch(title, ".*\| Microsoft Teams$")              ; Qualquer coisa terminando em “ | Microsoft Teams”
-                )
-                && !InStr(title, "Chat |")                                ; Ignora janelas de chat
-                && !InStr(title, "Sharing control bar |")                 ; Ignora barra de compartilhamento
-            ) {
+                ( InStr(title, "Microsoft Teams meeting")
+               || RegExMatch(title, "^[^|]+\| Microsoft Teams$")
+               || RegExMatch(title, "^.*\(.*\) \| Microsoft Teams$") )
+                && !InStr(title, "Chat |")
+                && !InStr(title, "Sharing control bar |") ) {
                 WinActivate(hwnd)
                 return true
             }
         }
     }
-
-    ; Fallback genérico caso o nome do executável mude
-    if hwnd := WinExist(".*\| Microsoft Teams") {                         ; Mesmo critério amplo
+    if hwnd := WinExist(".*\| Microsoft Teams") {
         WinActivate(hwnd)
         return true
     }
-
     MsgBox "Não foi possível encontrar uma janela de reunião ativa.", "Microsoft Teams", "Iconi"
     return false
 }
 
-; -----------------------------------------------------------------
-; HOTKEYS (Win  + Alt + Shift + …)
-; -----------------------------------------------------------------
-
-; 1) Microfone  –  Win + Alt + Shift + Q
-#!+q::                       ; Q
-{
-    if ActivateTeamsMeetingWindow()
-        Send "^+m"           ; Ctrl+Shift+M
+FindListItemContaining(root, text) {
+    items := root.FindAll(UIA.CreateCondition({ ControlType: "ListItem" }))
+    for item in items {
+        if InStr(item.Name, text)
+            return item
+    }
+    return false
 }
 
-; 2) Câmera  –  Win + Alt + Shift + F
-#!+f::                       ; F
-{
-    if ActivateTeamsMeetingWindow()
-        Send "^+o"           ; Ctrl+Shift+O
+WaitListItem(root, partialName, timeout := 3000) {
+    start := A_TickCount
+    while (A_TickCount - start < timeout) {
+        item := FindListItemContaining(root, partialName)
+        if item
+            return item
+        Sleep 100
+    }
+    return false
 }
 
-; 3) Compartilhar tela  –  Win + Alt + Shift + E
-#!+e::                       ; E
-{
-    if ActivateTeamsMeetingWindow() {
-        ; garante que o foco não fique preso em menus anteriores
-        Send "{Esc}"
-        Sleep 200
+#!+q:: {
+    if ActivateTeamsMeetingWindow()
+        Send "^+m"
+}
 
-        ; abre o menu de compartilhamento
-        Send "^+e"           ; Ctrl+Shift+E
-        Sleep 800            ; aguarda o menu carregar
+#!+f:: {
+    if ActivateTeamsMeetingWindow()
+        Send "^+o"
+}
 
-        ; navega lentamente pelas opções (4 TABs)
-        Loop 4 {
-            Send "{Tab}"
-            Sleep 200        ; deixa tempo para o Teams responder
-        }
+#!+e:: {
+    if !ActivateTeamsMeetingWindow()
+        return
+
+    hwnd := WinGetID("A")
+    root := UIA.ElementFromHandle(hwnd)
+    if !root
+        return
+
+    listItem := FindListItemContaining(root, "Opens list of")
+    if listItem {
+        listItem.Invoke()
+        return
+    }
+
+    shareBtn := root.FindFirst(UIA.CreateCondition({ AutomationId: "share-button" }))
+    if !shareBtn
+        return
+    shareBtn.Invoke()
+
+    listItem := WaitListItem(root, "Opens list of")
+    if listItem {
+        Sleep 700
+        listItem.Invoke()
     }
 }
 
-; 4) Sair da reunião  –  Win + Alt + Shift + U
-#!+u::                       ; U
-{
+#!+u:: {
     if !ActivateTeamsMeetingWindow()
         return
     response := MsgBox("Tem certeza de que deseja sair da reunião?", "Sair da reunião?", "YesNo Icon!")
     if response = "Yes"
-        Send "^+h"           ; Ctrl+Shift+H
+        Send "^+h"
 }
