@@ -21,7 +21,6 @@
 ;     Win + Alt + Shift + H : Available
 ;     Win + Alt + Shift + J : Available
 ;     Win + Alt + Shift + K : Available
-;     Win + Alt + Shift + V : Available
 ; ----- Onenote -------------
 ;     Win + Alt + Shift + N : Opens or activates OneNote
 ; ----- Spotify -------------
@@ -45,6 +44,7 @@
 ;     Win + Alt + Shift + R : Outlook - Open Reminder
 ;     Win + Alt + Shift + X : Outlook - Open calendar
 ; ----- Microsoft Teams ------
+;     Win + Alt + Shift + V : Open chat
 ;     Win + Alt + Shift + M : Microsoft Teams - New conversation
 ;     Win + Alt + Shift + Q : Microsoft Teams meeting - Toggle Mute
 ;     Win + Alt + Shift + F : Microsoft Teams meeting - Toggle camera
@@ -65,8 +65,8 @@
 ;     Shift + N : Available
 ;     Shift + Q : Available
 ;     Shift + S : Available
-;     Shift + T : Available
 ;     Shift + W : Available
+;     Shift + T : Available
 ;     Shift + X : Available
 ;     Shift + Z : Available
 ; ----- Microsoft Teams -----

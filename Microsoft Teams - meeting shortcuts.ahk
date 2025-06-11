@@ -93,3 +93,50 @@ WaitListItem(root, partialName, timeout := 3000) {
     if response = "Yes"
         Send "^+h"
 }
+
+
+FindTextFieldByScan(root) {
+    all := root.FindAll(UIA.CreateCondition({ ControlType: "Edit" }))
+    for elm in all {
+        name := elm.Name
+        if name = "Type a message"
+            return elm
+    }
+    return false
+}
+
+#!+v:: {
+    if !ActivateTeamsMeetingWindow()
+        return
+
+    hwnd := WinGetID("A")
+    root := UIA.ElementFromHandle(hwnd)
+    if !root
+        return
+
+    chatBtn := root.FindFirst(UIA.CreateCondition({ AutomationId: "chat-button" }))
+    if !chatBtn
+        return
+
+    ; Tenta localizar pelo texto do campo
+    textField := FindTextFieldByScan(root)
+    if textField {
+        chatBtn.Invoke()
+        return
+    }
+
+    chatBtn.Invoke()
+    Sleep 700
+
+    attempts := 0
+    while attempts < 10 {
+        root := UIA.ElementFromHandle(hwnd)
+        textField := FindTextFieldByScan(root)
+        if textField {
+            textField.SetFocus()
+            break
+        }
+        Sleep 300
+        attempts++
+    }
+}
