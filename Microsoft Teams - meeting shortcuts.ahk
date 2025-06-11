@@ -68,6 +68,7 @@ WaitListItem(root, partialName, timeout := 3000) {
     listItem := FindListItemContaining(root, "Opens list of")
     if listItem {
         listItem.Invoke()
+        ActivateTeamsMeetingWindow()
         return
     }
 
@@ -76,11 +77,13 @@ WaitListItem(root, partialName, timeout := 3000) {
         return
     shareBtn.Invoke()
 
+        Sleep 1000
     listItem := WaitListItem(root, "Opens list of")
     if listItem {
-        Sleep 700
         listItem.Invoke()
     }
+        Sleep 200
+        ActivateTeamsMeetingWindow()
 }
 
 #!+u:: {
