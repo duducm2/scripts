@@ -82,7 +82,7 @@ SendSymbol(sym) {
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe teams.exe")
 
-; Shift + P : Pin (🌟)
+; Shift + P : Pin
 +p::
 {
     Sleep "500"
@@ -96,7 +96,7 @@ SendSymbol(sym) {
     Send "{Enter}"
 }
 
-; Shift + V : Like (🌟)
+; Shift + V : Like
 +v::
 {
     Send "{Enter}"
@@ -104,7 +104,7 @@ SendSymbol(sym) {
     Send "{Esc}"
 }
 
-; Shift + B : Heart (🌟)
+; Shift + B : Heart
 +b::
 {
     Send "{Enter}"
@@ -113,7 +113,7 @@ SendSymbol(sym) {
     Send "{Esc}"
 }
 
-; Shift + C : Laugh (🌟)
+; Shift + C : Laugh
 +c::
 {
     Send "{Enter}"
@@ -123,7 +123,7 @@ SendSymbol(sym) {
     Send "{Esc}"
 }
 
-; Shift + Ç : Remove pin (🌟)
+; Shift + Ç : Remove pin
 +ç::
 {
     Sleep "500"
@@ -137,7 +137,7 @@ SendSymbol(sym) {
     Send "{Enter}"
 }
 
-; Shift + R : Reply Message (🌟)
+; Shift + R : Reply Message
 +r::
 {
     Send "{Enter}"
@@ -149,7 +149,7 @@ SendSymbol(sym) {
     Send "{Enter}"
 }
 
-; Shift + E : Edit message (🌟)
+; Shift + E : Edit message
 +e::
 {
     Send "{Enter}"
@@ -161,7 +161,7 @@ SendSymbol(sym) {
     Send "{Enter}"
 }
 
-; Shift + J : Mark as unread (🌟)
+; Shift + J : Mark as unread
 +j::
 {
     Send "^1"
@@ -179,7 +179,7 @@ SendSymbol(sym) {
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe OUTLOOK.EXE")
 
-; Shift + 8 : Send to general (🌟)
+; Shift + 8 : Send to general
 +8::
 {
     Send "!5"
@@ -189,7 +189,7 @@ SendSymbol(sym) {
     Send "{Enter}"
 }
 
-; Shift + 9 : Send to newsletter (🌟)
+; Shift + 9 : Send to newsletter
 +9::
 {
     Send "!5"
@@ -206,7 +206,7 @@ SendSymbol(sym) {
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe chrome.exe")
 
-; Shift + G : Pop up the current tab (🌟)
+; Shift + G : Pop up the current tab
 +g::
 {
     Send "{F6}"                        ; Focus address bar (omnibox)
