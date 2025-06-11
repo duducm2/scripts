@@ -80,7 +80,7 @@ SendSymbol(sym) {
 ;-------------------------------------------------------------------
 ; Microsoft Teams Shortcuts
 ;-------------------------------------------------------------------
-#HotIf WinActive("ahk_exe teams.exe")
+#HotIf WinActive("ahk_exe ms-teams.exe")
 
 ; Shift + P : Pin
 +p::
