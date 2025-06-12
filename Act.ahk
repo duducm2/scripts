@@ -6,16 +6,18 @@
 ;     Alt + Shift + Z : Bookmarks
 ;     Alt + Shift + S : Windows
 ;     Alt + Shift + A : Web
-;---------------------------------------- X ----------------------------------
+;---------------------------------------- Layer 2 + Keys ----------------------------------
 
-; x: Ctrl + Home
-; x: Ctrl + End
-; x: Shift + Home
-; x: Shift + End
-; x: Ctrl + Right arrow (5 times)
-; x: Ctrl + Left arrow (5 times)
-; x: Ctrl + Shift + Home
-; x: Ctrl + Shift + End
+; Layer 2 + 0: Ctrl + Home
+; Layer 2 + ESC: Ctrl + End
+; Layer 2 + P: Shift + Home
+; Layer 2 + ´: Shift + End
+; Layer 2 + 8: Ctrl + Right arrow (5 times)
+; Layer 2 + 9: Ctrl + Left arrow (5 times)
+; Layer 2 + 6: Ctrl + Shift + Home
+; Layer 2 + 7: Ctrl + Shift + End
+; Layer 2 + y: Ctrl + Shift + Page Up
+; Layer 2 + u: Ctrl + Shift + Page Down
 
 ;---------------------------------------- Win + Alt + Shift + keys ----------------------------------
 ; ----- Available -----------
