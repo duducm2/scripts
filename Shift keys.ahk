@@ -24,7 +24,13 @@ SendSymbol(sym) {
 #HotIf WinActive("ahk_exe onenote.exe")
 
 ; Shift + U : Onenote: select line and children
-+u:: Send("^+-") ; Remaps to Ctrl + Shift + -
++u:: Send("^+-") ; Remaps to Ctrl + Shift + -~
+
+; Shift + U : Onenote: select line and children
++d:: {
+    Send("^+-") ; Remaps to Ctrl + Shift + -
+    Send "{Del}"
+    }
 
 ; Shift + I : Onenote: expand all
 +i:: Send("!+-")     ; Remaps to Alt + Shift + 0

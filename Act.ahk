@@ -72,7 +72,6 @@
 ;---------------------------------------- Shift + keys ----------------------------------------------
 ; ----- Available -----------
 ;     Shift + A : Available
-;     Shift + D : Available
 ;     Shift + F : Available
 ;     Shift + M : Available
 ;     Shift + N : Available
@@ -94,6 +93,7 @@
 ;----- General --------------
 ;     Shift + Y : ?
 ; ----- Onenote -------------
+;     Shift + D : Delete
 ;     Shift + U : Onenote: select line and children
 ;     Shift + I : Onenote: collapse current
 ;     Shift + O : Onenote: expand current
