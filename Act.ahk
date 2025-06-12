@@ -6,6 +6,17 @@
 ;     Alt + Shift + Z : Bookmarks
 ;     Alt + Shift + S : Windows
 ;     Alt + Shift + A : Web
+;---------------------------------------- X ----------------------------------
+
+; x: Ctrl + Right arrow (5 times)
+; x: Ctrl + Left arrow (5 times)
+; x: Ctrl + Home
+; x: Ctrl + End
+; x: Ctrl + Shift + Home
+; x: Ctrl + Shift + End
+; x: Shift + Home
+; x: Shift + End
+
 ;---------------------------------------- Win + Alt + Shift + keys ----------------------------------
 ; ----- Available -----------
 ;     Win + Alt + Shift + 1 : Available
