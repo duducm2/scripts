@@ -8,14 +8,14 @@
 ;     Alt + Shift + A : Web
 ;---------------------------------------- X ----------------------------------
 
-; x: Ctrl + Right arrow (5 times)
-; x: Ctrl + Left arrow (5 times)
 ; x: Ctrl + Home
 ; x: Ctrl + End
-; x: Ctrl + Shift + Home
-; x: Ctrl + Shift + End
 ; x: Shift + Home
 ; x: Shift + End
+; x: Ctrl + Right arrow (5 times)
+; x: Ctrl + Left arrow (5 times)
+; x: Ctrl + Shift + Home
+; x: Ctrl + Shift + End
 
 ;---------------------------------------- Win + Alt + Shift + keys ----------------------------------
 ; ----- Available -----------
