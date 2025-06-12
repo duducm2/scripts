@@ -31,7 +31,6 @@
 ;     Win + Alt + Shift + O : Available
 ;     Win + Alt + Shift + P : Available
 ;     Win + Alt + Shift + ç : Available
-;     Win + Alt + Shift + H : Available
 ;     Win + Alt + Shift + J : Available
 ;     Win + Alt + Shift + K : Available
 ; ----- Onenote -------------
@@ -69,6 +68,8 @@
 ;     Win + Alt + Shift + Z : Opens WhatsApp
 ; ----- Windows ---------
 ;     Win + Alt + Shift + ] : Minimizes windows
+; ----- General ---------
+;     Win + Alt + Shift + H : Jump mouse on the middle
 ;---------------------------------------- Shift + keys ----------------------------------------------
 ; ----- Available -----------
 ;     Shift + A : Available
@@ -153,3 +154,4 @@ Run GetScriptPath("Open Google.ahk")
 Run GetScriptPath("Open WhatsApp.ahk")
 Run GetScriptPath("Hunt and Peck.ahk")
 Run GetScriptPath("Minimize.ahk")
+Run GetScriptPath("Jump mouse on the middle.ahk")
