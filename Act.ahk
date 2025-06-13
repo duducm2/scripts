@@ -18,6 +18,8 @@
 ; Layer 2 + 7: Ctrl + Shift + End
 ; Layer 2 + y: Ctrl + Shift + Page Up
 ; Layer 2 + u: Ctrl + Shift + Page Down
+; Layer 2 + i: Ctrl + Page Up
+; Layer 2 + o: Ctrl + Page Down
 
 ;---------------------------------------- Win + Alt + Shift + keys ----------------------------------
 ; ----- Available -----------
