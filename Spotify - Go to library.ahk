@@ -22,7 +22,7 @@ GoToSpotifyLibrary() {
     ; If Spotify is already open, activate its window.
     WinActivate(spotifyWin)
     WinWaitActive(spotifyWin, , 2)
-    Sleep(300)
+    Sleep(700)
 
     try {
         cUIA := UIA_Browser(spotifyWin)
@@ -44,7 +44,7 @@ GoToSpotifyLibrary() {
             ; Click on the "fullscreen library" button to enter library view.
             if fullscreenButton := cUIA.WaitElement({ Name: fullscreenButtonName, Type: fullscreenButtonType }, 3000) {
                 fullscreenButton.Click()
-                Sleep(500) ; Wait for UI to update
+                Sleep(1000) ; Wait for UI to update
             } else {
                 MsgBox("Could not find 'fullscreen library' button.")
                 return
@@ -57,9 +57,9 @@ GoToSpotifyLibrary() {
         ; First, navigate to the "Go back" button location once.
         if initialFilterField := cUIA.WaitElement({ Name: filterFieldName, Type: filterFieldType }, 1000) {
             initialFilterField.SetFocus()
-            Sleep(200)
+            Sleep(500)
             SendInput("{Shift Down}{Tab 5}{Shift Up}")
-            Sleep(200)
+            Sleep(500)
 
             ; Now, repeatedly press Enter as long as the focus remains on a "Go back" button.
             loop (10) {
