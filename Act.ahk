@@ -73,17 +73,9 @@
 ; ----- General ---------
 ;     Win + Alt + Shift + H : Jump mouse on the middle
 ;---------------------------------------- Shift + keys ----------------------------------------------
-; ----- Available -----------
-;     Shift + A : Available
-;     Shift + F : Available
-;     Shift + M : Available
-;     Shift + N : Available
-;     Shift + Q : Available
-;     Shift + S : Available
-;     Shift + W : Available
-;     Shift + T : Available
-;     Shift + X : Available
-;     Shift + Z : Available
+; ----- You can have repeated keys, depending on the software. -----------
+;----- General --------------
+;     Shift + Y : ?
 ; ----- Microsoft Teams -----
 ;     Shift + J : Mark as unread
 ;     Shift + V : Like
@@ -93,8 +85,6 @@
 ;     Shift + R : Reply Message
 ;     Shift + Ç : Remove pin
 ;     Shift + P : Pin
-;----- General --------------
-;     Shift + Y : ?
 ; ----- Onenote -------------
 ;     Shift + D : Delete
 ;     Shift + U : Onenote: select line and children
@@ -104,6 +94,8 @@
 ;     Shift + L : Onenote: expand all
 ; ----- WhatsApp -------------
 ;     Shift + H : What's app - Go to current chat
+;     Shift + J : Pin
+;     Shift + K : Make it unread
 ; ----- Google Chrome --------
 ;     Shift + G : Pop up the current tab
 ; ----- Outlook --------------

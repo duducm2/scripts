@@ -30,7 +30,7 @@ SendSymbol(sym) {
 +d:: {
     Send("^+-") ; Remaps to Ctrl + Shift + -
     Send "{Del}"
-    }
+}
 
 ; Shift + I : Onenote: expand all
 +i:: Send("!+-")     ; Remaps to Alt + Shift + 0
@@ -50,6 +50,12 @@ SendSymbol(sym) {
 ; WhatsApp Shortcuts
 ;-------------------------------------------------------------------
 #HotIf WinActive("WhatsApp")
+
+; Remap Shift+J to Ctrl+Alt+Shift+U
++j:: Send "^!+u"
+
+; Remap Shift+K to Ctrl+Alt+Shift+P
++k:: Send "^!+p"
 
 ; Shift + h: Focus the current conversation
 +h::
