@@ -78,13 +78,13 @@
 ;     Shift + Y : ?
 ; ----- Microsoft Teams -----
 ;     Shift + J : Mark as unread
-;     Shift + V : Like
-;     Shift + B : Heart
-;     Shift + C : Laugh
+;     Shift + Y : Like
+;     Shift + U : Heart
+;     Shift + I : Laugh
 ;     Shift + E : Edit message
 ;     Shift + R : Reply Message
-;     Shift + Ç : Remove pin
-;     Shift + P : Pin
+;     Shift + L : Remove pin
+;     Shift + K : Pin
 ; ----- Onenote -------------
 ;     Shift + D : Delete
 ;     Shift + U : Onenote: select line and children
