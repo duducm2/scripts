@@ -191,8 +191,8 @@ SendSymbol(sym) {
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe OUTLOOK.EXE")
 
-; Shift + 8 : Send to general
-+8::
+; Shift + Y : Send to general
++Y::
 {
     Send "!5"
     Send "O"
@@ -201,8 +201,8 @@ SendSymbol(sym) {
     Send "{Enter}"
 }
 
-; Shift + 9 : Send to newsletter
-+9::
+; Shift + U : Send to newsletter
++U::
 {
     Send "!5"
     Send "O"

@@ -99,8 +99,8 @@
 ; ----- Google Chrome --------
 ;     Shift + G : Pop up the current tab
 ; ----- Outlook --------------
-;     Shift + 8 : Send to general
-;     Shift + 9 : Send to newsletter
+;     Shift + Y: Send to general
+;     Shift + U: Send to newsletter
 
 ;---------------------------------------- Changed Shortcuts in the software itself ------------------
 ;     Ctrl + Shift + 8 : Fold/unfold (VS Code)
