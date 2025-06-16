@@ -94,8 +94,8 @@ SendSymbol(sym) {
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe ms-teams.exe")
 
-; Shift + P : Pin
-+p::
+; Shift + K : Pin
++K::
 {
     Sleep "500"
     Send "^1"
@@ -108,16 +108,16 @@ SendSymbol(sym) {
     Send "{Enter}"
 }
 
-; Shift + V : Like
-+v::
+; Shift + Y : Like
++Y::
 {
     Send "{Enter}"
     Send "{Enter}"
     Send "{Esc}"
 }
 
-; Shift + B : Heart
-+b::
+; Shift + U : Heart
++U::
 {
     Send "{Enter}"
     Send "{Down}"
@@ -125,8 +125,8 @@ SendSymbol(sym) {
     Send "{Esc}"
 }
 
-; Shift + C : Laugh
-+c::
+; Shift + I : Laugh
++I::
 {
     Send "{Enter}"
     Send "{Down}"
@@ -136,7 +136,7 @@ SendSymbol(sym) {
 }
 
 ; Shift + Ç : Remove pin
-+ç::
++l::
 {
     Sleep "500"
     Send "^1"
