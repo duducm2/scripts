@@ -78,9 +78,9 @@
 ;     Shift + Y : ?
 ; ----- Microsoft Teams -----
 ;     Shift + J : Mark as unread
-;     Shift + Y : Like
-;     Shift + U : Heart
-;     Shift + I : Laugh
+;     Shift + U : Like
+;     Shift + I : Heart
+;     Shift + O : Laugh
 ;     Shift + E : Edit message
 ;     Shift + R : Reply Message
 ;     Shift + L : Remove pin

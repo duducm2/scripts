@@ -108,16 +108,16 @@ SendSymbol(sym) {
     Send "{Enter}"
 }
 
-; Shift + Y : Like
-+Y::
+; Shift + U : Like
++U::
 {
     Send "{Enter}"
     Send "{Enter}"
     Send "{Esc}"
 }
 
-; Shift + U : Heart
-+U::
+; Shift + I : Heart
++I::
 {
     Send "{Enter}"
     Send "{Down}"
@@ -125,8 +125,8 @@ SendSymbol(sym) {
     Send "{Esc}"
 }
 
-; Shift + I : Laugh
-+I::
+; Shift + O : Laugh
++O::
 {
     Send "{Enter}"
     Send "{Down}"
