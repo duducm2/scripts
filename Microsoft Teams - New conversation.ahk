@@ -30,7 +30,7 @@
 
     ; Type the contact name directly (avoids clipboard issues) -------------
     SendText(contact)
-    Sleep 500
+    Sleep 1000
     Send "{Enter}"
     Sleep 300  ; wait for chat to load
 
