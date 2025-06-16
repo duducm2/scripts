@@ -1,50 +1,39 @@
 #Requires AutoHotkey v2.0+
+#SingleInstance Force
 
-#include UIA-v2\Lib\UIA.ahk
-
-; Win+Alt+Shift+M to start new Teams conversation
+; Win+Alt+Shift+M → jump straight to a chat in Microsoft Teams
 #!+m::
 {
-    MyGui := Gui(, "Enter a name:")
-    MyGui.Add("Text", , "Name:")
-    MyGui.Add("Edit", "vName ym")  ; The ym option starts a new column of controls.
-    MyGui.Add("Button", "default", "OK").OnEvent("Click", ProcessUserInput)
-    MyGui.OnEvent("Close", ProcessUserInput)
-    MyGui.Show()
+    ; Ask for the contact’s name -------------------------------------------
+    contact := Trim(InputBox("Enter a Teams contact name:", "Jump to Chat").Value)
+    if contact = ""
+        return
 
-    ProcessUserInput(*) {
-        Saved := MyGui.Submit()  ; Save the contents of named controls into an object.
+    ; Speed tweaks ----------------------------------------------------------
+    SetWinDelay 0
+    SetKeyDelay 0, 0
+    SetControlDelay 0
 
-        if WinExist("Chat |") || WinExist("Activity |") || WinExist("Teams and Channels |") || WinExist("Calls |") ||
-        WinExist("Search |") {
-
-            WinActivate
-
-            Sleep 200
-
-            Send "^e"
-
-            Sleep 300
-
-            Send "^a"
-            Send "{Backspace}"
-
-            Send Saved.Name
-
-            Sleep 2000
-
-            Send "{Down}"
-            Send "{Down}"
-            ; Send "{Down}"
-            Sleep 200
-            Send "{Enter}"
-
-            Send "^r"
-            Sleep 200
-            Send "{Tab}"
-            Send "+{Tab}"
-
-            Send "^+x"
-        }
+    ; Locate or launch Microsoft Teams -------------------------------------
+    teamsWindow := "Microsoft Teams"
+    if !WinExist("ahk_exe ms-teams.exe") && !WinExist("ahk_exe Teams.exe")
+    {
+        Run "ms-teams:"
+        WinWait(teamsWindow, , 15)
     }
+    WinActivate(teamsWindow)
+    WinWaitActive(teamsWindow, , 5)
+
+    ; Open the Go‑to box (Ctrl+G)
+    Send "^g"
+    Sleep 100  ; allow the box to appear & highlight
+
+    ; Type the contact name directly (avoids clipboard issues) -------------
+    SendText(contact)
+    Sleep 500
+    Send "{Enter}"
+    Sleep 300  ; wait for chat to load
+
+    ; Place cursor in the compose box --------------------------------------
+    Send "^r"
 }
