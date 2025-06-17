@@ -117,6 +117,7 @@ if (IS_WORK_ENVIRONMENT) {
     Run "C:\Users\fie7ca\Documents\Caffeine\caffeine64.exe"
     Run "C:\Users\fie7ca\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\apps do Chrome\Mobills"
     Run "C:\Users\fie7ca\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\apps do Chrome\Gmail"
+    Run "c:\Users\fie7ca\Documents\Settle Up.lnk"
 
     Run GetScriptPath("Microsoft Teams - meeting shortcuts.ahk")
     Run GetScriptPath("Outlook - Open mail.ahk")
