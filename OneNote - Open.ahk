@@ -6,8 +6,6 @@
     if oneNoteWin := WinExist("ahk_exe ONENOTE.EXE") {
         WinActivate(oneNoteWin)
     } else {
-        Send("#!n")
-        Sleep(1000)
-        Send("#!+n")
+        Run "c:\ProgramData\Microsoft\Windows\Start Menu\Programs\OneNote.lnk"
     }
 }
