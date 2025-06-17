@@ -4,24 +4,23 @@
 
 ActivateTeamsMeetingWindow() {
     static processes := ["ms-teams.exe", "Teams.exe", "MSTeams.exe"]
+
+    ; walk through every Teams window we can find
     for proc in processes {
         for hwnd in WinGetList("ahk_exe " proc) {
-            title := WinGetTitle(hwnd)
-            if (
-                ( InStr(title, "Microsoft Teams meeting")
-               || RegExMatch(title, "^[^|]+\| Microsoft Teams$")
-               || RegExMatch(title, "^.*\(.*\) \| Microsoft Teams$") )
-                && !InStr(title, "Chat |")
-                && !InStr(title, "Sharing control bar |") ) {
+            if IsTeamsMeetingTitle(title := WinGetTitle(hwnd)) {
                 WinActivate(hwnd)
                 return true
             }
         }
     }
-    if hwnd := WinExist(".*\| Microsoft Teams") {
+
+    ; fallback: any window whose title *matches the same regex*
+    if hwnd := WinExist("RegEx)^.*\| Microsoft Teams$") {  ; use “RegEx)” prefix!
         WinActivate(hwnd)
         return true
     }
+
     MsgBox "Não foi possível encontrar uma janela de reunião ativa.", "Microsoft Teams", "Iconi"
     return false
 }
@@ -45,6 +44,23 @@ WaitListItem(root, partialName, timeout := 3000) {
     }
     return false
 }
+
+; --- NEW: one place that decides if a Teams window is a meeting window ---
+IsTeamsMeetingTitle(title) {
+    ; filter out things we explicitly don’t want
+    if InStr(title, "Chat |")              ; chat side-panel
+     || InStr(title, "Sharing control bar |")
+        return false
+
+    ; ① legacy “Microsoft Teams meeting” pop-out
+    if InStr(title, "Microsoft Teams meeting")
+        return true
+
+    ; ② anything (including multiple pipes) that ENDS with “| Microsoft Teams”
+    ;     ^.*\| Microsoft Teams$
+    return RegExMatch(title, "i)^.*\| Microsoft Teams$")
+}
+
 
 #!+q:: {
     if ActivateTeamsMeetingWindow()
