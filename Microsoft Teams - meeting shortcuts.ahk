@@ -25,6 +25,29 @@ ActivateTeamsMeetingWindow() {
     return false
 }
 
+ActivateTeamsChatWindow() {
+    static processes := ["ms-teams.exe", "Teams.exe", "MSTeams.exe"]
+
+    ; walk through every Teams window we can find
+    for proc in processes {
+        for hwnd in WinGetList("ahk_exe " proc) {
+            if IsTeamsChatTitle(title := WinGetTitle(hwnd)) {
+                WinActivate(hwnd)
+                return true
+            }
+        }
+    }
+
+    ; fallback: any window whose title *matches the same regex*
+    if hwnd := WinExist("RegEx)^Chat \| .* \| Microsoft Teams$") {
+        WinActivate(hwnd)
+        return true
+    }
+
+    MsgBox "Não foi possível encontrar uma janela de chat do Teams.", "Microsoft Teams", "Iconi"
+    return false
+}
+
 FindListItemContaining(root, text) {
     items := root.FindAll(UIA.CreateCondition({ ControlType: "ListItem" }))
     for item in items {
@@ -59,6 +82,16 @@ IsTeamsMeetingTitle(title) {
     ; ② anything (including multiple pipes) that ENDS with “| Microsoft Teams”
     ;     ^.*\| Microsoft Teams$
     return RegExMatch(title, "i)^.*\| Microsoft Teams$")
+}
+
+IsTeamsChatTitle(title) {
+    ; ignore sharing control bar and explicit meeting windows
+    if InStr(title, "Sharing control bar |")
+     || InStr(title, "Microsoft Teams meeting")
+        return false
+
+    ; MUST contain "Chat |" and end with "| Microsoft Teams"
+    return InStr(title, "Chat |") && RegExMatch(title, "i)\| Microsoft Teams$")
 }
 
 
@@ -155,4 +188,16 @@ FindTextFieldByScan(root) {
         Sleep 300
         attempts++
     }
+}
+
+; Win + Alt + Shift + J : Select the chats window (e.g. "Chat | GS/BDU UX Project Champions | Microsoft Teams")
+#!+j:: {
+    if !ActivateTeamsChatWindow()
+        MsgBox "Não foi possível encontrar uma janela de chat do Teams.", "Microsoft Teams", "Iconi"
+}
+
+; Win + Alt + Shift + K : Select the meeting window (e.g. "Proj. Streamline Weekly Data Review | Microsoft Teams")
+#!+k:: {
+    if !ActivateTeamsMeetingWindow()
+        MsgBox "Não foi possível encontrar uma janela de reunião ativa.", "Microsoft Teams", "Iconi"
 }

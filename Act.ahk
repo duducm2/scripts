@@ -33,8 +33,6 @@
 ;     Win + Alt + Shift + O : Available
 ;     Win + Alt + Shift + P : Available
 ;     Win + Alt + Shift + ç : Available
-;     Win + Alt + Shift + J : Available
-;     Win + Alt + Shift + K : Available
 ; ----- Onenote -------------
 ;     Win + Alt + Shift + N : Opens or activates OneNote
 ; ----- Spotify -------------
@@ -64,6 +62,8 @@
 ;     Win + Alt + Shift + F : Microsoft Teams meeting - Toggle camera
 ;     Win + Alt + Shift + E : Microsoft Teams meeting - Screen share
 ;     Win + Alt + Shift + U : Microsoft Teams meeting - Exit meeting
+;     Win + Alt + Shift + J : Select the chats window
+;     Win + Alt + Shift + K : Select the meeting window
 ; ----- Hunt and Peck --------
 ;     Win + Alt + Shift + 0 : Hunt and Peck
 ; ----- WhatsApp ---------
