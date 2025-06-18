@@ -74,8 +74,6 @@
 ;     Win + Alt + Shift + H : Jump mouse on the middle
 ;---------------------------------------- Shift + keys ----------------------------------------------
 ; ----- You can have repeated keys, depending on the software. -----------
-;----- General --------------
-;     Shift + Y : ?
 ; ----- Microsoft Teams -----
 ;     Shift + J : Mark as unread
 ;     Shift + U : Like

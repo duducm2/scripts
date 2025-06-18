@@ -15,9 +15,6 @@ SendSymbol(sym) {
     SendText(sym)
 }
 
-; Symbol shortcuts using Win+Alt+Shift combinations
-+y:: SendSymbol("?")   ; Win+Alt+Shift+Y → ?
-
 ;-------------------------------------------------------------------
 ; OneNote Shortcuts
 ;-------------------------------------------------------------------
