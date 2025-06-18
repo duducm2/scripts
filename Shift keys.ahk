@@ -54,6 +54,44 @@ SendSymbol(sym) {
 ; Remap Shift+K to Ctrl+Alt+Shift+P
 +k:: Send "^!+p"
 
+global voiceMessageState := false
+; Shift + Y: Send voice message toggle
++y::
+{
+    global voiceMessageState
+    try
+    {
+        uia := UIA_Browser()
+        Sleep 300 ; Give UIA time to attach
+
+        if (voiceMessageState) {
+            ; We are recording, so find the 'Send' button to stop and send.
+            sendButton := uia.FindElement({ Name: "Send", Type: "Button" })
+            if (sendButton) {
+                sendButton.Click()
+                voiceMessageState := false ; Reset state
+            }
+            else {
+                MsgBox "Could not find the 'Send' button."
+            }
+        }
+        else {
+            ; We are not recording, so find the 'Voice message' button to start.
+            voiceMessageButton := uia.FindElement({ Name: "Voice message", Type: "Button" })
+            if (voiceMessageButton) {
+                voiceMessageButton.Click()
+                voiceMessageState := true ; Update state
+            }
+            else {
+                MsgBox "Could not find the 'Voice message' button."
+            }
+        }
+    }
+    catch Error as e {
+        MsgBox "An error occurred: " e.Message
+    }
+}
+
 ; Shift + h: Focus the current conversation
 +h::
 {

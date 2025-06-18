@@ -94,6 +94,7 @@
 ;     Shift + H : What's app - Go to current chat
 ;     Shift + J : Pin
 ;     Shift + K : Make it unread
+;     Shift + Y : Send voice message
 ; ----- Google Chrome --------
 ;     Shift + G : Pop up the current tab
 ; ----- Outlook --------------
