@@ -20,8 +20,8 @@ SendSymbol(sym) {
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe onenote.exe")
 
-; Shift + U : Onenote: select line and children
-+u:: Send("^+-") ; Remaps to Ctrl + Shift + -~
+; Shift + y : Onenote: select line and children
++y:: Send("^+-") ; Remaps to Ctrl + Shift + -~
 
 ; Shift + U : Onenote: select line and children
 +d:: {
@@ -29,17 +29,17 @@ SendSymbol(sym) {
     Send "{Del}"
 }
 
-; Shift + I : Onenote: expand all
-+i:: Send("!+-")     ; Remaps to Alt + Shift + 0
+; Shift + U : Onenote: expand all
++u:: Send("!+-")     ; Remaps to Alt + Shift + 0
 
-; Shift + O : Onenote: collapse all
-+o:: Send("!+{+}")     ; Remaps to Alt + Shift + 1
+; Shift + I : Onenote: collapse all
++i:: Send("!+{+}")     ; Remaps to Alt + Shift + 1
 
-; Shift + I : Onenote: expand all
-+k:: Send("!+1")     ; Remaps to Alt + Shift + 0
+; Shift + J : Onenote: expand all
++j:: Send("!+1")     ; Remaps to Alt + Shift + 0
 
-; Shift + O : Onenote: collapse all
-+l:: Send("!+0")     ; Remaps to Alt + Shift + 1
+; Shift + K : Onenote: collapse all
++k:: Send("!+0")     ; Remaps to Alt + Shift + 1
 
 #HotIf
 
@@ -105,16 +105,16 @@ SendSymbol(sym) {
     Send "{Enter}"
 }
 
-; Shift + U : Like
-+U::
+; Shift + Y : Like
++y::
 {
     Send "{Enter}"
     Send "{Enter}"
     Send "{Esc}"
 }
 
-; Shift + I : Heart
-+I::
+; Shift + U : Heart
++u::
 {
     Send "{Enter}"
     Send "{Down}"
@@ -122,8 +122,8 @@ SendSymbol(sym) {
     Send "{Esc}"
 }
 
-; Shift + O : Laugh
-+O::
+; Shift + I : Laugh
++i::
 {
     Send "{Enter}"
     Send "{Down}"

@@ -76,20 +76,20 @@
 ; ----- You can have repeated keys, depending on the software. -----------
 ; ----- Microsoft Teams -----
 ;     Shift + J : Mark as unread
-;     Shift + U : Like
-;     Shift + I : Heart
-;     Shift + O : Laugh
+;     Shift + Y : Like
+;     Shift + U : Heart
+;     Shift + I : Laugh
 ;     Shift + E : Edit message
 ;     Shift + R : Reply Message
 ;     Shift + L : Remove pin
 ;     Shift + K : Pin
 ; ----- Onenote -------------
 ;     Shift + D : Delete
-;     Shift + U : Onenote: select line and children
-;     Shift + I : Onenote: collapse current
-;     Shift + O : Onenote: expand current
-;     Shift + K : Onenote: collapse all
-;     Shift + L : Onenote: expand all
+;     Shift + Y : Onenote: select line and children
+;     Shift + U : Onenote: collapse current
+;     Shift + I : Onenote: expand current
+;     Shift + J : Onenote: collapse all
+;     Shift + K : Onenote: expand all
 ; ----- WhatsApp -------------
 ;     Shift + H : What's app - Go to current chat
 ;     Shift + J : Pin
