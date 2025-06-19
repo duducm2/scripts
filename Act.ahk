@@ -90,6 +90,8 @@
 ;     Shift + I : Onenote: expand current
 ;     Shift + J : Onenote: collapse all
 ;     Shift + K : Onenote: expand all
+; ----- Windows Explorer -------------
+;     Shift + Y : Windows Explorer - Select first file
 ; ----- WhatsApp -------------
 ;     Shift + H : What's app - Go to current chat
 ;     Shift + J : Pin

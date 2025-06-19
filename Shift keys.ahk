@@ -270,3 +270,36 @@ global voiceMessageState := false
 }
 
 #HotIf
+
+;-------------------------------------------------------------------
+; Windows Explorer Shortcuts
+;-------------------------------------------------------------------
+#HotIf WinActive("ahk_exe explorer.exe")
+
+; Shift + Y : Select first item in list
++y::
+{
+    try
+    {
+        ; Get the UIA element for the active File Explorer window using the static method
+        explorerEl := UIA.ElementFromHandle(WinExist("A"))
+
+        ; Find the first list item. AutomationId "0" is usually the first item.
+        ; The condition uses properties provided by the user.
+        firstItem := explorerEl.FindFirst({ AutomationId: "0", Type: "ListItem", ClassName: "UIItem" })
+
+        if (firstItem) {
+            ; Select and focus the item directly. The UIA library handles the pattern.
+            firstItem.Select()
+            firstItem.SetFocus()
+        }
+        else {
+            MsgBox "Could not find the first item to select."
+        }
+    }
+    catch Error as e {
+        MsgBox "An error occurred while trying to select the item: " e.Message
+    }
+}
+
+#HotIf
