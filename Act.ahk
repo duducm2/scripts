@@ -102,6 +102,8 @@
 ; ----- Outlook --------------
 ;     Shift + U: Send to general
 ;     Shift + I: Send to newsletter
+; ----- ChatGPT --------------
+;     Shift + Y: Select all and cut
 
 ;---------------------------------------- Changed Shortcuts in the software itself ------------------
 ;     Ctrl + Shift + 8 : Fold/unfold (VS Code)

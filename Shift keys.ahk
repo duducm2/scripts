@@ -7,6 +7,8 @@
 
 #SingleInstance Force
 
+SetTitleMatchMode 2
+
 #include UIA-v2\Lib\UIA.ahk
 #include UIA-v2\Lib\UIA_Browser.ahk
 
@@ -267,6 +269,21 @@ global voiceMessageState := false
     Send "{Enter}"                     ; Confirm the action (detach tab)
     Sleep 100
     Send "{Enter}"                     ; Confirm the action (detach tab)
+}
+
+#HotIf
+
+;-------------------------------------------------------------------
+; ChatGPT Shortcuts
+;-------------------------------------------------------------------
+#HotIf WinActive("chatgpt")
+
+; Shift + Y : Select all and cut
++y::
+{
+    Send "^a"
+    Sleep 50
+    Send "^x"
 }
 
 #HotIf
