@@ -25,7 +25,6 @@
 ; ----- Available -----------
 ;     Win + Alt + Shift + 1 : Available
 ;     Win + Alt + Shift + 2 : Available
-;     Win + Alt + Shift + L : Available
 ;     Win + Alt + Shift + 8 : Available
 ;     Win + Alt + Shift + 9 : Available
 ;     Win + Alt + Shift + Y : Available
@@ -39,6 +38,7 @@
 ;     Win + Alt + Shift + S : Opens or activates Spotify
 ;     Win + Alt + Shift + D : Spotify - Go to library
 ; ----- ChatGPT -------------
+;     Win + Alt + Shift + L : Talk with ChatGPT
 ;     Win + Alt + Shift + 6 : Get word pronunciation, definition, and Portuguese translation from ChatGPT
 ;     Win + Alt + Shift + 3 : Toggles the microphone (ChatGPT)
 ;     Win + Alt + Shift + T : Clicks on the last microphone icon in the ChatGPT
