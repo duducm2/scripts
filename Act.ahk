@@ -59,7 +59,7 @@
 ; ----- General ---------
 ;     Win + Alt + Shift + 1 : Jump mouse on the middle
 ; ----- Hunt and Peck ---------
-;     Win + Alt + Shift + 0 : Activate hunt and Peck
+;     Win + Alt + Shift + X : Activate hunt and Peck
 ;---------------------------------------- Shift + keys ----------------------------------------------
 ; ----- You can have repeated keys, depending on the software.
 ; ----- Prefered Keys sequences (most important first): Y U I O P H J K L N M , . 6 7 8 9 0 W E R T D F G C V B
@@ -79,8 +79,6 @@
 ;     Shift + I : Onenote: expand current
 ;     Shift + J : Onenote: collapse all
 ;     Shift + K : Onenote: expand all
-; ----- Windows Explorer -------------
-;     Shift + Y : Windows Explorer - Select first file
 ; ----- WhatsApp -------------
 ;     Shift + H : What's app - Go to current chat
 ;     Shift + J : Pin
@@ -90,6 +88,11 @@
 ;     Shift + I: Reply
 ;     Shift + O: Sticker panel
 ;     Shift + P: Toggle unred
+; ----- Gmail --------
+;     Shift + Y : Go to main inbox
+;     Shift + U : Go to updates
+;     Shift + I : Mark as read
+;     Shift + O : Mark as unread
 ; ----- Google Chrome --------
 ;     Shift + G : Pop up the current tab
 ; ----- Outlook --------------
@@ -100,6 +103,11 @@
 ; ----- Cursor --------------
 ;     Shift + Y : Fold/unfold (Cursor)
 ;     Shift + U : Fold/unfold (Cursor)
+; ----- Windows Explorer --------------
+;     Shift + Y : Select first file
+;     Shift + U : New folder
+;     Shift + I : New Shortcut
+
 ;---------------------------------------- Changed Shortcuts in the software itself ------------------
 ;     Ctrl + Shift + W : Remove unecessary keys (this closes some softwares and was causing issues)
 

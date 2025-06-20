@@ -343,25 +343,80 @@ global voiceMessageState := false
 {
     try
     {
-        ; Get the UIA element for the active File Explorer window using the static method
         explorerEl := UIA.ElementFromHandle(WinExist("A"))
+        firstItem := explorerEl.FindFirst({ Type: "ListItem" }) ; grab first ListItem regardless of AutomationId
+        firstItem.Select()
+        firstItem.SetFocus()
+    }
+    catch Error {
+        ; Fallback: just press Home to select the first item
+        Send "{Home}"
+    }
+}
 
-        ; Find the first list item. AutomationId "0" is usually the first item.
-        ; The condition uses properties provided by the user.
-        firstItem := explorerEl.FindFirst({ AutomationId: "0", Type: "ListItem", ClassName: "UIItem" })
+; Shift + U : New folder
++u:: Send("^+n")
 
-        if (firstItem) {
-            ; Select and focus the item directly. The UIA library handles the pattern.
-            firstItem.Select()
-            firstItem.SetFocus()
+; Shift + I : New Shortcut
++i::
+{
+    try
+    {
+        explorerEl := UIA.ElementFromHandle(WinExist("A"))
+        newButton := explorerEl.FindFirst({ Name: "Novo", Type: "Button" })
+        newButton.Click()
+        Sleep 150
+        Send "{Down}"
+        Send "{Enter}"
+    }
+    catch Error {
+        ; Fallback: open context menu and choose Shortcut
+        Send "+{F10}"
+        Sleep 150
+        Send "w"  ; New submenu (assumes English—adjust if needed)
+        Sleep 100
+        Send "s"  ; Shortcut option (assumes English—adjust if needed)
+    }
+}
+
+#HotIf
+
+;-------------------------------------------------------------------
+; Gmail Shortcuts
+;-------------------------------------------------------------------
+#HotIf WinActive("Gmail")
+
+; Shift + Y: Go to main inbox
++y:: Send("gi")
+
+; Shift + U: Go to updates
++u::
+{
+    try
+    {
+        uia := UIA_Browser("ahk_exe chrome.exe")
+        Sleep 300 ; Give UIA time to attach
+
+        ; Find the "Updates" tab. The name can change (e.g., "Updates, 1 new message,"),
+        ; so we search for a TabItem element that starts with "Updates".
+        updatesButton := uia.FindElement({ Name: "Updates", Type: "TabItem", matchmode: "Substring" })
+
+        if (updatesButton) {
+            updatesButton.Click()
         }
         else {
-            MsgBox "Could not find the first item to select."
+            MsgBox "Could not find the 'Updates' button."
         }
     }
     catch Error as e {
-        MsgBox "An error occurred while trying to select the item: " e.Message
+        MsgBox "An error occurred: " e.Message
     }
 }
+
+; Shift + I: Mark as read
++i:: Send("+i")
+
+; Shift + O: Mark as unread
++o:: Send("+u")
 
 #HotIf
