@@ -100,6 +100,11 @@
 ;     Shift + I: Send to newsletter
 ; ----- ChatGPT --------------
 ;     Shift + Y: Select all and cut
+;     Shift + U: Change model
+;     Shift + I: Togle sidebar
+;     Shift + O: Write chatgpt
+;     Shift + P: New chat
+;     Shift + H: Copy last code block
 ; ----- Cursor --------------
 ;     Shift + Y : Fold/unfold (Cursor)
 ;     Shift + U : Fold/unfold (Cursor)

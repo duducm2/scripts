@@ -331,6 +331,36 @@ global voiceMessageState := false
     Send "^x"
 }
 
+; Shift + U: Change model
++u::
+{
+    try
+    {
+        uia := UIA_Browser("ahk_exe chrome.exe")
+        Sleep 300
+        modelButton := uia.FindElement({ Name: "Model selector", Type: "Button", matchmode: "Substring" })
+        if (modelButton)
+            modelButton.Click()
+        else
+            MsgBox "Could not find 'Model selector' button."
+    }
+    catch Error as e {
+        MsgBox "An error occurred: " e.Message
+    }
+}
+
+; Shift + I: Toggle sidebar
++i:: Send("^+s")
+
+; Shift + O: Write chatgpt
++o:: Send("chatgpt")
+
+; Shift + P: New chat
++p:: Send("^+o")
+
+; Shift + H: Copy last code block
++h:: Send("^+;")
+
 #HotIf
 
 ;-------------------------------------------------------------------
