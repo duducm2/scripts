@@ -5,7 +5,7 @@
 #include UIA-v2\Lib\UIA_Browser.ahk
 #include %A_ScriptDir%\env.ahk
 
-#!+b:: CopyLastPrompt()
+#!+p:: CopyLastPrompt()
 
 CopyLastPrompt() {
     global IS_WORK_ENVIRONMENT

@@ -72,7 +72,7 @@ WaitListItem(root, partialName, timeout := 3000) {
 IsTeamsMeetingTitle(title) {
     ; filter out things we explicitly don’t want
     if InStr(title, "Chat |")              ; chat side-panel
-     || InStr(title, "Sharing control bar |")
+    || InStr(title, "Sharing control bar |")
         return false
 
     ; ① legacy “Microsoft Teams meeting” pop-out
@@ -87,25 +87,24 @@ IsTeamsMeetingTitle(title) {
 IsTeamsChatTitle(title) {
     ; ignore sharing control bar and explicit meeting windows
     if InStr(title, "Sharing control bar |")
-     || InStr(title, "Microsoft Teams meeting")
+    || InStr(title, "Microsoft Teams meeting")
         return false
 
     ; MUST contain "Chat |" and end with "| Microsoft Teams"
     return InStr(title, "Chat |") && RegExMatch(title, "i)\| Microsoft Teams$")
 }
 
-
-#!+q:: {
+#!+5:: {
     if ActivateTeamsMeetingWindow()
         Send "^+m"
 }
 
-#!+f:: {
+#!+4:: {
     if ActivateTeamsMeetingWindow()
         Send "^+o"
 }
 
-#!+e:: {
+#!+t:: {
     if !ActivateTeamsMeetingWindow()
         return
 
@@ -126,16 +125,16 @@ IsTeamsChatTitle(title) {
         return
     shareBtn.Invoke()
 
-        Sleep 1000
+    Sleep 1000
     listItem := WaitListItem(root, "Opens list of")
     if listItem {
         listItem.Invoke()
     }
-        Sleep 200
-        ActivateTeamsMeetingWindow()
+    Sleep 200
+    ActivateTeamsMeetingWindow()
 }
 
-#!+u:: {
+#!+2:: {
     if !ActivateTeamsMeetingWindow()
         return
     response := MsgBox("Tem certeza de que deseja sair da reunião?", "Sair da reunião?", "YesNo Icon!")
@@ -143,61 +142,14 @@ IsTeamsChatTitle(title) {
         Send "^+h"
 }
 
-
-FindTextFieldByScan(root) {
-    all := root.FindAll(UIA.CreateCondition({ ControlType: "Edit" }))
-    for elm in all {
-        name := elm.Name
-        if name = "Type a message"
-            return elm
-    }
-    return false
-}
-
-#!+v:: {
-    if !ActivateTeamsMeetingWindow()
-        return
-
-    hwnd := WinGetID("A")
-    root := UIA.ElementFromHandle(hwnd)
-    if !root
-        return
-
-    chatBtn := root.FindFirst(UIA.CreateCondition({ AutomationId: "chat-button" }))
-    if !chatBtn
-        return
-
-    ; Tenta localizar pelo texto do campo
-    textField := FindTextFieldByScan(root)
-    if textField {
-        chatBtn.Invoke()
-        return
-    }
-
-    chatBtn.Invoke()
-    Sleep 700
-
-    attempts := 0
-    while attempts < 10 {
-        root := UIA.ElementFromHandle(hwnd)
-        textField := FindTextFieldByScan(root)
-        if textField {
-            textField.SetFocus()
-            break
-        }
-        Sleep 300
-        attempts++
-    }
-}
-
 ; Win + Alt + Shift + J : Select the chats window (e.g. "Chat | GS/BDU UX Project Champions | Microsoft Teams")
-#!+j:: {
+#!+E:: {
     if !ActivateTeamsChatWindow()
         MsgBox "Não foi possível encontrar uma janela de chat do Teams.", "Microsoft Teams", "Iconi"
 }
 
 ; Win + Alt + Shift + K : Select the meeting window (e.g. "Proj. Streamline Weekly Data Review | Microsoft Teams")
-#!+k:: {
+#!+3:: {
     if !ActivateTeamsMeetingWindow()
         MsgBox "Não foi possível encontrar uma janela de reunião ativa.", "Microsoft Teams", "Iconi"
 }

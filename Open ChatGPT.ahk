@@ -1,7 +1,7 @@
 ﻿#Requires AutoHotkey v2.0+
 
 ; Win+Alt+Shift+C to open ChatGPT
-#!+c::
+#!+i::
 {
     SetTitleMatchMode(2)
     if WinExist("chatgpt") {

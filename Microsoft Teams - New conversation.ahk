@@ -2,7 +2,7 @@
 #SingleInstance Force
 
 ; Win+Alt+Shift+M → jump straight to a chat in Microsoft Teams
-#!+m::
+#!+r::
 {
     ; Ask for the contact’s name -------------------------------------------
     contact := Trim(InputBox("Enter a Teams contact name:", "Jump to Chat").Value)
@@ -16,8 +16,7 @@
 
     ; Locate or launch Microsoft Teams -------------------------------------
     teamsWindow := "Microsoft Teams"
-    if !WinExist("ahk_exe ms-teams.exe") && !WinExist("ahk_exe Teams.exe")
-    {
+    if !WinExist("ahk_exe ms-teams.exe") && !WinExist("ahk_exe Teams.exe") {
         Run "ms-teams:"
         WinWait(teamsWindow, , 15)
     }

@@ -3,7 +3,7 @@
 #include UIA-v2\Lib\UIA_Browser.ahk
 
 ; Win+Alt+Shift+T  →  alterna o “Ler em voz alta / Read aloud”
-#!+t::
+#!+9::
 {
     SetTitleMatchMode 2
     winTitle := "chatgpt"
@@ -24,8 +24,7 @@
         for btn in cUIA.FindAll({ Name: name, Type: "Button" })
             stopBtns.Push(btn)
 
-    if stopBtns.Length
-    {
+    if stopBtns.Length {
         stopBtns[stopBtns.Length].Click()        ; clica no último encontrado
         return
     }

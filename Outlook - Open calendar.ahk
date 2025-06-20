@@ -3,7 +3,7 @@
 #include UIA-v2\Lib\UIA.ahk
 
 ; Win+Alt+Shift+X to open Outlook calendar
-#!+x::
+#!+g::
 {
     ; Activate the "Calendar - Eduardo" window
     SetTitleMatchMode 1

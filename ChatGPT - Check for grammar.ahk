@@ -1,7 +1,7 @@
 #Requires AutoHotkey v2.0+
 
 ; Win+Alt+Shift+5 to check grammar
-#!+5::
+#!+o::
 {
     A_Clipboard := ""  ; Start off empty to allow ClipWait to detect when the text has arrived.
 

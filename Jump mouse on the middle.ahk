@@ -1,7 +1,7 @@
 #Requires AutoHotkey v2.0+
 #SingleInstance Force
 
-#+!h::  ; Win + Alt + Shift + H
+#+!1::  ; Win + Alt + Shift + H
 {
     hwnd := WinExist("A")  ; Get the handle of the active window
     if !hwnd {
@@ -16,9 +16,9 @@
         return
     }
 
-    left   := NumGet(rect, 0, "int")
-    top    := NumGet(rect, 4, "int")
-    right  := NumGet(rect, 8, "int")
+    left := NumGet(rect, 0, "int")
+    top := NumGet(rect, 4, "int")
+    right := NumGet(rect, 8, "int")
     bottom := NumGet(rect, 12, "int")
 
     ; Calculate center

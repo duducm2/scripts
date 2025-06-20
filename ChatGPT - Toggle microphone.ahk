@@ -20,7 +20,7 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
 }
 
 ; Win+Alt+Shift+3 to toggle microphone
-#!+3::
+#!+0::
 {
     ToggleDictation()
 }

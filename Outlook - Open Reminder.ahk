@@ -3,7 +3,7 @@
 #include UIA-v2\Lib\UIA.ahk
 
 ; Win+Alt+Shift+R to open Outlook reminders
-#!+r::
+#!+v::
 {
     SetTitleMatchMode 2
     WinActivate "Reminder"

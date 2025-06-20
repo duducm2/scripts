@@ -1,7 +1,7 @@
 #Requires AutoHotkey v2.0+
 
 ; Win+Alt+Shift+Y to activate YouTube
-#!+4::
+#!+h::
 {
     ; Set title match mode to find the word anywhere in the title
     SetTitleMatchMode 2  ; Mode 2 means the WinTitle can contain the title anywhere

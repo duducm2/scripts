@@ -56,6 +56,51 @@ SendSymbol(sym) {
 ; Remap Shift+K to Ctrl+Alt+Shift+P
 +k:: Send "^!+p"
 
+; Shift + U: Extended search (Alt+K)
++u:: Send("!k")
+
+; Shift + I: Reply (Alt+R)
++i:: Send("!r")
+
+; Shift + O: Sticker panel (Ctrl+Alt+S)
++o:: Send("^!s")
+
+; Shift + P: Edit last message (Win+Up)
+; The user updated this to be Toggle Unread
++p::
+{
+    try
+    {
+        uia := UIA_Browser()
+        Sleep 300 ; Give UIA time to attach
+
+        ; Find the "Unread" and "All" filter buttons
+        unreadButton := uia.FindElement({ Name: "Unread", AutomationId: "unread-filter", Type: "TabItem" })
+        allButton := uia.FindElement({ Name: "All", AutomationId: "all-filter", Type: "TabItem" })
+
+        if (unreadButton && allButton) {
+            ; Check if the "Unread" button is currently selected.
+            ; The .IsSelected property is part of the SelectionItemPattern.
+            if (unreadButton.IsSelected) {
+                allButton.Click() ; If Unread is selected, click All
+            }
+            else {
+                unreadButton.Click() ; Otherwise, click Unread
+            }
+        }
+        else if (unreadButton) {
+            ; Fallback if only the Unread button is found
+            unreadButton.Click()
+        }
+        else {
+            MsgBox "Could not find the 'Unread' filter button."
+        }
+    }
+    catch Error as e {
+        MsgBox "An error occurred: " e.Message
+    }
+}
+
 global voiceMessageState := false
 ; Shift + Y: Send voice message toggle
 +y::
