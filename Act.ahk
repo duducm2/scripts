@@ -21,21 +21,20 @@
 ; Layer 2 + A: Go to desktop
 ;---------------------------------------- Win + Alt + Shift + keys ----------------------------------
 ; ----- Available -----------
-; A C J K M Q U W X Y 3
+; A C J K Q U W X Y 3
 ; ----- Onenote -------------
 ;     Win + Alt + Shift + N : Opens or activates OneNote
 ; ----- Spotify -------------
 ;     Win + Alt + Shift + S : Opens or activates Spotify
 ;     Win + Alt + Shift + D : Spotify - Go to library
 ; ----- ChatGPT -------------
-;     Win + Alt + Shift + L : Talk with ChatGPT through voice
 ;     Win + Alt + Shift + 8 : Get word pronunciation, definition, and Portuguese translation from ChatGPT
-;     Win + Alt + Shift + 0 : Toggles the microphone
 ;     Win + Alt + Shift + 9 : Clicks on the last microphone icon in the ChatGPT
-;     Win + Alt + Shift + O : Check grammar and improve text in both English and Portuguese
-;     Win + Alt + Shift + 7 : Speak with ChatGPT
-;     Win + Alt + Shift + I : Opens ChatGPT
+;     Win + Alt + Shift + 0 : Speak with ChatGPT
 ;     Win + Alt + Shift + P : Copy last ChatGPT prompt
+;     Win + Alt + Shift + O : Check grammar and improve text in both English and Portuguese
+;     Win + Alt + Shift + I : Opens ChatGPT
+;     Win + Alt + Shift + L : Talk with ChatGPT through voice
 ; ----- Youtube -------------
 ;     Win + Alt + Shift + H : Activates Youtube
 ; ----- Google --------------
@@ -56,6 +55,7 @@
 ;     Win + Alt + Shift + Z : Opens WhatsApp
 ; ----- Windows ---------
 ;     Win + Alt + Shift + 6 : Minimizes windows
+;     Win + Alt + Shift + M : Maximizes the current window
 ; ----- General ---------
 ;     Win + Alt + Shift + 1 : Jump mouse on the middle
 ; ----- Hunt and Peck ---------
@@ -106,8 +106,21 @@
 ;     Shift + P: New chat
 ;     Shift + H: Copy last code block
 ; ----- Cursor --------------
-;     Shift + Y : Fold/unfold (Cursor)
-;     Shift + U : Fold/unfold (Cursor)
+;     Shift + Y : Unfold
+;     Shift + U : Fold
+;     Shift + I : Unfold all
+;     Shift + O : Fold all
+;     Shift + P : Go to terminal
+;     Shift + H : New terminal
+;     Shift + J : Go to file explorer
+;     Shift + K : Format code
+;     Shift + L : command palette
+;     Shift + M : Change project
+;     Shift + , : Show chat history
+;     Shift + . : Extensions
+;     Shift + 6 : Switch the brackets open/close
+;     Shift + 7 : Search
+;     Shift + 8 : Save all documents
 ; ----- Windows Explorer --------------
 ;     Shift + Y : Select first file
 ;     Shift + U : New folder
@@ -159,5 +172,6 @@ Run GetScriptPath("ChatGPT - Copy last message.ahk")
 Run GetScriptPath("Open Google.ahk")
 Run GetScriptPath("Open WhatsApp.ahk")
 Run GetScriptPath("Minimize.ahk")
+Run GetScriptPath("Maximize window.ahk")
 Run GetScriptPath("Jump mouse on the middle.ahk")
 Run GetScriptPath("Hunt and Peck.ahk")

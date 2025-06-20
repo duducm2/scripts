@@ -450,3 +450,80 @@ global voiceMessageState := false
 +o:: Send("+u")
 
 #HotIf
+
+;-------------------------------------------------------------------
+; Cursor Shortcuts
+;-------------------------------------------------------------------
+#HotIf WinActive("Cursor")
+
+; Shift + Y : Unfold
++y::
+{
+    Send "^+8"
+}
+
+; Shift + U : Fold
++u::
+{
+    Send "^+9"
+}
+
+; Shift + I : Unfold all
++i::
+{
+    Send "^m"
+    Send "^j"
+}
+
+; Shift + O : Fold all
++o::
+{
+    Send "^m"
+    Send "^0"
+}
+
+; Shift + P : Go to terminal
++p:: Send "^'"
+
+; Shift + H : New terminal
++h:: Send '^+"'
+
+; Shift + J : Go to file explorer
++j:: Send "^+e"
+
+; Shift + K : Format code
++k:: Send "!+f"
+
+; Shift + L : command palette
++l:: Send "^+p"
+
+; Shift + M : Change project
++m:: Send "^r"
+
+; Shift + , : Show chat history
++,::
+{
+    Send "^+p" ; Open command palette
+    Sleep 200
+    Send "show history"
+    Sleep 200
+    Send "{Enter}"
+}
+
+; Shift + . : Extensions
++.:: Send "^+x"
+
+; Shift + 6 : Switch the brackets open/close
++6:: Send "^+]"
+
+; Shift + 7 : Search
++7:: Send "^+f"
+
+; Shift + 8 : Save all documents
++8::
+{
+    Send "^k"
+    Send "s"
+}
+
+#HotIf
