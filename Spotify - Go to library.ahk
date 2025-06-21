@@ -10,21 +10,32 @@
 #!+d:: GoToSpotifyLibrary()
 
 GoToSpotifyLibrary() {
-    SetTitleMatchMode(2)
-    spotifyWin := "ahk_exe Spotify.exe"
-
-    ; If Spotify is not open, open it and finish the script.
-    if !WinExist(spotifyWin) {
-        OpenSpotify()
-        return
-    }
-
-    ; If Spotify is already open, activate its window.
-    WinActivate(spotifyWin)
-    WinWaitActive(spotifyWin, , 2)
-    Sleep(700)
+    ; Create and show a custom GUI for loading status
+    loadingGui := Gui()
+    loadingGui.Opt("+AlwaysOnTop -Caption +ToolWindow") ; Frameless, always on top
+    loadingGui.BackColor := "333333" ; Dark background
+    loadingGui.SetFont("s12 cFFFFFF", "Segoe UI") ; White text
+    statusText := loadingGui.Add("Text", "w300 Center", "Navigating to your library...")
+    loadingGui.Show("AutoSize Center NA")
+    WinSetTransparent(220, loadingGui) ; Make it semi-transparent
 
     try {
+        SetTitleMatchMode(2)
+        spotifyWin := "ahk_exe Spotify.exe"
+
+        ; If Spotify is not open, open it and finish the script.
+        if !WinExist(spotifyWin) {
+            OpenSpotify()
+            statusText.Value := "Spotify is opening..." ; Update text
+            Sleep(4000) ; Give Spotify time to launch
+            return
+        }
+
+        ; If Spotify is already open, activate its window.
+        WinActivate(spotifyWin)
+        WinWaitActive(spotifyWin, , 2)
+        Sleep(700)
+
         cUIA := UIA_Browser(spotifyWin)
 
         ; Define element properties
@@ -46,6 +57,7 @@ GoToSpotifyLibrary() {
                 fullscreenButton.Click()
                 Sleep(1000) ; Wait for UI to update
             } else {
+                statusText.Value := "Error: 'fullscreen' button not found."
                 MsgBox("Could not find 'fullscreen library' button.")
                 return
             }
@@ -57,9 +69,9 @@ GoToSpotifyLibrary() {
         ; First, navigate to the "Go back" button location once.
         if initialFilterField := cUIA.WaitElement({ Name: filterFieldName, Type: filterFieldType }, 1000) {
             initialFilterField.SetFocus()
-            Sleep(500)
+            Sleep(600)
             SendInput("{Shift Down}{Tab 5}{Shift Up}")
-            Sleep(500)
+            Sleep(600)
 
             ; Now, repeatedly press Enter as long as the focus remains on a "Go back" button.
             loop (10) {
@@ -69,7 +81,7 @@ GoToSpotifyLibrary() {
                 ; If the focused element is our button, press Enter.
                 if IsObject(focusedEl) && (focusedEl.Name == goBackButtonName) {
                     SendInput("{Enter}")
-                    Sleep(500) ; Wait for UI to update after the click.
+                    Sleep(600) ; Wait for UI to update after the click.
                 } else {
                     ; The focus has moved away, so we are done.
                     break
@@ -80,12 +92,20 @@ GoToSpotifyLibrary() {
         ; Finally, select the text field to filter the library.
         if filterField := cUIA.WaitElement({ Name: filterFieldName, Type: filterFieldType }, 2000) {
             filterField.Click()
+            statusText.Value := "Done! Library is ready."
         } else {
+            statusText.Value := "Error: Could not find filter field."
             MsgBox("Could not find the library filter text field.")
         }
 
     } catch as e {
+        statusText.Value := "An error occurred."
         MsgBox("An error occurred during Spotify automation: `n" e.Message)
+    } finally {
+        Sleep(2000) ; Keep the final message visible for a bit
+        if IsObject(loadingGui) && loadingGui.Hwnd {
+            loadingGui.Destroy()
+        }
     }
 }
 
