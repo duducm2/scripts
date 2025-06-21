@@ -125,6 +125,27 @@
 ;     Shift + Y : Select first file
 ;     Shift + U : New folder
 ;     Shift + I : New Shortcut
+; ----- Figma --------------
+;     Shift + Y : Show/Hide UI (Ctrl + \)
+;     Shift + U : Component search (Shift + I)
+;     Shift + I : Select parent (\)
+;     Shift + O : Create component (Ctrl + Alt + K)
+;     Shift + P : Detach instance (conflicting with other ahk) (Ctrl + Alt + B)
+;     Shift + H : Add auto layout (Shift + A)
+;     Shift + J : Remove auto layout (not working) (Alt + Shift + A)
+;     Shift + K : Suggest auto layout (Ctrl + Alt + Shift + A)
+;     Shift + L : Export (Ctrl + Shift + E)
+;     Shift + N : Copy as PNG (Ctrl + Shift + C)
+;     Shift + M : Actions... (Ctrl + K)
+;     Shift + , : Align left (Alt + A)
+;     Shift + . : Align right (Alt + D)
+;     Shift + 6 : Align top (Alt + W)
+;     Shift + 7 : Align bottom (Alt + S)
+;     Shift + 8 : Align center horizontal (Alt + H)
+;     Shift + 9 : Align center vertical (Alt + V) (conflicting with other ahk)
+;     Shift + 0 : Distribute horizontal spacing (Alt + Shift + H)
+;     Shift + W : Distribute vertical spacing (Alt + Shift + V)
+;     Shift + E : Tidy up (Ctrl + Alt + Shift + T)
 
 ;---------------------------------------- Changed Shortcuts in the software itself ------------------
 ;     Ctrl + Shift + W : Remove unecessary keys (this closes some softwares and was causing issues)

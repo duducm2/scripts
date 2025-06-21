@@ -527,3 +527,70 @@ global voiceMessageState := false
 }
 
 #HotIf
+
+;-------------------------------------------------------------------
+; Figma Shortcuts
+;-------------------------------------------------------------------
+#HotIf WinActive("ahk_exe Figma.exe")
+
+; Shift + Y : Show/Hide UI (Ctrl + \)
++y:: Send("^]")
+
+; Shift + U : Component search (Shift + I)
++u:: Send("+i")
+
+; Shift + I : Select parent (\)
++i:: Send("]")
+
+; Shift + O : Create component (Ctrl + Alt + K)
++o:: Send("^!k")
+
+; Shift + P : Detach instance (Ctrl + Alt + B)
++p:: Send("^!b")
+
+; Shift + H : Add auto layout (Shift + A)
++h:: Send("+a")
+
+; Shift + J : Remove auto layout (Alt + Shift + A)
++j:: Send("!+a")
+
+; Shift + K : Suggest auto layout (Ctrl + Alt + Shift + A)
++k:: Send("^!+a")
+
+; Shift + L : Export (Ctrl + Shift + E)
++l:: Send("^+e")
+
+; Shift + N : Copy as PNG (Ctrl + Shift + C)
++n:: Send("^+c")
+
+; Shift + M : Actions... (Ctrl + K)
++m:: Send("^k")
+
+; Shift + , : Align left (Alt + A)
++,:: Send("!a")
+
+; Shift + . : Align right (Alt + D)
++.:: Send("!d")
+
+; Shift + 6 : Align top (Alt + W)
++6:: Send("!w")
+
+; Shift + 7 : Align bottom (Alt + S)
++7:: Send("!s")
+
+; Shift + 8 : Align center horizontal (Alt + H)
++8:: Send("!h")
+
+; Shift + 9 : Align center vertical (Alt + V)
++9:: Send("!v")
+
+; Shift + 0 : Distribute horizontal spacing (Alt + Shift + H)
++0:: Send("!+h")
+
+; Shift + W : Distribute vertical spacing (Alt + Shift + V)
++w:: Send("!+v")
+
+; Shift + E : Tidy up (Ctrl + Alt + Shift + T)
++e:: Send("^!+t")
+
+#HotIf
