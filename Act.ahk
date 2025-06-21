@@ -21,7 +21,7 @@
 ; Layer 2 + A: Go to desktop
 ;---------------------------------------- Win + Alt + Shift + keys ----------------------------------
 ; ----- Available -----------
-; A C J K Q U W X Y 3
+; A C J K Q U W X Y 1
 ; ----- Onenote -------------
 ;     Win + Alt + Shift + N : Opens or activates OneNote
 ; ----- Spotify -------------
@@ -57,7 +57,7 @@
 ;     Win + Alt + Shift + 6 : Minimizes windows
 ;     Win + Alt + Shift + M : Maximizes the current window
 ; ----- General ---------
-;     Win + Alt + Shift + 1 : Jump mouse on the middle
+;     Win + Alt + Shift + 3 : Jump mouse on the middle
 ; ----- Hunt and Peck ---------
 ;     Win + Alt + Shift + X : Activate hunt and Peck
 ;---------------------------------------- Shift + keys ----------------------------------------------

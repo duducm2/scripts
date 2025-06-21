@@ -1,7 +1,7 @@
 #Requires AutoHotkey v2.0+
 #SingleInstance Force
 
-#+!1::  ; Win + Alt + Shift + H
+#+!3::  ; Win + Alt + Shift + H
 {
     hwnd := WinExist("A")  ; Get the handle of the active window
     if !hwnd {
