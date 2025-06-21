@@ -5,20 +5,84 @@
 ;    Open file explorer
 ;    Windows
 ;---------------------------------------- Layer 1 + Keys ----------------------------------
+; Layer 1 + ESC: F11
+; Layer 1 + 1: F1
+; Layer 1 + 2: F2
+; Layer 1 + 3: F3
+; Layer 1 + 4: F4
+; Layer 1 + 5: F5
+; Layer 1 + Up arrow: Mouse move up
+; Layer 1 + 6: F6
+; Layer 1 + 7: F7
+; Layer 1 + 8: F8
+; Layer 1 + 9: F9
+; Layer 1 + 0: F10
+; Layer 1 + Backspace: F12
+; Layer 1 + E: Macro Win+Z, 4, Enter
+; Layer 1 + R: Macro Win+Z, 5, Enter
+; Layer 1 + T: Macro Win+Z, 6, Enter
+; Layer 1 + Down arrow: Mouse move down
+; Layer 1 + Y: Page Up
+; Layer 1 + U: Home
+; Layer 1 + I: ]
+; Layer 1 + O: /
+; Layer 1 + P: ;
+; Layer 1 + F: Macro Win+Z, 7, Enter
+; Layer 1 + G: Macro Win+Z, 8, Enter
+; Layer 1 + Left arrow: Mouse move left
+; Layer 1 + H: Page Down
+; Layer 1 + J: End
+; Layer 1 + K: \
+; Layer 1 + L: -
+; Layer 1 + ´: '
+; Layer 1 + B: Win+L (Lock screen)
+; Layer 1 + Right arrow: Mouse move right
+; Layer 1 + N: ~
+; Layer 1 + M: `
+; Layer 1 + ,: / (numpad)
+; Layer 1 + .: +
+; Layer 1 + Enter (right): [
+; Layer 1 + Play/Pause: Mute
+; Layer 1 + Enter (thumb): Left mouse click
+; Layer 1 + mo 2: ?
+; Layer 1 + Printscreen: {
+; Layer 1 + Context Menu: |
+; Layer 1 + Delete: Alt+Shift+S
+
 ;---------------------------------------- Layer 2 + Keys ----------------------------------
-; Layer 2 + 0: Ctrl + Home
-; Layer 2 + ESC: Ctrl + End
-; Layer 2 + P: Shift + Home
-; Layer 2 + ´: Shift + End
-; Layer 2 + 8: Ctrl + Right arrow (5 times)
-; Layer 2 + 9: Ctrl + Left arrow (5 times)
-; Layer 2 + 6: Ctrl + Shift + Home
-; Layer 2 + 7: Ctrl + Shift + End
-; Layer 2 + y: Ctrl + Shift + Page Up
-; Layer 2 + u: Ctrl + Shift + Page Down
-; Layer 2 + i: Ctrl + Page Up
-; Layer 2 + o: Ctrl + Page Down
-; Layer 2 + A: Go to desktop
+; Layer 2 + ESC: Alt+F4
+; Layer 2 + 1: Bluetooth Select 0
+; Layer 2 + 2: Bluetooth Select 1
+; Layer 2 + 3: Bluetooth Select 2
+; Layer 2 + 4: Win+Home
+; Layer 2 + 5: Win+Shift+E
+; Layer 2 + Up arrow: 5 up arrows (Ctrl+Next Track with Ctrl)
+; Layer 2 + 6: Ctrl+Shift+Home
+; Layer 2 + 7: Ctrl+Shift+End
+; Layer 2 + 8: Macro Select to beginning of word (5 times) and delete
+; Layer 2 + 9: Macro Select to end of word (5 times) and delete
+; Layer 2 + 0: Ctrl+Home
+; Layer 2 + Backspace: Ctrl+End
+; Layer 2 + Down arrow: 5 down arrows (Ctrl+Previous Track with Ctrl)
+; Layer 2 + Y: Shift+Home
+; Layer 2 + U: Shift+End
+; Layer 2 + I: Macro Select to beginning of line and delete
+; Layer 2 + O: Macro Select to end of line and delete
+; Layer 2 + P: Ctrl+Page Up
+; Layer 2 + ´: Ctrl+Page Down
+; Layer 2 + F: Ctrl+Shift+V
+; Layer 2 + Left arrow: 5 left arrows (Ctrl+5 left arrows with Ctrl)
+; Layer 2 + H: Ctrl+Shift+Page Up
+; Layer 2 + J: Ctrl+Shift+Page Down
+; Layer 2 + V: Ctrl+Alt+V
+; Layer 2 + B: Ctrl+Alt+B
+; Layer 2 + Right arrow: 5 right arrows (Ctrl+5 right arrows with Ctrl)
+; Layer 2 + Play/Pause: Mute
+; Layer 2 + Enter (thumb): Left mouse click
+; Layer 2 + Printscreen: Output BLE
+; Layer 2 + Context Menu: Bluetooth Clear
+; Layer 2 + Delete: Ctrl+A, Delete
+
 ;---------------------------------------- Win + Alt + Shift + keys ----------------------------------
 ; ----- Available -----------
 ; A C J K Q U W X Y 1
