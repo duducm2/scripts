@@ -132,22 +132,6 @@ GoToSpotifyLibrary() {
     }
 }
 
-; =============================================================================
-; Spotify Volume Down
-; Hotkey: F13 & F14
-; =============================================================================
-F13:: {
-    OpenSpotify()
-    WinWaitActive("ahk_exe Spotify.exe", , 2)
-    Send("^{Down}")
-}
-
-F14:: {
-    OpenSpotify()
-    WinWaitActive("ahk_exe Spotify.exe", , 2)
-    Send("^{Up}")
-}
-
 ; --- NEW Hotkeys -------------------------------------------------------------
 ; Ctrl + Volume wheel → map to F13 / F14 so the same logic above is reused
 ^Volume_Down:: {
@@ -162,4 +146,26 @@ F14:: {
     WinWaitActive("ahk_exe Spotify.exe", , 2)
     Send("^{Up}")
     Send("^{Up}")
+}
+
+; --- NEW Hotkeys -------------------------------------------------------------
+; Alt + Volume wheel → control YouTube volume (when a YouTube tab is active)
+!Volume_Down:: {
+    winTitle := WinGetTitle("A")
+    if InStr(winTitle, "YouTube") {
+        ; Release Alt so the arrow key is not modified
+        SendInput "{Alt Up}{Down}{Alt Down}"
+    } else {
+        ; Fallback – pass the key through to the system master-volume
+        Send "{Volume_Down}"
+    }
+}
+
+!Volume_Up:: {
+    winTitle := WinGetTitle("A")
+    if InStr(winTitle, "YouTube") {
+        SendInput "{Alt Up}{Up}{Alt Down}"
+    } else {
+        Send "{Volume_Up}"
+    }
 }
