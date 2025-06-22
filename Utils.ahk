@@ -37,8 +37,20 @@
 ; Activate Hunt and Peck
 ; Hotkey: Win+Alt+Shift+X
 ; Original File: Hunt and Peck.ahk
+; Note: A short press activates Hunt and Peck. A long press (>1s) will first
+;       send {Esc} to reset a potentially stuck state, and then reactivate it.
 ; =============================================================================
 #!+x::
 {
-    Send "!ç"
+    if KeyWait("x", "T1") {
+        ; Key was released within 1 second (short press).
+        Send "!ç"
+    }
+    else {
+        ; Key was held down for >1 second (long press).
+        KeyWait("x") ; Wait for the key to be released.
+        Send "{Esc}"
+        Sleep 100
+        Send "!ç"
+    }
 }
