@@ -227,9 +227,8 @@ if (IS_WORK_ENVIRONMENT) {
     Run "c:\Users\fie7ca\Documents\Settle Up.lnk"
     Run "c:\ProgramData\Microsoft\Windows\Start Menu\Programs\OneNote.lnk"
 
-    Run GetScriptPath("Microsoft Teams - meeting shortcuts.ahk")
+    Run GetScriptPath("Microsoft Teams.ahk")
     Run GetScriptPath("Outlook.ahk")
-    Run GetScriptPath("Microsoft Teams - New conversation.ahk")
 } else {
     Run "C:\Users\eduev\OneDrive\Documentos\HuntAndPeck\hap.exe"
 }
@@ -241,10 +240,9 @@ Run GetScriptPath("Shift keys.ahk")
 Run GetScriptPath("Remove unecessary keys.ahk")
 Run GetScriptPath("Open Desktop.ahk")
 Run GetScriptPath("OneNote - Open.ahk")
-Run GetScriptPath("Spotify - Open.ahk")
-Run GetScriptPath("Spotify - Go to library.ahk")
-Run GetScriptPath("ChatGPT.ahk")
+Run GetScriptPath("Spotify.ahk")
 Run GetScriptPath("Youtube - Activate.ahk")
+Run GetScriptPath("ChatGPT.ahk")
 Run GetScriptPath("Open Google.ahk")
 Run GetScriptPath("Open WhatsApp.ahk")
 Run GetScriptPath("Minimize.ahk")

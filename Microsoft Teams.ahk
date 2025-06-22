@@ -1,11 +1,17 @@
 #Requires AutoHotkey v2.0+
+#SingleInstance Force
 
+; -----------------------------------------------------------------------------
+; This script consolidates all Microsoft Teams related hotkeys and functions.
+; -----------------------------------------------------------------------------
+
+; --- Includes ----------------------------------------------------------------
 #include UIA-v2\Lib\UIA.ahk
+
+; --- Helper Functions --------------------------------------------------------
 
 ActivateTeamsMeetingWindow() {
     static processes := ["ms-teams.exe", "Teams.exe", "MSTeams.exe"]
-
-    ; walk through every Teams window we can find
     for proc in processes {
         for hwnd in WinGetList("ahk_exe " proc) {
             if IsTeamsMeetingTitle(title := WinGetTitle(hwnd)) {
@@ -14,21 +20,16 @@ ActivateTeamsMeetingWindow() {
             }
         }
     }
-
-    ; fallback: any window whose title *matches the same regex*
-    if hwnd := WinExist("RegEx)^.*\| Microsoft Teams$") {  ; use “RegEx)” prefix!
+    if hwnd := WinExist("RegEx)^.*\| Microsoft Teams$") {
         WinActivate(hwnd)
         return true
     }
-
     MsgBox "Não foi possível encontrar uma janela de reunião ativa.", "Microsoft Teams", "Iconi"
     return false
 }
 
 ActivateTeamsChatWindow() {
     static processes := ["ms-teams.exe", "Teams.exe", "MSTeams.exe"]
-
-    ; walk through every Teams window we can find
     for proc in processes {
         for hwnd in WinGetList("ahk_exe " proc) {
             if IsTeamsChatTitle(title := WinGetTitle(hwnd)) {
@@ -37,13 +38,10 @@ ActivateTeamsChatWindow() {
             }
         }
     }
-
-    ; fallback: any window whose title *matches the same regex*
     if hwnd := WinExist("RegEx)^Chat \| .* \| Microsoft Teams$") {
         WinActivate(hwnd)
         return true
     }
-
     MsgBox "Não foi possível encontrar uma janela de chat do Teams.", "Microsoft Teams", "Iconi"
     return false
 }
@@ -68,63 +66,64 @@ WaitListItem(root, partialName, timeout := 3000) {
     return false
 }
 
-; --- NEW: one place that decides if a Teams window is a meeting window ---
 IsTeamsMeetingTitle(title) {
-    ; filter out things we explicitly don’t want
-    if InStr(title, "Chat |")              ; chat side-panel
-    || InStr(title, "Sharing control bar |")
+    if InStr(title, "Chat |") || InStr(title, "Sharing control bar |")
         return false
-
-    ; ① legacy “Microsoft Teams meeting” pop-out
     if InStr(title, "Microsoft Teams meeting")
         return true
-
-    ; ② anything (including multiple pipes) that ENDS with “| Microsoft Teams”
-    ;     ^.*\| Microsoft Teams$
     return RegExMatch(title, "i)^.*\| Microsoft Teams$")
 }
 
 IsTeamsChatTitle(title) {
-    ; ignore sharing control bar and explicit meeting windows
-    if InStr(title, "Sharing control bar |")
-    || InStr(title, "Microsoft Teams meeting")
+    if InStr(title, "Sharing control bar |") || InStr(title, "Microsoft Teams meeting")
         return false
-
-    ; MUST contain "Chat |" and end with "| Microsoft Teams"
     return InStr(title, "Chat |") && RegExMatch(title, "i)\| Microsoft Teams$")
 }
 
+; --- Hotkeys & Functions -----------------------------------------------------
+
+; =============================================================================
+; Meeting: Toggle Mute
+; Hotkey: Win+Alt+Shift+5
+; Original File: Microsoft Teams - meeting shortcuts.ahk
+; =============================================================================
 #!+5:: {
     if ActivateTeamsMeetingWindow()
         Send "^+m"
 }
 
+; =============================================================================
+; Meeting: Toggle Camera
+; Hotkey: Win+Alt+Shift+4
+; Original File: Microsoft Teams - meeting shortcuts.ahk
+; =============================================================================
 #!+4:: {
     if ActivateTeamsMeetingWindow()
         Send "^+o"
 }
 
+; =============================================================================
+; Meeting: Toggle Screen Share
+; Hotkey: Win+Alt+Shift+T
+; Original File: Microsoft Teams - meeting shortcuts.ahk
+; =============================================================================
 #!+t:: {
     if !ActivateTeamsMeetingWindow()
         return
-
     hwnd := WinGetID("A")
     root := UIA.ElementFromHandle(hwnd)
     if !root
         return
-
     listItem := FindListItemContaining(root, "Opens list of")
     if listItem {
         listItem.Invoke()
         ActivateTeamsMeetingWindow()
         return
     }
-
     shareBtn := root.FindFirst(UIA.CreateCondition({ AutomationId: "share-button" }))
     if !shareBtn
         return
     shareBtn.Invoke()
-
     Sleep 1000
     listItem := WaitListItem(root, "Opens list of")
     if listItem {
@@ -134,6 +133,11 @@ IsTeamsChatTitle(title) {
     ActivateTeamsMeetingWindow()
 }
 
+; =============================================================================
+; Meeting: Exit Meeting
+; Hotkey: Win+Alt+Shift+2
+; Original File: Microsoft Teams - meeting shortcuts.ahk
+; =============================================================================
 #!+2:: {
     if !ActivateTeamsMeetingWindow()
         return
@@ -142,14 +146,51 @@ IsTeamsChatTitle(title) {
         Send "^+h"
 }
 
-; Win + Alt + Shift + J : Select the chats window (e.g. "Chat | GS/BDU UX Project Champions | Microsoft Teams")
+; =============================================================================
+; Activate Chat Window
+; Hotkey: Win+Alt+Shift+E
+; Original File: Microsoft Teams - meeting shortcuts.ahk
+; =============================================================================
 #!+E:: {
     if !ActivateTeamsChatWindow()
         MsgBox "Não foi possível encontrar uma janela de chat do Teams.", "Microsoft Teams", "Iconi"
 }
 
-; Win + Alt + Shift + K : Select the meeting window (e.g. "Proj. Streamline Weekly Data Review | Microsoft Teams")
+; =============================================================================
+; Activate Meeting Window
+; Hotkey: Win+Alt+Shift+3
+; Original File: Microsoft Teams - meeting shortcuts.ahk
+; =============================================================================
 #!+3:: {
     if !ActivateTeamsMeetingWindow()
         MsgBox "Não foi possível encontrar uma janela de reunião ativa.", "Microsoft Teams", "Iconi"
+}
+
+; =============================================================================
+; Start New Conversation
+; Hotkey: Win+Alt+Shift+R
+; Original File: Microsoft Teams - New conversation.ahk
+; =============================================================================
+#!+r::
+{
+    contact := Trim(InputBox("Enter a Teams contact name:", "Jump to Chat").Value)
+    if contact = ""
+        return
+    SetWinDelay 0
+    SetKeyDelay 0, 0
+    SetControlDelay 0
+    teamsWindow := "Microsoft Teams"
+    if !WinExist("ahk_exe ms-teams.exe") && !WinExist("ahk_exe Teams.exe") {
+        Run "ms-teams:"
+        WinWait(teamsWindow, , 15)
+    }
+    WinActivate(teamsWindow)
+    WinWaitActive(teamsWindow, , 5)
+    Send "^g"
+    Sleep 100
+    SendText(contact)
+    Sleep 1000
+    Send "{Enter}"
+    Sleep 300
+    Send "^r"
 }
