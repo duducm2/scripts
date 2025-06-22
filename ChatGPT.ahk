@@ -127,6 +127,7 @@ CopyLastPrompt() {
     } catch as e {
         MsgBox(IS_WORK_ENVIRONMENT ? "Erro ao copiar:`n" e.Message : "Error copying:`n" e.Message)
     }
+    Send "!{Tab}"
 }
 
 ; =============================================================================
@@ -144,22 +145,29 @@ CopyLastPrompt() {
     Sleep 300
     readNames := ["Read aloud", "Ler em voz alta"]
     stopNames := ["Stop", "Parar"]
+    buttonClicked := false
     stopBtns := []
     for name in stopNames
         for btn in cUIA.FindAll({ Name: name, Type: "Button" })
             stopBtns.Push(btn)
     if stopBtns.Length {
         stopBtns[stopBtns.Length].Click()
-        return
+        buttonClicked := true
+    } else {
+        readBtns := []
+        for name in readNames
+            for btn in cUIA.FindAll({ Name: name, Type: "Button" })
+                readBtns.Push(btn)
+        if readBtns.Length {
+            readBtns[readBtns.Length].Click()
+            buttonClicked := true
+        } else {
+            MsgBox "Nenhum botão 'Read aloud/Ler em voz alta' ou 'Stop/Parar' encontrado!"
+        }
     }
-    readBtns := []
-    for name in readNames
-        for btn in cUIA.FindAll({ Name: name, Type: "Button" })
-            readBtns.Push(btn)
-    if readBtns.Length
-        readBtns[readBtns.Length].Click()
-    else
-        MsgBox "Nenhum botão 'Read aloud/Ler em voz alta' ou 'Stop/Parar' encontrado!"
+    if (buttonClicked) {
+        Send "!{Tab}"
+    }
 }
 
 ; =============================================================================
