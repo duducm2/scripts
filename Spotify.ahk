@@ -154,10 +154,12 @@ F14:: {
     OpenSpotify()
     WinWaitActive("ahk_exe Spotify.exe", , 2)
     Send("^{Down}")
+    Send("^{Down}")
 }
 
 ^Volume_Up:: {
     OpenSpotify()
     WinWaitActive("ahk_exe Spotify.exe", , 2)
+    Send("^{Up}")
     Send("^{Up}")
 }
