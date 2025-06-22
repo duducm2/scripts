@@ -131,3 +131,19 @@ GoToSpotifyLibrary() {
         }
     }
 }
+
+; =============================================================================
+; Spotify Volume Down
+; Hotkey: F13 & F14
+; =============================================================================
+F13:: {
+    OpenSpotify()
+    WinWaitActive("ahk_exe Spotify.exe", , 2)
+    Send("^{Down}")
+}
+
+F14:: {
+    OpenSpotify()
+    WinWaitActive("ahk_exe Spotify.exe", , 2)
+    Send("^{Down}")
+}
