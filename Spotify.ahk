@@ -145,5 +145,19 @@ F13:: {
 F14:: {
     OpenSpotify()
     WinWaitActive("ahk_exe Spotify.exe", , 2)
+    Send("^{Up}")
+}
+
+; --- NEW Hotkeys -------------------------------------------------------------
+; Ctrl + Volume wheel → map to F13 / F14 so the same logic above is reused
+^Volume_Down:: {
+    OpenSpotify()
+    WinWaitActive("ahk_exe Spotify.exe", , 2)
     Send("^{Down}")
+}
+
+^Volume_Up:: {
+    OpenSpotify()
+    WinWaitActive("ahk_exe Spotify.exe", , 2)
+    Send("^{Up}")
 }
