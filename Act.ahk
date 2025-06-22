@@ -211,9 +211,6 @@
 ;     Shift + W : Distribute vertical spacing (Alt + Shift + V)
 ;     Shift + E : Tidy up (Ctrl + Alt + Shift + T)
 
-;---------------------------------------- Changed Shortcuts in the software itself ------------------
-;     Ctrl + Shift + W : Remove unecessary keys (this closes some softwares and was causing issues)
-
 ;---------------------------------------- Scripts ---------------------------------------------------
 
 #Include env.ahk
@@ -237,10 +234,8 @@ if (IS_WORK_ENVIRONMENT) {
 Send "^!c"
 
 Run GetScriptPath("Shift keys.ahk")
-Run GetScriptPath("Remove unecessary keys.ahk")
 Run GetScriptPath("AppLaunchers.ahk")
 Run GetScriptPath("Spotify.ahk")
 Run GetScriptPath("ChatGPT.ahk")
 Run GetScriptPath("WindowManagement.ahk")
-Run GetScriptPath("Jump mouse on the middle.ahk")
-Run GetScriptPath("Hunt and Peck.ahk")
+Run GetScriptPath("Utils.ahk")
