@@ -59,7 +59,7 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
     Sleep 250
     Send "+{Esc}"
     searchString :=
-        "Below, you will find content. This content can be either a word or a sentence, in Portuguese or English. I would like you to correct the sentence based on grammar, taking cohesion and coherence into consideration. Please, don't prompt any additional comment, neither put your answer into quotation marks. Remember, we are not playing thumbs up or thumbs down now."
+        "Correct the following sentence for grammar, cohesion, and coherence. Respond with only the corrected sentence, no explanations."
     A_Clipboard := searchString . "`n`nContent: " . A_Clipboard
     Sleep 100
     Send("^a")
