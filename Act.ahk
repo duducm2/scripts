@@ -228,9 +228,7 @@ if (IS_WORK_ENVIRONMENT) {
     Run "c:\ProgramData\Microsoft\Windows\Start Menu\Programs\OneNote.lnk"
 
     Run GetScriptPath("Microsoft Teams - meeting shortcuts.ahk")
-    Run GetScriptPath("Outlook - Open mail.ahk")
-    Run GetScriptPath("Outlook - Open Reminder.ahk")
-    Run GetScriptPath("Outlook - Open calendar.ahk")
+    Run GetScriptPath("Outlook.ahk")
     Run GetScriptPath("Microsoft Teams - New conversation.ahk")
 } else {
     Run "C:\Users\eduev\OneDrive\Documentos\HuntAndPeck\hap.exe"
