@@ -1,5 +1,6 @@
 #Requires AutoHotkey v2.0+
 #SingleInstance Force
+#UseHook  ; Ensure Volume hotkeys are captured before the OS processes them
 
 ; -----------------------------------------------------------------------------
 ; This script consolidates all Spotify related hotkeys and functions.
@@ -21,22 +22,29 @@
 
 OpenSpotify() {
     SetTitleMatchMode(2)
+
+    ; 1) If Spotify is already running, just activate it.
     if WinExist("ahk_exe Spotify.exe") || WinExist("Spotify") {
         WinActivate
         return
     }
 
+    ; 2) Decide how to open it based on the environment.
     global IS_WORK_ENVIRONMENT
     if IS_WORK_ENVIRONMENT {
+        ; Work PC: Try the shortcut first.
         link := "C:\Users\fie7ca\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Spotify.lnk"
         if FileExist(link) {
             Run(link)
             return
         }
-        storeApp := "explorer.exe shell:AppsFolder\SpotifyAB.SpotifyMusic_zpdnekdrzrea0!Spotify"
-        Run(storeApp)
-    } else {
-        Run("spotify")
+
+        ; Fallback for Work PC: Use the Store App command.
+        Run("explorer.exe shell:AppsFolder\SpotifyAB.SpotifyMusic_zpdnekdrzrea0!Spotify")
+    }
+    else {
+        ; Personal PC: Directly run the Microsoft Store App command.
+        Run("explorer.exe shell:AppsFolder\SpotifyAB.SpotifyMusic_zpdnekdrzrea0!Spotify")
     }
 }
 
@@ -133,19 +141,27 @@ GoToSpotifyLibrary() {
 }
 
 ; --- NEW Hotkeys -------------------------------------------------------------
-; Ctrl + Volume wheel → map to F13 / F14 so the same logic above is reused
-^Volume_Down:: {
-    OpenSpotify()
-    WinWaitActive("ahk_exe Spotify.exe", , 2)
-    Send("^{Down}")
-    Send("^{Down}")
+; Volume wheel – handle differently when Ctrl is held.
+*Volume_Down:: {
+    if GetKeyState("Ctrl", "P") {
+        ; Ctrl held: adjust Spotify only
+        OpenSpotify()
+        WinWaitActive("ahk_exe Spotify.exe", , 2)
+        Send("^{Down}")
+    } else {
+        ; No Ctrl: let OS handle master volume
+        Send "{Volume_Down}"
+    }
 }
 
-^Volume_Up:: {
-    OpenSpotify()
-    WinWaitActive("ahk_exe Spotify.exe", , 2)
-    Send("^{Up}")
-    Send("^{Up}")
+*Volume_Up:: {
+    if GetKeyState("Ctrl", "P") {
+        OpenSpotify()
+        WinWaitActive("ahk_exe Spotify.exe", , 2)
+        Send("^{Up}")
+    } else {
+        Send "{Volume_Up}"
+    }
 }
 
 ; --- NEW Hotkeys -------------------------------------------------------------
