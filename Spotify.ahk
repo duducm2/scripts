@@ -56,29 +56,51 @@ OpenSpotify() {
 #!+d:: GoToSpotifyLibrary()
 
 GoToSpotifyLibrary() {
-    loadingGui := Gui()
-    loadingGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
-    loadingGui.BackColor := "333333"
-    loadingGui.SetFont("s12 cFFFFFF", "Segoe UI")
-    statusText := loadingGui.Add("Text", "w300 Center", "Navigating to your library...")
-    loadingGui.Show("AutoSize Center NA")
-    WinSetTransparent(220, loadingGui)
+    loadingGui := "" ; Defer GUI creation
 
     try {
         SetTitleMatchMode(2)
         spotifyWin := "ahk_exe Spotify.exe"
 
         if !WinExist(spotifyWin) {
+            ; If Spotify isn't running, create a GUI centered on the primary screen.
+            loadingGui := Gui()
+            loadingGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
+            loadingGui.BackColor := "333333"
+            loadingGui.SetFont("s12 cFFFFFF", "Segoe UI")
+            loadingGui.Add("Text", "w300 Center", "Spotify is opening...")
+            loadingGui.Show("AutoSize Center NA")
+            WinSetTransparent(220, loadingGui)
             OpenSpotify()
-            statusText.Value := "Spotify is opening..."
             Sleep(4000)
-            return
+            return ; Exit after handling the opening process
         }
 
+        ; --- Spotify window exists, so center the GUI on it ---
         WinActivate(spotifyWin)
         WinWaitActive(spotifyWin, , 2)
-        Sleep(700)
 
+        ; Get Spotify window's position and size
+        spotifyX := 0, spotifyY := 0, spotifyW := 0, spotifyH := 0
+        WinGetPos(&spotifyX, &spotifyY, &spotifyW, &spotifyH, spotifyWin)
+
+        ; Create and measure the loading GUI
+        loadingGui := Gui()
+        loadingGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
+        loadingGui.BackColor := "333333"
+        loadingGui.SetFont("s12 cFFFFFF", "Segoe UI")
+        statusText := loadingGui.Add("Text", "w300 Center", "Navigating to your library...")
+        loadingGui.Show("AutoSize Hide") ; Show hidden to get its size
+        guiW := 0, guiH := 0
+        loadingGui.GetPos(, , &guiW, &guiH)
+
+        ; Calculate the centered position and show the GUI
+        guiX := spotifyX + (spotifyW - guiW) / 2
+        guiY := spotifyY + (spotifyH - guiH) / 2
+        loadingGui.Show("x" . Round(guiX) . " y" . Round(guiY) . " NA")
+        WinSetTransparent(220, loadingGui)
+
+        Sleep(700)
         cUIA := UIA_Browser(spotifyWin)
 
         filterFieldName := "Type to filter your library. The list of content below will update as you type."
