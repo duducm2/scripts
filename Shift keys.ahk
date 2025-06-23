@@ -9,6 +9,7 @@
 
 SetTitleMatchMode 2
 
+#include %A_ScriptDir%\env.ahk
 #include UIA-v2\Lib\UIA.ahk
 #include UIA-v2\Lib\UIA_Browser.ahk
 
@@ -20,16 +21,9 @@ SendSymbol(sym) {
 ;-------------------------------------------------------------------
 ; Environment paths (unchanged)
 ;-------------------------------------------------------------------
-global WORK_SCRIPTS_PATH     := "C:\Users\fie7ca\Documents\01 - Scripts"
+global WORK_SCRIPTS_PATH := "C:\Users\fie7ca\Documents\01 - Scripts"
 global PERSONAL_SCRIPTS_PATH := "G:\Meu Drive\12 - Scripts"
-global IS_WORK_ENVIRONMENT   := true    ; set to false on personal rig
-
-GetScriptPath(scriptName) {
-    if (IS_WORK_ENVIRONMENT)
-        return WORK_SCRIPTS_PATH "\" scriptName
-    else
-        return PERSONAL_SCRIPTS_PATH "\" scriptName
-}
+; global IS_WORK_ENVIRONMENT   := true    ; set to false on personal rig // This will now be loaded from env.ahk
 
 ;-------------------------------------------------------------------
 ; OneNote Shortcuts
@@ -345,13 +339,13 @@ global voiceMessageState := false
     Send "^x"
 }
 
-; Shift + U → click ChatGPT’s model selector (any language)
-+u::{
+; Shift + U → click ChatGPT's model selector (any language)
++u:: {
     try {
         uia := UIA_Browser("ahk_exe chrome.exe")
         Sleep 300                 ; brief settle-time
 
-        ; 1️⃣  The button/menu item always carries an AutomationId that starts with “radix-”.
+        ; 1️⃣  The button/menu item always carries an AutomationId that starts with "radix-".
         modelCtl := uia.FindElement({ AutomationId: "radix-", matchmode: "StartsWith" })
 
         ; 2️⃣  If, for some reason, that fails, fall back to the label text (no type filter)
@@ -365,7 +359,7 @@ global voiceMessageState := false
         if (modelCtl)
             modelCtl.Click()
         else
-            MsgBox "Couldn’t find the model-selector (ID or label)."
+            MsgBox "Couldn't find the model-selector (ID or label)."
     }
     catch Error as e {
         MsgBox "UIA error: " e.Message
@@ -481,8 +475,8 @@ global voiceMessageState := false
 IsEditorActive() {
     global IS_WORK_ENVIRONMENT
     return IS_WORK_ENVIRONMENT
-           ? WinActive("ahk_exe Code.exe")       ; Visual Studio Code
-           : WinActive("ahk_exe Cursor.exe")     ; Cursor (VS Code-based)
+        ? WinActive("ahk_exe Code.exe")       ; Visual Studio Code
+            : WinActive("ahk_exe Cursor.exe")     ; Cursor (VS Code-based)
 }
 
 ;-------------------------------------------------------------------
