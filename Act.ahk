@@ -85,7 +85,7 @@
 
 ;---------------------------------------- Win + Alt + Shift + keys ----------------------------------
 ; ----- Available -----------
-; A C J K Q U W X Y 1
+; A C J K Q W X Y 1
 ; ----- Onenote -------------
 ;     Win + Alt + Shift + N : Opens or activates OneNote
 ; ----- Spotify -------------
@@ -96,6 +96,7 @@
 ;     Win + Alt + Shift + 9 : Clicks on the last microphone icon in the ChatGPT
 ;     Win + Alt + Shift + 0 : Speak with ChatGPT
 ;     Win + Alt + Shift + P : Copy last ChatGPT prompt
+;     Win + Alt + Shift + U : Activate ChatGPT and copy last code block
 ;     Win + Alt + Shift + O : Check grammar and improve text in both English and Portuguese
 ;     Win + Alt + Shift + I : Opens ChatGPT
 ;     Win + Alt + Shift + L : Talk with ChatGPT through voice
@@ -189,6 +190,8 @@
 ;     Shift + Y : Select first file
 ;     Shift + U : New folder
 ;     Shift + I : New Shortcut
+; ----- ClipAngel --------------
+;     Shift + Y : Select filtered content and copy
 ; ----- Figma --------------
 ;     Shift + Y : Show/Hide UI (Ctrl + \)
 ;     Shift + U : Component search (Shift + I)

@@ -54,6 +54,19 @@ global PERSONAL_SCRIPTS_PATH := "G:\Meu Drive\12 - Scripts"
 #HotIf
 
 ;-------------------------------------------------------------------
+; ClipAngel Shortcuts
+;-------------------------------------------------------------------
+#HotIf WinActive("ClipAngel")
+
+; Shift + Y : Select filtered content and copy
++y:: {
+    Send "{F10}"
+    Send "{F10}"
+}
+
+#HotIf
+
+;-------------------------------------------------------------------
 ; WhatsApp Shortcuts
 ;-------------------------------------------------------------------
 #HotIf WinActive("WhatsApp")

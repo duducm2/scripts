@@ -117,18 +117,13 @@ CopyLastPrompt() {
 
     ; — labels ChatGPT shows in EN and PT —
     copyNames := [
-        "Copy to clipboard"
-      , "Copiar para a área de transferência"
-      , "Copy"
-      , "Copiar"
+        "Copy to clipboard", "Copiar para a área de transferência", "Copy", "Copiar"
     ]
 
     ; — collect every matching button —
     copyBtns := []
     for name in copyNames
-        for btn in cUIA.FindAll({ Name: name
-                                , Type: "Button"
-                                , matchmode: "Substring" })
+        for btn in cUIA.FindAll({ Name: name, Type: "Button", matchmode: "Substring" })
             copyBtns.Push(btn)
 
     if !copyBtns.Length {
@@ -153,7 +148,6 @@ CopyLastPrompt() {
     ; optional: jump back to previous window
     Send "!{Tab}"
 }
-
 
 ; =============================================================================
 ; Toggle "Read Aloud"
@@ -450,4 +444,22 @@ ToggleDictationSpeak(triedFallback := false, forceAction := "") {
             submitFailCount := 0
         }
     }
+}
+
+; =============================================================================
+; Copy Last Code
+; Hotkey: Win+Alt+Shift+U
+; =============================================================================
+#!+u::
+{
+    SetTitleMatchMode(2)
+    if WinExist("chatgpt") {
+        WinActivate("chatgpt")
+    } else {
+        Run "chrome.exe --new-window https://chatgpt.com/"
+        if !WinWaitActive("ahk_exe chrome.exe", , 3)
+            return
+    }
+    Sleep 300
+    Send("^+;")
 }
