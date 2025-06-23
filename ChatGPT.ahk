@@ -100,35 +100,60 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
 }
 
 ; =============================================================================
-; Copy Last Message
-; Hotkey: Win+Alt+Shift+P
-; Original File: ChatGPT - Copy last message.ahk
+;  Copy Last Prompt  –  ChatGPT (Chrome)
+;  Hotkey:  Win + Alt + Shift + P   (#!+p)
 ; =============================================================================
+
 #!+p:: CopyLastPrompt()
 
 CopyLastPrompt() {
-    global IS_WORK_ENVIRONMENT
-    static pt_copyName := "Copiar"
-    static en_copyName := "Copy"
-    copyName := IS_WORK_ENVIRONMENT ? pt_copyName : en_copyName
     SetTitleMatchMode 2
     WinActivate "chatgpt"
-    WinWaitActive "ahk_exe chrome.exe"
+    if !WinWaitActive("ahk_exe chrome.exe", , 1)
+        return
+
     cUIA := UIA_Browser()
     Sleep 300
-    try {
-        buttons := cUIA.FindAll({ Name: copyName, Type: "Button" })
-        if buttons.Length {
-            lastBtn := buttons[buttons.Length]
-            lastBtn.Click()
-        } else {
-            MsgBox(IS_WORK_ENVIRONMENT ? "Nenhum botão 'Copiar' encontrado." : "No 'Copy' button found.")
-        }
-    } catch as e {
-        MsgBox(IS_WORK_ENVIRONMENT ? "Erro ao copiar:`n" e.Message : "Error copying:`n" e.Message)
+
+    ; — labels ChatGPT shows in EN and PT —
+    copyNames := [
+        "Copy to clipboard"
+      , "Copiar para a área de transferência"
+      , "Copy"
+      , "Copiar"
+    ]
+
+    ; — collect every matching button —
+    copyBtns := []
+    for name in copyNames
+        for btn in cUIA.FindAll({ Name: name
+                                , Type: "Button"
+                                , matchmode: "Substring" })
+            copyBtns.Push(btn)
+
+    if !copyBtns.Length {
+        MsgBox "⚠️  No copy button found (EN / PT)."
+        return
     }
+
+    lastBtn := copyBtns[copyBtns.Length]   ; the bottom-most one
+
+    ; — click it & wait for clipboard —
+    try {
+        lastBtn.ScrollIntoView()
+        Sleep 100
+        A_Clipboard := ""                  ; clear first
+        lastBtn.Click()
+        if !ClipWait(1)                    ; returns 0 on timeout
+            MsgBox "Copy failed – clipboard stayed empty."
+    } catch as e {
+        MsgBox "Error clicking copy button:`n" e.Message
+    }
+
+    ; optional: jump back to previous window
     Send "!{Tab}"
 }
+
 
 ; =============================================================================
 ; Toggle "Read Aloud"
