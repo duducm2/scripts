@@ -207,19 +207,21 @@ CopyLastPrompt() {
 
 ToggleVoiceMode(triedFallback := false, forceAction := "") {
     static isVoiceModeActive := false
-    startVoiceName := "Start voice mode"
-    endVoiceName := "End voice mode"
-    startNames_to_find := [startVoiceName]
-    endNames_to_find := [endVoiceName]
     SetTitleMatchMode 2
     WinActivate "chatgpt"
     WinWaitActive "ahk_exe chrome.exe"
     cUIA := UIA_Browser()
     Sleep 300
+
+    ; Button names in both English and Portuguese
+    startNames := ["Start voice mode", "Iniciar modo voz"]
+    endNames := ["End voice mode", "Encerrar modo voz"]
+
     action := forceAction ? forceAction : (!isVoiceModeActive ? "start" : "stop")
+
     if (action = "start") {
         try {
-            if btn := FindButton(cUIA, startNames_to_find) {
+            if btn := FindButtonByNames(cUIA, startNames) {
                 btn.Click()
                 isVoiceModeActive := true
                 return
@@ -239,7 +241,7 @@ ToggleVoiceMode(triedFallback := false, forceAction := "") {
         }
     } else if (action = "stop") {
         try {
-            if btn := FindButton(cUIA, endNames_to_find) {
+            if btn := FindButtonByNames(cUIA, endNames) {
                 btn.Click()
                 isVoiceModeActive := false
                 return
@@ -260,6 +262,12 @@ ToggleVoiceMode(triedFallback := false, forceAction := "") {
     }
 }
 
+FindButtonByNames(cUIA, namesArray) {
+    for name in namesArray
+        for btn in cUIA.FindAll({ Name: name, Type: "Button" })
+            return btn
+    return ""
+}
 ; =============================================================================
 ; Toggle Dictation (No Auto-Send)
 ; Hotkey: Win+Alt+Shift+0
