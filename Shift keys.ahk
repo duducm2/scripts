@@ -394,6 +394,7 @@ global voiceMessageState := false
 ; Shift + Y : Select first item in list
 +y::
 {
+    Send "{ESC}"
     try
     {
         explorerEl := UIA.ElementFromHandle(WinExist("A"))
