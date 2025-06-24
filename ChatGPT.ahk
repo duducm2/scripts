@@ -36,9 +36,13 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
     SetTitleMatchMode(2)
     if WinExist("chatgpt") {
         WinActivate("chatgpt")
+        if WinWaitActive("ahk_exe chrome.exe", , 2)
+            CenterMouse()
         Send("{Esc}")
     } else {
         Run "chrome.exe --new-window https://chatgpt.com/"
+        if WinWaitActive("ahk_exe chrome.exe", , 5)
+            CenterMouse()
     }
 }
 
@@ -54,6 +58,8 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
     ClipWait
     SetTitleMatchMode 2
     WinActivate "chatgpt"
+    if WinWaitActive("ahk_exe chrome.exe", , 2)
+        CenterMouse()
     Sleep 250
     Send "{Esc}"
     Sleep 250
@@ -82,6 +88,8 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
     ClipWait
     SetTitleMatchMode 2
     WinActivate "chatgpt"
+    if WinWaitActive("ahk_exe chrome.exe", , 2)
+        CenterMouse()
     Sleep 250
     Send "{Esc}"
     Sleep 250
@@ -111,6 +119,7 @@ CopyLastPrompt() {
     WinActivate "chatgpt"
     if !WinWaitActive("ahk_exe chrome.exe", , 1)
         return
+    CenterMouse()
 
     cUIA := UIA_Browser()
     Sleep 300
@@ -160,6 +169,7 @@ CopyLastPrompt() {
     winTitle := "chatgpt"
     WinActivate winTitle
     WinWaitActive "ahk_exe chrome.exe"
+    CenterMouse()
     cUIA := UIA_Browser()
     Sleep 300
     readNames := ["Read aloud", "Ler em voz alta"]
@@ -204,6 +214,7 @@ ToggleVoiceMode(triedFallback := false, forceAction := "") {
     SetTitleMatchMode 2
     WinActivate "chatgpt"
     WinWaitActive "ahk_exe chrome.exe"
+    CenterMouse()
     cUIA := UIA_Browser()
     Sleep 300
 
@@ -288,6 +299,7 @@ ToggleDictation(triedFallback := false, forceAction := "") {
     SetTitleMatchMode 2
     WinActivate "chatgpt"
     WinWaitActive "ahk_exe chrome.exe"
+    CenterMouse()
     cUIA := UIA_Browser()
     Sleep 300
     action := forceAction ? forceAction : (!isDictating ? "start" : "stop")
@@ -371,6 +383,7 @@ ToggleDictationSpeak(triedFallback := false, forceAction := "") {
     SetTitleMatchMode 2
     WinActivate "chatgpt"
     WinWaitActive "ahk_exe chrome.exe"
+    CenterMouse()
     cUIA := UIA_Browser()
     Sleep 300
     action := forceAction ? forceAction : (!isDictating ? "start" : "stop")
@@ -455,11 +468,22 @@ ToggleDictationSpeak(triedFallback := false, forceAction := "") {
     SetTitleMatchMode(2)
     if WinExist("chatgpt") {
         WinActivate("chatgpt")
+        if WinWaitActive("ahk_exe chrome.exe", , 2)
+            CenterMouse()
     } else {
         Run "chrome.exe --new-window https://chatgpt.com/"
         if !WinWaitActive("ahk_exe chrome.exe", , 3)
             return
+        CenterMouse()
     }
     Sleep 300
     Send("^+;")
+}
+
+; =============================================================================
+; Helper function to center mouse on the active window
+; =============================================================================
+CenterMouse() {
+    Sleep(200)
+    Send("#!+q")
 }
