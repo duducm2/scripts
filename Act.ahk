@@ -133,6 +133,7 @@
 ;     Shift + Y : Like
 ;     Shift + U : Heart
 ;     Shift + I : Laugh
+;     Shift + O : Go to home
 ;     Shift + E : Edit message
 ;     Shift + R : Reply Message
 ;     Shift + L : Remove pin

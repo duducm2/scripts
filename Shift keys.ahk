@@ -287,6 +287,14 @@ global voiceMessageState := false
     Send "{Enter}"
 }
 
+; Shift + O : Ctrl+1 then Ctrl+Shift+Home
++o::
+{
+    Send "^1"
+    Sleep "200"          ; 200 ms
+    Send "^+{Home}"
+}
+
 #HotIf
 
 ;-------------------------------------------------------------------
