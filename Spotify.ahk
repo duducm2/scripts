@@ -162,48 +162,59 @@ GoToSpotifyLibrary() {
     }
 }
 
-; --- NEW Hotkeys -------------------------------------------------------------
-; Volume wheel – handle differently when Ctrl is held.
 *Volume_Down:: {
     if GetKeyState("Ctrl", "P") {
-        ; Ctrl held: adjust Spotify only
-        OpenSpotify()
-        WinWaitActive("ahk_exe Spotify.exe", , 2)
-        Send("^{Down}")
+        ; Ctrl held: adjust Spotify volume
+        ActivateSpotify()
+        if WinWaitActive("ahk_exe Spotify.exe", , 2) {
+            Send("^{Down}")
+        }
+    } else if GetKeyState("Alt", "P") {
+        ; Alt held: adjust YouTube volume
+        if FocusYouTube() {
+            Send("{Down}")
+        } else {
+            Send("{Volume_Down}")
+        }
     } else {
-        ; No Ctrl: let OS handle master volume
-        Send "{Volume_Down}"
+        ; Default: master volume down
+        Send("{Volume_Down}")
     }
 }
 
 *Volume_Up:: {
     if GetKeyState("Ctrl", "P") {
-        OpenSpotify()
-        WinWaitActive("ahk_exe Spotify.exe", , 2)
-        Send("^{Up}")
+        ActivateSpotify()
+        if WinWaitActive("ahk_exe Spotify.exe", , 2) {
+            Send("^{Up}")
+        }
+    } else if GetKeyState("Alt", "P") {
+        if FocusYouTube() {
+            Send("{Up}")
+        } else {
+            Send("{Volume_Up}")
+        }
     } else {
-        Send "{Volume_Up}"
+        Send("{Volume_Up}")
     }
 }
 
-; --- NEW Hotkeys -------------------------------------------------------------
-; Alt + Volume wheel → control YouTube volume (when a YouTube tab is active)
-!Volume_Down:: {
-    winTitle := WinGetTitle("A")
-    if InStr(winTitle, "YouTube") {
-        ; Release Alt so the arrow key is not modified
-        SendInput "{Alt Up}{Down}{Alt Down}"
-    } else {
-        ; Fallback – pass the key through to the system master-volume
-        Send "{Volume_Down}"
+FocusYouTube() {
+    ; Tries to find a Chrome window with YouTube in the title
+    winList := WinGetList("ahk_exe chrome.exe")
+    for win in winList {
+        title := WinGetTitle(win)
+        if InStr(title, "YouTube") {
+            WinActivate(win)
+            WinWaitActive(win, , 2)
+            return true
+        }
     }
+    return false
 }
 
-!Volume_Up:: {
-    winTitle := WinGetTitle("A")
-    if InStr(winTitle, "YouTube") {
-        SendInput "{Alt Up}{Up}{Alt Down}"
-    } else {
-        Send "{Volume_Up}"
-    }
+ActivateSpotify() {
+    ; You can customize this part if you want it to launch Spotify if not open
+    ; For now, just tries to activate it
+    WinActivate("ahk_exe Spotify.exe")
 }
