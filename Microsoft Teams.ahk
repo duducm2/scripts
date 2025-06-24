@@ -80,6 +80,26 @@ IsTeamsChatTitle(title) {
     return InStr(title, "Chat |") && RegExMatch(title, "i)\| Microsoft Teams$")
 }
 
+; --- NEW helper --------------------------------------------------------------
+ShowCenteredOverlay(hwndTarget, text, duration := 1500) {
+    ; Build a semi-transparent dark overlay with big white text
+    WinGetPos(&wx, &wy, &ww, &wh, hwndTarget)
+    ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
+    ov.BackColor := "333333"          ; dark background
+    ov.SetFont("s24 cFFFFFF", "Segoe UI")
+    msg := ov.Add("Text", "Center", text)
+    ov.Show("AutoSize Hide")          ; measure the GUI first
+    ov.GetPos(&gx, &gy, &gw, &gh)
+    ; center over target window
+    cx := wx + (ww - gw)//2
+    cy := wy + (wh - gh)//2
+    ov.Show("x" . cx . " y" . cy . " NA")
+    WinSetTransparent(220, ov)        ; a bit of transparency
+    Sleep duration
+    ov.Destroy()
+}
+
+
 ; --- Hotkeys & Functions -----------------------------------------------------
 
 ; =============================================================================
@@ -88,8 +108,13 @@ IsTeamsChatTitle(title) {
 ; Original File: Microsoft Teams - meeting shortcuts.ahk
 ; =============================================================================
 #!+5:: {
-    if ActivateTeamsMeetingWindow()
+    prev := WinGetID("A")                     ; window you were in
+    if ActivateTeamsMeetingWindow() {
         Send "^+m"
+        Sleep 100
+        WinActivate(prev)                     ; switch back
+        ShowCenteredOverlay(prev, "MIC MUTED")
+    }
 }
 
 ; =============================================================================
@@ -98,39 +123,45 @@ IsTeamsChatTitle(title) {
 ; Original File: Microsoft Teams - meeting shortcuts.ahk
 ; =============================================================================
 #!+4:: {
-    if ActivateTeamsMeetingWindow()
+    prev := WinGetID("A")
+    if ActivateTeamsMeetingWindow() {
         Send "^+o"
+        Sleep 100
+        WinActivate(prev)
+        ShowCenteredOverlay(prev, "CAMERA OFF")
+    }
 }
 
+
 ; =============================================================================
-; Meeting: Toggle Screen Share
-; Hotkey: Win+Alt+Shift+T
-; Original File: Microsoft Teams - meeting shortcuts.ahk
+; Meeting: Toggle Screen Share  (Win Alt Shift T)
 ; =============================================================================
 #!+t:: {
+    prev := WinGetID("A")                 ; remember the window you were in
     if !ActivateTeamsMeetingWindow()
         return
-    hwnd := WinGetID("A")
-    root := UIA.ElementFromHandle(hwnd)
+
+    hwndTeams := WinGetID("A")            ; Teams meeting window
+    root := UIA.ElementFromHandle(hwndTeams)
     if !root
         return
+
+    ; --- perform the normal sharing workflow ---
     listItem := FindListItemContaining(root, "Opens list of")
     if listItem {
         listItem.Invoke()
-        ActivateTeamsMeetingWindow()
-        return
+    } else {
+        shareBtn := root.FindFirst(UIA.CreateCondition({ AutomationId: "share-button" }))
+        if !shareBtn
+            return
+        shareBtn.Invoke()
+        Sleep 1000
+        if li := WaitListItem(root, "Opens list of")
+            li.Invoke()
     }
-    shareBtn := root.FindFirst(UIA.CreateCondition({ AutomationId: "share-button" }))
-    if !shareBtn
-        return
-    shareBtn.Invoke()
-    Sleep 1000
-    listItem := WaitListItem(root, "Opens list of")
-    if listItem {
-        listItem.Invoke()
-    }
-    Sleep 200
-    ActivateTeamsMeetingWindow()
+
+    ; --- show the overlay on the PREVIOUS window ---
+    ShowCenteredOverlay(prev, "SHARING STARTED")
 }
 
 ; =============================================================================
