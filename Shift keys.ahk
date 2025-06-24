@@ -61,6 +61,7 @@ global PERSONAL_SCRIPTS_PATH := "G:\Meu Drive\12 - Scripts"
 ; Shift + Y : Select filtered content and copy
 +y:: {
     Send "{F10}"
+    Sleep "300"
     Send "{F10}"
 }
 
