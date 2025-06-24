@@ -25,7 +25,9 @@ OpenSpotify() {
 
     ; 1) If Spotify is already running, just activate it.
     if WinExist("ahk_exe Spotify.exe") || WinExist("Spotify") {
-        WinActivate
+        WinActivate()
+        if WinWaitActive("ahk_exe Spotify.exe", , 2)
+            CenterMouse()
         return
     }
 
@@ -36,15 +38,21 @@ OpenSpotify() {
         link := "C:\Users\fie7ca\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Spotify.lnk"
         if FileExist(link) {
             Run(link)
+            if WinWaitActive("ahk_exe Spotify.exe", , 5)
+                CenterMouse()
             return
         }
 
         ; Fallback for Work PC: Use the Store App command.
         Run("explorer.exe shell:AppsFolder\SpotifyAB.SpotifyMusic_zpdnekdrzrea0!Spotify")
+        if WinWaitActive("ahk_exe Spotify.exe", , 5)
+            CenterMouse()
     }
     else {
         ; Personal PC: Directly run the Microsoft Store App command.
         Run("explorer.exe shell:AppsFolder\SpotifyAB.SpotifyMusic_zpdnekdrzrea0!Spotify")
+        if WinWaitActive("ahk_exe Spotify.exe", , 5)
+            CenterMouse()
     }
 }
 
@@ -78,7 +86,9 @@ GoToSpotifyLibrary() {
 
         ; --- Spotify window exists, so center the GUI on it ---
         WinActivate(spotifyWin)
-        WinWaitActive(spotifyWin, , 2)
+        if WinWaitActive(spotifyWin, , 2) {
+            CenterMouse()
+        }
 
         ; Get Spotify window's position and size
         spotifyX := 0, spotifyY := 0, spotifyW := 0, spotifyH := 0
@@ -217,4 +227,12 @@ ActivateSpotify() {
     ; You can customize this part if you want it to launch Spotify if not open
     ; For now, just tries to activate it
     WinActivate("ahk_exe Spotify.exe")
+}
+
+; =============================================================================
+; Helper function to center mouse on the active window
+; =============================================================================
+CenterMouse() {
+    Sleep(200)
+    Send("#!+q")
 }
