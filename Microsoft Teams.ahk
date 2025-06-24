@@ -42,7 +42,7 @@ ActivateTeamsChatWindow() {
         WinActivate(hwnd)
         return true
     }
-    MsgBox "Não foi possível encontrar uma janela de chat do Teams.", "Microsoft Teams", "Iconi"
+    ; No message box here - just return false
     return false
 }
 
@@ -152,8 +152,17 @@ IsTeamsChatTitle(title) {
 ; Original File: Microsoft Teams - meeting shortcuts.ahk
 ; =============================================================================
 #!+E:: {
-    if !ActivateTeamsChatWindow()
-        MsgBox "Não foi possível encontrar uma janela de chat do Teams.", "Microsoft Teams", "Iconi"
+    if !ActivateTeamsChatWindow() {
+        RunTeams()
+    }
+}
+
+RunTeams() {
+    ; Example for Microsoft Store Teams
+    ; Run("shell:AppsFolder\MicrosoftTeams_8wekyb3d8bbwe!App")
+    
+    ; Example for desktop Teams
+    Run("c:\Users\fie7ca\Documents\Atalhos\Microsoft Teams - Shortcut.lnk")
 }
 
 ; =============================================================================

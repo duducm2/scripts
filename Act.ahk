@@ -226,7 +226,7 @@ if (IS_WORK_ENVIRONMENT) {
     Run "C:\Users\fie7ca\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\apps do Chrome\Gmail"
     Run "c:\Users\fie7ca\Documents\Settle Up.lnk"
     Run "c:\ProgramData\Microsoft\Windows\Start Menu\Programs\OneNote.lnk"
-
+    Run "cc:\Users\fie7ca\Documents\Atalhos\Microsoft Teams - Shortcut.lnk"
     Run GetScriptPath("Microsoft Teams.ahk")
     Run GetScriptPath("Outlook.ahk")
 } else {
