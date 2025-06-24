@@ -85,7 +85,7 @@
 
 ;---------------------------------------- Win + Alt + Shift + keys ----------------------------------
 ; ----- Available -----------
-; A C J K Q W X Y 1
+; A C J K W X Y 1
 ; ----- Onenote -------------
 ;     Win + Alt + Shift + N : Opens or activates OneNote
 ; ----- Spotify -------------
@@ -122,7 +122,7 @@
 ;     Win + Alt + Shift + 6 : Minimizes windows
 ;     Win + Alt + Shift + M : Maximizes the current window
 ; ----- General ---------
-;     Win + Alt + Shift + 3 : Jump mouse on the middle
+;     Win + Alt + Shift + Q : Jump mouse on the middle
 ; ----- Hunt and Peck ---------
 ;     Win + Alt + Shift + X : Activate hunt and Peck
 ;---------------------------------------- Shift + keys ----------------------------------------------

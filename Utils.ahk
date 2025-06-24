@@ -12,7 +12,7 @@
 ; Hotkey: Win+Alt+Shift+3
 ; Original File: Jump mouse on the middle.ahk
 ; =============================================================================
-#!+3::
+#!+Q::
 {
     hwnd := WinExist("A")
     if !hwnd {
