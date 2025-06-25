@@ -162,8 +162,9 @@
 ; ----- Google Chrome --------
 ;     Shift + G : Pop up the current tab
 ; ----- Outlook --------------
-;     Shift + U: Send to general
-;     Shift + I: Send to newsletter
+;     Shift + Y: Send to general
+;     Shift + U: Send to newsletter
+;     Shift + I: ?
 ; ----- ChatGPT --------------
 ;     Shift + Y: Select all and cut
 ;     Shift + U: Change model
