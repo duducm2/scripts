@@ -5,6 +5,9 @@
 ; This script consolidates all Window Management hotkeys.
 ; -----------------------------------------------------------------------------
 
+; --- Includes ----------------------------------------------------------------
+#include %A_ScriptDir%\env.ahk
+
 ; --- Hotkeys & Functions -----------------------------------------------------
 
 ; =============================================================================
@@ -29,12 +32,13 @@
 
 ; =============================================================================
 ; Move Active Window to Specific Monitor and Maximize
-; Hotkeys: Ctrl+Alt+Shift+A/S/D/F (MEH) -> monitors 1/2/3/4
+; Hotkeys: Ctrl+Alt+Shift+A/S/D/F (MEH)
 ; =============================================================================
-^!+a:: MoveWinToMonitor(1)
-^!+s:: MoveWinToMonitor(2)
-^!+d:: MoveWinToMonitor(3)
-^!+f:: MoveWinToMonitor(4)
+^!+a:: MoveWinToMonitor(IS_WORK_ENVIRONMENT ? 1 : 1)
+^!+s:: MoveWinToMonitor(IS_WORK_ENVIRONMENT ? 4 : 2)
+^!+d:: MoveWinToMonitor(IS_WORK_ENVIRONMENT ? 2 : 3)
+^!+f:: MoveWinToMonitor(IS_WORK_ENVIRONMENT ? 3 : 4)
+
 
 MoveWinToMonitor(mon) {
     ; Validate monitor index
