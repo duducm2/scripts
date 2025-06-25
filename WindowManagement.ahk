@@ -31,10 +31,10 @@
 ; Move Active Window to Specific Monitor and Maximize
 ; Hotkeys: Win+Shift+Q/W/E/R -> monitors 1/2/3/4
 ; =============================================================================
-#+a:: MoveWinToMonitor(1)  ; Win+Shift+A
-#+s:: MoveWinToMonitor(2)  ; Win+Shift+S
-#+d:: MoveWinToMonitor(4)  ; Win+Shift+D
-#+f:: MoveWinToMonitor(3)  ; Win+Shift+F
+#^!+a:: MoveWinToMonitor(1)
+#^!+s:: MoveWinToMonitor(2)
+#^!+d:: MoveWinToMonitor(3)
+#^!+f:: MoveWinToMonitor(4)
 
 MoveWinToMonitor(mon) {
     ; Validate monitor index
