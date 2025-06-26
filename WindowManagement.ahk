@@ -39,7 +39,6 @@
 ^!+d:: MoveWinToMonitor(IS_WORK_ENVIRONMENT ? 2 : 3)
 ^!+f:: MoveWinToMonitor(IS_WORK_ENVIRONMENT ? 3 : 4)
 
-
 MoveWinToMonitor(mon) {
     ; Validate monitor index
     if (mon > MonitorGetCount() || mon < 1) {
@@ -101,4 +100,38 @@ AltTab(count := 1) {
         SendEvent "!{Tab}"
         Sleep 60 ; brief delay to allow window switch animation
     }
+
+    ; Give the OS a moment to finish activating the target window, then flash it.
+    Sleep 80
+    FlashActiveWindow()
+}
+
+; ----------------------------------------------------------------------------
+; FlashActiveWindow  – draws an always-on-top yellow overlay covering
+;                     the currently active window for ~500 ms so it	stands out.
+; ----------------------------------------------------------------------------
+FlashActiveWindow() {
+    hwnd := WinExist("A")
+    if (!hwnd) {
+        return
+    }
+
+    ; Get active window position/size
+    WinGetPos &wx, &wy, &ww, &wh, hwnd
+
+    overlayW := 300
+    overlayH := 200
+    overlayX := wx + ((ww - overlayW) // 2)
+    overlayY := wy + ((wh - overlayH) // 2)
+
+    ; Create a borderless, click-through, opaque yellow overlay
+    overlay := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x20") ; WS_EX_TRANSPARENT for click-through
+    overlay.BackColor := "Yellow"
+    overlay.Show("x" overlayX " y" overlayY " w" overlayW " h" overlayH)
+
+    ; Ensure fully opaque (0=fully transparent, 255=opaque)
+    WinSetTransparent(255, overlay)
+
+    ; Destroy after 500 ms without blocking the script
+    SetTimer (() => overlay.Destroy()), -500
 }
