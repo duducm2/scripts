@@ -35,9 +35,9 @@
 ; Hotkeys: Ctrl+Alt+Shift+A/S/D/F (MEH)
 ; =============================================================================
 ^!+a:: MoveWinToMonitor(IS_WORK_ENVIRONMENT ? 1 : 1)
-^!+s:: MoveWinToMonitor(IS_WORK_ENVIRONMENT ? 4 : 2)
-^!+d:: MoveWinToMonitor(IS_WORK_ENVIRONMENT ? 2 : 3)
-^!+f:: MoveWinToMonitor(IS_WORK_ENVIRONMENT ? 3 : 4)
+^!+s:: MoveWinToMonitor(IS_WORK_ENVIRONMENT ? 2 : 2)
+^!+d:: MoveWinToMonitor(IS_WORK_ENVIRONMENT ? 3 : 3)
+^!+f:: MoveWinToMonitor(IS_WORK_ENVIRONMENT ? 4 : 4)
 
 
 MoveWinToMonitor(mon) {
