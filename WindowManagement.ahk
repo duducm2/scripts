@@ -129,9 +129,21 @@ AltTab(count := 1) {
 ; ----------------------------------------------------------------------------
 ; Mouse click hooks (update g_LastMouseClickTick)
 ; ----------------------------------------------------------------------------
-~*LButton:: g_LastMouseClickTick := A_TickCount
-~*RButton:: g_LastMouseClickTick := A_TickCount
-~*MButton:: g_LastMouseClickTick := A_TickCount
+~*LButton::
+{
+    global g_LastMouseClickTick
+    g_LastMouseClickTick := A_TickCount
+}
+~*RButton::
+{
+    global g_LastMouseClickTick
+    g_LastMouseClickTick := A_TickCount
+}
+~*MButton::
+{
+    global g_LastMouseClickTick
+    g_LastMouseClickTick := A_TickCount
+}
 
 ; ----------------------------------------------------------------------------
 ; Set a timer that monitors active-window changes and, when they are triggered
@@ -139,6 +151,7 @@ AltTab(count := 1) {
 ; cursor to the centre of the newly-activated window.
 ; ----------------------------------------------------------------------------
 MonitorActiveWindow() {
+    global g_LastMouseClickTick
     static lastHwnd := 0
     hwnd := WinExist("A")
     if (!hwnd || hwnd = lastHwnd)
@@ -148,7 +161,7 @@ MonitorActiveWindow() {
 
     ; If the window became active shortly after a mouse click, assume the user
     ; activated it with the mouse and skip moving the pointer.
-    if (A_TickCount - g_LastMouseClickTick < 400)  ; 400 ms threshold
+    if (A_TickCount - g_LastMouseClickTick < 1000)  ; 1000 ms threshold
         return
 
     MoveMouseToCenter(hwnd)
