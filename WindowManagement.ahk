@@ -171,4 +171,48 @@ MoveMouseToCenter(hwnd) {
     centerY := top + (bottom - top) // 2
 
     DllCall("SetCursorPos", "int", centerX, "int", centerY)
+
+    ; Show a halo highlight around the cursor
+    ShowCursorHalo(centerX, centerY)
+}
+
+; ---------------------------------------------------------------------------
+; Shows a temporary yellow halo (circle) centred at the given screen position.
+; The halo lasts 500 ms, radius 40 px, thickness 8 px, semi-transparent.
+; ---------------------------------------------------------------------------
+ShowCursorHalo(cx, cy, radius := 40, thickness := 8, color := "Yellow", duration := 500, alpha := 200) {
+    static haloGui := 0, destroyTimer := 0
+
+    ; Clean up any previous halo that might still be displayed
+    if IsObject(haloGui) {
+        try haloGui.Destroy()
+        haloGui := 0
+    }
+
+    ; Create a new GUI for the halo
+    haloGui := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x20 -DPIScale")
+    haloGui.BackColor := color
+
+    outerD := radius * 2              ; diameter of the outer circle
+    offset := thickness               ; shrink for the inner circle
+
+    ; Build ring region (outer ellipse minus inner ellipse)
+    hOuter := DllCall("gdi32\CreateEllipticRgn", "int", 0, "int", 0, "int", outerD, "int", outerD, "ptr")
+    hInner := DllCall("gdi32\CreateEllipticRgn", "int", offset, "int", offset, "int", outerD - offset, "int", outerD -
+        offset, "ptr")
+    RGN_DIFF := 3
+    DllCall("gdi32\CombineRgn", "ptr", hOuter, "ptr", hOuter, "ptr", hInner, "int", RGN_DIFF)
+    DllCall("user32\SetWindowRgn", "ptr", haloGui.Hwnd, "ptr", hOuter, "int", true)
+    DllCall("gdi32\DeleteObject", "ptr", hInner)
+
+    ; Show the GUI at the correct position (top-left offset)
+    haloGui.Show("NA x" (cx - radius) " y" (cy - radius) " w" outerD " h" outerD)
+    WinSetTransparent(alpha, haloGui.Hwnd)
+
+    ; Schedule destruction after the specified duration
+    if destroyTimer {
+        SetTimer(destroyTimer, 0)  ; cancel previous timer if exists
+    }
+    destroyTimer := (*) => (haloGui.Destroy(), haloGui := 0)
+    SetTimer(destroyTimer, -duration)
 }
