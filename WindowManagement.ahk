@@ -77,3 +77,24 @@ MoveWinToMonitor(mon) {
     ; Finally maximise so Windows treats it as maximised on that monitor
     WinMaximize hwnd
 }
+
+; =============================================================================
+; Switch to Previous Window
+; Hotkey: Ctrl+Alt+Shift+B (MEH+B)
+; =============================================================================
+^!+b:: AltTab(1)
+
+; =============================================================================
+; Switch to Second Previous Window
+; Hotkey: Ctrl+Alt+Shift+C (MEH+C)
+; =============================================================================
+^!+c:: AltTab(2)
+
+AltTab(count := 1) {
+    ; Send the Alt+Tab combination the specified number of times.
+    ; Using "!{Tab}" presses Alt+Tab in one shot, which Windows accepts reliably.
+    loop count {
+        SendEvent "!{Tab}"
+        Sleep 60 ; brief delay to allow window switch animation
+    }
+}
