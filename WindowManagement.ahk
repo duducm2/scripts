@@ -10,6 +10,8 @@
 
 ; --- Globals & Timers --------------------------------------------------------
 global g_LastActiveHwnd := 0
+global g_LastMouseClickTick := 0   ; Timestamp of the most recent mouse click (A_TickCount)
+SetTimer MonitorActiveWindow, 100  ; Check 10× per second
 
 ; --- Hotkeys & Functions -----------------------------------------------------
 
@@ -122,4 +124,51 @@ AltTab(count := 1) {
 
     ; Wait briefly to allow the window to activate
     Sleep 250
+}
+
+; ----------------------------------------------------------------------------
+; Mouse click hooks (update g_LastMouseClickTick)
+; ----------------------------------------------------------------------------
+~*LButton:: g_LastMouseClickTick := A_TickCount
+~*RButton:: g_LastMouseClickTick := A_TickCount
+~*MButton:: g_LastMouseClickTick := A_TickCount
+
+; ----------------------------------------------------------------------------
+; Set a timer that monitors active-window changes and, when they are triggered
+; by keyboard activity (i.e. not immediately after a mouse click), moves the
+; cursor to the centre of the newly-activated window.
+; ----------------------------------------------------------------------------
+MonitorActiveWindow() {
+    static lastHwnd := 0
+    hwnd := WinExist("A")
+    if (!hwnd || hwnd = lastHwnd)
+        return
+
+    lastHwnd := hwnd
+
+    ; If the window became active shortly after a mouse click, assume the user
+    ; activated it with the mouse and skip moving the pointer.
+    if (A_TickCount - g_LastMouseClickTick < 400)  ; 400 ms threshold
+        return
+
+    MoveMouseToCenter(hwnd)
+}
+
+MoveMouseToCenter(hwnd) {
+    if !hwnd
+        return
+
+    rect := Buffer(16, 0)
+    if !DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)
+        return
+
+    left := NumGet(rect, 0, "int")
+    top := NumGet(rect, 4, "int")
+    right := NumGet(rect, 8, "int")
+    bottom := NumGet(rect, 12, "int")
+
+    centerX := left + (right - left) // 2
+    centerY := top + (bottom - top) // 2
+
+    DllCall("SetCursorPos", "int", centerX, "int", centerY)
 }
