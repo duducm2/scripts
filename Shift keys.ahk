@@ -323,6 +323,9 @@ global voiceMessageState := false
     Send "{Enter}"
 }
 
+; Shift + H: Copy last code block
++I:: Send("?")
+
 #HotIf
 
 ;-------------------------------------------------------------------
