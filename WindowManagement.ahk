@@ -186,24 +186,55 @@ FlashActiveWindow() {
         Sleep 10
     }
 
-    ; Get active window position/size
+    ; Get window position/size and client area for better centering
     WinGetPos &wx, &wy, &ww, &wh, hwnd
+
+    ; Try to get client area (content area without title bar and borders)
+    try {
+        WinGetClientPos &cx, &cy, &cw, &ch, hwnd
+        ; Use client area if available and reasonable
+        if (cw > 100 && ch > 100) {
+            wx := cx
+            wy := cy
+            ww := cw
+            wh := ch
+        }
+    } catch {
+        ; Fallback to window area if client area fails
+        ; Adjust for typical window decorations to center better
+        titleBarHeight := 30  ; Approximate title bar height
+        borderWidth := 8      ; Approximate border width
+        wx += borderWidth
+        wy += titleBarHeight
+        ww -= (borderWidth * 2)
+        wh -= (titleBarHeight + borderWidth)
+    }
 
     overlayW := 300
     overlayH := 200
     overlayX := wx + ((ww - overlayW) // 2)
     overlayY := wy + ((wh - overlayH) // 2)
 
-    ; Create a borderless, click-through, opaque yellow overlay
-    overlay := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x20") ; WS_EX_TRANSPARENT for click-through
+    ; Create a more robust overlay that works better with Chrome and other browsers
+    overlay := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x80000") ; WS_EX_LAYERED for better transparency control
     overlay.BackColor := "Yellow"
-    overlay.Show("NA x" overlayX " y" overlayY " w" overlayW " h" overlayH)
+
+    ; Show at target position immediately
+    overlay.Show("x" overlayX " y" overlayY " w" overlayW " h" overlayH " NA")
 
     ; Store overlay handle to avoid self-triggering in monitor
     g_OverlayHwnd := overlay.Hwnd
 
-    ; Ensure fully opaque (0=fully transparent, 255=opaque)
-    WinSetTransparent(255, overlay)
+    ; Set transparency with better method for layered windows
+    WinSetTransparent(200, overlay) ; Slightly transparent (200/255) for better visibility over complex content
+
+    ; Add a subtle border to make it more visible on various backgrounds
+    try {
+        ; Use Windows API to add a border
+        DllCall("SetWindowPos", "ptr", overlay.Hwnd, "ptr", -1,
+            "int", overlayX, "int", overlayY, "int", overlayW, "int", overlayH,
+            "uint", 0x0040) ; SWP_SHOWWINDOW
+    }
 
     ; Destroy after 500 ms without blocking the script and clear handle reference
     SetTimer (() => (overlay.Destroy(), g_OverlayHwnd := 0)), -500
