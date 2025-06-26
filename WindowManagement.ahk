@@ -180,39 +180,58 @@ MoveMouseToCenter(hwnd) {
 ; Shows a temporary yellow halo (circle) centred at the given screen position.
 ; The halo lasts 500 ms, radius 40 px, thickness 8 px, semi-transparent.
 ; ---------------------------------------------------------------------------
-ShowCursorHalo(cx, cy, radius := 40, thickness := 8, color := "Yellow", duration := 500, alpha := 200) {
-    static haloGui := 0, destroyTimer := 0
+ShowCursorHalo(cx, cy, duration := 500, alpha := 200) {
+    static haloGuis := [], destroyTimer := 0
 
-    ; Clean up any previous halo that might still be displayed
-    if IsObject(haloGui) {
-        try haloGui.Destroy()
-        haloGui := 0
+    ; Clean up any previous halos that might still be displayed
+    if (haloGuis.Length > 0) {
+        for eachGui in haloGuis {
+            try eachGui.Destroy()
+        }
+        haloGuis := []
     }
 
-    ; Create a new GUI for the halo
-    haloGui := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x20 -DPIScale")
-    haloGui.BackColor := color
+    ; --- Configuration for the new multi-colored, thicker, larger halo ---
+    colors := ["FF0000", "FFBF00", "FFFF00", "80FF00", "00FFFF", "0080FF", "8000FF"] ; Rainbow
+    outermostRadius := 70  ; pixels
+    bandThickness := 5     ; pixels
 
-    outerD := radius * 2              ; diameter of the outer circle
-    offset := thickness               ; shrink for the inner circle
+    currentRadius := outermostRadius
+    for color in colors {
+        ; Create a new GUI for this color band
+        newGui := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x20 -DPIScale")
+        newGui.BackColor := color
+        haloGuis.Push(newGui)
 
-    ; Build ring region (outer ellipse minus inner ellipse)
-    hOuter := DllCall("gdi32\CreateEllipticRgn", "int", 0, "int", 0, "int", outerD, "int", outerD, "ptr")
-    hInner := DllCall("gdi32\CreateEllipticRgn", "int", offset, "int", offset, "int", outerD - offset, "int", outerD -
-        offset, "ptr")
-    RGN_DIFF := 3
-    DllCall("gdi32\CombineRgn", "ptr", hOuter, "ptr", hOuter, "ptr", hInner, "int", RGN_DIFF)
-    DllCall("user32\SetWindowRgn", "ptr", haloGui.Hwnd, "ptr", hOuter, "int", true)
-    DllCall("gdi32\DeleteObject", "ptr", hInner)
+        ; Build ring region for this band
+        outerD := currentRadius * 2
+        offset := bandThickness
+        hOuter := DllCall("gdi32\CreateEllipticRgn", "int", 0, "int", 0, "int", outerD, "int", outerD, "ptr")
+        hInner := DllCall("gdi32\CreateEllipticRgn", "int", offset, "int", offset, "int", outerD - offset, "int",
+            outerD - offset, "ptr")
+        RGN_DIFF := 3
+        DllCall("gdi32\CombineRgn", "ptr", hOuter, "ptr", hOuter, "ptr", hInner, "int", RGN_DIFF)
+        DllCall("user32\SetWindowRgn", "ptr", newGui.Hwnd, "ptr", hOuter, "int", true)
+        DllCall("gdi32\DeleteObject", "ptr", hInner)
 
-    ; Show the GUI at the correct position (top-left offset)
-    haloGui.Show("NA x" (cx - radius) " y" (cy - radius) " w" outerD " h" outerD)
-    WinSetTransparent(alpha, haloGui.Hwnd)
+        ; Show the GUI at the correct position (top-left offset)
+        newGui.Show("NA x" (cx - currentRadius) " y" (cy - currentRadius) " w" outerD " h" outerD)
+        WinSetTransparent(alpha, newGui.Hwnd)
 
-    ; Schedule destruction after the specified duration
-    if destroyTimer {
-        SetTimer(destroyTimer, 0)  ; cancel previous timer if exists
+        currentRadius -= bandThickness ; Shrink radius for the next color band
     }
-    destroyTimer := (*) => (haloGui.Destroy(), haloGui := 0)
+
+    ; Schedule destruction of all halo GUIs after the specified duration
+    if IsObject(destroyTimer) {
+        SetTimer(destroyTimer, 0)  ; cancel previous timer if it exists
+    }
+    destroyTimer := DestroyHalos.Bind(haloGuis)
     SetTimer(destroyTimer, -duration)
+}
+
+DestroyHalos(guisArray) {
+    for eachGui in guisArray {
+        try eachGui.Destroy()
+    }
+    guisArray.Length := 0
 }
