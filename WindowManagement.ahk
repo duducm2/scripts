@@ -39,17 +39,10 @@ SetTimer MonitorActiveWindow, 100  ; Check 10× per second
 ; Move Active Window to Monitor by POSITION (left-to-right order)
 ; Hotkeys: Ctrl+Alt+Shift+A/S/D/F correspond to 1st/2nd/3rd/4th monitors
 ; =============================================================================
-<<<<<<< HEAD
-^!+a:: MoveWinToMonitor(IS_WORK_ENVIRONMENT ? 1 : 1)
-^!+s:: MoveWinToMonitor(IS_WORK_ENVIRONMENT ? 2 : 2)
-^!+d:: MoveWinToMonitor(IS_WORK_ENVIRONMENT ? 3 : 3)
-^!+f:: MoveWinToMonitor(IS_WORK_ENVIRONMENT ? 4 : 4)
-=======
 ^!+a:: MoveWinToOrderedMonitor(1)  ; Left-most
 ^!+s:: MoveWinToOrderedMonitor(2)  ; 2nd from the left
 ^!+d:: MoveWinToOrderedMonitor(3)  ; 3rd from the left
 ^!+f:: MoveWinToOrderedMonitor(4)  ; 4th from the left
->>>>>>> 1db8b1f23ebfed6c7e9db567e5805332d9198dad
 
 MoveWinToOrderedMonitor(order) {
     idx := GetMonitorIndexByOrder(order)
