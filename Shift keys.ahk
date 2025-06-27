@@ -4,6 +4,7 @@
  ********************************************************************/
 
 #Requires AutoHotkey v2.0+
+#Warn  ; turn on helpful warnings
 
 #SingleInstance Force
 
@@ -123,42 +124,64 @@ global PERSONAL_SCRIPTS_PATH := "G:\Meu Drive\12 - Scripts"
     }
 }
 
-global voiceMessageState := false
-; Shift + Y: Send voice message toggle
-+y::
-{
-    global voiceMessageState
-    try
-    {
-        uia := UIA_Browser()
-        Sleep 300 ; Give UIA time to attach
+global isRecording := false          ; persist state between presses
 
-        if (voiceMessageState) {
-            ; We are recording, so find the 'Send' button to stop and send.
-            sendButton := uia.FindElement({ Name: "Send", Type: "Button" })
-            if (sendButton) {
-                sendButton.Click()
-                voiceMessageState := false ; Reset state
-            }
-            else {
-                MsgBox "Could not find the 'Send' button."
-            }
+; ---------- HOTKEY ----------------------------------------------------------
++y::ToggleVoiceMessage()             ; Shift + Y
+
+; ---------------------------------------------------------------------------
+ToggleVoiceMessage() {
+    global isRecording
+
+    try {
+        chrome := UIA_Browser()      ; top-level Chrome UIA element
+        if !IsObject(chrome) {
+            MsgBox "Can't attach to Chrome."
+            return
         }
-        else {
-            ; We are not recording, so find the 'Voice message' button to start.
-            voiceMessageButton := uia.FindElement({ Name: "Voice message", Type: "Button" })
-            if (voiceMessageButton) {
-                voiceMessageButton.Click()
-                voiceMessageState := true ; Update state
-            }
-            else {
-                MsgBox "Could not find the 'Voice message' button."
-            }
+
+        Sleep 400                    ; let Chrome finish drawing
+
+        ; Exact-name regexes (case-insensitive, anchored ^ $)
+        voiceBtn := WaitForButton(chrome, "i)^(Voice message|Record voice message)$")
+        sendBtn  := WaitForButton(chrome, "i)^(Send|Stop recording)$")
+
+        if (isRecording) {           ; ► stop & send
+            if IsObject(sendBtn) {
+                sendBtn.Invoke()
+                isRecording := false
+            } else
+                MsgBox "Couldn't find the Send / Stop button."
+        } else {                     ; ► start recording
+            if IsObject(voiceBtn) {
+                voiceBtn.Invoke()
+                isRecording := true
+            } else
+                MsgBox "Couldn't find the Voice-message button."
         }
+    } catch Error as err {
+        MsgBox "Error:`n" err.Message
     }
-    catch Error as e {
-        MsgBox "An error occurred: " e.Message
+}
+
+; ---------------------------------------------------------------------------
+; WaitForButton(root, pattern, timeout := 5000)
+;   • Searches **all descendant buttons** of `root` until one whose Name
+;     matches `pattern` (regex) is found, or the timeout (ms) elapses.
+;   • Returns the UIA element or 0 if none matched.
+; ---------------------------------------------------------------------------
+WaitForButton(root, pattern, timeout := 5000) {
+    if !IsObject(root)
+        return 0
+    deadline := A_TickCount + timeout
+    while (A_TickCount < deadline) {
+        for btn in root.FindAll({Type: "Button"}) {
+            if RegExMatch(btn.Name, pattern)
+                return btn
+        }
+        Sleep 150
     }
+    return 0
 }
 
 ; Shift + h: Focus the current conversation
