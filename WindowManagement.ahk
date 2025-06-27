@@ -36,54 +36,53 @@ SetTimer MonitorActiveWindow, 100  ; Check 10× per second
 }
 
 ; =============================================================================
-; Move Active Window to Specific Monitor and Maximize
-; Hotkeys: Ctrl+Alt+Shift+A/S/D/F (MEH)
+; Move Active Window to Monitor by POSITION (left-to-right order)
+; Hotkeys: Ctrl+Alt+Shift+A/S/D/F correspond to 1st/2nd/3rd/4th monitors
 ; =============================================================================
-^!+a:: MoveWinToMonitor(IS_WORK_ENVIRONMENT ? 1 : 1)
-^!+s:: MoveWinToMonitor(IS_WORK_ENVIRONMENT ? 4 : 2)
-^!+d:: MoveWinToMonitor(IS_WORK_ENVIRONMENT ? 2 : 4)
-^!+f:: MoveWinToMonitor(IS_WORK_ENVIRONMENT ? 3 : 3)
+^!+a:: MoveWinToOrderedMonitor(1)  ; Left-most
+^!+s:: MoveWinToOrderedMonitor(2)  ; 2nd from the left
+^!+d:: MoveWinToOrderedMonitor(3)  ; 3rd from the left
+^!+f:: MoveWinToOrderedMonitor(4)  ; 4th from the left
 
-MoveWinToMonitor(mon) {
-    ; Validate monitor index
-    if (mon > MonitorGetCount() || mon < 1) {
-        MsgBox "Invalid monitor index: " mon
-        return
+MoveWinToOrderedMonitor(order) {
+    idx := GetMonitorIndexByOrder(order)
+    if (idx)
+        MoveWinToMonitor(idx)
+    else
+        MsgBox "Monitor " order " not available (only " MonitorGetCount() " detected)."
+}
+
+GetMonitorIndexByOrder(order) {
+    count := MonitorGetCount()
+    if (order < 1 || order > count)
+        return 0
+
+    monitors := []
+    loop count {
+        i := A_Index
+        MonitorGet i, &l, &t, &r, &b
+        cx := (l + r) // 2  ; centre-X for ordering
+        cy := (t + b) // 2  ; centre-Y (tie-breaker)
+        monitors.Push({ idx: i, cx: cx, cy: cy })
     }
 
-    hwnd := WinExist("A")
-    if !hwnd {
-        MsgBox "No active window."
-        return
+    ; The .Sort() method is not available in older AHK v2.0-alpha builds.
+    ; Using a manual bubble sort for compatibility.
+    n := monitors.Length
+    loop n - 1 {
+        i := A_Index
+        loop n - i {
+            j := A_Index
+            a := monitors[j]
+            b := monitors[j + 1]
+            if (a.cx > b.cx || (a.cx == b.cx && a.cy > b.cy)) {
+                monitors[j] := b
+                monitors[j + 1] := a
+            }
+        }
     }
 
-    ; Obtain monitor work area
-    MonitorGet mon, &left, &top, &right, &bottom
-
-    ; Ensure window can be moved (restore if maximised/minimised)
-    state := WinGetMinMax(hwnd) ; 1=min,2=max,0=normal
-    if (state != 0) {
-        WinRestore hwnd
-        Sleep 100
-    }
-
-    width := right - left
-    height := bottom - top
-
-    ; First try the native WinMove (returns 1 on success, 0 on failure)
-    ok := 0
-    try ok := WinMove(hwnd, left, top, width, height)
-    catch {
-        ok := 0
-    }
-
-    ; Fallback to MoveWindow API if WinMove fails
-    if !ok {
-        DllCall("MoveWindow", "ptr", hwnd, "int", left, "int", top, "int", width, "int", height, "int", true)
-    }
-
-    ; Finally maximise so Windows treats it as maximised on that monitor
-    WinMaximize hwnd
+    return monitors[order].idx
 }
 
 ; =============================================================================
@@ -247,4 +246,54 @@ DestroyHalos(guisArray) {
         try eachGui.Destroy()
     }
     guisArray.Length := 0
+}
+
+; -----------------------------------------------------------------------------
+; Moves the active window to the specified monitor index and maximises it.
+; Re-added because it was inadvertently removed during refactor.
+; -----------------------------------------------------------------------------
+MoveWinToMonitor(mon) {
+    ; Validate monitor index
+    if (mon > MonitorGetCount() || mon < 1) {
+        MsgBox "Invalid monitor index: " mon
+        return
+    }
+
+    hwnd := WinExist("A")
+    if !hwnd {
+        MsgBox "No active window."
+        return
+    }
+
+    ; Obtain monitor work area
+    MonitorGet mon, &left, &top, &right, &bottom
+
+    ; Ensure window can be moved (restore if maximised/minimised)
+    state := WinGetMinMax(hwnd) ; 1=min,2=max,0=normal
+    if (state != 0) {
+        WinRestore hwnd
+        Sleep 100
+    }
+
+    width := right - left
+    height := bottom - top
+
+    ; First try the native WinMove (returns 1 on success, 0 on failure)
+    ok := 0
+    try ok := WinMove(hwnd, left, top, width, height)
+    catch {
+        ok := 0
+    }
+
+    ; Fallback to MoveWindow API if WinMove fails
+    if !ok {
+        DllCall("MoveWindow", "ptr", hwnd, "int", left, "int", top, "int", width, "int", height, "int", true)
+    }
+
+    ; Finally maximise so Windows treats it as maximised on that monitor
+    WinMaximize hwnd
+
+    ; Move mouse to the center of the window after the move
+    Sleep 151 ; allow window animation to finish
+    MoveMouseToCenter(hwnd)
 }
