@@ -294,6 +294,6 @@ MoveWinToMonitor(mon) {
     WinMaximize hwnd
 
     ; Move mouse to the center of the window after the move
-    Sleep 151 ; allow window animation to finish
+    Sleep 150 ; allow window animation to finish
     MoveMouseToCenter(hwnd)
 }
