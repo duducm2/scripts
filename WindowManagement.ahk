@@ -163,6 +163,12 @@ MonitorActiveWindow() {
     if (A_TickCount - g_LastMouseClickTick < 1000)  ; 1000 ms threshold
         return
 
+    ; --- Exclude specific applications (e.g., Snipping Tool) ---
+    processName := WinGetProcessName("ahk_id " hwnd)
+    if (processName = "ScreenClippingHost.exe" || processName = "SnippingTool.exe") {
+        return
+    }
+
     MoveMouseToCenter(hwnd)
 }
 
