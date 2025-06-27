@@ -124,7 +124,7 @@ global PERSONAL_SCRIPTS_PATH := "G:\Meu Drive\12 - Scripts"
     }
 }
 
-global isRecording := false          ; persist state between presses
+global isRecording := false          ; persists between hotkey presses
 
 ; ---------- HOTKEY ----------------------------------------------------------
 +y::ToggleVoiceMessage()             ; Shift + Y
@@ -143,18 +143,28 @@ ToggleVoiceMessage() {
         Sleep 400                    ; let Chrome finish drawing
 
         ; Exact-name regexes (case-insensitive, anchored ^ $)
-        voiceBtn := WaitForButton(chrome, "i)^(Voice message|Record voice message)$")
-        sendBtn  := WaitForButton(chrome, "i)^(Send|Stop recording)$")
+        voicePattern := "i)^(Voice message|Record voice message)$"
+        sendPattern  := "i)^(Send|Stop recording)$"
 
-        if (isRecording) {           ; ► stop & send
-            if IsObject(sendBtn) {
-                sendBtn.Invoke()
+        ; Helper to grab a button by pattern
+        FindBtn(p) => WaitForButton(chrome, p)
+
+        if (isRecording) {           ; ► we’re supposed to stop & send
+            if (btn := FindBtn(sendPattern)) {
+                btn.Invoke()
                 isRecording := false
-            } else
-                MsgBox "Couldn't find the Send / Stop button."
+            } else {
+                ; Assume you clicked Send manually → reset & start new rec
+                isRecording := false
+                if (btn := FindBtn(voicePattern)) {
+                    btn.Invoke()
+                    isRecording := true
+                } else
+                    MsgBox "Couldn't restart recording (Voice-message button missing)."
+            }
         } else {                     ; ► start recording
-            if IsObject(voiceBtn) {
-                voiceBtn.Invoke()
+            if (btn := FindBtn(voicePattern)) {
+                btn.Invoke()
                 isRecording := true
             } else
                 MsgBox "Couldn't find the Voice-message button."
@@ -166,9 +176,8 @@ ToggleVoiceMessage() {
 
 ; ---------------------------------------------------------------------------
 ; WaitForButton(root, pattern, timeout := 5000)
-;   • Searches **all descendant buttons** of `root` until one whose Name
-;     matches `pattern` (regex) is found, or the timeout (ms) elapses.
-;   • Returns the UIA element or 0 if none matched.
+;   • Searches all descendant buttons of `root` until Name matches `pattern`
+;   • Returns the UIA element or 0 if none matched within `timeout` ms
 ; ---------------------------------------------------------------------------
 WaitForButton(root, pattern, timeout := 5000) {
     if !IsObject(root)
