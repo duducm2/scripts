@@ -142,20 +142,29 @@ CopyLastPrompt() {
 
     lastBtn := copyBtns[copyBtns.Length]   ; the bottom-most one
 
+    isCopied := false
     ; — click it & wait for clipboard —
     try {
         lastBtn.ScrollIntoView()
         Sleep 100
         A_Clipboard := ""                  ; clear first
         lastBtn.Click()
-        if !ClipWait(1)                    ; returns 0 on timeout
+        if !ClipWait(1) {                  ; returns 0 on timeout
             MsgBox "Copy failed – clipboard stayed empty."
+        } else {
+            isCopied := true
+        }
     } catch as e {
         MsgBox "Error clicking copy button:`n" e.Message
     }
 
     ; optional: jump back to previous window
     Send "!{Tab}"
+
+    if (isCopied) {
+        Sleep(300) ; give window time to switch
+        ShowNotification("Last prompt copied!")
+    }
 }
 
 ; =============================================================================
@@ -466,6 +475,8 @@ ToggleDictationSpeak(triedFallback := false, forceAction := "") {
 #!+u::
 {
     SetTitleMatchMode(2)
+    A_Clipboard := "" ; Empty clipboard to check for new content later
+
     if WinExist("chatgpt") {
         WinActivate("chatgpt")
         if WinWaitActive("ahk_exe chrome.exe", , 2)
@@ -478,6 +489,13 @@ ToggleDictationSpeak(triedFallback := false, forceAction := "") {
     }
     Sleep 300
     Send("^+;")
+
+    Send("!{Tab}") ; Switch back to the previous window
+    Sleep(300) ; Wait for the window switch
+
+    if ClipWait(1) {
+        ShowNotification("Last code block copied!")
+    }
 }
 
 ; =============================================================================
@@ -486,4 +504,39 @@ ToggleDictationSpeak(triedFallback := false, forceAction := "") {
 CenterMouse() {
     Sleep(200)
     Send("#!+q")
+}
+
+; =============================================================================
+; Helper function to show a notification on the active window
+; =============================================================================
+ShowNotification(message, durationMs := 2000, bgColor := "FFFF00", fontColor := "000000", fontSize := 24) {
+    notificationGui := Gui()
+    notificationGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
+    notificationGui.BackColor := bgColor
+    notificationGui.SetFont("s" . fontSize . " c" . fontColor . " Bold", "Segoe UI")
+    notificationGui.Add("Text", "w400 Center", message)
+
+    ; To center on the whole screen if no window is active
+    activeWin := WinGetID("A")
+    if (activeWin) {
+        WinGetPos(&winX, &winY, &winW, &winH, activeWin)
+    } else {
+        workArea := SysGet.MonitorWorkArea(SysGet.MonitorPrimary)
+        winX := workArea.Left, winY := workArea.Top, winW := workArea.Right - workArea.Left, winH := workArea.Bottom -
+            workArea.Top
+    }
+
+    notificationGui.Show("AutoSize Hide")
+    guiW := 0, guiH := 0
+    notificationGui.GetPos(, , &guiW, &guiH)
+
+    guiX := winX + (winW - guiW) / 2
+    guiY := winY + (winH - guiH) / 2
+    notificationGui.Show("x" . Round(guiX) . " y" . Round(guiY) . " NA")
+    WinSetTransparent(220, notificationGui)
+
+    Sleep(durationMs)
+    if IsObject(notificationGui) && notificationGui.Hwnd {
+        notificationGui.Destroy()
+    }
 }
