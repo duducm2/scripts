@@ -4,7 +4,6 @@
  ********************************************************************/
 
 #Requires AutoHotkey v2.0+
-#Warn  ; turn on helpful warnings
 
 #SingleInstance Force
 
@@ -127,7 +126,7 @@ global PERSONAL_SCRIPTS_PATH := "G:\Meu Drive\12 - Scripts"
 global isRecording := false          ; persists between hotkey presses
 
 ; ---------- HOTKEY ----------------------------------------------------------
-+y::ToggleVoiceMessage()             ; Shift + Y
++y:: ToggleVoiceMessage()             ; Shift + Y
 
 ; ---------------------------------------------------------------------------
 ToggleVoiceMessage() {
@@ -144,7 +143,7 @@ ToggleVoiceMessage() {
 
         ; Exact-name regexes (case-insensitive, anchored ^ $)
         voicePattern := "i)^(Voice message|Record voice message)$"
-        sendPattern  := "i)^(Send|Stop recording)$"
+        sendPattern := "i)^(Send|Stop recording)$"
 
         ; Helper to grab a button by pattern
         FindBtn(p) => WaitForButton(chrome, p)
@@ -184,7 +183,7 @@ WaitForButton(root, pattern, timeout := 5000) {
         return 0
     deadline := A_TickCount + timeout
     while (A_TickCount < deadline) {
-        for btn in root.FindAll({Type: "Button"}) {
+        for btn in root.FindAll({ Type: "Button" }) {
             if RegExMatch(btn.Name, pattern)
                 return btn
         }
