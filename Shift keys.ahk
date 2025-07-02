@@ -357,6 +357,26 @@ WaitForButton(root, pattern, timeout := 5000) {
 ; Shift + H: Copy last code block
 +I:: Send("?")
 
+; Shift + O : Full screen (Alt → Z R → F)
++O::
+{
+    Send "{Alt}"
+    Sleep 100
+    Send "zr"
+    Sleep 100
+    Send "f"
+}
+
+; Shift + P : Normal mode (Alt → Z R → A)
++P::
+{
+    Send "{Alt}"
+    Sleep 100
+    Send "zr"
+    Sleep 100
+    Send "a"
+}
+
 #HotIf
 
 ;-------------------------------------------------------------------

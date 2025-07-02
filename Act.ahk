@@ -165,6 +165,8 @@
 ;     Shift + Y: Send to general
 ;     Shift + U: Send to newsletter
 ;     Shift + I: ?
+;     Shift + O: Ful screen
+;     Shift + P: Normal mode
 ; ----- ChatGPT --------------
 ;     Shift + Y: Select all and cut
 ;     Shift + U: Change model

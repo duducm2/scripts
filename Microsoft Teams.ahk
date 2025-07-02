@@ -71,7 +71,7 @@ IsTeamsMeetingTitle(title) {
         return false
     if InStr(title, "Microsoft Teams meeting")
         return true
-    return RegExMatch(title, "i)^.*\| Microsoft Teams$")
+    return RegExMatch(title, "i)^.*\| Microsoft Teams.*$")
 }
 
 IsTeamsChatTitle(title) {
@@ -229,7 +229,7 @@ RunTeams() {
     Send "^g"
     Sleep 100
     SendText(contact)
-    Sleep 1000
+    Sleep 1300
     Send "{Enter}"
     Sleep 300
     Send "^r"
