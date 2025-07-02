@@ -377,6 +377,30 @@ WaitForButton(root, pattern, timeout := 5000) {
     Send "a"
 }
 
+; Shift + H : Move focus to the message body
++H::
+{
+    ; First try a UI Automation lookup
+    try {
+        win := WinExist("A")
+        root := UIA.ElementFromHandle(win)                    ; UIA-v2 library
+        ; Look for the first editable document area
+        body := root.FindFirst({ ControlType: "Document" })   ; type 50030
+        if !body
+            body := root.FindFirst({ ControlType: "Edit", IsReadOnly: 0 })
+        if body {
+            body.SetFocus()
+            return
+        }
+    } catch Error {
+        ; fall through to the key-based method
+    }
+    ; Fallback: pressing F6 twice usually lands in the body
+    Send "{F6}"
+    Sleep 100
+    Send "{F6}"
+}
+
 #HotIf
 
 ;-------------------------------------------------------------------

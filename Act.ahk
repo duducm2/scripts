@@ -167,6 +167,7 @@
 ;     Shift + I: ?
 ;     Shift + O: Ful screen
 ;     Shift + P: Normal mode
+;     Shift + H: Go to message
 ; ----- ChatGPT --------------
 ;     Shift + Y: Select all and cut
 ;     Shift + U: Change model
