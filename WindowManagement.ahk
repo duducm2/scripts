@@ -437,8 +437,9 @@ CycleWindowsOnMonitor(order) {
     }
     ; Wait until the window is active to avoid race conditions during rapid cycling
     WinWaitActive "ahk_id " target.hwnd, , 0.3
+    ; The MonitorActiveWindow timer will centre the cursor automatically, so avoid
+    ; calling it here to prevent duplicate halo flashes.
     Sleep 100  ; small delay for animation/focus stability
-    MoveMouseToCenter(target.hwnd)
 }
 
 GetVisibleWindowsOnMonitor(mon) {
