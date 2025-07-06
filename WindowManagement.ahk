@@ -397,10 +397,23 @@ CycleWindowsOnMonitor(order) {
             g_WindowCycleIndices.Delete(idx)
     }
 
-    ; Determine starting position for this monitor (after potential reset)
-    pos := g_WindowCycleIndices.Has(idx) ? g_WindowCycleIndices.Get(idx) + 1 : 1
+    ; Determine starting position: 1 past the currently-active window (if it belongs to this
+    ; monitor) or the very first window otherwise.  This avoids stale indices and always bases
+    ; cycling on the window that the user is actually looking at.
+    activeIdx := 0
+    loop windows.Length {
+        if (windows[A_Index].hwnd = hwndCur) {
+            activeIdx := A_Index
+            break
+        }
+    }
+
+    pos := activeIdx ? activeIdx + 1 : 1
     if (pos > windows.Length)
         pos := 1
+
+    ; Remember the new position for subsequent cycles (only if we stayed on the same monitor).
+    g_WindowCycleIndices.Set(idx, pos)
 
     ; Ensure we don't stay on the same window if hotkey is pressed rapidly.
     startPos := pos
@@ -416,8 +429,6 @@ CycleWindowsOnMonitor(order) {
         if (pos = startPos)
             break
     }
-
-    g_WindowCycleIndices.Set(idx, pos)
 
     target := windows[pos]
     try WinActivate "ahk_id " target.hwnd
@@ -495,29 +506,17 @@ GetVisibleWindowsOnMonitor(mon) {
         }
     }
 
-    ; Manual bubble-sort: first by top (row), then by left (column).
+    ; Re-order purely by Z-order (topmost window first). Manual sort since Array.Sort
+    ; is not available in AHK v2.
     n := result.Length
     loop n - 1 {
         i := A_Index
         loop n - i {
             j := A_Index
-            a := result[j]
-            b := result[j + 1]
-            needSwap := false
-            if (a.top > b.top + TOL) {
-                needSwap := true
-            } else if (Abs(a.top - b.top) <= TOL) {
-                if (a.left > b.left) {
-                    needSwap := true
-                } else if (a.left = b.left) {
-                    ; Same position – fall back to Z-order (prefer topmost window first).
-                    if (a.z < b.z)
-                        needSwap := true
-                }
-            }
-            if (needSwap) {
-                result[j] := b
-                result[j + 1] := a
+            if (result[j].z < result[j + 1].z) {
+                temp := result[j]
+                result[j] := result[j + 1]
+                result[j + 1] := temp
             }
         }
     }
