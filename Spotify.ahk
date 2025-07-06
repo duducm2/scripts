@@ -175,14 +175,25 @@ GoToSpotifyLibrary() {
 *Volume_Down:: {
     if GetKeyState("Ctrl", "P") {
         ; Ctrl held: adjust Spotify volume
-        ActivateSpotify()
+        spotify := ActivateSpotify()
         if WinWaitActive("ahk_exe Spotify.exe", , 2) {
             Send("^{Down}")
         }
+        ; Re-minimize if the window was originally minimized
+        if IsObject(spotify) && spotify.wasMinimized {
+            hwnd := spotify.hwnd
+            ; One-shot timer after 2 seconds; capture hwnd by value
+            SetTimer((id := hwnd) => WinMinimize("ahk_id " id), -2000)
+        }
     } else if GetKeyState("Alt", "P") {
         ; Alt held: adjust YouTube volume
-        if FocusYouTube() {
+        yt := FocusYouTube()
+        if IsObject(yt) {
             Send("{Down}")
+            if yt.wasMinimized {
+                hwnd := yt.hwnd
+                SetTimer((id := hwnd) => WinMinimize("ahk_id " id), -2000)
+            }
         } else {
             Send("{Volume_Down}")
         }
@@ -194,13 +205,22 @@ GoToSpotifyLibrary() {
 
 *Volume_Up:: {
     if GetKeyState("Ctrl", "P") {
-        ActivateSpotify()
+        spotify := ActivateSpotify()
         if WinWaitActive("ahk_exe Spotify.exe", , 2) {
             Send("^{Up}")
         }
+        if IsObject(spotify) && spotify.wasMinimized {
+            hwnd := spotify.hwnd
+            SetTimer((id := hwnd) => WinMinimize("ahk_id " id), -2000)
+        }
     } else if GetKeyState("Alt", "P") {
-        if FocusYouTube() {
+        yt := FocusYouTube()
+        if IsObject(yt) {
             Send("{Up}")
+            if yt.wasMinimized {
+                hwnd := yt.hwnd
+                SetTimer((id := hwnd) => WinMinimize("ahk_id " id), -2000)
+            }
         } else {
             Send("{Volume_Up}")
         }
@@ -209,24 +229,34 @@ GoToSpotifyLibrary() {
     }
 }
 
+ActivateSpotify() {
+    ; Activate Spotify and return information about its previous state
+    winTitle := "ahk_exe Spotify.exe"
+    hwnd := WinExist(winTitle)
+    wasMinimized := hwnd && (WinGetMinMax(hwnd) == -1) ; -1 = minimized
+
+    ; Bring the window to the foreground (restores if it was minimized)
+    WinActivate(winTitle)
+
+    ; Return a small object so callers can inspect state if desired
+    return { hwnd: hwnd, wasMinimized: wasMinimized }
+}
+
+; =============================================================================
+; Updated FocusYouTube to also return hwnd & minimized flag
+; =============================================================================
 FocusYouTube() {
-    ; Tries to find a Chrome window with YouTube in the title
     winList := WinGetList("ahk_exe chrome.exe")
     for win in winList {
         title := WinGetTitle(win)
         if InStr(title, "YouTube") {
+            wasMinimized := (WinGetMinMax(win) == -1) ; check state before activation
             WinActivate(win)
             WinWaitActive(win, , 2)
-            return true
+            return { hwnd: win, wasMinimized: wasMinimized }
         }
     }
-    return false
-}
-
-ActivateSpotify() {
-    ; You can customize this part if you want it to launch Spotify if not open
-    ; For now, just tries to activate it
-    WinActivate("ahk_exe Spotify.exe")
+    return false ; not found
 }
 
 ; =============================================================================
