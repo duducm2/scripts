@@ -392,8 +392,19 @@ GetVisibleWindowsOnMonitor(mon) {
         right := NumGet(rect, 8, "int")
         bottom := NumGet(rect, 12, "int")
 
-        ; Check intersection with monitor bounds
-        if (right <= ml || left >= mr || bottom <= mt || top >= mb)
+        ; Use window centre point to decide which monitor it belongs to
+        centerX := (left + right) // 2
+        centerY := (top + bottom) // 2
+        if (centerX < ml || centerX > mr || centerY < mt || centerY > mb)
+            continue
+
+        ; Exclude desktop/worker windows or those without title
+        class := WinGetClass(hwnd)
+        if (class = "Progman" || class = "WorkerW")
+            continue
+
+        title := WinGetTitle(hwnd)
+        if (title = "")
             continue
 
         result.Push({ hwnd: hwnd, left: left, top: top })
