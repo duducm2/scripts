@@ -343,7 +343,10 @@ CycleWindowsOnMonitor(order) {
 
     windows := GetVisibleWindowsOnMonitor(idx)
     if (windows.Length = 0) {
-        MsgBox "No visible windows on monitor " order "."
+        ; Nothing to cycle on this monitor – re-centre cursor on current active window
+        hwndCur := WinExist("A")
+        if (hwndCur)
+            MoveMouseToCenter(hwndCur)
         return
     }
 
