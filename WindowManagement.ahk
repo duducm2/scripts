@@ -218,9 +218,20 @@ ShowCursorHalo(cx, cy, duration := 500, alpha := 200) {
     }
 
     ; --- Configuration for the new multi-colored, thicker, larger halo ---
-    colors := ["0072B2", "E69F00", "009E73", "D55E00", "CC79A7", "56B4E9", "F0E442"]
-    outermostRadius := 70  ; pixels
-    bandThickness := 5     ; pixels
+    ; Use a single, high-contrast colour that remains visible for most forms of colour-blindness
+    ; and avoids multi-colour symbolism.
+    colors := [
+        "FFFFFF",  ; white
+        "000000",  ; black
+        "FFB000",  ; vivid orange–yellow
+        "FFFF00",  ; bright yellow
+        "3772FF",  ; strong blue
+        "DF2935",  ; magenta-red
+        "248A3D"   ; bold green
+    ]
+    ; Increased size for better visibility across multiple monitors
+    outermostRadius := 140  ; pixels (was 70)
+    bandThickness := 10     ; pixels (was 5)
 
     currentRadius := outermostRadius
     for color in colors {
