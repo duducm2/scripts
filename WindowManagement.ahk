@@ -205,8 +205,8 @@ MoveMouseToCenter(hwnd) {
     ; Move the mouse cursor to the calculated centre point
     DllCall("SetCursorPos", "int", centerX, "int", centerY)
 
-    ; Show a halo highlight around the cursor
-    ShowCursorHalo(centerX, centerY)
+    ; Show a halo highlight around the cursor (shorter 250 ms for faster cycling)
+    ShowCursorHalo(centerX, centerY, 40)
 }
 
 ; ---------------------------------------------------------------------------
@@ -351,9 +351,27 @@ CycleWindowsOnMonitor(order) {
         return
     }
 
+    ; Determine starting position for this monitor
     pos := g_WindowCycleIndices.Has(idx) ? g_WindowCycleIndices.Get(idx) + 1 : 1
     if (pos > windows.Length)
         pos := 1
+
+    ; Ensure we don't stay on the same window if hotkey is pressed rapidly.
+    hwndCur := WinExist("A")
+    startPos := pos
+    loop windows.Length {
+        target := windows[pos]
+        if (target.hwnd != hwndCur)  ; found the next different window
+            break
+        ; Otherwise advance to next and wrap
+        pos++
+        if (pos > windows.Length)
+            pos := 1
+        ; If we've come full circle, all windows are the same – just break
+        if (pos = startPos)
+            break
+    }
+
     g_WindowCycleIndices.Set(idx, pos)
 
     target := windows[pos]
@@ -361,7 +379,9 @@ CycleWindowsOnMonitor(order) {
     catch {
         return
     }
-    Sleep 150  ; allow activation animation
+    ; Wait until the window is active to avoid race conditions during rapid cycling
+    WinWaitActive "ahk_id " target.hwnd, , 0.3
+    Sleep 100  ; small delay for animation/focus stability
     MoveMouseToCenter(target.hwnd)
 }
 
