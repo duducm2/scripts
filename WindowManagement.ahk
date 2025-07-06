@@ -385,43 +385,48 @@ GetVisibleWindowsOnMonitor(mon) {
     TOL := 40  ; tolerance for considering two rows the same when sorting
 
     for hwnd in hwnds {
-        ; Skip minimised windows (-1). Keep normal (0) and maximised (+1).
-        if (WinGetMinMax(hwnd) = -1)
-            continue
+        try {
+            ; Skip minimised windows (-1). Keep normal (0) and maximised (+1).
+            if (WinGetMinMax(hwnd) = -1)
+                continue
 
-        ; Skip invisible windows
-        if !DllCall("IsWindowVisible", "ptr", hwnd)
-            continue
+            ; Skip invisible windows
+            if !DllCall("IsWindowVisible", "ptr", hwnd)
+                continue
 
-        ; Skip toolwindows (notification icons, etc.)
-        exStyle := DllCall("GetWindowLongPtr", "ptr", hwnd, "int", GWL_EXSTYLE, "ptr")
-        if (exStyle & WS_EX_TOOLWINDOW)
-            continue
+            ; Skip toolwindows (notification icons, etc.)
+            exStyle := DllCall("GetWindowLongPtr", "ptr", hwnd, "int", GWL_EXSTYLE, "ptr")
+            if (exStyle & WS_EX_TOOLWINDOW)
+                continue
 
-        ; Verify window belongs to the target monitor according to Windows.
-        hMon := DllCall("MonitorFromWindow", "ptr", hwnd, "uint", 2, "ptr") ; nearest monitor
-        if (hMon != hTarget)
-            continue
+            ; Verify window belongs to the target monitor according to Windows.
+            hMon := DllCall("MonitorFromWindow", "ptr", hwnd, "uint", 2, "ptr") ; nearest monitor
+            if (hMon != hTarget)
+                continue
 
-        ; Exclude desktop/worker windows or those without title
-        class := WinGetClass(hwnd)
-        if (class = "Progman" || class = "WorkerW")
-            continue
+            ; Exclude desktop/worker windows or those without title
+            class := WinGetClass(hwnd)
+            if (class = "Progman" || class = "WorkerW")
+                continue
 
-        title := WinGetTitle(hwnd)
-        if (title = "")
-            continue
+            title := WinGetTitle(hwnd)
+            if (title = "")
+                continue
 
-        ; Cache position for sorting
-        rect := Buffer(16, 0)
-        if DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect) {
-            left := NumGet(rect, 0, "int")
-            top := NumGet(rect, 4, "int")
-        } else {
-            left := 0, top := 0
+            ; Cache position for sorting
+            rect := Buffer(16, 0)
+            if DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect) {
+                left := NumGet(rect, 0, "int")
+                top := NumGet(rect, 4, "int")
+            } else {
+                left := 0, top := 0
+            }
+
+            result.Push({ hwnd: hwnd, left: left, top: top })
+        } catch {
+            ; Ignore any errors for this window and continue enumerating.
+            continue
         }
-
-        result.Push({ hwnd: hwnd, left: left, top: top })
     }
 
     ; Manual bubble-sort: first by top (row), then by left (column).
