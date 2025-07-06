@@ -164,7 +164,15 @@ MonitorActiveWindow() {
         return
 
     ; --- Exclude specific applications (e.g., Snipping Tool) ---
-    processName := WinGetProcessName("ahk_id " hwnd)
+    ; Attempt to retrieve the process name; some system-level or UWP windows may
+    ; deny access, which would normally raise an exception and stop the script.
+    ; By catching the error we keep the timer running and simply ignore that
+    ; particular window.
+    try {
+        processName := WinGetProcessName("ahk_id " hwnd)
+    } catch {
+        return  ; Could not retrieve process name (e.g., access denied)
+    }
     if (processName = "ScreenClippingHost.exe" || processName = "SnippingTool.exe") {
         return
     }
