@@ -11,6 +11,7 @@
 ; --- Globals & Timers --------------------------------------------------------
 global g_LastActiveHwnd := 0
 global g_LastMouseClickTick := 0   ; Timestamp of the most recent mouse click (A_TickCount)
+global g_WindowCycleIndices := Map()  ; Keeps per-monitor cycling position
 SetTimer MonitorActiveWindow, 100  ; Check 10× per second
 
 ; --- Hotkeys & Functions -----------------------------------------------------
@@ -43,6 +44,11 @@ SetTimer MonitorActiveWindow, 100  ; Check 10× per second
 ^!+s:: MoveWinToOrderedMonitor(2)  ; 2nd from the left
 ^!+d:: MoveWinToOrderedMonitor(3)  ; 3rd from the left
 ^!+f:: MoveWinToOrderedMonitor(4)  ; 4th from the left
+
+^!+q:: CycleWindowsOnMonitor(1)  ; Cycle windows on monitor 1
+^!+w:: CycleWindowsOnMonitor(2)  ; Cycle windows on monitor 2
+^!+e:: CycleWindowsOnMonitor(3)  ; Cycle windows on monitor 3
+^!+r:: CycleWindowsOnMonitor(4)  ; Cycle windows on monitor 4
 
 MoveWinToOrderedMonitor(order) {
     idx := GetMonitorIndexByOrder(order)
@@ -321,4 +327,91 @@ MoveWinToMonitor(mon) {
     ; Move mouse to the center of the window after the move
     Sleep 150 ; allow window animation to finish
     MoveMouseToCenter(hwnd)
+}
+
+; =============================================================================
+; Cycle through visible windows on a monitor (top-to-bottom rows, left-to-right)
+; Hotkeys: Ctrl+Alt+Shift+Q/W/E/R map to monitors 1-4 (left-to-right order)
+; =============================================================================
+CycleWindowsOnMonitor(order) {
+    global g_WindowCycleIndices
+    idx := GetMonitorIndexByOrder(order)
+    if (!idx) {
+        MsgBox "Monitor " order " not available (only " MonitorGetCount() " detected)."
+        return
+    }
+
+    windows := GetVisibleWindowsOnMonitor(idx)
+    if (windows.Length = 0) {
+        MsgBox "No visible windows on monitor " order "."
+        return
+    }
+
+    pos := g_WindowCycleIndices.Has(idx) ? g_WindowCycleIndices.Get(idx) + 1 : 1
+    if (pos > windows.Length)
+        pos := 1
+    g_WindowCycleIndices.Set(idx, pos)
+
+    target := windows[pos]
+    try WinActivate "ahk_id " target.hwnd
+    catch {
+        return
+    }
+    Sleep 150  ; allow activation animation
+    MoveMouseToCenter(target.hwnd)
+}
+
+GetVisibleWindowsOnMonitor(mon) {
+    MonitorGet mon, &ml, &mt, &mr, &mb
+    result := []
+    hwnds := WinGetList()
+
+    GWL_EXSTYLE := -20
+    WS_EX_TOOLWINDOW := 0x00000080
+    TOL := 40  ; tolerance for considering two rows the same
+
+    for hwnd in hwnds {
+        ; Skip minimised windows
+        if (WinGetMinMax(hwnd) = 1)
+            continue
+
+        ; Skip invisible windows
+        if !DllCall("IsWindowVisible", "ptr", hwnd)
+            continue
+
+        exStyle := DllCall("GetWindowLongPtr", "ptr", hwnd, "int", GWL_EXSTYLE, "ptr")
+        if (exStyle & WS_EX_TOOLWINDOW)
+            continue
+
+        rect := Buffer(16, 0)
+        if !DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)
+            continue
+
+        left := NumGet(rect, 0, "int")
+        top := NumGet(rect, 4, "int")
+        right := NumGet(rect, 8, "int")
+        bottom := NumGet(rect, 12, "int")
+
+        ; Check intersection with monitor bounds
+        if (right <= ml || left >= mr || bottom <= mt || top >= mb)
+            continue
+
+        result.Push({ hwnd: hwnd, left: left, top: top })
+    }
+
+    ; Manual bubble-sort: first by top (row), then by left (column)
+    n := result.Length
+    loop n - 1 {
+        i := A_Index
+        loop n - i {
+            j := A_Index
+            a := result[j]
+            b := result[j + 1]
+            if ((a.top > b.top + TOL) || (Abs(a.top - b.top) <= TOL && a.left > b.left)) {
+                result[j] := b
+                result[j + 1] := a
+            }
+        }
+    }
+    return result
 }
