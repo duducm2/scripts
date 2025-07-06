@@ -405,6 +405,7 @@ GetVisibleWindowsOnMonitor(mon) {
     TOL := 40  ; tolerance for considering two rows the same when sorting
 
     for hwnd in hwnds {
+        zIdx := A_Index  ; preserves original Z-order (lower = bottom, higher = top)
         try {
             ; Skip minimised windows (-1). Keep normal (0) and maximised (+1).
             if (WinGetMinMax(hwnd) = -1)
@@ -442,7 +443,7 @@ GetVisibleWindowsOnMonitor(mon) {
                 left := 0, top := 0
             }
 
-            result.Push({ hwnd: hwnd, left: left, top: top })
+            result.Push({ hwnd: hwnd, left: left, top: top, z: zIdx })
         } catch {
             ; Ignore any errors for this window and continue enumerating.
             continue
@@ -457,7 +458,19 @@ GetVisibleWindowsOnMonitor(mon) {
             j := A_Index
             a := result[j]
             b := result[j + 1]
-            if ((a.top > b.top + TOL) || (Abs(a.top - b.top) <= TOL && a.left > b.left)) {
+            needSwap := false
+            if (a.top > b.top + TOL) {
+                needSwap := true
+            } else if (Abs(a.top - b.top) <= TOL) {
+                if (a.left > b.left) {
+                    needSwap := true
+                } else if (a.left = b.left) {
+                    ; Same position – fall back to Z-order (prefer topmost window first).
+                    if (a.z < b.z)
+                        needSwap := true
+                }
+            }
+            if (needSwap) {
                 result[j] := b
                 result[j + 1] := a
             }
