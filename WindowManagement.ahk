@@ -351,13 +351,29 @@ CycleWindowsOnMonitor(order) {
         return
     }
 
-    ; Determine starting position for this monitor
+    ; If the currently active window is on a **different** monitor, reset the cycle
+    ; so we start from the topmost visible window instead of cycling to the next.
+    hwndCur := WinExist("A")
+    hMonCur := DllCall("MonitorFromWindow", "ptr", hwndCur, "uint", 2, "ptr") ; nearest monitor
+
+    ; Get handle for the target monitor.
+    MonitorGet idx, &l, &t, &r, &b
+    cx := (l + r) // 2, cy := (t + b) // 2
+    point64 := (cy & 0xFFFFFFFF) << 32 | (cx & 0xFFFFFFFF)
+    hMonTarget := DllCall("MonitorFromPoint", "int64", point64, "uint", 2, "ptr")
+
+    if (hMonCur != hMonTarget) {
+        ; Coming from another monitor – reset cycle index to 0 so first pick is topmost
+        if (g_WindowCycleIndices.Has(idx))
+            g_WindowCycleIndices.Delete(idx)
+    }
+
+    ; Determine starting position for this monitor (after potential reset)
     pos := g_WindowCycleIndices.Has(idx) ? g_WindowCycleIndices.Get(idx) + 1 : 1
     if (pos > windows.Length)
         pos := 1
 
     ; Ensure we don't stay on the same window if hotkey is pressed rapidly.
-    hwndCur := WinExist("A")
     startPos := pos
     loop windows.Length {
         target := windows[pos]
