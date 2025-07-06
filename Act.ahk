@@ -1,3 +1,6 @@
+; Act.ahk - Comprehensive AutoHotkey Script for Keyboard Automation and Application Management
+; This script provides multi-layer keyboard shortcuts, application launchers, and automation for various software including Teams, Outlook, ChatGPT, Spotify, and more.
+
 ;---------------------------------------- Github ----------------------------------------------------
 ; https://github.com/duducm2/zmk-sofle/blob/main/keymap-drawer/eyelash_sofle.svg
 ;---------------------------------------- Layer 0 + Keys ----------------------------------
