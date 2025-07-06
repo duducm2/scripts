@@ -206,7 +206,7 @@ MoveMouseToCenter(hwnd) {
     DllCall("SetCursorPos", "int", centerX, "int", centerY)
 
     ; Show a halo highlight around the cursor (shorter 250 ms for faster cycling)
-    ShowCursorHalo(centerX, centerY, 40)
+    ShowCursorHalo(centerX, centerY, 30)
 }
 
 ; ---------------------------------------------------------------------------
@@ -421,7 +421,7 @@ GetVisibleWindowsOnMonitor(mon) {
     TOL := 40  ; tolerance for considering two rows the same when sorting
 
     for hwnd in hwnds {
-        zIdx := A_Index  ; preserves original Z-order (lower = bottom, higher = top)
+        zIdx := hwnds.Length - A_Index  ; 0 = bottom-most, bigger = nearer the top
         try {
             ; Skip minimised windows (-1). Keep normal (0) and maximised (+1).
             if (WinGetMinMax(hwnd) = -1)
