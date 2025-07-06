@@ -187,6 +187,13 @@ MonitorActiveWindow() {
 }
 
 MoveMouseToCenter(hwnd) {
+    static lastCenterTick := 0, lastCenterHwnd := 0
+    ; Avoid showing two halos for the same window in rapid succession.
+    if (hwnd = lastCenterHwnd && A_TickCount - lastCenterTick < 500)
+        return
+    lastCenterHwnd := hwnd
+    lastCenterTick := A_TickCount
+
     if !hwnd
         return
 
@@ -206,7 +213,7 @@ MoveMouseToCenter(hwnd) {
     DllCall("SetCursorPos", "int", centerX, "int", centerY)
 
     ; Show a halo highlight around the cursor (shorter 250 ms for faster cycling)
-    ShowCursorHalo(centerX, centerY, 30)
+    ShowCursorHalo(centerX, centerY, 15)
 }
 
 ; ---------------------------------------------------------------------------
@@ -214,7 +221,13 @@ MoveMouseToCenter(hwnd) {
 ; The halo lasts 500 ms, radius 40 px, thickness 8 px, semi-transparent.
 ; ---------------------------------------------------------------------------
 ShowCursorHalo(cx, cy, duration := 500, alpha := 200) {
-    static haloGuis := [], destroyTimer := 0
+    static haloGuis := [], destroyTimer := 0, lastHaloTick := 0
+    ; Prevent duplicate halos in quick succession (e.g. when multiple functions
+    ; call MoveMouseToCenter for the same activation). Skip if a halo was shown
+    ; less than 300 ms ago.
+    if (A_TickCount - lastHaloTick < 300)
+        return
+    lastHaloTick := A_TickCount
 
     ; Clean up any previous halos that might still be displayed
     if (haloGuis.Length > 0) {
@@ -225,20 +238,32 @@ ShowCursorHalo(cx, cy, duration := 500, alpha := 200) {
     }
 
     ; --- Configuration for the new multi-colored, thicker, larger halo ---
-    ; Use a single, high-contrast colour that remains visible for most forms of colour-blindness
-    ; and avoids multi-colour symbolism.
+    ; Use a broad, high-contrast palette that remains visible for most forms of colour-blindness.
     colors := [
         "FFFFFF",  ; white
         "000000",  ; black
+        "E69F00",  ; orange
+        "56B4E9",  ; sky blue
+        "009E73",  ; bluish green
+        "F0E442",  ; yellow
+        "0072B2",  ; blue
+        "D55E00",  ; vermillion
+        "CC79A7",  ; reddish purple
         "FFB000",  ; vivid orange–yellow
-        "FFFF00",  ; bright yellow
         "3772FF",  ; strong blue
         "DF2935",  ; magenta-red
-        "248A3D"   ; bold green
+        "248A3D",  ; bold green
+        "E74C3C",  ; bright red
+        "8E44AD",  ; purple
+        "3498DB",  ; turquoise
+        "2ECC71",  ; emerald
+        "F1C40F",  ; sunshine yellow
+        "95A5A6",  ; neutral gray
+        "34495E"   ; navy charcoal
     ]
-    ; Increased size for better visibility across multiple monitors
-    outermostRadius := 140  ; pixels (was 70)
-    bandThickness := 10     ; pixels (was 5)
+    ; Adjust ring sizing to fit the expanded colour list
+    bandThickness := 8             ; pixels (smaller to accommodate more rings)
+    outermostRadius := bandThickness * colors.Length  ; dynamically sized halo
 
     currentRadius := outermostRadius
     for color in colors {
@@ -259,8 +284,12 @@ ShowCursorHalo(cx, cy, duration := 500, alpha := 200) {
         DllCall("gdi32\DeleteObject", "ptr", hInner)
 
         ; Show the GUI at the correct position (top-left offset)
-        newGui.Show("NA x" (cx - currentRadius) " y" (cy - currentRadius) " w" outerD " h" outerD)
-        WinSetTransparent(alpha, newGui.Hwnd)
+        try {
+            newGui.Show("NA x" (cx - currentRadius) " y" (cy - currentRadius) " w" outerD " h" outerD)
+            WinSetTransparent(alpha, newGui.Hwnd)
+        } catch {
+            ; Ignore errors such as "Gui has no window" to keep the script running smoothly.
+        }
 
         currentRadius -= bandThickness ; Shrink radius for the next color band
     }
