@@ -182,8 +182,8 @@ GoToSpotifyLibrary() {
         ; Re-minimize if the window was originally minimized
         if IsObject(spotify) && spotify.wasMinimized {
             hwnd := spotify.hwnd
-            ; One-shot timer after 2 seconds; capture hwnd by value
-            SetTimer((id := hwnd) => WinMinimize("ahk_id " id), -2000)
+            ; One-shot timer after 3.5 seconds; capture hwnd by value
+            SetTimer((id := hwnd) => WinMinimize("ahk_id " id), -3500)
         }
     } else if GetKeyState("Alt", "P") {
         ; Alt held: adjust YouTube volume
@@ -192,7 +192,7 @@ GoToSpotifyLibrary() {
             Send("{Down}")
             if yt.wasMinimized {
                 hwnd := yt.hwnd
-                SetTimer((id := hwnd) => WinMinimize("ahk_id " id), -2000)
+                SetTimer((id := hwnd) => WinMinimize("ahk_id " id), -3500)
             }
         } else {
             Send("{Volume_Down}")
@@ -211,7 +211,7 @@ GoToSpotifyLibrary() {
         }
         if IsObject(spotify) && spotify.wasMinimized {
             hwnd := spotify.hwnd
-            SetTimer((id := hwnd) => WinMinimize("ahk_id " id), -2000)
+            SetTimer((id := hwnd) => WinMinimize("ahk_id " id), -3500)
         }
     } else if GetKeyState("Alt", "P") {
         yt := FocusYouTube()
@@ -219,7 +219,7 @@ GoToSpotifyLibrary() {
             Send("{Up}")
             if yt.wasMinimized {
                 hwnd := yt.hwnd
-                SetTimer((id := hwnd) => WinMinimize("ahk_id " id), -2000)
+                SetTimer((id := hwnd) => WinMinimize("ahk_id " id), -3500)
             }
         } else {
             Send("{Volume_Up}")
