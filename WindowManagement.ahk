@@ -72,8 +72,8 @@ GetMonitorIndexByOrder(order) {
         monitors.Push({ idx: i, cx: cx, cy: cy })
     }
 
-    ; The .Sort() method is not available in older AHK v2.0-alpha builds.
-    ; Using a manual bubble sort for compatibility.
+    ; Simple left-to-right ordering (with small vertical offset tolerance)
+    ; This is what the user expects for the MEH hotkeys.
     n := monitors.Length
     loop n - 1 {
         i := A_Index
@@ -202,6 +202,7 @@ MoveMouseToCenter(hwnd) {
     centerX := left + (right - left) // 2
     centerY := top + (bottom - top) // 2
 
+    ; Move the mouse cursor to the calculated centre point
     DllCall("SetCursorPos", "int", centerX, "int", centerY)
 
     ; Show a halo highlight around the cursor
@@ -365,40 +366,41 @@ CycleWindowsOnMonitor(order) {
 }
 
 GetVisibleWindowsOnMonitor(mon) {
+    ; Determine the monitor handle for the requested monitor index.
+    ; We take a point near the centre of that monitor and ask Windows which
+    ; monitor it belongs to.  This avoids any guessing about geometry and
+    ; matches the result returned by MonitorFromWindow used below.
     MonitorGet mon, &ml, &mt, &mr, &mb
+    cx := (ml + mr) // 2
+    cy := (mt + mb) // 2
+    ; POINT structure is passed **by value**, so combine X and Y into an int64.
+    point64 := (cy & 0xFFFFFFFF) << 32 | (cx & 0xFFFFFFFF)
+    hTarget := DllCall("MonitorFromPoint", "int64", point64, "uint", 2, "ptr") ; MONITOR_DEFAULTTONEAREST
+
     result := []
     hwnds := WinGetList()
 
     GWL_EXSTYLE := -20
     WS_EX_TOOLWINDOW := 0x00000080
-    TOL := 40  ; tolerance for considering two rows the same
+    TOL := 40  ; tolerance for considering two rows the same when sorting
 
     for hwnd in hwnds {
-        ; Skip minimised windows
-        if (WinGetMinMax(hwnd) = 1)
+        ; Skip minimised windows (-1). Keep normal (0) and maximised (+1).
+        if (WinGetMinMax(hwnd) = -1)
             continue
 
         ; Skip invisible windows
         if !DllCall("IsWindowVisible", "ptr", hwnd)
             continue
 
+        ; Skip toolwindows (notification icons, etc.)
         exStyle := DllCall("GetWindowLongPtr", "ptr", hwnd, "int", GWL_EXSTYLE, "ptr")
         if (exStyle & WS_EX_TOOLWINDOW)
             continue
 
-        rect := Buffer(16, 0)
-        if !DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)
-            continue
-
-        left := NumGet(rect, 0, "int")
-        top := NumGet(rect, 4, "int")
-        right := NumGet(rect, 8, "int")
-        bottom := NumGet(rect, 12, "int")
-
-        ; Use window centre point to decide which monitor it belongs to
-        centerX := (left + right) // 2
-        centerY := (top + bottom) // 2
-        if (centerX < ml || centerX > mr || centerY < mt || centerY > mb)
+        ; Verify window belongs to the target monitor according to Windows.
+        hMon := DllCall("MonitorFromWindow", "ptr", hwnd, "uint", 2, "ptr") ; nearest monitor
+        if (hMon != hTarget)
             continue
 
         ; Exclude desktop/worker windows or those without title
@@ -410,10 +412,19 @@ GetVisibleWindowsOnMonitor(mon) {
         if (title = "")
             continue
 
+        ; Cache position for sorting
+        rect := Buffer(16, 0)
+        if DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect) {
+            left := NumGet(rect, 0, "int")
+            top := NumGet(rect, 4, "int")
+        } else {
+            left := 0, top := 0
+        }
+
         result.Push({ hwnd: hwnd, left: left, top: top })
     }
 
-    ; Manual bubble-sort: first by top (row), then by left (column)
+    ; Manual bubble-sort: first by top (row), then by left (column).
     n := result.Length
     loop n - 1 {
         i := A_Index
