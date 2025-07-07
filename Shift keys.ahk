@@ -25,6 +25,14 @@ global WORK_SCRIPTS_PATH := "C:\Users\fie7ca\Documents\01 - Scripts"
 global PERSONAL_SCRIPTS_PATH := "G:\Meu Drive\12 - Scripts"
 ; global IS_WORK_ENVIRONMENT   := true    ; set to false on personal rig // This will now be loaded from env.ahk
 
+; ---------------------------------------------------------------------------
+; ShowErr(msgOrErr)  – uniform MsgBox for any thrown value
+; ---------------------------------------------------------------------------
+ShowErr(err) {
+    text := (Type(err) = "Error") ? err.Message : err
+    MsgBox("Error:`n" text, "Error", "Iconx")
+}
+
 ;-------------------------------------------------------------------
 ; OneNote Shortcuts
 ;-------------------------------------------------------------------
@@ -420,28 +428,29 @@ WaitForList(root, pattern := "", timeout := 5000) {
     Send "{F6}"
 }
 
-; Global variable to track which button to click next
-global nextOutlookButton := "Other"
++J:: {                                  ; toggle Focused / Other
+    static nextOutlookButton := "Other"
 
-; Shift + J : Toggle between "Other" and "Focused" buttons
-+J::
-{
     try {
-        win := WinExist("A")
+        win  := WinExist("A")
         root := UIA.ElementFromHandle(win)
-        
-        ; Find the button to click based on the toggle state
-        targetButton := root.FindFirst({ Name: nextOutlookButton, Type: "Button" })
-        
-        if (targetButton) {
-            targetButton.Click()
-            ; Toggle for next time
-            nextOutlookButton := (nextOutlookButton = "Other") ? "Focused" : "Other"
+
+        btn := root.FindFirst({
+                 Name: nextOutlookButton
+               , Type: "Button"
+        })
+
+        if btn {
+            btn.Click()
+            nextOutlookButton := (nextOutlookButton = "Other")
+                                ? "Focused" : "Other"
         } else {
-            MsgBox "Could not find the '" nextOutlookButton "' button."
+            MsgBox("Couldn't find ‘" nextOutlookButton "’.",
+                   "Button not found", "Iconx")
         }
-    } catch Error as e {
-        MsgBox "An error occurred while toggling buttons: " e.Message
+
+    } catch Error as err {              ; ← **only this form**
+        ShowErr(err)
     }
 }
 
