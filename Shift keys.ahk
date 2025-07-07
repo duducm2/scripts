@@ -252,9 +252,80 @@ WaitForList(root, pattern := "", timeout := 5000) {
 #HotIf
 
 ;-------------------------------------------------------------------
-; Microsoft Teams Shortcuts
+; Microsoft Teams Helper functions
 ;-------------------------------------------------------------------
-#HotIf WinActive("ahk_exe ms-teams.exe")
+IsTeamsMeetingTitle(title) {
+    if InStr(title, "Chat |") || InStr(title, "Sharing control bar |")
+        return false
+    if InStr(title, "Microsoft Teams meeting")
+        return true
+    return RegExMatch(title, "i)^.*\| Microsoft Teams.*$")
+}
+
+IsTeamsChatTitle(title) {
+    if InStr(title, "Sharing control bar |") || InStr(title, "Microsoft Teams meeting")
+        return false
+    return InStr(title, "Chat |") && RegExMatch(title, "i)\| Microsoft Teams$")
+}
+
+; -------------------------------------------------------------------
+; Helper predicates to detect which Teams window is active
+; -------------------------------------------------------------------
+IsTeamsMeetingActive() {
+    return IsTeamsMeetingTitle(WinGetTitle("A"))
+}
+IsTeamsChatActive() {
+    return IsTeamsChatTitle(WinGetTitle("A"))
+}
+
+; -------------------------------------------------------------------
+; Microsoft Teams Shortcuts – MEETING WINDOW
+; -------------------------------------------------------------------
+#HotIf IsTeamsMeetingActive()
+
+; Shift + Y : Open Chat pane
++Y:: {
+    try {
+        win  := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+
+        btn := root.FindFirst({AutomationId: "chat-button"})
+        if !btn
+            btn := root.FindFirst({Name: "Chat", ControlType: "Button"})
+
+        if btn
+            btn.Click()
+        else
+            MsgBox("Couldn't find the Chat button.", "Control not found", "Iconx")
+    }
+    catch as e {
+        MsgBox("UIA error:`n" e.Message, "Error", "Iconx")
+    }
+}
+
+; Shift + U : Maximize meeting window
++U:: {
+    try {
+        win  := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+
+        btn := root.FindFirst({Name: "Maximize meeting window", ControlType: "Button"})
+        if btn
+            btn.Click()
+        else
+            MsgBox("Couldn't find the Maximize button.", "Control not found", "Iconx")
+    }
+    catch as e {
+        MsgBox("UIA error:`n" e.Message, "Error", "Iconx")
+    }
+}
+
+#HotIf
+
+;-------------------------------------------------------------------
+; Microsoft Teams Shortcuts (chat)
+;-------------------------------------------------------------------
+#HotIf IsTeamsChatActive()
 
 ; Shift + K : Pin
 +K::

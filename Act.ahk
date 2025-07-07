@@ -135,7 +135,7 @@
 ;     Shift + Y : Toggle devices
 ;     Shift + U : Select devices areas
 ;     Shift + I : Full screen
-; ----- Microsoft Teams -----
+; ----- Microsoft Teams (chat) -----
 ;     Shift + J : Mark as unread
 ;     Shift + Y : Like
 ;     Shift + U : Heart
@@ -145,6 +145,9 @@
 ;     Shift + R : Reply Message
 ;     Shift + L : Remove pin
 ;     Shift + K : Pin
+; ----- Microsoft Teams (meeting) -----
+;     Shift + Y : Open chat
+;     Shift + U : Maximize
 ; ----- Onenote -------------
 ;     Shift + D : Delete
 ;     Shift + Y : Onenote: select line and children
