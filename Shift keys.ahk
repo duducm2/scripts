@@ -719,25 +719,51 @@ IsEditorActive() {
     }
 }
 
-; Shift + I : Toggle full screen
-+i::
+; Shift + U : Toggle full screen
++u::
 {
-    try {
-        spot := UIA_Browser("ahk_exe Spotify.exe")
-        Sleep 300
-        fsPattern := "i)^(Enter Full screen|Exit full screen)$"
-        if (btn := WaitForButton(spot, fsPattern)) {
-            btn.Invoke()
-        } else {
-            ; Fallback: try "Minimize Now Playing view" button
-            minimizePattern := "i)^Minimize Now Playing view$"
-            if (btn := WaitForButton(spot, minimizePattern))
-                btn.Invoke()
-            else
-                MsgBox "Couldn't find the Full-screen toggle button."
+    retryCount := 0
+    maxRetries := 1
+
+    while (retryCount <= maxRetries) {
+        try {
+            spot := UIA_Browser("ahk_exe Spotify.exe")
+            Sleep 300
+
+            ; Check if any RadioButton elements are visible (indicates full screen mode)
+            inFullScreen := false
+            try {
+                radioButtons := spot.FindAll({ Type: "RadioButton" })
+                if (radioButtons.Length > 0) {
+                    inFullScreen := true
+                }
+            } catch {
+                ; No radio buttons found, not in full screen
+            }
+
+            if (inFullScreen) {
+                ; We're in full screen, exit with ESC twice
+                Send "{Esc}"
+                Sleep 100
+                Send "{Esc}"
+            } else {
+                ; Not in full screen, look for Enter Full screen button
+                enterFsPattern := "i)^Enter Full screen$"
+                if (btn := WaitForButton(spot, enterFsPattern, 1000)) {
+                    btn.Invoke()
+                } else {
+                    MsgBox "Couldn't find the Enter Full screen button."
+                }
+            }
+            return ; Success, exit the retry loop
+        } catch Error as e {
+            retryCount++
+            if (retryCount > maxRetries) {
+                MsgBox "Error after retry: " e.Message
+            } else {
+                Sleep 500 ; Wait before retry
+            }
         }
-    } catch Error as e {
-        MsgBox "Error: " e.Message
     }
 }
 
