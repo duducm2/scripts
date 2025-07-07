@@ -192,6 +192,25 @@ WaitForButton(root, pattern, timeout := 5000) {
     return 0
 }
 
+; ---------------------------------------------------------------------------
+; WaitForList(root, pattern := "", timeout := 5000)
+;   • Searches descendant List controls; Name must match `pattern` if provided
+;   • Returns the UIA element or 0 after `timeout` ms
+; ---------------------------------------------------------------------------
+WaitForList(root, pattern := "", timeout := 5000) {
+    if !IsObject(root)
+        return 0
+    deadline := A_TickCount + timeout
+    while (A_TickCount < deadline) {
+        for lst in root.FindAll({ Type: "List" }) {
+            if (!pattern || RegExMatch(lst.Name, pattern))
+                return lst
+        }
+        Sleep 150
+    }
+    return 0
+}
+
 ; Shift + h: Focus the current conversation
 +h::
 {
@@ -652,6 +671,74 @@ IsEditorActive() {
 {
     Send "^k"
     Send "s"
+}
+
+#HotIf
+
+;-------------------------------------------------------------------
+; Spotify Shortcuts
+;-------------------------------------------------------------------ww
+#HotIf WinActive("ahk_exe Spotify.exe")
+
+; Shift + Y : Toggle Connect panel and select device
++y::
+{
+    try {
+        spot := UIA_Browser("ahk_exe Spotify.exe")
+        Sleep 300
+
+        ; Check if panel is open by looking for "This computer" button
+        thisComputerPattern := "i)^This computer$"
+        thisComputerBtn := WaitForButton(spot, thisComputerPattern, 1000)
+
+        if (thisComputerBtn) {
+            ; Panel is open, close it by clicking Connect button
+            connectPattern := "i)^(Connect to a device|Conectar a um dispositivo|Connect)$"
+            if (connectBtn := WaitForButton(spot, connectPattern))
+                connectBtn.Invoke()
+            else
+                MsgBox "Couldn't find the Connect button to close panel."
+        } else {
+            ; Panel is closed, open it and select "This computer"
+            connectPattern := "i)^(Connect to a device|Conectar a um dispositivo|Connect)$"
+            if (connectBtn := WaitForButton(spot, connectPattern)) {
+                connectBtn.Invoke()
+                Sleep 500  ; Wait for panel to open
+
+                ; Now select "This computer"
+                if (thisComputerBtn := WaitForButton(spot, thisComputerPattern))
+                    thisComputerBtn.SetFocus()
+                else
+                    MsgBox "Panel opened but couldn't find 'This computer' button."
+            } else {
+                MsgBox "Couldn't find the Connect-to-device button."
+            }
+        }
+    } catch Error as e {
+        MsgBox "Error: " e.Message
+    }
+}
+
+; Shift + I : Toggle full screen
++i::
+{
+    try {
+        spot := UIA_Browser("ahk_exe Spotify.exe")
+        Sleep 300
+        fsPattern := "i)^(Enter Full screen|Exit full screen)$"
+        if (btn := WaitForButton(spot, fsPattern)) {
+            btn.Invoke()
+        } else {
+            ; Fallback: try "Minimize Now Playing view" button
+            minimizePattern := "i)^Minimize Now Playing view$"
+            if (btn := WaitForButton(spot, minimizePattern))
+                btn.Invoke()
+            else
+                MsgBox "Couldn't find the Full-screen toggle button."
+        }
+    } catch Error as e {
+        MsgBox "Error: " e.Message
+    }
 }
 
 #HotIf
