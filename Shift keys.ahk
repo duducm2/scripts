@@ -420,6 +420,31 @@ WaitForList(root, pattern := "", timeout := 5000) {
     Send "{F6}"
 }
 
+; Global variable to track which button to click next
+global nextOutlookButton := "Other"
+
+; Shift + J : Toggle between "Other" and "Focused" buttons
++J::
+{
+    try {
+        win := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+        
+        ; Find the button to click based on the toggle state
+        targetButton := root.FindFirst({ Name: nextOutlookButton, Type: "Button" })
+        
+        if (targetButton) {
+            targetButton.Click()
+            ; Toggle for next time
+            nextOutlookButton := (nextOutlookButton = "Other") ? "Focused" : "Other"
+        } else {
+            MsgBox "Could not find the '" nextOutlookButton "' button."
+        }
+    } catch Error as e {
+        MsgBox "An error occurred while toggling buttons: " e.Message
+    }
+}
+
 #HotIf
 
 ;-------------------------------------------------------------------
