@@ -388,9 +388,9 @@ WaitForList(root, pattern := "", timeout := 5000) {
 +O::
 {
     Send "{Alt}"
-    Sleep 100
+    Sleep 200
     Send "zr"
-    Sleep 100
+    Sleep 200
     Send "f"
 }
 
@@ -398,14 +398,14 @@ WaitForList(root, pattern := "", timeout := 5000) {
 +P::
 {
     Send "{Alt}"
-    Sleep 100
+    Sleep 200
     Send "zr"
-    Sleep 100
+    Sleep 200
     Send "a"
 }
 
 ; Shift + H : Move focus to the message body
-+H::
++L::
 {
     ; First try a UI Automation lookup
     try {
@@ -428,7 +428,7 @@ WaitForList(root, pattern := "", timeout := 5000) {
     Send "{F6}"
 }
 
-+J:: {                                  ; toggle Focused / Other
++N:: {                                  ; toggle Focused / Other
     static nextOutlookButton := "Other"
 
     try {
@@ -452,6 +452,54 @@ WaitForList(root, pattern := "", timeout := 5000) {
     } catch Error as err {              ; ← **only this form**
         ShowErr(err)
     }
+}
+
+; -------------------------------------------------------------------
+; Focus helpers – reuse for any field you need
+; -------------------------------------------------------------------
+FocusOutlookField(criteria) {
+    try {
+        win  := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+        ctrl := root.FindFirst(criteria)
+        if ctrl {
+            ctrl.SetFocus()
+            return true
+        }
+    } catch Error {
+    }
+    return false
+}
+
+; -------------------------------------------------------------------
+; New shortcuts
+;   Shift + J  → Title field
+;   Shift + K  → Required (To…) field
+;   Shift + L  → Date Picker button
+; -------------------------------------------------------------------
+
++H:: {                                    ; go to Title
+    if FocusOutlookField({AutomationId: "4100"})
+        return
+    if FocusOutlookField({Name: "Title", ControlType: "Edit"})
+        return
+    MsgBox "Couldn't find the Title field.", "Control not found", "Iconx"
+}
+
++J:: {                                    ; go to Required
+    if FocusOutlookField({AutomationId: "4109"})
+        return
+    if FocusOutlookField({Name: "Required", ControlType: "Edit"})
+        return
+    MsgBox "Couldn't find the Required field.", "Control not found", "Iconx"
+}
+
++K:: {                                    ; go to Date Picker
+    if FocusOutlookField({AutomationId: "4352"})
+        return
+    if FocusOutlookField({Name: "Date Picker", ControlType: "Button"})
+        return
+    MsgBox "Couldn't find the Date Picker.", "Control not found", "Iconx"
 }
 
 #HotIf

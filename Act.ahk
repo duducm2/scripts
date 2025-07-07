@@ -174,7 +174,11 @@
 ;     Shift + I: ?
 ;     Shift + O: Ful screen
 ;     Shift + P: Normal mode
-;     Shift + H: Go to message
+;     Shift + H: Go to title
+;     Shift + J: Go required people
+;     Shift + K: Go date
+;     Shift + L: Go to message
+;     Shift + N: Toggle between current and other tabs
 ; ----- ChatGPT --------------
 ;     Shift + Y: Select all and cut
 ;     Shift + U: Change model
