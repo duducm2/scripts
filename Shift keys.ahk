@@ -30,7 +30,7 @@ global PERSONAL_SCRIPTS_PATH := "G:\Meu Drive\12 - Scripts"
 ; ---------------------------------------------------------------------------
 ShowErr(err) {
     text := (Type(err) = "Error") ? err.Message : err
-    MsgBox("Error:`n" text, "Error", "Iconx")
+    MsgBox("Error:`n" text, "Error", "IconX")
 }
 
 ;-------------------------------------------------------------------
@@ -283,11 +283,11 @@ WaitForList(root, pattern := "", timeout := 5000) {
             ; firstItem.Click()
         }
         else {
-            MsgBox("Could not find the first reminder item.", "Reminder Selection", "Iconx")
+            MsgBox("Could not find the first reminder item.", "Reminder Selection", "IconX")
         }
     }
     catch Error as e {
-        MsgBox("UIA error:`n" e.Message, "Outlook Reminder Error", "Iconx")
+        MsgBox("UIA error:`n" e.Message, "Outlook Reminder Error", "IconX")
     }
 }
 
@@ -295,7 +295,7 @@ WaitForList(root, pattern := "", timeout := 5000) {
 +U::
 {
     ; Show confirmation dialog
-    result := MsgBox("Are you sure you want to snooze this reminder for 1 hour?", "Snooze Reminder", "YesNo Icon?")
+    result := MsgBox("Are you sure you want to snooze this reminder for 1 hour?", "Snooze Reminder", "YesNo IconQuestion")
     
     if (result = "Yes") {
         try {
@@ -334,15 +334,15 @@ WaitForList(root, pattern := "", timeout := 5000) {
             }
             else {
                 if !textField {
-                    MsgBox("Could not find the snooze time text field.", "Snooze Error", "Iconx")
+                    MsgBox("Could not find the snooze time text field.", "Snooze Error", "IconX")
                 }
                 if !snoozeButton {
-                    MsgBox("Could not find the Snooze button.", "Snooze Error", "Iconx")
+                    MsgBox("Could not find the Snooze button.", "Snooze Error", "IconX")
                 }
             }
         }
         catch Error as e {
-            MsgBox("UIA error:`n" e.Message, "Outlook Reminder Error", "Iconx")
+            MsgBox("UIA error:`n" e.Message, "Outlook Reminder Error", "IconX")
         }
     }
 }
@@ -351,7 +351,7 @@ WaitForList(root, pattern := "", timeout := 5000) {
 +I::
 {
     ; Show confirmation dialog
-    result := MsgBox("Are you sure you want to snooze this reminder for 4 hours?", "Snooze Reminder", "YesNo Icon?")
+    result := MsgBox("Are you sure you want to snooze this reminder for 4 hours?", "Snooze Reminder", "YesNo IconQuestion")
     
     if (result = "Yes") {
         try {
@@ -390,15 +390,15 @@ WaitForList(root, pattern := "", timeout := 5000) {
             }
             else {
                 if !textField {
-                    MsgBox("Could not find the snooze time text field.", "Snooze Error", "Iconx")
+                    MsgBox("Could not find the snooze time text field.", "Snooze Error", "IconX")
                 }
                 if !snoozeButton {
-                    MsgBox("Could not find the Snooze button.", "Snooze Error", "Iconx")
+                    MsgBox("Could not find the Snooze button.", "Snooze Error", "IconX")
                 }
             }
         }
         catch Error as e {
-            MsgBox("UIA error:`n" e.Message, "Outlook Reminder Error", "Iconx")
+            MsgBox("UIA error:`n" e.Message, "Outlook Reminder Error", "IconX")
         }
     }
 }
@@ -407,7 +407,7 @@ WaitForList(root, pattern := "", timeout := 5000) {
 +O::
 {
     ; Show confirmation dialog
-    result := MsgBox("Are you sure you want to snooze this reminder for 1 day?", "Snooze Reminder", "YesNo Icon?")
+    result := MsgBox("Are you sure you want to snooze this reminder for 1 day?", "Snooze Reminder", "YesNo IconQuestion")
     
     if (result = "Yes") {
         try {
@@ -446,15 +446,15 @@ WaitForList(root, pattern := "", timeout := 5000) {
             }
             else {
                 if !textField {
-                    MsgBox("Could not find the snooze time text field.", "Snooze Error", "Iconx")
+                    MsgBox("Could not find the snooze time text field.", "Snooze Error", "IconX")
                 }
                 if !snoozeButton {
-                    MsgBox("Could not find the Snooze button.", "Snooze Error", "Iconx")
+                    MsgBox("Could not find the Snooze button.", "Snooze Error", "IconX")
                 }
             }
         }
         catch Error as e {
-            MsgBox("UIA error:`n" e.Message, "Outlook Reminder Error", "Iconx")
+            MsgBox("UIA error:`n" e.Message, "Outlook Reminder Error", "IconX")
         }
     }
 }
@@ -506,10 +506,10 @@ IsTeamsChatActive() {
         if btn
             btn.Click()
         else
-            MsgBox("Couldn't find the Chat button.", "Control not found", "Iconx")
+            MsgBox("Couldn't find the Chat button.", "Control not found", "IconX")
     }
     catch as e {
-        MsgBox("UIA error:`n" e.Message, "Error", "Iconx")
+        MsgBox("UIA error:`n" e.Message, "Error", "IconX")
     }
 }
 
@@ -523,10 +523,10 @@ IsTeamsChatActive() {
         if btn
             btn.Click()
         else
-            MsgBox("Couldn't find the Maximize button.", "Control not found", "Iconx")
+            MsgBox("Couldn't find the Maximize button.", "Control not found", "IconX")
     }
     catch as e {
-        MsgBox("UIA error:`n" e.Message, "Error", "Iconx")
+        MsgBox("UIA error:`n" e.Message, "Error", "IconX")
     }
 }
 
@@ -727,7 +727,7 @@ IsTeamsChatActive() {
                                 ? "Focused" : "Other"
         } else {
             MsgBox("Couldn't find ‘" nextOutlookButton "’.",
-                   "Button not found", "Iconx")
+                   "Button not found", "IconX")
         }
 
     } catch Error as err {              ; ← **only this form**
@@ -764,7 +764,7 @@ FocusOutlookField(criteria) {
         return
     if FocusOutlookField({Name: "Title", ControlType: "Edit"})
         return
-    MsgBox "Couldn't find the Title field.", "Control not found", "Iconx"
+    MsgBox "Couldn't find the Title field.", "Control not found", "IconX"
 }
 
 +J:: {                                    ; go to Required
@@ -772,7 +772,7 @@ FocusOutlookField(criteria) {
         return
     if FocusOutlookField({Name: "Required", ControlType: "Edit"})
         return
-    MsgBox "Couldn't find the Required field.", "Control not found", "Iconx"
+    MsgBox "Couldn't find the Required field.", "Control not found", "IconX"
 }
 
 +K:: {                                    ; go to Date Picker
@@ -780,7 +780,7 @@ FocusOutlookField(criteria) {
         return
     if FocusOutlookField({Name: "Date Picker", ControlType: "Button"})
         return
-    MsgBox "Couldn't find the Date Picker.", "Control not found", "Iconx"
+    MsgBox "Couldn't find the Date Picker.", "Control not found", "IconX"
 }
 
 #HotIf
