@@ -291,169 +291,130 @@ WaitForList(root, pattern := "", timeout := 5000) {
     }
 }
 
+;--------------------------------------------------------
 ; Shift + U : Snooze for 1 hour
+;--------------------------------------------------------
 +U::
 {
-    ; Show confirmation dialog
-    result := MsgBox("Are you sure you want to snooze this reminder for 1 hour?", "Snooze Reminder", "YesNo IconQuestion")
-    
+    result := MsgBox(
+        "Are you sure you want to snooze this reminder for 1 hour?",
+        "Snooze Reminder",
+        "YesNo Icon?"
+    )
+
     if (result = "Yes") {
         try {
-            win := WinExist("A")
+            win  := WinExist("A")
             root := UIA.ElementFromHandle(win)
-            
-            ; Find the text field for snooze time
+
             textField := root.FindFirst({Name: "Click Snooze to be reminded in:", Type: "50004"})
-            
-            ; Fallback: try finding by ControlType
-            if !textField {
+            if !textField
                 textField := root.FindFirst({ControlType: "Edit"})
-            }
-            
-            ; Find the Snooze button
+
             snoozeButton := root.FindFirst({AutomationId: "8334", ControlType: "Button"})
-            
-            ; Fallback: try finding by Name
-            if !snoozeButton {
+            if !snoozeButton
                 snoozeButton := root.FindFirst({Name: "Snooze", ControlType: "Button"})
-            }
-            
-            ; Fallback: try finding by Type
-            if !snoozeButton {
+            if !snoozeButton
                 snoozeButton := root.FindFirst({Name: "Snooze", Type: "50000"})
-            }
-            
+
             if textField && snoozeButton {
-                ; Clear the text field and type the new duration
                 textField.SetFocus()
                 textField.SetValue("")
                 textField.SetValue("1 hour")
-                
-                ; Click the Snooze button
                 snoozeButton.Click()
-            }
-            else {
-                if !textField {
+            } else {
+                if !textField
                     MsgBox("Could not find the snooze time text field.", "Snooze Error", "IconX")
-                }
-                if !snoozeButton {
+                if !snoozeButton
                     MsgBox("Could not find the Snooze button.", "Snooze Error", "IconX")
-                }
             }
-        }
-        catch Error as e {
+        } catch Error as e {
             MsgBox("UIA error:`n" e.Message, "Outlook Reminder Error", "IconX")
         }
     }
 }
 
+;--------------------------------------------------------
 ; Shift + I : Snooze for 4 hours
+;--------------------------------------------------------
 +I::
 {
-    ; Show confirmation dialog
-    result := MsgBox("Are you sure you want to snooze this reminder for 4 hours?", "Snooze Reminder", "YesNo IconQuestion")
-    
+    result := MsgBox(
+        "Are you sure you want to snooze this reminder for 4 hours?",
+        "Snooze Reminder",
+        "YesNo Icon?"
+    )
+
     if (result = "Yes") {
         try {
-            win := WinExist("A")
+            win  := WinExist("A")
             root := UIA.ElementFromHandle(win)
-            
-            ; Find the text field for snooze time
+
             textField := root.FindFirst({Name: "Click Snooze to be reminded in:", Type: "50004"})
-            
-            ; Fallback: try finding by ControlType
-            if !textField {
+            if !textField
                 textField := root.FindFirst({ControlType: "Edit"})
-            }
-            
-            ; Find the Snooze button
+
             snoozeButton := root.FindFirst({AutomationId: "8334", ControlType: "Button"})
-            
-            ; Fallback: try finding by Name
-            if !snoozeButton {
+            if !snoozeButton
                 snoozeButton := root.FindFirst({Name: "Snooze", ControlType: "Button"})
-            }
-            
-            ; Fallback: try finding by Type
-            if !snoozeButton {
+            if !snoozeButton
                 snoozeButton := root.FindFirst({Name: "Snooze", Type: "50000"})
-            }
-            
+
             if textField && snoozeButton {
-                ; Clear the text field and type the new duration
                 textField.SetFocus()
                 textField.SetValue("")
                 textField.SetValue("4 hours")
-                
-                ; Click the Snooze button
                 snoozeButton.Click()
-            }
-            else {
-                if !textField {
+            } else {
+                if !textField
                     MsgBox("Could not find the snooze time text field.", "Snooze Error", "IconX")
-                }
-                if !snoozeButton {
+                if !snoozeButton
                     MsgBox("Could not find the Snooze button.", "Snooze Error", "IconX")
-                }
             }
-        }
-        catch Error as e {
+        } catch Error as e {
             MsgBox("UIA error:`n" e.Message, "Outlook Reminder Error", "IconX")
         }
     }
 }
 
+;--------------------------------------------------------
 ; Shift + O : Snooze for 1 day
+;--------------------------------------------------------
 +O::
 {
-    ; Show confirmation dialog
-    result := MsgBox("Are you sure you want to snooze this reminder for 1 day?", "Snooze Reminder", "YesNo IconQuestion")
-    
+    result := MsgBox(
+        "Are you sure you want to snooze this reminder for 1 day?",
+        "Snooze Reminder",
+        "YesNo Icon?"
+    )
+
     if (result = "Yes") {
         try {
-            win := WinExist("A")
+            win  := WinExist("A")
             root := UIA.ElementFromHandle(win)
-            
-            ; Find the text field for snooze time
+
             textField := root.FindFirst({Name: "Click Snooze to be reminded in:", Type: "50004"})
-            
-            ; Fallback: try finding by ControlType
-            if !textField {
+            if !textField
                 textField := root.FindFirst({ControlType: "Edit"})
-            }
-            
-            ; Find the Snooze button
+
             snoozeButton := root.FindFirst({AutomationId: "8334", ControlType: "Button"})
-            
-            ; Fallback: try finding by Name
-            if !snoozeButton {
+            if !snoozeButton
                 snoozeButton := root.FindFirst({Name: "Snooze", ControlType: "Button"})
-            }
-            
-            ; Fallback: try finding by Type
-            if !snoozeButton {
+            if !snoozeButton
                 snoozeButton := root.FindFirst({Name: "Snooze", Type: "50000"})
-            }
-            
+
             if textField && snoozeButton {
-                ; Clear the text field and type the new duration
                 textField.SetFocus()
                 textField.SetValue("")
                 textField.SetValue("1 day")
-                
-                ; Click the Snooze button
                 snoozeButton.Click()
-            }
-            else {
-                if !textField {
+            } else {
+                if !textField
                     MsgBox("Could not find the snooze time text field.", "Snooze Error", "IconX")
-                }
-                if !snoozeButton {
+                if !snoozeButton
                     MsgBox("Could not find the Snooze button.", "Snooze Error", "IconX")
-                }
             }
-        }
-        catch Error as e {
+        } catch Error as e {
             MsgBox("UIA error:`n" e.Message, "Outlook Reminder Error", "IconX")
         }
     }

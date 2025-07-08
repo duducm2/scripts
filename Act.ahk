@@ -182,6 +182,11 @@
 ;     Shift + K: Go date
 ;     Shift + L: Go to message
 ;     Shift + N: Toggle between current and other tabs
+; ----- Outlook Reminder window --------------
+;     Shift + Y: Select the first list item
+;     Shift + U: Snooze for 1 hour
+;     Shift + I: Snooze for 4 hours
+;     Shift + O: Snooze for 1 day
 ; ----- ChatGPT --------------
 ;     Shift + Y: Select all and cut
 ;     Shift + U: Change model
