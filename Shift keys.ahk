@@ -606,21 +606,32 @@ FocusOutlookField(criteria) {
 ;   Shift + L  → Date Picker button
 ; -------------------------------------------------------------------
 
-+H:: {                                    ; go to Title
++H:: {                                    ; go to Title or Subject
     if FocusOutlookField({AutomationId: "4100"})
         return
     if FocusOutlookField({Name: "Title", ControlType: "Edit"})
         return
-    MsgBox "Couldn't find the Title field.", "Control not found", "IconX"
+    ; fallback to Subject
+    if FocusOutlookField({AutomationId: "4101"})
+        return
+    if FocusOutlookField({Name: "Subject", ControlType: "Edit"})
+        return
+    MsgBox "Couldn't find the Title or Subject field.", "Control not found", "IconX"
 }
 
-+J:: {                                    ; go to Required
++J:: {                                    ; go to Required or To
     if FocusOutlookField({AutomationId: "4109"})
         return
     if FocusOutlookField({Name: "Required", ControlType: "Edit"})
         return
-    MsgBox "Couldn't find the Required field.", "Control not found", "IconX"
+    ; fallback to To
+    if FocusOutlookField({AutomationId: "4117"})
+        return
+    if FocusOutlookField({Name: "To", ControlType: "Edit"})
+        return
+    MsgBox "Couldn't find the Required or To field.", "Control not found", "IconX"
 }
+
 
 +K:: {                                    ; go to Date Picker
     if FocusOutlookField({AutomationId: "4352"})
