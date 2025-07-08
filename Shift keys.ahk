@@ -252,6 +252,48 @@ WaitForList(root, pattern := "", timeout := 5000) {
 #HotIf
 
 ;-------------------------------------------------------------------
+; Outlook Reminder Window Shortcuts
+;-------------------------------------------------------------------
+#HotIf WinActive("ahk_exe OUTLOOK.EXE") && RegExMatch(WinGetTitle("A"), "i)\d+\s+Reminder\(s\)")
+
+; Shift + Y : Select first reminder list item
++Y::
+{
+    try {
+        win := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+        
+        ; Find the first list item in the reminder window
+        ; Looking for ListItem type (50007) with AutomationId pattern "ListViewItem-0"
+        firstItem := root.FindFirst({AutomationId: "ListViewItem-0", ControlType: "ListItem"})
+        
+        ; Fallback: if specific AutomationId doesn't work, find first ListItem
+        if !firstItem {
+            firstItem := root.FindFirst({ControlType: "ListItem"})
+        }
+        
+        ; Fallback: try finding by type number if ControlType doesn't work
+        if !firstItem {
+            firstItem := root.FindFirst({Type: "50007"})
+        }
+        
+        if firstItem {
+            firstItem.Select()
+            ; Alternative method: click the item to ensure selection
+            ; firstItem.Click()
+        }
+        else {
+            MsgBox("Could not find the first reminder item.", "Reminder Selection", "Iconx")
+        }
+    }
+    catch Error as e {
+        MsgBox("UIA error:`n" e.Message, "Outlook Reminder Error", "Iconx")
+    }
+}
+
+#HotIf
+
+;-------------------------------------------------------------------
 ; Microsoft Teams Helper functions
 ;-------------------------------------------------------------------
 IsTeamsMeetingTitle(title) {
