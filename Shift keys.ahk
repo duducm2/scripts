@@ -291,134 +291,40 @@ WaitForList(root, pattern := "", timeout := 5000) {
     }
 }
 
-;--------------------------------------------------------
-; Shift + U : Snooze for 1 hour
-;--------------------------------------------------------
-+U::
-{
-    result := MsgBox(
-        "Are you sure you want to snooze this reminder for 1 hour?",
-        "Snooze Reminder",
-        "YesNo Icon?"
-    )
-
-    if (result = "Yes") {
-        try {
-            win  := WinExist("A")
-            root := UIA.ElementFromHandle(win)
-
-            textField := root.FindFirst({Name: "Click Snooze to be reminded in:", Type: "50004"})
-            if !textField
-                textField := root.FindFirst({ControlType: "Edit"})
-
-            snoozeButton := root.FindFirst({AutomationId: "8334", ControlType: "Button"})
-            if !snoozeButton
-                snoozeButton := root.FindFirst({Name: "Snooze", ControlType: "Button"})
-            if !snoozeButton
-                snoozeButton := root.FindFirst({Name: "Snooze", Type: "50000"})
-
-            if textField && snoozeButton {
-                textField.SetFocus()
-                textField.SetValue("")
-                textField.SetValue("1 hour")
-                snoozeButton.Click()
-            } else {
-                if !textField
-                    MsgBox("Could not find the snooze time text field.", "Snooze Error", "IconX")
-                if !snoozeButton
-                    MsgBox("Could not find the Snooze button.", "Snooze Error", "IconX")
-            }
-        } catch Error as e {
-            MsgBox("UIA error:`n" e.Message, "Outlook Reminder Error", "IconX")
-        }
-    }
+; ativa a janela de lembretes do Outlook
+ActivateReminder() {
+    WinActivate("ahk_exe OUTLOOK.EXE")
+    WinWaitActive("ahk_exe OUTLOOK.EXE", , 1)
 }
 
-;--------------------------------------------------------
-; Shift + I : Snooze for 4 hours
-;--------------------------------------------------------
-+I::
-{
-    result := MsgBox(
-        "Are you sure you want to snooze this reminder for 4 hours?",
-        "Snooze Reminder",
-        "YesNo Icon?"
-    )
-
-    if (result = "Yes") {
-        try {
-            win  := WinExist("A")
-            root := UIA.ElementFromHandle(win)
-
-            textField := root.FindFirst({Name: "Click Snooze to be reminded in:", Type: "50004"})
-            if !textField
-                textField := root.FindFirst({ControlType: "Edit"})
-
-            snoozeButton := root.FindFirst({AutomationId: "8334", ControlType: "Button"})
-            if !snoozeButton
-                snoozeButton := root.FindFirst({Name: "Snooze", ControlType: "Button"})
-            if !snoozeButton
-                snoozeButton := root.FindFirst({Name: "Snooze", Type: "50000"})
-
-            if textField && snoozeButton {
-                textField.SetFocus()
-                textField.SetValue("")
-                textField.SetValue("4 hours")
-                snoozeButton.Click()
-            } else {
-                if !textField
-                    MsgBox("Could not find the snooze time text field.", "Snooze Error", "IconX")
-                if !snoozeButton
-                    MsgBox("Could not find the Snooze button.", "Snooze Error", "IconX")
-            }
-        } catch Error as e {
-            MsgBox("UIA error:`n" e.Message, "Outlook Reminder Error", "IconX")
-        }
-    }
+; digita o tempo e aperta Alt+S
+QuickSnooze(t) {
+    ActivateReminder()
+    Send("{Tab}")              ; chega ao combo
+    Send("{Tab}")              ; chega ao combo
+    Sleep 100
+    Send("^a{Delete}" . t)     ; substitui o texto
+    Sleep 120
+    Send("!s")                 ; Alt+S = Snooze
+    Sleep 200
+    Send("{Tab}")
+    Send("{Tab}") 
+    Send("{Tab}") 
 }
 
-;--------------------------------------------------------
-; Shift + O : Snooze for 1 day
-;--------------------------------------------------------
-+O::
-{
-    result := MsgBox(
-        "Are you sure you want to snooze this reminder for 1 day?",
-        "Snooze Reminder",
-        "YesNo Icon?"
-    )
-
-    if (result = "Yes") {
-        try {
-            win  := WinExist("A")
-            root := UIA.ElementFromHandle(win)
-
-            textField := root.FindFirst({Name: "Click Snooze to be reminded in:", Type: "50004"})
-            if !textField
-                textField := root.FindFirst({ControlType: "Edit"})
-
-            snoozeButton := root.FindFirst({AutomationId: "8334", ControlType: "Button"})
-            if !snoozeButton
-                snoozeButton := root.FindFirst({Name: "Snooze", ControlType: "Button"})
-            if !snoozeButton
-                snoozeButton := root.FindFirst({Name: "Snooze", Type: "50000"})
-
-            if textField && snoozeButton {
-                textField.SetFocus()
-                textField.SetValue("")
-                textField.SetValue("1 day")
-                snoozeButton.Click()
-            } else {
-                if !textField
-                    MsgBox("Could not find the snooze time text field.", "Snooze Error", "IconX")
-                if !snoozeButton
-                    MsgBox("Could not find the Snooze button.", "Snooze Error", "IconX")
-            }
-        } catch Error as e {
-            MsgBox("UIA error:`n" e.Message, "Outlook Reminder Error", "IconX")
-        }
-    }
+; caixa de confirmação antes de executar
+Confirm(t) {
+    if MsgBox("Snooze for " t "?", "Confirm Snooze", "YesNo Icon?") = "Yes"
+        QuickSnooze(t)
 }
+
+; HOTKEYS de teste
+; Shift+U  → 1 minuto
+; Shift+I  → 2 minutos
+; Shift+O  → 3 minutos
++U::Confirm("1 hour")
++I::Confirm("4 hours")
++O::Confirm("1 day")
 
 #HotIf
 
