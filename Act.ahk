@@ -175,8 +175,6 @@
 ;     Shift + Y: Send to general
 ;     Shift + U: Send to newsletter
 ;     Shift + I: ?
-;     Shift + O: Ful screen
-;     Shift + P: Normal mode
 ;     Shift + H: Go to title
 ;     Shift + J: Go required people
 ;     Shift + K: Go date

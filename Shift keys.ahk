@@ -626,26 +626,6 @@ IsTeamsChatActive() {
 ; Shift + H: Copy last code block
 +I:: Send("?")
 
-; Shift + O : Full screen (Alt → Z R → F)
-+O::
-{
-    Send "{Alt}"
-    Sleep 200
-    Send "zr"
-    Sleep 200
-    Send "f"
-}
-
-; Shift + P : Normal mode (Alt → Z R → A)
-+P::
-{
-    Send "{Alt}"
-    Sleep 200
-    Send "zr"
-    Sleep 200
-    Send "a"
-}
-
 ; Shift + H : Move focus to the message body
 +L::
 {
