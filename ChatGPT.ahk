@@ -10,9 +10,6 @@
 #include UIA-v2\Lib\UIA_Browser.ahk
 #include %A_ScriptDir%\env.ahk
 
-; --- Dictation Status Overlay -----------------------------------------------
-global dictationOverlayGui := ""
-
 ; --- Helper Functions --------------------------------------------------------
 
 ; Find the first UIA element whose Name matches any string in an array
@@ -32,7 +29,7 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
 ; =============================================================================
 ; Open ChatGPT
 ; Hotkey: Win+Alt+Shift+I
-; Original File: Open Chat GPT.ahk
+; Original File: Open ChatGPT.ahk
 ; =============================================================================
 #!+i::
 {
@@ -299,7 +296,6 @@ FindButtonByNames(cUIA, namesArray) {
 
 ToggleDictation(triedFallback := false, forceAction := "") {
     static isDictating := false
-    global dictationOverlayGui
     pt_dictateName := "Botão de ditado"
     en_dictateName := "Dictate button"
     pt_submitName := "Enviar ditado"
@@ -323,8 +319,6 @@ ToggleDictation(triedFallback := false, forceAction := "") {
             if btn := FindButton(cUIA, dictateNames_to_find) {
                 btn.Click()
                 isDictating := true
-                if (!IsObject(dictationOverlayGui) || !dictationOverlayGui.Hwnd)
-                    dictationOverlayGui := ShowDictationIndicator()
                 return
             } else if !triedFallback {
                 ToggleDictation(true, "stop")
@@ -347,10 +341,6 @@ ToggleDictation(triedFallback := false, forceAction := "") {
             if btn := FindButton(cUIA, submitOrStopNames_to_find) {
                 btn.Click()
                 isDictating := false
-                if (IsObject(dictationOverlayGui) && dictationOverlayGui.Hwnd) {
-                    dictationOverlayGui.Destroy()
-                    dictationOverlayGui := ""
-                }
                 return
             } else if !triedFallback {
                 ToggleDictation(true, "start")
@@ -385,7 +375,6 @@ ToggleDictation(triedFallback := false, forceAction := "") {
 ToggleDictationSpeak(triedFallback := false, forceAction := "") {
     static isDictating := false
     static submitFailCount := 0
-    global dictationOverlayGui
     pt_dictateName := "Botão de ditado"
     en_dictateName := "Dictate button"
     pt_submitName := "Enviar ditado"
@@ -417,8 +406,6 @@ ToggleDictationSpeak(triedFallback := false, forceAction := "") {
                 dictateBtn.Click()
                 isDictating := true
                 submitFailCount := 0
-                if (!IsObject(dictationOverlayGui) || !dictationOverlayGui.Hwnd)
-                    dictationOverlayGui := ShowDictationIndicator()
                 return
             } else if !triedFallback {
                 ToggleDictationSpeak(true, "stop")
@@ -445,10 +432,6 @@ ToggleDictationSpeak(triedFallback := false, forceAction := "") {
                 submitBtn.Click()
                 isDictating := false
                 submitFailCount := 0
-                if (IsObject(dictationOverlayGui) && dictationOverlayGui.Hwnd) {
-                    dictationOverlayGui.Destroy()
-                    dictationOverlayGui := ""
-                }
                 try {
                     Sleep 200
                     finalSendBtn := cUIA.WaitElement({ Name: currentSendPromptName, AutomationId: "composer-submit-button" },
@@ -559,26 +542,4 @@ ShowNotification(message, durationMs := 2000, bgColor := "FFFF00", fontColor := 
     if IsObject(notificationGui) && notificationGui.Hwnd {
         notificationGui.Destroy()
     }
-}
-
-; =============================================================================
-; Helper function to show / hide a persistent dictation indicator
-; =============================================================================
-ShowDictationIndicator(message := "🎤  ChatGPT dictation is ON", bgColor := "FFFF00", fontColor := "000000", fontSize := 24) {
-    gui := Gui()
-    gui.Opt("+AlwaysOnTop -Caption +ToolWindow")
-    gui.BackColor := bgColor
-    gui.SetFont("s" . fontSize . " c" . fontColor . " Bold", "Segoe UI")
-    gui.Add("Text", "Center", message)
-
-    workArea := SysGet.MonitorWorkArea(SysGet.MonitorPrimary)
-
-    gui.Show("AutoSize Hide")
-    gui.GetPos(, , &guiW, &guiH)
-
-    guiX := workArea.Left + (workArea.Right - workArea.Left - guiW) / 2
-    guiY := workArea.Top + (workArea.Bottom - workArea.Top - guiH) / 2
-    gui.Show("x" . Round(guiX) . " y" . Round(guiY) . " NA")
-    WinSetTransparent(220, gui)
-    return gui
 }
