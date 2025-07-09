@@ -411,6 +411,7 @@ ToggleDictationSpeak(triedFallback := false, forceAction := "") {
             if dictateBtn {
                 dictateBtn.Click()
                 isDictating := true
+                ShowDictationIndicator()
                 submitFailCount := 0
                 return
             } else if !triedFallback {
@@ -437,6 +438,7 @@ ToggleDictationSpeak(triedFallback := false, forceAction := "") {
             if submitBtn {
                 submitBtn.Click()
                 isDictating := false
+                HideDictationIndicator()
                 submitFailCount := 0
                 try {
                     Sleep 200
@@ -472,6 +474,7 @@ ToggleDictationSpeak(triedFallback := false, forceAction := "") {
         if submitFailCount >= 1 {
             MsgBox "Failed to submit dictation 1 time. Assuming dictation stopped. Press hotkey again to start."
             isDictating := false
+            HideDictationIndicator()
             submitFailCount := 0
         }
     }
