@@ -641,19 +641,21 @@ FocusOutlookField(criteria) {
     MsgBox "Couldn't find the Date Picker.", "Control not found", "IconX"
 }
 
-+M:: {  ; Shift + M → focus All Attendees list box
++M:: {  ; Shift + M → focus the “Make Recurring” button, then press Tab once
     try {
         win  := WinExist("A")
         root := UIA.ElementFromHandle(win)
-        target := root.FindFirst({
-            Name: "All Attendees list box, 1 attendee, Type text to add an attendee, Use the Up and down arrow keys to move through the list of attendees.",
-            ControlType: "DataItem"
-        })
 
-        if target {
-            target.SetFocus()
+        btn := root.FindFirst({AutomationId: "4364", ControlType: "Button"})
+        if !btn
+            btn := root.FindFirst({Name: "Make Recurring", ControlType: "Button"})
+
+        if btn {
+            btn.SetFocus()
+            Sleep 100
+            Send "{Tab}"
         } else {
-            MsgBox "Couldn't find the All Attendees list box element.", "Control not found", "IconX"
+            MsgBox "Couldn't find the Make Recurring button.", "Control not found", "IconX"
         }
     } catch Error as err {
         ShowErr(err)
