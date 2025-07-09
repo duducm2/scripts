@@ -443,23 +443,25 @@ CycleWindowsOnMonitor(order) {
 }
 
 GetVisibleWindowsOnMonitor(mon) {
-    ; (------- your original code, unchanged -------)
+    ; Get monitor bounds
     MonitorGet mon, &ml, &mt, &mr, &mb
     cx := (ml + mr) // 2
     cy := (mt + mb) // 2
     point64 := (cy & 0xFFFFFFFF) << 32 | (cx & 0xFFFFFFFF)
     hTarget := DllCall("MonitorFromPoint", "int64", point64, "uint", 2, "ptr")
 
-    result := []
+    allWindows := []
     hwnds := WinGetList()
 
     GWL_EXSTYLE      := -20
     WS_EX_TOOLWINDOW := 0x00000080
-    TOL              := 40  ; tolerance when deciding if two windows share a “row”
 
+    ; First pass: collect all valid windows on this monitor
     for hwnd in hwnds {
-        zIdx := hwnds.Length - A_Index
+        zIdx := hwnds.Length - A_Index  ; Higher zIdx = more on top
         try {
+            ; Skip minimized windows (-1). Keep normal (0) and maximized (+1).
+            ; This preserves the maximized window fix that was mentioned.
             if (WinGetMinMax(hwnd) = -1)
                 continue
             if !DllCall("IsWindowVisible", "ptr", hwnd)
@@ -477,39 +479,94 @@ GetVisibleWindowsOnMonitor(mon) {
             if (title = "")
                 continue
 
+            ; Get window rectangle
             rect := Buffer(16, 0)
             if DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect) {
                 left := NumGet(rect, 0, "int")
-                top  := NumGet(rect, 4, "int")
+                top := NumGet(rect, 4, "int")
+                right := NumGet(rect, 8, "int")
+                bottom := NumGet(rect, 12, "int")
             } else {
-                left := 0, top := 0
+                continue ; Skip if we can't get the rectangle
             }
 
-            result.Push({ hwnd: hwnd, left: left, top: top, z: zIdx })
+            allWindows.Push({ 
+                hwnd: hwnd, 
+                left: left, 
+                top: top, 
+                right: right, 
+                bottom: bottom, 
+                z: zIdx 
+            })
         } catch {
             continue
         }
     }
 
-    ; ──────────────────────────────────────────────────────────────
-    ; Re-order: first by Y (top→bottom), then by X (left→right)
-    ; ──────────────────────────────────────────────────────────────
-    n := result.Length
+    ; Second pass: filter out windows that are completely covered by other windows
+    visibleWindows := []
+    
+    for window in allWindows {
+        isVisible := false
+        
+        ; Check if this window has any visible area by testing if it's covered by higher Z-order windows
+        ; We'll sample a few points across the window to see if any are visible
+        samplePoints := [
+            {x: window.left + 10, y: window.top + 10},                    ; top-left
+            {x: window.right - 10, y: window.top + 10},                   ; top-right
+            {x: window.left + 10, y: window.bottom - 10},                 ; bottom-left
+            {x: window.right - 10, y: window.bottom - 10},                ; bottom-right
+            {x: (window.left + window.right) // 2, y: (window.top + window.bottom) // 2} ; center
+        ]
+        
+        for point in samplePoints {
+            ; Check if this point is visible (not covered by a higher Z-order window)
+            pointVisible := true
+            
+            for otherWindow in allWindows {
+                ; Skip if it's the same window or if the other window has lower Z-order
+                if (otherWindow.hwnd = window.hwnd || otherWindow.z <= window.z)
+                    continue
+                
+                ; Check if this point is inside the other window's rectangle
+                if (point.x >= otherWindow.left && point.x < otherWindow.right && 
+                    point.y >= otherWindow.top && point.y < otherWindow.bottom) {
+                    pointVisible := false
+                    break
+                }
+            }
+            
+            if (pointVisible) {
+                isVisible := true
+                break ; Found at least one visible point, so the window is visible
+            }
+        }
+        
+        if (isVisible) {
+            visibleWindows.Push(window)
+        }
+    }
+
+    ; Sort visible windows by position: first by Y (top→bottom), then by X (left→right)
+    ; This maintains the spatial ordering that users expect
+    TOL := 40  ; tolerance when deciding if two windows share a "row"
+    n := visibleWindows.Length
     if (n > 1) {
         loop n - 1 {
             i := A_Index
             loop n - i {
                 j := A_Index
-                rowDiff := result[j].top - result[j + 1].top
+                rowDiff := visibleWindows[j].top - visibleWindows[j + 1].top
                 if (rowDiff > TOL)                         ; lower row → move down
-                 || (Abs(rowDiff) <= TOL                  ; same “row”
-                     && result[j].left > result[j + 1].left) {    ; but more to the right
-                    temp := result[j]
-                    result[j] := result[j + 1]
-                    result[j + 1] := temp
+                 || (Abs(rowDiff) <= TOL                  ; same "row"
+                     && visibleWindows[j].left > visibleWindows[j + 1].left) {    ; but more to the right
+                    temp := visibleWindows[j]
+                    visibleWindows[j] := visibleWindows[j + 1]
+                    visibleWindows[j + 1] := temp
                 }
             }
         }
     }
-    return result
+    
+    return visibleWindows
 }
