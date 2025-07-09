@@ -5,6 +5,9 @@
 ; This script consolidates all ChatGPT related hotkeys and functions.
 ; -----------------------------------------------------------------------------
 
+; --- Global Variables --------------------------------------------------------
+dictationNotificationGui := ""
+
 ; --- Includes ----------------------------------------------------------------
 #include UIA-v2\Lib\UIA.ahk
 #include UIA-v2\Lib\UIA_Browser.ahk
@@ -319,6 +322,7 @@ ToggleDictation(triedFallback := false, forceAction := "") {
             if btn := FindButton(cUIA, dictateNames_to_find) {
                 btn.Click()
                 isDictating := true
+                ShowDictationNotification()
                 return
             } else if !triedFallback {
                 ToggleDictation(true, "stop")
@@ -341,6 +345,7 @@ ToggleDictation(triedFallback := false, forceAction := "") {
             if btn := FindButton(cUIA, submitOrStopNames_to_find) {
                 btn.Click()
                 isDictating := false
+                HideDictationNotification()
                 return
             } else if !triedFallback {
                 ToggleDictation(true, "start")
@@ -406,6 +411,7 @@ ToggleDictationSpeak(triedFallback := false, forceAction := "") {
                 dictateBtn.Click()
                 isDictating := true
                 submitFailCount := 0
+                ShowDictationNotification()
                 return
             } else if !triedFallback {
                 ToggleDictationSpeak(true, "stop")
@@ -432,6 +438,7 @@ ToggleDictationSpeak(triedFallback := false, forceAction := "") {
                 submitBtn.Click()
                 isDictating := false
                 submitFailCount := 0
+                HideDictationNotification()
                 try {
                     Sleep 200
                     finalSendBtn := cUIA.WaitElement({ Name: currentSendPromptName, AutomationId: "composer-submit-button" },
@@ -467,6 +474,7 @@ ToggleDictationSpeak(triedFallback := false, forceAction := "") {
             MsgBox "Failed to submit dictation 1 time. Assuming dictation stopped. Press hotkey again to start."
             isDictating := false
             submitFailCount := 0
+            HideDictationNotification()
         }
     }
 }
@@ -541,5 +549,41 @@ ShowNotification(message, durationMs := 2000, bgColor := "FFFF00", fontColor := 
     Sleep(durationMs)
     if IsObject(notificationGui) && notificationGui.Hwnd {
         notificationGui.Destroy()
+    }
+}
+
+; =============================================================================
+; Helper functions for persistent dictation notification
+; =============================================================================
+ShowDictationNotification() {
+    global dictationNotificationGui
+    HideDictationNotification() ; Hide any existing notification first
+    
+    dictationNotificationGui := Gui()
+    dictationNotificationGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
+    dictationNotificationGui.BackColor := "FF6B6B"  ; Red background
+    dictationNotificationGui.SetFont("s18 cFFFFFF Bold", "Segoe UI")
+    dictationNotificationGui.Add("Text", "w300 Center", "ChatGPT dictation is on")
+
+    ; Center on the whole screen
+    workArea := SysGet.MonitorWorkArea(SysGet.MonitorPrimary)
+    screenW := workArea.Right - workArea.Left
+    screenH := workArea.Bottom - workArea.Top
+
+    dictationNotificationGui.Show("AutoSize Hide")
+    guiW := 0, guiH := 0
+    dictationNotificationGui.GetPos(, , &guiW, &guiH)
+
+    guiX := (screenW - guiW) / 2
+    guiY := (screenH - guiH) / 2
+    dictationNotificationGui.Show("x" . Round(guiX) . " y" . Round(guiY) . " NA")
+    WinSetTransparent(200, dictationNotificationGui)
+}
+
+HideDictationNotification() {
+    global dictationNotificationGui
+    if IsObject(dictationNotificationGui) && dictationNotificationGui.Hwnd {
+        dictationNotificationGui.Destroy()
+        dictationNotificationGui := ""
     }
 }
