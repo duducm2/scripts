@@ -180,6 +180,7 @@
 ;     Shift + K: Go date
 ;     Shift + L: Go to message
 ;     Shift + N: Toggle between current and other tabs
+;     Shift + M: Select first participant for a meeting
 ; ----- Outlook Reminder window --------------
 ;     Shift + Y: Select the first list item
 ;     Shift + U: Snooze for 1 hour

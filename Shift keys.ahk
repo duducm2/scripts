@@ -641,6 +641,25 @@ FocusOutlookField(criteria) {
     MsgBox "Couldn't find the Date Picker.", "Control not found", "IconX"
 }
 
++M:: {  ; Shift + M → focus All Attendees list box
+    try {
+        win  := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+        target := root.FindFirst({
+            Name: "All Attendees list box, 1 attendee, Type text to add an attendee, Use the Up and down arrow keys to move through the list of attendees.",
+            ControlType: "DataItem"
+        })
+
+        if target {
+            target.SetFocus()
+        } else {
+            MsgBox "Couldn't find the All Attendees list box element.", "Control not found", "IconX"
+        }
+    } catch Error as err {
+        ShowErr(err)
+    }
+}
+
 #HotIf
 
 ;-------------------------------------------------------------------
