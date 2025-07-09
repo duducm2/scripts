@@ -443,73 +443,97 @@ CycleWindowsOnMonitor(order) {
 }
 
 GetVisibleWindowsOnMonitor(mon) {
-    ; (------- your original code, unchanged -------)
+    ; Step-1: determine target monitor handle --------------------------------
     MonitorGet mon, &ml, &mt, &mr, &mb
     cx := (ml + mr) // 2
     cy := (mt + mb) // 2
     point64 := (cy & 0xFFFFFFFF) << 32 | (cx & 0xFFFFFFFF)
     hTarget := DllCall("MonitorFromPoint", "int64", point64, "uint", 2, "ptr")
 
-    result := []
+    ; Enumerate all windows – WinGetList() returns them in top-to-bottom z-order
     hwnds := WinGetList()
 
     GWL_EXSTYLE      := -20
     WS_EX_TOOLWINDOW := 0x00000080
     TOL              := 40  ; tolerance when deciding if two windows share a “row”
 
+    visible := []      ; windows that remain at least PARTIALLY visible
+
     for hwnd in hwnds {
-        zIdx := hwnds.Length - A_Index
+        zIdx := hwnds.Length - A_Index  ; 0 = topmost, grows toward bottom
+
         try {
+            ; --- basic eligibility checks (unchanged) ----------------------
             if (WinGetMinMax(hwnd) = -1)
-                continue
+                continue            ; minimised
             if !DllCall("IsWindowVisible", "ptr", hwnd)
                 continue
             exStyle := DllCall("GetWindowLongPtr", "ptr", hwnd, "int", GWL_EXSTYLE, "ptr")
             if (exStyle & WS_EX_TOOLWINDOW)
-                continue
+                continue            ; skip tool windows (e.g., floating toolbars)
             hMon := DllCall("MonitorFromWindow", "ptr", hwnd, "uint", 2, "ptr")
             if (hMon != hTarget)
-                continue
+                continue            ; not on the requested monitor
             class := WinGetClass(hwnd)
             if (class = "Progman" || class = "WorkerW")
-                continue
+                continue            ; desktop / worker windows
             title := WinGetTitle(hwnd)
             if (title = "")
+                continue            ; unnamed (often invisible) windows
+
+            ; --- geometry --------------------------------------------------
+            rect := Buffer(16, 0)
+            if !DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)
                 continue
 
-            rect := Buffer(16, 0)
-            if DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect) {
-                left := NumGet(rect, 0, "int")
-                top  := NumGet(rect, 4, "int")
-            } else {
-                left := 0, top := 0
-            }
+            left   := NumGet(rect, 0, "int")
+            top    := NumGet(rect, 4, "int")
+            right  := NumGet(rect, 8, "int")
+            bottom := NumGet(rect, 12, "int")
 
-            result.Push({ hwnd: hwnd, left: left, top: top, z: zIdx })
+            ; --- visibility heuristic -------------------------------------
+            centerX := (left + right) // 2
+            centerY := (top + bottom) // 2
+
+            covered := false
+            for win in visible {
+                if (centerX >= win.left && centerX <= win.right
+                 && centerY >= win.top  && centerY <= win.bottom) {
+                    covered := true
+                    break
+                }
+            }
+            if (covered)
+                continue            ; completely concealed by a higher window
+
+            ; Otherwise, accept it as visible
+            visible.Push({ hwnd: hwnd, left: left, top: top, right: right,
+                            bottom: bottom, z: zIdx })
         } catch {
-            continue
+            continue                ; ignore windows that throw on inspection
         }
     }
 
     ; ──────────────────────────────────────────────────────────────
-    ; Re-order: first by Y (top→bottom), then by X (left→right)
+    ; Re-order accepted windows: by Y (top→bottom), then X (left→right)
     ; ──────────────────────────────────────────────────────────────
-    n := result.Length
+    n := visible.Length
     if (n > 1) {
         loop n - 1 {
             i := A_Index
             loop n - i {
                 j := A_Index
-                rowDiff := result[j].top - result[j + 1].top
+                rowDiff := visible[j].top - visible[j + 1].top
                 if (rowDiff > TOL)                         ; lower row → move down
                  || (Abs(rowDiff) <= TOL                  ; same “row”
-                     && result[j].left > result[j + 1].left) {    ; but more to the right
-                    temp := result[j]
-                    result[j] := result[j + 1]
-                    result[j + 1] := temp
+                     && visible[j].left > visible[j + 1].left) {
+                    temp := visible[j]
+                    visible[j] := visible[j + 1]
+                    visible[j + 1] := temp
                 }
             }
         }
     }
-    return result
+
+    return visible
 }
