@@ -10,6 +10,10 @@
 #include UIA-v2\Lib\UIA_Browser.ahk
 #include %A_ScriptDir%\env.ahk
 
+; --- Persistent Dictation Indicator ----------------------------------------
+; Holds the GUI object while dictation is active. Empty string when hidden.
+global dictationIndicatorGui := ""
+
 ; --- Helper Functions --------------------------------------------------------
 
 ; Find the first UIA element whose Name matches any string in an array
@@ -29,7 +33,7 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
 ; =============================================================================
 ; Open ChatGPT
 ; Hotkey: Win+Alt+Shift+I
-; Original File: Open ChatGPT.ahk
+; Original File: Open Chat GPT.ahk
 ; =============================================================================
 #!+i::
 {
@@ -319,6 +323,7 @@ ToggleDictation(triedFallback := false, forceAction := "") {
             if btn := FindButton(cUIA, dictateNames_to_find) {
                 btn.Click()
                 isDictating := true
+                ShowDictationIndicator()
                 return
             } else if !triedFallback {
                 ToggleDictation(true, "stop")
@@ -341,6 +346,7 @@ ToggleDictation(triedFallback := false, forceAction := "") {
             if btn := FindButton(cUIA, submitOrStopNames_to_find) {
                 btn.Click()
                 isDictating := false
+                HideDictationIndicator()
                 return
             } else if !triedFallback {
                 ToggleDictation(true, "start")
@@ -541,5 +547,46 @@ ShowNotification(message, durationMs := 2000, bgColor := "FFFF00", fontColor := 
     Sleep(durationMs)
     if IsObject(notificationGui) && notificationGui.Hwnd {
         notificationGui.Destroy()
+    }
+}
+
+; =============================================================================
+; Helper functions to show/hide the persistent dictation indicator
+; =============================================================================
+ShowDictationIndicator(message := "Dictation ON", bgColor := "FF0000", fontColor := "FFFFFF", fontSize := 28) {
+    global dictationIndicatorGui
+
+    ; If already visible, nothing to do
+    if (IsObject(dictationIndicatorGui) && dictationIndicatorGui.Hwnd)
+        return
+
+    dictationIndicatorGui := Gui()
+    dictationIndicatorGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
+    dictationIndicatorGui.BackColor := bgColor
+    dictationIndicatorGui.SetFont("s" . fontSize . " c" . fontColor . " Bold", "Segoe UI")
+    dictationIndicatorGui.Add("Text", "w350 Center", message)
+
+    ; Center over active window or primary monitor
+    activeWin := WinGetID("A")
+    if (activeWin) {
+        WinGetPos(&winX, &winY, &winW, &winH, activeWin)
+    } else {
+        workArea := SysGet.MonitorWorkArea(SysGet.MonitorPrimary)
+        winX := workArea.Left, winY := workArea.Top, winW := workArea.Right - workArea.Left, winH := workArea.Bottom - workArea.Top
+    }
+
+    dictationIndicatorGui.Show("AutoSize Hide")
+    dictationIndicatorGui.GetPos(,, &guiW, &guiH)
+    guiX := winX + (winW - guiW) / 2
+    guiY := winY + (winH - guiH) / 2
+    dictationIndicatorGui.Show("x" . Round(guiX) . " y" . Round(guiY) . " NA")
+    WinSetTransparent(220, dictationIndicatorGui)
+}
+
+HideDictationIndicator() {
+    global dictationIndicatorGui
+    if (IsObject(dictationIndicatorGui) && dictationIndicatorGui.Hwnd) {
+        dictationIndicatorGui.Destroy()
+        dictationIndicatorGui := ""
     }
 }
