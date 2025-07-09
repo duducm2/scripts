@@ -216,6 +216,7 @@ CopyLastPrompt() {
 #!+l::
 {
     ToggleVoiceMode()
+    Send "!{Tab}"
 }
 
 ToggleVoiceMode(triedFallback := false, forceAction := "") {
@@ -290,6 +291,7 @@ FindButtonByNames(cUIA, namesArray) {
 #!+0::
 {
     ToggleDictation()
+    Send "!{Tab}"
 }
 
 ToggleDictation(triedFallback := false, forceAction := "") {
@@ -367,6 +369,7 @@ ToggleDictation(triedFallback := false, forceAction := "") {
 #!+7::
 {
     ToggleDictationSpeak()
+    Send "!{Tab}"
 }
 
 ToggleDictationSpeak(triedFallback := false, forceAction := "") {
