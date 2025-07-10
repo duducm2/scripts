@@ -88,7 +88,7 @@
 
 ;---------------------------------------- Win + Alt + Shift + keys ----------------------------------
 ; ----- Available -----------
-; A C J K W X Y 1
+; A C K W X Y 1
 ; ----- Onenote -------------
 ;     Win + Alt + Shift + N : Opens or activates OneNote
 ; ----- Spotify -------------
@@ -100,6 +100,7 @@
 ;     Win + Alt + Shift + 0 : Speak with ChatGPT
 ;     Win + Alt + Shift + 7 : Speak with ChatGPT (send message automatically)
 ;     Win + Alt + Shift + P : Copy last ChatGPT prompt
+;     Win + Alt + Shift + J : Copy last ChatGPT message (in the editing box)
 ;     Win + Alt + Shift + U : Activate ChatGPT and copy last code block
 ;     Win + Alt + Shift + O : Check grammar and improve text in both English and Portuguese
 ;     Win + Alt + Shift + I : Opens ChatGPT

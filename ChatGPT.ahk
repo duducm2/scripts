@@ -575,11 +575,12 @@ ShowDictationIndicator(message := "Dictation ON", bgColor := "FF0000", fontColor
         WinGetPos(&winX, &winY, &winW, &winH, activeWin)
     } else {
         workArea := SysGet.MonitorWorkArea(SysGet.MonitorPrimary)
-        winX := workArea.Left, winY := workArea.Top, winW := workArea.Right - workArea.Left, winH := workArea.Bottom - workArea.Top
+        winX := workArea.Left, winY := workArea.Top, winW := workArea.Right - workArea.Left, winH := workArea.Bottom -
+            workArea.Top
     }
 
     dictationIndicatorGui.Show("AutoSize Hide")
-    dictationIndicatorGui.GetPos(,, &guiW, &guiH)
+    dictationIndicatorGui.GetPos(, , &guiW, &guiH)
     guiX := winX + (winW - guiW) / 2
     guiY := winY + (winH - guiH) / 2
     dictationIndicatorGui.Show("x" . Round(guiX) . " y" . Round(guiY) . " NA")
@@ -591,5 +592,22 @@ HideDictationIndicator() {
     if (IsObject(dictationIndicatorGui) && dictationIndicatorGui.Hwnd) {
         dictationIndicatorGui.Destroy()
         dictationIndicatorGui := ""
+    }
+}
+
+; =============================================================================
+; Send Ctrl+A, Sleep, Ctrl+X to ChatGPT
+; Hotkey: Win+Alt+Shift+J
+; =============================================================================
+#!+j::
+{
+    SetTitleMatchMode(2)
+    WinActivate("chatgpt")
+    if WinWaitActive("ahk_exe chrome.exe", , 2) {
+        Sleep(200)
+        Send("^a")
+        Sleep(50)
+        Send("^x")
+        Send("!{Tab}")
     }
 }
