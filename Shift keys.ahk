@@ -544,6 +544,10 @@ IsTeamsChatActive() {
         body := root.FindFirst({ ControlType: "Document" })   ; type 50030
         if !body
             body := root.FindFirst({ ControlType: "Edit", IsReadOnly: 0 })
+            Sleep 100
+            Send "+{Tab}"
+            Sleep 100
+            Send "{Tab}"
         if body {
             body.SetFocus()
             return
