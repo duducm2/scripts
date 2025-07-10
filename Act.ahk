@@ -98,6 +98,7 @@
 ;     Win + Alt + Shift + 8 : Get word pronunciation, definition, and Portuguese translation from ChatGPT
 ;     Win + Alt + Shift + 9 : Clicks on the last microphone icon in the ChatGPT
 ;     Win + Alt + Shift + 0 : Speak with ChatGPT
+;     Win + Alt + Shift + 7 : Speak with ChatGPT (send message automatically)
 ;     Win + Alt + Shift + P : Copy last ChatGPT prompt
 ;     Win + Alt + Shift + U : Activate ChatGPT and copy last code block
 ;     Win + Alt + Shift + O : Check grammar and improve text in both English and Portuguese
