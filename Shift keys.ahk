@@ -325,6 +325,7 @@ Confirm(t) {
 +U::Confirm("1 hour")
 +I::Confirm("4 hours")
 +O::Confirm("1 day")
++P::ConfirmDismissAll()  ; Shift + P : Dismiss all reminders with confirmation
 
 #HotIf
 
@@ -1077,3 +1078,27 @@ IsEditorActive() {
 +e:: Send("^!+t")
 
 #HotIf
+
+ConfirmDismissAll() {
+    if MsgBox("Dismiss all reminders?", "Confirm Dismiss", "YesNo Icon?") = "Yes"
+        DismissAllReminders()
+}
+
+DismissAllReminders() {
+    try {
+        win := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+        ; Try by AutomationId first
+        btn := root.FindFirst({AutomationId: "8345", ControlType: "Button"})
+        ; Fallback: search by name
+        if !btn
+            btn := root.FindFirst({Name: "Dismiss All", ControlType: "Button"})
+        if btn {
+            btn.Click()
+        } else {
+            MsgBox("Could not find the 'Dismiss All' button.", "Dismiss All", "IconX")
+        }
+    } catch Error as e {
+        MsgBox("UIA error:`n" e.Message, "Dismiss All Error", "IconX")
+    }
+}
