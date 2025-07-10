@@ -325,6 +325,7 @@ Confirm(t) {
 +U::Confirm("1 hour")
 +I::Confirm("4 hours")
 +O::Confirm("1 day")
++P::ConfirmDismissAll()  ; Shift + P : Dismiss all reminders with confirmation
 
 #HotIf
 
@@ -532,28 +533,40 @@ IsTeamsChatActive() {
 ; Shift + H: Copy last code block
 +I:: Send("?")
 
-; Shift + H : Move focus to the message body
+; Shift + L  →  focus Subject (e-mail) or Location (appointment) and Tab to body
 +L::
 {
-    ; First try a UI Automation lookup
-    try {
-        win := WinExist("A")
-        root := UIA.ElementFromHandle(win)                    ; UIA-v2 library
-        ; Look for the first editable document area
-        body := root.FindFirst({ ControlType: "Document" })   ; type 50030
-        if !body
-            body := root.FindFirst({ ControlType: "Edit", IsReadOnly: 0 })
-        if body {
-            body.SetFocus()
-            return
-        }
-    } catch Error {
-        ; fall through to the key-based method
+    hwnd := WinActive("ahk_class rctrl_renwnd32 ahk_exe OUTLOOK.EXE")
+    if !hwnd
+        return                                    ; no inspector on top
+
+    ui := UIA.ElementFromHandle(hwnd)
+
+    ; helper that returns the element or blank (instead of throwing)
+    safeFind(condObj) {
+        try return ui.FindFirst(condObj)
+        catch
+            return ""
     }
-    ; Fallback: pressing F6 twice usually lands in the body
-    Send "{F6}"
-    Sleep 100
-    Send "{F6}"
+
+    ; 1) e-mail Subject field  (AutomationId 4101)
+    target := safeFind({AutomationId:"4101"})
+
+    ; 2) appointment Location field  (AutomationId 4111)
+    if (!target)
+        target := safeFind({AutomationId:"4111"})
+
+    ; 3) fallback - any writable edit nearest the top (first Edit under Ribbon)
+    if (!target)
+        target := safeFind({ControlType:"Edit", IsReadOnly:0})
+
+    if (target) {
+        target.SetFocus()
+        Sleep 50           ; small pause for reliability
+        Send "{Tab}"       ; jump into the body
+    } else {
+        Send "{F6}{F6}"    ; last-resort Outlook cycle
+    }
 }
 
 +N:: {                                  ; toggle Focused / Other
@@ -1077,3 +1090,27 @@ IsEditorActive() {
 +e:: Send("^!+t")
 
 #HotIf
+
+ConfirmDismissAll() {
+    if MsgBox("Dismiss all reminders?", "Confirm Dismiss", "YesNo Icon?") = "Yes"
+        DismissAllReminders()
+}
+
+DismissAllReminders() {
+    try {
+        win := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+        ; Try by AutomationId first
+        btn := root.FindFirst({AutomationId: "8345", ControlType: "Button"})
+        ; Fallback: search by name
+        if !btn
+            btn := root.FindFirst({Name: "Dismiss All", ControlType: "Button"})
+        if btn {
+            btn.Click()
+        } else {
+            MsgBox("Could not find the 'Dismiss All' button.", "Dismiss All", "IconX")
+        }
+    } catch Error as e {
+        MsgBox("UIA error:`n" e.Message, "Dismiss All Error", "IconX")
+    }
+}

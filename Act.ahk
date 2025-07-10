@@ -187,6 +187,7 @@
 ;     Shift + U: Snooze for 1 hour
 ;     Shift + I: Snooze for 4 hours
 ;     Shift + O: Snooze for 1 day
+;     Shift + P: Dismiss all remiders
 ; ----- ChatGPT --------------
 ;     Shift + Y: Select all and cut
 ;     Shift + U: Change model
