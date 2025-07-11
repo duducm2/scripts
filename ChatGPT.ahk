@@ -607,9 +607,9 @@ HideDictationIndicator() {
         Send("{Esc}")
         Send("F")
         Send("{Backspace}")
-        Sleep(200)
+        Sleep(300)
         Send("^a")
-        Sleep(150)
+        Sleep(350)
         Send("^x")
         Send("!{Tab}")
     }
