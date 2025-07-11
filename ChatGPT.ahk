@@ -604,9 +604,11 @@ HideDictationIndicator() {
     SetTitleMatchMode(2)
     WinActivate("chatgpt")
     if WinWaitActive("ahk_exe chrome.exe", , 2) {
+        Send("{Esc}")
+        Send("F")
         Sleep(200)
         Send("^a")
-        Sleep(50)
+        Sleep(150)
         Send("^x")
         Send("!{Tab}")
     }
