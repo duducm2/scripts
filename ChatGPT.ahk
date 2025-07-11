@@ -606,6 +606,7 @@ HideDictationIndicator() {
     if WinWaitActive("ahk_exe chrome.exe", , 2) {
         Send("{Esc}")
         Send("F")
+        Send("{Backspace}")
         Sleep(200)
         Send("^a")
         Sleep(150)
