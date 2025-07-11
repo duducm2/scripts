@@ -262,21 +262,21 @@ WaitForList(root, pattern := "", timeout := 5000) {
     try {
         win := WinExist("A")
         root := UIA.ElementFromHandle(win)
-        
+
         ; Find the first list item in the reminder window
         ; Looking for ListItem type (50007) with AutomationId pattern "ListViewItem-0"
-        firstItem := root.FindFirst({AutomationId: "ListViewItem-0", ControlType: "ListItem"})
-        
+        firstItem := root.FindFirst({ AutomationId: "ListViewItem-0", ControlType: "ListItem" })
+
         ; Fallback: if specific AutomationId doesn't work, find first ListItem
         if !firstItem {
-            firstItem := root.FindFirst({ControlType: "ListItem"})
+            firstItem := root.FindFirst({ ControlType: "ListItem" })
         }
-        
+
         ; Fallback: try finding by type number if ControlType doesn't work
         if !firstItem {
-            firstItem := root.FindFirst({Type: "50007"})
+            firstItem := root.FindFirst({ Type: "50007" })
         }
-        
+
         if firstItem {
             firstItem.Select()
             ; Alternative method: click the item to ensure selection
@@ -308,8 +308,8 @@ QuickSnooze(t) {
     Send("!s")                 ; Alt+S = Snooze
     Sleep 200
     Send("{Tab}")
-    Send("{Tab}") 
-    Send("{Tab}") 
+    Send("{Tab}")
+    Send("{Tab}")
 }
 
 ; caixa de confirmação antes de executar
@@ -322,10 +322,10 @@ Confirm(t) {
 ; Shift+U  → 1 minuto
 ; Shift+I  → 2 minutos
 ; Shift+O  → 3 minutos
-+U::Confirm("1 hour")
-+I::Confirm("4 hours")
-+O::Confirm("1 day")
-+P::ConfirmDismissAll()  ; Shift + P : Dismiss all reminders with confirmation
++U:: Confirm("1 hour")
++I:: Confirm("4 hours")
++O:: Confirm("1 day")
++P:: ConfirmDismissAll()  ; Shift + P : Dismiss all reminders with confirmation
 
 #HotIf
 
@@ -364,12 +364,12 @@ IsTeamsChatActive() {
 ; Shift + Y : Open Chat pane
 +Y:: {
     try {
-        win  := WinExist("A")
+        win := WinExist("A")
         root := UIA.ElementFromHandle(win)
 
-        btn := root.FindFirst({AutomationId: "chat-button"})
+        btn := root.FindFirst({ AutomationId: "chat-button" })
         if !btn
-            btn := root.FindFirst({Name: "Chat", ControlType: "Button"})
+            btn := root.FindFirst({ Name: "Chat", ControlType: "Button" })
 
         if btn
             btn.Click()
@@ -384,10 +384,10 @@ IsTeamsChatActive() {
 ; Shift + U : Maximize meeting window
 +U:: {
     try {
-        win  := WinExist("A")
+        win := WinExist("A")
         root := UIA.ElementFromHandle(win)
 
-        btn := root.FindFirst({Name: "Maximize meeting window", ControlType: "Button"})
+        btn := root.FindFirst({ Name: "Maximize meeting window", ControlType: "Button" })
         if btn
             btn.Click()
         else
@@ -550,15 +550,15 @@ IsTeamsChatActive() {
     }
 
     ; 1) e-mail Subject field  (AutomationId 4101)
-    target := safeFind({AutomationId:"4101"})
+    target := safeFind({ AutomationId: "4101" })
 
     ; 2) appointment Location field  (AutomationId 4111)
     if (!target)
-        target := safeFind({AutomationId:"4111"})
+        target := safeFind({ AutomationId: "4111" })
 
     ; 3) fallback - any writable edit nearest the top (first Edit under Ribbon)
     if (!target)
-        target := safeFind({ControlType:"Edit", IsReadOnly:0})
+        target := safeFind({ ControlType: "Edit", IsReadOnly: 0 })
 
     if (target) {
         target.SetFocus()
@@ -573,21 +573,20 @@ IsTeamsChatActive() {
     static nextOutlookButton := "Other"
 
     try {
-        win  := WinExist("A")
+        win := WinExist("A")
         root := UIA.ElementFromHandle(win)
 
         btn := root.FindFirst({
-                 Name: nextOutlookButton
-               , Type: "Button"
+            Name: nextOutlookButton, Type: "Button"
         })
 
         if btn {
             btn.Click()
             nextOutlookButton := (nextOutlookButton = "Other")
-                                ? "Focused" : "Other"
+                ? "Focused" : "Other"
         } else {
             MsgBox("Couldn't find ‘" nextOutlookButton "’.",
-                   "Button not found", "IconX")
+                "Button not found", "IconX")
         }
 
     } catch Error as err {              ; ← **only this form**
@@ -600,7 +599,7 @@ IsTeamsChatActive() {
 ; -------------------------------------------------------------------
 FocusOutlookField(criteria) {
     try {
-        win  := WinExist("A")
+        win := WinExist("A")
         root := UIA.ElementFromHandle(win)
         ctrl := root.FindFirst(criteria)
         if ctrl {
@@ -620,48 +619,47 @@ FocusOutlookField(criteria) {
 ; -------------------------------------------------------------------
 
 +H:: {                                    ; go to Title or Subject
-    if FocusOutlookField({AutomationId: "4100"})
+    if FocusOutlookField({ AutomationId: "4100" })
         return
-    if FocusOutlookField({Name: "Title", ControlType: "Edit"})
+    if FocusOutlookField({ Name: "Title", ControlType: "Edit" })
         return
     ; fallback to Subject
-    if FocusOutlookField({AutomationId: "4101"})
+    if FocusOutlookField({ AutomationId: "4101" })
         return
-    if FocusOutlookField({Name: "Subject", ControlType: "Edit"})
+    if FocusOutlookField({ Name: "Subject", ControlType: "Edit" })
         return
     MsgBox "Couldn't find the Title or Subject field.", "Control not found", "IconX"
 }
 
 +J:: {                                    ; go to Required or To
-    if FocusOutlookField({AutomationId: "4109"})
+    if FocusOutlookField({ AutomationId: "4109" })
         return
-    if FocusOutlookField({Name: "Required", ControlType: "Edit"})
+    if FocusOutlookField({ Name: "Required", ControlType: "Edit" })
         return
     ; fallback to To
-    if FocusOutlookField({AutomationId: "4117"})
+    if FocusOutlookField({ AutomationId: "4117" })
         return
-    if FocusOutlookField({Name: "To", ControlType: "Edit"})
+    if FocusOutlookField({ Name: "To", ControlType: "Edit" })
         return
     MsgBox "Couldn't find the Required or To field.", "Control not found", "IconX"
 }
 
-
 +K:: {                                    ; go to Date Picker
-    if FocusOutlookField({AutomationId: "4352"})
+    if FocusOutlookField({ AutomationId: "4352" })
         return
-    if FocusOutlookField({Name: "Date Picker", ControlType: "Button"})
+    if FocusOutlookField({ Name: "Date Picker", ControlType: "Button" })
         return
     MsgBox "Couldn't find the Date Picker.", "Control not found", "IconX"
 }
 
 +M:: {  ; Shift + M → focus the “Make Recurring” button, then press Tab once
     try {
-        win  := WinExist("A")
+        win := WinExist("A")
         root := UIA.ElementFromHandle(win)
 
-        btn := root.FindFirst({AutomationId: "4364", ControlType: "Button"})
+        btn := root.FindFirst({ AutomationId: "4364", ControlType: "Button" })
         if !btn
-            btn := root.FindFirst({Name: "Make Recurring", ControlType: "Button"})
+            btn := root.FindFirst({ Name: "Make Recurring", ControlType: "Button" })
 
         if btn {
             btn.SetFocus()
@@ -1091,6 +1089,132 @@ IsEditorActive() {
 
 #HotIf
 
+;-------------------------------------------------------------------
+; Mobills Finance App Shortcuts
+;-------------------------------------------------------------------
+#HotIf WinActive("Mobills")
+
+; Shift + Y : Dashboard
++y:: {
+    try {
+        uia := UIA_Browser("ahk_exe chrome.exe")
+        Sleep 300
+
+        btn := uia.FindElement({ AutomationId: "menu-dashboard-item", Type: "Button" })
+        if (btn) {
+            btn.Click()
+        } else {
+            MsgBox "Could not find the Dashboard button.", "Mobills Navigation", "IconX"
+        }
+    } catch Error as e {
+        MsgBox "Error navigating to Dashboard: " e.Message, "Mobills Error", "IconX"
+    }
+}
+
+; Shift + U : Contas
++u:: {
+    try {
+        uia := UIA_Browser("ahk_exe chrome.exe")
+        Sleep 300
+
+        btn := uia.FindElement({ AutomationId: "menu-accounts-item", Type: "Button" })
+        if (btn) {
+            btn.Click()
+        } else {
+            MsgBox "Could not find the Contas button.", "Mobills Navigation", "IconX"
+        }
+    } catch Error as e {
+        MsgBox "Error navigating to Contas: " e.Message, "Mobills Error", "IconX"
+    }
+}
+
+; Shift + I : Transações
++i:: {
+    try {
+        uia := UIA_Browser("ahk_exe chrome.exe")
+        Sleep 300
+
+        btn := uia.FindElement({ AutomationId: "menu-transactions-item", Type: "Button" })
+        if (btn) {
+            btn.Click()
+        } else {
+            MsgBox "Could not find the Transações button.", "Mobills Navigation", "IconX"
+        }
+    } catch Error as e {
+        MsgBox "Error navigating to Transações: " e.Message, "Mobills Error", "IconX"
+    }
+}
+
+; Shift + O : Cartões de crédito
++o:: {
+    try {
+        uia := UIA_Browser("ahk_exe chrome.exe")
+        Sleep 300
+
+        btn := uia.FindElement({ AutomationId: "menu-creditCards-item", Type: "Button" })
+        if (btn) {
+            btn.Click()
+        } else {
+            MsgBox "Could not find the Cartões de crédito button.", "Mobills Navigation", "IconX"
+        }
+    } catch Error as e {
+        MsgBox "Error navigating to Cartões de crédito: " e.Message, "Mobills Error", "IconX"
+    }
+}
+
+; Shift + P : Planejamento
++p:: {
+    try {
+        uia := UIA_Browser("ahk_exe chrome.exe")
+        Sleep 300
+
+        btn := uia.FindElement({ AutomationId: "menu-budgets-item", Type: "Button" })
+        if (btn) {
+            btn.Click()
+        } else {
+            MsgBox "Could not find the Planejamento button.", "Mobills Navigation", "IconX"
+        }
+    } catch Error as e {
+        MsgBox "Error navigating to Planejamento: " e.Message, "Mobills Error", "IconX"
+    }
+}
+
+; Shift + H : Relatórios
++h:: {
+    try {
+        uia := UIA_Browser("ahk_exe chrome.exe")
+        Sleep 300
+
+        btn := uia.FindElement({ AutomationId: "menu-reports-item", Type: "Button" })
+        if (btn) {
+            btn.Click()
+        } else {
+            MsgBox "Could not find the Relatórios button.", "Mobills Navigation", "IconX"
+        }
+    } catch Error as e {
+        MsgBox "Error navigating to Relatórios: " e.Message, "Mobills Error", "IconX"
+    }
+}
+
+; Shift + J : Mais opções
++j:: {
+    try {
+        uia := UIA_Browser("ahk_exe chrome.exe")
+        Sleep 300
+
+        btn := uia.FindElement({ AutomationId: "menu-moreOptions-item", Type: "Button" })
+        if (btn) {
+            btn.Click()
+        } else {
+            MsgBox "Could not find the Mais opções button.", "Mobills Navigation", "IconX"
+        }
+    } catch Error as e {
+        MsgBox "Error navigating to Mais opções: " e.Message, "Mobills Error", "IconX"
+    }
+}
+
+#HotIf
+
 ConfirmDismissAll() {
     if MsgBox("Dismiss all reminders?", "Confirm Dismiss", "YesNo Icon?") = "Yes"
         DismissAllReminders()
@@ -1101,10 +1225,10 @@ DismissAllReminders() {
         win := WinExist("A")
         root := UIA.ElementFromHandle(win)
         ; Try by AutomationId first
-        btn := root.FindFirst({AutomationId: "8345", ControlType: "Button"})
+        btn := root.FindFirst({ AutomationId: "8345", ControlType: "Button" })
         ; Fallback: search by name
         if !btn
-            btn := root.FindFirst({Name: "Dismiss All", ControlType: "Button"})
+            btn := root.FindFirst({ Name: "Dismiss All", ControlType: "Button" })
         if btn {
             btn.Click()
         } else {
