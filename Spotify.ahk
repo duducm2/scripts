@@ -179,11 +179,16 @@ GoToSpotifyLibrary() {
         if WinWaitActive("ahk_exe Spotify.exe", , 2) {
             Send("^{Down}")
         }
-        ; Re-minimize if the window was originally minimized
-        if IsObject(spotify) && spotify.wasMinimized {
-            hwnd := spotify.hwnd
-            ; One-shot timer after 3.5 seconds; capture hwnd by value
-            SetTimer((id := hwnd) => WinMinimize("ahk_id " id), -3500)
+        ; Handle window state after action
+        if IsObject(spotify) {
+            if spotify.wasMinimized {
+                ; Re-minimize if the window was originally minimized
+                hwnd := spotify.hwnd
+                SetTimer((id := hwnd) => WinMinimize("ahk_id " id), -3500)
+            } else {
+                ; Use Alt+Tab to go back to previous window if it wasn't minimized
+                SetTimer(() => Send("!{Tab}"), -3500)
+            }
         }
     } else if GetKeyState("Alt", "P") {
         ; Alt held: adjust YouTube volume
@@ -193,6 +198,9 @@ GoToSpotifyLibrary() {
             if yt.wasMinimized {
                 hwnd := yt.hwnd
                 SetTimer((id := hwnd) => WinMinimize("ahk_id " id), -3500)
+            } else {
+                ; Use Alt+Tab to go back to previous window if it wasn't minimized
+                SetTimer(() => Send("!{Tab}"), -3500)
             }
         } else {
             Send("{Volume_Down}")
@@ -209,9 +217,16 @@ GoToSpotifyLibrary() {
         if WinWaitActive("ahk_exe Spotify.exe", , 2) {
             Send("^{Up}")
         }
-        if IsObject(spotify) && spotify.wasMinimized {
-            hwnd := spotify.hwnd
-            SetTimer((id := hwnd) => WinMinimize("ahk_id " id), -3500)
+        ; Handle window state after action
+        if IsObject(spotify) {
+            if spotify.wasMinimized {
+                ; Re-minimize if the window was originally minimized
+                hwnd := spotify.hwnd
+                SetTimer((id := hwnd) => WinMinimize("ahk_id " id), -3500)
+            } else {
+                ; Use Alt+Tab to go back to previous window if it wasn't minimized
+                SetTimer(() => Send("!{Tab}"), -3500)
+            }
         }
     } else if GetKeyState("Alt", "P") {
         yt := FocusYouTube()
@@ -220,6 +235,9 @@ GoToSpotifyLibrary() {
             if yt.wasMinimized {
                 hwnd := yt.hwnd
                 SetTimer((id := hwnd) => WinMinimize("ahk_id " id), -3500)
+            } else {
+                ; Use Alt+Tab to go back to previous window if it wasn't minimized
+                SetTimer(() => Send("!{Tab}"), -3500)
             }
         } else {
             Send("{Volume_Up}")
