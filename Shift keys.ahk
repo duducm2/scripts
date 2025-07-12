@@ -231,7 +231,6 @@ GetCheatSheetText() {
 ; ========== GUI creation & showing ========================================
 ToggleShortcutHelp() {
     static helpGui := 0
-
     static shown := false
 
     ; Toggle off if currently shown
@@ -277,8 +276,117 @@ ToggleShortcutHelp() {
     Hotkey "Esc", "On"
 }
 
-; Hotkey: Win + Alt + Shift + A  (#!+a) — toggles the cheat-sheet
-#!+a:: ToggleShortcutHelp()
+; ========== Global shortcuts cheat sheet (Win+Alt+Shift+key) ===============
+ShowGlobalShortcutsHelp() {
+    static globalGui := 0
+    static globalShown := false
+
+    ; Toggle off if currently shown
+    if (IsObject(globalGui) && globalShown) {
+        globalGui.Hide()
+        globalShown := false
+        return
+    }
+
+    ; Create the global shortcuts text with categories
+    globalText := "
+(
+=== ONENOTE ===
+Win+Alt+Shift+N  →  Opens or activates OneNote
+
+=== SPOTIFY ===
+Win+Alt+Shift+S  →  Opens or activates Spotify
+Win+Alt+Shift+D  →  Go to library
+
+=== CHATGPT ===
+Win+Alt+Shift+8  →  Get word pronunciation, definition, and Portuguese translation
+Win+Alt+Shift+9  →  Clicks on the last microphone icon
+Win+Alt+Shift+0  →  Speak with ChatGPT
+Win+Alt+Shift+7  →  Speak with ChatGPT (send message automatically)
+Win+Alt+Shift+P  →  Copy last ChatGPT prompt
+Win+Alt+Shift+J  →  Copy last ChatGPT message (in the editing box)
+Win+Alt+Shift+U  →  Activate ChatGPT and copy last code block
+Win+Alt+Shift+O  →  Check grammar and improve text in both English and Portuguese
+Win+Alt+Shift+I  →  Opens ChatGPT
+Win+Alt+Shift+L  →  Talk with ChatGPT through voice
+
+=== YOUTUBE ===
+Win+Alt+Shift+H  →  Activates Youtube
+
+=== GOOGLE ===
+Win+Alt+Shift+F  →  Opens Google
+
+=== OUTLOOK ===
+Win+Alt+Shift+B  →  Open mail
+Win+Alt+Shift+V  →  Open Reminder
+Win+Alt+Shift+G  →  Open calendar
+
+=== MICROSOFT TEAMS ===
+Win+Alt+Shift+R  →  New conversation
+Win+Alt+Shift+5  →  Toggle Mute (meeting)
+Win+Alt+Shift+4  →  Toggle camera (meeting)
+Win+Alt+Shift+T  →  Screen share (meeting)
+Win+Alt+Shift+2  →  Exit meeting
+Win+Alt+Shift+E  →  Select the chats window
+Win+Alt+Shift+3  →  Select the meeting window
+
+=== WHATSAPP ===
+Win+Alt+Shift+Z  →  Opens WhatsApp
+
+=== WINDOWS ===
+Win+Alt+Shift+6  →  Minimizes windows
+Win+Alt+Shift+M  →  Maximizes the current window
+
+=== GENERAL ===
+Win+Alt+Shift+Q  →  Jump mouse on the middle
+Win+Alt+Shift+X  →  Activate hunt and Peck
+
+=== SHORTCUTS ===
+Win+Alt+Shift+A  →  Show app-specific shortcuts (quick press)
+Win+Alt+Shift+A  →  Show global shortcuts (hold 400ms+)
+)"
+
+    static globalCtrl
+
+    if !IsObject(globalGui) {
+        globalGui := Gui(
+            "+AlwaysOnTop -Caption +ToolWindow +Border +Owner +LastFound"
+        )
+        globalGui.BackColor := "000000"
+        globalGui.SetFont("s10 cFFFF00", "Consolas")  ; Smaller font for more content
+        globalCtrl := globalGui.Add("Edit", "ReadOnly +Multi +VScroll -HScroll -Border Background000000 w760 h540")
+
+        ; Esc also hides
+        Hotkey "Esc", (*) => (globalGui.Hide(), globalShown := false), "Off"
+    }
+
+    ; Update text and show
+    globalCtrl.Value := globalText
+    globalGui.Show("NoActivate Center w780 h560")
+    globalShown := true
+    Hotkey "Esc", "On"
+}
+
+; ========== Hotkey with hold detection ====================================
+; Win + Alt + Shift + A with hold detection
+#!+a::
+{
+    static pressTime := 0
+    pressTime := A_TickCount
+
+    ; Wait for key release or timeout
+    KeyWait "a", "T0.4"  ; Wait max 400ms for key release
+
+    holdTime := A_TickCount - pressTime
+
+    if (holdTime >= 400) {
+        ; Long hold - show global shortcuts
+        ShowGlobalShortcutsHelp()
+    } else {
+        ; Quick press - show app-specific shortcuts
+        ToggleShortcutHelp()
+    }
+}
 
 ;-------------------------------------------------------------------
 ; Environment paths (unchanged)
