@@ -228,15 +228,20 @@ GetCheatSheetText() {
     return ""
 }
 
+; ========== Shared variables for cheat sheet state ========================
+global g_helpGui := 0
+global g_helpShown := false
+global g_globalGui := 0
+global g_globalShown := false
+
 ; ========== GUI creation & showing ========================================
 ToggleShortcutHelp() {
-    static helpGui := 0
-    static shown := false
+    global g_helpGui, g_helpShown
 
     ; Toggle off if currently shown
-    if (IsObject(helpGui) && shown) {
-        helpGui.Hide()
-        shown := false
+    if (IsObject(g_helpGui) && g_helpShown) {
+        g_helpGui.Hide()
+        g_helpShown := false
         return
     }
 
@@ -249,16 +254,17 @@ ToggleShortcutHelp() {
 
     static cheatCtrl
 
-    if !IsObject(helpGui) {
-        helpGui := Gui(
+    if !IsObject(g_helpGui) {
+        g_helpGui := Gui(
             "+AlwaysOnTop -Caption +ToolWindow +Border +Owner +LastFound"
         )
-        helpGui.BackColor := "000000"
-        helpGui.SetFont("s12 cFFFF00", "Consolas")
-        cheatCtrl := helpGui.Add("Edit", "ReadOnly +Multi -E0x200 -VScroll -HScroll -Border Background000000 w600 r1")
+        g_helpGui.BackColor := "000000"
+        g_helpGui.SetFont("s12 cFFFF00", "Consolas")
+        cheatCtrl := g_helpGui.Add("Edit", "ReadOnly +Multi -E0x200 -VScroll -HScroll -Border Background000000 w600 r1"
+        )
 
         ; Esc also hides
-        Hotkey "Esc", (*) => (helpGui.Hide(), shown := false), "Off"
+        Hotkey "Esc", (*) => (g_helpGui.Hide(), g_helpShown := false), "Off"
     }
 
     ; Update cheat-sheet text and resize height to fit
@@ -271,20 +277,19 @@ ToggleShortcutHelp() {
 
     ; Resize the control and GUI explicitly
     cheatCtrl.Move(, , 600, controlHeight)
-    helpGui.Show("NoActivate Center w620 h" guiHeight)
-    shown := true
+    g_helpGui.Show("NoActivate Center w620 h" guiHeight)
+    g_helpShown := true
     Hotkey "Esc", "On"
 }
 
 ; ========== Global shortcuts cheat sheet (Win+Alt+Shift+key) ===============
 ShowGlobalShortcutsHelp() {
-    static globalGui := 0
-    static globalShown := false
+    global g_globalGui, g_globalShown
 
     ; Toggle off if currently shown
-    if (IsObject(globalGui) && globalShown) {
-        globalGui.Hide()
-        globalShown := false
+    if (IsObject(g_globalGui) && g_globalShown) {
+        g_globalGui.Hide()
+        g_globalShown := false
         return
     }
 
@@ -348,22 +353,22 @@ Win+Alt+Shift+A  →  Show global shortcuts (hold 400ms+)
 
     static globalCtrl
 
-    if !IsObject(globalGui) {
-        globalGui := Gui(
+    if !IsObject(g_globalGui) {
+        g_globalGui := Gui(
             "+AlwaysOnTop -Caption +ToolWindow +Border +Owner +LastFound"
         )
-        globalGui.BackColor := "000000"
-        globalGui.SetFont("s10 cFFFF00", "Consolas")  ; Smaller font for more content
-        globalCtrl := globalGui.Add("Edit", "ReadOnly +Multi +VScroll -HScroll -Border Background000000 w760 h540")
+        g_globalGui.BackColor := "000000"
+        g_globalGui.SetFont("s10 cFFFF00", "Consolas")  ; Smaller font for more content
+        globalCtrl := g_globalGui.Add("Edit", "ReadOnly +Multi +VScroll -HScroll -Border Background000000 w760 h540")
 
         ; Esc also hides
-        Hotkey "Esc", (*) => (globalGui.Hide(), globalShown := false), "Off"
+        Hotkey "Esc", (*) => (g_globalGui.Hide(), g_globalShown := false), "Off"
     }
 
     ; Update text and show
     globalCtrl.Value := globalText
-    globalGui.Show("NoActivate Center w780 h560")
-    globalShown := true
+    g_globalGui.Show("NoActivate Center w780 h560")
+    g_globalShown := true
     Hotkey "Esc", "On"
 }
 
@@ -371,6 +376,22 @@ Win+Alt+Shift+A  →  Show global shortcuts (hold 400ms+)
 ; Win + Alt + Shift + A with hold detection
 #!+a::
 {
+    global g_helpGui, g_helpShown, g_globalGui, g_globalShown
+
+    ; First check if any cheat sheet is currently open - if so, close it
+    if (IsObject(g_helpGui) && g_helpShown) {
+        g_helpGui.Hide()
+        g_helpShown := false
+        return
+    }
+
+    if (IsObject(g_globalGui) && g_globalShown) {
+        g_globalGui.Hide()
+        g_globalShown := false
+        return
+    }
+
+    ; No cheat sheet is open, determine which one to show based on hold time
     static pressTime := 0
     pressTime := A_TickCount
 
