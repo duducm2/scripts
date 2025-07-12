@@ -133,9 +133,9 @@ ToggleShortcutHelp() {
         helpGui := Gui(
             "+AlwaysOnTop -Caption +ToolWindow +Border +Owner +LastFound"
         )
-        helpGui.BackColor := "222222"
-        helpGui.SetFont("s12 cFFFFFF", "Consolas")
-        helpGui.Add("Edit", "vCheatText ReadOnly -E0x200 r10 w430")
+        helpGui.BackColor := "000000"
+        helpGui.SetFont("s12 cFFFF00", "Consolas")
+        helpGui.Add("Edit", "vCheatText ReadOnly -E0x200 r10 w430 Background000000")
 
         ; Esc also hides
         Hotkey "Esc", (*) => (helpGui.Hide(), shown := false), "Off"
@@ -144,7 +144,6 @@ ToggleShortcutHelp() {
     helpGui["CheatText"].Value := text
 
     helpGui.Show("NoActivate AutoSize Center")
-    WinSetTransparent(240, helpGui.Hwnd)
 
     shown := true
     Hotkey "Esc", "On"
