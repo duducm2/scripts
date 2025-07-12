@@ -187,7 +187,7 @@ GoToSpotifyLibrary() {
                 SetTimer((id := hwnd) => WinMinimize("ahk_id " id), -3500)
             } else {
                 ; Use Alt+Tab to go back to previous window if it wasn't minimized
-                SetTimer(() => Send("!{Tab}"), -3500)
+                ScheduleAltTab()
             }
         }
     } else if GetKeyState("Alt", "P") {
@@ -200,7 +200,7 @@ GoToSpotifyLibrary() {
                 SetTimer((id := hwnd) => WinMinimize("ahk_id " id), -3500)
             } else {
                 ; Use Alt+Tab to go back to previous window if it wasn't minimized
-                SetTimer(() => Send("!{Tab}"), -3500)
+                ScheduleAltTab()
             }
         } else {
             Send("{Volume_Down}")
@@ -225,7 +225,7 @@ GoToSpotifyLibrary() {
                 SetTimer((id := hwnd) => WinMinimize("ahk_id " id), -3500)
             } else {
                 ; Use Alt+Tab to go back to previous window if it wasn't minimized
-                SetTimer(() => Send("!{Tab}"), -3500)
+                ScheduleAltTab()
             }
         }
     } else if GetKeyState("Alt", "P") {
@@ -237,7 +237,7 @@ GoToSpotifyLibrary() {
                 SetTimer((id := hwnd) => WinMinimize("ahk_id " id), -3500)
             } else {
                 ; Use Alt+Tab to go back to previous window if it wasn't minimized
-                SetTimer(() => Send("!{Tab}"), -3500)
+                ScheduleAltTab()
             }
         } else {
             Send("{Volume_Up}")
@@ -283,4 +283,18 @@ FocusYouTube() {
 CenterMouse() {
     Sleep(200)
     Send("#!+q")
+}
+
+; =============================================================================
+; Helper function to schedule a single Alt+Tab after 3.5 seconds of inactivity
+; =============================================================================
+ScheduleAltTab() {
+    ; Cancel any existing scheduled Alt+Tab so we only trigger it once
+    SetTimer(DoAltTab, 0)
+    ; Schedule a new one-shot Alt+Tab for 3.5 seconds from now
+    SetTimer(DoAltTab, -3500)
+}
+
+DoAltTab() {
+    Send("!{Tab}")
 }
