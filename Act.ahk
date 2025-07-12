@@ -88,7 +88,9 @@
 
 ;---------------------------------------- Win + Alt + Shift + keys ----------------------------------
 ; ----- Available -----------
-; A C K W X Y 1
+; C K W X Y 1
+; ----- Show shortcuts with shift + key -------------
+;     Win + Alt + Shift + A : Show shortcuts with shift + key
 ; ----- Onenote -------------
 ;     Win + Alt + Shift + N : Opens or activates OneNote
 ; ----- Spotify -------------

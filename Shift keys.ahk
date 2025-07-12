@@ -19,6 +19,141 @@ SendSymbol(sym) {
 }
 
 ;-------------------------------------------------------------------
+; Cheat-sheet overlay (Win + Alt + Shift + A) – shows remapped shortcuts
+;-------------------------------------------------------------------
+
+; Map that stores the pop-up text for each application.  Extend freely.
+cheatSheets := Map()
+
+; --- WhatsApp desktop -------------------------------------------------------
+cheatSheets["WhatsApp"] := "
+(
+Shift+Y  →  Toggle voice message
+Shift+U  →  Search chats
+Shift+I  →  Reply
+Shift+O  →  Sticker panel
+Shift+P  →  Toggle Unread filter
+Shift+H  →  Focus current chat
+)"  ; end WhatsApp
+
+; --- Outlook main window ----------------------------------------------------
+cheatSheets["OUTLOOK.EXE"] := "
+(
+Shift+Y  →  Send to General
+Shift+U  →  Send to Newsletter
+Shift+H  →  Subject / Title
+Shift+J  →  Required / To
+Shift+K  →  Date Picker
+Shift+L  →  Subject → Body
+Shift+N  →  Focused / Other
+Shift+M  →  Make Recurring → Tab
+)"  ; end Outlook
+
+; --- Microsoft Teams – meeting window --------------------------------------
+cheatSheets["TeamsMeeting"] := "
+(
+Shift+Y  →  Open Chat pane
+Shift+U  →  Maximize meeting window
+)"  ; end TeamsMeeting
+
+; --- Microsoft Teams – chat window -----------------------------------------
+cheatSheets["TeamsChat"] := "
+(
+Shift+K  →  Pin chat
+Shift+J  →  Mark unread
+Shift+Y  →  Like
+Shift+U  →  Heart
+Shift+I  →  Laugh
+Shift+L  →  Remove pin
+Shift+R  →  Reply
+Shift+E  →  Edit message
+Shift+O  →  Home panel
+)"  ; end TeamsChat
+
+; --- Spotify ---------------------------------------------------------------
+cheatSheets["Spotify.exe"] := "
+(
+Shift+Y  →  Toggle Connect panel
+Shift+U  →  Toggle Full screen
+)"  ; end Spotify
+
+; ========== Helper to decide which sheet applies ===========================
+GetCheatSheetText() {
+    global cheatSheets
+
+    exe := WinGetProcessName("A") ; active process name (e.g. chrome.exe)
+    title := WinGetTitle("A")
+
+    ; Special handling for Chrome-based apps that share chrome.exe
+    if (exe = "chrome.exe") {
+        if InStr(title, "WhatsApp")
+            return cheatSheets.Has("WhatsApp") ? cheatSheets["WhatsApp"] : ""
+        if InStr(title, "Gmail")
+            return "(Gmail)``r``nShift+Y → Inbox``r``nShift+U → Updates``r``nShift+I → Mark read``r``nShift+O → Mark unread"
+        if InStr(title, "ChatGPT") || InStr(title, "chatgpt")
+            return "(ChatGPT)``r``nShift+Y → Cut all``r``nShift+U → Model selector``r``nShift+I → Toggle sidebar``r``nShift+O → Type " "chatgpt" "``r``nShift+P → New chat``r``nShift+H → Copy code block"
+    }
+
+    ; Microsoft Teams – differentiate meeting vs chat via helper predicates
+    if IsTeamsMeetingActive()
+        return cheatSheets.Has("TeamsMeeting") ? cheatSheets["TeamsMeeting"] : ""
+    if IsTeamsChatActive()
+        return cheatSheets.Has("TeamsChat") ? cheatSheets["TeamsChat"] : ""
+
+    ; Direct match by process name
+    if cheatSheets.Has(exe)
+        return cheatSheets[exe]
+
+    ; Nothing found → blank → caller will show fallback message
+    return ""
+}
+
+; ========== GUI creation & showing ========================================
+ToggleShortcutHelp() {
+    static helpGui := 0
+
+    static shown := false
+
+    ; Toggle off if currently shown
+    if (IsObject(helpGui) && shown) {
+        helpGui.Hide()
+        shown := false
+        return
+    }
+
+    ; Ensure text for current context
+    text := GetCheatSheetText()
+    if (text = "") {
+        exe := WinGetProcessName("A")
+        text := "No cheat-sheet registered for:`n" exe
+    }
+
+    ; Build GUI on first use
+    if !IsObject(helpGui) {
+        helpGui := Gui(
+            "+AlwaysOnTop -Caption +ToolWindow +Border +Owner +LastFound"
+        )
+        helpGui.BackColor := "222222"
+        helpGui.SetFont("s12 cFFFFFF", "Consolas")
+        helpGui.Add("Edit", "vCheatText ReadOnly -E0x200 r10 w430")
+
+        ; Esc also hides
+        Hotkey "Esc", (*) => (helpGui.Hide(), shown := false), "Off"
+    }
+
+    helpGui["CheatText"].Value := text
+
+    helpGui.Show("NoActivate AutoSize Center")
+    WinSetTransparent(240, helpGui.Hwnd)
+
+    shown := true
+    Hotkey "Esc", "On"
+}
+
+; Hotkey: Win + Alt + Shift + A  (#!+a) — toggles the cheat-sheet
+#!+a:: ToggleShortcutHelp()
+
+;-------------------------------------------------------------------
 ; Environment paths (unchanged)
 ;-------------------------------------------------------------------
 global WORK_SCRIPTS_PATH := "C:\Users\fie7ca\Documents\01 - Scripts"
