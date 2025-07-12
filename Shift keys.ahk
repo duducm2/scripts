@@ -25,6 +25,10 @@ SendSymbol(sym) {
 ; Map that stores the pop-up text for each application.  Extend freely.
 cheatSheets := Map()
 
+;---------------------------------------- Shift + keys ----------------------------------------------
+; ----- You can have repeated keys, depending on the software.
+; ----- Prefered Keys sequences (most important first): Y U I O P H J K L N M , . 6 7 8 9 0 W E R T D F G C V B
+
 ; --- WhatsApp desktop -------------------------------------------------------
 cheatSheets["WhatsApp"] := "
 (
@@ -132,6 +136,45 @@ Shift+6  →  Switch brackets
 Shift+7  →  Search
 Shift+8  →  Save all documents
 )"  ; end VS Code
+
+; --- Windows Explorer ------------------------------------------------------
+cheatSheets["explorer.exe"] := "
+(
+Shift+Y  →  Select first file
+Shift+U  →  New folder
+Shift+I  →  New shortcut
+)"  ; end Explorer
+
+; --- ClipAngel -------------------------------------------------------------
+cheatSheets["ClipAngel.exe"] := "
+(
+Shift+Y  →  Select filtered content and copy
+)"  ; end ClipAngel
+
+; --- Figma -----------------------------------------------------------------
+cheatSheets["Figma.exe"] := "
+(
+Shift+Y  →  Show/Hide UI
+Shift+U  →  Component search
+Shift+I  →  Select parent
+Shift+O  →  Create component
+Shift+P  →  Detach instance
+Shift+H  →  Add auto layout
+Shift+J  →  Remove auto layout
+Shift+K  →  Suggest auto layout
+Shift+L  →  Export
+Shift+N  →  Copy as PNG
+Shift+M  →  Actions...
+Shift+,  →  Align left
+Shift+.  →  Align right
+Shift+6  →  Align top
+Shift+7  →  Align bottom
+Shift+8  →  Align center horizontal
+Shift+9  →  Align center vertical
+Shift+0  →  Distribute horizontal spacing
+Shift+W  →  Distribute vertical spacing
+Shift+E  →  Tidy up
+)"  ; end Figma
 
 ; ========== Helper to decide which sheet applies ===========================
 GetCheatSheetText() {
