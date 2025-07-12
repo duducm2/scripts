@@ -89,9 +89,9 @@ GetCheatSheetText() {
         if InStr(title, "WhatsApp")
             return cheatSheets.Has("WhatsApp") ? cheatSheets["WhatsApp"] : ""
         if InStr(title, "Gmail")
-            return "(Gmail)``r``nShift+Y → Inbox``r``nShift+U → Updates``r``nShift+I → Mark read``r``nShift+O → Mark unread"
+            return "(Gmail)`r`nShift+Y → Inbox`r`nShift+U → Updates`r`nShift+I → Mark read`r`nShift+O → Mark unread"
         if InStr(title, "ChatGPT") || InStr(title, "chatgpt")
-            return "(ChatGPT)``r``nShift+Y → Cut all``r``nShift+U → Model selector``r``nShift+I → Toggle sidebar``r``nShift+O → Type " "chatgpt" "``r``nShift+P → New chat``r``nShift+H → Copy code block"
+            return "(ChatGPT)`r`nShift+Y → Cut all`r`nShift+U → Model selector`r`nShift+I → Toggle sidebar`r`nShift+O → Type " "chatgpt" "`r`nShift+P → New chat`r`nShift+H → Copy code block"
     }
 
     ; Microsoft Teams – differentiate meeting vs chat via helper predicates
@@ -128,23 +128,31 @@ ToggleShortcutHelp() {
         text := "No cheat-sheet registered for:`n" exe
     }
 
-    ; Build GUI on first use
+    static cheatCtrl
+
     if !IsObject(helpGui) {
         helpGui := Gui(
             "+AlwaysOnTop -Caption +ToolWindow +Border +Owner +LastFound"
         )
         helpGui.BackColor := "000000"
         helpGui.SetFont("s12 cFFFF00", "Consolas")
-        helpGui.Add("Edit", "vCheatText ReadOnly -E0x200 r10 w430 Background000000")
+        cheatCtrl := helpGui.Add("Edit", "ReadOnly +Multi -E0x200 -VScroll -HScroll -Border Background000000 w600 r1")
 
         ; Esc also hides
         Hotkey "Esc", (*) => (helpGui.Hide(), shown := false), "Off"
     }
 
-    helpGui["CheatText"].Value := text
+    ; Update cheat-sheet text and resize height to fit
+    cheatCtrl.Value := text
+    lineCnt := StrLen(text) ? StrSplit(text, "`n").Length : 1
 
-    helpGui.Show("NoActivate AutoSize Center")
+    ; Calculate height based on line count (font size 12 ≈ 20px per line + margins)
+    controlHeight := lineCnt * 20 + 10
+    guiHeight := controlHeight + 20  ; Add padding for GUI borders
 
+    ; Resize the control and GUI explicitly
+    cheatCtrl.Move(, , 600, controlHeight)
+    helpGui.Show("NoActivate Center w620 h" guiHeight)
     shown := true
     Hotkey "Esc", "On"
 }
