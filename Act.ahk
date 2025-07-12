@@ -137,8 +137,7 @@
 ; ----- Prefered Keys sequences (most important first): Y U I O P H J K L N M , . 6 7 8 9 0 W E R T D F G C V B
 ; ----- Spotify -----
 ;     Shift + Y : Toggle devices
-;     Shift + U : Select devices areas
-;     Shift + I : Full screen
+;     Shift + U : Full screen
 ; ----- Microsoft Teams (chat) -----
 ;     Shift + J : Mark as unread
 ;     Shift + Y : Like

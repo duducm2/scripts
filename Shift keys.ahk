@@ -77,6 +77,17 @@ Shift+Y  →  Toggle Connect panel
 Shift+U  →  Toggle Full screen
 )"  ; end Spotify
 
+; --- OneNote ---------------------------------------------------------------
+cheatSheets["ONENOTE.EXE"] := "
+(
+Shift+Y  →  Select line and children
+Shift+U  →  Expand
+Shift+I  →  Collapse
+Shift+J  →  Expand all
+Shift+K  →  Collapse all
+Shift+D  →  Delete line and children
+)"  ; end OneNote
+
 ; ========== Helper to decide which sheet applies ===========================
 GetCheatSheetText() {
     global cheatSheets
@@ -103,6 +114,12 @@ GetCheatSheetText() {
     ; Direct match by process name
     if cheatSheets.Has(exe)
         return cheatSheets[exe]
+
+    ; Try case-insensitive match for process name
+    for key, value in cheatSheets {
+        if (StrLower(key) = StrLower(exe))
+            return value
+    }
 
     ; Nothing found → blank → caller will show fallback message
     return ""
