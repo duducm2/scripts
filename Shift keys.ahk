@@ -88,6 +88,51 @@ Shift+K  →  Collapse all
 Shift+D  →  Delete line and children
 )"  ; end OneNote
 
+; --- Chrome general shortcuts ----------------------------------------------
+cheatSheets["chrome.exe"] := "
+(
+Shift+G  →  Pop current tab to new window
+)"  ; end Chrome
+
+; --- Cursor / VS Code ------------------------------------------------------
+cheatSheets["Cursor.exe"] := "
+(
+Shift+Y  →  Unfold
+Shift+U  →  Fold
+Shift+I  →  Unfold all
+Shift+O  →  Fold all
+Shift+P  →  Go to terminal
+Shift+H  →  New terminal
+Shift+J  →  Go to file explorer
+Shift+K  →  Format code
+Shift+L  →  Command palette
+Shift+M  →  Change project
+Shift+,  →  Show chat history
+Shift+.  →  Extensions
+Shift+6  →  Switch brackets
+Shift+7  →  Search
+Shift+8  →  Save all documents
+)"  ; end Cursor
+
+cheatSheets["Code.exe"] := "
+(
+Shift+Y  →  Unfold
+Shift+U  →  Fold
+Shift+I  →  Unfold all
+Shift+O  →  Fold all
+Shift+P  →  Go to terminal
+Shift+H  →  New terminal
+Shift+J  →  Go to file explorer
+Shift+K  →  Format code
+Shift+L  →  Command palette
+Shift+M  →  Change project
+Shift+,  →  Show chat history
+Shift+.  →  Extensions
+Shift+6  →  Switch brackets
+Shift+7  →  Search
+Shift+8  →  Save all documents
+)"  ; end VS Code
+
 ; ========== Helper to decide which sheet applies ===========================
 GetCheatSheetText() {
     global cheatSheets
@@ -97,12 +142,27 @@ GetCheatSheetText() {
 
     ; Special handling for Chrome-based apps that share chrome.exe
     if (exe = "chrome.exe") {
+        chromeShortcuts := cheatSheets.Has("chrome.exe") ? cheatSheets["chrome.exe"] : ""
+        appShortcuts := ""
+
         if InStr(title, "WhatsApp")
-            return cheatSheets.Has("WhatsApp") ? cheatSheets["WhatsApp"] : ""
+            appShortcuts := cheatSheets.Has("WhatsApp") ? cheatSheets["WhatsApp"] : ""
         if InStr(title, "Gmail")
-            return "(Gmail)`r`nShift+Y → Inbox`r`nShift+U → Updates`r`nShift+I → Mark read`r`nShift+O → Mark unread"
+            appShortcuts :=
+                "(Gmail)`r`nShift+Y → Inbox`r`nShift+U → Updates`r`nShift+I → Mark read`r`nShift+O → Mark unread"
         if InStr(title, "ChatGPT") || InStr(title, "chatgpt")
-            return "(ChatGPT)`r`nShift+Y → Cut all`r`nShift+U → Model selector`r`nShift+I → Toggle sidebar`r`nShift+O → Type " "chatgpt" "`r`nShift+P → New chat`r`nShift+H → Copy code block"
+            appShortcuts :=
+                "(ChatGPT)`r`nShift+Y → Cut all`r`nShift+U → Model selector`r`nShift+I → Toggle sidebar`r`nShift+O → Type " "chatgpt" "`r`nShift+P → New chat`r`nShift+H → Copy code block"
+
+        ; Combine Chrome general + app-specific shortcuts
+        if (appShortcuts != "" && chromeShortcuts != "")
+            return "(Chrome)`r`n" chromeShortcuts "`r`n`r`n" appShortcuts
+        else if (appShortcuts != "")
+            return appShortcuts
+        else if (chromeShortcuts != "")
+            return "(Chrome)`r`n" chromeShortcuts
+        else
+            return ""
     }
 
     ; Microsoft Teams – differentiate meeting vs chat via helper predicates
