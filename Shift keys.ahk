@@ -155,8 +155,9 @@ cheatSheets["explorer.exe"] := "
 (
 Explorer
 Shift+Y  →  Select first file
-Shift+U  →  New folder
-Shift+I  →  New shortcut
+Shift+U  →  Focus search bar
+Shift+I  →  Focus address bar
+Shift+O  →  New folder
 )"  ; end Explorer
 
 ; --- ClipAngel -------------------------------------------------------------
@@ -1235,30 +1236,14 @@ FocusOutlookField(criteria) {
     }
 }
 
-; Shift + U : New folder
-+u:: Send("^+n")
+; Shift + U : Focus search bar (Ctrl+E/F)
++u:: Send "^e"
 
-; Shift + I : New Shortcut
-+i::
-{
-    try
-    {
-        explorerEl := UIA.ElementFromHandle(WinExist("A"))
-        newButton := explorerEl.FindFirst({ Name: "Novo", Type: "Button" })
-        newButton.Click()
-        Sleep 150
-        Send "{Down}"
-        Send "{Enter}"
-    }
-    catch Error {
-        ; Fallback: open context menu and choose Shortcut
-        Send "+{F10}"
-        Sleep 150
-        Send "w"  ; New submenu (assumes English—adjust if needed)
-        Sleep 100
-        Send "s"  ; Shortcut option (assumes English—adjust if needed)
-    }
-}
+; Shift + I : Focus address bar (Alt+D)
++i:: Send "!d"
+
+; Shift + O : New folder
++o:: Send("^+n")
 
 #HotIf
 
