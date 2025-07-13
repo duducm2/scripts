@@ -164,6 +164,13 @@ cheatSheets["ClipAngel.exe"] := "
 (
 ClipAngel
 Shift+Y  →  Select filtered content and copy
+Shift+U  →  Switch focus list/text
+Shift+I  →  Delete all non-favorite
+Shift+O  →  Clear filters
+Shift+P  →  Mark as favorite
+Shift+H  →  Unmark as favorite
+Shift+J  →  Edit text
+Shift+K  →  Save as file
 )"  ; end ClipAngel
 
 ; --- Figma -----------------------------------------------------------------
@@ -505,6 +512,27 @@ ShowErr(err) {
     Sleep "300"
     Send "{F10}"
 }
+
+; Shift + U : Switch focus between list and text (F10)
++u:: Send "{F10}"
+
+; Shift + I : Delete all non-favorite (Ctrl+Alt+K)
++i:: Send "^!k"
+
+; Shift + O : Clear filters (F7)
++o:: Send "{F7}"
+
+; Shift + P : Mark as favorite (Alt+Q)
++p:: Send "!q"
+
+; Shift + H : Unmark as favorite (Alt+W)
++h:: Send "!w"
+
+; Shift + J : Edit text (F4)
++j:: Send "{F4}"
+
+; Shift + K : Save as file (Ctrl+S)
++k:: Send "^s"
 
 #HotIf
 
