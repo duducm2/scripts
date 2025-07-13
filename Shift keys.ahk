@@ -1457,47 +1457,29 @@ IsEditorActive() {
 ; Shift + U : Toggle full screen
 +u::
 {
-    retryCount := 0
-    maxRetries := 1
+    try {
+        spot := UIA_Browser("ahk_exe Spotify.exe")
+        Sleep 300
 
-    while (retryCount <= maxRetries) {
-        try {
-            spot := UIA_Browser("ahk_exe Spotify.exe")
-            Sleep 300
+        ; Look for either Enter or Exit full screen button with case-insensitive pattern
+        enterFsPattern := "i)^Enter Full[- ]?screen$"
+        exitFsPattern := "i)^Exit Full[- ]?screen$"
 
-            ; Check if any RadioButton elements are visible (indicates full screen mode)
-            inFullScreen := false
-            try {
-                radioButtons := spot.FindAll({ Type: "RadioButton" })
-                if (radioButtons.Length > 0) {
-                    inFullScreen := true
-                }
-            } catch {
-                ; No radio buttons found, not in full screen
-            }
-
-            if (inFullScreen) {
-                ; We're in full screen, exit with ESC twice
-                Send "{Esc}"
-                Sleep 100
-                Send "{Esc}"
+        ; First attempt - immediate check
+        enterFsBtn := WaitForButton(spot, enterFsPattern, 500)
+        if (!enterFsBtn) {
+            exitFsBtn := WaitForButton(spot, exitFsPattern, 500)
+            if (!exitFsBtn) {
+                ; Wait 1 second and try again
+                Sleep 1000
+                exitFsBtn := WaitForButton(spot, exitFsPattern, 500)
+                if (exitFsBtn)
+                    exitFsBtn.Invoke()
             } else {
-                ; Not in full screen, look for Enter Full screen button
-                enterFsPattern := "i)^Enter Full screen$"
-                if (btn := WaitForButton(spot, enterFsPattern, 1000)) {
-                    btn.Invoke()
-                } else {
-                    MsgBox "Couldn't find the Enter Full screen button."
-                }
+                exitFsBtn.Invoke()
             }
-            return ; Success, exit the retry loop
-        } catch Error as e {
-            retryCount++
-            if (retryCount > maxRetries) {
-                MsgBox "Error after retry: " e.Message
-            } else {
-                Sleep 500 ; Wait before retry
-            }
+        } else {
+            enterFsBtn.Invoke()
         }
     }
 }
