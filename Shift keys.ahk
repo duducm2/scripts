@@ -126,6 +126,7 @@ Shift+.  →  Extensions
 Shift+6  →  Switch brackets
 Shift+7  →  Search
 Shift+8  →  Save all documents
+Shift+9  →  Change ML model
 )"  ; end Cursor
 
 cheatSheets["Code.exe"] := "
@@ -146,6 +147,7 @@ Shift+.  →  Extensions
 Shift+6  →  Switch brackets
 Shift+7  →  Search
 Shift+8  →  Save all documents
+Shift+9  →  Change ML model
 )"  ; end VS Code
 
 ; --- Windows Explorer ------------------------------------------------------
@@ -190,6 +192,30 @@ Shift+W  →  Distribute vertical spacing
 Shift+E  →  Tidy up
 )"  ; end Figma
 
+; --- Gmail ---------------------------------------------------------------
+cheatSheets["Gmail"] := "
+(
+Gmail
+Shift+Y  →  Go to main inbox
+Shift+U  →  Go to updates
+Shift+I  →  Mark as read
+Shift+O  →  Mark as unread
+Shift+P  →  Previous conversation
+Shift+H  →  Next conversation
+Shift+J  →  Archive conversation
+Shift+K  →  Select conversation
+Shift+L  →  Reply
+Shift+N  →  Reply all
+Shift+M  →  Forward
+Shift+,  →  Star/unstar conversation
+Shift+.  →  Delete
+Shift+6  →  Report as spam
+Shift+7  →  Compose new email
+Shift+8  →  Search mail
+Shift+9  →  Move to folder
+Shift+0  →  Show keyboard shortcuts help
+)"  ; end Gmail
+
 ; ========== Helper to decide which sheet applies ===========================
 GetCheatSheetText() {
     global cheatSheets
@@ -205,8 +231,7 @@ GetCheatSheetText() {
         if InStr(title, "WhatsApp")
             appShortcuts := cheatSheets.Has("WhatsApp") ? cheatSheets["WhatsApp"] : ""
         if InStr(title, "Gmail")
-            appShortcuts :=
-                "(Gmail)`r`nShift+Y → Inbox`r`nShift+U → Updates`r`nShift+I → Mark read`r`nShift+O → Mark unread"
+            appShortcuts := cheatSheets.Has("Gmail") ? cheatSheets["Gmail"] : ""
         if InStr(title, "ChatGPT") || InStr(title, "chatgpt")
             appShortcuts :=
                 "(ChatGPT)`r`nShift+Y → Cut all`r`nShift+U → Model selector`r`nShift+I → Toggle sidebar`r`nShift+O → Type " "chatgpt" "`r`nShift+P → New chat`r`nShift+H → Copy code block"
@@ -1214,10 +1239,10 @@ FocusOutlookField(criteria) {
 ;-------------------------------------------------------------------
 #HotIf WinActive("Gmail")
 
-; Shift + Y: Go to main inbox
+; Shift + Y: Go to main inbox (already implemented)
 +y:: Send("gi")
 
-; Shift + U: Go to updates
+; Shift + U: Go to updates (already implemented with UIA)
 +u::
 {
     try
@@ -1241,11 +1266,53 @@ FocusOutlookField(criteria) {
     }
 }
 
-; Shift + I: Mark as read
+; Shift + I: Mark as read (already implemented)
 +i:: Send("+i")
 
-; Shift + O: Mark as unread
+; Shift + O: Mark as unread (already implemented)
 +o:: Send("+u")
+
+; Shift + P: Previous conversation
++p:: Send("p")
+
+; Shift + H: Next conversation
++h:: Send("n")
+
+; Shift + J: Archive conversation
++j:: Send("e")
+
+; Shift + K: Select conversation
++k:: Send("x")
+
+; Shift + L: Reply
++l:: Send("r")
+
+; Shift + N: Reply all
++n:: Send("a")
+
+; Shift + M: Forward
++m:: Send("f")
+
+; Shift + ,: Star/unstar conversation
++,:: Send("s")
+
+; Shift + .: Delete
++.:: Send("#")
+
+; Shift + 6: Report as spam
++6:: Send("!")
+
+; Shift + 7: Compose new email
++7:: Send("c")
+
+; Shift + 8: Search mail
++8:: Send("/")
+
+; Shift + 9: Move to folder
++9:: Send("v")
+
+; Shift + 0: Show keyboard shortcuts help
++0:: Send("?")
 
 #HotIf
 
@@ -1333,6 +1400,9 @@ IsEditorActive() {
     Send "^k"
     Send "s"
 }
+
+; Shift + 9 : Trigger Ctrl+;
++9:: Send "^;"
 
 #HotIf
 
