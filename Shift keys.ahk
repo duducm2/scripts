@@ -98,6 +98,7 @@ Shift+M  →  Go to New Releases
 Shift+,  →  Go to Charts
 Shift+.  →  Toggle Now Playing View
 Shift+6  →  Toggle Library Sidebar
+Shift+7  →  Toggle Fullscreen Library
 )"  ; end Spotify
 
 ; --- OneNote ---------------------------------------------------------------
@@ -1519,6 +1520,25 @@ IsEditorActive() {
 
 ; Shift + 6 : Toggle Your Library Sidebar (Alt+Shift+L)
 +6:: Send "!+l"
+
+; Shift + 7 : Toggle Fullscreen Library
++7::
+{
+    try {
+        spot := UIA_Browser("ahk_exe Spotify.exe")
+        Sleep 300
+
+        ; Find the fullscreen library button
+        fullscreenLibBtn := spot.FindElement({ Name: "fullscreen library", Type: "Button" })
+        if (fullscreenLibBtn) {
+            fullscreenLibBtn.Click()
+        } else {
+            MsgBox "Could not find the fullscreen library button.", "Spotify Navigation", "IconX"
+        }
+    } catch Error as e {
+        MsgBox "Error toggling fullscreen library: " e.Message, "Spotify Error", "IconX"
+    }
+}
 
 #HotIf
 
