@@ -32,17 +32,21 @@ cheatSheets := Map()
 ; --- WhatsApp desktop -------------------------------------------------------
 cheatSheets["WhatsApp"] := "
 (
+WhatsApp
 Shift+Y  →  Toggle voice message
 Shift+U  →  Search chats
 Shift+I  →  Reply
 Shift+O  →  Sticker panel
 Shift+P  →  Toggle Unread filter
 Shift+H  →  Focus current chat
+Shift+J  →  Mark as read or unread
+Shift+K  →  Pin chat or unpin chat
 )"  ; end WhatsApp
 
 ; --- Outlook main window ----------------------------------------------------
 cheatSheets["OUTLOOK.EXE"] := "
 (
+Outlook
 Shift+Y  →  Send to General
 Shift+U  →  Send to Newsletter
 Shift+H  →  Subject / Title
@@ -56,6 +60,7 @@ Shift+M  →  Make Recurring → Tab
 ; --- Microsoft Teams – meeting window --------------------------------------
 cheatSheets["TeamsMeeting"] := "
 (
+Teams
 Shift+Y  →  Open Chat pane
 Shift+U  →  Maximize meeting window
 )"  ; end TeamsMeeting
@@ -63,6 +68,7 @@ Shift+U  →  Maximize meeting window
 ; --- Microsoft Teams – chat window -----------------------------------------
 cheatSheets["TeamsChat"] := "
 (
+Teams
 Shift+K  →  Pin chat
 Shift+J  →  Mark unread
 Shift+Y  →  Like
@@ -77,6 +83,7 @@ Shift+O  →  Home panel
 ; --- Spotify ---------------------------------------------------------------
 cheatSheets["Spotify.exe"] := "
 (
+Spotify
 Shift+Y  →  Toggle Connect panel
 Shift+U  →  Toggle Full screen
 )"  ; end Spotify
@@ -84,6 +91,7 @@ Shift+U  →  Toggle Full screen
 ; --- OneNote ---------------------------------------------------------------
 cheatSheets["ONENOTE.EXE"] := "
 (
+OneNote
 Shift+Y  →  Select line and children
 Shift+U  →  Expand
 Shift+I  →  Collapse
@@ -95,12 +103,14 @@ Shift+D  →  Delete line and children
 ; --- Chrome general shortcuts ----------------------------------------------
 cheatSheets["chrome.exe"] := "
 (
+Chrome
 Shift+G  →  Pop current tab to new window
 )"  ; end Chrome
 
 ; --- Cursor / VS Code ------------------------------------------------------
 cheatSheets["Cursor.exe"] := "
 (
+Cursor
 Shift+Y  →  Unfold
 Shift+U  →  Fold
 Shift+I  →  Unfold all
@@ -120,6 +130,7 @@ Shift+8  →  Save all documents
 
 cheatSheets["Code.exe"] := "
 (
+VS Code
 Shift+Y  →  Unfold
 Shift+U  →  Fold
 Shift+I  →  Unfold all
@@ -140,6 +151,7 @@ Shift+8  →  Save all documents
 ; --- Windows Explorer ------------------------------------------------------
 cheatSheets["explorer.exe"] := "
 (
+Explorer
 Shift+Y  →  Select first file
 Shift+U  →  New folder
 Shift+I  →  New shortcut
@@ -148,12 +160,14 @@ Shift+I  →  New shortcut
 ; --- ClipAngel -------------------------------------------------------------
 cheatSheets["ClipAngel.exe"] := "
 (
+ClipAngel
 Shift+Y  →  Select filtered content and copy
 )"  ; end ClipAngel
 
 ; --- Figma -----------------------------------------------------------------
 cheatSheets["Figma.exe"] := "
 (
+Figma
 Shift+Y  →  Show/Hide UI
 Shift+U  →  Component search
 Shift+I  →  Select parent
@@ -202,11 +216,11 @@ GetCheatSheetText() {
 
         ; Combine Chrome general + app-specific shortcuts
         if (appShortcuts != "" && chromeShortcuts != "")
-            return "(Chrome)`r`n" chromeShortcuts "`r`n`r`n" appShortcuts
+            return chromeShortcuts "`r`n`r`n" appShortcuts
         else if (appShortcuts != "")
             return appShortcuts
         else if (chromeShortcuts != "")
-            return "(Chrome)`r`n" chromeShortcuts
+            return chromeShortcuts
         else
             return ""
     }
