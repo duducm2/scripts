@@ -86,6 +86,18 @@ cheatSheets["Spotify.exe"] := "
 Spotify
 Shift+Y  →  Toggle Connect panel
 Shift+U  →  Toggle Full screen
+Shift+I  →  Open Search
+Shift+O  →  Go to Playlists
+Shift+P  →  Go to Artists
+Shift+H  →  Go to Albums
+Shift+J  →  Go to Search
+Shift+K  →  Go to Home
+Shift+L  →  Go to Now Playing
+Shift+N  →  Go to Made For You
+Shift+M  →  Go to New Releases
+Shift+,  →  Go to Charts
+Shift+.  →  Toggle Now Playing View
+Shift+6  →  Toggle Library Sidebar
 )"  ; end Spotify
 
 ; --- OneNote ---------------------------------------------------------------
@@ -1424,7 +1436,7 @@ IsEditorActive() {
 ;-------------------------------------------------------------------ww
 #HotIf WinActive("ahk_exe Spotify.exe")
 
-; Shift + Y : Toggle Connect panel and select device
+; Shift + Y : Toggle Connect panel
 +y::
 {
     try {
@@ -1510,6 +1522,42 @@ IsEditorActive() {
         }
     }
 }
+
+; Shift + I : Open Search (Ctrl+K)
++i:: Send "^k"
+
+; Shift + O : Go to Playlists (Alt+Shift+1)
++o:: Send "!+1"
+
+; Shift + P : Go to Artists (Alt+Shift+3)
++p:: Send "!+3"
+
+; Shift + H : Go to Albums (Alt+Shift+4)
++h:: Send "!+4"
+
+; Shift + J : Go to Search (Ctrl+L)
++j:: Send "^l"
+
+; Shift + K : Go to Home (Alt+Shift+H)
++k:: Send "!+h"
+
+; Shift + L : Go to Now Playing (Alt+Shift+J)
++l:: Send "!+j"
+
+; Shift + N : Go to Made For You (Alt+Shift+M)
++n:: Send "!+m"
+
+; Shift + M : Go to New Releases (Alt+Shift+N)
++m:: Send "!+n"
+
+; Shift + , : Go to Charts (Alt+Shift+C)
++,:: Send "!+c"
+
+; Shift + . : Toggle Now Playing View Sidebar (Alt+Shift+R)
++.:: Send "!+r"
+
+; Shift + 6 : Toggle Your Library Sidebar (Alt+Shift+L)
++6:: Send "!+l"
 
 #HotIf
 
