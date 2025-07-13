@@ -66,66 +66,58 @@ ShowLoopIndicator(show := true) {
     }
 }
 
-; Try to recover the last active window
-RecoverActiveWindow() {
-    ; First try Alt+Tab to get back to the last window
-    Send "!{Tab}"
-    Sleep 30  ; Brief delay to let window activate
-
-    ; If we're still on Program Manager, try Escape and Alt+Tab again
-    if (WinActive("Program Manager") || WinActive("ahk_exe explorer.exe")) {
-        Send "{Esc}"
-        Sleep 30
-        Send "!{Tab}"
-        Sleep 30
-    }
-
-    return !WinActive("Program Manager") && !WinActive("ahk_exe explorer.exe")
-}
-
 ; Activates Hunt and Peck and handles potential Program Manager activation
-ActivateHuntAndPeck() {
+ActivateHuntAndPeck(isLoopMode := false) {
     global g_HnPTargetWindow, g_HnPRetryCount
 
-    ; Activate the target window before sending Hunt and Peck
-    if (g_HnPTargetWindow && WinExist("ahk_id " g_HnPTargetWindow)) {
-        WinActivate("ahk_id " g_HnPTargetWindow)
-    } else {
-        ; If target window is lost, try to recover the last active window
-        if (!RecoverActiveWindow()) {
-            return false
-        }
-        ; Update target window to the recovered window
+    ; For single activation (not loop mode), always use current window
+    if (!isLoopMode) {
         g_HnPTargetWindow := WinExist("A")
     }
 
+    ; If we don't have a valid window, we can't proceed
+    if (!g_HnPTargetWindow || !WinExist("ahk_id " g_HnPTargetWindow)) {
+        return false
+    }
+
+    ; Ensure our target window is active
+    WinActivate("ahk_id " g_HnPTargetWindow)
     Sleep 30  ; Brief delay for window activation
-    Send "!ç"  ; Activate Hunt and Peck
 
-    ; Quick check for Program Manager activation
-    Sleep 50
+    ; Wait up to 120 ms for the window to actually become active (covers fast Alt-Tab cases)
+    if !WinWaitActive("ahk_id " g_HnPTargetWindow, "", 0.12) {
+        ; If it still isn't active, give up on this attempt
+        return false
+    }
 
-    ; Check if Program Manager got activated
-    if (WinActive("Program Manager") || WinActive("ahk_exe explorer.exe")) {
+    ; Send Hunt and Peck activation
+    Send "!ç"
+    Sleep 50  ; Brief delay to let Hunt and Peck activate
+
+    ; Check if we lost focus to Program Manager
+    if (WinActive("Program Manager")) {
         if (g_HnPRetryCount < 1) {  ; Only try recovery once
             g_HnPRetryCount++
-            ; Try to recover the window and Hunt and Peck
-            if (RecoverActiveWindow()) {
-                Sleep 30
-                Send "!ç"  ; Try Hunt and Peck again
-            } else {
+
+            ; Simply reactivate our target window and try again
+            WinActivate("ahk_id " g_HnPTargetWindow)
+            Sleep 30
+            Send "!ç"
+
+            ; Check if we succeeded this time
+            Sleep 50
+            if (WinActive("Program Manager")) {
                 g_HnPRetryCount := 0
                 return false
             }
         } else {
-            ; If we already tried recovery once, reset and stop
             g_HnPRetryCount := 0
             return false
         }
-    } else {
-        ; Success - reset retry counter
-        g_HnPRetryCount := 0
     }
+
+    ; Success - reset retry counter
+    g_HnPRetryCount := 0
     return true
 }
 
@@ -150,9 +142,6 @@ HnPLoopMode() {
             WinActivate("ahk_id " g_HnPTargetWindow)
             Sleep 30
             Send "{Esc}"
-        } else {
-            RecoverActiveWindow()
-            Send "{Esc}"
         }
 
         g_HnPTargetWindow := 0
@@ -162,11 +151,7 @@ HnPLoopMode() {
     ; Store the current active window
     g_HnPTargetWindow := WinExist("A")
     if (!g_HnPTargetWindow) {
-        if (!RecoverActiveWindow()) {
-            MsgBox "Cannot find active window. Cannot start Hunt and Peck loop mode."
-            return
-        }
-        g_HnPTargetWindow := WinExist("A")
+        return  ; Don't show error, just fail silently
     }
 
     ; Start the loop mode
@@ -195,7 +180,7 @@ ActivateHnP() {
     }
 
     g_HnPCurrentIteration++
-    if (!ActivateHuntAndPeck()) {
+    if (!ActivateHuntAndPeck(true)) {  ; Pass true to indicate loop mode
         ; If Hunt and Peck activation failed after retry, stop the loop
         SetTimer ActivateHnP, 0
         g_HnPLoopActive := false
@@ -209,7 +194,7 @@ ActivateHnP() {
 {
     if KeyWait("x", "T1") {
         ; Key was released within 1 second (short press)
-        ActivateHuntAndPeck()  ; Use the same activation function for consistency
+        ActivateHuntAndPeck(false)  ; Pass false to indicate single activation
     }
     else {
         ; Key was held down for >1 second (long press)
