@@ -1620,7 +1620,10 @@ IsEditorActive() {
         uia := UIA_Browser("ahk_exe chrome.exe")
         Sleep 300
 
+        ; First try by AutomationId, then fallback by Name
         btn := uia.FindElement({ AutomationId: "menu-dashboard-item", Type: "Button" })
+        if (!btn)
+            btn := uia.FindElement({ Name: "Dashboard", Type: "Button", matchmode: "Substring" })
         if (btn) {
             btn.Click()
         } else {
@@ -1636,15 +1639,17 @@ IsEditorActive() {
     try {
         uia := UIA_Browser("ahk_exe chrome.exe")
         Sleep 300
-
+        
         btn := uia.FindElement({ AutomationId: "menu-accounts-item", Type: "Button" })
+        if (!btn)
+            btn := uia.FindElement({ Name: "Accounts", Type: "Button", matchmode: "Substring" })
         if (btn) {
             btn.Click()
         } else {
-            MsgBox "Could not find the Contas button.", "Mobills Navigation", "IconX"
+            MsgBox "Could not find the Contas/Accounts button.", "Mobills Navigation", "IconX"
         }
     } catch Error as e {
-        MsgBox "Error navigating to Contas: " e.Message, "Mobills Error", "IconX"
+        MsgBox "Error navigating to Contas/Accounts: " e.Message, "Mobills Error", "IconX"
     }
 }
 
@@ -1655,13 +1660,15 @@ IsEditorActive() {
         Sleep 300
 
         btn := uia.FindElement({ AutomationId: "menu-transactions-item", Type: "Button" })
+        if (!btn)
+            btn := uia.FindElement({ Name: "Transactions", Type: "Button", matchmode: "Substring" })
         if (btn) {
             btn.Click()
         } else {
-            MsgBox "Could not find the Transações button.", "Mobills Navigation", "IconX"
+            MsgBox "Could not find the Transações/Transactions button.", "Mobills Navigation", "IconX"
         }
     } catch Error as e {
-        MsgBox "Error navigating to Transações: " e.Message, "Mobills Error", "IconX"
+        MsgBox "Error navigating to Transações/Transactions: " e.Message, "Mobills Error", "IconX"
     }
 }
 
@@ -1672,13 +1679,15 @@ IsEditorActive() {
         Sleep 300
 
         btn := uia.FindElement({ AutomationId: "menu-creditCards-item", Type: "Button" })
+        if (!btn)
+            btn := uia.FindElement({ Name: "Credit cards", Type: "Button", matchmode: "Substring" })
         if (btn) {
             btn.Click()
         } else {
-            MsgBox "Could not find the Cartões de crédito button.", "Mobills Navigation", "IconX"
+            MsgBox "Could not find the Cartões de crédito/Credit cards button.", "Mobills Navigation", "IconX"
         }
     } catch Error as e {
-        MsgBox "Error navigating to Cartões de crédito: " e.Message, "Mobills Error", "IconX"
+        MsgBox "Error navigating to Cartões de crédito/Credit cards: " e.Message, "Mobills Error", "IconX"
     }
 }
 
@@ -1689,13 +1698,15 @@ IsEditorActive() {
         Sleep 300
 
         btn := uia.FindElement({ AutomationId: "menu-budgets-item", Type: "Button" })
+        if (!btn)
+            btn := uia.FindElement({ Name: "Budgets", Type: "Button", matchmode: "Substring" })
         if (btn) {
             btn.Click()
         } else {
-            MsgBox "Could not find the Planejamento button.", "Mobills Navigation", "IconX"
+            MsgBox "Could not find the Planejamento/Budgets button.", "Mobills Navigation", "IconX"
         }
     } catch Error as e {
-        MsgBox "Error navigating to Planejamento: " e.Message, "Mobills Error", "IconX"
+        MsgBox "Error navigating to Planejamento/Budgets: " e.Message, "Mobills Error", "IconX"
     }
 }
 
@@ -1706,13 +1717,15 @@ IsEditorActive() {
         Sleep 300
 
         btn := uia.FindElement({ AutomationId: "menu-reports-item", Type: "Button" })
+        if (!btn)
+            btn := uia.FindElement({ Name: "Reports", Type: "Button", matchmode: "Substring" })
         if (btn) {
             btn.Click()
         } else {
-            MsgBox "Could not find the Relatórios button.", "Mobills Navigation", "IconX"
+            MsgBox "Could not find the Relatórios/Reports button.", "Mobills Navigation", "IconX"
         }
     } catch Error as e {
-        MsgBox "Error navigating to Relatórios: " e.Message, "Mobills Error", "IconX"
+        MsgBox "Error navigating to Relatórios/Reports: " e.Message, "Mobills Error", "IconX"
     }
 }
 
@@ -1723,13 +1736,34 @@ IsEditorActive() {
         Sleep 300
 
         btn := uia.FindElement({ AutomationId: "menu-moreOptions-item", Type: "Button" })
+        if (!btn)
+            btn := uia.FindElement({ Name: "More options", Type: "Button", matchmode: "Substring" })
         if (btn) {
             btn.Click()
         } else {
-            MsgBox "Could not find the Mais opções button.", "Mobills Navigation", "IconX"
+            MsgBox "Could not find the Mais opções/More options button.", "Mobills Navigation", "IconX"
         }
     } catch Error as e {
-        MsgBox "Error navigating to Mais opções: " e.Message, "Mobills Error", "IconX"
+        MsgBox "Error navigating to Mais opções/More options: " e.Message, "Mobills Error", "IconX"
+    }
+}
+
+; Shift + L : Settings
++l:: {
+    try {
+        uia := UIA_Browser("ahk_exe chrome.exe")
+        Sleep 300
+
+        btn := uia.FindElement({ AutomationId: "menu-settings-item", Type: "Button" })
+        if (!btn)
+            btn := uia.FindElement({ Name: "Settings", Type: "Button", matchmode: "Substring" })
+        if (btn) {
+            btn.Click()
+        } else {
+            MsgBox "Could not find the Settings button.", "Mobills Navigation", "IconX"
+        }
+    } catch Error as e {
+        MsgBox "Error navigating to Settings: " e.Message, "Mobills Error", "IconX"
     }
 }
 
