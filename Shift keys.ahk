@@ -1617,13 +1617,7 @@ IsEditorActive() {
 ; Shift + Y : Dashboard
 +y:: {
     try {
-        uia := UIA_Browser("ahk_exe chrome.exe")
-        Sleep 300
-
-        ; First try by AutomationId, then fallback by Name
-        btn := uia.FindElement({ AutomationId: "menu-dashboard-item", Type: "Button" })
-        if (!btn)
-            btn := uia.FindElement({ Name: "Dashboard", Type: "Button", matchmode: "Substring" })
+        btn := GetMobillsButton("menu-dashboard-item", "Dashboard")
         if (btn) {
             btn.Click()
         } else {
@@ -1637,12 +1631,7 @@ IsEditorActive() {
 ; Shift + U : Contas
 +u:: {
     try {
-        uia := UIA_Browser("ahk_exe chrome.exe")
-        Sleep 300
-        
-        btn := uia.FindElement({ AutomationId: "menu-accounts-item", Type: "Button" })
-        if (!btn)
-            btn := uia.FindElement({ Name: "Accounts", Type: "Button", matchmode: "Substring" })
+        btn := GetMobillsButton("menu-accounts-item", "Accounts")
         if (btn) {
             btn.Click()
         } else {
@@ -1656,12 +1645,7 @@ IsEditorActive() {
 ; Shift + I : Transações
 +i:: {
     try {
-        uia := UIA_Browser("ahk_exe chrome.exe")
-        Sleep 300
-
-        btn := uia.FindElement({ AutomationId: "menu-transactions-item", Type: "Button" })
-        if (!btn)
-            btn := uia.FindElement({ Name: "Transactions", Type: "Button", matchmode: "Substring" })
+        btn := GetMobillsButton("menu-transactions-item", "Transactions")
         if (btn) {
             btn.Click()
         } else {
@@ -1675,12 +1659,7 @@ IsEditorActive() {
 ; Shift + O : Cartões de crédito
 +o:: {
     try {
-        uia := UIA_Browser("ahk_exe chrome.exe")
-        Sleep 300
-
-        btn := uia.FindElement({ AutomationId: "menu-creditCards-item", Type: "Button" })
-        if (!btn)
-            btn := uia.FindElement({ Name: "Credit cards", Type: "Button", matchmode: "Substring" })
+        btn := GetMobillsButton("menu-creditCards-item", "Credit cards")
         if (btn) {
             btn.Click()
         } else {
@@ -1694,12 +1673,7 @@ IsEditorActive() {
 ; Shift + P : Planejamento
 +p:: {
     try {
-        uia := UIA_Browser("ahk_exe chrome.exe")
-        Sleep 300
-
-        btn := uia.FindElement({ AutomationId: "menu-budgets-item", Type: "Button" })
-        if (!btn)
-            btn := uia.FindElement({ Name: "Budgets", Type: "Button", matchmode: "Substring" })
+        btn := GetMobillsButton("menu-budgets-item", "Budgets")
         if (btn) {
             btn.Click()
         } else {
@@ -1713,12 +1687,7 @@ IsEditorActive() {
 ; Shift + H : Relatórios
 +h:: {
     try {
-        uia := UIA_Browser("ahk_exe chrome.exe")
-        Sleep 300
-
-        btn := uia.FindElement({ AutomationId: "menu-reports-item", Type: "Button" })
-        if (!btn)
-            btn := uia.FindElement({ Name: "Reports", Type: "Button", matchmode: "Substring" })
+        btn := GetMobillsButton("menu-reports-item", "Reports")
         if (btn) {
             btn.Click()
         } else {
@@ -1732,12 +1701,7 @@ IsEditorActive() {
 ; Shift + J : Mais opções
 +j:: {
     try {
-        uia := UIA_Browser("ahk_exe chrome.exe")
-        Sleep 300
-
-        btn := uia.FindElement({ AutomationId: "menu-moreOptions-item", Type: "Button" })
-        if (!btn)
-            btn := uia.FindElement({ Name: "More options", Type: "Button", matchmode: "Substring" })
+        btn := GetMobillsButton("menu-moreOptions-item", "More options")
         if (btn) {
             btn.Click()
         } else {
@@ -1751,12 +1715,7 @@ IsEditorActive() {
 ; Shift + L : Settings
 +l:: {
     try {
-        uia := UIA_Browser("ahk_exe chrome.exe")
-        Sleep 300
-
-        btn := uia.FindElement({ AutomationId: "menu-settings-item", Type: "Button" })
-        if (!btn)
-            btn := uia.FindElement({ Name: "Settings", Type: "Button", matchmode: "Substring" })
+        btn := GetMobillsButton("menu-settings-item", "Settings")
         if (btn) {
             btn.Click()
         } else {
@@ -1790,5 +1749,20 @@ DismissAllReminders() {
         }
     } catch Error as e {
         MsgBox("UIA error:`n" e.Message, "Dismiss All Error", "IconX")
+    }
+}
+
+; ---------------------------------------------------------------------------
+; Helper for Mobills buttons – language-neutral search
+; ---------------------------------------------------------------------------
+GetMobillsButton(autoId, btnName) {
+    try {
+        root := UIA.ElementFromHandle(WinExist("A"))
+        btn := root.FindFirst({ AutomationId: autoId, ControlType: "Button" })
+        if !btn
+            btn := root.FindFirst({ Name: btnName, ControlType: "Button" })
+        return btn
+    } catch Error {
+        return ""
     }
 }
