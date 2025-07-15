@@ -379,6 +379,7 @@ Win+Alt+Shift+U  →  Activate ChatGPT and copy last code block
 Win+Alt+Shift+O  →  Check grammar and improve text in both English and Portuguese
 Win+Alt+Shift+I  →  Opens ChatGPT
 Win+Alt+Shift+L  →  Talk with ChatGPT through voice
+Win+Alt+Shift+Y  →  Copy last message and read it aloud
 
 === YOUTUBE ===
 Win+Alt+Shift+H  →  Activates Youtube

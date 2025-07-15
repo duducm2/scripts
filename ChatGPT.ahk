@@ -172,6 +172,86 @@ CopyLastPrompt() {
 }
 
 ; =============================================================================
+; Copy Last Message and Read Aloud
+; Hotkey: Win+Alt+Shift+Y
+; =============================================================================
+#!+y::
+{
+    SetTitleMatchMode 2
+    WinActivate "chatgpt"
+    if !WinWaitActive("ahk_exe chrome.exe", , 2)
+        return
+    CenterMouse()
+
+    cUIA := UIA_Browser()
+    Sleep 300
+
+    ; — labels ChatGPT shows in EN and PT —
+    copyNames := [
+        "Copy to clipboard", "Copiar para a área de transferência", "Copy", "Copiar"
+    ]
+
+    ; — collect every matching button —
+    copyBtns := []
+    for name in copyNames
+        for btn in cUIA.FindAll({ Name: name, Type: "Button", matchmode: "Substring" })
+            copyBtns.Push(btn)
+
+    if !copyBtns.Length {
+        MsgBox "⚠️  No copy button found (EN / PT)."
+        return
+    }
+
+    lastBtn := copyBtns[copyBtns.Length]   ; the bottom-most one
+
+    ; — click copy & wait for clipboard —
+    try {
+        lastBtn.ScrollIntoView()
+        Sleep 100
+        A_Clipboard := ""                  ; clear first
+        lastBtn.Click()
+        if !ClipWait(1) {                  ; returns 0 on timeout
+            MsgBox "Copy failed – clipboard stayed empty."
+            return
+        }
+    } catch as e {
+        MsgBox "Error clicking copy button:`n" e.Message
+        return
+    }
+
+    ; Now trigger read aloud
+    Sleep 300
+    readNames := ["Read aloud", "Ler em voz alta"]
+    stopNames := ["Stop", "Parar"]
+    buttonClicked := false
+    stopBtns := []
+    for name in stopNames
+        for btn in cUIA.FindAll({ Name: name, Type: "Button" })
+            stopBtns.Push(btn)
+    if stopBtns.Length {
+        stopBtns[stopBtns.Length].Click()
+        Sleep 200  ; Small pause before starting new read
+    }
+
+    readBtns := []
+    for name in readNames
+        for btn in cUIA.FindAll({ Name: name, Type: "Button" })
+            readBtns.Push(btn)
+    if readBtns.Length {
+        readBtns[readBtns.Length].Click()
+        buttonClicked := true
+    } else {
+        MsgBox "No 'Read aloud/Ler em voz alta' button found!"
+        return
+    }
+
+    if (buttonClicked) {
+        ShowNotification("Message copied and reading!")
+        Send "!{Tab}"  ; Return to previous window
+    }
+}
+
+; =============================================================================
 ; Toggle "Read Aloud"
 ; Hotkey: Win+Alt+Shift+9
 ; Original File: ChatGPT - Click last microphone.ahk
