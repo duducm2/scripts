@@ -167,8 +167,11 @@ HnPLoopMode() {
     ; Activate Hunt and Peck immediately for the first time
     ActivateHuntAndPeck()
 
-    ; Start the loop - 2 seconds interval for subsequent activations
-    SetTimer ActivateHnP, 2000
+    ; Define customizable interval (ms) for Hunt and Peck loop
+    static loopIntervalMs := 3000   ; was 2000 – extended for more selection time
+
+    ; Start the loop with the new interval
+    SetTimer ActivateHnP, loopIntervalMs
 }
 
 ; Timer function to activate Hunt and Peck
