@@ -70,7 +70,7 @@ ShowLoopIndicator(show := true) {
 
 ; Activates Hunt and Peck and handles potential Program Manager activation
 ActivateHuntAndPeck(isLoopMode := false) {
-    global g_HnPTargetWindow, g_HnPRetryCount
+    global g_HnPTargetWindow, g_HnPRetryCount, g_HnPExePath
 
     ; For single activation (not loop mode), always use current window
     if (!isLoopMode) {
@@ -92,54 +92,48 @@ ActivateHuntAndPeck(isLoopMode := false) {
         return false
     }
 
-    ; Pre-action: single right-click then Esc to activate window without extra flash
-    Click "Right"
-    Sleep 30
-    Send "{Esc}"
-
-    ; Now activate Hunt and Peck hotkey sequence
-    Send "!ç"
-    Sleep 50  ; Brief delay to let Hunt and Peck activate
-
-    ; Check if we lost focus to Program Manager
-    if (WinActive("Program Manager")) {
-        if (g_HnPRetryCount < 1) {  ; Only try recovery once
-            g_HnPRetryCount++
-
-            ; Simply reactivate our target window and try again
-            WinActivate("ahk_id " g_HnPTargetWindow)
-            Sleep 30
-            Send "!ç"
-
-            ; Check if we succeeded this time
-            Sleep 50
-            if (WinActive("Program Manager")) {
-                g_HnPRetryCount := 0
-
-                ; Final fallback – sometimes Hunt-and-Peck loses track of the
-                ; foreground window and anchors itself to the desktop / task-bar.
-                ; Its CLI interface ("hap.exe /hint") re-evaluates the target
-                ; window from scratch and proves to be a lot more reliable, so we
-                ; invoke it once before giving up.
-                if (FileExist(g_HnPExePath)) {
-                    try {
-                        Run g_HnPExePath " /hint", , "Hide"
-                        Sleep 80  ; brief settle time
-                        return true   ; assume success – even if it still fails it just means no overlay shown
-                    } catch {
-                        ; ignore – we’ll fall through to the standard failure path
-                    }
-                }
-
-                return false
-            }
-        } else {
-            g_HnPRetryCount := 0
-            return false
+    ; ----------------------------------------------------------------------
+    ; NEW: prefer the far more reliable CLI (hap.exe /hint) instead of
+    ; sending the Alt+; hotkey sequence.  This avoids the focus problems that
+    ; sometimes cause Hunt-and-Peck to anchor itself to the desktop/taskbar.
+    ; ----------------------------------------------------------------------
+    boolSuccess := false
+    if (FileExist(g_HnPExePath)) {
+        try {
+            Run g_HnPExePath " /hint", , "Hide"
+            Sleep 80  ; brief settle time
+            boolSuccess := !WinActive("Program Manager")  ; if Program Manager came to the front we failed
         }
     }
 
-    ; Success - reset retry counter
+    ; If the CLI call failed (or exe not found) fall back to the legacy hotkey
+    if (!boolSuccess) {
+        ; Legacy hotkey: Alt + ç (cedilla) – adjust if you changed HnP’s hotkey
+        Send "!ç"
+        Sleep 50
+
+        ; Still anchored to Program Manager? => one retry only.
+        if (WinActive("Program Manager")) {
+            if (g_HnPRetryCount < 1) {
+                g_HnPRetryCount++
+
+                WinActivate("ahk_id " g_HnPTargetWindow)
+                Sleep 30
+                Send "!ç"
+                Sleep 50
+
+                if (WinActive("Program Manager")) {
+                    g_HnPRetryCount := 0
+                    return false
+                }
+            } else {
+                g_HnPRetryCount := 0
+                return false
+            }
+        }
+    }
+
+    ; Success – reset retry counter
     g_HnPRetryCount := 0
     return true
 }
