@@ -341,7 +341,10 @@ ToggleShortcutHelp() {
 
     ; Resize the control and GUI explicitly
     cheatCtrl.Move(, , 600, controlHeight)
-    g_helpGui.Show("NoActivate Center w620 h" guiHeight)
+    ; Show → measure → centre
+    g_helpGui.Show("AutoSize Hide")
+    CenterGuiOnActiveMonitor(g_helpGui)
+    g_helpGui.Show("NoActivate")  ; ensure visible after centring
     g_helpShown := true
     ; Hotkey "Esc", "On"  ; (disabled)
 }
@@ -433,7 +436,9 @@ Win+Alt+Shift+A  →  Show global shortcuts (hold 400ms+)
 
     ; Update text and show
     globalCtrl.Value := globalText
-    g_globalGui.Show("NoActivate Center w780 h560")
+    g_globalGui.Show("AutoSize Hide")
+    CenterGuiOnActiveMonitor(g_globalGui)
+    g_globalGui.Show("NoActivate")
     g_globalShown := true
     ; Hotkey "Esc", "On"  ; (disabled)
 }
@@ -490,6 +495,42 @@ global PERSONAL_SCRIPTS_PATH := "G:\Meu Drive\12 - Scripts"
 ShowErr(err) {
     text := (Type(err) = "Error") ? err.Message : err
     MsgBox("Error:`n" text, "Error", "IconX")
+}
+
+; ---------------------------------------------------------------------------
+; Helper: centre a GUI over the active window (fallback: primary monitor)
+; ---------------------------------------------------------------------------
+CenterGuiOnActiveMonitor(guiObj) {
+    ; Ensure GUI has its final size
+    guiObj.GetPos(, , &guiW, &guiH)
+
+    activeWin := WinGetID("A")
+    ; Default to primary monitor work area (monitor #1)
+    MonitorGetWorkArea(1, &lPrim, &tPrim, &rPrim, &bPrim)
+    wx := lPrim, wy := tPrim, ww := rPrim - lPrim, wh := bPrim - tPrim
+
+    ; If we know the active window, find which monitor contains its centre
+    if (activeWin) {
+        rect := Buffer(16, 0)
+        if (DllCall("GetWindowRect", "ptr", activeWin, "ptr", rect)) {
+            cx := NumGet(rect, 0, "int") + (NumGet(rect, 8, "int") - NumGet(rect, 0, "int")) // 2
+            cy := NumGet(rect, 4, "int") + (NumGet(rect, 12, "int") - NumGet(rect, 4, "int")) // 2
+
+            count := MonitorGetCount()
+            loop count {
+                idx := A_Index
+                MonitorGetWorkArea(idx, &l, &t, &r, &b)
+                if (cx >= l && cx <= r && cy >= t && cy <= b) {
+                    wx := l, wy := t, ww := r - l, wh := b - t
+                    break
+                }
+            }
+        }
+    }
+
+    guiX := wx + (ww - guiW) / 2
+    guiY := wy + (wh - guiH) / 2
+    guiObj.Show("NoActivate x" Round(guiX) " y" Round(guiY))
 }
 
 ;-------------------------------------------------------------------
