@@ -90,10 +90,10 @@ ActivateHuntAndPeck(isLoopMode := false) {
         return false
     }
 
-    ; Pre-action: double middle-click (press wheel twice)
-    Click "Middle"
-    Sleep 40
-    Click "Middle"
+    ; Pre-action: single right-click then Esc to activate window without extra flash
+    Click "Right"
+    Sleep 30
+    Send "{Esc}"
 
     ; Now activate Hunt and Peck hotkey sequence
     Send "!ç"
@@ -147,6 +147,9 @@ HnPLoopMode() {
             WinActivate("ahk_id " g_HnPTargetWindow)
             Sleep 30
             Send "{Esc}"
+
+            ; Safeguard: after 1000 ms send Esc to dismiss any late overlay.
+            SetTimer(() => Send("{Esc}"), -1000)
         }
 
         g_HnPTargetWindow := 0
@@ -184,6 +187,10 @@ ActivateHnP() {
         g_HnPCurrentIteration := 0
         g_HnPTargetWindow := 0
         ShowLoopIndicator(false)
+
+        ; Ensure any residual Hunt-and-Peck overlay is cleared
+        Send "{Esc}"
+        SetTimer(() => Send("{Esc}"), -1000)
         return
     }
 
