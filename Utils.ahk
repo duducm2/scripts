@@ -90,7 +90,12 @@ ActivateHuntAndPeck(isLoopMode := false) {
         return false
     }
 
-    ; Send Hunt and Peck activation
+    ; Pre-action: double middle-click (press wheel twice)
+    Click "Middle"
+    Sleep 40
+    Click "Middle"
+
+    ; Now activate Hunt and Peck hotkey sequence
     Send "!ç"
     Sleep 50  ; Brief delay to let Hunt and Peck activate
 
