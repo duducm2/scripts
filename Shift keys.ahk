@@ -299,7 +299,22 @@ GetCheatSheetText() {
     if IsTeamsChatActive()
         return cheatSheets.Has("TeamsChat") ? cheatSheets["TeamsChat"] : ""
 
-    ; Direct match by process name
+    ; Special handling for Outlook-based apps
+    if (exe = "OUTLOOK.EXE") {
+        ; Detect Reminders window – e.g. "1 Reminder" / "2 Reminders" or generic "Reminders"
+        if RegExMatch(title, "i)(^|\s)\d*\s*Reminder(s)?") {
+            return cheatSheets.Has("OutlookReminder") ? cheatSheets["OutlookReminder"] : cheatSheets["OUTLOOK.EXE"]
+        }
+        ; Detect Appointment or Meeting inspector windows
+        if RegExMatch(title, "i)(Appointment|Meeting)") {
+            return cheatSheets.Has("OutlookAppointment") ? cheatSheets["OutlookAppointment"] : cheatSheets["OUTLOOK.EXE"]
+        }
+        ; Fallback to generic Outlook sheet
+        if cheatSheets.Has("OUTLOOK.EXE")
+            return cheatSheets["OUTLOOK.EXE"]
+    }
+
+    ; Direct match by process name (generic fallback)
     if cheatSheets.Has(exe)
         return cheatSheets[exe]
 
@@ -307,18 +322,6 @@ GetCheatSheetText() {
     for key, value in cheatSheets {
         if (StrLower(key) = StrLower(exe))
             return value
-    }
-
-    ; Special handling for Outlook-based apps
-    if (exe = "OUTLOOK.EXE") {
-        ; Detect Reminders window – e.g. "1 Reminder" / "2 Reminders"
-        if RegExMatch(title, "i)\d+\s+Reminder\(s?\)") {
-            return cheatSheets.Has("OutlookReminder") ? cheatSheets["OutlookReminder"] : cheatSheets["OUTLOOK.EXE"]
-        }
-        ; Detect Appointment or Meeting inspector windows
-        if RegExMatch(title, "i)(Appointment|Meeting)") {
-            return cheatSheets.Has("OutlookAppointment") ? cheatSheets["OutlookAppointment"] : cheatSheets["OUTLOOK.EXE"]
-        }
     }
 
     ; Nothing found → blank → caller will show fallback message
