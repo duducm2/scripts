@@ -27,7 +27,7 @@ cheatSheets := Map()
 
 ;---------------------------------------- Shift + keys ----------------------------------------------
 ; ----- You can have repeated keys, depending on the software.
-; ----- Prefered Keys sequences (most important first): Y U I O P H J K L N M , . 6 7 8 9 0 W E R T D F G C V B
+; ----- Prefered Keys sequences (most important first): Y U I O P H J K L N M , . W E R T D F G C V B
 
 ; --- WhatsApp desktop -------------------------------------------------------
 cheatSheets["WhatsApp"] := "
@@ -97,8 +97,8 @@ Shift+N  →  Go to Made For You
 Shift+M  →  Go to New Releases
 Shift+,  →  Go to Charts
 Shift+.  →  Toggle Now Playing View
-Shift+6  →  Toggle Library Sidebar
-Shift+7  →  Toggle Fullscreen Library
+Shift+W  →  Toggle Library Sidebar
+Shift+E  →  Toggle Fullscreen Library
 )"  ; end Spotify
 
 ; --- OneNote ---------------------------------------------------------------
@@ -124,10 +124,10 @@ Shift+G  →  Pop current tab to new window
 cheatSheets["Cursor.exe"] := "
 (
 Cursor
-Shift+Y  →  Unfold
-Shift+U  →  Fold
-Shift+I  →  Unfold all
-Shift+O  →  Fold all
+Shift+Y  →  Fold
+Shift+U  →  Unfold
+Shift+I  →  Fold all
+Shift+O  →  Unfold all
 Shift+P  →  Go to terminal
 Shift+H  →  New terminal
 Shift+J  →  Go to file explorer
@@ -136,19 +136,19 @@ Shift+L  →  Command palette
 Shift+M  →  Change project
 Shift+,  →  Show chat history
 Shift+.  →  Extensions
-Shift+6  →  Switch brackets
-Shift+7  →  Search
-Shift+8  →  Save all documents
-Shift+9  →  Change ML model
+Shift+W  →  Switch brackets
+Shift+E  →  Search
+Shift+R  →  Save all documents
+Shift+T  →  Change ML model
 )"  ; end Cursor
 
 cheatSheets["Code.exe"] := "
 (
 VS Code
-Shift+Y  →  Unfold
-Shift+U  →  Fold
-Shift+I  →  Unfold all
-Shift+O  →  Fold all
+Shift+Y  →  Fold
+Shift+U  →  Unfold
+Shift+I  →  Fold all
+Shift+O  →  Unfold all
 Shift+P  →  Go to terminal
 Shift+H  →  New terminal
 Shift+J  →  Go to file explorer
@@ -157,10 +157,10 @@ Shift+L  →  Command palette
 Shift+M  →  Change project
 Shift+,  →  Show chat history
 Shift+.  →  Extensions
-Shift+6  →  Switch brackets
-Shift+7  →  Search
-Shift+8  →  Save all documents
-Shift+9  →  Change ML model
+Shift+W  →  Switch brackets
+Shift+E  →  Search
+Shift+R  →  Save all documents
+Shift+T  →  Change ML model
 )"  ; end VS Code
 
 ; --- Windows Explorer ------------------------------------------------------
@@ -204,11 +204,11 @@ Shift+N  →  Copy as PNG
 Shift+M  →  Actions...
 Shift+,  →  Align left
 Shift+.  →  Align right
-Shift+6  →  Align top
-Shift+7  →  Align bottom
-Shift+8  →  Align center horizontal
-Shift+9  →  Align center vertical
-Shift+0  →  Distribute horizontal spacing
+Shift+R  →  Align top
+Shift+T  →  Align bottom
+Shift+D  →  Align center horizontal
+Shift+F  →  Align center vertical
+Shift+G  →  Distribute horizontal spacing
 Shift+W  →  Distribute vertical spacing
 Shift+E  →  Tidy up
 )"  ; end Figma
@@ -230,11 +230,11 @@ Shift+N  →  Reply all
 Shift+M  →  Forward
 Shift+,  →  Star/unstar conversation
 Shift+.  →  Delete
-Shift+6  →  Report as spam
-Shift+7  →  Compose new email
-Shift+8  →  Search mail
-Shift+9  →  Move to folder
-Shift+0  →  Show keyboard shortcuts help
+Shift+W  →  Report as spam
+Shift+E  →  Compose new email
+Shift+R  →  Search mail
+Shift+T  →  Move to folder
+Shift+D  →  Show keyboard shortcuts help
 )"  ; end Gmail
 
 ; ========== Helper to decide which sheet applies ===========================
@@ -305,6 +305,7 @@ ToggleShortcutHelp() {
     if (IsObject(g_helpGui) && g_helpShown) {
         g_helpGui.Hide()
         g_helpShown := false
+        ; Hotkey "Esc", "Off"  ; (disabled)
         return
     }
 
@@ -326,8 +327,8 @@ ToggleShortcutHelp() {
         cheatCtrl := g_helpGui.Add("Edit", "ReadOnly +Multi -E0x200 -VScroll -HScroll -Border Background000000 w600 r1"
         )
 
-        ; Esc also hides
-        Hotkey "Esc", (*) => (g_helpGui.Hide(), g_helpShown := false), "Off"
+        ; Esc also hides  ; (disabled – use Win+Alt+Shift+A to hide)
+        ; Hotkey "Esc", (*) => (g_helpGui.Hide(), g_helpShown := false), "Off"
     }
 
     ; Update cheat-sheet text and resize height to fit
@@ -342,7 +343,7 @@ ToggleShortcutHelp() {
     cheatCtrl.Move(, , 600, controlHeight)
     g_helpGui.Show("NoActivate Center w620 h" guiHeight)
     g_helpShown := true
-    Hotkey "Esc", "On"
+    ; Hotkey "Esc", "On"  ; (disabled)
 }
 
 ; ========== Global shortcuts cheat sheet (Win+Alt+Shift+key) ===============
@@ -353,6 +354,7 @@ ShowGlobalShortcutsHelp() {
     if (IsObject(g_globalGui) && g_globalShown) {
         g_globalGui.Hide()
         g_globalShown := false
+        ; Hotkey "Esc", "Off"  ; (disabled)
         return
     }
 
@@ -424,15 +426,15 @@ Win+Alt+Shift+A  →  Show global shortcuts (hold 400ms+)
         g_globalGui.SetFont("s10 cFFFF00", "Consolas")  ; Smaller font for more content
         globalCtrl := g_globalGui.Add("Edit", "ReadOnly +Multi +VScroll -HScroll -Border Background000000 w760 h540")
 
-        ; Esc also hides
-        Hotkey "Esc", (*) => (g_globalGui.Hide(), g_globalShown := false), "Off"
+        ; Esc also hides  ; (disabled – use Win+Alt+Shift+A to hide)
+        ; Hotkey "Esc", (*) => (g_globalGui.Hide(), g_globalShown := false), "Off"
     }
 
     ; Update text and show
     globalCtrl.Value := globalText
     g_globalGui.Show("NoActivate Center w780 h560")
     g_globalShown := true
-    Hotkey "Esc", "On"
+    ; Hotkey "Esc", "On"  ; (disabled)
 }
 
 ; ========== Hotkey with hold detection ====================================
@@ -445,12 +447,14 @@ Win+Alt+Shift+A  →  Show global shortcuts (hold 400ms+)
     if (IsObject(g_helpGui) && g_helpShown) {
         g_helpGui.Hide()
         g_helpShown := false
+        ; Hotkey "Esc", "Off"  ; (disabled)
         return
     }
 
     if (IsObject(g_globalGui) && g_globalShown) {
         g_globalGui.Hide()
         g_globalShown := false
+        ; Hotkey "Esc", "Off"  ; (disabled)
         return
     }
 
@@ -1325,20 +1329,20 @@ FocusOutlookField(criteria) {
 ; Shift + .: Delete
 +.:: Send("#")
 
-; Shift + 6: Report as spam
-+6:: Send("!")
+; Shift + W: Report as spam
++w:: Send("!")
 
-; Shift + 7: Compose new email
-+7:: Send("c")
+; Shift + E: Compose new email
++e:: Send("c")
 
-; Shift + 8: Search mail
-+8:: Send("/")
+; Shift + R: Search mail
++r:: Send("/")
 
-; Shift + 9: Move to folder
-+9:: Send("v")
+; Shift + T: Move to folder
++t:: Send("v")
 
-; Shift + 0: Show keyboard shortcuts help
-+0:: Send("?")
+; Shift + D: Show keyboard shortcuts help
++d:: Send("?")
 
 #HotIf
 
@@ -1357,30 +1361,30 @@ IsEditorActive() {
 ;-------------------------------------------------------------------
 #HotIf IsEditorActive()
 
-; Shift + Y : Unfold
+; Shift + Y : Fold
 +y::
 {
     Send "^+8"
 }
 
-; Shift + U : Fold
+; Shift + U : Unfold
 +u::
 {
     Send "^+9"
 }
 
-; Shift + I : Unfold all
+; Shift + I : Fold all
 +i::
 {
     Send "^m"
-    Send "^j"
+    Send "^0"
 }
 
-; Shift + O : Fold all
+; Shift + O : Unfold all
 +o::
 {
     Send "^m"
-    Send "^0"
+    Send "^j"
 }
 
 ; Shift + P : Go to terminal
@@ -1414,21 +1418,21 @@ IsEditorActive() {
 ; Shift + . : Extensions
 +.:: Send "^+x"
 
-; Shift + 6 : Switch the brackets open/close
-+6:: Send "^+]"
+; Shift + W : Switch the brackets open/close
++w:: Send "^+]"
 
-; Shift + 7 : Search
-+7:: Send "^+f"
+; Shift + E : Search
++e:: Send "^+f"
 
-; Shift + 8 : Save all documents
-+8::
+; Shift + R : Save all documents
++r::
 {
     Send "^k"
     Send "s"
 }
 
-; Shift + 9 : Trigger Ctrl+;
-+9:: Send "^;"
+; Shift + T : Trigger Ctrl+;
++t:: Send "^;"
 
 #HotIf
 
@@ -1518,17 +1522,15 @@ IsEditorActive() {
 ; Shift + . : Toggle Now Playing View Sidebar (Alt+Shift+R)
 +.:: Send "!+r"
 
-; Shift + 6 : Toggle Your Library Sidebar (Alt+Shift+L)
-+6:: Send "!+l"
+; Shift + W : Toggle Your Library Sidebar (Alt+Shift+L)
++w:: Send "!+l"
 
-; Shift + 7 : Toggle Fullscreen Library
-+7::
+; Shift + E : Toggle Fullscreen Library
++e::
 {
     try {
         spot := UIA_Browser("ahk_exe Spotify.exe")
         Sleep 300
-
-        ; Find the fullscreen library button
         fullscreenLibBtn := spot.FindElement({ Name: "fullscreen library", Type: "Button" })
         if (fullscreenLibBtn) {
             fullscreenLibBtn.Click()
@@ -1586,20 +1588,20 @@ IsEditorActive() {
 ; Shift + . : Align right (Alt + D)
 +.:: Send("!d")
 
-; Shift + 6 : Align top (Alt + W)
-+6:: Send("!w")
+; Shift + R : Align top (Alt + W)
++r:: Send("!w")
 
-; Shift + 7 : Align bottom (Alt + S)
-+7:: Send("!s")
+; Shift + T : Align bottom (Alt + S)
++t:: Send("!s")
 
-; Shift + 8 : Align center horizontal (Alt + H)
-+8:: Send("!h")
+; Shift + D : Align center horizontal (Alt + H)
++d:: Send("!h")
 
-; Shift + 9 : Align center vertical (Alt + V)
-+9:: Send("!v")
+; Shift + F : Align center vertical (Alt + V)
++f:: Send("!v")
 
-; Shift + 0 : Distribute horizontal spacing (Alt + Shift + H)
-+0:: Send("!+h")
+; Shift + G : Distribute horizontal spacing (Alt + Shift + H)
++g:: Send("!+h")
 
 ; Shift + W : Distribute vertical spacing (Alt + Shift + V)
 +w:: Send("!+v")
