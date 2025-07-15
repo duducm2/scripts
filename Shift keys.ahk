@@ -57,6 +57,28 @@ Shift+N  →  Focused / Other
 Shift+M  →  Make Recurring → Tab
 )"  ; end Outlook
 
+; --- Outlook Reminder window -------------------------------------------------
+cheatSheets["OutlookReminder"] := "
+(
+Outlook – Reminders
+Shift+Y  →  Select first reminder
+Shift+U  →  Snooze 1 hour
+Shift+I  →  Snooze 4 hours
+Shift+O  →  Snooze 1 day
+Shift+P  →  Dismiss all reminders
+)"  ; end Outlook Reminder
+
+; --- Outlook Appointment window ---------------------------------------------
+cheatSheets["OutlookAppointment"] := "
+(
+Outlook – Appointment
+Shift+H  →  Title field
+Shift+J  →  Required / To field
+Shift+K  →  Date Picker
+Shift+L  →  Location → Body
+Shift+M  →  Make Recurring → Tab
+)"  ; end Outlook Appointment
+
 ; --- Microsoft Teams – meeting window --------------------------------------
 cheatSheets["TeamsMeeting"] := "
 (
@@ -285,6 +307,18 @@ GetCheatSheetText() {
     for key, value in cheatSheets {
         if (StrLower(key) = StrLower(exe))
             return value
+    }
+
+    ; Special handling for Outlook-based apps
+    if (exe = "OUTLOOK.EXE") {
+        ; Detect Reminders window – e.g. "1 Reminder" / "2 Reminders"
+        if RegExMatch(title, "i)\d+\s+Reminder\(s?\)") {
+            return cheatSheets.Has("OutlookReminder") ? cheatSheets["OutlookReminder"] : cheatSheets["OUTLOOK.EXE"]
+        }
+        ; Detect Appointment or Meeting inspector windows
+        if RegExMatch(title, "i)(Appointment|Meeting)") {
+            return cheatSheets.Has("OutlookAppointment") ? cheatSheets["OutlookAppointment"] : cheatSheets["OUTLOOK.EXE"]
+        }
     }
 
     ; Nothing found → blank → caller will show fallback message
