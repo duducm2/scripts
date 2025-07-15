@@ -43,6 +43,8 @@
 ; =============================================================================
 
 ; Global variables for Hunt and Peck loop mode
+; Path to Hunt and Peck executable – adjust if you install it elsewhere
+global g_HnPExePath := "C:\\Users\\fie7ca\\Documents\\HuntAndPack\\hap.exe"  ; <-- CHANGE ME if needed
 global g_HnPLoopActive := false
 global g_HnPLoopGui := false
 global g_HnPMaxIterations := 25
@@ -113,6 +115,22 @@ ActivateHuntAndPeck(isLoopMode := false) {
             Sleep 50
             if (WinActive("Program Manager")) {
                 g_HnPRetryCount := 0
+
+                ; Final fallback – sometimes Hunt-and-Peck loses track of the
+                ; foreground window and anchors itself to the desktop / task-bar.
+                ; Its CLI interface ("hap.exe /hint") re-evaluates the target
+                ; window from scratch and proves to be a lot more reliable, so we
+                ; invoke it once before giving up.
+                if (FileExist(g_HnPExePath)) {
+                    try {
+                        Run g_HnPExePath " /hint", , "Hide"
+                        Sleep 80  ; brief settle time
+                        return true   ; assume success – even if it still fails it just means no overlay shown
+                    } catch {
+                        ; ignore – we’ll fall through to the standard failure path
+                    }
+                }
+
                 return false
             }
         } else {
