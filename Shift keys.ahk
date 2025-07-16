@@ -280,7 +280,7 @@ GetCheatSheetText() {
                 "(ChatGPT)`r`nShift+Y → Cut all`r`nShift+U → Model selector`r`nShift+I → Toggle sidebar`r`nShift+O → Type " "chatgpt" "`r`nShift+P → New chat`r`nShift+H → Copy code block"
         if InStr(title, "Mobills")
             appShortcuts :=
-                "(Mobills)`r`nShift+Y → Dashboard`r`nShift+U → Contas`r`nShift+I → Transações`r`nShift+O → Cartões de crédito`r`nShift+P → Planejamento`r`nShift+H → Relatórios`r`nShift+J → Mais opções"
+                "(Mobills)`r`nShift+Y → Dashboard`r`nShift+U → Contas`r`nShift+I → Transações`r`nShift+O → Cartões de crédito`r`nShift+P → Planejamento`r`nShift+H → Relatórios`r`nShift+J → Mais opções`r`nShift+K → Opção 1`r`nShift+N → Opção 2"
 
         ; Combine Chrome general + app-specific shortcuts
         if (appShortcuts != "" && chromeShortcuts != "")
@@ -1790,6 +1790,38 @@ IsEditorActive() {
         }
     } catch Error as e {
         MsgBox "Error navigating to Mais opções/More options: " e.Message, "Mobills Error", "IconX"
+    }
+}
+
+; Shift + K : Opção 1 (Mais opções → Tab once)
++k:: {
+    try {
+        btn := GetMobillsButton("menu-moreOptions-item", "More options")
+        if (btn) {
+            btn.Click()
+            Sleep 300
+            Send "{Tab}"
+        } else {
+            MsgBox "Could not find the Mais opções/More options button.", "Mobills Navigation", "IconX"
+        }
+    } catch Error as e {
+        MsgBox "Error navigating to first unnamed option: " e.Message, "Mobills Error", "IconX"
+    }
+}
+
+; Shift + N : Opção 2 (Mais opções → Tab twice)
++n:: {
+    try {
+        btn := GetMobillsButton("menu-moreOptions-item", "More options")
+        if (btn) {
+            btn.Click()
+            Sleep 300
+            Send "{Tab 2}"
+        } else {
+            MsgBox "Could not find the Mais opções/More options button.", "Mobills Navigation", "IconX"
+        }
+    } catch Error as e {
+        MsgBox "Error navigating to second unnamed option: " e.Message, "Mobills Error", "IconX"
     }
 }
 
