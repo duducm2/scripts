@@ -1793,35 +1793,35 @@ IsEditorActive() {
     }
 }
 
-; Shift + K : Opção 1 (Mais opções → Tab once)
+; Shift + K : Left arrow (Filter → Tab twice)
 +k:: {
     try {
-        btn := GetMobillsButton("menu-moreOptions-item", "More options")
-        if (btn) {
-            btn.Click()
-            Sleep 300
-            Send "{Tab}"
-        } else {
-            MsgBox "Could not find the Mais opções/More options button.", "Mobills Navigation", "IconX"
-        }
-    } catch Error as e {
-        MsgBox "Error navigating to first unnamed option: " e.Message, "Mobills Error", "IconX"
-    }
-}
-
-; Shift + N : Opção 2 (Mais opções → Tab twice)
-+n:: {
-    try {
-        btn := GetMobillsButton("menu-moreOptions-item", "More options")
+        btn := GetMobillsButton("", "Filter")
         if (btn) {
             btn.Click()
             Sleep 300
             Send "{Tab 2}"
         } else {
-            MsgBox "Could not find the Mais opções/More options button.", "Mobills Navigation", "IconX"
+            MsgBox "Could not find the Filter button.", "Mobills Navigation", "IconX"
         }
     } catch Error as e {
-        MsgBox "Error navigating to second unnamed option: " e.Message, "Mobills Error", "IconX"
+        MsgBox "Error navigating to left arrow option: " e.Message, "Mobills Error", "IconX"
+    }
+}
+
+; Shift + N : Right arrow (Filter → Tab three times)
++n:: {
+    try {
+        btn := GetMobillsButton("", "Filter")
+        if (btn) {
+            btn.Click()
+            Sleep 300
+            Send "{Tab 3}"
+        } else {
+            MsgBox "Could not find the Filter button.", "Mobills Navigation", "IconX"
+        }
+    } catch Error as e {
+        MsgBox "Error navigating to right arrow option: " e.Message, "Mobills Error", "IconX"
     }
 }
 
