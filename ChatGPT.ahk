@@ -718,43 +718,44 @@ HideDictationIndicator() {
 ClickFirstConversationOptions(timeoutMs := 5000) {
     cUIA := UIA_Browser()
 
-    ; Extended set of possible labels (EN / PT-BR) the three-dots button may expose
+    ; Accept several localized labels the three-dots button may expose (EN / PT-BR)
     optNames := [
-        "Open conversation options", "Conversation options", "Open options", "More options", ; EN variants
-        "Abrir opções da conversa", "Abrir opções de conversa", "Opções da conversa", "Mais opções" ; PT-BR variants
+        "Open conversation options", "Conversation options", "Open options", "More options", ; EN
+        "Abrir opções da conversa", "Abrir opções de conversa", "Opções da conversa", "Mais opções" ; PT-BR
     ]
 
-    ; Common UIA control types we have observed for this element across locales / updates
+    ; Possible UIA control types we have observed for this element
     optTypes := ["Button", "MenuItem", "MenuButton", "SplitButton", "Custom"]
 
     startTick := A_TickCount
     btn := ""
 
-    ; --- First pass: try exact matches against all (name,type) combinations ---
-    for name in optNames {
-        for role in optTypes {
-            remaining := timeoutMs - (A_TickCount - startTick)
-            if (remaining <= 0)
-                break 2 ; overall timeout expired – jump out of both loops
-            thisBtn := cUIA.WaitElement({ Name: name, Type: role }, remaining)
-            if thisBtn {
-                btn := thisBtn
-                break 2
+    ; Loop until we either find the button or the overall timeout elapses.
+    ; We intentionally avoid a single blocking WaitElement() call that could
+    ; consume the *entire* timeout on a single, wrong locale/type combination.
+    while ((A_TickCount - startTick) < timeoutMs) {
+        for name in optNames {
+            for role in optTypes {
+                ; Try an *immediate* lookup (non-blocking) – this returns fast.
+                btn := cUIA.FindElement({ Name: name, Type: role, matchmode: "Substring" })
+                if btn {
+                    break 2 ; leave both loops
+                }
             }
         }
+        if btn
+            break
+        Sleep 150 ; small delay before the next scan cycle
     }
 
-    ; --- Second pass: relax to substring match, disregarding control type ---
     if !btn {
-        for name in optNames {
-            remaining := timeoutMs - (A_TickCount - startTick)
-            if (remaining <= 0)
+        ; As a last-ditch effort, do a broader substring search for either
+        ; "options" or "opções" regardless of element type.
+        broadTerms := ["options", "opções"]
+        for term in broadTerms {
+            btn := cUIA.FindElement({ Name: term, matchmode: "Substring" })
+            if btn
                 break
-            thisBtn := cUIA.WaitElement({ Name: name, matchmode: "Substring" }, remaining)
-            if thisBtn {
-                btn := thisBtn
-                break
-            }
         }
     }
 
