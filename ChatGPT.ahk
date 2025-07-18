@@ -43,28 +43,29 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
         if WinWaitActive("ahk_exe chrome.exe", , 2)
             CenterMouse()
         Send("{Esc}")
-        ; --- Send initial message to ensure chat exists ---
-        Sleep 300
-        Send("hey, what's up?{Enter}")
-        ; --- Open the options menu (three dots) for the first conversation ---
-        Sleep 700  ; give sidebar time to update
-        if ClickFirstConversationOptions() {
-            ; Navigate to "Rename" and apply new name
-            Sleep 300
-            Send("{Down}")
-            Sleep 120
-            Send("{Down}")
-            Sleep 80
-            Send("{Enter}")
-            Sleep 200
-            Send("chatgpt")
-            Sleep 100
-            Send("{Enter}")
-        }
     } else {
         Run "chrome.exe --new-window https://chatgpt.com/"
-        if WinWaitActive("ahk_exe chrome.exe", , 5)
+        if WinWaitActive("ahk_exe chrome.exe", , 5) {
             CenterMouse()
+            ; --- Send initial message to ensure chat exists ---
+            Sleep 4000  ; give the page time to load fully
+            Send("hey, what's up?{Enter}")
+            ; --- Open the options menu (three dots) for the first conversation ---
+            Sleep 3000  ; wait for sidebar to update with new chat
+            if ClickFirstConversationOptions() {
+                ; Navigate to "Rename" and apply new name
+                Sleep 300
+                Send("{Down}")
+                Sleep 120
+                Send("{Down}")
+                Sleep 80
+                Send("{Enter}")
+                Sleep 300
+                Send("chatgpt")
+                Sleep 120
+                Send("{Enter}")
+            }
+        }
     }
 }
 
