@@ -717,19 +717,25 @@ HideDictationIndicator() {
 ; =============================================================================
 ClickFirstConversationOptions(timeoutMs := 5000) {
     cUIA := UIA_Browser()
-    
-    ; Possible labels (EN / PT-BR) and control types the button can have
-    optNames := ["Open conversation options", "Abrir opções de conversa"]
-    optTypes := ["Button", "MenuItem"]
 
-    ; Try to find the element within the given timeout
+    ; Extended set of possible labels (EN / PT-BR) the three-dots button may expose
+    optNames := [
+        "Open conversation options", "Conversation options", "Open options", "More options", ; EN variants
+        "Abrir opções da conversa", "Abrir opções de conversa", "Opções da conversa", "Mais opções" ; PT-BR variants
+    ]
+
+    ; Common UIA control types we have observed for this element across locales / updates
+    optTypes := ["Button", "MenuItem", "MenuButton", "SplitButton", "Custom"]
+
     startTick := A_TickCount
     btn := ""
+
+    ; --- First pass: try exact matches against all (name,type) combinations ---
     for name in optNames {
         for role in optTypes {
             remaining := timeoutMs - (A_TickCount - startTick)
             if (remaining <= 0)
-                break 2 ; out of both loops – overall timeout expired
+                break 2 ; overall timeout expired – jump out of both loops
             thisBtn := cUIA.WaitElement({ Name: name, Type: role }, remaining)
             if thisBtn {
                 btn := thisBtn
@@ -737,10 +743,26 @@ ClickFirstConversationOptions(timeoutMs := 5000) {
             }
         }
     }
+
+    ; --- Second pass: relax to substring match, disregarding control type ---
+    if !btn {
+        for name in optNames {
+            remaining := timeoutMs - (A_TickCount - startTick)
+            if (remaining <= 0)
+                break
+            thisBtn := cUIA.WaitElement({ Name: name, matchmode: "Substring" }, remaining)
+            if thisBtn {
+                btn := thisBtn
+                break
+            }
+        }
+    }
+
     if !btn {
         MsgBox "⚠️  Conversation options button (EN/PT-BR) not found within " timeoutMs " ms."
         return false
     }
+
     try {
         btn.ScrollIntoView()
         Sleep 100
