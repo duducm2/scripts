@@ -749,7 +749,11 @@ ClickFirstConversationOptions(timeoutMs := 5000) {
     while ((A_TickCount - startTick) < timeoutMs) {
         for name in optNames {
             for role in optTypes {
-                btn := sidebar.FindElement({ Name: name, Type: role, matchmode: "Substring" })
+                try {
+                    btn := sidebar.FindElement({ Name: name, Type: role, matchmode: "Substring" })
+                } catch {
+                    btn := ""
+                }
                 if btn {
                     break 2  ; leave both loops
                 }
@@ -764,7 +768,11 @@ ClickFirstConversationOptions(timeoutMs := 5000) {
     if !btn {
         broadTerms := ["conversation options", "opções de conversa", "opcões", "options", "opções"]
         for term in broadTerms {
-            btn := sidebar.FindElement({ Name: term, matchmode: "Substring" })
+            try {
+                btn := sidebar.FindElement({ Name: term, matchmode: "Substring" })
+            } catch {
+                btn := ""
+            }
             if btn
                 break
         }
