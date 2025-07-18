@@ -718,52 +718,69 @@ HideDictationIndicator() {
 ClickFirstConversationOptions(timeoutMs := 5000) {
     cUIA := UIA_Browser()
 
-    ; Accept several localized labels the three-dots button may expose (EN / PT-BR)
+    ; --- 1) locate the "Chats / Conversas" sidebar container (first match) ---
+    sidebar := ""
+    for grp in cUIA.FindAll({ Type: "Group" }) {
+        n := Trim(StrLower(grp.Name))
+        if (InStr(n, "chats") || InStr(n, "conversas")) {
+            sidebar := grp
+            break
+        }
+    }
+    if !sidebar {
+        ; Fallback: operate on the whole page root if sidebar not detected
+        sidebar := cUIA
+    }
+
+    ; --- 2) prepare lookup tables ---
     optNames := [
-        "Open conversation options", "Conversation options", "Open options", "More options", ; EN
-        "Abrir opções da conversa", "Abrir opções de conversa", "Opções da conversa", "Mais opções" ; PT-BR
+        ; English
+        "Open conversation options", "Conversation options", "Open options", "More options",
+        ; Portuguese (Brazil)
+        "Abrir opções da conversa", "Abrir opções de conversa", "Opções da conversa", "Mais opções"
     ]
 
-    ; Possible UIA control types we have observed for this element
-    optTypes := ["Button", "MenuItem", "MenuButton", "SplitButton", "Custom"]
+    ; Include Link as another possible control type
+    optTypes := ["Button", "MenuItem", "MenuButton", "SplitButton", "Custom", "Link"]
 
+    ; --- 3) iterative scan until timeout elapses ---
     startTick := A_TickCount
     btn := ""
-
-    ; Loop until we either find the button or the overall timeout elapses.
-    ; We intentionally avoid a single blocking WaitElement() call that could
-    ; consume the *entire* timeout on a single, wrong locale/type combination.
     while ((A_TickCount - startTick) < timeoutMs) {
         for name in optNames {
             for role in optTypes {
-                ; Try an *immediate* lookup (non-blocking) – this returns fast.
-                btn := cUIA.FindElement({ Name: name, Type: role, matchmode: "Substring" })
+                btn := sidebar.FindElement({ Name: name, Type: role, matchmode: "Substring" })
                 if btn {
-                    break 2 ; leave both loops
+                    break 2  ; leave both loops
                 }
             }
         }
         if btn
             break
-        Sleep 150 ; small delay before the next scan cycle
+        Sleep 120
     }
 
+    ; --- 4) broader fallback search (any type, just keywords) ---
     if !btn {
-        ; As a last-ditch effort, do a broader substring search for either
-        ; "options" or "opções" regardless of element type.
-        broadTerms := ["options", "opções"]
+        broadTerms := ["conversation options", "opções de conversa", "opcões", "options", "opções"]
         for term in broadTerms {
-            btn := cUIA.FindElement({ Name: term, matchmode: "Substring" })
+            btn := sidebar.FindElement({ Name: term, matchmode: "Substring" })
             if btn
                 break
         }
     }
 
+    ; --- 5) if still not found, dump candidate list for debugging ---
     if !btn {
-        MsgBox "⚠️  Conversation options button (EN/PT-BR) not found within " timeoutMs " ms."
+        list := ""
+        for el in sidebar.FindAll({ Type: optTypes })
+            list .= el.Type "  |  " el.Name "`n"
+        FileAppend list, "*options-scan.log", "UTF-8"
+        MsgBox "Options control not found - candidate list written to options-scan.log"
         return false
     }
 
+    ; --- 6) success – scroll into view and click ---
     try {
         btn.ScrollIntoView()
         Sleep 100
