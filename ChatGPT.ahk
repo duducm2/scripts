@@ -10,6 +10,10 @@
 #include UIA-v2\Lib\UIA_Browser.ahk
 #include %A_ScriptDir%\env.ahk
 
+; --- Config ---------------------------------------------------------------
+; Path to the file containing the initial prompt ChatGPT should receive.
+PROMPT_FILE := A_ScriptDir "\ChatGPT_Prompt.txt"
+
 ; --- Persistent Dictation Indicator ----------------------------------------
 ; Holds the GUI object while dictation is active. Empty string when hidden.
 global dictationIndicatorGui := ""
@@ -47,11 +51,25 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
         Run "chrome.exe --new-window https://chatgpt.com/"
         if WinWaitActive("ahk_exe chrome.exe", , 5) {
             CenterMouse()
-            ; --- Send initial message to ensure chat exists ---
-            Sleep 4000  ; give the page time to load fully
-            Send("hey, what's up?{Enter}")
+            ; --- Read initial prompt from external file & paste it ---
+            Sleep 7000  ; give the page time to load fully
+            promptText := ""
+            try promptText := FileRead(PROMPT_FILE, "UTF-8")
+            if (StrLen(promptText) = 0)
+                promptText := "hey, what's up?"
+
+            ; Copy–paste to handle Unicode & speed
+            oldClip := A_Clipboard
+            A_Clipboard := ""           ; clear first so ClipWait can detect change
+            A_Clipboard := promptText
+            ClipWait 1                   ; wait up to 1 s for clipboard to update
+            Send("^v")                  ; paste
+            Sleep 100
+            Send("{Enter}")             ; submit
+            Sleep 100
+            A_Clipboard := oldClip       ; restore previous clipboard
             ; --- Open the options menu (three dots) for the first conversation ---
-            Sleep 3000  ; wait for sidebar to update with new chat
+            Sleep 7500  ; wait for sidebar to update with new chat
             if ClickFirstConversationOptions() {
                 ; Navigate to "Rename" and apply new name
                 Sleep 300
