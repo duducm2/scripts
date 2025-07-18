@@ -68,8 +68,12 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
             Send("{Enter}")             ; submit
             Sleep 100
             A_Clipboard := oldClip       ; restore previous clipboard
+
+            ; --- Ensure the Chats sidebar is visible (open) ---
+            EnsureSidebarOpen()
+
             ; --- Open the options menu (three dots) for the first conversation ---
-            Sleep 7500  ; wait for sidebar to update with new chat
+            Sleep 7000  ; wait for sidebar to update with new chat
             if ClickFirstConversationOptions() {
                 ; Navigate to "Rename" and apply new name
                 Sleep 300
@@ -798,6 +802,42 @@ ClickFirstConversationOptions(timeoutMs := 5000) {
         MsgBox "Error clicking options button:`n" e.Message
         return false
     }
+}
+
+; =============================================================================
+; Ensure the ChatGPT sidebar (Chats list) is open – toggles Ctrl+Shift+S if needed
+; =============================================================================
+EnsureSidebarOpen(timeoutMs := 3000) {
+    cUIA := UIA_Browser()
+    anchorNames := ["Chats", "Conversas"]
+
+    if SidebarVisible(cUIA, anchorNames)
+        return true    ; already open
+
+    ; sidebar hidden – toggle with Ctrl+Shift+S
+    Send "^+s"
+    Sleep 600
+
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        if SidebarVisible(cUIA, anchorNames)
+            return true
+        Sleep 200
+    }
+    return false   ; still hidden
+}
+
+; Helper – detects if the Chats sidebar is visible by looking for the anchor label
+SidebarVisible(uiRoot, names) {
+    for n in names {
+        try {
+            if uiRoot.FindElement({ Name: n, Type: "Text" })
+                return true
+        } catch {
+            ; ignore errors when element not found
+        }
+    }
+    return false
 }
 
 ; =============================================================================
