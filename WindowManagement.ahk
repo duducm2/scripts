@@ -179,7 +179,7 @@ MonitorActiveWindow() {
     } catch {
         return  ; Could not retrieve process name (e.g., access denied)
     }
-    if (processName = "ScreenClippingHost.exe" || processName = "SnippingTool.exe") {
+    if (processName = "ScreenClippingHost.exe" || processName = "SnippingTool.exe" || processName = "AHK.exe") {
         return
     }
 
