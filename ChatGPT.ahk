@@ -717,10 +717,28 @@ HideDictationIndicator() {
 ; =============================================================================
 ClickFirstConversationOptions(timeoutMs := 5000) {
     cUIA := UIA_Browser()
-    ; Wait for any button named "Open conversation options" to appear
-    btn := cUIA.WaitElement({ Name: "Open conversation options", Type: "Button" }, timeoutMs)
+    
+    ; Possible labels (EN / PT-BR) and control types the button can have
+    optNames := ["Open conversation options", "Abrir opções de conversa"]
+    optTypes := ["Button", "MenuItem"]
+
+    ; Try to find the element within the given timeout
+    startTick := A_TickCount
+    btn := ""
+    for name in optNames {
+        for role in optTypes {
+            remaining := timeoutMs - (A_TickCount - startTick)
+            if (remaining <= 0)
+                break 2 ; out of both loops – overall timeout expired
+            thisBtn := cUIA.WaitElement({ Name: name, Type: role }, remaining)
+            if thisBtn {
+                btn := thisBtn
+                break 2
+            }
+        }
+    }
     if !btn {
-        MsgBox "⚠️  'Open conversation options' button not found within " timeoutMs " ms."
+        MsgBox "⚠️  Conversation options button (EN/PT-BR) not found within " timeoutMs " ms."
         return false
     }
     try {
