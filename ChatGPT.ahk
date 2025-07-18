@@ -43,6 +43,24 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
         if WinWaitActive("ahk_exe chrome.exe", , 2)
             CenterMouse()
         Send("{Esc}")
+        ; --- Send initial message to ensure chat exists ---
+        Sleep 300
+        Send("hey, what's up?{Enter}")
+        ; --- Open the options menu (three dots) for the first conversation ---
+        Sleep 700  ; give sidebar time to update
+        if ClickFirstConversationOptions() {
+            ; Navigate to "Rename" and apply new name
+            Sleep 300
+            Send("{Down}")
+            Sleep 120
+            Send("{Down}")
+            Sleep 80
+            Send("{Enter}")
+            Sleep 200
+            Send("chatgpt")
+            Sleep 100
+            Send("{Enter}")
+        }
     } else {
         Run "chrome.exe --new-window https://chatgpt.com/"
         if WinWaitActive("ahk_exe chrome.exe", , 5)
@@ -672,6 +690,28 @@ HideDictationIndicator() {
     if (IsObject(dictationIndicatorGui) && dictationIndicatorGui.Hwnd) {
         dictationIndicatorGui.Destroy()
         dictationIndicatorGui := ""
+    }
+}
+
+; =============================================================================
+; Helper function to click the first conversation's options (three-dots) button
+; =============================================================================
+ClickFirstConversationOptions(timeoutMs := 5000) {
+    cUIA := UIA_Browser()
+    ; Wait for any button named "Open conversation options" to appear
+    btn := cUIA.WaitElement({ Name: "Open conversation options", Type: "Button" }, timeoutMs)
+    if !btn {
+        MsgBox "⚠️  'Open conversation options' button not found within " timeoutMs " ms."
+        return false
+    }
+    try {
+        btn.ScrollIntoView()
+        Sleep 100
+        btn.Click()
+        return true
+    } catch Error as e {
+        MsgBox "Error clicking options button:`n" e.Message
+        return false
     }
 }
 
