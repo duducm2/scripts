@@ -18,6 +18,10 @@ PROMPT_FILE := A_ScriptDir "\ChatGPT_Prompt.txt"
 ; Holds the GUI object while dictation is active. Empty string when hidden.
 global dictationIndicatorGui := ""
 
+; --- Persistent Loading Indicator ------------------------------------------
+; Holds the GUI object shown while the script is preparing ChatGPT.
+global loadingGui := ""
+
 ; --- Helper Functions --------------------------------------------------------
 
 ; Find the first UIA element whose Name matches any string in an array
@@ -41,15 +45,20 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
 ; =============================================================================
 #!+i::
 {
+    ShowLoading("Setting up ChatGPT…")
     SetTitleMatchMode(2)
     if WinExist("chatgpt") {
         WinActivate("chatgpt")
-        if WinWaitActive("ahk_exe chrome.exe", , 2)
+        if WinWaitActive("ahk_exe chrome.exe", , 2) {
+            RecenterLoadingOverWindow(WinExist("A"))
             CenterMouse()
+        }
         Send("{Esc}")
+        HideLoading()
     } else {
         Run "chrome.exe --new-window https://chatgpt.com/"
         if WinWaitActive("ahk_exe chrome.exe", , 5) {
+            RecenterLoadingOverWindow(WinExist("A"))
             CenterMouse()
             ; --- Read initial prompt from external file & paste it ---
             Sleep 7000  ; give the page time to load fully
@@ -60,22 +69,21 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
 
             ; Copy–paste to handle Unicode & speed
             oldClip := A_Clipboard
-            A_Clipboard := ""           ; clear first so ClipWait can detect change
+            A_Clipboard := ""
             A_Clipboard := promptText
-            ClipWait 1                   ; wait up to 1 s for clipboard to update
-            Send("^v")                  ; paste
+            ClipWait 1
+            Send("^v")
             Sleep 100
-            Send("{Enter}")             ; submit
+            Send("{Enter}")
             Sleep 100
-            A_Clipboard := oldClip       ; restore previous clipboard
+            A_Clipboard := oldClip
 
             ; --- Ensure the Chats sidebar is visible (open) ---
             EnsureSidebarOpen()
 
             ; --- Open the options menu (three dots) for the first conversation ---
-            Sleep 7000  ; wait for sidebar to update with new chat
+            Sleep 10000
             if ClickFirstConversationOptions() {
-                ; Navigate to "Rename" and apply new name
                 Sleep 300
                 Send("{Down}")
                 Sleep 120
@@ -87,6 +95,10 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
                 Sleep 120
                 Send("{Enter}")
             }
+            HideLoading()
+        } else {
+            ; Fallback – could not open Chrome window
+            HideLoading()
         }
     }
 }
@@ -858,4 +870,56 @@ SidebarVisible(uiRoot, names) {
         Send("^x")
         Send("!{Tab}")
     }
+}
+
+; =============================================================================
+; Loading indicator helpers
+; =============================================================================
+ShowLoading(message := "Loading…", bgColor := "FFFF00", fontColor := "000000", fontSize := 26) {
+    global loadingGui
+    ; If already visible, update text
+    if (IsObject(loadingGui) && loadingGui.Hwnd) {
+        ; Assume first control is the Text
+        loadingGui.Controls[1].Text := message
+        return
+    }
+    loadingGui := Gui()
+    loadingGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
+    loadingGui.BackColor := bgColor
+    loadingGui.SetFont("s" . fontSize . " c" . fontColor . " Bold", "Segoe UI")
+    loadingGui.Add("Text", "w500 Center", message)
+
+    ; Center on primary monitor
+    MonitorGetWorkArea(1, &l, &t, &r, &b)
+    winW := r - l
+    winH := b - t
+    loadingGui.Show("AutoSize Hide")
+    loadingGui.GetPos(, , &guiW, &guiH)
+    guiX := l + (winW - guiW) / 2
+    guiY := t + (winH - guiH) / 2
+    loadingGui.Show("x" . Round(guiX) . " y" . Round(guiY) . " NA")
+    WinSetTransparent(220, loadingGui)
+    Sleep 150
+}
+
+HideLoading() {
+    global loadingGui
+    if (IsObject(loadingGui) && loadingGui.Hwnd) {
+        loadingGui.Destroy()
+        loadingGui := ""
+    }
+}
+
+RecenterLoadingOverWindow(hwnd) {
+    global loadingGui
+    if !(IsObject(loadingGui) && loadingGui.Hwnd)
+        return
+    if !WinExist(hwnd)
+        return
+
+    WinGetPos(&wx, &wy, &ww, &wh, hwnd)
+    loadingGui.GetPos(, , &gw, &gh)
+    gx := wx + (ww - gw) / 2
+    gy := wy + (wh - gh) / 2
+    loadingGui.Show("x" . Round(gx) . " y" . Round(gy) . " NA")
 }
