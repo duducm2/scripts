@@ -13,6 +13,9 @@ SetTitleMatchMode 2
 #include UIA-v2\Lib\UIA.ahk
 #include UIA-v2\Lib\UIA_Browser.ahk
 
+; --- Config ---------------------------------------------------------------
+PROMPT_FILE := A_ScriptDir "\\ChatGPT_Prompt.txt"
+
 ; Function to send symbol characters
 SendSymbol(sym) {
     SendText(sym)
@@ -277,7 +280,7 @@ GetCheatSheetText() {
             appShortcuts := cheatSheets.Has("Gmail") ? cheatSheets["Gmail"] : ""
         if InStr(title, "ChatGPT") || InStr(title, "chatgpt")
             appShortcuts :=
-                "(ChatGPT)`r`nShift+Y → Cut all`r`nShift+U → Model selector`r`nShift+I → Toggle sidebar`r`nShift+O → Type " "chatgpt" "`r`nShift+P → New chat`r`nShift+H → Copy code block"
+                "(ChatGPT)`r`nShift+Y → Cut all`r`nShift+U → Model selector`r`nShift+I → Toggle sidebar`r`nShift+O → Re-send rules`r`nShift+P → New chat`r`nShift+H → Copy code block"
         if InStr(title, "Mobills")
             appShortcuts :=
                 "(Mobills)`r`nShift+Y → Dashboard`r`nShift+U → Contas`r`nShift+I → Transações`r`nShift+O → Cartões de crédito`r`nShift+P → Planejamento`r`nShift+H → Relatórios`r`nShift+J → Mais opções`r`nShift+K → Opção 1`r`nShift+N → Opção 2"
@@ -307,7 +310,8 @@ GetCheatSheetText() {
         }
         ; Detect Appointment or Meeting inspector windows
         if RegExMatch(title, "i)(Appointment|Meeting)") {
-            return cheatSheets.Has("OutlookAppointment") ? cheatSheets["OutlookAppointment"] : cheatSheets["OUTLOOK.EXE"]
+            return cheatSheets.Has("OutlookAppointment") ? cheatSheets["OutlookAppointment"] : cheatSheets[
+                "OUTLOOK.EXE"]
         }
         ; Fallback to generic Outlook sheet
         if cheatSheets.Has("OUTLOOK.EXE")
@@ -1299,8 +1303,32 @@ FocusOutlookField(criteria) {
 ; Shift + I: Toggle sidebar
 +i:: Send("^+s")
 
-; Shift + O: Write chatgpt
-+o:: Send("chatgpt")
+; Shift + O : Re-send rules & ask ChatGPT to correct mistake
++o::
+{
+    ; Ensure composer is focused
+    Send "{Esc}"
+    Sleep 150
+
+    promptText := ""
+    try promptText := FileRead(PROMPT_FILE, "UTF-8")
+    if (StrLen(promptText) = 0)
+        promptText := "[Prompt file missing]"
+
+    msg :=
+        "It seems you violated one of the conversation rules (e.g., incorrect name spelling). Read the rules below, identify your mistake, and reply ONLY with the corrected content." .
+        "`n`n" . promptText
+
+    oldClip := A_Clipboard
+    A_Clipboard := ""
+    A_Clipboard := msg
+    ClipWait 1
+    Send "^v"
+    Sleep 100
+    Send "{Enter}"
+    Sleep 100
+    A_Clipboard := oldClip
+}
 
 ; Shift + P: New chat
 +p:: Send("^+o")
