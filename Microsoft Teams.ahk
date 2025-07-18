@@ -111,7 +111,7 @@ ShowCenteredOverlay(hwndTarget, text, duration := 1500) {
     prev := WinGetID("A")                     ; window you were in
     if ActivateTeamsMeetingWindow() {
         Send "^+m"
-        Sleep 100
+        Sleep 800
         WinActivate(prev)                     ; switch back
         ShowCenteredOverlay(prev, "MIC MUTED")
     }
