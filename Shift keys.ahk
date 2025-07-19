@@ -125,6 +125,7 @@ Shift+.  →  Toggle Now Playing View
 Shift+W  →  Toggle Library Sidebar
 Shift+E  →  Toggle Fullscreen Library
 Shift+R  →  Toggle lyrics
+Shift+T  →  Toggle play/pause
 )"  ; end Spotify
 
 ; --- OneNote ---------------------------------------------------------------
@@ -1683,6 +1684,25 @@ IsEditorActive() {
     } catch Error as e {
         MsgBox "Error toggling lyrics: " e.Message, "Spotify Error", "IconX"
     }
+}
+
+; Shift + T : Toggle play/pause
++t::
+{
+    ; Simple approach: try to find Play button, if not found just send media key
+    try {
+        spot := UIA_Browser("ahk_exe Spotify.exe")
+        Sleep 300
+        playBtn := spot.FindElement({ Name: "Play", Type: "Button" })
+        if (playBtn) {
+            playBtn.Click()
+            return
+        }
+    }
+
+    ; If we get here, either Play button wasn't found or there was an error
+    ; In either case, just send media key to toggle play/pause
+    Send "{Media_Play_Pause}"
 }
 
 #HotIf
