@@ -262,6 +262,13 @@ Shift+T  →  Move to folder
 Shift+D  →  Show keyboard shortcuts help
 )"  ; end Gmail
 
+; --- Google Keep ---------------------------------------------------------------
+cheatSheets["Google Keep"] := "
+(
+Google Keep
+Shift+Y  →  Search and select note
+)"  ; end Google Keep
+
 ; ========== Helper to decide which sheet applies ===========================
 GetCheatSheetText() {
     global cheatSheets
@@ -284,6 +291,8 @@ GetCheatSheetText() {
         if InStr(title, "Mobills")
             appShortcuts :=
                 "(Mobills)`r`nShift+Y → Dashboard`r`nShift+U → Contas`r`nShift+I → Transações`r`nShift+O → Cartões de crédito`r`nShift+P → Planejamento`r`nShift+H → Relatórios`r`nShift+J → Mais opções`r`nShift+K → Opção 1`r`nShift+N → Opção 2"
+        if InStr(title, "Google Keep") || InStr(title, "keep.google.com")
+            appShortcuts := cheatSheets.Has("Google Keep") ? cheatSheets["Google Keep"] : ""
 
         ; Combine Chrome general + app-specific shortcuts
         if (appShortcuts != "" && chromeShortcuts != "")
@@ -1864,6 +1873,60 @@ IsEditorActive() {
         }
     } catch Error as e {
         MsgBox "Error navigating to Settings: " e.Message, "Mobills Error", "IconX"
+    }
+}
+
+#HotIf
+
+;-------------------------------------------------------------------
+; Google Keep Shortcuts
+;-------------------------------------------------------------------
+#HotIf WinActive("ahk_exe chrome.exe") && (WinActive("Google Keep") || WinActive("keep.google.com") || InStr(
+    WinGetTitle("A"), "Google Keep"))
+
+; Shift + Y : Search and select note
++y::
+{
+    ; Store the current active window handle
+    currentWindow := WinExist("A")
+
+    ; Show message box to get search text from user
+    searchText := InputBox("Enter text to search for in your notes:", "Google Keep Search", "w300 h100")
+
+    if (searchText.Result = "OK" && searchText.Value != "") {
+        ; Explicitly activate the Google Keep window to ensure we're working with the right window
+        WinActivate("ahk_id " currentWindow)
+        WinWaitActive("ahk_id " currentWindow, , 2)
+
+        ; Store the search text in clipboard
+        oldClip := A_Clipboard
+        A_Clipboard := searchText.Value
+
+        ; Wait a moment for clipboard to be ready
+        Sleep 200
+
+        ; Send Escape to clear any current selection/focus
+        Send "{Esc}"
+        Sleep 300
+
+        ; Open search with Ctrl+F
+        Send "^f"
+        Sleep 200
+
+        ; Paste the search text
+        Send "^v"
+        Sleep 900
+
+        ; Press Escape to close search
+        Send "{Esc}"
+        Sleep 300
+
+        ; Press Enter to confirm selection
+        Send "{Enter}"
+        Sleep 300
+
+        ; Restore original clipboard
+        A_Clipboard := oldClip
     }
 }
 
