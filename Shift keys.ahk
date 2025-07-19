@@ -1289,21 +1289,27 @@ FocusOutlookField(criteria) {
         uia := UIA_Browser("ahk_exe chrome.exe")
         Sleep 300                 ; brief settle-time
 
-        ; 1️⃣  The button/menu item always carries an AutomationId that starts with "radix-".
-        modelCtl := uia.FindElement({ AutomationId: "radix-", matchmode: "StartsWith" })
+        ; Find the model selector button with the new properties
+        modelCtl := uia.FindElement({
+            Name: "Model selector, current model is 4o",
+            Type: "Button",
+            AutomationId: "radix-«r290»"
+        })
 
-        ; 2️⃣  If, for some reason, that fails, fall back to the label text (no type filter)
+        ; Fallback: try to find by name pattern if exact match fails
         if (!modelCtl) {
-            for name in ["Model selector", "Seletor de modelo"]
-                if (modelCtl := uia.FindElement({ Name: name, matchmode: "Substring" }))
-                    break
+            modelCtl := uia.FindElement({
+                Name: "Model selector",
+                Type: "Button",
+                matchmode: "Substring"
+            })
         }
 
-        ; 3️⃣  Click or complain
+        ; Click or complain
         if (modelCtl)
             modelCtl.Click()
         else
-            MsgBox "Couldn't find the model-selector (ID or label)."
+            MsgBox "Couldn't find the model-selector button."
     }
     catch Error as e {
         MsgBox "UIA error: " e.Message
