@@ -124,6 +124,7 @@ Shift+,  →  Go to Charts
 Shift+.  →  Toggle Now Playing View
 Shift+W  →  Toggle Library Sidebar
 Shift+E  →  Toggle Fullscreen Library
+Shift+R  →  Toggle lyrics
 )"  ; end Spotify
 
 ; --- OneNote ---------------------------------------------------------------
@@ -1662,6 +1663,25 @@ IsEditorActive() {
         }
     } catch Error as e {
         MsgBox "Error toggling fullscreen library: " e.Message, "Spotify Error", "IconX"
+    }
+}
+
+; Shift + R : Toggle lyrics
++r::
+{
+    try {
+        spot := UIA_Browser("ahk_exe Spotify.exe")
+        Sleep 300
+
+        ; Find and click the Lyrics button
+        lyricsBtn := spot.FindElement({ Name: "Lyrics", Type: "Button" })
+        if (lyricsBtn) {
+            lyricsBtn.Click()
+        } else {
+            MsgBox "Could not find the Lyrics button.", "Spotify Navigation", "IconX"
+        }
+    } catch Error as e {
+        MsgBox "Error toggling lyrics: " e.Message, "Spotify Error", "IconX"
     }
 }
 
