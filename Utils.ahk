@@ -52,6 +52,34 @@ global g_HnPCurrentIteration := 0
 global g_HnPTargetWindow := 0  ; Store the window handle
 global g_HnPRetryCount := 0    ; Track retry attempts for Program Manager recovery
 
+; -----------------------------------------------------------------------------
+; Helper: Force-close any running Hunt-and-Peck (hap.exe) processes
+; -----------------------------------------------------------------------------
+CloseHuntAndPeckProcess() {
+    ; Attempt to terminate every instance of hap.exe. Ignoring any errors keeps
+    ; the call simple and side-effect-free if the process isn’t running.
+    try ProcessClose("hap.exe")
+}
+
+; Helper: returns true if active window is Program Manager (desktop) or taskbar – i.e. Hunt-and-Peck anchored incorrectly
+IsBadHnPAnchor() {
+    return WinActive("Program Manager") || WinActive("ahk_class Shell_TrayWnd")
+}
+
+; Safely activate the stored target window if it still exists
+SafeActivateTarget(hwnd) {
+    if (hwnd && WinExist("ahk_id " hwnd))
+        WinActivate("ahk_id " hwnd)
+}
+
+; Send a quick right-click to the centred mouse position – this shifts focus to the window’s
+; main area without selecting items.  Any context menu will be dismissed automatically by
+; Hunt-and-Peck’s overlay / Esc logic.
+RightClickFocus() {
+    Click "Right"
+    Sleep 30
+}
+
 ; Shows or hides the loop mode indicator
 ShowLoopIndicator(show := true) {
     global g_HnPLoopGui
@@ -72,6 +100,8 @@ ShowLoopIndicator(show := true) {
 ActivateHuntAndPeck(isLoopMode := false) {
     global g_HnPTargetWindow, g_HnPRetryCount, g_HnPExePath
 
+    ; NOTE: Do NOT force-kill hap.exe here – it interferes with subsequent launches.
+
     ; For single activation (not loop mode), always use current window
     if (!isLoopMode) {
         g_HnPTargetWindow := WinExist("A")
@@ -83,46 +113,54 @@ ActivateHuntAndPeck(isLoopMode := false) {
     }
 
     ; Ensure our target window is active
-    WinActivate("ahk_id " g_HnPTargetWindow)
-    Sleep 30  ; Brief delay for window activation
+    SafeActivateTarget(g_HnPTargetWindow)
+    Sleep 40
 
-    ; Wait up to 120 ms for the window to actually become active (covers fast Alt-Tab cases)
-    if !WinWaitActive("ahk_id " g_HnPTargetWindow, "", 0.12) {
+    ; Shift keyboard focus with a harmless right-click
+    RightClickFocus()
+    Sleep 20
+
+    ; Wait up to 200 ms for the window to actually become active (covers fast Alt-Tab cases)
+    if !WinWaitActive("ahk_id " g_HnPTargetWindow, "", 0.2) {
         ; If it still isn't active, give up on this attempt
         return false
     }
 
     ; ----------------------------------------------------------------------
-    ; NEW: prefer the far more reliable CLI (hap.exe /hint) instead of
-    ; sending the Alt+; hotkey sequence.  This avoids the focus problems that
-    ; sometimes cause Hunt-and-Peck to anchor itself to the desktop/taskbar.
+    ; Prefer the far more reliable CLI (hap.exe /hint). After running, ensure
+    ; we did NOT end up focused on Program Manager **or** the taskbar.
     ; ----------------------------------------------------------------------
     boolSuccess := false
     if (FileExist(g_HnPExePath)) {
         try {
+            ; Focus already fixed; just launch
             Run g_HnPExePath " /hint", , "Hide"
-            Sleep 80  ; brief settle time
-            boolSuccess := !WinActive("Program Manager")  ; if Program Manager came to the front we failed
+            Sleep 120
+            boolSuccess := !IsBadHnPAnchor()
         }
     }
 
     ; If the CLI call failed (or exe not found) fall back to the legacy hotkey
     if (!boolSuccess) {
-        ; Legacy hotkey: Alt + ç (cedilla) – adjust if you changed HnP’s hotkey
+        ; Legacy hotkey path
+        RightClickFocus()
         Send "!ç"
-        Sleep 50
+        Sleep 80
+        ; Re-activate target window to pull overlay back
+        SafeActivateTarget(g_HnPTargetWindow)
+        Sleep 40
 
-        ; Still anchored to Program Manager? => one retry only.
-        if (WinActive("Program Manager")) {
+        ; Still anchored to Program Manager / taskbar? => one retry only.
+        if (IsBadHnPAnchor()) {
             if (g_HnPRetryCount < 1) {
                 g_HnPRetryCount++
 
-                WinActivate("ahk_id " g_HnPTargetWindow)
-                Sleep 30
-                Send "!ç"
-                Sleep 50
+                SafeActivateTarget(g_HnPTargetWindow)
+                Sleep 40
+                RightClickFocus()
+                Sleep 80
 
-                if (WinActive("Program Manager")) {
+                if (IsBadHnPAnchor()) {
                     g_HnPRetryCount := 0
                     return false
                 }
@@ -156,12 +194,15 @@ HnPLoopMode() {
 
         ; Ensure we're in the target window and clear any Hunt and Peck state
         if (g_HnPTargetWindow && WinExist("ahk_id " g_HnPTargetWindow)) {
-            WinActivate("ahk_id " g_HnPTargetWindow)
+            SafeActivateTarget(g_HnPTargetWindow)
             Sleep 30
             Send "{Esc}"
 
             ; Safeguard: after 1000 ms send Esc to dismiss any late overlay.
             SetTimer(() => Send("{Esc}"), -1000)
+
+            ; Ensure the Hunt-and-Peck process is fully terminated
+            CloseHuntAndPeckProcess()
         }
 
         g_HnPTargetWindow := 0
@@ -203,6 +244,9 @@ ActivateHnP() {
         ; Ensure any residual Hunt-and-Peck overlay is cleared
         Send "{Esc}"
         SetTimer(() => Send("{Esc}"), -1000)
+
+        ; Terminate any lingering hap.exe process
+        CloseHuntAndPeckProcess()
         return
     }
 
@@ -219,12 +263,13 @@ ActivateHnP() {
 
 #!+x::
 {
-    if KeyWait("x", "T1") {
-        ; Key was released within 1 second (short press)
+    ; Treat press-and-hold >400 ms as loop-mode trigger (keeps parity with keyboard firmware)
+    if KeyWait("x", "T0.4") {
+        ; Released within 400 ms → single activation
         ActivateHuntAndPeck(false)  ; Pass false to indicate single activation
     }
     else {
-        ; Key was held down for >1 second (long press)
+        ; Key was held down ≥400 ms (long press)
         KeyWait("x")  ; Wait for the key to be released
         HnPLoopMode()
     }
