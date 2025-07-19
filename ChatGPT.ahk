@@ -45,17 +45,15 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
 ; =============================================================================
 #!+i::
 {
-    ShowLoading("Setting up ChatGPT…")
     SetTitleMatchMode(2)
     if WinExist("chatgpt") {
         WinActivate("chatgpt")
         if WinWaitActive("ahk_exe chrome.exe", , 2) {
-            RecenterLoadingOverWindow(WinExist("A"))
             CenterMouse()
         }
         Send("{Esc}")
-        HideLoading()
     } else {
+        ShowLoading("Setting up ChatGPT…")
         Run "chrome.exe --new-window https://chatgpt.com/"
         if WinWaitActive("ahk_exe chrome.exe", , 5) {
             RecenterLoadingOverWindow(WinExist("A"))
