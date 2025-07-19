@@ -267,6 +267,7 @@ cheatSheets["Google Keep"] := "
 (
 Google Keep
 Shift+Y  →  Search and select note
+Shift+U  →  Toggle main menu
 )"  ; end Google Keep
 
 ; ========== Helper to decide which sheet applies ===========================
@@ -1927,6 +1928,44 @@ IsEditorActive() {
 
         ; Restore original clipboard
         A_Clipboard := oldClip
+    }
+}
+
+; Shift + U : Toggle main menu
++u::
+{
+    try {
+        ; Store the current active window handle
+        currentWindow := WinExist("A")
+
+        ; Explicitly activate the Google Keep window to ensure we're working with the right window
+        WinActivate("ahk_id " currentWindow)
+        WinWaitActive("ahk_id " currentWindow, , 2)
+
+        ; Use UIA to find and click the main menu button
+        uia := UIA_Browser("ahk_exe chrome.exe")
+        Sleep 300 ; Give UIA time to attach
+
+        ; Find the main menu button by its properties
+        mainMenuBtn := uia.FindElement({
+            Name: "Main menu",
+            Type: "Button",
+            ClassName: "gb_Lc"
+        })
+
+        if (mainMenuBtn) {
+            mainMenuBtn.Click()
+        } else {
+            ; Fallback: try to find by name only
+            mainMenuBtn := uia.FindElement({ Name: "Main menu", Type: "Button" })
+            if (mainMenuBtn) {
+                mainMenuBtn.Click()
+            } else {
+                MsgBox "Could not find the Main menu button.", "Google Keep", "IconX"
+            }
+        }
+    } catch Error as e {
+        MsgBox "Error toggling main menu: " e.Message, "Google Keep Error", "IconX"
     }
 }
 
