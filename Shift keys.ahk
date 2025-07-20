@@ -285,6 +285,7 @@ cheatSheets["Settle Up"] := "
 Settle Up
 Shift+Y  →  Add transaction
 Shift+U  →  Focus expense value field
+Shift+I  →  Focus expense name field
 )"
 
 ; ========== Helper to decide which sheet applies ===========================
@@ -2682,6 +2683,46 @@ IsFileDialogActive() {
             paidByCombo.Click()
             Sleep 100
             Send "{Tab}"  ; Move to expense value field
+            return
+        }
+    } catch Error as e {
+        ; Silently handle errors
+    }
+}
+
+; Shift + I : Focus expense name field (via receipt button + shift-tab)
++i:: {
+    try {
+        uia := UIA_Browser()
+        Sleep 300
+
+        ; Find the "Add receipt" button
+        receiptBtn := uia.FindFirst({
+            Type: "Button",
+            Name: "Adicionar comprovante",
+            ClassName: "mdc-button mat-mdc-button mat-primary mat-mdc-button-base ng-star-inserted"
+        })
+
+        ; If not found by exact match, try other languages
+        if !receiptBtn {
+            possibleNames := [
+                "Adicionar comprovante",    ; Portuguese
+                "Add receipt",              ; English
+                "Añadir recibo",           ; Spanish
+                "Ajouter un reçu",         ; French
+                "Beleg hinzufügen"         ; German
+            ]
+            for name in possibleNames {
+                receiptBtn := uia.FindFirst({ Type: "Button", Name: name })
+                if receiptBtn
+                    break
+            }
+        }
+
+        if receiptBtn {
+            receiptBtn.SetFocus()  ; Just focus, don't click
+            Sleep 100
+            Send "+{Tab}"  ; Move backwards to expense name field
             return
         }
     } catch Error as e {
