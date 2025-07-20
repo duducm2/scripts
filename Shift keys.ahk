@@ -274,7 +274,7 @@ Shift+U  →  Toggle main menu
 
 ; --- File Dialog ---------------------------------------------------------------
 cheatSheets["FileDialog"] :=
-"(File Dialog)`r`nShift+Y → Select first item`r`nShift+U → Focus file name field`r`nShift+I → Click Insert/Open/Save button"
+"(File Dialog)`r`nShift+Y → Select first item`r`nShift+U → Focus file name field`r`nShift+I → Click Insert/Open/Save button`r`nShift+O → Click Cancel button"
 
 ; --- UIA Tree Inspector -------------------------------------------------
 cheatSheets["UIATreeInspector"] := "(UIA Tree Inspector)`r`nShift+Y → Refresh list"
@@ -2526,4 +2526,59 @@ IsFileDialogActive() {
     Send "!s"  ; Alt+S (Save)
     Sleep 50
     Send "!o"  ; Alt+O (Open)
+}
+
+; Shift + O : Click Cancel button
++o:: {
+    try {
+        root := UIA.ElementFromHandle(WinExist("A"))
+
+        ; First attempt: Find by AutomationId and Type (most reliable)
+        cancelBtn := root.FindFirst({ Type: "Button", AutomationId: "2" })
+
+        ; Second attempt: Try various possible names
+        if !cancelBtn {
+            possibleNames := [
+                ; English variations
+                "Cancel",
+                "Close",
+                "Exit",
+                "Dismiss",
+                ; Portuguese variations
+                "Cancelar",
+                "Fechar",
+                "Sair",
+                ; Spanish variations
+                "Cancelar",
+                "Cerrar",
+                ; French variations
+                "Annuler",
+                "Fermer",
+                ; German variations
+                "Abbrechen",
+                "Schließen",
+                ; Italian variations
+                "Annulla",
+                "Chiudi",
+                ; Generic
+                "No",
+                "Não",
+                "×",  ; Sometimes used as close symbol
+                "✕"   ; Alternative close symbol
+            ]
+            for name in possibleNames {
+                cancelBtn := root.FindFirst({ Type: "Button", Name: name })
+                if cancelBtn
+                    break
+            }
+        }
+
+        if cancelBtn {
+            cancelBtn.Click()
+            return
+        }
+    } catch Error {
+    }
+    ; Fallback: Try common keyboard shortcuts
+    Send "{Esc}"  ; Escape key is universal for cancel
 }
