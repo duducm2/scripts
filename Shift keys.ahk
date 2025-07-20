@@ -293,7 +293,7 @@ GetCheatSheetText() {
                 "(ChatGPT)`r`nShift+Y → Cut all`r`nShift+U → Model selector`r`nShift+I → Toggle sidebar`r`nShift+O → Re-send rules`r`nShift+P → New chat`r`nShift+H → Copy code block"
         if InStr(title, "Mobills")
             appShortcuts :=
-                "(Mobills)`r`nShift+Y → Dashboard`r`nShift+U → Contas`r`nShift+I → Transações`r`nShift+O → Cartões de crédito`r`nShift+P → Planejamento`r`nShift+H → Relatórios`r`nShift+J → Mais opções`r`nShift+K → Previous month`r`nShift+L → Next month"
+                "(Mobills)`r`nShift+Y → Dashboard`r`nShift+U → Contas`r`nShift+I → Transações`r`nShift+O → Cartões de crédito`r`nShift+P → Planejamento`r`nShift+H → Relatórios`r`nShift+J → Mais opções`r`nShift+K → Previous month`r`nShift+L → Next month`r`nShift+N → Ignore transaction`r`nShift+M → Name field"
         if InStr(title, "Google Keep") || InStr(title, "keep.google.com")
             appShortcuts := cheatSheets.Has("Google Keep") ? cheatSheets["Google Keep"] : ""
         if InStr(title, "YouTube")
@@ -732,7 +732,7 @@ ToggleVoiceMessage() {
         ; Helper to grab a button by pattern
         FindBtn(p) => WaitForButton(chrome, p)
 
-        if (isRecording) {           ; ► we’re supposed to stop & send
+        if (isRecording) {           ; ► we're supposed to stop & send
             if (btn := FindBtn(sendPattern)) {
                 btn.Invoke()
                 isRecording := false
@@ -1161,8 +1161,7 @@ IsTeamsChatActive() {
             nextOutlookButton := (nextOutlookButton = "Other")
                 ? "Focused" : "Other"
         } else {
-            MsgBox("Couldn't find ‘" nextOutlookButton "’.",
-                "Button not found", "IconX")
+            MsgBox("Couldn't find '" nextOutlookButton "'.", "Button not found", "IconX")
         }
 
     } catch Error as err {              ; ← **only this form**
@@ -1228,7 +1227,7 @@ FocusOutlookField(criteria) {
     MsgBox "Couldn't find the Date Picker.", "Control not found", "IconX"
 }
 
-+M:: {  ; Shift + M → focus the “Make Recurring” button, then press Tab once
++M:: {  ; Shift + M → focus the "Make Recurring" button, then press Tab once
     try {
         win := WinExist("A")
         root := UIA.ElementFromHandle(win)
@@ -1979,6 +1978,43 @@ NextMobillsMonth() {
         MsgBox "Error navigating to next month:`n" e.Message, "Mobills Error", "IconX"
     }
 }
+
+; ---- New helper to jump from "Open" button ----
+FocusViaOpenButton(tabs, pressSpace := false) {
+    try {
+        uia := TryAttachBrowser()
+        if !uia
+            return false
+        ; Anchor = Button named "Open"
+        openBtn := uia.FindElement({ Name: "Open", Type: "Button" })
+        if !openBtn {
+            ; fallback by class substring
+            openBtn := uia.FindElement({ ClassName: "MuiAutocomplete-popupIndicator", Type: "Button", matchmode: "Substring" })
+        }
+        if !openBtn
+            return false
+        openBtn.SetFocus()
+        Sleep 200
+        ; Tab forward specified times
+        loop tabs {
+            Send "+{Tab}"
+            Sleep 80
+        }
+        if pressSpace {
+            Sleep 80
+            Send "{Space}"
+        }
+        return true
+    } catch Error {
+        return false
+    }
+}
+
+; Shift + N : Toggle "Ignore transaction"
++n:: FocusViaOpenButton(3, true)
+
+; Shift + M : Focus expense name field
++m:: FocusViaOpenButton(2, false)
 
 #HotIf
 

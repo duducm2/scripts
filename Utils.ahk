@@ -16,8 +16,7 @@
 {
     hwnd := WinExist("A")
     if !hwnd {
-        MsgBox "Still no active window!"
-        return
+        return ; silently abort if no active window
     }
     rect := Buffer(16, 0)
     if !DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect) {

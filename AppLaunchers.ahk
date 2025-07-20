@@ -37,16 +37,16 @@
     SetTitleMatchMode 2
     if WinExist("Área de Trabalho ahk_class CabinetWClass") || WinExist("Desktop ahk_class CabinetWClass") {
         WinActivate
+        WinWaitActive("ahk_class CabinetWClass", , 2)  ; Wait up to 2 seconds for activation
+        Sleep(100)  ; Small additional delay to ensure window is ready
         CenterMouse()
     } else {
         target := IS_WORK_ENVIRONMENT ? "C:\Users\fie7ca\Desktop" : "C:\Users\eduev\OneDrive\Desktop"
         Run 'explorer.exe "' target '"'
-        ; Wait until any Explorer window appears (but not necessarily active)
+        ; Wait until Explorer window appears AND becomes active
         WinWait("ahk_class CabinetWClass")
-        ; Give the OS a moment to finish bringing the window to the foreground,
-        ; then force-activate it just in case it remained in the background.
-        Sleep(200)                     ; small delay requested
-        WinActivate                    ; ensure Explorer window is focused
+        WinWaitActive("ahk_class CabinetWClass", , 2)  ; Wait up to 2 seconds for activation
+        Sleep(100)  ; Small additional delay to ensure window is ready
         CenterMouse()
     }
 }
