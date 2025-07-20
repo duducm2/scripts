@@ -296,6 +296,8 @@ GetCheatSheetText() {
                 "(Mobills)`r`nShift+Y → Dashboard`r`nShift+U → Contas`r`nShift+I → Transações`r`nShift+O → Cartões de crédito`r`nShift+P → Planejamento`r`nShift+H → Relatórios`r`nShift+J → Mais opções`r`nShift+K → Previous month`r`nShift+L → Next month"
         if InStr(title, "Google Keep") || InStr(title, "keep.google.com")
             appShortcuts := cheatSheets.Has("Google Keep") ? cheatSheets["Google Keep"] : ""
+        if InStr(title, "YouTube")
+            appShortcuts := "(YouTube)`r`nShift+Y → Focus search box"
 
         ; Combine Chrome general + app-specific shortcuts
         if (appShortcuts != "" && chromeShortcuts != "")
@@ -2153,3 +2155,44 @@ FindMonthGroup(uia) {
     }
     return 0
 }
+
+;-------------------------------------------------------------------
+; YouTube Shortcuts
+;-------------------------------------------------------------------
+#HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "YouTube")
+
+; Shift + Y : Focus search box
++y:: {
+    try {
+        uia := UIA_Browser()
+        Sleep 300
+
+        ; Try multiple search strategies
+        searchBox := uia.FindFirst({ Type: "ComboBox", Name: "Search" })
+        if !searchBox
+            searchBox := uia.FindFirst({ Type: "Edit", Name: "Search" })
+        if !searchBox
+            searchBox := uia.FindFirst({ ClassName: "ytSearchboxComponentInput" })
+        if !searchBox
+            searchBox := uia.FindFirst({ Type: "SearchBox" })
+        if !searchBox
+            searchBox := uia.FindFirst({ AutomationId: "search" })
+
+        if (searchBox) {
+            searchBox.SetFocus()
+            ; Additional fallback - if SetFocus doesn't work, try sending keyboard shortcut
+            Sleep 100
+            if !searchBox.HasKeyboardFocus {
+                Send "/"  ; YouTube's built-in shortcut to focus search
+            }
+        } else {
+            ; Last resort - just use YouTube's built-in keyboard shortcut
+            Send "/"
+        }
+    } catch Error as e {
+        ; If all else fails, use the keyboard shortcut
+        Send "/"
+    }
+}
+
+#HotIf
