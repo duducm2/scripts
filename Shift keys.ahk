@@ -273,7 +273,8 @@ Shift+U  →  Toggle main menu
 )"  ; end Google Keep
 
 ; --- File Dialog ---------------------------------------------------------------
-cheatSheets["FileDialog"] := "(File Dialog)`r`nShift+Y → Select first item`r`nShift+U → Focus file name field"
+cheatSheets["FileDialog"] :=
+"(File Dialog)`r`nShift+Y → Select first item`r`nShift+U → Focus file name field`r`nShift+I → Click Insert/Open/Save button"
 
 ; --- UIA Tree Inspector -------------------------------------------------
 cheatSheets["UIATreeInspector"] := "(UIA Tree Inspector)`r`nShift+Y → Refresh list"
@@ -2462,4 +2463,67 @@ IsFileDialogActive() {
     }
     ; Fallback: Try to focus using keyboard navigation
     Send "!n"  ; Alt+N is a common shortcut for file name field
+}
+
+; Shift + I : Click Insert/Open/Save button
++i:: {
+    try {
+        root := UIA.ElementFromHandle(WinExist("A"))
+
+        ; First attempt: Find by AutomationId and Type (most reliable)
+        actionBtn := root.FindFirst({ Type: "Button", AutomationId: "1" })
+
+        ; Second attempt: Try various possible names
+        if !actionBtn {
+            possibleNames := [
+                ; English variations
+                "Insert",
+                "Open",
+                "Save",
+                "Save As",
+                "OK",
+                ; Portuguese variations
+                "Abrir",
+                "Salvar",
+                "Salvar como",
+                "Inserir",
+                ; Spanish variations (common in some systems)
+                "Insertar",
+                "Guardar",
+                "Guardar como",
+                ; French variations (common in some systems)
+                "Insérer",
+                "Ouvrir",
+                "Enregistrer",
+                "Enregistrer sous"
+            ]
+            for name in possibleNames {
+                actionBtn := root.FindFirst({ Type: "Button", Name: name })
+                if actionBtn
+                    break
+            }
+        }
+
+        ; Third attempt: Try SplitButton type (some dialogs use this instead)
+        if !actionBtn {
+            actionBtn := root.FindFirst({ Type: "SplitButton", AutomationId: "1" })
+            if !actionBtn {
+                for name in possibleNames {
+                    actionBtn := root.FindFirst({ Type: "SplitButton", Name: name })
+                    if actionBtn
+                        break
+                }
+            }
+        }
+
+        if actionBtn {
+            actionBtn.Click()
+            return
+        }
+    } catch Error {
+    }
+    ; Fallback: Try common keyboard shortcuts
+    Send "!s"  ; Alt+S (Save)
+    Sleep 50
+    Send "!o"  ; Alt+O (Open)
 }
