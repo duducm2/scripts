@@ -293,7 +293,7 @@ GetCheatSheetText() {
                 "(ChatGPT)`r`nShift+Y → Cut all`r`nShift+U → Model selector`r`nShift+I → Toggle sidebar`r`nShift+O → Re-send rules`r`nShift+P → New chat`r`nShift+H → Copy code block"
         if InStr(title, "Mobills")
             appShortcuts :=
-                "(Mobills)`r`nShift+Y → Dashboard`r`nShift+U → Contas`r`nShift+I → Transações`r`nShift+O → Cartões de crédito`r`nShift+P → Planejamento`r`nShift+H → Relatórios`r`nShift+J → Mais opções`r`nShift+K → Opção 1`r`nShift+N → Opção 2"
+                "(Mobills)`r`nShift+Y → Dashboard`r`nShift+U → Contas`r`nShift+I → Transações`r`nShift+O → Cartões de crédito`r`nShift+P → Planejamento`r`nShift+H → Relatórios`r`nShift+J → Mais opções`r`nShift+K → Previous month`r`nShift+L → Next month"
         if InStr(title, "Google Keep") || InStr(title, "keep.google.com")
             appShortcuts := cheatSheets.Has("Google Keep") ? cheatSheets["Google Keep"] : ""
 
@@ -1796,7 +1796,7 @@ IsEditorActive() {
 #HotIf
 
 ;-------------------------------------------------------------------
-; Mobills Finance App Shortcuts
+; Mobills Shortcuts
 ;-------------------------------------------------------------------
 #HotIf WinActive("Mobills")
 
@@ -1901,8 +1901,8 @@ IsEditorActive() {
 ; Shift + K : Previous month
 +k:: PrevMobillsMonth()
 
-; Shift + N : Next month
-+n:: NextMobillsMonth()
+; Shift + L : Next month
++l:: NextMobillsMonth()
 
 PrevMobillsMonth() {
     try {
@@ -1975,20 +1975,6 @@ NextMobillsMonth() {
         }
     } catch Error as e {
         MsgBox "Error navigating to next month:`n" e.Message, "Mobills Error", "IconX"
-    }
-}
-
-; Shift + L : Settings
-+l:: {
-    try {
-        btn := GetMobillsButton("menu-settings-item", "Settings")
-        if (btn) {
-            btn.Click()
-        } else {
-            MsgBox "Could not find the Settings button.", "Mobills Navigation", "IconX"
-        }
-    } catch Error as e {
-        MsgBox "Error navigating to Settings: " e.Message, "Mobills Error", "IconX"
     }
 }
 
