@@ -288,6 +288,18 @@ Shift+U  →  Focus expense value field
 Shift+I  →  Focus expense name field
 )"
 
+; --- Miro Shortcuts -----------------------------------------------------
+cheatSheets["Miro"] := "
+(
+Miro
+Shift+Y  →  Command palette
+Shift+U  →  Frame list
+Shift+I  →  Group
+Shift+O  →  Ungroup
+Shift+P  →  Lock/Unlock
+Shift+H  →  Add/Edit link
+)"
+
 ; ========== Helper to decide which sheet applies ===========================
 GetCheatSheetText() {
     global cheatSheets
@@ -326,6 +338,8 @@ GetCheatSheetText() {
             appShortcuts := cheatSheets["UIATreeInspector"]
         if InStr(title, "Settle Up")
             appShortcuts := cheatSheets.Has("Settle Up") ? cheatSheets["Settle Up"] : ""
+        if InStr(title, "Miro")
+            appShortcuts := cheatSheets.Has("Miro") ? cheatSheets["Miro"] : ""
 
         ; Combine Chrome general + app-specific shortcuts
         if (appShortcuts != "" && chromeShortcuts != "")
@@ -2729,5 +2743,30 @@ IsFileDialogActive() {
         ; Silently handle errors
     }
 }
+
+#HotIf
+
+;-------------------------------------------------------------------
+; Miro Shortcuts
+;-------------------------------------------------------------------
+#HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "Miro")
+
+; Shift + Y : Command palette (Ctrl+K)
++y:: Send "^k"
+
+; Shift + U : Frame list (Ctrl+Shift+F)
++u:: Send "^+f"
+
+; Shift + I : Group (Ctrl+G)
++i:: Send "^g"
+
+; Shift + O : Ungroup (Ctrl+Shift+G)
++o:: Send "^+g"
+
+; Shift + P : Lock/Unlock (Ctrl+Shift+L)
++p:: Send "^+l"
+
+; Shift + H : Add/Edit link (Alt+Ctrl+K)
++h:: Send "!^k"
 
 #HotIf
