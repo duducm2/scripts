@@ -1362,17 +1362,20 @@ FocusOutlookField(criteria) {
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe explorer.exe")
 
-; Shift + Y : Select first item in list
+; Shift + Y : Select first item in list (force-focus ItemsView)
 +y::
 {
+    ; Send a right-click to shift focus into the main pane
+    Click "Right"
+    Sleep 300
     ; Clear any in-place edits or text focus first
     Send "{ESC}"
+
+    EnsureItemsViewFocus()
 
     try {
         explorerEl := UIA.ElementFromHandle(WinExist("A"))
 
-        ; 1️⃣  Locate the Items View list (middle pane).  We try several common
-        ;     identifiers because they differ between Windows versions / languages.
         itemsView := explorerEl.FindFirst({ AutomationId: "ItemsView", Type: "List" })
             ? explorerEl.FindFirst({ AutomationId: "ItemsView", Type: "List" })
             : explorerEl.FindFirst({ ClassName: "UIItemsView", Type: "List" })
@@ -1382,11 +1385,10 @@ FocusOutlookField(criteria) {
         ; Fallback to entire window if we still did not find a dedicated list
         listRoot := itemsView ? itemsView : explorerEl
 
-        ; 2️⃣  Pick the very first ListItem inside that list root
+        ; Pick the very first ListItem inside that list root
         firstItem := listRoot.FindFirst({ Type: "ListItem" })
 
         if (firstItem) {
-            ; Bring it into view and focus it
             firstItem.ScrollIntoView()
             firstItem.Select()
             firstItem.SetFocus()
@@ -1398,6 +1400,29 @@ FocusOutlookField(criteria) {
 
     ; Last-chance fallback – press Home which works if focus is already inside the list
     Send "{Home}"
+}
+
+; Helper to force focus to the ItemsView pane (file list)
+EnsureItemsViewFocus() {
+    try {
+        explorerHwnd := WinExist("A")
+        root := UIA.ElementFromHandle(explorerHwnd)
+
+        ; quick check – if ItemsView already has keyboard focus, we're done
+        iv := root.FindFirst({ AutomationId: "ItemsView", Type: "List" })
+        if iv && iv.HasKeyboardFocus
+            return
+
+        ; Send up to 6 F6 cycles to reach the pane
+        loop 6 {
+            Send "{F6}"
+            Sleep 120
+            iv := root.FindFirst({ AutomationId: "ItemsView", Type: "List" })
+            if iv && iv.HasKeyboardFocus
+                break
+        }
+    } catch Error {
+    }
 }
 
 ; Shift + U : Focus search bar (Ctrl+E/F)
