@@ -1364,18 +1364,39 @@ FocusOutlookField(criteria) {
 ; Shift + Y : Select first item in list
 +y::
 {
+    ; Clear any in-place edits or text focus first
     Send "{ESC}"
-    try
-    {
+
+    try {
         explorerEl := UIA.ElementFromHandle(WinExist("A"))
-        firstItem := explorerEl.FindFirst({ Type: "ListItem" }) ; grab first ListItem regardless of AutomationId
-        firstItem.Select()
-        firstItem.SetFocus()
+
+        ; 1️⃣  Locate the Items View list (middle pane).  We try several common
+        ;     identifiers because they differ between Windows versions / languages.
+        itemsView := explorerEl.FindFirst({ AutomationId: "ItemsView", Type: "List" })
+            ? explorerEl.FindFirst({ AutomationId: "ItemsView", Type: "List" })
+            : explorerEl.FindFirst({ ClassName: "UIItemsView", Type: "List" })
+                ? explorerEl.FindFirst({ ClassName: "UIItemsView", Type: "List" })
+                : explorerEl.FindFirst({ Name: "Items View", Type: "List", matchmode: "Substring" })
+
+        ; Fallback to entire window if we still did not find a dedicated list
+        listRoot := itemsView ? itemsView : explorerEl
+
+        ; 2️⃣  Pick the very first ListItem inside that list root
+        firstItem := listRoot.FindFirst({ Type: "ListItem" })
+
+        if (firstItem) {
+            ; Bring it into view and focus it
+            firstItem.ScrollIntoView()
+            firstItem.Select()
+            firstItem.SetFocus()
+            return
+        }
+    } catch Error {
+        ; swallow and fallback below
     }
-    catch Error {
-        ; Fallback: just press Home to select the first item
-        Send "{Home}"
-    }
+
+    ; Last-chance fallback – press Home which works if focus is already inside the list
+    Send "{Home}"
 }
 
 ; Shift + U : Focus search bar (Ctrl+E/F)
