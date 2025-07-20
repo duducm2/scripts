@@ -279,6 +279,13 @@ cheatSheets["FileDialog"] :=
 ; --- UIA Tree Inspector -------------------------------------------------
 cheatSheets["UIATreeInspector"] := "(UIA Tree Inspector)`r`nShift+Y → Refresh list"
 
+; --- SettleUp Shortcuts -----------------------------------------------------
+cheatSheets["Settle Up"] := "
+(
+Settle Up
+Shift+Y  →  Add transaction
+)"
+
 ; ========== Helper to decide which sheet applies ===========================
 GetCheatSheetText() {
     global cheatSheets
@@ -315,6 +322,8 @@ GetCheatSheetText() {
             appShortcuts := "(YouTube)`r`nShift+Y → Focus search box"
         if InStr(title, "UIATreeInspector")
             appShortcuts := cheatSheets["UIATreeInspector"]
+        if InStr(title, "Settle Up")
+            appShortcuts := cheatSheets.Has("Settle Up") ? cheatSheets["Settle Up"] : ""
 
         ; Combine Chrome general + app-specific shortcuts
         if (appShortcuts != "" && chromeShortcuts != "")
@@ -2586,3 +2595,47 @@ IsFileDialogActive() {
     ; Fallback: Try common keyboard shortcuts
     Send "{Esc}"  ; Escape key is universal for cancel
 }
+
+;-------------------------------------------------------------------
+; SettleUp Shortcuts
+;-------------------------------------------------------------------
+#HotIf WinActive("Settle Up")
+
+; Shift + Y : Click Add Transaction button
++y:: {
+    try {
+        uia := UIA_Browser()
+        Sleep 300
+
+        ; Try multiple ways to find the Add Transaction button
+        addBtn := uia.FindFirst({
+            Type: "Button",
+            Name: "Adicionar transação",
+            ClassName: "new-dialog-button mdc-fab mat-mdc-fab mat-primary mat-mdc-button-base mdc-fab--extended mat-mdc-extended-fab ng-star-inserted"
+        })
+
+        ; If not found by full match, try partial match
+        if !addBtn {
+            possibleNames := [
+                "Adicionar transação",    ; Portuguese
+                "Add transaction",        ; English
+                "Nueva transacción",      ; Spanish
+                "Ajouter une transaction" ; French
+            ]
+            for name in possibleNames {
+                addBtn := uia.FindFirst({ Type: "Button", Name: name })
+                if addBtn
+                    break
+            }
+        }
+
+        if addBtn {
+            addBtn.Click()
+            return
+        }
+    } catch Error as e {
+        ; Silently handle errors
+    }
+}
+
+#HotIf
