@@ -284,6 +284,14 @@ GetCheatSheetText() {
 
     exe := WinGetProcessName("A") ; active process name (e.g. chrome.exe)
     title := WinGetTitle("A")
+    hwnd := WinExist("A")
+
+    ; Check for file dialog first (works in any app)
+    if WinGetClass("ahk_id " hwnd) = "#32770" {
+        txt := WinGetText("ahk_id " hwnd)
+        if InStr(txt, "Namespace Tree Control") || InStr(txt, "Controle da Árvore de Namespace")
+            return cheatSheets["FileDialog"]
+    }
 
     ; Special handling for Chrome-based apps that share chrome.exe
     if (exe = "chrome.exe") {
