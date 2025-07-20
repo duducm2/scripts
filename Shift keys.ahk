@@ -273,7 +273,7 @@ Shift+U  →  Toggle main menu
 )"  ; end Google Keep
 
 ; --- File Dialog ---------------------------------------------------------------
-cheatSheets["FileDialog"] := "(File Dialog)`r`nShift+Y → Select first item"
+cheatSheets["FileDialog"] := "(File Dialog)`r`nShift+Y → Select first item`r`nShift+U → Focus file name field"
 
 ; --- UIA Tree Inspector -------------------------------------------------
 cheatSheets["UIATreeInspector"] := "(UIA Tree Inspector)`r`nShift+Y → Refresh list"
@@ -2416,3 +2416,50 @@ IsFileDialogActive() {
 }
 
 #HotIf
+
+; Shift + U : Focus file name edit field
++u:: {
+    try {
+        root := UIA.ElementFromHandle(WinExist("A"))
+
+        ; First attempt: Find by AutomationId and Type (most reliable)
+        fileNameEdit := root.FindFirst({ Type: "Edit", AutomationId: "1148" })
+
+        ; Second attempt: Try various possible names
+        if !fileNameEdit {
+            possibleNames := [
+                "File name:",      ; English standard
+                "Nome:",          ; Portuguese standard
+                "Filename:",      ; Alternative English
+                "File Name:",     ; Alternative capitalization
+                "Name:",          ; Generic English
+                "Nome do arquivo:", ; Full Portuguese
+                "Save As:",       ; Save dialog English
+                "Salvar como:"    ; Save dialog Portuguese
+            ]
+            for name in possibleNames {
+                fileNameEdit := root.FindFirst({ Type: "Edit", Name: name })
+                if fileNameEdit
+                    break
+            }
+        }
+
+        ; Third attempt: Try to find through parent ComboBox
+        if !fileNameEdit {
+            fileNameCombo := root.FindFirst({ Type: "ComboBox", AutomationId: "1148" })
+            if fileNameCombo {
+                fileNameEdit := fileNameCombo.FindFirst({ Type: "Edit" })
+            }
+        }
+
+        if fileNameEdit {
+            fileNameEdit.SetFocus()
+            Sleep 50
+            Send "^a"  ; Select all existing text
+            return
+        }
+    } catch Error {
+    }
+    ; Fallback: Try to focus using keyboard navigation
+    Send "!n"  ; Alt+N is a common shortcut for file name field
+}
