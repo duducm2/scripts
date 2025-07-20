@@ -41,7 +41,12 @@
     } else {
         target := IS_WORK_ENVIRONMENT ? "C:\Users\fie7ca\Desktop" : "C:\Users\eduev\OneDrive\Desktop"
         Run 'explorer.exe "' target '"'
-        WinWaitActive("ahk_class CabinetWClass")
+        ; Wait until any Explorer window appears (but not necessarily active)
+        WinWait("ahk_class CabinetWClass")
+        ; Give the OS a moment to finish bringing the window to the foreground,
+        ; then force-activate it just in case it remained in the background.
+        Sleep(200)                     ; small delay requested
+        WinActivate                    ; ensure Explorer window is focused
         CenterMouse()
     }
 }
