@@ -2289,7 +2289,22 @@ FindMonthGroup(uia) {
 +y:: {
     try {
         root := UIA.ElementFromHandle(WinExist("A"))
-        ; find header (Header control)
+
+        ; First attempt: find and focus Items View list directly
+        itemsList := root.FindFirst({ Type: "List", ClassName: "UIItemsView" })
+        if !itemsList
+            itemsList := root.FindFirst({ Type: "List", Name: "Items View" })
+        if !itemsList
+            itemsList := root.FindFirst({ Type: "List", AutomationId: "ItemsView" })
+
+        if itemsList {
+            itemsList.SetFocus()
+            Sleep 120
+            Send "{Home}"  ; Go to first item
+            return
+        }
+
+        ; Second attempt: find header (Header control)
         hdr := root.FindFirst({ Type: "Header" })
         if !hdr {
             hdr := root.FindFirst({ Name: "Header", Type: "Header" })
@@ -2300,14 +2315,38 @@ FindMonthGroup(uia) {
             hdr.SetFocus()
             Sleep 120
             Send "+{Tab}"
-            Send "{Down}"
-            Send "{Up}"
+            Send "{Home}"
+            return
+        }
+
+        ; Third attempt: find file name ComboBox by AutomationId and Type
+        ; This should work regardless of the name (File name: or Nome:)
+        fileNameCombo := root.FindFirst({ Type: "ComboBox", AutomationId: "1148" })
+
+        ; If not found, try by various possible names
+        if !fileNameCombo {
+            possibleNames := ["File name:", "Nome:", "Filename:", "File Name:"]
+            for name in possibleNames {
+                fileNameCombo := root.FindFirst({ Type: "ComboBox", Name: name })
+                if fileNameCombo
+                    break
+            }
+        }
+
+        ; If ComboBox found, use it
+        if fileNameCombo {
+            fileNameCombo.SetFocus()
+            Sleep 120
+            Send "+{Tab}"
+            Send "{Home}"
             return
         }
     } catch Error {
     }
-    ; fallback simple Shift+Tab
+    ; Last resort fallback: simple Shift+Tab then Home
     Send "+{Tab}"
+    Sleep 120
+    Send "{Home}"
 }
 
 #HotIf
