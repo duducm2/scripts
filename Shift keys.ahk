@@ -275,6 +275,9 @@ Shift+U  →  Toggle main menu
 ; --- File Dialog ---------------------------------------------------------------
 cheatSheets["FileDialog"] := "(File Dialog)`r`nShift+Y → Select first item"
 
+; --- UIA Tree Inspector -------------------------------------------------
+cheatSheets["UIATreeInspector"] := "(UIA Tree Inspector)`r`nShift+Y → Refresh list"
+
 ; ========== Helper to decide which sheet applies ===========================
 GetCheatSheetText() {
     global cheatSheets
@@ -301,6 +304,8 @@ GetCheatSheetText() {
             appShortcuts := cheatSheets.Has("Google Keep") ? cheatSheets["Google Keep"] : ""
         if InStr(title, "YouTube")
             appShortcuts := "(YouTube)`r`nShift+Y → Focus search box"
+        if InStr(title, "UIATreeInspector")
+            appShortcuts := cheatSheets["UIATreeInspector"]
 
         ; Combine Chrome general + app-specific shortcuts
         if (appShortcuts != "" && chromeShortcuts != "")
@@ -312,6 +317,10 @@ GetCheatSheetText() {
         else
             return ""
     }
+
+    ; UIA Tree Inspector - check both process and window title
+    if (exe = "AutoHotkey64.exe" && InStr(title, "UIATreeInspector"))
+        return cheatSheets["UIATreeInspector"]
 
     ; Microsoft Teams – differentiate meeting vs chat via helper predicates
     if IsTeamsMeetingActive()
@@ -2335,3 +2344,28 @@ IsFileDialogActive() {
         return false
     }
 }
+
+;-------------------------------------------------------------------
+; UIA Tree Inspector Shortcuts
+;-------------------------------------------------------------------
+#HotIf WinActive("UIATreeInspector") || WinActive("ahk_exe UIATreeInspectorAutoHotkey64.exe")
+
+; Shift + Y : Refresh list
++y:: {
+    try {
+        root := UIA.ElementFromHandle(WinExist("A"))
+        Sleep 200
+        btn := root.FindFirst({ Name: "Refresh list", Type: "Button" })
+        if !btn
+            btn := root.FindFirst({ AutomationId: "5", Type: "Button" })
+        if btn {
+            btn.Invoke()
+        } else {
+            MsgBox "Could not find the Refresh list button.", "UIA Tree Inspector", "IconX"
+        }
+    } catch Error as e {
+        MsgBox "Error refreshing list:`n" e.Message, "UIA Tree Inspector", "IconX"
+    }
+}
+
+#HotIf

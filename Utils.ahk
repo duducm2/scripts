@@ -261,12 +261,26 @@ ActivateHnP() {
     }
 }
 
+; -----------------------------------------------------------------------------
+; Helper: Schedule multiple attempts to close Hunt-and-Peck after single activation
+;           Provides redundancy in case the first attempt fails or HnP hangs.
+; -----------------------------------------------------------------------------
+ScheduleHnPCleanup() {
+    global g_HnPLoopActive
+    ; Execute CloseHuntAndPeckProcess() after progressive delays, but only if we’re not in loop mode
+    static delays := [3000, 7000, 12000]  ; milliseconds
+    for d in delays
+        SetTimer(() => (!g_HnPLoopActive ? CloseHuntAndPeckProcess() : ""), -d)
+}
+
 #!+x::
 {
     ; Treat press-and-hold >400 ms as loop-mode trigger (keeps parity with keyboard firmware)
     if KeyWait("x", "T0.4") {
         ; Released within 400 ms → single activation
         ActivateHuntAndPeck(false)  ; Pass false to indicate single activation
+        ; Schedule redundant cleanup attempts to ensure hap.exe is terminated
+        ScheduleHnPCleanup()
     }
     else {
         ; Key was held down ≥400 ms (long press)
