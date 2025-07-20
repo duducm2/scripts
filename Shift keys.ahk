@@ -272,6 +272,9 @@ Shift+Y  →  Search and select note
 Shift+U  →  Toggle main menu
 )"  ; end Google Keep
 
+; --- File Dialog ---------------------------------------------------------------
+cheatSheets["FileDialog"] := "(File Dialog)`r`nShift+Y → Select first item"
+
 ; ========== Helper to decide which sheet applies ===========================
 GetCheatSheetText() {
     global cheatSheets
@@ -315,6 +318,8 @@ GetCheatSheetText() {
         return cheatSheets.Has("TeamsMeeting") ? cheatSheets["TeamsMeeting"] : ""
     if IsTeamsChatActive()
         return cheatSheets.Has("TeamsChat") ? cheatSheets["TeamsChat"] : ""
+    if IsFileDialogActive()
+        return cheatSheets["FileDialog"]
 
     ; Special handling for Outlook-based apps
     if (exe = "OUTLOOK.EXE") {
@@ -2257,3 +2262,74 @@ FindMonthGroup(uia) {
 }
 
 #HotIf
+
+;-------------------------------------------------------------------
+; File Dialog (Namespace Tree Control) Shortcuts
+;-------------------------------------------------------------------
+#HotIf IsFileDialogActive()
+
+; Shift + Y : select first file (via header focus + Shift+Tab)
++y:: {
+    try {
+        root := UIA.ElementFromHandle(WinExist("A"))
+        ; find header (Header control)
+        hdr := root.FindFirst({ Type: "Header" })
+        if !hdr {
+            hdr := root.FindFirst({ Name: "Header", Type: "Header" })
+            if !hdr
+                hdr := root.FindFirst({ Name: "Cabeçalho", Type: "Header" })
+        }
+        if hdr {
+            hdr.SetFocus()
+            Sleep 120
+            Send "+{Tab}"
+            return
+        }
+    } catch Error {
+    }
+    ; fallback simple Shift+Tab
+    Send "+{Tab}"
+}
+
+#HotIf
+
+IsFileDialogActive() {
+    hwnd := WinActive("A")
+    if !hwnd {
+        ToolTip("No active window")
+        return false
+    }
+
+    winClass := WinGetClass("ahk_id " hwnd)
+    winTitle := WinGetTitle("ahk_id " hwnd)
+    winProcess := WinGetProcessName("ahk_id " hwnd)
+
+    ToolTip("Window: " winTitle "`nClass: " winClass "`nProcess: " winProcess)
+    SetTimer () => ToolTip(), -3000  ; clear after 3s
+
+    if winClass != "#32770" {
+        return false
+    }
+
+    try {
+        root := UIA.ElementFromHandle(hwnd)
+        ; Try to find ANY useful identifiers
+        for type in ["List", "Tree", "Pane", "Window"] {
+            elements := root.FindAll({ Type: type })
+            if elements.Length {
+                info := "Found " elements.Length " " type "s:`n"
+                for el in elements {
+                    info .= "- Name: " el.Name " AutoId: " el.AutomationId " Class: " el.ClassName "`n"
+                }
+                ToolTip(info)
+                SetTimer () => ToolTip(), -5000
+                break
+            }
+        }
+        return true
+    } catch Error as e {
+        ToolTip("UIA Error: " e.Message)
+        SetTimer () => ToolTip(), -3000
+        return false
+    }
+}
