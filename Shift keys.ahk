@@ -1877,35 +1877,83 @@ IsEditorActive() {
     }
 }
 
-; Shift + K : Left arrow (Filter → Tab twice)
-+k:: {
+; Shift + K : Previous month
++k:: PrevMobillsMonth()
+
+; Shift + N : Next month
++n:: NextMobillsMonth()
+
+PrevMobillsMonth() {
     try {
-        btn := GetMobillsButton("", "Filter")
-        if (btn) {
+        uia := TryAttachBrowser()
+        if !uia {
+            MsgBox "Could not attach to the browser window.", "Mobills Navigation", "IconX"
+            return
+        }
+        grp := FindMonthGroup(uia)
+        if !grp {
+            MsgBox "Could not locate the month container.", "Mobills Navigation", "IconX"
+            return
+        }
+        ; First try: immediate previous sibling
+        btn := grp.WalkTree("-1", { Type: "Button" })
+        if !btn {
+            ; Fallback: search all buttons inside parent and pick the one to the LEFT of the group
+            parent := UIA.TreeWalkerTrue.GetParentElement(grp)
+            if (parent) {
+                grpPos := grp.Location
+                for , el in parent.FindAll({ Type: "Button" }) {
+                    pos := el.Location
+                    if (pos.y >= grpPos.y - 10 && pos.y <= grpPos.y + grpPos.h + 10 && pos.x < grpPos.x) {
+                        btn := el                          ; closest left candidate
+                    }
+                }
+            }
+        }
+        if btn {
             btn.Click()
-            Sleep 300
-            Send "{Tab 2}"
         } else {
-            MsgBox "Could not find the Filter button.", "Mobills Navigation", "IconX"
+            MsgBox "Could not find the previous-month button.", "Mobills Navigation", "IconX"
         }
     } catch Error as e {
-        MsgBox "Error navigating to left arrow option: " e.Message, "Mobills Error", "IconX"
+        MsgBox "Error navigating to previous month:`n" e.Message, "Mobills Error", "IconX"
     }
 }
 
-; Shift + N : Right arrow (Filter → Tab three times)
-+n:: {
+NextMobillsMonth() {
     try {
-        btn := GetMobillsButton("", "Filter")
-        if (btn) {
+        uia := TryAttachBrowser()
+        if !uia {
+            MsgBox "Could not attach to the browser window.", "Mobills Navigation", "IconX"
+            return
+        }
+        grp := FindMonthGroup(uia)
+        if !grp {
+            MsgBox "Could not locate the month container.", "Mobills Navigation", "IconX"
+            return
+        }
+        ; First try: immediate next sibling
+        btn := grp.WalkTree("+1", { Type: "Button" })
+        if !btn {
+            ; Fallback: search all buttons inside parent and pick the one to the RIGHT of the group
+            parent := UIA.TreeWalkerTrue.GetParentElement(grp)
+            if (parent) {
+                grpPos := grp.Location
+                for , el in parent.FindAll({ Type: "Button" }) {
+                    pos := el.Location
+                    if (pos.y >= grpPos.y - 10 && pos.y <= grpPos.y + grpPos.h + 10 && pos.x > grpPos.x + grpPos.w) {
+                        btn := el                          ; closest right candidate
+                    }
+                }
+            }
+        }
+        if btn {
             btn.Click()
-            Sleep 300
-            Send "{Tab 3}"
         } else {
-            MsgBox "Could not find the Filter button.", "Mobills Navigation", "IconX"
+            MsgBox "Could not find the next-month button.", "Mobills Navigation", "IconX"
         }
     } catch Error as e {
-        MsgBox "Error navigating to right arrow option: " e.Message, "Mobills Error", "IconX"
+        MsgBox "Error navigating to next month:`n" e.Message, "Mobills Error", "IconX"
     }
 }
 
@@ -2054,4 +2102,47 @@ GetMobillsButton(autoId, btnName) {
     } catch Error {
         return ""
     }
+}
+
+;-------------------------------------------
+; Helper functions
+;-------------------------------------------
+TryAttachBrowser() {
+    ; Try Chrome first, then Edge
+    try return UIA_Browser("ahk_exe chrome.exe")
+    catch {
+        try return UIA_Browser("ahk_exe msedge.exe")
+        catch {
+            return 0
+        }
+    }
+}
+
+FindMonthGroup(uia) {
+    ; Strategy 1 – look for known class name on the container
+    try {
+        grp := uia.FindElement({ Type: "Group", ClassName: "sc-kAyceB", matchmode: "Substring" })
+        if grp
+            return grp
+    }
+    catch {
+    }
+    ; Strategy 2 – locate by month text (any language)
+    months := ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October",
+        "November", "December",
+        "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro",
+        "Dezembro"]
+    for , m in months {
+        try {
+            el := uia.FindElement({ Name: m, Type: "Text", mm: 1, cs: false })
+            if el {
+                grp := el.WalkTree("p", { Type: "Group" })
+                if grp
+                    return grp
+            }
+        }
+        catch {
+        }
+    }
+    return 0
 }

@@ -44,7 +44,8 @@
 
 ; Global variables for Hunt and Peck loop mode
 ; Path to Hunt and Peck executable – adjust if you install it elsewhere
-global g_HnPExePath := "C:\\Users\\fie7ca\\Documents\\HuntAndPack\\hap.exe"  ; <-- CHANGE ME if needed
+#Include %A_ScriptDir%\env.ahk
+global g_HnPExePath := GetHnPExePath()
 global g_HnPLoopActive := false
 global g_HnPLoopGui := false
 global g_HnPMaxIterations := 25
