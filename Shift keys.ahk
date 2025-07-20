@@ -2283,6 +2283,8 @@ FindMonthGroup(uia) {
             hdr.SetFocus()
             Sleep 120
             Send "+{Tab}"
+            Send "{Down}"
+            Send "{Up}"
             return
         }
     } catch Error {
