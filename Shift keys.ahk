@@ -284,6 +284,7 @@ cheatSheets["Settle Up"] := "
 (
 Settle Up
 Shift+Y  →  Add transaction
+Shift+U  →  Focus expense value field
 )"
 
 ; ========== Helper to decide which sheet applies ===========================
@@ -2631,6 +2632,56 @@ IsFileDialogActive() {
 
         if addBtn {
             addBtn.Click()
+            return
+        }
+    } catch Error as e {
+        ; Silently handle errors
+    }
+}
+
+; Shift + U : Focus expense value field (via name field + tab)
++u:: {
+    try {
+        uia := UIA_Browser()
+        Sleep 300
+
+        ; Find the "who paid" combo box
+        paidByCombo := uia.FindFirst({
+            Type: "ComboBox",
+            Name: "Eduardo Figueiredo pagou"
+        })
+
+        ; If not found by exact match, try partial matches
+        if !paidByCombo {
+            possibleNames := [
+                " pagou",           ; Portuguese suffix
+                " paid",            ; English suffix
+                " pagó",            ; Spanish suffix
+                " a payé"           ; French suffix
+            ]
+            for suffix in possibleNames {
+                paidByCombo := uia.FindFirst({
+                    Type: "ComboBox",
+                    Name: A_UserName . suffix,
+                    matchmode: "Substring"
+                })
+                if paidByCombo
+                    break
+            }
+        }
+
+        ; Try by AutomationId if name matching failed
+        if !paidByCombo {
+            paidByCombo := uia.FindFirst({
+                Type: "ComboBox",
+                AutomationId: "mat-select-54"
+            })
+        }
+
+        if paidByCombo {
+            paidByCombo.Click()
+            Sleep 100
+            Send "{Tab}"  ; Move to expense value field
             return
         }
     } catch Error as e {
