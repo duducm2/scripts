@@ -246,8 +246,8 @@ cheatSheets["Gmail"] := "
 Gmail
 Shift+Y  →  Go to main inbox
 Shift+U  →  Go to updates
-Shift+I  →  Mark as read
-Shift+O  →  Mark as unread
+Shift+I  →  Go to forums
+Shift+O  →  Toggle read/unread
 Shift+P  →  Previous conversation
 Shift+H  →  Next conversation
 Shift+J  →  Archive conversation
@@ -1496,16 +1496,14 @@ EnsureItemsViewFocus() {
 ; Shift + Y: Go to main inbox (already implemented)
 +y:: Send("gi")
 
-; Shift + U: Go to updates (already implemented with UIA)
+; Shift + U: Go to updates
 +u::
 {
-    try
-    {
+    try {
         uia := UIA_Browser("ahk_exe chrome.exe")
         Sleep 300 ; Give UIA time to attach
 
-        ; Find the "Updates" tab. The name can change (e.g., "Updates, 1 new message,"),
-        ; so we search for a TabItem element that starts with "Updates".
+        ; Find the "Updates" tab (Name may start with "Updates" or include message counts)
         updatesButton := uia.FindElement({ Name: "Updates", Type: "TabItem", matchmode: "Substring" })
 
         if (updatesButton) {
@@ -1520,11 +1518,58 @@ EnsureItemsViewFocus() {
     }
 }
 
-; Shift + I: Mark as read (already implemented)
-+i:: Send("+i")
+; Shift + O: Toggle read / unread on the selected message
++o::
+{
+    try
+    {
+        uia := UIA_Browser("ahk_exe chrome.exe")
+        Sleep 300
 
-; Shift + O: Mark as unread (already implemented)
-+o:: Send("+u")
+        ; Regex patterns for the buttons (English & Portuguese)
+        readPattern := "i)^(Mark as read|Marcar como lida|Marcar como lido)$"
+        unreadPattern := "i)^(Mark as unread|Marcar como n[oó] lida|Marcar como n[oó] lido)$"
+
+        ; Prefer clicking "Mark as read" if present; otherwise "Mark as unread"
+        if (btn := WaitForButton(uia, readPattern, 1000)) {
+            btn.Invoke()
+        }
+        else if (btn := WaitForButton(uia, unreadPattern, 1000)) {
+            btn.Invoke()
+        }
+        else {
+            MsgBox "Could not find a 'Mark as read' or 'Mark as unread' button."
+        }
+    }
+    catch Error as e {
+        MsgBox "An error occurred: " e.Message
+    }
+}
+
+; Shift + I: Go to forums
++i::
+{
+    try
+    {
+        uia := UIA_Browser("ahk_exe chrome.exe")
+        Sleep 300
+
+        ; Try English and Portuguese names for the Forums tab
+        forumsButton := uia.FindElement({ Name: "Forums", Type: "TabItem", matchmode: "Substring" })
+        if (!forumsButton)
+            forumsButton := uia.FindElement({ Name: "Fóruns", Type: "TabItem", matchmode: "Substring" })
+
+        if (forumsButton) {
+            forumsButton.Click()
+        }
+        else {
+            MsgBox "Could not find the 'Forums' button."
+        }
+    }
+    catch Error as e {
+        MsgBox "An error occurred: " e.Message
+    }
+}
 
 ; Shift + P: Previous conversation
 +p:: Send("p")
