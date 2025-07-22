@@ -588,6 +588,9 @@ ToggleDictationSpeak(triedFallback := false, forceAction := "") {
                 isDictating := false
                 HideDictationIndicator()
                 submitFailCount := 0
+                ; --- Show green loading indicator while ChatGPT is transcribing (dictation) ---
+                transcribingButtonNames := [currentTranscribingName, currentSubmitName]
+                WaitForChatGPTButtonAndShowLoading(transcribingButtonNames, "Transcribing (dictation)…")
                 try {
                     Sleep 200
                     finalSendBtn := cUIA.WaitElement({ Name: currentSendPromptName, AutomationId: "composer-submit-button" },
@@ -601,9 +604,6 @@ ToggleDictationSpeak(triedFallback := false, forceAction := "") {
                 } catch Error as e_wait {
                     MsgBox "Error waiting for/clicking final " . currentSendPromptName . " button: " e_wait.Message
                 }
-                ; --- Show green loading indicator while ChatGPT is transcribing (dictation) ---
-                transcribingButtonNames := [currentTranscribingName, currentSubmitName]
-                WaitForChatGPTButtonAndShowLoading(transcribingButtonNames, "Transcribing (dictation)…")
                 ; --- Show green loading indicator while ChatGPT is responding ---
                 buttonNames := [currentStopStreamingName]
                 WaitForChatGPTButtonAndShowLoading(buttonNames, "AI is responding…")
