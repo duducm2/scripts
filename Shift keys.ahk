@@ -3,6 +3,16 @@
  *   • Provides system-wide symbol shortcuts
  ********************************************************************/
 
+/********************************************************************
+ *   AVAILABLE WIN+ALT+SHIFT COMBINATIONS
+ *   The following combinations are not currently in use:
+ *   • C - Available
+ *   • K - Available
+ *   • 1 - Available
+ *   • , - Available
+ *   • . - Available
+ ********************************************************************/
+
 #Requires AutoHotkey v2.0+
 
 #SingleInstance Force
@@ -492,6 +502,9 @@ Win+Alt+Shift+H  →  Activates Youtube
 
 === GOOGLE ===
 Win+Alt+Shift+F  →  Opens Google
+
+=== GMAIL ===
+Win+Alt+Shift+W  →  Opens Gmail
 
 === OUTLOOK ===
 Win+Alt+Shift+B  →  Open mail

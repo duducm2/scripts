@@ -104,6 +104,23 @@
 }
 
 ; =============================================================================
+; Open/Activate Gmail
+; Hotkey: Win+Alt+Shift+W
+; =============================================================================
+#!+w::
+{
+    SetTitleMatchMode 2
+    if WinExist("Gmail ahk_exe chrome.exe") {
+        WinActivate
+        CenterMouse()
+    } else {
+        Run "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Chrome Apps\Gmail.lnk"
+        WinWaitActive("Gmail ahk_exe chrome.exe")
+        CenterMouse()
+    }
+}
+
+; =============================================================================
 ; Helper function to center mouse on the active window
 ; =============================================================================
 CenterMouse() {
