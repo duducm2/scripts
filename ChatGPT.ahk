@@ -464,6 +464,7 @@ ToggleDictation(triedFallback := false, forceAction := "") {
                 btn.Click()
                 isDictating := true
                 ShowDictationIndicator()
+                ; (No green loading indicator here)
                 return
             } else if !triedFallback {
                 ToggleDictation(true, "stop")
@@ -487,6 +488,9 @@ ToggleDictation(triedFallback := false, forceAction := "") {
                 btn.Click()
                 isDictating := false
                 HideDictationIndicator()
+                ; --- Show green loading indicator while ChatGPT is responding ---
+                buttonNames := [IS_WORK_ENVIRONMENT ? "Interromper transmissão" : "Stop streaming"]
+                WaitForChatGPTButtonAndShowLoading(buttonNames, "AI is responding…")
                 return
             } else if !triedFallback {
                 ToggleDictation(true, "start")
@@ -553,6 +557,7 @@ ToggleDictationSpeak(triedFallback := false, forceAction := "") {
                 isDictating := true
                 ShowDictationIndicator()
                 submitFailCount := 0
+                ; (No green loading indicator here)
                 return
             } else if !triedFallback {
                 ToggleDictationSpeak(true, "stop")
@@ -593,6 +598,9 @@ ToggleDictationSpeak(triedFallback := false, forceAction := "") {
                 } catch Error as e_wait {
                     MsgBox "Error waiting for/clicking final " . currentSendPromptName . " button: " e_wait.Message
                 }
+                ; --- Show green loading indicator while ChatGPT is responding ---
+                buttonNames := [currentStopStreamingName]
+                WaitForChatGPTButtonAndShowLoading(buttonNames, "AI is responding…")
                 return
             } else if !triedFallback {
                 ToggleDictationSpeak(true, "start")
