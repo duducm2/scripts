@@ -9,6 +9,7 @@
 #include UIA-v2\Lib\UIA.ahk
 #include UIA-v2\Lib\UIA_Browser.ahk
 #include %A_ScriptDir%\env.ahk
+#include %A_ScriptDir%\ChatGPT_Loading.ahk
 
 ; --- Config ---------------------------------------------------------------
 ; Path to the file containing the initial prompt ChatGPT should receive.
@@ -132,6 +133,9 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
     Sleep 500
     Send("{Enter}")
     Sleep 500
+    ; After sending, show loading for Stop streaming
+    buttonNames := ["Stop streaming", "Interromper transmissão"]
+    WaitForChatGPTButtonAndShowLoading(buttonNames, "Waiting for response...")
 }
 
 ; =============================================================================
@@ -162,7 +166,9 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
     Sleep 500
     Send("{Enter}")
     Sleep 500
-    Send "!{Tab}"
+    ; After sending, show loading for Stop streaming
+    buttonNames := ["Stop streaming", "Interromper transmissão"]
+    WaitForChatGPTButtonAndShowLoading(buttonNames, "Waiting for response...")
 }
 
 ; =============================================================================
@@ -874,13 +880,12 @@ SidebarVisible(uiRoot, names) {
 }
 
 ; =============================================================================
-; Loading indicator helpers
+; Loading indicator helpers (yellow, small) – original
 ; =============================================================================
 ShowLoading(message := "Loading…", bgColor := "FFFF00", fontColor := "000000", fontSize := 26) {
     global loadingGui
     ; If already visible, update text
     if (IsObject(loadingGui) && loadingGui.Hwnd) {
-        ; Assume first control is the Text
         loadingGui.Controls[1].Text := message
         return
     }

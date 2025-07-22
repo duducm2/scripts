@@ -22,6 +22,7 @@ SetTitleMatchMode 2
 #include %A_ScriptDir%\env.ahk
 #include UIA-v2\Lib\UIA.ahk
 #include UIA-v2\Lib\UIA_Browser.ahk
+#include %A_ScriptDir%\ChatGPT_Loading.ahk
 
 ; --- Config ---------------------------------------------------------------
 PROMPT_FILE := A_ScriptDir "\\ChatGPT_Prompt.txt"
@@ -1412,6 +1413,10 @@ FocusOutlookField(criteria) {
     Send "{Enter}"
     Sleep 100
     A_Clipboard := oldClip
+
+    ; After sending, show loading for Stop streaming
+    buttonNames := ["Stop streaming", "Interromper transmissão"]
+    WaitForChatGPTButtonAndShowLoading(buttonNames, "Waiting for response...")
 }
 
 ; Shift + P: New chat
