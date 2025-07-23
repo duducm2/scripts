@@ -545,22 +545,37 @@ ToggleDictation(autoSend) {
 ; =============================================================================
 ; Small Loading Indicator Helpers (for Transcription)
 ; =============================================================================
-global smallLoadingGui := ""
+global smallLoadingGuis := [] ; Changed to array
 
 ShowSmallLoadingIndicator(state := "Loading…", bgColor := "00FF00") {
-    global smallLoadingGui
+    global smallLoadingGuis
 
-    if (IsObject(smallLoadingGui) && smallLoadingGui.Hwnd) {
-        smallLoadingGui.Controls[1].Text := state
+    ; If GUIs exist, just update the text of the topmost one (the message)
+    if (smallLoadingGuis.Length > 0) {
+        try {
+            ; The text control is expected to be in the first GUI of the stack
+            if (smallLoadingGuis[1].Controls.Length > 0)
+                smallLoadingGuis[1].Controls[1].Text := state
+        } catch {
+            ; In case the GUI or control is invalid, proceed to recreate
+        }
         return
     }
 
-    smallLoadingGui := Gui()
-    smallLoadingGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
-    smallLoadingGui.BackColor := bgColor
-    smallLoadingGui.SetFont("s8 c000000 Bold", "Segoe UI") ; Smaller font
-    smallLoadingGui.Add("Text", "w200 Center", state) ; Reduced width
+    ; --- Configuration for the simplified dual-border indicator ---
+    colors := ["000000", "FFFFFF"] ; Black and White borders
+    borderThickness := 2 ; pixels for each border
+    alpha := 220
 
+    ; --- Central Text GUI ---
+    textGui := Gui()
+    textGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
+    textGui.BackColor := bgColor
+    textGui.SetFont("s10 c000000 Bold", "Segoe UI") ; Slightly larger font
+    textGui.Add("Text", "w250 Center", state)       ; Wider for more text
+    smallLoadingGuis.Push(textGui)
+
+    ; --- Calculate Position ---
     activeWin := WinGetID("A")
     if (activeWin) {
         WinGetPos(&wx, &wy, &ww, &wh, activeWin)
@@ -569,19 +584,41 @@ ShowSmallLoadingIndicator(state := "Loading…", bgColor := "00FF00") {
         wx := work.Left, wy := work.Top, ww := work.Right - work.Left, wh := work.Bottom - work.Top
     }
 
-    smallLoadingGui.Show("AutoSize Hide")
-    smallLoadingGui.GetPos(, , &gw, &gh)
-    gx := wx + (ww - gw) / 2
-    gy := wy + (wh - gh) / 2
-    smallLoadingGui.Show("x" Round(gx) " y" Round(gy) " NA")
-    WinSetTransparent(100, smallLoadingGui)
+    ; --- Show Text GUI to get its dimensions ---
+    textGui.Show("AutoSize Hide")
+    textGui.GetPos(, , &gw, &gh)
+    cx := wx + (ww - gw) / 2
+    cy := wy + (wh - gh) / 2
+
+    ; --- Create Border GUIs ---
+    currentW := gw, currentH := gh
+    for color in colors {
+        currentW += borderThickness * 2
+        currentH += borderThickness * 2
+
+        borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
+        borderGui.BackColor := color
+        smallLoadingGuis.Push(borderGui)
+
+        xPos := cx - (currentW - gw) / 2
+        yPos := cy - (currentH - gh) / 2
+
+        borderGui.Show("x" Round(xPos) " y" Round(yPos) " w" Round(currentW) " h" Round(currentH) " NA")
+        WinSetTransparent(alpha, borderGui.Hwnd)
+    }
+
+    ; --- Show the main text GUI on top ---
+    textGui.Show("x" Round(cx) " y" Round(cy) " NA")
+    WinSetTransparent(alpha, textGui.Hwnd)
 }
 
 HideSmallLoadingIndicator() {
-    global smallLoadingGui
-    if (IsObject(smallLoadingGui) && smallLoadingGui.Hwnd) {
-        smallLoadingGui.Destroy()
-        smallLoadingGui := ""
+    global smallLoadingGuis
+    if (smallLoadingGuis.Length > 0) {
+        for gui in smallLoadingGuis {
+            try gui.Destroy()
+        }
+        smallLoadingGuis := [] ; Reset the array
     }
 }
 
