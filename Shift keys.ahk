@@ -24,6 +24,9 @@ SetTitleMatchMode 2
 #include UIA-v2\Lib\UIA_Browser.ahk
 #include %A_ScriptDir%\ChatGPT_Loading.ahk
 
+; --- Global Variables ---
+global smallLoadingGuis_ChatGPT := []
+
 ; --- Config ---------------------------------------------------------------
 PROMPT_FILE := A_ScriptDir "\\ChatGPT_Prompt.txt"
 
@@ -337,7 +340,7 @@ GetCheatSheetText() {
             appShortcuts := cheatSheets.Has("Gmail") ? cheatSheets["Gmail"] : ""
         if InStr(title, "ChatGPT") || InStr(title, "chatgpt")
             appShortcuts :=
-                "(ChatGPT)`r`nShift+Y → Cut all`r`nShift+U → Model selector`r`nShift+I → Toggle sidebar`r`nShift+O → Re-send rules`r`nShift+P → New chat`r`nShift+H → Copy code block"
+                "(ChatGPT)`r`nShift+Y → Cut all`r`nShift+U → Model selector`r`nShift+I → Toggle sidebar`r`nShift+O → Re-send rules`r`nShift+P → New chat`r`nShift+H → Copy code block`r`nShift+L → Send and show AI banner"
         if InStr(title, "Mobills")
             appShortcuts :=
                 "(Mobills)`r`nShift+Y → Dashboard`r`nShift+U → Contas`r`nShift+I → Transações`r`nShift+O → Cartões de crédito`r`nShift+P → Planejamento`r`nShift+H → Relatórios`r`nShift+J → Mais opções`r`nShift+K → Previous month`r`nShift+L → Next month`r`nShift+N → Ignore transaction`r`nShift+M → Name field"
@@ -1426,6 +1429,26 @@ FocusOutlookField(criteria) {
 
 ; Shift + H: Copy last code block
 +h:: Send("^+;")
+
+; Shift + L: Send and show AI banner
++l:: {
+    ; --- Button Names (EN/PT) ---
+    pt_stopStreamingName := "Interromper transmissão"
+    en_stopStreamingName := "Stop streaming"
+    currentStopStreamingName := IS_WORK_ENVIRONMENT ? pt_stopStreamingName : en_stopStreamingName
+
+    ; Step 1: Send Escape to ensure composer is focused
+    Send "{Esc}"
+    Sleep 100
+    ; Step 2: Send Enter to submit the prompt
+    Send "{Enter}"
+    Sleep 100
+    ; Step 3: Alt+Tab to previous window
+    Send "!{Tab}"
+    Sleep 300
+    ; Step 4: Wait for the Stop streaming button to appear, show indicator, then wait for it to disappear
+    WaitForButtonAndShowSmallLoading_ChatGPT([currentStopStreamingName], "AI is responding…")
+}
 
 #HotIf
 
@@ -2835,3 +2858,127 @@ IsFileDialogActive() {
 +h:: Send "!^k"
 
 #HotIf
+
+; --- Duplicated small loading indicator functions from ChatGPT.ahk ---
+global smallLoadingGuis_ChatGPT := []
+ShowSmallLoadingIndicator_ChatGPT(state := "Loading…", bgColor := "00FF00") {
+    global smallLoadingGuis_ChatGPT
+    if (smallLoadingGuis_ChatGPT.Length > 0) {
+        try {
+            if (smallLoadingGuis_ChatGPT[1].Controls.Length > 0)
+                smallLoadingGuis_ChatGPT[1].Controls[1].Text := state
+        } catch {
+            ; In case the GUI or control is invalid, proceed to recreate
+        }
+        return
+    }
+
+    ; --- Configuration for the simplified dual-border indicator ---
+    colors := ["000000", "FFFFFF"] ; Black and White borders
+    borderThickness := 2 ; pixels for each border
+    alpha := 90 ; Reduced opacity for better visibility
+
+    ; --- Central Text GUI ---
+    textGui := Gui()
+    textGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
+    textGui.BackColor := bgColor
+    textGui.SetFont("s10 c000000 Bold", "Segoe UI")
+    textGui.Add("Text", "w250 Center", state)
+    smallLoadingGuis_ChatGPT.Push(textGui)
+
+    ; --- Calculate Position ---
+    activeWin := WinGetID("A")
+    if (activeWin) {
+        WinGetPos(&wx, &wy, &ww, &wh, activeWin)
+    } else {
+        work := SysGet.MonitorWorkArea(SysGet.MonitorPrimary)
+        wx := work.Left, wy := work.Top, ww := work.Right - work.Left, wh := work.Bottom - work.Top
+    }
+
+    ; --- Show Text GUI to get its dimensions ---
+    textGui.Show("AutoSize Hide")
+    textGui.GetPos(, , &gw, &gh)
+    cx := wx + (ww - gw) / 2
+    cy := wy + (wh - gh) / 2
+
+    ; --- Create Border GUIs ---
+    currentW := gw, currentH := gh
+    for color in colors {
+        currentW += borderThickness * 2
+        currentH += borderThickness * 2
+
+        borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
+        borderGui.BackColor := color
+        smallLoadingGuis_ChatGPT.Push(borderGui)
+
+        xPos := cx - (currentW - gw) / 2
+        yPos := cy - (currentH - gh) / 2
+
+        borderGui.Show("x" Round(xPos) " y" Round(yPos) " w" Round(currentW) " h" Round(currentH) " NA")
+        WinSetTransparent(alpha, borderGui.Hwnd)
+    }
+
+    ; --- Show the main text GUI on top ---
+    textGui.Show("x" Round(cx) " y" Round(cy) " NA")
+    WinSetTransparent(alpha, textGui.Hwnd)
+}
+
+HideSmallLoadingIndicator_ChatGPT() {
+    global smallLoadingGuis_ChatGPT
+    if (smallLoadingGuis_ChatGPT.Length > 0) {
+        for gui in smallLoadingGuis_ChatGPT {
+            try gui.Destroy()
+        }
+        smallLoadingGuis_ChatGPT := []
+    }
+}
+
+WaitForButtonAndShowSmallLoading_ChatGPT(buttonNames, stateText := "Loading…", timeout := 15000) {
+    ; Store ChatGPT's window handle before Alt+Tab
+    chatGPTHwnd := WinExist("chatgpt")
+    if !chatGPTHwnd {
+        return ; ChatGPT window not found
+    }
+
+    ; Obtain UIA context for ChatGPT window specifically
+    try cUIA := UIA_Browser("ahk_id " chatGPTHwnd)
+    catch {
+        return ; Failed to get UIA context
+    }
+
+    start := A_TickCount
+    btn := ""
+
+    ; Wait for the target button to appear and monitor it until it disappears
+    while ((A_TickCount - start) < timeout) {
+        btn := ""
+        for n in buttonNames {
+            try btn := cUIA.FindElement({ Name: n, Type: "Button" })
+            catch {
+                btn := ""
+            }
+            if btn
+                break
+        }
+        if btn {
+            ShowSmallLoadingIndicator_ChatGPT(stateText)
+            while btn && ((A_TickCount - start) < timeout) {
+                Sleep 250
+                btn := ""
+                for n in buttonNames {
+                    try btn := cUIA.FindElement({ Name: n, Type: "Button" })
+                    catch {
+                        btn := ""
+                    }
+                    if btn
+                        break
+                }
+            }
+            break
+        }
+        Sleep 250
+    }
+
+    ; Always hide the indicator at the end
+    HideSmallLoadingIndicator_ChatGPT()
+}
