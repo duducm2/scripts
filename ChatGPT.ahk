@@ -462,8 +462,8 @@ ToggleDictation(triedFallback := false, forceAction := "") {
             if btn := FindButton(cUIA, dictateNames_to_find) {
                 btn.Click()
                 isDictating := true
+                Send "!{Tab}"
                 ShowDictationIndicator()
-                Send "!{Tab}"  ; Switch back to previous window before transcription starts
                 ; (No green loading indicator here)
             } else if !triedFallback {
                 ToggleDictation(true, "stop")
@@ -486,9 +486,9 @@ ToggleDictation(triedFallback := false, forceAction := "") {
                 btn.Click()
                 isDictating := false
                 HideDictationIndicator()
-                Send "!{Tab}"  ; Switch back to previous window after stopping dictation
                 ; --- Show green loading indicator while ChatGPT is transcribing (dictation) ---
                 transcribingButtonNames := [currentTranscribingName, currentSubmitName]
+                Send "!{Tab}"
                 WaitForChatGPTButtonAndShowLoading(transcribingButtonNames, "Transcribing (dictation)…")
                 ; --- Show green loading indicator while ChatGPT is responding ---
                 buttonNames := [IS_WORK_ENVIRONMENT ? "Interromper transmissão" : "Stop streaming"]
