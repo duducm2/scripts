@@ -505,9 +505,9 @@ ToggleDictation(autoSend) {
                 HideDictationIndicator()
                 Send "!{Tab}" ; Return to previous window immediately
 
-                ; --- Wait for transcription to finish ---
+                ; --- Wait for transcription to finish (indicator appears over ChatGPT) ---
                 transcribingWaitNames := [currentTranscribingName, currentSubmitName]
-                WaitForChatGPTButtonAndShowLoading(transcribingWaitNames, "Transcribing…")
+                WaitForButtonAndShowSmallLoading(transcribingWaitNames, "Transcribing…")
 
                 if (autoSend) {
                     try {
@@ -537,6 +537,89 @@ ToggleDictation(autoSend) {
             isDictating := false ; Reset state on error
         }
     }
+}
+
+; =============================================================================
+; Small Loading Indicator Helpers (for Transcription)
+; =============================================================================
+global smallLoadingGui := ""
+
+ShowSmallLoadingIndicator(state := "Loading…") {
+    global smallLoadingGui
+
+    if (IsObject(smallLoadingGui) && smallLoadingGui.Hwnd) {
+        smallLoadingGui.Controls[1].Text := state
+        return
+    }
+
+    smallLoadingGui := Gui()
+    smallLoadingGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
+    smallLoadingGui.BackColor := "00FF00" ; bright green
+    smallLoadingGui.SetFont("s18 c000000 Bold", "Segoe UI") ; Smaller font
+    smallLoadingGui.Add("Text", "w400 Center", state)
+
+    activeWin := WinGetID("A")
+    if (activeWin) {
+        WinGetPos(&wx, &wy, &ww, &wh, activeWin)
+    } else {
+        work := SysGet.MonitorWorkArea(SysGet.MonitorPrimary)
+        wx := work.Left, wy := work.Top, ww := work.Right - work.Left, wh := work.Bottom - work.Top
+    }
+
+    smallLoadingGui.Show("AutoSize Hide")
+    smallLoadingGui.GetPos(, , &gw, &gh)
+    gx := wx + (ww - gw) / 2
+    gy := wy + (wh - gh) / 2
+    smallLoadingGui.Show("x" Round(gx) " y" Round(gy) " NA")
+    WinSetTransparent(220, smallLoadingGui)
+}
+
+HideSmallLoadingIndicator() {
+    global smallLoadingGui
+    if (IsObject(smallLoadingGui) && smallLoadingGui.Hwnd) {
+        smallLoadingGui.Destroy()
+        smallLoadingGui := ""
+    }
+}
+
+WaitForButtonAndShowSmallLoading(buttonNames, stateText := "Loading…", timeout := 15000) {
+    try cUIA := UIA_Browser()
+    catch {
+        return
+    }
+    start := A_TickCount
+    btn := ""
+    while ((A_TickCount - start) < timeout) {
+        btn := ""
+        for n in buttonNames {
+            try {
+                btn := cUIA.FindElement({ Name: n, Type: "Button" })
+            } catch {
+                btn := ""
+            }
+            if btn
+                break
+        }
+        if btn {
+            ShowSmallLoadingIndicator(stateText)
+            while btn && ((A_TickCount - start) < timeout) {
+                Sleep 250
+                btn := ""
+                for n in buttonNames {
+                    try {
+                        btn := cUIA.FindElement({ Name: n, Type: "Button" })
+                    } catch {
+                        btn := ""
+                    }
+                    if btn
+                        break
+                }
+            }
+            break
+        }
+        Sleep 250
+    }
+    HideSmallLoadingIndicator()
 }
 
 ; =============================================================================
