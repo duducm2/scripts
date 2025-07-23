@@ -1377,7 +1377,7 @@ FocusOutlookField(criteria) {
 
         ; Find the model selector button containing "model selector" text
         modelCtl := uia.FindElement({
-            Name: "model selector",
+            Name: "Model selector",
             Type: "Button",
             matchmode: "Substring"
         })
