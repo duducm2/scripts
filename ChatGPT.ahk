@@ -503,7 +503,7 @@ ToggleDictation(autoSend) {
                 submitBtn.Click()
                 isDictating := false
                 HideDictationIndicator()
-                Send "!{Tab}" ; Return to previous window immediately
+                Send "!{Tab}" ; Return to previous window immediately to allow multitasking
 
                 ; --- Wait for transcription to finish (indicator appears over ChatGPT) ---
                 transcribingWaitNames := [currentTranscribingName, currentSubmitName]
@@ -516,9 +516,9 @@ ToggleDictation(autoSend) {
                         8000)
                         if finalSendBtn {
                             finalSendBtn.Click() ; Click instead of sending {Enter}
-                            Send "!{Tab}" ; Return to previous window AFTER all notifications
-                            ; --- Show green loading indicator while ChatGPT is responding ---
-                            WaitForChatGPTButtonAndShowLoading([currentStopStreamingName], "AI is responding…")
+                            Send "!{Tab}" ; Return to previous window immediately to allow multitasking
+                            ; --- Show smaller green loading indicator while ChatGPT is responding ---
+                            WaitForButtonAndShowSmallLoading([currentStopStreamingName], "AI is responding…")
                         } else {
                             MsgBox "Timeout: '" . currentSendPromptName . "' button did not appear."
                         }
