@@ -427,6 +427,7 @@ FindButtonByNames(cUIA, namesArray) {
             return btn
     return ""
 }
+
 ; =============================================================================
 ; Toggle Dictation (No Auto-Send)
 ; Hotkey: Win+Alt+Shift+0
@@ -434,82 +435,7 @@ FindButtonByNames(cUIA, namesArray) {
 ; =============================================================================
 #!+0::
 {
-    ToggleDictation()
-}
-
-ToggleDictation(triedFallback := false, forceAction := "") {
-    static isDictating := false
-    pt_dictateName := "Botão de ditado"
-    en_dictateName := "Dictate button"
-    pt_submitName := "Enviar ditado"
-    en_submitName := "Submit dictation"
-    pt_transcribingName := "Interromper ditado"
-    en_transcribingName := "Stop dictation"
-    currentDictateName := IS_WORK_ENVIRONMENT ? pt_dictateName : en_dictateName
-    currentSubmitName := IS_WORK_ENVIRONMENT ? pt_submitName : en_submitName
-    currentTranscribingName := IS_WORK_ENVIRONMENT ? pt_transcribingName : en_transcribingName
-    dictateNames_to_find := [currentDictateName]
-    submitOrStopNames_to_find := [currentSubmitName, currentTranscribingName]
-    SetTitleMatchMode 2
-    WinActivate "chatgpt"
-    WinWaitActive "ahk_exe chrome.exe"
-    CenterMouse()
-    cUIA := UIA_Browser()
-    Sleep 300
-    action := forceAction ? forceAction : (!isDictating ? "start" : "stop")
-    if (action = "start") {
-        try {
-            if btn := FindButton(cUIA, dictateNames_to_find) {
-                btn.Click()
-                isDictating := true
-                Send "!{Tab}"
-                ShowDictationIndicator()
-                ; (No green loading indicator here)
-            } else if !triedFallback {
-                ToggleDictation(true, "stop")
-            } else {
-                MsgBox (IS_WORK_ENVIRONMENT ? "Não foi possível iniciar ou parar o ditado. Nenhum botão encontrado." :
-                    "Could not start or stop dictation. No button found.")
-            }
-        } catch as e {
-            if !triedFallback {
-                ToggleDictation(true, "stop")
-                return
-            } else {
-                MsgBox (IS_WORK_ENVIRONMENT ? "Erro ao iniciar/parar ditado:`n" :
-                    "Error starting/stopping dictation:`n") e.Message
-            }
-        }
-    } else if (action = "stop") {
-        try {
-            if btn := FindButton(cUIA, submitOrStopNames_to_find) {
-                btn.Click()
-                isDictating := false
-                HideDictationIndicator()
-                ; --- Show green loading indicator while ChatGPT is transcribing (dictation) ---
-                transcribingButtonNames := [currentTranscribingName, currentSubmitName]
-                Send "!{Tab}"
-                WaitForChatGPTButtonAndShowLoading(transcribingButtonNames, "Transcribing (dictation)…")
-                ; --- Show green loading indicator while ChatGPT is responding ---
-                buttonNames := [IS_WORK_ENVIRONMENT ? "Interromper transmissão" : "Stop streaming"]
-                WaitForChatGPTButtonAndShowLoading(buttonNames, "AI is responding…")
-            } else if !triedFallback {
-                ToggleDictation(true, "start")
-            } else {
-                MsgBox (IS_WORK_ENVIRONMENT ? "Não foi possível parar ou iniciar o ditado. Nenhum botão encontrado." :
-                    "Could not stop or start dictation. No button found.")
-            }
-        } catch as e {
-            if !triedFallback {
-                ToggleDictation(true, "start")
-                return
-            } else {
-                MsgBox (IS_WORK_ENVIRONMENT ? "Erro ao parar/iniciar ditado:`n" :
-                    "Error stopping/starting dictation:`n") e.Message
-            }
-        }
-    }
-
+    ToggleDictation(false)
 }
 
 ; =============================================================================
@@ -519,13 +445,13 @@ ToggleDictation(triedFallback := false, forceAction := "") {
 ; =============================================================================
 #!+7::
 {
-    ToggleDictationSpeak()
-    Send "!{Tab}"
+    ToggleDictation(true)
 }
 
-ToggleDictationSpeak(triedFallback := false, forceAction := "") {
+ToggleDictation(autoSend) {
     static isDictating := false
-    static submitFailCount := 0
+
+    ; --- Button Names (EN/PT) ---
     pt_dictateName := "Botão de ditado"
     en_dictateName := "Dictate button"
     pt_submitName := "Enviar ditado"
@@ -536,98 +462,79 @@ ToggleDictationSpeak(triedFallback := false, forceAction := "") {
     en_sendPromptName := "Send prompt"
     pt_stopStreamingName := "Interromper transmissão"
     en_stopStreamingName := "Stop streaming"
+
     currentDictateName := IS_WORK_ENVIRONMENT ? pt_dictateName : en_dictateName
     currentSubmitName := IS_WORK_ENVIRONMENT ? pt_submitName : en_submitName
     currentTranscribingName := IS_WORK_ENVIRONMENT ? pt_transcribingName : en_transcribingName
     currentSendPromptName := IS_WORK_ENVIRONMENT ? pt_sendPromptName : en_sendPromptName
     currentStopStreamingName := IS_WORK_ENVIRONMENT ? pt_stopStreamingName : en_stopStreamingName
-    dictateNames_to_find := [currentDictateName]
-    submitOrStopNames_to_find := [currentSubmitName, currentTranscribingName]
+
+    startNames := [currentDictateName]
+    stopNames := [currentSubmitName, currentTranscribingName]
+
+    ; --- Activate Window & UIA ---
     SetTitleMatchMode 2
     WinActivate "chatgpt"
-    WinWaitActive "ahk_exe chrome.exe"
+    if !WinWaitActive("ahk_exe chrome.exe", , 2)
+        return
     CenterMouse()
     cUIA := UIA_Browser()
     Sleep 300
-    action := forceAction ? forceAction : (!isDictating ? "start" : "stop")
+
+    action := !isDictating ? "start" : "stop"
+
     if (action = "start") {
         try {
-            dictateBtn := cUIA.FindElement({ Name: currentDictateName, Type: "Button" })
-            if dictateBtn {
-                dictateBtn.Click()
+            if btn := FindButton(cUIA, startNames) {
+                btn.Click()
                 isDictating := true
                 ShowDictationIndicator()
-                submitFailCount := 0
-                ; (No green loading indicator here)
-                return
-            } else if !triedFallback {
-                ToggleDictationSpeak(true, "stop")
-                return
+                Send "!{Tab}"
             } else {
-                MsgBox currentDictateName . " not found, and could not stop dictation either."
+                MsgBox (IS_WORK_ENVIRONMENT ? "Não foi possível iniciar o ditado. Botão 'Iniciar' não encontrado." :
+                    "Could not start dictation. 'Start' button not found.")
             }
         } catch Error as e {
-            if !triedFallback {
-                ToggleDictationSpeak(true, "stop")
-                return
-            } else {
-                MsgBox "Error during pre-dictation or starting dictation: " e.Message
-                isDictating := false
-            }
+            MsgBox (IS_WORK_ENVIRONMENT ? "Erro ao iniciar o ditado: " : "Error starting dictation: ") . e.Message
         }
     } else if (action = "stop") {
         try {
-            submitBtn := cUIA.FindElement({ Name: currentSubmitName, Type: "Button" })
-            if !submitBtn {
-                submitBtn := cUIA.FindElement({ Name: currentTranscribingName, Type: "Button" })
-            }
-            if submitBtn {
+            if submitBtn := FindButton(cUIA, stopNames) {
                 submitBtn.Click()
                 isDictating := false
                 HideDictationIndicator()
-                submitFailCount := 0
-                ; --- Show green loading indicator while ChatGPT is transcribing (dictation) ---
-                transcribingButtonNames := [currentTranscribingName, currentSubmitName]
-                WaitForChatGPTButtonAndShowLoading(transcribingButtonNames, "Transcribing (dictation)…")
-                try {
-                    Sleep 200
-                    finalSendBtn := cUIA.WaitElement({ Name: currentSendPromptName, AutomationId: "composer-submit-button" },
-                    13000)
-                    if finalSendBtn {
-                        SendInput "{Enter}"
-                    } else {
-                        MsgBox "Timeout: '" . currentSendPromptName .
-                            "' button did not reappear after submitting dictation."
+                Send "!{Tab}" ; Return to previous window immediately
+
+                ; --- Wait for transcription to finish ---
+                transcribingWaitNames := [currentTranscribingName, currentSubmitName]
+                WaitForChatGPTButtonAndShowLoading(transcribingWaitNames, "Transcribing…")
+
+                if (autoSend) {
+                    try {
+                        ; The 'Send prompt' button should appear after transcription
+                        finalSendBtn := cUIA.WaitElement({ Name: currentSendPromptName, AutomationId: "composer-submit-button" },
+                        8000)
+                        if finalSendBtn {
+                            finalSendBtn.Click() ; Click instead of sending {Enter}
+                            ; --- Show green loading indicator while ChatGPT is responding ---
+                            WaitForChatGPTButtonAndShowLoading([currentStopStreamingName], "AI is responding…")
+                        } else {
+                            MsgBox "Timeout: '" . currentSendPromptName . "' button did not appear."
+                        }
+                    } catch Error as e_wait {
+                        MsgBox "Error waiting for send button: " . e_wait.Message
                     }
-                } catch Error as e_wait {
-                    MsgBox "Error waiting for/clicking final " . currentSendPromptName . " button: " e_wait.Message
+                } else {
+                    ShowNotification("Dictation captured!", 2000)
                 }
-                ; --- Show green loading indicator while ChatGPT is responding ---
-                buttonNames := [currentStopStreamingName]
-                WaitForChatGPTButtonAndShowLoading(buttonNames, "AI is responding…")
-                return
-            } else if !triedFallback {
-                ToggleDictationSpeak(true, "start")
-                return
             } else {
-                MsgBox currentSubmitName . " or " . currentTranscribingName .
-                    " button not found, and could not start dictation either."
-                submitFailCount++
+                MsgBox (IS_WORK_ENVIRONMENT ? "Não foi possível parar o ditado. Botão 'Parar' não encontrado." :
+                    "Could not stop dictation. 'Stop' button not found.")
+                isDictating := false ; Reset state if stop button is not found
             }
         } catch Error as e {
-            if !triedFallback {
-                ToggleDictationSpeak(true, "start")
-                return
-            } else {
-                MsgBox "Error finding or clicking Submit/Stop dictation button: " e.Message
-                submitFailCount++
-            }
-        }
-        if submitFailCount >= 1 {
-            MsgBox "Failed to submit dictation 1 time. Assuming dictation stopped. Press hotkey again to start."
-            isDictating := false
-            HideDictationIndicator()
-            submitFailCount := 0
+            MsgBox (IS_WORK_ENVIRONMENT ? "Erro ao parar o ditado: " : "Error stopping dictation: ") . e.Message
+            isDictating := false ; Reset state on error
         }
     }
 }
