@@ -516,6 +516,7 @@ ToggleDictation(autoSend) {
                         8000)
                         if finalSendBtn {
                             finalSendBtn.Click() ; Click instead of sending {Enter}
+                            Send "!{Tab}" ; Return to previous window AFTER all notifications
                             ; --- Show green loading indicator while ChatGPT is responding ---
                             WaitForChatGPTButtonAndShowLoading([currentStopStreamingName], "AI is responding…")
                         } else {
@@ -524,8 +525,6 @@ ToggleDictation(autoSend) {
                     } catch Error as e_wait {
                         MsgBox "Error waiting for send button: " . e_wait.Message
                     }
-                } else {
-                    ;WaitForButtonAndShowSmallLoading([currentSendPromptName], "Dictation captured!")
                 }
             } else {
                 MsgBox (IS_WORK_ENVIRONMENT ? "Não foi possível parar o ditado. Botão 'Parar' não encontrado." :
