@@ -326,6 +326,13 @@ Shift+P  →  Lock/Unlock
 Shift+H  →  Add/Edit link
 )"
 
+; --- Wikipedia ---------------------------------------------------------------
+cheatSheets["Wikipedia"] := "
+(
+Wikipedia
+Shift+Y  →  Click search button
+)"
+
 ; ========== Helper to decide which sheet applies ===========================
 GetCheatSheetText() {
     global cheatSheets
@@ -366,6 +373,8 @@ GetCheatSheetText() {
             appShortcuts := cheatSheets.Has("Settle Up") ? cheatSheets["Settle Up"] : ""
         if InStr(title, "Miro")
             appShortcuts := cheatSheets.Has("Miro") ? cheatSheets["Miro"] : ""
+        if InStr(title, "Wikipedia")
+            appShortcuts := cheatSheets.Has("Wikipedia") ? cheatSheets["Wikipedia"] : ""
 
         ; Combine Chrome general + app-specific shortcuts
         if (appShortcuts != "" && chromeShortcuts != "")
@@ -1057,6 +1066,38 @@ IsTeamsChatActive() {
     }
     catch as e {
         MsgBox("UIA error:`n" e.Message, "Error", "IconX")
+    }
+}
+
+#HotIf
+
+;-------------------------------------------------------------------
+; Wikipedia Shortcuts
+;-------------------------------------------------------------------
+#HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "Wikipedia")
+
+; Shift + Y: Toggle the search button (Type 50005 Link, Name "Search")
++y::
+{
+    try {
+        uia := UIA_Browser("ahk_exe chrome.exe")
+        Sleep 300 ; Give UIA time to attach
+
+        ; Find the search link by Type and Name
+        searchLink := uia.FindElement({ Type: 50005, Name: "Search" })
+        if (!searchLink) {
+            ; Fallback: try by Name only, in case Type is not exposed
+            searchLink := uia.FindElement({ Name: "Search" })
+        }
+
+        if (searchLink) {
+            searchLink.Click()
+        } else {
+            MsgBox "Could not find the Wikipedia search link (Type 50005, Name 'Search')."
+        }
+    }
+    catch Error as e {
+        MsgBox "An error occurred: " e.Message
     }
 }
 
