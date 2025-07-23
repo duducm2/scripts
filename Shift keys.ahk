@@ -181,6 +181,12 @@ Shift+W  →  Switch brackets
 Shift+E  →  Search
 Shift+R  →  Save all documents
 Shift+T  →  Change ML model
+Shift+D  →  Git section
+Shift+F  →  Generate commit message with AI
+Shift+G  →  Commit
+Shift+C  →  Commit and push
+Shift+V  →  Git pull
+Shift+B  →  Git push
 )"  ; end Cursor
 
 cheatSheets["Code.exe"] := "
@@ -202,6 +208,12 @@ Shift+W  →  Switch brackets
 Shift+E  →  Search
 Shift+R  →  Save all documents
 Shift+T  →  Change ML model
+Shift+D  →  Git section
+Shift+F  →  Generate commit message with AI
+Shift+G  →  Commit
+Shift+C  →  Commit and push
+Shift+V  →  Git pull
+Shift+B  →  Git push
 )"  ; end VS Code
 
 ; --- Windows Explorer ------------------------------------------------------
@@ -1745,6 +1757,89 @@ IsEditorActive() {
 
 ; Shift + T : Trigger Ctrl+;
 +t:: Send "^;"
+
+; --- Git Shortcuts ---
+; Shift + D : Git section
++d:: Send "^+g"
+
+; Shift + F : Generate commit message with AI
++f:: Send "^m"
+
+; Shift + G : Commit
++g::
+{
+    try {
+        win := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+        ; Name can vary based on branch, so use a substring match
+        commitBtn := root.FindFirst({ ControlType: "Button", Name: "Commit Changes on", matchmode: "Substring" })
+        if (commitBtn) {
+            commitBtn.Click()
+        } else {
+            MsgBox("Could not find the 'Commit' button.", "VS Code Git", "IconX")
+        }
+    } catch Error as e {
+        MsgBox("UIA Error: " e.Message, "VS Code Git Error", "IconX")
+    }
+}
+
+; Shift + C : Commit and push
++c::
+{
+    try {
+        win := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+        moreActionsBtn := root.FindFirst({ ControlType: "MenuItem", Name: "More Actions..." })
+        if (!moreActionsBtn) {
+            moreActionsBtn := root.FindFirst({ ControlType: "Button", Name: "More Actions..." })
+        }
+        if (moreActionsBtn) {
+            moreActionsBtn.Click()
+            Sleep 200
+            Send "{Down 3}"
+            Sleep 200
+            Send "{Enter}"
+        } else {
+            MsgBox("Could not find the 'More Actions...' button.", "VS Code Git", "IconX")
+        }
+    } catch Error as e {
+        MsgBox("UIA Error: " e.Message, "VS Code Git Error", "IconX")
+    }
+}
+
+; Shift + V : Git pull
++v::
+{
+    try {
+        win := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+        pullBtn := root.FindFirst({ ControlType: "Button", Name: "Pull" })
+        if (pullBtn) {
+            pullBtn.Click()
+        } else {
+            MsgBox("Could not find the 'Pull' button.", "VS Code Git", "IconX")
+        }
+    } catch Error as e {
+        MsgBox("UIA Error: " e.Message, "VS Code Git Error", "IconX")
+    }
+}
+
+; Shift + B : Git push
++b::
+{
+    try {
+        win := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+        pushBtn := root.FindFirst({ ControlType: "Button", Name: "Push" })
+        if (pushBtn) {
+            pushBtn.Click()
+        } else {
+            MsgBox("Could not find the 'Push' button.", "VS Code Git", "IconX")
+        }
+    } catch Error as e {
+        MsgBox("UIA Error: " e.Message, "VS Code Git Error", "IconX")
+    }
+}
 
 #HotIf
 
