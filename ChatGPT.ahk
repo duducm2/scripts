@@ -435,7 +435,6 @@ FindButtonByNames(cUIA, namesArray) {
 #!+0::
 {
     ToggleDictation()
-    Send "!{Tab}"
 }
 
 ToggleDictation(triedFallback := false, forceAction := "") {
@@ -464,11 +463,10 @@ ToggleDictation(triedFallback := false, forceAction := "") {
                 btn.Click()
                 isDictating := true
                 ShowDictationIndicator()
+                Send "!{Tab}"  ; Switch back to previous window before transcription starts
                 ; (No green loading indicator here)
-                return
             } else if !triedFallback {
                 ToggleDictation(true, "stop")
-                return
             } else {
                 MsgBox (IS_WORK_ENVIRONMENT ? "Não foi possível iniciar ou parar o ditado. Nenhum botão encontrado." :
                     "Could not start or stop dictation. No button found.")
@@ -488,16 +486,15 @@ ToggleDictation(triedFallback := false, forceAction := "") {
                 btn.Click()
                 isDictating := false
                 HideDictationIndicator()
+                Send "!{Tab}"  ; Switch back to previous window after stopping dictation
                 ; --- Show green loading indicator while ChatGPT is transcribing (dictation) ---
                 transcribingButtonNames := [currentTranscribingName, currentSubmitName]
                 WaitForChatGPTButtonAndShowLoading(transcribingButtonNames, "Transcribing (dictation)…")
                 ; --- Show green loading indicator while ChatGPT is responding ---
                 buttonNames := [IS_WORK_ENVIRONMENT ? "Interromper transmissão" : "Stop streaming"]
                 WaitForChatGPTButtonAndShowLoading(buttonNames, "AI is responding…")
-                return
             } else if !triedFallback {
                 ToggleDictation(true, "start")
-                return
             } else {
                 MsgBox (IS_WORK_ENVIRONMENT ? "Não foi possível parar ou iniciar o ditado. Nenhum botão encontrado." :
                     "Could not stop or start dictation. No button found.")
@@ -512,6 +509,7 @@ ToggleDictation(triedFallback := false, forceAction := "") {
             }
         }
     }
+
 }
 
 ; =============================================================================
