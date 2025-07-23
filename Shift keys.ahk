@@ -1375,21 +1375,12 @@ FocusOutlookField(criteria) {
         uia := UIA_Browser("ahk_exe chrome.exe")
         Sleep 300                 ; brief settle-time
 
-        ; Find the model selector button with the new properties
+        ; Find the model selector button containing "model selector" text
         modelCtl := uia.FindElement({
-            Name: "Model selector, current model is 4o",
+            Name: "model selector",
             Type: "Button",
-            AutomationId: "radix-«r290»"
+            matchmode: "Substring"
         })
-
-        ; Fallback: try to find by name pattern if exact match fails
-        if (!modelCtl) {
-            modelCtl := uia.FindElement({
-                Name: "Model selector",
-                Type: "Button",
-                matchmode: "Substring"
-            })
-        }
 
         ; Click or complain
         if (modelCtl)
