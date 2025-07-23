@@ -134,8 +134,9 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
     Send("{Enter}")
     Sleep 500
     ; After sending, show loading for Stop streaming
+    Send "!{Tab}" ; Return to previous window
     buttonNames := ["Stop streaming", "Interromper transmissão"]
-    WaitForChatGPTButtonAndShowLoading(buttonNames, "Waiting for response...")
+    WaitForButtonAndShowSmallLoading(buttonNames, "Waiting for response...")
 }
 
 ; =============================================================================
@@ -167,8 +168,9 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
     Send("{Enter}")
     Sleep 500
     ; After sending, show loading for Stop streaming
+    Send "!{Tab}" ; Return to previous window
     buttonNames := ["Stop streaming", "Interromper transmissão"]
-    WaitForChatGPTButtonAndShowLoading(buttonNames, "Waiting for response...")
+    WaitForButtonAndShowSmallLoading(buttonNames, "Waiting for response...")
 }
 
 ; =============================================================================
