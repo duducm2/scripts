@@ -685,7 +685,9 @@ CenterGuiOnActiveMonitor(guiObj) {
 
 ; Shift + Y : Select filtered content and copy
 +y:: {
-    Send "{F10}"
+    Send "{Tab}"
+    Sleep 100
+    Send "{Tab}"
     Sleep 300
     Send "^a"  ; Select all
     Sleep 100
