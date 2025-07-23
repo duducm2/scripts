@@ -525,7 +525,7 @@ ToggleDictation(autoSend) {
                         MsgBox "Error waiting for send button: " . e_wait.Message
                     }
                 } else {
-                    ShowNotification("Dictation captured!", 2000)
+                    ;WaitForButtonAndShowSmallLoading([currentSendPromptName], "Dictation captured!")
                 }
             } else {
                 MsgBox (IS_WORK_ENVIRONMENT ? "Não foi possível parar o ditado. Botão 'Parar' não encontrado." :
@@ -555,8 +555,8 @@ ShowSmallLoadingIndicator(state := "Loading…") {
     smallLoadingGui := Gui()
     smallLoadingGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
     smallLoadingGui.BackColor := "00FF00" ; bright green
-    smallLoadingGui.SetFont("s18 c000000 Bold", "Segoe UI") ; Smaller font
-    smallLoadingGui.Add("Text", "w400 Center", state)
+    smallLoadingGui.SetFont("s8 c000000 Bold", "Segoe UI") ; Smaller font
+    smallLoadingGui.Add("Text", "w200 Center", state) ; Reduced width
 
     activeWin := WinGetID("A")
     if (activeWin) {
@@ -571,7 +571,7 @@ ShowSmallLoadingIndicator(state := "Loading…") {
     gx := wx + (ww - gw) / 2
     gy := wy + (wh - gh) / 2
     smallLoadingGui.Show("x" Round(gx) " y" Round(gy) " NA")
-    WinSetTransparent(220, smallLoadingGui)
+    WinSetTransparent(100, smallLoadingGui)
 }
 
 HideSmallLoadingIndicator() {
