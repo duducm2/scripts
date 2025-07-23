@@ -490,8 +490,10 @@ ToggleDictation(autoSend) {
             if btn := FindButton(cUIA, startNames) {
                 btn.Click()
                 isDictating := true
-                ShowDictationIndicator()
+                ; Switch back to the previous window first so the indicator appears there
                 Send "!{Tab}"
+                Sleep 300    ; ensure the window switch has completed
+                ShowDictationIndicator()
             } else {
                 MsgBox (IS_WORK_ENVIRONMENT ? "Não foi possível iniciar o ditado. Botão 'Iniciar' não encontrado." :
                     "Could not start dictation. 'Start' button not found.")
@@ -545,7 +547,7 @@ ToggleDictation(autoSend) {
 ; =============================================================================
 global smallLoadingGui := ""
 
-ShowSmallLoadingIndicator(state := "Loading…") {
+ShowSmallLoadingIndicator(state := "Loading…", bgColor := "00FF00") {
     global smallLoadingGui
 
     if (IsObject(smallLoadingGui) && smallLoadingGui.Hwnd) {
@@ -555,7 +557,7 @@ ShowSmallLoadingIndicator(state := "Loading…") {
 
     smallLoadingGui := Gui()
     smallLoadingGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
-    smallLoadingGui.BackColor := "00FF00" ; bright green
+    smallLoadingGui.BackColor := bgColor
     smallLoadingGui.SetFont("s8 c000000 Bold", "Segoe UI") ; Smaller font
     smallLoadingGui.Add("Text", "w200 Center", state) ; Reduced width
 
@@ -699,43 +701,12 @@ ShowNotification(message, durationMs := 2000, bgColor := "FFFF00", fontColor := 
 ; =============================================================================
 ; Helper functions to show/hide the persistent dictation indicator
 ; =============================================================================
-ShowDictationIndicator(message := "Dictation ON", bgColor := "FF0000", fontColor := "FFFFFF", fontSize := 28) {
-    global dictationIndicatorGui
-
-    ; If already visible, nothing to do
-    if (IsObject(dictationIndicatorGui) && dictationIndicatorGui.Hwnd)
-        return
-
-    dictationIndicatorGui := Gui()
-    dictationIndicatorGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
-    dictationIndicatorGui.BackColor := bgColor
-    dictationIndicatorGui.SetFont("s" . fontSize . " c" . fontColor . " Bold", "Segoe UI")
-    dictationIndicatorGui.Add("Text", "w350 Center", message)
-
-    ; Center over active window or primary monitor
-    activeWin := WinGetID("A")
-    if (activeWin) {
-        WinGetPos(&winX, &winY, &winW, &winH, activeWin)
-    } else {
-        workArea := SysGet.MonitorWorkArea(SysGet.MonitorPrimary)
-        winX := workArea.Left, winY := workArea.Top, winW := workArea.Right - workArea.Left, winH := workArea.Bottom -
-            workArea.Top
-    }
-
-    dictationIndicatorGui.Show("AutoSize Hide")
-    dictationIndicatorGui.GetPos(, , &guiW, &guiH)
-    guiX := winX + (winW - guiW) / 2
-    guiY := winY + (winH - guiH) / 2
-    dictationIndicatorGui.Show("x" . Round(guiX) . " y" . Round(guiY) . " NA")
-    WinSetTransparent(220, dictationIndicatorGui)
+ShowDictationIndicator(message := "Dictation ON") {
+    ShowSmallLoadingIndicator(message, "FF0000")
 }
 
 HideDictationIndicator() {
-    global dictationIndicatorGui
-    if (IsObject(dictationIndicatorGui) && dictationIndicatorGui.Hwnd) {
-        dictationIndicatorGui.Destroy()
-        dictationIndicatorGui := ""
-    }
+    HideSmallLoadingIndicator()
 }
 
 ; =============================================================================
