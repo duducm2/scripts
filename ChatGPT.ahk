@@ -565,7 +565,7 @@ ShowSmallLoadingIndicator(state := "Loading…", bgColor := "00FF00") {
     ; --- Configuration for the simplified dual-border indicator ---
     colors := ["000000", "FFFFFF"] ; Black and White borders
     borderThickness := 2 ; pixels for each border
-    alpha := 220
+    alpha := 90 ; Reduced opacity from 220 to 180 for better visibility
 
     ; --- Central Text GUI ---
     textGui := Gui()
