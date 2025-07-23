@@ -121,6 +121,23 @@
 }
 
 ; =============================================================================
+; Open/Activate Wikipedia
+; Hotkey: Win+Alt+Shift+K
+; =============================================================================
+#!+k::
+{
+    SetTitleMatchMode 2
+    if WinExist("Wikipedia") {
+        WinActivate
+        CenterMouse()
+    } else {
+        Run "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Wikipedia.lnk"
+        WinWaitActive("Wikipedia")
+        CenterMouse()
+    }
+}
+
+; =============================================================================
 ; Helper function to center mouse on the active window
 ; =============================================================================
 CenterMouse() {

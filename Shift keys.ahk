@@ -550,6 +550,9 @@ Win+Alt+Shift+X  →  Activate hunt and Peck
 === SHORTCUTS ===
 Win+Alt+Shift+A  →  Show app-specific shortcuts (quick press)
 Win+Alt+Shift+A  →  Show global shortcuts (hold 400ms+)
+
+=== WIKIPEDIA ===
+Win+Alt+Shift+K  →  Opens or activates Wikipedia
 )"
 
     static globalCtrl
