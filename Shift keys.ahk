@@ -1793,25 +1793,281 @@ IsEditorActive() {
 ; Shift + T : Trigger Ctrl+;
 +t:: Send "^;"
 
+; --- Git Repository Selection Functions ---
+;
+; This section provides multi-repository support for VS Code Git operations.
+;
+; Features:
+; • Automatically detects all Git repositories in the Source Control panel
+; • Shows repository selection popup when multiple repositories are found
+; • Auto-selects when only one repository is available
+; • Provides fallback mechanisms for robust operation
+; • Includes comprehensive error handling and user feedback
+;
+; Usage: All Git hotkeys (+f, +g, +c, +v, +b) now support repository selection
+;
+
+; Function to detect all Git repositories in VS Code Source Control panel
+GetGitRepositories() {
+    try {
+        win := WinExist("A")
+        if (!win) {
+            return []
+        }
+
+        root := UIA.ElementFromHandle(win)
+        if (!root) {
+            return []
+        }
+
+        ; Find the Source Control Management tree - try multiple approaches
+        scmTree := root.FindFirst({ ControlType: "Tree", Name: "Source Control Management" })
+        if (!scmTree) {
+            ; Alternative: try finding by AutomationId or other properties
+            scmTree := root.FindFirst({ ControlType: "Tree", AutomationId: "scm-viewlet" })
+        }
+        if (!scmTree) {
+            ; Try finding any tree in the source control area
+            scmTrees := root.FindAll({ ControlType: "Tree" })
+            for tree in scmTrees {
+                try {
+                    if (InStr(tree.Name, "Source Control") || InStr(tree.AutomationId, "scm")) {
+                        scmTree := tree
+                        break
+                    }
+                } catch {
+                    continue
+                }
+            }
+        }
+
+        if (!scmTree) {
+            return []
+        }
+
+        repositories := []
+        ; Find all repository blocks - they appear as groups with "Git" labels
+        allElements := scmTree.FindAll({ ControlType: "TreeItem" })
+
+        for element in allElements {
+            try {
+                elementName := element.Name
+                if (!elementName) {
+                    continue
+                }
+
+                ; Look for repository names by finding labels that end with "Git"
+                if (InStr(elementName, "Git")) {
+                    ; Extract repository name by removing " Git" suffix
+                    repoName := StrReplace(elementName, " Git", "")
+                    repoName := Trim(repoName)
+
+                    ; Additional validation: ensure it's not just "Git" and has actual content
+                    if (repoName && repoName != "Git" && repoName != "") {
+                        ; Check if we already have this repository to avoid duplicates
+                        isDuplicate := false
+                        for existingRepo in repositories {
+                            if (existingRepo.name == repoName) {
+                                isDuplicate := true
+                                break
+                            }
+                        }
+
+                        if (!isDuplicate) {
+                            repositories.Push({ name: repoName, element: element })
+                        }
+                    }
+                }
+            } catch {
+                continue
+            }
+        }
+
+        return repositories
+    } catch Error as e {
+        ; Log error for debugging (optional)
+        ; FileAppend("Git repo detection error: " . e.Message . "`n", "debug.log")
+        return []
+    }
+}
+
+; Function to show repository selection popup and return selected repository element
+SelectRepository() {
+    repositories := GetGitRepositories()
+
+    if (repositories.Length == 0) {
+        MsgBox(
+            "No Git repositories found in Source Control panel.`n`nPlease ensure:`n• VS Code is open`n• Source Control panel is visible`n• At least one Git repository is loaded",
+            "Repository Selection", "IconX T10000")
+        return ""
+    }
+
+    if (repositories.Length == 1) {
+        ; Only one repository, use it automatically
+        return repositories[1].element
+    }
+
+    ; Multiple repositories - show selection dialog
+    repoNames := ""
+    for i, repo in repositories {
+        repoNames .= i . ". " . repo.name . "`n"
+    }
+
+    try {
+        result := InputBox("Select repository:`n`n" . repoNames . "`nEnter number (1-" . repositories.Length .
+            ") or press Cancel to abort:", "Repository Selection", "w400 h250")
+
+        if (result.Result == "Cancel") {
+            return ""
+        }
+
+        selectedIndex := result.Value
+        if (!selectedIndex || selectedIndex == "") {
+            return ""
+        }
+
+        index := Integer(selectedIndex)
+        if (index >= 1 && index <= repositories.Length) {
+            return repositories[index].element
+        } else {
+            MsgBox("Invalid selection (" . selectedIndex . "). Please enter a number between 1 and " . repositories.Length .
+                ".", "Repository Selection", "IconX T5000")
+            return ""
+        }
+    } catch Error as e {
+        if (InStr(e.Message, "cancelled") || InStr(e.Message, "Cancel")) {
+            return ""
+        }
+        MsgBox("Invalid input. Please enter a valid number.", "Repository Selection", "IconX T5000")
+        return ""
+    }
+}
+
+; Function to find elements within a specific repository scope
+FindInRepository(repoElement, searchCriteria) {
+    try {
+        ; First try to find in the repository element itself
+        element := repoElement.FindFirst(searchCriteria)
+        if (element) {
+            return element
+        }
+
+        ; If not found, try to find in the parent tree structure
+        ; This handles cases where buttons might be in sibling elements
+        win := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+        scmTree := root.FindFirst({ ControlType: "Tree", Name: "Source Control Management" })
+
+        if (scmTree) {
+            ; Find all elements and filter by proximity to our repository
+            allElements := scmTree.FindAll(searchCriteria)
+
+            for testElement in allElements {
+                try {
+                    ; Check if this element is related to our repository
+                    ; by walking up the tree to see if we find our repo element
+                    current := testElement
+                    while (current) {
+                        if (current == repoElement) {
+                            return testElement
+                        }
+                        try {
+                            current := current.TreeWalker.GetParentElement(current)
+                        } catch {
+                            break
+                        }
+                    }
+                } catch {
+                    continue
+                }
+            }
+        }
+
+        return ""
+    } catch {
+        return ""
+    }
+}
+
+; Function to test repository detection (for debugging/validation)
+; Usage: Call TestRepositoryDetection() from AutoHotkey console or add temporary hotkey
+TestRepositoryDetection() {
+    repositories := GetGitRepositories()
+
+    if (repositories.Length == 0) {
+        MsgBox("No repositories detected.`n`nPlease ensure VS Code is open with Source Control panel visible.",
+            "Repository Detection Test", "IconI")
+        return
+    }
+
+    repoList := "Found " . repositories.Length . " repository(ies):`n`n"
+    for i, repo in repositories {
+        repoList .= i . ". " . repo.name . "`n"
+    }
+
+    MsgBox(repoList, "Repository Detection Test", "IconI")
+}
+
 ; --- Git Shortcuts ---
 ; Shift + D : Git section
 +d:: Send "^+g"
 
 ; Shift + F : Generate commit message with AI
-+f:: Send "^m"
++f::
+{
+    try {
+        ; Select repository first to ensure we're working with the right context
+        repoElement := SelectRepository()
+        if (!repoElement) {
+            return ; User cancelled or no repositories found
+        }
+
+        ; The Ctrl+M shortcut should work in the context of the selected repository
+        ; First, try to focus on the repository's commit message input field
+        messageInput := FindInRepository(repoElement, { ControlType: "Edit", Name: "Message", matchmode: "Substring" })
+        if (!messageInput) {
+            ; Fallback: try to find globally
+            win := WinExist("A")
+            root := UIA.ElementFromHandle(win)
+            messageInput := root.FindFirst({ ControlType: "Edit", Name: "Message", matchmode: "Substring" })
+        }
+
+        if (messageInput) {
+            messageInput.SetFocus()
+            Sleep 100
+        }
+
+        ; Send the Ctrl+M command to generate commit message
+        Send "^m"
+    } catch Error as e {
+        ; If there's an error with UIA, fall back to the simple command
+        Send "^m"
+    }
+}
 
 ; Shift + G : Commit
 +g::
 {
     try {
-        win := WinExist("A")
-        root := UIA.ElementFromHandle(win)
-        ; Name can vary based on branch, so use a substring match
-        commitBtn := root.FindFirst({ ControlType: "Button", Name: "Commit Changes on", matchmode: "Substring" })
+        ; Select repository first
+        repoElement := SelectRepository()
+        if (!repoElement) {
+            return ; User cancelled or no repositories found
+        }
+
+        ; Find commit button within the selected repository scope
+        commitBtn := FindInRepository(repoElement, { ControlType: "Button", Name: "Commit Changes on", matchmode: "Substring" })
+        if (!commitBtn) {
+            ; Fallback: try to find globally and check if it's the right one
+            win := WinExist("A")
+            root := UIA.ElementFromHandle(win)
+            commitBtn := root.FindFirst({ ControlType: "Button", Name: "Commit Changes on", matchmode: "Substring" })
+        }
+
         if (commitBtn) {
             commitBtn.Click()
         } else {
-            MsgBox("Could not find the 'Commit' button.", "VS Code Git", "IconX")
+            MsgBox("Could not find the 'Commit' button for the selected repository.", "VS Code Git", "IconX")
         }
     } catch Error as e {
         MsgBox("UIA Error: " e.Message, "VS Code Git Error", "IconX")
@@ -1822,12 +2078,27 @@ IsEditorActive() {
 +c::
 {
     try {
-        win := WinExist("A")
-        root := UIA.ElementFromHandle(win)
-        moreActionsBtn := root.FindFirst({ ControlType: "MenuItem", Name: "More Actions..." })
-        if (!moreActionsBtn) {
-            moreActionsBtn := root.FindFirst({ ControlType: "Button", Name: "More Actions..." })
+        ; Select repository first
+        repoElement := SelectRepository()
+        if (!repoElement) {
+            return ; User cancelled or no repositories found
         }
+
+        ; Find More Actions button within the selected repository scope
+        moreActionsBtn := FindInRepository(repoElement, { ControlType: "MenuItem", Name: "More Actions..." })
+        if (!moreActionsBtn) {
+            moreActionsBtn := FindInRepository(repoElement, { ControlType: "Button", Name: "More Actions..." })
+        }
+        if (!moreActionsBtn) {
+            ; Fallback: try to find globally
+            win := WinExist("A")
+            root := UIA.ElementFromHandle(win)
+            moreActionsBtn := root.FindFirst({ ControlType: "MenuItem", Name: "More Actions..." })
+            if (!moreActionsBtn) {
+                moreActionsBtn := root.FindFirst({ ControlType: "Button", Name: "More Actions..." })
+            }
+        }
+
         if (moreActionsBtn) {
             moreActionsBtn.Click()
             Sleep 200
@@ -1835,7 +2106,7 @@ IsEditorActive() {
             Sleep 200
             Send "{Enter}"
         } else {
-            MsgBox("Could not find the 'More Actions...' button.", "VS Code Git", "IconX")
+            MsgBox("Could not find the 'More Actions...' button for the selected repository.", "VS Code Git", "IconX")
         }
     } catch Error as e {
         MsgBox("UIA Error: " e.Message, "VS Code Git Error", "IconX")
@@ -1846,13 +2117,25 @@ IsEditorActive() {
 +v::
 {
     try {
-        win := WinExist("A")
-        root := UIA.ElementFromHandle(win)
-        pullBtn := root.FindFirst({ ControlType: "Button", Name: "Pull" })
+        ; Select repository first
+        repoElement := SelectRepository()
+        if (!repoElement) {
+            return ; User cancelled or no repositories found
+        }
+
+        ; Find Pull button within the selected repository scope
+        pullBtn := FindInRepository(repoElement, { ControlType: "Button", Name: "Pull" })
+        if (!pullBtn) {
+            ; Fallback: try to find globally
+            win := WinExist("A")
+            root := UIA.ElementFromHandle(win)
+            pullBtn := root.FindFirst({ ControlType: "Button", Name: "Pull" })
+        }
+
         if (pullBtn) {
             pullBtn.Click()
         } else {
-            MsgBox("Could not find the 'Pull' button.", "VS Code Git", "IconX")
+            MsgBox("Could not find the 'Pull' button for the selected repository.", "VS Code Git", "IconX")
         }
     } catch Error as e {
         MsgBox("UIA Error: " e.Message, "VS Code Git Error", "IconX")
@@ -1863,13 +2146,25 @@ IsEditorActive() {
 +b::
 {
     try {
-        win := WinExist("A")
-        root := UIA.ElementFromHandle(win)
-        pushBtn := root.FindFirst({ ControlType: "Button", Name: "Push" })
+        ; Select repository first
+        repoElement := SelectRepository()
+        if (!repoElement) {
+            return ; User cancelled or no repositories found
+        }
+
+        ; Find Push button within the selected repository scope
+        pushBtn := FindInRepository(repoElement, { ControlType: "Button", Name: "Push" })
+        if (!pushBtn) {
+            ; Fallback: try to find globally
+            win := WinExist("A")
+            root := UIA.ElementFromHandle(win)
+            pushBtn := root.FindFirst({ ControlType: "Button", Name: "Push" })
+        }
+
         if (pushBtn) {
             pushBtn.Click()
         } else {
-            MsgBox("Could not find the 'Push' button.", "VS Code Git", "IconX")
+            MsgBox("Could not find the 'Push' button for the selected repository.", "VS Code Git", "IconX")
         }
     } catch Error as e {
         MsgBox("UIA Error: " e.Message, "VS Code Git Error", "IconX")
