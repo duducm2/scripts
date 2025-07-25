@@ -1892,8 +1892,19 @@ IsEditorActive() {
 
         ; Find and click the Connect button
         connectPattern := "i)^(Connect to a device|Conectar a um dispositivo|Connect)$"
-        if (connectBtn := WaitForButton(spot, connectPattern))
+        if (connectBtn := WaitForButton(spot, connectPattern)) {
             connectBtn.Invoke()
+
+            ; After connecting, wait a moment for the device list to load
+            Sleep 500
+
+            ; Search for Office button (e.g., "Office Google Cast")
+            officePattern := "i)Office"
+            if (officeBtn := WaitForButton(spot, officePattern, 3000)) {
+                officeBtn.Invoke()
+            }
+            ; If Office button not found, continue without error (as requested)
+        }
         else
             MsgBox "Couldn't find the Connect-to-device button."
     } catch Error as e {
