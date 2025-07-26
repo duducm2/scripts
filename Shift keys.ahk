@@ -3149,9 +3149,7 @@ IsFileDialogActive() {
 
         ; Try multiple ways to find the Add Transaction button
         addBtn := uia.FindFirst({
-            Type: "Button",
-            Name: "Adicionar transação",
-            ClassName: "new-dialog-button mdc-fab mat-mdc-fab mat-primary mat-mdc-button-base mdc-fab--extended mat-mdc-extended-fab ng-star-inserted"
+            Name: "Adicionar transação"
         })
 
         ; If not found by full match, try partial match
@@ -3163,7 +3161,7 @@ IsFileDialogActive() {
                 "Ajouter une transaction" ; French
             ]
             for name in possibleNames {
-                addBtn := uia.FindFirst({ Type: "Button", Name: name })
+                addBtn := uia.FindFirst({ Name: name })
                 if addBtn
                     break
             }
