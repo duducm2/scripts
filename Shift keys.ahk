@@ -1725,15 +1725,21 @@ IsEditorActive() {
 ; Shift + I : Fold all
 +i::
 {
-    Send "^m"
-    Send "^0"
+    Send "^+p" ; Open command palette
+    Sleep 400
+    Send "FFold All"
+    Sleep 400
+    Send "{Enter}"
 }
 
 ; Shift + O : Unfold all
 +o::
 {
-    Send "^m"
-    Send "^j"
+    Send "^+p" ; Open command palette
+    Sleep 400
+    Send "Unfold All"
+    Sleep 400
+    Send "{Enter}"
 }
 
 ; Shift + P : Go to terminal
