@@ -169,6 +169,7 @@ Shift+Y  →  Fold
 Shift+U  →  Unfold
 Shift+I  →  Fold all
 Shift+O  →  Unfold all
+Shift+F  →  Close all editors
 Shift+P  →  Go to terminal
 Shift+H  →  New terminal
 Shift+J  →  Go to file explorer
@@ -191,6 +192,7 @@ Shift+Y  →  Fold
 Shift+U  →  Unfold
 Shift+I  →  Fold all
 Shift+O  →  Unfold all
+Shift+F  →  Close all editors
 Shift+P  →  Go to terminal
 Shift+H  →  New terminal
 Shift+J  →  Go to file explorer
@@ -1742,6 +1744,16 @@ IsEditorActive() {
     Send "{Enter}"
 }
 
+; Shift + F : Close all editors
++f::
+{
+    Send "^+p" ; Open command palette
+    Sleep 400
+    Send "Close All Editors"
+    Sleep 400
+    Send "{Enter}"
+}
+
 ; Shift + P : Go to terminal
 +p:: Send "^'"
 
@@ -1791,6 +1803,8 @@ IsEditorActive() {
 
 ; Shift + D : Git section
 +d:: Send "^+g"
+
+; Ne code
 
 #HotIf
 
