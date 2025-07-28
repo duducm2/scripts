@@ -147,10 +147,10 @@ cheatSheets["ONENOTE.EXE"] := "
 (
 OneNote
 Shift+Y  →  Select line and children
-Shift+U  →  Expand
-Shift+I  →  Collapse
-Shift+J  →  Expand all
-Shift+K  →  Collapse all
+Shift+U  →  Collapse
+Shift+I  →  Expand
+Shift+J  →  Collapse all
+Shift+K  →  Expand all
 Shift+D  →  Delete line and children
 )"  ; end OneNote
 
