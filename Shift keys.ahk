@@ -499,7 +499,6 @@ Win+Alt+Shift+N  →  Opens or activates OneNote
 
 === SPOTIFY ===
 Win+Alt+Shift+S  →  Opens or activates Spotify
-Win+Alt+Shift+D  →  Go to library
 
 === CHATGPT ===
 Win+Alt+Shift+8  →  Get word pronunciation, definition, and Portuguese translation
