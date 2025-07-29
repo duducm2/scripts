@@ -169,7 +169,6 @@ Shift+Y  →  Fold
 Shift+U  →  Unfold
 Shift+I  →  Fold all
 Shift+O  →  Unfold all
-Shift+F  →  Close all editors
 Shift+P  →  Go to terminal
 Shift+H  →  New terminal
 Shift+J  →  Go to file explorer
@@ -183,6 +182,9 @@ Shift+E  →  Search
 Shift+R  →  Save all documents
 Shift+T  →  Change ML model
 Shift+D  →  Git section
+Shift+F  →  Close all editors
+Shift+G  →  Switch AI modes (agent/ask)
+Shift+C  →  Switch AI models (CLAUDE/GPT/O/Deep/Cursor)
 )"  ; end Cursor
 
 cheatSheets["Code.exe"] := "
@@ -192,7 +194,6 @@ Shift+Y  →  Fold
 Shift+U  →  Unfold
 Shift+I  →  Fold all
 Shift+O  →  Unfold all
-Shift+F  →  Close all editors
 Shift+P  →  Go to terminal
 Shift+H  →  New terminal
 Shift+J  →  Go to file explorer
@@ -206,6 +207,9 @@ Shift+E  →  Search
 Shift+R  →  Save all documents
 Shift+T  →  Change ML model
 Shift+D  →  Git section
+Shift+F  →  Close all editors
+Shift+G  →  Switch AI modes (agent/ask)
+Shift+C  →  Switch AI models (CLAUDE/GPT/O/Deep/Cursor)
 )"  ; end VS Code
 
 ; --- Windows Explorer ------------------------------------------------------
@@ -1803,9 +1807,138 @@ IsEditorActive() {
 ; Shift + D : Git section
 +d:: Send "^+g"
 
+; Shift + F : Switch between AI modes (agent/ask)
++g:: SwitchAIMode()
+
+; Shift + G : Switch between AI models
++c:: SwitchAIModel()
+
 ; Ne code
 
 #HotIf
+
+;-------------------------------------------------------------------
+; AI Mode and Model Switching Functions for Cursor/VS Code
+;-------------------------------------------------------------------
+
+; Function to switch between AI modes (agent/ask)
+SwitchAIMode() {
+    try {
+        ; Get the active Cursor/VS Code window
+        hwnd := WinExist("A")
+        if !hwnd
+            return
+
+        root := UIA.ElementFromHandle(hwnd)
+
+        ; Find the anchor button with specific AutomationId
+        anchorButton := root.FindFirst({ AutomationId: "add-file-pill-undefined-ada5841a-b250-44cd-9d2c-7b9aba126bc7" })
+        if !anchorButton {
+            MsgBox "Could not find anchor button with AutomationId 'add-file-pill-undefined-ada5841a-b250-44cd-9d2c-7b9aba126bc7'.",
+                "AI Mode Switch", "IconX"
+            return
+        }
+
+        ; Get user input directly
+        userChoice := InputBox("Choose AI Mode:`n`n1. ask`n2. agent`n`nEnter choice (1 or 2):", "AI Mode Selection",
+            "w250 h150")
+        if userChoice.Result != "OK"
+            return
+
+        ; Determine the mode string based on choice
+        modeString := ""
+        switch userChoice.Value {
+            case "1":
+                modeString := "ask"
+            case "2":
+                modeString := "agent"
+            default:
+                MsgBox "Invalid selection. Please choose 1 or 2.", "AI Mode Selection", "IconX"
+                return
+        }
+
+        ; Focus the anchor button and navigate to edit field
+        anchorButton.SetFocus()
+        Sleep 200
+        Send "{Tab}"  ; Move to edit field
+        Sleep 200
+
+        ; Send Ctrl+. and wait for context menu
+        Send "^."
+        Sleep 500  ; Wait for context menu to appear
+
+        ; Type the selected mode string
+        SendText modeString
+        Sleep 100
+
+        ; Press Enter to confirm
+        Send "{Enter}"
+
+    } catch Error as e {
+        MsgBox "Error switching AI mode: " e.Message, "AI Mode Switch Error", "IconX"
+    }
+}
+
+; Function to switch between AI models
+SwitchAIModel() {
+    try {
+        ; Get the active Cursor/VS Code window
+        hwnd := WinExist("A")
+        if !hwnd
+            return
+
+        root := UIA.ElementFromHandle(hwnd)
+
+        ; Find the anchor button with specific AutomationId
+        anchorButton := root.FindFirst({ AutomationId: "add-file-pill-undefined-ada5841a-b250-44cd-9d2c-7b9aba126bc7" })
+        if !anchorButton {
+            MsgBox "Could not find anchor button with AutomationId 'add-file-pill-undefined-ada5841a-b250-44cd-9d2c-7b9aba126bc7'.",
+                "AI Model Switch", "IconX"
+            return
+        }
+
+        ; Get user input directly
+        userChoice := InputBox(
+            "Choose AI Model:`n`n1. CLAUDE`n2. GPT`n3. O`n4. Deep`n5. Cursor`n`nEnter choice (1-5):",
+            "AI Model Selection", "w250 h180")
+        if userChoice.Result != "OK"
+            return
+
+        ; Determine the model string based on choice
+        modelString := ""
+        switch userChoice.Value {
+            case "1":
+                modelString := "CLAUDE"
+            case "2":
+                modelString := "GPT"
+            case "3":
+                modelString := "O"
+            case "4":
+                modelString := "Deep"
+            case "5":
+                modelString := "Cursor"
+            default:
+                MsgBox "Invalid selection. Please choose 1-5.", "AI Model Selection", "IconX"
+                return
+        }
+
+        ; Focus the anchor button and navigate to edit field
+        anchorButton.SetFocus()
+        Sleep 200
+        Send "{Tab}"  ; Move to edit field
+        Sleep 300
+
+        ; Send ^;
+        Send "^;"
+        Sleep 500  ; Wait for context menu to appear
+
+        ; Type the selected model string (no Enter needed for models)
+        SendText modelString
+
+    } catch Error as e {
+        MsgBox "Error switching AI model: " e.Message, "AI Model Switch Error", "IconX"
+    }
+}
 
 ;-------------------------------------------------------------------
 ; Spotify Shortcuts
