@@ -183,8 +183,8 @@ Shift+R  →  Save all documents
 Shift+T  →  Change ML model
 Shift+D  →  Git section
 Shift+F  →  Close all editors
-Shift+G  →  Switch AI modes (agent/ask)
-Shift+C  →  Switch AI models (CLAUDE/GPT/O/Deep/Cursor)
+Shift+G  →  Switch AI models (auto/CLAUD/GPT/O/DeepSeek/Cursor)
+Shift+C  →  Switch AI modes (agent/ask)
 )"  ; end Cursor
 
 cheatSheets["Code.exe"] := "
@@ -208,8 +208,8 @@ Shift+R  →  Save all documents
 Shift+T  →  Change ML model
 Shift+D  →  Git section
 Shift+F  →  Close all editors
-Shift+G  →  Switch AI modes (agent/ask)
-Shift+C  →  Switch AI models (CLAUDE/GPT/O/Deep/Cursor)
+Shift+G  →  Switch AI models (auto/CLAUD/GPT/O/DeepSeek/Cursor)
+Shift+C  →  Switch AI modes (agent/ask)
 )"  ; end VS Code
 
 ; --- Windows Explorer ------------------------------------------------------
@@ -1807,11 +1807,11 @@ IsEditorActive() {
 ; Shift + D : Git section
 +d:: Send "^+g"
 
-; Shift + F : Switch between AI modes (agent/ask)
-+g:: SwitchAIMode()
-
 ; Shift + G : Switch between AI models
-+c:: SwitchAIModel()
++g:: SwitchAIModel()
+
+; Shift + C : Switch between AI modes (agent/ask)
++c:: SwitchAIMode()
 
 ; Ne code
 
@@ -1899,28 +1899,10 @@ SwitchAIModel() {
 
         ; Get user input directly
         userChoice := InputBox(
-            "Choose AI Model:`n`n1. CLAUDE`n2. GPT`n3. O`n4. Deep`n5. Cursor`n`nEnter choice (1-5):",
-            "AI Model Selection", "w250 h180")
+            "Choose AI Model:`n`n1. auto`n2. CLAUD`n3. GPT`n4. O`n5. DeepSeek`n6. Cursor`n`nEnter choice (1-6):",
+            "AI Model Selection", "w250 h200")
         if userChoice.Result != "OK"
             return
-
-        ; Determine the model string based on choice
-        modelString := ""
-        switch userChoice.Value {
-            case "1":
-                modelString := "CLAUDE"
-            case "2":
-                modelString := "GPT"
-            case "3":
-                modelString := "O"
-            case "4":
-                modelString := "Deep"
-            case "5":
-                modelString := "Cursor"
-            default:
-                MsgBox "Invalid selection. Please choose 1-5.", "AI Model Selection", "IconX"
-                return
-        }
 
         ; Focus the anchor button and navigate to edit field
         anchorButton.SetFocus()
@@ -1928,12 +1910,54 @@ SwitchAIModel() {
         Send "{Tab}"  ; Move to edit field
         Sleep 300
 
-        ; Send ^;
-        Send "^;"
-        Sleep 500  ; Wait for context menu to appear
-
-        ; Type the selected model string (no Enter needed for models)
-        SendText modelString
+        ; Handle different behaviors based on choice
+        switch userChoice.Value {
+            case "1":
+            {
+                ; For auto option: simulate ;, wait for model context menu, then send ↓, Enter
+                Send "^;"
+                Sleep 500
+                Send "{Down}"
+                Sleep 100
+                Send "{Enter}"
+                Sleep 100
+                Send "{Escape}"
+            }
+            case "2":
+            {
+                ; For other options: simulate Ctrl + ., wait, type model string, no Enter
+                Send "^;"
+                Sleep 500
+                SendText "CLAUD"
+            }
+            case "3":
+            {
+                Send "^;"
+                Sleep 500
+                SendText "GPT"
+            }
+            case "4":
+            {
+                Send "^;"
+                Sleep 500
+                SendText "O"
+            }
+            case "5":
+            {
+                Send "^;"
+                Sleep 500
+                SendText "DeepSeek"
+            }
+            case "6":
+            {
+                Send "^;"
+                Sleep 500
+                SendText "Cursor"
+            }
+            default:
+                MsgBox "Invalid selection. Please choose 1-6.", "AI Model Selection", "IconX"
+                return
+        }
 
     } catch Error as e {
         MsgBox "Error switching AI model: " e.Message, "AI Model Switch Error", "IconX"
