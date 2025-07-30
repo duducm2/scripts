@@ -355,7 +355,7 @@ GetCheatSheetText() {
             appShortcuts := cheatSheets.Has("Gmail") ? cheatSheets["Gmail"] : ""
         if InStr(title, "ChatGPT") || InStr(title, "chatgpt")
             appShortcuts :=
-                "(ChatGPT)`r`nShift+Y → Cut all`r`nShift+U → Model selector`r`nShift+I → Toggle sidebar`r`nShift+O → Re-send rules`r`nShift+P → New chat`r`nShift+H → Copy code block`r`nShift+L → Send and show AI banner"
+                "(ChatGPT)`r`nShift+Y → Cut all`r`nShift+U → Model selector`r`nShift+I → Toggle sidebar`r`nShift+O → Re-send rules`r`nShift+H → Copy code block`r`nShift+L → Send and show AI banner"
         if InStr(title, "Mobills")
             appShortcuts :=
                 "(Mobills)`r`nShift+Y → Dashboard`r`nShift+U → Contas`r`nShift+I → Transações`r`nShift+O → Cartões de crédito`r`nShift+P → Planejamento`r`nShift+H → Relatórios`r`nShift+J → Mais opções`r`nShift+K → Previous month`r`nShift+L → Next month`r`nShift+N → Ignore transaction`r`nShift+M → Name field"
@@ -1465,9 +1465,6 @@ FocusOutlookField(criteria) {
     buttonNames := ["Stop streaming", "Interromper transmissão"]
     WaitForChatGPTButtonAndShowLoading(buttonNames, "Waiting for response...")
 }
-
-; Shift + P: New chat
-+p:: Send("^+o")
 
 ; Shift + H: Copy last code block
 +h:: Send("^+;")
