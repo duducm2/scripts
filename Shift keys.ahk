@@ -1821,21 +1821,6 @@ IsEditorActive() {
 ; Function to switch between AI modes (agent/ask)
 SwitchAIMode() {
     try {
-        ; Get the active Cursor/VS Code window
-        hwnd := WinExist("A")
-        if !hwnd
-            return
-
-        root := UIA.ElementFromHandle(hwnd)
-
-        ; Find the anchor button with specific AutomationId
-        anchorButton := root.FindFirst({ AutomationId: "add-file-pill-undefined-ada5841a-b250-44cd-9d2c-7b9aba126bc7" })
-        if !anchorButton {
-            MsgBox "Could not find anchor button with AutomationId 'add-file-pill-undefined-ada5841a-b250-44cd-9d2c-7b9aba126bc7'.",
-                "AI Mode Switch", "IconX"
-            return
-        }
-
         ; Get user input directly
         userChoice := InputBox("Choose AI Mode:`n`n1. ask`n2. agent`n`nEnter choice (1 or 2):", "AI Mode Selection",
             "w250 h150")
@@ -1854,11 +1839,11 @@ SwitchAIMode() {
                 return
         }
 
-        ; Focus the anchor button and navigate to edit field
-        anchorButton.SetFocus()
+        ; Send Escape twice, then Ctrl+I to select the edit field
+        Send "{Escape 2}"
         Sleep 200
-        Send "{Tab}"  ; Move to edit field
-        Sleep 200
+        Send "{Ctrl down}i{Ctrl up}"
+        Sleep 300
 
         ; Send Ctrl+. and wait for context menu
         Send "^."
@@ -1879,21 +1864,6 @@ SwitchAIMode() {
 ; Function to switch between AI models
 SwitchAIModel() {
     try {
-        ; Get the active Cursor/VS Code window
-        hwnd := WinExist("A")
-        if !hwnd
-            return
-
-        root := UIA.ElementFromHandle(hwnd)
-
-        ; Find the anchor button with specific AutomationId
-        anchorButton := root.FindFirst({ AutomationId: "add-file-pill-undefined-ada5841a-b250-44cd-9d2c-7b9aba126bc7" })
-        if !anchorButton {
-            MsgBox "Could not find anchor button with AutomationId 'add-file-pill-undefined-ada5841a-b250-44cd-9d2c-7b9aba126bc7'.",
-                "AI Model Switch", "IconX"
-            return
-        }
-
         ; Get user input directly
         userChoice := InputBox(
             "Choose AI Model:`n`n1. auto`n2. CLAUD`n3. GPT`n4. O`n5. DeepSeek`n6. Cursor`n`nEnter choice (1-6):",
@@ -1901,10 +1871,10 @@ SwitchAIModel() {
         if userChoice.Result != "OK"
             return
 
-        ; Focus the anchor button and navigate to edit field
-        anchorButton.SetFocus()
+        ; Send Escape twice, then Ctrl+I to select the edit field
+        Send "{Escape 2}"
         Sleep 200
-        Send "{Tab}"  ; Move to edit field
+        Send "{Ctrl down}i{Ctrl up}"
         Sleep 300
 
         ; Handle different behaviors based on choice
