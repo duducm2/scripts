@@ -175,8 +175,8 @@ CenterMouse() {
 ScheduleAltTab() {
     ; Cancel any existing scheduled Alt+Tab so we only trigger it once
     SetTimer(DoAltTab, 0)
-    ; Schedule a new one-shot Alt+Tab for 3.5 seconds from now
-    SetTimer(DoAltTab, -3500)
+    ; Schedule a new one-shot Alt+Tab for 0.8 second from now
+    SetTimer(DoAltTab, -800)
 }
 
 DoAltTab() {
