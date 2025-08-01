@@ -205,6 +205,12 @@ HnPLoopMode() {
             CloseHuntAndPeckProcess()
         }
 
+        ; Enhanced cleanup: Check for remaining HAP.EXE instances multiple times within 2 seconds
+        ; and close them if found. This ensures all instances are properly terminated.
+        SetTimer(() => CloseHuntAndPeckProcess(), -500)   ; First check at 500ms
+        SetTimer(() => CloseHuntAndPeckProcess(), -1000)  ; Second check at 1000ms
+        SetTimer(() => CloseHuntAndPeckProcess(), -1500)  ; Third check at 1500ms
+
         g_HnPTargetWindow := 0
         return
     }
@@ -247,6 +253,13 @@ ActivateHnP() {
 
         ; Terminate any lingering hap.exe process
         CloseHuntAndPeckProcess()
+
+        ; Enhanced cleanup: Check for remaining HAP.EXE instances multiple times within 2 seconds
+        ; and close them if found. This ensures all instances are properly terminated.
+        SetTimer(() => CloseHuntAndPeckProcess(), -500)   ; First check at 500ms
+        SetTimer(() => CloseHuntAndPeckProcess(), -1000)  ; Second check at 1000ms
+        SetTimer(() => CloseHuntAndPeckProcess(), -1500)  ; Third check at 1500ms
+
         return
     }
 
@@ -258,6 +271,12 @@ ActivateHnP() {
         g_HnPCurrentIteration := 0
         g_HnPTargetWindow := 0
         ShowLoopIndicator(false)
+
+        ; Enhanced cleanup: Check for remaining HAP.EXE instances multiple times within 2 seconds
+        ; and close them if found. This ensures all instances are properly terminated.
+        SetTimer(() => CloseHuntAndPeckProcess(), -500)   ; First check at 500ms
+        SetTimer(() => CloseHuntAndPeckProcess(), -1000)  ; Second check at 1000ms
+        SetTimer(() => CloseHuntAndPeckProcess(), -1500)  ; Third check at 1500ms
     }
 }
 
