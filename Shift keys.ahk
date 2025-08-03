@@ -371,6 +371,8 @@ GetCheatSheetText() {
             appShortcuts := cheatSheets.Has("Miro") ? cheatSheets["Miro"] : ""
         if InStr(title, "Wikipedia")
             appShortcuts := cheatSheets.Has("Wikipedia") ? cheatSheets["Wikipedia"] : ""
+        if InStr(title, "Google")
+            appShortcuts := "(Google)`r`nShift+Y → Focus search box"
 
         ; Combine Chrome general + app-specific shortcuts
         if (appShortcuts != "" && chromeShortcuts != "")
@@ -2629,6 +2631,51 @@ FindMonthGroup(uia) {
         Send "{Tab}"
         Sleep 100
         Send "{Enter}"
+    }
+}
+
+#HotIf
+
+;-------------------------------------------------------------------
+; Google Search Shortcuts
+;-------------------------------------------------------------------
+#HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "Google")
+
+; Shift + Y : Focus Google search box
++y:: {
+    try {
+        uia := UIA_Browser()
+        Sleep 300
+
+        ; Find the Google search box by Name
+        searchBox := uia.FindFirst({ Name: "Search" })
+        if !searchBox
+            searchBox := uia.FindFirst({ Type: "Edit", Name: "Search" })
+        if !searchBox
+            searchBox := uia.FindFirst({ Type: "SearchBox", Name: "Search" })
+        if !searchBox
+            searchBox := uia.FindFirst({ AutomationId: "search" })
+
+        if (searchBox) {
+            searchBox.SetFocus()
+            Sleep 100
+            if !searchBox.HasKeyboardFocus {
+                ; Fallback: use Ctrl+L to focus address bar, then Tab to search
+                Send "^l"
+                Sleep 100
+                Send "{Tab}"
+            }
+        } else {
+            ; Last resort: use Ctrl+L to focus address bar, then Tab to search
+            Send "^l"
+            Sleep 100
+            Send "{Tab}"
+        }
+    } catch Error as e {
+        ; If all else fails, use keyboard navigation
+        Send "^l"
+        Sleep 100
+        Send "{Tab}"
     }
 }
 
