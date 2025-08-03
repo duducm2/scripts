@@ -362,7 +362,7 @@ GetCheatSheetText() {
         if InStr(title, "Google Keep") || InStr(title, "keep.google.com")
             appShortcuts := cheatSheets.Has("Google Keep") ? cheatSheets["Google Keep"] : ""
         if InStr(title, "YouTube")
-            appShortcuts := "(YouTube)`r`nShift+Y → Focus search box"
+            appShortcuts := "(YouTube)`r`nShift+Y → Focus search box`r`nShift+U → Focus first video via Search filters"
         if InStr(title, "UIATreeInspector")
             appShortcuts := cheatSheets["UIATreeInspector"]
         if InStr(title, "Settle Up")
@@ -2587,6 +2587,48 @@ FindMonthGroup(uia) {
     } catch Error as e {
         ; If all else fails, use the keyboard shortcut
         Send "/"
+    }
+}
+
+; Shift + U : Focus first video via Search filters button
++u:: {
+    try {
+        uia := UIA_Browser()
+        Sleep 300
+
+        ; Find the "Search filters" button as anchor
+        searchFiltersButton := uia.FindFirst({ Name: "Search filters" })
+        if !searchFiltersButton
+            searchFiltersButton := uia.FindFirst({ Type: "Button", Name: "Search filters" })
+        if !searchFiltersButton
+            searchFiltersButton := uia.FindFirst({ AutomationId: "search-filters" })
+
+        if (searchFiltersButton) {
+            ; Focus the Search filters button (do not click)
+            searchFiltersButton.SetFocus()
+            Sleep 200
+
+            ; Send Tab to move focus to the first video list item
+            Send "{Tab}"
+            Sleep 100
+
+            ; Press Enter to select/play the first video
+            Send "{Enter}"
+        } else {
+            ; Fallback: try to navigate to first video using keyboard shortcuts
+            Send "{Home}"  ; Go to top of page
+            Sleep 100
+            Send "{Tab}"   ; Tab to first focusable element
+            Sleep 100
+            Send "{Enter}" ; Press Enter
+        }
+    } catch Error as e {
+        ; If all else fails, use basic keyboard navigation
+        Send "{Home}"
+        Sleep 100
+        Send "{Tab}"
+        Sleep 100
+        Send "{Enter}"
     }
 }
 
