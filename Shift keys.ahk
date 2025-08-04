@@ -284,6 +284,12 @@ Shift+E  →  Compose new email
 Shift+R  →  Search mail
 Shift+T  →  Move to folder
 Shift+D  →  Show keyboard shortcuts help
+
+Gmail Navigation (built-in shortcuts):
+J  →  Next message
+K  →  Previous message
+N  →  Next message in selection
+P  →  Previous message in selection
 )"  ; end Gmail
 
 ; --- Google Keep ---------------------------------------------------------------
