@@ -241,7 +241,7 @@ CopyLastPrompt() {
 {
     SetTitleMatchMode 2
     WinActivate "chatgpt"
-    if !WinWaitActive("ahk_exe chrome.exe", , 2)
+    if !WinWaitActive("ahk_exe chrome.exe", , 1)
         return
     CenterMouse()
 
@@ -266,7 +266,8 @@ CopyLastPrompt() {
 
     lastBtn := copyBtns[copyBtns.Length]   ; the bottom-most one
 
-    ; — click copy & wait for clipboard —
+    isCopied := false
+    ; — click it & wait for clipboard —
     try {
         lastBtn.ScrollIntoView()
         Sleep 100
@@ -274,11 +275,11 @@ CopyLastPrompt() {
         lastBtn.Click()
         if !ClipWait(1) {                  ; returns 0 on timeout
             MsgBox "Copy failed – clipboard stayed empty."
-            return
+        } else {
+            isCopied := true
         }
     } catch as e {
         MsgBox "Error clicking copy button:`n" e.Message
-        return
     }
 
     ; Now trigger read aloud
@@ -307,9 +308,12 @@ CopyLastPrompt() {
         return
     }
 
-    if (buttonClicked) {
+    ; optional: jump back to previous window
+    Send "!{Tab}"
+
+    if (isCopied && buttonClicked) {
+        Sleep(300) ; give window time to switch
         ShowNotification("Message copied and reading!")
-        Send "!{Tab}"  ; Return to previous window
     }
 }
 
