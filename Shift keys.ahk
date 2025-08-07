@@ -1328,6 +1328,15 @@ FocusOutlookField(criteria) {
 }
 
 ; -------------------------------------------------------------------
+; General helper – visually confirm focus on the selected element
+; Sends Down then Up to force a visible focus cue
+; -------------------------------------------------------------------
+EnsureFocus() {
+    Send "{Down}"
+    Send "{Up}"
+}
+
+; -------------------------------------------------------------------
 ; New shortcuts
 ;   Shift + J  → Title field
 ;   Shift + K  → Required (To…) field
@@ -1599,6 +1608,7 @@ FocusOutlookField(criteria) {
             firstItem.ScrollIntoView()
             firstItem.Select()
             firstItem.SetFocus()
+            EnsureFocus()
             return
         }
     } catch Error {
@@ -1607,8 +1617,7 @@ FocusOutlookField(criteria) {
 
     ; Last-chance fallback – press Home which works if focus is already inside the list
     Send "{Home}"
-    Send "{Down}"
-    Send "{Up}"
+    EnsureFocus()
 }
 
 ; Helper to force focus to the ItemsView pane (file list)
@@ -1667,6 +1676,7 @@ SelectExplorerSidebarFirstPinned() {
                 firstPinnedItem.ScrollIntoView()
                 firstPinnedItem.Select()
                 firstPinnedItem.SetFocus()
+                EnsureFocus()
                 return true
             }
         }
@@ -2820,6 +2830,7 @@ FindMonthGroup(uia) {
 
 ; Shift + Y : select first file (via header focus + Shift+Tab)
 +y:: {
+
     try {
         root := UIA.ElementFromHandle(WinExist("A"))
 
@@ -2834,6 +2845,7 @@ FindMonthGroup(uia) {
             itemsList.SetFocus()
             Sleep 120
             Send "{Home}"  ; Go to first item
+            EnsureFocus()
             return
         }
 
@@ -2849,6 +2861,7 @@ FindMonthGroup(uia) {
             Sleep 120
             Send "+{Tab}"
             Send "{Home}"
+            EnsureFocus()
             return
         }
 
@@ -2869,9 +2882,12 @@ FindMonthGroup(uia) {
         ; If ComboBox found, use it
         if fileNameCombo {
             fileNameCombo.SetFocus()
+
+            MsgBox "ComboBox found"
             Sleep 120
             Send "+{Tab}"
             Send "{Home}"
+            EnsureFocus()
             return
         }
     } catch Error {
@@ -2880,6 +2896,8 @@ FindMonthGroup(uia) {
     Send "+{Tab}"
     Sleep 120
     Send "{Home}"
+    EnsureFocus()
+
 }
 
 #HotIf
