@@ -1347,6 +1347,67 @@ EnsureFocus() {
     Send "{Up}"
 }
 
+; Helper: Select the first pinned item in Explorer sidebar (Navigation Pane)
+; Global so it can be reused by both Explorer and File Dialog contexts
+SelectExplorerSidebarFirstPinned() {
+    try {
+        explorerEl := UIA.ElementFromHandle(WinExist("A"))
+
+        ; Look for the navigation pane (sidebar) - it's typically a Tree control
+        navPane := explorerEl.FindFirst({ Type: "Tree" })
+
+        if (navPane) {
+            ; Define the keywords to search for pinned items
+            pinnedKeywords := ["fixo", "pinned", "pin", "fixado", "fixada", "fixar", "preso"]
+
+            ; Search for the first TreeItem that contains any of the pinned keywords
+            firstPinnedItem := unset
+            for keyword in pinnedKeywords {
+                firstPinnedItem := navPane.FindFirst({ Type: "TreeItem", Name: keyword, matchmode: "Substring" })
+                if (firstPinnedItem)
+                    break
+            }
+
+            if (firstPinnedItem) {
+                firstPinnedItem.ScrollIntoView()
+                firstPinnedItem.Select()
+                firstPinnedItem.SetFocus()
+                EnsureFocus()
+                return true
+            }
+
+            ; If we didn't find a pinned item, at least focus the tree and press Home
+            navPane.SetFocus()
+            Sleep 100
+            Send "{Home}"
+            EnsureFocus()
+            return false
+        }
+    } catch Error {
+        ; swallow and continue to fallback
+    }
+
+    ; Robust fallback – cycle through panes up to 6 times to reach navigation, then Home
+    loop 6 {
+        Send "{F6}"
+        Sleep 120
+        try {
+            explorerEl := UIA.ElementFromHandle(WinExist("A"))
+            navPane := explorerEl.FindFirst({ Type: "Tree" })
+            if (navPane && navPane.HasKeyboardFocus) {
+                Send "{Home}"
+                EnsureFocus()
+                return false
+            }
+        } catch Error {
+        }
+    }
+    ; Last resort – send Home anyway
+    Send "{Home}"
+    EnsureFocus()
+    return false
+}
+
 ; -------------------------------------------------------------------
 ; New shortcuts
 ;   Shift + J  → Title field
@@ -1662,45 +1723,6 @@ EnsureItemsViewFocus() {
 
 ; Shift + O : New folder
 +o:: Send("^+n")
-
-; Helper: Select the first pinned item in Explorer sidebar (Navigation Pane)
-SelectExplorerSidebarFirstPinned() {
-    try {
-        explorerEl := UIA.ElementFromHandle(WinExist("A"))
-
-        ; Look for the navigation pane (sidebar) - it's typically a Tree control
-        navPane := explorerEl.FindFirst({ Type: "Tree" })
-
-        if (navPane) {
-            ; Define the keywords to search for pinned items
-            pinnedKeywords := ["fixo", "pinned", "pin", "fixado", "fixada", "fixar", "preso"]
-
-            ; Search for the first TreeItem that contains any of the pinned keywords
-            firstPinnedItem := unset
-            for keyword in pinnedKeywords {
-                firstPinnedItem := navPane.FindFirst({ Type: "TreeItem", Name: keyword, matchmode: "Substring" })
-                if (firstPinnedItem)
-                    break
-            }
-
-            if (firstPinnedItem) {
-                firstPinnedItem.ScrollIntoView()
-                firstPinnedItem.Select()
-                firstPinnedItem.SetFocus()
-                EnsureFocus()
-                return true
-            }
-        }
-    } catch Error {
-        ; swallow and continue to fallback
-    }
-
-    ; Fallback - try to focus the navigation pane and press Home
-    Send "{F6}"  ; Cycle through panes to reach navigation
-    Sleep 100
-    Send "{Home}" ; Select first item in navigation
-    return false
-}
 
 ; Shift + P : Select first pinned item in Explorer sidebar
 +p::
