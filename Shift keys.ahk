@@ -1574,7 +1574,7 @@ FocusOutlookField(criteria) {
 {
     ; Send a right-click to shift focus into the main pane
     Click "Right"
-    Sleep 300
+    Sleep 100
     ; Clear any in-place edits or text focus first
     Send "{ESC}"
 
@@ -1607,6 +1607,8 @@ FocusOutlookField(criteria) {
 
     ; Last-chance fallback – press Home which works if focus is already inside the list
     Send "{Home}"
+    Send "{Down}"
+    Send "{Up}"
 }
 
 ; Helper to force focus to the ItemsView pane (file list)
@@ -1641,9 +1643,8 @@ EnsureItemsViewFocus() {
 ; Shift + O : New folder
 +o:: Send("^+n")
 
-; Shift + P : Select first pinned item in Explorer sidebar
-+p::
-{
+; Helper: Select the first pinned item in Explorer sidebar (Navigation Pane)
+SelectExplorerSidebarFirstPinned() {
     try {
         explorerEl := UIA.ElementFromHandle(WinExist("A"))
 
@@ -1666,26 +1667,39 @@ EnsureItemsViewFocus() {
                 firstPinnedItem.ScrollIntoView()
                 firstPinnedItem.Select()
                 firstPinnedItem.SetFocus()
-                return
+                return true
             }
         }
     } catch Error {
-        ; Fallback - try to focus the navigation pane and press Home
-        Send "{F6}"  ; Cycle through panes to reach navigation
-        Sleep 100
-        Send "{Home}" ; Select first item in navigation
+        ; swallow and continue to fallback
     }
+
+    ; Fallback - try to focus the navigation pane and press Home
+    Send "{F6}"  ; Cycle through panes to reach navigation
+    Sleep 100
+    Send "{Home}" ; Select first item in navigation
+    return false
+}
+
+; Shift + P : Select first pinned item in Explorer sidebar
++p::
+{
+    SelectExplorerSidebarFirstPinned()
 }
 
 ; Shift + H : Select "This PC" / "Este computador" in Explorer sidebar
 +h::
 {
-    ; First, use Shift + P to select the desktop (first pinned item)
-    Send "+p"
+    ; First, call the same logic as +P to select the desktop (first pinned item)
+    SelectExplorerSidebarFirstPinned()
     Sleep 200
 
     ; Then press END to go down to the bottom of the tree
     Send "{End}"
+    Send "{Up}"
+    Send "{Up}"
+    Send "{Up}"
+    Send "{Up}"
 }
 
 #HotIf
