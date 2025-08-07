@@ -1546,6 +1546,10 @@ FocusOutlookField(criteria) {
             ; Optional: Brief confirmation
             ToolTip("Input volume set to 100%")
             SetTimer(() => ToolTip(), -1000)
+
+            ; Close the Settings window
+            Sleep(300) ; Small delay to ensure setting is applied
+            Send("!{F4}") ; Alt+F4 to close Settings
         } else {
             MsgBox("Input volume slider not found. Make sure you're on the microphone settings page.", "Error", "IconX"
             )
