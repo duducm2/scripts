@@ -219,6 +219,7 @@ Shift+Y  →  Select first file
 Shift+U  →  Focus search bar
 Shift+I  →  Focus address bar
 Shift+O  →  New folder
+Shift+P  →  Select first pinned item in Explorer sidebar
 )"  ; end Explorer
 
 ; --- ClipAngel -------------------------------------------------------------
@@ -1638,6 +1639,42 @@ EnsureItemsViewFocus() {
 
 ; Shift + O : New folder
 +o:: Send("^+n")
+
+; Shift + P : Select first pinned item in Explorer sidebar
++p::
+{
+    try {
+        explorerEl := UIA.ElementFromHandle(WinExist("A"))
+
+        ; Look for the navigation pane (sidebar) - it's typically a Tree control
+        navPane := explorerEl.FindFirst({ Type: "Tree" })
+
+        if (navPane) {
+            ; Define the keywords to search for pinned items
+            pinnedKeywords := ["fixo", "pinned", "pin", "fixado", "fixada", "fixar", "preso"]
+
+            ; Search for the first TreeItem that contains any of the pinned keywords
+            firstPinnedItem := unset
+            for keyword in pinnedKeywords {
+                firstPinnedItem := navPane.FindFirst({ Type: "TreeItem", Name: keyword, matchmode: "Substring" })
+                if (firstPinnedItem)
+                    break
+            }
+
+            if (firstPinnedItem) {
+                firstPinnedItem.ScrollIntoView()
+                firstPinnedItem.Select()
+                firstPinnedItem.SetFocus()
+                return
+            }
+        }
+    } catch Error {
+        ; Fallback - try to focus the navigation pane and press Home
+        Send "{F6}"  ; Cycle through panes to reach navigation
+        Sleep 100
+        Send "{Home}" ; Select first item in navigation
+    }
+}
 
 #HotIf
 
