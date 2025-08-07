@@ -1747,8 +1747,16 @@ EnsureItemsViewFocus() {
 ; Shift + U : Focus search bar (Ctrl+E/F)
 +u:: Send "^e"
 
-; Shift + I : Focus address bar (Alt+D)
-+i:: Send "!d"
+; Shift + I : Create new folder (Ctrl+Shift+N), then Shift+Tab twice and Enter
++i:: {
+    Send "^+n"
+    Sleep 120
+    Send "+{Tab}"
+    Sleep 120
+    Send "+{Tab}"
+    Sleep 120
+    Send "{Enter}"
+}
 
 ; Shift + O : New folder
 +o:: Send("^+n")
@@ -2965,8 +2973,16 @@ FindMonthGroup(uia) {
 ; Shift + U : Focus search bar (Ctrl+E/F)
 +u:: Send "^e"
 
-; Shift + I : Focus address bar (Alt+D)
-+i:: Send "!d"
+; Shift + I : Create new folder (Ctrl+Shift+N), then Shift+Tab twice and Enter
++i:: {
+    Send "^e"
+    Sleep 120
+    Send "+{Tab}"
+    Sleep 120
+    Send "+{Tab}"
+    Sleep 120
+    Send "{Enter}"
+}
 
 ; Shift + O : New folder (Ctrl+Shift+N)
 +o:: Send "^+n"
