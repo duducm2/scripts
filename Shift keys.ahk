@@ -1650,6 +1650,35 @@ SelectExplorerSidebarFirstPinned() {
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe explorer.exe")
 
+; Explorer-specific helper – select first pinned item in the sidebar
+SelectExplorerSidebarFirstPinned_EX() {
+    try {
+        explorerEl := UIA.ElementFromHandle(WinExist("A"))
+        navPane := explorerEl.FindFirst({ Type: "Tree" })
+        if (navPane) {
+            pinnedKeywords := ["fixo", "pinned", "pin", "fixado", "fixada", "fixar", "preso"]
+            firstPinnedItem := unset
+            for keyword in pinnedKeywords {
+                firstPinnedItem := navPane.FindFirst({ Type: "TreeItem", Name: keyword, matchmode: "Substring" })
+                if (firstPinnedItem)
+                    break
+            }
+            if (firstPinnedItem) {
+                firstPinnedItem.ScrollIntoView()
+                firstPinnedItem.Select()
+                firstPinnedItem.SetFocus()
+                EnsureFocus()
+                return true
+            }
+        }
+    } catch Error {
+    }
+    Send "{F6}"
+    Sleep 100
+    Send "{Home}"
+    return false
+}
+
 ; Shift + Y : Select first item in list (force-focus ItemsView)
 +y::
 {
@@ -1727,14 +1756,14 @@ EnsureItemsViewFocus() {
 ; Shift + P : Select first pinned item in Explorer sidebar
 +p::
 {
-    SelectExplorerSidebarFirstPinned()
+    SelectExplorerSidebarFirstPinned_EX()
 }
 
 ; Shift + H : Select "This PC" / "Este computador" in Explorer sidebar
 +h::
 {
     ; First, call the same logic as +P to select the desktop (first pinned item)
-    SelectExplorerSidebarFirstPinned()
+    SelectExplorerSidebarFirstPinned_EX()
     Sleep 200
 
     ; Then press END to go down to the bottom of the tree
