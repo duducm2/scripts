@@ -10,7 +10,6 @@
  *   • K - Available
  *   • 1 - Available
  *   • , - Available
- *   • . - Available
  ********************************************************************/
 
 #Requires AutoHotkey v2.0+
@@ -304,6 +303,9 @@ Shift+U  →  Toggle main menu
 cheatSheets["FileDialog"] :=
 "(File Dialog)`r`nShift+Y → Select first item`r`nShift+U → Focus file name field`r`nShift+I → Click Insert/Open/Save button`r`nShift+O → Click Cancel button"
 
+; --- Settings Window -------------------------------------------------
+cheatSheets["Settings"] := "(Settings)`r`nShift+Y → Set input volume to 100%"
+
 ; --- UIA Tree Inspector -------------------------------------------------
 cheatSheets["UIATreeInspector"] := "(UIA Tree Inspector)`r`nShift+Y → Refresh list"
 
@@ -348,6 +350,11 @@ GetCheatSheetText() {
         txt := WinGetText("ahk_id " hwnd)
         if InStr(txt, "Namespace Tree Control") || InStr(txt, "Controle da Árvore de Namespace")
             return cheatSheets["FileDialog"]
+    }
+
+    ; Check for Settings window (both English and Portuguese)
+    if (title = "Settings" || title = "Configurações") {
+        return cheatSheets.Has("Settings") ? cheatSheets["Settings"] : ""
     }
 
     ; Special handling for Chrome-based apps that share chrome.exe
@@ -558,6 +565,8 @@ Win+Alt+Shift+M  →  Maximizes the current window
 === GENERAL ===
 Win+Alt+Shift+Q  →  Jump mouse on the middle
 Win+Alt+Shift+X  →  Activate hunt and Peck
+Win+Alt+Shift+.  →  Set microphone volume to 100
+
 
 === SHORTCUTS ===
 Win+Alt+Shift+A  →  Show app-specific shortcuts (quick press)
@@ -1495,6 +1504,56 @@ FocusOutlookField(criteria) {
     Sleep 300
     ; Step 4: Wait for the Stop streaming button to appear, show indicator, then wait for it to disappear
     WaitForButtonAndShowSmallLoading_ChatGPT([currentStopStreamingName], "AI is responding…")
+}
+
+#HotIf
+
+;-------------------------------------------------------------------
+; Settings Window Shortcuts
+;-------------------------------------------------------------------
+#HotIf WinActive("Settings") || WinActive("Configurações")
+
+; Shift + Y : Set input volume to 100%
++Y::
+{
+    try {
+        ; Get the active Settings window
+        settingsHwnd := WinExist("A")
+        settingsRoot := UIA.ElementFromHandle(settingsHwnd)
+
+        ; Try to find the input volume slider by AutomationId first (most reliable)
+        volumeSlider := ""
+        try {
+            volumeSlider := settingsRoot.FindFirst({ AutomationId: "SystemSettings_Audio_Input_VolumeValue_Slider",
+                ControlType: "Slider" })
+        } catch {
+            ; Fallback: Try by name (both English and Portuguese)
+            sliderNames := ["Input volume", "Ajustar o volume de entrada"]
+            for sliderName in sliderNames {
+                try {
+                    volumeSlider := settingsRoot.FindFirst({ Name: sliderName, ControlType: "Slider" })
+                    if volumeSlider
+                        break
+                } catch {
+                    continue
+                }
+            }
+        }
+
+        if volumeSlider {
+            ; Set slider value to maximum (100)
+            volumeSlider.SetValue(100)
+            ; Optional: Brief confirmation
+            ToolTip("Input volume set to 100%")
+            SetTimer(() => ToolTip(), -1000)
+        } else {
+            MsgBox("Input volume slider not found. Make sure you're on the microphone settings page.", "Error", "IconX"
+            )
+        }
+
+    } catch Error as e {
+        MsgBox("Error setting input volume: " . e.Message, "Error", "IconX")
+    }
 }
 
 #HotIf
