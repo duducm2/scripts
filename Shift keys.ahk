@@ -220,6 +220,7 @@ Shift+U  →  Focus search bar
 Shift+I  →  Focus address bar
 Shift+O  →  New folder
 Shift+P  →  Select first pinned item in Explorer sidebar
+Shift+H  →  Select the last item of the Explorer sidebar
 )"  ; end Explorer
 
 ; --- ClipAngel -------------------------------------------------------------
@@ -1674,6 +1675,17 @@ EnsureItemsViewFocus() {
         Sleep 100
         Send "{Home}" ; Select first item in navigation
     }
+}
+
+; Shift + H : Select "This PC" / "Este computador" in Explorer sidebar
++h::
+{
+    ; First, use Shift + P to select the desktop (first pinned item)
+    Send "+p"
+    Sleep 200
+
+    ; Then press END to go down to the bottom of the tree
+    Send "{End}"
 }
 
 #HotIf
