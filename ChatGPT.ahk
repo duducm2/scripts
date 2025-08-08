@@ -81,17 +81,17 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
             EnsureSidebarOpen()
 
             ; --- Open the options menu (three dots) for the first conversation ---
-            Sleep 14000
+            Sleep 16000
             if ClickFirstConversationOptions() {
                 Sleep 300
                 Send("{Down}")
-                Sleep 120
+                Sleep 300
                 Send("{Down}")
-                Sleep 80
+                Sleep 300
                 Send("{Enter}")
                 Sleep 300
                 Send("chatgpt")
-                Sleep 120
+                Sleep 300
                 Send("{Enter}")
                 ; --- Close sidebar again ---
                 Sleep 200
