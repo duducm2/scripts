@@ -187,6 +187,8 @@ Shift+C  →  Switch AI modes (agent/ask)
 Shift+V  →  Fold Git repos (SCM)
 
 --- Additional Shortcuts ---
+Ctrl + T  →  New chat tab
+Ctrl + N  →  New chat tab (replacing current)
 Alt + F12  →  Peek Definition
 Ctrl + D  →  Select next identical word
 Ctrl + Shift + L  →  Select all identical words
