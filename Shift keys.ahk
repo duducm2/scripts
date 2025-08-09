@@ -160,7 +160,7 @@ Chrome
 Shift+G  →  Pop current tab to new window
 )"  ; end Chrome
 
-; --- Cursor / VS Code ------------------------------------------------------
+; --- Cursor ------------------------------------------------------
 cheatSheets["Cursor.exe"] := "
 (
 Cursor
@@ -185,8 +185,36 @@ Shift+F  →  Close all editors
 Shift+G  →  Switch AI models (auto/CLAUD/GPT/O/DeepSeek/Cursor)
 Shift+C  →  Switch AI modes (agent/ask)
 Shift+V  →  Fold Git repos (SCM)
+
+--- Additional Shortcuts ---
+Alt + F12  →  Peek Definition
+Ctrl + D  →  Select next identical word
+Ctrl + Shift + L  →  Select all identical words
+F2  →  Rename symbol
+F8  →  Navigate problems
+Ctrl + Enter  →  Insert line below
+Ctrl + P  →  Quick Open
+Shift + Delete  →  Delete line
+Alt + ↑  →  Move line up
+Alt + ↓  →  Move line down
+Ctrl + 1 / Ctrl + 2 / Ctrl + 3 ...  →  Switch tabs
+Ctrl + N  →  New file
+Ctrl + Alt + ↑  →  Add cursor above
+Ctrl + Alt + ↓  →  Add cursor below
+Alt + Click  →  Multi-cursor by click
+Shift + Alt + ↑  →  Copy line up
+Shift + Alt + ↓  →  Copy line down
+Ctrl + ;  →  Insert comment
+Ctrl + Home  →  Go to top
+Ctrl + End  →  Go to end
+Alt + Z  →  Toggle word wrap
+Ctrl + Shift + D  →  Debugging
+Ctrl + R  →  Quick project switch
+Alt + J  →  Next review
+Alt + K  →  Previous review
 )"  ; end Cursor
 
+; --- VS Code ------------------------------------------------------
 cheatSheets["Code.exe"] := "
 (
 VS Code
@@ -211,6 +239,33 @@ Shift+F  →  Close all editors
 Shift+G  →  Switch AI models (auto/CLAUD/GPT/O/DeepSeek/Cursor)
 Shift+C  →  Switch AI modes (agent/ask)
 Shift+V  →  Fold Git repos (SCM)
+
+--- Additional Shortcuts ---
+Alt + F12  →  Peek Definition
+Ctrl + D  →  Select next identical word
+Ctrl + Shift + L  →  Select all identical words
+F2  →  Rename symbol
+F8  →  Navigate problems
+Ctrl + Enter  →  Insert line below
+Ctrl + P  →  Quick Open
+Shift + Delete  →  Delete line
+Alt + ↑  →  Move line up
+Alt + ↓  →  Move line down
+Ctrl + 1 / Ctrl + 2 / Ctrl + 3 ...  →  Switch tabs
+Ctrl + N  →  New file
+Ctrl + Alt + ↑  →  Add cursor above
+Ctrl + Alt + ↓  →  Add cursor below
+Alt + Click  →  Multi-cursor by click
+Shift + Alt + ↑  →  Copy line up
+Shift + Alt + ↓  →  Copy line down
+Ctrl + ;  →  Insert comment
+Ctrl + Home  →  Go to top
+Ctrl + End  →  Go to end
+Alt + Z  →  Toggle word wrap
+Ctrl + Shift + D  →  Debugging
+Ctrl + R  →  Quick project switch
+Alt + J  →  Next review
+Alt + K  →  Previous review
 )"  ; end VS Code
 
 ; --- Windows Explorer ------------------------------------------------------
@@ -489,7 +544,8 @@ ToggleShortcutHelp() {
         )
         g_helpGui.BackColor := "000000"
         g_helpGui.SetFont("s12 cFFFF00", "Consolas")
-        cheatCtrl := g_helpGui.Add("Edit", "ReadOnly +Multi -E0x200 -VScroll -HScroll -Border Background000000 w600 r1"
+        ; Enable vertical scroll so oversized cheat sheets remain usable
+        cheatCtrl := g_helpGui.Add("Edit", "ReadOnly +Multi -E0x200 +VScroll -HScroll -Border Background000000 w600 r1"
         )
 
         ; Esc also hides  ; (disabled – use Win+Alt+Shift+A to hide)
@@ -501,8 +557,15 @@ ToggleShortcutHelp() {
     lineCnt := StrLen(text) ? StrSplit(text, "`n").Length : 1
 
     ; Calculate height based on line count (font size 12 ≈ 20px per line + margins)
+    ; Apply min/max so content scrolls instead of being cut off
     controlHeight := lineCnt * 20 + 10
-    guiHeight := controlHeight + 20  ; Add padding for GUI borders
+    minHeight := 220  ; ensure a decent minimum height
+    MonitorGetWorkArea(1, &ml, &mt, &mr, &mb)
+    maxHeight := Floor((mb - mt) * 0.7)  ; cap to 70% of monitor work area
+    if (controlHeight < minHeight)
+        controlHeight := minHeight
+    if (controlHeight > maxHeight)
+        controlHeight := maxHeight
 
     ; Resize the control and GUI explicitly
     cheatCtrl.Move(, , 600, controlHeight)
