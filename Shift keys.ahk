@@ -182,6 +182,7 @@ Shift+R  →  Save all documents
 Shift+T  →  Change ML model
 Shift+D  →  Git section
 Shift+F  →  Close all editors
+Shift+V  →  Fold Git repos (SCM)
 Shift+G  →  Switch AI models (auto/CLAUD/GPT/O/DeepSeek/Cursor)
 Shift+C  →  Switch AI modes (agent/ask)
 )"  ; end Cursor
@@ -209,6 +210,7 @@ Shift+D  →  Git section
 Shift+F  →  Close all editors
 Shift+G  →  Switch AI models (auto/CLAUD/GPT/O/DeepSeek/Cursor)
 Shift+C  →  Switch AI modes (agent/ask)
+Shift+V  →  Fold Git repos (SCM)
 )"  ; end VS Code
 
 ; --- Windows Explorer ------------------------------------------------------
@@ -2016,6 +2018,9 @@ IsEditorActive() {
 ; Shift + C : Switch between AI modes (agent/ask)
 +c:: SwitchAIMode()
 
+; Shift + V : Fold all Git directories in Source Control (Cursor/VS Code)
++v:: FoldAllGitDirectoriesInCursor()
+
 ; Ne code
 
 #HotIf
@@ -2023,6 +2028,80 @@ IsEditorActive() {
 ;-------------------------------------------------------------------
 ; AI Mode and Model Switching Functions for Cursor/VS Code
 ;-------------------------------------------------------------------
+
+; Fold all Git directories in the Source Control view by collapsing each Git tree root
+FoldAllGitDirectoriesInCursor() {
+    try {
+        hwnd := WinExist("A")
+        if !hwnd
+            return
+        root := UIA.ElementFromHandle(hwnd)
+
+        ; Narrow to the Source Control (SCM) tree area to avoid unrelated matches
+        scmCond := UIA.CreatePropertyConditionEx(UIA.Property.Name, "Source Control", UIA.PropertyConditionFlags.IgnoreCaseMatchSubstring
+        )
+        scmCondPt := UIA.CreatePropertyConditionEx(UIA.Property.Name, "Controle de Código", UIA.PropertyConditionFlags.IgnoreCaseMatchSubstring
+        )
+        scmName := UIA.CreateOrCondition(scmCond, scmCondPt)
+        scmPaneType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Pane)
+        scmGroupType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Group)
+        scmTreeType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Tree)
+        scmScopeCond := UIA.CreateOrCondition(scmPaneType, UIA.CreateOrCondition(scmGroupType, scmTreeType))
+        scmRootCond := UIA.CreateAndCondition(scmName, scmScopeCond)
+        scmRoot := root.FindElement(scmRootCond, UIA.TreeScope.Descendants)
+        if !scmRoot
+            scmRoot := root ; fallback if SCM container not found
+
+        ; Find TreeItem nodes whose Name contains " Git" (case-insensitive)
+        nameCond := UIA.CreatePropertyConditionEx(UIA.Property.Name, " Git", UIA.PropertyConditionFlags.IgnoreCaseMatchSubstring
+        )
+        typeCond := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.TreeItem)
+        gitItemCond := UIA.CreateAndCondition(typeCond, nameCond)
+
+        items := scmRoot.FindElements(gitItemCond, UIA.TreeScope.Descendants)
+        if !items
+            return
+
+        for item in items {
+            if !item
+                continue
+            ; Prefer ExpandCollapsePattern when available
+            hasExpand := item.GetPropertyValue(UIA.Property.IsExpandCollapsePatternAvailable)
+            if hasExpand {
+                try {
+                    pat := item.ExpandCollapsePattern
+                    state := pat.ExpandCollapseState
+                    ; Collapse if not already collapsed
+                    if state != UIA.ExpandCollapseState.Collapsed
+                        pat.Collapse()
+                } catch Error {
+                    ; Fallback below if pattern fails
+                }
+            }
+            if !hasExpand {
+                ; Fallback: try to find the chevron/button and invoke/click it
+                btnType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Button)
+                txtType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Text)
+                dotName := UIA.CreatePropertyCondition(UIA.Property.Name, ".")
+                chevronCond := UIA.CreateOrCondition(btnType, UIA.CreateAndCondition(txtType, dotName))
+                chevron := item.FindElement(chevronCond, UIA.TreeScope.Children)
+                if !chevron
+                    chevron := item.FindElement(chevronCond, UIA.TreeScope.Descendants)
+                if chevron {
+                    ; If it supports Invoke, prefer it; else click
+                    if chevron.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
+                        try chevron.InvokePattern.Invoke()
+                    } else {
+                        try chevron.Click()
+                    }
+                }
+            }
+            Sleep 50
+        }
+    } catch Error as e {
+        try MsgBox "UIA error folding Git directories: " e.Message, "Cursor Git Fold", "IconX"
+    }
+}
 
 ; Function to switch between AI modes (agent/ask)
 SwitchAIMode() {
