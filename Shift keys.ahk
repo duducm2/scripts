@@ -237,6 +237,7 @@ Shift+P  →  Mark as favorite
 Shift+H  →  Unmark as favorite
 Shift+J  →  Edit text
 Shift+K  →  Save as file
+Shift+L  →  Merge clips
 )"  ; end ClipAngel
 
 ; --- Figma -----------------------------------------------------------------
@@ -770,6 +771,9 @@ CenterGuiOnActiveMonitor(guiObj) {
 
 ; Shift + K : Save as file (Ctrl+S)
 +k:: Send "^s"
+
+; Shift + L : Merge clips
++l:: Send "^!j"
 
 #HotIf
 
