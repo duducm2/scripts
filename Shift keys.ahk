@@ -185,6 +185,7 @@ Shift+F  →  Close all editors
 Shift+V  →  Fold Git repos (SCM)
 Shift+G  →  Switch AI models (auto/CLAUD/GPT/O/DeepSeek/Cursor)
 Shift+C  →  Switch AI modes (agent/ask)
+Shift+V  →  Fold Git repos (SCM)
 )"  ; end Cursor
 
 cheatSheets["Code.exe"] := "
