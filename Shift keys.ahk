@@ -182,7 +182,6 @@ Shift+R  →  Save all documents
 Shift+T  →  Change ML model
 Shift+D  →  Git section
 Shift+F  →  Close all editors
-Shift+V  →  Fold Git repos (SCM)
 Shift+G  →  Switch AI models (auto/CLAUD/GPT/O/DeepSeek/Cursor)
 Shift+C  →  Switch AI modes (agent/ask)
 Shift+V  →  Fold Git repos (SCM)
