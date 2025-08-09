@@ -2171,9 +2171,9 @@ SwitchAIModel() {
             {
                 ; For auto option: simulate ;, wait for model context menu, then send ↓, Enter
                 Send "^;"
+                Sleep 300
+                SendText "auto"
                 Sleep 500
-                Send "{Down}"
-                Sleep 100
                 Send "{Enter}"
                 Sleep 100
                 Send "{Escape}"
