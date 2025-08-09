@@ -1938,7 +1938,9 @@ IsEditorActive() {
 {
     Send "^+p" ; Open command palette
     Sleep 400
-    Send "FFold All"
+    Send "Fold  All"
+    Sleep 200
+    Send "{Down}"
     Sleep 400
     Send "{Enter}"
 }
