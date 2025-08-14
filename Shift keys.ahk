@@ -486,8 +486,8 @@ GetCheatSheetText() {
 
     ; Special handling for Outlook-based apps
     if (exe = "OUTLOOK.EXE") {
-        ; Detect Reminders window – e.g. "1 Reminder" / "2 Reminders" or generic "Reminders"
-        if RegExMatch(title, "i)(^|\s)\d*\s*Reminder(s)?") {
+        ; Detect Reminders window – e.g. "3 Reminder(s)" or any title containing "Reminder"
+        if RegExMatch(title, "i)Reminder") {
             return cheatSheets.Has("OutlookReminder") ? cheatSheets["OutlookReminder"] : cheatSheets["OUTLOOK.EXE"]
         }
         ; Detect Appointment or Meeting inspector windows
@@ -1022,7 +1022,7 @@ WaitForList(root, pattern := "", timeout := 5000) {
 ;-------------------------------------------------------------------
 ; Outlook Reminder Window Shortcuts
 ;-------------------------------------------------------------------
-#HotIf WinActive("ahk_exe OUTLOOK.EXE") && RegExMatch(WinGetTitle("A"), "i)\d+\s+Reminder\(s\)")
+#HotIf WinActive("ahk_exe OUTLOOK.EXE") && RegExMatch(WinGetTitle("A"), "i)Reminder")
 
 ; Shift + Y : Select first reminder list item
 +Y::
