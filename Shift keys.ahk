@@ -448,7 +448,8 @@ GetCheatSheetText() {
         if InStr(title, "Google Keep") || InStr(title, "keep.google.com")
             appShortcuts := cheatSheets.Has("Google Keep") ? cheatSheets["Google Keep"] : ""
         if InStr(title, "YouTube")
-            appShortcuts := "(YouTube)`r`nShift+Y → Focus search box`r`nShift+U → Focus first video via Search filters"
+            appShortcuts :=
+                "(YouTube)`r`nShift+Y → Focus search box`r`nShift+U → Focus first video via Search filters`r`nShift+I → Focus first video via Explore"
         if InStr(title, "UIATreeInspector")
             appShortcuts := cheatSheets["UIATreeInspector"]
         if InStr(title, "Settle Up")
