@@ -681,6 +681,12 @@ WaitForButtonAndShowSmallLoading(buttonNames, stateText := "Loading…", timeout
         Sleep 250
     }
     HideSmallLoadingIndicator()
+    ; Play completion sound only for actual AI responses (not for transcription phase)
+    try {
+        if (InStr(StrLower(stateText), "transcrib") = 0)
+            PlayCompletionChime()
+    } catch {
+    }
 }
 
 ; =============================================================================
@@ -961,4 +967,41 @@ RecenterLoadingOverWindow(hwnd) {
     gx := wx + (ww - gw) / 2
     gy := wy + (wh - gh) / 2
     loadingGui.Show("x" . Round(gx) . " y" . Round(gy) . " NA")
+}
+
+; =============================================================================
+; Completion chime (single beep, debounced)
+; =============================================================================
+PlayCompletionChime() {
+    try {
+        static lastTick := 0
+        if (A_TickCount - lastTick < 1500)
+            return
+        lastTick := A_TickCount
+
+        played := false
+        ; Prefer Windows MessageBeep (reliable through default output)
+        try {
+            rc := DllCall("User32\\MessageBeep", "UInt", 0xFFFFFFFF)
+            if (rc)
+                played := true
+        } catch {
+        }
+
+        ; Fallback to system asterisk sound
+        if !played {
+            try {
+                played := SoundPlay("*64", false)
+            } catch {
+            }
+        }
+
+        ; Last resort, attempt the classic beep
+        if !played {
+            try SoundBeep(1100, 130)
+            catch {
+            }
+        }
+    } catch {
+    }
 }

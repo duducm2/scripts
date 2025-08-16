@@ -1652,7 +1652,7 @@ SelectExplorerSidebarFirstPinned() {
 
     ; After sending, show loading for Stop streaming
     buttonNames := ["Stop streaming", "Interromper transmissão"]
-    WaitForChatGPTButtonAndShowLoading(buttonNames, "Waiting for response...")
+    WaitForButtonAndShowSmallLoading_ChatGPT(buttonNames, "Waiting for response...")
 }
 
 ; Shift + H: Copy last code block
@@ -3614,6 +3614,41 @@ HideSmallLoadingIndicator_ChatGPT() {
     }
 }
 
+; Short completion chime for ChatGPT responses (debounced)
+PlayCompletionChime_ChatGPT() {
+    try {
+        static lastTick := 0
+        if (A_TickCount - lastTick < 1500)
+            return
+        lastTick := A_TickCount
+
+        played := false
+        ; Prefer Windows MessageBeep (reliable through default output)
+        try {
+            rc := DllCall("User32\\MessageBeep", "UInt", 0xFFFFFFFF)
+            if (rc)
+                played := true
+        } catch {
+        }
+
+        ; Fallback to system asterisk sound
+        if !played {
+            try {
+                played := SoundPlay("*64", false)
+            } catch {
+            }
+        }
+
+        ; Last resort, attempt the classic beep
+        if !played {
+            try SoundBeep(1100, 130)
+            catch {
+            }
+        }
+    } catch {
+    }
+}
+
 WaitForButtonAndShowSmallLoading_ChatGPT(buttonNames, stateText := "Loading…", timeout := 15000) {
     ; Store ChatGPT's window handle before Alt+Tab
     chatGPTHwnd := WinExist("chatgpt")
@@ -3662,4 +3697,10 @@ WaitForButtonAndShowSmallLoading_ChatGPT(buttonNames, stateText := "Loading…",
 
     ; Always hide the indicator at the end
     HideSmallLoadingIndicator_ChatGPT()
+    ; Chime only for real AI answering events (not transcription)
+    try {
+        if (InStr(StrLower(stateText), "transcrib") = 0)
+            PlayCompletionChime_ChatGPT()
+    } catch {
+    }
 }
