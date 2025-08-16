@@ -408,6 +408,20 @@ FindButtonByNames(cUIA, namesArray) {
     return ""
 }
 
+EnsureMicVolume100() {
+    static lastRunTick := 0
+    if (A_TickCount - lastRunTick < 5000)
+        return
+    lastRunTick := A_TickCount
+    ps1Path := A_ScriptDir "\Set-MicVolume.ps1"
+    cmd := 'powershell.exe -ExecutionPolicy Bypass -File "' ps1Path '" -Level 100'
+    try {
+        RunWait cmd
+    } catch {
+        ; ignore errors, still debounced
+    }
+}
+
 ; =============================================================================
 ; Toggle Dictation (No Auto-Send)
 ; Hotkey: Win+Alt+Shift+0
@@ -467,6 +481,7 @@ ToggleDictation(autoSend) {
     if (action = "start") {
         try {
             if btn := FindButton(cUIA, startNames) {
+                EnsureMicVolume100()
                 btn.Click()
                 isDictating := true
                 ; Switch back to the previous window first so the indicator appears there
@@ -483,6 +498,7 @@ ToggleDictation(autoSend) {
     } else if (action = "stop") {
         try {
             if submitBtn := FindButton(cUIA, stopNames) {
+                ;EnsureMicVolume100()
                 submitBtn.Click()
                 isDictating := false
                 HideDictationIndicator()
