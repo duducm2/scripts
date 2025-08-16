@@ -497,7 +497,7 @@ ToggleDictation(autoSend) {
                             finalSendBtn.Click() ; Click instead of sending {Enter}
                             Send "!{Tab}" ; Return to previous window immediately to allow multitasking
                             ; --- Show smaller green loading indicator while ChatGPT is responding ---
-                            WaitForButtonAndShowSmallLoading([currentStopStreamingName], "AI is responding…")
+                            WaitForButtonAndShowSmallLoading([currentStopStreamingName], "AI is responding…", 180000)
                         } else {
                             MsgBox "Timeout: '" . currentSendPromptName . "' button did not appear."
                         }
@@ -603,8 +603,12 @@ WaitForButtonAndShowSmallLoading(buttonNames, stateText := "Loading…", timeout
         return
     }
     start := A_TickCount
+    deadline := start + timeout
     btn := ""
-    while ((A_TickCount - start) < timeout) {
+    indicatorShown := false
+    buttonEverFound := false
+    buttonDisappeared := false
+    while (A_TickCount < deadline) {
         btn := ""
         for n in buttonNames {
             try {
@@ -616,8 +620,12 @@ WaitForButtonAndShowSmallLoading(buttonNames, stateText := "Loading…", timeout
                 break
         }
         if btn {
-            ShowSmallLoadingIndicator(stateText)
-            while btn && ((A_TickCount - start) < timeout) {
+            buttonEverFound := true
+            if (!indicatorShown) {
+                ShowSmallLoadingIndicator(stateText)
+                indicatorShown := true
+            }
+            while btn && (A_TickCount < deadline) {
                 Sleep 250
                 btn := ""
                 for n in buttonNames {
@@ -630,20 +638,22 @@ WaitForButtonAndShowSmallLoading(buttonNames, stateText := "Loading…", timeout
                         break
                 }
             }
+            if !btn
+                buttonDisappeared := true
             break
         }
         Sleep 250
     }
-    ; Play completion sound only for actual AI responses (not for transcription phase)
+    ; Play completion sound only for actual AI responses when we saw the button and it disappeared
     try {
-        if (InStr(StrLower(stateText), "transcrib") = 0)
+        if (buttonEverFound && buttonDisappeared && InStr(StrLower(stateText), "transcrib") = 0)
             PlayCompletionChime()
     } catch {
     }
-    ; If transcription-finished chime is pending, fire once right before hiding
+    ; If transcription-finished chime is pending, fire only if we observed the transcribing button disappear
     try {
         global g_transcribeChimePending
-        if (g_transcribeChimePending) {
+        if (g_transcribeChimePending && buttonEverFound && buttonDisappeared) {
             g_transcribeChimePending := false
             PlayTranscriptionFinishedChime()
         }
