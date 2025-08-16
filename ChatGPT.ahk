@@ -65,7 +65,6 @@ GetChatGPTWindowHwnd() {
         }
         Send("{Esc}")
     } else {
-        ShowLoading("Setting up ChatGPT…")
         Run "chrome.exe --new-window https://chatgpt.com/"
         if WinWaitActive("ahk_exe chrome.exe", , 5) {
             RecenterLoadingOverWindow(WinExist("A"))
@@ -87,31 +86,6 @@ GetChatGPTWindowHwnd() {
             Send("{Enter}")
             Sleep 100
             A_Clipboard := oldClip
-
-            ; --- Ensure the Chats sidebar is visible (open) ---
-            EnsureSidebarOpen()
-
-            ; --- Open the options menu (three dots) for the first conversation ---
-            Sleep 16000
-            if ClickFirstConversationOptions() {
-                Sleep 300
-                Send("{Down}")
-                Sleep 300
-                Send("{Down}")
-                Sleep 300
-                Send("{Enter}")
-                Sleep 300
-                Send("chatgpt")
-                Sleep 300
-                Send("{Enter}")
-                ; --- Close sidebar again ---
-                Sleep 200
-                Send("^+s")
-            }
-            HideLoading()
-        } else {
-            ; Fallback – could not open Chrome window
-            HideLoading()
         }
     }
 }
