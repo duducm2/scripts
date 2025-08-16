@@ -465,7 +465,7 @@ GetCheatSheetText() {
             appShortcuts := cheatSheets.Has("Settle Up") ? cheatSheets["Settle Up"] : ""
         if InStr(title, "Miro")
             appShortcuts := cheatSheets.Has("Miro") ? cheatSheets["Miro"] : ""
-        if InStr(title, "Wikipedia")
+        if InStr(title, "Wikipedia", false)
             appShortcuts := cheatSheets.Has("Wikipedia") ? cheatSheets["Wikipedia"] : ""
         if InStr(title, "Google")
             appShortcuts := "(Google)`r`nShift+Y → Focus search box"
@@ -1180,7 +1180,7 @@ IsTeamsChatActive() {
 ;-------------------------------------------------------------------
 ; Wikipedia Shortcuts
 ;-------------------------------------------------------------------
-#HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "Wikipedia")
+#HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "Wikipedia", false)
 
 ; Shift + Y: Toggle the search button (Type 50005 Link, Name "Search")
 +y::
