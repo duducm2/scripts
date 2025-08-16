@@ -18,6 +18,8 @@ PROMPT_FILE := A_ScriptDir "\ChatGPT_Prompt.txt"
 ; --- Persistent Dictation Indicator ----------------------------------------
 ; Holds the GUI object while dictation is active. Empty string when hidden.
 global dictationIndicatorGui := ""
+; Flag to request a one-time transcription-finished chime for the Win+Alt+Shift+0 flow
+global g_transcribeChimePending := false
 
 ; --- Persistent Loading Indicator ------------------------------------------
 ; Holds the GUI object shown while the script is preparing ChatGPT.
@@ -444,6 +446,7 @@ EnsureMicVolume100() {
 
 ToggleDictation(autoSend) {
     static isDictating := false
+    global g_transcribeChimePending
 
     ; --- Button Names (EN/PT) ---
     pt_dictateName := "Botão de ditado"
@@ -488,6 +491,7 @@ ToggleDictation(autoSend) {
                 Send "!{Tab}"
                 Sleep 300    ; ensure the window switch has completed
                 ShowDictationIndicator()
+                g_transcribeChimePending := false
             } else {
                 MsgBox (IS_WORK_ENVIRONMENT ? "Não foi possível iniciar o ditado. Botão 'Iniciar' não encontrado." :
                     "Could not start dictation. 'Start' button not found.")
@@ -506,6 +510,8 @@ ToggleDictation(autoSend) {
 
                 ; --- Wait for transcription to finish (indicator appears over ChatGPT) ---
                 transcribingWaitNames := [currentTranscribingName, currentSubmitName]
+                ; Set a one-time flag so the watcher can emit a distinct chime right before closing
+                g_transcribeChimePending := !autoSend
                 WaitForButtonAndShowSmallLoading(transcribingWaitNames, "Transcribing…")
 
                 if (autoSend) {
@@ -658,6 +664,15 @@ WaitForButtonAndShowSmallLoading(buttonNames, stateText := "Loading…", timeout
     try {
         if (InStr(StrLower(stateText), "transcrib") = 0)
             PlayCompletionChime()
+    } catch {
+    }
+    ; If transcription-finished chime is pending, fire once right before hiding
+    try {
+        global g_transcribeChimePending
+        if (g_transcribeChimePending) {
+            g_transcribeChimePending := false
+            PlayTranscriptionFinishedChime()
+        }
     } catch {
     }
     HideSmallLoadingIndicator()
@@ -973,6 +988,40 @@ PlayCompletionChime() {
         ; Last resort, attempt the classic beep
         if !played {
             try SoundBeep(1100, 130)
+            catch {
+            }
+        }
+    } catch {
+    }
+}
+
+PlayTranscriptionFinishedChime() {
+    try {
+        static lastTick := 0
+        if (A_TickCount - lastTick < 2000)
+            return
+        lastTick := A_TickCount
+
+        played := false
+        ; Prefer a distinct Windows MessageBeep variant (warning icon)
+        try {
+            rc := DllCall("User32\\MessageBeep", "UInt", 0x00000030)
+            if (rc)
+                played := true
+        } catch {
+        }
+
+        ; Fallback to system exclamation sound
+        if !played {
+            try {
+                played := SoundPlay("*48", false)
+            } catch {
+            }
+        }
+
+        ; Last resort, a short, higher-pitched beep
+        if !played {
+            try SoundBeep(1400, 90)
             catch {
             }
         }
