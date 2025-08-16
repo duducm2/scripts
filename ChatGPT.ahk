@@ -222,7 +222,7 @@ CopyLastPrompt() {
 }
 
 ; =============================================================================
-; Copy Last Message and Read Aloud
+; Copy Last Message and Toggle Read Aloud
 ; Hotkey: Win+Alt+Shift+Y
 ; =============================================================================
 #!+y::
@@ -271,30 +271,38 @@ CopyLastPrompt() {
         MsgBox "Error clicking copy button:`n" e.Message
     }
 
-    ; Now trigger read aloud
+    ; Now check if currently reading and toggle accordingly
     Sleep 300
     readNames := ["Read aloud", "Ler em voz alta"]
     stopNames := ["Stop", "Parar"]
     buttonClicked := false
+    actionTaken := ""
+
+    ; First check if there's a Stop button (meaning currently reading)
     stopBtns := []
     for name in stopNames
         for btn in cUIA.FindAll({ Name: name, Type: "Button" })
             stopBtns.Push(btn)
-    if stopBtns.Length {
-        stopBtns[stopBtns.Length].Click()
-        Sleep 200  ; Small pause before starting new read
-    }
 
-    readBtns := []
-    for name in readNames
-        for btn in cUIA.FindAll({ Name: name, Type: "Button" })
-            readBtns.Push(btn)
-    if readBtns.Length {
-        readBtns[readBtns.Length].Click()
+    if stopBtns.Length {
+        ; Currently reading, so stop it
+        stopBtns[stopBtns.Length].Click()
         buttonClicked := true
+        actionTaken := "stopped"
     } else {
-        MsgBox "No 'Read aloud/Ler em voz alta' button found!"
-        return
+        ; Not currently reading, so start reading
+        readBtns := []
+        for name in readNames
+            for btn in cUIA.FindAll({ Name: name, Type: "Button" })
+                readBtns.Push(btn)
+        if readBtns.Length {
+            readBtns[readBtns.Length].Click()
+            buttonClicked := true
+            actionTaken := "started"
+        } else {
+            MsgBox "No 'Read aloud/Ler em voz alta' button found!"
+            return
+        }
     }
 
     ; optional: jump back to previous window
@@ -302,7 +310,11 @@ CopyLastPrompt() {
 
     if (isCopied && buttonClicked) {
         Sleep(300) ; give window time to switch
-        ShowNotification("Message copied and reading!")
+        if (actionTaken = "started") {
+            ShowNotification("Message copied and reading started!")
+        } else if (actionTaken = "stopped") {
+            ShowNotification("Message copied and reading stopped!")
+        }
     }
 }
 
