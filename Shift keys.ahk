@@ -3695,12 +3695,12 @@ WaitForButtonAndShowSmallLoading_ChatGPT(buttonNames, stateText := "Loading…",
         Sleep 250
     }
 
-    ; Always hide the indicator at the end
-    HideSmallLoadingIndicator_ChatGPT()
     ; Chime only for real AI answering events (not transcription)
     try {
         if (InStr(StrLower(stateText), "transcrib") = 0)
             PlayCompletionChime_ChatGPT()
     } catch {
     }
+    ; Always hide the indicator at the end
+    HideSmallLoadingIndicator_ChatGPT()
 }

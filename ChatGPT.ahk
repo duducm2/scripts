@@ -638,13 +638,13 @@ WaitForButtonAndShowSmallLoading(buttonNames, stateText := "Loading…", timeout
         }
         Sleep 250
     }
-    HideSmallLoadingIndicator()
     ; Play completion sound only for actual AI responses (not for transcription phase)
     try {
         if (InStr(StrLower(stateText), "transcrib") = 0)
             PlayCompletionChime()
     } catch {
     }
+    HideSmallLoadingIndicator()
 }
 
 ; =============================================================================
