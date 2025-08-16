@@ -1650,6 +1650,9 @@ SelectExplorerSidebarFirstPinned() {
     Sleep 100
     A_Clipboard := oldClip
 
+    ; Step 3: Alt+Tab to previous window
+    Send "!{Tab}"
+
     ; After sending, show loading for Stop streaming
     buttonNames := ["Stop streaming", "Interromper transmissão"]
     WaitForButtonAndShowSmallLoading_ChatGPT(buttonNames, "Waiting for response...")
@@ -1674,8 +1677,9 @@ SelectExplorerSidebarFirstPinned() {
     ; Step 3: Alt+Tab to previous window
     Send "!{Tab}"
     Sleep 300
-    ; Step 4: Wait for the Stop streaming button to appear, show indicator, then wait for it to disappear
-    WaitForButtonAndShowSmallLoading_ChatGPT([currentStopStreamingName], "AI is responding…")
+    ; Step 4: Show banner immediately (debounced by helper), then wait for completion to auto-hide and chime
+    ShowSmallLoadingIndicator_ChatGPT("AI is responding…")
+    WaitForButtonAndShowSmallLoading_ChatGPT([currentStopStreamingName, "Stop", "Interromper"], "AI is responding…")
 }
 
 #HotIf
@@ -3650,8 +3654,8 @@ PlayCompletionChime_ChatGPT() {
 }
 
 WaitForButtonAndShowSmallLoading_ChatGPT(buttonNames, stateText := "Loading…", timeout := 15000) {
-    ; Store ChatGPT's window handle before Alt+Tab
-    chatGPTHwnd := WinExist("chatgpt")
+    ; Store ChatGPT's window handle before Alt+Tab (robust contains-match)
+    chatGPTHwnd := GetChatGPTWindowHwnd()
     if !chatGPTHwnd {
         return ; ChatGPT window not found
     }
@@ -3673,6 +3677,13 @@ WaitForButtonAndShowSmallLoading_ChatGPT(buttonNames, stateText := "Loading…",
             catch {
                 btn := ""
             }
+            if !btn {
+                ; Fallback: substring match without strict type (handles UI variations)
+                try btn := cUIA.FindElement({ Name: n, matchmode: "Substring" })
+                catch {
+                    btn := ""
+                }
+            }
             if btn
                 break
         }
@@ -3685,6 +3696,13 @@ WaitForButtonAndShowSmallLoading_ChatGPT(buttonNames, stateText := "Loading…",
                     try btn := cUIA.FindElement({ Name: n, Type: "Button" })
                     catch {
                         btn := ""
+                    }
+                    if !btn {
+                        ; Fallback: substring match without strict type
+                        try btn := cUIA.FindElement({ Name: n, matchmode: "Substring" })
+                        catch {
+                            btn := ""
+                        }
                     }
                     if btn
                         break
@@ -3701,6 +3719,8 @@ WaitForButtonAndShowSmallLoading_ChatGPT(buttonNames, stateText := "Loading…",
             PlayCompletionChime_ChatGPT()
     } catch {
     }
-    ; Always hide the indicator at the end
-    HideSmallLoadingIndicator_ChatGPT()
+    ; Always hide the indicator at the end (debounced safety)
+    try HideSmallLoadingIndicator_ChatGPT()
+    catch {
+    }
 }
