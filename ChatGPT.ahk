@@ -392,7 +392,7 @@ EnsureMicVolume100() {
     ps1Path := A_ScriptDir "\Set-MicVolume.ps1"
     cmd := 'powershell.exe -ExecutionPolicy Bypass -File "' ps1Path '" -Level 100'
     try {
-        RunWait cmd
+        RunWait cmd, , "Hide"
     } catch {
         ; ignore errors, still debounced
     }
