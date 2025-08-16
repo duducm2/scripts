@@ -3335,17 +3335,10 @@ FindMonthGroup(uia) {
 IsFileDialogActive() {
     hwnd := WinActive("A")
     if !hwnd {
-        ToolTip("No active window")
         return false
     }
 
     winClass := WinGetClass("ahk_id " hwnd)
-    winTitle := WinGetTitle("ahk_id " hwnd)
-    winProcess := WinGetProcessName("ahk_id " hwnd)
-
-    ToolTip("Window: " winTitle "`nClass: " winClass "`nProcess: " winProcess)
-    SetTimer () => ToolTip(), -3000  ; clear after 3s
-
     if winClass != "#32770" {
         return false
     }
@@ -3356,19 +3349,11 @@ IsFileDialogActive() {
         for type in ["List", "Tree", "Pane", "Window"] {
             elements := root.FindAll({ Type: type })
             if elements.Length {
-                info := "Found " elements.Length " " type "s:`n"
-                for el in elements {
-                    info .= "- Name: " el.Name " AutoId: " el.AutomationId " Class: " el.ClassName "`n"
-                }
-                ToolTip(info)
-                SetTimer () => ToolTip(), -5000
-                break
+                return true
             }
         }
         return true
     } catch Error as e {
-        ToolTip("UIA Error: " e.Message)
-        SetTimer () => ToolTip(), -3000
         return false
     }
 }
