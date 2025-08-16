@@ -427,6 +427,8 @@ GetCheatSheetText() {
     title := WinGetTitle("A")
     hwnd := WinExist("A")
 
+    ; (removed temporary tooltip debugging)
+
     ; Check for file dialog first (works in any app)
     if WinGetClass("ahk_id " hwnd) = "#32770" {
         txt := WinGetText("ahk_id " hwnd)
@@ -444,31 +446,37 @@ GetCheatSheetText() {
         chromeShortcuts := cheatSheets.Has("chrome.exe") ? cheatSheets["chrome.exe"] : ""
         appShortcuts := ""
 
-        if InStr(title, "WhatsApp")
+        ; Normalize Chrome window title by removing the trailing " - Google Chrome"
+        chromeTitle := RegExReplace(title, "i) - Google Chrome$", "")
+
+        if InStr(chromeTitle, "WhatsApp")
             appShortcuts := cheatSheets.Has("WhatsApp") ? cheatSheets["WhatsApp"] : ""
-        if InStr(title, "Gmail")
+        if InStr(chromeTitle, "Gmail")
             appShortcuts := cheatSheets.Has("Gmail") ? cheatSheets["Gmail"] : ""
-        if InStr(title, "chatgpt")
+        if InStr(chromeTitle, "chatgpt")
             appShortcuts :=
                 "(ChatGPT)`r`nShift+Y → Cut all`r`nShift+U → Model selector`r`nShift+I → Toggle sidebar`r`nShift+O → Re-send rules`r`nShift+H → Copy code block`r`nShift+L → Send and show AI banner"
-        if InStr(title, "Mobills")
+        if InStr(chromeTitle, "Mobills")
             appShortcuts :=
                 "(Mobills)`r`nShift+Y → Dashboard`r`nShift+U → Contas`r`nShift+I → Transações`r`nShift+O → Cartões de crédito`r`nShift+P → Planejamento`r`nShift+H → Relatórios`r`nShift+J → Mais opções`r`nShift+K → Previous month`r`nShift+L → Next month`r`nShift+N → Ignore transaction`r`nShift+M → Name field"
-        if InStr(title, "Google Keep") || InStr(title, "keep.google.com")
+        if InStr(chromeTitle, "Google Keep") || InStr(chromeTitle, "keep.google.com")
             appShortcuts := cheatSheets.Has("Google Keep") ? cheatSheets["Google Keep"] : ""
-        if InStr(title, "YouTube")
+        if InStr(chromeTitle, "YouTube")
             appShortcuts :=
                 "(YouTube)`r`nShift+Y → Focus search box`r`nShift+U → Focus first video via Search filters`r`nShift+I → Focus first video via Explore"
-        if InStr(title, "UIATreeInspector")
+        if InStr(chromeTitle, "UIATreeInspector")
             appShortcuts := cheatSheets["UIATreeInspector"]
-        if InStr(title, "Settle Up")
+        if InStr(chromeTitle, "Settle Up")
             appShortcuts := cheatSheets.Has("Settle Up") ? cheatSheets["Settle Up"] : ""
-        if InStr(title, "Miro")
+        if InStr(chromeTitle, "Miro")
             appShortcuts := cheatSheets.Has("Miro") ? cheatSheets["Miro"] : ""
-        if InStr(title, "Wikipedia", false)
+        if InStr(chromeTitle, "Wikipedia", false) || InStr(chromeTitle, "wikipedia.org", false)
             appShortcuts := cheatSheets.Has("Wikipedia") ? cheatSheets["Wikipedia"] : ""
-        if InStr(title, "Google")
-            appShortcuts := "(Google)`r`nShift+Y → Focus search box"
+        ; Only set generic Google sheet if nothing else matched and title clearly indicates Google site
+        if (appShortcuts = "") {
+            if (chromeTitle = "Google" || InStr(chromeTitle, " - Google Search"))
+                appShortcuts := "(Google)`r`nShift+Y → Focus search box"
+        }
 
         ; Combine Chrome general + app-specific shortcuts
         if (appShortcuts != "" && chromeShortcuts != "")
