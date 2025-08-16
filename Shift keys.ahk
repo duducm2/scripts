@@ -26,6 +26,15 @@ SetTitleMatchMode 2
 ; --- Global Variables ---
 global smallLoadingGuis_ChatGPT := []
 
+; Helper: find ChatGPT chrome window by case-insensitive contains match
+GetChatGPTWindowHwnd() {
+    for hwnd in WinGetList("ahk_exe chrome.exe") {
+        if InStr(WinGetTitle("ahk_id " hwnd), "chatgpt", false)
+            return hwnd
+    }
+    return 0
+}
+
 ; --- Config ---------------------------------------------------------------
 PROMPT_FILE := A_ScriptDir "\\ChatGPT_Prompt.txt"
 
@@ -439,7 +448,7 @@ GetCheatSheetText() {
             appShortcuts := cheatSheets.Has("WhatsApp") ? cheatSheets["WhatsApp"] : ""
         if InStr(title, "Gmail")
             appShortcuts := cheatSheets.Has("Gmail") ? cheatSheets["Gmail"] : ""
-        if InStr(title, "ChatGPT") || InStr(title, "chatgpt")
+        if InStr(title, "chatgpt")
             appShortcuts :=
                 "(ChatGPT)`r`nShift+Y → Cut all`r`nShift+U → Model selector`r`nShift+I → Toggle sidebar`r`nShift+O → Re-send rules`r`nShift+H → Copy code block`r`nShift+L → Send and show AI banner"
         if InStr(title, "Mobills")
@@ -1570,7 +1579,7 @@ SelectExplorerSidebarFirstPinned() {
 ;-------------------------------------------------------------------
 ; ChatGPT Shortcuts
 ;-------------------------------------------------------------------
-#HotIf WinActive("chatgpt")
+#HotIf (hwnd := GetChatGPTWindowHwnd()) && WinActive("ahk_id " hwnd)
 
 ; Shift + Y : Select all and cut
 +y::

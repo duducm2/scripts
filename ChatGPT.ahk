@@ -37,6 +37,15 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
     return false
 }
 
+; Find ChatGPT browser window (case-insensitive contains match for "chatgpt")
+GetChatGPTWindowHwnd() {
+    for hwnd in WinGetList("ahk_exe chrome.exe") {
+        if InStr(WinGetTitle("ahk_id " hwnd), "chatgpt", false)
+            return hwnd
+    }
+    return 0
+}
+
 ; --- Hotkeys & Functions -----------------------------------------------------
 
 ; =============================================================================
@@ -47,9 +56,9 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
 #!+i::
 {
     SetTitleMatchMode(2)
-    if WinExist("chatgpt") {
-        WinActivate("chatgpt")
-        if WinWaitActive("ahk_exe chrome.exe", , 2) {
+    if hwnd := GetChatGPTWindowHwnd() {
+        WinActivate "ahk_id " hwnd
+        if WinWaitActive("ahk_id " hwnd, , 2) {
             CenterMouse()
         }
         Send("{Esc}")
@@ -116,7 +125,8 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
     Send "^c"
     ClipWait
     SetTitleMatchMode 2
-    WinActivate "chatgpt"
+    if hwnd := GetChatGPTWindowHwnd()
+        WinActivate "ahk_id " hwnd
     if WinWaitActive("ahk_exe chrome.exe", , 2)
         CenterMouse()
     Sleep 250
@@ -150,7 +160,8 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
     Send "^c"
     ClipWait
     SetTitleMatchMode 2
-    WinActivate "chatgpt"
+    if hwnd := GetChatGPTWindowHwnd()
+        WinActivate "ahk_id " hwnd
     if WinWaitActive("ahk_exe chrome.exe", , 2)
         CenterMouse()
     Sleep 250
@@ -182,7 +193,8 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
 
 CopyLastPrompt() {
     SetTitleMatchMode 2
-    WinActivate "chatgpt"
+    if hwnd := GetChatGPTWindowHwnd()
+        WinActivate "ahk_id " hwnd
     if !WinWaitActive("ahk_exe chrome.exe", , 1)
         return
     CenterMouse()
@@ -240,7 +252,8 @@ CopyLastPrompt() {
 #!+y::
 {
     SetTitleMatchMode 2
-    WinActivate "chatgpt"
+    if hwnd := GetChatGPTWindowHwnd()
+        WinActivate "ahk_id " hwnd
     if !WinWaitActive("ahk_exe chrome.exe", , 1)
         return
     CenterMouse()
@@ -325,9 +338,10 @@ CopyLastPrompt() {
 #!+9::
 {
     SetTitleMatchMode 2
-    winTitle := "chatgpt"
-    WinActivate winTitle
-    WinWaitActive "ahk_exe chrome.exe"
+    if hwnd := GetChatGPTWindowHwnd() {
+        WinActivate "ahk_id " hwnd
+        WinWaitActive "ahk_id " hwnd
+    }
     CenterMouse()
     cUIA := UIA_Browser()
     Sleep 300
@@ -372,8 +386,10 @@ CopyLastPrompt() {
 ToggleVoiceMode(triedFallback := false, forceAction := "") {
     static isVoiceModeActive := false
     SetTitleMatchMode 2
-    WinActivate "chatgpt"
-    WinWaitActive "ahk_exe chrome.exe"
+    if hwnd := GetChatGPTWindowHwnd() {
+        WinActivate "ahk_id " hwnd
+        WinWaitActive "ahk_id " hwnd
+    }
     CenterMouse()
     cUIA := UIA_Browser()
     Sleep 300
@@ -480,7 +496,8 @@ ToggleDictation(autoSend) {
 
     ; --- Activate Window & UIA ---
     SetTitleMatchMode 2
-    WinActivate "chatgpt"
+    if hwnd := GetChatGPTWindowHwnd()
+        WinActivate "ahk_id " hwnd
     if !WinWaitActive("ahk_exe chrome.exe", , 2)
         return
     CenterMouse()
@@ -675,9 +692,9 @@ WaitForButtonAndShowSmallLoading(buttonNames, stateText := "Loading…", timeout
     SetTitleMatchMode(2)
     A_Clipboard := "" ; Empty clipboard to check for new content later
 
-    if WinExist("chatgpt") {
-        WinActivate("chatgpt")
-        if WinWaitActive("ahk_exe chrome.exe", , 2)
+    if hwnd := GetChatGPTWindowHwnd() {
+        WinActivate("ahk_id " hwnd)
+        if WinWaitActive("ahk_id " hwnd, , 2)
             CenterMouse()
     } else {
         Run "chrome.exe --new-window https://chatgpt.com/"
@@ -881,7 +898,8 @@ SidebarVisible(uiRoot, names) {
 #!+j::
 {
     SetTitleMatchMode(2)
-    WinActivate("chatgpt")
+    if hwnd := GetChatGPTWindowHwnd()
+        WinActivate("ahk_id " hwnd)
     if WinWaitActive("ahk_exe chrome.exe", , 2) {
         Send("{Esc}")
         Send("F")
