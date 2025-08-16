@@ -331,48 +331,6 @@ CopyLastPrompt() {
 }
 
 ; =============================================================================
-; Toggle "Read Aloud"
-; Hotkey: Win+Alt+Shift+9
-; Original File: ChatGPT - Click last microphone.ahk
-; =============================================================================
-#!+9::
-{
-    SetTitleMatchMode 2
-    if hwnd := GetChatGPTWindowHwnd() {
-        WinActivate "ahk_id " hwnd
-        WinWaitActive "ahk_id " hwnd
-    }
-    CenterMouse()
-    cUIA := UIA_Browser()
-    Sleep 300
-    readNames := ["Read aloud", "Ler em voz alta"]
-    stopNames := ["Stop", "Parar"]
-    buttonClicked := false
-    stopBtns := []
-    for name in stopNames
-        for btn in cUIA.FindAll({ Name: name, Type: "Button" })
-            stopBtns.Push(btn)
-    if stopBtns.Length {
-        stopBtns[stopBtns.Length].Click()
-        buttonClicked := true
-    } else {
-        readBtns := []
-        for name in readNames
-            for btn in cUIA.FindAll({ Name: name, Type: "Button" })
-                readBtns.Push(btn)
-        if readBtns.Length {
-            readBtns[readBtns.Length].Click()
-            buttonClicked := true
-        } else {
-            MsgBox "Nenhum botão 'Read aloud/Ler em voz alta' ou 'Stop/Parar' encontrado!"
-        }
-    }
-    if (buttonClicked) {
-        Send "!{Tab}"
-    }
-}
-
-; =============================================================================
 ; Toggle Voice Mode
 ; Hotkey: Win+Alt+Shift+L
 ; Original File: ChatGPT - Talk trough voice.ahk

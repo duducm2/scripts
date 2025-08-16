@@ -10,6 +10,7 @@
  *   • K - Available
  *   • 1 - Available
  *   • , - Available
+ *   • 9 - Available
  ********************************************************************/
 
 #Requires AutoHotkey v2.0+
@@ -620,7 +621,6 @@ Win+Alt+Shift+S  →  Opens or activates Spotify
 
 === CHATGPT ===
 Win+Alt+Shift+8  →  Get word pronunciation, definition, and Portuguese translation
-Win+Alt+Shift+9  →  Clicks on the last microphone icon
 Win+Alt+Shift+0  →  Speak with ChatGPT
 Win+Alt+Shift+7  →  Speak with ChatGPT (send message automatically)
 Win+Alt+Shift+P  →  Copy last ChatGPT prompt
