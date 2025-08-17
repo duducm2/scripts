@@ -292,6 +292,34 @@ Shift+P  →  Select first pinned item in Explorer sidebar
 Shift+H  →  Select the last item of the Explorer sidebar
 )"  ; end Explorer
 
+; --- Microsoft Paint ------------------------------------------------------
+cheatSheets["mspaint.exe"] := "
+(
+MS Paint
+Shift+Y  →  Resize and Skew (Ctrl+W)
+
+--- Common Shortcuts ---
+Ctrl+N   →  New
+Ctrl+O   →  Open
+Ctrl+S   →  Save
+F12      →  Save As
+Ctrl+P   →  Print
+Ctrl+Z   →  Undo
+Ctrl+Y   →  Redo
+Ctrl+A   →  Select all
+Ctrl+C   →  Copy
+Ctrl+X   →  Cut
+Ctrl+V   →  Paste
+Ctrl+W   →  Resize and Skew
+Ctrl+E   →  Image properties
+Ctrl+R   →  Toggle rulers
+Ctrl+G   →  Toggle gridlines
+Ctrl+I   →  Invert colors
+F11      →  Fullscreen view
+Ctrl++   →  Zoom in
+Ctrl+-   →  Zoom out
+)"  ; end MS Paint
+
 ; --- ClipAngel -------------------------------------------------------------
 cheatSheets["ClipAngel.exe"] := "
 (
@@ -1866,6 +1894,16 @@ EnsureItemsViewFocus() {
     Send "{Up}"
     Send "{Up}"
 }
+
+#HotIf
+
+;-------------------------------------------------------------------
+; Microsoft Paint Shortcuts
+;-------------------------------------------------------------------
+#HotIf WinActive("ahk_exe mspaint.exe")
+
+; Shift + Y : Resize and Skew (Ctrl+W)
++y:: Send "^w"
 
 #HotIf
 
