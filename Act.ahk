@@ -28,6 +28,7 @@ if (IS_WORK_ENVIRONMENT) {
     Run "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Chrome Apps\Settle Up.lnk"
     Run "https://keep.google.com/u/0/#NOTE/1YCVkrriqNRyRhRyz1PV0gJ9Eor66ARhb1i9uLpvXTZ2j79nDScAUOIK4pBAMwHY"
     Run "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\apps do Chrome\WhatsApp Web.lnk"
+    Run "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Chrome Apps\Gmail.lnk"
 }
 
 Sleep 10000
