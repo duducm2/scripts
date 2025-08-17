@@ -195,6 +195,7 @@ Shift+F  →  Close all editors
 Shift+G  →  Switch AI models (auto/CLAUD/GPT/O/DeepSeek/Cursor)
 Shift+C  →  Switch AI modes (agent/ask)
 Shift+V  →  Fold Git repos (SCM)
+Shift+B  →  Create AI commit message, then select Commit or Commit and Push
 
 --- Additional Shortcuts ---
 Ctrl + T  →  New chat tab
@@ -251,6 +252,7 @@ Shift+F  →  Close all editors
 Shift+G  →  Switch AI models (auto/CLAUD/GPT/O/DeepSeek/Cursor)
 Shift+C  →  Switch AI modes (agent/ask)
 Shift+V  →  Fold Git repos (SCM)
+Shift+B  →  Create AI commit message, then select Commit or Commit and Push
 
 --- Additional Shortcuts ---
 Alt + F12  →  Peek Definition
@@ -697,7 +699,7 @@ Win+Alt+Shift+.  →  Set microphone volume to 100
 
 === SHORTCUTS ===
 Win+Alt+Shift+A  →  Show app-specific shortcuts (quick press)
-Win+Alt+Shift+A  →  Show global shortcuts (hold 400ms+)
+Win+Alt+Shift+A  →  Show global shortcuts (hold 700ms+)
 
 === WIKIPEDIA ===
 Win+Alt+Shift+K  →  Opens or activates Wikipedia
@@ -751,13 +753,13 @@ Win+Alt+Shift+K  →  Opens or activates Wikipedia
     static pressTime := 0
     pressTime := A_TickCount
 
-    ; Wait for key release or timeout
-    KeyWait "a", "T0.4"  ; Wait max 400ms for key release
+    ; Wait for key release or timeout (increased to accommodate 1s+ holds)
+    KeyWait "a", "T1"  ; Wait max 1.5s for key release
 
     holdTime := A_TickCount - pressTime
 
-    if (holdTime >= 400) {
-        ; Long hold - show global shortcuts
+    if (holdTime >= 700) {
+        ; Long hold (1s+) - show global shortcuts
         ShowGlobalShortcutsHelp()
     } else {
         ; Quick press - show app-specific shortcuts
@@ -2151,6 +2153,19 @@ IsEditorActive() {
 
 ; Shift + V : Fold all Git directories in Source Control (Cursor/VS Code)
 +v:: FoldAllGitDirectoriesInCursor()
+
+; Shift + B : Create AI commit message, then select Commit or Commit and Push
++b::
+{
+    Send "{Right}"
+    Send "{Down}"
+    Send "{Tab 2}"
+    Send "{Enter}"
+    Sleep 1500
+    Send "{Tab 2}"
+    Send "{Enter}"
+    Send "{Up 2}"
+}
 
 ; Ne code
 
