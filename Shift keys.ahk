@@ -484,15 +484,15 @@ GetCheatSheetText() {
             appShortcuts := cheatSheets.Has("Gmail") ? cheatSheets["Gmail"] : ""
         if InStr(chromeTitle, "chatgpt")
             appShortcuts :=
-                "(ChatGPT)`r`nShift+Y → Cut all`r`nShift+U → Model selector`r`nShift+I → Toggle sidebar`r`nShift+O → Re-send rules`r`nShift+H → Copy code block`r`nShift+L → Send and show AI banner"
+                "ChatGPT`r`nShift+Y → Cut all`r`nShift+U → Model selector`r`nShift+I → Toggle sidebar`r`nShift+O → Re-send rules`r`nShift+H → Copy code block`r`nShift+L → Send and show AI banner"
         if InStr(chromeTitle, "Mobills")
             appShortcuts :=
-                "(Mobills)`r`nShift+Y → Dashboard`r`nShift+U → Contas`r`nShift+I → Transações`r`nShift+O → Cartões de crédito`r`nShift+P → Planejamento`r`nShift+H → Relatórios`r`nShift+J → Mais opções`r`nShift+K → Previous month`r`nShift+L → Next month`r`nShift+N → Ignore transaction`r`nShift+M → Name field"
+                "Mobills`r`nShift+Y → Dashboard`r`nShift+U → Contas`r`nShift+I → Transações`r`nShift+O → Cartões de crédito`r`nShift+P → Planejamento`r`nShift+H → Relatórios`r`nShift+J → Mais opções`r`nShift+K → Previous month`r`nShift+L → Next month`r`nShift+N → Ignore transaction`r`nShift+M → Name field"
         if InStr(chromeTitle, "Google Keep") || InStr(chromeTitle, "keep.google.com")
             appShortcuts := cheatSheets.Has("Google Keep") ? cheatSheets["Google Keep"] : ""
         if InStr(chromeTitle, "YouTube")
             appShortcuts :=
-                "(YouTube)`r`nShift+Y → Focus search box`r`nShift+U → Focus first video via Search filters`r`nShift+I → Focus first video via Explore"
+                "YouTube`r`nShift+Y → Focus search box`r`nShift+U → Focus first video via Search filters`r`nShift+I → Focus first video via Explore"
         if InStr(chromeTitle, "UIATreeInspector")
             appShortcuts := cheatSheets["UIATreeInspector"]
         if InStr(chromeTitle, "Settle Up")
@@ -504,7 +504,7 @@ GetCheatSheetText() {
         ; Only set generic Google sheet if nothing else matched and title clearly indicates Google site
         if (appShortcuts = "") {
             if (chromeTitle = "Google" || InStr(chromeTitle, " - Google Search"))
-                appShortcuts := "(Google)`r`nShift+Y → Focus search box"
+                appShortcuts := "Google`r`nShift+Y → Focus search box"
         }
 
         ; Combine Chrome general + app-specific shortcuts
