@@ -10,6 +10,7 @@
  *   • K - Available
  *   • 1 - Available
  *   • , - Available
+ *   • 9 - Available
  ********************************************************************/
 
 #Requires AutoHotkey v2.0+
@@ -25,6 +26,15 @@ SetTitleMatchMode 2
 
 ; --- Global Variables ---
 global smallLoadingGuis_ChatGPT := []
+
+; Helper: find ChatGPT chrome window by case-insensitive contains match
+GetChatGPTWindowHwnd() {
+    for hwnd in WinGetList("ahk_exe chrome.exe") {
+        if InStr(WinGetTitle("ahk_id " hwnd), "chatgpt", false)
+            return hwnd
+    }
+    return 0
+}
 
 ; --- Config ---------------------------------------------------------------
 PROMPT_FILE := A_ScriptDir "\\ChatGPT_Prompt.txt"
@@ -185,6 +195,7 @@ Shift+F  →  Close all editors
 Shift+G  →  Switch AI models (auto/CLAUD/GPT/O/DeepSeek/Cursor)
 Shift+C  →  Switch AI modes (agent/ask)
 Shift+V  →  Fold Git repos (SCM)
+Shift+B  →  Create AI commit message, then select Commit or Commit and Push
 
 --- Additional Shortcuts ---
 Ctrl + T  →  New chat tab
@@ -241,6 +252,7 @@ Shift+F  →  Close all editors
 Shift+G  →  Switch AI models (auto/CLAUD/GPT/O/DeepSeek/Cursor)
 Shift+C  →  Switch AI modes (agent/ask)
 Shift+V  →  Fold Git repos (SCM)
+Shift+B  →  Create AI commit message, then select Commit or Commit and Push
 
 --- Additional Shortcuts ---
 Alt + F12  →  Peek Definition
@@ -281,6 +293,34 @@ Shift+O  →  New folder
 Shift+P  →  Select first pinned item in Explorer sidebar
 Shift+H  →  Select the last item of the Explorer sidebar
 )"  ; end Explorer
+
+; --- Microsoft Paint ------------------------------------------------------
+cheatSheets["mspaint.exe"] := "
+(
+MS Paint
+Shift+Y  →  Resize and Skew (Ctrl+W)
+
+--- Common Shortcuts ---
+Ctrl+N   →  New
+Ctrl+O   →  Open
+Ctrl+S   →  Save
+F12      →  Save As
+Ctrl+P   →  Print
+Ctrl+Z   →  Undo
+Ctrl+Y   →  Redo
+Ctrl+A   →  Select all
+Ctrl+C   →  Copy
+Ctrl+X   →  Cut
+Ctrl+V   →  Paste
+Ctrl+W   →  Resize and Skew
+Ctrl+E   →  Image properties
+Ctrl+R   →  Toggle rulers
+Ctrl+G   →  Toggle gridlines
+Ctrl+I   →  Invert colors
+F11      →  Fullscreen view
+Ctrl++   →  Zoom in
+Ctrl+-   →  Zoom out
+)"  ; end MS Paint
 
 ; --- ClipAngel -------------------------------------------------------------
 cheatSheets["ClipAngel.exe"] := "
@@ -418,6 +458,8 @@ GetCheatSheetText() {
     title := WinGetTitle("A")
     hwnd := WinExist("A")
 
+    ; (removed temporary tooltip debugging)
+
     ; Check for file dialog first (works in any app)
     if WinGetClass("ahk_id " hwnd) = "#32770" {
         txt := WinGetText("ahk_id " hwnd)
@@ -435,30 +477,37 @@ GetCheatSheetText() {
         chromeShortcuts := cheatSheets.Has("chrome.exe") ? cheatSheets["chrome.exe"] : ""
         appShortcuts := ""
 
-        if InStr(title, "WhatsApp")
+        ; Normalize Chrome window title by removing the trailing " - Google Chrome"
+        chromeTitle := RegExReplace(title, "i) - Google Chrome$", "")
+
+        if InStr(chromeTitle, "WhatsApp")
             appShortcuts := cheatSheets.Has("WhatsApp") ? cheatSheets["WhatsApp"] : ""
-        if InStr(title, "Gmail")
+        if InStr(chromeTitle, "Gmail")
             appShortcuts := cheatSheets.Has("Gmail") ? cheatSheets["Gmail"] : ""
-        if InStr(title, "ChatGPT") || InStr(title, "chatgpt")
+        if InStr(chromeTitle, "chatgpt")
             appShortcuts :=
-                "(ChatGPT)`r`nShift+Y → Cut all`r`nShift+U → Model selector`r`nShift+I → Toggle sidebar`r`nShift+O → Re-send rules`r`nShift+H → Copy code block`r`nShift+L → Send and show AI banner"
-        if InStr(title, "Mobills")
+                "ChatGPT`r`nShift+Y → Cut all`r`nShift+U → Model selector`r`nShift+I → Toggle sidebar`r`nShift+O → Re-send rules`r`nShift+H → Copy code block`r`nShift+L → Send and show AI banner"
+        if InStr(chromeTitle, "Mobills")
             appShortcuts :=
-                "(Mobills)`r`nShift+Y → Dashboard`r`nShift+U → Contas`r`nShift+I → Transações`r`nShift+O → Cartões de crédito`r`nShift+P → Planejamento`r`nShift+H → Relatórios`r`nShift+J → Mais opções`r`nShift+K → Previous month`r`nShift+L → Next month`r`nShift+N → Ignore transaction`r`nShift+M → Name field"
-        if InStr(title, "Google Keep") || InStr(title, "keep.google.com")
+                "Mobills`r`nShift+Y → Dashboard`r`nShift+U → Contas`r`nShift+I → Transações`r`nShift+O → Cartões de crédito`r`nShift+P → Planejamento`r`nShift+H → Relatórios`r`nShift+J → Mais opções`r`nShift+K → Previous month`r`nShift+L → Next month`r`nShift+N → Ignore transaction`r`nShift+M → Name field"
+        if InStr(chromeTitle, "Google Keep") || InStr(chromeTitle, "keep.google.com")
             appShortcuts := cheatSheets.Has("Google Keep") ? cheatSheets["Google Keep"] : ""
-        if InStr(title, "YouTube")
-            appShortcuts := "(YouTube)`r`nShift+Y → Focus search box`r`nShift+U → Focus first video via Search filters"
-        if InStr(title, "UIATreeInspector")
+        if InStr(chromeTitle, "YouTube")
+            appShortcuts :=
+                "YouTube`r`nShift+Y → Focus search box`r`nShift+U → Focus first video via Search filters`r`nShift+I → Focus first video via Explore"
+        if InStr(chromeTitle, "UIATreeInspector")
             appShortcuts := cheatSheets["UIATreeInspector"]
-        if InStr(title, "Settle Up")
+        if InStr(chromeTitle, "Settle Up")
             appShortcuts := cheatSheets.Has("Settle Up") ? cheatSheets["Settle Up"] : ""
-        if InStr(title, "Miro")
+        if InStr(chromeTitle, "Miro")
             appShortcuts := cheatSheets.Has("Miro") ? cheatSheets["Miro"] : ""
-        if InStr(title, "Wikipedia")
+        if InStr(chromeTitle, "Wikipedia", false) || InStr(chromeTitle, "wikipedia.org", false)
             appShortcuts := cheatSheets.Has("Wikipedia") ? cheatSheets["Wikipedia"] : ""
-        if InStr(title, "Google")
-            appShortcuts := "(Google)`r`nShift+Y → Focus search box"
+        ; Only set generic Google sheet if nothing else matched and title clearly indicates Google site
+        if (appShortcuts = "") {
+            if (chromeTitle = "Google" || InStr(chromeTitle, " - Google Search"))
+                appShortcuts := "Google`r`nShift+Y → Focus search box"
+        }
 
         ; Combine Chrome general + app-specific shortcuts
         if (appShortcuts != "" && chromeShortcuts != "")
@@ -602,7 +651,6 @@ Win+Alt+Shift+S  →  Opens or activates Spotify
 
 === CHATGPT ===
 Win+Alt+Shift+8  →  Get word pronunciation, definition, and Portuguese translation
-Win+Alt+Shift+9  →  Clicks on the last microphone icon
 Win+Alt+Shift+0  →  Speak with ChatGPT
 Win+Alt+Shift+7  →  Speak with ChatGPT (send message automatically)
 Win+Alt+Shift+P  →  Copy last ChatGPT prompt
@@ -651,7 +699,7 @@ Win+Alt+Shift+.  →  Set microphone volume to 100
 
 === SHORTCUTS ===
 Win+Alt+Shift+A  →  Show app-specific shortcuts (quick press)
-Win+Alt+Shift+A  →  Show global shortcuts (hold 400ms+)
+Win+Alt+Shift+A  →  Show global shortcuts (hold 700ms+)
 
 === WIKIPEDIA ===
 Win+Alt+Shift+K  →  Opens or activates Wikipedia
@@ -705,13 +753,13 @@ Win+Alt+Shift+K  →  Opens or activates Wikipedia
     static pressTime := 0
     pressTime := A_TickCount
 
-    ; Wait for key release or timeout
-    KeyWait "a", "T0.4"  ; Wait max 400ms for key release
+    ; Wait for key release or timeout (increased to accommodate 1s+ holds)
+    KeyWait "a", "T1"  ; Wait max 1.5s for key release
 
     holdTime := A_TickCount - pressTime
 
-    if (holdTime >= 400) {
-        ; Long hold - show global shortcuts
+    if (holdTime >= 700) {
+        ; Long hold (1s+) - show global shortcuts
         ShowGlobalShortcutsHelp()
     } else {
         ; Quick press - show app-specific shortcuts
@@ -1170,7 +1218,7 @@ IsTeamsChatActive() {
 ;-------------------------------------------------------------------
 ; Wikipedia Shortcuts
 ;-------------------------------------------------------------------
-#HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "Wikipedia")
+#HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "Wikipedia", false)
 
 ; Shift + Y: Toggle the search button (Type 50005 Link, Name "Search")
 +y::
@@ -1569,7 +1617,7 @@ SelectExplorerSidebarFirstPinned() {
 ;-------------------------------------------------------------------
 ; ChatGPT Shortcuts
 ;-------------------------------------------------------------------
-#HotIf WinActive("chatgpt")
+#HotIf (hwnd := GetChatGPTWindowHwnd()) && WinActive("ahk_id " hwnd)
 
 ; Shift + Y : Select all and cut
 +y::
@@ -1632,9 +1680,12 @@ SelectExplorerSidebarFirstPinned() {
     Sleep 100
     A_Clipboard := oldClip
 
+    ; Step 3: Alt+Tab to previous window
+    Send "!{Tab}"
+
     ; After sending, show loading for Stop streaming
     buttonNames := ["Stop streaming", "Interromper transmissão"]
-    WaitForChatGPTButtonAndShowLoading(buttonNames, "Waiting for response...")
+    WaitForButtonAndShowSmallLoading_ChatGPT(buttonNames, "Waiting for response...")
 }
 
 ; Shift + H: Copy last code block
@@ -1656,8 +1707,9 @@ SelectExplorerSidebarFirstPinned() {
     ; Step 3: Alt+Tab to previous window
     Send "!{Tab}"
     Sleep 300
-    ; Step 4: Wait for the Stop streaming button to appear, show indicator, then wait for it to disappear
-    WaitForButtonAndShowSmallLoading_ChatGPT([currentStopStreamingName], "AI is responding…")
+    ; Step 4: Show banner immediately (debounced by helper), then wait for completion to auto-hide and chime
+    ShowSmallLoadingIndicator_ChatGPT("AI is responding…")
+    WaitForButtonAndShowSmallLoading_ChatGPT([currentStopStreamingName, "Stop", "Interromper"], "AI is responding…")
 }
 
 #HotIf
@@ -1844,6 +1896,16 @@ EnsureItemsViewFocus() {
     Send "{Up}"
     Send "{Up}"
 }
+
+#HotIf
+
+;-------------------------------------------------------------------
+; Microsoft Paint Shortcuts
+;-------------------------------------------------------------------
+#HotIf WinActive("ahk_exe mspaint.exe")
+
+; Shift + Y : Resize and Skew (Ctrl+W)
++y:: Send "^w"
 
 #HotIf
 
@@ -2091,6 +2153,19 @@ IsEditorActive() {
 
 ; Shift + V : Fold all Git directories in Source Control (Cursor/VS Code)
 +v:: FoldAllGitDirectoriesInCursor()
+
+; Shift + B : Create AI commit message, then select Commit or Commit and Push
++b::
+{
+    Send "{Right}"
+    Send "{Down}"
+    Send "{Tab 2}"
+    Send "{Enter}"
+    Sleep 1500
+    Send "{Tab 2}"
+    Send "{Enter}"
+    Send "{Up 2}"
+}
 
 ; Ne code
 
@@ -3317,17 +3392,10 @@ FindMonthGroup(uia) {
 IsFileDialogActive() {
     hwnd := WinActive("A")
     if !hwnd {
-        ToolTip("No active window")
         return false
     }
 
     winClass := WinGetClass("ahk_id " hwnd)
-    winTitle := WinGetTitle("ahk_id " hwnd)
-    winProcess := WinGetProcessName("ahk_id " hwnd)
-
-    ToolTip("Window: " winTitle "`nClass: " winClass "`nProcess: " winProcess)
-    SetTimer () => ToolTip(), -3000  ; clear after 3s
-
     if winClass != "#32770" {
         return false
     }
@@ -3338,19 +3406,11 @@ IsFileDialogActive() {
         for type in ["List", "Tree", "Pane", "Window"] {
             elements := root.FindAll({ Type: type })
             if elements.Length {
-                info := "Found " elements.Length " " type "s:`n"
-                for el in elements {
-                    info .= "- Name: " el.Name " AutoId: " el.AutomationId " Class: " el.ClassName "`n"
-                }
-                ToolTip(info)
-                SetTimer () => ToolTip(), -5000
-                break
+                return true
             }
         }
         return true
     } catch Error as e {
-        ToolTip("UIA Error: " e.Message)
-        SetTimer () => ToolTip(), -3000
         return false
     }
 }
@@ -3611,9 +3671,44 @@ HideSmallLoadingIndicator_ChatGPT() {
     }
 }
 
+; Short completion chime for ChatGPT responses (debounced)
+PlayCompletionChime_ChatGPT() {
+    try {
+        static lastTick := 0
+        if (A_TickCount - lastTick < 1500)
+            return
+        lastTick := A_TickCount
+
+        played := false
+        ; Prefer Windows MessageBeep (reliable through default output)
+        try {
+            rc := DllCall("User32\\MessageBeep", "UInt", 0xFFFFFFFF)
+            if (rc)
+                played := true
+        } catch {
+        }
+
+        ; Fallback to system asterisk sound
+        if !played {
+            try {
+                played := SoundPlay("*64", false)
+            } catch {
+            }
+        }
+
+        ; Last resort, attempt the classic beep
+        if !played {
+            try SoundBeep(1100, 130)
+            catch {
+            }
+        }
+    } catch {
+    }
+}
+
 WaitForButtonAndShowSmallLoading_ChatGPT(buttonNames, stateText := "Loading…", timeout := 15000) {
-    ; Store ChatGPT's window handle before Alt+Tab
-    chatGPTHwnd := WinExist("chatgpt")
+    ; Store ChatGPT's window handle before Alt+Tab (robust contains-match)
+    chatGPTHwnd := GetChatGPTWindowHwnd()
     if !chatGPTHwnd {
         return ; ChatGPT window not found
     }
@@ -3635,6 +3730,13 @@ WaitForButtonAndShowSmallLoading_ChatGPT(buttonNames, stateText := "Loading…",
             catch {
                 btn := ""
             }
+            if !btn {
+                ; Fallback: substring match without strict type (handles UI variations)
+                try btn := cUIA.FindElement({ Name: n, matchmode: "Substring" })
+                catch {
+                    btn := ""
+                }
+            }
             if btn
                 break
         }
@@ -3648,6 +3750,13 @@ WaitForButtonAndShowSmallLoading_ChatGPT(buttonNames, stateText := "Loading…",
                     catch {
                         btn := ""
                     }
+                    if !btn {
+                        ; Fallback: substring match without strict type
+                        try btn := cUIA.FindElement({ Name: n, matchmode: "Substring" })
+                        catch {
+                            btn := ""
+                        }
+                    }
                     if btn
                         break
                 }
@@ -3657,6 +3766,14 @@ WaitForButtonAndShowSmallLoading_ChatGPT(buttonNames, stateText := "Loading…",
         Sleep 250
     }
 
-    ; Always hide the indicator at the end
-    HideSmallLoadingIndicator_ChatGPT()
+    ; Chime only for real AI answering events (not transcription)
+    try {
+        if (InStr(StrLower(stateText), "transcrib") = 0)
+            PlayCompletionChime_ChatGPT()
+    } catch {
+    }
+    ; Always hide the indicator at the end (debounced safety)
+    try HideSmallLoadingIndicator_ChatGPT()
+    catch {
+    }
 }

@@ -18,6 +18,8 @@ PROMPT_FILE := A_ScriptDir "\ChatGPT_Prompt.txt"
 ; --- Persistent Dictation Indicator ----------------------------------------
 ; Holds the GUI object while dictation is active. Empty string when hidden.
 global dictationIndicatorGui := ""
+; Flag to request a one-time transcription-finished chime for the Win+Alt+Shift+0 flow
+global g_transcribeChimePending := false
 
 ; --- Persistent Loading Indicator ------------------------------------------
 ; Holds the GUI object shown while the script is preparing ChatGPT.
@@ -37,6 +39,15 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
     return false
 }
 
+; Find ChatGPT browser window (case-insensitive contains match for "chatgpt")
+GetChatGPTWindowHwnd() {
+    for hwnd in WinGetList("ahk_exe chrome.exe") {
+        if InStr(WinGetTitle("ahk_id " hwnd), "chatgpt", false)
+            return hwnd
+    }
+    return 0
+}
+
 ; --- Hotkeys & Functions -----------------------------------------------------
 
 ; =============================================================================
@@ -47,14 +58,13 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
 #!+i::
 {
     SetTitleMatchMode(2)
-    if WinExist("chatgpt") {
-        WinActivate("chatgpt")
-        if WinWaitActive("ahk_exe chrome.exe", , 2) {
+    if hwnd := GetChatGPTWindowHwnd() {
+        WinActivate "ahk_id " hwnd
+        if WinWaitActive("ahk_id " hwnd, , 2) {
             CenterMouse()
         }
         Send("{Esc}")
     } else {
-        ShowLoading("Setting up ChatGPT…")
         Run "chrome.exe --new-window https://chatgpt.com/"
         if WinWaitActive("ahk_exe chrome.exe", , 5) {
             RecenterLoadingOverWindow(WinExist("A"))
@@ -76,31 +86,6 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
             Send("{Enter}")
             Sleep 100
             A_Clipboard := oldClip
-
-            ; --- Ensure the Chats sidebar is visible (open) ---
-            EnsureSidebarOpen()
-
-            ; --- Open the options menu (three dots) for the first conversation ---
-            Sleep 16000
-            if ClickFirstConversationOptions() {
-                Sleep 300
-                Send("{Down}")
-                Sleep 300
-                Send("{Down}")
-                Sleep 300
-                Send("{Enter}")
-                Sleep 300
-                Send("chatgpt")
-                Sleep 300
-                Send("{Enter}")
-                ; --- Close sidebar again ---
-                Sleep 200
-                Send("^+s")
-            }
-            HideLoading()
-        } else {
-            ; Fallback – could not open Chrome window
-            HideLoading()
         }
     }
 }
@@ -116,7 +101,8 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
     Send "^c"
     ClipWait
     SetTitleMatchMode 2
-    WinActivate "chatgpt"
+    if hwnd := GetChatGPTWindowHwnd()
+        WinActivate "ahk_id " hwnd
     if WinWaitActive("ahk_exe chrome.exe", , 2)
         CenterMouse()
     Sleep 250
@@ -150,7 +136,8 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
     Send "^c"
     ClipWait
     SetTitleMatchMode 2
-    WinActivate "chatgpt"
+    if hwnd := GetChatGPTWindowHwnd()
+        WinActivate "ahk_id " hwnd
     if WinWaitActive("ahk_exe chrome.exe", , 2)
         CenterMouse()
     Sleep 250
@@ -182,7 +169,8 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
 
 CopyLastPrompt() {
     SetTitleMatchMode 2
-    WinActivate "chatgpt"
+    if hwnd := GetChatGPTWindowHwnd()
+        WinActivate "ahk_id " hwnd
     if !WinWaitActive("ahk_exe chrome.exe", , 1)
         return
     CenterMouse()
@@ -234,13 +222,14 @@ CopyLastPrompt() {
 }
 
 ; =============================================================================
-; Copy Last Message and Read Aloud
+; Copy Last Message and Toggle Read Aloud
 ; Hotkey: Win+Alt+Shift+Y
 ; =============================================================================
 #!+y::
 {
     SetTitleMatchMode 2
-    WinActivate "chatgpt"
+    if hwnd := GetChatGPTWindowHwnd()
+        WinActivate "ahk_id " hwnd
     if !WinWaitActive("ahk_exe chrome.exe", , 1)
         return
     CenterMouse()
@@ -282,66 +271,26 @@ CopyLastPrompt() {
         MsgBox "Error clicking copy button:`n" e.Message
     }
 
-    ; Now trigger read aloud
+    ; Now check if currently reading and toggle accordingly
     Sleep 300
     readNames := ["Read aloud", "Ler em voz alta"]
     stopNames := ["Stop", "Parar"]
     buttonClicked := false
+    actionTaken := ""
+
+    ; First check if there's a Stop button (meaning currently reading)
     stopBtns := []
     for name in stopNames
         for btn in cUIA.FindAll({ Name: name, Type: "Button" })
             stopBtns.Push(btn)
+
     if stopBtns.Length {
-        stopBtns[stopBtns.Length].Click()
-        Sleep 200  ; Small pause before starting new read
-    }
-
-    readBtns := []
-    for name in readNames
-        for btn in cUIA.FindAll({ Name: name, Type: "Button" })
-            readBtns.Push(btn)
-    if readBtns.Length {
-        readBtns[readBtns.Length].Click()
-        buttonClicked := true
-    } else {
-        MsgBox "No 'Read aloud/Ler em voz alta' button found!"
-        return
-    }
-
-    ; optional: jump back to previous window
-    Send "!{Tab}"
-
-    if (isCopied && buttonClicked) {
-        Sleep(300) ; give window time to switch
-        ShowNotification("Message copied and reading!")
-    }
-}
-
-; =============================================================================
-; Toggle "Read Aloud"
-; Hotkey: Win+Alt+Shift+9
-; Original File: ChatGPT - Click last microphone.ahk
-; =============================================================================
-#!+9::
-{
-    SetTitleMatchMode 2
-    winTitle := "chatgpt"
-    WinActivate winTitle
-    WinWaitActive "ahk_exe chrome.exe"
-    CenterMouse()
-    cUIA := UIA_Browser()
-    Sleep 300
-    readNames := ["Read aloud", "Ler em voz alta"]
-    stopNames := ["Stop", "Parar"]
-    buttonClicked := false
-    stopBtns := []
-    for name in stopNames
-        for btn in cUIA.FindAll({ Name: name, Type: "Button" })
-            stopBtns.Push(btn)
-    if stopBtns.Length {
+        ; Currently reading, so stop it
         stopBtns[stopBtns.Length].Click()
         buttonClicked := true
+        actionTaken := "stopped"
     } else {
+        ; Not currently reading, so start reading
         readBtns := []
         for name in readNames
             for btn in cUIA.FindAll({ Name: name, Type: "Button" })
@@ -349,12 +298,23 @@ CopyLastPrompt() {
         if readBtns.Length {
             readBtns[readBtns.Length].Click()
             buttonClicked := true
+            actionTaken := "started"
         } else {
-            MsgBox "Nenhum botão 'Read aloud/Ler em voz alta' ou 'Stop/Parar' encontrado!"
+            MsgBox "No 'Read aloud/Ler em voz alta' button found!"
+            return
         }
     }
-    if (buttonClicked) {
-        Send "!{Tab}"
+
+    ; optional: jump back to previous window
+    Send "!{Tab}"
+
+    if (isCopied && buttonClicked) {
+        Sleep(300) ; give window time to switch
+        if (actionTaken = "started") {
+            ShowNotification("Message copied and reading started!")
+        } else if (actionTaken = "stopped") {
+            ShowNotification("Message copied and reading stopped!")
+        }
     }
 }
 
@@ -372,8 +332,10 @@ CopyLastPrompt() {
 ToggleVoiceMode(triedFallback := false, forceAction := "") {
     static isVoiceModeActive := false
     SetTitleMatchMode 2
-    WinActivate "chatgpt"
-    WinWaitActive "ahk_exe chrome.exe"
+    if hwnd := GetChatGPTWindowHwnd() {
+        WinActivate "ahk_id " hwnd
+        WinWaitActive "ahk_id " hwnd
+    }
     CenterMouse()
     cUIA := UIA_Browser()
     Sleep 300
@@ -434,6 +396,20 @@ FindButtonByNames(cUIA, namesArray) {
     return ""
 }
 
+EnsureMicVolume100() {
+    static lastRunTick := 0
+    if (A_TickCount - lastRunTick < 5000)
+        return
+    lastRunTick := A_TickCount
+    ps1Path := A_ScriptDir "\Set-MicVolume.ps1"
+    cmd := 'powershell.exe -ExecutionPolicy Bypass -File "' ps1Path '" -Level 100'
+    try {
+        RunWait cmd, , "Hide"
+    } catch {
+        ; ignore errors, still debounced
+    }
+}
+
 ; =============================================================================
 ; Toggle Dictation (No Auto-Send)
 ; Hotkey: Win+Alt+Shift+0
@@ -456,6 +432,7 @@ FindButtonByNames(cUIA, namesArray) {
 
 ToggleDictation(autoSend) {
     static isDictating := false
+    global g_transcribeChimePending
 
     ; --- Button Names (EN/PT) ---
     pt_dictateName := "Botão de ditado"
@@ -480,7 +457,8 @@ ToggleDictation(autoSend) {
 
     ; --- Activate Window & UIA ---
     SetTitleMatchMode 2
-    WinActivate "chatgpt"
+    if hwnd := GetChatGPTWindowHwnd()
+        WinActivate "ahk_id " hwnd
     if !WinWaitActive("ahk_exe chrome.exe", , 2)
         return
     CenterMouse()
@@ -492,12 +470,14 @@ ToggleDictation(autoSend) {
     if (action = "start") {
         try {
             if btn := FindButton(cUIA, startNames) {
+                EnsureMicVolume100()
                 btn.Click()
                 isDictating := true
                 ; Switch back to the previous window first so the indicator appears there
                 Send "!{Tab}"
                 Sleep 300    ; ensure the window switch has completed
                 ShowDictationIndicator()
+                g_transcribeChimePending := false
             } else {
                 MsgBox (IS_WORK_ENVIRONMENT ? "Não foi possível iniciar o ditado. Botão 'Iniciar' não encontrado." :
                     "Could not start dictation. 'Start' button not found.")
@@ -508,6 +488,7 @@ ToggleDictation(autoSend) {
     } else if (action = "stop") {
         try {
             if submitBtn := FindButton(cUIA, stopNames) {
+                ;EnsureMicVolume100()
                 submitBtn.Click()
                 isDictating := false
                 HideDictationIndicator()
@@ -515,6 +496,8 @@ ToggleDictation(autoSend) {
 
                 ; --- Wait for transcription to finish (indicator appears over ChatGPT) ---
                 transcribingWaitNames := [currentTranscribingName, currentSubmitName]
+                ; Set a one-time flag so the watcher can emit a distinct chime right before closing
+                g_transcribeChimePending := !autoSend
                 WaitForButtonAndShowSmallLoading(transcribingWaitNames, "Transcribing…")
 
                 if (autoSend) {
@@ -526,7 +509,7 @@ ToggleDictation(autoSend) {
                             finalSendBtn.Click() ; Click instead of sending {Enter}
                             Send "!{Tab}" ; Return to previous window immediately to allow multitasking
                             ; --- Show smaller green loading indicator while ChatGPT is responding ---
-                            WaitForButtonAndShowSmallLoading([currentStopStreamingName], "AI is responding…")
+                            WaitForButtonAndShowSmallLoading([currentStopStreamingName], "AI is responding…", 180000)
                         } else {
                             MsgBox "Timeout: '" . currentSendPromptName . "' button did not appear."
                         }
@@ -632,8 +615,12 @@ WaitForButtonAndShowSmallLoading(buttonNames, stateText := "Loading…", timeout
         return
     }
     start := A_TickCount
+    deadline := start + timeout
     btn := ""
-    while ((A_TickCount - start) < timeout) {
+    indicatorShown := false
+    buttonEverFound := false
+    buttonDisappeared := false
+    while (A_TickCount < deadline) {
         btn := ""
         for n in buttonNames {
             try {
@@ -645,8 +632,12 @@ WaitForButtonAndShowSmallLoading(buttonNames, stateText := "Loading…", timeout
                 break
         }
         if btn {
-            ShowSmallLoadingIndicator(stateText)
-            while btn && ((A_TickCount - start) < timeout) {
+            buttonEverFound := true
+            if (!indicatorShown) {
+                ShowSmallLoadingIndicator(stateText)
+                indicatorShown := true
+            }
+            while btn && (A_TickCount < deadline) {
                 Sleep 250
                 btn := ""
                 for n in buttonNames {
@@ -659,9 +650,26 @@ WaitForButtonAndShowSmallLoading(buttonNames, stateText := "Loading…", timeout
                         break
                 }
             }
+            if !btn
+                buttonDisappeared := true
             break
         }
         Sleep 250
+    }
+    ; Play completion sound only for actual AI responses when we saw the button and it disappeared
+    try {
+        if (buttonEverFound && buttonDisappeared && InStr(StrLower(stateText), "transcrib") = 0)
+            PlayCompletionChime()
+    } catch {
+    }
+    ; If transcription-finished chime is pending, fire only if we observed the transcribing button disappear
+    try {
+        global g_transcribeChimePending
+        if (g_transcribeChimePending && buttonEverFound && buttonDisappeared) {
+            g_transcribeChimePending := false
+            PlayTranscriptionFinishedChime()
+        }
+    } catch {
     }
     HideSmallLoadingIndicator()
 }
@@ -675,9 +683,9 @@ WaitForButtonAndShowSmallLoading(buttonNames, stateText := "Loading…", timeout
     SetTitleMatchMode(2)
     A_Clipboard := "" ; Empty clipboard to check for new content later
 
-    if WinExist("chatgpt") {
-        WinActivate("chatgpt")
-        if WinWaitActive("ahk_exe chrome.exe", , 2)
+    if hwnd := GetChatGPTWindowHwnd() {
+        WinActivate("ahk_id " hwnd)
+        if WinWaitActive("ahk_id " hwnd, , 2)
             CenterMouse()
     } else {
         Run "chrome.exe --new-window https://chatgpt.com/"
@@ -881,7 +889,8 @@ SidebarVisible(uiRoot, names) {
 #!+j::
 {
     SetTitleMatchMode(2)
-    WinActivate("chatgpt")
+    if hwnd := GetChatGPTWindowHwnd()
+        WinActivate("ahk_id " hwnd)
     if WinWaitActive("ahk_exe chrome.exe", , 2) {
         Send("{Esc}")
         Send("F")
@@ -943,4 +952,75 @@ RecenterLoadingOverWindow(hwnd) {
     gx := wx + (ww - gw) / 2
     gy := wy + (wh - gh) / 2
     loadingGui.Show("x" . Round(gx) . " y" . Round(gy) . " NA")
+}
+
+; =============================================================================
+; Completion chime (single beep, debounced)
+; =============================================================================
+PlayCompletionChime() {
+    try {
+        static lastTick := 0
+        if (A_TickCount - lastTick < 1500)
+            return
+        lastTick := A_TickCount
+
+        played := false
+        ; Prefer Windows MessageBeep (reliable through default output)
+        try {
+            rc := DllCall("User32\\MessageBeep", "UInt", 0xFFFFFFFF)
+            if (rc)
+                played := true
+        } catch {
+        }
+
+        ; Fallback to system asterisk sound
+        if !played {
+            try {
+                played := SoundPlay("*64", false)
+            } catch {
+            }
+        }
+
+        ; Last resort, attempt the classic beep
+        if !played {
+            try SoundBeep(1100, 130)
+            catch {
+            }
+        }
+    } catch {
+    }
+}
+
+PlayTranscriptionFinishedChime() {
+    try {
+        static lastTick := 0
+        if (A_TickCount - lastTick < 2000)
+            return
+        lastTick := A_TickCount
+
+        played := false
+        ; Prefer a distinct Windows MessageBeep variant (warning icon)
+        try {
+            rc := DllCall("User32\\MessageBeep", "UInt", 0x00000030)
+            if (rc)
+                played := true
+        } catch {
+        }
+
+        ; Fallback to system exclamation sound
+        if !played {
+            try {
+                played := SoundPlay("*48", false)
+            } catch {
+            }
+        }
+
+        ; Last resort, a short, higher-pitched beep
+        if !played {
+            try SoundBeep(1400, 90)
+            catch {
+            }
+        }
+    } catch {
+    }
 }
