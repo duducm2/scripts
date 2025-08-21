@@ -52,8 +52,10 @@ SendSymbol(sym) {
 cheatSheets := Map()
 
 ;---------------------------------------- Shift + keys ----------------------------------------------
+; ----- Assignment policy: use Shift + <key> first. When all Shift slots in the sequence are consumed, continue with Ctrl + Alt + <key> in the same order.
 ; ----- You can have repeated keys, depending on the software.
-; ----- Prefered Keys sequences (most important first): Y U I O P H J K L N M , . W E R T D F G C V B
+; ----- Preferred key sequence (most important first): Y U I O P H J K L N M , . W E R T D F G C V B
+; ----- Ctrl + Alt sequence (fallback, same order):    Y U I O P H J K L N M , . W E R T D F G C V B
 
 ; --- WhatsApp desktop -------------------------------------------------------
 cheatSheets["WhatsApp"] := "
@@ -196,7 +198,8 @@ Shift+G  →  Switch AI models (auto/CLAUD/GPT/O/DeepSeek/Cursor)
 Shift+C  →  Switch AI modes (agent/ask)
 Shift+V  →  Fold Git repos (SCM)
 Shift+B  →  Create AI commit message, then select Commit or Commit and Push
-
+Shift+N  →  Expand selection
+Ctrl + Alt + Y  →  Select to Bracket
 --- Additional Shortcuts ---
 Ctrl + T  →  New chat tab
 Ctrl + N  →  New chat tab (replacing current)
@@ -253,6 +256,7 @@ Shift+G  →  Switch AI models (auto/CLAUD/GPT/O/DeepSeek/Cursor)
 Shift+C  →  Switch AI modes (agent/ask)
 Shift+V  →  Fold Git repos (SCM)
 Shift+B  →  Create AI commit message, then select Commit or Commit and Push
+Shift+N  →  Expand selection
 
 --- Additional Shortcuts ---
 Alt + F12  →  Peek Definition
@@ -280,6 +284,7 @@ Ctrl + Shift + D  →  Debugging
 Ctrl + R  →  Quick project switch
 Alt + J  →  Next review
 Alt + K  →  Previous review
+Ctrl + Alt + Y  →  Select to Bracket
 )"  ; end VS Code
 
 ; --- Windows Explorer ------------------------------------------------------
@@ -2167,7 +2172,26 @@ IsEditorActive() {
     Send "{Up 2}"
 }
 
-; Ne code
+; Ctrl + Alt + Y : Select to Bracket (via Command Palette)
+^!y::
+{
+    oldClip := A_Clipboard
+    try {
+        A_Clipboard := ""
+        A_Clipboard := "select to bracket"
+        ClipWait 0.5
+        Send "^+p"
+        Sleep 300
+        Send "^v"
+        Sleep 150
+        Send "{Enter}"
+    } finally {
+        A_Clipboard := oldClip
+    }
+}
+
+; Shift + N : Expand selection (via Command Palette)
++n:: Send "+!{Right}"
 
 #HotIf
 
