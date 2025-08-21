@@ -17,9 +17,10 @@ if (IS_WORK_ENVIRONMENT) {
     Run "C:\Users\fie7ca\Documents\Caffeine\caffeine64.exe"
     Run "C:\Users\fie7ca\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\apps do Chrome\Mobills"
     Run "C:\Users\fie7ca\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\apps do Chrome\Gmail"
-    Run "c:\Users\fie7ca\Documents\Settle Up.lnk"
-    Run "c:\ProgramData\Microsoft\Windows\Start Menu\Programs\OneNote.lnk"
-    Run "cc:\Users\fie7ca\Documents\Atalhos\Microsoft Teams - Shortcut.lnk"
+    Run "C:\Users\fie7ca\Documents\Settle Up.lnk"
+    Run "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\OneNote.lnk"
+    Run "C:\Users\fie7ca\Documents\Atalhos\Microsoft Teams - Shortcut.lnk"
+    Run "https://keep.google.com/u/0/#NOTE/1YCVkrriqNRyRhRyz1PV0gJ9Eor66ARhb1i9uLpvXTZ2j79nDScAUOIK4pBAMwHY"
     Run GetScriptPath("Microsoft Teams.ahk")
     Run GetScriptPath("Outlook.ahk")
 } else {
