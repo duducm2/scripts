@@ -200,6 +200,7 @@ Shift+V  →  Fold Git repos (SCM)
 Shift+B  →  Create AI commit message, then select Commit or Commit and Push
 Shift+N  →  Expand selection
 Ctrl + Alt + Y  →  Select to Bracket
+
 --- Additional Shortcuts ---
 Ctrl + T  →  New chat tab
 Ctrl + N  →  New chat tab (replacing current)
@@ -257,6 +258,7 @@ Shift+C  →  Switch AI modes (agent/ask)
 Shift+V  →  Fold Git repos (SCM)
 Shift+B  →  Create AI commit message, then select Commit or Commit and Push
 Shift+N  →  Expand selection
+Ctrl + Alt + Y  →  Select to Bracket
 
 --- Additional Shortcuts ---
 Alt + F12  →  Peek Definition
