@@ -13,13 +13,11 @@ Run GetScriptPath("Utils.ahk")
 
 if (IS_WORK_ENVIRONMENT) {
 
-    Run "C:\Users\fie7ca\Documents\HuntAndPack\hap.exe"
-    Run "C:\Users\fie7ca\Documents\Caffeine\caffeine64.exe"
-    Run "C:\Users\fie7ca\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\apps do Chrome\Mobills"
-    Run "C:\Users\fie7ca\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\apps do Chrome\Gmail"
-    Run "C:\Users\fie7ca\Documents\Settle Up.lnk"
+    Run "C:\Users\fie7ca\Documents\HuntAndPeck\HuntAndPeck-1.7\hap.exe"
+    Run "C:\Users\fie7ca\Documents\Shortcuts\Mobills.lnk"
+    Run "C:\Users\fie7ca\Documents\Shortcuts\Gmail.lnk"
+    Run "C:\Users\fie7ca\Documents\Shortcuts\Settle Up.lnk"
     Run "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\OneNote.lnk"
-    Run "C:\Users\fie7ca\Documents\Atalhos\Microsoft Teams - Shortcut.lnk"
     Run "https://keep.google.com/u/0/#NOTE/1YCVkrriqNRyRhRyz1PV0gJ9Eor66ARhb1i9uLpvXTZ2j79nDScAUOIK4pBAMwHY"
     Run GetScriptPath("Microsoft Teams.ahk")
     Run GetScriptPath("Outlook.ahk")
