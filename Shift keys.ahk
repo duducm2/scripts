@@ -1227,24 +1227,45 @@ IsTeamsChatActive() {
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "Wikipedia", false)
 
-; Shift + Y: Toggle the search button (Type 50005 Link, Name "Search")
+; Shift + Y: Focus the Wikipedia search field (Type 50004 Edit)
 +y::
 {
     try {
         uia := UIA_Browser("ahk_exe chrome.exe")
         Sleep 300 ; Give UIA time to attach
 
-        ; Find the search link by Type and Name
-        searchLink := uia.FindElement({ Type: 50005, Name: "Search" })
-        if (!searchLink) {
-            ; Fallback: try by Name only, in case Type is not exposed
-            searchLink := uia.FindElement({ Name: "Search" })
-        }
+        ; Prefer searching within the current document/content element
+        doc := uia.GetCurrentDocumentElement()
 
-        if (searchLink) {
-            searchLink.Click()
+        ; Try multiple robust selectors in order of specificity
+        ; 1) Known AutomationId
+        searchEdit := doc.FindElement({ Type: 50004, AutomationId: "searchInput" })
+
+        ; 2) Name contains "search" (case-insensitive)
+        if (!searchEdit)
+            searchEdit := doc.FindElement({ Type: 50004, Name: "search", mm: 2, cs: false })
+
+        ; 3) ClassName contains "search"
+        if (!searchEdit)
+            searchEdit := doc.FindElement({ Type: 50004, ClassName: "search", mm: 2, cs: false })
+
+        ; 4) HelpText/Placeholder contains "search"
+        if (!searchEdit)
+            searchEdit := doc.FindElement({ Type: 50004, HelpText: "search", mm: 2, cs: false })
+
+        ; 5) AcceleratorKey matches (e.g., Alt+f)
+        if (!searchEdit)
+            searchEdit := doc.FindElement({ Type: 50004, AcceleratorKey: "Alt+f" })
+
+        if (searchEdit) {
+            try {
+                searchEdit.SetFocus()
+            } catch {
+                ; Fallback to click if SetFocus isn't supported
+                searchEdit.Click()
+            }
         } else {
-            MsgBox "Could not find the Wikipedia search link (Type 50005, Name 'Search')."
+            MsgBox "Could not find a Wikipedia search field (Type 50004 Edit with 'search')."
         }
     }
     catch Error as e {
