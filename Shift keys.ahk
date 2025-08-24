@@ -1227,45 +1227,60 @@ IsTeamsChatActive() {
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "Wikipedia", false)
 
-; Shift + Y: Focus the Wikipedia search field (Type 50004 Edit)
+; Shift + Y: Focus the Wikipedia search field (Type 50003 ComboBox)
 +y::
 {
     try {
         uia := UIA_Browser("ahk_exe chrome.exe")
-        Sleep 300 ; Give UIA time to attach
+        Sleep 200 ; Give UIA time to attach
 
-        ; Prefer searching within the current document/content element
-        doc := uia.GetCurrentDocumentElement()
+        ; Prefer document; fall back to browser root
+        try {
+            root := uia.GetCurrentDocumentElement()
+        } catch {
+            root := uia.BrowserElement
+        }
 
-        ; Try multiple robust selectors in order of specificity
-        ; 1) Known AutomationId
-        searchEdit := doc.FindElement({ Type: 50004, AutomationId: "searchInput" })
+        searchBox := 0
 
-        ; 2) Name contains "search" (case-insensitive)
-        if (!searchEdit)
-            searchEdit := doc.FindElement({ Type: 50004, Name: "search", mm: 2, cs: false })
-
-        ; 3) ClassName contains "search"
-        if (!searchEdit)
-            searchEdit := doc.FindElement({ Type: 50004, ClassName: "search", mm: 2, cs: false })
-
-        ; 4) HelpText/Placeholder contains "search"
-        if (!searchEdit)
-            searchEdit := doc.FindElement({ Type: 50004, HelpText: "search", mm: 2, cs: false })
-
-        ; 5) AcceleratorKey matches (e.g., Alt+f)
-        if (!searchEdit)
-            searchEdit := doc.FindElement({ Type: 50004, AcceleratorKey: "Alt+f" })
-
-        if (searchEdit) {
+        ; Simple, attribute-driven matching
+        try {
+            searchBox := root.FindElement({ Type: 50003, Name: "Search Wikipedia" })
+        } catch {
+        }
+        if (!searchBox) {
             try {
-                searchEdit.SetFocus()
+                searchBox := root.FindElement({ Type: 50003, AcceleratorKey: "Alt+f" })
             } catch {
-                ; Fallback to click if SetFocus isn't supported
-                searchEdit.Click()
+            }
+        }
+        if (!searchBox) {
+            try {
+                searchBox := root.FindElement({ Type: 50003, ClassName: "cdx-text-input__input" })
+            } catch {
+            }
+        }
+        if (!searchBox) {
+            try {
+                searchBox := root.FindElement({ Type: 50003, Name: "Search", mm: 2, cs: false })
+            } catch {
+            }
+        }
+
+        if (searchBox) {
+            try {
+                searchBox.SetFocus()
+            } catch {
+                searchBox.Click()
             }
         } else {
-            MsgBox "Could not find a Wikipedia search field (Type 50004 Edit with 'search')."
+            ; Final fallback: use the accelerator key
+            try {
+                uia.ControlSend("!f")
+                return
+            } catch {
+            }
+            MsgBox "Could not find the 'Search Wikipedia' field."
         }
     }
     catch Error as e {
