@@ -15,7 +15,6 @@ if (IS_WORK_ENVIRONMENT) {
 
     Run "C:\Users\fie7ca\Documents\HuntAndPeck\HuntAndPeck-1.7\hap.exe"
     Run "C:\Users\fie7ca\Documents\Shortcuts\Mobills.lnk"
-    Run "C:\Users\fie7ca\Documents\Shortcuts\Gmail.lnk"
     Run "C:\Users\fie7ca\Documents\Shortcuts\Settle Up.lnk"
     Run "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\OneNote.lnk"
     Run "https://keep.google.com/u/0/#NOTE/1YCVkrriqNRyRhRyz1PV0gJ9Eor66ARhb1i9uLpvXTZ2j79nDScAUOIK4pBAMwHY"
@@ -31,6 +30,9 @@ if (IS_WORK_ENVIRONMENT) {
 }
 
 Sleep 10000
+
+; Run gmail
+Send "#!+w"
 
 ; Run #!+i for both environments
 Send "#!+i"
