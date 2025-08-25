@@ -2174,10 +2174,7 @@ EnsureItemsViewFocus() {
 ;  Detect which editor is active
 ;-----------------------------------------
 IsEditorActive() {
-    global IS_WORK_ENVIRONMENT
-    return IS_WORK_ENVIRONMENT
-        ? WinActive("ahk_exe Code.exe")       ; Visual Studio Code
-            : WinActive("ahk_exe Cursor.exe")     ; Cursor (VS Code-based)
+    return WinActive("ahk_exe Code.exe") || WinActive("ahk_exe Cursor.exe")
 }
 
 ;-------------------------------------------------------------------
