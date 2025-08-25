@@ -1274,6 +1274,65 @@ IsTeamsChatActive() {
                 searchBox.Click()
             }
         } else {
+            ; Try focusing the profile link, Shift+Tab to Search, then activate
+            profileLink := 0
+            try {
+                profileLink := root.FindElement({ Type: 50005, Name: "Duducm2", cs: false })
+            } catch {
+            }
+            if (!profileLink) {
+                try {
+                    profileLink := root.FindElement({ Type: 50005, Name: "doodoocm2", cs: false })
+                } catch {
+                }
+            }
+            if (!profileLink) {
+                try {
+                    profileLink := root.FindElement({ ControlType: "Hyperlink", Name: "Duducm2", cs: false })
+                } catch {
+                }
+            }
+
+            if (profileLink) {
+                try {
+                    profileLink.SetFocus()
+                    Sleep 100
+                    uia.ControlSend("+{Tab}")
+                    Sleep 120
+                    uia.ControlSend("{Enter}")
+                    Sleep 150
+                } catch {
+                }
+
+                ; Retry locating the search field after activating Search
+                try {
+                    searchBox := root.FindElement({ Type: 50003, Name: "Search Wikipedia" })
+                } catch {
+                }
+                if (!searchBox) {
+                    try {
+                        searchBox := root.FindElement({ Type: 50003, ClassName: "cdx-text-input__input" })
+                    } catch {
+                    }
+                }
+                if (!searchBox) {
+                    try {
+                        searchBox := root.FindElement({ Type: 50003, Name: "Search", mm: 2, cs: false })
+                    } catch {
+                    }
+                }
+
+                if (searchBox) {
+                    try {
+                        searchBox.SetFocus()
+                    } catch {
+                        searchBox.Click()
+                    }
+                    return
+                }
+            }
+            ; Removed UIA click on Search button per request
+
             ; Final fallback: use the accelerator key
             try {
                 uia.ControlSend("!f")
