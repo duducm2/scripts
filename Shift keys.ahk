@@ -231,63 +231,6 @@ Alt + J  →  Next review
 Alt + K  →  Previous review
 )"  ; end Cursor
 
-; --- VS Code ------------------------------------------------------
-cheatSheets["Code.exe"] := "
-(
-VS Code
-Shift+Y  →  Fold
-Shift+U  →  Unfold
-Shift+I  →  Fold all
-Shift+O  →  Unfold all
-Shift+P  →  Go to terminal
-Shift+H  →  New terminal
-Shift+J  →  Go to file explorer
-Shift+K  →  Format code
-Shift+L  →  Command palette
-Shift+M  →  Change project
-Shift+,  →  Show chat history
-Shift+.  →  Extensions
-Shift+W  →  Switch brackets
-Shift+E  →  Search
-Shift+R  →  Save all documents
-Shift+T  →  Change ML model
-Shift+D  →  Git section
-Shift+F  →  Close all editors
-Shift+G  →  Switch AI models (auto/CLAUD/GPT/O/DeepSeek/Cursor)
-Shift+C  →  Switch AI modes (agent/ask)
-Shift+V  →  Fold Git repos (SCM)
-Shift+B  →  Create AI commit message, then select Commit or Commit and Push
-Shift+N  →  Expand selection
-Ctrl + Alt + Y  →  Select to Bracket
-
---- Additional Shortcuts ---
-Alt + F12  →  Peek Definition
-Ctrl + D  →  Select next identical word
-Ctrl + Shift + L  →  Select all identical words
-F2  →  Rename symbol
-F8  →  Navigate problems
-Ctrl + Enter  →  Insert line below
-Ctrl + P  →  Quick Open
-Shift + Delete  →  Delete line
-Alt + ↑  →  Move line up
-Alt + ↓  →  Move line down
-Ctrl + 1 / Ctrl + 2 / Ctrl + 3 ...  →  Switch tabs
-Ctrl + N  →  New file
-Ctrl + Alt + ↑  →  Add cursor above
-Ctrl + Alt + ↓  →  Add cursor below
-Alt + Click  →  Multi-cursor by click
-Shift + Alt + ↑  →  Copy line up
-Shift + Alt + ↓  →  Copy line down
-Ctrl + ;  →  Insert comment
-Ctrl + Home  →  Go to top
-Ctrl + End  →  Go to end
-Alt + Z  →  Toggle word wrap
-Ctrl + Shift + D  →  Debugging
-Ctrl + R  →  Quick project switch
-Alt + J  →  Next review
-Alt + K  →  Previous review
-Ctrl + Alt + Y  →  Select to Bracket
-)"  ; end VS Code
 
 ; --- Windows Explorer ------------------------------------------------------
 cheatSheets["explorer.exe"] := "
@@ -2174,11 +2117,11 @@ EnsureItemsViewFocus() {
 ;  Detect which editor is active
 ;-----------------------------------------
 IsEditorActive() {
-    return WinActive("ahk_exe Code.exe") || WinActive("ahk_exe Cursor.exe")
+    return WinActive("ahk_exe Cursor.exe")
 }
 
 ;-------------------------------------------------------------------
-; Cursor / VS Code Shortcuts
+; Cursor Shortcuts
 ;-------------------------------------------------------------------
 #HotIf IsEditorActive()
 
@@ -2282,7 +2225,7 @@ IsEditorActive() {
 ; Shift + C : Switch between AI modes (agent/ask)
 +c:: SwitchAIMode()
 
-; Shift + V : Fold all Git directories in Source Control (Cursor/VS Code)
+; Shift + V : Fold all Git directories in Source Control (Cursor)
 +v:: FoldAllGitDirectoriesInCursor()
 
 ; Shift + B : Create AI commit message, then select Commit or Commit and Push
@@ -2322,7 +2265,7 @@ IsEditorActive() {
 #HotIf
 
 ;-------------------------------------------------------------------
-; AI Mode and Model Switching Functions for Cursor/VS Code
+; AI Mode and Model Switching Functions for Cursor
 ;-------------------------------------------------------------------
 
 ; Fold all Git directories in the Source Control view by collapsing each Git tree root
