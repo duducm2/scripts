@@ -415,6 +415,12 @@ GetCheatSheetText() {
 
     ; (removed temporary tooltip debugging)
 
+    ; Prefer Outlook Reminders over generic File Dialog detection
+    if (exe = "OUTLOOK.EXE") {
+        if RegExMatch(title, "i)Reminder")
+            return cheatSheets.Has("OutlookReminder") ? cheatSheets["OutlookReminder"] : ""
+    }
+
     ; Check for file dialog first (works in any app)
     if WinGetClass("ahk_id " hwnd) = "#32770" {
         txt := WinGetText("ahk_id " hwnd)
@@ -3551,6 +3557,16 @@ IsFileDialogActive() {
     winClass := WinGetClass("ahk_id " hwnd)
     if winClass != "#32770" {
         return false
+    }
+
+    ; Exclude Outlook Reminders which can share dialog-like traits
+    try {
+        if (WinGetProcessName("ahk_id " hwnd) = "OUTLOOK.EXE") {
+            t := WinGetTitle("ahk_id " hwnd)
+            if RegExMatch(t, "i)Reminder")
+                return false
+        }
+    } catch Error {
     }
 
     try {
