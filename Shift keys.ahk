@@ -77,12 +77,7 @@ cheatSheets["OUTLOOK.EXE"] := "
 Outlook
 Shift+Y  →  Send to General
 Shift+U  →  Send to Newsletter
-Shift+H  →  Subject / Title
-Shift+J  →  Required / To
-Shift+K  →  Date Picker
-Shift+L  →  Subject → Body
 Shift+N  →  Focused / Other
-Shift+M  →  Make Recurring → Tab
 )"  ; end Outlook
 
 ; --- Outlook Reminder window -------------------------------------------------
@@ -106,6 +101,16 @@ Shift+K  →  Date Picker
 Shift+L  →  Location → Body
 Shift+M  →  Make Recurring → Tab
 )"  ; end Outlook Appointment
+
+; --- Outlook Message window ---------------------------------------------------
+cheatSheets["OutlookMessage"] := "
+(
+Outlook – Message
+Shift+Y  →  Subject / Title
+Shift+U  →  Required / To
+Shift+I  →  Date Picker
+Shift+L  →  Subject → Body
+)"  ; end Outlook Message
 
 ; --- Microsoft Teams – meeting window --------------------------------------
 cheatSheets["TeamsMeeting"] := "
@@ -487,6 +492,10 @@ GetCheatSheetText() {
         ; Detect Reminders window – e.g. "3 Reminder(s)" or any title containing "Reminder"
         if RegExMatch(title, "i)Reminder") {
             return cheatSheets.Has("OutlookReminder") ? cheatSheets["OutlookReminder"] : cheatSheets["OUTLOOK.EXE"]
+        }
+        ; Detect Message inspector windows – e.g., " - Message (HTML)"
+        if RegExMatch(title, "i) - Message \(") {
+            return cheatSheets.Has("OutlookMessage") ? cheatSheets["OutlookMessage"] : cheatSheets["OUTLOOK.EXE"]
         }
         ; Detect Appointment or Meeting inspector windows
         if RegExMatch(title, "i)(Appointment|Meeting)") {
@@ -1400,7 +1409,38 @@ IsTeamsChatActive() {
 ;-------------------------------------------------------------------
 ; Outlook Shortcuts
 ;-------------------------------------------------------------------
-#HotIf WinActive("ahk_exe OUTLOOK.EXE")
+
+; Helper predicates for Outlook window types
+IsOutlookMessageActive() {
+    return WinActive("ahk_exe OUTLOOK.EXE")
+        && RegExMatch(WinGetTitle("A"), "i) - Message \(")
+}
+
+IsOutlookAppointmentActive() {
+    return WinActive("ahk_exe OUTLOOK.EXE")
+        && RegExMatch(WinGetTitle("A"), "i)(Appointment|Meeting)")
+}
+
+IsOutlookReminderActive() {
+    return WinActive("ahk_exe OUTLOOK.EXE")
+        && RegExMatch(WinGetTitle("A"), "i)Reminder")
+}
+
+IsOutlookMainActive() {
+    if !WinActive("ahk_exe OUTLOOK.EXE")
+        return false
+    t := WinGetTitle("A")
+    ; Exclude inspectors and reminders
+    if RegExMatch(t, "i) - Message \(")
+        return false
+    if RegExMatch(t, "i)(Appointment|Meeting)")
+        return false
+    if RegExMatch(t, "i)Reminder")
+        return false
+    return true
+}
+
+#HotIf IsOutlookMainActive()
 
 ; Shift + U : Send to general
 +Y::
@@ -1412,7 +1452,7 @@ IsTeamsChatActive() {
     Send "{Enter}"
 }
 
-; Shift + I : Send to newsletter
+; Shift + U : Send to newsletter
 +U::
 {
     Send "!5"
@@ -1422,44 +1462,7 @@ IsTeamsChatActive() {
     Send "{Enter}"
 }
 
-; Shift + H: Copy last code block
-+I:: Send("?")
-
-; Shift + L  →  focus Subject (e-mail) or Location (appointment) and Tab to body
-+L::
-{
-    hwnd := WinActive("ahk_class rctrl_renwnd32 ahk_exe OUTLOOK.EXE")
-    if !hwnd
-        return                                    ; no inspector on top
-
-    ui := UIA.ElementFromHandle(hwnd)
-
-    ; helper that returns the element or blank (instead of throwing)
-    safeFind(condObj) {
-        try return ui.FindFirst(condObj)
-        catch
-            return ""
-    }
-
-    ; 1) e-mail Subject field  (AutomationId 4101)
-    target := safeFind({ AutomationId: "4101" })
-
-    ; 2) appointment Location field  (AutomationId 4111)
-    if (!target)
-        target := safeFind({ AutomationId: "4111" })
-
-    ; 3) fallback - any writable edit nearest the top (first Edit under Ribbon)
-    if (!target)
-        target := safeFind({ ControlType: "Edit", IsReadOnly: 0 })
-
-    if (target) {
-        target.SetFocus()
-        Sleep 50           ; small pause for reliability
-        Send "{Tab}"       ; jump into the body
-    } else {
-        Send "{F6}{F6}"    ; last-resort Outlook cycle
-    }
-}
+; (Main window has no inspector navigation hotkeys)
 
 +N:: {                                  ; toggle Focused / Other
     static nextOutlookButton := "Other"
@@ -1588,48 +1591,105 @@ SelectExplorerSidebarFirstPinned() {
     return false
 }
 
-; -------------------------------------------------------------------
-; New shortcuts
-;   Shift + J  → Title field
-;   Shift + K  → Required (To…) field
-;   Shift + L  → Date Picker button
-; -------------------------------------------------------------------
+; Message inspector-specific hotkeys (Subject/To/DatePicker/Body)
+#HotIf IsOutlookMessageActive()
 
-+H:: {                                    ; go to Title or Subject
-    if FocusOutlookField({ AutomationId: "4100" })
-        return
-    if FocusOutlookField({ Name: "Title", ControlType: "Edit" })
-        return
-    ; fallback to Subject
-    if FocusOutlookField({ AutomationId: "4101" })
+; Shift + Y → Subject
++Y:: {
+    if FocusOutlookField({ AutomationId: "4101" }) ; Subject
         return
     if FocusOutlookField({ Name: "Subject", ControlType: "Edit" })
         return
-    MsgBox "Couldn't find the Title or Subject field.", "Control not found", "IconX"
 }
 
-+J:: {                                    ; go to Required or To
-    if FocusOutlookField({ AutomationId: "4109" })
+; Shift + U → Required / To
++U:: {
+    if FocusOutlookField({ AutomationId: "4109" }) ; Required
         return
     if FocusOutlookField({ Name: "Required", ControlType: "Edit" })
         return
-    ; fallback to To
-    if FocusOutlookField({ AutomationId: "4117" })
+    if FocusOutlookField({ AutomationId: "4117" }) ; To
         return
     if FocusOutlookField({ Name: "To", ControlType: "Edit" })
         return
-    MsgBox "Couldn't find the Required or To field.", "Control not found", "IconX"
 }
 
-+K:: {                                    ; go to Date Picker
+; Shift + I → Date Picker (if present in this inspector)
++I:: {
     if FocusOutlookField({ AutomationId: "4352" })
         return
     if FocusOutlookField({ Name: "Date Picker", ControlType: "Button" })
         return
-    MsgBox "Couldn't find the Date Picker.", "Control not found", "IconX"
 }
 
-+M:: {  ; Shift + M → focus the "Make Recurring" button, then press Tab once
+; Shift + L → Subject → Body
++L:: {
+    if FocusOutlookField({ AutomationId: "4101" }) {
+        Sleep 50
+        Send "{Tab}"
+        return
+    }
+    if FocusOutlookField({ Name: "Subject", ControlType: "Edit" }) {
+        Sleep 50
+        Send "{Tab}"
+        return
+    }
+}
+
+#HotIf
+
+; Appointment/Meeting inspector-specific hotkeys
+#HotIf IsOutlookAppointmentActive()
+
+; Shift + H → Title
++H:: {
+    if FocusOutlookField({ AutomationId: "4100" })
+        return
+    if FocusOutlookField({ Name: "Title", ControlType: "Edit" })
+        return
+    ; fallback to Subject if Title not found
+    if FocusOutlookField({ AutomationId: "4101" })
+        return
+    if FocusOutlookField({ Name: "Subject", ControlType: "Edit" })
+        return
+}
+
+; Shift + J → Required / To
++J:: {
+    if FocusOutlookField({ AutomationId: "4109" })
+        return
+    if FocusOutlookField({ Name: "Required", ControlType: "Edit" })
+        return
+    if FocusOutlookField({ AutomationId: "4117" })
+        return
+    if FocusOutlookField({ Name: "To", ControlType: "Edit" })
+        return
+}
+
+; Shift + K → Date Picker
++K:: {
+    if FocusOutlookField({ AutomationId: "4352" })
+        return
+    if FocusOutlookField({ Name: "Date Picker", ControlType: "Button" })
+        return
+}
+
+; Shift + L → Location → Body
++L:: {
+    if FocusOutlookField({ AutomationId: "4111" }) { ; Location
+        Sleep 100
+        Send "{Tab}"
+        return
+    }
+    if FocusOutlookField({ Name: "Location", ControlType: "Edit" }) {
+        Sleep 100
+        Send "{Tab}"
+        return
+    }
+}
+
+; Shift + M → Make Recurring → Tab
++M:: {
     try {
         win := WinExist("A")
         root := UIA.ElementFromHandle(win)
