@@ -108,7 +108,6 @@ cheatSheets["OutlookMessage"] := "
 Outlook – Message
 Shift+Y  →  Subject / Title
 Shift+U  →  Required / To
-Shift+I  →  Date Picker
 Shift+L  →  Subject → Body
 )"  ; end Outlook Message
 
@@ -1621,12 +1620,7 @@ SelectExplorerSidebarFirstPinned() {
 }
 
 ; Shift + I → Date Picker (if present in this inspector)
-+I:: {
-    if FocusOutlookField({ AutomationId: "4352" })
-        return
-    if FocusOutlookField({ Name: "Date Picker", ControlType: "Button" })
-        return
-}
+; (No Shift + I in Message inspector)
 
 ; Shift + L → Subject → Body
 +L:: {
