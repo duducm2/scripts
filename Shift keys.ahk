@@ -7,9 +7,7 @@
  *   AVAILABLE WIN+ALT+SHIFT COMBINATIONS
  *   The following combinations are not currently in use:
  *   • C - Available
- *   • K - Available
  *   • 1 - Available
- *   • , - Available
  *   • 9 - Available
  ********************************************************************/
 
@@ -234,7 +232,6 @@ Ctrl + R  →  Quick project switch
 Alt + J  →  Next review
 Alt + K  →  Previous review
 )"  ; end Cursor
-
 
 ; --- Windows Explorer ------------------------------------------------------
 cheatSheets["explorer.exe"] := "
@@ -633,6 +630,9 @@ Win+Alt+Shift+F  →  Opens Google
 
 === GMAIL ===
 Win+Alt+Shift+W  →  Opens Gmail
+
+=== CURSOR ===
+Win+Alt+Shift+,  →  Opens or activates Cursor
 
 === OUTLOOK ===
 Win+Alt+Shift+B  →  Open mail
@@ -1418,17 +1418,17 @@ IsTeamsChatActive() {
 ; Helper predicates for Outlook window types
 IsOutlookMessageActive() {
     return WinActive("ahk_exe OUTLOOK.EXE")
-        && RegExMatch(WinGetTitle("A"), "i) - Message \(")
+    && RegExMatch(WinGetTitle("A"), "i) - Message \(")
 }
 
 IsOutlookAppointmentActive() {
     return WinActive("ahk_exe OUTLOOK.EXE")
-        && RegExMatch(WinGetTitle("A"), "i)(Appointment|Meeting)")
+    && RegExMatch(WinGetTitle("A"), "i)(Appointment|Meeting)")
 }
 
 IsOutlookReminderActive() {
     return WinActive("ahk_exe OUTLOOK.EXE")
-        && RegExMatch(WinGetTitle("A"), "i)Reminder")
+    && RegExMatch(WinGetTitle("A"), "i)Reminder")
 }
 
 IsOutlookMainActive() {
