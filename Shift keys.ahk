@@ -119,15 +119,15 @@ Shift+U  →  Maximize meeting window
 cheatSheets["TeamsChat"] := "
 (
 Teams
-Shift+K  →  Pin chat
-Shift+J  →  Mark unread
 Shift+Y  →  Like
 Shift+U  →  Heart
 Shift+I  →  Laugh
-Shift+L  →  Remove pin
-Shift+R  →  Reply
-Shift+E  →  Edit message
 Shift+O  →  Home panel
+Shift+J  →  Mark unread
+Shift+K  →  Pin chat
+Shift+L  →  Remove pin
+Shift+E  →  Edit message
+Shift+R  →  Reply
 )"  ; end TeamsChat
 
 ; --- Spotify ---------------------------------------------------------------
@@ -185,6 +185,7 @@ Shift+H  →  New terminal
 Shift+J  →  Go to file explorer
 Shift+K  →  Format code
 Shift+L  →  Command palette
+Shift+N  →  Expand selection
 Shift+M  →  Change project
 Shift+,  →  Show chat history
 Shift+.  →  Extensions
@@ -198,7 +199,6 @@ Shift+G  →  Switch AI models (auto/CLAUD/GPT/O/DeepSeek/Cursor)
 Shift+C  →  Switch AI modes (agent/ask)
 Shift+V  →  Fold Git repos (SCM)
 Shift+B  →  Create AI commit message, then select Commit or Commit and Push
-Shift+N  →  Expand selection
 Ctrl + Alt + Y  →  Select to Bracket
 
 --- Additional Shortcuts ---
@@ -304,13 +304,13 @@ Shift+N  →  Copy as PNG
 Shift+M  →  Actions...
 Shift+,  →  Align left
 Shift+.  →  Align right
+Shift+W  →  Distribute vertical spacing
+Shift+E  →  Tidy up
 Shift+R  →  Align top
 Shift+T  →  Align bottom
 Shift+D  →  Align center horizontal
 Shift+F  →  Align center vertical
 Shift+G  →  Distribute horizontal spacing
-Shift+W  →  Distribute vertical spacing
-Shift+E  →  Tidy up
 )"  ; end Figma
 
 ; --- Gmail ---------------------------------------------------------------
