@@ -300,6 +300,43 @@ GetMicrophoneState(hwndTeams, maxRetries := 3) {
     return "unknown"
 }
 
+; --- Camera state verification ---
+GetCameraState(hwndTeams, maxRetries := 3) {
+    ; Returns: "on", "off", or "unknown"
+    Loop maxRetries {
+        try {
+            root := UIA.ElementFromHandle(hwndTeams)
+            if !root {
+                if A_Index < maxRetries
+                    Sleep 150
+                continue
+            }
+            camBtn := root.FindFirst(UIA.CreateCondition({ AutomationId: "video-button" }))
+            if camBtn {
+                ; Prefer ToggleState when available
+                try {
+                    state := camBtn.ToggleState  ; 0=Off, 1=On, 2=Indeterminate
+                    if (state = UIA.ToggleState.On)
+                        return "on"
+                    if (state = UIA.ToggleState.Off)
+                        return "off"
+                }
+                ; Fallback: infer from Name (action-based text)
+                try name := camBtn.Name
+                if name {
+                    if InStr(name, "Desativar câmera") ; "Disable camera" => currently on
+                        return "on"
+                    if InStr(name, "Ativar câmera")    ; "Enable camera" => currently off
+                        return "off"
+                }
+            }
+        }
+        if A_Index < maxRetries
+            Sleep 200
+    }
+    return "unknown"
+}
+
 ; =============================================================================
 ; Meeting: Toggle Mute
 ; Hotkey: Win+Alt+Shift+5
@@ -350,12 +387,38 @@ GetMicrophoneState(hwndTeams, maxRetries := 3) {
 ; =============================================================================
 #!+4:: {
     prev := WinGetID("A")
-    if ActivateTeamsMeetingWindow() {
-        Send "^+o"
-        Sleep 100
-        WinActivate(prev)
-        ShowCenteredOverlay(prev, "CAMERA OFF")
+    if !ActivateTeamsMeetingWindow()
+        return
+
+    hwndTeams := WinGetID("A")
+
+    ; Get initial camera state
+    initialState := GetCameraState(hwndTeams)
+
+    ; Toggle camera once
+    Send "^+o"
+    Sleep 600
+
+    ; Verify the state changed (check only; do not re-toggle)
+    finalState := "unknown"
+    Loop 3 {
+        Sleep 250
+        finalState := GetCameraState(hwndTeams)
+        if (finalState != "unknown")
+            break
     }
+
+    WinActivate(prev)
+
+    if (finalState = "on" || finalState = "off") {
+        if finalState = "on"
+            ShowCenteredOverlay(prev, "CAMERA ON")
+        else
+            ShowCenteredOverlay(prev, "CAMERA OFF")
+        return
+    }
+
+    MsgBox "Não foi possível confirmar o estado da câmera (on/off).", "Microsoft Teams", "Iconx"
 }
 
 
