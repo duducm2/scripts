@@ -10,21 +10,127 @@
 
 ; --- Helper Functions --------------------------------------------------------
 
-ActivateTeamsMeetingWindow() {
-    static processes := ["ms-teams.exe", "Teams.exe", "MSTeams.exe"]
-    for proc in processes {
-        for hwnd in WinGetList("ahk_exe " proc) {
-            if IsTeamsMeetingTitle(title := WinGetTitle(hwnd)) {
-                WinActivate(hwnd)
+ActivateWindowWithRetry(hwnd, attempts := 6, waitMs := 500) {
+    ; Multiple strategies to restore and activate window
+    Loop attempts {
+        ; Strategy 1: Standard restore + activate
+        try {
+            WinRestore(hwnd)
+            Sleep 100
+            WinActivate(hwnd)
+            if WinWaitActive("ahk_id " hwnd, , waitMs/1000) {
                 return true
             }
         }
+        
+        ; Strategy 2: Show window using ShowWindow API
+        try {
+            DllCall("ShowWindow", "Ptr", hwnd, "Int", 9)  ; SW_RESTORE
+            Sleep 100
+            DllCall("SetForegroundWindow", "Ptr", hwnd)
+            if WinWaitActive("ahk_id " hwnd, , waitMs/1000) {
+                return true
+            }
+        }
+        
+        ; Strategy 3: Force to front using BringWindowToTop
+        try {
+            DllCall("BringWindowToTop", "Ptr", hwnd)
+            Sleep 100
+            WinActivate(hwnd)
+            if WinWaitActive("ahk_id " hwnd, , waitMs/1000) {
+                return true
+            }
+        }
+        
+        ; Strategy 4: Alt+Tab simulation to bring window up
+        if A_Index = attempts {
+            try {
+                Send "!{Tab}"
+                Sleep 200
+                WinActivate(hwnd)
+                if WinWaitActive("ahk_id " hwnd, , waitMs/1000) {
+                    return true
+                }
+            }
+        }
+        
+        Sleep 300
     }
+    return false
+}
+
+ActivateTeamsMeetingWindow() {
+    static processes := ["ms-teams.exe", "Teams.exe", "MSTeams.exe"]
+    ; Debug: collect all Teams windows for troubleshooting
+    allTitles := ""
+    foundMeetingWindow := false
+    
+    for proc in processes {
+        for hwnd in WinGetList("ahk_exe " proc) {
+            title := WinGetTitle(hwnd)
+            allTitles .= "- " . title . " (hwnd: " . hwnd . ")`n"
+            if IsTeamsMeetingTitle(title) {
+                foundMeetingWindow := true
+                allTitles .= "  → MEETING WINDOW DETECTED, attempting activation...`n"
+                if ActivateWindowWithRetry(hwnd) {
+                    allTitles .= "  → SUCCESS: Window activated`n"
+                    return true
+                } else {
+                    allTitles .= "  → FAILED: Could not activate window`n"
+                }
+            }
+        }
+    }
+    
+    ; Try regex fallback
     if hwnd := WinExist("RegEx)^.*\| Microsoft Teams$") {
-        WinActivate(hwnd)
-        return true
+        foundMeetingWindow := true
+        title := WinGetTitle(hwnd)
+        allTitles .= "- REGEX MATCH: " . title . " (hwnd: " . hwnd . ")`n"
+        allTitles .= "  → Attempting activation via regex fallback...`n"
+        if ActivateWindowWithRetry(hwnd) {
+            allTitles .= "  → SUCCESS: Window activated via regex`n"
+            return true
+        } else {
+            allTitles .= "  → FAILED: Could not activate via regex`n"
+        }
     }
-    MsgBox "Não foi possível encontrar uma janela de reunião ativa.", "Microsoft Teams", "Iconi"
+    
+    ; Final fallback: Click on Teams taskbar button
+    if foundMeetingWindow {
+        allTitles .= "`n→ FINAL ATTEMPT: Clicking Teams taskbar button...`n"
+        try {
+            ; Try to find and click Teams in taskbar
+            if WinExist("ahk_exe ms-teams.exe") || WinExist("ahk_exe Teams.exe") {
+                ; Send Win+T to cycle through taskbar and look for Teams
+                Send "#t"
+                Sleep 200
+                ; Try clicking where Teams might be
+                Loop 10 {
+                    Send "{Right}"
+                    Sleep 50
+                    if InStr(WinGetTitle("A"), "Teams") {
+                        Send "{Enter}"
+                        Sleep 500
+                        ; Check if we now have an active Teams window
+                        if WinActive("ahk_exe ms-teams.exe") || WinActive("ahk_exe Teams.exe") {
+                            allTitles .= "  → SUCCESS: Activated via taskbar`n"
+                            return true
+                        }
+                        break
+                    }
+                }
+            }
+        }
+        allTitles .= "  → FAILED: Taskbar activation failed`n"
+    }
+    
+    ; Show comprehensive debug info
+    debugMsg := foundMeetingWindow ? 
+        "Janela de reunião encontrada mas não foi possível ativar." : 
+        "Nenhuma janela de reunião encontrada."
+    MsgBox debugMsg . "`n`nDetalhes:`n" . allTitles, "Microsoft Teams Debug", "Iconi"
     return false
 }
 
@@ -55,6 +161,17 @@ FindListItemContaining(root, text) {
     return false
 }
 
+FindListItemContainingMultiLang(root, textArray) {
+    items := root.FindAll(UIA.CreateCondition({ ControlType: "ListItem" }))
+    for item in items {
+        for text in textArray {
+            if InStr(item.Name, text)
+                return item
+        }
+    }
+    return false
+}
+
 WaitListItem(root, partialName, timeout := 3000) {
     start := A_TickCount
     while (A_TickCount - start < timeout) {
@@ -66,10 +183,22 @@ WaitListItem(root, partialName, timeout := 3000) {
     return false
 }
 
+WaitListItemMultiLang(root, partialNameArray, timeout := 3000) {
+    start := A_TickCount
+    while (A_TickCount - start < timeout) {
+        item := FindListItemContainingMultiLang(root, partialNameArray)
+        if item
+            return item
+        Sleep 100
+    }
+    return false
+}
+
 IsTeamsMeetingTitle(title) {
     if InStr(title, "Chat |") || InStr(title, "Sharing control bar |")
         return false
-    if InStr(title, "Microsoft Teams meeting")
+    ; Support both English and Portuguese meeting indicators
+    if InStr(title, "Microsoft Teams meeting") || InStr(title, "Reunião do Microsoft Teams")
         return true
     return RegExMatch(title, "i)^.*\| Microsoft Teams.*$")
 }
@@ -83,17 +212,43 @@ IsTeamsChatTitle(title) {
 ; --- NEW helper --------------------------------------------------------------
 ShowCenteredOverlay(hwndTarget, text, duration := 1500) {
     ; Build a semi-transparent dark overlay with big white text
-    WinGetPos(&wx, &wy, &ww, &wh, hwndTarget)
+    ; Validate target window, fall back to active window, then screen center
+    target := hwndTarget
+    if !(IsSet(target) && target && WinExist("ahk_id " target)) {
+        target := WinGetID("A")
+    }
+    hasWindow := false
+    if target && WinExist("ahk_id " target) {
+        try {
+            WinGetPos(&wx, &wy, &ww, &wh, target)
+            hasWindow := (ww > 0 && wh > 0)
+        } catch {
+            hasWindow := false
+        }
+    }
+
     ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
     ov.BackColor := "333333"          ; dark background
     ov.SetFont("s24 cFFFFFF", "Segoe UI")
     msg := ov.Add("Text", "Center", text)
     ov.Show("AutoSize Hide")          ; measure the GUI first
     ov.GetPos(&gx, &gy, &gw, &gh)
-    ; center over target window
-    cx := wx + (ww - gw)//2
-    cy := wy + (wh - gh)//2
-    ov.Show("x" . cx . " y" . cy . " NA")
+
+    if hasWindow {
+        cx := wx + (ww - gw)//2
+        cy := wy + (wh - gh)//2
+        ov.Show("x" . cx . " y" . cy . " NA")
+    } else {
+        ; Screen center fallback (virtual screen across monitors)
+        vx := SysGet(76)  ; SM_XVIRTUALSCREEN
+        vy := SysGet(77)  ; SM_YVIRTUALSCREEN
+        vw := SysGet(78)  ; SM_CXVIRTUALSCREEN
+        vh := SysGet(79)  ; SM_CYVIRTUALSCREEN
+        cx := vx + (vw - gw)//2
+        cy := vy + (vh - gh)//2
+        ov.Show("x" . cx . " y" . cy . " NA")
+    }
+
     WinSetTransparent(220, ov)        ; a bit of transparency
     Sleep duration
     ov.Destroy()
@@ -147,7 +302,9 @@ ShowCenteredOverlay(hwndTarget, text, duration := 1500) {
         return
 
     ; --- perform the normal sharing workflow ---
-    listItem := FindListItemContaining(root, "Opens list of")
+    ; Support both English and Portuguese
+    windowListTexts := ["Opens list of", "Abre a lista de"]
+    listItem := FindListItemContainingMultiLang(root, windowListTexts)
     if listItem {
         listItem.Invoke()
     } else {
@@ -156,7 +313,7 @@ ShowCenteredOverlay(hwndTarget, text, duration := 1500) {
             return
         shareBtn.Invoke()
         Sleep 1000
-        if li := WaitListItem(root, "Opens list of")
+        if li := WaitListItemMultiLang(root, windowListTexts)
             li.Invoke()
     }
 
