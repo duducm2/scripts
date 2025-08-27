@@ -390,12 +390,91 @@ Shift+I  →  Focus expense name field
 cheatSheets["Miro"] := "
 (
 Miro
-Shift+Y  →  Command palette
 Shift+U  →  Frame list
 Shift+I  →  Group
 Shift+O  →  Ungroup
 Shift+P  →  Lock/Unlock
 Shift+H  →  Add/Edit link
+Q
+--- Built-in Shortcuts (Windows) ---
+Tools:
+V / H             →  Select tool / Hand
+T                 →  Text
+N                 →  Sticky notes
+S                 →  Shapes
+R                 →  Rectangle
+O                 →  Oval
+L                 →  Connection line / Arrow
+D                 →  Card
+P                 →  Pen
+E                 →  Eraser
+C                 →  Comment
+F                 →  Frame
+M                 →  Minimap
+Ctrl + K          →  Command palette
+Enter (bulk)      →  New sticky note
+Esc (bulk)        →  Exit sticky note bulk mode
+Ctrl + Shift + Enter  →  Open card panel
+Shift + C         →  Show/hide comments
+
+General:
+Ctrl + C / Ctrl + V  →  Copy / Paste
+Ctrl + X          →  Cut
+Ctrl + D          →  Duplicate
+Alt + drag        →  Duplicate by drag
+Alt + ←→↑↓        →  Duplicate horizontally/vertically
+Ctrl + click      →  Select multiple
+Ctrl + A          →  Select all
+Enter             →  Edit selected
+Esc               →  Deselect / quit edit
+Backspace         →  Delete
+Ctrl + G          →  Group
+Ctrl + Shift + G  →  Ungroup
+Ctrl + Shift + L  →  Lock / Unlock
+Ctrl + Shift + P  →  Protected lock / Unprotected lock
+PgUp              →  Bring to front
+Shift + PgUp      →  Bring forward
+PgDn              →  Send to back
+Shift + PgDn      →  Send backward
+Ctrl + Shift + K  →  Create board in new tab
+Alt + Ctrl + K    →  Add/Edit link to object
+Ctrl + Backspace  →  Clear object contents
+
+Navigation:
+←→↑↓              →  Move items/canvas
+Ctrl + +          →  Zoom in
+Ctrl + -          →  Zoom out
+Ctrl + 0          →  Zoom to 100%
+Alt + 1           →  Zoom to fit
+Alt + 2           →  Zoom to selected item
+Space + drag      →  Move canvas
+G                 →  Toggle grid
+Ctrl + F          →  Search
+
+Text:
+Ctrl + B          →  Bold
+Ctrl + I          →  Italic
+Ctrl + U          →  Underline
+
+Board navigation:
+Tab               →  Move forwards through objects (TL → BR)
+Shift + Tab       →  Move backwards through objects (TL → BR)
+Ctrl + ↑/↓/←/→    →  Move through board objects
+Ctrl + Shift + ↓/↑→  Move in/out of container (e.g., frame)
+Esc               →  Back to menu
+Enter             →  Edit an object
+Esc               →  Stop editing an object
+
+Toolbar navigation:
+Tab / Shift + Tab →  Move between toolbars
+Arrow keys        →  Move between toolbar items
+Enter / Space     →  Activate a menu item
+
+Desktop app:
+Ctrl + R          →  Reload the tab
+Ctrl + W          →  Close the tab
+Ctrl + Q          →  Exit the app
+Ctrl + Shift + L  →  Copy board link
 )"
 
 ; --- Wikipedia ---------------------------------------------------------------
@@ -3856,8 +3935,7 @@ IsFileDialogActive() {
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "Miro")
 
-; Shift + Y : Command palette (Ctrl+K)
-+y:: Send "^k"
+; (removed) Shift + Y : Command palette (Ctrl+K)
 
 ; Shift + U : Frame list (Ctrl+Shift+F)
 +u:: Send "^+f"
