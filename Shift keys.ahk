@@ -96,12 +96,11 @@ Outlook – Appointment
 Shift+Y  →  Start date (combo)
 Shift+U  →  Start date – Date Picker
 Shift+I  →  Start time (combo)
-Shift+P  →  End date (combo)
-Shift+,  →  End time (combo)
-Shift+L  →  Location → Body
-Shift+M  →  Make Recurring → Tab
+Shift+O  →  End date (combo)
 Shift+H  →  Title field
 Shift+J  →  Required / To field
+Shift+L  →  Location → Body
+Shift+M  →  Make Recurring → Tab
 )"  ; end Outlook Appointment
 
 ; --- Outlook Message window ---------------------------------------------------
@@ -1746,14 +1745,9 @@ Outlook_ClickEndTime_1200PM() {
     Outlook_ClickStartTime()
 }
 
-; Shift + P → End date (combo)
-+P:: {
+; Shift + O → End date (combo)
++O:: {
     Outlook_ClickEndDate()
-}
-
-; Shift + , → End time (combo)
-+,:: {
-    Outlook_ClickEndTime()
 }
 
 ; Shift + L → Location → Body
