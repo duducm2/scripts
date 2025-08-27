@@ -411,6 +411,7 @@ GetCameraState(hwndTeams, maxRetries := 3) {
     WinActivate(prev)
 
     if (finalState = "on" || finalState = "off") {
+        PlayMicrophoneBeep()
         if finalState = "on"
             ShowCenteredOverlay(prev, "CAMERA ON")
         else
@@ -456,9 +457,11 @@ GetCameraState(hwndTeams, maxRetries := 3) {
     
     ; Re-activate the Teams window to handle minimized-to-maximized transition
     if ActivateWindowWithRetry(hwndTeams, 3, 300) {
+        PlayMicrophoneBeep()
         ShowCenteredOverlay(hwndTeams, "SHARING TOGGLED")
     } else {
         ; Fallback: show overlay on previous window if Teams activation fails
+        PlayMicrophoneBeep()
         ShowCenteredOverlay(prev, "SHARING TOGGLED")
     }
 }
