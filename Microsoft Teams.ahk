@@ -317,8 +317,16 @@ ShowCenteredOverlay(hwndTarget, text, duration := 1500) {
             li.Invoke()
     }
 
-    ; --- show the overlay on the PREVIOUS window ---
-    ShowCenteredOverlay(prev, "SHARING STARTED")
+    ; --- Wait for the action to complete and ensure Teams window is activated ---
+    Sleep 2000  ; Give Teams time to process the sharing toggle
+    
+    ; Re-activate the Teams window to handle minimized-to-maximized transition
+    if ActivateWindowWithRetry(hwndTeams, 3, 300) {
+        ShowCenteredOverlay(hwndTeams, "SHARING TOGGLED")
+    } else {
+        ; Fallback: show overlay on previous window if Teams activation fails
+        ShowCenteredOverlay(prev, "SHARING TOGGLED")
+    }
 }
 
 ; =============================================================================
