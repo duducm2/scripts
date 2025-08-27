@@ -228,8 +228,16 @@ RunTeams() {
     WinWaitActive(teamsWindow, , 5)
     Send "^g"
     Sleep 100
-    SendText(contact)
-    Sleep 1300
+    ; Save current clipboard content
+    ClipboardOld := ClipboardAll()
+    ; Copy contact name to clipboard and paste it
+    A_Clipboard := contact
+    ClipWait 1  ; Wait for clipboard to contain data
+    Send "^v"
+    Sleep 100
+    ; Restore original clipboard content
+    A_Clipboard := ClipboardOld
+    Sleep 300
     Send "{Enter}"
     Sleep 300
     Send "^r"

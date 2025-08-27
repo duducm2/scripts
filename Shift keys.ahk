@@ -1318,15 +1318,20 @@ IsTeamsChatActive() {
 ; Shift + K : Pin
 +K::
 {
-    Sleep "500"
+    Sleep "150"
     Send "^1"
-    Sleep "300"
+    Sleep "100"
     Send("{AppsKey}")
-    Sleep "300"
+    Sleep "100"
     Send "{Down}"
     Send "{Down}"
     Send "{Right}"
     Send "{Enter}"
+    Send "{Esc}"
+    Sleep "200"
+    Send "^1"
+    Sleep "80"          ; 80 ms
+    Send "^+{Home}"
 }
 
 ; Shift + Y : Like
@@ -1359,11 +1364,11 @@ IsTeamsChatActive() {
 ; Shift + Ç : Remove pin
 +l::
 {
-    Sleep "500"
+    Sleep "150"
     Send "^1"
-    Sleep "300"
+    Sleep "100"
     Send("{AppsKey}")
-    Sleep "300"
+    Sleep "100"
     Send "{Down}"
     Send "{Down}"
     Send "{Down}"
@@ -1398,9 +1403,9 @@ IsTeamsChatActive() {
 +j::
 {
     Send "^1"
-    Sleep "400"
+    Sleep "120"
     Send("{AppsKey}")
-    Sleep "400"
+    Sleep "120"
     Send "{Down}"
     Send "{Enter}"
 }
@@ -1409,7 +1414,7 @@ IsTeamsChatActive() {
 +o::
 {
     Send "^1"
-    Sleep "200"          ; 200 ms
+    Sleep "80"          ; 80 ms
     Send "^+{Home}"
 }
 
