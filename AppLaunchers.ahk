@@ -115,7 +115,7 @@
         CenterMouse()
     } else {
         target := IS_WORK_ENVIRONMENT ?
-            "C:\Users\fie7ca\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\apps do Chrome\Gmail.lnk" :
+            "C:\Users\fie7ca\Documents\Shortcuts\Gmail.lnk" :
                 "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Chrome Apps\Gmail.lnk"
         Run target
         WinWaitActive("Gmail ahk_exe chrome.exe")
