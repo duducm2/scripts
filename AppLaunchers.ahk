@@ -114,9 +114,30 @@
         WinActivate
         CenterMouse()
     } else {
-        target := IS_WORK_ENVIRONMENT ? "C:\Users\fie7ca\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\apps do Chrome\Gmail.lnk" : "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Chrome Apps\Gmail.lnk"
+        target := IS_WORK_ENVIRONMENT ?
+            "C:\Users\fie7ca\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\apps do Chrome\Gmail.lnk" :
+                "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Chrome Apps\Gmail.lnk"
         Run target
         WinWaitActive("Gmail ahk_exe chrome.exe")
+        CenterMouse()
+    }
+}
+
+; =============================================================================
+; Open/Activate Cursor
+; Hotkey: Win+Alt+Shift+,
+; =============================================================================
+#!+,::
+{
+    SetTitleMatchMode 2
+    if WinExist("ahk_exe Cursor.exe") {
+        WinActivate
+        CenterMouse()
+    } else {
+        target := IS_WORK_ENVIRONMENT ? "C:\\Users\\fie7ca\\AppData\\Local\\Programs\\cursor\\Cursor.exe" :
+            "C:\\Users\\eduev\\AppData\\Local\\Programs\\cursor\\Cursor.exe"
+        Run target
+        WinWaitActive("ahk_exe Cursor.exe")
         CenterMouse()
     }
 }
