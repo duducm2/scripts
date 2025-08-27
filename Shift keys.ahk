@@ -1750,6 +1750,22 @@ Outlook_ClickEndTime_1200PM() {
     Outlook_ClickEndDate()
 }
 
+; Shift + H → Title field
++H:: {
+    if FocusOutlookField({ AutomationId: "4100" }) ; Title
+        return
+    if FocusOutlookField({ Name: "Title", ControlType: "Edit" })
+        return
+}
+
+; Shift + J → Required / To field
++J:: {
+    if FocusOutlookField({ AutomationId: "4109" }) ; Required
+        return
+    if FocusOutlookField({ Name: "Required", ControlType: "Edit" })
+        return
+}
+
 ; Shift + L → Location → Body
 +L:: {
     if FocusOutlookField({ AutomationId: "4111" }) { ; Location
@@ -1764,7 +1780,7 @@ Outlook_ClickEndTime_1200PM() {
     }
 }
 
-; Shift + M → Make Recurring → Tab
+; Shift + M → Make Recurring (click)
 +M:: {
     try {
         win := WinExist("A")
@@ -1775,9 +1791,7 @@ Outlook_ClickEndTime_1200PM() {
             btn := root.FindFirst({ Name: "Make Recurring", ControlType: "Button" })
 
         if btn {
-            btn.SetFocus()
-            Sleep 100
-            Send "{Tab}"
+            btn.Invoke()
         } else {
             MsgBox "Couldn't find the Make Recurring button.", "Control not found", "IconX"
         }
