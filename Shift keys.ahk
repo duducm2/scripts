@@ -97,10 +97,11 @@ Shift+Y  →  Start date (combo)
 Shift+U  →  Start date – Date Picker
 Shift+I  →  Start time (combo)
 Shift+O  →  End date (combo)
+Shift+P  →  All day checkbox
 Shift+H  →  Title field
 Shift+J  →  Required / To field
 Shift+L  →  Location → Body
-Shift+M  →  Make Recurring → Tab
+Shift+M  →  Make Recurring
 )"  ; end Outlook Appointment
 
 ; --- Outlook Message window ---------------------------------------------------
@@ -1748,6 +1749,26 @@ Outlook_ClickEndTime_1200PM() {
 ; Shift + O → End date (combo)
 +O:: {
     Outlook_ClickEndDate()
+}
+
+; Shift + P → All day checkbox
++P:: {
+    try {
+        win := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+
+        checkbox := root.FindFirst({ AutomationId: "4226", ControlType: "CheckBox" })
+        if !checkbox
+            checkbox := root.FindFirst({ Name: "All day", ControlType: "CheckBox" })
+
+        if checkbox {
+            checkbox.Invoke()
+        } else {
+            MsgBox "Couldn't find the All day checkbox.", "Control not found", "IconX"
+        }
+    } catch Error as err {
+        ShowErr(err)
+    }
 }
 
 ; Shift + H → Title field
