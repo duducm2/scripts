@@ -257,6 +257,49 @@ ShowCenteredOverlay(hwndTarget, text, duration := 1500) {
 
 ; --- Hotkeys & Functions -----------------------------------------------------
 
+; --- Audio feedback helper ---
+PlayMicrophoneBeep() {
+    ; Play a single short beep to indicate microphone action
+    SoundBeep(800, 150)
+}
+
+; --- Microphone state verification ---
+GetMicrophoneState(hwndTeams, maxRetries := 3) {
+    ; Returns: "muted", "unmuted", or "unknown"
+    Loop maxRetries {
+        try {
+            root := UIA.ElementFromHandle(hwndTeams)
+            if !root {
+                if A_Index < maxRetries
+                    Sleep 150
+                continue
+            }
+            micBtn := root.FindFirst(UIA.CreateCondition({ AutomationId: "microphone-button" }))
+            if micBtn {
+                ; Prefer ToggleState when available
+                try {
+                    state := micBtn.ToggleState  ; 0=Off, 1=On, 2=Indeterminate
+                    if (state = UIA.ToggleState.On)
+                        return "muted"          ; Toggle ON => mute active
+                    if (state = UIA.ToggleState.Off)
+                        return "unmuted"
+                }
+                ; Fallback: infer from Name (action-based text)
+                try name := micBtn.Name
+                if name {
+                    if InStr(name, "Desativar mudo") ; "Disable mute" => currently muted
+                        return "muted"
+                    if InStr(name, "Ativar mudo")    ; "Enable mute" => currently unmuted
+                        return "unmuted"
+                }
+            }
+        }
+        if A_Index < maxRetries
+            Sleep 200  ; Wait before retry
+    }
+    return "unknown"
+}
+
 ; =============================================================================
 ; Meeting: Toggle Mute
 ; Hotkey: Win+Alt+Shift+5
@@ -264,12 +307,40 @@ ShowCenteredOverlay(hwndTarget, text, duration := 1500) {
 ; =============================================================================
 #!+5:: {
     prev := WinGetID("A")                     ; window you were in
-    if ActivateTeamsMeetingWindow() {
-        Send "^+m"
-        Sleep 800
-        WinActivate(prev)                     ; switch back
-        ShowCenteredOverlay(prev, "MIC MUTED")
+    if !ActivateTeamsMeetingWindow()
+        return
+
+    hwndTeams := WinGetID("A")
+    ; Get initial state
+    initialState := GetMicrophoneState(hwndTeams)
+    
+    ; Toggle microphone once
+    Send "^+m"
+    Sleep 600
+    
+    ; Verify the state changed (check only; do not re-toggle)
+    finalState := "unknown"
+    Loop 3 {
+        Sleep 250
+        finalState := GetMicrophoneState(hwndTeams)
+        if (finalState != "unknown" && finalState != initialState)
+            break
     }
+    
+    ; On success, play single beep and show overlay
+    if (finalState != "unknown" && finalState != initialState) {
+        PlayMicrophoneBeep()
+        WinActivate(prev)
+        if finalState = "muted"
+            ShowCenteredOverlay(prev, "MIC MUTED")
+        else
+            ShowCenteredOverlay(prev, "MIC UNMUTED")
+        return
+    }
+    
+    ; On failure, show an error and do not beep
+    WinActivate(prev)
+    MsgBox "Não foi possível confirmar o estado do microfone (mute/unmute).", "Microsoft Teams", "Iconx"
 }
 
 ; =============================================================================
