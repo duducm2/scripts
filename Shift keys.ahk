@@ -95,11 +95,15 @@ Shift+P  →  Dismiss all reminders
 cheatSheets["OutlookAppointment"] := "
 (
 Outlook – Appointment
-Shift+H  →  Title field
-Shift+J  →  Required / To field
-Shift+K  →  Date Picker
+Shift+Y  →  Start date (combo)
+Shift+U  →  Start date – Date Picker
+Shift+I  →  Start time (combo)
+Shift+P  →  End date (combo)
+Shift+,  →  End time (combo)
 Shift+L  →  Location → Body
 Shift+M  →  Make Recurring → Tab
+Shift+H  →  Title field
+Shift+J  →  Required / To field
 )"  ; end Outlook Appointment
 
 ; --- Outlook Message window ---------------------------------------------------
@@ -1511,6 +1515,43 @@ FocusOutlookField(criteria) {
 }
 
 ; -------------------------------------------------------------------
+; Click helper – try AutomationId first, then Name+ClassName
+; -------------------------------------------------------------------
+ClickOutlookByIdThenNameClass(automationId, name, className, controlType := "") {
+    try {
+        win := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+
+        if (automationId) {
+            el := root.FindFirst({ AutomationId: automationId })
+            if (el) {
+                el.SetFocus()
+                Sleep 50
+                el.Click()
+                return true
+            }
+        }
+
+        crit := { Name: name }
+        if (className)
+            crit.ClassName := className
+        if (controlType)
+            crit.ControlType := controlType
+
+        el := root.FindFirst(crit)
+        if (el) {
+            el.SetFocus()
+            Sleep 50
+            el.Click()
+            return true
+        }
+    } catch Error as err {
+        ShowErr(err)
+    }
+    return false
+}
+
+; -------------------------------------------------------------------
 ; General helper – visually confirm focus on the selected element
 ; Sends Down then Up to force a visible focus cue
 ; -------------------------------------------------------------------
@@ -1641,37 +1682,78 @@ SelectExplorerSidebarFirstPinned() {
 ; Appointment/Meeting inspector-specific hotkeys
 #HotIf IsOutlookAppointmentActive()
 
-; Shift + H → Title
-+H:: {
-    if FocusOutlookField({ AutomationId: "4100" })
-        return
-    if FocusOutlookField({ Name: "Title", ControlType: "Edit" })
-        return
-    ; fallback to Subject if Title not found
-    if FocusOutlookField({ AutomationId: "4101" })
-        return
-    if FocusOutlookField({ Name: "Subject", ControlType: "Edit" })
-        return
+; ----- Outlook Appointment: Date/Time helpers -----
+Outlook_ClickStartDate() {
+    ClickOutlookByIdThenNameClass("4098", "Start date, combo", "RichEdit20WPT", "Edit")
 }
 
-; Shift + J → Required / To
-+J:: {
-    if FocusOutlookField({ AutomationId: "4109" })
+Outlook_ClickStartDatePicker() {
+    ; Robust open: focus the Date Picker and press Enter
+    if FocusOutlookField({ AutomationId: "4352" }) {
+        Sleep 80
+        Send "{Enter}"
         return
-    if FocusOutlookField({ Name: "Required", ControlType: "Edit" })
+    }
+    if FocusOutlookField({ Name: "Date Picker", ControlType: "Button" }) {
+        Sleep 80
+        Send "{Enter}"
         return
-    if FocusOutlookField({ AutomationId: "4117" })
-        return
-    if FocusOutlookField({ Name: "To", ControlType: "Edit" })
-        return
+    }
 }
 
-; Shift + K → Date Picker
-+K:: {
-    if FocusOutlookField({ AutomationId: "4352" })
-        return
-    if FocusOutlookField({ Name: "Date Picker", ControlType: "Button" })
-        return
+Outlook_ClickStartTime() {
+    ClickOutlookByIdThenNameClass("4096", "Start time, combo", "RichEdit20WPT", "Edit")
+}
+
+Outlook_ClickStartTime_1100AM() {
+    ; Clicks the button showing 11:00 AM (start)
+    ClickOutlookByIdThenNameClass("4354", "11:00 AM", "AfxWndW", "Button")
+}
+
+Outlook_ClickEndDate() {
+    ClickOutlookByIdThenNameClass("4099", "End date, combo", "RichEdit20WPT", "Edit")
+}
+
+Outlook_ClickEndDatePicker() {
+    ; Date Picker next to End date
+    ClickOutlookByIdThenNameClass("4353", "Date Picker", "AfxWndW", "Button")
+}
+
+Outlook_ClickEndTime() {
+    ClickOutlookByIdThenNameClass("4097", "End time, combo", "RichEdit20WPT", "Edit")
+}
+
+Outlook_ClickEndTime_1200PM() {
+    ; Clicks the button showing 12:00 PM (end)
+    ClickOutlookByIdThenNameClass("4355", "12:00 PM", "AfxWndW", "Button")
+}
+
+; (moved +H/+J below to ensure the block starts with Y)
+
+; New Shift hotkeys for date/time controls (Start → End), ordered by key preference
+; Shift + Y → Start date (combo)
++Y:: {
+    Outlook_ClickStartDate()
+}
+
+; Shift + U → Start date – Date Picker
++U:: {
+    Outlook_ClickStartDatePicker()
+}
+
+; Shift + I → Start time (combo)
++I:: {
+    Outlook_ClickStartTime()
+}
+
+; Shift + P → End date (combo)
++P:: {
+    Outlook_ClickEndDate()
+}
+
+; Shift + , → End time (combo)
++,:: {
+    Outlook_ClickEndTime()
 }
 
 ; Shift + L → Location → Body
