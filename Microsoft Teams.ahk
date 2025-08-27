@@ -387,14 +387,29 @@ RunTeams() {
     Sleep 100
     ; Save current clipboard content
     ClipboardOld := ClipboardAll()
-    ; Copy contact name to clipboard and paste it
-    A_Clipboard := contact
-    ClipWait 1  ; Wait for clipboard to contain data
+    
+    ; Ensure clipboard contains the correct contact name with retry logic
+    Loop 5 {
+        A_Clipboard := contact
+        ; Wait for clipboard to contain data and verify it's the correct content
+        if ClipWait(2) && (A_Clipboard = contact) {
+            break
+        }
+        if A_Index = 5 {
+            ; Restore clipboard and show error if we couldn't set it correctly
+            A_Clipboard := ClipboardOld
+            MsgBox("Failed to set clipboard with contact name. Please try again.", "Clipboard Error", "Iconx")
+            return
+        }
+        Sleep 100
+    }
+    
     Send "^v"
-    Sleep 100
+    Sleep 200  ; Give more time for the paste operation
+    
     ; Restore original clipboard content
     A_Clipboard := ClipboardOld
-    Sleep 300
+    Sleep 450
     Send "{Enter}"
     Sleep 300
     Send "^r"

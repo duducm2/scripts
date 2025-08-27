@@ -1403,9 +1403,9 @@ IsTeamsChatActive() {
 +j::
 {
     Send "^1"
-    Sleep "120"
+    Sleep "220"
     Send("{AppsKey}")
-    Sleep "120"
+    Sleep "220"
     Send "{Down}"
     Send "{Enter}"
 }
