@@ -97,11 +97,12 @@ Shift+Y  →  Start date (combo)
 Shift+U  →  Start date – Date Picker
 Shift+I  →  Start time (combo)
 Shift+O  →  End date (combo)
-Shift+P  →  All day checkbox
-Shift+H  →  Title field
-Shift+J  →  Required / To field
-Shift+L  →  Location → Body
-Shift+M  →  Make Recurring
+Shift+P  →  End time (combo)
+Shift+H  →  All day checkbox
+Shift+J  →  Title field
+Shift+L  →  Required / To field
+Shift+M  →  Location → Body
+Shift+,  →  Make Recurring
 )"  ; end Outlook Appointment
 
 ; --- Outlook Message window ---------------------------------------------------
@@ -1835,8 +1836,13 @@ Outlook_ClickEndTime_1200PM() {
     Outlook_ClickEndDate()
 }
 
-; Shift + P → All day checkbox
+; Shift + P → End time (combo)
 +P:: {
+    Outlook_ClickEndTime()
+}
+
+; Shift + H → All day checkbox
++H:: {
     try {
         win := WinExist("A")
         root := UIA.ElementFromHandle(win)
@@ -1855,24 +1861,24 @@ Outlook_ClickEndTime_1200PM() {
     }
 }
 
-; Shift + H → Title field
-+H:: {
+; Shift + J → Title field
++J:: {
     if FocusOutlookField({ AutomationId: "4100" }) ; Title
         return
     if FocusOutlookField({ Name: "Title", ControlType: "Edit" })
         return
 }
 
-; Shift + J → Required / To field
-+J:: {
+; Shift + L → Required / To field
++L:: {
     if FocusOutlookField({ AutomationId: "4109" }) ; Required
         return
     if FocusOutlookField({ Name: "Required", ControlType: "Edit" })
         return
 }
 
-; Shift + L → Location → Body
-+L:: {
+; Shift + M → Location → Body
++M:: {
     if FocusOutlookField({ AutomationId: "4111" }) { ; Location
         Sleep 100
         Send "{Tab}"
@@ -1885,8 +1891,9 @@ Outlook_ClickEndTime_1200PM() {
     }
 }
 
-; Shift + M → Make Recurring (click)
-+M:: {
+; Shift + ; → Make Recurring (click)
+; Semicolon key virtual key code is VK_BA; with Shift it's +vkBA
++,:: {
     try {
         win := WinExist("A")
         root := UIA.ElementFromHandle(win)
