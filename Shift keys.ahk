@@ -3954,39 +3954,50 @@ IsFileDialogActive() {
     }
 }
 
-; Shift + I : Focus expense name field (via receipt button + shift-tab)
+; Shift + I : Focus expense name field
 +i:: {
     try {
         uia := UIA_Browser()
         Sleep 300
 
-        ; Find the "Add receipt" button
-        receiptBtn := uia.FindFirst({
-            Type: "Button",
-            Name: "Adicionar comprovante",
-            ClassName: "mdc-button mat-mdc-button mat-primary mat-mdc-button-base ng-star-inserted"
+        ; Try to find the expense name field directly by AutomationId
+        nameField := uia.FindFirst({
+            Type: "Edit",
+            AutomationId: "mat-input-14"
         })
 
-        ; If not found by exact match, try other languages
-        if !receiptBtn {
-            possibleNames := [
-                "Adicionar comprovante",    ; Portuguese
-                "Add receipt",              ; English
-                "Añadir recibo",           ; Spanish
-                "Ajouter un reçu",         ; French
-                "Beleg hinzufügen"         ; German
+        ; If not found by AutomationId, try by placeholder text prefix
+        if !nameField {
+            possiblePrefixes := [
+                "por ex.",      ; Portuguese
+                "e.g.",         ; English
+                "p. ej.",       ; Spanish
+                "par ex."       ; French
             ]
-            for name in possibleNames {
-                receiptBtn := uia.FindFirst({ Type: "Button", Name: name })
-                if receiptBtn
+            for prefix in possiblePrefixes {
+                nameField := uia.FindFirst({ 
+                    Type: "Edit", 
+                    Name: prefix, 
+                    matchmode: "Substring" 
+                })
+                if nameField
                     break
             }
         }
 
-        if receiptBtn {
-            receiptBtn.SetFocus()  ; Just focus, don't click
-            Sleep 100
-            Send "+{Tab}"  ; Move backwards to expense name field
+        ; Fallback: find any edit field with "mat-input" in AutomationId
+        if !nameField {
+            nameField := uia.FindFirst({
+                Type: "Edit",
+                AutomationId: "mat-input",
+                matchmode: "Substring"
+            })
+        }
+
+        if nameField {
+            nameField.SetFocus()
+            Sleep 50
+            Send "^a"  ; Select all text in the field
             return
         }
     } catch Error as e {
