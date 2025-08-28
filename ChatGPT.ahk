@@ -596,12 +596,12 @@ WaitForButtonAndShowSmallLoading(buttonNames, stateText := "Loading…", timeout
         return
     }
     start := A_TickCount
-    deadline := start + timeout
+    deadline := (timeout > 0) ? (start + timeout) : 0
     btn := ""
     indicatorShown := false
     buttonEverFound := false
     buttonDisappeared := false
-    while (A_TickCount < deadline) {
+    while (timeout <= 0 || A_TickCount < deadline) {
         btn := ""
         for n in buttonNames {
             try {
@@ -618,7 +618,7 @@ WaitForButtonAndShowSmallLoading(buttonNames, stateText := "Loading…", timeout
                 ShowSmallLoadingIndicator(stateText)
                 indicatorShown := true
             }
-            while btn && (A_TickCount < deadline) {
+            while btn && (timeout <= 0 || A_TickCount < deadline) {
                 Sleep 250
                 btn := ""
                 for n in buttonNames {

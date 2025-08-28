@@ -2126,7 +2126,8 @@ Outlook_ClickEndTime_1200PM() {
     Sleep 300
     ; Step 4: Show banner immediately (debounced by helper), then wait for completion to auto-hide and chime
     ShowSmallLoadingIndicator_ChatGPT("AI is responding…")
-    WaitForButtonAndShowSmallLoading_ChatGPT([currentStopStreamingName, "Stop", "Interromper"], "AI is responding…")
+    ; Use infinite timeout so the banner persists for long responses
+    WaitForButtonAndShowSmallLoading_ChatGPT([currentStopStreamingName, "Stop", "Interromper"], "AI is responding…", 0)
 }
 
 #HotIf
@@ -4135,7 +4136,8 @@ WaitForButtonAndShowSmallLoading_ChatGPT(buttonNames, stateText := "Loading…",
     btn := ""
 
     ; Wait for the target button to appear and monitor it until it disappears
-    while ((A_TickCount - start) < timeout) {
+    deadline := (timeout > 0) ? (start + timeout) : 0
+    while (timeout <= 0 || (A_TickCount < deadline)) {
         btn := ""
         for n in buttonNames {
             try btn := cUIA.FindElement({ Name: n, Type: "Button" })
@@ -4154,7 +4156,7 @@ WaitForButtonAndShowSmallLoading_ChatGPT(buttonNames, stateText := "Loading…",
         }
         if btn {
             ShowSmallLoadingIndicator_ChatGPT(stateText)
-            while btn && ((A_TickCount - start) < timeout) {
+            while btn && (timeout <= 0 || (A_TickCount < deadline)) {
                 Sleep 250
                 btn := ""
                 for n in buttonNames {
