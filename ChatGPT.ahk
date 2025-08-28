@@ -524,7 +524,10 @@ ToggleDictation(autoSend) {
                 isDictating := false ; Reset state if stop button is not found
             }
         } catch Error as e {
-            ; Instead of interrupting with a modal dialog, show a quick blue banner
+            ; Instead of interrupting with a modal dialog, briefly switch back to the user's window
+            ; so the banner appears on the monitor with the active window, then show a quick blue banner
+            Send "!{Tab}"
+            Sleep 250
             ShowNotification(IS_WORK_ENVIRONMENT ? "Reiniciando ditado…" : "Restarting dictation…", 1200, "3772FF", "FFFFFF")
             isDictating := false ; Reset state so we can attempt a fresh start
 
