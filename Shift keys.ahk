@@ -1410,7 +1410,7 @@ IsTeamsChatActive() {
     Send "{Esc}"
     Sleep "200"
     Send "^1"
-    Sleep "80"          ; 80 ms
+    Sleep "500"          ; 80 ms
     Send "^+{Home}"
 }
 
