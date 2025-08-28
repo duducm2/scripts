@@ -237,46 +237,13 @@ CopyLastPrompt() {
     cUIA := UIA_Browser()
     Sleep 300
 
-    ; — labels ChatGPT shows in EN and PT —
-    copyNames := [
-        "Copy to clipboard", "Copiar para a área de transferência", "Copy", "Copiar"
-    ]
-
-    ; — collect every matching button —
-    copyBtns := []
-    for name in copyNames
-        for btn in cUIA.FindAll({ Name: name, Type: "Button", matchmode: "Substring" })
-            copyBtns.Push(btn)
-
-    if !copyBtns.Length {
-        MsgBox "⚠️  No copy button found (EN / PT)."
-        return
-    }
-
-    lastBtn := copyBtns[copyBtns.Length]   ; the bottom-most one
-
-    isCopied := false
-    ; — click it & wait for clipboard —
-    try {
-        lastBtn.ScrollIntoView()
-        Sleep 100
-        A_Clipboard := ""                  ; clear first
-        lastBtn.Click()
-        if !ClipWait(1) {                  ; returns 0 on timeout
-            MsgBox "Copy failed – clipboard stayed empty."
-        } else {
-            isCopied := true
-        }
-    } catch as e {
-        MsgBox "Error clicking copy button:`n" e.Message
-    }
-
     ; Now check if currently reading and toggle accordingly
     Sleep 300
     readNames := ["Read aloud", "Ler em voz alta"]
     stopNames := ["Stop", "Parar"]
     buttonClicked := false
     actionTaken := ""
+    isCopied := false
 
     ; First check if there's a Stop button (meaning currently reading)
     stopBtns := []
@@ -296,6 +263,30 @@ CopyLastPrompt() {
             for btn in cUIA.FindAll({ Name: name, Type: "Button" })
                 readBtns.Push(btn)
         if readBtns.Length {
+            ; Copy last message only when starting to read aloud
+            copyNames := [
+                "Copy to clipboard", "Copiar para a área de transferência", "Copy", "Copiar"
+            ]
+            copyBtns := []
+            for name in copyNames
+                for btn in cUIA.FindAll({ Name: name, Type: "Button", matchmode: "Substring" })
+                    copyBtns.Push(btn)
+
+            if copyBtns.Length {
+                lastBtn := copyBtns[copyBtns.Length]
+                try {
+                    lastBtn.ScrollIntoView()
+                    Sleep 100
+                    A_Clipboard := ""
+                    lastBtn.Click()
+                    if ClipWait(1) {
+                        isCopied := true
+                    }
+                } catch as e {
+                    ; Swallow copy errors – proceed to start reading anyway
+                }
+            }
+
             readBtns[readBtns.Length].Click()
             buttonClicked := true
             actionTaken := "started"
@@ -308,13 +299,9 @@ CopyLastPrompt() {
     ; optional: jump back to previous window
     Send "!{Tab}"
 
-    if (isCopied && buttonClicked) {
+    if (isCopied && buttonClicked && actionTaken = "started") {
         Sleep(300) ; give window time to switch
-        if (actionTaken = "started") {
-            ShowNotification("Message copied and reading started!")
-        } else if (actionTaken = "stopped") {
-            ShowNotification("Message copied and reading stopped!")
-        }
+        ShowNotification("Message copied and reading started!")
     }
 }
 
