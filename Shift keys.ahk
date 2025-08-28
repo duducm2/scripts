@@ -246,6 +246,7 @@ Shift+Y  →  Select first file
 Shift+U  →  Focus search bar
 Shift+I  →  Focus address bar
 Shift+O  →  New folder
+Shift+J  →  Create a shortcut
 Shift+P  →  Select first pinned item in Explorer sidebar
 Shift+H  →  Select the last item of the Explorer sidebar
 )"  ; end Explorer
@@ -2309,6 +2310,23 @@ EnsureItemsViewFocus() {
 
 ; Shift + O : New folder
 +o:: Send("^+n")
+
+; Shift + J : Create a shortcut (Alt, Enter, Down, Enter)
+; Sequence: open context/properties, navigate to "Create shortcut" option, confirm
+; Uses keystrokes to avoid UIA flakiness in different Explorer views
++j::
+{
+    ; Ensure focus is in the file list so the keystrokes hit the right target
+    EnsureItemsViewFocus()
+    Sleep 100
+    Send "{Alt}"
+    Sleep 50
+    Send "{Enter}"
+    Sleep 100
+    Send "{Down}"
+    Sleep 50
+    Send "{Enter}"
+}
 
 ; Shift + P : Select first pinned item in Explorer sidebar
 +p::
