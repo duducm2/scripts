@@ -120,6 +120,7 @@ cheatSheets["TeamsMeeting"] := "
 Teams
 Shift+Y  →  Open Chat pane
 Shift+U  →  Maximize meeting window
+Shift+I  →  Reagir
 )"  ; end TeamsMeeting
 
 ; --- Microsoft Teams – chat window -----------------------------------------
@@ -1350,6 +1351,34 @@ IsTeamsChatActive() {
             btn.Click()
         else
             MsgBox("Couldn't find the Maximize button.", "Control not found", "IconX")
+    }
+    catch as e {
+        MsgBox("UIA error:`n" e.Message, "Error", "IconX")
+    }
+}
+
+; Shift + I : Reagir (open reactions menu)
++I:: {
+    try {
+        win := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+
+        btn := 0
+        try {
+            btn := root.FindFirst({ AutomationId: "reaction-menu-button" })
+        } catch {
+        }
+        if !btn {
+            try {
+                btn := root.FindFirst({ Name: "Reagir", ControlType: "Button" })
+            } catch {
+            }
+        }
+
+        if btn
+            btn.Click()
+        else
+            MsgBox("Couldn't find the Reagir button.", "Control not found", "IconX")
     }
     catch as e {
         MsgBox("UIA error:`n" e.Message, "Error", "IconX")
