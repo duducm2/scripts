@@ -1,7 +1,7 @@
 #Requires AutoHotkey v2.0+
 
 ; -----------------------------------------------------------------------------
-; ChatGPT loading indicator utilities (green notification)
+; ChatGPT loading indicator utilities (high-contrast centered banner)
 ;   • ShowChatGPTLoadingIndicator(state)   → shows / updates indicator
 ;   • HideChatGPTLoadingIndicator()        → hides indicator
 ;   • WaitForChatGPTButtonAndShowLoading(buttonNames, stateText, timeoutMs)
@@ -25,9 +25,9 @@ ShowChatGPTLoadingIndicator(state := "Loading…") {
 
     chatgptLoadingGui := Gui()
     chatgptLoadingGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
-    chatgptLoadingGui.BackColor := "00FF00"                      ; bright green
-    chatgptLoadingGui.SetFont("s28 c000000 Bold", "Segoe UI")
-    chatgptLoadingGui.Add("Text", "w600 Center", state)
+    chatgptLoadingGui.BackColor := "3772FF"
+    chatgptLoadingGui.SetFont("s24 cFFFFFF Bold", "Segoe UI")
+    chatgptLoadingGui.Add("Text", "w500 Center", state)
 
     ; Centre over active window (fallback: primary monitor)
     activeWin := WinGetID("A")

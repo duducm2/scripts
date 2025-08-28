@@ -554,7 +554,7 @@ RunTeams() {
     
     ; Restore original clipboard content
     A_Clipboard := ClipboardOld
-    Sleep 450
+    Sleep 600
     Send "{Enter}"
     Sleep 300
     Send "^r"
