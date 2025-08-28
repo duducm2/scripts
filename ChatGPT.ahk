@@ -573,7 +573,7 @@ ToggleDictation(autoSend) {
 ; =============================================================================
 global smallLoadingGuis := [] ; Changed to array
 
-ShowSmallLoadingIndicator(state := "Loading…", bgColor := "00FF00") {
+ShowSmallLoadingIndicator(state := "Loading…", bgColor := "3772FF") {
     global smallLoadingGuis
 
     ; If GUIs exist, just update the text of the topmost one (the message)
@@ -588,54 +588,9 @@ ShowSmallLoadingIndicator(state := "Loading…", bgColor := "00FF00") {
         return
     }
 
-    ; --- Configuration for the simplified dual-border indicator ---
-    colors := ["000000", "FFFFFF"] ; Black and White borders
-    borderThickness := 2 ; pixels for each border
-    alpha := 90 ; Reduced opacity from 220 to 180 for better visibility
-
-    ; --- Central Text GUI ---
-    textGui := Gui()
-    textGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
-    textGui.BackColor := bgColor
-    textGui.SetFont("s10 c000000 Bold", "Segoe UI") ; Slightly larger font
-    textGui.Add("Text", "w250 Center", state)       ; Wider for more text
+    ; Create a single, high-contrast, centered banner using the unified builder
+    textGui := CreateCenteredBanner(state, bgColor, "FFFFFF", 24, 220)
     smallLoadingGuis.Push(textGui)
-
-    ; --- Calculate Position ---
-    activeWin := WinGetID("A")
-    if (activeWin) {
-        WinGetPos(&wx, &wy, &ww, &wh, activeWin)
-    } else {
-        work := SysGet.MonitorWorkArea(SysGet.MonitorPrimary)
-        wx := work.Left, wy := work.Top, ww := work.Right - work.Left, wh := work.Bottom - work.Top
-    }
-
-    ; --- Show Text GUI to get its dimensions ---
-    textGui.Show("AutoSize Hide")
-    textGui.GetPos(, , &gw, &gh)
-    cx := wx + (ww - gw) / 2
-    cy := wy + (wh - gh) / 2
-
-    ; --- Create Border GUIs ---
-    currentW := gw, currentH := gh
-    for color in colors {
-        currentW += borderThickness * 2
-        currentH += borderThickness * 2
-
-        borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
-        borderGui.BackColor := color
-        smallLoadingGuis.Push(borderGui)
-
-        xPos := cx - (currentW - gw) / 2
-        yPos := cy - (currentH - gh) / 2
-
-        borderGui.Show("x" Round(xPos) " y" Round(yPos) " w" Round(currentW) " h" Round(currentH) " NA")
-        WinSetTransparent(alpha, borderGui.Hwnd)
-    }
-
-    ; --- Show the main text GUI on top ---
-    textGui.Show("x" Round(cx) " y" Round(cy) " NA")
-    WinSetTransparent(alpha, textGui.Hwnd)
 }
 
 HideSmallLoadingIndicator() {
@@ -752,34 +707,39 @@ CenterMouse() {
 }
 
 ; =============================================================================
-; Helper function to show a notification on the active window
+; Unified banner builder – consistent shape/font/opacity for all banners here
 ; =============================================================================
-ShowNotification(message, durationMs := 2000, bgColor := "FFFF00", fontColor := "000000", fontSize := 24) {
-    notificationGui := Gui()
-    notificationGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
-    notificationGui.BackColor := bgColor
-    notificationGui.SetFont("s" . fontSize . " c" . fontColor . " Bold", "Segoe UI")
-    notificationGui.Add("Text", "w400 Center", message)
+CreateCenteredBanner(message, bgColor := "3772FF", fontColor := "FFFFFF", fontSize := 24, alpha := 220) {
+    bGui := Gui()
+    bGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
+    bGui.BackColor := bgColor
+    bGui.SetFont("s" . fontSize . " c" . fontColor . " Bold", "Segoe UI")
+    bGui.Add("Text", "w500 Center", message)
 
-    ; To center on the whole screen if no window is active
     activeWin := WinGetID("A")
     if (activeWin) {
         WinGetPos(&winX, &winY, &winW, &winH, activeWin)
     } else {
         workArea := SysGet.MonitorWorkArea(SysGet.MonitorPrimary)
-        winX := workArea.Left, winY := workArea.Top, winW := workArea.Right - workArea.Left, winH := workArea.Bottom -
-            workArea.Top
+        winX := workArea.Left, winY := workArea.Top, winW := workArea.Right - workArea.Left, winH := workArea.Bottom - workArea.Top
     }
 
-    notificationGui.Show("AutoSize Hide")
+    bGui.Show("AutoSize Hide")
     guiW := 0, guiH := 0
-    notificationGui.GetPos(, , &guiW, &guiH)
+    bGui.GetPos(, , &guiW, &guiH)
 
     guiX := winX + (winW - guiW) / 2
     guiY := winY + (winH - guiH) / 2
-    notificationGui.Show("x" . Round(guiX) . " y" . Round(guiY) . " NA")
-    WinSetTransparent(220, notificationGui)
+    bGui.Show("x" . Round(guiX) . " y" . Round(guiY) . " NA")
+    WinSetTransparent(alpha, bGui)
+    return bGui
+}
 
+; =============================================================================
+; Helper function to show a notification on the active window
+; =============================================================================
+ShowNotification(message, durationMs := 2000, bgColor := "FFFF00", fontColor := "000000", fontSize := 24) {
+    notificationGui := CreateCenteredBanner(message, bgColor, fontColor, fontSize, 220)
     Sleep(durationMs)
     if IsObject(notificationGui) && notificationGui.Hwnd {
         notificationGui.Destroy()
