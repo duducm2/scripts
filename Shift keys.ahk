@@ -3964,7 +3964,7 @@ IsFileDialogActive() {
 ; --- Unified banner helpers for ChatGPT indicators (match ChatGPT.ahk style) ---
 global smallLoadingGuis_ChatGPT := []
 
-CreateCenteredBanner_ChatGPT(message, bgColor := "3772FF", fontColor := "FFFFFF", fontSize := 24, alpha := 220) {
+CreateCenteredBanner_ChatGPT(message, bgColor := "3772FF", fontColor := "FFFFFF", fontSize := 24, alpha := 178) {
     bGui := Gui()
     bGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
     bGui.BackColor := bgColor
@@ -3999,7 +3999,7 @@ ShowSmallLoadingIndicator_ChatGPT(state := "Loading…", bgColor := "3772FF") {
         }
         return
     }
-    textGui := CreateCenteredBanner_ChatGPT(state, bgColor, "FFFFFF", 24, 220)
+    textGui := CreateCenteredBanner_ChatGPT(state, bgColor, "FFFFFF", 24, 178)
     smallLoadingGuis_ChatGPT.Push(textGui)
 }
 

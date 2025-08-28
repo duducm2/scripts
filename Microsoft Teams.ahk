@@ -249,7 +249,7 @@ ShowCenteredOverlay(hwndTarget, text, duration := 1500) {
         ov.Show("x" . cx . " y" . cy . " NA")
     }
 
-    WinSetTransparent(220, ov)        ; high opacity for visibility
+    WinSetTransparent(178, ov)        ; ~70% opacity for visibility
     Sleep duration
     ov.Destroy()
 }

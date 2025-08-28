@@ -589,7 +589,7 @@ ShowSmallLoadingIndicator(state := "Loading…", bgColor := "3772FF") {
     }
 
     ; Create a single, high-contrast, centered banner using the unified builder
-    textGui := CreateCenteredBanner(state, bgColor, "FFFFFF", 24, 220)
+    textGui := CreateCenteredBanner(state, bgColor, "FFFFFF", 24, 178)
     smallLoadingGuis.Push(textGui)
 }
 
@@ -709,7 +709,7 @@ CenterMouse() {
 ; =============================================================================
 ; Unified banner builder – consistent shape/font/opacity for all banners here
 ; =============================================================================
-CreateCenteredBanner(message, bgColor := "3772FF", fontColor := "FFFFFF", fontSize := 24, alpha := 220) {
+CreateCenteredBanner(message, bgColor := "3772FF", fontColor := "FFFFFF", fontSize := 24, alpha := 178) {
     bGui := Gui()
     bGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
     bGui.BackColor := bgColor
@@ -739,7 +739,7 @@ CreateCenteredBanner(message, bgColor := "3772FF", fontColor := "FFFFFF", fontSi
 ; Helper function to show a notification on the active window
 ; =============================================================================
 ShowNotification(message, durationMs := 2000, bgColor := "FFFF00", fontColor := "000000", fontSize := 24) {
-    notificationGui := CreateCenteredBanner(message, bgColor, fontColor, fontSize, 220)
+    notificationGui := CreateCenteredBanner(message, bgColor, fontColor, fontSize, 178)
     Sleep(durationMs)
     if IsObject(notificationGui) && notificationGui.Hwnd {
         notificationGui.Destroy()
@@ -927,7 +927,7 @@ ShowLoading(message := "Loading…", bgColor := "FFFF00", fontColor := "000000",
     guiX := l + (winW - guiW) / 2
     guiY := t + (winH - guiH) / 2
     loadingGui.Show("x" . Round(guiX) . " y" . Round(guiY) . " NA")
-    WinSetTransparent(220, loadingGui)
+    WinSetTransparent(178, loadingGui)
     Sleep 150
 }
 

@@ -43,7 +43,7 @@ ShowChatGPTLoadingIndicator(state := "Loading…") {
     gx := wx + (ww - gw) / 2
     gy := wy + (wh - gh) / 2
     chatgptLoadingGui.Show("x" Round(gx) " y" Round(gy) " NA")
-    WinSetTransparent(220, chatgptLoadingGui)
+    WinSetTransparent(178, chatgptLoadingGui)
 }
 
 HideChatGPTLoadingIndicator() {
