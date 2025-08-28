@@ -461,6 +461,47 @@ ToggleDictation(autoSend) {
                 EnsureMicVolume100()
                 btn.Click()
                 isDictating := true
+                ; Wait until dictation actually starts: either the start button disappears
+                ; or the stop/submit button appears, then play a short start chime
+                ; Keep this check brief to avoid blocking UX
+                try {
+                    detected := false
+                    loops := 0
+                    while (loops < 20 && !detected) { ; ~3s max (20 * 150ms)
+                        ; Check for stop/submit (meaning listening started)
+                        stopFound := false
+                        for n in stopNames {
+                            try {
+                                if cUIA.FindElement({ Name: n, Type: "Button" }) {
+                                    stopFound := true
+                                    break
+                                }
+                            } catch {
+                            }
+                        }
+                        if (stopFound) {
+                            detected := true
+                            break
+                        }
+                        ; Or verify the start button is gone
+                        startStillThere := false
+                        try {
+                            if FindButton(cUIA, startNames)
+                                startStillThere := true
+                        } catch {
+                            startStillThere := false
+                        }
+                        if (!startStillThere) {
+                            detected := true
+                            break
+                        }
+                        Sleep 150
+                        loops++
+                    }
+                    if (detected)
+                        PlayDictationStartedChime()
+                } catch {
+                }
                 ; Switch back to the previous window first so the indicator appears there
                 Send "!{Tab}"
                 Sleep 300    ; ensure the window switch has completed
@@ -515,7 +556,8 @@ ToggleDictation(autoSend) {
             ; so the banner appears on the monitor with the active window, then show a quick blue banner
             Send "!{Tab}"
             Sleep 250
-            ShowNotification(IS_WORK_ENVIRONMENT ? "Reiniciando ditado…" : "Restarting dictation…", 1200, "3772FF", "FFFFFF")
+            ShowNotification(IS_WORK_ENVIRONMENT ? "Reiniciando ditado…" : "Restarting dictation…", 1200, "3772FF",
+                "FFFFFF")
             isDictating := false ; Reset state so we can attempt a fresh start
 
             stopErrorRetryCount++
@@ -548,7 +590,8 @@ ToggleDictation(autoSend) {
                 }
             } else {
                 ; Too many consecutive failures – stop trying
-                ShowNotification(IS_WORK_ENVIRONMENT ? "Falhas repetidas no ditado — parando" : "Repeated dictation failures — stopping", 1800, "DF2935", "FFFFFF")
+                ShowNotification(IS_WORK_ENVIRONMENT ? "Falhas repetidas no ditado — parando" :
+                    "Repeated dictation failures — stopping", 1800, "DF2935", "FFFFFF")
                 stopErrorRetryCount := 0
             }
         }
@@ -708,7 +751,8 @@ CreateCenteredBanner(message, bgColor := "3772FF", fontColor := "FFFFFF", fontSi
         WinGetPos(&winX, &winY, &winW, &winH, activeWin)
     } else {
         workArea := SysGet.MonitorWorkArea(SysGet.MonitorPrimary)
-        winX := workArea.Left, winY := workArea.Top, winW := workArea.Right - workArea.Left, winH := workArea.Bottom - workArea.Top
+        winX := workArea.Left, winY := workArea.Top, winW := workArea.Right - workArea.Left, winH := workArea.Bottom -
+            workArea.Top
     }
 
     bGui.Show("AutoSize Hide")
@@ -1004,6 +1048,41 @@ PlayTranscriptionFinishedChime() {
         ; Last resort, a short, higher-pitched beep
         if !played {
             try SoundBeep(1400, 90)
+            catch {
+            }
+        }
+    } catch {
+    }
+}
+
+; =============================================================================
+; Dictation started chime (distinct beep when microphone starts listening)
+; =============================================================================
+PlayDictationStartedChime() {
+    try {
+        static lastTick := 0
+        if (A_TickCount - lastTick < 1000)
+            return
+        lastTick := A_TickCount
+
+        played := false
+        ; Use information icon beep to distinguish from other cues
+        try {
+            rc := DllCall("User32\\MessageBeep", "UInt", 0x00000040)
+            if (rc)
+                played := true
+        } catch {
+        }
+
+        if !played {
+            try {
+                played := SoundPlay("*16", false) ; system hand/stop sound as fallback
+            } catch {
+            }
+        }
+
+        if !played {
+            try SoundBeep(1200, 100)
             catch {
             }
         }
