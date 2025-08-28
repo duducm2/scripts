@@ -211,7 +211,7 @@ IsTeamsChatTitle(title) {
 
 ; --- NEW helper --------------------------------------------------------------
 ShowCenteredOverlay(hwndTarget, text, duration := 1500) {
-    ; Build a semi-transparent dark overlay with big white text
+    ; High-contrast centered banner (consistent with other scripts)
     ; Validate target window, fall back to active window, then screen center
     target := hwndTarget
     if !(IsSet(target) && target && WinExist("ahk_id " target)) {
@@ -228,9 +228,9 @@ ShowCenteredOverlay(hwndTarget, text, duration := 1500) {
     }
 
     ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
-    ov.BackColor := "333333"          ; dark background
-    ov.SetFont("s24 cFFFFFF", "Segoe UI")
-    msg := ov.Add("Text", "Center", text)
+    ov.BackColor := "3772FF"          ; strong blue
+    ov.SetFont("s24 cFFFFFF Bold", "Segoe UI")
+    msg := ov.Add("Text", "w500 Center", text)
     ov.Show("AutoSize Hide")          ; measure the GUI first
     ov.GetPos(&gx, &gy, &gw, &gh)
 
@@ -249,7 +249,7 @@ ShowCenteredOverlay(hwndTarget, text, duration := 1500) {
         ov.Show("x" . cx . " y" . cy . " NA")
     }
 
-    WinSetTransparent(220, ov)        ; a bit of transparency
+    WinSetTransparent(220, ov)        ; high opacity for visibility
     Sleep duration
     ov.Destroy()
 }
