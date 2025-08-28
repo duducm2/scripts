@@ -342,11 +342,106 @@ Shift+R  →  Search mail
 Shift+T  →  Move to folder
 Shift+D  →  Show keyboard shortcuts help
 
-Gmail Navigation (built-in shortcuts):
-J  →  Next message
-K  →  Previous message
-N  →  Next message in selection
-P  →  Previous message in selection
+--- Built-in Shortcuts (Windows) ---
+
+Compose & chat:
+p  →  Previous message in an open conversation
+n  →  Next message in an open conversation
+Shift + Esc  →  Focus main window
+Esc  →  Focus latest chat or compose
+Ctrl + .  →  Advance to the next chat or compose
+Ctrl + ,  →  Advance to previous chat or compose
+Ctrl + Enter  →  Send
+Ctrl + Shift + c  →  Add cc recipients
+Ctrl + Shift + b  →  Add bcc recipients
+Ctrl + Shift + f  →  Access custom from
+Ctrl + k  →  Insert a link
+Ctrl + m  →  Open spelling suggestions
+
+Formatting text:
+Ctrl + Shift + 5  →  Previous font
+Ctrl + Shift + 6  →  Next font
+Ctrl + Shift + -  →  Decrease text size
+Ctrl + Shift + +  →  Increase text size
+Ctrl + b  →  Bold
+Ctrl + i  →  Italics
+Ctrl + u  →  Underline
+Ctrl + Shift + 7  →  Numbered list
+Ctrl + Shift + 8  →  Bulleted list
+Ctrl + Shift + 9  →  Quote
+Ctrl + [  →  Indent less
+Ctrl + ]  →  Indent more
+Ctrl + Shift + l  →  Align left
+Ctrl + Shift + e  →  Align center
+Ctrl + Shift + r  →  Align right
+Ctrl + \  →  Remove formatting
+
+Actions (shortcuts on):
+,  →  Move focus to toolbar
+x  →  Select conversation
+s  →  Toggle star/rotate among superstars
+e  →  Archive
+m  →  Mute conversation
+!  →  Report as spam
+#  →  Delete
+r  →  Reply
+Shift + r  →  Reply in a new window
+a  →  Reply all
+Shift + a  →  Reply all in a new window
+f  →  Forward
+Shift + f  →  Forward in a new window
+Shift + n  →  Update conversation
+] or [  →  Archive conversation and go previous/next
+z  →  Undo last action
+Shift + i  →  Mark as read
+Shift + u  →  Mark as unread
+_  →  Mark unread from the selected message
++ or =  →  Mark as important
+-  →  Mark as not important
+b  →  Snooze (not available in classic Gmail)
+;  →  Expand entire conversation
+:  →  Collapse entire conversation
+Shift + t  →  Add conversation to Tasks
+
+Jumping (shortcuts on):
+g + i  →  Go to Inbox
+g + s  →  Go to Starred conversations
+g + b  →  Go to Snoozed conversations
+g + t  →  Go to Sent messages
+g + d  →  Go to Drafts
+g + a  →  Go to All mail
+Ctrl + Alt + ,  →  Switch to left sidebar (Calendar/Keep/Tasks)
+Ctrl + Alt + .  →  Switch to right (back to inbox)
+g + k  →  Go to Tasks
+g + l  →  Go to label
+
+Threadlist selection (shortcuts on):
+* + a  →  Select all conversations
+* + n  →  Deselect all conversations
+* + r  →  Select read conversations
+* + u  →  Select unread conversations
+* + s  →  Select starred conversations
+* + t  →  Select unstarred conversations
+
+Navigation (shortcuts on):
+g + n  →  Go to next page
+g + p  →  Go to previous page
+u  →  Back to threadlist
+k  →  Newer conversation
+j  →  Older conversation
+o or Enter  →  Open conversation
+``  →  Go to next Inbox section
+~  →  Go to previous Inbox section
+
+Application (shortcuts on):
+c  →  Compose
+d  →  Compose in a new tab
+/  →  Search mail
+q  →  Search chat contacts
+.  →  Open ""more actions"" menu
+v  →  Open ""move to"" menu
+l  →  Open ""label as"" menu
+?  →  Open keyboard shortcut help
 )"  ; end Gmail
 
 ; --- Google Keep ---------------------------------------------------------------
