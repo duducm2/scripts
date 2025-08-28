@@ -432,6 +432,7 @@ EnsureMicVolume100() {
 
 ToggleDictation(autoSend) {
     static isDictating := false
+    static stopErrorRetryCount := 0
     global g_transcribeChimePending
 
     ; --- Button Names (EN/PT) ---
@@ -523,8 +524,43 @@ ToggleDictation(autoSend) {
                 isDictating := false ; Reset state if stop button is not found
             }
         } catch Error as e {
-            MsgBox (IS_WORK_ENVIRONMENT ? "Erro ao parar o ditado: " : "Error stopping dictation: ") . e.Message
-            isDictating := false ; Reset state on error
+            ; Instead of interrupting with a modal dialog, show a quick blue banner
+            ShowNotification(IS_WORK_ENVIRONMENT ? "Reiniciando ditado…" : "Restarting dictation…", 1200, "3772FF", "FFFFFF")
+            isDictating := false ; Reset state so we can attempt a fresh start
+
+            stopErrorRetryCount++
+            if (stopErrorRetryCount <= 3) {
+                ; Attempt to restart dictation quickly
+                try {
+                    SetTitleMatchMode 2
+                    if hwnd := GetChatGPTWindowHwnd() {
+                        WinActivate "ahk_id " hwnd
+                        WinWaitActive "ahk_id " hwnd
+                    }
+                    CenterMouse()
+                    cUIA_restart := UIA_Browser()
+                    Sleep 200
+                    if btnRestart := FindButton(cUIA_restart, startNames, "Button", 3000) {
+                        EnsureMicVolume100()
+                        btnRestart.Click()
+                        isDictating := true
+                        Send "!{Tab}"
+                        Sleep 300
+                        ShowDictationIndicator()
+                        g_transcribeChimePending := false
+                        stopErrorRetryCount := 0 ; success – reset counter
+                    } else {
+                        ; Could not find start button – give up silently this time
+                        ; (Leave isDictating := false so the user can try again)
+                    }
+                } catch {
+                    ; Swallow restart errors – if they persist, the retry cap below will stop it
+                }
+            } else {
+                ; Too many consecutive failures – stop trying
+                ShowNotification(IS_WORK_ENVIRONMENT ? "Falhas repetidas no ditado — parando" : "Repeated dictation failures — stopping", 1800, "DF2935", "FFFFFF")
+                stopErrorRetryCount := 0
+            }
         }
     }
 }
