@@ -75,6 +75,7 @@ cheatSheets["OUTLOOK.EXE"] := "
 Outlook
 Shift+Y  →  Send to General
 Shift+U  →  Send to Newsletter
+Shift+I  →  Go to Inbox
 Shift+N  →  Focused / Other
 )"  ; end Outlook
 
@@ -1681,6 +1682,22 @@ IsOutlookMainActive() {
 }
 
 ; (Main window has no inspector navigation hotkeys)
+
+; Shift + I : Go to Inbox
++I::
+{
+    Send "{Alt}"
+    Sleep 60
+    Send "6"
+    Sleep 80
+    Send "^{Home}"
+    Sleep 100
+    Send "i"
+    Sleep 50
+    Send "n"
+    Sleep 50
+    Send "{Enter}"
+}
 
 +N:: {                                  ; toggle Focused / Other
     static nextOutlookButton := "Other"
