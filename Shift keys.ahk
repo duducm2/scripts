@@ -3961,68 +3961,46 @@ IsFileDialogActive() {
 
 #HotIf
 
-; --- Duplicated small loading indicator functions from ChatGPT.ahk ---
+; --- Unified banner helpers for ChatGPT indicators (match ChatGPT.ahk style) ---
 global smallLoadingGuis_ChatGPT := []
-ShowSmallLoadingIndicator_ChatGPT(state := "Loading…", bgColor := "00FF00") {
+
+CreateCenteredBanner_ChatGPT(message, bgColor := "3772FF", fontColor := "FFFFFF", fontSize := 24, alpha := 220) {
+    bGui := Gui()
+    bGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
+    bGui.BackColor := bgColor
+    bGui.SetFont("s" . fontSize . " c" . fontColor . " Bold", "Segoe UI")
+    bGui.Add("Text", "w500 Center", message)
+
+    activeWin := WinGetID("A")
+    if (activeWin) {
+        WinGetPos(&winX, &winY, &winW, &winH, activeWin)
+    } else {
+        workArea := SysGet.MonitorWorkArea(SysGet.MonitorPrimary)
+        winX := workArea.Left, winY := workArea.Top, winW := workArea.Right - workArea.Left, winH := workArea.Bottom - workArea.Top
+    }
+
+    bGui.Show("AutoSize Hide")
+    guiW := 0, guiH := 0
+    bGui.GetPos(, , &guiW, &guiH)
+
+    guiX := winX + (winW - guiW) / 2
+    guiY := winY + (winH - guiH) / 2
+    bGui.Show("x" . Round(guiX) . " y" . Round(guiY) . " NA")
+    WinSetTransparent(alpha, bGui)
+    return bGui
+}
+
+ShowSmallLoadingIndicator_ChatGPT(state := "Loading…", bgColor := "3772FF") {
     global smallLoadingGuis_ChatGPT
     if (smallLoadingGuis_ChatGPT.Length > 0) {
-        try {
-            if (smallLoadingGuis_ChatGPT[1].Controls.Length > 0)
-                smallLoadingGuis_ChatGPT[1].Controls[1].Text := state
-        } catch {
-            ; In case the GUI or control is invalid, proceed to recreate
+        try if (smallLoadingGuis_ChatGPT[1].Controls.Length > 0)
+            smallLoadingGuis_ChatGPT[1].Controls[1].Text := state
+        catch {
         }
         return
     }
-
-    ; --- Configuration for the simplified dual-border indicator ---
-    colors := ["000000", "FFFFFF"] ; Black and White borders
-    borderThickness := 2 ; pixels for each border
-    alpha := 90 ; Reduced opacity for better visibility
-
-    ; --- Central Text GUI ---
-    textGui := Gui()
-    textGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
-    textGui.BackColor := bgColor
-    textGui.SetFont("s10 c000000 Bold", "Segoe UI")
-    textGui.Add("Text", "w250 Center", state)
+    textGui := CreateCenteredBanner_ChatGPT(state, bgColor, "FFFFFF", 24, 220)
     smallLoadingGuis_ChatGPT.Push(textGui)
-
-    ; --- Calculate Position ---
-    activeWin := WinGetID("A")
-    if (activeWin) {
-        WinGetPos(&wx, &wy, &ww, &wh, activeWin)
-    } else {
-        work := SysGet.MonitorWorkArea(SysGet.MonitorPrimary)
-        wx := work.Left, wy := work.Top, ww := work.Right - work.Left, wh := work.Bottom - work.Top
-    }
-
-    ; --- Show Text GUI to get its dimensions ---
-    textGui.Show("AutoSize Hide")
-    textGui.GetPos(, , &gw, &gh)
-    cx := wx + (ww - gw) / 2
-    cy := wy + (wh - gh) / 2
-
-    ; --- Create Border GUIs ---
-    currentW := gw, currentH := gh
-    for color in colors {
-        currentW += borderThickness * 2
-        currentH += borderThickness * 2
-
-        borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
-        borderGui.BackColor := color
-        smallLoadingGuis_ChatGPT.Push(borderGui)
-
-        xPos := cx - (currentW - gw) / 2
-        yPos := cy - (currentH - gh) / 2
-
-        borderGui.Show("x" Round(xPos) " y" Round(yPos) " w" Round(currentW) " h" Round(currentH) " NA")
-        WinSetTransparent(alpha, borderGui.Hwnd)
-    }
-
-    ; --- Show the main text GUI on top ---
-    textGui.Show("x" Round(cx) " y" Round(cy) " NA")
-    WinSetTransparent(alpha, textGui.Hwnd)
 }
 
 HideSmallLoadingIndicator_ChatGPT() {
