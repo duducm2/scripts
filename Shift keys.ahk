@@ -123,6 +123,8 @@ Teams
 Shift+Y  →  Open Chat pane
 Shift+U  →  Maximize meeting window
 Shift+I  →  Reagir
+Shift+O  →  Join now with camera and microphone on
+Shift+P  →  Audio settings
 )"  ; end TeamsMeeting
 
 ; --- Microsoft Teams – chat window -----------------------------------------
@@ -1417,6 +1419,64 @@ IsTeamsChatActive() {
     }
     catch as e {
         MsgBox("UIA error:`n" e.Message, "Error", "IconX")
+    }
+}
+
+; Shift + O : Join now with camera and microphone on
++O:: {
+    try {
+        win := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+
+        ; Find the "Join now" button by AutomationId first
+        btn := root.FindFirst({ AutomationId: "prejoin-join-button" })
+        
+        ; Fallback: try finding by name
+        if !btn {
+            btn := root.FindFirst({ Name: "Ingressar agora Com a câmera ligada e Microfone ligado", ControlType: "Button" })
+        }
+        
+        ; Fallback: try finding by partial name (in case the name varies)
+        if !btn {
+            btn := root.FindFirst({ Name: "Ingressar agora", ControlType: "Button" })
+        }
+
+        if btn {
+            btn.Click()
+        }
+        ; No message box as requested - fail silently
+    }
+    catch {
+        ; No message box as requested - fail silently
+    }
+}
+
+; Shift + P : Audio settings
++P:: {
+    try {
+        win := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+
+        ; Find the audio settings button by AutomationId first
+        btn := root.FindFirst({ AutomationId: "prejoin-audiosettings-button" })
+        
+        ; Fallback: try finding by name
+        if !btn {
+            btn := root.FindFirst({ Name: "Microfone do computador e controles do alto-falante Configurações de áudio", ControlType: "Button" })
+        }
+        
+        ; Fallback: try finding by partial name
+        if !btn {
+            btn := root.FindFirst({ Name: "Configurações de áudio", ControlType: "Button" })
+        }
+
+        if btn {
+            btn.Click()
+        }
+        ; No message box as requested - fail silently
+    }
+    catch {
+        ; No message box as requested - fail silently
     }
 }
 
