@@ -4067,7 +4067,7 @@ IsFileDialogActive() {
             ; Now tab 6 times slowly to reach expense name field
             Loop 6 {
                 Send "{Tab}"
-                Sleep 200  ; Slow timing between tabs
+                Sleep 20  ; Slow timing between tabs
             }
             return
         }
