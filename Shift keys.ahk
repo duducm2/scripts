@@ -4019,50 +4019,56 @@ IsFileDialogActive() {
     }
 }
 
-; Shift + I : Focus expense name field
+; Shift + I : Focus expense name field (via value field + 6 tabs)
 +i:: {
     try {
         uia := UIA_Browser()
         Sleep 300
 
-        ; Try to find the expense name field directly by AutomationId
-        nameField := uia.FindFirst({
-            Type: "Edit",
-            AutomationId: "mat-input-14"
+        ; Find the "who paid" combo box (same logic as +u)
+        paidByCombo := uia.FindFirst({
+            Type: "ComboBox",
+            Name: "Eduardo Figueiredo pagou"
         })
 
-        ; If not found by AutomationId, try by placeholder text prefix
-        if !nameField {
-            possiblePrefixes := [
-                "por ex.",      ; Portuguese
-                "e.g.",         ; English
-                "p. ej.",       ; Spanish
-                "par ex."       ; French
+        ; If not found by exact match, try partial matches
+        if !paidByCombo {
+            possibleNames := [
+                " pagou",           ; Portuguese suffix
+                " paid",            ; English suffix
+                " pagó",            ; Spanish suffix
+                " a payé"           ; French suffix
             ]
-            for prefix in possiblePrefixes {
-                nameField := uia.FindFirst({ 
-                    Type: "Edit", 
-                    Name: prefix, 
-                    matchmode: "Substring" 
+            for suffix in possibleNames {
+                paidByCombo := uia.FindFirst({
+                    Type: "ComboBox",
+                    Name: A_UserName . suffix,
+                    matchmode: "Substring"
                 })
-                if nameField
+                if paidByCombo
                     break
             }
         }
 
-        ; Fallback: find any edit field with "mat-input" in AutomationId
-        if !nameField {
-            nameField := uia.FindFirst({
-                Type: "Edit",
-                AutomationId: "mat-input",
-                matchmode: "Substring"
+        ; Try by AutomationId if name matching failed
+        if !paidByCombo {
+            paidByCombo := uia.FindFirst({
+                Type: "ComboBox",
+                AutomationId: "mat-select-54"
             })
         }
 
-        if nameField {
-            nameField.SetFocus()
-            Sleep 50
-            Send "^a"  ; Select all text in the field
+        if paidByCombo {
+            paidByCombo.Click()
+            Sleep 100
+            Send "{Tab}"  ; Move to expense value field
+            Sleep 200     ; Slow tab timing
+            
+            ; Now tab 6 times slowly to reach expense name field
+            Loop 6 {
+                Send "{Tab}"
+                Sleep 200  ; Slow timing between tabs
+            }
             return
         }
     } catch Error as e {
