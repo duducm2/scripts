@@ -88,6 +88,7 @@ Shift+U  →  Snooze 1 hour
 Shift+I  →  Snooze 4 hours
 Shift+O  →  Snooze 1 day
 Shift+P  →  Dismiss all reminders
+Shift+H  →  Join Online
 )"  ; end Outlook Reminder
 
 ; --- Outlook Appointment window ---------------------------------------------
@@ -1286,6 +1287,39 @@ Confirm(t) {
 +I:: Confirm("4 hours")
 +O:: Confirm("1 day")
 +P:: ConfirmDismissAll()  ; Shift + P : Dismiss all reminders with confirmation
+
+; Shift + H : Join Online
++H::
+{
+    try {
+        win := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+
+        ; Find the "Join Online" button
+        ; Type: 50000 (Button), Name: "Join Online", AutomationId: "8346", ClassName: "Button"
+        joinButton := root.FindFirst({ Name: "Join Online", Type: "50000", AutomationId: "8346" })
+
+        ; Fallback: try finding by name only
+        if !joinButton {
+            joinButton := root.FindFirst({ Name: "Join Online", ControlType: "Button" })
+        }
+
+        ; Fallback: try finding by AutomationId only
+        if !joinButton {
+            joinButton := root.FindFirst({ AutomationId: "8346" })
+        }
+
+        if joinButton {
+            joinButton.Click()
+        }
+        else {
+            ; No message box as requested - fail silently
+        }
+    }
+    catch Error as e {
+        ; No message box as requested - fail silently
+    }
+}
 
 #HotIf
 
