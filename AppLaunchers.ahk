@@ -165,6 +165,7 @@
 ; =============================================================================
 #!+9::
 {
+    SoundBeep()
     url := "https://keep.google.com/u/0/#LIST/18_9CP4EZyO6i88cnsRR6HgRNlSEohvkKX0PEZXh8mKnj8H_TpfRhG6aUbrCdxQ"
     Run "chrome.exe " url
     WinWait("ahk_exe chrome.exe")
@@ -190,7 +191,6 @@
     }
     overlay.Show("AutoSize Center")
     Sleep(5000)
-    overlay.Destroy()
 
     WinActivate("ahk_exe chrome.exe")
     Sleep(100)
@@ -209,6 +209,8 @@
     Send("{Escape}")
     Sleep(3000)
     Send("^w")
+    SoundBeep()
+    overlay.Destroy()
 }
 
 ; =============================================================================
