@@ -160,6 +160,53 @@
 }
 
 ; =============================================================================
+; Open Google Keep Pomodoro list, show overlay, then send keys
+; Hotkey: Win+Alt+Shift+9
+; =============================================================================
+#!+9::
+{
+    url := "https://keep.google.com/u/0/#LIST/18_9CP4EZyO6i88cnsRR6HgRNlSEohvkKX0PEZXh8mKnj8H_TpfRhG6aUbrCdxQ"
+    Run "chrome.exe " url
+    WinWait("ahk_exe chrome.exe")
+    WinActivate("ahk_exe chrome.exe")
+
+    imagePath := ""
+    for name in ["tomato.png", "tomato.jpg", "pomodoro.png", "pomodoro.jpg"] {
+        candidate := A_ScriptDir "\" name
+        if FileExist(candidate) {
+            imagePath := candidate
+            break
+        }
+    }
+
+    overlay := Gui()
+    overlay.Opt("+AlwaysOnTop -Caption +ToolWindow +E0x20")
+    if (imagePath != "") {
+        overlay.Add("Picture", "w240 h240 Center", imagePath)
+    } else {
+        overlay.SetFont("s36", "Segoe UI")
+        overlay.Add("Text", "Center cRed", "Pomodoro")
+        overlay.BackColor := "FFFFFF"
+    }
+    overlay.Show("AutoSize Center")
+    Sleep(5000)
+    overlay.Destroy()
+
+    WinActivate("ahk_exe chrome.exe")
+    Sleep(100)
+    Send("{Enter}")
+    Sleep(250)
+    Send("{Up}")
+    Sleep(250)
+    ClipSaved := ClipboardAll()
+    A_Clipboard := "tomato"
+    ClipWait(1)
+    Send("^v")
+    Sleep(50)
+    A_Clipboard := ClipSaved
+}
+
+; =============================================================================
 ; Helper function to center mouse on the active window
 ; =============================================================================
 CenterMouse() {
