@@ -236,6 +236,11 @@
         ; Fail silently if UIA not available here
     }
 
+    ; Quick motivation banner
+    goOverlay := CreateCenteredBanner_Launchers("GO!", "3772FF", "FFFFFF", 48, 178)
+    Sleep(1200)
+    try goOverlay.Destroy()
+
     SoundBeep()
     overlay.Destroy()
 }
@@ -246,4 +251,34 @@
 CenterMouse() {
     Sleep(200)
     Send("#!+q")
+}
+
+; =============================================================================
+; Centered banner helper (AppLaunchers aesthetic)
+; =============================================================================
+CreateCenteredBanner_Launchers(message, bgColor := "be4747", fontColor := "FFFFFF", fontSize := 24, alpha := 178) {
+    bGui := Gui()
+    bGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
+    bGui.BackColor := bgColor
+    bGui.SetFont("s" . fontSize . " c" . fontColor . " Bold", "Segoe UI")
+    bGui.Add("Text", "w500 Center", message)
+
+    activeWin := WinGetID("A")
+    if (activeWin) {
+        WinGetPos(&winX, &winY, &winW, &winH, activeWin)
+    } else {
+        workArea := SysGet.MonitorWorkArea(SysGet.MonitorPrimary)
+        winX := workArea.Left, winY := workArea.Top, winW := workArea.Right - workArea.Left, winH := workArea.Bottom -
+            workArea.Top
+    }
+
+    bGui.Show("AutoSize Hide")
+    guiW := 0, guiH := 0
+    bGui.GetPos(, , &guiW, &guiH)
+
+    guiX := winX + (winW - guiW) / 2
+    guiY := winY + (winH - guiH) / 2
+    bGui.Show("x" . Round(guiX) . " y" . Round(guiY) . " NA")
+    WinSetTransparent(alpha, bGui)
+    return bGui
 }
