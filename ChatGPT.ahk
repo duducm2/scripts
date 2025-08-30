@@ -1089,3 +1089,66 @@ PlayDictationStartedChime() {
     } catch {
     }
 }
+
+; =============================================================================
+; Voice Mode watcher: beep when "End voice mode" appears/disappears
+; =============================================================================
+global g_voiceWatcherOn := false
+
+StartVoiceModeWatcher() {
+    global g_voiceWatcherOn
+    if g_voiceWatcherOn
+        return
+    g_voiceWatcherOn := true
+    SetTimer(CheckVoiceModeButton, 400)
+}
+
+StopVoiceModeWatcher() {
+    global g_voiceWatcherOn
+    if !g_voiceWatcherOn
+        return
+    g_voiceWatcherOn := false
+    SetTimer(CheckVoiceModeButton, 0)
+}
+
+CheckVoiceModeButton() {
+    static prevPresent := false
+    static lastChangeTick := 0
+
+    hwnd := GetChatGPTWindowHwnd()
+    present := false
+
+    if (hwnd) {
+        try {
+            cUIA := UIA_Browser("ahk_id " hwnd)
+            names := ["End voice mode", "Encerrar modo voz"]
+            for n in names {
+                try {
+                    if cUIA.FindElement({ Name: n, Type: "Button" }) {
+                        present := true
+                        break
+                    }
+                } catch {
+                }
+            }
+        } catch {
+        }
+    }
+
+    if (present != prevPresent) {
+        if (A_TickCount - lastChangeTick > 800) {
+            lastChangeTick := A_TickCount
+            if (present) {
+                ; started talking
+                PlayDictationStartedChime()
+            } else {
+                ; finished talking
+                PlayCompletionChime()
+            }
+        }
+        prevPresent := present
+    }
+}
+
+; Start watcher on script load
+StartVoiceModeWatcher()
