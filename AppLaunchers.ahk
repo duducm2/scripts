@@ -199,11 +199,16 @@
     Send("{Up}")
     Sleep(250)
     ClipSaved := ClipboardAll()
-    A_Clipboard := "tomato"
+    current := FormatTime(, "dd/MM/yyyy HH:mm")
+    A_Clipboard := "tomato " current
     ClipWait(1)
     Send("^v")
     Sleep(50)
     A_Clipboard := ClipSaved
+
+    Send("{Escape}")
+    Sleep(3000)
+    Send("^w")
 }
 
 ; =============================================================================
