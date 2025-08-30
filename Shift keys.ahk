@@ -169,13 +169,14 @@ Shift+T  →  Toggle play/pause
 cheatSheets["ONENOTE.EXE"] := "
 (
 OneNote
+Shift+F  →  Advanced Searching with double quotes
 Shift+Y  →  Select line and children
 Shift+U  →  Collapse
 Shift+I  →  Expand
 Shift+J  →  Collapse all
 Shift+K  →  Expand all
 Shift+D  →  Delete line and children
-Shift+F  →  Delete line (keep children)
+Shift+S  →  Delete line (keep children)
 )"  ; end OneNote
 
 ; --- Chrome general shortcuts ----------------------------------------------
@@ -976,6 +977,19 @@ CenterGuiOnActiveMonitor(guiObj) {
 ; Shift + y : Onenote: select line and children
 +y:: Send("^+-") ; Remaps to Ctrl + Shift + -~
 
+; Shift + F : Advanced Searching with double quotes
++f:: {
+    Send "^f"
+    Sleep 50
+    Send "^a"
+    Sleep 20
+    Send "{Del}"
+    Sleep 20
+    Send '""'
+    Sleep 20
+    Send "{Left}"
+}
+
 ; Shift + U : Onenote: select line and children
 +d:: {
     Send("^+-") ; Remaps to Ctrl + Shift + -
@@ -983,7 +997,7 @@ CenterGuiOnActiveMonitor(guiObj) {
 }
 
 ; Shift + F : Onenote: delete only current line (keep children)
-+f:: {
++s:: {
     Send("+{Left}")
     Send "{Del}"
 }
