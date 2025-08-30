@@ -212,6 +212,7 @@ Shift+C  →  Switch AI modes (agent/ask)
 Shift+V  →  Fold Git repos (SCM)
 Shift+B  →  Create AI commit message, then select Commit or Commit and Push
 Ctrl + Alt + Y  →  Select to Bracket
+Ctrl + Alt + U  →  Open in file explorer
 
 --- Additional Shortcuts ---
 Ctrl + T  →  New chat tab
@@ -1430,12 +1431,12 @@ IsTeamsChatActive() {
 
         ; Find the "Join now" button by AutomationId first
         btn := root.FindFirst({ AutomationId: "prejoin-join-button" })
-        
+
         ; Fallback: try finding by name
         if !btn {
             btn := root.FindFirst({ Name: "Ingressar agora Com a câmera ligada e Microfone ligado", ControlType: "Button" })
         }
-        
+
         ; Fallback: try finding by partial name (in case the name varies)
         if !btn {
             btn := root.FindFirst({ Name: "Ingressar agora", ControlType: "Button" })
@@ -1459,12 +1460,13 @@ IsTeamsChatActive() {
 
         ; Find the audio settings button by AutomationId first
         btn := root.FindFirst({ AutomationId: "prejoin-audiosettings-button" })
-        
+
         ; Fallback: try finding by name
         if !btn {
-            btn := root.FindFirst({ Name: "Microfone do computador e controles do alto-falante Configurações de áudio", ControlType: "Button" })
+            btn := root.FindFirst({ Name: "Microfone do computador e controles do alto-falante Configurações de áudio",
+                ControlType: "Button" })
         }
-        
+
         ; Fallback: try finding by partial name
         if !btn {
             btn := root.FindFirst({ Name: "Configurações de áudio", ControlType: "Button" })
@@ -2773,6 +2775,9 @@ IsEditorActive() {
         A_Clipboard := oldClip
     }
 }
+
+; Ctrl + Alt + U : Remap to Shift+Alt+R
+^!u:: Send "+!r"
 
 ; Shift + N : Expand selection (via Command Palette)
 +n:: Send "+!{Right}"
@@ -4157,9 +4162,9 @@ IsFileDialogActive() {
             Sleep 100
             Send "{Tab}"  ; Move to expense value field
             Sleep 200     ; Slow tab timing
-            
+
             ; Now tab 6 times slowly to reach expense name field
-            Loop 6 {
+            loop 6 {
                 Send "{Tab}"
                 Sleep 20  ; Slow timing between tabs
             }
@@ -4211,7 +4216,8 @@ CreateCenteredBanner_ChatGPT(message, bgColor := "3772FF", fontColor := "FFFFFF"
         WinGetPos(&winX, &winY, &winW, &winH, activeWin)
     } else {
         workArea := SysGet.MonitorWorkArea(SysGet.MonitorPrimary)
-        winX := workArea.Left, winY := workArea.Top, winW := workArea.Right - workArea.Left, winH := workArea.Bottom - workArea.Top
+        winX := workArea.Left, winY := workArea.Top, winW := workArea.Right - workArea.Left, winH := workArea.Bottom -
+            workArea.Top
     }
 
     bGui.Show("AutoSize Hide")
