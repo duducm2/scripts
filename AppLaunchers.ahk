@@ -173,7 +173,7 @@
 
     imagePath := ""
     for name in ["tomato.png", "tomato.jpg", "pomodoro.png", "pomodoro.jpg"] {
-        candidate := A_ScriptDir "\" name
+        candidate := A_ScriptDir "\pictures\" name
         if FileExist(candidate) {
             imagePath := candidate
             break
