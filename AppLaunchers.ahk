@@ -7,6 +7,7 @@
 
 ; --- Includes ----------------------------------------------------------------
 #include %A_ScriptDir%\env.ahk
+#include UIA-v2\Lib\UIA.ahk
 
 ; --- Hotkeys & Functions -----------------------------------------------------
 
@@ -209,6 +210,32 @@
     Send("{Escape}")
     Sleep(3000)
     Send("^w")
+
+    ; Open Windows Clock (Alarms & Clock) and start focus session (Pomodoro)
+    try {
+        Run "ms-clock:"
+        ; The Clock window is hosted by ApplicationFrameHost.exe, title typically contains "Relógio" or "Clock"
+        SetTitleMatchMode 2
+        WinWait("ahk_exe ApplicationFrameHost.exe")
+        WinActivate("ahk_exe ApplicationFrameHost.exe")
+        Sleep(2000)
+
+        Send("^{Home}")
+        Sleep(100)
+        Send("{Enter}")
+
+        ; Only proceed if previous Send("{Enter}") (after ^{Home}) succeeded
+        Sleep(600)
+        loop 9 {
+            Send("{Tab}")
+            Sleep(100)
+        }
+        Send("{Enter}")
+
+    } catch {
+        ; Fail silently if UIA not available here
+    }
+
     SoundBeep()
     overlay.Destroy()
 }
