@@ -215,6 +215,7 @@ Shift+V  →  Fold Git repos (SCM)
 Shift+B  →  Create AI commit message, then select Commit or Commit and Push
 Ctrl + Alt + Y  →  Select to Bracket
 Ctrl + Alt + U  →  Open in file explorer
+Ctrl + Alt + I  →  fold-all-directories
 
 --- Additional Shortcuts ---
 Ctrl + T  →  New chat tab
@@ -2800,6 +2801,9 @@ IsEditorActive() {
 ; Ctrl + Alt + U : Remap to Shift+Alt+R
 ^!u:: Send "+!r"
 
+; Ctrl + Alt + I : Fold all directories in VS Code Explorer
+^!i:: FoldAllDirectoriesInExplorer()
+
 ; Shift + N : Expand selection (via Command Palette)
 +n:: Send "+!{Right}"
 
@@ -2880,6 +2884,143 @@ FoldAllGitDirectoriesInCursor() {
         }
     } catch Error as e {
         try MsgBox "UIA error folding Git directories: " e.Message, "Cursor Git Fold", "IconX"
+    }
+}
+
+; Collapse all expandable directories in the Explorer (FileExplorer3) for all workspace roots
+FoldAllDirectoriesInExplorer() {
+    try {
+        hwnd := WinExist("A")
+        if !hwnd
+            return
+        root := UIA.ElementFromHandle(hwnd)
+
+        ; Ensure Explorer is focused if not already
+        Send "^+e"
+        Sleep 150
+
+        ; Find the Explorer container (EN/PT names) and then the Tree control inside it
+        expEn := UIA.CreatePropertyConditionEx(UIA.Property.Name, "Explorer", UIA.PropertyConditionFlags.IgnoreCaseMatchSubstring
+        )
+        expPt := UIA.CreatePropertyConditionEx(UIA.Property.Name, "Explorador", UIA.PropertyConditionFlags.IgnoreCaseMatchSubstring
+        )
+        expName := UIA.CreateOrCondition(expEn, expPt)
+        paneType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Pane)
+        groupType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Group)
+        scopeCond := UIA.CreateOrCondition(paneType, groupType)
+        expRootCond := UIA.CreateAndCondition(expName, scopeCond)
+        expRoot := ""
+        try expRoot := root.FindElement(expRootCond, UIA.TreeScope.Descendants)
+        if !expRoot
+            expRoot := root
+
+        treeType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Tree)
+        autoId3 := UIA.CreatePropertyCondition(UIA.Property.AutomationId, "FileExplorer3")
+        fileTree := ""
+        try fileTree := expRoot.FindElement(autoId3, UIA.TreeScope.Descendants)
+        if !fileTree {
+            try {
+                autoId2 := UIA.CreatePropertyCondition(UIA.Property.AutomationId, "FileExplorer2")
+                fileTree := expRoot.FindElement(autoId2, UIA.TreeScope.Descendants)
+            }
+        }
+        if !fileTree {
+            try {
+                autoId := UIA.CreatePropertyCondition(UIA.Property.AutomationId, "FileExplorer")
+                fileTree := expRoot.FindElement(autoId, UIA.TreeScope.Descendants)
+            }
+        }
+        if !fileTree {
+            try fileTree := expRoot.FindElement(treeType, UIA.TreeScope.Descendants)
+        }
+        if !fileTree
+            return
+
+        ; Capture currently focused tree item (best effort) to restore selection
+        hasFocusProp := UIA.CreatePropertyCondition(UIA.Property.HasKeyboardFocus, true)
+        focusedEl := ""
+        try focusedEl := fileTree.FindElement(hasFocusProp, UIA.TreeScope.Descendants)
+        focusedName := ""
+        if focusedEl
+            focusedName := focusedEl.GetPropertyValue(UIA.Property.Name)
+
+        ; Preserve scroll position when possible
+        hPerc := vPerc := ""
+        hasScroll := fileTree.GetPropertyValue(UIA.Property.IsScrollPatternAvailable)
+        if hasScroll {
+            try {
+                sp := fileTree.ScrollPattern
+                hPerc := sp.HorizontalScrollPercent
+                vPerc := sp.VerticalScrollPercent
+            }
+        }
+
+        ; Get all TreeItem nodes that support expand/collapse (i.e., directories)
+        itemType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.TreeItem)
+        canExpand := UIA.CreatePropertyCondition(UIA.Property.IsExpandCollapsePatternAvailable, true)
+        dirCond := UIA.CreateAndCondition(itemType, canExpand)
+        items := fileTree.FindElements(dirCond, UIA.TreeScope.Descendants)
+        if !items
+            return
+
+        ; Collapse each expanded directory. Do not toggle; skip already collapsed.
+        for item in items {
+            if !item
+                continue
+            try {
+                pat := item.ExpandCollapsePattern
+                if pat.ExpandCollapseState != UIA.ExpandCollapseState.Collapsed
+                    pat.Collapse()
+            } catch Error {
+                ; Fallback: try clicking the chevron/glyph if found (e.g., text "" or button)
+                btnType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Button)
+                txtType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Text)
+                glyphName := UIA.CreatePropertyCondition(UIA.Property.Name, "")
+                dotName := UIA.CreatePropertyCondition(UIA.Property.Name, ".")
+                chevronCond := UIA.CreateOrCondition(btnType, UIA.CreateOrCondition(UIA.CreateAndCondition(txtType,
+                    glyphName), UIA.CreateAndCondition(txtType, dotName)))
+                chevron := ""
+                try chevron := item.FindElement(chevronCond, UIA.TreeScope.Children)
+                if !chevron
+                    try chevron := item.FindElement(chevronCond, UIA.TreeScope.Descendants)
+                if chevron {
+                    if chevron.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
+                        try chevron.InvokePattern.Invoke()
+                    } else {
+                        try chevron.Click()
+                    }
+                }
+            }
+            Sleep 10
+        }
+
+        ; Restore scroll position if it changed
+        if hasScroll && (hPerc != "" && vPerc != "") {
+            try fileTree.ScrollPattern.SetScrollPercent(hPerc, vPerc)
+        }
+
+        ; Restore selection/focus if possible
+        if focusedName {
+            nameCond := UIA.CreatePropertyConditionEx(UIA.Property.Name, focusedName, UIA.PropertyConditionFlags.IgnoreCase
+            )
+            itemType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.TreeItem)
+            focusedLookup := UIA.CreateAndCondition(itemType, nameCond)
+            newFocus := ""
+            try newFocus := fileTree.FindElement(focusedLookup, UIA.TreeScope.Descendants)
+            if newFocus {
+                try newFocus.SetFocus()
+            } else {
+                try fileTree.SetFocus()
+            }
+        } else {
+            try fileTree.SetFocus()
+        }
+
+        ; Optional brief toast
+        ToolTip "Directories folded"
+        SetTimer () => ToolTip(), -800
+    } catch Error as e {
+        try MsgBox "UIA error folding Explorer directories: " e.Message, "Cursor Explorer Fold", "IconX"
     }
 }
 
