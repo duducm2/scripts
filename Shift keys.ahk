@@ -175,6 +175,7 @@ Shift+I  →  Expand
 Shift+J  →  Collapse all
 Shift+K  →  Expand all
 Shift+D  →  Delete line and children
+Shift+F  →  Delete line (keep children)
 )"  ; end OneNote
 
 ; --- Chrome general shortcuts ----------------------------------------------
@@ -978,6 +979,12 @@ CenterGuiOnActiveMonitor(guiObj) {
 ; Shift + U : Onenote: select line and children
 +d:: {
     Send("^+-") ; Remaps to Ctrl + Shift + -
+    Send "{Del}"
+}
+
+; Shift + F : Onenote: delete only current line (keep children)
++f:: {
+    Send("+{Left}")
     Send "{Del}"
 }
 
