@@ -88,6 +88,7 @@ Shift+U  →  Snooze 1 hour
 Shift+I  →  Snooze 4 hours
 Shift+O  →  Snooze 1 day
 Shift+P  →  Dismiss all reminders
+Shift+H  →  Join Online
 )"  ; end Outlook Reminder
 
 ; --- Outlook Appointment window ---------------------------------------------
@@ -122,6 +123,8 @@ Teams
 Shift+Y  →  Open Chat pane
 Shift+U  →  Maximize meeting window
 Shift+I  →  Reagir
+Shift+O  →  Join now with camera and microphone on
+Shift+P  →  Audio settings
 )"  ; end TeamsMeeting
 
 ; --- Microsoft Teams – chat window -----------------------------------------
@@ -1287,6 +1290,39 @@ Confirm(t) {
 +O:: Confirm("1 day")
 +P:: ConfirmDismissAll()  ; Shift + P : Dismiss all reminders with confirmation
 
+; Shift + H : Join Online
++H::
+{
+    try {
+        win := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+
+        ; Find the "Join Online" button
+        ; Type: 50000 (Button), Name: "Join Online", AutomationId: "8346", ClassName: "Button"
+        joinButton := root.FindFirst({ Name: "Join Online", Type: "50000", AutomationId: "8346" })
+
+        ; Fallback: try finding by name only
+        if !joinButton {
+            joinButton := root.FindFirst({ Name: "Join Online", ControlType: "Button" })
+        }
+
+        ; Fallback: try finding by AutomationId only
+        if !joinButton {
+            joinButton := root.FindFirst({ AutomationId: "8346" })
+        }
+
+        if joinButton {
+            joinButton.Click()
+        }
+        else {
+            ; No message box as requested - fail silently
+        }
+    }
+    catch Error as e {
+        ; No message box as requested - fail silently
+    }
+}
+
 #HotIf
 
 ;-------------------------------------------------------------------
@@ -1383,6 +1419,64 @@ IsTeamsChatActive() {
     }
     catch as e {
         MsgBox("UIA error:`n" e.Message, "Error", "IconX")
+    }
+}
+
+; Shift + O : Join now with camera and microphone on
++O:: {
+    try {
+        win := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+
+        ; Find the "Join now" button by AutomationId first
+        btn := root.FindFirst({ AutomationId: "prejoin-join-button" })
+        
+        ; Fallback: try finding by name
+        if !btn {
+            btn := root.FindFirst({ Name: "Ingressar agora Com a câmera ligada e Microfone ligado", ControlType: "Button" })
+        }
+        
+        ; Fallback: try finding by partial name (in case the name varies)
+        if !btn {
+            btn := root.FindFirst({ Name: "Ingressar agora", ControlType: "Button" })
+        }
+
+        if btn {
+            btn.Click()
+        }
+        ; No message box as requested - fail silently
+    }
+    catch {
+        ; No message box as requested - fail silently
+    }
+}
+
+; Shift + P : Audio settings
++P:: {
+    try {
+        win := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+
+        ; Find the audio settings button by AutomationId first
+        btn := root.FindFirst({ AutomationId: "prejoin-audiosettings-button" })
+        
+        ; Fallback: try finding by name
+        if !btn {
+            btn := root.FindFirst({ Name: "Microfone do computador e controles do alto-falante Configurações de áudio", ControlType: "Button" })
+        }
+        
+        ; Fallback: try finding by partial name
+        if !btn {
+            btn := root.FindFirst({ Name: "Configurações de áudio", ControlType: "Button" })
+        }
+
+        if btn {
+            btn.Click()
+        }
+        ; No message box as requested - fail silently
+    }
+    catch {
+        ; No message box as requested - fail silently
     }
 }
 
@@ -4019,50 +4113,56 @@ IsFileDialogActive() {
     }
 }
 
-; Shift + I : Focus expense name field
+; Shift + I : Focus expense name field (via value field + 6 tabs)
 +i:: {
     try {
         uia := UIA_Browser()
         Sleep 300
 
-        ; Try to find the expense name field directly by AutomationId
-        nameField := uia.FindFirst({
-            Type: "Edit",
-            AutomationId: "mat-input-14"
+        ; Find the "who paid" combo box (same logic as +u)
+        paidByCombo := uia.FindFirst({
+            Type: "ComboBox",
+            Name: "Eduardo Figueiredo pagou"
         })
 
-        ; If not found by AutomationId, try by placeholder text prefix
-        if !nameField {
-            possiblePrefixes := [
-                "por ex.",      ; Portuguese
-                "e.g.",         ; English
-                "p. ej.",       ; Spanish
-                "par ex."       ; French
+        ; If not found by exact match, try partial matches
+        if !paidByCombo {
+            possibleNames := [
+                " pagou",           ; Portuguese suffix
+                " paid",            ; English suffix
+                " pagó",            ; Spanish suffix
+                " a payé"           ; French suffix
             ]
-            for prefix in possiblePrefixes {
-                nameField := uia.FindFirst({ 
-                    Type: "Edit", 
-                    Name: prefix, 
-                    matchmode: "Substring" 
+            for suffix in possibleNames {
+                paidByCombo := uia.FindFirst({
+                    Type: "ComboBox",
+                    Name: A_UserName . suffix,
+                    matchmode: "Substring"
                 })
-                if nameField
+                if paidByCombo
                     break
             }
         }
 
-        ; Fallback: find any edit field with "mat-input" in AutomationId
-        if !nameField {
-            nameField := uia.FindFirst({
-                Type: "Edit",
-                AutomationId: "mat-input",
-                matchmode: "Substring"
+        ; Try by AutomationId if name matching failed
+        if !paidByCombo {
+            paidByCombo := uia.FindFirst({
+                Type: "ComboBox",
+                AutomationId: "mat-select-54"
             })
         }
 
-        if nameField {
-            nameField.SetFocus()
-            Sleep 50
-            Send "^a"  ; Select all text in the field
+        if paidByCombo {
+            paidByCombo.Click()
+            Sleep 100
+            Send "{Tab}"  ; Move to expense value field
+            Sleep 200     ; Slow tab timing
+            
+            ; Now tab 6 times slowly to reach expense name field
+            Loop 6 {
+                Send "{Tab}"
+                Sleep 20  ; Slow timing between tabs
+            }
             return
         }
     } catch Error as e {
