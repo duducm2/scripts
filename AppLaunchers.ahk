@@ -97,7 +97,7 @@
         WinActivate
         CenterMouse()
     } else {
-        Run "chrome.exe https://www.youtube.com"
+        Run "chrome.exe --new-window https://www.youtube.com"
         WinWaitActive("YouTube")
         CenterMouse()
     }
