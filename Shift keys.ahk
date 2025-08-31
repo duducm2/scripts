@@ -487,6 +487,7 @@ cheatSheets["UIATreeInspector"] := "(UIA Tree Inspector)`r`nShift+Y → Refresh 
 cheatSheets["Settle Up"] := "
 (
 Settle Up
+Shift+Y  →  Add transaction
 Shift+U  →  Focus expense value field
 Shift+I  →  Focus expense name field
 )"
@@ -4391,6 +4392,26 @@ IsFileDialogActive() {
 ; SettleUp Shortcuts
 ;-------------------------------------------------------------------
 #HotIf WinActive("Settle Up")
+
+; Shift + Y : Click "Adicionar transação" button (UIA by Name substring)
++y:: {
+    try {
+        uia := UIA_Browser()
+        Sleep 200
+        ; Keep it simple: search only by Name with substring
+        btn := uia.FindElement({
+            Name: "Adicionar transa",
+            matchmode: "Substring"
+        })
+        if (btn) {
+            btn.Click()
+        } else {
+            MsgBox "Could not find the 'Adicionar transação' button."
+        }
+    } catch Error as e {
+        MsgBox "Error clicking 'Adicionar transação': " e.Message
+    }
+}
 
 ; Shift + U : Focus expense value field (via name field + tab)
 +u:: {
