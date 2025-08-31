@@ -168,14 +168,14 @@ Shift+T  →  Toggle play/pause
 cheatSheets["ONENOTE.EXE"] := "
 (
 OneNote
-Shift+F  →  Advanced Searching with double quotes
-Shift+Y  →  Select line and children
-Shift+U  →  Collapse
-Shift+I  →  Expand
-Shift+J  →  Collapse all
-Shift+K  →  Expand all
+Shift+Y  →  Collapse
+Shift+U  →  Expand
+Shift+I  →  Collapse all
+Shift+O  →  Expand all
+Shift+P  →  Select line and children
 Shift+D  →  Delete line and children
 Shift+S  →  Delete line (keep children)
+Shift+F  →  Advanced Searching with double quotes
 )"  ; end OneNote
 
 ; --- Chrome general shortcuts ----------------------------------------------
@@ -981,8 +981,8 @@ CenterGuiOnActiveMonitor(guiObj) {
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe onenote.exe")
 
-; Shift + y : Onenote: select line and children
-+y:: Send("^+-") ; Remaps to Ctrl + Shift + -~
+; Shift + P : Onenote: select line and children
++p:: Send("^+-") ; Remaps to Ctrl + Shift + -
 
 ; Shift + F : Advanced Searching with double quotes
 +f:: {
@@ -997,29 +997,29 @@ CenterGuiOnActiveMonitor(guiObj) {
     Send "{Left}"
 }
 
-; Shift + U : Onenote: select line and children
+; Shift + D : Onenote: delete line and children
 +d:: {
     Send("^+-") ; Remaps to Ctrl + Shift + -
     Send "{Del}"
 }
 
-; Shift + F : Onenote: delete only current line (keep children)
+; Shift + S : Onenote: delete only current line (keep children)
 +s:: {
     Send("+{Right}")
     Send "{Del}"
 }
 
-; Shift + U : Onenote: expand all
-+u:: Send("!+-")     ; Remaps to Alt + Shift + 0
+; Shift + U : Onenote: collapse
++u:: Send("!+{+}")     ; Remaps to Alt + Shift + +
+
+; Shift + Y : Onenote: expand
++y:: Send("!+{-}")     ; Remaps to Alt + Shift + -
 
 ; Shift + I : Onenote: collapse all
-+i:: Send("!+{+}")     ; Remaps to Alt + Shift + 1
++i:: Send("!+1")     ; Remaps to Alt + Shift + 1
 
-; Shift + J : Onenote: expand all
-+j:: Send("!+1")     ; Remaps to Alt + Shift + 0
-
-; Shift + K : Onenote: collapse all
-+k:: Send("!+0")     ; Remaps to Alt + Shift + 1
+; Shift + O : Onenote: expand all
++o:: Send("!+0")     ; Remaps to Alt + Shift + 0
 
 #HotIf
 
