@@ -8,7 +8,6 @@
  *   The following combinations are not currently in use:
  *   • C - Available
  *   • 1 - Available
- *   • 9 - Available
  ********************************************************************/
 
 #Requires AutoHotkey v2.0+
@@ -793,6 +792,10 @@ ShowGlobalShortcutsHelp() {
     ; Create the global shortcuts text with categories
     globalText := "
 (
+=== AVAILABLE (unused) ===
+Win+Alt+Shift+C  →  Available
+Win+Alt+Shift+1  →  Available
+
 === ONENOTE ===
 Win+Alt+Shift+N  →  Opens or activates OneNote
 
@@ -848,6 +851,7 @@ Win+Alt+Shift+M  →  Maximizes the current window
 Win+Alt+Shift+Q  →  Jump mouse on the middle
 Win+Alt+Shift+X  →  Activate hunt and Peck
 Win+Alt+Shift+.  →  Set microphone volume to 100
+Win+Alt+Shift+9  →  Pomodoro
 
 
 === SHORTCUTS ===
