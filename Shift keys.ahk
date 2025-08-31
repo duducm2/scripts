@@ -3144,6 +3144,38 @@ UnfoldAllDirectoriesInExplorer() {
     }
 }
 
+; Helper: detect on-screen Text elements for "Agent"/"Ask" and send Ctrl+I/L
+HasTextByRegex(pattern) {
+    try {
+        hwnd := WinExist("A")
+        if !hwnd
+            return false
+        root := UIA.ElementFromHandle(hwnd)
+        if !IsObject(root)
+            return false
+        for el in root.FindAll({ Type: "Text" }) {
+            if RegExMatch(el.Name, pattern)
+                return true
+        }
+    } catch Error as e {
+        ; ignore and fall through
+    }
+    return false
+}
+
+SendCtrlKeyBasedOnAgentAsk() {
+    ; Returns true if a key was sent, false otherwise
+    if HasTextByRegex("i)\\bagent\\b") {
+        Send "{Ctrl down}i{Ctrl up}"
+        return true
+    }
+    if HasTextByRegex("i)ask") {
+        Send "{Ctrl down}l{Ctrl up}"
+        return true
+    }
+    return false
+}
+
 ; Function to switch between AI modes (agent/ask)
 SwitchAIMode() {
     try {
@@ -3165,10 +3197,13 @@ SwitchAIMode() {
                 return
         }
 
-        ; Send Escape twice, then Ctrl+I to select the edit field
+        ; Send Escape twice, then select the edit field based on on-screen Agent/Ask
         Send "{Escape 2}"
         Sleep 200
-        Send "{Ctrl down}i{Ctrl up}"
+        if !SendCtrlKeyBasedOnAgentAsk() {
+            ; Fallback to Ctrl+I if no relevant text is found
+            Send "{Ctrl down}i{Ctrl up}"
+        }
         Sleep 300
 
         ; Send Ctrl+. and wait for context menu
@@ -3197,10 +3232,13 @@ SwitchAIModel() {
         if userChoice.Result != "OK"
             return
 
-        ; Send Escape twice, then Ctrl+I to select the edit field
+        ; Send Escape twice, then select the edit field based on on-screen Agent/Ask
         Send "{Escape 2}"
         Sleep 200
-        Send "{Ctrl down}i{Ctrl up}"
+        if !SendCtrlKeyBasedOnAgentAsk() {
+            ; Fallback to Ctrl+I if no relevant text is found
+            Send "{Ctrl down}i{Ctrl up}"
+        }
         Sleep 300
 
         ; Handle different behaviors based on choice
