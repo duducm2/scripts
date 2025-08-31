@@ -1004,7 +1004,7 @@ CenterGuiOnActiveMonitor(guiObj) {
 
 ; Shift + F : Onenote: delete only current line (keep children)
 +s:: {
-    Send("+{Left}")
+    Send("+{Right}")
     Send "{Del}"
 }
 
