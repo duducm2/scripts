@@ -1,13 +1,13 @@
-/********************************************************************
+﻿/********************************************************************
  *   Win+Alt+Shift symbol layer shortcuts (AHK v2)
- *   • Provides system-wide symbol shortcuts
+ *   â€¢ Provides system-wide symbol shortcuts
  ********************************************************************/
 
 /********************************************************************
  *   AVAILABLE WIN+ALT+SHIFT COMBINATIONS
  *   The following combinations are not currently in use:
- *   • C - Available
- *   • 1 - Available
+ *   â€¢ C - Available
+ *   â€¢ 1 - Available
  ********************************************************************/
 
 #Requires AutoHotkey v2.0+
@@ -42,7 +42,7 @@ SendSymbol(sym) {
 }
 
 ;-------------------------------------------------------------------
-; Cheat-sheet overlay (Win + Alt + Shift + A) – shows remapped shortcuts
+; Cheat-sheet overlay (Win + Alt + Shift + A) â€“ shows remapped shortcuts
 ;-------------------------------------------------------------------
 
 ; Map that stores the pop-up text for each application.  Extend freely.
@@ -52,9 +52,9 @@ cheatSheets := Map()
 cheatSheets["Mercado Livre"] := "
 (
 Mercado Livre
-Shift+Y  ��'  Focus search field
-Shift+U  ��'  Carrinho de compras
-Shift+I  ��'  Compras feitas
+Shift+Y  ï¿½ï¿½'  Focus search field
+Shift+U  ï¿½ï¿½'  Carrinho de compras
+Shift+I  ï¿½ï¿½'  Compras feitas
 )"  ; end Mercado Livre
 
 ;---------------------------------------- Shift + keys ----------------------------------------------
@@ -67,536 +67,535 @@ Shift+I  ��'  Compras feitas
 cheatSheets["WhatsApp"] := "
 (
 WhatsApp
-Shift+Y  →  Toggle voice message
-Shift+U  →  Search chats
-Shift+I  →  Reply
-Shift+O  →  Sticker panel
-Shift+P  →  Toggle Unread filter
-Shift+H  →  Focus current chat
-Shift+J  →  Mark as read or unread
-Shift+K  →  Pin chat or unpin chat
+Shift+Y  â†’  Toggle voice message
+Shift+U  â†’  Search chats
+Shift+I  â†’  Reply
+Shift+O  â†’  Sticker panel
+Shift+P  â†’  Toggle Unread filter
+Shift+H  â†’  Focus current chat
+Shift+J  â†’  Mark as read or unread
+Shift+K  â†’  Pin chat or unpin chat
 )"  ; end WhatsApp
 
 ; --- Outlook main window ----------------------------------------------------
 cheatSheets["OUTLOOK.EXE"] := "
 (
 Outlook
-Shift+Y  →  Send to General
-Shift+U  →  Send to Newsletter
-Shift+I  →  Go to Inbox
-Shift+N  →  Focused / Other
+Shift+Y  â†’  Send to General
+Shift+U  â†’  Send to Newsletter
+Shift+I  â†’  Go to Inbox
+Shift+N  â†’  Focused / Other
 )"  ; end Outlook
 
 ; --- Outlook Reminder window -------------------------------------------------
 cheatSheets["OutlookReminder"] := "
 (
-Outlook – Reminders
-Shift+Y  →  Select first reminder
-Shift+U  →  Snooze 1 hour
-Shift+I  →  Snooze 4 hours
-Shift+O  →  Snooze 1 day
-Shift+P  →  Dismiss all reminders
-Shift+H  →  Join Online
+Outlook â€“ Reminders
+Shift+Y  â†’  Select first reminder
+Shift+U  â†’  Snooze 1 hour
+Shift+I  â†’  Snooze 4 hours
+Shift+O  â†’  Snooze 1 day
+Shift+P  â†’  Dismiss all reminders
+Shift+H  â†’  Join Online
 )"  ; end Outlook Reminder
 
 ; --- Outlook Appointment window ---------------------------------------------
 cheatSheets["OutlookAppointment"] := "
 (
-Outlook – Appointment
-Shift+Y  →  Start date (combo)
-Shift+U  →  Start date – Date Picker
-Shift+I  →  Start time (combo)
-Shift+O  →  End date (combo)
-Shift+P  →  End time (combo)
-Shift+H  →  All day checkbox
-Shift+J  →  Title field
-Shift+L  →  Required / To field
-Shift+M  →  Location → Body
-Shift+,  →  Make Recurring
+Outlook â€“ Appointment
+Shift+Y  â†’  Start date (combo)
+Shift+U  â†’  Start date â€“ Date Picker
+Shift+I  â†’  Start time (combo)
+Shift+O  â†’  End date (combo)
+Shift+P  â†’  End time (combo)
+Shift+H  â†’  All day checkbox
+Shift+J  â†’  Title field
+Shift+L  â†’  Required / To field
+Shift+M  â†’  Location â†’ Body
+Shift+,  â†’  Make Recurring
 )"  ; end Outlook Appointment
 
 ; --- Outlook Message window ---------------------------------------------------
 cheatSheets["OutlookMessage"] := "
 (
-Outlook – Message
-Shift+Y  →  Subject / Title
-Shift+U  →  Required / To
-Shift+L  →  Subject → Body
+Outlook â€“ Message
+Shift+Y  â†’  Subject / Title
+Shift+U  â†’  Required / To
+Shift+L  â†’  Subject â†’ Body
 )"  ; end Outlook Message
 
-; --- Microsoft Teams – meeting window --------------------------------------
+; --- Microsoft Teams â€“ meeting window --------------------------------------
 cheatSheets["TeamsMeeting"] := "
 (
 Teams
-Shift+Y  →  Open Chat pane
-Shift+U  →  Maximize meeting window
-Shift+I  →  Reagir
-Shift+O  →  Join now with camera and microphone on
-Shift+P  →  Audio settings
+Shift+Y  â†’  Open Chat pane
+Shift+U  â†’  Maximize meeting window
+Shift+I  â†’  Reagir
+Shift+O  â†’  Join now with camera and microphone on
+Shift+P  â†’  Audio settings
 )"  ; end TeamsMeeting
 
-; --- Microsoft Teams – chat window -----------------------------------------
+; --- Microsoft Teams â€“ chat window -----------------------------------------
 cheatSheets["TeamsChat"] := "
 (
 Teams
-Shift+Y  →  Like
-Shift+U  →  Heart
-Shift+I  →  Laugh
-Shift+O  →  Home panel
-Shift+J  →  Mark unread
-Shift+K  →  Pin chat
-Shift+L  →  Remove pin
-Shift+E  →  Edit message
-Shift+R  →  Reply
+Shift+Y  â†’  Like
+Shift+U  â†’  Heart
+Shift+I  â†’  Laugh
+Shift+O  â†’  Home panel
+Shift+J  â†’  Mark unread
+Shift+K  â†’  Pin chat
+Shift+L  â†’  Remove pin
+Shift+E  â†’  Edit message
+Shift+R  â†’  Reply
 )"  ; end TeamsChat
 
 ; --- Spotify ---------------------------------------------------------------
 cheatSheets["Spotify.exe"] := "
 (
 Spotify
-Shift+Y  →  Toggle Connect panel
-Shift+U  →  Toggle Full screen
-Shift+I  →  Open Search
-Shift+O  →  Go to Playlists
-Shift+P  →  Go to Artists
-Shift+H  →  Go to Albums
-Shift+J  →  Go to Search
-Shift+K  →  Go to Home
-Shift+L  →  Go to Now Playing
-Shift+N  →  Go to Made For You
-Shift+M  →  Go to New Releases
-Shift+,  →  Go to Charts
-Shift+.  →  Toggle Now Playing View
-Shift+W  →  Toggle Library Sidebar
-Shift+E  →  Toggle Fullscreen Library
-Shift+R  →  Toggle lyrics
-Shift+T  →  Toggle play/pause
+Shift+Y  â†’  Toggle Connect panel
+Shift+U  â†’  Toggle Full screen
+Shift+I  â†’  Open Search
+Shift+O  â†’  Go to Playlists
+Shift+P  â†’  Go to Artists
+Shift+H  â†’  Go to Albums
+Shift+J  â†’  Go to Search
+Shift+K  â†’  Go to Home
+Shift+L  â†’  Go to Now Playing
+Shift+N  â†’  Go to Made For You
+Shift+M  â†’  Go to New Releases
+Shift+,  â†’  Go to Charts
+Shift+.  â†’  Toggle Now Playing View
+Shift+W  â†’  Toggle Library Sidebar
+Shift+E  â†’  Toggle Fullscreen Library
+Shift+R  â†’  Toggle lyrics
+Shift+T  â†’  Toggle play/pause
 )"  ; end Spotify
 
 ; --- OneNote ---------------------------------------------------------------
 cheatSheets["ONENOTE.EXE"] := "
 (
 OneNote
-Shift+Y  →  Collapse
-Shift+U  →  Expand
-Shift+I  →  Collapse all
-Shift+O  →  Expand all
-Shift+P  →  Select line and children
-Shift+D  →  Delete line and children
-Shift+S  →  Delete line (keep children)
-Shift+F  →  Advanced Searching with double quotes
+Shift+Y  â†’  Collapse
+Shift+U  â†’  Expand
+Shift+I  â†’  Collapse all
+Shift+O  â†’  Expand all
+Shift+P  â†’  Select line and children
+Shift+D  â†’  Delete line and children
+Shift+S  â†’  Delete line (keep children)
+Shift+F  â†’  Advanced Searching with double quotes
 )"  ; end OneNote
 
 ; --- Chrome general shortcuts ----------------------------------------------
 cheatSheets["chrome.exe"] := "
 (
 Chrome
-Shift+G  →  Pop current tab to new window
+Shift+G  â†’  Pop current tab to new window
 )"  ; end Chrome
 
 ; --- Cursor ------------------------------------------------------
 cheatSheets["Cursor.exe"] := "
 (
 Cursor
-Shift+Y  →  Fold
-Shift+U  →  Unfold
-Shift+I  →  Fold all
-Shift+O  →  Unfold all
-Shift+P  →  Go to terminal
-Shift+H  →  New terminal
-Shift+J  →  Go to file explorer
-Shift+K  →  Format code
-Shift+L  →  Command palette
-Shift+N  →  Expand selection
-Shift+M  →  Change project
-Shift+,  →  Show chat history
-Shift+.  →  Extensions
-Shift+W  →  Switch brackets
-Shift+E  →  Search
-Shift+R  →  Save all documents
-Shift+T  →  Change ML model
-Shift+D  →  Git section
-Shift+F  →  Close all editors
-Shift+G  →  Switch AI models (auto/CLAUD/GPT/O/DeepSeek/Cursor)
-Shift+C  →  Switch AI modes (agent/ask)
-Shift+V  →  Fold Git repos (SCM)
-Shift+B  →  Create AI commit message, then select Commit or Commit and Push
-Ctrl + Alt + Y  →  Select to Bracket
-Ctrl + Alt + U  →  Open in file explorer
-Ctrl + Alt + I  →  Fold all directories
-Ctrl + Alt + O  →  Unfold all directories
+Shift+Y  â†’  Fold
+Shift+U  â†’  Unfold
+Shift+I  â†’  Fold all
+Shift+O  â†’  Unfold all
+Shift+P  â†’  Go to terminal
+Shift+H  â†’  New terminal
+Shift+J  â†’  Go to file explorer
+Shift+K  â†’  Format code
+Shift+L  â†’  Command palette
+Shift+N  â†’  Expand selection
+Shift+M  â†’  Change project
+Shift+,  â†’  Show chat history
+Shift+.  â†’  Extensions
+Shift+W  â†’  Switch brackets
+Shift+E  â†’  Search
+Shift+R  â†’  Save all documents
+Shift+T  â†’  Change ML model
+Shift+D  â†’  Git section
+Shift+F  â†’  Close all editors
+Shift+G  â†’  Switch AI models (auto/CLAUD/GPT/O/DeepSeek/Cursor)
+Shift+C  â†’  Switch AI modes (agent/ask)
+Shift+V  â†’  Fold Git repos (SCM)
+Shift+B  â†’  Create AI commit message, then select Commit or Commit and Push
+Ctrl + Alt + Y  â†’  Select to Bracket
+Ctrl + Alt + U  â†’  Open in file explorer
+Ctrl + Alt + I  â†’  Fold all directories
+Ctrl + Alt + O  â†’  Unfold all directories
 
 --- Additional Shortcuts ---
-Ctrl + T  →  New chat tab
-Ctrl + N  →  New chat tab (replacing current)
-Alt + F12  →  Peek Definition
-Ctrl + D  →  Select next identical word
-Ctrl + Shift + L  →  Select all identical words
-F2  →  Rename symbol
-F8  →  Navigate problems
-Ctrl + Enter  →  Insert line below
-Ctrl + P  →  Quick Open
-Shift + Delete  →  Delete line
-Alt + ↑  →  Move line up
-Alt + ↓  →  Move line down
-Ctrl + 1 / Ctrl + 2 / Ctrl + 3 ...  →  Switch tabs
-Ctrl + N  →  New file
-Ctrl + Alt + ↑  →  Add cursor above
-Ctrl + Alt + ↓  →  Add cursor below
-Alt + Click  →  Multi-cursor by click
-Shift + Alt + ↑  →  Copy line up
-Shift + Alt + ↓  →  Copy line down
-Ctrl + ;  →  Insert comment
-Ctrl + Home  →  Go to top
-Ctrl + End  →  Go to end
-Alt + Z  →  Toggle word wrap
-Ctrl + Shift + D  →  Debugging
-Ctrl + R  →  Quick project switch
-Alt + J  →  Next review
-Alt + K  →  Previous review
+Ctrl + T  â†’  New chat tab
+Ctrl + N  â†’  New chat tab (replacing current)
+Alt + F12  â†’  Peek Definition
+Ctrl + D  â†’  Select next identical word
+Ctrl + Shift + L  â†’  Select all identical words
+F2  â†’  Rename symbol
+F8  â†’  Navigate problems
+Ctrl + Enter  â†’  Insert line below
+Ctrl + P  â†’  Quick Open
+Shift + Delete  â†’  Delete line
+Alt + â†‘  â†’  Move line up
+Alt + â†“  â†’  Move line down
+Ctrl + 1 / Ctrl + 2 / Ctrl + 3 ...  â†’  Switch tabs
+Ctrl + N  â†’  New file
+Ctrl + Alt + â†‘  â†’  Add cursor above
+Ctrl + Alt + â†“  â†’  Add cursor below
+Alt + Click  â†’  Multi-cursor by click
+Shift + Alt + â†‘  â†’  Copy line up
+Shift + Alt + â†“  â†’  Copy line down
+Ctrl + ;  â†’  Insert comment
+Ctrl + Home  â†’  Go to top
+Ctrl + End  â†’  Go to end
+Alt + Z  â†’  Toggle word wrap
+Ctrl + Shift + D  â†’  Debugging
+Ctrl + R  â†’  Quick project switch
+Alt + J  â†’  Next review
+Alt + K  â†’  Previous review
 )"  ; end Cursor
 
 ; --- Windows Explorer ------------------------------------------------------
 cheatSheets["explorer.exe"] := "
 (
 Explorer
-Shift+Y  →  Select first file
-Shift+U  →  Focus search bar
-Shift+I  →  Focus address bar
-Shift+O  →  New folder
-Shift+J  →  Create a shortcut
-Shift+P  →  Select first pinned item in Explorer sidebar
-Shift+H  →  Select the last item of the Explorer sidebar
+Shift+Y  â†’  Select first file
+Shift+U  â†’  Focus search bar
+Shift+I  â†’  Focus address bar
+Shift+O  â†’  New folder
+Shift+J  â†’  Create a shortcut
+Shift+P  â†’  Select first pinned item in Explorer sidebar
+Shift+H  â†’  Select the last item of the Explorer sidebar
 )"  ; end Explorer
 
 ; --- Microsoft Paint ------------------------------------------------------
 cheatSheets["mspaint.exe"] := "
 (
 MS Paint
-Shift+Y  →  Resize and Skew (Ctrl+W)
+Shift+Y  â†’  Resize and Skew (Ctrl+W)
 
 --- Common Shortcuts ---
-Ctrl+N   →  New
-Ctrl+O   →  Open
-Ctrl+S   →  Save
-F12      →  Save As
-Ctrl+P   →  Print
-Ctrl+Z   →  Undo
-Ctrl+Y   →  Redo
-Ctrl+A   →  Select all
-Ctrl+C   →  Copy
-Ctrl+X   →  Cut
-Ctrl+V   →  Paste
-Ctrl+W   →  Resize and Skew
-Ctrl+E   →  Image properties
-Ctrl+R   →  Toggle rulers
-Ctrl+G   →  Toggle gridlines
-Ctrl+I   →  Invert colors
-F11      →  Fullscreen view
-Ctrl++   →  Zoom in
-Ctrl+-   →  Zoom out
+Ctrl+N   â†’  New
+Ctrl+O   â†’  Open
+Ctrl+S   â†’  Save
+F12      â†’  Save As
+Ctrl+P   â†’  Print
+Ctrl+Z   â†’  Undo
+Ctrl+Y   â†’  Redo
+Ctrl+A   â†’  Select all
+Ctrl+C   â†’  Copy
+Ctrl+X   â†’  Cut
+Ctrl+V   â†’  Paste
+Ctrl+W   â†’  Resize and Skew
+Ctrl+E   â†’  Image properties
+Ctrl+R   â†’  Toggle rulers
+Ctrl+G   â†’  Toggle gridlines
+Ctrl+I   â†’  Invert colors
+F11      â†’  Fullscreen view
+Ctrl++   â†’  Zoom in
+Ctrl+-   â†’  Zoom out
 )"  ; end MS Paint
 
 ; --- ClipAngel -------------------------------------------------------------
 cheatSheets["ClipAngel.exe"] := "
 (
 ClipAngel
-Shift+Y  →  Select filtered content and copy
-Shift+U  →  Switch focus list/text
-Shift+I  →  Delete all non-favorite
-Shift+O  →  Clear filters
-Shift+P  →  Mark as favorite
-Shift+H  →  Unmark as favorite
-Shift+J  →  Edit text
-Shift+K  →  Save as file
-Shift+L  →  Merge clips
+Shift+Y  â†’  Select filtered content and copy
+Shift+U  â†’  Switch focus list/text
+Shift+I  â†’  Delete all non-favorite
+Shift+O  â†’  Clear filters
+Shift+P  â†’  Mark as favorite
+Shift+H  â†’  Unmark as favorite
+Shift+J  â†’  Edit text
+Shift+K  â†’  Save as file
+Shift+L  â†’  Merge clips
 )"  ; end ClipAngel
 
 ; --- Figma -----------------------------------------------------------------
 cheatSheets["Figma.exe"] := "
 (
 Figma
-Shift+Y  →  Show/Hide UI
-Shift+U  →  Component search
-Shift+I  →  Select parent
-Shift+O  →  Create component
-Shift+P  →  Detach instance
-Shift+H  →  Add auto layout
-Shift+J  →  Remove auto layout
-Shift+K  →  Suggest auto layout
-Shift+L  →  Export
-Shift+N  →  Copy as PNG
-Shift+M  →  Actions...
-Shift+,  →  Align left
-Shift+.  →  Align right
-Shift+W  →  Distribute vertical spacing
-Shift+E  →  Tidy up
-Shift+R  →  Align top
-Shift+T  →  Align bottom
-Shift+D  →  Align center horizontal
-Shift+F  →  Align center vertical
-Shift+G  →  Distribute horizontal spacing
+Shift+Y  â†’  Show/Hide UI
+Shift+U  â†’  Component search
+Shift+I  â†’  Select parent
+Shift+O  â†’  Create component
+Shift+P  â†’  Detach instance
+Shift+H  â†’  Add auto layout
+Shift+J  â†’  Remove auto layout
+Shift+K  â†’  Suggest auto layout
+Shift+L  â†’  Export
+Shift+N  â†’  Copy as PNG
+Shift+M  â†’  Actions...
+Shift+,  â†’  Align left
+Shift+.  â†’  Align right
+Shift+W  â†’  Distribute vertical spacing
+Shift+E  â†’  Tidy up
+Shift+R  â†’  Align top
+Shift+T  â†’  Align bottom
+Shift+D  â†’  Align center horizontal
+Shift+F  â†’  Align center vertical
+Shift+G  â†’  Distribute horizontal spacing
 )"  ; end Figma
 
 ; --- Gmail ---------------------------------------------------------------
 cheatSheets["Gmail"] := "
 (
 Gmail
-Shift+Y  →  Go to main inbox
-Shift+U  →  Go to updates
-Shift+I  →  Go to forums
-Shift+O  →  Toggle read/unread
-Shift+P  →  Previous conversation
-Shift+H  →  Next conversation
-Shift+J  →  Archive conversation
-Shift+K  →  Select conversation
-Shift+L  →  Reply
-Shift+N  →  Reply all
-Shift+M  →  Forward
-Shift+,  →  Star/unstar conversation
-Shift+.  →  Delete
-Shift+W  →  Report as spam
-Shift+E  →  Compose new email
-Shift+R  →  Search mail
-Shift+T  →  Move to folder
-Shift+D  →  Show keyboard shortcuts help
+Shift+Y  â†’  Go to main inbox
+Shift+U  â†’  Go to updates
+Shift+I  â†’  Go to forums
+Shift+O  â†’  Toggle read/unread
+Shift+P  â†’  Previous conversation
+Shift+H  â†’  Next conversation
+Shift+J  â†’  Archive conversation
+Shift+K  â†’  Select conversation
+Shift+L  â†’  Reply
+Shift+N  â†’  Reply all
+Shift+M  â†’  Forward
+Shift+,  â†’  Star/unstar conversation
+Shift+.  â†’  Delete
+Shift+W  â†’  Report as spam
+Shift+E  â†’  Compose new email
+Shift+R  â†’  Search mail
+Shift+T  â†’  Move to folder
+Shift+D  â†’  Show keyboard shortcuts help
 
 --- Built-in Shortcuts (Windows) ---
 
 Compose & chat:
-p  →  Previous message in an open conversation
-n  →  Next message in an open conversation
-Shift + Esc  →  Focus main window
-Esc  →  Focus latest chat or compose
-Ctrl + .  →  Advance to the next chat or compose
-Ctrl + ,  →  Advance to previous chat or compose
-Ctrl + Enter  →  Send
-Ctrl + Shift + c  →  Add cc recipients
-Ctrl + Shift + b  →  Add bcc recipients
-Ctrl + Shift + f  →  Access custom from
-Ctrl + k  →  Insert a link
-Ctrl + m  →  Open spelling suggestions
+p  â†’  Previous message in an open conversation
+n  â†’  Next message in an open conversation
+Shift + Esc  â†’  Focus main window
+Esc  â†’  Focus latest chat or compose
+Ctrl + .  â†’  Advance to the next chat or compose
+Ctrl + ,  â†’  Advance to previous chat or compose
+Ctrl + Enter  â†’  Send
+Ctrl + Shift + c  â†’  Add cc recipients
+Ctrl + Shift + b  â†’  Add bcc recipients
+Ctrl + Shift + f  â†’  Access custom from
+Ctrl + k  â†’  Insert a link
+Ctrl + m  â†’  Open spelling suggestions
 
 Formatting text:
-Ctrl + Shift + 5  →  Previous font
-Ctrl + Shift + 6  →  Next font
-Ctrl + Shift + -  →  Decrease text size
-Ctrl + Shift + +  →  Increase text size
-Ctrl + b  →  Bold
-Ctrl + i  →  Italics
-Ctrl + u  →  Underline
-Ctrl + Shift + 7  →  Numbered list
-Ctrl + Shift + 8  →  Bulleted list
-Ctrl + Shift + 9  →  Quote
-Ctrl + [  →  Indent less
-Ctrl + ]  →  Indent more
-Ctrl + Shift + l  →  Align left
-Ctrl + Shift + e  →  Align center
-Ctrl + Shift + r  →  Align right
-Ctrl + \  →  Remove formatting
+Ctrl + Shift + 5  â†’  Previous font
+Ctrl + Shift + 6  â†’  Next font
+Ctrl + Shift + -  â†’  Decrease text size
+Ctrl + Shift + +  â†’  Increase text size
+Ctrl + b  â†’  Bold
+Ctrl + i  â†’  Italics
+Ctrl + u  â†’  Underline
+Ctrl + Shift + 7  â†’  Numbered list
+Ctrl + Shift + 8  â†’  Bulleted list
+Ctrl + Shift + 9  â†’  Quote
+Ctrl + [  â†’  Indent less
+Ctrl + ]  â†’  Indent more
+Ctrl + Shift + l  â†’  Align left
+Ctrl + Shift + e  â†’  Align center
+Ctrl + Shift + r  â†’  Align right
+Ctrl + \  â†’  Remove formatting
 
 Actions (shortcuts on):
-,  →  Move focus to toolbar
-x  →  Select conversation
-s  →  Toggle star/rotate among superstars
-e  →  Archive
-m  →  Mute conversation
-!  →  Report as spam
-#  →  Delete
-r  →  Reply
-Shift + r  →  Reply in a new window
-a  →  Reply all
-Shift + a  →  Reply all in a new window
-f  →  Forward
-Shift + f  →  Forward in a new window
-Shift + n  →  Update conversation
-] or [  →  Archive conversation and go previous/next
-z  →  Undo last action
-Shift + i  →  Mark as read
-Shift + u  →  Mark as unread
-_  →  Mark unread from the selected message
-+ or =  →  Mark as important
--  →  Mark as not important
-b  →  Snooze (not available in classic Gmail)
-;  →  Expand entire conversation
-:  →  Collapse entire conversation
-Shift + t  →  Add conversation to Tasks
+,  â†’  Move focus to toolbar
+x  â†’  Select conversation
+s  â†’  Toggle star/rotate among superstars
+e  â†’  Archive
+m  â†’  Mute conversation
+!  â†’  Report as spam
+#  â†’  Delete
+r  â†’  Reply
+Shift + r  â†’  Reply in a new window
+a  â†’  Reply all
+Shift + a  â†’  Reply all in a new window
+f  â†’  Forward
+Shift + f  â†’  Forward in a new window
+Shift + n  â†’  Update conversation
+] or [  â†’  Archive conversation and go previous/next
+z  â†’  Undo last action
+Shift + i  â†’  Mark as read
+Shift + u  â†’  Mark as unread
+_  â†’  Mark unread from the selected message
++ or =  â†’  Mark as important
+-  â†’  Mark as not important
+b  â†’  Snooze (not available in classic Gmail)
+;  â†’  Expand entire conversation
+:  â†’  Collapse entire conversation
+Shift + t  â†’  Add conversation to Tasks
 
 Jumping (shortcuts on):
-g + i  →  Go to Inbox
-g + s  →  Go to Starred conversations
-g + b  →  Go to Snoozed conversations
-g + t  →  Go to Sent messages
-g + d  →  Go to Drafts
-g + a  →  Go to All mail
-Ctrl + Alt + ,  →  Switch to left sidebar (Calendar/Keep/Tasks)
-Ctrl + Alt + .  →  Switch to right (back to inbox)
-g + k  →  Go to Tasks
-g + l  →  Go to label
+g + i  â†’  Go to Inbox
+g + s  â†’  Go to Starred conversations
+g + b  â†’  Go to Snoozed conversations
+g + t  â†’  Go to Sent messages
+g + d  â†’  Go to Drafts
+g + a  â†’  Go to All mail
+Ctrl + Alt + ,  â†’  Switch to left sidebar (Calendar/Keep/Tasks)
+Ctrl + Alt + .  â†’  Switch to right (back to inbox)
+g + k  â†’  Go to Tasks
+g + l  â†’  Go to label
 
 Threadlist selection (shortcuts on):
-* + a  →  Select all conversations
-* + n  →  Deselect all conversations
-* + r  →  Select read conversations
-* + u  →  Select unread conversations
-* + s  →  Select starred conversations
-* + t  →  Select unstarred conversations
+* + a  â†’  Select all conversations
+* + n  â†’  Deselect all conversations
+* + r  â†’  Select read conversations
+* + u  â†’  Select unread conversations
+* + s  â†’  Select starred conversations
+* + t  â†’  Select unstarred conversations
 
 Navigation (shortcuts on):
-g + n  →  Go to next page
-g + p  →  Go to previous page
-u  →  Back to threadlist
-k  →  Newer conversation
-j  →  Older conversation
-o or Enter  →  Open conversation
-``  →  Go to next Inbox section
-~  →  Go to previous Inbox section
+g + n  â†’  Go to next page
+g + p  â†’  Go to previous page
+u  â†’  Back to threadlist
+k  â†’  Newer conversation
+j  â†’  Older conversation
+o or Enter  â†’  Open conversation
+``  â†’  Go to next Inbox section
+~  â†’  Go to previous Inbox section
 
 Application (shortcuts on):
-c  →  Compose
-d  →  Compose in a new tab
-/  →  Search mail
-q  →  Search chat contacts
-.  →  Open ""more actions"" menu
-v  →  Open ""move to"" menu
-l  →  Open ""label as"" menu
-?  →  Open keyboard shortcut help
+c  â†’  Compose
+d  â†’  Compose in a new tab
+/  â†’  Search mail
+q  â†’  Search chat contacts
+.  â†’  Open ""more actions"" menu
+v  â†’  Open ""move to"" menu
+l  â†’  Open ""label as"" menu
+?  â†’  Open keyboard shortcut help
 )"  ; end Gmail
 
 ; --- Google Keep ---------------------------------------------------------------
 cheatSheets["Google Keep"] := "
 (
 Google Keep
-Shift+Y  →  Search and select note
-Shift+U  →  Toggle main menu
+Shift+Y  â†’  Search and select note
+Shift+U  â†’  Toggle main menu
 )"  ; end Google Keep
 
 ; --- File Dialog ---------------------------------------------------------------
 cheatSheets["FileDialog"] := "
 (
 File Dialog
-Shift+Y  →  Select first item
-Shift+U  →  Focus search bar
-Shift+I  →  Focus address bar
-Shift+O  →  New folder
-Shift+P  →  Select first pinned item in sidebar
-Shift+H  →  Select 'This PC' / 'Este computador' in sidebar
-Shift+J  →  Focus file name field
-Shift+K  →  Click Insert/Open/Save button
-Shift+L  →  Click Cancel button
+Shift+Y  â†’  Select first item
+Shift+U  â†’  Focus search bar
+Shift+I  â†’  Focus address bar
+Shift+O  â†’  New folder
+Shift+P  â†’  Select first pinned item in sidebar
+Shift+H  â†’  Select 'This PC' / 'Este computador' in sidebar
+Shift+J  â†’  Focus file name field
+Shift+K  â†’  Click Insert/Open/Save button
+Shift+L  â†’  Click Cancel button
 )"
 
 ; --- Settings Window -------------------------------------------------
-cheatSheets["Settings"] := "(Settings)`r`nShift+Y → Set input volume to 100%"
+cheatSheets["Settings"] := "(Settings)`r`nShift+Y â†’ Set input volume to 100%"
 
 ; --- UIA Tree Inspector -------------------------------------------------
-cheatSheets["UIATreeInspector"] := "(UIA Tree Inspector)`r`nShift+Y → Refresh list"
-
+cheatSheets["UIATreeInspector"] := "(UIA Tree Inspector)`r`nShift+Y → Refresh list`r`nShift+U → Focus filter field"
 ; --- SettleUp Shortcuts -----------------------------------------------------
 cheatSheets["Settle Up"] := "
 (
 Settle Up
-Shift+Y  →  Add transaction
-Shift+U  →  Focus expense value field
-Shift+I  →  Focus expense name field
+Shift+Y  â†’  Add transaction
+Shift+U  â†’  Focus expense value field
+Shift+I  â†’  Focus expense name field
 )"
 
 ; --- Miro Shortcuts -----------------------------------------------------
 cheatSheets["Miro"] := "
 (
 Miro
-Shift+U  →  Frame list
-Shift+I  →  Group
-Shift+O  →  Ungroup
-Shift+P  →  Lock/Unlock
-Shift+H  →  Add/Edit link
+Shift+U  â†’  Frame list
+Shift+I  â†’  Group
+Shift+O  â†’  Ungroup
+Shift+P  â†’  Lock/Unlock
+Shift+H  â†’  Add/Edit link
 Q
 --- Built-in Shortcuts (Windows) ---
 Tools:
-V / H             →  Select tool / Hand
-T                 →  Text
-N                 →  Sticky notes
-S                 →  Shapes
-R                 →  Rectangle
-O                 →  Oval
-L                 →  Connection line / Arrow
-D                 →  Card
-P                 →  Pen
-E                 →  Eraser
-C                 →  Comment
-F                 →  Frame
-M                 →  Minimap
-Ctrl + K          →  Command palette
-Enter (bulk)      →  New sticky note
-Esc (bulk)        →  Exit sticky note bulk mode
-Ctrl + Shift + Enter  →  Open card panel
-Shift + C         →  Show/hide comments
+V / H             â†’  Select tool / Hand
+T                 â†’  Text
+N                 â†’  Sticky notes
+S                 â†’  Shapes
+R                 â†’  Rectangle
+O                 â†’  Oval
+L                 â†’  Connection line / Arrow
+D                 â†’  Card
+P                 â†’  Pen
+E                 â†’  Eraser
+C                 â†’  Comment
+F                 â†’  Frame
+M                 â†’  Minimap
+Ctrl + K          â†’  Command palette
+Enter (bulk)      â†’  New sticky note
+Esc (bulk)        â†’  Exit sticky note bulk mode
+Ctrl + Shift + Enter  â†’  Open card panel
+Shift + C         â†’  Show/hide comments
 
 General:
-Ctrl + C / Ctrl + V  →  Copy / Paste
-Ctrl + X          →  Cut
-Ctrl + D          →  Duplicate
-Alt + drag        →  Duplicate by drag
-Alt + ←→↑↓        →  Duplicate horizontally/vertically
-Ctrl + click      →  Select multiple
-Ctrl + A          →  Select all
-Enter             →  Edit selected
-Esc               →  Deselect / quit edit
-Backspace         →  Delete
-Ctrl + G          →  Group
-Ctrl + Shift + G  →  Ungroup
-Ctrl + Shift + L  →  Lock / Unlock
-Ctrl + Shift + P  →  Protected lock / Unprotected lock
-PgUp              →  Bring to front
-Shift + PgUp      →  Bring forward
-PgDn              →  Send to back
-Shift + PgDn      →  Send backward
-Ctrl + Shift + K  →  Create board in new tab
-Alt + Ctrl + K    →  Add/Edit link to object
-Ctrl + Backspace  →  Clear object contents
+Ctrl + C / Ctrl + V  â†’  Copy / Paste
+Ctrl + X          â†’  Cut
+Ctrl + D          â†’  Duplicate
+Alt + drag        â†’  Duplicate by drag
+Alt + â†â†’â†‘â†“        â†’  Duplicate horizontally/vertically
+Ctrl + click      â†’  Select multiple
+Ctrl + A          â†’  Select all
+Enter             â†’  Edit selected
+Esc               â†’  Deselect / quit edit
+Backspace         â†’  Delete
+Ctrl + G          â†’  Group
+Ctrl + Shift + G  â†’  Ungroup
+Ctrl + Shift + L  â†’  Lock / Unlock
+Ctrl + Shift + P  â†’  Protected lock / Unprotected lock
+PgUp              â†’  Bring to front
+Shift + PgUp      â†’  Bring forward
+PgDn              â†’  Send to back
+Shift + PgDn      â†’  Send backward
+Ctrl + Shift + K  â†’  Create board in new tab
+Alt + Ctrl + K    â†’  Add/Edit link to object
+Ctrl + Backspace  â†’  Clear object contents
 
 Navigation:
-←→↑↓              →  Move items/canvas
-Ctrl + +          →  Zoom in
-Ctrl + -          →  Zoom out
-Ctrl + 0          →  Zoom to 100%
-Alt + 1           →  Zoom to fit
-Alt + 2           →  Zoom to selected item
-Space + drag      →  Move canvas
-G                 →  Toggle grid
-Ctrl + F          →  Search
+â†â†’â†‘â†“              â†’  Move items/canvas
+Ctrl + +          â†’  Zoom in
+Ctrl + -          â†’  Zoom out
+Ctrl + 0          â†’  Zoom to 100%
+Alt + 1           â†’  Zoom to fit
+Alt + 2           â†’  Zoom to selected item
+Space + drag      â†’  Move canvas
+G                 â†’  Toggle grid
+Ctrl + F          â†’  Search
 
 Text:
-Ctrl + B          →  Bold
-Ctrl + I          →  Italic
-Ctrl + U          →  Underline
+Ctrl + B          â†’  Bold
+Ctrl + I          â†’  Italic
+Ctrl + U          â†’  Underline
 
 Board navigation:
-Tab               →  Move forwards through objects (TL → BR)
-Shift + Tab       →  Move backwards through objects (TL → BR)
-Ctrl + ↑/↓/←/→    →  Move through board objects
-Ctrl + Shift + ↓/↑→  Move in/out of container (e.g., frame)
-Esc               →  Back to menu
-Enter             →  Edit an object
-Esc               →  Stop editing an object
+Tab               â†’  Move forwards through objects (TL â†’ BR)
+Shift + Tab       â†’  Move backwards through objects (TL â†’ BR)
+Ctrl + â†‘/â†“/â†/â†’    â†’  Move through board objects
+Ctrl + Shift + â†“/â†‘â†’  Move in/out of container (e.g., frame)
+Esc               â†’  Back to menu
+Enter             â†’  Edit an object
+Esc               â†’  Stop editing an object
 
 Toolbar navigation:
-Tab / Shift + Tab →  Move between toolbars
-Arrow keys        →  Move between toolbar items
-Enter / Space     →  Activate a menu item
+Tab / Shift + Tab â†’  Move between toolbars
+Arrow keys        â†’  Move between toolbar items
+Enter / Space     â†’  Activate a menu item
 
 Desktop app:
-Ctrl + R          →  Reload the tab
-Ctrl + W          →  Close the tab
-Ctrl + Q          →  Exit the app
-Ctrl + Shift + L  →  Copy board link
+Ctrl + R          â†’  Reload the tab
+Ctrl + W          â†’  Close the tab
+Ctrl + Q          â†’  Exit the app
+Ctrl + Shift + L  â†’  Copy board link
 )"
 
 ; --- Wikipedia ---------------------------------------------------------------
 cheatSheets["Wikipedia"] := "
 (
 Wikipedia
-Shift+Y  →  Click search button
+Shift+Y  â†’  Click search button
 )"
 
 ; ========== Helper to decide which sheet applies ===========================
@@ -618,12 +617,12 @@ GetCheatSheetText() {
     ; Check for file dialog first (works in any app)
     if WinGetClass("ahk_id " hwnd) = "#32770" {
         txt := WinGetText("ahk_id " hwnd)
-        if InStr(txt, "Namespace Tree Control") || InStr(txt, "Controle da Árvore de Namespace")
+        if InStr(txt, "Namespace Tree Control") || InStr(txt, "Controle da Ãrvore de Namespace")
             return cheatSheets["FileDialog"]
     }
 
     ; Check for Settings window (both English and Portuguese)
-    if (title = "Settings" || title = "Configurações") {
+    if (title = "Settings" || title = "ConfiguraÃ§Ãµes") {
         return cheatSheets.Has("Settings") ? cheatSheets["Settings"] : ""
     }
 
@@ -641,15 +640,15 @@ GetCheatSheetText() {
             appShortcuts := cheatSheets.Has("Gmail") ? cheatSheets["Gmail"] : ""
         if InStr(chromeTitle, "chatgpt")
             appShortcuts :=
-                "ChatGPT`r`nShift+Y → Cut all`r`nShift+U → Model selector`r`nShift+I → Toggle sidebar`r`nShift+O → Re-send rules`r`nShift+H → Copy code block`r`nShift+L → Send and show AI banner"
+                "ChatGPT`r`nShift+Y â†’ Cut all`r`nShift+U â†’ Model selector`r`nShift+I â†’ Toggle sidebar`r`nShift+O â†’ Re-send rules`r`nShift+H â†’ Copy code block`r`nShift+L â†’ Send and show AI banner"
         if InStr(chromeTitle, "Mobills")
             appShortcuts :=
-                "Mobills`r`nShift+Y → Dashboard`r`nShift+U → Contas`r`nShift+I → Transações`r`nShift+O → Cartões de crédito`r`nShift+P → Planejamento`r`nShift+H → Relatórios`r`nShift+J → Mais opções`r`nShift+K → Previous month`r`nShift+L → Next month`r`nShift+N → Ignore transaction`r`nShift+M → Name field"
+                "Mobills`r`nShift+Y â†’ Dashboard`r`nShift+U â†’ Contas`r`nShift+I â†’ TransaÃ§Ãµes`r`nShift+O â†’ CartÃµes de crÃ©dito`r`nShift+P â†’ Planejamento`r`nShift+H â†’ RelatÃ³rios`r`nShift+J â†’ Mais opÃ§Ãµes`r`nShift+K â†’ Previous month`r`nShift+L â†’ Next month`r`nShift+N â†’ Ignore transaction`r`nShift+M â†’ Name field"
         if InStr(chromeTitle, "Google Keep") || InStr(chromeTitle, "keep.google.com")
             appShortcuts := cheatSheets.Has("Google Keep") ? cheatSheets["Google Keep"] : ""
         if InStr(chromeTitle, "YouTube")
             appShortcuts :=
-                "YouTube`r`nShift+Y → Focus search box`r`nShift+U → Focus first video via Search filters`r`nShift+I → Focus first video via Explore"
+                "YouTube`r`nShift+Y â†’ Focus search box`r`nShift+U â†’ Focus first video via Search filters`r`nShift+I â†’ Focus first video via Explore"
         if InStr(chromeTitle, "UIATreeInspector")
             appShortcuts := cheatSheets["UIATreeInspector"]
         if InStr(chromeTitle, "Settle Up")
@@ -663,7 +662,7 @@ GetCheatSheetText() {
         ; Only set generic Google sheet if nothing else matched and title clearly indicates Google site
         if (appShortcuts = "") {
             if (chromeTitle = "Google" || InStr(chromeTitle, " - Google Search"))
-                appShortcuts := "Google`r`nShift+Y → Focus search box"
+                appShortcuts := "Google`r`nShift+Y â†’ Focus search box"
         }
 
         ; Combine Chrome general + app-specific shortcuts
@@ -681,7 +680,7 @@ GetCheatSheetText() {
     if (exe = "AutoHotkey64.exe" && InStr(title, "UIATreeInspector"))
         return cheatSheets["UIATreeInspector"]
 
-    ; Microsoft Teams – differentiate meeting vs chat via helper predicates
+    ; Microsoft Teams â€“ differentiate meeting vs chat via helper predicates
     if IsTeamsMeetingActive()
         return cheatSheets.Has("TeamsMeeting") ? cheatSheets["TeamsMeeting"] : ""
     if IsTeamsChatActive()
@@ -691,11 +690,11 @@ GetCheatSheetText() {
 
     ; Special handling for Outlook-based apps
     if (exe = "OUTLOOK.EXE") {
-        ; Detect Reminders window – e.g. "3 Reminder(s)" or any title containing "Reminder"
+        ; Detect Reminders window â€“ e.g. "3 Reminder(s)" or any title containing "Reminder"
         if RegExMatch(title, "i)Reminder") {
             return cheatSheets.Has("OutlookReminder") ? cheatSheets["OutlookReminder"] : cheatSheets["OUTLOOK.EXE"]
         }
-        ; Detect Message inspector windows – e.g., " - Message (HTML)"
+        ; Detect Message inspector windows â€“ e.g., " - Message (HTML)"
         if RegExMatch(title, "i) - Message \(") {
             return cheatSheets.Has("OutlookMessage") ? cheatSheets["OutlookMessage"] : cheatSheets["OUTLOOK.EXE"]
         }
@@ -719,7 +718,7 @@ GetCheatSheetText() {
             return value
     }
 
-    ; Nothing found → blank → caller will show fallback message
+    ; Nothing found â†’ blank â†’ caller will show fallback message
     return ""
 }
 
@@ -760,7 +759,7 @@ ToggleShortcutHelp() {
         cheatCtrl := g_helpGui.Add("Edit", "ReadOnly +Multi -E0x200 +VScroll -HScroll -Border Background000000 w600 r1"
         )
 
-        ; Esc also hides  ; (disabled – use Win+Alt+Shift+A to hide)
+        ; Esc also hides  ; (disabled â€“ use Win+Alt+Shift+A to hide)
         ; Hotkey "Esc", (*) => (g_helpGui.Hide(), g_helpShown := false), "Off"
     }
 
@@ -768,7 +767,7 @@ ToggleShortcutHelp() {
     cheatCtrl.Value := text
     lineCnt := StrLen(text) ? StrSplit(text, "`n").Length : 1
 
-    ; Calculate height based on line count (font size 12 ≈ 20px per line + margins)
+    ; Calculate height based on line count (font size 12 â‰ˆ 20px per line + margins)
     ; Apply min/max so content scrolls instead of being cut off
     controlHeight := lineCnt * 20 + 10
     minHeight := 220  ; ensure a decent minimum height
@@ -781,7 +780,7 @@ ToggleShortcutHelp() {
 
     ; Resize the control and GUI explicitly
     cheatCtrl.Move(, , 600, controlHeight)
-    ; Show → measure → centre
+    ; Show â†’ measure â†’ centre
     g_helpGui.Show("AutoSize Hide")
     CenterGuiOnActiveMonitor(g_helpGui)
     g_helpGui.Show("NoActivate")  ; ensure visible after centring
@@ -805,73 +804,73 @@ ShowGlobalShortcutsHelp() {
     globalText := "
 (
 === AVAILABLE (unused) ===
-Win+Alt+Shift+C  →  Available
-Win+Alt+Shift+1  →  Available
+Win+Alt+Shift+C  â†’  Available
+Win+Alt+Shift+1  â†’  Available
 
 === ONENOTE ===
-Win+Alt+Shift+N  →  Opens or activates OneNote
+Win+Alt+Shift+N  â†’  Opens or activates OneNote
 
 === SPOTIFY ===
-Win+Alt+Shift+S  →  Opens or activates Spotify
+Win+Alt+Shift+S  â†’  Opens or activates Spotify
 
 === CHATGPT ===
-Win+Alt+Shift+8  →  Get word pronunciation, definition, and Portuguese translation
-Win+Alt+Shift+0  →  Speak with ChatGPT
-Win+Alt+Shift+7  →  Speak with ChatGPT (send message automatically)
-Win+Alt+Shift+P  →  Copy last ChatGPT prompt
-Win+Alt+Shift+J  →  Copy last ChatGPT message (in the editing box)
-Win+Alt+Shift+U  →  Activate ChatGPT and copy last code block
-Win+Alt+Shift+O  →  Check grammar and improve text in both English and Portuguese
-Win+Alt+Shift+I  →  Opens ChatGPT
-Win+Alt+Shift+L  →  Talk with ChatGPT through voice
-Win+Alt+Shift+Y  →  Copy last message and read it aloud
+Win+Alt+Shift+8  â†’  Get word pronunciation, definition, and Portuguese translation
+Win+Alt+Shift+0  â†’  Speak with ChatGPT
+Win+Alt+Shift+7  â†’  Speak with ChatGPT (send message automatically)
+Win+Alt+Shift+P  â†’  Copy last ChatGPT prompt
+Win+Alt+Shift+J  â†’  Copy last ChatGPT message (in the editing box)
+Win+Alt+Shift+U  â†’  Activate ChatGPT and copy last code block
+Win+Alt+Shift+O  â†’  Check grammar and improve text in both English and Portuguese
+Win+Alt+Shift+I  â†’  Opens ChatGPT
+Win+Alt+Shift+L  â†’  Talk with ChatGPT through voice
+Win+Alt+Shift+Y  â†’  Copy last message and read it aloud
 
 === YOUTUBE ===
-Win+Alt+Shift+H  →  Activates Youtube
+Win+Alt+Shift+H  â†’  Activates Youtube
 
 === GOOGLE ===
-Win+Alt+Shift+F  →  Opens Google
+Win+Alt+Shift+F  â†’  Opens Google
 
 === GMAIL ===
-Win+Alt+Shift+W  →  Opens Gmail
+Win+Alt+Shift+W  â†’  Opens Gmail
 
 === CURSOR ===
-Win+Alt+Shift+,  →  Opens or activates Cursor
+Win+Alt+Shift+,  â†’  Opens or activates Cursor
 
 === OUTLOOK ===
-Win+Alt+Shift+B  →  Open mail
-Win+Alt+Shift+V  →  Open Reminder
-Win+Alt+Shift+G  →  Open calendar
+Win+Alt+Shift+B  â†’  Open mail
+Win+Alt+Shift+V  â†’  Open Reminder
+Win+Alt+Shift+G  â†’  Open calendar
 
 === MICROSOFT TEAMS ===
-Win+Alt+Shift+R  →  New conversation
-Win+Alt+Shift+5  →  Toggle Mute (meeting)
-Win+Alt+Shift+4  →  Toggle camera (meeting)
-Win+Alt+Shift+T  →  Screen share (meeting)
-Win+Alt+Shift+2  →  Exit meeting
-Win+Alt+Shift+E  →  Select the chats window
-Win+Alt+Shift+3  →  Select the meeting window
+Win+Alt+Shift+R  â†’  New conversation
+Win+Alt+Shift+5  â†’  Toggle Mute (meeting)
+Win+Alt+Shift+4  â†’  Toggle camera (meeting)
+Win+Alt+Shift+T  â†’  Screen share (meeting)
+Win+Alt+Shift+2  â†’  Exit meeting
+Win+Alt+Shift+E  â†’  Select the chats window
+Win+Alt+Shift+3  â†’  Select the meeting window
 
 === WHATSAPP ===
-Win+Alt+Shift+Z  →  Opens WhatsApp
+Win+Alt+Shift+Z  â†’  Opens WhatsApp
 
 === WINDOWS ===
-Win+Alt+Shift+6  →  Minimizes windows
-Win+Alt+Shift+M  →  Maximizes the current window
+Win+Alt+Shift+6  â†’  Minimizes windows
+Win+Alt+Shift+M  â†’  Maximizes the current window
 
 === GENERAL ===
-Win+Alt+Shift+Q  →  Jump mouse on the middle
-Win+Alt+Shift+X  →  Activate hunt and Peck
-Win+Alt+Shift+.  →  Set microphone volume to 100
-Win+Alt+Shift+9  →  Pomodoro
+Win+Alt+Shift+Q  â†’  Jump mouse on the middle
+Win+Alt+Shift+X  â†’  Activate hunt and Peck
+Win+Alt+Shift+.  â†’  Set microphone volume to 100
+Win+Alt+Shift+9  â†’  Pomodoro
 
 
 === SHORTCUTS ===
-Win+Alt+Shift+A  →  Show app-specific shortcuts (quick press)
-Win+Alt+Shift+A  →  Show global shortcuts (hold 700ms+)
+Win+Alt+Shift+A  â†’  Show app-specific shortcuts (quick press)
+Win+Alt+Shift+A  â†’  Show global shortcuts (hold 700ms+)
 
 === WIKIPEDIA ===
-Win+Alt+Shift+K  →  Opens or activates Wikipedia
+Win+Alt+Shift+K  â†’  Opens or activates Wikipedia
 )"
 
     static globalCtrl
@@ -884,7 +883,7 @@ Win+Alt+Shift+K  →  Opens or activates Wikipedia
         g_globalGui.SetFont("s10 cFFFF00", "Consolas")  ; Smaller font for more content
         globalCtrl := g_globalGui.Add("Edit", "ReadOnly +Multi +VScroll -HScroll -Border Background000000 w760 h540")
 
-        ; Esc also hides  ; (disabled – use Win+Alt+Shift+A to hide)
+        ; Esc also hides  ; (disabled â€“ use Win+Alt+Shift+A to hide)
         ; Hotkey "Esc", (*) => (g_globalGui.Hide(), g_globalShown := false), "Off"
     }
 
@@ -944,7 +943,7 @@ global PERSONAL_SCRIPTS_PATH := "G:\Meu Drive\12 - Scripts"
 ; global IS_WORK_ENVIRONMENT   := true    ; set to false on personal rig // This will now be loaded from env.ahk
 
 ; ---------------------------------------------------------------------------
-; ShowErr(msgOrErr)  – uniform MsgBox for any thrown value
+; ShowErr(msgOrErr)  â€“ uniform MsgBox for any thrown value
 ; ---------------------------------------------------------------------------
 ShowErr(err) {
     text := (Type(err) = "Error") ? err.Message : err
@@ -1159,12 +1158,12 @@ ToggleVoiceMessage() {
         ; Helper to grab a button by pattern
         FindBtn(p) => WaitForButton(chrome, p)
 
-        if (isRecording) {           ; ► we're supposed to stop & send
+        if (isRecording) {           ; â–º we're supposed to stop & send
             if (btn := FindBtn(sendPattern)) {
                 btn.Invoke()
                 isRecording := false
             } else {
-                ; Assume you clicked Send manually → reset & start new rec
+                ; Assume you clicked Send manually â†’ reset & start new rec
                 isRecording := false
                 if (btn := FindBtn(voicePattern)) {
                     btn.Invoke()
@@ -1172,7 +1171,7 @@ ToggleVoiceMessage() {
                 } else
                     MsgBox "Couldn't restart recording (Voice-message button missing)."
             }
-        } else {                     ; ► start recording
+        } else {                     ; â–º start recording
             if (btn := FindBtn(voicePattern)) {
                 btn.Invoke()
                 isRecording := true
@@ -1186,8 +1185,8 @@ ToggleVoiceMessage() {
 
 ; ---------------------------------------------------------------------------
 ; WaitForButton(root, pattern, timeout := 5000)
-;   • Searches all descendant buttons of `root` until Name matches `pattern`
-;   • Returns the UIA element or 0 if none matched within `timeout` ms
+;   â€¢ Searches all descendant buttons of `root` until Name matches `pattern`
+;   â€¢ Returns the UIA element or 0 if none matched within `timeout` ms
 ; ---------------------------------------------------------------------------
 WaitForButton(root, pattern, timeout := 5000) {
     if !IsObject(root)
@@ -1205,8 +1204,8 @@ WaitForButton(root, pattern, timeout := 5000) {
 
 ; ---------------------------------------------------------------------------
 ; WaitForList(root, pattern := "", timeout := 5000)
-;   • Searches descendant List controls; Name must match `pattern` if provided
-;   • Returns the UIA element or 0 after `timeout` ms
+;   â€¢ Searches descendant List controls; Name must match `pattern` if provided
+;   â€¢ Returns the UIA element or 0 after `timeout` ms
 ; ---------------------------------------------------------------------------
 WaitForList(root, pattern := "", timeout := 5000) {
     if !IsObject(root)
@@ -1315,16 +1314,16 @@ QuickSnooze(t) {
     Send("{Tab}")
 }
 
-; caixa de confirmação antes de executar
+; caixa de confirmaÃ§Ã£o antes de executar
 Confirm(t) {
     if MsgBox("Snooze for " t "?", "Confirm Snooze", "YesNo Icon?") = "Yes"
         QuickSnooze(t)
 }
 
 ; HOTKEYS de teste
-; Shift+U  → 1 minuto
-; Shift+I  → 2 minutos
-; Shift+O  → 3 minutos
+; Shift+U  â†’ 1 minuto
+; Shift+I  â†’ 2 minutos
+; Shift+O  â†’ 3 minutos
 +U:: Confirm("1 hour")
 +I:: Confirm("4 hours")
 +O:: Confirm("1 day")
@@ -1393,7 +1392,7 @@ IsTeamsChatActive() {
 }
 
 ; -------------------------------------------------------------------
-; Microsoft Teams Shortcuts – MEETING WINDOW
+; Microsoft Teams Shortcuts â€“ MEETING WINDOW
 ; -------------------------------------------------------------------
 #HotIf IsTeamsMeetingActive()
 
@@ -1473,7 +1472,7 @@ IsTeamsChatActive() {
 
         ; Fallback: try finding by name
         if !btn {
-            btn := root.FindFirst({ Name: "Ingressar agora Com a câmera ligada e Microfone ligado", ControlType: "Button" })
+            btn := root.FindFirst({ Name: "Ingressar agora Com a cÃ¢mera ligada e Microfone ligado", ControlType: "Button" })
         }
 
         ; Fallback: try finding by partial name (in case the name varies)
@@ -1502,13 +1501,13 @@ IsTeamsChatActive() {
 
         ; Fallback: try finding by name
         if !btn {
-            btn := root.FindFirst({ Name: "Microfone do computador e controles do alto-falante Configurações de áudio",
+            btn := root.FindFirst({ Name: "Microfone do computador e controles do alto-falante ConfiguraÃ§Ãµes de Ã¡udio",
                 ControlType: "Button" })
         }
 
         ; Fallback: try finding by partial name
         if !btn {
-            btn := root.FindFirst({ Name: "Configurações de áudio", ControlType: "Button" })
+            btn := root.FindFirst({ Name: "ConfiguraÃ§Ãµes de Ã¡udio", ControlType: "Button" })
         }
 
         if btn {
@@ -1677,14 +1676,14 @@ IsTeamsChatActive() {
         if (!field) {
             ; Try by ComboBox name (Type 50003)
             try {
-                field := root.FindElement({ Type: 50003, Name: "Digite o que você quer encontrar", cs: false })
+                field := root.FindElement({ Type: 50003, Name: "Digite o que vocÃª quer encontrar", cs: false })
             } catch {
             }
         }
         if (!field) {
             ; Try by Edit control name
             try {
-                field := root.FindElement({ Type: "Edit", Name: "Digite o que você quer encontrar", cs: false })
+                field := root.FindElement({ Type: "Edit", Name: "Digite o que vocÃª quer encontrar", cs: false })
             } catch {
             }
         }
@@ -1849,7 +1848,7 @@ IsTeamsChatActive() {
     Send "{Esc}"
 }
 
-; Shift + Ç : Remove pin
+; Shift + Ã‡ : Remove pin
 +l::
 {
     Sleep "150"
@@ -2001,13 +2000,13 @@ IsOutlookMainActive() {
             MsgBox("Couldn't find '" nextOutlookButton "'.", "Button not found", "IconX")
         }
 
-    } catch Error as err {              ; ← **only this form**
+    } catch Error as err {              ; â† **only this form**
         ShowErr(err)
     }
 }
 
 ; -------------------------------------------------------------------
-; Focus helpers – reuse for any field you need
+; Focus helpers â€“ reuse for any field you need
 ; -------------------------------------------------------------------
 FocusOutlookField(criteria) {
     try {
@@ -2024,7 +2023,7 @@ FocusOutlookField(criteria) {
 }
 
 ; -------------------------------------------------------------------
-; Click helper – try AutomationId first, then Name+ClassName
+; Click helper â€“ try AutomationId first, then Name+ClassName
 ; -------------------------------------------------------------------
 ClickOutlookByIdThenNameClass(automationId, name, className, controlType := "") {
     try {
@@ -2061,7 +2060,7 @@ ClickOutlookByIdThenNameClass(automationId, name, className, controlType := "") 
 }
 
 ; -------------------------------------------------------------------
-; General helper – visually confirm focus on the selected element
+; General helper â€“ visually confirm focus on the selected element
 ; Sends Down then Up to force a visible focus cue
 ; -------------------------------------------------------------------
 EnsureFocus() {
@@ -2125,7 +2124,7 @@ SelectExplorerSidebarFirstPinned() {
         ; swallow and continue to fallback
     }
 
-    ; Robust fallback – cycle through panes up to 6 times to reach navigation, then Home
+    ; Robust fallback â€“ cycle through panes up to 6 times to reach navigation, then Home
     loop 6 {
         Send "{F6}"
         Sleep 120
@@ -2140,7 +2139,7 @@ SelectExplorerSidebarFirstPinned() {
         } catch Error {
         }
     }
-    ; Last resort – send Home anyway
+    ; Last resort â€“ send Home anyway
     Send "{Home}"
     EnsureFocus()
     return false
@@ -2149,7 +2148,7 @@ SelectExplorerSidebarFirstPinned() {
 ; Message inspector-specific hotkeys (Subject/To/DatePicker/Body)
 #HotIf IsOutlookMessageActive()
 
-; Shift + Y → Subject
+; Shift + Y â†’ Subject
 +Y:: {
     if FocusOutlookField({ AutomationId: "4101" }) ; Subject
         return
@@ -2157,7 +2156,7 @@ SelectExplorerSidebarFirstPinned() {
         return
 }
 
-; Shift + U → Required / To
+; Shift + U â†’ Required / To
 +U:: {
     if FocusOutlookField({ AutomationId: "4109" }) ; Required
         return
@@ -2169,10 +2168,10 @@ SelectExplorerSidebarFirstPinned() {
         return
 }
 
-; Shift + I → Date Picker (if present in this inspector)
+; Shift + I â†’ Date Picker (if present in this inspector)
 ; (No Shift + I in Message inspector)
 
-; Shift + L → Subject → Body
+; Shift + L â†’ Subject â†’ Body
 +L:: {
     if FocusOutlookField({ AutomationId: "4101" }) {
         Sleep 50
@@ -2239,33 +2238,33 @@ Outlook_ClickEndTime_1200PM() {
 
 ; (moved +H/+J below to ensure the block starts with Y)
 
-; New Shift hotkeys for date/time controls (Start → End), ordered by key preference
-; Shift + Y → Start date (combo)
+; New Shift hotkeys for date/time controls (Start â†’ End), ordered by key preference
+; Shift + Y â†’ Start date (combo)
 +Y:: {
     Outlook_ClickStartDate()
 }
 
-; Shift + U → Start date – Date Picker
+; Shift + U â†’ Start date â€“ Date Picker
 +U:: {
     Outlook_ClickStartDatePicker()
 }
 
-; Shift + I → Start time (combo)
+; Shift + I â†’ Start time (combo)
 +I:: {
     Outlook_ClickStartTime()
 }
 
-; Shift + O → End date (combo)
+; Shift + O â†’ End date (combo)
 +O:: {
     Outlook_ClickEndDate()
 }
 
-; Shift + P → End time (combo)
+; Shift + P â†’ End time (combo)
 +P:: {
     Outlook_ClickEndTime()
 }
 
-; Shift + H → All day checkbox
+; Shift + H â†’ All day checkbox
 +H:: {
     try {
         win := WinExist("A")
@@ -2285,7 +2284,7 @@ Outlook_ClickEndTime_1200PM() {
     }
 }
 
-; Shift + J → Title field
+; Shift + J â†’ Title field
 +J:: {
     if FocusOutlookField({ AutomationId: "4100" }) ; Title
         return
@@ -2293,7 +2292,7 @@ Outlook_ClickEndTime_1200PM() {
         return
 }
 
-; Shift + L → Required / To field
+; Shift + L â†’ Required / To field
 +L:: {
     if FocusOutlookField({ AutomationId: "4109" }) ; Required
         return
@@ -2301,7 +2300,7 @@ Outlook_ClickEndTime_1200PM() {
         return
 }
 
-; Shift + M → Location → Body
+; Shift + M â†’ Location â†’ Body
 +M:: {
     if FocusOutlookField({ AutomationId: "4111" }) { ; Location
         Sleep 100
@@ -2315,7 +2314,7 @@ Outlook_ClickEndTime_1200PM() {
     }
 }
 
-; Shift + ; → Make Recurring (click)
+; Shift + ; â†’ Make Recurring (click)
 ; Semicolon key virtual key code is VK_BA; with Shift it's +vkBA
 +,:: {
     try {
@@ -2374,7 +2373,7 @@ Outlook_ClickEndTime_1200PM() {
     Send "^x"
 }
 
-; Shift + U → click ChatGPT's model selector (any language)
+; Shift + U â†’ click ChatGPT's model selector (any language)
 +u:: {
     try {
         uia := UIA_Browser("ahk_exe chrome.exe")
@@ -2431,7 +2430,7 @@ Outlook_ClickEndTime_1200PM() {
     Send "!{Tab}"
 
     ; After sending, show loading for Stop streaming
-    buttonNames := ["Stop streaming", "Interromper transmissão"]
+    buttonNames := ["Stop streaming", "Interromper transmissÃ£o"]
     WaitForButtonAndShowSmallLoading_ChatGPT(buttonNames, "Waiting for response...")
 }
 
@@ -2441,7 +2440,7 @@ Outlook_ClickEndTime_1200PM() {
 ; Shift + L: Send and show AI banner
 +l:: {
     ; --- Button Names (EN/PT) ---
-    pt_stopStreamingName := "Interromper transmissão"
+    pt_stopStreamingName := "Interromper transmissÃ£o"
     en_stopStreamingName := "Stop streaming"
     currentStopStreamingName := IS_WORK_ENVIRONMENT ? pt_stopStreamingName : en_stopStreamingName
 
@@ -2455,9 +2454,10 @@ Outlook_ClickEndTime_1200PM() {
     Send "!{Tab}"
     Sleep 300
     ; Step 4: Show banner immediately (debounced by helper), then wait for completion to auto-hide and chime
-    ShowSmallLoadingIndicator_ChatGPT("AI is responding…")
+    ShowSmallLoadingIndicator_ChatGPT("AI is respondingâ€¦")
     ; Use infinite timeout so the banner persists for long responses
-    WaitForButtonAndShowSmallLoading_ChatGPT([currentStopStreamingName, "Stop", "Interromper"], "AI is responding…", 0)
+    WaitForButtonAndShowSmallLoading_ChatGPT([currentStopStreamingName, "Stop", "Interromper"], "AI is respondingâ€¦",
+    0)
 }
 
 #HotIf
@@ -2465,7 +2465,7 @@ Outlook_ClickEndTime_1200PM() {
 ;-------------------------------------------------------------------
 ; Settings Window Shortcuts
 ;-------------------------------------------------------------------
-#HotIf WinActive("Settings") || WinActive("Configurações")
+#HotIf WinActive("Settings") || WinActive("ConfiguraÃ§Ãµes")
 
 ; Shift + Y : Set input volume to 100%
 +Y::
@@ -2521,7 +2521,7 @@ Outlook_ClickEndTime_1200PM() {
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe explorer.exe")
 
-; Explorer-specific helper – select first pinned item in the sidebar
+; Explorer-specific helper â€“ select first pinned item in the sidebar
 SelectExplorerSidebarFirstPinned_EX() {
     try {
         explorerEl := UIA.ElementFromHandle(WinExist("A"))
@@ -2603,7 +2603,7 @@ SelectExplorerSidebarFirstPinned_EX() {
         ; swallow and fallback below
     }
 
-    ; Last-chance fallback – press Home which works if focus is already inside the list
+    ; Last-chance fallback â€“ press Home which works if focus is already inside the list
     Send "{Home}"
     EnsureFocus()
 }
@@ -2614,7 +2614,7 @@ EnsureItemsViewFocus() {
         explorerHwnd := WinExist("A")
         root := UIA.ElementFromHandle(explorerHwnd)
 
-        ; quick check – if ItemsView already has keyboard focus, we're done
+        ; quick check â€“ if ItemsView already has keyboard focus, we're done
         iv := root.FindFirst({ AutomationId: "ItemsView", Type: "List" })
         if iv && iv.HasKeyboardFocus
             return
@@ -2730,7 +2730,7 @@ EnsureItemsViewFocus() {
 
         ; Regex patterns for the buttons (English & Portuguese)
         readPattern := "i)^(Mark as read|Marcar como lida|Marcar como lido)$"
-        unreadPattern := "i)^(Mark as unread|Marcar como n[oó] lida|Marcar como n[oó] lido)$"
+        unreadPattern := "i)^(Mark as unread|Marcar como n[oÃ³] lida|Marcar como n[oÃ³] lido)$"
 
         ; Prefer clicking "Mark as read" if present; otherwise "Mark as unread"
         if (btn := WaitForButton(uia, readPattern, 1000)) {
@@ -2759,7 +2759,7 @@ EnsureItemsViewFocus() {
         ; Try English and Portuguese names for the Forums tab
         forumsButton := uia.FindElement({ Name: "Forums", Type: "TabItem", matchmode: "Substring" })
         if (!forumsButton)
-            forumsButton := uia.FindElement({ Name: "Fóruns", Type: "TabItem", matchmode: "Substring" })
+            forumsButton := uia.FindElement({ Name: "FÃ³runs", Type: "TabItem", matchmode: "Substring" })
 
         if (forumsButton) {
             forumsButton.Click()
@@ -2992,7 +2992,8 @@ FoldAllGitDirectoriesInCursor() {
         ; Narrow to the Source Control (SCM) tree area to avoid unrelated matches
         scmCond := UIA.CreatePropertyConditionEx(UIA.Property.Name, "Source Control", UIA.PropertyConditionFlags.IgnoreCaseMatchSubstring
         )
-        scmCondPt := UIA.CreatePropertyConditionEx(UIA.Property.Name, "Controle de Código", UIA.PropertyConditionFlags.IgnoreCaseMatchSubstring
+        scmCondPt := UIA.CreatePropertyConditionEx(UIA.Property.Name, "Controle de CÃ³digo", UIA.PropertyConditionFlags
+            .IgnoreCaseMatchSubstring
         )
         scmName := UIA.CreateOrCondition(scmCond, scmCondPt)
         scmPaneType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Pane)
@@ -3140,10 +3141,10 @@ FoldAllDirectoriesInExplorer() {
                 if pat.ExpandCollapseState != UIA.ExpandCollapseState.Collapsed
                     pat.Collapse()
             } catch Error {
-                ; Fallback: try clicking the chevron/glyph if found (e.g., text "" or button)
+                ; Fallback: try clicking the chevron/glyph if found (e.g., text "îª´" or button)
                 btnType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Button)
                 txtType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Text)
-                glyphName := UIA.CreatePropertyCondition(UIA.Property.Name, "")
+                glyphName := UIA.CreatePropertyCondition(UIA.Property.Name, "îª´")
                 dotName := UIA.CreatePropertyCondition(UIA.Property.Name, ".")
                 chevronCond := UIA.CreateOrCondition(btnType, UIA.CreateOrCondition(UIA.CreateAndCondition(txtType,
                     glyphName), UIA.CreateAndCondition(txtType, dotName)))
@@ -3272,10 +3273,10 @@ UnfoldAllDirectoriesInExplorer() {
                 if pat.ExpandCollapseState == UIA.ExpandCollapseState.Collapsed
                     pat.Expand()
             } catch Error {
-                ; Fallback: try clicking the chevron/glyph if found (e.g., text "" or button)
+                ; Fallback: try clicking the chevron/glyph if found (e.g., text "îª´" or button)
                 btnType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Button)
                 txtType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Text)
-                glyphName := UIA.CreatePropertyCondition(UIA.Property.Name, "")
+                glyphName := UIA.CreatePropertyCondition(UIA.Property.Name, "îª´")
                 dotName := UIA.CreatePropertyCondition(UIA.Property.Name, ".")
                 chevronCond := UIA.CreateOrCondition(btnType, UIA.CreateOrCondition(UIA.CreateAndCondition(txtType,
                     glyphName), UIA.CreateAndCondition(txtType, dotName)))
@@ -3409,7 +3410,7 @@ SwitchAIModel() {
         switch userChoice.Value {
             case "1":
             {
-                ; For auto option: simulate ;, wait for model context menu, then send ↓, Enter
+                ; For auto option: simulate ;, wait for model context menu, then send â†“, Enter
                 Send "^;"
                 Sleep 300
                 SendText "auto"
@@ -3719,31 +3720,31 @@ SwitchAIModel() {
     }
 }
 
-; Shift + I : Transações
+; Shift + I : TransaÃ§Ãµes
 +i:: {
     try {
         btn := GetMobillsButton("menu-transactions-item", "Transactions")
         if (btn) {
             btn.Click()
         } else {
-            MsgBox "Could not find the Transações/Transactions button.", "Mobills Navigation", "IconX"
+            MsgBox "Could not find the TransaÃ§Ãµes/Transactions button.", "Mobills Navigation", "IconX"
         }
     } catch Error as e {
-        MsgBox "Error navigating to Transações/Transactions: " e.Message, "Mobills Error", "IconX"
+        MsgBox "Error navigating to TransaÃ§Ãµes/Transactions: " e.Message, "Mobills Error", "IconX"
     }
 }
 
-; Shift + O : Cartões de crédito
+; Shift + O : CartÃµes de crÃ©dito
 +o:: {
     try {
         btn := GetMobillsButton("menu-creditCards-item", "Credit cards")
         if (btn) {
             btn.Click()
         } else {
-            MsgBox "Could not find the Cartões de crédito/Credit cards button.", "Mobills Navigation", "IconX"
+            MsgBox "Could not find the CartÃµes de crÃ©dito/Credit cards button.", "Mobills Navigation", "IconX"
         }
     } catch Error as e {
-        MsgBox "Error navigating to Cartões de crédito/Credit cards: " e.Message, "Mobills Error", "IconX"
+        MsgBox "Error navigating to CartÃµes de crÃ©dito/Credit cards: " e.Message, "Mobills Error", "IconX"
     }
 }
 
@@ -3761,31 +3762,31 @@ SwitchAIModel() {
     }
 }
 
-; Shift + H : Relatórios
+; Shift + H : RelatÃ³rios
 +h:: {
     try {
         btn := GetMobillsButton("menu-reports-item", "Reports")
         if (btn) {
             btn.Click()
         } else {
-            MsgBox "Could not find the Relatórios/Reports button.", "Mobills Navigation", "IconX"
+            MsgBox "Could not find the RelatÃ³rios/Reports button.", "Mobills Navigation", "IconX"
         }
     } catch Error as e {
-        MsgBox "Error navigating to Relatórios/Reports: " e.Message, "Mobills Error", "IconX"
+        MsgBox "Error navigating to RelatÃ³rios/Reports: " e.Message, "Mobills Error", "IconX"
     }
 }
 
-; Shift + J : Mais opções
+; Shift + J : Mais opÃ§Ãµes
 +j:: {
     try {
         btn := GetMobillsButton("menu-moreOptions-item", "More options")
         if (btn) {
             btn.Click()
         } else {
-            MsgBox "Could not find the Mais opções/More options button.", "Mobills Navigation", "IconX"
+            MsgBox "Could not find the Mais opÃ§Ãµes/More options button.", "Mobills Navigation", "IconX"
         }
     } catch Error as e {
-        MsgBox "Error navigating to Mais opções/More options: " e.Message, "Mobills Error", "IconX"
+        MsgBox "Error navigating to Mais opÃ§Ãµes/More options: " e.Message, "Mobills Error", "IconX"
     }
 }
 
@@ -4025,7 +4026,7 @@ DismissAllReminders() {
 }
 
 ; ---------------------------------------------------------------------------
-; Helper for Mobills buttons – language-neutral search
+; Helper for Mobills buttons â€“ language-neutral search
 ; ---------------------------------------------------------------------------
 GetMobillsButton(autoId, btnName) {
     try {
@@ -4054,7 +4055,7 @@ TryAttachBrowser() {
 }
 
 FindMonthGroup(uia) {
-    ; Strategy 1 – look for known class name on the container
+    ; Strategy 1 â€“ look for known class name on the container
     try {
         grp := uia.FindElement({ Type: "Group", ClassName: "sc-kAyceB", matchmode: "Substring" })
         if grp
@@ -4062,10 +4063,11 @@ FindMonthGroup(uia) {
     }
     catch {
     }
-    ; Strategy 2 – locate by month text (any language)
+    ; Strategy 2 â€“ locate by month text (any language)
     months := ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October",
         "November", "December",
-        "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro",
+        "Janeiro", "Fevereiro", "MarÃ§o", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro",
+        "Novembro",
         "Dezembro"]
     for , m in months {
         try {
@@ -4241,7 +4243,7 @@ FindMonthGroup(uia) {
         if !hdr {
             hdr := root.FindFirst({ Name: "Header", Type: "Header" })
             if !hdr
-                hdr := root.FindFirst({ Name: "Cabeçalho", Type: "Header" })
+                hdr := root.FindFirst({ Name: "CabeÃ§alho", Type: "Header" })
         }
         if hdr {
             hdr.SetFocus()
@@ -4396,7 +4398,7 @@ FindMonthGroup(uia) {
                 "Guardar",
                 "Guardar como",
                 ; French variations (common in some systems)
-                "Insérer",
+                "InsÃ©rer",
                 "Ouvrir",
                 "Enregistrer",
                 "Enregistrer sous"
@@ -4460,15 +4462,15 @@ FindMonthGroup(uia) {
                 "Fermer",
                 ; German variations
                 "Abbrechen",
-                "Schließen",
+                "SchlieÃŸen",
                 ; Italian variations
                 "Annulla",
                 "Chiudi",
                 ; Generic
                 "No",
-                "Não",
-                "×",  ; Sometimes used as close symbol
-                "✕"   ; Alternative close symbol
+                "NÃ£o",
+                "Ã—",  ; Sometimes used as close symbol
+                "âœ•"   ; Alternative close symbol
             ]
             for name in possibleNames {
                 cancelBtn := root.FindFirst({ Type: "Button", Name: name })
@@ -4548,6 +4550,28 @@ IsFileDialogActive() {
     }
 }
 
+; Shift + U : Focus macro sidebar button and shift tab 6 times
++u:: {
+    try {
+        root := UIA.ElementFromHandle(WinExist("A"))
+        Sleep 200
+        ; Find the "Filter:" text element
+        filterText := root.FindFirst({ Name: "Filter:", Type: "Text", AutomationId: "18" })
+        if filterText {
+            ; Focus on the text element
+            filterText.SetFocus()
+            Sleep 100
+
+            ; Hit Tab once
+            Send "{Tab}"
+            Sleep 50
+        } else {
+            MsgBox "Could not find the 'Filter:' text element.", "Text Focus", "IconX"
+        }
+    } catch Error as e {
+        MsgBox "Error focusing button and performing Shift+Tab sequence:`n" e.Message, "Button Focus", "IconX"
+    }
+}
 #HotIf
 
 ;-------------------------------------------------------------------
@@ -4555,7 +4579,7 @@ IsFileDialogActive() {
 ;-------------------------------------------------------------------
 #HotIf WinActive("Settle Up")
 
-; Shift + Y : Click "Adicionar transação" button (UIA by Name substring)
+; Shift + Y : Click "Adicionar transaÃ§Ã£o" button (UIA by Name substring)
 +y:: {
     try {
         uia := UIA_Browser()
@@ -4568,10 +4592,10 @@ IsFileDialogActive() {
         if (btn) {
             btn.Click()
         } else {
-            MsgBox "Could not find the 'Adicionar transação' button."
+            MsgBox "Could not find the 'Adicionar transaÃ§Ã£o' button."
         }
     } catch Error as e {
-        MsgBox "Error clicking 'Adicionar transação': " e.Message
+        MsgBox "Error clicking 'Adicionar transaÃ§Ã£o': " e.Message
     }
 }
 
@@ -4592,8 +4616,8 @@ IsFileDialogActive() {
             possibleNames := [
                 " pagou",           ; Portuguese suffix
                 " paid",            ; English suffix
-                " pagó",            ; Spanish suffix
-                " a payé"           ; French suffix
+                " pagÃ³",            ; Spanish suffix
+                " a payÃ©"           ; French suffix
             ]
             for suffix in possibleNames {
                 paidByCombo := uia.FindFirst({
@@ -4642,8 +4666,8 @@ IsFileDialogActive() {
             possibleNames := [
                 " pagou",           ; Portuguese suffix
                 " paid",            ; English suffix
-                " pagó",            ; Spanish suffix
-                " a payé"           ; French suffix
+                " pagÃ³",            ; Spanish suffix
+                " a payÃ©"           ; French suffix
             ]
             for suffix in possibleNames {
                 paidByCombo := uia.FindFirst({
@@ -4738,7 +4762,7 @@ CreateCenteredBanner_ChatGPT(message, bgColor := "3772FF", fontColor := "FFFFFF"
     return bGui
 }
 
-ShowSmallLoadingIndicator_ChatGPT(state := "Loading…", bgColor := "3772FF") {
+ShowSmallLoadingIndicator_ChatGPT(state := "Loadingâ€¦", bgColor := "3772FF") {
     global smallLoadingGuis_ChatGPT
     if (smallLoadingGuis_ChatGPT.Length > 0) {
         try if (smallLoadingGuis_ChatGPT[1].Controls.Length > 0)
@@ -4796,7 +4820,7 @@ PlayCompletionChime_ChatGPT() {
     }
 }
 
-WaitForButtonAndShowSmallLoading_ChatGPT(buttonNames, stateText := "Loading…", timeout := 15000) {
+WaitForButtonAndShowSmallLoading_ChatGPT(buttonNames, stateText := "Loadingâ€¦", timeout := 15000) {
     ; Store ChatGPT's window handle before Alt+Tab (robust contains-match)
     chatGPTHwnd := GetChatGPTWindowHwnd()
     if !chatGPTHwnd {
