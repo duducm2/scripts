@@ -3295,6 +3295,9 @@ SwitchAIModel() {
                 return
         }
 
+        Sleep 100
+        Send "{Enter}"
+
     } catch Error as e {
         MsgBox "Error switching AI model: " e.Message, "AI Model Switch Error", "IconX"
     }
