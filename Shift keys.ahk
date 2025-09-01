@@ -53,6 +53,8 @@ cheatSheets["Mercado Livre"] := "
 (
 Mercado Livre
 Shift+Y  ��'  Focus search field
+Shift+U  ��'  Carrinho de compras
+Shift+I  ��'  Compras feitas
 )"  ; end Mercado Livre
 
 ;---------------------------------------- Shift + keys ----------------------------------------------
@@ -1704,6 +1706,91 @@ IsTeamsChatActive() {
         } else {
             MsgBox "Could not find Mercado Livre search field."
         }
+    } catch Error as e {
+        MsgBox "An error occurred: " e.Message
+    }
+}
+
+; Shift + U: Carrinho de compras (Cart)
++u::
+{
+    try {
+        uia := UIA_Browser("ahk_exe chrome.exe")
+        Sleep 200
+        try {
+            root := uia.GetCurrentDocumentElement()
+        } catch {
+            root := uia.BrowserElement
+        }
+
+        cart := 0
+        ; Prefer AutomationId
+        try {
+            cart := root.FindElement({ AutomationId: "nav-cart" })
+        } catch {
+        }
+        if (!cart) {
+            ; Try by class name substring
+            try {
+                cart := root.FindElement({ ClassName: "nav-cart", matchmode: "Substring" })
+            } catch {
+            }
+        }
+        if (!cart) {
+            ; Try by link name containing 'carrinho'
+            try {
+                cart := root.FindElement({ Type: 50005, Name: "carrinho", cs: false, matchmode: "Substring" })
+            } catch {
+            }
+        }
+
+        if (cart) {
+            try cart.Invoke()
+            catch {
+                try cart.Click()
+            }
+            return
+        }
+        MsgBox "Could not find Mercado Livre cart link."
+    } catch Error as e {
+        MsgBox "An error occurred: " e.Message
+    }
+}
+
+; Shift + I: Compras (Purchases)
++i::
+{
+    try {
+        uia := UIA_Browser("ahk_exe chrome.exe")
+        Sleep 200
+        try {
+            root := uia.GetCurrentDocumentElement()
+        } catch {
+            root := uia.BrowserElement
+        }
+
+        purchases := 0
+        ; Try by class name first
+        try {
+            purchases := root.FindElement({ ClassName: "option-purchases" })
+        } catch {
+        }
+        if (!purchases) {
+            ; Try by link name 'Compras'
+            try {
+                purchases := root.FindElement({ Type: 50005, Name: "Compras", cs: false, matchmode: "Substring" })
+            } catch {
+            }
+        }
+
+        if (purchases) {
+            try purchases.Invoke()
+            catch {
+                try purchases.Click()
+            }
+            return
+        }
+        MsgBox "Could not find Mercado Livre purchases link."
     } catch Error as e {
         MsgBox "An error occurred: " e.Message
     }
