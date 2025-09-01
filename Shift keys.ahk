@@ -41,6 +41,30 @@ SendSymbol(sym) {
     SendText(sym)
 }
 
+; Helper: normalize common UTF-8→CP1252 mojibake so arrows and punctuation display correctly
+NormalizeMojibake(str) {
+    if (str = "")
+        return str
+    reps := Map(
+        "â†’", "→",   ; right arrow
+        "â†�", "←",   ; left arrow
+        "â†‘", "↑",   ; up arrow
+        "â†“", "↓",   ; down arrow
+        "â€¢", "•",
+        "â€“", "–",
+        "â€”", "—",
+        "â€¦", "…",
+        "â€˜", "‘",
+        "â€™", "’",
+        "â€œ", "“",
+        "â€", "”",
+        "Ã—", "×"
+    )
+    for k, v in reps
+        str := StrReplace(str, k, v)
+    return str
+}
+
 ;-------------------------------------------------------------------
 ; Cheat-sheet overlay (Win + Alt + Shift + A) â€“ shows remapped shortcuts
 ;-------------------------------------------------------------------
@@ -741,7 +765,7 @@ ToggleShortcutHelp() {
     }
 
     ; Ensure text for current context
-    text := GetCheatSheetText()
+    text := NormalizeMojibake(GetCheatSheetText())
     if (text = "") {
         exe := WinGetProcessName("A")
         text := "No cheat-sheet registered for:`n" exe
@@ -887,8 +911,8 @@ Win+Alt+Shift+K  â†’  Opens or activates Wikipedia
         ; Hotkey "Esc", (*) => (g_globalGui.Hide(), g_globalShown := false), "Off"
     }
 
-    ; Update text and show
-    globalCtrl.Value := globalText
+    ; Fix mojibake (arrows, punctuation) then update text and show
+    globalCtrl.Value := NormalizeMojibake(globalText)
     g_globalGui.Show("AutoSize Hide")
     CenterGuiOnActiveMonitor(g_globalGui)
     g_globalGui.Show("NoActivate")
