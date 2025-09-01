@@ -48,6 +48,13 @@ SendSymbol(sym) {
 ; Map that stores the pop-up text for each application.  Extend freely.
 cheatSheets := Map()
 
+; --- Mercado Livre (Brazil) -----------------------------------------------
+cheatSheets["Mercado Livre"] := "
+(
+Mercado Livre
+Shift+Y  ��'  Focus search field
+)"  ; end Mercado Livre
+
 ;---------------------------------------- Shift + keys ----------------------------------------------
 ; ----- Assignment policy: use Shift + <key> first. When all Shift slots in the sequence are consumed, continue with Ctrl + Alt + <key> in the same order.
 ; ----- You can have repeated keys, depending on the software.
@@ -649,6 +656,8 @@ GetCheatSheetText() {
             appShortcuts := cheatSheets.Has("Miro") ? cheatSheets["Miro"] : ""
         if InStr(chromeTitle, "Wikipedia", false) || InStr(chromeTitle, "wikipedia.org", false)
             appShortcuts := cheatSheets.Has("Wikipedia") ? cheatSheets["Wikipedia"] : ""
+        if InStr(chromeTitle, "Mercado Livre", false)
+            appShortcuts := cheatSheets.Has("Mercado Livre") ? cheatSheets["Mercado Livre"] : ""
         ; Only set generic Google sheet if nothing else matched and title clearly indicates Google site
         if (appShortcuts = "") {
             if (chromeTitle = "Google" || InStr(chromeTitle, " - Google Search"))
@@ -1633,6 +1642,69 @@ IsTeamsChatActive() {
         }
     }
     catch Error as e {
+        MsgBox "An error occurred: " e.Message
+    }
+}
+
+#HotIf
+
+;-------------------------------------------------------------------
+; Mercado Livre (Brazil) Shortcuts
+;-------------------------------------------------------------------
+#HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "Mercado Livre", false)
+
+; Shift + Y: Focus Mercado Livre search field
++y::
+{
+    try {
+        uia := UIA_Browser("ahk_exe chrome.exe")
+        Sleep 200
+        ; Prefer the document root; fall back to browser element
+        try {
+            root := uia.GetCurrentDocumentElement()
+        } catch {
+            root := uia.BrowserElement
+        }
+
+        field := 0
+        ; Try AutomationId first
+        try {
+            field := root.FindElement({ AutomationId: "cb1-edit" })
+        } catch {
+        }
+        if (!field) {
+            ; Try by ComboBox name (Type 50003)
+            try {
+                field := root.FindElement({ Type: 50003, Name: "Digite o que você quer encontrar", cs: false })
+            } catch {
+            }
+        }
+        if (!field) {
+            ; Try by Edit control name
+            try {
+                field := root.FindElement({ Type: "Edit", Name: "Digite o que você quer encontrar", cs: false })
+            } catch {
+            }
+        }
+        if (!field) {
+            ; Try by class name
+            try {
+                field := root.FindElement({ ClassName: "nav-search-input" })
+            } catch {
+            }
+        }
+
+        if (field) {
+            try {
+                field.SetFocus()
+            } catch {
+                field.Click()
+            }
+            return
+        } else {
+            MsgBox "Could not find Mercado Livre search field."
+        }
+    } catch Error as e {
         MsgBox "An error occurred: " e.Message
     }
 }
