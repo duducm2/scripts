@@ -289,6 +289,7 @@ Shift+U  â†’  Focus search bar
 Shift+I  â†’  Focus address bar
 Shift+O  â†’  New folder
 Shift+J  â†’  Create a shortcut
+Shift+K  â†’  Copy as path
 Shift+P  â†’  Select first pinned item in Explorer sidebar
 Shift+H  â†’  Select the last item of the Explorer sidebar
 )"  ; end Explorer
@@ -2680,6 +2681,9 @@ EnsureItemsViewFocus() {
     Sleep 50
     Send "{Enter}"
 }
+
+; Shift + K : Copy as path (Ctrl+Shift+C)
++k:: Send "^+c"
 
 ; Shift + P : Select first pinned item in Explorer sidebar
 +p::
