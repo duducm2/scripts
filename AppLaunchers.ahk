@@ -253,19 +253,14 @@
                 Sleep(200)
             }
 
+            ; Close the Clock window (ApplicationFrameHost.exe)
+            try {
+                WinClose("ahk_exe ApplicationFrameHost.exe")
+            }
+
         } catch {
             ; Fallback: do nothing if UIA not available
         }
-
-        ; ; Only proceed if previous Send("{Enter}") (after ^{Home}) succeeded
-        ; Sleep(1200)
-        ; loop 9 {
-        ;     Send("{Tab}")
-        ;     Sleep(320)
-        ; }
-        ; ; Send("{Enter}")
-
-        ; Sleep(240)
 
     } catch {
         ; Fail silently if UIA not available here
@@ -278,8 +273,6 @@
 
     SoundBeep()
     overlay.Destroy()
-
-    ; Send("!{F4}")
 }
 
 ; =============================================================================
