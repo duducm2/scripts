@@ -208,7 +208,7 @@
     A_Clipboard := ClipSaved
 
     Send("{Escape}")
-    Sleep(3000)
+    Sleep(4000)
     Send("^w")
 
     ; Open Windows Clock (Alarms & Clock) and start focus session (Pomodoro)
@@ -220,17 +220,47 @@
         WinActivate("ahk_exe ApplicationFrameHost.exe")
         Sleep(2000)
 
-        Send("^{Home}")
-        Sleep(100)
-        Send("{Enter}")
+        ; Tab through elements until we find the "Iniciar" button, then press Enter
+        try {
+            ; Start from the beginning of the application
+            Send("^{Home}")
+            Sleep(300)
 
-        ; Only proceed if previous Send("{Enter}") (after ^{Home}) succeeded
-        Sleep(600)
-        loop 9 {
-            Send("{Tab}")
-            Sleep(100)
+            ; Tab through elements until we find "Iniciar" button
+            maxTabs := 50  ; Safety limit to prevent infinite loop
+            foundButton := false
+
+            loop maxTabs {
+                ; Check if current focused element has AutomationId "TimerPlayPauseButton"
+                try {
+                    focusedElement := UIA.GetFocusedElement()
+                    if (focusedElement && focusedElement.AutomationId == "TimerPlayPauseButton") {
+                        foundButton := true
+                        break
+                    }
+                } catch {
+                    ; Continue if UIA check fails
+                }
+
+                ; Tab to next element
+                Send("{Tab}")
+                Sleep(200)
+            }
+
+            ; If we found the button, press Enter to activate it
+            if (foundButton) {
+                Send("{Enter}")
+                Sleep(200)
+            }
+
+            ; Close the Clock window (ApplicationFrameHost.exe)
+            try {
+                WinClose("ahk_exe ApplicationFrameHost.exe")
+            }
+
+        } catch {
+            ; Fallback: do nothing if UIA not available
         }
-        Send("{Enter}")
 
     } catch {
         ; Fail silently if UIA not available here
