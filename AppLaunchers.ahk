@@ -154,7 +154,8 @@
         WinActivate
         CenterMouse()
     } else {
-        Run "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Wikipedia.lnk"
+        target := IS_WORK_ENVIRONMENT ? "C:\Users\fie7ca\Documents\Shortcuts\Wikipedia.lnk" : "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Wikipedia.lnk"
+        Run target
         WinWaitActive("Wikipedia")
         CenterMouse()
     }
