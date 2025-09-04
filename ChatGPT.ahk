@@ -39,6 +39,34 @@ FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
     return false
 }
 
+; Collect visible elements by Name only (exact match, case-insensitive)
+CollectByNamesExact(root, namesArr) {
+    results := []
+    for name in namesArr {
+        try {
+            for el in root.FindAll({ Name: name, mm: 3, cs: false })
+                if !(el.IsOffscreen)
+                    results.Push(el)
+        } catch {
+        }
+    }
+    return results
+}
+
+; Collect visible elements by Name only (substring match, case-insensitive)
+CollectByNamesContains(root, namesArr) {
+    results := []
+    for name in namesArr {
+        try {
+            for el in root.FindAll({ Name: name, mm: 2, cs: false })
+                if !(el.IsOffscreen)
+                    results.Push(el)
+        } catch {
+        }
+    }
+    return results
+}
+
 ; Find ChatGPT browser window (case-insensitive contains match for "chatgpt")
 GetChatGPTWindowHwnd() {
     for hwnd in WinGetList("ahk_exe chrome.exe") {
@@ -222,7 +250,7 @@ CopyLastPrompt() {
 }
 
 ; =============================================================================
-; Copy Last Message and Toggle Read Aloud
+; Open Read Aloud via More actions on latest assistant message
 ; Hotkey: Win+Alt+Shift+Y
 ; =============================================================================
 #!+y::
@@ -237,70 +265,93 @@ CopyLastPrompt() {
     cUIA := UIA_Browser()
     Sleep 300
 
-    ; Now check if currently reading and toggle accordingly
-    Sleep 300
+    ; Name sets (case-insensitive)
+    moreNames := ["More actions", "More options", "Mais ações", "Mais opções"]
     readNames := ["Read aloud", "Ler em voz alta"]
-    stopNames := ["Stop", "Parar"]
-    buttonClicked := false
-    actionTaken := ""
+    copyNames := ["Copy to clipboard", "Copiar para a área de transferência", "Copy", "Copiar"]
+
+    CollectPreferExact := (root, arr) => (
+        elsExact := CollectByNamesExact(root, arr),
+        elsExact.Length ? elsExact : CollectByNamesContains(root, arr)
+    )
+
+    ; Try to infer latest assistant message using last Copy button occurrence
+    copyCandidates := CollectPreferExact(cUIA, copyNames)
+    targetContainer := ""
     isCopied := false
-
-    ; First check if there's a Stop button (meaning currently reading)
-    stopBtns := []
-    for name in stopNames
-        for btn in cUIA.FindAll({ Name: name, Type: "Button" })
-            stopBtns.Push(btn)
-
-    if stopBtns.Length {
-        ; Currently reading, so stop it
-        stopBtns[stopBtns.Length].Click()
-        buttonClicked := true
-        actionTaken := "stopped"
-    } else {
-        ; Not currently reading, so start reading
-        readBtns := []
-        for name in readNames
-            for btn in cUIA.FindAll({ Name: name, Type: "Button" })
-                readBtns.Push(btn)
-        if readBtns.Length {
-            ; Copy last message only when starting to read aloud
-            copyNames := [
-                "Copy to clipboard", "Copiar para a área de transferência", "Copy", "Copiar"
-            ]
-            copyBtns := []
-            for name in copyNames
-                for btn in cUIA.FindAll({ Name: name, Type: "Button", matchmode: "Substring" })
-                    copyBtns.Push(btn)
-
-            if copyBtns.Length {
-                lastBtn := copyBtns[copyBtns.Length]
-                try {
-                    lastBtn.ScrollIntoView()
-                    Sleep 100
-                    A_Clipboard := ""
-                    lastBtn.Click()
-                    if ClipWait(1) {
-                        isCopied := true
-                    }
-                } catch as e {
-                    ; Swallow copy errors – proceed to start reading anyway
+    if (copyCandidates.Length) {
+        lastCopy := copyCandidates[copyCandidates.Length]
+        current := lastCopy
+        loop 12 {
+            try {
+                current := current.Parent
+                if !IsObject(current)
+                    break
+                cand := CollectPreferExact(current, moreNames)
+                if (cand.Length) {
+                    targetContainer := current
+                    break
                 }
+            } catch {
+                break
             }
+        }
 
-            readBtns[readBtns.Length].Click()
-            buttonClicked := true
-            actionTaken := "started"
-        } else {
-            MsgBox "No 'Read aloud/Ler em voz alta' button found!"
-            return
+        ; Click the last Copy button to copy latest assistant message
+        try {
+            lastCopy.ScrollIntoView()
+            Sleep 100
+            A_Clipboard := ""
+            lastCopy.Click()
+            if ClipWait(1)
+                isCopied := true
+        } catch {
         }
     }
 
-    ; optional: jump back to previous window
-    Send "!{Tab}"
+    ; Find and click More actions
+    moreBtns := []
+    if (IsObject(targetContainer))
+        moreBtns := CollectPreferExact(targetContainer, moreNames)
+    if !(moreBtns.Length)
+        moreBtns := CollectPreferExact(cUIA, moreNames) ; fallback to latest message in thread
 
-    if (isCopied && buttonClicked && actionTaken = "started") {
-        Sleep(300) ; give window time to switch
+    if !(moreBtns.Length) {
+        ShowNotification("Read Aloud not found", 1500, "3772FF", "FFFFFF")
+        return
+    }
+
+    try {
+        btn := moreBtns[moreBtns.Length]
+        btn.ScrollIntoView()
+        Sleep 80
+        btn.Click()
+    } catch {
+        ShowNotification("Read Aloud not found", 1500, "3772FF", "FFFFFF")
+        return
+    }
+
+    ; From the opened menu, click Read aloud
+    Sleep 120
+    readItems := CollectPreferExact(cUIA, readNames)
+    if !(readItems.Length) {
+        ShowNotification("Read Aloud not found", 1500, "3772FF", "FFFFFF")
+        return
+    }
+
+    try {
+        readItem := readItems[readItems.Length]
+        readItem.ScrollIntoView()
+        Sleep 60
+        readItem.Click()
+    } catch {
+        ShowNotification("Read Aloud not found", 1500, "3772FF", "FFFFFF")
+        return
+    }
+
+    ; Show banner if copied successfully (stay in ChatGPT)
+    if (isCopied) {
+        Sleep(300)
         ShowNotification("Message copied and reading started!")
     }
 }
