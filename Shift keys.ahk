@@ -145,7 +145,7 @@ cheatSheets["OutlookMessage"] := "
 Outlook â€“ Message
 Shift+Y  â†’  Subject / Title
 Shift+U  â†’  Required / To
-Shift+L  â†’  Subject â†’ Body
+Shift+M  â†’  Location â†’ Body
 )"  ; end Outlook Message
 
 ; --- Microsoft Teams â€“ meeting window --------------------------------------
@@ -2235,8 +2235,8 @@ SelectExplorerSidebarFirstPinned() {
 ; Shift + I â†’ Date Picker (if present in this inspector)
 ; (No Shift + I in Message inspector)
 
-; Shift + L â†’ Subject â†’ Body
-+L:: {
+; Shift + M â†’ Subject â†’ Body
++M:: {
     if FocusOutlookField({ AutomationId: "4101" }) {
         Sleep 50
         Send "{Tab}"
