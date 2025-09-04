@@ -349,11 +349,20 @@ CopyLastPrompt() {
         return
     }
 
+    Sleep(120)
+
+    Send("!{Tab}") ; Send Shift+Tab to move focus backward
+
+    Sleep(220)
+
     ; Show banner if copied successfully (stay in ChatGPT)
     if (isCopied) {
-        Sleep(300)
         ShowNotification("Message copied and reading started!")
     }
+
+    Sleep(50)
+
+    Send("{Media_Play_Pause}")
 }
 
 ; =============================================================================
