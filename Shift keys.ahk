@@ -145,7 +145,7 @@ cheatSheets["OutlookMessage"] := "
 Outlook â€“ Message
 Shift+Y  â†’  Subject / Title
 Shift+U  â†’  Required / To
-Shift+L  â†’  Subject â†’ Body
+Shift+M  â†’  Location â†’ Body
 )"  ; end Outlook Message
 
 ; --- Microsoft Teams â€“ meeting window --------------------------------------
@@ -1441,21 +1441,60 @@ IsTeamsChatActive() {
     }
 }
 
-; Shift + U : Maximize meeting window
+; Shift + U : Switch from compacted to normal Teams meeting window
 +U:: {
-    try {
-        win := WinExist("A")
-        root := UIA.ElementFromHandle(win)
-
-        btn := root.FindFirst({ Name: "Maximize meeting window", ControlType: "Button" })
-        if btn
-            btn.Click()
-        else
-            MsgBox("Couldn't find the Maximize button.", "Control not found", "IconX")
+    ; Get current active window title
+    currentTitle := WinGetTitle("A")
+    
+    ; Check if current window is a compacted Teams meeting
+    isCompacted := false
+    if (currentTitle = "Reunião do Microsoft Teams | Microsoft Teams") {
+        isCompacted := true
+        baseTitle := "Reunião do Microsoft Teams"
+    } else if (InStr(currentTitle, "Modo de exibição compacto da reunião | Reunião do Microsoft Teams | Microsoft Teams")) {
+        isCompacted := true
+        baseTitle := "Reunião do Microsoft Teams"
     }
-    catch as e {
-        MsgBox("UIA error:`n" e.Message, "Error", "IconX")
+    
+    if (!isCompacted) {
+        ; Not a compacted meeting window, do nothing
+        return
     }
+    
+    ; Search for the corresponding normal meeting window
+    normalMeetingHwnd := 0
+    for hwnd in WinGetList("ahk_exe ms-teams.exe") {
+        title := WinGetTitle(hwnd)
+        
+        ; Skip if it's the same window or another compacted window
+        if (hwnd = WinGetID("A") || InStr(title, "Modo de exibição compacto da reunião")) {
+            continue
+        }
+        
+        ; Check if it's a normal meeting window with the same base title
+        if (InStr(title, baseTitle) && InStr(title, "| Microsoft Teams") && !InStr(title, "Modo de exibição compacto da reunião")) {
+            normalMeetingHwnd := hwnd
+            break
+        }
+    }
+    
+            ; If found, switch to the normal meeting window
+        if (normalMeetingHwnd) {
+            try {
+                WinActivate("ahk_id " normalMeetingHwnd)
+                ; Optional: Show a brief tooltip to confirm the switch
+                ToolTip("Switched to normal meeting view")
+                SetTimer(() => ToolTip(), -1000) ; Hide tooltip after 1 second
+            } catch as e {
+                ; Fallback: try to bring window to front
+                WinShow("ahk_id " normalMeetingHwnd)
+                WinActivate("ahk_id " normalMeetingHwnd)
+            }
+        } else {
+            ; No corresponding normal window found - show notification
+            ToolTip("No normal meeting window found")
+            SetTimer(() => ToolTip(), -1500) ; Hide tooltip after 1.5 seconds
+        }
 }
 
 ; Shift + I : Reagir (open reactions menu)
@@ -2196,8 +2235,8 @@ SelectExplorerSidebarFirstPinned() {
 ; Shift + I â†’ Date Picker (if present in this inspector)
 ; (No Shift + I in Message inspector)
 
-; Shift + L â†’ Subject â†’ Body
-+L:: {
+; Shift + M â†’ Subject â†’ Body
++M:: {
     if FocusOutlookField({ AutomationId: "4101" }) {
         Sleep 50
         Send "{Tab}"

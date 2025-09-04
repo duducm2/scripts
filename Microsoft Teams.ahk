@@ -11,22 +11,38 @@
 ; --- Helper Functions --------------------------------------------------------
 
 ActivateWindowWithRetry(hwnd, attempts := 6, waitMs := 500) {
+    ; Get original window state to preserve size and prevent unwanted maximization
+    originalState := ""
+    try {
+        originalState := WinGetMinMax(hwnd)
+        ; Validate the state value (-1=minimized, 0=normal, 1=maximized)
+        if !(originalState = -1 || originalState = 0 || originalState = 1) {
+            originalState := ""  ; Reset if invalid state
+        }
+    } catch {
+        originalState := ""  ; Reset on error
+    }
+    
     ; Multiple strategies to restore and activate window
     Loop attempts {
-        ; Strategy 1: Standard restore + activate
+        ; Strategy 1: Standard restore + activate (only if minimized)
         try {
-            WinRestore(hwnd)
-            Sleep 100
+            if (originalState = -1) {  ; Only restore if window was minimized (-1=minimized, 0=normal, 1=maximized)
+                WinRestore(hwnd)
+                Sleep 100
+            }
             WinActivate(hwnd)
             if WinWaitActive("ahk_id " hwnd, , waitMs/1000) {
                 return true
             }
         }
         
-        ; Strategy 2: Show window using ShowWindow API
+        ; Strategy 2: Show window using ShowWindow API (only if minimized)
         try {
-            DllCall("ShowWindow", "Ptr", hwnd, "Int", 9)  ; SW_RESTORE
-            Sleep 100
+            if (originalState = -1) {  ; Only restore if window was minimized (-1=minimized, 0=normal, 1=maximized)
+                DllCall("ShowWindow", "Ptr", hwnd, "Int", 9)  ; SW_RESTORE
+                Sleep 100
+            }
             DllCall("SetForegroundWindow", "Ptr", hwnd)
             if WinWaitActive("ahk_id " hwnd, , waitMs/1000) {
                 return true
@@ -455,7 +471,7 @@ GetCameraState(hwndTeams, maxRetries := 3) {
     ; --- Wait for the action to complete and ensure Teams window is activated ---
     Sleep 2000  ; Give Teams time to process the sharing toggle
     
-    ; Re-activate the Teams window to handle minimized-to-maximized transition
+    ; Re-activate the Teams window while preserving its size
     if ActivateWindowWithRetry(hwndTeams, 3, 300) {
         PlayMicrophoneBeep()
         ShowCenteredOverlay(hwndTeams, "SHARING TOGGLED")
