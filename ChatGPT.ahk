@@ -356,19 +356,43 @@ CopyLastPrompt() {
 
     Sleep(120)
 
-    Send("!{Tab}") ; Send Shift+Tab to move focus backward
+    Send("{Escape}") ; Send Shift+Tab to move focus backward
 
-    Sleep(220)
+    Sleep(200)
 
+    Send("{Media_Play_Pause}")
+
+    Sleep(200)
+
+    ; If Spotify is open, activate it and send media play again
+    try {
+        if WinExist("ahk_exe Spotify.exe") {
+            WinActivate("ahk_exe Spotify.exe")
+            WinWaitActive("ahk_exe Spotify.exe", , 1)
+            Sleep(200)
+            Send("{Media_Play_Pause}")
+            Sleep(300)
+            ; Verbosely hold Alt and send Tab twice7., with clear intent and timing
+            Send("{Alt down}")    ; Hold down the Alt key
+            Send("{Tab}")           ; Press Tab while Alt is held (first tab)
+            Sleep(50)
+            Send("{Tab}")           ; Press Tab again while still holding Alt (second tab)
+            Sleep(50)
+            Send("{Alt up}")      ; Release the Alt key
+        }
+        else {
+            Send("!{Tab}") ; Send Shift+Tab to move focus backward
+            Sleep(300)
+        }
+    } catch {
+        ; Ignore errors if Spotify is not running or cannot be activated
+    }
+
+    Sleep(300)
     ; Show banner if copied successfully (stay in ChatGPT)
     if (isCopied) {
         ShowNotification("Message copied and reading started!")
     }
-
-    Sleep(50)
-
-    Send("{Media_Play_Pause}")
-
 }
 
 ; =============================================================================
