@@ -835,7 +835,7 @@ CreateCenteredBanner(message, bgColor := "3772FF", fontColor := "FFFFFF", fontSi
 ; =============================================================================
 ; Helper function to show a notification on the active window
 ; =============================================================================
-ShowNotification(message, durationMs := 2000, bgColor := "FFFF00", fontColor := "000000", fontSize := 24) {
+ShowNotification(message, durationMs := 500, bgColor := "FFFF00", fontColor := "000000", fontSize := 24) {
     notificationGui := CreateCenteredBanner(message, bgColor, fontColor, fontSize, 178)
     Sleep(durationMs)
     if IsObject(notificationGui) && notificationGui.Hwnd {
