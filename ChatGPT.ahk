@@ -255,6 +255,11 @@ CopyLastPrompt() {
 ; =============================================================================
 #!+y::
 {
+
+    ; If Spotify exists, send a media pause key
+    if ProcessExist("Spotify.exe")
+        Send("{Media_Stop}")
+
     SetTitleMatchMode 2
     if hwnd := GetChatGPTWindowHwnd()
         WinActivate "ahk_id " hwnd
@@ -363,6 +368,7 @@ CopyLastPrompt() {
     Sleep(50)
 
     Send("{Media_Play_Pause}")
+
 }
 
 ; =============================================================================
