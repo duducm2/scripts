@@ -84,6 +84,16 @@ ProcessCheatSheetText(text) {
             ; Replace the shortcut with padded version
             paddedShortcut := PadShortcut(match[1])
             processedLine := StrReplace(line, match[1], paddedShortcut)
+            
+            ; Check if this is a built-in shortcut (contains common built-in patterns)
+            if (IsBuiltInShortcut(match[1])) {
+                ; Add visual distinction for built-in shortcuts with dashes and brackets
+                processedLine := "--- " . processedLine
+            } else {
+                ; Add visual distinction for custom shortcuts
+                processedLine := ">>> " . processedLine
+            }
+            
             processedLines.Push(processedLine)
         } else {
             processedLines.Push(line)
@@ -99,7 +109,78 @@ ProcessCheatSheetText(text) {
             result := result . "`n" . line
         }
     }
+    
+    ; Add legend at the top if there are shortcuts
+    if (InStr(result, ">>>") || InStr(result, "---")) {
+        separator := ""
+        Loop 50 {
+            separator .= "="
+        }
+        legend := ">>> Custom shortcuts  |  --- Built-in shortcuts`n" . separator . "`n`n"
+        result := legend . result
+    }
+    
     return result
+}
+
+; Function to detect if a shortcut is a built-in shortcut
+IsBuiltInShortcut(shortcut) {
+    ; Remove brackets for easier matching
+    content := RegExReplace(shortcut, "\[|\]", "")
+    
+    ; Common built-in shortcut patterns
+    builtInPatterns := [
+        "Ctrl \+ [A-Z]",           ; Ctrl + Letter
+        "Ctrl \+ [0-9]",           ; Ctrl + Number
+        "Ctrl \+ [F1-F12]",        ; Ctrl + Function keys
+        "Alt \+ [A-Z]",            ; Alt + Letter
+        "Alt \+ [0-9]",            ; Alt + Number
+        "Alt \+ [F1-F12]",         ; Alt + Function keys
+        "Alt \+ [↑↓←→]",           ; Alt + Arrow keys
+        "Ctrl \+ Shift \+ [A-Z]",  ; Ctrl + Shift + Letter
+        "Ctrl \+ Shift \+ [0-9]",  ; Ctrl + Shift + Number
+        "Ctrl \+ Enter",           ; Ctrl + Enter
+        "Ctrl \+ Space",           ; Ctrl + Space
+        "Ctrl \+ Tab",             ; Ctrl + Tab
+        "Ctrl \+ Esc",             ; Ctrl + Esc
+        "Ctrl \+ Home",            ; Ctrl + Home
+        "Ctrl \+ End",             ; Ctrl + End
+        "Ctrl \+ PageUp",          ; Ctrl + PageUp
+        "Ctrl \+ PageDown",        ; Ctrl + PageDown
+        "Ctrl \+ Insert",          ; Ctrl + Insert
+        "Ctrl \+ Delete",          ; Ctrl + Delete
+        "Ctrl \+ Backspace",       ; Ctrl + Backspace
+        "Shift \+ [A-Z]",          ; Shift + Letter
+        "Shift \+ [0-9]",          ; Shift + Number
+        "Shift \+ [F1-F12]",       ; Shift + Function keys
+        "Shift \+ [↑↓←→]",         ; Shift + Arrow keys
+        "Shift \+ Enter",          ; Shift + Enter
+        "Shift \+ Delete",         ; Shift + Delete
+        "Shift \+ Tab",            ; Shift + Tab
+        "Shift \+ Esc",            ; Shift + Esc
+        "F[1-9]|F1[0-2]",         ; Function keys F1-F12
+        "Esc",                     ; Escape key
+        "Enter",                   ; Enter key
+        "Space",                   ; Space key
+        "Tab",                     ; Tab key
+        "Backspace",               ; Backspace key
+        "Delete",                  ; Delete key
+        "Insert",                  ; Insert key
+        "Home",                    ; Home key
+        "End",                     ; End key
+        "PageUp",                  ; PageUp key
+        "PageDown",                ; PageDown key
+        "↑|↓|←|→"                  ; Arrow keys
+    ]
+    
+    ; Check against built-in patterns
+    for pattern in builtInPatterns {
+        if RegExMatch(content, "i)^" . pattern . "$") {
+            return true
+        }
+    }
+    
+    return false
 }
 
 ; Helper: normalize common UTF-8→CP1252 mojibake so arrows and punctuation display correctly
