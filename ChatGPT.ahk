@@ -98,7 +98,7 @@ GetChatGPTWindowHwnd() {
             RecenterLoadingOverWindow(WinExist("A"))
             CenterMouse()
             ; --- Read initial prompt from external file & paste it ---
-            Sleep 7000  ; give the page time to load fully
+            Sleep (IS_WORK_ENVIRONMENT ? 3500 : 7000)  ; give the page time to load fully
             promptText := ""
             try promptText := FileRead(PROMPT_FILE, "UTF-8")
             if (StrLen(promptText) = 0)
@@ -110,9 +110,9 @@ GetChatGPTWindowHwnd() {
             A_Clipboard := promptText
             ClipWait 1
             Send("^v")
-            Sleep 100
+            Sleep (IS_WORK_ENVIRONMENT ? 50 : 100)
             Send("{Enter}")
-            Sleep 100
+            Sleep (IS_WORK_ENVIRONMENT ? 50 : 100)
             A_Clipboard := oldClip
         }
     }
@@ -133,20 +133,20 @@ GetChatGPTWindowHwnd() {
         WinActivate "ahk_id " hwnd
     if WinWaitActive("ahk_exe chrome.exe", , 2)
         CenterMouse()
-    Sleep 250
+    Sleep (IS_WORK_ENVIRONMENT ? 125 : 250)
     Send "{Esc}"
-    Sleep 250
+    Sleep (IS_WORK_ENVIRONMENT ? 125 : 250)
     Send "+{Esc}"
     searchString :=
         "Correct the following sentence for grammar, cohesion, and coherence. Respond with only the corrected sentence, no explanations."
     A_Clipboard := searchString . "`n`nContent: " . A_Clipboard
-    Sleep 100
+    Sleep (IS_WORK_ENVIRONMENT ? 50 : 100)
     Send("^a")
-    Sleep 500
+    Sleep (IS_WORK_ENVIRONMENT ? 250 : 500)
     Send("^v")
-    Sleep 500
+    Sleep (IS_WORK_ENVIRONMENT ? 250 : 500)
     Send("{Enter}")
-    Sleep 500
+    Sleep (IS_WORK_ENVIRONMENT ? 250 : 500)
     ; After sending, show loading for Stop streaming
     Send "!{Tab}" ; Return to previous window
     buttonNames := ["Stop streaming", "Interromper transmissão"]
@@ -168,20 +168,20 @@ GetChatGPTWindowHwnd() {
         WinActivate "ahk_id " hwnd
     if WinWaitActive("ahk_exe chrome.exe", , 2)
         CenterMouse()
-    Sleep 250
+    Sleep (IS_WORK_ENVIRONMENT ? 125 : 250)
     Send "{Esc}"
-    Sleep 250
+    Sleep (IS_WORK_ENVIRONMENT ? 125 : 250)
     Send "+{Esc}"
     searchString :=
         "Below, you will find a word or phrase. I'd like you to answer in five sections: the 1st section you will repeat the word twice. For each time you repeat, use a point to finish the phrase. The 2nd section should have the definition of the word (You should also say each part of speech does the different definitions belong to). The 3d section should have the pronunciation of this word using the Internation Phonetic Alphabet characters (for American English).The 4th section should have the same word applied in a real sentence (put that in quotations, so I can identify that). In the 5th, Write down the translation of the word into Portuguese. Please, do not title any section. Thanks!"
     A_Clipboard := searchString . "`n`nContent: " . A_Clipboard
-    Sleep 100
+    Sleep (IS_WORK_ENVIRONMENT ? 50 : 100)
     Send("^a")
-    Sleep 500
+    Sleep (IS_WORK_ENVIRONMENT ? 250 : 500)
     Send("^v")
-    Sleep 500
+    Sleep (IS_WORK_ENVIRONMENT ? 250 : 500)
     Send("{Enter}")
-    Sleep 500
+    Sleep (IS_WORK_ENVIRONMENT ? 250 : 500)
     ; After sending, show loading for Stop streaming
     Send "!{Tab}" ; Return to previous window
     buttonNames := ["Stop streaming", "Interromper transmissão"]
@@ -204,7 +204,7 @@ CopyLastPrompt() {
     CenterMouse()
 
     cUIA := UIA_Browser()
-    Sleep 300
+    Sleep (IS_WORK_ENVIRONMENT ? 150 : 300)
 
     ; — labels ChatGPT shows in EN and PT —
     copyNames := [
@@ -228,7 +228,7 @@ CopyLastPrompt() {
     ; — click it & wait for clipboard —
     try {
         lastBtn.ScrollIntoView()
-        Sleep 100
+        Sleep (IS_WORK_ENVIRONMENT ? 50 : 100)
         A_Clipboard := ""                  ; clear first
         lastBtn.Click()
         if !ClipWait(1) {                  ; returns 0 on timeout
@@ -244,7 +244,7 @@ CopyLastPrompt() {
     Send "!{Tab}"
 
     if (isCopied) {
-        Sleep(300) ; give window time to switch
+        Sleep(IS_WORK_ENVIRONMENT ? 150 : 300) ; give window time to switch
         ShowNotification("Last prompt copied!")
     }
 }
@@ -268,7 +268,7 @@ CopyLastPrompt() {
     CenterMouse()
 
     cUIA := UIA_Browser()
-    Sleep 300
+    Sleep (IS_WORK_ENVIRONMENT ? 150 : 300)
 
     ; Name sets (case-insensitive)
     moreNames := ["More actions", "More options", "Mais ações", "Mais opções"]
@@ -305,7 +305,7 @@ CopyLastPrompt() {
         ; Click the last Copy button to copy latest assistant message
         try {
             lastCopy.ScrollIntoView()
-            Sleep 100
+            Sleep (IS_WORK_ENVIRONMENT ? 50 : 100)
             A_Clipboard := ""
             lastCopy.Click()
             if ClipWait(1)
@@ -314,7 +314,7 @@ CopyLastPrompt() {
         }
     }
 
-    Sleep(300)
+    Sleep(IS_WORK_ENVIRONMENT ? 150 : 300)
 
     ; Find and click More actions
     moreBtns := []
@@ -331,7 +331,7 @@ CopyLastPrompt() {
     try {
         btn := moreBtns[moreBtns.Length]
         btn.ScrollIntoView()
-        Sleep 80
+        Sleep (IS_WORK_ENVIRONMENT ? 40 : 80)
         btn.Click()
     } catch {
         ShowNotification("More btns not found", 1500, "3772FF", "FFFFFF")
@@ -339,7 +339,7 @@ CopyLastPrompt() {
     }
 
     ; From the opened menu, click Read aloud
-    Sleep 120
+    Sleep (IS_WORK_ENVIRONMENT ? 60 : 120)
     readItems := CollectPreferExact(cUIA, readNames)
     if !(readItems.Length) {
         ShowNotification("Read Aloud not found", 1500, "3772FF", "FFFFFF")
@@ -349,26 +349,26 @@ CopyLastPrompt() {
     try {
         readItem := readItems[readItems.Length]
         readItem.ScrollIntoView()
-        Sleep 60
+        Sleep (IS_WORK_ENVIRONMENT ? 30 : 60)
         readItem.Click()
     } catch {
         ShowNotification("Read Aloud not found", 1500, "3772FF", "FFFFFF")
         return
     }
 
-    Sleep(300)
+    Sleep(IS_WORK_ENVIRONMENT ? 150 : 300)
 
     Send("{Escape}") ; 
 
-    Sleep(50)
+    Sleep(IS_WORK_ENVIRONMENT ? 25 : 50)
 
     Send("{Media_Play_Pause}")
 
-    Sleep(50)
+    Sleep(IS_WORK_ENVIRONMENT ? 25 : 50)
 
     Send("!{Tab}") ; Send Shift+Tab to move focus backward
     
-    Sleep(300)
+    Sleep(IS_WORK_ENVIRONMENT ? 150 : 300)
 
     ; Show banner if copied successfully (stay in ChatGPT)
     if (isCopied) {
@@ -396,7 +396,7 @@ ToggleVoiceMode(triedFallback := false, forceAction := "") {
     }
     CenterMouse()
     cUIA := UIA_Browser()
-    Sleep 300
+    Sleep (IS_WORK_ENVIRONMENT ? 150 : 300)
 
     ; Button names in both English and Portuguese
     startNames := ["Start voice mode", "Iniciar modo voz"]
@@ -733,7 +733,7 @@ WaitForButtonAndShowSmallLoading(buttonNames, stateText := "Loading…", timeout
                 indicatorShown := true
             }
             while btn && (timeout <= 0 || A_TickCount < deadline) {
-                Sleep 250
+                Sleep (IS_WORK_ENVIRONMENT ? 125 : 250)
                 btn := ""
                 for n in buttonNames {
                     try {
@@ -749,7 +749,7 @@ WaitForButtonAndShowSmallLoading(buttonNames, stateText := "Loading…", timeout
                 buttonDisappeared := true
             break
         }
-        Sleep 250
+        Sleep (IS_WORK_ENVIRONMENT ? 125 : 250)
     }
     ; Play completion sound only for actual AI responses when we saw the button and it disappeared
     try {
@@ -788,11 +788,11 @@ WaitForButtonAndShowSmallLoading(buttonNames, stateText := "Loading…", timeout
             return
         CenterMouse()
     }
-    Sleep 300
+    Sleep (IS_WORK_ENVIRONMENT ? 150 : 300)
     Send("^+;")
 
     Send("!{Tab}") ; Switch back to the previous window
-    Sleep(300) ; Wait for the window switch
+    Sleep(IS_WORK_ENVIRONMENT ? 150 : 300) ; Wait for the window switch
 
     if ClipWait(1) {
         ShowNotification("Last code block copied!")
@@ -803,7 +803,7 @@ WaitForButtonAndShowSmallLoading(buttonNames, stateText := "Loading…", timeout
 ; Helper function to center mouse on the active window
 ; =============================================================================
 CenterMouse() {
-    Sleep(200)
+    Sleep(IS_WORK_ENVIRONMENT ? 100 : 200)
     Send("#!+q")
 }
 
@@ -908,7 +908,7 @@ ClickFirstConversationOptions(timeoutMs := 5000) {
         }
         if btn
             break
-        Sleep 120
+        Sleep (IS_WORK_ENVIRONMENT ? 60 : 120)
     }
 
     ; --- 4) broader fallback search (any type, just keywords) ---
@@ -938,7 +938,7 @@ ClickFirstConversationOptions(timeoutMs := 5000) {
     ; --- 6) success – scroll into view and click ---
     try {
         btn.ScrollIntoView()
-        Sleep 100
+        Sleep (IS_WORK_ENVIRONMENT ? 50 : 100)
         btn.Click()
         return true
     } catch Error as e {
@@ -959,13 +959,13 @@ EnsureSidebarOpen(timeoutMs := 3000) {
 
     ; sidebar hidden – toggle with Ctrl+Shift+S
     Send "^+s"
-    Sleep 600
+    Sleep (IS_WORK_ENVIRONMENT ? 300 : 600)
 
     deadline := A_TickCount + timeoutMs
     while (A_TickCount < deadline) {
         if SidebarVisible(cUIA, anchorNames)
             return true
-        Sleep 200
+        Sleep (IS_WORK_ENVIRONMENT ? 100 : 200)
     }
     return false   ; still hidden
 }
@@ -996,9 +996,9 @@ SidebarVisible(uiRoot, names) {
         Send("{Esc}")
         Send("F")
         Send("{Backspace}")
-        Sleep(300)
+        Sleep(IS_WORK_ENVIRONMENT ? 150 : 300)
         Send("^a")
-        Sleep(350)
+        Sleep(IS_WORK_ENVIRONMENT ? 175 : 350)
         Send("^x")
         Send("!{Tab}")
     }
@@ -1030,7 +1030,7 @@ ShowLoading(message := "Loading…", bgColor := "FFFF00", fontColor := "000000",
     guiY := t + (winH - guiH) / 2
     loadingGui.Show("x" . Round(guiX) . " y" . Round(guiY) . " NA")
     WinSetTransparent(178, loadingGui)
-    Sleep 150
+    Sleep (IS_WORK_ENVIRONMENT ? 75 : 150)
 }
 
 HideLoading() {
