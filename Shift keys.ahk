@@ -899,7 +899,7 @@ ToggleShortcutHelp() {
         g_helpGui.BackColor := "000000"
         g_helpGui.SetFont("s12 cFFFF00", "Consolas")
         ; Enable vertical scroll so oversized cheat sheets remain usable
-        cheatCtrl := g_helpGui.Add("Edit", "ReadOnly +Multi -E0x200 +VScroll -HScroll -Border Background000000 w600 r1"
+        cheatCtrl := g_helpGui.Add("Edit", "ReadOnly +Multi -E0x200 +VScroll -HScroll -Border Background000000 w1000 r1"
         )
 
         ; Esc also hides  ; (disabled â€“ use Win+Alt+Shift+A to hide)
@@ -924,7 +924,7 @@ ToggleShortcutHelp() {
         controlHeight := maxHeight
 
     ; Resize the control and GUI explicitly
-    cheatCtrl.Move(, , 600, controlHeight)
+    cheatCtrl.Move(, , 1000, controlHeight)
     ; Show > measure > centre
     g_helpGui.Show("AutoSize Hide")
     CenterGuiOnActiveMonitor(g_helpGui)
@@ -1026,7 +1026,7 @@ ShowGlobalShortcutsHelp() {
         )
         g_globalGui.BackColor := "000000"
         g_globalGui.SetFont("s10 cFFFF00", "Consolas")  ; Smaller font for more content
-        globalCtrl := g_globalGui.Add("Edit", "ReadOnly +Multi +VScroll -HScroll -Border Background000000 w760 h540")
+        globalCtrl := g_globalGui.Add("Edit", "ReadOnly +Multi +VScroll -HScroll -Border Background000000 w1000 h540")
 
         ; Esc also hides  ; (disabled â€“ use Win+Alt+Shift+A to hide)
         ; Hotkey "Esc", (*) => (g_globalGui.Hide(), g_globalShown := false), "Off"
