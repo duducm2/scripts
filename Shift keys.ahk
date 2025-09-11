@@ -41,6 +41,56 @@ SendSymbol(sym) {
     SendText(sym)
 }
 
+; Function to pad shortcuts to consistent width for alignment
+PadShortcut(shortcut, targetWidth := 24) {
+    ; Extract the content between brackets
+    if RegExMatch(shortcut, "\[(.*?)\]", &match) {
+        content := match[1]
+        ; Calculate padding needed
+        padding := targetWidth - StrLen(content)
+        if (padding > 0) {
+            ; Create padding string by repeating spaces
+            paddingStr := ""
+            Loop padding {
+                paddingStr .= " "
+            }
+            ; Add spaces after the content but before the closing bracket
+            return "[" . content . paddingStr . "]"
+        }
+    }
+    return shortcut
+}
+
+; Function to process cheat sheet text and pad all shortcuts
+ProcessCheatSheetText(text) {
+    ; Split into lines
+    lines := StrSplit(text, "`n")
+    processedLines := []
+    
+    for line in lines {
+        ; Check if line contains a shortcut pattern
+        if RegExMatch(line, "(\[.*?\])", &match) {
+            ; Replace the shortcut with padded version
+            paddedShortcut := PadShortcut(match[1])
+            processedLine := StrReplace(line, match[1], paddedShortcut)
+            processedLines.Push(processedLine)
+        } else {
+            processedLines.Push(line)
+        }
+    }
+    
+    ; Join lines back together manually
+    result := ""
+    for i, line in processedLines {
+        if (i = 1) {
+            result := line
+        } else {
+            result := result . "`n" . line
+        }
+    }
+    return result
+}
+
 ; Helper: normalize common UTF-8→CP1252 mojibake so arrows and punctuation display correctly
 NormalizeMojibake(str) {
     if (str = "")
@@ -857,8 +907,10 @@ ToggleShortcutHelp() {
     }
 
     ; Update cheat-sheet text and resize height to fit
-    cheatCtrl.Value := text
-    lineCnt := StrLen(text) ? StrSplit(text, "`n").Length : 1
+    ; Process the text to pad shortcuts for alignment
+    processedText := ProcessCheatSheetText(text)
+    cheatCtrl.Value := processedText
+    lineCnt := StrLen(processedText) ? StrSplit(processedText, "`n").Length : 1
 
     ; Calculate height based on line count (font size 12 â‰ˆ 20px per line + margins)
     ; Apply min/max so content scrolls instead of being cut off
@@ -980,8 +1032,10 @@ ShowGlobalShortcutsHelp() {
         ; Hotkey "Esc", (*) => (g_globalGui.Hide(), g_globalShown := false), "Off"
     }
 
-    ; Fix mojibake (arrows, punctuation) then update text and show
-    globalCtrl.Value := NormalizeMojibake(globalText)
+    ; Fix mojibake (arrows, punctuation), pad shortcuts, then update text and show
+    normalizedText := NormalizeMojibake(globalText)
+    processedText := ProcessCheatSheetText(normalizedText)
+    globalCtrl.Value := processedText
     g_globalGui.Show("AutoSize Hide")
     CenterGuiOnActiveMonitor(g_globalGui)
     g_globalGui.Show("NoActivate")
