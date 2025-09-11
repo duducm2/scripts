@@ -1196,18 +1196,33 @@ CenterGuiOnActiveMonitor(guiObj) {
     ; Ensure GUI has its final size
     guiObj.GetPos(, , &guiW, &guiH)
 
-    activeWin := WinGetID("A")
+    ; Get the active window - try multiple methods for better reliability
+    activeWin := 0
+    try {
+        activeWin := WinGetID("A")
+    } catch {
+        ; Fallback: try to get the foreground window
+        activeWin := DllCall("GetForegroundWindow", "ptr")
+    }
+
     ; Default to primary monitor work area (monitor #1)
     MonitorGetWorkArea(1, &lPrim, &tPrim, &rPrim, &bPrim)
     wx := lPrim, wy := tPrim, ww := rPrim - lPrim, wh := bPrim - tPrim
 
-    ; If we know the active window, find which monitor contains its centre
-    if (activeWin) {
+    ; If we have an active window, find which monitor contains its center
+    if (activeWin && activeWin != 0) {
         rect := Buffer(16, 0)
         if (DllCall("GetWindowRect", "ptr", activeWin, "ptr", rect)) {
-            cx := NumGet(rect, 0, "int") + (NumGet(rect, 8, "int") - NumGet(rect, 0, "int")) // 2
-            cy := NumGet(rect, 4, "int") + (NumGet(rect, 12, "int") - NumGet(rect, 4, "int")) // 2
+            ; Calculate window center
+            winLeft := NumGet(rect, 0, "int")
+            winTop := NumGet(rect, 4, "int")
+            winRight := NumGet(rect, 8, "int")
+            winBottom := NumGet(rect, 12, "int")
+            
+            cx := winLeft + (winRight - winLeft) // 2
+            cy := winTop + (winBottom - winTop) // 2
 
+            ; Find which monitor contains the window center
             count := MonitorGetCount()
             loop count {
                 idx := A_Index
@@ -1220,8 +1235,18 @@ CenterGuiOnActiveMonitor(guiObj) {
         }
     }
 
+    ; Calculate center position with bounds checking
     guiX := wx + (ww - guiW) / 2
     guiY := wy + (wh - guiH) / 2
+    
+    ; Ensure the GUI stays within monitor bounds
+    guiX := Max(wx, Min(guiX, wx + ww - guiW))
+    guiY := Max(wy, Min(guiY, wy + wh - guiH))
+    
+    ; Ensure minimum position (avoid negative coordinates)
+    guiX := Max(0, guiX)
+    guiY := Max(0, guiY)
+
     guiObj.Show("NoActivate x" Round(guiX) " y" Round(guiY))
 }
 
