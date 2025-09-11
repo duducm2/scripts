@@ -159,13 +159,15 @@ Shift+O  â†’  Join now with camera and microphone on
 Shift+P  â†’  Audio settings
 )"  ; end TeamsMeeting
 
-; --- Microsoft Teams â€“ chat window -----------------------------------------
+; --- Microsoft Teams â€" chat window -----------------------------------------
 cheatSheets["TeamsChat"] := "
 (
 Teams
-Shift+Y  â†’  Like
-Shift+U  â†’  Heart
-Shift+I  â†’  Laugh
+
+--- Custom Shortcuts ---
+Shift+Y  â†'  Like
+Shift+U  â†'  Heart
+Shift+I  â†'  Laugh
 Shift+O  â†'  Home panel
 Shift+P  â†'  Attach file
 Shift+H  â†'  Open history menu
@@ -176,7 +178,67 @@ Shift+N  â†'  Collapse all conversation folders
 Shift+M  â†'  Activate/deactivate details panel
 Shift+,  â†'  View all unread items
 Shift+E  â†'  Edit message
-Shift+R  â†’  Reply
+Shift+R  â†'  Reply
+
+--- Built-in Shortcuts ---
+Geral:
+Ctrl + .  â†'  Show keyboard shortcuts
+Ctrl + E  â†'  Open search
+Ctrl + /  â†'  Show commands
+Ctrl + G  â†'  Go to a chat or channel
+Ctrl + N  â†'  Start new chat
+Ctrl + Shift + N  â†'  Open a new chat
+Ctrl + Shift + F  â†'  Open filter
+Ctrl + ,  â†'  Open Settings
+F1  â†'  Open Help
+Ctrl + =  â†'  Zoom in
+Ctrl + -  â†'  Zoom out
+Ctrl + 0  â†'  Reset zoom level
+Ctrl + O  â†'  Open existing conversation in new window
+
+Navegação:
+Ctrl + 1-9  â†'  Open 1st-9th App in App Bar
+Ctrl + L  â†'  Move focus to left rail item
+Ctrl + M  â†'  Move focus to messages panel
+Ctrl + Alt + T  â†'  Move focus to top system notification
+Alt + Left  â†'  Back
+Alt + Right  â†'  Forward
+Ctrl + H  â†'  Open history menu
+Ctrl + R  â†'  Go to text box
+Ctrl + Alt + Enter  â†'  Focus on resizable divider
+Ctrl + Shift + Enter  â†'  Reset slots to default size
+Win + Shift + Y  â†'  Move focus to notification
+
+Redigir:
+Ctrl + Shift + X  â†'  Expand text box
+Ctrl + Enter  â†'  Send (expanded text box)
+Alt + Shift + O  â†'  Attach file
+Shift + Enter  â†'  Start new line
+Ctrl + B  â†'  Apply bold style
+Ctrl + I  â†'  Apply italic style
+Ctrl + U  â†'  Apply underline style
+Alt + A  â†'  Rewrite with Copilot
+Alt + Shift + E  â†'  Open video recorder
+Ctrl + Alt + L  â†'  Add a Loop paragraph
+Ctrl + Shift + I  â†'  Mark message as important
+Ctrl + K  â†'  Insert link
+Ctrl + Alt + Shift + C  â†'  Insert embedded code
+Ctrl + Alt + Shift + B  â†'  Insert code block
+
+Mensagens:
+Alt + Q  â†'  Collapse all conversation folders
+Ctrl + J  â†'  Go to last read/new message
+Ctrl + Alt + R  â†'  React to last message
+Alt + P  â†'  Activate/deactivate details panel
+Alt + Shift + R  â†'  Reply to last message
+Alt + 1-9  â†'  Open 1st-9th Tab in Chat Panel Header
+Ctrl + Alt + Z  â†'  Clear all filters
+Ctrl + Alt + U  â†'  View all unread items
+Ctrl + Alt + B  â†'  View all meeting items
+Ctrl + Alt + C  â†'  View all chat conversations
+Ctrl + Alt + A  â†'  View all channel conversations
+Ctrl + F  â†'  Search current Chat/Channel messages
+Alt + T  â†'  Open Threads List
 )"  ; end TeamsChat
 
 ; --- Spotify ---------------------------------------------------------------
