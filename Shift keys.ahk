@@ -49,13 +49,24 @@ PadShortcut(shortcut, targetWidth := 24) {
         ; Calculate padding needed
         padding := targetWidth - StrLen(content)
         if (padding > 0) {
-            ; Create padding string by repeating spaces
-            paddingStr := ""
-            Loop padding {
-                paddingStr .= " "
+            ; Calculate left and right padding for centering
+            leftPadding := Floor(padding / 2)
+            rightPadding := padding - leftPadding
+            
+            ; Create left padding string
+            leftPaddingStr := ""
+            Loop leftPadding {
+                leftPaddingStr .= " "
             }
-            ; Add spaces after the content but before the closing bracket
-            return "[" . content . paddingStr . "]"
+            
+            ; Create right padding string
+            rightPaddingStr := ""
+            Loop rightPadding {
+                rightPaddingStr .= " "
+            }
+            
+            ; Center the content within the brackets
+            return "[" . leftPaddingStr . content . rightPaddingStr . "]"
         }
     }
     return shortcut
