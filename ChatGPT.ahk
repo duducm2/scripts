@@ -522,7 +522,7 @@ ToggleDictation(autoSend) {
         return
     CenterMouse()
     cUIA := UIA_Browser()
-    Sleep 300
+    Sleep (IS_WORK_ENVIRONMENT ? 150 : 300)
 
     action := !isDictating ? "start" : "stop"
 
@@ -566,7 +566,7 @@ ToggleDictation(autoSend) {
                             detected := true
                             break
                         }
-                        Sleep 150
+                        Sleep (IS_WORK_ENVIRONMENT ? 75 : 150)
                         loops++
                     }
                     if (detected)
@@ -575,7 +575,7 @@ ToggleDictation(autoSend) {
                 }
                 ; Switch back to the previous window first so the indicator appears there
                 Send "!{Tab}"
-                Sleep 300    ; ensure the window switch has completed
+                Sleep (IS_WORK_ENVIRONMENT ? 150 : 300)    ; ensure the window switch has completed
                 ShowDictationIndicator()
                 g_transcribeChimePending := false
             } else {
@@ -626,7 +626,7 @@ ToggleDictation(autoSend) {
             ; Instead of interrupting with a modal dialog, briefly switch back to the user's window
             ; so the banner appears on the monitor with the active window, then show a quick blue banner
             Send "!{Tab}"
-            Sleep 250
+            Sleep (IS_WORK_ENVIRONMENT ? 125 : 250)
             ShowNotification(IS_WORK_ENVIRONMENT ? "Reiniciando ditado…" : "Restarting dictation…", 1200, "3772FF",
                 "FFFFFF")
             isDictating := false ; Reset state so we can attempt a fresh start
@@ -642,13 +642,13 @@ ToggleDictation(autoSend) {
                     }
                     CenterMouse()
                     cUIA_restart := UIA_Browser()
-                    Sleep 200
+                    Sleep (IS_WORK_ENVIRONMENT ? 100 : 200)
                     if btnRestart := FindButton(cUIA_restart, startNames, "Button", 3000) {
                         EnsureMicVolume100()
                         btnRestart.Click()
                         isDictating := true
                         Send "!{Tab}"
-                        Sleep 300
+                        Sleep (IS_WORK_ENVIRONMENT ? 150 : 300)
                         ShowDictationIndicator()
                         g_transcribeChimePending := false
                         stopErrorRetryCount := 0 ; success – reset counter
