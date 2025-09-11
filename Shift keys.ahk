@@ -166,11 +166,16 @@ Teams
 Shift+Y  â†’  Like
 Shift+U  â†’  Heart
 Shift+I  â†’  Laugh
-Shift+O  â†’  Home panel
-Shift+J  â†’  Mark unread
-Shift+K  â†’  Pin chat
-Shift+L  â†’  Remove pin
-Shift+E  â†’  Edit message
+Shift+O  â†'  Home panel
+Shift+P  â†'  Attach file
+Shift+H  â†'  Open history menu
+Shift+J  â†'  Mark unread
+Shift+K  â†'  Pin chat
+Shift+L  â†'  Remove pin
+Shift+N  â†'  Collapse all conversation folders
+Shift+M  â†'  Activate/deactivate details panel
+Shift+,  â†'  View all unread items
+Shift+E  â†'  Edit message
 Shift+R  â†’  Reply
 )"  ; end TeamsChat
 
@@ -1967,6 +1972,36 @@ IsTeamsChatActive() {
     Send "^1"
     Sleep "80"          ; 80 ms
     Send "^+{Home}"
+}
+
+; Shift + H : Open history menu
++h::
+{
+    Send "^h"
+}
+
+; Shift + P : Attach file
++p::
+{
+    Send "!+o"
+}
+
+; Shift + N : Collapse all conversation folders
++n::
+{
+    Send "!q"
+}
+
+; Shift + M : Activate/deactivate details panel
++m::
+{
+    Send "!p"
+}
+
+; Shift + , : View all unread items
++,::
+{
+    Send "^!u"
 }
 
 #HotIf
