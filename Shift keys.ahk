@@ -91,72 +91,72 @@ Shift+I  ï¿½ï¿½'  Compras feitas
 cheatSheets["WhatsApp"] := "
 (
 WhatsApp
-Shift+Y  â†’  Toggle voice message
-Shift+U  â†’  Search chats
-Shift+I  â†’  Reply
-Shift+O  â†’  Sticker panel
-Shift+P  â†’  Toggle Unread filter
-Shift+H  â†’  Focus current chat
-Shift+J  â†’  Mark as read or unread
-Shift+K  â†’  Pin chat or unpin chat
+[Shift+Y] > Toggle voice message
+[Shift+U] > Search chats
+[Shift+I] > Reply
+[Shift+O] > Sticker panel
+[Shift+P] > Toggle Unread filter
+[Shift+H] > Focus current chat
+[Shift+J] > Mark as read or unread
+[Shift+K] > Pin chat or unpin chat
 )"  ; end WhatsApp
 
 ; --- Outlook main window ----------------------------------------------------
 cheatSheets["OUTLOOK.EXE"] := "
 (
 Outlook
-Shift+Y  â†’  Send to General
-Shift+U  â†’  Send to Newsletter
-Shift+I  â†’  Go to Inbox
-Shift+N  â†’  Focused / Other
+[Shift+Y] > Send to General
+[Shift+U] > Send to Newsletter
+[Shift+I] > Go to Inbox
+[Shift+N] > Focused / Other
 )"  ; end Outlook
 
 ; --- Outlook Reminder window -------------------------------------------------
 cheatSheets["OutlookReminder"] := "
 (
-Outlook â€“ Reminders
-Shift+Y  â†’  Select first reminder
-Shift+U  â†’  Snooze 1 hour
-Shift+I  â†’  Snooze 4 hours
-Shift+O  â†’  Snooze 1 day
-Shift+P  â†’  Dismiss all reminders
-Shift+H  â†’  Join Online
+Outlook â€" Reminders
+[Shift+Y] > Select first reminder
+[Shift+U] > Snooze 1 hour
+[Shift+I] > Snooze 4 hours
+[Shift+O] > Snooze 1 day
+[Shift+P] > Dismiss all reminders
+[Shift+H] > Join Online
 )"  ; end Outlook Reminder
 
 ; --- Outlook Appointment window ---------------------------------------------
 cheatSheets["OutlookAppointment"] := "
 (
-Outlook â€“ Appointment
-Shift+Y  â†’  Start date (combo)
-Shift+U  â†’  Start date â€“ Date Picker
-Shift+I  â†’  Start time (combo)
-Shift+O  â†’  End date (combo)
-Shift+P  â†’  End time (combo)
-Shift+H  â†’  All day checkbox
-Shift+J  â†’  Title field
-Shift+L  â†’  Required / To field
-Shift+M  â†’  Location â†’ Body
-Shift+,  â†’  Make Recurring
+Outlook â€" Appointment
+[Shift+Y] > Start date (combo)
+[Shift+U] > Start date â€" Date Picker
+[Shift+I] > Start time (combo)
+[Shift+O] > End date (combo)
+[Shift+P] > End time (combo)
+[Shift+H] > All day checkbox
+[Shift+J] > Title field
+[Shift+L] > Required / To field
+[Shift+M] > Location > Body
+[Shift+,] > Make Recurring
 )"  ; end Outlook Appointment
 
 ; --- Outlook Message window ---------------------------------------------------
 cheatSheets["OutlookMessage"] := "
 (
-Outlook â€“ Message
-Shift+Y  â†’  Subject / Title
-Shift+U  â†’  Required / To
-Shift+M  â†’  Location â†’ Body
+Outlook â€" Message
+[Shift+Y] > Subject / Title
+[Shift+U] > Required / To
+[Shift+M] > Location > Body
 )"  ; end Outlook Message
 
-; --- Microsoft Teams â€“ meeting window --------------------------------------
+; --- Microsoft Teams â€" meeting window --------------------------------------
 cheatSheets["TeamsMeeting"] := "
 (
 Teams
-Shift+Y  â†’  Open Chat pane
-Shift+U  â†’  Maximize meeting window
-Shift+I  â†’  Reagir
-Shift+O  â†’  Join now with camera and microphone on
-Shift+P  â†’  Audio settings
+[Shift+Y] > Open Chat pane
+[Shift+U] > Maximize meeting window
+[Shift+I] > Reagir
+[Shift+O] > Join now with camera and microphone on
+[Shift+P] > Audio settings
 )"  ; end TeamsMeeting
 
 ; --- Microsoft Teams â€" chat window -----------------------------------------
@@ -165,530 +165,530 @@ cheatSheets["TeamsChat"] := "
 Teams
 
 --- Custom Shortcuts ---
-Shift+Y  â†'  Like
-Shift+U  â†'  Heart
-Shift+I  â†'  Laugh
-Shift+O  â†'  Home panel
-Shift+P  â†'  Attach file
-Shift+H  â†'  Open history menu
-Shift+J  â†'  Mark unread
-Shift+K  â†'  Pin chat
-Shift+L  â†'  Remove pin
-Shift+N  â†'  Collapse all conversation folders
-Shift+M  â†'  Activate/deactivate details panel
-Shift+,  â†'  View all unread items
-Shift+E  â†'  Edit message
-Shift+R  â†'  Reply
+[Shift+Y] > Like
+[Shift+U] > Heart
+[Shift+I] > Laugh
+[Shift+O] > Home panel
+[Shift+P] > Attach file
+[Shift+H] > Open history menu
+[Shift+J] > Mark unread
+[Shift+K] > Pin chat
+[Shift+L] > Remove pin
+[Shift+N] > Collapse all conversation folders
+[Shift+M] > Activate/deactivate details panel
+[Shift+,] > View all unread items
+[Shift+E] > Edit message
+[Shift+R] > Reply
 
 --- Built-in Shortcuts ---
 Geral:
-Ctrl + .  â†'  Show keyboard shortcuts
-Ctrl + E  â†'  Open search
-Ctrl + /  â†'  Show commands
-Ctrl + G  â†'  Go to a chat or channel
-Ctrl + N  â†'  Start new chat
-Ctrl + Shift + N  â†'  Open a new chat
-Ctrl + Shift + F  â†'  Open filter
-Ctrl + ,  â†'  Open Settings
-F1  â†'  Open Help
-Ctrl + =  â†'  Zoom in
-Ctrl + -  â†'  Zoom out
-Ctrl + 0  â†'  Reset zoom level
-Ctrl + O  â†'  Open existing conversation in new window
+[Ctrl + .] > Show keyboard shortcuts
+[Ctrl + E] > Open search
+[Ctrl + /] > Show commands
+[Ctrl + G] > Go to a chat or channel
+[Ctrl + N] > Start new chat
+[Ctrl + Shift + N] > Open a new chat
+[Ctrl + Shift + F] > Open filter
+[Ctrl + ,] > Open Settings
+[F1] > Open Help
+[Ctrl + =] > Zoom in
+[Ctrl + -] > Zoom out
+[Ctrl + 0] > Reset zoom level
+[Ctrl + O] > Open existing conversation in new window
 
 Navegação:
-Ctrl + 1-9  â†'  Open 1st-9th App in App Bar
-Ctrl + L  â†'  Move focus to left rail item
-Ctrl + M  â†'  Move focus to messages panel
-Ctrl + Alt + T  â†'  Move focus to top system notification
-Alt + Left  â†'  Back
-Alt + Right  â†'  Forward
-Ctrl + H  â†'  Open history menu
-Ctrl + R  â†'  Go to text box
-Ctrl + Alt + Enter  â†'  Focus on resizable divider
-Ctrl + Shift + Enter  â†'  Reset slots to default size
-Win + Shift + Y  â†'  Move focus to notification
+[Ctrl + 1-9] > Open 1st-9th App in App Bar
+[Ctrl + L] > Move focus to left rail item
+[Ctrl + M] > Move focus to messages panel
+[Ctrl + Alt + T] > Move focus to top system notification
+[Alt + Left] > Back
+[Alt + Right] > Forward
+[Ctrl + H] > Open history menu
+[Ctrl + R] > Go to text box
+[Ctrl + Alt + Enter] > Focus on resizable divider
+[Ctrl + Shift + Enter] > Reset slots to default size
+[Win + Shift + Y] > Move focus to notification
 
 Redigir:
-Ctrl + Shift + X  â†'  Expand text box
-Ctrl + Enter  â†'  Send (expanded text box)
-Alt + Shift + O  â†'  Attach file
-Shift + Enter  â†'  Start new line
-Ctrl + B  â†'  Apply bold style
-Ctrl + I  â†'  Apply italic style
-Ctrl + U  â†'  Apply underline style
-Alt + A  â†'  Rewrite with Copilot
-Alt + Shift + E  â†'  Open video recorder
-Ctrl + Alt + L  â†'  Add a Loop paragraph
-Ctrl + Shift + I  â†'  Mark message as important
-Ctrl + K  â†'  Insert link
-Ctrl + Alt + Shift + C  â†'  Insert embedded code
-Ctrl + Alt + Shift + B  â†'  Insert code block
+[Ctrl + Shift + X] > Expand text box
+[Ctrl + Enter] > Send (expanded text box)
+[Alt + Shift + O] > Attach file
+[Shift + Enter] > Start new line
+[Ctrl + B] > Apply bold style
+[Ctrl + I] > Apply italic style
+[Ctrl + U] > Apply underline style
+[Alt + A] > Rewrite with Copilot
+[Alt + Shift + E] > Open video recorder
+[Ctrl + Alt + L] > Add a Loop paragraph
+[Ctrl + Shift + I] > Mark message as important
+[Ctrl + K] > Insert link
+[Ctrl + Alt + Shift + C] > Insert embedded code
+[Ctrl + Alt + Shift + B] > Insert code block
 
 Mensagens:
-Alt + Q  â†'  Collapse all conversation folders
-Ctrl + J  â†'  Go to last read/new message
-Ctrl + Alt + R  â†'  React to last message
-Alt + P  â†'  Activate/deactivate details panel
-Alt + Shift + R  â†'  Reply to last message
-Alt + 1-9  â†'  Open 1st-9th Tab in Chat Panel Header
-Ctrl + Alt + Z  â†'  Clear all filters
-Ctrl + Alt + U  â†'  View all unread items
-Ctrl + Alt + B  â†'  View all meeting items
-Ctrl + Alt + C  â†'  View all chat conversations
-Ctrl + Alt + A  â†'  View all channel conversations
-Ctrl + F  â†'  Search current Chat/Channel messages
-Alt + T  â†'  Open Threads List
+[Alt + Q] > Collapse all conversation folders
+[Ctrl + J] > Go to last read/new message
+[Ctrl + Alt + R] > React to last message
+[Alt + P] > Activate/deactivate details panel
+[Alt + Shift + R] > Reply to last message
+[Alt + 1-9] > Open 1st-9th Tab in Chat Panel Header
+[Ctrl + Alt + Z] > Clear all filters
+[Ctrl + Alt + U] > View all unread items
+[Ctrl + Alt + B] > View all meeting items
+[Ctrl + Alt + C] > View all chat conversations
+[Ctrl + Alt + A] > View all channel conversations
+[Ctrl + F] > Search current Chat/Channel messages
+[Alt + T] > Open Threads List
 )"  ; end TeamsChat
 
 ; --- Spotify ---------------------------------------------------------------
 cheatSheets["Spotify.exe"] := "
 (
 Spotify
-Shift+Y  â†’  Toggle Connect panel
-Shift+U  â†’  Toggle Full screen
-Shift+I  â†’  Open Search
-Shift+O  â†’  Go to Playlists
-Shift+P  â†’  Go to Artists
-Shift+H  â†’  Go to Albums
-Shift+J  â†’  Go to Search
-Shift+K  â†’  Go to Home
-Shift+L  â†’  Go to Now Playing
-Shift+N  â†’  Go to Made For You
-Shift+M  â†’  Go to New Releases
-Shift+,  â†’  Go to Charts
-Shift+.  â†’  Toggle Now Playing View
-Shift+W  â†’  Toggle Library Sidebar
-Shift+E  â†’  Toggle Fullscreen Library
-Shift+R  â†’  Toggle lyrics
-Shift+T  â†’  Toggle play/pause
+[Shift+Y] > Toggle Connect panel
+[Shift+U] > Toggle Full screen
+[Shift+I] > Open Search
+[Shift+O] > Go to Playlists
+[Shift+P] > Go to Artists
+[Shift+H] > Go to Albums
+[Shift+J] > Go to Search
+[Shift+K] > Go to Home
+[Shift+L] > Go to Now Playing
+[Shift+N] > Go to Made For You
+[Shift+M] > Go to New Releases
+[Shift+,] > Go to Charts
+[Shift+.] > Toggle Now Playing View
+[Shift+W] > Toggle Library Sidebar
+[Shift+E] > Toggle Fullscreen Library
+[Shift+R] > Toggle lyrics
+[Shift+T] > Toggle play/pause
 )"  ; end Spotify
 
 ; --- OneNote ---------------------------------------------------------------
 cheatSheets["ONENOTE.EXE"] := "
 (
 OneNote
-Shift+Y  â†’  Collapse
-Shift+U  â†’  Expand
-Shift+I  â†’  Collapse all
-Shift+O  â†’  Expand all
-Shift+P  â†’  Select line and children
-Shift+D  â†’  Delete line and children
-Shift+S  â†’  Delete line (keep children)
-Shift+F  â†’  Advanced Searching with double quotes
+[Shift+Y] > Collapse
+[Shift+U] > Expand
+[Shift+I] > Collapse all
+[Shift+O] > Expand all
+[Shift+P] > Select line and children
+[Shift+D] > Delete line and children
+[Shift+S] > Delete line (keep children)
+[Shift+F] > Advanced Searching with double quotes
 )"  ; end OneNote
 
 ; --- Chrome general shortcuts ----------------------------------------------
 cheatSheets["chrome.exe"] := "
 (
 Chrome
-Shift+G  â†’  Pop current tab to new window
+[Shift+G] > Pop current tab to new window
 )"  ; end Chrome
 
 ; --- Cursor ------------------------------------------------------
 cheatSheets["Cursor.exe"] := "
 (
 Cursor
-Shift+Y  â†’  Fold
-Shift+U  â†’  Unfold
-Shift+I  â†’  Fold all
-Shift+O  â†’  Unfold all
-Shift+P  â†’  Go to terminal
-Shift+H  â†’  New terminal
-Shift+J  â†’  Go to file explorer
-Shift+K  â†’  Format code
-Shift+L  â†’  Command palette
-Shift+N  â†’  Expand selection
-Shift+M  â†’  Change project
-Shift+,  â†’  Show chat history
-Shift+.  â†’  Extensions
-Shift+W  â†’  Switch brackets
-Shift+E  â†’  Search
-Shift+R  â†’  Save all documents
-Shift+T  â†’  Change ML model
-Shift+D  â†’  Git section
-Shift+F  â†’  Close all editors
-Shift+G  â†’  Switch AI models (auto/CLAUD/GPT/O/DeepSeek/Cursor)
-Shift+C  â†’  Switch AI modes (agent/ask)
-Shift+V  â†’  Fold Git repos (SCM)
-Shift+B  â†’  Create AI commit message, then select Commit or Commit and Push
-Ctrl + Alt + Y  â†’  Select to Bracket
-Ctrl + Alt + U  â†’  Open in file explorer
-Ctrl + Alt + I  â†’  Fold all directories
-Ctrl + Alt + O  â†’  Unfold all directories
-Ctrl + Alt + H  â†’  Kill terminal  [custom: defined in Cursor settings.json]
+[Shift+Y] > Fold
+[Shift+U] > Unfold
+[Shift+I] > Fold all
+[Shift+O] > Unfold all
+[Shift+P] > Go to terminal
+[Shift+H] > New terminal
+[Shift+J] > Go to file explorer
+[Shift+K] > Format code
+[Shift+L] > Command palette
+[Shift+N] > Expand selection
+[Shift+M] > Change project
+[Shift+,] > Show chat history
+[Shift+.] > Extensions
+[Shift+W] > Switch brackets
+[Shift+E] > Search
+[Shift+R] > Save all documents
+[Shift+T] > Change ML model
+[Shift+D] > Git section
+[Shift+F] > Close all editors
+[Shift+G] > Switch AI models (auto/CLAUD/GPT/O/DeepSeek/Cursor)
+[Shift+C] > Switch AI modes (agent/ask)
+[Shift+V] > Fold Git repos (SCM)
+[Shift+B] > Create AI commit message, then select Commit or Commit and Push
+[Ctrl + Alt + Y] > Select to Bracket
+[Ctrl + Alt + U] > Open in file explorer
+[Ctrl + Alt + I] > Fold all directories
+[Ctrl + Alt + O] > Unfold all directories
+[Ctrl + Alt + H] > Kill terminal  [custom: defined in Cursor settings.json]
 
 --- Additional Shortcuts ---
-Ctrl + T  â†’  New chat tab
-Ctrl + N  â†’  New chat tab (replacing current)
-Alt + F12  â†’  Peek Definition
-Ctrl + D  â†’  Select next identical word
-Ctrl + Shift + L  â†’  Select all identical words
-F2  â†’  Rename symbol
-F8  â†’  Navigate problems
-Ctrl + Enter  â†’  Insert line below
-Ctrl + P  â†’  Quick Open
-Shift + Delete  â†’  Delete line
-Alt + â†‘  â†’  Move line up
-Alt + â†“  â†’  Move line down
-Ctrl + 1 / Ctrl + 2 / Ctrl + 3 ...  â†’  Switch tabs
-Ctrl + N  â†’  New file
-Ctrl + Alt + â†‘  â†’  Add cursor above
-Ctrl + Alt + â†“  â†’  Add cursor below
-Alt + Click  â†’  Multi-cursor by click
-Shift + Alt + â†‘  â†’  Copy line up
-Shift + Alt + â†“  â†’  Copy line down
-Ctrl + ;  â†’  Insert comment
-Ctrl + Home  â†’  Go to top
-Ctrl + End  â†’  Go to end
-Alt + Z  â†’  Toggle word wrap
-Ctrl + Shift + D  â†’  Debugging
-Ctrl + R  â†’  Quick project switch
-Alt + J  â†’  Next review
-Alt + K  â†’  Previous review
+[Ctrl + T] > New chat tab
+[Ctrl + N] > New chat tab (replacing current)
+[Alt + F12] > Peek Definition
+[Ctrl + D] > Select next identical word
+[Ctrl + Shift + L] > Select all identical words
+[F2] > Rename symbol
+[F8] > Navigate problems
+[Ctrl + Enter] > Insert line below
+[Ctrl + P] > Quick Open
+[Shift + Delete] > Delete line
+[Alt + ↑] > Move line up
+[Alt + ↓] > Move line down
+[Ctrl + 1 / Ctrl + 2 / Ctrl + 3 ...] > Switch tabs
+[Ctrl + N] > New file
+[Ctrl + Alt + ↑] > Add cursor above
+[Ctrl + Alt + ↓] > Add cursor below
+[Alt + Click] > Multi-cursor by click
+[Shift + Alt + ↑] > Copy line up
+[Shift + Alt + ↓] > Copy line down
+[Ctrl + ;] > Insert comment
+[Ctrl + Home] > Go to top
+[Ctrl + End] > Go to end
+[Alt + Z] > Toggle word wrap
+[Ctrl + Shift + D] > Debugging
+[Ctrl + R] > Quick project switch
+[Alt + J] > Next review
+[Alt + K] > Previous review
 )"  ; end Cursor
 
 ; --- Windows Explorer ------------------------------------------------------
 cheatSheets["explorer.exe"] := "
 (
 Explorer
-Shift+Y  â†’  Select first file
-Shift+U  â†’  Focus search bar
-Shift+I  â†’  Focus address bar
-Shift+O  â†’  New folder
-Shift+J  â†’  Create a shortcut
-Shift+K  â†’  Copy as path
-Shift+P  â†’  Select first pinned item in Explorer sidebar
-Shift+H  â†’  Select the last item of the Explorer sidebar
+[Shift+Y] > Select first file
+[Shift+U] > Focus search bar
+[Shift+I] > Focus address bar
+[Shift+O] > New folder
+[Shift+J] > Create a shortcut
+[Shift+K] > Copy as path
+[Shift+P] > Select first pinned item in Explorer sidebar
+[Shift+H] > Select the last item of the Explorer sidebar
 )"  ; end Explorer
 
 ; --- Microsoft Paint ------------------------------------------------------
 cheatSheets["mspaint.exe"] := "
 (
 MS Paint
-Shift+Y  â†’  Resize and Skew (Ctrl+W)
+[Shift+Y] > Resize and Skew (Ctrl+W)
 
 --- Common Shortcuts ---
-Ctrl+N   â†’  New
-Ctrl+O   â†’  Open
-Ctrl+S   â†’  Save
-F12      â†’  Save As
-Ctrl+P   â†’  Print
-Ctrl+Z   â†’  Undo
-Ctrl+Y   â†’  Redo
-Ctrl+A   â†’  Select all
-Ctrl+C   â†’  Copy
-Ctrl+X   â†’  Cut
-Ctrl+V   â†’  Paste
-Ctrl+W   â†’  Resize and Skew
-Ctrl+E   â†’  Image properties
-Ctrl+R   â†’  Toggle rulers
-Ctrl+G   â†’  Toggle gridlines
-Ctrl+I   â†’  Invert colors
-F11      â†’  Fullscreen view
-Ctrl++   â†’  Zoom in
-Ctrl+-   â†’  Zoom out
+[Ctrl+N] > New
+[Ctrl+O] > Open
+[Ctrl+S] > Save
+[F12] > Save As
+[Ctrl+P] > Print
+[Ctrl+Z] > Undo
+[Ctrl+Y] > Redo
+[Ctrl+A] > Select all
+[Ctrl+C] > Copy
+[Ctrl+X] > Cut
+[Ctrl+V] > Paste
+[Ctrl+W] > Resize and Skew
+[Ctrl+E] > Image properties
+[Ctrl+R] > Toggle rulers
+[Ctrl+G] > Toggle gridlines
+[Ctrl+I] > Invert colors
+[F11] > Fullscreen view
+[Ctrl++] > Zoom in
+[Ctrl+-] > Zoom out
 )"  ; end MS Paint
 
 ; --- ClipAngel -------------------------------------------------------------
 cheatSheets["ClipAngel.exe"] := "
 (
 ClipAngel
-Shift+Y  â†’  Select filtered content and copy
-Shift+U  â†’  Switch focus list/text
-Shift+I  â†’  Delete all non-favorite
-Shift+O  â†’  Clear filters
-Shift+P  â†’  Mark as favorite
-Shift+H  â†’  Unmark as favorite
-Shift+J  â†’  Edit text
-Shift+K  â†’  Save as file
-Shift+L  â†’  Merge clips
+[Shift+Y] > Select filtered content and copy
+[Shift+U] > Switch focus list/text
+[Shift+I] > Delete all non-favorite
+[Shift+O] > Clear filters
+[Shift+P] > Mark as favorite
+[Shift+H] > Unmark as favorite
+[Shift+J] > Edit text
+[Shift+K] > Save as file
+[Shift+L] > Merge clips
 )"  ; end ClipAngel
 
 ; --- Figma -----------------------------------------------------------------
 cheatSheets["Figma.exe"] := "
 (
 Figma
-Shift+Y  â†’  Show/Hide UI
-Shift+U  â†’  Component search
-Shift+I  â†’  Select parent
-Shift+O  â†’  Create component
-Shift+P  â†’  Detach instance
-Shift+H  â†’  Add auto layout
-Shift+J  â†’  Remove auto layout
-Shift+K  â†’  Suggest auto layout
-Shift+L  â†’  Export
-Shift+N  â†’  Copy as PNG
-Shift+M  â†’  Actions...
-Shift+,  â†’  Align left
-Shift+.  â†’  Align right
-Shift+W  â†’  Distribute vertical spacing
-Shift+E  â†’  Tidy up
-Shift+R  â†’  Align top
-Shift+T  â†’  Align bottom
-Shift+D  â†’  Align center horizontal
-Shift+F  â†’  Align center vertical
-Shift+G  â†’  Distribute horizontal spacing
+[Shift+Y] > Show/Hide UI
+[Shift+U] > Component search
+[Shift+I] > Select parent
+[Shift+O] > Create component
+[Shift+P] > Detach instance
+[Shift+H] > Add auto layout
+[Shift+J] > Remove auto layout
+[Shift+K] > Suggest auto layout
+[Shift+L] > Export
+[Shift+N] > Copy as PNG
+[Shift+M] > Actions...
+[Shift+,] > Align left
+[Shift+.] > Align right
+[Shift+W] > Distribute vertical spacing
+[Shift+E] > Tidy up
+[Shift+R] > Align top
+[Shift+T] > Align bottom
+[Shift+D] > Align center horizontal
+[Shift+F] > Align center vertical
+[Shift+G] > Distribute horizontal spacing
 )"  ; end Figma
 
 ; --- Gmail ---------------------------------------------------------------
 cheatSheets["Gmail"] := "
 (
 Gmail
-Shift+Y  â†’  Go to main inbox
-Shift+U  â†’  Go to updates
-Shift+I  â†’  Go to forums
-Shift+O  â†’  Toggle read/unread
-Shift+P  â†’  Previous conversation
-Shift+H  â†’  Next conversation
-Shift+J  â†’  Archive conversation
-Shift+K  â†’  Select conversation
-Shift+L  â†’  Reply
-Shift+N  â†’  Reply all
-Shift+M  â†’  Forward
-Shift+,  â†’  Star/unstar conversation
-Shift+.  â†’  Delete
-Shift+W  â†’  Report as spam
-Shift+E  â†’  Compose new email
-Shift+R  â†’  Search mail
-Shift+T  â†’  Move to folder
-Shift+D  â†’  Show keyboard shortcuts help
+[Shift+Y] > Go to main inbox
+[Shift+U] > Go to updates
+[Shift+I] > Go to forums
+[Shift+O] > Toggle read/unread
+[Shift+P] > Previous conversation
+[Shift+H] > Next conversation
+[Shift+J] > Archive conversation
+[Shift+K] > Select conversation
+[Shift+L] > Reply
+[Shift+N] > Reply all
+[Shift+M] > Forward
+[Shift+,] > Star/unstar conversation
+[Shift+.] > Delete
+[Shift+W] > Report as spam
+[Shift+E] > Compose new email
+[Shift+R] > Search mail
+[Shift+T] > Move to folder
+[Shift+D] > Show keyboard shortcuts help
 
 --- Built-in Shortcuts (Windows) ---
 
 Compose & chat:
-p  â†’  Previous message in an open conversation
-n  â†’  Next message in an open conversation
-Shift + Esc  â†’  Focus main window
-Esc  â†’  Focus latest chat or compose
-Ctrl + .  â†’  Advance to the next chat or compose
-Ctrl + ,  â†’  Advance to previous chat or compose
-Ctrl + Enter  â†’  Send
-Ctrl + Shift + c  â†’  Add cc recipients
-Ctrl + Shift + b  â†’  Add bcc recipients
-Ctrl + Shift + f  â†’  Access custom from
-Ctrl + k  â†’  Insert a link
-Ctrl + m  â†’  Open spelling suggestions
+[p] > Previous message in an open conversation
+[n] > Next message in an open conversation
+[Shift + Esc] > Focus main window
+[Esc] > Focus latest chat or compose
+[Ctrl + .] > Advance to the next chat or compose
+[Ctrl + ,] > Advance to previous chat or compose
+[Ctrl + Enter] > Send
+[Ctrl + Shift + c] > Add cc recipients
+[Ctrl + Shift + b] > Add bcc recipients
+[Ctrl + Shift + f] > Access custom from
+[Ctrl + k] > Insert a link
+[Ctrl + m] > Open spelling suggestions
 
 Formatting text:
-Ctrl + Shift + 5  â†’  Previous font
-Ctrl + Shift + 6  â†’  Next font
-Ctrl + Shift + -  â†’  Decrease text size
-Ctrl + Shift + +  â†’  Increase text size
-Ctrl + b  â†’  Bold
-Ctrl + i  â†’  Italics
-Ctrl + u  â†’  Underline
-Ctrl + Shift + 7  â†’  Numbered list
-Ctrl + Shift + 8  â†’  Bulleted list
-Ctrl + Shift + 9  â†’  Quote
-Ctrl + [  â†’  Indent less
-Ctrl + ]  â†’  Indent more
-Ctrl + Shift + l  â†’  Align left
-Ctrl + Shift + e  â†’  Align center
-Ctrl + Shift + r  â†’  Align right
-Ctrl + \  â†’  Remove formatting
+[Ctrl + Shift + 5] > Previous font
+[Ctrl + Shift + 6] > Next font
+[Ctrl + Shift + -] > Decrease text size
+[Ctrl + Shift + +] > Increase text size
+[Ctrl + b] > Bold
+[Ctrl + i] > Italics
+[Ctrl + u] > Underline
+[Ctrl + Shift + 7] > Numbered list
+[Ctrl + Shift + 8] > Bulleted list
+[Ctrl + Shift + 9] > Quote
+[Ctrl + []] > Indent less
+[Ctrl + ]] > Indent more
+[Ctrl + Shift + l] > Align left
+[Ctrl + Shift + e] > Align center
+[Ctrl + Shift + r] > Align right
+[Ctrl + \] > Remove formatting
 
 Actions (shortcuts on):
-,  â†’  Move focus to toolbar
-x  â†’  Select conversation
-s  â†’  Toggle star/rotate among superstars
-e  â†’  Archive
-m  â†’  Mute conversation
-!  â†’  Report as spam
-#  â†’  Delete
-r  â†’  Reply
-Shift + r  â†’  Reply in a new window
-a  â†’  Reply all
-Shift + a  â†’  Reply all in a new window
-f  â†’  Forward
-Shift + f  â†’  Forward in a new window
-Shift + n  â†’  Update conversation
-] or [  â†’  Archive conversation and go previous/next
-z  â†’  Undo last action
-Shift + i  â†’  Mark as read
-Shift + u  â†’  Mark as unread
-_  â†’  Mark unread from the selected message
-+ or =  â†’  Mark as important
--  â†’  Mark as not important
-b  â†’  Snooze (not available in classic Gmail)
-;  â†’  Expand entire conversation
-:  â†’  Collapse entire conversation
-Shift + t  â†’  Add conversation to Tasks
+[,] > Move focus to toolbar
+[x] > Select conversation
+[s] > Toggle star/rotate among superstars
+[e] > Archive
+[m] > Mute conversation
+[!] > Report as spam
+[#] > Delete
+[r] > Reply
+[Shift + r] > Reply in a new window
+[a] > Reply all
+[Shift + a] > Reply all in a new window
+[f] > Forward
+[Shift + f] > Forward in a new window
+[Shift + n] > Update conversation
+[] or []] > Archive conversation and go previous/next
+[z] > Undo last action
+[Shift + i] > Mark as read
+[Shift + u] > Mark as unread
+[_] > Mark unread from the selected message
+[+ or =] > Mark as important
+[-] > Mark as not important
+[b] > Snooze (not available in classic Gmail)
+[;] > Expand entire conversation
+[:] > Collapse entire conversation
+[Shift + t] > Add conversation to Tasks
 
 Jumping (shortcuts on):
-g + i  â†’  Go to Inbox
-g + s  â†’  Go to Starred conversations
-g + b  â†’  Go to Snoozed conversations
-g + t  â†’  Go to Sent messages
-g + d  â†’  Go to Drafts
-g + a  â†’  Go to All mail
-Ctrl + Alt + ,  â†’  Switch to left sidebar (Calendar/Keep/Tasks)
-Ctrl + Alt + .  â†’  Switch to right (back to inbox)
-g + k  â†’  Go to Tasks
-g + l  â†’  Go to label
+[g + i] > Go to Inbox
+[g + s] > Go to Starred conversations
+[g + b] > Go to Snoozed conversations
+[g + t] > Go to Sent messages
+[g + d] > Go to Drafts
+[g + a] > Go to All mail
+[Ctrl + Alt + ,] > Switch to left sidebar (Calendar/Keep/Tasks)
+[Ctrl + Alt + .] > Switch to right (back to inbox)
+[g + k] > Go to Tasks
+[g + l] > Go to label
 
 Threadlist selection (shortcuts on):
-* + a  â†’  Select all conversations
-* + n  â†’  Deselect all conversations
-* + r  â†’  Select read conversations
-* + u  â†’  Select unread conversations
-* + s  â†’  Select starred conversations
-* + t  â†’  Select unstarred conversations
+[* + a] > Select all conversations
+[* + n] > Deselect all conversations
+[* + r] > Select read conversations
+[* + u] > Select unread conversations
+[* + s] > Select starred conversations
+[* + t] > Select unstarred conversations
 
 Navigation (shortcuts on):
-g + n  â†’  Go to next page
-g + p  â†’  Go to previous page
-u  â†’  Back to threadlist
-k  â†’  Newer conversation
-j  â†’  Older conversation
-o or Enter  â†’  Open conversation
-``  â†’  Go to next Inbox section
-~  â†’  Go to previous Inbox section
+[g + n] > Go to next page
+[g + p] > Go to previous page
+[u] > Back to threadlist
+[k] > Newer conversation
+[j] > Older conversation
+[o or Enter] > Open conversation
+[`] > Go to next Inbox section
+[~] > Go to previous Inbox section
 
 Application (shortcuts on):
-c  â†’  Compose
-d  â†’  Compose in a new tab
-/  â†’  Search mail
-q  â†’  Search chat contacts
-.  â†’  Open ""more actions"" menu
-v  â†’  Open ""move to"" menu
-l  â†’  Open ""label as"" menu
-?  â†’  Open keyboard shortcut help
+[c] > Compose
+[d] > Compose in a new tab
+[/] > Search mail
+[q] > Search chat contacts
+[.] > Open ""more actions"" menu
+[v] > Open ""move to"" menu
+[l] > Open ""label as"" menu
+[?] > Open keyboard shortcut help
 )"  ; end Gmail
 
 ; --- Google Keep ---------------------------------------------------------------
 cheatSheets["Google Keep"] := "
 (
 Google Keep
-Shift+Y  â†’  Search and select note
-Shift+U  â†’  Toggle main menu
+[Shift+Y] > Search and select note
+[Shift+U] > Toggle main menu
 )"  ; end Google Keep
 
 ; --- File Dialog ---------------------------------------------------------------
 cheatSheets["FileDialog"] := "
 (
 File Dialog
-Shift+Y  â†’  Select first item
-Shift+U  â†’  Focus search bar
-Shift+I  â†’  Focus address bar
-Shift+O  â†’  New folder
-Shift+P  â†’  Select first pinned item in sidebar
-Shift+H  â†’  Select 'This PC' / 'Este computador' in sidebar
-Shift+J  â†’  Focus file name field
-Shift+K  â†’  Click Insert/Open/Save button
-Shift+L  â†’  Click Cancel button
+[Shift+Y] > Select first item
+[Shift+U] > Focus search bar
+[Shift+I] > Focus address bar
+[Shift+O] > New folder
+[Shift+P] > Select first pinned item in sidebar
+[Shift+H] > Select 'This PC' / 'Este computador' in sidebar
+[Shift+J] > Focus file name field
+[Shift+K] > Click Insert/Open/Save button
+[Shift+L] > Click Cancel button
 )"
 
 ; --- Settings Window -------------------------------------------------
-cheatSheets["Settings"] := "(Settings)`r`nShift+Y â†’ Set input volume to 100%"
+cheatSheets["Settings"] := "(Settings)`r`n[Shift+Y] > Set input volume to 100%"
 
 ; --- UIA Tree Inspector -------------------------------------------------
-cheatSheets["UIATreeInspector"] := "(UIA Tree Inspector)`r`nShift+Y → Refresh list`r`nShift+U → Focus filter field"
+cheatSheets["UIATreeInspector"] := "(UIA Tree Inspector)`r`n[Shift+Y] > Refresh list`r`n[Shift+U] > Focus filter field"
 ; --- SettleUp Shortcuts -----------------------------------------------------
 cheatSheets["Settle Up"] := "
 (
 Settle Up
-Shift+Y  â†’  Add transaction
-Shift+U  â†’  Focus expense value field
-Shift+I  â†’  Focus expense name field
+[Shift+Y] > Add transaction
+[Shift+U] > Focus expense value field
+[Shift+I] > Focus expense name field
 )"
 
 ; --- Miro Shortcuts -----------------------------------------------------
 cheatSheets["Miro"] := "
 (
 Miro
-Shift+U  â†’  Frame list
-Shift+I  â†’  Group
-Shift+O  â†’  Ungroup
-Shift+P  â†’  Lock/Unlock
-Shift+H  â†’  Add/Edit link
+[Shift+U] > Frame list
+[Shift+I] > Group
+[Shift+O] > Ungroup
+[Shift+P] > Lock/Unlock
+[Shift+H] > Add/Edit link
 Q
 --- Built-in Shortcuts (Windows) ---
 Tools:
-V / H             â†’  Select tool / Hand
-T                 â†’  Text
-N                 â†’  Sticky notes
-S                 â†’  Shapes
-R                 â†’  Rectangle
-O                 â†’  Oval
-L                 â†’  Connection line / Arrow
-D                 â†’  Card
-P                 â†’  Pen
-E                 â†’  Eraser
-C                 â†’  Comment
-F                 â†’  Frame
-M                 â†’  Minimap
-Ctrl + K          â†’  Command palette
-Enter (bulk)      â†’  New sticky note
-Esc (bulk)        â†’  Exit sticky note bulk mode
-Ctrl + Shift + Enter  â†’  Open card panel
-Shift + C         â†’  Show/hide comments
+[V / H] > Select tool / Hand
+[T] > Text
+[N] > Sticky notes
+[S] > Shapes
+[R] > Rectangle
+[O] > Oval
+[L] > Connection line / Arrow
+[D] > Card
+[P] > Pen
+[E] > Eraser
+[C] > Comment
+[F] > Frame
+[M] > Minimap
+[Ctrl + K] > Command palette
+[Enter (bulk)] > New sticky note
+[Esc (bulk)] > Exit sticky note bulk mode
+[Ctrl + Shift + Enter] > Open card panel
+[Shift + C] > Show/hide comments
 
 General:
-Ctrl + C / Ctrl + V  â†’  Copy / Paste
-Ctrl + X          â†’  Cut
-Ctrl + D          â†’  Duplicate
-Alt + drag        â†’  Duplicate by drag
+[Ctrl + C / Ctrl + V] > Copy / Paste
+[Ctrl + X] > Cut
+[Ctrl + D] > Duplicate
+[Alt + drag] > Duplicate by drag
 Alt + â†â†’â†‘â†“        â†’  Duplicate horizontally/vertically
-Ctrl + click      â†’  Select multiple
-Ctrl + A          â†’  Select all
-Enter             â†’  Edit selected
-Esc               â†’  Deselect / quit edit
-Backspace         â†’  Delete
-Ctrl + G          â†’  Group
-Ctrl + Shift + G  â†’  Ungroup
-Ctrl + Shift + L  â†’  Lock / Unlock
-Ctrl + Shift + P  â†’  Protected lock / Unprotected lock
-PgUp              â†’  Bring to front
-Shift + PgUp      â†’  Bring forward
-PgDn              â†’  Send to back
-Shift + PgDn      â†’  Send backward
-Ctrl + Shift + K  â†’  Create board in new tab
-Alt + Ctrl + K    â†’  Add/Edit link to object
-Ctrl + Backspace  â†’  Clear object contents
+[Ctrl + click] > Select multiple
+[Ctrl + A] > Select all
+[Enter] > Edit selected
+[Esc] > Deselect / quit edit
+[Backspace] > Delete
+[Ctrl + G] > Group
+[Ctrl + Shift + G] > Ungroup
+[Ctrl + Shift + L] > Lock / Unlock
+[Ctrl + Shift + P] > Protected lock / Unprotected lock
+[PgUp] > Bring to front
+[Shift + PgUp] > Bring forward
+[PgDn] > Send to back
+[Shift + PgDn] > Send backward
+[Ctrl + Shift + K] > Create board in new tab
+[Alt + Ctrl + K] > Add/Edit link to object
+[Ctrl + Backspace] > Clear object contents
 
 Navigation:
 â†â†’â†‘â†“              â†’  Move items/canvas
-Ctrl + +          â†’  Zoom in
-Ctrl + -          â†’  Zoom out
-Ctrl + 0          â†’  Zoom to 100%
-Alt + 1           â†’  Zoom to fit
-Alt + 2           â†’  Zoom to selected item
-Space + drag      â†’  Move canvas
-G                 â†’  Toggle grid
-Ctrl + F          â†’  Search
+[Ctrl + +] > Zoom in
+[Ctrl + -] > Zoom out
+[Ctrl + 0] > Zoom to 100%
+[Alt + 1] > Zoom to fit
+[Alt + 2] > Zoom to selected item
+[Space + drag] > Move canvas
+[G] > Toggle grid
+[Ctrl + F] > Search
 
 Text:
-Ctrl + B          â†’  Bold
-Ctrl + I          â†’  Italic
-Ctrl + U          â†’  Underline
+[Ctrl + B] > Bold
+[Ctrl + I] > Italic
+[Ctrl + U] > Underline
 
 Board navigation:
-Tab               â†’  Move forwards through objects (TL â†’ BR)
-Shift + Tab       â†’  Move backwards through objects (TL â†’ BR)
+[Tab] > Move forwards through objects (TL > BR)
+[Shift + Tab] > Move backwards through objects (TL > BR)
 Ctrl + â†‘/â†“/â†/â†’    â†’  Move through board objects
-Ctrl + Shift + â†“/â†‘â†’  Move in/out of container (e.g., frame)
-Esc               â†’  Back to menu
-Enter             â†’  Edit an object
-Esc               â†’  Stop editing an object
+[Ctrl + Shift + ↓/↑] > Move in/out of container (e.g., frame)
+[Esc] > Back to menu
+[Enter] > Edit an object
+[Esc] > Stop editing an object
 
 Toolbar navigation:
-Tab / Shift + Tab â†’  Move between toolbars
-Arrow keys        â†’  Move between toolbar items
-Enter / Space     â†’  Activate a menu item
+[Tab / Shift + Tab] > Move between toolbars
+[Arrow keys] > Move between toolbar items
+[Enter / Space] > Activate a menu item
 
 Desktop app:
-Ctrl + R          â†’  Reload the tab
-Ctrl + W          â†’  Close the tab
-Ctrl + Q          â†’  Exit the app
-Ctrl + Shift + L  â†’  Copy board link
+[Ctrl + R] > Reload the tab
+[Ctrl + W] > Close the tab
+[Ctrl + Q] > Exit the app
+[Ctrl + Shift + L] > Copy board link
 )"
 
 ; --- Wikipedia ---------------------------------------------------------------
 cheatSheets["Wikipedia"] := "
 (
 Wikipedia
-Shift+Y  â†’  Click search button
+[Shift+Y] > Click search button
 )"
 
 ; ========== Helper to decide which sheet applies ===========================
@@ -733,15 +733,15 @@ GetCheatSheetText() {
             appShortcuts := cheatSheets.Has("Gmail") ? cheatSheets["Gmail"] : ""
         if InStr(chromeTitle, "chatgpt")
             appShortcuts :=
-                "ChatGPT`r`nShift+Y â†’ Cut all`r`nShift+U â†’ Model selector`r`nShift+I â†’ Toggle sidebar`r`nShift+O â†’ Re-send rules`r`nShift+H â†’ Copy code block`r`nShift+L â†’ Send and show AI banner"
+                "ChatGPT`r`n[Shift+Y] > Cut all`r`n[Shift+U] > Model selector`r`n[Shift+I] > Toggle sidebar`r`n[Shift+O] > Re-send rules`r`n[Shift+H] > Copy code block`r`n[Shift+L] > Send and show AI banner"
         if InStr(chromeTitle, "Mobills")
             appShortcuts :=
-                "Mobills`r`nShift+Y â†’ Dashboard`r`nShift+U â†’ Contas`r`nShift+I â†’ TransaÃ§Ãµes`r`nShift+O â†’ CartÃµes de crÃ©dito`r`nShift+P â†’ Planejamento`r`nShift+H â†’ RelatÃ³rios`r`nShift+J â†’ Mais opÃ§Ãµes`r`nShift+K â†’ Previous month`r`nShift+L â†’ Next month`r`nShift+N â†’ Ignore transaction`r`nShift+M â†’ Name field"
+                "Mobills`r`n[Shift+Y] > Dashboard`r`n[Shift+U] > Contas`r`n[Shift+I] > TransaÃ§Ãµes`r`n[Shift+O] > CartÃµes de crÃ©dito`r`n[Shift+P] > Planejamento`r`n[Shift+H] > RelatÃ³rios`r`n[Shift+J] > Mais opÃ§Ãµes`r`n[Shift+K] > Previous month`r`n[Shift+L] > Next month`r`n[Shift+N] > Ignore transaction`r`n[Shift+M] > Name field"
         if InStr(chromeTitle, "Google Keep") || InStr(chromeTitle, "keep.google.com")
             appShortcuts := cheatSheets.Has("Google Keep") ? cheatSheets["Google Keep"] : ""
         if InStr(chromeTitle, "YouTube")
             appShortcuts :=
-                "YouTube`r`nShift+Y â†’ Focus search box`r`nShift+U â†’ Focus first video via Search filters`r`nShift+I â†’ Focus first video via Explore"
+                "YouTube`r`n[Shift+Y] > Focus search box`r`n[Shift+U] > Focus first video via Search filters`r`n[Shift+I] > Focus first video via Explore"
         if InStr(chromeTitle, "UIATreeInspector")
             appShortcuts := cheatSheets["UIATreeInspector"]
         if InStr(chromeTitle, "Settle Up")
@@ -755,7 +755,7 @@ GetCheatSheetText() {
         ; Only set generic Google sheet if nothing else matched and title clearly indicates Google site
         if (appShortcuts = "") {
             if (chromeTitle = "Google" || InStr(chromeTitle, " - Google Search"))
-                appShortcuts := "Google`r`nShift+Y â†’ Focus search box"
+                appShortcuts := "Google`r`n[Shift+Y] > Focus search box"
         }
 
         ; Combine Chrome general + app-specific shortcuts
@@ -811,7 +811,7 @@ GetCheatSheetText() {
             return value
     }
 
-    ; Nothing found â†’ blank â†’ caller will show fallback message
+    ; Nothing found > blank > caller will show fallback message
     return ""
 }
 
@@ -873,7 +873,7 @@ ToggleShortcutHelp() {
 
     ; Resize the control and GUI explicitly
     cheatCtrl.Move(, , 600, controlHeight)
-    ; Show â†’ measure â†’ centre
+    ; Show > measure > centre
     g_helpGui.Show("AutoSize Hide")
     CenterGuiOnActiveMonitor(g_helpGui)
     g_helpGui.Show("NoActivate")  ; ensure visible after centring
@@ -897,73 +897,73 @@ ShowGlobalShortcutsHelp() {
     globalText := "
 (
 === AVAILABLE (unused) ===
-Win+Alt+Shift+C  â†’  Available
-Win+Alt+Shift+1  â†’  Available
+[Win+Alt+Shift+C] > Available
+[Win+Alt+Shift+1] > Available
 
 === ONENOTE ===
-Win+Alt+Shift+N  â†’  Opens or activates OneNote
+[Win+Alt+Shift+N] > Opens or activates OneNote
 
 === SPOTIFY ===
-Win+Alt+Shift+S  â†’  Opens or activates Spotify
+[Win+Alt+Shift+S] > Opens or activates Spotify
 
 === CHATGPT ===
-Win+Alt+Shift+8  â†’  Get word pronunciation, definition, and Portuguese translation
-Win+Alt+Shift+0  â†’  Speak with ChatGPT
-Win+Alt+Shift+7  â†’  Speak with ChatGPT (send message automatically)
-Win+Alt+Shift+P  â†’  Copy last ChatGPT prompt
-Win+Alt+Shift+J  â†’  Copy last ChatGPT message (in the editing box)
-Win+Alt+Shift+U  â†’  Activate ChatGPT and copy last code block
-Win+Alt+Shift+O  â†’  Check grammar and improve text in both English and Portuguese
-Win+Alt+Shift+I  â†’  Opens ChatGPT
-Win+Alt+Shift+L  â†’  Talk with ChatGPT through voice
-Win+Alt+Shift+Y  â†’  Copy last message and read it aloud
+[Win+Alt+Shift+8] > Get word pronunciation, definition, and Portuguese translation
+[Win+Alt+Shift+0] > Speak with ChatGPT
+[Win+Alt+Shift+7] > Speak with ChatGPT (send message automatically)
+[Win+Alt+Shift+P] > Copy last ChatGPT prompt
+[Win+Alt+Shift+J] > Copy last ChatGPT message (in the editing box)
+[Win+Alt+Shift+U] > Activate ChatGPT and copy last code block
+[Win+Alt+Shift+O] > Check grammar and improve text in both English and Portuguese
+[Win+Alt+Shift+I] > Opens ChatGPT
+[Win+Alt+Shift+L] > Talk with ChatGPT through voice
+[Win+Alt+Shift+Y] > Copy last message and read it aloud
 
 === YOUTUBE ===
-Win+Alt+Shift+H  â†’  Activates Youtube
+[Win+Alt+Shift+H] > Activates Youtube
 
 === GOOGLE ===
-Win+Alt+Shift+F  â†’  Opens Google
+[Win+Alt+Shift+F] > Opens Google
 
 === GMAIL ===
-Win+Alt+Shift+W  â†’  Opens Gmail
+[Win+Alt+Shift+W] > Opens Gmail
 
 === CURSOR ===
-Win+Alt+Shift+,  â†’  Opens or activates Cursor
+[Win+Alt+Shift+,] > Opens or activates Cursor
 
 === OUTLOOK ===
-Win+Alt+Shift+B  â†’  Open mail
-Win+Alt+Shift+V  â†’  Open Reminder
-Win+Alt+Shift+G  â†’  Open calendar
+[Win+Alt+Shift+B] > Open mail
+[Win+Alt+Shift+V] > Open Reminder
+[Win+Alt+Shift+G] > Open calendar
 
 === MICROSOFT TEAMS ===
-Win+Alt+Shift+R  â†’  New conversation
-Win+Alt+Shift+5  â†’  Toggle Mute (meeting)
-Win+Alt+Shift+4  â†’  Toggle camera (meeting)
-Win+Alt+Shift+T  â†’  Screen share (meeting)
-Win+Alt+Shift+2  â†’  Exit meeting
-Win+Alt+Shift+E  â†’  Select the chats window
-Win+Alt+Shift+3  â†’  Select the meeting window
+[Win+Alt+Shift+R] > New conversation
+[Win+Alt+Shift+5] > Toggle Mute (meeting)
+[Win+Alt+Shift+4] > Toggle camera (meeting)
+[Win+Alt+Shift+T] > Screen share (meeting)
+[Win+Alt+Shift+2] > Exit meeting
+[Win+Alt+Shift+E] > Select the chats window
+[Win+Alt+Shift+3] > Select the meeting window
 
 === WHATSAPP ===
-Win+Alt+Shift+Z  â†’  Opens WhatsApp
+[Win+Alt+Shift+Z] > Opens WhatsApp
 
 === WINDOWS ===
-Win+Alt+Shift+6  â†’  Minimizes windows
-Win+Alt+Shift+M  â†’  Maximizes the current window
+[Win+Alt+Shift+6] > Minimizes windows
+[Win+Alt+Shift+M] > Maximizes the current window
 
 === GENERAL ===
-Win+Alt+Shift+Q  â†’  Jump mouse on the middle
-Win+Alt+Shift+X  â†’  Activate hunt and Peck
-Win+Alt+Shift+.  â†’  Set microphone volume to 100
-Win+Alt+Shift+9  â†’  Pomodoro
+[Win+Alt+Shift+Q] > Jump mouse on the middle
+[Win+Alt+Shift+X] > Activate hunt and Peck
+[Win+Alt+Shift+.] > Set microphone volume to 100
+[Win+Alt+Shift+9] > Pomodoro
 
 
 === SHORTCUTS ===
-Win+Alt+Shift+A  â†’  Show app-specific shortcuts (quick press)
-Win+Alt+Shift+A  â†’  Show global shortcuts (hold 700ms+)
+[Win+Alt+Shift+A] > Show app-specific shortcuts (quick press)
+[Win+Alt+Shift+A] > Show global shortcuts (hold 700ms+)
 
 === WIKIPEDIA ===
-Win+Alt+Shift+K  â†’  Opens or activates Wikipedia
+[Win+Alt+Shift+K] > Opens or activates Wikipedia
 )"
 
     static globalCtrl
@@ -1256,7 +1256,7 @@ ToggleVoiceMessage() {
                 btn.Invoke()
                 isRecording := false
             } else {
-                ; Assume you clicked Send manually â†’ reset & start new rec
+                ; Assume you clicked Send manually > reset & start new rec
                 isRecording := false
                 if (btn := FindBtn(voicePattern)) {
                     btn.Invoke()
@@ -1414,9 +1414,9 @@ Confirm(t) {
 }
 
 ; HOTKEYS de teste
-; Shift+U  â†’ 1 minuto
-; Shift+I  â†’ 2 minutos
-; Shift+O  â†’ 3 minutos
+; Shift+U  > 1 minuto
+; Shift+I  > 2 minutos
+; Shift+O  > 3 minutos
 +U:: Confirm("1 hour")
 +I:: Confirm("4 hours")
 +O:: Confirm("1 day")
@@ -2312,7 +2312,7 @@ SelectExplorerSidebarFirstPinned() {
 ; Message inspector-specific hotkeys (Subject/To/DatePicker/Body)
 #HotIf IsOutlookMessageActive()
 
-; Shift + Y â†’ Subject
+; Shift + Y > Subject
 +Y:: {
     if FocusOutlookField({ AutomationId: "4101" }) ; Subject
         return
@@ -2320,7 +2320,7 @@ SelectExplorerSidebarFirstPinned() {
         return
 }
 
-; Shift + U â†’ Required / To
+; Shift + U > Required / To
 +U:: {
     if FocusOutlookField({ AutomationId: "4109" }) ; Required
         return
@@ -2332,10 +2332,10 @@ SelectExplorerSidebarFirstPinned() {
         return
 }
 
-; Shift + I â†’ Date Picker (if present in this inspector)
+; Shift + I > Date Picker (if present in this inspector)
 ; (No Shift + I in Message inspector)
 
-; Shift + M â†’ Subject â†’ Body
+; Shift + M > Subject > Body
 +M:: {
     if FocusOutlookField({ AutomationId: "4101" }) {
         Sleep 50
@@ -2402,8 +2402,8 @@ Outlook_ClickEndTime_1200PM() {
 
 ; (moved +H/+J below to ensure the block starts with Y)
 
-; New Shift hotkeys for date/time controls (Start â†’ End), ordered by key preference
-; Shift + Y â†’ Start date (combo)
+; New Shift hotkeys for date/time controls (Start > End), ordered by key preference
+; Shift + Y > Start date (combo)
 +Y:: {
     Outlook_ClickStartDate()
 }
