@@ -80,7 +80,7 @@ RightClickFocus() {
     if (IS_WORK_ENVIRONMENT) {
         Sleep 10  ; Reduced sleep for work environment
     } else {
-        Sleep 30  ; Original sleep for personal environment
+        Sleep 10  ; Personal environment now matches work environment
     }
 }
 
@@ -125,7 +125,7 @@ ActivateHuntAndPeck(isLoopMode := false) {
     if (IS_WORK_ENVIRONMENT) {
         Sleep 10  ; Reduced sleep for work environment
     } else {
-        Sleep 20  ; Original sleep for personal environment
+        Sleep 10  ; Personal environment now matches work environment
     }
 
     ; Wait up to 200 ms for the window to actually become active (covers fast Alt-Tab cases)
@@ -156,7 +156,7 @@ ActivateHuntAndPeck(isLoopMode := false) {
         if (IS_WORK_ENVIRONMENT) {
             Sleep 40  ; Reduced sleep for work environment
         } else {
-            Sleep 80  ; Original sleep for personal environment
+            Sleep 40  ; Personal environment now matches work environment
         }
         ; Re-activate target window to pull overlay back
         SafeActivateTarget(g_HnPTargetWindow)
