@@ -740,7 +740,7 @@ ToggleDictation(autoSend) {
                 ; --- Wait for transcription to finish (indicator appears over ChatGPT) ---
                 transcribingWaitNames := [currentTranscribingName, currentSubmitName]
                 ; Set a one-time flag so the watcher can emit a distinct chime right before closing
-                g_transcribeChimePending := !autoSend
+                g_transcribeChimePending := true  ; Always play transcription finished chime
                 WaitForButtonAndShowSmallLoading(transcribingWaitNames, "Transcribing…")
 
                 if (autoSend) {
