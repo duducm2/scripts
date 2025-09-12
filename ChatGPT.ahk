@@ -5,6 +5,111 @@
 ; This script consolidates all ChatGPT related hotkeys and functions.
 ; -----------------------------------------------------------------------------
 
+; Global error handler to suppress system error sounds
+OnError(ErrorHandler)
+
+ErrorHandler(exception, mode) {
+    ; Silently log errors without showing system dialogs or sounds
+    ; Return 1 to suppress the error, -1 to show default error dialog
+    return 1
+}
+
+; Suppress Windows error sounds using multiple methods
+SuppressErrorSounds() {
+    try {
+        ; Method 1: Disable error beeps via registry
+        RegWrite(0, "REG_DWORD", "HKCU\Control Panel\Sound", "Beep")
+
+        ; Method 2: Set SPI_SETBEEP to FALSE
+        DllCall("SystemParametersInfo", "UInt", 0x0002, "UInt", 0, "Ptr", 0, "UInt", 0)
+
+        ; Method 3: Disable specific sound events
+        DllCall("User32.dll\SystemParametersInfo", "UInt", 0x0003, "UInt", 0, "Ptr", 0, "UInt", 0x0001)
+    } catch {
+        ; Silently ignore if we can't suppress sounds
+    }
+}
+
+; Restore error sounds
+RestoreErrorSounds() {
+    try {
+        ; Restore error beeps
+        RegWrite(1, "REG_DWORD", "HKCU\Control Panel\Sound", "Beep")
+
+        ; Re-enable beep
+        DllCall("SystemParametersInfo", "UInt", 0x0002, "UInt", 1, "Ptr", 0, "UInt", 0)
+    } catch {
+        ; Silently ignore restore errors
+    }
+}
+
+; Wrapper functions to suppress Windows error sounds
+SafeWinActivate(winTitle) {
+    try {
+        WinActivate(winTitle)
+        return true
+    } catch {
+        return false
+    }
+}
+
+SafeWinWaitActive(winTitle, winText := "", timeout := 1) {
+    try {
+        return WinWaitActive(winTitle, winText, timeout)
+    } catch {
+        return false
+    }
+}
+
+SafeSend(keys) {
+    try {
+        Send(keys)
+        return true
+    } catch {
+        return false
+    }
+}
+
+SafeClick(element) {
+    try {
+        if IsObject(element)
+            element.Click()
+        return true
+    } catch {
+        return false
+    }
+}
+
+; Temporarily disable Windows system sounds
+DisableSystemSounds() {
+    try {
+        ; Disable system sound scheme temporarily
+        RegWrite("(None)", "REG_SZ", "HKCU\AppEvents\Schemes\Apps\.Default\.Default\.Current")
+        RegWrite("(None)", "REG_SZ", "HKCU\AppEvents\Schemes\Apps\.Default\SystemExclamation\.Current")
+        RegWrite("(None)", "REG_SZ", "HKCU\AppEvents\Schemes\Apps\.Default\SystemHand\.Current")
+        RegWrite("(None)", "REG_SZ", "HKCU\AppEvents\Schemes\Apps\.Default\SystemQuestion\.Current")
+    } catch {
+        ; Silently ignore registry errors
+    }
+}
+
+; Re-enable Windows system sounds (restore defaults)
+EnableSystemSounds() {
+    try {
+        ; Restore default Windows sound scheme
+        RegWrite("C:\Windows\media\Windows Error.wav", "REG_SZ",
+            "HKCU\AppEvents\Schemes\Apps\.Default\.Default\.Current")
+        RegWrite("C:\Windows\media\Windows Exclamation.wav", "REG_SZ",
+            "HKCU\AppEvents\Schemes\Apps\.Default\SystemExclamation\.Current")
+        RegWrite("C:\Windows\media\Windows Critical Stop.wav", "REG_SZ",
+            "HKCU\AppEvents\Schemes\Apps\.Default\SystemHand\.Current")
+        RegWrite("C:\Windows\media\Windows Question.wav", "REG_SZ",
+            "HKCU\AppEvents\Schemes\Apps\.Default\SystemQuestion\.Current")
+    } catch {
+        ; Silently ignore registry errors
+    }
+}
+
 ; --- Includes ----------------------------------------------------------------
 #include UIA-v2\Lib\UIA.ahk
 #include UIA-v2\Lib\UIA_Browser.ahk
@@ -30,11 +135,15 @@ global loadingGui := ""
 ; Find the first UIA element whose Name matches any string in an array
 FindButton(cUIA, names, role := "Button", timeoutMs := 0) {
     for name in names {
-        el := (timeoutMs = 0)
-            ? cUIA.FindElement({ Name: name, Type: role })
-            : cUIA.WaitElement({ Name: name, Type: role }, timeoutMs)
-        if el
-            return el
+        try {
+            el := (timeoutMs = 0)
+                ? cUIA.FindElement({ Name: name, Type: role })
+                : cUIA.WaitElement({ Name: name, Type: role }, timeoutMs)
+            if el
+                return el
+        } catch {
+            ; Silently continue to next name if this one fails
+        }
     }
     return false
 }
@@ -48,6 +157,7 @@ CollectByNamesExact(root, namesArr) {
                 if !(el.IsOffscreen)
                     results.Push(el)
         } catch {
+            ; Silently ignore errors
         }
     }
     return results
@@ -62,6 +172,7 @@ CollectByNamesContains(root, namesArr) {
                 if !(el.IsOffscreen)
                     results.Push(el)
         } catch {
+            ; Silently ignore errors
         }
     }
     return results
@@ -69,9 +180,17 @@ CollectByNamesContains(root, namesArr) {
 
 ; Find ChatGPT browser window (case-insensitive contains match for "chatgpt")
 GetChatGPTWindowHwnd() {
-    for hwnd in WinGetList("ahk_exe chrome.exe") {
-        if InStr(WinGetTitle("ahk_id " hwnd), "chatgpt", false)
-            return hwnd
+    try {
+        for hwnd in WinGetList("ahk_exe chrome.exe") {
+            try {
+                if InStr(WinGetTitle("ahk_id " hwnd), "chatgpt", false)
+                    return hwnd
+            } catch {
+                ; Silently skip invalid windows
+            }
+        }
+    } catch {
+        ; Silently handle WinGetList errors
     }
     return 0
 }
@@ -91,7 +210,7 @@ GetChatGPTWindowHwnd() {
         if WinWaitActive("ahk_id " hwnd, , 2) {
             CenterMouse()
         }
-        Send("{Esc}")
+        SafeSend("{Esc}")
     } else {
         Run "chrome.exe --new-window https://chatgpt.com/"
         if WinWaitActive("ahk_exe chrome.exe", , 5) {
@@ -109,9 +228,9 @@ GetChatGPTWindowHwnd() {
             A_Clipboard := ""
             A_Clipboard := promptText
             ClipWait 1
-            Send("^v")
+            SafeSend("^v")
             Sleep (IS_WORK_ENVIRONMENT ? 50 : 100)
-            Send("{Enter}")
+            SafeSend("{Enter}")
             Sleep (IS_WORK_ENVIRONMENT ? 50 : 100)
             A_Clipboard := oldClip
         }
@@ -134,9 +253,9 @@ GetChatGPTWindowHwnd() {
     if WinWaitActive("ahk_exe chrome.exe", , 2)
         CenterMouse()
     Sleep (IS_WORK_ENVIRONMENT ? 125 : 250)
-    Send "{Esc}"
+    SafeSend("{Esc}")
     Sleep (IS_WORK_ENVIRONMENT ? 125 : 250)
-    Send "+{Esc}"
+    SafeSend("+{Esc}")
     searchString :=
         "Correct the following sentence for grammar, cohesion, and coherence. Respond with only the corrected sentence, no explanations."
     A_Clipboard := searchString . "`n`nContent: " . A_Clipboard
@@ -203,8 +322,13 @@ CopyLastPrompt() {
         return
     CenterMouse()
 
-    cUIA := UIA_Browser()
-    Sleep (IS_WORK_ENVIRONMENT ? 150 : 300)
+    try {
+        cUIA := UIA_Browser()
+        Sleep (IS_WORK_ENVIRONMENT ? 150 : 300)
+    } catch {
+        ShowNotification("Unable to connect to browser", 1500, "DF2935", "FFFFFF")
+        return
+    }
 
     ; — labels ChatGPT shows in EN and PT —
     copyNames := [
@@ -218,7 +342,7 @@ CopyLastPrompt() {
             copyBtns.Push(btn)
 
     if !copyBtns.Length {
-        MsgBox "⚠️  No copy button found (EN / PT)."
+        ShowNotification("⚠️ No copy button found", 1500, "DF2935", "FFFFFF")
         return
     }
 
@@ -230,14 +354,14 @@ CopyLastPrompt() {
         lastBtn.ScrollIntoView()
         Sleep (IS_WORK_ENVIRONMENT ? 50 : 100)
         A_Clipboard := ""                  ; clear first
-        lastBtn.Click()
+        SafeClick(lastBtn)
         if !ClipWait(1) {                  ; returns 0 on timeout
-            MsgBox "Copy failed – clipboard stayed empty."
+            ShowNotification("Copy failed – clipboard stayed empty", 1500, "DF2935", "FFFFFF")
         } else {
             isCopied := true
         }
     } catch as e {
-        MsgBox "Error clicking copy button:`n" e.Message
+        ShowNotification("Error clicking copy button", 1500, "DF2935", "FFFFFF")
     }
 
     ; optional: jump back to previous window
@@ -267,8 +391,13 @@ CopyLastPrompt() {
         return
     CenterMouse()
 
-    cUIA := UIA_Browser()
-    Sleep (IS_WORK_ENVIRONMENT ? 150 : 300)
+    try {
+        cUIA := UIA_Browser()
+        Sleep (IS_WORK_ENVIRONMENT ? 150 : 300)
+    } catch {
+        ShowNotification("Unable to connect to browser", 1500, "DF2935", "FFFFFF")
+        return
+    }
 
     ; Name sets (case-insensitive)
     moreNames := ["More actions", "More options", "Mais ações", "Mais opções"]
@@ -307,10 +436,11 @@ CopyLastPrompt() {
             lastCopy.ScrollIntoView()
             Sleep (IS_WORK_ENVIRONMENT ? 50 : 100)
             A_Clipboard := ""
-            lastCopy.Click()
+            SafeClick(lastCopy)
             if ClipWait(1)
                 isCopied := true
         } catch {
+            ; Silently ignore errors
         }
     }
 
@@ -332,7 +462,7 @@ CopyLastPrompt() {
         btn := moreBtns[moreBtns.Length]
         btn.ScrollIntoView()
         Sleep (IS_WORK_ENVIRONMENT ? 40 : 80)
-        btn.Click()
+        SafeClick(btn)
     } catch {
         ShowNotification("More btns not found", 1500, "3772FF", "FFFFFF")
         return
@@ -350,7 +480,7 @@ CopyLastPrompt() {
         readItem := readItems[readItems.Length]
         readItem.ScrollIntoView()
         Sleep (IS_WORK_ENVIRONMENT ? 30 : 60)
-        readItem.Click()
+        SafeClick(readItem)
     } catch {
         ShowNotification("Read Aloud not found", 1500, "3772FF", "FFFFFF")
         return
@@ -358,7 +488,7 @@ CopyLastPrompt() {
 
     Sleep(IS_WORK_ENVIRONMENT ? 150 : 300)
 
-    Send("{Escape}") ; 
+    Send("{Escape}") ;
 
     Sleep(IS_WORK_ENVIRONMENT ? 25 : 50)
 
@@ -367,7 +497,7 @@ CopyLastPrompt() {
     Sleep(IS_WORK_ENVIRONMENT ? 25 : 50)
 
     Send("!{Tab}") ; Send Shift+Tab to move focus backward
-    
+
     Sleep(IS_WORK_ENVIRONMENT ? 150 : 300)
 
     ; Show banner if copied successfully (stay in ChatGPT)
@@ -395,8 +525,13 @@ ToggleVoiceMode(triedFallback := false, forceAction := "") {
         WinWaitActive "ahk_id " hwnd
     }
     CenterMouse()
-    cUIA := UIA_Browser()
-    Sleep (IS_WORK_ENVIRONMENT ? 150 : 300)
+    try {
+        cUIA := UIA_Browser()
+        Sleep (IS_WORK_ENVIRONMENT ? 150 : 300)
+    } catch {
+        ShowNotification("Unable to connect to browser", 1500, "DF2935", "FFFFFF")
+        return
+    }
 
     ; Button names in both English and Portuguese
     startNames := ["Start voice mode", "Iniciar modo voz"]
@@ -414,14 +549,14 @@ ToggleVoiceMode(triedFallback := false, forceAction := "") {
                 ToggleVoiceMode(true, "stop")
                 return
             } else {
-                MsgBox "Could not start or stop voice mode. No button found."
+                ShowNotification("Could not start/stop voice mode", 1500, "DF2935", "FFFFFF")
             }
         } catch as e {
             if !triedFallback {
                 ToggleVoiceMode(true, "stop")
                 return
             } else {
-                MsgBox "Error starting/stopping voice mode:`n" e.Message
+                ShowNotification("Error starting/stopping voice mode", 1500, "DF2935", "FFFFFF")
             }
         }
     } else if (action = "stop") {
@@ -434,14 +569,14 @@ ToggleVoiceMode(triedFallback := false, forceAction := "") {
                 ToggleVoiceMode(true, "start")
                 return
             } else {
-                MsgBox "Could not stop or start voice mode. No button found."
+                ShowNotification("Could not stop/start voice mode", 1500, "DF2935", "FFFFFF")
             }
         } catch as e {
             if !triedFallback {
                 ToggleVoiceMode(true, "start")
                 return
             } else {
-                MsgBox "Error stopping/starting voice mode:`n" e.Message
+                ShowNotification("Error stopping/starting voice mode", 1500, "DF2935", "FFFFFF")
             }
         }
     }
@@ -464,7 +599,7 @@ EnsureMicVolume100() {
     try {
         RunWait cmd, , "Hide"
     } catch {
-        ; ignore errors, still debounced
+        ; Silently ignore mic volume errors, still debounced
     }
 }
 
@@ -521,8 +656,13 @@ ToggleDictation(autoSend) {
     if !WinWaitActive("ahk_exe chrome.exe", , 2)
         return
     CenterMouse()
-    cUIA := UIA_Browser()
-    Sleep (IS_WORK_ENVIRONMENT ? 150 : 300)
+    try {
+        cUIA := UIA_Browser()
+        Sleep (IS_WORK_ENVIRONMENT ? 150 : 300)
+    } catch {
+        ShowNotification("Unable to connect to browser", 1500, "DF2935", "FFFFFF")
+        return
+    }
 
     action := !isDictating ? "start" : "stop"
 
@@ -548,6 +688,7 @@ ToggleDictation(autoSend) {
                                     break
                                 }
                             } catch {
+                                ; Silently ignore UIA element errors
                             }
                         }
                         if (stopFound) {
@@ -572,6 +713,7 @@ ToggleDictation(autoSend) {
                     if (detected)
                         PlayDictationStartedChime()
                 } catch {
+                    ; Silently ignore errors
                 }
                 ; Switch back to the previous window first so the indicator appears there
                 Send "!{Tab}"
@@ -579,11 +721,12 @@ ToggleDictation(autoSend) {
                 ShowDictationIndicator()
                 g_transcribeChimePending := false
             } else {
-                MsgBox (IS_WORK_ENVIRONMENT ? "Não foi possível iniciar o ditado. Botão 'Iniciar' não encontrado." :
-                    "Could not start dictation. 'Start' button not found.")
+                ShowNotification((IS_WORK_ENVIRONMENT ? "Não foi possível iniciar o ditado" :
+                    "Could not start dictation"), 1500, "DF2935", "FFFFFF")
             }
         } catch Error as e {
-            MsgBox (IS_WORK_ENVIRONMENT ? "Erro ao iniciar o ditado: " : "Error starting dictation: ") . e.Message
+            ShowNotification((IS_WORK_ENVIRONMENT ? "Erro ao iniciar o ditado" : "Error starting dictation"), 1500,
+            "DF2935", "FFFFFF")
         }
     } else if (action = "stop") {
         try {
@@ -611,15 +754,15 @@ ToggleDictation(autoSend) {
                             ; --- Show smaller green loading indicator while ChatGPT is responding ---
                             WaitForButtonAndShowSmallLoading([currentStopStreamingName], "AI is responding…", 180000)
                         } else {
-                            MsgBox "Timeout: '" . currentSendPromptName . "' button did not appear."
+                            ShowNotification("Timeout: Send button did not appear", 1500, "DF2935", "FFFFFF")
                         }
                     } catch Error as e_wait {
-                        MsgBox "Error waiting for send button: " . e_wait.Message
+                        ShowNotification("Error waiting for send button", 1500, "DF2935", "FFFFFF")
                     }
                 }
             } else {
-                MsgBox (IS_WORK_ENVIRONMENT ? "Não foi possível parar o ditado. Botão 'Parar' não encontrado." :
-                    "Could not stop dictation. 'Stop' button not found.")
+                ShowNotification((IS_WORK_ENVIRONMENT ? "Não foi possível parar o ditado" :
+                    "Could not stop dictation"), 1500, "DF2935", "FFFFFF")
                 isDictating := false ; Reset state if stop button is not found
             }
         } catch Error as e {
@@ -641,8 +784,13 @@ ToggleDictation(autoSend) {
                         WinWaitActive "ahk_id " hwnd
                     }
                     CenterMouse()
-                    cUIA_restart := UIA_Browser()
-                    Sleep (IS_WORK_ENVIRONMENT ? 100 : 200)
+                    try {
+                        cUIA_restart := UIA_Browser()
+                        Sleep (IS_WORK_ENVIRONMENT ? 100 : 200)
+                    } catch {
+                        ; Silently ignore restart UIA errors
+                        return
+                    }
                     if btnRestart := FindButton(cUIA_restart, startNames, "Button", 3000) {
                         EnsureMicVolume100()
                         btnRestart.Click()
@@ -657,7 +805,7 @@ ToggleDictation(autoSend) {
                         ; (Leave isDictating := false so the user can try again)
                     }
                 } catch {
-                    ; Swallow restart errors – if they persist, the retry cap below will stop it
+                    ; Silently ignore restart errors – if they persist, the retry cap below will stop it
                 }
             } else {
                 ; Too many consecutive failures – stop trying
@@ -684,7 +832,7 @@ ShowSmallLoadingIndicator(state := "Loading…", bgColor := "3772FF") {
             if (smallLoadingGuis[1].Controls.Length > 0)
                 smallLoadingGuis[1].Controls[1].Text := state
         } catch {
-            ; In case the GUI or control is invalid, proceed to recreate
+            ; Silently handle GUI/control errors and recreate
         }
         return
     }
@@ -699,6 +847,9 @@ HideSmallLoadingIndicator() {
     if (smallLoadingGuis.Length > 0) {
         for gui in smallLoadingGuis {
             try gui.Destroy()
+            catch {
+                ; Silently ignore GUI destroy errors
+            }
         }
         smallLoadingGuis := [] ; Reset the array
     }
@@ -707,6 +858,7 @@ HideSmallLoadingIndicator() {
 WaitForButtonAndShowSmallLoading(buttonNames, stateText := "Loading…", timeout := 15000) {
     try cUIA := UIA_Browser()
     catch {
+        ; Silently ignore UIA browser errors
         return
     }
     start := A_TickCount
@@ -756,6 +908,7 @@ WaitForButtonAndShowSmallLoading(buttonNames, stateText := "Loading…", timeout
         if (buttonEverFound && buttonDisappeared && InStr(StrLower(stateText), "transcrib") = 0)
             PlayCompletionChime()
     } catch {
+        ; Silently ignore errors
     }
     ; If transcription-finished chime is pending, fire only if we observed the transcribing button disappear
     try {
@@ -765,6 +918,7 @@ WaitForButtonAndShowSmallLoading(buttonNames, stateText := "Loading…", timeout
             PlayTranscriptionFinishedChime()
         }
     } catch {
+        ; Silently ignore errors
     }
     HideSmallLoadingIndicator()
 }
@@ -863,7 +1017,12 @@ HideDictationIndicator() {
 ; Helper function to click the first conversation's options (three-dots) button
 ; =============================================================================
 ClickFirstConversationOptions(timeoutMs := 5000) {
-    cUIA := UIA_Browser()
+    try {
+        cUIA := UIA_Browser()
+    } catch {
+        ShowNotification("Unable to connect to browser", 1500, "DF2935", "FFFFFF")
+        return false
+    }
 
     ; --- 1) locate the "Chats / Conversas" sidebar container (first match) ---
     sidebar := ""
@@ -931,7 +1090,7 @@ ClickFirstConversationOptions(timeoutMs := 5000) {
         for el in sidebar.FindAll({ Type: optTypes })
             list .= el.Type "  |  " el.Name "`n"
         FileAppend list, "*options-scan.log", "UTF-8"
-        MsgBox "Options control not found - candidate list written to options-scan.log"
+        ShowNotification("Options control not found", 1500, "DF2935", "FFFFFF")
         return false
     }
 
@@ -942,7 +1101,7 @@ ClickFirstConversationOptions(timeoutMs := 5000) {
         btn.Click()
         return true
     } catch Error as e {
-        MsgBox "Error clicking options button:`n" e.Message
+        ShowNotification("Error clicking options button", 1500, "DF2935", "FFFFFF")
         return false
     }
 }
@@ -951,7 +1110,11 @@ ClickFirstConversationOptions(timeoutMs := 5000) {
 ; Ensure the ChatGPT sidebar (Chats list) is open – toggles Ctrl+Shift+S if needed
 ; =============================================================================
 EnsureSidebarOpen(timeoutMs := 3000) {
-    cUIA := UIA_Browser()
+    try {
+        cUIA := UIA_Browser()
+    } catch {
+        return false
+    }
     anchorNames := ["Chats", "Conversas"]
 
     if SidebarVisible(cUIA, anchorNames)
@@ -977,7 +1140,7 @@ SidebarVisible(uiRoot, names) {
             if uiRoot.FindElement({ Name: n, Type: "Text" })
                 return true
         } catch {
-            ; ignore errors when element not found
+            ; Silently ignore errors when element not found
         }
     }
     return false
@@ -1072,6 +1235,7 @@ PlayCompletionChime() {
             if (rc)
                 played := true
         } catch {
+            ; Silently ignore errors
         }
 
         ; Fallback to system asterisk sound
@@ -1079,6 +1243,7 @@ PlayCompletionChime() {
             try {
                 played := SoundPlay("*64", false)
             } catch {
+                ; Silently ignore errors
             }
         }
 
@@ -1089,6 +1254,7 @@ PlayCompletionChime() {
             }
         }
     } catch {
+        ; Silently ignore errors
     }
 }
 
@@ -1106,6 +1272,7 @@ PlayTranscriptionFinishedChime() {
             if (rc)
                 played := true
         } catch {
+            ; Silently ignore errors
         }
 
         ; Fallback to system exclamation sound
@@ -1113,6 +1280,7 @@ PlayTranscriptionFinishedChime() {
             try {
                 played := SoundPlay("*48", false)
             } catch {
+                ; Silently ignore errors
             }
         }
 
@@ -1123,6 +1291,7 @@ PlayTranscriptionFinishedChime() {
             }
         }
     } catch {
+        ; Silently ignore errors
     }
 }
 
@@ -1143,12 +1312,14 @@ PlayDictationStartedChime() {
             if (rc)
                 played := true
         } catch {
+            ; Silently ignore errors
         }
 
         if !played {
             try {
                 played := SoundPlay("*16", false) ; system hand/stop sound as fallback
             } catch {
+                ; Silently ignore errors
             }
         }
 
@@ -1158,6 +1329,7 @@ PlayDictationStartedChime() {
             }
         }
     } catch {
+        ; Silently ignore errors
     }
 }
 
@@ -1200,9 +1372,11 @@ CheckVoiceModeButton() {
                         break
                     }
                 } catch {
+                    ; Silently ignore errors
                 }
             }
         } catch {
+            ; Silently ignore errors
         }
     }
 
@@ -1221,5 +1395,15 @@ CheckVoiceModeButton() {
     }
 }
 
-; Start watcher on script load
+; Initialize comprehensive sound suppression and start watcher on script load
+SuppressErrorSounds()
+DisableSystemSounds()
 StartVoiceModeWatcher()
+
+; Re-enable sounds when script exits
+OnExit(RestoreSoundsOnExit)
+
+RestoreSoundsOnExit(*) {
+    RestoreErrorSounds()
+    EnableSystemSounds()
+}
