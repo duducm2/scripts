@@ -72,12 +72,16 @@ SafeActivateTarget(hwnd) {
         WinActivate("ahk_id " hwnd)
 }
 
-; Send a quick right-click to the centred mouse position – this shifts focus to the window’s
+; Send a quick right-click to the centred mouse position – this shifts focus to the window's
 ; main area without selecting items.  Any context menu will be dismissed automatically by
-; Hunt-and-Peck’s overlay / Esc logic.
+; Hunt-and-Peck's overlay / Esc logic.
 RightClickFocus() {
     Click "Right"
-    Sleep 30
+    if (IS_WORK_ENVIRONMENT) {
+        Sleep 10  ; Reduced sleep for work environment
+    } else {
+        Sleep 30  ; Original sleep for personal environment
+    }
 }
 
 ; Shows or hides the loop mode indicator
@@ -118,7 +122,11 @@ ActivateHuntAndPeck(isLoopMode := false) {
 
     ; Shift keyboard focus with a harmless right-click
     RightClickFocus()
-    Sleep 20
+    if (IS_WORK_ENVIRONMENT) {
+        Sleep 10  ; Reduced sleep for work environment
+    } else {
+        Sleep 20  ; Original sleep for personal environment
+    }
 
     ; Wait up to 200 ms for the window to actually become active (covers fast Alt-Tab cases)
     if !WinWaitActive("ahk_id " g_HnPTargetWindow, "", 0.2) {
@@ -145,7 +153,11 @@ ActivateHuntAndPeck(isLoopMode := false) {
         ; Legacy hotkey path
         RightClickFocus()
         Send "!ç"
-        Sleep 80
+        if (IS_WORK_ENVIRONMENT) {
+            Sleep 40  ; Reduced sleep for work environment
+        } else {
+            Sleep 80  ; Original sleep for personal environment
+        }
         ; Re-activate target window to pull overlay back
         SafeActivateTarget(g_HnPTargetWindow)
         Sleep 40
