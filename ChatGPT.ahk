@@ -270,6 +270,9 @@ GetChatGPTWindowHwnd() {
     Send "!{Tab}" ; Return to previous window
     buttonNames := ["Stop streaming", "Interromper transmissão"]
     WaitForButtonAndShowSmallLoading(buttonNames, "Waiting for response...")
+
+    ; Play completion sound
+    PlayGrammarCheckCompletedChime()
 }
 
 ; =============================================================================
@@ -1325,6 +1328,82 @@ PlayDictationStartedChime() {
 
         if !played {
             try SoundBeep(1200, 100)
+            catch {
+            }
+        }
+    } catch {
+        ; Silently ignore errors
+    }
+}
+
+; =============================================================================
+; Grammar check started chime (distinct beep when grammar check begins)
+; =============================================================================
+PlayGrammarCheckStartedChime() {
+    try {
+        static lastTick := 0
+        if (A_TickCount - lastTick < 1000)
+            return
+        lastTick := A_TickCount
+
+        played := false
+        ; Use question icon beep to distinguish from other cues
+        try {
+            rc := DllCall("User32\\MessageBeep", "UInt", 0x00000020)
+            if (rc)
+                played := true
+        } catch {
+            ; Silently ignore errors
+        }
+
+        if !played {
+            try {
+                played := SoundPlay("*32", false) ; system question sound as fallback
+            } catch {
+                ; Silently ignore errors
+            }
+        }
+
+        if !played {
+            try SoundBeep(1000, 120)
+            catch {
+            }
+        }
+    } catch {
+        ; Silently ignore errors
+    }
+}
+
+; =============================================================================
+; Grammar check completed chime (distinct beep when grammar check finishes)
+; =============================================================================
+PlayGrammarCheckCompletedChime() {
+    try {
+        static lastTick := 0
+        if (A_TickCount - lastTick < 1500)
+            return
+        lastTick := A_TickCount
+
+        played := false
+        ; Use asterisk icon beep to distinguish from other cues
+        try {
+            rc := DllCall("User32\\MessageBeep", "UInt", 0x00000040)
+            if (rc)
+                played := true
+        } catch {
+            ; Silently ignore errors
+        }
+
+        if !played {
+            try {
+                played := SoundPlay("*64", false) ; system asterisk sound as fallback
+            } catch {
+                ; Silently ignore errors
+            }
+        }
+
+        if !played {
+            try SoundBeep(1300, 150)
             catch {
             }
         }
