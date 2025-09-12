@@ -290,7 +290,27 @@ GetMicrophoneState(hwndTeams, maxRetries := 3) {
                     Sleep 150
                 continue
             }
+            
+            ; Try automation ID first
             micBtn := root.FindFirst(UIA.CreateCondition({ AutomationId: "microphone-button" }))
+            
+            ; If automation ID fails, try finding by name patterns
+            if !micBtn {
+                ; English and Portuguese name patterns for microphone button
+                micNamePatterns := [
+                    "Microphone", "Mic", "Mute", "Unmute",
+                    "Microfone", "Mudo", "Desativar mudo", "Ativar mudo",
+                    "Turn on microphone", "Turn off microphone",
+                    "Ligar microfone", "Desligar microfone"
+                ]
+                
+                for pattern in micNamePatterns {
+                    micBtn := root.FindFirst(UIA.CreateCondition({ Name: pattern }))
+                    if micBtn
+                        break
+                }
+            }
+            
             if micBtn {
                 ; Prefer ToggleState when available
                 try {
@@ -303,9 +323,15 @@ GetMicrophoneState(hwndTeams, maxRetries := 3) {
                 ; Fallback: infer from Name (action-based text)
                 try name := micBtn.Name
                 if name {
-                    if InStr(name, "Desativar mudo") ; "Disable mute" => currently muted
+                    ; Portuguese patterns
+                    if InStr(name, "Desativar mudo") || InStr(name, "Desligar microfone") ; "Disable mute" => currently muted
                         return "muted"
-                    if InStr(name, "Ativar mudo")    ; "Enable mute" => currently unmuted
+                    if InStr(name, "Ativar mudo") || InStr(name, "Ligar microfone")    ; "Enable mute" => currently unmuted
+                        return "unmuted"
+                    ; English patterns
+                    if InStr(name, "Unmute") || InStr(name, "Turn on microphone")
+                        return "muted"
+                    if InStr(name, "Mute") || InStr(name, "Turn off microphone")
                         return "unmuted"
                 }
             }
@@ -327,7 +353,26 @@ GetCameraState(hwndTeams, maxRetries := 3) {
                     Sleep 150
                 continue
             }
+            
+            ; Try automation ID first
             camBtn := root.FindFirst(UIA.CreateCondition({ AutomationId: "video-button" }))
+            
+            ; If automation ID fails, try finding by name patterns
+            if !camBtn {
+                ; English and Portuguese name patterns for camera button
+                camNamePatterns := [
+                    "Camera", "Video", "Turn on camera", "Turn off camera", "Turn camera on", "Turn camera off",
+                    "Câmera", "Vídeo", "Ativar câmera", "Desativar câmera",
+                    "Start video", "Stop video", "Iniciar vídeo", "Parar vídeo"
+                ]
+                
+                for pattern in camNamePatterns {
+                    camBtn := root.FindFirst(UIA.CreateCondition({ Name: pattern }))
+                    if camBtn
+                        break
+                }
+            }
+            
             if camBtn {
                 ; Prefer ToggleState when available
                 try {
@@ -340,9 +385,15 @@ GetCameraState(hwndTeams, maxRetries := 3) {
                 ; Fallback: infer from Name (action-based text)
                 try name := camBtn.Name
                 if name {
-                    if InStr(name, "Desativar câmera") ; "Disable camera" => currently on
+                    ; Portuguese patterns
+                    if InStr(name, "Desativar câmera") || InStr(name, "Parar vídeo") ; "Disable camera" => currently on
                         return "on"
-                    if InStr(name, "Ativar câmera")    ; "Enable camera" => currently off
+                    if InStr(name, "Ativar câmera") || InStr(name, "Iniciar vídeo")    ; "Enable camera" => currently off
+                        return "off"
+                    ; English patterns
+                    if InStr(name, "Turn off camera") || InStr(name, "Turn camera off") || InStr(name, "Stop video")
+                        return "on"
+                    if InStr(name, "Turn on camera") || InStr(name, "Turn camera on") || InStr(name, "Start video")
                         return "off"
                 }
             }
@@ -459,7 +510,25 @@ GetCameraState(hwndTeams, maxRetries := 3) {
     if listItem {
         listItem.Invoke()
     } else {
+        ; Try automation ID first
         shareBtn := root.FindFirst(UIA.CreateCondition({ AutomationId: "share-button" }))
+        
+        ; If automation ID fails, try finding by name patterns
+        if !shareBtn {
+            ; English and Portuguese name patterns for share button
+            shareNamePatterns := [
+                "Share", "Share content", "Share screen", "Start sharing",
+                "Compartilhar", "Compartilhar conteúdo", "Compartilhar tela", "Iniciar compartilhamento",
+                "Present", "Present screen", "Apresentar", "Apresentar tela"
+            ]
+            
+            for pattern in shareNamePatterns {
+                shareBtn := root.FindFirst(UIA.CreateCondition({ Name: pattern }))
+                if shareBtn
+                    break
+            }
+        }
+        
         if !shareBtn
             return
         shareBtn.Invoke()
