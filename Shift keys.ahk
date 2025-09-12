@@ -249,6 +249,9 @@ cheatSheets["OUTLOOK.EXE"] := "
 Outlook
 [Shift+Y] > Send to General
 [Shift+U] > Send to Newsletter
+[Shift+O] > Subject / Title
+[Shift+P] > Required / To
+[Shift+M] > Subject -> Body
 [Shift+I] > Go to Inbox
 [Shift+N] > Focused / Other
 )"  ; end Outlook
@@ -2327,7 +2330,39 @@ IsOutlookMainActive() {
     Send "{Enter}"
 }
 
-; (Main window has no inspector navigation hotkeys)
+; Shift + O : Subject / Title (same as Message window +Y)
++O:: {
+    if FocusOutlookField({ AutomationId: "4101" }) ; Subject
+        return
+    if FocusOutlookField({ Name: "Subject", ControlType: "Edit" })
+        return
+}
+
+; Shift + P : Required / To (same as Message window +U)
++P:: {
+    if FocusOutlookField({ AutomationId: "4109" }) ; Required
+        return
+    if FocusOutlookField({ Name: "Required", ControlType: "Edit" })
+        return
+    if FocusOutlookField({ AutomationId: "4117" }) ; To
+        return
+    if FocusOutlookField({ Name: "To", ControlType: "Edit" })
+        return
+}
+
+; Shift + M : Subject -> Body (same as Message window +M)
++M:: {
+    if FocusOutlookField({ AutomationId: "4101" }) {
+        Sleep 50
+        Send "{Tab}"
+        return
+    }
+    if FocusOutlookField({ Name: "Subject", ControlType: "Edit" }) {
+        Sleep 50
+        Send "{Tab}"
+        return
+    }
+}
 
 ; Shift + I : Go to Inbox
 +I::
