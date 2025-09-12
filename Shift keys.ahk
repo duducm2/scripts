@@ -249,10 +249,10 @@ cheatSheets["OUTLOOK.EXE"] := "
 Outlook
 [Shift+Y] > Send to General
 [Shift+U] > Send to Newsletter
+[Shift+I] > Go to Inbox
 [Shift+O] > Subject / Title
 [Shift+P] > Required / To
 [Shift+M] > Subject -> Body
-[Shift+I] > Go to Inbox
 [Shift+N] > Focused / Other
 )"  ; end Outlook
 
