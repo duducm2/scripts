@@ -1669,6 +1669,8 @@ IsTeamsChatActive() {
         btn := root.FindFirst({ AutomationId: "chat-button" })
         if !btn
             btn := root.FindFirst({ Name: "Chat", ControlType: "Button" })
+        if !btn
+            btn := root.FindFirst({ Name: "Bate-papo", ControlType: "Button" })
 
         if btn
             btn.Click()
@@ -1755,6 +1757,12 @@ IsTeamsChatActive() {
             } catch {
             }
         }
+        if !btn {
+            try {
+                btn := root.FindFirst({ Name: "React", ControlType: "Button" })
+            } catch {
+            }
+        }
 
         if btn
             btn.Click()
@@ -1775,14 +1783,24 @@ IsTeamsChatActive() {
         ; Find the "Join now" button by AutomationId first
         btn := root.FindFirst({ AutomationId: "prejoin-join-button" })
 
-        ; Fallback: try finding by name
+        ; Fallback: try finding by name (Portuguese)
         if !btn {
             btn := root.FindFirst({ Name: "Ingressar agora Com a cÃ¢mera ligada e Microfone ligado", ControlType: "Button" })
         }
 
-        ; Fallback: try finding by partial name (in case the name varies)
+        ; Fallback: try finding by name (English)
+        if !btn {
+            btn := root.FindFirst({ Name: "Join now with camera and microphone on", ControlType: "Button" })
+        }
+
+        ; Fallback: try finding by partial name (Portuguese)
         if !btn {
             btn := root.FindFirst({ Name: "Ingressar agora", ControlType: "Button" })
+        }
+
+        ; Fallback: try finding by partial name (English)
+        if !btn {
+            btn := root.FindFirst({ Name: "Join now", ControlType: "Button" })
         }
 
         if btn {
@@ -1804,15 +1822,26 @@ IsTeamsChatActive() {
         ; Find the audio settings button by AutomationId first
         btn := root.FindFirst({ AutomationId: "prejoin-audiosettings-button" })
 
-        ; Fallback: try finding by name
+        ; Fallback: try finding by name (Portuguese)
         if !btn {
             btn := root.FindFirst({ Name: "Microfone do computador e controles do alto-falante ConfiguraÃ§Ãµes de Ã¡udio",
                 ControlType: "Button" })
         }
 
-        ; Fallback: try finding by partial name
+        ; Fallback: try finding by name (English)
+        if !btn {
+            btn := root.FindFirst({ Name: "Computer microphone and speaker controls Audio settings",
+                ControlType: "Button" })
+        }
+
+        ; Fallback: try finding by partial name (Portuguese)
         if !btn {
             btn := root.FindFirst({ Name: "ConfiguraÃ§Ãµes de Ã¡udio", ControlType: "Button" })
+        }
+
+        ; Fallback: try finding by partial name (English)
+        if !btn {
+            btn := root.FindFirst({ Name: "Audio settings", ControlType: "Button" })
         }
 
         if btn {

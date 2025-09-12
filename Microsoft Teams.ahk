@@ -142,11 +142,11 @@ ActivateTeamsMeetingWindow() {
         allTitles .= "  → FAILED: Taskbar activation failed`n"
     }
     
-    ; Show comprehensive debug info
+    ; Show error as banner overlay
     debugMsg := foundMeetingWindow ? 
-        "Janela de reunião encontrada mas não foi possível ativar." : 
-        "Nenhuma janela de reunião encontrada."
-    MsgBox debugMsg . "`n`nDetalhes:`n" . allTitles, "Microsoft Teams Debug", "Iconi"
+        "MEETING WINDOW FOUND BUT COULD NOT ACTIVATE" : 
+        "NO MEETING WINDOW FOUND"
+    ShowCenteredOverlay(WinGetID("A"), debugMsg, 3000)
     return false
 }
 
@@ -391,9 +391,9 @@ GetCameraState(hwndTeams, maxRetries := 3) {
         return
     }
     
-    ; On failure, show an error and do not beep
+    ; On failure, show an error banner and do not beep
     WinActivate(prev)
-    MsgBox "Não foi possível confirmar o estado do microfone (mute/unmute).", "Microsoft Teams", "Iconx"
+    ShowCenteredOverlay(prev, "MICROPHONE STATE UNKNOWN", 3000)
 }
 
 ; =============================================================================
@@ -435,7 +435,7 @@ GetCameraState(hwndTeams, maxRetries := 3) {
         return
     }
 
-    MsgBox "Não foi possível confirmar o estado da câmera (on/off).", "Microsoft Teams", "Iconx"
+    ShowCenteredOverlay(prev, "CAMERA STATE UNKNOWN", 3000)
 }
 
 
@@ -521,7 +521,7 @@ RunTeams() {
 ; =============================================================================
 #!+3:: {
     if !ActivateTeamsMeetingWindow()
-        MsgBox "Não foi possível encontrar uma janela de reunião ativa.", "Microsoft Teams", "Iconi"
+        ShowCenteredOverlay(WinGetID("A"), "NO ACTIVE MEETING WINDOW", 3000)
 }
 
 ; =============================================================================
@@ -559,7 +559,7 @@ RunTeams() {
         if A_Index = 5 {
             ; Restore clipboard and show error if we couldn't set it correctly
             A_Clipboard := ClipboardOld
-            MsgBox("Failed to set clipboard with contact name. Please try again.", "Clipboard Error", "Iconx")
+            ShowCenteredOverlay(WinGetID("A"), "CLIPBOARD ERROR - TRY AGAIN", 3000)
             return
         }
         Sleep 100
