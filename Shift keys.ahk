@@ -52,19 +52,19 @@ PadShortcut(shortcut, targetWidth := 24) {
             ; Calculate left and right padding for centering
             leftPadding := Floor(padding / 2)
             rightPadding := padding - leftPadding
-            
+
             ; Create left padding string
             leftPaddingStr := ""
-            Loop leftPadding {
+            loop leftPadding {
                 leftPaddingStr .= " "
             }
-            
+
             ; Create right padding string
             rightPaddingStr := ""
-            Loop rightPadding {
+            loop rightPadding {
                 rightPaddingStr .= " "
             }
-            
+
             ; Center the content within the brackets
             return "[" . leftPaddingStr . content . rightPaddingStr . "]"
         }
@@ -77,14 +77,14 @@ ProcessCheatSheetText(text) {
     ; Split into lines
     lines := StrSplit(text, "`n")
     processedLines := []
-    
+
     for line in lines {
         ; Check if line contains a shortcut pattern
         if RegExMatch(line, "(\[.*?\])", &match) {
             ; Replace the shortcut with padded version
             paddedShortcut := PadShortcut(match[1])
             processedLine := StrReplace(line, match[1], paddedShortcut)
-            
+
             ; Check if this is a built-in shortcut (contains common built-in patterns)
             if (IsBuiltInShortcut(match[1])) {
                 ; Add visual distinction for built-in shortcuts with dashes and brackets
@@ -93,13 +93,13 @@ ProcessCheatSheetText(text) {
                 ; Add visual distinction for custom shortcuts
                 processedLine := ">>> " . processedLine
             }
-            
+
             processedLines.Push(processedLine)
         } else {
             processedLines.Push(line)
         }
     }
-    
+
     ; Join lines back together manually
     result := ""
     for i, line in processedLines {
@@ -109,17 +109,17 @@ ProcessCheatSheetText(text) {
             result := result . "`n" . line
         }
     }
-    
+
     ; Add legend at the top if there are shortcuts
     if (InStr(result, ">>>") || InStr(result, "---")) {
         separator := ""
-        Loop 50 {
+        loop 50 {
             separator .= "="
         }
         legend := ">>> Custom shortcuts  |  --- Built-in shortcuts`n" . separator . "`n`n"
         result := legend . result
     }
-    
+
     return result
 }
 
@@ -127,7 +127,7 @@ ProcessCheatSheetText(text) {
 IsBuiltInShortcut(shortcut) {
     ; Remove brackets for easier matching
     content := RegExReplace(shortcut, "\[|\]", "")
-    
+
     ; Common built-in shortcut patterns
     builtInPatterns := [
         "Ctrl \+ [A-Z]",           ; Ctrl + Letter
@@ -172,14 +172,14 @@ IsBuiltInShortcut(shortcut) {
         "PageDown",                ; PageDown key
         "↑|↓|←|→"                  ; Arrow keys
     ]
-    
+
     ; Check against built-in patterns
     for pattern in builtInPatterns {
         if RegExMatch(content, "i)^" . pattern . "$") {
             return true
         }
     }
-    
+
     return false
 }
 
@@ -994,7 +994,8 @@ ToggleShortcutHelp() {
         g_helpGui.BackColor := "000000"
         g_helpGui.SetFont("s12 cFFFF00", "Consolas")
         ; Enable vertical scroll so oversized cheat sheets remain usable
-        cheatCtrl := g_helpGui.Add("Edit", "ReadOnly +Multi -E0x200 +VScroll -HScroll -Border Background000000 w1000 r1"
+        cheatCtrl := g_helpGui.Add("Edit",
+            "ReadOnly +Multi -E0x200 +VScroll -HScroll -Border Background000000 w1000 r1"
         )
 
         ; Esc also hides  ; (disabled â€“ use Win+Alt+Shift+A to hide)
@@ -1044,7 +1045,6 @@ ShowGlobalShortcutsHelp() {
     globalText := "
 (
 === AVAILABLE (unused) ===
-[Win+Alt+Shift+C] > Available
 [Win+Alt+Shift+1] > Available
 
 === ONENOTE ===
@@ -1076,6 +1076,7 @@ ShowGlobalShortcutsHelp() {
 
 === CURSOR ===
 [Win+Alt+Shift+,] > Opens or activates Cursor
+[Win+Alt+Shift+C] > Activates Cursor and sends Shift+J, Ctrl+I, Shift+Backspace sequence
 
 === OUTLOOK ===
 [Win+Alt+Shift+B] > Open mail
@@ -1221,7 +1222,7 @@ CenterGuiOnActiveMonitor(guiObj) {
             winTop := NumGet(rect, 4, "int")
             winRight := NumGet(rect, 8, "int")
             winBottom := NumGet(rect, 12, "int")
-            
+
             cx := winLeft + (winRight - winLeft) // 2
             cy := winTop + (winBottom - winTop) // 2
 
@@ -1241,11 +1242,11 @@ CenterGuiOnActiveMonitor(guiObj) {
     ; Calculate center position with bounds checking
     guiX := wx + (ww - guiW) / 2
     guiY := wy + (wh - guiH) / 2
-    
+
     ; Ensure the GUI stays within monitor bounds
     guiX := Max(wx, Min(guiX, wx + ww - guiW))
     guiY := Max(wy, Min(guiY, wy + wh - guiH))
-    
+
     ; Ensure minimum position (avoid negative coordinates)
     guiX := Max(0, guiX)
     guiY := Max(0, guiY)

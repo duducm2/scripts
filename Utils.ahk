@@ -33,6 +33,37 @@
 }
 
 ; =============================================================================
+; Activate Cursor and Send Key Sequence
+; Hotkey: Win+Alt+Shift+C
+; =============================================================================
+#!+C::
+{
+    ; First activate Cursor
+    SetTitleMatchMode 2
+    if WinExist("ahk_exe Cursor.exe") {
+        WinActivate
+        ; Wait for Cursor to be active
+        WinWaitActive("ahk_exe Cursor.exe", "", 2)
+    } else {
+        ; Launch Cursor if not running
+        target := IS_WORK_ENVIRONMENT ? "C:\\Users\\fie7ca\\AppData\\Local\\Programs\\cursor\\Cursor.exe" :
+            "C:\\Users\\eduev\\AppData\\Local\\Programs\\cursor\\Cursor.exe"
+        Run target
+        WinWaitActive("ahk_exe Cursor.exe", "", 10)
+    }
+
+    ; Small delay to ensure Cursor is ready
+    Sleep 200
+
+    ; Send the key sequence with small delays between each
+    Send "^+e"   ; Press Ctrl+Shift+E
+    Sleep 100
+    Send "^i"        ; Ctrl+I
+    Sleep 100
+    Send "+{Backspace}"  ; Shift+Backspace
+}
+
+; =============================================================================
 ; Activate Hunt and Peck
 ; Hotkey: Win+Alt+Shift+X
 ; Original File: Hunt and Peck.ahk
