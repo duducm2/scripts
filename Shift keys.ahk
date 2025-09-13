@@ -1121,7 +1121,7 @@ ShowGlobalShortcutsHelp() {
             "+AlwaysOnTop -Caption +ToolWindow +Border +Owner +LastFound"
         )
         g_globalGui.BackColor := "000000"
-        g_globalGui.SetFont("s10 cFFFF00", "Consolas")  ; Smaller font for more content
+        g_globalGui.SetFont("s10 c00BFFF", "Consolas")  ; Smaller font for more content, blue color to distinguish from specific shortcuts
         globalCtrl := g_globalGui.Add("Edit", "ReadOnly +Multi +VScroll -HScroll -Border Background000000 w1000 h540")
 
         ; Esc also hides  ; (disabled â€“ use Win+Alt+Shift+A to hide)
