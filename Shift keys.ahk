@@ -3818,7 +3818,7 @@ SwitchAIModel() {
                 SendText "auto"
                 Sleep 500
                 Send "{Enter}"
-                Sleep 100
+                Sleep 300
                 Send "{Escape}"
             }
             case "2":
