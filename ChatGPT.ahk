@@ -489,19 +489,21 @@ CopyLastPrompt() {
         return
     }
 
-    Sleep(IS_WORK_ENVIRONMENT ? 150 : 300)
+    ; Sleep(IS_WORK_ENVIRONMENT ? 150 : 300)
 
-    Send("{Escape}") ;
+    ; Send("{Escape}") ;
 
-    Sleep(IS_WORK_ENVIRONMENT ? 25 : 50)
+    ; Sleep(IS_WORK_ENVIRONMENT ? 25 : 50)
 
-    Send("{Media_Play_Pause}")
+    ; Send("{Media_Play_Pause}")
 
-    Sleep(IS_WORK_ENVIRONMENT ? 25 : 50)
+    ; Sleep(IS_WORK_ENVIRONMENT ? 25 : 50)
+
+    Sleep(150)
 
     Send("!{Tab}") ; Send Shift+Tab to move focus backward
 
-    Sleep(IS_WORK_ENVIRONMENT ? 150 : 300)
+    Sleep(IS_WORK_ENVIRONMENT ? 150 : 150)
 
     ; Show banner if copied successfully (stay in ChatGPT)
     if (isCopied) {
