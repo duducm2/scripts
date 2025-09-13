@@ -423,17 +423,7 @@ GetChatGPTWindowHwnd() {
         return
     }
 
-    ; Sleep(IS_WORK_ENVIRONMENT ? 150 : 300)
-
-    ; Send("{Escape}") ;
-
-    ; Sleep(IS_WORK_ENVIRONMENT ? 25 : 50)
-
-    ; Send("{Media_Play_Pause}")
-
-    ; Sleep(IS_WORK_ENVIRONMENT ? 25 : 50)
-
-    Sleep(150)
+    Sleep(500)
 
     Send("!{Tab}") ; Send Shift+Tab to move focus backward
 
