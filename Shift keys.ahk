@@ -1076,7 +1076,7 @@ ShowGlobalShortcutsHelp() {
 
 === CURSOR ===
 [Win+Alt+Shift+,] > Opens or activates Cursor
-[Win+Alt+Shift+C] > Activates Cursor and sends Shift+J, Ctrl+I, Shift+Backspace sequence
+[Win+Alt+Shift+C] > Activates Cursor with action options: 1) Proceed with terminal 2) Hit Enter 3) Allow
 
 === OUTLOOK ===
 [Win+Alt+Shift+B] > Open mail

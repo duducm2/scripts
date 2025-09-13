@@ -33,34 +33,81 @@
 }
 
 ; =============================================================================
-; Activate Cursor and Send Key Sequence
+; Activate Cursor and Send Key Sequence with Options
 ; Hotkey: Win+Alt+Shift+C
 ; =============================================================================
+
+; Function to activate Cursor and send key sequence based on user choice
+CursorKeySequence() {
+    try {
+        ; Get user input for action choice
+        userChoice := InputBox(
+            "Choose Action:`n`n1. Proceed with terminal`n2. Hit Enter`n3. Allow`n`nEnter choice (1-3):",
+            "Cursor Action Selection", "w250 h180")
+        if userChoice.Result != "OK"
+            return
+
+        ; First activate Cursor
+        SetTitleMatchMode 2
+        if WinExist("ahk_exe Cursor.exe") {
+            WinActivate
+            ; Wait for Cursor to be active
+            WinWaitActive("ahk_exe Cursor.exe", "", 2)
+        } else {
+            ; Launch Cursor if not running
+            target := IS_WORK_ENVIRONMENT ? "C:\\Users\\fie7ca\\AppData\\Local\\Programs\\cursor\\Cursor.exe" :
+                "C:\\Users\\eduev\\AppData\\Local\\Programs\\cursor\\Cursor.exe"
+            Run target
+            WinWaitActive("ahk_exe Cursor.exe", "", 10)
+        }
+
+        ; Small delay to ensure Cursor is ready
+        Sleep 200
+
+        ; Send the key sequence based on user choice
+        switch userChoice.Value {
+            case "1":
+            {
+                ; Option 1: Proceed with terminal (original sequence)
+                Send "^+e"   ; Press Ctrl+Shift+E
+                Sleep 100
+                Send "^i"    ; Ctrl+I
+                Sleep 100
+                Send "+{Backspace}"  ; Shift+Backspace
+            }
+            case "2":
+            {
+                ; Option 2: Hit Enter (modified sequence)
+                Send "^+e"   ; Press Ctrl+Shift+E
+                Sleep 100
+                Send "^i"    ; Ctrl+I
+                Sleep 100
+                Send "{Enter}"  ; Enter instead of Shift+Backspace
+            }
+            case "3":
+            {
+                ; Option 3: Allow (basic sequence + up arrows + enter)
+                Send "^+e"   ; Press Ctrl+Shift+E
+                Sleep 100
+                Send "^i"    ; Ctrl+I
+                Sleep 100
+                Send "{Up}"  ; up arrow
+                Sleep 100
+                Send "{Enter}"  ; Enter
+            }
+            default:
+                MsgBox "Invalid selection. Please choose 1-3.", "Cursor Action Selection", "IconX"
+                return
+        }
+
+    } catch Error as e {
+        MsgBox "Error executing Cursor action: " e.Message, "Cursor Action Error", "IconX"
+    }
+}
+
 #!+C::
 {
-    ; First activate Cursor
-    SetTitleMatchMode 2
-    if WinExist("ahk_exe Cursor.exe") {
-        WinActivate
-        ; Wait for Cursor to be active
-        WinWaitActive("ahk_exe Cursor.exe", "", 2)
-    } else {
-        ; Launch Cursor if not running
-        target := IS_WORK_ENVIRONMENT ? "C:\\Users\\fie7ca\\AppData\\Local\\Programs\\cursor\\Cursor.exe" :
-            "C:\\Users\\eduev\\AppData\\Local\\Programs\\cursor\\Cursor.exe"
-        Run target
-        WinWaitActive("ahk_exe Cursor.exe", "", 10)
-    }
-
-    ; Small delay to ensure Cursor is ready
-    Sleep 200
-
-    ; Send the key sequence with small delays between each
-    Send "^+e"   ; Press Ctrl+Shift+E
-    Sleep 100
-    Send "^i"        ; Ctrl+I
-    Sleep 100
-    Send "+{Backspace}"  ; Shift+Backspace
+    CursorKeySequence()
 }
 
 ; =============================================================================
