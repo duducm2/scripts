@@ -453,9 +453,9 @@ GetVisibleWindowsOnMonitor(mon) {
     ; Enumerate all windows – WinGetList() returns them in top-to-bottom z-order
     hwnds := WinGetList()
 
-    GWL_EXSTYLE      := -20
+    GWL_EXSTYLE := -20
     WS_EX_TOOLWINDOW := 0x00000080
-    TOL              := 40  ; tolerance when deciding if two windows share a “row”
+    TOL := 40  ; tolerance when deciding if two windows share a “row”
 
     visible := []      ; windows that remain at least PARTIALLY visible
 
@@ -486,9 +486,9 @@ GetVisibleWindowsOnMonitor(mon) {
             if !DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)
                 continue
 
-            left   := NumGet(rect, 0, "int")
-            top    := NumGet(rect, 4, "int")
-            right  := NumGet(rect, 8, "int")
+            left := NumGet(rect, 0, "int")
+            top := NumGet(rect, 4, "int")
+            right := NumGet(rect, 8, "int")
             bottom := NumGet(rect, 12, "int")
 
             ; --- visibility heuristic -------------------------------------
@@ -498,7 +498,7 @@ GetVisibleWindowsOnMonitor(mon) {
             covered := false
             for win in visible {
                 if (centerX >= win.left && centerX <= win.right
-                 && centerY >= win.top  && centerY <= win.bottom) {
+                    && centerY >= win.top && centerY <= win.bottom) {
                     covered := true
                     break
                 }
@@ -508,7 +508,7 @@ GetVisibleWindowsOnMonitor(mon) {
 
             ; Otherwise, accept it as visible
             visible.Push({ hwnd: hwnd, left: left, top: top, right: right,
-                            bottom: bottom, z: zIdx })
+                bottom: bottom, z: zIdx })
         } catch {
             continue                ; ignore windows that throw on inspection
         }
@@ -525,8 +525,8 @@ GetVisibleWindowsOnMonitor(mon) {
                 j := A_Index
                 rowDiff := visible[j].top - visible[j + 1].top
                 if (rowDiff > TOL)                         ; lower row → move down
-                 || (Abs(rowDiff) <= TOL                  ; same “row”
-                     && visible[j].left > visible[j + 1].left) {
+                || (Abs(rowDiff) <= TOL                  ; same “row”
+                && visible[j].left > visible[j + 1].left) {
                     temp := visible[j]
                     visible[j] := visible[j + 1]
                     visible[j + 1] := temp

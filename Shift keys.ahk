@@ -1048,6 +1048,7 @@ ShowGlobalShortcutsHelp() {
 [Win+Alt+Shift+1] 
 [Win+Alt+Shift+P] 
 [Win+Alt+Shift+U]
+[Win+Alt+Shift+.]
 
 === ONENOTE ===
 [Win+Alt+Shift+N] > Opens or activates OneNote
@@ -1102,9 +1103,7 @@ ShowGlobalShortcutsHelp() {
 === GENERAL ===
 [Win+Alt+Shift+Q] > Jump mouse on the middle
 [Win+Alt+Shift+X] > Activate hunt and Peck
-[Win+Alt+Shift+.] > Set microphone volume to 100
 [Win+Alt+Shift+9] > Pomodoro
-
 
 === SHORTCUTS ===
 [Win+Alt+Shift+A] > Show app-specific shortcuts (quick press)
