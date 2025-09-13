@@ -1045,7 +1045,8 @@ ShowGlobalShortcutsHelp() {
     globalText := "
 (
 === AVAILABLE (unused) ===
-[Win+Alt+Shift+1] > Available
+[Win+Alt+Shift+1] 
+[Win+Alt+Shift+P] 
 
 === ONENOTE ===
 [Win+Alt+Shift+N] > Opens or activates OneNote
@@ -1057,7 +1058,6 @@ ShowGlobalShortcutsHelp() {
 [Win+Alt+Shift+8] > Get word pronunciation, definition, and Portuguese translation
 [Win+Alt+Shift+0] > Speak with ChatGPT
 [Win+Alt+Shift+7] > Speak with ChatGPT (send message automatically)
-[Win+Alt+Shift+P] > Copy last ChatGPT prompt
 [Win+Alt+Shift+J] > Copy last ChatGPT message (in the editing box)
 [Win+Alt+Shift+U] > Activate ChatGPT and copy last code block
 [Win+Alt+Shift+O] > Check grammar and improve text in both English and Portuguese
