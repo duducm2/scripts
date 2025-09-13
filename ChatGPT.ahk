@@ -863,36 +863,6 @@ WaitForButtonAndShowSmallLoading(buttonNames, stateText := "Loading…", timeout
 }
 
 ; =============================================================================
-; Copy Last Code
-; Hotkey: Win+Alt+Shift+U
-; =============================================================================
-#!+u::
-{
-    SetTitleMatchMode(2)
-    A_Clipboard := "" ; Empty clipboard to check for new content later
-
-    if hwnd := GetChatGPTWindowHwnd() {
-        WinActivate("ahk_id " hwnd)
-        if WinWaitActive("ahk_id " hwnd, , 2)
-            CenterMouse()
-    } else {
-        Run "chrome.exe --new-window https://chatgpt.com/"
-        if !WinWaitActive("ahk_exe chrome.exe", , 3)
-            return
-        CenterMouse()
-    }
-    Sleep (IS_WORK_ENVIRONMENT ? 150 : 300)
-    Send("^+;")
-
-    Send("!{Tab}") ; Switch back to the previous window
-    Sleep(IS_WORK_ENVIRONMENT ? 150 : 300) ; Wait for the window switch
-
-    if ClipWait(1) {
-        ShowNotification("Last code block copied!")
-    }
-}
-
-; =============================================================================
 ; Helper function to center mouse on the active window
 ; =============================================================================
 CenterMouse() {
