@@ -4004,20 +4004,66 @@ SwitchAIModel() {
 ; Shift + T : Toggle play/pause
 +t::
 {
-    ; Simple approach: try to find Play button, if not found just send media key
     try {
         spot := UIA_Browser("ahk_exe Spotify.exe")
         Sleep 300
-        playBtn := spot.FindElement({ Name: "Play", Type: "Button" })
-        if (playBtn) {
-            playBtn.Click()
-            return
-        }
-    }
 
-    ; If we get here, either Play button wasn't found or there was an error
-    ; In either case, just send media key to toggle play/pause
-    Send "{Media_Play_Pause}"
+        ; First, find the Spotify element by name and type (Link)
+        spotifyElement := spot.FindElement({ Name: "Spotify", Type: "Link" })
+        if (!spotifyElement) {
+            ; Try alternative names in case of localization
+            spotifyElement := spot.FindElement({ Name: "Spotify", Type: 50005 })
+        }
+
+        if (spotifyElement) {
+            ; Select the Spotify element to focus it (without clicking)
+            spotifyElement.Select()
+            Sleep(300)
+
+            ; Tab through elements until we find a button with "play" in its name
+            maxTabs := 3  ; Only try 3 tabs, then fall back to media key
+            foundButton := false
+
+            loop maxTabs {
+                ; Check if current focused element has "play" in its name
+                try {
+                    focusedElement := UIA.GetFocusedElement()
+                    if (focusedElement) {
+                        elementName := focusedElement.Name
+                        if (InStr(elementName, "play") || InStr(elementName, "tocar")) {
+                            foundButton := true
+                            break
+                        }
+                    }
+                } catch {
+                    ; Continue if UIA check fails
+                }
+
+                ; Tab to next element
+                Send("{Tab}")
+                Sleep(50)
+            }
+
+            ; If we found the button, press Enter to activate it
+            if (foundButton) {
+                Send("{Enter}")
+                Sleep(50)
+                return
+            } else {
+                ; If we didn't find the play button after 3 tabs, just send media pause
+                Send("{Media_Play_Pause}")
+                return
+            }
+        }
+
+        ; If we get here, either Spotify element wasn't found or play button wasn't found
+        ; Fall back to media key
+        Send "{Media_Play_Pause}"
+
+    } catch Error as e {
+        ; If there's any error, fall back to media key
+        Send "{Media_Play_Pause}"
+    }
 }
 
 #HotIf
