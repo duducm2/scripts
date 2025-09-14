@@ -330,11 +330,15 @@ GetChatGPTWindowHwnd() {
 
     try {
         cUIA := UIA_Browser()
-        Sleep (IS_WORK_ENVIRONMENT ? 150 : 300)
+        Sleep(150)
     } catch {
         ShowNotification("Unable to connect to browser", 1500, "DF2935", "FFFFFF")
         return
     }
+
+    ; Go to the end of the thread
+    Send("^{End}")
+    Sleep(150)
 
     ; Name sets (case-insensitive)
     moreNames := ["More actions", "More options", "Mais ações", "Mais opções"]
@@ -371,7 +375,7 @@ GetChatGPTWindowHwnd() {
         ; Click the last Copy button to copy latest assistant message
         try {
             lastCopy.ScrollIntoView()
-            Sleep (IS_WORK_ENVIRONMENT ? 50 : 100)
+            Sleep(50)
             A_Clipboard := ""
             SafeClick(lastCopy)
             if ClipWait(1)
@@ -381,7 +385,7 @@ GetChatGPTWindowHwnd() {
         }
     }
 
-    Sleep(IS_WORK_ENVIRONMENT ? 150 : 300)
+    Sleep(150)
 
     ; Find and click More actions
     moreBtns := []
@@ -398,7 +402,7 @@ GetChatGPTWindowHwnd() {
     try {
         btn := moreBtns[moreBtns.Length]
         btn.ScrollIntoView()
-        Sleep (IS_WORK_ENVIRONMENT ? 40 : 80)
+        Sleep(40)
         SafeClick(btn)
     } catch {
         ShowNotification("More btns not found", 1500, "3772FF", "FFFFFF")
@@ -406,7 +410,7 @@ GetChatGPTWindowHwnd() {
     }
 
     ; From the opened menu, click Read aloud
-    Sleep (IS_WORK_ENVIRONMENT ? 60 : 120)
+    Sleep(60)
     readItems := CollectPreferExact(cUIA, readNames)
     if !(readItems.Length) {
         ShowNotification("Read Aloud not found", 1500, "3772FF", "FFFFFF")
@@ -416,18 +420,18 @@ GetChatGPTWindowHwnd() {
     try {
         readItem := readItems[readItems.Length]
         readItem.ScrollIntoView()
-        Sleep (IS_WORK_ENVIRONMENT ? 30 : 60)
+        Sleep(30)
         SafeClick(readItem)
     } catch {
         ShowNotification("Read Aloud not found", 1500, "3772FF", "FFFFFF")
         return
     }
 
-    Sleep(500)
+    Sleep(700)
 
     Send("!{Tab}") ; Send Shift+Tab to move focus backward
 
-    Sleep(IS_WORK_ENVIRONMENT ? 150 : 150)
+    Sleep(150)
 
     ; Show banner if copied successfully (stay in ChatGPT)
     if (isCopied) {
