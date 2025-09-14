@@ -3391,6 +3391,10 @@ FoldAllGitDirectoriesInCursor() {
             return
         root := UIA.ElementFromHandle(hwnd)
 
+        Sleep(150)
+        Send("^+g")
+        Sleep(350)
+
         ; Narrow to the Source Control (SCM) tree area to avoid unrelated matches
         scmCond := UIA.CreatePropertyConditionEx(UIA.Property.Name, "Source Control", UIA.PropertyConditionFlags.IgnoreCaseMatchSubstring
         )
@@ -4125,8 +4129,7 @@ SwitchAIModel() {
             Sleep(300)
 
             ; Tab through elements until we find a button with "play" in its name
-
-            maxTabs := 20 ; Try more tabs to find the play button
+            maxTabs := 6 ; Try 6 tabs to find the play button
             foundButton := false
 
             loop maxTabs {
@@ -4156,7 +4159,7 @@ SwitchAIModel() {
 
                 ; Tab to next element
                 Send("{Tab}")
-                Sleep(100)  ; Increased sleep to ensure proper tabbing
+                Sleep(20)  ; Increased sleep to ensure proper tabbing
             }
 
             ; If we found the button, press Enter to activate it
