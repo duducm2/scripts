@@ -4004,24 +4004,129 @@ SwitchAIModel() {
 ; Shift + T : Toggle play/pause
 +t::
 {
+
     try {
         spot := UIA_Browser("ahk_exe Spotify.exe")
         Sleep 300
 
-        ; First, find the Spotify element by name and type (Link)
-        spotifyElement := spot.FindElement({ Name: "Spotify", Type: "Link" })
-        if (!spotifyElement) {
-            ; Try alternative names in case of localization
-            spotifyElement := spot.FindElement({ Name: "Spotify", Type: 50005 })
+        ; Check if we can connect to Spotify
+        if (!spot) {
+            Send "{Media_Play_Pause}"
+            return
         }
 
-        if (spotifyElement) {
-            ; Select the Spotify element to focus it (without clicking)
-            spotifyElement.Select()
+        ; =============================================================================
+        ; ANCHOR SECTION - Try to find any suitable anchor element to start navigation
+        ; =============================================================================
+
+        ; Anchor 1: Try to find the Spotify element by name and type (Link)
+        try {
+            anchorElement := spot.FindElement({ Name: "Spotify", Type: "Link" })
+        } catch {
+            anchorElement := ""
+        }
+        if (!anchorElement) {
+            try {
+                anchorElement := spot.FindElement({ Name: "Spotify", Type: 50005 })
+            } catch {
+                anchorElement := ""
+            }
+        }
+
+        ; Anchor 4: Try to find "Enter Full screen" button
+        if (!anchorElement) {
+            try {
+                anchorElement := spot.FindElement({ Name: "Enter Full screen", Type: "Button" })
+            } catch {
+                anchorElement := ""
+            }
+            if (!anchorElement) {
+                try {
+                    anchorElement := spot.FindElement({ Name: "Enter Full screen", Type: 50000 })
+                } catch {
+                    anchorElement := ""
+                }
+            }
+            ; Also try Portuguese variations
+            if (!anchorElement) {
+                fullscreenNames := ["Entrar em tela cheia", "Tela cheia", "Full screen", "Fullscreen"]
+                for name in fullscreenNames {
+                    try {
+                        anchorElement := spot.FindElement({ Name: name, Type: "Button" })
+                    } catch {
+                        anchorElement := ""
+                    }
+                    if (!anchorElement) {
+                        try {
+                            anchorElement := spot.FindElement({ Name: name, Type: 50000 })
+                        } catch {
+                            anchorElement := ""
+                        }
+                    }
+                    if (anchorElement) {
+                        break
+                    }
+                }
+            }
+        }
+
+        ; Anchor 5: Last resort - try to find ANY element we can use as a starting point
+        if (!anchorElement) {
+            ; Try to find any button first
+            try {
+                buttons := spot.FindAll({ Type: "Button" })
+                if (buttons.Length > 0) {
+                    anchorElement := buttons[1]
+                }
+            } catch {
+                ; Continue if this fails
+            }
+
+            if (!anchorElement) {
+                ; Try to find any text element
+                try {
+                    texts := spot.FindAll({ Type: "Text" })
+                    if (texts.Length > 0) {
+                        anchorElement := texts[1]
+                    }
+                } catch {
+                    ; Continue if this fails
+                }
+            }
+
+            if (!anchorElement) {
+                ; Try to find ANY element at all
+                try {
+                    allElements := spot.FindAll({})
+                    if (allElements.Length > 0) {
+                        anchorElement := allElements[1]
+                    }
+                } catch {
+                    ; Continue if this fails
+                }
+            }
+        }
+
+        ; Final fallback: If we still don't have an anchor, just use the first element we found
+        if (!anchorElement) {
+            try {
+                allElements := spot.FindAll({})
+                if (allElements.Length > 0) {
+                    anchorElement := allElements[1]
+                }
+            } catch {
+                ; Continue if this fails
+            }
+        }
+
+        if (anchorElement) {
+            ; Use tab method to find the correct play button
+            anchorElement.Select()
             Sleep(300)
 
             ; Tab through elements until we find a button with "play" in its name
-            maxTabs := 3  ; Only try 3 tabs, then fall back to media key
+
+            maxTabs := 20 ; Try more tabs to find the play button
             foundButton := false
 
             loop maxTabs {
@@ -4030,7 +4135,17 @@ SwitchAIModel() {
                     focusedElement := UIA.GetFocusedElement()
                     if (focusedElement) {
                         elementName := focusedElement.Name
-                        if (InStr(elementName, "play") || InStr(elementName, "tocar")) {
+                        elementType := focusedElement.Type
+
+                        ; Look for the specific play button we want
+                        ; First priority: Look for the exact button "Play 01011001" with type 50000
+                        if (elementName == "Play 01011001" && elementType == 50000) {
+                            foundButton := true
+                            break
+                        }
+                        ; Second priority: Look for any play button with type 50000 (main play button)
+                        else if ((InStr(elementName, "play", false) || InStr(elementName, "tocar", false)) &&
+                        elementType == 50000) {
                             foundButton := true
                             break
                         }
@@ -4041,7 +4156,7 @@ SwitchAIModel() {
 
                 ; Tab to next element
                 Send("{Tab}")
-                Sleep(50)
+                Sleep(100)  ; Increased sleep to ensure proper tabbing
             }
 
             ; If we found the button, press Enter to activate it
