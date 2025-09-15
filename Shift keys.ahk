@@ -449,8 +449,8 @@ Cursor
 [Shift+.] > Extensions
 [Shift+W] > Switch brackets
 [Shift+E] > Search
-[Shift+R] > Emoji selector (1:🔲 2:⏳ 3:⚡ 4:2️⃣ 5:❓)
-[Shift+T] > Change ML model
+[Shift+R] > (empty)
+[Shift+T] > Emoji selector (1:🔲 2:⏳ 3:⚡ 4:2️⃣ 5:❓)
 [Shift+D] > Git section
 [Shift+F] > Close all editors
 [Shift+G] > Switch AI models (auto/CLAUD/GPT/O/DeepSeek/Cursor)
@@ -3318,8 +3318,8 @@ IsEditorActive() {
 ; Shift + E : Search
 +e:: Send "^+f"
 
-; Shift + R : Emoji selector
-+r::
+; Shift + T : Emoji selector
++t::
 {
     try {
         ; Show emoji selection dialog
@@ -3350,9 +3350,6 @@ IsEditorActive() {
         MsgBox "Error in emoji selector: " e.Message, "Emoji Selector Error", "IconX"
     }
 }
-
-; Shift + T : Trigger Ctrl+;
-+t:: Send "^;"
 
 ; Shift + D : Git section
 +d:: Send "^+g"
