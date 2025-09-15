@@ -1,7 +1,5 @@
 ## Scripts Toolkit (AutoHotkey v2)
 
-This folder contains AutoHotkey v2 scripts for daily workflows: global hotkeys, UI Automation (UIA) helpers, Spotify controls, Microsoft Teams helpers, and window management utilities.
-
 ### Philosophy
 
 - Keep hotkeys predictable and memorable
