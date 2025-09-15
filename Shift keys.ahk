@@ -449,7 +449,7 @@ Cursor
 [Shift+.] > Extensions
 [Shift+W] > Switch brackets
 [Shift+E] > Search
-[Shift+R] > Save all documents
+[Shift+R] > Emoji selector (1:🔲 2:⏳ 3:⚡ 4:2️⃣ 5:❓)
 [Shift+T] > Change ML model
 [Shift+D] > Git section
 [Shift+F] > Close all editors
@@ -467,7 +467,7 @@ Cursor
 [Ctrl + Alt + L] > Open markdown preview
 [Ctrl + Alt + N] > Open code actions
 [Ctrl + Alt + M] > Paste Image
-
+[Ctrl + Alt + Z] > Toggle Zen Mode
 
 --- Additional Shortcuts ---
 [Ctrl + T] > New chat tab
@@ -3318,11 +3318,37 @@ IsEditorActive() {
 ; Shift + E : Search
 +e:: Send "^+f"
 
-; Shift + R : Save all documents
+; Shift + R : Emoji selector
 +r::
 {
-    Send "^k"
-    Send "s"
+    try {
+        ; Show emoji selection dialog
+        userChoice := InputBox(
+            "Select emoji to insert:`n`n1. 🔲 Tasks/Checklist items`n2. ⏳ Time-sensitive tasks`n3. ⚡ First priority`n4. 2️⃣ Second priority`n5. ❓ Questions/Uncertain items`n`nEnter choice (1-5):",
+            "Emoji Selector", "w350 h200")
+
+        if userChoice.Result != "OK"
+            return
+
+        ; Map numbers to emojis
+        emojiMap := Map()
+        emojiMap[1] := "🔲"
+        emojiMap[2] := "⏳"
+        emojiMap[3] := "⚡"
+        emojiMap[4] := "2️⃣"
+        emojiMap[5] := "❓"
+
+        ; Convert to number and validate
+        choice := Integer(userChoice.Value)
+        if (choice >= 1 && choice <= 5) {
+            SendText(emojiMap[choice])
+        } else {
+            MsgBox "Invalid selection. Please choose 1-5.", "Emoji Selector", "IconX"
+        }
+
+    } catch Error as e {
+        MsgBox "Error in emoji selector: " e.Message, "Emoji Selector Error", "IconX"
+    }
 }
 
 ; Shift + T : Trigger Ctrl+;
@@ -3880,7 +3906,7 @@ SwitchAIModel() {
 
 ;-------------------------------------------------------------------
 ; Spotify Shortcuts
-;-------------------------------------------------------------------ww
+;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe Spotify.exe")
 
 ; Shift + Y : Toggle Connect panel
