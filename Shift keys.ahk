@@ -463,6 +463,8 @@ Cursor
 [Ctrl + Alt + O] > Unfold all directories
 [Ctrl + Alt + H] > Kill terminal  [custom: defined in Cursor settings.json]
 [Ctrl + Alt + L] > Open markdown preview
+[Ctrl + Alt + N] > Open code actions
+
 
 --- Additional Shortcuts ---
 [Ctrl + T] > New chat tab
@@ -3374,6 +3376,9 @@ IsEditorActive() {
 
 ; Ctrl + Alt + O : Unfold all directories in VS Code Explorer
 ^!o:: UnfoldAllDirectoriesInExplorer()
+
+; Ctrl + Alt + N : Open code actions
+^!n:: Send "^+o"
 
 ; Shift + N : Expand selection (via Command Palette)
 +n:: Send "+!{Right}"
