@@ -462,6 +462,7 @@ Cursor
 [Ctrl + Alt + I] > Fold all directories
 [Ctrl + Alt + O] > Unfold all directories
 [Ctrl + Alt + H] > Kill terminal  [custom: defined in Cursor settings.json]
+[Ctrl + Alt + K] > Go to Parent Fold
 [Ctrl + Alt + L] > Open markdown preview
 [Ctrl + Alt + N] > Open code actions
 
