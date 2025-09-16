@@ -454,7 +454,7 @@ Cursor
 [Shift+D] > Git section
 [Shift+F] > Close all editors
 [Shift+G] > Switch AI models (auto/CLAUD/GPT/O/DeepSeek/Cursor)
-[Shift+C] > Switch AI modes (agent/ask)
+[Shift+C] > Switch between AI modes (agent/ask)
 [Shift+V] > Fold Git repos (SCM)
 [Shift+B] > Create AI commit message, then select Commit or Commit and Push
 [Ctrl + Alt + Y] > Select to Bracket
@@ -3357,8 +3357,8 @@ IsEditorActive() {
 ; Shift + G : Switch between AI models
 +g:: SwitchAIModel()
 
-; Shift + C : Switch between AI modes (agent/ask)
-+c:: SwitchAIMode()
+; Shift + C : Ctrl + .
++c:: Send("^.")
 
 ; Shift + V : Fold all Git directories in Source Control (Cursor)
 +v:: FoldAllGitDirectoriesInCursor()
