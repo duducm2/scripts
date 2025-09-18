@@ -2200,9 +2200,7 @@ IsTeamsChatActive() {
     Sleep "100"
     Send("{AppsKey}")
     Sleep "100"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
+    Send "r"
     Send "{Enter}"
 }
 
