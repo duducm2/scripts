@@ -468,6 +468,7 @@ Cursor
 [Ctrl + Alt + N] > Open code actions
 [Ctrl + Alt + M] > Paste Image
 [Ctrl + Alt + Z] > Toggle Zen Mode
+[Ctrl + Alt + T] > Move editor group into new window
 
 --- Additional Shortcuts ---
 [Ctrl + T] > New chat tab
