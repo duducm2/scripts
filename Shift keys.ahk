@@ -252,6 +252,8 @@ Outlook
 [Shift+I] > Go to Inbox
 [Shift+O] > Subject / Title
 [Shift+P] > Required / To
+[Shift+K] > Send Shift+F6
+[Shift+L] > Send F6
 [Shift+M] > Subject -> Body
 [Shift+N] > Focused / Other
 )"  ; end Outlook
@@ -2548,6 +2550,12 @@ SelectExplorerSidebarFirstPinned() {
     EnsureFocus()
     return false
 }
+
+; Shift + K : Send Shift+F6
++K:: Send "+{F6}"
+
+; Shift + L : Send F6
++L:: Send "{F6}"
 
 ; Message inspector-specific hotkeys (Subject/To/DatePicker/Body)
 #HotIf IsOutlookMessageActive()
