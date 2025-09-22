@@ -51,3 +51,6 @@ RegisterHotstring("::gut::", "GS_UX core team_Trainings Management")
 
 ::gbp::GS_B2C_Portals and Key Accounts Process POC
 RegisterHotstring("::gbp::", "GS_B2C_Portals and Key Accounts Process POC")
+
+::cgrammar:: Coorect grammar and spelling
+RegisterHotstring("::cgrammar::", "Coorect grammar and spelling")
