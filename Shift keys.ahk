@@ -3444,8 +3444,137 @@ CancelEmoji(ctrl, *) {
 ; Shift + D : Git section
 +d:: Send "^+g"
 
-; Shift + G : Switch between AI models
-+g:: SwitchAIModel()
+; Global variables for AI model selector
+global gAIModelTargetWin := 0
+
+; AI Model auto-submit function
+AutoSubmitAIModel(ctrl, *) {
+    currentValue := ctrl.Text
+    if (currentValue != "" && IsInteger(currentValue)) {
+        choice := Integer(currentValue)
+        if (choice >= 1 && choice <= 6) {
+            ctrl.Gui.Destroy()
+            ExecuteAIModelSelection(choice)
+        }
+    }
+}
+
+; Manual submit function for AI model (backup)
+SubmitAIModel(ctrl, *) {
+    currentValue := ctrl.Gui["AIModelInput"].Text
+    if (currentValue != "" && IsInteger(currentValue)) {
+        choice := Integer(currentValue)
+        if (choice >= 1 && choice <= 6) {
+            ctrl.Gui.Destroy()
+            ExecuteAIModelSelection(choice)
+        } else {
+            MsgBox "Invalid selection. Please choose 1-6.", "AI Model Selection", "IconX"
+        }
+    }
+}
+
+; Cancel function for AI model
+CancelAIModel(ctrl, *) {
+    ctrl.Gui.Destroy()
+}
+
+; Execute the AI model selection logic
+ExecuteAIModelSelection(choice) {
+    try {
+        ; Send Escape twice, then select the edit field based on on-screen Agent/Ask
+        Send "{Escape 2}"
+        Sleep 200
+        if !SendCtrlKeyBasedOnAgentAsk() {
+            ; Fallback to Ctrl+I if no relevant text is found
+            Send "{Ctrl down}i{Ctrl up}"
+        }
+        Sleep 300
+
+        ; Handle different behaviors based on choice
+        switch choice {
+            case 1:
+            {
+                ; For auto option: simulate ;, wait for model context menu, then send ↓, Enter
+                Send "^;"
+                Sleep 300
+                SendText "auto"
+                Sleep 500
+                Send "{Enter}"
+                Sleep 300
+                Send "{Escape}"
+            }
+            case 2:
+            {
+                ; For other options: simulate Ctrl + ., wait, type model string, no Enter
+                Send "^;"
+                Sleep 500
+                SendText "CLAUD"
+            }
+            case 3:
+            {
+                Send "^;"
+                Sleep 500
+                SendText "GPT"
+            }
+            case 4:
+            {
+                Send "^;"
+                Sleep 500
+                SendText "O"
+            }
+            case 5:
+            {
+                Send "^;"
+                Sleep 500
+                SendText "DeepSeek"
+            }
+            case 6:
+            {
+                Send "^;"
+                Sleep 500
+                SendText "Cursor"
+            }
+        }
+
+        Sleep 100
+        Send "{Enter}"
+
+    } catch Error as e {
+        MsgBox "Error in AI model selection: " e.Message, "AI Model Selection Error", "IconX"
+    }
+}
+
+; Shift + G : Switch between AI models (Auto-submit version)
++g::
+{
+    try {
+        ; Remember current target window before showing GUI
+        gAIModelTargetWin := WinExist("A")
+        ; Create GUI for AI model selection with auto-submit
+        aiModelGui := Gui("+AlwaysOnTop +ToolWindow", "AI Model Selection")
+        aiModelGui.SetFont("s10", "Segoe UI")
+        
+        ; Add instruction text
+        aiModelGui.AddText("w350 Center", "Choose AI Model:`n`n1. auto`n2. CLAUD`n3. GPT`n4. O`n5. DeepSeek`n6. Cursor`n`nType a number (1-6):")
+        
+        ; Add input field with auto-submit functionality
+        aiModelGui.AddEdit("w50 Center vAIModelInput Limit1 Number")
+        
+        ; Add OK and Cancel buttons (as backup)
+        aiModelGui.AddButton("w80 xp-40 y+10", "OK").OnEvent("Click", SubmitAIModel)
+        aiModelGui.AddButton("w80 xp+90", "Cancel").OnEvent("Click", CancelAIModel)
+        
+        ; Set up auto-submit on text change
+        aiModelGui["AIModelInput"].OnEvent("Change", AutoSubmitAIModel)
+        
+        ; Show GUI and focus input
+        aiModelGui.Show("w350 h200")
+        aiModelGui["AIModelInput"].Focus()
+
+    } catch Error as e {
+        MsgBox "Error in AI model selector: " e.Message, "AI Model Selector Error", "IconX"
+    }
+}
 
 ; Shift + C : Ctrl + .
 +c:: Send("^.")
