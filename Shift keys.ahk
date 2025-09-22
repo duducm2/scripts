@@ -20,6 +20,7 @@ SetTitleMatchMode 2
 #include UIA-v2\Lib\UIA.ahk
 #include UIA-v2\Lib\UIA_Browser.ahk
 #include %A_ScriptDir%\ChatGPT_Loading.ahk
+#include %A_ScriptDir%\Hotstrings.ahk
 
 ; --- Global Variables ---
 global smallLoadingGuis_ChatGPT := []
@@ -1051,7 +1052,21 @@ ShowGlobalShortcutsHelp() {
     }
 
     ; Create the global shortcuts text with categories
-    globalText := "
+    ; Get hotstrings section first
+    hsText := ""
+    try {
+        hsText := GetHotstringsCheatSheetText()
+    } catch {
+    }
+
+    globalText := ""
+    
+    ; Add hotstrings at the top if any are defined
+    if (StrLen(hsText)) {
+        globalText .= "=== HOTSTRINGS ===`n" hsText "`n`n"
+    }
+
+    globalText .= "
 (
 === AVAILABLE (unused) ===
 [Win+Alt+Shift+1] 
