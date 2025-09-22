@@ -3343,33 +3343,98 @@ IsEditorActive() {
 ; Shift + R : Send Ctrl+Shift+
 +r:: Send("^+.")
 
-; Shift + T : Emoji selector
-+t::
-{
+; Auto-submit function - triggers when text changes
+global gEmojiTargetWin := 0
+
+GetEmojiByNumber(numberText) {
+    try number := Integer(numberText)
+    catch {
+        return ""
+    }
+    emojiMap := Map()
+    emojiMap[1] := "🔲"
+    emojiMap[2] := "⏳"
+    emojiMap[3] := "⚡"
+    emojiMap[4] := "2️⃣"
+    emojiMap[5] := "❓"
+    return (emojiMap.Has(number)) ? emojiMap[number] : ""
+}
+
+InsertEmojiToTarget(emoji) {
+    if (emoji = "")
+        return
+    if (gEmojiTargetWin) {
+        WinActivate gEmojiTargetWin
+        Sleep 80
+    }
+    ClipSaved := A_Clipboard
     try {
-        ; Show emoji selection dialog
-        userChoice := InputBox(
-            "Select emoji to insert:`n`n1. 🔲 Tasks/Checklist items`n2. ⏳ Time-sensitive tasks`n3. ⚡ First priority`n4. 2️⃣ Second priority`n5. ❓ Questions/Uncertain items`n`nEnter choice (1-5):",
-            "Emoji Selector", "w350 h200")
+        A_Clipboard := ""
+        A_Clipboard := emoji
+        ClipWait 0.3
+        Send "^v"
+        Sleep 50
+    } finally {
+        A_Clipboard := ClipSaved
+    }
+}
 
-        if userChoice.Result != "OK"
-            return
+AutoSubmitEmoji(ctrl, *) {
+    currentValue := ctrl.Text
+    if (currentValue != "" && IsInteger(currentValue)) {
+        emoji := GetEmojiByNumber(currentValue)
+        if (emoji != "") {
+            ctrl.Gui.Destroy()
+            InsertEmojiToTarget(emoji)
+        }
+    }
+}
 
-        ; Map numbers to emojis
-        emojiMap := Map()
-        emojiMap[1] := "🔲"
-        emojiMap[2] := "⏳"
-        emojiMap[3] := "⚡"
-        emojiMap[4] := "2️⃣"
-        emojiMap[5] := "❓"
-
-        ; Convert to number and validate
-        choice := Integer(userChoice.Value)
-        if (choice >= 1 && choice <= 5) {
-            SendText(emojiMap[choice])
+; Manual submit function (backup)
+SubmitEmoji(ctrl, *) {
+    currentValue := ctrl.Gui["EmojiInput"].Text
+    if (currentValue != "" && IsInteger(currentValue)) {
+        emoji := GetEmojiByNumber(currentValue)
+        if (emoji != "") {
+            ctrl.Gui.Destroy()
+            InsertEmojiToTarget(emoji)
         } else {
             MsgBox "Invalid selection. Please choose 1-5.", "Emoji Selector", "IconX"
         }
+    }
+}
+
+; Cancel function
+CancelEmoji(ctrl, *) {
+    ctrl.Gui.Destroy()
+}
+
+; Shift + T : Emoji selector (Auto-submit version)
++t::
+{
+    try {
+        ; Remember current target window before showing GUI
+        gEmojiTargetWin := WinExist("A")
+        ; Create GUI for emoji selection with auto-submit
+        emojiGui := Gui("+AlwaysOnTop +ToolWindow", "Emoji Selector")
+        emojiGui.SetFont("s10", "Segoe UI")
+        
+        ; Add instruction text
+        emojiGui.AddText("w350 Center", "Select emoji to insert:`n`n1. 🔲 Tasks/Checklist items`n2. ⏳ Time-sensitive tasks`n3. ⚡ First priority`n4. 2️⃣ Second priority`n5. ❓ Questions/Uncertain items`n`nType a number (1-5):")
+        
+        ; Add input field with auto-submit functionality
+        emojiGui.AddEdit("w50 Center vEmojiInput Limit1 Number")
+        
+        ; Add OK and Cancel buttons (as backup)
+        emojiGui.AddButton("w80 xp-40 y+10", "OK").OnEvent("Click", SubmitEmoji)
+        emojiGui.AddButton("w80 xp+90", "Cancel").OnEvent("Click", CancelEmoji)
+        
+        ; Set up auto-submit on text change
+        emojiGui["EmojiInput"].OnEvent("Change", AutoSubmitEmoji)
+        
+        ; Show GUI and focus input
+        emojiGui.Show("w350 h200")
+        emojiGui["EmojiInput"].Focus()
 
     } catch Error as e {
         MsgBox "Error in emoji selector: " e.Message, "Emoji Selector Error", "IconX"
