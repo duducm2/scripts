@@ -252,8 +252,6 @@ Outlook
 [Shift+I] > Go to Inbox
 [Shift+O] > Subject / Title
 [Shift+P] > Required / To
-[Shift+K] > Send Shift+F6
-[Shift+L] > Send F6
 [Shift+M] > Subject -> Body
 [Shift+N] > Focused / Other
 )"  ; end Outlook
@@ -451,7 +449,7 @@ Cursor
 [Shift+.] > Extensions
 [Shift+W] > Switch brackets
 [Shift+E] > Search
-[Shift+R] > (empty)
+[Shift+R] > Open Bread Crumbs menu.
 [Shift+T] > Emoji selector (1:🔲 2:⏳ 3:⚡ 4:2️⃣ 5:❓)
 [Shift+D] > Git section
 [Shift+F] > Close all editors
@@ -2551,12 +2549,6 @@ SelectExplorerSidebarFirstPinned() {
     return false
 }
 
-; Shift + K : Send Shift+F6
-+K:: Send "+{F6}"
-
-; Shift + L : Send F6
-+L:: Send "{F6}"
-
 ; Message inspector-specific hotkeys (Subject/To/DatePicker/Body)
 #HotIf IsOutlookMessageActive()
 
@@ -3325,6 +3317,9 @@ IsEditorActive() {
 ; Shift + E : Search
 +e:: Send "^+f"
 
+; Shift + R : Send Ctrl+Shift+
++r:: Send("^+.")
+
 ; Shift + T : Emoji selector
 +t::
 {
@@ -4025,24 +4020,8 @@ SwitchAIModel() {
     }
 }
 
-; Shift + R : Toggle lyrics
-+r::
-{
-    try {
-        spot := UIA_Browser("ahk_exe Spotify.exe")
-        Sleep 300
-
-        ; Find and click the Lyrics button
-        lyricsBtn := spot.FindElement({ Name: "Lyrics", Type: "Button" })
-        if (lyricsBtn) {
-            lyricsBtn.Click()
-        } else {
-            MsgBox "Could not find the Lyrics button.", "Spotify Navigation", "IconX"
-        }
-    } catch Error as e {
-        MsgBox "Error toggling lyrics: " e.Message, "Spotify Error", "IconX"
-    }
-}
+; Shift + R : Send Ctrl+Shift+
++r:: Send("^+")
 
 ; Shift + T : Toggle play/pause
 +t::
