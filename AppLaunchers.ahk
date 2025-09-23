@@ -12,20 +12,94 @@
 ; --- Hotkeys & Functions -----------------------------------------------------
 
 ; =============================================================================
-; Open/Activate OneNote
+; Open/Activate Cursor with specific window requirements
 ; Hotkey: Win+Alt+Shift+N
-; Original File: OneNote - Open.ahk
+; Original File: OneNote - Open.ahk (Updated for Cursor)
 ; =============================================================================
 #!+n::
 {
-    if WinExist("ahk_exe ONENOTE.EXE") {
-        WinActivate
-        CenterMouse()
-    } else {
-        Run "c:\ProgramData\Microsoft\Windows\Start Menu\Programs\OneNote.lnk"
-        WinWaitActive("ahk_exe ONENOTE.EXE")
-        CenterMouse()
+    ; Look for Cursor windows with specific names: habits, home, punctual, or work
+    ; Exclude windows containing "preview"
+    targetWindow := ""
+    
+    ; Get all Cursor windows (support both Cursor.exe and Code.exe just in case)
+    for proc in ["ahk_exe Cursor.exe", "ahk_exe Code.exe"] {
+        for hwnd in WinGetList(proc) {
+            try {
+                winTitle := WinGetTitle("ahk_id " hwnd)
+                winTitleLower := StrLower(winTitle)
+
+                ; Skip any preview windows
+                if InStr(winTitleLower, "preview")
+                    continue
+
+                ; Check if window contains any of the target names
+                if (InStr(winTitleLower, "habits")
+                    || InStr(winTitleLower, "home")
+                    || InStr(winTitleLower, "punctual")
+                    || InStr(winTitleLower, "work")) {
+                    targetWindow := "ahk_id " hwnd
+                    break
+                }
+            } catch {
+                ; Silently skip invalid windows
+            }
+        }
+        if (targetWindow)
+            break
     }
+    
+    if (targetWindow) {
+        ; Found a matching Cursor window
+        WinActivate(targetWindow)
+        if WinWaitActive(targetWindow, , 2) {
+            CenterMouse()
+            Sleep(100)  ; Small delay to ensure window is fully active
+            Send("^+o")  ; Send Ctrl+Shift+O
+        }
+    } else {
+        ; No matching Cursor window found - show fallback panel
+        ShowCursorFallbackPanel()
+    }
+}
+
+; =============================================================================
+; Show fallback panel when no matching Cursor window is found
+; =============================================================================
+ShowCursorFallbackPanel() {
+    ; Create a notification panel similar to ChatGPT.ahk style
+    fallbackGui := Gui()
+    fallbackGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
+    fallbackGui.BackColor := "3772FF"  ; Blue background like ChatGPT notifications
+    fallbackGui.SetFont("s20 cFFFFFF Bold", "Segoe UI")
+    
+    ; Create the message
+    message := "No Cursor window found with names: habits, home, punctual, or work"
+    fallbackGui.Add("Text", "w600 Center", message)
+    
+    ; Center on active monitor
+    activeWin := WinGetID("A")
+    if (activeWin) {
+        WinGetPos(&winX, &winY, &winW, &winH, activeWin)
+    } else {
+        MonitorGetWorkArea(1, &l, &t, &r, &b)
+        winX := l
+        winY := t
+        winW := r - l
+        winH := b - t
+    }
+    
+    fallbackGui.Show("AutoSize Hide")
+    guiW := 0, guiH := 0
+    fallbackGui.GetPos(, , &guiW, &guiH)
+    
+    guiX := winX + (winW - guiW) / 2
+    guiY := winY + (winH - guiH) / 2
+    fallbackGui.Show("x" . Round(guiX) . " y" . Round(guiY) . " NA")
+    WinSetTransparent(178, fallbackGui)
+    
+    ; Auto-hide after 3 seconds
+    SetTimer(() => fallbackGui.Destroy(), -3000)
 }
 
 ; =============================================================================

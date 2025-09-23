@@ -1074,8 +1074,8 @@ ShowGlobalShortcutsHelp() {
 [Win+Alt+Shift+U]
 [Win+Alt+Shift+.]
 
-=== ONENOTE ===
-[Win+Alt+Shift+N] > Opens or activates OneNote
+=== CURSOR ===
+[Win+Alt+Shift+N] > Opens or activates Cursor (habits, home, punctual, or work windows)
 
 === SPOTIFY ===
 [Win+Alt+Shift+S] > Opens or activates Spotify
