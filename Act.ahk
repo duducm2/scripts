@@ -15,6 +15,7 @@ Run GetScriptPath("Utils.ahk")
 if (IS_WORK_ENVIRONMENT) {
 
     Run "C:\Users\fie7ca\Documents\HuntAndPeck\HuntAndPeck-1.7\hap.exe"
+    Run "C:\Users\fie7ca\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Cursor\Cursor.lnk"
     Run "C:\Users\fie7ca\Documents\Shortcuts\Mobills.lnk"
     Run "C:\Users\fie7ca\Documents\Shortcuts\Settle Up.lnk"
     Run "https://keep.google.com/u/0/#NOTE/1YCVkrriqNRyRhRyz1PV0gJ9Eor66ARhb1i9uLpvXTZ2j79nDScAUOIK4pBAMwHY"
