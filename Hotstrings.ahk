@@ -28,26 +28,29 @@ GetHotstringsCheatSheetText() {
 ; ----------------------
 
 ; --- Project Names ---
-::guc::GS_UX core team_UX and CIP Integration
-RegisterHotstring("::guc::", "GS_UX core team_UX and CIP Integration")
+::myl::My Links
+RegisterHotstring("::myl::", "My Links")
 
-::ged::GS_E&S_CIP Dashboard research and design
-RegisterHotstring("::ged::", "GS_E&S_CIP Dashboard research and design")
+::gintegra::GS_UX core team_UX and CIP Integration
+RegisterHotstring("::gintegra::", "GS_UX core team_UX and CIP Integration")
 
-::gbc::GS_B2C_Credit_Management_Strategy_UI_Mentoring
-RegisterHotstring("::gbc::", "GS_B2C_Credit_Management_Strategy_UI_Mentoring")
+::gdash::GS_E&S_CIP Dashboard research and design
+RegisterHotstring("::gdash::", "GS_E&S_CIP Dashboard research and design")
 
-::gum::GS_UX Core Team_Monitoring for B2C in Brazil
-RegisterHotstring("::gum::", "GS_UX Core Team_Monitoring for B2C in Brazil")
+::gb2c::GS_B2C_Credit_Management_Strategy_UI_Mentoring
+RegisterHotstring("::gb2c::", "GS_B2C_Credit_Management_Strategy_UI_Mentoring")
 
-::gup::GS_UX_Project_Management_Activities_LA
-RegisterHotstring("::gup::", "GS_UX_Project_Management_Activities_LA")
+::gug::GS_UX Core Team_Monitoring for B2C in Brazil
+RegisterHotstring("::gug::", "GS_UX Core Team_Monitoring for B2C in Brazil")
 
-::guc2::GS_UX_and_CIP
-RegisterHotstring("::guc2::", "GS_UX_and_CIP")
+::gpm::GS_UX_Project_Management_Activities_LA
+RegisterHotstring("::gpm::", "GS_UX_Project_Management_Activities_LA")
 
-::gut::GS_UX core team_Trainings Management
-RegisterHotstring("::gut::", "GS_UX core team_Trainings Management")
+::guxcip::GS_UX_and_CIP
+RegisterHotstring("::guxcip::", "GS_UX_and_CIP")
+
+::gtrain::GS_UX core team_Trainings Management
+RegisterHotstring("::gtrain::", "GS_UX core team_Trainings Management")
 
 ::gbp::GS_B2C_Portals and Key Accounts Process POC
 RegisterHotstring("::gbp::", "GS_B2C_Portals and Key Accounts Process POC")
