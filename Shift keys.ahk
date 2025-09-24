@@ -444,21 +444,21 @@ Cursor
 [Shift+P] > Go to terminal
 [Shift+H] > New terminal
 [Shift+J] > Go to file explorer
-[Shift+K] > Format code
+[Shift+K] > Format code (less used)
 [Shift+L] > Command palette
-[Shift+N] > Expand selection
+[Shift+N] > Expand selection 
 [Shift+M] > Change project
-[Shift+,] > Show chat history
-[Shift+.] > Extensions
-[Shift+W] > Switch brackets
-[Shift+E] > Search
+[Shift+,] > Show chat history 
+[Shift+.] > Extensions (less used)
+[Shift+W] > Switch brackets (less used)
+[Shift+E] > Search 
 [Shift+R] > Open Bread Crumbs menu.
 [Shift+T] > Emoji selector (1:🔲 2:⏳ 3:⚡ 4:2️⃣ 5:❓)
 [Shift+D] > Git section
-[Shift+F] > Close all editors
+[Shift+F] > Close all editors (less used)
 [Shift+G] > Switch AI models (auto/CLAUD/GPT/O/DeepSeek/Cursor)
 [Shift+C] > Switch between AI modes (agent/ask)
-[Shift+V] > Fold Git repos (SCM)
+[Shift+V] > Fold Git repos (SCM) 
 [Shift+B] > Create AI commit message, then select Commit or Commit and Push
 [Ctrl + Alt + Y] > Select to Bracket
 [Ctrl + Alt + U] > Open in file explorer
@@ -466,12 +466,15 @@ Cursor
 [Ctrl + Alt + O] > Unfold all directories
 [Ctrl + Alt + P] > Paste As...
 [Ctrl + Alt + H] > Kill terminal  [custom: defined in Cursor settings.json]
-[Ctrl + Alt + K] > Go to Parent Fold
 [Ctrl + Alt + L] > Open markdown preview
 [Ctrl + Alt + N] > Open code actions
 [Ctrl + Alt + M] > Paste Image
 [Ctrl + Alt + Z] > Toggle Zen Mode
 [Ctrl + Alt + T] > Move editor group into new window
+[Ctrl + Alt + K] > Available
+[Ctrl + Alt + Up] > Go to Parent Fold
+[Ctrl + Alt + Left] > Go to sibling fold previous
+[Ctrl + Alt + Right] > Go to sibling fold next
 
 --- Additional Shortcuts ---
 [Ctrl + T] > New chat tab
@@ -1060,7 +1063,7 @@ ShowGlobalShortcutsHelp() {
     }
 
     globalText := ""
-    
+
     ; Add hotstrings at the top if any are defined
     if (StrLen(hsText)) {
         globalText .= "=== HOTSTRINGS ===`n" hsText "`n`n"
@@ -3418,20 +3421,22 @@ CancelEmoji(ctrl, *) {
         ; Create GUI for emoji selection with auto-submit
         emojiGui := Gui("+AlwaysOnTop +ToolWindow", "Emoji Selector")
         emojiGui.SetFont("s10", "Segoe UI")
-        
+
         ; Add instruction text
-        emojiGui.AddText("w350 Center", "Select emoji to insert:`n`n1. 🔲 Tasks/Checklist items`n2. ⏳ Time-sensitive tasks`n3. ⚡ First priority`n4. 2️⃣ Second priority`n5. ❓ Questions/Uncertain items`n`nType a number (1-5):")
-        
+        emojiGui.AddText("w350 Center",
+            "Select emoji to insert:`n`n1. 🔲 Tasks/Checklist items`n2. ⏳ Time-sensitive tasks`n3. ⚡ First priority`n4. 2️⃣ Second priority`n5. ❓ Questions/Uncertain items`n`nType a number (1-5):"
+        )
+
         ; Add input field with auto-submit functionality
         emojiGui.AddEdit("w50 Center vEmojiInput Limit1 Number")
-        
+
         ; Add OK and Cancel buttons (as backup)
         emojiGui.AddButton("w80 xp-40 y+10", "OK").OnEvent("Click", SubmitEmoji)
         emojiGui.AddButton("w80 xp+90", "Cancel").OnEvent("Click", CancelEmoji)
-        
+
         ; Set up auto-submit on text change
         emojiGui["EmojiInput"].OnEvent("Change", AutoSubmitEmoji)
-        
+
         ; Show GUI and focus input
         emojiGui.Show("w350 h200")
         emojiGui["EmojiInput"].Focus()
@@ -3553,20 +3558,21 @@ ExecuteAIModelSelection(choice) {
         ; Create GUI for AI model selection with auto-submit
         aiModelGui := Gui("+AlwaysOnTop +ToolWindow", "AI Model Selection")
         aiModelGui.SetFont("s10", "Segoe UI")
-        
+
         ; Add instruction text
-        aiModelGui.AddText("w350 Center", "Choose AI Model:`n`n1. auto`n2. CLAUD`n3. GPT`n4. O`n5. DeepSeek`n6. Cursor`n`nType a number (1-6):")
-        
+        aiModelGui.AddText("w350 Center",
+            "Choose AI Model:`n`n1. auto`n2. CLAUD`n3. GPT`n4. O`n5. DeepSeek`n6. Cursor`n`nType a number (1-6):")
+
         ; Add input field with auto-submit functionality
         aiModelGui.AddEdit("w50 Center vAIModelInput Limit1 Number")
-        
+
         ; Add OK and Cancel buttons (as backup)
         aiModelGui.AddButton("w80 xp-40 y+10", "OK").OnEvent("Click", SubmitAIModel)
         aiModelGui.AddButton("w80 xp+90", "Cancel").OnEvent("Click", CancelAIModel)
-        
+
         ; Set up auto-submit on text change
         aiModelGui["AIModelInput"].OnEvent("Change", AutoSubmitAIModel)
-        
+
         ; Show GUI and focus input
         aiModelGui.Show("w350 h200")
         aiModelGui["AIModelInput"].Focus()
