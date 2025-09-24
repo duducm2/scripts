@@ -37,71 +37,109 @@
 ; Hotkey: Win+Alt+Shift+C
 ; =============================================================================
 
-; Function to activate Cursor and send key sequence based on user choice
-CursorKeySequence() {
-    try {
-        ; Get user input for action choice
-        userChoice := InputBox(
-            "Choose Action:`n`n1. Proceed with terminal`n2. Hit Enter`n3. Allow`n`nEnter choice (1-3):",
-            "Cursor Action Selection", "w250 h180")
-        if userChoice.Result != "OK"
-            return
+; Global variable to remember target window for Cursor action
+global gCursorActionTargetWin := 0
 
+; Auto-submit handler for Cursor action modal
+AutoSubmitCursorAction(ctrl, *) {
+    currentValue := ctrl.Text
+    if (currentValue != "" && IsInteger(currentValue)) {
+        choice := Integer(currentValue)
+        if (choice >= 1 && choice <= 3) {
+            ctrl.Gui.Destroy()
+            ExecuteCursorAction(choice)
+        }
+    }
+}
+
+; Manual submit handler (OK button)
+SubmitCursorAction(ctrl, *) {
+    currentValue := ctrl.Gui["CursorActionInput"].Text
+    if (currentValue != "" && IsInteger(currentValue)) {
+        choice := Integer(currentValue)
+        if (choice >= 1 && choice <= 3) {
+            ctrl.Gui.Destroy()
+            ExecuteCursorAction(choice)
+        } else {
+            MsgBox "Invalid selection. Please choose 1-3.", "Cursor Action Selection", "IconX"
+        }
+    }
+}
+
+; Cancel handler
+CancelCursorAction(ctrl, *) {
+    ctrl.Gui.Destroy()
+}
+
+; Execute the Cursor key sequence based on numeric choice
+ExecuteCursorAction(choice) {
+    try {
         ; First activate Cursor
         SetTitleMatchMode 2
         if WinExist("ahk_exe Cursor.exe") {
             WinActivate
-            ; Wait for Cursor to be active
             WinWaitActive("ahk_exe Cursor.exe", "", 2)
         } else {
-            ; Launch Cursor if not running
             target := IS_WORK_ENVIRONMENT ? "C:\\Users\\fie7ca\\AppData\\Local\\Programs\\cursor\\Cursor.exe" :
                 "C:\\Users\\eduev\\AppData\\Local\\Programs\\cursor\\Cursor.exe"
             Run target
             WinWaitActive("ahk_exe Cursor.exe", "", 10)
         }
 
-        ; Small delay to ensure Cursor is ready
         Sleep 200
 
-        ; Send the key sequence based on user choice
-        switch userChoice.Value {
-            case "1":
+        switch choice {
+            case 1:
             {
-                ; Option 1: Proceed with terminal (original sequence)
-                Send "^+e"   ; Press Ctrl+Shift+E
+                Send "^+e"
                 Sleep 100
-                Send "^i"    ; Ctrl+I
+                Send "^i"
                 Sleep 100
-                Send "+{Backspace}"  ; Shift+Backspace
+                Send "+{Backspace}"
             }
-            case "2":
+            case 2:
             {
-                ; Option 2: Hit Enter (modified sequence)
-                Send "^+e"   ; Press Ctrl+Shift+E
+                Send "^+e"
                 Sleep 100
-                Send "^i"    ; Ctrl+I
+                Send "^i"
                 Sleep 100
-                Send "{Enter}"  ; Enter instead of Shift+Backspace
+                Send "{Enter}"
             }
-            case "3":
+            case 3:
             {
-                ; Option 3: Allow (basic sequence + up arrows + enter)
-                Send "^+e"   ; Press Ctrl+Shift+E
+                Send "^+e"
                 Sleep 100
-                Send "^i"    ; Ctrl+I
+                Send "^i"
                 Sleep 100
-                Send "{Up}"  ; up arrow
+                Send "{Up}"
                 Sleep 100
-                Send "{Enter}"  ; Enter
+                Send "{Enter}"
             }
-            default:
-                MsgBox "Invalid selection. Please choose 1-3.", "Cursor Action Selection", "IconX"
-                return
         }
-
     } catch Error as e {
         MsgBox "Error executing Cursor action: " e.Message, "Cursor Action Error", "IconX"
+    }
+}
+
+; Function to show auto-submit modal and then run Cursor action
+CursorKeySequence() {
+    try {
+        gCursorActionTargetWin := WinExist("A")
+
+        cursorGui := Gui("+AlwaysOnTop +ToolWindow", "Cursor Action Selection")
+        cursorGui.SetFont("s10", "Segoe UI")
+
+        cursorGui.AddText("w360 Center",
+            "Choose Action:`n`n1. Shift backspace`n2. Enter`n3. Allow`n`nType a number (1-3):")
+        cursorGui.AddEdit("w50 Center vCursorActionInput Limit1 Number")
+        cursorGui.AddButton("w80 xp-40 y+10", "OK").OnEvent("Click", SubmitCursorAction)
+        cursorGui.AddButton("w80 xp+90", "Cancel").OnEvent("Click", CancelCursorAction)
+        cursorGui["CursorActionInput"].OnEvent("Change", AutoSubmitCursorAction)
+
+        cursorGui.Show("w360 h200")
+        cursorGui["CursorActionInput"].Focus()
+    } catch Error as e {
+        MsgBox "Error opening Cursor action selector: " e.Message, "Cursor Action Error", "IconX"
     }
 }
 
