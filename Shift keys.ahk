@@ -3583,18 +3583,136 @@ ExecuteAIModelSelection(choice) {
 ; Shift + V : Fold all Git directories in Source Control (Cursor)
 +v:: FoldAllGitDirectoriesInCursor()
 
-; Shift + B : Create AI commit message, then select Commit or Commit and Push
+; Global variable for commit selector target window
+global gCommitTargetWin := 0
+
+; Function to get commit action by number
+GetCommitActionByNumber(numberText) {
+    try number := Integer(numberText)
+    catch {
+        return ""
+    }
+    actionMap := Map()
+    actionMap[1] := "workspace"
+    actionMap[2] := "repository"
+    return (actionMap.Has(number)) ? actionMap[number] : ""
+}
+
+; Function to execute commit action
+ExecuteCommitAction(action) {
+    if (action = "")
+        return
+
+    if (action = "workspace") {
+        ; Option 1: Commit and push from workspace (original behavior)
+        Send "{Right}"
+        Send "{Down}"
+        Send "{Tab 2}"
+        Send "{Enter}"
+        Sleep 1500
+        Send "{Tab 2}"
+        Send "{Enter}"
+        Send "{Up 2}"
+    }
+    else if (action = "repository") {
+        ; Option 2: Commit and push from repository (customize this section)
+
+        ; Then execute the commit commands
+        Send "^+g"
+        Sleep 150
+        Send "+{Tab}"
+        Send "{Tab}"
+        Sleep 150
+        Send "{Home}"
+        Send "{Home}"
+        Sleep 350
+        Send "{Tab 2}"
+        Send "{Enter}"
+        Sleep 1500
+        Send "{Tab 2}"
+        Send "{Enter}"
+        Send "{Up 2}"
+    }
+}
+
+; Auto-submit function for commit selector
+AutoSubmitCommit(ctrl, *) {
+    currentValue := ctrl.Text
+    if (currentValue != "" && IsInteger(currentValue)) {
+        action := GetCommitActionByNumber(currentValue)
+        if (action != "") {
+            ctrl.Gui.Destroy()
+            ExecuteCommitAction(action)
+        }
+    }
+}
+
+; Manual submit function for commit selector (backup)
+SubmitCommit(ctrl, *) {
+    currentValue := ctrl.Gui["CommitInput"].Text
+    if (currentValue != "" && IsInteger(currentValue)) {
+        action := GetCommitActionByNumber(currentValue)
+        if (action != "") {
+            ctrl.Gui.Destroy()
+            ExecuteCommitAction(action)
+        } else {
+            MsgBox "Invalid selection. Please choose 1-2.", "Commit Selector", "IconX"
+        }
+    }
+}
+
+; Cancel function for commit selector
+CancelCommit(ctrl, *) {
+    ctrl.Gui.Destroy()
+}
+
+; Shift + B : Commit selector (Auto-submit version)
 +b::
 {
-    Send "{Right}"
-    Send "{Down}"
-    Send "{Tab 2}"
-    Send "{Enter}"
-    Sleep 1500
-    Send "{Tab 2}"
-    Send "{Enter}"
-    Send "{Up 2}"
+    try {
+        ; Remember current target window before showing GUI
+        gCommitTargetWin := WinExist("A")
+        ; Create GUI for commit selection with auto-submit
+        commitGui := Gui("+AlwaysOnTop +ToolWindow", "Commit Selector")
+        commitGui.SetFont("s10", "Segoe UI")
+
+        ; Add instruction text
+        commitGui.AddText("w400 Center",
+            "Select commit action:`n`n1. Commit and push from workspace`n2. Commit and push from repository`n`nType a number (1-2):"
+        )
+
+        ; Add input field with auto-submit functionality
+        commitGui.AddEdit("w50 Center vCommitInput Limit1 Number")
+
+        ; Add OK and Cancel buttons (as backup)
+        commitGui.AddButton("w80 xp-40 y+10", "OK").OnEvent("Click", SubmitCommit)
+        commitGui.AddButton("w80 xp+90", "Cancel").OnEvent("Click", CancelCommit)
+
+        ; Set up auto-submit on text change
+        commitGui["CommitInput"].OnEvent("Change", AutoSubmitCommit)
+
+        ; Show GUI and focus input
+        commitGui.Show("w400 h200")
+        commitGui["CommitInput"].Focus()
+
+    } catch Error as e {
+        MsgBox "Error in commit selector: " e.Message, "Commit Selector Error", "IconX"
+    }
 }
+
+; Shift + B (Legacy) : Create AI commit message, then select Commit or Commit and Push
+; (Kept for reference - now handled by the selector above)
+; +b::
+; {
+;     Send "{Right}"
+;     Send "{Down}"
+;     Send "{Tab 2}"
+;     Send "{Enter}"
+;     Sleep 1500
+;     Send "{Tab 2}"
+;     Send "{Enter}"
+;     Send "{Up 2}"
+; }
 
 ; Ctrl + Alt + Y : Select to Bracket (via Command Palette)
 ^!y::
