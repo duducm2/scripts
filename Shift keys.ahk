@@ -1478,6 +1478,54 @@ ToggleVoiceMessage() {
 }
 
 ; ---------------------------------------------------------------------------
+ClickGenerateCommitMessageButton() {
+    try {
+        ; Use UIA_Browser to get the root element (similar to other functions in the script)
+        uia := UIA_Browser()
+        if !IsObject(uia) {
+            ; Fallback: try Ctrl+M shortcut if UIA fails
+            Send "^m"
+            return true
+        }
+
+        ; Find the "Generate Commit Message (Ctrl+M)" button
+        ; Try multiple search strategies
+        btn := uia.FindFirst({ Name: "Generate Commit Message (Ctrl+M)", ControlType: "Button" })
+
+        ; If not found by exact name, try partial match
+        if !btn {
+            btn := uia.FindFirst({ Name: "Generate Commit Message", ControlType: "Button" })
+        }
+
+        ; If still not found, try by ControlType only (Type: 50000 = Button)
+        if !btn {
+            ; Get all buttons and find the one with the right name
+            buttons := uia.FindAll({ ControlType: "Button" })
+            for button in buttons {
+                if InStr(button.Name, "Generate Commit Message") {
+                    btn := button
+                    break
+                }
+            }
+        }
+
+        if btn {
+            btn.Click()
+            return true
+        } else {
+            ; Fallback: try Ctrl+M shortcut
+            Send "^m"
+            return true
+        }
+    }
+    catch Error as e {
+        ; Fallback: try Ctrl+M shortcut if UIA fails
+        Send "^m"
+        return true
+    }
+}
+
+; ---------------------------------------------------------------------------
 ; WaitForButton(root, pattern, timeout := 5000)
 ;   â€¢ Searches all descendant buttons of `root` until Name matches `pattern`
 ;   â€¢ Returns the UIA element or 0 if none matched within `timeout` ms
@@ -3620,15 +3668,12 @@ ExecuteCommitAction(action) {
         ; Then execute the commit commands
         Send "^+g"
         Sleep 150
-        Send "+{Tab}"
-        Send "{Tab}"
-        Sleep 150
-        Send "{Home}"
-        Send "{Home}"
-        Sleep 350
-        Send "{Tab 2}"
+
+        ; Click on the "Generate Commit Message (Ctrl+M)" button
+        ClickGenerateCommitMessageButton()
+
+        Send "{Tab 3}"
         Send "{Enter}"
-        Sleep 1500
         Send "{Tab 2}"
         Send "{Enter}"
         Send "{Up 2}"
@@ -3699,20 +3744,6 @@ CancelCommit(ctrl, *) {
         MsgBox "Error in commit selector: " e.Message, "Commit Selector Error", "IconX"
     }
 }
-
-; Shift + B (Legacy) : Create AI commit message, then select Commit or Commit and Push
-; (Kept for reference - now handled by the selector above)
-; +b::
-; {
-;     Send "{Right}"
-;     Send "{Down}"
-;     Send "{Tab 2}"
-;     Send "{Enter}"
-;     Sleep 1500
-;     Send "{Tab 2}"
-;     Send "{Enter}"
-;     Send "{Up 2}"
-; }
 
 ; Ctrl + Alt + Y : Select to Bracket (via Command Palette)
 ^!y::
