@@ -3366,20 +3366,15 @@ GetEmojiByNumber(numberText) {
 InsertEmojiToTarget(emoji) {
     if (emoji = "")
         return
+    ; Activate the target window if we have it stored
     if (gEmojiTargetWin) {
         WinActivate gEmojiTargetWin
-        Sleep 80
+        Sleep 150
     }
-    ClipSaved := A_Clipboard
-    try {
-        A_Clipboard := ""
-        A_Clipboard := emoji
-        ClipWait 0.3
-        Send "^v"
-        Sleep 50
-    } finally {
-        A_Clipboard := ClipSaved
-    }
+
+    ; Use direct text insertion - no clipboard manipulation
+    ; This is more reliable and won't interfere with user's clipboard
+    SendText(emoji)
 }
 
 AutoSubmitEmoji(ctrl, *) {
