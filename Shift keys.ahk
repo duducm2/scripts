@@ -219,9 +219,9 @@ cheatSheets := Map()
 cheatSheets["Mercado Livre"] := "
 (
 Mercado Livre
-Shift+Y  ï¿½ï¿½'  Focus search field
-Shift+U  ï¿½ï¿½'  Carrinho de compras
-Shift+I  ï¿½ï¿½'  Compras feitas
+[Shift+Y] > 🔍 Focus search field
+[Shift+U] > 🛒 Carrinho de compras
+[Shift+I] > 📦 Compras feitas
 )"  ; end Mercado Livre
 
 ;---------------------------------------- Shift + keys ----------------------------------------------
@@ -234,77 +234,77 @@ Shift+I  ï¿½ï¿½'  Compras feitas
 cheatSheets["WhatsApp"] := "
 (
 WhatsApp
-[Shift+Y] > Toggle voice message
-[Shift+U] > Search chats
-[Shift+I] > Reply
-[Shift+O] > Sticker panel
-[Shift+P] > Toggle Unread filter
-[Shift+H] > Focus current chat
-[Shift+J] > Mark as read or unread
-[Shift+K] > Pin chat or unpin chat
+[Shift+Y] > 🎤 Toggle voice message
+[Shift+U] > 🔍 Search chats
+[Shift+I] > ↩️ Reply
+[Shift+O] > 😀 Sticker panel
+[Shift+P] > 📬 Toggle Unread filter
+[Shift+H] > 💬 Focus current chat
+[Shift+J] > ✅ Mark as read or unread
+[Shift+K] > 📌 Pin chat or unpin chat
 )"  ; end WhatsApp
 
 ; --- Outlook main window ----------------------------------------------------
 cheatSheets["OUTLOOK.EXE"] := "
 (
 Outlook
-[Shift+Y] > Send to General
-[Shift+U] > Send to Newsletter
-[Shift+I] > Go to Inbox
-[Shift+O] > Subject / Title
-[Shift+P] > Required / To
+[Shift+Y] > 📧 Send to General
+[Shift+U] > 📰 Send to Newsletter
+[Shift+I] > 📥 Go to Inbox
+[Shift+O] > 📝 Subject / Title
+[Shift+P] > 👥 Required / To
 [Shift+K] > Send Shift+F6
 [Shift+L] > Send F6
-[Shift+M] > Subject -> Body
-[Shift+N] > Focused / Other
+[Shift+M] > 📝 Subject -> Body
+[Shift+N] > 🎯 Focused / Other
 )"  ; end Outlook
 
 ; --- Outlook Reminder window -------------------------------------------------
 cheatSheets["OutlookReminder"] := "
 (
 Outlook â€" Reminders
-[Shift+Y] > Select first reminder
-[Shift+U] > Snooze 1 hour
-[Shift+I] > Snooze 4 hours
-[Shift+O] > Snooze 1 day
-[Shift+P] > Dismiss all reminders
-[Shift+H] > Join Online
+[Shift+Y] > 🔔 Select first reminder
+[Shift+U] > ⏰ Snooze 1 hour
+[Shift+I] > ⏰ Snooze 4 hours
+[Shift+O] > ⏰ Snooze 1 day
+[Shift+P] > ❌ Dismiss all reminders
+[Shift+H] > 🌐 Join Online
 )"  ; end Outlook Reminder
 
 ; --- Outlook Appointment window ---------------------------------------------
 cheatSheets["OutlookAppointment"] := "
 (
 Outlook â€" Appointment
-[Shift+Y] > Start date (combo)
-[Shift+U] > Start date â€" Date Picker
-[Shift+I] > Start time (combo)
-[Shift+O] > End date (combo)
-[Shift+P] > End time (combo)
-[Shift+H] > All day checkbox
-[Shift+J] > Title field
-[Shift+L] > Required / To field
-[Shift+M] > Location > Body
-[Shift+,] > Make Recurring
+[Shift+Y] > 📅 Start date (combo)
+[Shift+U] > 📅 Start date â€" Date Picker
+[Shift+I] > 🕐 Start time (combo)
+[Shift+O] > 📅 End date (combo)
+[Shift+P] > 🕐 End time (combo)
+[Shift+H] > ☑️ All day checkbox
+[Shift+J] > 📝 Title field
+[Shift+L] > 👥 Required / To field
+[Shift+M] > 📍 Location > Body
+[Shift+,] > 🔄 Make Recurring
 )"  ; end Outlook Appointment
 
 ; --- Outlook Message window ---------------------------------------------------
 cheatSheets["OutlookMessage"] := "
 (
 Outlook â€" Message
-[Shift+Y] > Subject / Title
-[Shift+U] > Required / To
-[Shift+M] > Location > Body
+[Shift+Y] > 📝 Subject / Title
+[Shift+U] > 👥 Required / To
+[Shift+M] > 📍 Location > Body
 )"  ; end Outlook Message
 
 ; --- Microsoft Teams â€" meeting window --------------------------------------
 cheatSheets["TeamsMeeting"] := "
 (
 Teams
-[Shift+Y] > Open Chat pane
-[Shift+U] > Maximize meeting window
-[Shift+I] > Reagir
-[Shift+O] > Join now with camera and microphone on
-[Shift+P] > Audio settings
+[Shift+Y] > 💬 Open Chat pane
+[Shift+U] > 🔍 Maximize meeting window
+[Shift+I] > 👍 Reagir
+[Shift+O] > 🎥 Join now with camera and microphone on
+[Shift+P] > 🔊 Audio settings
 )"  ; end TeamsMeeting
 
 ; --- Microsoft Teams â€" chat window -----------------------------------------
@@ -313,20 +313,20 @@ cheatSheets["TeamsChat"] := "
 Teams
 
 --- Custom Shortcuts ---
-[Shift+Y] > Like
-[Shift+U] > Heart
-[Shift+I] > Laugh
-[Shift+O] > Home panel
-[Shift+P] > Attach file
-[Shift+H] > Open history menu
-[Shift+J] > Mark unread
-[Shift+K] > Pin chat
-[Shift+L] > Remove pin
-[Shift+N] > Collapse all conversation folders
-[Shift+M] > Activate/deactivate details panel
-[Shift+,] > View all unread items
-[Shift+E] > Edit message
-[Shift+R] > Reply
+[Shift+Y] > 👍 Like
+[Shift+U] > ❤️ Heart
+[Shift+I] > 😂 Laugh
+[Shift+O] > 🏠 Home panel
+[Shift+P] > 📎 Attach file
+[Shift+H] > 📜 Open history menu
+[Shift+J] > 📬 Mark unread
+[Shift+K] > 📌 Pin chat
+[Shift+L] > 📌 Remove pin
+[Shift+N] > 📁 Collapse all conversation folders
+[Shift+M] > ℹ️ Activate/deactivate details panel
+[Shift+,] > 📬 View all unread items
+[Shift+E] > ✏️ Edit message
+[Shift+R] > ↩️ Reply
 
 --- Built-in Shortcuts ---
 Geral:
@@ -393,224 +393,224 @@ Mensagens:
 cheatSheets["Spotify.exe"] := "
 (
 Spotify
-[Shift+Y] > Toggle Connect panel
-[Shift+U] > Toggle Full screen
-[Shift+I] > Open Search
-[Shift+O] > Go to Playlists
-[Shift+P] > Go to Artists
-[Shift+H] > Go to Albums
-[Shift+J] > Go to Search
-[Shift+K] > Go to Home
-[Shift+L] > Go to Now Playing
-[Shift+N] > Go to Made For You
-[Shift+M] > Go to New Releases
-[Shift+,] > Go to Charts
-[Shift+.] > Toggle Now Playing View
-[Shift+W] > Toggle Library Sidebar
-[Shift+E] > Toggle Fullscreen Library
-[Shift+R] > Toggle lyrics
-[Shift+T] > Toggle play/pause
+[Shift+Y] > 🔗 Toggle Connect panel
+[Shift+U] > 🖥️ Toggle Full screen
+[Shift+I] > 🔍 Open Search
+[Shift+O] > 📋 Go to Playlists
+[Shift+P] > 🎤 Go to Artists
+[Shift+H] > 💿 Go to Albums
+[Shift+J] > 🔍 Go to Search
+[Shift+K] > 🏠 Go to Home
+[Shift+L] > 🎵 Go to Now Playing
+[Shift+N] > 🎯 Go to Made For You
+[Shift+M] > 🆕 Go to New Releases
+[Shift+,] > 📊 Go to Charts
+[Shift+.] > 🎵 Toggle Now Playing View
+[Shift+W] > 📚 Toggle Library Sidebar
+[Shift+E] > 🖥️ Toggle Fullscreen Library
+[Shift+R] > 🎤 Toggle lyrics
+[Shift+T] > ⏯️ Toggle play/pause
 )"  ; end Spotify
 
 ; --- OneNote ---------------------------------------------------------------
 cheatSheets["ONENOTE.EXE"] := "
 (
 OneNote
-[Shift+Y] > Collapse
-[Shift+U] > Expand
-[Shift+I] > Collapse all
-[Shift+O] > Expand all
-[Shift+P] > Select line and children
-[Shift+D] > Delete line and children
-[Shift+S] > Delete line (keep children)
-[Shift+F] > Advanced Searching with double quotes
+[Shift+Y] > 📉 Collapse
+[Shift+U] > 📈 Expand
+[Shift+I] > 📉 Collapse all
+[Shift+O] > 📈 Expand all
+[Shift+P] > 📝 Select line and children
+[Shift+D] > 🗑️ Delete line and children
+[Shift+S] > 🗑️ Delete line (keep children)
+[Shift+F] > 🔍 Advanced Searching with double quotes
 )"  ; end OneNote
 
 ; --- Chrome general shortcuts ----------------------------------------------
 cheatSheets["chrome.exe"] := "
 (
 Chrome
-[Shift+G] > Pop current tab to new window
+[Shift+G] > 🪟 Pop current tab to new window
 )"  ; end Chrome
 
 ; --- Cursor ------------------------------------------------------
 cheatSheets["Cursor.exe"] := "
 (
 Cursor
-[Shift+Y] > Fold
-[Shift+U] > Unfold
-[Shift+I] > Fold all
-[Shift+O] > Unfold all
-[Shift+P] > Go to terminal
-[Shift+H] > New terminal
-[Shift+J] > Go to file explorer
-[Shift+K] > Format code (less used)
-[Shift+L] > Command palette
-[Shift+N] > Expand selection 
-[Shift+M] > Change project
-[Shift+,] > Show chat history 
-[Shift+.] > Extensions (less used)
-[Shift+W] > Switch brackets (less used)
-[Shift+E] > Search 
-[Shift+R] > Open Bread Crumbs menu.
-[Shift+T] > Emoji selector (1:🔲 2:⏳ 3:⚡ 4:2️⃣ 5:❓)
-[Shift+D] > Git section
-[Shift+F] > Close all editors (less used)
-[Shift+G] > Switch AI models (auto/CLAUD/GPT/O/DeepSeek/Cursor)
-[Shift+C] > Switch between AI modes (agent/ask)
-[Shift+V] > Fold Git repos (SCM) 
-[Shift+B] > Create AI commit message, then select Commit or Commit and Push
-[Ctrl + Alt + Y] > Select to Bracket
-[Ctrl + Alt + U] > Open in file explorer
-[Ctrl + Alt + I] > Fold all directories
-[Ctrl + Alt + O] > Unfold all directories
-[Ctrl + Alt + P] > Paste As...
-[Ctrl + Alt + H] > Kill terminal  [custom: defined in Cursor settings.json]
-[Ctrl + Alt + L] > Open markdown preview
-[Ctrl + Alt + N] > Open code actions
-[Ctrl + Alt + M] > Paste Image
-[Ctrl + Alt + Z] > Toggle Zen Mode
-[Ctrl + Alt + T] > Move editor group into new window
-[Ctrl + Alt + K] > Available
-[Ctrl + Alt + Up] > Go to Parent Fold
-[Ctrl + Alt + Left] > Go to sibling fold previous
-[Ctrl + Alt + Right] > Go to sibling fold next
+[Shift+Y] > 📉 Fold
+[Shift+U] > 📈 Unfold
+[Shift+I] > 📉 Fold all
+[Shift+O] > 📈 Unfold all
+[Shift+P] > 💻 Go to terminal
+[Shift+H] > 💻 New terminal
+[Shift+J] > 📁 Go to file explorer
+[Shift+K] > 🎨 Format code (less used)
+[Shift+L] > ⌨️ Command palette
+[Shift+N] > 📈 Expand selection 
+[Shift+M] > 🔄 Change project
+[Shift+,] > 💬 Show chat history 
+[Shift+.] > 🔌 Extensions (less used)
+[Shift+W] > 🔄 Switch brackets (less used)
+[Shift+E] > 🔍 Search 
+[Shift+R] > 🍞 Open Bread Crumbs menu.
+[Shift+T] > 😀 Emoji selector (1:🔲 2:⏳ 3:⚡ 4:2️⃣ 5:❓)
+[Shift+D] > 🌿 Git section
+[Shift+F] > ❌ Close all editors (less used)
+[Shift+G] > 🤖 Switch AI models (auto/CLAUD/GPT/O/DeepSeek/Cursor)
+[Shift+C] > 🔄 Switch between AI modes (agent/ask)
+[Shift+V] > 📁 Fold Git repos (SCM) 
+[Shift+B] > 💬 Create AI commit message, then select Commit or Commit and Push
+[Ctrl + Alt + Y] > 🔲 Select to Bracket
+[Ctrl + Alt + U] > 📁 Open in file explorer
+[Ctrl + Alt + I] > 📉 Fold all directories
+[Ctrl + Alt + O] > 📈 Unfold all directories
+[Ctrl + Alt + P] > 📋 Paste As...
+[Ctrl + Alt + H] > ⚡ Kill terminal  [custom: defined in Cursor settings.json]
+[Ctrl + Alt + L] > 📄 Open markdown preview
+[Ctrl + Alt + N] > ⚡ Open code actions
+[Ctrl + Alt + M] > 🖼️ Paste Image
+[Ctrl + Alt + Z] > 🧘 Toggle Zen Mode
+[Ctrl + Alt + T] > 🪟 Move editor group into new window
+[Ctrl + Alt + K] > ✅ Available
+[Ctrl + Alt + Up] > ⬆️ Go to Parent Fold
+[Ctrl + Alt + Left] > ⬅️ Go to sibling fold previous
+[Ctrl + Alt + Right] > ➡️ Go to sibling fold next
 
 --- Additional Shortcuts ---
-[Ctrl + T] > New chat tab
-[Ctrl + N] > New chat tab (replacing current)
-[Alt + F12] > Peek Definition
-[Ctrl + D] > Select next identical word
-[Ctrl + Shift + L] > Select all identical words
-[F2] > Rename symbol
-[F8] > Navigate problems
-[Ctrl + Enter] > Insert line below
-[Ctrl + P] > Quick Open
-[Shift + Delete] > Delete line
-[Alt + ↑] > Move line up
-[Alt + ↓] > Move line down
-[Ctrl + 1 / Ctrl + 2 / Ctrl + 3 ...] > Switch tabs
-[Ctrl + N] > New file
-[Ctrl + Alt + ↑] > Add cursor above
-[Ctrl + Alt + ↓] > Add cursor below
-[Alt + Click] > Multi-cursor by click
-[Shift + Alt + ↑] > Copy line up
-[Shift + Alt + ↓] > Copy line down
-[Ctrl + ;] > Insert comment
-[Ctrl + Home] > Go to top
-[Ctrl + End] > Go to end
-[Alt + Z] > Toggle word wrap
-[Ctrl + Shift + D] > Debugging
-[Ctrl + R] > Quick project switch
-[Alt + J] > Next review
-[Alt + K] > Previous review
+[Ctrl + T] > 💬 New chat tab
+[Ctrl + N] > 💬 New chat tab (replacing current)
+[Alt + F12] > 👁️ Peek Definition
+[Ctrl + D] > 📝 Select next identical word
+[Ctrl + Shift + L] > 📝 Select all identical words
+[F2] > ✏️ Rename symbol
+[F8] > 🔍 Navigate problems
+[Ctrl + Enter] > ➕ Insert line below
+[Ctrl + P] > 🔍 Quick Open
+[Shift + Delete] > 🗑️ Delete line
+[Alt + ↑] > ⬆️ Move line up
+[Alt + ↓] > ⬇️ Move line down
+[Ctrl + 1 / Ctrl + 2 / Ctrl + 3 ...] > 🔄 Switch tabs
+[Ctrl + N] > 📄 New file
+[Ctrl + Alt + ↑] > ⬆️ Add cursor above
+[Ctrl + Alt + ↓] > ⬇️ Add cursor below
+[Alt + Click] > 👆 Multi-cursor by click
+[Shift + Alt + ↑] > ⬆️ Copy line up
+[Shift + Alt + ↓] > ⬇️ Copy line down
+[Ctrl + ;] > 💬 Insert comment
+[Ctrl + Home] > ⬆️ Go to top
+[Ctrl + End] > ⬇️ Go to end
+[Alt + Z] > 🔄 Toggle word wrap
+[Ctrl + Shift + D] > 🐛 Debugging
+[Ctrl + R] > 🔄 Quick project switch
+[Alt + J] > ⬇️ Next review
+[Alt + K] > ⬆️ Previous review
 )"  ; end Cursor
 
 ; --- Windows Explorer ------------------------------------------------------
 cheatSheets["explorer.exe"] := "
 (
 Explorer
-[Shift+Y] > Select first file
-[Shift+U] > Focus search bar
-[Shift+I] > Focus address bar
-[Shift+O] > New folder
-[Shift+J] > Create a shortcut
-[Shift+K] > Copy as path
-[Shift+P] > Select first pinned item in Explorer sidebar
-[Shift+H] > Select the last item of the Explorer sidebar
+[Shift+Y] > 📄 Select first file
+[Shift+U] > 🔍 Focus search bar
+[Shift+I] > 📍 Focus address bar
+[Shift+O] > 📁 New folder
+[Shift+J] > 🔗 Create a shortcut
+[Shift+K] > 📋 Copy as path
+[Shift+P] > 📌 Select first pinned item in Explorer sidebar
+[Shift+H] > 📌 Select the last item of the Explorer sidebar
 )"  ; end Explorer
 
 ; --- Microsoft Paint ------------------------------------------------------
 cheatSheets["mspaint.exe"] := "
 (
 MS Paint
-[Shift+Y] > Resize and Skew (Ctrl+W)
+[Shift+Y] > 📏 Resize and Skew (Ctrl+W)
 
 --- Common Shortcuts ---
-[Ctrl+N] > New
-[Ctrl+O] > Open
-[Ctrl+S] > Save
-[F12] > Save As
-[Ctrl+P] > Print
-[Ctrl+Z] > Undo
-[Ctrl+Y] > Redo
-[Ctrl+A] > Select all
-[Ctrl+C] > Copy
-[Ctrl+X] > Cut
-[Ctrl+V] > Paste
-[Ctrl+W] > Resize and Skew
-[Ctrl+E] > Image properties
-[Ctrl+R] > Toggle rulers
-[Ctrl+G] > Toggle gridlines
-[Ctrl+I] > Invert colors
-[F11] > Fullscreen view
-[Ctrl++] > Zoom in
-[Ctrl+-] > Zoom out
+[Ctrl+N] > 📄 New
+[Ctrl+O] > 📂 Open
+[Ctrl+S] > 💾 Save
+[F12] > 💾 Save As
+[Ctrl+P] > 🖨️ Print
+[Ctrl+Z] > ↩️ Undo
+[Ctrl+Y] > ↪️ Redo
+[Ctrl+A] > 📄 Select all
+[Ctrl+C] > 📋 Copy
+[Ctrl+X] > ✂️ Cut
+[Ctrl+V] > 📋 Paste
+[Ctrl+W] > 📏 Resize and Skew
+[Ctrl+E] > ℹ️ Image properties
+[Ctrl+R] > 📏 Toggle rulers
+[Ctrl+G] > 🔲 Toggle gridlines
+[Ctrl+I] > 🔄 Invert colors
+[F11] > 🖥️ Fullscreen view
+[Ctrl++] > 🔍 Zoom in
+[Ctrl+-] > 🔍 Zoom out
 )"  ; end MS Paint
 
 ; --- ClipAngel -------------------------------------------------------------
 cheatSheets["ClipAngel.exe"] := "
 (
 ClipAngel
-[Shift+Y] > Select filtered content and copy
-[Shift+U] > Switch focus list/text
-[Shift+I] > Delete all non-favorite
-[Shift+O] > Clear filters
-[Shift+P] > Mark as favorite
-[Shift+H] > Unmark as favorite
-[Shift+J] > Edit text
-[Shift+K] > Save as file
-[Shift+L] > Merge clips
+[Shift+Y] > 📋 Select filtered content and copy
+[Shift+U] > 🔄 Switch focus list/text
+[Shift+I] > 🗑️ Delete all non-favorite
+[Shift+O] > 🧹 Clear filters
+[Shift+P] > ⭐ Mark as favorite
+[Shift+H] > ⭐ Unmark as favorite
+[Shift+J] > ✏️ Edit text
+[Shift+K] > 💾 Save as file
+[Shift+L] > 🔗 Merge clips
 )"  ; end ClipAngel
 
 ; --- Figma -----------------------------------------------------------------
 cheatSheets["Figma.exe"] := "
 (
 Figma
-[Shift+Y] > Show/Hide UI
-[Shift+U] > Component search
-[Shift+I] > Select parent
-[Shift+O] > Create component
-[Shift+P] > Detach instance
-[Shift+H] > Add auto layout
-[Shift+J] > Remove auto layout
-[Shift+K] > Suggest auto layout
-[Shift+L] > Export
-[Shift+N] > Copy as PNG
-[Shift+M] > Actions...
-[Shift+,] > Align left
-[Shift+.] > Align right
-[Shift+W] > Distribute vertical spacing
-[Shift+E] > Tidy up
-[Shift+R] > Align top
-[Shift+T] > Align bottom
-[Shift+D] > Align center horizontal
-[Shift+F] > Align center vertical
-[Shift+G] > Distribute horizontal spacing
+[Shift+Y] > 👁️ Show/Hide UI
+[Shift+U] > 🔍 Component search
+[Shift+I] > ⬆️ Select parent
+[Shift+O] > 🧩 Create component
+[Shift+P] > 🔗 Detach instance
+[Shift+H] > 📐 Add auto layout
+[Shift+J] > 📐 Remove auto layout
+[Shift+K] > 💡 Suggest auto layout
+[Shift+L] > 📤 Export
+[Shift+N] > 🖼️ Copy as PNG
+[Shift+M] > ⚡ Actions...
+[Shift+,] > ⬅️ Align left
+[Shift+.] > ➡️ Align right
+[Shift+W] > 📏 Distribute vertical spacing
+[Shift+E] > 🧹 Tidy up
+[Shift+R] > ⬆️ Align top
+[Shift+T] > ⬇️ Align bottom
+[Shift+D] > ↔️ Align center horizontal
+[Shift+F] > ↕️ Align center vertical
+[Shift+G] > 📏 Distribute horizontal spacing
 )"  ; end Figma
 
 ; --- Gmail ---------------------------------------------------------------
 cheatSheets["Gmail"] := "
 (
 Gmail
-[Shift+Y] > Go to main inbox
-[Shift+U] > Go to updates
-[Shift+I] > Go to forums
-[Shift+O] > Toggle read/unread
-[Shift+P] > Previous conversation
-[Shift+H] > Next conversation
-[Shift+J] > Archive conversation
-[Shift+K] > Select conversation
-[Shift+L] > Reply
-[Shift+N] > Reply all
-[Shift+M] > Forward
-[Shift+,] > Star/unstar conversation
-[Shift+.] > Delete
-[Shift+W] > Report as spam
-[Shift+E] > Compose new email
-[Shift+R] > Search mail
-[Shift+T] > Move to folder
-[Shift+D] > Show keyboard shortcuts help
+[Shift+Y] > 📥 Go to main inbox
+[Shift+U] > 📰 Go to updates
+[Shift+I] > 💬 Go to forums
+[Shift+O] > 📬 Toggle read/unread
+[Shift+P] > ⬅️ Previous conversation
+[Shift+H] > ➡️ Next conversation
+[Shift+J] > 📦 Archive conversation
+[Shift+K] > ✅ Select conversation
+[Shift+L] > ↩️ Reply
+[Shift+N] > ↩️ Reply all
+[Shift+M] > ➡️ Forward
+[Shift+,] > ⭐ Star/unstar conversation
+[Shift+.] > 🗑️ Delete
+[Shift+W] > 🚫 Report as spam
+[Shift+E] > ✍️ Compose new email
+[Shift+R] > 🔍 Search mail
+[Shift+T] > 📁 Move to folder
+[Shift+D] > ⌨️ Show keyboard shortcuts help
 
 --- Built-in Shortcuts (Windows) ---
 
@@ -718,48 +718,49 @@ Application (shortcuts on):
 cheatSheets["Google Keep"] := "
 (
 Google Keep
-[Shift+Y] > Search and select note
-[Shift+U] > Toggle main menu
+[Shift+Y] > 🔍 Search and select note
+[Shift+U] > 📋 Toggle main menu
 )"  ; end Google Keep
 
 ; --- File Dialog ---------------------------------------------------------------
 cheatSheets["FileDialog"] := "
 (
 File Dialog
-[Shift+Y] > Select first item
-[Shift+U] > Focus search bar
-[Shift+I] > Focus address bar
-[Shift+O] > New folder
-[Shift+P] > Select first pinned item in sidebar
-[Shift+H] > Select 'This PC' / 'Este computador' in sidebar
-[Shift+J] > Focus file name field
-[Shift+K] > Click Insert/Open/Save button
-[Shift+L] > Click Cancel button
+[Shift+Y] > 📄 Select first item
+[Shift+U] > 🔍 Focus search bar
+[Shift+I] > 📍 Focus address bar
+[Shift+O] > 📁 New folder
+[Shift+P] > 📌 Select first pinned item in sidebar
+[Shift+H] > 💻 Select 'This PC' / 'Este computador' in sidebar
+[Shift+J] > 📝 Focus file name field
+[Shift+K] > ✅ Click Insert/Open/Save button
+[Shift+L] > ❌ Click Cancel button
 )"
 
 ; --- Settings Window -------------------------------------------------
-cheatSheets["Settings"] := "(Settings)`r`n[Shift+Y] > Set input volume to 100%"
+cheatSheets["Settings"] := "(Settings)`r`n[Shift+Y] > 🔊 Set input volume to 100%"
 
 ; --- UIA Tree Inspector -------------------------------------------------
-cheatSheets["UIATreeInspector"] := "(UIA Tree Inspector)`r`n[Shift+Y] > Refresh list`r`n[Shift+U] > Focus filter field"
+cheatSheets["UIATreeInspector"] :=
+"(UIA Tree Inspector)`r`n[Shift+Y] > 🔄 Refresh list`r`n[Shift+U] > 🔍 Focus filter field"
 ; --- SettleUp Shortcuts -----------------------------------------------------
 cheatSheets["Settle Up"] := "
 (
 Settle Up
-[Shift+Y] > Add transaction
-[Shift+U] > Focus expense value field
-[Shift+I] > Focus expense name field
+[Shift+Y] > ➕ Add transaction
+[Shift+U] > 💰 Focus expense value field
+[Shift+I] > 📝 Focus expense name field
 )"
 
 ; --- Miro Shortcuts -----------------------------------------------------
 cheatSheets["Miro"] := "
 (
 Miro
-[Shift+U] > Frame list
-[Shift+I] > Group
-[Shift+O] > Ungroup
-[Shift+P] > Lock/Unlock
-[Shift+H] > Add/Edit link
+[Shift+U] > 📋 Frame list
+[Shift+I] > 🔗 Group
+[Shift+O] > 🔗 Ungroup
+[Shift+P] > 🔒 Lock/Unlock
+[Shift+H] > 🔗 Add/Edit link
 Q
 --- Built-in Shortcuts (Windows) ---
 Tools:
@@ -846,7 +847,7 @@ Desktop app:
 cheatSheets["Wikipedia"] := "
 (
 Wikipedia
-[Shift+Y] > Click search button
+[Shift+Y] > 🔍 Click search button
 )"
 
 ; ========== Helper to decide which sheet applies ===========================
