@@ -426,7 +426,7 @@ OneNote
 [Shift+F] > 🔍 Advanced Searching with double quotes
 )"  ; end OneNote
 
-; --- Chrome general shortcuts ----------------------------------------------
+; --- Chrome general shortcuts test  ----------------------------------------------
 cheatSheets["chrome.exe"] := "
 (
 Chrome
