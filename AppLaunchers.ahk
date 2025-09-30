@@ -21,6 +21,7 @@
     ; Look for Cursor windows with specific names: habits, home, punctual, or work
     ; Exclude windows containing "preview"
     targetWindow := ""
+    fallbackWindow := ""
     
     ; Get all Cursor windows (support both Cursor.exe and Code.exe just in case)
     for proc in ["ahk_exe Cursor.exe", "ahk_exe Code.exe"] {
@@ -32,6 +33,10 @@
                 ; Skip any preview windows
                 if InStr(winTitleLower, "preview")
                     continue
+
+                ; Store the first valid Cursor window as fallback
+                if (!fallbackWindow)
+                    fallbackWindow := "ahk_id " hwnd
 
                 ; Check if window contains any of the target names
                 if (InStr(winTitleLower, "habits")
@@ -57,8 +62,16 @@
             Sleep(100)  ; Small delay to ensure window is fully active
             Send("^+o")  ; Send Ctrl+Shift+O
         }
+    } else if (fallbackWindow) {
+        ; No specific window found, but found a general Cursor window - use fallback
+        WinActivate(fallbackWindow)
+        if WinWaitActive(fallbackWindow, , 2) {
+            CenterMouse()
+            Sleep(100)  ; Small delay to ensure window is fully active
+            Send("^+o")  ; Send Ctrl+Shift+O
+        }
     } else {
-        ; No matching Cursor window found - show fallback panel
+        ; No Cursor window found at all - show fallback panel
         ShowCursorFallbackPanel()
     }
 }
