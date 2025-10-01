@@ -447,7 +447,7 @@ Cursor
 [Ctrl+H] > 📁 Reveal in file explorer
 [Ctrl+J] > 🔲 Select to Bracket
 [Ctrl+,] > 📉 Fold all directories
-[Ctrl+.] > 🔌 Extensions
+[Ctrl+.] > 💬 Toggle chat or agent
 [Ctrl+Q] > 📈 Unfold all directories
 [Ctrl+E] > 📄 Go to file
 [Ctrl+R] > 📂 File open Recent
