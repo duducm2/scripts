@@ -426,7 +426,7 @@ OneNote
 [Shift+F] > 🔍 Advanced Searching with double quotes
 )"  ; end OneNote
 
-; --- Chrome general shortcuts test 2 ----------------------------------------------
+; --- Chrome general shortcuts ----------------------------------------------
 cheatSheets["chrome.exe"] := "
 (
 Chrome
@@ -3323,8 +3323,8 @@ IsEditorActive() {
     Send "^+9"
 }
 
-; Shift + I : Fold all
-+i::
+; Ctrl + Y : Fold all
+^y::
 {
     Send "^+p" ; Open command palette
     Sleep 400
@@ -3335,8 +3335,8 @@ IsEditorActive() {
     Send "{Enter}"
 }
 
-; Shift + O : Unfold all
-+o::
+; Ctrl + U : Unfold all
+^u::
 {
     Send "^+p" ; Open command palette
     Sleep 400
@@ -3364,14 +3364,15 @@ IsEditorActive() {
 ; Shift + J : Go to file explorer
 +j:: Send "^+e"
 
-; Shift + K : Format code
-+k:: Send "!+f"
++k::
+{
+    Send "+i"
+    Sleep 400
+    Send "+o"
+}
 
 ; Shift + L : command palette
 +l:: Send "^+p"
-
-; Shift + M : Change project
-+m:: Send "^r"
 
 ; Shift + , : Show chat history
 +,::
@@ -3382,12 +3383,6 @@ IsEditorActive() {
     Sleep 200
     Send "{Enter}"
 }
-
-; Shift + . : Extensions
-+.:: Send "^+x"
-
-; Shift + W : Switch the brackets open/close
-+w:: Send "^+]"
 
 ; Shift + E : Search
 +e:: Send "^+f"
@@ -3626,11 +3621,8 @@ ExecuteAIModelSelection(choice) {
     }
 }
 
-; Shift + C : Ctrl + .
-+c:: Send("^.")
-
 ; Shift + V : Fold all Git directories in Source Control (Cursor)
-+v:: FoldAllGitDirectoriesInCursor()
++w:: FoldAllGitDirectoriesInCursor()
 
 ; Global variable for commit selector target window
 global gCommitTargetWin := 0
@@ -3712,69 +3704,11 @@ CancelCommit(ctrl, *) {
     ctrl.Gui.Destroy()
 }
 
-; Shift + B : Commit selector (Auto-submit version)
-+b::
-{
-    try {
-        ; Remember current target window before showing GUI
-        gCommitTargetWin := WinExist("A")
-        ; Create GUI for commit selection with auto-submit
-        commitGui := Gui("+AlwaysOnTop +ToolWindow", "Commit Selector")
-        commitGui.SetFont("s10", "Segoe UI")
-
-        ; Add instruction text
-        commitGui.AddText("w400 Center",
-            "Select commit action:`n`n1. Commit and push from workspace`n2. Commit and push from repository`n`nType a number (1-2):"
-        )
-
-        ; Add input field with auto-submit functionality
-        commitGui.AddEdit("w50 Center vCommitInput Limit1 Number")
-
-        ; Add OK and Cancel buttons (as backup)
-        commitGui.AddButton("w80 xp-40 y+10", "OK").OnEvent("Click", SubmitCommit)
-        commitGui.AddButton("w80 xp+90", "Cancel").OnEvent("Click", CancelCommit)
-
-        ; Set up auto-submit on text change
-        commitGui["CommitInput"].OnEvent("Change", AutoSubmitCommit)
-
-        ; Show GUI and focus input
-        commitGui.Show("w400 h200")
-        commitGui["CommitInput"].Focus()
-
-    } catch Error as e {
-        MsgBox "Error in commit selector: " e.Message, "Commit Selector Error", "IconX"
-    }
-}
-
-; Ctrl + Alt + Y : Select to Bracket (via Command Palette)
-^!y::
-{
-    oldClip := A_Clipboard
-    try {
-        A_Clipboard := ""
-        A_Clipboard := "select to bracket"
-        ClipWait 0.5
-        Send "^+p"
-        Sleep 300
-        Send "^v"
-        Sleep 150
-        Send "{Enter}"
-    } finally {
-        A_Clipboard := oldClip
-    }
-}
-
-; Ctrl + Alt + U : Remap to Shift+Alt+R
-^!u:: Send "+!r"
-
 ; Ctrl + Alt + I : Fold all directories in VS Code Explorer
-^!i:: FoldAllDirectoriesInExplorer()
+^,:: FoldAllDirectoriesInExplorer()
 
 ; Ctrl + Alt + O : Unfold all directories in VS Code Explorer
-^!o:: UnfoldAllDirectoriesInExplorer()
-
-; Ctrl + Alt + N : Open code actions
-^!n:: Send "^+o"
+^q:: UnfoldAllDirectoriesInExplorer()
 
 ; Shift + N : Expand selection (via Command Palette)
 +n:: Send "+!{Right}"
