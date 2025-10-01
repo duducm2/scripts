@@ -437,50 +437,61 @@ Chrome
 cheatSheets["Cursor.exe"] := "
 (
 Cursor
-[Shift+Y] > 📉 Fold
-[Shift+U] > 📈 Unfold
-[Shift+I] > 📉 Fold all
-[Shift+O] > 📈 Unfold all
-[Shift+P] > 💻 Go to terminal
-[Shift+H] > 💻 New terminal
-[Shift+J] > 📁 Go to file explorer
-[Shift+K] > 🎨 Format code (less used)
-[Shift+L] > ⌨️ Command palette
-[Shift+N] > 📈 Expand selection 
-[Shift+M] > 🔄 Change project
-[Shift+,] > 💬 Show chat history 
-[Shift+.] > 🔌 Extensions (less used)
-[Shift+W] > 🔄 Switch brackets (less used)
-[Shift+E] > 🔍 Search 
-[Shift+R] > 🍞 Open Bread Crumbs menu.
-[Shift+T] > 😀 Emoji selector (1:🔲 2:⏳ 3:⚡ 4:2️⃣ 5:❓)
-[Shift+D] > 🌿 Git section
-[Shift+F] > ❌ Close all editors (less used)
-[Shift+G] > 🤖 Switch AI models (auto/CLAUD/GPT/O/DeepSeek/Cursor)
-[Shift+C] > 🔄 Switch between AI modes (agent/ask)
-[Shift+V] > 📁 Fold Git repos (SCM) 
-[Shift+B] > 💬 Create AI commit message, then select Commit or Commit and Push
-[Ctrl + Alt + Y] > 🔲 Select to Bracket
-[Ctrl + Alt + U] > 📁 Open in file explorer
-[Ctrl + Alt + I] > 📉 Fold all directories
-[Ctrl + Alt + O] > 📈 Unfold all directories
-[Ctrl + Alt + P] > 📋 Paste As...
-[Ctrl + Alt + H] > ⚡ Kill terminal  [custom: defined in Cursor settings.json]
-[Ctrl + Alt + L] > 📄 Open markdown preview
-[Ctrl + Alt + N] > ⚡ Open code actions
-[Ctrl + Alt + M] > 🖼️ Paste Image
-[Ctrl + Alt + Z] > 🧘 Toggle Zen Mode
-[Ctrl + Alt + T] > 🪟 Move editor group into new window
-[Ctrl + Alt + K] > ✅ Available
-[Ctrl + Alt + Up] > ⬆️ Go to Parent Fold
-[Ctrl + Alt + Left] > ⬅️ Go to sibling fold previous
-[Ctrl + Alt + Right] > ➡️ Go to sibling fold next
+
+--- CTRL Shortcuts (Cursor-defined) ---
+[Ctrl+M] > 💬 Generate commit message
+[Ctrl+G] > ⚡ Kill terminal [custom in settings.json]
+[Ctrl+Y] > 📉 Fold all
+[Ctrl+U] > 📈 Unfold all
+[Ctrl+O] > 📋 Paste As...
+[Ctrl+H] > 📁 Reveal in file explorer
+[Ctrl+J] > 🔲 Select to Bracket
+[Ctrl+,] > 📉 Fold all directories
+[Ctrl+.] > 🔌 Extensions
+[Ctrl+Q] > 📈 Unfold all directories
+[Ctrl+E] > 📄 Go to file
+[Ctrl+R] > 📂 File open Recent
+[Ctrl+T] > 🔍 Go to symbol in workspace
+[Ctrl+D] > 📝 Add selection to next find match
+[Ctrl+F] > 🔍 Find
+[Ctrl+Z] > ↩️ Undo
+[Ctrl+B] > 📊 Toggle primary sidebar visibility
+
+--- SHIFT Shortcuts (ahk = AutoHotkey) ---
+[Shift+Y] > 📉 Fold (ahk)
+[Shift+U] > 📈 Unfold (ahk)
+[Shift+I] > 📄 Open markdown preview to the side (cursor)
+[Shift+O] > 🪟 Move editor into new window (cursor)
+[Shift+P] > 💻 Go to terminal (ahk)
+[Shift+H] > 💻 New terminal (ahk)
+[Shift+J] > 📁 Go to file explorer (ahk)
+[Shift+K] > 📄🪟 Open markdown preview and move editor into new window (ahk)
+[Shift+L] > ⌨️ Command palette (ahk)
+[Shift+N] > 📈 Expand selection (ahk)
+[Shift+M] > ⚡ Go to symbol in access view (cursor)
+[Shift+,] > 💬 Show chat history (ahk)
+[Shift+.] > 🖼️ Paste Image (cursor)
+[Shift+W] > 📁 Fold Git repos (SCM) (ahk)
+[Shift+E] > 🔍 Search (ahk)
+[Shift+R] > 🍞 Open Bread Crumbs menu (ahk)
+[Shift+T] > 😀 Emoji selector (1:🔲 2:⏳ 3:⚡ 4:2️⃣ 5:❓) (ahk)
+[Shift+D] > 🌿 Git section (ahk)
+[Shift+F] > ❌ Close all editors (ahk)
+[Shift+G] > 🤖 Switch AI models (auto/CLAUD/GPT/O/DeepSeek/Cursor) (ahk)
+[Shift+Z] > 🧘 Zen mode (cursor)
+[Shift+C] > ⬇️ Git Pull (cursor)
+[Shift+V] > ✅ Git Commit (cursor)
+[Shift+B] > ⬆️ Git Push (cursor)
+
+--- CTRL+ALT Shortcuts (Cursor-defined) ---
+[Ctrl+Alt+Up] > ⬆️ Go to Parent Fold
+[Ctrl+Alt+Left] > ⬅️ Go to sibling fold previous
+[Ctrl+Alt+Right] > ➡️ Go to sibling fold next
 
 --- Additional Shortcuts ---
 [Ctrl + T] > 💬 New chat tab
 [Ctrl + N] > 💬 New chat tab (replacing current)
 [Alt + F12] > 👁️ Peek Definition
-[Ctrl + D] > 📝 Select next identical word
 [Ctrl + Shift + L] > 📝 Select all identical words
 [F2] > ✏️ Rename symbol
 [F8] > 🔍 Navigate problems
@@ -490,7 +501,6 @@ Cursor
 [Alt + ↑] > ⬆️ Move line up
 [Alt + ↓] > ⬇️ Move line down
 [Ctrl + 1 / Ctrl + 2 / Ctrl + 3 ...] > 🔄 Switch tabs
-[Ctrl + N] > 📄 New file
 [Ctrl + Alt + ↑] > ⬆️ Add cursor above
 [Ctrl + Alt + ↓] > ⬇️ Add cursor below
 [Alt + Click] > 👆 Multi-cursor by click
