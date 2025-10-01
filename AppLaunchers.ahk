@@ -60,7 +60,7 @@
         if WinWaitActive(targetWindow, , 2) {
             CenterMouse()
             Sleep(100)  ; Small delay to ensure window is fully active
-            Send("^+o")  ; Send Ctrl+Shift+O
+            Send("+m")  ; Send Ctrl+Shift+O
         }
     } else if (fallbackWindow) {
         ; No specific window found, but found a general Cursor window - use fallback
@@ -68,7 +68,7 @@
         if WinWaitActive(fallbackWindow, , 2) {
             CenterMouse()
             Sleep(100)  ; Small delay to ensure window is fully active
-            Send("^+o")  ; Send Ctrl+Shift+O
+            Send("+m")  ; Send Ctrl+Shift+O
         }
     } else {
         ; No Cursor window found at all - show fallback panel
