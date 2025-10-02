@@ -3377,7 +3377,7 @@ IsEditorActive() {
 +k::
 {
     Send "+i"
-    Sleep 400
+    Sleep 700
     Send "+o"
 }
 
