@@ -3379,6 +3379,8 @@ IsEditorActive() {
     Send "+i"
     Sleep 700
     Send "+o"
+    Sleep 500
+    WinMaximize "A"
 }
 
 ; Shift + L : command palette
