@@ -4793,6 +4793,37 @@ FocusViaOpenButton(tabs, pressSpace := false) {
 ; Shift + M : Focus expense name field
 +m:: FocusViaOpenButton(2, false)
 
+; Shift + E : Click action button then Expense menu item
++e:: {
+    try {
+        uia := TryAttachBrowser()
+        if !uia {
+            MsgBox "Could not attach to the browser window.", "Mobills Navigation", "IconX"
+            return
+        }
+
+        ; First, click the action button
+        actionBtn := uia.FindElement({ Type: "Button", AutomationId: "action-button" })
+        if !actionBtn {
+            MsgBox "Could not find the action button.", "Mobills Navigation", "IconX"
+            return
+        }
+        actionBtn.Click()
+        Sleep(300)  ; Wait for menu to appear
+
+        ; Then click on the Expense menu item
+        expenseItem := uia.FindElement({ Type: "MenuItem", Name: "Expense" })
+        if !expenseItem {
+            MsgBox "Could not find the Expense menu item.", "Mobills Navigation", "IconX"
+            return
+        }
+        expenseItem.Click()
+
+    } catch Error as e {
+        MsgBox "Error clicking action button and Expense menu: " e.Message, "Mobills Error", "IconX"
+    }
+}
+
 #HotIf
 
 ;-------------------------------------------------------------------
