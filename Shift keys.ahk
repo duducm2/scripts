@@ -3589,38 +3589,40 @@ ExecuteAIModelSelection(choice) {
     }
 }
 
-; Shift + G : Switch between AI models (Auto-submit version)
-+g::
-{
-    try {
-        ; Remember current target window before showing GUI
-        gAIModelTargetWin := WinExist("A")
-        ; Create GUI for AI model selection with auto-submit
-        aiModelGui := Gui("+AlwaysOnTop +ToolWindow", "AI Model Selection")
-        aiModelGui.SetFont("s10", "Segoe UI")
+; ; Shift + G : Switch between AI models (Auto-submit version)
+; +g::
+; {
+;     try {
+;         ; Remember current target window before showing GUI
+;         gAIModelTargetWin := WinExist("A")
+;         ; Create GUI for AI model selection with auto-submit
+;         aiModelGui := Gui("+AlwaysOnTop +ToolWindow", "AI Model Selection")
+;         aiModelGui.SetFont("s10", "Segoe UI")
 
-        ; Add instruction text
-        aiModelGui.AddText("w350 Center",
-            "Choose AI Model:`n`n1. auto`n2. CLAUD`n3. GPT`n4. O`n5. DeepSeek`n6. Cursor`n`nType a number (1-6):")
+;         ; Add instruction text
+;         aiModelGui.AddText("w350 Center",
+;             "Choose AI Model:`n`n1. auto`n2. CLAUD`n3. GPT`n4. O`n5. DeepSeek`n6. Cursor`n`nType a number (1-6):")
 
-        ; Add input field with auto-submit functionality
-        aiModelGui.AddEdit("w50 Center vAIModelInput Limit1 Number")
+;         ; Add input field with auto-submit functionality
+;         aiModelGui.AddEdit("w50 Center vAIModelInput Limit1 Number")
 
-        ; Add OK and Cancel buttons (as backup)
-        aiModelGui.AddButton("w80 xp-40 y+10", "OK").OnEvent("Click", SubmitAIModel)
-        aiModelGui.AddButton("w80 xp+90", "Cancel").OnEvent("Click", CancelAIModel)
+;         ; Add OK and Cancel buttons (as backup)
+;         aiModelGui.AddButton("w80 xp-40 y+10", "OK").OnEvent("Click", SubmitAIModel)
+;         aiModelGui.AddButton("w80 xp+90", "Cancel").OnEvent("Click", CancelAIModel)
 
-        ; Set up auto-submit on text change
-        aiModelGui["AIModelInput"].OnEvent("Change", AutoSubmitAIModel)
+;         ; Set up auto-submit on text change
+;         aiModelGui["AIModelInput"].OnEvent("Change", AutoSubmitAIModel)
 
-        ; Show GUI and focus input
-        aiModelGui.Show("w350 h200")
-        aiModelGui["AIModelInput"].Focus()
+;         ; Show GUI and focus input
+;         aiModelGui.Show("w350 h200")
+;         aiModelGui["AIModelInput"].Focus()
 
-    } catch Error as e {
-        MsgBox "Error in AI model selector: " e.Message, "AI Model Selector Error", "IconX"
-    }
-}
+;     } catch Error as e {
+;         MsgBox "Error in AI model selector: " e.Message, "AI Model Selector Error", "IconX"
+;     }
+; }
+
++g::^;
 
 ; Shift + V : Fold all Git directories in Source Control (Cursor)
 +w:: FoldAllGitDirectoriesInCursor()

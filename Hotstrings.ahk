@@ -1,6 +1,32 @@
 #Requires AutoHotkey v2.0+
 
-; --- Project Names ---
+; Central registry of hotstrings for cheat-sheet display
+global g_hotstrings := []
+
+RegisterHotstring(trigger, expansion) {
+    global g_hotstrings
+    g_hotstrings.Push({ trigger: trigger, expansion: expansion })
+}
+
+GetHotstringsCheatSheetText() {
+    global g_hotstrings
+    if (!IsSet(g_hotstrings) || g_hotstrings.Length = 0)
+        return ""
+    txt := ""
+    for hs in g_hotstrings {
+        line := "[" hs.trigger "] > " hs.expansion
+        if (txt = "")
+            txt := line
+        else
+            txt := txt . "`n" . line
+    }
+    return txt
+}
+
+; ----------------------
+; Define hotstrings below
+; ----------------------
+
 :o:myl::My Links
 :o:gintegra::GS_UX core team_UX and CIP Integration
 :o:gdash::GS_E&S_CIP Dashboard research and design
