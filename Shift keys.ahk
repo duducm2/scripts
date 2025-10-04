@@ -905,7 +905,7 @@ GetCheatSheetText() {
                 "ChatGPT`r`n[Shift+Y] > Cut all`r`n[Shift+U] > Model selector`r`n[Shift+I] > Toggle sidebar`r`n[Shift+O] > Re-send rules`r`n[Shift+H] > Copy code block`r`n[Shift+L] > Send and show AI banner"
         if InStr(chromeTitle, "Mobills")
             appShortcuts :=
-                "Mobills`r`n[Shift+Y] > Dashboard`r`n[Shift+U] > Contas`r`n[Shift+I] > TransaÃ§Ãµes`r`n[Shift+O] > CartÃµes de crÃ©dito`r`n[Shift+P] > Planejamento`r`n[Shift+H] > RelatÃ³rios`r`n[Shift+J] > Mais opÃ§Ãµes`r`n[Shift+K] > Previous month`r`n[Shift+L] > Next month`r`n[Shift+N] > Ignore transaction`r`n[Shift+M] > Name field"
+                "Mobills - Navigation`r`n[Shift+Y] > Dashboard`r`n[Shift+U] > Contas`r`n[Shift+I] > TransaÃ§Ãµes`r`n[Shift+O] > CartÃµes de crÃ©dito`r`n[Shift+P] > Planejamento`r`n[Shift+H] > RelatÃ³rios`r`n[Shift+J] > Mais opÃ§Ãµes`r`n[Shift+K] > Previous month`r`n[Shift+L] > Next month`r`n`r`nMobills - Actions`r`n[Shift+N] > Ignore transaction`r`n[Shift+M] > Name field`r`n[Shift+E] > New Expense`r`n[Shift+R] > New Income`r`n[Shift+T] > New Credit expense`r`n[Shift+D] > New Transfer"
         if InStr(chromeTitle, "Google Keep") || InStr(chromeTitle, "keep.google.com")
             appShortcuts := cheatSheets.Has("Google Keep") ? cheatSheets["Google Keep"] : ""
         if InStr(chromeTitle, "YouTube")
@@ -4821,6 +4821,99 @@ FocusViaOpenButton(tabs, pressSpace := false) {
 
     } catch Error as e {
         MsgBox "Error clicking action button and Expense menu: " e.Message, "Mobills Error", "IconX"
+    }
+}
+
+; Shift + R : Click action button then Income menu item
++r:: {
+    try {
+        uia := TryAttachBrowser()
+        if !uia {
+            MsgBox "Could not attach to the browser window.", "Mobills Navigation", "IconX"
+            return
+        }
+
+        ; First, click the action button
+        actionBtn := uia.FindElement({ Type: "Button", AutomationId: "action-button" })
+        if !actionBtn {
+            MsgBox "Could not find the action button.", "Mobills Navigation", "IconX"
+            return
+        }
+        actionBtn.Click()
+        Sleep(300)  ; Wait for menu to appear
+
+        ; Then click on the Income menu item
+        incomeItem := uia.FindElement({ Type: "MenuItem", Name: "Income" })
+        if !incomeItem {
+            MsgBox "Could not find the Income menu item.", "Mobills Navigation", "IconX"
+            return
+        }
+        incomeItem.Click()
+
+    } catch Error as e {
+        MsgBox "Error clicking action button and Income menu: " e.Message, "Mobills Error", "IconX"
+    }
+}
+
+; Shift + T : Click action button then Credit card expense menu item
++t:: {
+    try {
+        uia := TryAttachBrowser()
+        if !uia {
+            MsgBox "Could not attach to the browser window.", "Mobills Navigation", "IconX"
+            return
+        }
+
+        ; First, click the action button
+        actionBtn := uia.FindElement({ Type: "Button", AutomationId: "action-button" })
+        if !actionBtn {
+            MsgBox "Could not find the action button.", "Mobills Navigation", "IconX"
+            return
+        }
+        actionBtn.Click()
+        Sleep(300)  ; Wait for menu to appear
+
+        ; Then click on the Credit card expense menu item
+        creditItem := uia.FindElement({ Type: "MenuItem", Name: "Credit card expense" })
+        if !creditItem {
+            MsgBox "Could not find the Credit card expense menu item.", "Mobills Navigation", "IconX"
+            return
+        }
+        creditItem.Click()
+
+    } catch Error as e {
+        MsgBox "Error clicking action button and Credit card expense menu: " e.Message, "Mobills Error", "IconX"
+    }
+}
+
+; Shift + D : Click action button then Transfer menu item
++d:: {
+    try {
+        uia := TryAttachBrowser()
+        if !uia {
+            MsgBox "Could not attach to the browser window.", "Mobills Navigation", "IconX"
+            return
+        }
+
+        ; First, click the action button
+        actionBtn := uia.FindElement({ Type: "Button", AutomationId: "action-button" })
+        if !actionBtn {
+            MsgBox "Could not find the action button.", "Mobills Navigation", "IconX"
+            return
+        }
+        actionBtn.Click()
+        Sleep(300)  ; Wait for menu to appear
+
+        ; Then click on the Transfer menu item
+        transferItem := uia.FindElement({ Type: "MenuItem", Name: "Transfer" })
+        if !transferItem {
+            MsgBox "Could not find the Transfer menu item.", "Mobills Navigation", "IconX"
+            return
+        }
+        transferItem.Click()
+
+    } catch Error as e {
+        MsgBox "Error clicking action button and Transfer menu: " e.Message, "Mobills Error", "IconX"
     }
 }
 
