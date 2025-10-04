@@ -3583,7 +3583,6 @@ ExecuteAIModelSelection(choice) {
         }
 
         Sleep 100
-        Send "{Enter}"
 
     } catch Error as e {
         MsgBox "Error in AI model selection: " e.Message, "AI Model Selection Error", "IconX"
