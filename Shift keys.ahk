@@ -449,7 +449,7 @@ Cursor
 [Ctrl+,] > 📉 Fold all directories
 [Ctrl+.] > 💬 Toggle chat or agent
 [Ctrl+Q] > 📈 Unfold all directories
-[Ctrl+E] > 📄 Go to file
+[Ctrl+E] > 🤖 Open Agent Window
 [Ctrl+R] > 📂 File open Recent
 [Ctrl+T] > 🔍 Go to symbol in workspace
 [Ctrl+D] > 📝 Add selection to next find match
@@ -3388,9 +3388,6 @@ IsEditorActive() {
 
 ; Shift + E : Search
 +e:: Send "^+f"
-
-; Shift + R : Send Ctrl+Shift+
-+r:: Send("^+.")
 
 ; Auto-submit function - triggers when text changes
 global gEmojiTargetWin := 0
