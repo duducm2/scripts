@@ -3355,16 +3355,6 @@ IsEditorActive() {
     Send "{Enter}"
 }
 
-; Shift + F : Close all editors
-+f::
-{
-    Send "^+p" ; Open command palette
-    Sleep 400
-    Send "Close All Editors"
-    Sleep 400
-    Send "{Enter}"
-}
-
 ; Shift + P : Go to terminal
 +p:: Send "^'"
 
