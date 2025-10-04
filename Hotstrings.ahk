@@ -1,5 +1,8 @@
 #Requires AutoHotkey v2.0+
 
+; Prevent hotstring duplication by changing ending characters
+#Hotstring EndChars `n `t
+
 ; Central registry of hotstrings for cheat-sheet display
 global g_hotstrings := []
 
@@ -28,32 +31,32 @@ GetHotstringsCheatSheetText() {
 ; ----------------------
 
 ; --- Project Names ---
-::myl::My Links
-RegisterHotstring("::myl::", "My Links")
+:*o:myl::My Links
+RegisterHotstring(":*o:myl::", "My Links")
 
-::gintegra::GS_UX core team_UX and CIP Integration
-RegisterHotstring("::gintegra::", "GS_UX core team_UX and CIP Integration")
+:*o:gintegra::GS_UX core team_UX and CIP Integration
+RegisterHotstring(":*o:gintegra::", "GS_UX core team_UX and CIP Integration")
 
-::gdash::GS_E&S_CIP Dashboard research and design
-RegisterHotstring("::gdash::", "GS_E&S_CIP Dashboard research and design")
+:*o:gdash::GS_E&S_CIP Dashboard research and design
+RegisterHotstring(":*o:gdash::", "GS_E&S_CIP Dashboard research and design")
 
-::gb2c::GS_B2C_Credit_Management_Strategy_UI_Mentoring
-RegisterHotstring("::gb2c::", "GS_B2C_Credit_Management_Strategy_UI_Mentoring")
+:*o:gb2c::GS_B2C_Credit_Management_Strategy_UI_Mentoring
+RegisterHotstring(":*o:gb2c::", "GS_B2C_Credit_Management_Strategy_UI_Mentoring")
 
-::gug::GS_UX Core Team_Monitoring for B2C in Brazil
-RegisterHotstring("::gug::", "GS_UX Core Team_Monitoring for B2C in Brazil")
+:*o:gug::GS_UX Core Team_Monitoring for B2C in Brazil
+RegisterHotstring(":*o:gug::", "GS_UX Core Team_Monitoring for B2C in Brazil")
 
-::gpm::GS_UX_Project_Management_Activities_LA
-RegisterHotstring("::gpm::", "GS_UX_Project_Management_Activities_LA")
+:*o:gpm::GS_UX_Project_Management_Activities_LA
+RegisterHotstring(":*o:gpm::", "GS_UX_Project_Management_Activities_LA")
 
-::guxcip::GS_UX_and_CIP
-RegisterHotstring("::guxcip::", "GS_UX_and_CIP")
+:*o:guxcip::GS_UX_and_CIP
+RegisterHotstring(":*o:guxcip::", "GS_UX_and_CIP")
 
-::gtrain::GS_UX core team_Trainings Management
-RegisterHotstring("::gtrain::", "GS_UX core team_Trainings Management")
+:*o:gtrain::GS_UX core team_Trainings Management
+RegisterHotstring(":*o:gtrain::", "GS_UX core team_Trainings Management")
 
-::gbp::GS_B2C_Portals and Key Accounts Process POC
-RegisterHotstring("::gbp::", "GS_B2C_Portals and Key Accounts Process POC")
+:*o:gbp::GS_B2C_Portals and Key Accounts Process POC
+RegisterHotstring(":*o:gbp::", "GS_B2C_Portals and Key Accounts Process POC")
 
-::cgrammar:: Coorect grammar and spelling
-RegisterHotstring("::cgrammar::", "Coorect grammar and spelling")
+:*o:cgrammar:: Coorect grammar and spelling
+RegisterHotstring(":*o:cgrammar::", "Coorect grammar and spelling")
