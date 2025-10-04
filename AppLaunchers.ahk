@@ -373,6 +373,20 @@ CenterMouse() {
 }
 
 ; =============================================================================
+; Send specific key combinations
+; Hotkey: Win+Alt+Shift+.
+; =============================================================================
+#!+.::
+{
+    Sleep(100)
+    Send("^c")
+    Sleep(200)
+    Send("!v")
+    Sleep(700)
+    Send("!q")
+}
+
+; =============================================================================
 ; Centered banner helper (AppLaunchers aesthetic)
 ; =============================================================================
 CreateCenteredBanner_Launchers(message, bgColor := "be4747", fontColor := "FFFFFF", fontSize := 24, alpha := 178) {

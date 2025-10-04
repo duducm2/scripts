@@ -1086,7 +1086,6 @@ ShowGlobalShortcutsHelp() {
 [Win+Alt+Shift+1] 
 [Win+Alt+Shift+P] 
 [Win+Alt+Shift+U]
-[Win+Alt+Shift+.]
 
 === CURSOR ===
 [Win+Alt+Shift+N] > Opens or activates Cursor (habits, home, punctual, or work windows)
