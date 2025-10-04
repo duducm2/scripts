@@ -1141,6 +1141,7 @@ ShowGlobalShortcutsHelp() {
 [Win+Alt+Shift+Q] > Jump mouse on the middle
 [Win+Alt+Shift+X] > Activate hunt and Peck
 [Win+Alt+Shift+9] > Pomodoro
+[Win+Alt+Shift+.] > Clip Angel (copy, paste, and quit)
 
 === SHORTCUTS ===
 [Win+Alt+Shift+A] > Show app-specific shortcuts (quick press)
