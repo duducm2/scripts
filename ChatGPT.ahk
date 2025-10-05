@@ -341,7 +341,8 @@ GetChatGPTWindowHwnd() {
     Sleep(150)
 
     ; Name sets (case-insensitive)
-    moreNames := ["More actions", "More options", "Mais ações", "Mais opções"]
+    ; Include Portuguese variants and ASCII fallbacks (without diacritics)
+    moreNames := ["More actions", "More options", "Mais ações", "Mais acoes", "Mais opções", "Mais opcoes"]
     readNames := ["Read aloud", "Ler em voz alta"]
     copyNames := ["Copy to clipboard", "Copiar para a área de transferência", "Copy", "Copiar"]
 
@@ -394,6 +395,25 @@ GetChatGPTWindowHwnd() {
     if !(moreBtns.Length)
         moreBtns := CollectPreferExact(cUIA, moreNames) ; fallback to latest message in thread
 
+    ; Extra robust fallback: search by Button class/automation id hints seen in PT-BR UI
+    if !(moreBtns.Length) {
+        try {
+            for el in cUIA.FindAll({ Type: "Button" }) {
+                n := StrLower(Trim(el.Name))
+                cls := el.ClassName
+                aid := el.AutomationId
+                if (InStr(n, "mais a") || InStr(n, "more a")) {
+                    moreBtns.Push(el)
+                    continue
+                }
+                if (InStr(cls, "text-token-text-secondary") || InStr(cls, "hover:bg-token-bg-secondary") || InStr(aid,
+                    "radix-"))
+                    moreBtns.Push(el)
+            }
+        } catch {
+        }
+    }
+
     if !(moreBtns.Length) {
         ShowNotification("More btns not found", 1500, "3772FF", "FFFFFF")
         return
@@ -410,11 +430,22 @@ GetChatGPTWindowHwnd() {
     }
 
     ; From the opened menu, click Read aloud
-    Sleep(60)
+    Sleep(300)
     readItems := CollectPreferExact(cUIA, readNames)
     if !(readItems.Length) {
-        ShowNotification("Read Aloud not found", 1500, "3772FF", "FFFFFF")
-        return
+        ; Fallback: scan visible menuitems/buttons for Portuguese text
+        try {
+            for el in cUIA.FindAll({ Type: ["MenuItem", "Button"] }) {
+                n := StrLower(Trim(el.Name))
+                if (InStr(n, "read aloud") || InStr(n, "ler em voz alta"))
+                    readItems.Push(el)
+            }
+        } catch {
+        }
+        if !(readItems.Length) {
+            ShowNotification("Read Aloud not found", 1500, "3772FF", "FFFFFF")
+            return
+        }
     }
 
     try {
