@@ -4890,8 +4890,75 @@ FocusViaOpenButton(tabs, pressSpace := false) {
     }
 }
 
-; Shift + M : Focus expense name field
-+m:: FocusViaOpenButton(2, false)
+; ---- Helper to focus the Description field directly ----
+FocusDescriptionField() {
+    try {
+        uia := TryAttachBrowser()
+        if !uia
+            return false
+
+        ; Try multiple simple approaches
+        descriptionElement := ""
+
+        ; Method 1: Just AutomationId
+        try {
+            descriptionElement := uia.FindElement({ AutomationId: "mui-66475" })
+        } catch {
+        }
+
+        ; Method 2: Name "Description"
+        if !descriptionElement {
+            try {
+                descriptionElement := uia.FindElement({ Name: "Description" })
+            } catch {
+            }
+        }
+
+        ; Method 3: Partial ClassName match
+        if !descriptionElement {
+            try {
+                descriptionElement := uia.FindElement({ ClassName: "MuiAutocomplete-input", matchmode: "Substring" })
+            } catch {
+            }
+        }
+
+        ; Method 4: Any input with "Description" in name
+        if !descriptionElement {
+            try {
+                allInputs := uia.FindAll({ Type: "Edit" })
+                for input in allInputs {
+                    if InStr(input.Name, "Description") {
+                        descriptionElement := input
+                        break
+                    }
+                }
+            } catch {
+            }
+        }
+
+        if !descriptionElement {
+            MsgBox "Could not find the Description field.", "Mobills Navigation", "IconX"
+            return false
+        }
+
+        ; Try to click first, then set focus
+        try {
+            descriptionElement.Click()
+            Sleep 100
+        } catch {
+        }
+
+        descriptionElement.SetFocus()
+        return true
+
+    } catch Error as e {
+        MsgBox "Error focusing Description field: " e.Message, "Mobills Error", "IconX"
+        return false
+    }
+}
+
+; Shift + M : Focus description field
++m:: FocusDescriptionField()
 
 ; Shift + E : Click action button then Expense menu item
 +e:: {
