@@ -4890,7 +4890,7 @@ FocusViaOpenButton(tabs, pressSpace := false) {
     }
 }
 
-; ---- Helper to focus the Description field directly ----
+; ---- Helper to focus the Description field directly ----y
 FocusDescriptionField() {
     try {
         uia := TryAttachBrowser()
