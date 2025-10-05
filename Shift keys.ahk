@@ -4788,7 +4788,107 @@ FocusViaOpenButton(tabs, pressSpace := false) {
 }
 
 ; Shift + N : Toggle "Ignore transaction"
-+n:: FocusViaOpenButton(3, true)
++n:: {
+    try {
+        uia := TryAttachBrowser()
+        if !uia {
+            MsgBox "Could not attach to the browser window.", "Mobills Navigation", "IconX"
+            return
+        }
+
+        ; Find anchor and start tabbing
+        anchor := ""
+        try {
+            anchor := uia.FindElement({ Type: "Button", Name: "More details", matchmode: "Substring" })
+        } catch {
+            try {
+                anchor := uia.FindElement({ Type: "Button" })
+            } catch {
+                anchor := uia.FindFirst()
+            }
+        }
+
+        if (!anchor) {
+            MsgBox "Could not find anchor element.", "Mobills Navigation", "IconX"
+            return
+        }
+
+        ; Focus anchor
+        try {
+            anchor.SetFocus()
+        } catch {
+            anchor.Click()
+        }
+        Sleep(200)
+
+        ; Tab through elements
+        maxTabs := 30
+        found := false
+        ignoreToggleCount := 0 ; Counter for ignore toggles
+
+        loop maxTabs {
+            try {
+                focused := UIA.GetFocusedElement()
+                if (focused) {
+                    name := focused.Name
+                    type := focused.Type
+                    className := focused.ClassName
+
+                    ; Check for ignore-related elements
+                    if (InStr(StrLower(name), "ignore") || InStr(StrLower(name), "ignorar") ||
+                    InStr(StrLower(className), "switch") || InStr(StrLower(className), "toggle")) {
+
+                        ignoreToggleCount++
+                        if (ignoreToggleCount == 2) { ; Target the second toggle
+                            Send("{Space}")
+                            found := true
+                            break
+                        }
+                    }
+
+                    ; Check checkbox with ignore text nearby
+                    if (type = 50002) {
+                        try {
+                            parent := UIA.TreeWalkerTrue.GetParentElement(focused)
+                            if (parent) {
+                                parentChildren := parent.FindAll({ Type: "Text" })
+                                for child in parentChildren {
+                                    try {
+                                        if (InStr(StrLower(child.Name), "ignore") || InStr(StrLower(child.Name),
+                                        "ignorar")) {
+                                            ignoreToggleCount++
+                                            if (ignoreToggleCount == 2) { ; Target the second toggle
+                                                Send("{Space}")
+                                                found := true
+                                                break 2
+                                            }
+                                        }
+                                    } catch {
+                                        ; Skip
+                                    }
+                                }
+                            }
+                        } catch {
+                            ; Continue
+                        }
+                    }
+                }
+            } catch {
+                ; Continue
+            }
+
+            Send("{Tab}")
+            Sleep(80)
+        }
+
+        if (!found) {
+            MsgBox "Could not find the second Ignore transaction toggle.", "Mobills Navigation", "IconX"
+        }
+
+    } catch Error as e {
+        MsgBox "Error: " e.Message, "Mobills Error", "IconX"
+    }
+}
 
 ; Shift + M : Focus expense name field
 +m:: FocusViaOpenButton(2, false)
