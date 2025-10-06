@@ -36,7 +36,7 @@ GetHotstringsCheatSheetText() {
 :o:guxcip::GS_UX_and_CIP
 :o:gtrain::GS_UX core team_Trainings Management
 :o:gbp::GS_B2C_Portals and Key Accounts Process POC
-:o:cgrammar:: Coorect grammar and spelling
+:o:cgrammar:: Coorect grammar and spelling. Remove any dasehs from the text.
 :o:ptext::Correct grammar and spelling. Remove any text styles, such as bold, italic, or font size. Bring me back only the plain text with no additional AI comments.
 
 ; ----------------------
@@ -52,7 +52,7 @@ InitHotstringsCheatSheet() {
     RegisterHotstring(":o:guxcip", "GS_UX_and_CIP")
     RegisterHotstring(":o:gtrain", "GS_UX core team_Trainings Management")
     RegisterHotstring(":o:gbp", "GS_B2C_Portals and Key Accounts Process POC")
-    RegisterHotstring(":o:cgrammar", " Coorect grammar and spelling")
+    RegisterHotstring(":o:cgrammar", " Coorect grammar and spelling. Remove any dasehs from the text.")
     RegisterHotstring(":o:ptext", "Correct grammar and spelling. Remove any text styles, such as bold, italic, or font size. Bring me back only the plain text with no additional AI comments.")
 }
 
