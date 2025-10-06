@@ -38,3 +38,23 @@ GetHotstringsCheatSheetText() {
 :o:gbp::GS_B2C_Portals and Key Accounts Process POC
 :o:cgrammar:: Coorect grammar and spelling
 :o:ptext::Correct grammar and spelling. Remove any text styles, such as bold, italic, or font size. Bring me back only the plain text with no additional AI comments.
+
+; ----------------------
+; Register hotstrings for cheat sheet display
+; ----------------------
+InitHotstringsCheatSheet() {
+    RegisterHotstring(":o:myl", "My Links")
+    RegisterHotstring(":o:gintegra", "GS_UX core team_UX and CIP Integration")
+    RegisterHotstring(":o:gdash", "GS_E&S_CIP Dashboard research and design")
+    RegisterHotstring(":o:gb2c", "GS_B2C_Credit_Management_Strategy_UI_Mentoring")
+    RegisterHotstring(":o:gug", "GS_UX Core Team_Monitoring for B2C in Brazil")
+    RegisterHotstring(":o:gpm", "GS_UX_Project_Management_Activities_LA")
+    RegisterHotstring(":o:guxcip", "GS_UX_and_CIP")
+    RegisterHotstring(":o:gtrain", "GS_UX core team_Trainings Management")
+    RegisterHotstring(":o:gbp", "GS_B2C_Portals and Key Accounts Process POC")
+    RegisterHotstring(":o:cgrammar", " Coorect grammar and spelling")
+    RegisterHotstring(":o:ptext", "Correct grammar and spelling. Remove any text styles, such as bold, italic, or font size. Bring me back only the plain text with no additional AI comments.")
+}
+
+; Auto-run registration on load
+InitHotstringsCheatSheet()
