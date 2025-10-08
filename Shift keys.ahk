@@ -238,7 +238,7 @@ WhatsApp
 [Shift+U] > 🔍 Search chats
 [Shift+I] > ↩️ Reply
 [Shift+O] > 😀 Sticker panel
-[Shift+P] > 📬 Toggle Unread filter
+[Shift+,] > 📬 Toggle Unread filter
 [Shift+H] > 💬 Focus current chat
 [Shift+J] > ✅ Mark as read or unread
 [Shift+K] > 📌 Pin chat or unpin chat
@@ -1404,7 +1404,7 @@ CenterGuiOnActiveMonitor(guiObj) {
 
 ; Shift + P: Edit last message (Win+Up)
 ; The user updated this to be Toggle Unread
-+p::
++,::
 {
     try
     {
