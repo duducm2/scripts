@@ -37,7 +37,7 @@ GetHotstringsCheatSheetText() {
 :o:gtrain::GS_UX core team_Trainings Management
 :o:gbp::GS_B2C_Portals and Key Accounts Process POC
 :o:cgrammar:: Coorect grammar and spelling. Remove any dasehs from the text.
-:o:ptext::Correct grammar and spelling. Remove any text styles, such as bold, italic, or font size. Bring me back only the plain text with no additional AI comments.
+:o:cagent::Continue your browsering. Check for missing radio buttons. Answer everything till you get to the last phase in the TrustMate website.
 
 ; ----------------------
 ; Register hotstrings for cheat sheet display
@@ -53,7 +53,9 @@ InitHotstringsCheatSheet() {
     RegisterHotstring(":o:gtrain", "GS_UX core team_Trainings Management")
     RegisterHotstring(":o:gbp", "GS_B2C_Portals and Key Accounts Process POC")
     RegisterHotstring(":o:cgrammar", " Coorect grammar and spelling. Remove any dasehs from the text.")
-    RegisterHotstring(":o:ptext", "Correct grammar and spelling. Remove any text styles, such as bold, italic, or font size. Bring me back only the plain text with no additional AI comments.")
+    RegisterHotstring(":o:cagent",
+        "Continue your browsering. Check for missing radio buttons. Answer everything till you get to the last phase in the TrustMate website."
+    )
 }
 
 ; Auto-run registration on load
