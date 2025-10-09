@@ -439,7 +439,7 @@ cheatSheets["Cursor.exe"] := "
 Cursor
 
 --- CTRL Shortcuts (Cursor-defined) ---
-[Ctrl+M] > 💬 Generate commit message
+[Ctrl+M] > 🤖 Ask (Ctrl+Alt+A), wait 6s, then paste (Shift+V) (ahk)
 [Ctrl+G] > ⚡ Kill terminal [custom in settings.json]
 [Ctrl+Y] > 📉 Fold all
 [Ctrl+U] > 📈 Unfold all
