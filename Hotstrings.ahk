@@ -39,6 +39,7 @@ GetHotstringsCheatSheetText() {
 :o:cgrammar:: Coorect grammar and spelling. Remove any dasehs from the text.
 :o:cagent::Continue your browsering. Check for missing radio buttons. Answer everything till you get to the last phase in the TrustMate website.
 :o:cagentquest::This questions are not fulfilled in the questionnaire. Go back and answer them.
+:o:cagentall::Go over the entire form and answer all the questions that are missing.
 
 ; ----------------------
 ; Register hotstrings for cheat sheet display
@@ -59,6 +60,9 @@ InitHotstringsCheatSheet() {
     )
     RegisterHotstring(":o:cagentquest",
         "This questions are not fulfilled in the questionnaire. Go back and answer them."
+    )
+    RegisterHotstring(":o:cagentall",
+        "Go over the entire form and answer all the questions that are missing."
     )
 }
 
