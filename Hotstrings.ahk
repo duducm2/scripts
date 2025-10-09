@@ -38,6 +38,7 @@ GetHotstringsCheatSheetText() {
 :o:gbp::GS_B2C_Portals and Key Accounts Process POC
 :o:cgrammar:: Coorect grammar and spelling. Remove any dasehs from the text.
 :o:cagent::Continue your browsering. Check for missing radio buttons. Answer everything till you get to the last phase in the TrustMate website.
+:o:cagentquest::This questions are not fulfilled in the questionnaire. Go back and answer them.
 
 ; ----------------------
 ; Register hotstrings for cheat sheet display
@@ -55,6 +56,9 @@ InitHotstringsCheatSheet() {
     RegisterHotstring(":o:cgrammar", " Coorect grammar and spelling. Remove any dasehs from the text.")
     RegisterHotstring(":o:cagent",
         "Continue your browsering. Check for missing radio buttons. Answer everything till you get to the last phase in the TrustMate website."
+    )
+    RegisterHotstring(":o:cagentquest",
+        "This questions are not fulfilled in the questionnaire. Go back and answer them."
     )
 }
 
