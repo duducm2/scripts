@@ -3389,6 +3389,17 @@ IsEditorActive() {
 ; Shift + E : Search
 +e:: Send "^+f"
 
+; Ctrl + M : Ask, wait banner 6s, then Shift+V
+^M::
+{
+    Send "^!a"
+    Sleep 200
+    ShowSmallLoadingIndicator_ChatGPT("Waiting 6s…")
+    Sleep 6000
+    HideSmallLoadingIndicator_ChatGPT()
+    Send "+v"
+}
+
 ; Auto-submit function - triggers when text changes
 global gEmojiTargetWin := 0
 
