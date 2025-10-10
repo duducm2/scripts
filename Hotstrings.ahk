@@ -47,6 +47,9 @@ InsertText(text) {
         Sleep 40
         A_Clipboard := saved
     }
+    
+    ; Send arrow right then left after pasting
+    Send "{Left}"
 }
 
 ; ----------------------
