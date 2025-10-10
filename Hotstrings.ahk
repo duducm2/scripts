@@ -42,9 +42,10 @@ InsertText(text) {
     try {
         A_Clipboard := text
         ClipWait(0.3)
+        Sleep 50  ; Give time for clipboard to fully update
         Send "^v"
     } finally {
-        Sleep 40
+        Sleep 150  ; Wait longer for paste to complete before restoring clipboard
         A_Clipboard := saved
     }
     
