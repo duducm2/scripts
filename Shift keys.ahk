@@ -3333,28 +3333,6 @@ IsEditorActive() {
     Send "^+9"
 }
 
-; Ctrl + Y : Fold all
-^y::
-{
-    Send "^+p" ; Open command palette
-    Sleep 400
-    Send "Fold  All"
-    Sleep 200
-    Send "{Down}"
-    Sleep 400
-    Send "{Enter}"
-}
-
-; Ctrl + U : Unfold all
-^u::
-{
-    Send "^+p" ; Open command palette
-    Sleep 400
-    Send "Unfold All"
-    Sleep 400
-    Send "{Enter}"
-}
-
 ; Shift + P : Go to terminal
 +p:: Send "^'"
 
@@ -3394,7 +3372,7 @@ IsEditorActive() {
 {
     Send "^!a"
     Sleep 200
-    Loop 8 {
+    loop 8 {
         secondsLeft := 9 - A_Index
         ShowSmallLoadingIndicator_ChatGPT("Waiting " . secondsLeft . "s…")
         Sleep 1000
