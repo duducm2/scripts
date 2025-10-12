@@ -3370,6 +3370,8 @@ IsEditorActive() {
 ; Ctrl + M : Ask, wait banner 8s, then Shift+V
 ^M::
 {
+    Send "+d"
+    Sleep 200
     Send "^!a"
     Sleep 200
     loop 8 {
@@ -3475,9 +3477,6 @@ CancelEmoji(ctrl, *) {
         MsgBox "Error in emoji selector: " e.Message, "Emoji Selector Error", "IconX"
     }
 }
-
-; Shift + D : Git section
-+d:: Send "^+g"
 
 ; Global variables for AI model selector
 global gAIModelTargetWin := 0
