@@ -262,7 +262,7 @@ ShowCursorFallbackPanel() {
     WinActivate("ahk_exe chrome.exe")
 
     imagePath := ""
-    for name in ["tomato.png", "tomato.jpg", "pomodoro.png", "pomodoro.jpg"] {
+    for name in ["water-bottle.jpg"] {
         candidate := A_ScriptDir "\pictures\" name
         if FileExist(candidate) {
             imagePath := candidate
