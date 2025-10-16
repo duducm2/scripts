@@ -2492,11 +2492,14 @@ IsOutlookMainActive() {
 ; Shift + H : Don't send any response
 +H::
 {
+    ShowSmallLoadingIndicator_ChatGPT("Don't send any response…")
     Send "+{Tab}"
-    Sleep 500
+    Sleep 1000
     Send "d"
     Sleep 50
     Send "{Enter}"
+    Sleep 500
+    HideSmallLoadingIndicator_ChatGPT()
 }
 
 ; -------------------------------------------------------------------
