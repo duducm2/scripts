@@ -2493,7 +2493,7 @@ IsOutlookMainActive() {
 +H::
 {
     Send "+{Tab}"
-    Sleep 400
+    Sleep 500
     Send "d"
     Sleep 50
     Send "{Enter}"
