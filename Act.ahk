@@ -34,8 +34,5 @@ if (IS_WORK_ENVIRONMENT) {
 
 Sleep 10000
 
-; Run gmail
-Send "#!+w"
-
 ; Run #!+i for both environments
 Send "#!+i"
