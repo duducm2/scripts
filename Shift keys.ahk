@@ -3224,13 +3224,7 @@ EnsureItemsViewFocus() {
 
 ; Shift + Y : Select White Color (Up-Arrow, Ctrl-Home, Ctrl-Home)
 +y:: {
-    Send "^Home"
-    Sleep 100
-    Send "{Up}"
-    Send "^Home"
-    Sleep 100
-    Send "^Home"
-    Sleep 100
+    Send "^{PgUp}"
 }
 
 #HotIf
