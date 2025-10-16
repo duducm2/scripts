@@ -8,6 +8,39 @@
 ; --- Includes ----------------------------------------------------------------
 #include %A_ScriptDir%\env.ahk
 
+; --- Helper Functions --------------------------------------------------------
+; Unified banner builder for WindowManagement notifications
+CreateCenteredBanner_WM(message, bgColor := "DF2935", fontColor := "FFFFFF", fontSize := 20, alpha := 178) {
+    bGui := Gui()
+    bGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
+    bGui.BackColor := bgColor
+    bGui.SetFont("s" . fontSize . " c" . fontColor . " Bold", "Segoe UI")
+    bGui.Add("Text", "w500 Center", message)
+
+    activeWin := WinGetID("A")
+    if (activeWin) {
+        WinGetPos(&winX, &winY, &winW, &winH, activeWin)
+    } else {
+        MonitorGetWorkArea(1, &l, &t, &r, &b)
+        winX := l, winY := t, winW := r - l, winH := b - t
+    }
+
+    bGui.Show("AutoSize Hide")
+    guiW := 0, guiH := 0
+    bGui.GetPos(, , &guiW, &guiH)
+
+    guiX := winX + (winW - guiW) / 2
+    guiY := winY + (winH - guiH) / 2
+    bGui.Show("x" . Round(guiX) . " y" . Round(guiY) . " NA")
+    WinSetTransparent(alpha, bGui)
+    return bGui
+}
+
+ShowNotification_WM(message, durationMs := 1500) {
+    notificationGui := CreateCenteredBanner_WM(message)
+    SetTimer(() => notificationGui.Destroy(), -durationMs)
+}
+
 ; --- Globals & Timers --------------------------------------------------------
 global g_LastActiveHwnd := 0
 global g_LastMouseClickTick := 0   ; Timestamp of the most recent mouse click (A_TickCount)
@@ -55,7 +88,7 @@ MoveWinToOrderedMonitor(order) {
     if (idx)
         MoveWinToMonitor(idx)
     else
-        MsgBox "Monitor " order " not available (only " MonitorGetCount() " detected)."
+        ShowNotification_WM("Monitor " order " not available (only " MonitorGetCount() " detected).")
 }
 
 GetMonitorIndexByOrder(order) {
@@ -316,13 +349,13 @@ DestroyHalos(guisArray) {
 MoveWinToMonitor(mon) {
     ; Validate monitor index
     if (mon > MonitorGetCount() || mon < 1) {
-        MsgBox "Invalid monitor index: " mon
+        ShowNotification_WM("Invalid monitor index: " mon)
         return
     }
 
     hwnd := WinExist("A")
     if !hwnd {
-        MsgBox "No active window."
+        ShowNotification_WM("No active window.")
         return
     }
 
@@ -367,7 +400,7 @@ CycleWindowsOnMonitor(order) {
     global g_WindowCycleIndices
     idx := GetMonitorIndexByOrder(order)
     if (!idx) {
-        MsgBox "Monitor " order " not available (only " MonitorGetCount() " detected)."
+        ShowNotification_WM("Monitor " order " not available (only " MonitorGetCount() " detected).")
         return
     }
 

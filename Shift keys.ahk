@@ -4316,183 +4316,233 @@ SwitchAIModel() {
 ; Shift + R : Send Ctrl+Shift+
 +r:: Send("^+")
 
-; Shift + T : Toggle play/pause
-+t::
-{
-
+; Shift + T : Toggle Play/Pause using the "Download" button as anchor
+; Improvements:
+; - Robust word-based detection: matches any Button 50000 whose Name contains the word "play"
+;   (also supports "reproduzir" / "tocar"), prefers Play over Pause when both are seen.
+; - No click on the anchor. Only SetFocus/Select.
++t:: {
     try {
         spot := UIA_Browser("ahk_exe Spotify.exe")
-        Sleep 300
-
-        ; Check if we can connect to Spotify
+        Sleep(200)
         if (!spot) {
-            Send "{Media_Play_Pause}"
+            Send("{Media_Play_Pause}")
+            return
+        }
+        WinActivate("ahk_exe Spotify.exe")
+        Sleep(150)
+
+        ; 1) Find the exact anchor: Button 50000 named "Download"
+        anchor := FindDownloadAnchor(spot)
+        if (!anchor) {
+            ; Fallback: best-scored Play/Pause button via scan
+            btn := FindBestPlayPauseButton(spot)
+            if (btn) {
+                ActivateElement(btn)
+                return
+            }
+            Send("{Media_Play_Pause}")
             return
         }
 
-        ; =============================================================================
-        ; ANCHOR SECTION - Try to find any suitable anchor element to start navigation
-        ; =============================================================================
-
-        ; Anchor 1: Try to find the Spotify element by name and type (Link)
-        try {
-            anchorElement := spot.FindElement({ Name: "Spotify", Type: "Link" })
-        } catch {
-            anchorElement := ""
-        }
-        if (!anchorElement) {
-            try {
-                anchorElement := spot.FindElement({ Name: "Spotify", Type: 50005 })
-            } catch {
-                anchorElement := ""
-            }
-        }
-
-        ; Anchor 4: Try to find "Enter Full screen" button
-        if (!anchorElement) {
-            try {
-                anchorElement := spot.FindElement({ Name: "Enter Full screen", Type: "Button" })
-            } catch {
-                anchorElement := ""
-            }
-            if (!anchorElement) {
-                try {
-                    anchorElement := spot.FindElement({ Name: "Enter Full screen", Type: 50000 })
-                } catch {
-                    anchorElement := ""
-                }
-            }
-            ; Also try Portuguese variations
-            if (!anchorElement) {
-                fullscreenNames := ["Entrar em tela cheia", "Tela cheia", "Full screen", "Fullscreen"]
-                for name in fullscreenNames {
-                    try {
-                        anchorElement := spot.FindElement({ Name: name, Type: "Button" })
-                    } catch {
-                        anchorElement := ""
-                    }
-                    if (!anchorElement) {
-                        try {
-                            anchorElement := spot.FindElement({ Name: name, Type: 50000 })
-                        } catch {
-                            anchorElement := ""
-                        }
-                    }
-                    if (anchorElement) {
-                        break
-                    }
-                }
-            }
-        }
-
-        ; Anchor 5: Last resort - try to find ANY element we can use as a starting point
-        if (!anchorElement) {
-            ; Try to find any button first
-            try {
-                buttons := spot.FindAll({ Type: "Button" })
-                if (buttons.Length > 0) {
-                    anchorElement := buttons[1]
-                }
-            } catch {
-                ; Continue if this fails
-            }
-
-            if (!anchorElement) {
-                ; Try to find any text element
-                try {
-                    texts := spot.FindAll({ Type: "Text" })
-                    if (texts.Length > 0) {
-                        anchorElement := texts[1]
-                    }
-                } catch {
-                    ; Continue if this fails
-                }
-            }
-
-            if (!anchorElement) {
-                ; Try to find ANY element at all
-                try {
-                    allElements := spot.FindAll({})
-                    if (allElements.Length > 0) {
-                        anchorElement := allElements[1]
-                    }
-                } catch {
-                    ; Continue if this fails
-                }
-            }
-        }
-
-        ; Final fallback: If we still don't have an anchor, just use the first element we found
-        if (!anchorElement) {
-            try {
-                allElements := spot.FindAll({})
-                if (allElements.Length > 0) {
-                    anchorElement := allElements[1]
-                }
-            } catch {
-                ; Continue if this fails
-            }
-        }
-
-        if (anchorElement) {
-            ; Use tab method to find the correct play button
-            anchorElement.Select()
-            Sleep(300)
-
-            ; Tab through elements until we find a button with "play" in its name
-            maxTabs := 6 ; Try 6 tabs to find the play button
-            foundButton := false
-
-            loop maxTabs {
-                ; Check if current focused element has "play" in its name
-                try {
-                    focusedElement := UIA.GetFocusedElement()
-                    if (focusedElement) {
-                        elementName := focusedElement.Name
-                        elementType := focusedElement.Type
-
-                        ; Look for the specific play button we want
-                        ; First priority: Look for the exact button "Play 01011001" with type 50000
-                        if (elementName == "Play 01011001" && elementType == 50000) {
-                            foundButton := true
-                            break
-                        }
-                        ; Second priority: Look for any play button with type 50000 (main play button)
-                        else if ((InStr(elementName, "play", false) || InStr(elementName, "tocar", false)) &&
-                        elementType == 50000) {
-                            foundButton := true
-                            break
-                        }
-                    }
-                } catch {
-                    ; Continue if UIA check fails
-                }
-
-                ; Tab to next element
-                Send("{Tab}")
-                Sleep(20)  ; Increased sleep to ensure proper tabbing
-            }
-
-            ; If we found the button, press Enter to activate it
-            if (foundButton) {
-                Send("{Enter}")
-                Sleep(50)
-                return
-            } else {
-                ; If we didn't find the play button after 3 tabs, just send media pause
-                Send("{Media_Play_Pause}")
+        ; 2) Focus the anchor WITHOUT clicking it
+        if (!FocusAnchorWithoutClick(anchor)) {
+            btn := FindBestPlayPauseButton(spot)
+            if (btn) {
+                ActivateElement(btn)
                 return
             }
+            Send("{Media_Play_Pause}")
+            return
+        }
+        Sleep(160)
+
+        ; 3) From the anchor, back-tab up to 12 steps to locate Play/Pause
+        if (HuntBackToPlayPausePreferPlay(12))  ; Shift+Tab only
+            return
+
+        ; 4) Direct lookup fallback - scan and pick the best-scoring Play/Pause button
+        btn := FindBestPlayPauseButton(spot)
+        if (btn) {
+            ActivateElement(btn)
+            return
         }
 
-        ; If we get here, either Spotify element wasn't found or play button wasn't found
-        ; Fall back to media key
-        Send "{Media_Play_Pause}"
+        ; 5) Final fallback – OS media key
+        Send("{Media_Play_Pause}")
 
     } catch Error as e {
-        ; If there's any error, fall back to media key
-        Send "{Media_Play_Pause}"
+        Send("{Media_Play_Pause}")
     }
+}
+
+; ---------------------------
+; Helpers
+; ---------------------------
+
+FindDownloadAnchor(root) {
+    ; Exact spec: Type 50000 (Button), Name "Download"
+    try {
+        el := root.FindElement({ Type: 50000, Name: "Download" })
+        if (el)
+            return el
+    } catch {
+    }
+    try {
+        el := root.FindElement({ Type: "Button", Name: "Download" })
+        if (el)
+            return el
+    } catch {
+    }
+    return ""
+}
+
+FocusAnchorWithoutClick(el) {
+    ; Do NOT click the anchor
+    try {
+        el.SetFocus()
+        return true
+    } catch {
+    }
+    try {
+        el.Select()   ; Safe, non-click focus in many UIA wrappers
+        return true
+    } catch {
+    }
+    return false
+}
+
+HuntBackToPlayPausePreferPlay(steps) {
+    global UIA
+    ; Prefer Play (> Pause). Keep the first Pause seen as a fallback.
+    pauseCandidate := ""
+
+    ; Check current focus first
+    try {
+        fe := UIA.GetFocusedElement()
+        sc := PlayPauseScore(fe)
+        if (sc >= 2)
+            return ActivateElement(fe)  ; Found Play (or equivalent)
+        else if (sc = 1)
+            pauseCandidate := fe
+    } catch {
+    }
+
+    loop steps {
+        Send("+{Tab}")            ; Shift+Tab only
+        Sleep(80)
+        try {
+            fe := UIA.GetFocusedElement()
+            sc := PlayPauseScore(fe)
+            if (sc >= 2)
+                return ActivateElement(fe)  ; Prefer Play immediately
+            else if (!pauseCandidate && sc = 1)
+                pauseCandidate := fe        ; Remember first Pause
+        } catch {
+        }
+    }
+    if (pauseCandidate)
+        return ActivateElement(pauseCandidate)
+    return false
+}
+
+; Score-based detector:
+; 2 = Play-like (play/reproduzir/tocar)
+; 1 = Pause-like (pause/pausar/pausa)
+; 0 = not a target
+PlayPauseScore(el) {
+    try {
+        tp := el.Type
+        if !(tp == 50000 || tp == "Button")
+            return 0
+
+        nm := el.Name
+        if (!nm)
+            return 0
+
+        norm := NormalizeName(nm)
+
+        if (ContainsWord(norm, "play") || ContainsWord(norm, "reproduzir") || ContainsWord(norm, "tocar"))
+            return 2
+        if (ContainsWord(norm, "pause") || ContainsWord(norm, "pausar") || ContainsWord(norm, "pausa"))
+            return 1
+    } catch {
+    }
+    return 0
+}
+
+ActivateElement(el) {
+    try {
+        el.Invoke()     ; Preferred - UIA Invoke pattern
+        return true
+    } catch {
+    }
+    try {
+        el.Click()      ; Acceptable on the target (not the anchor)
+        return true
+    } catch {
+    }
+    Send("{Enter}")     ; Last resort
+    Sleep(60)
+    return true
+}
+
+; Scan all buttons and pick the best-scoring Play/Pause control
+FindBestPlayPauseButton(root) {
+    best := ""
+    bestScore := 0
+
+    ; First try numeric ControlType
+    try {
+        btns := root.FindAll({ Type: 50000 })
+        if (btns && btns.Length) {
+            for _, b in btns {
+                sc := PlayPauseScore(b)
+                if (sc > bestScore) {
+                    best := b, bestScore := sc
+                    if (bestScore >= 2)  ; Play found - early exit
+                        return best
+                }
+            }
+        }
+    } catch {
+    }
+
+    ; Then try textual ControlType
+    try {
+        btns := root.FindAll({ Type: "Button" })
+        if (btns && btns.Length) {
+            for _, b in btns {
+                sc := PlayPauseScore(b)
+                if (sc > bestScore) {
+                    best := b, bestScore := sc
+                    if (bestScore >= 2)
+                        return best
+                }
+            }
+        }
+    } catch {
+    }
+
+    return best
+}
+
+; --- text utils ---
+
+NormalizeName(s) {
+    ; Lowercase and collapse non-word chars (punctuation, hyphens) to single spaces
+    try s := StrLower(s)
+    catch {
+    }
+    try s := RegExReplace(s, "[^\w]+", " ")
+    catch {
+    }
+    return Trim(s)
+}
+
+ContainsWord(norm, word) {
+    ; Match a whole word boundary after normalization
+    return RegExMatch(norm, "(^|\s)" . word . "(\s|$)")
 }
 
 #HotIf
