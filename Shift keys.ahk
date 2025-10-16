@@ -254,6 +254,7 @@ Outlook
 [Shift+O] > 📝 Subject / Title
 [Shift+P] > 👥 Required / To
 [Shift+H] > 🚫 Don't send any response
+[Shift+J] > ✅ Send response 
 [Shift+K] > Send Shift+F6
 [Shift+L] > Send F6
 [Shift+M] > 📝 Subject -> Body
@@ -2494,8 +2495,21 @@ IsOutlookMainActive() {
 {
     ShowSmallLoadingIndicator_ChatGPT("Don't send any response…")
     Send "+{Tab}"
-    Sleep 1000
+    Sleep 1500
     Send "d"
+    Sleep 50
+    Send "{Enter}"
+    Sleep 500
+    HideSmallLoadingIndicator_ChatGPT()
+}
+
+; Shift + J : Send response
++J::
+{
+    ShowSmallLoadingIndicator_ChatGPT("Send response…")
+    Send "+{Tab}"
+    Sleep 1500
+    Send "s"
     Sleep 50
     Send "{Enter}"
     Sleep 500
