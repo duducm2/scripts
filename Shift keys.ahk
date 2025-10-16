@@ -752,6 +752,13 @@ File Dialog
 ; --- Settings Window -------------------------------------------------
 cheatSheets["Settings"] := "(Settings)`r`n[Shift+Y] > 🔊 Set input volume to 100%"
 
+; --- Excel ------------------------------------------------------------
+cheatSheets["EXCEL.EXE"] := "
+(
+Excel
+[Shift+Y] > ⚪ Select White Color
+)"
+
 ; --- UIA Tree Inspector -------------------------------------------------
 cheatSheets["UIATreeInspector"] :=
 "(UIA Tree Inspector)`r`n[Shift+Y] > 🔄 Refresh list`r`n[Shift+U] > 🔍 Focus filter field"
@@ -3207,6 +3214,24 @@ EnsureItemsViewFocus() {
 
 ; Shift + Y : Resize and Skew (Ctrl+W)
 +y:: Send "^w"
+
+#HotIf
+
+;-------------------------------------------------------------------
+; Excel Shortcuts
+;-------------------------------------------------------------------
+#HotIf WinActive("ahk_exe EXCEL.EXE")
+
+; Shift + Y : Select White Color (Up-Arrow, Ctrl-Home, Ctrl-Home)
++y:: {
+    Send "^Home"
+    Sleep 100
+    Send "{Up}"
+    Send "^Home"
+    Sleep 100
+    Send "^Home"
+    Sleep 100
+}
 
 #HotIf
 
