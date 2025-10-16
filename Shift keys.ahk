@@ -253,6 +253,7 @@ Outlook
 [Shift+I] > 📥 Go to Inbox
 [Shift+O] > 📝 Subject / Title
 [Shift+P] > 👥 Required / To
+[Shift+H] > 🚫 Don't send any response
 [Shift+K] > Send Shift+F6
 [Shift+L] > Send F6
 [Shift+M] > 📝 Subject -> Body
@@ -2488,8 +2489,18 @@ IsOutlookMainActive() {
     }
 }
 
+; Shift + H : Don't send any response
++H::
+{
+    Send "+{Tab}"
+    Sleep 400
+    Send "d"
+    Sleep 50
+    Send "{Enter}"
+}
+
 ; -------------------------------------------------------------------
-; Focus helpers â€“ reuse for any field you need
+; Focus helpers â€" reuse for any field you need
 ; -------------------------------------------------------------------
 FocusOutlookField(criteria) {
     try {
