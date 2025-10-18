@@ -48,7 +48,7 @@ InsertText(text) {
         Sleep 150  ; Wait longer for paste to complete before restoring clipboard
         A_Clipboard := saved
     }
-    
+
     ; Send arrow right then left after pasting
     Send "{Left}"
 }
@@ -110,7 +110,9 @@ InsertText(text) {
 
 :o:cagent::
 {
-    InsertText("Continue your browsing. Check for missing radio buttons. Answer everything till you get to the last phase in the TrustMate website.")
+    InsertText(
+        "Continue your browsing. Check for missing radio buttons. Answer everything till you get to the last phase in the TrustMate website."
+    )
 }
 
 :o:cagentquest::
@@ -121,6 +123,16 @@ InsertText(text) {
 :o:cagentall::
 {
     InsertText("Go over the entire form and answer all the questions that are missing.")
+}
+
+:o:ebosch::
+{
+    InsertText("eduardo.figueiredo@br.bosch.com")
+}
+
+:o:egoogle::
+{
+    InsertText("edu.evangelista.figueiredo@gmail.com")
 }
 
 ; ----------------------
@@ -137,9 +149,14 @@ InitHotstringsCheatSheet() {
     RegisterHotstring(":o:gtrain", "GS_UX core team_Trainings Management")
     RegisterHotstring(":o:gbp", "GS_B2C_Portals and Key Accounts Process POC")
     RegisterHotstring(":o:cgrammar", "Correct grammar and spelling. Remove any dashes from the text.")
-    RegisterHotstring(":o:cagent", "Continue your browsing. Check for missing radio buttons. Answer everything till you get to the last phase in the TrustMate website.")
-    RegisterHotstring(":o:cagentquest", "These questions are not fulfilled in the questionnaire. Go back and answer them.")
+    RegisterHotstring(":o:cagent",
+        "Continue your browsing. Check for missing radio buttons. Answer everything till you get to the last phase in the TrustMate website."
+    )
+    RegisterHotstring(":o:cagentquest",
+        "These questions are not fulfilled in the questionnaire. Go back and answer them.")
     RegisterHotstring(":o:cagentall", "Go over the entire form and answer all the questions that are missing.")
+    RegisterHotstring(":o:ebosch", "eduardo.figueiredo@br.bosch.com")
+    RegisterHotstring(":o:egoogle", "edu.evangelista.figueiredo@gmail.com")
 }
 InitHotstringsCheatSheet()
 
