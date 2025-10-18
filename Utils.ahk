@@ -149,6 +149,39 @@ CursorKeySequence() {
 }
 
 ; =============================================================================
+; Mouse Jump Shortcuts
+; Hotkeys: Win+Alt+Shift+Arrow Keys
+; Jump mouse cursor by fixed pixel distance in each direction
+; =============================================================================
+
+; Define the movement distance in pixels
+global MOUSE_JUMP_DISTANCE := 200
+
+; Jump mouse right
+#!+Right::
+{
+    MouseMove MOUSE_JUMP_DISTANCE, 0, 0, "R"
+}
+
+; Jump mouse left
+#!+Left::
+{
+    MouseMove -MOUSE_JUMP_DISTANCE, 0, 0, "R"
+}
+
+; Jump mouse down
+#!+Down::
+{
+    MouseMove 0, MOUSE_JUMP_DISTANCE, 0, "R"
+}
+
+; Jump mouse up
+#!+Up::
+{
+    MouseMove 0, -MOUSE_JUMP_DISTANCE, 0, "R"
+}
+
+; =============================================================================
 ; Activate Hunt and Peck
 ; Hotkey: Win+Alt+Shift+X
 ; Original File: Hunt and Peck.ahk

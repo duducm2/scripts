@@ -1149,6 +1149,10 @@ ShowGlobalShortcutsHelp() {
 === GENERAL ===
 [Win+Alt+Shift+Q] > Jump mouse on the middle
 [Win+Alt+Shift+X] > Activate hunt and Peck
+[Win+Alt+Shift+→] > Jump mouse 100px right
+[Win+Alt+Shift+←] > Jump mouse 100px left
+[Win+Alt+Shift+↓] > Jump mouse 100px down
+[Win+Alt+Shift+↑] > Jump mouse 100px up
 [Win+Alt+Shift+9] > Pomodoro
 [Win+Alt+Shift+.] > Clip Angel (copy, paste, and quit)
 
