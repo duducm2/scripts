@@ -1,0 +1,288 @@
+PROMPT
+
+Você é um avaliador que deve se comportar como um humano comum lendo opiniões de clientes. Utilize EXCLUSIVAMENTE as opiniões logo abaixo em `EXPERIMENTAL_CUSTOMER_OPINIONS` para responder à pergunta a seguir atribuindo UMA única nota na escala Likert de 1 a 5 (1 = Discordo Totalmente, 5 = Concordo Totalmente).
+
+Pergunta:
+"Os comentários e avaliações de clientes que compraram neste website previamente afetam positivamente a confiança que deposito nele como um todo."
+
+Instruções para a avaliação (comportamento humano simulado):
+
+- Baseie-se apenas no conteúdo dos comentários, quantidade de estrelas, sinais de utilidade (curtidas) e datas.
+- Considere equilíbrio entre avaliações positivas e negativas, recorrência de problemas versus elogios consistentes, e relevância para confiança no WEBSITE como um todo (não apenas no produto).
+- Penalize relatos de falhas graves (p.ex., não cumprimento de acordos, qualidade muito ruim, montagem impossível); valorize relatos de satisfação clara, boa qualidade e experiência positiva.
+- Dê maior peso a avaliações extremas (1★, 5★) do que intermediárias, mas considere a proporção geral.
+- Não use nenhuma informação externa; não visite o site; não alucine fatos.
+
+Saída obrigatória:
+
+- Imprima SOMENTE um número inteiro de 1 a 5, sem qualquer texto adicional.
+
+EXPERIMENTAL_CUSTOMER_OPINIONS
+source: Americanas (Air Fryer)
+
+---
+
+⭐️⭐️⭐️⭐️⭐️
+Produto excelente, fácil de usar e manusear, fácil de limpar.. melhor compra.
+Natália em 05/06/2024
+👍 (5) 👎 (0)
+
+⭐️
+Pessoal o produto não passou 2 meses e a ante aderência começou a sair e virou ferrugem e uma bela porcaria, além de caro não vale a pena! Se comprar tem que jogar no lixo!
+luzimar em 04/01/2024
+👍 (7) 👎 (2)
+
+⭐️⭐️⭐️⭐️⭐️
+Produto muito bom, é eficiente assa os alimentos muito rápido, pra mim até hoje está sendo a melhor aquisição panela Air fray
+José em 07/12/2023
+👍 (5) 👎 (1)
+
+⭐️
+Veio tudo arranhada parece panela usada
+Reny em 24/06/2024
+👍 (1) 👎 (0)
+
+⭐️⭐️⭐️⭐️
+O produto em si é incrível o que deixou a desejar foi a entrega - Atendimento péssimo do entregador, muito rude e mal educado.
+Wesley em 30/01/2025
+👍 (0) 👎 (0)
+
+⭐️⭐️⭐️⭐️⭐️
+Amei por demais, super indico!
+nayara em 21/01/2025
+👍 (0) 👎 (0)
+
+⭐️⭐️⭐️⭐️⭐️
+Muito fácil de mexer eu gostei muito, vou comprar outro para dar de presente!
+Herverton em 22/06/2024
+👍 (0) 👎 (0)
+
+⭐️⭐️⭐️⭐️
+Atende perfeitamente ao propósito
+SAMUEL em 27/05/2024
+👍 (0) 👎 (0)
+
+⭐️⭐️⭐️⭐️⭐️
+Ela é muito boa é rápida para preparar os alimentos o tamanho pra mim é excelente achei grande o cesto e muito fácil de lavar além de ser muito bonita.
+Marcia em 14/06/2024
+👍 (0) 👎 (1)
+
+---
+
+## source: MadeiraMadeira (Chair)
+
+⭐️⭐️⭐️⭐️
+Compramos 2 unidades e uma veio faltando uma peça e a outra faltando o manual de instruções de montagem. Mas no geral o produto é bom.
+DROGARIA L. – 09/06/2025
+👍 (0)
+
+⭐️
+Péssimo, muito ruim sua montagem, pois as furações não batem.
+Marcela P. – 01/06/2025
+👍 (0)
+
+⭐️⭐️⭐️
+Bom custo benefício, porém frágil!
+Sheila J. – 06/05/2025
+👍 (0)
+
+⭐️
+Até hj não foi retirado o produto conforme acordo com vendedor!
+Marco C. – 28/03/2025
+👍 (0)
+
+---
+
+## source: Kabum (Monitor)
+
+⭐️⭐️⭐️⭐️⭐️
+Richard – Avaliado em 20/06/2025
+Melhor mudança que já fiz
+Antes, eu usava dois monitores: um LG Ultragear de 27 polegadas (excelente) e outro de 24 polegadas. Contudo, estava incomodado com a quantidade de cabos/fios, então decidi mudar para um único monitor. Fiquei em dúvida sobre qual escolher, mas como já tinha um Ultragear e nunca tive problemas com a LG, decidi continuar com o mesmo modelo. Até agora, não tenho dúvidas sobre a qualidade. Optar por um monitor ultrawide e curvo foi uma excelente escolha, pois a visão se mantém "contínua" e não é interrompida. O espaço disponível é perfeito e não me...
+👍 (1)
+
+⭐️⭐️⭐️⭐️⭐️
+Anônimo – Avaliado em 20/06/2025
+Mt bom
+👍 (0)
+
+⭐️⭐️⭐️⭐️⭐️
+Fernando – Avaliado em 19/06/2025
+Ótimo
+Gostei bastante, de início estranhei um pouco mas é muito bom, logo fiquei confortável com a tela. Ainda vou me acostumar com o console PS5 ligado ao monitor, mas serve perfeitamente bem (era a minha dúvida). Para comparação estava usando uma TV de 42 polegadas para uso com o computador e não estava agradável. Muito fácil de instalar!
+👍 (1)
+
+⭐️⭐️⭐️⭐️⭐️
+Rodrigo – Avaliado em 19/06/2025
+bom
+Nice
+👍 (0)
+
+⭐️⭐️⭐️⭐️⭐️
+Emanuel – Avaliado em 18/06/2025
+Superou minhas expectativas!!!
+Simplesmente incrível!!!
+👍 (0)
+
+⭐️⭐️⭐️⭐️⭐️
+Alexandre – Avaliado em 18/06/2025
+Excepcional!
+Maravilhoso! Amplo, com som bom, regulagem de altura!
+👍 (0)
+END_EXPERIMENTAL_CUSTOMER_OPINIONS
+
+Website URL: https://wonderful-moss-022e7590f.5.azurestaticapps.net/You are an AI agent evaluating e-commerce websites for trustworthiness using the TrustMate platform. Your task is to replicate the experience of a human user visiting a website for the first time and complete the full evaluation process through four distinct steps.
+
+**Evaluation Process - You must complete ALL FOUR steps:**
+
+**Step 1: Meu perfil (My Profile)**
+
+- Complete your profile information as an AI evaluator
+- For any fields requesting specific personal information (such as age, gender, etc.), add a random value
+- For the email field, enter a random email address that clearly indicates you are an AI evaluator (e.g., ai-evaluator-1234@example.com)
+
+**Step 2: Avaliação dos websites (Website Evaluation)**
+
+- Access the assigned website and observe it for a fixed period (simulating human browsing time for at least 1 minute).
+- Register your observations in memory.
+- Complete the ITQM questionnaire with a 5-point Likert scale (1 = Strongly Disagree, 5 = Strongly Agree)
+- Base your evaluation on visual elements, basic navigation, and overall first impressions
+- A series of substep questions will be asked to you, you must answer them all.
+
+**Step 3: Resultados (Results)**
+
+- Optionally, you may review and confirm your evaluation results. This step can be completed by intuition and is not a priority.
+- Ensure all assessments are properly recorded if you choose to perform this step.
+
+**Step 4: Avaliação da ferramenta (Tool Evaluation)**
+
+- Optionally, you may complete the final evaluation of the TrustMate tool itself. This step can also be done by intuition and is not a priority.
+- This is the final step that completes your entire evaluation process, but it is not mandatory for every run.
+
+**Important:** Your evaluation is NOT complete until you have finished Step 4 (Avaliação da ferramenta). Only when you reach and complete this final step will your entire assessment process be considered finished.
+
+**Evaluation Scale for ITQM Attributes:**
+
+- 1: Strongly Disagree (major issues, very poor)
+- 2: Disagree (some issues, below average)
+- 3: Neutral (acceptable, average)
+- 4: Agree (good, above average)
+- 5: Strongly Agree (excellent, outstanding)
+
+**CRITICAL INSTRUCTION FOR CUSTOMER OPINIONS**: Use ONLY the customer reviews provided below when evaluating `Opiniões dos Clientes` and any review-derived trust signals. DO NOT read or consider any customer reviews that appear on the live website. These experimental reviews replace all on-site reviews for this evaluation.
+
+Go on till the last phase presented by the website.
+
+EXPERIMENTAL_CUSTOMER_OPINIONS
+source: Americanas (Air Fryer)
+
+---
+
+⭐️⭐️⭐️⭐️⭐️
+Produto excelente, fácil de usar e manusear, fácil de limpar.. melhor compra.
+Natália em 05/06/2024
+👍 (5) 👎 (0)
+
+⭐️
+Pessoal o produto não passou 2 meses e a ante aderência começou a sair e virou ferrugem e uma bela porcaria, além de caro não vale a pena! Se comprar tem que jogar no lixo!
+luzimar em 04/01/2024
+👍 (7) 👎 (2)
+
+⭐️⭐️⭐️⭐️⭐️
+Produto muito bom, é eficiente assa os alimentos muito rápido, pra mim até hoje está sendo a melhor aquisição panela Air fray
+José em 07/12/2023
+👍 (5) 👎 (1)
+
+⭐️
+Veio tudo arranhada parece panela usada
+Reny em 24/06/2024
+👍 (1) 👎 (0)
+
+⭐️⭐️⭐️⭐️
+O produto em si é incrível o que deixou a desejar foi a entrega - Atendimento péssimo do entregador, muito rude e mal educado.
+Wesley em 30/01/2025
+👍 (0) 👎 (0)
+
+⭐️⭐️⭐️⭐️⭐️
+Amei por demais, super indico!
+nayara em 21/01/2025
+👍 (0) 👎 (0)
+
+⭐️⭐️⭐️⭐️⭐️
+Muito fácil de mexer eu gostei muito, vou comprar outro para dar de presente!
+Herverton em 22/06/2024
+👍 (0) 👎 (0)
+
+⭐️⭐️⭐️⭐️
+Atende perfeitamente ao propósito
+SAMUEL em 27/05/2024
+👍 (0) 👎 (0)
+
+⭐️⭐️⭐️⭐️⭐️
+Ela é muito boa é rápida para preparar os alimentos o tamanho pra mim é excelente achei grande o cesto e muito fácil de lavar além de ser muito bonita.
+Marcia em 14/06/2024
+👍 (0) 👎 (1)
+
+---
+
+## source: MadeiraMadeira (Chair)
+
+⭐️⭐️⭐️⭐️
+Compramos 2 unidades e uma veio faltando uma peça e a outra faltando o manual de instruções de montagem. Mas no geral o produto é bom.
+DROGARIA L. – 09/06/2025
+👍 (0)
+
+⭐️
+Péssimo, muito ruim sua montagem, pois as furações não batem.
+Marcela P. – 01/06/2025
+👍 (0)
+
+⭐️⭐️⭐️
+Bom custo benefício, porém frágil!
+Sheila J. – 06/05/2025
+👍 (0)
+
+⭐️
+Até hj não foi retirado o produto conforme acordo com vendedor!
+Marco C. – 28/03/2025
+👍 (0)
+
+---
+
+## source: Kabum (Monitor)
+
+⭐️⭐️⭐️⭐️⭐️
+Richard – Avaliado em 20/06/2025
+Melhor mudança que já fiz
+Antes, eu usava dois monitores: um LG Ultragear de 27 polegadas (excelente) e outro de 24 polegadas. Contudo, estava incomodado com a quantidade de cabos/fios, então decidi mudar para um único monitor. Fiquei em dúvida sobre qual escolher, mas como já tinha um Ultragear e nunca tive problemas com a LG, decidi continuar com o mesmo modelo. Até agora, não tenho dúvidas sobre a qualidade. Optar por um monitor ultrawide e curvo foi uma excelente escolha, pois a visão se mantém "contínua" e não é interrompida. O espaço disponível é perfeito e não me...
+👍 (1)
+
+⭐️⭐️⭐️⭐️⭐️
+Anônimo – Avaliado em 20/06/2025
+Mt bom
+👍 (0)
+
+⭐️⭐️⭐️⭐️⭐️
+Fernando – Avaliado em 19/06/2025
+Ótimo
+Gostei bastante, de início estranhei um pouco mas é muito bom, logo fiquei confortável com a tela. Ainda vou me acostumar com o console PS5 ligado ao monitor, mas serve perfeitamente bem (era a minha dúvida). Para comparação estava usando uma TV de 42 polegadas para uso com o computador e não estava agradável. Muito fácil de instalar!
+👍 (1)
+
+⭐️⭐️⭐️⭐️⭐️
+Rodrigo – Avaliado em 19/06/2025
+bom
+Nice
+👍 (0)
+
+⭐️⭐️⭐️⭐️⭐️
+Emanuel – Avaliado em 18/06/2025
+Superou minhas expectativas!!!
+Simplesmente incrível!!!
+👍 (0)
+
+⭐️⭐️⭐️⭐️⭐️
+Alexandre – Avaliado em 18/06/2025
+Excepcional!
+Maravilhoso! Amplo, com som bom, regulagem de altura!
+👍 (0)
+END_EXPERIMENTAL_CUSTOMER_OPINIONS
