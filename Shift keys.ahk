@@ -1243,6 +1243,9 @@ ShowGlobalShortcutsHelp() {
     A_Clipboard := ""
     A_Clipboard := "https://chatgpt.com/"
     ClipWait 1
+
+    Sleep 1000
+
     Send "^v"
     Send "{Enter}"
     A_Clipboard := oldClip
@@ -1268,6 +1271,8 @@ ShowGlobalShortcutsHelp() {
     A_Clipboard := ""
     A_Clipboard := promptText
     ClipWait 1
+    Sleep 1000
+
     Send "^v"
     Sleep 200
 
