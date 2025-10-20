@@ -135,6 +135,11 @@ InsertText(text) {
     InsertText("edu.evangelista.figueiredo@gmail.com")
 }
 
+:o:mtask::
+{
+    InsertText("This is a message, summary, text or any textual information that translates into a task for me to do. Translate this way, make informative and start with the emoji 🔲.")
+}
+
 ; ----------------------
 ; Register hotstrings for cheat sheet display
 ; ----------------------
@@ -157,6 +162,7 @@ InitHotstringsCheatSheet() {
     RegisterHotstring(":o:cagentall", "Go over the entire form and answer all the questions that are missing.")
     RegisterHotstring(":o:ebosch", "eduardo.figueiredo@br.bosch.com")
     RegisterHotstring(":o:egoogle", "edu.evangelista.figueiredo@gmail.com")
+    RegisterHotstring(":o:mtask", "This is a message, summary, text or any textual information that translates into a task for me to do. Translate this way, make informative and start with the emoji 🔲.")
 }
 InitHotstringsCheatSheet()
 
