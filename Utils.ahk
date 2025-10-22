@@ -7,6 +7,13 @@
 
 ; --- Hotkeys & Functions -----------------------------------------------------
 
+; Ensure per-monitor DPI awareness so coordinates are physical pixels across mixed scaling
+InitDpiAwareness() {
+    static PER_MONITOR_AWARE_V2 := -4 ; DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2
+    try DllCall("SetProcessDpiAwarenessContext", "ptr", PER_MONITOR_AWARE_V2, "ptr")
+}
+InitDpiAwareness()
+
 ; =============================================================================
 ; Jump Mouse to Middle of Active Window
 ; Hotkey: Win+Alt+Shift+3
@@ -151,34 +158,99 @@ CursorKeySequence() {
 ; =============================================================================
 ; Mouse Jump Shortcuts
 ; Hotkeys: Win+Alt+Shift+Arrow Keys
-; Jump mouse cursor by fixed pixel distance in each direction
+; Jump mouse cursor by fixed pixel distance in each direction with multi-monitor support
 ; =============================================================================
 
-; Define the movement distance in pixels
-global MOUSE_JUMP_DISTANCE := 200
+; Set coordinate mode to screen for proper multi-monitor support
+CoordMode "Mouse", "Screen"
+
+; Define the movement distance in pixels (increased from 200 to 300)
+global MOUSE_JUMP_DISTANCE := 300
+
+; Helper function to get current mouse position using physical screen coordinates
+GetMousePos() {
+    pt := Buffer(8, 0)
+    DllCall("GetCursorPos", "ptr", pt)
+    return {x: NumGet(pt, 0, "int"), y: NumGet(pt, 4, "int")}
+}
+
+; Helper function to get all monitor information
+GetMonitorInfo() {
+    ; Get the number of monitors
+    monitorCount := SysGet(80)  ; SM_CMONITORS
+    monitors := []
+    
+    Loop monitorCount {
+        ; Get work area for each monitor (excludes taskbar)
+        MonitorGetWorkArea(A_Index, &left, &top, &right, &bottom)
+        monitors.Push({
+            left: left,
+            top: top,
+            right: right,
+            bottom: bottom,
+            width: right - left,
+            height: bottom - top
+        })
+    }
+    
+    return monitors
+}
+
+; Helper function: get virtual desktop bounds (supports negative X/Y)
+GetVirtualBounds() {
+    left := DllCall("GetSystemMetrics", "int", 76)    ; SM_XVIRTUALSCREEN
+    top := DllCall("GetSystemMetrics", "int", 77)     ; SM_YVIRTUALSCREEN
+    width := DllCall("GetSystemMetrics", "int", 78)   ; SM_CXVIRTUALSCREEN
+    height := DllCall("GetSystemMetrics", "int", 79)  ; SM_CYVIRTUALSCREEN
+    return { left: left, top: top, right: left + width - 1, bottom: top + height - 1 }
+}
+
+Clamp(n, lo, hi) {
+    return n < lo ? lo : n > hi ? hi : n
+}
+
+; Helper function to find which monitor contains the given coordinates
+FindMonitorForCoords(x, y, monitors) {
+    for monitor in monitors {
+        if (x >= monitor.left && x <= monitor.right && y >= monitor.top && y <= monitor.bottom) {
+            return monitor
+        }
+    }
+    return false  ; Not found in any monitor
+}
+
+; Helper function to safely move mouse with proper multi-monitor boundary checking
+SafeMouseMove(deltaX, deltaY) {
+    pos := GetMousePos()
+    v := GetVirtualBounds()
+    x := Clamp(pos.x + deltaX, v.left, v.right)
+    y := Clamp(pos.y + deltaY, v.top,  v.bottom)
+    ; Use SetCursorPos to avoid any app/client coordinate transforms
+    DllCall("SetCursorPos", "int", x, "int", y)
+}
 
 ; Jump mouse right
 #!+Right::
 {
-    MouseMove MOUSE_JUMP_DISTANCE, 0, 0, "R"
+    SafeMouseMove(MOUSE_JUMP_DISTANCE, 0)
 }
 
 ; Jump mouse left
 #!+Left::
 {
-    MouseMove -MOUSE_JUMP_DISTANCE, 0, 0, "R"
+    SafeMouseMove(-MOUSE_JUMP_DISTANCE, 0)
 }
 
 ; Jump mouse down
 #!+Down::
 {
-    MouseMove 0, MOUSE_JUMP_DISTANCE, 0, "R"
+    SafeMouseMove(0, MOUSE_JUMP_DISTANCE)
 }
 
 ; Jump mouse up
 #!+Up::
 {
-    MouseMove 0, -MOUSE_JUMP_DISTANCE, 0, "R"
+    SafeMouseMove(0, -MOUSE_JUMP_DISTANCE)
 }
 
 ; =============================================================================
