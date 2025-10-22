@@ -2568,7 +2568,7 @@ IsOutlookMainActive() {
     Send "+{Tab}"
     Sleep 1500
     Send "d"
-    Sleep 50
+    Sleep 450
     Send "{Enter}"
     Sleep 500
     HideSmallLoadingIndicator_ChatGPT()
