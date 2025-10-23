@@ -78,10 +78,16 @@ SetTimer MonitorActiveWindow, 100  ; Check 10× per second
 ^!+d:: MoveWinToOrderedMonitor(3)  ; 3rd from the left
 ^!+f:: MoveWinToOrderedMonitor(4)  ; 4th from the left
 
-^!+q:: CycleWindowsOnMonitor(1)  ; Cycle windows on monitor 1
-^!+w:: CycleWindowsOnMonitor(2)  ; Cycle windows on monitor 2
-^!+e:: CycleWindowsOnMonitor(3)  ; Cycle windows on monitor 3
-^!+r:: CycleWindowsOnMonitor(4)  ; Cycle windows on monitor 4
+^!#q:: CycleWindowsOnMonitor(1)  ; Cycle windows on monitor 1
+^!#w:: CycleWindowsOnMonitor(2)  ; Cycle windows on monitor 2
+^!#e:: CycleWindowsOnMonitor(3)  ; Cycle windows on monitor 3
+^!#r:: CycleWindowsOnMonitor(4)  ; Cycle windows on monitor 4
+
+; Shift variants: minimize the active window on the specified monitor
+^!+#q:: MinimizeWindowOnMonitor(1)  ; Minimize window on monitor 1
+^!+#w:: MinimizeWindowOnMonitor(2)  ; Minimize window on monitor 2
+^!+#e:: MinimizeWindowOnMonitor(3)  ; Minimize window on monitor 3
+^!+#r:: MinimizeWindowOnMonitor(4)  ; Minimize window on monitor 4
 
 MoveWinToOrderedMonitor(order) {
     idx := GetMonitorIndexByOrder(order)
@@ -569,4 +575,38 @@ GetVisibleWindowsOnMonitor(mon) {
     }
 
     return visible
+}
+
+; =============================================================================
+; Minimize the active window on the specified monitor
+; Function: MinimizeWindowOnMonitor(order)
+; =============================================================================
+MinimizeWindowOnMonitor(order) {
+    idx := GetMonitorIndexByOrder(order)
+    if (!idx) {
+        ShowNotification_WM("Monitor " order " not available (only " MonitorGetCount() " detected).")
+        return
+    }
+
+    ; Get the active window on the target monitor
+    windows := GetVisibleWindowsOnMonitor(idx)
+    if (windows.Length = 0) {
+        ShowNotification_WM("No windows found on monitor " order)
+        return
+    }
+
+    ; Get the topmost window on the monitor (first in the list)
+    targetWindow := windows[1]
+
+    try {
+        ; Activate the window first
+        WinActivate "ahk_id " targetWindow.hwnd
+        ; Wait briefly for activation
+        Sleep 100
+        ; Then minimize it
+        WinMinimize "ahk_id " targetWindow.hwnd
+        ShowNotification_WM("Minimized window on monitor " order)
+    } catch {
+        ShowNotification_WM("Failed to minimize window on monitor " order)
+    }
 }
