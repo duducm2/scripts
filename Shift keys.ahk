@@ -3510,8 +3510,6 @@ IsEditorActive() {
                 } else if InStr(windowText, "Message") {
                     elementFound := true
                     MsgBox "Found 'Message' - element present"
-                } else {
-                    MsgBox "Debug: Window text contains: " . SubStr(windowText, 1, 200)
                 }
             }
         }
@@ -3526,9 +3524,7 @@ IsEditorActive() {
             ShowSmallLoadingIndicator_ChatGPT("Element not found, stopping...")
             Sleep 500
             HideSmallLoadingIndicator_ChatGPT()
-
-            MsgBox "Message text found, continuing..."
-            Sleep 2000
+            Sleep 1500
             Send "+v"
 
             return
