@@ -78,10 +78,10 @@ SetTimer MonitorActiveWindow, 100  ; Check 10× per second
 ^!+d:: MoveWinToOrderedMonitor(3)  ; 3rd from the left
 ^!+f:: MoveWinToOrderedMonitor(4)  ; 4th from the left
 
-^!#q:: CycleWindowsOnMonitor(1)  ; Cycle windows on monitor 1
-^!#w:: CycleWindowsOnMonitor(2)  ; Cycle windows on monitor 2
-^!#e:: CycleWindowsOnMonitor(3)  ; Cycle windows on monitor 3
-^!#r:: CycleWindowsOnMonitor(4)  ; Cycle windows on monitor 4
+^!+q:: CycleWindowsOnMonitor(1)  ; Cycle windows on monitor 1
+^!+w:: CycleWindowsOnMonitor(2)  ; Cycle windows on monitor 2
+^!+e:: CycleWindowsOnMonitor(3)  ; Cycle windows on monitor 3
+^!+r:: CycleWindowsOnMonitor(4)  ; Cycle windows on monitor 4
 
 MoveWinToOrderedMonitor(order) {
     idx := GetMonitorIndexByOrder(order)
