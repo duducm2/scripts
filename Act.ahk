@@ -1,5 +1,6 @@
 ;---------------------------------------- Github ----------------------------------------------------
 ; https://github.com/duducm2/zmk-sofle/blob/main/keymap-drawer/eyelash_sofle.svg
+;t
 ;---------------------------------------- Scripts ---------------------------------------------------
 
 #Include env.ahk
@@ -20,7 +21,7 @@ if (IS_WORK_ENVIRONMENT) {
     Run "C:\Users\fie7ca\Documents\Shortcuts\Settle Up.lnk"
     Run "https://keep.google.com/u/0/#NOTE/1YCVkrriqNRyRhRyz1PV0gJ9Eor66ARhb1i9uLpvXTZ2j79nDScAUOIK4pBAMwHY"
     Run "C:\Users\fie7ca\Documents\Shortcuts\WindowGrid.lnk"
-    
+
     Run GetScriptPath("Microsoft Teams.ahk")
     Run GetScriptPath("Outlook.ahk")
 } else {

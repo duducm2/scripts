@@ -3491,10 +3491,51 @@ IsEditorActive() {
     loop 8 {
         secondsLeft := 9 - A_Index
         ShowSmallLoadingIndicator_ChatGPT("Waiting " . secondsLeft . "s…")
+
+        ; Check if the message text is present - ultra simple approach
+        elementFound := false
+
+        try {
+            if WinExist("A") {
+                ; Just search for the most distinctive part
+                windowText := WinGetText("A")
+
+                ; Look for the unique shortcut text
+                if InStr(windowText, "Ctrl+⏎") {
+                    elementFound := true
+                    MsgBox "Found Ctrl+⏎ - element present"
+                } else if InStr(windowText, "commit on") {
+                    elementFound := true
+                    MsgBox "Found 'commit on' - element present"
+                } else if InStr(windowText, "Message") {
+                    elementFound := true
+                    MsgBox "Found 'Message' - element present"
+                } else {
+                    MsgBox "Debug: Window text contains: " . SubStr(windowText, 1, 200)
+                }
+            }
+        }
+
+        ; Simple logic: if element found, continue; if not found, exit early
+        if (elementFound) {
+            ShowSmallLoadingIndicator_ChatGPT("Element present, continuing...")
+            Sleep 1000
+            continue
+        } else {
+            ; Element not found, exit early
+            ShowSmallLoadingIndicator_ChatGPT("Element not found, stopping...")
+            Sleep 500
+            HideSmallLoadingIndicator_ChatGPT()
+
+            MsgBox "Message text found, continuing..."
+            Sleep 2000
+            Send "+v"
+
+            return
+        }
+
         Sleep 1000
     }
-    HideSmallLoadingIndicator_ChatGPT()
-    Send "+v"
 }
 
 ; Auto-submit function - triggers when text changes
