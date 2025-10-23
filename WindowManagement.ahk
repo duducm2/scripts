@@ -17,9 +17,23 @@ CreateCenteredBanner_WM(message, bgColor := "DF2935", fontColor := "FFFFFF", fon
     bGui.SetFont("s" . fontSize . " c" . fontColor . " Bold", "Segoe UI")
     bGui.Add("Text", "w500 Center", message)
 
-    activeWin := WinGetID("A")
+    ; Safely get active window - handle case where no window is active
+    activeWin := 0
+    try {
+        activeWin := WinGetID("A")
+    } catch {
+        ; No active window available, will use primary monitor
+        activeWin := 0
+    }
+    
     if (activeWin) {
-        WinGetPos(&winX, &winY, &winW, &winH, activeWin)
+        try {
+            WinGetPos(&winX, &winY, &winW, &winH, activeWin)
+        } catch {
+            ; If we can't get window position, fall back to primary monitor
+            MonitorGetWorkArea(1, &l, &t, &r, &b)
+            winX := l, winY := t, winW := r - l, winH := b - t
+        }
     } else {
         MonitorGetWorkArea(1, &l, &t, &r, &b)
         winX := l, winY := t, winW := r - l, winH := b - t
@@ -203,7 +217,13 @@ AltTab(count := 1) {
 MonitorActiveWindow() {
     global g_LastMouseClickTick
     static lastHwnd := 0
-    hwnd := WinExist("A")
+    hwnd := 0
+    try {
+        hwnd := WinExist("A")
+    } catch {
+        ; No active window available
+        return
+    }
     if (!hwnd || hwnd = lastHwnd)
         return
 
@@ -365,7 +385,13 @@ MoveWinToMonitor(mon) {
         return
     }
 
-    hwnd := WinExist("A")
+    hwnd := 0
+    try {
+        hwnd := WinExist("A")
+    } catch {
+        ShowNotification_WM("No active window available.")
+        return
+    }
     if !hwnd {
         ShowNotification_WM("No active window.")
         return
@@ -419,7 +445,12 @@ CycleWindowsOnMonitor(order) {
     windows := GetVisibleWindowsOnMonitor(idx)
     if (windows.Length = 0) {
         ; Nothing to cycle on this monitor – re-centre cursor on current active window
-        hwndCur := WinExist("A")
+        hwndCur := 0
+        try {
+            hwndCur := WinExist("A")
+        } catch {
+            ; No active window available
+        }
         if (hwndCur)
             MoveMouseToCenter(hwndCur)
         return
@@ -427,8 +458,21 @@ CycleWindowsOnMonitor(order) {
 
     ; If the currently active window is on a **different** monitor, reset the cycle
     ; so we start from the topmost visible window instead of cycling to the next.
-    hwndCur := WinExist("A")
-    hMonCur := DllCall("MonitorFromWindow", "ptr", hwndCur, "uint", 2, "ptr") ; nearest monitor
+    hwndCur := 0
+    try {
+        hwndCur := WinExist("A")
+    } catch {
+        ; No active window available, will reset cycle
+        hwndCur := 0
+    }
+    hMonCur := 0
+    if (hwndCur) {
+        try {
+            hMonCur := DllCall("MonitorFromWindow", "ptr", hwndCur, "uint", 2, "ptr") ; nearest monitor
+        } catch {
+            hMonCur := 0
+        }
+    }
 
     ; Get handle for the target monitor.
     MonitorGet idx, &l, &t, &r, &b
@@ -612,8 +656,8 @@ MinimizeWindowOnMonitor(order) {
         ; Then minimize it
         WinMinimize "ahk_id " targetWindow.hwnd
         ShowNotification_WM("Minimized window on monitor " order)
-    } catch {
-        ShowNotification_WM("Failed to minimize window on monitor " order)
+    } catch Error as e {
+        ShowNotification_WM("Failed to minimize window on monitor " order ": " e.Message)
     }
 }
 
@@ -646,7 +690,7 @@ CloseWindowOnMonitor(order) {
         ; Then close it
         WinClose "ahk_id " targetWindow.hwnd
         ShowNotification_WM("Closed window on monitor " order)
-    } catch {
-        ShowNotification_WM("Failed to close window on monitor " order)
+    } catch Error as e {
+        ShowNotification_WM("Failed to close window on monitor " order ": " e.Message)
     }
 }
