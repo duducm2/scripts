@@ -3523,9 +3523,9 @@ IsEditorActive() {
             ; Element not found, exit early
             ShowSmallLoadingIndicator_ChatGPT("Element not found, stopping...")
             Sleep 500
-            HideSmallLoadingIndicator_ChatGPT()
             Sleep 2500
             Send "+v"
+            HideSmallLoadingIndicator_ChatGPT()
 
             return
         }
