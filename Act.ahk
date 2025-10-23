@@ -1,8 +1,5 @@
 ;---------------------------------------- Github ----------------------------------------------------
 ; https://github.com/duducm2/zmk-sofle/blob/main/keymap-drawer/eyelash_sofle.svg
-;Hi fidjfijds 3fidsjf
-
-;fdsfijsdf
 ;---------------------------------------- Scripts ---------------------------------------------------
 
 #Include env.ahk
