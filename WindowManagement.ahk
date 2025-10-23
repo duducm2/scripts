@@ -73,10 +73,16 @@ SetTimer MonitorActiveWindow, 100  ; Check 10× per second
 ; Move Active Window to Monitor by POSITION (left-to-right order)
 ; Hotkeys: Ctrl+Alt+Shift+A/S/D/F correspond to 1st/2nd/3rd/4th monitors
 ; =============================================================================
-^!+a:: MoveWinToOrderedMonitor(1)  ; Left-most
-^!+s:: MoveWinToOrderedMonitor(2)  ; 2nd from the left
-^!+d:: MoveWinToOrderedMonitor(3)  ; 3rd from the left
-^!+f:: MoveWinToOrderedMonitor(4)  ; 4th from the left
+^!#a:: MoveWinToOrderedMonitor(1)  ; Left-most
+^!#s:: MoveWinToOrderedMonitor(2)  ; 2nd from the left
+^!#d:: MoveWinToOrderedMonitor(3)  ; 3rd from the left
+^!#f:: MoveWinToOrderedMonitor(4)  ; 4th from the left
+
+; Shift variants: close the active window on the specified monitor
+^!+#a:: CloseWindowOnMonitor(1)  ; Close window on monitor 1
+^!+#s:: CloseWindowOnMonitor(2)  ; Close window on monitor 2
+^!+#d:: CloseWindowOnMonitor(3)  ; Close window on monitor 3
+^!+#f:: CloseWindowOnMonitor(4)  ; Close window on monitor 4
 
 ^!#q:: CycleWindowsOnMonitor(1)  ; Cycle windows on monitor 1
 ^!#w:: CycleWindowsOnMonitor(2)  ; Cycle windows on monitor 2
@@ -608,5 +614,39 @@ MinimizeWindowOnMonitor(order) {
         ShowNotification_WM("Minimized window on monitor " order)
     } catch {
         ShowNotification_WM("Failed to minimize window on monitor " order)
+    }
+}
+
+; =============================================================================
+; Close the active window on the specified monitor
+; Function: CloseWindowOnMonitor(order)
+; =============================================================================
+CloseWindowOnMonitor(order) {
+    idx := GetMonitorIndexByOrder(order)
+    if (!idx) {
+        ShowNotification_WM("Monitor " order " not available (only " MonitorGetCount() " detected).")
+        return
+    }
+
+    ; Get the active window on the target monitor
+    windows := GetVisibleWindowsOnMonitor(idx)
+    if (windows.Length = 0) {
+        ShowNotification_WM("No windows found on monitor " order)
+        return
+    }
+
+    ; Get the topmost window on the monitor (first in the list)
+    targetWindow := windows[1]
+
+    try {
+        ; Activate the window first
+        WinActivate "ahk_id " targetWindow.hwnd
+        ; Wait briefly for activation
+        Sleep 100
+        ; Then close it
+        WinClose "ahk_id " targetWindow.hwnd
+        ShowNotification_WM("Closed window on monitor " order)
+    } catch {
+        ShowNotification_WM("Failed to close window on monitor " order)
     }
 }
