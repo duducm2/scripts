@@ -4512,11 +4512,29 @@ SwitchAIModel() {
     try {
         spot := UIA_Browser("ahk_exe Spotify.exe")
         Sleep 300
-        fullscreenLibBtn := spot.FindElement({ Name: "fullscreen library", Type: "Button" })
-        if (fullscreenLibBtn) {
-            fullscreenLibBtn.Click()
-        } else {
-            MsgBox "Could not find the fullscreen library button.", "Spotify Navigation", "IconX"
+        
+        ; First, try to find and click "Open Your Library" button (if available)
+        try {
+            openLibBtn := spot.FindElement({ Name: "Open Your Library", Type: "Button" })
+            if (openLibBtn) {
+                openLibBtn.Click()
+                Sleep 500  ; Wait for the library to open and UI to adjust
+            }
+        } catch {
+            ; "Open Your Library" button not found - this is normal, continue to next step
+        }
+        
+        ; Then, try to find and click "Expand Your Library" button
+        try {
+            expandLibBtn := spot.FindElement({ Name: "Expand Your Library", Type: "Button" })
+            if (expandLibBtn) {
+                expandLibBtn.Click()
+                Sleep 300  ; Wait for the expansion to complete
+            } else {
+                MsgBox "Could not find the 'Expand Your Library' button.", "Spotify Navigation", "IconX"
+            }
+        } catch {
+            MsgBox "Could not find the 'Expand Your Library' button.", "Spotify Navigation", "IconX"
         }
     } catch Error as e {
         MsgBox "Error toggling fullscreen library: " e.Message, "Spotify Error", "IconX"
