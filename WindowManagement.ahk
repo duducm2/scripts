@@ -655,7 +655,6 @@ MinimizeWindowOnMonitor(order) {
         Sleep 100
         ; Then minimize it
         WinMinimize "ahk_id " targetWindow.hwnd
-        ShowNotification_WM("Minimized window on monitor " order)
     } catch Error as e {
         ShowNotification_WM("Failed to minimize window on monitor " order ": " e.Message)
     }
@@ -689,7 +688,6 @@ CloseWindowOnMonitor(order) {
         Sleep 100
         ; Then close it
         WinClose "ahk_id " targetWindow.hwnd
-        ShowNotification_WM("Closed window on monitor " order)
     } catch Error as e {
         ShowNotification_WM("Failed to close window on monitor " order ": " e.Message)
     }

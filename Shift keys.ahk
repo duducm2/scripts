@@ -329,6 +329,8 @@ Teams
 [Shift+,] > 📬 View all unread items
 [Shift+E] > ✏️ Edit message
 [Shift+R] > ↩️ Reply
+[Shift+T] > 👥 Add participants
+[Shift+W] > 📞 Audio call
 
 --- Built-in Shortcuts ---
 Geral:
@@ -2429,6 +2431,63 @@ IsTeamsChatActive() {
     Send "^!u"
 }
 
+; Shift + W : Audio call
++w::
+{
+    ; Show confirmation popup
+    if MsgBox("Do you want to call this person?", "Confirm Call", "YesNo Icon?") = "Yes" {
+        try {
+            win := WinExist("A")
+            root := UIA.ElementFromHandle(win)
+            
+            ; Find the "Audio call" button
+            audioCallButton := root.FindFirst({ Name: "Audio call", Type: "50000" })
+            
+            if audioCallButton {
+                audioCallButton.Click()
+            } else {
+                ; Show error banner
+                ShowSmallLoadingIndicator_ChatGPT("Could not find audio call button")
+                SetTimer(() => HideSmallLoadingIndicator_ChatGPT(), -2000)
+            }
+        }
+        catch Error as e {
+            ; Show error banner
+            ShowSmallLoadingIndicator_ChatGPT("Could not find audio call button")
+            SetTimer(() => HideSmallLoadingIndicator_ChatGPT(), -2000)
+        }
+    }
+}
+
+; Shift + T : Add participants
++t::
+{
+    try {
+        win := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+        
+        ; Find the "View and add participants" button using substring matching
+        participantsButton := root.FindFirst({ Name: "View and add participants", Type: "50000", matchmode: "Substring" })
+        
+        if participantsButton {
+            participantsButton.Click()
+            Sleep 100
+            Send "{Tab}"
+            Sleep 100
+            Send "{Enter}"
+        } else {
+            ; Show error banner
+            ShowSmallLoadingIndicator_ChatGPT("Could not find add participants button")
+            SetTimer(() => HideSmallLoadingIndicator_ChatGPT(), -2000)
+        }
+    }
+    catch Error as e {
+        ; Show error banner
+        ShowSmallLoadingIndicator_ChatGPT("Could not find add participants button")
+        SetTimer(() => HideSmallLoadingIndicator_ChatGPT(), -2000)
+    }
+}
+
 #HotIf
 
 ;-------------------------------------------------------------------
@@ -4453,11 +4512,29 @@ SwitchAIModel() {
     try {
         spot := UIA_Browser("ahk_exe Spotify.exe")
         Sleep 300
-        fullscreenLibBtn := spot.FindElement({ Name: "fullscreen library", Type: "Button" })
-        if (fullscreenLibBtn) {
-            fullscreenLibBtn.Click()
-        } else {
-            MsgBox "Could not find the fullscreen library button.", "Spotify Navigation", "IconX"
+        
+        ; First, try to find and click "Open Your Library" button (if available)
+        try {
+            openLibBtn := spot.FindElement({ Name: "Open Your Library", Type: "Button" })
+            if (openLibBtn) {
+                openLibBtn.Click()
+                Sleep 500  ; Wait for the library to open and UI to adjust
+            }
+        } catch {
+            ; "Open Your Library" button not found - this is normal, continue to next step
+        }
+        
+        ; Then, try to find and click "Expand Your Library" button
+        try {
+            expandLibBtn := spot.FindElement({ Name: "Expand Your Library", Type: "Button" })
+            if (expandLibBtn) {
+                expandLibBtn.Click()
+                Sleep 300  ; Wait for the expansion to complete
+            } else {
+                MsgBox "Could not find the 'Expand Your Library' button.", "Spotify Navigation", "IconX"
+            }
+        } catch {
+            MsgBox "Could not find the 'Expand Your Library' button.", "Spotify Navigation", "IconX"
         }
     } catch Error as e {
         MsgBox "Error toggling fullscreen library: " e.Message, "Spotify Error", "IconX"
