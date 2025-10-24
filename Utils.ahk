@@ -171,7 +171,7 @@ global MOUSE_JUMP_DISTANCE := 300
 GetMousePos() {
     pt := Buffer(8, 0)
     DllCall("GetCursorPos", "ptr", pt)
-    return {x: NumGet(pt, 0, "int"), y: NumGet(pt, 4, "int")}
+    return { x: NumGet(pt, 0, "int"), y: NumGet(pt, 4, "int") }
 }
 
 ; Helper function to get all monitor information
@@ -179,8 +179,8 @@ GetMonitorInfo() {
     ; Get the number of monitors
     monitorCount := SysGet(80)  ; SM_CMONITORS
     monitors := []
-    
-    Loop monitorCount {
+
+    loop monitorCount {
         ; Get work area for each monitor (excludes taskbar)
         MonitorGetWorkArea(A_Index, &left, &top, &right, &bottom)
         monitors.Push({
@@ -192,7 +192,7 @@ GetMonitorInfo() {
             height: bottom - top
         })
     }
-    
+
     return monitors
 }
 
@@ -224,7 +224,7 @@ SafeMouseMove(deltaX, deltaY) {
     pos := GetMousePos()
     v := GetVirtualBounds()
     x := Clamp(pos.x + deltaX, v.left, v.right)
-    y := Clamp(pos.y + deltaY, v.top,  v.bottom)
+    y := Clamp(pos.y + deltaY, v.top, v.bottom)
     ; Use SetCursorPos to avoid any app/client coordinate transforms
     DllCall("SetCursorPos", "int", x, "int", y)
 }
@@ -251,6 +251,30 @@ SafeMouseMove(deltaX, deltaY) {
 #!+Up::
 {
     SafeMouseMove(0, -MOUSE_JUMP_DISTANCE)
+}
+
+; Jump mouse right with Control (double distance)
+#!+^Right::
+{
+    SafeMouseMove(MOUSE_JUMP_DISTANCE * 3, 0)
+}
+
+; Jump mouse left with Control (double distance)
+#!+^Left::
+{
+    SafeMouseMove(-MOUSE_JUMP_DISTANCE * 3, 0)
+}
+
+; Jump mouse down with Control (double distance)
+#!+^Down::
+{
+    SafeMouseMove(0, MOUSE_JUMP_DISTANCE * 3)
+}
+
+; Jump mouse up with Control (double distance)
+#!+^Up::
+{
+    SafeMouseMove(0, -MOUSE_JUMP_DISTANCE * 3)
 }
 
 ; =============================================================================
