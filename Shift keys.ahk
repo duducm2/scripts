@@ -329,6 +329,8 @@ Teams
 [Shift+,] > 📬 View all unread items
 [Shift+E] > ✏️ Edit message
 [Shift+R] > ↩️ Reply
+[Shift+T] > 👥 Add participants
+[Shift+W] > 📞 Audio call
 
 --- Built-in Shortcuts ---
 Geral:
@@ -2427,6 +2429,63 @@ IsTeamsChatActive() {
 +,::
 {
     Send "^!u"
+}
+
+; Shift + W : Audio call
++w::
+{
+    ; Show confirmation popup
+    if MsgBox("Do you want to call this person?", "Confirm Call", "YesNo Icon?") = "Yes" {
+        try {
+            win := WinExist("A")
+            root := UIA.ElementFromHandle(win)
+            
+            ; Find the "Audio call" button
+            audioCallButton := root.FindFirst({ Name: "Audio call", Type: "50000" })
+            
+            if audioCallButton {
+                audioCallButton.Click()
+            } else {
+                ; Show error banner
+                ShowSmallLoadingIndicator_ChatGPT("Could not find audio call button")
+                SetTimer(() => HideSmallLoadingIndicator_ChatGPT(), -2000)
+            }
+        }
+        catch Error as e {
+            ; Show error banner
+            ShowSmallLoadingIndicator_ChatGPT("Could not find audio call button")
+            SetTimer(() => HideSmallLoadingIndicator_ChatGPT(), -2000)
+        }
+    }
+}
+
+; Shift + T : Add participants
++t::
+{
+    try {
+        win := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+        
+        ; Find the "View and add participants" button using substring matching
+        participantsButton := root.FindFirst({ Name: "View and add participants", Type: "50000", matchmode: "Substring" })
+        
+        if participantsButton {
+            participantsButton.Click()
+            Sleep 100
+            Send "{Tab}"
+            Sleep 100
+            Send "{Enter}"
+        } else {
+            ; Show error banner
+            ShowSmallLoadingIndicator_ChatGPT("Could not find add participants button")
+            SetTimer(() => HideSmallLoadingIndicator_ChatGPT(), -2000)
+        }
+    }
+    catch Error as e {
+        ; Show error banner
+        ShowSmallLoadingIndicator_ChatGPT("Could not find add participants button")
+        SetTimer(() => HideSmallLoadingIndicator_ChatGPT(), -2000)
+    }
 }
 
 #HotIf
