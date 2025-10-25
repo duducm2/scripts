@@ -916,7 +916,7 @@ GetCheatSheetText() {
                 "ChatGPT`r`n[Shift+Y] > Cut all`r`n[Shift+U] > Model selector`r`n[Shift+I] > Toggle sidebar`r`n[Shift+O] > Re-send rules`r`n[Shift+H] > Copy code block`r`n[Shift+L] > Send and show AI banner"
         if InStr(chromeTitle, "Mobills")
             appShortcuts :=
-                "Mobills - Navigation`r`n[Shift+Y] > Dashboard`r`n[Shift+U] > Contas`r`n[Shift+I] > TransaÃ§Ãµes`r`n[Shift+O] > CartÃµes de crÃ©dito`r`n[Shift+P] > Planejamento`r`n[Shift+H] > RelatÃ³rios`r`n[Shift+J] > Mais opÃ§Ãµes`r`n[Shift+K] > Previous month`r`n[Shift+L] > Next month`r`n`r`nMobills - Actions`r`n[Shift+N] > Ignore transaction`r`n[Shift+M] > Name field`r`n[Shift+E] > New Expense`r`n[Shift+R] > New Income`r`n[Shift+T] > New Credit expense`r`n[Shift+D] > New Transfer"
+                "Mobills - Navigation`r`n[Shift+Y] > Dashboard`r`n[Shift+U] > Contas`r`n[Shift+I] > TransaÃ§Ãµes`r`n[Shift+O] > CartÃµes de crÃ©dito`r`n[Shift+P] > Planejamento`r`n[Shift+H] > RelatÃ³rios`r`n[Shift+J] > Mais opÃ§Ãµes`r`n[Shift+K] > Previous month`r`n[Shift+L] > Next month`r`n`r`nMobills - Actions`r`n[Shift+N] > Ignore transaction`r`n[Shift+M] > Name field`r`n[Shift+E] > New Expense`r`n[Shift+R] > New Income`r`n[Shift+T] > New Credit expense`r`n[Shift+D] > New Transfer`r`n[Shift+W] > Open button + type MAIN"
         if InStr(chromeTitle, "Google Keep") || InStr(chromeTitle, "keep.google.com")
             appShortcuts := cheatSheets.Has("Google Keep") ? cheatSheets["Google Keep"] : ""
         if InStr(chromeTitle, "YouTube")
@@ -2439,10 +2439,10 @@ IsTeamsChatActive() {
         try {
             win := WinExist("A")
             root := UIA.ElementFromHandle(win)
-            
+
             ; Find the "Audio call" button
             audioCallButton := root.FindFirst({ Name: "Audio call", Type: "50000" })
-            
+
             if audioCallButton {
                 audioCallButton.Click()
             } else {
@@ -2465,10 +2465,10 @@ IsTeamsChatActive() {
     try {
         win := WinExist("A")
         root := UIA.ElementFromHandle(win)
-        
+
         ; Find the "View and add participants" button using substring matching
         participantsButton := root.FindFirst({ Name: "View and add participants", Type: "50000", matchmode: "Substring" })
-        
+
         if participantsButton {
             participantsButton.Click()
             Sleep 100
@@ -4512,7 +4512,7 @@ SwitchAIModel() {
     try {
         spot := UIA_Browser("ahk_exe Spotify.exe")
         Sleep 300
-        
+
         ; First, try to find and click "Open Your Library" button (if available)
         try {
             openLibBtn := spot.FindElement({ Name: "Open Your Library", Type: "Button" })
@@ -4523,7 +4523,7 @@ SwitchAIModel() {
         } catch {
             ; "Open Your Library" button not found - this is normal, continue to next step
         }
-        
+
         ; Then, try to find and click "Expand Your Library" button
         try {
             expandLibBtn := spot.FindElement({ Name: "Expand Your Library", Type: "Button" })
@@ -5350,6 +5350,48 @@ FocusDescriptionField() {
 
     } catch Error as e {
         MsgBox "Error clicking action button and Transfer menu: " e.Message, "Mobills Error", "IconX"
+    }
+}
+
+; Shift + W : Click "Open" button and type "MAIN"
++w:: {
+    try {
+        uia := TryAttachBrowser()
+        if !uia {
+            MsgBox "Could not attach to the browser window.", "Mobills Navigation", "IconX"
+            return
+        }
+
+        ; Find "Attach File" button as anchor
+        anchor := uia.FindElement({ Name: "Attach File" })
+        if !anchor {
+            MsgBox "Could not find the Attach File button (anchor).", "Mobills Navigation", "IconX"
+            return
+        }
+
+        ; Focus the anchor
+        anchor.SetFocus()
+        Sleep(200)  ; Wait for focus to settle
+
+        ; Tab backwards once to reach the "Open" button
+        Send("+{Tab}")  ; Shift+Tab to go backwards once
+        Sleep(200)      ; Wait for focus to settle
+
+        ; Click the "Open" button
+        Send("{Enter}")
+        Sleep(200)  ; Wait for any dropdown/menu to appear
+
+        ; Type "MAIN" letter by letter for better performance
+        Send("M")
+        Sleep(50)
+        Send("A")
+        Sleep(50)
+        Send("I")
+        Sleep(50)
+        Send("N")
+
+    } catch Error as e {
+        MsgBox "Error finding and clicking Open button: " e.Message, "Mobills Error", "IconX"
     }
 }
 
