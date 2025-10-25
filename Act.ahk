@@ -18,7 +18,6 @@ if (IS_WORK_ENVIRONMENT) {
     Run "C:\Users\fie7ca\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Cursor\Cursor.lnk"
     Run "C:\Users\fie7ca\Documents\Shortcuts\Mobills.lnk"
     Run "C:\Users\fie7ca\Documents\Shortcuts\Settle Up.lnk"
-    Run "https://keep.google.com/u/0/#NOTE/1YCVkrriqNRyRhRyz1PV0gJ9Eor66ARhb1i9uLpvXTZ2j79nDScAUOIK4pBAMwHY"
     Run "C:\Users\fie7ca\Documents\Shortcuts\WindowGrid.lnk"
 
     Run GetScriptPath("Microsoft Teams.ahk")
@@ -28,7 +27,6 @@ if (IS_WORK_ENVIRONMENT) {
     Run "C:\Users\eduev\OneDrive\Documentos\HuntAndPeck\hap.exe"
     Run "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Chrome Apps\Mobills.lnk"
     Run "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Chrome Apps\Settle Up.lnk"
-    Run "https://keep.google.com/u/0/#NOTE/1YCVkrriqNRyRhRyz1PV0gJ9Eor66ARhb1i9uLpvXTZ2j79nDScAUOIK4pBAMwHY"
     Run "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\apps do Chrome\WhatsApp Web.lnk"
     Run "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Chrome Apps\Gmail.lnk"
 }
