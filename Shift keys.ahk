@@ -7,7 +7,6 @@
  *   AVAILABLE WIN+ALT+SHIFT COMBINATIONS
  *   The following combinations are not currently in use:
  *   â€¢ C - Available
- *   â€¢ 1 - Available
  ********************************************************************/
 
 #Requires AutoHotkey v2.0+
@@ -1103,8 +1102,10 @@ ShowGlobalShortcutsHelp() {
 === SPOTIFY ===
 [Win+Alt+Shift+S] > Opens or activates Spotify
 
+r=== CLIP ANGEL ===
+[Win+Alt+Shift+1] > Send top list item from Clip Angel
+
 === CHATGPT ===
-[Win+Alt+Shift+1] > ChatGPT testing (opens tab, pastes placeholder, submits)
 [Win+Alt+Shift+8] > Get word pronunciation, definition, and Portuguese translation
 [Win+Alt+Shift+0] > Speak with ChatGPT
 [Win+Alt+Shift+7] > Speak with ChatGPT (send message automatically)
@@ -1231,63 +1232,14 @@ ShowGlobalShortcutsHelp() {
 }
 
 ; =============================================================================
-; ChatGPT Testing Shortcut
+; Send Top List Item from Clip Angel
 ; Hotkey: Win+Alt+Shift+1
 ; =============================================================================
 #!+1::
 {
-    ; Step 1: Open new Chrome tab
-    Send "^t"
-    Sleep (IS_WORK_ENVIRONMENT ? 75 : 150)
-
-    ; Step 2: Navigate to ChatGPT using clipboard
-    oldClip := A_Clipboard
-    A_Clipboard := ""
-    A_Clipboard := "https://chatgpt.com/"
-    ClipWait 1
-
-    Sleep 1000
-
-    Send "^v"
-    Send "{Enter}"
-    A_Clipboard := oldClip
-
-    Sleep 1000
-
-    Send "^{Tab}"
-
-    Sleep 1000
-
-    Send "^w"
-
-    ; Step 3: Wait for page to load
-    Sleep (IS_WORK_ENVIRONMENT ? 2500 : 4000)
-
-    ; Step 4: Paste text from GPT_Prompt.txt file
-    promptText := ""
-    try promptText := FileRead(A_ScriptDir "\GPT_Prompt.txt", "UTF-8")
-    if (StrLen(promptText) = 0)
-        promptText := "[GPT_Prompt.txt file missing]"
-
-    oldClip := A_Clipboard
-    A_Clipboard := ""
-    A_Clipboard := promptText
-    ClipWait 1
-    Sleep 1000
-
-    Send "^v"
-    Sleep 200
-
-    ; Step 5: Ensure ChatGPT window is active and submit message
-    if hwnd := GetChatGPTWindowHwnd() {
-        WinActivate "ahk_id " hwnd
-        Sleep 200
-        SubmitChatGPTMessage()  ; Call the submit function directly
-    }
-
-    ; Restore clipboard
-    A_Clipboard := oldClip
-
+    Send "!v"
+    Sleep 700
+    Send "^!b"
 }
 
 ;-------------------------------------------------------------------
