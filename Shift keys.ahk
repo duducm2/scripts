@@ -442,6 +442,7 @@ cheatSheets["Cursor.exe"] := "
 Cursor
 
 --- CTRL Shortcuts (Cursor-defined) ---
+[Ctrl+1] > 🎯 Remove clustering and focus on the code (ahk)
 [Ctrl+M] > 🤖 Ask (Ctrl+Alt+A), wait 6s, then paste (Shift+V) (ahk)
 [Ctrl+G] > ⚡ Kill terminal [custom in settings.json]
 [Ctrl+Y] > 📉 Fold all
@@ -3457,6 +3458,23 @@ IsEditorActive() {
 ; Cursor Shortcuts
 ;-------------------------------------------------------------------
 #HotIf IsEditorActive()
+
+; Ctrl + 1 : Remove clustering and focus on the code
+^1::
+{
+    ; Send ESC two times
+    Send "{Escape}"  ; ESC
+    Sleep 50
+    Send "{Escape}"  ; ESC again
+    Sleep 100
+    ; CTRL B once
+    Send "^b"
+    Sleep 100
+    ; CTRL I twice
+    Send "^i"
+    Sleep 100
+    Send "^i"
+}
 
 ; Shift + Y : Fold
 +y::
