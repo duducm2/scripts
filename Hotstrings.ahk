@@ -149,12 +149,6 @@ InsertText(text) {
     )
 }
 
-:o:floghdr::
-{
-    ; Pastes: Date<TAB>Meal<TAB>Time<TAB>Main_Items<TAB>Tags<TAB>Notes
-    InsertText("Date`tMeal`tTime`tMain_Items`tTags`tNotes")
-}
-
 ; ----------------------
 ; Register hotstrings for cheat sheet display
 ; ----------------------
@@ -181,7 +175,6 @@ InitHotstringsCheatSheet() {
         "This is a message, summary, text or any textual information that translates into a task for me to do. Translate this way, make informative and start with the emoji 🔲."
     )
     RegisterHotstring(":o:flog", "Food_Log dictation → Excel TSV prompt")
-    RegisterHotstring(":o:floghdr", "Food_Log header (tab-separated)")
 }
 InitHotstringsCheatSheet()
 

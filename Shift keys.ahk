@@ -913,7 +913,7 @@ GetCheatSheetText() {
             appShortcuts := cheatSheets.Has("Gmail") ? cheatSheets["Gmail"] : ""
         if InStr(chromeTitle, "chatgpt")
             appShortcuts :=
-                "ChatGPT`r`n[Shift+Y] > Cut all`r`n[Shift+U] > Model selector`r`n[Shift+I] > Toggle sidebar`r`n[Shift+O] > Re-send rules`r`n[Shift+H] > Copy code block`r`n[Shift+L] > Send and show AI banner"
+                "ChatGPT`r`n[Shift+Y] > Cut all`r`n[Shift+U] > Model selector`r`n[Shift+I] > Toggle sidebar`r`n[Shift+O] > Re-send rules`r`n[Shift+H] > Copy code block`r`n[Shift+J] > Go down`r`n[Shift+L] > Send and show AI banner"
         if InStr(chromeTitle, "Mobills")
             appShortcuts :=
                 "Mobills - Navigation`r`n[Shift+Y] > Dashboard`r`n[Shift+U] > Contas`r`n[Shift+I] > TransaÃ§Ãµes`r`n[Shift+O] > CartÃµes de crÃ©dito`r`n[Shift+P] > Planejamento`r`n[Shift+H] > RelatÃ³rios`r`n[Shift+J] > Mais opÃ§Ãµes`r`n[Shift+K] > Previous month`r`n[Shift+L] > Next month`r`n`r`nMobills - Actions`r`n[Shift+N] > Ignore transaction`r`n[Shift+M] > Name field`r`n[Shift+E] > New Expense`r`n[Shift+R] > New Income`r`n[Shift+T] > New Credit expense`r`n[Shift+D] > New Transfer`r`n[Shift+W] > Open button + type MAIN"
@@ -3083,6 +3083,18 @@ Outlook_ClickEndTime_1200PM() {
 
 ; Shift + H: Copy last code block
 +h:: Send("^+;")
+
+; Shift + J: Go down
++j::
+{
+    Send "d"
+    Sleep 50
+    Send "{Backspace}"
+    Sleep 50
+    Send "+{Tab}"
+    Sleep 50
+    Send "{Enter}"
+}
 
 ; Shift + L: Send and show AI banner
 +l:: SubmitChatGPTMessage()
