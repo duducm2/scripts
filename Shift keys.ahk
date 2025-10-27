@@ -3558,7 +3558,7 @@ IsEditorActive() {
         ; Simple logic: if element found, continue; if not found, exit early
         if (elementFound) {
             ShowSmallLoadingIndicator_ChatGPT("Element present, continuing...")
-            Sleep 1000
+            Sleep 1500
             continue
         } else {
             ; Element not found, exit early
