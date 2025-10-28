@@ -130,9 +130,43 @@ ExecuteVoiceAloudOption(option) {
         Send "{Escape}"  ; Stop voice aloud
     }
 
-    ; Finally: Minimize the Outlook window
-    Sleep 500
-    WinMinimize "ahk_exe OUTLOOK.EXE"
+    ; Finally: Minimize the Outlook window (robust with retries)
+    Sleep 900
+    try {
+        hwnd := WinExist("ahk_exe OUTLOOK.EXE")
+        if (hwnd) {
+            ; If Outlook's floating "Read Aloud" panel is present, try closing it first
+            oldMode := A_TitleMatchMode
+            SetTitleMatchMode 2
+            for rhwnd in WinGetList("Read Aloud ahk_exe OUTLOOK.EXE") {
+                try {
+                    WinActivate "ahk_id " rhwnd
+                    Sleep 80
+                    Send "{Esc}"
+                    Sleep 120
+                    ; Try to close as well (some variants ignore Esc)
+                    WinClose "ahk_id " rhwnd
+                } catch {
+                }
+            }
+            SetTitleMatchMode oldMode
+
+            Loop 3 {
+                WinMinimize "ahk_id " hwnd
+                Sleep 200
+                if (WinGetMinMax("ahk_id " hwnd) = -1)
+                    break
+                ; Bring to front then try again
+                WinActivate "ahk_id " hwnd
+                Sleep 160
+            }
+        } else {
+            WinMinimize "ahk_exe OUTLOOK.EXE"
+        }
+    } catch {
+        ; Last resort
+        WinMinimize "ahk_exe OUTLOOK.EXE"
+    }
 }
 
 ; Auto-submit function for voice aloud
