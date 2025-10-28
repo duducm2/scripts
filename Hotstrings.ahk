@@ -138,7 +138,7 @@ InsertText(text) {
 :o:mtask::
 {
     InsertText(
-        "This is a message, summary, text or any textual information that translates into a task for me to do. Translate this way, make informative and start with the emoji 🔲."
+        "This is a message, summary, text or any textual information that translates into a task for me to do. Translate this way, into a task, make informative and start with the emoji 🔲. Make it clear and consise."
     )
 }
 
@@ -172,7 +172,7 @@ InitHotstringsCheatSheet() {
     RegisterHotstring(":o:ebosch", "eduardo.figueiredo@br.bosch.com")
     RegisterHotstring(":o:egoogle", "edu.evangelista.figueiredo@gmail.com")
     RegisterHotstring(":o:mtask",
-        "This is a message, summary, text or any textual information that translates into a task for me to do. Translate this way, make informative and start with the emoji 🔲."
+        "This is a message, summary, text or any textual information that translates into a task for me to do. Translate this way, into a task, make informative and start with the emoji 🔲. Make it clear and consise."
     )
     RegisterHotstring(":o:flog", "Food_Log dictation → Excel TSV prompt")
 }
