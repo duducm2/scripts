@@ -984,9 +984,9 @@ SidebarVisible(uiRoot, names) {
         Send("{Esc}")
         Send("F")
         Send("{Backspace}")
-        Sleep(IS_WORK_ENVIRONMENT ? 150 : 300)
+        Sleep(100)
         Send("^a")
-        Sleep(IS_WORK_ENVIRONMENT ? 175 : 350)
+        Sleep(100)
         Send("^x")
         Send("!{Tab}")
     }
