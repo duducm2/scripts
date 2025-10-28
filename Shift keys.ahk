@@ -759,6 +759,14 @@ File Dialog
 ; --- Settings Window -------------------------------------------------
 cheatSheets["Settings"] := "(Settings)`r`n[Shift+Y] > 🔊 Set input volume to 100%"
 
+; --- Command Palette -------------------------------------------------
+cheatSheets["Command Palette"] := "
+(
+Command Palette
+[Ctrl+H] > Open in folder
+[Shift+K] > Copy path
+)"
+
 ; --- Excel ------------------------------------------------------------
 cheatSheets["EXCEL.EXE"] := "
 (
@@ -903,6 +911,11 @@ GetCheatSheetText() {
     ; Check for Settings window (both English and Portuguese)
     if (title = "Settings" || title = "ConfiguraÃ§Ãµes") {
         return cheatSheets.Has("Settings") ? cheatSheets["Settings"] : ""
+    }
+
+    ; Check for Command Palette window
+    if InStr(title, "Command Palette", false) {
+        return cheatSheets.Has("Command Palette") ? cheatSheets["Command Palette"] : ""
     }
 
     ; Special handling for Chrome-based apps that share chrome.exe
@@ -6220,6 +6233,19 @@ IsFileDialogActive() {
 
 ; Shift + H : Add/Edit link (Alt+Ctrl+K)
 +h:: Send "!^k"
+
+#HotIf
+
+;-------------------------------------------------------------------
+; PowerToys Command Palette Shortcuts
+;-------------------------------------------------------------------
+#HotIf WinActive("Command Palette")
+
+; Ctrl + H : Trigger Ctrl+Shift+E
+^h:: Send "^+e"
+
+; Shift + K : Trigger Ctrl+Shift+C
++k:: Send "^+c"
 
 #HotIf
 
