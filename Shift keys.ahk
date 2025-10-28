@@ -759,6 +759,7 @@ cheatSheets["EXCEL.EXE"] := "
 (
 Excel
 [Shift+Y] > ⚪ Select White Color
+[Shift+U] > ✏️ Enable Editing
 )"
 
 ; --- UIA Tree Inspector -------------------------------------------------
@@ -3316,6 +3317,20 @@ EnsureItemsViewFocus() {
 ; Shift + Y : Select White Color (Up-Arrow, Ctrl-Home, Ctrl-Home)
 +y:: {
     Send "^{PgUp}"
+}
+
+; Shift + U : Click Enable Editing button
++u:: {
+    try {
+        root := UIA.ElementFromHandle(WinExist("A"))
+        if (btn := WaitForButton(root, "Enable Editing", 3000)) {
+            btn.Invoke()
+        } else {
+            MsgBox "Couldn't find the Enable Editing button."
+        }
+    } catch Error as err {
+        MsgBox "Error:`n" err.Message
+    }
 }
 
 #HotIf
