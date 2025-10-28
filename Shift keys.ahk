@@ -763,8 +763,9 @@ cheatSheets["Settings"] := "(Settings)`r`n[Shift+Y] > 🔊 Set input volume to 1
 cheatSheets["Command Palette"] := "
 (
 Command Palette
-[Ctrl+H] > Open in folder
-[Shift+K] > Copy path
+[Ctrl+H] > ⌨️ Original shortcut (Ctrl+Shift+E)
+[Shift+K] > ⌨️ Original shortcut (Ctrl+Shift+C)
+[Shift+Y] > ⌨️ Send ten backspaces
 )"
 
 ; --- Excel ------------------------------------------------------------
@@ -6246,6 +6247,9 @@ IsFileDialogActive() {
 
 ; Shift + K : Trigger Ctrl+Shift+C
 +k:: Send "^+c"
+
+; Shift + Y : Send ten backspaces
++y:: Send "{Backspace 10}"
 
 #HotIf
 
