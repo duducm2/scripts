@@ -561,7 +561,7 @@ EnsureMicVolume100() {
     ps1Path := A_ScriptDir "\Set-MicVolume.ps1"
     cmd := 'powershell.exe -ExecutionPolicy Bypass -File "' ps1Path '" -Level 100'
     try {
-        RunWait cmd, , "Hide"
+        Run cmd, , "Hide"  ; Run asynchronously - don't wait for it to complete
     } catch {
         ; Silently ignore mic volume errors, still debounced
     }
@@ -589,194 +589,85 @@ EnsureMicVolume100() {
 
 ToggleDictation(autoSend) {
     static isDictating := false
-    static stopErrorRetryCount := 0
     global g_transcribeChimePending
 
-    ; --- Button Names (EN/PT) ---
-    pt_dictateName := "Botão de ditado"
-    en_dictateName := "Dictate button"
-    pt_submitName := "Enviar ditado"
-    en_submitName := "Submit dictation"
-    pt_transcribingName := "Interromper ditado"
-    en_transcribingName := "Stop dictation"
-    pt_sendPromptName := "Enviar prompt"
-    en_sendPromptName := "Send prompt"
-    pt_stopStreamingName := "Interromper transmissão"
-    en_stopStreamingName := "Stop streaming"
-
-    currentDictateName := IS_WORK_ENVIRONMENT ? pt_dictateName : en_dictateName
-    currentSubmitName := IS_WORK_ENVIRONMENT ? pt_submitName : en_submitName
-    currentTranscribingName := IS_WORK_ENVIRONMENT ? pt_transcribingName : en_transcribingName
-    currentSendPromptName := IS_WORK_ENVIRONMENT ? pt_sendPromptName : en_sendPromptName
-    currentStopStreamingName := IS_WORK_ENVIRONMENT ? pt_stopStreamingName : en_stopStreamingName
-
-    startNames := [currentDictateName]
-    stopNames := [currentSubmitName, currentTranscribingName]
-
-    ; --- Activate Window & UIA ---
+    ; --- Activate Window ---
     SetTitleMatchMode 2
     if hwnd := GetChatGPTWindowHwnd()
         WinActivate "ahk_id " hwnd
     if !WinWaitActive("ahk_exe chrome.exe", , 2)
         return
-    CenterMouse()
-    try {
-        cUIA := UIA_Browser()
-        Sleep (IS_WORK_ENVIRONMENT ? 150 : 300)
-    } catch {
-        ShowNotification("Unable to connect to browser", 1500, "DF2935", "FFFFFF")
-        return
-    }
 
     action := !isDictating ? "start" : "stop"
 
     if (action = "start") {
         try {
-            if btn := FindButton(cUIA, startNames) {
-                EnsureMicVolume100()
-                btn.Click()
-                isDictating := true
-                ; Wait until dictation actually starts: either the start button disappears
-                ; or the stop/submit button appears, then play a short start chime
-                ; Keep this check brief to avoid blocking UX
-                try {
-                    detected := false
-                    loops := 0
-                    while (loops < 20 && !detected) { ; ~3s max (20 * 150ms)
-                        ; Check for stop/submit (meaning listening started)
-                        stopFound := false
-                        for n in stopNames {
-                            try {
-                                if cUIA.FindElement({ Name: n, Type: "Button" }) {
-                                    stopFound := true
-                                    break
-                                }
-                            } catch {
-                                ; Silently ignore UIA element errors
-                            }
-                        }
-                        if (stopFound) {
-                            detected := true
-                            break
-                        }
-                        ; Or verify the start button is gone
-                        startStillThere := false
-                        try {
-                            if FindButton(cUIA, startNames)
-                                startStillThere := true
-                        } catch {
-                            startStillThere := false
-                        }
-                        if (!startStillThere) {
-                            detected := true
-                            break
-                        }
-                        Sleep (IS_WORK_ENVIRONMENT ? 75 : 150)
-                        loops++
-                    }
-                    if (detected)
-                        PlayDictationStartedChime()
-                } catch {
-                    ; Silently ignore errors
-                }
-                ; Switch back to the previous window first so the indicator appears there
-                Send "!{Tab}"
-                Sleep (IS_WORK_ENVIRONMENT ? 150 : 300)    ; ensure the window switch has completed
-                ShowDictationIndicator()
-                g_transcribeChimePending := false
-            } else {
-                ShowNotification((IS_WORK_ENVIRONMENT ? "Não foi possível iniciar o ditado" :
-                    "Could not start dictation"), 1500, "DF2935", "FFFFFF")
-            }
+            ; Navigate to text field: Esc, type 'd', backspace
+            Send "{Esc}"
+            Sleep (IS_WORK_ENVIRONMENT ? 50 : 100)
+            Send "d"
+            Sleep (IS_WORK_ENVIRONMENT ? 50 : 100)
+            Send "{Backspace}"
+            Sleep (IS_WORK_ENVIRONMENT ? 50 : 100)
+
+            ; Press Tab twice to focus on dictation button
+            Send "{Tab 2}"
+
+            ; Press Enter to start dictation (don't wait for mic volume check)
+            Send "{Enter}"
+            isDictating := true
+
+            ; Start dictation chime and volume check in parallel (don't wait)
+            PlayDictationStartedChime()
+            EnsureMicVolume100()  ; This runs asynchronously - starts in background
+
+            ; Switch back to previous window and show indicator
+            Send "!{Tab}"
+            Sleep (IS_WORK_ENVIRONMENT ? 150 : 300)
+            ShowDictationIndicator()
+            g_transcribeChimePending := false
         } catch Error as e {
             ShowNotification((IS_WORK_ENVIRONMENT ? "Erro ao iniciar o ditado" : "Error starting dictation"), 1500,
             "DF2935", "FFFFFF")
         }
     } else if (action = "stop") {
         try {
-            if submitBtn := FindButton(cUIA, stopNames) {
-                ;EnsureMicVolume100()
-                submitBtn.Click()
-                isDictating := false
-                HideDictationIndicator()
-                Send "!{Tab}" ; Return to previous window immediately to allow multitasking
+            ; Return to ChatGPT window
+            if hwnd := GetChatGPTWindowHwnd()
+                WinActivate "ahk_id " hwnd
 
-                ; --- Wait for transcription to finish (indicator appears over ChatGPT) ---
-                transcribingWaitNames := [currentTranscribingName, currentSubmitName]
-                ; Set a one-time flag so the watcher can emit a distinct chime right before closing
-                g_transcribeChimePending := true  ; Always play transcription finished chime
-                WaitForButtonAndShowSmallLoading(transcribingWaitNames, "Transcribing…")
+            Sleep (IS_WORK_ENVIRONMENT ? 50 : 100)
 
-                if (autoSend) {
-                    try {
-                        ; The 'Send prompt' button should appear after transcription
-                        finalSendBtn := cUIA.WaitElement({ Name: currentSendPromptName, AutomationId: "composer-submit-button" },
-                        8000)
-                        if finalSendBtn {
-                            finalSendBtn.Click() ; Click instead of sending {Enter}
-                            Send "!{Tab}" ; Return to previous window immediately to allow multitasking
-                            ; --- Show smaller green loading indicator while ChatGPT is responding ---
-                            WaitForButtonAndShowSmallLoading([currentStopStreamingName], "AI is responding…", 180000)
-                        } else {
-                            ShowNotification("Timeout: Send button did not appear", 1500, "DF2935", "FFFFFF")
-                        }
-                    } catch Error as e_wait {
-                        ShowNotification("Error waiting for send button", 1500, "DF2935", "FFFFFF")
-                    }
-                }
-            } else {
-                ShowNotification((IS_WORK_ENVIRONMENT ? "Não foi possível parar o ditado" :
-                    "Could not stop dictation"), 1500, "DF2935", "FFFFFF")
-                isDictating := false ; Reset state if stop button is not found
+            ; Press Enter to stop/pause dictation
+            Send "{Enter}"
+            isDictating := false
+            HideDictationIndicator()
+            Send "!{Tab}" ; Return to previous window immediately
+
+            ; Wait for transcription to finish if we need to check status
+            ; For now, just set the flag for transcription finished chime
+            g_transcribeChimePending := true
+
+            ; If auto-send is enabled, wait a bit then send the prompt
+            if (autoSend) {
+                ; Wait for the send button to become available
+                Sleep (IS_WORK_ENVIRONMENT ? 1000 : 2000)
+
+                ; Return to ChatGPT to send
+                if hwnd := GetChatGPTWindowHwnd()
+                    WinActivate "ahk_id " hwnd
+
+                Sleep (IS_WORK_ENVIRONMENT ? 100 : 200)
+
+                ; Press Enter to send the transcribed text
+                Send "{Enter}"
+                Send "!{Tab}" ; Return to previous window
+
+                ; Note: We skip the loading indicator for now to keep it simple
             }
         } catch Error as e {
-            ; Instead of interrupting with a modal dialog, briefly switch back to the user's window
-            ; so the banner appears on the monitor with the active window, then show a quick blue banner
-            Send "!{Tab}"
-            Sleep (IS_WORK_ENVIRONMENT ? 125 : 250)
-            ShowNotification(IS_WORK_ENVIRONMENT ? "Reiniciando ditado…" : "Restarting dictation…", 1200, "3772FF",
-                "FFFFFF")
-            isDictating := false ; Reset state so we can attempt a fresh start
-
-            stopErrorRetryCount++
-            if (stopErrorRetryCount <= 3) {
-                ; Attempt to restart dictation quickly
-                try {
-                    SetTitleMatchMode 2
-                    if hwnd := GetChatGPTWindowHwnd() {
-                        WinActivate "ahk_id " hwnd
-                        WinWaitActive "ahk_id " hwnd
-                    }
-                    CenterMouse()
-                    try {
-                        cUIA_restart := UIA_Browser()
-                        Sleep (IS_WORK_ENVIRONMENT ? 100 : 200)
-                    } catch {
-                        ; Silently ignore restart UIA errors
-                        return
-                    }
-                    if btnRestart := FindButton(cUIA_restart, startNames, "Button", 3000) {
-                        EnsureMicVolume100()
-                        btnRestart.Click()
-                        isDictating := true
-                        Send "!{Tab}"
-                        Sleep (IS_WORK_ENVIRONMENT ? 150 : 300)
-                        ShowDictationIndicator()
-                        g_transcribeChimePending := false
-                        stopErrorRetryCount := 0 ; success – reset counter
-                    } else {
-                        ; Could not find start button – give up silently this time
-                        ; (Leave isDictating := false so the user can try again)
-                    }
-                } catch {
-                    ; Silently ignore restart errors – if they persist, the retry cap below will stop it
-                }
-            } else {
-                ; Too many consecutive failures – stop trying
-                ShowNotification(IS_WORK_ENVIRONMENT ? "Falhas repetidas no ditado — parando" :
-                    "Repeated dictation failures — stopping", 1800, "DF2935", "FFFFFF")
-                stopErrorRetryCount := 0
-            }
+            ShowNotification(IS_WORK_ENVIRONMENT ? "Erro ao parar o ditado" : "Error stopping dictation", 1500,
+                "DF2935", "FFFFFF")
         }
     }
 }
