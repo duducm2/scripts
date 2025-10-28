@@ -6,7 +6,12 @@
 /********************************************************************
  *   AVAILABLE WIN+ALT+SHIFT COMBINATIONS
  *   The following combinations are not currently in use:
- *   â€¢ C - Available
+ *   
+ *   Letters: P, U
+ *   Numbers: (all numbers 0-9 are used)
+ *   Symbols: ; ' [ ] \ | ` ~ @ # $ % ^ & * ( ) - _ = + { } : " < > ? /
+ *   
+ *   Note: Some combinations use Ctrl+Alt+Shift+Arrow keys for extended mouse movement
  ********************************************************************/
 
 #Requires AutoHotkey v2.0+
@@ -1133,6 +1138,7 @@ r=== CLIP ANGEL ===
 [Win+Alt+Shift+B] > Open mail
 [Win+Alt+Shift+V] > Open Reminder
 [Win+Alt+Shift+G] > Open calendar
+[Win+Alt+Shift+D] > Voice aloud the email
 
 === MICROSOFT TEAMS ===
 [Win+Alt+Shift+R] > New conversation
