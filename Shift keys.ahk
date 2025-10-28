@@ -766,6 +766,7 @@ Command Palette
 [Ctrl+H] > ⌨️ Original shortcut (Ctrl+Shift+E)
 [Shift+K] > ⌨️ Original shortcut (Ctrl+Shift+C)
 [Shift+Y] > ⌨️ Send ten backspaces
+[Shift+U] > ⌨️ Precise search
 )"
 
 ; --- Excel ------------------------------------------------------------
@@ -6250,6 +6251,9 @@ IsFileDialogActive() {
 
 ; Shift + Y : Send ten backspaces
 +y:: Send "{Backspace 10}"
+
+; Shift + U : Insert double quotes twice, then hit left arrow
++u:: Send '""{Left}'
 
 #HotIf
 
