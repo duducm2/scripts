@@ -767,6 +767,7 @@ Command Palette
 [Shift+K] > ⌨️ Original shortcut (Ctrl+Shift+C)
 [Shift+Y] > ⌨️ Send ten backspaces
 [Shift+U] > ⌨️ Precise search
+[Shift+I] > ⌨️ Add favorit
 )"
 
 ; --- Excel ------------------------------------------------------------
@@ -6254,6 +6255,17 @@ IsFileDialogActive() {
 
 ; Shift + U : Insert double quotes twice, then hit left arrow
 +u:: Send '""{Left}'
+
+; Shift + I : Send "fav" letter by letter and Enter
++i:: {
+    Send "f"
+    Sleep 50
+    Send "a"
+    Sleep 50
+    Send "v"
+    Sleep 50
+    Send "{Enter}"
+}
 
 #HotIf
 
