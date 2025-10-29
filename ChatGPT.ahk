@@ -553,6 +553,56 @@ FindButtonByNames(cUIA, namesArray) {
     return ""
 }
 
+; Wait until the ChatGPT composer submit button becomes available
+; Uses AutomationId: "composer-submit-button"; falls back to Name if needed
+WaitForComposerSubmitButton(timeoutMs := 30000) {
+    try {
+        hwnd := GetChatGPTWindowHwnd()
+        if !hwnd
+            return false
+        cUIA := UIA_Browser("ahk_id " hwnd)
+    } catch {
+        return false
+    }
+
+    names := ["Send prompt", "Enviar prompt", "Send", "Enviar"]
+    start := A_TickCount
+    deadline := (timeoutMs > 0) ? (start + timeoutMs) : 0
+    while (timeoutMs <= 0 || A_TickCount < deadline) {
+        btn := ""
+        ; Prefer AutomationId match
+        try btn := cUIA.FindElement({ AutomationId: "composer-submit-button", Type: "Button" })
+        catch {
+            btn := ""
+        }
+        if !btn {
+            ; Fallback to name variants
+            for n in names {
+                try {
+                    btn := cUIA.FindElement({ Name: n, Type: "Button" })
+                } catch {
+                    btn := ""
+                }
+                if btn
+                    break
+            }
+        }
+        if btn {
+            ; Ensure it's visible and enabled before proceeding
+            ok := true
+            try {
+                ok := (!btn.IsOffscreen) && btn.IsEnabled
+            } catch {
+                ok := true
+            }
+            if ok
+                return true
+        }
+        Sleep (IS_WORK_ENVIRONMENT ? 100 : 200)
+    }
+    return false
+}
+
 EnsureMicVolume100() {
     static lastRunTick := 0
     if (A_TickCount - lastRunTick < 5000)
@@ -651,8 +701,8 @@ ToggleDictation(autoSend) {
 
             ; If auto-send is enabled, wait a bit then send the prompt
             if (autoSend) {
-                ; Wait for the send button to become available
-                Sleep 1200
+                ; Wait until the composer submit button is present (transcription finished)
+                WaitForComposerSubmitButton(30000)
 
                 ; Return to ChatGPT to send
                 if hwnd := GetChatGPTWindowHwnd()
