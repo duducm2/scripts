@@ -3610,6 +3610,101 @@ IsEditorActive() {
 
         Sleep 1000
     }
+
+    ; After commit is sent, show push selector popup
+    ShowCommitPushSelector()
+}
+
+; Global variable for commit push selector target window
+global gCommitPushTargetWin := 0
+
+; Function to get commit push action by number
+GetCommitPushActionByNumber(numberText) {
+    try number := Integer(numberText)
+    catch {
+        return ""
+    }
+    actionMap := Map()
+    actionMap[1] := "push"
+    actionMap[2] := "dont_push"
+    return (actionMap.Has(number)) ? actionMap[number] : ""
+}
+
+; Function to execute commit push action
+ExecuteCommitPushAction(action) {
+    if (action = "")
+        return
+
+    if (action = "push") {
+        ; Option 1: Push (send Shift+B)
+        Send "+b"
+    } else if (action = "dont_push") {
+        ; Option 2: Don't push (do nothing)
+        ; Just close the popup, no action needed
+    }
+}
+
+; Auto-submit function for commit push selector
+AutoSubmitCommitPush(ctrl, *) {
+    currentValue := ctrl.Text
+    if (currentValue != "" && IsInteger(currentValue)) {
+        action := GetCommitPushActionByNumber(currentValue)
+        if (action != "") {
+            ctrl.Gui.Destroy()
+            ExecuteCommitPushAction(action)
+        }
+    }
+}
+
+; Manual submit function for commit push selector (backup)
+SubmitCommitPush(ctrl, *) {
+    currentValue := ctrl.Gui["CommitPushInput"].Text
+    if (currentValue != "" && IsInteger(currentValue)) {
+        action := GetCommitPushActionByNumber(currentValue)
+        if (action != "") {
+            ctrl.Gui.Destroy()
+            ExecuteCommitPushAction(action)
+        } else {
+            MsgBox "Invalid selection. Please choose 1-2.", "Commit Push Selector", "IconX"
+        }
+    }
+}
+
+; Cancel function for commit push selector
+CancelCommitPush(ctrl, *) {
+    ctrl.Gui.Destroy()
+}
+
+; Function to show commit push selector popup
+ShowCommitPushSelector() {
+    try {
+        ; Remember current target window before showing GUI
+        gCommitPushTargetWin := WinExist("A")
+        ; Create GUI for commit push selection with auto-submit
+        commitPushGui := Gui("+AlwaysOnTop +ToolWindow", "Commit Push Selector")
+        commitPushGui.SetFont("s10", "Segoe UI")
+
+        ; Add instruction text
+        commitPushGui.AddText("w350 Center",
+            "Commit sent! Choose next action:`n`n1. Push (Shift+B)`n2. Don't push`n`nType a number (1-2):")
+
+        ; Add input field with auto-submit
+        commitPushGui.AddEdit("w50 Center vCommitPushInput", "")
+        commitPushGui["CommitPushInput"].OnEvent("Change", AutoSubmitCommitPush)
+
+        ; Add manual submit button (backup)
+        commitPushGui.AddButton("w80", "Submit").OnEvent("Click", SubmitCommitPush)
+
+        ; Add cancel button
+        commitPushGui.AddButton("w80", "Cancel").OnEvent("Click", CancelCommitPush)
+
+        ; Show GUI and focus input
+        commitPushGui.Show("w350 h150")
+        commitPushGui["CommitPushInput"].Focus()
+
+    } catch Error as e {
+        MsgBox "Error in commit push selector: " e.Message, "Commit Push Selector Error", "IconX"
+    }
 }
 
 ; Auto-submit function - triggers when text changes
