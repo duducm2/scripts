@@ -1,5 +1,5 @@
 ;---------------------------------------- Github ----------------------------------------------------
-; https://github.com/duducm2/zmk-sofle/blob/main/keymap-drawer/eyelash_sofle.svg
+; https://github.com/duducm2/zmk-sofle/blob/main/keymap-drawer/eyelash_sofle.svg 2
 ;---------------------------------------- Scripts ---------------------------------------------------
 
 #Include env.ahk
@@ -22,7 +22,7 @@ if (IS_WORK_ENVIRONMENT) {
 
     Run GetScriptPath("Microsoft Teams.ahk")
     Run GetScriptPath("Outlook.ahk")
-    
+
     ; Open Google Sheets link in Chrome
     Run "chrome.exe https://docs.google.com/spreadsheets/d/1KORjeQa52pbqjYP1MikpSEiGJp5Wzlxq/edit?gid=730106566#gid=730106566"
 } else {
