@@ -604,11 +604,11 @@ ToggleDictation(autoSend) {
         try {
             ; Navigate to text field: Esc, type 'd', backspace
             Send "{Esc}"
-            Sleep (IS_WORK_ENVIRONMENT ? 50 : 100)
+            Sleep 100
             Send "d"
-            Sleep (IS_WORK_ENVIRONMENT ? 50 : 100)
+            Sleep 100
             Send "{Backspace}"
-            Sleep (IS_WORK_ENVIRONMENT ? 50 : 100)
+            Sleep 100
 
             ; Press Tab twice to focus on dictation button
             Send "{Tab 2}"
@@ -636,7 +636,8 @@ ToggleDictation(autoSend) {
             if hwnd := GetChatGPTWindowHwnd()
                 WinActivate "ahk_id " hwnd
 
-            Sleep (IS_WORK_ENVIRONMENT ? 50 : 100)
+            ; calibrate here
+            Sleep 200
 
             ; Press Enter to stop/pause dictation
             Send "{Enter}"
@@ -651,13 +652,13 @@ ToggleDictation(autoSend) {
             ; If auto-send is enabled, wait a bit then send the prompt
             if (autoSend) {
                 ; Wait for the send button to become available
-                Sleep (IS_WORK_ENVIRONMENT ? 1000 : 2000)
+                Sleep 1200
 
                 ; Return to ChatGPT to send
                 if hwnd := GetChatGPTWindowHwnd()
                     WinActivate "ahk_id " hwnd
-
-                Sleep (IS_WORK_ENVIRONMENT ? 100 : 200)
+                
+                Sleep 100
 
                 ; Press Enter to send the transcribed text
                 Send "{Enter}"
