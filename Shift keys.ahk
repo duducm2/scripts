@@ -3604,12 +3604,19 @@ IsEditorActive() {
             Sleep 2500
             Send "+v"
             HideSmallLoadingIndicator_ChatGPT()
+
+            ; Show push selector popup after commit is sent
+            ShowCommitPushSelector()
+            return
         }
 
         Sleep 1000
     }
 
-    ; After commit is sent, show push selector popup
+    ; If we reach here, the loop completed normally (element was found)
+    ; Send the commit and show push selector popup
+    Send "+v"
+    HideSmallLoadingIndicator_ChatGPT()
     ShowCommitPushSelector()
 }
 
