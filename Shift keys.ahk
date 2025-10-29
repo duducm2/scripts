@@ -3604,8 +3604,6 @@ IsEditorActive() {
             Sleep 2500
             Send "+v"
             HideSmallLoadingIndicator_ChatGPT()
-
-            return
         }
 
         Sleep 1000
