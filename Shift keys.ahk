@@ -763,8 +763,8 @@ cheatSheets["Settings"] := "(Settings)`r`n[Shift+Y] > 🔊 Set input volume to 1
 cheatSheets["Command Palette"] := "
 (
 Command Palette
-[Ctrl+H] > ⌨️ Original shortcut (Ctrl+Shift+E)
-[Shift+K] > ⌨️ Original shortcut (Ctrl+Shift+C)
+[Ctrl+H] > ⌨️ Open in folder (Ctrl+Shift+E)
+[Shift+K] > ⌨️ Copy file path (Ctrl+Shift+C)
 [Shift+Y] > ⌨️ Send ten backspaces
 [Shift+U] > ⌨️ Precise search
 [Shift+I] > ⌨️ Add favorit
