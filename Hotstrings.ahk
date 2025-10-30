@@ -106,7 +106,7 @@ InsertText(text) {
 :o:cgrammar::
 {
     InsertText(
-        "Correct grammar and spelling. Remove any dashes from the text. The text should be plain with no styles. Give back only the text."
+        "Correct grammar and spelling. Remove any dashes from the text. The text should be plain with no styles. Give back only the text. Use lininebreaks and a space betetween paragraphs and look like a human."
     )
 }
 
@@ -165,7 +165,7 @@ InitHotstringsCheatSheet() {
     RegisterHotstring(":o:gtrain", "GS_UX core team_Trainings Management")
     RegisterHotstring(":o:gbp", "GS_B2C_Portals and Key Accounts Process POC")
     RegisterHotstring(":o:cgrammar",
-        "Correct grammar and spelling. Remove any dashes from the text. The text should be plain with no styles. Give back only the text."
+        "Correct grammar and spelling. Remove any dashes from the text. The text should be plain with no styles. Give back only the text. Use linebreaks and a space between paragraphs and look like a human."
     )
     RegisterHotstring(":o:cagent",
         "Continue your browsing. Check for missing radio buttons. Answer everything till you get to the last phase in the TrustMate website."
