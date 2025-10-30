@@ -3614,6 +3614,7 @@ IsEditorActive() {
     Send "+v"
     HideSmallLoadingIndicator_ChatGPT()
     ShowCommitPushSelector()
+    Send "^!,"
 }
 
 ; Global variable for commit push selector target window
