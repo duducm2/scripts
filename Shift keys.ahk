@@ -3603,6 +3603,7 @@ IsEditorActive() {
 
             ; Show push selector popup after commit is sent
             ShowCommitPushSelector()
+            Send "^!,"
             return
         }
 
@@ -3612,9 +3613,9 @@ IsEditorActive() {
     ; If we reach here, the loop completed normally (element was found)
     ; Send the commit and show push selector popup
     Send "+v"
-    Send "^!,"
     HideSmallLoadingIndicator_ChatGPT()
     ShowCommitPushSelector()
+    Send "^!,"
 }
 
 ; Global variable for commit push selector target window
