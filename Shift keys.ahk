@@ -3598,12 +3598,12 @@ IsEditorActive() {
             ShowSmallLoadingIndicator_ChatGPT("Element not found, stopping...")
             Sleep 500
             Sleep 2500
+            Send "^!,"
             Send "+v"
             HideSmallLoadingIndicator_ChatGPT()
 
             ; Show push selector popup after commit is sent
             ShowCommitPushSelector()
-            Send "^!,"
             return
         }
 
@@ -3612,10 +3612,10 @@ IsEditorActive() {
 
     ; If we reach here, the loop completed normally (element was found)
     ; Send the commit and show push selector popup
+    Send "^!,"
     Send "+v"
     HideSmallLoadingIndicator_ChatGPT()
     ShowCommitPushSelector()
-    Send "^!,"
 }
 
 ; Global variable for commit push selector target window
