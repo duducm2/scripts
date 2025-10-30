@@ -3504,13 +3504,9 @@ IsEditorActive() {
     Sleep 50
     Send "{Escape}"  ; ESC again
     Sleep 100
-    ; CTRL B once
-    Send "^b"
+    Send "^!n"
     Sleep 100
-    ; CTRL I twice
-    Send "^i"
-    Sleep 100
-    Send "^i"
+    Send "^!,"
 }
 
 ; Shift + Y : Fold
