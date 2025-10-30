@@ -630,6 +630,7 @@ Gmail
 [Shift+R] > 🔍 Search mail
 [Shift+T] > 📁 Move to folder
 [Shift+D] > ⌨️ Show keyboard shortcuts help
+[Shift+F] > 📬 Click inbox button
 
 --- Built-in Shortcuts (Windows) ---
 
@@ -3481,6 +3482,38 @@ EnsureItemsViewFocus() {
 
 ; Shift + D: Show keyboard shortcuts help
 +d:: Send("?")
+
+; Shift + F: Click inbox button
++f::
+{
+    try {
+        uia := UIA_Browser("ahk_exe chrome.exe")
+        Sleep 300 ; Give UIA time to attach
+
+        ; Try to find inbox link by name (may include unread count)
+        inboxLink := uia.FindElement({ Name: "Inbox", Type: "50005", matchmode: "Substring" })
+
+        ; Fallback: try by ClassName
+        if (!inboxLink) {
+            inboxLink := uia.FindElement({ ClassName: "J-Ke n0", Type: "50005" })
+        }
+
+        ; Fallback: try by Value (URL)
+        if (!inboxLink) {
+            inboxLink := uia.FindElement({ Value: "#inbox", Type: "50005", matchmode: "Substring" })
+        }
+
+        if (inboxLink) {
+            inboxLink.Click()
+        }
+        else {
+            MsgBox "Could not find the 'Inbox' button."
+        }
+    }
+    catch Error as e {
+        MsgBox "An error occurred: " e.Message
+    }
+}
 
 #HotIf
 
