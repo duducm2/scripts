@@ -704,17 +704,23 @@ ToggleDictation(autoSend) {
                 ; Wait until the composer submit button is present (transcription finished)
                 WaitForComposerSubmitButton(30000)
 
+                ; Fire a clear chime to indicate transcription has finished
+                g_transcribeChimePending := false
+                ;PlayTranscriptionFinishedChime()
+
                 ; Return to ChatGPT to send
                 if hwnd := GetChatGPTWindowHwnd()
                     WinActivate "ahk_id " hwnd
-                
+
                 Sleep 100
 
                 ; Press Enter to send the transcribed text
                 Send "{Enter}"
                 Send "!{Tab}" ; Return to previous window
 
-                ; Note: We skip the loading indicator for now to keep it simple
+                ; Wait for the AI answering phase and chime on completion
+                buttonNames := ["Stop streaming", "Interromper transmissão"]
+                WaitForButtonAndShowSmallLoading(buttonNames, "Waiting for response...")
             }
         } catch Error as e {
             ShowNotification(IS_WORK_ENVIRONMENT ? "Erro ao parar o ditado" : "Error stopping dictation", 1500,

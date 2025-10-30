@@ -105,7 +105,9 @@ InsertText(text) {
 
 :o:cgrammar::
 {
-    InsertText("Correct grammar and spelling. Remove any dashes from the text. The text should be plain with no styles. Give back only the text.")
+    InsertText(
+        "Correct grammar and spelling. Remove any dashes from the text. The text should be plain with no styles. Give back only the text."
+    )
 }
 
 :o:cagent::
@@ -145,7 +147,7 @@ InsertText(text) {
 :o:flog::
 {
     InsertText(
-        "( LTrim`nFood_Log dictation → Excel CSV`n`nROLE`nYou transcribe my meal dictation (PT/EN) into rows for my Excel Food_Log.`n`nHOW IT WORKS`n- I will dictate one or more meals in free speech.`n- Process immediately without asking questions.`n`nOUTPUT (strict)`n- Return ONLY CSV data rows. NO header row. NO markdown, NO code fences, NO commentary.`n- Each row format: Date;Meal;Time;Main_Items;Tags;Notes`n- Sort by Date then Time.`n`nFIELD RULES`n- Date: YYYY‑MM‑DD. Use " "today" " for current date in America/Sao_Paulo timezone.`n- Time: HH:MM in 24h; pad leading zeros (e.g., 08:05).`n- Meal: Breakfast | Lunch | Dinner | Snack.`n  PT mapping: café da manhã→Breakfast; almoço→Lunch; jantar/janta→Dinner; lanche→Snack.`n- Main_Items: comma‑separated simple item names (e.g., coffee, bread, butter).`n- Tags: comma‑separated, from this set when present or inferable:`n  caffeine, sugar, alcohol, dairy, gluten, fried, spicy, high-carb, low-carb, processed, protein, fiber, late-night, home-cooked, fast-food.`n  Add " "late-night" " automatically if Time ≥ 22:00.`n- Notes: short free text when I provide context.`n`nMISSING INFO`n- If Date or Time is missing, use " "today" " and infer time from meal type (Breakfast=08:00, Lunch=12:00, Dinner=19:00, Snack=15:00).`n`nACK`n- Process the dictation immediately and output CSV rows only.`n)"
+        "( LTrim`nFood_Log dictation → Excel CSV`n`nROLE`nYou transcribe my meal dictation (PT/EN) into rows for my Excel Food_Log.`n`nHOW IT WORKS`n- I will dictate one or more meals in free speech.`n- Process immediately without asking questions.`n`nOUTPUT (strict)`n- Return ONLY CSV data rows. NO header row. NO markdown, NO code fences, NO commentary.`n- Each row format: Date;Meal;Time;Main_Items;Tags;Clarity_of_Tought;Satisfaction_with_Speech;Notes`n- Sort by Date then Time.`n`nFIELD RULES`n- Date: YYYY‑MM‑DD. Use " "today" " for current date in America/Sao_Paulo timezone.`n- Time: HH:MM in 24h; pad leading zeros (e.g., 08:05).`n- Meal: Breakfast | Lunch | Dinner | Snack.`n  PT mapping: café da manhã→Breakfast; almoço→Lunch; jantar/janta→Dinner; lanche→Snack.`n- Main_Items: comma‑separated simple item names (e.g., coffee, bread, butter).`n- Tags: comma‑separated, from this set when present or inferable:`n  caffeine, sugar, alcohol, dairy, gluten, fried, spicy, high-carb, low-carb, processed, protein, fiber, late-night, home-cooked, fast-food.`n  Add " "late-night" " automatically if Time ≥ 22:00.`n- Clarity_of_Tought: integer 0–3 (0 = liked a lot; 3 = disliked a lot). If not stated, leave empty.`n- Satisfaction_with_Speech: integer 0–3 (0 = liked a lot; 3 = disliked a lot). If not stated, leave empty.`n- Notes: short free text when I provide context.`n`nMISSING INFO`n- If Date or Time is missing, use " "today" " and infer time from meal type (Breakfast=08:00, Lunch=12:00, Dinner=19:00, Snack=15:00).`n`nACK`n- Process the dictation immediately and output CSV rows only.`n)"
     )
 }
 
@@ -162,7 +164,9 @@ InitHotstringsCheatSheet() {
     RegisterHotstring(":o:guxcip", "GS_UX_and_CIP")
     RegisterHotstring(":o:gtrain", "GS_UX core team_Trainings Management")
     RegisterHotstring(":o:gbp", "GS_B2C_Portals and Key Accounts Process POC")
-    RegisterHotstring(":o:cgrammar", "Correct grammar and spelling. Remove any dashes from the text. The text should be plain with no styles. Give back only the text.")
+    RegisterHotstring(":o:cgrammar",
+        "Correct grammar and spelling. Remove any dashes from the text. The text should be plain with no styles. Give back only the text."
+    )
     RegisterHotstring(":o:cagent",
         "Continue your browsing. Check for missing radio buttons. Answer everything till you get to the last phase in the TrustMate website."
     )
@@ -174,7 +178,7 @@ InitHotstringsCheatSheet() {
     RegisterHotstring(":o:mtask",
         "This is a message, summary, text or any textual information that translates into a task for me to do. Translate this way, into a task, make informative and start with the emoji 🔲. Make it clear and consise."
     )
-    RegisterHotstring(":o:flog", "Food_Log dictation → Excel TSV prompt")
+    RegisterHotstring(":o:flog", "Food_Log dictation → Excel CSV prompt (with Clarity & Speech ratings)")
 }
 InitHotstringsCheatSheet()
 
