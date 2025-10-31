@@ -779,6 +779,14 @@ Excel
 [Shift+U] > ✏️ Enable Editing
 )"
 
+; --- Power BI ------------------------------------------------------------
+cheatSheets["Power BI"] := "
+(
+Power BI
+[Shift+Y] > 📊 Transform data
+[Shift+U] > 📊 Close and apply
+)"
+
 ; --- UIA Tree Inspector -------------------------------------------------
 cheatSheets["UIATreeInspector"] :=
 "(UIA Tree Inspector)`r`n[Shift+Y] > 🔄 Refresh list`r`n[Shift+U] > 🔍 Focus filter field"
@@ -920,6 +928,11 @@ GetCheatSheetText() {
     ; Check for Command Palette window
     if InStr(title, "Command Palette", false) {
         return cheatSheets.Has("Command Palette") ? cheatSheets["Command Palette"] : ""
+    }
+
+    ; Check for Power BI (by process name or window title)
+    if (exe = "PBIDesktop.exe" || InStr(title, "powerbi", false)) {
+        return cheatSheets.Has("Power BI") ? cheatSheets["Power BI"] : ""
     }
 
     ; Special handling for Chrome-based apps that share chrome.exe
@@ -3354,6 +3367,40 @@ EnsureItemsViewFocus() {
     } catch Error as err {
         MsgBox "Error:`n" err.Message
     }
+}
+
+#HotIf
+
+;-------------------------------------------------------------------
+; Power BI Shortcuts
+;-------------------------------------------------------------------
+#HotIf WinActive("ahk_exe PBIDesktop.exe") || InStr(WinGetTitle("A"), "powerbi", false)
+
+; Shift + Y : Format theme (Alt, H, T, Down, Enter)
++y:: {
+    Send "{Alt down}"
+    Send "{Alt up}"
+    Send "h"
+    Sleep 100
+    Send "t"
+    Sleep 100
+    Send "{Down}"
+    Sleep 100
+    Send "{Enter}"
+}
+
+; Shift + U : Close and apply (Alt, H, C, C)
++u:: {
+    Send "{Alt down}"
+    Sleep 50
+    Send "{Alt down}"
+    Sleep 50
+    Send "{Alt up}"
+    Send "h"
+    Sleep 100
+    Send "c"
+    Sleep 100
+    Send "c"
 }
 
 #HotIf
