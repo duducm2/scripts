@@ -3391,8 +3391,11 @@ EnsureItemsViewFocus() {
 
 ; Shift + U : Close and apply (Alt, H, C, C)
 +u:: {
+    Send "{Esc}"
+    Send "{Esc}"
     Send "{Alt down}"
     Send "{Alt down}"
+    Sleep 200
     Sleep 200
     Send "{Alt up}"
     Send "h"
