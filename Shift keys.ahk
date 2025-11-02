@@ -785,6 +785,9 @@ cheatSheets["Power BI"] := "
 Power BI
 [Shift+Y] > 📊 Transform data
 [Shift+U] > 📊 Close and apply
+[Shift+I] > 📊 Report view
+[Shift+O] > 📊 Data view
+[Shift+P] > 📊 Model view
 )"
 
 ; --- UIA Tree Inspector -------------------------------------------------
@@ -3403,6 +3406,72 @@ EnsureItemsViewFocus() {
     Send "c"
     Sleep 100
     Send "c"
+}
+
+; Shift + I : Report view
++i:: {
+    try {
+        win := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+
+        ; Find the Report view tab by name only
+        reportTab := root.FindFirst({ Name: "Report view" })
+        if !reportTab {
+            reportTab := root.FindFirst({ Name: "Report view", matchmode: "Substring" })
+        }
+
+        if reportTab {
+            reportTab.Click()
+        } else {
+            MsgBox "Could not find the 'Report view' tab.", "Power BI", "IconX"
+        }
+    } catch Error as e {
+        MsgBox "Error switching to Report view: " e.Message, "Power BI Error", "IconX"
+    }
+}
+
+; Shift + O : Data view
++o:: {
+    try {
+        win := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+
+        ; Find the Data view tab by name only
+        dataTab := root.FindFirst({ Name: "Data view" })
+        if !dataTab {
+            dataTab := root.FindFirst({ Name: "Data view", matchmode: "Substring" })
+        }
+
+        if dataTab {
+            dataTab.Click()
+        } else {
+            MsgBox "Could not find the 'Data view' tab.", "Power BI", "IconX"
+        }
+    } catch Error as e {
+        MsgBox "Error switching to Data view: " e.Message, "Power BI Error", "IconX"
+    }
+}
+
+; Shift + P : Model view
++p:: {
+    try {
+        win := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+
+        ; Find the Model view tab by name only
+        modelTab := root.FindFirst({ Name: "Model view" })
+        if !modelTab {
+            modelTab := root.FindFirst({ Name: "Model view", matchmode: "Substring" })
+        }
+
+        if modelTab {
+            modelTab.Click()
+        } else {
+            MsgBox "Could not find the 'Model view' tab.", "Power BI", "IconX"
+        }
+    } catch Error as e {
+        MsgBox "Error switching to Model view: " e.Message, "Power BI Error", "IconX"
+    }
 }
 
 #HotIf
