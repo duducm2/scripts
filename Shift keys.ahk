@@ -791,6 +791,8 @@ Power BI
 [Shift+H] > 📊 Analytics
 [Shift+J] > 📊 Format visual
 [Shift+K] > 📊 Build visual
+[Shift+L] > ✅ OK/Confirm modal button
+[Shift+N] > ❌ Cancel/Exit modal button
 )"
 
 ; --- UIA Tree Inspector -------------------------------------------------
@@ -3541,6 +3543,181 @@ EnsureItemsViewFocus() {
     } catch Error as e {
         MsgBox "Error switching to Build visual: " e.Message, "Power BI Error", "IconX"
     }
+}
+
+; Shift + L : Click OK/Confirm button in Power BI modals
++l:: {
+    try {
+        root := UIA.ElementFromHandle(WinExist("A"))
+
+        ; Try by name first (since we know it's "OK" with Type 50000)
+        possibleNames := [
+            ; English variations
+            "OK",
+            "Confirm",
+            "Accept",
+            "Apply",
+            "Yes",
+            "Continue",
+            "Proceed",
+            "Save",
+            "Finish",
+            ; Portuguese variations
+            "Confirmar",
+            "Aceitar",
+            "Aplicar",
+            "Sim",
+            "Continuar",
+            "Prosseguir",
+            "Salvar",
+            "Finalizar",
+            ; Spanish variations
+            "Aceptar",
+            "Continuar",
+            "Guardar",
+            "Finalizar",
+            ; French variations
+            "Confirmer",
+            "Accepter",
+            "Continuer",
+            "Enregistrer",
+            ; German variations
+            "Bestätigen",
+            "Akzeptieren",
+            "Fortfahren",
+            "Speichern"
+        ]
+
+        ; First attempt: Try by name with Button type (numeric 50000 or string "Button")
+        for name in possibleNames {
+            confirmBtn := root.FindFirst({ Type: "Button", Name: name })
+            if !confirmBtn {
+                ; Try with numeric type code
+                confirmBtn := root.FindFirst({ Type: 50000, Name: name })
+            }
+            if confirmBtn
+                break
+        }
+
+        ; Second attempt: Find by AutomationId and Type
+        if !confirmBtn {
+            confirmBtn := root.FindFirst({ Type: "Button", AutomationId: "1" })
+            if !confirmBtn {
+                confirmBtn := root.FindFirst({ Type: 50000, AutomationId: "1" })
+            }
+        }
+
+        ; Third attempt: Try SplitButton type (some dialogs use this instead)
+        if !confirmBtn {
+            for name in possibleNames {
+                confirmBtn := root.FindFirst({ Type: "SplitButton", Name: name })
+                if confirmBtn
+                    break
+            }
+            if !confirmBtn {
+                confirmBtn := root.FindFirst({ Type: "SplitButton", AutomationId: "1" })
+            }
+        }
+
+        ; Fourth attempt: Search all buttons and find by name (more thorough)
+        if !confirmBtn {
+            allButtons := root.FindAll({ Type: "Button" })
+            for btn in allButtons {
+                btnName := btn.Name
+                for name in possibleNames {
+                    if (btnName = name) {
+                        confirmBtn := btn
+                        break
+                    }
+                }
+                if confirmBtn
+                    break
+            }
+        }
+
+        if confirmBtn {
+            confirmBtn.Click()
+            return
+        }
+    } catch Error {
+    }
+    ; Fallback: Try common keyboard shortcuts
+    Send "{Enter}"  ; Enter key is universal for OK/Confirm
+}
+
+; Shift + N : Click Cancel/Exit button in Power BI modals
++n:: {
+    try {
+        root := UIA.ElementFromHandle(WinExist("A"))
+
+        ; First attempt: Find by AutomationId and Type (most reliable)
+        cancelBtn := root.FindFirst({ Type: "Button", AutomationId: "2" })
+
+        ; Second attempt: Try various possible names for Cancel/Exit
+        if !cancelBtn {
+            possibleNames := [
+                ; English variations
+                "Cancel",
+                "Close",
+                "Exit",
+                "Dismiss",
+                "No",
+                "Abort",
+                "Back",
+                "Close",
+                ; Portuguese variations
+                "Cancelar",
+                "Fechar",
+                "Sair",
+                "Descartar",
+                "Não",
+                "Voltar",
+                ; Spanish variations
+                "Cancelar",
+                "Cerrar",
+                "Salir",
+                "Descartar",
+                "No",
+                ; French variations
+                "Annuler",
+                "Fermer",
+                "Quitter",
+                "Ignorer",
+                "Non",
+                ; German variations
+                "Abbrechen",
+                "Schließen",
+                "Verlassen",
+                "Abweisen",
+                "Nein"
+            ]
+            for name in possibleNames {
+                cancelBtn := root.FindFirst({ Type: "Button", Name: name })
+                if cancelBtn
+                    break
+            }
+        }
+
+        ; Third attempt: Try SplitButton type (some dialogs use this instead)
+        if !cancelBtn {
+            cancelBtn := root.FindFirst({ Type: "SplitButton", AutomationId: "2" })
+            if !cancelBtn {
+                for name in possibleNames {
+                    cancelBtn := root.FindFirst({ Type: "SplitButton", Name: name })
+                    if cancelBtn
+                        break
+                }
+            }
+        }
+
+        if cancelBtn {
+            cancelBtn.Click()
+            return
+        }
+    } catch Error {
+    }
+    ; Fallback: Try common keyboard shortcuts
+    Send "{Esc}"  ; Escape key is universal for cancel
 }
 
 #HotIf
