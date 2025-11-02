@@ -795,8 +795,8 @@ Power BI
 [Shift+N] > ❌ Cancel/Exit modal button
 [Shift+M] > 🖱️ Right-click Previous pages button
 [Shift+,] > 📋 Filter pane collapse/expand
-[Shift+.] > 📊 Data pane toggle
-[Shift+W] > 🎨 Visualizations pane toggle
+[Shift+.] > 🎨 Visualizations pane toggle
+[Shift+W] > 📊 Data pane toggle
 [Shift+E] > ➕ New page
 )"
 
@@ -3815,41 +3815,8 @@ EnsureItemsViewFocus() {
     }
 }
 
-; Shift + . : Click Data button
+; Shift + . : Click Visualizations button
 +.:: {
-    try {
-        root := UIA.ElementFromHandle(WinExist("A"))
-
-        ; Find by Name
-        dataBtn := root.FindFirst({ Type: "Button", Name: "Data" })
-        if !dataBtn {
-            dataBtn := root.FindFirst({ Type: 50000, Name: "Data" })
-        }
-
-        ; Find by ClassName
-        if !dataBtn {
-            dataBtn := root.FindFirst({ Type: "Button", ClassName: "toggle-button" })
-            if !dataBtn {
-                allButtons := root.FindAll({ Type: "Button" })
-                for btn in allButtons {
-                    if (btn.Name = "Data" && InStr(btn.ClassName, "toggle-button")) {
-                        dataBtn := btn
-                        break
-                    }
-                }
-            }
-        }
-
-        if dataBtn {
-            dataBtn.Click()
-            return
-        }
-    } catch Error {
-    }
-}
-
-; Shift + W : Click Visualizations button
-+w:: {
     try {
         root := UIA.ElementFromHandle(WinExist("A"))
 
@@ -3875,6 +3842,39 @@ EnsureItemsViewFocus() {
 
         if vizBtn {
             vizBtn.Click()
+            return
+        }
+    } catch Error {
+    }
+}
+
+; Shift + W : Click Data button
++w:: {
+    try {
+        root := UIA.ElementFromHandle(WinExist("A"))
+
+        ; Find by Name
+        dataBtn := root.FindFirst({ Type: "Button", Name: "Data" })
+        if !dataBtn {
+            dataBtn := root.FindFirst({ Type: 50000, Name: "Data" })
+        }
+
+        ; Find by ClassName
+        if !dataBtn {
+            dataBtn := root.FindFirst({ Type: "Button", ClassName: "toggle-button" })
+            if !dataBtn {
+                allButtons := root.FindAll({ Type: "Button" })
+                for btn in allButtons {
+                    if (btn.Name = "Data" && InStr(btn.ClassName, "toggle-button")) {
+                        dataBtn := btn
+                        break
+                    }
+                }
+            }
+        }
+
+        if dataBtn {
+            dataBtn.Click()
             return
         }
     } catch Error {
