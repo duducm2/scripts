@@ -793,6 +793,7 @@ Power BI
 [Shift+K] > 📊 Build visual
 [Shift+L] > ✅ OK/Confirm modal button
 [Shift+N] > ❌ Cancel/Exit modal button
+[Shift+M] > 🖱️ Right-click Previous pages button
 )"
 
 ; --- UIA Tree Inspector -------------------------------------------------
@@ -3717,7 +3718,58 @@ EnsureItemsViewFocus() {
     } catch Error {
     }
     ; Fallback: Try common keyboard shortcuts
-    Send "{Esc}"  ; Escape key is universal for cancel
+    Send "{Esc}"  ; Escape key is universal for cancels
+}
+
+; Shift + M : Right-click Previous pages button in Power BI
++m:: {
+    try {
+        root := UIA.ElementFromHandle(WinExist("A"))
+
+        ; First attempt: Find by Name and Type
+        prevPageBtn := root.FindFirst({ Type: "Button", Name: "Previous pages" })
+        if !prevPageBtn {
+            prevPageBtn := root.FindFirst({ Type: 50000, Name: "Previous pages" })
+        }
+
+        ; Second attempt: Find by ClassName
+        if !prevPageBtn {
+            prevPageBtn := root.FindFirst({ Type: "Button", ClassName: "carouselNavButton previousPage" })
+            if !prevPageBtn {
+                prevPageBtn := root.FindFirst({ Type: 50000, ClassName: "carouselNavButton previousPage" })
+            }
+        }
+
+        ; Third attempt: Find by partial ClassName match
+        if !prevPageBtn {
+            allButtons := root.FindAll({ Type: "Button" })
+            for btn in allButtons {
+                btnClassName := btn.ClassName
+                if InStr(btnClassName, "previousPage") {
+                    prevPageBtn := btn
+                    break
+                }
+            }
+        }
+
+        if prevPageBtn {
+            ; Get button location and instantly move cursor to that position
+            btnPos := prevPageBtn.Location
+            x := btnPos.x + btnPos.w // 2
+            y := btnPos.y + btnPos.h // 2
+
+            ; Instantly set cursor position (no visible movement)
+            DllCall("SetCursorPos", "Int", x, "Int", y)
+
+            ; Perform right-click immediately
+            saveCoordMode := A_CoordModeMouse
+            CoordMode("Mouse", "Screen")
+            Click(x " " y " Right")
+            CoordMode("Mouse", saveCoordMode)
+            return
+        }
+    } catch Error {
+    }
 }
 
 #HotIf
