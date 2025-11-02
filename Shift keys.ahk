@@ -1276,7 +1276,7 @@ r=== CLIP ANGEL ===
 #!+1::
 {
     Send "!v"
-    Sleep 700
+    Sleep 50
     Send "^!b"
 }
 
