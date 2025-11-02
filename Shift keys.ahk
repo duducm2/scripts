@@ -794,6 +794,10 @@ Power BI
 [Shift+L] > ✅ OK/Confirm modal button
 [Shift+N] > ❌ Cancel/Exit modal button
 [Shift+M] > 🖱️ Right-click Previous pages button
+[Shift+,] > 📋 Filter pane collapse/expand
+[Shift+.] > 📊 Data pane toggle
+[Shift+W] > 🎨 Visualizations pane toggle
+[Shift+E] > ➕ New page
 )"
 
 ; --- UIA Tree Inspector -------------------------------------------------
@@ -3766,6 +3770,149 @@ EnsureItemsViewFocus() {
             CoordMode("Mouse", "Screen")
             Click(x " " y " Right")
             CoordMode("Mouse", saveCoordMode)
+            return
+        }
+    } catch Error {
+    }
+}
+
+; Shift + , : Click Filter pane collapse/expand button
++,:: {
+    try {
+        root := UIA.ElementFromHandle(WinExist("A"))
+
+        ; Find by Name (full name)
+        filterBtn := root.FindFirst({ Type: "Button", Name: "Collapse or expand the filter pane while editing. This also determines how report readers see it" })
+        if !filterBtn {
+            filterBtn := root.FindFirst({ Type: 50000, Name: "Collapse or expand the filter pane while editing. This also determines how report readers see it" })
+        }
+
+        ; Find by ClassName
+        if !filterBtn {
+            filterBtn := root.FindFirst({ Type: "Button", ClassName: "btn collapseIcon pbi-borderless-button glyphicon glyph-mini pbi-glyph-doublechevronleft" })
+            if !filterBtn {
+                filterBtn := root.FindFirst({ Type: 50000, ClassName: "btn collapseIcon pbi-borderless-button glyphicon glyph-mini pbi-glyph-doublechevronleft" })
+            }
+        }
+
+        ; Find by partial ClassName match
+        if !filterBtn {
+            allButtons := root.FindAll({ Type: "Button" })
+            for btn in allButtons {
+                btnClassName := btn.ClassName
+                if InStr(btnClassName, "pbi-glyph-doublechevronleft") {
+                    filterBtn := btn
+                    break
+                }
+            }
+        }
+
+        if filterBtn {
+            filterBtn.Click()
+            return
+        }
+    } catch Error {
+    }
+}
+
+; Shift + . : Click Data button
++.:: {
+    try {
+        root := UIA.ElementFromHandle(WinExist("A"))
+
+        ; Find by Name
+        dataBtn := root.FindFirst({ Type: "Button", Name: "Data" })
+        if !dataBtn {
+            dataBtn := root.FindFirst({ Type: 50000, Name: "Data" })
+        }
+
+        ; Find by ClassName
+        if !dataBtn {
+            dataBtn := root.FindFirst({ Type: "Button", ClassName: "toggle-button" })
+            if !dataBtn {
+                allButtons := root.FindAll({ Type: "Button" })
+                for btn in allButtons {
+                    if (btn.Name = "Data" && InStr(btn.ClassName, "toggle-button")) {
+                        dataBtn := btn
+                        break
+                    }
+                }
+            }
+        }
+
+        if dataBtn {
+            dataBtn.Click()
+            return
+        }
+    } catch Error {
+    }
+}
+
+; Shift + W : Click Visualizations button
++w:: {
+    try {
+        root := UIA.ElementFromHandle(WinExist("A"))
+
+        ; Find by Name
+        vizBtn := root.FindFirst({ Type: "Button", Name: "Visualizations" })
+        if !vizBtn {
+            vizBtn := root.FindFirst({ Type: 50000, Name: "Visualizations" })
+        }
+
+        ; Find by ClassName
+        if !vizBtn {
+            vizBtn := root.FindFirst({ Type: "Button", ClassName: "toggle-button ng-star-inserted" })
+            if !vizBtn {
+                allButtons := root.FindAll({ Type: "Button" })
+                for btn in allButtons {
+                    if (btn.Name = "Visualizations" && InStr(btn.ClassName, "toggle-button")) {
+                        vizBtn := btn
+                        break
+                    }
+                }
+            }
+        }
+
+        if vizBtn {
+            vizBtn.Click()
+            return
+        }
+    } catch Error {
+    }
+}
+
+; Shift + E : Click New page button
++e:: {
+    try {
+        root := UIA.ElementFromHandle(WinExist("A"))
+
+        ; Find by Name
+        newPageBtn := root.FindFirst({ Type: "Button", Name: "New page" })
+        if !newPageBtn {
+            newPageBtn := root.FindFirst({ Type: 50000, Name: "New page" })
+        }
+
+        ; Find by ClassName
+        if !newPageBtn {
+            newPageBtn := root.FindFirst({ Type: "Button", ClassName: "section static create" })
+            if !newPageBtn {
+                newPageBtn := root.FindFirst({ Type: 50000, ClassName: "section static create" })
+            }
+        }
+
+        ; Find by partial ClassName match
+        if !newPageBtn {
+            allButtons := root.FindAll({ Type: "Button" })
+            for btn in allButtons {
+                if (btn.Name = "New page") {
+                    newPageBtn := btn
+                    break
+                }
+            }
+        }
+
+        if newPageBtn {
+            newPageBtn.Click()
             return
         }
     } catch Error {
