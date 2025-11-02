@@ -796,8 +796,8 @@ Power BI
 [Shift+M] > 🖱️ Right-click Previous pages button
 [Shift+,] > 📋 Filter pane collapse/expand
 [Shift+.] > 🎨 Visualizations pane toggle
-[Shift+Q] > ➕ New page
-[Shift+W] > 📊 Data pane toggle
+[Shift+W] > ➕ New page
+[Shift+Q] > 📊 Data pane toggle
 )"
 
 ; --- UIA Tree Inspector -------------------------------------------------
@@ -3850,7 +3850,7 @@ EnsureItemsViewFocus() {
 }
 
 ; Shift + W : Click Data button
-+w:: {
++q:: {
     try {
         root := UIA.ElementFromHandle(WinExist("A"))
 
@@ -3883,7 +3883,7 @@ EnsureItemsViewFocus() {
 }
 
 ; Shift + Q : Click New page button
-+q:: {
++w:: {
     try {
         root := UIA.ElementFromHandle(WinExist("A"))
 
