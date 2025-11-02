@@ -786,7 +786,7 @@ Power BI
 [Shift+Y] > 📊 Transform data
 [Shift+U] > 📊 Close and apply
 [Shift+I] > 📊 Report view
-[Shift+O] > 📊 Data view
+[Shift+O] > 📊 Table view
 [Shift+P] > 📊 Model view
 )"
 
@@ -3430,25 +3430,25 @@ EnsureItemsViewFocus() {
     }
 }
 
-; Shift + O : Data view
+; Shift + O : Table view
 +o:: {
     try {
         win := WinExist("A")
         root := UIA.ElementFromHandle(win)
 
-        ; Find the Data view tab by name only
-        dataTab := root.FindFirst({ Name: "Data view" })
-        if !dataTab {
-            dataTab := root.FindFirst({ Name: "Data view", matchmode: "Substring" })
+        ; Find the Table view tab by name only
+        tableTab := root.FindFirst({ Name: "Table view" })
+        if !tableTab {
+            tableTab := root.FindFirst({ Name: "Table view", matchmode: "Substring" })
         }
 
-        if dataTab {
-            dataTab.Click()
+        if tableTab {
+            tableTab.Click()
         } else {
-            MsgBox "Could not find the 'Data view' tab.", "Power BI", "IconX"
+            MsgBox "Could not find the 'Table view' tab.", "Power BI", "IconX"
         }
     } catch Error as e {
-        MsgBox "Error switching to Data view: " e.Message, "Power BI Error", "IconX"
+        MsgBox "Error switching to Table view: " e.Message, "Power BI Error", "IconX"
     }
 }
 
