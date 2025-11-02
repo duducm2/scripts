@@ -2028,7 +2028,7 @@ IsTeamsChatActive() {
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "Wikipedia", false)
 
-; Shift + Y: Focus the Wikipedia search field (Type 50003 ComboBox)
+; Shift + Y: Focus the Wikipedia search field (Type 50004 Edit)
 +y::
 {
     try {
@@ -2044,26 +2044,40 @@ IsTeamsChatActive() {
 
         searchBox := 0
 
-        ; Simple, attribute-driven matching
+        ; Try finding by AutomationId first (most reliable)
         try {
-            searchBox := root.FindElement({ Type: 50003, Name: "Search Wikipedia" })
+            searchBox := root.FindElement({ AutomationId: "searchInput" })
         } catch {
         }
+
+        ; Try finding by Type and Name
         if (!searchBox) {
             try {
-                searchBox := root.FindElement({ Type: 50003, AcceleratorKey: "Alt+f" })
+                searchBox := root.FindElement({ Type: 50004, Name: "Search Wikipedia" })
             } catch {
             }
         }
+
+        ; Try finding by Type and ClassName
         if (!searchBox) {
             try {
-                searchBox := root.FindElement({ Type: 50003, ClassName: "cdx-text-input__input" })
+                searchBox := root.FindElement({ Type: 50004, ClassName: "cdx-text-input__input mw-searchInput" })
             } catch {
             }
         }
+
+        ; Try finding by partial ClassName
         if (!searchBox) {
             try {
-                searchBox := root.FindElement({ Type: 50003, Name: "Search", mm: 2, cs: false })
+                searchBox := root.FindElement({ Type: 50004, ClassName: "cdx-text-input__input" })
+            } catch {
+            }
+        }
+
+        ; Try finding by AcceleratorKey
+        if (!searchBox) {
+            try {
+                searchBox := root.FindElement({ Type: 50004, AcceleratorKey: "Alt+f" })
             } catch {
             }
         }
@@ -2107,18 +2121,18 @@ IsTeamsChatActive() {
 
                 ; Retry locating the search field after activating Search
                 try {
-                    searchBox := root.FindElement({ Type: 50003, Name: "Search Wikipedia" })
+                    searchBox := root.FindElement({ AutomationId: "searchInput" })
                 } catch {
                 }
                 if (!searchBox) {
                     try {
-                        searchBox := root.FindElement({ Type: 50003, ClassName: "cdx-text-input__input" })
+                        searchBox := root.FindElement({ Type: 50004, Name: "Search Wikipedia" })
                     } catch {
                     }
                 }
                 if (!searchBox) {
                     try {
-                        searchBox := root.FindElement({ Type: 50003, Name: "Search", mm: 2, cs: false })
+                        searchBox := root.FindElement({ Type: 50004, ClassName: "cdx-text-input__input" })
                     } catch {
                     }
                 }
