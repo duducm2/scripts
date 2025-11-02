@@ -3562,6 +3562,7 @@ EnsureItemsViewFocus() {
             "Confirm",
             "Accept",
             "Apply",
+            "Done"
             "Yes",
             "Continue",
             "Proceed",
