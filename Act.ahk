@@ -33,3 +33,28 @@ Sleep 10000
 
 ; Run #!+i for both environments
 Send "#!+i"
+
+; Ask user if they want to update the Habits Sheet
+result := MsgBox("Do you want to update the Habits Sheet?", "Update Habits Sheet", "YesNo")
+if (result = "No") {
+    return
+}
+
+; If Yes, proceed with updating habits
+if (IS_WORK_ENVIRONMENT) {
+    ; TODO: Update with actual work environment path
+    habitsFolder := "PLACEHOLDER_WORK_ENVIRONMENT_PATH"
+} else {
+    habitsFolder := "C:\Users\eduev\Meu Drive\14 - Notes\habits"
+}
+
+excelFile := habitsFolder . "\habit_sleep_food_tracker.xlsx"
+
+; Change to the habits folder and run git pull
+SetWorkingDir(habitsFolder)
+RunWait("git pull", habitsFolder, "Hide")
+
+Sleep 3000
+
+; Open the Excel file
+Run(excelFile)
