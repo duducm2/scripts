@@ -22,9 +22,6 @@ if (IS_WORK_ENVIRONMENT) {
 
     Run GetScriptPath("Microsoft Teams.ahk")
     Run GetScriptPath("Outlook.ahk")
-
-    ; Open Google Sheets link in Chrome
-    Run "chrome.exe https://docs.google.com/spreadsheets/d/1KORjeQa52pbqjYP1MikpSEiGJp5Wzlxq/edit?gid=730106566#gid=730106566"
 } else {
     Run "C:\Users\eduev\OneDrive\Documentos\HuntAndPeck\hap.exe"
     Run "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Chrome Apps\Mobills.lnk"
