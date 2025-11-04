@@ -6967,10 +6967,11 @@ IsFileDialogActive() {
 
 ; Shift + I : Send "fav" letter by letter and Enter
 +i:: {
+    Send "{Backspace 6}"
     Send "a"
-    Sleep 150   
+    Sleep 200
     Send "d"
-    Sleep 150   
+    Sleep 200
     Send "{Enter}"
 }
 
