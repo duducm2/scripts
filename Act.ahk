@@ -58,3 +58,21 @@ Sleep 3000
 
 ; Open the Excel file
 Run(excelFile)
+
+; Ask user if they want to update Notes folder
+result := MsgBox("Do you want to git pull your Notes folder?", "Update Notes Folder", "YesNo")
+if (result = "No") {
+    return
+}
+
+; If Yes, proceed with updating notes
+if (IS_WORK_ENVIRONMENT) {
+    ; TODO: Update with actual work environment path
+    notesFolder := "PLACEHOLDER_WORK_ENVIRONMENT_NOTES_PATH"
+} else {
+    notesFolder := "C:\Users\eduev\Meu Drive\14 - Notes"
+}
+
+; Change to the notes folder and run git pull
+SetWorkingDir(notesFolder)
+RunWait("git pull", notesFolder, "Hide")
