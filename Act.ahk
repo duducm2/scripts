@@ -43,7 +43,7 @@ if (result = "No") {
 ; If Yes, proceed with updating habits
 if (IS_WORK_ENVIRONMENT) {
     ; TODO: Update with actual work environment path
-    habitsFolder := "PLACEHOLDER_WORK_ENVIRONMENT_PATH"
+    habitsFolder := "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes\habits"
 } else {
     habitsFolder := "C:\Users\eduev\Meu Drive\14 - Notes\habits"
 }
@@ -68,7 +68,7 @@ if (result = "No") {
 ; If Yes, proceed with updating notes
 if (IS_WORK_ENVIRONMENT) {
     ; TODO: Update with actual work environment path
-    notesFolder := "PLACEHOLDER_WORK_ENVIRONMENT_NOTES_PATH"
+    notesFolder := "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes"
 } else {
     notesFolder := "C:\Users\eduev\Meu Drive\14 - Notes"
 }
