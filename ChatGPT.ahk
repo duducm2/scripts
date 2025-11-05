@@ -675,7 +675,6 @@ ToggleDictation(autoSend) {
             Send "!{Tab}"
             Sleep (IS_WORK_ENVIRONMENT ? 150 : 300)
             ShowDictationIndicator()
-            g_transcribeChimePending := false
         } catch Error as e {
             ShowNotification((IS_WORK_ENVIRONMENT ? "Erro ao iniciar o ditado" : "Error starting dictation"), 1500,
             "DF2935", "FFFFFF")
@@ -692,22 +691,22 @@ ToggleDictation(autoSend) {
             ; Press Enter to stop/pause dictation
             Send "{Enter}"
             isDictating := false
-            HideDictationIndicator()
-            Send "!{Tab}" ; Return to previous window immediately
+            ; Don't hide indicator yet - keep it visible until transcription finishes
+            Send "!{Tab}" ; Return to previous window
 
-            ; Wait for transcription to finish if we need to check status
-            ; For now, just set the flag for transcription finished chime
-            g_transcribeChimePending := true
+            ; Wait for transcription to finish by monitoring for the submit button
+            ; The submit button appears when transcription is complete
+            if WaitForComposerSubmitButton(30000) {
+                ; Transcription finished - hide indicator and play chime
+                HideDictationIndicator()
+                PlayTranscriptionFinishedChime()
+            } else {
+                ; Timeout - hide indicator anyway
+                HideDictationIndicator()
+            }
 
             ; If auto-send is enabled, wait a bit then send the prompt
             if (autoSend) {
-                ; Wait until the composer submit button is present (transcription finished)
-                WaitForComposerSubmitButton(30000)
-
-                ; Fire a clear chime to indicate transcription has finished
-                g_transcribeChimePending := false
-                ;PlayTranscriptionFinishedChime()
-
                 ; Return to ChatGPT to send
                 if hwnd := GetChatGPTWindowHwnd()
                     WinActivate "ahk_id " hwnd
@@ -723,6 +722,7 @@ ToggleDictation(autoSend) {
                 WaitForButtonAndShowSmallLoading(buttonNames, "Waiting for response...")
             }
         } catch Error as e {
+            HideDictationIndicator() ; Ensure indicator is hidden on error
             ShowNotification(IS_WORK_ENVIRONMENT ? "Erro ao parar o ditado" : "Error stopping dictation", 1500,
                 "DF2935", "FFFFFF")
         }
