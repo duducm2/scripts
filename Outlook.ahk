@@ -122,6 +122,8 @@ ExecuteVoiceAloudOption(option) {
     else if (option = "from_beginning") {
         ; Option 2: Voice aloud from beginning
         Send "#!+b"  ; Go to Outlook email
+        Sleep 100
+        Send "{Right}"
         Sleep 300
         Send "^{Home}"  ; Go to beginning of email
         Sleep 200
