@@ -777,6 +777,7 @@ cheatSheets["EXCEL.EXE"] := "
 Excel
 [Shift+Y] > ⚪ Select White Color
 [Shift+U] > ✏️ Enable Editing
+[Shift+I] > 📊 Turn CSV delimited by semicolon into columns
 )"
 
 ; --- Power BI ------------------------------------------------------------
@@ -3394,6 +3395,27 @@ EnsureItemsViewFocus() {
     } catch Error as err {
         MsgBox "Error:`n" err.Message
     }
+}
+
+; Shift + I : Turn CSV delimited by semicolon into columns (Alt, 0, 5, D, Enter, M, Enter, Enter)
++i:: {
+    Send "{Alt}"
+    Sleep 100
+    Send "0"
+    Sleep 100
+    Send "5"
+    Sleep 100
+    Send "d"
+    Sleep 100
+    Send "{Enter}"
+    Sleep 100
+    if MsgBox("If 'semicolon' is selected, hit yes", "Confirm", "YesNo Icon?") != "Yes" {
+        Send "m"
+        Sleep 100
+    }
+    Send "{Enter}"
+    Sleep 100
+    Send "{Enter}"
 }
 
 #HotIf
