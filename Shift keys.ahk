@@ -4238,10 +4238,12 @@ IsEditorActive() {
 ; Ctrl + M : Ask, wait banner 8s, then Shift+V
 ^M::
 {
-    pushChoice := MsgBox("Do you want to push after this commit?","Commit Push","YesNo IconQuestion")
-    if (pushChoice = "Cancel")
-        return
-    shouldPushAfterCommit := (pushChoice = "Yes")
+    ShowCommitPushSelector(false)
+    if (gCommitPushTargetWin) {
+        WinActivate gCommitPushTargetWin
+        WinWaitActive gCommitPushTargetWin, , 0.5
+        Sleep 100
+    }
     Send "+d"
     Sleep 200
     Send "^!a"
@@ -4286,11 +4288,6 @@ IsEditorActive() {
             Send "+v"
             HideSmallLoadingIndicator_ChatGPT()
 
-            ; Execute push decision after commit is sent
-            if (shouldPushAfterCommit)
-                ExecuteCommitPushAction("push")
-            else
-                ExecuteCommitPushAction("dont_push")
             return
         }
 
@@ -4298,14 +4295,10 @@ IsEditorActive() {
     }
 
     ; If we reach here, the loop completed normally (element was found)
-    ; Send the commit and apply push decision
+    ; Send the commit
     Send "^!,"
     Send "+v"
     HideSmallLoadingIndicator_ChatGPT()
-    if (shouldPushAfterCommit)
-        ExecuteCommitPushAction("push")
-    else
-        ExecuteCommitPushAction("dont_push")
 }
 
 ; Global variable for commit push selector target window
@@ -4369,7 +4362,7 @@ CancelCommitPush(ctrl, *) {
 }
 
 ; Function to show commit push selector popup
-ShowCommitPushSelector() {
+ShowCommitPushSelector(focusInput := true) {
     try {
         ; Remember current target window before showing GUI
         gCommitPushTargetWin := WinExist("A")
@@ -4392,8 +4385,9 @@ ShowCommitPushSelector() {
         commitPushGui.AddButton("w80", "Cancel").OnEvent("Click", CancelCommitPush)
 
         ; Show GUI and focus input
-        commitPushGui.Show("w350 h150")
-        commitPushGui["CommitPushInput"].Focus()
+        commitPushGui.Show("NA w350 h150")
+        if (focusInput)
+            commitPushGui["CommitPushInput"].Focus()
 
     } catch Error as e {
         MsgBox "Error in commit push selector: " e.Message, "Commit Push Selector Error", "IconX"
