@@ -4262,6 +4262,9 @@ IsEditorActive() {
 ; Ctrl + M : Ask, wait banner 8s, then Shift+V
 ^M::
 {
+    ; Prompt push decision upfront (blocking, topmost). Store for later execution.
+    PromptCommitPushDecisionBlocking()
+
     Send "+d"
     Sleep 200
     Send "^!a"
@@ -4306,8 +4309,8 @@ IsEditorActive() {
             Send "+v"
             HideSmallLoadingIndicator_ChatGPT()
 
-            ; Show push selector popup after commit is sent
-            ShowCommitPushSelector()
+            ; Execute stored decision (if any) after commit is sent
+            ExecuteStoredCommitPushDecision()
             return
         }
 
@@ -4319,11 +4322,13 @@ IsEditorActive() {
     Send "^!,"
     Send "+v"
     HideSmallLoadingIndicator_ChatGPT()
-    ShowCommitPushSelector()
+    ExecuteStoredCommitPushDecision()
 }
 
 ; Global variable for commit push selector target window
 global gCommitPushTargetWin := 0
+; Global variable to store the user's push decision ("push" | "dont_push" | "")
+global gCommitPushDecision := ""
 
 ; Function to get commit push action by number
 GetCommitPushActionByNumber(numberText) {
@@ -4335,6 +4340,46 @@ GetCommitPushActionByNumber(numberText) {
     actionMap[1] := "push"
     actionMap[2] := "dont_push"
     return (actionMap.Has(number)) ? actionMap[number] : ""
+}
+
+; Record-only auto-submit handler for the upfront decision prompt
+CommitPushDecision_AutoSubmit(ctrl, *) {
+    currentValue := ctrl.Text
+    if (currentValue != "" && IsInteger(currentValue)) {
+        action := GetCommitPushActionByNumber(currentValue)
+        if (action != "") {
+            gCommitPushDecision := action
+            ctrl.Gui.Destroy()
+        }
+    }
+}
+
+; Blocking, topmost prompt to capture push decision upfront
+PromptCommitPushDecisionBlocking() {
+    try {
+        gCommitPushDecision := ""
+        decisionGui := Gui("+AlwaysOnTop +ToolWindow", "Commit Push Selector")
+        decisionGui.SetFont("s10", "Segoe UI")
+        decisionGui.AddText("w350 Center"
+            , "Push after commit?`n`n1. Push (Shift+B)`n2. Don't push`n`nType a number (1-2):")
+        decisionGui.AddEdit("w50 Center vCommitPushInput", "")
+        decisionGui["CommitPushInput"].OnEvent("Change", CommitPushDecision_AutoSubmit)
+        decisionGui.AddButton("w80", "Cancel").OnEvent("Click", (*) => decisionGui.Destroy())
+        decisionGui.Show("w350 h150")
+        decisionGui["CommitPushInput"].Focus()
+        WinWaitClose("ahk_id " decisionGui.Hwnd)
+    } catch Error as e {
+        MsgBox "Error in upfront push decision: " e.Message, "Commit Push Selector Error", "IconX"
+    }
+}
+
+; Execute stored decision at the exact current push moment
+ExecuteStoredCommitPushDecision() {
+    if (gCommitPushDecision = "push") {
+        Send "+b"
+    }
+    ; Clear after execution to avoid reusing stale decisions
+    gCommitPushDecision := ""
 }
 
 ; Function to execute commit push action
