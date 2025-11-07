@@ -2516,7 +2516,7 @@ IsTeamsChatActive() {
                 SetTimer(() => HideSmallLoadingIndicator_ChatGPT(), -2000)
             }
         }
-        catch Error as e {j
+        catch Error as e {
             ; Show error banner
             ShowSmallLoadingIndicator_ChatGPT("Could not find call button")
             SetTimer(() => HideSmallLoadingIndicator_ChatGPT(), -2000)
@@ -4238,6 +4238,10 @@ IsEditorActive() {
 ; Ctrl + M : Ask, wait banner 8s, then Shift+V
 ^M::
 {
+    pushChoice := MsgBox("Do you want to push after this commit?","Commit Push","YesNo IconQuestion")
+    if (pushChoice = "Cancel")
+        return
+    shouldPushAfterCommit := (pushChoice = "Yes")
     Send "+d"
     Sleep 200
     Send "^!a"
@@ -4282,8 +4286,11 @@ IsEditorActive() {
             Send "+v"
             HideSmallLoadingIndicator_ChatGPT()
 
-            ; Show push selector popup after commit is sent
-            ShowCommitPushSelector()
+            ; Execute push decision after commit is sent
+            if (shouldPushAfterCommit)
+                ExecuteCommitPushAction("push")
+            else
+                ExecuteCommitPushAction("dont_push")
             return
         }
 
@@ -4291,11 +4298,14 @@ IsEditorActive() {
     }
 
     ; If we reach here, the loop completed normally (element was found)
-    ; Send the commit and show push selector popup
+    ; Send the commit and apply push decision
     Send "^!,"
     Send "+v"
     HideSmallLoadingIndicator_ChatGPT()
-    ShowCommitPushSelector()
+    if (shouldPushAfterCommit)
+        ExecuteCommitPushAction("push")
+    else
+        ExecuteCommitPushAction("dont_push")
 }
 
 ; Global variable for commit push selector target window
