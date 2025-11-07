@@ -4344,6 +4344,7 @@ GetCommitPushActionByNumber(numberText) {
 
 ; Record-only auto-submit handler for the upfront decision prompt
 CommitPushDecision_AutoSubmit(ctrl, *) {
+    global gCommitPushDecision
     currentValue := ctrl.Text
     if (currentValue != "" && IsInteger(currentValue)) {
         action := GetCommitPushActionByNumber(currentValue)
@@ -4356,6 +4357,7 @@ CommitPushDecision_AutoSubmit(ctrl, *) {
 
 ; Blocking, topmost prompt to capture push decision upfront
 PromptCommitPushDecisionBlocking() {
+    global gCommitPushDecision
     try {
         gCommitPushDecision := ""
         decisionGui := Gui("+AlwaysOnTop +ToolWindow", "Commit Push Selector")
@@ -4375,6 +4377,7 @@ PromptCommitPushDecisionBlocking() {
 
 ; Execute stored decision at the exact current push moment
 ExecuteStoredCommitPushDecision() {
+    global gCommitPushDecision
     if (gCommitPushDecision = "push") {
         Send "+b"
     }
