@@ -2461,7 +2461,7 @@ IsTeamsChatActive() {
 
         if moreOptionsButton {
             moreOptionsButton.Click()
-            Sleep 250
+            Sleep 350
 
             detachMenuItem := root.FindFirst({ Name: "Open in new window", Type: "50011" })
 
