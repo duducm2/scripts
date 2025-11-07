@@ -2536,9 +2536,9 @@ IsTeamsChatActive() {
 
         if participantsButton {
             participantsButton.Click()
-            Sleep 100
+            Sleep 300
             Send "{Tab}"
-            Sleep 100
+            Sleep 300
             Send "{Enter}"
         } else {
             ; Show error banner
