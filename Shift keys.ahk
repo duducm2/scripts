@@ -3472,17 +3472,41 @@ EnsureItemsViewFocus() {
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe PBIDesktop.exe") || InStr(WinGetTitle("A"), "powerbi", false)
 
-; Shift + Y : Format theme (Alt, H, T, Down, Enter)
+; Shift + Y : Transform data (Alt, H, T, then UIA click)
 +y:: {
-    Send "{Alt down}"
-    Send "{Alt up}"
-    Send "h"
-    Sleep 100
-    Send "t"
-    Sleep 100
-    Send "{Down}"
-    Sleep 100
-    Send "{Enter}"
+    try {
+        Send "{Alt down}"
+        Send "{Alt up}"
+        Sleep 80
+        Send "h"
+        Sleep 120
+        Send "t"
+        Sleep 250
+
+        win := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+
+        possibleNames := ["Transform data", "Transformar dados"]
+        transformBtn := ""
+
+        for , name in possibleNames {
+            transformBtn := root.FindFirst({ Name: name, Type: "50011" })
+            if transformBtn
+                break
+        }
+
+        if !transformBtn {
+            transformBtn := root.FindFirst({ Name: "Transform", Type: "50011", matchmode: "Substring" })
+        }
+
+        if transformBtn {
+            transformBtn.Click()
+        } else {
+            MsgBox "Could not find the 'Transform data' menu item.", "Power BI", "IconX"
+        }
+    } catch Error as e {
+        MsgBox "Error triggering Transform data: " e.Message, "Power BI Error", "IconX"
+    }
 }
 
 ; Shift + U : Close and apply (Alt, H, C, C)
