@@ -1,5 +1,5 @@
 ;---------------------------------------- Github ----------------------------------------------------
-; https://github.com/duducm2/zmk-sofle/blob/main/keymap-drawer/eyelash_sofle.svg This is the main file
+; https://github.com/duducm2/zmk-sofle/blob/main/keymap-drawer/eyelash_sofle.svg This is the main file 2
 ;---------------------------------------- Scripts ---------------------------------------------------
 
 #Include env.ahk
