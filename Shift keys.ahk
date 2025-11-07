@@ -4262,6 +4262,8 @@ IsEditorActive() {
 ; Ctrl + M : Ask, wait banner 8s, then Shift+V
 ^M::
 {
+    ; Remember current target window so later keystrokes go to the right app
+    gCommitPushTargetWin := WinExist("A")
     ; Prompt push decision upfront (blocking, topmost). Store for later execution.
     PromptCommitPushDecisionBlocking()
 
@@ -4378,7 +4380,13 @@ PromptCommitPushDecisionBlocking() {
 ; Execute stored decision at the exact current push moment
 ExecuteStoredCommitPushDecision() {
     global gCommitPushDecision
+    global gCommitPushTargetWin
     if (gCommitPushDecision = "push") {
+        ; Ensure the intended window has focus before sending the push hotkey
+        if (gCommitPushTargetWin) {
+            WinActivate gCommitPushTargetWin
+            Sleep 150
+        }
         Send "+b"
     }
     ; Clear after execution to avoid reusing stale decisions
