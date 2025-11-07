@@ -4238,12 +4238,6 @@ IsEditorActive() {
 ; Ctrl + M : Ask, wait banner 8s, then Shift+V
 ^M::
 {
-    ShowCommitPushSelector(false)
-    if (gCommitPushTargetWin) {
-        WinActivate gCommitPushTargetWin
-        WinWaitActive gCommitPushTargetWin, , 0.5
-        Sleep 100
-    }
     Send "+d"
     Sleep 200
     Send "^!a"
@@ -4288,6 +4282,8 @@ IsEditorActive() {
             Send "+v"
             HideSmallLoadingIndicator_ChatGPT()
 
+            ; Show push selector popup after commit is sent
+            ShowCommitPushSelector()
             return
         }
 
@@ -4295,10 +4291,11 @@ IsEditorActive() {
     }
 
     ; If we reach here, the loop completed normally (element was found)
-    ; Send the commit
+    ; Send the commit and show push selector popup
     Send "^!,"
     Send "+v"
     HideSmallLoadingIndicator_ChatGPT()
+    ShowCommitPushSelector()
 }
 
 ; Global variable for commit push selector target window
@@ -4362,7 +4359,7 @@ CancelCommitPush(ctrl, *) {
 }
 
 ; Function to show commit push selector popup
-ShowCommitPushSelector(focusInput := true) {
+ShowCommitPushSelector() {
     try {
         ; Remember current target window before showing GUI
         gCommitPushTargetWin := WinExist("A")
@@ -4385,9 +4382,8 @@ ShowCommitPushSelector(focusInput := true) {
         commitPushGui.AddButton("w80", "Cancel").OnEvent("Click", CancelCommitPush)
 
         ; Show GUI and focus input
-        commitPushGui.Show("NA w350 h150")
-        if (focusInput)
-            commitPushGui["CommitPushInput"].Focus()
+        commitPushGui.Show("w350 h150")
+        commitPushGui["CommitPushInput"].Focus()
 
     } catch Error as e {
         MsgBox "Error in commit push selector: " e.Message, "Commit Push Selector Error", "IconX"
