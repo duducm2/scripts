@@ -194,17 +194,17 @@ NormalizeMojibake(str) {
         return str
     reps := Map(
         "â†’", "→",   ; right arrow
-        "â†�", "←",   ; left arrow
+        "â†", "←",   ; left arrow
         "â†‘", "↑",   ; up arrow
         "â†“", "↓",   ; down arrow
         "â€¢", "•",
         "â€“", "–",
         "â€”", "—",
         "â€¦", "…",
-        "â€˜", "‘",
-        "â€™", "’",
-        "â€œ", "“",
-        "â€", "”",
+        "â€˜", "'",
+        "â€™", "'",
+        "â€œ", Chr(34),
+        "â€", Chr(34),
         "Ã—", "×"
     )
     for k, v in reps
@@ -213,7 +213,7 @@ NormalizeMojibake(str) {
 }
 
 ;-------------------------------------------------------------------
-; Cheat-sheet overlay (Win + Alt + Shift + A) â€“ shows remapped shortcuts
+; Cheat-sheet overlay (Win + Alt + Shift + A) â€" shows remapped shortcuts
 ;-------------------------------------------------------------------
 
 ; Map that stores the pop-up text for each application.  Extend freely.
@@ -331,10 +331,11 @@ Teams
 [Shift+N] > 📁 Collapse all conversation folders
 [Shift+M] > ℹ️ Activate/deactivate details panel
 [Shift+,] > 📬 View all unread items
+[Shift+.] > 🪟 Detach current chat
 [Shift+E] > ✏️ Edit message
 [Shift+R] > ↩️ Reply
 [Shift+T] > 👥 Add participants
-[Shift+W] > 📞 Audio call
+[Shift+W] > 📞 Start call (audio/video)
 
 --- Built-in Shortcuts ---
 Geral:
@@ -868,7 +869,7 @@ Alt + â†â†’â†‘â†“        â†’  Duplicate horizontally/ve
 [Ctrl + Backspace] > Clear object contents
 
 Navigation:
-â†â†’â†‘â†“              â†’  Move items/canvas
+â†â†'â†'              â†'  Move items/canvas
 [Ctrl + +] > Zoom in
 [Ctrl + -] > Zoom out
 [Ctrl + 0] > Zoom to 100%
@@ -886,7 +887,7 @@ Text:
 Board navigation:
 [Tab] > Move forwards through objects (TL > BR)
 [Shift + Tab] > Move backwards through objects (TL > BR)
-Ctrl + â†‘/â†“/â†/â†’    â†’  Move through board objects
+Ctrl + â†'/+â†"/â†/â†'    â†'  Move through board objects
 [Ctrl + Shift + ↓/↑] > Move in/out of container (e.g., frame)
 [Esc] > Back to menu
 [Enter] > Edit an object
@@ -1003,7 +1004,7 @@ GetCheatSheetText() {
     if (exe = "AutoHotkey64.exe" && InStr(title, "UIATreeInspector"))
         return cheatSheets["UIATreeInspector"]
 
-    ; Microsoft Teams â€“ differentiate meeting vs chat via helper predicates
+    ; Microsoft Teams â€" differentiate meeting vs chat via helper predicates
     if IsTeamsMeetingActive()
         return cheatSheets.Has("TeamsMeeting") ? cheatSheets["TeamsMeeting"] : ""
     if IsTeamsChatActive()
@@ -1013,11 +1014,11 @@ GetCheatSheetText() {
 
     ; Special handling for Outlook-based apps
     if (exe = "OUTLOOK.EXE") {
-        ; Detect Reminders window â€“ e.g. "3 Reminder(s)" or any title containing "Reminder"
+        ; Detect Reminders window â€" e.g. "3 Reminder(s)" or any title containing "Reminder"
         if RegExMatch(title, "i)Reminder") {
             return cheatSheets.Has("OutlookReminder") ? cheatSheets["OutlookReminder"] : cheatSheets["OUTLOOK.EXE"]
         }
-        ; Detect Message inspector windows â€“ e.g., " - Message (HTML)"
+        ; Detect Message inspector windows â€" e.g., " - Message (HTML)"
         if RegExMatch(title, "i) - Message \(") {
             return cheatSheets.Has("OutlookMessage") ? cheatSheets["OutlookMessage"] : cheatSheets["OUTLOOK.EXE"]
         }
@@ -1083,7 +1084,7 @@ ToggleShortcutHelp() {
             "ReadOnly +Multi -E0x200 +VScroll -HScroll -Border Background000000 w1000 r1"
         )
 
-        ; Esc also hides  ; (disabled â€“ use Win+Alt+Shift+A to hide)
+        ; Esc also hides  ; (disabled â€" use Win+Alt+Shift+A to hide)
         ; Hotkey "Esc", (*) => (g_helpGui.Hide(), g_helpShown := false), "Off"
     }
 
@@ -1229,7 +1230,7 @@ r=== CLIP ANGEL ===
         g_globalGui.SetFont("s10 c00BFFF", "Consolas")  ; Smaller font for more content, blue color to distinguish from specific shortcuts
         globalCtrl := g_globalGui.Add("Edit", "ReadOnly +Multi +VScroll -HScroll -Border Background000000 w1000 h540")
 
-        ; Esc also hides  ; (disabled â€“ use Win+Alt+Shift+A to hide)
+        ; Esc also hides  ; (disabled â€" use Win+Alt+Shift+A to hide)
         ; Hotkey "Esc", (*) => (g_globalGui.Hide(), g_globalShown := false), "Off"
     }
 
@@ -1302,7 +1303,7 @@ global PERSONAL_SCRIPTS_PATH := "G:\Meu Drive\12 - Scripts"
 ; global IS_WORK_ENVIRONMENT   := true    ; set to false on personal rig // This will now be loaded from env.ahk
 
 ; ---------------------------------------------------------------------------
-; ShowErr(msgOrErr)  â€“ uniform MsgBox for any thrown value
+; ShowErr(msgOrErr)  â€" uniform MsgBox for any thrown value
 ; ---------------------------------------------------------------------------
 ShowErr(err) {
     text := (Type(err) = "Error") ? err.Message : err
@@ -1824,7 +1825,7 @@ IsTeamsChatActive() {
 }
 
 ; -------------------------------------------------------------------
-; Microsoft Teams Shortcuts â€“ MEETING WINDOW
+; Microsoft Teams Shortcuts â€" MEETING WINDOW
 ; -------------------------------------------------------------------
 #HotIf IsTeamsMeetingActive()
 
@@ -2449,7 +2450,43 @@ IsTeamsChatActive() {
     Send "^!u"
 }
 
-; Shift + W : Audio call
+; Shift + . : Detach current chat
++.::
+{
+    try {
+        win := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+
+        moreOptionsButton := root.FindFirst({ Name: "More chat options", Type: "50000" })
+
+        if moreOptionsButton {
+            moreOptionsButton.Click()
+            Sleep 250
+
+            detachMenuItem := root.FindFirst({ Name: "Open in new window", Type: "50011" })
+
+            if !detachMenuItem {
+                detachMenuItem := UIA.GetRootElement().FindFirst({ Name: "Open in new window", Type: "50011" })
+            }
+
+            if detachMenuItem {
+                detachMenuItem.Click()
+            } else {
+                ShowSmallLoadingIndicator_ChatGPT("Could not find Open in new window")
+                SetTimer(() => HideSmallLoadingIndicator_ChatGPT(), -2000)
+            }
+        } else {
+            ShowSmallLoadingIndicator_ChatGPT("Could not find more chat options")
+            SetTimer(() => HideSmallLoadingIndicator_ChatGPT(), -2000)
+        }
+    }
+    catch Error as e {
+        ShowSmallLoadingIndicator_ChatGPT("Could not detach chat")
+        SetTimer(() => HideSmallLoadingIndicator_ChatGPT(), -2000)
+    }
+}
+
+; Shift + W : Call current chat
 +w::
 {
     ; Show confirmation popup
@@ -2458,20 +2495,30 @@ IsTeamsChatActive() {
             win := WinExist("A")
             root := UIA.ElementFromHandle(win)
 
-            ; Find the "Audio call" button
-            audioCallButton := root.FindFirst({ Name: "Audio call", Type: "50000" })
+            callButton := 0
+            callButtonNames := ["Audio call", "Video call"]
 
-            if audioCallButton {
-                audioCallButton.Click()
+            for name in callButtonNames {
+                callButton := root.FindFirst({ Name: name, Type: "50000" })
+                if callButton
+                    break
+            }
+
+            if !callButton {
+                callButton := root.FindFirst({ Name: " call", Type: "50000", matchmode: "Substring" })
+            }
+
+            if callButton {
+                callButton.Click()
             } else {
                 ; Show error banner
-                ShowSmallLoadingIndicator_ChatGPT("Could not find audio call button")
+                ShowSmallLoadingIndicator_ChatGPT("Could not find call button")
                 SetTimer(() => HideSmallLoadingIndicator_ChatGPT(), -2000)
             }
         }
-        catch Error as e {
+        catch Error as e {j
             ; Show error banner
-            ShowSmallLoadingIndicator_ChatGPT("Could not find audio call button")
+            ShowSmallLoadingIndicator_ChatGPT("Could not find call button")
             SetTimer(() => HideSmallLoadingIndicator_ChatGPT(), -2000)
         }
     }
@@ -2682,7 +2729,7 @@ FocusOutlookField(criteria) {
 }
 
 ; -------------------------------------------------------------------
-; Click helper â€“ try AutomationId first, then Name+ClassName
+; Click helper â€" try AutomationId first, then Name+ClassName
 ; -------------------------------------------------------------------
 ClickOutlookByIdThenNameClass(automationId, name, className, controlType := "") {
     try {
@@ -2719,7 +2766,7 @@ ClickOutlookByIdThenNameClass(automationId, name, className, controlType := "") 
 }
 
 ; -------------------------------------------------------------------
-; General helper â€“ visually confirm focus on the selected element
+; General helper â€" visually confirm focus on the selected element
 ; Sends Down then Up to force a visible focus cue
 ; -------------------------------------------------------------------
 EnsureFocus() {
@@ -2783,7 +2830,7 @@ SelectExplorerSidebarFirstPinned() {
         ; swallow and continue to fallback
     }
 
-    ; Robust fallback â€“ cycle through panes up to 6 times to reach navigation, then Home
+    ; Robust fallback â€" cycle through panes up to 6 times to reach navigation, then Home
     loop 6 {
         Send "{F6}"
         Sleep 120
@@ -2798,7 +2845,7 @@ SelectExplorerSidebarFirstPinned() {
         } catch Error {
         }
     }
-    ; Last resort â€“ send Home anyway
+    ; Last resort â€" send Home anyway
     Send "{Home}"
     EnsureFocus()
     return false
@@ -2909,27 +2956,27 @@ Outlook_ClickEndTime_1200PM() {
     Outlook_ClickStartDate()
 }
 
-; Shift + U â†’ Start date â€“ Date Picker
+; Shift + U â†' Start date â€" Date Picker
 +U:: {
     Outlook_ClickStartDatePicker()
 }
 
-; Shift + I â†’ Start time (combo)
+; Shift + I â†' Start time (combo)
 +I:: {
     Outlook_ClickStartTime()
 }
 
-; Shift + O â†’ End date (combo)
+; Shift + O â†' End date (combo)
 +O:: {
     Outlook_ClickEndDate()
 }
 
-; Shift + P â†’ End time (combo)
+; Shift + P â†' End time (combo)
 +P:: {
     Outlook_ClickEndTime()
 }
 
-; Shift + H â†’ All day checkbox
+; Shift + H â†' All day checkbox
 +H:: {
     try {
         win := WinExist("A")
@@ -2949,7 +2996,7 @@ Outlook_ClickEndTime_1200PM() {
     }
 }
 
-; Shift + J â†’ Title field
+; Shift + J â†' Title field
 +J:: {
     if FocusOutlookField({ AutomationId: "4100" }) ; Title
         return
@@ -2957,7 +3004,7 @@ Outlook_ClickEndTime_1200PM() {
         return
 }
 
-; Shift + L â†’ Required / To field
+; Shift + L â†' Required / To field
 +L:: {
     if FocusOutlookField({ AutomationId: "4109" }) ; Required
         return
@@ -2965,7 +3012,7 @@ Outlook_ClickEndTime_1200PM() {
         return
 }
 
-; Shift + M â†’ Location â†’ Body
+; Shift + M â†' Location â†' Body
 +M:: {
     if FocusOutlookField({ AutomationId: "4111" }) { ; Location
         Sleep 100
@@ -2979,7 +3026,7 @@ Outlook_ClickEndTime_1200PM() {
     }
 }
 
-; Shift + ; â†’ Make Recurring (click)
+; Shift + ; â†' Make Recurring (click)
 ; Semicolon key virtual key code is VK_BA; with Shift it's +vkBA
 +,:: {
     try {
@@ -3038,7 +3085,7 @@ Outlook_ClickEndTime_1200PM() {
     Send "^x"
 }
 
-; Shift + U â†’ click ChatGPT's model selector (any language)
+; Shift + U â†' click ChatGPT's model selector (any language)
 +u:: {
     try {
         uia := UIA_Browser("ahk_exe chrome.exe")
@@ -3201,7 +3248,7 @@ SubmitChatGPTMessage() {
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe explorer.exe")
 
-; Explorer-specific helper â€“ select first pinned item in the sidebar
+; Explorer-specific helper â€" select first pinned item in the sidebar
 SelectExplorerSidebarFirstPinned_EX() {
     try {
         explorerEl := UIA.ElementFromHandle(WinExist("A"))
@@ -3283,7 +3330,7 @@ SelectExplorerSidebarFirstPinned_EX() {
         ; swallow and fallback below
     }
 
-    ; Last-chance fallback â€“ press Home which works if focus is already inside the list
+    ; Last-chance fallback â€" press Home which works if focus is already inside the list
     Send "{Home}"
     EnsureFocus()
 }
@@ -3294,7 +3341,7 @@ EnsureItemsViewFocus() {
         explorerHwnd := WinExist("A")
         root := UIA.ElementFromHandle(explorerHwnd)
 
-        ; quick check â€“ if ItemsView already has keyboard focus, we're done
+        ; quick check â€" if ItemsView already has keyboard focus, we're done
         iv := root.FindFirst({ AutomationId: "ItemsView", Type: "List" })
         if iv && iv.HasKeyboardFocus
             return
@@ -5103,7 +5150,7 @@ SwitchAIModel() {
         switch userChoice.Value {
             case "1":
             {
-                ; For auto option: simulate ;, wait for model context menu, then send â†“, Enter
+                ; For auto option: simulate ;, wait for model context menu, then send â†" , Enter
                 Send "^;"
                 Sleep 300
                 SendText "auto"
@@ -6264,7 +6311,7 @@ DismissAllReminders() {
 }
 
 ; ---------------------------------------------------------------------------
-; Helper for Mobills buttons â€“ language-neutral search
+; Helper for Mobills buttons â€" language-neutral search
 ; ---------------------------------------------------------------------------
 GetMobillsButton(autoId, btnName) {
     try {
@@ -6293,7 +6340,7 @@ TryAttachBrowser() {
 }
 
 FindMonthGroup(uia) {
-    ; Strategy 1 â€“ look for known class name on the container
+    ; Strategy 1 â€" look for known class name on the container
     try {
         grp := uia.FindElement({ Type: "Group", ClassName: "sc-kAyceB", matchmode: "Substring" })
         if grp
@@ -6301,7 +6348,7 @@ FindMonthGroup(uia) {
     }
     catch {
     }
-    ; Strategy 2 â€“ locate by month text (any language)
+    ; Strategy 2 â€" locate by month text (any language)
     months := ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October",
         "November", "December",
         "Janeiro", "Fevereiro", "MarÃ§o", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro",
