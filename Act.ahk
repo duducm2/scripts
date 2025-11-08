@@ -1,6 +1,7 @@
 ;---------------------------------------- Github ----------------------------------------------------
-; https://github.com/duducm2/zmk-sofle/blob/main/keymap-drawer/eyelash_sofle.svg This is not a test file for the keyboard layout
-;---------------------------------------- Scripts ---------------------------------------------------
+; https://github.com/duducm2/zmk-sofle/blob/main/keymap-drawer/eyelash_sofle.svg
+;---------------------------------------- Scripts -------------------------------
+--------------------------------------------------------------------------------Description-- -------------------------------------------------
 
 #Include env.ahk
 
