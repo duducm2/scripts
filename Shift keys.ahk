@@ -4267,6 +4267,13 @@ IsEditorActive() {
     ; Prompt push decision upfront (blocking, topmost). Store for later execution.
     PromptCommitPushDecisionBlocking()
 
+    ; Reactivate the target window after dialog closes (dialog steals focus)
+    if (gCommitPushTargetWin) {
+        WinActivate gCommitPushTargetWin
+        WinWaitActive("ahk_id " gCommitPushTargetWin, , 1)
+        Sleep 200
+    }
+
     Send "+d"
     Sleep 200
     Send "^!a"
@@ -4307,7 +4314,13 @@ IsEditorActive() {
             ShowSmallLoadingIndicator_ChatGPT("Element not found, stopping...")
             Sleep 500
             Sleep 2500
+            ; Ensure target window is active before sending commit command
+            if (gCommitPushTargetWin) {
+                WinActivate gCommitPushTargetWin
+                Sleep 200
+            }
             Send "^!,"
+            Sleep 100
             Send "+v"
             HideSmallLoadingIndicator_ChatGPT()
 
@@ -4321,7 +4334,13 @@ IsEditorActive() {
 
     ; If we reach here, the loop completed normally (element was found)
     ; Send the commit and show push selector popup
+    ; Ensure target window is active before sending commit command
+    if (gCommitPushTargetWin) {
+        WinActivate gCommitPushTargetWin
+        Sleep 200
+    }
     Send "^!,"
+    Sleep 100
     Send "+v"
     HideSmallLoadingIndicator_ChatGPT()
     ExecuteStoredCommitPushDecision()
