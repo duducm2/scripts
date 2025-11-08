@@ -4401,10 +4401,13 @@ ExecuteStoredCommitPushDecision() {
     global gCommitPushDecision
     global gCommitPushTargetWin
     if (gCommitPushDecision = "push") {
+        ; Wait a moment for Cursor to process the commit
+        Sleep 500
         ; Ensure the intended window has focus before sending the push hotkey
         if (gCommitPushTargetWin) {
             WinActivate gCommitPushTargetWin
-            Sleep 150
+            WinWaitActive("ahk_id " gCommitPushTargetWin, , 2)
+            Sleep 200
         }
         Send "+b"
     }
