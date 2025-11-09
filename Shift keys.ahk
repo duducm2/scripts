@@ -449,6 +449,7 @@ Cursor
 
 --- CTRL Shortcuts (Cursor-defined) ---
 [Ctrl+1] > 🎯 Remove clustering and focus on the code (ahk)
+[Ctrl+2] > 📁 Copy path (cursor)
 [Ctrl+M] > 🤖 Ask (Ctrl+Alt+A), wait 6s, then paste (Shift+V) (ahk)
 [Ctrl+G] > ⚡ Kill terminal [custom in settings.json]
 [Ctrl+Y] > 📉 Fold all
