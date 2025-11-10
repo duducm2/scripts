@@ -2499,16 +2499,32 @@ IsTeamsChatActive() {
             root := UIA.ElementFromHandle(win)
 
             callButton := 0
-            callButtonNames := ["Audio call", "Video call"]
+            callButtonNames := ["Audio call", "Video call", "Start audio call", "Start video call"]
 
             for name in callButtonNames {
-                callButton := root.FindFirst({ Name: name, Type: "50000" })
+                candidates := root.FindAll({ Name: name, Type: "50000", matchmode: "Substring", cs: false })
+                if candidates {
+                    for candidate in candidates {
+                        if !candidate.GetPropertyValue(UIA.Property.IsOffscreen) && candidate.GetPropertyValue(UIA.Property.IsEnabled) {
+                            callButton := candidate
+                            break
+                        }
+                    }
+                }
                 if callButton
                     break
             }
 
             if !callButton {
-                callButton := root.FindFirst({ Name: " call", Type: "50000", matchmode: "Substring" })
+                candidates := root.FindAll({ Type: "50000" })
+                if candidates {
+                    for candidate in candidates {
+                        if InStr(StrLower(candidate.Name), "call") && !candidate.GetPropertyValue(UIA.Property.IsOffscreen) && candidate.GetPropertyValue(UIA.Property.IsEnabled) {
+                            callButton := candidate
+                            break
+                        }
+                    }
+                }
             }
 
             if callButton {
