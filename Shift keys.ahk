@@ -802,6 +802,7 @@ Power BI
 [Shift+,] > 📋 Filter pane collapse/expand
 [Shift+.] > 🎨 Visualizations pane toggle
 [Shift+W] > ➕ New page
+[Shift+E] > 📊 New measure
 [Shift+Q] > 📊 Data pane toggle
 )"
 
@@ -4160,6 +4161,23 @@ EnsureItemsViewFocus() {
             return
         }
     } catch Error {
+    }
+}
+
+; Shift + E : New measure (Alt, H, N, M)
++e:: {
+    try {
+        Send "{Alt down}"
+        Sleep 80
+        Send "{Alt up}"
+        Sleep 120
+        Send "h"
+        Sleep 120
+        Send "n"
+        Sleep 120
+        Send "m"
+    } catch Error as e {
+        MsgBox "Error triggering New measure: " e.Message, "Power BI Error", "IconX"
     }
 }
 
