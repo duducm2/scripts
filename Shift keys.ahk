@@ -233,6 +233,7 @@ Mercado Livre
 ; ----- You can have repeated keys, depending on the software.
 ; ----- Preferred key sequence (most important first): Y U I O P H J K L N M , . W E R T D F G C V B
 ; ----- Ctrl + Alt sequence (fallback, same order):    Y U I O P H J K L N M , . W E R T D F G C V B
+; ----- Shift + D (Teams chat) -> Fold chat sections (🩶 grey)
 
 ; --- WhatsApp desktop -------------------------------------------------------
 cheatSheets["WhatsApp"] := "
@@ -336,6 +337,7 @@ Teams
 [Shift+R] > ↩️ Reply
 [Shift+T] > 👥 Add participants
 [Shift+W] > 📞 Start call (audio/video)
+[Shift+D] > 🩶 Fold chat sections
 
 --- Built-in Shortcuts ---
 Geral:
@@ -2552,6 +2554,112 @@ IsTeamsChatActive() {
         ShowSmallLoadingIndicator_ChatGPT("Could not find add participants button")
         SetTimer(() => HideSmallLoadingIndicator_ChatGPT(), -2000)
     }
+}
+
+; Shift + D : Collapse chat categories
++d::
+{
+    try {
+        win := WinExist("A")
+        if !win
+            return
+
+        root := UIA.ElementFromHandle(win)
+
+        ; Narrow search to the chat navigation tree to speed up lookups.
+        treeCond := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Tree)
+        trees := ""
+        try trees := root.FindElements(treeCond, UIA.TreeScope.Descendants)
+
+        targetTree := ""
+        targetIds := ["menur6a5", "menur6as", "menur6br", "menur6f6"]
+
+        if trees {
+            for candidate in trees {
+                if !candidate
+                    continue
+                hasSection := false
+                for id in targetIds {
+                    if !id
+                        continue
+                    sectionEl := ""
+                    try sectionEl := candidate.FindFirst({ AutomationId: id, Type: "50024" })
+                    if sectionEl {
+                        hasSection := true
+                        break
+                    }
+                }
+                if hasSection {
+                    targetTree := candidate
+                    break
+                }
+            }
+        }
+
+        if !targetTree
+            targetTree := root
+
+        ; Collect all expandable tree items (categories and chat groups).
+        treeItemCond := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.TreeItem)
+        canCollapseCond := UIA.CreatePropertyCondition(UIA.Property.IsExpandCollapsePatternAvailable, true)
+        collapsibleCond := UIA.CreateAndCondition(treeItemCond, canCollapseCond)
+        items := targetTree.FindElements(collapsibleCond, UIA.TreeScope.Descendants)
+
+        if !items {
+            ShowSmallLoadingIndicator_ChatGPT("No collapsible chat sections found")
+            SetTimer(() => HideSmallLoadingIndicator_ChatGPT(), -2000)
+            return
+        }
+
+        collapsed := 0
+        already := 0
+        total := 0
+
+        for item in items {
+            if !item
+                continue
+            total++
+            try {
+                pat := item.ExpandCollapsePattern
+                if pat.ExpandCollapseState != UIA.ExpandCollapseState.Collapsed {
+                    pat.Collapse()
+                    collapsed++
+                    Sleep 25
+                } else {
+                    already++
+                }
+            } catch Error {
+                ; Best-effort fallback: focus and send Left to collapse.
+                try {
+                    item.SetFocus()
+                    Sleep 40
+                    Send "{Left}"
+                    collapsed++
+                } catch {
+                }
+            }
+        }
+
+        msg := ""
+        if collapsed {
+            msg := Format("Collapsed {} chat section{}", collapsed, collapsed = 1 ? "" : "s")
+        } else if already && !collapsed {
+            msg := "Chat sections already collapsed"
+        } else {
+            msg := "Nothing to collapse"
+        }
+
+        ShowSmallLoadingIndicator_ChatGPT(msg)
+        SetTimer(() => HideSmallLoadingIndicator_ChatGPT(), -2000)
+    }
+    catch Error {
+        ShowSmallLoadingIndicator_ChatGPT("Could not collapse chat sections")
+        SetTimer(() => HideSmallLoadingIndicator_ChatGPT(), -2000)
+    }
+
+    Send "^{Home}"
+    Send "f"
+    Send "f"
 }
 
 #HotIf
