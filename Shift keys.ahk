@@ -2658,8 +2658,19 @@ IsTeamsChatActive() {
     }
 
     Send "^{Home}"
+    Sleep "200"
+    Send "c"
+    Send "{Right}"
+    Sleep "100"
+    Send "^{Home}"
+    Sleep "200"
+    Send "g"
+    Send "{Right}"
+    Send "^{Home}"
+    Sleep "200"
     Send "f"
     Send "f"
+    Send "{Right}"
 }
 
 #HotIf
