@@ -3565,7 +3565,7 @@ EnsureItemsViewFocus() {
     Sleep 100
     Send "{Enter}"
     Sleep 100
-    if MsgBox("If 'semicolon' is selected, hit yes", "Confirm", "YesNo Icon?") != "Yes" {
+    if MsgBox("If 'semicolon' is not selected, hit yes", "Confirm", "YesNo Icon?") = "Yes" {
         Send "m"
         Sleep 100
     }
