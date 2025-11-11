@@ -773,6 +773,11 @@ Command Palette
 [Shift+Y] > ⌨️ Send ten backspaces
 [Shift+U] > ⌨️ Precise search
 [Shift+I] > ⌨️ Add favorit
+[Ctrl+1] > ⌨️ Select current item (Enter)
+[Ctrl+2] > ⌨️ Move down once and select
+[Ctrl+3] > ⌨️ Move down twice and select
+[Ctrl+4] > ⌨️ Move down three times and select
+[Ctrl+5] > ⌨️ Move down four times and select
 )"
 
 ; --- Excel ------------------------------------------------------------
@@ -7279,6 +7284,39 @@ IsFileDialogActive() {
     Sleep 200
     Send "d"
     Sleep 200
+    Send "{Enter}"
+}
+
+; Ctrl + 1 : Trigger Enter
+^1:: Send "{Enter}"
+
+; Ctrl + 2 : Trigger Down then Enter
+^2:: {
+    Send "{Down}"
+    Send "{Enter}"
+}
+
+; Ctrl + 3 : Trigger Down twice then Enter
+^3:: {
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
+}
+
+; Ctrl + 4 : Trigger Down three times then Enter
+^4:: {
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
+}
+
+; Ctrl + 5 : Trigger Down four times then Enter
+^5:: {
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
     Send "{Enter}"
 }
 
