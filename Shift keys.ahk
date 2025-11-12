@@ -4971,10 +4971,81 @@ CancelCommit(ctrl, *) {
 ; Ctrl + Alt + O : Unfold all directories in VS Code Explorer
 ^q:: UnfoldAllDirectoriesInExplorer()
 
+; Ctrl + 6 : Context-aware agent panel actions in Cursor
+^6::
+{
+    targetHwnd := WinExist("A")
+
+    toggleVisible := Cursor_IsElementVisibleByName("Toggle Agents Side Bar (Ctrl+Shift+S)", targetHwnd)
+    if toggleVisible {
+        Send "^e"
+        return
+    }
+
+    Send "^e"
+    Sleep 400
+
+    newAgentVisible := Cursor_IsElementVisibleByName("New Agent", targetHwnd)
+    if newAgentVisible {
+        Send "^+s"
+        Sleep 200
+    }
+
+    moreActionsVisible := Cursor_IsElementVisibleByName("More Actions...", targetHwnd)
+    if moreActionsVisible {
+        try {
+            root := UIA.ElementFromHandle(targetHwnd)
+            if (root) {
+                maximizeBtn := ""
+                try maximizeBtn := root.FindElement({ Type: 50000, Name: "Maximize Chat Size" })
+                if !maximizeBtn {
+                    try maximizeBtn := root.FindElement({ Type: "Button", Name: "Maximize Chat Size" })
+                }
+                if (maximizeBtn) {
+                    try {
+                        if maximizeBtn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
+                            maximizeBtn.InvokePattern.Invoke()
+                        } else {
+                            maximizeBtn.Click()
+                        }
+                    } catch Error as e {
+                    }
+                }
+            }
+        } catch Error as e {
+        }
+    } else {
+    }
+}
+
 ; Shift + N : Expand selection (via Command Palette)
 +n:: Send "+!{Right}"
 
 #HotIf
+
+Cursor_IsElementVisibleByName(name, hwnd := 0) {
+    try {
+        if !name
+            return false
+        if !hwnd
+            hwnd := WinExist("A")
+        if !hwnd
+            return false
+
+        root := UIA.ElementFromHandle(hwnd)
+        if !root
+            return false
+
+        element := ""
+        try element := root.FindElement({ Name: name })
+        if !element
+            return false
+
+        return !element.GetPropertyValue(UIA.Property.IsOffscreen)
+    } catch Error {
+        return false
+    }
+}
 
 ;-------------------------------------------------------------------
 ; AI Mode and Model Switching Functions for Cursor
