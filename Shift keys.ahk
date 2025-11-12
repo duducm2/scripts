@@ -4370,6 +4370,8 @@ IsEditorActive() {
     Send "^!n"
     Sleep 100
     Send "^!,"
+    Sleep 100
+    Send "^'"
 }
 
 ; Shift + Y : Fold
