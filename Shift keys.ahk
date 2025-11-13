@@ -778,6 +778,7 @@ Command Palette
 [Ctrl+3] > ⌨️ Move down twice and select
 [Ctrl+4] > ⌨️ Move down three times and select
 [Ctrl+5] > ⌨️ Move down four times and select
+[Ctrl+6] > ⌨️ Move down five times and select
 )"
 
 ; --- Excel ------------------------------------------------------------
@@ -7456,6 +7457,16 @@ IsFileDialogActive() {
 
 ; Ctrl + 5 : Trigger Down four times then Enter
 ^5:: {
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
+}
+
+; Ctrl + 6 : Trigger Down five times then Enter
+^6:: {
+    Send "{Down}"
     Send "{Down}"
     Send "{Down}"
     Send "{Down}"
