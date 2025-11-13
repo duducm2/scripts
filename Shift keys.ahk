@@ -4373,7 +4373,7 @@ IsEditorActive() {
     Sleep 100
     Send "^!,"
     Sleep 100
-    Send "^'"
+    Send "#!o"
 }
 
 ; Shift + Y : Fold
