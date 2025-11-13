@@ -2511,7 +2511,8 @@ IsTeamsChatActive() {
                 candidates := root.FindAll({ Name: name, Type: "50000", matchmode: "Substring", cs: false })
                 if candidates {
                     for candidate in candidates {
-                        if !candidate.GetPropertyValue(UIA.Property.IsOffscreen) && candidate.GetPropertyValue(UIA.Property.IsEnabled) {
+                        if !candidate.GetPropertyValue(UIA.Property.IsOffscreen) && candidate.GetPropertyValue(UIA.Property
+                            .IsEnabled) {
                             callButton := candidate
                             break
                         }
@@ -2525,7 +2526,8 @@ IsTeamsChatActive() {
                 candidates := root.FindAll({ Type: "50000" })
                 if candidates {
                     for candidate in candidates {
-                        if InStr(StrLower(candidate.Name), "call") && !candidate.GetPropertyValue(UIA.Property.IsOffscreen) && candidate.GetPropertyValue(UIA.Property.IsEnabled) {
+                        if InStr(StrLower(candidate.Name), "call") && !candidate.GetPropertyValue(UIA.Property.IsOffscreen
+                        ) && candidate.GetPropertyValue(UIA.Property.IsEnabled) {
                             callButton := candidate
                             break
                         }
@@ -4983,38 +4985,42 @@ CancelCommit(ctrl, *) {
     }
 
     Send "^e"
-    Sleep 400
+    Sleep 800
 
     newAgentVisible := Cursor_IsElementVisibleByName("New Agent", targetHwnd)
     if newAgentVisible {
+        Sleep 600
         Send "^+s"
-        Sleep 200
     }
 
-    moreActionsVisible := Cursor_IsElementVisibleByName("More Actions...", targetHwnd)
-    if moreActionsVisible {
+    moreActionsEl := Cursor_GetVisibleElementByName("More Actions...", targetHwnd, ["Link", 50005, "Button", 50000])
+    if moreActionsEl {
         try {
-            root := UIA.ElementFromHandle(targetHwnd)
-            if (root) {
-                maximizeBtn := ""
-                try maximizeBtn := root.FindElement({ Type: 50000, Name: "Maximize Chat Size" })
-                if !maximizeBtn {
-                    try maximizeBtn := root.FindElement({ Type: "Button", Name: "Maximize Chat Size" })
-                }
-                if (maximizeBtn) {
-                    try {
-                        if maximizeBtn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
-                            maximizeBtn.InvokePattern.Invoke()
-                        } else {
-                            maximizeBtn.Click()
-                        }
-                    } catch Error as e {
-                    }
-                }
+            if moreActionsEl.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
+                moreActionsEl.InvokePattern.Invoke()
+            } else {
+                moreActionsEl.Click()
             }
+            Sleep 250
         } catch Error as e {
         }
+
+        maximizeBtn := Cursor_GetVisibleElementByName("Maximize Chat Size", targetHwnd, ["Button", 50000], "Substring")
+        if (maximizeBtn) {
+
+            try {
+                if maximizeBtn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
+                    maximizeBtn.InvokePattern.Invoke()
+                } else {
+                    maximizeBtn.Click()
+                }
+            } catch Error as e {
+            }
+        }
+        else {
+        }
     } else {
+
     }
 }
 
@@ -5023,27 +5029,73 @@ CancelCommit(ctrl, *) {
 
 #HotIf
 
-Cursor_IsElementVisibleByName(name, hwnd := 0) {
+Cursor_IsElementVisibleByName(name, hwnd := 0, typeList := "", matchmode := "") {
+    return !!Cursor_GetVisibleElementByName(name, hwnd, typeList, matchmode)
+}
+
+Cursor_GetVisibleElementByName(name, hwnd := 0, typeList := "", matchmode := "") {
+    try {
+        element := Cursor_FindElementByName(name, hwnd, typeList, matchmode)
+        if !element
+            return ""
+
+        isOffscreen := true
+        try isOffscreen := element.GetPropertyValue(UIA.Property.IsOffscreen)
+        if isOffscreen
+            return ""
+
+        return element
+    } catch Error {
+        return ""
+    }
+}
+
+Cursor_FindElementByName(name, hwnd := 0, typeList := "", matchmode := "") {
     try {
         if !name
-            return false
+            return ""
         if !hwnd
             hwnd := WinExist("A")
         if !hwnd
-            return false
+            return ""
 
         root := UIA.ElementFromHandle(hwnd)
         if !root
-            return false
+            return ""
 
-        element := ""
-        try element := root.FindElement({ Name: name })
-        if !element
-            return false
+        searchConfigs := []
+        types := []
+        if (Type(typeList) == "Array") {
+            types := typeList
+        } else if (typeList) {
+            types := [typeList]
+        }
 
-        return !element.GetPropertyValue(UIA.Property.IsOffscreen)
+        if (Type(types) == "Array" && types.Length) {
+            for typeVal in types {
+                config := { Name: name }
+                if matchmode
+                    config.matchmode := matchmode
+                config.Type := typeVal
+                searchConfigs.Push(config)
+            }
+        } else {
+            config := { Name: name }
+            if matchmode
+                config.matchmode := matchmode
+            searchConfigs.Push(config)
+        }
+
+        for config in searchConfigs {
+            element := ""
+            try element := root.FindElement(config)
+            if element
+                return element
+        }
+
+        return ""
     } catch Error {
-        return false
+        return ""
     }
 }
 
