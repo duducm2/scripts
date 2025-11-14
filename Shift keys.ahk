@@ -799,9 +799,8 @@ Power BI
 [Shift+I] > 📊 Report view
 [Shift+O] > 📊 Table view
 [Shift+P] > 📊 Model view
-[Shift+H] > 📊 Analytics
+[Shift+H] > 📊 Build visual
 [Shift+J] > 📊 Format visual
-[Shift+K] > 📊 Build visual
 [Shift+L] > ✅ OK/Confirm modal button
 [Shift+N] > ❌ Cancel/Exit modal button
 [Shift+M] > 🖱️ Right-click Previous pages button
@@ -3737,60 +3736,62 @@ EnsureItemsViewFocus() {
     }
 }
 
-; Shift + H : Analytics
+; Shift + H : Build visual
 +h:: {
     try {
         win := WinExist("A")
+        if !win
+            return
         root := UIA.ElementFromHandle(win)
 
-        ; Find the Analytics tab by name only
-        analyticsTab := root.FindFirst({ Name: "Analytics" })
-        if !analyticsTab {
-            analyticsTab := root.FindFirst({ Name: "Analytics", matchmode: "Substring" })
+        possibleNames := [
+            "Build visual",
+            "Build visuals",
+            "Build visualization",
+            "Build pane",
+            "Visualizar",
+            "Criar visual",
+            "Criar visualização",
+            "Construir visual",
+            "Construir visualização"
+        ]
+
+        buildTab := ""
+
+        for name in possibleNames {
+            buildTab := root.FindFirst({ Type: "50019", Name: name })
+            if buildTab
+                break
+            buildTab := root.FindFirst({ Type: "TabItem", Name: name })
+            if buildTab
+                break
+            buildTab := root.FindFirst({ Type: "50019", Name: name, matchmode: "Substring" })
+            if buildTab
+                break
+            buildTab := root.FindFirst({ Type: "TabItem", Name: name, matchmode: "Substring" })
+            if buildTab
+                break
         }
 
-        if analyticsTab {
-            analyticsTab.Click()
-        } else {
-            MsgBox "Could not find the 'Analytics' tab.", "Power BI", "IconX"
-        }
-    } catch Error as e {
-        MsgBox "Error switching to Analytics: " e.Message, "Power BI Error", "IconX"
-    }
-}
-
-; Shift + J : Format visual
-+j:: {
-    try {
-        win := WinExist("A")
-        root := UIA.ElementFromHandle(win)
-
-        ; Find the Format visual tab by name only
-        formatTab := root.FindFirst({ Name: "Format visual" })
-        if !formatTab {
-            formatTab := root.FindFirst({ Name: "Format visual", matchmode: "Substring" })
-        }
-
-        if formatTab {
-            formatTab.Click()
-        } else {
-            MsgBox "Could not find the 'Format visual' tab.", "Power BI", "IconX"
-        }
-    } catch Error as e {
-        MsgBox "Error switching to Format visual: " e.Message, "Power BI Error", "IconX"
-    }
-}
-
-; Shift + K : Build visual
-+k:: {
-    try {
-        win := WinExist("A")
-        root := UIA.ElementFromHandle(win)
-
-        ; Find the Build visual tab by name only
-        buildTab := root.FindFirst({ Name: "Build visual" })
         if !buildTab {
-            buildTab := root.FindFirst({ Name: "Build visual", matchmode: "Substring" })
+            tabCond := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.TabItem)
+            tabs := ""
+            try tabs := root.FindElements(tabCond, UIA.TreeScope.Descendants)
+            if tabs {
+                for tab in tabs {
+                    if !tab
+                        continue
+                    tabName := tab.Name
+                    for name in possibleNames {
+                        if InStr(tabName, name) {
+                            buildTab := tab
+                            break
+                        }
+                    }
+                    if buildTab
+                        break
+                }
+            }
         }
 
         if buildTab {
@@ -3800,6 +3801,70 @@ EnsureItemsViewFocus() {
         }
     } catch Error as e {
         MsgBox "Error switching to Build visual: " e.Message, "Power BI Error", "IconX"
+    }
+}
+
+; Shift + J : Format visual
++j:: {
+    try {
+        win := WinExist("A")
+        if !win
+            return
+        root := UIA.ElementFromHandle(win)
+
+        possibleNames := [
+            "Format visual",
+            "Format visuals",
+            "Formatting",
+            "Formatar visual",
+            "Formato visual"
+        ]
+
+        formatTab := ""
+
+        for name in possibleNames {
+            formatTab := root.FindFirst({ Type: "50019", Name: name })
+            if formatTab
+                break
+            formatTab := root.FindFirst({ Type: "TabItem", Name: name })
+            if formatTab
+                break
+            formatTab := root.FindFirst({ Type: "50019", Name: name, matchmode: "Substring" })
+            if formatTab
+                break
+            formatTab := root.FindFirst({ Type: "TabItem", Name: name, matchmode: "Substring" })
+            if formatTab
+                break
+        }
+
+        if !formatTab {
+            tabCond := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.TabItem)
+            tabs := ""
+            try tabs := root.FindElements(tabCond, UIA.TreeScope.Descendants)
+            if tabs {
+                for tab in tabs {
+                    if !tab
+                        continue
+                    tabName := tab.Name
+                    for name in possibleNames {
+                        if InStr(tabName, name) {
+                            formatTab := tab
+                            break
+                        }
+                    }
+                    if formatTab
+                        break
+                }
+            }
+        }
+
+        if formatTab {
+            formatTab.Click()
+        } else {
+            MsgBox "Could not find the 'Format visual' tab.", "Power BI", "IconX"
+        }
+    } catch Error as e {
+        MsgBox "Error switching to Format visual: " e.Message, "Power BI Error", "IconX"
     }
 }
 
