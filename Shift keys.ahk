@@ -809,6 +809,7 @@ Power BI
 [Shift+.] > 🎨 Visualizations pane toggle
 [Shift+W] > ➕ New page
 [Shift+E] > 📊 New measure
+[Shift+R] > 📁 Collapse Fields tables
 [Shift+Q] > 📊 Data pane toggle
 )"
 
@@ -4188,6 +4189,71 @@ EnsureItemsViewFocus() {
         Send "m"
     } catch Error as e {
         MsgBox "Error triggering New measure: " e.Message, "Power BI Error", "IconX"
+    }
+}
+
+; Shift + R : Collapse Power BI table tree items
++r:: {
+    try {
+        win := WinExist("A")
+        if !win
+            return
+
+        root := UIA.ElementFromHandle(win)
+
+        treeItemCond := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.TreeItem)
+        expandCond := UIA.CreatePropertyCondition(UIA.Property.IsExpandCollapsePatternAvailable, true)
+        tableCond := UIA.CreatePropertyConditionEx(UIA.Property.Name, "Table ", UIA.PropertyConditionFlags.IgnoreCaseMatchSubstring
+        )
+        calcTableCond := UIA.CreatePropertyConditionEx(UIA.Property.Name, "Calculated Table", UIA.PropertyConditionFlags
+            .IgnoreCaseMatchSubstring)
+        nameCond := UIA.CreateOrCondition(tableCond, calcTableCond)
+        targetCond := UIA.CreateAndCondition(treeItemCond, UIA.CreateAndCondition(expandCond, nameCond))
+
+        items := ""
+        try items := root.FindElements(targetCond, UIA.TreeScope.Descendants)
+
+        if !items {
+            MsgBox "Could not find any Power BI tables to collapse.", "Power BI", "IconX"
+            return
+        }
+
+        collapsed := 0
+        already := 0
+
+        for item in items {
+            if !item
+                continue
+            try {
+                pat := item.ExpandCollapsePattern
+                if pat.ExpandCollapseState != UIA.ExpandCollapseState.Collapsed {
+                    pat.Collapse()
+                    collapsed++
+                    Sleep 35
+                } else {
+                    already++
+                }
+            } catch Error {
+                try {
+                    item.SetFocus()
+                    Sleep 40
+                    Send "{Left}"
+                    collapsed++
+                } catch {
+                }
+            }
+        }
+
+        if collapsed {
+            ToolTip Format("Collapsed {} table{}", collapsed, collapsed = 1 ? "" : "s")
+        } else if already {
+            ToolTip "All tables already collapsed"
+        } else {
+            ToolTip "No tables collapsed"
+        }
+        SetTimer(() => ToolTip(), -1200)
+    } catch Error as e {
+        MsgBox "Error collapsing Power BI tables: " e.Message, "Power BI Error", "IconX"
     }
 }
 
