@@ -4242,15 +4242,15 @@ EnsureItemsViewFocus() {
 +e:: {
     try {
         Send "{Escape}"
-        Sleep 100
+        Sleep 200
         Send "{Alt down}"
-        Sleep 80
+        Sleep 150
         Send "{Alt up}"
-        Sleep 120
+        Sleep 190
         Send "h"
-        Sleep 120
+        Sleep 190
         Send "n"
-        Sleep 120
+        Sleep 190
         Send "m"
     } catch Error as e {
         MsgBox "Error triggering New measure: " e.Message, "Power BI Error", "IconX"
