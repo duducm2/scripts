@@ -809,6 +809,7 @@ Power BI
 [Shift+W] > ➕ New page
 [Shift+E] > 📊 New measure
 [Shift+F] > 📕 CloseAllDrawers
+[Shift+G] > 📖 OpenAllDrawers
 [Shift+R] > 📁 Collapse Fields tables
 [Shift+Q] > 📊 Data pane toggle
 )"
@@ -4266,27 +4267,7 @@ EnsureItemsViewFocus() {
 
         root := UIA.ElementFromHandle(win)
 
-        drawerConfigs := [{
-            label: "Visualizations",
-            names: ["Visualizations", "Visualizações"],
-            classContains: ["toggle-button"]
-        }, {
-            label: "Data",
-            names: ["Data", "Dados"],
-            classContains: ["toggle-button"]
-        }, {
-            label: "Properties",
-            names: ["Properties", "Propriedades"],
-            classContains: ["toggle-button"]
-        }, {
-            label: "Filter pane",
-            names: [
-                "Collapse or expand the filter pane while editing. This also determines how report readers see it",
-                "Filter pane",
-                "Pane de filtros"
-            ],
-            classContains: ["pbi-glyph-doublechevronleft", "pbi-glyph-doublechevronright"]
-        }]
+        drawerConfigs := PowerBI_GetDrawerConfigs()
 
         closed := 0
         already := 0
@@ -4321,6 +4302,52 @@ EnsureItemsViewFocus() {
         SetTimer(() => ToolTip(), -1500)
     } catch Error as e {
         MsgBox "Error closing Power BI drawers: " e.Message, "Power BI Error", "IconX"
+    }
+}
+
+; Shift + G : Open all Power BI drawers (Visualizations/Data/Properties/Filters)
++g:: {
+    try {
+        win := WinExist("A")
+        if !win
+            return
+
+        root := UIA.ElementFromHandle(win)
+        drawerConfigs := PowerBI_GetDrawerConfigs()
+
+        opened := 0
+        already := 0
+        skipped := 0
+
+        for , cfg in drawerConfigs {
+            btn := PowerBI_FindDrawerButton(root, cfg)
+            if !btn {
+                skipped++
+                continue
+            }
+            result := PowerBI_ExpandDrawerElement(btn)
+            if result = 1 {
+                opened++
+            } else if result = 0 {
+                already++
+            } else {
+                skipped++
+            }
+        }
+
+        msg := opened
+            ? Format("Opened {} drawer{}", opened, opened = 1 ? "" : "s")
+                : "No drawers needed opening"
+
+        if already
+            msg .= Format(" | {} already open", already)
+        if skipped
+            msg .= Format(" | {} skipped", skipped)
+
+        ToolTip msg
+        SetTimer(() => ToolTip(), -1500)
+    } catch Error as e {
+        MsgBox "Error opening Power BI drawers: " e.Message, "Power BI Error", "IconX"
     }
 }
 
@@ -4390,6 +4417,30 @@ EnsureItemsViewFocus() {
 }
 
 #HotIf
+
+PowerBI_GetDrawerConfigs() {
+    return [{
+        label: "Visualizations",
+        names: ["Visualizations", "Visualizações"],
+        classContains: ["toggle-button"]
+    }, {
+        label: "Data",
+        names: ["Data", "Dados"],
+        classContains: ["toggle-button"]
+    }, {
+        label: "Properties",
+        names: ["Properties", "Propriedades"],
+        classContains: ["toggle-button"]
+    }, {
+        label: "Filter pane",
+        names: [
+            "Collapse or expand the filter pane while editing. This also determines how report readers see it",
+            "Filter pane",
+            "Pane de filtros"
+        ],
+        classContains: ["pbi-glyph-doublechevronleft", "pbi-glyph-doublechevronright"]
+    }]
+}
 
 PowerBI_FindDrawerButton(root, config) {
     try {
@@ -4470,6 +4521,40 @@ PowerBI_AttemptCollapse(element) {
             state := pat.ExpandCollapseState
             if state != UIA.ExpandCollapseState.Collapsed {
                 pat.Collapse()
+                Sleep 40
+                return 1
+            }
+            return 0
+        }
+    } catch Error {
+    }
+    return -1
+}
+
+PowerBI_ExpandDrawerElement(element) {
+    current := element
+    loop 4 {
+        if !current
+            break
+        result := PowerBI_AttemptExpand(current)
+        if result != -1
+            return result
+        try current := UIA.TreeWalkerTrue.GetParentElement(current)
+        catch {
+            current := ""
+        }
+    }
+    return -1
+}
+
+PowerBI_AttemptExpand(element) {
+    try {
+        hasPattern := element.GetPropertyValue(UIA.Property.IsExpandCollapsePatternAvailable)
+        if hasPattern {
+            pat := element.ExpandCollapsePattern
+            state := pat.ExpandCollapseState
+            if state != UIA.ExpandCollapseState.Expanded {
+                pat.Expand()
                 Sleep 40
                 return 1
             }
