@@ -801,6 +801,7 @@ Power BI
 [Shift+P] > 📊 Model view
 [Shift+H] > 📊 Build visual
 [Shift+J] > 📊 Format visual
+[Shift+K] > 🔍 Select search edit field
 [Shift+L] > ✅ OK/Confirm modal button
 [Shift+N] > ❌ Cancel/Exit modal button
 [Shift+M] > 🖱️ Right-click Previous pages button
@@ -3867,6 +3868,57 @@ EnsureItemsViewFocus() {
         }
     } catch Error as e {
         MsgBox "Error switching to Format visual: " e.Message, "Power BI Error", "IconX"
+    }
+}
+
+; Shift + K : Select the Power BI search edit field (Data anchor + Tab)
++k:: {
+    try {
+        win := WinExist("A")
+        if !win
+            return
+
+        root := UIA.ElementFromHandle(win)
+
+        dataBtn := ""
+        try {
+            for cfg in PowerBI_GetDrawerConfigs() {
+                if (cfg.HasOwnProp("label") && cfg.label = "Data") {
+                    dataBtn := PowerBI_FindDrawerButton(root, cfg)
+                    if dataBtn
+                        break
+                }
+            }
+        }
+
+        if !dataBtn {
+            MsgBox "Could not locate the Data button anchor.", "Power BI", "IconX"
+            return
+        }
+
+        focused := false
+        try {
+            dataBtn.SetFocus()
+            focused := true
+        } catch {
+            try {
+                dataBtn.Select()
+                focused := true
+            } catch {
+            }
+        }
+
+        if !focused {
+            MsgBox "Could not focus the Data button anchor.", "Power BI", "IconX"
+            return
+        }
+
+        Sleep 120
+        Send "{Tab}"
+        Sleep 120
+        Send "^a"
+    } catch Error as e {
+        MsgBox "Error selecting the Power BI search field: " e.Message, "Power BI Error", "IconX"
     }
 }
 
