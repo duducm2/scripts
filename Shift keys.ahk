@@ -4241,7 +4241,6 @@ EnsureItemsViewFocus() {
 ; Shift + E : New measure (Alt, H, N, M)
 +e:: {
     try {
-        Send "{Escape}"
         Sleep 200
         Send "{Alt down}"
         Sleep 150
