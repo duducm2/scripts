@@ -2043,7 +2043,7 @@ IsTeamsChatActive() {
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "Wikipedia", false)
 
-; Shift + Y: Focus the Wikipedia search field (Type 50004 Edit)
+; Shift + Y: Focus the Wikipedia search field (prefer the field; if hidden, click the Search toggle first)
 +y::
 {
     try {
@@ -2057,120 +2057,106 @@ IsTeamsChatActive() {
             root := uia.BrowserElement
         }
 
+        ; Try to locate the "Search Wikipedia" field by name (combo box / edit),
+        ; avoiding fragile AutomationId/ClassName dependencies.
         searchBox := 0
 
-        ; Try finding by AutomationId first (most reliable)
+        ; First try: ComboBox with the expected name (Type 50003)
         try {
-            searchBox := root.FindElement({ AutomationId: "searchInput" })
+            searchBox := root.FindElement({ Type: 50003, Name: "Search Wikipedia", cs: false })
         } catch {
         }
 
-        ; Try finding by Type and Name
+        ; Second: Edit control with the same name (in case UI changes type)
         if (!searchBox) {
             try {
-                searchBox := root.FindElement({ Type: 50004, Name: "Search Wikipedia" })
+                searchBox := root.FindElement({ Type: 50004, Name: "Search Wikipedia", cs: false })
             } catch {
             }
         }
 
-        ; Try finding by Type and ClassName
+        ; Third: any element by name "Search Wikipedia"
         if (!searchBox) {
             try {
-                searchBox := root.FindElement({ Type: 50004, ClassName: "cdx-text-input__input mw-searchInput" })
+                searchBox := root.FindElement({ Name: "Search Wikipedia", cs: false })
             } catch {
             }
         }
 
-        ; Try finding by partial ClassName
-        if (!searchBox) {
-            try {
-                searchBox := root.FindElement({ Type: 50004, ClassName: "cdx-text-input__input" })
-            } catch {
-            }
-        }
-
-        ; Try finding by AcceleratorKey
-        if (!searchBox) {
-            try {
-                searchBox := root.FindElement({ Type: 50004, AcceleratorKey: "Alt+f" })
-            } catch {
-            }
-        }
-
+        ; If we found the field, focus/click it and we're done.
         if (searchBox) {
             try {
                 searchBox.SetFocus()
             } catch {
                 searchBox.Click()
             }
-        } else {
-            ; Try focusing the profile link, Shift+Tab to Search, then activate
-            profileLink := 0
-            try {
-                profileLink := root.FindElement({ Type: 50005, Name: "Duducm2", cs: false })
-            } catch {
-            }
-            if (!profileLink) {
-                try {
-                    profileLink := root.FindElement({ Type: 50005, Name: "doodoocm2", cs: false })
-                } catch {
-                }
-            }
-            if (!profileLink) {
-                try {
-                    profileLink := root.FindElement({ ControlType: "Hyperlink", Name: "Duducm2", cs: false })
-                } catch {
-                }
-            }
-
-            if (profileLink) {
-                try {
-                    profileLink.SetFocus()
-                    Sleep 100
-                    uia.ControlSend("+{Tab}")
-                    Sleep 120
-                    uia.ControlSend("{Enter}")
-                    Sleep 150
-                } catch {
-                }
-
-                ; Retry locating the search field after activating Search
-                try {
-                    searchBox := root.FindElement({ AutomationId: "searchInput" })
-                } catch {
-                }
-                if (!searchBox) {
-                    try {
-                        searchBox := root.FindElement({ Type: 50004, Name: "Search Wikipedia" })
-                    } catch {
-                    }
-                }
-                if (!searchBox) {
-                    try {
-                        searchBox := root.FindElement({ Type: 50004, ClassName: "cdx-text-input__input" })
-                    } catch {
-                    }
-                }
-
-                if (searchBox) {
-                    try {
-                        searchBox.SetFocus()
-                    } catch {
-                        searchBox.Click()
-                    }
-                    return
-                }
-            }
-            ; Removed UIA click on Search button per request
-
-            ; Final fallback: use the accelerator key
-            try {
-                uia.ControlSend("!f")
-                return
-            } catch {
-            }
-            MsgBox "Could not find the 'Search Wikipedia' field."
+            return
         }
+
+        ; If the field is not available yet, try clicking the "Search" toggle button/link first.
+        searchToggle := 0
+
+        ; Prefer a hyperlink/link named "Search"
+        try {
+            searchToggle := root.FindElement({ Type: 50005, Name: "Search", cs: false })
+        } catch {
+        }
+        if (!searchToggle) {
+            try {
+                searchToggle := root.FindElement({ ControlType: "Hyperlink", Name: "Search", cs: false })
+            } catch {
+            }
+        }
+
+        if (searchToggle) {
+            try {
+                searchToggle.Click()
+            } catch {
+                ; If the click fails for some reason, fall back to the accelerator
+                try {
+                    uia.ControlSend("!f")
+                } catch {
+                }
+            }
+
+            ; Give the UI a moment to reveal the field, then try again to find it.
+            Sleep 250
+
+            searchBox := 0
+            try {
+                searchBox := root.FindElement({ Type: 50003, Name: "Search Wikipedia", cs: false })
+            } catch {
+            }
+            if (!searchBox) {
+                try {
+                    searchBox := root.FindElement({ Type: 50004, Name: "Search Wikipedia", cs: false })
+                } catch {
+                }
+            }
+            if (!searchBox) {
+                try {
+                    searchBox := root.FindElement({ Name: "Search Wikipedia", cs: false })
+                } catch {
+                }
+            }
+
+            if (searchBox) {
+                try {
+                    searchBox.SetFocus()
+                } catch {
+                    searchBox.Click()
+                }
+                return
+            }
+        }
+
+        ; Final fallback: use the accelerator key if all else fails.
+        try {
+            uia.ControlSend("!f")
+            return
+        } catch {
+        }
+        MsgBox "Could not find the 'Search Wikipedia' field."
     }
     catch Error as e {
         MsgBox "An error occurred: " e.Message
