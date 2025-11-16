@@ -6988,8 +6988,8 @@ FocusDescriptionField() {
         Sleep(200)      ; Wait for focus to settle
 
         ; Click the "Open" button
-        Send("{Enter}")
-        Sleep(200)  ; Wait for any dropdown/menu to appear
+        ; Send("{Enter}")
+        ; Sleep(200)  ; Wait for any dropdown/menu to appear
 
         ; Type "MAIN" letter by letter for better performance
         Send("M")
