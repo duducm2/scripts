@@ -630,15 +630,13 @@ EnsureMicVolume100() {
 }
 
 ; =============================================================================
-; Toggle Dictation (No Auto-Send)
+; Toggle Dictation (No Auto-Send) - WITH AUTO-RESTART
 ; Hotkey: Win+Alt+Shift+0
 ; Original File: ChatGPT - Toggle microphone.ahk
 ; =============================================================================
 #!+0::
 {
-    global g_autoRestartEnabled
-    g_autoRestartEnabled := false  ; Disable auto-restart on manual stop
-    ToggleDictation(false, "manual")
+    HandleDictationToggleWithAutoRestart(false)
 }
 
 ; =============================================================================
