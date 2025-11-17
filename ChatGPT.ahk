@@ -126,6 +126,18 @@ global dictationIndicatorGui := ""
 ; Flag to request a one-time transcription-finished chime for the Win+Alt+Shift+0 flow
 global g_transcribeChimePending := false
 
+; --- Auto-Restart Dictation Manager ----------------------------------------
+; State machine: IDLE | ACTIVE | RESTARTING | ERROR
+global g_dictationState := "IDLE"
+global g_dictationStartTime := 0
+global g_autoRestartEnabled := false
+global g_autoRestartTimer := ""
+global g_autoSendMode := false
+global g_hotkeyLock := false
+global g_lastHotkeyTime := 0
+global CONST_MAX_DICTATION_MS := 30000  ; 30 seconds
+global CONST_HOTKEY_DEBOUNCE_MS := 500
+
 ; --- Persistent Loading Indicator ------------------------------------------
 ; Holds the GUI object shown while the script is preparing ChatGPT.
 global loadingGui := ""
@@ -624,22 +636,29 @@ EnsureMicVolume100() {
 ; =============================================================================
 #!+0::
 {
-    ToggleDictation(false)
+    global g_autoRestartEnabled
+    g_autoRestartEnabled := false  ; Disable auto-restart on manual stop
+    ToggleDictation(false, "manual")
 }
 
 ; =============================================================================
-; Toggle Dictation (with Auto-Send)
+; Toggle Dictation (with Auto-Send) - WITH AUTO-RESTART
 ; Hotkey: Win+Alt+Shift+7
 ; Original File: ChatGPT - Speak.ahk
 ; =============================================================================
 #!+7::
 {
-    ToggleDictation(true)
+    HandleDictationToggleWithAutoRestart(true)
 }
 
-ToggleDictation(autoSend) {
+ToggleDictation(autoSend, source := "manual") {
     static isDictating := false
     global g_transcribeChimePending
+    global g_dictationState
+    global g_autoRestartEnabled
+    global g_autoRestartTimer
+    global g_autoSendMode
+    global g_dictationStartTime
 
     ; --- Activate Window ---
     SetTitleMatchMode 2
@@ -649,6 +668,7 @@ ToggleDictation(autoSend) {
         return
 
     action := !isDictating ? "start" : "stop"
+    g_autoSendMode := autoSend
 
     if (action = "start") {
         try {
@@ -666,6 +686,12 @@ ToggleDictation(autoSend) {
             ; Press Enter to start dictation (don't wait for mic volume check)
             Send "{Enter}"
             isDictating := true
+            g_dictationState := "ACTIVE"
+
+            ; Start auto-restart timer if enabled
+            if (g_autoRestartEnabled || source = "auto_restart") {
+                StartAutoRestartTimer()
+            }
 
             ; Start dictation chime and volume check in parallel (don't wait)
             PlayDictationStartedChime()
@@ -676,11 +702,15 @@ ToggleDictation(autoSend) {
             Sleep (IS_WORK_ENVIRONMENT ? 150 : 300)
             ShowDictationIndicator()
         } catch Error as e {
+            g_dictationState := "ERROR"
             ShowNotification((IS_WORK_ENVIRONMENT ? "Erro ao iniciar o ditado" : "Error starting dictation"), 1500,
             "DF2935", "FFFFFF")
         }
     } else if (action = "stop") {
         try {
+            ; Cancel auto-restart timer
+            StopAutoRestartTimer()
+
             ; Return to ChatGPT window
             if hwnd := GetChatGPTWindowHwnd()
                 WinActivate "ahk_id " hwnd
@@ -691,12 +721,39 @@ ToggleDictation(autoSend) {
             ; Press Enter to stop/pause dictation
             Send "{Enter}"
             isDictating := false
+
             ; Don't hide indicator yet - keep it visible until transcription finishes
             Send "!{Tab}" ; Return to previous window
 
             ; Wait for transcription to finish by monitoring for the submit button
             ; The submit button appears when transcription is complete
-            if WaitForComposerSubmitButton(30000) {
+            transcriptionFinished := WaitForComposerSubmitButton(30000)
+
+            ; Special handling for autosend mode with auto-restart enabled
+            ; Instead of sending, restart dictation immediately
+            if (autoSend && g_autoRestartEnabled && source != "manual" && transcriptionFinished) {
+                ; Don't hide indicator or send - restart instead
+                ; Small delay before restart
+                Sleep(500)
+                ; Restart dictation directly (don't call ExecuteAutoRestartSequence to avoid recursion)
+                ; Set state to ACTIVE so timer can start properly
+                g_dictationState := "ACTIVE"
+                ; Start new dictation (timer will be started by ToggleDictation)
+                ToggleDictation(false, "auto_restart")
+                return
+            }
+
+            ; If we're in a restart sequence and this is an automatic restart (not manual),
+            ; don't hide indicator or play chime - let the restart sequence continue
+            ; But if this is a manual stop, allow it to proceed normally
+            if (g_dictationState = "RESTARTING" && source != "manual") {
+                ; Keep indicator visible, don't play chime
+                ; Just return - the restart sequence will handle continuation
+                return
+            }
+
+            ; Normal flow: hide indicator and handle autosend
+            if (transcriptionFinished) {
                 ; Transcription finished - hide indicator and play chime
                 HideDictationIndicator()
                 PlayTranscriptionFinishedChime()
@@ -705,8 +762,8 @@ ToggleDictation(autoSend) {
                 HideDictationIndicator()
             }
 
-            ; If auto-send is enabled, wait a bit then send the prompt
-            if (autoSend) {
+            ; If auto-send is enabled (and not auto-restart mode), wait a bit then send the prompt
+            if (autoSend && (!g_autoRestartEnabled || source = "manual")) {
                 ; Return to ChatGPT to send
                 if hwnd := GetChatGPTWindowHwnd()
                     WinActivate "ahk_id " hwnd
@@ -721,12 +778,146 @@ ToggleDictation(autoSend) {
                 buttonNames := ["Stop streaming", "Interromper transmissão"]
                 WaitForButtonAndShowSmallLoading(buttonNames, "Waiting for response...")
             }
+
+            ; Update state
+            if (g_dictationState != "RESTARTING") {
+                g_dictationState := "IDLE"
+            }
         } catch Error as e {
             HideDictationIndicator() ; Ensure indicator is hidden on error
+            g_dictationState := "ERROR"
             ShowNotification(IS_WORK_ENVIRONMENT ? "Erro ao parar o ditado" : "Error stopping dictation", 1500,
                 "DF2935", "FFFFFF")
         }
     }
+}
+
+; =============================================================================
+; Auto-Restart Dictation Manager
+; =============================================================================
+
+; Handle dictation toggle with auto-restart enabled
+HandleDictationToggleWithAutoRestart(autoSend) {
+    global g_autoRestartEnabled
+    global g_dictationState
+
+    if (g_dictationState = "IDLE") {
+        ; Starting dictation - enable auto-restart
+        g_autoRestartEnabled := true
+        ToggleDictation(autoSend, "manual")
+    } else {
+        ; Stopping dictation - disable auto-restart
+        g_autoRestartEnabled := false
+        ToggleDictation(autoSend, "manual")
+    }
+}
+
+; Start the 30-second auto-restart timer
+StartAutoRestartTimer() {
+    global g_dictationStartTime
+    global g_autoRestartTimer
+    global CONST_MAX_DICTATION_MS
+
+    g_dictationStartTime := A_TickCount
+    ; One-shot timer (negative value = one-time execution)
+    g_autoRestartTimer := SetTimer(OnAutoRestartTimerExpired, -CONST_MAX_DICTATION_MS)
+}
+
+; Stop the auto-restart timer
+StopAutoRestartTimer() {
+    global g_autoRestartTimer
+    if (g_autoRestartTimer) {
+        SetTimer(g_autoRestartTimer, 0)  ; Disable timer
+        g_autoRestartTimer := ""
+    }
+}
+
+; Timer callback when 30 seconds expires
+OnAutoRestartTimerExpired() {
+    global g_dictationState
+    global g_autoRestartEnabled
+
+    if (g_dictationState = "ACTIVE" && g_autoRestartEnabled) {
+        g_dictationState := "RESTARTING"
+        ExecuteAutoRestartSequence()
+    }
+}
+
+; Execute the automatic restart sequence
+ExecuteAutoRestartSequence() {
+    global g_dictationState
+    global g_autoRestartEnabled
+    global g_hotkeyLock
+    global g_lastHotkeyTime
+    global CONST_HOTKEY_DEBOUNCE_MS
+
+    ; Debounce check - prevent rapid-fire restarts
+    if ((A_TickCount - g_lastHotkeyTime) < CONST_HOTKEY_DEBOUNCE_MS) {
+        ; Too soon, reschedule for later
+        StartAutoRestartTimer()
+        g_dictationState := "ACTIVE"
+        return
+    }
+
+    ; Lock check - prevent concurrent execution
+    if (g_hotkeyLock) {
+        ; Already executing, reschedule
+        StartAutoRestartTimer()
+        g_dictationState := "ACTIVE"
+        return
+    }
+
+    g_hotkeyLock := true
+    g_lastHotkeyTime := A_TickCount
+
+    try {
+        ; Step 1: Stop current dictation (without autosend)
+        ; This will trigger the stop action in ToggleDictation
+        ; The stop will wait for transcription but keep indicator visible (due to RESTARTING state check)
+        ToggleDictation(false, "auto_restart")
+
+        ; Step 2: Wait for transcription to finish (short timeout to avoid long delays)
+        ; The WaitForComposerSubmitButton is already called in ToggleDictation stop action
+        ; But we need to ensure it completes - use a shorter timeout for restart
+        ; Actually, WaitForComposerSubmitButton was already called, so we just wait a bit
+        Sleep(300)
+
+        ; Step 3: Small delay to ensure UI is ready
+        Sleep(200)
+
+        ; Step 4: Start dictation again (without autosend, auto-restart will be enabled)
+        ; Since isDictating is now false, this will start a new dictation
+        ; The indicator should still be visible from before
+        ToggleDictation(false, "auto_restart")
+
+        ; Step 5: Verify restart succeeded and reset timer
+        Sleep(500)
+        if (VerifyDictationActive()) {
+            g_dictationState := "ACTIVE"
+            ; Timer will be started by ToggleDictation start action
+        } else {
+            g_dictationState := "ERROR"
+            g_autoRestartEnabled := false
+            HideDictationIndicator()  ; Hide on error
+            ShowNotification(IS_WORK_ENVIRONMENT ? "Falha no reinício automático" : "Auto-restart failed", 2000,
+                "DF2935", "FFFFFF")
+        }
+    } catch Error as e {
+        g_dictationState := "ERROR"
+        g_autoRestartEnabled := false
+        HideDictationIndicator()  ; Hide on error
+        ShowNotification(IS_WORK_ENVIRONMENT ? "Erro no reinício automático" : "Auto-restart error", 2000, "DF2935",
+            "FFFFFF")
+    } finally {
+        g_hotkeyLock := false
+    }
+}
+
+; Verify that dictation is actually active
+VerifyDictationActive() {
+    global smallLoadingGuis
+    ; Check if dictation indicator is visible
+    return (smallLoadingGuis.Length > 0)
 }
 
 ; =============================================================================
