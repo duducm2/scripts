@@ -870,6 +870,9 @@ ExecuteAutoRestartSequence() {
     g_hotkeyLock := true
     g_lastHotkeyTime := A_TickCount
 
+    ; Play chime to notify user that restart is beginning
+    PlayAutoRestartChime()
+
     try {
         ; Step 1: Stop current dictation (without autosend)
         ; This will trigger the stop action in ToggleDictation
@@ -1398,6 +1401,45 @@ PlayDictationStartedChime() {
 
         if !played {
             try SoundBeep(1200, 100)
+            catch {
+            }
+        }
+    } catch {
+        ; Silently ignore errors
+    }
+}
+
+; =============================================================================
+; Auto-restart chime (distinct beep when 30-second timer expires and restart begins)
+; =============================================================================
+PlayAutoRestartChime() {
+    try {
+        static lastTick := 0
+        if (A_TickCount - lastTick < 1000)
+            return
+        lastTick := A_TickCount
+
+        played := false
+        ; Use question icon beep (0x00000020) to distinguish from other cues
+        ; This is a distinct sound that indicates a transition/restart event
+        try {
+            rc := DllCall("User32\\MessageBeep", "UInt", 0x00000020)
+            if (rc)
+                played := true
+        } catch {
+            ; Silently ignore errors
+        }
+
+        if !played {
+            try {
+                played := SoundPlay("*32", false) ; system question sound as fallback
+            } catch {
+                ; Silently ignore errors
+            }
+        }
+
+        if !played {
+            try SoundBeep(1000, 120)
             catch {
             }
         }
