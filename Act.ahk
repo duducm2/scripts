@@ -43,12 +43,19 @@ if (result = "No") {
 ; If Yes, proceed with updating habits
 if (IS_WORK_ENVIRONMENT) {
     ; TODO: Update with actual work environment path
-    habitsFolder := "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes\habits"
+    notesFolder := "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes"
 } else {
-    habitsFolder := "C:\Users\eduev\Meu Drive\14 - Notes\habits"
+    notesFolder := "C:\Users\eduev\Meu Drive\14 - Notes"
 }
 
+habitsFolder := notesFolder . "\habits"
 excelFile := habitsFolder . "\habit_sleep_food_tracker.xlsx"
+
+; Ensure the notes folder is up to date before opening the habits sheet
+SetWorkingDir(notesFolder)
+RunWait("git pull", notesFolder, "Hide")
+
+Sleep 3000
 
 ; Change to the habits folder and run git pull
 SetWorkingDir(habitsFolder)
@@ -66,13 +73,5 @@ if (result = "No") {
 }
 
 ; If Yes, proceed with updating notes
-if (IS_WORK_ENVIRONMENT) {
-    ; TODO: Update with actual work environment path
-    notesFolder := "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes"
-} else {
-    notesFolder := "C:\Users\eduev\Meu Drive\14 - Notes"
-}
-
-; Change to the notes folder and run git pull
 SetWorkingDir(notesFolder)
 RunWait("git pull", notesFolder, "Hide")
