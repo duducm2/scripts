@@ -7833,6 +7833,42 @@ IsFileDialogActive() {
 ; Shift + U : Insert double quotes twice, then hit left arrow
 +u:: Send '""{Left}'
 
+; Shift + O : Focus on Folders Only
++o:: {
+    Send "!+w"
+    Sleep 120
+    Send "{Tab}"
+    Sleep 10
+    Send "{Enter}"
+    Sleep 10
+    Send "{Up}"
+    Sleep 10
+    Send "{Up}"
+    Sleep 10
+    Send "{Down}"
+    Sleep 10
+    Send "{Enter}"
+}
+
+; Shift + P : Focus on Files Only
++p:: {
+    Send "!+w"
+    Sleep 120
+    Send "{Tab}"
+    Sleep 10
+    Send "{Enter}"
+    Sleep 10
+    Send "{Up}"
+    Sleep 10
+    Send "{Up}"
+    Sleep 10
+    Send "{Down}"
+    Sleep 10
+    Send "{Down}"
+    Sleep 10
+    Send "{Enter}"
+}
+
 ; Shift + I : Send "fav" letter by letter and Enter
 +i:: {
     Send "{Backspace 6}"
