@@ -1077,14 +1077,242 @@ ShowNotification(message, durationMs := 500, bgColor := "FFFF00", fontColor := "
 }
 
 ; =============================================================================
-; Helper functions to show/hide the persistent dictation indicator
+; Helper functions to show/hide the persistent dictation indicator with shrinking banner
 ; =============================================================================
+global dictationProgressGui := ""
+global dictationProgressTimer := ""
+global dictationProgressStartTime := 0
+global CONST_DICTATION_PROGRESS_INITIAL_SIZE := 200  ; Start at 200px square
+global CONST_DICTATION_PROGRESS_MIN_SIZE := 1  ; Shrink to 1px (1 second remaining)
+global CONST_DICTATION_PROGRESS_UPDATE_INTERVAL := 1000  ; Update every 1 second
+; Store the centre point where the indicator should be anchored (screen coordinates)
+global dictationCenterX := 0
+global dictationCenterY := 0
+
 ShowDictationIndicator(message := "Dictation ON") {
-    ShowSmallLoadingIndicator(message, "FF0000")
+    global dictationProgressGui
+    global dictationProgressTimer
+    global dictationProgressStartTime
+    global CONST_MAX_DICTATION_MS
+    global CONST_DICTATION_PROGRESS_INITIAL_SIZE
+    global dictationCenterX
+    global dictationCenterY
+    
+    ; Clean up any existing indicator
+    HideDictationIndicator()
+    
+    ; Record start time
+    dictationProgressStartTime := A_TickCount
+    
+    ; --- Capture the visual centre using the existing CentreMouse pipeline ---
+    ; This leverages the already-working Win+Alt+Shift+Q logic (Utils.ahk) instead
+    ; of re-implementing monitor/window maths here.
+    try CenterMouse()
+    catch {
+        ; If the centering hotkey fails for any reason, we still fall back below
+    }
+
+    Sleep(150)  ; Give the mouse a moment to reach the window centre
+
+    pt := Buffer(8, 0)
+    if (DllCall("GetCursorPos", "ptr", pt)) {
+        dictationCenterX := NumGet(pt, 0, "int")
+        dictationCenterY := NumGet(pt, 4, "int")
+    } else {
+        ; Fallback: approximate using active window
+        activeWin := 0
+        try {
+            activeWin := WinGetID("A")
+        } catch {
+            activeWin := 0
+        }
+        if (activeWin) {
+            try {
+                WinGetPos(&wx, &wy, &ww, &wh, activeWin)
+                dictationCenterX := wx + (ww / 2)
+                dictationCenterY := wy + (wh / 2)
+            } catch {
+                workArea := SysGet.MonitorWorkArea(SysGet.MonitorPrimary)
+                dictationCenterX := workArea.Left + (workArea.Right - workArea.Left) / 2
+                dictationCenterY := workArea.Top + (workArea.Bottom - workArea.Top) / 2
+            }
+        } else {
+            workArea := SysGet.MonitorWorkArea(SysGet.MonitorPrimary)
+            dictationCenterX := workArea.Left + (workArea.Right - workArea.Left) / 2
+            dictationCenterY := workArea.Top + (workArea.Bottom - workArea.Top) / 2
+        }
+    }
+
+    ; --- 3) Create initial square indicator at full size ---
+    CreateDictationSquare(CONST_DICTATION_PROGRESS_INITIAL_SIZE)
+    
+    ; Start 1-second timer to update square indicator
+    dictationProgressTimer := SetTimer(UpdateDictationSquare, CONST_DICTATION_PROGRESS_UPDATE_INTERVAL)
+}
+
+; Helper function to get the monitor work area width for the active window
+; Uses the same monitor detection logic as WindowManagement.ahk
+GetMonitorWidthForActiveWindow() {
+    activeWin := 0
+    try {
+        activeWin := WinGetID("A")
+    } catch {
+        ; No active window available, use primary monitor work area
+        MonitorGetWorkArea 1, &left, &top, &right, &bottom
+        return right - left
+    }
+    
+    if (!activeWin) {
+        ; No active window, use primary monitor work area
+        MonitorGetWorkArea 1, &left, &top, &right, &bottom
+        return right - left
+    }
+    
+    ; Get the monitor handle for the active window
+    hMon := 0
+    try {
+        hMon := DllCall("MonitorFromWindow", "ptr", activeWin, "uint", 2, "ptr")
+    } catch {
+        ; Fallback to primary monitor work area if detection fails
+        MonitorGetWorkArea 1, &left, &top, &right, &bottom
+        return right - left
+    }
+    
+    ; Find which monitor index matches this handle
+    count := MonitorGetCount()
+    loop count {
+        i := A_Index
+        MonitorGet i, &l, &t, &r, &b
+        cx := (l + r) // 2
+        cy := (t + b) // 2
+        point64 := (cy & 0xFFFFFFFF) << 32 | (cx & 0xFFFFFFFF)
+        hMonTarget := DllCall("MonitorFromPoint", "int64", point64, "uint", 2, "ptr")
+        
+        if (hMon = hMonTarget) {
+            ; Found the monitor, return its work area width (excludes taskbar)
+            MonitorGetWorkArea i, &l, &t, &r, &b
+            return r - l
+        }
+    }
+    
+    ; Fallback: use primary monitor work area if no match found
+    MonitorGetWorkArea 1, &left, &top, &right, &bottom
+    return right - left
 }
 
 HideDictationIndicator() {
-    HideSmallLoadingIndicator()
+    global dictationProgressGui
+    global dictationProgressTimer
+    
+    ; Stop the timer
+    if (dictationProgressTimer) {
+        SetTimer(dictationProgressTimer, 0)
+        dictationProgressTimer := ""
+    }
+    
+    ; Destroy the GUI
+    if (IsObject(dictationProgressGui) && dictationProgressGui.Hwnd) {
+        try dictationProgressGui.Destroy()
+        catch {
+            ; Silently ignore errors
+        }
+        dictationProgressGui := ""
+    }
+}
+
+; Helper function to create a shrinking square indicator
+; Centers on the mouse position captured via CenterMouse()
+CreateDictationSquare(size) {
+    global dictationProgressGui
+    global dictationCenterX
+    global dictationCenterY
+    
+    ; Destroy existing GUI if it exists
+    if (IsObject(dictationProgressGui) && dictationProgressGui.Hwnd) {
+        try dictationProgressGui.Destroy()
+        catch {
+            ; Silently ignore errors
+        }
+    }
+    
+    ; Fallback centre if we don't have a captured point
+    centerX := dictationCenterX
+    centerY := dictationCenterY
+    if (centerX = 0 && centerY = 0) {
+        ; Approximate using active window or primary monitor
+        activeWin := 0
+        try {
+            activeWin := WinGetID("A")
+        } catch {
+            activeWin := 0
+        }
+        if (activeWin) {
+            try {
+                WinGetPos(&wx, &wy, &ww, &wh, activeWin)
+                centerX := wx + (ww / 2)
+                centerY := wy + (wh / 2)
+            } catch {
+            }
+        }
+        if (centerX = 0 && centerY = 0) {
+            workArea := SysGet.MonitorWorkArea(SysGet.MonitorPrimary)
+            centerX := workArea.Left + (workArea.Right - workArea.Left) / 2
+            centerY := workArea.Top + (workArea.Bottom - workArea.Top) / 2
+        }
+    }
+    
+    ; Create square GUI - just a colored square, no text
+    dictationProgressGui := Gui()
+    dictationProgressGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
+    dictationProgressGui.BackColor := "FF0000"  ; Red color
+    
+    ; Create a square by showing with explicit size
+    ; Position centered on the captured point
+    guiX := centerX - (size / 2)
+    guiY := centerY - (size / 2)
+    
+    dictationProgressGui.Show("x" . Round(guiX) . " y" . Round(guiY) . " w" . size . " h" . size . " NA")
+    WinSetTransparent(200, dictationProgressGui)
+}
+
+; Timer function that recreates the square with smaller size each second
+UpdateDictationSquare() {
+    global dictationProgressGui
+    global dictationProgressStartTime
+    global dictationProgressTimer
+    global CONST_DICTATION_PROGRESS_INITIAL_SIZE
+    global CONST_DICTATION_PROGRESS_MIN_SIZE
+    global CONST_MAX_DICTATION_MS
+    
+    ; Calculate elapsed time
+    elapsedMs := A_TickCount - dictationProgressStartTime
+    progress := elapsedMs / CONST_MAX_DICTATION_MS  ; 0.0 to 1.0
+    
+    ; Calculate new size: starts at INITIAL_SIZE, shrinks to MIN_SIZE (1px = 1 second remaining)
+    if (progress >= 1.0) {
+        ; Time's up - use minimum size (1px)
+        newSize := CONST_DICTATION_PROGRESS_MIN_SIZE
+        ; Stop timer when we reach the end
+        if (dictationProgressTimer) {
+            SetTimer(dictationProgressTimer, 0)
+            dictationProgressTimer := ""
+        }
+    } else {
+        ; Calculate size: initialSize - (progress * (initialSize - minSize))
+        ; When progress = 29/30, size should be close to 1px (1 second remaining)
+        newSize := Round(CONST_DICTATION_PROGRESS_INITIAL_SIZE - (progress * (CONST_DICTATION_PROGRESS_INITIAL_SIZE - CONST_DICTATION_PROGRESS_MIN_SIZE)))
+        ; Ensure we don't go below minimum
+        if (newSize < CONST_DICTATION_PROGRESS_MIN_SIZE) {
+            newSize := CONST_DICTATION_PROGRESS_MIN_SIZE
+        }
+    }
+    
+    ; Recreate the square with new size
+    try {
+        CreateDictationSquare(newSize)
+    } catch {
+        ; Silently ignore errors
+    }
 }
 
 ; =============================================================================
