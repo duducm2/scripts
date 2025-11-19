@@ -135,7 +135,7 @@ global g_autoRestartTimer := ""
 global g_autoSendMode := false
 global g_hotkeyLock := false
 global g_lastHotkeyTime := 0
-global CONST_MAX_DICTATION_MS := 45000  ; 45 seconds
+global CONST_MAX_DICTATION_MS := 30000  ; 30 seconds
 global CONST_HOTKEY_DEBOUNCE_MS := 500
 
 ; --- Persistent Loading Indicator ------------------------------------------
