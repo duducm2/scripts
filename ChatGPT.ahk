@@ -714,6 +714,10 @@ ToggleDictation(autoSend, source := "manual") {
             ; Stop the square indicator timer immediately
             ; BUT: Don't hide indicator if this is an auto-restart (we want to keep it visible during restart)
             if (source != "auto_restart") {
+                ; Set state to IDLE immediately so timer callback stops recreating the square
+                if (g_dictationState != "RESTARTING") {
+                    g_dictationState := "IDLE"
+                }
                 HideDictationIndicator()
             }
 
@@ -782,6 +786,9 @@ ToggleDictation(autoSend, source := "manual") {
                 ; Press Enter to send the transcribed text
                 Send "{Enter}"
                 Send "!{Tab}" ; Return to previous window
+
+                ; Hide the red square indicator before showing the blue "Waiting for response..." banner
+                HideDictationIndicator()
 
                 ; Wait for the AI answering phase and chime on completion
                 buttonNames := ["Stop streaming", "Interromper transmissão"]
