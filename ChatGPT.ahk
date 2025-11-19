@@ -708,6 +708,10 @@ ToggleDictation(autoSend, source := "manual") {
         try {
             ; Cancel auto-restart timer
             StopAutoRestartTimer()
+            
+            ; Stop the square indicator timer immediately
+            ; This prevents the timer from recreating the square after we hide it
+            HideDictationIndicator()
 
             ; Return to ChatGPT window
             if hwnd := GetChatGPTWindowHwnd()
@@ -721,6 +725,7 @@ ToggleDictation(autoSend, source := "manual") {
             isDictating := false
 
             ; Don't hide indicator yet - keep it visible until transcription finishes
+            ; (Unless it's a manual stop, in which case we already hid it above)
             Send "!{Tab}" ; Return to previous window
 
             ; Wait for transcription to finish by monitoring for the submit button
@@ -751,6 +756,7 @@ ToggleDictation(autoSend, source := "manual") {
             }
 
             ; Normal flow: hide indicator and handle autosend
+            ; (For manual stops, we already hid it above, but ensure it's hidden here too as safety)
             if (transcriptionFinished) {
                 ; Transcription finished - hide indicator and play chime
                 HideDictationIndicator()
@@ -1283,6 +1289,18 @@ UpdateDictationSquare() {
     global CONST_DICTATION_PROGRESS_INITIAL_SIZE
     global CONST_DICTATION_PROGRESS_MIN_SIZE
     global CONST_MAX_DICTATION_MS
+    global g_dictationState
+    
+    ; Check if dictation is still active - if not, stop the timer and hide indicator
+    if (g_dictationState != "ACTIVE" && g_dictationState != "RESTARTING") {
+        ; Dictation stopped - clean up
+        if (dictationProgressTimer) {
+            SetTimer(dictationProgressTimer, 0)
+            dictationProgressTimer := ""
+        }
+        HideDictationIndicator()
+        return
+    }
     
     ; Calculate elapsed time
     elapsedMs := A_TickCount - dictationProgressStartTime
