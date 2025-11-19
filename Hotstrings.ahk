@@ -151,6 +151,13 @@ InsertText(text) {
     )
 }
 
+:o:aiopt::
+{
+    InsertText(
+        "( LTrim`nTask: Rewrite the input text so it becomes AI-oriented.`n`nGoal: Produce a version that is concise, unambiguous, free of redundancy, and easy for an AI to parse.`n`nInstructions:`n`n1. Keep only essential information.`n2. Use positive, direct instructions.`n3. Maintain consistent terminology and simple syntax.`n4. Resolve ambiguity and clarify references.`n5. Output in a clean, structured format with no extra commentary.`n`nInput: <insert text here>`n`nOutput:`nA rewritten version of the input text that is optimized for AI interpretation and contains:`n`n* Clear meaning`n* No repeated ideas`n* No filler wording`n* No contradictions`n* Stable terminology`n* Straightforward sentence structure)"
+    )
+}
+
 ; ----------------------
 ; Register hotstrings for cheat sheet display
 ; ----------------------
@@ -179,6 +186,7 @@ InitHotstringsCheatSheet() {
         "This is a message, summary, text or any textual information that translates into a task for me to do. Translate this way, into a task, make informative and start with the emoji 🔲. Make it clear and consise."
     )
     RegisterHotstring(":o:flog", "Food_Log dictation → Excel CSV prompt (with Speech rating)")
+    RegisterHotstring(":o:aiopt", "AI-Optimized text rewriting prompt")
 }
 InitHotstringsCheatSheet()
 
