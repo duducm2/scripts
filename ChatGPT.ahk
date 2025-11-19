@@ -701,6 +701,8 @@ ToggleDictation(autoSend, source := "manual") {
             ShowDictationIndicator()
         } catch Error as e {
             g_dictationState := "ERROR"
+            ; Hide indicator on error (if it was shown)
+            HideDictationIndicator()
             ShowNotification((IS_WORK_ENVIRONMENT ? "Erro ao iniciar o ditado" : "Error starting dictation"), 1500,
             "DF2935", "FFFFFF")
         }
@@ -710,8 +712,10 @@ ToggleDictation(autoSend, source := "manual") {
             StopAutoRestartTimer()
             
             ; Stop the square indicator timer immediately
-            ; This prevents the timer from recreating the square after we hide it
-            HideDictationIndicator()
+            ; BUT: Don't hide indicator if this is an auto-restart (we want to keep it visible during restart)
+            if (source != "auto_restart") {
+                HideDictationIndicator()
+            }
 
             ; Return to ChatGPT window
             if hwnd := GetChatGPTWindowHwnd()
@@ -751,7 +755,8 @@ ToggleDictation(autoSend, source := "manual") {
             ; But if this is a manual stop, allow it to proceed normally
             if (g_dictationState = "RESTARTING" && source != "manual") {
                 ; Keep indicator visible, don't play chime
-                ; Just return - the restart sequence will handle continuation
+                ; Don't update state - keep it as RESTARTING so the restart sequence can continue
+                ; Just return - the restart sequence will handle continuation and restart
                 return
             }
 
@@ -894,19 +899,23 @@ ExecuteAutoRestartSequence() {
 
         ; Step 4: Start dictation again (without autosend, auto-restart will be enabled)
         ; Since isDictating is now false, this will start a new dictation
-        ; The indicator should still be visible from before
+        ; The indicator should still be visible from before, but ShowDictationIndicator will reset it
         ToggleDictation(false, "auto_restart")
 
-        ; Step 5: Verify restart succeeded and reset timer
-        Sleep(500)
+        ; Step 5: Verify restart succeeded
+        ; Give it a bit more time for the start action to complete and indicator to be created
+        Sleep(800)
         if (VerifyDictationActive()) {
             g_dictationState := "ACTIVE"
-            ; Timer will be started by ToggleDictation start action
+            ; Timer will be started by ToggleDictation start action (ShowDictationIndicator)
+            ; The indicator should now be showing and counting down from 30 seconds again
         } else {
+            ; Restart failed - check if it's because the start action threw an error
+            ; The error would have been caught in ToggleDictation start action
             g_dictationState := "ERROR"
             g_autoRestartEnabled := false
             HideDictationIndicator()  ; Hide on error
-            ShowNotification(IS_WORK_ENVIRONMENT ? "Falha no reinício automático" : "Auto-restart failed", 2000,
+            ShowNotification(IS_WORK_ENVIRONMENT ? "Falha no reinício automático - não foi possível ativar o botão de ditado" : "Auto-restart failed - unable to trigger dictation button", 2000,
                 "DF2935", "FFFFFF")
         }
     } catch Error as e {
@@ -922,9 +931,9 @@ ExecuteAutoRestartSequence() {
 
 ; Verify that dictation is actually active
 VerifyDictationActive() {
-    global smallLoadingGuis
-    ; Check if dictation indicator is visible
-    return (smallLoadingGuis.Length > 0)
+    global dictationProgressGui
+    ; Check if dictation square indicator is visible
+    return (IsObject(dictationProgressGui) && dictationProgressGui.Hwnd)
 }
 
 ; =============================================================================
