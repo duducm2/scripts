@@ -1106,7 +1106,7 @@ global dictationProgressTimer := ""
 global dictationProgressStartTime := 0
 global CONST_DICTATION_PROGRESS_INITIAL_SIZE := 200  ; Start at 200px square
 global CONST_DICTATION_PROGRESS_MIN_SIZE := 1  ; Shrink to 1px (1 second remaining)
-global CONST_DICTATION_PROGRESS_UPDATE_INTERVAL := 1000  ; Update every 1 second
+global CONST_DICTATION_PROGRESS_UPDATE_INTERVAL := 5000  ; Update every 5 seconds
 ; Store the centre point where the indicator should be anchored (screen coordinates)
 global dictationCenterX := 0
 global dictationCenterY := 0
