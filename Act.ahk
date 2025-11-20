@@ -4,6 +4,18 @@
 
 #Include env.ahk
 
+if (IS_WORK_ENVIRONMENT) {
+    ; TODO: Replace with the actual scripts folder path on the work laptop
+    scriptsFolder := "C:\Path\To\Work\Scripts"
+} else {
+    scriptsFolder := "C:\Users\eduev\Meu Drive\12 - Scripts"
+}
+
+; Ensure the scripts folder is up to date before launching any scripts
+SetWorkingDir(scriptsFolder)
+RunWait("git fetch", scriptsFolder, "Hide")
+RunWait("git pull", scriptsFolder, "Hide")
+
 Run GetScriptPath("Shift keys.ahk")
 Run GetScriptPath("AppLaunchers.ahk")
 Run GetScriptPath("Spotify.ahk")
