@@ -7873,9 +7873,9 @@ IsFileDialogActive() {
 +i:: {
     Send "{Backspace 6}"
     Send "a"
-    Sleep 200
+    Sleep 300
     Send "d"
-    Sleep 200
+    Sleep 300
     Send "{Enter}"
 }
 
