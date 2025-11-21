@@ -823,8 +823,8 @@ cheatSheets["Settle Up"] := "
 (
 Settle Up
 [Shift+Y] > ➕ Add transaction
-[Shift+U] > 💰 Focus expense value field
-[Shift+I] > 📝 Focus expense name field
+[Shift+U] > 📝 Focus expense name field
+[Shift+I] > 💰 Focus expense value field
 )"
 
 ; --- Miro Shortcuts -----------------------------------------------------
@@ -7683,8 +7683,8 @@ IsFileDialogActive() {
     }
 }
 
-; Shift + U : Focus expense value field (via name field + tab)
-+u:: {
+; Shift + U : Focus expense name field (via value field + 6 tabs)
++i:: {
     try {
         uia := UIA_Browser()
         Sleep 300
@@ -7733,8 +7733,8 @@ IsFileDialogActive() {
     }
 }
 
-; Shift + I : Focus expense name field (via value field + 6 tabs)
-+i:: {
+; Shift + I : Focus expense value field (via name field + tab)
++u:: {
     try {
         uia := UIA_Browser()
         Sleep 300
