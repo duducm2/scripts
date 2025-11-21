@@ -220,61 +220,157 @@ FindMonitorForCoords(x, y, monitors) {
 }
 
 ; Helper function to safely move mouse with proper multi-monitor boundary checking
+; Always shows both prediction squares (blue for short, red for long) in the direction of movement
 SafeMouseMove(deltaX, deltaY) {
     pos := GetMousePos()
     v := GetVirtualBounds()
-    x := Clamp(pos.x + deltaX, v.left, v.right)
-    y := Clamp(pos.y + deltaY, v.top, v.bottom)
-    ; Use SetCursorPos to avoid any app/client coordinate transforms
-    DllCall("SetCursorPos", "int", x, "int", y)
+    ; Calculate target position where mouse will jump to (current + jump distance)
+    targetX := Clamp(pos.x + deltaX, v.left, v.right)
+    targetY := Clamp(pos.y + deltaY, v.top, v.bottom)
+
+    ; Move the mouse to the target position first
+    DllCall("SetCursorPos", "int", targetX, "int", targetY)
+
+    ; After moving, show both prediction squares in the direction of movement
+    ; Blue square: shows where mouse will land with short jump (without Control)
+    ; Red square: shows where mouse will land with long jump (with Control)
+    ShowBothPredictionSquares(targetX, targetY, deltaX, deltaY)
 }
 
-; Jump mouse right
+; Global array to track all feedback GUI windows
+global g_MouseMoveFeedbackGuis := []
+
+; Helper function to close all feedback GUIs
+CloseMouseMoveFeedback() {
+    global g_MouseMoveFeedbackGuis
+    try {
+        for gui in g_MouseMoveFeedbackGuis {
+            try {
+                if (IsObject(gui) && gui.Hwnd) {
+                    gui.Destroy()
+                }
+            } catch {
+                ; Silently ignore errors for individual GUIs
+            }
+        }
+        g_MouseMoveFeedbackGuis := []
+    } catch {
+        ; Silently ignore errors during cleanup
+    }
+}
+
+; Helper function to show both prediction squares (blue and red) in the direction of movement
+; Shows where the mouse will land if user presses short (blue) or long (red) jump in the same direction
+ShowBothPredictionSquares(currentX, currentY, deltaX, deltaY) {
+    global g_MouseMoveFeedbackGuis
+    global MOUSE_JUMP_DISTANCE
+    v := GetVirtualBounds()
+
+    ; Close any existing feedback GUIs first
+    CloseMouseMoveFeedback()
+
+    ; Determine the direction of movement from the sign of deltaX/deltaY
+    ; The squares always use the base MOUSE_JUMP_DISTANCE, regardless of current jump distance
+
+    if (deltaX != 0) {
+        ; Horizontal movement - determine direction from sign of deltaX
+        directionX := deltaX > 0 ? 1 : -1  ; 1 for right, -1 for left
+
+        ; Blue square: shows where mouse will land with short jump (MOUSE_JUMP_DISTANCE in this direction)
+        shortPredictionX := Clamp(currentX + MOUSE_JUMP_DISTANCE * directionX, v.left, v.right)
+        ; Red square: shows where mouse will land with long jump (MOUSE_JUMP_DISTANCE * 2 in this direction)
+        longPredictionX := Clamp(currentX + MOUSE_JUMP_DISTANCE * 2 * directionX, v.left, v.right)
+
+        ; Show blue square (short distance) in the direction of movement
+        ShowPredictionSquare(shortPredictionX, currentY, "0000FF")
+        ; Show red square (long distance) in the direction of movement
+        ShowPredictionSquare(longPredictionX, currentY, "FF0000")
+    } else if (deltaY != 0) {
+        ; Vertical movement - determine direction from sign of deltaY
+        directionY := deltaY > 0 ? 1 : -1  ; 1 for down, -1 for up
+
+        ; Blue square: shows where mouse will land with short jump (MOUSE_JUMP_DISTANCE in this direction)
+        shortPredictionY := Clamp(currentY + MOUSE_JUMP_DISTANCE * directionY, v.top, v.bottom)
+        ; Red square: shows where mouse will land with long jump (MOUSE_JUMP_DISTANCE * 2 in this direction)
+        longPredictionY := Clamp(currentY + MOUSE_JUMP_DISTANCE * 2 * directionY, v.top, v.bottom)
+
+        ; Show blue square (short distance) in the direction of movement
+        ShowPredictionSquare(currentX, shortPredictionY, "0000FF")
+        ; Show red square (long distance) in the direction of movement
+        ShowPredictionSquare(currentX, longPredictionY, "FF0000")
+    }
+
+    ; Auto-hide after 300ms
+    SetTimer(CloseMouseMoveFeedback, -300)
+}
+
+; Helper function to show a single prediction square
+ShowPredictionSquare(x, y, color) {
+    global g_MouseMoveFeedbackGuis
+    squareSize := 40
+
+    ; Create a simple GUI window with specified color background
+    squareGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
+    squareGui.BackColor := color
+
+    ; Position the square centered at the target position
+    guiX := x - (squareSize // 2)
+    guiY := y - (squareSize // 2)
+
+    ; Show the square
+    squareGui.Show("x" . guiX . " y" . guiY . " w" . squareSize . " h" . squareSize . " NA")
+    WinSetTransparent(200, squareGui)  ; Semi-transparent for visibility
+
+    ; Store reference for cleanup
+    g_MouseMoveFeedbackGuis.Push(squareGui)
+}
+
+; Jump mouse right (short distance)
 #!+Right::
 {
     SafeMouseMove(MOUSE_JUMP_DISTANCE, 0)
 }
 
-; Jump mouse left
+; Jump mouse left (short distance)
 #!+Left::
 {
     SafeMouseMove(-MOUSE_JUMP_DISTANCE, 0)
 }
 
-; Jump mouse down
+; Jump mouse down (short distance)
 #!+Down::
 {
     SafeMouseMove(0, MOUSE_JUMP_DISTANCE)
 }
 
-; Jump mouse up
+; Jump mouse up (short distance)
 #!+Up::
 {
     SafeMouseMove(0, -MOUSE_JUMP_DISTANCE)
 }
 
-; Jump mouse right with Control (double distance)
+; Jump mouse right with Control (long distance)
 #!+^Right::
 {
-    SafeMouseMove(MOUSE_JUMP_DISTANCE * 3, 0)
+    SafeMouseMove(MOUSE_JUMP_DISTANCE * 2, 0)
 }
 
-; Jump mouse left with Control (double distance)
+; Jump mouse left with Control (long distance)
 #!+^Left::
 {
-    SafeMouseMove(-MOUSE_JUMP_DISTANCE * 3, 0)
+    SafeMouseMove(-MOUSE_JUMP_DISTANCE * 2, 0)
 }
 
-; Jump mouse down with Control (double distance)
+; Jump mouse down with Control (long distance)
 #!+^Down::
 {
-    SafeMouseMove(0, MOUSE_JUMP_DISTANCE * 3)
+    SafeMouseMove(0, MOUSE_JUMP_DISTANCE * 2)
 }
 
-; Jump mouse up with Control (double distance)
+; Jump mouse up with Control (long distance)
 #!+^Up::
 {
-    SafeMouseMove(0, -MOUSE_JUMP_DISTANCE * 3)
+    SafeMouseMove(0, -MOUSE_JUMP_DISTANCE * 2)
 }
 
 ; =============================================================================
