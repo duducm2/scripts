@@ -60,30 +60,15 @@ if (IS_WORK_ENVIRONMENT) {
     notesFolder := "C:\Users\eduev\Meu Drive\14 - Notes"
 }
 
+; Ensure the notes folder is up to date before working with habits
+SetWorkingDir(notesFolder)
+RunWait("git fetch", notesFolder, "Hide")
+RunWait("git pull", notesFolder, "Hide")
+
 habitsFolder := notesFolder . "\habits"
 excelFile := habitsFolder . "\habit_sleep_food_tracker.xlsx"
 
-; Ensure the notes folder is up to date before opening the habits sheet
-SetWorkingDir(notesFolder)
-RunWait("git pull", notesFolder, "Hide")
-
-Sleep 3000
-
-; Change to the habits folder and run git pull
-SetWorkingDir(habitsFolder)
-RunWait("git pull", habitsFolder, "Hide")
-
-Sleep 3000
+Sleep 10000
 
 ; Open the Excel file
 Run(excelFile)
-
-; Ask user if they want to update Notes folder
-result := MsgBox("Do you want to git pull your Notes folder?", "Update Notes Folder", "YesNo")
-if (result = "No") {
-    return
-}
-
-; If Yes, proceed with updating notes
-SetWorkingDir(notesFolder)
-RunWait("git pull", notesFolder, "Hide")
