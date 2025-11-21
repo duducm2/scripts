@@ -135,7 +135,7 @@ global g_autoRestartTimer := ""
 global g_autoSendMode := false
 global g_hotkeyLock := false
 global g_lastHotkeyTime := 0
-global CONST_MAX_DICTATION_MS := 30000  ; 30 seconds
+global CONST_MAX_DICTATION_MS := 40000  ; 40 seconds
 global CONST_HOTKEY_DEBOUNCE_MS := 500
 
 ; --- Persistent Loading Indicator ------------------------------------------
@@ -710,7 +710,7 @@ ToggleDictation(autoSend, source := "manual") {
         try {
             ; Cancel auto-restart timer
             StopAutoRestartTimer()
-            
+
             ; Stop the square indicator timer immediately
             ; BUT: Don't hide indicator if this is an auto-restart (we want to keep it visible during restart)
             if (source != "auto_restart") {
@@ -828,7 +828,7 @@ HandleDictationToggleWithAutoRestart(autoSend) {
     }
 }
 
-; Start the 30-second auto-restart timer
+; Start the 40-second auto-restart timer
 StartAutoRestartTimer() {
     global g_dictationStartTime
     global g_autoRestartTimer
@@ -848,7 +848,7 @@ StopAutoRestartTimer() {
     }
 }
 
-; Timer callback when 30 seconds expires
+; Timer callback when 40 seconds expires
 OnAutoRestartTimerExpired() {
     global g_dictationState
     global g_autoRestartEnabled
@@ -915,14 +915,16 @@ ExecuteAutoRestartSequence() {
         if (VerifyDictationActive()) {
             g_dictationState := "ACTIVE"
             ; Timer will be started by ToggleDictation start action (ShowDictationIndicator)
-            ; The indicator should now be showing and counting down from 30 seconds again
+            ; The indicator should now be showing and counting down from 40 seconds again
         } else {
             ; Restart failed - check if it's because the start action threw an error
             ; The error would have been caught in ToggleDictation start action
             g_dictationState := "ERROR"
             g_autoRestartEnabled := false
             HideDictationIndicator()  ; Hide on error
-            ShowNotification(IS_WORK_ENVIRONMENT ? "Falha no reinício automático - não foi possível ativar o botão de ditado" : "Auto-restart failed - unable to trigger dictation button", 2000,
+            ShowNotification(IS_WORK_ENVIRONMENT ?
+                "Falha no reinício automático - não foi possível ativar o botão de ditado" :
+                    "Auto-restart failed - unable to trigger dictation button", 2000,
                 "DF2935", "FFFFFF")
         }
     } catch Error as e {
@@ -1119,13 +1121,13 @@ ShowDictationIndicator(message := "Dictation ON") {
     global CONST_DICTATION_PROGRESS_INITIAL_SIZE
     global dictationCenterX
     global dictationCenterY
-    
+
     ; Clean up any existing indicator
     HideDictationIndicator()
-    
+
     ; Record start time
     dictationProgressStartTime := A_TickCount
-    
+
     ; --- Capture the visual centre using the existing CentreMouse pipeline ---
     ; This leverages the already-working Win+Alt+Shift+Q logic (Utils.ahk) instead
     ; of re-implementing monitor/window maths here.
@@ -1167,7 +1169,7 @@ ShowDictationIndicator(message := "Dictation ON") {
 
     ; --- 3) Create initial square indicator at full size ---
     CreateDictationSquare(CONST_DICTATION_PROGRESS_INITIAL_SIZE)
-    
+
     ; Start 1-second timer to update square indicator
     dictationProgressTimer := SetTimer(UpdateDictationSquare, CONST_DICTATION_PROGRESS_UPDATE_INTERVAL)
 }
@@ -1183,13 +1185,13 @@ GetMonitorWidthForActiveWindow() {
         MonitorGetWorkArea 1, &left, &top, &right, &bottom
         return right - left
     }
-    
+
     if (!activeWin) {
         ; No active window, use primary monitor work area
         MonitorGetWorkArea 1, &left, &top, &right, &bottom
         return right - left
     }
-    
+
     ; Get the monitor handle for the active window
     hMon := 0
     try {
@@ -1199,7 +1201,7 @@ GetMonitorWidthForActiveWindow() {
         MonitorGetWorkArea 1, &left, &top, &right, &bottom
         return right - left
     }
-    
+
     ; Find which monitor index matches this handle
     count := MonitorGetCount()
     loop count {
@@ -1209,14 +1211,14 @@ GetMonitorWidthForActiveWindow() {
         cy := (t + b) // 2
         point64 := (cy & 0xFFFFFFFF) << 32 | (cx & 0xFFFFFFFF)
         hMonTarget := DllCall("MonitorFromPoint", "int64", point64, "uint", 2, "ptr")
-        
+
         if (hMon = hMonTarget) {
             ; Found the monitor, return its work area width (excludes taskbar)
             MonitorGetWorkArea i, &l, &t, &r, &b
             return r - l
         }
     }
-    
+
     ; Fallback: use primary monitor work area if no match found
     MonitorGetWorkArea 1, &left, &top, &right, &bottom
     return right - left
@@ -1225,13 +1227,13 @@ GetMonitorWidthForActiveWindow() {
 HideDictationIndicator() {
     global dictationProgressGui
     global dictationProgressTimer
-    
+
     ; Stop the timer
     if (dictationProgressTimer) {
         SetTimer(dictationProgressTimer, 0)
         dictationProgressTimer := ""
     }
-    
+
     ; Destroy the GUI
     if (IsObject(dictationProgressGui) && dictationProgressGui.Hwnd) {
         try dictationProgressGui.Destroy()
@@ -1248,7 +1250,7 @@ CreateDictationSquare(size) {
     global dictationProgressGui
     global dictationCenterX
     global dictationCenterY
-    
+
     ; Destroy existing GUI if it exists
     if (IsObject(dictationProgressGui) && dictationProgressGui.Hwnd) {
         try dictationProgressGui.Destroy()
@@ -1256,7 +1258,7 @@ CreateDictationSquare(size) {
             ; Silently ignore errors
         }
     }
-    
+
     ; Fallback centre if we don't have a captured point
     centerX := dictationCenterX
     centerY := dictationCenterY
@@ -1282,17 +1284,17 @@ CreateDictationSquare(size) {
             centerY := workArea.Top + (workArea.Bottom - workArea.Top) / 2
         }
     }
-    
+
     ; Create square GUI - just a colored square, no text
     dictationProgressGui := Gui()
     dictationProgressGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
     dictationProgressGui.BackColor := "FF0000"  ; Red color
-    
+
     ; Create a square by showing with explicit size
     ; Position centered on the captured point
     guiX := centerX - (size / 2)
     guiY := centerY - (size / 2)
-    
+
     dictationProgressGui.Show("x" . Round(guiX) . " y" . Round(guiY) . " w" . size . " h" . size . " NA")
     WinSetTransparent(200, dictationProgressGui)
 }
@@ -1306,7 +1308,7 @@ UpdateDictationSquare() {
     global CONST_DICTATION_PROGRESS_MIN_SIZE
     global CONST_MAX_DICTATION_MS
     global g_dictationState
-    
+
     ; Check if dictation is still active - if not, stop the timer and hide indicator
     if (g_dictationState != "ACTIVE" && g_dictationState != "RESTARTING") {
         ; Dictation stopped - clean up
@@ -1317,11 +1319,11 @@ UpdateDictationSquare() {
         HideDictationIndicator()
         return
     }
-    
+
     ; Calculate elapsed time
     elapsedMs := A_TickCount - dictationProgressStartTime
     progress := elapsedMs / CONST_MAX_DICTATION_MS  ; 0.0 to 1.0
-    
+
     ; Calculate new size: starts at INITIAL_SIZE, shrinks to MIN_SIZE (1px = 1 second remaining)
     if (progress >= 1.0) {
         ; Time's up - use minimum size (1px)
@@ -1333,14 +1335,15 @@ UpdateDictationSquare() {
         }
     } else {
         ; Calculate size: initialSize - (progress * (initialSize - minSize))
-        ; When progress = 29/30, size should be close to 1px (1 second remaining)
-        newSize := Round(CONST_DICTATION_PROGRESS_INITIAL_SIZE - (progress * (CONST_DICTATION_PROGRESS_INITIAL_SIZE - CONST_DICTATION_PROGRESS_MIN_SIZE)))
+        ; When progress = 39/40, size should be close to 1px (1 second remaining)
+        newSize := Round(CONST_DICTATION_PROGRESS_INITIAL_SIZE - (progress * (CONST_DICTATION_PROGRESS_INITIAL_SIZE -
+            CONST_DICTATION_PROGRESS_MIN_SIZE)))
         ; Ensure we don't go below minimum
         if (newSize < CONST_DICTATION_PROGRESS_MIN_SIZE) {
             newSize := CONST_DICTATION_PROGRESS_MIN_SIZE
         }
     }
-    
+
     ; Recreate the square with new size
     try {
         CreateDictationSquare(newSize)
@@ -1670,7 +1673,7 @@ PlayDictationStartedChime() {
 }
 
 ; =============================================================================
-; Auto-restart chime (distinct beep when 30-second timer expires and restart begins)
+; Auto-restart chime (distinct beep when 40-second timer expires and restart begins)
 ; =============================================================================
 PlayAutoRestartChime() {
     try {
