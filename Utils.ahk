@@ -300,8 +300,8 @@ ShowBothPredictionSquares(currentX, currentY, deltaX, deltaY) {
         ShowPredictionSquare(currentX, longPredictionY, "FF0000")
     }
 
-    ; Auto-hide after 300ms
-    SetTimer(CloseMouseMoveFeedback, -300)
+    ; Auto-hide after 1300ms (1 second longer than before)
+    SetTimer(CloseMouseMoveFeedback, -1300)
 }
 
 ; Helper function to show a single prediction square
