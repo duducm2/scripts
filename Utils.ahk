@@ -337,6 +337,7 @@ global g_SquareSelectorPositions := []  ; Array of {x, y} positions for each squ
 global g_SquareSelectorLetters := ["Q", "W", "E", "R", "T", "A", "S", "D", "F", "G", "Z", "X", "C", "V", "B"]
 global g_SquareSelectorTimer := false
 global g_SquareSelectorLetterMap := Map()  ; Map to store letter to index mapping
+global g_SquareSelectorSessionID := 0  ; Unique session ID to prevent timer conflicts
 
 ; Global array to store hotkey handlers for cleanup
 global g_SquareSelectorHotkeyHandlers := []
@@ -348,11 +349,34 @@ global g_SquareSelectorLock := false
 global g_ActiveDirection := ""
 
 ; Timer handler for square selector timeout
-SquareSelectorTimerHandler() {
-    global g_SquareSelectorLock, g_ActiveDirection
+SquareSelectorTimerHandler(sessionID) {
+    global g_SquareSelectorLock, g_ActiveDirection, g_SquareSelectorTimer
+    global g_SquareSelectorActive, g_SquareSelectorSessionID
+
+    ; CRITICAL: Check if this timer is for the current session
+    ; If session ID doesn't match, this timer is stale and should be ignored
+    if (sessionID != g_SquareSelectorSessionID) {
+        ; This timer is for an old session, ignore it
+        return
+    }
+
+    ; Check if selector is still active (might have been cleaned up by new direction)
+    if (!g_SquareSelectorActive) {
+        ; Already cleaned up, just clear timer reference
+        g_SquareSelectorTimer := false
+        return
+    }
+
+    ; Only cleanup if selector is still active and session matches
     CleanupSquareSelector()
     g_SquareSelectorLock := false
     g_ActiveDirection := ""  ; Clear active direction on timeout
+    g_SquareSelectorTimer := false  ; Clear timer reference
+}
+
+; Helper to create a timer handler bound to a specific session ID
+CreateTimerHandler(sessionID) {
+    return () => SquareSelectorTimerHandler(sessionID)
 }
 
 ; Function to cleanup square selector system
@@ -552,8 +576,9 @@ ShowSquareSelector(direction) {
     SetupLetterKeyListener()
 
     ; Set timer to cleanup after 2 seconds
-    ; Create cleanup function that also releases the lock and clears active direction
-    g_SquareSelectorTimer := ObjBindMethod(SquareSelectorTimerHandler)
+    ; Create cleanup function bound to this session ID (prevents old timers from cleaning up new squares)
+    currentSessionID := g_SquareSelectorSessionID
+    g_SquareSelectorTimer := CreateTimerHandler(currentSessionID)
     SetTimer(g_SquareSelectorTimer, -2000)
 
     ; Lock will be released when timer fires or when user selects a letter
@@ -629,19 +654,41 @@ HandleDirectionHotkey(direction) {
     ; TEST: Uncomment next line to verify hotkey is firing
     ; MsgBox "Hotkey triggered: " . direction, "Debug"
 
-    global g_SquareSelectorActive, g_ActiveDirection
+    global g_SquareSelectorActive, g_ActiveDirection, g_SquareSelectorTimer
+    global g_SquareSelectorLock
 
-    ; Simple cleanup first
+    ; STEP 1: IMMEDIATELY disable active flag and clear positions
+    ; This prevents letter hotkeys from using old positions
+    g_SquareSelectorActive := false
+    global g_SquareSelectorPositions
+    g_SquareSelectorPositions := []
+
+    ; STEP 2: Increment session ID to invalidate any old timers
+    global g_SquareSelectorSessionID
+    g_SquareSelectorSessionID++
+
+    ; STEP 3: Cancel any existing timer FIRST (prevents old timer from cleaning up new squares)
+    if (g_SquareSelectorTimer) {
+        SetTimer(g_SquareSelectorTimer, 0)
+        g_SquareSelectorTimer := false
+    }
+
+    ; STEP 4: Clean up old selector completely (GUIs, hotkeys, etc.)
     CleanupSquareSelector()
-    Sleep 10
 
-    ; Set active direction
+    ; STEP 5: Reset lock to ensure clean state
+    g_SquareSelectorLock := false
+
+    ; STEP 6: Wait a bit for cleanup to complete
+    Sleep 30
+
+    ; STEP 7: Set new active direction
     g_ActiveDirection := StrLower(direction)
 
-    ; Brief delay
+    ; STEP 8: Brief delay before showing new squares
     Sleep 50
 
-    ; Show the squares
+    ; STEP 9: Show the new squares (with session ID)
     ShowSquareSelector(g_ActiveDirection)
 }
 
