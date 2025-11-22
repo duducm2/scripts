@@ -319,7 +319,7 @@ ShowPredictionSquare(x, y, color) {
 
     ; Show the square
     squareGui.Show("x" . guiX . " y" . guiY . " w" . squareSize . " h" . squareSize . " NA")
-    WinSetTransparent(200, squareGui)  ; Semi-transparent for visibility
+    WinSetTransparent(100, squareGui)  ; Less opaque for better visibility
 
     ; Store reference for cleanup
     g_MouseMoveFeedbackGuis.Push(squareGui)
@@ -420,6 +420,9 @@ CleanupSquareSelector() {
     } catch {
         ; Silently ignore if hotkey doesn't exist
     }
+
+    ; Disable direction switch hotkeys
+    DisableDirectionSwitchHotkeys()
 
     ; Reset click mode flag
     global g_SquareSelectorClickMode
@@ -552,8 +555,8 @@ ShowSquareSelector(direction) {
     for guiInfo in guiArray {
         ; Position while hidden (no rendering delay)
         guiInfo.gui.Show("x" . guiInfo.x . " y" . guiInfo.y . " w" . squareSize . " h" . squareSize . " NA Hide")
-        ; Set 50% opaque (128 = 50% opacity, 255 = fully opaque, 0 = fully transparent)
-        WinSetTransparent(128, guiInfo.gui)
+        ; Set less opaque (80 = ~31% opacity, 255 = fully opaque, 0 = fully transparent)
+        WinSetTransparent(80, guiInfo.gui)
     }
 
     ; STEP 4: Show all GUIs simultaneously (batch show for instant appearance)
@@ -610,6 +613,9 @@ ShowSquareSelector(direction) {
 
     ; Enable CTRL hotkey to toggle click mode
     Hotkey("Ctrl", (*) => HandleCtrlToggle(), "On")
+
+    ; Enable arrow keys for immediate direction switching
+    EnableDirectionSwitchHotkeys()
 
     ; Set timer to cleanup after 5 seconds if nothing is pressed
     ; Create cleanup function bound to this session ID (prevents old timers from cleaning up new squares)
@@ -678,8 +684,8 @@ ShowDirectionIndicators() {
     ; Position all GUIs while hidden, then show simultaneously
     for guiInfo in guiArray {
         guiInfo.gui.Show("x" . guiInfo.x . " y" . guiInfo.y . " w" . squareSize . " h" . squareSize . " NA Hide")
-        ; Set 50% opaque (same as letter squares)
-        WinSetTransparent(128, guiInfo.gui)
+        ; Set less opaque (same as letter squares)
+        WinSetTransparent(80, guiInfo.gui)
     }
 
     ; Show all GUIs simultaneously
@@ -951,6 +957,9 @@ SelectSquareByIndex(index) {
     ; Letter hotkeys are now re-enabled by ShowSquareSelector
     ; Disable letter/number hotkeys will be handled by loop mode handlers
 
+    ; Disable direction switch hotkeys before enabling loop mode hotkeys
+    DisableDirectionSwitchHotkeys()
+
     ; Set loop mode flag
     g_SquareSelectorLoopMode := true
 
@@ -1057,6 +1066,28 @@ HandleLoopModeMButton() {
         ExitLoopMode()
         ; Send the click after exiting loop mode
         Click("Middle")
+    }
+}
+
+; Helper function to enable direction switch hotkeys (arrow keys for switching directions immediately)
+EnableDirectionSwitchHotkeys() {
+    ; Enable arrow key hotkeys for immediate direction switching (without modifiers)
+    Hotkey("Right", (*) => HandleDirectionHotkey("Right"), "On")
+    Hotkey("Left", (*) => HandleDirectionHotkey("Left"), "On")
+    Hotkey("Down", (*) => HandleDirectionHotkey("Down"), "On")
+    Hotkey("Up", (*) => HandleDirectionHotkey("Up"), "On")
+}
+
+; Helper function to disable direction switch hotkeys
+DisableDirectionSwitchHotkeys() {
+    ; Disable arrow key hotkeys
+    try {
+        Hotkey("Right", "Off")
+        Hotkey("Left", "Off")
+        Hotkey("Down", "Off")
+        Hotkey("Up", "Off")
+    } catch {
+        ; Silently ignore if hotkeys don't exist
     }
 }
 
