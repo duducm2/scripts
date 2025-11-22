@@ -585,8 +585,13 @@ ShowSquareSelector(direction) {
     g_SquareSelectorActive := true
     SetupLetterKeyListener()
 
-    ; No timeout - squares persist until Escape is pressed (loop mode)
-    ; Lock will be released when user selects a letter (enters loop mode) or presses Escape
+    ; Set timer to cleanup after 5 seconds if nothing is pressed
+    ; Create cleanup function bound to this session ID (prevents old timers from cleaning up new squares)
+    currentSessionID := g_SquareSelectorSessionID
+    g_SquareSelectorTimer := CreateTimerHandler(currentSessionID)
+    SetTimer(g_SquareSelectorTimer, -5000)  ; 5 second timeout
+
+    ; Lock will be released when timer fires, user selects a letter (enters loop mode), or presses Escape
 }
 
 ; Factory function to create a handler that properly captures the index
@@ -666,6 +671,13 @@ SelectSquareByIndex(index) {
     ; Enter loop mode instead of cleaning up
     ; Disable letter/number hotkeys (squares remain visible)
     DisableLetterHotkeys()
+
+    ; Cancel timeout timer since we're entering loop mode
+    global g_SquareSelectorTimer
+    if (g_SquareSelectorTimer) {
+        SetTimer(g_SquareSelectorTimer, 0)
+        g_SquareSelectorTimer := false
+    }
 
     ; Set loop mode flag
     g_SquareSelectorLoopMode := true
