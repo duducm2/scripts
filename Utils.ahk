@@ -407,16 +407,12 @@ ForceCleanupAllSquares() {
         try {
             if (IsObject(gui)) {
                 try {
-                    gui.Hide()
-                } catch {
-                    ; Ignore hide errors
-                }
-                try {
                     if (gui.Hwnd) {
+                        gui.Hide()
                         gui.Destroy()
                     }
                 } catch {
-                    ; Ignore destroy errors
+                    ; Ignore hide/destroy errors
                 }
             }
         } catch {
@@ -426,27 +422,7 @@ ForceCleanupAllSquares() {
     g_SquareSelectorGuis := []
 
     ; Aggressively destroy all direction indicator GUIs
-    for gui in g_DirectionIndicatorGuis {
-        try {
-            if (IsObject(gui)) {
-                try {
-                    gui.Hide()
-                } catch {
-                    ; Ignore hide errors
-                }
-                try {
-                    if (gui.Hwnd) {
-                        gui.Destroy()
-                    }
-                } catch {
-                    ; Ignore destroy errors
-                }
-            }
-        } catch {
-            ; Silently ignore all errors
-        }
-    }
-    g_DirectionIndicatorGuis := []
+    DestroyGuiArray(g_DirectionIndicatorGuis)
 
     ; Cancel all timers
     if (g_SquareSelectorTimer) {
@@ -509,25 +485,8 @@ BackupCleanupTimer() {
         return
     }
 
-    ; If there are any GUIs still in the array, check if they're valid
-    if (g_SquareSelectorGuis.Length > 0) {
-        ; Check if any GUI is still valid
-        hasValidGui := false
-        for gui in g_SquareSelectorGuis {
-            try {
-                if (IsObject(gui) && gui.Hwnd) {
-                    hasValidGui := true
-                    break
-                }
-            } catch {
-                ; Ignore errors
-            }
-        }
-        ; If we found valid GUIs and it's been more than 10 seconds, force cleanup
-        if (hasValidGui && elapsed >= 10) {
-            ForceCleanupAllSquares()
-        }
-    } else if (!g_SquareSelectorActive) {
+    ; If there are no GUIs and not active, cleanup is done, stop timer
+    if (g_SquareSelectorGuis.Length = 0 && !g_SquareSelectorActive) {
         ; No GUIs and not active - cleanup is done, stop timer
         if (g_SquareSelectorBackupTimer) {
             SetTimer(g_SquareSelectorBackupTimer, 0)
@@ -592,16 +551,7 @@ CleanupSquareSelector() {
     g_SquareSelectorHotkeyHandlers := []
 
     ; Destroy all square GUIs
-    for gui in g_SquareSelectorGuis {
-        try {
-            if (IsObject(gui) && gui.Hwnd) {
-                gui.Destroy()
-            }
-        } catch {
-            ; Silently ignore errors
-        }
-    }
-    g_SquareSelectorGuis := []
+    DestroyGuiArray(g_SquareSelectorGuis)
     g_SquareSelectorPositions := []
 
     ; Clean up direction indicator squares
@@ -887,12 +837,12 @@ ShowDirectionIndicators() {
     }
 }
 
-; Helper function to cleanup direction indicator squares
-CleanupDirectionIndicators() {
-    global g_DirectionIndicatorGuis
-
-    ; Destroy all direction indicator GUIs
-    for gui in g_DirectionIndicatorGuis {
+; Helper function to destroy GUI objects in an array (reusable)
+DestroyGuiArray(guis) {
+    if (!guis || guis.Length = 0) {
+        return
+    }
+    for gui in guis {
         try {
             if (IsObject(gui) && gui.Hwnd) {
                 gui.Destroy()
@@ -901,7 +851,13 @@ CleanupDirectionIndicators() {
             ; Silently ignore errors
         }
     }
-    g_DirectionIndicatorGuis := []
+    guis.Length := 0  ; Clear array efficiently
+}
+
+; Helper function to cleanup direction indicator squares
+CleanupDirectionIndicators() {
+    global g_DirectionIndicatorGuis
+    DestroyGuiArray(g_DirectionIndicatorGuis)
 }
 
 ; Factory function to create a handler that properly captures the index
@@ -1105,16 +1061,7 @@ SelectSquareByIndex(index) {
     currentDirection := g_ActiveDirection
 
     global g_SquareSelectorGuis
-    for gui in g_SquareSelectorGuis {
-        try {
-            if (IsObject(gui) && gui.Hwnd) {
-                gui.Destroy()
-            }
-        } catch {
-            ; Silently ignore errors
-        }
-    }
-    g_SquareSelectorGuis := []
+    DestroyGuiArray(g_SquareSelectorGuis)
     g_SquareSelectorPositions := []  ; Clear positions as well
 
     ; Cancel timeout timer since we're entering loop mode
@@ -1212,14 +1159,13 @@ HandleDirectionHotkey(direction) {
     ; STEP 5: Reset lock to ensure clean state
     g_SquareSelectorLock := false
 
-    ; STEP 6: Wait a bit for cleanup to complete
-    Sleep 30
+    ; STEP 6: Wait a bit for cleanup to complete and brief delay before showing new squares
+    Sleep 80
 
     ; STEP 7: Set new active direction
     g_ActiveDirection := StrLower(direction)
 
-    ; STEP 8: Brief delay before showing new squares
-    Sleep 50
+    ; STEP 8: Show new squares (delay already included above)
 
     ; STEP 9: Disable loop mode if it was active (transitioning from loop mode)
     global g_SquareSelectorLoopMode
@@ -1477,11 +1423,7 @@ SafeActivateTarget(hwnd) {
 ; Hunt-and-Peck's overlay / Esc logic.
 RightClickFocus() {
     Click "Right"
-    if (IS_WORK_ENVIRONMENT) {
-        Sleep 10  ; Reduced sleep for work environment
-    } else {
-        Sleep 10  ; Personal environment now matches work environment
-    }
+    Sleep 10  ; Brief pause for focus shift
 }
 
 ; Shows or hides the loop mode indicator
@@ -1522,11 +1464,6 @@ ActivateHuntAndPeck(isLoopMode := false) {
 
     ; Shift keyboard focus with a harmless right-click
     RightClickFocus()
-    if (IS_WORK_ENVIRONMENT) {
-        Sleep 10  ; Reduced sleep for work environment
-    } else {
-        Sleep 10  ; Personal environment now matches work environment
-    }
 
     ; Wait up to 200 ms for the window to actually become active (covers fast Alt-Tab cases)
     if !WinWaitActive("ahk_id " g_HnPTargetWindow, "", 0.2) {
@@ -1553,11 +1490,7 @@ ActivateHuntAndPeck(isLoopMode := false) {
         ; Legacy hotkey path
         RightClickFocus()
         Send "!ç"
-        if (IS_WORK_ENVIRONMENT) {
-            Sleep 40  ; Reduced sleep for work environment
-        } else {
-            Sleep 40  ; Personal environment now matches work environment
-        }
+        Sleep 40
         ; Re-activate target window to pull overlay back
         SafeActivateTarget(g_HnPTargetWindow)
         Sleep 40
