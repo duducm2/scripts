@@ -5406,8 +5406,8 @@ CancelCommit(ctrl, *) {
 
     newAgentVisible := Cursor_IsElementVisibleByName("New Agent", targetHwnd)
     if newAgentVisible {
-        Sleep 600
-        Send "^+s"
+        Sleep 700
+        Send "^!s"
     }
 
     moreActionsEl := Cursor_GetVisibleElementByName("More Actions...", targetHwnd, ["Link", 50005, "Button", 50000])
