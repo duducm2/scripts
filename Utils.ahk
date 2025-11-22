@@ -325,28 +325,348 @@ ShowPredictionSquare(x, y, color) {
     g_MouseMoveFeedbackGuis.Push(squareGui)
 }
 
-; Jump mouse right (short distance)
+; =============================================================================
+; Square Selector System for Mouse Jump
+; Shows 15 red squares with letters in chosen direction, waits for letter selection
+; =============================================================================
+
+; Global variables for square selector system
+global g_SquareSelectorActive := false
+global g_SquareSelectorGuis := []
+global g_SquareSelectorPositions := []  ; Array of {x, y} positions for each square
+global g_SquareSelectorLetters := ["Q", "W", "E", "R", "T", "A", "S", "D", "F", "G", "Z", "X", "C", "V", "B"]
+global g_SquareSelectorTimer := false
+global g_SquareSelectorLetterMap := Map()  ; Map to store letter to index mapping
+
+; Global array to store hotkey handlers for cleanup
+global g_SquareSelectorHotkeyHandlers := []
+
+; Lock flag to prevent multiple square selectors from running simultaneously
+global g_SquareSelectorLock := false
+
+; Active direction flag - prevents old selectors from interfering
+global g_ActiveDirection := ""
+
+; Timer handler for square selector timeout
+SquareSelectorTimerHandler() {
+    global g_SquareSelectorLock, g_ActiveDirection
+    CleanupSquareSelector()
+    g_SquareSelectorLock := false
+    g_ActiveDirection := ""  ; Clear active direction on timeout
+}
+
+; Function to cleanup square selector system
+CleanupSquareSelector() {
+    global g_SquareSelectorActive, g_SquareSelectorGuis, g_SquareSelectorTimer
+    global g_SquareSelectorLetters, g_SquareSelectorHotkeyHandlers
+    global g_SquareSelectorLock, g_ActiveDirection
+
+    ; Disable active flag immediately
+    g_SquareSelectorActive := false
+
+    ; Disable all letter hotkeys immediately using stored handlers
+    for letter in g_SquareSelectorLetters {
+        try {
+            Hotkey(letter, "Off")
+            Hotkey(StrLower(letter), "Off")
+        } catch {
+            ; Silently ignore errors if hotkey doesn't exist
+        }
+    }
+
+    ; Clear hotkey handlers array
+    g_SquareSelectorHotkeyHandlers := []
+
+    ; Destroy all square GUIs
+    for gui in g_SquareSelectorGuis {
+        try {
+            if (IsObject(gui) && gui.Hwnd) {
+                gui.Destroy()
+            }
+        } catch {
+            ; Silently ignore errors
+        }
+    }
+    g_SquareSelectorGuis := []
+    g_SquareSelectorPositions := []
+
+    ; Cancel timer if active
+    if (g_SquareSelectorTimer) {
+        SetTimer(g_SquareSelectorTimer, 0)
+        g_SquareSelectorTimer := false
+    }
+
+    ; Clear active direction if this cleanup completes the selector
+    ; (Note: Don't clear if new selector is being set up - g_ActiveDirection is set before cleanup)
+    ; Only clear if there's no active direction or it matches (cleanup from timeout/selection)
+}
+
+; Function to show 15 squares with letters in a line in the chosen direction
+ShowSquareSelector(direction) {
+    global g_SquareSelectorActive, g_SquareSelectorGuis, g_SquareSelectorPositions
+    global g_SquareSelectorLetters, g_SquareSelectorLock
+
+    ; Clear arrays first
+    g_SquareSelectorGuis := []
+    g_SquareSelectorPositions := []
+
+    ; Simple cleanup of any existing selector
+    CleanupSquareSelector()
+    Sleep 10
+
+    ; Get current mouse position
+    pos := GetMousePos()
+    startX := pos.x
+    startY := pos.y
+
+    ; Configuration
+    squareSize := 40
+    spacing := 35  ; Spacing between squares (increased for better visual separation)
+    numSquares := 15
+
+    ; Normalize direction
+    directionLower := StrLower(direction)
+
+    ; STEP 1: Calculate all center positions first
+    ; First square (Q) starts AFTER mouse position, not centered on it
+    ; Initial offset: half square size (20px) + spacing (35px) = 55px from mouse position
+    ; This ensures the first square's left edge starts after the mouse cursor
+    initialOffset := (squareSize / 2.0) + spacing  ; 20 + 35 = 55 pixels
+
+    calculatedPositions := []
+    if (directionLower = "right" || directionLower = "left") {
+        ; Horizontal line
+        directionMultiplier := directionLower = "right" ? 1 : -1
+        loop numSquares {
+            i := A_Index
+            ; Calculate offset for square i
+            ; First square (i=1): initialOffset (55px) - starts after mouse
+            ; Subsequent squares: initialOffset + (i-1) * (squareSize + spacing)
+            ; For i=1: 55px, for i=2: 55 + 75 = 130px, for i=3: 55 + 150 = 205px, etc.
+            offset := (initialOffset + (i - 1) * (squareSize + spacing)) * directionMultiplier
+            squareCenterX := Round(startX + offset)
+            squareCenterY := startY
+            calculatedPositions.Push({ x: squareCenterX, y: squareCenterY })
+        }
+    } else {
+        ; Vertical line (up or down)
+        directionMultiplier := directionLower = "down" ? 1 : -1
+        loop numSquares {
+            i := A_Index
+            ; Same calculation for vertical: first square starts after mouse
+            offset := (initialOffset + (i - 1) * (squareSize + spacing)) * directionMultiplier
+            squareCenterX := startX
+            squareCenterY := Round(startY + offset)
+            calculatedPositions.Push({ x: squareCenterX, y: squareCenterY })
+        }
+    }
+
+    ; STEP 2: Create all GUIs at once (don't show yet)
+    guiArray := []
+    loop numSquares {
+        i := A_Index
+        pos := calculatedPositions[i]
+
+        ; Create square GUI with letter
+        squareGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
+        squareGui.BackColor := "FF0000"  ; Red
+        squareGui.SetFont("s12 Bold cFFFFFF", "Segoe UI")  ; White text, bold
+
+        ; Set GUI margins to 0 to eliminate any padding that could affect centering
+        squareGui.MarginX := 0
+        squareGui.MarginY := 0
+
+        ; Create text control that perfectly centers the letter
+        ; Center = 0x1 (SS_CENTER) for horizontal centering
+        ; 0x200 = SS_CENTERIMAGE for vertical centering
+        ; 0x201 combines both (SS_CENTER | SS_CENTERIMAGE) for perfect centering
+        ; Text control fills entire square (40x40) to ensure proper centering
+        letterText := squareGui.AddText("w" . squareSize . " h" . squareSize . " Center 0x201",
+            g_SquareSelectorLetters[i])
+
+        ; Calculate top-left position for this square
+        guiX := Round(pos.x - squareSize / 2.0)
+        guiY := Round(pos.y - squareSize / 2.0)
+
+        ; Store GUI and position info (not shown yet)
+        guiArray.Push({ gui: squareGui, x: guiX, y: guiY, calculatedCenter: pos })
+    }
+
+    ; STEP 3: Prepare all GUIs (position while hidden for instant showing)
+    for guiInfo in guiArray {
+        ; Position and set transparency while hidden (no rendering delay)
+        guiInfo.gui.Show("x" . guiInfo.x . " y" . guiInfo.y . " w" . squareSize . " h" . squareSize . " NA Hide")
+        WinSetTransparent(230, guiInfo.gui)
+    }
+
+    ; STEP 4: Show all GUIs simultaneously (batch show for instant appearance)
+    ; Use Show() instead of SetWindowPos to ensure windows actually appear
+    ; Show all windows using Show() - this is more reliable than SetWindowPos
+    for guiInfo in guiArray {
+        try {
+            ; Show window using Show() - ensure it actually appears
+            guiInfo.gui.Show("NA")  ; Show without activating
+        } catch {
+            ; If Show() fails, try using the position again
+            try {
+                guiInfo.gui.Show("x" . guiInfo.x . " y" . guiInfo.y . " w" . squareSize . " h" . squareSize . " NA")
+            }
+        }
+    }
+
+    ; STEP 5: Brief delay to ensure all GUIs are fully rendered
+    Sleep 20  ; Increased delay to ensure windows are fully rendered before querying positions
+
+    ; STEP 6: Query actual GUI positions and store actual centers for mouse jump
+    ; Query actual window positions using GetWindowRect to get exact centers
+    ; This accounts for any window borders, padding, or DPI adjustments
+    for i, guiInfo in guiArray {
+        squareGuiObj := guiInfo.gui  ; Use different variable name to avoid conflict
+        g_SquareSelectorGuis.Push(squareGuiObj)
+
+        ; Query actual window rectangle using GetWindowRect
+        ; This gives us the actual physical pixel coordinates after DPI adjustments
+        rect := Buffer(16, 0)  ; RECT structure: left, top, right, bottom (4 ints)
+        if (DllCall("GetWindowRect", "ptr", squareGuiObj.Hwnd, "ptr", rect)) {
+            ; Extract rectangle coordinates (physical pixels with DPI awareness)
+            winLeft := NumGet(rect, 0, "int")
+            winTop := NumGet(rect, 4, "int")
+            winRight := NumGet(rect, 8, "int")
+            winBottom := NumGet(rect, 12, "int")
+
+            ; Calculate actual center from window rectangle
+            actualCenterX := winLeft + (winRight - winLeft) / 2
+            actualCenterY := winTop + (winBottom - winTop) / 2
+
+            ; Store actual center position (rounded to nearest pixel)
+            g_SquareSelectorPositions.Push({ x: Round(actualCenterX), y: Round(actualCenterY) })
+        } else {
+            ; Fallback to calculated position if GetWindowRect fails
+            g_SquareSelectorPositions.Push({ x: guiInfo.calculatedCenter.x, y: guiInfo.calculatedCenter.y })
+        }
+    }
+
+    ; Activate letter selection mode
+    g_SquareSelectorActive := true
+    SetupLetterKeyListener()
+
+    ; Set timer to cleanup after 1 second
+    ; Create cleanup function that also releases the lock and clears active direction
+    g_SquareSelectorTimer := ObjBindMethod(SquareSelectorTimerHandler)
+    SetTimer(g_SquareSelectorTimer, -1000)
+
+    ; Lock will be released when timer fires or when user selects a letter
+}
+
+; Factory function to create a handler that properly captures the index
+; This ensures each handler gets its own copy of the index value
+CreateSquareSelectorHandler(index) {
+    ; Return a function that captures the index value at creation time
+    return (*) => SelectSquareByIndex(index)
+}
+
+; Function to setup hotkey listeners for letter keys
+; Uses individual hotkeys that are only active when square selector is shown
+SetupLetterKeyListener() {
+    global g_SquareSelectorLetters, g_SquareSelectorHotkeyHandlers
+
+    ; Clear any existing handlers
+    g_SquareSelectorHotkeyHandlers := []
+
+    ; Create a handler for each letter using factory function
+    ; This ensures proper closure capture - each handler gets its own index value
+    for i, letter in g_SquareSelectorLetters {
+        ; Use factory function to create handler with properly captured index
+        handler := CreateSquareSelectorHandler(i)
+
+        ; Store handler reference for cleanup (optional, but good practice)
+        g_SquareSelectorHotkeyHandlers.Push({ letter: letter, handler: handler })
+
+        ; Enable both uppercase and lowercase versions
+        Hotkey(letter, handler, "On")
+        Hotkey(StrLower(letter), handler, "On")
+    }
+}
+
+; Handler for letter key press - uses index directly to avoid matching issues
+SelectSquareByIndex(index) {
+    global g_SquareSelectorActive, g_SquareSelectorPositions, g_ActiveDirection
+
+    ; Double-check that selector is active (safety check)
+    if (!g_SquareSelectorActive) {
+        return
+    }
+
+    ; Verify positions array is valid
+    if (!g_SquareSelectorPositions || g_SquareSelectorPositions.Length = 0) {
+        ; Positions array is empty, cleanup and abort
+        CleanupSquareSelector()
+        return
+    }
+
+    ; Validate index
+    if (index < 1 || index > g_SquareSelectorPositions.Length) {
+        CleanupSquareSelector()
+        return
+    }
+
+    ; Get the position for this square (index is 1-based)
+    targetPos := g_SquareSelectorPositions[index]
+
+    ; Move mouse to the center of the selected square
+    DllCall("SetCursorPos", "int", targetPos.x, "int", targetPos.y)
+
+    ; Cleanup and exit (also release lock and clear active direction)
+    CleanupSquareSelector()
+    global g_SquareSelectorLock, g_ActiveDirection
+    g_SquareSelectorLock := false  ; Release lock after mouse jump
+    g_ActiveDirection := ""  ; Clear active direction after selection
+}
+
+; Simplified helper function to handle direction hotkey
+HandleDirectionHotkey(direction) {
+    ; TEST: Uncomment next line to verify hotkey is firing
+    ; MsgBox "Hotkey triggered: " . direction, "Debug"
+
+    global g_SquareSelectorActive, g_ActiveDirection
+
+    ; Simple cleanup first
+    CleanupSquareSelector()
+    Sleep 10
+
+    ; Set active direction
+    g_ActiveDirection := StrLower(direction)
+
+    ; Brief delay
+    Sleep 50
+
+    ; Show the squares
+    ShowSquareSelector(g_ActiveDirection)
+}
+
+; Jump mouse right (short distance) - now shows square selector
 #!+Right::
 {
-    SafeMouseMove(MOUSE_JUMP_DISTANCE, 0)
+    HandleDirectionHotkey("Right")
+    return
 }
 
-; Jump mouse left (short distance)
+; Jump mouse left (short distance) - now shows square selector
 #!+Left::
 {
-    SafeMouseMove(-MOUSE_JUMP_DISTANCE, 0)
+    HandleDirectionHotkey("Left")
 }
 
-; Jump mouse down (short distance)
+; Jump mouse down (short distance) - now shows square selector
 #!+Down::
 {
-    SafeMouseMove(0, MOUSE_JUMP_DISTANCE)
+    HandleDirectionHotkey("Down")
 }
 
-; Jump mouse up (short distance)
+; Jump mouse up (short distance) - now shows square selector
 #!+Up::
 {
-    SafeMouseMove(0, -MOUSE_JUMP_DISTANCE)
+    HandleDirectionHotkey("Up")
 }
 
 ; Jump mouse right with Control (long distance)
