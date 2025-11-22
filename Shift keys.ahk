@@ -1157,6 +1157,10 @@ ShowGlobalShortcutsHelp() {
 
     globalText .= "
 (
+=== MAIN KEY COMBINATIONS ===
+[Symbol Layer] Win+Alt+Shift - Primary combination 
+[Window Management] Ctrl+Alt+Win - Secondary combination
+
 === AVAILABLE (unused) ===
 [Win+Alt+Shift+P] 
 [Win+Alt+Shift+U]
