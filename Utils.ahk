@@ -335,7 +335,7 @@ global g_SquareSelectorActive := false
 global g_SquareSelectorGuis := []
 global g_SquareSelectorPositions := []  ; Array of {x, y} positions for each square
 global g_SquareSelectorLetters := ["1", "2", "3", "4", "5", "Q", "W", "E", "R", "T", "A", "S", "D", "F", "G", "Z", "X",
-    "C", "V", "B"]
+    "C", "V", "B", "6", "7", "8", "9", "0", "y", "u", "i", "o", "p", "h", "j", "k", "l", "n", "m", ",", "."]
 global g_SquareSelectorTimer := false
 global g_SquareSelectorLetterMap := Map()  ; Map to store letter to index mapping
 global g_SquareSelectorSessionID := 0  ; Unique session ID to prevent timer conflicts
@@ -476,7 +476,7 @@ ShowSquareSelector(direction) {
     ; Configuration
     squareSize := 24  ; Reduced for more precision
     spacing := 20  ; Reduced for more precision
-    numSquares := 20
+    numSquares := 38  ; Updated to match total characters in g_SquareSelectorLetters
 
     ; Normalize direction
     directionLower := StrLower(direction)
