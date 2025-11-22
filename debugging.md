@@ -274,10 +274,79 @@ This documentation reflects the current stable implementation as of the latest u
 5. **Graceful Error Handling**: Try-catch blocks prevent crashes from cleanup errors
 6. **DPI Awareness**: Uses physical pixel coordinates across mixed DPI settings
 
+## Click Mode Feature Development
+
+### Overview
+
+Added a click mode feature that allows users to toggle between normal mode (mouse jump + loop) and click mode (mouse jump + click + exit). When click mode is active, squares turn blue to indicate the mode change.
+
+### Implementation History
+
+#### Initial Attempts (Failed)
+
+1. **First Approach**: Tried to detect CTRL key being held while pressing letter/number
+
+   - Problem: CTRL+letter combinations conflicted with system shortcuts
+   - Result: Unreliable, often didn't work
+
+2. **Second Approach**: Added CTRL toggle to activate click mode
+   - Square colors change from red to blue when CTRL is pressed
+   - Click mode flag (`g_SquareSelectorClickMode`) tracks state
+   - Problem: Click didn't register - mouse moved but no click happened
+   - Attempted fixes:
+     - Various delay timings (50ms, 100ms, 200ms, 300ms)
+     - Different click methods (`Click()`, `Click(x y)`, `DllCall mouse_event`)
+     - Window activation before clicking
+     - Updating `g_LastMouseClickTick` to prevent interference
+
+#### Root Cause Discovery
+
+**Problem**: The square selector GUIs are created with `+AlwaysOnTop -Caption +ToolWindow`, making them topmost windows. When trying to click at the square position, the click was hitting the square GUI itself, not the window underneath it.
+
+**Evidence**: Mouse would move to position correctly, but clicks never registered. User reported mouse was centering on previously active window (suggesting MonitorActiveWindow was interfering, but that wasn't the root issue).
+
+#### Solution (Current Implementation)
+
+**Fix**: Destroy/hide the squares BEFORE clicking, so the click hits the actual window underneath.
+
+**New Flow**:
+
+1. User presses letter/number in click mode (blue squares visible)
+2. Store target position
+3. **Immediately hide/destroy ALL squares** (removes AlwaysOnTop blockers)
+4. Wait 50ms for GUI cleanup to complete
+5. Find window at target position (now that squares are gone)
+6. Activate that window
+7. Move mouse to target position
+8. Update `g_LastMouseClickTick` to prevent MonitorActiveWindow interference
+9. Perform click (now hits actual window)
+10. Complete cleanup
+
+**Key Changes**:
+
+- Moved square cleanup to BEFORE click attempt
+- Added explicit `Hide()` before `Destroy()` for instant visual removal
+- Window detection happens AFTER squares are removed (more reliable)
+- Cleaner sequence: remove blocker → find target → click
+
+### Current Status
+
+✅ Click mode toggle works (CTRL toggles, squares change color)
+✅ Squares are properly destroyed before clicking
+✅ Click now hits the actual window underneath
+✅ No interference from AlwaysOnTop GUI windows
+
+### Technical Details
+
+- **Click mode flag**: `g_SquareSelectorClickMode` - tracks whether click mode is active
+- **Visual indicator**: Squares turn blue (`0000FF`) when click mode active, red (`FF0000`) when normal
+- **CTRL hotkey**: Enabled only when squares are visible, toggles click mode
+- **Cleanup order**: Squares → Hotkeys → Click → Final cleanup
+
 ## Future Improvements (Optional)
 
 - Add visual feedback when hovering over squares
-- Adjustable timeout duration (currently hardcoded to 2000ms)
+- Adjustable timeout duration (currently hardcoded to 5000ms)
 - Customizable square size and spacing (currently 40px and 35px)
-- Support for more than 15 squares
+- Support for more than 20 squares
 - Visual indicator showing which square will be selected on key press

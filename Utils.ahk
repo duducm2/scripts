@@ -352,6 +352,9 @@ global g_ActiveDirection := ""
 ; Loop mode flag - indicates waiting for Escape or arrow key after selection
 global g_SquareSelectorLoopMode := false
 
+; Click mode flag - when true, squares are blue and selection will click and exit
+global g_SquareSelectorClickMode := false
+
 ; Direction indicator GUIs (4 squares around mouse pointer in loop mode)
 global g_DirectionIndicatorGuis := []
 
@@ -410,6 +413,17 @@ CleanupSquareSelector() {
         DisableLoopModeHotkeys()
         g_SquareSelectorLoopMode := false
     }
+
+    ; Disable CTRL hotkey (click mode toggle)
+    try {
+        Hotkey("Ctrl", "Off")
+    } catch {
+        ; Silently ignore if hotkey doesn't exist
+    }
+
+    ; Reset click mode flag
+    global g_SquareSelectorClickMode
+    g_SquareSelectorClickMode := false
 
     ; Clear hotkey handlers array
     g_SquareSelectorHotkeyHandlers := []
@@ -509,7 +523,9 @@ ShowSquareSelector(direction) {
 
         ; Create square GUI with letter
         squareGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
-        squareGui.BackColor := "FF0000"  ; Red
+        ; Color depends on click mode: blue if click mode active, red otherwise
+        global g_SquareSelectorClickMode
+        squareGui.BackColor := g_SquareSelectorClickMode ? "0000FF" : "FF0000"  ; Blue or Red
         squareGui.SetFont("s12 Bold cFFFFFF", "Segoe UI")  ; White text, bold
 
         ; Set GUI margins to 0 to eliminate any padding that could affect centering
@@ -589,7 +605,11 @@ ShowSquareSelector(direction) {
 
     ; Activate letter selection mode
     g_SquareSelectorActive := true
+    g_SquareSelectorClickMode := false  ; Reset click mode when showing new squares
     SetupLetterKeyListener()
+
+    ; Enable CTRL hotkey to toggle click mode
+    Hotkey("Ctrl", (*) => HandleCtrlToggle(), "On")
 
     ; Set timer to cleanup after 5 seconds if nothing is pressed
     ; Create cleanup function bound to this session ID (prevents old timers from cleaning up new squares)
@@ -737,6 +757,43 @@ DisableLetterHotkeys() {
     }
 }
 
+; Function to toggle click mode and update square colors
+ToggleClickMode() {
+    global g_SquareSelectorClickMode, g_SquareSelectorActive, g_SquareSelectorGuis
+
+    ; Only toggle if squares are visible
+    if (!g_SquareSelectorActive) {
+        return
+    }
+
+    ; Toggle click mode flag
+    g_SquareSelectorClickMode := !g_SquareSelectorClickMode
+
+    ; Update all square colors based on click mode
+    newColor := g_SquareSelectorClickMode ? "0000FF" : "FF0000"  ; Blue or Red
+    for gui in g_SquareSelectorGuis {
+        try {
+            if (IsObject(gui) && gui.Hwnd) {
+                gui.BackColor := newColor
+                ; Force redraw by hiding and showing
+                gui.Show("Hide")
+                gui.Show("NA")
+            }
+        } catch {
+            ; Silently ignore errors
+        }
+    }
+}
+
+; Handler for CTRL key to toggle click mode
+HandleCtrlToggle() {
+    global g_SquareSelectorActive
+    ; Only toggle if squares are active
+    if (g_SquareSelectorActive) {
+        ToggleClickMode()
+    }
+}
+
 ; Handler for letter key press - uses index directly to avoid matching issues
 SelectSquareByIndex(index) {
     global g_SquareSelectorActive, g_SquareSelectorPositions, g_ActiveDirection
@@ -766,7 +823,85 @@ SelectSquareByIndex(index) {
     ; Move mouse to the center of the selected square
     DllCall("SetCursorPos", "int", targetPos.x, "int", targetPos.y)
 
-    ; Hide letter/number squares to reduce cluttering
+    ; Check if click mode is active
+    global g_SquareSelectorClickMode
+    if (g_SquareSelectorClickMode) {
+        ; Click mode: perform a click and exit completely
+        ; STEP 1: Store target position before cleanup (targetPos is already stored)
+
+        ; STEP 2: Clean up squares FIRST - they block clicks (AlwaysOnTop windows)
+        DisableLetterHotkeys()
+        global g_SquareSelectorTimer
+        if (g_SquareSelectorTimer) {
+            SetTimer(g_SquareSelectorTimer, 0)
+            g_SquareSelectorTimer := false
+        }
+
+        ; Hide/destroy all square GUIs immediately
+        global g_SquareSelectorGuis
+        for gui in g_SquareSelectorGuis {
+            try {
+                if (IsObject(gui) && gui.Hwnd) {
+                    gui.Hide()  ; Hide first for instant disappearance
+                    gui.Destroy()
+                }
+            } catch {
+                ; Silently ignore errors
+            }
+        }
+        g_SquareSelectorGuis := []
+        g_SquareSelectorPositions := []  ; Clear positions
+
+        ; STEP 3: Wait for GUI cleanup to complete
+        Sleep 50
+
+        ; STEP 4: Find window at target position (now that squares are gone)
+        targetHwnd := DllCall("WindowFromPoint", "Int64", (targetPos.y << 32) | (targetPos.x & 0xFFFFFFFF), "Ptr")
+        if (targetHwnd) {
+            ; Get the root window (in case we got a child window)
+            rootHwnd := DllCall("GetAncestor", "Ptr", targetHwnd, "UInt", 2, "Ptr")  ; GA_ROOT = 2
+            if (rootHwnd) {
+                targetHwnd := rootHwnd
+            }
+            ; Activate the window
+            try {
+                WinActivate("ahk_id " . targetHwnd)
+                WinWaitActive("ahk_id " . targetHwnd, , 0.5)
+            } catch {
+                ; Ignore if activation fails
+            }
+        }
+
+        ; STEP 5: Move mouse and click
+        DllCall("SetCursorPos", "int", targetPos.x, "int", targetPos.y)
+        Sleep 100
+
+        ; Update last mouse click tick to prevent MonitorActiveWindow interference
+        try {
+            g_LastMouseClickTick := A_TickCount
+        } catch {
+            ; Ignore if variable doesn't exist
+        }
+
+        ; Perform the click
+        Click
+
+        ; STEP 6: Complete cleanup
+        try {
+            Hotkey("Ctrl", "Off")
+        } catch {
+            ; Ignore
+        }
+
+        CleanupDirectionIndicators()
+        g_SquareSelectorLock := false
+        g_ActiveDirection := ""
+        g_SquareSelectorClickMode := false
+        g_SquareSelectorActive := false
+        return
+    }
+
+    ; Normal mode: Hide letter/number squares to reduce cluttering
     global g_SquareSelectorGuis
     for gui in g_SquareSelectorGuis {
         try {
