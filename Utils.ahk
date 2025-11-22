@@ -766,11 +766,25 @@ SelectSquareByIndex(index) {
     ; Move mouse to the center of the selected square
     DllCall("SetCursorPos", "int", targetPos.x, "int", targetPos.y)
 
+    ; Hide letter/number squares to reduce cluttering
+    global g_SquareSelectorGuis
+    for gui in g_SquareSelectorGuis {
+        try {
+            if (IsObject(gui) && gui.Hwnd) {
+                gui.Destroy()
+            }
+        } catch {
+            ; Silently ignore errors
+        }
+    }
+    g_SquareSelectorGuis := []
+    g_SquareSelectorPositions := []  ; Clear positions as well
+
     ; Show direction indicator squares around the mouse pointer
     ShowDirectionIndicators()
 
     ; Enter loop mode instead of cleaning up
-    ; Disable letter/number hotkeys (squares remain visible)
+    ; Disable letter/number hotkeys (squares are now hidden)
     DisableLetterHotkeys()
 
     ; Cancel timeout timer since we're entering loop mode
