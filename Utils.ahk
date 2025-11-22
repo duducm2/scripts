@@ -858,16 +858,70 @@ HandleDirectionHotkey(direction) {
     ShowSquareSelector(g_ActiveDirection)
 }
 
-; Helper function to enable loop mode hotkeys (Escape and arrow keys)
+; Helper function to exit loop mode (shared by Escape and mouse handlers)
+ExitLoopMode() {
+    global g_SquareSelectorLoopMode, g_SquareSelectorLock, g_ActiveDirection
+
+    ; Only handle if in loop mode
+    if (!g_SquareSelectorLoopMode) {
+        return
+    }
+
+    ; Disable loop mode hotkeys
+    DisableLoopModeHotkeys()
+
+    ; Cleanup completely
+    CleanupSquareSelector()
+
+    ; Reset all state
+    g_SquareSelectorLoopMode := false
+    g_SquareSelectorLock := false
+    g_ActiveDirection := ""
+}
+
+; Mouse click handlers for loop mode (exit and forward the click)
+HandleLoopModeLButton() {
+    global g_SquareSelectorLoopMode
+    if (g_SquareSelectorLoopMode) {
+        ExitLoopMode()
+        ; Send the click after exiting loop mode
+        Click("Left")
+    }
+}
+
+HandleLoopModeRButton() {
+    global g_SquareSelectorLoopMode
+    if (g_SquareSelectorLoopMode) {
+        ExitLoopMode()
+        ; Send the click after exiting loop mode
+        Click("Right")
+    }
+}
+
+HandleLoopModeMButton() {
+    global g_SquareSelectorLoopMode
+    if (g_SquareSelectorLoopMode) {
+        ExitLoopMode()
+        ; Send the click after exiting loop mode
+        Click("Middle")
+    }
+}
+
+; Helper function to enable loop mode hotkeys (Escape, arrow keys, and mouse clicks)
 EnableLoopModeHotkeys() {
     ; Enable Escape hotkey for loop mode (wrap in function for proper callback)
-    Hotkey("Escape", (*) => HandleEscapeKey(), "On")
+    Hotkey("Escape", (*) => ExitLoopMode(), "On")
 
     ; Enable arrow key hotkeys for loop mode (without modifiers)
     Hotkey("Right", (*) => HandleLoopModeRight(), "On")
     Hotkey("Left", (*) => HandleLoopModeLeft(), "On")
     Hotkey("Down", (*) => HandleLoopModeDown(), "On")
     Hotkey("Up", (*) => HandleLoopModeUp(), "On")
+
+    ; Enable mouse click hotkeys to exit loop mode (forward click after exit)
+    Hotkey("LButton", (*) => HandleLoopModeLButton(), "On")
+    Hotkey("RButton", (*) => HandleLoopModeRButton(), "On")
+    Hotkey("MButton", (*) => HandleLoopModeMButton(), "On")
 }
 
 ; Helper function to disable loop mode hotkeys
@@ -888,27 +942,20 @@ DisableLoopModeHotkeys() {
     } catch {
         ; Silently ignore if hotkeys don't exist
     }
+
+    ; Disable mouse click hotkeys
+    try {
+        Hotkey("LButton", "Off")
+        Hotkey("RButton", "Off")
+        Hotkey("MButton", "Off")
+    } catch {
+        ; Silently ignore if hotkeys don't exist
+    }
 }
 
 ; Escape key handler for loop mode
 HandleEscapeKey() {
-    global g_SquareSelectorLoopMode, g_SquareSelectorLock, g_ActiveDirection
-
-    ; Only handle if in loop mode
-    if (!g_SquareSelectorLoopMode) {
-        return
-    }
-
-    ; Disable loop mode hotkeys
-    DisableLoopModeHotkeys()
-
-    ; Cleanup completely
-    CleanupSquareSelector()
-
-    ; Reset all state
-    g_SquareSelectorLoopMode := false
-    g_SquareSelectorLock := false
-    g_ActiveDirection := ""
+    ExitLoopMode()
 }
 
 ; Loop mode arrow key handlers (only active when in loop mode)
@@ -963,30 +1010,6 @@ HandleLoopModeUp() {
 #!+Up::
 {
     HandleDirectionHotkey("Up")
-}
-
-; Jump mouse right with Control (long distance)
-#!+^Right::
-{
-    SafeMouseMove(MOUSE_JUMP_DISTANCE * 2, 0)
-}
-
-; Jump mouse left with Control (long distance)
-#!+^Left::
-{
-    SafeMouseMove(-MOUSE_JUMP_DISTANCE * 2, 0)
-}
-
-; Jump mouse down with Control (long distance)
-#!+^Down::
-{
-    SafeMouseMove(0, MOUSE_JUMP_DISTANCE * 2)
-}
-
-; Jump mouse up with Control (long distance)
-#!+^Up::
-{
-    SafeMouseMove(0, -MOUSE_JUMP_DISTANCE * 2)
 }
 
 ; =============================================================================

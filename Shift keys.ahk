@@ -1218,10 +1218,10 @@ r=== CLIP ANGEL ===
 === GENERAL ===
 [Win+Alt+Shift+Q] > Jump mouse on the middle
 [Win+Alt+Shift+X] > Activate hunt and Peck
-[Win+Alt+Shift+→] > Jump mouse 100px right
-[Win+Alt+Shift+←] > Jump mouse 100px left
-[Win+Alt+Shift+↓] > Jump mouse 100px down
-[Win+Alt+Shift+↑] > Jump mouse 100px up
+[Win+Alt+Shift+→] > Show square selector (right direction)
+[Win+Alt+Shift+←] > Show square selector (left direction)
+[Win+Alt+Shift+↓] > Show square selector (down direction)
+[Win+Alt+Shift+↑] > Show square selector (up direction)
 [Win+Alt+Shift+9] > Pomodoro
 [Win+Alt+Shift+.] > Clip Angel (copy, paste, and quit)
 
