@@ -352,6 +352,9 @@ global g_ActiveDirection := ""
 ; Loop mode flag - indicates waiting for Escape or arrow key after selection
 global g_SquareSelectorLoopMode := false
 
+; Direction indicator GUIs (4 squares around mouse pointer in loop mode)
+global g_DirectionIndicatorGuis := []
+
 ; Timer handler for square selector timeout
 SquareSelectorTimerHandler(sessionID) {
     global g_SquareSelectorLock, g_ActiveDirection, g_SquareSelectorTimer
@@ -423,6 +426,9 @@ CleanupSquareSelector() {
     }
     g_SquareSelectorGuis := []
     g_SquareSelectorPositions := []
+
+    ; Clean up direction indicator squares
+    CleanupDirectionIndicators()
 
     ; Cancel timer if active
     if (g_SquareSelectorTimer) {
@@ -594,6 +600,98 @@ ShowSquareSelector(direction) {
     ; Lock will be released when timer fires, user selects a letter (enters loop mode), or presses Escape
 }
 
+; Function to show 4 direction indicator squares around the mouse pointer
+ShowDirectionIndicators() {
+    global g_DirectionIndicatorGuis
+
+    ; Clean up any existing direction indicators
+    CleanupDirectionIndicators()
+
+    ; Get current mouse position
+    pos := GetMousePos()
+    mouseX := pos.x
+    mouseY := pos.y
+
+    ; Configuration
+    squareSize := 40
+    offset := 50  ; Distance from mouse pointer to center of indicator squares
+
+    ; Arrow symbols for each direction
+    arrowUp := "↑"
+    arrowRight := "→"
+    arrowDown := "↓"
+    arrowLeft := "←"
+    arrows := [arrowUp, arrowRight, arrowDown, arrowLeft]
+
+    ; Positions relative to mouse: Up, Right, Down, Left
+    positions := []
+    positions.Push({ x: mouseX, y: mouseY - offset })           ; Up
+    positions.Push({ x: mouseX + offset, y: mouseY })           ; Right
+    positions.Push({ x: mouseX, y: mouseY + offset })           ; Down
+    positions.Push({ x: mouseX - offset, y: mouseY })            ; Left
+
+    ; Create all 4 indicator squares
+    guiArray := []
+    for i, arrow in arrows {
+        pos := positions[i]
+
+        ; Create square GUI with arrow
+        indicatorGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
+        indicatorGui.BackColor := "FF0000"  ; Red
+        indicatorGui.SetFont("s16 Bold cFFFFFF", "Segoe UI")  ; White text, bold, larger for arrows
+
+        ; Set GUI margins to 0
+        indicatorGui.MarginX := 0
+        indicatorGui.MarginY := 0
+
+        ; Create text control that perfectly centers the arrow
+        arrowText := indicatorGui.AddText("w" . squareSize . " h" . squareSize . " Center 0x201", arrow)
+
+        ; Calculate top-left position for this square
+        guiX := Round(pos.x - squareSize / 2.0)
+        guiY := Round(pos.y - squareSize / 2.0)
+
+        ; Store GUI and position info
+        guiArray.Push({ gui: indicatorGui, x: guiX, y: guiY })
+    }
+
+    ; Position all GUIs while hidden, then show simultaneously
+    for guiInfo in guiArray {
+        guiInfo.gui.Show("x" . guiInfo.x . " y" . guiInfo.y . " w" . squareSize . " h" . squareSize . " NA Hide")
+        ; Set 50% opaque (same as letter squares)
+        WinSetTransparent(128, guiInfo.gui)
+    }
+
+    ; Show all GUIs simultaneously
+    for guiInfo in guiArray {
+        try {
+            guiInfo.gui.Show("NA")
+        } catch {
+            try {
+                guiInfo.gui.Show("x" . guiInfo.x . " y" . guiInfo.y . " w" . squareSize . " h" . squareSize . " NA")
+            }
+        }
+        g_DirectionIndicatorGuis.Push(guiInfo.gui)
+    }
+}
+
+; Helper function to cleanup direction indicator squares
+CleanupDirectionIndicators() {
+    global g_DirectionIndicatorGuis
+
+    ; Destroy all direction indicator GUIs
+    for gui in g_DirectionIndicatorGuis {
+        try {
+            if (IsObject(gui) && gui.Hwnd) {
+                gui.Destroy()
+            }
+        } catch {
+            ; Silently ignore errors
+        }
+    }
+    g_DirectionIndicatorGuis := []
+}
+
 ; Factory function to create a handler that properly captures the index
 ; This ensures each handler gets its own copy of the index value
 CreateSquareSelectorHandler(index) {
@@ -667,6 +765,9 @@ SelectSquareByIndex(index) {
 
     ; Move mouse to the center of the selected square
     DllCall("SetCursorPos", "int", targetPos.x, "int", targetPos.y)
+
+    ; Show direction indicator squares around the mouse pointer
+    ShowDirectionIndicators()
 
     ; Enter loop mode instead of cleaning up
     ; Disable letter/number hotkeys (squares remain visible)
