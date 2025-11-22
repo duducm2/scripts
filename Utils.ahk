@@ -918,9 +918,6 @@ SelectSquareByIndex(index) {
     g_SquareSelectorGuis := []
     g_SquareSelectorPositions := []  ; Clear positions as well
 
-    ; Show direction indicator squares around the mouse pointer
-    ShowDirectionIndicators()
-
     ; Cancel timeout timer since we're entering loop mode
     global g_SquareSelectorTimer
     if (g_SquareSelectorTimer) {
@@ -931,7 +928,7 @@ SelectSquareByIndex(index) {
     ; Predict user wants to continue in same direction - show new squares immediately
     ; This speeds up the workflow (user doesn't need to press arrow key)
     if (currentDirection) {
-        ; Small delay to ensure mouse position is stable and direction indicators are visible
+        ; Small delay to ensure mouse position is stable
         Sleep 50
         ; Automatically show new squares in the same direction
         ; The mouse is now at the selected square position, so new squares will continue from there
@@ -944,6 +941,11 @@ SelectSquareByIndex(index) {
             g_SquareSelectorTimer := false
         }
     }
+
+    ; Show direction indicator squares AFTER new squares are shown
+    ; (ShowSquareSelector calls CleanupSquareSelector which removes direction indicators,
+    ;  so we need to show them after to prevent blinking/vanishing)
+    ShowDirectionIndicators()
 
     ; Enter loop mode
     ; Letter hotkeys are now re-enabled by ShowSquareSelector
