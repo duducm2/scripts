@@ -334,7 +334,8 @@ ShowPredictionSquare(x, y, color) {
 global g_SquareSelectorActive := false
 global g_SquareSelectorGuis := []
 global g_SquareSelectorPositions := []  ; Array of {x, y} positions for each square
-global g_SquareSelectorLetters := ["Q", "W", "E", "R", "T", "A", "S", "D", "F", "G", "Z", "X", "C", "V", "B"]
+global g_SquareSelectorLetters := ["1", "2", "3", "4", "5", "Q", "W", "E", "R", "T", "A", "S", "D", "F", "G", "Z", "X",
+    "C", "V", "B"]
 global g_SquareSelectorTimer := false
 global g_SquareSelectorLetterMap := Map()  ; Map to store letter to index mapping
 global g_SquareSelectorSessionID := 0  ; Unique session ID to prevent timer conflicts
@@ -446,7 +447,7 @@ ShowSquareSelector(direction) {
     ; Configuration
     squareSize := 40
     spacing := 35  ; Spacing between squares (increased for better visual separation)
-    numSquares := 15
+    numSquares := 20
 
     ; Normalize direction
     directionLower := StrLower(direction)
