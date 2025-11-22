@@ -902,6 +902,9 @@ SelectSquareByIndex(index) {
     }
 
     ; Normal mode: Hide letter/number squares to reduce cluttering
+    ; Store the current direction before cleanup (for predicting next direction)
+    currentDirection := g_ActiveDirection
+
     global g_SquareSelectorGuis
     for gui in g_SquareSelectorGuis {
         try {
@@ -918,10 +921,6 @@ SelectSquareByIndex(index) {
     ; Show direction indicator squares around the mouse pointer
     ShowDirectionIndicators()
 
-    ; Enter loop mode instead of cleaning up
-    ; Disable letter/number hotkeys (squares are now hidden)
-    DisableLetterHotkeys()
-
     ; Cancel timeout timer since we're entering loop mode
     global g_SquareSelectorTimer
     if (g_SquareSelectorTimer) {
@@ -929,16 +928,33 @@ SelectSquareByIndex(index) {
         g_SquareSelectorTimer := false
     }
 
+    ; Predict user wants to continue in same direction - show new squares immediately
+    ; This speeds up the workflow (user doesn't need to press arrow key)
+    if (currentDirection) {
+        ; Small delay to ensure mouse position is stable and direction indicators are visible
+        Sleep 50
+        ; Automatically show new squares in the same direction
+        ; The mouse is now at the selected square position, so new squares will continue from there
+        ShowSquareSelector(currentDirection)
+
+        ; Cancel the timeout timer that ShowSquareSelector set up - we're in loop mode, no timeout
+        global g_SquareSelectorTimer
+        if (g_SquareSelectorTimer) {
+            SetTimer(g_SquareSelectorTimer, 0)
+            g_SquareSelectorTimer := false
+        }
+    }
+
+    ; Enter loop mode
+    ; Letter hotkeys are now re-enabled by ShowSquareSelector
+    ; Disable letter/number hotkeys will be handled by loop mode handlers
+
     ; Set loop mode flag
     g_SquareSelectorLoopMode := true
-
-    ; Disable active flag to prevent letter hotkeys from working
-    g_SquareSelectorActive := false
 
     ; Enable loop mode hotkeys (Escape and arrow keys)
     EnableLoopModeHotkeys()
 
-    ; DO NOT cleanup - squares remain visible
     ; DO NOT clear g_ActiveDirection - needed for context
     ; DO NOT release lock - maintained during loop mode
 }
