@@ -494,10 +494,10 @@ ShowSquareSelector(direction) {
 
     ; STEP 3: Prepare all GUIs (position while hidden for instant showing)
     for guiInfo in guiArray {
-        ; Position and set transparency while hidden (no rendering delay)
-        ; More opaque: 255 = fully opaque, 250 = very opaque (less transparent)
+        ; Position while hidden (no rendering delay)
         guiInfo.gui.Show("x" . guiInfo.x . " y" . guiInfo.y . " w" . squareSize . " h" . squareSize . " NA Hide")
-        WinSetTransparent(250, guiInfo.gui)
+        ; Set fully opaque (255 = fully opaque, no transparency)
+        WinSetTransparent(255, guiInfo.gui)
     }
 
     ; STEP 4: Show all GUIs simultaneously (batch show for instant appearance)
@@ -551,10 +551,10 @@ ShowSquareSelector(direction) {
     g_SquareSelectorActive := true
     SetupLetterKeyListener()
 
-    ; Set timer to cleanup after 1.5 seconds
+    ; Set timer to cleanup after 2 seconds
     ; Create cleanup function that also releases the lock and clears active direction
     g_SquareSelectorTimer := ObjBindMethod(SquareSelectorTimerHandler)
-    SetTimer(g_SquareSelectorTimer, -1500)
+    SetTimer(g_SquareSelectorTimer, -2000)
 
     ; Lock will be released when timer fires or when user selects a letter
 }
