@@ -358,6 +358,12 @@ global g_SquareSelectorClickMode := false
 ; Direction indicator GUIs (4 squares around mouse pointer in loop mode)
 global g_DirectionIndicatorGuis := []
 
+; Timestamp when squares were last shown (for guaranteed cleanup)
+global g_SquareSelectorStartTime := 0
+
+; Backup cleanup timer (guaranteed to fire after 10 seconds)
+global g_SquareSelectorBackupTimer := false
+
 ; Timer handler for square selector timeout
 SquareSelectorTimerHandler(sessionID) {
     global g_SquareSelectorLock, g_ActiveDirection, g_SquareSelectorTimer
@@ -382,6 +388,153 @@ SquareSelectorTimerHandler(sessionID) {
     g_SquareSelectorLock := false
     g_ActiveDirection := ""  ; Clear active direction on timeout
     g_SquareSelectorTimer := false  ; Clear timer reference
+}
+
+; Force cleanup function - aggressively destroys all squares regardless of state
+; This is a backup mechanism to ensure squares never persist forever
+ForceCleanupAllSquares() {
+    global g_SquareSelectorGuis, g_DirectionIndicatorGuis
+    global g_SquareSelectorActive, g_SquareSelectorLock, g_ActiveDirection
+    global g_SquareSelectorLoopMode, g_SquareSelectorClickMode
+    global g_SquareSelectorTimer, g_SquareSelectorBackupTimer
+    global g_SquareSelectorStartTime
+
+    ; Force disable active flag
+    g_SquareSelectorActive := false
+
+    ; Aggressively destroy all square GUIs
+    for gui in g_SquareSelectorGuis {
+        try {
+            if (IsObject(gui)) {
+                try {
+                    gui.Hide()
+                } catch {
+                    ; Ignore hide errors
+                }
+                try {
+                    if (gui.Hwnd) {
+                        gui.Destroy()
+                    }
+                } catch {
+                    ; Ignore destroy errors
+                }
+            }
+        } catch {
+            ; Silently ignore all errors
+        }
+    }
+    g_SquareSelectorGuis := []
+
+    ; Aggressively destroy all direction indicator GUIs
+    for gui in g_DirectionIndicatorGuis {
+        try {
+            if (IsObject(gui)) {
+                try {
+                    gui.Hide()
+                } catch {
+                    ; Ignore hide errors
+                }
+                try {
+                    if (gui.Hwnd) {
+                        gui.Destroy()
+                    }
+                } catch {
+                    ; Ignore destroy errors
+                }
+            }
+        } catch {
+            ; Silently ignore all errors
+        }
+    }
+    g_DirectionIndicatorGuis := []
+
+    ; Cancel all timers
+    if (g_SquareSelectorTimer) {
+        try {
+            SetTimer(g_SquareSelectorTimer, 0)
+        } catch {
+            ; Ignore
+        }
+        g_SquareSelectorTimer := false
+    }
+
+    if (g_SquareSelectorBackupTimer) {
+        try {
+            SetTimer(g_SquareSelectorBackupTimer, 0)
+        } catch {
+            ; Ignore
+        }
+        g_SquareSelectorBackupTimer := false
+    }
+
+    ; Reset all state
+    g_SquareSelectorLock := false
+    g_ActiveDirection := ""
+    g_SquareSelectorLoopMode := false
+    g_SquareSelectorClickMode := false
+    g_SquareSelectorStartTime := 0
+
+    ; Disable all hotkeys (best effort)
+    try {
+        DisableDirectionSwitchHotkeys()
+    } catch {
+        ; Ignore
+    }
+    try {
+        DisableLoopModeHotkeys()
+    } catch {
+        ; Ignore
+    }
+}
+
+; Backup timer handler - guaranteed to fire after 10 seconds
+BackupCleanupTimer() {
+    global g_SquareSelectorStartTime, g_SquareSelectorGuis, g_SquareSelectorBackupTimer
+    global g_SquareSelectorActive
+
+    ; If start time is 0, squares have been cleaned up, stop the timer
+    if (g_SquareSelectorStartTime == 0) {
+        if (g_SquareSelectorBackupTimer) {
+            SetTimer(g_SquareSelectorBackupTimer, 0)
+            g_SquareSelectorBackupTimer := false
+        }
+        return
+    }
+
+    ; Check if squares have been visible for more than 10 seconds
+    elapsed := (A_TickCount - g_SquareSelectorStartTime) / 1000  ; Convert to seconds
+    if (elapsed >= 10) {
+        ; Force cleanup if squares have been visible for 10+ seconds
+        ForceCleanupAllSquares()
+        return
+    }
+
+    ; If there are any GUIs still in the array, check if they're valid
+    if (g_SquareSelectorGuis.Length > 0) {
+        ; Check if any GUI is still valid
+        hasValidGui := false
+        for gui in g_SquareSelectorGuis {
+            try {
+                if (IsObject(gui) && gui.Hwnd) {
+                    hasValidGui := true
+                    break
+                }
+            } catch {
+                ; Ignore errors
+            }
+        }
+        ; If we found valid GUIs and it's been more than 10 seconds, force cleanup
+        if (hasValidGui && elapsed >= 10) {
+            ForceCleanupAllSquares()
+        }
+    } else if (!g_SquareSelectorActive) {
+        ; No GUIs and not active - cleanup is done, stop timer
+        if (g_SquareSelectorBackupTimer) {
+            SetTimer(g_SquareSelectorBackupTimer, 0)
+            g_SquareSelectorBackupTimer := false
+        }
+        g_SquareSelectorStartTime := 0
+    }
 }
 
 ; Helper to create a timer handler bound to a specific session ID
@@ -424,6 +577,13 @@ CleanupSquareSelector() {
     ; Disable direction switch hotkeys
     DisableDirectionSwitchHotkeys()
 
+    ; Disable Escape hotkey
+    try {
+        Hotkey("Escape", "Off")
+    } catch {
+        ; Silently ignore if hotkey doesn't exist
+    }
+
     ; Reset click mode flag
     global g_SquareSelectorClickMode
     g_SquareSelectorClickMode := false
@@ -452,6 +612,17 @@ CleanupSquareSelector() {
         SetTimer(g_SquareSelectorTimer, 0)
         g_SquareSelectorTimer := false
     }
+
+    ; Cancel backup timer if active
+    global g_SquareSelectorBackupTimer
+    if (g_SquareSelectorBackupTimer) {
+        SetTimer(g_SquareSelectorBackupTimer, 0)
+        g_SquareSelectorBackupTimer := false
+    }
+
+    ; Clear start time
+    global g_SquareSelectorStartTime
+    g_SquareSelectorStartTime := 0
 
     ; Clear active direction if this cleanup completes the selector
     ; (Note: Don't clear if new selector is being set up - g_ActiveDirection is set before cleanup)
@@ -617,11 +788,26 @@ ShowSquareSelector(direction) {
     ; Enable arrow keys for immediate direction switching
     EnableDirectionSwitchHotkeys()
 
-    ; Set timer to cleanup after 5 seconds if nothing is pressed
+    ; Enable Escape key to cancel squares (works in initial mode)
+    Hotkey("Escape", (*) => CancelSquareSelector(), "On")
+
+    ; Record start time for guaranteed cleanup
+    global g_SquareSelectorStartTime
+    g_SquareSelectorStartTime := A_TickCount
+
+    ; Set timer to cleanup after 10 seconds if nothing is pressed
     ; Create cleanup function bound to this session ID (prevents old timers from cleaning up new squares)
     currentSessionID := g_SquareSelectorSessionID
     g_SquareSelectorTimer := CreateTimerHandler(currentSessionID)
-    SetTimer(g_SquareSelectorTimer, -5000)  ; 5 second timeout
+    SetTimer(g_SquareSelectorTimer, -10000)  ; 10 second timeout
+
+    ; Set up backup cleanup timer that checks every 2 seconds (guaranteed cleanup after 10 seconds)
+    global g_SquareSelectorBackupTimer
+    if (g_SquareSelectorBackupTimer) {
+        SetTimer(g_SquareSelectorBackupTimer, 0)  ; Cancel old backup timer
+    }
+    g_SquareSelectorBackupTimer := () => BackupCleanupTimer()
+    SetTimer(g_SquareSelectorBackupTimer, 2000)  ; Check every 2 seconds
 
     ; Lock will be released when timer fires, user selects a letter (enters loop mode), or presses Escape
 }
@@ -837,11 +1023,18 @@ SelectSquareByIndex(index) {
 
         ; STEP 2: Clean up squares FIRST - they block clicks (AlwaysOnTop windows)
         DisableLetterHotkeys()
-        global g_SquareSelectorTimer
+        global g_SquareSelectorTimer, g_SquareSelectorBackupTimer
         if (g_SquareSelectorTimer) {
             SetTimer(g_SquareSelectorTimer, 0)
             g_SquareSelectorTimer := false
         }
+        if (g_SquareSelectorBackupTimer) {
+            SetTimer(g_SquareSelectorBackupTimer, 0)
+            g_SquareSelectorBackupTimer := false
+        }
+        ; Clear start time
+        global g_SquareSelectorStartTime
+        g_SquareSelectorStartTime := 0
 
         ; Hide/destroy all square GUIs immediately
         global g_SquareSelectorGuis
@@ -925,11 +1118,18 @@ SelectSquareByIndex(index) {
     g_SquareSelectorPositions := []  ; Clear positions as well
 
     ; Cancel timeout timer since we're entering loop mode
-    global g_SquareSelectorTimer
+    global g_SquareSelectorTimer, g_SquareSelectorBackupTimer
     if (g_SquareSelectorTimer) {
         SetTimer(g_SquareSelectorTimer, 0)
         g_SquareSelectorTimer := false
     }
+    if (g_SquareSelectorBackupTimer) {
+        SetTimer(g_SquareSelectorBackupTimer, 0)
+        g_SquareSelectorBackupTimer := false
+    }
+    ; Clear start time since we're entering loop mode
+    global g_SquareSelectorStartTime
+    g_SquareSelectorStartTime := 0
 
     ; Predict user wants to continue in same direction - show new squares immediately
     ; This speeds up the workflow (user doesn't need to press arrow key)
@@ -941,11 +1141,18 @@ SelectSquareByIndex(index) {
         ShowSquareSelector(currentDirection)
 
         ; Cancel the timeout timer that ShowSquareSelector set up - we're in loop mode, no timeout
-        global g_SquareSelectorTimer
+        global g_SquareSelectorTimer, g_SquareSelectorBackupTimer
         if (g_SquareSelectorTimer) {
             SetTimer(g_SquareSelectorTimer, 0)
             g_SquareSelectorTimer := false
         }
+        if (g_SquareSelectorBackupTimer) {
+            SetTimer(g_SquareSelectorBackupTimer, 0)
+            g_SquareSelectorBackupTimer := false
+        }
+        ; Clear start time since we're in loop mode
+        global g_SquareSelectorStartTime
+        g_SquareSelectorStartTime := 0
     }
 
     ; Show direction indicator squares AFTER new squares are shown
@@ -988,10 +1195,15 @@ HandleDirectionHotkey(direction) {
     global g_SquareSelectorSessionID
     g_SquareSelectorSessionID++
 
-    ; STEP 3: Cancel any existing timer FIRST (prevents old timer from cleaning up new squares)
+    ; STEP 3: Cancel any existing timers FIRST (prevents old timers from cleaning up new squares)
     if (g_SquareSelectorTimer) {
         SetTimer(g_SquareSelectorTimer, 0)
         g_SquareSelectorTimer := false
+    }
+    global g_SquareSelectorBackupTimer
+    if (g_SquareSelectorBackupTimer) {
+        SetTimer(g_SquareSelectorBackupTimer, 0)
+        g_SquareSelectorBackupTimer := false
     }
 
     ; STEP 4: Clean up old selector completely (GUIs, hotkeys, etc.)
@@ -1018,6 +1230,30 @@ HandleDirectionHotkey(direction) {
 
     ; STEP 10: Show the new squares (with session ID)
     ShowSquareSelector(g_ActiveDirection)
+}
+
+; Helper function to cancel squares (works in both initial mode and loop mode)
+CancelSquareSelector() {
+    global g_SquareSelectorLoopMode, g_SquareSelectorLock, g_ActiveDirection
+    global g_SquareSelectorActive
+
+    ; Only handle if squares are active
+    if (!g_SquareSelectorActive && !g_SquareSelectorLoopMode) {
+        return
+    }
+
+    ; Disable loop mode hotkeys if in loop mode
+    if (g_SquareSelectorLoopMode) {
+        DisableLoopModeHotkeys()
+    }
+
+    ; Cleanup completely
+    CleanupSquareSelector()
+
+    ; Reset all state
+    g_SquareSelectorLoopMode := false
+    g_SquareSelectorLock := false
+    g_ActiveDirection := ""
 }
 
 ; Helper function to exit loop mode (shared by Escape and mouse handlers)
@@ -1093,8 +1329,8 @@ DisableDirectionSwitchHotkeys() {
 
 ; Helper function to enable loop mode hotkeys (Escape, arrow keys, and mouse clicks)
 EnableLoopModeHotkeys() {
-    ; Enable Escape hotkey for loop mode (wrap in function for proper callback)
-    Hotkey("Escape", (*) => ExitLoopMode(), "On")
+    ; Enable Escape hotkey for loop mode (uses CancelSquareSelector which works for both modes)
+    Hotkey("Escape", (*) => CancelSquareSelector(), "On")
 
     ; Enable arrow key hotkeys for loop mode (without modifiers)
     Hotkey("Right", (*) => HandleLoopModeRight(), "On")
