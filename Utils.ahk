@@ -474,8 +474,8 @@ ShowSquareSelector(direction) {
     startY := pos.y
 
     ; Configuration
-    squareSize := 30  ; Reduced from 40 for more precision
-    spacing := 25  ; Reduced from 35 for more precision
+    squareSize := 24  ; Reduced for more precision
+    spacing := 20  ; Reduced for more precision
     numSquares := 20
 
     ; Normalize direction
@@ -483,9 +483,9 @@ ShowSquareSelector(direction) {
 
     ; STEP 1: Calculate all center positions first
     ; First square (1) starts AFTER mouse position, not centered on it
-    ; Initial offset: half square size (15px) + spacing (25px) = 40px from mouse position
+    ; Initial offset: half square size (12px) + spacing (20px) = 32px from mouse position
     ; This ensures the first square's left edge starts after the mouse cursor
-    initialOffset := (squareSize / 2.0) + spacing  ; 15 + 25 = 40 pixels
+    initialOffset := (squareSize / 2.0) + spacing  ; 12 + 20 = 32 pixels
 
     calculatedPositions := []
     if (directionLower = "right" || directionLower = "left") {
@@ -494,9 +494,9 @@ ShowSquareSelector(direction) {
         loop numSquares {
             i := A_Index
             ; Calculate offset for square i
-            ; First square (i=1): initialOffset (40px) - starts after mouse
+            ; First square (i=1): initialOffset (32px) - starts after mouse
             ; Subsequent squares: initialOffset + (i-1) * (squareSize + spacing)
-            ; For i=1: 40px, for i=2: 40 + 55 = 95px, for i=3: 40 + 110 = 150px, etc.
+            ; For i=1: 32px, for i=2: 32 + 44 = 76px, for i=3: 32 + 88 = 120px, etc.
             offset := (initialOffset + (i - 1) * (squareSize + spacing)) * directionMultiplier
             squareCenterX := Round(startX + offset)
             squareCenterY := startY
@@ -526,7 +526,7 @@ ShowSquareSelector(direction) {
         ; Color depends on click mode: blue if click mode active, red otherwise
         global g_SquareSelectorClickMode
         squareGui.BackColor := g_SquareSelectorClickMode ? "0000FF" : "FF0000"  ; Blue or Red
-        squareGui.SetFont("s9 Bold cFFFFFF", "Segoe UI")  ; White text, bold, smaller for precision
+        squareGui.SetFont("s8 Bold cFFFFFF", "Segoe UI")  ; White text, bold, smaller for precision
 
         ; Set GUI margins to 0 to eliminate any padding that could affect centering
         squareGui.MarginX := 0
@@ -633,8 +633,8 @@ ShowDirectionIndicators() {
     mouseY := pos.y
 
     ; Configuration
-    squareSize := 30  ; Reduced from 40 for more precision
-    offset := 40  ; Reduced from 50 for more precision
+    squareSize := 24  ; Reduced for more precision
+    offset := 35  ; Reduced for more precision
 
     ; Arrow symbols for each direction
     arrowUp := "↑"
@@ -658,7 +658,7 @@ ShowDirectionIndicators() {
         ; Create square GUI with arrow
         indicatorGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
         indicatorGui.BackColor := "FF0000"  ; Red
-        indicatorGui.SetFont("s12 Bold cFFFFFF", "Segoe UI")  ; White text, bold, smaller for precision
+        indicatorGui.SetFont("s10 Bold cFFFFFF", "Segoe UI")  ; White text, bold, smaller for precision
 
         ; Set GUI margins to 0
         indicatorGui.MarginX := 0
