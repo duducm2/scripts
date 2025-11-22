@@ -520,8 +520,8 @@ ShowSquareSelector(direction) {
     for guiInfo in guiArray {
         ; Position while hidden (no rendering delay)
         guiInfo.gui.Show("x" . guiInfo.x . " y" . guiInfo.y . " w" . squareSize . " h" . squareSize . " NA Hide")
-        ; Set fully opaque (255 = fully opaque, no transparency)
-        WinSetTransparent(255, guiInfo.gui)
+        ; Set 50% opaque (128 = 50% opacity, 255 = fully opaque, 0 = fully transparent)
+        WinSetTransparent(128, guiInfo.gui)
     }
 
     ; STEP 4: Show all GUIs simultaneously (batch show for instant appearance)
