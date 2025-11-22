@@ -349,6 +349,9 @@ global g_SquareSelectorLock := false
 ; Active direction flag - prevents old selectors from interfering
 global g_ActiveDirection := ""
 
+; Loop mode flag - indicates waiting for Escape or arrow key after selection
+global g_SquareSelectorLoopMode := false
+
 ; Timer handler for square selector timeout
 SquareSelectorTimerHandler(sessionID) {
     global g_SquareSelectorLock, g_ActiveDirection, g_SquareSelectorTimer
@@ -384,7 +387,7 @@ CreateTimerHandler(sessionID) {
 CleanupSquareSelector() {
     global g_SquareSelectorActive, g_SquareSelectorGuis, g_SquareSelectorTimer
     global g_SquareSelectorLetters, g_SquareSelectorHotkeyHandlers
-    global g_SquareSelectorLock, g_ActiveDirection
+    global g_SquareSelectorLock, g_ActiveDirection, g_SquareSelectorLoopMode
 
     ; Disable active flag immediately
     g_SquareSelectorActive := false
@@ -397,6 +400,12 @@ CleanupSquareSelector() {
         } catch {
             ; Silently ignore errors if hotkey doesn't exist
         }
+    }
+
+    ; Disable loop mode hotkeys if in loop mode
+    if (g_SquareSelectorLoopMode) {
+        DisableLoopModeHotkeys()
+        g_SquareSelectorLoopMode := false
     }
 
     ; Clear hotkey handlers array
@@ -576,13 +585,8 @@ ShowSquareSelector(direction) {
     g_SquareSelectorActive := true
     SetupLetterKeyListener()
 
-    ; Set timer to cleanup after 2 seconds
-    ; Create cleanup function bound to this session ID (prevents old timers from cleaning up new squares)
-    currentSessionID := g_SquareSelectorSessionID
-    g_SquareSelectorTimer := CreateTimerHandler(currentSessionID)
-    SetTimer(g_SquareSelectorTimer, -2000)
-
-    ; Lock will be released when timer fires or when user selects a letter
+    ; No timeout - squares persist until Escape is pressed (loop mode)
+    ; Lock will be released when user selects a letter (enters loop mode) or presses Escape
 }
 
 ; Factory function to create a handler that properly captures the index
@@ -615,9 +619,25 @@ SetupLetterKeyListener() {
     }
 }
 
+; Helper function to disable letter hotkeys (used when entering loop mode)
+DisableLetterHotkeys() {
+    global g_SquareSelectorLetters
+
+    ; Disable all letter hotkeys
+    for letter in g_SquareSelectorLetters {
+        try {
+            Hotkey(letter, "Off")
+            Hotkey(StrLower(letter), "Off")
+        } catch {
+            ; Silently ignore errors if hotkey doesn't exist
+        }
+    }
+}
+
 ; Handler for letter key press - uses index directly to avoid matching issues
 SelectSquareByIndex(index) {
     global g_SquareSelectorActive, g_SquareSelectorPositions, g_ActiveDirection
+    global g_SquareSelectorLoopMode, g_SquareSelectorLock
 
     ; Double-check that selector is active (safety check)
     if (!g_SquareSelectorActive) {
@@ -643,11 +663,22 @@ SelectSquareByIndex(index) {
     ; Move mouse to the center of the selected square
     DllCall("SetCursorPos", "int", targetPos.x, "int", targetPos.y)
 
-    ; Cleanup and exit (also release lock and clear active direction)
-    CleanupSquareSelector()
-    global g_SquareSelectorLock, g_ActiveDirection
-    g_SquareSelectorLock := false  ; Release lock after mouse jump
-    g_ActiveDirection := ""  ; Clear active direction after selection
+    ; Enter loop mode instead of cleaning up
+    ; Disable letter/number hotkeys (squares remain visible)
+    DisableLetterHotkeys()
+
+    ; Set loop mode flag
+    g_SquareSelectorLoopMode := true
+
+    ; Disable active flag to prevent letter hotkeys from working
+    g_SquareSelectorActive := false
+
+    ; Enable loop mode hotkeys (Escape and arrow keys)
+    EnableLoopModeHotkeys()
+
+    ; DO NOT cleanup - squares remain visible
+    ; DO NOT clear g_ActiveDirection - needed for context
+    ; DO NOT release lock - maintained during loop mode
 }
 
 ; Simplified helper function to handle direction hotkey
@@ -689,8 +720,97 @@ HandleDirectionHotkey(direction) {
     ; STEP 8: Brief delay before showing new squares
     Sleep 50
 
-    ; STEP 9: Show the new squares (with session ID)
+    ; STEP 9: Disable loop mode if it was active (transitioning from loop mode)
+    global g_SquareSelectorLoopMode
+    if (g_SquareSelectorLoopMode) {
+        DisableLoopModeHotkeys()
+        g_SquareSelectorLoopMode := false
+    }
+
+    ; STEP 10: Show the new squares (with session ID)
     ShowSquareSelector(g_ActiveDirection)
+}
+
+; Helper function to enable loop mode hotkeys (Escape and arrow keys)
+EnableLoopModeHotkeys() {
+    ; Enable Escape hotkey for loop mode (wrap in function for proper callback)
+    Hotkey("Escape", (*) => HandleEscapeKey(), "On")
+
+    ; Enable arrow key hotkeys for loop mode (without modifiers)
+    Hotkey("Right", (*) => HandleLoopModeRight(), "On")
+    Hotkey("Left", (*) => HandleLoopModeLeft(), "On")
+    Hotkey("Down", (*) => HandleLoopModeDown(), "On")
+    Hotkey("Up", (*) => HandleLoopModeUp(), "On")
+}
+
+; Helper function to disable loop mode hotkeys
+DisableLoopModeHotkeys() {
+    ; Disable Escape hotkey
+    try {
+        Hotkey("Escape", "Off")
+    } catch {
+        ; Silently ignore if hotkey doesn't exist
+    }
+
+    ; Disable arrow key hotkeys
+    try {
+        Hotkey("Right", "Off")
+        Hotkey("Left", "Off")
+        Hotkey("Down", "Off")
+        Hotkey("Up", "Off")
+    } catch {
+        ; Silently ignore if hotkeys don't exist
+    }
+}
+
+; Escape key handler for loop mode
+HandleEscapeKey() {
+    global g_SquareSelectorLoopMode, g_SquareSelectorLock, g_ActiveDirection
+
+    ; Only handle if in loop mode
+    if (!g_SquareSelectorLoopMode) {
+        return
+    }
+
+    ; Disable loop mode hotkeys
+    DisableLoopModeHotkeys()
+
+    ; Cleanup completely
+    CleanupSquareSelector()
+
+    ; Reset all state
+    g_SquareSelectorLoopMode := false
+    g_SquareSelectorLock := false
+    g_ActiveDirection := ""
+}
+
+; Loop mode arrow key handlers (only active when in loop mode)
+HandleLoopModeRight() {
+    global g_SquareSelectorLoopMode
+    if (g_SquareSelectorLoopMode) {
+        HandleDirectionHotkey("Right")
+    }
+}
+
+HandleLoopModeLeft() {
+    global g_SquareSelectorLoopMode
+    if (g_SquareSelectorLoopMode) {
+        HandleDirectionHotkey("Left")
+    }
+}
+
+HandleLoopModeDown() {
+    global g_SquareSelectorLoopMode
+    if (g_SquareSelectorLoopMode) {
+        HandleDirectionHotkey("Down")
+    }
+}
+
+HandleLoopModeUp() {
+    global g_SquareSelectorLoopMode
+    if (g_SquareSelectorLoopMode) {
+        HandleDirectionHotkey("Up")
+    }
 }
 
 ; Jump mouse right (short distance) - now shows square selector
