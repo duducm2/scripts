@@ -7852,7 +7852,7 @@ IsFileDialogActive() {
     Send "{Down}"
     Sleep 10
     Send "{Enter}"
-    Sleep 10
+    Sleep 30
     Send "{Tab}"
 }
 
@@ -7873,7 +7873,7 @@ IsFileDialogActive() {
     Send "{Down}"
     Sleep 10
     Send "{Enter}"
-    Sleep 10
+    Sleep 30
     Send "{Tab}"
 }
 
