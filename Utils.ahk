@@ -646,7 +646,7 @@ ShowSquareSelector(direction) {
     } catch {
         ; Ignore
     }
-    
+
     ; Clean up old squares after a brief delay (allows new squares to appear first)
     ; Cancel any existing old squares cleanup timer first
     global g_OldSquaresCleanupTimer
@@ -654,12 +654,12 @@ ShowSquareSelector(direction) {
         SetTimer(g_OldSquaresCleanupTimer, 0)
         g_OldSquaresCleanupTimer := false
     }
-    
+
     if (oldGuis.Length > 0) {
         g_OldSquaresCleanupTimer := () => CleanupOldSquareGuis(oldGuis)
         SetTimer(g_OldSquaresCleanupTimer, -50)
     }
-    
+
     Sleep 10
 
     ; Get current mouse position
@@ -1097,10 +1097,10 @@ SelectSquareByIndex(index) {
         ; Clear arrays immediately
         g_SquareSelectorGuis := []
         g_SquareSelectorPositions := []
-        
+
         ; Also destroy direction indicators immediately
         CleanupDirectionIndicators()
-        
+
         ; Force a small delay to ensure GUI destruction is complete
         Sleep 20
 
@@ -1194,11 +1194,11 @@ SelectSquareByIndex(index) {
     if (currentDirection) {
         ; Small delay to ensure mouse position is stable
         Sleep 50
-        
+
         ; Store old squares temporarily so we can clean them up after showing new ones
         global g_SquareSelectorGuis
         oldSquares := g_SquareSelectorGuis.Clone()
-        
+
         ; Automatically show new squares in the same direction
         ; The mouse is now at the selected square position, so new squares will continue from there
         ; ShowSquareSelector will try to clean up, but we'll preserve old squares
@@ -1269,7 +1269,10 @@ HandleDirectionHotkey(direction) {
     ; MsgBox "Hotkey triggered: " . direction, "Debug"
 
     global g_SquareSelectorActive, g_ActiveDirection, g_SquareSelectorTimer
-    global g_SquareSelectorLock
+    global g_SquareSelectorLock, g_SquareSelectorClickMode
+
+    ; STEP 0: Preserve click mode state BEFORE cleanup (so blue squares stay blue when changing direction)
+    preservedClickMode := g_SquareSelectorClickMode
 
     ; STEP 1: IMMEDIATELY disable active flag and clear positions
     ; This prevents letter hotkeys from using old positions
@@ -1315,6 +1318,25 @@ HandleDirectionHotkey(direction) {
 
     ; STEP 10: Show the new squares (with session ID)
     ShowSquareSelector(g_ActiveDirection)
+
+    ; STEP 11: Restore click mode state if it was active (so blue squares remain blue)
+    if (preservedClickMode) {
+        g_SquareSelectorClickMode := true
+        ; Update all square colors to blue to reflect click mode
+        global g_SquareSelectorGuis
+        for gui in g_SquareSelectorGuis {
+            try {
+                if (IsObject(gui) && gui.Hwnd) {
+                    gui.BackColor := "0000FF"  ; Blue
+                    ; Force redraw by hiding and showing
+                    gui.Show("Hide")
+                    gui.Show("NA")
+                }
+            } catch {
+                ; Silently ignore errors
+            }
+        }
+    }
 }
 
 ; Helper function to cancel squares (works in both initial mode and loop mode)
