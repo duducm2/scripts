@@ -453,7 +453,12 @@ ForceCleanupAllSquares() {
     g_SquareSelectorClickMode := false
     g_SquareSelectorStartTime := 0
 
-    ; Disable all hotkeys (best effort)
+    ; Disable all hotkeys (best effort) to prevent bugs
+    try {
+        DisableLetterHotkeys()
+    } catch {
+        ; Ignore
+    }
     try {
         DisableDirectionSwitchHotkeys()
     } catch {
@@ -464,9 +469,19 @@ ForceCleanupAllSquares() {
     } catch {
         ; Ignore
     }
+    try {
+        Hotkey("Ctrl", "Off")
+    } catch {
+        ; Ignore
+    }
+    try {
+        Hotkey("Escape", "Off")
+    } catch {
+        ; Ignore
+    }
 }
 
-; Backup timer handler - guaranteed to fire after 10 seconds
+; Backup timer handler - guaranteed to fire after 7 seconds
 BackupCleanupTimer() {
     global g_SquareSelectorStartTime, g_SquareSelectorGuis, g_SquareSelectorBackupTimer
     global g_SquareSelectorActive
@@ -480,10 +495,10 @@ BackupCleanupTimer() {
         return
     }
 
-    ; Check if squares have been visible for more than 10 seconds
+    ; Check if squares have been visible for more than 7 seconds
     elapsed := (A_TickCount - g_SquareSelectorStartTime) / 1000  ; Convert to seconds
-    if (elapsed >= 10) {
-        ; Force cleanup if squares have been visible for 10+ seconds
+    if (elapsed >= 7) {
+        ; Force cleanup if squares have been visible for 7+ seconds
         ForceCleanupAllSquares()
         return
     }
@@ -586,13 +601,21 @@ CleanupSquareSelector() {
         g_SquareSelectorBackupTimer := false
     }
 
+    ; Cancel old squares cleanup timer if active
+    global g_OldSquaresCleanupTimer
+    if (g_OldSquaresCleanupTimer) {
+        SetTimer(g_OldSquaresCleanupTimer, 0)
+        g_OldSquaresCleanupTimer := false
+    }
+
     ; Clear start time
     global g_SquareSelectorStartTime
     g_SquareSelectorStartTime := 0
 
-    ; Clear active direction if this cleanup completes the selector
-    ; (Note: Don't clear if new selector is being set up - g_ActiveDirection is set before cleanup)
-    ; Only clear if there's no active direction or it matches (cleanup from timeout/selection)
+    ; Release lock and clear active direction to prevent bugs
+    ; This ensures the hotkeys can be used again after cleanup
+    g_SquareSelectorLock := false
+    g_ActiveDirection := ""
 }
 
 ; Function to show 15 squares with letters in a line in the chosen direction
@@ -792,13 +815,13 @@ ShowSquareSelector(direction) {
     global g_SquareSelectorStartTime
     g_SquareSelectorStartTime := A_TickCount
 
-    ; Set timer to cleanup after 10 seconds if nothing is pressed
+    ; Set timer to cleanup after 7 seconds if nothing is pressed
     ; Create cleanup function bound to this session ID (prevents old timers from cleaning up new squares)
     currentSessionID := g_SquareSelectorSessionID
     g_SquareSelectorTimer := CreateTimerHandler(currentSessionID)
-    SetTimer(g_SquareSelectorTimer, -10000)  ; 10 second timeout
+    SetTimer(g_SquareSelectorTimer, -7000)  ; 7 second timeout
 
-    ; Set up backup cleanup timer that checks every 2 seconds (guaranteed cleanup after 10 seconds)
+    ; Set up backup cleanup timer that checks every 2 seconds (guaranteed cleanup after 7 seconds)
     global g_SquareSelectorBackupTimer
     if (g_SquareSelectorBackupTimer) {
         SetTimer(g_SquareSelectorBackupTimer, 0)  ; Cancel old backup timer

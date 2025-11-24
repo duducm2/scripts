@@ -7842,17 +7842,17 @@ IsFileDialogActive() {
     Send "!+w"
     Sleep 120
     Send "{Tab}"
-    Sleep 10
-    Send "{Enter}"
-    Sleep 10
-    Send "{Up}"
-    Sleep 10
-    Send "{Up}"
-    Sleep 10
-    Send "{Down}"
-    Sleep 10
+    Sleep 30
     Send "{Enter}"
     Sleep 30
+    Send "{Up}"
+    Sleep 30
+    Send "{Up}"
+    Sleep 30
+    Send "{Down}"
+    Sleep 30
+    Send "{Enter}"
+    Sleep 50
     Send "{Tab}"
 }
 
@@ -7861,19 +7861,19 @@ IsFileDialogActive() {
     Send "!+w"
     Sleep 120
     Send "{Tab}"
-    Sleep 10
-    Send "{Enter}"
-    Sleep 10
-    Send "{Up}"
-    Sleep 10
-    Send "{Up}"
-    Sleep 10
-    Send "{Down}"
-    Sleep 10
-    Send "{Down}"
-    Sleep 10
+    Sleep 30
     Send "{Enter}"
     Sleep 30
+    Send "{Up}"
+    Sleep 30
+    Send "{Up}"
+    Sleep 30
+    Send "{Down}"
+    Sleep 30
+    Send "{Down}"
+    Sleep 30
+    Send "{Enter}"
+    Sleep 50
     Send "{Tab}"
 }
 
