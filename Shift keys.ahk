@@ -7852,6 +7852,8 @@ IsFileDialogActive() {
     Send "{Down}"
     Sleep 10
     Send "{Enter}"
+    Sleep 10
+    Send "{Tab}"
 }
 
 ; Shift + P : Focus on Files Only
@@ -7871,6 +7873,8 @@ IsFileDialogActive() {
     Send "{Down}"
     Sleep 10
     Send "{Enter}"
+    Sleep 10
+    Send "{Tab}"
 }
 
 ; Shift + I : Send "fav" letter by letter and Enter

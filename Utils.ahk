@@ -364,6 +364,9 @@ global g_SquareSelectorStartTime := 0
 ; Backup cleanup timer (guaranteed to fire after 10 seconds)
 global g_SquareSelectorBackupTimer := false
 
+; Timer for cleaning up old squares when showing new ones
+global g_OldSquaresCleanupTimer := false
+
 ; Timer handler for square selector timeout
 SquareSelectorTimerHandler(sessionID) {
     global g_SquareSelectorLock, g_ActiveDirection, g_SquareSelectorTimer
@@ -501,6 +504,19 @@ CreateTimerHandler(sessionID) {
     return () => SquareSelectorTimerHandler(sessionID)
 }
 
+; Helper function to cleanup old square GUIs (used by ShowSquareSelector)
+CleanupOldSquareGuis(oldGuis) {
+    for gui in oldGuis {
+        try {
+            if (IsObject(gui) && gui.Hwnd) {
+                gui.Destroy()
+            }
+        } catch {
+            ; Silently ignore errors
+        }
+    }
+}
+
 ; Function to cleanup square selector system
 CleanupSquareSelector() {
     global g_SquareSelectorActive, g_SquareSelectorGuis, g_SquareSelectorTimer
@@ -584,12 +600,43 @@ ShowSquareSelector(direction) {
     global g_SquareSelectorActive, g_SquareSelectorGuis, g_SquareSelectorPositions
     global g_SquareSelectorLetters, g_SquareSelectorLock
 
-    ; Clear arrays first
+    ; Don't clear arrays immediately - preserve old squares
+    ; We'll clean them up after showing new ones if needed
+    oldGuis := g_SquareSelectorGuis.Clone()
+    oldPositions := g_SquareSelectorPositions.Clone()
+
+    ; Clear arrays for new squares
     g_SquareSelectorGuis := []
     g_SquareSelectorPositions := []
 
-    ; Simple cleanup of any existing selector
-    CleanupSquareSelector()
+    ; Don't call CleanupSquareSelector here - it destroys squares
+    ; Instead, just disable hotkeys temporarily
+    DisableLetterHotkeys()
+    try {
+        Hotkey("Ctrl", "Off")
+    } catch {
+        ; Ignore
+    }
+    DisableDirectionSwitchHotkeys()
+    try {
+        Hotkey("Escape", "Off")
+    } catch {
+        ; Ignore
+    }
+    
+    ; Clean up old squares after a brief delay (allows new squares to appear first)
+    ; Cancel any existing old squares cleanup timer first
+    global g_OldSquaresCleanupTimer
+    if (g_OldSquaresCleanupTimer) {
+        SetTimer(g_OldSquaresCleanupTimer, 0)
+        g_OldSquaresCleanupTimer := false
+    }
+    
+    if (oldGuis.Length > 0) {
+        g_OldSquaresCleanupTimer := () => CleanupOldSquareGuis(oldGuis)
+        SetTimer(g_OldSquaresCleanupTimer, -50)
+    }
+    
     Sleep 10
 
     ; Get current mouse position
@@ -977,9 +1024,9 @@ SelectSquareByIndex(index) {
         ; Click mode: perform a click and exit completely
         ; STEP 1: Store target position before cleanup (targetPos is already stored)
 
-        ; STEP 2: Clean up squares FIRST - they block clicks (AlwaysOnTop windows)
+        ; STEP 2: Immediately disable all hotkeys and cancel ALL timers
         DisableLetterHotkeys()
-        global g_SquareSelectorTimer, g_SquareSelectorBackupTimer
+        global g_SquareSelectorTimer, g_SquareSelectorBackupTimer, g_OldSquaresCleanupTimer
         if (g_SquareSelectorTimer) {
             SetTimer(g_SquareSelectorTimer, 0)
             g_SquareSelectorTimer := false
@@ -988,29 +1035,59 @@ SelectSquareByIndex(index) {
             SetTimer(g_SquareSelectorBackupTimer, 0)
             g_SquareSelectorBackupTimer := false
         }
+        ; Cancel the old squares cleanup timer from ShowSquareSelector
+        if (g_OldSquaresCleanupTimer) {
+            SetTimer(g_OldSquaresCleanupTimer, 0)
+            g_OldSquaresCleanupTimer := false
+        }
         ; Clear start time
         global g_SquareSelectorStartTime
         g_SquareSelectorStartTime := 0
 
-        ; Hide/destroy all square GUIs immediately
+        ; Disable other hotkeys immediately
+        try {
+            Hotkey("Ctrl", "Off")
+        } catch {
+            ; Ignore
+        }
+        DisableDirectionSwitchHotkeys()
+        try {
+            Hotkey("Escape", "Off")
+        } catch {
+            ; Ignore
+        }
+
+        ; STEP 3: Destroy all square GUIs immediately and aggressively
+        ; This must happen BEFORE the click so squares don't block it
         global g_SquareSelectorGuis
+        ; Destroy all squares in the array
         for gui in g_SquareSelectorGuis {
             try {
                 if (IsObject(gui) && gui.Hwnd) {
-                    gui.Hide()  ; Hide first for instant disappearance
+                    ; Force immediate destruction - no hiding, just destroy
                     gui.Destroy()
                 }
             } catch {
                 ; Silently ignore errors
             }
         }
+        ; Clear arrays immediately
         g_SquareSelectorGuis := []
-        g_SquareSelectorPositions := []  ; Clear positions
+        g_SquareSelectorPositions := []
+        
+        ; Also destroy direction indicators immediately
+        CleanupDirectionIndicators()
+        
+        ; Force a small delay to ensure GUI destruction is complete
+        Sleep 20
 
-        ; STEP 3: Wait for GUI cleanup to complete
+        ; STEP 4: Clean up direction indicators immediately
+        CleanupDirectionIndicators()
+
+        ; STEP 5: Wait for GUI cleanup to complete
         Sleep 50
 
-        ; STEP 4: Find window at target position (now that squares are gone)
+        ; STEP 6: Find window at target position (now that squares are gone)
         targetHwnd := DllCall("WindowFromPoint", "Int64", (targetPos.y << 32) | (targetPos.x & 0xFFFFFFFF), "Ptr")
         if (targetHwnd) {
             ; Get the root window (in case we got a child window)
@@ -1027,7 +1104,7 @@ SelectSquareByIndex(index) {
             }
         }
 
-        ; STEP 5: Move mouse and click
+        ; STEP 7: Move mouse and click
         DllCall("SetCursorPos", "int", targetPos.x, "int", targetPos.y)
         Sleep 100
 
@@ -1041,28 +1118,38 @@ SelectSquareByIndex(index) {
         ; Perform the click
         Click
 
-        ; STEP 6: Complete cleanup
-        try {
-            Hotkey("Ctrl", "Off")
-        } catch {
-            ; Ignore
+        ; STEP 8: Final cleanup - ensure everything is reset
+        ; Double-check that all squares are destroyed (defensive cleanup)
+        global g_SquareSelectorGuis
+        if (g_SquareSelectorGuis.Length > 0) {
+            for gui in g_SquareSelectorGuis {
+                try {
+                    if (IsObject(gui) && gui.Hwnd) {
+                        gui.Destroy()
+                    }
+                } catch {
+                    ; Ignore
+                }
+            }
+            g_SquareSelectorGuis := []
         }
 
-        CleanupDirectionIndicators()
+        ; Reset all state flags
         g_SquareSelectorLock := false
         g_ActiveDirection := ""
         g_SquareSelectorClickMode := false
         g_SquareSelectorActive := false
+        g_SquareSelectorLoopMode := false
+
+        ; Final cleanup of direction indicators (defensive)
+        CleanupDirectionIndicators()
+
         return
     }
 
-    ; Normal mode: Hide letter/number squares to reduce cluttering
+    ; Normal mode: Keep letter/number squares visible - don't destroy them
     ; Store the current direction before cleanup (for predicting next direction)
     currentDirection := g_ActiveDirection
-
-    global g_SquareSelectorGuis
-    DestroyGuiArray(g_SquareSelectorGuis)
-    g_SquareSelectorPositions := []  ; Clear positions as well
 
     ; Cancel timeout timer since we're entering loop mode
     global g_SquareSelectorTimer, g_SquareSelectorBackupTimer
@@ -1080,12 +1167,22 @@ SelectSquareByIndex(index) {
 
     ; Predict user wants to continue in same direction - show new squares immediately
     ; This speeds up the workflow (user doesn't need to press arrow key)
+    ; Keep old squares visible - don't destroy them, just show new ones
     if (currentDirection) {
         ; Small delay to ensure mouse position is stable
         Sleep 50
+        
+        ; Store old squares temporarily so we can clean them up after showing new ones
+        global g_SquareSelectorGuis
+        oldSquares := g_SquareSelectorGuis.Clone()
+        
         ; Automatically show new squares in the same direction
         ; The mouse is now at the selected square position, so new squares will continue from there
+        ; ShowSquareSelector will try to clean up, but we'll preserve old squares
         ShowSquareSelector(currentDirection)
+
+        ; Clean up old squares after a brief delay to allow new squares to appear
+        SetTimer(() => CleanupOldSquareGuis(oldSquares), -100)
 
         ; Cancel the timeout timer that ShowSquareSelector set up - we're in loop mode, no timeout
         global g_SquareSelectorTimer, g_SquareSelectorBackupTimer
@@ -1100,6 +1197,25 @@ SelectSquareByIndex(index) {
         ; Clear start time since we're in loop mode
         global g_SquareSelectorStartTime
         g_SquareSelectorStartTime := 0
+    } else {
+        ; No direction - keep squares visible (don't destroy them)
+        ; The algorithm finishes but letters remain displayed
+        ; Just disable hotkeys but keep squares visible
+        DisableLetterHotkeys()
+        try {
+            Hotkey("Ctrl", "Off")
+        } catch {
+            ; Ignore
+        }
+        DisableDirectionSwitchHotkeys()
+        try {
+            Hotkey("Escape", "Off")
+        } catch {
+            ; Ignore
+        }
+        ; Don't destroy squares - keep them visible
+        g_SquareSelectorActive := false
+        g_SquareSelectorLock := false
     }
 
     ; Show direction indicator squares AFTER new squares are shown
