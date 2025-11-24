@@ -5,8 +5,13 @@
 #Include env.ahk
 
 if (IS_WORK_ENVIRONMENT) {
+    response := MsgBox("Can we proceed with Act?", "Act automation", "YesNo")
+    if (response = "No") {
+        return
+    }
+
     ; TODO: Replace with the actual scripts folder path on the work laptop
-    scriptsFolder := "C:\Path\To\Work\Scripts"
+    scriptsFolder := "C:\Users\fie7ca\Documents\scripts"
 } else {
     scriptsFolder := "C:\Users\eduev\Meu Drive\12 - Scripts"
 }
@@ -15,6 +20,22 @@ if (IS_WORK_ENVIRONMENT) {
 SetWorkingDir(scriptsFolder)
 RunWait("git fetch", scriptsFolder, "Hide")
 RunWait("git pull", scriptsFolder, "Hide")
+
+Sleep 10000
+
+if (IS_WORK_ENVIRONMENT) {
+    ; TODO: Update with actual work environment path
+    notesFolder := "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes"
+} else {
+    notesFolder := "C:\Users\eduev\Meu Drive\14 - Notes"
+}
+
+; Ensure the notes folder is up to date before working with habits
+SetWorkingDir(notesFolder)
+RunWait("git fetch", notesFolder, "Hide")
+RunWait("git pull", notesFolder, "Hide")
+
+Sleep 10000
 
 Run GetScriptPath("Shift keys.ahk")
 Run GetScriptPath("AppLaunchers.ahk")
@@ -41,34 +62,13 @@ if (IS_WORK_ENVIRONMENT) {
     Run "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Chrome Apps\Gmail.lnk"
 }
 
-Sleep 10000
-
-; Run #!+i for both environments
-Send "#!+i"
-
-; Ask user if they want to update the Habits Sheet
-result := MsgBox("Do you want to update the Habits Sheet?", "Update Habits Sheet", "YesNo")
-if (result = "No") {
-    return
-}
-
-; If Yes, proceed with updating habits
-if (IS_WORK_ENVIRONMENT) {
-    ; TODO: Update with actual work environment path
-    notesFolder := "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes"
-} else {
-    notesFolder := "C:\Users\eduev\Meu Drive\14 - Notes"
-}
-
-; Ensure the notes folder is up to date before working with habits
-SetWorkingDir(notesFolder)
-RunWait("git fetch", notesFolder, "Hide")
-RunWait("git pull", notesFolder, "Hide")
-
 habitsFolder := notesFolder . "\habits"
 excelFile := habitsFolder . "\habit_sleep_food_tracker.xlsx"
 
-Sleep 10000
+Sleep 1000
 
 ; Open the Excel file
 Run(excelFile)
+
+; Run #!+i for both environments
+Send "#!+i"
