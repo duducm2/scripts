@@ -270,10 +270,9 @@ Outlook
 cheatSheets["OutlookReminder"] := "
 (
 Outlook â€" Reminders
-[Shift+Y] > 🔔 Select first reminder
-[Shift+U] > ⏰ Snooze 1 hour
-[Shift+I] > ⏰ Snooze 4 hours
-[Shift+O] > ⏰ Snooze 1 day
+[Shift+Y] > ⏰ Snooze 1 hour
+[Shift+U] > ⏰ Snooze 4 hours
+[Shift+I] > ⏰ Snooze 1 day
 [Shift+P] > ❌ Dismiss all reminders
 [Shift+H] > 🌐 Join Online
 )"  ; end Outlook Reminder
@@ -1708,41 +1707,6 @@ WaitForList(root, pattern := "", timeout := 5000) {
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe OUTLOOK.EXE") && RegExMatch(WinGetTitle("A"), "i)Reminder")
 
-; Shift + Y : Select first reminder list item
-+Y::
-{
-    try {
-        win := WinExist("A")
-        root := UIA.ElementFromHandle(win)
-
-        ; Find the first list item in the reminder window
-        ; Looking for ListItem type (50007) with AutomationId pattern "ListViewItem-0"
-        firstItem := root.FindFirst({ AutomationId: "ListViewItem-0", ControlType: "ListItem" })
-
-        ; Fallback: if specific AutomationId doesn't work, find first ListItem
-        if !firstItem {
-            firstItem := root.FindFirst({ ControlType: "ListItem" })
-        }
-
-        ; Fallback: try finding by type number if ControlType doesn't work
-        if !firstItem {
-            firstItem := root.FindFirst({ Type: "50007" })
-        }
-
-        if firstItem {
-            firstItem.Select()
-            ; Alternative method: click the item to ensure selection
-            ; firstItem.Click()
-        }
-        else {
-            MsgBox("Could not find the first reminder item.", "Reminder Selection", "IconX")
-        }
-    }
-    catch Error as e {
-        MsgBox("UIA error:`n" e.Message, "Outlook Reminder Error", "IconX")
-    }
-}
-
 ; ativa a janela de lembretes do Outlook
 ActivateReminder() {
     WinActivate("ahk_exe OUTLOOK.EXE")
@@ -1774,9 +1738,9 @@ Confirm(t) {
 ; Shift+U  > 1 minuto
 ; Shift+I  > 2 minutos
 ; Shift+O  > 3 minutos
-+U:: Confirm("1 hour")
-+I:: Confirm("4 hours")
-+O:: Confirm("1 day")
++Y:: Confirm("1 hour")
++U:: Confirm("4 hours")
++I:: Confirm("1 day")
 +P:: ConfirmDismissAll()  ; Shift + P : Dismiss all reminders with confirmation
 
 ; Shift + H : Join Online
