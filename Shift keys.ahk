@@ -976,7 +976,7 @@ GetCheatSheetText() {
             appShortcuts := cheatSheets.Has("Gmail") ? cheatSheets["Gmail"] : ""
         if InStr(chromeTitle, "chatgpt")
             appShortcuts :=
-                "ChatGPT`r`n[Shift+Y] > Cut all`r`n[Shift+U] > Model selector`r`n[Shift+I] > Toggle sidebar`r`n[Shift+O] > Re-send rules`r`n[Shift+H] > Copy code block`r`n[Shift+J] > Go down`r`n[Shift+L] > Send and show AI banner"
+                "ChatGPT`r`n[Shift+I] > Toggle sidebar`r`n[Shift+O] > Re-send rules`r`n[Shift+H] > Copy code block`r`n[Shift+J] > Go down`r`n[Shift+L] > Send and show AI banner"
         if InStr(chromeTitle, "Mobills")
             appShortcuts :=
                 "Mobills - Navigation`r`n[Shift+Y] > Dashboard`r`n[Shift+U] > Contas`r`n[Shift+I] > TransaÃ§Ãµes`r`n[Shift+O] > CartÃµes de crÃ©dito`r`n[Shift+P] > Planejamento`r`n[Shift+H] > RelatÃ³rios`r`n[Shift+J] > Mais opÃ§Ãµes`r`n[Shift+K] > Previous month`r`n[Shift+L] > Next month`r`n`r`nMobills - Actions`r`n[Shift+N] > Ignore transaction`r`n[Shift+M] > Name field`r`n[Shift+E] > New Expense`r`n[Shift+R] > New Income`r`n[Shift+T] > New Credit expense`r`n[Shift+D] > New Transfer`r`n[Shift+W] > Open button + type MAIN"
@@ -3179,37 +3179,8 @@ Outlook_ClickEndTime_1200PM() {
 ;-------------------------------------------------------------------
 #HotIf (hwnd := GetChatGPTWindowHwnd()) && WinActive("ahk_id " hwnd)
 
-; Shift + Y : Select all and cut
-+y::
-{
-    Send "^a"
-    Sleep 50
-    Send "^x"
-}
-
-; Shift + U â†' click ChatGPT's model selector (any language)
-+u:: {
-    try {
-        uia := UIA_Browser("ahk_exe chrome.exe")
-        Sleep 300                 ; brief settle-time
-
-        ; Find the model selector button containing "model selector" text
-        modelCtl := uia.FindElement({
-            Name: "Model selector",
-            Type: "Button",
-            matchmode: "Substring"
-        })
-
-        ; Click or complain
-        if (modelCtl)
-            modelCtl.Click()
-        else
-            MsgBox "Couldn't find the model-selector button."
-    }
-    catch Error as e {
-        MsgBox "UIA error: " e.Message
-    }
-}
+; Shift + Y : (reserved for later script)
+; Shift + U : (reserved for later script)
 
 ; Shift + I: Toggle sidebar
 +i:: Send("^+s")
