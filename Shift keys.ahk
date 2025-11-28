@@ -2513,10 +2513,26 @@ IsTeamsChatActive() {
 +t::
 {
     try {
+        ; Show progress banner
+        ShowSmallLoadingIndicator_ChatGPT("Adding participants...")
+        
         win := WinExist("A")
         root := UIA.ElementFromHandle(win)
 
-        ; Find the "View and add participants" button using substring matching
+        ; First, find and click the "More chat options" button
+        moreOptionsButton := root.FindFirst({ Name: "More chat options", Type: "50000", matchmode: "Substring" })
+
+        if !moreOptionsButton {
+            ; Show error banner
+            ShowSmallLoadingIndicator_ChatGPT("Could not find more options button")
+            SetTimer(() => HideSmallLoadingIndicator_ChatGPT(), -2000)
+            return
+        }
+
+        moreOptionsButton.Click()
+        Sleep 500  ; Wait for menu to open
+
+        ; Now find and click the "View and add participants" button
         participantsButton := root.FindFirst({ Name: "View and add participants", Type: "50000", matchmode: "Substring" })
 
         if participantsButton {
@@ -2525,6 +2541,8 @@ IsTeamsChatActive() {
             Send "{Tab}"
             Sleep 300
             Send "{Enter}"
+            ; Hide progress banner on success
+            SetTimer(() => HideSmallLoadingIndicator_ChatGPT(), -1000)
         } else {
             ; Show error banner
             ShowSmallLoadingIndicator_ChatGPT("Could not find add participants button")
