@@ -2515,7 +2515,7 @@ IsTeamsChatActive() {
     try {
         ; Show progress banner
         ShowSmallLoadingIndicator_ChatGPT("Adding participants...")
-        
+
         win := WinExist("A")
         root := UIA.ElementFromHandle(win)
 
@@ -3197,7 +3197,39 @@ Outlook_ClickEndTime_1200PM() {
 ;-------------------------------------------------------------------
 #HotIf (hwnd := GetChatGPTWindowHwnd()) && WinActive("ahk_id " hwnd)
 
-; Shift + Y : (reserved for later script)
+; Shift + Y : Select element by path (for tests)
++y::
+{
+    try {
+        chatGPTHwnd := GetChatGPTWindowHwnd()
+        if !chatGPTHwnd {
+            return
+        }
+
+        ; Get UIA browser context for ChatGPT window
+        cUIA := UIA_Browser("ahk_id " chatGPTHwnd)
+        if !cUIA {
+            return
+        }
+
+        Sleep 200 ; Give UIA time to attach
+
+        ; Select element using the provided path
+        element := cUIA.ElementFromPath({ T: 33, CN: "BrowserRootView" }, { T: 33 }, { T: 33 }, { T: 33, CN: "BrowserView" }, { T: 33,
+            CN: "View" }, { T: 33 }, { T: 33 }, { T: 30 }, { T: 26 }, { T: 26 }, { T: 0, CN: "text-token-text-tertiary flex w-full items-center justify-start gap-0.5 px-4 py-1.5",
+                i: -1 }
+        )
+
+        if element {
+            element.SetFocus()
+            Sleep 100
+            element.Click()
+        }
+    } catch Error as err {
+        ShowErr(err)
+    }
+}
+
 ; Shift + U : (reserved for later script)
 
 ; Shift + I: Toggle sidebar

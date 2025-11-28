@@ -245,6 +245,8 @@ GetChatGPTWindowHwnd() {
             SafeSend("{Enter}")
             Sleep (IS_WORK_ENVIRONMENT ? 50 : 100)
             A_Clipboard := oldClip
+
+            ; Here
         }
     }
 }
