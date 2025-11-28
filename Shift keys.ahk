@@ -3191,9 +3191,8 @@ Outlook_ClickEndTime_1200PM() {
     Send "{Enter}"                     ; Confirm the action (detach tab)
 }
 
-; Ctrl + Alt + Y : Name ChatGPT window as "ChatGPT"
-^!y::
-{
+; Function to rename ChatGPT window (can be called directly or via hotkey)
+RenameChatGPTWindowToChatGPT() {
     try {
         ; Get the active Chrome window
         chatGPTHwnd := WinExist("A")
@@ -3404,7 +3403,15 @@ Outlook_ClickEndTime_1200PM() {
         Send "{Enter}"
     } catch Error as err {
         ShowErr(err)
+        return false
     }
+    return true
+}
+
+; Ctrl + Alt + Y : Name ChatGPT window as "ChatGPT"
+^!y::
+{
+    RenameChatGPTWindowToChatGPT()
 }
 
 #HotIf

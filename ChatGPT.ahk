@@ -247,16 +247,190 @@ GetChatGPTWindowHwnd() {
             A_Clipboard := oldClip
 
             ; Wait 10 seconds for window to receive a name, then rename it to "ChatGPT"
-            ShowSmallLoadingIndicator("ChatGPT is loading…")
             Sleep 10000 ; Wait 10 seconds for window to receive a name
             Send "{F5}"
-
             Sleep 7000
 
-            Send "^!y"
+            ; Call the renaming function directly
+            RenameChatGPTWindowToChatGPT()
 
-            HideSmallLoadingIndicator()
         }
+    }
+}
+
+; =============================================================================
+; Function to rename ChatGPT window to "ChatGPT"
+; =============================================================================
+RenameChatGPTWindowToChatGPT() {
+    try {
+        ; Get the active Chrome window
+        chatGPTHwnd := WinExist("A")
+        if !chatGPTHwnd {
+            return false
+        }
+
+        ; Get UIA browser context for the active Chrome window
+        cUIA := UIA_Browser("ahk_id " chatGPTHwnd)
+        if !cUIA {
+            return false
+        }
+
+        Sleep 200 ; Give UIA time to attach
+
+        ; Get root element (prefer document, fallback to browser root)
+        try {
+            root := cUIA.GetCurrentDocumentElement()
+        } catch {
+            root := cUIA.BrowserElement
+        }
+        if !root {
+            return false
+        }
+
+        ; Step 1: Locate the chat button (Type: 50000, Name: "Seus chats")
+        chatButton := 0
+        try {
+            chatButton := root.FindElement({ Type: 50000, Name: "Seus chats", cs: false })
+        } catch {
+            try {
+                chatButton := root.FindElement({ Type: 50000, Name: "Seus chats" })
+            } catch {
+            }
+        }
+
+        if !chatButton {
+            return false
+        }
+
+        ; Step 2: Get the sibling element (next sibling of chat button)
+        siblingElement := UIA.TreeWalkerTrue.TryGetNextSiblingElement(chatButton)
+        if !siblingElement {
+            return false
+        }
+
+        ; Step 2.5: Check if sibling element supports ExpandCollapse pattern and expand it if collapsed
+        try {
+            hasExpandPattern := siblingElement.GetPropertyValue(UIA.Property.IsExpandCollapsePatternAvailable)
+            if (hasExpandPattern) {
+                expandPattern := siblingElement.ExpandCollapsePattern
+                expandState := expandPattern.ExpandCollapseState
+
+                if (expandState == UIA.ExpandCollapseState.Collapsed) {
+                    expandPattern.Expand()
+                    Sleep 300
+                } else if (expandState == UIA.ExpandCollapseState.PartiallyExpanded) {
+                    expandPattern.Expand()
+                    Sleep 300
+                }
+            }
+        } catch {
+        }
+
+        ; Step 3: Find the OpenConversationOptions button
+        openConversationButton := 0
+
+        try {
+            openConversationButton := siblingElement.FindElement({ Type: 50000, Name: "Abrir opções de conversa", cs: false },
+            UIA.TreeScope.Descendants)
+        } catch {
+        }
+
+        if (!openConversationButton) {
+            try {
+                openConversationButton := siblingElement.FindElement({ Type: 50000, AutomationId: "radix-_r_b6_" }, UIA
+                .TreeScope.Descendants)
+            } catch {
+            }
+        }
+
+        if (!openConversationButton) {
+            try {
+                openConversationButton := siblingElement.FindElement({ Type: 50000, ClassName: "__menu-item-trailing-btn" },
+                UIA.TreeScope.Descendants)
+            } catch {
+            }
+        }
+
+        if (!openConversationButton) {
+            try {
+                openConversationButton := UIA.TreeWalkerTrue.TryGetFirstChildElement(siblingElement)
+                if (openConversationButton && openConversationButton.Type != 50000) {
+                    openConversationButton := 0
+                }
+            } catch {
+            }
+        }
+
+        if !openConversationButton {
+            return false
+        }
+
+        ; Step 4: Click the button
+        clicked := false
+
+        try {
+            openConversationButton.Invoke()
+            clicked := true
+        } catch {
+        }
+
+        if (!clicked) {
+            try {
+                openConversationButton.SetFocus()
+                Sleep 50
+                openConversationButton.Click()
+                clicked := true
+            } catch {
+            }
+        }
+
+        if (!clicked) {
+            try {
+                openConversationButton.Click("left")
+                clicked := true
+            } catch {
+            }
+        }
+
+        if (!clicked) {
+            try {
+                pos := openConversationButton.Location
+                if (pos && pos.w > 0 && pos.h > 0) {
+                    WinActivate("ahk_id " chatGPTHwnd)
+                    WinWaitActive("ahk_id " chatGPTHwnd, , 1)
+                    Sleep 100
+                    MouseGetPos(&prevX, &prevY)
+                    CoordMode("Mouse", "Screen")
+                    Click(pos.x + pos.w // 2, pos.y + pos.h // 2)
+                    Sleep 50
+                    MouseMove(prevX, prevY)
+                    clicked := true
+                }
+            } catch {
+            }
+        }
+
+        if (!clicked) {
+            return false
+        }
+
+        ; After clicking, send DownArrow three times, type "ChatGPT", and press Enter
+        Sleep 200
+        Send "{Down}"
+        Sleep 100
+        Send "{Down}"
+        Sleep 100
+        Send "{Down}"
+        Sleep 100
+        Send "{Enter}"
+        Sleep 400
+        Send "ChatGPT"
+        Sleep 100
+        Send "{Enter}"
+
+        return true
+    } catch Error as err {
+        return false
     }
 }
 
