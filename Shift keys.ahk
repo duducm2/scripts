@@ -3197,7 +3197,7 @@ Outlook_ClickEndTime_1200PM() {
 ;-------------------------------------------------------------------
 #HotIf (hwnd := GetChatGPTWindowHwnd()) && WinActive("ahk_id " hwnd)
 
-; Shift + Y : Select element by path (for tests)
+; Shift + Y : Select element by path and click button in first sibling (for tests)
 +y::
 {
     try {
@@ -3214,17 +3214,65 @@ Outlook_ClickEndTime_1200PM() {
 
         Sleep 200 ; Give UIA time to attach
 
-        ; Select element using the provided path
-        element := cUIA.ElementFromPath({ T: 33, CN: "BrowserRootView" }, { T: 33 }, { T: 33 }, { T: 33, CN: "BrowserView" }, { T: 33,
+        ; Select link element using the provided path
+        linkElement := cUIA.ElementFromPath({ T: 33, CN: "BrowserRootView" }, { T: 33 }, { T: 33 }, { T: 33, CN: "BrowserView" }, { T: 33,
             CN: "View" }, { T: 33 }, { T: 33 }, { T: 30 }, { T: 26 }, { T: 26 }, { T: 0, CN: "text-token-text-tertiary flex w-full items-center justify-start gap-0.5 px-4 py-1.5",
                 i: -1 }
         )
 
-        if element {
-            element.SetFocus()
-            Sleep 100
-            element.Click()
+        if !linkElement {
+            return
         }
+
+        ; Get the first sibling (next sibling) of the link element
+        firstSibling := UIA.TreeWalkerTrue.TryGetNextSiblingElement(linkElement)
+        if !firstSibling {
+            return
+        }
+
+        ; Enumerate children of the first sibling and filter by Type 50000 (Button)
+        ; Only trust Type, ignore Name, LocalizedType, AutomationId, ClassName
+        buttonFound := false
+        for child in firstSibling.GetChildren() {
+            ; Check if this child is a Button (Type 50000)
+            if (child.Type = 50000) {
+                ; If multiple buttons exist, choose the first one (immediately below link in hierarchy)
+                if !buttonFound {
+                    ; Try Invoke first, fallback to Click
+                    try {
+                        child.Invoke()
+                        buttonFound := true
+                        break
+                    } catch {
+                        ; If Invoke fails, try Click
+                        try {
+                            child.Click()
+                            buttonFound := true
+                            break
+                        }
+                    }
+                }
+            }
+        }
+
+        if !buttonFound {
+            ; No button found in first sibling's children
+            return
+        }
+
+        ; After clicking the button, send DownArrow three times, type "ChatGPT", and press Enter
+        Sleep 200 ; Give UI time to respond to button click
+        Send "{Down}"
+        Sleep 100
+        Send "{Down}"
+        Sleep 100
+        Send "{Down}"
+        Sleep 100
+        Send "{Enter}"
+        Sleep 400
+        Send "ChatGPT"
+        Sleep 100
+        Send "{Enter}"
     } catch Error as err {
         ShowErr(err)
     }
