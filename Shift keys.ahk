@@ -441,6 +441,7 @@ cheatSheets["chrome.exe"] := "
 (
 Chrome
 [Shift+G] > 🪟 Pop current tab to new window
+[Ctrl+Alt+Y] > 🏷️ Name ChatGPT window as "ChatGPT"
 )"  ; end Chrome
 
 ; --- Cursor ------------------------------------------------------
@@ -976,7 +977,7 @@ GetCheatSheetText() {
             appShortcuts := cheatSheets.Has("Gmail") ? cheatSheets["Gmail"] : ""
         if InStr(chromeTitle, "chatgpt")
             appShortcuts :=
-                "ChatGPT`r`n[Shift+Y] > Name the window as `"ChatGPT`"`r`n[Shift+I] > Toggle sidebar`r`n[Shift+O] > Re-send rules`r`n[Shift+H] > Copy code block`r`n[Shift+J] > Go down`r`n[Shift+L] > Send and show AI banner"
+                "ChatGPT`r`n[Shift+I] > Toggle sidebar`r`n[Shift+O] > Re-send rules`r`n[Shift+H] > Copy code block`r`n[Shift+J] > Go down`r`n[Shift+L] > Send and show AI banner"
         if InStr(chromeTitle, "Mobills")
             appShortcuts :=
                 "Mobills - Navigation`r`n[Shift+Y] > Dashboard`r`n[Shift+U] > Contas`r`n[Shift+I] > TransaÃ§Ãµes`r`n[Shift+O] > CartÃµes de crÃ©dito`r`n[Shift+P] > Planejamento`r`n[Shift+H] > RelatÃ³rios`r`n[Shift+J] > Mais opÃ§Ãµes`r`n[Shift+K] > Previous month`r`n[Shift+L] > Next month`r`n`r`nMobills - Actions`r`n[Shift+N] > Ignore transaction`r`n[Shift+M] > Name field`r`n[Shift+E] > New Expense`r`n[Shift+R] > New Income`r`n[Shift+T] > New Credit expense`r`n[Shift+D] > New Transfer`r`n[Shift+W] > Open button + type MAIN"
@@ -3190,23 +3191,17 @@ Outlook_ClickEndTime_1200PM() {
     Send "{Enter}"                     ; Confirm the action (detach tab)
 }
 
-#HotIf
-
-;-------------------------------------------------------------------
-; ChatGPT Shortcuts
-;-------------------------------------------------------------------
-#HotIf (hwnd := GetChatGPTWindowHwnd()) && WinActive("ahk_id " hwnd)
-
-; Shift + Y : Name the window as "ChatGPT"
-+y::
+; Ctrl + Alt + Y : Name ChatGPT window as "ChatGPT"
+^!y::
 {
     try {
-        chatGPTHwnd := GetChatGPTWindowHwnd()
+        ; Get the active Chrome window
+        chatGPTHwnd := WinExist("A")
         if !chatGPTHwnd {
             return
         }
 
-        ; Get UIA browser context for ChatGPT window
+        ; Get UIA browser context for the active Chrome window
         cUIA := UIA_Browser("ahk_id " chatGPTHwnd)
         if !cUIA {
             return
@@ -3214,49 +3209,183 @@ Outlook_ClickEndTime_1200PM() {
 
         Sleep 200 ; Give UIA time to attach
 
-        ; Select link element using the provided path
-        linkElement := cUIA.ElementFromPath({ T: 33, CN: "BrowserRootView" }, { T: 33 }, { T: 33 }, { T: 33, CN: "BrowserView" }, { T: 33,
-            CN: "View" }, { T: 33 }, { T: 33 }, { T: 30 }, { T: 26 }, { T: 26 }, { T: 0, CN: "text-token-text-tertiary flex w-full items-center justify-start gap-0.5 px-4 py-1.5",
-                i: -1 }
-        )
-
-        if !linkElement {
+        ; Get root element (prefer document, fallback to browser root)
+        try {
+            root := cUIA.GetCurrentDocumentElement()
+        } catch {
+            root := cUIA.BrowserElement
+        }
+        if !root {
+            MsgBox "Failed to get root element", "ChatGPT", "IconX"
             return
         }
 
-        ; Get the first sibling (next sibling) of the link element
-        firstSibling := UIA.TreeWalkerTrue.TryGetNextSiblingElement(linkElement)
-        if !firstSibling {
-            return
-        }
+        ; Step 1: Locate the chat button (Type: 50000, Name: "Seus chats")
+        chatButton := 0
+        try {
+            chatButton := root.FindElement({ Type: 50000, Name: "Seus chats", cs: false })
 
-        ; Enumerate children of the first sibling and filter by Type 50000 (Button)
-        ; Only trust Type, ignore Name, LocalizedType, AutomationId, ClassName
-        buttonFound := false
-        for child in firstSibling.GetChildren() {
-            ; Check if this child is a Button (Type 50000)
-            if (child.Type = 50000) {
-                ; If multiple buttons exist, choose the first one (immediately below link in hierarchy)
-                if !buttonFound {
-                    ; Try Invoke first, fallback to Click
-                    try {
-                        child.Invoke()
-                        buttonFound := true
-                        break
-                    } catch {
-                        ; If Invoke fails, try Click
-                        try {
-                            child.Click()
-                            buttonFound := true
-                            break
-                        }
-                    }
-                }
+        } catch {
+            ; Try without case sensitivity if first attempt fails
+            try {
+                chatButton := root.FindElement({ Type: 50000, Name: "Seus chats" })
+
+            } catch {
             }
         }
 
-        if !buttonFound {
-            ; No button found in first sibling's children
+        if !chatButton {
+            MsgBox "Failed to find chat button 'Seus chats'", "ChatGPT", "IconX"
+            return
+        }
+
+        ; Step 2: Get the sibling element (next sibling of chat button)
+        siblingElement := UIA.TreeWalkerTrue.TryGetNextSiblingElement(chatButton)
+        if !siblingElement {
+            MsgBox "Failed to find sibling element of chat button", "ChatGPT", "IconX"
+            return
+        }
+
+        ; Step 2.5: Check if sibling element supports ExpandCollapse pattern and expand it if collapsed
+        try {
+            hasExpandPattern := siblingElement.GetPropertyValue(UIA.Property.IsExpandCollapsePatternAvailable)
+            if (hasExpandPattern) {
+                expandPattern := siblingElement.ExpandCollapsePattern
+                expandState := expandPattern.ExpandCollapseState
+
+                ; If collapsed, expand it
+                if (expandState == UIA.ExpandCollapseState.Collapsed) {
+                    expandPattern.Expand()
+                    Sleep 300 ; Wait for expansion to complete
+                } else if (expandState == UIA.ExpandCollapseState.PartiallyExpanded) {
+                    ; If partially expanded, try to expand it fully
+                    expandPattern.Expand()
+                    Sleep 300
+                }
+            }
+        } catch {
+            ; Continue even if expand fails - element might not need expansion
+        }
+
+        ; Step 3: Find the OpenConversationOptions button directly using its known properties
+        ; Button: Type 50000, Name "Abrir opções de conversa", AutomationId "radix-_r_b6_", ClassName "__menu-item-trailing-btn"
+        openConversationButton := 0
+
+        ; Try 1: Find by Name and Type (most reliable)
+        try {
+            openConversationButton := siblingElement.FindElement({ Type: 50000, Name: "Abrir opções de conversa", cs: false },
+            UIA.TreeScope.Descendants)
+        } catch {
+        }
+
+        ; Try 2: Find by AutomationId (if Name search fails)
+        if (!openConversationButton) {
+            try {
+                openConversationButton := siblingElement.FindElement({ Type: 50000, AutomationId: "radix-_r_b6_" }, UIA
+                .TreeScope.Descendants)
+            } catch {
+            }
+        }
+
+        ; Try 3: Find by ClassName (if both above fail)
+        if (!openConversationButton) {
+            try {
+                openConversationButton := siblingElement.FindElement({ Type: 50000, ClassName: "__menu-item-trailing-btn" },
+                UIA.TreeScope.Descendants)
+            } catch {
+            }
+        }
+
+        ; Try 4: Fallback to first child button (if specific search fails)
+        if (!openConversationButton) {
+            try {
+                openConversationButton := UIA.TreeWalkerTrue.TryGetFirstChildElement(siblingElement)
+                ; Verify it's actually a button
+                if (openConversationButton && openConversationButton.Type != 50000) {
+                    openConversationButton := 0
+                }
+            } catch {
+            }
+        }
+
+        if !openConversationButton {
+            MsgBox "Failed to find OpenConversationOptions button 'Abrir opções de conversa'", "ChatGPT", "IconX"
+            return
+        }
+
+        ; Step 4: Click the OpenConversationOptions button
+        ; Check if button is enabled and visible
+        try {
+            if (openConversationButton.GetPropertyValue(UIA.Property.IsOffscreen)) {
+                MsgBox "OpenConversationOptions button is offscreen", "ChatGPT", "IconX"
+                return
+            }
+            if (!openConversationButton.GetPropertyValue(UIA.Property.IsEnabled)) {
+                MsgBox "OpenConversationOptions button is disabled", "ChatGPT", "IconX"
+                return
+            }
+        } catch {
+            ; Continue even if property check fails
+        }
+
+        ; Try multiple click strategies in order of preference
+        clicked := false
+
+        ; Strategy 1: Try Invoke pattern (most reliable for buttons)
+        try {
+            openConversationButton.Invoke()
+            clicked := true
+        } catch {
+        }
+
+        ; Strategy 2: Try SetFocus then Click
+        if (!clicked) {
+            try {
+                openConversationButton.SetFocus()
+                Sleep 50
+                openConversationButton.Click()
+                clicked := true
+            } catch {
+            }
+        }
+
+        ; Strategy 3: Force coordinate-based click using "left" parameter
+        if (!clicked) {
+            try {
+                openConversationButton.Click("left")
+                clicked := true
+            } catch {
+            }
+        }
+
+        ; Strategy 4: Direct coordinate click using element Location
+        if (!clicked) {
+            try {
+                pos := openConversationButton.Location
+                if (pos && pos.w > 0 && pos.h > 0) {
+                    ; Activate window first
+                    WinActivate("ahk_id " chatGPTHwnd)
+                    WinWaitActive("ahk_id " chatGPTHwnd, , 1)
+                    Sleep 100
+
+                    ; Save current mouse position
+                    MouseGetPos(&prevX, &prevY)
+
+                    ; Click at center of element
+                    CoordMode("Mouse", "Screen")
+                    Click(pos.x + pos.w // 2, pos.y + pos.h // 2)
+                    Sleep 50
+
+                    ; Restore mouse position
+                    MouseMove(prevX, prevY)
+                    clicked := true
+                }
+            } catch {
+            }
+        }
+
+        if (!clicked) {
+            MsgBox "Failed to click OpenConversationOptions button (all methods failed)", "ChatGPT", "IconX"
             return
         }
 
@@ -3277,6 +3406,13 @@ Outlook_ClickEndTime_1200PM() {
         ShowErr(err)
     }
 }
+
+#HotIf
+
+;-------------------------------------------------------------------
+; ChatGPT Shortcuts
+;-------------------------------------------------------------------
+#HotIf (hwnd := GetChatGPTWindowHwnd()) && WinActive("ahk_id " hwnd)
 
 ; Shift + U : (reserved for later script)
 

@@ -246,8 +246,110 @@ GetChatGPTWindowHwnd() {
             Sleep (IS_WORK_ENVIRONMENT ? 50 : 100)
             A_Clipboard := oldClip
 
-            ; Here
+            ; Wait 10 seconds for window to receive a name, then rename it to "ChatGPT"
+            ShowSmallLoadingIndicator("ChatGPT is loading…")
+            Sleep 10000 ; Wait 10 seconds for window to receive a name
+            Send "{F5}"
+            Sleep 2000
+
+            ; Ensure window is active before renaming
+            chatGPTHwnd := GetChatGPTWindowHwnd()
+            if chatGPTHwnd {
+                WinActivate "ahk_id " chatGPTHwnd
+                WinWaitActive "ahk_id " chatGPTHwnd, , 2
+                Sleep 500 ; Give window time to fully activate
+            }
+
+            ShowSmallLoadingIndicator("Renaming window…")
+            success := RenameChatGPTWindow()
+            if !success {
+                ShowSmallLoadingIndicator("Renaming failed, retrying…")
+                Sleep 2000
+                success := RenameChatGPTWindow()
+            }
+            HideSmallLoadingIndicator()
         }
+    }
+}
+
+; Helper function: Rename ChatGPT window to "ChatGPT"
+RenameChatGPTWindow() {
+    try {
+        chatGPTHwnd := GetChatGPTWindowHwnd()
+        if !chatGPTHwnd {
+            return false
+        }
+
+        ; Get UIA browser context for ChatGPT window
+        cUIA := UIA_Browser("ahk_id " chatGPTHwnd)
+        if !cUIA {
+            return false
+        }
+
+        Sleep 200 ; Give UIA time to attach
+
+        ; Select link element using the provided path
+        linkElement := cUIA.ElementFromPath({ T: 33, CN: "BrowserRootView" }, { T: 33 }, { T: 33 }, { T: 33, CN: "BrowserView" }, { T: 33,
+            CN: "View" }, { T: 33 }, { T: 33 }, { T: 30 }, { T: 26 }, { T: 26 }, { T: 0, CN: "text-token-text-tertiary flex w-full items-center justify-start gap-0.5 px-4 py-1.5",
+                i: -1 }
+        )
+
+        if !linkElement {
+            return false
+        }
+
+        ; Get the first sibling (next sibling) of the link element
+        firstSibling := UIA.TreeWalkerTrue.TryGetNextSiblingElement(linkElement)
+        if !firstSibling {
+            return false
+        }
+
+        ; Enumerate children of the first sibling and filter by Type 50000 (Button)
+        ; Only trust Type, ignore Name, LocalizedType, AutomationId, ClassName
+        buttonFound := false
+        for child in firstSibling.GetChildren() {
+            ; Check if this child is a Button (Type 50000)
+            if (child.Type = 50000) {
+                ; If multiple buttons exist, choose the first one (immediately below link in hierarchy)
+                if !buttonFound {
+                    ; Try Invoke first, fallback to Click
+                    try {
+                        child.Invoke()
+                        buttonFound := true
+                        break
+                    } catch {
+                        ; If Invoke fails, try Click
+                        try {
+                            child.Click()
+                            buttonFound := true
+                            break
+                        }
+                    }
+                }
+            }
+        }
+
+        if !buttonFound {
+            ; No button found in first sibling's children
+            return false
+        }
+
+        ; After clicking the button, send DownArrow three times, type "ChatGPT", and press Enter
+        Sleep 200 ; Give UI time to respond to button click
+        Send "{Down}"
+        Sleep 100
+        Send "{Down}"
+        Sleep 100
+        Send "{Down}"
+        Sleep 100
+        Send "{Enter}"
+        Sleep 400
+        Send "ChatGPT"
+        Sleep 100
+        Send "{Enter}"
+        return true
+    } catch Error as err {
+        return false
     }
 }
 
