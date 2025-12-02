@@ -3445,6 +3445,386 @@ Outlook_SelectOptionByInputBox(title, basePrompt, optionsMap) {
     }
 }
 
+; =============================================================================
+; Outlook Appointment Control State Checking Functions (UIA-based)
+; =============================================================================
+
+Outlook_CheckPrivacyState() {
+    try {
+        win := WinExist("A")
+        if (!win) {
+            return ""
+        }
+        root := UIA.ElementFromHandle(win)
+        Sleep 100  ; Allow UI to update
+        
+        ; Look for Private checkbox - typically has AutomationId or specific Name
+        checkbox := root.FindFirst({ AutomationId: "4227", ControlType: "CheckBox" })
+        if (!checkbox) {
+            checkbox := root.FindFirst({ Name: "Private", ControlType: "CheckBox" })
+        }
+        
+        if (checkbox) {
+            ; Check if checkbox is checked
+            isChecked := checkbox.GetCurrentPropertyValue(UIA.Property.ToggleToggleState)
+            ; ToggleState: 0 = Off, 1 = On
+            return (isChecked = 1) ? "On" : "Off"
+        }
+    } catch Error {
+        ; Silently fail - return empty string
+    }
+    return ""
+}
+
+Outlook_CheckAllDayState() {
+    try {
+        win := WinExist("A")
+        if (!win) {
+            return ""
+        }
+        root := UIA.ElementFromHandle(win)
+        Sleep 100  ; Allow UI to update
+        
+        checkbox := root.FindFirst({ AutomationId: "4226", ControlType: "CheckBox" })
+        if (!checkbox) {
+            checkbox := root.FindFirst({ Name: "All day", ControlType: "CheckBox" })
+        }
+        
+        if (checkbox) {
+            isChecked := checkbox.GetCurrentPropertyValue(UIA.Property.ToggleToggleState)
+            return (isChecked = 1) ? "Yes" : "No"
+        }
+    } catch Error {
+        ; Silently fail
+    }
+    return ""
+}
+
+Outlook_CheckStatusState() {
+    try {
+        win := WinExist("A")
+        if (!win) {
+            return ""
+        }
+        root := UIA.ElementFromHandle(win)
+        Sleep 100  ; Allow UI to update
+        
+        ; Look for Status dropdown/button - may need to find by AutomationId or Name
+        statusControl := root.FindFirst({ AutomationId: "4356", ControlType: "Button" })
+        if (!statusControl) {
+            statusControl := root.FindFirst({ Name: "Busy", ControlType: "Button" })
+        }
+        if (!statusControl) {
+            ; Try to find any control with Status-related names
+            statusControl := root.FindFirst({ Name: "Free", ControlType: "Button" })
+        }
+        
+        if (statusControl) {
+            ; Get the text/value of the status control
+            statusText := statusControl.GetCurrentPropertyValue(UIA.Property.Name)
+            if (InStr(statusText, "Free", false)) {
+                return "Free"
+            } else if (InStr(statusText, "Busy", false)) {
+                return "Busy"
+            } else if (InStr(statusText, "Out of office", false) || InStr(statusText, "Out of Office", false)) {
+                return "Out of office"
+            }
+        }
+    } catch Error {
+        ; Silently fail
+    }
+    return ""
+}
+
+Outlook_CheckCategoryState() {
+    try {
+        win := WinExist("A")
+        if (!win) {
+            return ""
+        }
+        root := UIA.ElementFromHandle(win)
+        Sleep 100  ; Allow UI to update
+        
+        ; Look for Category control - may be a button or dropdown
+        categoryControl := root.FindFirst({ AutomationId: "4357", ControlType: "Button" })
+        if (!categoryControl) {
+            categoryControl := root.FindFirst({ Name: "Categorize", ControlType: "Button" })
+        }
+        
+        if (categoryControl) {
+            ; Try to get category text/value
+            categoryText := categoryControl.GetCurrentPropertyValue(UIA.Property.Name)
+            if (InStr(categoryText, "Important", false)) {
+                return "Important"
+            } else if (InStr(categoryText, "Personal", false)) {
+                return "Personal"
+            }
+        }
+    } catch Error {
+        ; Silently fail
+    }
+    return ""
+}
+
+Outlook_CheckReminderState() {
+    try {
+        win := WinExist("A")
+        if (!win) {
+            return ""
+        }
+        root := UIA.ElementFromHandle(win)
+        Sleep 100  ; Allow UI to update
+        
+        ; Look for Reminder dropdown/field
+        reminderControl := root.FindFirst({ AutomationId: "4358", ControlType: "ComboBox" })
+        if (!reminderControl) {
+            reminderControl := root.FindFirst({ Name: "Reminder", ControlType: "ComboBox" })
+        }
+        if (!reminderControl) {
+            reminderControl := root.FindFirst({ Name: "Reminder", ControlType: "Edit" })
+        }
+        
+        if (reminderControl) {
+            reminderText := reminderControl.GetCurrentPropertyValue(UIA.Property.Value)
+            if (reminderText) {
+                return reminderText
+            }
+        }
+    } catch Error {
+        ; Silently fail
+    }
+    return ""
+}
+
+; =============================================================================
+; Outlook Appointment Control Application Functions
+; =============================================================================
+
+ApplyPrivacy(desiredState) {
+    if (desiredState = "Off") {
+        return  ; Do nothing if Private Off is desired
+    }
+    
+    try {
+        ; Check current state
+        currentState := Outlook_CheckPrivacyState()
+        if (currentState = "On") {
+            return  ; Already set to On, skip
+        }
+        
+        ; Ensure Outlook window is active
+        if (!IsOutlookAppointmentActive()) {
+            return
+        }
+        
+        ; Apply Private On: Alt+7
+        Send "{Alt Down}{Alt Up}"
+        Sleep 150
+        Send "7"
+        Sleep 200
+    } catch Error {
+        ; Silently continue
+    }
+}
+
+ApplyAllDay(desiredState) {
+    try {
+        ; Check current state
+        currentState := Outlook_CheckAllDayState()
+        if ((desiredState = "No (timed)" && currentState = "No") || 
+            (desiredState = "Yes" && currentState = "Yes")) {
+            return  ; Already set correctly, skip
+        }
+        
+        ; Ensure Outlook window is active
+        if (!IsOutlookAppointmentActive()) {
+            return
+        }
+        
+        ; Use existing UIA checkbox click logic
+        win := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+        
+        checkbox := root.FindFirst({ AutomationId: "4226", ControlType: "CheckBox" })
+        if (!checkbox) {
+            checkbox := root.FindFirst({ Name: "All day", ControlType: "CheckBox" })
+        }
+        
+        if (checkbox) {
+            checkbox.Invoke()
+            Sleep 200
+        }
+    } catch Error {
+        ; Silently continue
+    }
+}
+
+ApplyStatus(desiredState) {
+    try {
+        ; Check current state
+        currentState := Outlook_CheckStatusState()
+        if (currentState = desiredState) {
+            return  ; Already set correctly, skip
+        }
+        
+        ; Ensure Outlook window is active
+        if (!IsOutlookAppointmentActive()) {
+            return
+        }
+        
+        ; Open Status menu: Alt+5
+        Send "{Alt Down}{Alt Up}"
+        Sleep 150
+        Send "5"
+        Sleep 200
+        
+        ; Navigate based on desired state
+        if (desiredState = "Free") {
+            Send "{Up}"
+            Sleep 100
+            Send "{Up}"
+        } else if (desiredState = "Busy") {
+            Send "{Down}"
+        } else if (desiredState = "Out of office") {
+            Send "{Down}"
+            Sleep 100
+            Send "{Down}"
+        }
+        
+        Sleep 150
+        Send "{Enter}"
+        Sleep 200
+    } catch Error {
+        ; Silently continue
+    }
+}
+
+ApplyCategory(desiredState) {
+    try {
+        ; Check current state
+        currentState := Outlook_CheckCategoryState()
+        if (currentState = desiredState) {
+            return  ; Already set correctly, skip
+        }
+        
+        ; Ensure Outlook window is active
+        if (!IsOutlookAppointmentActive()) {
+            return
+        }
+        
+        ; Open Category menu: Alt+6
+        Send "{Alt Down}{Alt Up}"
+        Sleep 150
+        Send "6"
+        Sleep 200
+        
+        ; Navigate based on desired state
+        if (desiredState = "Important") {
+            ; Down 1-4 times, use 2 as default
+            Send "{Down}"
+            Sleep 150
+            Send "{Down}"
+        } else if (desiredState = "Personal") {
+            ; Down 6 times
+            loop 6 {
+                Send "{Down}"
+                Sleep 150
+            }
+        }
+        
+        Sleep 150
+        Send "{Enter}"
+        Sleep 200
+    } catch Error {
+        ; Silently continue
+    }
+}
+
+ApplyReminder(desiredState) {
+    try {
+        ; Check current state
+        currentState := Outlook_CheckReminderState()
+        ; Normalize current state for comparison
+        normalizedCurrent := ""
+        if (InStr(currentState, "4 hours", false) || InStr(currentState, "4 hour", false)) {
+            normalizedCurrent := "4 hours"
+        } else if (InStr(currentState, "1 day", false) || InStr(currentState, "one day", false)) {
+            normalizedCurrent := "1 day"
+        } else if (InStr(currentState, "4 days", false) || InStr(currentState, "four days", false)) {
+            normalizedCurrent := "4 days"
+        } else if (InStr(currentState, "1 week", false) || InStr(currentState, "one week", false)) {
+            normalizedCurrent := "1 week"
+        }
+        
+        if (normalizedCurrent = desiredState) {
+            return  ; Already set correctly, skip
+        }
+        
+        ; Ensure Outlook window is active
+        if (!IsOutlookAppointmentActive()) {
+            return
+        }
+        
+        ; Open Reminder field: Alt+8
+        Send "{Alt Down}{Alt Up}"
+        Sleep 150
+        Send "8"
+        Sleep 200
+        
+        ; Clear existing text and type new value
+        Send "^a"  ; Select all
+        Sleep 100
+        SendText desiredState  ; Type the reminder text
+        Sleep 200
+        Send "{Enter}"
+        Sleep 200
+    } catch Error {
+        ; Silently continue
+    }
+}
+
+; =============================================================================
+; Main Function: Apply All Outlook Appointment Settings
+; =============================================================================
+
+ApplyOutlookAppointmentSettings(privacy, allDay, status, category, reminder) {
+    ; Verify Outlook Appointment window is still active
+    if (!IsOutlookAppointmentActive()) {
+        MsgBox "Outlook Appointment window is not active.", "Error", "IconX"
+        return
+    }
+    
+    ; Show loading banner
+    ShowSmallLoadingIndicator_ChatGPT("Applying settings...")
+    
+    try {
+        ; Apply each setting in sequence
+        ApplyPrivacy(privacy.Private)
+        Sleep 100
+        
+        ApplyAllDay(allDay.AllDay)
+        Sleep 100
+        
+        ApplyStatus(status.Status)
+        Sleep 100
+        
+        ApplyCategory(category.Category)
+        Sleep 100
+        
+        ApplyReminder(reminder.Reminder)
+        
+        ; Update loading banner to show completion
+        ShowSmallLoadingIndicator_ChatGPT("Settings applied")
+        Sleep 1000
+    } catch Error as e {
+        ShowSmallLoadingIndicator_ChatGPT("Error applying settings")
+        Sleep 1000
+    } finally {
+        ; Always hide loading banner
+        HideSmallLoadingIndicator_ChatGPT()
+    }
+}
+
 RunOutlookAppointmentWizard() {
     ; STEP 1 – Privacy (2 options)
     step1Options := Map()
@@ -3524,16 +3904,19 @@ RunOutlookAppointmentWizard() {
     }
     selReminder := step5Options[choice5]
 
-    ; Final summary (preview only)
-    summary  := "✅ Preview of appointment configuration:" . "`n`n"
+    ; Final summary and apply settings
+    summary  := "✅ Appointment configuration:" . "`n`n"
     summary .= "📊 Status:    " . selStatus.Status . "`n"
     summary .= "📂 Category:  " . selCategory.Category . "`n"
     summary .= "📅 All-day:   " . selAllDay.AllDay . "`n"
     summary .= "🔐 Private:   " . selPrivacy.Private . "`n"
     summary .= "⏰ Reminder:  " . selReminder.Reminder . "`n`n"
-    summary .= "ℹ️ This is a preview only – no changes were applied yet."
+    summary .= "Applying settings now..."
 
-    MsgBox summary, "📅 Outlook Appointment – Preview", "Iconi"
+    MsgBox summary, "📅 Outlook Appointment", "Iconi"
+    
+    ; Apply the settings
+    ApplyOutlookAppointmentSettings(selPrivacy, selAllDay, selStatus, selCategory, selReminder)
 }
 
 ; Shift + . → Cascaded text wizard for Outlook Appointment
