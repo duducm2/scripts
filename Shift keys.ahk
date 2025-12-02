@@ -3452,14 +3452,14 @@ RunOutlookAppointmentWizard() {
     step1Options["2"] := { Label: "🔒 Private ON",  Private: "On" }
 
     choice1 := Outlook_SelectOptionByInputBox(
-        "📅 Outlook Appointment – Step 1 of 4",
+        "📅 Outlook Appointment – Step 1 of 5",
         "Choose privacy:",
         step1Options
     )
     if (choice1 = "") {
         return  ; user cancelled
     }
-    sel1 := step1Options[choice1]
+    selPrivacy := step1Options[choice1]
 
     ; STEP 2 – All-day (2 options)
     step2Options := Map()
@@ -3467,52 +3467,70 @@ RunOutlookAppointmentWizard() {
     step2Options["2"] := { Label: "📅 All-day YES",        AllDay: "Yes" }
 
     choice2 := Outlook_SelectOptionByInputBox(
-        "📅 Outlook Appointment – Step 2 of 4",
+        "📅 Outlook Appointment – Step 2 of 5",
         "Choose duration:",
         step2Options
     )
     if (choice2 = "") {
         return
     }
-    sel2 := step2Options[choice2]
+    selAllDay := step2Options[choice2]
 
     ; STEP 3 – Status (3 options)
     step3Options := Map()
-    step3Options["1"] := { Label: "🟢 Free",         Status: "Free" }
-    step3Options["2"] := { Label: "🟡 Busy",         Status: "Busy" }
+    step3Options["1"] := { Label: "🟢 Free",          Status: "Free" }
+    step3Options["2"] := { Label: "🟡 Busy",          Status: "Busy" }
     step3Options["3"] := { Label: "🔴 Out of office", Status: "Out of office" }
 
     choice3 := Outlook_SelectOptionByInputBox(
-        "📅 Outlook Appointment – Step 3 of 4",
+        "📅 Outlook Appointment – Step 3 of 5",
         "Choose status:",
         step3Options
     )
     if (choice3 = "") {
         return
     }
-    sel3 := step3Options[choice3]
+    selStatus := step3Options[choice3]
 
-    ; STEP 4 – Reminder (2 options)
+    ; STEP 4 – Category (2 options)
     step4Options := Map()
-    step4Options["1"] := { Label: "⏰ Reminder 15 minutes before", Reminder: "15 minutes" }
-    step4Options["2"] := { Label: "📆 Reminder 2 days before",      Reminder: "2 days" }
+    step4Options["1"] := { Label: "⭐ Important", Category: "Important" }
+    step4Options["2"] := { Label: "👤 Personal",  Category: "Personal" }
 
     choice4 := Outlook_SelectOptionByInputBox(
-        "📅 Outlook Appointment – Step 4 of 4",
-        "Choose reminder:",
+        "📅 Outlook Appointment – Step 4 of 5",
+        "Choose category:",
         step4Options
     )
     if (choice4 = "") {
         return
     }
-    sel4 := step4Options[choice4]
+    selCategory := step4Options[choice4]
+
+    ; STEP 5 – Reminder (4 options)
+    step5Options := Map()
+    step5Options["1"] := { Label: "⏰ Reminder 4 hours before",   Reminder: "4 hours" }
+    step5Options["2"] := { Label: "🗓️ Reminder 1 day before",     Reminder: "1 day" }
+    step5Options["3"] := { Label: "📆 Reminder 4 days before",    Reminder: "4 days" }
+    step5Options["4"] := { Label: "📅 Reminder 1 week before",    Reminder: "1 week" }
+
+    choice5 := Outlook_SelectOptionByInputBox(
+        "📅 Outlook Appointment – Step 5 of 5",
+        "Choose reminder:",
+        step5Options
+    )
+    if (choice5 = "") {
+        return
+    }
+    selReminder := step5Options[choice5]
 
     ; Final summary (preview only)
     summary  := "✅ Preview of appointment configuration:" . "`n`n"
-    summary .= "📊 Status:  " . sel3.Status . "`n"
-    summary .= "📅 All-day: " . sel2.AllDay . "`n"
-    summary .= "🔐 Private: " . sel1.Private . "`n"
-    summary .= "⏰ Reminder: " . sel4.Reminder . "`n`n"
+    summary .= "📊 Status:    " . selStatus.Status . "`n"
+    summary .= "📂 Category:  " . selCategory.Category . "`n"
+    summary .= "📅 All-day:   " . selAllDay.AllDay . "`n"
+    summary .= "🔐 Private:   " . selPrivacy.Private . "`n"
+    summary .= "⏰ Reminder:  " . selReminder.Reminder . "`n`n"
     summary .= "ℹ️ This is a preview only – no changes were applied yet."
 
     MsgBox summary, "📅 Outlook Appointment – Preview", "Iconi"
