@@ -3393,16 +3393,25 @@ CreateOutlookOptionHandler(optionsMap) {
 
 ; Show selection dialog with immediate auto-submit on number entry (no Enter needed)
 Outlook_SelectOptionByInputBox(title, basePrompt, optionsMap) {
-    ; Build prompt text
+    ; Build prompt text with better spacing and grouping
     prompt := basePrompt . "`n`n"
     validList := ""
+    lastGroup := 0
     for key, opt in optionsMap {
+        ; Add extra spacing between groups if this option has a Group property
+        if (opt.HasProp("Group") && opt.Group != lastGroup && lastGroup > 0) {
+            prompt .= "`n"  ; Add blank line between groups
+        }
+        if (opt.HasProp("Group")) {
+            lastGroup := opt.Group
+        }
+        
         prompt .= key . ") " . opt.Label . "`n"
         if (validList != "")
             validList .= ", "
         validList .= key
     }
-    prompt .= "`nType a number (" . validList . "):"
+    prompt .= "`n`nType a number (" . validList . "):"
 
     ; Create GUI dialog
     try {
@@ -3437,16 +3446,14 @@ Outlook_SelectOptionByInputBox(title, basePrompt, optionsMap) {
 }
 
 RunOutlookAppointmentWizard() {
-    ; STEP 1 – Private × All‑day (4 options)
+    ; STEP 1 – Privacy (2 options)
     step1Options := Map()
-    step1Options["1"] := { Label: "Private OFF · All-day NO (timed)", Private: "Off", AllDay: "No (timed)" }
-    step1Options["2"] := { Label: "Private OFF · All-day YES",        Private: "Off", AllDay: "Yes" }
-    step1Options["3"] := { Label: "Private ON  · All-day NO (timed)", Private: "On",  AllDay: "No (timed)" }
-    step1Options["4"] := { Label: "Private ON  · All-day YES",        Private: "On",  AllDay: "Yes" }
+    step1Options["1"] := { Label: "🔓 Private OFF", Private: "Off" }
+    step1Options["2"] := { Label: "🔒 Private ON",  Private: "On" }
 
     choice1 := Outlook_SelectOptionByInputBox(
-        "Outlook Appointment – Step 1 of 3",
-        "Choose privacy and duration:",
+        "📅 Outlook Appointment – Step 1 of 4",
+        "Choose privacy:",
         step1Options
     )
     if (choice1 = "") {
@@ -3454,15 +3461,14 @@ RunOutlookAppointmentWizard() {
     }
     sel1 := step1Options[choice1]
 
-    ; STEP 2 – Status (3 options)
+    ; STEP 2 – All-day (2 options)
     step2Options := Map()
-    step2Options["1"] := { Label: "Free",         Status: "Free" }
-    step2Options["2"] := { Label: "Busy",         Status: "Busy" }
-    step2Options["3"] := { Label: "Out of office", Status: "Out of office" }
+    step2Options["1"] := { Label: "⏰ All-day NO (timed)", AllDay: "No (timed)" }
+    step2Options["2"] := { Label: "📅 All-day YES",        AllDay: "Yes" }
 
     choice2 := Outlook_SelectOptionByInputBox(
-        "Outlook Appointment – Step 2 of 3",
-        "Choose status:",
+        "📅 Outlook Appointment – Step 2 of 4",
+        "Choose duration:",
         step2Options
     )
     if (choice2 = "") {
@@ -3470,14 +3476,15 @@ RunOutlookAppointmentWizard() {
     }
     sel2 := step2Options[choice2]
 
-    ; STEP 3 – Reminder (2 options)
+    ; STEP 3 – Status (3 options)
     step3Options := Map()
-    step3Options["1"] := { Label: "Reminder 15 minutes before", Reminder: "15 minutes" }
-    step3Options["2"] := { Label: "Reminder 2 days before",      Reminder: "2 days" }
+    step3Options["1"] := { Label: "🟢 Free",         Status: "Free" }
+    step3Options["2"] := { Label: "🟡 Busy",         Status: "Busy" }
+    step3Options["3"] := { Label: "🔴 Out of office", Status: "Out of office" }
 
     choice3 := Outlook_SelectOptionByInputBox(
-        "Outlook Appointment – Step 3 of 3",
-        "Choose reminder:",
+        "📅 Outlook Appointment – Step 3 of 4",
+        "Choose status:",
         step3Options
     )
     if (choice3 = "") {
@@ -3485,15 +3492,30 @@ RunOutlookAppointmentWizard() {
     }
     sel3 := step3Options[choice3]
 
-    ; Final summary (preview only)
-    summary  := "Preview of appointment configuration:" . "`n`n"
-    summary .= "Status:  " . sel2.Status . "`n"
-    summary .= "All-day: " . sel1.AllDay . "`n"
-    summary .= "Private: " . sel1.Private . "`n"
-    summary .= "Reminder: " . sel3.Reminder . "`n`n"
-    summary .= "This is a preview only – no changes were applied yet."
+    ; STEP 4 – Reminder (2 options)
+    step4Options := Map()
+    step4Options["1"] := { Label: "⏰ Reminder 15 minutes before", Reminder: "15 minutes" }
+    step4Options["2"] := { Label: "📆 Reminder 2 days before",      Reminder: "2 days" }
 
-    MsgBox summary, "Outlook Appointment – Preview", "Iconi"
+    choice4 := Outlook_SelectOptionByInputBox(
+        "📅 Outlook Appointment – Step 4 of 4",
+        "Choose reminder:",
+        step4Options
+    )
+    if (choice4 = "") {
+        return
+    }
+    sel4 := step4Options[choice4]
+
+    ; Final summary (preview only)
+    summary  := "✅ Preview of appointment configuration:" . "`n`n"
+    summary .= "📊 Status:  " . sel3.Status . "`n"
+    summary .= "📅 All-day: " . sel2.AllDay . "`n"
+    summary .= "🔐 Private: " . sel1.Private . "`n"
+    summary .= "⏰ Reminder: " . sel4.Reminder . "`n`n"
+    summary .= "ℹ️ This is a preview only – no changes were applied yet."
+
+    MsgBox summary, "📅 Outlook Appointment – Preview", "Iconi"
 }
 
 ; Shift + . → Cascaded text wizard for Outlook Appointment
