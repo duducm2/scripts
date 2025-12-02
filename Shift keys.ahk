@@ -3618,9 +3618,8 @@ ApplyPrivacy(desiredState) {
         }
         
         ; Apply Private On: Alt+7
-        Send "{Alt Down}{Alt Up}"
-        Sleep 150
-        Send "7"
+        ; Use ! prefix for Alt key combination
+        Send "!7"
         Sleep 200
     } catch Error {
         ; Silently continue
@@ -3673,25 +3672,23 @@ ApplyStatus(desiredState) {
         }
         
         ; Open Status menu: Alt+5
-        Send "{Alt Down}{Alt Up}"
-        Sleep 150
-        Send "5"
-        Sleep 200
+        Send "!5"
+        Sleep 300  ; Wait for menu to open
         
         ; Navigate based on desired state
         if (desiredState = "Free") {
             Send "{Up}"
-            Sleep 100
+            Sleep 150
             Send "{Up}"
         } else if (desiredState = "Busy") {
             Send "{Down}"
         } else if (desiredState = "Out of office") {
             Send "{Down}"
-            Sleep 100
+            Sleep 150
             Send "{Down}"
         }
         
-        Sleep 150
+        Sleep 200  ; Wait before confirming
         Send "{Enter}"
         Sleep 200
     } catch Error {
@@ -3713,26 +3710,24 @@ ApplyCategory(desiredState) {
         }
         
         ; Open Category menu: Alt+6
-        Send "{Alt Down}{Alt Up}"
-        Sleep 150
-        Send "6"
-        Sleep 200
+        Send "!6"
+        Sleep 300  ; Wait for menu to open
         
         ; Navigate based on desired state
         if (desiredState = "Important") {
             ; Down 1-4 times, use 2 as default
             Send "{Down}"
-            Sleep 150
+            Sleep 200
             Send "{Down}"
         } else if (desiredState = "Personal") {
             ; Down 6 times
             loop 6 {
                 Send "{Down}"
-                Sleep 150
+                Sleep 200
             }
         }
         
-        Sleep 150
+        Sleep 200  ; Wait before confirming
         Send "{Enter}"
         Sleep 200
     } catch Error {
@@ -3766,9 +3761,7 @@ ApplyReminder(desiredState) {
         }
         
         ; Open Reminder field: Alt+8
-        Send "{Alt Down}{Alt Up}"
-        Sleep 150
-        Send "8"
+        Send "!8"
         Sleep 200
         
         ; Clear existing text and type new value
