@@ -1101,16 +1101,13 @@ SelectSquareByIndex(index) {
         ; Also destroy direction indicators immediately
         CleanupDirectionIndicators()
 
-        ; Force a small delay to ensure GUI destruction is complete
-        Sleep 20
+        ; Brief delay to ensure GUI destruction is complete
+        Sleep 15
 
-        ; STEP 4: Clean up direction indicators immediately
-        CleanupDirectionIndicators()
+        ; STEP 4: Wait briefly for GUI cleanup to complete
+        Sleep 25
 
-        ; STEP 5: Wait for GUI cleanup to complete
-        Sleep 50
-
-        ; STEP 6: Find window at target position (now that squares are gone)
+        ; STEP 5: Find window at target position (now that squares are gone)
         targetHwnd := DllCall("WindowFromPoint", "Int64", (targetPos.y << 32) | (targetPos.x & 0xFFFFFFFF), "Ptr")
         if (targetHwnd) {
             ; Get the root window (in case we got a child window)
@@ -1121,15 +1118,15 @@ SelectSquareByIndex(index) {
             ; Activate the window
             try {
                 WinActivate("ahk_id " . targetHwnd)
-                WinWaitActive("ahk_id " . targetHwnd, , 0.5)
+                WinWaitActive("ahk_id " . targetHwnd, , 0.35)
             } catch {
                 ; Ignore if activation fails
             }
         }
 
-        ; STEP 7: Move mouse and click
+        ; STEP 6: Move mouse and click
         DllCall("SetCursorPos", "int", targetPos.x, "int", targetPos.y)
-        Sleep 100
+        Sleep 40
 
         ; Update last mouse click tick to prevent MonitorActiveWindow interference
         try {
