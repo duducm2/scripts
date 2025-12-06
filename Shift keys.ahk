@@ -3951,7 +3951,7 @@ RenameChatGPTWindowToChatGPT() {
 
         ; Send F5 to refresh the page
         Send "{F5}"
-        Sleep 2000 ; Wait for page refresh
+        Sleep 5000 ; Wait for page refresh
 
         ; Get the active Chrome window
         chatGPTHwnd := WinExist("A")
@@ -3980,6 +3980,47 @@ RenameChatGPTWindowToChatGPT() {
             MsgBox "Failed to get root element", "ChatGPT", "IconX"
             return
         }
+
+        ; Step 0: Ensure sidebar is open (required for "Seus chats" to be visible)
+        ; Check if sidebar is open by looking for "Fechar barra lateral" button
+        sidebarCloseButton := 0
+        try {
+            sidebarCloseButton := root.FindElement({ Type: 50000, Name: "Fechar barra lateral", cs: false })
+        } catch {
+            try {
+                sidebarCloseButton := root.FindElement({ Type: 50000, Name: "Fechar barra lateral" })
+            } catch {
+            }
+        }
+
+        ; If sidebar is not open (button not found), open it using keyboard shortcut
+        if (!sidebarCloseButton) {
+            ; Try to open sidebar with Ctrl+Shift+S
+            Send "^+s"
+            Sleep 500 ; Wait for sidebar to open
+
+            ; Verify sidebar is now open by checking for the close button again
+            try {
+                sidebarCloseButton := root.FindElement({ Type: 50000, Name: "Fechar barra lateral", cs: false })
+            } catch {
+                try {
+                    sidebarCloseButton := root.FindElement({ Type: 50000, Name: "Fechar barra lateral" })
+                } catch {
+                }
+            }
+
+            ; If still not found, try alternative: look for "Seus chats" or "Chats" text to verify sidebar
+            if (!sidebarCloseButton) {
+                ; Wait a bit more and try one more time
+                Sleep 500
+                try {
+                    sidebarCloseButton := root.FindElement({ Type: 50000, Name: "Fechar barra lateral", cs: false })
+                } catch {
+                }
+            }
+        }
+
+        Sleep 1000 ; Wait for sidebar to open
 
         ; Step 1: Locate the chat button (Type: 50000, Name: "Seus chats")
         chatButton := 0
@@ -4169,6 +4210,36 @@ RenameChatGPTWindowToChatGPT() {
         Send "ChatGPT"
         Sleep 100
         Send "{Enter}"
+        Sleep 500 ; Wait for rename to complete
+
+        ; Send F5 to refresh the page
+        Send "{F5}"
+        Sleep 2000 ; Wait for page refresh
+
+        ; Collapse the sidebar at the end
+        try {
+            ; Try to find and click the "Fechar barra lateral" button
+            sidebarCloseButton := root.FindElement({ Type: 50000, Name: "Fechar barra lateral", cs: false })
+            if (sidebarCloseButton) {
+                try {
+                    sidebarCloseButton.Invoke()
+                } catch {
+                    try {
+                        sidebarCloseButton.Click()
+                    } catch {
+                        ; Fallback to keyboard shortcut if button click fails
+                        Send "^+s"
+                    }
+                }
+            } else {
+                ; If button not found, use keyboard shortcut to close sidebar
+                Send "^+s"
+            }
+        } catch {
+            ; If any error occurs, use keyboard shortcut as fallback
+            Send "^+s"
+        }
+        Sleep 300 ; Wait for sidebar to close
 
         ; Hide banner on success
         HideSmallLoadingIndicator_ChatGPT()
