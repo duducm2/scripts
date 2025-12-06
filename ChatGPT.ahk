@@ -80,6 +80,12 @@ SafeClick(element) {
     }
 }
 
+; ShowErr(msgOrErr) - uniform MsgBox for any thrown value
+ShowErr(err) {
+    text := (Type(err) = "Error") ? err.Message : err
+    MsgBox("Error:`n" text, "Error", "IconX")
+}
+
 ; Temporarily disable Windows system sounds
 DisableSystemSounds() {
     try {
@@ -210,6 +216,85 @@ GetChatGPTWindowHwnd() {
 ; --- Hotkeys & Functions -----------------------------------------------------
 
 ; =============================================================================
+; Initialize ChatGPT window on first-time opening
+; This function handles the complete setup when opening ChatGPT for the first time
+; =============================================================================
+InitializeChatGPTFirstTime() {
+    try {
+        ; Show banner to inform user
+        ShowSmallLoadingIndicator("Opening ChatGPT...")
+
+        ; Run Chrome with new window
+        Run "chrome.exe --new-window https://chatgpt.com/"
+        if !WinWaitActive("ahk_exe chrome.exe", , 5) {
+            HideSmallLoadingIndicator()
+            return
+        }
+
+        ; Get the ChatGPT window handle
+        chatGPTHwnd := WinExist("A")
+        if !chatGPTHwnd {
+            HideSmallLoadingIndicator()
+            return
+        }
+
+        ; Activate the ChatGPT window
+        WinActivate("ahk_id " chatGPTHwnd)
+        WinWaitActive("ahk_id " chatGPTHwnd, , 2)
+        Sleep 200 ; Give window time to fully activate
+
+        RecenterLoadingOverWindow(chatGPTHwnd)
+        CenterMouse()
+
+        ; Update banner status
+        ShowSmallLoadingIndicator("Loading ChatGPT page...")
+
+        ; --- Read initial prompt from external file & paste it ---
+        Sleep (IS_WORK_ENVIRONMENT ? 3500 : 7000)  ; give the page time to load fully
+        promptText := ""
+        try promptText := FileRead(PROMPT_FILE, "UTF-8")
+        if (StrLen(promptText) = 0)
+            promptText := "hey, what's up?"
+
+        ; Update banner status
+        ShowSmallLoadingIndicator("Sending initial prompt...")
+
+        ; Copy–paste to handle Unicode & speed
+        oldClip := A_Clipboard
+        A_Clipboard := ""
+        A_Clipboard := promptText
+        ClipWait 1
+        SafeSend("^v")
+        Sleep (IS_WORK_ENVIRONMENT ? 50 : 100)
+        SafeSend("{Enter}")
+        Sleep (IS_WORK_ENVIRONMENT ? 50 : 100)
+        A_Clipboard := oldClip
+
+        ; Update banner status
+        ShowSmallLoadingIndicator("Waiting for response...")
+
+        ; Wait 10 seconds for window to receive a name, then rename it to "ChatGPT"
+        Sleep 10000 ; Wait 10 seconds for window to receive a name
+
+        ; Update banner status
+        ShowSmallLoadingIndicator("Refreshing page...")
+        Send "{F5}"
+        Sleep 7000
+
+        ; Update banner status and call the renaming function
+        ShowSmallLoadingIndicator("Renaming window to ChatGPT...")
+        RenameChatGPTWindowToChatGPT()
+
+        ; Hide banner on success
+        HideSmallLoadingIndicator()
+    } catch Error as err {
+        ; Hide banner on error
+        HideSmallLoadingIndicator()
+        ShowErr(err)
+    }
+}
+
+; =============================================================================
 ; Open ChatGPT
 ; Hotkey: Win+Alt+Shift+I
 ; Original File: Open Chat GPT.ahk
@@ -224,37 +309,7 @@ GetChatGPTWindowHwnd() {
         }
         SafeSend("{Esc}")
     } else {
-        Run "chrome.exe --new-window https://chatgpt.com/"
-        if WinWaitActive("ahk_exe chrome.exe", , 5) {
-            RecenterLoadingOverWindow(WinExist("A"))
-            CenterMouse()
-            ; --- Read initial prompt from external file & paste it ---
-            Sleep (IS_WORK_ENVIRONMENT ? 3500 : 7000)  ; give the page time to load fully
-            promptText := ""
-            try promptText := FileRead(PROMPT_FILE, "UTF-8")
-            if (StrLen(promptText) = 0)
-                promptText := "hey, what's up?"
-
-            ; Copy–paste to handle Unicode & speed
-            oldClip := A_Clipboard
-            A_Clipboard := ""
-            A_Clipboard := promptText
-            ClipWait 1
-            SafeSend("^v")
-            Sleep (IS_WORK_ENVIRONMENT ? 50 : 100)
-            SafeSend("{Enter}")
-            Sleep (IS_WORK_ENVIRONMENT ? 50 : 100)
-            A_Clipboard := oldClip
-
-            ; Wait 10 seconds for window to receive a name, then rename it to "ChatGPT"
-            Sleep 10000 ; Wait 10 seconds for window to receive a name
-            Send "{F5}"
-            Sleep 7000
-
-            ; Call the renaming function directly
-            RenameChatGPTWindowToChatGPT()
-
-        }
+        InitializeChatGPTFirstTime()
     }
 }
 
@@ -263,15 +318,29 @@ GetChatGPTWindowHwnd() {
 ; =============================================================================
 RenameChatGPTWindowToChatGPT() {
     try {
-        ; Get the active Chrome window
-        chatGPTHwnd := WinExist("A")
+        ; Show banner to inform user
+        ShowSmallLoadingIndicator("Renaming ChatGPT window...")
+
+        ; Get the ChatGPT window handle first
+        chatGPTHwnd := GetChatGPTWindowHwnd()
         if !chatGPTHwnd {
+            HideSmallLoadingIndicator()
             return false
         }
+
+        ; Activate the ChatGPT window before sending keyboard input
+        WinActivate("ahk_id " chatGPTHwnd)
+        WinWaitActive("ahk_id " chatGPTHwnd, , 2)
+        Sleep 200 ; Give window time to fully activate
+
+        ; Send F5 to refresh the page
+        Send "{F5}"
+        Sleep 5000 ; Wait for page refresh
 
         ; Get UIA browser context for the active Chrome window
         cUIA := UIA_Browser("ahk_id " chatGPTHwnd)
         if !cUIA {
+            HideSmallLoadingIndicator()
             return false
         }
 
@@ -284,27 +353,97 @@ RenameChatGPTWindowToChatGPT() {
             root := cUIA.BrowserElement
         }
         if !root {
+            HideSmallLoadingIndicator()
+            MsgBox "Failed to get root element", "ChatGPT", "IconX"
             return false
         }
 
-        ; Step 1: Locate the chat button (Type: 50000, Name: "Seus chats")
-        chatButton := 0
-        try {
-            chatButton := root.FindElement({ Type: 50000, Name: "Seus chats", cs: false })
-        } catch {
+        ; Step 0: Ensure sidebar is open (required for "Seus chats" to be visible)
+        ; Check if sidebar is open by looking for close sidebar button (Portuguese or English)
+        sidebarCloseButton := 0
+        sidebarCloseNames := ["Fechar barra lateral", "Close sidebar"]
+        for name in sidebarCloseNames {
             try {
-                chatButton := root.FindElement({ Type: 50000, Name: "Seus chats" })
+                sidebarCloseButton := root.FindElement({ Type: 50000, Name: name, cs: false })
+                if (sidebarCloseButton)
+                    break
             } catch {
+                try {
+                    sidebarCloseButton := root.FindElement({ Type: 50000, Name: name })
+                    if (sidebarCloseButton)
+                        break
+                } catch {
+                }
+            }
+        }
+
+        ; If sidebar is not open (button not found), open it using keyboard shortcut
+        if (!sidebarCloseButton) {
+            ; Try to open sidebar with Ctrl+Shift+S
+            Send "^+s"
+            Sleep 500 ; Wait for sidebar to open
+
+            ; Verify sidebar is now open by checking for the close button again
+            for name in sidebarCloseNames {
+                try {
+                    sidebarCloseButton := root.FindElement({ Type: 50000, Name: name, cs: false })
+                    if (sidebarCloseButton)
+                        break
+                } catch {
+                    try {
+                        sidebarCloseButton := root.FindElement({ Type: 50000, Name: name })
+                        if (sidebarCloseButton)
+                            break
+                    } catch {
+                    }
+                }
+            }
+
+            ; If still not found, wait a bit more and try one more time
+            if (!sidebarCloseButton) {
+                Sleep 500
+                for name in sidebarCloseNames {
+                    try {
+                        sidebarCloseButton := root.FindElement({ Type: 50000, Name: name, cs: false })
+                        if (sidebarCloseButton)
+                            break
+                    } catch {
+                    }
+                }
+            }
+        }
+
+        Sleep 1000 ; Wait for sidebar to open
+
+        ; Step 1: Locate the chat button (Type: 50000, Name: "Seus chats" or "Your chats")
+        chatButton := 0
+        chatButtonNames := ["Seus chats", "Your chats", "Chats"]
+        for name in chatButtonNames {
+            try {
+                chatButton := root.FindElement({ Type: 50000, Name: name, cs: false })
+                if (chatButton)
+                    break
+            } catch {
+                try {
+                    chatButton := root.FindElement({ Type: 50000, Name: name })
+                    if (chatButton)
+                        break
+                } catch {
+                }
             }
         }
 
         if !chatButton {
+            HideSmallLoadingIndicator()
+            MsgBox "Failed to find chat button (tried: Seus chats, Your chats, Chats)", "ChatGPT", "IconX"
             return false
         }
 
         ; Step 2: Get the sibling element (next sibling of chat button)
         siblingElement := UIA.TreeWalkerTrue.TryGetNextSiblingElement(chatButton)
         if !siblingElement {
+            HideSmallLoadingIndicator()
+            MsgBox "Failed to find sibling element of chat button", "ChatGPT", "IconX"
             return false
         }
 
@@ -315,26 +454,45 @@ RenameChatGPTWindowToChatGPT() {
                 expandPattern := siblingElement.ExpandCollapsePattern
                 expandState := expandPattern.ExpandCollapseState
 
+                ; If collapsed, expand it
                 if (expandState == UIA.ExpandCollapseState.Collapsed) {
                     expandPattern.Expand()
-                    Sleep 300
+                    Sleep 300 ; Wait for expansion to complete
                 } else if (expandState == UIA.ExpandCollapseState.PartiallyExpanded) {
+                    ; If partially expanded, try to expand it fully
                     expandPattern.Expand()
                     Sleep 300
                 }
             }
         } catch {
+            ; Continue even if expand fails - element might not need expansion
         }
 
-        ; Step 3: Find the OpenConversationOptions button
+        ; Step 3: Find the OpenConversationOptions button directly using its known properties
+        ; Button: Type 50000, Name "Abrir opções de conversa" (PT) or "Open conversation options" (EN), AutomationId "radix-_r_b6_", ClassName "__menu-item-trailing-btn"
         openConversationButton := 0
+        conversationOptionNames := ["Abrir opções de conversa", "Abrir opções da conversa", "Open conversation options",
+            "Conversation options", "Open options"]
 
-        try {
-            openConversationButton := siblingElement.FindElement({ Type: 50000, Name: "Abrir opções de conversa", cs: false },
-            UIA.TreeScope.Descendants)
-        } catch {
+        ; Try 1: Find by Name and Type (most reliable) - try both Portuguese and English
+        for name in conversationOptionNames {
+            try {
+                openConversationButton := siblingElement.FindElement({ Type: 50000, Name: name, cs: false },
+                UIA.TreeScope.Descendants)
+                if (openConversationButton)
+                    break
+            } catch {
+                try {
+                    openConversationButton := siblingElement.FindElement({ Type: 50000, Name: name },
+                    UIA.TreeScope.Descendants)
+                    if (openConversationButton)
+                        break
+                } catch {
+                }
+            }
         }
 
+        ; Try 2: Find by AutomationId (if Name search fails)
         if (!openConversationButton) {
             try {
                 openConversationButton := siblingElement.FindElement({ Type: 50000, AutomationId: "radix-_r_b6_" }, UIA
@@ -343,6 +501,7 @@ RenameChatGPTWindowToChatGPT() {
             }
         }
 
+        ; Try 3: Find by ClassName (if both above fail)
         if (!openConversationButton) {
             try {
                 openConversationButton := siblingElement.FindElement({ Type: 50000, ClassName: "__menu-item-trailing-btn" },
@@ -351,9 +510,11 @@ RenameChatGPTWindowToChatGPT() {
             }
         }
 
+        ; Try 4: Fallback to first child button (if specific search fails)
         if (!openConversationButton) {
             try {
                 openConversationButton := UIA.TreeWalkerTrue.TryGetFirstChildElement(siblingElement)
+                ; Verify it's actually a button
                 if (openConversationButton && openConversationButton.Type != 50000) {
                     openConversationButton := 0
                 }
@@ -362,18 +523,40 @@ RenameChatGPTWindowToChatGPT() {
         }
 
         if !openConversationButton {
+            HideSmallLoadingIndicator()
+            MsgBox "Failed to find OpenConversationOptions button (tried: Abrir opções de conversa, Open conversation options, etc.)",
+                "ChatGPT", "IconX"
             return false
         }
 
-        ; Step 4: Click the button
+        ; Step 4: Click the OpenConversationOptions button
+        ; Check if button is enabled and visible
+        try {
+            if (openConversationButton.GetPropertyValue(UIA.Property.IsOffscreen)) {
+                HideSmallLoadingIndicator()
+                MsgBox "OpenConversationOptions button is offscreen", "ChatGPT", "IconX"
+                return false
+            }
+            if (!openConversationButton.GetPropertyValue(UIA.Property.IsEnabled)) {
+                HideSmallLoadingIndicator()
+                MsgBox "OpenConversationOptions button is disabled", "ChatGPT", "IconX"
+                return false
+            }
+        } catch {
+            ; Continue even if property check fails
+        }
+
+        ; Try multiple click strategies in order of preference
         clicked := false
 
+        ; Strategy 1: Try Invoke pattern (most reliable for buttons)
         try {
             openConversationButton.Invoke()
             clicked := true
         } catch {
         }
 
+        ; Strategy 2: Try SetFocus then Click
         if (!clicked) {
             try {
                 openConversationButton.SetFocus()
@@ -384,6 +567,7 @@ RenameChatGPTWindowToChatGPT() {
             }
         }
 
+        ; Strategy 3: Force coordinate-based click using "left" parameter
         if (!clicked) {
             try {
                 openConversationButton.Click("left")
@@ -392,17 +576,25 @@ RenameChatGPTWindowToChatGPT() {
             }
         }
 
+        ; Strategy 4: Direct coordinate click using element Location
         if (!clicked) {
             try {
                 pos := openConversationButton.Location
                 if (pos && pos.w > 0 && pos.h > 0) {
+                    ; Activate window first
                     WinActivate("ahk_id " chatGPTHwnd)
                     WinWaitActive("ahk_id " chatGPTHwnd, , 1)
                     Sleep 100
+
+                    ; Save current mouse position
                     MouseGetPos(&prevX, &prevY)
+
+                    ; Click at center of element
                     CoordMode("Mouse", "Screen")
                     Click(pos.x + pos.w // 2, pos.y + pos.h // 2)
                     Sleep 50
+
+                    ; Restore mouse position
                     MouseMove(prevX, prevY)
                     clicked := true
                 }
@@ -411,11 +603,13 @@ RenameChatGPTWindowToChatGPT() {
         }
 
         if (!clicked) {
+            HideSmallLoadingIndicator()
+            MsgBox "Failed to click OpenConversationOptions button (all methods failed)", "ChatGPT", "IconX"
             return false
         }
 
-        ; After clicking, send DownArrow three times, type "ChatGPT", and press Enter
-        Sleep 200
+        ; After clicking the button, send DownArrow three times, type "ChatGPT", and press Enter
+        Sleep 200 ; Give UI time to respond to button click
         Send "{Down}"
         Sleep 100
         Send "{Down}"
@@ -427,9 +621,59 @@ RenameChatGPTWindowToChatGPT() {
         Send "ChatGPT"
         Sleep 100
         Send "{Enter}"
+        Sleep 500 ; Wait for rename to complete
 
+        ; Send F5 to refresh the page
+        Send "{F5}"
+        Sleep 2000 ; Wait for page refresh
+
+        ; Collapse the sidebar at the end
+        try {
+            ; Try to find and click the close sidebar button (Portuguese or English)
+            sidebarCloseButton := 0
+            for name in sidebarCloseNames {
+                try {
+                    sidebarCloseButton := root.FindElement({ Type: 50000, Name: name, cs: false })
+                    if (sidebarCloseButton)
+                        break
+                } catch {
+                    try {
+                        sidebarCloseButton := root.FindElement({ Type: 50000, Name: name })
+                        if (sidebarCloseButton)
+                            break
+                    } catch {
+                    }
+                }
+            }
+
+            if (sidebarCloseButton) {
+                try {
+                    sidebarCloseButton.Invoke()
+                } catch {
+                    try {
+                        sidebarCloseButton.Click()
+                    } catch {
+                        ; Fallback to keyboard shortcut if button click fails
+                        Send "^+s"
+                    }
+                }
+            } else {
+                ; If button not found, use keyboard shortcut to close sidebar
+                Send "^+s"
+            }
+        } catch {
+            ; If any error occurs, use keyboard shortcut as fallback
+            Send "^+s"
+        }
+        Sleep 300 ; Wait for sidebar to close
+
+        ; Hide banner on success
+        HideSmallLoadingIndicator()
         return true
     } catch Error as err {
+        ; Hide banner on error
+        HideSmallLoadingIndicator()
+        ShowErr(err)
         return false
     }
 }
