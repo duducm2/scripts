@@ -3982,14 +3982,21 @@ RenameChatGPTWindowToChatGPT() {
         }
 
         ; Step 0: Ensure sidebar is open (required for "Seus chats" to be visible)
-        ; Check if sidebar is open by looking for "Fechar barra lateral" button
+        ; Check if sidebar is open by looking for close sidebar button (Portuguese or English)
         sidebarCloseButton := 0
-        try {
-            sidebarCloseButton := root.FindElement({ Type: 50000, Name: "Fechar barra lateral", cs: false })
-        } catch {
+        sidebarCloseNames := ["Fechar barra lateral", "Close sidebar"]
+        for name in sidebarCloseNames {
             try {
-                sidebarCloseButton := root.FindElement({ Type: 50000, Name: "Fechar barra lateral" })
+                sidebarCloseButton := root.FindElement({ Type: 50000, Name: name, cs: false })
+                if (sidebarCloseButton)
+                    break
             } catch {
+                try {
+                    sidebarCloseButton := root.FindElement({ Type: 50000, Name: name })
+                    if (sidebarCloseButton)
+                        break
+                } catch {
+                }
             }
         }
 
@@ -4000,45 +4007,58 @@ RenameChatGPTWindowToChatGPT() {
             Sleep 500 ; Wait for sidebar to open
 
             ; Verify sidebar is now open by checking for the close button again
-            try {
-                sidebarCloseButton := root.FindElement({ Type: 50000, Name: "Fechar barra lateral", cs: false })
-            } catch {
+            for name in sidebarCloseNames {
                 try {
-                    sidebarCloseButton := root.FindElement({ Type: 50000, Name: "Fechar barra lateral" })
+                    sidebarCloseButton := root.FindElement({ Type: 50000, Name: name, cs: false })
+                    if (sidebarCloseButton)
+                        break
                 } catch {
+                    try {
+                        sidebarCloseButton := root.FindElement({ Type: 50000, Name: name })
+                        if (sidebarCloseButton)
+                            break
+                    } catch {
+                    }
                 }
             }
 
-            ; If still not found, try alternative: look for "Seus chats" or "Chats" text to verify sidebar
+            ; If still not found, wait a bit more and try one more time
             if (!sidebarCloseButton) {
-                ; Wait a bit more and try one more time
                 Sleep 500
-                try {
-                    sidebarCloseButton := root.FindElement({ Type: 50000, Name: "Fechar barra lateral", cs: false })
-                } catch {
+                for name in sidebarCloseNames {
+                    try {
+                        sidebarCloseButton := root.FindElement({ Type: 50000, Name: name, cs: false })
+                        if (sidebarCloseButton)
+                            break
+                    } catch {
+                    }
                 }
             }
         }
 
         Sleep 1000 ; Wait for sidebar to open
 
-        ; Step 1: Locate the chat button (Type: 50000, Name: "Seus chats")
+        ; Step 1: Locate the chat button (Type: 50000, Name: "Seus chats" or "Your chats")
         chatButton := 0
-        try {
-            chatButton := root.FindElement({ Type: 50000, Name: "Seus chats", cs: false })
-
-        } catch {
-            ; Try without case sensitivity if first attempt fails
+        chatButtonNames := ["Seus chats", "Your chats", "Chats"]
+        for name in chatButtonNames {
             try {
-                chatButton := root.FindElement({ Type: 50000, Name: "Seus chats" })
-
+                chatButton := root.FindElement({ Type: 50000, Name: name, cs: false })
+                if (chatButton)
+                    break
             } catch {
+                try {
+                    chatButton := root.FindElement({ Type: 50000, Name: name })
+                    if (chatButton)
+                        break
+                } catch {
+                }
             }
         }
 
         if !chatButton {
             HideSmallLoadingIndicator_ChatGPT()
-            MsgBox "Failed to find chat button 'Seus chats'", "ChatGPT", "IconX"
+            MsgBox "Failed to find chat button (tried: Seus chats, Your chats, Chats)", "ChatGPT", "IconX"
             return
         }
 
@@ -4072,14 +4092,27 @@ RenameChatGPTWindowToChatGPT() {
         }
 
         ; Step 3: Find the OpenConversationOptions button directly using its known properties
-        ; Button: Type 50000, Name "Abrir opções de conversa", AutomationId "radix-_r_b6_", ClassName "__menu-item-trailing-btn"
+        ; Button: Type 50000, Name "Abrir opções de conversa" (PT) or "Open conversation options" (EN), AutomationId "radix-_r_b6_", ClassName "__menu-item-trailing-btn"
         openConversationButton := 0
+        conversationOptionNames := ["Abrir opções de conversa", "Abrir opções da conversa", "Open conversation options",
+            "Conversation options", "Open options"]
 
-        ; Try 1: Find by Name and Type (most reliable)
-        try {
-            openConversationButton := siblingElement.FindElement({ Type: 50000, Name: "Abrir opções de conversa", cs: false },
-            UIA.TreeScope.Descendants)
-        } catch {
+        ; Try 1: Find by Name and Type (most reliable) - try both Portuguese and English
+        for name in conversationOptionNames {
+            try {
+                openConversationButton := siblingElement.FindElement({ Type: 50000, Name: name, cs: false },
+                UIA.TreeScope.Descendants)
+                if (openConversationButton)
+                    break
+            } catch {
+                try {
+                    openConversationButton := siblingElement.FindElement({ Type: 50000, Name: name },
+                    UIA.TreeScope.Descendants)
+                    if (openConversationButton)
+                        break
+                } catch {
+                }
+            }
         }
 
         ; Try 2: Find by AutomationId (if Name search fails)
@@ -4114,7 +4147,8 @@ RenameChatGPTWindowToChatGPT() {
 
         if !openConversationButton {
             HideSmallLoadingIndicator_ChatGPT()
-            MsgBox "Failed to find OpenConversationOptions button 'Abrir opções de conversa'", "ChatGPT", "IconX"
+            MsgBox "Failed to find OpenConversationOptions button (tried: Abrir opções de conversa, Open conversation options, etc.)",
+                "ChatGPT", "IconX"
             return
         }
 
@@ -4218,8 +4252,23 @@ RenameChatGPTWindowToChatGPT() {
 
         ; Collapse the sidebar at the end
         try {
-            ; Try to find and click the "Fechar barra lateral" button
-            sidebarCloseButton := root.FindElement({ Type: 50000, Name: "Fechar barra lateral", cs: false })
+            ; Try to find and click the close sidebar button (Portuguese or English)
+            sidebarCloseButton := 0
+            for name in sidebarCloseNames {
+                try {
+                    sidebarCloseButton := root.FindElement({ Type: 50000, Name: name, cs: false })
+                    if (sidebarCloseButton)
+                        break
+                } catch {
+                    try {
+                        sidebarCloseButton := root.FindElement({ Type: 50000, Name: name })
+                        if (sidebarCloseButton)
+                            break
+                    } catch {
+                    }
+                }
+            }
+
             if (sidebarCloseButton) {
                 try {
                     sidebarCloseButton.Invoke()
