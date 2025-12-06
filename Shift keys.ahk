@@ -3187,30 +3187,30 @@ global g_OutlookPaletteSessionID := 0
 ; Private: 1=Off, 2=On
 ; Reminder: 1=15min, 2=2days
 global g_OutlookPaletteMapping := Map(
-    "Q", {Status: 1, AllDay: 1, Private: 1, Reminder: 1},  ; Free, All-day Yes, Private Off, 15min
-    "W", {Status: 1, AllDay: 1, Private: 1, Reminder: 2},  ; Free, All-day Yes, Private Off, 2days
-    "E", {Status: 1, AllDay: 1, Private: 2, Reminder: 1},  ; Free, All-day Yes, Private On, 15min
-    "R", {Status: 1, AllDay: 1, Private: 2, Reminder: 2},  ; Free, All-day Yes, Private On, 2days
-    "A", {Status: 1, AllDay: 2, Private: 1, Reminder: 1},  ; Free, All-day No, Private Off, 15min
-    "S", {Status: 1, AllDay: 2, Private: 1, Reminder: 2},  ; Free, All-day No, Private Off, 2days
-    "D", {Status: 1, AllDay: 2, Private: 2, Reminder: 1},  ; Free, All-day No, Private On, 15min
-    "F", {Status: 1, AllDay: 2, Private: 2, Reminder: 2},  ; Free, All-day No, Private On, 2days
-    "Z", {Status: 2, AllDay: 1, Private: 1, Reminder: 1},  ; Busy, All-day Yes, Private Off, 15min
-    "X", {Status: 2, AllDay: 1, Private: 1, Reminder: 2},  ; Busy, All-day Yes, Private Off, 2days
-    "C", {Status: 2, AllDay: 1, Private: 2, Reminder: 1},  ; Busy, All-day Yes, Private On, 15min
-    "V", {Status: 2, AllDay: 1, Private: 2, Reminder: 2},  ; Busy, All-day Yes, Private On, 2days
-    "B", {Status: 2, AllDay: 2, Private: 1, Reminder: 1},  ; Busy, All-day No, Private Off, 15min
-    "N", {Status: 2, AllDay: 2, Private: 1, Reminder: 2},  ; Busy, All-day No, Private Off, 2days
-    "M", {Status: 2, AllDay: 2, Private: 2, Reminder: 1},  ; Busy, All-day No, Private On, 15min
-    ",", {Status: 2, AllDay: 2, Private: 2, Reminder: 2},  ; Busy, All-day No, Private On, 2days
-    "U", {Status: 3, AllDay: 1, Private: 1, Reminder: 1},  ; Out of office, All-day Yes, Private Off, 15min
-    "I", {Status: 3, AllDay: 1, Private: 1, Reminder: 2},  ; Out of office, All-day Yes, Private Off, 2days
-    "O", {Status: 3, AllDay: 1, Private: 2, Reminder: 1},  ; Out of office, All-day Yes, Private On, 15min
-    "P", {Status: 3, AllDay: 1, Private: 2, Reminder: 2},  ; Out of office, All-day Yes, Private On, 2days
-    "J", {Status: 3, AllDay: 2, Private: 1, Reminder: 1},  ; Out of office, All-day No, Private Off, 15min
-    "K", {Status: 3, AllDay: 2, Private: 1, Reminder: 2},  ; Out of office, All-day No, Private Off, 2days
-    "L", {Status: 3, AllDay: 2, Private: 2, Reminder: 1},  ; Out of office, All-day No, Private On, 15min
-    ";", {Status: 3, AllDay: 2, Private: 2, Reminder: 2}   ; Out of office, All-day No, Private On, 2days
+    "Q", { Status: 1, AllDay: 1, Private: 1, Reminder: 1 },  ; Free, All-day Yes, Private Off, 15min
+    "W", { Status: 1, AllDay: 1, Private: 1, Reminder: 2 },  ; Free, All-day Yes, Private Off, 2days
+    "E", { Status: 1, AllDay: 1, Private: 2, Reminder: 1 },  ; Free, All-day Yes, Private On, 15min
+    "R", { Status: 1, AllDay: 1, Private: 2, Reminder: 2 },  ; Free, All-day Yes, Private On, 2days
+    "A", { Status: 1, AllDay: 2, Private: 1, Reminder: 1 },  ; Free, All-day No, Private Off, 15min
+    "S", { Status: 1, AllDay: 2, Private: 1, Reminder: 2 },  ; Free, All-day No, Private Off, 2days
+    "D", { Status: 1, AllDay: 2, Private: 2, Reminder: 1 },  ; Free, All-day No, Private On, 15min
+    "F", { Status: 1, AllDay: 2, Private: 2, Reminder: 2 },  ; Free, All-day No, Private On, 2days
+    "Z", { Status: 2, AllDay: 1, Private: 1, Reminder: 1 },  ; Busy, All-day Yes, Private Off, 15min
+    "X", { Status: 2, AllDay: 1, Private: 1, Reminder: 2 },  ; Busy, All-day Yes, Private Off, 2days
+    "C", { Status: 2, AllDay: 1, Private: 2, Reminder: 1 },  ; Busy, All-day Yes, Private On, 15min
+    "V", { Status: 2, AllDay: 1, Private: 2, Reminder: 2 },  ; Busy, All-day Yes, Private On, 2days
+    "B", { Status: 2, AllDay: 2, Private: 1, Reminder: 1 },  ; Busy, All-day No, Private Off, 15min
+    "N", { Status: 2, AllDay: 2, Private: 1, Reminder: 2 },  ; Busy, All-day No, Private Off, 2days
+    "M", { Status: 2, AllDay: 2, Private: 2, Reminder: 1 },  ; Busy, All-day No, Private On, 15min
+    ",", { Status: 2, AllDay: 2, Private: 2, Reminder: 2 },  ; Busy, All-day No, Private On, 2days
+    "U", { Status: 3, AllDay: 1, Private: 1, Reminder: 1 },  ; Out of office, All-day Yes, Private Off, 15min
+    "I", { Status: 3, AllDay: 1, Private: 1, Reminder: 2 },  ; Out of office, All-day Yes, Private Off, 2days
+    "O", { Status: 3, AllDay: 1, Private: 2, Reminder: 1 },  ; Out of office, All-day Yes, Private On, 15min
+    "P", { Status: 3, AllDay: 1, Private: 2, Reminder: 2 },  ; Out of office, All-day Yes, Private On, 2days
+    "J", { Status: 3, AllDay: 2, Private: 1, Reminder: 1 },  ; Out of office, All-day No, Private Off, 15min
+    "K", { Status: 3, AllDay: 2, Private: 1, Reminder: 2 },  ; Out of office, All-day No, Private Off, 2days
+    "L", { Status: 3, AllDay: 2, Private: 2, Reminder: 1 },  ; Out of office, All-day No, Private On, 15min
+    ";", { Status: 3, AllDay: 2, Private: 2, Reminder: 2 }   ; Out of office, All-day No, Private On, 2days
 )
 
 ; Letters in display order (3 status groups, each with 2 rows × 4 columns)
@@ -3285,44 +3285,44 @@ ShowOutlookAppointmentPalette() {
     ; Layout: 3 groups side by side, each group is 2 rows × 4 columns
     guiArray := []
     statusGroupWidth := (squareSize * colsPerStatus) + (spacing * (colsPerStatus - 1))
-    
+
     loop 3 {  ; 3 status groups
         statusIndex := A_Index
         groupOffsetX := (statusIndex - 1) * (statusGroupWidth + statusGroupSpacing)
-        
+
         loop rowsPerStatus {  ; 2 rows per status
             rowIndex := A_Index
             loop colsPerStatus {  ; 4 columns per row
                 colIndex := A_Index
-                
+
                 ; Calculate letter index in the flat array
-                letterIndex := ((statusIndex - 1) * rowsPerStatus * colsPerStatus) + 
-                              ((rowIndex - 1) * colsPerStatus) + colIndex
-                
+                letterIndex := ((statusIndex - 1) * rowsPerStatus * colsPerStatus) +
+                ((rowIndex - 1) * colsPerStatus) + colIndex
+
                 if (letterIndex > g_OutlookPaletteLetters.Length) {
                     continue
                 }
-                
+
                 letter := g_OutlookPaletteLetters[letterIndex]
-                
+
                 ; Calculate position
                 squareX := startX + groupOffsetX + ((colIndex - 1) * (squareSize + spacing))
                 squareY := startY + ((rowIndex - 1) * (squareSize + spacing))
-                
+
                 ; Create square GUI
                 squareGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
                 squareGui.BackColor := "333333"  ; Dark gray background
                 squareGui.SetFont("s10 Bold cFFFFFF", "Segoe UI")
                 squareGui.MarginX := 0
                 squareGui.MarginY := 0
-                
+
                 ; Add letter text
                 letterText := squareGui.AddText("w" . squareSize . " h" . squareSize . " Center 0x201", letter)
-                
+
                 ; Calculate top-left position
                 guiX := Round(squareX - squareSize / 2.0)
                 guiY := Round(squareY - squareSize / 2.0)
-                
+
                 guiArray.Push({ gui: squareGui, x: guiX, y: guiY })
             }
         }
@@ -3405,7 +3405,7 @@ Outlook_SelectOptionByInputBox(title, basePrompt, optionsMap) {
         if (opt.HasProp("Group")) {
             lastGroup := opt.Group
         }
-        
+
         prompt .= key . ") " . opt.Label . "`n"
         if (validList != "")
             validList .= ", "
@@ -3419,21 +3419,21 @@ Outlook_SelectOptionByInputBox(title, basePrompt, optionsMap) {
         optionGui.SetFont("s10", "Segoe UI")
         optionGui.AddText("w400 Center", prompt)
         optionGui.AddEdit("w50 Center vOptionInput", "")
-        
+
         ; Set up auto-submit handler using factory function to capture optionsMap
         handler := CreateOutlookOptionHandler(optionsMap)
         optionGui["OptionInput"].OnEvent("Change", handler)
-        
+
         ; Add Cancel button
         cancelBtn := optionGui.AddButton("w80", "Cancel")
         cancelBtn.OnEvent("Click", CancelOutlookOption.Bind(optionGui))
-        
+
         optionGui.Show("w400 h180")
         optionGui["OptionInput"].Focus()
-        
+
         ; Wait for dialog to close
         WinWaitClose("ahk_id " optionGui.Hwnd)
-        
+
         ; Retrieve the selected choice from global variable
         global g_OutlookAppointmentChoice
         choice := g_OutlookAppointmentChoice
@@ -3457,13 +3457,13 @@ Outlook_CheckPrivacyState() {
         }
         root := UIA.ElementFromHandle(win)
         Sleep 100  ; Allow UI to update
-        
+
         ; Look for Private checkbox - typically has AutomationId or specific Name
         checkbox := root.FindFirst({ AutomationId: "4227", ControlType: "CheckBox" })
         if (!checkbox) {
             checkbox := root.FindFirst({ Name: "Private", ControlType: "CheckBox" })
         }
-        
+
         if (checkbox) {
             ; Check if checkbox is checked
             isChecked := checkbox.GetCurrentPropertyValue(UIA.Property.ToggleToggleState)
@@ -3484,12 +3484,12 @@ Outlook_CheckAllDayState() {
         }
         root := UIA.ElementFromHandle(win)
         Sleep 100  ; Allow UI to update
-        
+
         checkbox := root.FindFirst({ AutomationId: "4226", ControlType: "CheckBox" })
         if (!checkbox) {
             checkbox := root.FindFirst({ Name: "All day", ControlType: "CheckBox" })
         }
-        
+
         if (checkbox) {
             isChecked := checkbox.GetCurrentPropertyValue(UIA.Property.ToggleToggleState)
             return (isChecked = 1) ? "Yes" : "No"
@@ -3508,7 +3508,7 @@ Outlook_CheckStatusState() {
         }
         root := UIA.ElementFromHandle(win)
         Sleep 100  ; Allow UI to update
-        
+
         ; Look for Status dropdown/button - may need to find by AutomationId or Name
         statusControl := root.FindFirst({ AutomationId: "4356", ControlType: "Button" })
         if (!statusControl) {
@@ -3518,7 +3518,7 @@ Outlook_CheckStatusState() {
             ; Try to find any control with Status-related names
             statusControl := root.FindFirst({ Name: "Free", ControlType: "Button" })
         }
-        
+
         if (statusControl) {
             ; Get the text/value of the status control
             statusText := statusControl.GetCurrentPropertyValue(UIA.Property.Name)
@@ -3544,13 +3544,13 @@ Outlook_CheckCategoryState() {
         }
         root := UIA.ElementFromHandle(win)
         Sleep 100  ; Allow UI to update
-        
+
         ; Look for Category control - may be a button or dropdown
         categoryControl := root.FindFirst({ AutomationId: "4357", ControlType: "Button" })
         if (!categoryControl) {
             categoryControl := root.FindFirst({ Name: "Categorize", ControlType: "Button" })
         }
-        
+
         if (categoryControl) {
             ; Try to get category text/value
             categoryText := categoryControl.GetCurrentPropertyValue(UIA.Property.Name)
@@ -3574,7 +3574,7 @@ Outlook_CheckReminderState() {
         }
         root := UIA.ElementFromHandle(win)
         Sleep 100  ; Allow UI to update
-        
+
         ; Look for Reminder dropdown/field
         reminderControl := root.FindFirst({ AutomationId: "4358", ControlType: "ComboBox" })
         if (!reminderControl) {
@@ -3583,7 +3583,7 @@ Outlook_CheckReminderState() {
         if (!reminderControl) {
             reminderControl := root.FindFirst({ Name: "Reminder", ControlType: "Edit" })
         }
-        
+
         if (reminderControl) {
             reminderText := reminderControl.GetCurrentPropertyValue(UIA.Property.Value)
             if (reminderText) {
@@ -3604,19 +3604,19 @@ ApplyPrivacy(desiredState) {
     if (desiredState = "Off") {
         return  ; Do nothing if Private Off is desired
     }
-    
+
     try {
         ; Check current state
         currentState := Outlook_CheckPrivacyState()
         if (currentState = "On") {
             return  ; Already set to On, skip
         }
-        
+
         ; Ensure Outlook window is active
         if (!IsOutlookAppointmentActive()) {
             return
         }
-        
+
         ; Apply Private On: Alt+7
         ; Use ! prefix for Alt key combination
         Send "!7"
@@ -3630,25 +3630,25 @@ ApplyAllDay(desiredState) {
     try {
         ; Check current state
         currentState := Outlook_CheckAllDayState()
-        if ((desiredState = "No (timed)" && currentState = "No") || 
-            (desiredState = "Yes" && currentState = "Yes")) {
+        if ((desiredState = "No (timed)" && currentState = "No") ||
+        (desiredState = "Yes" && currentState = "Yes")) {
             return  ; Already set correctly, skip
         }
-        
+
         ; Ensure Outlook window is active
         if (!IsOutlookAppointmentActive()) {
             return
         }
-        
+
         ; Use existing UIA checkbox click logic
         win := WinExist("A")
         root := UIA.ElementFromHandle(win)
-        
+
         checkbox := root.FindFirst({ AutomationId: "4226", ControlType: "CheckBox" })
         if (!checkbox) {
             checkbox := root.FindFirst({ Name: "All day", ControlType: "CheckBox" })
         }
-        
+
         if (checkbox) {
             checkbox.Invoke()
             Sleep 200
@@ -3665,16 +3665,16 @@ ApplyStatus(desiredState) {
         if (currentState = desiredState) {
             return  ; Already set correctly, skip
         }
-        
+
         ; Ensure Outlook window is active
         if (!IsOutlookAppointmentActive()) {
             return
         }
-        
+
         ; Open Status menu: Alt+5
         Send "!5"
         Sleep 300  ; Wait for menu to open
-        
+
         ; Navigate based on desired state
         if (desiredState = "Free") {
             Send "{Up}"
@@ -3687,7 +3687,7 @@ ApplyStatus(desiredState) {
             Sleep 150
             Send "{Down}"
         }
-        
+
         Sleep 200  ; Wait before confirming
         Send "{Enter}"
         Sleep 200
@@ -3703,16 +3703,16 @@ ApplyCategory(desiredState) {
         if (currentState = desiredState) {
             return  ; Already set correctly, skip
         }
-        
+
         ; Ensure Outlook window is active
         if (!IsOutlookAppointmentActive()) {
             return
         }
-        
+
         ; Open Category menu: Alt+6
         Send "!6"
         Sleep 300  ; Wait for menu to open
-        
+
         ; Navigate based on desired state
         if (desiredState = "Important") {
             ; Down 1-4 times, use 2 as default
@@ -3726,7 +3726,7 @@ ApplyCategory(desiredState) {
                 Sleep 200
             }
         }
-        
+
         Sleep 200  ; Wait before confirming
         Send "{Enter}"
         Sleep 200
@@ -3750,20 +3750,20 @@ ApplyReminder(desiredState) {
         } else if (InStr(currentState, "1 week", false) || InStr(currentState, "one week", false)) {
             normalizedCurrent := "1 week"
         }
-        
+
         if (normalizedCurrent = desiredState) {
             return  ; Already set correctly, skip
         }
-        
+
         ; Ensure Outlook window is active
         if (!IsOutlookAppointmentActive()) {
             return
         }
-        
+
         ; Open Reminder field: Alt+8
         Send "!8"
         Sleep 200
-        
+
         ; Clear existing text and type new value
         Send "^a"  ; Select all
         Sleep 100
@@ -3786,26 +3786,26 @@ ApplyOutlookAppointmentSettings(privacy, allDay, status, category, reminder) {
         MsgBox "Outlook Appointment window is not active.", "Error", "IconX"
         return
     }
-    
+
     ; Show loading banner
     ShowSmallLoadingIndicator_ChatGPT("Applying settings...")
-    
+
     try {
         ; Apply each setting in sequence
         ApplyPrivacy(privacy.Private)
         Sleep 100
-        
+
         ApplyAllDay(allDay.AllDay)
         Sleep 100
-        
+
         ApplyStatus(status.Status)
         Sleep 100
-        
+
         ApplyCategory(category.Category)
         Sleep 100
-        
+
         ApplyReminder(reminder.Reminder)
-        
+
         ; Update loading banner to show completion
         ShowSmallLoadingIndicator_ChatGPT("Settings applied")
         Sleep 1000
@@ -3822,7 +3822,7 @@ RunOutlookAppointmentWizard() {
     ; STEP 1 – Privacy (2 options)
     step1Options := Map()
     step1Options["1"] := { Label: "🔓 Private OFF", Private: "Off" }
-    step1Options["2"] := { Label: "🔒 Private ON",  Private: "On" }
+    step1Options["2"] := { Label: "🔒 Private ON", Private: "On" }
 
     choice1 := Outlook_SelectOptionByInputBox(
         "📅 Outlook Appointment – Step 1 of 5",
@@ -3837,7 +3837,7 @@ RunOutlookAppointmentWizard() {
     ; STEP 2 – All-day (2 options)
     step2Options := Map()
     step2Options["1"] := { Label: "⏰ All-day NO (timed)", AllDay: "No (timed)" }
-    step2Options["2"] := { Label: "📅 All-day YES",        AllDay: "Yes" }
+    step2Options["2"] := { Label: "📅 All-day YES", AllDay: "Yes" }
 
     choice2 := Outlook_SelectOptionByInputBox(
         "📅 Outlook Appointment – Step 2 of 5",
@@ -3851,8 +3851,8 @@ RunOutlookAppointmentWizard() {
 
     ; STEP 3 – Status (3 options)
     step3Options := Map()
-    step3Options["1"] := { Label: "🟢 Free",          Status: "Free" }
-    step3Options["2"] := { Label: "🟡 Busy",          Status: "Busy" }
+    step3Options["1"] := { Label: "🟢 Free", Status: "Free" }
+    step3Options["2"] := { Label: "🟡 Busy", Status: "Busy" }
     step3Options["3"] := { Label: "🔴 Out of office", Status: "Out of office" }
 
     choice3 := Outlook_SelectOptionByInputBox(
@@ -3868,7 +3868,7 @@ RunOutlookAppointmentWizard() {
     ; STEP 4 – Category (2 options)
     step4Options := Map()
     step4Options["1"] := { Label: "⭐ Important", Category: "Important" }
-    step4Options["2"] := { Label: "👤 Personal",  Category: "Personal" }
+    step4Options["2"] := { Label: "👤 Personal", Category: "Personal" }
 
     choice4 := Outlook_SelectOptionByInputBox(
         "📅 Outlook Appointment – Step 4 of 5",
@@ -3882,10 +3882,10 @@ RunOutlookAppointmentWizard() {
 
     ; STEP 5 – Reminder (4 options)
     step5Options := Map()
-    step5Options["1"] := { Label: "⏰ Reminder 4 hours before",   Reminder: "4 hours" }
-    step5Options["2"] := { Label: "🗓️ Reminder 1 day before",     Reminder: "1 day" }
-    step5Options["3"] := { Label: "📆 Reminder 4 days before",    Reminder: "4 days" }
-    step5Options["4"] := { Label: "📅 Reminder 1 week before",    Reminder: "1 week" }
+    step5Options["1"] := { Label: "⏰ Reminder 4 hours before", Reminder: "4 hours" }
+    step5Options["2"] := { Label: "🗓️ Reminder 1 day before", Reminder: "1 day" }
+    step5Options["3"] := { Label: "📆 Reminder 4 days before", Reminder: "4 days" }
+    step5Options["4"] := { Label: "📅 Reminder 1 week before", Reminder: "1 week" }
 
     choice5 := Outlook_SelectOptionByInputBox(
         "📅 Outlook Appointment – Step 5 of 5",
@@ -3898,7 +3898,7 @@ RunOutlookAppointmentWizard() {
     selReminder := step5Options[choice5]
 
     ; Final summary and apply settings
-    summary  := "✅ Appointment configuration:" . "`n`n"
+    summary := "✅ Appointment configuration:" . "`n`n"
     summary .= "📊 Status:    " . selStatus.Status . "`n"
     summary .= "📂 Category:  " . selCategory.Category . "`n"
     summary .= "📅 All-day:   " . selAllDay.AllDay . "`n"
@@ -3907,7 +3907,7 @@ RunOutlookAppointmentWizard() {
     summary .= "Applying settings now..."
 
     MsgBox summary, "📅 Outlook Appointment", "Iconi"
-    
+
     ; Apply the settings
     ApplyOutlookAppointmentSettings(selPrivacy, selAllDay, selStatus, selCategory, selReminder)
 }
@@ -3946,15 +3946,24 @@ RunOutlookAppointmentWizard() {
 ; Function to rename ChatGPT window (can be called directly or via hotkey)
 RenameChatGPTWindowToChatGPT() {
     try {
+        ; Show banner to inform user
+        ShowSmallLoadingIndicator_ChatGPT("Renaming ChatGPT window...")
+
+        ; Send F5 to refresh the page
+        Send "{F5}"
+        Sleep 2000 ; Wait for page refresh
+
         ; Get the active Chrome window
         chatGPTHwnd := WinExist("A")
         if !chatGPTHwnd {
+            HideSmallLoadingIndicator_ChatGPT()
             return
         }
 
         ; Get UIA browser context for the active Chrome window
         cUIA := UIA_Browser("ahk_id " chatGPTHwnd)
         if !cUIA {
+            HideSmallLoadingIndicator_ChatGPT()
             return
         }
 
@@ -3967,6 +3976,7 @@ RenameChatGPTWindowToChatGPT() {
             root := cUIA.BrowserElement
         }
         if !root {
+            HideSmallLoadingIndicator_ChatGPT()
             MsgBox "Failed to get root element", "ChatGPT", "IconX"
             return
         }
@@ -3986,6 +3996,7 @@ RenameChatGPTWindowToChatGPT() {
         }
 
         if !chatButton {
+            HideSmallLoadingIndicator_ChatGPT()
             MsgBox "Failed to find chat button 'Seus chats'", "ChatGPT", "IconX"
             return
         }
@@ -3993,6 +4004,7 @@ RenameChatGPTWindowToChatGPT() {
         ; Step 2: Get the sibling element (next sibling of chat button)
         siblingElement := UIA.TreeWalkerTrue.TryGetNextSiblingElement(chatButton)
         if !siblingElement {
+            HideSmallLoadingIndicator_ChatGPT()
             MsgBox "Failed to find sibling element of chat button", "ChatGPT", "IconX"
             return
         }
@@ -4060,6 +4072,7 @@ RenameChatGPTWindowToChatGPT() {
         }
 
         if !openConversationButton {
+            HideSmallLoadingIndicator_ChatGPT()
             MsgBox "Failed to find OpenConversationOptions button 'Abrir opções de conversa'", "ChatGPT", "IconX"
             return
         }
@@ -4068,10 +4081,12 @@ RenameChatGPTWindowToChatGPT() {
         ; Check if button is enabled and visible
         try {
             if (openConversationButton.GetPropertyValue(UIA.Property.IsOffscreen)) {
+                HideSmallLoadingIndicator_ChatGPT()
                 MsgBox "OpenConversationOptions button is offscreen", "ChatGPT", "IconX"
                 return
             }
             if (!openConversationButton.GetPropertyValue(UIA.Property.IsEnabled)) {
+                HideSmallLoadingIndicator_ChatGPT()
                 MsgBox "OpenConversationOptions button is disabled", "ChatGPT", "IconX"
                 return
             }
@@ -4136,6 +4151,7 @@ RenameChatGPTWindowToChatGPT() {
         }
 
         if (!clicked) {
+            HideSmallLoadingIndicator_ChatGPT()
             MsgBox "Failed to click OpenConversationOptions button (all methods failed)", "ChatGPT", "IconX"
             return
         }
@@ -4153,7 +4169,12 @@ RenameChatGPTWindowToChatGPT() {
         Send "ChatGPT"
         Sleep 100
         Send "{Enter}"
+
+        ; Hide banner on success
+        HideSmallLoadingIndicator_ChatGPT()
     } catch Error as err {
+        ; Hide banner on error
+        HideSmallLoadingIndicator_ChatGPT()
         ShowErr(err)
         return false
     }
