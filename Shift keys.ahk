@@ -925,6 +925,13 @@ Wikipedia
 [Shift+Y] > 🔍 Click search button
 )"
 
+; --- Google Gemini -----------------------------------------------------------
+cheatSheets["Google Gemini"] := "
+(
+Google Gemini
+[Shift+Y] > 🎤 Click microphone button (speech dictation)
+)"
+
 ; ========== Helper to decide which sheet applies ===========================
 GetCheatSheetText() {
     global cheatSheets
@@ -996,6 +1003,8 @@ GetCheatSheetText() {
             appShortcuts := cheatSheets.Has("Wikipedia") ? cheatSheets["Wikipedia"] : ""
         if InStr(chromeTitle, "Mercado Livre", false)
             appShortcuts := cheatSheets.Has("Mercado Livre") ? cheatSheets["Mercado Livre"] : ""
+        if InStr(chromeTitle, "Gemini", false) || InStr(chromeTitle, "gemini.google.com", false)
+            appShortcuts := cheatSheets.Has("Google Gemini") ? cheatSheets["Google Gemini"] : ""
         ; Only set generic Google sheet if nothing else matched and title clearly indicates Google site
         if (appShortcuts = "") {
             if (chromeTitle = "Google" || InStr(chromeTitle, " - Google Search"))
@@ -8325,7 +8334,161 @@ FindMonthGroup(uia) {
 #HotIf
 
 ;-------------------------------------------------------------------
-; Google Search Shortcuts
+; Google Gemini Shortcuts
+;-------------------------------------------------------------------
+#HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "Gemini", false)
+
+; Shift + Y : Click microphone button (speech dictation)
++y:: {
+    ; Check if we're in Gemini window (normalize title like cheatsheet does)
+    chromeTitle := RegExReplace(WinGetTitle("A"), "i) - Google Chrome$", "")
+    if (!InStr(chromeTitle, "Gemini", false) && !InStr(chromeTitle, "gemini.google.com", false)) {
+        return  ; Not a Gemini window, exit silently
+    }
+
+    try {
+        uia := UIA_Browser()
+        if !uia {
+            MsgBox "Could not attach to the browser window.", "Google Gemini", "IconX"
+            return
+        }
+        Sleep 300
+
+        ; Step 1: Find the "Fast" button
+        fastButton := uia.FindFirst({ Type: 50000, Name: "Fast" })
+        if (!fastButton) {
+            MsgBox "Could not find the 'Fast' button.", "Google Gemini", "IconX"
+            return
+        }
+
+        ; Step 2: Get the parent of the "Fast" button
+        parentElement := fastButton.GetParent()
+        if (!parentElement) {
+            MsgBox "Could not find parent element of 'Fast' button.", "Google Gemini", "IconX"
+            return
+        }
+
+        ; Step 3: Find the "Microphone" button among siblings (children of the same parent)
+        micButton := parentElement.FindFirst({ Type: 50000, Name: "Microphone" })
+
+        ; If not found directly, try searching through siblings
+        if (!micButton) {
+            ; Try next sibling
+            sibling := UIA.TreeWalkerTrue.TryGetNextSiblingElement(fastButton)
+            if (sibling) {
+                try {
+                    if (sibling.Name = "Microphone" && sibling.Type = 50000) {
+                        micButton := sibling
+                    }
+                } catch {
+                }
+            }
+
+            ; Try previous sibling
+            if (!micButton) {
+                sibling := UIA.TreeWalkerTrue.TryGetPreviousSiblingElement(fastButton)
+                if (sibling) {
+                    try {
+                        if (sibling.Name = "Microphone" && sibling.Type = 50000) {
+                            micButton := sibling
+                        }
+                    } catch {
+                    }
+                }
+            }
+
+            ; Try searching all children of parent
+            if (!micButton) {
+                allChildren := parentElement.FindAll({ Type: 50000 })
+                for child in allChildren {
+                    try {
+                        if (child.Name = "Microphone") {
+                            micButton := child
+                            break
+                        }
+                    } catch {
+                        continue
+                    }
+                }
+            }
+        }
+
+        if (!micButton) {
+            MsgBox "Could not find the microphone button as a sibling of 'Fast' button.", "Google Gemini", "IconX"
+            return
+        }
+
+        ; Try multiple clicking strategies in order of preference
+        clicked := false
+
+        ; Strategy 1: Try Invoke pattern (most reliable for buttons)
+        try {
+            micButton.Invoke()
+            clicked := true
+        } catch {
+        }
+
+        ; Strategy 2: Try SetFocus then Click
+        if (!clicked) {
+            try {
+                micButton.SetFocus()
+                Sleep 100
+                micButton.Click()
+                clicked := true
+            } catch {
+            }
+        }
+
+        ; Strategy 3: Try Click with "left" parameter
+        if (!clicked) {
+            try {
+                micButton.Click("left")
+                clicked := true
+            } catch {
+            }
+        }
+
+        ; Strategy 4: Direct coordinate click using element Location
+        if (!clicked) {
+            try {
+                pos := micButton.Location
+                if (pos && pos.w > 0 && pos.h > 0) {
+                    ; Activate window first
+                    geminiHwnd := WinExist("A")
+                    if (geminiHwnd) {
+                        WinActivate("ahk_id " geminiHwnd)
+                        WinWaitActive("ahk_id " geminiHwnd, , 1)
+                        Sleep 100
+
+                        ; Save current mouse position
+                        MouseGetPos(&prevX, &prevY)
+
+                        ; Click at center of element
+                        CoordMode("Mouse", "Screen")
+                        Click(pos.x + pos.w // 2, pos.y + pos.h // 2)
+                        Sleep 50
+
+                        ; Restore mouse position
+                        MouseMove(prevX, prevY)
+                        clicked := true
+                    }
+                }
+            } catch {
+            }
+        }
+
+        if (!clicked) {
+            MsgBox "Failed to click microphone button (all methods failed).", "Google Gemini", "IconX"
+        }
+    } catch Error as e {
+        MsgBox "An error occurred: " e.Message, "Google Gemini", "IconX"
+    }
+}
+
+#HotIf
+
+;-------------------------------------------------------------------
+; Google Gemini Shortcuts (must come before Google Search)
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "Google")
 
