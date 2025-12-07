@@ -2039,6 +2039,8 @@ IsTeamsChatActive() {
         ; avoiding fragile AutomationId/ClassName dependencies.
         searchBox := 0
 
+        Send "{Click}"
+
         ; First try: ComboBox with the expected name (Type 50003)
         try {
             searchBox := root.FindElement({ Type: 50003, Name: "Search Wikipedia", cs: false })
@@ -8338,8 +8340,157 @@ FindMonthGroup(uia) {
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "Gemini", false)
 
-; Shift + Y : Click microphone button (speech dictation)
+; Global variable to track microphone keep-alive timer
+global g_GeminiMicKeepAliveTimer := 0
+
+; Function to keep microphone button alive without clicking (used by timer)
+KeepGeminiMicrophoneAlive() {
+    global g_GeminiMicKeepAliveTimer
+    try {
+        ; Only run if we're still in a Gemini window
+        if (!WinActive("ahk_exe chrome.exe")) {
+            SetTimer(KeepGeminiMicrophoneAlive, 0)
+            g_GeminiMicKeepAliveTimer := 0
+            return
+        }
+
+        chromeTitle := RegExReplace(WinGetTitle("A"), "i) - Google Chrome$", "")
+        if (!InStr(chromeTitle, "Gemini", false) && !InStr(chromeTitle, "gemini.google.com", false)) {
+            ; Not in Gemini anymore, stop the timer
+            SetTimer(KeepGeminiMicrophoneAlive, 0)
+            g_GeminiMicKeepAliveTimer := 0
+            return
+        }
+
+        uia := UIA_Browser()
+        if !uia {
+            return
+        }
+        Sleep 200
+
+        ; Find the "Fast" button
+        fastButton := uia.FindFirst({ Type: 50000, Name: "Fast" })
+        if (!fastButton) {
+            return
+        }
+
+        ; Get parent and find microphone button
+        parentElement := UIA.TreeWalkerTrue.TryGetParentElement(fastButton)
+        if (!parentElement) {
+            return
+        }
+
+        micButton := 0
+        micButton := parentElement.FindFirst({ Type: 50000, Name: "Microphone" })
+        if (!micButton) {
+            ; Try siblings
+            sibling := 0
+            sibling := UIA.TreeWalkerTrue.TryGetNextSiblingElement(fastButton)
+            if (sibling) {
+                try {
+                    if (sibling.Name = "Microphone" && sibling.Type = 50000) {
+                        micButton := sibling
+                    }
+                } catch {
+                }
+            }
+            if (!micButton) {
+                sibling := 0
+                sibling := UIA.TreeWalkerTrue.TryGetPreviousSiblingElement(fastButton)
+                if (sibling) {
+                    try {
+                        if (sibling.Name = "Microphone" && sibling.Type = 50000) {
+                            micButton := sibling
+                        }
+                    } catch {
+                    }
+                }
+            }
+        }
+
+        if (!micButton) {
+            return
+        }
+
+        ; Check button state before interacting
+        isOffscreen := true
+        isEnabled := false
+        try {
+            isOffscreen := micButton.GetPropertyValue(UIA.Property.IsOffscreen)
+            isEnabled := micButton.GetPropertyValue(UIA.Property.IsEnabled)
+        } catch {
+            ; If we can't check state, try to interact anyway
+        }
+
+        ; Only interact if button is visible and enabled (or if state check failed)
+        ; If button is offscreen or disabled, it may have vanished - try to reactivate
+        if (isOffscreen || !isEnabled) {
+            ; Button has vanished or is disabled, try to reactivate with non-click methods
+            ; Use SetFocus or Select to activate without clicking
+            try {
+                micButton.SetFocus()
+            } catch {
+                try {
+                    micButton.Select()
+                } catch {
+                    ; Fallback: mouse hover without clicking
+                    try {
+                        pos := micButton.Location
+                        if (pos && pos.w > 0 && pos.h > 0) {
+                            ; Save current mouse position
+                            MouseGetPos(&prevX, &prevY)
+
+                            ; Move mouse to button center without clicking
+                            CoordMode("Mouse", "Screen")
+                            MouseMove(pos.x + pos.w // 2, pos.y + pos.h // 2, 0)
+                            Sleep 50
+
+                            ; Restore mouse position
+                            MouseMove(prevX, prevY)
+                        }
+                    } catch {
+                    }
+                }
+            }
+        } else {
+            ; Button is visible and enabled - use gentle keep-alive methods
+            ; Try SetFocus first (non-intrusive)
+            try {
+                micButton.SetFocus()
+            } catch {
+                ; If SetFocus fails, try Select
+                try {
+                    micButton.Select()
+                } catch {
+                    ; Last resort: mouse hover without clicking
+                    try {
+                        pos := micButton.Location
+                        if (pos && pos.w > 0 && pos.h > 0) {
+                            ; Save current mouse position
+                            MouseGetPos(&prevX, &prevY)
+
+                            ; Move mouse to button center without clicking
+                            CoordMode("Mouse", "Screen")
+                            MouseMove(pos.x + pos.w // 2, pos.y + pos.h // 2, 0)
+                            Sleep 50
+
+                            ; Restore mouse position
+                            MouseMove(prevX, prevY)
+                        }
+                    } catch {
+                    }
+                }
+            }
+        }
+    } catch {
+        ; Silently ignore errors
+    }
+}
+
+; Shift + Y : Click microphone button (speech dictation) and start keep-alive timer (non-intrusive)
 +y:: {
+    global g_GeminiMicKeepAliveTimer
+
     ; Check if we're in Gemini window (normalize title like cheatsheet does)
     chromeTitle := RegExReplace(WinGetTitle("A"), "i) - Google Chrome$", "")
     if (!InStr(chromeTitle, "Gemini", false) && !InStr(chromeTitle, "gemini.google.com", false)) {
@@ -8479,7 +8630,20 @@ FindMonthGroup(uia) {
 
         if (!clicked) {
             MsgBox "Failed to click microphone button (all methods failed).", "Google Gemini", "IconX"
+            return
         }
+
+        ; Start keep-alive timer to prevent microphone button from vanishing
+        ; Use non-intrusive methods (SetFocus/Select/hover) every 2.5 seconds to keep it active
+        if (g_GeminiMicKeepAliveTimer) {
+            ; Timer already running, stop it first
+            SetTimer(KeepGeminiMicrophoneAlive, 0)
+            g_GeminiMicKeepAliveTimer := 0
+        }
+        ; Start new timer (2500ms = 2.5 seconds) - less frequent since we're not clicking
+        SetTimer(KeepGeminiMicrophoneAlive, 2500)
+        g_GeminiMicKeepAliveTimer := 1
+
     } catch Error as e {
         MsgBox "An error occurred: " e.Message, "Google Gemini", "IconX"
     }

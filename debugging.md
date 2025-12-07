@@ -1,94 +1,44 @@
-# Outlook Appointment Controls Debugging
+# Google Gemini Microphone Button Keep-Alive
 
 ## Issue
-Reminder and All-day were working, but Privacy, Status, and Category were not working.
 
-## Root Cause
-The Alt key sequences were being sent incorrectly. The code was using:
-```
-Send "{Alt Down}{Alt Up}"
-Sleep 150
-Send "7"
-```
+The microphone button in Google Gemini vanishes after a few seconds when no audio is detected, even though the user wants to keep it active.
 
-This doesn't properly send Alt+7 as a key combination. AutoHotkey needs the `!` prefix for Alt key combinations.
+## Solution
 
-## Fixes Applied
+Implemented a keep-alive timer that uses non-intrusive methods (SetFocus, Select, or mouse hover) to prevent the microphone button from vanishing without clicking it repeatedly. This avoids interrupting the user's speech with multiple clicks.
 
-### 1. ApplyPrivacy (Alt+7)
-**Before:**
-```ahk
-Send "{Alt Down}{Alt Up}"
-Sleep 150
-Send "7"
-Sleep 200
-```
+## Implementation Details
 
-**After:**
-```ahk
-Send "!7"  ; ! prefix = Alt key
-Sleep 200
-```
+### Global Variable
 
-### 2. ApplyStatus (Alt+5)
-**Before:**
-```ahk
-Send "{Alt Down}{Alt Up}"
-Sleep 150
-Send "5"
-Sleep 200
-```
+- `g_GeminiMicKeepAliveTimer`: Tracks whether the keep-alive timer is active
 
-**After:**
-```ahk
-Send "!5"
-Sleep 300  ; Increased wait time for menu to open
-```
+### Timer Function: `KeepGeminiMicrophoneAlive()`
 
-Also increased delays between arrow key presses and before Enter to ensure menu navigation works properly.
+- Checks if still in Gemini window before interacting
+- Finds the microphone button using the same method as the main shortcut (via "Fast" button's parent/siblings)
+- **State checking**: Checks `IsOffscreen` and `IsEnabled` properties before interacting
+- **Non-intrusive methods** (in order of preference):
+  1. `SetFocus()` - Sets keyboard focus without clicking
+  2. `Select()` - Selects the element without clicking
+  3. Mouse hover - Moves mouse to button center without clicking (fallback)
+- Only interacts when button state indicates it might vanish (offscreen or disabled)
+- Automatically stops if user leaves Gemini window
 
-### 3. ApplyCategory (Alt+6)
-**Before:**
-```ahk
-Send "{Alt Down}{Alt Up}"
-Sleep 150
-Send "6"
-Sleep 200
-```
+### Main Shortcut: Shift+Y
 
-**After:**
-```ahk
-Send "!6"
-Sleep 300  ; Increased wait time for menu to open
-```
+- Clicks microphone button immediately (to activate it)
+- Starts keep-alive timer (2.5 second interval)
+- Timer continues until user leaves Gemini window or presses Shift+Y again (which restarts timer)
 
-Also increased delays between Down arrow presses (200ms instead of 150ms) for better reliability.
+## Key Points
 
-### 4. ApplyReminder (Alt+8)
-**Before:**
-```ahk
-Send "{Alt Down}{Alt Up}"
-Sleep 150
-Send "8"
-Sleep 200
-```
-
-**After:**
-```ahk
-Send "!8"
-Sleep 200
-```
-
-## Key Changes Summary
-1. Changed all Alt key sequences from `{Alt Down}{Alt Up}` + number to `!number` format
-2. Increased delays after opening menus (300ms for Status and Category)
-3. Increased delays between arrow key presses for Category (200ms)
-4. Added delay before Enter key to ensure selection is ready
-
-## Testing
-- Privacy: Alt+7 should now toggle Private On
-- Status: Alt+5 opens menu, arrows navigate, Enter confirms
-- Category: Alt+6 opens menu, arrows navigate, Enter confirms
-- Reminder: Already working (no change needed)
-- All-day: Already working (uses UIA directly, no change needed)
-
+- Timer interval: 2.5 seconds (2500ms) - less frequent since we're not clicking
+- Uses non-intrusive UIA methods to avoid interrupting speech
+- State checking prevents unnecessary interactions
+- Timer automatically stops when leaving Gemini window
+- All errors are silently caught to prevent interruption
+- Uses `UIA.TreeWalkerTrue.TryGetParentElement()` to find parent (not `GetParent()` which doesn't exist)
+- Global variable must be declared in timer function scope
+- Mouse position is saved and restored when using hover fallback
