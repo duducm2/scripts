@@ -679,44 +679,6 @@ RenameChatGPTWindowToChatGPT() {
 }
 
 ; =============================================================================
-; Check Grammar
-; Hotkey: Win+Alt+Shift+O
-; Original File: ChatGPT - Check for grammar.ahk
-; =============================================================================
-#!+o::
-{
-    A_Clipboard := ""  ; Start off empty to allow ClipWait to detect when the text has arrived.
-    Send "^c"
-    ClipWait
-    SetTitleMatchMode 2
-    if hwnd := GetChatGPTWindowHwnd()
-        WinActivate "ahk_id " hwnd
-    if WinWaitActive("ahk_exe chrome.exe", , 2)
-        CenterMouse()
-    Sleep (IS_WORK_ENVIRONMENT ? 125 : 250)
-    SafeSend("{Esc}")
-    Sleep (IS_WORK_ENVIRONMENT ? 125 : 250)
-    SafeSend("+{Esc}")
-    searchString :=
-        "Correct the following sentence for grammar, cohesion, and coherence. Respond with only the corrected sentence, no explanations."
-    A_Clipboard := searchString . "`n`nContent: " . A_Clipboard
-    Sleep (IS_WORK_ENVIRONMENT ? 50 : 100)
-    Send("^a")
-    Sleep (IS_WORK_ENVIRONMENT ? 250 : 500)
-    Send("^v")
-    Sleep (IS_WORK_ENVIRONMENT ? 250 : 500)
-    Send("{Enter}")
-    Sleep (IS_WORK_ENVIRONMENT ? 250 : 500)
-    ; After sending, show loading for Stop streaming
-    Send "!{Tab}" ; Return to previous window
-    buttonNames := ["Stop streaming", "Interromper transmissão"]
-    WaitForButtonAndShowSmallLoading(buttonNames, "Waiting for response...")
-
-    ; Play completion sound
-    PlayGrammarCheckCompletedChime()
-}
-
-; =============================================================================
 ; Get Pronunciation
 ; Hotkey: Win+Alt+Shift+8
 ; Original File: ChatGPT - Pronunciation.ahk
@@ -1580,13 +1542,6 @@ SidebarVisible(uiRoot, names) {
         }
     }
     return false
-}
-
-; =============================================================================
-; Empty
-; =============================================================================
-#!+j::
-{
 }
 
 ; =============================================================================
