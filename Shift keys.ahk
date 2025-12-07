@@ -23,7 +23,6 @@ SetTitleMatchMode 2
 #include %A_ScriptDir%\env.ahk
 #include UIA-v2\Lib\UIA.ahk
 #include UIA-v2\Lib\UIA_Browser.ahk
-#include %A_ScriptDir%\ChatGPT_Loading.ahk
 #include %A_ScriptDir%\Hotstrings.ahk
 
 ; --- Global Variables ---
@@ -998,7 +997,7 @@ GetCheatSheetText() {
             appShortcuts := cheatSheets.Has("Mercado Livre") ? cheatSheets["Mercado Livre"] : ""
         if InStr(chromeTitle, "gemini", false)
             appShortcuts :=
-                "Gemini`r`n[Shift+Y] > Toggle the drawer`r`n[Shift+U] > New chat`r`n[Shift+I] > Search`r`n[Shift+O] > Change Model`r`n[Shift+P] > Tools`r`n[Shift+H] > Focus prompt field`r`n[Shift+J] > Copy last message`r`n[Shift+K] > Read aloud last message"
+                "Gemini`r`n[Shift+Y] > Toggle the drawer`r`n[Shift+U] > New chat`r`n[Shift+I] > Search`r`n[Shift+O] > Change Model`r`n[Shift+P] > Tools`r`n[Shift+H] > Focus prompt field`r`n[Shift+J] > Copy last message`r`n[Shift+K] > Read aloud last message`r`n[Shift+L] > Send Gemini prompt text"
         ; Only set generic Google sheet if nothing else matched and title clearly indicates Google site
         if (appShortcuts = "") {
             if (chromeTitle = "Google" || InStr(chromeTitle, " - Google Search"))
@@ -8956,6 +8955,112 @@ FindMonthGroup(uia) {
             textToSpeechMenuItem.Click()
         } else {
             ; Last resort: Could not find "Text to speech" menu item
+        }
+    } catch Error as e {
+        ; If all else fails, silently fail (no fallback action defined)
+    }
+}
+
+; Shift + L : Focus the prompt text field and send Gemini prompt text
++l:: {
+    try {
+        uia := UIA_Browser()
+        Sleep 300
+
+        ; Primary strategy: Find by Name "Enter a prompt here" with Type 50004 (Edit)
+        promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
+
+        ; Fallback 1: Try by Type "Edit" and Name "Enter a prompt here"
+        if !promptField {
+            promptField := uia.FindFirst({ Type: "Edit", Name: "Enter a prompt here" })
+        }
+
+        ; Fallback 2: Try by ClassName containing "ql-editor" or "new-input-ui" (substring match)
+        if !promptField {
+            allEdits := uia.FindAll({ Type: 50004 })
+            for edit in allEdits {
+                if (InStr(edit.ClassName, "ql-editor") || InStr(edit.ClassName, "new-input-ui")) {
+                    if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "prompt") {
+                        promptField := edit
+                        break
+                    }
+                }
+            }
+        }
+
+        ; Fallback 3: Try finding by ClassName containing "ql-editor" (most specific identifier)
+        if !promptField {
+            allEdits := uia.FindAll({ Type: 50004 })
+            for edit in allEdits {
+                if InStr(edit.ClassName, "ql-editor") {
+                    promptField := edit
+                    break
+                }
+            }
+        }
+
+        ; Fallback 4: Try finding by Name with substring match (in case of localization variations)
+        if !promptField {
+            allEdits := uia.FindAll({ Type: 50004 })
+            for edit in allEdits {
+                if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "Digite um prompt") || InStr(edit.Name,
+                    "prompt") {
+                    ; Additional check to ensure it's the prompt field (has ql-editor in className)
+                    if InStr(edit.ClassName, "ql-editor") {
+                        promptField := edit
+                        break
+                    }
+                }
+            }
+        }
+
+        if (promptField) {
+            promptField.SetFocus()
+            Sleep 100
+            ; Ensure focus was successful
+            if (!promptField.HasKeyboardFocus) {
+                ; Fallback: try clicking if SetFocus didn't work
+                promptField.Click()
+                Sleep 100
+            }
+
+            ; Read the Gemini_Prompt.txt file and paste its contents via clipboard
+            promptFilePath := A_ScriptDir "\Gemini_Prompt.txt"
+            if FileExist(promptFilePath) {
+                ; Save current clipboard
+                oldClipboard := A_Clipboard
+                try {
+                    ; Read and set clipboard
+                    promptText := FileRead(promptFilePath, "UTF-8")
+                    if (promptText) {
+                        A_Clipboard := promptText
+                        ClipWait 1, 1  ; Wait for clipboard to be ready
+
+                        ; Clear any existing text first (select all and delete)
+                        Send "^a"
+                        Sleep 50
+
+                        ; Paste the text from clipboard
+                        Send "^v"
+                        Sleep 100
+
+                        ; Restore original clipboard
+                        A_Clipboard := oldClipboard
+
+                        Sleep 400
+                        Send "{Enter}"
+                    }
+                } catch Error as e {
+                    ; If file reading fails, try to restore clipboard
+                    try {
+                        A_Clipboard := oldClipboard
+                    }
+                }
+            } else {
+                ; File not found - could show a message or just silently fail
+            }
+        } else {
+            ; Last resort: Could not find prompt field
         }
     } catch Error as e {
         ; If all else fails, silently fail (no fallback action defined)
