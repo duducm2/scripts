@@ -240,105 +240,102 @@ Mercado Livre
 ; --- WhatsApp desktop -------------------------------------------------------
 cheatSheets["WhatsApp"] := "
 (
-WhatsApp
-[Shift+Y] > 🎤 Toggle voice message
-[Shift+U] > 🔍 Search chats
-[Shift+I] > ↩️ Reply
-[Shift+O] > 😀 Sticker panel
-[Shift+,] > 📬 Toggle Unread filter
-[Shift+H] > 💬 Focus current chat
-[Shift+J] > ✅ Mark as read or unread
-[Shift+K] > 📌 Pin chat or unpin chat
+WhatsApp (Shift)
+🎤 [V]Toggle [V]oice message
+🔍 [S][S]earch chats
+↩️ [R][R]eply
+😀 [E][E]moji panel
+📬 [U]Toggle [U]nread filter
+💬 [F]ocus current [F]chat
+✅ [M]ark as read or unread
+📌 [P]in chat or unpin chat
 )"  ; end WhatsApp
 
 ; --- Outlook main window ----------------------------------------------------
 cheatSheets["OUTLOOK.EXE"] := "
 (
-Outlook
-[Shift+Y] > 📧 Send to General
-[Shift+U] > 📰 Send to Newsletter
-[Shift+I] > 📥 Go to Inbox
-[Shift+O] > 📝 Subject / Title
-[Shift+P] > 👥 Required / To
-[Shift+H] > 🚫 Don't send any response
-[Shift+J] > ✅ Send response 
-[Shift+K] > Send Shift+F6
-[Shift+L] > Send F6
-[Shift+M] > 📝 Subject -> Body
-[Shift+N] > 🎯 Focused / Other
+Outlook (Shift)
+📧 [G]Send to [G]eneral
+📰 [N]Send to [N]ewsletter
+📥 [I]Go to [I]nbox
+📝 [S]ubject / Title
+👥 [T]o / [R]equired
+🚫 [D]on't send any response
+✅ [E]Send [E]response
+📝 [B]ody (Subject -> Body)
+🎯 [F]ocused / [O]ther
 )"  ; end Outlook
 
 ; --- Outlook Reminder window -------------------------------------------------
 cheatSheets["OutlookReminder"] := "
 (
-Outlook â€" Reminders
-[Shift+Y] > ⏰ Snooze 1 hour
-[Shift+U] > ⏰ Snooze 4 hours
-[Shift+I] > ⏰ Snooze 1 day
-[Shift+P] > ❌ Dismiss all reminders
-[Shift+H] > 🌐 Join Online
+Outlook - Reminders (Shift)
+⏰ [H]Snooze 1 [H]our
+⏰ [F]Snooze [F]our hours
+⏰ [D]Snooze 1 [D]ay
+❌ [X]Dismiss all reminders
+🌐 [J]oin [O]nline
 )"  ; end Outlook Reminder
 
 ; --- Outlook Appointment window ---------------------------------------------
 cheatSheets["OutlookAppointment"] := "
 (
-Outlook â€" Appointment
-[Shift+Y] > 📅 Start date (combo)
-[Shift+U] > 📅 Start date â€" Date Picker
-[Shift+I] > 🕐 Start time (combo)
-[Shift+O] > 📅 End date (combo)
-[Shift+P] > 🕐 End time (combo)
-[Shift+H] > ☑️ All day checkbox
-[Shift+J] > 📝 Title field
-[Shift+L] > 👥 Required / To field
-[Shift+M] > 📍 Location > Body
-[Shift+,] > 🔄 Make Recurring
+Outlook - Appointment (Shift)
+📅 [S]tart [D]ate (combo)
+📅 [D]ate [P]icker (start)
+🕐 [T]ime (start)
+📅 [E]nd [D]ate (combo)
+🕐 [N]End [T]ime (combo)
+☑️ [A]ll [D]ay checkbox
+📝 [I]Title field
+👥 [R]equired / [T]o field
+📍 [L]ocation
+📝 [B]ody
+🔄 [C]Make [R]ecurring
 )"  ; end Outlook Appointment
 
 ; --- Outlook Message window ---------------------------------------------------
 cheatSheets["OutlookMessage"] := "
 (
-Outlook â€" Message
-[Shift+Y] > 📝 Subject / Title
-[Shift+U] > 👥 Required / To
-[Shift+M] > 📍 Location > Body
+Outlook - Message (Shift)
+📝 [S]ubject / Title
+👥 [T]o / [R]equired
+📝 [B]ody (Location -> Body)
 )"  ; end Outlook Message
 
 ; --- Microsoft Teams â€" meeting window --------------------------------------
 cheatSheets["TeamsMeeting"] := "
 (
-Teams
-[Shift+Y] > 💬 Open Chat pane
-[Shift+U] > 🔍 Maximize meeting window
-[Shift+I] > 👍 Reagir
-[Shift+O] > 🎥 Join now with camera and microphone on
-[Shift+P] > 🔊 Audio settings
+Teams (Shift)
+💬 [C]Open [C]hat pane
+⛶ [M]aximize meeting [M]indow
+👍 [R]eact / [R]eagir
+🎥 [J]oin now with camera and microphone on
+🔊 [A]udio settings
 )"  ; end TeamsMeeting
 
 ; --- Microsoft Teams â€" chat window -----------------------------------------
 cheatSheets["TeamsChat"] := "
 (
-Teams
-
---- Custom Shortcuts ---
-[Shift+Y] > 👍 Like
-[Shift+U] > ❤️ Heart
-[Shift+I] > 😂 Laugh
-[Shift+O] > 🏠 Home panel
-[Shift+P] > 📎 Attach file
-[Shift+H] > 📜 Open history menu
-[Shift+J] > 📬 Mark unread
-[Shift+K] > 📌 Pin chat
-[Shift+L] > 📌 Remove pin
-[Shift+N] > 📁 Collapse all conversation folders
-[Shift+M] > ℹ️ Activate/deactivate details panel
-[Shift+,] > 📬 View all unread items
-[Shift+.] > 🪟 Detach current chat
-[Shift+E] > ✏️ Edit message
-[Shift+R] > ↩️ Reply
-[Shift+T] > 👥 Add participants
-[Shift+W] > 📞 Start call (audio/video)
-[Shift+D] > 🩶 Fold chat sections
+Teams (Shift)
+↩️ [R][R]eply
+📬 [U]View all [U]nread items
+📌 [P]in chat
+✏️ [E]dit message
+📎 [A]ttach file
+📜 [H]istory menu
+📬 [M]ark unread
+📌 [X]Unpin chat
+📁 [C]ollapse all conversation folders
+ℹ️ [I]nfo / Details panel
+🪟 [.]Detach chat
+👥 [T]eam / Add participants
+📞 [V]ideo call
+🩶 [F]old chat sections
+👍 [L]ike reaction
+❤️ [G]Heart reaction
+😂 [J]Laugh reaction
+🏠 [O]pen home panel
 
 --- Built-in Shortcuts ---
 Geral:
@@ -404,24 +401,23 @@ Mensagens:
 ; --- Spotify ---------------------------------------------------------------
 cheatSheets["Spotify.exe"] := "
 (
-Spotify
-[Shift+Y] > 🔗 Toggle Connect panel
-[Shift+U] > 🖥️ Toggle Full screen
-[Shift+I] > 🔍 Open Search
-[Shift+O] > 📋 Go to Playlists
-[Shift+P] > 🎤 Go to Artists
-[Shift+H] > 💿 Go to Albums
-[Shift+J] > 🔍 Go to Search
-[Shift+K] > 🏠 Go to Home
-[Shift+L] > 🎵 Go to Now Playing
-[Shift+N] > 🎯 Go to Made For You
-[Shift+M] > 🆕 Go to New Releases
-[Shift+,] > 📊 Go to Charts
-[Shift+.] > 🎵 Toggle Now Playing View
-[Shift+W] > 📚 Toggle Library Sidebar
-[Shift+E] > 🖥️ Toggle Fullscreen Library
-[Shift+R] > 🎤 Toggle lyrics
-[Shift+T] > ⏯️ Toggle play/pause
+Spotify (Shift)
+🔗 [C]onnect panel
+⛶ [F]ullscreen
+🔍 [S]earch
+📋 [P]laylists
+🎤 [A]rtists
+💿 [B]Albums
+🏠 [H]ome
+🎵 [N]ow [P]laying
+🎯 [M]ade [F]or [Y]ou
+🆕 [R]eleases (New)
+📊 [X]Charts
+🎵 [V]iew (Now Playing)
+📚 [L]ibrary sidebar
+⛶ [E]xpand [L]ibrary
+🎤 [Y]Lyrics
+⏯️ [T]Play / [P]ause
 )"  ; end Spotify
 
 ; --- OneNote ---------------------------------------------------------------
@@ -441,9 +437,9 @@ OneNote
 ; --- Chrome general shortcuts ----------------------------------------------
 cheatSheets["chrome.exe"] := "
 (
-Chrome
-[Shift+G] > 🪟 Pop current tab to new window
-[Ctrl+Alt+Y] > 🏷️ Name ChatGPT window as "ChatGPT"
+Chrome (Shift)
+🪟 [W]Pop current tab to new [W]indow
+🏷️ [Ctrl+Alt+Y] Name ChatGPT window as "ChatGPT"
 )"  ; end Chrome
 
 ; --- Cursor ------------------------------------------------------
@@ -472,31 +468,31 @@ Cursor
 [Ctrl+Z] > ↩️ Undo
 [Ctrl+B] > 📊 Toggle primary sidebar visibility
 
---- SHIFT Shortcuts (ahk = AutoHotkey) ---
-[Shift+Y] > 📉 Fold (ahk)
-[Shift+U] > 📈 Unfold (ahk)
-[Shift+I] > 📄 Open markdown preview to the side (cursor)
-[Shift+O] > 🪟 Move editor into new window (cursor)
-[Shift+P] > 💻 Go to terminal (ahk)
-[Shift+H] > 💻 New terminal (ahk)
-[Shift+J] > 📁 Go to file explorer (ahk)
-[Shift+K] > 📄🪟 Open markdown preview and move editor into new window (ahk)
-[Shift+L] > ⌨️ Command palette (ahk)
-[Shift+N] > 📈 Expand selection (ahk)
-[Shift+M] > ⚡ Go to symbol in access view (cursor)
-[Shift+,] > 💬 Show chat history (ahk)
-[Shift+.] > 🖼️ Paste Image (cursor)
-[Shift+W] > 📁 Fold Git repos (SCM) (ahk)
-[Shift+E] > 🔍 Search (ahk)
-[Shift+R] > 🍞 Open Bread Crumbs menu (ahk)
-[Shift+T] > 😀 Emoji selector (1:🔲 2:⏳ 3:⚡ 4:2️⃣ 5:❓) (ahk)
-[Shift+D] > 🌿 Git section (ahk)
-[Shift+F] > ❌ Close all editors (ahk)
-[Shift+G] > 🤖 Switch AI models (auto/CLAUD/GPT/O/DeepSeek/Cursor) (ahk)
-[Shift+Z] > 🧘 Zen mode (cursor)
-[Shift+C] > ⬇️ Git Pull (cursor)
-[Shift+V] > ✅ Git Commit (cursor)
-[Shift+B] > ⬆️ Git Push (cursor)
+--- SHIFT Shortcuts (Shift) (ahk = AutoHotkey) ---
+📉 [F]old (ahk)
+📈 [U]nfold (ahk)
+📄 [M]arkdown preview (cursor)
+🪟 [W]indow (move editor) (cursor)
+💻 [T]erminal (ahk)
+💻 [N]ew [T]erminal (ahk)
+📁 [E]xplorer (ahk)
+📄🪟 [K]eep (markdown + window) (ahk)
+⌨️ [C]ommand palette (ahk)
+📈 [X]Expand selection (ahk)
+⚡ [S]ymbol in access view (cursor)
+💬 [H]istory (chat) (ahk)
+🖼️ [I]mage (paste) (cursor)
+📁 [G]it repos fold (SCM) (ahk)
+🔍 [Q]Search (ahk)
+🍞 [R]Breadcrumbs menu (ahk)
+😀 [O]Emoji selector (ahk)
+🌿 [D]Git section (ahk)
+❌ [Z]Close all editors (ahk)
+🤖 [A]I models switch (ahk)
+🧘 [Y]Zen mode (cursor)
+⬇️ [P]ull (Git) (cursor)
+✅ [V]Commit (Git) (cursor)
+⬆️ [B]Push (Git) (cursor)
 
 --- CTRL+ALT Shortcuts (Cursor-defined) ---
 [Ctrl+Alt+Up] > ⬆️ Go to Parent Fold
@@ -534,15 +530,15 @@ Cursor
 ; --- Windows Explorer ------------------------------------------------------
 cheatSheets["explorer.exe"] := "
 (
-Explorer
-[Shift+Y] > 📄 Select first file
-[Shift+U] > 🔍 Focus search bar
-[Shift+I] > 📍 Focus address bar
-[Shift+O] > 📁 New folder
-[Shift+J] > 🔗 Create a shortcut
-[Shift+K] > 📋 Copy as path
-[Shift+P] > 📌 Select first pinned item in Explorer sidebar
-[Shift+H] > 📌 Select the last item of the Explorer sidebar
+Explorer (Shift)
+📄 [F]Select first [F]ile
+🔍 [S]earch bar
+📍 [A]ddress bar
+📁 [N]ew [F]older
+🔗 [H]s[H]ortcut (create)
+📋 [C]opy as path
+📌 [P]inned item (first in sidebar)
+📌 [L]ast item (Explorer sidebar)
 )"  ; end Explorer
 
 ; --- Microsoft Paint ------------------------------------------------------
@@ -617,26 +613,26 @@ Figma
 ; --- Gmail ---------------------------------------------------------------
 cheatSheets["Gmail"] := "
 (
-Gmail
-[Shift+Y] > 📥 Go to main inbox
-[Shift+U] > 📰 Go to updates
-[Shift+I] > 💬 Go to forums
-[Shift+O] > 📬 Toggle read/unread
-[Shift+P] > ⬅️ Previous conversation
-[Shift+H] > ➡️ Next conversation
-[Shift+J] > 📦 Archive conversation
-[Shift+K] > ✅ Select conversation
-[Shift+L] > ↩️ Reply
-[Shift+N] > ↩️ Reply all
-[Shift+M] > ➡️ Forward
-[Shift+,] > ⭐ Star/unstar conversation
-[Shift+.] > 🗑️ Delete
-[Shift+W] > 🚫 Report as spam
-[Shift+E] > ✍️ Compose new email
-[Shift+R] > 🔍 Search mail
-[Shift+T] > 📁 Move to folder
-[Shift+D] > ⌨️ Show keyboard shortcuts help
-[Shift+F] > 📬 Click inbox button
+Gmail (Shift)
+📥 [I]nbox
+📰 [U]pdates
+💬 [F]orums
+📬 [R]ead / [U]nread toggle
+⬅️ [P]revious conversation
+➡️ [N]ext conversation
+📦 [A]rchive conversation
+✅ [S]elect conversation
+↩️ [Y]Reply
+↩️ [G]Reply [A]ll
+➡️ [W]Forward
+⭐ [T]Star / unstar conversation
+🗑️ [D]elete
+🚫 [X]Spam
+✍️ [C]ompose new email
+🔍 [Q]Search mail
+📁 [M]ove to folder
+⌨️ [H]elp (keyboard shortcuts)
+📬 [B]Inbox button
 
 --- Built-in Shortcuts (Windows) ---
 
@@ -751,20 +747,20 @@ Google Keep
 ; --- File Dialog ---------------------------------------------------------------
 cheatSheets["FileDialog"] := "
 (
-File Dialog
-[Shift+Y] > 📄 Select first item
-[Shift+U] > 🔍 Focus search bar
-[Shift+I] > 📍 Focus address bar
-[Shift+O] > 📁 New folder
-[Shift+P] > 📌 Select first pinned item in sidebar
-[Shift+H] > 💻 Select 'This PC' / 'Este computador' in sidebar
-[Shift+J] > 📝 Focus file name field
-[Shift+K] > ✅ Click Insert/Open/Save button
-[Shift+L] > ❌ Click Cancel button
+File Dialog (Shift)
+📄 [F]Select first [F]ile
+🔍 [S]earch bar
+📍 [A]ddress bar
+📁 [N]ew [F]older
+📌 [P]inned item (first in sidebar)
+💻 [T]his [P]C (sidebar)
+📝 [N]ame field (file name)
+✅ [O]pen/[S]ave button
+❌ [C]ancel button
 )"
 
 ; --- Settings Window -------------------------------------------------
-cheatSheets["Settings"] := "(Settings)`r`n[Shift+Y] > 🔊 Set input volume to 100%"
+cheatSheets["Settings"] := "(Settings (Shift))`r`n🔊 [V]Set input [V]olume to 100%"
 
 ; --- Command Palette -------------------------------------------------
 cheatSheets["Command Palette"] := "
@@ -1489,24 +1485,22 @@ CenterGuiOnActiveMonitor(guiObj) {
 ;-------------------------------------------------------------------
 #HotIf WinActive("WhatsApp")
 
-; Remap Shift+J to Ctrl+Alt+Shift+U
-+j:: Send "^!+u"
+global isRecording := false          ; persists between hotkey presses
 
-; Remap Shift+K to Ctrl+Alt+Shift+P
-+k:: Send "^!+p"
+; Shift + V : Toggle voice message - Voice
++v:: ToggleVoiceMessage()
 
-; Shift + U: Extended search (Alt+K)
-+u:: Send("!k")
+; Shift + S : Search chats - Search
++s:: Send("!k")
 
-; Shift + I: Reply (Alt+R)
-+i:: Send("!r")
+; Shift + R : Reply - Reply
++r:: Send("!r")
 
-; Shift + O: Sticker panel (Ctrl+Alt+S)
-+o:: Send("^!s")
+; Shift + E : Emoji panel - Emoji
++e:: Send("^!s")
 
-; Shift + P: Edit last message (Win+Up)
-; The user updated this to be Toggle Unread
-+,::
+; Shift + U : Toggle Unread filter - Unread
++u::
 {
     try
     {
@@ -1540,10 +1534,41 @@ CenterGuiOnActiveMonitor(guiObj) {
     }
 }
 
-global isRecording := false          ; persists between hotkey presses
+; Shift + F : Focus current chat - Focus
++f::
+{
+    try
+    {
+        ; WhatsApp desktop is Chromium-based, so we can use UIA_Browser.
+        ; It should attach to the active window, which is WhatsApp thanks to #HotIf.
+        uia := UIA_Browser()
+        Sleep 300 ; Give UIA time to attach to the browser. A similar delay is in the reference script.
 
-; ---------- HOTKEY ----------------------------------------------------------
-+y:: ToggleVoiceMessage()             ; Shift + Y
+        ; Find the "Archived" button to use as an anchor.
+        ; The user provided: Name:"Archived "
+        archivedButton := uia.FindElement({ Name: "Archived ", Type: "Button" })
+
+        if (archivedButton) {
+            ; Focus the button without clicking it.
+            archivedButton.SetFocus()
+            ; Send Tab to move to the main conversation list.
+            ; From there, the focus should be on the selected chat.
+            SendInput "{Tab}"
+        }
+        else {
+            MsgBox "Could not find the 'Archived' button."
+        }
+    }
+    catch Error as e {
+        MsgBox "An error occurred while trying to focus WhatsApp conversation: " e.Message
+    }
+}
+
+; Shift + M : Mark as read or unread - Mark
++m:: Send "^!+u"
+
+; Shift + P : Pin chat or unpin chat - Pin
++p:: Send "^!+p"
 
 ; ---------------------------------------------------------------------------
 ToggleVoiceMessage() {
@@ -1676,36 +1701,6 @@ WaitForList(root, pattern := "", timeout := 5000) {
     return 0
 }
 
-; Shift + h: Focus the current conversation
-+h::
-{
-    try
-    {
-        ; WhatsApp desktop is Chromium-based, so we can use UIA_Browser.
-        ; It should attach to the active window, which is WhatsApp thanks to #HotIf.
-        uia := UIA_Browser()
-        Sleep 300 ; Give UIA time to attach to the browser. A similar delay is in the reference script.
-
-        ; Find the "Archived" button to use as an anchor.
-        ; The user provided: Name:"Archived "
-        archivedButton := uia.FindElement({ Name: "Archived ", Type: "Button" })
-
-        if (archivedButton) {
-            ; Focus the button without clicking it.
-            archivedButton.SetFocus()
-            ; Send Tab to move to the main conversation list.
-            ; From there, the focus should be on the selected chat.
-            SendInput "{Tab}"
-        }
-        else {
-            MsgBox "Could not find the 'Archived' button."
-        }
-    }
-    catch Error as e {
-        MsgBox "An error occurred while trying to focus WhatsApp conversation: " e.Message
-    }
-}
-
 #HotIf
 
 ;-------------------------------------------------------------------
@@ -1740,17 +1735,20 @@ Confirm(t) {
         QuickSnooze(t)
 }
 
-; HOTKEYS de teste
-; Shift+U  > 1 minuto
-; Shift+I  > 2 minutos
-; Shift+O  > 3 minutos
-+Y:: Confirm("1 hour")
-+U:: Confirm("4 hours")
-+I:: Confirm("1 day")
-+P:: ConfirmDismissAll()  ; Shift + P : Dismiss all reminders with confirmation
+; Shift + H : Snooze 1 hour - Hour
++H:: Confirm("1 hour")
 
-; Shift + H : Join Online
-+H::
+; Shift + F : Snooze 4 hours - Four
++F:: Confirm("4 hours")
+
+; Shift + D : Snooze 1 day - Day
++D:: Confirm("1 day")
+
+; Shift + X : Dismiss all reminders - Dismiss
++X:: ConfirmDismissAll()
+
+; Shift + J : Join Online - Join
++J::
 {
     try {
         win := WinExist("A")
@@ -1816,8 +1814,8 @@ IsTeamsChatActive() {
 ; -------------------------------------------------------------------
 #HotIf IsTeamsMeetingActive()
 
-; Shift + Y : Open Chat pane
-+Y:: {
+; Shift + C : Open Chat pane - Chat
++C:: {
     try {
         win := WinExist("A")
         root := UIA.ElementFromHandle(win)
@@ -1838,8 +1836,8 @@ IsTeamsChatActive() {
     }
 }
 
-; Shift + U : Switch from compacted to normal Teams meeting window
-+U:: {
+; Shift + M : Maximize meeting window - Maximize
++M:: {
     ; Get current active window title
     currentTitle := WinGetTitle("A")
 
@@ -1896,8 +1894,8 @@ IsTeamsChatActive() {
     }
 }
 
-; Shift + I : Reagir (open reactions menu)
-+I:: {
+; Shift + R : React / Reagir - React
++R:: {
     try {
         win := WinExist("A")
         root := UIA.ElementFromHandle(win)
@@ -1930,8 +1928,8 @@ IsTeamsChatActive() {
     }
 }
 
-; Shift + O : Join now with camera and microphone on
-+O:: {
+; Shift + J : Join now with camera and microphone on - Join
++J:: {
     try {
         win := WinExist("A")
         root := UIA.ElementFromHandle(win)
@@ -1969,8 +1967,8 @@ IsTeamsChatActive() {
     }
 }
 
-; Shift + P : Audio settings
-+P:: {
+; Shift + A : Audio settings - Audio
++A:: {
     try {
         win := WinExist("A")
         root := UIA.ElementFromHandle(win)
@@ -2294,8 +2292,26 @@ IsTeamsChatActive() {
 ;-------------------------------------------------------------------
 #HotIf IsTeamsChatActive()
 
-; Shift + K : Pin
-+K::
+; Shift + R : Reply - Reply
++r::
+{
+    Send "{Enter}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
+}
+
+; Shift + U : View all unread items - Unread
++u::
+{
+    Send "^!u"
+}
+
+; Shift + P : Pin chat - Pin
++p::
 {
     Sleep "150"
     Send "^1"
@@ -2313,58 +2329,7 @@ IsTeamsChatActive() {
     Send "^+{Home}"
 }
 
-; Shift + Y : Like
-+y::
-{
-    Send "{Enter}"
-    Send "{Enter}"
-    Send "{Esc}"
-}
-
-; Shift + U : Heart
-+u::
-{
-    Send "{Enter}"
-    Send "{Down}"
-    Send "{Enter}"
-    Send "{Esc}"
-}
-
-; Shift + I : Laugh
-+i::
-{
-    Send "{Enter}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Enter}"
-    Send "{Esc}"
-}
-
-; Shift + Ã‡ : Remove pin
-+l::
-{
-    Sleep "150"
-    Send "^1"
-    Sleep "100"
-    Send("{AppsKey}")
-    Sleep "100"
-    Send "r"
-    Send "{Enter}"
-}
-
-; Shift + R : Reply Message
-+r::
-{
-    Send "{Enter}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Enter}"
-}
-
-; Shift + E : Edit message
+; Shift + E : Edit message - Edit
 +e::
 {
     Send "{Enter}"
@@ -2376,8 +2341,20 @@ IsTeamsChatActive() {
     Send "{Enter}"
 }
 
-; Shift + J : Mark as unread
-+j::
+; Shift + A : Attach file - Attach
++a::
+{
+    Send "!+o"
+}
+
+; Shift + H : Open history menu - History
++h::
+{
+    Send "^h"
+}
+
+; Shift + M : Mark as unread - Mark
++m::
 {
     Send "^1"
     Sleep "220"
@@ -2387,45 +2364,31 @@ IsTeamsChatActive() {
     Send "{Enter}"
 }
 
-; Shift + O : Ctrl+1 then Ctrl+Shift+Home
-+o::
+; Shift + X : Unpin chat - Unpin
++x::
 {
+    Sleep "150"
     Send "^1"
-    Sleep "80"          ; 80 ms
-    Send "^+{Home}"
+    Sleep "100"
+    Send("{AppsKey}")
+    Sleep "100"
+    Send "r"
+    Send "{Enter}"
 }
 
-; Shift + H : Open history menu
-+h::
-{
-    Send "^h"
-}
-
-; Shift + P : Attach file
-+p::
-{
-    Send "!+o"
-}
-
-; Shift + N : Collapse all conversation folders
-+n::
+; Shift + C : Collapse all conversation folders - Collapse
++c::
 {
     Send "!q"
 }
 
-; Shift + M : Activate/deactivate details panel
-+m::
+; Shift + I : Activate/deactivate details panel - Info
++i::
 {
     Send "!p"
 }
 
-; Shift + , : View all unread items
-+,::
-{
-    Send "^!u"
-}
-
-; Shift + . : Detach current chat
+; Shift + . : Detach current chat - Window
 +.::
 {
     try {
@@ -2461,8 +2424,8 @@ IsTeamsChatActive() {
     }
 }
 
-; Shift + W : Call current chat
-+w::
+; Shift + V : Video call - Video
++v::
 {
     ; Show confirmation popup
     if MsgBox("Do you want to call this person?", "Confirm Call", "YesNo Icon?") = "Yes" {
@@ -2517,7 +2480,7 @@ IsTeamsChatActive() {
     }
 }
 
-; Shift + T : Add participants
+; Shift + T : Add participants - Team
 +t::
 {
     try {
@@ -2564,8 +2527,8 @@ IsTeamsChatActive() {
     }
 }
 
-; Shift + D : Collapse chat categories
-+d::
+; Shift + F : Fold chat sections - Fold
++f::
 {
     try {
         win := WinExist("A")
@@ -2681,6 +2644,41 @@ IsTeamsChatActive() {
     Send "{Right}"
 }
 
+; Shift + O : Open home panel - Open
++o::
+{
+    Send "^1"
+    Sleep "80"          ; 80 ms
+    Send "^+{Home}"
+}
+
+; Shift + L : Like reaction - Like
++l::
+{
+    Send "{Enter}"
+    Send "{Enter}"
+    Send "{Esc}"
+}
+
+; Shift + G : Heart reaction - Heart
++g::
+{
+    Send "{Enter}"
+    Send "{Down}"
+    Send "{Enter}"
+    Send "{Esc}"
+}
+
+; Shift + J : Laugh reaction - Laugh
++j::
+{
+    Send "{Enter}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
+    Send "{Esc}"
+}
+
 #HotIf
 
 ;-------------------------------------------------------------------
@@ -2719,8 +2717,8 @@ IsOutlookMainActive() {
 
 #HotIf IsOutlookMainActive()
 
-; Shift + U : Send to general
-+Y::
+; Shift + G : Send to General - General
++G::
 {
     Send "!5"
     Send "O"
@@ -2729,8 +2727,8 @@ IsOutlookMainActive() {
     Send "{Enter}"
 }
 
-; Shift + U : Send to newsletter
-+U::
+; Shift + N : Send to Newsletter - Newsletter
++N::
 {
     Send "!5"
     Send "O"
@@ -2739,41 +2737,7 @@ IsOutlookMainActive() {
     Send "{Enter}"
 }
 
-; Shift + O : Subject / Title (same as Message window +Y)
-+O:: {
-    if FocusOutlookField({ AutomationId: "4101" }) ; Subject
-        return
-    if FocusOutlookField({ Name: "Subject", ControlType: "Edit" })
-        return
-}
-
-; Shift + P : Required / To (same as Message window +U)
-+P:: {
-    if FocusOutlookField({ AutomationId: "4109" }) ; Required
-        return
-    if FocusOutlookField({ Name: "Required", ControlType: "Edit" })
-        return
-    if FocusOutlookField({ AutomationId: "4117" }) ; To
-        return
-    if FocusOutlookField({ Name: "To", ControlType: "Edit" })
-        return
-}
-
-; Shift + M : Subject -> Body (same as Message window +M)
-+M:: {
-    if FocusOutlookField({ AutomationId: "4101" }) {
-        Sleep 50
-        Send "{Tab}"
-        return
-    }
-    if FocusOutlookField({ Name: "Subject", ControlType: "Edit" }) {
-        Sleep 50
-        Send "{Tab}"
-        return
-    }
-}
-
-; Shift + I : Go to Inbox
+; Shift + I : Go to Inbox - Inbox
 +I::
 {
     Send "{Alt}"
@@ -2789,7 +2753,42 @@ IsOutlookMainActive() {
     Send "{Enter}"
 }
 
-+N:: {                                  ; toggle Focused / Other
+; Shift + S : Subject / Title - Subject
++S:: {
+    if FocusOutlookField({ AutomationId: "4101" }) ; Subject
+        return
+    if FocusOutlookField({ Name: "Subject", ControlType: "Edit" })
+        return
+}
+
+; Shift + T : Required / To - To
++T:: {
+    if FocusOutlookField({ AutomationId: "4109" }) ; Required
+        return
+    if FocusOutlookField({ Name: "Required", ControlType: "Edit" })
+        return
+    if FocusOutlookField({ AutomationId: "4117" }) ; To
+        return
+    if FocusOutlookField({ Name: "To", ControlType: "Edit" })
+        return
+}
+
+; Shift + B : Subject -> Body - Body
++B:: {
+    if FocusOutlookField({ AutomationId: "4101" }) {
+        Sleep 50
+        Send "{Tab}"
+        return
+    }
+    if FocusOutlookField({ Name: "Subject", ControlType: "Edit" }) {
+        Sleep 50
+        Send "{Tab}"
+        return
+    }
+}
+
+; Shift + F : Toggle Focused / Other - Focused
++F:: {                                  ; toggle Focused / Other
     static nextOutlookButton := "Other"
 
     try {
@@ -2813,8 +2812,8 @@ IsOutlookMainActive() {
     }
 }
 
-; Shift + H : Don't send any response
-+H::
+; Shift + D : Don't send any response - Don't send
++D::
 {
     ShowSmallLoadingIndicator_ChatGPT("Don't send any response…")
     Send "+{Tab}"
@@ -2826,8 +2825,8 @@ IsOutlookMainActive() {
     HideSmallLoadingIndicator_ChatGPT()
 }
 
-; Shift + J : Send response
-+J::
+; Shift + E : Send response - Send
++E::
 {
     ShowSmallLoadingIndicator_ChatGPT("Send response…")
     Send "+{Tab}"
@@ -2988,16 +2987,16 @@ SelectExplorerSidebarFirstPinned() {
 ; Message inspector-specific hotkeys (Subject/To/DatePicker/Body)
 #HotIf IsOutlookMessageActive()
 
-; Shift + Y > Subject
-+Y:: {
+; Shift + S : Subject / Title - Subject
++S:: {
     if FocusOutlookField({ AutomationId: "4101" }) ; Subject
         return
     if FocusOutlookField({ Name: "Subject", ControlType: "Edit" })
         return
 }
 
-; Shift + U > Required / To
-+U:: {
+; Shift + T : Required / To - To
++T:: {
     if FocusOutlookField({ AutomationId: "4109" }) ; Required
         return
     if FocusOutlookField({ Name: "Required", ControlType: "Edit" })
@@ -3008,11 +3007,8 @@ SelectExplorerSidebarFirstPinned() {
         return
 }
 
-; Shift + I > Date Picker (if present in this inspector)
-; (No Shift + I in Message inspector)
-
-; Shift + M > Subject > Body
-+M:: {
+; Shift + B : Body (Subject -> Body) - Body
++B:: {
     if FocusOutlookField({ AutomationId: "4101" }) {
         Sleep 50
         Send "{Tab}"
@@ -3078,34 +3074,33 @@ Outlook_ClickEndTime_1200PM() {
 
 ; (moved +H/+J below to ensure the block starts with Y)
 
-; New Shift hotkeys for date/time controls (Start > End), ordered by key preference
-; Shift + Y > Start date (combo)
-+Y:: {
+; Shift + S : Start date (combo) - Start Date
++S:: {
     Outlook_ClickStartDate()
 }
 
-; Shift + U â†' Start date â€" Date Picker
-+U:: {
+; Shift + D : Start date - Date Picker - Date Picker
++D:: {
     Outlook_ClickStartDatePicker()
 }
 
-; Shift + I â†' Start time (combo)
-+I:: {
+; Shift + T : Start time (combo) - Time
++T:: {
     Outlook_ClickStartTime()
 }
 
-; Shift + O â†' End date (combo)
-+O:: {
+; Shift + E : End date (combo) - End Date
++E:: {
     Outlook_ClickEndDate()
 }
 
-; Shift + P â†' End time (combo)
-+P:: {
+; Shift + N : End time (combo) - End Time
++N:: {
     Outlook_ClickEndTime()
 }
 
-; Shift + H â†' All day checkbox
-+H:: {
+; Shift + A : All day checkbox - All Day
++A:: {
     try {
         win := WinExist("A")
         root := UIA.ElementFromHandle(win)
@@ -3124,24 +3119,24 @@ Outlook_ClickEndTime_1200PM() {
     }
 }
 
-; Shift + J â†' Title field
-+J:: {
+; Shift + I : Title field - Title
++I:: {
     if FocusOutlookField({ AutomationId: "4100" }) ; Title
         return
     if FocusOutlookField({ Name: "Title", ControlType: "Edit" })
         return
 }
 
-; Shift + L â†' Required / To field
-+L:: {
+; Shift + R : Required / To field - Required
++R:: {
     if FocusOutlookField({ AutomationId: "4109" }) ; Required
         return
     if FocusOutlookField({ Name: "Required", ControlType: "Edit" })
         return
 }
 
-; Shift + M â†' Location â†' Body
-+M:: {
+; Shift + L : Location -> Body - Location
++L:: {
     if FocusOutlookField({ AutomationId: "4111" }) { ; Location
         Sleep 100
         Send "{Tab}"
@@ -3154,9 +3149,22 @@ Outlook_ClickEndTime_1200PM() {
     }
 }
 
-; Shift + ; â†' Make Recurring (click)
-; Semicolon key virtual key code is VK_BA; with Shift it's +vkBA
-+,:: {
+; Shift + B : Body (from Location) - Body
++B:: {
+    if FocusOutlookField({ AutomationId: "4111" }) { ; Location
+        Sleep 100
+        Send "{Tab}"
+        return
+    }
+    if FocusOutlookField({ Name: "Location", ControlType: "Edit" }) {
+        Sleep 100
+        Send "{Tab}"
+        return
+    }
+}
+
+; Shift + C : Make Recurring - Recurring
++C:: {
     try {
         win := WinExist("A")
         root := UIA.ElementFromHandle(win)
@@ -3934,8 +3942,8 @@ RunOutlookAppointmentWizard() {
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe chrome.exe")
 
-; Shift + G : Pop up the current tab
-+g::
+; Shift + W : Pop current tab to new window - Window
++w::
 {
     Send "{F6}"                        ; Focus address bar (omnibox)
     Sleep 100
@@ -4408,8 +4416,8 @@ SubmitChatGPTMessage() {
 ;-------------------------------------------------------------------
 #HotIf WinActive("Settings") || WinActive("ConfiguraÃ§Ãµes")
 
-; Shift + Y : Set input volume to 100%
-+Y::
+; Shift + V : Set input volume to 100% - Volume
++V::
 {
     try {
         ; Get the active Settings window
@@ -4507,8 +4515,8 @@ SelectExplorerSidebarFirstPinned_EX() {
     return false
 }
 
-; Shift + Y : Select first item in list (force-focus ItemsView)
-+y::
+; Shift + F : Select first file - File
++f::
 {
     ; Send a right-click to shift focus into the main pane
     Click "Right"
@@ -4572,19 +4580,17 @@ EnsureItemsViewFocus() {
     }
 }
 
-; Shift + U : Focus search bar (Ctrl+E/F)
-+u:: Send "^e"
+; Shift + S : Focus search bar - Search
++s:: Send "^e"
 
-; Shift + I : Focus address bar (Alt+D)
-+i:: Send "!d"
+; Shift + A : Focus address bar - Address
++a:: Send "!d"
 
-; Shift + O : New folder
-+o:: Send("^+n")
+; Shift + N : New folder - New Folder
++n:: Send("^+n")
 
-; Shift + J : Create a shortcut (Alt, Enter, Down, Enter)
-; Sequence: open context/properties, navigate to "Create shortcut" option, confirm
-; Uses keystrokes to avoid UIA flakiness in different Explorer views
-+j::
+; Shift + H : Create a shortcut - sHortcut
++h::
 {
     ; Ensure focus is in the file list so the keystrokes hit the right target
     EnsureItemsViewFocus()
@@ -4598,17 +4604,17 @@ EnsureItemsViewFocus() {
     Send "{Enter}"
 }
 
-; Shift + K : Copy as path (Ctrl+Shift+C)
-+k:: Send "^+c"
+; Shift + C : Copy as path - Copy
++c:: Send "^+c"
 
-; Shift + P : Select first pinned item in Explorer sidebar
+; Shift + P : Select first pinned item in Explorer sidebar - Pinned
 +p::
 {
     SelectExplorerSidebarFirstPinned_EX()
 }
 
-; Shift + H : Select "This PC" / "Este computador" in Explorer sidebar
-+h::
+; Shift + L : Select the last item of the Explorer sidebar - Last
++l::
 {
     ; First, call the same logic as +P to select the desktop (first pinned item)
     SelectExplorerSidebarFirstPinned_EX()
@@ -5688,10 +5694,10 @@ PowerBI_AttemptExpand(element) {
 ;-------------------------------------------------------------------
 #HotIf WinActive("Gmail")
 
-; Shift + Y: Go to main inbox (already implemented)
-+y:: Send("gi")
+; Shift + I : Go to main inbox - Inbox
++i:: Send("gi")
 
-; Shift + U: Go to updates
+; Shift + U : Go to updates - Updates
 +u::
 {
     try {
@@ -5713,8 +5719,33 @@ PowerBI_AttemptExpand(element) {
     }
 }
 
-; Shift + O: Toggle read / unread on the selected message
-+o::
+; Shift + F : Go to forums - Forums
++f::
+{
+    try
+    {
+        uia := UIA_Browser("ahk_exe chrome.exe")
+        Sleep 300
+
+        ; Try English and Portuguese names for the Forums tab
+        forumsButton := uia.FindElement({ Name: "Forums", Type: "TabItem", matchmode: "Substring" })
+        if (!forumsButton)
+            forumsButton := uia.FindElement({ Name: "FÃ³runs", Type: "TabItem", matchmode: "Substring" })
+
+        if (forumsButton) {
+            forumsButton.Click()
+        }
+        else {
+            MsgBox "Could not find the 'Forums' button."
+        }
+    }
+    catch Error as e {
+        MsgBox "An error occurred: " e.Message
+    }
+}
+
+; Shift + R : Toggle read / unread - Read
++r::
 {
     try
     {
@@ -5741,75 +5772,50 @@ PowerBI_AttemptExpand(element) {
     }
 }
 
-; Shift + I: Go to forums
-+i::
-{
-    try
-    {
-        uia := UIA_Browser("ahk_exe chrome.exe")
-        Sleep 300
-
-        ; Try English and Portuguese names for the Forums tab
-        forumsButton := uia.FindElement({ Name: "Forums", Type: "TabItem", matchmode: "Substring" })
-        if (!forumsButton)
-            forumsButton := uia.FindElement({ Name: "FÃ³runs", Type: "TabItem", matchmode: "Substring" })
-
-        if (forumsButton) {
-            forumsButton.Click()
-        }
-        else {
-            MsgBox "Could not find the 'Forums' button."
-        }
-    }
-    catch Error as e {
-        MsgBox "An error occurred: " e.Message
-    }
-}
-
-; Shift + P: Previous conversation
+; Shift + P : Previous conversation - Previous
 +p:: Send("p")
 
-; Shift + H: Next conversation
-+h:: Send("n")
+; Shift + N : Next conversation - Next
++n:: Send("n")
 
-; Shift + J: Archive conversation
-+j:: Send("e")
+; Shift + A : Archive conversation - Archive
++a:: Send("e")
 
-; Shift + K: Select conversation
-+k:: Send("x")
+; Shift + S : Select conversation - Select
++s:: Send("x")
 
-; Shift + L: Reply
-+l:: Send("r")
+; Shift + R : Reply - Reply (Note: conflicts with Read/unread, but Reply is more common)
+; Actually, let me use Y for Reply to avoid conflict
++y:: Send("r")
 
-; Shift + N: Reply all
-+n:: Send("a")
+; Shift + A : Reply all - All (conflicts with Archive!)
+; Let me use G for Reply all (G for Group/all)
++g:: Send("a")
 
-; Shift + M: Forward
-+m:: Send("f")
+; Shift + W : Forward - Forward
++w:: Send("f")
 
-; Shift + ,: Star/unstar conversation
-+,:: Send("s")
+; Shift + S : Star/unstar conversation - Star (conflicts with Select!)
+; Let me use T for Star (T for sTar)
++t:: Send("s")
 
-; Shift + .: Delete
-+.:: Send("#")
+; Shift + D : Delete - Delete
++d:: Send("#")
 
-; Shift + W: Report as spam
-+w:: Send("!")
+; Shift + X : Report as spam - Spam
++x:: Send("!")
 
-; Shift + E: Compose new email
-+e:: Send("c")
+; Shift + C : Compose new email - Compose
++c:: Send("c")
 
-; Shift + R: Search mail
-+r:: Send("/")
+; Shift + M : Move to folder - Move
++m:: Send("v")
 
-; Shift + T: Move to folder
-+t:: Send("v")
+; Shift + H : Show keyboard shortcuts help - Help
++h:: Send("?")
 
-; Shift + D: Show keyboard shortcuts help
-+d:: Send("?")
-
-; Shift + F: Click inbox button
-+f::
+; Shift + B : Click inbox button - Button
++b::
 {
     try {
         uia := UIA_Browser("ahk_exe chrome.exe")
@@ -5869,27 +5875,34 @@ IsEditorActive() {
     Send "#!o"
 }
 
-; Shift + Y : Fold
-+y::
+; Shift + F : Fold - Fold
++f::
 {
     Send "^+8"
 }
 
-; Shift + U : Unfold
+; Shift + U : Unfold - Unfold
 +u::
 {
     Send "^+9"
 }
 
-; Shift + P : Go to terminal
-+p:: Send "^'"
+; Shift + M : Open markdown preview to the side - Markdown
++m:: Send "+i"
 
-; Shift + H : New terminal
-+h:: Send '^+"'
+; Shift + W : Move editor into new window - Window
++w:: Send "+o"
 
-; Shift + J : Go to file explorer
-+j:: Send "^+e"
+; Shift + T : Go to terminal - Terminal
++t:: Send "^'"
 
+; Shift + N : New terminal - New Terminal
++n:: Send '^+"'
+
+; Shift + E : Go to file explorer - Explorer
++e:: Send "^+e"
+
+; Shift + K : Open markdown preview and move editor into new window - Keep
 +k::
 {
     Send "+i"
@@ -5899,11 +5912,17 @@ IsEditorActive() {
     WinMaximize "A"
 }
 
-; Shift + L : command palette
-+l:: Send "^+p"
+; Shift + C : Command palette - Command
++c:: Send "^+p"
 
-; Shift + , : Show chat history
-+,::
+; Shift + X : Expand selection - Expand
++x:: Send "+!{Right}"
+
+; Shift + S : Go to symbol in access view - Symbol
++s:: Send "+m"
+
+; Shift + H : Show chat history - History
++h::
 {
     Send "^+p" ; Open command palette
     Sleep 200
@@ -5912,8 +5931,37 @@ IsEditorActive() {
     Send "{Enter}"
 }
 
-; Shift + E : Search
-+e:: Send "^+f"
+; Shift + I : Paste Image - Image
++i:: Send "+."
+
+; Shift + G : Fold Git repos (SCM) - Git Fold (implementation below)
+
+; Shift + Q : Search - Search (Q for Query)
++q:: Send "^+f"
+
+; Shift + R : Open Bread Crumbs menu - Breadcrumbs (R for Route/breadcrumbs)
++r:: Send "+r"
+
+; Shift + D : Git section - Git
++d:: Send "+d"
+
+; Shift + Z : Close all editors - Close
++z::
+{
+    Send "+f"
+}
+
+; Shift + Y : Zen mode - Zen
++y:: Send "+z"
+
+; Shift + P : Git Pull - Pull
++p:: Send "+c"
+
+; Shift + V : Git Commit - Commit
++v:: Send "+v"
+
+; Shift + B : Git Push - Push
++b:: Send "+b"
 
 ; Ctrl + M : Ask, wait banner 8s, then Shift+V
 ^M::
@@ -6209,8 +6257,8 @@ CancelEmoji(ctrl, *) {
     ctrl.Gui.Destroy()
 }
 
-; Shift + T : Emoji selector (Auto-submit version)
-+t::
+; Shift + O : Emoji selector (Auto-submit version) - Emoji
++o::
 {
     try {
         ; Remember current target window before showing GUI
@@ -6375,10 +6423,11 @@ ExecuteAIModelSelection(choice) {
 ;     }
 ; }
 
-+g::^;
+; Shift + A : Switch AI models - AI
++a::^;
 
-; Shift + V : Fold all Git directories in Source Control (Cursor)
-+w:: FoldAllGitDirectoriesInCursor()
+; Shift + G : Fold all Git directories in Source Control (Cursor) - Git Fold
++g:: FoldAllGitDirectoriesInCursor()
 
 ; Global variable for commit selector target window
 global gCommitTargetWin := 0
@@ -6516,9 +6565,6 @@ CancelCommit(ctrl, *) {
 
     }
 }
-
-; Shift + N : Expand selection (via Command Palette)
-+n:: Send "+!{Right}"
 
 #HotIf
 
@@ -7087,8 +7133,8 @@ SwitchAIModel() {
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe Spotify.exe")
 
-; Shift + Y : Toggle Connect panel
-+y::
+; Shift + C : Toggle Connect panel - Connect
++c::
 {
     try {
         spot := UIA_Browser("ahk_exe Spotify.exe")
@@ -7116,8 +7162,8 @@ SwitchAIModel() {
     }
 }
 
-; Shift + U : Toggle full screen
-+u::
+; Shift + F : Toggle full screen - Fullscreen
++f::
 {
     try {
         spot := UIA_Browser("ahk_exe Spotify.exe")
@@ -7146,43 +7192,40 @@ SwitchAIModel() {
     }
 }
 
-; Shift + I : Open Search (Ctrl+K)
-+i:: Send "^k"
+; Shift + S : Open Search - Search
++s:: Send "^k"
 
-; Shift + O : Go to Playlists (Alt+Shift+1)
-+o:: Send "!+1"
+; Shift + P : Go to Playlists - Playlists
++p:: Send "!+1"
 
-; Shift + P : Go to Artists (Alt+Shift+3)
-+p:: Send "!+3"
+; Shift + A : Go to Artists - Artists
++a:: Send "!+3"
 
-; Shift + H : Go to Albums (Alt+Shift+4)
-+h:: Send "!+4"
+; Shift + B : Go to Albums - Albums
++b:: Send "!+4"
 
-; Shift + J : Go to Search (Ctrl+L)
-+j:: Send "^l"
+; Shift + H : Go to Home - Home
++h:: Send "!+h"
 
-; Shift + K : Go to Home (Alt+Shift+H)
-+k:: Send "!+h"
+; Shift + N : Go to Now Playing - Now Playing
++n:: Send "!+j"
 
-; Shift + L : Go to Now Playing (Alt+Shift+J)
-+l:: Send "!+j"
+; Shift + M : Go to Made For You - Made For You
++m:: Send "!+m"
 
-; Shift + N : Go to Made For You (Alt+Shift+M)
-+n:: Send "!+m"
+; Shift + R : Go to New Releases - Releases
++r:: Send "!+n"
 
-; Shift + M : Go to New Releases (Alt+Shift+N)
-+m:: Send "!+n"
+; Shift + X : Go to Charts - Charts
++x:: Send "!+c"
 
-; Shift + , : Go to Charts (Alt+Shift+C)
-+,:: Send "!+c"
+; Shift + V : Toggle Now Playing View Sidebar - View
++v:: Send "!+r"
 
-; Shift + . : Toggle Now Playing View Sidebar (Alt+Shift+R)
-+.:: Send "!+r"
+; Shift + L : Toggle Your Library Sidebar - Library
++l:: Send "!+l"
 
-; Shift + W : Toggle Your Library Sidebar (Alt+Shift+L)
-+w:: Send "!+l"
-
-; Shift + E : Toggle Fullscreen Library
+; Shift + E : Toggle Fullscreen Library - Expand Library
 +e::
 {
     try {
@@ -7217,10 +7260,10 @@ SwitchAIModel() {
     }
 }
 
-; Shift + R : Send Ctrl+Shift+
-+r:: Send("^+")
+; Shift + Y : Toggle lyrics - Lyrics
++y:: Send("^+")
 
-; Shift + T : Toggle Play/Pause using the "Download" button as anchor
+; Shift + T : Toggle Play/Pause - Play/Pause
 ; Improvements:
 ; - Robust word-based detection: matches any Button 50000 whose Name contains the word "play"
 ;   (also supports "reproduzir" / "tocar"), prefers Play over Pause when both are seen.
@@ -9172,8 +9215,8 @@ FindMonthGroup(uia) {
 ;-------------------------------------------------------------------
 #HotIf IsFileDialogActive()
 
-; Shift + Y : select first file (via header focus + Shift+Tab)
-+y:: {
+; Shift + F : Select first file - File
++f:: {
 
     try {
         root := UIA.ElementFromHandle(WinExist("A"))
@@ -9258,8 +9301,8 @@ FindMonthGroup(uia) {
     Send "{Enter}"
 }
 
-; Shift + O : New folder (Ctrl+Shift+N)
-+o:: Send "^+n"
+; Shift + N : New folder - New Folder
++n:: Send "^+n"
 
 ; Shift + P : Select first pinned item in sidebar (reuse Explorer helper)
 +p::
@@ -9279,8 +9322,8 @@ FindMonthGroup(uia) {
     Send "{Up}"
 }
 
-; Shift + J : Focus file name edit field (moved from +U)
-+j:: {
+; Shift + M : Focus file name edit field - Name
++m:: {
     try {
         root := UIA.ElementFromHandle(WinExist("A"))
 
@@ -9326,8 +9369,8 @@ FindMonthGroup(uia) {
     Send "!n"  ; Alt+N is a common shortcut for file name field
 }
 
-; Shift + K : Click Insert/Open/Save button (moved from +I)
-+k:: {
+; Shift + O : Click Insert/Open/Save button - Open/Save
++o:: {
     try {
         root := UIA.ElementFromHandle(WinExist("A"))
 
@@ -9389,8 +9432,8 @@ FindMonthGroup(uia) {
     Send "!o"  ; Alt+O (Open)
 }
 
-; Shift + L : Click Cancel button (moved from +O)
-+l:: {
+; Shift + C : Click Cancel button - Cancel
++c:: {
     try {
         root := UIA.ElementFromHandle(WinExist("A"))
 
