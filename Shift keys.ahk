@@ -260,7 +260,7 @@ Outlook - Appointment (Shift)
 📅 [D]ate [P]icker (start)
 🕐 [T]ime (start)
 📅 [E]nd [D]ate (combo)
-🕐 [N]End [T]ime (combo)
+🕐 [E]nd [T]ime (combo)
 ☑️ [A]ll [D]ay checkbox
 📝 [I]Title field
 👥 [R]equired / [T]o field
@@ -554,7 +554,7 @@ ClipAngel (Shift)
 🧹 [O]Clear filters
 ⭐ [P]Mark as [F]avorite
 ⭐ [H]Unmark as favorite
-✏️ [J]Edit [E]ext
+✏️ [E]Edit [T]ext
 💾 [K]Save as file
 🔗 [L]Merge clips
 )"  ; end ClipAngel
@@ -715,7 +715,7 @@ Application (shortcuts on):
 cheatSheets["Google Keep"] := "
 (
 Google Keep (Shift)
-🔍 [S]earch and select [S]ote
+🔍 [S]earch and select [N]ote
 📋 [M]Toggle [M]ain menu
 )"  ; end Google Keep
 
@@ -742,9 +742,9 @@ cheatSheets["Command Palette"] := "
 (
 Command Palette (Shift)
 ⌨️ [Ctrl+H] [O]pen in folder ([O]pen)
-⌨️ [K]opy file [P]ath ([K]opy)
-⌨️ [Y]Send ten backspaces ([Y]es/clear)
-⌨️ [U]Precise [S]earch ([U]ser)
+⌨️ [C]opy file [P]ath ([C]opy)
+⌨️ [B]Send ten [B]ackspaces
+⌨️ [S]Precise [S]earch
 ⌨️ [I]Add [F]avorite ([I]nsert)
 ⌨️ [Ctrl+1] [S]elect current item ([S]elect)
 ⌨️ [Ctrl+2] [M]ove down once and select ([M]ove)
@@ -758,25 +758,25 @@ Command Palette (Shift)
 cheatSheets["EXCEL.EXE"] := "
 (
 Excel (Shift)
-⚪ [Y]Select [W]hite Color
-✏️ [U]Enable [E]diting
-📊 [I]Turn [C]SV delimited by semicolon into columns
+⚪ [W]Select [W]hite Color
+✏️ [E]Enable [E]diting
+📊 [C]Turn [C]SV delimited by semicolon into columns
 )"
 
 ; --- Power BI ------------------------------------------------------------
 cheatSheets["Power BI"] := "
 (
 Power BI (Shift)
-📊 [Y]ransform [D]ata
+📊 [T]ransform [D]ata
 📊 [U]Close and [A]pply
 📊 [I]Report view
 📊 [O]Table view
 📊 [P]Model view
 📊 [H]Build [V]isual
 📊 [J]Format visual
-🔍 [K]Select [S]earch edit field
+🔍 [S]elect [S]earch edit field
 ✅ [L]OK/Confirm modal button
-❌ [N]Cancel/Exit modal button
+❌ [X]Cancel/E[X]it modal button
 🖱️ [M]Previous pages button
 📋 [,]Filter pane collapse/expand
 🎨 [.]Visualizations pane toggle
@@ -790,7 +790,7 @@ Power BI (Shift)
 
 ; --- UIA Tree Inspector -------------------------------------------------
 cheatSheets["UIATreeInspector"] :=
-"(UIA Tree Inspector (Shift))`r`n🔄 [R]efresh [R]ist`r`n🔍 [F]ocus [F]ilter field"
+"(UIA Tree Inspector (Shift))`r`n🔄 [R]efresh [L]ist`r`n🔍 [F]ocus [F]ilter field"
 ; --- SettleUp Shortcuts -----------------------------------------------------
 cheatSheets["Settle Up"] := "
 (
@@ -919,7 +919,7 @@ cheatSheets["ChatGPT"] := "
 ChatGPT (Shift)
 📂 [I]Toggle s[I]debar
 🔄 [O]Re-send rules
-📋 [H]Copy code [H]lock
+📋 [C]opy code [B]lock
 ⬇️ [J]Go [J]own
 🤖 [L]Send and show AI [L]anner
 )"
@@ -941,8 +941,8 @@ Mobills (Shift)
 ➡️ [L]Next [L]onth
 
 --- Actions ---
-🚫 [N]Ignore [N]ransaction
-✏️ [M]Name [M]ield
+🚫 [I]gnore [T]ransaction
+✏️ [N]ame [F]ield
 💸 [E]New [E]xpense
 💵 [R]New [R]ncome
 💳 [T]New [C]redit [E]xpense
