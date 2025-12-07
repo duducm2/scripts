@@ -38,6 +38,7 @@ RunWait("git pull", notesFolder, "Hide")
 Sleep 10000
 
 Run GetScriptPath("Shift keys.ahk")
+Run GetScriptPath("Gemini.ahk")
 Run GetScriptPath("AppLaunchers.ahk")
 Run GetScriptPath("Spotify.ahk")
 Run GetScriptPath("Hotstrings.ahk")
