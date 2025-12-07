@@ -2064,8 +2064,8 @@ IsTeamsChatActive() {
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "Wikipedia", false)
 
-; Shift + Y: Focus the Wikipedia search field (prefer the field; if hidden, click the Search toggle first)
-+y::
+; Shift + S: Focus the Wikipedia search field (prefer the field; if hidden, click the Search toggle first)
++s::
 {
     try {
         uia := UIA_Browser("ahk_exe chrome.exe")
