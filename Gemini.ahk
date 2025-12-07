@@ -68,6 +68,7 @@ ShowNotification(message, durationMs := 500, bgColor := "FFFF00", fontColor := "
 ; --- Hotkeys ----------------------------------------------------------------
 
 ; Win+Alt+Shift+7 : Read aloud the last message in Gemini (activates Gemini window first, then clicks last "Show more options" then "Text to speech")
+; If reading is active, clicking this shortcut again will pause the reading
 #!+7:: {
     try {
         ; Step 1: Activate Gemini window globally
@@ -79,10 +80,46 @@ ShowNotification(message, durationMs := 500, bgColor := "FFFF00", fontColor := "
         }
         Sleep 300
 
-        ; Step 2: Find all "Show more options" buttons
+        ; Step 2: Check if "Pause" button exists (if reading is active, pause it)
         uia := UIA_Browser()
         Sleep 300
 
+        ; Try to find "Pause" button
+        pauseButton := 0
+        try {
+            ; Primary strategy: Find by Name "Pause" with Type 50000 (Button)
+            pauseButton := uia.FindFirst({ Name: "Pause", Type: 50000 })
+            
+            ; Fallback: Try by Type "Button" and Name "Pause"
+            if !pauseButton {
+                pauseButton := uia.FindFirst({ Type: "Button", Name: "Pause" })
+            }
+            
+            ; Fallback: Search all buttons for one with "Pause" name and tts-button className
+            if !pauseButton {
+                allButtons := uia.FindAll({ Type: 50000 })
+                for button in allButtons {
+                    if (button.Name = "Pause" || InStr(button.Name, "Pause", false) = 1) {
+                        if (InStr(button.ClassName, "tts-button") || InStr(button.ClassName, "mdc-icon-button")) {
+                            pauseButton := button
+                            break
+                        }
+                    }
+                }
+            }
+        } catch {
+            ; Silently continue if pause button search fails
+        }
+
+        ; If "Pause" button found, click it and return to previous window
+        if (pauseButton) {
+            pauseButton.Click()
+            ShowNotification("Paused", 800, "FFFF00", "000000", 24)
+            Send "!{Tab}"
+            return
+        }
+
+        ; Step 3: Find all "Show more options" buttons (normal read-aloud flow)
         allMoreOptionsButtons := []
 
         ; Primary strategy: Find all buttons with Name "Show more options"
@@ -142,11 +179,11 @@ ShowNotification(message, durationMs := 500, bgColor := "FFFF00", fontColor := "
             return
         }
 
-        ; Step 3: Click the last "Show more options" button
+        ; Step 4: Click the last "Show more options" button
         lastMoreOptionsButton.Click()
         Sleep 400 ; Wait for menu to appear
 
-        ; Step 4: Find and click the "Text to speech" menu item
+        ; Step 5: Find and click the "Text to speech" menu item
         textToSpeechMenuItem := 0
 
         ; Primary strategy: Find by Name "Text to speech" with Type 50011 (MenuItem)
