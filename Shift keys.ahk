@@ -8513,76 +8513,136 @@ FindMonthGroup(uia) {
             return
         }
 
-        ; Step 2: Find the button next to Microphone (sibling button)
+        ; Step 2: Find the button next to Microphone using position-based approach
         siblingButton := 0
 
-        ; Strategy 1: Try next sibling
-        nextSibling := UIA.TreeWalkerTrue.TryGetNextSiblingElement(microphoneButton)
-        if (nextSibling) {
-            if (nextSibling.Type == 50000) {
-                ; Next sibling is directly a button
-                siblingButton := nextSibling
-            } else {
-                ; Next sibling might contain a button, try to find one
-                try {
-                    childButton := nextSibling.FindFirst({ Type: 50000 })
-                    if (childButton) {
-                        siblingButton := childButton
-                    }
-                } catch {
-                }
-            }
-        }
+        try {
+            ; Get microphone button's position
+            micPos := microphoneButton.Location
+            micCenterX := micPos.x + (micPos.w / 2)
+            micCenterY := micPos.y + (micPos.h / 2)
 
-        ; Strategy 2: Try previous sibling if next didn't work or wasn't a button
-        if (!siblingButton) {
-            prevSibling := UIA.TreeWalkerTrue.TryGetPreviousSiblingElement(microphoneButton)
-            if (prevSibling) {
-                if (prevSibling.Type == 50000) {
-                    ; Previous sibling is directly a button
-                    siblingButton := prevSibling
-                } else {
-                    ; Previous sibling might contain a button, try to find one
+            ; Get parent container and find all buttons within it
+            parent := UIA.TreeWalkerTrue.GetParentElement(microphoneButton)
+            if (!parent) {
+                ; If no parent, try grandparent
+                parent := UIA.TreeWalkerTrue.GetParentElement(UIA.TreeWalkerTrue.GetParentElement(microphoneButton))
+            }
+
+            if (parent) {
+                ; Find all buttons in the parent container (including descendants)
+                allParentButtons := parent.FindAll({ Type: 50000 }, UIA.TreeScope.Descendants)
+
+                closestButton := 0
+                closestDistance := 999999
+                closestButtonRight := 0
+                closestDistanceRight := 999999
+
+                ; Find the closest button horizontally (prefer buttons to the right)
+                for button in allParentButtons {
+                    ; Skip the microphone button itself
                     try {
-                        childButton := prevSibling.FindFirst({ Type: 50000 })
-                        if (childButton) {
-                            siblingButton := childButton
-                        }
-                    } catch {
-                    }
-                }
-            }
-        }
-
-        ; Strategy 3: If direct siblings don't work, get parent and find buttons near microphone's position
-        if (!siblingButton || siblingButton.Type != 50000) {
-            try {
-                parent := UIA.TreeWalkerTrue.GetParentElement(microphoneButton)
-                if (parent) {
-                    micPos := microphoneButton.Location
-                    allParentButtons := parent.FindAll({ Type: 50000 })
-
-                    ; Find the button closest to microphone (horizontal neighbors)
-                    for button in allParentButtons {
-                        if (button == microphoneButton)
+                        if (UIA.CompareElements(button, microphoneButton))
                             continue
-
+                    } catch {
+                        ; If comparison fails, use position check
                         btnPos := button.Location
-                        ; Check if button is on the same row and close horizontally
-                        sameRow := (Abs(btnPos.y - micPos.y) < 20) ; Within 20 pixels vertically
-                        closeHorizontally := (Abs(btnPos.x - micPos.x) < 200) ; Within 200 pixels horizontally
+                        if (btnPos.x == micPos.x && btnPos.y == micPos.y && btnPos.w == micPos.w && btnPos.h == micPos.h
+                        )
+                            continue
+                    }
 
-                        if (sameRow && closeHorizontally) {
-                            siblingButton := button
-                            break
+                    btnPos := button.Location
+                    btnCenterX := btnPos.x + (btnPos.w / 2)
+                    btnCenterY := btnPos.y + (btnPos.h / 2)
+
+                    ; Check if button is on roughly the same row (within 30 pixels vertically)
+                    verticalDistance := Abs(btnCenterY - micCenterY)
+                    if (verticalDistance > 30)
+                        continue
+
+                    ; Calculate horizontal distance
+                    horizontalDistance := Abs(btnCenterX - micCenterX)
+
+                    ; Prefer buttons to the right of microphone
+                    if (btnCenterX > micCenterX) {
+                        if (horizontalDistance < closestDistanceRight) {
+                            closestDistanceRight := horizontalDistance
+                            closestButtonRight := button
+                        }
+                    } else {
+                        ; Also track left buttons as fallback
+                        if (horizontalDistance < closestDistance) {
+                            closestDistance := horizontalDistance
+                            closestButton := button
                         }
                     }
                 }
-            } catch {
+
+                ; Prefer button to the right, otherwise use closest button on left
+                if (closestButtonRight) {
+                    siblingButton := closestButtonRight
+                } else if (closestButton) {
+                    siblingButton := closestButton
+                }
             }
+
+            ; Fallback: If parent approach didn't work, search all buttons by position
+            if (!siblingButton) {
+                micPos := microphoneButton.Location
+                micCenterX := micPos.x + (micPos.w / 2)
+                micCenterY := micPos.y + (micPos.h / 2)
+
+                closestButton := 0
+                closestDistance := 999999
+                closestButtonRight := 0
+                closestDistanceRight := 999999
+
+                for button in allButtons {
+                    try {
+                        if (UIA.CompareElements(button, microphoneButton))
+                            continue
+                    } catch {
+                        btnPos := button.Location
+                        if (btnPos.x == micPos.x && btnPos.y == micPos.y && btnPos.w == micPos.w && btnPos.h == micPos.h
+                        )
+                            continue
+                    }
+
+                    btnPos := button.Location
+                    btnCenterX := btnPos.x + (btnPos.w / 2)
+                    btnCenterY := btnPos.y + (btnPos.h / 2)
+
+                    verticalDistance := Abs(btnCenterY - micCenterY)
+                    if (verticalDistance > 30)
+                        continue
+
+                    horizontalDistance := Abs(btnCenterX - micCenterX)
+
+                    if (btnCenterX > micCenterX) {
+                        if (horizontalDistance < closestDistanceRight && horizontalDistance < 300) {
+                            closestDistanceRight := horizontalDistance
+                            closestButtonRight := button
+                        }
+                    } else {
+                        if (horizontalDistance < closestDistance && horizontalDistance < 300) {
+                            closestDistance := horizontalDistance
+                            closestButton := button
+                        }
+                    }
+                }
+
+                if (closestButtonRight) {
+                    siblingButton := closestButtonRight
+                } else if (closestButton) {
+                    siblingButton := closestButton
+                }
+            }
+        } catch Error as e {
+            ; If position-based approach fails, silently continue
         }
 
-        if (siblingButton && siblingButton.Type == 50000) {
+        if (siblingButton) {
             siblingButton.Click()
         } else {
             ; Last resort: Could not find sibling button
