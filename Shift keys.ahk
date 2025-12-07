@@ -997,7 +997,7 @@ GetCheatSheetText() {
             appShortcuts := cheatSheets.Has("Mercado Livre") ? cheatSheets["Mercado Livre"] : ""
         if InStr(chromeTitle, "gemini", false)
             appShortcuts :=
-                "Gemini`r`n[Shift+Y] > Toggle the drawer`r`n[Shift+U] > New chat`r`n[Shift+I] > Search`r`n[Shift+O] > Change Model`r`n[Shift+P] > Tools`r`n[Shift+H] > Focus prompt field`r`n[Shift+J] > Copy last message`r`n[Shift+K] > Read aloud last message`r`n[Shift+L] > Send Gemini prompt text`r`n[Shift+F] > Expand input to fullscreen"
+                "Gemini`r`n[Shift+D] > Toggle the drawer`r`n[Shift+N] > New chat`r`n[Shift+S] > Search`r`n[Shift+M] > Change Model`r`n[Shift+T] > Tools`r`n[Shift+P] > Focus prompt field`r`n[Shift+C] > Copy last message`r`n[Shift+R] > Read aloud last message`r`n[Shift+G] > Send Gemini prompt text`r`n[Shift+F] > Expand input to fullscreen"
         ; Only set generic Google sheet if nothing else matched and title clearly indicates Google site
         if (appShortcuts = "") {
             if (chromeTitle = "Google" || InStr(chromeTitle, " - Google Search"))
@@ -8333,8 +8333,8 @@ FindMonthGroup(uia) {
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "gemini", false)
 
-; Shift + Y : Click the Main menu button (Collapse menu button)
-+y:: {
+; Shift + D : Click the Main menu button (Collapse menu button) - Drawer
++d:: {
     try {
         uia := UIA_Browser()
         Sleep 300
@@ -8382,8 +8382,8 @@ FindMonthGroup(uia) {
     }
 }
 
-; Shift + U : Click the New chat button
-+u:: {
+; Shift + N : Click the New chat button - New
++n:: {
     try {
         uia := UIA_Browser()
         Sleep 300
@@ -8429,8 +8429,8 @@ FindMonthGroup(uia) {
     }
 }
 
-; Shift + I : Click the Search button
-+i:: {
+; Shift + S : Click the Search button - Search
++s:: {
     try {
         uia := UIA_Browser()
         Sleep 300
@@ -8479,8 +8479,8 @@ FindMonthGroup(uia) {
     }
 }
 
-; Shift + O : Click the button next to Microphone button (e.g., "Fast" button)
-+o:: {
+; Shift + M : Click the button next to Microphone button (e.g., "Fast" button) - Model
++m:: {
     try {
         uia := UIA_Browser()
         Sleep 300
@@ -8651,8 +8651,8 @@ FindMonthGroup(uia) {
     }
 }
 
-; Shift + P : Click the Tools button
-+p:: {
+; Shift + T : Click the Tools button - Tools
++t:: {
     try {
         uia := UIA_Browser()
         Sleep 300
@@ -8704,8 +8704,8 @@ FindMonthGroup(uia) {
     }
 }
 
-; Shift + H : Focus the prompt text field
-+h:: {
+; Shift + P : Focus the prompt text field - Prompt
++p:: {
     try {
         uia := UIA_Browser()
         Sleep 300
@@ -8774,8 +8774,8 @@ FindMonthGroup(uia) {
     }
 }
 
-; Shift + J : Click the last Copy button (copies the preceding message)
-+j:: {
+; Shift + C : Click the last Copy button (copies the preceding message) - Copy
++c:: {
     try {
         uia := UIA_Browser()
         Sleep 300
@@ -8843,8 +8843,8 @@ FindMonthGroup(uia) {
     }
 }
 
-; Shift + K : Read aloud the last message (click last "Show more options" then "Text to speech")
-+k:: {
+; Shift + R : Read aloud the last message (click last "Show more options" then "Text to speech") - Read
++r:: {
     try {
         uia := UIA_Browser()
         Sleep 300
@@ -8961,8 +8961,8 @@ FindMonthGroup(uia) {
     }
 }
 
-; Shift + L : Focus the prompt text field and send Gemini prompt text
-+l:: {
+; Shift + G : Focus the prompt text field and send Gemini prompt text - Gemini
++g:: {
     try {
         uia := UIA_Browser()
         Sleep 300
