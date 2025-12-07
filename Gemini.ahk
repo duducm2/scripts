@@ -178,7 +178,7 @@ WaitForButtonAndShowSmallLoading(buttonNames, stateText := "Loading…", timeout
                 indicatorShown := true
             }
             while btn && (timeout <= 0 || A_TickCount < deadline) {
-                Sleep (IS_WORK_ENVIRONMENT ? 125 : 250)
+                Sleep 250
                 btn := ""
                 for n in buttonNames {
                     try {
@@ -194,7 +194,7 @@ WaitForButtonAndShowSmallLoading(buttonNames, stateText := "Loading…", timeout
                 buttonDisappeared := true
             break
         }
-        Sleep (IS_WORK_ENVIRONMENT ? 125 : 250)
+        Sleep 250
     }
     ; Play completion sound only for actual AI responses when we saw the button and it disappeared
     try {
@@ -210,7 +210,7 @@ WaitForButtonAndShowSmallLoading(buttonNames, stateText := "Loading…", timeout
 ; Helper function to center mouse on the active window
 ; =============================================================================
 CenterMouse() {
-    Sleep(IS_WORK_ENVIRONMENT ? 100 : 200)
+    Sleep 200
     Send("#!+q")
 }
 
@@ -545,13 +545,13 @@ CenterMouse() {
     searchString :=
         "Below, you will find a word or phrase. I'd like you to answer in five sections: the 1st section you will repeat the word twice. For each time you repeat, use a point to finish the phrase. The 2nd section should have the definition of the word (You should also say each part of speech does the different definitions belong to). The 3d section should have the pronunciation of this word using the Internation Phonetic Alphabet characters (for American English).The 4th section should have the same word applied in a real sentence (put that in quotations, so I can identify that). In the 5th, Write down the translation of the word into Portuguese. Please, do not title any section. Thanks!"
     A_Clipboard := searchString . "`n`nContent: " . A_Clipboard
-    Sleep (IS_WORK_ENVIRONMENT ? 50 : 100)
+    Sleep 100
     Send("^a")
-    Sleep (IS_WORK_ENVIRONMENT ? 250 : 500)
+    Sleep 500
     Send("^v")
-    Sleep (IS_WORK_ENVIRONMENT ? 250 : 500)
+    Sleep 500
     Send("{Enter}")
-    Sleep (IS_WORK_ENVIRONMENT ? 250 : 500)
+    Sleep 500
     ; After sending, show loading for Stop streaming
     Send "!{Tab}" ; Return to previous window
     buttonNames := ["Stop streaming", "Interromper transmissão"]
@@ -592,7 +592,7 @@ InitializeGeminiFirstTime() {
         ShowSmallLoadingIndicator("Loading Gemini page...")
 
         ; Wait for page to load fully
-        Sleep (IS_WORK_ENVIRONMENT ? 3500 : 7000)
+        Sleep 300
 
         ; Find and focus the Gemini prompt field
         uia := UIA_Browser()
@@ -674,9 +674,9 @@ InitializeGeminiFirstTime() {
         A_Clipboard := promptText
         ClipWait 1
         Send("^v")
-        Sleep (IS_WORK_ENVIRONMENT ? 50 : 100)
+        Sleep 100
         Send("{Enter}")
-        Sleep (IS_WORK_ENVIRONMENT ? 50 : 100)
+        Sleep 100
         A_Clipboard := oldClip
 
         ; Hide banner on success
