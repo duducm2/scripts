@@ -471,12 +471,8 @@ CenterMouse() {
     SetTitleMatchMode(2)
     if hwnd := GetGeminiWindowHwnd()
         WinActivate("ahk_id " hwnd)
-    if WinWaitActive("ahk_exe chrome.exe", , 2)
-        CenterMouse()
-    Sleep (IS_WORK_ENVIRONMENT ? 125 : 250)
-    Send "{Esc}"
-    Sleep (IS_WORK_ENVIRONMENT ? 125 : 250)
-    Send "+{Esc}"
+    if !WinWaitActive("ahk_exe chrome.exe", , 2)
+        return
     
     ; Find the Gemini prompt field
     uia := UIA_Browser()
@@ -556,4 +552,59 @@ CenterMouse() {
     Send "!{Tab}" ; Return to previous window
     buttonNames := ["Stop streaming", "Interromper transmissão"]
     WaitForButtonAndShowSmallLoading(buttonNames, "Waiting for response...")
+
+    ; Go back to previous window
+    Send "!{Tab}"
+}
+
+; =============================================================================
+; Initialize Gemini window on first-time opening
+; =============================================================================
+InitializeGeminiFirstTime() {
+    try {
+        ; Show banner to inform user
+        ShowSmallLoadingIndicator("Opening Gemini...")
+        
+        ; Run Chrome with new window
+        Run "chrome.exe --new-window https://gemini.google.com/"
+        if !WinWaitActive("ahk_exe chrome.exe", , 5) {
+            HideSmallLoadingIndicator()
+            return
+        }
+        
+        ; Get the Gemini window handle
+        geminiHwnd := WinExist("A")
+        if !geminiHwnd {
+            HideSmallLoadingIndicator()
+            return
+        }
+        
+        ; Activate the Gemini window
+        WinActivate("ahk_id " geminiHwnd)
+        WinWaitActive("ahk_id " geminiHwnd, , 2)
+        Sleep 200 ; Give window time to fully activate
+        
+        ; Hide banner on success
+        HideSmallLoadingIndicator()
+    } catch Error as err {
+        ; Hide banner on error
+        HideSmallLoadingIndicator()
+    }
+}
+
+; =============================================================================
+; Open Gemini
+; Hotkey: Win+Alt+Shift+G
+; =============================================================================
+#!+i:: {
+    SetTitleMatchMode(2)
+    if hwnd := GetGeminiWindowHwnd() {
+        WinActivate("ahk_id " hwnd)
+        if WinWaitActive("ahk_id " hwnd, , 2) {
+            CenterMouse()
+        }
+        Send("{Esc}")
+    } else {
+        InitializeGeminiFirstTime()
+    }
 }

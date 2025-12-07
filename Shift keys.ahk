@@ -1179,12 +1179,12 @@ r=== CLIP ANGEL ===
 [Win+Alt+Shift+1] > Send top list item from Clip Angel
 
 === GEMINI ===
+[Win+Alt+Shift+I] > Opens Gemini
 [Win+Alt+Shift+8] > Get word pronunciation, definition, and Portuguese translation (Gemini)
 [Win+Alt+Shift+7] > Read aloud the last message in Gemini
 [Win+Alt+Shift+J] > Copy the last message in Gemini
 
 === CHATGPT ===
-[Win+Alt+Shift+I] > Opens ChatGPT
 [Win+Alt+Shift+L] > Talk with ChatGPT through voice
 
 === YOUTUBE ===
