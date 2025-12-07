@@ -997,7 +997,7 @@ GetCheatSheetText() {
         if InStr(chromeTitle, "Mercado Livre", false)
             appShortcuts := cheatSheets.Has("Mercado Livre") ? cheatSheets["Mercado Livre"] : ""
         if InStr(chromeTitle, "gemini", false)
-            appShortcuts := "Gemini`r`n[Shift+Y] > Toggle the drawer"
+            appShortcuts := "Gemini`r`n[Shift+Y] > Toggle the drawer`r`n[Shift+U] > New chat`r`n[Shift+I] > Search"
         ; Only set generic Google sheet if nothing else matched and title clearly indicates Google site
         if (appShortcuts = "") {
             if (chromeTitle = "Google" || InStr(chromeTitle, " - Google Search"))
@@ -8379,6 +8379,103 @@ FindMonthGroup(uia) {
     } catch Error as e {
         ; If all else fails, try Escape key as fallback
         Send "{Escape}"
+    }
+}
+
+; Shift + U : Click the New chat button
++u:: {
+    try {
+        uia := UIA_Browser()
+        Sleep 300
+
+        ; Primary strategy: Find by Name "New chat" with Type 50000 (Button)
+        newChatButton := uia.FindFirst({ Name: "New chat", Type: 50000 })
+
+        ; Fallback 1: Try by Type "Button" and Name "New chat"
+        if !newChatButton {
+            newChatButton := uia.FindFirst({ Type: "Button", Name: "New chat" })
+        }
+
+        ; Fallback 2: Try by ClassName containing "side-nav-action-button" (substring match)
+        if !newChatButton {
+            allButtons := uia.FindAll({ Type: 50000 })
+            for button in allButtons {
+                if InStr(button.ClassName, "side-nav-action-button") && InStr(button.Name, "New chat") {
+                    newChatButton := button
+                    break
+                }
+            }
+        }
+
+        ; Fallback 3: Try finding by Name with substring match (in case of localization variations)
+        if !newChatButton {
+            allButtons := uia.FindAll({ Type: 50000 })
+            for button in allButtons {
+                if InStr(button.Name, "New chat") || InStr(button.Name, "Nova conversa") {
+                    newChatButton := button
+                    break
+                }
+            }
+        }
+
+        if (newChatButton) {
+            newChatButton.Click()
+        } else {
+            ; Last resort: Could try keyboard navigation if Gemini has a keyboard shortcut for new chat
+            ; For now, we'll just not do anything if we can't find the button
+        }
+    } catch Error as e {
+        ; If all else fails, silently fail (no fallback action defined)
+    }
+}
+
+; Shift + I : Click the Search button
++i:: {
+    try {
+        uia := UIA_Browser()
+        Sleep 300
+
+        ; Primary strategy: Find by Name "Search" with Type 50000 (Button)
+        searchButton := uia.FindFirst({ Name: "Search", Type: 50000 })
+
+        ; Fallback 1: Try by Type "Button" and Name "Search"
+        if !searchButton {
+            searchButton := uia.FindFirst({ Type: "Button", Name: "Search" })
+        }
+
+        ; Fallback 2: Try by ClassName containing "search-button" (substring match)
+        if !searchButton {
+            allButtons := uia.FindAll({ Type: 50000 })
+            for button in allButtons {
+                if InStr(button.ClassName, "search-button") && InStr(button.Name, "Search") {
+                    searchButton := button
+                    break
+                }
+            }
+        }
+
+        ; Fallback 3: Try finding by Name with substring match (in case of localization variations)
+        if !searchButton {
+            allButtons := uia.FindAll({ Type: 50000 })
+            for button in allButtons {
+                if InStr(button.Name, "Search") || InStr(button.Name, "Pesquisar") || InStr(button.Name, "Buscar") {
+                    ; Additional check to ensure it's the search button (has search-button in className)
+                    if InStr(button.ClassName, "search-button") {
+                        searchButton := button
+                        break
+                    }
+                }
+            }
+        }
+
+        if (searchButton) {
+            searchButton.Click()
+        } else {
+            ; Last resort: Could try keyboard navigation if Gemini has a keyboard shortcut for search
+            ; For now, we'll just not do anything if we can't find the button
+        }
+    } catch Error as e {
+        ; If all else fails, silently fail (no fallback action defined)
     }
 }
 
