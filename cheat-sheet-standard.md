@@ -36,6 +36,91 @@ Each line follows this structure:
 4. **Spacing**: No space between the initial bracket and the action text: `[D]Toggle` not `[D] Toggle`
 5. **No Space Before Mnemonic in Text**: The mnemonic bracket in the action should be directly attached: `the[D]rawer` not `the [D]rawer`
 
+## Mnemonic Key Conventions
+
+These are **guidelines** (not strict rules) to help maintain consistency across applications and make shortcuts easier to remember. When assigning mnemonic keys, prioritize these conventions, but adapt when needed for better clarity or when conflicts arise.
+
+### Primary Conventions
+
+- **`N`** - **New**: New chat, new document, new file, new tab, new item
+  - Examples: `[N]ew chat`, `[N]ew document`, `[N]ew file`
+- **`S`** - **Search**: Search, find, seek
+  - Examples: `[S]earch`, `[S]earch files`, `[S]earch messages`
+- **`C`** - **Copy**: Copy, clipboard operations
+  - Examples: `[C]opy`, `[C]opy last message`, `[C]opy selection`
+- **`P`** - **Prompt/Input**: Prompt field, input focus, paste
+  - Examples: `Focus [P]rompt`, `[P]aste`, `[P]rompt field`
+- **`F`** - **Fullscreen/Focus**: Fullscreen mode, focus actions, find
+  - Examples: `[F]ullscreen`, `[F]ocus`, `[F]ind`
+- **`R`** - **Read/Reply**: Read aloud, reply, refresh, reload
+  - Examples: `[R]ead aloud`, `[R]eply`, `[R]efresh`
+- **`T`** - **Tools**: Tools menu, toggle, tab
+  - Examples: `[T]ools`, `[T]oggle`, `[T]ab`
+- **`D`** - **Drawer/Delete**: Drawer, delete, duplicate
+  - Examples: `[D]rawer`, `[D]elete`, `[D]uplicate`
+- **`M`** - **Model/Menu**: Model selection, menu, move
+  - Examples: `Change [M]odel`, `[M]enu`, `[M]ove`
+- **`G`** - **Go/Generate**: Go to, generate, Gemini (when context-specific)
+  - Examples: `[G]o to`, `[G]enerate`, `Send [G]emini prompt`
+- **`H`** - **Help/History**: Help, history, home
+  - Examples: `[H]elp`, `[H]istory`, `[H]ome`
+- **`E`** - **Edit/Export**: Edit, export, expand
+  - Examples: `[E]dit`, `[E]xport`, `[E]xpand`
+- **`O`** - **Open/Options**: Open, options, organize
+  - Examples: `[O]pen`, `[O]ptions`, `[O]rganize`
+- **`U`** - **Undo/Update**: Undo, update, unfold
+  - Examples: `[U]ndo`, `[U]pdate`, `[U]nfold`
+- **`I`** - **Insert/Import**: Insert, import, info
+  - Examples: `[I]nsert`, `[I]mport`, `[I]nfo`
+- **`K`** - **Keep/Keyboard**: Keep, keyboard shortcuts
+  - Examples: `[K]eep`, `[K]eyboard shortcuts`
+- **`L`** - **List/Link**: List, link, location
+  - Examples: `[L]ist`, `[L]ink`, `[L]ocation`
+- **`W`** - **Window/Write**: Window operations, write
+  - Examples: `[W]indow`, `[W]rite`, `New [W]indow`
+- **`X`** - **Exit/eXport**: Exit, export, close
+  - Examples: `[X]it`, `E[X]port`, `[X] Close`
+- **`Z`** - **Undo/Zoom**: Undo (common), zoom
+  - Examples: `[Z]oom`, `[Z] Undo` (when U is unavailable)
+
+### Secondary Conventions
+
+- **`Y`** - Often used for toggle actions or yes/confirm when primary keys are taken
+- **`V`** - View, verify, version
+- **`B`** - Back, bookmark, bold
+- **`J`** - Jump, join
+- **`Q`** - Quit, query, quick
+
+### Decision Guidelines
+
+When choosing mnemonic keys:
+
+1. **Prioritize conventions** - Use the standard mappings above when they fit
+2. **Consider context** - Some keys may have app-specific meanings (e.g., `G` for Gemini)
+3. **Avoid conflicts** - If a standard key is already used, choose the next best mnemonic
+4. **Prioritize clarity** - A less-standard but clearer mnemonic is better than a confusing standard one
+5. **Be flexible** - These are guidelines, not strict rules. Adapt as needed.
+
+### Examples of Convention Usage
+
+```
+✅ Good (follows conventions):
+[N]ew chat          - N for New
+[S]earch             - S for Search
+[C]opy last message  - C for Copy
+[F]ullscreen         - F for Fullscreen
+[R]ead aloud         - R for Read
+
+✅ Good (context-appropriate):
+[G]Send[G]emini      - G for Gemini (context-specific)
+[M]Change[M]odel     - M for Model (context-specific)
+[D]Toggle the[D]rawer - D for Drawer (context-specific)
+
+⚠️ Acceptable (when standard is taken):
+[P]Focus[P]rompt     - P for Prompt (C, F, S already used)
+[T][T]ools           - T for Tools (when other keys conflict)
+```
+
 ## Example: Gemini (Shift)
 
 ```

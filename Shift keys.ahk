@@ -84,14 +84,26 @@ ProcessCheatSheetText(text) {
 
     for line in lines {
         ; Check if line contains a shortcut pattern at the start (before any mnemonic brackets in text)
-        ; Match the first bracket pattern that appears at the beginning or after minimal text
-        if RegExMatch(line, "^(\[.*?\])", &match) {
-            ; Replace only the first shortcut with padded version
-            paddedShortcut := PadShortcut(match[1])
-            processedLine := StrReplace(line, match[1], paddedShortcut, , , 1)
+        ; Match emoji (if present) and the first bracket pattern: emoji + bracket
+        ; Pattern: optional emoji/characters (non-bracket chars), then bracket, then rest of line
+        if RegExMatch(line, "^([^\[\]]*?)(\[.*?\])(.*)$", &match) {
+            emoji := match[1]  ; Emoji or empty
+            bracket := match[2]  ; First bracket [KEY]
+            restOfLine := match[3]  ; Rest of the line after bracket
+
+            ; Pad the bracket content to align all brackets
+            paddedShortcut := PadShortcut(bracket)
+
+            ; Reconstruct line with spacing: emoji + space + padded bracket + space + rest
+            ; Add space after emoji (if present) and space after bracket
+            if (emoji != "") {
+                processedLine := emoji . " " . paddedShortcut . " " . restOfLine
+            } else {
+                processedLine := paddedShortcut . " " . restOfLine
+            }
 
             ; Check if this is a built-in shortcut (contains common built-in patterns)
-            if (IsBuiltInShortcut(match[1])) {
+            if (IsBuiltInShortcut(bracket)) {
                 ; Add visual distinction for built-in shortcuts with dashes and brackets
                 processedLine := "--- " . processedLine
             } else {
