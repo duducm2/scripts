@@ -997,7 +997,8 @@ GetCheatSheetText() {
         if InStr(chromeTitle, "Mercado Livre", false)
             appShortcuts := cheatSheets.Has("Mercado Livre") ? cheatSheets["Mercado Livre"] : ""
         if InStr(chromeTitle, "gemini", false)
-            appShortcuts := "Gemini`r`n[Shift+Y] > Toggle the drawer`r`n[Shift+U] > New chat`r`n[Shift+I] > Search"
+            appShortcuts :=
+                "Gemini`r`n[Shift+Y] > Toggle the drawer`r`n[Shift+U] > New chat`r`n[Shift+I] > Search`r`n[Shift+O] > Fast button (next to microphone)`r`n[Shift+P] > Tools"
         ; Only set generic Google sheet if nothing else matched and title clearly indicates Google site
         if (appShortcuts = "") {
             if (chromeTitle = "Google" || InStr(chromeTitle, " - Google Search"))
@@ -8473,6 +8474,171 @@ FindMonthGroup(uia) {
         } else {
             ; Last resort: Could try keyboard navigation if Gemini has a keyboard shortcut for search
             ; For now, we'll just not do anything if we can't find the button
+        }
+    } catch Error as e {
+        ; If all else fails, silently fail (no fallback action defined)
+    }
+}
+
+; Shift + O : Click the button next to Microphone button (e.g., "Fast" button)
++o:: {
+    try {
+        uia := UIA_Browser()
+        Sleep 300
+
+        ; Step 1: Find the Microphone button
+        microphoneButton := 0
+
+        ; Primary strategy: Find by ClassName containing "speech_dictation_mic_button"
+        allButtons := uia.FindAll({ Type: 50000 })
+        for button in allButtons {
+            if InStr(button.ClassName, "speech_dictation_mic_button") {
+                microphoneButton := button
+                break
+            }
+        }
+
+        ; Fallback 1: Find by Name "Microphone"
+        if !microphoneButton {
+            microphoneButton := uia.FindFirst({ Name: "Microphone", Type: 50000 })
+        }
+
+        ; Fallback 2: Try by Type "Button" and Name "Microphone"
+        if !microphoneButton {
+            microphoneButton := uia.FindFirst({ Type: "Button", Name: "Microphone" })
+        }
+
+        if (!microphoneButton) {
+            ; Could not find microphone button, abort
+            return
+        }
+
+        ; Step 2: Find the button next to Microphone (sibling button)
+        siblingButton := 0
+
+        ; Strategy 1: Try next sibling
+        nextSibling := UIA.TreeWalkerTrue.TryGetNextSiblingElement(microphoneButton)
+        if (nextSibling) {
+            if (nextSibling.Type == 50000) {
+                ; Next sibling is directly a button
+                siblingButton := nextSibling
+            } else {
+                ; Next sibling might contain a button, try to find one
+                try {
+                    childButton := nextSibling.FindFirst({ Type: 50000 })
+                    if (childButton) {
+                        siblingButton := childButton
+                    }
+                } catch {
+                }
+            }
+        }
+
+        ; Strategy 2: Try previous sibling if next didn't work or wasn't a button
+        if (!siblingButton) {
+            prevSibling := UIA.TreeWalkerTrue.TryGetPreviousSiblingElement(microphoneButton)
+            if (prevSibling) {
+                if (prevSibling.Type == 50000) {
+                    ; Previous sibling is directly a button
+                    siblingButton := prevSibling
+                } else {
+                    ; Previous sibling might contain a button, try to find one
+                    try {
+                        childButton := prevSibling.FindFirst({ Type: 50000 })
+                        if (childButton) {
+                            siblingButton := childButton
+                        }
+                    } catch {
+                    }
+                }
+            }
+        }
+
+        ; Strategy 3: If direct siblings don't work, get parent and find buttons near microphone's position
+        if (!siblingButton || siblingButton.Type != 50000) {
+            try {
+                parent := UIA.TreeWalkerTrue.GetParentElement(microphoneButton)
+                if (parent) {
+                    micPos := microphoneButton.Location
+                    allParentButtons := parent.FindAll({ Type: 50000 })
+
+                    ; Find the button closest to microphone (horizontal neighbors)
+                    for button in allParentButtons {
+                        if (button == microphoneButton)
+                            continue
+
+                        btnPos := button.Location
+                        ; Check if button is on the same row and close horizontally
+                        sameRow := (Abs(btnPos.y - micPos.y) < 20) ; Within 20 pixels vertically
+                        closeHorizontally := (Abs(btnPos.x - micPos.x) < 200) ; Within 200 pixels horizontally
+
+                        if (sameRow && closeHorizontally) {
+                            siblingButton := button
+                            break
+                        }
+                    }
+                }
+            } catch {
+            }
+        }
+
+        if (siblingButton && siblingButton.Type == 50000) {
+            siblingButton.Click()
+        } else {
+            ; Last resort: Could not find sibling button
+        }
+    } catch Error as e {
+        ; If all else fails, silently fail (no fallback action defined)
+    }
+}
+
+; Shift + P : Click the Tools button
++p:: {
+    try {
+        uia := UIA_Browser()
+        Sleep 300
+
+        ; Primary strategy: Find by Name "Tools" with Type 50000 (Button)
+        toolsButton := uia.FindFirst({ Name: "Tools", Type: 50000 })
+
+        ; Fallback 1: Try by Type "Button" and Name "Tools"
+        if !toolsButton {
+            toolsButton := uia.FindFirst({ Type: "Button", Name: "Tools" })
+        }
+
+        ; Fallback 2: Try by ClassName containing "toolbox-drawer-button" (substring match)
+        if !toolsButton {
+            allButtons := uia.FindAll({ Type: 50000 })
+            for button in allButtons {
+                if InStr(button.ClassName, "toolbox-drawer-button") && InStr(button.Name, "Tools") {
+                    toolsButton := button
+                    break
+                }
+            }
+        }
+
+        ; Fallback 3: Try finding by Name with substring match (in case of localization variations)
+        if !toolsButton {
+            allButtons := uia.FindAll({ Type: 50000 })
+            for button in allButtons {
+                if InStr(button.Name, "Tools") || InStr(button.Name, "Ferramentas") {
+                    ; Additional check to ensure it's the tools button (has toolbox-drawer-button in className)
+                    if InStr(button.ClassName, "toolbox-drawer-button") {
+                        toolsButton := button
+                        break
+                    }
+                }
+            }
+        }
+
+        if (toolsButton) {
+            toolsButton.Click()
+
+            Sleep 100
+
+            Send "{Tab}"
+        } else {
+            ; Last resort: Could not find Tools button
         }
     } catch Error as e {
         ; If all else fails, silently fail (no fallback action defined)
