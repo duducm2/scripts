@@ -83,11 +83,12 @@ ProcessCheatSheetText(text) {
     processedLines := []
 
     for line in lines {
-        ; Check if line contains a shortcut pattern
-        if RegExMatch(line, "(\[.*?\])", &match) {
-            ; Replace the shortcut with padded version
+        ; Check if line contains a shortcut pattern at the start (before any mnemonic brackets in text)
+        ; Match the first bracket pattern that appears at the beginning or after minimal text
+        if RegExMatch(line, "^(\[.*?\])", &match) {
+            ; Replace only the first shortcut with padded version
             paddedShortcut := PadShortcut(match[1])
-            processedLine := StrReplace(line, match[1], paddedShortcut)
+            processedLine := StrReplace(line, match[1], paddedShortcut, , , 1)
 
             ; Check if this is a built-in shortcut (contains common built-in patterns)
             if (IsBuiltInShortcut(match[1])) {
@@ -997,7 +998,7 @@ GetCheatSheetText() {
             appShortcuts := cheatSheets.Has("Mercado Livre") ? cheatSheets["Mercado Livre"] : ""
         if InStr(chromeTitle, "gemini", false)
             appShortcuts :=
-                "Gemini`r`n[Shift+D] > Toggle the [D]rawer`r`n[Shift+N] > [N]ew chat`r`n[Shift+S] > [S]earch`r`n[Shift+M] > Change [M]odel`r`n[Shift+T] > [T]ools`r`n[Shift+P] > Focus [P]rompt field`r`n[Shift+C] > [C]opy last message`r`n[Shift+R] > [R]ead aloud last message`r`n[Shift+G] > Send [G]emini prompt text`r`n[Shift+F] > [F]ullscreen input"
+                "Gemini (Shift)`r`n[D]Toggle the[D]rawer`r`n[N][N]ew chat`r`n[S][S]earch`r`n[M]Change[M]odel`r`n[T][T]ools`r`n[P]Focus[P]rompt field`r`n[C][C]opy last message`r`n[R][R]ead aloud last message`r`n[G]Send[G]emini prompt text`r`n[F][F]ullscreen input"
         ; Only set generic Google sheet if nothing else matched and title clearly indicates Google site
         if (appShortcuts = "") {
             if (chromeTitle = "Google" || InStr(chromeTitle, " - Google Search"))
