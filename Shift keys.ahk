@@ -997,7 +997,7 @@ GetCheatSheetText() {
             appShortcuts := cheatSheets.Has("Mercado Livre") ? cheatSheets["Mercado Livre"] : ""
         if InStr(chromeTitle, "gemini", false)
             appShortcuts :=
-                "Gemini`r`n[Shift+Y] > Toggle the drawer`r`n[Shift+U] > New chat`r`n[Shift+I] > Search`r`n[Shift+O] > Change Model`r`n[Shift+P] > Tools`r`n[Shift+H] > Focus prompt field`r`n[Shift+J] > Copy last message`r`n[Shift+K] > Read aloud last message`r`n[Shift+L] > Send Gemini prompt text"
+                "Gemini`r`n[Shift+Y] > Toggle the drawer`r`n[Shift+U] > New chat`r`n[Shift+I] > Search`r`n[Shift+O] > Change Model`r`n[Shift+P] > Tools`r`n[Shift+H] > Focus prompt field`r`n[Shift+J] > Copy last message`r`n[Shift+K] > Read aloud last message`r`n[Shift+L] > Send Gemini prompt text`r`n[Shift+F] > Expand input to fullscreen"
         ; Only set generic Google sheet if nothing else matched and title clearly indicates Google site
         if (appShortcuts = "") {
             if (chromeTitle = "Google" || InStr(chromeTitle, " - Google Search"))
@@ -9061,6 +9061,56 @@ FindMonthGroup(uia) {
             }
         } else {
             ; Last resort: Could not find prompt field
+        }
+    } catch Error as e {
+        ; If all else fails, silently fail (no fallback action defined)
+    }
+}
+
+; Shift + F : Click the Expand input to Fullscreen button
++f:: {
+    try {
+        uia := UIA_Browser()
+        Sleep 300
+
+        ; Primary strategy: Find by Name "Expand input to Fullscreen" with Type 50000 (Button)
+        fullscreenButton := uia.FindFirst({ Name: "Expand input to Fullscreen", Type: 50000 })
+
+        ; Fallback 1: Try by Type "Button" and Name "Expand input to Fullscreen"
+        if !fullscreenButton {
+            fullscreenButton := uia.FindFirst({ Type: "Button", Name: "Expand input to Fullscreen" })
+        }
+
+        ; Fallback 2: Try by ClassName containing "fullscreen-button" (substring match)
+        if !fullscreenButton {
+            allButtons := uia.FindAll({ Type: 50000 })
+            for button in allButtons {
+                if InStr(button.ClassName, "fullscreen-button") {
+                    fullscreenButton := button
+                    break
+                }
+            }
+        }
+
+        ; Fallback 3: Try finding by Name with substring match (in case of localization variations)
+        if !fullscreenButton {
+            allButtons := uia.FindAll({ Type: 50000 })
+            for button in allButtons {
+                if InStr(button.Name, "Expand input") || InStr(button.Name, "Fullscreen") || InStr(button.Name,
+                    "Expandir") {
+                    ; Additional check to ensure it's the fullscreen button (has fullscreen-button in className)
+                    if InStr(button.ClassName, "fullscreen-button") {
+                        fullscreenButton := button
+                        break
+                    }
+                }
+            }
+        }
+
+        if (fullscreenButton) {
+            fullscreenButton.Click()
+        } else {
+            ; Last resort: Could not find fullscreen button
         }
     } catch Error as e {
         ; If all else fails, silently fail (no fallback action defined)
