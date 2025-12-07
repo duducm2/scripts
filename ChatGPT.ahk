@@ -679,41 +679,6 @@ RenameChatGPTWindowToChatGPT() {
 }
 
 ; =============================================================================
-; Get Pronunciation
-; Hotkey: Win+Alt+Shift+8
-; Original File: ChatGPT - Pronunciation.ahk
-; =============================================================================
-#!+8::
-{
-    A_Clipboard := ""
-    Send "^c"
-    ClipWait
-    SetTitleMatchMode 2
-    if hwnd := GetChatGPTWindowHwnd()
-        WinActivate "ahk_id " hwnd
-    if WinWaitActive("ahk_exe chrome.exe", , 2)
-        CenterMouse()
-    Sleep (IS_WORK_ENVIRONMENT ? 125 : 250)
-    Send "{Esc}"
-    Sleep (IS_WORK_ENVIRONMENT ? 125 : 250)
-    Send "+{Esc}"
-    searchString :=
-        "Below, you will find a word or phrase. I'd like you to answer in five sections: the 1st section you will repeat the word twice. For each time you repeat, use a point to finish the phrase. The 2nd section should have the definition of the word (You should also say each part of speech does the different definitions belong to). The 3d section should have the pronunciation of this word using the Internation Phonetic Alphabet characters (for American English).The 4th section should have the same word applied in a real sentence (put that in quotations, so I can identify that). In the 5th, Write down the translation of the word into Portuguese. Please, do not title any section. Thanks!"
-    A_Clipboard := searchString . "`n`nContent: " . A_Clipboard
-    Sleep (IS_WORK_ENVIRONMENT ? 50 : 100)
-    Send("^a")
-    Sleep (IS_WORK_ENVIRONMENT ? 250 : 500)
-    Send("^v")
-    Sleep (IS_WORK_ENVIRONMENT ? 250 : 500)
-    Send("{Enter}")
-    Sleep (IS_WORK_ENVIRONMENT ? 250 : 500)
-    ; After sending, show loading for Stop streaming
-    Send "!{Tab}" ; Return to previous window
-    buttonNames := ["Stop streaming", "Interromper transmissão"]
-    WaitForButtonAndShowSmallLoading(buttonNames, "Waiting for response...")
-}
-
-; =============================================================================
 ; Empty
 ; =============================================================================
 #!+y::

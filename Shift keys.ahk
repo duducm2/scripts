@@ -1165,7 +1165,9 @@ ShowGlobalShortcutsHelp() {
 [Window Management] Ctrl+Alt+Win - Secondary combination
 
 === AVAILABLE (unused) ===
-[Win+Alt+Shift+P] 
+[Win+Alt+Shift+Y] > Empty
+[Win+Alt+Shift+O] > Empty
+[Win+Alt+Shift+P] > Empty
 
 === CURSOR ===
 [Win+Alt+Shift+N] > Opens or activates Cursor (habits, home, punctual, or work windows)
@@ -1176,15 +1178,14 @@ ShowGlobalShortcutsHelp() {
 r=== CLIP ANGEL ===
 [Win+Alt+Shift+1] > Send top list item from Clip Angel
 
-=== CHATGPT ===
-[Win+Alt+Shift+8] > Get word pronunciation, definition, and Portuguese translation
-[Win+Alt+Shift+0] > Voice-to-text
+=== GEMINI ===
+[Win+Alt+Shift+8] > Get word pronunciation, definition, and Portuguese translation (Gemini)
 [Win+Alt+Shift+7] > Read aloud the last message in Gemini
 [Win+Alt+Shift+J] > Copy the last message in Gemini
-[Win+Alt+Shift+O] > Empty
+
+=== CHATGPT ===
 [Win+Alt+Shift+I] > Opens ChatGPT
 [Win+Alt+Shift+L] > Talk with ChatGPT through voice
-[Win+Alt+Shift+Y] > Empty
 
 === YOUTUBE ===
 [Win+Alt+Shift+H] > Activates Youtube
@@ -1224,6 +1225,7 @@ r=== CLIP ANGEL ===
 === GENERAL ===
 [Win+Alt+Shift+U] > Quick string shortcuts
 [Win+Alt+Shift+Q] > Jump mouse on the middle
+[Win+Alt+Shift+0] > Voice-to-text
 [Win+Alt+Shift+X] > Activate hunt and Peck
 [Win+Alt+Shift+→] > Show square selector (right direction)
 [Win+Alt+Shift+←] > Show square selector (left direction)

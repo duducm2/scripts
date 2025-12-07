@@ -4,6 +4,7 @@
 ; --- Includes ----------------------------------------------------------------
 #include UIA-v2\Lib\UIA.ahk
 #include UIA-v2\Lib\UIA_Browser.ahk
+#include %A_ScriptDir%\env.ahk
 
 ; --- Helper Functions --------------------------------------------------------
 
@@ -103,6 +104,110 @@ PlayCopyCompletedChime() {
     } catch {
         ; Silently ignore errors
     }
+}
+
+; =============================================================================
+; Small Loading Indicator Helpers
+; =============================================================================
+global smallLoadingGuis_Gemini := []
+
+ShowSmallLoadingIndicator(state := "Loading…", bgColor := "3772FF") {
+    global smallLoadingGuis_Gemini
+
+    ; If GUIs exist, just update the text of the topmost one (the message)
+    if (smallLoadingGuis_Gemini.Length > 0) {
+        try {
+            ; The text control is expected to be in the first GUI of the stack
+            if (smallLoadingGuis_Gemini[1].Controls.Length > 0)
+                smallLoadingGuis_Gemini[1].Controls[1].Text := state
+        } catch {
+            ; Silently handle GUI/control errors and recreate
+        }
+        return
+    }
+
+    ; Create a single, high-contrast, centered banner using the unified builder
+    textGui := CreateCenteredBanner(state, bgColor, "FFFFFF", 24, 178)
+    smallLoadingGuis_Gemini.Push(textGui)
+}
+
+HideSmallLoadingIndicator() {
+    global smallLoadingGuis_Gemini
+    if (smallLoadingGuis_Gemini.Length > 0) {
+        for gui in smallLoadingGuis_Gemini {
+            try gui.Destroy()
+            catch {
+                ; Silently ignore GUI destroy errors
+            }
+        }
+        smallLoadingGuis_Gemini := [] ; Reset the array
+    }
+}
+
+WaitForButtonAndShowSmallLoading(buttonNames, stateText := "Loading…", timeout := 15000) {
+    try cUIA := UIA_Browser()
+    catch {
+        ; Silently ignore UIA browser errors
+        return
+    }
+    start := A_TickCount
+    deadline := (timeout > 0) ? (start + timeout) : 0
+    btn := ""
+    indicatorShown := false
+    buttonEverFound := false
+    buttonDisappeared := false
+    while (timeout <= 0 || A_TickCount < deadline) {
+        btn := ""
+        for n in buttonNames {
+            try {
+                btn := cUIA.FindElement({ Name: n, Type: "Button" })
+            } catch {
+                btn := ""
+            }
+            if btn
+                break
+        }
+        if btn {
+            buttonEverFound := true
+            if (!indicatorShown) {
+                ShowSmallLoadingIndicator(stateText)
+                indicatorShown := true
+            }
+            while btn && (timeout <= 0 || A_TickCount < deadline) {
+                Sleep (IS_WORK_ENVIRONMENT ? 125 : 250)
+                btn := ""
+                for n in buttonNames {
+                    try {
+                        btn := cUIA.FindElement({ Name: n, Type: "Button" })
+                    } catch {
+                        btn := ""
+                    }
+                    if btn
+                        break
+                }
+            }
+            if !btn
+                buttonDisappeared := true
+            break
+        }
+        Sleep (IS_WORK_ENVIRONMENT ? 125 : 250)
+    }
+    ; Play completion sound only for actual AI responses when we saw the button and it disappeared
+    try {
+        if (buttonEverFound && buttonDisappeared && InStr(StrLower(stateText), "transcrib") = 0)
+            PlayCopyCompletedChime()
+    } catch {
+        ; Silently ignore errors
+    }
+    HideSmallLoadingIndicator()
+}
+
+; =============================================================================
+; Helper function to center mouse on the active window
+; =============================================================================
+CenterMouse() {
+    Sleep(IS_WORK_ENVIRONMENT ? 100 : 200)
+    Send("#!+q")
 }
 
 ; --- Hotkeys ----------------------------------------------------------------
@@ -353,4 +458,102 @@ PlayCopyCompletedChime() {
     } catch Error as e {
         ; If all else fails, silently fail (no fallback action defined)
     }
+}
+
+; =============================================================================
+; Get Pronunciation
+; Hotkey: Win+Alt+Shift+8
+; =============================================================================
+#!+8:: {
+    A_Clipboard := ""
+    Send "^c"
+    ClipWait
+    SetTitleMatchMode(2)
+    if hwnd := GetGeminiWindowHwnd()
+        WinActivate("ahk_id " hwnd)
+    if WinWaitActive("ahk_exe chrome.exe", , 2)
+        CenterMouse()
+    Sleep (IS_WORK_ENVIRONMENT ? 125 : 250)
+    Send "{Esc}"
+    Sleep (IS_WORK_ENVIRONMENT ? 125 : 250)
+    Send "+{Esc}"
+    
+    ; Find the Gemini prompt field
+    uia := UIA_Browser()
+    Sleep 300
+    
+    promptField := 0
+    
+    ; Primary strategy: Find by Name "Enter a prompt here" with Type 50004 (Edit)
+    promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
+    
+    ; Fallback 1: Try by Type "Edit" and Name "Enter a prompt here"
+    if !promptField {
+        promptField := uia.FindFirst({ Type: "Edit", Name: "Enter a prompt here" })
+    }
+    
+    ; Fallback 2: Try by ClassName containing "ql-editor" or "new-input-ui" (substring match)
+    if !promptField {
+        allEdits := uia.FindAll({ Type: 50004 })
+        for edit in allEdits {
+            if (InStr(edit.ClassName, "ql-editor") || InStr(edit.ClassName, "new-input-ui")) {
+                if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "prompt") {
+                    promptField := edit
+                    break
+                }
+            }
+        }
+    }
+    
+    ; Fallback 3: Try finding by ClassName containing "ql-editor" (most specific identifier)
+    if !promptField {
+        allEdits := uia.FindAll({ Type: 50004 })
+        for edit in allEdits {
+            if InStr(edit.ClassName, "ql-editor") {
+                promptField := edit
+                break
+            }
+        }
+    }
+    
+    ; Fallback 4: Try finding by Name with substring match (in case of localization variations)
+    if !promptField {
+        allEdits := uia.FindAll({ Type: 50004 })
+        for edit in allEdits {
+            if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "Digite um prompt") || InStr(edit.Name, "prompt") {
+                ; Additional check to ensure it's the prompt field (has ql-editor in className)
+                if InStr(edit.ClassName, "ql-editor") {
+                    promptField := edit
+                    break
+                }
+            }
+        }
+    }
+    
+    if (promptField) {
+        ; Focus the prompt field
+        promptField.SetFocus()
+        Sleep 100
+        ; Ensure focus was successful
+        if (!promptField.HasKeyboardFocus) {
+            ; Fallback: try clicking if SetFocus didn't work
+            promptField.Click()
+            Sleep 100
+        }
+    }
+    
+    searchString :=
+        "Below, you will find a word or phrase. I'd like you to answer in five sections: the 1st section you will repeat the word twice. For each time you repeat, use a point to finish the phrase. The 2nd section should have the definition of the word (You should also say each part of speech does the different definitions belong to). The 3d section should have the pronunciation of this word using the Internation Phonetic Alphabet characters (for American English).The 4th section should have the same word applied in a real sentence (put that in quotations, so I can identify that). In the 5th, Write down the translation of the word into Portuguese. Please, do not title any section. Thanks!"
+    A_Clipboard := searchString . "`n`nContent: " . A_Clipboard
+    Sleep (IS_WORK_ENVIRONMENT ? 50 : 100)
+    Send("^a")
+    Sleep (IS_WORK_ENVIRONMENT ? 250 : 500)
+    Send("^v")
+    Sleep (IS_WORK_ENVIRONMENT ? 250 : 500)
+    Send("{Enter}")
+    Sleep (IS_WORK_ENVIRONMENT ? 250 : 500)
+    ; After sending, show loading for Stop streaming
+    Send "!{Tab}" ; Return to previous window
+    buttonNames := ["Stop streaming", "Interromper transmissão"]
+    WaitForButtonAndShowSmallLoading(buttonNames, "Waiting for response...")
 }
