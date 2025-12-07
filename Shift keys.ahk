@@ -1166,6 +1166,7 @@ ShowGlobalShortcutsHelp() {
 
 === AVAILABLE (unused) ===
 [Win+Alt+Shift+Y] > Empty
+[Win+Alt+Shift+L] > Empty
 [Win+Alt+Shift+O] > Empty
 [Win+Alt+Shift+P] > Empty
 
@@ -1183,9 +1184,6 @@ r=== CLIP ANGEL ===
 [Win+Alt+Shift+8] > Get word pronunciation, definition, and Portuguese translation (Gemini)
 [Win+Alt+Shift+7] > Read aloud the last message in Gemini
 [Win+Alt+Shift+J] > Copy the last message in Gemini
-
-=== CHATGPT ===
-[Win+Alt+Shift+L] > Talk with ChatGPT through voice
 
 === YOUTUBE ===
 [Win+Alt+Shift+H] > Activates Youtube
