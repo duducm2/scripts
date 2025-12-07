@@ -47,32 +47,7 @@ SendSymbol(sym) {
 
 ; Function to pad shortcuts to consistent width for alignment
 PadShortcut(shortcut, targetWidth := 24) {
-    ; Extract the content between brackets
-    if RegExMatch(shortcut, "\[(.*?)\]", &match) {
-        content := match[1]
-        ; Calculate padding needed
-        padding := targetWidth - StrLen(content)
-        if (padding > 0) {
-            ; Calculate left and right padding for centering
-            leftPadding := Floor(padding / 2)
-            rightPadding := padding - leftPadding
-
-            ; Create left padding string
-            leftPaddingStr := ""
-            loop leftPadding {
-                leftPaddingStr .= " "
-            }
-
-            ; Create right padding string
-            rightPaddingStr := ""
-            loop rightPadding {
-                rightPaddingStr .= " "
-            }
-
-            ; Center the content within the brackets
-            return "[" . leftPaddingStr . content . rightPaddingStr . "]"
-        }
-    }
+    ; Return shortcut without padding (spaces removed)
     return shortcut
 }
 
@@ -424,8 +399,8 @@ Spotify (Shift)
 cheatSheets["ONENOTE.EXE"] := "
 (
 OneNote (Shift)
-📉 [C]ollapse
-📈 [E]xpand
+📈 [Y]Expand
+📉 [U]Collapse ([U]nfold reverse)
 📉 [I]Collapse [A]ll
 📈 [O]Expand [A]ll
 📝 [P]Select line and children ([P]aragraph)
@@ -573,15 +548,15 @@ MS Paint (Shift)
 cheatSheets["ClipAngel.exe"] := "
 (
 ClipAngel (Shift)
-📋 [S]elect filtered content and copy ([S]elect)
-🔄 [U]Switch focus list/text ([U]ser)
-🗑️ [D]elete all non-favorite ([D]elete)
-🧹 [C]lear filters ([C]lear)
-⭐ [F]Mark as [F]avorite
-⭐ [H]Unmark as favorite ([H]ide)
-✏️ [E]dit [E]ext
-💾 [S]ave as file ([S]ave)
-🔗 [M]erge clips ([M]erge)
+📋 [Y]Select filtered content and copy
+🔄 [U]Switch focus list/text
+🗑️ [I]Delete all non-favorite
+🧹 [O]Clear filters
+⭐ [P]Mark as [F]avorite
+⭐ [H]Unmark as favorite
+✏️ [J]Edit [E]ext
+💾 [K]Save as file
+🔗 [L]Merge clips
 )"  ; end ClipAngel
 
 ; --- Figma -----------------------------------------------------------------
@@ -783,34 +758,34 @@ Command Palette (Shift)
 cheatSheets["EXCEL.EXE"] := "
 (
 Excel (Shift)
-⚪ [W]Select [W]hite Color
-✏️ [E]nable [E]diting
-📊 [C]Turn [C]SV delimited by semicolon into columns
+⚪ [Y]Select [W]hite Color
+✏️ [U]Enable [E]diting
+📊 [I]Turn [C]SV delimited by semicolon into columns
 )"
 
 ; --- Power BI ------------------------------------------------------------
 cheatSheets["Power BI"] := "
 (
 Power BI (Shift)
-📊 [T]ransform [D]ata
-📊 [C]lose and [A]pply
-📊 [R]eport view
-📊 [T]able view
-📊 [M]odel view
-📊 [B]uild [V]isual
-📊 [F]ormat visual ([F]ormat)
-🔍 [S]elect [S]earch edit field
-✅ [O]K/Confirm modal button ([O]K)
-❌ [C]ancel/Exit modal button ([C]ancel)
-🖱️ [P]revious pages button ([P]revious)
-📋 [F]ilter pane collapse/expand ([F]ilter)
-🎨 [V]isualizations pane toggle ([V]isualizations)
-➕ [N]ew [P]age
-📊 [M]New [M]easure
-📕 [C]loseAll[D]rawers ([C]lose)
-📖 [O]penAll[D]rawers ([O]pen)
-📁 [C]ollapse [F]ields tables ([C]ollapse)
-📊 [D]ata pane toggle ([D]ata)
+📊 [Y]ransform [D]ata
+📊 [U]Close and [A]pply
+📊 [I]Report view
+📊 [O]Table view
+📊 [P]Model view
+📊 [H]Build [V]isual
+📊 [J]Format visual
+🔍 [K]Select [S]earch edit field
+✅ [L]OK/Confirm modal button
+❌ [N]Cancel/Exit modal button
+🖱️ [M]Previous pages button
+📋 [,]Filter pane collapse/expand
+🎨 [.]Visualizations pane toggle
+➕ [W]New [P]age
+📊 [E]New [M]easure
+📕 [F]CloseAll[D]rawers
+📖 [G]OpenAll[D]rawers
+📁 [R]Collapse [F]ields tables
+📊 [Q]Data pane toggle
 )"
 
 ; --- UIA Tree Inspector -------------------------------------------------
@@ -1191,21 +1166,8 @@ ShowGlobalShortcutsHelp() {
     }
 
     ; Create the global shortcuts text with categories
-    ; Get hotstrings section first
-    hsText := ""
-    try {
-        hsText := GetHotstringsCheatSheetText()
-    } catch {
-    }
 
-    globalText := ""
-
-    ; Add hotstrings at the top if any are defined
-    if (StrLen(hsText)) {
-        globalText .= "=== HOTSTRINGS ===`n" hsText "`n`n"
-    }
-
-    globalText .= "
+    globalText := "
 (
 === MAIN KEY COMBINATIONS ===
 [Symbol Layer] Win+Alt+Shift - Primary combination 
