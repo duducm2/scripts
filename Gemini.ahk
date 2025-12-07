@@ -266,6 +266,8 @@ ShowNotification(message, durationMs := 500, bgColor := "FFFF00", fontColor := "
             lastCopyButton.Click()
             ; Show notification banner when copy button is clicked
             ShowNotification("Copied!", 800, "FFFF00", "000000", 24)
+            ; Return to previous window
+            Send "!{Tab}"
         } else {
             ; Last resort: Could not find last Copy button
         }
