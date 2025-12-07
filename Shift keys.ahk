@@ -998,7 +998,7 @@ GetCheatSheetText() {
             appShortcuts := cheatSheets.Has("Mercado Livre") ? cheatSheets["Mercado Livre"] : ""
         if InStr(chromeTitle, "gemini", false)
             appShortcuts :=
-                "Gemini`r`n[Shift+Y] > Toggle the drawer`r`n[Shift+U] > New chat`r`n[Shift+I] > Search`r`n[Shift+O] > Fast button (next to microphone)`r`n[Shift+P] > Tools"
+                "Gemini`r`n[Shift+Y] > Toggle the drawer`r`n[Shift+U] > New chat`r`n[Shift+I] > Search`r`n[Shift+O] > Fast button (next to microphone)`r`n[Shift+P] > Tools`r`n[Shift+H] > Focus prompt field`r`n[Shift+J] > Copy last message"
         ; Only set generic Google sheet if nothing else matched and title clearly indicates Google site
         if (appShortcuts = "") {
             if (chromeTitle = "Google" || InStr(chromeTitle, " - Google Search"))
@@ -8699,6 +8699,145 @@ FindMonthGroup(uia) {
             Send "{Tab}"
         } else {
             ; Last resort: Could not find Tools button
+        }
+    } catch Error as e {
+        ; If all else fails, silently fail (no fallback action defined)
+    }
+}
+
+; Shift + H : Focus the prompt text field
++h:: {
+    try {
+        uia := UIA_Browser()
+        Sleep 300
+
+        ; Primary strategy: Find by Name "Enter a prompt here" with Type 50004 (Edit)
+        promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
+
+        ; Fallback 1: Try by Type "Edit" and Name "Enter a prompt here"
+        if !promptField {
+            promptField := uia.FindFirst({ Type: "Edit", Name: "Enter a prompt here" })
+        }
+
+        ; Fallback 2: Try by ClassName containing "ql-editor" or "new-input-ui" (substring match)
+        if !promptField {
+            allEdits := uia.FindAll({ Type: 50004 })
+            for edit in allEdits {
+                if (InStr(edit.ClassName, "ql-editor") || InStr(edit.ClassName, "new-input-ui")) {
+                    if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "prompt") {
+                        promptField := edit
+                        break
+                    }
+                }
+            }
+        }
+
+        ; Fallback 3: Try finding by ClassName containing "ql-editor" (most specific identifier)
+        if !promptField {
+            allEdits := uia.FindAll({ Type: 50004 })
+            for edit in allEdits {
+                if InStr(edit.ClassName, "ql-editor") {
+                    promptField := edit
+                    break
+                }
+            }
+        }
+
+        ; Fallback 4: Try finding by Name with substring match (in case of localization variations)
+        if !promptField {
+            allEdits := uia.FindAll({ Type: 50004 })
+            for edit in allEdits {
+                if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "Digite um prompt") || InStr(edit.Name,
+                    "prompt") {
+                    ; Additional check to ensure it's the prompt field (has ql-editor in className)
+                    if InStr(edit.ClassName, "ql-editor") {
+                        promptField := edit
+                        break
+                    }
+                }
+            }
+        }
+
+        if (promptField) {
+            promptField.SetFocus()
+            Sleep 100
+            ; Ensure focus was successful
+            if (!promptField.HasKeyboardFocus) {
+                ; Fallback: try clicking if SetFocus didn't work
+                promptField.Click()
+                Sleep 100
+            }
+        } else {
+            ; Last resort: Could not find prompt field
+        }
+    } catch Error as e {
+        ; If all else fails, silently fail (no fallback action defined)
+    }
+}
+
+; Shift + J : Click the last Copy button (copies the preceding message)
++j:: {
+    try {
+        uia := UIA_Browser()
+        Sleep 300
+
+        ; Find all Copy buttons
+        allCopyButtons := []
+
+        ; Primary strategy: Find all buttons with Name "Copy"
+        allButtons := uia.FindAll({ Type: 50000 })
+        for button in allButtons {
+            if (button.Name = "Copy" || InStr(button.Name, "Copy", false) = 1) {
+                ; Additional check: ensure it has the Copy button className pattern
+                if (InStr(button.ClassName, "icon-button") || InStr(button.ClassName, "mdc-button")) {
+                    allCopyButtons.Push(button)
+                }
+            }
+        }
+
+        ; Fallback: Try by Type "Button" if the above didn't find enough
+        if (allCopyButtons.Length = 0) {
+            allButtons := uia.FindAll({ Type: "Button" })
+            for button in allButtons {
+                if (button.Name = "Copy" || InStr(button.Name, "Copy", false) = 1) {
+                    allCopyButtons.Push(button)
+                }
+            }
+        }
+
+        if (allCopyButtons.Length = 0) {
+            ; No Copy buttons found
+            return
+        }
+
+        ; Find the last Copy button (the one with the highest Y position, meaning furthest down the page)
+        lastCopyButton := 0
+        highestY := -1
+
+        for copyButton in allCopyButtons {
+            try {
+                btnPos := copyButton.Location
+                btnBottomY := btnPos.y + btnPos.h
+
+                ; The last button will be the one with the highest bottom Y coordinate
+                if (btnBottomY > highestY) {
+                    highestY := btnBottomY
+                    lastCopyButton := copyButton
+                }
+            } catch {
+                ; If getting location fails, skip this button
+            }
+        }
+
+        ; If position-based approach didn't work, just use the last one in the array
+        if (!lastCopyButton && allCopyButtons.Length > 0) {
+            lastCopyButton := allCopyButtons[allCopyButtons.Length]
+        }
+
+        if (lastCopyButton) {
+            lastCopyButton.Click()
+        } else {
+            ; Last resort: Could not find last Copy button
         }
     } catch Error as e {
         ; If all else fails, silently fail (no fallback action defined)
