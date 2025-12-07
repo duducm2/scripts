@@ -1,6 +1,8 @@
 #Requires AutoHotkey v2.0+
 #SingleInstance Force
 
+#Include %A_ScriptDir%\Hotstrings.ahk
+
 ; -----------------------------------------------------------------------------
 ; This script consolidates various utility hotkeys.
 ; -----------------------------------------------------------------------------
@@ -1809,4 +1811,284 @@ ScheduleHnPCleanup() {
         KeyWait("x")  ; Wait for the key to be released
         HnPLoopMode()
     }
+}
+
+; =============================================================================
+; Hotstring Selector with Character Shortcuts
+; Hotkey: Win+Alt+Shift+U
+; Shows a GUI with all hotstrings and their assigned characters. Pressing
+; a character immediately pastes the corresponding text.
+; =============================================================================
+
+; Global variables for hotstring selector
+global g_HotstringSelectorGui := false
+global g_HotstringSelectorActive := false
+global g_HotstringCharMap := Map()  ; Maps character to expansion text
+global g_HotstringHotkeyHandlers := []  ; Store hotkey handlers for cleanup
+
+; Character sequence for assignment
+; Format: 1 2 3 4 5 q w e r t a s d f g z x c v b 6 7 8 9 0 y u i o p h j k l n m , .
+global g_HotstringCharSequence := ["1", "2", "3", "4", "5", "q", "w", "e", "r", "t", "a", "s", "d", "f", "g", "z", "x",
+    "c", "v", "b", "6", "7", "8", "9", "0", "y", "u", "i", "o", "p", "h", "j", "k", "l", "n", "m", ",", "."]
+
+; Extract hotstring expansions from their definitions
+; Returns array of expansion text strings in order of definition
+ExtractHotstringExpansions() {
+    expansions := []
+
+    ; Extract actual expansion text from each hotstring definition
+    ; Order matches the definitions in Hotstrings.ahk
+    expansions.Push("My Links")
+    expansions.Push("GS_UX core team_UX and CIP Integration")
+    expansions.Push("GS_E&S_CIP Dashboard research and design")
+    expansions.Push("GS_B2C_Credit_Management_Strategy_UI_Mentoring")
+    expansions.Push("GS_UX Core Team_Monitoring for B2C in Brazil")
+    expansions.Push("GS_UX_Project_Management_Activities_LA")
+    expansions.Push("GS_UX_and_CIP")
+    expansions.Push("GS_UX core team_Trainings Management")
+    expansions.Push("GS_B2C_Portals and Key Accounts Process POC")
+    expansions.Push(
+        "Correct grammar and spelling. Remove any dashes from the text. The text should be plain with no styles. Give back only the text. Use lininebreaks and a space betetween paragraphs and look like a human."
+    )
+    expansions.Push(
+        "Continue your browsing. Check for missing radio buttons. Answer everything till you get to the last phase in the TrustMate website."
+    )
+    expansions.Push("These questions are not fulfilled in the questionnaire. Go back and answer them.")
+    expansions.Push("Go over the entire form and answer all the questions that are missing.")
+    expansions.Push("eduardo.figueiredo@br.bosch.com")
+    expansions.Push("edu.evangelista.figueiredo@gmail.com")
+    expansions.Push(
+        "This is a message, summary, text or any textual information that translates into a task for me to do. Translate this way, into a task, make informative and start with the emoji 🔲. Make it clear and consise."
+    )
+    expansions.Push(
+        "( LTrim`nFood_Log dictation → Excel CSV`n`nROLE`nYou transcribe my meal dictation (PT/EN) into rows for my Excel Food_Log.`n`nHOW IT WORKS`n- I will dictate one or more meals in free speech.`n- Process immediately without asking questions.`n`nOUTPUT (strict)`n- Return ONLY CSV data rows. NO header row. NO markdown, NO code fences, NO commentary.`n- Each row format: Date;Meal;Time;Main_Items;Tags;Satisfaction_with_Speech;Notes`n- Sort by Date then Time.`n`nFIELD RULES`n- Date: YYYY‑MM‑DD. Use " "today" " for current date in America/Sao_Paulo timezone.`n- Time: HH:MM in 24h; pad leading zeros (e.g., 08:05).`n- Meal: Breakfast | Lunch | Dinner | Snack.`n  PT mapping: café da manhã→Breakfast; almoço→Lunch; jantar/janta→Dinner; lanche→Snack.`n- Main_Items: comma‑separated simple item names (e.g., coffee, bread, butter).`n- Tags: comma‑separated, from this set when present or inferable:`n  caffeine, sugar, alcohol, dairy, gluten, fried, spicy, high-carb, low-carb, processed, protein, fiber, late-night, home-cooked, fast-food.`n  Add " "late-night" " automatically if Time ≥ 22:00.`n- Satisfaction_with_Speech: integer 0–3 (0 = liked a lot; 3 = disliked a lot). If not stated, leave empty.`n- Notes: short free text when I provide context.`n`nMISSING INFO`n- If Date or Time is missing, use " "today" " and infer time from meal type (Breakfast=08:00, Lunch=12:00, Dinner=19:00, Snack=15:00).`n`nACK`n- Process the dictation immediately and output CSV rows only.`n For the date always consider one day before the current one.)"
+    )
+    expansions.Push(
+        "( LTrim`nTask: Rewrite the input text so it becomes AI-oriented.`n`nGoal: Produce a version that is concise, unambiguous, free of redundancy, and easy for an AI to parse.`n`nContext: The input text contains instructions and requests intended for a second AI (AIB). You must preserve ALL important information, especially any instructions, requests, or requirements meant for AIB. Do not remove information in the name of clarity or conciseness.`n`nInstructions:`n`n1. Preserve all essential information, especially instructions and requests for the second AI.`n2. Use positive, direct instructions.`n3. Maintain consistent terminology and simple syntax.`n4. Resolve ambiguity and clarify references.`n5. Output in a clean, structured format with no extra commentary.`n6. Do NOT omit any important information, requests, or instructions that the user provided for the second AI.`n7. Do NOT bias the prompt with your own concerns, interpretations, or modifications. Process the text as-is without adding your own perspective or concerns.`n`nInput: <insert text here>`n`nOutput:`nCRITICAL: The output must contain ONLY the processed result with no additional text, commentary, explanations, or formatting. The output must be ready for direct copy and paste without any modification.`n`nA rewritten version of the input text that is optimized for AI interpretation and contains:`n`n* Clear meaning`n* No repeated ideas`n* No filler wording`n* No contradictions`n* Stable terminology`n* Straightforward sentence structure`n* ALL important information preserved, especially instructions for the second AI)"
+    )
+
+    return expansions
+}
+
+; Build character-to-expansion mapping
+BuildHotstringCharMap() {
+    expansions := ExtractHotstringExpansions()
+    charMap := Map()
+
+    ; Assign characters sequentially to expansions
+    loop expansions.Length {
+        if (A_Index <= g_HotstringCharSequence.Length) {
+            char := g_HotstringCharSequence[A_Index]
+            charMap[char] := expansions[A_Index]
+        }
+    }
+
+    return charMap
+}
+
+; Get preview text (truncate long text for display, replace newlines with spaces)
+GetPreviewText(text, maxLength := 60) {
+    ; Replace newlines and multiple spaces with single space for cleaner preview
+    preview := RegExReplace(text, "`r?`n", " ")
+    preview := RegExReplace(preview, "\s+", " ")
+    preview := Trim(preview)
+
+    if (StrLen(preview) <= maxLength) {
+        return preview
+    }
+    return SubStr(preview, 1, maxLength) . "..."
+}
+
+; Cleanup hotstring selector
+CleanupHotstringSelector() {
+    global g_HotstringSelectorActive, g_HotstringSelectorGui, g_HotstringHotkeyHandlers
+    global g_HotstringCharMap
+
+    ; Disable active flag
+    g_HotstringSelectorActive := false
+
+    ; Disable all character hotkeys
+    for handler in g_HotstringHotkeyHandlers {
+        try {
+            char := handler.char
+            ; Handle special VK codes
+            if (char = ",") {
+                Hotkey("vkBC", "Off")
+            } else if (char = ".") {
+                Hotkey("vkBE", "Off")
+            } else {
+                Hotkey(char, "Off")
+                ; Also disable uppercase for lowercase letters
+                if (RegExMatch(char, "^[a-z]$")) {
+                    Hotkey(StrUpper(char), "Off")
+                }
+            }
+        } catch {
+            ; Silently ignore errors
+        }
+    }
+
+    ; Disable Escape hotkey
+    try {
+        Hotkey("Escape", "Off")
+    } catch {
+        ; Ignore
+    }
+
+    ; Clear handlers array
+    g_HotstringHotkeyHandlers := []
+
+    ; Close and destroy GUI
+    if (IsObject(g_HotstringSelectorGui)) {
+        try {
+            g_HotstringSelectorGui.Destroy()
+        } catch {
+            ; Ignore
+        }
+        g_HotstringSelectorGui := false
+    }
+
+    ; Clear char map
+    g_HotstringCharMap := Map()
+}
+
+; Handler for character key press
+HandleHotstringChar(char) {
+    global g_HotstringSelectorActive, g_HotstringCharMap
+
+    ; Only process if selector is active
+    if (!g_HotstringSelectorActive) {
+        return
+    }
+
+    ; Get expansion text for this character
+    expansion := g_HotstringCharMap.Get(char, "")
+    if (expansion = "") {
+        ; Try lowercase if uppercase
+        expansion := g_HotstringCharMap.Get(StrLower(char), "")
+    }
+
+    if (expansion != "") {
+        ; Cleanup first (closes GUI, disables hotkeys)
+        CleanupHotstringSelector()
+
+        ; Paste the text
+        InsertText(expansion)
+    }
+}
+
+; Factory function to create a handler that properly captures the character
+; This ensures each handler gets its own copy of the char value
+CreateHotstringCharHandler(char) {
+    ; Return a function that captures the char value at creation time
+    return (*) => HandleHotstringChar(char)
+}
+
+; Handler for Escape key
+HandleHotstringEscape(*) {
+    global g_HotstringSelectorActive
+    if (g_HotstringSelectorActive) {
+        CleanupHotstringSelector()
+    }
+}
+
+; Show hotstring selector GUI
+ShowHotstringSelector() {
+    global g_HotstringSelectorGui, g_HotstringSelectorActive, g_HotstringCharMap
+    global g_HotstringHotkeyHandlers
+
+    ; Close existing GUI if open
+    if (g_HotstringSelectorActive && IsObject(g_HotstringSelectorGui)) {
+        CleanupHotstringSelector()
+        Sleep 50
+    }
+
+    ; Build character mapping
+    g_HotstringCharMap := BuildHotstringCharMap()
+
+    if (g_HotstringCharMap.Count = 0) {
+        MsgBox "No hotstrings found.", "Hotstring Selector", "IconX"
+        return
+    }
+
+    ; Create GUI
+    g_HotstringSelectorGui := Gui("+AlwaysOnTop +ToolWindow", "Hotstring Shortcuts")
+    g_HotstringSelectorGui.SetFont("s10", "Segoe UI")
+
+    ; Build display text
+    displayText := "Press a character to paste its hotstring:`n`n"
+
+    ; Count hotstrings for height calculation
+    hotstringCount := 0
+
+    ; Sort characters for display (use original sequence order)
+    for i, char in g_HotstringCharSequence {
+        if (g_HotstringCharMap.Has(char)) {
+            expansion := g_HotstringCharMap[char]
+            preview := GetPreviewText(expansion)
+            displayText .= "[" . char . "] > " . preview . "`n"
+            hotstringCount++
+        }
+    }
+
+    displayText .= "`nPress Escape to cancel."
+
+    ; Add text control
+    g_HotstringSelectorGui.AddText("w600 Center", displayText)
+    g_HotstringSelectorGui.AddButton("w100 Default", "Close").OnEvent("Click", (*) => CleanupHotstringSelector())
+
+    ; Calculate height: ~20px per hotstring line + title + spacing + button
+    ; Minimum height of 300, or calculated based on content
+    estimatedHeight := Max(300, (hotstringCount + 5) * 20 + 60)
+    ; Cap at reasonable maximum (70% of screen height)
+    MonitorGetWorkArea(1, &ml, &mt, &mr, &mb)
+    maxHeight := Floor((mb - mt) * 0.7)
+    finalHeight := Min(estimatedHeight, maxHeight)
+
+    ; Show GUI
+    g_HotstringSelectorGui.Show("w620 h" . finalHeight)
+
+    ; Set active flag
+    g_HotstringSelectorActive := true
+
+    ; Clear handlers array
+    g_HotstringHotkeyHandlers := []
+
+    ; Enable hotkeys for all assigned characters
+    for char in g_HotstringCharSequence {
+        if (g_HotstringCharMap.Has(char)) {
+            ; Use factory function to create handler with properly captured char value
+            handler := CreateHotstringCharHandler(char)
+
+            ; Store handler for cleanup
+            g_HotstringHotkeyHandlers.Push({ char: char, handler: handler })
+
+            ; Enable hotkey (both uppercase and lowercase)
+            try {
+                ; Handle special characters that need VK codes
+                if (char = ",") {
+                    Hotkey("vkBC", handler, "On")  ; VK code for comma
+                } else if (char = ".") {
+                    Hotkey("vkBE", handler, "On")  ; VK code for period
+                } else {
+                    Hotkey(char, handler, "On")
+                    ; Also enable uppercase for lowercase letters
+                    if (RegExMatch(char, "^[a-z]$")) {
+                        Hotkey(StrUpper(char), handler, "On")
+                    }
+                }
+            } catch {
+                ; Silently ignore if we can't create hotkey for this character
+            }
+        }
+    }
+
+    ; Enable Escape hotkey
+    Hotkey("Escape", HandleHotstringEscape, "On")
+}
+
+; Win+Alt+Shift+U hotkey
+#!+U::
+{
+    ShowHotstringSelector()
 }
