@@ -115,16 +115,6 @@ ProcessCheatSheetText(text) {
         }
     }
 
-    ; Add legend at the top if there are shortcuts
-    if (InStr(result, ">>>") || InStr(result, "---")) {
-        separator := ""
-        loop 50 {
-            separator .= "="
-        }
-        legend := ">>> Custom shortcuts  |  --- Built-in shortcuts`n" . separator . "`n`n"
-        result := legend . result
-    }
-
     return result
 }
 
@@ -998,7 +988,7 @@ GetCheatSheetText() {
             appShortcuts := cheatSheets.Has("Mercado Livre") ? cheatSheets["Mercado Livre"] : ""
         if InStr(chromeTitle, "gemini", false)
             appShortcuts :=
-                "Gemini (Shift)`r`n[D]Toggle the[D]rawer`r`n[N][N]ew chat`r`n[S][S]earch`r`n[M]Change[M]odel`r`n[T][T]ools`r`n[P]Focus[P]rompt field`r`n[C][C]opy last message`r`n[R][R]ead aloud last message`r`n[G]Send[G]emini prompt text`r`n[F][F]ullscreen input"
+                "Gemini (Shift)`r`n📂 [D]Toggle the[D]rawer`r`n💬 [N][N]ew chat`r`n🔍 [S][S]earch`r`n🔄 [M]Change[M]odel`r`n🛠️ [T][T]ools`r`n⌨️ [P]Focus[P]rompt field`r`n📋 [C][C]opy last message`r`n🔊 [R][R]ead aloud last message`r`n🤖 [G]Send[G]emini prompt text`r`n⛶ [F][F]ullscreen input"
         ; Only set generic Google sheet if nothing else matched and title clearly indicates Google site
         if (appShortcuts = "") {
             if (chromeTitle = "Google" || InStr(chromeTitle, " - Google Search"))
