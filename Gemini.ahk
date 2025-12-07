@@ -594,7 +594,7 @@ InitializeGeminiFirstTime() {
 
 ; =============================================================================
 ; Open Gemini
-; Hotkey: Win+Alt+Shift+G
+; Hotkey: Win+Alt+Shift+I
 ; =============================================================================
 #!+i:: {
     SetTitleMatchMode(2)
@@ -602,8 +602,72 @@ InitializeGeminiFirstTime() {
         WinActivate("ahk_id " hwnd)
         if WinWaitActive("ahk_id " hwnd, , 2) {
             CenterMouse()
+            Send("{Esc}")
+            
+            ; Focus the Gemini prompt field (same logic as Shift+H)
+            Sleep 300
+            uia := UIA_Browser()
+            Sleep 300
+            
+            promptField := 0
+            
+            ; Primary strategy: Find by Name "Enter a prompt here" with Type 50004 (Edit)
+            promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
+            
+            ; Fallback 1: Try by Type "Edit" and Name "Enter a prompt here"
+            if !promptField {
+                promptField := uia.FindFirst({ Type: "Edit", Name: "Enter a prompt here" })
+            }
+            
+            ; Fallback 2: Try by ClassName containing "ql-editor" or "new-input-ui" (substring match)
+            if !promptField {
+                allEdits := uia.FindAll({ Type: 50004 })
+                for edit in allEdits {
+                    if (InStr(edit.ClassName, "ql-editor") || InStr(edit.ClassName, "new-input-ui")) {
+                        if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "prompt") {
+                            promptField := edit
+                            break
+                        }
+                    }
+                }
+            }
+            
+            ; Fallback 3: Try finding by ClassName containing "ql-editor" (most specific identifier)
+            if !promptField {
+                allEdits := uia.FindAll({ Type: 50004 })
+                for edit in allEdits {
+                    if InStr(edit.ClassName, "ql-editor") {
+                        promptField := edit
+                        break
+                    }
+                }
+            }
+            
+            ; Fallback 4: Try finding by Name with substring match (in case of localization variations)
+            if !promptField {
+                allEdits := uia.FindAll({ Type: 50004 })
+                for edit in allEdits {
+                    if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "Digite um prompt") || InStr(edit.Name, "prompt") {
+                        ; Additional check to ensure it's the prompt field (has ql-editor in className)
+                        if InStr(edit.ClassName, "ql-editor") {
+                            promptField := edit
+                            break
+                        }
+                    }
+                }
+            }
+            
+            if (promptField) {
+                promptField.SetFocus()
+                Sleep 100
+                ; Ensure focus was successful
+                if (!promptField.HasKeyboardFocus) {
+                    ; Fallback: try clicking if SetFocus didn't work
+                    promptField.Click()
+                    Sleep 100
+                }
+            }
         }
-        Send("{Esc}")
     } else {
         InitializeGeminiFirstTime()
     }
