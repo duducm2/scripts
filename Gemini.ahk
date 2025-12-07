@@ -6,6 +6,10 @@
 #include UIA-v2\Lib\UIA_Browser.ahk
 #include %A_ScriptDir%\env.ahk
 
+; --- Config ---------------------------------------------------------------
+; Path to the file containing the initial prompt Gemini should receive.
+PROMPT_FILE := A_ScriptDir "\Gemini_Prompt.txt"
+
 ; --- Helper Functions --------------------------------------------------------
 
 ; Find Gemini browser window (case-insensitive contains match for "gemini")
@@ -234,12 +238,12 @@ CenterMouse() {
         try {
             ; Primary strategy: Find by Name "Pause" with Type 50000 (Button)
             pauseButton := uia.FindFirst({ Name: "Pause", Type: 50000 })
-            
+
             ; Fallback: Try by Type "Button" and Name "Pause"
             if !pauseButton {
                 pauseButton := uia.FindFirst({ Type: "Button", Name: "Pause" })
             }
-            
+
             ; Fallback: Search all buttons for one with "Pause" name and tts-button className
             if !pauseButton {
                 allButtons := uia.FindAll({ Type: 50000 })
@@ -473,21 +477,21 @@ CenterMouse() {
         WinActivate("ahk_id " hwnd)
     if !WinWaitActive("ahk_exe chrome.exe", , 2)
         return
-    
+
     ; Find the Gemini prompt field
     uia := UIA_Browser()
     Sleep 300
-    
+
     promptField := 0
-    
+
     ; Primary strategy: Find by Name "Enter a prompt here" with Type 50004 (Edit)
     promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
-    
+
     ; Fallback 1: Try by Type "Edit" and Name "Enter a prompt here"
     if !promptField {
         promptField := uia.FindFirst({ Type: "Edit", Name: "Enter a prompt here" })
     }
-    
+
     ; Fallback 2: Try by ClassName containing "ql-editor" or "new-input-ui" (substring match)
     if !promptField {
         allEdits := uia.FindAll({ Type: 50004 })
@@ -500,7 +504,7 @@ CenterMouse() {
             }
         }
     }
-    
+
     ; Fallback 3: Try finding by ClassName containing "ql-editor" (most specific identifier)
     if !promptField {
         allEdits := uia.FindAll({ Type: 50004 })
@@ -511,7 +515,7 @@ CenterMouse() {
             }
         }
     }
-    
+
     ; Fallback 4: Try finding by Name with substring match (in case of localization variations)
     if !promptField {
         allEdits := uia.FindAll({ Type: 50004 })
@@ -525,7 +529,7 @@ CenterMouse() {
             }
         }
     }
-    
+
     if (promptField) {
         ; Focus the prompt field
         promptField.SetFocus()
@@ -537,7 +541,7 @@ CenterMouse() {
             Sleep 100
         }
     }
-    
+
     searchString :=
         "Below, you will find a word or phrase. I'd like you to answer in five sections: the 1st section you will repeat the word twice. For each time you repeat, use a point to finish the phrase. The 2nd section should have the definition of the word (You should also say each part of speech does the different definitions belong to). The 3d section should have the pronunciation of this word using the Internation Phonetic Alphabet characters (for American English).The 4th section should have the same word applied in a real sentence (put that in quotations, so I can identify that). In the 5th, Write down the translation of the word into Portuguese. Please, do not title any section. Thanks!"
     A_Clipboard := searchString . "`n`nContent: " . A_Clipboard
@@ -564,26 +568,117 @@ InitializeGeminiFirstTime() {
     try {
         ; Show banner to inform user
         ShowSmallLoadingIndicator("Opening Gemini...")
-        
+
         ; Run Chrome with new window
         Run "chrome.exe --new-window https://gemini.google.com/"
         if !WinWaitActive("ahk_exe chrome.exe", , 5) {
             HideSmallLoadingIndicator()
             return
         }
-        
+
         ; Get the Gemini window handle
         geminiHwnd := WinExist("A")
         if !geminiHwnd {
             HideSmallLoadingIndicator()
             return
         }
-        
+
         ; Activate the Gemini window
         WinActivate("ahk_id " geminiHwnd)
         WinWaitActive("ahk_id " geminiHwnd, , 2)
         Sleep 200 ; Give window time to fully activate
-        
+
+        ; Update banner status
+        ShowSmallLoadingIndicator("Loading Gemini page...")
+
+        ; Wait for page to load fully
+        Sleep (IS_WORK_ENVIRONMENT ? 3500 : 7000)
+
+        ; Find and focus the Gemini prompt field
+        uia := UIA_Browser()
+        Sleep 300
+
+        promptField := 0
+
+        ; Primary strategy: Find by Name "Enter a prompt here" with Type 50004 (Edit)
+        promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
+
+        ; Fallback 1: Try by Type "Edit" and Name "Enter a prompt here"
+        if !promptField {
+            promptField := uia.FindFirst({ Type: "Edit", Name: "Enter a prompt here" })
+        }
+
+        ; Fallback 2: Try by ClassName containing "ql-editor" or "new-input-ui" (substring match)
+        if !promptField {
+            allEdits := uia.FindAll({ Type: 50004 })
+            for edit in allEdits {
+                if (InStr(edit.ClassName, "ql-editor") || InStr(edit.ClassName, "new-input-ui")) {
+                    if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "prompt") {
+                        promptField := edit
+                        break
+                    }
+                }
+            }
+        }
+
+        ; Fallback 3: Try finding by ClassName containing "ql-editor" (most specific identifier)
+        if !promptField {
+            allEdits := uia.FindAll({ Type: 50004 })
+            for edit in allEdits {
+                if InStr(edit.ClassName, "ql-editor") {
+                    promptField := edit
+                    break
+                }
+            }
+        }
+
+        ; Fallback 4: Try finding by Name with substring match (in case of localization variations)
+        if !promptField {
+            allEdits := uia.FindAll({ Type: 50004 })
+            for edit in allEdits {
+                if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "Digite um prompt") || InStr(edit.Name,
+                    "prompt") {
+                    ; Additional check to ensure it's the prompt field (has ql-editor in className)
+                    if InStr(edit.ClassName, "ql-editor") {
+                        promptField := edit
+                        break
+                    }
+                }
+            }
+        }
+
+        if (promptField) {
+            ; Focus the prompt field
+            promptField.SetFocus()
+            Sleep 100
+            ; Ensure focus was successful
+            if (!promptField.HasKeyboardFocus) {
+                ; Fallback: try clicking if SetFocus didn't work
+                promptField.Click()
+                Sleep 100
+            }
+        }
+
+        ; Update banner status
+        ShowSmallLoadingIndicator("Sending initial prompt...")
+
+        ; Read initial prompt from external file & paste it
+        promptText := ""
+        try promptText := FileRead(PROMPT_FILE, "UTF-8")
+        if (StrLen(promptText) = 0)
+            promptText := "hey, what's up?"
+
+        ; Copy–paste to handle Unicode & speed
+        oldClip := A_Clipboard
+        A_Clipboard := ""
+        A_Clipboard := promptText
+        ClipWait 1
+        Send("^v")
+        Sleep (IS_WORK_ENVIRONMENT ? 50 : 100)
+        Send("{Enter}")
+        Sleep (IS_WORK_ENVIRONMENT ? 50 : 100)
+        A_Clipboard := oldClip
+
         ; Hide banner on success
         HideSmallLoadingIndicator()
     } catch Error as err {
@@ -603,22 +698,22 @@ InitializeGeminiFirstTime() {
         if WinWaitActive("ahk_id " hwnd, , 2) {
             CenterMouse()
             Send("{Esc}")
-            
+
             ; Focus the Gemini prompt field (same logic as Shift+H)
             Sleep 300
             uia := UIA_Browser()
             Sleep 300
-            
+
             promptField := 0
-            
+
             ; Primary strategy: Find by Name "Enter a prompt here" with Type 50004 (Edit)
             promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
-            
+
             ; Fallback 1: Try by Type "Edit" and Name "Enter a prompt here"
             if !promptField {
                 promptField := uia.FindFirst({ Type: "Edit", Name: "Enter a prompt here" })
             }
-            
+
             ; Fallback 2: Try by ClassName containing "ql-editor" or "new-input-ui" (substring match)
             if !promptField {
                 allEdits := uia.FindAll({ Type: 50004 })
@@ -631,7 +726,7 @@ InitializeGeminiFirstTime() {
                     }
                 }
             }
-            
+
             ; Fallback 3: Try finding by ClassName containing "ql-editor" (most specific identifier)
             if !promptField {
                 allEdits := uia.FindAll({ Type: 50004 })
@@ -642,12 +737,13 @@ InitializeGeminiFirstTime() {
                     }
                 }
             }
-            
+
             ; Fallback 4: Try finding by Name with substring match (in case of localization variations)
             if !promptField {
                 allEdits := uia.FindAll({ Type: 50004 })
                 for edit in allEdits {
-                    if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "Digite um prompt") || InStr(edit.Name, "prompt") {
+                    if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "Digite um prompt") || InStr(edit.Name,
+                        "prompt") {
                         ; Additional check to ensure it's the prompt field (has ql-editor in className)
                         if InStr(edit.ClassName, "ql-editor") {
                             promptField := edit
@@ -656,7 +752,7 @@ InitializeGeminiFirstTime() {
                     }
                 }
             }
-            
+
             if (promptField) {
                 promptField.SetFocus()
                 Sleep 100
