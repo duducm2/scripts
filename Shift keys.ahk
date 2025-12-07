@@ -224,10 +224,10 @@ cheatSheets := Map()
 ; --- Mercado Livre (Brazil) -----------------------------------------------
 cheatSheets["Mercado Livre"] := "
 (
-Mercado Livre
-[Shift+Y] > 🔍 Focus search field
-[Shift+U] > 🛒 Carrinho de compras
-[Shift+I] > 📦 Compras feitas
+Mercado Livre (Shift)
+🔍 [S]Focus [S]earch field
+🛒 [C]arrinho de compras ([C]art)
+📦 [P]Compras feitas ([P]urchases)
 )"  ; end Mercado Livre
 
 ;---------------------------------------- Shift + keys ----------------------------------------------
@@ -423,15 +423,15 @@ Spotify (Shift)
 ; --- OneNote ---------------------------------------------------------------
 cheatSheets["ONENOTE.EXE"] := "
 (
-OneNote
-[Shift+Y] > 📉 Collapse
-[Shift+U] > 📈 Expand
-[Shift+I] > 📉 Collapse all
-[Shift+O] > 📈 Expand all
-[Shift+P] > 📝 Select line and children
-[Shift+D] > 🗑️ Delete line and children
-[Shift+S] > 🗑️ Delete line (keep children)
-[Shift+F] > 🔍 Advanced Searching with double quotes
+OneNote (Shift)
+📉 [C]ollapse
+📈 [E]xpand
+📉 [I]Collapse [A]ll
+📈 [O]Expand [A]ll
+📝 [P]Select line and children ([P]aragraph)
+🗑️ [D]elete line and children
+🗑️ [S]Delete line ([S]ingle, keep children)
+🔍 [F]Advanced [S]earching with double quotes ([F]ind)
 )"  ; end OneNote
 
 ; --- Chrome general shortcuts ----------------------------------------------
@@ -439,7 +439,7 @@ cheatSheets["chrome.exe"] := "
 (
 Chrome (Shift)
 🪟 [W]Pop current tab to new [W]indow
-🏷️ [Ctrl+Alt+Y] Name ChatGPT window as "ChatGPT"
+🏷️ [Ctrl+Alt+Y] [N]ame ChatGPT [W]indow as "ChatGPT"
 )"  ; end Chrome
 
 ; --- Cursor ------------------------------------------------------
@@ -448,25 +448,25 @@ cheatSheets["Cursor.exe"] := "
 Cursor
 
 --- CTRL Shortcuts (Cursor-defined) ---
-[Ctrl+1] > 🎯 Remove clustering and focus on the code (ahk)
-[Ctrl+2] > 📁 Copy path (cursor)
-[Ctrl+M] > 🤖 Ask (Ctrl+Alt+A), wait 6s, then paste (Shift+V) (ahk)
-[Ctrl+G] > ⚡ Kill terminal [custom in settings.json]
-[Ctrl+Y] > 📉 Fold all
-[Ctrl+U] > 📈 Unfold all
-[Ctrl+O] > 📋 Paste As...
-[Ctrl+H] > 📁 Reveal in file explorer
-[Ctrl+J] > 🔲 Select to Bracket
-[Ctrl+,] > 📉 Fold all directories
-[Ctrl+.] > 💬 Toggle chat or agent
-[Ctrl+Q] > 📈 Unfold all directories
-[Ctrl+E] > 🤖 Open Agent Window
-[Ctrl+R] > 📂 File open Recent
-[Ctrl+T] > 🔍 Go to symbol in workspace
-[Ctrl+D] > 📝 Add selection to next find match
-[Ctrl+F] > 🔍 Find
-[Ctrl+Z] > ↩️ Undo
-[Ctrl+B] > 📊 Toggle primary sidebar visibility
+🎯 [Ctrl+1] Remove clustering and focus on the code (ahk)
+📁 [Ctrl+2] Copy path (cursor)
+🤖 [Ctrl+M] Ask ([M]essage) (Ctrl+Alt+A), wait 6s, then paste (Shift+V) (ahk)
+⚡ [Ctrl+G] Kill terminal [custom in settings.json]
+📉 [Ctrl+Y] Fold all
+📈 [Ctrl+U] [U]nfold all
+📋 [Ctrl+O] Paste As... ([O]pen)
+📁 [Ctrl+H] Reveal in file explorer ([H]ome)
+🔲 [Ctrl+J] Select to Bracket ([J]ump)
+📉 [Ctrl+,] Fold all directories
+💬 [Ctrl+.] Toggle chat or agent
+📈 [Ctrl+Q] Unfold all directories ([Q]uick)
+🤖 [Ctrl+E] Open Agent [E]indow
+📂 [Ctrl+R] File open [R]ecent
+🔍 [Ctrl+T] Go to symbol in workspace ([T]ype)
+📝 [Ctrl+D] Add selection to next find match ([D]uplicate)
+🔍 [Ctrl+F] [F]ind
+↩️ [Ctrl+Z] [Z] Undo
+📊 [Ctrl+B] Toggle primary sidebar visibility ([B]ar)
 
 --- SHIFT Shortcuts (Shift) (ahk = AutoHotkey) ---
 📉 [F]old (ahk)
@@ -495,36 +495,36 @@ Cursor
 ⬆️ [B]Push (Git) (cursor)
 
 --- CTRL+ALT Shortcuts (Cursor-defined) ---
-[Ctrl+Alt+Up] > ⬆️ Go to Parent Fold
-[Ctrl+Alt+Left] > ⬅️ Go to sibling fold previous
-[Ctrl+Alt+Right] > ➡️ Go to sibling fold next
+⬆️ [Ctrl+Alt+Up] Go to [P]arent Fold
+⬅️ [Ctrl+Alt+Left] Go to sibling fold [P]revious
+➡️ [Ctrl+Alt+Right] Go to sibling fold [N]ext
 
 --- Additional Shortcuts ---
-[Ctrl + T] > 💬 New chat tab
-[Ctrl + N] > 💬 New chat tab (replacing current)
-[Alt + F12] > 👁️ Peek Definition
-[Ctrl + Shift + L] > 📝 Select all identical words
-[F2] > ✏️ Rename symbol
-[F8] > 🔍 Navigate problems
-[Ctrl + Enter] > ➕ Insert line below
-[Ctrl + P] > 🔍 Quick Open
-[Shift + Delete] > 🗑️ Delete line
-[Alt + ↑] > ⬆️ Move line up
-[Alt + ↓] > ⬇️ Move line down
-[Ctrl + 1 / Ctrl + 2 / Ctrl + 3 ...] > 🔄 Switch tabs
-[Ctrl + Alt + ↑] > ⬆️ Add cursor above
-[Ctrl + Alt + ↓] > ⬇️ Add cursor below
-[Alt + Click] > 👆 Multi-cursor by click
-[Shift + Alt + ↑] > ⬆️ Copy line up
-[Shift + Alt + ↓] > ⬇️ Copy line down
-[Ctrl + ;] > 💬 Insert comment
-[Ctrl + Home] > ⬆️ Go to top
-[Ctrl + End] > ⬇️ Go to end
-[Alt + Z] > 🔄 Toggle word wrap
-[Ctrl + Shift + D] > 🐛 Debugging
-[Ctrl + R] > 🔄 Quick project switch
-[Alt + J] > ⬇️ Next review
-[Alt + K] > ⬆️ Previous review
+💬 [Ctrl+T] [N]ew chat tab
+💬 [Ctrl+N] [N]ew chat tab (replacing current)
+👁️ [Alt+F12] [P]eek Definition
+📝 [Ctrl+Shift+L] Select all identical words ([L]ines)
+✏️ [F2] [R]ename symbol
+🔍 [F8] [N]avigate problems
+➕ [Ctrl+Enter] [I]nsert line below
+🔍 [Ctrl+P] [Q]uick [O]pen ([P]roject)
+🗑️ [Shift+Delete] [D]elete line
+⬆️ [Alt+↑] [M]ove line [U]p
+⬇️ [Alt+↓] [M]ove line [D]own
+🔄 [Ctrl+1/2/3...] [S]witch tabs
+⬆️ [Ctrl+Alt+↑] Add cursor [A]bove
+⬇️ [Ctrl+Alt+↓] Add cursor [B]elow
+👆 [Alt+Click] [M]ulti-cursor by click
+⬆️ [Shift+Alt+↑] [C]opy line [U]p
+⬇️ [Shift+Alt+↓] [C]opy line [D]own
+💬 [Ctrl+;] [I]nsert [C]omment
+⬆️ [Ctrl+Home] Go to [T]op
+⬇️ [Ctrl+End] Go to [E]nd
+🔄 [Alt+Z] Toggle word [W]rap
+🐛 [Ctrl+Shift+D] [D]ebugging
+🔄 [Ctrl+R] [Q]uick project switch ([R]eload)
+⬇️ [Alt+J] [N]ext review ([J]ump)
+⬆️ [Alt+K] [P]revious review ([K]ey)
 )"  ; end Cursor
 
 ; --- Windows Explorer ------------------------------------------------------
@@ -544,8 +544,8 @@ Explorer (Shift)
 ; --- Microsoft Paint ------------------------------------------------------
 cheatSheets["mspaint.exe"] := "
 (
-MS Paint
-[Shift+Y] > 📏 Resize and Skew (Ctrl+W)
+MS Paint (Shift)
+📏 [R]esize and [S]kew (Ctrl+W)
 
 --- Common Shortcuts ---
 [Ctrl+N] > 📄 New
@@ -572,42 +572,42 @@ MS Paint
 ; --- ClipAngel -------------------------------------------------------------
 cheatSheets["ClipAngel.exe"] := "
 (
-ClipAngel
-[Shift+Y] > 📋 Select filtered content and copy
-[Shift+U] > 🔄 Switch focus list/text
-[Shift+I] > 🗑️ Delete all non-favorite
-[Shift+O] > 🧹 Clear filters
-[Shift+P] > ⭐ Mark as favorite
-[Shift+H] > ⭐ Unmark as favorite
-[Shift+J] > ✏️ Edit text
-[Shift+K] > 💾 Save as file
-[Shift+L] > 🔗 Merge clips
+ClipAngel (Shift)
+📋 [S]elect filtered content and copy ([S]elect)
+🔄 [U]Switch focus list/text ([U]ser)
+🗑️ [D]elete all non-favorite ([D]elete)
+🧹 [C]lear filters ([C]lear)
+⭐ [F]Mark as [F]avorite
+⭐ [H]Unmark as favorite ([H]ide)
+✏️ [E]dit [E]ext
+💾 [S]ave as file ([S]ave)
+🔗 [M]erge clips ([M]erge)
 )"  ; end ClipAngel
 
 ; --- Figma -----------------------------------------------------------------
 cheatSheets["Figma.exe"] := "
 (
-Figma
-[Shift+Y] > 👁️ Show/Hide UI
-[Shift+U] > 🔍 Component search
-[Shift+I] > ⬆️ Select parent
-[Shift+O] > 🧩 Create component
-[Shift+P] > 🔗 Detach instance
-[Shift+H] > 📐 Add auto layout
-[Shift+J] > 📐 Remove auto layout
-[Shift+K] > 💡 Suggest auto layout
-[Shift+L] > 📤 Export
-[Shift+N] > 🖼️ Copy as PNG
-[Shift+M] > ⚡ Actions...
-[Shift+,] > ⬅️ Align left
-[Shift+.] > ➡️ Align right
-[Shift+W] > 📏 Distribute vertical spacing
-[Shift+E] > 🧹 Tidy up
-[Shift+R] > ⬆️ Align top
-[Shift+T] > ⬇️ Align bottom
-[Shift+D] > ↔️ Align center horizontal
-[Shift+F] > ↕️ Align center vertical
-[Shift+G] > 📏 Distribute horizontal spacing
+Figma (Shift)
+👁️ [U]Show/[H]ide [U]I
+🔍 [S]earch ([S]earch component)
+⬆️ [P]Select [P]arent
+🧩 [C]reate [C]omponent
+🔗 [D]etach instance ([D]etach)
+📐 [A]dd [A]uto layout
+📐 [R]emove auto layout ([R]emove)
+💡 [S]uggest auto layout ([S]uggest)
+📤 [E]xport
+🖼️ [C]opy as [P]NG ([C]opy)
+⚡ [A]ctions... ([A]ctions)
+⬅️ [L]Align [L]eft
+➡️ [R]Align [R]ight
+📏 [V]Distribute [V]ertical spacing
+🧹 [T]idy up ([T]idy)
+⬆️ [T]Align [T]op
+⬇️ [B]Align [B]ottom
+↔️ [H]Align center [H]orizontal
+↕️ [V]Align center [V]ertical
+📏 [H]Distribute [H]orizontal spacing
 )"  ; end Figma
 
 ; --- Gmail ---------------------------------------------------------------
@@ -739,9 +739,9 @@ Application (shortcuts on):
 ; --- Google Keep ---------------------------------------------------------------
 cheatSheets["Google Keep"] := "
 (
-Google Keep
-[Shift+Y] > 🔍 Search and select note
-[Shift+U] > 📋 Toggle main menu
+Google Keep (Shift)
+🔍 [S]earch and select [S]ote
+📋 [M]Toggle [M]ain menu
 )"  ; end Google Keep
 
 ; --- File Dialog ---------------------------------------------------------------
@@ -765,76 +765,75 @@ cheatSheets["Settings"] := "(Settings (Shift))`r`n🔊 [V]Set input [V]olume to 
 ; --- Command Palette -------------------------------------------------
 cheatSheets["Command Palette"] := "
 (
-Command Palette
-[Ctrl+H] > ⌨️ Open in folder (Ctrl+Shift+E)
-[Shift+K] > ⌨️ Copy file path (Ctrl+Shift+C)
-[Shift+Y] > ⌨️ Send ten backspaces
-[Shift+U] > ⌨️ Precise search
-[Shift+I] > ⌨️ Add favorit
-[Ctrl+1] > ⌨️ Select current item (Enter)
-[Ctrl+2] > ⌨️ Move down once and select
-[Ctrl+3] > ⌨️ Move down twice and select
-[Ctrl+4] > ⌨️ Move down three times and select
-[Ctrl+5] > ⌨️ Move down four times and select
-[Ctrl+6] > ⌨️ Move down five times and select
+Command Palette (Shift)
+⌨️ [Ctrl+H] [O]pen in folder ([O]pen)
+⌨️ [K]opy file [P]ath ([K]opy)
+⌨️ [Y]Send ten backspaces ([Y]es/clear)
+⌨️ [U]Precise [S]earch ([U]ser)
+⌨️ [I]Add [F]avorite ([I]nsert)
+⌨️ [Ctrl+1] [S]elect current item ([S]elect)
+⌨️ [Ctrl+2] [M]ove down once and select ([M]ove)
+⌨️ [Ctrl+3] [M]ove down twice and select ([M]ove)
+⌨️ [Ctrl+4] [M]ove down three times and select ([M]ove)
+⌨️ [Ctrl+5] [M]ove down four times and select ([M]ove)
+⌨️ [Ctrl+6] [M]ove down five times and select ([M]ove)
 )"
 
 ; --- Excel ------------------------------------------------------------
 cheatSheets["EXCEL.EXE"] := "
 (
-Excel
-[Shift+Y] > ⚪ Select White Color
-[Shift+U] > ✏️ Enable Editing
-[Shift+I] > 📊 Turn CSV delimited by semicolon into columns
+Excel (Shift)
+⚪ [W]Select [W]hite Color
+✏️ [E]nable [E]diting
+📊 [C]Turn [C]SV delimited by semicolon into columns
 )"
 
 ; --- Power BI ------------------------------------------------------------
 cheatSheets["Power BI"] := "
 (
-Power BI
-[Shift+Y] > 📊 Transform data
-[Shift+U] > 📊 Close and apply
-[Shift+I] > 📊 Report view
-[Shift+O] > 📊 Table view
-[Shift+P] > 📊 Model view
-[Shift+H] > 📊 Build visual
-[Shift+J] > 📊 Format visual
-[Shift+K] > 🔍 Select search edit field
-[Shift+L] > ✅ OK/Confirm modal button
-[Shift+N] > ❌ Cancel/Exit modal button
-[Shift+M] > 🖱️ Right-click Previous pages button
-[Shift+,] > 📋 Filter pane collapse/expand
-[Shift+.] > 🎨 Visualizations pane toggle
-[Shift+W] > ➕ New page
-[Shift+E] > 📊 New measure
-[Shift+F] > 📕 CloseAllDrawers
-[Shift+G] > 📖 OpenAllDrawers
-[Shift+R] > 📁 Collapse Fields tables
-[Shift+Q] > 📊 Data pane toggle
+Power BI (Shift)
+📊 [T]ransform [D]ata
+📊 [C]lose and [A]pply
+📊 [R]eport view
+📊 [T]able view
+📊 [M]odel view
+📊 [B]uild [V]isual
+📊 [F]ormat visual ([F]ormat)
+🔍 [S]elect [S]earch edit field
+✅ [O]K/Confirm modal button ([O]K)
+❌ [C]ancel/Exit modal button ([C]ancel)
+🖱️ [P]revious pages button ([P]revious)
+📋 [F]ilter pane collapse/expand ([F]ilter)
+🎨 [V]isualizations pane toggle ([V]isualizations)
+➕ [N]ew [P]age
+📊 [M]New [M]easure
+📕 [C]loseAll[D]rawers ([C]lose)
+📖 [O]penAll[D]rawers ([O]pen)
+📁 [C]ollapse [F]ields tables ([C]ollapse)
+📊 [D]ata pane toggle ([D]ata)
 )"
 
 ; --- UIA Tree Inspector -------------------------------------------------
 cheatSheets["UIATreeInspector"] :=
-"(UIA Tree Inspector)`r`n[Shift+Y] > 🔄 Refresh list`r`n[Shift+U] > 🔍 Focus filter field"
+"(UIA Tree Inspector (Shift))`r`n🔄 [R]efresh [R]ist`r`n🔍 [F]ocus [F]ilter field"
 ; --- SettleUp Shortcuts -----------------------------------------------------
 cheatSheets["Settle Up"] := "
 (
-Settle Up
-[Shift+Y] > ➕ Add transaction
-[Shift+U] > 📝 Focus expense name field
-[Shift+I] > 💰 Focus expense value field
+Settle Up (Shift)
+➕ [A]dd [T]ransaction
+📝 [N]Focus expense [N]ame field
+💰 [V]Focus expense [V]alue field
 )"
 
 ; --- Miro Shortcuts -----------------------------------------------------
 cheatSheets["Miro"] := "
 (
-Miro
-[Shift+U] > 📋 Frame list
-[Shift+I] > 🔗 Group
-[Shift+O] > 🔗 Ungroup
-[Shift+P] > 🔒 Lock/Unlock
-[Shift+H] > 🔗 Add/Edit link
-Q
+Miro (Shift)
+📋 [F]rame [L]ist
+🔗 [G]roup
+🔗 [U]ngroup ([U]ngroup)
+🔒 [L]ock/Unlock ([L]ock)
+🔗 [L]Add/Edit [L]ink
 --- Built-in Shortcuts (Windows) ---
 Tools:
 [V / H] > Select tool / Hand
@@ -919,8 +918,61 @@ Desktop app:
 ; --- Wikipedia ---------------------------------------------------------------
 cheatSheets["Wikipedia"] := "
 (
-Wikipedia
-[Shift+Y] > 🔍 Click search button
+Wikipedia (Shift)
+🔍 [S]Click [S]earch button
+)"
+
+; --- YouTube ---------------------------------------------------------------
+cheatSheets["YouTube"] := "
+(
+YouTube (Shift)
+🔍 [S]Focus [S]earch box
+🎬 [U]Focus first video via Search filters
+🎬 [I]Focus first video via [I]Explore
+)"
+
+; --- Google Search ---------------------------------------------------------------
+cheatSheets["Google"] := "
+(
+Google (Shift)
+🔍 [S]Focus [S]earch box
+)"
+
+; --- ChatGPT ---------------------------------------------------------------
+cheatSheets["ChatGPT"] := "
+(
+ChatGPT (Shift)
+📂 [I]Toggle s[I]debar
+🔄 [O]Re-send rules
+📋 [H]Copy code [H]lock
+⬇️ [J]Go [J]own
+🤖 [L]Send and show AI [L]anner
+)"
+
+; --- Mobills ---------------------------------------------------------------
+cheatSheets["Mobills"] := "
+(
+Mobills (Shift)
+
+--- Navigation ---
+📊 [D]ashboard
+💳 [A]ccounts ([A]ccounts)
+💰 [T]ransactions ([T]ransações)
+💳 [C]redit [C]ards ([C]artões de crédito)
+📅 [P]lanning ([P]lanejamento)
+📈 [R]eports ([R]elatórios)
+⚙️ [M]ore [M]enu ([M]ais opções)
+⬅️ [K]Previous [K]onth
+➡️ [L]Next [L]onth
+
+--- Actions ---
+🚫 [N]Ignore [N]ransaction
+✏️ [M]Name [M]ield
+💸 [E]New [E]xpense
+💵 [R]New [R]ncome
+💳 [T]New [C]redit [E]xpense
+🔄 [D]New [T]ransfer ([D]eposit)
+🔘 [W]Open button + type MAIN ([W]indow)
 )"
 
 ; ========== Helper to decide which sheet applies ===========================
@@ -974,16 +1026,13 @@ GetCheatSheetText() {
         if InStr(chromeTitle, "Gmail")
             appShortcuts := cheatSheets.Has("Gmail") ? cheatSheets["Gmail"] : ""
         if InStr(chromeTitle, "chatgpt")
-            appShortcuts :=
-                "ChatGPT`r`n[Shift+I] > Toggle sidebar`r`n[Shift+O] > Re-send rules`r`n[Shift+H] > Copy code block`r`n[Shift+J] > Go down`r`n[Shift+L] > Send and show AI banner"
+            appShortcuts := cheatSheets.Has("ChatGPT") ? cheatSheets["ChatGPT"] : ""
         if InStr(chromeTitle, "Mobills")
-            appShortcuts :=
-                "Mobills - Navigation`r`n[Shift+Y] > Dashboard`r`n[Shift+U] > Contas`r`n[Shift+I] > TransaÃ§Ãµes`r`n[Shift+O] > CartÃµes de crÃ©dito`r`n[Shift+P] > Planejamento`r`n[Shift+H] > RelatÃ³rios`r`n[Shift+J] > Mais opÃ§Ãµes`r`n[Shift+K] > Previous month`r`n[Shift+L] > Next month`r`n`r`nMobills - Actions`r`n[Shift+N] > Ignore transaction`r`n[Shift+M] > Name field`r`n[Shift+E] > New Expense`r`n[Shift+R] > New Income`r`n[Shift+T] > New Credit expense`r`n[Shift+D] > New Transfer`r`n[Shift+W] > Open button + type MAIN"
+            appShortcuts := cheatSheets.Has("Mobills") ? cheatSheets["Mobills"] : ""
         if InStr(chromeTitle, "Google Keep") || InStr(chromeTitle, "keep.google.com")
             appShortcuts := cheatSheets.Has("Google Keep") ? cheatSheets["Google Keep"] : ""
         if InStr(chromeTitle, "YouTube")
-            appShortcuts :=
-                "YouTube`r`n[Shift+Y] > Focus search box`r`n[Shift+U] > Focus first video via Search filters`r`n[Shift+I] > Focus first video via Explore"
+            appShortcuts := cheatSheets.Has("YouTube") ? cheatSheets["YouTube"] : ""
         if InStr(chromeTitle, "UIATreeInspector")
             appShortcuts := cheatSheets["UIATreeInspector"]
         if InStr(chromeTitle, "Settle Up")
@@ -1000,7 +1049,7 @@ GetCheatSheetText() {
         ; Only set generic Google sheet if nothing else matched and title clearly indicates Google site
         if (appShortcuts = "") {
             if (chromeTitle = "Google" || InStr(chromeTitle, " - Google Search"))
-                appShortcuts := "Google`r`n[Shift+Y] > Focus search box"
+                appShortcuts := cheatSheets.Has("Google") ? cheatSheets["Google"] : ""
         }
 
         ; Combine Chrome general + app-specific shortcuts
