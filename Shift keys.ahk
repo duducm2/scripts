@@ -8327,6 +8327,62 @@ FindMonthGroup(uia) {
 #HotIf
 
 ;-------------------------------------------------------------------
+; Gemini Website Shortcuts
+;-------------------------------------------------------------------
+#HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "gemini", false)
+
+; Shift + Y : Click the Main menu button (Collapse menu button)
++y:: {
+    try {
+        uia := UIA_Browser()
+        Sleep 300
+
+        ; Primary strategy: Find by Name "Main menu" with Type 50000 (Button)
+        mainMenuButton := uia.FindFirst({ Name: "Main menu", Type: 50000 })
+
+        ; Fallback 1: Try by Type and ClassName containing "main-menu-button" (substring match)
+        if !mainMenuButton {
+            allButtons := uia.FindAll({ Type: 50000 })
+            for button in allButtons {
+                if InStr(button.ClassName, "main-menu-button") {
+                    mainMenuButton := button
+                    break
+                }
+            }
+        }
+
+        ; Fallback 2: Try by Type "Button" and Name "Main menu"
+        if !mainMenuButton {
+            mainMenuButton := uia.FindFirst({ Type: "Button", Name: "Main menu" })
+        }
+
+        ; Fallback 3: Try finding by Name with substring match (in case of localization variations)
+        if !mainMenuButton {
+            allButtons := uia.FindAll({ Type: 50000 })
+            for button in allButtons {
+                if InStr(button.Name, "Main menu") || InStr(button.Name, "Menu principal") {
+                    mainMenuButton := button
+                    break
+                }
+            }
+        }
+
+        if (mainMenuButton) {
+            mainMenuButton.Click()
+        } else {
+            ; Last resort: Try keyboard navigation (may vary depending on Gemini's keyboard shortcuts)
+            ; This is a fallback in case UIA methods fail
+            Send "{Escape}"
+        }
+    } catch Error as e {
+        ; If all else fails, try Escape key as fallback
+        Send "{Escape}"
+    }
+}
+
+#HotIf
+
+;-------------------------------------------------------------------
 ; Google Search Shortcuts
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "Google")
