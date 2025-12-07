@@ -1058,26 +1058,6 @@ EnsureMicVolume100() {
     }
 }
 
-; =============================================================================
-; Toggle Dictation (No Auto-Send) - WITH AUTO-RESTART
-; Hotkey: Win+Alt+Shift+0
-; Original File: ChatGPT - Toggle microphone.ahk
-; =============================================================================
-#!+0::
-{
-    HandleDictationToggleWithAutoRestart(false)
-}
-
-; =============================================================================
-; Toggle Dictation (with Auto-Send) - WITH AUTO-RESTART
-; Hotkey: Win+Alt+Shift+7
-; Original File: ChatGPT - Speak.ahk
-; =============================================================================
-#!+7::
-{
-    HandleDictationToggleWithAutoRestart(true)
-}
-
 ToggleDictation(autoSend, source := "manual") {
     static isDictating := false
     global g_transcribeChimePending
