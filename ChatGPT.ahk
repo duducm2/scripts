@@ -1895,24 +1895,10 @@ SidebarVisible(uiRoot, names) {
 }
 
 ; =============================================================================
-; Send Ctrl+A, Sleep, Ctrl+X to ChatGPT
-; Hotkey: Win+Alt+Shift+J
+; Empty
 ; =============================================================================
 #!+j::
 {
-    SetTitleMatchMode(2)
-    if hwnd := GetChatGPTWindowHwnd()
-        WinActivate("ahk_id " hwnd)
-    if WinWaitActive("ahk_exe chrome.exe", , 2) {
-        Send("{Esc}")
-        Send("F")
-        Send("{Backspace}")
-        Sleep(100)
-        Send("^a")
-        Sleep(100)
-        Send("^x")
-        Send("!{Tab}")
-    }
 }
 
 ; =============================================================================

@@ -1181,7 +1181,7 @@ r=== CLIP ANGEL ===
 [Win+Alt+Shift+8] > Get word pronunciation, definition, and Portuguese translation
 [Win+Alt+Shift+0] > Voice-to-text
 [Win+Alt+Shift+7] > Empty
-[Win+Alt+Shift+J] > Copy last ChatGPT message (in the editing box)
+[Win+Alt+Shift+J] > Empyt
 [Win+Alt+Shift+O] > Check grammar and improve text in both English and Portuguese
 [Win+Alt+Shift+I] > Opens ChatGPT
 [Win+Alt+Shift+L] > Talk with ChatGPT through voice
