@@ -996,6 +996,8 @@ GetCheatSheetText() {
             appShortcuts := cheatSheets.Has("Wikipedia") ? cheatSheets["Wikipedia"] : ""
         if InStr(chromeTitle, "Mercado Livre", false)
             appShortcuts := cheatSheets.Has("Mercado Livre") ? cheatSheets["Mercado Livre"] : ""
+        if InStr(chromeTitle, "gemini", false)
+            appShortcuts := "Gemini`r`n[Shift+Y] > Toggle the drawer"
         ; Only set generic Google sheet if nothing else matched and title clearly indicates Google site
         if (appShortcuts = "") {
             if (chromeTitle = "Google" || InStr(chromeTitle, " - Google Search"))
