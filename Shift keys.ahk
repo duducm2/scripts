@@ -8362,7 +8362,7 @@ FindMonthGroup(uia) {
         }
 
         ; Step 2: Get the parent of the "Fast" button
-        parentElement := fastButton.GetParent()
+        parentElement := UIA.TreeWalkerTrue.TryGetParentElement(fastButton)
         if (!parentElement) {
             MsgBox "Could not find parent element of 'Fast' button.", "Google Gemini", "IconX"
             return
