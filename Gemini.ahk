@@ -24,6 +24,47 @@ GetGeminiWindowHwnd() {
     return 0
 }
 
+; =============================================================================
+; Unified banner builder – consistent shape/font/opacity for all banners here
+; =============================================================================
+CreateCenteredBanner(message, bgColor := "3772FF", fontColor := "FFFFFF", fontSize := 24, alpha := 178) {
+    bGui := Gui()
+    bGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
+    bGui.BackColor := bgColor
+    bGui.SetFont("s" . fontSize . " c" . fontColor . " Bold", "Segoe UI")
+    bGui.Add("Text", "w500 Center", message)
+
+    activeWin := WinGetID("A")
+    if (activeWin) {
+        WinGetPos(&winX, &winY, &winW, &winH, activeWin)
+    } else {
+        workArea := SysGet.MonitorWorkArea(SysGet.MonitorPrimary)
+        winX := workArea.Left, winY := workArea.Top, winW := workArea.Right - workArea.Left, winH := workArea.Bottom -
+            workArea.Top
+    }
+
+    bGui.Show("AutoSize Hide")
+    guiW := 0, guiH := 0
+    bGui.GetPos(, , &guiW, &guiH)
+
+    guiX := winX + (winW - guiW) / 2
+    guiY := winY + (winH - guiH) / 2
+    bGui.Show("x" . Round(guiX) . " y" . Round(guiY) . " NA")
+    WinSetTransparent(alpha, bGui)
+    return bGui
+}
+
+; =============================================================================
+; Helper function to show a notification on the active window
+; =============================================================================
+ShowNotification(message, durationMs := 500, bgColor := "FFFF00", fontColor := "000000", fontSize := 24) {
+    notificationGui := CreateCenteredBanner(message, bgColor, fontColor, fontSize, 178)
+    Sleep(durationMs)
+    if IsObject(notificationGui) && notificationGui.Hwnd {
+        notificationGui.Destroy()
+    }
+}
+
 ; --- Hotkeys ----------------------------------------------------------------
 
 ; Win+Alt+Shift+7 : Read aloud the last message in Gemini (activates Gemini window first, then clicks last "Show more options" then "Text to speech")
@@ -147,6 +188,86 @@ GetGeminiWindowHwnd() {
             textToSpeechMenuItem.Click()
         } else {
             ; Last resort: Could not find "Text to speech" menu item
+        }
+    } catch Error as e {
+        ; If all else fails, silently fail (no fallback action defined)
+    }
+}
+
+; Win+Alt+Shift+J : Click the last Copy button in Gemini (activates Gemini window first, then copies the preceding message)
+#!+j:: {
+    try {
+        ; Step 1: Activate Gemini window globally
+        SetTitleMatchMode(2)
+        if hwnd := GetGeminiWindowHwnd()
+            WinActivate("ahk_id " hwnd)
+        if !WinWaitActive("ahk_exe chrome.exe", , 2) {
+            return
+        }
+        Sleep 300
+
+        ; Step 2: Find all Copy buttons
+        uia := UIA_Browser()
+        Sleep 300
+
+        allCopyButtons := []
+
+        ; Primary strategy: Find all buttons with Name "Copy"
+        allButtons := uia.FindAll({ Type: 50000 })
+        for button in allButtons {
+            if (button.Name = "Copy" || InStr(button.Name, "Copy", false) = 1) {
+                ; Additional check: ensure it has the Copy button className pattern
+                if (InStr(button.ClassName, "icon-button") || InStr(button.ClassName, "mdc-button")) {
+                    allCopyButtons.Push(button)
+                }
+            }
+        }
+
+        ; Fallback: Try by Type "Button" if the above didn't find enough
+        if (allCopyButtons.Length = 0) {
+            allButtons := uia.FindAll({ Type: "Button" })
+            for button in allButtons {
+                if (button.Name = "Copy" || InStr(button.Name, "Copy", false) = 1) {
+                    allCopyButtons.Push(button)
+                }
+            }
+        }
+
+        if (allCopyButtons.Length = 0) {
+            ; No Copy buttons found
+            return
+        }
+
+        ; Find the last Copy button (the one with the highest Y position, meaning furthest down the page)
+        lastCopyButton := 0
+        highestY := -1
+
+        for copyButton in allCopyButtons {
+            try {
+                btnPos := copyButton.Location
+                btnBottomY := btnPos.y + btnPos.h
+
+                ; The last button will be the one with the highest bottom Y coordinate
+                if (btnBottomY > highestY) {
+                    highestY := btnBottomY
+                    lastCopyButton := copyButton
+                }
+            } catch {
+                ; If getting location fails, skip this button
+            }
+        }
+
+        ; If position-based approach didn't work, just use the last one in the array
+        if (!lastCopyButton && allCopyButtons.Length > 0) {
+            lastCopyButton := allCopyButtons[allCopyButtons.Length]
+        }
+
+        if (lastCopyButton) {
+            lastCopyButton.Click()
+            ; Show notification banner when copy button is clicked
+            ShowNotification("Copied!", 800, "FFFF00", "000000", 24)
+        } else {
+            ; Last resort: Could not find last Copy button
         }
     } catch Error as e {
         ; If all else fails, silently fail (no fallback action defined)
