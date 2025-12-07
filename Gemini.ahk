@@ -65,6 +65,46 @@ ShowNotification(message, durationMs := 500, bgColor := "FFFF00", fontColor := "
     }
 }
 
+; =============================================================================
+; Copy completed chime (single beep, debounced)
+; =============================================================================
+PlayCopyCompletedChime() {
+    try {
+        static lastTick := 0
+        if (A_TickCount - lastTick < 1500)
+            return
+        lastTick := A_TickCount
+
+        played := false
+        ; Prefer Windows MessageBeep (reliable through default output)
+        try {
+            rc := DllCall("User32\\MessageBeep", "UInt", 0xFFFFFFFF)
+            if (rc)
+                played := true
+        } catch {
+            ; Silently ignore errors
+        }
+
+        ; Fallback to system asterisk sound
+        if !played {
+            try {
+                played := SoundPlay("*64", false)
+            } catch {
+                ; Silently ignore errors
+            }
+        }
+
+        ; Last resort, attempt the classic beep
+        if !played {
+            try SoundBeep(1100, 130)
+            catch {
+            }
+        }
+    } catch {
+        ; Silently ignore errors
+    }
+}
+
 ; --- Hotkeys ----------------------------------------------------------------
 
 ; Win+Alt+Shift+7 : Read aloud the last message in Gemini (activates Gemini window first, then clicks last "Show more options" then "Text to speech")
@@ -301,6 +341,8 @@ ShowNotification(message, durationMs := 500, bgColor := "FFFF00", fontColor := "
 
         if (lastCopyButton) {
             lastCopyButton.Click()
+            ; Play chime when copy completes
+            PlayCopyCompletedChime()
             ; Show notification banner when copy button is clicked
             ShowNotification("Copied!", 800, "FFFF00", "000000", 24)
             ; Return to previous window

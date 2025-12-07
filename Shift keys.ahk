@@ -1166,7 +1166,6 @@ ShowGlobalShortcutsHelp() {
 
 === AVAILABLE (unused) ===
 [Win+Alt+Shift+P] 
-[Win+Alt+Shift+U]
 
 === CURSOR ===
 [Win+Alt+Shift+N] > Opens or activates Cursor (habits, home, punctual, or work windows)
@@ -1223,6 +1222,7 @@ r=== CLIP ANGEL ===
 [Win+Alt+Shift+M] > Maximizes the current window
 
 === GENERAL ===
+[Win+Alt+Shift+U] > Quick string shortcuts
 [Win+Alt+Shift+Q] > Jump mouse on the middle
 [Win+Alt+Shift+X] > Activate hunt and Peck
 [Win+Alt+Shift+→] > Show square selector (right direction)
