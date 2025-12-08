@@ -41,8 +41,6 @@ Run GetScriptPath("Shift keys.ahk")
 Run GetScriptPath("Gemini.ahk")
 Run GetScriptPath("AppLaunchers.ahk")
 Run GetScriptPath("Spotify.ahk")
-Run GetScriptPath("Hotstrings.ahk")
-Run GetScriptPath("ChatGPT.ahk")
 Run GetScriptPath("WindowManagement.ahk")
 Run GetScriptPath("Utils.ahk")
 

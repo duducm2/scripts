@@ -23,7 +23,6 @@ SetTitleMatchMode 2
 #include %A_ScriptDir%\env.ahk
 #include UIA-v2\Lib\UIA.ahk
 #include UIA-v2\Lib\UIA_Browser.ahk
-#include %A_ScriptDir%\Hotstrings.ahk
 
 ; --- Global Variables ---
 global smallLoadingGuis_ChatGPT := []
