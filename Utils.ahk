@@ -2478,7 +2478,7 @@ ShowHotstringSelector() {
 !+W::
 {
     ; Send Alt+Shift+W again
-    Send "!+w"
+    Send "!+f"
     ; Show message box
 
     Sleep 100
