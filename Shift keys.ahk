@@ -430,25 +430,21 @@ Cursor
 📈 [Ctrl+U] [U]nfold all
 📋 [Ctrl+O] Paste As... ([O]pen)
 📁 [Ctrl+H] Reveal in file explorer ([H]ome)
-🔲 [Ctrl+J] Select to Bracket ([J]ump)
+🔲 [Ctrl+J] Select to Bracket
 📉 [Ctrl+,] Fold all directories
 💬 [Ctrl+.] Toggle chat or agent
-📈 [Ctrl+Q] Unfold all directories ([Q]uick)
-🤖 [Ctrl+E] Open Agent [E]indow
+📈 [Ctrl+Q] Unfold all directories
+🤖 [Ctrl+E] Open Agent
 📂 [Ctrl+R] File open [R]ecent
 🔍 [Ctrl+T] Go to symbol in workspace ([T]ype)
-💬 [Ctrl+T] [N]ew chat tab
 💬 [Ctrl+N] [N]ew chat tab (replacing current)
 ➕ [Ctrl+Enter] [I]nsert line below
-🔍 [Ctrl+P] [Q]uick [O]pen ([P]roject)
-🔄 [Ctrl+1/2/3...] [S]witch tabs
-💬 [Ctrl+;] [I]nsert [C]omment
-⬆️ [Ctrl+Home] Go to [T]op
-⬇️ [Ctrl+End] Go to [E]nd
-🔄 [Ctrl+R] [Q]uick project switch ([R]eload)
+🔍 [Ctrl+P] Open ([P]roject)
+🔄 [Ctrl+1/2/3...] Switch tabs
+💬 [Ctrl+;] Insert comment
 📝 [Ctrl+D] Add selection to next find match ([D]uplicate)
 🔍 [Ctrl+F] [F]ind
-↩️ [Ctrl+Z] [Z] Undo
+↩️ [Ctrl+Z] Undo
 📊 [Ctrl+B] Toggle primary sidebar visibility ([B]ar)
 
 --- SHIFT Shortcuts (Shift) (ahk = AutoHotkey) ---
