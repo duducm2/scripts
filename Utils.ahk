@@ -2045,9 +2045,9 @@ global g_HotstringCharMap := Map()  ; Maps character to expansion text
 global g_HotstringHotkeyHandlers := []  ; Store hotkey handlers for cleanup
 
 ; Character sequence for assignment (by category)
-; Prompts: q-w-e-r-t-y-u, General: a-s-d, Projects: 1-8
-global g_HotstringCharSequence := ["q", "w", "e", "r", "t", "y", "u", "a", "s", "d", "1", "2", "3", "4", "5", "6", "7",
-    "8"]
+; Character sequence for assignment: 12345qwertasdfgzxcvb 67890yuiophjklnm,.
+global g_HotstringCharSequence := ["1", "2", "3", "4", "5", "q", "w", "e", "r", "t", "a", "s", "d", "f", "g", "z", "x",
+    "c", "v", "b", " ", "6", "7", "8", "9", "0", "y", "u", "i", "o", "p", "h", "j", "k", "l", "n", "m", ",", "."]
 
 ; Category display order (Prompts first, General second, Projects last)
 global g_HotstringCategories := ["Prompts", "General", "Projects"]
@@ -2283,11 +2283,53 @@ ShowHotstringSelector() {
 
     displayText .= "Press Escape to cancel."
 
+    ; Get active window's monitor to calculate appropriate sizes and position
+    activeWin := 0
+    try {
+        activeWin := WinGetID("A")
+    } catch {
+        activeWin := 0
+    }
+
+    ; Default to primary monitor work area
+    MonitorGetWorkArea(1, &monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
+    monitorWidth := monitorRight - monitorLeft
+    monitorHeight := monitorBottom - monitorTop
+
+    ; If we have an active window, find which monitor contains its center
+    if (activeWin && activeWin != 0) {
+        rect := Buffer(16, 0)
+        if (DllCall("GetWindowRect", "ptr", activeWin, "ptr", rect)) {
+            ; Calculate window center
+            winLeft := NumGet(rect, 0, "int")
+            winTop := NumGet(rect, 4, "int")
+            winRight := NumGet(rect, 8, "int")
+            winBottom := NumGet(rect, 12, "int")
+
+            centerX := winLeft + (winRight - winLeft) // 2
+            centerY := winTop + (winBottom - winTop) // 2
+
+            ; Find which monitor contains the window center
+            monitorCount := MonitorGetCount()
+            loop monitorCount {
+                idx := A_Index
+                MonitorGetWorkArea(idx, &l, &t, &r, &b)
+                if (centerX >= l && centerX <= r && centerY >= t && centerY <= b) {
+                    monitorLeft := l
+                    monitorTop := t
+                    monitorRight := r
+                    monitorBottom := b
+                    monitorWidth := r - l
+                    monitorHeight := b - t
+                    break
+                }
+            }
+        }
+    }
+
     ; Add scrollable text control with all content
-    ; Use a fixed height and enable scrolling
-    MonitorGetWorkArea(1, &ml, &mt, &mr, &mb)
-    screenHeight := mb - mt
-    textControlHeight := Floor(screenHeight * 0.65)  ; Use 65% of screen height for content
+    ; Use a fixed height and enable scrolling (65% of monitor height)
+    textControlHeight := Floor(monitorHeight * 0.65)
 
     g_HotstringSelectorGui.AddEdit("w600 h" . textControlHeight . " ReadOnly -VScroll", displayText)
 
@@ -2296,9 +2338,24 @@ ShowHotstringSelector() {
 
     ; Calculate total height: margins + instruction + spacer + text control + button + spacing
     totalHeight := 20 + 30 + 10 + textControlHeight + 40 + 20  ; margins + instruction + spacer + content + button + spacing
+    guiWidth := 620
 
-    ; Show GUI with calculated height
-    g_HotstringSelectorGui.Show("w620 h" . totalHeight)
+    ; Calculate center position for the GUI
+    guiX := monitorLeft + (monitorWidth - guiWidth) // 2
+    guiY := monitorTop + (monitorHeight - totalHeight) // 2
+
+    ; Ensure the GUI stays within monitor bounds
+    if (guiX < monitorLeft)
+        guiX := monitorLeft
+    if (guiY < monitorTop)
+        guiY := monitorTop
+    if (guiX + guiWidth > monitorLeft + monitorWidth)
+        guiX := monitorLeft + monitorWidth - guiWidth
+    if (guiY + totalHeight > monitorTop + monitorHeight)
+        guiY := monitorTop + monitorHeight - totalHeight
+
+    ; Show GUI centered on the active window's monitor
+    g_HotstringSelectorGui.Show("w" . guiWidth . " h" . totalHeight . " x" . guiX . " y" . guiY)
 
     ; Set active flag
     g_HotstringSelectorActive := true
