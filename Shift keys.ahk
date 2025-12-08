@@ -422,30 +422,30 @@ cheatSheets["Cursor.exe"] := "
 Cursor
 
 --- CTRL Shortcuts (Cursor-defined) ---
-🎯 [Ctrl+1] Remove clustering and focus on the code (ahk)
-📁 [Ctrl+2] Copy path (cursor)
-🤖 [Ctrl+M] Ask ([M]essage) (Ctrl+Alt+A), wait 6s, then paste (Shift+V) (ahk)
-⚡ [Ctrl+G] Kill terminal [custom in settings.json]
-📉 [Ctrl+Y] Fold all
-📈 [Ctrl+U] [U]nfold all
-📋 [Ctrl+O] Paste As... ([O]pen)
-📁 [Ctrl+H] Reveal in file explorer ([H]ome)
-🔲 [Ctrl+J] Select to Bracket
-📉 [Ctrl+,] Fold all directories
-💬 [Ctrl+.] Toggle chat or agent
-📈 [Ctrl+Q] Unfold all directories
-🤖 [Ctrl+E] Open Agent
-📂 [Ctrl+R] File open [R]ecent
-🔍 [Ctrl+T] Go to symbol in workspace ([T]ype)
-💬 [Ctrl+N] [N]ew chat tab (replacing current)
-➕ [Ctrl+Enter] [I]nsert line below
-🔍 [Ctrl+P] Open ([P]roject)
-🔄 [Ctrl+1/2/3...] Switch tabs
-💬 [Ctrl+;] Insert comment
-📝 [Ctrl+D] Add selection to next find match ([D]uplicate)
-🔍 [Ctrl+F] [F]ind
-↩️ [Ctrl+Z] Undo
-📊 [Ctrl+B] Toggle primary sidebar visibility ([B]ar)
+🎯 [1] Remove clustering and focus on the code (ahk)
+📁 [2] Copy path (cursor)
+🤖 [M] Ask ([M]essage), wait 6s, then paste (Shift+V) (ahk)
+⚡ [G] Kill terminal [custom in settings.json]
+📉 [Y] Fold all
+📈 [U] [U]nfold all
+📋 [O] Paste As... ([O]pen)
+📁 [H] Reveal in file explorer ([H]ome)
+🔲 [J] Select to Bracket
+📉 [,] Fold all directories
+💬 [.] Toggle chat or agent
+📈 [Q] Unfold all directories
+🤖 [E] Open Agent
+📂 [R] File open [R]ecent
+🔍 [T] Go to symbol in workspace ([T]ype)
+💬 [N] [N]ew chat tab (replacing current)
+➕ [Enter] [I]nsert line below
+🔍 [P] Open ([P]roject)
+🔄 [1/2/3...] Switch tabs
+💬 [;] Insert comment
+📝 [D] Add selection to next find match ([D]uplicate)
+🔍 [F] [F]ind
+↩️ [Z] Undo
+📊 [B] Toggle primary sidebar visibility ([B]ar)
 
 --- SHIFT Shortcuts (Shift) (ahk = AutoHotkey) ---
 📉 [F]old (ahk)
