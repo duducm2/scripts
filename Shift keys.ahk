@@ -437,6 +437,15 @@ Cursor
 🤖 [Ctrl+E] Open Agent [E]indow
 📂 [Ctrl+R] File open [R]ecent
 🔍 [Ctrl+T] Go to symbol in workspace ([T]ype)
+💬 [Ctrl+T] [N]ew chat tab
+💬 [Ctrl+N] [N]ew chat tab (replacing current)
+➕ [Ctrl+Enter] [I]nsert line below
+🔍 [Ctrl+P] [Q]uick [O]pen ([P]roject)
+🔄 [Ctrl+1/2/3...] [S]witch tabs
+💬 [Ctrl+;] [I]nsert [C]omment
+⬆️ [Ctrl+Home] Go to [T]op
+⬇️ [Ctrl+End] Go to [E]nd
+🔄 [Ctrl+R] [Q]uick project switch ([R]eload)
 📝 [Ctrl+D] Add selection to next find match ([D]uplicate)
 🔍 [Ctrl+F] [F]ind
 ↩️ [Ctrl+Z] [Z] Undo
@@ -472,31 +481,22 @@ Cursor
 ⬆️ [Ctrl+Alt+Up] Go to [P]arent Fold
 ⬅️ [Ctrl+Alt+Left] Go to sibling fold [P]revious
 ➡️ [Ctrl+Alt+Right] Go to sibling fold [N]ext
+⬆️ [Ctrl+Alt+↑] Add cursor [A]bove
+⬇️ [Ctrl+Alt+↓] Add cursor [B]elow
 
 --- Additional Shortcuts ---
-💬 [Ctrl+T] [N]ew chat tab
-💬 [Ctrl+N] [N]ew chat tab (replacing current)
 👁️ [Alt+F12] [P]eek Definition
 📝 [Ctrl+Shift+L] Select all identical words ([L]ines)
 ✏️ [F2] [R]ename symbol
 🔍 [F8] [N]avigate problems
-➕ [Ctrl+Enter] [I]nsert line below
-🔍 [Ctrl+P] [Q]uick [O]pen ([P]roject)
 🗑️ [Shift+Delete] [D]elete line
 ⬆️ [Alt+↑] [M]ove line [U]p
 ⬇️ [Alt+↓] [M]ove line [D]own
-🔄 [Ctrl+1/2/3...] [S]witch tabs
-⬆️ [Ctrl+Alt+↑] Add cursor [A]bove
-⬇️ [Ctrl+Alt+↓] Add cursor [B]elow
 👆 [Alt+Click] [M]ulti-cursor by click
 ⬆️ [Shift+Alt+↑] [C]opy line [U]p
 ⬇️ [Shift+Alt+↓] [C]opy line [D]own
-💬 [Ctrl+;] [I]nsert [C]omment
-⬆️ [Ctrl+Home] Go to [T]op
-⬇️ [Ctrl+End] Go to [E]nd
 🔄 [Alt+Z] Toggle word [W]rap
 🐛 [Ctrl+Shift+D] [D]ebugging
-🔄 [Ctrl+R] [Q]uick project switch ([R]eload)
 ⬇️ [Alt+J] [N]ext review ([J]ump)
 ⬆️ [Alt+K] [P]revious review ([K]ey)
 )"  ; end Cursor
