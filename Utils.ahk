@@ -56,9 +56,6 @@ InsertText(text) {
         Sleep 150  ; Wait longer for paste to complete before restoring clipboard
         A_Clipboard := saved
     }
-
-    ; Send arrow right then left after pasting
-    Send "{Left}"
 }
 
 ; ----------------------
