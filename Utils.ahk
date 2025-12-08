@@ -172,12 +172,14 @@ InitHotstringsCheatSheet() {
         "AI Text Optimizer"
     )
 
-    ; Placeholder prompts (5 slots reserved for future prompts)
+    ; Placeholder prompts (7 slots reserved for future prompts)
     RegisterHotstring("", "", "Prompts", "Reserved 1")
     RegisterHotstring("", "", "Prompts", "Reserved 2")
     RegisterHotstring("", "", "Prompts", "Reserved 3")
     RegisterHotstring("", "", "Prompts", "Reserved 4")
     RegisterHotstring("", "", "Prompts", "Reserved 5")
+    RegisterHotstring("", "", "Prompts", "Reserved 6")
+    RegisterHotstring("", "", "Prompts", "Reserved 7")
 
     ; General Information (2 items) - Second category
     RegisterHotstring(":o:ebosch", "eduardo.figueiredo@br.bosch.com", "General")
@@ -2025,10 +2027,9 @@ global g_HotstringSelectorActive := false
 global g_HotstringCharMap := Map()  ; Maps character to expansion text
 global g_HotstringHotkeyHandlers := []  ; Store hotkey handlers for cleanup
 
-; Character sequence for assignment (ordered by display: Prompts, General, Projects)
-; Prompts: 9 characters (4 real + 5 placeholders), General: 2 characters, Projects: 9 characters
-global g_HotstringCharSequence := ["1", "2", "3", "4", "5", "q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "a", "s",
-    "d", "f", "g"]
+; Character sequence for assignment: 1 2 3 4 5 q w e r t a s d f g z x c v b 6 7 8 9 0 y u i o p h j k l n m , .
+global g_HotstringCharSequence := ["1", "2", "3", "4", "5", "q", "w", "e", "r", "t", "a", "s", "d", "f", "g", "z", "x",
+    "c", "v", "b", "6", "7", "8", "9", "0", "y", "u", "i", "o", "p", "h", "j", "k", "l", "n", "m", ",", "."]
 
 ; Category display order (Prompts first, General second, Projects last)
 global g_HotstringCategories := ["Prompts", "General", "Projects"]
