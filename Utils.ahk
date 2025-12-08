@@ -18,9 +18,9 @@ global g_lastExpansion := 0
 ; Trigger only on Space or Tab, not Enter or punctuation
 Hotstring("EndChars", " `t")
 
-RegisterHotstring(trigger, expansion, category := "") {
+RegisterHotstring(trigger, expansion, category := "", title := "") {
     global g_hotstrings
-    g_hotstrings.Push({ trigger: trigger, expansion: expansion, category: category })
+    g_hotstrings.Push({ trigger: trigger, expansion: expansion, category: category, title: title })
 }
 
 GetHotstringsCheatSheetText() {
@@ -115,23 +115,6 @@ InsertText(text) {
     )
 }
 
-:o:cagent::
-{
-    InsertText(
-        "Continue your browsing. Check for missing radio buttons. Answer everything till you get to the last phase in the TrustMate website."
-    )
-}
-
-:o:cagentquest::
-{
-    InsertText("These questions are not fulfilled in the questionnaire. Go back and answer them.")
-}
-
-:o:cagentall::
-{
-    InsertText("Go over the entire form and answer all the questions that are missing.")
-}
-
 :o:ebosch::
 {
     InsertText("eduardo.figueiredo@br.bosch.com")
@@ -167,40 +150,34 @@ InsertText(text) {
 ; Register hotstrings for cheat sheet display
 ; ----------------------
 InitHotstringsCheatSheet() {
-    ; Prompts (7 items) - First category
+    ; Prompts (4 items) - First category
     RegisterHotstring(":o:cgrammar",
         "Correct grammar and spelling. Remove any dashes from the text. The text should be plain with no styles. Give back only the text. Use linebreaks and a space between paragraphs and look like a human.",
-        "Prompts"
+        "Prompts",
+        "Grammar & Spelling Corrector"
     )
-    RegisterHotstring(":o:cagent",
-        "Continue your browsing. Check for missing radio buttons. Answer everything till you get to the last phase in the TrustMate website.",
-        "Prompts"
-    )
-    RegisterHotstring(":o:cagentquest",
-        "These questions are not fulfilled in the questionnaire. Go back and answer them.",
-        "Prompts"
-    )
-    RegisterHotstring(":o:cagentall", "Go over the entire form and answer all the questions that are missing.",
-        "Prompts")
     RegisterHotstring(":o:mtask",
         "This is a message, summary, text or any textual information that translates into a task for me to do. Translate this way, into a task, make informative and start with the emoji 🔲. Make it clear and consise.",
-        "Prompts"
+        "Prompts",
+        "Convert to Task"
     )
     RegisterHotstring(":o:flog",
         "( LTrim`nFood_Log dictation → Excel CSV`n`nROLE`nYou transcribe my meal dictation (PT/EN) into rows for my Excel Food_Log.`n`nHOW IT WORKS`n- I will dictate one or more meals in free speech.`n- Process immediately without asking questions.`n`nOUTPUT (strict)`n- Return ONLY CSV data rows. NO header row. NO markdown, NO code fences, NO commentary.`n- Each row format: Date;Meal;Time;Main_Items;Tags;Satisfaction_with_Speech;Notes`n- Sort by Date then Time.`n`nFIELD RULES`n- Date: YYYY‑MM‑DD. Use " "today" " for current date in America/Sao_Paulo timezone.`n- Time: HH:MM in 24h; pad leading zeros (e.g., 08:05).`n- Meal: Breakfast | Lunch | Dinner | Snack.`n  PT mapping: café da manhã→Breakfast; almoço→Lunch; jantar/janta→Dinner; lanche→Snack.`n- Main_Items: comma‑separated simple item names (e.g., coffee, bread, butter).`n- Tags: comma‑separated, from this set when present or inferable:`n  caffeine, sugar, alcohol, dairy, gluten, fried, spicy, high-carb, low-carb, processed, protein, fiber, late-night, home-cooked, fast-food.`n  Add " "late-night" " automatically if Time ≥ 22:00.`n- Satisfaction_with_Speech: integer 0–3 (0 = liked a lot; 3 = disliked a lot). If not stated, leave empty.`n- Notes: short free text when I provide context.`n`nMISSING INFO`n- If Date or Time is missing, use " "today" " and infer time from meal type (Breakfast=08:00, Lunch=12:00, Dinner=19:00, Snack=15:00).`n`nACK`n- Process the dictation immediately and output CSV rows only.`n For the date always consider one day before the current one.)",
-        "Prompts"
+        "Prompts",
+        "Food Log Dictation"
     )
     RegisterHotstring(":o:aiopt",
         "( LTrim`nTask: Rewrite the input text so it becomes AI-oriented.`n`nGoal: Produce a version that is concise, unambiguous, free of redundancy, and easy for an AI to parse.`n`nContext: The input text contains instructions and requests intended for a second AI (AIB). You must preserve ALL important information, especially any instructions, requests, or requirements meant for AIB. Do not remove information in the name of clarity or conciseness.`n`nInstructions:`n`n1. Preserve all essential information, especially instructions and requests for the second AI.`n2. Use positive, direct instructions.`n3. Maintain consistent terminology and simple syntax.`n4. Resolve ambiguity and clarify references.`n5. Output in a clean, structured format with no extra commentary.`n6. Do NOT omit any important information, requests, or instructions that the user provided for the second AI.`n7. Do NOT bias the prompt with your own concerns, interpretations, or modifications. Process the text as-is without adding your own perspective or concerns.`n`nInput: <insert text here>`n`nOutput:`nCRITICAL: The output must contain ONLY the processed result with no additional text, commentary, explanations, or formatting. The output must be ready for direct copy and paste without any modification.`n`nA rewritten version of the input text that is optimized for AI interpretation and contains:`n`n* Clear meaning`n* No repeated ideas`n* No filler wording`n* No contradictions`n* Stable terminology`n* Straightforward sentence structure`n* ALL important information preserved, especially instructions for the second AI)",
-        "Prompts"
+        "Prompts",
+        "AI Text Optimizer"
     )
 
-    ; General Information (3 items) - Second category
-    RegisterHotstring(":o:myl", "My Links", "General")
+    ; General Information (2 items) - Second category
     RegisterHotstring(":o:ebosch", "eduardo.figueiredo@br.bosch.com", "General")
     RegisterHotstring(":o:egoogle", "edu.evangelista.figueiredo@gmail.com", "General")
 
-    ; Project Names (8 items) - Last category
+    ; Project Names (9 items) - Last category
+    RegisterHotstring(":o:myl", "My Links", "Projects")
     RegisterHotstring(":o:gintegra", "GS_UX core team_UX and CIP Integration", "Projects")
     RegisterHotstring(":o:gdash", "GS_E&S_CIP Dashboard research and design", "Projects")
     RegisterHotstring(":o:gb2c", "GS_B2C_Credit_Management_Strategy_UI_Mentoring", "Projects")
@@ -2041,9 +2018,9 @@ global g_HotstringSelectorActive := false
 global g_HotstringCharMap := Map()  ; Maps character to expansion text
 global g_HotstringHotkeyHandlers := []  ; Store hotkey handlers for cleanup
 
-; Character sequence for assignment (by category)
-; Character sequence for assignment: 12345qwertasdfgzxcvb 67890yuiophjklnm,.
-global g_HotstringCharSequence := ["1", "2", "3", "4", "5", "q", "w", "e", "r", "t", "a", "s", "d", "f", "g", "z", "x",
+; Character sequence for assignment: 15qwertasdfgzxcvb 67890yuiophjklnm,.
+; (Removed 2, 3, 4 - hotstrings moved up)
+global g_HotstringCharSequence := ["1", "5", "q", "w", "e", "r", "t", "a", "s", "d", "f", "g", "z", "x",
     "c", "v", "b", " ", "6", "7", "8", "9", "0", "y", "u", "i", "o", "p", "h", "j", "k", "l", "n", "m", ",", "."]
 
 ; Category display order (Prompts first, General second, Projects last)
@@ -2267,8 +2244,13 @@ ShowHotstringSelector() {
             for hs in categorized[category] {
                 char := expansionToChar.Get(hs.expansion, "")
                 if (char != "") {
-                    preview := GetPreviewText(hs.expansion)
-                    displayText .= "[" . char . "] > " . preview . "`n"
+                    ; Use title for prompts, preview text for others
+                    if (category = "Prompts" && hs.title != "") {
+                        displayText .= "[" . char . "] > " . hs.title . "`n"
+                    } else {
+                        preview := GetPreviewText(hs.expansion)
+                        displayText .= "[" . char . "] > " . preview . "`n"
+                    }
                     hotstringCount++
                 }
             }
