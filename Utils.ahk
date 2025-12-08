@@ -2243,11 +2243,7 @@ ShowHotstringSelector() {
     g_HotstringSelectorGui := Gui("+AlwaysOnTop +ToolWindow", "Hotstring Shortcuts")
     g_HotstringSelectorGui.SetFont("s10", "Segoe UI")
     g_HotstringSelectorGui.MarginX := 10
-    g_HotstringSelectorGui.MarginY := 10
-
-    ; Add instruction text
-    g_HotstringSelectorGui.AddText("w600 Center", "Press a character to paste its hotstring:")
-    g_HotstringSelectorGui.AddText("w600 Center", "")  ; Spacer
+    g_HotstringSelectorGui.MarginY := 5
 
     ; Build reverse map: expansion -> character
     expansionToChar := Map()
@@ -2333,11 +2329,12 @@ ShowHotstringSelector() {
 
     g_HotstringSelectorGui.AddEdit("w600 h" . textControlHeight . " ReadOnly -VScroll", displayText)
 
-    ; Add Close button
-    g_HotstringSelectorGui.AddButton("w100 Default Center", "Close").OnEvent("Click", (*) => CleanupHotstringSelector())
+    ; Add Close button (set as default so it gets focus, not the Edit control)
+    closeBtn := g_HotstringSelectorGui.AddButton("w100 Default Center", "Close")
+    closeBtn.OnEvent("Click", (*) => CleanupHotstringSelector())
 
-    ; Calculate total height: margins + instruction + spacer + text control + button + spacing
-    totalHeight := 20 + 30 + 10 + textControlHeight + 40 + 20  ; margins + instruction + spacer + content + button + spacing
+    ; Calculate total height: margins + text control + button + spacing
+    totalHeight := 10 + textControlHeight + 40 + 10  ; margins + content + button + spacing
     guiWidth := 620
 
     ; Calculate center position for the GUI
@@ -2356,6 +2353,10 @@ ShowHotstringSelector() {
 
     ; Show GUI centered on the active window's monitor
     g_HotstringSelectorGui.Show("w" . guiWidth . " h" . totalHeight . " x" . guiX . " y" . guiY)
+
+    ; Prevent text selection by ensuring Close button has focus (prevents Edit control from selecting all text)
+    Sleep 10  ; Small delay to ensure GUI is fully shown
+    closeBtn.Focus()
 
     ; Set active flag
     g_HotstringSelectorActive := true
