@@ -2478,14 +2478,20 @@ ShowHotstringSelector() {
 !+W::
 {
     ; Send Alt+Shift+W again
-    Send "!+f"
+    ; Small delay to ensure previous key release is complete
+    Sleep 50
+    
+    ; Send Win+Ctrl+Alt+Y using SendInput for better reliability
+    ; SendInput is more reliable for complex modifier combinations
+    SendInput "#^!y"
+    
     ; Show message box
 
-    Sleep 100
+    Sleep 50
     
     Send '""'
     
-    Sleep 100
+    Sleep 50
     
     Send "{Left}"
 

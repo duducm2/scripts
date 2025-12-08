@@ -1168,7 +1168,6 @@ ShowGlobalShortcutsHelp() {
 
     globalText := "
 (
-=== GLOBAL MODIFIERS (Three-Key Combinations) ===
 [Win+Alt+Shift] - PRIMARY triple modifier (most used for system-wide shortcuts)
 [Ctrl+Alt+Win] - SECONDARY triple modifier (reserved for future use, window management)
 
