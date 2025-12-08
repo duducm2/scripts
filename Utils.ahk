@@ -2230,10 +2230,56 @@ ShowHotstringSelector() {
     ; Get categorized hotstrings
     categorized := GetCategorizedHotstrings()
 
+    ; Get monitor dimensions early for responsive sizing
+    activeWin := 0
+    try {
+        activeWin := WinGetID("A")
+    } catch {
+        activeWin := 0
+    }
+
+    ; Default to primary monitor work area
+    MonitorGetWorkArea(1, &monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
+    monitorWidth := monitorRight - monitorLeft
+    monitorHeight := monitorBottom - monitorTop
+
+    ; If we have an active window, find which monitor contains its center
+    if (activeWin && activeWin != 0) {
+        rect := Buffer(16, 0)
+        if (DllCall("GetWindowRect", "ptr", activeWin, "ptr", rect)) {
+            ; Calculate window center
+            winLeft := NumGet(rect, 0, "int")
+            winTop := NumGet(rect, 4, "int")
+            winRight := NumGet(rect, 8, "int")
+            winBottom := NumGet(rect, 12, "int")
+
+            centerX := winLeft + (winRight - winLeft) // 2
+            centerY := winTop + (winBottom - winTop) // 2
+
+            ; Find which monitor contains the window center
+            monitorCount := MonitorGetCount()
+            loop monitorCount {
+                idx := A_Index
+                MonitorGetWorkArea(idx, &l, &t, &r, &b)
+                if (centerX >= l && centerX <= r && centerY >= t && centerY <= b) {
+                    monitorLeft := l
+                    monitorTop := t
+                    monitorRight := r
+                    monitorBottom := b
+                    monitorWidth := r - l
+                    monitorHeight := b - t
+                    break
+                }
+            }
+        }
+    }
+
     ; Create GUI
     ; Create non-activating GUI so PowerToys Command Palette stays open
     g_HotstringSelectorGui := Gui("+AlwaysOnTop +ToolWindow +E0x08000000", "Hotstring Shortcuts")
-    g_HotstringSelectorGui.SetFont("s10", "Segoe UI")
+    ; Use slightly smaller font for better fit on small monitors
+    fontSize := (monitorHeight < 800) ? 9 : 10
+    g_HotstringSelectorGui.SetFont("s" . fontSize, "Segoe UI")
     g_HotstringSelectorGui.MarginX := 10
     g_HotstringSelectorGui.MarginY := 5
 
@@ -2322,68 +2368,32 @@ ShowHotstringSelector() {
 
     displayText .= "Press Escape to cancel."
 
-    ; Get active window's monitor to calculate appropriate sizes and position
-    activeWin := 0
-    try {
-        activeWin := WinGetID("A")
-    } catch {
-        activeWin := 0
-    }
-
-    ; Default to primary monitor work area
-    MonitorGetWorkArea(1, &monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
-    monitorWidth := monitorRight - monitorLeft
-    monitorHeight := monitorBottom - monitorTop
-
-    ; If we have an active window, find which monitor contains its center
-    if (activeWin && activeWin != 0) {
-        rect := Buffer(16, 0)
-        if (DllCall("GetWindowRect", "ptr", activeWin, "ptr", rect)) {
-            ; Calculate window center
-            winLeft := NumGet(rect, 0, "int")
-            winTop := NumGet(rect, 4, "int")
-            winRight := NumGet(rect, 8, "int")
-            winBottom := NumGet(rect, 12, "int")
-
-            centerX := winLeft + (winRight - winLeft) // 2
-            centerY := winTop + (winBottom - winTop) // 2
-
-            ; Find which monitor contains the window center
-            monitorCount := MonitorGetCount()
-            loop monitorCount {
-                idx := A_Index
-                MonitorGetWorkArea(idx, &l, &t, &r, &b)
-                if (centerX >= l && centerX <= r && centerY >= t && centerY <= b) {
-                    monitorLeft := l
-                    monitorTop := t
-                    monitorRight := r
-                    monitorBottom := b
-                    monitorWidth := r - l
-                    monitorHeight := b - t
-                    break
-                }
-            }
-        }
-    }
-
     ; Calculate text control height based on actual content (number of lines)
     ; Count actual lines in displayText (including empty lines for spacing)
     lineCount := 1  ; Start at 1 (first line doesn't have a newline before it)
     loop parse, displayText, "`n" {
         lineCount++
     }
-    ; Calculate height: ~18 pixels per line (includes line spacing)
-    lineHeight := 18
+    ; Calculate height: ~16 pixels per line (reduced for more compact display)
+    lineHeight := 16
     textControlHeight := lineCount * lineHeight
-    ; Ensure minimum and maximum bounds
-    minHeight := 200
-    maxHeight := Floor(monitorHeight * 0.8)
+    ; Ensure minimum and maximum bounds - use smaller percentage on small monitors
+    minHeight := 150
+    ; Use adaptive max height: 85% for large monitors, 90% for small monitors
+    maxHeightPercent := (monitorHeight < 800) ? 0.90 : 0.75
+    maxHeight := Floor(monitorHeight * maxHeightPercent)
     if (textControlHeight < minHeight)
         textControlHeight := minHeight
     if (textControlHeight > maxHeight)
         textControlHeight := maxHeight
 
-    g_HotstringSelectorGui.AddEdit("w600 h" . textControlHeight . " ReadOnly -VScroll", displayText)
+    ; Make width responsive to monitor size (smaller on small monitors)
+    ; Minimum width 500px, maximum 650px, scale with monitor width
+    baseWidth := (monitorWidth < 1200) ? 500 : 600
+    textControlWidth := baseWidth - 20  ; Account for margins
+
+    ; Enable vertical scrolling for long content
+    g_HotstringSelectorGui.AddEdit("w" . textControlWidth . " h" . textControlHeight . " ReadOnly VScroll", displayText)
 
     ; Add Close button (set as default so it gets focus, not the Edit control)
     closeBtn := g_HotstringSelectorGui.AddButton("w100 Default Center", "Close")
@@ -2391,21 +2401,23 @@ ShowHotstringSelector() {
 
     ; Calculate total height: margins + text control + button + spacing
     totalHeight := 10 + textControlHeight + 40 + 10  ; margins + content + button + spacing
-    guiWidth := 620
+    guiWidth := baseWidth
 
-    ; Calculate center position for the GUI
+    ; Calculate center position for the GUI with margins
+    marginX := 20  ; Horizontal margin from screen edges
+    marginY := 20  ; Vertical margin from screen edges
     guiX := monitorLeft + (monitorWidth - guiWidth) // 2
     guiY := monitorTop + (monitorHeight - totalHeight) // 2
 
-    ; Ensure the GUI stays within monitor bounds
-    if (guiX < monitorLeft)
-        guiX := monitorLeft
-    if (guiY < monitorTop)
-        guiY := monitorTop
-    if (guiX + guiWidth > monitorLeft + monitorWidth)
-        guiX := monitorLeft + monitorWidth - guiWidth
-    if (guiY + totalHeight > monitorTop + monitorHeight)
-        guiY := monitorTop + monitorHeight - totalHeight
+    ; Ensure the GUI stays within monitor bounds with margins
+    if (guiX < monitorLeft + marginX)
+        guiX := monitorLeft + marginX
+    if (guiY < monitorTop + marginY)
+        guiY := monitorTop + marginY
+    if (guiX + guiWidth > monitorLeft + monitorWidth - marginX)
+        guiX := monitorLeft + monitorWidth - guiWidth - marginX
+    if (guiY + totalHeight > monitorTop + monitorHeight - marginY)
+        guiY := monitorTop + monitorHeight - totalHeight - marginY
 
     ; Show GUI centered on the active window's monitor
     g_HotstringSelectorGui.Show("NA w" . guiWidth . " h" . totalHeight . " x" . guiX . " y" . guiY)
