@@ -2244,60 +2244,80 @@ ShowHotstringSelector() {
     }
 
     ; Build display text grouped by category
+    ; Show all characters in sequence, including empty slots as placeholders
     displayText := ""
     hotstringCount := 0
 
-    ; Display each category with header
+    ; Build a map of character index to hotstring info
+    charIndexToHotstring := Map()
+    charIndex := 1
     for category in g_HotstringCategories {
-        if (categorized[category].Length > 0) {
+        for hs in categorized[category] {
+            if (charIndex <= g_HotstringCharSequence.Length) {
+                charIndexToHotstring[charIndex] := { hotstring: hs, category: category }
+            }
+            charIndex++
+        }
+    }
+
+    ; Display each category with header, showing all character slots
+    currentCharIndex := 1
+    for category in g_HotstringCategories {
+        ; Calculate how many character slots belong to this category
+        categorySlotCount := categorized[category].Length
+        
+        if (categorySlotCount > 0 || currentCharIndex <= g_HotstringCharSequence.Length) {
             ; Add category header
             displayText .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`n"
             displayText .= category . "`n"
             displayText .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`n"
 
-            ; Display hotstrings in this category with their assigned characters
-            ; Calculate starting character index for this category
-            startCharIndex := 1
-            for cat in g_HotstringCategories {
-                if (cat = category) {
-                    break
-                }
-                ; Count all items in previous categories
-                for prevHs in categorized[cat] {
-                    startCharIndex++
-                }
-            }
-
-            charIndexInCategory := 1
-            for hs in categorized[category] {
-                char := ""
-                if (hs.expansion != "") {
-                    ; Get character from expansion map for real hotstrings
-                    char := expansionToChar.Get(hs.expansion, "")
-                } else {
-                    ; For placeholders, use sequential position in category
-                    charIndex := startCharIndex + charIndexInCategory - 1
-                    if (charIndex <= g_HotstringCharSequence.Length) {
-                        char := g_HotstringCharSequence[charIndex]
+            ; Display all character slots for this category (including empty ones)
+            Loop categorySlotCount {
+                if (currentCharIndex <= g_HotstringCharSequence.Length) {
+                    char := g_HotstringCharSequence[currentCharIndex]
+                    
+                    ; Check if this character has a hotstring assigned
+                    if (charIndexToHotstring.Has(currentCharIndex)) {
+                        hsInfo := charIndexToHotstring[currentCharIndex]
+                        hs := hsInfo.hotstring
+                        
+                        ; Use title for prompts (including placeholders), preview text for others
+                        if (category = "Prompts" && hs.title != "") {
+                            displayText .= "[" . char . "] > " . hs.title . "`n"
+                            hotstringCount++
+                        } else if (hs.expansion != "") {
+                            preview := GetPreviewText(hs.expansion)
+                            displayText .= "[" . char . "] > " . preview . "`n"
+                            hotstringCount++
+                        } else {
+                            ; Empty placeholder slot
+                            displayText .= "[" . char . "] > (empty)`n"
+                        }
+                    } else {
+                        ; Character slot exists but no hotstring assigned
+                        displayText .= "[" . char . "] > (empty)`n"
                     }
+                    
+                    currentCharIndex++
                 }
-
-                if (char != "") {
-                    ; Use title for prompts (including placeholders), preview text for others
-                    if (category = "Prompts" && hs.title != "") {
-                        displayText .= "[" . char . "] > " . hs.title . "`n"
-                        hotstringCount++
-                    } else if (hs.expansion != "") {
-                        preview := GetPreviewText(hs.expansion)
-                        displayText .= "[" . char . "] > " . preview . "`n"
-                        hotstringCount++
-                    }
-                }
-                charIndexInCategory++
             }
 
             displayText .= "`n"  ; Space between categories
         }
+    }
+    
+    ; Show any remaining unassigned character slots
+    if (currentCharIndex <= g_HotstringCharSequence.Length) {
+        displayText .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`n"
+        displayText .= "Unassigned`n"
+        displayText .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`n"
+        while (currentCharIndex <= g_HotstringCharSequence.Length) {
+            char := g_HotstringCharSequence[currentCharIndex]
+            displayText .= "[" . char . "] > (empty)`n"
+            currentCharIndex++
+        }
+        displayText .= "`n"
     }
 
     displayText .= "Press Escape to cancel."
