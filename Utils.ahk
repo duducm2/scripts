@@ -2429,6 +2429,9 @@ ShowHotstringSelector() {
     Hotkey("Escape", HandleHotstringEscape, "On")
 }
 
+; AI NOTE: keep the hotstring selector message consistent. The sequence of
+; characters is fixed and should list every slot in order, even when a slot
+; is empty, so downstream AI/debugging always sees the full set.
 ; Win+Alt+Shift+U hotkey
 #!+U::
 {
