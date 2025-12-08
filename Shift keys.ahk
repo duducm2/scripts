@@ -1243,6 +1243,9 @@ r=== CLIP ANGEL ===
 [Win+Alt+Shift+9] > Pomodoro
 [Win+Alt+Shift+.] > Clip Angel (copy, paste, and quit)
 
+=== COMMAND PALETTE ===
+[Win+Ctrl+Alt+Y] > Command Palette - File search
+
 === SHORTCUTS ===
 [Win+Alt+Shift+A] > Show app-specific shortcuts (quick press)
 [Win+Alt+Shift+A] > Show global shortcuts (hold 700ms+)
