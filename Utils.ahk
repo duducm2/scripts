@@ -2197,6 +2197,9 @@ HandleHotstringChar(char) {
         ; Cleanup first (closes GUI, disables hotkeys)
         CleanupHotstringSelector()
 
+        ; Small delay to ensure target window has focus before pasting
+        Sleep 150
+
         ; Paste the text
         InsertText(expansion)
     }
