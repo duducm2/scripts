@@ -2343,9 +2343,22 @@ ShowHotstringSelector() {
         }
     }
 
-    ; Add scrollable text control with all content
-    ; Use a fixed height and enable scrolling (65% of monitor height)
-    textControlHeight := Floor(monitorHeight * 0.65)
+    ; Calculate text control height based on actual content (number of lines)
+    ; Count actual lines in displayText (including empty lines for spacing)
+    lineCount := 1  ; Start at 1 (first line doesn't have a newline before it)
+    loop parse, displayText, "`n" {
+        lineCount++
+    }
+    ; Calculate height: ~18 pixels per line (includes line spacing)
+    lineHeight := 18
+    textControlHeight := lineCount * lineHeight
+    ; Ensure minimum and maximum bounds
+    minHeight := 200
+    maxHeight := Floor(monitorHeight * 0.8)
+    if (textControlHeight < minHeight)
+        textControlHeight := minHeight
+    if (textControlHeight > maxHeight)
+        textControlHeight := maxHeight
 
     g_HotstringSelectorGui.AddEdit("w600 h" . textControlHeight . " ReadOnly -VScroll", displayText)
 
