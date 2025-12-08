@@ -2221,7 +2221,9 @@ ShowHotstringSelector() {
     g_HotstringCharMap := BuildHotstringCharMap()
 
     if (g_HotstringCharMap.Count = 0) {
-        MsgBox "No hotstrings found.", "Hotstring Selector", "IconX"
+        ; Use tray notification to avoid stealing focus/closing other palettes
+        TrayTip("Hotstring Selector", "No hotstrings found.", "IconX")
+        SetTimer(() => TrayTip(), -5000)  ; Auto-hide after ~5s
         return
     }
 
@@ -2229,7 +2231,8 @@ ShowHotstringSelector() {
     categorized := GetCategorizedHotstrings()
 
     ; Create GUI
-    g_HotstringSelectorGui := Gui("+AlwaysOnTop +ToolWindow", "Hotstring Shortcuts")
+    ; Create non-activating GUI so PowerToys Command Palette stays open
+    g_HotstringSelectorGui := Gui("+AlwaysOnTop +ToolWindow +E0x08000000", "Hotstring Shortcuts")
     g_HotstringSelectorGui.SetFont("s10", "Segoe UI")
     g_HotstringSelectorGui.MarginX := 10
     g_HotstringSelectorGui.MarginY := 5
@@ -2385,11 +2388,7 @@ ShowHotstringSelector() {
         guiY := monitorTop + monitorHeight - totalHeight
 
     ; Show GUI centered on the active window's monitor
-    g_HotstringSelectorGui.Show("w" . guiWidth . " h" . totalHeight . " x" . guiX . " y" . guiY)
-
-    ; Prevent text selection by ensuring Close button has focus (prevents Edit control from selecting all text)
-    Sleep 10  ; Small delay to ensure GUI is fully shown
-    closeBtn.Focus()
+    g_HotstringSelectorGui.Show("NA w" . guiWidth . " h" . totalHeight . " x" . guiX . " y" . guiY)
 
     ; Set active flag
     g_HotstringSelectorActive := true
