@@ -172,6 +172,13 @@ InitHotstringsCheatSheet() {
         "AI Text Optimizer"
     )
 
+    ; Placeholder prompts (5 slots reserved for future prompts)
+    RegisterHotstring("", "", "Prompts", "Reserved 1")
+    RegisterHotstring("", "", "Prompts", "Reserved 2")
+    RegisterHotstring("", "", "Prompts", "Reserved 3")
+    RegisterHotstring("", "", "Prompts", "Reserved 4")
+    RegisterHotstring("", "", "Prompts", "Reserved 5")
+
     ; General Information (2 items) - Second category
     RegisterHotstring(":o:ebosch", "eduardo.figueiredo@br.bosch.com", "General")
     RegisterHotstring(":o:egoogle", "edu.evangelista.figueiredo@gmail.com", "General")
@@ -2018,10 +2025,10 @@ global g_HotstringSelectorActive := false
 global g_HotstringCharMap := Map()  ; Maps character to expansion text
 global g_HotstringHotkeyHandlers := []  ; Store hotkey handlers for cleanup
 
-; Character sequence for assignment: 15qwertasdfgzxcvb 67890yuiophjklnm,.
-; (Removed 2, 3, 4 - hotstrings moved up)
-global g_HotstringCharSequence := ["1", "5", "q", "w", "e", "r", "t", "a", "s", "d", "f", "g", "z", "x",
-    "c", "v", "b", " ", "6", "7", "8", "9", "0", "y", "u", "i", "o", "p", "h", "j", "k", "l", "n", "m", ",", "."]
+; Character sequence for assignment (ordered by display: Prompts, General, Projects)
+; Prompts: 9 characters (4 real + 5 placeholders), General: 2 characters, Projects: 9 characters
+global g_HotstringCharSequence := ["1", "2", "3", "4", "5", "q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "a", "s",
+    "d", "f", "g"]
 
 ; Category display order (Prompts first, General second, Projects last)
 global g_HotstringCategories := ["Prompts", "General", "Projects"]
@@ -2054,7 +2061,11 @@ BuildHotstringCharMap() {
         for hs in categorized[category] {
             if (charIndex <= g_HotstringCharSequence.Length) {
                 char := g_HotstringCharSequence[charIndex]
-                charMap[char] := hs.expansion
+                ; Only assign characters to hotstrings that have an expansion (skip empty placeholders)
+                if (hs.expansion != "") {
+                    charMap[char] := hs.expansion
+                }
+                ; Always increment charIndex to reserve slots for placeholders
                 charIndex++
             }
         }
@@ -2241,18 +2252,44 @@ ShowHotstringSelector() {
             displayText .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`n"
 
             ; Display hotstrings in this category with their assigned characters
+            ; Calculate starting character index for this category
+            startCharIndex := 1
+            for cat in g_HotstringCategories {
+                if (cat = category) {
+                    break
+                }
+                ; Count all items in previous categories
+                for prevHs in categorized[cat] {
+                    startCharIndex++
+                }
+            }
+
+            charIndexInCategory := 1
             for hs in categorized[category] {
-                char := expansionToChar.Get(hs.expansion, "")
+                char := ""
+                if (hs.expansion != "") {
+                    ; Get character from expansion map for real hotstrings
+                    char := expansionToChar.Get(hs.expansion, "")
+                } else {
+                    ; For placeholders, use sequential position in category
+                    charIndex := startCharIndex + charIndexInCategory - 1
+                    if (charIndex <= g_HotstringCharSequence.Length) {
+                        char := g_HotstringCharSequence[charIndex]
+                    }
+                }
+
                 if (char != "") {
-                    ; Use title for prompts, preview text for others
+                    ; Use title for prompts (including placeholders), preview text for others
                     if (category = "Prompts" && hs.title != "") {
                         displayText .= "[" . char . "] > " . hs.title . "`n"
-                    } else {
+                        hotstringCount++
+                    } else if (hs.expansion != "") {
                         preview := GetPreviewText(hs.expansion)
                         displayText .= "[" . char . "] > " . preview . "`n"
+                        hotstringCount++
                     }
-                    hotstringCount++
                 }
+                charIndexInCategory++
             }
 
             displayText .= "`n"  ; Space between categories
