@@ -2469,3 +2469,24 @@ ShowHotstringSelector() {
 {
     ShowHotstringSelector()
 }
+
+; =============================================================================
+; Alt+Shift+W Shortcut
+; Hotkey: Alt+Shift+W
+; Sends Alt+Shift+W again, then shows a message box
+; =============================================================================
+!+W::
+{
+    ; Send Alt+Shift+W again
+    Send "!+w"
+    ; Show message box
+
+    Sleep 100
+    
+    Send '""'
+    
+    Sleep 100
+    
+    Send "{Left}"
+
+}
