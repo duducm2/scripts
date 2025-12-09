@@ -3849,51 +3849,52 @@ ApplyOutlookAppointmentSettings(privacy, allDay, status, category, reminder) {
 }
 
 RunOutlookAppointmentWizard() {
-    ; STEP 1 – Privacy (2 options)
+    ; STEP 1 – Status (4 options)
     step1Options := Map()
-    step1Options["1"] := { Label: "🔓 Private OFF", Private: "Off" }
-    step1Options["2"] := { Label: "🔒 Private ON", Private: "On" }
+    step1Options["1"] := { Label: "🟢 Free", Status: "Free" }
+    step1Options["2"] := { Label: "🟡 Tentative", Status: "Tentative" }
+    step1Options["3"] := { Label: "🔴 Busy", Status: "Busy" }
+    step1Options["4"] := { Label: "🔴 Out of office", Status: "Out of office" }
 
     choice1 := Outlook_SelectOptionByInputBox(
         "📅 Outlook Appointment – Step 1 of 5",
-        "Choose privacy:",
+        "Choose status:",
         step1Options
     )
     if (choice1 = "") {
         return  ; user cancelled
     }
-    selPrivacy := step1Options[choice1]
+    selStatus := step1Options[choice1]
 
-    ; STEP 2 – All-day (2 options)
+    ; STEP 2 – Privacy (2 options)
     step2Options := Map()
-    step2Options["1"] := { Label: "⏰ All-day NO (timed)", AllDay: "No (timed)" }
-    step2Options["2"] := { Label: "📅 All-day YES", AllDay: "Yes" }
+    step2Options["1"] := { Label: "🔓 Private OFF", Private: "Off" }
+    step2Options["2"] := { Label: "🔒 Private ON", Private: "On" }
 
     choice2 := Outlook_SelectOptionByInputBox(
         "📅 Outlook Appointment – Step 2 of 5",
-        "Choose duration:",
+        "Choose privacy:",
         step2Options
     )
     if (choice2 = "") {
         return
     }
-    selAllDay := step2Options[choice2]
+    selPrivacy := step2Options[choice2]
 
-    ; STEP 3 – Status (3 options)
+    ; STEP 3 – All-day (2 options)
     step3Options := Map()
-    step3Options["1"] := { Label: "🟢 Free", Status: "Free" }
-    step3Options["2"] := { Label: "🟡 Busy", Status: "Busy" }
-    step3Options["3"] := { Label: "🔴 Out of office", Status: "Out of office" }
+    step3Options["1"] := { Label: "⏰ All-day NO (timed)", AllDay: "No (timed)" }
+    step3Options["2"] := { Label: "📅 All-day YES", AllDay: "Yes" }
 
     choice3 := Outlook_SelectOptionByInputBox(
         "📅 Outlook Appointment – Step 3 of 5",
-        "Choose status:",
+        "Choose duration:",
         step3Options
     )
     if (choice3 = "") {
         return
     }
-    selStatus := step3Options[choice3]
+    selAllDay := step3Options[choice3]
 
     ; STEP 4 – Category (2 options)
     step4Options := Map()
@@ -3910,12 +3911,14 @@ RunOutlookAppointmentWizard() {
     }
     selCategory := step4Options[choice4]
 
-    ; STEP 5 – Reminder (4 options)
+    ; STEP 5 – Reminder (6 options)
     step5Options := Map()
-    step5Options["1"] := { Label: "⏰ Reminder 4 hours before", Reminder: "4 hours" }
-    step5Options["2"] := { Label: "🗓️ Reminder 1 day before", Reminder: "1 day" }
-    step5Options["3"] := { Label: "📆 Reminder 4 days before", Reminder: "4 days" }
-    step5Options["4"] := { Label: "📅 Reminder 1 week before", Reminder: "1 week" }
+    step5Options["1"] := { Label: "⏰ 15 minutes", Reminder: "15 minutes" }
+    step5Options["2"] := { Label: "⏰ 4 hours", Reminder: "4 hours" }
+    step5Options["3"] := { Label: "🗓️ 1 day", Reminder: "1 day" }
+    step5Options["4"] := { Label: "📆 2 days", Reminder: "2 days" }
+    step5Options["5"] := { Label: "📅 1 week", Reminder: "1 week" }
+    step5Options["6"] := { Label: "📅 2 weeks", Reminder: "2 weeks" }
 
     choice5 := Outlook_SelectOptionByInputBox(
         "📅 Outlook Appointment – Step 5 of 5",
@@ -3927,19 +3930,18 @@ RunOutlookAppointmentWizard() {
     }
     selReminder := step5Options[choice5]
 
-    ; Final summary and apply settings
-    summary := "✅ Appointment configuration:" . "`n`n"
+    ; Final summary - display all captured values
+    summary := "✅ Appointment Configuration Summary:" . "`n`n"
     summary .= "📊 Status:    " . selStatus.Status . "`n"
-    summary .= "📂 Category:  " . selCategory.Category . "`n"
-    summary .= "📅 All-day:   " . selAllDay.AllDay . "`n"
     summary .= "🔐 Private:   " . selPrivacy.Private . "`n"
-    summary .= "⏰ Reminder:  " . selReminder.Reminder . "`n`n"
-    summary .= "Applying settings now..."
+    summary .= "📅 All-day:   " . selAllDay.AllDay . "`n"
+    summary .= "📂 Category:  " . selCategory.Category . "`n"
+    summary .= "⏰ Reminder:  " . selReminder.Reminder . "`n"
 
-    MsgBox summary, "📅 Outlook Appointment", "Iconi"
+    MsgBox summary, "📅 Outlook Appointment Configuration", "Iconi"
 
-    ; Apply the settings
-    ApplyOutlookAppointmentSettings(selPrivacy, selAllDay, selStatus, selCategory, selReminder)
+    ; Apply the settings (commented out for now - just showing summary)
+    ; ApplyOutlookAppointmentSettings(selPrivacy, selAllDay, selStatus, selCategory, selReminder)
 }
 
 ; Shift + . → Cascaded text wizard for Outlook Appointment
