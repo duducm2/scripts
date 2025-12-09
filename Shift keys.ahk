@@ -775,7 +775,7 @@ Power BI (Shift)
 🔍 [S]elect [S]earch edit field
 ✅ [L]OK/Confirm modal button
 ❌ [X]Cancel/E[X]it modal button
-🖱️ [M]Previous pages button
+🖱️ [A]All pages button
 📋 [,]Filter pane collapse/expand
 🎨 [.]Visualizations pane toggle
 ➕ [W]New [P]age
@@ -4645,8 +4645,7 @@ EnsureItemsViewFocus() {
 
     ; Step 5: Shift+Tab with a longer wait (1s)
     Sleep 4500
-    
-    
+
     ; Steps 6-10 with 400ms between each
     Send "+{Tab}"
     Sleep postStepDelay
@@ -4664,7 +4663,7 @@ EnsureItemsViewFocus() {
     Sleep postStepDelay
 
     ; 11. Shift+Tab (3x) with 400ms between
-    Loop 3 {
+    loop 3 {
         Send "+{Tab}"
         Sleep postStepDelay
     }
@@ -4672,12 +4671,12 @@ EnsureItemsViewFocus() {
     ; 12. Enter
     Send "{Enter}"
     Sleep postStepDelay
-    
+
     ; 15. Enter
     Send "{Enter}"
-    
+
     Sleep postStepDelay
-    
+
     Send "!{F4}"  ; Alt+F4 closes the current window
     HideSmallLoadingIndicator_ChatGPT()
 
@@ -5246,8 +5245,8 @@ EnsureItemsViewFocus() {
     Send "{Esc}"  ; Escape key is universal for cancels
 }
 
-; Shift + M : Right-click Previous pages button in Power BI
-+m:: {
+; Shift + A : Right-click All pages button in Power BI
++a:: {
     try {
         root := UIA.ElementFromHandle(WinExist("A"))
 
