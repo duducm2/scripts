@@ -4463,8 +4463,8 @@ RenameChatGPTWindowToChatGPT() {
     WaitForButtonAndShowSmallLoading_ChatGPT(buttonNames, "Waiting for response...")
 }
 
-; Shift + H: Copy last code block
-+h:: Send("^+;")
+; Shift + C: Copy last code block
++c:: Send("^+;")
 
 ; Shift + J: Go down
 +j::
@@ -8277,8 +8277,8 @@ FocusDescriptionField() {
 #HotIf WinActive("ahk_exe chrome.exe") && (WinActive("Google Keep") || WinActive("keep.google.com") || InStr(
     WinGetTitle("A"), "Google Keep"))
 
-; Shift + Y : Search and select note
-+y::
+; Shift + S : Search and select note
++s::
 {
     ; Store the current active window handle
     currentWindow := WinExist("A")
@@ -8323,8 +8323,8 @@ FocusDescriptionField() {
     }
 }
 
-; Shift + U : Toggle main menu
-+u::
+; Shift + M : Toggle main menu
++m::
 {
     try {
         ; Store the current active window handle
@@ -8451,8 +8451,8 @@ FindMonthGroup(uia) {
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "YouTube")
 
-; Shift + Y : Focus search box
-+y:: {
+; Shift + S : Focus search box
++s:: {
     try {
         uia := UIA_Browser()
         Sleep 300
@@ -8501,6 +8501,48 @@ FindMonthGroup(uia) {
         if (searchFiltersButton) {
             ; Focus the Search filters button (do not click)
             searchFiltersButton.SetFocus()
+            Sleep 200
+
+            ; Send Tab to move focus to the first video list item
+            Send "{Tab}"
+            Sleep 100
+
+            ; Press Enter to select/play the first video
+            Send "{Enter}"
+        } else {
+            ; Fallback: try to navigate to first video using keyboard shortcuts
+            Send "{Home}"  ; Go to top of page
+            Sleep 100
+            Send "{Tab}"   ; Tab to first focusable element
+            Sleep 100
+            Send "{Enter}" ; Press Enter
+        }
+    } catch Error as e {
+        ; If all else fails, use basic keyboard navigation
+        Send "{Home}"
+        Sleep 100
+        Send "{Tab}"
+        Sleep 100
+        Send "{Enter}"
+    }
+}
+
+; Shift + I : Focus first video via Explore button
++i:: {
+    try {
+        uia := UIA_Browser()
+        Sleep 300
+
+        ; Find the "Explore" button as anchor
+        exploreButton := uia.FindFirst({ Name: "Explore" })
+        if !exploreButton
+            exploreButton := uia.FindFirst({ Type: "Button", Name: "Explore" })
+        if !exploreButton
+            exploreButton := uia.FindFirst({ AutomationId: "explore" })
+
+        if (exploreButton) {
+            ; Focus the Explore button (do not click)
+            exploreButton.SetFocus()
             Sleep 200
 
             ; Send Tab to move focus to the first video list item
@@ -9325,8 +9367,8 @@ FindMonthGroup(uia) {
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "Google")
 
-; Shift + Y : Focus Google search box
-+y:: {
+; Shift + S : Focus Google search box
++s:: {
     try {
         uia := UIA_Browser()
         Sleep 300
