@@ -427,6 +427,8 @@ Cursor
 --- CTRL Shortcuts (Cursor-defined) ---
 🎯 [1] Remove clustering and focus on the code (ahk)
 📁 [2] Copy path (cursor)
+📊 [3] CSV: Edit CSV
+💾 [4] CSV: Apply changes to source file and save
 🤖 [M] Ask ([M]essage), wait 6s, then paste (Shift+V) (ahk)
 ⚡ [G] Kill terminal [custom in settings.json]
 📉 [Y] Fold all
