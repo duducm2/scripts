@@ -189,8 +189,10 @@ InitHotstringsCheatSheet() {
     RegisterHotstring(":o:myl", "My Links", "Projects", "🔗 My Links")
     RegisterHotstring(":o:gintegra", "GS_UX core team_UX and CIP Integration", "Projects", "🔄 UX and CIP Integration")
     RegisterHotstring(":o:gdash", "GS_E&S_CIP Dashboard research and design", "Projects", "📊 CIP Dashboard")
-    RegisterHotstring(":o:gb2c", "GS_B2C_Credit_Management_Strategy_UI_Mentoring", "Projects", "💳 B2C Credit Management")
-    RegisterHotstring(":o:gug", "GS_UX Core Team_Monitoring for B2C in Brazil", "Projects", "🇧🇷 B2C Monitoring Brazil")
+    RegisterHotstring(":o:gb2c", "GS_B2C_Credit_Management_Strategy_UI_Mentoring", "Projects",
+        "💳 B2C Credit Management")
+    RegisterHotstring(":o:gug", "GS_UX Core Team_Monitoring for B2C in Brazil", "Projects",
+        "🇧🇷 B2C Monitoring Brazil")
     RegisterHotstring(":o:gpm", "GS_UX_Project_Management_Activities_LA", "Projects", "📋 Project Management LA")
     RegisterHotstring(":o:guxcip", "GS_UX_and_CIP", "Projects", "🔗 UX and CIP")
     RegisterHotstring(":o:gtrain", "GS_UX core team_Trainings Management", "Projects", "🎓 Trainings Management")
@@ -754,11 +756,14 @@ CleanupSquareSelector() {
         }
     }
 
-    ; Disable loop mode hotkeys if in loop mode
-    if (g_SquareSelectorLoopMode) {
+    ; ALWAYS disable loop mode hotkeys (including mouse button hotkeys) to prevent blocking clicks
+    ; This ensures mouse clicks work even if hotkeys were enabled through a race condition
+    try {
         DisableLoopModeHotkeys()
-        g_SquareSelectorLoopMode := false
+    } catch {
+        ; Silently ignore if there's an error
     }
+    g_SquareSelectorLoopMode := false
 
     ; Disable CTRL hotkey (click mode toggle)
     try {
@@ -1549,9 +1554,11 @@ CancelSquareSelector() {
         return
     }
 
-    ; Disable loop mode hotkeys if in loop mode
-    if (g_SquareSelectorLoopMode) {
+    ; ALWAYS disable loop mode hotkeys (including mouse button hotkeys) to prevent blocking clicks
+    try {
         DisableLoopModeHotkeys()
+    } catch {
+        ; Silently ignore if there's an error
     }
 
     ; Cleanup completely
