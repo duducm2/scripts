@@ -3824,7 +3824,7 @@ ApplyOutlookAppointmentSettings(privacy, allDay, status, category, reminder) {
     ; Ensure Outlook appointment window is active before applying settings
     foundWindow := false
     targetHwnd := 0
-    
+
     ; First, check if current window is an Outlook appointment/meeting/event
     currentHwnd := WinExist("A")
     if (currentHwnd) {
@@ -3834,7 +3834,7 @@ ApplyOutlookAppointmentSettings(privacy, allDay, status, category, reminder) {
             foundWindow := true
         }
     }
-    
+
     ; If not found in current window, search all Outlook windows
     if (!foundWindow) {
         for hwnd in WinGetList("ahk_exe OUTLOOK.EXE") {
@@ -3843,17 +3843,18 @@ ApplyOutlookAppointmentSettings(privacy, allDay, status, category, reminder) {
             if RegExMatch(title, "i)(Appointment|Meeting|Event)") {
                 targetHwnd := hwnd
                 foundWindow := true
-                break1
+                break
             }
         }
     }
-    
+
     ; If no window found, show error and exit
     if (!foundWindow || !targetHwnd) {
-        MsgBox "Outlook appointment/meeting/event window not found. Please open an appointment window first.", "Error", "IconX"
+        MsgBox "Outlook appointment/meeting/event window not found. Please open an appointment window first.", "Error",
+            "IconX"
         return
     }
-    
+
     ; Forcefully activate the window
     WinActivate("ahk_id " targetHwnd)
     WinShow("ahk_id " targetHwnd)  ; Ensure window is visible
@@ -3897,7 +3898,7 @@ RunOutlookAppointmentWizard() {
     ; Always find and activate Outlook appointment window before starting wizard
     foundWindow := false
     targetHwnd := 0
-    
+
     ; First, check if current window is an Outlook appointment/meeting/event
     currentHwnd := WinExist("A")
     if (currentHwnd) {
@@ -3907,7 +3908,7 @@ RunOutlookAppointmentWizard() {
             foundWindow := true
         }
     }
-    
+
     ; If not found in current window, search all Outlook windows
     if (!foundWindow) {
         for hwnd in WinGetList("ahk_exe OUTLOOK.EXE") {
@@ -3920,13 +3921,14 @@ RunOutlookAppointmentWizard() {
             }
         }
     }
-    
+
     ; If no window found, show error and exit
     if (!foundWindow || !targetHwnd) {
-        MsgBox "Outlook appointment/meeting/event window not found. Please open an appointment window first.", "Wizard Error", "IconX"
+        MsgBox "Outlook appointment/meeting/event window not found. Please open an appointment window first.",
+            "Wizard Error", "IconX"
         return
     }
-    
+
     ; Forcefully activate the window
     WinActivate("ahk_id " targetHwnd)
     WinShow("ahk_id " targetHwnd)  ; Ensure window is visible
@@ -3934,7 +3936,7 @@ RunOutlookAppointmentWizard() {
     ; Wait for window to become active
     WinWaitActive("ahk_id " targetHwnd, , 2)
     Sleep 300  ; Additional wait for stability and focus
-    
+
     ; STEP 1 – Status (4 options)
     step1Options := Map()
     step1Options["1"] := { Label: "🟢 Free", Status: "Free" }
