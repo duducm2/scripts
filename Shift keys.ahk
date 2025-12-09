@@ -268,6 +268,7 @@ Outlook - Appointment (Shift)
 📍 [L]ocation
 📝 [B]ody
 🔄 [C]Make [R]ecurring
+🧙 [W]izard (configure appointment)
 )"  ; end Outlook Appointment
 
 ; --- Outlook Message window ---------------------------------------------------
@@ -3447,8 +3448,8 @@ Outlook_SelectOptionByInputBox(title, basePrompt, optionsMap) {
     try {
         optionGui := Gui("+AlwaysOnTop +ToolWindow", title)
         optionGui.SetFont("s10", "Segoe UI")
-        optionGui.AddText("w400 Center", prompt)
-        optionGui.AddEdit("w50 Center vOptionInput", "")
+        optionGui.AddText("w480 Center", prompt)
+        optionGui.AddEdit("w60 Center vOptionInput", "")
 
         ; Set up auto-submit handler using factory function to capture optionsMap
         handler := CreateOutlookOptionHandler(optionsMap)
@@ -3458,7 +3459,7 @@ Outlook_SelectOptionByInputBox(title, basePrompt, optionsMap) {
         cancelBtn := optionGui.AddButton("w80", "Cancel")
         cancelBtn.OnEvent("Click", CancelOutlookOption.Bind(optionGui))
 
-        optionGui.Show("w400 h180")
+        optionGui.Show("w500 h250")
         optionGui["OptionInput"].Focus()
 
         ; Wait for dialog to close
@@ -3944,8 +3945,8 @@ RunOutlookAppointmentWizard() {
     ; ApplyOutlookAppointmentSettings(selPrivacy, selAllDay, selStatus, selCategory, selReminder)
 }
 
-; Shift + . → Cascaded text wizard for Outlook Appointment
-+.:: {
+; Shift + w → Cascaded text wizard for Outlook Appointment
++w:: {
     if (!IsOutlookAppointmentActive()) {
         return
     }
