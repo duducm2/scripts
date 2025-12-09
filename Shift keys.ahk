@@ -9589,8 +9589,8 @@ IsFileDialogActive() {
 ;-------------------------------------------------------------------
 #HotIf WinActive("Settle Up")
 
-; Shift + Y : Click "Adicionar transaÃ§Ã£o" button (UIA by Name substring)
-+y:: {
+; Shift + A : Click "Adicionar transaÃ§Ã£o" button (UIA by Name substring)
++a:: {
     try {
         uia := UIA_Browser()
         Sleep 200
@@ -9609,63 +9609,13 @@ IsFileDialogActive() {
     }
 }
 
-; Shift + U : Focus expense name field (via value field + 6 tabs)
-+i:: {
+; Shift + N : Focus expense name field (via value field + tabs)
++n:: {
     try {
         uia := UIA_Browser()
         Sleep 300
 
         ; Find the "who paid" combo box
-        paidByCombo := uia.FindFirst({
-            Type: "ComboBox",
-            Name: "Eduardo Figueiredo pagou"
-        })
-
-        ; If not found by exact match, try partial matches
-        if !paidByCombo {
-            possibleNames := [
-                " pagou",           ; Portuguese suffix
-                " paid",            ; English suffix
-                " pagÃ³",            ; Spanish suffix
-                " a payÃ©"           ; French suffix
-            ]
-            for suffix in possibleNames {
-                paidByCombo := uia.FindFirst({
-                    Type: "ComboBox",
-                    Name: A_UserName . suffix,
-                    matchmode: "Substring"
-                })
-                if paidByCombo
-                    break
-            }
-        }
-
-        ; Try by AutomationId if name matching failed
-        if !paidByCombo {
-            paidByCombo := uia.FindFirst({
-                Type: "ComboBox",
-                AutomationId: "mat-select-54"
-            })
-        }
-
-        if paidByCombo {
-            paidByCombo.Click()
-            Sleep 100
-            Send "{Tab}"  ; Move to expense value field
-            return
-        }
-    } catch Error as e {
-        ; Silently handle errors
-    }
-}
-
-; Shift + I : Focus expense value field (via name field + tab)
-+u:: {
-    try {
-        uia := UIA_Browser()
-        Sleep 300
-
-        ; Find the "who paid" combo box (same logic as +u)
         paidByCombo := uia.FindFirst({
             Type: "ComboBox",
             Name: "Eduardo Figueiredo pagou"
@@ -9709,6 +9659,56 @@ IsFileDialogActive() {
                 Send "{Tab}"
                 Sleep 20  ; Slow timing between tabs
             }
+            return
+        }
+    } catch Error as e {
+        ; Silently handle errors
+    }
+}
+
+; Shift + V : Focus expense value field
++v:: {
+    try {
+        uia := UIA_Browser()
+        Sleep 300
+
+        ; Find the "who paid" combo box (same logic as +u)
+        paidByCombo := uia.FindFirst({
+            Type: "ComboBox",
+            Name: "Eduardo Figueiredo pagou"
+        })
+
+        ; If not found by exact match, try partial matches
+        if !paidByCombo {
+            possibleNames := [
+                " pagou",           ; Portuguese suffix
+                " paid",            ; English suffix
+                " pagÃ³",            ; Spanish suffix
+                " a payÃ©"           ; French suffix
+            ]
+            for suffix in possibleNames {
+                paidByCombo := uia.FindFirst({
+                    Type: "ComboBox",
+                    Name: A_UserName . suffix,
+                    matchmode: "Substring"
+                })
+                if paidByCombo
+                    break
+            }
+        }
+
+        ; Try by AutomationId if name matching failed
+        if !paidByCombo {
+            paidByCombo := uia.FindFirst({
+                Type: "ComboBox",
+                AutomationId: "mat-select-54"
+            })
+        }
+
+        if paidByCombo {
+            paidByCombo.Click()
+            Sleep 100
+            Send "{Tab}"  ; Move to expense value field
             return
         }
     } catch Error as e {
