@@ -3819,11 +3819,46 @@ ApplyReminder(desiredState) {
 ; =============================================================================
 
 ApplyOutlookAppointmentSettings(privacy, allDay, status, category, reminder) {
-    ; Verify Outlook Appointment window is still active
-    if (!IsOutlookAppointmentActive()) {
-        MsgBox "Outlook Appointment window is not active.", "Error", "IconX"
+    ; Ensure Outlook appointment window is active before applying settings
+    foundWindow := false
+    targetHwnd := 0
+    
+    ; First, check if current window is an Outlook appointment/meeting/event
+    currentHwnd := WinExist("A")
+    if (currentHwnd) {
+        currentTitle := WinGetTitle("A")
+        if (WinGetProcessName("A") = "OUTLOOK.EXE" && RegExMatch(currentTitle, "i)(Appointment|Meeting|Event)")) {
+            targetHwnd := currentHwnd
+            foundWindow := true
+        }
+    }
+    
+    ; If not found in current window, search all Outlook windows
+    if (!foundWindow) {
+        for hwnd in WinGetList("ahk_exe OUTLOOK.EXE") {
+            title := WinGetTitle("ahk_id " hwnd)
+            ; Match Appointment, Meeting, or Event windows (including "Untitled - Event")
+            if RegExMatch(title, "i)(Appointment|Meeting|Event)") {
+                targetHwnd := hwnd
+                foundWindow := true
+                break1
+            }
+        }
+    }
+    
+    ; If no window found, show error and exit
+    if (!foundWindow || !targetHwnd) {
+        MsgBox "Outlook appointment/meeting/event window not found. Please open an appointment window first.", "Error", "IconX"
         return
     }
+    
+    ; Forcefully activate the window
+    WinActivate("ahk_id " targetHwnd)
+    WinShow("ahk_id " targetHwnd)  ; Ensure window is visible
+    WinRestore("ahk_id " targetHwnd)  ; Restore if minimized
+    ; Wait for window to become active
+    WinWaitActive("ahk_id " targetHwnd, , 2)
+    Sleep 300  ; Additional wait for stability and focus
 
     ; Show loading banner
     ShowSmallLoadingIndicator_ChatGPT("Applying settings...")
@@ -3857,6 +3892,47 @@ ApplyOutlookAppointmentSettings(privacy, allDay, status, category, reminder) {
 }
 
 RunOutlookAppointmentWizard() {
+    ; Always find and activate Outlook appointment window before starting wizard
+    foundWindow := false
+    targetHwnd := 0
+    
+    ; First, check if current window is an Outlook appointment/meeting/event
+    currentHwnd := WinExist("A")
+    if (currentHwnd) {
+        currentTitle := WinGetTitle("A")
+        if (WinGetProcessName("A") = "OUTLOOK.EXE" && RegExMatch(currentTitle, "i)(Appointment|Meeting|Event)")) {
+            targetHwnd := currentHwnd
+            foundWindow := true
+        }
+    }
+    
+    ; If not found in current window, search all Outlook windows
+    if (!foundWindow) {
+        for hwnd in WinGetList("ahk_exe OUTLOOK.EXE") {
+            title := WinGetTitle("ahk_id " hwnd)
+            ; Match Appointment, Meeting, or Event windows (including "Untitled - Event")
+            if RegExMatch(title, "i)(Appointment|Meeting|Event)") {
+                targetHwnd := hwnd
+                foundWindow := true
+                break
+            }
+        }
+    }
+    
+    ; If no window found, show error and exit
+    if (!foundWindow || !targetHwnd) {
+        MsgBox "Outlook appointment/meeting/event window not found. Please open an appointment window first.", "Wizard Error", "IconX"
+        return
+    }
+    
+    ; Forcefully activate the window
+    WinActivate("ahk_id " targetHwnd)
+    WinShow("ahk_id " targetHwnd)  ; Ensure window is visible
+    WinRestore("ahk_id " targetHwnd)  ; Restore if minimized
+    ; Wait for window to become active
+    WinWaitActive("ahk_id " targetHwnd, , 2)
+    Sleep 300  ; Additional wait for stability and focus
+    
     ; STEP 1 – Status (4 options)
     step1Options := Map()
     step1Options["1"] := { Label: "🟢 Free", Status: "Free" }
@@ -3937,16 +4013,6 @@ RunOutlookAppointmentWizard() {
         return
     }
     selReminder := step5Options[choice5]
-
-    ; Final summary - display all captured values
-    summary := "✅ Appointment Configuration Summary:" . "`n`n"
-    summary .= "📊 Status:    " . selStatus.Status . "`n"
-    summary .= "🔐 Private:   " . selPrivacy.Private . "`n"
-    summary .= "📅 All-day:   " . selAllDay.AllDay . "`n"
-    summary .= "📂 Category:  " . selCategory.Category . "`n"
-    summary .= "⏰ Reminder:  " . selReminder.Reminder . "`n"
-
-    MsgBox summary, "📅 Outlook Appointment Configuration", "Iconi"
 
     ; Apply all settings at the end of the wizard
     ApplyOutlookAppointmentSettings(selPrivacy, selAllDay, selStatus, selCategory, selReminder)
