@@ -3753,6 +3753,10 @@ ApplyCategory(desiredState) {
             Send "{Down}"
             Sleep 200
             Send "{Down}"
+            Sleep 200
+            Send "{Down}"
+            Sleep 200
+            Send "{Down}"
         } else if (desiredState = "Personal") {
             ; Down 6 times
             loop 6 {
