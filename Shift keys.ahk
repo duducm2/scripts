@@ -3702,25 +3702,28 @@ ApplyStatus(desiredState) {
             return
         }
 
-        ; Open Status menu: Alt+5
-        Send "!5"
-        Sleep 300  ; Wait for menu to open
-
-        ; Navigate based on desired state
+        ; Map status to first letter
+        statusLetter := ""
         if (desiredState = "Free") {
-            Send "{Up}"
-            Sleep 150
-            Send "{Up}"
+            statusLetter := "F"
+        } else if (desiredState = "Tentative") {
+            statusLetter := "T"
         } else if (desiredState = "Busy") {
-            Send "{Down}"
+            statusLetter := "B"
         } else if (desiredState = "Out of office") {
-            Send "{Down}"
-            Sleep 150
-            Send "{Down}"
+            statusLetter := "O"
+        } else {
+            return  ; Unknown status
         }
 
+        ; Sequence: Alt (down and up), then 5, then first letter, then Enter
+        Send "{Alt down}{Alt up}"  ; Press Alt (down and up)
+        Sleep 200  ; Wait for menu to open
+        Send "5"  ; Press number 5
+        Sleep 200  ; Wait for submenu
+        Send statusLetter  ; Press first letter of status
         Sleep 200  ; Wait before confirming
-        Send "{Enter}"
+        Send "{Enter}"  ; Confirm selection
         Sleep 200
     } catch Error {
         ; Silently continue
@@ -3941,8 +3944,8 @@ RunOutlookAppointmentWizard() {
 
     MsgBox summary, "📅 Outlook Appointment Configuration", "Iconi"
 
-    ; Apply the settings (commented out for now - just showing summary)
-    ; ApplyOutlookAppointmentSettings(selPrivacy, selAllDay, selStatus, selCategory, selReminder)
+    ; Apply all settings at the end of the wizard
+    ApplyOutlookAppointmentSettings(selPrivacy, selAllDay, selStatus, selCategory, selReminder)
 }
 
 ; Shift + w → Cascaded text wizard for Outlook Appointment
