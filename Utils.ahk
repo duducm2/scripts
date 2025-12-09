@@ -135,7 +135,7 @@ InsertText(text) {
 :o:flog::
 {
     InsertText(
-        "( LTrim`nFood_Log dictation → Excel CSV`n`nROLE`nYou transcribe my meal dictation (PT/EN) into rows for my Excel Food_Log.`n`nHOW IT WORKS`n- I will dictate one or more meals in free speech.`n- Process immediately without asking questions.`n`nOUTPUT (strict)`n- Return ONLY CSV data rows. NO header row. NO markdown, NO code fences, NO commentary.`n- Each row format: Date;Meal;Time;Main_Items;Tags;Satisfaction_with_Speech;Notes`n- Sort by Date then Time.`n`nFIELD RULES`n- Date: YYYY‑MM‑DD. Use " "today" " for current date in America/Sao_Paulo timezone.`n- Time: HH:MM in 24h; pad leading zeros (e.g., 08:05).`n- Meal: Breakfast | Lunch | Dinner | Snack.`n  PT mapping: café da manhã→Breakfast; almoço→Lunch; jantar/janta→Dinner; lanche→Snack.`n- Main_Items: comma‑separated simple item names (e.g., coffee, bread, butter).`n- Tags: comma‑separated, from this set when present or inferable:`n  caffeine, sugar, alcohol, dairy, gluten, fried, spicy, high-carb, low-carb, processed, protein, fiber, late-night, home-cooked, fast-food.`n  Add " "late-night" " automatically if Time ≥ 22:00.`n- Satisfaction_with_Speech: integer 0–3 (0 = liked a lot; 3 = disliked a lot). If not stated, leave empty.`n- Notes: short free text when I provide context.`n`nMISSING INFO`n- If Date or Time is missing, use " "today" " and infer time from meal type (Breakfast=08:00, Lunch=12:00, Dinner=19:00, Snack=15:00).`n`nACK`n- Process the dictation immediately and output CSV rows only.`n For the date always consider one day before the current one.)"
+        "( LTrim`nFood_Log dictation → Excel CSV`n`nROLE`nYou transcribe my meal dictation (PT/EN) into rows for my Excel Food_Log.`n`nHOW IT WORKS`n- I will dictate one or more meals in free speech.`n- Process immediately without asking questions.`n`nOUTPUT FORMAT (STRICT)`n- Plain text CSV. NO markdown, NO header, NO commentary.`n- Output a single block of text. NO empty lines between rows.`n- Separator: semicolon (;)`n`nEXAMPLE OUTPUT`n2025-10-25;Breakfast;08:30;coffee;caffeine;0;`n2025-10-25;Lunch;12:15;rice, beans;protein;0;`n`nOUTPUT RULES`n- Strip all blank lines. Do not add leading/trailing newlines.`n- Trim whitespace from each row.`n- Each row format: Date;Meal;Time;Main_Items;Tags;Satisfaction_with_Speech;Notes`n- Sort by Date then Time.`n`nFIELD RULES`n- Date: YYYY‑MM‑DD. Use " "today" " for current date in America/Sao_Paulo timezone.`n  (IMPORTANT: For the date always consider one day before the current one, unless specified otherwise.)`n- Time: HH:MM in 24h; pad leading zeros (e.g., 08:05).`n- Meal: Breakfast | Lunch | Dinner | Snack.`n  PT mapping: café da manhã→Breakfast; almoço→Lunch; jantar/janta→Dinner; lanche→Snack.`n- Main_Items: comma‑separated simple item names (e.g., coffee, bread, butter).`n- Tags: comma‑separated, from this set when present or inferable:`n  caffeine, sugar, alcohol, dairy, gluten, fried, spicy, high-carb, low-carb, processed, protein, fiber, late-night, home-cooked, fast-food.`n  Add " "late-night" " automatically if Time ≥ 22:00.`n- Satisfaction_with_Speech: integer 0–3 (0 = liked a lot; 3 = disliked a lot). If not stated, leave empty.`n- Notes: short free text when I provide context.`n`nMISSING INFO`n- If Date or Time is missing, use " "today" " and infer time from meal type (Breakfast=08:00, Lunch=12:00, Dinner=19:00, Snack=15:00).`n`nACK`n- Process the dictation immediately and output CSV rows only.)"
     )
 }
 
@@ -162,7 +162,7 @@ InitHotstringsCheatSheet() {
         "Convert to Task"
     )
     RegisterHotstring(":o:flog",
-        "( LTrim`nFood_Log dictation → Excel CSV`n`nROLE`nYou transcribe my meal dictation (PT/EN) into rows for my Excel Food_Log.`n`nHOW IT WORKS`n- I will dictate one or more meals in free speech.`n- Process immediately without asking questions.`n`nOUTPUT (strict)`n- Return ONLY CSV data rows. NO header row. NO markdown, NO code fences, NO commentary.`n- Each row format: Date;Meal;Time;Main_Items;Tags;Satisfaction_with_Speech;Notes`n- Sort by Date then Time.`n`nFIELD RULES`n- Date: YYYY‑MM‑DD. Use " "today" " for current date in America/Sao_Paulo timezone.`n- Time: HH:MM in 24h; pad leading zeros (e.g., 08:05).`n- Meal: Breakfast | Lunch | Dinner | Snack.`n  PT mapping: café da manhã→Breakfast; almoço→Lunch; jantar/janta→Dinner; lanche→Snack.`n- Main_Items: comma‑separated simple item names (e.g., coffee, bread, butter).`n- Tags: comma‑separated, from this set when present or inferable:`n  caffeine, sugar, alcohol, dairy, gluten, fried, spicy, high-carb, low-carb, processed, protein, fiber, late-night, home-cooked, fast-food.`n  Add " "late-night" " automatically if Time ≥ 22:00.`n- Satisfaction_with_Speech: integer 0–3 (0 = liked a lot; 3 = disliked a lot). If not stated, leave empty.`n- Notes: short free text when I provide context.`n`nMISSING INFO`n- If Date or Time is missing, use " "today" " and infer time from meal type (Breakfast=08:00, Lunch=12:00, Dinner=19:00, Snack=15:00).`n`nACK`n- Process the dictation immediately and output CSV rows only.`n For the date always consider one day before the current one.)",
+        "( LTrim`nFood_Log dictation → Excel CSV`n`nROLE`nYou transcribe my meal dictation (PT/EN) into rows for my Excel Food_Log.`n`nHOW IT WORKS`n- I will dictate one or more meals in free speech.`n- Process immediately without asking questions.`n`nOUTPUT FORMAT (STRICT)`n- Plain text CSV. NO markdown, NO header, NO commentary.`n- Output a single block of text. NO empty lines between rows.`n- Separator: semicolon (;)`n`nEXAMPLE OUTPUT`n2025-10-25;Breakfast;08:30;coffee;caffeine;0;`n2025-10-25;Lunch;12:15;rice, beans;protein;0;`n`nOUTPUT RULES`n- Strip all blank lines. Do not add leading/trailing newlines.`n- Trim whitespace from each row.`n- Each row format: Date;Meal;Time;Main_Items;Tags;Satisfaction_with_Speech;Notes`n- Sort by Date then Time.`n`nFIELD RULES`n- Date: YYYY‑MM‑DD. Use " "today" " for current date in America/Sao_Paulo timezone.`n  (IMPORTANT: For the date always consider one day before the current one, unless specified otherwise.)`n- Time: HH:MM in 24h; pad leading zeros (e.g., 08:05).`n- Meal: Breakfast | Lunch | Dinner | Snack.`n  PT mapping: café da manhã→Breakfast; almoço→Lunch; jantar/janta→Dinner; lanche→Snack.`n- Main_Items: comma‑separated simple item names (e.g., coffee, bread, butter).`n- Tags: comma‑separated, from this set when present or inferable:`n  caffeine, sugar, alcohol, dairy, gluten, fried, spicy, high-carb, low-carb, processed, protein, fiber, late-night, home-cooked, fast-food.`n  Add " "late-night" " automatically if Time ≥ 22:00.`n- Satisfaction_with_Speech: integer 0–3 (0 = liked a lot; 3 = disliked a lot). If not stated, leave empty.`n- Notes: short free text when I provide context.`n`nMISSING INFO`n- If Date or Time is missing, use " "today" " and infer time from meal type (Breakfast=08:00, Lunch=12:00, Dinner=19:00, Snack=15:00).`n`nACK`n- Process the dictation immediately and output CSV rows only.)",
         "Prompts",
         "Food Log Dictation"
     )
@@ -2311,7 +2311,7 @@ ShowHotstringSelector() {
     for category in g_HotstringCategories {
         ; Calculate how many character slots belong to this category
         categorySlotCount := categorized[category].Length
-        
+
         if (categorySlotCount > 0 || currentCharIndex <= g_HotstringCharSequence.Length) {
             ; Add category header
             displayText .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`n"
@@ -2319,15 +2319,15 @@ ShowHotstringSelector() {
             displayText .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`n"
 
             ; Display all character slots for this category (including empty ones)
-            Loop categorySlotCount {
+            loop categorySlotCount {
                 if (currentCharIndex <= g_HotstringCharSequence.Length) {
                     char := g_HotstringCharSequence[currentCharIndex]
-                    
+
                     ; Check if this character has a hotstring assigned
                     if (charIndexToHotstring.Has(currentCharIndex)) {
                         hsInfo := charIndexToHotstring[currentCharIndex]
                         hs := hsInfo.hotstring
-                        
+
                         ; Use title for prompts (including placeholders), preview text for others
                         if (category = "Prompts" && hs.title != "") {
                             displayText .= "[" . char . "] > " . hs.title . "`n"
@@ -2344,7 +2344,7 @@ ShowHotstringSelector() {
                         ; Character slot exists but no hotstring assigned
                         displayText .= "[" . char . "] > (empty)`n"
                     }
-                    
+
                     currentCharIndex++
                 }
             }
@@ -2352,7 +2352,7 @@ ShowHotstringSelector() {
             displayText .= "`n"  ; Space between categories
         }
     }
-    
+
     ; Show any remaining unassigned character slots
     if (currentCharIndex <= g_HotstringCharSequence.Length) {
         displayText .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`n"
@@ -2393,7 +2393,8 @@ ShowHotstringSelector() {
     textControlWidth := baseWidth - 20  ; Account for margins
 
     ; Enable vertical scrolling for long content
-    g_HotstringSelectorGui.AddEdit("w" . textControlWidth . " h" . textControlHeight . " ReadOnly VScroll", displayText)
+    g_HotstringSelectorGui.AddEdit("w" . textControlWidth . " h" . textControlHeight . " ReadOnly VScroll", displayText
+    )
 
     ; Add Close button (set as default so it gets focus, not the Edit control)
     closeBtn := g_HotstringSelectorGui.AddButton("w100 Default Center", "Close")
@@ -2480,19 +2481,19 @@ ShowHotstringSelector() {
     ; Send Alt+Shift+W again
     ; Small delay to ensure previous key release is complete
     Sleep 50
-    
+
     ; Send Win+Ctrl+Alt+Y using SendInput for better reliability
     ; SendInput is more reliable for complex modifier combinations
     SendInput "#^!y"
-    
+
     ; Show message box
 
     Sleep 50
-    
+
     Send '""'
-    
+
     Sleep 50
-    
+
     Send "{Left}"
 
 }
