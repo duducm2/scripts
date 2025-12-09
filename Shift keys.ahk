@@ -1058,8 +1058,8 @@ GetCheatSheetText() {
         if RegExMatch(title, "i) - Message \(") {
             return cheatSheets.Has("OutlookMessage") ? cheatSheets["OutlookMessage"] : cheatSheets["OUTLOOK.EXE"]
         }
-        ; Detect Appointment or Meeting inspector windows
-        if RegExMatch(title, "i)(Appointment|Meeting)") {
+        ; Detect Appointment, Meeting, or Event inspector windows
+        if RegExMatch(title, "i)(Appointment|Meeting|Event)") {
             return cheatSheets.Has("OutlookAppointment") ? cheatSheets["OutlookAppointment"] : cheatSheets[
                 "OUTLOOK.EXE"]
         }
@@ -2708,7 +2708,7 @@ IsOutlookMessageActive() {
 
 IsOutlookAppointmentActive() {
     return WinActive("ahk_exe OUTLOOK.EXE")
-    && RegExMatch(WinGetTitle("A"), "i)(Appointment|Meeting)")
+    && RegExMatch(WinGetTitle("A"), "i)(Appointment|Meeting|Event)")
 }
 
 IsOutlookReminderActive() {
@@ -2723,7 +2723,7 @@ IsOutlookMainActive() {
     ; Exclude inspectors and reminders
     if RegExMatch(t, "i) - Message \(")
         return false
-    if RegExMatch(t, "i)(Appointment|Meeting)")
+    if RegExMatch(t, "i)(Appointment|Meeting|Event)")
         return false
     if RegExMatch(t, "i)Reminder")
         return false
