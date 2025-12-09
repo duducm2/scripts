@@ -238,6 +238,8 @@ Outlook (Shift)
 ✅ [E]Send [E]response
 📝 [B]ody (Subject -> Body)
 🎯 [F]ocused / [O]ther
+🔀 [K]Cycle panes backward
+🔀 [L]Cycle panes forward
 )"  ; end Outlook
 
 ; --- Outlook Reminder window -------------------------------------------------
