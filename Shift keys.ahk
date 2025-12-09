@@ -4626,6 +4626,7 @@ EnsureItemsViewFocus() {
     ; Ensure the focus is in the items view so the context menu targets a file
     EnsureItemsViewFocus()
     Sleep 100
+    ShowSmallLoadingIndicator_ChatGPT("Sharing file…")
 
     preStepDelay := 140
     postStepDelay := 250
@@ -4676,6 +4677,7 @@ EnsureItemsViewFocus() {
     Sleep postStepDelay
     
     Send "!{F4}"  ; Alt+F4 closes the current window
+    HideSmallLoadingIndicator_ChatGPT()
 
 }
 
