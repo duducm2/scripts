@@ -8794,6 +8794,16 @@ FindMonthGroup(uia) {
                             continue
                     }
 
+                    ; Validate button name contains "Fast" or "Thinking"
+                    try {
+                        buttonName := button.Name
+                        if (!InStr(buttonName, "Fast") && !InStr(buttonName, "Thinking"))
+                            continue
+                    } catch {
+                        ; If we can't get the name, skip this button
+                        continue
+                    }
+
                     btnPos := button.Location
                     btnCenterX := btnPos.x + (btnPos.w / 2)
                     btnCenterY := btnPos.y + (btnPos.h / 2)
@@ -8851,6 +8861,16 @@ FindMonthGroup(uia) {
                             continue
                     }
 
+                    ; Validate button name contains "Fast" or "Thinking"
+                    try {
+                        buttonName := button.Name
+                        if (!InStr(buttonName, "Fast") && !InStr(buttonName, "Thinking"))
+                            continue
+                    } catch {
+                        ; If we can't get the name, skip this button
+                        continue
+                    }
+
                     btnPos := button.Location
                     btnCenterX := btnPos.x + (btnPos.w / 2)
                     btnCenterY := btnPos.y + (btnPos.h / 2)
@@ -8885,7 +8905,17 @@ FindMonthGroup(uia) {
         }
 
         if (siblingButton) {
-            siblingButton.Click()
+            ; Step 3: Validate that the button name contains "Fast" or "Thinking"
+            try {
+                buttonName := siblingButton.Name
+                if (InStr(buttonName, "Fast") || InStr(buttonName, "Thinking")) {
+                    siblingButton.Click()
+                } else {
+                    ; Button found but name doesn't match expected values
+                }
+            } catch Error as e {
+                ; If we can't get the name, skip clicking for safety
+            }
         } else {
             ; Last resort: Could not find sibling button
         }
