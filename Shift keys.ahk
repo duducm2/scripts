@@ -507,6 +507,7 @@ Explorer (Shift)
 📁 [N]ew [F]older
 🔗 [H]s[H]ortcut (create)
 📋 [C]opy as path
+📤 [R]Share file
 📌 [P]inned item (first in sidebar)
 📌 [L]ast item (Explorer sidebar)
 )"  ; end Explorer
@@ -4618,6 +4619,65 @@ EnsureItemsViewFocus() {
 
 ; Shift + C : Copy as path - Copy
 +c:: Send "^+c"
+
+; Shift + R : Share file via context menu workflow - shaRe
++r::
+{
+    ; Ensure the focus is in the items view so the context menu targets a file
+    EnsureItemsViewFocus()
+    Sleep 100
+
+    preStepDelay := 140
+    postStepDelay := 250
+
+    ; Steps 1-4 with 120ms between each
+    Send "{AppsKey}" ; 1. open context menu
+    Sleep preStepDelay
+    Send "w"         ; 2. W
+    Sleep preStepDelay
+    Send "s"         ; 3. S
+    Sleep preStepDelay
+    Send "{Enter}"   ; 4. Enter
+    Sleep preStepDelay
+
+    ; Step 5: Shift+Tab with a longer wait (1s)
+    Sleep 4500
+    
+    
+    ; Steps 6-10 with 400ms between each
+    Send "+{Tab}"
+    Sleep postStepDelay
+    Send "+{Tab}"
+    Sleep postStepDelay
+    Send "+{Tab}"
+    Sleep postStepDelay
+    Send "{Enter}"                     ; 7. Enter
+    Sleep postStepDelay
+    Send "{Up}"                        ; 8. Up
+    Sleep postStepDelay
+    Send "{Up}"                        ; 9. Up
+    Sleep postStepDelay
+    Send "{Up}"                        ; 10. Up
+    Sleep postStepDelay
+
+    ; 11. Shift+Tab (3x) with 400ms between
+    Loop 3 {
+        Send "+{Tab}"
+        Sleep postStepDelay
+    }
+
+    ; 12. Enter
+    Send "{Enter}"
+    Sleep postStepDelay
+    
+    ; 15. Enter
+    Send "{Enter}"
+    
+    Sleep postStepDelay
+    
+    Send "!{F4}"  ; Alt+F4 closes the current window
+
+}
 
 ; Shift + P : Select first pinned item in Explorer sidebar - Pinned
 +p::
