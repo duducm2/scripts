@@ -936,12 +936,12 @@ Mobills (Shift)
 ➡️ [L]Next [L]onth
 
 --- Actions ---
-🚫 [I]gnore [T]ransaction
+🚫 [I]gnore transac[I]on
 ✏️ [N]ame [F]ield
 💸 [E]New [E]xpense
-💵 [R]New [R]ncome
-💳 [T]New [C]redit [E]xpense
-🔄 [D]New [T]ransfer ([D]eposit)
+💵 [Y]New [Y]ncome
+💳 [X]redit card e[X]pense
+🔄 [F]unds trans[F]er
 🔘 [W]Open button + type MAIN ([W]indow)
 )"
 
@@ -7578,8 +7578,8 @@ ContainsWord(norm, word) {
 ;-------------------------------------------------------------------
 #HotIf WinActive("Mobills")
 
-; Shift + Y : Dashboard
-+y:: {
+; Shift + D : Dashboard
++d:: {
     try {
         btn := GetMobillsButton("menu-dashboard-item", "Dashboard")
         if (btn) {
@@ -7592,8 +7592,8 @@ ContainsWord(norm, word) {
     }
 }
 
-; Shift + U : Contas
-+u:: {
+; Shift + A : Contas
++a:: {
     try {
         btn := GetMobillsButton("menu-accounts-item", "Accounts")
         if (btn) {
@@ -7606,8 +7606,8 @@ ContainsWord(norm, word) {
     }
 }
 
-; Shift + I : TransaÃ§Ãµes
-+i:: {
+; Shift + T : TransaÃ§Ãµes
++t:: {
     try {
         btn := GetMobillsButton("menu-transactions-item", "Transactions")
         if (btn) {
@@ -7620,8 +7620,8 @@ ContainsWord(norm, word) {
     }
 }
 
-; Shift + O : CartÃµes de crÃ©dito
-+o:: {
+; Shift + C : CartÃµes de crÃ©dito
++c:: {
     try {
         btn := GetMobillsButton("menu-creditCards-item", "Credit cards")
         if (btn) {
@@ -7648,8 +7648,8 @@ ContainsWord(norm, word) {
     }
 }
 
-; Shift + H : RelatÃ³rios
-+h:: {
+; Shift + R : RelatÃ³rios
++r:: {
     try {
         btn := GetMobillsButton("menu-reports-item", "Reports")
         if (btn) {
@@ -7662,8 +7662,8 @@ ContainsWord(norm, word) {
     }
 }
 
-; Shift + J : Mais opÃ§Ãµes
-+j:: {
+; Shift + M : Mais opÃ§Ãµes
++m:: {
     try {
         btn := GetMobillsButton("menu-moreOptions-item", "More options")
         if (btn) {
@@ -7787,8 +7787,8 @@ FocusViaOpenButton(tabs, pressSpace := false) {
     }
 }
 
-; Shift + N : Toggle "Ignore transaction"
-+n:: {
+; Shift + I : Toggle "Ignore transaction"
++i:: {
     try {
         uia := TryAttachBrowser()
         if !uia {
@@ -7957,8 +7957,8 @@ FocusDescriptionField() {
     }
 }
 
-; Shift + M : Focus description field
-+m:: FocusDescriptionField()
+; Shift + N : Focus name/description field
++n:: FocusDescriptionField()
 
 ; Shift + E : Click action button then Expense menu item
 +e:: {
@@ -7991,8 +7991,8 @@ FocusDescriptionField() {
     }
 }
 
-; Shift + R : Click action button then Income menu item
-+r:: {
+; Shift + Y : Click action button then Income menu item
++y:: {
     try {
         uia := TryAttachBrowser()
         if !uia {
@@ -8022,8 +8022,8 @@ FocusDescriptionField() {
     }
 }
 
-; Shift + T : Click action button then Credit card expense menu item
-+t:: {
+; Shift + X : Click action button then Credit card expense menu item
++x:: {
     try {
         uia := TryAttachBrowser()
         if !uia {
@@ -8053,8 +8053,8 @@ FocusDescriptionField() {
     }
 }
 
-; Shift + D : Click action button then Transfer menu item
-+d:: {
+; Shift + F : Click action button then Transfer menu item
++f:: {
     try {
         uia := TryAttachBrowser()
         if !uia {
