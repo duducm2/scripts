@@ -257,17 +257,17 @@ Outlook - Reminders (Shift)
 cheatSheets["OutlookAppointment"] := "
 (
 Outlook - Appointment (Shift)
-📅 [S]tart [D]ate (combo)
-📅 [D]ate [P]icker (start)
-🕐 [T]ime (start)
-📅 [E]nd [D]ate (combo)
-🕐 [E]nd [T]ime (combo)
-☑️ [A]ll [D]ay checkbox
-📝 [I]Title field
-👥 [R]equired / [T]o field
+📅 [S]tart date (combo)
+📅 [P]icker (start date)
+🕐 Start [T]ime (combo)
+📅 [E]nd date (combo)
+🕐 End [H]our (time combo)
+☑️ [A]ll-day toggle
+📝 T[i]tle field
+👥 [R]equired / To
 📍 [L]ocation
 📝 [B]ody
-🔄 [C]Make [R]ecurring
+🔄 [C]Make Recurring
 🧙 [W]izard (configure appointment)
 )"  ; end Outlook Appointment
 
@@ -3091,15 +3091,13 @@ Outlook_ClickEndTime_1200PM() {
     ClickOutlookByIdThenNameClass("4355", "12:00 PM", "AfxWndW", "Button")
 }
 
-; (moved +H/+J below to ensure the block starts with Y)
-
 ; Shift + S : Start date (combo) - Start Date
 +S:: {
     Outlook_ClickStartDate()
 }
 
-; Shift + D : Start date - Date Picker - Date Picker
-+D:: {
+; Shift + P : Start date picker - Picker
++P:: {
     Outlook_ClickStartDatePicker()
 }
 
@@ -3113,8 +3111,8 @@ Outlook_ClickEndTime_1200PM() {
     Outlook_ClickEndDate()
 }
 
-; Shift + N : End time (combo) - End Time
-+N:: {
+; Shift + H : End time (combo) - End Hour
++H:: {
     Outlook_ClickEndTime()
 }
 
