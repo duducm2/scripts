@@ -8879,13 +8879,17 @@ FindMonthGroup(uia) {
                             continue
                     }
 
-                    ; Validate button name contains "Fast" or "Thinking"
+                    ; Validate button name is exactly "Fast" or "Thinking" and is Type 50000 (Button)
                     try {
+                        ; Verify it's actually a button
+                        
+                        if (button.CurrentControlType != 50000)
+                            continue
                         buttonName := button.Name
-                        if (!InStr(buttonName, "Fast") && !InStr(buttonName, "Thinking"))
+                        if (buttonName != "Fast" && buttonName != "Thinking")
                             continue
                     } catch {
-                        ; If we can't get the name, skip this button
+                        ; If we can't get the name or type, skip this button
                         continue
                     }
 
@@ -8946,13 +8950,16 @@ FindMonthGroup(uia) {
                             continue
                     }
 
-                    ; Validate button name contains "Fast" or "Thinking"
+                    ; Validate button name is exactly "Fast" or "Thinking" and is Type 50000 (Button)
                     try {
+                        ; Verify it's actually a button
+                        if (button.CurrentControlType != 50000)
+                            continue
                         buttonName := button.Name
-                        if (!InStr(buttonName, "Fast") && !InStr(buttonName, "Thinking"))
+                        if (buttonName != "Fast" && buttonName != "Thinking")
                             continue
                     } catch {
-                        ; If we can't get the name, skip this button
+                        ; If we can't get the name or type, skip this button
                         continue
                     }
 
@@ -8990,16 +8997,19 @@ FindMonthGroup(uia) {
         }
 
         if (siblingButton) {
-            ; Step 3: Validate that the button name contains "Fast" or "Thinking"
+            ; Step 3: Validate that the button name is exactly "Fast" or "Thinking" and is Type 50000 (Button)
             try {
-                buttonName := siblingButton.Name
-                if (InStr(buttonName, "Fast") || InStr(buttonName, "Thinking")) {
-                    siblingButton.Click()
-                } else {
-                    ; Button found but name doesn't match expected values
+                ; Verify it's actually a button
+                if (siblingButton.CurrentControlType == 50000) {
+                    buttonName := siblingButton.Name
+                    if (buttonName == "Fast" || buttonName == "Thinking") {
+                        siblingButton.Click()
+                    } else {
+                        ; Button found but name doesn't match expected values
+                    }
                 }
             } catch Error as e {
-                ; If we can't get the name, skip clicking for safety
+                ; If we can't get the name or type, skip clicking for safety
             }
         } else {
             ; Last resort: Could not find sibling button
