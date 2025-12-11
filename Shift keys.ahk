@@ -806,11 +806,11 @@ Settle Up (Shift)
 cheatSheets["Miro"] := "
 (
 Miro (Shift)
-📋 [F]rame [L]ist
-🔗 [G]roup
-🔗 [U]ngroup ([U]ngroup)
-🔒 [L]ock/Unlock ([L]ock)
-🔗 [L]Add/Edit [L]ink
+📋 [F]Frame [L]ist
+🔗 [G]Group
+🔗 [U]Ungroup
+🔒 [L]Lock/Unlock
+🔗 [K]Add/Edit [L]ink
 --- Built-in Shortcuts (Windows) ---
 Tools:
 [V / H] > Select tool / Hand
@@ -9982,20 +9982,20 @@ IsFileDialogActive() {
 
 ; (removed) Shift + Y : Command palette (Ctrl+K)
 
-; Shift + U : Frame list (Ctrl+Shift+F)
-+u:: Send "^+f"
+; Shift + F : Frame List (Ctrl+Shift+F)
++f:: Send "^+f"
 
-; Shift + I : Group (Ctrl+G)
-+i:: Send "^g"
+; Shift + G : Group (Ctrl+G)
++g:: Send "^g"
 
-; Shift + O : Ungroup (Ctrl+Shift+G)
-+o:: Send "^+g"
+; Shift + U : Ungroup (Ctrl+Shift+G)
++u:: Send "^+g"
 
-; Shift + P : Lock/Unlock (Ctrl+Shift+L)
-+p:: Send "^+l"
+; Shift + L : Lock/Unlock (Ctrl+Shift+L)
++l:: Send "^+l"
 
-; Shift + H : Add/Edit link (Alt+Ctrl+K)
-+h:: Send "!^k"
+; Shift + K : Add/Edit Link (Alt+Ctrl+K)
++k:: Send "!^k"
 
 #HotIf
 
