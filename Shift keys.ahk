@@ -730,7 +730,7 @@ File Dialog (Shift)
 📁 [N]ew [F]older
 📌 [P]inned item (first in sidebar)
 💻 [T]his [P]C (sidebar)
-📝 [N]ame field (file name)
+📝 [M]Focus file [N]ame field
 ✅ [O]pen/[S]ave button
 ❌ [C]ancel button
 )"
@@ -9538,8 +9538,6 @@ FindMonthGroup(uia) {
         ; If ComboBox found, use it
         if fileNameCombo {
             fileNameCombo.SetFocus()
-
-            MsgBox "ComboBox found"
             Sleep 120
             Send "+{Tab}"
             Send "{Home}"
@@ -9556,31 +9554,45 @@ FindMonthGroup(uia) {
 
 }
 
-; Shift + U : Focus search bar (Ctrl+E/F)
-+u:: Send "^e"
+; Shift + S : Focus search bar - Search bar
++s:: Send "^e"
 
-; Shift + I : Create new folder (Ctrl+Shift+N), then Shift+Tab twice and Enter
-+i:: {
-    Send "^e"
-    Sleep 120
-    Send "+{Tab}"
-    Sleep 120
-    Send "+{Tab}"
-    Sleep 120
-    Send "{Enter}"
+; Shift + A : Focus address bar - Address bar
++a:: {
+    try {
+        root := UIA.ElementFromHandle(WinExist("A"))
+        ; Try to find address bar by common names
+        addressBar := root.FindFirst({ Type: "Edit", Name: "Address:" })
+        if !addressBar
+            addressBar := root.FindFirst({ Type: "Edit", Name: "Endereço:" })
+        if !addressBar
+            addressBar := root.FindFirst({ Type: "ComboBox", AutomationId: "1001" })
+        if !addressBar
+            addressBar := root.FindFirst({ Type: "Edit", ClassName: "Edit" })
+        
+        if addressBar {
+            addressBar.SetFocus()
+            Sleep 50
+            Send "^a"  ; Select all existing text
+            return
+        }
+    } catch Error {
+    }
+    ; Fallback: Use Alt+D (common shortcut for address bar in file dialogs)
+    Send "!d"
 }
 
 ; Shift + N : New folder - New Folder
 +n:: Send "^+n"
 
-; Shift + P : Select first pinned item in sidebar (reuse Explorer helper)
+; Shift + P : Select first pinned item in sidebar - Pinned item
 +p::
 {
     SelectExplorerSidebarFirstPinned()
 }
 
-; Shift + H : Select "This PC" / "Este computador" in sidebar
-+h::
+; Shift + T : Select "This PC" / "Este computador" in sidebar - This PC
++t::
 {
     SelectExplorerSidebarFirstPinned()
     Sleep 200
