@@ -485,6 +485,9 @@ Cursor
 ⬆️ [Ctrl+Alt+↑] Add cursor [A]bove
 ⬇️ [Ctrl+Alt+↓] Add cursor [B]elow
 
+--- ALT Shortcuts (ahk = AutoHotkey) ---
+📄 [N] Review next file (ahk)
+
 --- Additional Shortcuts ---
 👁️ [Alt+F12] [P]eek Definition
 📝 [Ctrl+Shift+L] Select all identical words ([L]ines)
@@ -6760,6 +6763,46 @@ CancelCommit(ctrl, *) {
         }
     } else {
 
+    }
+}
+
+; Alt + N : Review next file - Review next file
+!n::
+{
+    try {
+        win := WinExist("A")
+        if (!win) {
+            return
+        }
+        root := UIA.ElementFromHandle(win)
+        Sleep 100  ; Allow UI to update
+
+        ; Find the "Review next file" button by Type 50020 (Text) and Name
+        reviewButton := root.FindFirst({ Name: "Review next file", Type: "50020" })
+
+        ; Fallback: Try by Type "Text" and Name
+        if !reviewButton {
+            reviewButton := root.FindFirst({ Name: "Review next file", Type: "Text" })
+        }
+
+        ; Fallback: Try by Name with substring match (in case of localization variations)
+        if !reviewButton {
+            allTexts := root.FindAll({ Type: "50020" })
+            for text in allTexts {
+                if InStr(text.Name, "Review next file") {
+                    reviewButton := text
+                    break
+                }
+            }
+        }
+
+        if (reviewButton) {
+            reviewButton.Click()
+        } else {
+            ; Last resort: Could not find the button
+        }
+    } catch Error as e {
+        ; If all else fails, silently fail (no fallback action defined)
     }
 }
 
