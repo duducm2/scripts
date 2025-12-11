@@ -3878,8 +3878,11 @@ ApplyOutlookAppointmentSettings(privacy, allDay, status, category, reminder) {
         ApplyStatus(status.Status)
         Sleep 100
 
-        ApplyCategory(category.Category)
-        Sleep 100
+        ; If user chose to skip category, do nothing
+        if (category.Category != "") {
+            ApplyCategory(category.Category)
+            Sleep 100
+        }
 
         ApplyReminder(reminder.Reminder)
 
@@ -3946,7 +3949,7 @@ RunOutlookAppointmentWizard() {
     step1Options["4"] := { Label: "🔴 Out of office", Status: "Out of office" }
 
     choice1 := Outlook_SelectOptionByInputBox(
-        "📅 Outlook Appointment – Step 1 of 5",
+        "📅 Outlook Appointment – Step 1 of 6",
         "Choose status:",
         step1Options
     )
@@ -3961,7 +3964,7 @@ RunOutlookAppointmentWizard() {
     step2Options["2"] := { Label: "🔒 Private ON", Private: "On" }
 
     choice2 := Outlook_SelectOptionByInputBox(
-        "📅 Outlook Appointment – Step 2 of 5",
+        "📅 Outlook Appointment – Step 2 of 6",
         "Choose privacy:",
         step2Options
     )
@@ -3976,7 +3979,7 @@ RunOutlookAppointmentWizard() {
     step3Options["2"] := { Label: "📅 All-day YES", AllDay: "Yes" }
 
     choice3 := Outlook_SelectOptionByInputBox(
-        "📅 Outlook Appointment – Step 3 of 5",
+        "📅 Outlook Appointment – Step 3 of 6",
         "Choose duration:",
         step3Options
     )
@@ -3985,13 +3988,14 @@ RunOutlookAppointmentWizard() {
     }
     selAllDay := step3Options[choice3]
 
-    ; STEP 4 – Category (2 options)
+    ; STEP 4 – Category (3 options, including none)
     step4Options := Map()
-    step4Options["1"] := { Label: "⭐ Important", Category: "Important" }
-    step4Options["2"] := { Label: "👤 Personal", Category: "Personal" }
+    step4Options["1"] := { Label: "🚫 No category", Category: "" }
+    step4Options["2"] := { Label: "⭐ Important", Category: "Important" }
+    step4Options["3"] := { Label: "👤 Personal", Category: "Personal" }
 
     choice4 := Outlook_SelectOptionByInputBox(
-        "📅 Outlook Appointment – Step 4 of 5",
+        "📅 Outlook Appointment – Step 4 of 6",
         "Choose category:",
         step4Options
     )
@@ -4010,7 +4014,7 @@ RunOutlookAppointmentWizard() {
     step5Options["6"] := { Label: "📅 2 weeks", Reminder: "2 weeks" }
 
     choice5 := Outlook_SelectOptionByInputBox(
-        "📅 Outlook Appointment – Step 5 of 5",
+        "📅 Outlook Appointment – Step 5 of 6",
         "Choose reminder:",
         step5Options
     )
@@ -4019,8 +4023,34 @@ RunOutlookAppointmentWizard() {
     }
     selReminder := step5Options[choice5]
 
+    ; STEP 6 – Note marker (boolean)
+    step6Options := Map()
+    step6Options["1"] := { Label: "📝 Mark as NOTE", IsNote: true }
+    step6Options["2"] := { Label: "✖️ No note", IsNote: false }
+
+    choice6 := Outlook_SelectOptionByInputBox(
+        "📅 Outlook Appointment – Step 6 of 6",
+        "Is this a note?",
+        step6Options
+    )
+    if (choice6 = "") {
+        return
+    }
+    selNote := step6Options[choice6]
+
     ; Apply all settings at the end of the wizard
     ApplyOutlookAppointmentSettings(selPrivacy, selAllDay, selStatus, selCategory, selReminder)
+
+    ; If flagged as note, append NOTE at cursor (title should already be focused)
+    if (selNote.IsNote) {
+        try {
+            if (IsOutlookAppointmentActive()) {
+                SendText " NOTE"
+            }
+        } catch Error {
+            ; Silently ignore failures
+        }
+    }
 }
 
 ; Shift + w → Cascaded text wizard for Outlook Appointment
