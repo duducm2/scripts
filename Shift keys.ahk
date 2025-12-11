@@ -237,7 +237,7 @@ Outlook (Shift)
 🚫 [D]on't send any response
 ✅ [E]Send [E]response
 📝 [B]ody (Subject -> Body)
-🎯 [F]ocused / [O]ther
+🎯 [F]ocused / Other
 🔀 [K]Cycle panes backward
 🔀 [L]Cycle panes forward
 )"  ; end Outlook
@@ -276,7 +276,7 @@ cheatSheets["OutlookMessage"] := "
 (
 Outlook - Message (Shift)
 📝 [S]ubject / Title
-👥 [T]o / [R]equired
+👥 [T]o / Required
 📝 [B]ody (Location -> Body)
 )"  ; end Outlook Message
 
@@ -387,14 +387,14 @@ Spotify (Shift)
 💿 [B]Albums
 🏠 [H]ome
 🎵 [N]ow [P]laying
-🎯 [M]ade [F]or [Y]ou
+🎯 [M]ade For You
 🆕 [R]eleases (New)
 📊 [X]Charts
 🎵 [V]iew (Now Playing)
 📚 [L]ibrary sidebar
 ⛶ [E]xpand [L]ibrary
 🎤 [Y]Lyrics
-⏯️ [T]Play / [P]ause
+⏯️ [T]Play / Pause
 )"  ; end Spotify
 
 ; --- OneNote ---------------------------------------------------------------
@@ -403,12 +403,12 @@ cheatSheets["ONENOTE.EXE"] := "
 OneNote (Shift)
 📈 [Y]Expand
 📉 [U]Collapse ([U]nfold reverse)
-📉 [I]Collapse [A]ll
+📉 [I]Collapse All
 📈 [O]Expand [A]ll
 📝 [P]Select line and children ([P]aragraph)
 🗑️ [D]elete line and children
 🗑️ [S]Delete line ([S]ingle, keep children)
-🔍 [F]Advanced [S]earching with double quotes ([F]ind)
+🔍 [F]Advanced Searching with double quotes ([F]ind)
 )"  ; end OneNote
 
 ; --- Chrome general shortcuts ----------------------------------------------
@@ -8882,7 +8882,7 @@ FindMonthGroup(uia) {
                     ; Validate button name is exactly "Fast" or "Thinking" and is Type 50000 (Button)
                     try {
                         ; Verify it's actually a button
-                        
+
                         if (button.CurrentControlType != 50000)
                             continue
                         buttonName := button.Name
