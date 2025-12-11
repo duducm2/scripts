@@ -762,6 +762,7 @@ Excel (Shift)
 ⚪ [W]Select [W]hite Color
 ✏️ [E]Enable [E]diting
 📊 [C]Turn [C]SV delimited by semicolon into columns
+➕ [A]Add multiple rows (Alt, Alt, 2, R x8)
 )"
 
 ; --- Power BI ------------------------------------------------------------
@@ -4838,6 +4839,19 @@ EnsureItemsViewFocus() {
     Send "{Enter}"
     Sleep 100
     Send "{Enter}"
+}
+
+; Shift + A : Add multiple rows (repeat Alt, Alt, 2, R with delays)
++a:: {
+    Loop 8 {
+        Send "{Alt down}"
+        Send "{Alt up}"
+        Sleep 100
+        Send "2"
+        Sleep 50
+        Send "r"
+        Sleep 50
+    }
 }
 
 #HotIf
