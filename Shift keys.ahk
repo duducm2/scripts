@@ -4874,7 +4874,7 @@ EnsureItemsViewFocus() {
 
 ; Shift + A : Add multiple rows (repeat Alt, Alt, 2, R with delays)
 +a:: {
-    Loop 8 {
+    loop 8 {
         Send "{Alt down}"
         Send "{Alt up}"
         Sleep 100
@@ -4892,8 +4892,8 @@ EnsureItemsViewFocus() {
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe PBIDesktop.exe") || InStr(WinGetTitle("A"), "powerbi", false)
 
-; Shift + Y : Transform data (Alt, H, T, then UIA click)
-+y:: {
+; Shift + T : Transform data (Alt, H, T, then UIA click)
++t:: {
     try {
         Send "{Alt down}"
         Send "{Alt up}"
@@ -5143,8 +5143,8 @@ EnsureItemsViewFocus() {
     }
 }
 
-; Shift + K : Select the Power BI search edit field (Data anchor + Tab)
-+k:: {
+; Shift + S : Select the Power BI search edit field (Data anchor + Tab)
++s:: {
     try {
         win := WinExist("A")
         if !win
@@ -5295,8 +5295,8 @@ EnsureItemsViewFocus() {
     Send "{Enter}"  ; Enter key is universal for OK/Confirm
 }
 
-; Shift + N : Click Cancel/Exit button in Power BI modals
-+n:: {
+; Shift + X : Click Cancel/Exit button in Power BI modals
++x:: {
     try {
         root := UIA.ElementFromHandle(WinExist("A"))
 
@@ -5493,7 +5493,7 @@ EnsureItemsViewFocus() {
     }
 }
 
-; Shift + W : Click Data button
+; Shift + Q : Click Data button (Data pane toggle)
 +q:: {
     try {
         root := UIA.ElementFromHandle(WinExist("A"))
@@ -5526,7 +5526,7 @@ EnsureItemsViewFocus() {
     }
 }
 
-; Shift + Q : Click New page button
+; Shift + W : Click New page button
 +w:: {
     try {
         root := UIA.ElementFromHandle(WinExist("A"))
@@ -9612,7 +9612,7 @@ FindMonthGroup(uia) {
             addressBar := root.FindFirst({ Type: "ComboBox", AutomationId: "1001" })
         if !addressBar
             addressBar := root.FindFirst({ Type: "Edit", ClassName: "Edit" })
-        
+
         if addressBar {
             addressBar.SetFocus()
             Sleep 50
