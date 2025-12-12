@@ -270,6 +270,9 @@ CenterMouse() {
         }
 
         ; Step 3: Find all "Show more options" elements (normal read-aloud flow)
+        ; Show banner while searching
+        searchBanner := CreateCenteredBanner("Finding read aloud button...", "3772FF", "FFFFFF", 24, 178)
+        
         allMoreOptionsButtons := []
 
         ; Primary strategy: Search directly by name (most efficient - finds 8 elements vs searching 120+ buttons)
@@ -287,6 +290,9 @@ CenterMouse() {
 
         if (allMoreOptionsButtons.Length = 0) {
             ; No "Show more options" buttons found
+            if IsObject(searchBanner) && searchBanner.Hwnd {
+                searchBanner.Destroy()
+            }
             return
         }
 
@@ -316,12 +322,20 @@ CenterMouse() {
 
         if (!lastMoreOptionsButton) {
             ; Could not find last "Show more options" button
+            if IsObject(searchBanner) && searchBanner.Hwnd {
+                searchBanner.Destroy()
+            }
             return
         }
 
         ; Step 4: Click the last "Show more options" button
         lastMoreOptionsButton.Click()
         Sleep 300 ; Wait for menu to appear
+        
+        ; Hide search banner now that we found the button
+        if IsObject(searchBanner) && searchBanner.Hwnd {
+            searchBanner.Destroy()
+        }
 
         ; Step 5: Find and click the "Text to speech" menu item
         textToSpeechMenuItem := 0
