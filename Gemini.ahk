@@ -269,9 +269,45 @@ CenterMouse() {
             return
         }
 
+                    ; Try to find "Resume" button (if reading is paused, resume it)
+        resumeButton := 0
+        try {
+            ; Primary strategy: Find by Name "Resume" with Type 50000 (Button)
+            resumeButton := uia.FindFirst({ Name: "Resume", Type: 50000 })
+
+            ; Fallback: Try by Type "Button" and Name "Resume"
+            if !resumeButton {
+                resumeButton := uia.FindFirst({ Type: "Button", Name: "Resume" })
+            }
+
+            ; Fallback: Search all buttons for one with "Resume" name and tts-button className
+            if !resumeButton {
+                allButtons := uia.FindAll({ Type: 50000 })
+                for button in allButtons {
+                    if (button.Name = "Resume" || InStr(button.Name, "Resume", false) = 1) {
+                        if (InStr(button.ClassName, "tts-button") || InStr(button.ClassName, "mdc-icon-button")) {
+                            resumeButton := button
+                            break
+                        }
+                    }
+                }
+            }
+        } catch {
+            ; Silently continue if resume button search fails
+        }
+
+        ; If "Resume" button found, click it and return to previous window
+        if (resumeButton) {
+            resumeButton.Click()
+            ShowNotification("Resumed", 800, "FFFF00", "000000", 24)
+            Send "!{Tab}"
+            return
+        }
+
         ; Step 3: Find all "Show more options" elements (normal read-aloud flow)
         ; Show banner while searching
         searchBanner := CreateCenteredBanner("Finding read aloud button...", "3772FF", "FFFFFF", 24, 178)
+        Sleep 250 ; Small delay to ensure UI is ready
         
         allMoreOptionsButtons := []
 
