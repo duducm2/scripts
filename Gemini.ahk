@@ -216,10 +216,10 @@ CenterMouse() {
 
 ; --- Hotkeys ----------------------------------------------------------------
 
-; Win+Alt+Shift+7 : Read aloud the last message in Gemini (activates Gemini window first, then clicks last "Show more options" then "Text to speech")
+; Win+Alt+Shift+7 : Read aloud and copy the last message in Gemini (activates Gemini window first, copies the message, then clicks last "Show more options" then "Text to speech")
 ; If reading is active, clicking this shortcut again will pause the reading
 #!+7:: {
-    
+
     try {
         ; Step 1: Activate Gemini window globally
         SetTitleMatchMode(2)
@@ -269,7 +269,7 @@ CenterMouse() {
             return
         }
 
-                    ; Try to find "Resume" button (if reading is paused, resume it)
+        ; Try to find "Resume" button (if reading is paused, resume it)
         resumeButton := 0
         try {
             ; Primary strategy: Find by Name "Resume" with Type 50000 (Button)
@@ -304,11 +304,66 @@ CenterMouse() {
             return
         }
 
-        ; Step 3: Find all "Show more options" elements (normal read-aloud flow)
+        ; Step 3: Find and click the last Copy button (copy the message we're about to read)
+        allCopyButtons := []
+
+        ; Primary strategy: Find all buttons with Name "Copy"
+        allButtons := uia.FindAll({ Type: 50000 })
+        for button in allButtons {
+            if (button.Name = "Copy" || InStr(button.Name, "Copy", false) = 1) {
+                ; Additional check: ensure it has the Copy button className pattern
+                if (InStr(button.ClassName, "icon-button") || InStr(button.ClassName, "mdc-button")) {
+                    allCopyButtons.Push(button)
+                }
+            }
+        }
+
+        ; Fallback: Try by Type "Button" if the above didn't find enough
+        if (allCopyButtons.Length = 0) {
+            allButtons := uia.FindAll({ Type: "Button" })
+            for button in allButtons {
+                if (button.Name = "Copy" || InStr(button.Name, "Copy", false) = 1) {
+                    allCopyButtons.Push(button)
+                }
+            }
+        }
+
+        ; Find the last Copy button (the one with the highest Y position, meaning furthest down the page)
+        lastCopyButton := 0
+        highestY := -1
+
+        for copyButton in allCopyButtons {
+            try {
+                btnPos := copyButton.Location
+                btnBottomY := btnPos.y + btnPos.h
+
+                ; The last button will be the one with the highest bottom Y coordinate
+                if (btnBottomY > highestY) {
+                    highestY := btnBottomY
+                    lastCopyButton := copyButton
+                }
+            } catch {
+                ; If getting location fails, skip this button
+            }
+        }
+
+        ; If position-based approach didn't work, just use the last one in the array
+        if (!lastCopyButton && allCopyButtons.Length > 0) {
+            lastCopyButton := allCopyButtons[allCopyButtons.Length]
+        }
+
+        ; Click the copy button if found
+        if (lastCopyButton) {
+            lastCopyButton.Click()
+            ; Play chime when copy completes
+            PlayCopyCompletedChime()
+        }
+
+        ; Step 4: Find all "Show more options" elements (normal read-aloud flow)
         ; Show banner while searching
-        searchBanner := CreateCenteredBanner("Finding read aloud button...", "3772FF", "FFFFFF", 24, 178)
-        Sleep 250 ; Small delay to ensure UI is ready
-        
+        searchBanner := CreateCenteredBanner("Finding read aloud button and copying...", "3772FF", "FFFFFF", 24, 178)
+        Sleep 300 ; Small delay to ensure UI is ready
+
         allMoreOptionsButtons := []
 
         ; Primary strategy: Search directly by name (most efficient - finds 8 elements vs searching 120+ buttons)
@@ -364,16 +419,16 @@ CenterMouse() {
             return
         }
 
-        ; Step 4: Click the last "Show more options" button
+        ; Step 5: Click the last "Show more options" button
         lastMoreOptionsButton.Click()
         Sleep 300 ; Wait for menu to appear
-        
+
         ; Hide search banner now that we found the button
         if IsObject(searchBanner) && searchBanner.Hwnd {
             searchBanner.Destroy()
         }
 
-        ; Step 5: Find and click the "Text to speech" menu item
+        ; Step 6: Find and click the "Text to speech" menu item
         textToSpeechMenuItem := 0
 
         ; Primary strategy: Find by Name "Text to speech" with Type 50011 (MenuItem)
@@ -413,8 +468,17 @@ CenterMouse() {
 
         if (textToSpeechMenuItem) {
             textToSpeechMenuItem.Click()
+            ; Show notification that both copy and read-aloud actions completed
+            ShowNotification("Copied & Reading aloud", 800, "FFFF00", "000000", 24)
+            ; Return to previous window
+            Send "!{Tab}"
         } else {
             ; Last resort: Could not find "Text to speech" menu item
+            ; Still show notification for copy if it succeeded
+            if (lastCopyButton) {
+                ShowNotification("Copied!", 800, "FFFF00", "000000", 24)
+                Send "!{Tab}"
+            }
         }
     } catch Error as e {
         ; If all else fails, silently fail (no fallback action defined)
