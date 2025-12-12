@@ -12,36 +12,6 @@ PROMPT_FILE := A_ScriptDir "\Gemini_Prompt.txt"
 
 ; --- Helper Functions --------------------------------------------------------
 
-; Debug logging helper function
-DebugLog(location, message, dataStr := "", hypothesisId := "") {
-    ; #region agent log
-    try {
-        logPath := A_ScriptDir "\.cursor\debug.log"
-        timestamp := A_Now
-        ; Manually format JSON with proper escaping
-        EscapeJson(str) {
-            str := StrReplace(str, "\", "\\")
-            str := StrReplace(str, "`"", "\`"")
-            str := StrReplace(str, "`n", "\n")
-            str := StrReplace(str, "`r", "\r")
-            str := StrReplace(str, "`t", "\t")
-            return str
-        }
-        if (dataStr = "")
-            dataStr := "{}"
-        else if (!InStr(dataStr, "{"))
-            dataStr := "`"" . EscapeJson(dataStr) . "`""
-        locationEscaped := EscapeJson(location)
-        messageEscaped := EscapeJson(message)
-        hypothesisIdEscaped := EscapeJson(hypothesisId)
-        json := "{`"sessionId`":`"debug-session`",`"runId`":`"run1`",`"hypothesisId`":`"" . hypothesisIdEscaped . "`",`"location`":`"" . locationEscaped . "`",`"message`":`"" . messageEscaped . "`",`"data`":" . dataStr . ",`"timestamp`":`"" . timestamp . "`"}"
-        FileAppend(json . "`n", logPath, "UTF-8")
-    } catch {
-        ; Silently fail if logging fails
-    }
-    ; #endregion
-}
-
 ; Find Gemini browser window (case-insensitive contains match for "gemini")
 GetGeminiWindowHwnd() {
     try {
@@ -251,27 +221,18 @@ CenterMouse() {
 #!+7:: {
     
     try {
-        ; #region agent log
-        DebugLog("Gemini.ahk:223", "Function entry - starting read aloud", "", "D")
-        ; #endregion
         ; Step 1: Activate Gemini window globally
         SetTitleMatchMode(2)
         if hwnd := GetGeminiWindowHwnd()
             WinActivate("ahk_id " hwnd)
         if !WinWaitActive("ahk_exe chrome.exe", , 2) {
-            ; #region agent log
-            DebugLog("Gemini.ahk:229", "Window activation timeout", "", "D")
-            ; #endregion
             return
         }
-        Sleep 300
+        Sleep 200
 
         ; Step 2: Check if "Pause" button exists (if reading is active, pause it)
-        ; #region agent log
-        DebugLog("Gemini.ahk:234", "Creating UIA_Browser instance", "", "D")
-        ; #endregion
         uia := UIA_Browser()
-        Sleep 300
+        Sleep 200
 
         ; Try to find "Pause" button
         pauseButton := 0
@@ -308,127 +269,24 @@ CenterMouse() {
             return
         }
 
-        ; Step 3: Find all "Show more options" buttons (normal read-aloud flow)
+        ; Step 3: Find all "Show more options" elements (normal read-aloud flow)
         allMoreOptionsButtons := []
-        ; #region agent log
-        DebugLog("Gemini.ahk:322", "Starting search for Show more options", "", "A")
-        ; #endregion
 
-        ; Primary strategy: Find all buttons with Name "Show more options"
-        ; #region agent log
-        DebugLog("Gemini.ahk:326", "Searching Type 50000 (Button)", "", "A")
-        ; #endregion
-        allButtons := uia.FindAll({ Type: 50000 })
-        ; #region agent log
-        DebugLog("Gemini.ahk:329", "Found buttons count", "{`"count`":" . allButtons.Length . "}", "A")
-        ; #endregion
-        for button in allButtons {
-            btnName := button.Name
-            if (btnName = "Show more options" || InStr(btnName, "Show more options", false) = 1) {
-                ; #region agent log
-                btnClassName := button.ClassName
-                btnLocalizedType := button.LocalizedType
-                DebugLog("Gemini.ahk:336", "Found candidate button", "{`"name`":`"" . btnName . "`",`"type`":" . button.Type . ",`"className`":`"" . btnClassName . "`",`"localizedType`":`"" . btnLocalizedType . "`"}", "A")
-                ; #endregion
-                ; Additional check: ensure it has the more-menu-button className pattern
-                if (InStr(button.ClassName, "more-menu-button") || InStr(button.ClassName, "mdc-button")) {
-                    allMoreOptionsButtons.Push(button)
-                    ; #region agent log
-                    DebugLog("Gemini.ahk:341", "Button passed className filter", "{`"name`":`"" . btnName . "`"}", "C")
-                    ; #endregion
-                } else {
-                    ; #region agent log
-                    DebugLog("Gemini.ahk:344", "Button excluded by className filter", "{`"name`":`"" . btnName . "`",`"className`":`"" . button.ClassName . "`"}", "C")
-                    ; #endregion
-                }
-            }
-        }
-
-        ; Fallback: Try by Type "Button" if the above didn't find enough
-        if (allMoreOptionsButtons.Length = 0) {
-            ; #region agent log
-            DebugLog("Gemini.ahk:354", "Trying fallback: Type Button", "", "A")
-            ; #endregion
-            allButtons := uia.FindAll({ Type: "Button" })
-            ; #region agent log
-            DebugLog("Gemini.ahk:357", "Found buttons count (fallback)", "{`"count`":" . allButtons.Length . "}", "A")
-            ; #endregion
-            for button in allButtons {
-                btnName := button.Name
-                if (btnName = "Show more options" || InStr(btnName, "Show more options", false) = 1) {
-                    ; #region agent log
-                    btnClassName2 := button.ClassName
-                    btnLocalizedType2 := button.LocalizedType
-                    DebugLog("Gemini.ahk:364", "Found candidate button (fallback)", "{`"name`":`"" . btnName . "`",`"type`":" . button.Type . ",`"className`":`"" . btnClassName2 . "`",`"localizedType`":`"" . btnLocalizedType2 . "`"}", "A")
-                    ; #endregion
-                    if (InStr(button.ClassName, "more-menu-button")) {
-                        allMoreOptionsButtons.Push(button)
-                        ; #region agent log
-                        DebugLog("Gemini.ahk:369", "Button passed className filter (fallback)", "{`"name`":`"" . btnName . "`"}", "C")
-                        ; #endregion
-                    } else {
-                        ; #region agent log
-                        DebugLog("Gemini.ahk:372", "Button excluded by className filter (fallback)", "{`"name`":`"" . btnName . "`",`"className`":`"" . button.ClassName . "`"}", "C")
-                        ; #endregion
-                    }
-                }
-            }
-        }
-
-        ; Search for Type 50011 (MenuItem) as user reported
-        ; #region agent log
-        DebugLog("Gemini.ahk:381", "Searching Type 50011 (MenuItem) for Show more options", "", "A")
-        ; #endregion
-        allMenuItems := uia.FindAll({ Type: 50011 })
-        ; #region agent log
-        DebugLog("Gemini.ahk:384", "Found menu items count", "{`"count`":" . allMenuItems.Length . "}", "A")
-        ; #endregion
-        for menuItem in allMenuItems {
-            itemName := menuItem.Name
-            if (itemName = "Show more options" || InStr(itemName, "Show more options", false) = 1) {
-                ; #region agent log
-                itemClassName := menuItem.ClassName
-                itemLocalizedType := menuItem.LocalizedType
-                DebugLog("Gemini.ahk:390", "Found candidate menu item", "{`"name`":`"" . itemName . "`",`"type`":" . menuItem.Type . ",`"className`":`"" . itemClassName . "`",`"localizedType`":`"" . itemLocalizedType . "`"}", "A")
-                ; #endregion
-                allMoreOptionsButtons.Push(menuItem)
-            }
-        }
-
-        ; Search ALL elements with name "Show more options" regardless of type
-        ; #region agent log
-        DebugLog("Gemini.ahk:397", "Searching ALL elements with name Show more options", "", "B")
-        ; #endregion
+        ; Primary strategy: Search directly by name (most efficient - finds 8 elements vs searching 120+ buttons)
         try {
-            allElements := uia.FindAll({ Name: "Show more options" })
-            ; #region agent log
-            DebugLog("Gemini.ahk:400", "Found elements by name", "{`"count`":" . allElements.Length . "}", "B")
-            ; #endregion
-            for element in allElements {
-                ; #region agent log
-                elemName := element.Name
-                elemType := element.Type
-                elemTypeName := UIA.Type[elemType]
-                elemClassName := element.ClassName
-                elemLocalizedType := element.LocalizedType
-                DebugLog("Gemini.ahk:407", "Element with Show more options name", "{`"name`":`"" . elemName . "`",`"type`":" . elemType . ",`"typeName`":`"" . elemTypeName . "`",`"className`":`"" . elemClassName . "`",`"localizedType`":`"" . elemLocalizedType . "`"}", "B")
-                ; #endregion
+            allMoreOptionsButtons := uia.FindAll({ Name: "Show more options" })
+        } catch {
+            ; If direct name search fails, try Type 50011 (MenuItem) as fallback
+            allMenuItems := uia.FindAll({ Type: 50011 })
+            for menuItem in allMenuItems {
+                if (menuItem.Name = "Show more options" || InStr(menuItem.Name, "Show more options", false) = 1) {
+                    allMoreOptionsButtons.Push(menuItem)
+                }
             }
-        } catch Error as e {
-            ; #region agent log
-            errorMsg := (Type(e) = "Error") ? e.Message : String(e)
-            DebugLog("Gemini.ahk:412", "Error searching by name", "{`"error`":`"" . errorMsg . "`"}", "B")
-            ; #endregion
         }
 
-        ; #region agent log
-        DebugLog("Gemini.ahk:416", "Final allMoreOptionsButtons count", "{`"count`":" . allMoreOptionsButtons.Length . "}", "A")
-        ; #endregion
         if (allMoreOptionsButtons.Length = 0) {
             ; No "Show more options" buttons found
-            ; #region agent log
-            DebugLog("Gemini.ahk:420", "No Show more options buttons found - returning", "", "A")
-            ; #endregion
             return
         }
 
@@ -463,7 +321,7 @@ CenterMouse() {
 
         ; Step 4: Click the last "Show more options" button
         lastMoreOptionsButton.Click()
-        Sleep 600 ; Wait for menu to appear
+        Sleep 300 ; Wait for menu to appear
 
         ; Step 5: Find and click the "Text to speech" menu item
         textToSpeechMenuItem := 0
@@ -473,13 +331,11 @@ CenterMouse() {
 
         ; Fallback 1: Try by Type "MenuItem" and Name "Text to speech"
         if !textToSpeechMenuItem {
-            Sleep 200 ; Additional delay before fallback attempt
             textToSpeechMenuItem := uia.FindFirst({ Type: "MenuItem", Name: "Text to speech" })
         }
 
         ; Fallback 2: Try by ClassName containing "mat-mdc-menu-item" (substring match)
         if !textToSpeechMenuItem {
-            Sleep 200 ; Additional delay before fallback attempt
             allMenuItems := uia.FindAll({ Type: 50011 })
             for menuItem in allMenuItems {
                 if InStr(menuItem.Name, "Text to speech") || InStr(menuItem.Name, "speech") {
@@ -493,7 +349,6 @@ CenterMouse() {
 
         ; Fallback 3: Try finding by Name with substring match (in case of localization variations)
         if !textToSpeechMenuItem {
-            Sleep 200 ; Additional delay before fallback attempt
             allMenuItems := uia.FindAll({ Type: 50011 })
             for menuItem in allMenuItems {
                 if InStr(menuItem.Name, "Text to speech") || InStr(menuItem.Name, "Texto para fala") || InStr(menuItem.Name,
