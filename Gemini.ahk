@@ -362,7 +362,7 @@ CenterMouse() {
         ; Step 4: Find all "Show more options" elements (normal read-aloud flow)
         ; Show banner while searching
         searchBanner := CreateCenteredBanner("Finding read aloud button and copying...", "3772FF", "FFFFFF", 24, 178)
-        Sleep 300 ; Small delay to ensure UI is ready
+        Sleep 400 ; Small delay to ensure UI is ready
 
         allMoreOptionsButtons := []
 
