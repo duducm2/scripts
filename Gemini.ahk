@@ -804,69 +804,72 @@ InitializeGeminiFirstTime() {
             CenterMouse()
             Send("{Esc}")
 
-            ; Focus the Gemini prompt field (same logic as Shift+H)
-            Sleep 300
+            ; Focus the Gemini prompt field - optimized for speed
+            Sleep 200 ; Reduced from 300ms
             uia := UIA_Browser()
-            Sleep 300
+            Sleep 200 ; Reduced from 300ms
 
             promptField := 0
 
             ; Primary strategy: Find by Name "Enter a prompt here" with Type 50004 (Edit)
-            promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
-
-            ; Fallback 1: Try by Type "Edit" and Name "Enter a prompt here"
-            if !promptField {
-                promptField := uia.FindFirst({ Type: "Edit", Name: "Enter a prompt here" })
+            try {
+                promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
+            } catch {
+                ; Silently continue to fallbacks
             }
 
-            ; Fallback 2: Try by ClassName containing "ql-editor" or "new-input-ui" (substring match)
+            ; If primary strategy failed, use optimized fallback: get all edits once and check all conditions in a single pass
             if !promptField {
-                allEdits := uia.FindAll({ Type: 50004 })
-                for edit in allEdits {
-                    if (InStr(edit.ClassName, "ql-editor") || InStr(edit.ClassName, "new-input-ui")) {
-                        if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "prompt") {
+                try {
+                    allEdits := uia.FindAll({ Type: 50004 })
+                    qlEditorFallback := 0 ; Track any ql-editor as fallback
+
+                    for edit in allEdits {
+                        className := edit.ClassName
+                        name := edit.Name
+                        hasQlEditor := InStr(className, "ql-editor")
+                        hasNewInputUi := InStr(className, "new-input-ui")
+                        hasPromptName := (InStr(name, "Enter a prompt") || InStr(name, "Digite um prompt") || InStr(
+                            name, "prompt"))
+
+                        ; Priority 1: ql-editor with prompt-related name (best match - exit immediately)
+                        if hasQlEditor && hasPromptName {
                             promptField := edit
                             break
                         }
-                    }
-                }
-            }
 
-            ; Fallback 3: Try finding by ClassName containing "ql-editor" (most specific identifier)
-            if !promptField {
-                allEdits := uia.FindAll({ Type: 50004 })
-                for edit in allEdits {
-                    if InStr(edit.ClassName, "ql-editor") {
-                        promptField := edit
-                        break
-                    }
-                }
-            }
-
-            ; Fallback 4: Try finding by Name with substring match (in case of localization variations)
-            if !promptField {
-                allEdits := uia.FindAll({ Type: 50004 })
-                for edit in allEdits {
-                    if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "Digite um prompt") || InStr(edit.Name,
-                        "prompt") {
-                        ; Additional check to ensure it's the prompt field (has ql-editor in className)
-                        if InStr(edit.ClassName, "ql-editor") {
+                        ; Priority 2: new-input-ui with prompt-related name
+                        if hasNewInputUi && hasPromptName && !promptField {
                             promptField := edit
                             break
                         }
+
+                        ; Priority 3: any ql-editor (save first one as fallback)
+                        if hasQlEditor && !qlEditorFallback {
+                            qlEditorFallback := edit
+                        }
                     }
+
+                    ; Use ql-editor fallback if we didn't find a better match
+                    if !promptField && qlEditorFallback {
+                        promptField := qlEditorFallback
+                    }
+                } catch {
+                    ; Silently continue if fallback fails
                 }
             }
 
             if (promptField) {
                 promptField.SetFocus()
-                Sleep 100
+                Sleep 50 ; Reduced from 100ms
                 ; Ensure focus was successful
                 if (!promptField.HasKeyboardFocus) {
                     ; Fallback: try clicking if SetFocus didn't work
                     promptField.Click()
-                    Sleep 100
+                    Sleep 50 ; Reduced from 100ms
                 }
+                ; Play chime when field is successfully focused
+                PlayCopyCompletedChime()
             }
         }
     } else {
