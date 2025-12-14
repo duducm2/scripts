@@ -745,7 +745,7 @@ cheatSheets["Settings"] := "(Settings (Shift))`r`n🔊 [V]Set input [V]olume to 
 cheatSheets["Command Palette"] := "
 (
 Command Palette (Shift)
-⌨️ [Ctrl+H] [O]pen in folder ([O]pen)
+⌨️ [Ctrl+O] [O]pen in folder ([O]pen)
 ⌨️ [C]opy file [P]ath ([C]opy)
 ⌨️ [B]Send ten [B]ackspaces
 ⌨️ [S]Precise [S]earch
@@ -10136,14 +10136,14 @@ IsFileDialogActive() {
 ;-------------------------------------------------------------------
 #HotIf WinActive("Command Palette")
 
-; Ctrl + H : Trigger Ctrl+Shift+E
-^h:: Send "^+e"
+; Ctrl + O : Trigger Ctrl+Shift+E (Open in folder)
+^o:: Send "^+e"
 
-; Shift + K : Trigger Ctrl+Shift+C
-+k:: Send "^+c"
+; Shift + C : Trigger Ctrl+Shift+C (Copy file path)
++c:: Send "^+c"
 
-; Shift + Y : Send ten backspaces
-+y:: Send "{Backspace 10}"
+; Shift + B : Send ten backspaces
++b:: Send "{Backspace 10}"
 
 ; Shift + U : Insert double quotes twice, then hit left arrow
 +u:: Send '""{Left}'
