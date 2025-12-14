@@ -1597,36 +1597,13 @@ ToggleVoiceMessage() {
     global isRecording
 
     try {
-        ; #region agent log
-        startTime := A_TickCount
-        FileAppend('{"location":"Shift keys.ahk:1596","message":"ToggleVoiceMessage START","data":{"isRecording":' .
-            isRecording . ',"timestamp":' . A_TickCount . '},"sessionId":"debug-session","hypothesisId":"ALL"}' . "`n",
-            "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
-        ; #endregion
-
         chrome := UIA_Browser()      ; top-level Chrome UIA element
         if !IsObject(chrome) {
             MsgBox "Can't attach to Chrome."
             return
         }
 
-        ; #region agent log
-        afterBrowserTime := A_TickCount
-        FileAppend('{"location":"Shift keys.ahk:1600","message":"After UIA_Browser","data":{"elapsedMs":' . (
-            afterBrowserTime - startTime) . ',"timestamp":' . A_TickCount .
-        '},"sessionId":"debug-session","hypothesisId":"A"}' . "`n",
-        "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
-        ; #endregion
-
         Sleep 100                    ; reduced from 400ms - let Chrome finish drawing
-
-        ; #region agent log
-        afterSleepTime := A_TickCount
-        FileAppend('{"location":"Shift keys.ahk:1606","message":"After Sleep 100","data":{"elapsedMs":' . (
-            afterSleepTime - afterBrowserTime) . ',"timestamp":' . A_TickCount .
-        '},"sessionId":"debug-session","hypothesisId":"A"}' . "`n",
-        "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
-        ; #endregion
 
         ; Exact-name regexes (case-insensitive, anchored ^ $)
         voicePattern := "i)^(Voice message|Record voice message)$"
@@ -1637,62 +1614,14 @@ ToggleVoiceMessage() {
         FindBtn(p) => WaitForButton(chrome, p, 3000)
 
         if (isRecording) {           ; â–º we're supposed to stop & send
-            ; #region agent log
-            beforeFindTime := A_TickCount
-            FileAppend('{"location":"Shift keys.ahk:1616","message":"Before FindBtn sendPattern","data":{"pattern":"' .
-                sendPattern . '","timestamp":' . A_TickCount . '},"sessionId":"debug-session","hypothesisId":"B"}' .
-                "`n", "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
-            ; #endregion
-
             if (btn := FindBtn(sendPattern)) {
-                ; #region agent log
-                afterFindTime := A_TickCount
-                FileAppend('{"location":"Shift keys.ahk:1617","message":"Found Send button","data":{"elapsedMs":' . (
-                    afterFindTime - beforeFindTime) . ',"buttonName":"' . btn.Name . '","timestamp":' . A_TickCount .
-                '},"sessionId":"debug-session","hypothesisId":"B"}' . "`n",
-                "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
-                ; #endregion
-
-                ; #region agent log
-                beforeInvokeTime := A_TickCount
-                FileAppend('{"location":"Shift keys.ahk:1655","message":"Before btn.Invoke()","data":{"timestamp":' .
-                    A_TickCount . '},"sessionId":"debug-session","hypothesisId":"F"}' . "`n",
-                    "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
-                ; #endregion
-
                 try {
                     btn.Click()
-                    ; #region agent log
-                    afterInvokeTime := A_TickCount
-                    FileAppend(
-                        '{"location":"Shift keys.ahk:1655","message":"After btn.Click() SUCCESS","data":{"elapsedMs":' .
-                        (afterInvokeTime - beforeInvokeTime) . ',"timestamp":' . A_TickCount .
-                        '},"sessionId":"debug-session","hypothesisId":"F"}' . "`n",
-                        "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
-                    ; #endregion
                 } catch Error as err {
-                    ; #region agent log
-                    FileAppend('{"location":"Shift keys.ahk:1655","message":"btn.Click() ERROR","data":{"error":"' .
-                        err.Message . '","timestamp":' . A_TickCount .
-                        '},"sessionId":"debug-session","hypothesisId":"F"}' . "`n",
-                        "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
-                    ; #endregion
                     ; Try alternative: Click() method
                     try {
                         btn.Click()
-                        ; #region agent log
-                        FileAppend(
-                            '{"location":"Shift keys.ahk:1655","message":"btn.Click() SUCCESS (fallback)","data":{"timestamp":' .
-                            A_TickCount . '},"sessionId":"debug-session","hypothesisId":"F"}' . "`n",
-                            "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
-                        ; #endregion
                     } catch Error as err2 {
-                        ; #region agent log
-                        FileAppend('{"location":"Shift keys.ahk:1655","message":"btn.Click() ERROR","data":{"error":"' .
-                            err2.Message . '","timestamp":' . A_TickCount .
-                            '},"sessionId":"debug-session","hypothesisId":"F"}' . "`n",
-                            "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
-                        ; #endregion
                     }
                 }
                 isRecording := false
@@ -1701,59 +1630,19 @@ ToggleVoiceMessage() {
             } else {
                 ; Assume you clicked Send manually > reset & start new rec
                 isRecording := false
-                ; #region agent log
-                beforeFindTime2 := A_TickCount
-                FileAppend(
-                    '{"location":"Shift keys.ahk:1622","message":"Before FindBtn voicePattern (fallback)","data":{"pattern":"' .
-                    voicePattern . '","timestamp":' . A_TickCount . '},"sessionId":"debug-session","hypothesisId":"B"}' .
-                    "`n", "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
-                ; #endregion
-
                 if (btn := FindBtn(voicePattern)) {
-                    ; #region agent log
-                    afterFindTime2 := A_TickCount
-                    FileAppend(
-                        '{"location":"Shift keys.ahk:1623","message":"Found Voice button (fallback)","data":{"elapsedMs":' .
-                        (afterFindTime2 - beforeFindTime2) . ',"timestamp":' . A_TickCount .
-                        '},"sessionId":"debug-session","hypothesisId":"B"}' . "`n",
-                        "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
-                    ; #endregion
-
                     btn.Click()
                     isRecording := true
                 } else
                     MsgBox "Couldn't restart recording (Voice-message button missing)."
             }
         } else {                     ; â–º start recording
-            ; #region agent log
-            beforeFindTime := A_TickCount
-            FileAppend('{"location":"Shift keys.ahk:1629","message":"Before FindBtn voicePattern","data":{"pattern":"' .
-                voicePattern . '","timestamp":' . A_TickCount . '},"sessionId":"debug-session","hypothesisId":"B"}' .
-                "`n", "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
-            ; #endregion
-
             if (btn := FindBtn(voicePattern)) {
-                ; #region agent log
-                afterFindTime := A_TickCount
-                FileAppend('{"location":"Shift keys.ahk:1630","message":"Found Voice button","data":{"elapsedMs":' . (
-                    afterFindTime - beforeFindTime) . ',"timestamp":' . A_TickCount .
-                '},"sessionId":"debug-session","hypothesisId":"B"}' . "`n",
-                "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
-                ; #endregion
-
                 btn.Click()
                 isRecording := true
             } else
                 MsgBox "Couldn't find the Voice-message button."
         }
-
-        ; #region agent log
-        endTime := A_TickCount
-        FileAppend('{"location":"Shift keys.ahk:1638","message":"ToggleVoiceMessage END","data":{"totalElapsedMs":' . (
-            endTime - startTime) . ',"timestamp":' . A_TickCount .
-        '},"sessionId":"debug-session","hypothesisId":"ALL"}' . "`n",
-        "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
-        ; #endregion
     } catch Error as err {
         MsgBox "Error:`n" err.Message
     }
@@ -1816,35 +1705,9 @@ WaitForButton(root, pattern, timeout := 5000) {
     if !IsObject(root)
         return 0
 
-    ; #region agent log
-    startTime := A_TickCount
-    FileAppend('{"location":"Shift keys.ahk:1693","message":"WaitForButton START","data":{"pattern":"' . pattern .
-        '","timeout":' . timeout . ',"timestamp":' . A_TickCount . '},"sessionId":"debug-session","hypothesisId":"B"}' .
-        "`n", "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
-    ; #endregion
-
     deadline := A_TickCount + timeout
-    iterationCount := 0
     while (A_TickCount < deadline) {
-        iterationCount++
-
-        ; #region agent log
-        beforeFindAllTime := A_TickCount
-        ; #endregion
-
         buttons := root.FindAll({ Type: "Button" })
-        buttonCount := 0
-        for btn in buttons {
-            buttonCount++
-        }
-
-        ; #region agent log
-        afterFindAllTime := A_TickCount
-        FileAppend('{"location":"Shift keys.ahk:1698","message":"FindAll iteration","data":{"iteration":' .
-            iterationCount . ',"buttonCount":' . buttonCount . ',"findAllMs":' . (afterFindAllTime - beforeFindAllTime) .
-            ',"timestamp":' . A_TickCount . '},"sessionId":"debug-session","hypothesisId":"C"}' . "`n",
-            "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
-        ; #endregion
 
         ; Collect all matching buttons and their properties
         matchingButtons := []
@@ -1867,14 +1730,6 @@ WaitForButton(root, pattern, timeout := 5000) {
                 } catch {
                     supportsInvoke := false
                 }
-
-                ; #region agent log
-                FileAppend('{"location":"Shift keys.ahk:1846","message":"Found matching button","data":{"buttonName":"' .
-                    btn.Name . '","hasClassName":' . (hasClassName ? "true" : "false") . ',"className":"' . className .
-                    '","supportsInvoke":' . (supportsInvoke ? "true" : "false") . ',"timestamp":' . A_TickCount .
-                    '},"sessionId":"debug-session","hypothesisId":"G"}' . "`n",
-                    "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
-                ; #endregion
 
                 matchingButtons.Push({ btn: btn, hasClassName: hasClassName, className: className, supportsInvoke: supportsInvoke })
             }
@@ -1908,34 +1763,10 @@ WaitForButton(root, pattern, timeout := 5000) {
                 bestBtn := matchingButtons[1].btn
             }
 
-            ; #region agent log
-            endTime := A_TickCount
-            selectedSupportsInvoke := false
-            try {
-                selectedSupportsInvoke := bestBtn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)
-            } catch {
-            }
-            FileAppend(
-                '{"location":"Shift keys.ahk:1700","message":"WaitForButton FOUND","data":{"totalElapsedMs":' . (
-                    endTime - startTime) . ',"iterations":' . iterationCount . ',"buttonName":"' . bestBtn.Name .
-                '","matchesFound":' . matchingButtons.Length . ',"selectedHasClassName":' . (bestClassName != "" ?
-                    "true" : "false") . ',"selectedClassName":"' . bestClassName . '","selectedSupportsInvoke":' .
-                (selectedSupportsInvoke ? "true" : "false") . ',"timestamp":' . A_TickCount .
-                '},"sessionId":"debug-session","hypothesisId":"B"}' . "`n",
-                "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
-            ; #endregion
             return bestBtn
         }
         Sleep 50  ; reduced from 150ms to 50ms for faster retries
     }
-
-    ; #region agent log
-    endTime := A_TickCount
-    FileAppend('{"location":"Shift keys.ahk:1704","message":"WaitForButton TIMEOUT","data":{"totalElapsedMs":' . (
-        endTime - startTime) . ',"iterations":' . iterationCount . ',"timestamp":' . A_TickCount .
-    '},"sessionId":"debug-session","hypothesisId":"B"}' . "`n",
-    "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
-    ; #endregion
 
     return 0
 }
