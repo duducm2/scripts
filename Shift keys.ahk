@@ -10139,11 +10139,11 @@ IsFileDialogActive() {
 ; Ctrl + H : Trigger Ctrl+Shift+E
 ^h:: Send "^+e"
 
-; Shift + K : Trigger Ctrl+Shift+C
-+k:: Send "^+c"
+; Shift + C : Trigger Ctrl+Shift+C (Copy file path)
++c:: Send "^+c"
 
-; Shift + Y : Send ten backspaces
-+y:: Send "{Backspace 10}"
+; Shift + B : Send ten backspaces
++b:: Send "{Backspace 10}"
 
 ; Shift + U : Insert double quotes twice, then hit left arrow
 +u:: Send '""{Left}'
