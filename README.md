@@ -84,6 +84,31 @@ Preserve window state and try multiple activation strategies:
 - Use centered, timed overlay banners instead of modal `MsgBox`
 - Keep operations silent; on failure, fall back gracefully
 
+### 6) State-Based Toggle Pattern (Fast Button Toggling)
+
+For functions that toggle between two states (e.g., start/stop recording), use a global state variable with quick button finding.
+
+**Key principles:**
+
+- Use a global boolean variable to track state between hotkey presses
+- Use `WaitForButton()` with regex patterns to quickly find the appropriate button based on state
+- Minimize delays: only small sleeps (100ms initial, 300ms after state change) for UI to settle
+- Pattern-based matching allows flexible button name matching (localized, dynamic text)
+
+**Why it works:**
+
+- State persists between calls, so the function knows which button to target
+- Direct button finding via `WaitForButton()` is faster than navigation or searching
+- Minimal sleeps keep the toggle responsive while allowing UI to update
+
+**Example:** WhatsApp voice message toggle (`ToggleVoiceMessage()`)
+
+- Global `isRecording` tracks whether recording is active
+- If `isRecording` is true → find and click "Send/Stop recording" button
+- If `isRecording` is false → find and click "Voice message" button
+- Update state after successful click
+- Uses regex patterns like `"i)^(Voice message|Record voice message)$"` for flexible matching
+
 ---
 
 ## Patterns Library (Copy/Paste)
@@ -132,6 +157,47 @@ else
 ### Center Cursor Halo (WindowManagement)
 
 Use `#!+q` to centre the cursor on the active window and show a temporary halo for spatial orientation.
+
+### State-Based Toggle with Quick Button Finding
+
+```ahk
+global isRecording := false          ; persists between hotkey presses
+
+ToggleVoiceMessage() {
+    global isRecording
+
+    try {
+        chrome := UIA_Browser()
+        Sleep 100                    ; minimal delay for UI to settle
+
+        ; Pattern-based button finding
+        voicePattern := "i)^(Voice message|Record voice message)$"
+        sendPattern := "i)^(Send|Stop recording)$"
+        FindBtn(p) => WaitForButton(chrome, p, 3000)
+
+        if (isRecording) {           ; stop & send
+            if (btn := FindBtn(sendPattern)) {
+                btn.Click()
+                isRecording := false
+                Sleep 300            ; allow UI to restore after sending
+            }
+        } else {                     ; start recording
+            if (btn := FindBtn(voicePattern)) {
+                btn.Click()
+                isRecording := true
+            }
+        }
+    } catch Error as err {
+        ; handle error
+    }
+}
+```
+
+**Performance benefits:**
+
+- Fast execution: direct button finding, minimal sleeps
+- State-aware: knows which button to target without checking UI state
+- Resilient: pattern matching handles localized/dynamic button names
 
 ---
 
