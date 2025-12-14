@@ -1,4 +1,4 @@
-﻿/********************************************************************
+/********************************************************************
  *   Win+Alt+Shift symbol layer shortcuts (AHK v2)
  *   â€¢ Provides system-wide symbol shortcuts
  ********************************************************************/
@@ -552,15 +552,15 @@ MS Paint (Shift)
 cheatSheets["ClipAngel.exe"] := "
 (
 ClipAngel (Shift)
-📋 [Y]Select filtered content and copy
-🔄 [U]Switch focus list/text
-🗑️ [I]Delete all non-favorite
-🧹 [O]Clear filters
-⭐ [P]Mark as [F]avorite
-⭐ [H]Unmark as favorite
+📋 [C]Select filtered content and copy
+🔄 [T]Switch focus list/text (Toggle)
+🗑️ [D]Delete all non-favorite
+🧹 [X]Clear filters
+⭐ [F]Mark as [F]avorite
+⭐ [U]Unmark as favorite (Unmark)
 ✏️ [E]Edit [T]ext
-💾 [K]Save as file
-🔗 [L]Merge clips
+💾 [S]Save as file
+🔗 [M]Merge clips
 )"  ; end ClipAngel
 
 ; --- Figma -----------------------------------------------------------------
@@ -1463,8 +1463,8 @@ CenterGuiOnActiveMonitor(guiObj) {
 ;-------------------------------------------------------------------
 #HotIf WinActive("ClipAngel")
 
-; Shift + Y : Select filtered content and copy
-+y:: {
+; Shift + C : Select filtered content and copy
++c:: {
     Send "{Tab}"
     Sleep 100
     Send "{Tab}"
@@ -1476,29 +1476,29 @@ CenterGuiOnActiveMonitor(guiObj) {
     Send "{F10}"
 }
 
-; Shift + U : Switch focus between list and text (F10)
-+u:: Send "{F10}"
+; Shift + T : Switch focus between list and text (Toggle) (F10)
++t:: Send "{F10}"
 
-; Shift + I : Delete all non-favorite (Ctrl+Alt+K)
-+i:: Send "^!k"
+; Shift + D : Delete all non-favorite (Ctrl+Alt+K)
++d:: Send "^!k"
 
-; Shift + O : Clear filters (F7)
-+o:: Send "{F7}"
+; Shift + X : Clear filters (F7)
++x:: Send "{F7}"
 
-; Shift + P : Mark as favorite (Alt+Q)
-+p:: Send "!q"
+; Shift + F : Mark as favorite (Alt+Q)
++f:: Send "!q"
 
-; Shift + H : Unmark as favorite (Alt+W)
-+h:: Send "!w"
+; Shift + U : Unmark as favorite (Unmark) (Alt+W)
++u:: Send "!w"
 
-; Shift + J : Edit text (F4)
-+j:: Send "{F4}"
+; Shift + E : Edit text (F4)
++e:: Send "{F4}"
 
-; Shift + K : Save as file (Ctrl+S)
-+k:: Send "^s"
+; Shift + S : Save as file (Ctrl+S)
++s:: Send "^s"
 
-; Shift + L : Merge clips
-+l:: Send "^!j"
+; Shift + M : Merge clips
++m:: Send "^!j"
 
 #HotIf
 
@@ -9931,8 +9931,8 @@ IsFileDialogActive() {
 ;-------------------------------------------------------------------
 #HotIf WinActive("UIATreeInspector") || WinActive("ahk_exe UIATreeInspectorAutoHotkey64.exe")
 
-; Shift + Y : Refresh list
-+y:: {
+; Shift + R : Refresh list
++r:: {
     try {
         root := UIA.ElementFromHandle(WinExist("A"))
         Sleep 200
@@ -9949,8 +9949,8 @@ IsFileDialogActive() {
     }
 }
 
-; Shift + U : Focus macro sidebar button and shift tab 6 times
-+u:: {
+; Shift + F : Focus filter field
++f:: {
     try {
         root := UIA.ElementFromHandle(WinExist("A"))
         Sleep 200
