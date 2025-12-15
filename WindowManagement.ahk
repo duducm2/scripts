@@ -306,23 +306,29 @@ ShowCursorFlash(cx, cy) {
     borderColor := "FFFFFF" ; White border
     alpha := 220            ; Semi-transparent
 
-    ; Create the flash indicator GUI
-    flashGui := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x20 -DPIScale")
-    flashGui.BackColor := bgColor
-
-    ; Add border by creating a slightly larger outer GUI
-    flashGui.Add("Text", "x0 y0 w" size " h" size " Background" bgColor)
-
-    ; Position centered on cursor
-    x := cx - (size // 2)
-    y := cy - (size // 2)
-
-    ; Show first flash
+    ; Create the flash indicator GUI (fully guarded so errors never surface to user)
     try {
+        flashGui := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x20 -DPIScale")
+        flashGui.BackColor := bgColor
+
+        ; Add border by creating a slightly larger outer GUI
+        flashGui.Add("Text", "x0 y0 w" size " h" size " Background" bgColor)
+
+        ; Position centered on cursor
+        x := cx - (size // 2)
+        y := cy - (size // 2)
+
+        ; Show first flash
         flashGui.Show("NA x" x " y" y " w" size " h" size)
         WinSetTransparent(alpha, flashGui.Hwnd)
     } catch {
-        return  ; Silently fail if GUI cannot be shown
+        ; Best-effort cleanup; avoid throwing from visual-only helper
+        try {
+            if (flashGui && IsObject(flashGui))
+                flashGui.Destroy()
+        }
+        flashGui := 0
+        return
     }
 
     ; Schedule flash animation: hide after 150ms, show again after 250ms, destroy after 400ms
