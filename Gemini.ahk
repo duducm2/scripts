@@ -495,18 +495,18 @@ CenterMouse() {
         if !WinWaitActive("ahk_exe chrome.exe", , 2) {
             return
         }
-        Sleep 300
+        Sleep 150  ; keep snappy per README (short settle after activation)
 
         ; Step 2: Find all Copy buttons
         uia := UIA_Browser()
-        Sleep 300
+        Sleep 120  ; minimal settle before querying UIA
 
         allCopyButtons := []
 
-        ; Primary strategy: Find all buttons with Name "Copy"
+        ; Primary pass: Find all buttons, filter for any "Copy" variant
         allButtons := uia.FindAll({ Type: 50000 })
         for button in allButtons {
-            if (button.Name = "Copy" || InStr(button.Name, "Copy", false) = 1) {
+            if (button.Name = "Copy" || InStr(button.Name, "Copy", false)) {
                 ; Additional check: ensure it has the Copy button className pattern
                 if (InStr(button.ClassName, "icon-button") || InStr(button.ClassName, "mdc-button")) {
                     allCopyButtons.Push(button)
@@ -514,11 +514,11 @@ CenterMouse() {
             }
         }
 
-        ; Fallback: Try by Type "Button" if the above didn't find enough
+        ; Fallback: broaden type if none found on primary pass (still single filter loop)
         if (allCopyButtons.Length = 0) {
             allButtons := uia.FindAll({ Type: "Button" })
             for button in allButtons {
-                if (button.Name = "Copy" || InStr(button.Name, "Copy", false) = 1) {
+                if (button.Name = "Copy" || InStr(button.Name, "Copy", false)) {
                     allCopyButtons.Push(button)
                 }
             }
