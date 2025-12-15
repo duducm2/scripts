@@ -9058,7 +9058,7 @@ ToggleGeminiModel() {
 +p:: {
     try {
         uia := UIA_Browser()
-        Sleep 300
+        Sleep 150  ; small settle per README (keep this snappy)
 
         ; Primary strategy: Find by Name "Enter a prompt here" with Type 50004 (Edit)
         promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
@@ -9068,42 +9068,32 @@ ToggleGeminiModel() {
             promptField := uia.FindFirst({ Type: "Edit", Name: "Enter a prompt here" })
         }
 
-        ; Fallback 2: Try by ClassName containing "ql-editor" or "new-input-ui" (substring match)
+        ; Shared scan for remaining fallbacks (single FindAll + scoring for efficiency)
         if !promptField {
+            best := 0, bestScore := -1
             allEdits := uia.FindAll({ Type: 50004 })
             for edit in allEdits {
-                if (InStr(edit.ClassName, "ql-editor") || InStr(edit.ClassName, "new-input-ui")) {
-                    if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "prompt") {
-                        promptField := edit
-                        break
-                    }
+                cls := edit.ClassName
+                name := edit.Name
+                score := 0
+                if InStr(cls, "ql-editor")
+                    score += 3
+                if InStr(cls, "new-input-ui")
+                    score += 2
+                if InStr(name, "Enter a prompt")
+                    score += 3
+                else if InStr(name, "prompt")
+                    score += 2
+                else if InStr(name, "Digite um prompt")
+                    score += 2
+                ; pick the highest scoring candidate
+                if (score > bestScore) {
+                    bestScore := score
+                    best := edit
                 }
             }
-        }
-
-        ; Fallback 3: Try finding by ClassName containing "ql-editor" (most specific identifier)
-        if !promptField {
-            allEdits := uia.FindAll({ Type: 50004 })
-            for edit in allEdits {
-                if InStr(edit.ClassName, "ql-editor") {
-                    promptField := edit
-                    break
-                }
-            }
-        }
-
-        ; Fallback 4: Try finding by Name with substring match (in case of localization variations)
-        if !promptField {
-            allEdits := uia.FindAll({ Type: 50004 })
-            for edit in allEdits {
-                if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "Digite um prompt") || InStr(edit.Name,
-                    "prompt") {
-                    ; Additional check to ensure it's the prompt field (has ql-editor in className)
-                    if InStr(edit.ClassName, "ql-editor") {
-                        promptField := edit
-                        break
-                    }
-                }
+            if (bestScore >= 0) {
+                promptField := best
             }
         }
 
