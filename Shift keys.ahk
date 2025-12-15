@@ -1613,17 +1613,77 @@ ToggleVoiceMessage() {
         ; Use longer timeout (3000ms) for voice message button to allow WhatsApp UI to restore
         FindBtn(p) => WaitForButton(chrome, p, 3000)
 
+        ; #region agent log ToggleVoiceMessage entry
+        logLine := '{"sessionId":"debug-session","runId":"pre-fix-1","hypothesisId":"H1",'
+            . '"location":"Shift keys.ahk:ToggleVoiceMessage","message":"ToggleVoiceMessage entry",'
+            . '"data":{"isRecording":' . (isRecording ? "true" : "false") . '},"timestamp":' . A_TickCount . '}'
+        logLine .= "`n"
+        FileAppend(logLine, ".cursor\\debug.log", "UTF-8")
+        ; #endregion agent log ToggleVoiceMessage entry
+
         if (isRecording) {           ; â–º we're supposed to stop & send
+            ; #region agent log isRecording branch
+            logLine := '{"sessionId":"debug-session","runId":"pre-fix-1","hypothesisId":"H2",'
+                . '"location":"Shift keys.ahk:ToggleVoiceMessage","message":"Entered isRecording branch",'
+                . '"data":{},"timestamp":' . A_TickCount . '}'
+            logLine .= "`n"
+            FileAppend(logLine, ".cursor\\debug.log", "UTF-8")
+            ; #endregion agent log isRecording branch
+
             if (btn := FindBtn(sendPattern)) {
+                ; #region agent log send button found
+                btnName := ""
+                btnClass := ""
+                try btnName := btn.Name
+                try btnClass := btn.ClassName
+                logLine := '{"sessionId":"debug-session","runId":"pre-fix-1","hypothesisId":"H3",'
+                    . '"location":"Shift keys.ahk:ToggleVoiceMessage","message":"Send button found",'
+                    . '"data":{"name":"' . btnName . '","className":"' . btnClass . '"},"timestamp":' . A_TickCount . '}'
+                logLine .= "`n"
+                FileAppend(logLine, ".cursor\\debug.log", "UTF-8")
+                ; #endregion agent log send button found
+
+                ; Determine if this button supports Invoke (hypothesis H6)
+                supportsInvoke := false
                 try {
-                    btn.Click()
-                } catch Error as err {
-                    ; Try alternative: Click() method
+                    supportsInvoke := btn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)
+                } catch {
+                    supportsInvoke := false
+                }
+
+                ; #region agent log send button capabilities
+                logLine := '{"sessionId":"debug-session","runId":"pre-fix-1","hypothesisId":"H6",'
+                    . '"location":"Shift keys.ahk:ToggleVoiceMessage","message":"Send button capabilities",'
+                    . '"data":{"supportsInvoke":' . (supportsInvoke ? "true" : "false") . '},"timestamp":' . A_TickCount . '}'
+                logLine .= "`n"
+                FileAppend(logLine, ".cursor\\debug.log", "UTF-8")
+                ; #endregion agent log send button capabilities
+
+                ; Try multi-strategy activation: prefer Invoke when available, fallback to Click
+                clicked := false
+                if (supportsInvoke) {
                     try {
-                        btn.Click()
-                    } catch Error as err2 {
+                        btn.Invoke()
+                        clicked := true
+                    } catch {
                     }
                 }
+                if (!clicked) {
+                    try {
+                        btn.Click()
+                        clicked := true
+                    } catch {
+                    }
+                }
+
+                ; #region agent log send button activation result
+                logLine := '{"sessionId":"debug-session","runId":"pre-fix-1","hypothesisId":"H7",'
+                    . '"location":"Shift keys.ahk:ToggleVoiceMessage","message":"Send button activation attempt",'
+                    . '"data":{"clicked":' . (clicked ? "true" : "false") . '},"timestamp":' . A_TickCount . '}'
+                logLine .= "`n"
+                FileAppend(logLine, ".cursor\\debug.log", "UTF-8")
+                ; #endregion agent log send button activation result
+
                 isRecording := false
                 ; Give WhatsApp time to restore the UI after sending
                 Sleep 300
@@ -1716,12 +1776,25 @@ WaitForButton(root, pattern, timeout := 5000) {
                 className := ""
                 hasClassName := false
                 supportsInvoke := false
+                parentName := ""
+                parentClass := ""
+
                 try {
                     className := btn.ClassName
                     hasClassName := (className != "")
                 } catch {
                     ; ClassName property not available or error reading
                     hasClassName := false
+                }
+
+                ; Try to capture parent info for better disambiguation (esp. duplicated "Send" buttons)
+                try {
+                    parent := btn.Parent
+                    parentName := parent.Name
+                    parentClass := parent.ClassName
+                } catch {
+                    parentName := ""
+                    parentClass := ""
                 }
 
                 ; Check if button supports Invoke pattern
@@ -1731,7 +1804,22 @@ WaitForButton(root, pattern, timeout := 5000) {
                     supportsInvoke := false
                 }
 
-                matchingButtons.Push({ btn: btn, hasClassName: hasClassName, className: className, supportsInvoke: supportsInvoke })
+                ; #region agent log WaitForButton candidate (send pattern focus)
+                if InStr(pattern, "Send|Stop recording") {
+                    candName := ""
+                    candClass := className
+                    candAutoId := ""
+                    try candName := btn.Name
+                    try candAutoId := btn.AutomationId
+                    logLine := '{"sessionId":"debug-session","runId":"pre-fix-1","hypothesisId":"H5",'
+                        . '"location":"Shift keys.ahk:WaitForButton","message":"Candidate button for send pattern",'
+                        . '"data":{"pattern":"' . pattern . '","name":"' . candName . '","className":"' . candClass . '","automationId":"' . candAutoId . '","parentName":"' . parentName . '","parentClass":"' . parentClass . '","supportsInvoke":' . (supportsInvoke ? "true" : "false") . '},"timestamp":' . A_TickCount . '}'
+                    logLine .= "`n"
+                    FileAppend(logLine, ".cursor\\debug.log", "UTF-8")
+                }
+                ; #endregion agent log WaitForButton candidate (send pattern focus)
+
+                matchingButtons.Push({ btn: btn, hasClassName: hasClassName, className: className, supportsInvoke: supportsInvoke, parentName: parentName, parentClass: parentClass })
             }
         }
 
@@ -1751,6 +1839,16 @@ WaitForButton(root, pattern, timeout := 5000) {
                     score += 5   ; Second priority: supports Invoke pattern
                 }
 
+                ; Additional heuristic for WhatsApp voice "Send" vs text "Send" (H8)
+                ; When using the sendPattern, prefer the inner child button whose parent is also "Send"
+                if InStr(pattern, "Send|Stop recording") {
+                    try {
+                        if (match.parentName = "Send") {
+                            score += 3
+                        }
+                    }
+                }
+
                 if (score > bestScore) {
                     bestBtn := match.btn
                     bestClassName := match.className
@@ -1762,6 +1860,18 @@ WaitForButton(root, pattern, timeout := 5000) {
             if !bestBtn {
                 bestBtn := matchingButtons[1].btn
             }
+
+            ; #region agent log WaitForButton selection
+            btnName := ""
+            btnClass := ""
+            try btnName := bestBtn.Name
+            try btnClass := bestBtn.ClassName
+            logLine := '{"sessionId":"debug-session","runId":"pre-fix-1","hypothesisId":"H4",'
+                . '"location":"Shift keys.ahk:WaitForButton","message":"Returning best button for pattern",'
+                . '"data":{"pattern":"' . pattern . '","name":"' . btnName . '","className":"' . btnClass . '"},"timestamp":' . A_TickCount . '}'
+            logLine .= "`n"
+            FileAppend(logLine, ".cursor\\debug.log", "UTF-8")
+            ; #endregion agent log WaitForButton selection
 
             return bestBtn
         }
