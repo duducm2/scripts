@@ -805,9 +805,9 @@ InitializeGeminiFirstTime() {
             Send("{Esc}")
 
             ; Focus the Gemini prompt field - optimized for speed
-            Sleep 200 ; Reduced from 300ms
+            Sleep 150  ; small settle per README (keep snappy)
             uia := UIA_Browser()
-            Sleep 200 ; Reduced from 300ms
+            Sleep 120  ; minimal settle before querying UIA
 
             promptField := 0
 
@@ -818,41 +818,32 @@ InitializeGeminiFirstTime() {
                 ; Silently continue to fallbacks
             }
 
-            ; If primary strategy failed, use optimized fallback: get all edits once and check all conditions in a single pass
+            ; If primary strategy failed, use single-pass scoring over all edits
             if !promptField {
                 try {
                     allEdits := uia.FindAll({ Type: 50004 })
-                    qlEditorFallback := 0 ; Track any ql-editor as fallback
-
+                    best := 0, bestScore := -1
                     for edit in allEdits {
-                        className := edit.ClassName
+                        cls := edit.ClassName
                         name := edit.Name
-                        hasQlEditor := InStr(className, "ql-editor")
-                        hasNewInputUi := InStr(className, "new-input-ui")
-                        hasPromptName := (InStr(name, "Enter a prompt") || InStr(name, "Digite um prompt") || InStr(
-                            name, "prompt"))
-
-                        ; Priority 1: ql-editor with prompt-related name (best match - exit immediately)
-                        if hasQlEditor && hasPromptName {
-                            promptField := edit
-                            break
-                        }
-
-                        ; Priority 2: new-input-ui with prompt-related name
-                        if hasNewInputUi && hasPromptName && !promptField {
-                            promptField := edit
-                            break
-                        }
-
-                        ; Priority 3: any ql-editor (save first one as fallback)
-                        if hasQlEditor && !qlEditorFallback {
-                            qlEditorFallback := edit
+                        score := 0
+                        if InStr(cls, "ql-editor")
+                            score += 3
+                        if InStr(cls, "new-input-ui")
+                            score += 2
+                        if InStr(name, "Enter a prompt")
+                            score += 3
+                        else if InStr(name, "prompt")
+                            score += 2
+                        else if InStr(name, "Digite um prompt")
+                            score += 2
+                        if (score > bestScore) {
+                            bestScore := score
+                            best := edit
                         }
                     }
-
-                    ; Use ql-editor fallback if we didn't find a better match
-                    if !promptField && qlEditorFallback {
-                        promptField := qlEditorFallback
+                    if (bestScore >= 0) {
+                        promptField := best
                     }
                 } catch {
                     ; Silently continue if fallback fails
