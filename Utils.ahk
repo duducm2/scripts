@@ -185,18 +185,19 @@ InitHotstringsCheatSheet() {
     RegisterHotstring(":o:ebosch", "eduardo.figueiredo@br.bosch.com", "General", "💼 Bosch Email")
     RegisterHotstring(":o:egoogle", "edu.evangelista.figueiredo@gmail.com", "General", "📧 Gmail")
 
-    ; Project Names (9 items) - Last category
+    ; Project Names (Projects category)
+    ; Order here defines character assignment within the Projects segment of g_HotstringCharSequence.
+    ; First three keep their current slots, then we introduce "14-my-notes" at the former X slot,
+    ; and drop the previous X/C/7 entries so later projects shift left by one as needed.
     RegisterHotstring(":o:myl", "My Links", "Projects", "🔗 My Links")
     RegisterHotstring(":o:gintegra", "GS_UX core team_UX and CIP Integration", "Projects", "🔄 UX and CIP Integration")
     RegisterHotstring(":o:gdash", "GS_E&S_CIP Dashboard research and design", "Projects", "📊 CIP Dashboard")
-    RegisterHotstring(":o:gb2c", "GS_B2C_Credit_Management_Strategy_UI_Mentoring", "Projects",
-        "💳 B2C Credit Management")
-    RegisterHotstring(":o:gug", "GS_UX Core Team_Monitoring for B2C in Brazil", "Projects",
-        "🇧🇷 B2C Monitoring Brazil")
+    ; New project for the X slot in the selector
+    RegisterHotstring(":o:14notes", "14-my-notes", "Projects", "📝 14-my-notes")
+    ; Remaining projects (previously after X/C/7) shift left one character each
     RegisterHotstring(":o:gpm", "GS_UX_Project_Management_Activities_LA", "Projects", "📋 Project Management LA")
     RegisterHotstring(":o:guxcip", "GS_UX_and_CIP", "Projects", "🔗 UX and CIP")
     RegisterHotstring(":o:gtrain", "GS_UX core team_Trainings Management", "Projects", "🎓 Trainings Management")
-    RegisterHotstring(":o:gbp", "GS_B2C_Portals and Key Accounts Process POC", "Projects", "🌐 B2C Portals POC")
 }
 InitHotstringsCheatSheet()
 
