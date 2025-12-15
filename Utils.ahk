@@ -252,6 +252,247 @@ InitDpiAwareness()
 ; Global variable to remember target window for Cursor action
 global gCursorActionTargetWin := 0
 
+; =============================================================================
+; Focus Mode (multi-monitor blackout via overlays)
+; Hotkey: Win+Alt+Shift+Y
+; =============================================================================
+
+global g_FocusModeOn := false
+global g_FocusModeActiveMonitor := 0
+global g_FocusModeOverlays := []  ; array of GUI overlays (one per covered monitor)
+
+FocusDbg_EscapeJson(s) {
+    s := StrReplace(s, "\", "\\")
+    s := StrReplace(s, '"', '\"')
+    s := StrReplace(s, "`r", "")
+    s := StrReplace(s, "`n", "\n")
+    return s
+}
+
+FocusDbg_JsonVal(v) {
+    if (IsNumber(v)) {
+        return v
+    }
+    return '"' FocusDbg_EscapeJson(String(v)) '"'
+}
+
+FocusDbgLog(hypothesisId, location, message, data := 0, runId := "pre-fix") {
+    ; Writes NDJSON lines to: <scriptdir>\.cursor\debug.log
+    logPath := A_ScriptDir "\.cursor\debug.log"
+    ts := DllCall("GetTickCount64", "uint64")
+
+    dataJson := "{}"
+    if (IsObject(data)) {
+        parts := []
+        for k, v in data {
+            parts.Push('"' FocusDbg_EscapeJson(String(k)) '":' FocusDbg_JsonVal(v))
+        }
+        dataJson := "{" StrJoin(parts, ",") "}"
+    }
+
+    line := '{'
+        . '"sessionId":"debug-session",'
+        . '"runId":"' FocusDbg_EscapeJson(runId) '",'
+        . '"hypothesisId":"' FocusDbg_EscapeJson(hypothesisId) '",'
+        . '"location":"' FocusDbg_EscapeJson(location) '",'
+        . '"message":"' FocusDbg_EscapeJson(message) '",'
+        . '"timestamp":' ts ','
+        . '"data":' dataJson
+        . '}'
+
+    try FileAppend(line "`n", logPath, "UTF-8")
+}
+
+StrJoin(arr, delim := ",") {
+    if (!IsObject(arr) || arr.Length = 0) {
+        return ""
+    }
+    out := ""
+    for i, s in arr {
+        out .= (i = 1 ? s : delim s)
+    }
+    return out
+}
+
+GetActiveMonitorIndex() {
+    hwnd := WinExist("A")
+    if (!hwnd) {
+        ;#region agent log
+        FocusDbgLog("H4", "Utils.ahk:GetActiveMonitorIndex", "No active hwnd", Map("hwnd", 0))
+        ;#endregion agent log
+        return 0
+    }
+
+    rect := Buffer(16, 0)
+    if (!DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)) {
+        ;#region agent log
+        FocusDbgLog("H4", "Utils.ahk:GetActiveMonitorIndex", "GetWindowRect failed", Map("hwnd", hwnd))
+        ;#endregion agent log
+        return 0
+    }
+
+    left := NumGet(rect, 0, "int")
+    top := NumGet(rect, 4, "int")
+    right := NumGet(rect, 8, "int")
+    bottom := NumGet(rect, 12, "int")
+
+    centerX := left + (right - left) // 2
+    centerY := top + (bottom - top) // 2
+
+    monitorCount := MonitorGetCount()
+    loop monitorCount {
+        MonitorGet(A_Index, &ml, &mt, &mr, &mb)
+        if (centerX >= ml && centerX <= mr && centerY >= mt && centerY <= mb) {
+            ;#region agent log
+            FocusDbgLog("H2", "Utils.ahk:GetActiveMonitorIndex", "Matched monitor by center point", Map(
+                "hwnd", hwnd,
+                "centerX", centerX, "centerY", centerY,
+                "matchedMonitor", A_Index,
+                "ml", ml, "mt", mt, "mr", mr, "mb", mb
+            ))
+            ;#endregion agent log
+            return A_Index
+        }
+    }
+
+    ;#region agent log
+    FocusDbgLog("H4", "Utils.ahk:GetActiveMonitorIndex", "No monitor matched center point", Map(
+        "hwnd", hwnd,
+        "centerX", centerX, "centerY", centerY,
+        "monitorCount", monitorCount
+    ))
+    ;#endregion agent log
+    return 0
+}
+
+EnableFocusMode() {
+    global g_FocusModeOn, g_FocusModeActiveMonitor, g_FocusModeOverlays
+
+    if (g_FocusModeOn) {
+        ;#region agent log
+        FocusDbgLog("H5", "Utils.ahk:EnableFocusMode", "Already enabled; no-op", Map("g_FocusModeOn", g_FocusModeOn))
+        ;#endregion agent log
+        return
+    }
+
+    activeMon := GetActiveMonitorIndex()
+    if (!activeMon) {
+        ;#region agent log
+        FocusDbgLog("H4", "Utils.ahk:EnableFocusMode", "Active monitor detection failed; abort", Map("activeMon",
+            activeMon))
+        ;#endregion agent log
+        return
+    }
+
+    g_FocusModeActiveMonitor := activeMon
+    g_FocusModeOverlays := []
+
+    monitorCount := MonitorGetCount()
+
+    ;#region agent log
+    ctx := 0, awareness := ""
+    try {
+        ctx := DllCall("GetProcessDpiAwarenessContext", "ptr")
+        awareness := DllCall("GetAwarenessFromDpiAwarenessContext", "ptr", ctx, "int")
+    }
+    FocusDbgLog("H1", "Utils.ahk:EnableFocusMode", "DPI + monitor count snapshot", Map(
+        "activeMon", activeMon,
+        "monitorCount", monitorCount,
+        "dpiContextPtr", ctx,
+        "dpiAwareness", awareness
+    ))
+    ;#endregion agent log
+
+    loop monitorCount {
+        MonitorGet(A_Index, &ml, &mt, &mr, &mb)
+        ;#region agent log
+        FocusDbgLog("H2", "Utils.ahk:EnableFocusMode", "MonitorGet bounds", Map(
+            "i", A_Index,
+            "ml", ml, "mt", mt, "mr", mr, "mb", mb,
+            "w", mr - ml, "h", mb - mt
+        ))
+        ;#endregion agent log
+    }
+
+    loop monitorCount {
+        i := A_Index
+        if (i = activeMon) {
+            continue
+        }
+
+        MonitorGet(i, &l, &t, &r, &b)
+        w := r - l
+        h := b - t
+        if (w <= 0 || h <= 0) {
+            continue
+        }
+
+        overlay := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x20") ; WS_EX_TRANSPARENT => click-through
+        overlay.BackColor := "000000"
+        overlay.Show("NA x" l " y" t " w" w " h" h)
+        g_FocusModeOverlays.Push(overlay)
+
+        ; Query actual overlay window rect (physical pixels) to detect scaling/border issues
+        rect := Buffer(16, 0)
+        ok := 0
+        try ok := DllCall("GetWindowRect", "ptr", overlay.Hwnd, "ptr", rect)
+        if (ok) {
+            wl := NumGet(rect, 0, "int"), wt := NumGet(rect, 4, "int")
+            wr := NumGet(rect, 8, "int"), wb := NumGet(rect, 12, "int")
+            ;#region agent log
+            FocusDbgLog("H3", "Utils.ahk:EnableFocusMode", "Overlay shown; actual rect", Map(
+                "monitorIndex", i,
+                "targetL", l, "targetT", t, "targetW", w, "targetH", h,
+                "actualL", wl, "actualT", wt, "actualR", wr, "actualB", wb,
+                "actualW", wr - wl, "actualH", wb - wt
+            ))
+            ;#endregion agent log
+        } else {
+            ;#region agent log
+            FocusDbgLog("H3", "Utils.ahk:EnableFocusMode", "Overlay shown; GetWindowRect failed", Map(
+                "monitorIndex", i,
+                "targetL", l, "targetT", t, "targetW", w, "targetH", h
+            ))
+            ;#endregion agent log
+        }
+    }
+
+    g_FocusModeOn := true
+}
+
+DisableFocusMode() {
+    global g_FocusModeOn, g_FocusModeActiveMonitor, g_FocusModeOverlays
+
+    for overlay in g_FocusModeOverlays {
+        try {
+            if (IsObject(overlay) && overlay.Hwnd) {
+                overlay.Destroy()
+            }
+        } catch {
+            ; Ignore
+        }
+    }
+
+    g_FocusModeOverlays := []
+    g_FocusModeActiveMonitor := 0
+    g_FocusModeOn := false
+}
+
+ToggleFocusMode() {
+    global g_FocusModeOn
+    ;#region agent log
+    FocusDbgLog("H5", "Utils.ahk:ToggleFocusMode", "Toggle invoked", Map(
+        "g_FocusModeOn_before", g_FocusModeOn,
+        "hwndActive", WinExist("A")
+    ))
+    ;#endregion agent log
+    if (g_FocusModeOn) {
+        DisableFocusMode()
+    } else {
+        EnableFocusMode()
+    }
+}
+
 ; Auto-submit handler for Cursor action modal
 AutoSubmitCursorAction(ctrl, *) {
     currentValue := ctrl.Text
@@ -2503,4 +2744,13 @@ ShowHotstringSelector() {
 
     Send "{Left}"
 
+}
+
+; =============================================================================
+; Focus Mode (multi-monitor blackout)
+; Hotkey: Win+Alt+Shift+Y
+; =============================================================================
+#!+Y::
+{
+    ToggleFocusMode()
 }
