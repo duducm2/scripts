@@ -228,11 +228,11 @@ CenterMouse() {
         if !WinWaitActive("ahk_exe chrome.exe", , 2) {
             return
         }
-        Sleep 200
+        Sleep 150  ; small settle per README (keep this snappy)
 
         ; Step 2: Check if "Pause" button exists (if reading is active, pause it)
         uia := UIA_Browser()
-        Sleep 200
+        Sleep 120  ; minimal settle before querying UIA
 
         ; Try to find "Pause" button
         pauseButton := 0
@@ -307,10 +307,10 @@ CenterMouse() {
         ; Step 3: Find and click the last Copy button (copy the message we're about to read)
         allCopyButtons := []
 
-        ; Primary strategy: Find all buttons with Name "Copy"
+        ; Primary strategy: Single pass - find all buttons and filter for any "Copy" variant
         allButtons := uia.FindAll({ Type: 50000 })
         for button in allButtons {
-            if (button.Name = "Copy" || InStr(button.Name, "Copy", false) = 1) {
+            if (button.Name = "Copy" || InStr(button.Name, "Copy", false)) {
                 ; Additional check: ensure it has the Copy button className pattern
                 if (InStr(button.ClassName, "icon-button") || InStr(button.ClassName, "mdc-button")) {
                     allCopyButtons.Push(button)
@@ -318,11 +318,11 @@ CenterMouse() {
             }
         }
 
-        ; Fallback: Try by Type "Button" if the above didn't find enough
+        ; Fallback: broaden type only if none found on primary pass
         if (allCopyButtons.Length = 0) {
             allButtons := uia.FindAll({ Type: "Button" })
             for button in allButtons {
-                if (button.Name = "Copy" || InStr(button.Name, "Copy", false) = 1) {
+                if (button.Name = "Copy" || InStr(button.Name, "Copy", false)) {
                     allCopyButtons.Push(button)
                 }
             }
@@ -362,7 +362,7 @@ CenterMouse() {
         ; Step 4: Find all "Show more options" elements (normal read-aloud flow)
         ; Show banner while searching
         searchBanner := CreateCenteredBanner("Finding read aloud button and copying...", "3772FF", "FFFFFF", 24, 178)
-        Sleep 400 ; Small delay to ensure UI is ready
+        Sleep 250  ; small delay to ensure UI is ready without feeling sluggish
 
         allMoreOptionsButtons := []
 
