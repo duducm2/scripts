@@ -8770,6 +8770,9 @@ FindMonthGroup(uia) {
 ; Global state for Gemini drawer (main menu) – mirrors the state‑based toggle pattern
 isGeminiDrawerOpen := false
 
+; Global state for Gemini model toggle (Fast vs Thinking)
+isGeminiFastModel := true  ; true = Fast, false = Thinking
+
 ; Shift + D : Toggle the Main menu button (drawer) using fast state-based pattern
 +d:: {
     ToggleGeminiDrawer()
@@ -8921,215 +8924,72 @@ ToggleGeminiDrawer() {
     }
 }
 
-; Shift + M : Click the button next to Microphone button (e.g., "Fast" button) - Model
+; Shift + M : Toggle between Fast and Thinking models - Model
 +m:: {
+    ToggleGeminiModel()
+}
+
+; ---------------------------------------------------------------------------
+ToggleGeminiModel() {
+    global isGeminiFastModel
+
     try {
         uia := UIA_Browser()
-        Sleep 300
-
-        ; Step 1: Find the Microphone button
-        microphoneButton := 0
-
-        ; Primary strategy: Find by ClassName containing "speech_dictation_mic_button"
-        allButtons := uia.FindAll({ Type: 50000 })
-        for button in allButtons {
-            if InStr(button.ClassName, "speech_dictation_mic_button") {
-                microphoneButton := button
-                break
-            }
-        }
-
-        ; Fallback 1: Find by Name "Microphone"
-        if !microphoneButton {
-            microphoneButton := uia.FindFirst({ Name: "Microphone", Type: 50000 })
-        }
-
-        ; Fallback 2: Try by Type "Button" and Name "Microphone"
-        if !microphoneButton {
-            microphoneButton := uia.FindFirst({ Type: "Button", Name: "Microphone" })
-        }
-
-        if (!microphoneButton) {
-            ; Could not find microphone button, abort
+        if !IsObject(uia) {
             return
         }
 
-        ; Step 2: Find the button next to Microphone using position-based approach
-        siblingButton := 0
+        Sleep 100  ; Small settle time – keep this snappy
 
-        try {
-            ; Get microphone button's position
-            micPos := microphoneButton.Location
-            micCenterX := micPos.x + (micPos.w / 2)
-            micCenterY := micPos.y + (micPos.h / 2)
+        ; Combined pattern to find either Fast or Thinking button in one search
+        modelPattern := "i)^(Fast|Thinking)$"
+        
+        ; Helper to grab a button by pattern with shorter timeout for speed
+        FindBtn(p) => WaitForButton(uia, p, 1500)
 
-            ; Get parent container and find all buttons within it
-            parent := UIA.TreeWalkerTrue.GetParentElement(microphoneButton)
-            if (!parent) {
-                ; If no parent, try grandparent
-                parent := UIA.TreeWalkerTrue.GetParentElement(UIA.TreeWalkerTrue.GetParentElement(microphoneButton))
-            }
-
-            if (parent) {
-                ; Find all buttons in the parent container (including descendants)
-                allParentButtons := parent.FindAll({ Type: 50000 }, UIA.TreeScope.Descendants)
-
-                closestButton := 0
-                closestDistance := 999999
-                closestButtonRight := 0
-                closestDistanceRight := 999999
-
-                ; Find the closest button horizontally (prefer buttons to the right)
-                for button in allParentButtons {
-                    ; Skip the microphone button itself
-                    try {
-                        if (UIA.CompareElements(button, microphoneButton))
-                            continue
-                    } catch {
-                        ; If comparison fails, use position check
-                        btnPos := button.Location
-                        if (btnPos.x == micPos.x && btnPos.y == micPos.y && btnPos.w == micPos.w && btnPos.h == micPos.h
-                        )
-                            continue
-                    }
-
-                    ; Validate button name is exactly "Fast" or "Thinking" and is Type 50000 (Button)
-                    try {
-                        ; Verify it's actually a button
-
-                        if (button.CurrentControlType != 50000)
-                            continue
-                        buttonName := button.Name
-                        if (buttonName != "Fast" && buttonName != "Thinking")
-                            continue
-                    } catch {
-                        ; If we can't get the name or type, skip this button
-                        continue
-                    }
-
-                    btnPos := button.Location
-                    btnCenterX := btnPos.x + (btnPos.w / 2)
-                    btnCenterY := btnPos.y + (btnPos.h / 2)
-
-                    ; Check if button is on roughly the same row (within 30 pixels vertically)
-                    verticalDistance := Abs(btnCenterY - micCenterY)
-                    if (verticalDistance > 30)
-                        continue
-
-                    ; Calculate horizontal distance
-                    horizontalDistance := Abs(btnCenterX - micCenterX)
-
-                    ; Prefer buttons to the right of microphone
-                    if (btnCenterX > micCenterX) {
-                        if (horizontalDistance < closestDistanceRight) {
-                            closestDistanceRight := horizontalDistance
-                            closestButtonRight := button
-                        }
-                    } else {
-                        ; Also track left buttons as fallback
-                        if (horizontalDistance < closestDistance) {
-                            closestDistance := horizontalDistance
-                            closestButton := button
-                        }
-                    }
-                }
-
-                ; Prefer button to the right, otherwise use closest button on left
-                if (closestButtonRight) {
-                    siblingButton := closestButtonRight
-                } else if (closestButton) {
-                    siblingButton := closestButton
-                }
-            }
-
-            ; Fallback: If parent approach didn't work, search all buttons by position
-            if (!siblingButton) {
-                micPos := microphoneButton.Location
-                micCenterX := micPos.x + (micPos.w / 2)
-                micCenterY := micPos.y + (micPos.h / 2)
-
-                closestButton := 0
-                closestDistance := 999999
-                closestButtonRight := 0
-                closestDistanceRight := 999999
-
-                for button in allButtons {
-                    try {
-                        if (UIA.CompareElements(button, microphoneButton))
-                            continue
-                    } catch {
-                        btnPos := button.Location
-                        if (btnPos.x == micPos.x && btnPos.y == micPos.y && btnPos.w == micPos.w && btnPos.h == micPos.h
-                        )
-                            continue
-                    }
-
-                    ; Validate button name is exactly "Fast" or "Thinking" and is Type 50000 (Button)
-                    try {
-                        ; Verify it's actually a button
-                        if (button.CurrentControlType != 50000)
-                            continue
-                        buttonName := button.Name
-                        if (buttonName != "Fast" && buttonName != "Thinking")
-                            continue
-                    } catch {
-                        ; If we can't get the name or type, skip this button
-                        continue
-                    }
-
-                    btnPos := button.Location
-                    btnCenterX := btnPos.x + (btnPos.w / 2)
-                    btnCenterY := btnPos.y + (btnPos.h / 2)
-
-                    verticalDistance := Abs(btnCenterY - micCenterY)
-                    if (verticalDistance > 30)
-                        continue
-
-                    horizontalDistance := Abs(btnCenterX - micCenterX)
-
-                    if (btnCenterX > micCenterX) {
-                        if (horizontalDistance < closestDistanceRight && horizontalDistance < 300) {
-                            closestDistanceRight := horizontalDistance
-                            closestButtonRight := button
-                        }
-                    } else {
-                        if (horizontalDistance < closestDistance && horizontalDistance < 300) {
-                            closestDistance := horizontalDistance
-                            closestButton := button
-                        }
-                    }
-                }
-
-                if (closestButtonRight) {
-                    siblingButton := closestButtonRight
-                } else if (closestButton) {
-                    siblingButton := closestButton
-                }
-            }
-        } catch Error as e {
-            ; If position-based approach fails, silently continue
-        }
-
-        if (siblingButton) {
-            ; Step 3: Validate that the button name is exactly "Fast" or "Thinking" and is Type 50000 (Button)
+        ; Find whichever model button is currently visible (could be either one)
+        if (btn := FindBtn(modelPattern)) {
+            ; Check which button we found
+            btnName := ""
+            try btnName := btn.Name
+            
+            ; Determine if this button supports Invoke
+            supportsInvoke := false
             try {
-                ; Verify it's actually a button
-                if (siblingButton.CurrentControlType == 50000) {
-                    buttonName := siblingButton.Name
-                    if (buttonName == "Fast" || buttonName == "Thinking") {
-                        siblingButton.Click()
-                    } else {
-                        ; Button found but name doesn't match expected values
-                    }
-                }
-            } catch Error as e {
-                ; If we can't get the name or type, skip clicking for safety
+                supportsInvoke := btn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)
+            } catch {
+                supportsInvoke := false
             }
-        } else {
-            ; Last resort: Could not find sibling button
+
+            ; Try multi-strategy activation: prefer Invoke when available, fallback to Click
+            clicked := false
+            if (supportsInvoke) {
+                try {
+                    btn.Invoke()
+                    clicked := true
+                } catch {
+                }
+            }
+            if (!clicked) {
+                try {
+                    btn.Click()
+                    clicked := true
+                } catch {
+                }
+            }
+
+            ; Update state based on which button we actually clicked
+            if (clicked) {
+                if (btnName = "Fast") {
+                    isGeminiFastModel := true
+                } else if (btnName = "Thinking") {
+                    isGeminiFastModel := false
+                }
+                Sleep 150  ; Minimal sleep – just enough for UI to register
+            }
         }
-    } catch Error as e {
-        ; If all else fails, silently fail (no fallback action defined)
+    } catch Error as err {
+        ; Silently fail if anything goes wrong
     }
 }
 
