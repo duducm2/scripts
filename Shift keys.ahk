@@ -8933,6 +8933,9 @@ ToggleGeminiDrawer() {
 ToggleGeminiModel() {
     global isGeminiFastModel
 
+    ; Show a small banner while toggling models
+    ShowSmallLoadingIndicator_ChatGPT("Switching model...")
+
     try {
         uia := UIA_Browser()
         if !IsObject(uia) {
@@ -8982,14 +8985,19 @@ ToggleGeminiModel() {
             if (clicked) {
                 if (btnName = "Fast") {
                     isGeminiFastModel := true
+                    ShowSmallLoadingIndicator_ChatGPT("Fast model active")
                 } else if (btnName = "Thinking") {
                     isGeminiFastModel := false
+                    ShowSmallLoadingIndicator_ChatGPT("Thinking model active")
                 }
                 Sleep 150  ; Minimal sleep – just enough for UI to register
             }
         }
     } catch Error as err {
         ; Silently fail if anything goes wrong
+    } finally {
+        ; Hide the banner shortly after finishing
+        SetTimer(() => HideSmallLoadingIndicator_ChatGPT(), -900)
     }
 }
 
