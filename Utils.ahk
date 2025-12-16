@@ -314,6 +314,31 @@ StrJoin(arr, delim := ",") {
     return out
 }
 
+FocusDbg_TryGetMonitorDpiFromRect(l, t, r, b, &dpiX, &dpiY) {
+    dpiX := ""
+    dpiY := ""
+    try {
+        cx := l + (r - l) // 2
+        cy := t + (b - t) // 2
+        pt := (cy << 32) | (cx & 0xFFFFFFFF)
+        hMon := DllCall("MonitorFromPoint", "int64", pt, "uint", 2, "ptr") ; MONITOR_DEFAULTTONEAREST=2
+        if (!hMon) {
+            return false
+        }
+        x := 0, y := 0
+        ; MDT_EFFECTIVE_DPI = 0
+        hr := DllCall("Shcore\GetDpiForMonitor", "ptr", hMon, "int", 0, "uint*", &x, "uint*", &y, "uint")
+        if (hr != 0) {
+            return false
+        }
+        dpiX := x
+        dpiY := y
+        return true
+    } catch {
+        return false
+    }
+}
+
 GetActiveMonitorIndex() {
     hwnd := WinExist("A")
     if (!hwnd) {
@@ -405,9 +430,15 @@ EnableFocusMode() {
 
     loop monitorCount {
         MonitorGet(A_Index, &ml, &mt, &mr, &mb)
+        name := ""
+        dx := "", dy := ""
+        try name := MonitorGetName(A_Index)
+        try FocusDbg_TryGetMonitorDpiFromRect(ml, mt, mr, mb, &dx, &dy)
         ;#region agent log
         FocusDbgLog("H2", "Utils.ahk:EnableFocusMode", "MonitorGet bounds", Map(
             "i", A_Index,
+            "name", name,
+            "dpiX", dx, "dpiY", dy,
             "ml", ml, "mt", mt, "mr", mr, "mb", mb,
             "w", mr - ml, "h", mb - mt
         ))
@@ -428,6 +459,9 @@ EnableFocusMode() {
         }
 
         overlay := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x20") ; WS_EX_TRANSPARENT => click-through
+        ; Critical: disable GUI DPI scaling so x/y/w/h are interpreted in raw screen coords
+        ; Without this, AHK scales the overlay (e.g. 150%) and it spills into other monitors.
+        overlay.Opt("-DPIScale")
         overlay.BackColor := "000000"
         overlay.Show("NA x" l " y" t " w" w " h" h)
         g_FocusModeOverlays.Push(overlay)
