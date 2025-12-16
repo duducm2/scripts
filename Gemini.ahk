@@ -228,11 +228,11 @@ CenterMouse() {
         if !WinWaitActive("ahk_exe chrome.exe", , 2) {
             return
         }
-        Sleep 200
+        Sleep 150  ; small settle per README (keep this snappy)
 
         ; Step 2: Check if "Pause" button exists (if reading is active, pause it)
         uia := UIA_Browser()
-        Sleep 200
+        Sleep 120  ; minimal settle before querying UIA
 
         ; Try to find "Pause" button
         pauseButton := 0
@@ -307,10 +307,10 @@ CenterMouse() {
         ; Step 3: Find and click the last Copy button (copy the message we're about to read)
         allCopyButtons := []
 
-        ; Primary strategy: Find all buttons with Name "Copy"
+        ; Primary strategy: Single pass - find all buttons and filter for any "Copy" variant
         allButtons := uia.FindAll({ Type: 50000 })
         for button in allButtons {
-            if (button.Name = "Copy" || InStr(button.Name, "Copy", false) = 1) {
+            if (button.Name = "Copy" || InStr(button.Name, "Copy", false)) {
                 ; Additional check: ensure it has the Copy button className pattern
                 if (InStr(button.ClassName, "icon-button") || InStr(button.ClassName, "mdc-button")) {
                     allCopyButtons.Push(button)
@@ -318,11 +318,11 @@ CenterMouse() {
             }
         }
 
-        ; Fallback: Try by Type "Button" if the above didn't find enough
+        ; Fallback: broaden type only if none found on primary pass
         if (allCopyButtons.Length = 0) {
             allButtons := uia.FindAll({ Type: "Button" })
             for button in allButtons {
-                if (button.Name = "Copy" || InStr(button.Name, "Copy", false) = 1) {
+                if (button.Name = "Copy" || InStr(button.Name, "Copy", false)) {
                     allCopyButtons.Push(button)
                 }
             }
@@ -362,7 +362,7 @@ CenterMouse() {
         ; Step 4: Find all "Show more options" elements (normal read-aloud flow)
         ; Show banner while searching
         searchBanner := CreateCenteredBanner("Finding read aloud button and copying...", "3772FF", "FFFFFF", 24, 178)
-        Sleep 400 ; Small delay to ensure UI is ready
+        Sleep 250  ; small delay to ensure UI is ready without feeling sluggish
 
         allMoreOptionsButtons := []
 
@@ -495,18 +495,18 @@ CenterMouse() {
         if !WinWaitActive("ahk_exe chrome.exe", , 2) {
             return
         }
-        Sleep 300
+        Sleep 150  ; keep snappy per README (short settle after activation)
 
         ; Step 2: Find all Copy buttons
         uia := UIA_Browser()
-        Sleep 300
+        Sleep 120  ; minimal settle before querying UIA
 
         allCopyButtons := []
 
-        ; Primary strategy: Find all buttons with Name "Copy"
+        ; Primary pass: Find all buttons, filter for any "Copy" variant
         allButtons := uia.FindAll({ Type: 50000 })
         for button in allButtons {
-            if (button.Name = "Copy" || InStr(button.Name, "Copy", false) = 1) {
+            if (button.Name = "Copy" || InStr(button.Name, "Copy", false)) {
                 ; Additional check: ensure it has the Copy button className pattern
                 if (InStr(button.ClassName, "icon-button") || InStr(button.ClassName, "mdc-button")) {
                     allCopyButtons.Push(button)
@@ -514,11 +514,11 @@ CenterMouse() {
             }
         }
 
-        ; Fallback: Try by Type "Button" if the above didn't find enough
+        ; Fallback: broaden type if none found on primary pass (still single filter loop)
         if (allCopyButtons.Length = 0) {
             allButtons := uia.FindAll({ Type: "Button" })
             for button in allButtons {
-                if (button.Name = "Copy" || InStr(button.Name, "Copy", false) = 1) {
+                if (button.Name = "Copy" || InStr(button.Name, "Copy", false)) {
                     allCopyButtons.Push(button)
                 }
             }
@@ -805,9 +805,9 @@ InitializeGeminiFirstTime() {
             Send("{Esc}")
 
             ; Focus the Gemini prompt field - optimized for speed
-            Sleep 200 ; Reduced from 300ms
+            Sleep 150  ; small settle per README (keep snappy)
             uia := UIA_Browser()
-            Sleep 200 ; Reduced from 300ms
+            Sleep 120  ; minimal settle before querying UIA
 
             promptField := 0
 
@@ -818,41 +818,32 @@ InitializeGeminiFirstTime() {
                 ; Silently continue to fallbacks
             }
 
-            ; If primary strategy failed, use optimized fallback: get all edits once and check all conditions in a single pass
+            ; If primary strategy failed, use single-pass scoring over all edits
             if !promptField {
                 try {
                     allEdits := uia.FindAll({ Type: 50004 })
-                    qlEditorFallback := 0 ; Track any ql-editor as fallback
-
+                    best := 0, bestScore := -1
                     for edit in allEdits {
-                        className := edit.ClassName
+                        cls := edit.ClassName
                         name := edit.Name
-                        hasQlEditor := InStr(className, "ql-editor")
-                        hasNewInputUi := InStr(className, "new-input-ui")
-                        hasPromptName := (InStr(name, "Enter a prompt") || InStr(name, "Digite um prompt") || InStr(
-                            name, "prompt"))
-
-                        ; Priority 1: ql-editor with prompt-related name (best match - exit immediately)
-                        if hasQlEditor && hasPromptName {
-                            promptField := edit
-                            break
-                        }
-
-                        ; Priority 2: new-input-ui with prompt-related name
-                        if hasNewInputUi && hasPromptName && !promptField {
-                            promptField := edit
-                            break
-                        }
-
-                        ; Priority 3: any ql-editor (save first one as fallback)
-                        if hasQlEditor && !qlEditorFallback {
-                            qlEditorFallback := edit
+                        score := 0
+                        if InStr(cls, "ql-editor")
+                            score += 3
+                        if InStr(cls, "new-input-ui")
+                            score += 2
+                        if InStr(name, "Enter a prompt")
+                            score += 3
+                        else if InStr(name, "prompt")
+                            score += 2
+                        else if InStr(name, "Digite um prompt")
+                            score += 2
+                        if (score > bestScore) {
+                            bestScore := score
+                            best := edit
                         }
                     }
-
-                    ; Use ql-editor fallback if we didn't find a better match
-                    if !promptField && qlEditorFallback {
-                        promptField := qlEditorFallback
+                    if (bestScore >= 0) {
+                        promptField := best
                     }
                 } catch {
                     ; Silently continue if fallback fails

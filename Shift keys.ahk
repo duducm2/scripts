@@ -1182,7 +1182,6 @@ ShowGlobalShortcutsHelp() {
 [Window Management] Ctrl+Alt+Win - Secondary combination
 
 === AVAILABLE (unused) ===
-[Win+Alt+Shift+Y] > Empty
 [Win+Alt+Shift+L] > Empty
 [Win+Alt+Shift+O] > Empty
 [Win+Alt+Shift+P] > Empty
@@ -1236,6 +1235,7 @@ r=== CLIP ANGEL ===
 === WINDOWS ===
 [Win+Alt+Shift+6] > Minimizes windows
 [Win+Alt+Shift+M] > Maximizes the current window
+[Win+Alt+Shift+Y] > Focus Mode: Black out all monitors except the one with the active window (toggle)
 
 === GENERAL ===
 [Win+Alt+Shift+U] > Quick string shortcuts
@@ -1613,51 +1613,15 @@ ToggleVoiceMessage() {
         ; Use longer timeout (3000ms) for voice message button to allow WhatsApp UI to restore
         FindBtn(p) => WaitForButton(chrome, p, 3000)
 
-        ; #region agent log ToggleVoiceMessage entry
-        logLine := '{"sessionId":"debug-session","runId":"pre-fix-1","hypothesisId":"H1",'
-            . '"location":"Shift keys.ahk:ToggleVoiceMessage","message":"ToggleVoiceMessage entry",'
-            . '"data":{"isRecording":' . (isRecording ? "true" : "false") . '},"timestamp":' . A_TickCount . '}'
-        logLine .= "`n"
-        FileAppend(logLine, ".cursor\\debug.log", "UTF-8")
-        ; #endregion agent log ToggleVoiceMessage entry
-
         if (isRecording) {           ; â–º we're supposed to stop & send
-            ; #region agent log isRecording branch
-            logLine := '{"sessionId":"debug-session","runId":"pre-fix-1","hypothesisId":"H2",'
-                . '"location":"Shift keys.ahk:ToggleVoiceMessage","message":"Entered isRecording branch",'
-                . '"data":{},"timestamp":' . A_TickCount . '}'
-            logLine .= "`n"
-            FileAppend(logLine, ".cursor\\debug.log", "UTF-8")
-            ; #endregion agent log isRecording branch
-
             if (btn := FindBtn(sendPattern)) {
-                ; #region agent log send button found
-                btnName := ""
-                btnClass := ""
-                try btnName := btn.Name
-                try btnClass := btn.ClassName
-                logLine := '{"sessionId":"debug-session","runId":"pre-fix-1","hypothesisId":"H3",'
-                    . '"location":"Shift keys.ahk:ToggleVoiceMessage","message":"Send button found",'
-                    . '"data":{"name":"' . btnName . '","className":"' . btnClass . '"},"timestamp":' . A_TickCount . '}'
-                logLine .= "`n"
-                FileAppend(logLine, ".cursor\\debug.log", "UTF-8")
-                ; #endregion agent log send button found
-
-                ; Determine if this button supports Invoke (hypothesis H6)
+                ; Determine if this button supports Invoke
                 supportsInvoke := false
                 try {
                     supportsInvoke := btn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)
                 } catch {
                     supportsInvoke := false
                 }
-
-                ; #region agent log send button capabilities
-                logLine := '{"sessionId":"debug-session","runId":"pre-fix-1","hypothesisId":"H6",'
-                    . '"location":"Shift keys.ahk:ToggleVoiceMessage","message":"Send button capabilities",'
-                    . '"data":{"supportsInvoke":' . (supportsInvoke ? "true" : "false") . '},"timestamp":' . A_TickCount . '}'
-                logLine .= "`n"
-                FileAppend(logLine, ".cursor\\debug.log", "UTF-8")
-                ; #endregion agent log send button capabilities
 
                 ; Try multi-strategy activation: prefer Invoke when available, fallback to Click
                 clicked := false
@@ -1675,14 +1639,6 @@ ToggleVoiceMessage() {
                     } catch {
                     }
                 }
-
-                ; #region agent log send button activation result
-                logLine := '{"sessionId":"debug-session","runId":"pre-fix-1","hypothesisId":"H7",'
-                    . '"location":"Shift keys.ahk:ToggleVoiceMessage","message":"Send button activation attempt",'
-                    . '"data":{"clicked":' . (clicked ? "true" : "false") . '},"timestamp":' . A_TickCount . '}'
-                logLine .= "`n"
-                FileAppend(logLine, ".cursor\\debug.log", "UTF-8")
-                ; #endregion agent log send button activation result
 
                 isRecording := false
                 ; Give WhatsApp time to restore the UI after sending
@@ -1804,22 +1760,8 @@ WaitForButton(root, pattern, timeout := 5000) {
                     supportsInvoke := false
                 }
 
-                ; #region agent log WaitForButton candidate (send pattern focus)
-                if InStr(pattern, "Send|Stop recording") {
-                    candName := ""
-                    candClass := className
-                    candAutoId := ""
-                    try candName := btn.Name
-                    try candAutoId := btn.AutomationId
-                    logLine := '{"sessionId":"debug-session","runId":"pre-fix-1","hypothesisId":"H5",'
-                        . '"location":"Shift keys.ahk:WaitForButton","message":"Candidate button for send pattern",'
-                        . '"data":{"pattern":"' . pattern . '","name":"' . candName . '","className":"' . candClass . '","automationId":"' . candAutoId . '","parentName":"' . parentName . '","parentClass":"' . parentClass . '","supportsInvoke":' . (supportsInvoke ? "true" : "false") . '},"timestamp":' . A_TickCount . '}'
-                    logLine .= "`n"
-                    FileAppend(logLine, ".cursor\\debug.log", "UTF-8")
-                }
-                ; #endregion agent log WaitForButton candidate (send pattern focus)
-
-                matchingButtons.Push({ btn: btn, hasClassName: hasClassName, className: className, supportsInvoke: supportsInvoke, parentName: parentName, parentClass: parentClass })
+                matchingButtons.Push({ btn: btn, hasClassName: hasClassName, className: className, supportsInvoke: supportsInvoke,
+                    parentName: parentName, parentClass: parentClass })
             }
         }
 
@@ -1860,18 +1802,6 @@ WaitForButton(root, pattern, timeout := 5000) {
             if !bestBtn {
                 bestBtn := matchingButtons[1].btn
             }
-
-            ; #region agent log WaitForButton selection
-            btnName := ""
-            btnClass := ""
-            try btnName := bestBtn.Name
-            try btnClass := bestBtn.ClassName
-            logLine := '{"sessionId":"debug-session","runId":"pre-fix-1","hypothesisId":"H4",'
-                . '"location":"Shift keys.ahk:WaitForButton","message":"Returning best button for pattern",'
-                . '"data":{"pattern":"' . pattern . '","name":"' . btnName . '","className":"' . btnClass . '"},"timestamp":' . A_TickCount . '}'
-            logLine .= "`n"
-            FileAppend(logLine, ".cursor\\debug.log", "UTF-8")
-            ; #endregion agent log WaitForButton selection
 
             return bestBtn
         }
@@ -8841,6 +8771,9 @@ FindMonthGroup(uia) {
 ; Global state for Gemini drawer (main menu) – mirrors the state‑based toggle pattern
 isGeminiDrawerOpen := false
 
+; Global state for Gemini model toggle (Fast vs Thinking)
+isGeminiFastModel := true  ; true = Fast, false = Thinking
+
 ; Shift + D : Toggle the Main menu button (drawer) using fast state-based pattern
 +d:: {
     ToggleGeminiDrawer()
@@ -8992,215 +8925,80 @@ ToggleGeminiDrawer() {
     }
 }
 
-; Shift + M : Click the button next to Microphone button (e.g., "Fast" button) - Model
+; Shift + M : Toggle between Fast and Thinking models - Model
 +m:: {
+    ToggleGeminiModel()
+}
+
+; ---------------------------------------------------------------------------
+ToggleGeminiModel() {
+    global isGeminiFastModel
+
+    ; Show a small banner while toggling models
+    ShowSmallLoadingIndicator_ChatGPT("Switching model...")
+
     try {
         uia := UIA_Browser()
-        Sleep 300
-
-        ; Step 1: Find the Microphone button
-        microphoneButton := 0
-
-        ; Primary strategy: Find by ClassName containing "speech_dictation_mic_button"
-        allButtons := uia.FindAll({ Type: 50000 })
-        for button in allButtons {
-            if InStr(button.ClassName, "speech_dictation_mic_button") {
-                microphoneButton := button
-                break
-            }
-        }
-
-        ; Fallback 1: Find by Name "Microphone"
-        if !microphoneButton {
-            microphoneButton := uia.FindFirst({ Name: "Microphone", Type: 50000 })
-        }
-
-        ; Fallback 2: Try by Type "Button" and Name "Microphone"
-        if !microphoneButton {
-            microphoneButton := uia.FindFirst({ Type: "Button", Name: "Microphone" })
-        }
-
-        if (!microphoneButton) {
-            ; Could not find microphone button, abort
+        if !IsObject(uia) {
             return
         }
 
-        ; Step 2: Find the button next to Microphone using position-based approach
-        siblingButton := 0
+        Sleep 100  ; Small settle time – keep this snappy
 
-        try {
-            ; Get microphone button's position
-            micPos := microphoneButton.Location
-            micCenterX := micPos.x + (micPos.w / 2)
-            micCenterY := micPos.y + (micPos.h / 2)
+        ; Combined pattern to find either Fast or Thinking button in one search
+        modelPattern := "i)^(Fast|Thinking)$"
 
-            ; Get parent container and find all buttons within it
-            parent := UIA.TreeWalkerTrue.GetParentElement(microphoneButton)
-            if (!parent) {
-                ; If no parent, try grandparent
-                parent := UIA.TreeWalkerTrue.GetParentElement(UIA.TreeWalkerTrue.GetParentElement(microphoneButton))
-            }
+        ; Helper to grab a button by pattern with shorter timeout for speed
+        FindBtn(p) => WaitForButton(uia, p, 1500)
 
-            if (parent) {
-                ; Find all buttons in the parent container (including descendants)
-                allParentButtons := parent.FindAll({ Type: 50000 }, UIA.TreeScope.Descendants)
+        ; Find whichever model button is currently visible (could be either one)
+        if (btn := FindBtn(modelPattern)) {
+            ; Check which button we found
+            btnName := ""
+            try btnName := btn.Name
 
-                closestButton := 0
-                closestDistance := 999999
-                closestButtonRight := 0
-                closestDistanceRight := 999999
-
-                ; Find the closest button horizontally (prefer buttons to the right)
-                for button in allParentButtons {
-                    ; Skip the microphone button itself
-                    try {
-                        if (UIA.CompareElements(button, microphoneButton))
-                            continue
-                    } catch {
-                        ; If comparison fails, use position check
-                        btnPos := button.Location
-                        if (btnPos.x == micPos.x && btnPos.y == micPos.y && btnPos.w == micPos.w && btnPos.h == micPos.h
-                        )
-                            continue
-                    }
-
-                    ; Validate button name is exactly "Fast" or "Thinking" and is Type 50000 (Button)
-                    try {
-                        ; Verify it's actually a button
-
-                        if (button.CurrentControlType != 50000)
-                            continue
-                        buttonName := button.Name
-                        if (buttonName != "Fast" && buttonName != "Thinking")
-                            continue
-                    } catch {
-                        ; If we can't get the name or type, skip this button
-                        continue
-                    }
-
-                    btnPos := button.Location
-                    btnCenterX := btnPos.x + (btnPos.w / 2)
-                    btnCenterY := btnPos.y + (btnPos.h / 2)
-
-                    ; Check if button is on roughly the same row (within 30 pixels vertically)
-                    verticalDistance := Abs(btnCenterY - micCenterY)
-                    if (verticalDistance > 30)
-                        continue
-
-                    ; Calculate horizontal distance
-                    horizontalDistance := Abs(btnCenterX - micCenterX)
-
-                    ; Prefer buttons to the right of microphone
-                    if (btnCenterX > micCenterX) {
-                        if (horizontalDistance < closestDistanceRight) {
-                            closestDistanceRight := horizontalDistance
-                            closestButtonRight := button
-                        }
-                    } else {
-                        ; Also track left buttons as fallback
-                        if (horizontalDistance < closestDistance) {
-                            closestDistance := horizontalDistance
-                            closestButton := button
-                        }
-                    }
-                }
-
-                ; Prefer button to the right, otherwise use closest button on left
-                if (closestButtonRight) {
-                    siblingButton := closestButtonRight
-                } else if (closestButton) {
-                    siblingButton := closestButton
-                }
-            }
-
-            ; Fallback: If parent approach didn't work, search all buttons by position
-            if (!siblingButton) {
-                micPos := microphoneButton.Location
-                micCenterX := micPos.x + (micPos.w / 2)
-                micCenterY := micPos.y + (micPos.h / 2)
-
-                closestButton := 0
-                closestDistance := 999999
-                closestButtonRight := 0
-                closestDistanceRight := 999999
-
-                for button in allButtons {
-                    try {
-                        if (UIA.CompareElements(button, microphoneButton))
-                            continue
-                    } catch {
-                        btnPos := button.Location
-                        if (btnPos.x == micPos.x && btnPos.y == micPos.y && btnPos.w == micPos.w && btnPos.h == micPos.h
-                        )
-                            continue
-                    }
-
-                    ; Validate button name is exactly "Fast" or "Thinking" and is Type 50000 (Button)
-                    try {
-                        ; Verify it's actually a button
-                        if (button.CurrentControlType != 50000)
-                            continue
-                        buttonName := button.Name
-                        if (buttonName != "Fast" && buttonName != "Thinking")
-                            continue
-                    } catch {
-                        ; If we can't get the name or type, skip this button
-                        continue
-                    }
-
-                    btnPos := button.Location
-                    btnCenterX := btnPos.x + (btnPos.w / 2)
-                    btnCenterY := btnPos.y + (btnPos.h / 2)
-
-                    verticalDistance := Abs(btnCenterY - micCenterY)
-                    if (verticalDistance > 30)
-                        continue
-
-                    horizontalDistance := Abs(btnCenterX - micCenterX)
-
-                    if (btnCenterX > micCenterX) {
-                        if (horizontalDistance < closestDistanceRight && horizontalDistance < 300) {
-                            closestDistanceRight := horizontalDistance
-                            closestButtonRight := button
-                        }
-                    } else {
-                        if (horizontalDistance < closestDistance && horizontalDistance < 300) {
-                            closestDistance := horizontalDistance
-                            closestButton := button
-                        }
-                    }
-                }
-
-                if (closestButtonRight) {
-                    siblingButton := closestButtonRight
-                } else if (closestButton) {
-                    siblingButton := closestButton
-                }
-            }
-        } catch Error as e {
-            ; If position-based approach fails, silently continue
-        }
-
-        if (siblingButton) {
-            ; Step 3: Validate that the button name is exactly "Fast" or "Thinking" and is Type 50000 (Button)
+            ; Determine if this button supports Invoke
+            supportsInvoke := false
             try {
-                ; Verify it's actually a button
-                if (siblingButton.CurrentControlType == 50000) {
-                    buttonName := siblingButton.Name
-                    if (buttonName == "Fast" || buttonName == "Thinking") {
-                        siblingButton.Click()
-                    } else {
-                        ; Button found but name doesn't match expected values
-                    }
-                }
-            } catch Error as e {
-                ; If we can't get the name or type, skip clicking for safety
+                supportsInvoke := btn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)
+            } catch {
+                supportsInvoke := false
             }
-        } else {
-            ; Last resort: Could not find sibling button
+
+            ; Try multi-strategy activation: prefer Invoke when available, fallback to Click
+            clicked := false
+            if (supportsInvoke) {
+                try {
+                    btn.Invoke()
+                    clicked := true
+                } catch {
+                }
+            }
+            if (!clicked) {
+                try {
+                    btn.Click()
+                    clicked := true
+                } catch {
+                }
+            }
+
+            ; Update state based on which button we actually clicked
+            if (clicked) {
+                if (btnName = "Fast") {
+                    isGeminiFastModel := true
+                    ShowSmallLoadingIndicator_ChatGPT("Fast model active")
+                } else if (btnName = "Thinking") {
+                    isGeminiFastModel := false
+                    ShowSmallLoadingIndicator_ChatGPT("Thinking model active")
+                }
+                Sleep 150  ; Minimal sleep – just enough for UI to register
+            }
         }
-    } catch Error as e {
-        ; If all else fails, silently fail (no fallback action defined)
+    } catch Error as err {
+        ; Silently fail if anything goes wrong
+    } finally {
+        ; Hide the banner shortly after finishing
+        SetTimer(() => HideSmallLoadingIndicator_ChatGPT(), -900)
     }
 }
 
@@ -9261,7 +9059,7 @@ ToggleGeminiDrawer() {
 +p:: {
     try {
         uia := UIA_Browser()
-        Sleep 300
+        Sleep 150  ; small settle per README (keep this snappy)
 
         ; Primary strategy: Find by Name "Enter a prompt here" with Type 50004 (Edit)
         promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
@@ -9271,42 +9069,32 @@ ToggleGeminiDrawer() {
             promptField := uia.FindFirst({ Type: "Edit", Name: "Enter a prompt here" })
         }
 
-        ; Fallback 2: Try by ClassName containing "ql-editor" or "new-input-ui" (substring match)
+        ; Shared scan for remaining fallbacks (single FindAll + scoring for efficiency)
         if !promptField {
+            best := 0, bestScore := -1
             allEdits := uia.FindAll({ Type: 50004 })
             for edit in allEdits {
-                if (InStr(edit.ClassName, "ql-editor") || InStr(edit.ClassName, "new-input-ui")) {
-                    if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "prompt") {
-                        promptField := edit
-                        break
-                    }
+                cls := edit.ClassName
+                name := edit.Name
+                score := 0
+                if InStr(cls, "ql-editor")
+                    score += 3
+                if InStr(cls, "new-input-ui")
+                    score += 2
+                if InStr(name, "Enter a prompt")
+                    score += 3
+                else if InStr(name, "prompt")
+                    score += 2
+                else if InStr(name, "Digite um prompt")
+                    score += 2
+                ; pick the highest scoring candidate
+                if (score > bestScore) {
+                    bestScore := score
+                    best := edit
                 }
             }
-        }
-
-        ; Fallback 3: Try finding by ClassName containing "ql-editor" (most specific identifier)
-        if !promptField {
-            allEdits := uia.FindAll({ Type: 50004 })
-            for edit in allEdits {
-                if InStr(edit.ClassName, "ql-editor") {
-                    promptField := edit
-                    break
-                }
-            }
-        }
-
-        ; Fallback 4: Try finding by Name with substring match (in case of localization variations)
-        if !promptField {
-            allEdits := uia.FindAll({ Type: 50004 })
-            for edit in allEdits {
-                if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "Digite um prompt") || InStr(edit.Name,
-                    "prompt") {
-                    ; Additional check to ensure it's the prompt field (has ql-editor in className)
-                    if InStr(edit.ClassName, "ql-editor") {
-                        promptField := edit
-                        break
-                    }
-                }
+            if (bestScore >= 0) {
+                promptField := best
             }
         }
 
