@@ -429,6 +429,7 @@ Cursor
 📁 [2] Copy path (cursor)
 📊 [3] CSV: Edit CSV
 💾 [4] CSV: Apply changes to source file and save
+🔄 [5] Reload (ahk)
 🤖 [M] Ask ([M]essage), wait 6s, then paste (Shift+V) (ahk)
 ⚡ [G] Kill terminal [custom in settings.json]
 📉 [Y] Fold all
@@ -6182,6 +6183,55 @@ IsEditorActive() {
     Send "#!o"
 }
 
+; Ctrl + 5 : Click Reload button - Reload
+^5::
+{
+    try {
+        win := WinExist("A")
+        if (!win) {
+            return
+        }
+        root := UIA.ElementFromHandle(win)
+        Sleep 100  ; Allow UI to update
+
+        ; Primary strategy: Find by Name "Reload" with Type 50000 (Button)
+        reloadButton := root.FindFirst({ Name: "Reload", Type: 50000 })
+
+        ; Fallback: Try by Type "Button" and Name "Reload"
+        if !reloadButton {
+            reloadButton := root.FindFirst({ Type: "Button", Name: "Reload" })
+        }
+
+        ; Fallback: Search all buttons for one with "Reload" name
+        if !reloadButton {
+            allButtons := root.FindAll({ Type: 50000 })
+            for button in allButtons {
+                if (button.Name = "Reload" || InStr(button.Name, "Reload", false) = 1) {
+                    reloadButton := button
+                    break
+                }
+            }
+        }
+
+        if (reloadButton) {
+            ; Try Invoke pattern first, fallback to Click
+            try {
+                if (reloadButton.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)) {
+                    reloadButton.Invoke()
+                } else {
+                    reloadButton.Click()
+                }
+            } catch {
+                reloadButton.Click()
+            }
+        } else {
+            ; Last resort: Could not find Reload button
+        }
+    } catch Error as e {
+        ; If all else fails, silently fail (no fallback action defined)
+    }
+}
+
 ; Shift + F : Fold - Fold
 +f::
 {
@@ -6318,7 +6368,7 @@ IsEditorActive() {
         ; Simple logic: if element found, continue; if not found, exit early
         if (elementFound) {
             ShowSmallLoadingIndicator_ChatGPT("Element present, continuing...")
-            Sleep 1500
+            Sleep 3500
             continue
         } else {
             ; Element not found, exit early
