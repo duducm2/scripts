@@ -6368,19 +6368,18 @@ IsEditorActive() {
         ; Simple logic: if element found, continue; if not found, exit early
         if (elementFound) {
             ShowSmallLoadingIndicator_ChatGPT("Element present, continuing...")
-            Sleep 3000
+            Sleep 1000
             continue
         } else {
             ; Element not found, exit early
             ShowSmallLoadingIndicator_ChatGPT("Element not found, stopping...")
-            Sleep 1000
+            Sleep 3500
             ; Ensure target window is active before sending commit command
             if (gCommitPushTargetWin) {
                 WinActivate gCommitPushTargetWin
                 Sleep 200
             }
             Send "^!,"
-            Sleep 3000
             Send "+v"
             HideSmallLoadingIndicator_ChatGPT()
 
