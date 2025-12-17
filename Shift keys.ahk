@@ -6373,8 +6373,7 @@ IsEditorActive() {
         } else {
             ; Element not found, exit early
             ShowSmallLoadingIndicator_ChatGPT("Element not found, stopping...")
-            Sleep 500
-            Sleep 2500
+            Sleep 3500
             ; Ensure target window is active before sending commit command
             if (gCommitPushTargetWin) {
                 WinActivate gCommitPushTargetWin
