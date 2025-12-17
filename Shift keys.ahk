@@ -6368,12 +6368,12 @@ IsEditorActive() {
         ; Simple logic: if element found, continue; if not found, exit early
         if (elementFound) {
             ShowSmallLoadingIndicator_ChatGPT("Element present, continuing...")
-            Sleep 3500
+            Sleep 3000
             continue
         } else {
             ; Element not found, exit early
             ShowSmallLoadingIndicator_ChatGPT("Element not found, stopping...")
-            Sleep 3500
+            Sleep 3000
             ; Ensure target window is active before sending commit command
             if (gCommitPushTargetWin) {
                 WinActivate gCommitPushTargetWin
@@ -6384,6 +6384,7 @@ IsEditorActive() {
             Send "+v"
             HideSmallLoadingIndicator_ChatGPT()
 
+            Sleep 3000
             ; Execute stored decision (if any) after commit is sent
             ExecuteStoredCommitPushDecision()
             return
@@ -6403,6 +6404,7 @@ IsEditorActive() {
     Sleep 100
     Send "+v"
     HideSmallLoadingIndicator_ChatGPT()
+    Sleep 3000
     ExecuteStoredCommitPushDecision()
 }
 
