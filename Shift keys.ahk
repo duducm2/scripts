@@ -6380,7 +6380,7 @@ IsEditorActive() {
                 Sleep 200
             }
             Send "^!,"
-            Sleep 100
+            Sleep 3000
             Send "+v"
             HideSmallLoadingIndicator_ChatGPT()
 
