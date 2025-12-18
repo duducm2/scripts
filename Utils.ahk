@@ -2917,7 +2917,7 @@ global g_DictationPulseOpacity := 128  ; Current opacity (50-255)
 global g_LastActiveMonitor := 0  ; Track last monitor to detect changes
 
 ; Constants for dictation indicator
-global DICTATION_SQUARE_SIZE := 50
+global DICTATION_SQUARE_SIZE := 150  ; 3x bigger (was 50)
 global DICTATION_PULSE_MIN := 50      ; Minimum opacity (~20%)
 global DICTATION_PULSE_MAX := 255     ; Maximum opacity (100%)
 global DICTATION_PULSE_STEP := 15     ; Opacity change per tick
