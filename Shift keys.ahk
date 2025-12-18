@@ -23,6 +23,7 @@ SetTitleMatchMode 2
 #include %A_ScriptDir%\env.ahk
 #include UIA-v2\Lib\UIA.ahk
 #include UIA-v2\Lib\UIA_Browser.ahk
+#include %A_ScriptDir%\Utils.ahk
 
 ; --- Global Variables ---
 global smallLoadingGuis_ChatGPT := []
@@ -8909,8 +8910,8 @@ FindMonthGroup(uia) {
 ; Global state for Gemini drawer (main menu) – mirrors the state‑based toggle pattern
 isGeminiDrawerOpen := false
 
-; Global state for Gemini model toggle (Fast vs Thinking)
-isGeminiFastModel := true  ; true = Fast, false = Thinking
+; Global state for Gemini model toggle (Fast, Thinking, or Pro)
+isGeminiFastModel := "Fast"  ; Tracks current model: "Fast", "Thinking", or "Pro"
 
 ; Shift + D : Toggle the Main menu button (drawer) using fast state-based pattern
 +d:: {
@@ -9063,7 +9064,7 @@ ToggleGeminiDrawer() {
     }
 }
 
-; Shift + M : Toggle between Fast and Thinking models - Model
+; Shift + M : Toggle between Fast, Thinking, and Pro models - Model
 +m:: {
     ToggleGeminiModel()
 }
@@ -9072,28 +9073,222 @@ ToggleGeminiDrawer() {
 ToggleGeminiModel() {
     global isGeminiFastModel
 
+    ;#region agent log
+    FocusDbgLog("H1", "Shift keys.ahk:ToggleGeminiModel", "Function entry", Map(
+        "isGeminiFastModel", isGeminiFastModel,
+        "isGeminiFastModelType", Type(isGeminiFastModel),
+        "activeWindowAtStart", WinExist("A"),
+        "activeWindowTitleAtStart", WinGetTitle("A")
+    ))
+    ;#endregion agent log
+
     ; Show a small banner while toggling models
     ShowSmallLoadingIndicator_ChatGPT("Switching model...")
 
     try {
         uia := UIA_Browser()
+
+        ;#region agent log
+        FocusDbgLog("H3", "Shift keys.ahk:ToggleGeminiModel", "UIA_Browser result", Map(
+            "uiaIsObject", IsObject(uia),
+            "uiaType", Type(uia)
+        ))
+        ;#endregion agent log
+
         if !IsObject(uia) {
+            ;#region agent log
+            FocusDbgLog("H3", "Shift keys.ahk:ToggleGeminiModel", "UIA_Browser failed - early return", Map())
+            ;#endregion agent log
             return
         }
 
         Sleep 100  ; Small settle time – keep this snappy
 
-        ; Combined pattern to find either Fast or Thinking button in one search
-        modelPattern := "i)^(Fast|Thinking)$"
+        ; Combined pattern to find Fast, Thinking, or Pro button in one search
+        modelPattern := "i)^(Fast|Thinking|Pro)$"
+
+        ;#region agent log
+        FocusDbgLog("H1", "Shift keys.ahk:ToggleGeminiModel", "Pattern before search", Map(
+            "modelPattern", modelPattern
+        ))
+        ;#endregion agent log
 
         ; Helper to grab a button by pattern with shorter timeout for speed
         FindBtn(p) => WaitForButton(uia, p, 1500)
+        ; Find all model buttons to see which ones are available
+        allButtons := uia.FindAll({ Type: "Button" })
+        modelButtons := []
+        for btnCandidate in allButtons {
+            try {
+                btnName := btnCandidate.Name
+                if (RegExMatch(btnName, modelPattern)) {
+                    ; Get className first to check for disabled state
+                    className := ""
+                    try {
+                        className := btnCandidate.ClassName
+                    } catch {
+                    }
 
-        ; Find whichever model button is currently visible (could be either one)
-        if (btn := FindBtn(modelPattern)) {
+                    ; Check if button is disabled
+                    isDisabled := false
+                    try {
+                        ; Check if button has "disabled" in class name
+                        if (InStr(className, "disabled") || InStr(className, "mat-mdc-button-disabled")) {
+                            isDisabled := true
+                        }
+                        ; Also check IsEnabled property
+                        try {
+                            if (!btnCandidate.GetPropertyValue(UIA.Property.IsEnabled)) {
+                                isDisabled := true
+                            }
+                        } catch {
+                        }
+                    } catch {
+                    }
+
+                    ; Check if button is selected/active
+                    isSelected := false
+                    try {
+                        isSelected := btnCandidate.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable) &&
+                        btnCandidate.SelectionItemPattern.IsSelected
+                    } catch {
+                        ; Try alternative way to check if selected
+                        try {
+                            ; Check if button has "selected" in class name or other properties
+                            if (InStr(className, "selected") || InStr(className, "active") || InStr(className,
+                                "mdc-selected")) {
+                                isSelected := true
+                            }
+                        } catch {
+                        }
+                    }
+                    modelButtons.Push({ btn: btnCandidate, name: btnName, isSelected: isSelected, isDisabled: isDisabled,
+                        className: className })
+
+                    ;#region agent log
+                    FocusDbgLog("H2", "Shift keys.ahk:ToggleGeminiModel", "Found model button", Map(
+                        "name", btnName,
+                        "isSelected", isSelected,
+                        "isDisabled", isDisabled,
+                        "className", className
+                    ))
+                    ;#endregion agent log
+                }
+            } catch {
+            }
+        }
+
+        ;#region agent log
+        FocusDbgLog("H2", "Shift keys.ahk:ToggleGeminiModel", "All model buttons found", Map(
+            "count", modelButtons.Length,
+            "buttonNames", modelButtons.Length > 0 ? modelButtons[1].name : "none"
+        ))
+        ;#endregion agent log
+
+        ; Strategy: Find a button that is NOT the current one (to actually toggle)
+        ; If we have multiple buttons, click one that's different from current state
+        btn := 0
+        currentModelLower := StrLower(isGeminiFastModel)
+
+        if (modelButtons.Length > 1) {
+            ; Multiple buttons available - find one that's different from current AND enabled
+            for modelBtn in modelButtons {
+                btnNameLower := StrLower(modelBtn.name)
+                if (btnNameLower != currentModelLower && !modelBtn.isDisabled) {
+                    btn := modelBtn.btn
+                    ;#region agent log
+                    FocusDbgLog("H2", "Shift keys.ahk:ToggleGeminiModel", "Selected different enabled button to toggle",
+                        Map(
+                            "name", modelBtn.name,
+                            "currentModel", isGeminiFastModel,
+                            "targetModel", modelBtn.name,
+                            "isDisabled", modelBtn.isDisabled
+                        ))
+                    ;#endregion agent log
+                    break
+                }
+            }
+
+            ; If no different enabled button found, try to find any enabled button (even if same name)
+            ; This handles cases where we want to click Pro but the disabled Pro button was found first
+            if (!btn) {
+                for modelBtn in modelButtons {
+                    if (!modelBtn.isDisabled) {
+                        btn := modelBtn.btn
+                        ;#region agent log
+                        FocusDbgLog("H2", "Shift keys.ahk:ToggleGeminiModel",
+                            "Selected enabled button (no different option)", Map(
+                                "name", modelBtn.name,
+                                "currentModel", isGeminiFastModel,
+                                "isDisabled", modelBtn.isDisabled
+                            ))
+                        ;#endregion agent log
+                        break
+                    }
+                }
+            }
+        }
+
+        ; If we couldn't find a different enabled button, or only one button available, use the first enabled one
+        ; (This handles the case where only one model button is visible at a time)
+        if (!btn && modelButtons.Length > 0) {
+            ; Try to find first enabled button
+            for modelBtn in modelButtons {
+                if (!modelBtn.isDisabled) {
+                    btn := modelBtn.btn
+                    ;#region agent log
+                    FocusDbgLog("H2", "Shift keys.ahk:ToggleGeminiModel", "Using first enabled button", Map(
+                        "name", modelBtn.name,
+                        "isDisabled", modelBtn.isDisabled
+                    ))
+                    ;#endregion agent log
+                    break
+                }
+            }
+
+            ; If all buttons are disabled, log warning but still try the first one
+            if (!btn) {
+                btn := modelButtons[1].btn
+                ;#region agent log
+                FocusDbgLog("H2", "Shift keys.ahk:ToggleGeminiModel",
+                    "WARNING: All buttons disabled, using first anyway", Map(
+                        "name", modelButtons[1].name,
+                        "isDisabled", modelButtons[1].isDisabled
+                    ))
+                ;#endregion agent log
+            }
+        }
+
+        ; Final fallback: if no buttons found in our scan, use the original method
+        if (!btn) {
+            btn := FindBtn(modelPattern)
+            ;#region agent log
+            FocusDbgLog("H2", "Shift keys.ahk:ToggleGeminiModel", "Using fallback - clicked any visible button", Map())
+            ;#endregion agent log
+        }
+
+        ;#region agent log
+        FocusDbgLog("H1", "Shift keys.ahk:ToggleGeminiModel", "Button search result", Map(
+            "btnFound", IsObject(btn),
+            "btnType", Type(btn),
+            "btnIsZero", (btn = 0)
+        ))
+        ;#endregion agent log
+
+        if (btn) {
             ; Check which button we found
             btnName := ""
             try btnName := btn.Name
+
+            ;#region agent log
+            FocusDbgLog("H1", "Shift keys.ahk:ToggleGeminiModel", "Button name extracted", Map(
+                "btnName", btnName,
+                "btnNameLength", StrLen(btnName),
+                "btnNameMatchesFast", (btnName = "Fast"),
+                "btnNameMatchesThinking", (btnName = "Thinking"),
+                "btnNameMatchesPro", (btnName = "Pro")
+            ))
+            ;#endregion agent log
 
             ; Determine if this button supports Invoke
             supportsInvoke := false
@@ -9103,40 +9298,198 @@ ToggleGeminiModel() {
                 supportsInvoke := false
             }
 
-            ; Try multi-strategy activation: prefer Invoke when available, fallback to Click
+            ;#region agent log
+            FocusDbgLog("H4", "Shift keys.ahk:ToggleGeminiModel", "Invoke pattern check", Map(
+                "supportsInvoke", supportsInvoke
+            ))
+            ;#endregion agent log
+
+            ; Try multi-strategy activation: prefer Invoke when available, fallback to Click, then mouse coordinates
             clicked := false
+
+            ; Strategy 1: Try to focus the button first (may help with COM errors)
+            try {
+                btn.SetFocus()
+                Sleep 50
+            } catch {
+                ; Ignore focus errors
+            }
+
             if (supportsInvoke) {
                 try {
                     btn.Invoke()
                     clicked := true
-                } catch {
+                    ;#region agent log
+                    FocusDbgLog("H4", "Shift keys.ahk:ToggleGeminiModel", "Invoke succeeded", Map())
+                    ;#endregion agent log
+                } catch Error as invokeErr {
+                    ;#region agent log
+                    FocusDbgLog("H4", "Shift keys.ahk:ToggleGeminiModel", "Invoke failed", Map(
+                        "error", invokeErr.Message
+                    ))
+                    ;#endregion agent log
                 }
             }
             if (!clicked) {
                 try {
                     btn.Click()
                     clicked := true
-                } catch {
+                    ;#region agent log
+                    FocusDbgLog("H4", "Shift keys.ahk:ToggleGeminiModel", "Click succeeded", Map())
+                    ;#endregion agent log
+                } catch Error as clickErr {
+                    ;#region agent log
+                    FocusDbgLog("H4", "Shift keys.ahk:ToggleGeminiModel", "Click failed", Map(
+                        "error", clickErr.Message
+                    ))
+                    ;#endregion agent log
                 }
             }
 
-            ; Update state based on which button we actually clicked
-            if (clicked) {
-                if (btnName = "Fast") {
-                    isGeminiFastModel := true
-                    ShowSmallLoadingIndicator_ChatGPT("Fast model active")
-                } else if (btnName = "Thinking") {
-                    isGeminiFastModel := false
-                    ShowSmallLoadingIndicator_ChatGPT("Thinking model active")
+            ; Strategy 3: Fallback to mouse coordinates if both Invoke and Click fail
+            if (!clicked) {
+                try {
+                    ; Get browser window handle to ensure we activate the correct window
+                    browserHwnd := 0
+                    try {
+                        browserHwnd := uia.BrowserId
+                    } catch {
+                        ; Fallback: try to find Chrome window with Gemini in title
+                        browserHwnd := WinExist("ahk_exe chrome.exe")
+                    }
+
+                    ;#region agent log
+                    FocusDbgLog("H6", "Shift keys.ahk:ToggleGeminiModel", "Before mouse click - window check", Map(
+                        "browserHwnd", browserHwnd,
+                        "activeWindowBefore", WinExist("A"),
+                        "activeWindowTitle", WinGetTitle("A")
+                    ))
+                    ;#endregion agent log
+
+                    ; Activate the browser window BEFORE clicking to prevent activating wrong window
+                    if (browserHwnd) {
+                        WinActivate("ahk_id " browserHwnd)
+                        WinWaitActive("ahk_id " browserHwnd, , 1)
+                        Sleep 50  ; Brief pause after activation
+
+                        ;#region agent log
+                        FocusDbgLog("H6", "Shift keys.ahk:ToggleGeminiModel", "Browser window activated", Map(
+                            "browserHwnd", browserHwnd,
+                            "activeWindowAfter", WinExist("A")
+                        ))
+                        ;#endregion agent log
+                    }
+
+                    ; Get button location and click using mouse coordinates
+                    btnLocation := btn.Location
+                    if (btnLocation && btnLocation.x >= 0 && btnLocation.y >= 0) {
+                        ; Save current mouse position and coordinate mode
+                        MouseGetPos(&prevX, &prevY)
+                        prevCoordMode := A_CoordModeMouse
+
+                        ; Set coordinate mode to Screen for absolute coordinates
+                        CoordMode("Mouse", "Screen")
+
+                        ; Calculate click position
+                        clickX := btnLocation.x + btnLocation.w // 2
+                        clickY := btnLocation.y + btnLocation.h // 2
+
+                        ;#region agent log
+                        FocusDbgLog("H6", "Shift keys.ahk:ToggleGeminiModel", "Mouse click coordinates", Map(
+                            "clickX", clickX,
+                            "clickY", clickY,
+                            "btnLocationX", btnLocation.x,
+                            "btnLocationY", btnLocation.y,
+                            "btnLocationW", btnLocation.w,
+                            "btnLocationH", btnLocation.h
+                        ))
+                        ;#endregion agent log
+
+                        ; Click at button center
+                        Click(clickX, clickY)
+                        clicked := true
+
+                        ;#region agent log
+                        FocusDbgLog("H4", "Shift keys.ahk:ToggleGeminiModel", "Mouse coordinate click succeeded", Map(
+                            "x", clickX,
+                            "y", clickY,
+                            "activeWindowAfterClick", WinExist("A")
+                        ))
+                        ;#endregion agent log
+
+                        ; Restore mouse position and coordinate mode after a brief delay
+                        Sleep 100
+                        CoordMode("Mouse", prevCoordMode)
+                        MouseMove(prevX, prevY)
+                    }
+                } catch Error as mouseErr {
+                    ;#region agent log
+                    FocusDbgLog("H4", "Shift keys.ahk:ToggleGeminiModel", "Mouse coordinate click failed", Map(
+                        "error", mouseErr.Message
+                    ))
+                    ;#endregion agent log
                 }
+            }
+
+            ;#region agent log
+            FocusDbgLog("H4", "Shift keys.ahk:ToggleGeminiModel", "Click/Invoke result", Map(
+                "clicked", clicked
+            ))
+            ;#endregion agent log
+
+            ; Update state based on which button we actually clicked
+            ; Use case-insensitive comparison since button names may vary in casing
+            btnNameLower := StrLower(btnName)
+            if (clicked) {
+                if (btnNameLower = "fast") {
+                    isGeminiFastModel := "Fast"
+                    ShowSmallLoadingIndicator_ChatGPT("Fast model active")
+                } else if (btnNameLower = "thinking") {
+                    isGeminiFastModel := "Thinking"
+                    ShowSmallLoadingIndicator_ChatGPT("Thinking model active")
+                } else if (btnNameLower = "pro") {
+                    isGeminiFastModel := "Pro"
+                    ShowSmallLoadingIndicator_ChatGPT("Pro model active")
+                } else {
+                    ;#region agent log
+                    FocusDbgLog("H2", "Shift keys.ahk:ToggleGeminiModel", "Unknown button name - no state update", Map(
+                        "btnName", btnName,
+                        "btnNameLower", btnNameLower
+                    ))
+                    ;#endregion agent log
+                }
+
+                ;#region agent log
+                FocusDbgLog("H5", "Shift keys.ahk:ToggleGeminiModel", "State after update", Map(
+                    "isGeminiFastModel", isGeminiFastModel
+                ))
+                ;#endregion agent log
+
                 Sleep 150  ; Minimal sleep – just enough for UI to register
             }
+        } else {
+            ;#region agent log
+            FocusDbgLog("H2", "Shift keys.ahk:ToggleGeminiModel", "No button found - pattern may not match", Map(
+                "modelPattern", modelPattern
+            ))
+            ;#endregion agent log
         }
     } catch Error as err {
-        ; Silently fail if anything goes wrong
+        ;#region agent log
+        FocusDbgLog("H5", "Shift keys.ahk:ToggleGeminiModel", "Exception caught", Map(
+            "errorMessage", err.Message,
+            "errorWhat", err.What,
+            "errorFile", err.File,
+            "errorLine", err.Line
+        ))
+        ;#endregion agent log
     } finally {
         ; Hide the banner shortly after finishing
         SetTimer(() => HideSmallLoadingIndicator_ChatGPT(), -900)
+
+        ;#region agent log
+        FocusDbgLog("H1", "Shift keys.ahk:ToggleGeminiModel", "Function exit", Map())
+        ;#endregion agent log
     }
 }
 
