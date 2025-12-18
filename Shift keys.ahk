@@ -910,6 +910,9 @@ YouTube (Shift)
 🔍 [S]Focus [S]earch box
 🎬 [U]Focus first video via Search filters
 🎬 [I]Focus first video via [I]Explore
+🏠 [H]Navigate to [H]ome
+📜 [R]Navigate to histo[R]y
+📋 [P]Navigate to [P]laylists
 )"
 
 ; --- Google Search ---------------------------------------------------------------
@@ -8842,6 +8845,57 @@ FindMonthGroup(uia) {
         Send "{Tab}"
         Sleep 100
         Send "{Enter}"
+    }
+}
+
+; Shift + H : Navigate to YouTube Home
++h:: {
+    try {
+        uia := UIA_Browser()
+        uia.Navigate("https://www.youtube.com/")
+    } catch Error as e {
+        ; Fallback: use address bar navigation with clipboard paste
+        clipSave := ClipboardAll()
+        A_Clipboard := "https://www.youtube.com/"
+        Send "^l"  ; Focus address bar
+        Sleep 50
+        Send "^v{Enter}"  ; Paste and navigate
+        Sleep 50
+        A_Clipboard := clipSave
+    }
+}
+
+; Shift + R : Navigate to YouTube History
++r:: {
+    try {
+        uia := UIA_Browser()
+        uia.Navigate("https://www.youtube.com/feed/history")
+    } catch Error as e {
+        ; Fallback: use address bar navigation with clipboard paste
+        clipSave := ClipboardAll()
+        A_Clipboard := "https://www.youtube.com/feed/history"
+        Send "^l"  ; Focus address bar
+        Sleep 50
+        Send "^v{Enter}"  ; Paste and navigate
+        Sleep 50
+        A_Clipboard := clipSave
+    }
+}
+
+; Shift + P : Navigate to YouTube Playlists
++p:: {
+    try {
+        uia := UIA_Browser()
+        uia.Navigate("https://www.youtube.com/feed/playlists")
+    } catch Error as e {
+        ; Fallback: use address bar navigation with clipboard paste
+        clipSave := ClipboardAll()
+        A_Clipboard := "https://www.youtube.com/feed/playlists"
+        Send "^l"  ; Focus address bar
+        Sleep 50
+        Send "^v{Enter}"  ; Paste and navigate
+        Sleep 50
+        A_Clipboard := clipSave
     }
 }
 
