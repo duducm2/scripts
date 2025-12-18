@@ -6335,6 +6335,22 @@ IsEditorActive() {
         Sleep 200
     }
 
+    ; Block all mouse and keyboard input to prevent user interference
+    ; This ensures the script can complete its automation without interruption
+    BlockInput "On"
+
+    ; Ensure target window stays active throughout the operation
+    try {
+        if (gCommitPushTargetWin && WinExist("ahk_id " gCommitPushTargetWin)) {
+            WinActivate gCommitPushTargetWin
+            WinWaitActive("ahk_id " gCommitPushTargetWin, , 1)
+        }
+    } catch {
+        ; If window no longer exists, restore input and exit
+        BlockInput "Off"
+        return
+    }
+
     Send "+d"
     Sleep 200
     Send "^!a"
@@ -6342,6 +6358,18 @@ IsEditorActive() {
     loop 8 {
         secondsLeft := 9 - A_Index
         ShowSmallLoadingIndicator_ChatGPT("Waiting " . secondsLeft . "s…")
+
+        ; Keep target window active during the loop
+        try {
+            if (gCommitPushTargetWin && WinExist("ahk_id " gCommitPushTargetWin)) {
+                WinActivate gCommitPushTargetWin
+            }
+        } catch {
+            ; Window closed, restore input and exit
+            BlockInput "Off"
+            HideSmallLoadingIndicator_ChatGPT()
+            return
+        }
 
         ; Check if the message text is present - ultra simple approach
         elementFound := false
@@ -6375,7 +6403,7 @@ IsEditorActive() {
             ShowSmallLoadingIndicator_ChatGPT("Element not found, stopping...")
             Sleep 5500
             ; Ensure target window is active before sending commit command
-            if (gCommitPushTargetWin) {
+            if (gCommitPushTargetWin && WinExist("ahk_id " gCommitPushTargetWin)) {
                 WinActivate gCommitPushTargetWin
                 Sleep 200
             }
@@ -6386,6 +6414,9 @@ IsEditorActive() {
             Sleep 1000
             ; Execute stored decision (if any) after commit is sent
             ExecuteStoredCommitPushDecision()
+
+            ; Restore input before exiting
+            BlockInput "Off"
             return
         }
 
@@ -6395,7 +6426,7 @@ IsEditorActive() {
     ; If we reach here, the loop completed normally (element was found)
     ; Send the commit and show push selector popup
     ; Ensure target window is active before sending commit command
-    if (gCommitPushTargetWin) {
+    if (gCommitPushTargetWin && WinExist("ahk_id " gCommitPushTargetWin)) {
         WinActivate gCommitPushTargetWin
         Sleep 200
     }
@@ -6405,6 +6436,9 @@ IsEditorActive() {
     HideSmallLoadingIndicator_ChatGPT()
     Sleep 3000
     ExecuteStoredCommitPushDecision()
+
+    ; Restore input after all operations complete
+    BlockInput "Off"
 }
 
 ; Global variable for commit push selector target window
