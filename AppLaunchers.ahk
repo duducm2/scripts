@@ -185,7 +185,7 @@ ShowCursorFallbackPanel() {
         WinActivate
         CenterMouse()
     } else {
-        Run "chrome.exe --new-window https://www.youtube.com"
+        Run "chrome.exe --new-window https://www.youtube.com/feed/playlists"
         WinWaitActive("YouTube")
         CenterMouse()
     }

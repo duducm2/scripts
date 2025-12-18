@@ -2803,3 +2803,102 @@ ToggleFocusMode() {
     Sleep 10
     SoundBeep(800, 200)
 }
+
+; =============================================================================
+; Block Escape Key from handy.exe
+; Prevents Escape key from closing handy.exe while still allowing
+; Escape to work normally in other applications
+; =============================================================================
+
+; Force hook-based hotkey to intercept Escape at a lower level
+; This should catch it before handy.exe's hook processes it
+#UseHook
+#InputLevel 10
+Escape::
+{
+    ;#region agent log
+    FocusDbgLog("H1", "Utils.ahk:Escape", "Escape hotkey triggered", Map("timestamp", A_TickCount))
+    ;#endregion agent log
+
+    ; Get active window info before checking
+    activeWin := WinGetID("A")
+    activeWinTitle := WinGetTitle("A")
+    activeWinProcess := WinGetProcessName("A")
+    activeWinProcessPath := WinGetProcessPath("A")
+    isHandyActive := WinActive("ahk_exe handy.exe")
+
+    ; Try alternative detection methods
+    isHandyByTitle := InStr(activeWinTitle, "handy", false) > 0
+    isHandyByProcess := InStr(activeWinProcess, "handy", false) > 0
+    isHandyByPath := InStr(activeWinProcessPath, "handy", false) > 0
+
+    ; Check if handy.exe process exists/running (regardless of active window)
+    ; handy.exe uses a global hook, so we need to block Escape whenever it's running
+    handyProcessId := 0
+    try {
+        handyProcessId := ProcessExist("handy.exe")
+    } catch {
+        handyProcessId := 0
+    }
+    handyProcessExists := (handyProcessId > 0)
+
+    ;#region agent log
+    FocusDbgLog("H2", "Utils.ahk:Escape", "Process and window check", Map(
+        "activeWin", activeWin,
+        "activeWinTitle", activeWinTitle,
+        "activeWinProcess", activeWinProcess,
+        "activeWinProcessPath", activeWinProcessPath,
+        "isHandyActive", isHandyActive,
+        "handyProcessId", handyProcessId,
+        "handyProcessExists", handyProcessExists,
+        "note", "handy.exe uses global hook, blocking when process exists"
+    ))
+    ;#endregion agent log
+
+    ; Block Escape if handy.exe process is running (regardless of active window)
+    ; handy.exe uses a global keyboard hook, so it listens to Escape even when not active
+    shouldBlock := handyProcessExists
+
+    ;#region agent log
+    FocusDbgLog("H4", "Utils.ahk:Escape", "Blocking decision", Map(
+        "handyProcessExists", handyProcessExists,
+        "shouldBlock", shouldBlock,
+        "reason", "Blocking because handy.exe process is running (global hook)"
+    ))
+    ;#endregion agent log
+
+    ; Block Escape if handy.exe is running
+    if (shouldBlock) {
+        ;#region agent log
+        FocusDbgLog("H3", "Utils.ahk:Escape", "Blocking Escape for handy.exe", Map(
+            "blocking", true,
+            "returning", true
+        ))
+        ;#endregion agent log
+
+        ; Block Escape from reaching handy.exe - do nothing
+        ; This prevents the dictation software from closing
+        return
+    }
+
+    ;#region agent log
+    FocusDbgLog("H3", "Utils.ahk:Escape", "Forwarding Escape to system", Map(
+        "blocking", false,
+        "forwarding", true
+    ))
+    ;#endregion agent log
+
+    ; Otherwise, forward Escape to the system
+    ; Use SendInput for more reliable key forwarding
+    SendInput "{Escape}"
+
+    ;#region agent log
+    FocusDbgLog("H3", "Utils.ahk:Escape", "Escape forwarded", Map("afterSend", true))
+    ;#endregion agent log
+}
+#InputLevel 0
+
+;#region agent log
+; Log that Escape hotkey section was loaded
+FocusDbgLog("H1", "Utils.ahk", "Escape hotkey registered", Map("inputLevel", 10, "useHook", true))
+;#endregion agent log
