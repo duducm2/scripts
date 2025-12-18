@@ -2902,3 +2902,216 @@ Escape::
 ; Log that Escape hotkey section was loaded
 FocusDbgLog("H1", "Utils.ahk", "Escape hotkey registered", Map("inputLevel", 10, "useHook", true))
 ;#endregion agent log
+
+; =============================================================================
+; Dictation Indicator - Red Pulsing Square
+; Shows a red pulsing square at the top center of the active monitor when
+; dictation is active with handy.exe. Toggles with Win+Alt+Shift+0.
+; =============================================================================
+
+; Global variables for dictation indicator
+global g_DictationActive := false
+global g_DictationIndicatorGui := false
+global g_DictationPulseTimer := false
+global g_DictationPulseDirection := 1  ; 1 = fading in, -1 = fading out
+global g_DictationPulseOpacity := 128  ; Current opacity (50-255)
+
+; Constants for dictation indicator
+global DICTATION_SQUARE_SIZE := 50
+global DICTATION_PULSE_MIN := 50      ; Minimum opacity (~20%)
+global DICTATION_PULSE_MAX := 255     ; Maximum opacity (100%)
+global DICTATION_PULSE_STEP := 15     ; Opacity change per tick
+global DICTATION_PULSE_INTERVAL := 50 ; Timer interval in ms (smooth animation)
+
+; Get the monitor that contains the active window
+; Returns monitor index (1-based) or 0 if not found
+GetDictationActiveMonitor() {
+    hwnd := WinExist("A")
+    if (!hwnd) {
+        return 1  ; Default to primary monitor
+    }
+
+    rect := Buffer(16, 0)
+    if (!DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)) {
+        return 1  ; Default to primary monitor
+    }
+
+    left := NumGet(rect, 0, "int")
+    top := NumGet(rect, 4, "int")
+    right := NumGet(rect, 8, "int")
+    bottom := NumGet(rect, 12, "int")
+
+    centerX := left + (right - left) // 2
+    centerY := top + (bottom - top) // 2
+
+    monitorCount := MonitorGetCount()
+    loop monitorCount {
+        MonitorGet(A_Index, &ml, &mt, &mr, &mb)
+        if (centerX >= ml && centerX <= mr && centerY >= mt && centerY <= mb) {
+            return A_Index
+        }
+    }
+
+    return 1  ; Default to primary monitor
+}
+
+; Show the dictation indicator at the top center of the active monitor
+ShowDictationIndicator() {
+    global g_DictationIndicatorGui, g_DictationPulseOpacity
+    global DICTATION_SQUARE_SIZE
+
+    ; Clean up any existing indicator
+    HideDictationIndicator()
+
+    ; Get active monitor bounds
+    monitorIndex := GetDictationActiveMonitor()
+    MonitorGet(monitorIndex, &monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
+    monitorWidth := monitorRight - monitorLeft
+
+    ; Calculate position: top center of monitor with small offset from top
+    squareX := monitorLeft + (monitorWidth - DICTATION_SQUARE_SIZE) // 2
+    squareY := monitorTop + 20  ; 20 pixels from top
+
+    ; Create the red square GUI
+    ; +AlwaysOnTop: stays on top of all windows
+    ; -Caption: no title bar
+    ; +ToolWindow: doesn't appear in taskbar
+    ; +E0x20: click-through (WS_EX_TRANSPARENT)
+    ; -DPIScale: use raw screen coordinates
+    g_DictationIndicatorGui := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x20")
+    g_DictationIndicatorGui.Opt("-DPIScale")
+    g_DictationIndicatorGui.BackColor := "FF0000"  ; Red
+
+    ; Reset pulse opacity
+    g_DictationPulseOpacity := 128
+
+    ; Show the indicator without activating it
+    g_DictationIndicatorGui.Show("NA x" . squareX . " y" . squareY . " w" . DICTATION_SQUARE_SIZE . " h" .
+        DICTATION_SQUARE_SIZE)
+    WinSetTransparent(g_DictationPulseOpacity, g_DictationIndicatorGui)
+}
+
+; Hide and destroy the dictation indicator
+HideDictationIndicator() {
+    global g_DictationIndicatorGui
+
+    if (IsObject(g_DictationIndicatorGui)) {
+        try {
+            if (g_DictationIndicatorGui.Hwnd) {
+                g_DictationIndicatorGui.Destroy()
+            }
+        } catch {
+            ; Ignore errors
+        }
+        g_DictationIndicatorGui := false
+    }
+}
+
+; Update the pulse animation (called by timer)
+UpdateDictationIndicatorPulse() {
+    global g_DictationIndicatorGui, g_DictationPulseOpacity, g_DictationPulseDirection
+    global DICTATION_PULSE_MIN, DICTATION_PULSE_MAX, DICTATION_PULSE_STEP
+
+    ; Check if indicator GUI is still valid
+    if (!IsObject(g_DictationIndicatorGui) || !g_DictationIndicatorGui.Hwnd) {
+        return
+    }
+
+    ; Update opacity based on direction
+    g_DictationPulseOpacity += DICTATION_PULSE_STEP * g_DictationPulseDirection
+
+    ; Reverse direction at bounds
+    if (g_DictationPulseOpacity >= DICTATION_PULSE_MAX) {
+        g_DictationPulseOpacity := DICTATION_PULSE_MAX
+        g_DictationPulseDirection := -1  ; Start fading out
+    } else if (g_DictationPulseOpacity <= DICTATION_PULSE_MIN) {
+        g_DictationPulseOpacity := DICTATION_PULSE_MIN
+        g_DictationPulseDirection := 1   ; Start fading in
+    }
+
+    ; Apply new transparency
+    try {
+        WinSetTransparent(g_DictationPulseOpacity, g_DictationIndicatorGui)
+    } catch {
+        ; Ignore errors (window might have been destroyed)
+    }
+}
+
+; Start the pulse animation timer
+StartDictationPulseTimer() {
+    global g_DictationPulseTimer, DICTATION_PULSE_INTERVAL, g_DictationPulseDirection
+
+    ; Reset pulse direction to fade in
+    g_DictationPulseDirection := 1
+
+    ; Stop any existing timer
+    StopDictationPulseTimer()
+
+    ; Create and start new timer
+    g_DictationPulseTimer := UpdateDictationIndicatorPulse
+    SetTimer(g_DictationPulseTimer, DICTATION_PULSE_INTERVAL)
+}
+
+; Stop the pulse animation timer
+StopDictationPulseTimer() {
+    global g_DictationPulseTimer
+
+    if (g_DictationPulseTimer) {
+        try {
+            SetTimer(g_DictationPulseTimer, 0)
+        } catch {
+            ; Ignore errors
+        }
+        g_DictationPulseTimer := false
+    }
+}
+
+; Toggle dictation mode on/off
+; Checks if handy.exe is running before activating
+ToggleDictationMode() {
+    global g_DictationActive
+
+    ; Check if handy.exe is running
+    handyProcessId := 0
+    try {
+        handyProcessId := ProcessExist("handy.exe")
+    } catch {
+        handyProcessId := 0
+    }
+
+    ; If trying to activate but handy.exe is not running, show notification
+    if (!g_DictationActive && handyProcessId = 0) {
+        TrayTip("Dictation Mode", "handy.exe is not running", "IconX")
+        SetTimer(() => TrayTip(), -3000)
+        return
+    }
+
+    ; Toggle state
+    g_DictationActive := !g_DictationActive
+
+    if (g_DictationActive) {
+        ; Activating dictation mode
+        ShowDictationIndicator()
+        StartDictationPulseTimer()
+    } else {
+        ; Deactivating dictation mode
+        StopDictationPulseTimer()
+        HideDictationIndicator()
+    }
+}
+
+; Cleanup dictation indicator resources
+CleanupDictationIndicator(*) {
+    StopDictationPulseTimer()
+    HideDictationIndicator()
+}
+
+; Register cleanup on script exit
+OnExit(CleanupDictationIndicator)
+
+; Toggle dictation mode with Win+Alt+Shift+0
+; The ~ prefix allows the key combination to pass through to handy.exe
+~#!+0::
+{
+    ToggleDictationMode()
+}
