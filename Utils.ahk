@@ -2820,69 +2820,39 @@ Escape::
     FocusDbgLog("H1", "Utils.ahk:Escape", "Escape hotkey triggered", Map("timestamp", A_TickCount))
     ;#endregion agent log
 
-    ; Get active window info before checking
-    activeWin := WinGetID("A")
-    activeWinTitle := WinGetTitle("A")
-    activeWinProcess := WinGetProcessName("A")
-    activeWinProcessPath := WinGetProcessPath("A")
-    isHandyActive := WinActive("ahk_exe handy.exe")
-
-    ; Try alternative detection methods
-    isHandyByTitle := InStr(activeWinTitle, "handy", false) > 0
-    isHandyByProcess := InStr(activeWinProcess, "handy", false) > 0
-    isHandyByPath := InStr(activeWinProcessPath, "handy", false) > 0
-
-    ; Check if the "Recording" window from handy.exe exists
-    ; Only block Escape when actually recording, not just when handy.exe is running
-    recordingWindowExists := false
-    try {
-        recordingWindowExists := WinExist("Recording ahk_exe handy.exe")
-    } catch {
-        recordingWindowExists := false
-    }
+    ; Use state-based blocking: check g_DictationActive instead of checking window each time
+    ; This ensures Esc remains restricted for the entire duration of dictation
+    global g_DictationActive
 
     ;#region agent log
-    FocusDbgLog("H2", "Utils.ahk:Escape", "Process and window check", Map(
-        "activeWin", activeWin,
-        "activeWinTitle", activeWinTitle,
-        "activeWinProcess", activeWinProcess,
-        "activeWinProcessPath", activeWinProcessPath,
-        "isHandyActive", isHandyActive,
-        "recordingWindowExists", recordingWindowExists,
-        "note", "Only blocking when Recording window exists"
+    FocusDbgLog("H2", "Utils.ahk:Escape", "State-based check", Map(
+        "g_DictationActive", g_DictationActive,
+        "note", "Using state variable instead of window check"
     ))
     ;#endregion agent log
 
-    ; Block Escape only if the "Recording" window exists
-    ; This allows Escape to work normally when handy.exe is running but not recording
-    shouldBlock := (recordingWindowExists > 0)
-
-    ;#region agent log
-    FocusDbgLog("H4", "Utils.ahk:Escape", "Blocking decision", Map(
-        "recordingWindowExists", recordingWindowExists,
-        "shouldBlock", shouldBlock,
-        "reason", "Blocking because Recording window exists (dictation active)"
-    ))
-    ;#endregion agent log
-
-    ; Block Escape if handy.exe is running
-    if (shouldBlock) {
+    ; Block Escape if dictation is active (state-based, no timeout)
+    ; This restriction remains for the entire duration of dictation
+    if (g_DictationActive) {
         ;#region agent log
-        FocusDbgLog("H3", "Utils.ahk:Escape", "Blocking Escape for handy.exe", Map(
+        FocusDbgLog("H3", "Utils.ahk:Escape", "Blocking Escape (dictation active)", Map(
             "blocking", true,
-            "returning", true
+            "returning", true,
+            "reason", "Dictation state is active - Esc restricted"
         ))
         ;#endregion agent log
 
         ; Block Escape from reaching handy.exe - do nothing
         ; This prevents the dictation software from closing
+        ; Restriction remains active for entire dictation duration (no timeout)
         return
     }
 
     ;#region agent log
     FocusDbgLog("H3", "Utils.ahk:Escape", "Forwarding Escape to system", Map(
         "blocking", false,
-        "forwarding", true
+        "forwarding", true,
+        "reason", "Dictation not active - Esc allowed"
     ))
     ;#endregion agent log
 
@@ -3096,7 +3066,18 @@ CheckDictationRecordingWindow() {
         g_DictationActive := newState
 
         if (g_DictationActive) {
-            ; Recording window appeared - show indicator
+            ; Recording window appeared - set mic volume FIRST, then show indicator
+            ; Run PowerShell script to set mic volume to 100% (synchronously to ensure it completes first)
+            try {
+                micVolumeScript := A_ScriptDir "\Set-MicVolume.ps1"
+                if (FileExist(micVolumeScript)) {
+                    RunWait "powershell.exe -ExecutionPolicy Bypass -File `"" micVolumeScript "`"", , "Hide"
+                }
+            } catch Error as e {
+                ; Silently handle errors - don't interrupt dictation if script fails
+            }
+
+            ; Only after mic volume is set, show indicator and start timer
             ShowDictationIndicator()
             StartDictationPulseTimer()
         } else {
@@ -3141,6 +3122,32 @@ StopDictationCheckTimer() {
 ToggleDictationMode() {
     ; Trigger immediate check (the timer will handle showing/hiding)
     CheckDictationRecordingWindow()
+}
+
+; Force end dictation immediately (e.g., when Ask action is triggered)
+; This immediately removes Esc restriction and hides the indicator
+EndDictation() {
+    global g_DictationActive
+
+    ;#region agent log
+    FocusDbgLog("H1", "Utils.ahk:EndDictation", "Forcing dictation to end", Map(
+        "previousState", g_DictationActive
+    ))
+    ;#endregion agent log
+
+    ; Immediately set state to inactive
+    g_DictationActive := false
+
+    ; Hide indicator and stop timers
+    StopDictationPulseTimer()
+    HideDictationIndicator()
+
+    ;#region agent log
+    FocusDbgLog("H2", "Utils.ahk:EndDictation", "Dictation ended", Map(
+        "newState", g_DictationActive,
+        "indicatorHidden", true
+    ))
+    ;#endregion agent log
 }
 
 ; Cleanup dictation indicator resources

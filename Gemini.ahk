@@ -802,7 +802,6 @@ InitializeGeminiFirstTime() {
         WinActivate("ahk_id " hwnd)
         if WinWaitActive("ahk_id " hwnd, , 2) {
             CenterMouse()
-            Send("{Esc}")
 
             ; Focus the Gemini prompt field - optimized for speed
             Sleep 150  ; small settle per README (keep snappy)
