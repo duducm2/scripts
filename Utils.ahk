@@ -2786,3 +2786,20 @@ ToggleFocusMode() {
 {
     ToggleFocusMode()
 }
+
+; =============================================================================
+; Print Screen with Chime
+; Hotkey: Alt+PrintScreen
+; Lets the native Alt+PrintScreen pass through (captures active window)
+; and plays a chime sound to confirm the action
+; =============================================================================
+~!PrintScreen::
+{
+    ; Let the key combination pass through to Windows (captures active window)
+    ; The ~ prefix allows the original key to work normally
+
+    ; Brief delay to ensure screenshot is taken, then play chime
+    ; This is safe - one-shot timer automatically cleans up after execution
+    Sleep 10
+    SoundBeep(800, 200)
+}
