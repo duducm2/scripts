@@ -2914,6 +2914,7 @@ global g_DictationPulseTimer := false
 global g_DictationCheckTimer := false  ; Timer to check if Recording window still exists
 global g_DictationPulseDirection := 1  ; 1 = fading in, -1 = fading out
 global g_DictationPulseOpacity := 128  ; Current opacity (50-255)
+global g_LastActiveMonitor := 0  ; Track last monitor to detect changes
 
 ; Constants for dictation indicator
 global DICTATION_SQUARE_SIZE := 50
@@ -2954,13 +2955,10 @@ GetDictationActiveMonitor() {
     return 1  ; Default to primary monitor
 }
 
-; Show the dictation indicator at the top center of the active monitor
+; Show or update the dictation indicator at the top center of the active monitor
 ShowDictationIndicator() {
-    global g_DictationIndicatorGui, g_DictationPulseOpacity
+    global g_DictationIndicatorGui, g_DictationPulseOpacity, g_LastActiveMonitor
     global DICTATION_SQUARE_SIZE
-
-    ; Clean up any existing indicator
-    HideDictationIndicator()
 
     ; Get active monitor bounds
     monitorIndex := GetDictationActiveMonitor()
@@ -2971,7 +2969,18 @@ ShowDictationIndicator() {
     squareX := monitorLeft + (monitorWidth - DICTATION_SQUARE_SIZE) // 2
     squareY := monitorTop + 20  ; 20 pixels from top
 
-    ; Create the red square GUI
+    ; Check if indicator already exists
+    if (IsObject(g_DictationIndicatorGui) && g_DictationIndicatorGui.Hwnd) {
+        ; Indicator exists - just reposition it if monitor changed
+        if (monitorIndex != g_LastActiveMonitor) {
+            g_DictationIndicatorGui.Show("NA x" . squareX . " y" . squareY . " w" . DICTATION_SQUARE_SIZE . " h" .
+                DICTATION_SQUARE_SIZE)
+            g_LastActiveMonitor := monitorIndex
+        }
+        return
+    }
+
+    ; Create new indicator
     ; +AlwaysOnTop: stays on top of all windows
     ; -Caption: no title bar
     ; +ToolWindow: doesn't appear in taskbar
@@ -2983,6 +2992,7 @@ ShowDictationIndicator() {
 
     ; Reset pulse opacity
     g_DictationPulseOpacity := 128
+    g_LastActiveMonitor := monitorIndex
 
     ; Show the indicator without activating it
     g_DictationIndicatorGui.Show("NA x" . squareX . " y" . squareY . " w" . DICTATION_SQUARE_SIZE . " h" .
@@ -3066,6 +3076,7 @@ StopDictationPulseTimer() {
 }
 
 ; Check if Recording window still exists and update indicator accordingly
+; Also updates indicator position to follow active window
 CheckDictationRecordingWindow() {
     global g_DictationActive
 
@@ -3080,7 +3091,7 @@ CheckDictationRecordingWindow() {
     ; Update state based on whether Recording window exists
     newState := (recordingWindowExists > 0)
 
-    ; Only update if state changed
+    ; Update if state changed
     if (newState != g_DictationActive) {
         g_DictationActive := newState
 
@@ -3092,8 +3103,10 @@ CheckDictationRecordingWindow() {
             ; Recording window disappeared - hide indicator
             StopDictationPulseTimer()
             HideDictationIndicator()
-            StopDictationCheckTimer()
         }
+    } else if (g_DictationActive) {
+        ; Recording is active - update indicator position to follow active window
+        ShowDictationIndicator()  ; This will reposition if monitor changed
     }
 }
 
@@ -3124,34 +3137,10 @@ StopDictationCheckTimer() {
 }
 
 ; Toggle dictation mode on/off
-; Checks if the "Recording" window exists to determine if dictation is active
+; The check timer handles everything automatically, this just triggers an immediate check
 ToggleDictationMode() {
-    global g_DictationActive
-
-    ; Check if the "Recording" window exists
-    ; This is the actual indicator that dictation is active
-    recordingWindowExists := false
-    try {
-        recordingWindowExists := WinExist("Recording ahk_exe handy.exe")
-    } catch {
-        recordingWindowExists := false
-    }
-
-    ; Update state based on whether Recording window exists
-    ; If Recording window exists, dictation is active
-    g_DictationActive := (recordingWindowExists > 0)
-
-    if (g_DictationActive) {
-        ; Recording window exists - show indicator and start monitoring
-        ShowDictationIndicator()
-        StartDictationPulseTimer()
-        StartDictationCheckTimer()  ; Monitor for window closing
-    } else {
-        ; Recording window doesn't exist - hide indicator
-        StopDictationPulseTimer()
-        HideDictationIndicator()
-        StopDictationCheckTimer()
-    }
+    ; Trigger immediate check (the timer will handle showing/hiding)
+    CheckDictationRecordingWindow()
 }
 
 ; Cleanup dictation indicator resources
@@ -3170,3 +3159,7 @@ OnExit(CleanupDictationIndicator)
 {
     ToggleDictationMode()
 }
+
+; Start the check timer automatically when script loads
+; This continuously monitors for the Recording window and updates indicator position
+StartDictationCheckTimer()
