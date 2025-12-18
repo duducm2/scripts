@@ -2832,15 +2832,14 @@ Escape::
     isHandyByProcess := InStr(activeWinProcess, "handy", false) > 0
     isHandyByPath := InStr(activeWinProcessPath, "handy", false) > 0
 
-    ; Check if handy.exe process exists/running (regardless of active window)
-    ; handy.exe uses a global hook, so we need to block Escape whenever it's running
-    handyProcessId := 0
+    ; Check if the "Recording" window from handy.exe exists
+    ; Only block Escape when actually recording, not just when handy.exe is running
+    recordingWindowExists := false
     try {
-        handyProcessId := ProcessExist("handy.exe")
+        recordingWindowExists := WinExist("Recording ahk_exe handy.exe")
     } catch {
-        handyProcessId := 0
+        recordingWindowExists := false
     }
-    handyProcessExists := (handyProcessId > 0)
 
     ;#region agent log
     FocusDbgLog("H2", "Utils.ahk:Escape", "Process and window check", Map(
@@ -2849,21 +2848,20 @@ Escape::
         "activeWinProcess", activeWinProcess,
         "activeWinProcessPath", activeWinProcessPath,
         "isHandyActive", isHandyActive,
-        "handyProcessId", handyProcessId,
-        "handyProcessExists", handyProcessExists,
-        "note", "handy.exe uses global hook, blocking when process exists"
+        "recordingWindowExists", recordingWindowExists,
+        "note", "Only blocking when Recording window exists"
     ))
     ;#endregion agent log
 
-    ; Block Escape if handy.exe process is running (regardless of active window)
-    ; handy.exe uses a global keyboard hook, so it listens to Escape even when not active
-    shouldBlock := handyProcessExists
+    ; Block Escape only if the "Recording" window exists
+    ; This allows Escape to work normally when handy.exe is running but not recording
+    shouldBlock := (recordingWindowExists > 0)
 
     ;#region agent log
     FocusDbgLog("H4", "Utils.ahk:Escape", "Blocking decision", Map(
-        "handyProcessExists", handyProcessExists,
+        "recordingWindowExists", recordingWindowExists,
         "shouldBlock", shouldBlock,
-        "reason", "Blocking because handy.exe process is running (global hook)"
+        "reason", "Blocking because Recording window exists (dictation active)"
     ))
     ;#endregion agent log
 
@@ -2913,6 +2911,7 @@ FocusDbgLog("H1", "Utils.ahk", "Escape hotkey registered", Map("inputLevel", 10,
 global g_DictationActive := false
 global g_DictationIndicatorGui := false
 global g_DictationPulseTimer := false
+global g_DictationCheckTimer := false  ; Timer to check if Recording window still exists
 global g_DictationPulseDirection := 1  ; 1 = fading in, -1 = fading out
 global g_DictationPulseOpacity := 128  ; Current opacity (50-255)
 
@@ -3066,43 +3065,99 @@ StopDictationPulseTimer() {
     }
 }
 
+; Check if Recording window still exists and update indicator accordingly
+CheckDictationRecordingWindow() {
+    global g_DictationActive
+
+    ; Check if the "Recording" window exists
+    recordingWindowExists := false
+    try {
+        recordingWindowExists := WinExist("Recording ahk_exe handy.exe")
+    } catch {
+        recordingWindowExists := false
+    }
+
+    ; Update state based on whether Recording window exists
+    newState := (recordingWindowExists > 0)
+
+    ; Only update if state changed
+    if (newState != g_DictationActive) {
+        g_DictationActive := newState
+
+        if (g_DictationActive) {
+            ; Recording window appeared - show indicator
+            ShowDictationIndicator()
+            StartDictationPulseTimer()
+        } else {
+            ; Recording window disappeared - hide indicator
+            StopDictationPulseTimer()
+            HideDictationIndicator()
+            StopDictationCheckTimer()
+        }
+    }
+}
+
+; Start timer to periodically check Recording window state
+StartDictationCheckTimer() {
+    global g_DictationCheckTimer
+
+    ; Stop any existing timer
+    StopDictationCheckTimer()
+
+    ; Check every 500ms
+    g_DictationCheckTimer := CheckDictationRecordingWindow
+    SetTimer(g_DictationCheckTimer, 500)
+}
+
+; Stop the check timer
+StopDictationCheckTimer() {
+    global g_DictationCheckTimer
+
+    if (g_DictationCheckTimer) {
+        try {
+            SetTimer(g_DictationCheckTimer, 0)
+        } catch {
+            ; Ignore errors
+        }
+        g_DictationCheckTimer := false
+    }
+}
+
 ; Toggle dictation mode on/off
-; Checks if handy.exe is running before activating
+; Checks if the "Recording" window exists to determine if dictation is active
 ToggleDictationMode() {
     global g_DictationActive
 
-    ; Check if handy.exe is running
-    handyProcessId := 0
+    ; Check if the "Recording" window exists
+    ; This is the actual indicator that dictation is active
+    recordingWindowExists := false
     try {
-        handyProcessId := ProcessExist("handy.exe")
+        recordingWindowExists := WinExist("Recording ahk_exe handy.exe")
     } catch {
-        handyProcessId := 0
+        recordingWindowExists := false
     }
 
-    ; If trying to activate but handy.exe is not running, show notification
-    if (!g_DictationActive && handyProcessId = 0) {
-        TrayTip("Dictation Mode", "handy.exe is not running", "IconX")
-        SetTimer(() => TrayTip(), -3000)
-        return
-    }
-
-    ; Toggle state
-    g_DictationActive := !g_DictationActive
+    ; Update state based on whether Recording window exists
+    ; If Recording window exists, dictation is active
+    g_DictationActive := (recordingWindowExists > 0)
 
     if (g_DictationActive) {
-        ; Activating dictation mode
+        ; Recording window exists - show indicator and start monitoring
         ShowDictationIndicator()
         StartDictationPulseTimer()
+        StartDictationCheckTimer()  ; Monitor for window closing
     } else {
-        ; Deactivating dictation mode
+        ; Recording window doesn't exist - hide indicator
         StopDictationPulseTimer()
         HideDictationIndicator()
+        StopDictationCheckTimer()
     }
 }
 
 ; Cleanup dictation indicator resources
 CleanupDictationIndicator(*) {
     StopDictationPulseTimer()
+    StopDictationCheckTimer()
     HideDictationIndicator()
 }
 
