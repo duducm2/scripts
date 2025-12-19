@@ -683,17 +683,62 @@ CloseWindowOnMonitor(order) {
 ; Displays a numbered list of projects and opens the selected folder in Cursor.
 ; =============================================================================
 
+; Character sequence for assignment: 1 2 3 4 5 q w e r t a s d f g z x c v b 6 7 8 9 0 y u i o p h j k l n m , .
+global g_ProjectCharSequence := ["1", "2", "3", "4", "5", "q", "w", "e", "r", "t", "a", "s", "d", "f", "g", "z", "x",
+    "c", "v", "b", "6", "7", "8", "9", "0", "y", "u", "i", "o", "p", "h", "j", "k", "l", "n", "m", ",", "."]
+
+; Category display order (General first, Personal second, Work last)
+global g_ProjectCategories := ["General", "Personal", "Work"]
+
 ; Global project list - add your projects here
-global g_Projects := [{ name: "12 - Scripts", path: "C:\Users\eduev\Meu Drive\12 - Scripts", workPath: "" }, { name: "Notes",
-    path: "C:\Users\eduev\Meu Drive\14 - Notes", workPath: "" }, { name: "ZMK Sofle", path: "C:\Users\eduev\Documents\ZMK\zmk-sofle",
-        workPath: "" }, { name: "AI Experiment", path: "C:\Users\eduev\Meu Drive\04 - Pós-graduação\01 - Mestrado\26-ai-experiment",
-            workPath: "" }
+; Each project should have: name, path, workPath, and category ("General", "Personal", or "Work")
+global g_Projects := [
+    ; General category
+    { name: "Scripts", path: "C:\Users\eduev\Meu Drive\12 - Scripts", workPath: "C:\Users\fie7ca\Documents\scripts", category: "General" },
+    { name: "14-my-notes", path: "C:\Users\eduev\Meu Drive\14 - Notes", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes", category: "General" },
+    { name: "", path: "", workPath: "", category: "General" },
+    { name: "", path: "", workPath: "", category: "General" },
+    { name: "", path: "", workPath: "", category: "General" },
+    ; Personal category
+    { name: "ZMK Sofle", path: "C:\Users\eduev\Documents\ZMK\zmk-sofle", workPath: "", category: "Personal" },
+    { name: "AI Experiment", path: "C:\Users\eduev\Meu Drive\04 - Pós-graduação\01 - Mestrado\26-ai-experiment", workPath: "", category: "Personal" },
+    { name: "", path: "", workPath: "", category: "Personal" },
+    { name: "", path: "", workPath: "", category: "Personal" },
+    { name: "", path: "", workPath: "", category: "Personal" },
+    ; Work category
+    { name: "dashboard-model-research", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_E&S_CIP Dashboard research and design workspace folder\dashboard-model-research", category: "Work" },
+    { name: "GS_UX core team_UX and CIP Integration", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_UX core team_UX and CIP Integration", category: "Work" },
+    { name: "", path: "", workPath: "", category: "Work" },
+    { name: "", path: "", workPath: "", category: "Work" },
+    { name: "", path: "", workPath: "", category: "Work" }
 ]
 ; TODO: Fill in workPath for each project above when configuring work environment
 ; Global variables for project selector
 global g_ProjectSelectorGui := false
 global g_ProjectSelectorActive := false
 global g_ProjectHotkeyHandlers := []  ; Store hotkey handlers for cleanup
+
+; Get categorized projects for display
+GetCategorizedProjects() {
+    global g_Projects
+    categorized := Map()
+    categorized["General"] := []
+    categorized["Personal"] := []
+    categorized["Work"] := []
+
+    if (!IsSet(g_Projects) || g_Projects.Length = 0) {
+        return categorized
+    }
+
+    for project in g_Projects {
+        category := project.HasProp("category") ? project.category : "Personal"
+        if (category = "General" || category = "Personal" || category = "Work") {
+            categorized[category].Push(project)
+        }
+    }
+
+    return categorized
+}
 ; Cleanup project selector: destroy GUI, disable hotkeys, reset state
 CleanupProjectSelector() {
     global g_ProjectSelectorActive, g_ProjectSelectorGui, g_ProjectHotkeyHandlers
@@ -701,11 +746,22 @@ CleanupProjectSelector() {
     ; Disable active flag
     g_ProjectSelectorActive := false
 
-    ; Disable all number hotkeys (1-5)
+    ; Disable all character hotkeys
     for handler in g_ProjectHotkeyHandlers {
         try {
-            num := handler.num
-            Hotkey(num, "Off")
+            char := handler.char
+            ; Handle special VK codes for comma and period
+            if (char = ",") {
+                Hotkey("vkBC", "Off")
+            } else if (char = ".") {
+                Hotkey("vkBE", "Off")
+            } else {
+                Hotkey(char, "Off")
+                ; Also disable uppercase for lowercase letters
+                if (RegExMatch(char, "^[a-z]$")) {
+                    Hotkey(StrUpper(char), "Off")
+                }
+            }
         } catch {
             ; Silently ignore errors
         }
@@ -747,6 +803,11 @@ HandleProjectSelection(index) {
 
     ; Get project
     project := g_Projects[index]
+
+    ; Skip empty placeholders (no name or path)
+    if (project.name = "" && project.path = "" && project.workPath = "") {
+        return
+    }
 
     ; Cleanup first (closes GUI, disables hotkeys)
     CleanupProjectSelector()
@@ -860,17 +921,98 @@ ShowProjectSelector() {
     g_ProjectSelectorGui.MarginX := 15
     g_ProjectSelectorGui.MarginY := 10
 
-    ; Build display text with numbered project list
-    displayText := "=== PROJECT QUICK SELECTOR ===`n`n"
+    ; Get categorized projects
+    categorized := GetCategorizedProjects()
 
-    ; Add each project with its number
-    maxProjects := Min(g_Projects.Length, 5)  ; Limit to 5 projects
-    loop maxProjects {
-        project := g_Projects[A_Index]
-        displayText .= "[" . A_Index . "] " . project.name . "`n"
+    ; Build a map of project index to character assignment
+    ; This allows us to track which character is assigned to which project index
+    projectIndexToChar := Map()
+    charIndex := 1
+
+    ; Build a map of project index to category for easier lookup
+    projectIndexToCategory := Map()
+    loop g_Projects.Length {
+        projectIndex := A_Index
+        project := g_Projects[projectIndex]
+        category := project.HasProp("category") ? project.category : "Personal"
+        projectIndexToCategory[projectIndex] := category
     }
 
-    displayText .= "`n[ESC] Cancel"
+    ; Assign characters sequentially within each category
+    for category in g_ProjectCategories {
+        ; Find all project indices in this category
+        categoryProjectIndices := []
+        for projectIndex, cat in projectIndexToCategory {
+            if (cat = category) {
+                categoryProjectIndices.Push(projectIndex)
+            }
+        }
+
+        ; Sort by index to maintain order
+        ; Assign characters to projects in this category
+        for projectIndex in categoryProjectIndices {
+            project := g_Projects[projectIndex]
+
+            ; Skip empty placeholders
+            if (project.name = "" && project.path = "" && project.workPath = "") {
+                charIndex++
+                continue
+            }
+
+            ; Check if we have a character available
+            if (charIndex > g_ProjectCharSequence.Length) {
+                break
+            }
+
+            char := g_ProjectCharSequence[charIndex]
+            projectIndexToChar[projectIndex] := char
+            charIndex++
+        }
+    }
+
+    ; Build display text with category headers
+    displayText := "=== PROJECT QUICK SELECTOR ===`n`n"
+
+    ; Display each category with header
+    for category in g_ProjectCategories {
+        ; Find all project indices in this category that have characters assigned
+        categoryProjectIndices := []
+        for projectIndex, char in projectIndexToChar {
+            if (projectIndexToCategory.Has(projectIndex) && projectIndexToCategory[projectIndex] = category) {
+                categoryProjectIndices.Push(projectIndex)
+            }
+        }
+
+        ; Skip if no projects in this category
+        if (categoryProjectIndices.Length = 0) {
+            continue
+        }
+
+        ; Add category header
+        displayText .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`n"
+        displayText .= category . "`n"
+        displayText .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`n"
+
+        ; Display projects in this category
+        for projectIndex in categoryProjectIndices {
+            project := g_Projects[projectIndex]
+
+            ; Skip empty placeholders (shouldn't happen, but safety check)
+            if (project.name = "" && project.path = "" && project.workPath = "") {
+                continue
+            }
+
+            ; Get assigned character
+            if (projectIndexToChar.Has(projectIndex)) {
+                char := projectIndexToChar[projectIndex]
+                displayText .= "[" . char . "] " . project.name . "`n"
+            }
+        }
+
+        displayText .= "`n"  ; Space between categories
+    }
+
+    displayText .= "[ESC] Cancel"
 
     ; Calculate text dimensions
     baseWidth := 350
@@ -913,17 +1055,26 @@ ShowProjectSelector() {
     ; Clear handlers array
     g_ProjectHotkeyHandlers := []
 
-    ; Enable hotkeys for numbers 1-5 (based on available projects)
-    loop maxProjects {
-        num := String(A_Index)
-        handler := CreateProjectHandler(A_Index)
+    ; Enable hotkeys using the same character mapping as display
+    for projectIndex, char in projectIndexToChar {
+        handler := CreateProjectHandler(projectIndex)
 
         ; Store handler for cleanup
-        g_ProjectHotkeyHandlers.Push({ num: num, handler: handler })
+        g_ProjectHotkeyHandlers.Push({ char: char, handler: handler })
 
-        ; Enable hotkey
+        ; Enable hotkey (handle special VK codes for comma and period)
         try {
-            Hotkey(num, handler, "On")
+            if (char = ",") {
+                Hotkey("vkBC", handler, "On")  ; VK code for comma
+            } else if (char = ".") {
+                Hotkey("vkBE", handler, "On")  ; VK code for period
+            } else {
+                Hotkey(char, handler, "On")
+                ; Also enable uppercase for lowercase letters
+                if (RegExMatch(char, "^[a-z]$")) {
+                    Hotkey(StrUpper(char), handler, "On")
+                }
+            }
         } catch {
             ; Silently ignore if we can't create hotkey
         }
