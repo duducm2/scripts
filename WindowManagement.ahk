@@ -678,6 +678,265 @@ CloseWindowOnMonitor(order) {
 }
 
 ; =============================================================================
+; Project Quick Selector
+; Hotkey: Win+Alt+Shift+L
+; Displays a numbered list of projects and opens the selected folder in Cursor.
+; =============================================================================
+
+; Global project list - add your projects here
+global g_Projects := [{ name: "12 - Scripts", path: "C:\Users\eduev\Meu Drive\12 - Scripts", workPath: "" }, { name: "Notes",
+    path: "C:\Users\eduev\Meu Drive\14 - Notes", workPath: "" }, { name: "ZMK Sofle", path: "C:\Users\eduev\Documents\ZMK\zmk-sofle",
+        workPath: "" }, { name: "AI Experiment", path: "C:\Users\eduev\Meu Drive\04 - Pós-graduação\01 - Mestrado\26-ai-experiment",
+            workPath: "" }
+]
+; TODO: Fill in workPath for each project above when configuring work environment
+; Global variables for project selector
+global g_ProjectSelectorGui := false
+global g_ProjectSelectorActive := false
+global g_ProjectHotkeyHandlers := []  ; Store hotkey handlers for cleanup
+; Cleanup project selector: destroy GUI, disable hotkeys, reset state
+CleanupProjectSelector() {
+    global g_ProjectSelectorActive, g_ProjectSelectorGui, g_ProjectHotkeyHandlers
+
+    ; Disable active flag
+    g_ProjectSelectorActive := false
+
+    ; Disable all number hotkeys (1-5)
+    for handler in g_ProjectHotkeyHandlers {
+        try {
+            num := handler.num
+            Hotkey(num, "Off")
+        } catch {
+            ; Silently ignore errors
+        }
+    }
+
+    ; Disable Escape hotkey for project selector
+    try {
+        Hotkey("Escape", "Off")
+    } catch {
+        ; Ignore
+    }
+
+    ; Clear handlers array
+    g_ProjectHotkeyHandlers := []
+
+    ; Close and destroy GUI
+    if (IsObject(g_ProjectSelectorGui)) {
+        try {
+            g_ProjectSelectorGui.Destroy()
+        } catch {
+            ; Ignore
+        }
+        g_ProjectSelectorGui := false
+    }
+}
+; Handle project selection - launches Cursor with the selected project
+HandleProjectSelection(index) {
+    global g_ProjectSelectorActive, g_Projects
+
+    ; Only process if selector is active
+    if (!g_ProjectSelectorActive) {
+        return
+    }
+
+    ; Validate index
+    if (index < 1 || index > g_Projects.Length) {
+        return
+    }
+
+    ; Get project
+    project := g_Projects[index]
+
+    ; Cleanup first (closes GUI, disables hotkeys)
+    CleanupProjectSelector()
+
+    ; Small delay to ensure cleanup is complete
+    Sleep 100
+
+    ; Select path based on environment
+    projectPath := IS_WORK_ENVIRONMENT ? project.workPath : project.path
+
+    ; If work environment but no workPath set, fall back to personal path
+    if (IS_WORK_ENVIRONMENT && projectPath = "") {
+        projectPath := project.path
+    }
+
+    ; Validate project path exists
+    if (projectPath = "" || !DirExist(projectPath)) {
+        ShowNotification_WM("Project folder not found: " . projectPath)
+        return
+    }
+
+    ; Get Cursor executable path based on environment
+    cursorPath := IS_WORK_ENVIRONMENT ?
+        "C:\Users\fie7ca\AppData\Local\Programs\cursor\Cursor.exe" :
+            "C:\Users\eduev\AppData\Local\Programs\cursor\Cursor.exe"
+
+    ; Launch Cursor with the project path
+    try {
+        Run cursorPath . ' "' . projectPath . '"'
+    } catch Error as e {
+        ShowNotification_WM("Failed to launch Cursor: " . e.Message)
+    }
+}
+; Factory function to create a handler that properly captures the index
+CreateProjectHandler(index) {
+    return (*) => HandleProjectSelection(index)
+}
+; Handler for Escape key in project selector
+HandleProjectEscape(*) {
+    global g_ProjectSelectorActive
+    if (g_ProjectSelectorActive) {
+        CleanupProjectSelector()
+    }
+}
+; Show project selector GUI
+ShowProjectSelector() {
+    global g_ProjectSelectorGui, g_ProjectSelectorActive, g_Projects
+    global g_ProjectHotkeyHandlers
+
+    ; Close existing GUI if open
+    if (g_ProjectSelectorActive && IsObject(g_ProjectSelectorGui)) {
+        CleanupProjectSelector()
+        Sleep 50
+    }
+
+    ; Check if we have projects configured
+    if (g_Projects.Length = 0) {
+        ShowNotification_WM("No projects configured.")
+        return
+    }
+
+    ; Get monitor dimensions early for responsive sizing
+    activeWin := 0
+    try {
+        activeWin := WinGetID("A")
+    } catch {
+        activeWin := 0
+    }
+
+    ; Default to primary monitor work area
+    MonitorGetWorkArea(1, &monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
+    monitorWidth := monitorRight - monitorLeft
+    monitorHeight := monitorBottom - monitorTop
+
+    ; If we have an active window, find which monitor contains its center
+    if (activeWin && activeWin != 0) {
+        rect := Buffer(16, 0)
+        if (DllCall("GetWindowRect", "ptr", activeWin, "ptr", rect)) {
+            ; Calculate window center
+            winLeft := NumGet(rect, 0, "int")
+            winTop := NumGet(rect, 4, "int")
+            winRight := NumGet(rect, 8, "int")
+            winBottom := NumGet(rect, 12, "int")
+
+            centerX := winLeft + (winRight - winLeft) // 2
+            centerY := winTop + (winBottom - winTop) // 2
+
+            ; Find which monitor contains the window center
+            monitorCount := MonitorGetCount()
+            loop monitorCount {
+                idx := A_Index
+                MonitorGetWorkArea(idx, &l, &t, &r, &b)
+                if (centerX >= l && centerX <= r && centerY >= t && centerY <= b) {
+                    monitorLeft := l
+                    monitorTop := t
+                    monitorRight := r
+                    monitorBottom := b
+                    monitorWidth := r - l
+                    monitorHeight := b - t
+                    break
+                }
+            }
+        }
+    }
+
+    ; Create GUI - non-activating so it doesn't steal focus
+    g_ProjectSelectorGui := Gui("+AlwaysOnTop +ToolWindow +E0x08000000", "Project Selector")
+    ; Use slightly smaller font for better fit on small monitors
+    fontSize := (monitorHeight < 800) ? 9 : 10
+    g_ProjectSelectorGui.SetFont("s" . fontSize, "Segoe UI")
+    g_ProjectSelectorGui.MarginX := 15
+    g_ProjectSelectorGui.MarginY := 10
+
+    ; Build display text with numbered project list
+    displayText := "=== PROJECT QUICK SELECTOR ===`n`n"
+
+    ; Add each project with its number
+    maxProjects := Min(g_Projects.Length, 5)  ; Limit to 5 projects
+    loop maxProjects {
+        project := g_Projects[A_Index]
+        displayText .= "[" . A_Index . "] " . project.name . "`n"
+    }
+
+    displayText .= "`n[ESC] Cancel"
+
+    ; Calculate text dimensions
+    baseWidth := 350
+    lineHeight := fontSize + 6
+    lineCount := StrSplit(displayText, "`n").Length
+    textControlHeight := lineCount * lineHeight + 10
+
+    ; Add text control
+    g_ProjectSelectorGui.Add("Text", "w" . (baseWidth - 30), displayText)
+
+    ; Add close button
+    closeBtn := g_ProjectSelectorGui.Add("Button", "w80 Center", "Close")
+    closeBtn.OnEvent("Click", (*) => CleanupProjectSelector())
+
+    ; Calculate total height
+    totalHeight := 20 + textControlHeight + 40 + 10
+
+    ; Calculate center position for the GUI
+    marginX := 20
+    marginY := 20
+    guiX := monitorLeft + (monitorWidth - baseWidth) // 2
+    guiY := monitorTop + (monitorHeight - totalHeight) // 2
+
+    ; Ensure the GUI stays within monitor bounds
+    if (guiX < monitorLeft + marginX)
+        guiX := monitorLeft + marginX
+    if (guiY < monitorTop + marginY)
+        guiY := monitorTop + marginY
+    if (guiX + baseWidth > monitorLeft + monitorWidth - marginX)
+        guiX := monitorLeft + monitorWidth - baseWidth - marginX
+    if (guiY + totalHeight > monitorTop + monitorHeight - marginY)
+        guiY := monitorTop + monitorHeight - totalHeight - marginY
+
+    ; Show GUI centered on the active window's monitor
+    g_ProjectSelectorGui.Show("NA w" . baseWidth . " h" . totalHeight . " x" . guiX . " y" . guiY)
+
+    ; Set active flag
+    g_ProjectSelectorActive := true
+
+    ; Clear handlers array
+    g_ProjectHotkeyHandlers := []
+
+    ; Enable hotkeys for numbers 1-5 (based on available projects)
+    loop maxProjects {
+        num := String(A_Index)
+        handler := CreateProjectHandler(A_Index)
+
+        ; Store handler for cleanup
+        g_ProjectHotkeyHandlers.Push({ num: num, handler: handler })
+
+        ; Enable hotkey
+        try {
+            Hotkey(num, handler, "On")
+        } catch {
+            ; Silently ignore if we can't create hotkey
+        }
+    }
+
+    ; Enable Escape hotkey
+    Hotkey("Escape", HandleProjectEscape, "On")
+}
+; Win+Alt+Shift+L hotkey for Project Quick Selector
+#!+l:: {
+    ShowProjectSelector()
+}
+; =============================================================================
 ; SCRIPT SUMMARY & OPTIMIZATION DOCUMENTATION
 ; =============================================================================
 ;

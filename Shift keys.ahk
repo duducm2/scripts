@@ -1187,9 +1187,11 @@ ShowGlobalShortcutsHelp() {
 [Window Management] Ctrl+Alt+Win - Secondary combination
 
 === AVAILABLE (unused) ===
-[Win+Alt+Shift+L] > Empty
 [Win+Alt+Shift+O] > Empty
 [Win+Alt+Shift+P] > Empty
+
+=== PROJECT SELECTOR ===
+[Win+Alt+Shift+L] > Project Quick Selector (opens project folder in Cursor)
 
 === CURSOR ===
 [Win+Alt+Shift+N] > Opens or activates Cursor (habits, home, punctual, or work windows)
