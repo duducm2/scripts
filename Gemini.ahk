@@ -421,7 +421,7 @@ CenterMouse() {
 
         ; Step 5: Click the last "Show more options" button
         lastMoreOptionsButton.Click()
-        Sleep 300 ; Wait for menu to appear
+        Sleep 1000 ; Wait for menu to appear
 
         ; Hide search banner now that we found the button
         if IsObject(searchBanner) && searchBanner.Hwnd {
