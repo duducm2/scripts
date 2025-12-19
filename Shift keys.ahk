@@ -7741,6 +7741,34 @@ SwitchAIModel() {
         enterFsPattern := "i)^Enter Full[- ]?screen$"
         exitFsPattern := "i)^Exit Full[- ]?screen$"
 
+        ; Helper function to click button with multi-strategy (Invoke or Click)
+        ClickButton(btn) {
+            if (!btn)
+                return false
+            supportsInvoke := false
+            try {
+                supportsInvoke := btn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)
+            } catch {
+                supportsInvoke := false
+            }
+            clicked := false
+            if (supportsInvoke) {
+                try {
+                    btn.Invoke()
+                    clicked := true
+                } catch {
+                }
+            }
+            if (!clicked) {
+                try {
+                    btn.Click()
+                    clicked := true
+                } catch {
+                }
+            }
+            return clicked
+        }
+
         ; First attempt - immediate check
         enterFsBtn := WaitForButton(spot, enterFsPattern, 500)
         if (!enterFsBtn) {
@@ -7750,12 +7778,12 @@ SwitchAIModel() {
                 Sleep 1000
                 exitFsBtn := WaitForButton(spot, exitFsPattern, 500)
                 if (exitFsBtn)
-                    exitFsBtn.Invoke()
+                    ClickButton(exitFsBtn)
             } else {
-                exitFsBtn.Invoke()
+                ClickButton(exitFsBtn)
             }
         } else {
-            enterFsBtn.Invoke()
+            ClickButton(enterFsBtn)
         }
     }
 }
