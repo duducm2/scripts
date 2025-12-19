@@ -27,6 +27,23 @@ SetTitleMatchMode 2
 
 ; --- Global Variables ---
 global smallLoadingGuis_ChatGPT := []
+global DEBUG_LOG_PATH := A_ScriptDir "\.cursor\debug.log"
+
+; Helper function for safe debug logging with retry on file lock
+DebugLog(text) {
+    maxRetries := 3
+    retryDelay := 10
+    loop maxRetries {
+        try {
+            FileAppend text, DEBUG_LOG_PATH
+            return
+        } catch {
+            if (A_Index < maxRetries) {
+                Sleep retryDelay
+            }
+        }
+    }
+}
 
 ; Helper: find ChatGPT chrome window by case-insensitive contains match
 GetChatGPTWindowHwnd() {
@@ -380,7 +397,7 @@ Mensagens:
 cheatSheets["Spotify.exe"] := "
 (
 Spotify (Shift)
-🔗 [C]onnect panel
+🔗 [C]onnect to a device
 ⛶ [F]ullscreen
 🔍 [S]earch
 📋 [P]laylists
@@ -1725,16 +1742,35 @@ ClickGenerateCommitMessageButton() {
 ;   â€¢ Returns the UIA element or 0 if none matched within `timeout` ms
 ; ---------------------------------------------------------------------------
 WaitForButton(root, pattern, timeout := 5000) {
+    ; #region agent log
+    DebugLog Format(
+        "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:1727`",`"message`":`"WaitForButton entry`",`"data`":{`"pattern`":`"{4}`",`"timeout`":{5}},`"sessionId`":`"debug-session`",`"runId`":`"run1`",`"hypothesisId`":`"B`"}`n",
+        A_TickCount, Random(1000, 9999), A_TickCount, pattern, timeout)
+    ; #endregion
     if !IsObject(root)
         return 0
 
     deadline := A_TickCount + timeout
     while (A_TickCount < deadline) {
         buttons := root.FindAll({ Type: "Button" })
+        ; #region agent log
+        DebugLog Format(
+            "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:1733`",`"message`":`"Found buttons count`",`"data`":{`"count`":{4}},`"sessionId`":`"debug-session`",`"runId`":`"run1`",`"hypothesisId`":`"B`"}`n",
+            A_TickCount, Random(1000, 9999), A_TickCount, buttons.Length)
+        ; #endregion
 
         ; Collect all matching buttons and their properties
         matchingButtons := []
         for btn in buttons {
+            btnName := ""
+            try btnName := btn.Name
+            ; #region agent log
+            if InStr(pattern, "Connect") {
+                DebugLog Format(
+                    "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:1738`",`"message`":`"Checking button name`",`"data`":{`"name`":`"{4}`",`"pattern`":`"{5}`"},`"sessionId`":`"debug-session`",`"runId`":`"run1`",`"hypothesisId`":`"B`"}`n",
+                    A_TickCount, Random(1000, 9999), A_TickCount, btnName, pattern)
+            }
+            ; #endregion
             if RegExMatch(btn.Name, pattern) {
                 className := ""
                 hasClassName := false
@@ -1767,6 +1803,11 @@ WaitForButton(root, pattern, timeout := 5000) {
                     supportsInvoke := false
                 }
 
+                ; #region agent log
+                DebugLog Format(
+                    "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:1770`",`"message`":`"Matching button found`",`"data`":{`"name`":`"{4}`",`"className`":`"{5}`",`"hasClassName`":{6},`"supportsInvoke`":{7}},`"sessionId`":`"debug-session`",`"runId`":`"run1`",`"hypothesisId`":`"B,C`"}`n",
+                    A_TickCount, Random(1000, 9999), A_TickCount, btnName, className, hasClassName, supportsInvoke)
+                ; #endregion
                 matchingButtons.Push({ btn: btn, hasClassName: hasClassName, className: className, supportsInvoke: supportsInvoke,
                     parentName: parentName, parentClass: parentClass })
             }
@@ -1810,11 +1851,25 @@ WaitForButton(root, pattern, timeout := 5000) {
                 bestBtn := matchingButtons[1].btn
             }
 
+            ; #region agent log
+            finalBtnName := "", finalBtnClassName := "", finalBtnType := ""
+            try finalBtnName := bestBtn.Name
+            try finalBtnClassName := bestBtn.ClassName
+            try finalBtnType := bestBtn.ControlType
+            DebugLog Format(
+                "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:1813`",`"message`":`"WaitForButton returning button`",`"data`":{`"name`":`"{4}`",`"className`":`"{5}`",`"type`":`"{6}`",`"score`":{7}},`"sessionId`":`"debug-session`",`"runId`":`"run1`",`"hypothesisId`":`"C`"}`n",
+                A_TickCount, Random(1000, 9999), A_TickCount, finalBtnName, finalBtnClassName, finalBtnType, bestScore)
+            ; #endregion
             return bestBtn
         }
         Sleep 50  ; reduced from 150ms to 50ms for faster retries
     }
 
+    ; #region agent log
+    DebugLog Format(
+        "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:1818`",`"message`":`"WaitForButton timeout - no button found`",`"data`":{`"pattern`":`"{4}`"},`"sessionId`":`"debug-session`",`"runId`":`"run1`",`"hypothesisId`":`"B`"}`n",
+        A_TickCount, Random(1000, 9999), A_TickCount, pattern)
+    ; #endregion
     return 0
 }
 
@@ -7570,17 +7625,77 @@ SwitchAIModel() {
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe Spotify.exe")
 
-; Shift + C : Toggle Connect panel - Connect
+; Shift + C : Toggle Connect to a device - Connect to a device
 +c::
 {
+    ; #region agent log
+    DebugLog Format(
+        "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:7574`",`"message`":`"Connect button handler entry`",`"data`":{},`"sessionId`":`"debug-session`",`"runId`":`"run1`",`"hypothesisId`":`"A`"}`n",
+        A_TickCount, Random(1000, 9999), A_TickCount)
+    ; #endregion
     try {
         spot := UIA_Browser("ahk_exe Spotify.exe")
         Sleep 300
 
         ; Find and click the Connect button
         connectPattern := "i)^(Connect to a device|Conectar a um dispositivo|Connect)$"
+        ; #region agent log
+        DebugLog Format(
+            "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:7582`",`"message`":`"Before WaitForButton call`",`"data`":{`"pattern`":`"{4}`"},`"sessionId`":`"debug-session`",`"runId`":`"run1`",`"hypothesisId`":`"B`"}`n",
+            A_TickCount, Random(1000, 9999), A_TickCount, connectPattern)
+        ; #endregion
         if (connectBtn := WaitForButton(spot, connectPattern)) {
-            connectBtn.Invoke()
+            ; #region agent log
+            btnName := "", btnType := "", btnClassName := "", btnLocalizedType := "", supportsInvoke := false,
+                supportsToggle := false
+            try btnName := connectBtn.Name
+            try btnType := connectBtn.ControlType
+            try btnClassName := connectBtn.ClassName
+            try btnLocalizedType := connectBtn.LocalizedControlType
+            try supportsInvoke := connectBtn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)
+            try supportsToggle := connectBtn.GetPropertyValue(UIA.Property.IsTogglePatternAvailable)
+            DebugLog Format(
+                "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:7583`",`"message`":`"Button found before Invoke`",`"data`":{`"name`":`"{4}`",`"type`":`"{5}`",`"className`":`"{6}`",`"localizedType`":`"{7}`",`"supportsInvoke`":{8},`"supportsToggle`":{9}},`"sessionId`":`"debug-session`",`"runId`":`"run1`",`"hypothesisId`":`"A,C`"}`n",
+                A_TickCount, Random(1000, 9999), A_TickCount, btnName, btnType, btnClassName, btnLocalizedType,
+                supportsInvoke, supportsToggle)
+            ; #endregion
+            ; Try multi-strategy activation: prefer Invoke when available, fallback to Click
+            clicked := false
+            if (supportsInvoke) {
+                try {
+                    connectBtn.Invoke()
+                    clicked := true
+                    ; #region agent log
+                    DebugLog Format(
+                        "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:7663`",`"message`":`"Invoke() succeeded`",`"data`":{},`"sessionId`":`"debug-session`",`"runId`":`"run1`",`"hypothesisId`":`"A`"}`n",
+                        A_TickCount, Random(1000, 9999), A_TickCount)
+                    ; #endregion
+                } catch Error as invokeErr {
+                    ; #region agent log
+                    DebugLog Format(
+                        "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:7663`",`"message`":`"Invoke() failed, trying Click()`",`"data`":{`"error`":`"{4}`"},`"sessionId`":`"debug-session`",`"runId`":`"run1`",`"hypothesisId`":`"A,E`"}`n",
+                        A_TickCount, Random(1000, 9999), A_TickCount, invokeErr.Message)
+                    ; #endregion
+                }
+            }
+            if (!clicked) {
+                try {
+                    connectBtn.Click()
+                    clicked := true
+                    ; #region agent log
+                    DebugLog Format(
+                        "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:7675`",`"message`":`"Click() succeeded`",`"data`":{},`"sessionId`":`"debug-session`",`"runId`":`"run1`",`"hypothesisId`":`"A,E`"}`n",
+                        A_TickCount, Random(1000, 9999), A_TickCount)
+                    ; #endregion
+                } catch Error as clickErr {
+                    ; #region agent log
+                    DebugLog Format(
+                        "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:7675`",`"message`":`"Click() failed`",`"data`":{`"error`":`"{4}`"},`"sessionId`":`"debug-session`",`"runId`":`"run1`",`"hypothesisId`":`"A,E`"}`n",
+                        A_TickCount, Random(1000, 9999), A_TickCount, clickErr.Message)
+                    ; #endregion
+                    throw clickErr
+                }
+            }
 
             ; After connecting, wait a moment for the device list to load
             Sleep 500
@@ -7592,11 +7707,27 @@ SwitchAIModel() {
             }
             ; If Office button not found, continue without error (as requested)
         }
-        else
+        else {
+            ; #region agent log
+            DebugLog Format(
+                "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:7595`",`"message`":`"Button not found by WaitForButton`",`"data`":{`"pattern`":`"{4}`"},`"sessionId`":`"debug-session`",`"runId`":`"run1`",`"hypothesisId`":`"B,D`"}`n",
+                A_TickCount, Random(1000, 9999), A_TickCount, connectPattern)
+            ; #endregion
             MsgBox "Couldn't find the Connect-to-device button."
+        }
     } catch Error as e {
+        ; #region agent log
+        DebugLog Format(
+            "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:7597`",`"message`":`"Exception caught`",`"data`":{`"error`":`"{4}`"},`"sessionId`":`"debug-session`",`"runId`":`"run1`",`"hypothesisId`":`"A,B,C,D,E`"}`n",
+            A_TickCount, Random(1000, 9999), A_TickCount, e.Message)
+        ; #endregion
         MsgBox "Error: " e.Message
     }
+    ; #region agent log
+    DebugLog Format(
+        "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:7600`",`"message`":`"Connect button handler exit`",`"data`":{},`"sessionId`":`"debug-session`",`"runId`":`"run1`",`"hypothesisId`":`"A`"}`n",
+        A_TickCount, Random(1000, 9999), A_TickCount)
+    ; #endregion
 }
 
 ; Shift + F : Toggle full screen - Fullscreen
