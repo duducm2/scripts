@@ -419,67 +419,33 @@ CenterMouse() {
             return
         }
 
-        ; Step 5: Click the last "Show more options" button
-        lastMoreOptionsButton.Click()
-        Sleep 1000 ; Wait for menu to appear
+        ; Step 5 & 6: Click "Show more options" and navigate to "Text to speech"
+        ; Note: For first-time read-aloud, Gemini requires doing this twice
+        loop 2 {
+            ; Click the last "Show more options" button
+            lastMoreOptionsButton.Click()
+            Sleep 350 ; Wait for menu to appear
 
-        ; Hide search banner now that we found the button
-        if IsObject(searchBanner) && searchBanner.Hwnd {
-            searchBanner.Destroy()
-        }
+            ; Hide search banner after first attempt
+            if (A_Index = 1 && IsObject(searchBanner) && searchBanner.Hwnd) {
+                searchBanner.Destroy()
+            }
 
-        ; Step 6: Find and click the "Text to speech" menu item
-        textToSpeechMenuItem := 0
+            ; Navigate to "Text to speech" menu item using keyboard
+            Send "{Down}"
+            Sleep 200 ; Brief pause to ensure menu navigation completes
+            Send "{Enter}"
 
-        ; Primary strategy: Find by Name "Text to speech" with Type 50011 (MenuItem)
-        textToSpeechMenuItem := uia.FindFirst({ Name: "Text to speech", Type: 50011 })
-
-        ; Fallback 1: Try by Type "MenuItem" and Name "Text to speech"
-        if !textToSpeechMenuItem {
-            textToSpeechMenuItem := uia.FindFirst({ Type: "MenuItem", Name: "Text to speech" })
-        }
-
-        ; Fallback 2: Try by ClassName containing "mat-mdc-menu-item" (substring match)
-        if !textToSpeechMenuItem {
-            allMenuItems := uia.FindAll({ Type: 50011 })
-            for menuItem in allMenuItems {
-                if InStr(menuItem.Name, "Text to speech") || InStr(menuItem.Name, "speech") {
-                    if InStr(menuItem.ClassName, "mat-mdc-menu-item") {
-                        textToSpeechMenuItem := menuItem
-                        break
-                    }
-                }
+            ; Wait before next attempt (if needed) or before finishing
+            if (A_Index = 1) {
+                Sleep 450 ; Wait after first attempt before retrying
             }
         }
 
-        ; Fallback 3: Try finding by Name with substring match (in case of localization variations)
-        if !textToSpeechMenuItem {
-            allMenuItems := uia.FindAll({ Type: 50011 })
-            for menuItem in allMenuItems {
-                if InStr(menuItem.Name, "Text to speech") || InStr(menuItem.Name, "Texto para fala") || InStr(menuItem.Name,
-                    "Ler em voz alta") {
-                    if InStr(menuItem.ClassName, "mat-mdc-menu-item") {
-                        textToSpeechMenuItem := menuItem
-                        break
-                    }
-                }
-            }
-        }
-
-        if (textToSpeechMenuItem) {
-            textToSpeechMenuItem.Click()
-            ; Show notification that both copy and read-aloud actions completed
-            ShowNotification("Copied & Reading aloud", 800, "FFFF00", "000000", 24)
-            ; Return to previous window
-            Send "!{Tab}"
-        } else {
-            ; Last resort: Could not find "Text to speech" menu item
-            ; Still show notification for copy if it succeeded
-            if (lastCopyButton) {
-                ShowNotification("Copied!", 800, "FFFF00", "000000", 24)
-                Send "!{Tab}"
-            }
-        }
+        ; Show notification that both copy and read-aloud actions completed
+        ShowNotification("Copied & Reading aloud", 800, "FFFF00", "000000", 24)
+        ; Return to previous window
+        Send "!{Tab}"
     } catch Error as e {
         ; If all else fails, silently fail (no fallback action defined)
     }
