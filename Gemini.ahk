@@ -424,7 +424,7 @@ CenterMouse() {
         loop 2 {
             ; Click the last "Show more options" button
             lastMoreOptionsButton.Click()
-            Sleep 350 ; Wait for menu to appear
+            Sleep 200 ; Wait for menu to appear
 
             ; Hide search banner after first attempt
             if (A_Index = 1 && IsObject(searchBanner) && searchBanner.Hwnd) {
@@ -438,7 +438,7 @@ CenterMouse() {
 
             ; Wait before next attempt (if needed) or before finishing
             if (A_Index = 1) {
-                Sleep 450 ; Wait after first attempt before retrying
+                Sleep 200 ; Wait after first attempt before retrying
             }
         }
 
