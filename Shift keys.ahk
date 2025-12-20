@@ -5061,31 +5061,55 @@ EnsureItemsViewFocus() {
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe PBIDesktop.exe") || InStr(WinGetTitle("A"), "powerbi", false)
 
-; Shift + T : Transform data (Alt, H, T, then UIA click)
+; Shift + T : Transform data (Click Home tab, then T, then UIA click)
 +t:: {
     try {
-        Send "{Alt down}"
-        Send "{Alt up}"
-        Sleep 80
-        Send "h"
-        Sleep 120
-        Send "t"
-        Sleep 250
-
         win := WinExist("A")
         root := UIA.ElementFromHandle(win)
+
+        ; Click the Home tab
+        homeTab := root.FindFirst({ Type: "50019", Name: "Home", AutomationId: "home" })
+        if !homeTab {
+            homeTab := root.FindFirst({ Type: "50019", Name: "Home" })
+        }
+        if !homeTab {
+            homeTab := root.FindFirst({ Type: "50019", AutomationId: "home" })
+        }
+
+        if homeTab {
+            homeTab.Click()
+            Sleep 120
+        } else {
+            MsgBox "Could not find the 'Home' tab.", "Power BI", "IconX"
+            return
+        }
+
+        Send "t"
+        Sleep 250
 
         possibleNames := ["Transform data", "Transformar dados"]
         transformBtn := ""
 
+        ; Try to find by Name and Type 50000 (Button)
         for , name in possibleNames {
-            transformBtn := root.FindFirst({ Name: name, Type: "50011" })
+            transformBtn := root.FindFirst({ Name: name, Type: "50000" })
             if transformBtn
                 break
         }
 
+        ; Fallback: try with ClassName
         if !transformBtn {
-            transformBtn := root.FindFirst({ Name: "Transform", Type: "50011", matchmode: "Substring" })
+            transformBtn := root.FindFirst({ Type: "50000", ClassName: "splitPrimaryButton root-332" })
+        }
+
+        ; Fallback: try with partial ClassName match
+        if !transformBtn {
+            transformBtn := root.FindFirst({ Type: "50000", ClassName: "splitPrimaryButton", matchmode: "Substring" })
+        }
+
+        ; Fallback: try with partial Name match
+        if !transformBtn {
+            transformBtn := root.FindFirst({ Name: "Transform", Type: "50000", matchmode: "Substring" })
         }
 
         if transformBtn {
