@@ -238,9 +238,9 @@ WhatsApp (Shift)
 ↩️ [R][R]eply
 😀 [E][E]moji panel
 📬 [U]Toggle [U]nread filter
-💬 [F]ocus current [F]chat
-✅ [M]ark as read or unread
-📌 [P]in chat or unpin chat
+💬 [F][F]ocus current chat
+✅ [M][M]ark as read/unread
+📌 [P][P]in chat or unpin
 )"  ; end WhatsApp
 
 ; --- Outlook main window ----------------------------------------------------
@@ -250,14 +250,14 @@ Outlook (Shift)
 📧 [G]Send to [G]eneral
 📰 [N]Send to [N]ewsletter
 📥 [I]Go to [I]nbox
-📝 [S]ubject / Title
-👥 [T]o / [R]equired
-🚫 [D]on't send any response
-✅ [E]Send [E]response
-📝 [B]ody (Subject -> Body)
-🎯 [F]ocused / Other
-🔀 [K]Cycle panes backward
-🔀 [L]Cycle panes forward
+📝 [S][S]ubject / Title
+👥 [T][T]o / Required
+🚫 [D][D]on't send response
+✅ [E]Send [E]vent response
+📝 [B][B]ody (Subject → Body)
+🎯 [F][F]ocused / Other
+🔀 [K]Cycle bac[K]ward pane
+🔀 [L]Cyc[L]e forward pane
 )"  ; end Outlook
 
 ; --- Outlook Reminder window -------------------------------------------------
@@ -267,70 +267,70 @@ Outlook - Reminders (Shift)
 ⏰ [H]Snooze 1 [H]our
 ⏰ [F]Snooze [F]our hours
 ⏰ [D]Snooze 1 [D]ay
-❌ [X]Dismiss all reminders
-🌐 [J]oin [O]nline
+❌ [X]E[X]it all reminders (Dismiss)
+🌐 [J][J]oin Online
 )"  ; end Outlook Reminder
 
 ; --- Outlook Appointment window ---------------------------------------------
 cheatSheets["OutlookAppointment"] := "
 (
 Outlook - Appointment (Shift)
-📅 [S]tart date (combo)
-📅 [P]icker (start date)
-🕐 Start [T]ime (combo)
-📅 [E]nd date (combo)
-🕐 End [H]our (time combo)
-☑️ [A]ll-day toggle
-📝 T[i]tle field
-👥 [R]equired / To
-📍 [L]ocation
-📝 [B]ody
-🔄 [C]Make Recurring
-🧙 [W]izard (configure appointment)
+📅 [S][S]tart date (combo)
+📅 [P]Date [P]icker (start)
+🕐 [T]Start [T]ime (combo)
+📅 [E][E]nd date (combo)
+🕐 [H]End [H]our (time combo)
+☑️ [A][A]ll-day toggle
+📝 [I]T[I]tle field
+👥 [R][R]equired / To
+📍 [L][L]ocation
+📝 [B][B]ody
+🔄 [C]Make Re[C]urring
+🧙 [W][W]izard (configure)
 )"  ; end Outlook Appointment
 
 ; --- Outlook Message window ---------------------------------------------------
 cheatSheets["OutlookMessage"] := "
 (
 Outlook - Message (Shift)
-📝 [S]ubject / Title
-👥 [T]o / Required
-📝 [B]ody (Location -> Body)
+📝 [S][S]ubject / Title
+👥 [T][T]o / Required
+📝 [B][B]ody (Location → Body)
 )"  ; end Outlook Message
 
 ; --- Microsoft Teams â€" meeting window --------------------------------------
 cheatSheets["TeamsMeeting"] := "
 (
-Teams (Shift)
+Teams - Meeting (Shift)
 💬 [C]Open [C]hat pane
-⛶ [M]aximize meeting [M]indow
+⛶ [M]aximize [M]eeting window
 👍 [R]eact / [R]eagir
-🎥 [J]oin now with camera and microphone on
-🔊 [A]udio settings
+🎥 [J][J]oin now (camera + mic on)
+🔊 [A][A]udio settings
 )"  ; end TeamsMeeting
 
 ; --- Microsoft Teams â€" chat window -----------------------------------------
 cheatSheets["TeamsChat"] := "
 (
-Teams (Shift)
+Teams - Chat (Shift)
 ↩️ [R][R]eply
 📬 [U]View all [U]nread items
-📌 [P]in chat
-✏️ [E]dit message
-📎 [A]ttach file
-📜 [H]istory menu
-📬 [M]ark unread
-📌 [X]Unpin chat
-📁 [C]ollapse all conversation folders
-ℹ️ [I]nfo / Details panel
-🪟 [.]Detach chat
-👥 [T]eam / Add participants
-📞 [V]ideo call
-🩶 [F]old chat sections
-👍 [L]ike reaction
-❤️ [G]Heart reaction
-😂 [J]Laugh reaction
-🏠 [O]pen home panel
+📌 [P][P]in chat
+✏️ [E][E]dit message
+📎 [A][A]ttach file
+📜 [H][H]istory menu
+📬 [M][M]ark unread
+📌 [X]Unpin (e[X]it pin)
+📁 [C][C]ollapse all folders
+ℹ️ [I][I]nfo / Details panel
+🪟 [.]Detach chat (new [.]window)
+👥 [T][T]eam / Add participants
+📞 [V][V]ideo call
+🩶 [F][F]old chat sections
+👍 [L][L]ike reaction
+❤️ [G][G]ive heart reaction
+😂 [J][J]oke reaction (😂)
+🏠 [O][O]pen home panel
 
 --- Built-in Shortcuts ---
 Geral:
@@ -397,36 +397,36 @@ Mensagens:
 cheatSheets["Spotify.exe"] := "
 (
 Spotify (Shift)
-🔗 [C]onnect to a device
-⛶ [F]ullscreen
-🔍 [S]earch
-📋 [P]laylists
-🎤 [A]rtists
-💿 [B]Albums
-🏠 [H]ome
-🎵 [N]ow [P]laying
-🎯 [M]ade For You
-🆕 [R]eleases (New)
-📊 [X]Charts
-🎵 [V]iew (Now Playing)
-📚 [L]ibrary sidebar
-⛶ [E]xpand [L]ibrary
-🎤 [Y]Lyrics
-⏯️ [T]Play / Pause
+🔗 [C][C]onnect to device
+⛶ [F][F]ullscreen
+🔍 [S][S]earch
+📋 [P][P]laylists
+🎤 [A][A]rtists
+💿 [B]Al[B]ums
+🏠 [H][H]ome
+🎵 [N][N]ow Playing
+🎯 [M][M]ade For You
+🆕 [R]New [R]eleases
+📊 [X]E[X]plore Charts
+🎵 [V][V]iew (Now Playing)
+📚 [L][L]ibrary sidebar
+⛶ [E][E]xpand Library
+🎤 [Y]L[Y]rics
+⏯️ [T][T]oggle Play/Pause
 )"  ; end Spotify
 
 ; --- OneNote ---------------------------------------------------------------
 cheatSheets["ONENOTE.EXE"] := "
 (
 OneNote (Shift)
-📈 [Y]Expand
+📈 [Y]Expand section (wh[Y] not)
 📉 [U]Collapse ([U]nfold reverse)
-📉 [I]Collapse All
-📈 [O]Expand [A]ll
-📝 [P]Select line and children ([P]aragraph)
-🗑️ [D]elete line and children
-🗑️ [S]Delete line ([S]ingle, keep children)
-🔍 [F]Advanced Searching with double quotes ([F]ind)
+📉 [I]Collapse All ([I]nward)
+📈 [O][O]pen All (Expand)
+📝 [P]Select [P]aragraph (line + children)
+🗑️ [D][D]elete line and children
+🗑️ [S][S]ingle delete (keep children)
+🔍 [F][F]ind Advanced (with quotes)
 )"  ; end OneNote
 
 ; --- Chrome general shortcuts ----------------------------------------------
@@ -434,7 +434,7 @@ cheatSheets["chrome.exe"] := "
 (
 Chrome (Shift)
 🪟 [W]Pop current tab to new [W]indow
-🏷️ [Ctrl+Alt+Y] [N]ame ChatGPT [W]indow as "ChatGPT"
+🏷️ [Ctrl+Alt+Y] [N]ame ChatGPT Window as "ChatGPT"
 )"  ; end Chrome
 
 ; --- Cursor ------------------------------------------------------
@@ -448,17 +448,17 @@ Cursor
 📊 [3] CSV: Edit CSV
 💾 [4] CSV: Apply changes to source file and save
 🔄 [5] Reload (ahk)
-🤖 [M] Ask ([M]essage), wait 6s, then paste (Shift+V) (ahk)
-⚡ [G] Kill terminal [custom in settings.json]
-📉 [Y] Fold all
+🤖 [M] Ask ([M]essage), wait 6s, then paste (ahk)
+⚡ [G] Kill terminal ([G]o away)
+📉 [Y] Fold all (tuck awa[Y])
 📈 [U] [U]nfold all
 📋 [O] Paste As... ([O]pen)
-📁 [H] Reveal in file explorer
-🔲 [J] Select to Bracket
+📁 [H] Reveal in file explorer (s[H]ow)
+🔲 [J] Select to Bracket (ad[J]acent)
 📉 [,] Fold all directories
 💬 [.] Toggle chat or agent
-📈 [Q] Unfold all directories
-🤖 [E] Open Agent
+📈 [Q] Unfold all directories (e[Q]ual)
+🤖 [E] Open Agent (AI [E]xpert)
 📂 [R] File open [R]ecent
 🔍 [T] Go to symbol in workspace ([T]ype)
 💬 [N] [N]ew chat tab (replacing current)
@@ -468,34 +468,34 @@ Cursor
 💬 [;] Insert comment
 📝 [D] Add selection to next find match ([D]uplicate)
 🔍 [F] [F]ind
-↩️ [Z] Undo
+↩️ [Z] Undo (common [Z])
 📊 [B] Toggle primary sidebar visibility ([B]ar)
 
 --- SHIFT Shortcuts (Shift) (ahk = AutoHotkey) ---
-📉 [F]old (ahk)
-📈 [U]nfold (ahk)
-📄 [M]arkdown preview (cursor)
-🪟 [W]indow (move editor) (cursor)
-💻 [T]erminal (ahk)
-💻 [N]ew [T]erminal (ahk)
-📁 [E]xplorer (ahk)
-📄🪟 [K] Markdown + window (ahk)
-⌨️ [C]ommand palette (ahk)
+📉 [F][F]old (ahk)
+📈 [U][U]nfold (ahk)
+📄 [M][M]arkdown preview (cursor)
+🪟 [W][W]indow (move editor) (cursor)
+💻 [T][T]erminal (ahk)
+💻 [N][N]ew Terminal (ahk)
+📁 [E][E]xplorer (ahk)
+📄🪟 [K] Mar[K]down + window (ahk)
+⌨️ [C][C]ommand palette (ahk)
 📈 [X] E[X]pand selection (ahk)
-⚡ [S]ymbol in access view (cursor)
-💬 [H]istory (chat) (ahk)
-🖼️ [I]mage (paste) (cursor)
-📁 [G]it repos fold (SCM) (ahk)
-🔍 [Q]Search (ahk)
-🍞 [R]Breadcrumbs menu (ahk)
-😀 [O]Emoji selector (ahk)
-🌿 [D]Git section (ahk)
-❌ [Z]Close all editors (ahk)
-🤖 [A]I models switch (ahk)
-🧘 [Y]Zen mode (cursor)
-⬇️ [P]ull (Git) (cursor)
-✅ [V]Commit (Git) (cursor)
-⬆️ [B]Push (Git) (cursor)
+⚡ [S][S]ymbol in access view (cursor)
+💬 [H][H]istory (chat) (ahk)
+🖼️ [I][I]mage (paste) (cursor)
+📁 [G][G]it repos fold (SCM) (ahk)
+🔍 [Q][Q]uery Search (ahk)
+🍞 [R]B[R]eadcrumbs menu (ahk)
+😀 [O]Emoji selector (em[O]ji) (ahk)
+🌿 [D]Git section ([D]iff) (ahk)
+❌ [Z]Close all editors (end [Z]one) (ahk)
+🤖 [A][A]I models switch (ahk)
+🧘 [Y]Zen mode (tranquilit[Y]) (cursor)
+⬇️ [P][P]ull (Git) (cursor)
+✅ [V]Commit (Git sa[V]e) (cursor)
+⬆️ [B]Push (Git pu[B]lish) (cursor)
 
 --- CTRL+ALT Shortcuts (Cursor-defined) ---
 ⬆️ [Ctrl+Alt+Up] Go to [P]arent Fold
@@ -505,7 +505,7 @@ Cursor
 ⬇️ [Ctrl+Alt+↓] Add cursor [B]elow
 
 --- ALT Shortcuts (ahk = AutoHotkey) ---
-📄 [N] Review next file (ahk)
+📄 [N] Review [N]ext file (ahk)
 
 --- Additional Shortcuts ---
 👁️ [Alt+F12] [P]eek Definition
@@ -513,15 +513,15 @@ Cursor
 ✏️ [F2] [R]ename symbol
 🔍 [F8] [N]avigate problems
 🗑️ [Shift+Delete] [D]elete line
-⬆️ [Alt+↑] [M]ove line [U]p
-⬇️ [Alt+↓] [M]ove line [D]own
+⬆️ [Alt+↑] [M]ove line Up
+⬇️ [Alt+↓] [M]ove line Down
 👆 [Alt+Click] [M]ulti-cursor by click
-⬆️ [Shift+Alt+↑] [C]opy line [U]p
-⬇️ [Shift+Alt+↓] [C]opy line [D]own
+⬆️ [Shift+Alt+↑] [C]opy line Up
+⬇️ [Shift+Alt+↓] [C]opy line Down
 🔄 [Alt+Z] Toggle word [W]rap
 🐛 [Ctrl+Shift+D] [D]ebugging
-⬇️ [Alt+J] [N]ext review ([J]ump)
-⬆️ [Alt+K] [P]revious review ([K]ey)
+⬇️ [Alt+J] Jump to [N]ext review
+⬆️ [Alt+K] [P]revious review (bac[K])
 )"  ; end Cursor
 
 ; --- Windows Explorer ------------------------------------------------------
@@ -529,21 +529,21 @@ cheatSheets["explorer.exe"] := "
 (
 Explorer (Shift)
 📄 [F]Select first [F]ile
-🔍 [S]earch bar
-📍 [A]ddress bar
-📁 [N]ew [F]older
-🔗 [H]s[H]ortcut (create)
-📋 [C]opy as path
-📤 [R]Share file
-📌 [P]inned item (first in sidebar)
-📌 [L]ast item (Explorer sidebar)
+🔍 [S][S]earch bar
+📍 [A][A]ddress bar
+📁 [N][N]ew Folder
+🔗 [H]Create s[H]ortcut
+📋 [C][C]opy as path
+📤 [R]Sha[R]e file
+📌 [P][P]inned item (first in sidebar)
+📌 [L][L]ast item (sidebar)
 )"  ; end Explorer
 
 ; --- Microsoft Paint ------------------------------------------------------
 cheatSheets["mspaint.exe"] := "
 (
 MS Paint (Shift)
-📏 [R]esize and [S]kew (Ctrl+W)
+📏 [R][R]esize and Skew (Ctrl+W)
 
 --- Common Shortcuts ---
 [Ctrl+N] > 📄 New
@@ -571,36 +571,36 @@ MS Paint (Shift)
 cheatSheets["ClipAngel.exe"] := "
 (
 ClipAngel (Shift)
-📋 [C]Select filtered content and copy
-🔄 [T]Switch focus list/text (Toggle)
-🗑️ [D]Delete all non-favorite
-🧹 [X]Clear filters
+📋 [C][C]opy filtered content
+🔄 [T][T]oggle focus list/text
+🗑️ [D][D]elete all non-favorite
+🧹 [X]Clear (e[X]it filters)
 ⭐ [F]Mark as [F]avorite
-⭐ [U]Unmark as favorite (Unmark)
-✏️ [E]Edit [T]ext
-💾 [S]Save as file
-🔗 [M]Merge clips
+⭐ [U][U]nmark as favorite
+✏️ [E][E]dit Text
+💾 [S][S]ave as file
+🔗 [M][M]erge clips
 )"  ; end ClipAngel
 
 ; --- Figma -----------------------------------------------------------------
 cheatSheets["Figma.exe"] := "
 (
 Figma (Shift)
-👁️ [U]Show/[H]ide [U]I
-🔍 [S]earch ([S]earch component)
+👁️ [U]Toggle [U]I visibility
+🔍 [S][S]earch component
 ⬆️ [P]Select [P]arent
 🧩 [C]reate [C]omponent
-🔗 [D]etach instance ([D]etach)
+🔗 [D][D]etach instance
 📐 [A]dd [A]uto layout
-📐 [R]emove auto layout ([R]emove)
-💡 [S]uggest auto layout ([S]uggest)
-📤 [E]xport
-🖼️ [C]opy as [P]NG ([C]opy)
-⚡ [A]ctions... ([A]ctions)
+📐 [R][R]emove auto layout
+💡 [S][S]uggest auto layout
+📤 [E][E]xport
+🖼️ [C][C]opy as PNG
+⚡ [A][A]ctions...
 ⬅️ [L]Align [L]eft
 ➡️ [R]Align [R]ight
 📏 [V]Distribute [V]ertical spacing
-🧹 [T]idy up ([T]idy)
+🧹 [T][T]idy up
 ⬆️ [T]Align [T]op
 ⬇️ [B]Align [B]ottom
 ↔️ [H]Align center [H]orizontal
@@ -612,25 +612,25 @@ Figma (Shift)
 cheatSheets["Gmail"] := "
 (
 Gmail (Shift)
-📥 [I]nbox
-📰 [U]pdates
-💬 [F]orums
-📬 [R]ead / [U]nread toggle
-⬅️ [P]revious conversation
-➡️ [N]ext conversation
-📦 [A]rchive conversation
-✅ [S]elect conversation
-↩️ [Y]Reply
-↩️ [G]Reply [A]ll
-➡️ [W]Forward
-⭐ [T]Star / unstar conversation
-🗑️ [D]elete
-🚫 [X]Spam
-✍️ [C]ompose new email
-🔍 [Q]Search mail
-📁 [M]ove to folder
-⌨️ [H]elp (keyboard shortcuts)
-📬 [B]Inbox button
+📥 [I][I]nbox
+📰 [U][U]pdates
+💬 [F][F]orums
+📬 [R]Toggle [R]ead status
+⬅️ [P][P]revious conversation
+➡️ [N][N]ext conversation
+📦 [A][A]rchive conversation
+✅ [S][S]elect conversation
+↩️ [Y]Repl[Y]
+↩️ [G]Reply to [G]roup (all)
+➡️ [W]For[W]ard
+⭐ [T]S[T]ar toggle
+🗑️ [D][D]elete
+🚫 [X]Spam (e[X]clude)
+✍️ [C][C]ompose new email
+🔍 [Q][Q]uery mail (Search)
+📁 [M][M]ove to folder
+⌨️ [H][H]elp (keyboard shortcuts)
+📬 [B]Inbox [B]utton
 
 --- Built-in Shortcuts (Windows) ---
 
@@ -738,7 +738,7 @@ Application (shortcuts on):
 cheatSheets["Google Keep"] := "
 (
 Google Keep (Shift)
-🔍 [S]earch and select [N]ote
+🔍 [S][S]earch and select Note
 📋 [M]Toggle [M]ain menu
 )"  ; end Google Keep
 
@@ -747,14 +747,14 @@ cheatSheets["FileDialog"] := "
 (
 File Dialog (Shift)
 📄 [F]Select first [F]ile
-🔍 [S]earch bar
-📍 [A]ddress bar
-📁 [N]ew [F]older
-📌 [P]inned item (first in sidebar)
-💻 [T]his [P]C (sidebar)
-📝 [M]Focus file [N]ame field
-✅ [O]pen/[S]ave button
-❌ [C]ancel button
+🔍 [S][S]earch bar
+📍 [A][A]ddress bar
+📁 [N][N]ew Folder
+📌 [P][P]inned item (first in sidebar)
+💻 [T][T]his PC (sidebar)
+📝 [M]File na[M]e field
+✅ [O][O]pen/Save button
+❌ [C][C]ancel button
 )"
 
 ; --- Settings Window -------------------------------------------------
@@ -765,16 +765,16 @@ cheatSheets["Command Palette"] := "
 (
 Command Palette (Shift)
 ⌨️ [Ctrl+H] Reveal in file explorer
-⌨️ [C]opy file [P]ath ([C]opy)
+⌨️ [C][C]opy file Path
 ⌨️ [B]Send ten [B]ackspaces
 ⌨️ [S]Precise [S]earch
-⌨️ [I]Add [F]avorite ([I]nsert)
-⌨️ [Ctrl+1] [S]elect current item ([S]elect)
-⌨️ [Ctrl+2] [M]ove down once and select ([M]ove)
-⌨️ [Ctrl+3] [M]ove down twice and select ([M]ove)
-⌨️ [Ctrl+4] [M]ove down three times and select ([M]ove)
-⌨️ [Ctrl+5] [M]ove down four times and select ([M]ove)
-⌨️ [Ctrl+6] [M]ove down five times and select ([M]ove)
+⌨️ [I][I]nsert Favorite (Add)
+⌨️ [Ctrl+1] [S]elect current item
+⌨️ [Ctrl+2] [M]ove down once and select
+⌨️ [Ctrl+3] [M]ove down twice and select
+⌨️ [Ctrl+4] [M]ove down three times and select
+⌨️ [Ctrl+5] [M]ove down four times and select
+⌨️ [Ctrl+6] [M]ove down five times and select
 )"
 
 ; --- Excel ------------------------------------------------------------
@@ -783,8 +783,8 @@ cheatSheets["EXCEL.EXE"] := "
 Excel (Shift)
 ⚪ [W]Select [W]hite Color
 ✏️ [E]Enable [E]diting
-📊 [C]Turn [C]SV delimited by semicolon into columns
-➕ [A]Add multiple rows (Alt, Alt, 2, R x8)
+📊 [C][C]SV to columns (semicolon delimited)
+➕ [A][A]dd multiple rows
 📅 [P]Type [P]revious day date
 )"
 
@@ -793,42 +793,42 @@ cheatSheets["Power BI"] := "
 (
 Power BI (Shift)
 --- Views ---
-📊 [I]Report view
-📊 [O]Table view
-📊 [P]Model view
+📊 [I]Report v[I]ew
+📊 [O]Table view ([O]verview)
+📊 [P]Model view ([P]lan)
 --- Data Operations ---
-📊 [T]ransform [D]ata
-📊 [U]Close and [A]pply
-📊 [E]New [M]easure
-🔄 [Y]Refresh
+📊 [T][T]ransform Data
+📊 [U][U]pdate (Close and Apply)
+📊 [E]New M[E]asure
+🔄 [Y]Refresh (read[Y])
 --- Visual Operations ---
-📊 [H]Build [V]isual
-📊 [J]Format visual
-⬆️ [B]Bring forward
-⬇️ [D]Send backward
-📐 [K][A]lign
-📄 [V]Fit to [P]age
+📊 [H]Build visual ([H]andle)
+📊 [J]Format visual (ad[J]ust)
+⬆️ [B][B]ring forward
+⬇️ [D]Sen[D] backward
+📐 [K][A]lign ([K]eep straight)
+📄 [V]Fit to Page ([V]iew)
 --- Navigation & Pages ---
-🖱️ [A]All pages button
-➕ [W]New [P]age
+🖱️ [A][A]ll pages button
+➕ [W]Ne[W] Page
 --- Drawers & Panes ---
-📕 [F]CloseAll[D]rawers
-📖 [G]OpenAll[D]rawers
-📁 [R]Collapse [F]ields tables
+📕 [F]Close All Drawers ([F]old)
+📖 [G]Open All Drawers (un[G]roup)
+📁 [R]Collapse Fields ([R]educe)
 --- Search & Modals ---
-🔍 [S]elect [S]earch edit field
-✅ [L]OK/Confirm modal button
+🔍 [S][S]earch edit field
+✅ [L]OK/Confirm moda[L] button
 ❌ [X]Cancel/E[X]it modal button
 )"
 
 ; --- UIA Tree Inspector -------------------------------------------------
 cheatSheets["UIATreeInspector"] :=
-"(UIA Tree Inspector (Shift))`r`n🔄 [R]efresh [L]ist`r`n🔍 [F]ocus [F]ilter field"
+"(UIA Tree Inspector (Shift))`r`n🔄 [R][R]efresh List`r`n🔍 [F]ocus [F]ilter field"
 ; --- SettleUp Shortcuts -----------------------------------------------------
 cheatSheets["Settle Up"] := "
 (
 Settle Up (Shift)
-➕ [A]dd [T]ransaction
+➕ [A][A]dd Transaction
 📝 [N]Focus expense [N]ame field
 💰 [V]Focus expense [V]alue field
 )"
@@ -837,11 +837,11 @@ Settle Up (Shift)
 cheatSheets["Miro"] := "
 (
 Miro (Shift)
-📋 [F]Frame [L]ist
-🔗 [G]Group
-🔗 [U]Ungroup
-🔒 [L]Lock/Unlock
-🔗 [K]Add/Edit [L]ink
+📋 [F][F]rame List
+🔗 [G][G]roup
+🔗 [U][U]ngroup
+🔒 [L][L]ock/Unlock
+🔗 [K]Add/Edit Lin[K]
 --- Built-in Shortcuts (Windows) ---
 Tools:
 [V / H] > Select tool / Hand
@@ -927,7 +927,7 @@ Desktop app:
 cheatSheets["Wikipedia"] := "
 (
 Wikipedia (Shift)
-🔍 [S]Click [S]earch button
+🔍 [S][S]earch button click
 )"
 
 ; --- YouTube ---------------------------------------------------------------
@@ -935,8 +935,8 @@ cheatSheets["YouTube"] := "
 (
 YouTube (Shift)
 🔍 [S]Focus [S]earch box
-🎬 [U]Focus first video via Search filters
-🎬 [I]Focus first video via [I]Explore
+🎬 [U]Focus first video (filter res[U]lts)
+🎬 [I]Focus first v[I]deo via Explore
 🏠 [H]Navigate to [H]ome
 📜 [R]Navigate to histo[R]y
 📋 [P]Navigate to [P]laylists
@@ -946,7 +946,7 @@ YouTube (Shift)
 cheatSheets["Google"] := "
 (
 Google (Shift)
-🔍 [S]Focus [S]earch box
+🔍 [S][S]earch box focus
 )"
 
 ; --- ChatGPT ---------------------------------------------------------------
@@ -954,10 +954,10 @@ cheatSheets["ChatGPT"] := "
 (
 ChatGPT (Shift)
 📂 [I]Toggle s[I]debar
-🔄 [O]Re-send rules
-📋 [C]opy code [B]lock
-⬇️ [J]Go [J]own
-🤖 [L]Send and show AI [L]anner
+🔄 [O]Re-send rules ([O]rder again)
+📋 [C][C]opy code block
+⬇️ [J]Go down ([J]ump)
+🤖 [L]Send and show AI P[L]anner
 )"
 
 ; --- Mobills ---------------------------------------------------------------
@@ -966,24 +966,24 @@ cheatSheets["Mobills"] := "
 Mobills (Shift)
 
 --- Navigation ---
-📊 [D]ashboard
-💳 [A]ccounts ([A]ccounts)
-💰 [T]ransactions ([T]ransações)
-💳 [C]redit [C]ards ([C]artões de crédito)
-📅 [P]lanning ([P]lanejamento)
-📈 [R]eports ([R]elatórios)
-⚙️ [M]ore [M]enu ([M]ais opções)
-⬅️ [K]Previous [K]onth
-➡️ [L]Next [L]onth
+📊 [D][D]ashboard
+💳 [A][A]ccounts (Contas)
+💰 [T][T]ransactions (Transações)
+💳 [C]redit [C]ards (Cartões)
+📅 [P][P]lanning (Planejamento)
+📈 [R][R]eports (Relatórios)
+⚙️ [M]ore [M]enu (Mais opções)
+⬅️ [K]Previous month (bac[K])
+➡️ [L]Next month (cyc[L]e)
 
 --- Actions ---
-🚫 [I]gnore transac[I]on
-✏️ [N]ame [F]ield
+🚫 [I][I]gnore transaction
+✏️ [N][N]ame Field
 💸 [E]New [E]xpense
-💵 [Y]New [Y]ncome
-💳 [X]redit card e[X]pense
-🔄 [F]unds trans[F]er
-🔘 [W]Open button + type MAIN ([W]indow)
+💵 [Y]New Incom[Y]
+💳 [X]Credit card e[X]pense
+🔄 [F]Funds trans[F]er
+🔘 [W][W]indow (Open button + type MAIN)
 )"
 
 ; ========== Helper to decide which sheet applies ===========================
