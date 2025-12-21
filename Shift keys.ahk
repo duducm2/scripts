@@ -419,7 +419,7 @@ Spotify (Shift)
 cheatSheets["ONENOTE.EXE"] := "
 (
 OneNote (Shift)
-📈 [Y]Expand section (wh[Y] not)
+📈 [Y]Expand [Y]section
 📉 [U]Collapse ([U]nfold reverse)
 📉 [I]Collapse All ([I]nward)
 📈 [O][O]pen All (Expand)
@@ -448,28 +448,28 @@ Cursor
 📊 [3] CSV: Edit CSV
 💾 [4] CSV: Apply changes to source file and save
 🔄 [5] Reload (ahk)
-🤖 [M] Ask ([M]essage), wait 6s, then paste (ahk)
-⚡ [G] Kill terminal ([G]o away)
-📉 [Y] Fold all (tuck awa[Y])
+🤖 [M]Ask [M]essage, wait 6s, then paste (ahk)
+⚡ [G]Kill terminal ([G]o away)
+📉 [Y]Fold all (tuck awa[Y])
 📈 [U] [U]nfold all
-📋 [O] Paste As... ([O]pen)
-📁 [H] Reveal in file explorer (s[H]ow)
-🔲 [J] Select to Bracket (ad[J]acent)
+📋 [O]Open Paste As... ([O]pen)
+📁 [H]Reveal in file explorer (s[H]ow)
+🔲 [J]Select to Bracket (ad[J]acent)
 📉 [,] Fold all directories
 💬 [.] Toggle chat or agent
-📈 [Q] Unfold all directories (e[Q]ual)
-🤖 [E] Open Agent (AI [E]xpert)
-📂 [R] File open [R]ecent
-🔍 [T] Go to symbol in workspace ([T]ype)
+📈 [Q]Unfold all directories (e[Q]ual)
+🤖 [E]Open [E]xpert Agent
+📂 [R]File open [R]ecent
+🔍 [T]Go to [T]ype symbol in workspace
 💬 [N] [N]ew chat tab (replacing current)
 ➕ [Enter] [I]nsert line below
-🔍 [P] Open ([P]roject)
+🔍 [P]Open [P]roject
 🔄 [1/2/3...] Switch tabs
 💬 [;] Insert comment
-📝 [D] Add selection to next find match ([D]uplicate)
+📝 [D]Duplicate selection to next find match
 🔍 [F] [F]ind
-↩️ [Z] Undo (common [Z])
-📊 [B] Toggle primary sidebar visibility ([B]ar)
+↩️ [Z]Undo (common [Z])
+📊 [B]Toggle [B]ar (primary sidebar)
 
 --- SHIFT Shortcuts (Shift) (ahk = AutoHotkey) ---
 📉 [F][F]old (ahk)
@@ -574,7 +574,7 @@ ClipAngel (Shift)
 📋 [C][C]opy filtered content
 🔄 [T][T]oggle focus list/text
 🗑️ [D][D]elete all non-favorite
-🧹 [X]Clear (e[X]it filters)
+🧹 [X]E[X]it filters (Clear)
 ⭐ [F]Mark as [F]avorite
 ⭐ [U][U]nmark as favorite
 ✏️ [E][E]dit Text
@@ -806,7 +806,7 @@ Power BI (Shift)
 📊 [J]Format visual (ad[J]ust)
 ⬆️ [B][B]ring forward
 ⬇️ [D]Sen[D] backward
-📐 [K][A]lign ([K]eep straight)
+📐 [K]Keep [A]lign straight
 📄 [V]Fit to Page ([V]iew)
 --- Navigation & Pages ---
 🖱️ [A][A]ll pages button
@@ -817,7 +817,7 @@ Power BI (Shift)
 📁 [R]Collapse Fields ([R]educe)
 --- Search & Modals ---
 🔍 [S][S]earch edit field
-✅ [L]OK/Confirm moda[L] button
+✅ [L]Confirm moda[L] button (OK)
 ❌ [X]Cancel/E[X]it modal button
 )"
 
