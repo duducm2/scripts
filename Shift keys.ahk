@@ -5649,19 +5649,46 @@ EnsureItemsViewFocus() {
     }
 }
 
-; Shift + E : New measure (Alt, H, N, M)
+; Shift + E : New measure (Click Home tab, then New measure button)
 +e:: {
     try {
-        Sleep 200
-        Send "{Alt down}"
-        Sleep 150
-        Send "{Alt up}"
-        Sleep 190
-        Send "h"
-        Sleep 190
-        Send "n"
-        Sleep 190
-        Send "m"
+        win := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+
+        ; Click the Home tab
+        homeTab := root.FindFirst({ Type: "50019", Name: "Home", AutomationId: "home" })
+        if !homeTab {
+            homeTab := root.FindFirst({ Type: "50019", Name: "Home" })
+        }
+        if !homeTab {
+            homeTab := root.FindFirst({ Type: "50019", AutomationId: "home" })
+        }
+
+        if homeTab {
+            homeTab.Click()
+            Sleep 200
+        } else {
+            MsgBox "Could not find the 'Home' tab.", "Power BI", "IconX"
+            return
+        }
+
+        ; Click the New measure button
+        newMeasureBtn := root.FindFirst({ Type: "50000", Name: "New measure", AutomationId: "newMeasure" })
+        if !newMeasureBtn {
+            newMeasureBtn := root.FindFirst({ Type: "50000", Name: "New measure" })
+        }
+        if !newMeasureBtn {
+            newMeasureBtn := root.FindFirst({ Type: "50000", AutomationId: "newMeasure" })
+        }
+        if !newMeasureBtn {
+            newMeasureBtn := root.FindFirst({ Type: "50000", ClassName: "ms-Button root-336" })
+        }
+
+        if newMeasureBtn {
+            newMeasureBtn.Click()
+        } else {
+            MsgBox "Could not find the 'New measure' button.", "Power BI", "IconX"
+        }
     } catch Error as e {
         MsgBox "Error triggering New measure: " e.Message, "Power BI Error", "IconX"
     }
