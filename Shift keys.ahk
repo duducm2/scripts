@@ -5065,10 +5065,12 @@ EnsureItemsViewFocus() {
 
 ; Shift + P : Type previous day date
 +p:: {
-    ; Calculate yesterday's date (AutoHotkey v2 syntax: DateAdd(DateTime, Time, TimeUnits))
-    yesterday := DateAdd(A_Now, -1, "Days")
+    ; Calculate yesterday's date
+    ; Get current date/time and subtract exactly 24 hours (86400 seconds)
+    currentTime := A_Now
+    yesterdayTime := DateAdd(currentTime, -86400, "Seconds")
     ; Format as dd/MM/yyyy (DD/MM/YYYY format)
-    dateStr := FormatTime(yesterday, "dd/MM/yyyy")
+    dateStr := FormatTime(yesterdayTime, "dd/MM/yyyy")
     ; Small delay to ensure Excel is ready
     Sleep 50
     ; Type the date as a whole word at once
