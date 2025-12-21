@@ -805,6 +805,10 @@ Power BI (Shift)
 ➕ [W]New [P]age
 📊 [E]New [M]easure
 🔄 [Y]Refresh
+⬆️ [B]Bring forward
+⬇️ [D]Send backward
+📐 [K][A]lign
+📄 [V]Fit to [P]age
 📕 [F]CloseAll[D]rawers
 📖 [G]OpenAll[D]rawers
 📁 [R]Collapse [F]ields tables
@@ -5737,6 +5741,227 @@ EnsureItemsViewFocus() {
     }
 }
 
+; Shift + B : Bring forward (Click Format tab, then click button 10 times)
++b:: {
+    try {
+        win := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+
+        ; Click the Format tab
+        formatTab := root.FindFirst({ Type: "50019", Name: "Format", AutomationId: "visualFormatting" })
+        if !formatTab {
+            formatTab := root.FindFirst({ Type: "50019", Name: "Format" })
+        }
+        if !formatTab {
+            formatTab := root.FindFirst({ Type: "50019", AutomationId: "visualFormatting" })
+        }
+
+        if formatTab {
+            formatTab.Click()
+            Sleep 200
+        } else {
+            MsgBox "Could not find the 'Format' tab.", "Power BI", "IconX"
+            return
+        }
+
+        ; Find the Bring forward button
+        bringForwardBtn := root.FindFirst({ Type: "50000", Name: "Bring forward" })
+        if !bringForwardBtn {
+            bringForwardBtn := root.FindFirst({ Type: "50000", ClassName: "splitPrimaryButton root-332", Name: "Bring forward" })
+        }
+        if !bringForwardBtn {
+            ; Search all buttons for one named "Bring forward"
+            allButtons := root.FindAll({ Type: "50000" })
+            for btn in allButtons {
+                if (btn.Name = "Bring forward") {
+                    bringForwardBtn := btn
+                    break
+                }
+            }
+        }
+
+        if !bringForwardBtn {
+            MsgBox "Could not find the 'Bring forward' button.", "Power BI", "IconX"
+            return
+        }
+
+        ; Show execution banner
+        bannerGui := CreateCenteredBanner_PowerBI("Bringing forward 10 times...")
+
+        ; Click the button 10 times
+        loop 10 {
+            bringForwardBtn.Click()
+            Sleep 50
+        }
+
+        ; Hide banner after completion
+        Sleep 300
+        try bannerGui.Destroy()
+    } catch Error as e {
+        try bannerGui.Destroy()
+        MsgBox "Error triggering Bring forward: " e.Message, "Power BI Error", "IconX"
+    }
+}
+
+; Shift + D : Send backward (Click Format tab, then click button 10 times)
++d:: {
+    try {
+        win := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+
+        ; Click the Format tab
+        formatTab := root.FindFirst({ Type: "50019", Name: "Format", AutomationId: "visualFormatting" })
+        if !formatTab {
+            formatTab := root.FindFirst({ Type: "50019", Name: "Format" })
+        }
+        if !formatTab {
+            formatTab := root.FindFirst({ Type: "50019", AutomationId: "visualFormatting" })
+        }
+
+        if formatTab {
+            formatTab.Click()
+            Sleep 200
+        } else {
+            MsgBox "Could not find the 'Format' tab.", "Power BI", "IconX"
+            return
+        }
+
+        ; Find the Send backward button
+        sendBackwardBtn := root.FindFirst({ Type: "50000", Name: "Send backward" })
+        if !sendBackwardBtn {
+            sendBackwardBtn := root.FindFirst({ Type: "50000", ClassName: "splitPrimaryButton root-332", Name: "Send backward" })
+        }
+        if !sendBackwardBtn {
+            ; Search all buttons for one named "Send backward"
+            allButtons := root.FindAll({ Type: "50000" })
+            for btn in allButtons {
+                if (btn.Name = "Send backward") {
+                    sendBackwardBtn := btn
+                    break
+                }
+            }
+        }
+
+        if !sendBackwardBtn {
+            MsgBox "Could not find the 'Send backward' button.", "Power BI", "IconX"
+            return
+        }
+
+        ; Show execution banner
+        bannerGui := CreateCenteredBanner_PowerBI("Sending backward 10 times...")
+
+        ; Click the button 10 times
+        loop 10 {
+            sendBackwardBtn.Click()
+            Sleep 50
+        }
+
+        ; Hide banner after completion
+        Sleep 300
+        try bannerGui.Destroy()
+    } catch Error as e {
+        try bannerGui.Destroy()
+        MsgBox "Error triggering Send backward: " e.Message, "Power BI Error", "IconX"
+    }
+}
+
+; Shift + K : Align (Click Format tab, then click Align button)
++k:: {
+    try {
+        win := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+
+        ; Click the Format tab
+        formatTab := root.FindFirst({ Type: "50019", Name: "Format", AutomationId: "visualFormatting" })
+        if !formatTab {
+            formatTab := root.FindFirst({ Type: "50019", Name: "Format" })
+        }
+        if !formatTab {
+            formatTab := root.FindFirst({ Type: "50019", AutomationId: "visualFormatting" })
+        }
+
+        if formatTab {
+            formatTab.Click()
+            Sleep 200
+        } else {
+            MsgBox "Could not find the 'Format' tab.", "Power BI", "IconX"
+            return
+        }
+
+        ; Find the Align button
+        alignBtn := root.FindFirst({ Type: "50000", Name: "Align", AutomationId: "alignFlyout" })
+        if !alignBtn {
+            alignBtn := root.FindFirst({ Type: "50000", Name: "Align" })
+        }
+        if !alignBtn {
+            alignBtn := root.FindFirst({ Type: "50000", AutomationId: "alignFlyout" })
+        }
+        if !alignBtn {
+            alignBtn := root.FindFirst({ Type: "50000", ClassName: "ms-Button ms-Button--hasMenu root-337" })
+        }
+        if !alignBtn {
+            ; Search all buttons for one named "Align"
+            allButtons := root.FindAll({ Type: "50000" })
+            for btn in allButtons {
+                if (btn.Name = "Align") {
+                    alignBtn := btn
+                    break
+                }
+            }
+        }
+
+        if !alignBtn {
+            MsgBox "Could not find the 'Align' button.", "Power BI", "IconX"
+            return
+        }
+
+        ; Click the Align button
+        alignBtn.Click()
+    } catch Error as e {
+        MsgBox "Error triggering Align: " e.Message, "Power BI Error", "IconX"
+    }
+}
+
+; Shift + V : Fit to page
++v:: {
+    try {
+        win := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+
+        ; Find the Fit to page button
+        fitToPageBtn := root.FindFirst({ Type: "50000", Name: "Fit to page", AutomationId: "fitToPageButton" })
+        if !fitToPageBtn {
+            fitToPageBtn := root.FindFirst({ Type: "50000", Name: "Fit to page" })
+        }
+        if !fitToPageBtn {
+            fitToPageBtn := root.FindFirst({ Type: "50000", AutomationId: "fitToPageButton" })
+        }
+        if !fitToPageBtn {
+            fitToPageBtn := root.FindFirst({ Type: "50000", ClassName: "smallImageButton", AutomationId: "fitToPageButton" })
+        }
+        if !fitToPageBtn {
+            ; Search all buttons for one named "Fit to page"
+            allButtons := root.FindAll({ Type: "50000" })
+            for btn in allButtons {
+                if (btn.Name = "Fit to page") {
+                    fitToPageBtn := btn
+                    break
+                }
+            }
+        }
+
+        if !fitToPageBtn {
+            MsgBox "Could not find the 'Fit to page' button.", "Power BI", "IconX"
+            return
+        }
+
+        ; Click the Fit to page button
+        fitToPageBtn.Click()
+    } catch Error as e {
+        MsgBox "Error triggering Fit to page: " e.Message, "Power BI Error", "IconX"
+    }
+}
+
 ; Shift + F : Close all Power BI drawers (Visualizations/Data/Properties/Filters)
 +f:: {
     try {
@@ -10595,6 +10820,34 @@ IsFileDialogActive() {
 }
 
 #HotIf
+
+; --- Unified banner helpers for Power BI indicators ---
+CreateCenteredBanner_PowerBI(message, bgColor := "3772FF", fontColor := "FFFFFF", fontSize := 24, alpha := 178) {
+    bGui := Gui()
+    bGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
+    bGui.BackColor := bgColor
+    bGui.SetFont("s" . fontSize . " c" . fontColor . " Bold", "Segoe UI")
+    bGui.Add("Text", "w500 Center", message)
+
+    activeWin := WinGetID("A")
+    if (activeWin) {
+        WinGetPos(&winX, &winY, &winW, &winH, activeWin)
+    } else {
+        workArea := SysGet.MonitorWorkArea(SysGet.MonitorPrimary)
+        winX := workArea.Left, winY := workArea.Top, winW := workArea.Right - workArea.Left, winH := workArea.Bottom -
+            workArea.Top
+    }
+
+    bGui.Show("AutoSize Hide")
+    guiW := 0, guiH := 0
+    bGui.GetPos(, , &guiW, &guiH)
+
+    guiX := winX + (winW - guiW) / 2
+    guiY := winY + (winH - guiH) / 2
+    bGui.Show("x" . Round(guiX) . " y" . Round(guiY) . " NA")
+    WinSetTransparent(alpha, bGui)
+    return bGui
+}
 
 ; --- Unified banner helpers for ChatGPT indicators (match ChatGPT.ahk style) ---
 global smallLoadingGuis_ChatGPT := []
