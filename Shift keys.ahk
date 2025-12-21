@@ -791,27 +791,33 @@ Excel (Shift)
 cheatSheets["Power BI"] := "
 (
 Power BI (Shift)
-📊 [T]ransform [D]ata
-📊 [U]Close and [A]pply
+--- Views ---
 📊 [I]Report view
 📊 [O]Table view
 📊 [P]Model view
-📊 [H]Build [V]isual
-📊 [J]Format visual
-🔍 [S]elect [S]earch edit field
-✅ [L]OK/Confirm modal button
-❌ [X]Cancel/E[X]it modal button
-🖱️ [A]All pages button
-➕ [W]New [P]age
+--- Data Operations ---
+📊 [T]ransform [D]ata
+📊 [U]Close and [A]pply
 📊 [E]New [M]easure
 🔄 [Y]Refresh
+--- Visual Operations ---
+📊 [H]Build [V]isual
+📊 [J]Format visual
 ⬆️ [B]Bring forward
 ⬇️ [D]Send backward
 📐 [K][A]lign
 📄 [V]Fit to [P]age
+--- Navigation & Pages ---
+🖱️ [A]All pages button
+➕ [W]New [P]age
+--- Drawers & Panes ---
 📕 [F]CloseAll[D]rawers
 📖 [G]OpenAll[D]rawers
 📁 [R]Collapse [F]ields tables
+--- Search & Modals ---
+🔍 [S]elect [S]earch edit field
+✅ [L]OK/Confirm modal button
+❌ [X]Cancel/E[X]it modal button
 )"
 
 ; --- UIA Tree Inspector -------------------------------------------------
