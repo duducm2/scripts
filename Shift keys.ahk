@@ -5786,7 +5786,7 @@ EnsureItemsViewFocus() {
         }
 
         ; Show execution banner
-        bannerGui := CreateCenteredBanner_PowerBI("Bringing forward 10 times...")
+        ShowSmallLoadingIndicator_ChatGPT("Bringing forward 10 times...")
 
         ; Click the button 10 times
         loop 10 {
@@ -5796,9 +5796,9 @@ EnsureItemsViewFocus() {
 
         ; Hide banner after completion
         Sleep 300
-        try bannerGui.Destroy()
+        HideSmallLoadingIndicator_ChatGPT()
     } catch Error as e {
-        try bannerGui.Destroy()
+        HideSmallLoadingIndicator_ChatGPT()
         MsgBox "Error triggering Bring forward: " e.Message, "Power BI Error", "IconX"
     }
 }
@@ -5848,7 +5848,7 @@ EnsureItemsViewFocus() {
         }
 
         ; Show execution banner
-        bannerGui := CreateCenteredBanner_PowerBI("Sending backward 10 times...")
+        ShowSmallLoadingIndicator_ChatGPT("Sending backward 10 times...")
 
         ; Click the button 10 times
         loop 10 {
@@ -5858,9 +5858,9 @@ EnsureItemsViewFocus() {
 
         ; Hide banner after completion
         Sleep 300
-        try bannerGui.Destroy()
+        HideSmallLoadingIndicator_ChatGPT()
     } catch Error as e {
-        try bannerGui.Destroy()
+        HideSmallLoadingIndicator_ChatGPT()
         MsgBox "Error triggering Send backward: " e.Message, "Power BI Error", "IconX"
     }
 }
@@ -10820,34 +10820,6 @@ IsFileDialogActive() {
 }
 
 #HotIf
-
-; --- Unified banner helpers for Power BI indicators ---
-CreateCenteredBanner_PowerBI(message, bgColor := "3772FF", fontColor := "FFFFFF", fontSize := 24, alpha := 178) {
-    bGui := Gui()
-    bGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
-    bGui.BackColor := bgColor
-    bGui.SetFont("s" . fontSize . " c" . fontColor . " Bold", "Segoe UI")
-    bGui.Add("Text", "w500 Center", message)
-
-    activeWin := WinGetID("A")
-    if (activeWin) {
-        WinGetPos(&winX, &winY, &winW, &winH, activeWin)
-    } else {
-        workArea := SysGet.MonitorWorkArea(SysGet.MonitorPrimary)
-        winX := workArea.Left, winY := workArea.Top, winW := workArea.Right - workArea.Left, winH := workArea.Bottom -
-            workArea.Top
-    }
-
-    bGui.Show("AutoSize Hide")
-    guiW := 0, guiH := 0
-    bGui.GetPos(, , &guiW, &guiH)
-
-    guiX := winX + (winW - guiW) / 2
-    guiY := winY + (winH - guiH) / 2
-    bGui.Show("x" . Round(guiX) . " y" . Round(guiY) . " NA")
-    WinSetTransparent(alpha, bGui)
-    return bGui
-}
 
 ; --- Unified banner helpers for ChatGPT indicators (match ChatGPT.ahk style) ---
 global smallLoadingGuis_ChatGPT := []
