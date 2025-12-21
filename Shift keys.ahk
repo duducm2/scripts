@@ -785,6 +785,7 @@ Excel (Shift)
 ✏️ [E]Enable [E]diting
 📊 [C]Turn [C]SV delimited by semicolon into columns
 ➕ [A]Add multiple rows (Alt, Alt, 2, R x8)
+📅 [P]Type [P]revious day date
 )"
 
 ; --- Power BI ------------------------------------------------------------
@@ -5060,6 +5061,18 @@ EnsureItemsViewFocus() {
         Send "r"
         Sleep 50
     }
+}
+
+; Shift + P : Type previous day date
++p:: {
+    ; Calculate yesterday's date (AutoHotkey v2 syntax: DateAdd(DateTime, Time, TimeUnits))
+    yesterday := DateAdd(A_Now, -1, "Days")
+    ; Format as dd/MM/yyyy (DD/MM/YYYY format)
+    dateStr := FormatTime(yesterday, "dd/MM/yyyy")
+    ; Small delay to ensure Excel is ready
+    Sleep 50
+    ; Type the date as a whole word at once
+    SendText dateStr
 }
 
 #HotIf
