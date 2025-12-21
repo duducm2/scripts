@@ -804,6 +804,7 @@ Power BI (Shift)
 🖱️ [A]All pages button
 ➕ [W]New [P]age
 📊 [E]New [M]easure
+🔄 [Y]Refresh
 📕 [F]CloseAll[D]rawers
 📖 [G]OpenAll[D]rawers
 📁 [R]Collapse [F]ields tables
@@ -5691,6 +5692,48 @@ EnsureItemsViewFocus() {
         }
     } catch Error as e {
         MsgBox "Error triggering New measure: " e.Message, "Power BI Error", "IconX"
+    }
+}
+
+; Shift + Y : Refresh (Click Home tab, then Refresh button)
++y:: {
+    try {
+        win := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+
+        ; Click the Home tab
+        homeTab := root.FindFirst({ Type: "50019", Name: "Home", AutomationId: "home" })
+        if !homeTab {
+            homeTab := root.FindFirst({ Type: "50019", Name: "Home" })
+        }
+        if !homeTab {
+            homeTab := root.FindFirst({ Type: "50019", AutomationId: "home" })
+        }
+
+        if homeTab {
+            homeTab.Click()
+            Sleep 200
+        } else {
+            MsgBox "Could not find the 'Home' tab.", "Power BI", "IconX"
+            return
+        }
+
+        ; Find the Refresh button
+        refreshBtn := root.FindFirst({ Type: "50000", Name: "Refresh" })
+        if !refreshBtn {
+            refreshBtn := root.FindFirst({ Type: "50000", ClassName: "splitPrimaryButton root-332" })
+        }
+        if !refreshBtn {
+            refreshBtn := root.FindFirst({ Type: "50000", ClassName: "splitPrimaryButton", matchmode: "Substring" })
+        }
+
+        if refreshBtn {
+            refreshBtn.Click()
+        } else {
+            MsgBox "Could not find the 'Refresh' button.", "Power BI", "IconX"
+        }
+    } catch Error as e {
+        MsgBox "Error triggering Refresh: " e.Message, "Power BI Error", "IconX"
     }
 }
 
