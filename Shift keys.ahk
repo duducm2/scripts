@@ -792,30 +792,24 @@ Excel (Shift)
 cheatSheets["Power BI"] := "
 (
 Power BI (Shift)
---- Views ---
 📊 [I]Report v[I]ew
 📊 [O]Table view ([O]verview)
 📊 [P]Model view ([P]lan)
---- Data Operations ---
 📊 [T][T]ransform Data
 📊 [U][U]pdate (Close and Apply)
 📊 [E]New M[E]asure
 🔄 [Y]Refresh (read[Y])
---- Visual Operations ---
 📊 [H]Build visual ([H]andle)
 📊 [J]Format visual (ad[J]ust)
 ⬆️ [B][B]ring forward
 ⬇️ [D]Sen[D] backward
 📐 [K]Keep [A]lign straight
 📄 [V]Fit to Page ([V]iew)
---- Navigation & Pages ---
 🖱️ [A][A]ll pages button
 ➕ [W]Ne[W] Page
---- Drawers & Panes ---
 📕 [F]Close All Drawers ([F]old)
 📖 [G]Open All Drawers (un[G]roup)
 📁 [R]Collapse Fields ([R]educe)
---- Search & Modals ---
 🔍 [S][S]earch edit field
 ✅ [L]Confirm moda[L] button (OK)
 ❌ [X]Cancel/E[X]it modal button
