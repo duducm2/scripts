@@ -808,6 +808,7 @@ Power BI (Shift)
 📐 [K]Keep [A]lign straight
 📄 [V]Fit to Page ([V]iew)
 🎨 [M]Format painter ([M]atch format)
+🔗 [N]Group visuals (Groupi[N]g)
 🖱️ [A][A]ll pages button
 ➕ [W]Ne[W] Page
 📕 [F]Close All Drawers ([F]old)
@@ -6549,6 +6550,93 @@ EnsureItemsViewFocus() {
         formatPainterBtn.Click()
     } catch Error as e {
         MsgBox "Error triggering Format painter: " e.Message, "Power BI Error", "IconX"
+    }
+}
+
+; Shift + N : Group visuals (Click Format tab, then click Group button)
++n:: {
+    try {
+        win := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+
+        ; Click the Format tab
+        formatTab := root.FindFirst({ Type: "50019", Name: "Format", AutomationId: "visualFormatting" })
+        if !formatTab {
+            formatTab := root.FindFirst({ Type: "50019", Name: "Format" })
+        }
+        if !formatTab {
+            formatTab := root.FindFirst({ Type: "50019", AutomationId: "visualFormatting" })
+        }
+
+        if formatTab {
+            formatTab.Click()
+            Sleep 200
+        } else {
+            MsgBox "Could not find the 'Format' tab.", "Power BI", "IconX"
+            return
+        }
+
+        ; Find the Group button by AutomationId (primary method)
+        groupBtn := root.FindFirst({ Type: "50000", AutomationId: "groupVisualsFlyout" })
+        if !groupBtn {
+            groupBtn := root.FindFirst({ Type: 50000, AutomationId: "groupVisualsFlyout" })
+        }
+
+        ; Fallback: Try by Name and Type
+        if !groupBtn {
+            groupBtn := root.FindFirst({ Type: "50000", Name: "Group" })
+        }
+        if !groupBtn {
+            groupBtn := root.FindFirst({ Type: 50000, Name: "Group" })
+        }
+
+        ; Fallback: Try by ClassName
+        if !groupBtn {
+            groupBtn := root.FindFirst({ Type: "50000", ClassName: "ms-Button ms-Button--hasMenu root-337",
+                AutomationId: "groupVisualsFlyout" })
+        }
+        if !groupBtn {
+            groupBtn := root.FindFirst({ Type: 50000, ClassName: "ms-Button ms-Button--hasMenu root-337" })
+        }
+
+        ; Fallback: Try partial ClassName match
+        if !groupBtn {
+            groupBtn := root.FindFirst({ Type: "50000", ClassName: "ms-Button--hasMenu", matchmode: "Substring" })
+            ; Verify it's the right button by checking AutomationId or Name
+            if groupBtn {
+                try {
+                    if (groupBtn.AutomationId != "groupVisualsFlyout" && groupBtn.Name != "Group") {
+                        groupBtn := ""
+                    }
+                } catch {
+                    groupBtn := ""
+                }
+            }
+        }
+
+        ; Last resort: Search all buttons for Group
+        if !groupBtn {
+            allButtons := root.FindAll({ Type: "50000" })
+            for btn in allButtons {
+                try {
+                    if (btn.AutomationId = "groupVisualsFlyout" || btn.Name = "Group") {
+                        groupBtn := btn
+                        break
+                    }
+                } catch {
+                }
+            }
+        }
+
+        if !groupBtn {
+            MsgBox "Could not find the 'Group' button.", "Power BI", "IconX"
+            return
+        }
+
+        ; Click the Group button
+        groupBtn.Click()
+    } catch Error as e {
+        MsgBox "Error triggering Group: " e.Message, "Power BI Error", "IconX"
     }
 }
 
