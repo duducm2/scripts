@@ -807,6 +807,7 @@ Power BI (Shift)
 ⬇️ [D]Sen[D] backward
 📐 [K]Keep [A]lign straight
 📄 [V]Fit to Page ([V]iew)
+🎨 [M]Format painter ([M]atch format)
 🖱️ [A][A]ll pages button
 ➕ [W]Ne[W] Page
 📕 [F]Close All Drawers ([F]old)
@@ -6479,6 +6480,75 @@ EnsureItemsViewFocus() {
         fitToPageBtn.Click()
     } catch Error as e {
         MsgBox "Error triggering Fit to page: " e.Message, "Power BI Error", "IconX"
+    }
+}
+
+; Shift + M : Format painter (Match format)
++m:: {
+    try {
+        win := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+
+        ; Find the Format painter button by AutomationId (primary method)
+        formatPainterBtn := root.FindFirst({ Type: "50000", AutomationId: "formatPainter" })
+        if !formatPainterBtn {
+            formatPainterBtn := root.FindFirst({ Type: 50000, AutomationId: "formatPainter" })
+        }
+
+        ; Fallback: Try by Name and Type
+        if !formatPainterBtn {
+            formatPainterBtn := root.FindFirst({ Type: "50000", Name: "Format painter" })
+        }
+        if !formatPainterBtn {
+            formatPainterBtn := root.FindFirst({ Type: 50000, Name: "Format painter" })
+        }
+
+        ; Fallback: Try by ClassName
+        if !formatPainterBtn {
+            formatPainterBtn := root.FindFirst({ Type: "50000", ClassName: "ms-Button root-345", AutomationId: "formatPainter" })
+        }
+        if !formatPainterBtn {
+            formatPainterBtn := root.FindFirst({ Type: 50000, ClassName: "ms-Button root-345" })
+        }
+
+        ; Fallback: Try partial ClassName match
+        if !formatPainterBtn {
+            formatPainterBtn := root.FindFirst({ Type: "50000", ClassName: "ms-Button", matchmode: "Substring" })
+            ; Verify it's the right button by checking AutomationId or Name
+            if formatPainterBtn {
+                try {
+                    if (formatPainterBtn.AutomationId != "formatPainter" && formatPainterBtn.Name != "Format painter") {
+                        formatPainterBtn := ""
+                    }
+                } catch {
+                    formatPainterBtn := ""
+                }
+            }
+        }
+
+        ; Last resort: Search all buttons for Format painter
+        if !formatPainterBtn {
+            allButtons := root.FindAll({ Type: "50000" })
+            for btn in allButtons {
+                try {
+                    if (btn.AutomationId = "formatPainter" || btn.Name = "Format painter") {
+                        formatPainterBtn := btn
+                        break
+                    }
+                } catch {
+                }
+            }
+        }
+
+        if !formatPainterBtn {
+            MsgBox "Could not find the 'Format painter' button.", "Power BI", "IconX"
+            return
+        }
+
+        ; Click the Format painter button
+        formatPainterBtn.Click()
+    } catch Error as e {
+        MsgBox "Error triggering Format painter: " e.Message, "Power BI Error", "IconX"
     }
 }
 

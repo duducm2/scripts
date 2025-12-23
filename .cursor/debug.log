@@ -145,3 +145,15 @@
 {"sessionId":"debug-session","runId":"pre-fix","hypothesisId":"H2","location":"Utils.ahk:Escape","message":"State-based check","timestamp":427355687,"data":{"g_DictationActive":0,"note":"Using state variable instead of window check"}}
 {"sessionId":"debug-session","runId":"pre-fix","hypothesisId":"H3","location":"Utils.ahk:Escape","message":"Forwarding Escape to system","timestamp":427355734,"data":{"blocking":0,"forwarding":1,"reason":"Dictation not active - Esc allowed"}}
 {"sessionId":"debug-session","runId":"pre-fix","hypothesisId":"H3","location":"Utils.ahk:Escape","message":"Escape forwarded","timestamp":427355765,"data":{"afterSend":1}}
+{"sessionId":"debug-session","runId":"pre-fix","hypothesisId":"H1","location":"Utils.ahk:Escape","message":"Escape hotkey triggered","timestamp":427387968,"data":{"timestamp":427387968}}
+{"sessionId":"debug-session","runId":"pre-fix","hypothesisId":"H2","location":"Utils.ahk:Escape","message":"State-based check","timestamp":427387968,"data":{"g_DictationActive":0,"note":"Using state variable instead of window check"}}
+{"sessionId":"debug-session","runId":"pre-fix","hypothesisId":"H3","location":"Utils.ahk:Escape","message":"Forwarding Escape to system","timestamp":427387984,"data":{"blocking":0,"forwarding":1,"reason":"Dictation not active - Esc allowed"}}
+{"sessionId":"debug-session","runId":"pre-fix","hypothesisId":"H3","location":"Utils.ahk:Escape","message":"Escape forwarded","timestamp":427388000,"data":{"afterSend":1}}
+{"sessionId":"debug-session","runId":"pre-fix","hypothesisId":"H1","location":"Utils.ahk:Escape","message":"Escape hotkey triggered","timestamp":427433125,"data":{"timestamp":427433125}}
+{"sessionId":"debug-session","runId":"pre-fix","hypothesisId":"H2","location":"Utils.ahk:Escape","message":"State-based check","timestamp":427433125,"data":{"g_DictationActive":0,"note":"Using state variable instead of window check"}}
+{"sessionId":"debug-session","runId":"pre-fix","hypothesisId":"H3","location":"Utils.ahk:Escape","message":"Forwarding Escape to system","timestamp":427433140,"data":{"blocking":0,"forwarding":1,"reason":"Dictation not active - Esc allowed"}}
+{"sessionId":"debug-session","runId":"pre-fix","hypothesisId":"H3","location":"Utils.ahk:Escape","message":"Escape forwarded","timestamp":427433156,"data":{"afterSend":1}}
+{"sessionId":"debug-session","runId":"pre-fix","hypothesisId":"H1","location":"Utils.ahk:Escape","message":"Escape hotkey triggered","timestamp":427445218,"data":{"timestamp":427445218}}
+{"sessionId":"debug-session","runId":"pre-fix","hypothesisId":"H2","location":"Utils.ahk:Escape","message":"State-based check","timestamp":427445218,"data":{"g_DictationActive":0,"note":"Using state variable instead of window check"}}
+{"sessionId":"debug-session","runId":"pre-fix","hypothesisId":"H3","location":"Utils.ahk:Escape","message":"Forwarding Escape to system","timestamp":427445234,"data":{"blocking":0,"forwarding":1,"reason":"Dictation not active - Esc allowed"}}
+{"sessionId":"debug-session","runId":"pre-fix","hypothesisId":"H3","location":"Utils.ahk:Escape","message":"Escape forwarded","timestamp":427445265,"data":{"afterSend":1}}
