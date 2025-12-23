@@ -1549,8 +1549,21 @@ global g_ClipAngelFilterCharSequence := ["1", "2", "3", "4", "5"]
 ; ClipAngel Filter Selector Functions
 ; =============================================================================
 
+; Global variable for banner GUI
+global g_ClipAngelBannerGui := ""
+
 ; Helper function to show a notification banner
 ShowNotification_ClipAngel(message, durationMs := 800, bgColor := "3772FF", fontColor := "FFFFFF", fontSize := 24) {
+    global g_ClipAngelBannerGui
+
+    ; Destroy previous banner if exists
+    try {
+        if IsObject(g_ClipAngelBannerGui) && g_ClipAngelBannerGui.Hwnd {
+            g_ClipAngelBannerGui.Destroy()
+        }
+    } catch {
+    }
+
     bGui := Gui()
     bGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
     bGui.BackColor := bgColor
@@ -1575,21 +1588,21 @@ ShowNotification_ClipAngel(message, durationMs := 800, bgColor := "3772FF", font
     bGui.Show("x" . Round(guiX) . " y" . Round(guiY) . " NA")
     WinSetTransparent(178, bGui)
 
-    ; Store GUI in static variable for timer cleanup
-    static bannerGui := ""
-    bannerGui := bGui
+    ; Store GUI reference globally and set timer
+    g_ClipAngelBannerGui := bGui
     SetTimer(CloseClipAngelBanner, -durationMs)
 }
 
 CloseClipAngelBanner() {
-    static bannerGui := ""
+    global g_ClipAngelBannerGui
     try {
-        if IsObject(bannerGui) && bannerGui.Hwnd {
-            bannerGui.Destroy()
-            bannerGui := ""
+        if IsObject(g_ClipAngelBannerGui) && g_ClipAngelBannerGui.Hwnd {
+            g_ClipAngelBannerGui.Destroy()
+            g_ClipAngelBannerGui := ""
         }
     } catch {
     }
+    SetTimer(CloseClipAngelBanner, 0) ; Disable timer
 }
 
 ; Navigate ClipAngel ComboBox to select a specific file type
