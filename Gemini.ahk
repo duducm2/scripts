@@ -431,10 +431,66 @@ CenterMouse() {
                 searchBanner.Destroy()
             }
 
-            ; Navigate to "Text to speech" menu item using keyboard
-            Send "{Down}"
-            Sleep 200 ; Brief pause to ensure menu navigation completes
-            Send "{Enter}"
+            ; Find and click "Text to speech" menu item using UIA
+            textToSpeechMenuItem := 0
+            try {
+                ; Primary strategy: Find by Name "Text to speech" with Type 50011 (MenuItem)
+                textToSpeechMenuItem := uia.FindFirst({ Name: "Text to speech", Type: 50011 })
+            } catch {
+                ; Silently continue to fallbacks
+            }
+
+            ; Fallback 1: Try by Type "MenuItem" and Name "Text to speech"
+            if !textToSpeechMenuItem {
+                try {
+                    textToSpeechMenuItem := uia.FindFirst({ Type: "MenuItem", Name: "Text to speech" })
+                } catch {
+                    ; Silently continue
+                }
+            }
+
+            ; Fallback 2: Search all MenuItems for one with "Text to speech" name and matching className
+            if !textToSpeechMenuItem {
+                try {
+                    allMenuItems := uia.FindAll({ Type: 50011 })
+                    for menuItem in allMenuItems {
+                        if (menuItem.Name = "Text to speech" || InStr(menuItem.Name, "Text to speech", false) = 1) {
+                            if (InStr(menuItem.ClassName, "mat-mdc-menu-item")) {
+                                textToSpeechMenuItem := menuItem
+                                break
+                            }
+                        }
+                    }
+                } catch {
+                    ; Silently continue
+                }
+            }
+
+            ; Fallback 3: Search all MenuItems by name only (broader match)
+            if !textToSpeechMenuItem {
+                try {
+                    allMenuItems := uia.FindAll({ Type: 50011 })
+                    for menuItem in allMenuItems {
+                        if (menuItem.Name = "Text to speech" || InStr(menuItem.Name, "Text to speech", false) = 1) {
+                            textToSpeechMenuItem := menuItem
+                            break
+                        }
+                    }
+                } catch {
+                    ; Silently continue
+                }
+            }
+
+            ; Click the menu item if found
+            if (textToSpeechMenuItem) {
+                textToSpeechMenuItem.Click()
+                Sleep 200 ; Brief pause to ensure menu action completes
+            } else {
+                ; If UIA method fails, fallback to keyboard navigation
+                Send "{Down}"
+                Sleep 200
+                Send "{Enter}"
+            }
 
             ; Wait before next attempt (if needed) or before finishing
             if (A_Index = 1) {

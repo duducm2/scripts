@@ -784,7 +784,8 @@ Excel (Shift)
 ⚪ [W]Select [W]hite Color
 ✏️ [E]Enable [E]diting
 📊 [C][C]SV to columns (semicolon delimited)
-➕ [A][A]dd multiple rows
+➕ [A][A]dd multiple rows (10 rows)
+🗑️ [R][R]ow removal workflow (remove row, down arrow, repeat 5-7 times)
 📅 [P]Type [P]revious day date
 )"
 
@@ -5044,17 +5045,43 @@ EnsureItemsViewFocus() {
     Send "{Enter}"
 }
 
-; Shift + A : Add multiple rows (repeat Alt, Alt, 2, R with delays)
+; Shift + A : Add multiple rows (repeat Alt, Alt, 0, 2 with delays)
 +a:: {
-    loop 8 {
+    ShowSmallLoadingIndicator_ChatGPT("Adding 10 rows...")
+    loop 10 {
         Send "{Alt down}"
         Send "{Alt up}"
         Sleep 100
+        Send "0"
+        Sleep 50
         Send "2"
         Sleep 50
-        Send "r"
-        Sleep 50
     }
+    HideSmallLoadingIndicator_ChatGPT()
+}
+
+; Shift + R : Row removal workflow (remove row, down arrow, repeat 5-7 times)
+; Pre-condition: Place cursor in starting cell
+; Step 1: Execute REMOVE ROW SHORTCUT (Alt, Alt, 3, R)
+; Step 2: Press DOWN ARROW
+; Step 3: Repeat Step 1 and Step 2 for 5 to 7 iterations
+; Purpose: Remove alternating sequences of empty and populated rows
++r:: {
+    ShowSmallLoadingIndicator_ChatGPT("Removing rows...")
+    loop 6 {  ; Using 6 as middle ground between 5-7 iterations
+        ; Execute Remove Row shortcut (Alt, Alt, 3, R)
+        Send "{Alt down}"
+        Send "{Alt up}"
+        Sleep 100
+        Send "3"
+        Sleep 50
+        Send "r"
+        Sleep 100
+        ; Press Down Arrow
+        Send "{Down}"
+        Sleep 100
+    }
+    HideSmallLoadingIndicator_ChatGPT()
 }
 
 ; Shift + P : Type previous day date
