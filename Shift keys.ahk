@@ -5552,14 +5552,14 @@ EnsureItemsViewFocus() {
         ; Execute Remove Row shortcut (Alt, Alt, 3, R)
         Send "{Alt down}"
         Send "{Alt up}"
-        Sleep 100
+        Sleep 150
         Send "3"
-        Sleep 50
-        Send "r"
         Sleep 100
+        Send "r"
+        Sleep 150
         ; Press Down Arrow
         Send "{Down}"
-        Sleep 100
+        Sleep 150
     }
     HideSmallLoadingIndicator_ChatGPT()
 }
