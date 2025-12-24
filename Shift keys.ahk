@@ -10243,6 +10243,14 @@ isGeminiDrawerOpen := false
 ; Global state for Gemini model toggle (Fast, Thinking, or Pro)
 isGeminiFastModel := "Fast"  ; Tracks current model: "Fast", "Thinking", or "Pro"
 
+; Global variables for Gemini model selector wizard menu
+global g_GeminiModelSelectorGui := false
+global g_GeminiModelSelectorActive := false
+global g_GeminiModelHotkeyHandlers := []
+global g_GeminiModelCharSequence := ["1", "2", "3"]
+global g_GeminiModels := [{ name: "Fast", description: "Answers quickly" }, { name: "Thinking", description: "Solves complex problems" }, { name: "Pro",
+    description: "Thinks longer for advanced math & code" }]
+
 ; Shift + D : Toggle the Main menu button (drawer) using fast state-based pattern
 +d:: {
     ToggleGeminiDrawer()
@@ -10394,9 +10402,9 @@ ToggleGeminiDrawer() {
     }
 }
 
-; Shift + M : Toggle between Fast, Thinking, and Pro models - Model
+; Shift + M : Show model selector wizard menu (Fast, Thinking, Pro) - Model
 +m:: {
-    ToggleGeminiModel()
+    ShowGeminiModelSelector()
 }
 
 ; ---------------------------------------------------------------------------
@@ -10630,6 +10638,382 @@ ToggleGeminiModel() {
         ; Hide the banner shortly after finishing
         SetTimer(() => HideSmallLoadingIndicator_ChatGPT(), -900)
     }
+}
+
+; ---------------------------------------------------------------------------
+; Cleanup function for Gemini model selector
+CleanupGeminiModelSelector() {
+    global g_GeminiModelSelectorActive, g_GeminiModelSelectorGui, g_GeminiModelHotkeyHandlers
+
+    ; Disable active flag
+    g_GeminiModelSelectorActive := false
+
+    ; Disable all character hotkeys
+    for handler in g_GeminiModelHotkeyHandlers {
+        try {
+            char := handler.char
+            Hotkey(char, "Off")
+            ; Also disable uppercase for numbers (though they're already uppercase)
+            if (RegExMatch(char, "^[1-9]$")) {
+                Hotkey(char, "Off")
+            }
+        } catch {
+            ; Silently ignore errors
+        }
+    }
+
+    ; Disable Escape hotkey
+    try {
+        Hotkey("Escape", "Off")
+    } catch {
+        ; Ignore
+    }
+
+    ; Clear handlers array
+    g_GeminiModelHotkeyHandlers := []
+
+    ; Close and destroy GUI
+    if (IsObject(g_GeminiModelSelectorGui)) {
+        try {
+            g_GeminiModelSelectorGui.Destroy()
+        } catch {
+            ; Ignore
+        }
+        g_GeminiModelSelectorGui := false
+    }
+}
+
+; ---------------------------------------------------------------------------
+; Handler for Escape key in Gemini model selector
+HandleGeminiModelSelectorEscape(*) {
+    global g_GeminiModelSelectorActive
+    if (g_GeminiModelSelectorActive) {
+        CleanupGeminiModelSelector()
+    }
+}
+
+; ---------------------------------------------------------------------------
+; Factory function to create a handler that properly captures the model name
+CreateGeminiModelCharHandler(char) {
+    return (*) => HandleGeminiModelSelection(char)
+}
+
+; ---------------------------------------------------------------------------
+; Handler for model selection in Gemini model selector
+HandleGeminiModelSelection(char) {
+    global g_GeminiModelSelectorActive, g_GeminiModels, g_GeminiModelCharSequence
+    global isGeminiFastModel
+
+    ; Only process if selector is active
+    if (!g_GeminiModelSelectorActive) {
+        return
+    }
+
+    ; Get model index from character (1-based array index)
+    modelIndex := -1
+    for idx, ch in g_GeminiModelCharSequence {
+        if (ch = char) {
+            modelIndex := idx
+            break
+        }
+    }
+
+    if (modelIndex < 1 || modelIndex > g_GeminiModels.Length) {
+        return
+    }
+
+    ; Get model info
+    modelInfo := g_GeminiModels[modelIndex]
+    modelName := modelInfo.name
+
+    ; Cleanup selector first (closes GUI, disables hotkeys)
+    CleanupGeminiModelSelector()
+
+    ; Small delay to ensure Gemini window has focus
+    Sleep 150
+
+    ; Show loading indicator
+    ShowSmallLoadingIndicator_ChatGPT("Switching to " . modelName . " model...")
+
+    try {
+        uia := UIA_Browser()
+        if !IsObject(uia) {
+            return
+        }
+
+        Sleep 100  ; Small settle time
+
+        ; Combined pattern to find Fast, Thinking, or Pro button
+        modelPattern := "i)^(Fast|Thinking|Pro)$"
+
+        ; Find the model button (reuse logic from ToggleGeminiModel)
+        allButtons := uia.FindAll({ Type: "Button" })
+        btn := 0
+        for btnCandidate in allButtons {
+            try {
+                btnName := btnCandidate.Name
+                if (RegExMatch(btnName, modelPattern)) {
+                    ; Check if button is disabled
+                    isDisabled := false
+                    try {
+                        className := btnCandidate.ClassName
+                        if (InStr(className, "disabled") || InStr(className, "mat-mdc-button-disabled")) {
+                            isDisabled := true
+                        }
+                        try {
+                            if (!btnCandidate.GetPropertyValue(UIA.Property.IsEnabled)) {
+                                isDisabled := true
+                            }
+                        } catch {
+                        }
+                    } catch {
+                    }
+
+                    if (!isDisabled) {
+                        btn := btnCandidate
+                        break
+                    }
+                }
+            } catch {
+            }
+        }
+
+        ; Fallback: use WaitForButton if we didn't find one
+        if (!btn) {
+            btn := WaitForButton(uia, modelPattern, 1500)
+        }
+
+        if (btn) {
+            ; Try to focus the button first
+            try {
+                btn.SetFocus()
+                Sleep 50
+            } catch {
+            }
+
+            ; Click the button to open dropdown
+            clicked := false
+            try {
+                if (btn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)) {
+                    btn.Invoke()
+                    clicked := true
+                }
+            } catch {
+            }
+
+            if (!clicked) {
+                try {
+                    btn.Click()
+                    clicked := true
+                } catch {
+                }
+            }
+
+            if (!clicked) {
+                ; Fallback to mouse coordinates
+                try {
+                    browserHwnd := 0
+                    try {
+                        browserHwnd := uia.BrowserId
+                    } catch {
+                        browserHwnd := WinExist("ahk_exe chrome.exe")
+                    }
+
+                    if (browserHwnd) {
+                        WinActivate("ahk_id " browserHwnd)
+                        WinWaitActive("ahk_id " browserHwnd, , 1)
+                        Sleep 50
+                    }
+
+                    btnLocation := btn.Location
+                    if (btnLocation && btnLocation.x >= 0 && btnLocation.y >= 0) {
+                        MouseGetPos(&prevX, &prevY)
+                        prevCoordMode := A_CoordModeMouse
+                        CoordMode("Mouse", "Screen")
+                        clickX := btnLocation.x + btnLocation.w // 2
+                        clickY := btnLocation.y + btnLocation.h // 2
+                        Click(clickX, clickY)
+                        Sleep 100
+                        CoordMode("Mouse", prevCoordMode)
+                        MouseMove(prevX, prevY)
+                        clicked := true
+                    }
+                } catch {
+                }
+            }
+
+            if (clicked) {
+                ; Wait for dropdown to open
+                Sleep 200
+
+                ; Navigate with arrow keys based on model
+                if (modelName = "Thinking") {
+                    Send "{Down}"
+                    Sleep 50
+                } else if (modelName = "Pro") {
+                    Send "{Down}"
+                    Sleep 50
+                    Send "{Down}"
+                    Sleep 50
+                }
+                ; Fast: no arrows needed (already selected)
+
+                ; Press Enter to confirm selection
+                Send "{Enter}"
+                Sleep 150
+
+                ; Update global state
+                isGeminiFastModel := modelName
+                ShowSmallLoadingIndicator_ChatGPT(modelName . " model active")
+            }
+        }
+    } catch Error as err {
+        ; Silently fail if anything goes wrong
+    } finally {
+        ; Hide the banner shortly after finishing
+        SetTimer(() => HideSmallLoadingIndicator_ChatGPT(), -900)
+    }
+}
+
+; ---------------------------------------------------------------------------
+; Show Gemini model selector wizard menu
+ShowGeminiModelSelector() {
+    global g_GeminiModelSelectorGui, g_GeminiModelSelectorActive, g_GeminiModelHotkeyHandlers
+    global g_GeminiModels, g_GeminiModelCharSequence
+
+    ; Close existing GUI if open
+    if (g_GeminiModelSelectorActive && IsObject(g_GeminiModelSelectorGui)) {
+        CleanupGeminiModelSelector()
+        Sleep 50
+    }
+
+    ; Get monitor dimensions
+    activeWin := 0
+    try {
+        activeWin := WinGetID("A")
+    } catch {
+        activeWin := 0
+    }
+
+    ; Default to primary monitor work area
+    MonitorGetWorkArea(1, &monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
+    monitorWidth := monitorRight - monitorLeft
+    monitorHeight := monitorBottom - monitorTop
+
+    ; If we have an active window, find which monitor contains its center
+    if (activeWin && activeWin != 0) {
+        rect := Buffer(16, 0)
+        if (DllCall("GetWindowRect", "ptr", activeWin, "ptr", rect)) {
+            winLeft := NumGet(rect, 0, "int")
+            winTop := NumGet(rect, 4, "int")
+            winRight := NumGet(rect, 8, "int")
+            winBottom := NumGet(rect, 12, "int")
+
+            centerX := winLeft + (winRight - winLeft) // 2
+            centerY := winTop + (winBottom - winTop) // 2
+
+            monitorCount := MonitorGetCount()
+            loop monitorCount {
+                idx := A_Index
+                MonitorGetWorkArea(idx, &l, &t, &r, &b)
+                if (centerX >= l && centerX <= r && centerY >= t && centerY <= b) {
+                    monitorLeft := l
+                    monitorTop := t
+                    monitorRight := r
+                    monitorBottom := b
+                    monitorWidth := r - l
+                    monitorHeight := b - t
+                    break
+                }
+            }
+        }
+    }
+
+    ; Create GUI
+    g_GeminiModelSelectorGui := Gui("+AlwaysOnTop +ToolWindow +E0x08000000", "Gemini Model Selector")
+    fontSize := (monitorHeight < 800) ? 9 : 10
+    g_GeminiModelSelectorGui.SetFont("s" . fontSize, "Segoe UI")
+    g_GeminiModelSelectorGui.MarginX := 10
+    g_GeminiModelSelectorGui.MarginY := 5
+
+    ; Build display text
+    displayText := "Gemini Model Selector`n`n"
+    charIndex := 0
+    for model in g_GeminiModels {
+        if (charIndex < g_GeminiModelCharSequence.Length) {
+            char := g_GeminiModelCharSequence[charIndex + 1]
+            displayText .= "[" . char . "] " . model.name . " - " . model.description . "`n"
+            charIndex++
+        }
+    }
+
+    ; Calculate GUI size
+    baseWidth := 400
+    textControlHeight := Min(400, (g_GeminiModels.Length * 25) + 60)
+    textControlWidth := baseWidth - 20
+
+    ; Add text control with display
+    g_GeminiModelSelectorGui.AddEdit("w" . textControlWidth . " h" . textControlHeight . " ReadOnly VScroll",
+        displayText)
+
+    ; Add Close button
+    closeBtn := g_GeminiModelSelectorGui.AddButton("w100 Default Center", "Close")
+    closeBtn.OnEvent("Click", (*) => CleanupGeminiModelSelector())
+
+    ; Calculate total height
+    totalHeight := 10 + textControlHeight + 40 + 10
+    guiWidth := baseWidth
+
+    ; Calculate center position
+    marginX := 20
+    marginY := 20
+    guiX := monitorLeft + (monitorWidth - guiWidth) // 2
+    guiY := monitorTop + (monitorHeight - totalHeight) // 2
+
+    ; Ensure GUI stays within monitor bounds
+    if (guiX < monitorLeft + marginX)
+        guiX := monitorLeft + marginX
+    if (guiY < monitorTop + marginY)
+        guiY := monitorTop + marginY
+    if (guiX + guiWidth > monitorLeft + monitorWidth - marginX)
+        guiX := monitorLeft + monitorWidth - guiWidth - marginX
+    if (guiY + totalHeight > monitorTop + monitorHeight - marginY)
+        guiY := monitorTop + monitorHeight - totalHeight - marginY
+
+    ; Show GUI centered on the active window's monitor
+    g_GeminiModelSelectorGui.Show("NA w" . guiWidth . " h" . totalHeight . " x" . guiX . " y" . guiY)
+
+    ; Set active flag
+    g_GeminiModelSelectorActive := true
+
+    ; Clear handlers array
+    g_GeminiModelHotkeyHandlers := []
+
+    ; Enable hotkeys for all assigned characters
+    charIndex := 0
+    for model in g_GeminiModels {
+        if (charIndex < g_GeminiModelCharSequence.Length) {
+            char := g_GeminiModelCharSequence[charIndex + 1]
+
+            ; Create handler
+            handler := CreateGeminiModelCharHandler(char)
+
+            ; Store handler for cleanup
+            g_GeminiModelHotkeyHandlers.Push({ char: char, handler: handler })
+
+            ; Enable hotkey
+            try {
+                Hotkey(char, handler, "On")
+            } catch {
+                ; Silently ignore if we can't create hotkey
+            }
+
+            charIndex++
+        }
+    }
+
+    ; Enable Escape hotkey
+    Hotkey("Escape", HandleGeminiModelSelectorEscape, "On")
 }
 
 ; Shift + T : Click the Tools button - Tools
