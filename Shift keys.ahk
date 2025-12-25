@@ -5805,49 +5805,58 @@ EnsureItemsViewFocus() {
             return
         root := UIA.ElementFromHandle(win)
 
-        possibleNames := [
-            "Format visual",
-            "Format visuals",
-            "Formatting",
-            "Formatar visual",
-            "Formato visual"
-        ]
-
         formatTab := ""
 
-        for name in possibleNames {
-            formatTab := root.FindFirst({ Type: "50019", Name: name })
-            if formatTab
-                break
-            formatTab := root.FindFirst({ Type: "TabItem", Name: name })
-            if formatTab
-                break
-            formatTab := root.FindFirst({ Type: "50019", Name: name, matchmode: "Substring" })
-            if formatTab
-                break
-            formatTab := root.FindFirst({ Type: "TabItem", Name: name, matchmode: "Substring" })
-            if formatTab
-                break
+        ; Try "Format page" first (this is the working solution and is fast)
+        try {
+            formatTab := root.FindFirst({ Type: "50019", Name: "Format page" })
+        } catch {
+            try {
+                formatTab := root.FindFirst({ Type: "TabItem", Name: "Format page" })
+            } catch {
+                ; Continue to fallback searches
+            }
         }
 
+        ; If "Format page" not found, try original names (simplified - only most common)
         if !formatTab {
-            tabCond := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.TabItem)
-            tabs := ""
-            try tabs := root.FindElements(tabCond, UIA.TreeScope.Descendants)
-            if tabs {
-                for tab in tabs {
-                    if !tab
-                        continue
-                    tabName := tab.Name
-                    for name in possibleNames {
-                        if InStr(tabName, name) {
+            possibleNames := ["Format visual", "Format visuals", "Formatting"]
+            for name in possibleNames {
+                try {
+                    formatTab := root.FindFirst({ Type: "50019", Name: name })
+                    if formatTab
+                        break
+                } catch {
+                    try {
+                        formatTab := root.FindFirst({ Type: "TabItem", Name: name })
+                        if formatTab
+                            break
+                    } catch {
+                        ; Continue to next name
+                    }
+                }
+            }
+        }
+
+        ; Final fallback: use FindElements to search all tabs
+        if !formatTab {
+            try {
+                tabCond := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.TabItem)
+                tabs := root.FindElements(tabCond, UIA.TreeScope.Descendants)
+                if tabs {
+                    for tab in tabs {
+                        if !tab
+                            continue
+                        tabName := tab.Name
+                        if InStr(tabName, "Format page") || InStr(tabName, "Format visual") || InStr(tabName,
+                            "Formatting") {
                             formatTab := tab
                             break
                         }
                     }
-                    if formatTab
-                        break
                 }
+            } catch {
+                ; Ignore errors
             }
         }
 
