@@ -7394,7 +7394,7 @@ IsEditorActive() {
     Sleep 100
     Send "+v"
     HideSmallLoadingIndicator_ChatGPT()
-    Sleep 3000
+    Sleep 2000
     ExecuteStoredCommitPushDecision()
 
     ; Restore input after all operations complete
