@@ -1055,7 +1055,7 @@ GetCheatSheetText() {
             appShortcuts := cheatSheets.Has("Mercado Livre") ? cheatSheets["Mercado Livre"] : ""
         if InStr(chromeTitle, "gemini", false)
             appShortcuts :=
-                "Gemini (Shift)`r`n📂 [D]Toggle the[D]rawer`r`n💬 [N][N]ew chat`r`n🔍 [S][S]earch`r`n🔄 [M]Change[M]odel`r`n🛠️ [T][T]ools`r`n⌨️ [P]Focus[P]rompt field`r`n📋 [C][C]opy last message`r`n🔊 [R][R]ead aloud last message`r`n🤖 [G]Send[G]emini prompt text`r`n⛶ [F][F]ullscreen input"
+                "Gemini (Shift)`r`n📂 [D]Toggle the[D]rawer`r`n💬 [N][N]ew chat`r`n🔍 [S][S]earch`r`n🔄 [M]Change[M]odel`r`n🛠️ [T][T]ools`r`n⌨️ [P]Focus[P]rompt field`r`n📋 [C][C]opy last message`r`n🔊 [R][R]ead aloud last message`r`n🤖 [G]Send[G]emini prompt text`r`n⛶ [F][F]ullscreen input`r`n🔔 [E]Send [E]nter and notify on completion"
         ; Only set generic Google sheet if nothing else matched and title clearly indicates Google site
         if (appShortcuts = "") {
             if (chromeTitle = "Google" || InStr(chromeTitle, " - Google Search"))
@@ -11479,6 +11479,147 @@ ShowGeminiModelSelector() {
         }
     } catch Error as e {
         ; If all else fails, silently fail (no fallback action defined)
+    }
+}
+
+; Shift + E : Send Enter and monitor for response completion - Enter
++e:: {
+    ; Send Enter key to submit the prompt
+    Send "{Enter}"
+
+    ; Monitor for response completion
+    WaitForStopResponseButton_Gemini()
+}
+
+; ---------------------------------------------------------------------------
+; Monitor "Stop response" button and play chime when it disappears
+; ---------------------------------------------------------------------------
+WaitForStopResponseButton_Gemini(timeout := 300000) {
+    ; Store Gemini window handle
+    geminiHwnd := WinExist("A")
+    if !geminiHwnd {
+        return ; Gemini window not found
+    }
+
+    ; Obtain UIA context for Gemini window
+    try {
+        uia := UIA_Browser("ahk_id " geminiHwnd)
+    } catch {
+        return ; Failed to get UIA context
+    }
+
+    start := A_TickCount
+    btn := ""
+    buttonFound := false
+
+    ; Wait for the "Stop response" button to appear
+    deadline := (timeout > 0) ? (start + timeout) : 0
+    while (timeout <= 0 || (A_TickCount < deadline)) {
+        btn := ""
+
+        ; Try to find the "Stop response" button
+        try {
+            btn := uia.FindFirst({ Type: "50000", Name: "Stop response" })
+        } catch {
+            btn := ""
+        }
+
+        if !btn {
+            ; Fallback: Try by Type "Button" and Name "Stop response"
+            try {
+                btn := uia.FindFirst({ Type: "Button", Name: "Stop response" })
+            } catch {
+                btn := ""
+            }
+        }
+
+        if !btn {
+            ; Fallback: Try substring match for localization variations
+            try {
+                btn := uia.FindFirst({ Name: "Stop response", matchmode: "Substring" })
+            } catch {
+                btn := ""
+            }
+        }
+
+        if btn {
+            buttonFound := true
+            ; Monitor the button until it disappears
+            while btn && (timeout <= 0 || (A_TickCount < deadline)) {
+                Sleep 250
+                btn := ""
+
+                ; Check if button still exists
+                try {
+                    btn := uia.FindFirst({ Type: "50000", Name: "Stop response" })
+                } catch {
+                    btn := ""
+                }
+
+                if !btn {
+                    try {
+                        btn := uia.FindFirst({ Type: "Button", Name: "Stop response" })
+                    } catch {
+                        btn := ""
+                    }
+                }
+
+                if !btn {
+                    try {
+                        btn := uia.FindFirst({ Name: "Stop response", matchmode: "Substring" })
+                    } catch {
+                        btn := ""
+                    }
+                }
+            }
+            break
+        }
+        Sleep 250
+    }
+
+    ; Play chime when button disappears (only if we found it initially)
+    if buttonFound {
+        try {
+            PlayCompletionChime_Gemini()
+        } catch {
+        }
+    }
+}
+
+; ---------------------------------------------------------------------------
+; Play completion chime for Gemini responses (debounced)
+; ---------------------------------------------------------------------------
+PlayCompletionChime_Gemini() {
+    try {
+        static lastTick := 0
+        if (A_TickCount - lastTick < 1500)
+            return
+        lastTick := A_TickCount
+
+        played := false
+        ; Prefer Windows MessageBeep (reliable through default output)
+        try {
+            rc := DllCall("User32\\MessageBeep", "UInt", 0xFFFFFFFF)
+            if (rc)
+                played := true
+        } catch {
+        }
+
+        ; Fallback to system asterisk sound
+        if !played {
+            try {
+                played := SoundPlay("*64", false)
+            } catch {
+            }
+        }
+
+        ; Last resort, attempt the classic beep
+        if !played {
+            try SoundBeep(1100, 130)
+            catch {
+            }
+        }
+    } catch {
     }
 }
 
