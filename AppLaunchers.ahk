@@ -231,6 +231,258 @@ ShowCursorFallbackPanel() {
 }
 
 ; =============================================================================
+; Wikipedia Selector with Character Shortcuts
+; Hotkey: Win+Alt+Shift+K
+; Shows a GUI with Wikipedia article options. Pressing a character (1-5)
+; immediately opens the corresponding article or performs the action.
+; =============================================================================
+
+; Global variables for Wikipedia selector
+global g_WikipediaSelectorGui := false
+global g_WikipediaSelectorActive := false
+global g_WikipediaSelectorHandlers := []  ; Store hotkey handlers for cleanup
+
+; Wikipedia article items configuration
+; Item 1: Taoism
+; Items 2-5: Placeholders (no action)
+global g_WikipediaItems := [{ char: "1", title: "Taoism", url: "https://en.wikipedia.org/wiki/Taoism" }, { char: "2",
+    title: "Placeholder", url: "" }, { char: "3", title: "Placeholder", url: "" }, { char: "4", title: "Placeholder",
+        url: "" }, { char: "5", title: "Placeholder", url: "" }
+]
+
+; Handler for character key press
+HandleWikipediaChar(char) {
+    global g_WikipediaSelectorActive, g_WikipediaItems
+
+    ; Only process if selector is active
+    if (!g_WikipediaSelectorActive) {
+        return
+    }
+
+    ; Find the item for this character
+    item := ""
+    for i, itm in g_WikipediaItems {
+        if (itm.char = char) {
+            item := itm
+            break
+        }
+    }
+
+    if (item) {
+        ; Cleanup first (closes GUI, disables hotkeys)
+        CleanupWikipediaSelector()
+
+        ; If item has a URL, open it
+        if (item.url != "") {
+            Run item.url
+        }
+        ; Items 2-5 have no URL, so no action is taken
+    }
+}
+
+; Factory function to create a handler that properly captures the character
+CreateWikipediaCharHandler(char) {
+    ; Return a function that captures the char value at creation time
+    return (*) => HandleWikipediaChar(char)
+}
+
+; Handler for Escape key
+HandleWikipediaEscape(*) {
+    global g_WikipediaSelectorActive
+    if (g_WikipediaSelectorActive) {
+        CleanupWikipediaSelector()
+    }
+}
+
+; Cleanup Wikipedia selector
+CleanupWikipediaSelector() {
+    global g_WikipediaSelectorActive, g_WikipediaSelectorGui, g_WikipediaSelectorHandlers
+
+    ; Disable active flag
+    g_WikipediaSelectorActive := false
+
+    ; Disable all character hotkeys
+    for handler in g_WikipediaSelectorHandlers {
+        try {
+            char := handler.char
+            Hotkey(char, "Off")
+        } catch {
+            ; Silently ignore errors
+        }
+    }
+
+    ; Disable Escape hotkey
+    try {
+        Hotkey("Escape", "Off")
+    } catch {
+        ; Ignore
+    }
+
+    ; Clear handlers array
+    g_WikipediaSelectorHandlers := []
+
+    ; Close and destroy GUI
+    if (IsObject(g_WikipediaSelectorGui)) {
+        try {
+            g_WikipediaSelectorGui.Destroy()
+        } catch {
+            ; Ignore
+        }
+        g_WikipediaSelectorGui := false
+    }
+}
+
+; Show Wikipedia selector GUI
+ShowWikipediaSelector() {
+    global g_WikipediaSelectorGui, g_WikipediaSelectorActive, g_WikipediaSelectorHandlers
+    global g_WikipediaItems
+
+    ; Close existing GUI if open
+    if (g_WikipediaSelectorActive && IsObject(g_WikipediaSelectorGui)) {
+        CleanupWikipediaSelector()
+        Sleep 50
+    }
+
+    ; Get monitor dimensions early for responsive sizing
+    activeWin := 0
+    try {
+        activeWin := WinGetID("A")
+    } catch {
+        activeWin := 0
+    }
+
+    ; Default to primary monitor work area
+    MonitorGetWorkArea(1, &monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
+    monitorWidth := monitorRight - monitorLeft
+    monitorHeight := monitorBottom - monitorTop
+
+    ; If we have an active window, find which monitor contains its center
+    if (activeWin && activeWin != 0) {
+        rect := Buffer(16, 0)
+        if (DllCall("GetWindowRect", "ptr", activeWin, "ptr", rect)) {
+            ; Calculate window center
+            winLeft := NumGet(rect, 0, "int")
+            winTop := NumGet(rect, 4, "int")
+            winRight := NumGet(rect, 8, "int")
+            winBottom := NumGet(rect, 12, "int")
+
+            centerX := winLeft + (winRight - winLeft) // 2
+            centerY := winTop + (winBottom - winTop) // 2
+
+            ; Find which monitor contains the window center
+            monitorCount := MonitorGetCount()
+            loop monitorCount {
+                idx := A_Index
+                MonitorGetWorkArea(idx, &l, &t, &r, &b)
+                if (centerX >= l && centerX <= r && centerY >= t && centerY <= b) {
+                    monitorLeft := l
+                    monitorTop := t
+                    monitorRight := r
+                    monitorBottom := b
+                    monitorWidth := r - l
+                    monitorHeight := b - t
+                    break
+                }
+            }
+        }
+    }
+
+    ; Create GUI
+    ; Create non-activating GUI so PowerToys Command Palette stays open
+    g_WikipediaSelectorGui := Gui("+AlwaysOnTop +ToolWindow +E0x08000000", "Wikipedia Articles")
+    ; Use slightly smaller font for better fit on small monitors
+    fontSize := (monitorHeight < 800) ? 9 : 10
+    g_WikipediaSelectorGui.SetFont("s" . fontSize, "Segoe UI")
+    g_WikipediaSelectorGui.MarginX := 10
+    g_WikipediaSelectorGui.MarginY := 5
+
+    ; Build display text
+    displayText := ""
+    for i, item in g_WikipediaItems {
+        displayText .= "[" . item.char . "] > " . item.title . "`n"
+    }
+    displayText .= "`nPress Escape to cancel."
+
+    ; Calculate text control height based on actual content (number of lines)
+    lineCount := 1  ; Start at 1 (first line doesn't have a newline before it)
+    loop parse, displayText, "`n" {
+        lineCount++
+    }
+    ; Calculate height: ~16 pixels per line
+    lineHeight := 16
+    textControlHeight := lineCount * lineHeight
+    ; Ensure minimum and maximum bounds
+    minHeight := 150
+    maxHeightPercent := (monitorHeight < 800) ? 0.90 : 0.75
+    maxHeight := Floor(monitorHeight * maxHeightPercent)
+    if (textControlHeight < minHeight)
+        textControlHeight := minHeight
+    if (textControlHeight > maxHeight)
+        textControlHeight := maxHeight
+
+    ; Make width responsive to monitor size
+    baseWidth := (monitorWidth < 1200) ? 500 : 600
+    textControlWidth := baseWidth - 20  ; Account for margins
+
+    ; Enable vertical scrolling for long content
+    g_WikipediaSelectorGui.AddEdit("w" . textControlWidth . " h" . textControlHeight . " ReadOnly VScroll", displayText
+    )
+
+    ; Add Close button (set as default so it gets focus, not the Edit control)
+    closeBtn := g_WikipediaSelectorGui.AddButton("w100 Default Center", "Close")
+    closeBtn.OnEvent("Click", (*) => CleanupWikipediaSelector())
+
+    ; Calculate total height: margins + text control + button + spacing
+    totalHeight := 10 + textControlHeight + 40 + 10  ; margins + content + button + spacing
+    guiWidth := baseWidth
+
+    ; Calculate center position for the GUI with margins
+    marginX := 20  ; Horizontal margin from screen edges
+    marginY := 20  ; Vertical margin from screen edges
+    guiX := monitorLeft + (monitorWidth - guiWidth) // 2
+    guiY := monitorTop + (monitorHeight - totalHeight) // 2
+
+    ; Ensure the GUI stays within monitor bounds with margins
+    if (guiX < monitorLeft + marginX)
+        guiX := monitorLeft + marginX
+    if (guiY < monitorTop + marginY)
+        guiY := monitorTop + marginY
+    if (guiX + guiWidth > monitorLeft + monitorWidth - marginX)
+        guiX := monitorLeft + monitorWidth - guiWidth - marginX
+    if (guiY + totalHeight > monitorTop + monitorHeight - marginY)
+        guiY := monitorTop + monitorHeight - totalHeight - marginY
+
+    ; Show GUI centered on the active window's monitor
+    g_WikipediaSelectorGui.Show("NA w" . guiWidth . " h" . totalHeight . " x" . guiX . " y" . guiY)
+
+    ; Set active flag
+    g_WikipediaSelectorActive := true
+
+    ; Clear handlers array
+    g_WikipediaSelectorHandlers := []
+
+    ; Enable hotkeys for characters 1-5
+    for item in g_WikipediaItems {
+        char := item.char
+        ; Use factory function to create handler with properly captured char value
+        handler := CreateWikipediaCharHandler(char)
+
+        ; Store handler for cleanup
+        g_WikipediaSelectorHandlers.Push({ char: char, handler: handler })
+
+        ; Enable hotkey
+        try {
+            Hotkey(char, handler, "On")
+        } catch {
+            ; Silently ignore if we can't create hotkey for this character
+        }
+    }
+
+    ; Enable Escape hotkey
+    Hotkey("Escape", HandleWikipediaEscape, "On")
+}
+
+; =============================================================================
 ; Open/Activate Wikipedia
 ; Hotkey: Win+Alt+Shift+K
 ; =============================================================================
@@ -241,11 +493,7 @@ ShowCursorFallbackPanel() {
         WinActivate
         CenterMouse()
     } else {
-        target := IS_WORK_ENVIRONMENT ? "C:\Users\fie7ca\Documents\Shortcuts\Wikipedia.lnk" :
-            "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Wikipedia.lnk"
-        Run target
-        WinWaitActive("Wikipedia")
-        CenterMouse()
+        ShowWikipediaSelector()
     }
 }
 
