@@ -272,9 +272,9 @@ HandleWikipediaChar(char) {
         ; Cleanup first (closes GUI, disables hotkeys)
         CleanupWikipediaSelector()
 
-        ; If item has a URL, open it
+        ; If item has a URL, open it in Chrome in a new window
         if (item.url != "") {
-            Run item.url
+            Run "chrome.exe --new-window " item.url
         }
         ; Items 2-5 have no URL, so no action is taken
     }
