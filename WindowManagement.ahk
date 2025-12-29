@@ -785,11 +785,49 @@ CleanupProjectSelector() {
         g_ProjectSelectorGui := false
     }
 }
+; Extract matching segments from project path for window title matching
+; Cursor window titles have format: "filename - folder-name - Cursor" or "filename - path-segment - Cursor"
+; Examples:
+;   "eyelash_sofle.keymap - zmk-sofle - Cursor" matches path ending in "zmk-sofle"
+;   "WindowManagement.ahk - 12 - Scripts - Cursor" matches path ending in "12 - Scripts"
+;   "argument.md - 26-ai-experiment - Cursor" matches path ending in "26-ai-experiment"
+ExtractProjectMatchSegments(projectPath) {
+    ; Normalize the project path (remove trailing backslashes)
+    normalizedPath := RTrim(projectPath, "\")
+
+    ; Split path into segments
+    pathSegments := StrSplit(normalizedPath, "\")
+
+    ; Extract the last folder name (e.g., "zmk-sofle", "26-ai-experiment", "12 - Scripts")
+    lastSegment := pathSegments[pathSegments.Length]
+
+    ; Build list of potential match strings
+    matchSegments := [lastSegment]
+
+    ; If the last segment contains " - ", it's already a compound name like "12 - Scripts"
+    ; We also want to check if the last two segments together form a pattern
+    ; For example: path "C:\Users\eduev\Meu Drive\12 - Scripts"
+    ;   Last segment: "12 - Scripts" (this should match)
+    ;   But window might show just "12 - Scripts" or the full path segment
+
+    ; If we have at least 2 segments, also try the combination
+    ; This handles cases where the folder structure might be represented differently
+    if (pathSegments.Length >= 2) {
+        ; Try last two segments joined with " - " (for cases like "14 - Notes")
+        lastTwoJoined := pathSegments[pathSegments.Length - 1] . " - " . pathSegments[pathSegments.Length]
+        if (lastTwoJoined != lastSegment) {  ; Only add if different
+            matchSegments.Push(lastTwoJoined)
+        }
+    }
+
+    return matchSegments
+}
+
 ; Find and activate the last used Cursor window for a project path
 ; Returns true if a window was found and activated, false otherwise
 FindAndActivateCursorWindow(projectPath) {
-    ; Normalize the project path for comparison (remove trailing backslashes)
-    normalizedPath := RTrim(projectPath, "\")
+    ; Extract match segments from the project path
+    matchSegments := ExtractProjectMatchSegments(projectPath)
 
     ; Get all Cursor windows
     cursorWindows := []
@@ -804,10 +842,13 @@ FindAndActivateCursorWindow(projectPath) {
                     continue
                 }
 
-                ; Check if window title contains the project path
-                ; Cursor window titles typically contain the project path
-                if (InStr(winTitle, normalizedPath)) {
-                    cursorWindows.Push({ hwnd: hwnd, title: winTitle })
+                ; Check if window title contains any of the match segments
+                ; Cursor window titles have format: "filename - folder-name - Cursor"
+                for segment in matchSegments {
+                    if (InStr(winTitle, segment)) {
+                        cursorWindows.Push({ hwnd: hwnd, title: winTitle })
+                        break  ; Found a match, no need to check other segments
+                    }
                 }
             } catch {
                 ; Skip windows we can't access
@@ -883,9 +924,6 @@ HandleProjectSelection(index) {
     ; Cleanup first (closes GUI, disables hotkeys)
     CleanupProjectSelector()
 
-    ; Small delay to ensure cleanup is complete
-    Sleep 100
-
     ; Select path based on environment
     projectPath := IS_WORK_ENVIRONMENT ? project.workPath : project.path
 
@@ -900,8 +938,9 @@ HandleProjectSelection(index) {
         return
     }
 
-    ; Try to find and activate an existing Cursor window for this project
+    ; Try to find and activate an existing Cursor window for this project FIRST
     ; This will ignore preview windows and activate the last used one
+    ; This check happens before launching to make the process faster
     if (FindAndActivateCursorWindow(projectPath)) {
         ; Successfully activated existing window
         return
