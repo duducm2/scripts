@@ -5528,8 +5528,8 @@ EnsureItemsViewFocus() {
 
 ; Shift + A : Add multiple rows (repeat Alt, Alt, 0, 2 with delays)
 +a:: {
-    ShowSmallLoadingIndicator_ChatGPT("Adding 10 rows...")
-    loop 10 {
+    ShowSmallLoadingIndicator_ChatGPT("Adding 12 rows...")
+    loop 12 {
         Send "{Alt down}"
         Send "{Alt up}"
         Sleep 100
@@ -5549,7 +5549,7 @@ EnsureItemsViewFocus() {
 ; Purpose: Remove alternating sequences of empty and populated rows
 +r:: {
     ShowSmallLoadingIndicator_ChatGPT("Removing rows...")
-    loop 6 {  ; Using 6 as middle ground between 5-7 iterations
+    loop 8 {  ; Using 8 as middle ground between 5-7 iterations
         ; Execute Remove Row shortcut (Alt, Alt, 3, R)
         Send "{Alt down}"
         Send "{Alt up}"
