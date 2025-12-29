@@ -694,23 +694,21 @@ global g_ProjectCategories := ["General", "Personal", "Work"]
 ; Each project should have: name, path, workPath, and category ("General", "Personal", or "Work")
 global g_Projects := [
     ; General category
-    { name: "Scripts", path: "C:\Users\eduev\Meu Drive\12 - Scripts", workPath: "C:\Users\fie7ca\Documents\scripts", category: "General" },
-    { name: "14-my-notes", path: "C:\Users\eduev\Meu Drive\14 - Notes", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes", category: "General" },
-    { name: "", path: "", workPath: "", category: "General" },
-    { name: "", path: "", workPath: "", category: "General" },
-    { name: "", path: "", workPath: "", category: "General" },
-    ; Personal category
-    { name: "ZMK Sofle", path: "C:\Users\eduev\Documents\ZMK\zmk-sofle", workPath: "", category: "Personal" },
-    { name: "AI Experiment", path: "C:\Users\eduev\Meu Drive\04 - Pós-graduação\01 - Mestrado\26-ai-experiment", workPath: "", category: "Personal" },
-    { name: "", path: "", workPath: "", category: "Personal" },
-    { name: "", path: "", workPath: "", category: "Personal" },
-    { name: "", path: "", workPath: "", category: "Personal" },
-    ; Work category
-    { name: "dashboard-model-research", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_E&S_CIP Dashboard research and design workspace folder\dashboard-model-research", category: "Work" },
-    { name: "GS_UX core team_UX and CIP Integration", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_UX core team_UX and CIP Integration", category: "Work" },
-    { name: "", path: "", workPath: "", category: "Work" },
-    { name: "", path: "", workPath: "", category: "Work" },
-    { name: "", path: "", workPath: "", category: "Work" }
+    { name: "Scripts", path: "C:\Users\eduev\Meu Drive\12 - Scripts", workPath: "C:\Users\fie7ca\Documents\scripts",
+        category: "General" }, { name: "14-my-notes", path: "C:\Users\eduev\Meu Drive\14 - Notes", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes",
+            category: "General" }, { name: "", path: "", workPath: "", category: "General" }, { name: "", path: "",
+                workPath: "", category: "General" }, { name: "", path: "", workPath: "", category: "General" },
+                ; Personal category
+                { name: "ZMK Sofle", path: "C:\Users\eduev\Documents\ZMK\zmk-sofle", workPath: "", category: "Personal" }, { name: "AI Experiment",
+                    path: "C:\Users\eduev\Meu Drive\04 - Pós-graduação\01 - Mestrado\26-ai-experiment", workPath: "",
+                    category: "Personal" }, { name: "", path: "", workPath: "", category: "Personal" }, { name: "",
+                        path: "", workPath: "", category: "Personal" }, { name: "", path: "", workPath: "", category: "Personal" },
+                        ; Work category
+                        { name: "dashboard-model-research", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_E&S_CIP Dashboard research and design workspace folder\dashboard-model-research",
+                            category: "Work" }, { name: "GS_UX core team_UX and CIP Integration", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_UX core team_UX and CIP Integration",
+                                category: "Work" }, { name: "", path: "", workPath: "", category: "Work" }, { name: "",
+                                    path: "", workPath: "", category: "Work" }, { name: "", path: "", workPath: "",
+                                        category: "Work" }
 ]
 ; TODO: Fill in workPath for each project above when configuring work environment
 ; Global variables for project selector
@@ -787,7 +785,80 @@ CleanupProjectSelector() {
         g_ProjectSelectorGui := false
     }
 }
-; Handle project selection - launches Cursor with the selected project
+; Find and activate the last used Cursor window for a project path
+; Returns true if a window was found and activated, false otherwise
+FindAndActivateCursorWindow(projectPath) {
+    ; Normalize the project path for comparison (remove trailing backslashes)
+    normalizedPath := RTrim(projectPath, "\")
+
+    ; Get all Cursor windows
+    cursorWindows := []
+    try {
+        for hwnd in WinGetList("ahk_exe Cursor.exe") {
+            try {
+                winTitle := WinGetTitle("ahk_id " hwnd)
+                winTitleLower := StrLower(winTitle)
+
+                ; Skip windows with "preview" in the title
+                if (InStr(winTitleLower, "preview")) {
+                    continue
+                }
+
+                ; Check if window title contains the project path
+                ; Cursor window titles typically contain the project path
+                if (InStr(winTitle, normalizedPath)) {
+                    cursorWindows.Push({ hwnd: hwnd, title: winTitle })
+                }
+            } catch {
+                ; Skip windows we can't access
+                continue
+            }
+        }
+    } catch {
+        ; No Cursor windows found or error accessing them
+        return false
+    }
+
+    ; If no matching windows found, return false
+    if (cursorWindows.Length = 0) {
+        return false
+    }
+
+    ; Find the last used window
+    ; First, check if any of them is currently active
+    try {
+        activeHwnd := WinGetID("A")
+        for window in cursorWindows {
+            if (window.hwnd = activeHwnd) {
+                ; This window is already active, just center mouse
+                WinActivate("ahk_id " window.hwnd)
+                MoveMouseToCenter(window.hwnd)
+                return true
+            }
+        }
+    } catch {
+        ; Could not get active window, continue
+    }
+
+    ; If no active window matches, get the first window in the list
+    ; WinGetList returns windows in z-order (most recently used first)
+    if (cursorWindows.Length > 0) {
+        targetWindow := cursorWindows[1]
+        try {
+            WinActivate("ahk_id " targetWindow.hwnd)
+            WinWaitActive("ahk_id " targetWindow.hwnd, , 2)
+            MoveMouseToCenter(targetWindow.hwnd)
+            return true
+        } catch {
+            ; Failed to activate, return false
+            return false
+        }
+    }
+
+    return false
+}
+
+; Handle project selection - activates existing Cursor window or launches new one
 HandleProjectSelection(index) {
     global g_ProjectSelectorActive, g_Projects
 
@@ -829,6 +900,14 @@ HandleProjectSelection(index) {
         return
     }
 
+    ; Try to find and activate an existing Cursor window for this project
+    ; This will ignore preview windows and activate the last used one
+    if (FindAndActivateCursorWindow(projectPath)) {
+        ; Successfully activated existing window
+        return
+    }
+
+    ; No existing window found, launch a new Cursor window
     ; Get Cursor executable path based on environment
     cursorPath := IS_WORK_ENVIRONMENT ?
         "C:\Users\fie7ca\AppData\Local\Programs\cursor\Cursor.exe" :
