@@ -8,6 +8,8 @@
 ; --- Includes ----------------------------------------------------------------
 #include %A_ScriptDir%\env.ahk
 #include UIA-v2\Lib\UIA.ahk
+#include UIA-v2\Lib\UIA_Browser.ahk
+#include %A_ScriptDir%\Utils.ahk
 
 ; --- Hotkeys & Functions -----------------------------------------------------
 
@@ -242,6 +244,10 @@ global g_WikipediaSelectorGui := false
 global g_WikipediaSelectorActive := false
 global g_WikipediaSelectorHandlers := []  ; Store hotkey handlers for cleanup
 
+; Global variables for Wikipedia scroll position save/restore
+global g_WikipediaScrollPositionsFile := A_ScriptDir "\wikipedia_scroll_positions.ini"
+global g_WikipediaLastSaveTime := 0
+
 ; Wikipedia article items configuration
 ; Item 1: Taoism
 ; Items 2-5: Placeholders (no action)
@@ -249,6 +255,200 @@ global g_WikipediaItems := [{ char: "1", title: "Taoism", url: "https://en.wikip
     title: "Placeholder", url: "" }, { char: "3", title: "Placeholder", url: "" }, { char: "4", title: "Placeholder",
         url: "" }, { char: "5", title: "Placeholder", url: "" }
 ]
+
+; =============================================================================
+; Wikipedia Scroll Position Storage Functions
+; =============================================================================
+
+; Check if the active window is on Monitor 3
+IsWindowOnMonitor3() {
+    ;#region agent log
+    logPath := A_ScriptDir "\.cursor\debug.log"
+    hwnd := WinExist("A")
+    FileAppend Format(
+        '{{"timestamp":{},"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Checking monitor for window","data":{{"hwnd":{}}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}`n',
+        A_TickCount, hwnd), logPath
+    ;#endregion agent log
+
+    if (!hwnd) {
+        ;#region agent log
+        FileAppend Format(
+            '{{"timestamp":{},"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"No active window","data":{{}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}`n',
+            A_TickCount), logPath
+        ;#endregion agent log
+        return false
+    }
+
+    rect := Buffer(16, 0)
+    if (!DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)) {
+        ;#region agent log
+        FileAppend Format(
+            '{{"timestamp":{},"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"GetWindowRect failed","data":{{"hwnd":{}}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}`n',
+            A_TickCount, hwnd), logPath
+        ;#endregion agent log
+        return false
+    }
+
+    left := NumGet(rect, 0, "int")
+    top := NumGet(rect, 4, "int")
+    right := NumGet(rect, 8, "int")
+    bottom := NumGet(rect, 12, "int")
+
+    centerX := left + (right - left) // 2
+    centerY := top + (bottom - top) // 2
+
+    monitorCount := MonitorGetCount()
+    loop monitorCount {
+        MonitorGet(A_Index, &ml, &mt, &mr, &mb)
+        if (centerX >= ml && centerX <= mr && centerY >= mt && centerY <= mb) {
+            isMonitor3 := (A_Index = 3)
+            ;#region agent log
+            FileAppend Format(
+                '{{"timestamp":{},"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Monitor check result","data":{{"monitorIndex":{},"isMonitor3":{},"centerX":{},"centerY":{}}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}`n',
+                A_TickCount, A_Index, isMonitor3, centerX, centerY), logPath
+            ;#endregion agent log
+            return isMonitor3
+        }
+    }
+
+    ;#region agent log
+    FileAppend Format(
+        '{{"timestamp":{},"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Window not on any monitor","data":{{"centerX":{},"centerY":{}}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}`n',
+        A_TickCount, centerX, centerY), logPath
+    ;#endregion agent log
+    return false
+}
+
+; Get current Wikipedia article URL from the active Chrome window
+GetWikipediaURL() {
+    ;#region agent log
+    logPath := A_ScriptDir "\.cursor\debug.log"
+    FileAppend Format(
+        '{{"timestamp":{},"location":"AppLaunchers.ahk:GetWikipediaURL","message":"Getting Wikipedia URL","data":{{}},"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}}`n',
+        A_TickCount), logPath
+    ;#endregion agent log
+
+    try {
+        if (!WinActive("ahk_exe chrome.exe") || !InStr(WinGetTitle("A"), "Wikipedia")) {
+            ;#region agent log
+            FileAppend Format(
+                '{{"timestamp":{},"location":"AppLaunchers.ahk:GetWikipediaURL","message":"Window not active or not Wikipedia","data":{{}},"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}}`n',
+                A_TickCount), logPath
+            ;#endregion agent log
+            return ""
+        }
+        uia := UIA_Browser("ahk_exe chrome.exe")
+        url := uia.GetCurrentURL()
+        ;#region agent log
+        FileAppend Format(
+            '{{"timestamp":{},"location":"AppLaunchers.ahk:GetWikipediaURL","message":"Got URL from browser","data":{{"url":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}}`n',
+            A_TickCount, url), logPath
+        ;#endregion agent log
+        if (url = "" || !InStr(url, "wikipedia.org")) {
+            ;#region agent log
+            FileAppend Format(
+                '{{"timestamp":{},"location":"AppLaunchers.ahk:GetWikipediaURL","message":"Invalid URL","data":{{"url":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}}`n',
+                A_TickCount, url), logPath
+            ;#endregion agent log
+            return ""
+        }
+        ; Normalize URL - remove trailing slashes and fragments
+        originalUrl := url
+        url := RegExReplace(url, "/#.*$", "")
+        url := RegExReplace(url, "/+$", "")
+        ;#region agent log
+        FileAppend Format(
+            '{{"timestamp":{},"location":"AppLaunchers.ahk:GetWikipediaURL","message":"URL normalized","data":{{"originalUrl":"{}","normalizedUrl":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}}`n',
+            A_TickCount, originalUrl, url), logPath
+        ;#endregion agent log
+        return url
+    } catch Error as err {
+        ;#region agent log
+        FileAppend Format(
+            '{{"timestamp":{},"location":"AppLaunchers.ahk:GetWikipediaURL","message":"Exception occurred","data":{{"error":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}}`n',
+            A_TickCount, err.Message), logPath
+        ;#endregion agent log
+        return ""
+    }
+}
+
+; Save scroll position for a Wikipedia article URL
+; Now saves as percentage (0.0 to 1.0) instead of absolute pixels
+SaveWikipediaScrollPosition(url, scrollPercentage) {
+    global g_WikipediaScrollPositionsFile
+    ;#region agent log
+    logPath := A_ScriptDir "\.cursor\debug.log"
+    FileAppend Format(
+        '{{"timestamp":{},"location":"AppLaunchers.ahk:SaveWikipediaScrollPosition","message":"Saving scroll position","data":{{"url":"{}","scrollPercentage":{}}},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}}`n',
+        A_TickCount, url, scrollPercentage), logPath
+    ;#endregion agent log
+    try {
+        if (url = "" || scrollPercentage = "" || scrollPercentage < 0 || scrollPercentage > 1) {
+            ;#region agent log
+            FileAppend Format(
+                '{{"timestamp":{},"location":"AppLaunchers.ahk:SaveWikipediaScrollPosition","message":"Invalid parameters","data":{{"url":"{}","scrollPercentage":{}}},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}}`n',
+                A_TickCount, url, scrollPercentage), logPath
+            ;#endregion agent log
+            return false
+        }
+        ; Ensure directory exists
+        SplitPath(g_WikipediaScrollPositionsFile, , &dir)
+        if (dir != "" && !DirExist(dir)) {
+            DirCreate(dir)
+        }
+        IniWrite(scrollPercentage, g_WikipediaScrollPositionsFile, "Positions", url)
+        ;#region agent log
+        FileAppend Format(
+            '{{"timestamp":{},"location":"AppLaunchers.ahk:SaveWikipediaScrollPosition","message":"Scroll position saved successfully","data":{{"url":"{}","scrollPercentage":{}}},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}}`n',
+            A_TickCount, url, scrollPercentage), logPath
+        ;#endregion agent log
+        return true
+    } catch Error as err {
+        ;#region agent log
+        FileAppend Format(
+            '{{"timestamp":{},"location":"AppLaunchers.ahk:SaveWikipediaScrollPosition","message":"Exception saving scroll position","data":{{"error":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}}`n',
+            A_TickCount, err.Message), logPath
+        ;#endregion agent log
+        return false
+    }
+}
+
+; Load saved scroll position for a Wikipedia article URL
+; Returns percentage (0.0 to 1.0) instead of absolute pixels
+LoadWikipediaScrollPosition(url) {
+    global g_WikipediaScrollPositionsFile
+    ;#region agent log
+    logPath := A_ScriptDir "\.cursor\debug.log"
+    FileAppend Format(
+        '{{"timestamp":{},"location":"AppLaunchers.ahk:LoadWikipediaScrollPosition","message":"Loading scroll position","data":{{"url":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}}`n',
+        A_TickCount, url), logPath
+    ;#endregion agent log
+    try {
+        if (url = "") {
+            ;#region agent log
+            FileAppend Format(
+                '{{"timestamp":{},"location":"AppLaunchers.ahk:LoadWikipediaScrollPosition","message":"Empty URL","data":{{}},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}}`n',
+                A_TickCount), logPath
+            ;#endregion agent log
+            return 0.0
+        }
+        scrollPos := IniRead(g_WikipediaScrollPositionsFile, "Positions", url, "0")
+        scrollPercentage := Float(scrollPos)
+        ;#region agent log
+        FileAppend Format(
+            '{{"timestamp":{},"location":"AppLaunchers.ahk:LoadWikipediaScrollPosition","message":"Loaded scroll position","data":{{"scrollPercentage":{}}},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}}`n',
+            A_TickCount, scrollPercentage), logPath
+        ;#endregion agent log
+        return scrollPercentage
+    } catch Error as err {
+        ;#region agent log
+        FileAppend Format(
+            '{{"timestamp":{},"location":"AppLaunchers.ahk:LoadWikipediaScrollPosition","message":"Exception loading scroll position","data":{{"error":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}}`n',
+            A_TickCount, err.Message), logPath
+        ;#endregion agent log
+        return 0.0
+    }
+}
 
 ; Handler for character key press
 HandleWikipediaChar(char) {
@@ -275,6 +475,81 @@ HandleWikipediaChar(char) {
         ; If item has a URL, open it in Chrome in a new window
         if (item.url != "") {
             Run "chrome.exe --new-window " item.url
+            ; Wait for the window to appear and become active
+            WinWait("ahk_exe chrome.exe", , 5)
+            Sleep(500)  ; Give the page a moment to start loading
+
+            ; Wait for the page to load (check for Wikipedia in title)
+            SetTitleMatchMode 2
+            if WinWait("Wikipedia", , 10) {
+                WinActivate("Wikipedia")
+                WinWaitActive("Wikipedia", , 5)
+                Sleep(1500)  ; Additional wait for page to stabilize
+
+                ; Try to restore scroll position (only if on Monitor 3)
+                try {
+                    if (!IsWindowOnMonitor3()) {
+                        ;#region agent log
+                        logPath := A_ScriptDir "\.cursor\debug.log"
+                        FileAppend Format(
+                            '{{"timestamp":{},"location":"AppLaunchers.ahk:HandleWikipediaChar","message":"Window not on Monitor 3, skipping restore","data":{{}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}`n',
+                            A_TickCount), logPath
+                        ;#endregion agent log
+                        return
+                    }
+                    savedPercentage := LoadWikipediaScrollPosition(item.url)
+                    ;#region agent log
+                    logPath := A_ScriptDir "\.cursor\debug.log"
+                    FileAppend Format(
+                        '{{"timestamp":{},"location":"AppLaunchers.ahk:HandleWikipediaChar","message":"Loaded saved percentage","data":{{"url":"{}","savedPercentage":{}}},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,D,F"}}`n',
+                        A_TickCount, item.url, savedPercentage), logPath
+                    ;#endregion agent log
+                    if (savedPercentage > 0.0) {
+                        ;#region agent log
+                        FileAppend Format(
+                            '{{"timestamp":{},"location":"AppLaunchers.ahk:HandleWikipediaChar","message":"Getting document height to calculate pixel position","data":{{"savedPercentage":{}}},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}}`n',
+                            A_TickCount, savedPercentage), logPath
+                        ;#endregion agent log
+                        uia := UIA_Browser("ahk_exe chrome.exe")
+                        ; Wait a bit more for page to be fully ready
+                        Sleep(500)
+                        ; Get current document height to calculate pixel position
+                        docHeight := uia.JSReturnThroughClipboard("document.documentElement.scrollHeight")
+                        ;#region agent log
+                        FileAppend Format(
+                            '{{"timestamp":{},"location":"AppLaunchers.ahk:HandleWikipediaChar","message":"Got document height","data":{{"docHeight":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}}`n',
+                            A_TickCount, docHeight), logPath
+                        ;#endregion agent log
+                        if (docHeight != "" && docHeight != "undefined" && docHeight != "null") {
+                            docHeightFloat := Float(docHeight)
+                            if (docHeightFloat > 0) {
+                                targetScrollY := savedPercentage * docHeightFloat
+                                ;#region agent log
+                                FileAppend Format(
+                                    '{{"timestamp":{},"location":"AppLaunchers.ahk:HandleWikipediaChar","message":"Calculated target scroll position","data":{{"savedPercentage":{},"docHeightFloat":{},"targetScrollY":{}}},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}}`n',
+                                    A_TickCount, savedPercentage, docHeightFloat, targetScrollY), logPath
+                                ;#endregion agent log
+                                uia.JSExecute("window.scrollTo(0, " . Round(targetScrollY) . ");")
+                                Sleep(500)  ; Longer wait after scroll to check result
+                                ;#region agent log
+                                currentScroll := uia.JSReturnThroughClipboard("window.pageYOffset")
+                                FileAppend Format(
+                                    '{{"timestamp":{},"location":"AppLaunchers.ahk:HandleWikipediaChar","message":"Scroll restored, checking result","data":{{"targetScrollY":{},"actualPosition":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,F"}}`n',
+                                    A_TickCount, targetScrollY, currentScroll), logPath
+                                ;#endregion agent log
+                                Sleep(200)  ; Brief wait after scroll
+                            }
+                        }
+                    }
+                } catch Error as err {
+                    ;#region agent log
+                    logPath := A_ScriptDir "\.cursor\debug.log"
+                    FileAppend Format(
+                        '{{"timestamp":{},"location":"AppLaunchers.ahk:HandleWikipediaChar","message":"Exception in restore","data":{{"error":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}}`n',
+                        A_TickCount, err.Message), logPath
+                    ;#endregion agent log
+                }
+            }
         }
         ; Items 2-5 have no URL, so no action is taken
     }
@@ -491,7 +766,82 @@ ShowWikipediaSelector() {
     SetTitleMatchMode 2
     if WinExist("Wikipedia") {
         WinActivate
+        WinWaitActive("Wikipedia", , 2)
         CenterMouse()
+
+        ; Wait briefly for page to stabilize
+        Sleep(500)
+
+        ; Try to restore scroll position (only if on Monitor 3)
+        try {
+            if (!IsWindowOnMonitor3()) {
+                ;#region agent log
+                logPath := A_ScriptDir "\.cursor\debug.log"
+                FileAppend Format(
+                    '{{"timestamp":{},"location":"AppLaunchers.ahk:#!+k::","message":"Window not on Monitor 3, skipping restore","data":{{}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}`n',
+                    A_TickCount), logPath
+                ;#endregion agent log
+                return
+            }
+            url := GetWikipediaURL()
+            if (url != "") {
+                ;#region agent log
+                logPath := A_ScriptDir "\.cursor\debug.log"
+                FileAppend Format(
+                    '{{"timestamp":{},"location":"AppLaunchers.ahk:#!+k::","message":"Got URL, loading saved position","data":{{"url":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,D"}}`n',
+                    A_TickCount, url), logPath
+                ;#endregion agent log
+                savedPercentage := LoadWikipediaScrollPosition(url)
+                ;#region agent log
+                FileAppend Format(
+                    '{{"timestamp":{},"location":"AppLaunchers.ahk:#!+k::","message":"Loaded saved percentage","data":{{"savedPercentage":{}}},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,D,F"}}`n',
+                    A_TickCount, savedPercentage), logPath
+                ;#endregion agent log
+                if (savedPercentage > 0.0) {
+                    ;#region agent log
+                    FileAppend Format(
+                        '{{"timestamp":{},"location":"AppLaunchers.ahk:#!+k::","message":"Getting document height to calculate pixel position","data":{{"savedPercentage":{}}},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}}`n',
+                        A_TickCount, savedPercentage), logPath
+                    ;#endregion agent log
+                    uia := UIA_Browser("ahk_exe chrome.exe")
+                    Sleep(500)  ; Brief wait for page to be ready
+                    ; Get current document height to calculate pixel position
+                    docHeight := uia.JSReturnThroughClipboard("document.documentElement.scrollHeight")
+                    ;#region agent log
+                    FileAppend Format(
+                        '{{"timestamp":{},"location":"AppLaunchers.ahk:#!+k::","message":"Got document height","data":{{"docHeight":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}}`n',
+                        A_TickCount, docHeight), logPath
+                    ;#endregion agent log
+                    if (docHeight != "" && docHeight != "undefined" && docHeight != "null") {
+                        docHeightFloat := Float(docHeight)
+                        if (docHeightFloat > 0) {
+                            targetScrollY := savedPercentage * docHeightFloat
+                            ;#region agent log
+                            FileAppend Format(
+                                '{{"timestamp":{},"location":"AppLaunchers.ahk:#!+k::","message":"Calculated target scroll position","data":{{"savedPercentage":{},"docHeightFloat":{},"targetScrollY":{}}},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}}`n',
+                                A_TickCount, savedPercentage, docHeightFloat, targetScrollY), logPath
+                            ;#endregion agent log
+                            uia.JSExecute("window.scrollTo(0, " . Round(targetScrollY) . ");")
+                            Sleep(500)  ; Longer wait after scroll to check result
+                            ;#region agent log
+                            currentScroll := uia.JSReturnThroughClipboard("window.pageYOffset")
+                            FileAppend Format(
+                                '{{"timestamp":{},"location":"AppLaunchers.ahk:#!+k::","message":"Scroll restored, checking result","data":{{"targetScrollY":{},"actualPosition":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,F"}}`n',
+                                A_TickCount, targetScrollY, currentScroll), logPath
+                            ;#endregion agent log
+                            Sleep(200)  ; Brief wait after scroll
+                        }
+                    }
+                }
+            }
+        } catch Error as err {
+            ;#region agent log
+            logPath := A_ScriptDir "\.cursor\debug.log"
+            FileAppend Format(
+                '{{"timestamp":{},"location":"AppLaunchers.ahk:#!+k::","message":"Exception in restore","data":{{"error":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}}`n',
+                A_TickCount, err.Message), logPath
+            ;#endregion agent log
+        }
     } else {
         ShowWikipediaSelector()
     }
@@ -613,6 +963,127 @@ ShowWikipediaSelector() {
 }
 
 ; =============================================================================
+; Automatic Wikipedia Scroll Position Save Timer
+; =============================================================================
+
+; Periodic checker function that runs every 2 seconds
+WikipediaScrollSaveChecker() {
+    global g_WikipediaLastSaveTime
+    ;#region agent log
+    logPath := A_ScriptDir "\.cursor\debug.log"
+    FileAppend Format(
+        '{{"timestamp":{},"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{{}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}`n',
+        A_TickCount), logPath
+    ;#endregion agent log
+
+    ; Check if Wikipedia window is currently active
+    if (WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "Wikipedia")) {
+        ;#region agent log
+        FileAppend Format(
+            '{{"timestamp":{},"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Wikipedia window active","data":{{}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}`n',
+            A_TickCount), logPath
+        ;#endregion agent log
+
+        ; Check if window is on Monitor 3
+        if (!IsWindowOnMonitor3()) {
+            ;#region agent log
+            FileAppend Format(
+                '{{"timestamp":{},"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Window not on Monitor 3, skipping","data":{{}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}`n',
+                A_TickCount), logPath
+            ;#endregion agent log
+            return
+        }
+
+        ; Calculate time since last save
+        timeSinceLastSave := A_TickCount - g_WikipediaLastSaveTime
+        ;#region agent log
+        FileAppend Format(
+            '{{"timestamp":{},"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Time since last save","data":{{"timeSinceLastSave":{}}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}`n',
+            A_TickCount, timeSinceLastSave), logPath
+        ;#endregion agent log
+
+        ; If 3 minutes (180000ms) have passed, save the scroll position
+        if (timeSinceLastSave >= 180000) {
+            ;#region agent log
+            FileAppend Format(
+                '{{"timestamp":{},"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Attempting to save scroll position","data":{{}},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C,E"}}`n',
+                A_TickCount), logPath
+            ;#endregion agent log
+            try {
+                url := GetWikipediaURL()
+                if (url != "") {
+                    ;#region agent log
+                    FileAppend Format(
+                        '{{"timestamp":{},"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Getting scroll position","data":{{"url":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C"}}`n',
+                        A_TickCount, url), logPath
+                    ;#endregion agent log
+                    uia := UIA_Browser("ahk_exe chrome.exe")
+                    scrollY := uia.JSReturnThroughClipboard("window.pageYOffset")
+                    ;#region agent log
+                    FileAppend Format(
+                        '{{"timestamp":{},"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Scroll position retrieved","data":{{"scrollY":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C,E"}}`n',
+                        A_TickCount, scrollY), logPath
+                    ;#endregion agent log
+
+                    ; Get document height to calculate percentage
+                    docHeight := uia.JSReturnThroughClipboard("document.documentElement.scrollHeight")
+                    ;#region agent log
+                    FileAppend Format(
+                        '{{"timestamp":{},"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Retrieved scroll values","data":{{"scrollY":"{}","docHeight":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C,E,F"}}`n',
+                        A_TickCount, scrollY, docHeight), logPath
+                    ;#endregion agent log
+
+                    ; Convert to numbers and calculate percentage
+                    if (scrollY != "" && scrollY != "undefined" && scrollY != "null" && docHeight != "" && docHeight !=
+                        "undefined" && docHeight != "null") {
+                        scrollYFloat := Float(scrollY)
+                        docHeightFloat := Float(docHeight)
+                        ;#region agent log
+                        FileAppend Format(
+                            '{{"timestamp":{},"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Converted to floats","data":{{"scrollYFloat":{},"docHeightFloat":{}}},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}}`n',
+                            A_TickCount, scrollYFloat, docHeightFloat), logPath
+                        ;#endregion agent log
+                        if (scrollYFloat >= 0 && docHeightFloat > 0) {
+                            scrollPercentage := scrollYFloat / docHeightFloat
+                            ; Clamp to valid range
+                            if (scrollPercentage > 1.0) {
+                                scrollPercentage := 1.0
+                            }
+                            ;#region agent log
+                            FileAppend Format(
+                                '{{"timestamp":{},"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Calculated scroll percentage","data":{{"scrollPercentage":{}}},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}}`n',
+                                A_TickCount, scrollPercentage), logPath
+                            ;#endregion agent log
+                            saved := SaveWikipediaScrollPosition(url, scrollPercentage)
+                            ;#region agent log
+                            FileAppend Format(
+                                '{{"timestamp":{},"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Save result","data":{{"saved":{}}},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}}`n',
+                                A_TickCount, saved), logPath
+                            ;#endregion agent log
+                            if (saved) {
+                                g_WikipediaLastSaveTime := A_TickCount
+                            }
+                        }
+                    } else {
+                        ;#region agent log
+                        FileAppend Format(
+                            '{{"timestamp":{},"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Invalid scroll or docHeight values","data":{{"scrollY":"{}","docHeight":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"E,F"}}`n',
+                            A_TickCount, scrollY, docHeight), logPath
+                        ;#endregion agent log
+                    }
+                }
+            } catch Error as err {
+                ;#region agent log
+                FileAppend Format(
+                    '{{"timestamp":{},"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Exception in save","data":{{"error":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C"}}`n',
+                    A_TickCount, err.Message), logPath
+                ;#endregion agent log
+            }
+        }
+    }
+}
+
+; =============================================================================
 ; Helper function to center mouse on the active window
 ; =============================================================================
 CenterMouse() {
@@ -665,3 +1136,9 @@ CreateCenteredBanner_Launchers(message, bgColor := "be4747", fontColor := "FFFFF
     WinSetTransparent(alpha, bGui)
     return bGui
 }
+
+; =============================================================================
+; Initialize Wikipedia scroll position auto-save timer
+; =============================================================================
+; Start the periodic checker timer (runs every 2 seconds)
+SetTimer(WikipediaScrollSaveChecker, 2000)
