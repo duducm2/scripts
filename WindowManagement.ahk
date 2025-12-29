@@ -823,6 +823,82 @@ ExtractProjectMatchSegments(projectPath) {
     return matchSegments
 }
 
+; Find and activate the last used Cursor PREVIEW window for a project path
+; Returns true if a preview window was found and activated, false otherwise
+FindAndActivatePreviewWindow(projectPath) {
+    ; Extract match segments from the project path
+    matchSegments := ExtractProjectMatchSegments(projectPath)
+
+    ; Get all Cursor windows
+    previewWindows := []
+    try {
+        for hwnd in WinGetList("ahk_exe Cursor.exe") {
+            try {
+                winTitle := WinGetTitle("ahk_id " hwnd)
+                winTitleLower := StrLower(winTitle)
+
+                ; ONLY include windows with "preview" in the title
+                if (!InStr(winTitleLower, "preview")) {
+                    continue
+                }
+
+                ; Check if window title contains any of the match segments
+                ; Cursor preview window titles have format: "Preview filename - folder-name - Cursor"
+                for segment in matchSegments {
+                    if (InStr(winTitle, segment)) {
+                        previewWindows.Push({ hwnd: hwnd, title: winTitle })
+                        break  ; Found a match, no need to check other segments
+                    }
+                }
+            } catch {
+                ; Skip windows we can't access
+                continue
+            }
+        }
+    } catch {
+        ; No Cursor windows found or error accessing them
+        return false
+    }
+
+    ; If no matching preview windows found, return false
+    if (previewWindows.Length = 0) {
+        return false
+    }
+
+    ; Find the last used preview window
+    ; First, check if any of them is currently active
+    try {
+        activeHwnd := WinGetID("A")
+        for window in previewWindows {
+            if (window.hwnd = activeHwnd) {
+                ; This window is already active, just center mouse
+                WinActivate("ahk_id " window.hwnd)
+                MoveMouseToCenter(window.hwnd)
+                return true
+            }
+        }
+    } catch {
+        ; Could not get active window, continue
+    }
+
+    ; If no active window matches, get the first window in the list
+    ; WinGetList returns windows in z-order (most recently used first)
+    if (previewWindows.Length > 0) {
+        targetWindow := previewWindows[1]
+        try {
+            WinActivate("ahk_id " targetWindow.hwnd)
+            WinWaitActive("ahk_id " targetWindow.hwnd, , 2)
+            MoveMouseToCenter(targetWindow.hwnd)
+            return true
+        } catch {
+            ; Failed to activate, return false
+            return false
+        }
+    }
+
+    return false
+}
+
 ; Find and activate the last used Cursor window for a project path
 ; Returns true if a window was found and activated, false otherwise
 FindAndActivateCursorWindow(projectPath) {
@@ -970,6 +1046,115 @@ HandleProjectEscape(*) {
         CleanupProjectSelector()
     }
 }
+
+; Handler for preview window activation (character "3")
+HandlePreviewWindowSelection(*) {
+    global g_ProjectSelectorActive, g_Projects
+
+    ; Only process if selector is active
+    if (!g_ProjectSelectorActive) {
+        return
+    }
+
+    ; Cleanup first (closes GUI, disables hotkeys)
+    CleanupProjectSelector()
+
+    ; Small delay to ensure cleanup is complete
+    Sleep 100
+
+    ; Try to find and activate preview windows for all projects
+    ; Check each project's path to find matching preview windows
+    previewWindows := []
+    try {
+        for hwnd in WinGetList("ahk_exe Cursor.exe") {
+            try {
+                winTitle := WinGetTitle("ahk_id " hwnd)
+                winTitleLower := StrLower(winTitle)
+
+                ; ONLY include windows with "preview" in the title
+                if (!InStr(winTitleLower, "preview")) {
+                    continue
+                }
+
+                ; Check if this preview window matches any project
+                windowMatched := false
+                for project in g_Projects {
+                    ; Skip empty placeholders
+                    if (project.name = "" && project.path = "" && project.workPath = "") {
+                        continue
+                    }
+
+                    ; Select path based on environment
+                    projectPath := IS_WORK_ENVIRONMENT ? project.workPath : project.path
+                    if (IS_WORK_ENVIRONMENT && projectPath = "") {
+                        projectPath := project.path
+                    }
+
+                    if (projectPath = "") {
+                        continue
+                    }
+
+                    ; Extract match segments and check if window title matches
+                    matchSegments := ExtractProjectMatchSegments(projectPath)
+                    for segment in matchSegments {
+                        if (InStr(winTitle, segment)) {
+                            previewWindows.Push({ hwnd: hwnd, title: winTitle })
+                            windowMatched := true
+                            break  ; Found a match, no need to check other segments
+                        }
+                    }
+
+                    ; If we found a match, break from project loop
+                    if (windowMatched) {
+                        break
+                    }
+                }
+            } catch {
+                ; Skip windows we can't access
+                continue
+            }
+        }
+    } catch {
+        ; No Cursor windows found
+        ShowNotification_WM("No preview windows found.")
+        return
+    }
+
+    ; If no matching preview windows found
+    if (previewWindows.Length = 0) {
+        ShowNotification_WM("No preview windows found for any project.")
+        return
+    }
+
+    ; Find the last used preview window
+    ; First, check if any of them is currently active
+    try {
+        activeHwnd := WinGetID("A")
+        for window in previewWindows {
+            if (window.hwnd = activeHwnd) {
+                ; This window is already active, just center mouse
+                WinActivate("ahk_id " window.hwnd)
+                MoveMouseToCenter(window.hwnd)
+                return
+            }
+        }
+    } catch {
+        ; Could not get active window, continue
+    }
+
+    ; If no active window matches, get the first window in the list
+    ; WinGetList returns windows in z-order (most recently used first)
+    if (previewWindows.Length > 0) {
+        targetWindow := previewWindows[1]
+        try {
+            WinActivate("ahk_id " targetWindow.hwnd)
+            WinWaitActive("ahk_id " targetWindow.hwnd, , 2)
+            MoveMouseToCenter(targetWindow.hwnd)
+        } catch {
+            ShowNotification_WM("Failed to activate preview window.")
+        }
+    }
+}
 ; Show project selector GUI
 ShowProjectSelector() {
     global g_ProjectSelectorGui, g_ProjectSelectorActive, g_Projects
@@ -1083,6 +1268,16 @@ ShowProjectSelector() {
             }
 
             char := g_ProjectCharSequence[charIndex]
+
+            ; Skip character "3" - it's reserved for preview window activation
+            if (char = "3") {
+                charIndex++
+                if (charIndex > g_ProjectCharSequence.Length) {
+                    break
+                }
+                char := g_ProjectCharSequence[charIndex]
+            }
+
             projectIndexToChar[projectIndex] := char
             charIndex++
         }
@@ -1130,6 +1325,7 @@ ShowProjectSelector() {
         displayText .= "`n"  ; Space between categories
     }
 
+    displayText .= "`n[3] Activate Preview Windows`n"
     displayText .= "[ESC] Cancel"
 
     ; Calculate text dimensions
@@ -1196,6 +1392,15 @@ ShowProjectSelector() {
         } catch {
             ; Silently ignore if we can't create hotkey
         }
+    }
+
+    ; Enable hotkey for preview window activation (character "3")
+    try {
+        previewHandler := HandlePreviewWindowSelection
+        g_ProjectHotkeyHandlers.Push({ char: "3", handler: previewHandler })
+        Hotkey("3", previewHandler, "On")
+    } catch {
+        ; Silently ignore if we can't create hotkey
     }
 
     ; Enable Escape hotkey
