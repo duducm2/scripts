@@ -424,7 +424,7 @@ HandleWikipediaChar(char) {
                     if (savedPercentage > 0.0) {
                         ; Show banner to inform user that scroll position is being restored
                         restoreBanner := CreateCenteredBanner_Launchers("Restoring scroll position... Please wait",
-                            "3772FF", "FFFFFF", 24, 178)
+                            "3772FF", "FFFFFF", 10, 178, 180)
 
                         uia := UIA_Browser("ahk_exe chrome.exe")
                         ; Wait a bit more for page to be fully ready
@@ -1061,12 +1061,13 @@ CenterMouse() {
 ; =============================================================================
 ; Centered banner helper (AppLaunchers aesthetic)
 ; =============================================================================
-CreateCenteredBanner_Launchers(message, bgColor := "be4747", fontColor := "FFFFFF", fontSize := 24, alpha := 178) {
+CreateCenteredBanner_Launchers(message, bgColor := "be4747", fontColor := "FFFFFF", fontSize := 24, alpha := 178, width :=
+    500) {
     bGui := Gui()
     bGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
     bGui.BackColor := bgColor
     bGui.SetFont("s" . fontSize . " c" . fontColor . " Bold", "Segoe UI")
-    bGui.Add("Text", "w500 Center", message)
+    bGui.Add("Text", "w" . width . " Center", message)
 
     activeWin := WinGetID("A")
     if (activeWin) {
