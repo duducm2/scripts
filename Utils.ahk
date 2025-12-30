@@ -202,6 +202,30 @@ InitHotstringsCheatSheet() {
 }
 InitHotstringsCheatSheet()
 
+; =============================================================================
+; Quick Open Files System
+; =============================================================================
+
+; Global variables for quick open files
+global g_QuickOpenFiles := []
+global g_QuickOpenFileCharMap := Map()  ; Maps character to file path
+
+; Register a file for quick opening
+RegisterQuickOpenFile(filePath, title) {
+    global g_QuickOpenFiles
+    g_QuickOpenFiles.Push({ filePath: filePath, title: title, category: "Quick Open Files" })
+}
+
+; Initialize quick open files
+InitQuickOpenFiles() {
+    ; Register dissertation Power BI file with character 'y'
+    RegisterQuickOpenFile(
+        "C:\Users\eduev\Meu Drive\04 - Pós-graduação\01 - Mestrado\26-ai-experiment\infoVis\Dissertation InfoVis  - PowerBI - Charts.pbix",
+        "📊 Dissertation InfoVis"
+    )
+}
+InitQuickOpenFiles()
+
 ; ------------
 ; Optional: scope Explorer-only hotstrings used for renaming
 ; Uncomment to restrict selected triggers to File Explorer or Save dialogs
@@ -2040,17 +2064,14 @@ global g_HotstringHotkeyHandlers := []  ; Store hotkey handlers for cleanup
 global g_HotstringCharSequence := ["1", "2", "3", "4", "5", "q", "w", "e", "r", "t", "a", "s", "d", "f", "g", "z", "x",
     "c", "v", "b", "6", "7", "8", "9", "0", "y", "u", "i", "o", "p", "h", "j", "k", "l", "n", "m", ",", "."]
 
-; Category display order (Prompts first, General second, Projects last)
-global g_HotstringCategories := ["Prompts", "General", "Projects"]
+; Category display order (Prompts first, General second, Projects last, Quick Open Files last)
+global g_HotstringCategories := ["Prompts", "General", "Projects", "Quick Open Files"]
 
 ; Build character-to-expansion mapping grouped by category
 BuildHotstringCharMap() {
-    global g_hotstrings
+    global g_hotstrings, g_QuickOpenFiles, g_HotstringCategories
     charMap := Map()
-
-    if (!IsSet(g_hotstrings) || g_hotstrings.Length = 0) {
-        return charMap
-    }
+    global g_QuickOpenFileCharMap := Map()
 
     ; Group hotstrings by category
     categorized := Map()
@@ -2058,25 +2079,43 @@ BuildHotstringCharMap() {
     categorized["Prompts"] := []
     categorized["General"] := []
 
-    for hs in g_hotstrings {
-        category := hs.category
-        if (category = "Projects" || category = "Prompts" || category = "General") {
-            categorized[category].Push(hs)
+    if (IsSet(g_hotstrings) && g_hotstrings.Length > 0) {
+        for hs in g_hotstrings {
+            category := hs.category
+            if (category = "Projects" || category = "Prompts" || category = "General") {
+                categorized[category].Push(hs)
+            }
         }
     }
 
     ; Assign characters sequentially within each category
     charIndex := 1
     for category in g_HotstringCategories {
-        for hs in categorized[category] {
-            if (charIndex <= g_HotstringCharSequence.Length) {
-                char := g_HotstringCharSequence[charIndex]
-                ; Only assign characters to hotstrings that have an expansion (skip empty placeholders)
-                if (hs.expansion != "") {
-                    charMap[char] := hs.expansion
+        if (category = "Quick Open Files") {
+            ; Handle quick open files
+            if (IsSet(g_QuickOpenFiles) && g_QuickOpenFiles.Length > 0) {
+                for fileEntry in g_QuickOpenFiles {
+                    if (charIndex <= g_HotstringCharSequence.Length) {
+                        char := g_HotstringCharSequence[charIndex]
+                        g_QuickOpenFileCharMap[char] := fileEntry.filePath
+                        charIndex++
+                    }
                 }
-                ; Always increment charIndex to reserve slots for placeholders
-                charIndex++
+            }
+        } else {
+            ; Handle hotstring categories
+            if (categorized.Has(category)) {
+                for hs in categorized[category] {
+                    if (charIndex <= g_HotstringCharSequence.Length) {
+                        char := g_HotstringCharSequence[charIndex]
+                        ; Only assign characters to hotstrings that have an expansion (skip empty placeholders)
+                        if (hs.expansion != "") {
+                            charMap[char] := hs.expansion
+                        }
+                        ; Always increment charIndex to reserve slots for placeholders
+                        charIndex++
+                    }
+                }
             }
         }
     }
@@ -2086,20 +2125,27 @@ BuildHotstringCharMap() {
 
 ; Get categorized hotstrings for display
 GetCategorizedHotstrings() {
-    global g_hotstrings
+    global g_hotstrings, g_QuickOpenFiles
     categorized := Map()
     categorized["Projects"] := []
     categorized["Prompts"] := []
     categorized["General"] := []
+    categorized["Quick Open Files"] := []
 
-    if (!IsSet(g_hotstrings) || g_hotstrings.Length = 0) {
-        return categorized
+    ; Add hotstrings
+    if (IsSet(g_hotstrings) && g_hotstrings.Length > 0) {
+        for hs in g_hotstrings {
+            category := hs.category
+            if (category = "Projects" || category = "Prompts" || category = "General") {
+                categorized[category].Push(hs)
+            }
+        }
     }
 
-    for hs in g_hotstrings {
-        category := hs.category
-        if (category = "Projects" || category = "Prompts" || category = "General") {
-            categorized[category].Push(hs)
+    ; Add quick open files
+    if (IsSet(g_QuickOpenFiles) && g_QuickOpenFiles.Length > 0) {
+        for fileEntry in g_QuickOpenFiles {
+            categorized["Quick Open Files"].Push(fileEntry)
         }
     }
 
@@ -2117,6 +2163,47 @@ GetPreviewText(text, maxLength := 60) {
         return preview
     }
     return SubStr(preview, 1, maxLength) . "..."
+}
+
+; Find and activate Power BI file, or open it if not already open
+FindAndActivatePowerBIFile(filePath) {
+    ; Check if file exists
+    if (!FileExist(filePath)) {
+        return false
+    }
+
+    ; Extract filename from path
+    SplitPath(filePath, &fileName)
+
+    ; Search for Power BI Desktop windows with matching filename
+    try {
+        for hwnd in WinGetList("ahk_exe PBIDesktop.exe") {
+            try {
+                winTitle := WinGetTitle("ahk_id " hwnd)
+                ; Check if window title contains the filename (Power BI shows filename in title)
+                if (InStr(winTitle, fileName)) {
+                    ; Found matching window, activate it
+                    WinActivate("ahk_id " hwnd)
+                    WinWaitActive("ahk_id " hwnd, , 2)
+                    return true
+                }
+            } catch {
+                ; Skip windows we can't access
+                continue
+            }
+        }
+    } catch {
+        ; No Power BI windows found or error accessing them
+    }
+
+    ; No matching window found, open the file
+    try {
+        Run(filePath)
+        return true
+    } catch Error as e {
+        ; Failed to open file
+        return false
+    }
 }
 
 ; Cleanup hotstring selector
@@ -2174,14 +2261,43 @@ CleanupHotstringSelector() {
 
 ; Handler for character key press
 HandleHotstringChar(char) {
-    global g_HotstringSelectorActive, g_HotstringCharMap
+    global g_HotstringSelectorActive, g_HotstringCharMap, g_QuickOpenFileCharMap
 
     ; Only process if selector is active
     if (!g_HotstringSelectorActive) {
         return
     }
 
-    ; Get expansion text for this character
+    ; First check if character maps to a file path (quick open files)
+    filePath := g_QuickOpenFileCharMap.Get(char, "")
+    if (filePath = "") {
+        ; Try lowercase if uppercase
+        filePath := g_QuickOpenFileCharMap.Get(StrLower(char), "")
+    }
+
+    if (filePath != "") {
+        ; Cleanup first (closes GUI, disables hotkeys)
+        CleanupHotstringSelector()
+
+        ; Determine file type and open accordingly
+        SplitPath(filePath, , , &ext)
+        ext := StrLower(ext)
+
+        if (ext = "pbix") {
+            ; Power BI file
+            FindAndActivatePowerBIFile(filePath)
+        } else {
+            ; Generic file opening (fallback)
+            try {
+                Run(filePath)
+            } catch {
+                ; File opening failed
+            }
+        }
+        return
+    }
+
+    ; Check if character maps to a hotstring expansion
     expansion := g_HotstringCharMap.Get(char, "")
     if (expansion = "") {
         ; Try lowercase if uppercase
@@ -2229,9 +2345,12 @@ ShowHotstringSelector() {
     ; Build character mapping
     g_HotstringCharMap := BuildHotstringCharMap()
 
-    if (g_HotstringCharMap.Count = 0) {
+    ; Check if we have any items to display (hotstrings or quick open files)
+    global g_QuickOpenFileCharMap
+    hasItems := (g_HotstringCharMap.Count > 0) || (g_QuickOpenFileCharMap.Count > 0)
+    if (!hasItems) {
         ; Use tray notification to avoid stealing focus/closing other palettes
-        TrayTip("Hotstring Selector", "No hotstrings found.", "IconX")
+        TrayTip("Hotstring Selector", "No hotstrings or files found.", "IconX")
         SetTimer(() => TrayTip(), -5000)  ; Auto-hide after ~5s
         return
     }
@@ -2303,13 +2422,13 @@ ShowHotstringSelector() {
     displayText := ""
     hotstringCount := 0
 
-    ; Build a map of character index to hotstring info
+    ; Build a map of character index to hotstring/file info
     charIndexToHotstring := Map()
     charIndex := 1
     for category in g_HotstringCategories {
-        for hs in categorized[category] {
+        for item in categorized[category] {
             if (charIndex <= g_HotstringCharSequence.Length) {
-                charIndexToHotstring[charIndex] := { hotstring: hs, category: category }
+                charIndexToHotstring[charIndex] := { hotstring: item, category: category }
             }
             charIndex++
         }
@@ -2337,11 +2456,11 @@ ShowHotstringSelector() {
                         hsInfo := charIndexToHotstring[currentCharIndex]
                         hs := hsInfo.hotstring
 
-                        ; Use title if available (for all categories), otherwise use preview text
-                        if (hs.title != "") {
+                        ; Use title if available (for all categories including quick open files), otherwise use preview text
+                        if (hs.HasProp("title") && hs.title != "") {
                             displayText .= "[" . char . "] > " . hs.title . "`n"
                             hotstringCount++
-                        } else if (hs.expansion != "") {
+                        } else if (hs.HasProp("expansion") && hs.expansion != "") {
                             preview := GetPreviewText(hs.expansion)
                             displayText .= "[" . char . "] > " . preview . "`n"
                             hotstringCount++
@@ -2438,9 +2557,9 @@ ShowHotstringSelector() {
     ; Clear handlers array
     g_HotstringHotkeyHandlers := []
 
-    ; Enable hotkeys for all assigned characters
+    ; Enable hotkeys for all assigned characters (both hotstrings and quick open files)
     for char in g_HotstringCharSequence {
-        if (g_HotstringCharMap.Has(char)) {
+        if (g_HotstringCharMap.Has(char) || g_QuickOpenFileCharMap.Has(char)) {
             ; Use factory function to create handler with properly captured char value
             handler := CreateHotstringCharHandler(char)
 
