@@ -927,6 +927,7 @@ cheatSheets["Wikipedia"] := "
 (
 Wikipedia (Shift)
 🔍 [S][S]earch button click
+💾 [P]Save scroll [P]osition
 )"
 
 ; --- YouTube ---------------------------------------------------------------
@@ -2811,6 +2812,128 @@ IsTeamsChatActive() {
     catch Error as e {
         MsgBox "An error occurred: " e.Message
     }
+}
+
+; Shift + P: Save Wikipedia scroll position
++p::
+{
+    ; Include AppLaunchers.ahk functions by calling the manual save function
+    ; Since we can't directly include, we'll duplicate the logic here
+    SaveWikipediaScrollPositionManually_ShiftKeys()
+}
+
+; Wikipedia scroll position save function (duplicated from AppLaunchers.ahk)
+SaveWikipediaScrollPositionManually_ShiftKeys() {
+    ; Check if Wikipedia window is currently active
+    if (!WinActive("ahk_exe chrome.exe") || !InStr(WinGetTitle("A"), "Wikipedia")) {
+        return false
+    }
+
+    ; Check if window is on Monitor 3
+    hwnd := WinExist("A")
+    if (!hwnd) {
+        return false
+    }
+
+    rect := Buffer(16, 0)
+    if (!DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)) {
+        return false
+    }
+
+    left := NumGet(rect, 0, "int")
+    top := NumGet(rect, 4, "int")
+    right := NumGet(rect, 8, "int")
+    bottom := NumGet(rect, 12, "int")
+
+    centerX := left + (right - left) // 2
+    centerY := top + (bottom - top) // 2
+
+    monitorCount := MonitorGetCount()
+    isMonitor3 := false
+    loop monitorCount {
+        MonitorGet(A_Index, &ml, &mt, &mr, &mb)
+        if (centerX >= ml && centerX <= mr && centerY >= mt && centerY <= mb) {
+            isMonitor3 := (A_Index = 3)
+            break
+        }
+    }
+
+    if (!isMonitor3) {
+        return false
+    }
+
+    ; Show banner to inform user that scroll position is being saved
+    saveBanner := CreateCenteredBanner_ChatGPT("Saving scroll position... Please wait", "3772FF", "FFFFFF", 24, 178)
+
+    try {
+        ; Get Wikipedia URL
+        if (!WinActive("ahk_exe chrome.exe") || !InStr(WinGetTitle("A"), "Wikipedia")) {
+            return false
+        }
+        uia := UIA_Browser("ahk_exe chrome.exe")
+        url := uia.GetCurrentURL()
+        if (url = "" || !InStr(url, "wikipedia.org")) {
+            return false
+        }
+        ; Normalize URL - remove trailing slashes and fragments
+        url := RegExReplace(url, "/#.*$", "")
+        url := RegExReplace(url, "/+$", "")
+
+        if (url = "") {
+            return false
+        }
+
+        ; Get scroll position
+        scrollY := uia.JSReturnThroughClipboard("window.pageYOffset")
+        ; Get document height to calculate percentage
+        docHeight := uia.JSReturnThroughClipboard("document.documentElement.scrollHeight")
+
+        ; Convert to numbers and calculate percentage
+        if (scrollY != "" && scrollY != "undefined" && scrollY != "null" && docHeight != "" && docHeight !=
+            "undefined" && docHeight != "null") {
+            scrollYFloat := Float(scrollY)
+            docHeightFloat := Float(docHeight)
+            if (scrollYFloat >= 0 && docHeightFloat > 0) {
+                scrollPercentage := scrollYFloat / docHeightFloat
+                ; Clamp to valid range
+                if (scrollPercentage > 1.0) {
+                    scrollPercentage := 1.0
+                }
+
+                ; Save to INI file
+                scrollPositionsFile := A_ScriptDir "\wikipedia_scroll_positions.ini"
+                SplitPath(scrollPositionsFile, , &dir)
+                if (dir != "" && !DirExist(dir)) {
+                    DirCreate(dir)
+                }
+                saved := IniWrite(scrollPercentage, scrollPositionsFile, "Positions", url)
+
+                if (saved) {
+                    ; Update banner to show success
+                    try {
+                        if (IsObject(saveBanner) && saveBanner.Hwnd) {
+                            saveBanner.Controls[1].Text := "Scroll position saved!"
+                            Sleep(1000)  ; Show success message for 1 second
+                        }
+                    } catch {
+                    }
+                    return true
+                }
+            }
+        }
+    } catch Error as err {
+        ; Silent fail
+    } finally {
+        ; Always hide the banner after save operation completes
+        try {
+            if (IsObject(saveBanner) && saveBanner.Hwnd) {
+                Sleep(500)  ; Brief delay before hiding
+                saveBanner.Destroy()
+            }
+        } catch {
+        }
+    }
+    return false
 }
 
 #HotIf

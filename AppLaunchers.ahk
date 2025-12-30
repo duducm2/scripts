@@ -246,7 +246,6 @@ global g_WikipediaSelectorHandlers := []  ; Store hotkey handlers for cleanup
 
 ; Global variables for Wikipedia scroll position save/restore
 global g_WikipediaScrollPositionsFile := A_ScriptDir "\wikipedia_scroll_positions.ini"
-global g_WikipediaLastSaveTime := 0
 
 ; Wikipedia article items configuration
 ; Item 1: Taoism
@@ -963,145 +962,73 @@ ShowWikipediaSelector() {
 }
 
 ; =============================================================================
-; Automatic Wikipedia Scroll Position Save Timer
+; Manual Wikipedia Scroll Position Save Function
+; Can be called manually to save the current scroll position
 ; =============================================================================
-
-; Periodic checker function that runs every 2 seconds
-WikipediaScrollSaveChecker() {
-    global g_WikipediaLastSaveTime
-    ;#region agent log
-    logPath := A_ScriptDir "\.cursor\debug.log"
-    FileAppend Format(
-        '{{"timestamp":{},"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{{}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}`n',
-        A_TickCount), logPath
-    ;#endregion agent log
-
+SaveWikipediaScrollPositionManually() {
     ; Check if Wikipedia window is currently active
-    if (WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "Wikipedia")) {
-        ;#region agent log
-        FileAppend Format(
-            '{{"timestamp":{},"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Wikipedia window active","data":{{}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}`n',
-            A_TickCount), logPath
-        ;#endregion agent log
+    if (!WinActive("ahk_exe chrome.exe") || !InStr(WinGetTitle("A"), "Wikipedia")) {
+        return false
+    }
 
-        ; Check if window is on Monitor 3
-        if (!IsWindowOnMonitor3()) {
-            ;#region agent log
-            FileAppend Format(
-                '{{"timestamp":{},"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Window not on Monitor 3, skipping","data":{{}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}`n',
-                A_TickCount), logPath
-            ;#endregion agent log
-            return
+    ; Check if window is on Monitor 3
+    if (!IsWindowOnMonitor3()) {
+        return false
+    }
+
+    ; Show banner to inform user that scroll position is being saved
+    saveBanner := CreateCenteredBanner_Launchers("Saving scroll position... Please wait", "3772FF", "FFFFFF", 24, 178)
+
+    try {
+        url := GetWikipediaURL()
+        if (url = "") {
+            return false
         }
 
-        ; Calculate time since last save
-        timeSinceLastSave := A_TickCount - g_WikipediaLastSaveTime
-        ;#region agent log
-        FileAppend Format(
-            '{{"timestamp":{},"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Time since last save","data":{{"timeSinceLastSave":{}}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}`n',
-            A_TickCount, timeSinceLastSave), logPath
-        ;#endregion agent log
+        uia := UIA_Browser("ahk_exe chrome.exe")
+        scrollY := uia.JSReturnThroughClipboard("window.pageYOffset")
 
-        ; If 5 minutes (300000ms) have passed, save the scroll position
-        if (timeSinceLastSave >= 300000) {
-            ;#region agent log
-            FileAppend Format(
-                '{{"timestamp":{},"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Attempting to save scroll position","data":{{}},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C,E"}}`n',
-                A_TickCount), logPath
-            ;#endregion agent log
-            
-            ; Show banner to inform user that scroll position is being saved
-            saveBanner := CreateCenteredBanner_Launchers("Saving scroll position... Please wait", "3772FF", "FFFFFF", 24, 178)
-            
-            try {
-                url := GetWikipediaURL()
-                if (url != "") {
-                    ;#region agent log
-                    FileAppend Format(
-                        '{{"timestamp":{},"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Getting scroll position","data":{{"url":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C"}}`n',
-                        A_TickCount, url), logPath
-                    ;#endregion agent log
-                    uia := UIA_Browser("ahk_exe chrome.exe")
-                    scrollY := uia.JSReturnThroughClipboard("window.pageYOffset")
-                    ;#region agent log
-                    FileAppend Format(
-                        '{{"timestamp":{},"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Scroll position retrieved","data":{{"scrollY":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C,E"}}`n',
-                        A_TickCount, scrollY), logPath
-                    ;#endregion agent log
+        ; Get document height to calculate percentage
+        docHeight := uia.JSReturnThroughClipboard("document.documentElement.scrollHeight")
 
-                    ; Get document height to calculate percentage
-                    docHeight := uia.JSReturnThroughClipboard("document.documentElement.scrollHeight")
-                    ;#region agent log
-                    FileAppend Format(
-                        '{{"timestamp":{},"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Retrieved scroll values","data":{{"scrollY":"{}","docHeight":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C,E,F"}}`n',
-                        A_TickCount, scrollY, docHeight), logPath
-                    ;#endregion agent log
-
-                    ; Convert to numbers and calculate percentage
-                    if (scrollY != "" && scrollY != "undefined" && scrollY != "null" && docHeight != "" && docHeight !=
-                        "undefined" && docHeight != "null") {
-                        scrollYFloat := Float(scrollY)
-                        docHeightFloat := Float(docHeight)
-                        ;#region agent log
-                        FileAppend Format(
-                            '{{"timestamp":{},"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Converted to floats","data":{{"scrollYFloat":{},"docHeightFloat":{}}},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}}`n',
-                            A_TickCount, scrollYFloat, docHeightFloat), logPath
-                        ;#endregion agent log
-                        if (scrollYFloat >= 0 && docHeightFloat > 0) {
-                            scrollPercentage := scrollYFloat / docHeightFloat
-                            ; Clamp to valid range
-                            if (scrollPercentage > 1.0) {
-                                scrollPercentage := 1.0
-                            }
-                            ;#region agent log
-                            FileAppend Format(
-                                '{{"timestamp":{},"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Calculated scroll percentage","data":{{"scrollPercentage":{}}},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}}`n',
-                                A_TickCount, scrollPercentage), logPath
-                            ;#endregion agent log
-                            saved := SaveWikipediaScrollPosition(url, scrollPercentage)
-                            ;#region agent log
-                            FileAppend Format(
-                                '{{"timestamp":{},"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Save result","data":{{"saved":{}}},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}}`n',
-                                A_TickCount, saved), logPath
-                            ;#endregion agent log
-                            if (saved) {
-                                g_WikipediaLastSaveTime := A_TickCount
-                                ; Update banner to show success
-                                try {
-                                    if (IsObject(saveBanner) && saveBanner.Hwnd) {
-                                        saveBanner.Controls[1].Text := "Scroll position saved!"
-                                        Sleep(1000)  ; Show success message for 1 second
-                                    }
-                                } catch {
-                                }
-                            }
-                        }
-                    } else {
-                        ;#region agent log
-                        FileAppend Format(
-                            '{{"timestamp":{},"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Invalid scroll or docHeight values","data":{{"scrollY":"{}","docHeight":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"E,F"}}`n',
-                            A_TickCount, scrollY, docHeight), logPath
-                        ;#endregion agent log
-                    }
+        ; Convert to numbers and calculate percentage
+        if (scrollY != "" && scrollY != "undefined" && scrollY != "null" && docHeight != "" && docHeight !=
+            "undefined" && docHeight != "null") {
+            scrollYFloat := Float(scrollY)
+            docHeightFloat := Float(docHeight)
+            if (scrollYFloat >= 0 && docHeightFloat > 0) {
+                scrollPercentage := scrollYFloat / docHeightFloat
+                ; Clamp to valid range
+                if (scrollPercentage > 1.0) {
+                    scrollPercentage := 1.0
                 }
-            } catch Error as err {
-                ;#region agent log
-                FileAppend Format(
-                    '{{"timestamp":{},"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Exception in save","data":{{"error":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C"}}`n',
-                    A_TickCount, err.Message), logPath
-                ;#endregion agent log
-            } finally {
-                ; Always hide the banner after save operation completes
-                try {
-                    if (IsObject(saveBanner) && saveBanner.Hwnd) {
-                        Sleep(500)  ; Brief delay before hiding
-                        saveBanner.Destroy()
+                saved := SaveWikipediaScrollPosition(url, scrollPercentage)
+                if (saved) {
+                    ; Update banner to show success
+                    try {
+                        if (IsObject(saveBanner) && saveBanner.Hwnd) {
+                            saveBanner.Controls[1].Text := "Scroll position saved!"
+                            Sleep(1000)  ; Show success message for 1 second
+                        }
+                    } catch {
                     }
-                } catch {
+                    return true
                 }
             }
         }
+    } catch Error as err {
+        ; Silent fail
+    } finally {
+        ; Always hide the banner after save operation completes
+        try {
+            if (IsObject(saveBanner) && saveBanner.Hwnd) {
+                Sleep(500)  ; Brief delay before hiding
+                saveBanner.Destroy()
+            }
+        } catch {
+        }
     }
+    return false
 }
 
 ; =============================================================================
@@ -1159,7 +1086,6 @@ CreateCenteredBanner_Launchers(message, bgColor := "be4747", fontColor := "FFFFF
 }
 
 ; =============================================================================
-; Initialize Wikipedia scroll position auto-save timer
+; Initialize Wikipedia scroll position auto-save timer - REMOVED
 ; =============================================================================
-; Start the periodic checker timer (runs every 2 seconds)
-SetTimer(WikipediaScrollSaveChecker, 2000)
+; Auto-save timer removed - now using manual save via Shift keys.ahk shortcut

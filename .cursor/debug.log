@@ -2038,3 +2038,300 @@
 {{"timestamp":258498640,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
 {{"timestamp":258500640,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
 {{"timestamp":258502640,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258504640,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258506640,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258508656,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258510656,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258512656,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258514656,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258514687,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Wikipedia window active","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258514750,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Checking monitor for window","data":{{"hwnd":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258514859,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Monitor check result","data":{{"monitorIndex":3,"isMonitor3":1,"centerX":6570,"centerY":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258514953,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Time since last save","data":{{"timeSinceLastSave":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258516656,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258516656,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Wikipedia window active","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258516671,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Checking monitor for window","data":{{"hwnd":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258516687,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Monitor check result","data":{{"monitorIndex":3,"isMonitor3":1,"centerX":6570,"centerY":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258516703,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Time since last save","data":{{"timeSinceLastSave":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258518718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258520718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258522718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258522718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Wikipedia window active","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258522750,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Checking monitor for window","data":{{"hwnd":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258522781,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Monitor check result","data":{{"monitorIndex":3,"isMonitor3":1,"centerX":6570,"centerY":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258522812,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Time since last save","data":{{"timeSinceLastSave":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258524718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258526718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258528718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258530718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258532718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258534718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258536718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258538718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258540718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258542718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258544718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258546718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258548718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258550718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258552718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258554718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258556718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258558718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258560718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258562718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258564718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258566718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258568718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258570718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258572718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258574718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258576718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258578718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258580718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258582718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258584718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258586718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258588718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258590718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258592718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258594718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258596718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258598718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258600718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258602718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258604718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258606718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258608718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258610718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258612718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258614718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258616718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258618718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258620718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258622718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258624718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258624718,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Wikipedia window active","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258624734,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Checking monitor for window","data":{{"hwnd":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258624750,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Monitor check result","data":{{"monitorIndex":3,"isMonitor3":1,"centerX":6570,"centerY":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258624765,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Time since last save","data":{{"timeSinceLastSave":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258624781,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Attempting to save scroll position","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C,E"}}
+{{"timestamp":258624812,"location":"AppLaunchers.ahk:GetWikipediaURL","message":"Getting Wikipedia URL","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}}
+{{"timestamp":258625937,"location":"AppLaunchers.ahk:GetWikipediaURL","message":"Got URL from browser","data":{{"url":"https://en.wikipedia.org/wiki/Taoism"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}}
+{{"timestamp":258625937,"location":"AppLaunchers.ahk:GetWikipediaURL","message":"URL normalized","data":{{"originalUrl":"https://en.wikipedia.org/wiki/Taoism","normalizedUrl":"https://en.wikipedia.org/wiki/Taoism"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}}
+{{"timestamp":258625953,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Getting scroll position","data":{{"url":"https://en.wikipedia.org/wiki/Taoism"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C"}}
+{{"timestamp":258627078,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Scroll position retrieved","data":{{"scrollY":"27162"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C,E"}}
+{{"timestamp":258627171,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Retrieved scroll values","data":{{"scrollY":"27162","docHeight":"46575"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C,E,F"}}
+{{"timestamp":258627171,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Converted to floats","data":{{"scrollYFloat":27162.0,"docHeightFloat":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}}
+{{"timestamp":258627203,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Calculated scroll percentage","data":{{"scrollPercentage":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}}
+{{"timestamp":258627250,"location":"AppLaunchers.ahk:SaveWikipediaScrollPosition","message":"Saving scroll position","data":{{"url":"https://en.wikipedia.org/wiki/Taoism","scrollPercentage":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}}
+{{"timestamp":258627281,"location":"AppLaunchers.ahk:SaveWikipediaScrollPosition","message":"Scroll position saved successfully","data":{{"url":"https://en.wikipedia.org/wiki/Taoism","scrollPercentage":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}}
+{{"timestamp":258627328,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Save result","data":{{"saved":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}}
+{{"timestamp":258627875,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Checking monitor for window","data":{{"hwnd":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258627875,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Monitor check result","data":{{"monitorIndex":3,"isMonitor3":1,"centerX":6570,"centerY":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258627890,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258627906,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Wikipedia window active","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258627921,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Checking monitor for window","data":{{"hwnd":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258627937,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Monitor check result","data":{{"monitorIndex":3,"isMonitor3":1,"centerX":6570,"centerY":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258627953,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Time since last save","data":{{"timeSinceLastSave":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258627968,"location":"AppLaunchers.ahk:GetWikipediaURL","message":"Getting Wikipedia URL","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}}
+{{"timestamp":258629140,"location":"AppLaunchers.ahk:GetWikipediaURL","message":"Got URL from browser","data":{{"url":"https://en.wikipedia.org/wiki/Taoism"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}}
+{{"timestamp":258629140,"location":"AppLaunchers.ahk:GetWikipediaURL","message":"URL normalized","data":{{"originalUrl":"https://en.wikipedia.org/wiki/Taoism","normalizedUrl":"https://en.wikipedia.org/wiki/Taoism"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}}
+{{"timestamp":258629171,"location":"AppLaunchers.ahk:#!+k::","message":"Got URL, loading saved position","data":{{"url":"https://en.wikipedia.org/wiki/Taoism"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,D"}}
+{{"timestamp":258629203,"location":"AppLaunchers.ahk:LoadWikipediaScrollPosition","message":"Loading scroll position","data":{{"url":"https://en.wikipedia.org/wiki/Taoism"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}}
+{{"timestamp":258629234,"location":"AppLaunchers.ahk:LoadWikipediaScrollPosition","message":"Loaded scroll position","data":{{"scrollPercentage":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}}
+{{"timestamp":258629281,"location":"AppLaunchers.ahk:#!+k::","message":"Loaded saved percentage","data":{{"savedPercentage":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,D,F"}}
+{{"timestamp":258629296,"location":"AppLaunchers.ahk:#!+k::","message":"Getting document height to calculate pixel position","data":{{"savedPercentage":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}}
+{{"timestamp":258630078,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258630078,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Wikipedia window active","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258630093,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Checking monitor for window","data":{{"hwnd":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258630109,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Monitor check result","data":{{"monitorIndex":3,"isMonitor3":1,"centerX":6570,"centerY":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258630125,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Time since last save","data":{{"timeSinceLastSave":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258631000,"location":"AppLaunchers.ahk:#!+k::","message":"Got document height","data":{{"docHeight":"46575"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}}
+{{"timestamp":258631000,"location":"AppLaunchers.ahk:#!+k::","message":"Calculated target scroll position","data":{{"savedPercentage":0.58318840579710141,"docHeightFloat":46575.0,"targetScrollY":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}}
+{{"timestamp":258631687,"location":"AppLaunchers.ahk:#!+k::","message":"Scroll restored, checking result","data":{{"targetScrollY":27161.999999999996,"actualPosition":"27162"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,F"}}
+{{"timestamp":258632078,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258632078,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Wikipedia window active","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258632109,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Checking monitor for window","data":{{"hwnd":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258632140,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Monitor check result","data":{{"monitorIndex":3,"isMonitor3":1,"centerX":6570,"centerY":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258632171,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Time since last save","data":{{"timeSinceLastSave":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258634078,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258634078,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Wikipedia window active","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258634078,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Checking monitor for window","data":{{"hwnd":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258634109,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Monitor check result","data":{{"monitorIndex":3,"isMonitor3":1,"centerX":6570,"centerY":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258634140,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Time since last save","data":{{"timeSinceLastSave":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258636078,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258638078,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258638078,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Wikipedia window active","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258638109,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Checking monitor for window","data":{{"hwnd":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258638125,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Monitor check result","data":{{"monitorIndex":3,"isMonitor3":1,"centerX":6570,"centerY":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258638156,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Time since last save","data":{{"timeSinceLastSave":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258638843,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Checking monitor for window","data":{{"hwnd":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258638843,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Monitor check result","data":{{"monitorIndex":3,"isMonitor3":1,"centerX":6570,"centerY":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258638875,"location":"AppLaunchers.ahk:LoadWikipediaScrollPosition","message":"Loading scroll position","data":{{"url":"https://en.wikipedia.org/wiki/Taoism"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}}
+{{"timestamp":258638906,"location":"AppLaunchers.ahk:LoadWikipediaScrollPosition","message":"Loaded scroll position","data":{{"scrollPercentage":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}}
+{{"timestamp":258638937,"location":"AppLaunchers.ahk:HandleWikipediaChar","message":"Loaded saved percentage","data":{{"url":"https://en.wikipedia.org/wiki/Taoism","savedPercentage":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,D,F"}}
+{{"timestamp":258638968,"location":"AppLaunchers.ahk:HandleWikipediaChar","message":"Getting document height to calculate pixel position","data":{{"savedPercentage":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}}
+{{"timestamp":258640078,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258640078,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Wikipedia window active","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258640093,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Checking monitor for window","data":{{"hwnd":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258640109,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Monitor check result","data":{{"monitorIndex":3,"isMonitor3":1,"centerX":6570,"centerY":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258640125,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Time since last save","data":{{"timeSinceLastSave":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258640578,"location":"AppLaunchers.ahk:HandleWikipediaChar","message":"Got document height","data":{{"docHeight":"46579"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}}
+{{"timestamp":258640578,"location":"AppLaunchers.ahk:HandleWikipediaChar","message":"Calculated target scroll position","data":{{"savedPercentage":0.58318840579710141,"docHeightFloat":46579.0,"targetScrollY":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}}
+{{"timestamp":258641250,"location":"AppLaunchers.ahk:HandleWikipediaChar","message":"Scroll restored, checking result","data":{{"targetScrollY":27164.332753623188,"actualPosition":"27164"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,F"}}
+{{"timestamp":258642078,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258642078,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Wikipedia window active","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258642093,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Checking monitor for window","data":{{"hwnd":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258642125,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Monitor check result","data":{{"monitorIndex":3,"isMonitor3":1,"centerX":6570,"centerY":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258642156,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Time since last save","data":{{"timeSinceLastSave":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258644078,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258644078,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Wikipedia window active","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258644109,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Checking monitor for window","data":{{"hwnd":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258644140,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Monitor check result","data":{{"monitorIndex":3,"isMonitor3":1,"centerX":6570,"centerY":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258644171,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Time since last save","data":{{"timeSinceLastSave":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258646078,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258646078,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Wikipedia window active","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258646109,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Checking monitor for window","data":{{"hwnd":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258646140,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Monitor check result","data":{{"monitorIndex":3,"isMonitor3":1,"centerX":6570,"centerY":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258646171,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Time since last save","data":{{"timeSinceLastSave":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258648078,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258648078,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Wikipedia window active","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258648093,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Checking monitor for window","data":{{"hwnd":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258648109,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Monitor check result","data":{{"monitorIndex":3,"isMonitor3":1,"centerX":6570,"centerY":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258648125,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Time since last save","data":{{"timeSinceLastSave":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258650078,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258650078,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Wikipedia window active","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258650093,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Checking monitor for window","data":{{"hwnd":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258650125,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Monitor check result","data":{{"monitorIndex":3,"isMonitor3":1,"centerX":6570,"centerY":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258650156,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Time since last save","data":{{"timeSinceLastSave":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258652078,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258652078,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Wikipedia window active","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258652093,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Checking monitor for window","data":{{"hwnd":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258652109,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Monitor check result","data":{{"monitorIndex":3,"isMonitor3":1,"centerX":6570,"centerY":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258652125,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Time since last save","data":{{"timeSinceLastSave":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258654078,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258654078,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Wikipedia window active","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258654093,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Checking monitor for window","data":{{"hwnd":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258654125,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Monitor check result","data":{{"monitorIndex":3,"isMonitor3":1,"centerX":6570,"centerY":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258654171,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Time since last save","data":{{"timeSinceLastSave":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258656093,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258656093,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Wikipedia window active","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258656109,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Checking monitor for window","data":{{"hwnd":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258656125,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Monitor check result","data":{{"monitorIndex":3,"isMonitor3":1,"centerX":6570,"centerY":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258656156,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Time since last save","data":{{"timeSinceLastSave":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258658093,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258658093,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Wikipedia window active","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258658109,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Checking monitor for window","data":{{"hwnd":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258658125,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Monitor check result","data":{{"monitorIndex":3,"isMonitor3":1,"centerX":6570,"centerY":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258658140,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Time since last save","data":{{"timeSinceLastSave":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258660093,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258660093,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Wikipedia window active","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258660109,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Checking monitor for window","data":{{"hwnd":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258660140,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Monitor check result","data":{{"monitorIndex":3,"isMonitor3":1,"centerX":6570,"centerY":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258660171,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Time since last save","data":{{"timeSinceLastSave":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258662093,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258662093,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Wikipedia window active","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258662109,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Checking monitor for window","data":{{"hwnd":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258666156,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258666156,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Wikipedia window active","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258666187,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Checking monitor for window","data":{{"hwnd":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258666218,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Monitor check result","data":{{"monitorIndex":3,"isMonitor3":1,"centerX":6570,"centerY":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258666265,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Time since last save","data":{{"timeSinceLastSave":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258668156,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258668156,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Wikipedia window active","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258668171,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Checking monitor for window","data":{{"hwnd":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258668203,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Monitor check result","data":{{"monitorIndex":3,"isMonitor3":1,"centerX":6570,"centerY":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258668234,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Time since last save","data":{{"timeSinceLastSave":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258670156,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258672156,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258674156,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258676156,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258676171,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Wikipedia window active","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258676171,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Checking monitor for window","data":{{"hwnd":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258676203,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Monitor check result","data":{{"monitorIndex":3,"isMonitor3":1,"centerX":6570,"centerY":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258676203,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Time since last save","data":{{"timeSinceLastSave":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258678156,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258680156,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258682156,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258684156,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258686156,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258688156,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258690156,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258692156,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258694156,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258696156,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258698156,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258700156,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258702156,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258704156,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258706156,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258708156,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258710171,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258712171,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258712171,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Wikipedia window active","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258712250,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Checking monitor for window","data":{{"hwnd":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258712359,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Monitor check result","data":{{"monitorIndex":3,"isMonitor3":1,"centerX":6570,"centerY":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258712437,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Time since last save","data":{{"timeSinceLastSave":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258714171,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258714171,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Wikipedia window active","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258714218,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Checking monitor for window","data":{{"hwnd":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258714281,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Monitor check result","data":{{"monitorIndex":3,"isMonitor3":1,"centerX":6570,"centerY":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258714375,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Time since last save","data":{{"timeSinceLastSave":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258716171,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258718171,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258718171,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Wikipedia window active","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258718203,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Checking monitor for window","data":{{"hwnd":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258718250,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Monitor check result","data":{{"monitorIndex":3,"isMonitor3":1,"centerX":6570,"centerY":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258718265,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Time since last save","data":{{"timeSinceLastSave":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258720171,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258720187,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Wikipedia window active","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258720218,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Checking monitor for window","data":{{"hwnd":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258720281,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Monitor check result","data":{{"monitorIndex":3,"isMonitor3":1,"centerX":6570,"centerY":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258720343,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Time since last save","data":{{"timeSinceLastSave":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258722171,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258724171,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258726171,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258728171,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258730171,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258732187,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258734187,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258736187,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258738187,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258740187,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258742187,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258744187,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258746187,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258748187,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258748187,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Wikipedia window active","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258750187,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258750187,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Wikipedia window active","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258750218,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Checking monitor for window","data":{{"hwnd":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258750250,"location":"AppLaunchers.ahk:IsWindowOnMonitor3","message":"Monitor check result","data":{{"monitorIndex":3,"isMonitor3":1,"centerX":6570,"centerY":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258750281,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Time since last save","data":{{"timeSinceLastSave":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258752187,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258754187,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258756187,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258758187,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258760187,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258762187,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258764187,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258766187,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258768187,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258770187,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258772187,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258774187,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258776187,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258778187,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258780187,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258782187,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258784187,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258786187,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258788187,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258790187,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258792187,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258794187,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258796250,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258798250,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258800250,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
+{{"timestamp":258802250,"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Timer tick","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}}
