@@ -3069,7 +3069,7 @@ CheckDictationRecordingWindow() {
             ; Recording window appeared - set mic volume FIRST, then show indicator
             ; Run PowerShell script to set mic volume to 100% (synchronously to ensure it completes first)
             try {
-                micVolumeScript := A_ScriptDir "\Set-MicVolume.ps1"
+                micVolumeScript := A_ScriptDir "\scripts\Set-MicVolume.ps1"
                 if (FileExist(micVolumeScript)) {
                     RunWait "powershell.exe -ExecutionPolicy Bypass -File `"" micVolumeScript "`"", , "Hide"
                 }

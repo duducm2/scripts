@@ -245,7 +245,7 @@ global g_WikipediaSelectorActive := false
 global g_WikipediaSelectorHandlers := []  ; Store hotkey handlers for cleanup
 
 ; Global variables for Wikipedia scroll position save/restore
-global g_WikipediaScrollPositionsFile := A_ScriptDir "\wikipedia_scroll_positions.ini"
+global g_WikipediaScrollPositionsFile := A_ScriptDir "\data\wikipedia_scroll_positions.ini"
 
 ; Wikipedia article items configuration
 ; Item 1: Taoism

@@ -8,7 +8,7 @@
 
 ; --- Config ---------------------------------------------------------------
 ; Path to the file containing the initial prompt Gemini should receive.
-PROMPT_FILE := A_ScriptDir "\Gemini_Prompt.txt"
+PROMPT_FILE := A_ScriptDir "\data\Gemini_Prompt.txt"
 
 ; --- Helper Functions --------------------------------------------------------
 

@@ -2901,7 +2901,7 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
                 }
 
                 ; Save to INI file
-                scrollPositionsFile := A_ScriptDir "\wikipedia_scroll_positions.ini"
+                scrollPositionsFile := A_ScriptDir "\data\wikipedia_scroll_positions.ini"
                 SplitPath(scrollPositionsFile, , &dir)
                 if (dir != "" && !DirExist(dir)) {
                     DirCreate(dir)
@@ -11513,7 +11513,7 @@ ShowGeminiModelSelector() {
             }
 
             ; Read the Gemini_Prompt.txt file and paste its contents via clipboard
-            promptFilePath := A_ScriptDir "\Gemini_Prompt.txt"
+            promptFilePath := A_ScriptDir "\data\Gemini_Prompt.txt"
             if FileExist(promptFilePath) {
                 ; Save current clipboard
                 oldClipboard := A_Clipboard

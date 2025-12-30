@@ -2397,3 +2397,7 @@
 {{"timestamp":259066109,"location":"AppLaunchers.ahk:HandleWikipediaChar","message":"Got document height","data":{{"docHeight":"46579"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}}
 {{"timestamp":259066109,"location":"AppLaunchers.ahk:HandleWikipediaChar","message":"Calculated target scroll position","data":{{"savedPercentage":0.58426194310252277,"docHeightFloat":46579.0,"targetScrollY":}},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}}
 {{"timestamp":259066718,"location":"AppLaunchers.ahk:HandleWikipediaChar","message":"Scroll restored, checking result","data":{{"targetScrollY":27214.337047772409,"actualPosition":"27214"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,F"}}
+{"sessionId":"debug-session","runId":"pre-fix","hypothesisId":"H1","location":"Utils.ahk:Escape","message":"Escape hotkey triggered","timestamp":259096187,"data":{"timestamp":259096187}}
+{"sessionId":"debug-session","runId":"pre-fix","hypothesisId":"H2","location":"Utils.ahk:Escape","message":"State-based check","timestamp":259096187,"data":{"g_DictationActive":0,"note":"Using state variable instead of window check"}}
+{"sessionId":"debug-session","runId":"pre-fix","hypothesisId":"H3","location":"Utils.ahk:Escape","message":"Forwarding Escape to system","timestamp":259096218,"data":{"blocking":0,"forwarding":1,"reason":"Dictation not active - Esc allowed"}}
+{"sessionId":"debug-session","runId":"pre-fix","hypothesisId":"H3","location":"Utils.ahk:Escape","message":"Escape forwarded","timestamp":259096250,"data":{"afterSend":1}}
