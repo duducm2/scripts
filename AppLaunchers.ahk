@@ -814,59 +814,23 @@ LogPomodoroSession() {
 
 ; Play chime callback - plays sound every 1 second with multiple methods for maximum audibility
 PomodoroChimeCallback(*) {
-    ; #region agent log
-    SafeDebugLog(
-        '{"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"AppLaunchers.ahk:816","message":"PomodoroChimeCallback called","data":{},"timestamp":' A_TickCount '}`n'
-    )
-    ; #endregion
-
     ; Play multiple sounds simultaneously for maximum audibility
     ; Method 1: Primary - SoundBeep with high frequency and longer duration (most reliable and audible)
     try {
         SoundBeep(2000, 300)  ; High frequency (2000 Hz) and longer duration (300 ms) for better audibility
-        ; #region agent log
-        SafeDebugLog(
-            '{"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"AppLaunchers.ahk:822","message":"SoundBeep 2000Hz succeeded","data":{"method":"SoundBeep","freq":2000},"timestamp":' A_TickCount '}`n'
-        )
-        ; #endregion
-    } catch Error as err {
-        ; #region agent log
-        SafeDebugLog(
-            '{"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"AppLaunchers.ahk:825","message":"SoundBeep 2000Hz failed","data":{"error":err.Message},"timestamp":' A_TickCount '}`n'
-        )
-        ; #endregion
+    } catch {
     }
 
     ; Method 2: Also try MessageBeep as additional sound
     try {
         DllCall("User32\MessageBeep", "UInt", 0xFFFFFFFF)
-        ; #region agent log
-        SafeDebugLog(
-            '{"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"AppLaunchers.ahk:830","message":"MessageBeep succeeded","data":{"method":"MessageBeep"},"timestamp":' A_TickCount '}`n'
-        )
-        ; #endregion
-    } catch Error as err {
-        ; #region agent log
-        SafeDebugLog(
-            '{"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"AppLaunchers.ahk:833","message":"MessageBeep failed","data":{"error":err.Message},"timestamp":' A_TickCount '}`n'
-        )
-        ; #endregion
+    } catch {
     }
 
     ; Method 3: Also try system sound as additional alert
     try {
         SoundPlay("*16")  ; System asterisk sound
-        ; #region agent log
-        SafeDebugLog(
-            '{"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"AppLaunchers.ahk:838","message":"SoundPlay *16 succeeded","data":{"method":"SoundPlay"},"timestamp":' A_TickCount '}`n'
-        )
-        ; #endregion
-    } catch Error as err {
-        ; #region agent log
-        SafeDebugLog(
-            '{"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"AppLaunchers.ahk:841","message":"SoundPlay *16 failed","data":{"error":err.Message},"timestamp":' A_TickCount '}`n'
-        )
-        ; #endregion
+    } catch {
     }
 }
 
@@ -899,12 +863,6 @@ PomodoroHideOverlayCallback(*) {
 PlayCompletionChime(durationMs) {
     global g_ChimeTimer, g_ChimeStopTimer
 
-    ; #region agent log
-    SafeDebugLog(
-        '{"sessionId":"debug-session","runId":"run1","hypothesisId":"C","location":"AppLaunchers.ahk:879","message":"PlayCompletionChime called","data":{"durationMs":durationMs},"timestamp":' A_TickCount '}`n'
-    )
-    ; #endregion
-
     ; Cancel any existing chime timers
     if (g_ChimeTimer) {
         SetTimer(g_ChimeTimer, 0)
@@ -916,41 +874,20 @@ PlayCompletionChime(durationMs) {
     }
 
     ; Play immediate sound when timer completes (before starting periodic chime)
-    ; #region agent log
-    SafeDebugLog(
-        '{"sessionId":"debug-session","runId":"run1","hypothesisId":"D","location":"AppLaunchers.ahk:893","message":"Calling immediate PomodoroChimeCallback","data":{},"timestamp":' A_TickCount '}`n'
-    )
-    ; #endregion
     PomodoroChimeCallback()
 
     ; Start chime timer (every 1 second for better audibility)
     g_ChimeTimer := PomodoroChimeCallback
     SetTimer(g_ChimeTimer, 1000)
-    ; #region agent log
-    SafeDebugLog(
-        '{"sessionId":"debug-session","runId":"run1","hypothesisId":"C","location":"AppLaunchers.ahk:897","message":"Chime timer set","data":{"interval":1000},"timestamp":' A_TickCount '}`n'
-    )
-    ; #endregion
 
     ; Set timer to stop chime after duration
     g_ChimeStopTimer := PomodoroStopChimeCallback
     SetTimer(g_ChimeStopTimer, -durationMs)
-    ; #region agent log
-    SafeDebugLog(
-        '{"sessionId":"debug-session","runId":"run1","hypothesisId":"C","location":"AppLaunchers.ahk:901","message":"Stop timer set","data":{"duration":durationMs},"timestamp":' A_TickCount '}`n'
-    )
-    ; #endregion
 }
 
 ; Handler when Pomodoro timer completes (25 minutes)
 OnPomodoroComplete() {
     global g_PomodoroTimer, g_PomodoroOverlay, g_ChimeTimer, g_ChimeStopTimer
-
-    ; #region agent log
-    SafeDebugLog(
-        '{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"AppLaunchers.ahk:905","message":"OnPomodoroComplete called","data":{},"timestamp":' A_TickCount '}`n'
-    )
-    ; #endregion
 
     ; Cancel the main timer
     if (g_PomodoroTimer) {
@@ -962,26 +899,11 @@ OnPomodoroComplete() {
 
     ; Play 30-second completion chime (plays immediate sound, then every 1 second for 30 seconds)
     ; The chime will continue playing even while the message box is shown
-    ; #region agent log
-    SafeDebugLog(
-        '{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"AppLaunchers.ahk:924","message":"About to call PlayCompletionChime","data":{},"timestamp":' A_TickCount '}`n'
-    )
-    ; #endregion
     PlayCompletionChime(30000)
 
     ; Show completion message box immediately (this is blocking, but chime continues in background)
-    ; #region agent log
-    SafeDebugLog(
-        '{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"AppLaunchers.ahk:928","message":"About to show message box","data":{},"timestamp":' A_TickCount '}`n'
-    )
-    ; #endregion
     result := MsgBox("Pomodoro session complete!`n`nTrigger another Pomodoro?", "Pomodoro Complete",
         "YesNo Icon?")
-    ; #region agent log
-    SafeDebugLog(
-        '{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"AppLaunchers.ahk:931","message":"Message box dismissed","data":{"result":result},"timestamp":' A_TickCount '}`n'
-    )
-    ; #endregion
 
     ; No overlay to clean up (we don't show it when timer completes)
 
