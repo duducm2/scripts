@@ -2,3 +2,4 @@
 {"sessionId":"debug-session","runId":"pre-fix","hypothesisId":"H2","location":"Utils.ahk:Escape","message":"State-based check","timestamp":315234328,"data":{"g_DictationActive":1,"note":"Using state variable instead of window check"}}
 {"sessionId":"debug-session","runId":"pre-fix","hypothesisId":"H3","location":"Utils.ahk:Escape","message":"Blocking Escape (dictation active)","timestamp":315234343,"data":{"blocking":1,"reason":"Dictation state is active - Esc restricted","returning":1}}
 {"sessionId":"debug-session","runId":"pre-fix","hypothesisId":"H1","location":"Utils.ahk","message":"Escape hotkey registered","timestamp":315568265,"data":{"inputLevel":10,"useHook":1}}
+{"sessionId":"debug-session","runId":"pre-fix","hypothesisId":"H1","location":"Utils.ahk","message":"Escape hotkey registered","timestamp":315835203,"data":{"inputLevel":10,"useHook":1}}

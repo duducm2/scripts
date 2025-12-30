@@ -2172,16 +2172,25 @@ FindAndActivatePowerBIFile(filePath) {
         return false
     }
 
-    ; Extract filename from path
-    SplitPath(filePath, &fileName)
+    ; Extract filename from path (Power BI window titles don't include .pbix extension)
+    SplitPath(filePath, , , , &fileNameNoExt)
+
+    ; Normalize the filename for comparison (trim whitespace, case-insensitive)
+    fileNameNoExt := Trim(fileNameNoExt)
+    fileNameLower := StrLower(fileNameNoExt)
 
     ; Search for Power BI Desktop windows with matching filename
+    ; Power BI window titles are like "Dissertation InfoVis  - PowerBI - Charts" (no extension)
     try {
         for hwnd in WinGetList("ahk_exe PBIDesktop.exe") {
             try {
                 winTitle := WinGetTitle("ahk_id " hwnd)
-                ; Check if window title contains the filename (Power BI shows filename in title)
-                if (InStr(winTitle, fileName)) {
+                winTitleLower := StrLower(Trim(winTitle))
+
+                ; Check if window title matches the filename (case-insensitive)
+                ; Power BI window title should be exactly the filename or start with it
+                ; Check for exact match first, then check if title starts with filename
+                if (winTitleLower = fileNameLower || InStr(winTitleLower, fileNameLower) = 1) {
                     ; Found matching window, activate it
                     WinActivate("ahk_id " hwnd)
                     WinWaitActive("ahk_id " hwnd, , 2)
