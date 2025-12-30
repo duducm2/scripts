@@ -689,6 +689,9 @@ ShowWikipediaSelector() {
         WinWaitActive("Wikipedia", , 2)
         CenterMouse()
 
+        ; Enable focus mode to darken other monitors
+        EnableFocusMode()
+
         ; Wait briefly for page to stabilize
         Sleep(500)
 
