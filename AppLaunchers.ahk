@@ -249,10 +249,12 @@ global g_WikipediaScrollPositionsFile := A_ScriptDir "\data\wikipedia_scroll_pos
 
 ; Wikipedia article items configuration
 ; Item 1: Taoism
-; Items 2-5: Placeholders (no action)
+; Item 2: Claude Debussy
+; Items 3-5: Placeholders (no action)
 global g_WikipediaItems := [{ char: "1", title: "Taoism", url: "https://en.wikipedia.org/wiki/Taoism" }, { char: "2",
-    title: "Placeholder", url: "" }, { char: "3", title: "Placeholder", url: "" }, { char: "4", title: "Placeholder",
-        url: "" }, { char: "5", title: "Placeholder", url: "" }
+    title: "Claude Debussy", url: "https://en.wikipedia.org/wiki/Claude_Debussy" }, { char: "3", title: "Placeholder",
+        url: "" }, { char: "4", title: "Placeholder",
+            url: "" }, { char: "5", title: "Placeholder", url: "" }
 ]
 
 ; =============================================================================
