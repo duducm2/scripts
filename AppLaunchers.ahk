@@ -794,17 +794,8 @@ ShowWaterBottleOverlay() {
 
 ; Show periodic TrayTip notification during pomodoro (more reliable than overlay)
 ShowTinyWaterBottleIndicator() {
-    ;#region agent log
-    FocusDbgLog("H1", "AppLaunchers.ahk:ShowTinyWaterBottleIndicator",
-        "Function called - setting up tray notifications", Map())
-    ;#endregion agent log
-
     ; No initial notification - only periodic reminders
     ; The water bottle overlay is shown separately
-
-    ;#region agent log
-    FocusDbgLog("H1", "AppLaunchers.ahk:ShowTinyWaterBottleIndicator", "Indicator setup complete", Map())
-    ;#endregion agent log
 
     ; Return a dummy object to maintain compatibility
     ; The periodic notifications will be handled by a timer
@@ -836,10 +827,6 @@ LogPomodoroSession() {
 ; Check pomodoro status from last CSV entry
 CheckPomodoroStatus() {
     global g_PomodoroLogFile
-
-    ;#region agent log
-    FocusDbgLog("H1", "AppLaunchers.ahk:CheckPomodoroStatus", "Function called", Map())
-    ;#endregion agent log
 
     ; Check if log file exists
     if (!FileExist(g_PomodoroLogFile)) {
@@ -890,13 +877,6 @@ CheckPomodoroStatus() {
         lastDate := Trim(parts[1])
         lastTime := Trim(parts[2])
 
-        ;#region agent log
-        FocusDbgLog("H1", "AppLaunchers.ahk:CheckPomodoroStatus", "Last entry parsed", Map(
-            "lastDate", lastDate,
-            "lastTime", lastTime
-        ))
-        ;#endregion agent log
-
         ; Parse date and time
         ; Format: yyyy/MM/dd and HH:mm
         dateTimeStr := lastDate . " " . lastTime
@@ -904,14 +884,6 @@ CheckPomodoroStatus() {
 
         ; Calculate time difference in minutes
         timeDiffMinutes := CalculateMinutesDifference(dateTimeStr, currentDateTimeStr)
-
-        ;#region agent log
-        FocusDbgLog("H1", "AppLaunchers.ahk:CheckPomodoroStatus", "Time difference calculation result", Map(
-            "timeDiffMinutes", timeDiffMinutes,
-            "dateTimeStr", dateTimeStr,
-            "currentDateTimeStr", currentDateTimeStr
-        ))
-        ;#endregion agent log
 
         ; Check if calculation failed
         ; timeDiffMinutes = 0 means same minute (just started), which is valid
@@ -926,14 +898,6 @@ CheckPomodoroStatus() {
         }
 
         ; timeDiffMinutes = 0 means pomodoro was just started (within same minute) - this is valid
-
-        ;#region agent log
-        FocusDbgLog("H1", "AppLaunchers.ahk:CheckPomodoroStatus", "Time difference calculated", Map(
-            "timeDiffMinutes", timeDiffMinutes,
-            "lastDateTime", dateTimeStr,
-            "currentDateTime", currentDateTimeStr
-        ))
-        ;#endregion agent log
 
         ; Check if probably in pomodoro (within 25 minutes)
         probablyInPomodoro := (timeDiffMinutes >= 0 && timeDiffMinutes <= 25)
@@ -961,11 +925,6 @@ CheckPomodoroStatus() {
         }
 
     } catch Error as err {
-        ;#region agent log
-        FocusDbgLog("H1", "AppLaunchers.ahk:CheckPomodoroStatus", "Error reading CSV", Map(
-            "error", err.Message
-        ))
-        ;#endregion agent log
         result := MsgBox("Error reading pomodoro log: " . err.Message . "`n`nWould you like to start a new Pomodoro?",
             "Pomodoro Status", "YesNo Icon?")
         if (result = "Yes") {
@@ -995,20 +954,9 @@ CalculateMinutesDifference(dateTimeStr1, dateTimeStr2) {
 
 ; Helper to convert date/time string to total minutes since a reference point
 ParseDateTimeToMinutes(dateTimeStr) {
-    ;#region agent log
-    FocusDbgLog("H1", "AppLaunchers.ahk:ParseDateTimeToMinutes", "Parsing date/time", Map(
-        "dateTimeStr", dateTimeStr
-    ))
-    ;#endregion agent log
-
     try {
         parts := StrSplit(dateTimeStr, " ")
         if (parts.Length < 2) {
-            ;#region agent log
-            FocusDbgLog("H1", "AppLaunchers.ahk:ParseDateTimeToMinutes", "Invalid format - not enough parts", Map(
-                "partsLength", parts.Length
-            ))
-            ;#endregion agent log
             return 0
         }
 
@@ -1018,11 +966,6 @@ ParseDateTimeToMinutes(dateTimeStr) {
         ; Split date components
         dateComponents := StrSplit(datePart, "/")
         if (dateComponents.Length < 3) {
-            ;#region agent log
-            FocusDbgLog("H1", "AppLaunchers.ahk:ParseDateTimeToMinutes", "Invalid date format", Map(
-                "dateComponentsLength", dateComponents.Length
-            ))
-            ;#endregion agent log
             return 0
         }
 
@@ -1033,59 +976,24 @@ ParseDateTimeToMinutes(dateTimeStr) {
         ; Split time components
         timeComponents := StrSplit(timePart, ":")
         if (timeComponents.Length < 2) {
-            ;#region agent log
-            FocusDbgLog("H1", "AppLaunchers.ahk:ParseDateTimeToMinutes", "Invalid time format", Map(
-                "timeComponentsLength", timeComponents.Length
-            ))
-            ;#endregion agent log
             return 0
         }
 
         hour := Integer(timeComponents[1])
         minute := Integer(timeComponents[2])
 
-        ;#region agent log
-        FocusDbgLog("H1", "AppLaunchers.ahk:ParseDateTimeToMinutes", "Parsed components", Map(
-            "year", year,
-            "month", month,
-            "day", day,
-            "hour", hour,
-            "minute", minute
-        ))
-        ;#endregion agent log
-
         ; More accurate: use days since year 2000
         daysSince2000 := CalculateDaysSince2000(year, month, day)
         totalMinutes := daysSince2000 * 1440 + hour * 60 + minute
 
-        ;#region agent log
-        FocusDbgLog("H1", "AppLaunchers.ahk:ParseDateTimeToMinutes", "Calculated total minutes", Map(
-            "daysSince2000", daysSince2000,
-            "totalMinutes", totalMinutes
-        ))
-        ;#endregion agent log
-
         return totalMinutes
     } catch Error as err {
-        ;#region agent log
-        FocusDbgLog("H1", "AppLaunchers.ahk:ParseDateTimeToMinutes", "Error parsing", Map(
-            "error", err.Message
-        ))
-        ;#endregion agent log
         return 0
     }
 }
 
 ; Calculate days since January 1, 2000
 CalculateDaysSince2000(year, month, day) {
-    ;#region agent log
-    FocusDbgLog("H1", "AppLaunchers.ahk:CalculateDaysSince2000", "Calculating days", Map(
-        "year", year,
-        "month", month,
-        "day", day
-    ))
-    ;#endregion agent log
-
     ; Simple calculation: approximate days
     ; More accurate would require handling leap years, but for our use case (25 minute window) this is sufficient
     days := 0
@@ -1116,12 +1024,6 @@ CalculateDaysSince2000(year, month, day) {
 
     ; Add days in current month
     days += day - 1
-
-    ;#region agent log
-    FocusDbgLog("H1", "AppLaunchers.ahk:CalculateDaysSince2000", "Calculated days", Map(
-        "days", days
-    ))
-    ;#endregion agent log
 
     return days
 }
@@ -1282,11 +1184,6 @@ StartPomodoroTimer() {
     SetTimer(PomodoroHideOverlayCallback, -5000)
 
     ; Show tiny water bottle indicator (periodic TrayTip notifications)
-    ;#region agent log
-    FocusDbgLog("H1", "AppLaunchers.ahk:StartPomodoroTimer", "Creating indicator", Map(
-        "existingIndicator", g_PomodoroTinyIndicator ? "exists" : "none"
-    ))
-    ;#endregion agent log
     if (g_PomodoroTinyIndicator && IsObject(g_PomodoroTinyIndicator)) {
         try {
             if (g_PomodoroTinyIndicator.Hwnd) {
@@ -1301,12 +1198,6 @@ StartPomodoroTimer() {
     ; This will show a subtle reminder that pomodoro is active
     g_PomodoroReminderTimer := () => TrayTip("🍅 Pomodoro Active", "Timer still running...", "Iconi")
     SetTimer(g_PomodoroReminderTimer, 300000)  ; Every 5 minutes
-
-    ;#region agent log
-    FocusDbgLog("H1", "AppLaunchers.ahk:StartPomodoroTimer", "Indicator created with periodic notifications", Map(
-        "indicatorExists", IsObject(g_PomodoroTinyIndicator)
-    ))
-    ;#endregion agent log
 
     ; Set up 25-minute completion timer (1,500,000 ms = 25 minutes)
     g_PomodoroTimer := OnPomodoroComplete
