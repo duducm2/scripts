@@ -764,6 +764,8 @@ global g_PomodoroTimer := false
 global g_ChimeTimer := false
 global g_ChimeStopTimer := false
 global g_PomodoroOverlay := false
+global g_PomodoroTinyIndicator := false
+global g_PomodoroReminderTimer := false
 global g_PomodoroLogFile := A_ScriptDir "\data\pomodoro_log.csv"
 
 ; Show water bottle image overlay as hydration reminder
@@ -790,6 +792,25 @@ ShowWaterBottleOverlay() {
     return overlay
 }
 
+; Show periodic TrayTip notification during pomodoro (more reliable than overlay)
+ShowTinyWaterBottleIndicator() {
+    ;#region agent log
+    FocusDbgLog("H1", "AppLaunchers.ahk:ShowTinyWaterBottleIndicator",
+        "Function called - setting up tray notifications", Map())
+    ;#endregion agent log
+
+    ; No initial notification - only periodic reminders
+    ; The water bottle overlay is shown separately
+
+    ;#region agent log
+    FocusDbgLog("H1", "AppLaunchers.ahk:ShowTinyWaterBottleIndicator", "Indicator setup complete", Map())
+    ;#endregion agent log
+
+    ; Return a dummy object to maintain compatibility
+    ; The periodic notifications will be handled by a timer
+    return { Hwnd: 0, Destroy: () => {} }
+}
+
 ; Log Pomodoro session to CSV file
 LogPomodoroSession() {
     global g_PomodoroLogFile
@@ -810,6 +831,304 @@ LogPomodoroSession() {
 
     ; Append entry to CSV
     FileAppend(currentDate . "," . currentTime . "`n", g_PomodoroLogFile)
+}
+
+; Check pomodoro status from last CSV entry
+CheckPomodoroStatus() {
+    global g_PomodoroLogFile
+
+    ;#region agent log
+    FocusDbgLog("H1", "AppLaunchers.ahk:CheckPomodoroStatus", "Function called", Map())
+    ;#endregion agent log
+
+    ; Check if log file exists
+    if (!FileExist(g_PomodoroLogFile)) {
+        result := MsgBox("No pomodoro records found.`n`nWould you like to start a new Pomodoro?",
+            "Pomodoro Status", "YesNo Icon?")
+        if (result = "Yes") {
+            StartPomodoroTimer()
+        }
+        return
+    }
+
+    ; Read the CSV file
+    try {
+        fileContent := FileRead(g_PomodoroLogFile)
+        lines := StrSplit(fileContent, "`n")
+
+        ; Find the last non-empty line (skip header and empty lines)
+        lastLine := ""
+        loop lines.Length {
+            idx := lines.Length - A_Index + 1
+            line := Trim(lines[idx])
+            if (line != "" && line != "Date,Time" && InStr(line, ",")) {
+                lastLine := line
+                break
+            }
+        }
+
+        if (lastLine = "") {
+            result := MsgBox("No pomodoro records found.`n`nWould you like to start a new Pomodoro?",
+                "Pomodoro Status", "YesNo Icon?")
+            if (result = "Yes") {
+                StartPomodoroTimer()
+            }
+            return
+        }
+
+        ; Parse the last entry
+        parts := StrSplit(lastLine, ",")
+        if (parts.Length < 2) {
+            result := MsgBox("Invalid pomodoro record format.`n`nWould you like to start a new Pomodoro?",
+                "Pomodoro Status", "YesNo Icon?")
+            if (result = "Yes") {
+                StartPomodoroTimer()
+            }
+            return
+        }
+
+        lastDate := Trim(parts[1])
+        lastTime := Trim(parts[2])
+
+        ;#region agent log
+        FocusDbgLog("H1", "AppLaunchers.ahk:CheckPomodoroStatus", "Last entry parsed", Map(
+            "lastDate", lastDate,
+            "lastTime", lastTime
+        ))
+        ;#endregion agent log
+
+        ; Parse date and time
+        ; Format: yyyy/MM/dd and HH:mm
+        dateTimeStr := lastDate . " " . lastTime
+        currentDateTimeStr := FormatTime(, "yyyy/MM/dd HH:mm")
+
+        ; Calculate time difference in minutes
+        timeDiffMinutes := CalculateMinutesDifference(dateTimeStr, currentDateTimeStr)
+
+        ;#region agent log
+        FocusDbgLog("H1", "AppLaunchers.ahk:CheckPomodoroStatus", "Time difference calculation result", Map(
+            "timeDiffMinutes", timeDiffMinutes,
+            "dateTimeStr", dateTimeStr,
+            "currentDateTimeStr", currentDateTimeStr
+        ))
+        ;#endregion agent log
+
+        ; Check if calculation failed
+        ; timeDiffMinutes = 0 means same minute (just started), which is valid
+        ; Negative means calculation error or future date (shouldn't happen)
+        if (timeDiffMinutes < 0) {
+            result := MsgBox("Could not calculate time difference.`n`nWould you like to start a new Pomodoro?",
+                "Pomodoro Status", "YesNo Icon?")
+            if (result = "Yes") {
+                StartPomodoroTimer()
+            }
+            return
+        }
+
+        ; timeDiffMinutes = 0 means pomodoro was just started (within same minute) - this is valid
+
+        ;#region agent log
+        FocusDbgLog("H1", "AppLaunchers.ahk:CheckPomodoroStatus", "Time difference calculated", Map(
+            "timeDiffMinutes", timeDiffMinutes,
+            "lastDateTime", dateTimeStr,
+            "currentDateTime", currentDateTimeStr
+        ))
+        ;#endregion agent log
+
+        ; Check if probably in pomodoro (within 25 minutes)
+        probablyInPomodoro := (timeDiffMinutes >= 0 && timeDiffMinutes <= 25)
+
+        ; Build message
+        statusMsg := "Last Pomodoro:`n"
+        statusMsg .= "Date: " . lastDate . "`n"
+        statusMsg .= "Time: " . lastTime . "`n"
+        statusMsg .= "Time ago: " . Round(timeDiffMinutes) . " minutes`n`n"
+
+        if (probablyInPomodoro) {
+            statusMsg .= "✅ You are PROBABLY in a Pomodoro session."
+        } else {
+            statusMsg .= "❌ You are PROBABLY NOT in a Pomodoro session.`n`n"
+            statusMsg .= "Would you like to start a new Pomodoro?"
+        }
+
+        if (probablyInPomodoro) {
+            MsgBox(statusMsg, "Pomodoro Status", "Iconi")
+        } else {
+            result := MsgBox(statusMsg, "Pomodoro Status", "YesNo Icon?")
+            if (result = "Yes") {
+                StartPomodoroTimer()
+            }
+        }
+
+    } catch Error as err {
+        ;#region agent log
+        FocusDbgLog("H1", "AppLaunchers.ahk:CheckPomodoroStatus", "Error reading CSV", Map(
+            "error", err.Message
+        ))
+        ;#endregion agent log
+        result := MsgBox("Error reading pomodoro log: " . err.Message . "`n`nWould you like to start a new Pomodoro?",
+            "Pomodoro Status", "YesNo Icon?")
+        if (result = "Yes") {
+            StartPomodoroTimer()
+        }
+    }
+}
+
+; Helper function to calculate minutes difference between two date/time strings
+CalculateMinutesDifference(dateTimeStr1, dateTimeStr2) {
+    ; Parse format: "yyyy/MM/dd HH:mm"
+    ; Calculate difference in minutes
+    try {
+        ; Parse both date/time strings
+        time1 := ParseDateTimeToMinutes(dateTimeStr1)
+        time2 := ParseDateTimeToMinutes(dateTimeStr2)
+
+        if (time1 = 0 || time2 = 0) {
+            return 0
+        }
+
+        return time2 - time1
+    } catch Error as err {
+        return 0
+    }
+}
+
+; Helper to convert date/time string to total minutes since a reference point
+ParseDateTimeToMinutes(dateTimeStr) {
+    ;#region agent log
+    FocusDbgLog("H1", "AppLaunchers.ahk:ParseDateTimeToMinutes", "Parsing date/time", Map(
+        "dateTimeStr", dateTimeStr
+    ))
+    ;#endregion agent log
+
+    try {
+        parts := StrSplit(dateTimeStr, " ")
+        if (parts.Length < 2) {
+            ;#region agent log
+            FocusDbgLog("H1", "AppLaunchers.ahk:ParseDateTimeToMinutes", "Invalid format - not enough parts", Map(
+                "partsLength", parts.Length
+            ))
+            ;#endregion agent log
+            return 0
+        }
+
+        datePart := parts[1]  ; "yyyy/MM/dd"
+        timePart := parts[2]  ; "HH:mm"
+
+        ; Split date components
+        dateComponents := StrSplit(datePart, "/")
+        if (dateComponents.Length < 3) {
+            ;#region agent log
+            FocusDbgLog("H1", "AppLaunchers.ahk:ParseDateTimeToMinutes", "Invalid date format", Map(
+                "dateComponentsLength", dateComponents.Length
+            ))
+            ;#endregion agent log
+            return 0
+        }
+
+        year := Integer(dateComponents[1])
+        month := Integer(dateComponents[2])
+        day := Integer(dateComponents[3])
+
+        ; Split time components
+        timeComponents := StrSplit(timePart, ":")
+        if (timeComponents.Length < 2) {
+            ;#region agent log
+            FocusDbgLog("H1", "AppLaunchers.ahk:ParseDateTimeToMinutes", "Invalid time format", Map(
+                "timeComponentsLength", timeComponents.Length
+            ))
+            ;#endregion agent log
+            return 0
+        }
+
+        hour := Integer(timeComponents[1])
+        minute := Integer(timeComponents[2])
+
+        ;#region agent log
+        FocusDbgLog("H1", "AppLaunchers.ahk:ParseDateTimeToMinutes", "Parsed components", Map(
+            "year", year,
+            "month", month,
+            "day", day,
+            "hour", hour,
+            "minute", minute
+        ))
+        ;#endregion agent log
+
+        ; More accurate: use days since year 2000
+        daysSince2000 := CalculateDaysSince2000(year, month, day)
+        totalMinutes := daysSince2000 * 1440 + hour * 60 + minute
+
+        ;#region agent log
+        FocusDbgLog("H1", "AppLaunchers.ahk:ParseDateTimeToMinutes", "Calculated total minutes", Map(
+            "daysSince2000", daysSince2000,
+            "totalMinutes", totalMinutes
+        ))
+        ;#endregion agent log
+
+        return totalMinutes
+    } catch Error as err {
+        ;#region agent log
+        FocusDbgLog("H1", "AppLaunchers.ahk:ParseDateTimeToMinutes", "Error parsing", Map(
+            "error", err.Message
+        ))
+        ;#endregion agent log
+        return 0
+    }
+}
+
+; Calculate days since January 1, 2000
+CalculateDaysSince2000(year, month, day) {
+    ;#region agent log
+    FocusDbgLog("H1", "AppLaunchers.ahk:CalculateDaysSince2000", "Calculating days", Map(
+        "year", year,
+        "month", month,
+        "day", day
+    ))
+    ;#endregion agent log
+
+    ; Simple calculation: approximate days
+    ; More accurate would require handling leap years, but for our use case (25 minute window) this is sufficient
+    days := 0
+
+    ; Days from 2000 to year-1
+    if (year > 2000) {
+        loop (year - 2000) {
+            yearNum := 2000 + A_Index - 1
+            days += IsLeapYear(yearNum) ? 366 : 365
+        }
+    } else if (year < 2000) {
+        ; Handle years before 2000 (shouldn't happen for pomodoro logs, but handle gracefully)
+        loop (2000 - year) {
+            yearNum := 2000 - A_Index
+            days -= IsLeapYear(yearNum) ? 366 : 365
+        }
+    }
+
+    ; Days from Jan 1 to month-1 in current year
+    monthDays := [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    if (IsLeapYear(year)) {
+        monthDays[3] := 29  ; February has 29 days in leap year
+    }
+
+    loop (month - 1) {
+        days += monthDays[A_Index]
+    }
+
+    ; Add days in current month
+    days += day - 1
+
+    ;#region agent log
+    FocusDbgLog("H1", "AppLaunchers.ahk:CalculateDaysSince2000", "Calculated days", Map(
+        "days", days
+    ))
+    ;#endregion agent log
+
+    return days
+}
+
+; Check if year is a leap year
+IsLeapYear(year) {
+    return (Mod(year, 4) = 0 && Mod(year, 100) != 0) || (Mod(year, 400) = 0)
 }
 
 ; Play chime callback - plays sound every 1 second with multiple methods for maximum audibility
@@ -887,7 +1206,8 @@ PlayCompletionChime(durationMs) {
 
 ; Handler when Pomodoro timer completes (25 minutes)
 OnPomodoroComplete() {
-    global g_PomodoroTimer, g_PomodoroOverlay, g_ChimeTimer, g_ChimeStopTimer
+    global g_PomodoroTimer, g_PomodoroOverlay, g_PomodoroTinyIndicator, g_ChimeTimer, g_ChimeStopTimer,
+        g_PomodoroReminderTimer
 
     ; Cancel the main timer
     if (g_PomodoroTimer) {
@@ -895,7 +1215,23 @@ OnPomodoroComplete() {
         g_PomodoroTimer := false
     }
 
-    ; Don't show water bottle image when timer completes - removed per user request
+    ; Hide tiny water bottle indicator when timer completes
+    if (g_PomodoroTinyIndicator && IsObject(g_PomodoroTinyIndicator)) {
+        try {
+            if (g_PomodoroTinyIndicator.Hwnd) {
+                g_PomodoroTinyIndicator.Destroy()
+            }
+        } catch {
+        }
+        ; Stop periodic reminder notifications
+        if (g_PomodoroReminderTimer) {
+            SetTimer(g_PomodoroReminderTimer, 0)
+            g_PomodoroReminderTimer := false
+        }
+        ; Clear any pending tray notifications
+        TrayTip()  ; Clear tray tip
+        g_PomodoroTinyIndicator := false
+    }
 
     ; Play 30-second completion chime (plays immediate sound, then every 1 second for 30 seconds)
     ; The chime will continue playing even while the message box is shown
@@ -904,8 +1240,6 @@ OnPomodoroComplete() {
     ; Show completion message box immediately (this is blocking, but chime continues in background)
     result := MsgBox("Pomodoro session complete!`n`nTrigger another Pomodoro?", "Pomodoro Complete",
         "YesNo Icon?")
-
-    ; No overlay to clean up (we don't show it when timer completes)
 
     ; Stop chime when message box is dismissed (works for both Yes and No)
     if (g_ChimeTimer) {
@@ -925,7 +1259,7 @@ OnPomodoroComplete() {
 
 ; Start a new Pomodoro timer session
 StartPomodoroTimer() {
-    global g_PomodoroTimer, g_PomodoroOverlay
+    global g_PomodoroTimer, g_PomodoroOverlay, g_PomodoroTinyIndicator
     ; Cancel any existing timer
     if (g_PomodoroTimer) {
         SetTimer(g_PomodoroTimer, 0)
@@ -935,7 +1269,7 @@ StartPomodoroTimer() {
     ; Log the session start
     LogPomodoroSession()
 
-    ; Show water bottle image overlay
+    ; Show water bottle image overlay (large, auto-hides after 5 seconds)
     if (g_PomodoroOverlay && IsObject(g_PomodoroOverlay) && g_PomodoroOverlay.Hwnd) {
         try {
             g_PomodoroOverlay.Destroy()
@@ -944,20 +1278,64 @@ StartPomodoroTimer() {
     }
     g_PomodoroOverlay := ShowWaterBottleOverlay()
 
-    ; Auto-hide overlay after 5 seconds (like original behavior)
+    ; Auto-hide large overlay after 5 seconds
     SetTimer(PomodoroHideOverlayCallback, -5000)
 
-    ; Set up 25-minute (1,500,000 ms) completion timer
+    ; Show tiny water bottle indicator (periodic TrayTip notifications)
+    ;#region agent log
+    FocusDbgLog("H1", "AppLaunchers.ahk:StartPomodoroTimer", "Creating indicator", Map(
+        "existingIndicator", g_PomodoroTinyIndicator ? "exists" : "none"
+    ))
+    ;#endregion agent log
+    if (g_PomodoroTinyIndicator && IsObject(g_PomodoroTinyIndicator)) {
+        try {
+            if (g_PomodoroTinyIndicator.Hwnd) {
+                g_PomodoroTinyIndicator.Destroy()
+            }
+        } catch {
+        }
+    }
+    g_PomodoroTinyIndicator := ShowTinyWaterBottleIndicator()
+
+    ; Set up periodic reminder notifications (every 5 minutes)
+    ; This will show a subtle reminder that pomodoro is active
+    g_PomodoroReminderTimer := () => TrayTip("🍅 Pomodoro Active", "Timer still running...", "Iconi")
+    SetTimer(g_PomodoroReminderTimer, 300000)  ; Every 5 minutes
+
+    ;#region agent log
+    FocusDbgLog("H1", "AppLaunchers.ahk:StartPomodoroTimer", "Indicator created with periodic notifications", Map(
+        "indicatorExists", IsObject(g_PomodoroTinyIndicator)
+    ))
+    ;#endregion agent log
+
+    ; Set up 25-minute completion timer (1,500,000 ms = 25 minutes)
     g_PomodoroTimer := OnPomodoroComplete
     SetTimer(g_PomodoroTimer, -1500000)
 }
 
 ; =============================================================================
 ; Pomodoro Timer - Hotkey: Win+Alt+Shift+9
+; Quick press: Start pomodoro timer
+; Long press (2 seconds): Check pomodoro status
 ; =============================================================================
 #!+9::
 {
-    StartPomodoroTimer()
+    ; Record press time
+    static pressTime := 0
+    pressTime := A_TickCount
+
+    ; Wait for key release or timeout (1 second for long press)
+    KeyWait("9", "T1")
+
+    holdTime := A_TickCount - pressTime
+
+    if (holdTime >= 1000) {
+        ; Long press (1+ seconds) - check pomodoro status
+        CheckPomodoroStatus()
+    } else {
+        ; Quick press - start pomodoro timer
+        StartPomodoroTimer()
+    }
 }
 
 ; =============================================================================
@@ -1070,9 +1448,10 @@ CreateCenteredBanner_Launchers(message, bgColor := "be4747", fontColor := "FFFFF
     if (activeWin) {
         WinGetPos(&winX, &winY, &winW, &winH, activeWin)
     } else {
-        workArea := SysGet.MonitorWorkArea(SysGet.MonitorPrimary)
-        winX := workArea.Left, winY := workArea.Top, winW := workArea.Right - workArea.Left, winH := workArea.Bottom -
-            workArea.Top
+        ; Get primary monitor work area (monitor 1 is primary)
+        MonitorGetWorkArea(1, &winX, &winY, &winRight, &winBottom)
+        winW := winRight - winX
+        winH := winBottom - winY
     }
 
     bGui.Show("AutoSize Hide")
