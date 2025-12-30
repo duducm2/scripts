@@ -30,19 +30,25 @@ global smallLoadingGuis_ChatGPT := []
 global DEBUG_LOG_PATH := A_ScriptDir "\.cursor\debug.log"
 
 ; Helper function for safe debug logging with retry on file lock
-DebugLog(text) {
+; Handles file locking gracefully by retrying with exponential backoff
+SafeDebugLog(text) {
     maxRetries := 3
     retryDelay := 10
     loop maxRetries {
         try {
             FileAppend text, DEBUG_LOG_PATH
-            return
-        } catch {
-            if (A_Index < maxRetries) {
-                Sleep retryDelay
+            return true
+        } catch Error as err {
+            ; If it's a file lock error (32) and we have retries left, wait and retry
+            if (err.Number = 32 && A_Index < maxRetries) {
+                Sleep retryDelay * A_Index  ; Exponential backoff
+            } else {
+                ; For other errors or final retry, silently fail to not interrupt script execution
+                return false
             }
         }
     }
+    return false
 }
 
 ; Helper: find ChatGPT chrome window by case-insensitive contains match
@@ -2229,7 +2235,7 @@ ClickGenerateCommitMessageButton() {
 ; ---------------------------------------------------------------------------
 WaitForButton(root, pattern, timeout := 5000) {
     ; #region agent log
-    DebugLog Format(
+    SafeDebugLog Format(
         "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:1727`",`"message`":`"WaitForButton entry`",`"data`":{`"pattern`":`"{4}`",`"timeout`":{5}},`"sessionId`":`"debug-session`",`"runId`":`"run1`",`"hypothesisId`":`"B`"}`n",
         A_TickCount, Random(1000, 9999), A_TickCount, pattern, timeout)
     ; #endregion
@@ -2240,7 +2246,7 @@ WaitForButton(root, pattern, timeout := 5000) {
     while (A_TickCount < deadline) {
         buttons := root.FindAll({ Type: "Button" })
         ; #region agent log
-        DebugLog Format(
+        SafeDebugLog Format(
             "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:1733`",`"message`":`"Found buttons count`",`"data`":{`"count`":{4}},`"sessionId`":`"debug-session`",`"runId`":`"run1`",`"hypothesisId`":`"B`"}`n",
             A_TickCount, Random(1000, 9999), A_TickCount, buttons.Length)
         ; #endregion
@@ -2252,7 +2258,7 @@ WaitForButton(root, pattern, timeout := 5000) {
             try btnName := btn.Name
             ; #region agent log
             if InStr(pattern, "Connect") {
-                DebugLog Format(
+                SafeDebugLog Format(
                     "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:1738`",`"message`":`"Checking button name`",`"data`":{`"name`":`"{4}`",`"pattern`":`"{5}`"},`"sessionId`":`"debug-session`",`"runId`":`"run1`",`"hypothesisId`":`"B`"}`n",
                     A_TickCount, Random(1000, 9999), A_TickCount, btnName, pattern)
             }
@@ -2290,7 +2296,7 @@ WaitForButton(root, pattern, timeout := 5000) {
                 }
 
                 ; #region agent log
-                DebugLog Format(
+                SafeDebugLog Format(
                     "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:1770`",`"message`":`"Matching button found`",`"data`":{`"name`":`"{4}`",`"className`":`"{5}`",`"hasClassName`":{6},`"supportsInvoke`":{7}},`"sessionId`":`"debug-session`",`"runId`":`"run1`",`"hypothesisId`":`"B,C`"}`n",
                     A_TickCount, Random(1000, 9999), A_TickCount, btnName, className, hasClassName, supportsInvoke)
                 ; #endregion
@@ -2342,7 +2348,7 @@ WaitForButton(root, pattern, timeout := 5000) {
             try finalBtnName := bestBtn.Name
             try finalBtnClassName := bestBtn.ClassName
             try finalBtnType := bestBtn.ControlType
-            DebugLog Format(
+            SafeDebugLog Format(
                 "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:1813`",`"message`":`"WaitForButton returning button`",`"data`":{`"name`":`"{4}`",`"className`":`"{5}`",`"type`":`"{6}`",`"score`":{7}},`"sessionId`":`"debug-session`",`"runId`":`"run1`",`"hypothesisId`":`"C`"}`n",
                 A_TickCount, Random(1000, 9999), A_TickCount, finalBtnName, finalBtnClassName, finalBtnType, bestScore)
             ; #endregion
@@ -2352,7 +2358,7 @@ WaitForButton(root, pattern, timeout := 5000) {
     }
 
     ; #region agent log
-    DebugLog Format(
+    SafeDebugLog Format(
         "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:1818`",`"message`":`"WaitForButton timeout - no button found`",`"data`":{`"pattern`":`"{4}`"},`"sessionId`":`"debug-session`",`"runId`":`"run1`",`"hypothesisId`":`"B`"}`n",
         A_TickCount, Random(1000, 9999), A_TickCount, pattern)
     ; #endregion
@@ -2817,6 +2823,11 @@ IsTeamsChatActive() {
 ; Shift + P: Save Wikipedia scroll position
 +p::
 {
+    ;#region agent log
+    SafeDebugLog Format(
+        '{{"timestamp":{},"location":"Shift keys.ahk:+p::","message":"Shift+P pressed, calling save function","data":{{}},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}}`n',
+        A_TickCount)
+    ;#endregion agent log
     ; Include AppLaunchers.ahk functions by calling the manual save function
     ; Since we can't directly include, we'll duplicate the logic here
     SaveWikipediaScrollPositionManually_ShiftKeys()
@@ -2824,19 +2835,67 @@ IsTeamsChatActive() {
 
 ; Wikipedia scroll position save function (duplicated from AppLaunchers.ahk)
 SaveWikipediaScrollPositionManually_ShiftKeys() {
-    ; Check if Wikipedia window is currently active
-    if (!WinActive("ahk_exe chrome.exe") || !InStr(WinGetTitle("A"), "Wikipedia")) {
+    ;#region agent log
+    SafeDebugLog Format(
+        '{{"timestamp":{},"location":"Shift keys.ahk:SaveWikipediaScrollPositionManually_ShiftKeys","message":"Function called","data":{{}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A,C"}}`n',
+        A_TickCount)
+    ;#endregion agent log
+    try {
+        ; Check if Wikipedia window is currently active
+        activeWindow := WinGetTitle("A")
+        isChromeActive := WinActive("ahk_exe chrome.exe")
+        hasWikipedia := InStr(activeWindow, "Wikipedia")
+        ;#region agent log
+        SafeDebugLog Format(
+            '{{"timestamp":{},"location":"Shift keys.ahk:SaveWikipediaScrollPositionManually_ShiftKeys","message":"Window check details","data":{{"activeWindow":"{}","isChromeActive":{},"hasWikipedia":{}}},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}}`n',
+            A_TickCount, activeWindow, isChromeActive, hasWikipedia)
+        ;#endregion agent log
+        if (!isChromeActive || !hasWikipedia) {
+            ;#region agent log
+            SafeDebugLog Format(
+                '{{"timestamp":{},"location":"Shift keys.ahk:SaveWikipediaScrollPositionManually_ShiftKeys","message":"Window not active or not Wikipedia","data":{{"activeWindow":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}}`n',
+                A_TickCount, activeWindow)
+            ;#endregion agent log
+            return false
+        }
+    } catch Error as err {
+        ;#region agent log
+        SafeDebugLog Format(
+            '{{"timestamp":{},"location":"Shift keys.ahk:SaveWikipediaScrollPositionManually_ShiftKeys","message":"Exception in window check","data":{{"error":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}}`n',
+            A_TickCount, err.Message)
+        ;#endregion agent log
         return false
     }
 
     ; Check if window is on Monitor 3
     hwnd := WinExist("A")
+    ;#region agent log
+    SafeDebugLog Format(
+        '{{"timestamp":{},"location":"Shift keys.ahk:SaveWikipediaScrollPositionManually_ShiftKeys","message":"Got window handle","data":{{"hwnd":{}}},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}}`n',
+        A_TickCount, hwnd)
+    ;#endregion agent log
     if (!hwnd) {
+        ;#region agent log
+        SafeDebugLog Format(
+            '{{"timestamp":{},"location":"Shift keys.ahk:SaveWikipediaScrollPositionManually_ShiftKeys","message":"No window handle, returning","data":{{}},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}}`n',
+            A_TickCount)
+        ;#endregion agent log
         return false
     }
 
     rect := Buffer(16, 0)
-    if (!DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)) {
+    getRectResult := DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)
+    ;#region agent log
+    SafeDebugLog Format(
+        '{{"timestamp":{},"location":"Shift keys.ahk:SaveWikipediaScrollPositionManually_ShiftKeys","message":"GetWindowRect result","data":{{"result":{}}},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}}`n',
+        A_TickCount, getRectResult)
+    ;#endregion agent log
+    if (!getRectResult) {
+        ;#region agent log
+        SafeDebugLog Format(
+            '{{"timestamp":{},"location":"Shift keys.ahk:SaveWikipediaScrollPositionManually_ShiftKeys","message":"GetWindowRect failed, returning","data":{{}},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}}`n',
+            A_TickCount)
+        ;#endregion agent log
         return false
     }
 
@@ -2857,14 +2916,32 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
             break
         }
     }
-
+    ;#region agent log
+    SafeDebugLog Format(
+        '{{"timestamp":{},"location":"Shift keys.ahk:SaveWikipediaScrollPositionManually_ShiftKeys","message":"Monitor 3 check result","data":{{"isMonitor3":{}}},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}}`n',
+        A_TickCount, isMonitor3)
+    ;#endregion agent log
     if (!isMonitor3) {
+        ;#region agent log
+        SafeDebugLog Format(
+            '{{"timestamp":{},"location":"Shift keys.ahk:SaveWikipediaScrollPositionManually_ShiftKeys","message":"Not on Monitor 3, returning","data":{{}},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}}`n',
+            A_TickCount)
+        ;#endregion agent log
         return false
     }
 
     ; Show banner to inform user that scroll position is being saved
+    ;#region agent log
+    SafeDebugLog Format(
+        '{{"timestamp":{},"location":"Shift keys.ahk:SaveWikipediaScrollPositionManually_ShiftKeys","message":"About to create banner and enter try block","data":{{}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A,B,C"}}`n',
+        A_TickCount)
+    ;#endregion agent log
     saveBanner := CreateCenteredBanner_ChatGPT("Saving scroll position... Please wait", "3772FF", "FFFFFF", 24, 178)
-
+    ;#region agent log
+    SafeDebugLog Format(
+        '{{"timestamp":{},"location":"Shift keys.ahk:SaveWikipediaScrollPositionManually_ShiftKeys","message":"Banner created, entering try block","data":{{}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A,B,C"}}`n',
+        A_TickCount)
+    ;#endregion agent log
     try {
         ; Get Wikipedia URL
         if (!WinActive("ahk_exe chrome.exe") || !InStr(WinGetTitle("A"), "Wikipedia")) {
@@ -2872,12 +2949,28 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
         }
         uia := UIA_Browser("ahk_exe chrome.exe")
         url := uia.GetCurrentURL()
+        ;#region agent log
+        SafeDebugLog Format(
+            '{{"timestamp":{},"location":"Shift keys.ahk:SaveWikipediaScrollPositionManually_ShiftKeys","message":"Got URL from browser","data":{{"rawUrl":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A,B,D"}}`n',
+            A_TickCount, url)
+        ;#endregion agent log
         if (url = "" || !InStr(url, "wikipedia.org")) {
+            ;#region agent log
+            SafeDebugLog Format(
+                '{{"timestamp":{},"location":"Shift keys.ahk:SaveWikipediaScrollPositionManually_ShiftKeys","message":"URL invalid or empty","data":{{"url":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}}`n',
+                A_TickCount, url)
+            ;#endregion agent log
             return false
         }
         ; Normalize URL - remove trailing slashes and fragments
+        originalUrl := url
         url := RegExReplace(url, "/#.*$", "")
         url := RegExReplace(url, "/+$", "")
+        ;#region agent log
+        SafeDebugLog Format(
+            '{{"timestamp":{},"location":"Shift keys.ahk:SaveWikipediaScrollPositionManually_ShiftKeys","message":"URL normalized","data":{{"originalUrl":"{}","normalizedUrl":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A,B,D"}}`n',
+            A_TickCount, originalUrl, url)
+        ;#endregion agent log
 
         if (url = "") {
             return false
@@ -2906,7 +2999,17 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
                 if (dir != "" && !DirExist(dir)) {
                     DirCreate(dir)
                 }
+                ;#region agent log
+                SafeDebugLog Format(
+                    '{{"timestamp":{},"location":"Shift keys.ahk:SaveWikipediaScrollPositionManually_ShiftKeys","message":"About to write to INI file","data":{{"saveUrl":"{}","scrollPercentage":{},"iniFile":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A,B,D"}}`n',
+                    A_TickCount, url, scrollPercentage, scrollPositionsFile)
+                ;#endregion agent log
                 saved := IniWrite(scrollPercentage, scrollPositionsFile, "Positions", url)
+                ;#region agent log
+                SafeDebugLog Format(
+                    '{{"timestamp":{},"location":"Shift keys.ahk:SaveWikipediaScrollPositionManually_ShiftKeys","message":"INI write result","data":{{"saveUrl":"{}","saved":{}}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A,B,D"}}`n',
+                    A_TickCount, url, saved)
+                ;#endregion agent log
 
                 if (saved) {
                     ; Update banner to show success
@@ -2922,6 +3025,11 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
             }
         }
     } catch Error as err {
+        ;#region agent log
+        SafeDebugLog Format(
+            '{{"timestamp":{},"location":"Shift keys.ahk:SaveWikipediaScrollPositionManually_ShiftKeys","message":"Exception caught in try block","data":{{"error":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A,B,C,D"}}`n',
+            A_TickCount, err.Message)
+        ;#endregion agent log
         ; Silent fail
     } finally {
         ; Always hide the banner after save operation completes
@@ -8651,7 +8759,7 @@ SwitchAIModel() {
 +c::
 {
     ; #region agent log
-    DebugLog Format(
+    SafeDebugLog Format(
         "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:7574`",`"message`":`"Connect button handler entry`",`"data`":{},`"sessionId`":`"debug-session`",`"runId`":`"run1`",`"hypothesisId`":`"A`"}`n",
         A_TickCount, Random(1000, 9999), A_TickCount)
     ; #endregion
@@ -8662,7 +8770,7 @@ SwitchAIModel() {
         ; Find and click the Connect button
         connectPattern := "i)^(Connect to a device|Conectar a um dispositivo|Connect)$"
         ; #region agent log
-        DebugLog Format(
+        SafeDebugLog Format(
             "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:7582`",`"message`":`"Before WaitForButton call`",`"data`":{`"pattern`":`"{4}`"},`"sessionId`":`"debug-session`",`"runId`":`"run1`",`"hypothesisId`":`"B`"}`n",
             A_TickCount, Random(1000, 9999), A_TickCount, connectPattern)
         ; #endregion
@@ -8676,7 +8784,7 @@ SwitchAIModel() {
             try btnLocalizedType := connectBtn.LocalizedControlType
             try supportsInvoke := connectBtn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)
             try supportsToggle := connectBtn.GetPropertyValue(UIA.Property.IsTogglePatternAvailable)
-            DebugLog Format(
+            SafeDebugLog Format(
                 "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:7583`",`"message`":`"Button found before Invoke`",`"data`":{`"name`":`"{4}`",`"type`":`"{5}`",`"className`":`"{6}`",`"localizedType`":`"{7}`",`"supportsInvoke`":{8},`"supportsToggle`":{9}},`"sessionId`":`"debug-session`",`"runId`":`"run1`",`"hypothesisId`":`"A,C`"}`n",
                 A_TickCount, Random(1000, 9999), A_TickCount, btnName, btnType, btnClassName, btnLocalizedType,
                 supportsInvoke, supportsToggle)
@@ -8688,13 +8796,13 @@ SwitchAIModel() {
                     connectBtn.Invoke()
                     clicked := true
                     ; #region agent log
-                    DebugLog Format(
+                    SafeDebugLog Format(
                         "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:7663`",`"message`":`"Invoke() succeeded`",`"data`":{},`"sessionId`":`"debug-session`",`"runId`":`"run1`",`"hypothesisId`":`"A`"}`n",
                         A_TickCount, Random(1000, 9999), A_TickCount)
                     ; #endregion
                 } catch Error as invokeErr {
                     ; #region agent log
-                    DebugLog Format(
+                    SafeDebugLog Format(
                         "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:7663`",`"message`":`"Invoke() failed, trying Click()`",`"data`":{`"error`":`"{4}`"},`"sessionId`":`"debug-session`",`"runId`":`"run1`",`"hypothesisId`":`"A,E`"}`n",
                         A_TickCount, Random(1000, 9999), A_TickCount, invokeErr.Message)
                     ; #endregion
@@ -8705,13 +8813,13 @@ SwitchAIModel() {
                     connectBtn.Click()
                     clicked := true
                     ; #region agent log
-                    DebugLog Format(
+                    SafeDebugLog Format(
                         "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:7675`",`"message`":`"Click() succeeded`",`"data`":{},`"sessionId`":`"debug-session`",`"runId`":`"run1`",`"hypothesisId`":`"A,E`"}`n",
                         A_TickCount, Random(1000, 9999), A_TickCount)
                     ; #endregion
                 } catch Error as clickErr {
                     ; #region agent log
-                    DebugLog Format(
+                    SafeDebugLog Format(
                         "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:7675`",`"message`":`"Click() failed`",`"data`":{`"error`":`"{4}`"},`"sessionId`":`"debug-session`",`"runId`":`"run1`",`"hypothesisId`":`"A,E`"}`n",
                         A_TickCount, Random(1000, 9999), A_TickCount, clickErr.Message)
                     ; #endregion
@@ -8731,7 +8839,7 @@ SwitchAIModel() {
         }
         else {
             ; #region agent log
-            DebugLog Format(
+            SafeDebugLog Format(
                 "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:7595`",`"message`":`"Button not found by WaitForButton`",`"data`":{`"pattern`":`"{4}`"},`"sessionId`":`"debug-session`",`"runId`":`"run1`",`"hypothesisId`":`"B,D`"}`n",
                 A_TickCount, Random(1000, 9999), A_TickCount, connectPattern)
             ; #endregion
@@ -8739,14 +8847,14 @@ SwitchAIModel() {
         }
     } catch Error as e {
         ; #region agent log
-        DebugLog Format(
+        SafeDebugLog Format(
             "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:7597`",`"message`":`"Exception caught`",`"data`":{`"error`":`"{4}`"},`"sessionId`":`"debug-session`",`"runId`":`"run1`",`"hypothesisId`":`"A,B,C,D,E`"}`n",
             A_TickCount, Random(1000, 9999), A_TickCount, e.Message)
         ; #endregion
         MsgBox "Error: " e.Message
     }
     ; #region agent log
-    DebugLog Format(
+    SafeDebugLog Format(
         "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:7600`",`"message`":`"Connect button handler exit`",`"data`":{},`"sessionId`":`"debug-session`",`"runId`":`"run1`",`"hypothesisId`":`"A`"}`n",
         A_TickCount, Random(1000, 9999), A_TickCount)
     ; #endregion
