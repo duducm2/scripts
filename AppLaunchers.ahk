@@ -707,7 +707,7 @@ ShowWikipediaSelector() {
                 if (savedPercentage > 0.0) {
                     ; Show banner to inform user that scroll position is being restored
                     restoreBanner := CreateCenteredBanner_Launchers("Restoring scroll position... Please wait",
-                        "3772FF", "FFFFFF", 24, 178)
+                        "3772FF", "FFFFFF", 10, 178, 180)
 
                     uia := UIA_Browser("ahk_exe chrome.exe")
                     Sleep(500)  ; Brief wait for page to be ready
