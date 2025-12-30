@@ -692,9 +692,6 @@ ShowWikipediaSelector() {
         ; Enable focus mode to darken other monitors
         EnableFocusMode()
 
-        ; Wait briefly for page to stabilize
-        Sleep(500)
-
         ; Try to restore scroll position (only if on Monitor 3)
         restoreBanner := ""
         try {
@@ -705,7 +702,7 @@ ShowWikipediaSelector() {
             if (url != "") {
                 savedPercentage := LoadWikipediaScrollPosition(url)
                 if (savedPercentage > 0.0) {
-                    ; Show banner to inform user that scroll position is being restored
+                    ; Show banner immediately to inform user that scroll position is being restored
                     restoreBanner := CreateCenteredBanner_Launchers("Restoring scroll position... Please wait",
                         "3772FF", "FFFFFF", 10, 178, 180)
 
