@@ -909,17 +909,19 @@ ShowWikipediaSelector() {
 }
 
 ; =============================================================================
-; Open Google Keep Pomodoro list, show overlay, then send keys
+; Pomodoro Timer System - Local Timer with CSV Logging
 ; Hotkey: Win+Alt+Shift+9
 ; =============================================================================
-#!+9::
-{
-    SoundBeep()
-    url := "https://keep.google.com/u/0/#LIST/18_9CP4EZyO6i88cnsRR6HgRNlSEohvkKX0PEZXh8mKnj8H_TpfRhG6aUbrCdxQ"
-    Run "chrome.exe " url
-    WinWait("ahk_exe chrome.exe")
-    WinActivate("ahk_exe chrome.exe")
 
+; Global variables for Pomodoro timer management
+global g_PomodoroTimer := false
+global g_ChimeTimer := false
+global g_ChimeStopTimer := false
+global g_PomodoroOverlay := false
+global g_PomodoroLogFile := A_ScriptDir "\data\pomodoro_log.csv"
+
+; Show water bottle image overlay as hydration reminder
+ShowWaterBottleOverlay() {
     imagePath := ""
     for name in ["water-bottle.jpg"] {
         candidate := A_ScriptDir "\pictures\" name
@@ -939,88 +941,176 @@ ShowWikipediaSelector() {
         overlay.BackColor := "FFFFFF"
     }
     overlay.Show("AutoSize Center")
-    Sleep(5000)
+    return overlay
+}
 
-    WinActivate("ahk_exe chrome.exe")
-    Sleep(100)
-    Send("{Enter}")
-    Sleep(250)
-    Send("{Up}")
-    Sleep(250)
-    ClipSaved := ClipboardAll()
-    current := FormatTime(, "dd/MM/yyyy HH:mm")
-    A_Clipboard := "tomato " current
-    ClipWait(1)
-    Send("^v")
-    Sleep(50)
-    A_Clipboard := ClipSaved
-
-    Send("{Escape}")
-    Sleep(4000)
-    Send("^w")
-
-    ; Open Windows Clock (Alarms & Clock) and start focus session (Pomodoro)
-    try {
-        Run "ms-clock:"
-        ; The Clock window is hosted by ApplicationFrameHost.exe, title typically contains "Relógio" or "Clock"
-        SetTitleMatchMode 2
-        WinWait("ahk_exe ApplicationFrameHost.exe")
-        WinActivate("ahk_exe ApplicationFrameHost.exe")
-        Sleep(2000)
-
-        ; Tab through elements until we find the "Iniciar" button, then press Enter
-        try {
-            ; Start from the beginning of the application
-            Send("^{Home}")
-            Sleep(300)
-
-            ; Tab through elements until we find "Iniciar" button
-            maxTabs := 50  ; Safety limit to prevent infinite loop
-            foundButton := false
-
-            loop maxTabs {
-                ; Check if current focused element has AutomationId "TimerPlayPauseButton"
-                try {
-                    focusedElement := UIA.GetFocusedElement()
-                    if (focusedElement && focusedElement.AutomationId == "TimerPlayPauseButton") {
-                        foundButton := true
-                        break
-                    }
-                } catch {
-                    ; Continue if UIA check fails
-                }
-
-                ; Tab to next element
-                Send("{Tab}")
-                Sleep(200)
-            }
-
-            ; If we found the button, press Enter to activate it
-            if (foundButton) {
-                Send("{Enter}")
-                Sleep(200)
-            }
-
-            ; Close the Clock window (ApplicationFrameHost.exe)
-            try {
-                WinClose("ahk_exe ApplicationFrameHost.exe")
-            }
-
-        } catch {
-            ; Fallback: do nothing if UIA not available
-        }
-
-    } catch {
-        ; Fail silently if UIA not available here
+; Log Pomodoro session to CSV file
+LogPomodoroSession() {
+    global g_PomodoroLogFile
+    ; Ensure data directory exists
+    SplitPath(g_PomodoroLogFile, , &dir)
+    if (dir != "" && !DirExist(dir)) {
+        DirCreate(dir)
     }
 
-    ; Quick motivation banner
-    goOverlay := CreateCenteredBanner_Launchers("GO!", "3772FF", "FFFFFF", 48, 178)
-    Sleep(1200)
-    try goOverlay.Destroy()
+    ; Check if file exists, if not create with headers
+    if (!FileExist(g_PomodoroLogFile)) {
+        FileAppend("Date,Time`n", g_PomodoroLogFile)
+    }
 
-    SoundBeep()
-    overlay.Destroy()
+    ; Get current date and time
+    currentDate := FormatTime(, "yyyy/MM/dd")
+    currentTime := FormatTime(, "HH:mm")
+
+    ; Append entry to CSV
+    FileAppend(currentDate . "," . currentTime . "`n", g_PomodoroLogFile)
+}
+
+; Play chime callback - plays sound every 2 seconds
+PomodoroChimeCallback(*) {
+    try {
+        DllCall("User32\MessageBeep", "UInt", 0xFFFFFFFF)
+    } catch {
+        try {
+            SoundBeep(1100, 130)
+        } catch {
+        }
+    }
+}
+
+; Stop chime callback - stops both chime timers
+PomodoroStopChimeCallback(*) {
+    global g_ChimeTimer, g_ChimeStopTimer
+    if (g_ChimeTimer) {
+        SetTimer(g_ChimeTimer, 0)
+        g_ChimeTimer := false
+    }
+    if (g_ChimeStopTimer) {
+        SetTimer(g_ChimeStopTimer, 0)
+        g_ChimeStopTimer := false
+    }
+}
+
+; Auto-hide Pomodoro overlay after 5 seconds
+PomodoroHideOverlayCallback(*) {
+    global g_PomodoroOverlay
+    if (g_PomodoroOverlay && IsObject(g_PomodoroOverlay) && g_PomodoroOverlay.Hwnd) {
+        try {
+            g_PomodoroOverlay.Destroy()
+        } catch {
+        }
+        g_PomodoroOverlay := false
+    }
+}
+
+; Play completion chime for specified duration
+PlayCompletionChime(durationMs) {
+    global g_ChimeTimer, g_ChimeStopTimer
+
+    ; Cancel any existing chime timers
+    if (g_ChimeTimer) {
+        SetTimer(g_ChimeTimer, 0)
+        g_ChimeTimer := false
+    }
+    if (g_ChimeStopTimer) {
+        SetTimer(g_ChimeStopTimer, 0)
+        g_ChimeStopTimer := false
+    }
+
+    ; Start chime timer (every 2 seconds)
+    g_ChimeTimer := PomodoroChimeCallback
+    SetTimer(g_ChimeTimer, 2000)
+
+    ; Set timer to stop chime after duration
+    g_ChimeStopTimer := PomodoroStopChimeCallback
+    SetTimer(g_ChimeStopTimer, -durationMs)
+}
+
+; Handler when Pomodoro timer completes (25 minutes)
+OnPomodoroComplete() {
+    global g_PomodoroTimer, g_PomodoroOverlay, g_ChimeTimer, g_ChimeStopTimer
+    ; Cancel the main timer
+    if (g_PomodoroTimer) {
+        SetTimer(g_PomodoroTimer, 0)
+        g_PomodoroTimer := false
+    }
+
+    ; Show water bottle image again
+    if (g_PomodoroOverlay && IsObject(g_PomodoroOverlay) && g_PomodoroOverlay.Hwnd) {
+        try {
+            g_PomodoroOverlay.Destroy()
+        } catch {
+        }
+    }
+    g_PomodoroOverlay := ShowWaterBottleOverlay()
+
+    ; Play 15-second completion chime
+    PlayCompletionChime(15000)
+
+    ; Show completion message box
+    result := MsgBox("Pomodoro session complete!`n`nTrigger another Pomodoro?", "Pomodoro Complete",
+        "YesNo IconQuestion")
+
+    ; Clean up overlay
+    if (g_PomodoroOverlay && IsObject(g_PomodoroOverlay) && g_PomodoroOverlay.Hwnd) {
+        try {
+            g_PomodoroOverlay.Destroy()
+        } catch {
+        }
+        g_PomodoroOverlay := false
+    }
+
+    ; Stop chime if still playing
+    if (g_ChimeTimer) {
+        SetTimer(g_ChimeTimer, 0)
+        g_ChimeTimer := false
+    }
+    if (g_ChimeStopTimer) {
+        SetTimer(g_ChimeStopTimer, 0)
+        g_ChimeStopTimer := false
+    }
+
+    ; If user wants to trigger another Pomodoro, start it
+    if (result = "Yes") {
+        StartPomodoroTimer()
+    }
+}
+
+; Start a new Pomodoro timer session
+StartPomodoroTimer() {
+    global g_PomodoroTimer, g_PomodoroOverlay
+    ; Cancel any existing timer
+    if (g_PomodoroTimer) {
+        SetTimer(g_PomodoroTimer, 0)
+        g_PomodoroTimer := false
+    }
+
+    ; Log the session start
+    LogPomodoroSession()
+
+    ; Show water bottle image overlay
+    if (g_PomodoroOverlay && IsObject(g_PomodoroOverlay) && g_PomodoroOverlay.Hwnd) {
+        try {
+            g_PomodoroOverlay.Destroy()
+        } catch {
+        }
+    }
+    g_PomodoroOverlay := ShowWaterBottleOverlay()
+
+    ; Auto-hide overlay after 5 seconds (like original behavior)
+    SetTimer(PomodoroHideOverlayCallback, -5000)
+
+    ; Set up 25-minute (1,500,000 ms) completion timer
+    g_PomodoroTimer := OnPomodoroComplete
+    SetTimer(g_PomodoroTimer, -1500000)
+}
+
+; =============================================================================
+; Pomodoro Timer - Hotkey: Win+Alt+Shift+9
+; =============================================================================
+#!+9::
+{
+    StartPomodoroTimer()
 }
 
 ; =============================================================================
