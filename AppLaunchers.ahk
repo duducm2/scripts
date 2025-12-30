@@ -765,7 +765,6 @@ global g_ChimeTimer := false
 global g_ChimeStopTimer := false
 global g_PomodoroOverlay := false
 global g_PomodoroTinyIndicator := false
-global g_PomodoroReminderTimer := false
 global g_PomodoroLogFile := A_ScriptDir "\data\pomodoro_log.csv"
 
 ; Show water bottle image overlay as hydration reminder
@@ -1108,8 +1107,7 @@ PlayCompletionChime(durationMs) {
 
 ; Handler when Pomodoro timer completes (25 minutes)
 OnPomodoroComplete() {
-    global g_PomodoroTimer, g_PomodoroOverlay, g_PomodoroTinyIndicator, g_ChimeTimer, g_ChimeStopTimer,
-        g_PomodoroReminderTimer
+    global g_PomodoroTimer, g_PomodoroOverlay, g_PomodoroTinyIndicator, g_ChimeTimer, g_ChimeStopTimer
 
     ; Cancel the main timer
     if (g_PomodoroTimer) {
@@ -1124,11 +1122,6 @@ OnPomodoroComplete() {
                 g_PomodoroTinyIndicator.Destroy()
             }
         } catch {
-        }
-        ; Stop periodic reminder notifications
-        if (g_PomodoroReminderTimer) {
-            SetTimer(g_PomodoroReminderTimer, 0)
-            g_PomodoroReminderTimer := false
         }
         ; Clear any pending tray notifications
         TrayTip()  ; Clear tray tip
@@ -1193,11 +1186,6 @@ StartPomodoroTimer() {
         }
     }
     g_PomodoroTinyIndicator := ShowTinyWaterBottleIndicator()
-
-    ; Set up periodic reminder notifications (every 5 minutes)
-    ; This will show a subtle reminder that pomodoro is active
-    g_PomodoroReminderTimer := () => TrayTip("🍅 Pomodoro Active", "Timer still running...", "Iconi")
-    SetTimer(g_PomodoroReminderTimer, 300000)  ; Every 5 minutes
 
     ; Set up 25-minute completion timer (1,500,000 ms = 25 minutes)
     g_PomodoroTimer := OnPomodoroComplete
