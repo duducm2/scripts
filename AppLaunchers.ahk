@@ -1002,13 +1002,17 @@ WikipediaScrollSaveChecker() {
             A_TickCount, timeSinceLastSave), logPath
         ;#endregion agent log
 
-        ; If 3 minutes (180000ms) have passed, save the scroll position
-        if (timeSinceLastSave >= 180000) {
+        ; If 5 minutes (300000ms) have passed, save the scroll position
+        if (timeSinceLastSave >= 300000) {
             ;#region agent log
             FileAppend Format(
                 '{{"timestamp":{},"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Attempting to save scroll position","data":{{}},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C,E"}}`n',
                 A_TickCount), logPath
             ;#endregion agent log
+            
+            ; Show banner to inform user that scroll position is being saved
+            saveBanner := CreateCenteredBanner_Launchers("Saving scroll position... Please wait", "3772FF", "FFFFFF", 24, 178)
+            
             try {
                 url := GetWikipediaURL()
                 if (url != "") {
@@ -1062,6 +1066,14 @@ WikipediaScrollSaveChecker() {
                             ;#endregion agent log
                             if (saved) {
                                 g_WikipediaLastSaveTime := A_TickCount
+                                ; Update banner to show success
+                                try {
+                                    if (IsObject(saveBanner) && saveBanner.Hwnd) {
+                                        saveBanner.Controls[1].Text := "Scroll position saved!"
+                                        Sleep(1000)  ; Show success message for 1 second
+                                    }
+                                } catch {
+                                }
                             }
                         }
                     } else {
@@ -1078,6 +1090,15 @@ WikipediaScrollSaveChecker() {
                     '{{"timestamp":{},"location":"AppLaunchers.ahk:WikipediaScrollSaveChecker","message":"Exception in save","data":{{"error":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C"}}`n',
                     A_TickCount, err.Message), logPath
                 ;#endregion agent log
+            } finally {
+                ; Always hide the banner after save operation completes
+                try {
+                    if (IsObject(saveBanner) && saveBanner.Hwnd) {
+                        Sleep(500)  ; Brief delay before hiding
+                        saveBanner.Destroy()
+                    }
+                } catch {
+                }
             }
         }
     }
