@@ -486,6 +486,7 @@ HandleWikipediaChar(char) {
                 Sleep(1500)  ; Additional wait for page to stabilize
 
                 ; Try to restore scroll position (only if on Monitor 3)
+                restoreBanner := ""
                 try {
                     if (!IsWindowOnMonitor3()) {
                         ;#region agent log
@@ -504,6 +505,10 @@ HandleWikipediaChar(char) {
                         A_TickCount, item.url, savedPercentage), logPath
                     ;#endregion agent log
                     if (savedPercentage > 0.0) {
+                        ; Show banner to inform user that scroll position is being restored
+                        restoreBanner := CreateCenteredBanner_Launchers("Restoring scroll position... Please wait",
+                            "3772FF", "FFFFFF", 24, 178)
+
                         ;#region agent log
                         FileAppend Format(
                             '{{"timestamp":{},"location":"AppLaunchers.ahk:HandleWikipediaChar","message":"Getting document height to calculate pixel position","data":{{"savedPercentage":{}}},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}}`n',
@@ -536,6 +541,25 @@ HandleWikipediaChar(char) {
                                     '{{"timestamp":{},"location":"AppLaunchers.ahk:HandleWikipediaChar","message":"Scroll restored, checking result","data":{{"targetScrollY":{},"actualPosition":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,F"}}`n',
                                     A_TickCount, targetScrollY, currentScroll), logPath
                                 ;#endregion agent log
+
+                                ; Update banner to show success
+                                try {
+                                    if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
+                                        restoreBanner.Controls[1].Text := "Scroll position restored!"
+                                        Sleep(1000)  ; Show success message for 1 second
+                                    }
+                                } catch {
+                                }
+
+                                ; Hide banner after restoration
+                                try {
+                                    if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
+                                        Sleep(500)  ; Brief delay before hiding
+                                        restoreBanner.Destroy()
+                                    }
+                                } catch {
+                                }
+
                                 Sleep(200)  ; Brief wait after scroll
                             }
                         }
@@ -547,6 +571,13 @@ HandleWikipediaChar(char) {
                         '{{"timestamp":{},"location":"AppLaunchers.ahk:HandleWikipediaChar","message":"Exception in restore","data":{{"error":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}}`n',
                         A_TickCount, err.Message), logPath
                     ;#endregion agent log
+                    ; Hide banner on error
+                    try {
+                        if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
+                            restoreBanner.Destroy()
+                        }
+                    } catch {
+                    }
                 }
             }
         }
@@ -772,6 +803,7 @@ ShowWikipediaSelector() {
         Sleep(500)
 
         ; Try to restore scroll position (only if on Monitor 3)
+        restoreBanner := ""
         try {
             if (!IsWindowOnMonitor3()) {
                 ;#region agent log
@@ -797,6 +829,10 @@ ShowWikipediaSelector() {
                     A_TickCount, savedPercentage), logPath
                 ;#endregion agent log
                 if (savedPercentage > 0.0) {
+                    ; Show banner to inform user that scroll position is being restored
+                    restoreBanner := CreateCenteredBanner_Launchers("Restoring scroll position... Please wait",
+                        "3772FF", "FFFFFF", 24, 178)
+
                     ;#region agent log
                     FileAppend Format(
                         '{{"timestamp":{},"location":"AppLaunchers.ahk:#!+k::","message":"Getting document height to calculate pixel position","data":{{"savedPercentage":{}}},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}}`n',
@@ -828,6 +864,25 @@ ShowWikipediaSelector() {
                                 '{{"timestamp":{},"location":"AppLaunchers.ahk:#!+k::","message":"Scroll restored, checking result","data":{{"targetScrollY":{},"actualPosition":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,F"}}`n',
                                 A_TickCount, targetScrollY, currentScroll), logPath
                             ;#endregion agent log
+
+                            ; Update banner to show success
+                            try {
+                                if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
+                                    restoreBanner.Controls[1].Text := "Scroll position restored!"
+                                    Sleep(1000)  ; Show success message for 1 second
+                                }
+                            } catch {
+                            }
+
+                            ; Hide banner after restoration
+                            try {
+                                if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
+                                    Sleep(500)  ; Brief delay before hiding
+                                    restoreBanner.Destroy()
+                                }
+                            } catch {
+                            }
+
                             Sleep(200)  ; Brief wait after scroll
                         }
                     }
@@ -840,6 +895,13 @@ ShowWikipediaSelector() {
                 '{{"timestamp":{},"location":"AppLaunchers.ahk:#!+k::","message":"Exception in restore","data":{{"error":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}}`n',
                 A_TickCount, err.Message), logPath
             ;#endregion agent log
+            ; Hide banner on error
+            try {
+                if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
+                    restoreBanner.Destroy()
+                }
+            } catch {
+            }
         }
     } else {
         ShowWikipediaSelector()
