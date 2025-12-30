@@ -2823,11 +2823,6 @@ IsTeamsChatActive() {
 ; Shift + P: Save Wikipedia scroll position
 +p::
 {
-    ;#region agent log
-    SafeDebugLog Format(
-        '{{"timestamp":{},"location":"Shift keys.ahk:+p::","message":"Shift+P pressed, calling save function","data":{{}},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}}`n',
-        A_TickCount)
-    ;#endregion agent log
     ; Include AppLaunchers.ahk functions by calling the manual save function
     ; Since we can't directly include, we'll duplicate the logic here
     SaveWikipediaScrollPositionManually_ShiftKeys()
@@ -2835,67 +2830,27 @@ IsTeamsChatActive() {
 
 ; Wikipedia scroll position save function (duplicated from AppLaunchers.ahk)
 SaveWikipediaScrollPositionManually_ShiftKeys() {
-    ;#region agent log
-    SafeDebugLog Format(
-        '{{"timestamp":{},"location":"Shift keys.ahk:SaveWikipediaScrollPositionManually_ShiftKeys","message":"Function called","data":{{}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A,C"}}`n',
-        A_TickCount)
-    ;#endregion agent log
     try {
         ; Check if Wikipedia window is currently active
         activeWindow := WinGetTitle("A")
         isChromeActive := WinActive("ahk_exe chrome.exe")
         hasWikipedia := InStr(activeWindow, "Wikipedia")
-        ;#region agent log
-        SafeDebugLog Format(
-            '{{"timestamp":{},"location":"Shift keys.ahk:SaveWikipediaScrollPositionManually_ShiftKeys","message":"Window check details","data":{{"activeWindow":"{}","isChromeActive":{},"hasWikipedia":{}}},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}}`n',
-            A_TickCount, activeWindow, isChromeActive, hasWikipedia)
-        ;#endregion agent log
         if (!isChromeActive || !hasWikipedia) {
-            ;#region agent log
-            SafeDebugLog Format(
-                '{{"timestamp":{},"location":"Shift keys.ahk:SaveWikipediaScrollPositionManually_ShiftKeys","message":"Window not active or not Wikipedia","data":{{"activeWindow":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}}`n',
-                A_TickCount, activeWindow)
-            ;#endregion agent log
             return false
         }
     } catch Error as err {
-        ;#region agent log
-        SafeDebugLog Format(
-            '{{"timestamp":{},"location":"Shift keys.ahk:SaveWikipediaScrollPositionManually_ShiftKeys","message":"Exception in window check","data":{{"error":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}}`n',
-            A_TickCount, err.Message)
-        ;#endregion agent log
         return false
     }
 
     ; Check if window is on Monitor 3
     hwnd := WinExist("A")
-    ;#region agent log
-    SafeDebugLog Format(
-        '{{"timestamp":{},"location":"Shift keys.ahk:SaveWikipediaScrollPositionManually_ShiftKeys","message":"Got window handle","data":{{"hwnd":{}}},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}}`n',
-        A_TickCount, hwnd)
-    ;#endregion agent log
     if (!hwnd) {
-        ;#region agent log
-        SafeDebugLog Format(
-            '{{"timestamp":{},"location":"Shift keys.ahk:SaveWikipediaScrollPositionManually_ShiftKeys","message":"No window handle, returning","data":{{}},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}}`n',
-            A_TickCount)
-        ;#endregion agent log
         return false
     }
 
     rect := Buffer(16, 0)
     getRectResult := DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)
-    ;#region agent log
-    SafeDebugLog Format(
-        '{{"timestamp":{},"location":"Shift keys.ahk:SaveWikipediaScrollPositionManually_ShiftKeys","message":"GetWindowRect result","data":{{"result":{}}},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}}`n',
-        A_TickCount, getRectResult)
-    ;#endregion agent log
     if (!getRectResult) {
-        ;#region agent log
-        SafeDebugLog Format(
-            '{{"timestamp":{},"location":"Shift keys.ahk:SaveWikipediaScrollPositionManually_ShiftKeys","message":"GetWindowRect failed, returning","data":{{}},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}}`n',
-            A_TickCount)
-        ;#endregion agent log
         return false
     }
 
@@ -2916,32 +2871,12 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
             break
         }
     }
-    ;#region agent log
-    SafeDebugLog Format(
-        '{{"timestamp":{},"location":"Shift keys.ahk:SaveWikipediaScrollPositionManually_ShiftKeys","message":"Monitor 3 check result","data":{{"isMonitor3":{}}},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}}`n',
-        A_TickCount, isMonitor3)
-    ;#endregion agent log
     if (!isMonitor3) {
-        ;#region agent log
-        SafeDebugLog Format(
-            '{{"timestamp":{},"location":"Shift keys.ahk:SaveWikipediaScrollPositionManually_ShiftKeys","message":"Not on Monitor 3, returning","data":{{}},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}}`n',
-            A_TickCount)
-        ;#endregion agent log
         return false
     }
 
     ; Show banner to inform user that scroll position is being saved
-    ;#region agent log
-    SafeDebugLog Format(
-        '{{"timestamp":{},"location":"Shift keys.ahk:SaveWikipediaScrollPositionManually_ShiftKeys","message":"About to create banner and enter try block","data":{{}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A,B,C"}}`n',
-        A_TickCount)
-    ;#endregion agent log
     saveBanner := CreateCenteredBanner_ChatGPT("Saving scroll position... Please wait", "3772FF", "FFFFFF", 24, 178)
-    ;#region agent log
-    SafeDebugLog Format(
-        '{{"timestamp":{},"location":"Shift keys.ahk:SaveWikipediaScrollPositionManually_ShiftKeys","message":"Banner created, entering try block","data":{{}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A,B,C"}}`n',
-        A_TickCount)
-    ;#endregion agent log
     try {
         ; Get Wikipedia URL
         if (!WinActive("ahk_exe chrome.exe") || !InStr(WinGetTitle("A"), "Wikipedia")) {
@@ -2949,28 +2884,12 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
         }
         uia := UIA_Browser("ahk_exe chrome.exe")
         url := uia.GetCurrentURL()
-        ;#region agent log
-        SafeDebugLog Format(
-            '{{"timestamp":{},"location":"Shift keys.ahk:SaveWikipediaScrollPositionManually_ShiftKeys","message":"Got URL from browser","data":{{"rawUrl":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A,B,D"}}`n',
-            A_TickCount, url)
-        ;#endregion agent log
         if (url = "" || !InStr(url, "wikipedia.org")) {
-            ;#region agent log
-            SafeDebugLog Format(
-                '{{"timestamp":{},"location":"Shift keys.ahk:SaveWikipediaScrollPositionManually_ShiftKeys","message":"URL invalid or empty","data":{{"url":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}}`n',
-                A_TickCount, url)
-            ;#endregion agent log
             return false
         }
         ; Normalize URL - remove trailing slashes and fragments
-        originalUrl := url
         url := RegExReplace(url, "/#.*$", "")
         url := RegExReplace(url, "/+$", "")
-        ;#region agent log
-        SafeDebugLog Format(
-            '{{"timestamp":{},"location":"Shift keys.ahk:SaveWikipediaScrollPositionManually_ShiftKeys","message":"URL normalized","data":{{"originalUrl":"{}","normalizedUrl":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A,B,D"}}`n',
-            A_TickCount, originalUrl, url)
-        ;#endregion agent log
 
         if (url = "") {
             return false
@@ -2999,17 +2918,7 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
                 if (dir != "" && !DirExist(dir)) {
                     DirCreate(dir)
                 }
-                ;#region agent log
-                SafeDebugLog Format(
-                    '{{"timestamp":{},"location":"Shift keys.ahk:SaveWikipediaScrollPositionManually_ShiftKeys","message":"About to write to INI file","data":{{"saveUrl":"{}","scrollPercentage":{},"iniFile":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A,B,D"}}`n',
-                    A_TickCount, url, scrollPercentage, scrollPositionsFile)
-                ;#endregion agent log
                 saved := IniWrite(scrollPercentage, scrollPositionsFile, "Positions", url)
-                ;#region agent log
-                SafeDebugLog Format(
-                    '{{"timestamp":{},"location":"Shift keys.ahk:SaveWikipediaScrollPositionManually_ShiftKeys","message":"INI write result","data":{{"saveUrl":"{}","saved":{}}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A,B,D"}}`n',
-                    A_TickCount, url, saved)
-                ;#endregion agent log
 
                 if (saved) {
                     ; Update banner to show success
@@ -3025,11 +2934,6 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
             }
         }
     } catch Error as err {
-        ;#region agent log
-        SafeDebugLog Format(
-            '{{"timestamp":{},"location":"Shift keys.ahk:SaveWikipediaScrollPositionManually_ShiftKeys","message":"Exception caught in try block","data":{{"error":"{}"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A,B,C,D"}}`n',
-            A_TickCount, err.Message)
-        ;#endregion agent log
         ; Silent fail
     } finally {
         ; Always hide the banner after save operation completes
