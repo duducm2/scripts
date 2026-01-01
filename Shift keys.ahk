@@ -7505,6 +7505,8 @@ IsEditorActive() {
             Send "^!,"
             Send "+v"
             HideSmallLoadingIndicator_ChatGPT()
+            ; Play chime when banner is hidden
+            PlayCompletionChime_ChatGPT()
 
             Sleep 1000
             ; Execute stored decision (if any) after commit is sent
@@ -7529,6 +7531,8 @@ IsEditorActive() {
     Sleep 100
     Send "+v"
     HideSmallLoadingIndicator_ChatGPT()
+    ; Play chime when banner is hidden
+    PlayCompletionChime_ChatGPT()
     Sleep 2000
     ExecuteStoredCommitPushDecision()
 
