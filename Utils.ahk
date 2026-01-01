@@ -2605,7 +2605,15 @@ ShowHotstringSelector() {
 ; Win+Alt+Shift+U hotkey
 #!+U::
 {
-    ShowHotstringSelector()
+    global g_HotstringSelectorActive, g_HotstringSelectorGui
+
+    ; If selector is already open, close it
+    if (g_HotstringSelectorActive && IsObject(g_HotstringSelectorGui)) {
+        CleanupHotstringSelector()
+    } else {
+        ; Otherwise, open it
+        ShowHotstringSelector()
+    }
 }
 
 ; =============================================================================
