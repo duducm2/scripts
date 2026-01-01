@@ -780,6 +780,7 @@ ShowWaterBottleOverlay() {
 
     overlay := Gui()
     overlay.Opt("+AlwaysOnTop -Caption +ToolWindow +E0x20")
+    'tedst'
     if (imagePath != "") {
         overlay.Add("Picture", "w240 h240 Center", imagePath)
     } else {
