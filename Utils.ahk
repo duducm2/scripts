@@ -2784,11 +2784,34 @@ GetActiveMonitorIndex() {
 EnableFocusMode() {
     global g_FocusModeOn, g_FocusModeActiveMonitor, g_FocusModeOverlays
 
-    if (g_FocusModeOn) {
+    ; Check if focus mode is already active by verifying state and overlays
+    hasActiveOverlays := false
+    if (IsObject(g_FocusModeOverlays) && g_FocusModeOverlays.Length > 0) {
+        ; Verify at least one overlay window still exists
+        for overlay in g_FocusModeOverlays {
+            if (IsObject(overlay) && overlay.Hwnd && WinExist("ahk_id " . overlay.Hwnd)) {
+                hasActiveOverlays := true
+                break
+            }
+        }
+    }
+
+    ; If already enabled (by flag or by existing overlays), clean up and return
+    if (g_FocusModeOn || hasActiveOverlays) {
         ;#region agent log
-        FocusDbgLog("H5", "Utils.ahk:EnableFocusMode", "Already enabled; no-op", Map("g_FocusModeOn", g_FocusModeOn))
+        FocusDbgLog("H5", "Utils.ahk:EnableFocusMode", "Already enabled; cleaning up stale state", Map(
+            "g_FocusModeOn", g_FocusModeOn,
+            "hasActiveOverlays", hasActiveOverlays
+        ))
         ;#endregion agent log
-        return
+        ; If overlays exist but flag is wrong, fix the state
+        if (hasActiveOverlays && !g_FocusModeOn) {
+            ; Clean up the orphaned overlays first
+            DisableFocusMode()
+        } else {
+            ; Already properly enabled, just return
+            return
+        }
     }
 
     activeMon := GetActiveMonitorIndex()
@@ -2904,16 +2927,49 @@ DisableFocusMode() {
 }
 
 ToggleFocusMode() {
-    global g_FocusModeOn
+    global g_FocusModeOn, g_FocusModeOverlays
     ;#region agent log
     FocusDbgLog("H5", "Utils.ahk:ToggleFocusMode", "Toggle invoked", Map(
         "g_FocusModeOn_before", g_FocusModeOn,
+        "overlaysCount", g_FocusModeOverlays ? g_FocusModeOverlays.Length : 0,
         "hwndActive", WinExist("A")
     ))
     ;#endregion agent log
-    if (g_FocusModeOn) {
+
+    ; Check if focus mode is actually active by verifying both state and overlays
+    ; This prevents adding layers when state is out of sync
+    hasActiveOverlays := false
+    if (IsObject(g_FocusModeOverlays) && g_FocusModeOverlays.Length > 0) {
+        ; Verify at least one overlay window still exists
+        for overlay in g_FocusModeOverlays {
+            if (IsObject(overlay) && overlay.Hwnd && WinExist("ahk_id " . overlay.Hwnd)) {
+                hasActiveOverlays := true
+                break
+            }
+        }
+    }
+
+    ; Determine actual state: if overlays exist OR flag is set, consider it ON
+    actualState := g_FocusModeOn || hasActiveOverlays
+
+    ;#region agent log
+    FocusDbgLog("H5", "Utils.ahk:ToggleFocusMode", "State check", Map(
+        "g_FocusModeOn", g_FocusModeOn,
+        "hasActiveOverlays", hasActiveOverlays,
+        "actualState", actualState
+    ))
+    ;#endregion agent log
+
+    if (actualState) {
+        ; Focus mode is on - disable it
         DisableFocusMode()
     } else {
+        ; Focus mode is off - enable it
+        ; First ensure any stale overlays are cleaned up
+        if (hasActiveOverlays && !g_FocusModeOn) {
+            ; State mismatch: overlays exist but flag says off - clean up first
+            DisableFocusMode()
+        }
         EnableFocusMode()
     }
 }

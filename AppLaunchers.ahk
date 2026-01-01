@@ -426,6 +426,9 @@ HandleWikipediaChar(char) {
                         restoreBanner := CreateCenteredBanner_Launchers("Restoring scroll position... Please wait",
                             "3772FF", "FFFFFF", 10, 178, 180)
 
+                        ; Block all keyboard and mouse input during scroll restoration
+                        BlockInput("On")
+
                         uia := UIA_Browser("ahk_exe chrome.exe")
                         ; Wait a bit more for page to be fully ready
                         Sleep(500)
@@ -459,8 +462,13 @@ HandleWikipediaChar(char) {
                                 Sleep(200)  ; Brief wait after scroll
                             }
                         }
+
+                        ; Restore input after scroll restoration is complete
+                        BlockInput("Off")
                     }
                 } catch Error as err {
+                    ; Always restore input on error
+                    BlockInput("Off")
                     ; Hide banner on error
                     try {
                         if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
@@ -706,6 +714,9 @@ ShowWikipediaSelector() {
                     restoreBanner := CreateCenteredBanner_Launchers("Restoring scroll position... Please wait",
                         "3772FF", "FFFFFF", 10, 178, 180)
 
+                    ; Block all keyboard and mouse input during scroll restoration
+                    BlockInput("On")
+
                     uia := UIA_Browser("ahk_exe chrome.exe")
                     Sleep(500)  ; Brief wait for page to be ready
                     ; Get current document height to calculate pixel position
@@ -738,9 +749,14 @@ ShowWikipediaSelector() {
                             Sleep(200)  ; Brief wait after scroll
                         }
                     }
+
+                    ; Restore input after scroll restoration is complete
+                    BlockInput("Off")
                 }
             }
         } catch Error as err {
+            ; Always restore input on error
+            BlockInput("Off")
             ; Hide banner on error
             try {
                 if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
@@ -780,7 +796,6 @@ ShowWaterBottleOverlay() {
 
     overlay := Gui()
     overlay.Opt("+AlwaysOnTop -Caption +ToolWindow +E0x20")
-    'tedst'
     if (imagePath != "") {
         overlay.Add("Picture", "w240 h240 Center", imagePath)
     } else {
