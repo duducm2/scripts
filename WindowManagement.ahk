@@ -844,10 +844,27 @@ FindAndActivatePreviewWindow(projectPath) {
 
                 ; Check if window title contains any of the match segments
                 ; Cursor preview window titles have format: "Preview filename - folder-name - Cursor"
+                ; or "Preview filename - folder-name (Workspace) - Cursor"
                 for segment in matchSegments {
+                    ; Try exact match first
                     if (InStr(winTitle, segment)) {
                         previewWindows.Push({ hwnd: hwnd, title: winTitle })
                         break  ; Found a match, no need to check other segments
+                    }
+                    ; Also try matching segment with "(Workspace)" suffix (for titles like "Trustmate Workspace (Workspace)")
+                    if (InStr(winTitle, segment . " (Workspace)")) {
+                        previewWindows.Push({ hwnd: hwnd, title: winTitle })
+                        break
+                    }
+                    ; Also try matching just the last word if segment contains spaces (e.g., "Workspace" from "Trustmate Workspace")
+                    if (InStr(segment, " ")) {
+                        segmentParts := StrSplit(segment, " ")
+                        lastPart := segmentParts[segmentParts.Length]
+                        if (InStr(winTitle, lastPart) && InStr(winTitle, segmentParts[1])) {
+                            ; Both first and last parts are in title, likely a match
+                            previewWindows.Push({ hwnd: hwnd, title: winTitle })
+                            break
+                        }
                     }
                 }
             } catch {
@@ -1076,6 +1093,14 @@ HandlePreviewWindowSelection(*) {
                     continue
                 }
 
+                ; Extract workspace name from window title
+                ; Format: "Preview filename - WorkspaceName (Workspace) - Cursor"
+                ; We want to extract "WorkspaceName"
+                workspaceName := ""
+                if (RegExMatch(winTitle, "Preview .+? - (.+?) \(Workspace\)", &match)) {
+                    workspaceName := match[1]
+                }
+
                 ; Check if this preview window matches any project
                 windowMatched := false
                 for project in g_Projects {
@@ -1090,6 +1115,27 @@ HandlePreviewWindowSelection(*) {
                         projectPath := project.path
                     }
 
+                    ; First, try matching by workspace name against project name
+                    if (workspaceName != "" && project.name != "" && InStr(workspaceName, project.name)) {
+                        previewWindows.Push({ hwnd: hwnd, title: winTitle })
+                        windowMatched := true
+                        break
+                    }
+
+                    ; Also try matching workspace name directly in project path
+                    if (workspaceName != "" && projectPath != "" && InStr(projectPath, workspaceName)) {
+                        previewWindows.Push({ hwnd: hwnd, title: winTitle })
+                        windowMatched := true
+                        break
+                    }
+
+                    ; Also try matching project name in window title (fallback)
+                    if (project.name != "" && InStr(winTitle, project.name)) {
+                        previewWindows.Push({ hwnd: hwnd, title: winTitle })
+                        windowMatched := true
+                        break
+                    }
+
                     if (projectPath = "") {
                         continue
                     }
@@ -1097,10 +1143,28 @@ HandlePreviewWindowSelection(*) {
                     ; Extract match segments and check if window title matches
                     matchSegments := ExtractProjectMatchSegments(projectPath)
                     for segment in matchSegments {
+                        ; Try exact match first
                         if (InStr(winTitle, segment)) {
                             previewWindows.Push({ hwnd: hwnd, title: winTitle })
                             windowMatched := true
                             break  ; Found a match, no need to check other segments
+                        }
+                        ; Also try matching segment with "(Workspace)" suffix (for titles like "Trustmate Workspace (Workspace)")
+                        if (InStr(winTitle, segment . " (Workspace)")) {
+                            previewWindows.Push({ hwnd: hwnd, title: winTitle })
+                            windowMatched := true
+                            break
+                        }
+                        ; Also try matching just the last word if segment contains spaces (e.g., "Workspace" from "Trustmate Workspace")
+                        if (InStr(segment, " ")) {
+                            segmentParts := StrSplit(segment, " ")
+                            lastPart := segmentParts[segmentParts.Length]
+                            if (InStr(winTitle, lastPart) && InStr(winTitle, segmentParts[1])) {
+                                ; Both first and last parts are in title, likely a match
+                                previewWindows.Push({ hwnd: hwnd, title: winTitle })
+                                windowMatched := true
+                                break
+                            }
                         }
                     }
 
@@ -1120,10 +1184,43 @@ HandlePreviewWindowSelection(*) {
         return
     }
 
-    ; If no matching preview windows found
+    ; If no matching preview windows found, check if we have any preview windows with extracted workspace names
+    ; that don't match any project - include them anyway so all preview windows are accessible
     if (previewWindows.Length = 0) {
-        ShowNotification_WM("No preview windows found for any project.")
-        return
+        ; Re-scan all Cursor windows to find preview windows that weren't matched
+        try {
+            for hwnd in WinGetList("ahk_exe Cursor.exe") {
+                try {
+                    winTitle := WinGetTitle("ahk_id " hwnd)
+                    winTitleLower := StrLower(winTitle)
+
+                    ; Only include windows with "preview" in the title
+                    if (!InStr(winTitleLower, "preview")) {
+                        continue
+                    }
+
+                    ; Extract workspace name
+                    workspaceName := ""
+                    if (RegExMatch(winTitle, "Preview .+? - (.+?) \(Workspace\)", &match)) {
+                        workspaceName := match[1]
+                    }
+
+                    ; If we have a workspace name, include this preview window even if it doesn't match any project
+                    if (workspaceName != "") {
+                        previewWindows.Push({ hwnd: hwnd, title: winTitle })
+                    }
+                } catch {
+                    continue
+                }
+            }
+        } catch {
+        }
+
+        ; If still no preview windows found
+        if (previewWindows.Length = 0) {
+            ShowNotification_WM("No preview windows found for any project.")
+            return
+        }
     }
 
     ; Find the last used preview window
