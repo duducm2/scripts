@@ -272,6 +272,9 @@ global g_WikipediaSelectorHandlers := []  ; Store hotkey handlers for cleanup
 ; Global variables for Wikipedia scroll position save/restore
 global g_WikipediaScrollPositionsFile := A_ScriptDir "\data\wikipedia_scroll_positions.ini"
 
+; Global variable for Wikipedia focus monitoring (automatic blackout cancellation)
+global g_WikipediaFocusMonitorTimer := false
+
 ; Wikipedia article items configuration
 ; Item 1: Taoism
 ; Item 2: Claude Debussy
@@ -281,6 +284,45 @@ global g_WikipediaItems := [{ char: "1", title: "Taoism", url: "https://en.wikip
         url: "" }, { char: "4", title: "Placeholder",
             url: "" }, { char: "5", title: "Placeholder", url: "" }
 ]
+
+; =============================================================================
+; Wikipedia Focus Monitoring for Automatic Blackout Cancellation
+; =============================================================================
+
+; Monitor Wikipedia window focus and automatically disable focus mode when Wikipedia loses focus
+MonitorWikipediaFocus() {
+    global g_WikipediaFocusMonitorTimer
+
+    ; Check if Wikipedia is still the active window
+    SetTitleMatchMode 2
+    if (!WinActive("Wikipedia")) {
+        ; Wikipedia is no longer active - disable focus mode and stop monitoring
+        DisableFocusMode()
+        StopWikipediaFocusMonitor()
+    }
+}
+
+; Start monitoring Wikipedia window focus
+StartWikipediaFocusMonitor() {
+    global g_WikipediaFocusMonitorTimer
+
+    ; Stop any existing monitor first
+    StopWikipediaFocusMonitor()
+
+    ; Start periodic monitoring (check every 200ms for responsive detection)
+    g_WikipediaFocusMonitorTimer := MonitorWikipediaFocus
+    SetTimer(g_WikipediaFocusMonitorTimer, 200)
+}
+
+; Stop monitoring Wikipedia window focus
+StopWikipediaFocusMonitor() {
+    global g_WikipediaFocusMonitorTimer
+
+    if (g_WikipediaFocusMonitorTimer) {
+        SetTimer(g_WikipediaFocusMonitorTimer, 0)
+        g_WikipediaFocusMonitorTimer := false
+    }
+}
 
 ; =============================================================================
 ; Wikipedia Scroll Position Storage Functions
@@ -413,6 +455,12 @@ HandleWikipediaChar(char) {
                 WinActivate("Wikipedia")
                 WinWaitActive("Wikipedia", , 5)
                 Sleep(1500)  ; Additional wait for page to stabilize
+
+                ; Enable focus mode to darken other monitors
+                EnableFocusMode()
+
+                ; Start monitoring Wikipedia focus for automatic blackout cancellation
+                StartWikipediaFocusMonitor()
 
                 ; Try to restore scroll position (only if on Monitor 3)
                 restoreBanner := ""
@@ -699,6 +747,9 @@ ShowWikipediaSelector() {
 
         ; Enable focus mode to darken other monitors
         EnableFocusMode()
+
+        ; Start monitoring Wikipedia focus for automatic blackout cancellation
+        StartWikipediaFocusMonitor()
 
         ; Try to restore scroll position (only if on Monitor 3)
         restoreBanner := ""
