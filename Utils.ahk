@@ -246,10 +246,40 @@ RegisterMacro(func, title) {
     g_Macros.Push({ func: func, title: title, category: "Macros" })
 }
 
+; Quick Update Scripts macro function
+QuickUpdateScripts() {
+    ; Check if we're in work environment
+    if (IS_WORK_ENVIRONMENT) {
+        ; Work environment file paths
+        files := [
+            "C:\Users\fie7ca\Documents\scripts\WindowManagement.ahk",
+            "C:\Users\fie7ca\Documents\scripts\Utils.ahk",
+            "C:\Users\fie7ca\Documents\scripts\Spotify.ahk",
+            "C:\Users\fie7ca\Documents\scripts\Shift keys.ahk",
+            "C:\Users\fie7ca\Documents\scripts\Outlook.ahk",
+            "C:\Users\fie7ca\Documents\scripts\Microsoft Teams.ahk",
+            "C:\Users\fie7ca\Documents\scripts\Gemini.ahk",
+            "C:\Users\fie7ca\Documents\scripts\AppLaunchers.ahk"
+        ]
+        
+        ; Execute each script file
+        for index, file in files {
+            try {
+                Run file
+            } catch Error as e {
+                ; Continue with next file if one fails
+            }
+        }
+    } else {
+        ; Personal environment - show reminder message
+        MsgBox("Personal computer paths not configured.`n`nPlease update the macro with personal computer file paths.`n`nExpected pattern: C:\Users\eduev\...", "Quick Update Scripts", "Icon!")
+    }
+}
+
 ; Initialize macros
 InitMacros() {
-    ; Hello World macro
-    RegisterMacro(() => MsgBox("Hello World", "Macro"), "👋 Hello World")
+    ; Quick Update to Your Scripts macro
+    RegisterMacro(QuickUpdateScripts, "⚡ Quick Update to Your Scripts")
 }
 InitMacros()
 

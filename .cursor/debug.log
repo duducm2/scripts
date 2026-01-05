@@ -28,3 +28,12 @@
 {"sessionId":"debug-session","runId":"pre-fix","hypothesisId":"H3","location":"Utils.ahk:Escape","message":"Forwarding Escape to system","timestamp":26909765,"data":{"blocking":0,"forwarding":1,"reason":"Dictation not active - Esc allowed"}}
 {"sessionId":"debug-session","runId":"pre-fix","hypothesisId":"H3","location":"Utils.ahk:Escape","message":"Escape forwarded","timestamp":26909781,"data":{"afterSend":1}}
 {"sessionId":"debug-session","runId":"pre-fix","hypothesisId":"H1","location":"Utils.ahk","message":"Escape hotkey registered","timestamp":27224343,"data":{"inputLevel":10,"useHook":1}}
+{"sessionId":"debug-session","runId":"pre-fix","hypothesisId":"H1","location":"Utils.ahk","message":"Escape hotkey registered","timestamp":27927656,"data":{"inputLevel":10,"useHook":1}}
+{"sessionId":"debug-session","runId":"pre-fix","hypothesisId":"H1","location":"Utils.ahk","message":"Escape hotkey registered","timestamp":28124375,"data":{"inputLevel":10,"useHook":1}}
+{"sessionId":"debug-session","runId":"pre-fix","hypothesisId":"H1","location":"Utils.ahk","message":"Escape hotkey registered","timestamp":28128046,"data":{"inputLevel":10,"useHook":1}}
+{"sessionId":"debug-session","runId":"pre-fix","hypothesisId":"H1","location":"Utils.ahk:Escape","message":"Escape hotkey triggered","timestamp":28131406,"data":{"timestamp":28131406}}
+{"sessionId":"debug-session","runId":"pre-fix","hypothesisId":"H2","location":"Utils.ahk:Escape","message":"State-based check","timestamp":28131406,"data":{"g_DictationActive":0,"note":"Using state variable instead of window check"}}
+{"sessionId":"debug-session","runId":"pre-fix","hypothesisId":"H3","location":"Utils.ahk:Escape","message":"Forwarding Escape to system","timestamp":28131421,"data":{"blocking":0,"forwarding":1,"reason":"Dictation not active - Esc allowed"}}
+{"sessionId":"debug-session","runId":"pre-fix","hypothesisId":"H3","location":"Utils.ahk:Escape","message":"Escape forwarded","timestamp":28131437,"data":{"afterSend":1}}
+{"sessionId":"debug-session","runId":"pre-fix","hypothesisId":"H1","location":"Utils.ahk","message":"Escape hotkey registered","timestamp":28137343,"data":{"inputLevel":10,"useHook":1}}
+{"sessionId":"debug-session","runId":"pre-fix","hypothesisId":"H1","location":"Utils.ahk","message":"Escape hotkey registered","timestamp":28139312,"data":{"inputLevel":10,"useHook":1}}
