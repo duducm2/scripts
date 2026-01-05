@@ -5528,24 +5528,19 @@ EnsureItemsViewFocus() {
 {
     ; Ensure the focus is in the items view so the context menu targets a file
     EnsureItemsViewFocus()
-    Sleep 100
+    Sleep 200
     ShowSmallLoadingIndicator_ChatGPT("Sharing file…")
 
-    preStepDelay := 140
-    postStepDelay := 250
+    preStepDelay := 280
+    postStepDelay := 500
 
-    ; Steps 1-4 with 120ms between each
+    ; ; Steps 1-4 with 120ms between each
     Send "{AppsKey}" ; 1. open context menu
     Sleep preStepDelay
-    Send "w"         ; 2. W
-    Sleep preStepDelay
-    Send "s"         ; 3. S
-    Sleep preStepDelay
-    Send "{Enter}"   ; 4. Enter
-    Sleep preStepDelay
+    Send "s1"         ; 2. W
 
-    ; Step 5: Shift+Tab with a longer wait (1s)
-    Sleep 4500
+    ; ; Step 5: Shift+Tab with a longer wait (1s)
+    Sleep 6500
 
     ; Steps 6-10 with 400ms between each
     Send "+{Tab}"
@@ -5578,7 +5573,7 @@ EnsureItemsViewFocus() {
 
     Sleep postStepDelay
 
-    Send "!{F4}"  ; Alt+F4 closes the current window
+    ; Send "!{F4}"  ; Alt+F4 closes the current window
     HideSmallLoadingIndicator_ChatGPT()
 
 }
