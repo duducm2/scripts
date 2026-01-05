@@ -5573,7 +5573,7 @@ EnsureItemsViewFocus() {
 
     Sleep postStepDelay
 
-    ; Send "!{F4}"  ; Alt+F4 closes the current window
+    Send "!{F4}"  ; Alt+F4 closes the current window
     HideSmallLoadingIndicator_ChatGPT()
 
 }
