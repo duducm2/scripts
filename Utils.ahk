@@ -232,6 +232,27 @@ InitQuickOpenFiles() {
 }
 InitQuickOpenFiles()
 
+; =============================================================================
+; Macros System
+; =============================================================================
+
+; Global variables for macros
+global g_Macros := []
+global g_MacroCharMap := Map()  ; Maps character to macro function
+
+; Register a macro
+RegisterMacro(func, title) {
+    global g_Macros
+    g_Macros.Push({ func: func, title: title, category: "Macros" })
+}
+
+; Initialize macros
+InitMacros() {
+    ; Hello World macro
+    RegisterMacro(() => MsgBox("Hello World", "Macro"), "👋 Hello World")
+}
+InitMacros()
+
 ; ------------
 ; Optional: scope Explorer-only hotstrings used for renaming
 ; Uncomment to restrict selected triggers to File Explorer or Save dialogs
@@ -2070,14 +2091,15 @@ global g_HotstringHotkeyHandlers := []  ; Store hotkey handlers for cleanup
 global g_HotstringCharSequence := ["1", "2", "3", "4", "5", "q", "w", "e", "r", "t", "a", "s", "d", "f", "g", "z", "x",
     "c", "v", "b", "6", "7", "8", "9", "0", "y", "u", "i", "o", "p", "h", "j", "k", "l", "n", "m", ",", "."]
 
-; Category display order (Prompts first, General second, Projects last, Files & Links last)
-global g_HotstringCategories := ["Prompts", "General", "Projects", "Files & Links"]
+; Category display order (Prompts first, General second, Projects last, Files & Links, Macros last)
+global g_HotstringCategories := ["Prompts", "General", "Projects", "Files & Links", "Macros"]
 
 ; Build character-to-expansion mapping grouped by category
 BuildHotstringCharMap() {
-    global g_hotstrings, g_QuickOpenFiles, g_HotstringCategories
+    global g_hotstrings, g_QuickOpenFiles, g_HotstringCategories, g_Macros
     charMap := Map()
     global g_QuickOpenFileCharMap := Map()
+    global g_MacroCharMap := Map()
 
     ; Group hotstrings by category
     categorized := Map()
@@ -2108,6 +2130,17 @@ BuildHotstringCharMap() {
                     }
                 }
             }
+        } else if (category = "Macros") {
+            ; Handle macros
+            if (IsSet(g_Macros) && g_Macros.Length > 0) {
+                for macroEntry in g_Macros {
+                    if (charIndex <= g_HotstringCharSequence.Length) {
+                        char := g_HotstringCharSequence[charIndex]
+                        g_MacroCharMap[char] := macroEntry.func
+                        charIndex++
+                    }
+                }
+            }
         } else {
             ; Handle hotstring categories
             if (categorized.Has(category)) {
@@ -2131,12 +2164,13 @@ BuildHotstringCharMap() {
 
 ; Get categorized hotstrings for display
 GetCategorizedHotstrings() {
-    global g_hotstrings, g_QuickOpenFiles
+    global g_hotstrings, g_QuickOpenFiles, g_Macros
     categorized := Map()
     categorized["Projects"] := []
     categorized["Prompts"] := []
     categorized["General"] := []
     categorized["Files & Links"] := []
+    categorized["Macros"] := []
 
     ; Add hotstrings
     if (IsSet(g_hotstrings) && g_hotstrings.Length > 0) {
@@ -2152,6 +2186,13 @@ GetCategorizedHotstrings() {
     if (IsSet(g_QuickOpenFiles) && g_QuickOpenFiles.Length > 0) {
         for fileEntry in g_QuickOpenFiles {
             categorized["Files & Links"].Push(fileEntry)
+        }
+    }
+
+    ; Add macros
+    if (IsSet(g_Macros) && g_Macros.Length > 0) {
+        for macroEntry in g_Macros {
+            categorized["Macros"].Push(macroEntry)
         }
     }
 
@@ -2276,7 +2317,7 @@ CleanupHotstringSelector() {
 
 ; Handler for character key press
 HandleHotstringChar(char) {
-    global g_HotstringSelectorActive, g_HotstringCharMap, g_QuickOpenFileCharMap
+    global g_HotstringSelectorActive, g_HotstringCharMap, g_QuickOpenFileCharMap, g_MacroCharMap
 
     ; Only process if selector is active
     if (!g_HotstringSelectorActive) {
@@ -2308,6 +2349,26 @@ HandleHotstringChar(char) {
             } catch {
                 ; File opening failed
             }
+        }
+        return
+    }
+
+    ; Check if character maps to a macro function
+    macroFunc := g_MacroCharMap.Get(char, "")
+    if (macroFunc = "") {
+        ; Try lowercase if uppercase
+        macroFunc := g_MacroCharMap.Get(StrLower(char), "")
+    }
+
+    if (macroFunc != "") {
+        ; Cleanup first (closes GUI, disables hotkeys)
+        CleanupHotstringSelector()
+
+        ; Execute the macro function
+        try {
+            macroFunc()
+        } catch Error as e {
+            ; Macro execution failed
         }
         return
     }
@@ -2360,12 +2421,12 @@ ShowHotstringSelector() {
     ; Build character mapping
     g_HotstringCharMap := BuildHotstringCharMap()
 
-    ; Check if we have any items to display (hotstrings or quick open files)
-    global g_QuickOpenFileCharMap
-    hasItems := (g_HotstringCharMap.Count > 0) || (g_QuickOpenFileCharMap.Count > 0)
+    ; Check if we have any items to display (hotstrings, quick open files, or macros)
+    global g_QuickOpenFileCharMap, g_MacroCharMap
+    hasItems := (g_HotstringCharMap.Count > 0) || (g_QuickOpenFileCharMap.Count > 0) || (g_MacroCharMap.Count > 0)
     if (!hasItems) {
         ; Use tray notification to avoid stealing focus/closing other palettes
-        TrayTip("Hotstring Selector", "No hotstrings or files found.", "IconX")
+        TrayTip("Hotstring Selector", "No hotstrings, files, or macros found.", "IconX")
         SetTimer(() => TrayTip(), -5000)  ; Auto-hide after ~5s
         return
     }
@@ -2572,9 +2633,9 @@ ShowHotstringSelector() {
     ; Clear handlers array
     g_HotstringHotkeyHandlers := []
 
-    ; Enable hotkeys for all assigned characters (both hotstrings and quick open files)
+    ; Enable hotkeys for all assigned characters (hotstrings, quick open files, and macros)
     for char in g_HotstringCharSequence {
-        if (g_HotstringCharMap.Has(char) || g_QuickOpenFileCharMap.Has(char)) {
+        if (g_HotstringCharMap.Has(char) || g_QuickOpenFileCharMap.Has(char) || g_MacroCharMap.Has(char)) {
             ; Use factory function to create handler with properly captured char value
             handler := CreateHotstringCharHandler(char)
 
