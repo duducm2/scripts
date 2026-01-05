@@ -5571,7 +5571,7 @@ EnsureItemsViewFocus() {
     ; 15. Enter
     Send "{Enter}"
 
-    Sleep 1000
+    Sleep 3000
 
     Send "!{F4}"  ; Alt+F4 closes the current window
     HideSmallLoadingIndicator_ChatGPT()
