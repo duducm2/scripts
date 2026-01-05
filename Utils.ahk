@@ -229,6 +229,18 @@ InitQuickOpenFiles() {
         "https://www.youtube.com/watch?v=I6ZRH9Mraqw&t=2s",
         "📻 Radio-Tiso Exercises"
     )
+    
+    ; Register GS_UX core team_UX and CIP Integration Miro
+    RegisterQuickOpenFile(
+        "https://miro.com/app/board/uXjVJdbNFkA=/",
+        "🎨 GS_UX core team_UX and CIP Integration Miro"
+    )
+    
+    ; Register GS_E&S_CIP Dashboard research and design Miro
+    RegisterQuickOpenFile(
+        "https://miro.com/app/board/uXjVJVZSXvk=/",
+        "📊 GS_E&S_CIP Dashboard research and design Miro"
+    )
 }
 InitQuickOpenFiles()
 
