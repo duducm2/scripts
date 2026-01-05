@@ -157,7 +157,7 @@ InitHotstringsCheatSheet() {
         "✏️ Grammar & Spelling Corrector"
     )
     RegisterHotstring(":o:mtask",
-        "This is a message, summary, text or any textual information that translates into a task for me to do. Translate this way, into a task, make informative and start with the emoji 🔲. Make it clear and consise.",
+        "This is a message, summary, text or any textual information that translates into a task for me to do. Translate this into a task. OUTPUT RULES: Output ONLY the task itself. Start with the emoji 🔲. Make it clear, concise, coherent, and cohesive. Do not add any additional text, explanations, or commentary beyond the task itself.",
         "Prompts",
         "🔲 Convert to Task"
     )
