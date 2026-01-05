@@ -833,6 +833,7 @@ global g_ChimeStopTimer := false
 global g_PomodoroOverlay := false
 global g_PomodoroTinyIndicator := false
 global g_PomodoroLogFile := A_ScriptDir "\data\pomodoro_log.csv"
+global g_PomodoroCount := 0  ; Track Pomodoro count in work environment
 
 ; Show water bottle image overlay as hydration reminder
 ShowWaterBottleOverlay() {
@@ -870,7 +871,13 @@ ShowTinyWaterBottleIndicator() {
 
 ; Log Pomodoro session to CSV file
 LogPomodoroSession() {
-    global g_PomodoroLogFile
+    global g_PomodoroLogFile, IS_WORK_ENVIRONMENT
+    
+    ; Suppress CSV logging in work environment
+    if (IS_WORK_ENVIRONMENT) {
+        return
+    }
+    
     ; Ensure data directory exists
     SplitPath(g_PomodoroLogFile, , &dir)
     if (dir != "" && !DirExist(dir)) {
@@ -1221,15 +1228,19 @@ OnPomodoroComplete() {
 
 ; Start a new Pomodoro timer session
 StartPomodoroTimer() {
-    global g_PomodoroTimer, g_PomodoroOverlay, g_PomodoroTinyIndicator
+    global g_PomodoroTimer, g_PomodoroOverlay, g_PomodoroTinyIndicator, g_PomodoroCount, IS_WORK_ENVIRONMENT
     ; Cancel any existing timer
     if (g_PomodoroTimer) {
         SetTimer(g_PomodoroTimer, 0)
         g_PomodoroTimer := false
     }
 
-    ; Log the session start
-    LogPomodoroSession()
+    ; Increment Pomodoro count in work environment, otherwise log to CSV
+    if (IS_WORK_ENVIRONMENT) {
+        g_PomodoroCount++
+    } else {
+        LogPomodoroSession()
+    }
 
     ; Show water bottle image overlay (large, auto-hides after 5 seconds)
     if (g_PomodoroOverlay && IsObject(g_PomodoroOverlay) && g_PomodoroOverlay.Hwnd) {
