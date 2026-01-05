@@ -203,7 +203,7 @@ InitHotstringsCheatSheet() {
 InitHotstringsCheatSheet()
 
 ; =============================================================================
-; Quick Open Files System
+; Files & Links System
 ; =============================================================================
 
 ; Global variables for quick open files
@@ -213,7 +213,7 @@ global g_QuickOpenFileCharMap := Map()  ; Maps character to file path
 ; Register a file for quick opening
 RegisterQuickOpenFile(filePath, title) {
     global g_QuickOpenFiles
-    g_QuickOpenFiles.Push({ filePath: filePath, title: title, category: "Quick Open Files" })
+    g_QuickOpenFiles.Push({ filePath: filePath, title: title, category: "Files & Links" })
 }
 
 ; Initialize quick open files
@@ -222,6 +222,12 @@ InitQuickOpenFiles() {
     RegisterQuickOpenFile(
         "C:\Users\eduev\Meu Drive\04 - Pós-graduação\01 - Mestrado\26-ai-experiment\infoVis\Dissertation InfoVis  - PowerBI - Charts.pbix",
         "📊 Dissertation InfoVis"
+    )
+    
+    ; Register radio-tiso exercises YouTube link
+    RegisterQuickOpenFile(
+        "https://www.youtube.com/watch?v=I6ZRH9Mraqw&t=2s",
+        "📻 Radio-Tiso Exercises"
     )
 }
 InitQuickOpenFiles()
@@ -2064,8 +2070,8 @@ global g_HotstringHotkeyHandlers := []  ; Store hotkey handlers for cleanup
 global g_HotstringCharSequence := ["1", "2", "3", "4", "5", "q", "w", "e", "r", "t", "a", "s", "d", "f", "g", "z", "x",
     "c", "v", "b", "6", "7", "8", "9", "0", "y", "u", "i", "o", "p", "h", "j", "k", "l", "n", "m", ",", "."]
 
-; Category display order (Prompts first, General second, Projects last, Quick Open Files last)
-global g_HotstringCategories := ["Prompts", "General", "Projects", "Quick Open Files"]
+; Category display order (Prompts first, General second, Projects last, Files & Links last)
+global g_HotstringCategories := ["Prompts", "General", "Projects", "Files & Links"]
 
 ; Build character-to-expansion mapping grouped by category
 BuildHotstringCharMap() {
@@ -2091,7 +2097,7 @@ BuildHotstringCharMap() {
     ; Assign characters sequentially within each category
     charIndex := 1
     for category in g_HotstringCategories {
-        if (category = "Quick Open Files") {
+        if (category = "Files & Links") {
             ; Handle quick open files
             if (IsSet(g_QuickOpenFiles) && g_QuickOpenFiles.Length > 0) {
                 for fileEntry in g_QuickOpenFiles {
@@ -2130,7 +2136,7 @@ GetCategorizedHotstrings() {
     categorized["Projects"] := []
     categorized["Prompts"] := []
     categorized["General"] := []
-    categorized["Quick Open Files"] := []
+    categorized["Files & Links"] := []
 
     ; Add hotstrings
     if (IsSet(g_hotstrings) && g_hotstrings.Length > 0) {
@@ -2145,7 +2151,7 @@ GetCategorizedHotstrings() {
     ; Add quick open files
     if (IsSet(g_QuickOpenFiles) && g_QuickOpenFiles.Length > 0) {
         for fileEntry in g_QuickOpenFiles {
-            categorized["Quick Open Files"].Push(fileEntry)
+            categorized["Files & Links"].Push(fileEntry)
         }
     }
 
