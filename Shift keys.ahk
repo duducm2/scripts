@@ -5532,7 +5532,7 @@ EnsureItemsViewFocus() {
     ShowSmallLoadingIndicator_ChatGPT("Sharing file…")
 
     preStepDelay := 350
-    postStepDelay := 550
+    postStepDelay := 700
 
     ; ; Steps 1-4 with 120ms between each
     Send "{AppsKey}" ; 1. open context menu
@@ -5566,7 +5566,7 @@ EnsureItemsViewFocus() {
 
     ; 12. Enter
     Send "{Enter}"
-    Sleep postStepDelay
+    Sleep 1000
 
     ; 15. Enter
     Send "{Enter}"
