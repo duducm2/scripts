@@ -9308,7 +9308,7 @@ PrevMobillsMonth() {
     ; #region agent log
     try {
         FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-        ',"location":"Shift keys.ahk:9158","message":"PrevMobillsMonth entry","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n',
+        ',"location":"Shift keys.ahk:9307","message":"PrevMobillsMonth entry","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n',
         DEBUG_LOG_PATH
     } catch {
     }
@@ -9318,7 +9318,7 @@ PrevMobillsMonth() {
         ; #region agent log
         try {
             FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-            ',"location":"Shift keys.ahk:9160","message":"PrevMobillsMonth after TryAttachBrowser","data":{"uia":' . (
+            ',"location":"Shift keys.ahk:9317","message":"PrevMobillsMonth after TryAttachBrowser","data":{"uia":' . (
                 uia ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n', DEBUG_LOG_PATH
         } catch {
         }
@@ -9327,59 +9327,145 @@ PrevMobillsMonth() {
             MsgBox "Could not attach to the browser window.", "Mobills Navigation", "IconX"
             return
         }
-        grp := FindMonthGroup(uia)
+        btn := ""
+        
+        ; PRIMARY LOGIC: Try UIA path-based detection first (most reliable)
+        ; Path: {T:30}, {T:26}, {T:26}, {T:8}, {T:7}, {T:0}
         ; #region agent log
         try {
             FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-            ',"location":"Shift keys.ahk:9165","message":"PrevMobillsMonth after FindMonthGroup","data":{"grp":' . (grp ?
-                1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}`n', DEBUG_LOG_PATH
+            ',"location":"Shift keys.ahk:9335","message":"PrevMobillsMonth trying UIA path","data":{"path":"T:30,T:26,T:26,T:8,T:7,T:0"},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}`n',
+            DEBUG_LOG_PATH
         } catch {
         }
         ; #endregion
-        btn := ""
-        ; PRIMARY LOGIC: Only if month group found, try to find arrow buttons
-        if grp {
-            ; PRIMARY LOGIC: First try: immediate previous sibling
-            btn := grp.WalkTree("-1", { Type: "Button" })
-            if !btn {
-                ; PRIMARY LOGIC: Fallback: search all buttons inside parent and pick the one to the LEFT of the group
-                parent := UIA.TreeWalkerTrue.GetParentElement(grp)
-                if (parent) {
-                    grpPos := grp.Location
-                    for , el in parent.FindAll({ Type: "Button" }) {
-                        pos := el.Location
-                        if (pos.y >= grpPos.y - 10 && pos.y <= grpPos.y + grpPos.h + 10 && pos.x < grpPos.x) {
-                            btn := el                          ; closest left candidate
-                        }
-                    }
-                }
-            }
-        }
-        ; FALLBACK LOGIC: If primary logic failed or month group not found, try pagination button
-        if !btn {
+        try {
+            ; Try with Type property (T:30 = Type:30)
+            btn := uia.ElementFromPath({Type:30}, {Type:26}, {Type:26}, {Type:8}, {Type:7}, {Type:0})
+            ; #region agent log
             try {
-                btn := uia.FindElement({ Name: "Go to previous page", Type: 50000, ClassName: "MuiPaginationItem",
-                    matchmode: "Substring" })
+                btnName := ""
+                try btnName := btn.GetPropertyValue(UIA.Property.Name)
+                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+                ',"location":"Shift keys.ahk:9342","message":"PrevMobillsMonth UIA path success","data":{"found":true,"name":"' . btnName . '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}`n',
+                DEBUG_LOG_PATH
+            } catch {
+            }
+            ; #endregion
+        } catch Error as e {
+            ; #region agent log
+            try {
+                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+                ',"location":"Shift keys.ahk:9350","message":"PrevMobillsMonth UIA path failed","data":{"error":"' . e.Message . '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}`n',
+                DEBUG_LOG_PATH
+            } catch {
+            }
+            ; #endregion
+        }
+        
+        ; FALLBACK 1: Try by Name "Go to previous page" (keep existing fallback for compatibility)
+        if !btn {
+            ; #region agent log
+            try {
+                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+                ',"location":"Shift keys.ahk:9360","message":"PrevMobillsMonth trying name search","data":{"name":"Go to previous page"},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}`n',
+                DEBUG_LOG_PATH
+            } catch {
+            }
+            ; #endregion
+            try {
+                ; Try with Type 50000 (Button) and Name match
+                btn := uia.FindElement({ Name: "Go to previous page", Type: 50000, matchmode: "Substring" })
+                if !btn {
+                    ; Also try with ClassName filter
+                    btn := uia.FindElement({ Name: "Go to previous page", Type: 50000, ClassName: "MuiPaginationItem",
+                        matchmode: "Substring" })
+                }
                 ; Verify button is not disabled
                 if btn {
                     try {
-                        className := btn.GetPropertyValue(UIA.Property.ClassName)
+                        className := ""
+                        try className := btn.GetPropertyValue(UIA.Property.ClassName)
                         if InStr(className, "Mui-disabled")
                             btn := ""  ; Button is disabled, don't use it
                     } catch {
                         ; If we can't check className, assume button is usable
                     }
                 }
+                ; #region agent log
+                try {
+                    FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+                    ',"location":"Shift keys.ahk:9380","message":"PrevMobillsMonth name search result","data":{"found":' . (btn ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}`n',
+                    DEBUG_LOG_PATH
+                } catch {
+                }
+                ; #endregion
             } catch {
                 ; Fallback search failed, btn remains empty
             }
         }
+        
+        ; FALLBACK 2: Try month group-based detection (keep for backward compatibility)
+        if !btn {
+            ; #region agent log
+            try {
+                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+                ',"location":"Shift keys.ahk:9395","message":"PrevMobillsMonth trying month group","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}`n',
+                DEBUG_LOG_PATH
+            } catch {
+            }
+            ; #endregion
+            grp := FindMonthGroup(uia)
+            ; #region agent log
+            try {
+                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+                ',"location":"Shift keys.ahk:9400","message":"PrevMobillsMonth after FindMonthGroup","data":{"grp":' . (grp ?
+                    1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}`n', DEBUG_LOG_PATH
+            } catch {
+            }
+            ; #endregion
+            if grp {
+                ; PRIMARY LOGIC: First try: immediate previous sibling
+                btn := grp.WalkTree("-1", { Type: "Button" })
+                if !btn {
+                    ; PRIMARY LOGIC: Fallback: search all buttons inside parent and pick the one to the LEFT of the group
+                    parent := UIA.TreeWalkerTrue.GetParentElement(grp)
+                    if (parent) {
+                        grpPos := grp.Location
+                        for , el in parent.FindAll({ Type: "Button" }) {
+                            pos := el.Location
+                            if (pos.y >= grpPos.y - 10 && pos.y <= grpPos.y + grpPos.h + 10 && pos.x < grpPos.x) {
+                                btn := el                          ; closest left candidate
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        ; #region agent log
+        try {
+            FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+            ',"location":"Shift keys.ahk:9425","message":"PrevMobillsMonth final result","data":{"btnFound":' . (btn ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"A,B,C,E"}`n',
+            DEBUG_LOG_PATH
+        } catch {
+        }
+        ; #endregion
+        
         if btn {
             btn.Click()
         } else {
             MsgBox "Could not find the previous-month button.", "Mobills Navigation", "IconX"
         }
     } catch Error as e {
+        ; #region agent log
+        try {
+            FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+            ',"location":"Shift keys.ahk:9438","message":"PrevMobillsMonth exception","data":{"error":"' . e.Message . '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n',
+            DEBUG_LOG_PATH
+        } catch {
+        }
+        ; #endregion
         MsgBox "Error navigating to previous month:`n" e.Message, "Mobills Error", "IconX"
     }
 }
@@ -9388,7 +9474,7 @@ NextMobillsMonth() {
     ; #region agent log
     try {
         FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-        ',"location":"Shift keys.ahk:9213","message":"NextMobillsMonth entry","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n',
+        ',"location":"Shift keys.ahk:9387","message":"NextMobillsMonth entry","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n',
         DEBUG_LOG_PATH
     } catch {
     }
@@ -9398,7 +9484,7 @@ NextMobillsMonth() {
         ; #region agent log
         try {
             FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-            ',"location":"Shift keys.ahk:9215","message":"NextMobillsMonth after TryAttachBrowser","data":{"uia":' . (
+            ',"location":"Shift keys.ahk:9397","message":"NextMobillsMonth after TryAttachBrowser","data":{"uia":' . (
                 uia ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n', DEBUG_LOG_PATH
         } catch {
         }
@@ -9407,59 +9493,145 @@ NextMobillsMonth() {
             MsgBox "Could not attach to the browser window.", "Mobills Navigation", "IconX"
             return
         }
-        grp := FindMonthGroup(uia)
+        btn := ""
+        
+        ; PRIMARY LOGIC: Try UIA path-based detection first (most reliable)
+        ; Path: {T:30}, {T:26}, {T:26}, {T:8}, {T:7, i:-1}, {T:0}
         ; #region agent log
         try {
             FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-            ',"location":"Shift keys.ahk:9220","message":"NextMobillsMonth after FindMonthGroup","data":{"grp":' . (grp ?
-                1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}`n', DEBUG_LOG_PATH
+            ',"location":"Shift keys.ahk:9415","message":"NextMobillsMonth trying UIA path","data":{"path":"T:30,T:26,T:26,T:8,T:7,i:-1,T:0"},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}`n',
+            DEBUG_LOG_PATH
         } catch {
         }
         ; #endregion
-        btn := ""
-        ; PRIMARY LOGIC: Only if month group found, try to find arrow buttons
-        if grp {
-            ; PRIMARY LOGIC: First try: immediate next sibling
-            btn := grp.WalkTree("+1", { Type: "Button" })
-            if !btn {
-                ; PRIMARY LOGIC: Fallback: search all buttons inside parent and pick the one to the RIGHT of the group
-                parent := UIA.TreeWalkerTrue.GetParentElement(grp)
-                if (parent) {
-                    grpPos := grp.Location
-                    for , el in parent.FindAll({ Type: "Button" }) {
-                        pos := el.Location
-                        if (pos.y >= grpPos.y - 10 && pos.y <= grpPos.y + grpPos.h + 10 && pos.x > grpPos.x + grpPos.w) {
-                            btn := el                          ; closest right candidate
-                        }
-                    }
-                }
-            }
-        }
-        ; FALLBACK LOGIC: If primary logic failed or month group not found, try pagination button
-        if !btn {
+        try {
+            ; Try with Type property (T:30 = Type:30, i:-1 means last of that type)
+            btn := uia.ElementFromPath({Type:30}, {Type:26}, {Type:26}, {Type:8}, {Type:7, i:-1}, {Type:0})
+            ; #region agent log
             try {
-                btn := uia.FindElement({ Name: "Go to next page", Type: 50000, ClassName: "MuiPaginationItem",
-                    matchmode: "Substring" })
+                btnName := ""
+                try btnName := btn.GetPropertyValue(UIA.Property.Name)
+                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+                ',"location":"Shift keys.ahk:9422","message":"NextMobillsMonth UIA path success","data":{"found":true,"name":"' . btnName . '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}`n',
+                DEBUG_LOG_PATH
+            } catch {
+            }
+            ; #endregion
+        } catch Error as e {
+            ; #region agent log
+            try {
+                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+                ',"location":"Shift keys.ahk:9430","message":"NextMobillsMonth UIA path failed","data":{"error":"' . e.Message . '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}`n',
+                DEBUG_LOG_PATH
+            } catch {
+            }
+            ; #endregion
+        }
+        
+        ; FALLBACK 1: Try by Name "Go to next page" (keep existing fallback for compatibility)
+        if !btn {
+            ; #region agent log
+            try {
+                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+                ',"location":"Shift keys.ahk:9440","message":"NextMobillsMonth trying name search","data":{"name":"Go to next page"},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}`n',
+                DEBUG_LOG_PATH
+            } catch {
+            }
+            ; #endregion
+            try {
+                ; Try with Type 50000 (Button) and Name match
+                btn := uia.FindElement({ Name: "Go to next page", Type: 50000, matchmode: "Substring" })
+                if !btn {
+                    ; Also try with ClassName filter
+                    btn := uia.FindElement({ Name: "Go to next page", Type: 50000, ClassName: "MuiPaginationItem",
+                        matchmode: "Substring" })
+                }
                 ; Verify button is not disabled
                 if btn {
                     try {
-                        className := btn.GetPropertyValue(UIA.Property.ClassName)
+                        className := ""
+                        try className := btn.GetPropertyValue(UIA.Property.ClassName)
                         if InStr(className, "Mui-disabled")
                             btn := ""  ; Button is disabled, don't use it
                     } catch {
                         ; If we can't check className, assume button is usable
                     }
                 }
+                ; #region agent log
+                try {
+                    FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+                    ',"location":"Shift keys.ahk:9460","message":"NextMobillsMonth name search result","data":{"found":' . (btn ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}`n',
+                    DEBUG_LOG_PATH
+                } catch {
+                }
+                ; #endregion
             } catch {
                 ; Fallback search failed, btn remains empty
             }
         }
+        
+        ; FALLBACK 2: Try month group-based detection (keep for backward compatibility)
+        if !btn {
+            ; #region agent log
+            try {
+                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+                ',"location":"Shift keys.ahk:9475","message":"NextMobillsMonth trying month group","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}`n',
+                DEBUG_LOG_PATH
+            } catch {
+            }
+            ; #endregion
+            grp := FindMonthGroup(uia)
+            ; #region agent log
+            try {
+                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+                ',"location":"Shift keys.ahk:9480","message":"NextMobillsMonth after FindMonthGroup","data":{"grp":' . (grp ?
+                    1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}`n', DEBUG_LOG_PATH
+            } catch {
+            }
+            ; #endregion
+            if grp {
+                ; PRIMARY LOGIC: First try: immediate next sibling
+                btn := grp.WalkTree("+1", { Type: "Button" })
+                if !btn {
+                    ; PRIMARY LOGIC: Fallback: search all buttons inside parent and pick the one to the RIGHT of the group
+                    parent := UIA.TreeWalkerTrue.GetParentElement(grp)
+                    if (parent) {
+                        grpPos := grp.Location
+                        for , el in parent.FindAll({ Type: "Button" }) {
+                            pos := el.Location
+                            if (pos.y >= grpPos.y - 10 && pos.y <= grpPos.y + grpPos.h + 10 && pos.x > grpPos.x + grpPos.w) {
+                                btn := el                          ; closest right candidate
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        ; #region agent log
+        try {
+            FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+            ',"location":"Shift keys.ahk:9505","message":"NextMobillsMonth final result","data":{"btnFound":' . (btn ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"A,B,C,E"}`n',
+            DEBUG_LOG_PATH
+        } catch {
+        }
+        ; #endregion
+        
         if btn {
             btn.Click()
         } else {
             MsgBox "Could not find the next-month button.", "Mobills Navigation", "IconX"
         }
     } catch Error as e {
+        ; #region agent log
+        try {
+            FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+            ',"location":"Shift keys.ahk:9518","message":"NextMobillsMonth exception","data":{"error":"' . e.Message . '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n',
+            DEBUG_LOG_PATH
+        } catch {
+        }
+        ; #endregion
         MsgBox "Error navigating to next month:`n" e.Message, "Mobills Error", "IconX"
     }
 }
