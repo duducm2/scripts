@@ -5536,7 +5536,7 @@ EnsureItemsViewFocus() {
 
     ; ; Steps 1-4 with 120ms between each
     Send "{AppsKey}" ; 1. open context menu
-    Sleep postStepDelay
+    Sleep 2000
     Send "s1"         ; 2. W
 
     ; ; Step 5: Shift+Tab with a longer wait (1s)
@@ -5571,7 +5571,7 @@ EnsureItemsViewFocus() {
     ; 15. Enter
     Send "{Enter}"
 
-    Sleep postStepDelay
+    Sleep 1000
 
     Send "!{F4}"  ; Alt+F4 closes the current window
     HideSmallLoadingIndicator_ChatGPT()
