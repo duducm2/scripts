@@ -36,39 +36,6 @@ SafeDebugLog(text) {
     return false
 }
 
-; Helper function for NDJSON debug logging
-DebugLog(location, message, data := "", hypothesisId := "", runId := "run1") {
-    try {
-        ; Format data as JSON string if it's an object/array, otherwise as string
-        dataStr := ""
-        if (IsObject(data)) {
-            ; Simple JSON-like formatting for objects
-            dataStr := "{"
-            first := true
-            for key, value in data {
-                if (!first)
-                    dataStr .= ","
-                first := false
-                ; Escape quotes in strings
-                keyStr := StrReplace(key, '"', '\"')
-                if (IsObject(value))
-                    valueStr := "[object]"
-                else
-                    valueStr := StrReplace(String(value), '"', '\"')
-                dataStr .= '"' . keyStr . '":"' . valueStr . '"'
-            }
-            dataStr .= "}"
-        } else {
-            dataStr := '"' . StrReplace(String(data), '"', '\"') . '"'
-        }
-        
-        logLine := '{"sessionId":"debug-session","runId":"' . runId . '","hypothesisId":"' . hypothesisId . '","location":"' . StrReplace(location, '"', '\"') . '","message":"' . StrReplace(message, '"', '\"') . '","data":' . dataStr . ',"timestamp":' . A_TickCount . '}`n'
-        SafeDebugLog(logLine)
-    } catch {
-        ; Silently fail to not interrupt script execution
-    }
-}
-
 ; --- Hotkeys & Functions -----------------------------------------------------
 
 ; =============================================================================
@@ -366,17 +333,11 @@ IsWindowOnMonitor3() {
     hwnd := WinExist("A")
 
     if (!hwnd) {
-        ; #region agent log
-        DebugLog("AppLaunchers.ahk:333", "IsWindowOnMonitor3: no active window", "", "A", "run1")
-        ; #endregion
         return false
     }
 
     rect := Buffer(16, 0)
     if (!DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)) {
-        ; #region agent log
-        DebugLog("AppLaunchers.ahk:340", "IsWindowOnMonitor3: GetWindowRect failed", "", "A", "run1")
-        ; #endregion
         return false
     }
 
@@ -393,16 +354,10 @@ IsWindowOnMonitor3() {
         MonitorGet(A_Index, &ml, &mt, &mr, &mb)
         if (centerX >= ml && centerX <= mr && centerY >= mt && centerY <= mb) {
             isMonitor3 := (A_Index = 3)
-            ; #region agent log
-            DebugLog("AppLaunchers.ahk:355", "IsWindowOnMonitor3: found monitor", {monitorIndex: A_Index, isMonitor3: isMonitor3, centerX: centerX, centerY: centerY}, "A", "run1")
-            ; #endregion
             return isMonitor3
         }
     }
 
-    ; #region agent log
-    DebugLog("AppLaunchers.ahk:361", "IsWindowOnMonitor3: window not found on any monitor", {centerX: centerX, centerY: centerY, monitorCount: monitorCount}, "A", "run1")
-    ; #endregion
     return false
 }
 
@@ -420,33 +375,13 @@ NormalizeWikipediaURL(url) {
 ; Get current Wikipedia article URL from the active Chrome window
 GetWikipediaURL() {
     try {
-        isChromeActive := WinActive("ahk_exe chrome.exe")
-        winTitle := WinGetTitle("A")
-        hasWikipedia := InStr(winTitle, "Wikipedia")
-        
-        ; #region agent log
-        DebugLog("AppLaunchers.ahk:378", "GetWikipediaURL: checking window", {isChromeActive: isChromeActive, winTitle: winTitle, hasWikipedia: hasWikipedia}, "B", "run1")
-        ; #endregion
-        
-        if (!isChromeActive || !hasWikipedia) {
-            ; #region agent log
-            DebugLog("AppLaunchers.ahk:378", "GetWikipediaURL: window check failed", {isChromeActive: isChromeActive, hasWikipedia: hasWikipedia}, "B", "run1")
-            ; #endregion
+        if (!WinActive("ahk_exe chrome.exe") || !InStr(WinGetTitle("A"), "Wikipedia")) {
             return ""
         }
         uia := UIA_Browser("ahk_exe chrome.exe")
         url := uia.GetCurrentURL()
-        normalizedUrl := NormalizeWikipediaURL(url)
-        
-        ; #region agent log
-        DebugLog("AppLaunchers.ahk:382", "GetWikipediaURL: URL retrieved", {url: url, normalizedUrl: normalizedUrl}, "B", "run1")
-        ; #endregion
-        
-        return normalizedUrl
+        return NormalizeWikipediaURL(url)
     } catch Error as err {
-        ; #region agent log
-        DebugLog("AppLaunchers.ahk:384", "GetWikipediaURL: error", {error: err.Message, what: err.What}, "B", "run1")
-        ; #endregion
         return ""
     }
 }
@@ -552,28 +487,15 @@ LoadWikipediaScrollPosition(url) {
     global g_WikipediaScrollPositionsFile
     try {
         if (url = "") {
-            ; #region agent log
-            DebugLog("AppLaunchers.ahk:489", "LoadWikipediaScrollPosition: empty URL", "", "C", "run1")
-            ; #endregion
             return 0.0
         }
         ; Normalize URL to match save format - remove trailing slashes and fragments
-        urlBeforeNorm := url
         url := RegExReplace(url, "/#.*$", "")
         url := RegExReplace(url, "/+$", "")
-        fileExists := FileExist(g_WikipediaScrollPositionsFile)
         scrollPos := IniRead(g_WikipediaScrollPositionsFile, "Positions", url, "0")
         scrollPercentage := Float(scrollPos)
-        
-        ; #region agent log
-        DebugLog("AppLaunchers.ahk:495", "LoadWikipediaScrollPosition: loaded", {urlBeforeNorm: urlBeforeNorm, url: url, fileExists: fileExists, scrollPos: scrollPos, scrollPercentage: scrollPercentage}, "C", "run1")
-        ; #endregion
-        
         return scrollPercentage
     } catch Error as err {
-        ; #region agent log
-        DebugLog("AppLaunchers.ahk:498", "LoadWikipediaScrollPosition: error", {error: err.Message, what: err.What, url: url}, "C", "run1")
-        ; #endregion
         return 0.0
     }
 }
@@ -898,16 +820,8 @@ ShowWikipediaSelector() {
 ; =============================================================================
 #!+k::
 {
-    ; #region agent log
-    DebugLog("AppLaunchers.ahk:902", "=== NEW CODE VERSION - Hotkey Win+Alt+Shift+K pressed ===", "", "ALL", "run1")
-    ; #endregion
-    
     SetTitleMatchMode 2
     if WinExist("Wikipedia") {
-        ; #region agent log
-        DebugLog("AppLaunchers.ahk:908", "Wikipedia window exists", "", "ALL", "run1")
-        ; #endregion
-        
         WinActivate
         WinWaitActive("Wikipedia", , 2)
         ; Ensure Chrome is active (Wikipedia windows are Chrome windows)
@@ -921,125 +835,77 @@ ShowWikipediaSelector() {
         ; Start monitoring Wikipedia focus for automatic blackout cancellation
         StartWikipediaFocusMonitor()
 
-        ; Try to restore scroll position
+        ; Try to restore scroll position (check first, then show banner only if needed)
         restoreBanner := ""
         try {
-            ; #region agent log
-            DebugLog("AppLaunchers.ahk:926", "Entered scroll restoration try block", "", "ALL", "run1")
-            isOnMonitor3 := IsWindowOnMonitor3()
-            DebugLog("AppLaunchers.ahk:929", "IsWindowOnMonitor3 result", {isOnMonitor3: isOnMonitor3}, "A", "run1")
-            ; #endregion
-            
-            ; #region agent log
             url := GetWikipediaURL()
-            DebugLog("AppLaunchers.ahk:841", "GetWikipediaURL result", {url: url, urlLength: StrLen(url)}, "B", "run1")
-            ; #endregion
+            if (url = "")
+                return  ; Early return if no URL
             
-            if (url != "") {
-                ; #region agent log
-                savedPercentage := LoadWikipediaScrollPosition(url)
-                DebugLog("AppLaunchers.ahk:843", "LoadWikipediaScrollPosition result", {savedPercentage: savedPercentage, url: url}, "C", "run1")
-                ; #endregion
-                
-                if (savedPercentage > 0.0) {
-                    ; #region agent log
-                    DebugLog("AppLaunchers.ahk:844", "Starting scroll restoration", {savedPercentage: savedPercentage}, "D", "run1")
-                    ; #endregion
-                    
-                    ; Show banner immediately to inform user that scroll position is being restored
-                    restoreBanner := CreateCenteredBanner_Launchers("Restoring scroll position... Please wait",
-                        "3772FF", "FFFFFF", 10, 178, 180)
+            savedPercentage := LoadWikipediaScrollPosition(url)
+            if (savedPercentage <= 0.0)
+                return  ; Early return if no saved position
+            
+            ; Only show banner if we actually have a position to restore
+            restoreBanner := CreateCenteredBanner_Launchers("Restoring scroll position... Please wait",
+                "3772FF", "FFFFFF", 10, 178, 180)
 
-                    ; Block all keyboard and mouse input during scroll restoration
-                    BlockInput("On")
+            ; Block all keyboard and mouse input during scroll restoration
+            BlockInput("On")
 
-                    uia := UIA_Browser("ahk_exe chrome.exe")
-                    Sleep(500)  ; Brief wait for page to be ready
-                    ; Get current document height to calculate pixel position
-                    docHeight := uia.JSReturnThroughClipboard("document.documentElement.scrollHeight")
-                    
-                    ; #region agent log
-                    DebugLog("AppLaunchers.ahk:855", "Document height retrieved", {docHeight: docHeight}, "D", "run1")
-                    ; #endregion
-                    
-                    if (docHeight != "" && docHeight != "undefined" && docHeight != "null") {
-                        docHeightFloat := Float(docHeight)
-                        if (docHeightFloat > 0) {
-                            targetScrollY := savedPercentage * docHeightFloat
-                            
-                            ; #region agent log
-                            DebugLog("AppLaunchers.ahk:859", "About to execute scroll", {targetScrollY: targetScrollY, docHeightFloat: docHeightFloat, savedPercentage: savedPercentage}, "D", "run1")
-                            ; #endregion
-                            
-                            uia.JSExecute("window.scrollTo(0, " . Round(targetScrollY) . ");")
-                            Sleep(500)  ; Longer wait after scroll to check result
-
-                            ; #region agent log
-                            DebugLog("AppLaunchers.ahk:860", "Scroll executed", {targetScrollY: targetScrollY}, "D", "run1")
-                            ; #endregion
-
-                            ; Update banner to show success
-                            try {
-                                if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
-                                    restoreBanner.Controls[1].Text := "Scroll position restored!"
-                                    Sleep(1000)  ; Show success message for 1 second
-                                }
-                            } catch {
-                            }
-
-                            ; Hide banner after restoration
-                            try {
-                                if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
-                                    Sleep(500)  ; Brief delay before hiding
-                                    restoreBanner.Destroy()
-                                }
-                            } catch {
-                            }
-
-                            Sleep(200)  ; Brief wait after scroll
-                        } else {
-                            ; #region agent log
-                            DebugLog("AppLaunchers.ahk:858", "docHeightFloat <= 0", {docHeightFloat: docHeightFloat}, "D", "run1")
-                            ; #endregion
-                        }
-                    } else {
-                        ; #region agent log
-                        DebugLog("AppLaunchers.ahk:856", "Invalid docHeight", {docHeight: docHeight}, "D", "run1")
-                        ; #endregion
-                    }
-
-                    ; Restore input after scroll restoration is complete
-                    BlockInput("Off")
-                } else {
-                    ; #region agent log
-                    DebugLog("AppLaunchers.ahk:843", "savedPercentage <= 0.0, skipping restoration", {savedPercentage: savedPercentage}, "C", "run1")
-                    ; #endregion
-                }
-            } else {
-                ; #region agent log
-                DebugLog("AppLaunchers.ahk:841", "URL is empty, skipping restoration", "", "B", "run1")
-                ; #endregion
+            uia := UIA_Browser("ahk_exe chrome.exe")
+            Sleep(500)  ; Brief wait for page to be ready
+            
+            ; Get current document height to calculate pixel position
+            docHeight := uia.JSReturnThroughClipboard("document.documentElement.scrollHeight")
+            if (docHeight = "" || docHeight = "undefined" || docHeight = "null") {
+                BlockInput("Off")
+                if (IsObject(restoreBanner) && restoreBanner.Hwnd)
+                    restoreBanner.Destroy()
+                return
             }
-        } catch Error as err {
-            ; #region agent log
-            DebugLog("AppLaunchers.ahk:889", "Error in scroll restoration", {error: err.Message, what: err.What, file: err.File, line: err.Line}, "E", "run1")
-            ; #endregion
             
+            docHeightFloat := Float(docHeight)
+            if (docHeightFloat <= 0) {
+                BlockInput("Off")
+                if (IsObject(restoreBanner) && restoreBanner.Hwnd)
+                    restoreBanner.Destroy()
+                return
+            }
+            
+            ; Execute scroll restoration
+            targetScrollY := savedPercentage * docHeightFloat
+            uia.JSExecute("window.scrollTo(0, " . Round(targetScrollY) . ");")
+            Sleep(500)  ; Wait after scroll
+            
+            ; Restore input after scroll restoration
+            BlockInput("Off")
+            
+            ; Update banner to show success, then hide
+            if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
+                try {
+                    restoreBanner.Controls[1].Text := "Scroll position restored!"
+                    Sleep(1000)  ; Show success message
+                } catch {
+                }
+                try {
+                    restoreBanner.Destroy()
+                } catch {
+                }
+            }
+            
+        } catch Error as err {
             ; Always restore input on error
             BlockInput("Off")
             ; Hide banner on error
-            try {
-                if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
+            if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
+                try {
                     restoreBanner.Destroy()
-                }
-            } catch {
+                } catch {
+                
             }
         }
     } else {
-        ; #region agent log
-        DebugLog("AppLaunchers.ahk:824", "Wikipedia window does not exist, showing selector", "", "ALL", "run1")
-        ; #endregion
-        
         ShowWikipediaSelector()
     }
 }
