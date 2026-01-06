@@ -797,6 +797,28 @@ ShowWikipediaSelector() {
                 }
                 ; #endregion
                 if (savedPercentage > 0.0) {
+                    ; Add to history array for Shift+B functionality (access global from Shift keys.ahk)
+                    try {
+                        ; Try to access the global history array if it exists
+                        if (IsSet(g_WikipediaScrollHistory)) {
+                            g_WikipediaScrollHistory.Push({url: url, scrollPercentage: savedPercentage})
+                            ; Limit history to last 10 positions
+                            if (g_WikipediaScrollHistory.Length > 10) {
+                                g_WikipediaScrollHistory.RemoveAt(1)
+                            }
+                            ; #region agent log
+                            try {
+                                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+                                ',"location":"AppLaunchers.ahk:799","message":"Added restored position to history","data":{"url":"' . url . '","scrollPercentage":' .
+                                savedPercentage . ',"historyLength":' . g_WikipediaScrollHistory.Length . '},"sessionId":"debug-session","runId":"post-fix","hypothesisId":"H"}`n', DEBUG_LOG_PATH
+                            } catch {
+                            }
+                            ; #endregion
+                        }
+                    } catch {
+                        ; History array might not exist yet, that's okay
+                    }
+                    
                     ; Show banner immediately to inform user that scroll position is being restored
                     restoreBanner := CreateCenteredBanner_Launchers("Restoring scroll position... Please wait",
                         "3772FF", "FFFFFF", 10, 178, 180)

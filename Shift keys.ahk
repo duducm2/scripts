@@ -3046,26 +3046,42 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
                     }
                     ; #endregion
                 }
+                ; Always add to history stack for "go back" functionality (independent of INI file save)
+                global g_WikipediaScrollHistory
+                ; Add current position to history (url, scrollPercentage)
+                g_WikipediaScrollHistory.Push({url: url, scrollPercentage: scrollPercentage})
+                ; #region agent log
+                try {
+                    FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+                    ',"location":"Shift keys.ahk:3049","message":"Added to history stack","data":{"url":"' . url . '","scrollPercentage":' .
+                    scrollPercentage . ',"historyLength":' . g_WikipediaScrollHistory.Length . '},"sessionId":"debug-session","runId":"post-fix","hypothesisId":"H"}`n', DEBUG_LOG_PATH
+                } catch {
+                }
+                ; #endregion
+                ; Limit history to last 10 positions to prevent memory issues
+                if (g_WikipediaScrollHistory.Length > 10) {
+                    g_WikipediaScrollHistory.RemoveAt(1)
+                    ; #region agent log
+                    try {
+                        FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+                        ',"location":"Shift keys.ahk:3052","message":"Trimmed history to 10 items","data":{"historyLength":' . g_WikipediaScrollHistory.Length . '},"sessionId":"debug-session","runId":"post-fix","hypothesisId":"H"}`n', DEBUG_LOG_PATH
+                    } catch {
+                    }
+                    ; #endregion
+                }
+                
+                ; Try to save to INI file (for persistence across sessions)
                 saved := IniWrite(scrollPercentage, scrollPositionsFile, "Positions", url)
                 ; #region agent log
                 try {
                     FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-                    ',"location":"Shift keys.ahk:2931","message":"IniWrite result","data":{"saved":' . (saved ? 1 : 0) .
-                    ',"url":"' . url . '","scrollPercentage":' . scrollPercentage . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}`n', DEBUG_LOG_PATH
+                    ',"location":"Shift keys.ahk:3056","message":"IniWrite result","data":{"saved":' . (saved ? 1 : 0) .
+                    ',"url":"' . url . '","scrollPercentage":' . scrollPercentage . '},"sessionId":"debug-session","runId":"post-fix","hypothesisId":"E"}`n', DEBUG_LOG_PATH
                 } catch {
                 }
                 ; #endregion
 
                 if (saved) {
-                    ; Also add to history stack for "go back" functionality
-                    global g_WikipediaScrollHistory
-                    ; Add current position to history (url, scrollPercentage)
-                    g_WikipediaScrollHistory.Push({url: url, scrollPercentage: scrollPercentage})
-                    ; Limit history to last 10 positions to prevent memory issues
-                    if (g_WikipediaScrollHistory.Length > 10) {
-                        g_WikipediaScrollHistory.RemoveAt(1)
-                    }
-                    
                     ; Update banner to show success
                     try {
                         if (IsObject(saveBanner) && saveBanner.Hwnd) {
@@ -3077,7 +3093,7 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
                     ; #region agent log
                     try {
                         FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-                        ',"location":"Shift keys.ahk:2951","message":"Save successful - returning true","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}`n', DEBUG_LOG_PATH
+                        ',"location":"Shift keys.ahk:3068","message":"Save successful - returning true","data":{},"sessionId":"debug-session","runId":"post-fix","hypothesisId":"E"}`n', DEBUG_LOG_PATH
                     } catch {
                     }
                     ; #endregion
@@ -3086,10 +3102,20 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
                     ; #region agent log
                     try {
                         FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-                        ',"location":"Shift keys.ahk:2953","message":"IniWrite returned false","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}`n', DEBUG_LOG_PATH
+                        ',"location":"Shift keys.ahk:3075","message":"IniWrite returned false but history was added","data":{},"sessionId":"debug-session","runId":"post-fix","hypothesisId":"E"}`n', DEBUG_LOG_PATH
                     } catch {
                     }
                     ; #endregion
+                    ; Still return true since history was added successfully
+                    ; Update banner to show success (history saved even if INI failed)
+                    try {
+                        if (IsObject(saveBanner) && saveBanner.Hwnd) {
+                            saveBanner.Controls[1].Text := "Scroll position saved!"
+                            Sleep(1000)  ; Show success message for 1 second
+                        }
+                    } catch {
+                    }
+                    return true
                 }
             } else {
                 ; #region agent log
@@ -3153,7 +3179,7 @@ RestorePreviousWikipediaScrollPosition() {
     
     try {
         ; Check if Wikipedia window is currently active
-        activeWindow := WinGetTitle("A"
+        activeWindow := WinGetTitle("A")
         isChromeActive := WinActive("ahk_exe chrome.exe")
         hasWikipedia := InStr(activeWindow, "Wikipedia")
         ; #region agent log
@@ -3189,28 +3215,124 @@ RestorePreviousWikipediaScrollPosition() {
     ; #region agent log
     try {
         FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-        ',"location":"Shift keys.ahk:3137","message":"Checking history length","data":{"historyLength":' . g_WikipediaScrollHistory.Length . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"H"}`n', DEBUG_LOG_PATH
+        ',"location":"Shift keys.ahk:3137","message":"Checking history length","data":{"historyLength":' . g_WikipediaScrollHistory.Length . '},"sessionId":"debug-session","runId":"post-fix","hypothesisId":"H"}`n', DEBUG_LOG_PATH
     } catch {
     }
     ; #endregion
+    
+    ; If history is empty, try to fall back to INI file (for positions saved via activation restore or previous sessions)
     if (g_WikipediaScrollHistory.Length = 0) {
         ; #region agent log
         try {
             FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-            ',"location":"Shift keys.ahk:3138","message":"History empty - early return","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"H"}`n', DEBUG_LOG_PATH
+            ',"location":"Shift keys.ahk:3211","message":"History empty - trying INI fallback","data":{},"sessionId":"debug-session","runId":"post-fix","hypothesisId":"H"}`n', DEBUG_LOG_PATH
         } catch {
         }
         ; #endregion
-        ; Show brief message that no history exists
-        restoreBanner := CreateCenteredBanner_ChatGPT("No previous scroll position found", "FF6B6B", "FFFFFF", 24, 178)
-        Sleep(1500)
+        
+        ; Get current URL to load from INI
         try {
-            if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
-                restoreBanner.Destroy()
+            uia := UIA_Browser("ahk_exe chrome.exe")
+            url := uia.GetCurrentURL()
+            if (url = "" || !InStr(url, "wikipedia.org")) {
+                ; Show brief message that no history exists
+                restoreBanner := CreateCenteredBanner_ChatGPT("No previous scroll position found", "FF6B6B", "FFFFFF", 24, 178)
+                Sleep(1500)
+                try {
+                    if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
+                        restoreBanner.Destroy()
+                    }
+                } catch {
+                }
+                return false
             }
-        } catch {
+            ; Normalize URL
+            url := RegExReplace(url, "/#.*$", "")
+            url := RegExReplace(url, "/+$", "")
+            
+            ; Load from INI file
+            scrollPositionsFile := A_ScriptDir "\data\wikipedia_scroll_positions.ini"
+            savedPercentage := IniRead(scrollPositionsFile, "Positions", url, "0")
+            savedPercentageFloat := Float(savedPercentage)
+            
+            ; #region agent log
+            try {
+                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+                ',"location":"Shift keys.ahk:3230","message":"INI fallback - loaded position","data":{"url":"' . url . '","savedPercentage":' .
+                savedPercentageFloat . '},"sessionId":"debug-session","runId":"post-fix","hypothesisId":"H"}`n', DEBUG_LOG_PATH
+            } catch {
+            }
+            ; #endregion
+            
+            if (savedPercentageFloat > 0.0) {
+                ; Found a saved position in INI, restore it
+                restoreBanner := CreateCenteredBanner_ChatGPT("Restoring previous scroll position... Please wait", "3772FF", "FFFFFF", 24, 178)
+                
+                try {
+                    BlockInput("On")
+                    Sleep(500)
+                    
+                    docHeight := uia.JSReturnThroughClipboard("document.documentElement.scrollHeight")
+                    if (docHeight != "" && docHeight != "undefined" && docHeight != "null") {
+                        docHeightFloat := Float(docHeight)
+                        if (docHeightFloat > 0) {
+                            targetScrollY := savedPercentageFloat * docHeightFloat
+                            uia.JSExecute("window.scrollTo(0, " . Round(targetScrollY) . ");")
+                            Sleep(500)
+                            
+                            try {
+                                if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
+                                    restoreBanner.Controls[1].Text := "Previous scroll position restored!"
+                                    Sleep(1000)
+                                }
+                            } catch {
+                            }
+                        }
+                    }
+                } catch Error as err {
+                    ; Silent fail
+                } finally {
+                    BlockInput("Off")
+                    try {
+                        if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
+                            Sleep(500)
+                            restoreBanner.Destroy()
+                        }
+                    } catch {
+                    }
+                }
+                return true
+            } else {
+                ; No saved position found in INI either
+                restoreBanner := CreateCenteredBanner_ChatGPT("No previous scroll position found", "FF6B6B", "FFFFFF", 24, 178)
+                Sleep(1500)
+                try {
+                    if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
+                        restoreBanner.Destroy()
+                    }
+                } catch {
+                }
+                return false
+            }
+        } catch Error as err {
+            ; #region agent log
+            try {
+                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+                ',"location":"Shift keys.ahk:3245","message":"INI fallback exception","data":{"error":"' . err.Message . '"},"sessionId":"debug-session","runId":"post-fix","hypothesisId":"H"}`n', DEBUG_LOG_PATH
+            } catch {
+            }
+            ; #endregion
+            ; Show brief message that no history exists
+            restoreBanner := CreateCenteredBanner_ChatGPT("No previous scroll position found", "FF6B6B", "FFFFFF", 24, 178)
+            Sleep(1500)
+            try {
+                if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
+                    restoreBanner.Destroy()
+                }
+            } catch {
+            }
+            return false
         }
-        return false
     }
 
     ; Get current URL to match with history
@@ -3266,30 +3388,78 @@ RestorePreviousWikipediaScrollPosition() {
     ; Find the most recent previous position (not the current one)
     previousPosition := 0
     foundIndex := 0
+    ; #region agent log
+    try {
+        FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+        ',"location":"Shift keys.ahk:3230","message":"Starting history search","data":{"currentUrl":"' . url . '","historyLength":' .
+        g_WikipediaScrollHistory.Length . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"H"}`n', DEBUG_LOG_PATH
+    } catch {
+    }
+    ; #endregion
     ; Search backwards through history to find a different position
     loop g_WikipediaScrollHistory.Length {
         idx := g_WikipediaScrollHistory.Length - A_Index + 1
         historyItem := g_WikipediaScrollHistory[idx]
+        ; #region agent log
+        try {
+            FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+            ',"location":"Shift keys.ahk:3234","message":"Checking history item","data":{"idx":' . idx . ',"historyUrl":"' . historyItem.url .
+            '","historyPercentage":' . historyItem.scrollPercentage . ',"currentUrl":"' . url . '","urlMatch":' . (historyItem.url = url ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"H"}`n', DEBUG_LOG_PATH
+        } catch {
+        }
+        ; #endregion
         ; Check if this is a different position (different URL or different scroll percentage)
         if (historyItem.url != url) {
             ; Different article, use this one
             previousPosition := historyItem
             foundIndex := idx
+            ; #region agent log
+            try {
+                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+                ',"location":"Shift keys.ahk:3237","message":"Found different article in history","data":{"foundIndex":' . foundIndex . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"H"}`n', DEBUG_LOG_PATH
+            } catch {
+            }
+            ; #endregion
             break
         } else {
             ; Same article, check if scroll position is different
             currentScroll := uia.JSReturnThroughClipboard("window.pageYOffset")
             docHeight := uia.JSReturnThroughClipboard("document.documentElement.scrollHeight")
+            ; #region agent log
+            try {
+                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+                ',"location":"Shift keys.ahk:3240","message":"Same article - checking scroll difference","data":{"currentScroll":"' . currentScroll .
+                '","docHeight":"' . docHeight . '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}`n', DEBUG_LOG_PATH
+            } catch {
+            }
+            ; #endregion
             if (currentScroll != "" && currentScroll != "undefined" && currentScroll != "null" && 
                 docHeight != "" && docHeight != "undefined" && docHeight != "null") {
                 currentScrollFloat := Float(currentScroll)
                 docHeightFloat := Float(docHeight)
                 if (docHeightFloat > 0) {
                     currentPercentage := currentScrollFloat / docHeightFloat
+                    diff := Abs(currentPercentage - historyItem.scrollPercentage)
+                    ; #region agent log
+                    try {
+                        FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+                        ',"location":"Shift keys.ahk:3247","message":"Calculated scroll difference","data":{"currentPercentage":' . currentPercentage .
+                        ',"historyPercentage":' . historyItem.scrollPercentage . ',"diff":' . diff . ',"threshold":0.01,"isDifferent":' .
+                        (diff > 0.01 ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}`n', DEBUG_LOG_PATH
+                    } catch {
+                    }
+                    ; #endregion
                     ; If the saved percentage is different from current, use it
-                    if (Abs(currentPercentage - historyItem.scrollPercentage) > 0.01) {
+                    if (diff > 0.01) {
                         previousPosition := historyItem
                         foundIndex := idx
+                        ; #region agent log
+                        try {
+                            FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+                            ',"location":"Shift keys.ahk:3250","message":"Found different scroll position in history","data":{"foundIndex":' . foundIndex . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"H"}`n', DEBUG_LOG_PATH
+                        } catch {
+                        }
+                        ; #endregion
                         break
                     }
                 }
