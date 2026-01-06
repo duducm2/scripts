@@ -2476,6 +2476,48 @@ ShowHotstringSelector() {
     ; Get categorized hotstrings
     categorized := GetCategorizedHotstrings()
 
+    ; =============================================================================
+    ; Dynamic Modal UI Adaptation Based on Monitor Configuration
+    ; 
+    ; Monitor Dataset Structure (for reference):
+    ; {
+    ;   "monitor_dataset": [
+    ;     {
+    ;       "id": 1,
+    ;       "resolution": "1920x1200",
+    ;       "orientation": "landscape",
+    ;       "scale": "125%",
+    ;       "ui_strategy": "dual_column_wide"
+    ;     },
+    ;     {
+    ;       "id": 2,
+    ;       "resolution": "3840x2160",
+    ;       "orientation": "landscape",
+    ;       "scale": "150%",
+    ;       "ui_strategy": "dual_column_max_width_constrained"
+    ;     },
+    ;     {
+    ;       "id": 3,
+    ;       "resolution": "1920x1080",
+    ;       "orientation": "landscape",
+    ;       "scale": "100%",
+    ;       "ui_strategy": "dual_column_wide"
+    ;     },
+    ;     {
+    ;       "id": 4,
+    ;       "resolution": "1080x1920",
+    ;       "orientation": "portrait",
+    ;       "scale": "100%",
+    ;       "ui_strategy": "single_column_vertical_stretch"
+    ;     }
+    ;   ],
+    ;   "instruction_logic": {
+    ;     "landscape_rule": "Apply two-column layout; prioritize width expansion.",
+    ;     "portrait_rule": "Apply single-column layout; prioritize height expansion."
+    ;   }
+    ; }
+    ; =============================================================================
+
     ; Get monitor dimensions early for responsive sizing
     activeWin := 0
     try {
@@ -2520,12 +2562,16 @@ ShowHotstringSelector() {
         }
     }
 
+    ; Detect monitor orientation: portrait (height > width) vs landscape (width >= height)
+    isPortrait := (monitorHeight > monitorWidth)
+
     ; Create GUI
     ; Create non-activating GUI so PowerToys Command Palette stays open
     g_HotstringSelectorGui := Gui("+AlwaysOnTop +ToolWindow +E0x08000000", "Hotstring Shortcuts")
     ; Use slightly smaller font for better fit on small monitors
+    ; Use Consolas (monospace) for better column alignment in two-column layout
     fontSize := (monitorHeight < 800) ? 9 : 10
-    g_HotstringSelectorGui.SetFont("s" . fontSize, "Segoe UI")
+    g_HotstringSelectorGui.SetFont("s" . fontSize, "Consolas")
     g_HotstringSelectorGui.MarginX := 10
     g_HotstringSelectorGui.MarginY := 5
 
@@ -2535,10 +2581,10 @@ ShowHotstringSelector() {
         expansionToChar[expansion] := char
     }
 
-    ; Build display text grouped by category
-    ; Show all characters in sequence, including empty slots as placeholders
-    displayText := ""
+    ; Build items list grouped by category for two-column layout
+    ; Collect all items first, then format in two columns
     hotstringCount := 0
+    allItems := []  ; Array of {category, char, text, isEmpty}
 
     ; Build a map of character index to hotstring/file info
     charIndexToHotstring := Map()
@@ -2552,22 +2598,19 @@ ShowHotstringSelector() {
         }
     }
 
-    ; Display each category with header, showing all character slots
+    ; Collect all items with their categories
     currentCharIndex := 1
     for category in g_HotstringCategories {
         ; Calculate how many character slots belong to this category
         categorySlotCount := categorized[category].Length
 
         if (categorySlotCount > 0 || currentCharIndex <= g_HotstringCharSequence.Length) {
-            ; Add category header
-            displayText .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`n"
-            displayText .= category . "`n"
-            displayText .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`n"
-
-            ; Display all character slots for this category (including empty ones)
+            ; Collect all character slots for this category (including empty ones)
             loop categorySlotCount {
                 if (currentCharIndex <= g_HotstringCharSequence.Length) {
                     char := g_HotstringCharSequence[currentCharIndex]
+                    itemText := ""
+                    isEmpty := false
 
                     ; Check if this character has a hotstring assigned
                     if (charIndexToHotstring.Has(currentCharIndex)) {
@@ -2576,40 +2619,211 @@ ShowHotstringSelector() {
 
                         ; Use title if available (for all categories including quick open files), otherwise use preview text
                         if (hs.HasProp("title") && hs.title != "") {
-                            displayText .= "[" . char . "] > " . hs.title . "`n"
+                            itemText := "[" . char . "] > " . hs.title
                             hotstringCount++
                         } else if (hs.HasProp("expansion") && hs.expansion != "") {
                             preview := GetPreviewText(hs.expansion)
-                            displayText .= "[" . char . "] > " . preview . "`n"
+                            itemText := "[" . char . "] > " . preview
                             hotstringCount++
                         } else {
                             ; Empty placeholder slot
-                            displayText .= "[" . char . "] > (empty)`n"
+                            itemText := "[" . char . "] > (empty)"
+                            isEmpty := true
                         }
                     } else {
                         ; Character slot exists but no hotstring assigned
-                        displayText .= "[" . char . "] > (empty)`n"
+                        itemText := "[" . char . "] > (empty)"
+                        isEmpty := true
                     }
 
+                    allItems.Push({category: category, char: char, text: itemText, isEmpty: isEmpty})
                     currentCharIndex++
                 }
             }
-
-            displayText .= "`n"  ; Space between categories
         }
     }
 
     ; Show any remaining unassigned character slots
     if (currentCharIndex <= g_HotstringCharSequence.Length) {
-        displayText .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`n"
-        displayText .= "Unassigned`n"
-        displayText .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`n"
         while (currentCharIndex <= g_HotstringCharSequence.Length) {
             char := g_HotstringCharSequence[currentCharIndex]
-            displayText .= "[" . char . "] > (empty)`n"
+            allItems.Push({category: "Unassigned", char: char, text: "[" . char . "] > (empty)", isEmpty: true})
             currentCharIndex++
         }
+    }
+
+    ; Helper function to pad string to specified width
+    PadString(str, width) {
+        len := StrLen(str)
+        if (len >= width)
+            return str
+        padding := width - len
+        spaces := ""
+        loop padding {
+            spaces .= " "
+        }
+        return str . spaces
+    }
+    
+    ; Helper function to center string in specified width
+    CenterString(str, width) {
+        len := StrLen(str)
+        if (len >= width)
+            return str
+        padding := (width - len) // 2
+        leftSpaces := ""
+        rightSpaces := ""
+        loop padding {
+            leftSpaces .= " "
+        }
+        loop (width - len - padding) {
+            rightSpaces .= " "
+        }
+        return leftSpaces . str . rightSpaces
+    }
+    
+    ; Helper function to create separator line
+    CreateSeparator(width) {
+        separator := ""
+        loop width {
+            separator .= "─"
+        }
+        return separator
+    }
+    
+    ; Build display text based on monitor orientation
+    displayText := ""
+    
+    if (isPortrait) {
+        ; PORTRAIT MODE: Single-column layout optimized for vertical space
+        currentCategory := ""
+        for item in allItems {
+            if (item.category != currentCategory) {
+                ; Process previous category if exists
+                if (currentCategory != "") {
+                    displayText .= "`n"  ; Space between categories
+                }
+                
+                ; Update to new category and add category header
+                currentCategory := item.category
+                displayText .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`n"
+                displayText .= currentCategory . "`n"
+                displayText .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`n"
+            }
+            
+            ; Add item
+            displayText .= item.text . "`n"
+        }
+        
+        ; Add final spacing
         displayText .= "`n"
+    } else {
+        ; LANDSCAPE MODE: Two-column layout optimized for horizontal space
+        ; Calculate maximum item text length to determine column width
+        maxItemLength := 0
+        for item in allItems {
+            if (StrLen(item.text) > maxItemLength)
+                maxItemLength := StrLen(item.text)
+        }
+        ; Set column width to accommodate longest item + padding
+        columnWidth := maxItemLength + 5
+        ; Ensure minimum column width
+        if (columnWidth < 40)
+            columnWidth := 40
+        
+        ; Total width for category headers (two columns + spacing)
+        totalWidth := columnWidth * 2 + 10
+        columnSpacing := "    "  ; 4 spaces between columns
+        
+        ; Build two-column display text with category headers
+        currentCategory := ""
+        categoryItems := []
+        
+        ; First, collect items by category and build two-column layout
+        for item in allItems {
+            if (item.category != currentCategory) {
+                ; Process previous category if exists
+                if (currentCategory != "" && categoryItems.Length > 0) {
+                    ; Add category header spanning both columns
+                    separator := CreateSeparator(totalWidth)
+                    displayText .= separator . "`n"
+                    displayText .= CenterString(currentCategory, totalWidth) . "`n"
+                    displayText .= separator . "`n"
+                    
+                    ; Split category items into two columns
+                    midPoint := Ceil(categoryItems.Length / 2)
+                    maxLines := categoryItems.Length - midPoint
+                    if (midPoint > maxLines)
+                        maxLines := midPoint
+                    
+                    loop maxLines {
+                        leftText := ""
+                        rightText := ""
+                        
+                        ; Left column item
+                        if (A_Index <= midPoint) {
+                            leftText := PadString(categoryItems[A_Index].text, columnWidth)
+                        } else {
+                            leftText := PadString("", columnWidth)
+                        }
+                        
+                        ; Right column item
+                        rightIdx := A_Index + midPoint
+                        if (rightIdx <= categoryItems.Length) {
+                            rightText := categoryItems[rightIdx].text
+                        } else {
+                            rightText := ""
+                        }
+                        
+                        displayText .= leftText . columnSpacing . rightText . "`n"
+                    }
+                    displayText .= "`n"  ; Space between categories
+                }
+                
+                ; Start new category
+                currentCategory := item.category
+                categoryItems := []
+            }
+            categoryItems.Push(item)
+        }
+        
+        ; Process last category
+        if (currentCategory != "" && categoryItems.Length > 0) {
+            ; Add category header spanning both columns
+            separator := CreateSeparator(totalWidth)
+            displayText .= separator . "`n"
+            displayText .= CenterString(currentCategory, totalWidth) . "`n"
+            displayText .= separator . "`n"
+            
+            ; Split category items into two columns
+            midPoint := Ceil(categoryItems.Length / 2)
+            maxLines := categoryItems.Length - midPoint
+            if (midPoint > maxLines)
+                maxLines := midPoint
+            
+            loop maxLines {
+                leftText := ""
+                rightText := ""
+                
+                ; Left column item
+                if (A_Index <= midPoint) {
+                    leftText := PadString(categoryItems[A_Index].text, columnWidth)
+                } else {
+                    leftText := PadString("", columnWidth)
+                }
+                
+                ; Right column item
+                rightIdx := A_Index + midPoint
+                if (rightIdx <= categoryItems.Length) {
+                    rightText := categoryItems[rightIdx].text
+                } else {
+                    rightText := ""
+                }
+                
+                displayText .= leftText . columnSpacing . rightText . "`n"
+            }
+            displayText .= "`n"  ; Space between categories
+        }
     }
 
     displayText .= "Press Escape to cancel."
@@ -2623,19 +2837,42 @@ ShowHotstringSelector() {
     ; Calculate height: ~16 pixels per line (reduced for more compact display)
     lineHeight := 16
     textControlHeight := lineCount * lineHeight
-    ; Ensure minimum and maximum bounds - use smaller percentage on small monitors
+    ; Ensure minimum and maximum bounds
     minHeight := 150
-    ; Use adaptive max height: 85% for large monitors, 90% for small monitors
-    maxHeightPercent := (monitorHeight < 800) ? 0.90 : 0.75
-    maxHeight := Floor(monitorHeight * maxHeightPercent)
-    if (textControlHeight < minHeight)
-        textControlHeight := minHeight
-    if (textControlHeight > maxHeight)
-        textControlHeight := maxHeight
-
-    ; Make width responsive to monitor size (smaller on small monitors)
-    ; Minimum width 500px, maximum 650px, scale with monitor width
-    baseWidth := (monitorWidth < 1200) ? 500 : 600
+    
+    ; Adjust sizing based on orientation
+    if (isPortrait) {
+        ; PORTRAIT: Prioritize height expansion, use narrower width
+        ; Use more vertical space for portrait monitors (up to 85% of height)
+        maxHeightPercent := 0.85
+        maxHeight := Floor(monitorHeight * maxHeightPercent)
+        if (textControlHeight < minHeight)
+            textControlHeight := minHeight
+        if (textControlHeight > maxHeight)
+            textControlHeight := maxHeight
+        
+        ; Narrower width for portrait (optimized for vertical scrolling)
+        baseWidth := (monitorWidth < 800) ? 400 : (monitorWidth < 1200) ? 500 : 500
+        ; Ensure we don't exceed monitor width with margins
+        if (baseWidth > monitorWidth - 40)
+            baseWidth := monitorWidth - 40
+    } else {
+        ; LANDSCAPE: Prioritize width expansion, use two-column layout
+        ; Use adaptive max height: 85% for large monitors, 90% for small monitors
+        maxHeightPercent := (monitorHeight < 800) ? 0.90 : 0.75
+        maxHeight := Floor(monitorHeight * maxHeightPercent)
+        if (textControlHeight < minHeight)
+            textControlHeight := minHeight
+        if (textControlHeight > maxHeight)
+            textControlHeight := maxHeight
+        
+        ; Wide width for landscape (two-column layout)
+        ; Further reduced width to eliminate empty space: 650px minimum, scale up to 1000px based on monitor width
+        baseWidth := (monitorWidth < 1200) ? 650 : (monitorWidth < 1920) ? 800 : 1000
+        ; Ensure we don't exceed monitor width with margins
+        if (baseWidth > monitorWidth - 40)
+            baseWidth := monitorWidth - 40
+    }
     textControlWidth := baseWidth - 20  ; Account for margins
 
     ; Enable vertical scrolling for long content
