@@ -739,6 +739,13 @@ ShowWikipediaSelector() {
 ; =============================================================================
 #!+k::
 {
+    ; #region agent log
+    try {
+        FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+        ',"location":"AppLaunchers.ahk:740","message":"Win+Alt+Shift+K hotkey triggered","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n', DEBUG_LOG_PATH
+    } catch {
+    }
+    ; #endregion
     SetTitleMatchMode 2
     if WinExist("Wikipedia") {
         WinActivate
@@ -754,12 +761,41 @@ ShowWikipediaSelector() {
         ; Try to restore scroll position (only if on Monitor 3)
         restoreBanner := ""
         try {
+            ; #region agent log
+            try {
+                isOnMonitor3 := IsWindowOnMonitor3()
+                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+                ',"location":"AppLaunchers.ahk:757","message":"Monitor 3 check","data":{"isOnMonitor3":' . (isOnMonitor3 ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"I"}`n', DEBUG_LOG_PATH
+            } catch {
+            }
+            ; #endregion
             if (!IsWindowOnMonitor3()) {
+                ; #region agent log
+                try {
+                    FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+                    ',"location":"AppLaunchers.ahk:758","message":"Not on Monitor 3 - early return","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"I"}`n', DEBUG_LOG_PATH
+                } catch {
+                }
+                ; #endregion
                 return
             }
             url := GetWikipediaURL()
+            ; #region agent log
+            try {
+                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+                ',"location":"AppLaunchers.ahk:760","message":"Got URL in activation restore","data":{"url":"' . url . '","urlLength":' . StrLen(url) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}`n', DEBUG_LOG_PATH
+            } catch {
+            }
+            ; #endregion
             if (url != "") {
                 savedPercentage := LoadWikipediaScrollPosition(url)
+                ; #region agent log
+                try {
+                    FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+                    ',"location":"AppLaunchers.ahk:762","message":"Loaded scroll position","data":{"savedPercentage":' . savedPercentage . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"J"}`n', DEBUG_LOG_PATH
+                } catch {
+                }
+                ; #endregion
                 if (savedPercentage > 0.0) {
                     ; Show banner immediately to inform user that scroll position is being restored
                     restoreBanner := CreateCenteredBanner_Launchers("Restoring scroll position... Please wait",
@@ -768,10 +804,31 @@ ShowWikipediaSelector() {
                     ; Block all keyboard and mouse input during scroll restoration
                     BlockInput("On")
 
+                    ; #region agent log
+                    try {
+                        FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+                        ',"location":"AppLaunchers.ahk:771","message":"Creating UIA_Browser for activation restore","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}`n', DEBUG_LOG_PATH
+                    } catch {
+                    }
+                    ; #endregion
                     uia := UIA_Browser("ahk_exe chrome.exe")
+                    ; #region agent log
+                    try {
+                        FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+                        ',"location":"AppLaunchers.ahk:771","message":"UIA_Browser created for activation restore","data":{"uia":' . (uia ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}`n', DEBUG_LOG_PATH
+                    } catch {
+                    }
+                    ; #endregion
                     Sleep(500)  ; Brief wait for page to be ready
                     ; Get current document height to calculate pixel position
                     docHeight := uia.JSReturnThroughClipboard("document.documentElement.scrollHeight")
+                    ; #region agent log
+                    try {
+                        FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+                        ',"location":"AppLaunchers.ahk:774","message":"Got docHeight in activation restore","data":{"docHeight":"' . docHeight . '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}`n', DEBUG_LOG_PATH
+                    } catch {
+                    }
+                    ; #endregion
                     if (docHeight != "" && docHeight != "undefined" && docHeight != "null") {
                         docHeightFloat := Float(docHeight)
                         if (docHeightFloat > 0) {
@@ -806,6 +863,13 @@ ShowWikipediaSelector() {
                 }
             }
         } catch Error as err {
+            ; #region agent log
+            try {
+                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+                ',"location":"AppLaunchers.ahk:808","message":"Exception in activation restore","data":{"error":"' . err.Message . '","file":"' . err.File . '","line":' . err.Line . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"G"}`n', DEBUG_LOG_PATH
+            } catch {
+            }
+            ; #endregion
             ; Always restore input on error
             BlockInput("Off")
             ; Hide banner on error
