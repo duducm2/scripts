@@ -2860,6 +2860,110 @@ global g_WikipediaScrollHistory := []
     RestorePreviousWikipediaScrollPosition()
 }
 
+; Helper function to restore scroll position to a given percentage
+; Returns true on success, false on failure
+RestoreWikipediaScrollPosition(scrollPercentage, bannerText := "Restoring scroll position... Please wait") {
+    if (scrollPercentage <= 0.0 || scrollPercentage > 1.0) {
+        return false
+    }
+    
+    try {
+        ; Create UIA_Browser once
+        uia := UIA_Browser("ahk_exe chrome.exe")
+        if (!uia) {
+            return false
+        }
+        
+        ; Show banner
+        restoreBanner := CreateCenteredBanner_ChatGPT(bannerText, "3772FF", "FFFFFF", 24, 178)
+        
+        ; Block input during restoration
+        BlockInput("On")
+        
+        ; Wait for page to be ready
+        Sleep(500)
+        
+        ; Get document height
+        docHeight := uia.JSReturnThroughClipboard("document.documentElement.scrollHeight")
+        if (docHeight = "" || docHeight = "undefined" || docHeight = "null") {
+            BlockInput("Off")
+            if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
+                restoreBanner.Destroy()
+            }
+            return false
+        }
+        
+        docHeightFloat := Float(docHeight)
+        if (docHeightFloat <= 0) {
+            BlockInput("Off")
+            if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
+                restoreBanner.Destroy()
+            }
+            return false
+        }
+        
+        ; Calculate and execute scroll
+        targetScrollY := scrollPercentage * docHeightFloat
+        uia.JSExecute("window.scrollTo(0, " . Round(targetScrollY) . ");")
+        Sleep(500)
+        
+        ; Update banner to show success
+        try {
+            if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
+                restoreBanner.Controls[1].Text := "Scroll position restored!"
+                Sleep(1000)
+            }
+        } catch {
+        }
+        
+        ; Cleanup
+        BlockInput("Off")
+        try {
+            if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
+                Sleep(500)
+                restoreBanner.Destroy()
+            }
+        } catch {
+        }
+        
+        return true
+    } catch Error as err {
+        BlockInput("Off")
+        try {
+            if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
+                restoreBanner.Destroy()
+            }
+        } catch {
+        }
+        return false
+    }
+}
+
+; Helper function to normalize Wikipedia URLs
+NormalizeWikipediaURL(url) {
+    if (url = "" || !InStr(url, "wikipedia.org")) {
+        return ""
+    }
+    ; Remove fragments and trailing slashes
+    url := RegExReplace(url, "/#.*$", "")
+    url := RegExReplace(url, "/+$", "")
+    return url
+}
+
+; Helper function to get and normalize Wikipedia URL from active window
+GetWikipediaURLNormalized() {
+    try {
+        if (!WinActive("ahk_exe chrome.exe") || !InStr(WinGetTitle("A"), "Wikipedia")) {
+            return ""
+        }
+        uia := UIA_Browser("ahk_exe chrome.exe")
+        url := uia.GetCurrentURL()
+        return NormalizeWikipediaURL(url)
+    } catch Error as err {
+        return ""
+    }
+}
+
 ; Wikipedia scroll position save function (duplicated from AppLaunchers.ahk)
 SaveWikipediaScrollPositionManually_ShiftKeys() {
     ; #region agent log
@@ -2917,54 +3021,28 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
     ; Show banner to inform user that scroll position is being saved
     saveBanner := CreateCenteredBanner_ChatGPT("Saving scroll position... Please wait", "3772FF", "FFFFFF", 24, 178)
     try {
-        ; Get Wikipedia URL
-        if (!WinActive("ahk_exe chrome.exe") || !InStr(WinGetTitle("A"), "Wikipedia")) {
+        ; Get normalized Wikipedia URL
+        url := GetWikipediaURLNormalized()
+        ; #region agent log
+        try {
+            FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+            ',"location":"Shift keys.ahk:2959","message":"Got normalized URL","data":{"url":"' . url . '","urlLength":' . StrLen(url) . '},"sessionId":"debug-session","runId":"post-fix","hypothesisId":"F"}`n', DEBUG_LOG_PATH
+        } catch {
+        }
+        ; #endregion
+        if (url = "") {
             ; #region agent log
             try {
                 FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-                ',"location":"Shift keys.ahk:2893","message":"Window check failed in try block - early return","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}`n', DEBUG_LOG_PATH
+                ',"location":"Shift keys.ahk:2966","message":"URL check failed - early return","data":{},"sessionId":"debug-session","runId":"post-fix","hypothesisId":"F"}`n', DEBUG_LOG_PATH
             } catch {
             }
             ; #endregion
             return false
         }
-        ; #region agent log
-        try {
-            FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-            ',"location":"Shift keys.ahk:2895","message":"Creating UIA_Browser","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}`n', DEBUG_LOG_PATH
-        } catch {
-        }
-        ; #endregion
+        
+        ; Create UIA_Browser for getting scroll position
         uia := UIA_Browser("ahk_exe chrome.exe")
-        ; #region agent log
-        try {
-            FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-            ',"location":"Shift keys.ahk:2896","message":"UIA_Browser created","data":{"uia":' . (uia ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}`n', DEBUG_LOG_PATH
-        } catch {
-        }
-        ; #endregion
-        url := uia.GetCurrentURL()
-        ; #region agent log
-        try {
-            FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-            ',"location":"Shift keys.ahk:2897","message":"Got URL","data":{"url":"' . url . '","urlLength":' . StrLen(url) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}`n', DEBUG_LOG_PATH
-        } catch {
-        }
-        ; #endregion
-        if (url = "" || !InStr(url, "wikipedia.org")) {
-            ; #region agent log
-            try {
-                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-                ',"location":"Shift keys.ahk:2898","message":"URL check failed - early return","data":{"url":"' . url . '","hasWikipedia":' .
-                (InStr(url, "wikipedia.org") ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}`n', DEBUG_LOG_PATH
-            } catch {
-            }
-            ; #endregion
-            return false
-        }
-        ; Normalize URL - remove trailing slashes and fragments
-        url := RegExReplace(url, "/#.*$", "")
-        url := RegExReplace(url, "/+$", "")
 
         if (url = "") {
             ; #region agent log
@@ -3232,9 +3310,8 @@ RestorePreviousWikipediaScrollPosition() {
         
         ; Get current URL to load from INI
         try {
-            uia := UIA_Browser("ahk_exe chrome.exe")
-            url := uia.GetCurrentURL()
-            if (url = "" || !InStr(url, "wikipedia.org")) {
+            url := GetWikipediaURLNormalized()
+            if (url = "") {
                 ; Show brief message that no history exists
                 restoreBanner := CreateCenteredBanner_ChatGPT("No previous scroll position found", "FF6B6B", "FFFFFF", 24, 178)
                 Sleep(1500)
@@ -3246,9 +3323,6 @@ RestorePreviousWikipediaScrollPosition() {
                 }
                 return false
             }
-            ; Normalize URL
-            url := RegExReplace(url, "/#.*$", "")
-            url := RegExReplace(url, "/+$", "")
             
             ; Load from INI file
             scrollPositionsFile := A_ScriptDir "\data\wikipedia_scroll_positions.ini"
@@ -3265,43 +3339,8 @@ RestorePreviousWikipediaScrollPosition() {
             ; #endregion
             
             if (savedPercentageFloat > 0.0) {
-                ; Found a saved position in INI, restore it
-                restoreBanner := CreateCenteredBanner_ChatGPT("Restoring previous scroll position... Please wait", "3772FF", "FFFFFF", 24, 178)
-                
-                try {
-                    BlockInput("On")
-                    Sleep(500)
-                    
-                    docHeight := uia.JSReturnThroughClipboard("document.documentElement.scrollHeight")
-                    if (docHeight != "" && docHeight != "undefined" && docHeight != "null") {
-                        docHeightFloat := Float(docHeight)
-                        if (docHeightFloat > 0) {
-                            targetScrollY := savedPercentageFloat * docHeightFloat
-                            uia.JSExecute("window.scrollTo(0, " . Round(targetScrollY) . ");")
-                            Sleep(500)
-                            
-                            try {
-                                if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
-                                    restoreBanner.Controls[1].Text := "Previous scroll position restored!"
-                                    Sleep(1000)
-                                }
-                            } catch {
-                            }
-                        }
-                    }
-                } catch Error as err {
-                    ; Silent fail
-                } finally {
-                    BlockInput("Off")
-                    try {
-                        if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
-                            Sleep(500)
-                            restoreBanner.Destroy()
-                        }
-                    } catch {
-                    }
-                }
-                return true
+                ; Found a saved position in INI, restore it using helper function
+                return RestoreWikipediaScrollPosition(savedPercentageFloat, "Restoring previous scroll position... Please wait")
             } else {
                 ; No saved position found in INI either
                 restoreBanner := CreateCenteredBanner_ChatGPT("No previous scroll position found", "FF6B6B", "FFFFFF", 24, 178)
@@ -3337,43 +3376,27 @@ RestorePreviousWikipediaScrollPosition() {
 
     ; Get current URL to match with history
     try {
+        url := GetWikipediaURLNormalized()
         ; #region agent log
         try {
             FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-            ',"location":"Shift keys.ahk:3151","message":"Creating UIA_Browser for restore","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}`n', DEBUG_LOG_PATH
+            ',"location":"Shift keys.ahk:3415","message":"Got normalized URL in restore","data":{"url":"' . url . '","urlLength":' . StrLen(url) . '},"sessionId":"debug-session","runId":"post-fix","hypothesisId":"F"}`n', DEBUG_LOG_PATH
         } catch {
         }
         ; #endregion
-        uia := UIA_Browser("ahk_exe chrome.exe")
-        ; #region agent log
-        try {
-            FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-            ',"location":"Shift keys.ahk:3153","message":"UIA_Browser created for restore","data":{"uia":' . (uia ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}`n', DEBUG_LOG_PATH
-        } catch {
-        }
-        ; #endregion
-        url := uia.GetCurrentURL()
-        ; #region agent log
-        try {
-            FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-            ',"location":"Shift keys.ahk:3154","message":"Got URL in restore","data":{"url":"' . url . '","urlLength":' . StrLen(url) . ',"hasWikipedia":' .
-            (InStr(url, "wikipedia.org") ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}`n', DEBUG_LOG_PATH
-        } catch {
-        }
-        ; #endregion
-        if (url = "" || !InStr(url, "wikipedia.org")) {
+        if (url = "") {
             ; #region agent log
             try {
                 FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-                ',"location":"Shift keys.ahk:3155","message":"URL check failed in restore - early return","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}`n', DEBUG_LOG_PATH
+                ',"location":"Shift keys.ahk:3422","message":"URL check failed in restore - early return","data":{},"sessionId":"debug-session","runId":"post-fix","hypothesisId":"F"}`n', DEBUG_LOG_PATH
             } catch {
             }
             ; #endregion
             return false
         }
-        ; Normalize URL - remove trailing slashes and fragments
-        url := RegExReplace(url, "/#.*$", "")
-        url := RegExReplace(url, "/+$", "")
+        
+        ; Create UIA_Browser for checking scroll differences
+        uia := UIA_Browser("ahk_exe chrome.exe")
     } catch Error as err {
         ; #region agent log
         try {
@@ -3494,61 +3517,14 @@ RestorePreviousWikipediaScrollPosition() {
         return false
     }
 
-    ; Show banner to inform user that scroll position is being restored
-    restoreBanner := CreateCenteredBanner_ChatGPT("Restoring previous scroll position... Please wait", "3772FF", "FFFFFF", 24, 178)
+    ; Restore scroll position using helper function
+    success := RestoreWikipediaScrollPosition(previousPosition.scrollPercentage, "Restoring previous scroll position... Please wait")
     
-    try {
-        ; Block all keyboard and mouse input during scroll restoration
-        BlockInput("On")
-        
-        ; Wait a bit for page to be ready
-        Sleep(500)
-        
-        ; Get current document height to calculate pixel position
-        docHeight := uia.JSReturnThroughClipboard("document.documentElement.scrollHeight")
-        if (docHeight != "" && docHeight != "undefined" && docHeight != "null") {
-            docHeightFloat := Float(docHeight)
-            if (docHeightFloat > 0) {
-                targetScrollY := previousPosition.scrollPercentage * docHeightFloat
-                uia.JSExecute("window.scrollTo(0, " . Round(targetScrollY) . ");")
-                Sleep(500)  ; Wait after scroll to check result
-                
-                ; Update banner to show success
-                try {
-                    if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
-                        restoreBanner.Controls[1].Text := "Previous scroll position restored!"
-                        Sleep(1000)  ; Show success message for 1 second
-                    }
-                } catch {
-                }
-                
-                ; Remove the restored position from history (since we just used it)
-                ; and all positions after it
-                if (foundIndex > 0 && foundIndex <= g_WikipediaScrollHistory.Length) {
-                    ; Remove from foundIndex to end
-                    loop (g_WikipediaScrollHistory.Length - foundIndex + 1) {
-                        g_WikipediaScrollHistory.Pop()
-                    }
-                }
-            }
-        }
-    } catch Error as err {
-        ; #region agent log
-        try {
-            FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-            ',"location":"Shift keys.ahk:3250","message":"Exception during scroll restore","data":{"error":"' . err.Message . '","file":"' . err.File . '","line":' . err.Line . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"G"}`n', DEBUG_LOG_PATH
-        } catch {
-        }
-        ; #endregion
-    } finally {
-        ; Always restore input and hide banner
-        BlockInput("Off")
-        try {
-            if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
-                Sleep(500)  ; Brief delay before hiding
-                restoreBanner.Destroy()
-            }
-        } catch {
+    ; Remove the restored position from history (since we just used it) and all positions after it
+    if (success && foundIndex > 0 && foundIndex <= g_WikipediaScrollHistory.Length) {
+        ; Remove from foundIndex to end
+        loop (g_WikipediaScrollHistory.Length - foundIndex + 1) {
+            g_WikipediaScrollHistory.Pop()
         }
     }
     ; #region agent log

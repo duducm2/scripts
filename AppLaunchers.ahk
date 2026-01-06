@@ -361,6 +361,17 @@ IsWindowOnMonitor3() {
     return false
 }
 
+; Helper function to normalize Wikipedia URLs
+NormalizeWikipediaURL(url) {
+    if (url = "" || !InStr(url, "wikipedia.org")) {
+        return ""
+    }
+    ; Remove fragments and trailing slashes
+    url := RegExReplace(url, "/#.*$", "")
+    url := RegExReplace(url, "/+$", "")
+    return url
+}
+
 ; Get current Wikipedia article URL from the active Chrome window
 GetWikipediaURL() {
     try {
@@ -369,15 +380,88 @@ GetWikipediaURL() {
         }
         uia := UIA_Browser("ahk_exe chrome.exe")
         url := uia.GetCurrentURL()
-        if (url = "" || !InStr(url, "wikipedia.org")) {
-            return ""
-        }
-        ; Normalize URL - remove trailing slashes and fragments
-        url := RegExReplace(url, "/#.*$", "")
-        url := RegExReplace(url, "/+$", "")
-        return url
+        return NormalizeWikipediaURL(url)
     } catch Error as err {
         return ""
+    }
+}
+
+; Helper function to restore scroll position to a given percentage
+; Returns true on success, false on failure
+RestoreWikipediaScrollPosition(scrollPercentage, bannerText := "Restoring scroll position... Please wait") {
+    if (scrollPercentage <= 0.0 || scrollPercentage > 1.0) {
+        return false
+    }
+    
+    try {
+        ; Create UIA_Browser once
+        uia := UIA_Browser("ahk_exe chrome.exe")
+        if (!uia) {
+            return false
+        }
+        
+        ; Show banner
+        restoreBanner := CreateCenteredBanner_Launchers(bannerText, "3772FF", "FFFFFF", 10, 178, 180)
+        
+        ; Block input during restoration
+        BlockInput("On")
+        
+        ; Wait for page to be ready
+        Sleep(500)
+        
+        ; Get document height
+        docHeight := uia.JSReturnThroughClipboard("document.documentElement.scrollHeight")
+        if (docHeight = "" || docHeight = "undefined" || docHeight = "null") {
+            BlockInput("Off")
+            if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
+                restoreBanner.Destroy()
+            }
+            return false
+        }
+        
+        docHeightFloat := Float(docHeight)
+        if (docHeightFloat <= 0) {
+            BlockInput("Off")
+            if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
+                restoreBanner.Destroy()
+            }
+            return false
+        }
+        
+        ; Calculate and execute scroll
+        targetScrollY := scrollPercentage * docHeightFloat
+        uia.JSExecute("window.scrollTo(0, " . Round(targetScrollY) . ");")
+        Sleep(500)
+        
+        ; Update banner to show success
+        try {
+            if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
+                restoreBanner.Controls[1].Text := "Scroll position restored!"
+                Sleep(1000)
+            }
+        } catch {
+        }
+        
+        ; Cleanup
+        BlockInput("Off")
+        try {
+            if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
+                Sleep(500)
+                restoreBanner.Destroy()
+            }
+        } catch {
+        }
+        
+        return true
+    } catch Error as err {
+        BlockInput("Off")
+        try {
+            if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
+                restoreBanner.Destroy()
+            }
+        } catch {
+        }
+        return false
     }
 }
 
@@ -819,69 +903,8 @@ ShowWikipediaSelector() {
                         ; History array might not exist yet, that's okay
                     }
                     
-                    ; Show banner immediately to inform user that scroll position is being restored
-                    restoreBanner := CreateCenteredBanner_Launchers("Restoring scroll position... Please wait",
-                        "3772FF", "FFFFFF", 10, 178, 180)
-
-                    ; Block all keyboard and mouse input during scroll restoration
-                    BlockInput("On")
-
-                    ; #region agent log
-                    try {
-                        FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-                        ',"location":"AppLaunchers.ahk:771","message":"Creating UIA_Browser for activation restore","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}`n', DEBUG_LOG_PATH
-                    } catch {
-                    }
-                    ; #endregion
-                    uia := UIA_Browser("ahk_exe chrome.exe")
-                    ; #region agent log
-                    try {
-                        FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-                        ',"location":"AppLaunchers.ahk:771","message":"UIA_Browser created for activation restore","data":{"uia":' . (uia ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}`n', DEBUG_LOG_PATH
-                    } catch {
-                    }
-                    ; #endregion
-                    Sleep(500)  ; Brief wait for page to be ready
-                    ; Get current document height to calculate pixel position
-                    docHeight := uia.JSReturnThroughClipboard("document.documentElement.scrollHeight")
-                    ; #region agent log
-                    try {
-                        FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-                        ',"location":"AppLaunchers.ahk:774","message":"Got docHeight in activation restore","data":{"docHeight":"' . docHeight . '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}`n', DEBUG_LOG_PATH
-                    } catch {
-                    }
-                    ; #endregion
-                    if (docHeight != "" && docHeight != "undefined" && docHeight != "null") {
-                        docHeightFloat := Float(docHeight)
-                        if (docHeightFloat > 0) {
-                            targetScrollY := savedPercentage * docHeightFloat
-                            uia.JSExecute("window.scrollTo(0, " . Round(targetScrollY) . ");")
-                            Sleep(500)  ; Longer wait after scroll to check result
-
-                            ; Update banner to show success
-                            try {
-                                if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
-                                    restoreBanner.Controls[1].Text := "Scroll position restored!"
-                                    Sleep(1000)  ; Show success message for 1 second
-                                }
-                            } catch {
-                            }
-
-                            ; Hide banner after restoration
-                            try {
-                                if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
-                                    Sleep(500)  ; Brief delay before hiding
-                                    restoreBanner.Destroy()
-                                }
-                            } catch {
-                            }
-
-                            Sleep(200)  ; Brief wait after scroll
-                        }
-                    }
-
-                    ; Restore input after scroll restoration is complete
-                    BlockInput("Off")
+                    ; Restore scroll position using helper function
+                    RestoreWikipediaScrollPosition(savedPercentage, "Restoring scroll position... Please wait")
                 }
             }
         } catch Error as err {
