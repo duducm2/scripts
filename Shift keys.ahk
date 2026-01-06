@@ -7353,9 +7353,9 @@ IsEditorActive() {
 +k::
 {
     Send "+i"
-    Sleep 700
+    Sleep 1200
     Send "+o"
-    Sleep 500
+    Sleep 800
     WinMaximize "A"
 }
 
