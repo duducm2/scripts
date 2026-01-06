@@ -394,14 +394,18 @@ RestoreWikipediaScrollPosition(scrollPercentage, bannerText := "Restoring scroll
     }
     
     try {
+        ; Show banner immediately to give user instant feedback
+        restoreBanner := CreateCenteredBanner_Launchers(bannerText, "3772FF", "FFFFFF", 10, 178, 180)
+        Sleep(10)  ; Brief pause to ensure banner is rendered and visible
+        
         ; Create UIA_Browser once
         uia := UIA_Browser("ahk_exe chrome.exe")
         if (!uia) {
+            if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
+                restoreBanner.Destroy()
+            }
             return false
         }
-        
-        ; Show banner
-        restoreBanner := CreateCenteredBanner_Launchers(bannerText, "3772FF", "FFFFFF", 10, 178, 180)
         
         ; Block input during restoration
         BlockInput("On")
@@ -433,19 +437,11 @@ RestoreWikipediaScrollPosition(scrollPercentage, bannerText := "Restoring scroll
         uia.JSExecute("window.scrollTo(0, " . Round(targetScrollY) . ");")
         Sleep(500)
         
-        ; Update banner to show success
-        try {
-            if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
-                restoreBanner.Controls[1].Text := "Scroll position restored!"
-                Sleep(1000)
-            }
-        } catch {
-        }
-        
         ; Cleanup
         BlockInput("Off")
         try {
             if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
+                restoreBanner.Controls[1].Text := "Scroll position restored!"
                 Sleep(500)
                 restoreBanner.Destroy()
             }
@@ -554,9 +550,10 @@ HandleWikipediaChar(char) {
                     }
                     savedPercentage := LoadWikipediaScrollPosition(item.url)
                     if (savedPercentage > 0.0) {
-                        ; Show banner to inform user that scroll position is being restored
+                        ; Show banner immediately to give user instant feedback
                         restoreBanner := CreateCenteredBanner_Launchers("Restoring scroll position... Please wait",
                             "3772FF", "FFFFFF", 10, 178, 180)
+                        Sleep(10)  ; Brief pause to ensure banner is rendered and visible
 
                         ; Block all keyboard and mouse input during scroll restoration
                         BlockInput("On")
@@ -823,13 +820,6 @@ ShowWikipediaSelector() {
 ; =============================================================================
 #!+k::
 {
-    ; #region agent log
-    try {
-        FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-        ',"location":"AppLaunchers.ahk:740","message":"Win+Alt+Shift+K hotkey triggered","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n', DEBUG_LOG_PATH
-    } catch {
-    }
-    ; #endregion
     SetTitleMatchMode 2
     if WinExist("Wikipedia") {
         WinActivate
@@ -841,90 +831,6 @@ ShowWikipediaSelector() {
 
         ; Start monitoring Wikipedia focus for automatic blackout cancellation
         StartWikipediaFocusMonitor()
-
-        ; Try to restore scroll position (only if on Monitor 3)
-        restoreBanner := ""
-        try {
-            ; #region agent log
-            try {
-                isOnMonitor3 := IsWindowOnMonitor3()
-                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-                ',"location":"AppLaunchers.ahk:757","message":"Monitor 3 check","data":{"isOnMonitor3":' . (isOnMonitor3 ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"I"}`n', DEBUG_LOG_PATH
-            } catch {
-            }
-            ; #endregion
-            if (!IsWindowOnMonitor3()) {
-                ; #region agent log
-                try {
-                    FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-                    ',"location":"AppLaunchers.ahk:758","message":"Not on Monitor 3 - early return","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"I"}`n', DEBUG_LOG_PATH
-                } catch {
-                }
-                ; #endregion
-                return
-            }
-            url := GetWikipediaURL()
-            ; #region agent log
-            try {
-                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-                ',"location":"AppLaunchers.ahk:760","message":"Got URL in activation restore","data":{"url":"' . url . '","urlLength":' . StrLen(url) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"F"}`n', DEBUG_LOG_PATH
-            } catch {
-            }
-            ; #endregion
-            if (url != "") {
-                savedPercentage := LoadWikipediaScrollPosition(url)
-                ; #region agent log
-                try {
-                    FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-                    ',"location":"AppLaunchers.ahk:762","message":"Loaded scroll position","data":{"savedPercentage":' . savedPercentage . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"J"}`n', DEBUG_LOG_PATH
-                } catch {
-                }
-                ; #endregion
-                if (savedPercentage > 0.0) {
-                    ; Add to history array for Shift+B functionality (access global from Shift keys.ahk)
-                    try {
-                        ; Try to access the global history array if it exists
-                        if (IsSet(g_WikipediaScrollHistory)) {
-                            g_WikipediaScrollHistory.Push({url: url, scrollPercentage: savedPercentage})
-                            ; Limit history to last 10 positions
-                            if (g_WikipediaScrollHistory.Length > 10) {
-                                g_WikipediaScrollHistory.RemoveAt(1)
-                            }
-                            ; #region agent log
-                            try {
-                                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-                                ',"location":"AppLaunchers.ahk:799","message":"Added restored position to history","data":{"url":"' . url . '","scrollPercentage":' .
-                                savedPercentage . ',"historyLength":' . g_WikipediaScrollHistory.Length . '},"sessionId":"debug-session","runId":"post-fix","hypothesisId":"H"}`n', DEBUG_LOG_PATH
-                            } catch {
-                            }
-                            ; #endregion
-                        }
-                    } catch {
-                        ; History array might not exist yet, that's okay
-                    }
-                    
-                    ; Restore scroll position using helper function
-                    RestoreWikipediaScrollPosition(savedPercentage, "Restoring scroll position... Please wait")
-                }
-            }
-        } catch Error as err {
-            ; #region agent log
-            try {
-                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-                ',"location":"AppLaunchers.ahk:808","message":"Exception in activation restore","data":{"error":"' . err.Message . '","file":"' . err.File . '","line":' . err.Line . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"G"}`n', DEBUG_LOG_PATH
-            } catch {
-            }
-            ; #endregion
-            ; Always restore input on error
-            BlockInput("Off")
-            ; Hide banner on error
-            try {
-                if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
-                    restoreBanner.Destroy()
-                }
-            } catch {
-            }
-        }
     } else {
         ShowWikipediaSelector()
     }

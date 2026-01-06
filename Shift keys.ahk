@@ -2843,23 +2843,6 @@ global g_WikipediaScrollHistory := []
     SaveWikipediaScrollPositionManually_ShiftKeys()
 }
 
-; Shift + B: Go Back to previous scroll position
-+b::
-{
-    ; #region agent log
-    try {
-        activeWindow := WinGetTitle("A")
-        isChromeActive := WinActive("ahk_exe chrome.exe")
-        hasWikipedia := InStr(activeWindow, "Wikipedia")
-        FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-        ',"location":"Shift keys.ahk:2836","message":"Shift+B hotkey triggered","data":{"activeWindow":"' . activeWindow . '","isChromeActive":' .
-        (isChromeActive ? 1 : 0) . ',"hasWikipedia":' . (hasWikipedia ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n', DEBUG_LOG_PATH
-    } catch {
-    }
-    ; #endregion
-    RestorePreviousWikipediaScrollPosition()
-}
-
 ; Helper function to restore scroll position to a given percentage
 ; Returns true on success, false on failure
 RestoreWikipediaScrollPosition(scrollPercentage, bannerText := "Restoring scroll position... Please wait") {
