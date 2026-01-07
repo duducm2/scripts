@@ -3154,6 +3154,8 @@ ShowHotstringSelector() {
 global g_FocusModeOn := false
 global g_FocusModeActiveMonitor := 0
 global g_FocusModeOverlays := []  ; array of GUI overlays (one per covered monitor)
+global g_FocusModeTrackedWindow := 0  ; window handle that was active when focus mode was enabled
+global g_FocusModeMonitorTimer := false  ; timer for monitoring window focus changes
 
 FocusDbg_EscapeJson(s) {
     s := StrReplace(s, "\", "\\")
@@ -3285,7 +3287,7 @@ GetActiveMonitorIndex() {
 }
 
 EnableFocusMode() {
-    global g_FocusModeOn, g_FocusModeActiveMonitor, g_FocusModeOverlays
+    global g_FocusModeOn, g_FocusModeActiveMonitor, g_FocusModeOverlays, g_FocusModeTrackedWindow
 
     ; Check if focus mode is already active by verifying state and overlays
     hasActiveOverlays := false
@@ -3328,6 +3330,12 @@ EnableFocusMode() {
 
     g_FocusModeActiveMonitor := activeMon
     g_FocusModeOverlays := []
+    
+    ; Store the active window handle when focus mode is enabled
+    g_FocusModeTrackedWindow := WinExist("A")
+    
+    ; Start monitoring for window focus changes
+    StartFocusModeWindowMonitor()
 
     monitorCount := MonitorGetCount()
 
@@ -3412,7 +3420,10 @@ EnableFocusMode() {
 }
 
 DisableFocusMode() {
-    global g_FocusModeOn, g_FocusModeActiveMonitor, g_FocusModeOverlays
+    global g_FocusModeOn, g_FocusModeActiveMonitor, g_FocusModeOverlays, g_FocusModeTrackedWindow, g_FocusModeMonitorTimer
+
+    ; Stop monitoring window focus changes
+    StopFocusModeWindowMonitor()
 
     for overlay in g_FocusModeOverlays {
         try {
@@ -3426,6 +3437,7 @@ DisableFocusMode() {
 
     g_FocusModeOverlays := []
     g_FocusModeActiveMonitor := 0
+    g_FocusModeTrackedWindow := 0
     g_FocusModeOn := false
 }
 
@@ -3474,6 +3486,57 @@ ToggleFocusMode() {
             DisableFocusMode()
         }
         EnableFocusMode()
+    }
+}
+
+; Monitor window focus changes and automatically disable focus mode when active window changes
+FocusModeWindowMonitor(*) {
+    global g_FocusModeOn, g_FocusModeTrackedWindow
+    
+    ; Only monitor if focus mode is active
+    if (!g_FocusModeOn) {
+        return
+    }
+    
+    ; Check if tracked window still exists
+    if (g_FocusModeTrackedWindow && !WinExist("ahk_id " . g_FocusModeTrackedWindow)) {
+        ; Tracked window was closed - automatically disable focus mode
+        DisableFocusMode()
+        return
+    }
+    
+    ; Get current active window
+    currentWindow := WinExist("A")
+    
+    ; If current window is different from tracked window, disable focus mode
+    if (g_FocusModeTrackedWindow && currentWindow && currentWindow != g_FocusModeTrackedWindow) {
+        ; Window focus changed - automatically disable focus mode
+        DisableFocusMode()
+    }
+}
+
+; Start monitoring window focus changes
+StartFocusModeWindowMonitor() {
+    global g_FocusModeMonitorTimer
+    
+    ; Stop any existing timer first
+    StopFocusModeWindowMonitor()
+    
+    ; Start timer to check window focus every 200ms
+    g_FocusModeMonitorTimer := SetTimer(FocusModeWindowMonitor, 200)
+}
+
+; Stop monitoring window focus changes
+StopFocusModeWindowMonitor() {
+    global g_FocusModeMonitorTimer
+    
+    if (g_FocusModeMonitorTimer) {
+        try {
+            SetTimer(g_FocusModeMonitorTimer, 0)  ; Disable timer
+        } catch {
+            ; Ignore errors
+        }
+        g_FocusModeMonitorTimer := false
     }
 }
 
