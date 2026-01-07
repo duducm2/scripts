@@ -223,7 +223,7 @@ InitQuickOpenFiles() {
         "C:\Users\eduev\Meu Drive\04 - Pós-graduação\01 - Mestrado\26-ai-experiment\infoVis\Dissertation InfoVis  - PowerBI - Charts.pbix",
         "📊 Dissertation InfoVis"
     )
-    
+
     ; Register radio-tiso exercises YouTube link
     RegisterQuickOpenFile(
         "https://www.youtube.com/watch?v=I6ZRH9Mraqw&t=2s",
@@ -273,7 +273,7 @@ QuickUpdateScripts() {
             "C:\Users\fie7ca\Documents\scripts\Gemini.ahk",
             "C:\Users\fie7ca\Documents\scripts\AppLaunchers.ahk"
         ]
-        
+
         ; Execute each script file
         for index, file in files {
             try {
@@ -283,8 +283,26 @@ QuickUpdateScripts() {
             }
         }
     } else {
-        ; Personal environment - show reminder message
-        MsgBox("Personal computer paths not configured.`n`nPlease update the macro with personal computer file paths.`n`nExpected pattern: C:\Users\eduev\...", "Quick Update Scripts", "Icon!")
+        ; Personal environment file paths
+        files := [
+            "C:\Users\eduev\Meu Drive\12 - Scripts\WindowManagement.ahk",
+            "C:\Users\eduev\Meu Drive\12 - Scripts\Utils.ahk",
+            "C:\Users\eduev\Meu Drive\12 - Scripts\Spotify.ahk",
+            "C:\Users\eduev\Meu Drive\12 - Scripts\Shift keys.ahk",
+            "C:\Users\eduev\Meu Drive\12 - Scripts\Outlook.ahk",
+            "C:\Users\eduev\Meu Drive\12 - Scripts\Microsoft Teams.ahk",
+            "C:\Users\eduev\Meu Drive\12 - Scripts\Gemini.ahk",
+            "C:\Users\eduev\Meu Drive\12 - Scripts\AppLaunchers.ahk"
+        ]
+
+        ; Execute each script file
+        for index, file in files {
+            try {
+                Run file
+            } catch Error as e {
+                ; Continue with next file if one fails
+            }
+        }
     }
 }
 
