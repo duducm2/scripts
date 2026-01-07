@@ -375,12 +375,23 @@ NormalizeWikipediaURL(url) {
 ; Get current Wikipedia article URL from the active Chrome window
 GetWikipediaURL() {
     try {
-        if (!WinActive("ahk_exe chrome.exe") || !InStr(WinGetTitle("A"), "Wikipedia")) {
+        if (!WinActive("ahk_exe chrome.exe")) {
             return ""
         }
+
+        winTitle := WinGetTitle("A")
+        if (!InStr(winTitle, "Wikipedia")) {
+            return ""
+        }
+
         uia := UIA_Browser("ahk_exe chrome.exe")
+        if (!uia) {
+            return ""
+        }
+
         url := uia.GetCurrentURL()
-        return NormalizeWikipediaURL(url)
+        normalizedUrl := NormalizeWikipediaURL(url)
+        return normalizedUrl
     } catch Error as err {
         return ""
     }
@@ -392,12 +403,12 @@ RestoreWikipediaScrollPosition(scrollPercentage, bannerText := "Restoring scroll
     if (scrollPercentage <= 0.0 || scrollPercentage > 1.0) {
         return false
     }
-    
+
     try {
         ; Show banner immediately to give user instant feedback
         restoreBanner := CreateCenteredBanner_Launchers(bannerText, "3772FF", "FFFFFF", 10, 178, 180)
         Sleep(10)  ; Brief pause to ensure banner is rendered and visible
-        
+
         ; Create UIA_Browser once
         uia := UIA_Browser("ahk_exe chrome.exe")
         if (!uia) {
@@ -406,13 +417,13 @@ RestoreWikipediaScrollPosition(scrollPercentage, bannerText := "Restoring scroll
             }
             return false
         }
-        
+
         ; Block input during restoration
         BlockInput("On")
-        
+
         ; Wait for page to be ready
         Sleep(500)
-        
+
         ; Get document height
         docHeight := uia.JSReturnThroughClipboard("document.documentElement.scrollHeight")
         if (docHeight = "" || docHeight = "undefined" || docHeight = "null") {
@@ -422,7 +433,7 @@ RestoreWikipediaScrollPosition(scrollPercentage, bannerText := "Restoring scroll
             }
             return false
         }
-        
+
         docHeightFloat := Float(docHeight)
         if (docHeightFloat <= 0) {
             BlockInput("Off")
@@ -431,12 +442,12 @@ RestoreWikipediaScrollPosition(scrollPercentage, bannerText := "Restoring scroll
             }
             return false
         }
-        
+
         ; Calculate and execute scroll
         targetScrollY := scrollPercentage * docHeightFloat
         uia.JSExecute("window.scrollTo(0, " . Round(targetScrollY) . ");")
         Sleep(500)
-        
+
         ; Cleanup
         BlockInput("Off")
         try {
@@ -447,7 +458,7 @@ RestoreWikipediaScrollPosition(scrollPercentage, bannerText := "Restoring scroll
             }
         } catch {
         }
-        
+
         return true
     } catch Error as err {
         BlockInput("Off")
@@ -489,10 +500,24 @@ LoadWikipediaScrollPosition(url) {
         if (url = "") {
             return 0.0
         }
+
+        ; Verify INI file path is set
+        if (!g_WikipediaScrollPositionsFile) {
+            return 0.0
+        }
+
         ; Normalize URL to match save format - remove trailing slashes and fragments
-        url := RegExReplace(url, "/#.*$", "")
-        url := RegExReplace(url, "/+$", "")
-        scrollPos := IniRead(g_WikipediaScrollPositionsFile, "Positions", url, "0")
+        normalizedUrl := RegExReplace(url, "/#.*$", "")
+        normalizedUrl := RegExReplace(normalizedUrl, "/+$", "")
+
+        ; Ensure directory exists (in case it was deleted)
+        SplitPath(g_WikipediaScrollPositionsFile, , &dir)
+        if (dir != "" && !DirExist(dir)) {
+            DirCreate(dir)
+        }
+
+        ; Read from INI file
+        scrollPos := IniRead(g_WikipediaScrollPositionsFile, "Positions", normalizedUrl, "0")
         scrollPercentage := Float(scrollPos)
         return scrollPercentage
     } catch Error as err {
@@ -838,14 +863,29 @@ ShowWikipediaSelector() {
         ; Try to restore scroll position (check first, then show banner only if needed)
         restoreBanner := ""
         try {
-            url := GetWikipediaURL()
-            if (url = "")
-                return  ; Early return if no URL
-            
+            ; Get URL with retry logic
+            url := ""
+            urlRetries := 3
+            loop urlRetries {
+                url := GetWikipediaURL()
+                if (url != "") {
+                    break
+                }
+                if (A_Index < urlRetries) {
+                    Sleep(300)  ; Wait before retry
+                }
+            }
+
+            if (url = "") {
+                return  ; Early return if no URL after retries
+            }
+
+            ; Load saved position
             savedPercentage := LoadWikipediaScrollPosition(url)
-            if (savedPercentage <= 0.0)
+            if (savedPercentage <= 0.0) {
                 return  ; Early return if no saved position
-            
+            }
+
             ; Only show banner if we actually have a position to restore
             restoreBanner := CreateCenteredBanner_Launchers("Restoring scroll position... Please wait",
                 "3772FF", "FFFFFF", 10, 178, 180)
@@ -853,34 +893,90 @@ ShowWikipediaSelector() {
             ; Block all keyboard and mouse input during scroll restoration
             BlockInput("On")
 
-            uia := UIA_Browser("ahk_exe chrome.exe")
-            Sleep(500)  ; Brief wait for page to be ready
-            
-            ; Get current document height to calculate pixel position
-            docHeight := uia.JSReturnThroughClipboard("document.documentElement.scrollHeight")
-            if (docHeight = "" || docHeight = "undefined" || docHeight = "null") {
+            ; Initialize UIA_Browser with retry logic
+            uia := false
+            uiaRetries := 3
+            loop uiaRetries {
+                try {
+                    uia := UIA_Browser("ahk_exe chrome.exe")
+                    if (uia) {
+                        break
+                    }
+                } catch Error as uiaErr {
+                    if (A_Index < uiaRetries) {
+                        Sleep(500)  ; Wait before retry
+                    }
+                }
+            }
+
+            if (!uia) {
                 BlockInput("Off")
-                if (IsObject(restoreBanner) && restoreBanner.Hwnd)
+                if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
+                    restoreBanner.Controls[1].Text := "Error: Could not access browser"
+                    Sleep(2000)
                     restoreBanner.Destroy()
+                }
                 return
             }
-            
+
+            ; Wait longer for page to be ready (increased from 500ms)
+            Sleep(1000)
+
+            ; Get current document height with retry logic
+            docHeight := ""
+            docHeightRetries := 3
+            loop docHeightRetries {
+                try {
+                    docHeight := uia.JSReturnThroughClipboard("document.documentElement.scrollHeight")
+                    if (docHeight != "" && docHeight != "undefined" && docHeight != "null") {
+                        break
+                    }
+                } catch Error as docErr {
+                    if (A_Index < docHeightRetries) {
+                        Sleep(500)  ; Wait before retry
+                    }
+                }
+            }
+
+            if (docHeight = "" || docHeight = "undefined" || docHeight = "null") {
+                BlockInput("Off")
+                if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
+                    restoreBanner.Controls[1].Text := "Error: Page not ready"
+                    Sleep(2000)
+                    restoreBanner.Destroy()
+                }
+                return
+            }
+
             docHeightFloat := Float(docHeight)
             if (docHeightFloat <= 0) {
                 BlockInput("Off")
-                if (IsObject(restoreBanner) && restoreBanner.Hwnd)
+                if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
+                    restoreBanner.Controls[1].Text := "Error: Invalid page height"
+                    Sleep(2000)
                     restoreBanner.Destroy()
+                }
                 return
             }
-            
+
             ; Execute scroll restoration
             targetScrollY := savedPercentage * docHeightFloat
-            uia.JSExecute("window.scrollTo(0, " . Round(targetScrollY) . ");")
-            Sleep(500)  ; Wait after scroll
-            
+            try {
+                uia.JSExecute("window.scrollTo(0, " . Round(targetScrollY) . ");")
+                Sleep(800)  ; Increased wait after scroll to ensure it completes
+            } catch Error as scrollErr {
+                BlockInput("Off")
+                if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
+                    restoreBanner.Controls[1].Text := "Error: Scroll failed"
+                    Sleep(2000)
+                    restoreBanner.Destroy()
+                }
+                return
+            }
+
             ; Restore input after scroll restoration
             BlockInput("Off")
-            
+
             ; Update banner to show success, then hide
             if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
                 try {
@@ -893,16 +989,23 @@ ShowWikipediaSelector() {
                 } catch {
                 }
             }
-            
+
         } catch Error as err {
             ; Always restore input on error
             BlockInput("Off")
-            ; Hide banner on error
+            ; Hide banner on error with error message
             if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
                 try {
+                    restoreBanner.Controls[1].Text := "Error: " . SubStr(err.Message, 1, 50)
+                    Sleep(2000)
                     restoreBanner.Destroy()
                 } catch {
-                
+                    ; If banner update fails, just destroy it
+                    try {
+                        restoreBanner.Destroy()
+                    } catch {
+                    }
+                }
             }
         }
     } else {
@@ -961,12 +1064,12 @@ ShowTinyWaterBottleIndicator() {
 ; Log Pomodoro session to CSV file
 LogPomodoroSession() {
     global g_PomodoroLogFile, IS_WORK_ENVIRONMENT
-    
+
     ; Suppress CSV logging in work environment
     if (IS_WORK_ENVIRONMENT) {
         return
     }
-    
+
     ; Ensure data directory exists
     SplitPath(g_PomodoroLogFile, , &dir)
     if (dir != "" && !DirExist(dir)) {
