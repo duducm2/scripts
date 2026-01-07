@@ -11513,17 +11513,132 @@ HandleGeminiModelSelection(char) {
                 ; Wait for dropdown to open
                 Sleep 200
 
-                ; Navigate with arrow keys based on model
-                if (modelName = "Thinking") {
-                    Send "{Down}"
-                    Sleep 50
-                } else if (modelName = "Pro") {
-                    Send "{Down}"
-                    Sleep 50
-                    Send "{Down}"
-                    Sleep 50
+                ; Step 1: Parse the menu to determine the active model from UI
+                ; Locate parent container via path: {T:30}, {T:26}
+                ; Then inspect children to identify the currently selected MenuItem
+                currentModelName := ""
+                detectedCurrentModel := false
+                
+                try {
+                    ; Try to find parent container using ElementFromPath
+                    parentContainer := uia.ElementFromPath({ Type: 30 }, { Type: 26 })
+                    
+                    if (parentContainer) {
+                        ; Strategy 1: Try direct path to selected MenuItem using {T:11, i:-1}
+                        try {
+                            selectedMenuItem := parentContainer.ElementFromPath({ Type: 11, i: -1 })
+                            if (selectedMenuItem) {
+                                try {
+                                    currentModelName := selectedMenuItem.Name
+                                    detectedCurrentModel := true
+                                } catch {
+                                }
+                            }
+                        } catch {
+                        }
+                        
+                        ; Strategy 2: If direct path didn't work, find all MenuItems and check which is selected
+                        if (!detectedCurrentModel) {
+                            try {
+                                ; Type 50011 is MenuItem, but try Type 11 first (might be alternative code)
+                                allMenuItems := parentContainer.FindAll({ Type: 50011 })
+                                
+                                ; If Type 50011 didn't work, try Type 11
+                                if (!allMenuItems || allMenuItems.Length = 0) {
+                                    allMenuItems := parentContainer.FindAll({ Type: 11 })
+                                }
+                                
+                                ; If still no results, try by LocalizedType "menu item"
+                                if (!allMenuItems || allMenuItems.Length = 0) {
+                                    allMenuItems := parentContainer.FindAll({ LocalizedType: "menu item" })
+                                }
+                                
+                                ; Find the selected MenuItem
+                                if (allMenuItems && allMenuItems.Length > 0) {
+                                    for menuItem in allMenuItems {
+                                        try {
+                                            ; Check if this MenuItem is selected using SelectionItemPattern
+                                            isSelected := false
+                                            try {
+                                                ; Check SelectionItemPattern (most reliable method)
+                                                if (menuItem.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)) {
+                                                    isSelected := menuItem.SelectionItemPattern.IsSelected
+                                                }
+                                            } catch {
+                                                ; SelectionItemPattern not available for this item, skip
+                                            }
+                                            
+                                            if (isSelected) {
+                                                currentModelName := menuItem.Name
+                                                detectedCurrentModel := true
+                                                break
+                                            }
+                                        } catch {
+                                        }
+                                    }
+                                }
+                            } catch {
+                            }
+                        }
+                        
+                        ; Strategy 3: Fallback - try finding by checking which MenuItem has "selected" in className
+                        if (!detectedCurrentModel) {
+                            try {
+                                allMenuItems := parentContainer.FindAll({ Type: 50011 })
+                                if (!allMenuItems || allMenuItems.Length = 0) {
+                                    allMenuItems := parentContainer.FindAll({ Type: 11 })
+                                }
+                                
+                                if (allMenuItems && allMenuItems.Length > 0) {
+                                    for menuItem in allMenuItems {
+                                        try {
+                                            className := menuItem.ClassName
+                                            if (InStr(className, "selected") || InStr(className, "active") || InStr(className, "mdc-selected")) {
+                                                currentModelName := menuItem.Name
+                                                detectedCurrentModel := true
+                                                break
+                                            }
+                                        } catch {
+                                        }
+                                    }
+                                }
+                            } catch {
+                            }
+                        }
+                    }
+                } catch {
+                    ; If ElementFromPath fails, continue with fallback logic
                 }
-                ; Fast: no arrows needed (already selected)
+                
+                ; Fallback: Use global variable if UI detection failed
+                if (!detectedCurrentModel) {
+                    currentModelName := isGeminiFastModel
+                }
+
+                ; Step 2: Calculate the required key presses based on current selection
+                ; Visual order: 1. Fast, 2. Thinking, 3. Pro
+                modelPositions := Map("Fast", 1, "Thinking", 2, "Pro", 3)
+                currentPosition := modelPositions.Has(currentModelName) ? modelPositions[currentModelName] : 1
+                targetPosition := modelPositions.Has(modelName) ? modelPositions[modelName] : 1
+                
+                ; Calculate relative movement needed
+                positionDiff := targetPosition - currentPosition
+                
+                ; Step 3: Execute navigation once initial state is confirmed
+                if (positionDiff > 0) {
+                    ; Target is below current position - use Down arrows
+                    loop positionDiff {
+                        Send "{Down}"
+                        Sleep 50
+                    }
+                } else if (positionDiff < 0) {
+                    ; Target is above current position - use Up arrows
+                    loop Abs(positionDiff) {
+                        Send "{Up}"
+                        Sleep 50
+                    }
+                }
+                ; If positionDiff = 0, no navigation needed (already on target)
 
                 ; Press Enter to confirm selection
                 Send "{Enter}"
