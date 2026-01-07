@@ -854,6 +854,7 @@ Miro (Shift)
 🔗 [U][U]ngroup
 🔒 [L][L]ock/Unlock
 🔗 [K]Add/Edit Lin[K]
+❌ [X]Close sidebar (e[X]it)
 --- Built-in Shortcuts (Windows) ---
 Tools:
 [V / H] > Select tool / Hand
@@ -12855,6 +12856,195 @@ IsFileDialogActive() {
 
 ; Shift + K : Add/Edit Link (Alt+Ctrl+K)
 +k:: Send "!^k"
+
+; Shift + X : Close sidebar (eXit)
+; Path: {T:30}, {T:26,A:"spaces-sidebar-element"}, {T:0, i:2}
++x:: {
+    ; #region agent log
+    try {
+        SafeDebugLog('{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount . ',"location":"Shift keys.ahk:12862","message":"Miro CloseSidebar entry","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"H1,H2,H3,H4,H5"}`n')
+    } catch {
+    }
+    ; #endregion
+    
+    ; H1: Try UIA_Browser instead of UIA() for Chrome apps
+    ; H2: Don't use static - initialize each time
+    try {
+        ; #region agent log
+        try {
+            SafeDebugLog('{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount . ',"location":"Shift keys.ahk:12870","message":"Attempting UIA_Browser init","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"H1"}`n')
+        } catch {
+        }
+        ; #endregion
+        
+        uia := UIA_Browser("ahk_exe chrome.exe")
+        
+        ; #region agent log
+        try {
+            SafeDebugLog('{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount . ',"location":"Shift keys.ahk:12875","message":"UIA_Browser created","data":{"uiaExists":' . (uia ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"H1"}`n')
+        } catch {
+        }
+        ; #endregion
+        
+        ; Get the Miro window element
+        win := WinExist("A")
+        
+        ; #region agent log
+        try {
+            SafeDebugLog('{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount . ',"location":"Shift keys.ahk:12882","message":"Window handle obtained","data":{"win":' . win . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"H3,H4"}`n')
+        } catch {
+        }
+        ; #endregion
+        
+        ; H3, H4: ElementFromPath should be called on root element, not uia directly
+        ; Try calling on uia first (H3 test)
+        try {
+            ; #region agent log
+            try {
+                SafeDebugLog('{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount . ',"location":"Shift keys.ahk:12890","message":"Attempting ElementFromPath on uia","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"H3"}`n')
+            } catch {
+            }
+            ; #endregion
+            
+            closeBtn := uia.ElementFromPath({ Type: 30 }, { Type: 26, AutomationId: "spaces-sidebar-element" }, { Type: 0, i: 2 })
+            
+            ; #region agent log
+            try {
+                SafeDebugLog('{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount . ',"location":"Shift keys.ahk:12895","message":"ElementFromPath on uia result","data":{"closeBtnExists":' . (closeBtn ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"H3"}`n')
+            } catch {
+            }
+            ; #endregion
+            
+            if closeBtn {
+                ; #region agent log
+                try {
+                    SafeDebugLog('{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount . ',"location":"Shift keys.ahk:12900","message":"Clicking closeBtn from uia.ElementFromPath","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"H3"}`n')
+                } catch {
+                }
+                ; #endregion
+                closeBtn.Click()
+                return
+            }
+        } catch Error as e {
+            ; #region agent log
+            try {
+                SafeDebugLog('{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount . ',"location":"Shift keys.ahk:12907","message":"ElementFromPath on uia failed","data":{"error":' . (e.Message ? '"' . StrReplace(e.Message, '"', '\"') . '"' : 'null') . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"H3"}`n')
+            } catch {
+            }
+            ; #endregion
+        }
+        
+        ; H4: Try ElementFromPath on root element instead
+        try {
+            root := uia.ElementFromHandle(win)
+            
+            ; #region agent log
+            try {
+                SafeDebugLog('{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount . ',"location":"Shift keys.ahk:12917","message":"Root element obtained","data":{"rootExists":' . (root ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"H4"}`n')
+            } catch {
+            }
+            ; #endregion
+            
+            ; #region agent log
+            try {
+                SafeDebugLog('{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount . ',"location":"Shift keys.ahk:12922","message":"Attempting ElementFromPath on root","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"H4"}`n')
+            } catch {
+            }
+            ; #endregion
+            
+            closeBtn := root.ElementFromPath({ Type: 30 }, { Type: 26, AutomationId: "spaces-sidebar-element" }, { Type: 0, i: 2 })
+            
+            ; #region agent log
+            try {
+                SafeDebugLog('{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount . ',"location":"Shift keys.ahk:12927","message":"ElementFromPath on root result","data":{"closeBtnExists":' . (closeBtn ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"H4"}`n')
+            } catch {
+            }
+            ; #endregion
+            
+            if closeBtn {
+                ; #region agent log
+                try {
+                    SafeDebugLog('{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount . ',"location":"Shift keys.ahk:12932","message":"Clicking closeBtn from root.ElementFromPath","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"H4"}`n')
+                } catch {
+                }
+                ; #endregion
+                closeBtn.Click()
+                return
+            }
+        } catch Error as e {
+            ; #region agent log
+            try {
+                SafeDebugLog('{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount . ',"location":"Shift keys.ahk:12939","message":"ElementFromPath on root failed","data":{"error":' . (e.Message ? '"' . StrReplace(e.Message, '"', '\"') . '"' : 'null') . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"H4"}`n')
+            } catch {
+            }
+            ; #endregion
+        }
+    } catch Error as e {
+        ; #region agent log
+        try {
+            SafeDebugLog('{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount . ',"location":"Shift keys.ahk:12946","message":"UIA_Browser init failed","data":{"error":' . (e.Message ? '"' . StrReplace(e.Message, '"', '\"') . '"' : 'null') . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"H1"}`n')
+        } catch {
+        }
+        ; #endregion
+    }
+    
+    ; Fallback: Try to find by name using UIA.ElementFromHandle
+    try {
+        ; #region agent log
+        try {
+            SafeDebugLog('{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount . ',"location":"Shift keys.ahk:12954","message":"Trying fallback FindFirst by name","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"H2"}`n')
+        } catch {
+        }
+        ; #endregion
+        
+        win := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+        
+        ; #region agent log
+        try {
+            SafeDebugLog('{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount . ',"location":"Shift keys.ahk:12960","message":"Fallback root obtained","data":{"rootExists":' . (root ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"H2"}`n')
+        } catch {
+        }
+        ; #endregion
+        
+        closeBtn := root.FindFirst({ Name: "Close sidebar", Type: 50000 })
+        
+        ; #region agent log
+        try {
+            SafeDebugLog('{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount . ',"location":"Shift keys.ahk:12965","message":"Fallback FindFirst result","data":{"closeBtnExists":' . (closeBtn ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"H2"}`n')
+        } catch {
+        }
+        ; #endregion
+        
+        if closeBtn {
+            ; #region agent log
+            try {
+                SafeDebugLog('{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount . ',"location":"Shift keys.ahk:12970","message":"Clicking closeBtn from fallback","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"H2"}`n')
+            } catch {
+            }
+            ; #endregion
+            closeBtn.Click()
+            return
+        }
+    } catch Error as e {
+        ; #region agent log
+        try {
+            SafeDebugLog('{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount . ',"location":"Shift keys.ahk:12977","message":"Fallback FindFirst failed","data":{"error":' . (e.Message ? '"' . StrReplace(e.Message, '"', '\"') . '"' : 'null') . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"H2"}`n')
+        } catch {
+        }
+        ; #endregion
+    }
+    
+    ; Final fallback: show error
+    ; #region agent log
+    try {
+        SafeDebugLog('{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount . ',"location":"Shift keys.ahk:12985","message":"All methods failed - showing tooltip","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"H1,H2,H3,H4,H5"}`n')
+    } catch {
+    }
+    ; #endregion
+    ToolTip "Close sidebar button not found"
+    SetTimer () => ToolTip(), -2000
+}
 
 #HotIf
 
