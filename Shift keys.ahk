@@ -338,6 +338,13 @@ Teams - Chat (Shift)
 😂 [J][J]oke reaction (😂)
 🏠 [O][O]pen home panel
 
+--- Search Field (Top) ---
+🔍 [Alt+1]Select 1st search result (↓↓ Enter)
+🔍 [Alt+2]Select 2nd search result (↓↓↓ Enter)
+🔍 [Alt+3]Select 3rd search result (↓↓↓↓ Enter)
+🔍 [Alt+4]Select 4th search result (↓↓↓↓↓ Enter)
+🔍 [Alt+5]Select 5th search result (↓↓↓↓↓↓ Enter)
+
 --- Built-in Shortcuts ---
 Geral:
 [Ctrl + .] > Show keyboard shortcuts
@@ -3940,6 +3947,76 @@ RestorePreviousWikipediaScrollPosition() {
     Send "{Down}"
     Send "{Enter}"
     Send "{Esc}"
+}
+
+; Alt + 1 : Select 1st search result - Search
+!1::
+{
+    Send "{Down}"
+    Sleep 100
+    Send "{Down}"
+    Sleep 100
+    Send "{Enter}"
+}
+
+; Alt + 2 : Select 2nd search result - Search
+!2::
+{
+    Send "{Down}"
+    Sleep 100
+    Send "{Down}"
+    Sleep 100
+    Send "{Down}"
+    Sleep 100
+    Send "{Enter}"
+}
+
+; Alt + 3 : Select 3rd search result - Search
+!3::
+{
+    Send "{Down}"
+    Sleep 100
+    Send "{Down}"
+    Sleep 100
+    Send "{Down}"
+    Sleep 100
+    Send "{Down}"
+    Sleep 100
+    Send "{Enter}"
+}
+
+; Alt + 4 : Select 4th search result - Search
+!4::
+{
+    Send "{Down}"
+    Sleep 100
+    Send "{Down}"
+    Sleep 100
+    Send "{Down}"
+    Sleep 100
+    Send "{Down}"
+    Sleep 100
+    Send "{Down}"
+    Sleep 100
+    Send "{Enter}"
+}
+
+; Alt + 5 : Select 5th search result - Search
+!5::
+{
+    Send "{Down}"
+    Sleep 100
+    Send "{Down}"
+    Sleep 100
+    Send "{Down}"
+    Sleep 100
+    Send "{Down}"
+    Sleep 100
+    Send "{Down}"
+    Sleep 100
+    Send "{Down}"
+    Sleep 100
+    Send "{Enter}"
 }
 
 #HotIf
