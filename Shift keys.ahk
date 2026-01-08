@@ -7886,11 +7886,16 @@ IsEditorActive() {
     ShowSmallLoadingIndicator_ChatGPT("Processing...")
     
     Send "+i"
-    Sleep 1200
+    Sleep 1500
     Send "+o"
-    Sleep 800
+    Sleep 2300
+    Send "!{F4}"
+    Sleep 300
+    Send "^{Tab}"
+    Sleep 300
+    Send "+o"
     WinMaximize "A"
-    
+
     ; Hide banner after completion
     HideSmallLoadingIndicator_ChatGPT()
 }
