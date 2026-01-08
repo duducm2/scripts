@@ -7886,15 +7886,107 @@ IsEditorActive() {
     ShowSmallLoadingIndicator_ChatGPT("Processing...")
     
     Send "+i"
-    Sleep 1500
-    Send "+o"
     Sleep 2300
-    Send "!{F4}"
-    Sleep 300
-    Send "^{Tab}"
-    Sleep 300
-    Send "+o"
-    WinMaximize "A"
+
+    ; Find and select the Preview tab using UIA
+    try {
+        win := WinExist("A")
+        if !win
+            return
+        root := UIA.ElementFromHandle(win)
+        
+        ; Small delay to allow UIA to settle after getting root
+        Sleep 100
+        
+        previewTab := 0
+        
+        ; Strategy 1: Try ElementFromPath using the provided path
+        ; Path: {T:30}, {T:32}, {T:26}, {T:18, i:-1}, {T:19}
+        try {
+            previewTab := root.ElementFromPath({ Type: 30 }, { Type: 32 }, { Type: 26 }, { Type: 18, i: -1 }, { Type: 19 })
+            ; Verify it contains "Preview" in name
+            if previewTab {
+                tabName := previewTab.Name
+                if !InStr(tabName, "Preview") {
+                    previewTab := 0
+                }
+            }
+            Sleep 50
+        } catch {
+            previewTab := 0
+        }
+        
+        ; Strategy 2: Find by Type 50019 (TabItem) with Name containing "Preview"
+        if (!previewTab) {
+            try {
+                previewTab := root.FindFirst({ Type: 50019, Name: "Preview", matchmode: "Substring" })
+            } catch {
+                try {
+                    previewTab := root.FindFirst({ Type: "TabItem", Name: "Preview", matchmode: "Substring" })
+                } catch {
+                }
+            }
+            Sleep 50
+        }
+        
+        ; Strategy 3: Find all TabItems and filter for ones with "Preview" in name
+        if (!previewTab) {
+            try {
+                tabCond := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.TabItem)
+                tabs := root.FindElements(tabCond, UIA.TreeScope.Descendants)
+                if tabs {
+                    for tab in tabs {
+                        if !tab
+                            continue
+                        tabName := tab.Name
+                        if InStr(tabName, "Preview") {
+                            previewTab := tab
+                            break
+                        }
+                    }
+                }
+            } catch {
+            }
+            Sleep 50
+        }
+        
+        ; Select the Preview tab if found
+        if previewTab {
+            try {
+                previewTab.Click()
+                ; Delay to allow tab to fully activate
+                Sleep 300
+            } catch {
+                try {
+                    previewTab.SetFocus()
+                    Sleep 100
+                    previewTab.Click()
+                    ; Delay to allow tab to fully activate
+                    Sleep 300
+                } catch {
+                    ; If Click fails, try Invoke if available
+                    try {
+                        if previewTab.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
+                            previewTab.Invoke()
+                            ; Delay to allow tab to fully activate
+                            Sleep 300
+                        }
+                    } catch {
+                    }
+                }
+            }
+        }
+
+        ; Delay before sending next command to allow UI to settle
+        Sleep 300
+        Send "+o"
+        ; Delay to allow command to process before maximizing
+        Sleep 500
+        WinMaximize "A"
+
+    } catch Error as e {
+        ; Silently fail if tab selection fails
+    }
 
     ; Hide banner after completion
     HideSmallLoadingIndicator_ChatGPT()
