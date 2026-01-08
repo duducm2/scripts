@@ -8848,39 +8848,47 @@ FoldAllDirectoriesInExplorer() {
         itemType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.TreeItem)
         canExpand := UIA.CreatePropertyCondition(UIA.Property.IsExpandCollapsePatternAvailable, true)
         dirCond := UIA.CreateAndCondition(itemType, canExpand)
-        items := fileTree.FindElements(dirCond, UIA.TreeScope.Descendants)
-        if !items
-            return
-
-        ; Collapse each expanded directory. Do not toggle; skip already collapsed.
-        for item in items {
-            if !item
-                continue
-            try {
-                pat := item.ExpandCollapsePattern
-                if pat.ExpandCollapseState != UIA.ExpandCollapseState.Collapsed
-                    pat.Collapse()
-            } catch Error {
-                ; Fallback: try clicking the chevron/glyph if found (e.g., text "îª´" or button)
-                btnType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Button)
-                txtType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Text)
-                glyphName := UIA.CreatePropertyCondition(UIA.Property.Name, "îª´")
-                dotName := UIA.CreatePropertyCondition(UIA.Property.Name, ".")
-                chevronCond := UIA.CreateOrCondition(btnType, UIA.CreateOrCondition(UIA.CreateAndCondition(txtType,
-                    glyphName), UIA.CreateAndCondition(txtType, dotName)))
-                chevron := ""
-                try chevron := item.FindElement(chevronCond, UIA.TreeScope.Children)
-                if !chevron
-                    try chevron := item.FindElement(chevronCond, UIA.TreeScope.Descendants)
-                if chevron {
-                    if chevron.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
-                        try chevron.InvokePattern.Invoke()
-                    } else {
-                        try chevron.Click()
+        
+        ; Loop 3 times to ensure all nested directories are collapsed
+        loop 3 {
+            ; Re-find items each iteration as tree structure may change after collapsing
+            items := fileTree.FindElements(dirCond, UIA.TreeScope.Descendants)
+            if !items
+                break
+            
+            ; Collapse each expanded directory. Do not toggle; skip already collapsed.
+            for item in items {
+                if !item
+                    continue
+                try {
+                    pat := item.ExpandCollapsePattern
+                    if pat.ExpandCollapseState != UIA.ExpandCollapseState.Collapsed
+                        pat.Collapse()
+                } catch Error {
+                    ; Fallback: try clicking the chevron/glyph if found (e.g., text "îª´" or button)
+                    btnType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Button)
+                    txtType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Text)
+                    glyphName := UIA.CreatePropertyCondition(UIA.Property.Name, "îª´")
+                    dotName := UIA.CreatePropertyCondition(UIA.Property.Name, ".")
+                    chevronCond := UIA.CreateOrCondition(btnType, UIA.CreateOrCondition(UIA.CreateAndCondition(txtType,
+                        glyphName), UIA.CreateAndCondition(txtType, dotName)))
+                    chevron := ""
+                    try chevron := item.FindElement(chevronCond, UIA.TreeScope.Children)
+                    if !chevron
+                        try chevron := item.FindElement(chevronCond, UIA.TreeScope.Descendants)
+                    if chevron {
+                        if chevron.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
+                            try chevron.InvokePattern.Invoke()
+                        } else {
+                            try chevron.Click()
+                        }
                     }
                 }
+                Sleep 10
             }
-            Sleep 10
+            
+            ; Brief pause between iterations to allow UI to update
+            Sleep 50
         }
 
         ; Restore scroll position if it changed
