@@ -10993,6 +10993,15 @@ ToggleGeminiDrawer() {
 
 ; Shift + M : Show model selector wizard menu (Fast, Thinking, Pro) - Model
 +m:: {
+    ; #region agent log
+    try {
+        logEntry :=
+            '{"sessionId":"debug-session","runId":"run1","hypothesisId":"I","location":"Shift keys.ahk:10995","message":"Shift+M hotkey triggered","data":{},"timestamp":' .
+            A_TickCount . '}'
+        FileAppend(logEntry . "`n", "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
+    } catch {
+    }
+    ; #endregion
     ShowGeminiModelSelector()
 }
 
@@ -11293,6 +11302,16 @@ HandleGeminiModelSelection(char) {
     global g_GeminiModelSelectorActive, g_GeminiModels, g_GeminiModelCharSequence
     global isGeminiFastModel
 
+    ; #region agent log
+    try {
+        logEntry :=
+            '{"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"Shift keys.ahk:11292","message":"HandleGeminiModelSelection entry","data":{"char":"' .
+            char . '","currentModelGlobal":"' . isGeminiFastModel . '"},"timestamp":' . A_TickCount . '}'
+        FileAppend(logEntry . "`n", "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
+    } catch {
+    }
+    ; #endregion
+
     ; Only process if selector is active
     if (!g_GeminiModelSelectorActive) {
         return
@@ -11315,6 +11334,16 @@ HandleGeminiModelSelection(char) {
     modelInfo := g_GeminiModels[modelIndex]
     modelName := modelInfo.name
 
+    ; #region agent log
+    try {
+        logEntry :=
+            '{"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"Shift keys.ahk:11316","message":"Target model determined","data":{"targetModel":"' .
+            modelName . '","currentModelGlobal":"' . isGeminiFastModel . '"},"timestamp":' . A_TickCount . '}'
+        FileAppend(logEntry . "`n", "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
+    } catch {
+    }
+    ; #endregion
+
     ; Cleanup selector first (closes GUI, disables hotkeys)
     CleanupGeminiModelSelector()
 
@@ -11335,37 +11364,85 @@ HandleGeminiModelSelection(char) {
         ; Combined pattern to find Fast, Thinking, or Pro button
         modelPattern := "i)^(Fast|Thinking|Pro)$"
 
-        ; Find the model button (reuse logic from ToggleGeminiModel)
+        ; Find the TRIGGER button (not the menu item) - it has "mat-mdc-menu-trigger" in className
         allButtons := uia.FindAll({ Type: "Button" })
         btn := 0
+        clickedButtonName := ""
+        triggerButtonClassName := ""
         for btnCandidate in allButtons {
             try {
                 btnName := btnCandidate.Name
+                className := ""
+                try {
+                    className := btnCandidate.ClassName
+                } catch {
+                }
+
+                ; #region agent log
+                try {
+                    logEntry :=
+                        '{"sessionId":"debug-session","runId":"run1","hypothesisId":"G","location":"Shift keys.ahk:11364","message":"Button candidate found","data":{"btnName":"' .
+                        btnName . '","className":"' . className . '","matchesPattern":' . (RegExMatch(btnName,
+                            modelPattern) ? "true" : "false") . '},"timestamp":' . A_TickCount . '}'
+                    FileAppend(logEntry . "`n", "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
+                } catch {
+                }
+                ; #endregion
+
                 if (RegExMatch(btnName, modelPattern)) {
-                    ; Check if button is disabled
-                    isDisabled := false
+                    ; Check if this is the TRIGGER button (has "mat-mdc-menu-trigger" in className)
+                    isTriggerButton := InStr(className, "mat-mdc-menu-trigger")
+
+                    ; #region agent log
                     try {
-                        className := btnCandidate.ClassName
-                        if (InStr(className, "disabled") || InStr(className, "mat-mdc-button-disabled")) {
-                            isDisabled := true
-                        }
+                        logEntry :=
+                            '{"sessionId":"debug-session","runId":"run1","hypothesisId":"G","location":"Shift keys.ahk:11370","message":"Checking if trigger button","data":{"btnName":"' .
+                            btnName . '","isTriggerButton":' . (isTriggerButton ? "true" : "false") . ',"className":"' .
+                            className . '"},"timestamp":' . A_TickCount . '}'
+                        FileAppend(logEntry . "`n", "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
+                    } catch {
+                    }
+                    ; #endregion
+
+                    ; Only use the trigger button, not menu items
+                    if (isTriggerButton) {
+                        ; Check if button is disabled
+                        isDisabled := false
                         try {
-                            if (!btnCandidate.GetPropertyValue(UIA.Property.IsEnabled)) {
+                            if (InStr(className, "disabled") || InStr(className, "mat-mdc-button-disabled")) {
                                 isDisabled := true
+                            }
+                            try {
+                                if (!btnCandidate.GetPropertyValue(UIA.Property.IsEnabled)) {
+                                    isDisabled := true
+                                }
+                            } catch {
                             }
                         } catch {
                         }
-                    } catch {
-                    }
 
-                    if (!isDisabled) {
-                        btn := btnCandidate
-                        break
+                        if (!isDisabled) {
+                            btn := btnCandidate
+                            clickedButtonName := btnName
+                            triggerButtonClassName := className
+                            break
+                        }
                     }
                 }
             } catch {
             }
         }
+
+        ; #region agent log
+        try {
+            logEntry :=
+                '{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Shift keys.ahk:11400","message":"Trigger button found before click","data":{"buttonName":"' .
+                clickedButtonName . '","targetModel":"' . modelName . '","className":"' . triggerButtonClassName .
+                '","buttonFound":' . (btn ? "true" : "false") . '},"timestamp":' . A_TickCount . '}'
+            FileAppend(logEntry . "`n", "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
+        } catch {
+        }
+        ; #endregion
 
         ; Fallback: use WaitForButton if we didn't find one
         if (!btn) {
@@ -11432,27 +11509,368 @@ HandleGeminiModelSelection(char) {
             }
 
             if (clicked) {
-                ; Wait for dropdown to open
-                Sleep 200
-
-                ; Navigate with arrow keys based on model
-                if (modelName = "Thinking") {
-                    Send "{Down}"
-                    Sleep 50
-                } else if (modelName = "Pro") {
-                    Send "{Down}"
-                    Sleep 50
-                    Send "{Down}"
-                    Sleep 50
+                ; #region agent log
+                try {
+                    timeAfterClick := A_TickCount
+                    logEntry :=
+                        '{"sessionId":"debug-session","runId":"run1","hypothesisId":"F","location":"Shift keys.ahk:11466","message":"Button clicked, starting dropdown wait","data":{"targetModel":"' .
+                        modelName . '","timeAfterClick":' . timeAfterClick . '},"timestamp":' . A_TickCount . '}'
+                    FileAppend(logEntry . "`n", "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
+                } catch {
                 }
-                ; Fast: no arrows needed (already selected)
+                ; #endregion
+
+                ; Wait for dropdown to open
+                Sleep 200  ; Need delay for dropdown to fully open and render menu items
+
+                ; #region agent log
+                try {
+                    timeAfterWait := A_TickCount
+                    delayAfterClick := timeAfterWait - timeAfterClick
+                    logEntry :=
+                        '{"sessionId":"debug-session","runId":"run1","hypothesisId":"F","location":"Shift keys.ahk:11468","message":"After dropdown wait, before navigation","data":{"targetModel":"' .
+                        modelName . '","delayAfterClick":' . delayAfterClick . ',"timeAfterWait":' . timeAfterWait .
+                        '},"timestamp":' . A_TickCount . '}'
+                    FileAppend(logEntry . "`n", "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
+                } catch {
+                }
+                ; #endregion
+
+                ; Initialize variables for relative navigation
+                detectedCurrentModel := ""
+                currentModelIndex := -1
+                targetModelIndex := -1
+                modelOrder := ["Fast", "Thinking", "Pro"]  ; Order in dropdown
+
+                ; Find target model index
+                for idx, model in modelOrder {
+                    if (model = modelName) {
+                        targetModelIndex := idx
+                        break
+                    }
+                }
+
+                ; #region agent log
+                try {
+                    ; Try to detect which model is selected in dropdown after opening
+                    ; Find MENU ITEMS (not triggers) - they have "mdc-button mat-mdc-button-base input-area-switch" in className
+
+                    try {
+                        dropdownButtons := uia.FindAll({ Type: "Button" })
+                        menuItems := []
+                        for dropdownBtn in dropdownButtons {
+                            try {
+                                dropdownBtnName := dropdownBtn.Name
+                                dropdownClassName := ""
+                                try {
+                                    dropdownClassName := dropdownBtn.ClassName
+                                } catch {
+                                }
+
+                                ; Check if this is a MENU ITEM (has "mdc-button mat-mdc-button-base input-area-switch")
+                                isMenuItem := InStr(dropdownClassName,
+                                    "mdc-button mat-mdc-button-base input-area-switch")
+
+                                if (RegExMatch(dropdownBtnName, modelPattern) && isMenuItem) {
+                                    ; Check if this button is selected in dropdown
+                                    isSelected := false
+                                    isFocused := false
+                                    try {
+                                        if (dropdownBtn.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)) {
+                                            isSelected := dropdownBtn.SelectionItemPattern.IsSelected
+                                        }
+                                    } catch {
+                                    }
+
+                                    ; Also check if focused (dropdown usually opens with current item focused)
+                                    try {
+                                        if (dropdownBtn.GetPropertyValue(UIA.Property.HasKeyboardFocus)) {
+                                            isFocused := dropdownBtn.GetPropertyValue(UIA.Property.HasKeyboardFocus)
+                                        }
+                                    } catch {
+                                    }
+
+                                    ; Try alternative: check className for selected state
+                                    if (!isSelected) {
+                                        try {
+                                            if (InStr(dropdownClassName, "selected") || InStr(dropdownClassName,
+                                                "active") || InStr(dropdownClassName, "mdc-selected")) {
+                                                isSelected := true
+                                            }
+                                        } catch {
+                                        }
+                                    }
+
+                                    ; If focused, treat as selected (dropdown opens with current item focused)
+                                    if (isFocused && !isSelected) {
+                                        isSelected := true
+                                    }
+
+                                    ; #region agent log
+                                    try {
+                                        logEntry :=
+                                            '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H","location":"Shift keys.ahk:11527","message":"Menu item found","data":{"btnName":"' .
+                                            dropdownBtnName . '","isSelected":' . (isSelected ? "true" : "false") .
+                                            ',"isFocused":' . (isFocused ? "true" : "false") .
+                                            ',"className":"' . dropdownClassName . '"},"timestamp":' . A_TickCount .
+                                            '}'
+                                        FileAppend(logEntry . "`n",
+                                            "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
+                                    } catch {
+                                    }
+                                    ; #endregion
+
+                                    if (isSelected) {
+                                        detectedCurrentModel := dropdownBtnName
+                                        ; Find current model index
+                                        for idx, model in modelOrder {
+                                            if (model = detectedCurrentModel) {
+                                                currentModelIndex := idx
+                                                break
+                                            }
+                                        }
+                                    }
+
+                                    menuItems.Push({ name: dropdownBtnName, isSelected: isSelected, className: dropdownClassName })
+                                }
+                            } catch {
+                            }
+                        }
+                    } catch {
+                    }
+
+                    ; Fallback: if we didn't detect current model from menu items, use the trigger button name
+                    if (detectedCurrentModel = "" && clickedButtonName != "") {
+                        detectedCurrentModel := clickedButtonName
+                        ; Find current model index from trigger button name
+                        for idx, model in modelOrder {
+                            if (model = detectedCurrentModel) {
+                                currentModelIndex := idx
+                                break
+                            }
+                        }
+                        ; #region agent log
+                        try {
+                            logEntry :=
+                                '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H","location":"Shift keys.ahk:11625","message":"Using trigger button name as current model","data":{"triggerButtonName":"' .
+                                clickedButtonName . '","currentModelIndex":' . currentModelIndex . '},"timestamp":' .
+                                A_TickCount . '}'
+                            FileAppend(logEntry . "`n", "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
+                        } catch {
+                        }
+                        ; #endregion
+                    }
+
+                    logEntry :=
+                        '{"sessionId":"debug-session","runId":"run1","hypothesisId":"C","location":"Shift keys.ahk:11655","message":"Dropdown opened, detected current model","data":{"detectedCurrentModel":"' .
+                        detectedCurrentModel . '","currentModelIndex":' . currentModelIndex . ',"targetModel":"' .
+                        modelName . '","targetModelIndex":' . targetModelIndex . ',"globalCurrentModel":"' .
+                        isGeminiFastModel . '","clickedButtonName":"' . clickedButtonName . '","menuItemsCount":' .
+                        menuItems.Length . ',"detectionMethod":"' . (detectedCurrentModel != "" ? (currentModelIndex >=
+                            0 ? "menuItem" : "triggerButton") : "none") . '"},"timestamp":' . A_TickCount . '}'
+                    FileAppend(logEntry . "`n", "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
+                } catch {
+                }
+                ; #endregion
+
+                ; Calculate relative navigation needed
+                arrowKeysSent := 0
+                timeBeforeNav := A_TickCount
+
+                ; If we detected the current model, use relative navigation
+                if (currentModelIndex >= 0 && targetModelIndex >= 0) {
+                    relativeSteps := targetModelIndex - currentModelIndex
+
+                    ; #region agent log
+                    try {
+                        logEntry :=
+                            '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H","location":"Shift keys.ahk:11690","message":"Calculated relative navigation","data":{"currentModelIndex":' .
+                            currentModelIndex . ',"targetModelIndex":' . targetModelIndex . ',"relativeSteps":' .
+                            relativeSteps . ',"currentModel":"' . detectedCurrentModel . '","targetModel":"' .
+                            modelName . '","modelOrder":"Fast(0),Thinking(1),Pro(2)"},"timestamp":' . A_TickCount . '}'
+                        FileAppend(logEntry . "`n", "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
+                    } catch {
+                    }
+                    ; #endregion
+
+                    if (relativeSteps > 0) {
+                        ; Need to go down
+                        loop relativeSteps {
+                            Send "{Down}"
+                            arrowKeysSent++
+                            ; #region agent log
+                            try {
+                                logEntry :=
+                                    '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H","location":"Shift keys.ahk:11649","message":"Arrow key sent","data":{"direction":"Down","step":' .
+                                    A_Index . ',"totalSteps":' . relativeSteps . ',"currentModelIndex":' .
+                                    currentModelIndex . ',"targetModelIndex":' . targetModelIndex . '},"timestamp":' .
+                                    A_TickCount . '}'
+                                FileAppend(logEntry . "`n", "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
+                            } catch {
+                            }
+                            ; #endregion
+                        }
+                    } else if (relativeSteps < 0) {
+                        ; Need to go up
+                        loop Abs(relativeSteps) {
+                            Send "{Up}"
+                            arrowKeysSent++
+                            ; #region agent log
+                            try {
+                                logEntry :=
+                                    '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H","location":"Shift keys.ahk:11655","message":"Arrow key sent","data":{"direction":"Up","step":' .
+                                    A_Index . ',"totalSteps":' . Abs(relativeSteps) . ',"currentModelIndex":' .
+                                    currentModelIndex . ',"targetModelIndex":' . targetModelIndex . '},"timestamp":' .
+                                    A_TickCount . '}'
+                                FileAppend(logEntry . "`n", "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
+                            } catch {
+                            }
+                            ; #endregion
+                        }
+                    } else {
+                        ; #region agent log
+                        try {
+                            logEntry :=
+                                '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H","location":"Shift keys.ahk:11665","message":"No navigation needed","data":{"currentModelIndex":' .
+                                currentModelIndex . ',"targetModelIndex":' . targetModelIndex .
+                                ',"relativeSteps":0},"timestamp":' . A_TickCount . '}'
+                            FileAppend(logEntry . "`n", "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
+                        } catch {
+                        }
+                        ; #endregion
+                    }
+                    ; If relativeSteps = 0, no navigation needed
+                } else {
+                    ; Fallback: if detection failed, try using global state variable
+                    ; #region agent log
+                    try {
+                        logEntry :=
+                            '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H","location":"Shift keys.ahk:11733","message":"Detection failed, trying global state fallback","data":{"targetModel":"' .
+                            modelName . '","currentModelIndex":' . currentModelIndex . ',"targetModelIndex":' .
+                            targetModelIndex . ',"globalCurrentModel":"' . isGeminiFastModel . '"},"timestamp":' .
+                            A_TickCount . '}'
+                        FileAppend(logEntry . "`n", "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
+                    } catch {
+                    }
+                    ; #endregion
+
+                    ; Use global state as fallback
+                    if (isGeminiFastModel != "") {
+                        detectedCurrentModel := isGeminiFastModel
+                        ; Find current model index from global state
+                        for idx, model in modelOrder {
+                            if (model = detectedCurrentModel) {
+                                currentModelIndex := idx
+                                break
+                            }
+                        }
+
+                        ; Now calculate relative navigation
+                        if (currentModelIndex >= 0 && targetModelIndex >= 0) {
+                            relativeSteps := targetModelIndex - currentModelIndex
+
+                            ; #region agent log
+                            try {
+                                logEntry :=
+                                    '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H","location":"Shift keys.ahk:11755","message":"Calculated relative navigation from global state","data":{"currentModelIndex":' .
+                                    currentModelIndex . ',"targetModelIndex":' . targetModelIndex . ',"relativeSteps":' .
+                                    relativeSteps . ',"currentModel":"' . detectedCurrentModel . '","targetModel":"' .
+                                    modelName . '"},"timestamp":' . A_TickCount . '}'
+                                FileAppend(logEntry . "`n", "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
+                            } catch {
+                            }
+                            ; #endregion
+
+                            if (relativeSteps > 0) {
+                                ; Need to go down
+                                loop relativeSteps {
+                                    Send "{Down}"
+                                    arrowKeysSent++
+                                    ; #region agent log
+                                    try {
+                                        logEntry :=
+                                            '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H","location":"Shift keys.ahk:11770","message":"Arrow key sent (global fallback)","data":{"direction":"Down","step":' .
+                                            A_Index . ',"totalSteps":' . relativeSteps . '},"timestamp":' . A_TickCount .
+                                            '}'
+                                        FileAppend(logEntry . "`n",
+                                            "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
+                                    } catch {
+                                    }
+                                    ; #endregion
+                                }
+                            } else if (relativeSteps < 0) {
+                                ; Need to go up
+                                loop Abs(relativeSteps) {
+                                    Send "{Up}"
+                                    arrowKeysSent++
+                                    ; #region agent log
+                                    try {
+                                        logEntry :=
+                                            '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H","location":"Shift keys.ahk:11784","message":"Arrow key sent (global fallback)","data":{"direction":"Up","step":' .
+                                            A_Index . ',"totalSteps":' . Abs(relativeSteps) . '},"timestamp":' .
+                                            A_TickCount . '}'
+                                        FileAppend(logEntry . "`n",
+                                            "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
+                                    } catch {
+                                    }
+                                    ; #endregion
+                                }
+                            }
+                        }
+                    }
+                }
+
+                ; #region agent log
+                try {
+                    timeAfterNav := A_TickCount
+                    logEntry :=
+                        '{"sessionId":"debug-session","runId":"run1","hypothesisId":"D","location":"Shift keys.ahk:11547","message":"Navigation keys sent","data":{"targetModel":"' .
+                        modelName . '","arrowKeysSent":' . arrowKeysSent . ',"currentModelGlobal":"' .
+                        isGeminiFastModel . '","timeAfterNav":' . timeAfterNav . '},"timestamp":' . A_TickCount . '}'
+                    FileAppend(logEntry . "`n", "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
+                } catch {
+                }
+                ; #endregion
 
                 ; Press Enter to confirm selection
+                timeBeforeEnter := A_TickCount
+                delayBeforeEnter := timeBeforeEnter - timeAfterNav
+                ; #region agent log
+                try {
+                    logEntry :=
+                        '{"sessionId":"debug-session","runId":"run1","hypothesisId":"F","location":"Shift keys.ahk:11560","message":"Before Enter key","data":{"targetModel":"' .
+                        modelName . '","delayBeforeEnter":' . delayBeforeEnter . ',"timeBeforeEnter":' .
+                        timeBeforeEnter . '},"timestamp":' . A_TickCount . '}'
+                    FileAppend(logEntry . "`n", "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
+                } catch {
+                }
+                ; #endregion
                 Send "{Enter}"
-                Sleep 150
+                timeAfterEnter := A_TickCount
+                ; #region agent log
+                try {
+                    logEntry :=
+                        '{"sessionId":"debug-session","runId":"run1","hypothesisId":"F","location":"Shift keys.ahk:11561","message":"Enter key sent","data":{"targetModel":"' .
+                        modelName . '","timeAfterEnter":' . timeAfterEnter . '},"timestamp":' . A_TickCount . '}'
+                    FileAppend(logEntry . "`n", "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
+                } catch {
+                }
+                ; #endregion
+                ; Sleep 150  ; Removed for testing
 
                 ; Update global state
                 isGeminiFastModel := modelName
+
+                ; #region agent log
+                try {
+                    logEntry :=
+                        '{"sessionId":"debug-session","runId":"run1","hypothesisId":"E","location":"Shift keys.ahk:11455","message":"Global state updated","data":{"newGlobalModel":"' .
+                        isGeminiFastModel . '","targetModel":"' . modelName . '"},"timestamp":' . A_TickCount . '}'
+                    FileAppend(logEntry . "`n", "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
+                } catch {
+                }
+                ; #endregion
+
                 ShowSmallLoadingIndicator_ChatGPT(modelName . " model active")
             }
         }
@@ -11469,6 +11887,16 @@ HandleGeminiModelSelection(char) {
 ShowGeminiModelSelector() {
     global g_GeminiModelSelectorGui, g_GeminiModelSelectorActive, g_GeminiModelHotkeyHandlers
     global g_GeminiModels, g_GeminiModelCharSequence
+
+    ; #region agent log
+    try {
+        logEntry :=
+            '{"sessionId":"debug-session","runId":"run1","hypothesisId":"I","location":"Shift keys.ahk:11878","message":"ShowGeminiModelSelector called","data":{},"timestamp":' .
+            A_TickCount . '}'
+        FileAppend(logEntry . "`n", "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
+    } catch {
+    }
+    ; #endregion
 
     ; Close existing GUI if open
     if (g_GeminiModelSelectorActive && IsObject(g_GeminiModelSelectorGui)) {
@@ -11569,8 +11997,42 @@ ShowGeminiModelSelector() {
     if (guiY + totalHeight > monitorTop + monitorHeight - marginY)
         guiY := monitorTop + monitorHeight - totalHeight - marginY
 
+    ; #region agent log
+    try {
+        logEntry :=
+            '{"sessionId":"debug-session","runId":"run1","hypothesisId":"I","location":"Shift keys.ahk:11989","message":"About to show GUI","data":{"guiX":' .
+            guiX . ',"guiY":' . guiY . ',"guiWidth":' . guiWidth . ',"totalHeight":' . totalHeight . '},"timestamp":' .
+            A_TickCount . '}'
+        FileAppend(logEntry . "`n", "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
+    } catch {
+    }
+    ; #endregion
+
     ; Show GUI centered on the active window's monitor
-    g_GeminiModelSelectorGui.Show("NA w" . guiWidth . " h" . totalHeight . " x" . guiX . " y" . guiY)
+    try {
+        g_GeminiModelSelectorGui.Show("NA w" . guiWidth . " h" . totalHeight . " x" . guiX . " y" . guiY)
+
+        ; #region agent log
+        try {
+            logEntry :=
+                '{"sessionId":"debug-session","runId":"run1","hypothesisId":"I","location":"Shift keys.ahk:11995","message":"GUI shown successfully","data":{},"timestamp":' .
+                A_TickCount . '}'
+            FileAppend(logEntry . "`n", "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
+        } catch {
+        }
+        ; #endregion
+    } catch Error as e {
+        ; #region agent log
+        try {
+            logEntry :=
+                '{"sessionId":"debug-session","runId":"run1","hypothesisId":"I","location":"Shift keys.ahk:12000","message":"Error showing GUI","data":{"error":"' .
+                e.Message . '"},"timestamp":' . A_TickCount . '}'
+            FileAppend(logEntry . "`n", "c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log")
+        } catch {
+        }
+        ; #endregion
+        return
+    }
 
     ; Set active flag
     g_GeminiModelSelectorActive := true
