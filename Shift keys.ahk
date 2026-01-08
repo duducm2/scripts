@@ -7882,11 +7882,17 @@ IsEditorActive() {
 ; Shift + K : Open markdown preview and move editor into new window - Keep
 +k::
 {
+    ; Show banner while algorithm is executing
+    ShowSmallLoadingIndicator_ChatGPT("Processing...")
+    
     Send "+i"
     Sleep 1200
     Send "+o"
     Sleep 800
     WinMaximize "A"
+    
+    ; Hide banner after completion
+    HideSmallLoadingIndicator_ChatGPT()
 }
 
 ; Shift + C : Command palette - Command
