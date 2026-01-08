@@ -2322,6 +2322,129 @@ FindAndActivatePowerBIFile(filePath) {
     }
 }
 
+; Find and activate Miro window by title keywords and URL
+; Returns true if window was found and activated, or if URL was opened successfully
+FindAndActivateMiroWindow(url, titleKeywords) {
+    ; Normalize title keywords for matching (case-insensitive)
+    keywordsLower := StrLower(titleKeywords)
+    
+    ; Search for Chrome windows with Miro in title
+    try {
+        for hwnd in WinGetList("ahk_exe chrome.exe") {
+            try {
+                winTitle := WinGetTitle("ahk_id " hwnd)
+                winTitleLower := StrLower(Trim(winTitle))
+                
+                ; Check if window is a Miro window and contains the keywords
+                if (InStr(winTitleLower, "miro") && InStr(winTitleLower, keywordsLower)) {
+                    ; Found matching window, activate it and bring to front
+                    ; Use a separate try-catch for activation to ensure we return even if activation fails
+                    try {
+                        ; Ensure window is not minimized first
+                        if (WinGetMinMax("ahk_id " hwnd) = -1) {
+                            WinRestore("ahk_id " hwnd)
+                        }
+                        
+                        ; Activate the window
+                        WinActivate("ahk_id " hwnd)
+                        WinWaitActive("ahk_id " hwnd, , 2)
+                        
+                        ; Bring to front using AlwaysOnTop trick to ensure it's not hidden
+                        WinSetAlwaysOnTop("On", "ahk_id " hwnd)
+                        Sleep 50
+                        WinSetAlwaysOnTop("Off", "ahk_id " hwnd)
+                    } catch Error as activateErr {
+                        ; Even if activation fails, we found the window, so return to prevent opening a new one
+                    }
+                    
+                    ; Return immediately after activating - don't continue searching or open new window
+                    return true
+                }
+            } catch Error as e {
+                ; Skip windows we can't access
+                continue
+            }
+        }
+    } catch {
+        ; No Chrome windows found or error accessing them
+    }
+    
+    ; No matching window found, open the URL
+    try {
+        ; Open URL in Chrome
+        Run("chrome.exe --new-window " . url)
+        
+        ; Wait for window to appear and become active
+        ; Wait up to 10 seconds for the window to appear
+        WinWait("ahk_exe chrome.exe", , 10)
+        
+        ; Find the newly opened window by checking for Miro in title
+        ; Give it a moment to load
+        Sleep(1000)
+        
+        ; Try to find the window with Miro in title
+        loop 10 {
+            for hwnd in WinGetList("ahk_exe chrome.exe") {
+                try {
+                    winTitle := WinGetTitle("ahk_id " hwnd)
+                    winTitleLower := StrLower(Trim(winTitle))
+                    
+                    if (InStr(winTitleLower, "miro") && InStr(winTitleLower, keywordsLower)) {
+                        ; Found the window, activate it
+                        ; Ensure window is not minimized first
+                        if (WinGetMinMax("ahk_id " hwnd) = -1) {
+                            WinRestore("ahk_id " hwnd)
+                        }
+                        ; Activate the window
+                        WinActivate("ahk_id " hwnd)
+                        WinWaitActive("ahk_id " hwnd, , 2)
+                        ; Bring to front using AlwaysOnTop trick to ensure it's not hidden
+                        WinSetAlwaysOnTop("On", "ahk_id " hwnd)
+                        Sleep 50
+                        WinSetAlwaysOnTop("Off", "ahk_id " hwnd)
+                        ; Additional check: ensure window is actually active
+                        if (WinActive("ahk_id " hwnd)) {
+                            return true
+                        }
+                    }
+                } catch {
+                    continue
+                }
+            }
+            Sleep(500)  ; Wait before next attempt
+        }
+        
+        ; If we couldn't find by title, just activate the most recent Chrome window
+        ; This is a fallback in case the title hasn't updated yet
+        try {
+            chromeWindows := WinGetList("ahk_exe chrome.exe")
+            if (chromeWindows.Length > 0) {
+                ; Get the first (most recent) Chrome window
+                hwnd := chromeWindows[1]
+                
+                ; Ensure window is not minimized
+                if (WinGetMinMax("ahk_id " hwnd) = -1) {
+                    WinRestore("ahk_id " hwnd)
+                }
+                ; Activate the window
+                WinActivate("ahk_id " hwnd)
+                WinWaitActive("ahk_id " hwnd, , 2)
+                ; Bring to front
+                WinSetAlwaysOnTop("On", "ahk_id " hwnd)
+                Sleep 50
+                WinSetAlwaysOnTop("Off", "ahk_id " hwnd)
+                return true
+            }
+        } catch {
+        }
+        
+        return true  ; Assume success if we got this far
+    } catch Error as e {
+        ; Failed to open URL
+        return false
+    }
+}
+
 ; Cleanup hotstring selector
 CleanupHotstringSelector() {
     global g_HotstringSelectorActive, g_HotstringSelectorGui, g_HotstringHotkeyHandlers
@@ -2381,6 +2504,22 @@ HandleHotstringChar(char) {
 
     ; Only process if selector is active
     if (!g_HotstringSelectorActive) {
+        return
+    }
+
+    ; Special handling for Miro boards (characters "9" and "0")
+    ; Check these first before checking the char maps
+    if (char = "9") {
+        ; Cleanup first (closes GUI, disables hotkeys)
+        CleanupHotstringSelector()
+        ; CIP & UX Integration mini workshop - Miro
+        FindAndActivateMiroWindow("https://miro.com/app/board/uXjVJdbNFkA=/", "CIP & UX Integration")
+        return
+    } else if (char = "0") {
+        ; Cleanup first (closes GUI, disables hotkeys)
+        CleanupHotstringSelector()
+        ; CIP Dashboard - Workspace - Miro
+        FindAndActivateMiroWindow("https://miro.com/app/board/uXjVJVZSXvk=/", "CIP Dashboard")
         return
     }
 
@@ -3015,6 +3154,8 @@ ShowHotstringSelector() {
 global g_FocusModeOn := false
 global g_FocusModeActiveMonitor := 0
 global g_FocusModeOverlays := []  ; array of GUI overlays (one per covered monitor)
+global g_FocusModeTrackedWindow := 0  ; window handle that was active when focus mode was enabled
+global g_FocusModeMonitorTimer := false  ; timer for monitoring window focus changes
 
 FocusDbg_EscapeJson(s) {
     s := StrReplace(s, "\", "\\")
@@ -3146,7 +3287,7 @@ GetActiveMonitorIndex() {
 }
 
 EnableFocusMode() {
-    global g_FocusModeOn, g_FocusModeActiveMonitor, g_FocusModeOverlays
+    global g_FocusModeOn, g_FocusModeActiveMonitor, g_FocusModeOverlays, g_FocusModeTrackedWindow
 
     ; Check if focus mode is already active by verifying state and overlays
     hasActiveOverlays := false
@@ -3189,6 +3330,12 @@ EnableFocusMode() {
 
     g_FocusModeActiveMonitor := activeMon
     g_FocusModeOverlays := []
+    
+    ; Store the active window handle when focus mode is enabled
+    g_FocusModeTrackedWindow := WinExist("A")
+    
+    ; Start monitoring for window focus changes
+    StartFocusModeWindowMonitor()
 
     monitorCount := MonitorGetCount()
 
@@ -3273,7 +3420,10 @@ EnableFocusMode() {
 }
 
 DisableFocusMode() {
-    global g_FocusModeOn, g_FocusModeActiveMonitor, g_FocusModeOverlays
+    global g_FocusModeOn, g_FocusModeActiveMonitor, g_FocusModeOverlays, g_FocusModeTrackedWindow, g_FocusModeMonitorTimer
+
+    ; Stop monitoring window focus changes
+    StopFocusModeWindowMonitor()
 
     for overlay in g_FocusModeOverlays {
         try {
@@ -3287,6 +3437,7 @@ DisableFocusMode() {
 
     g_FocusModeOverlays := []
     g_FocusModeActiveMonitor := 0
+    g_FocusModeTrackedWindow := 0
     g_FocusModeOn := false
 }
 
@@ -3335,6 +3486,57 @@ ToggleFocusMode() {
             DisableFocusMode()
         }
         EnableFocusMode()
+    }
+}
+
+; Monitor window focus changes and automatically disable focus mode when active window changes
+FocusModeWindowMonitor(*) {
+    global g_FocusModeOn, g_FocusModeTrackedWindow
+    
+    ; Only monitor if focus mode is active
+    if (!g_FocusModeOn) {
+        return
+    }
+    
+    ; Check if tracked window still exists
+    if (g_FocusModeTrackedWindow && !WinExist("ahk_id " . g_FocusModeTrackedWindow)) {
+        ; Tracked window was closed - automatically disable focus mode
+        DisableFocusMode()
+        return
+    }
+    
+    ; Get current active window
+    currentWindow := WinExist("A")
+    
+    ; If current window is different from tracked window, disable focus mode
+    if (g_FocusModeTrackedWindow && currentWindow && currentWindow != g_FocusModeTrackedWindow) {
+        ; Window focus changed - automatically disable focus mode
+        DisableFocusMode()
+    }
+}
+
+; Start monitoring window focus changes
+StartFocusModeWindowMonitor() {
+    global g_FocusModeMonitorTimer
+    
+    ; Stop any existing timer first
+    StopFocusModeWindowMonitor()
+    
+    ; Start timer to check window focus every 200ms
+    g_FocusModeMonitorTimer := SetTimer(FocusModeWindowMonitor, 200)
+}
+
+; Stop monitoring window focus changes
+StopFocusModeWindowMonitor() {
+    global g_FocusModeMonitorTimer
+    
+    if (g_FocusModeMonitorTimer) {
+        try {
+            SetTimer(g_FocusModeMonitorTimer, 0)  ; Disable timer
+        } catch {
+            ; Ignore errors
+        }
+        g_FocusModeMonitorTimer := false
     }
 }
 
