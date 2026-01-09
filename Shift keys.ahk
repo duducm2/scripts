@@ -847,7 +847,7 @@ Power BI (Shift)
 
 ; --- UIA Tree Inspector -------------------------------------------------
 cheatSheets["UIATreeInspector"] :=
-"(UIA Tree Inspector (Shift))`r`n🔄 [R][R]efresh List`r`n🔍 [F]ocus [F]ilter field"
+"(UIA Tree Inspector (Shift))`r`n🔄 [R][R]efresh List`r`n🔍 [F]ocus [F]ilter field`r`n🔍 [S]elect [S]earch tree item"
 ; --- SettleUp Shortcuts -----------------------------------------------------
 cheatSheets["Settle Up"] := "
 (
@@ -13385,6 +13385,113 @@ IsFileDialogActive() {
         }
     } catch Error as e {
         MsgBox "Error focusing button and performing Shift+Tab sequence:`n" e.Message, "Button Focus", "IconX"
+    }
+}
+
+; Shift + S : Select tree item by name prefix
++s:: {
+    try {
+        ; Global variable to store user input
+        global g_TreeItemSearchInput := ""
+
+        ; Create GUI dialog
+        searchGui := Gui("+AlwaysOnTop +ToolWindow", "Select Tree Item")
+        searchGui.SetFont("s10", "Segoe UI")
+
+        ; Add instruction text
+        searchGui.AddText("w350 Center", "Enter text to search for tree item (starts with):")
+
+        ; Add text input field
+        searchGui.AddEdit("w300 Center vTreeItemInput")
+
+        ; Submit handler
+        SubmitTreeItemSearch(ctrl, *) {
+            global g_TreeItemSearchInput
+            g_TreeItemSearchInput := ctrl.Gui["TreeItemInput"].Text
+            ctrl.Gui.Destroy()
+        }
+
+        ; Cancel handler
+        CancelTreeItemSearch(ctrl, *) {
+            global g_TreeItemSearchInput
+            g_TreeItemSearchInput := ""
+            ctrl.Gui.Destroy()
+        }
+
+        ; Add OK and Cancel buttons (OK is default, triggered by Enter)
+        okBtn := searchGui.AddButton("w80 xp-40 y+10 Default", "OK")
+        okBtn.OnEvent("Click", SubmitTreeItemSearch)
+        cancelBtn := searchGui.AddButton("w80 xp+90", "Cancel")
+        cancelBtn.OnEvent("Click", CancelTreeItemSearch)
+
+        ; Show GUI and focus input
+        searchGui.Show("w350 h150")
+        searchGui["TreeItemInput"].Focus()
+
+        ; Wait for dialog to close
+        WinWaitClose("ahk_id " searchGui.Hwnd)
+
+        ; Get the input value
+        global g_TreeItemSearchInput
+        searchText := g_TreeItemSearchInput
+        g_TreeItemSearchInput := ""  ; Clear for next use
+
+        ; If user cancelled, exit
+        if (searchText = "")
+            return
+
+        ; Get root element and find Tree
+        root := UIA.ElementFromHandle(WinExist("A"))
+        Sleep 200
+
+        ; Find Tree container with AutomationId="4"
+        treeContainer := root.FindFirst({ Type: "Tree", AutomationId: "4" })
+        if (!treeContainer) {
+            MsgBox "Could not find the tree container (AutomationId='4').", "UIA Tree Inspector", "IconX"
+            return
+        }
+
+        ; Get all TreeItem children
+        treeItems := treeContainer.FindAll({ Type: "TreeItem" })
+        if (!treeItems) {
+            MsgBox "No tree items found in the tree container.", "UIA Tree Inspector", "IconX"
+            return
+        }
+
+        ; Search for TreeItem where Name starts with searchText (case-insensitive)
+        matchingItem := ""
+        searchTextLower := StrLower(searchText)
+        for item in treeItems {
+            if (!item)
+                continue
+            try {
+                itemName := item.Name
+                if (StrLower(SubStr(itemName, 1, StrLen(searchText))) = searchTextLower) {
+                    matchingItem := item
+                    break
+                }
+            } catch {
+                ; Skip items without names
+                continue
+            }
+        }
+
+        ; Select the matching item
+        if (matchingItem) {
+            try {
+                matchingItem.Select()
+                ; Optional: Scroll into view and set focus
+                matchingItem.ScrollIntoView()
+                matchingItem.SetFocus()
+            } catch Error as e {
+                MsgBox "Error selecting tree item:`n" e.Message, "UIA Tree Inspector", "IconX"
+            }
+        } else {
+            MsgBox Format("No tree item found starting with '{}'.", searchText), "UIA Tree Inspector", "IconX"
+        }
+
+    } catch Error as e {
+        MsgBox "Error in tree item search:`n" e.Message, "UIA Tree Inspector", "IconX"
     }
 }
 #HotIf
