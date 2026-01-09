@@ -13657,6 +13657,47 @@ IsFileDialogActive() {
     Send "{Enter}"
 }
 
+; Easy Selection
+; Alt + 1 : Easy Selection - 1st item
+!1::
+{
+    Send "{Enter}"
+}
+
+; Alt + 2 : Easy Selection - 2nd item
+!2::
+{
+    Send "{Down}"
+    Send "{Enter}"
+}
+
+; Alt + 3 : Easy Selection - 3rd item
+!3::
+{
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
+}
+
+; Alt + 4 : Easy Selection - 4th item
+!4::
+{
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
+}
+
+; Alt + 5 : Easy Selection - 5th item
+!5::
+{
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
+}
+
 #HotIf
 
 ; --- Unified banner helpers for ChatGPT indicators (match ChatGPT.ahk style) ---
