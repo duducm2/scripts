@@ -3505,14 +3505,7 @@ FocusModeWindowMonitor(*) {
         return
     }
     
-    ; Get current active window
-    currentWindow := WinExist("A")
-    
-    ; If current window is different from tracked window, disable focus mode
-    if (g_FocusModeTrackedWindow && currentWindow && currentWindow != g_FocusModeTrackedWindow) {
-        ; Window focus changed - automatically disable focus mode
-        DisableFocusMode()
-    }
+    ; Window activation monitoring removed - blackout now only disabled via manual toggle (#!+Y)
 }
 
 ; Start monitoring window focus changes
