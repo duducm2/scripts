@@ -4292,6 +4292,32 @@ SelectExplorerSidebarFirstPinned() {
                     break
             }
 
+            ; If no pinned item found by keywords, try to find Desktop by first letter
+            ; Portuguese: "Área de Trabalho" starts with "Á" or "a"
+            ; English: "Desktop" starts with "D" or "d"
+            if (!firstPinnedItem) {
+                allTreeItems := navPane.FindAll({ Type: "TreeItem" })
+                for item in allTreeItems {
+                    try {
+                        itemName := item.Name
+                        ; Check if name starts with "a" or "Á" (Portuguese Desktop) or "d" or "D" (English Desktop)
+                        ; Case-insensitive check
+                        firstChar := SubStr(itemName, 1, 1)
+                        if (firstChar = "a" || firstChar = "A" || firstChar = "Á" || firstChar = "á" ||
+                            firstChar = "d" || firstChar = "D") {
+                            ; Additional check: must be Desktop-related (not just any item starting with a/d)
+                            if (InStr(itemName, "Desktop", false) || InStr(itemName, "Área de Trabalho", false) ||
+                            InStr(itemName, "Trabalho", false)) {
+                                firstPinnedItem := item
+                                break
+                            }
+                        }
+                    } catch {
+                        ; Skip items without names
+                    }
+                }
+            }
+
             if (firstPinnedItem) {
                 firstPinnedItem.ScrollIntoView()
                 firstPinnedItem.Select()
