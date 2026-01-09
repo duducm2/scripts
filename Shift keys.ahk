@@ -39,8 +39,20 @@ SafeDebugLog(text) {
             FileAppend text, DEBUG_LOG_PATH
             return true
         } catch Error as err {
+            ; Check if error has Number property before accessing it
+            ; File lock error is typically error code 32
+            hasNumber := false
+            errNumber := 0
+            try {
+                errNumber := err.Number
+                hasNumber := true
+            } catch {
+                ; Error doesn't have Number property, treat as non-retryable
+                hasNumber := false
+            }
+
             ; If it's a file lock error (32) and we have retries left, wait and retry
-            if (err.Number = 32 && A_Index < maxRetries) {
+            if (hasNumber && errNumber = 32 && A_Index < maxRetries) {
                 Sleep retryDelay * A_Index  ; Exponential backoff
             } else {
                 ; For other errors or final retry, silently fail to not interrupt script execution
@@ -7885,7 +7897,7 @@ IsEditorActive() {
 {
     ; Show banner while algorithm is executing
     ShowSmallLoadingIndicator_ChatGPT("Processing...")
-    
+
     Send "+i"
     Sleep 2300
 
@@ -7895,12 +7907,12 @@ IsEditorActive() {
         if !win
             return
         root := UIA.ElementFromHandle(win)
-        
+
         ; Small delay to allow UIA to settle after getting root
         Sleep 100
-        
+
         previewTab := 0
-        
+
         ; Strategy 1: Try ElementFromPath using the provided path
         ; Path: {T:30}, {T:32}, {T:26}, {T:18, i:-1}, {T:19}
         try {
@@ -7916,7 +7928,7 @@ IsEditorActive() {
         } catch {
             previewTab := 0
         }
-        
+
         ; Strategy 2: Find by Type 50019 (TabItem) with Name containing "Preview"
         if (!previewTab) {
             try {
@@ -7929,7 +7941,7 @@ IsEditorActive() {
             }
             Sleep 50
         }
-        
+
         ; Strategy 3: Find all TabItems and filter for ones with "Preview" in name
         if (!previewTab) {
             try {
@@ -7950,7 +7962,7 @@ IsEditorActive() {
             }
             Sleep 50
         }
-        
+
         ; Select the Preview tab if found
         if previewTab {
             try {
@@ -8952,14 +8964,14 @@ FoldAllDirectoriesInExplorer() {
         itemType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.TreeItem)
         canExpand := UIA.CreatePropertyCondition(UIA.Property.IsExpandCollapsePatternAvailable, true)
         dirCond := UIA.CreateAndCondition(itemType, canExpand)
-        
+
         ; Loop 3 times to ensure all nested directories are collapsed
         loop 3 {
             ; Re-find items each iteration as tree structure may change after collapsing
             items := fileTree.FindElements(dirCond, UIA.TreeScope.Descendants)
             if !items
                 break
-            
+
             ; Collapse each expanded directory. Do not toggle; skip already collapsed.
             for item in items {
                 if !item
@@ -8990,7 +9002,7 @@ FoldAllDirectoriesInExplorer() {
                 }
                 Sleep 10
             }
-            
+
             ; Brief pause between iterations to allow UI to update
             Sleep 50
         }
@@ -12992,7 +13004,7 @@ PlayCompletionChime_Gemini() {
         if !addressBar
             addressBar := root.FindFirst({ Type: "Edit", ClassName: "Edit" })
 
-        if addressBar {
+        if (addressBar) {
             addressBar.SetFocus()
             Sleep 50
             Send "^a"  ; Select all existing text
@@ -13217,7 +13229,7 @@ IsFileDialogActive() {
 
     try {
         root := UIA.ElementFromHandle(hwnd)
-        
+
         ; Check UIA properties: Type = Window (50032) and LocalizedType = "dialog"
         rootType := ""
         rootLocalizedType := ""
@@ -13225,25 +13237,25 @@ IsFileDialogActive() {
         try rootType := root.Type
         try rootLocalizedType := root.LocalizedType
         try rootName := root.Name
-        
+
         ; Primary check: Type must be Window and LocalizedType must be "dialog"
         if (rootType = UIA.Type.Window && rootLocalizedType = "dialog") {
             return true
         }
-        
+
         ; Fallback 1: Check if window name matches common file dialog names
         ; This handles cases where LocalizedType might vary by language/application
         if (rootType = UIA.Type.Window) {
-            fileDialogNames := ["Save As", "Open", "Browse", "Select File", "Choose File", 
-                               "Salvar como", "Abrir", "Procurar", "Selecionar arquivo",
-                               "Guardar como", "Guardar", "Explorar"]
+            fileDialogNames := ["Save As", "Open", "Browse", "Select File", "Choose File",
+                "Salvar como", "Abrir", "Procurar", "Selecionar arquivo",
+                "Guardar como", "Guardar", "Explorar"]
             for dialogName in fileDialogNames {
                 if (InStr(rootName, dialogName, false)) {
                     return true
                 }
             }
         }
-        
+
         ; Fallback 2: Check for file dialog characteristic elements (Namespace Tree Control, file lists, etc.)
         ; This is a last resort if UIA properties don't match but it's still a file dialog
         try {
@@ -13255,7 +13267,7 @@ IsFileDialogActive() {
         } catch {
             ; Window text check failed, continue
         }
-        
+
         ; If we get here, it's not a file dialog
         return false
     } catch Error as e {
