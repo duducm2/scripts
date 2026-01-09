@@ -1019,8 +1019,9 @@ GetCheatSheetText() {
     ; Check for file dialog first (works in any app)
     if WinGetClass("ahk_id " hwnd) = "#32770" {
         txt := WinGetText("ahk_id " hwnd)
-        if InStr(txt, "Namespace Tree Control") || InStr(txt, "Controle da Ãrvore de Namespace")
+        if InStr(txt, "Namespace Tree Control") || InStr(txt, "Controle da Ãrvore de Namespace") {
             return cheatSheets["FileDialog"]
+        }
     }
 
     ; Check for Settings window (both English and Portuguese)
@@ -6144,7 +6145,7 @@ EnsureItemsViewFocus() {
 ;-------------------------------------------------------------------
 ; Excel Shortcuts
 ;-------------------------------------------------------------------
-#HotIf WinActive("ahk_exe EXCEL.EXE")
+#HotIf WinActive("ahk_exe EXCEL.EXE") && WinGetClass("A") != "#32770"
 
 ; Shift + Y : Select White Color (Up-Arrow, Ctrl-Home, Ctrl-Home)
 +y:: {
@@ -7786,7 +7787,7 @@ IsEditorActive() {
 ;-------------------------------------------------------------------
 ; Cursor Shortcuts
 ;-------------------------------------------------------------------
-#HotIf IsEditorActive()
+#HotIf IsEditorActive() && WinGetClass("A") != "#32770"
 
 ; Ctrl + 1 : Remove clustering and focus on the code
 ^1::
@@ -13198,30 +13199,65 @@ IsFileDialogActive() {
     }
 
     winClass := WinGetClass("ahk_id " hwnd)
+    winTitle := WinGetTitle("ahk_id " hwnd)
+    winExe := WinGetProcessName("ahk_id " hwnd)
     if winClass != "#32770" {
         return false
     }
 
     ; Exclude Outlook Reminders which can share dialog-like traits
     try {
-        if (WinGetProcessName("ahk_id " hwnd) = "OUTLOOK.EXE") {
-            t := WinGetTitle("ahk_id " hwnd)
-            if RegExMatch(t, "i)Reminder")
+        if (winExe = "OUTLOOK.EXE") {
+            if RegExMatch(winTitle, "i)Reminder") {
                 return false
+            }
         }
     } catch Error {
     }
 
     try {
         root := UIA.ElementFromHandle(hwnd)
-        ; Try to find ANY useful identifiers
-        for type in ["List", "Tree", "Pane", "Window"] {
-            elements := root.FindAll({ Type: type })
-            if elements.Length {
-                return true
+        
+        ; Check UIA properties: Type = Window (50032) and LocalizedType = "dialog"
+        rootType := ""
+        rootLocalizedType := ""
+        rootName := ""
+        try rootType := root.Type
+        try rootLocalizedType := root.LocalizedType
+        try rootName := root.Name
+        
+        ; Primary check: Type must be Window and LocalizedType must be "dialog"
+        if (rootType = UIA.Type.Window && rootLocalizedType = "dialog") {
+            return true
+        }
+        
+        ; Fallback 1: Check if window name matches common file dialog names
+        ; This handles cases where LocalizedType might vary by language/application
+        if (rootType = UIA.Type.Window) {
+            fileDialogNames := ["Save As", "Open", "Browse", "Select File", "Choose File", 
+                               "Salvar como", "Abrir", "Procurar", "Selecionar arquivo",
+                               "Guardar como", "Guardar", "Explorar"]
+            for dialogName in fileDialogNames {
+                if (InStr(rootName, dialogName, false)) {
+                    return true
+                }
             }
         }
-        return true
+        
+        ; Fallback 2: Check for file dialog characteristic elements (Namespace Tree Control, file lists, etc.)
+        ; This is a last resort if UIA properties don't match but it's still a file dialog
+        try {
+            ; Check for Namespace Tree Control in window text (original method as backup)
+            txt := WinGetText("ahk_id " hwnd)
+            if InStr(txt, "Namespace Tree Control") || InStr(txt, "Controle da Ãrvore de Namespace") {
+                return true
+            }
+        } catch {
+            ; Window text check failed, continue
+        }
+        
+        ; If we get here, it's not a file dialog
+        return false
     } catch Error as e {
         return false
     }
