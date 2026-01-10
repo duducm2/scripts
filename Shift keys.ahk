@@ -6239,7 +6239,7 @@ Excel_CSVToColumns(autoSelectSemicolon := false) {
     Excel_AddMultipleRows()    ; Add multiple rows first
     Sleep 200
     Send "^{Up}"
-    Sleep 200
+    Sleep 300
     Send "{Down}"
     Sleep 200
     Send "^v"           ; Ctrl+V (Paste action)

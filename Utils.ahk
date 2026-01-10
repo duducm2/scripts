@@ -229,13 +229,13 @@ InitQuickOpenFiles() {
         "https://www.youtube.com/watch?v=I6ZRH9Mraqw&t=2s",
         "📻 Radio-Tiso Exercises"
     )
-    
+
     ; Register GS_UX core team_UX and CIP Integration Miro
     RegisterQuickOpenFile(
         "https://miro.com/app/board/uXjVJdbNFkA=/",
         "🎨 GS_UX core team_UX and CIP Integration Miro"
     )
-    
+
     ; Register GS_E&S_CIP Dashboard research and design Miro
     RegisterQuickOpenFile(
         "https://miro.com/app/board/uXjVJVZSXvk=/",
@@ -2327,14 +2327,14 @@ FindAndActivatePowerBIFile(filePath) {
 FindAndActivateMiroWindow(url, titleKeywords) {
     ; Normalize title keywords for matching (case-insensitive)
     keywordsLower := StrLower(titleKeywords)
-    
+
     ; Search for Chrome windows with Miro in title
     try {
         for hwnd in WinGetList("ahk_exe chrome.exe") {
             try {
                 winTitle := WinGetTitle("ahk_id " hwnd)
                 winTitleLower := StrLower(Trim(winTitle))
-                
+
                 ; Check if window is a Miro window and contains the keywords
                 if (InStr(winTitleLower, "miro") && InStr(winTitleLower, keywordsLower)) {
                     ; Found matching window, activate it and bring to front
@@ -2344,11 +2344,11 @@ FindAndActivateMiroWindow(url, titleKeywords) {
                         if (WinGetMinMax("ahk_id " hwnd) = -1) {
                             WinRestore("ahk_id " hwnd)
                         }
-                        
+
                         ; Activate the window
                         WinActivate("ahk_id " hwnd)
                         WinWaitActive("ahk_id " hwnd, , 2)
-                        
+
                         ; Bring to front using AlwaysOnTop trick to ensure it's not hidden
                         WinSetAlwaysOnTop("On", "ahk_id " hwnd)
                         Sleep 50
@@ -2356,7 +2356,7 @@ FindAndActivateMiroWindow(url, titleKeywords) {
                     } catch Error as activateErr {
                         ; Even if activation fails, we found the window, so return to prevent opening a new one
                     }
-                    
+
                     ; Return immediately after activating - don't continue searching or open new window
                     return true
                 }
@@ -2368,27 +2368,27 @@ FindAndActivateMiroWindow(url, titleKeywords) {
     } catch {
         ; No Chrome windows found or error accessing them
     }
-    
+
     ; No matching window found, open the URL
     try {
         ; Open URL in Chrome
         Run("chrome.exe --new-window " . url)
-        
+
         ; Wait for window to appear and become active
         ; Wait up to 10 seconds for the window to appear
         WinWait("ahk_exe chrome.exe", , 10)
-        
+
         ; Find the newly opened window by checking for Miro in title
         ; Give it a moment to load
         Sleep(1000)
-        
+
         ; Try to find the window with Miro in title
         loop 10 {
             for hwnd in WinGetList("ahk_exe chrome.exe") {
                 try {
                     winTitle := WinGetTitle("ahk_id " hwnd)
                     winTitleLower := StrLower(Trim(winTitle))
-                    
+
                     if (InStr(winTitleLower, "miro") && InStr(winTitleLower, keywordsLower)) {
                         ; Found the window, activate it
                         ; Ensure window is not minimized first
@@ -2413,7 +2413,7 @@ FindAndActivateMiroWindow(url, titleKeywords) {
             }
             Sleep(500)  ; Wait before next attempt
         }
-        
+
         ; If we couldn't find by title, just activate the most recent Chrome window
         ; This is a fallback in case the title hasn't updated yet
         try {
@@ -2421,7 +2421,7 @@ FindAndActivateMiroWindow(url, titleKeywords) {
             if (chromeWindows.Length > 0) {
                 ; Get the first (most recent) Chrome window
                 hwnd := chromeWindows[1]
-                
+
                 ; Ensure window is not minimized
                 if (WinGetMinMax("ahk_id " hwnd) = -1) {
                     WinRestore("ahk_id " hwnd)
@@ -2437,7 +2437,7 @@ FindAndActivateMiroWindow(url, titleKeywords) {
             }
         } catch {
         }
-        
+
         return true  ; Assume success if we got this far
     } catch Error as e {
         ; Failed to open URL
@@ -2635,7 +2635,7 @@ ShowHotstringSelector() {
 
     ; =============================================================================
     ; Dynamic Modal UI Adaptation Based on Monitor Configuration
-    ; 
+    ;
     ; Monitor Dataset Structure (for reference):
     ; {
     ;   "monitor_dataset": [
@@ -2793,7 +2793,7 @@ ShowHotstringSelector() {
                         isEmpty := true
                     }
 
-                    allItems.Push({category: category, char: char, text: itemText, isEmpty: isEmpty})
+                    allItems.Push({ category: category, char: char, text: itemText, isEmpty: isEmpty })
                     currentCharIndex++
                 }
             }
@@ -2804,7 +2804,7 @@ ShowHotstringSelector() {
     if (currentCharIndex <= g_HotstringCharSequence.Length) {
         while (currentCharIndex <= g_HotstringCharSequence.Length) {
             char := g_HotstringCharSequence[currentCharIndex]
-            allItems.Push({category: "Unassigned", char: char, text: "[" . char . "] > (empty)", isEmpty: true})
+            allItems.Push({ category: "Unassigned", char: char, text: "[" . char . "] > (empty)", isEmpty: true })
             currentCharIndex++
         }
     }
@@ -2821,7 +2821,7 @@ ShowHotstringSelector() {
         }
         return str . spaces
     }
-    
+
     ; Helper function to center string in specified width
     CenterString(str, width) {
         len := StrLen(str)
@@ -2838,7 +2838,7 @@ ShowHotstringSelector() {
         }
         return leftSpaces . str . rightSpaces
     }
-    
+
     ; Helper function to create separator line
     CreateSeparator(width) {
         separator := ""
@@ -2847,10 +2847,10 @@ ShowHotstringSelector() {
         }
         return separator
     }
-    
+
     ; Build display text based on monitor orientation
     displayText := ""
-    
+
     if (isPortrait) {
         ; PORTRAIT MODE: Single-column layout optimized for vertical space
         currentCategory := ""
@@ -2860,18 +2860,18 @@ ShowHotstringSelector() {
                 if (currentCategory != "") {
                     displayText .= "`n"  ; Space between categories
                 }
-                
+
                 ; Update to new category and add category header
                 currentCategory := item.category
                 displayText .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`n"
                 displayText .= currentCategory . "`n"
                 displayText .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`n"
             }
-            
+
             ; Add item
             displayText .= item.text . "`n"
         }
-        
+
         ; Add final spacing
         displayText .= "`n"
     } else {
@@ -2887,15 +2887,15 @@ ShowHotstringSelector() {
         ; Ensure minimum column width
         if (columnWidth < 40)
             columnWidth := 40
-        
+
         ; Total width for category headers (two columns + spacing)
         totalWidth := columnWidth * 2 + 10
         columnSpacing := "    "  ; 4 spaces between columns
-        
+
         ; Build two-column display text with category headers
         currentCategory := ""
         categoryItems := []
-        
+
         ; First, collect items by category and build two-column layout
         for item in allItems {
             if (item.category != currentCategory) {
@@ -2906,24 +2906,24 @@ ShowHotstringSelector() {
                     displayText .= separator . "`n"
                     displayText .= CenterString(currentCategory, totalWidth) . "`n"
                     displayText .= separator . "`n"
-                    
+
                     ; Split category items into two columns
                     midPoint := Ceil(categoryItems.Length / 2)
                     maxLines := categoryItems.Length - midPoint
                     if (midPoint > maxLines)
                         maxLines := midPoint
-                    
+
                     loop maxLines {
                         leftText := ""
                         rightText := ""
-                        
+
                         ; Left column item
                         if (A_Index <= midPoint) {
                             leftText := PadString(categoryItems[A_Index].text, columnWidth)
                         } else {
                             leftText := PadString("", columnWidth)
                         }
-                        
+
                         ; Right column item
                         rightIdx := A_Index + midPoint
                         if (rightIdx <= categoryItems.Length) {
@@ -2931,19 +2931,19 @@ ShowHotstringSelector() {
                         } else {
                             rightText := ""
                         }
-                        
+
                         displayText .= leftText . columnSpacing . rightText . "`n"
                     }
                     displayText .= "`n"  ; Space between categories
                 }
-                
+
                 ; Start new category
                 currentCategory := item.category
                 categoryItems := []
             }
             categoryItems.Push(item)
         }
-        
+
         ; Process last category
         if (currentCategory != "" && categoryItems.Length > 0) {
             ; Add category header spanning both columns
@@ -2951,24 +2951,24 @@ ShowHotstringSelector() {
             displayText .= separator . "`n"
             displayText .= CenterString(currentCategory, totalWidth) . "`n"
             displayText .= separator . "`n"
-            
+
             ; Split category items into two columns
             midPoint := Ceil(categoryItems.Length / 2)
             maxLines := categoryItems.Length - midPoint
             if (midPoint > maxLines)
                 maxLines := midPoint
-            
+
             loop maxLines {
                 leftText := ""
                 rightText := ""
-                
+
                 ; Left column item
                 if (A_Index <= midPoint) {
                     leftText := PadString(categoryItems[A_Index].text, columnWidth)
                 } else {
                     leftText := PadString("", columnWidth)
                 }
-                
+
                 ; Right column item
                 rightIdx := A_Index + midPoint
                 if (rightIdx <= categoryItems.Length) {
@@ -2976,7 +2976,7 @@ ShowHotstringSelector() {
                 } else {
                     rightText := ""
                 }
-                
+
                 displayText .= leftText . columnSpacing . rightText . "`n"
             }
             displayText .= "`n"  ; Space between categories
@@ -2996,7 +2996,7 @@ ShowHotstringSelector() {
     textControlHeight := lineCount * lineHeight
     ; Ensure minimum and maximum bounds
     minHeight := 150
-    
+
     ; Adjust sizing based on orientation
     if (isPortrait) {
         ; PORTRAIT: Prioritize height expansion, use narrower width
@@ -3007,7 +3007,7 @@ ShowHotstringSelector() {
             textControlHeight := minHeight
         if (textControlHeight > maxHeight)
             textControlHeight := maxHeight
-        
+
         ; Narrower width for portrait (optimized for vertical scrolling)
         baseWidth := (monitorWidth < 800) ? 400 : (monitorWidth < 1200) ? 500 : 500
         ; Ensure we don't exceed monitor width with margins
@@ -3022,7 +3022,7 @@ ShowHotstringSelector() {
             textControlHeight := minHeight
         if (textControlHeight > maxHeight)
             textControlHeight := maxHeight
-        
+
         ; Wide width for landscape (two-column layout)
         ; Further reduced width to eliminate empty space: 650px minimum, scale up to 1000px based on monitor width
         baseWidth := (monitorWidth < 1200) ? 650 : (monitorWidth < 1920) ? 800 : 1000
@@ -3330,10 +3330,10 @@ EnableFocusMode() {
 
     g_FocusModeActiveMonitor := activeMon
     g_FocusModeOverlays := []
-    
+
     ; Store the active window handle when focus mode is enabled
     g_FocusModeTrackedWindow := WinExist("A")
-    
+
     ; Start monitoring for window focus changes
     StartFocusModeWindowMonitor()
 
@@ -3420,7 +3420,8 @@ EnableFocusMode() {
 }
 
 DisableFocusMode() {
-    global g_FocusModeOn, g_FocusModeActiveMonitor, g_FocusModeOverlays, g_FocusModeTrackedWindow, g_FocusModeMonitorTimer
+    global g_FocusModeOn, g_FocusModeActiveMonitor, g_FocusModeOverlays, g_FocusModeTrackedWindow,
+        g_FocusModeMonitorTimer
 
     ; Stop monitoring window focus changes
     StopFocusModeWindowMonitor()
@@ -3492,29 +3493,29 @@ ToggleFocusMode() {
 ; Monitor window focus changes and automatically disable focus mode when active window changes
 FocusModeWindowMonitor(*) {
     global g_FocusModeOn, g_FocusModeTrackedWindow
-    
+
     ; Only monitor if focus mode is active
     if (!g_FocusModeOn) {
         return
     }
-    
+
     ; Check if tracked window still exists
     if (g_FocusModeTrackedWindow && !WinExist("ahk_id " . g_FocusModeTrackedWindow)) {
         ; Tracked window was closed - automatically disable focus mode
         DisableFocusMode()
         return
     }
-    
+
     ; Window activation monitoring removed - blackout now only disabled via manual toggle (#!+Y)
 }
 
 ; Start monitoring window focus changes
 StartFocusModeWindowMonitor() {
     global g_FocusModeMonitorTimer
-    
+
     ; Stop any existing timer first
     StopFocusModeWindowMonitor()
-    
+
     ; Start timer to check window focus every 200ms
     g_FocusModeMonitorTimer := SetTimer(FocusModeWindowMonitor, 200)
 }
@@ -3522,7 +3523,7 @@ StartFocusModeWindowMonitor() {
 ; Stop monitoring window focus changes
 StopFocusModeWindowMonitor() {
     global g_FocusModeMonitorTimer
-    
+
     if (g_FocusModeMonitorTimer) {
         try {
             SetTimer(g_FocusModeMonitorTimer, 0)  ; Disable timer
@@ -3916,6 +3917,8 @@ OnExit(CleanupDictationIndicator)
 ~#!+0::
 {
     ToggleDictationMode()
+    ; Soft chime notification to indicate completion
+    SoundBeep(500, 150)
 }
 
 ; Start the check timer automatically when script loads
