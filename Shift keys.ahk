@@ -811,6 +811,7 @@ Excel (Shift)
 ⚪ [W]Select [W]hite Color
 ✏️ [E]Enable [E]diting
 📊 [C][C]SV to columns (semicolon delimited)
+📋 [V]Quickly [V]aste and extract CSV
 ➕ [A][A]dd multiple rows (10 rows)
 🗑️ [R][R]ow removal workflow (remove row, down arrow, repeat 5-7 times)
 📅 [P]Type [P]revious day date
@@ -6185,27 +6186,14 @@ EnsureItemsViewFocus() {
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe EXCEL.EXE") && WinGetClass("A") != "#32770"
 
-; Shift + Y : Select White Color (Up-Arrow, Ctrl-Home, Ctrl-Home)
-+y:: {
-    Send "^{PgUp}"
-}
-
-; Shift + U : Click Enable Editing button
-+u:: {
-    try {
-        root := UIA.ElementFromHandle(WinExist("A"))
-        if (btn := WaitForButton(root, "Enable Editing", 3000)) {
-            btn.Invoke()
-        } else {
-            MsgBox "Couldn't find the Enable Editing button."
-        }
-    } catch Error as err {
-        MsgBox "Error:`n" err.Message
-    }
-}
-
-; Shift + I : Turn CSV delimited by semicolon into columns (Alt, 0, 5, D, Enter, M, Enter, Enter)
-+i:: {
+; Helper function: Convert CSV delimited by semicolon into columns
+Excel_CSVToColumns() {
+    ; #region agent log
+    SafeDebugLog Format(
+        "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:Excel_CSVToColumns`",`"message`":`"CSV to columns function called`",`"data`":{{}},`"sessionId`":`"debug-session`",`"runId`":`"post-fix`",`"hypothesisId`":`"FIXED`"}`n",
+        A_TickCount, Random(1000, 9999), A_Now
+    )
+    ; #endregion
     Send "{Alt}"
     Sleep 100
     Send "0"
@@ -6223,6 +6211,69 @@ EnsureItemsViewFocus() {
     Send "{Enter}"
     Sleep 100
     Send "{Enter}"
+}
+
+; Shift + W : Select White Color (Up-Arrow, Ctrl-Home, Ctrl-Home)
++w:: {
+    Send "^{PgUp}"
+}
+
+; Shift + E : Click Enable Editing button
++e:: {
+    try {
+        root := UIA.ElementFromHandle(WinExist("A"))
+        if (btn := WaitForButton(root, "Enable Editing", 3000)) {
+            btn.Invoke()
+        } else {
+            MsgBox "Couldn't find the Enable Editing button."
+        }
+    } catch Error as err {
+        MsgBox "Error:`n" err.Message
+    }
+}
+
+; Shift + V : Quickly paste and extract CSV (Paste, CSV to columns, Enter)
++v:: {
+    ; #region agent log
+    SafeDebugLog Format(
+        "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:6209`",`"message`":`"Shift+V handler entered`",`"data`":{{}},`"sessionId`":`"debug-session`",`"runId`":`"post-fix`",`"hypothesisId`":`"FIXED`"}`n",
+        A_TickCount, Random(1000, 9999), A_Now
+    )
+    ; #endregion
+    Send "^v"           ; Ctrl+V (Paste action)
+    ; #region agent log
+    SafeDebugLog Format(
+        "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:6210`",`"message`":`"Sent Ctrl+V, before calling CSV function`",`"data`":{{}},`"sessionId`":`"debug-session`",`"runId`":`"post-fix`",`"hypothesisId`":`"FIXED`"}`n",
+        A_TickCount, Random(1000, 9999), A_Now
+    )
+    ; #endregion
+    Sleep 200
+    ; #region agent log
+    SafeDebugLog Format(
+        "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:6212`",`"message`":`"About to call Excel_CSVToColumns function`",`"data`":{{}},`"sessionId`":`"debug-session`",`"runId`":`"post-fix`",`"hypothesisId`":`"FIXED`"}`n",
+        A_TickCount, Random(1000, 9999), A_Now
+    )
+    ; #endregion
+    Excel_CSVToColumns()    ; Call function directly instead of sending keys
+    ; #region agent log
+    SafeDebugLog Format(
+        "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:6212`",`"message`":`"After Excel_CSVToColumns function call`",`"data`":{{}},`"sessionId`":`"debug-session`",`"runId`":`"post-fix`",`"hypothesisId`":`"FIXED`"}`n",
+        A_TickCount, Random(1000, 9999), A_Now
+    )
+    ; #endregion
+    Sleep 200           ; Allow CSV dialog to appear
+    Send "{Enter}"      ; Confirmation action
+}
+
+; Shift + C : Turn CSV delimited by semicolon into columns (Alt, 0, 5, D, Enter, M, Enter, Enter)
++c:: {
+    ; #region agent log
+    SafeDebugLog Format(
+        "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:+c`",`"message`":`"Shift+C handler TRIGGERED`",`"data`":{{}},`"sessionId`":`"debug-session`",`"runId`":`"post-fix`",`"hypothesisId`":`"FIXED`"}`n",
+        A_TickCount, Random(1000, 9999), A_Now
+    )
+    ; #endregion
+    Excel_CSVToColumns()
 }
 
 ; Shift + A : Add multiple rows (repeat Alt, Alt, 0, 2 with delays)
