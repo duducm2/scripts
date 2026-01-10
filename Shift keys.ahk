@@ -6236,6 +6236,12 @@ Excel_CSVToColumns(autoSelectSemicolon := false) {
 
 ; Shift + V : Quickly paste and extract CSV (Paste, CSV to columns)
 +v:: {
+    Excel_AddMultipleRows()    ; Add multiple rows first
+    Sleep 200
+    Send "^{Up}"
+    Sleep 200
+    Send "{Down}"
+    Sleep 200
     Send "^v"           ; Ctrl+V (Paste action)
     Sleep 200
     Excel_CSVToColumns(true)    ; Auto-select semicolon, bypass dialog
@@ -6244,6 +6250,7 @@ Excel_CSVToColumns(autoSelectSemicolon := false) {
     Sleep 200
     Excel_RemoveRows(10)
     Sleep 200
+    Send "^{Up}"
 }
 
 ; Shift + C : Turn CSV delimited by semicolon into columns (Alt, 0, 5, D, Enter, M, Enter, Enter)
@@ -6251,10 +6258,10 @@ Excel_CSVToColumns(autoSelectSemicolon := false) {
     Excel_CSVToColumns()
 }
 
-; Shift + A : Add multiple rows (repeat Alt, Alt, 0, 2 with delays)
-+a:: {
-    ShowSmallLoadingIndicator_ChatGPT("Adding 12 rows...")
-    loop 12 {
+; Helper function: Add multiple rows (repeat Alt, Alt, 0, 2 with delays)
+Excel_AddMultipleRows(count := 15) {
+    ShowSmallLoadingIndicator_ChatGPT("Adding " . count . " rows...")
+    loop count {
         Send "{Alt down}"
         Send "{Alt up}"
         Sleep 100
@@ -6264,6 +6271,11 @@ Excel_CSVToColumns(autoSelectSemicolon := false) {
         Sleep 50
     }
     HideSmallLoadingIndicator_ChatGPT()
+}
+
+; Shift + A : Add multiple rows (repeat Alt, Alt, 0, 2 with delays)
++a:: {
+    Excel_AddMultipleRows()    ; Call function directly
 }
 
 ; Helper function: Row removal workflow (remove row, down arrow, repeat)
