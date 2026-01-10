@@ -6188,12 +6188,6 @@ EnsureItemsViewFocus() {
 
 ; Helper function: Convert CSV delimited by semicolon into columns
 Excel_CSVToColumns() {
-    ; #region agent log
-    SafeDebugLog Format(
-        "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:Excel_CSVToColumns`",`"message`":`"CSV to columns function called`",`"data`":{{}},`"sessionId`":`"debug-session`",`"runId`":`"post-fix`",`"hypothesisId`":`"FIXED`"}`n",
-        A_TickCount, Random(1000, 9999), A_Now
-    )
-    ; #endregion
     Send "{Alt}"
     Sleep 100
     Send "0"
@@ -6234,45 +6228,15 @@ Excel_CSVToColumns() {
 
 ; Shift + V : Quickly paste and extract CSV (Paste, CSV to columns, Enter)
 +v:: {
-    ; #region agent log
-    SafeDebugLog Format(
-        "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:6209`",`"message`":`"Shift+V handler entered`",`"data`":{{}},`"sessionId`":`"debug-session`",`"runId`":`"post-fix`",`"hypothesisId`":`"FIXED`"}`n",
-        A_TickCount, Random(1000, 9999), A_Now
-    )
-    ; #endregion
     Send "^v"           ; Ctrl+V (Paste action)
-    ; #region agent log
-    SafeDebugLog Format(
-        "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:6210`",`"message`":`"Sent Ctrl+V, before calling CSV function`",`"data`":{{}},`"sessionId`":`"debug-session`",`"runId`":`"post-fix`",`"hypothesisId`":`"FIXED`"}`n",
-        A_TickCount, Random(1000, 9999), A_Now
-    )
-    ; #endregion
     Sleep 200
-    ; #region agent log
-    SafeDebugLog Format(
-        "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:6212`",`"message`":`"About to call Excel_CSVToColumns function`",`"data`":{{}},`"sessionId`":`"debug-session`",`"runId`":`"post-fix`",`"hypothesisId`":`"FIXED`"}`n",
-        A_TickCount, Random(1000, 9999), A_Now
-    )
-    ; #endregion
     Excel_CSVToColumns()    ; Call function directly instead of sending keys
-    ; #region agent log
-    SafeDebugLog Format(
-        "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:6212`",`"message`":`"After Excel_CSVToColumns function call`",`"data`":{{}},`"sessionId`":`"debug-session`",`"runId`":`"post-fix`",`"hypothesisId`":`"FIXED`"}`n",
-        A_TickCount, Random(1000, 9999), A_Now
-    )
-    ; #endregion
     Sleep 200           ; Allow CSV dialog to appear
     Send "{Enter}"      ; Confirmation action
 }
 
 ; Shift + C : Turn CSV delimited by semicolon into columns (Alt, 0, 5, D, Enter, M, Enter, Enter)
 +c:: {
-    ; #region agent log
-    SafeDebugLog Format(
-        "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:+c`",`"message`":`"Shift+C handler TRIGGERED`",`"data`":{{}},`"sessionId`":`"debug-session`",`"runId`":`"post-fix`",`"hypothesisId`":`"FIXED`"}`n",
-        A_TickCount, Random(1000, 9999), A_Now
-    )
-    ; #endregion
     Excel_CSVToColumns()
 }
 
