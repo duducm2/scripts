@@ -6187,7 +6187,8 @@ EnsureItemsViewFocus() {
 #HotIf WinActive("ahk_exe EXCEL.EXE") && WinGetClass("A") != "#32770"
 
 ; Helper function: Convert CSV delimited by semicolon into columns
-Excel_CSVToColumns() {
+; autoSelectSemicolon: If true, automatically selects semicolon without showing dialog. If false, shows confirmation dialog.
+Excel_CSVToColumns(autoSelectSemicolon := false) {
     Send "{Alt}"
     Sleep 100
     Send "0"
@@ -6198,9 +6199,16 @@ Excel_CSVToColumns() {
     Sleep 100
     Send "{Enter}"
     Sleep 100
-    if MsgBox("If 'semicolon' is not selected, hit yes", "Confirm", "YesNo Icon?") = "Yes" {
+    if (autoSelectSemicolon) {
+        ; Automatically select semicolon without dialog
         Send "m"
         Sleep 100
+    } else {
+        ; Show confirmation dialog for user to decide
+        if MsgBox("If 'semicolon' is not selected, hit yes", "Confirm", "YesNo Icon?") = "Yes" {
+            Send "m"
+            Sleep 100
+        }
     }
     Send "{Enter}"
     Sleep 100
@@ -6226,13 +6234,11 @@ Excel_CSVToColumns() {
     }
 }
 
-; Shift + V : Quickly paste and extract CSV (Paste, CSV to columns, Enter)
+; Shift + V : Quickly paste and extract CSV (Paste, CSV to columns)
 +v:: {
     Send "^v"           ; Ctrl+V (Paste action)
     Sleep 200
-    Excel_CSVToColumns()    ; Call function directly instead of sending keys
-    Sleep 200           ; Allow CSV dialog to appear
-    Send "{Enter}"      ; Confirmation action
+    Excel_CSVToColumns(true)    ; Auto-select semicolon, bypass dialog
 }
 
 ; Shift + C : Turn CSV delimited by semicolon into columns (Alt, 0, 5, D, Enter, M, Enter, Enter)
