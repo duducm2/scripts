@@ -6239,6 +6239,11 @@ Excel_CSVToColumns(autoSelectSemicolon := false) {
     Send "^v"           ; Ctrl+V (Paste action)
     Sleep 200
     Excel_CSVToColumns(true)    ; Auto-select semicolon, bypass dialog
+    Sleep 200
+    Send "{Down}"
+    Sleep 200
+    Excel_RemoveRows(10)
+    Sleep 200
 }
 
 ; Shift + C : Turn CSV delimited by semicolon into columns (Alt, 0, 5, D, Enter, M, Enter, Enter)
@@ -6261,15 +6266,15 @@ Excel_CSVToColumns(autoSelectSemicolon := false) {
     HideSmallLoadingIndicator_ChatGPT()
 }
 
-; Shift + R : Row removal workflow (remove row, down arrow, repeat 5-7 times)
+; Helper function: Row removal workflow (remove row, down arrow, repeat)
 ; Pre-condition: Place cursor in starting cell
 ; Step 1: Execute REMOVE ROW SHORTCUT (Alt, Alt, 3, R)
 ; Step 2: Press DOWN ARROW
-; Step 3: Repeat Step 1 and Step 2 for 5 to 7 iterations
+; Step 3: Repeat Step 1 and Step 2 for specified iterations
 ; Purpose: Remove alternating sequences of empty and populated rows
-+r:: {
+Excel_RemoveRows(iterations := 8) {
     ShowSmallLoadingIndicator_ChatGPT("Removing rows...")
-    loop 8 {  ; Using 8 as middle ground between 5-7 iterations
+    loop iterations {
         ; Execute Remove Row shortcut (Alt, Alt, 3, R)
         Send "{Alt down}"
         Send "{Alt up}"
@@ -6283,6 +6288,11 @@ Excel_CSVToColumns(autoSelectSemicolon := false) {
         Sleep 150
     }
     HideSmallLoadingIndicator_ChatGPT()
+}
+
+; Shift + R : Row removal workflow (remove row, down arrow, repeat 5-7 times)
++r:: {
+    Excel_RemoveRows()    ; Call function directly
 }
 
 ; Shift + P : Type previous day date
