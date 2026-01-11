@@ -405,8 +405,9 @@ ExecuteCursorAction(choice) {
             WinActivate
             WinWaitActive("ahk_exe Cursor.exe", "", 2)
         } else {
-            target := IS_WORK_ENVIRONMENT ? "C:\\Users\\fie7ca\\AppData\\Local\\Programs\\cursor\\Cursor.exe" :
-                "C:\\Users\\eduev\\AppData\\Local\\Programs\\cursor\\Cursor.exe"
+            target := IS_WORK_ENVIRONMENT ?
+                "C:\\Users\\fie7ca\\AppData\\Local\\Programs\\cursor\\Cursor.exe" :
+                    "C:\\Users\\eduev\\AppData\\Local\\Programs\\cursor\\Cursor.exe"
             Run target
             WinWaitActive("ahk_exe Cursor.exe", "", 10)
         }
@@ -1863,7 +1864,8 @@ HandleLoopModeUp() {
 ; Activate Hunt and Peck
 ; Hotkey: Win+Alt+Shift+X
 ; Original File: Hunt and Peck.ahk
-; Note: A short press activates Hunt and Peck. A long press (>1s) will activate
+; Note: A short press activates Hunt and Peck.
+;       A long press (>1s) will activate
 ;       loop mode, which will continuously reactivate Hunt and Peck after each
 ;       selection until either long pressed again or max iterations reached.
 ; =============================================================================
@@ -2108,7 +2110,7 @@ ActivateHnP() {
 
 ; -----------------------------------------------------------------------------
 ; Helper: Schedule multiple attempts to close Hunt-and-Peck after single activation
-;           Provides redundancy in case the first attempt fails or HnP hangs.
+; Provides redundancy in case the first attempt fails or HnP hangs.
 ; -----------------------------------------------------------------------------
 ScheduleHnPCleanup() {
     global g_HnPLoopActive
@@ -2984,7 +2986,6 @@ ShowHotstringSelector() {
     }
 
     displayText .= "Press Escape to cancel."
-
     ; Calculate text control height based on actual content (number of lines)
     ; Count actual lines in displayText (including empty lines for spacing)
     lineCount := 1  ; Start at 1 (first line doesn't have a newline before it)
@@ -3157,98 +3158,14 @@ global g_FocusModeOverlays := []  ; array of GUI overlays (one per covered monit
 global g_FocusModeTrackedWindow := 0  ; window handle that was active when focus mode was enabled
 global g_FocusModeMonitorTimer := false  ; timer for monitoring window focus changes
 
-FocusDbg_EscapeJson(s) {
-    s := StrReplace(s, "\", "\\")
-    s := StrReplace(s, '"', '\"')
-    s := StrReplace(s, "`r", "")
-    s := StrReplace(s, "`n", "\n")
-    return s
-}
-
-FocusDbg_JsonVal(v) {
-    if (IsNumber(v)) {
-        return v
-    }
-    return '"' FocusDbg_EscapeJson(String(v)) '"'
-}
-
-FocusDbgLog(hypothesisId, location, message, data := 0, runId := "pre-fix") {
-    ; Writes NDJSON lines to: <scriptdir>\.cursor\debug.log
-    logPath := A_ScriptDir "\.cursor\debug.log"
-    ts := DllCall("GetTickCount64", "uint64")
-
-    dataJson := "{}"
-    if (IsObject(data)) {
-        parts := []
-        for k, v in data {
-            parts.Push('"' FocusDbg_EscapeJson(String(k)) '":' FocusDbg_JsonVal(v))
-        }
-        dataJson := "{" StrJoin(parts, ",") "}"
-    }
-
-    line := '{'
-        . '"sessionId":"debug-session",'
-        . '"runId":"' FocusDbg_EscapeJson(runId) '",'
-        . '"hypothesisId":"' FocusDbg_EscapeJson(hypothesisId) '",'
-        . '"location":"' FocusDbg_EscapeJson(location) '",'
-        . '"message":"' FocusDbg_EscapeJson(message) '",'
-        . '"timestamp":' ts ','
-        . '"data":' dataJson
-        . '}'
-
-    try FileAppend(line "`n", logPath, "UTF-8")
-}
-
-StrJoin(arr, delim := ",") {
-    if (!IsObject(arr) || arr.Length = 0) {
-        return ""
-    }
-    out := ""
-    for i, s in arr {
-        out .= (i = 1 ? s : delim s)
-    }
-    return out
-}
-
-FocusDbg_TryGetMonitorDpiFromRect(l, t, r, b, &dpiX, &dpiY) {
-    dpiX := ""
-    dpiY := ""
-    try {
-        cx := l + (r - l) // 2
-        cy := t + (b - t) // 2
-        pt := (cy << 32) | (cx & 0xFFFFFFFF)
-        hMon := DllCall("MonitorFromPoint", "int64", pt, "uint", 2, "ptr") ; MONITOR_DEFAULTTONEAREST=2
-        if (!hMon) {
-            return false
-        }
-        x := 0, y := 0
-        ; MDT_EFFECTIVE_DPI = 0
-        hr := DllCall("Shcore\GetDpiForMonitor", "ptr", hMon, "int", 0, "uint*", &x, "uint*", &y, "uint")
-        if (hr != 0) {
-            return false
-        }
-        dpiX := x
-        dpiY := y
-        return true
-    } catch {
-        return false
-    }
-}
-
 GetActiveMonitorIndex() {
     hwnd := WinExist("A")
     if (!hwnd) {
-        ;#region agent log
-        FocusDbgLog("H4", "Utils.ahk:GetActiveMonitorIndex", "No active hwnd", Map("hwnd", 0))
-        ;#endregion agent log
         return 0
     }
 
     rect := Buffer(16, 0)
     if (!DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)) {
-        ;#region agent log
-        FocusDbgLog("H4", "Utils.ahk:GetActiveMonitorIndex", "GetWindowRect failed", Map("hwnd", hwnd))
-        ;#endregion agent log
         return 0
     }
 
@@ -3264,25 +3181,10 @@ GetActiveMonitorIndex() {
     loop monitorCount {
         MonitorGet(A_Index, &ml, &mt, &mr, &mb)
         if (centerX >= ml && centerX <= mr && centerY >= mt && centerY <= mb) {
-            ;#region agent log
-            FocusDbgLog("H2", "Utils.ahk:GetActiveMonitorIndex", "Matched monitor by center point", Map(
-                "hwnd", hwnd,
-                "centerX", centerX, "centerY", centerY,
-                "matchedMonitor", A_Index,
-                "ml", ml, "mt", mt, "mr", mr, "mb", mb
-            ))
-            ;#endregion agent log
             return A_Index
         }
     }
 
-    ;#region agent log
-    FocusDbgLog("H4", "Utils.ahk:GetActiveMonitorIndex", "No monitor matched center point", Map(
-        "hwnd", hwnd,
-        "centerX", centerX, "centerY", centerY,
-        "monitorCount", monitorCount
-    ))
-    ;#endregion agent log
     return 0
 }
 
@@ -3303,12 +3205,6 @@ EnableFocusMode() {
 
     ; If already enabled (by flag or by existing overlays), clean up and return
     if (g_FocusModeOn || hasActiveOverlays) {
-        ;#region agent log
-        FocusDbgLog("H5", "Utils.ahk:EnableFocusMode", "Already enabled; cleaning up stale state", Map(
-            "g_FocusModeOn", g_FocusModeOn,
-            "hasActiveOverlays", hasActiveOverlays
-        ))
-        ;#endregion agent log
         ; If overlays exist but flag is wrong, fix the state
         if (hasActiveOverlays && !g_FocusModeOn) {
             ; Clean up the orphaned overlays first
@@ -3321,10 +3217,6 @@ EnableFocusMode() {
 
     activeMon := GetActiveMonitorIndex()
     if (!activeMon) {
-        ;#region agent log
-        FocusDbgLog("H4", "Utils.ahk:EnableFocusMode", "Active monitor detection failed; abort", Map("activeMon",
-            activeMon))
-        ;#endregion agent log
         return
     }
 
@@ -3339,35 +3231,11 @@ EnableFocusMode() {
 
     monitorCount := MonitorGetCount()
 
-    ;#region agent log
-    ctx := 0, awareness := ""
-    try {
-        ctx := DllCall("GetProcessDpiAwarenessContext", "ptr")
-        awareness := DllCall("GetAwarenessFromDpiAwarenessContext", "ptr", ctx, "int")
-    }
-    FocusDbgLog("H1", "Utils.ahk:EnableFocusMode", "DPI + monitor count snapshot", Map(
-        "activeMon", activeMon,
-        "monitorCount", monitorCount,
-        "dpiContextPtr", ctx,
-        "dpiAwareness", awareness
-    ))
-    ;#endregion agent log
-
     loop monitorCount {
         MonitorGet(A_Index, &ml, &mt, &mr, &mb)
         name := ""
         dx := "", dy := ""
         try name := MonitorGetName(A_Index)
-        try FocusDbg_TryGetMonitorDpiFromRect(ml, mt, mr, mb, &dx, &dy)
-        ;#region agent log
-        FocusDbgLog("H2", "Utils.ahk:EnableFocusMode", "MonitorGet bounds", Map(
-            "i", A_Index,
-            "name", name,
-            "dpiX", dx, "dpiY", dy,
-            "ml", ml, "mt", mt, "mr", mr, "mb", mb,
-            "w", mr - ml, "h", mb - mt
-        ))
-        ;#endregion agent log
     }
 
     loop monitorCount {
@@ -3395,25 +3263,6 @@ EnableFocusMode() {
         rect := Buffer(16, 0)
         ok := 0
         try ok := DllCall("GetWindowRect", "ptr", overlay.Hwnd, "ptr", rect)
-        if (ok) {
-            wl := NumGet(rect, 0, "int"), wt := NumGet(rect, 4, "int")
-            wr := NumGet(rect, 8, "int"), wb := NumGet(rect, 12, "int")
-            ;#region agent log
-            FocusDbgLog("H3", "Utils.ahk:EnableFocusMode", "Overlay shown; actual rect", Map(
-                "monitorIndex", i,
-                "targetL", l, "targetT", t, "targetW", w, "targetH", h,
-                "actualL", wl, "actualT", wt, "actualR", wr, "actualB", wb,
-                "actualW", wr - wl, "actualH", wb - wt
-            ))
-            ;#endregion agent log
-        } else {
-            ;#region agent log
-            FocusDbgLog("H3", "Utils.ahk:EnableFocusMode", "Overlay shown; GetWindowRect failed", Map(
-                "monitorIndex", i,
-                "targetL", l, "targetT", t, "targetW", w, "targetH", h
-            ))
-            ;#endregion agent log
-        }
     }
 
     g_FocusModeOn := true
@@ -3444,13 +3293,6 @@ DisableFocusMode() {
 
 ToggleFocusMode() {
     global g_FocusModeOn, g_FocusModeOverlays
-    ;#region agent log
-    FocusDbgLog("H5", "Utils.ahk:ToggleFocusMode", "Toggle invoked", Map(
-        "g_FocusModeOn_before", g_FocusModeOn,
-        "overlaysCount", g_FocusModeOverlays ? g_FocusModeOverlays.Length : 0,
-        "hwndActive", WinExist("A")
-    ))
-    ;#endregion agent log
 
     ; Check if focus mode is actually active by verifying both state and overlays
     ; This prevents adding layers when state is out of sync
@@ -3467,14 +3309,6 @@ ToggleFocusMode() {
 
     ; Determine actual state: if overlays exist OR flag is set, consider it ON
     actualState := g_FocusModeOn || hasActiveOverlays
-
-    ;#region agent log
-    FocusDbgLog("H5", "Utils.ahk:ToggleFocusMode", "State check", Map(
-        "g_FocusModeOn", g_FocusModeOn,
-        "hasActiveOverlays", hasActiveOverlays,
-        "actualState", actualState
-    ))
-    ;#endregion agent log
 
     if (actualState) {
         ; Focus mode is on - disable it
@@ -3568,60 +3402,24 @@ StopFocusModeWindowMonitor() {
 #InputLevel 10
 Escape::
 {
-    ;#region agent log
-    FocusDbgLog("H1", "Utils.ahk:Escape", "Escape hotkey triggered", Map("timestamp", A_TickCount))
-    ;#endregion agent log
-
     ; Use state-based blocking: check g_DictationActive instead of checking window each time
     ; This ensures Esc remains restricted for the entire duration of dictation
     global g_DictationActive
 
-    ;#region agent log
-    FocusDbgLog("H2", "Utils.ahk:Escape", "State-based check", Map(
-        "g_DictationActive", g_DictationActive,
-        "note", "Using state variable instead of window check"
-    ))
-    ;#endregion agent log
-
     ; Block Escape if dictation is active (state-based, no timeout)
     ; This restriction remains for the entire duration of dictation
     if (g_DictationActive) {
-        ;#region agent log
-        FocusDbgLog("H3", "Utils.ahk:Escape", "Blocking Escape (dictation active)", Map(
-            "blocking", true,
-            "returning", true,
-            "reason", "Dictation state is active - Esc restricted"
-        ))
-        ;#endregion agent log
-
         ; Block Escape from reaching handy.exe - do nothing
         ; This prevents the dictation software from closing
         ; Restriction remains active for entire dictation duration (no timeout)
         return
     }
 
-    ;#region agent log
-    FocusDbgLog("H3", "Utils.ahk:Escape", "Forwarding Escape to system", Map(
-        "blocking", false,
-        "forwarding", true,
-        "reason", "Dictation not active - Esc allowed"
-    ))
-    ;#endregion agent log
-
     ; Otherwise, forward Escape to the system
     ; Use SendInput for more reliable key forwarding
     SendInput "{Escape}"
-
-    ;#region agent log
-    FocusDbgLog("H3", "Utils.ahk:Escape", "Escape forwarded", Map("afterSend", true))
-    ;#endregion agent log
 }
 #InputLevel 0
-
-;#region agent log
-; Log that Escape hotkey section was loaded
-FocusDbgLog("H1", "Utils.ahk", "Escape hotkey registered", Map("inputLevel", 10, "useHook", true))
-;#endregion agent log
 
 ; =============================================================================
 ; Dictation Indicator - Red Pulsing Square
@@ -3828,22 +3626,6 @@ PlayDictationCompletionChime(*) {
     ; Only play if flag was set (prevent duplicate execution)
     if (chimeShouldPlay) {
         SafePlayDictationSound(g_DictationStopSound)
-
-        ; #region agent log
-        FocusDbgLog("I", "Utils.ahk:PlayDictationCompletionChime", "Transcription complete - completion chime played",
-            Map(
-                "flagValue_before", chimeShouldPlay,
-                "flagValue_after", g_DictationCompletionChimeScheduled
-            ))
-        ; #endregion
-    } else {
-        ; #region agent log
-        FocusDbgLog("L", "Utils.ahk:PlayDictationCompletionChime",
-            "Completion chime skipped (already played or not scheduled)", Map(
-                "flagValue_before", chimeShouldPlay,
-                "flagValue_after", g_DictationCompletionChimeScheduled
-            ))
-        ; #endregion
     }
 }
 
@@ -3853,13 +3635,6 @@ PlayDictationCompletionChime(*) {
 CheckDictationRecordingWindow() {
     global g_DictationActive, g_DictationCompletionChimeScheduled
 
-    ; #region agent log
-    FocusDbgLog("A", "Utils.ahk:CheckDictationRecordingWindow", "Function called", Map(
-        "previousState", g_DictationActive,
-        "calledFrom", "timer_or_manual"
-    ))
-    ; #endregion
-
     ; Step 2: Check if the "Recording" window exists
     windowExists := false
     try {
@@ -3868,22 +3643,8 @@ CheckDictationRecordingWindow() {
         windowExists := false
     }
 
-    ; #region agent log
-    FocusDbgLog("B", "Utils.ahk:CheckDictationRecordingWindow", "State check complete", Map(
-        "windowExists", windowExists,
-        "previousState", g_DictationActive
-    ))
-    ; #endregion
-
     ; Step 3: Handle Start - if window exists AND not active
     if (windowExists && !g_DictationActive) {
-        ; #region agent log
-        FocusDbgLog("S1", "Utils.ahk:CheckDictationRecordingWindow", "Start transition - window exists, activating",
-            Map(
-                "previousState", g_DictationActive
-            ))
-        ; #endregion
-
         g_DictationActive := true
 
         ; Run PowerShell script to set mic volume to 100%
@@ -3902,24 +3663,9 @@ CheckDictationRecordingWindow() {
 
         ; Play start chime (throttled by audio firewall)
         SafePlayDictationSound(g_DictationStartSound)
-
-        ; #region agent log
-        FocusDbgLog("S2", "Utils.ahk:CheckDictationRecordingWindow",
-            "Start transition complete - chime played",
-            Map(
-                "newState", g_DictationActive
-            ))
-        ; #endregion
     }
     ; Step 4: Handle Stop - if window does NOT exist AND active
     else if (!windowExists && g_DictationActive) {
-        ; #region agent log
-        FocusDbgLog("ST1", "Utils.ahk:CheckDictationRecordingWindow", "Stop transition - window missing, deactivating",
-            Map(
-                "previousState", g_DictationActive
-            ))
-        ; #endregion
-
         g_DictationActive := false
 
         StopDictationPulseTimer()
@@ -3928,15 +3674,6 @@ CheckDictationRecordingWindow() {
         ; Schedule completion chime
         g_DictationCompletionChimeScheduled := true
         SetTimer(PlayDictationCompletionChime, -2500)
-
-        ; #region agent log
-        FocusDbgLog("ST2", "Utils.ahk:CheckDictationRecordingWindow",
-            "Stop transition complete - completion chime scheduled",
-            Map(
-                "newState", g_DictationActive,
-                "chimeScheduled", g_DictationCompletionChimeScheduled
-            ))
-        ; #endregion
     }
     ; If already active and window exists, just update indicator position
     else if (g_DictationActive && windowExists) {
@@ -3982,25 +3719,12 @@ ToggleDictationMode() {
 EndDictation() {
     global g_DictationActive
 
-    ;#region agent log
-    FocusDbgLog("H1", "Utils.ahk:EndDictation", "Forcing dictation to end", Map(
-        "previousState", g_DictationActive
-    ))
-    ;#endregion agent log
-
     ; Immediately set state to inactive
     g_DictationActive := false
 
     ; Hide indicator and stop timers
     StopDictationPulseTimer()
     HideDictationIndicator()
-
-    ;#region agent log
-    FocusDbgLog("H2", "Utils.ahk:EndDictation", "Dictation ended", Map(
-        "newState", g_DictationActive,
-        "indicatorHidden", true
-    ))
-    ;#endregion agent log
 }
 
 ; Cleanup dictation indicator resources
@@ -4017,20 +3741,8 @@ OnExit(CleanupDictationIndicator)
 ; The ~ prefix allows the key combination to pass through to handy.exe
 ~#!+0::
 {
-    ; #region agent log
-    FocusDbgLog("D", "Utils.ahk:~#!+0", "Hotkey pressed", Map(
-        "currentState", g_DictationActive
-    ))
-    ; #endregion
-
     ; Just trigger the check - chimes are handled by state transitions
     ToggleDictationMode()
-
-    ; #region agent log
-    FocusDbgLog("E", "Utils.ahk:~#!+0", "ToggleDictationMode called", Map(
-        "note", "Chimes handled by state transitions, not hotkey"
-    ))
-    ; #endregion
 }
 
 ; Start the check timer automatically when script loads
