@@ -3637,6 +3637,8 @@ global g_DictationCheckTimer := false  ; Timer to check if Recording window stil
 global g_DictationPulseDirection := 1  ; 1 = fading in, -1 = fading out
 global g_DictationPulseOpacity := 128  ; Current opacity (50-255)
 global g_LastActiveMonitor := 0  ; Track last monitor to detect changes
+global g_DictationCompletionChimeScheduled := false  ; Flag to prevent multiple completion chimes
+global g_VerifyStopTimer := false  ; Timer for delayed stop verification
 
 ; Constants for dictation indicator
 global DICTATION_SQUARE_SIZE := 150  ; 3x bigger (was 50)
@@ -3797,29 +3799,88 @@ StopDictationPulseTimer() {
     }
 }
 
+; Play completion chime after transcription finishes
+PlayDictationCompletionChime(*) {
+    global g_DictationCompletionChimeScheduled
+
+    ; CRITICAL: Test-and-set pattern - clear flag IMMEDIATELY to prevent duplicates
+    ; Read flag value, clear it immediately, then check if we should play
+    chimeShouldPlay := g_DictationCompletionChimeScheduled
+    g_DictationCompletionChimeScheduled := false  ; Clear IMMEDIATELY to prevent other calls
+
+    ; Only play if flag was set (prevent duplicate execution)
+    if (chimeShouldPlay) {
+        SoundBeep(500, 150)
+
+        ; #region agent log
+        FocusDbgLog("I", "Utils.ahk:PlayDictationCompletionChime", "Transcription complete - completion chime played",
+            Map(
+                "flagValue_before", chimeShouldPlay,
+                "flagValue_after", g_DictationCompletionChimeScheduled
+            ))
+        ; #endregion
+    } else {
+        ; #region agent log
+        FocusDbgLog("L", "Utils.ahk:PlayDictationCompletionChime",
+            "Completion chime skipped (already played or not scheduled)", Map(
+                "flagValue_before", chimeShouldPlay,
+                "flagValue_after", g_DictationCompletionChimeScheduled
+            ))
+        ; #endregion
+    }
+}
+
 ; Check if Recording window still exists and update indicator accordingly
 ; Also updates indicator position to follow active window
+; Refactored with asymmetric state transitions: immediate start, delayed stop verification
 CheckDictationRecordingWindow() {
-    global g_DictationActive
+    global g_DictationActive, g_DictationCompletionChimeScheduled, g_VerifyStopTimer
+
+    ; #region agent log
+    FocusDbgLog("A", "Utils.ahk:CheckDictationRecordingWindow", "Function called", Map(
+        "previousState", g_DictationActive,
+        "calledFrom", "timer_or_manual"
+    ))
+    ; #endregion
 
     ; Check if the "Recording" window exists
-    recordingWindowExists := false
+    windowExists := false
     try {
-        recordingWindowExists := WinExist("Recording ahk_exe handy.exe")
+        windowExists := WinExist("Recording ahk_exe handy.exe")
     } catch {
-        recordingWindowExists := false
+        windowExists := false
     }
 
-    ; Update state based on whether Recording window exists
-    newState := (recordingWindowExists > 0)
+    ; #region agent log
+    FocusDbgLog("B", "Utils.ahk:CheckDictationRecordingWindow", "State check complete", Map(
+        "windowExists", windowExists,
+        "previousState", g_DictationActive
+    ))
+    ; #endregion
 
-    ; Update if state changed
-    if (newState != g_DictationActive) {
-        g_DictationActive := newState
+    if (windowExists) {
+        ; Window exists - handle START transition (IMMEDIATE)
+        ; Cancel any pending VerifyStop timer immediately
+        if (g_VerifyStopTimer) {
+            SetTimer(g_VerifyStopTimer, 0)
+            g_VerifyStopTimer := false
+            ; #region agent log
+            FocusDbgLog("C1", "Utils.ahk:CheckDictationRecordingWindow", "Cancelled pending VerifyStop timer", Map())
+            ; #endregion
+        }
 
-        if (g_DictationActive) {
-            ; Recording window appeared - set mic volume FIRST, then show indicator
-            ; Run PowerShell script to set mic volume to 100% (synchronously to ensure it completes first)
+        ; If currently inactive, transition to active immediately
+        if (!g_DictationActive) {
+            ; #region agent log
+            FocusDbgLog("S1", "Utils.ahk:CheckDictationRecordingWindow", "Start transition - window exists, activating",
+                Map(
+                    "previousState", g_DictationActive
+                ))
+            ; #endregion
+
+            g_DictationActive := true
+
+            ; Run PowerShell script to set mic volume to 100%
             try {
                 micVolumeScript := A_ScriptDir "\scripts\Set-MicVolume.ps1"
                 if (FileExist(micVolumeScript)) {
@@ -3829,17 +3890,109 @@ CheckDictationRecordingWindow() {
                 ; Silently handle errors - don't interrupt dictation if script fails
             }
 
-            ; Only after mic volume is set, show indicator and start timer
+            ; Show indicator and start pulse timer
             ShowDictationIndicator()
             StartDictationPulseTimer()
+
+            ; Play start chime immediately
+            SoundBeep(500, 150)
+
+            ; #region agent log
+            FocusDbgLog("S2", "Utils.ahk:CheckDictationRecordingWindow", "Start transition complete - chime played",
+                Map(
+                    "newState", g_DictationActive
+                ))
+            ; #endregion
         } else {
-            ; Recording window disappeared - hide indicator
-            StopDictationPulseTimer()
-            HideDictationIndicator()
+            ; Already active - just update indicator position
+            ShowDictationIndicator()  ; This will reposition if monitor changed
         }
-    } else if (g_DictationActive) {
-        ; Recording is active - update indicator position to follow active window
-        ShowDictationIndicator()  ; This will reposition if monitor changed
+    } else {
+        ; Window does NOT exist - handle STOP transition (DELAYED/VERIFIED)
+        if (g_DictationActive) {
+            ; Currently active - do NOT update state yet
+            ; Start VerifyStop timer if not already running
+            if (!g_VerifyStopTimer) {
+                ; #region agent log
+                FocusDbgLog("ST1", "Utils.ahk:CheckDictationRecordingWindow",
+                    "Window missing - starting VerifyStop timer", Map(
+                        "currentState", g_DictationActive
+                    ))
+                ; #endregion
+
+                g_VerifyStopTimer := VerifyDictationStop
+                SetTimer(g_VerifyStopTimer, -500)  ; 500ms delay, one-time
+
+                ; #region agent log
+                FocusDbgLog("ST2", "Utils.ahk:CheckDictationRecordingWindow", "VerifyStop timer started", Map(
+                    "delay", "500ms"
+                ))
+                ; #endregion
+            } else {
+                ; #region agent log
+                FocusDbgLog("ST3", "Utils.ahk:CheckDictationRecordingWindow",
+                    "Window missing - VerifyStop timer already running", Map(
+                        "currentState", g_DictationActive
+                    ))
+                ; #endregion
+            }
+        }
+        ; If already inactive, do nothing
+    }
+}
+
+; Verify that dictation has actually stopped (window is still missing after delay)
+; This prevents false positives from window flapping during initialization
+VerifyDictationStop(*) {
+    global g_DictationActive, g_DictationCompletionChimeScheduled, g_VerifyStopTimer
+
+    ; #region agent log
+    FocusDbgLog("VS1", "Utils.ahk:VerifyDictationStop", "Verifying stop transition", Map(
+        "currentState", g_DictationActive
+    ))
+    ; #endregion
+
+    ; Clear timer reference
+    g_VerifyStopTimer := false
+
+    ; Check window one last time
+    windowExists := false
+    try {
+        windowExists := WinExist("Recording ahk_exe handy.exe")
+    } catch {
+        windowExists := false
+    }
+
+    if (!windowExists) {
+        ; Window is still missing - commit to inactive state
+        ; #region agent log
+        FocusDbgLog("VS2", "Utils.ahk:VerifyDictationStop", "Window still missing - committing stop", Map(
+            "previousState", g_DictationActive
+        ))
+        ; #endregion
+
+        g_DictationActive := false
+
+        StopDictationPulseTimer()
+        HideDictationIndicator()
+
+        ; Schedule completion chime
+        g_DictationCompletionChimeScheduled := true
+        SetTimer(PlayDictationCompletionChime, -2500)
+
+        ; #region agent log
+        FocusDbgLog("VS3", "Utils.ahk:VerifyDictationStop", "Stop committed - completion chime scheduled", Map(
+            "newState", g_DictationActive,
+            "chimeScheduled", g_DictationCompletionChimeScheduled
+        ))
+        ; #endregion
+    } else {
+        ; Window has reappeared - retain active state, do nothing
+        ; #region agent log
+        FocusDbgLog("VS4", "Utils.ahk:VerifyDictationStop", "Window reappeared - retaining active state", Map(
+            "currentState", g_DictationActive
+        ))
+        ; #endregion
     }
 }
 
@@ -3916,9 +4069,20 @@ OnExit(CleanupDictationIndicator)
 ; The ~ prefix allows the key combination to pass through to handy.exe
 ~#!+0::
 {
+    ; #region agent log
+    FocusDbgLog("D", "Utils.ahk:~#!+0", "Hotkey pressed", Map(
+        "currentState", g_DictationActive
+    ))
+    ; #endregion
+
+    ; Just trigger the check - chimes are handled by state transitions
     ToggleDictationMode()
-    ; Soft chime notification to indicate completion
-    SoundBeep(500, 150)
+
+    ; #region agent log
+    FocusDbgLog("E", "Utils.ahk:~#!+0", "ToggleDictationMode called", Map(
+        "note", "Chimes handled by state transitions, not hotkey"
+    ))
+    ; #endregion
 }
 
 ; Start the check timer automatically when script loads
