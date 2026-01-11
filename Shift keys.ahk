@@ -1242,7 +1242,7 @@ ShowGlobalShortcutsHelp() {
 
 === AVAILABLE (unused) ===
 [Win+Alt+Shift+O] > Empty
-[Win+Alt+Shift+J] > Empty
+[Win+Alt+Shift+P] > Empty
 
 === PROJECT SELECTOR ===
 [Win+Alt+Shift+L] > Project Quick Selector (opens project folder in Cursor)
@@ -1260,7 +1260,7 @@ r=== CLIP ANGEL ===
 [Win+Alt+Shift+I] > Opens Gemini
 [Win+Alt+Shift+8] > Get word pronunciation, definition, and Portuguese translation (Gemini)
 [Win+Alt+Shift+7] > Read aloud the last message in Gemini
-[Win+Alt+Shift+P] > Copy the last message in Gemini
+[Win+Alt+Shift+J] > Copy the last message in Gemini
 
 === YOUTUBE ===
 [Win+Alt+Shift+H] > Activates Youtube

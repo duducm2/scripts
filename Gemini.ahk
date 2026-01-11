@@ -507,13 +507,8 @@ CenterMouse() {
     }
 }
 
-; Win+Alt+Shift+J : (empty)
+; Win+Alt+Shift+J : Click the last Copy button in Gemini (activates Gemini window first, then copies the preceding message)
 #!+j:: {
-    ; Empty for now
-}
-
-; Win+Alt+Shift+P : Click the last Copy button in Gemini (activates Gemini window first, then copies the preceding message)
-#!+p:: {
     try {
         ; Step 1: Activate Gemini window globally
         SetTitleMatchMode(2)
