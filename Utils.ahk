@@ -3602,6 +3602,7 @@ StopDictationPulseTimer() {
 ; Audio firewall: Throttle dictation sounds to prevent duplicates
 ; Enforces a minimum 1000ms gap between sounds regardless of how many times logic fires
 SafePlayDictationSound(filePath) {
+    Critical  ; Prevents thread interruption - ensures atomic check-and-update sequence
     global g_LastDictationSoundTick
 
     ; If less than 1000ms has passed since last sound, ignore this call
@@ -3635,7 +3636,7 @@ PlayDictationCompletionChime(*) {
 CheckDictationRecordingWindow() {
     global g_DictationActive, g_DictationCompletionChimeScheduled
 
-    ; Step 2: Check if the "Recording" window exists
+    ; Check if the "Recording" window exists
     windowExists := false
     try {
         windowExists := WinExist("Recording ahk_exe handy.exe")
