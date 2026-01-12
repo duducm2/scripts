@@ -832,11 +832,45 @@ InitializeGeminiFirstTime() {
 
             promptField := 0
 
-            ; Primary strategy: Find by Name "Enter a prompt here" with Type 50004 (Edit)
+            ; Optimization: The prompt is a direct child of the "main" group.
+            ; Finding the main group first avoids searching the navigation sidebar and chat history.
             try {
-                promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
+                ; Find the "main" group (Type 50026). 
+                ; In the tree, it's the first Group child of the Document.
+                mainGroup := uia.FindFirst({Type: 50026})
+                
+                if (mainGroup) {
+                    ; Search ONLY immediate children of the main group (Scope 2)
+                    ; This skips the deep hierarchy of chat history and navigation
+                    promptField := mainGroup.FindFirst({Name: "Enter a prompt here", Type: 50004}, 2)
+                    
+                    if (!promptField) {
+                        ; Portuguese fallback
+                        promptField := mainGroup.FindFirst({Name: "Digite um prompt", Type: 50004}, 2)
+                    }
+                    
+                    if (!promptField) {
+                        ; Substring fallback (still within children)
+                        edits := mainGroup.FindAll({Type: 50004}, 2)
+                        for edit in edits {
+                            if (InStr(edit.Name, "prompt") || InStr(edit.Name, "Enter a")) {
+                                promptField := edit
+                                break
+                            }
+                        }
+                    }
+                }
             } catch {
                 ; Silently continue to fallbacks
+            }
+
+            ; Fallback: Primary strategy (Full search)
+            if !promptField {
+                try {
+                    promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
+                } catch {
+                    ; Silently continue to fallbacks
+                }
             }
 
             ; If primary strategy failed, use single-pass scoring over all edits
