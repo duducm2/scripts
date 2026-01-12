@@ -63,6 +63,41 @@ SafeDebugLog(text) {
     return false
 }
 
+; Helper function to build simple JSON log entries
+BuildLogJson(id, timestamp, location, message, data, sessionId, runId, hypothesisId) {
+    json := '{"id":"' . id . '","timestamp":' . timestamp . ',"location":"' . location . '","message":"' . message . '","data":{'
+    first := true
+    for key, value in data.OwnProps() {
+        if (!first)
+            json .= ","
+        first := false
+        json .= '"' . key . '":'
+        if (Type(value) = "String")
+            json .= '"' . StrReplace(StrReplace(value, "\", "\\"), '"', '\"') . '"'
+        else if (Type(value) = "Integer" || Type(value) = "Float")
+            json .= value
+        else if (Type(value) = "Array") {
+            json .= "["
+            arrFirst := true
+            for i, v in value {
+                if (!arrFirst)
+                    json .= ","
+                arrFirst := false
+                if (Type(v) = "String")
+                    json .= '"' . StrReplace(StrReplace(v, "\", "\\"), '"', '\"') . '"'
+                else if (Type(v) = "Integer" || Type(v) = "Float")
+                    json .= v
+                else
+                    json .= '""'
+            }
+            json .= "]"
+        } else
+            json .= '"' . String(value) . '"'
+    }
+    json .= '},"sessionId":"' . sessionId . '","runId":"' . runId . '","hypothesisId":"' . hypothesisId . '"}'
+    return json
+}
+
 ; Helper: find ChatGPT chrome window by case-insensitive contains match
 GetChatGPTWindowHwnd() {
     for hwnd in WinGetList("ahk_exe chrome.exe") {
@@ -11604,6 +11639,15 @@ CreateGeminiModelCharHandler(char) {
 HandleGeminiModelSelection(char) {
     global g_GeminiModelSelectorActive, g_GeminiModels, g_GeminiModelCharSequence
     global isGeminiFastModel
+    global IS_WORK_ENVIRONMENT
+
+    ; #region agent log
+    try {
+        logJson := BuildLogJson("log_" . A_TickCount . "_entry", A_TickCount, "Shift keys.ahk:11604", "HandleGeminiModelSelection entry", {char: char, isWorkEnv: IS_WORK_ENVIRONMENT}, "debug-session", "run1", "A,B,C,D,E")
+        SafeDebugLog(logJson . "`n")
+    } catch {
+    }
+    ; #endregion
 
     ; Only process if selector is active
     if (!g_GeminiModelSelectorActive) {
@@ -11669,7 +11713,55 @@ HandleGeminiModelSelection(char) {
 
         Sleep 100  ; Small settle time
 
-        ; NEW STRATEGY: Find Group element with Name "Open mode picker", then get its first child Button
+        ; #region agent log - H4: Try anchor-based search for work environment
+        anchorButton := ""
+        anchorBasedModelButton := ""
+        try {
+            if (IS_WORK_ENVIRONMENT) {
+                ; Try finding anchor: "Open menu for conversation actions" at 1,3,3
+                anchorNames := ["Open menu for conversation actions", "Open menu for conversation actions.", "Abrir menu de ações da conversa"]
+                for anchorName in anchorNames {
+                    try {
+                        anchorButton := uia.FindFirst({ Type: "MenuItem", Name: anchorName, cs: false })
+                        if (anchorButton)
+                            break
+                    } catch {
+                    }
+                }
+                if (anchorButton) {
+                    ; Try to find sibling button "PRO" (should be at index 1,3,4)
+                    try {
+                        parent := anchorButton.GetParentElement()
+                        if (parent) {
+                            children := parent.GetChildren()
+                            for child in children {
+                                try {
+                                    if (child.Type = 50000 && (child.Name = "PRO" || child.Name = "Pro")) {
+                                        try {
+                                            if (!child.IsOffscreen) {
+                                                anchorBasedModelButton := child
+                                                break
+                                            }
+                                        } catch {
+                                        }
+                                    }
+                                } catch {
+                                }
+                            }
+                        }
+                    } catch {
+                    }
+                }
+                logJson := BuildLogJson("log_" . A_TickCount . "_anchor_search", A_TickCount, "Shift keys.ahk:11714", "Anchor-based search for work UI", {anchorFound: anchorButton ? "yes" : "no", modelButtonFound: anchorBasedModelButton ? "yes" : "no", modelButtonName: anchorBasedModelButton ? anchorBasedModelButton.Name : ""}, "debug-session", "run1", "H4")
+                SafeDebugLog(logJson . "`n")
+            }
+        } catch {
+        }
+        ; #endregion
+
+        ; NEW STRATEGY: Find Group element with Name "Open mode picker", then get its first child Button.
+        ; Fallback for work environment: directly find model buttons (Fast/Thinking/Pro/PRO) when the group is absent.
+        modelButton := ""
         ; Step 1: Find the Group element with Name "Open mode picker"
         modePickerGroup := ""
         try {
@@ -11678,10 +11770,39 @@ HandleGeminiModelSelection(char) {
         } catch {
         }
 
+        ; #region agent log
+        try {
+            foundGroup := modePickerGroup ? "yes" : "no"
+            logJson := BuildLogJson("log_" . A_TickCount . "_group1", A_TickCount, "Shift keys.ahk:11677", "Primary Group search result", {found: foundGroup}, "debug-session", "run1", "A")
+            SafeDebugLog(logJson . "`n")
+        } catch {
+        }
+        ; #endregion
+
         ; Fallback: Search all Groups and find by name
         if (!modePickerGroup) {
             try {
                 allGroups := uia.FindAll({ Type: "Group" })
+                ; #region agent log
+                try {
+                    groupNames := []
+                    groupClassNames := []
+                    for group in allGroups {
+                        try {
+                            groupNames.Push(group.Name)
+                            try {
+                                groupClassNames.Push(group.ClassName)
+                            } catch {
+                                groupClassNames.Push("")
+                            }
+                        } catch {
+                        }
+                    }
+                    logJson := BuildLogJson("log_" . A_TickCount . "_groups", A_TickCount, "Shift keys.ahk:11684", "All Groups found", {count: allGroups.Length, names: groupNames, classNames: groupClassNames}, "debug-session", "run1", "A,C")
+                    SafeDebugLog(logJson . "`n")
+                } catch {
+                }
+                ; #endregion
                 for group in allGroups {
                     try {
                         groupName := group.Name
@@ -11702,22 +11823,166 @@ HandleGeminiModelSelection(char) {
             }
         }
 
+        ; #region agent log
+        try {
+            foundGroupFinal := modePickerGroup ? "yes" : "no"
+            logJson := BuildLogJson("log_" . A_TickCount . "_group2", A_TickCount, "Shift keys.ahk:11705", "Final Group search result", {found: foundGroupFinal}, "debug-session", "run1", "A,C")
+            SafeDebugLog(logJson . "`n")
+        } catch {
+        }
+        ; #endregion
+
+        ; #region agent log
+        try {
+            allButtons := uia.FindAll({ Type: "Button" })
+            modelButtonNames := []
+            modelButtonTypes := []
+            for btn in allButtons {
+                try {
+                    btnName := btn.Name
+                    if (InStr(btnName, "Fast") || InStr(btnName, "Thinking") || InStr(btnName, "Pro") || InStr(btnName, "PRO")) {
+                        modelButtonNames.Push(btnName)
+                        try {
+                            modelButtonTypes.Push(btn.ClassName)
+                        } catch {
+                            modelButtonTypes.Push("")
+                        }
+                    }
+                } catch {
+                }
+            }
+            logJson := BuildLogJson("log_" . A_TickCount . "_buttons", A_TickCount, "Shift keys.ahk:11705", "Model buttons found", {count: modelButtonNames.Length, names: modelButtonNames, classNames: modelButtonTypes}, "debug-session", "run1", "B")
+            SafeDebugLog(logJson . "`n")
+        } catch {
+        }
+        ; #endregion
+
         if (!modePickerGroup) {
-            return
+            ; Fallback: direct button search for Fast/Thinking/Pro/PRO (work UI)
+            ; Prefer anchor-based button if found (H4)
+            if (anchorBasedModelButton) {
+                modelButton := anchorBasedModelButton
+            } else {
+                try {
+                    allButtonsFallback := uia.FindAll({ Type: "Button" })
+                    bestBtn := ""
+                    bestScore := -1
+                    pattern := "i)^(Fast|Thinking|Pro|PRO)$"
+                for btn in allButtonsFallback {
+                    try {
+                        btnName := btn.Name
+                        if RegExMatch(btnName, pattern) {
+                            ; Prefer visible buttons first
+                            isOffscreen := false
+                            try {
+                                isOffscreen := btn.IsOffscreen
+                            } catch {
+                            }
+                            score := isOffscreen ? 0 : 2
+                            ; Prefer exact PRO (uppercase) in work env
+                            if (IS_WORK_ENVIRONMENT && btnName = "PRO")
+                                score += 1
+                            if (score > bestScore) {
+                                bestScore := score
+                                bestBtn := btn
+                            }
+                        }
+                    } catch {
+                    }
+                }
+                    if bestBtn {
+                        modelButton := bestBtn
+                    }
+                }
+                ; #region agent log
+                try {
+                    names := []
+                    classes := []
+                    automationIds := []
+                    offscreenFlags := []
+                    for btn in allButtonsFallback {
+                        try {
+                            if RegExMatch(btn.Name, pattern) {
+                                names.Push(btn.Name)
+                                try {
+                                    classes.Push(btn.ClassName)
+                                } catch {
+                                    classes.Push("")
+                                }
+                                try {
+                                    automationIds.Push(btn.AutomationId)
+                                } catch {
+                                    automationIds.Push("")
+                                }
+                                try {
+                                    offscreenFlags.Push(btn.IsOffscreen)
+                                } catch {
+                                    offscreenFlags.Push("")
+                                }
+                            }
+                        } catch {
+                        }
+                    }
+                    foundName := modelButton ? modelButton.Name : ""
+                    offscreen := ""
+                    automationId := ""
+                    try {
+                        offscreen := modelButton.IsOffscreen
+                    } catch {
+                        offscreen := ""
+                    }
+                    try {
+                        automationId := modelButton.AutomationId
+                    } catch {
+                        automationId := ""
+                    }
+                    logJson := BuildLogJson("log_" . A_TickCount . "_direct_buttons", A_TickCount, "Shift keys.ahk:11706", "Direct button fallback search", {candidates: names, classNames: classes, automationIds: automationIds, offscreenFlags: offscreenFlags, chosen: foundName, chosenOffscreen: offscreen, chosenAutomationId: automationId, usedAnchorBased: anchorBasedModelButton ? "yes" : "no"}, "debug-session", "run1", "A,B,H1,H4")
+                    SafeDebugLog(logJson . "`n")
+                } catch {
+                }
+                ; #endregion
+            }
+
+            if (!modelButton) {
+                ; #region agent log
+                try {
+                    logJson := BuildLogJson("log_" . A_TickCount . "_exit1", A_TickCount, "Shift keys.ahk:11706", "Early exit - no modePickerGroup and no direct button", {targetModel: modelName}, "debug-session", "run1", "A,C")
+                    SafeDebugLog(logJson . "`n")
+                } catch {
+                }
+                ; #endregion
+                return
+            }
         }
 
         ; Step 2: Get the first child Button of the Group (this button shows current model name)
-        modelButton := ""
         try {
-            ; Get all children of the Group
-            groupChildren := modePickerGroup.FindAll({ Type: "Button" })
-            if (groupChildren && groupChildren.Length > 0) {
-                modelButton := groupChildren[1]  ; First child button
+            if (!modelButton && modePickerGroup) {
+                ; Get all children of the Group
+                groupChildren := modePickerGroup.FindAll({ Type: "Button" })
+                ; #region agent log
+                try {
+                    childCount := groupChildren ? groupChildren.Length : 0
+                    logJson := BuildLogJson("log_" . A_TickCount . "_children", A_TickCount, "Shift keys.ahk:11713", "Group children buttons", {count: childCount}, "debug-session", "run1", "D")
+                    SafeDebugLog(logJson . "`n")
+                } catch {
+                }
+                ; #endregion
+                if (groupChildren && groupChildren.Length > 0) {
+                    modelButton := groupChildren[1]  ; First child button
+                }
             }
         } catch Error as btnErr {
         }
 
         if (!modelButton) {
+            ; #region agent log
+            try {
+                logJson := BuildLogJson("log_" . A_TickCount . "_exit2", A_TickCount, "Shift keys.ahk:11720", "Early exit - no modelButton", {targetModel: modelName}, "debug-session", "run1", "D")
+                SafeDebugLog(logJson . "`n")
+            } catch {
+            }
+            ; #endregion
             return
         }
 
@@ -11728,6 +11993,14 @@ HandleGeminiModelSelection(char) {
         } catch {
             return
         }
+
+        ; #region agent log
+        try {
+            logJson := BuildLogJson("log_" . A_TickCount . "_current", A_TickCount, "Shift keys.ahk:11727", "Current model read", {currentModel: currentModel, targetModel: modelName}, "debug-session", "run1", "E")
+            SafeDebugLog(logJson . "`n")
+        } catch {
+        }
+        ; #endregion
 
         ; Step 4: Compare current model with target - if same, do nothing
         currentModelLower := StrLower(currentModel)
@@ -11753,12 +12026,77 @@ HandleGeminiModelSelection(char) {
             }
         }
 
+        ; #region agent log
+        try {
+            logJson := BuildLogJson("log_" . A_TickCount . "_click", A_TickCount, "Shift keys.ahk:11742", "Button click result", {clicked: clicked}, "debug-session", "run1", "D")
+            SafeDebugLog(logJson . "`n")
+        } catch {
+        }
+        ; #endregion
+
         if (!clicked) {
+            ; #region agent log
+            try {
+                logJson := BuildLogJson("log_" . A_TickCount . "_exit3", A_TickCount, "Shift keys.ahk:11756", "Early exit - click failed", {targetModel: modelName}, "debug-session", "run1", "D")
+                SafeDebugLog(logJson . "`n")
+            } catch {
+            }
+            ; #endregion
             return
         }
 
         ; Wait for menu to open
         Sleep 200
+
+        ; #region agent log - H2: Check if menu/list appeared after click
+        try {
+            menuFound := false
+            listFound := false
+            menuItems := []
+            listItems := []
+            try {
+                menus := uia.FindAll({ Type: "Menu" })
+                if (menus && menus.Length > 0) {
+                    menuFound := true
+                    for menu in menus {
+                        try {
+                            items := menu.FindAll({ Type: "MenuItem" })
+                            for item in items {
+                                try {
+                                    menuItems.Push(item.Name)
+                                } catch {
+                                }
+                            }
+                        } catch {
+                        }
+                    }
+                }
+            } catch {
+            }
+            try {
+                lists := uia.FindAll({ Type: "List" })
+                if (lists && lists.Length > 0) {
+                    listFound := true
+                    for list in lists {
+                        try {
+                            items := list.FindAll({ Type: "ListItem" })
+                            for item in items {
+                                try {
+                                    listItems.Push(item.Name)
+                                } catch {
+                                }
+                            }
+                        } catch {
+                        }
+                    }
+                }
+            } catch {
+            }
+            logJson := BuildLogJson("log_" . A_TickCount . "_menu_check", A_TickCount, "Shift keys.ahk:11980", "Menu/List detection after click", {menuFound: menuFound, listFound: listFound, menuItems: menuItems, listItems: listItems}, "debug-session", "run1", "H2,H3,H5")
+            SafeDebugLog(logJson . "`n")
+        } catch {
+        }
+        ; #endregion
 
         ; Step 6: Navigate menu using arrow keys based on state machine logic
         arrowKeysToSend := 0
@@ -11796,6 +12134,14 @@ HandleGeminiModelSelection(char) {
             }
         }
 
+        ; #region agent log
+        try {
+            logJson := BuildLogJson("log_" . A_TickCount . "_arrows", A_TickCount, "Shift keys.ahk:11799", "Arrow keys to send", {count: arrowKeysToSend, direction: arrowDirection, currentNormalized: currentModelNormalized, targetNormalized: targetModelNormalized}, "debug-session", "run1", "E")
+            SafeDebugLog(logJson . "`n")
+        } catch {
+        }
+        ; #endregion
+
         ; Send arrow keys
         if (arrowKeysToSend > 0) {
             arrowKey := "{" . arrowDirection . "}"
@@ -11809,10 +12155,50 @@ HandleGeminiModelSelection(char) {
         Sleep 100  ; Small delay before Enter
         Send "{Enter}"
 
+        ; #region agent log - H5: Check what model is active after Enter
+        try {
+            Sleep 200  ; Wait for menu to close and model to update
+            finalModelButton := ""
+            finalModelName := ""
+            try {
+                ; Try to find the model button again to see what's selected
+                allButtonsFinal := uia.FindAll({ Type: "Button" })
+                pattern := "i)^(Fast|Thinking|Pro|PRO)$"
+                for btn in allButtonsFinal {
+                    try {
+                        if RegExMatch(btn.Name, pattern) {
+                            try {
+                                if (!btn.IsOffscreen) {
+                                    finalModelButton := btn
+                                    finalModelName := btn.Name
+                                    break
+                                }
+                            } catch {
+                            }
+                        }
+                    } catch {
+                    }
+                }
+            } catch {
+            }
+            logJson := BuildLogJson("log_" . A_TickCount . "_after_enter", A_TickCount, "Shift keys.ahk:12037", "Model after Enter pressed", {targetModel: modelName, finalModelName: finalModelName}, "debug-session", "run1", "H3,H5")
+            SafeDebugLog(logJson . "`n")
+        } catch {
+        }
+        ; #endregion
+
         ; Update global state
         isGeminiFastModel := modelName
         ShowSmallLoadingIndicator_ChatGPT(modelName . " model selected")
         Sleep 150
+
+        ; #region agent log
+        try {
+            logJson := BuildLogJson("log_" . A_TickCount . "_exit4", A_TickCount, "Shift keys.ahk:11815", "Function exit - success", {targetModel: modelName}, "debug-session", "run1", "E")
+            SafeDebugLog(logJson . "`n")
+        } catch {
+        }
+        ; #endregion
     } catch Error as err {
         ; Silently fail if anything goes wrong
     } finally {
