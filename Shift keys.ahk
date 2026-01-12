@@ -6264,11 +6264,11 @@ Excel_AddMultipleRows(count := 15) {
     loop count {
         Send "{Alt down}"
         Send "{Alt up}"
-        Sleep 100
+        Sleep 200
         Send "0"
-        Sleep 50
+        Sleep 100
         Send "2"
-        Sleep 50
+        Sleep 150
     }
     HideSmallLoadingIndicator_ChatGPT()
 }
