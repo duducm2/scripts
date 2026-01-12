@@ -305,51 +305,16 @@ CenterMouse() {
         }
 
         ; Step 3: Find and click the last Copy button (copy the message we're about to read)
-        allCopyButtons := []
-
-        ; Primary strategy: Single pass - find all buttons and filter for any "Copy" variant
-        allButtons := uia.FindAll({ Type: 50000 })
-        for button in allButtons {
-            if (button.Name = "Copy" || InStr(button.Name, "Copy", false)) {
-                ; Additional check: ensure it has the Copy button className pattern
-                if (InStr(button.ClassName, "icon-button") || InStr(button.ClassName, "mdc-button")) {
-                    allCopyButtons.Push(button)
-                }
-            }
-        }
-
-        ; Fallback: broaden type only if none found on primary pass
-        if (allCopyButtons.Length = 0) {
-            allButtons := uia.FindAll({ Type: "Button" })
-            for button in allButtons {
-                if (button.Name = "Copy" || InStr(button.Name, "Copy", false)) {
-                    allCopyButtons.Push(button)
-                }
-            }
-        }
-
-        ; Find the last Copy button (the one with the highest Y position, meaning furthest down the page)
         lastCopyButton := 0
-        highestY := -1
 
-        for copyButton in allCopyButtons {
-            try {
-                btnPos := copyButton.Location
-                btnBottomY := btnPos.y + btnPos.h
-
-                ; The last button will be the one with the highest bottom Y coordinate
-                if (btnBottomY > highestY) {
-                    highestY := btnBottomY
-                    lastCopyButton := copyButton
-                }
-            } catch {
-                ; If getting location fails, skip this button
+        ; Optimization: Search directly for "Copy" buttons using UIA filtering
+        ; This avoids fetching all buttons and filtering in AHK (slow)
+        ; The last element in the tree is invariably the last one on the page (visual order)
+        try {
+            allCopyButtons := uia.FindAll({Name: "Copy", Type: 50000, MatchMode: "Substring"})
+            if (allCopyButtons.Length > 0) {
+                lastCopyButton := allCopyButtons[-1]
             }
-        }
-
-        ; If position-based approach didn't work, just use the last one in the array
-        if (!lastCopyButton && allCopyButtons.Length > 0) {
-            lastCopyButton := allCopyButtons[allCopyButtons.Length]
         }
 
         ; Click the copy button if found
@@ -368,15 +333,10 @@ CenterMouse() {
 
         ; Primary strategy: Search directly by name (most efficient - finds 8 elements vs searching 120+ buttons)
         try {
-            allMoreOptionsButtons := uia.FindAll({ Name: "Show more options" })
+            ; Optimization: Direct search + take last element (no sorting needed)
+            allMoreOptionsButtons := uia.FindAll({ Name: "Show more options", MatchMode: "Substring" })
         } catch {
-            ; If direct name search fails, try Type 50011 (MenuItem) as fallback
-            allMenuItems := uia.FindAll({ Type: 50011 })
-            for menuItem in allMenuItems {
-                if (menuItem.Name = "Show more options" || InStr(menuItem.Name, "Show more options", false) = 1) {
-                    allMoreOptionsButtons.Push(menuItem)
-                }
-            }
+            allMoreOptionsButtons := []
         }
 
         if (allMoreOptionsButtons.Length = 0) {
@@ -389,26 +349,9 @@ CenterMouse() {
 
         ; Find the last "Show more options" button (the one with the highest Y position, meaning furthest down the page)
         lastMoreOptionsButton := 0
-        highestY := -1
-
-        for moreOptionsButton in allMoreOptionsButtons {
-            try {
-                btnPos := moreOptionsButton.Location
-                btnBottomY := btnPos.y + btnPos.h
-
-                ; The last button will be the one with the highest bottom Y coordinate
-                if (btnBottomY > highestY) {
-                    highestY := btnBottomY
-                    lastMoreOptionsButton := moreOptionsButton
-                }
-            } catch {
-                ; If getting location fails, skip this button
-            }
-        }
-
-        ; If position-based approach didn't work, just use the last one in the array
-        if (!lastMoreOptionsButton && allMoreOptionsButtons.Length > 0) {
-            lastMoreOptionsButton := allMoreOptionsButtons[allMoreOptionsButtons.Length]
+        
+        if (allMoreOptionsButtons.Length > 0) {
+            lastMoreOptionsButton := allMoreOptionsButtons[-1]
         }
 
         if (!lastMoreOptionsButton) {
@@ -521,58 +464,18 @@ CenterMouse() {
 
         ; Step 2: Find all Copy buttons
         uia := UIA_Browser()
-        Sleep 120  ; minimal settle before querying UIA
+        Sleep 50  ; minimal settle before querying UIA
 
-        allCopyButtons := []
-
-        ; Primary pass: Find all buttons, filter for any "Copy" variant
-        allButtons := uia.FindAll({ Type: 50000 })
-        for button in allButtons {
-            if (button.Name = "Copy" || InStr(button.Name, "Copy", false)) {
-                ; Additional check: ensure it has the Copy button className pattern
-                if (InStr(button.ClassName, "icon-button") || InStr(button.ClassName, "mdc-button")) {
-                    allCopyButtons.Push(button)
-                }
-            }
-        }
-
-        ; Fallback: broaden type if none found on primary pass (still single filter loop)
-        if (allCopyButtons.Length = 0) {
-            allButtons := uia.FindAll({ Type: "Button" })
-            for button in allButtons {
-                if (button.Name = "Copy" || InStr(button.Name, "Copy", false)) {
-                    allCopyButtons.Push(button)
-                }
-            }
-        }
-
-        if (allCopyButtons.Length = 0) {
-            ; No Copy buttons found
-            return
-        }
-
-        ; Find the last Copy button (the one with the highest Y position, meaning furthest down the page)
         lastCopyButton := 0
-        highestY := -1
-
-        for copyButton in allCopyButtons {
-            try {
-                btnPos := copyButton.Location
-                btnBottomY := btnPos.y + btnPos.h
-
-                ; The last button will be the one with the highest bottom Y coordinate
-                if (btnBottomY > highestY) {
-                    highestY := btnBottomY
-                    lastCopyButton := copyButton
-                }
-            } catch {
-                ; If getting location fails, skip this button
+        
+        ; Optimization: Search directly for "Copy" buttons using UIA filtering
+        ; This avoids fetching all buttons and filtering in AHK (slow)
+        ; The last element in the tree is invariably the last one on the page (visual order)
+        try {
+            allCopyButtons := uia.FindAll({Name: "Copy", Type: 50000, MatchMode: "Substring"})
+            if (allCopyButtons.Length > 0) {
+                lastCopyButton := allCopyButtons[-1]
             }
-        }
-
-        ; If position-based approach didn't work, just use the last one in the array
-        if (!lastCopyButton && allCopyButtons.Length > 0) {
-            lastCopyButton := allCopyButtons[allCopyButtons.Length]
         }
 
         if (lastCopyButton) {
