@@ -3602,6 +3602,7 @@ StopDictationPulseTimer() {
 ; Audio firewall: Throttle dictation sounds to prevent duplicates
 ; Enforces a minimum 1000ms gap between sounds regardless of how many times logic fires
 SafePlayDictationSound(filePath) {
+SafePlayDictationSound(filePath, beepFreq := 0) {
     Critical  ; Prevents thread interruption - ensures atomic check-and-update sequence
     global g_LastDictationSoundTick
 
@@ -3612,6 +3613,8 @@ SafePlayDictationSound(filePath) {
 
     ; Update timestamp and play sound
     g_LastDictationSoundTick := A_TickCount
+    if (beepFreq > 0)
+        SoundBeep(beepFreq, 150)
     SoundPlay(filePath)
 }
 
@@ -3627,6 +3630,7 @@ PlayDictationCompletionChime(*) {
     ; Only play if flag was set (prevent duplicate execution)
     if (chimeShouldPlay) {
         SafePlayDictationSound(g_DictationStopSound)
+        SafePlayDictationSound(g_DictationStopSound, 550)
     }
 }
 
@@ -3664,6 +3668,7 @@ CheckDictationRecordingWindow() {
 
         ; Play start chime (throttled by audio firewall)
         SafePlayDictationSound(g_DictationStartSound)
+        SafePlayDictationSound(g_DictationStartSound, 750)
     }
     ; Step 4: Handle Stop - if window does NOT exist AND active
     else if (!windowExists && g_DictationActive) {
