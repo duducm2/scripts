@@ -8202,7 +8202,7 @@ IsEditorActive() {
             ; Commit
             Send "^{Enter}"
             
-            ShowSmallLoadingIndicator_ChatGPT("Committing...")
+            ShowSmallLoadingIndicator_ChatGPT("Committing....")
             Sleep 1000
             
             ; Push if requested
