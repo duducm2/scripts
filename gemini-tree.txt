@@ -288,7 +288,7 @@ Type: 50033 (Pane) Name: "Google Gemini - Google Chrome" LocalizedType: "pane" C
 4,1,2,1,1,1,1: Type: 50033 (Pane) LocalizedType: "pane"
 4,1,2,1,1,1,2: Type: 50033 (Pane) LocalizedType: "pane"
 4,1,2,1,1,1,3: Type: 50033 (Pane) LocalizedType: "pane"
-4,1,2,1,1,1,3,1: Type: 50000 (Button) Name: "Back" LocalizedType: "button"
+4,1,2,1,1,1,3,1: Type: 50000 (Button) N,ame: "Back" LocalizedType: "button"
 4,1,2,1,1,1,3,2: Type: 50000 (Button) Name: "Forward" LocalizedType: "button"
 4,1,2,1,1,1,3,3: Type: 50000 (Button) Name: "Reload" LocalizedType: "button"
 4,1,2,1,1,1,3,4: Type: 50000 (Button) Name: "Home" LocalizedType: "button"

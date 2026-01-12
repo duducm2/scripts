@@ -8160,6 +8160,65 @@ IsEditorActive() {
 ; Shift + B : Git Push - Push
 +b:: Send "+b"
 
+; Win + M : Commit and Push (AI Generated) - Optimized with UIA
+#m::
+{
+    ; Remember target window
+    targetWin := WinExist("A")
+    if !targetWin
+        return
+
+    ; Prompt for push decision first (blocking)
+    PromptCommitPushDecisionBlocking()
+    
+    ; Ensure window is active
+    WinActivate(targetWin)
+    WinWaitActive(targetWin,, 1)
+
+    ; Trigger SCM and AI Generation
+    Send "+d" ; Focus SCM
+    Sleep 200
+    Send "^!a" ; Trigger AI Generation
+    
+    ; Show loading indicator
+    ShowSmallLoadingIndicator_ChatGPT("Generating commit message...")
+
+    try {
+        ; Get UIA element for the window
+        uia := UIA.ElementFromHandle(targetWin)
+        
+        ; Define the placeholder element condition
+        ; Name contains "Message (Ctrl+⏎ to commit on"
+        ; Type is Text (50020)
+        placeholderCond := {Name:"Message (Ctrl+⏎ to commit on", matchmode:"Substring", Type:50020}
+        
+        ; Wait for the placeholder to disappear (timeout 15s)
+        if (uia.WaitElementNotExist(placeholderCond, 15000)) {
+            ; Placeholder disappeared - text is present
+            
+            ; Small buffer to ensure text insertion is complete
+            Sleep 500 
+            
+            ; Commit
+            Send "^{Enter}"
+            
+            ShowSmallLoadingIndicator_ChatGPT("Committing...")
+            Sleep 1000
+            
+            ; Push if requested
+            ExecuteStoredCommitPushDecision()
+            
+            ShowSmallLoadingIndicator_ChatGPT("Done")
+        } else {
+            ShowSmallLoadingIndicator_ChatGPT("Timeout: Message not generated")
+        }
+    } catch Error as e {
+        ShowSmallLoadingIndicator_ChatGPT("Error: " . e.Message)
+    } finally {
+        SetTimer(() => HideSmallLoadingIndicator_ChatGPT(), -1000)
+    }
+}
+
 ; Ctrl + M : Ask, wait banner 8s, then Shift+V
 ^M::
 {
