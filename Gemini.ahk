@@ -216,9 +216,9 @@ CenterMouse() {
 
 ; --- Hotkeys ----------------------------------------------------------------
 
-; Win+Alt+Shift+7 : Read aloud and copy the last message in Gemini (activates Gemini window first, copies the message, then clicks last "Show more options" then "Text to speech")
+; Win+Alt+Shift+O : Read aloud and copy the last message in Gemini (activates Gemini window first, copies the message, then clicks last "Show more options" then "Text to speech")
 ; If reading is active, clicking this shortcut again will pause the reading
-#!+7:: {
+#!+o:: {
 
     try {
         ; Step 1: Activate Gemini window globally
@@ -507,8 +507,8 @@ CenterMouse() {
     }
 }
 
-; Win+Alt+Shift+J : Click the last Copy button in Gemini (activates Gemini window first, then copies the preceding message)
-#!+j:: {
+; Win+Alt+Shift+P : Click the last Copy button in Gemini (activates Gemini window first, then copies the preceding message)
+#!+p:: {
     try {
         ; Step 1: Activate Gemini window globally
         SetTitleMatchMode(2)
