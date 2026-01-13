@@ -484,6 +484,16 @@ ToggleOutlookAndTeams() {
             } catch Error as e {
                 MsgBox "Error launching Teams: " e.Message
             }
+            
+            ; Activate Outlook at the end
+            try {
+                if (ProcessExist("OUTLOOK.EXE")) {
+                    WinActivate("ahk_exe OUTLOOK.EXE")
+                    WinWaitActive("ahk_exe OUTLOOK.EXE", , 2)
+                }
+            } catch Error as e {
+                ; Silently fail if activation doesn't work
+            }
         }
     } catch Error as e {
         MsgBox "Error in ToggleOutlookAndTeams macro: " e.Message
