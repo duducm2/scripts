@@ -11602,7 +11602,7 @@ HandleGeminiModelSelection(char) {
         ; Ignore cleanup errors
     }
 
-    ; Small delay to ensure Gemini window has focus
+l    ; Small delay to ensure GUI cleanup is complete
     Sleep 150
 
     ; Show loading indicator (with error handling)
@@ -11613,7 +11613,41 @@ HandleGeminiModelSelection(char) {
     }
 
     try {
-        ; Initialize uia variable first
+        ; Activate Gemini window
+        SetTitleMatchMode(2)
+        geminiHwnd := 0
+        try {
+            ; Find Gemini window by searching Chrome windows with "gemini" in title
+            for hwnd in WinGetList("ahk_exe chrome.exe") {
+                try {
+                    if InStr(WinGetTitle("ahk_id " hwnd), "gemini", false) {
+                        geminiHwnd := hwnd
+                        break
+                    }
+                } catch {
+                    ; Silently skip invalid windows
+                }
+            }
+        } catch {
+            ; Silently handle WinGetList errors
+        }
+
+        if (geminiHwnd) {
+            WinActivate("ahk_id " geminiHwnd)
+            if !WinWaitActive("ahk_id " geminiHwnd, , 2) {
+                return
+            }
+        } else {
+            ; Fallback: try to activate any Chrome window
+            WinActivate("ahk_exe chrome.exe")
+            if !WinWaitActive("ahk_exe chrome.exe", , 2) {
+                return
+            }
+        }
+
+        Sleep 150  ; Small settle time
+
+        ; Initialize UIA
         uia := ""
         try {
             uia := UIA_Browser()
@@ -11625,146 +11659,95 @@ HandleGeminiModelSelection(char) {
             return
         }
 
-        Sleep 100  ; Small settle time
+        Sleep 120  ; Minimal settle before querying UIA
 
-        ; NEW STRATEGY: Find Group element with Name "Open mode picker", then get its first child Button
-        ; Step 1: Find the Group element with Name "Open mode picker"
-        modePickerGroup := ""
+        ; Find the Gemini prompt input field
+        promptField := 0
+
+        ; Primary strategy: Find by Name "Enter a prompt here" with Type 50004 (Edit)
         try {
-            ; Try finding by exact name match
-            modePickerGroup := uia.FindFirst({ Type: "Group", Name: "Open mode picker" })
+            promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
         } catch {
+            ; Silently continue to fallbacks
         }
 
-        ; Fallback: Search all Groups and find by name
-        if (!modePickerGroup) {
+        ; Fallback 1: Try by Type "Edit" and Name "Enter a prompt here"
+        if !promptField {
             try {
-                allGroups := uia.FindAll({ Type: "Group" })
-                for group in allGroups {
-                    try {
-                        groupName := group.Name
-                        groupClassName := ""
-                        try {
-                            groupClassName := group.ClassName
-                        } catch {
-                        }
-                        if (groupName = "Open mode picker" || (InStr(groupClassName, "pill-ui-logo-container") && InStr(
-                            groupClassName, "mat-mdc-menu-trigger"))) {
-                            modePickerGroup := group
+                promptField := uia.FindFirst({ Type: "Edit", Name: "Enter a prompt here" })
+            } catch {
+            }
+        }
+
+        ; Fallback 2: Try by ClassName containing "ql-editor" or "new-input-ui" (substring match)
+        if !promptField {
+            try {
+                allEdits := uia.FindAll({ Type: 50004 })
+                for edit in allEdits {
+                    if (InStr(edit.ClassName, "ql-editor") || InStr(edit.ClassName, "new-input-ui")) {
+                        if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "prompt") {
+                            promptField := edit
                             break
                         }
-                    } catch {
                     }
                 }
             } catch {
             }
         }
 
-        if (!modePickerGroup) {
-            return
-        }
-
-        ; Step 2: Get the first child Button of the Group (this button shows current model name)
-        modelButton := ""
-        try {
-            ; Get all children of the Group
-            groupChildren := modePickerGroup.FindAll({ Type: "Button" })
-            if (groupChildren && groupChildren.Length > 0) {
-                modelButton := groupChildren[1]  ; First child button
-            }
-        } catch Error as btnErr {
-        }
-
-        if (!modelButton) {
-            return
-        }
-
-        ; Step 3: Read current model from button Name
-        currentModel := ""
-        try {
-            currentModel := modelButton.Name
-        } catch {
-            return
-        }
-
-        ; Step 4: Compare current model with target - if same, do nothing
-        currentModelLower := StrLower(currentModel)
-        targetModelLower := StrLower(modelName)
-        if (currentModelLower = targetModelLower) {
-            ShowSmallLoadingIndicator_ChatGPT(modelName . " model already active")
-            Sleep 150
-            return
-        }
-
-        ; Step 5: Click button to open menu
-        clicked := false
-        try {
-            if (modelButton.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)) {
-                modelButton.Invoke()
-                clicked := true
-            }
-        } catch {
+        ; Fallback 3: Try finding by ClassName containing "ql-editor" (most specific identifier)
+        if !promptField {
             try {
-                modelButton.Click()
-                clicked := true
+                allEdits := uia.FindAll({ Type: 50004 })
+                for edit in allEdits {
+                    if InStr(edit.ClassName, "ql-editor") {
+                        promptField := edit
+                        break
+                    }
+                }
             } catch {
             }
         }
 
-        if (!clicked) {
+        ; Fallback 4: Try finding by Name with substring match (in case of localization variations)
+        if !promptField {
+            try {
+                allEdits := uia.FindAll({ Type: 50004 })
+                for edit in allEdits {
+                    if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "Digite um prompt") || InStr(edit.Name, "prompt") {
+                        ; Additional check to ensure it's the prompt field (has ql-editor in className)
+                        if InStr(edit.ClassName, "ql-editor") {
+                            promptField := edit
+                            break
+                        }
+                    }
+                }
+            } catch {
+            }
+        }
+
+        if (!promptField) {
             return
         }
 
-        ; Wait for menu to open
-        Sleep 200
-
-        ; Step 6: Navigate menu using arrow keys based on state machine logic
-        arrowKeysToSend := 0
-        arrowDirection := ""
-
-        ; State machine navigation logic (all comparisons case-insensitive)
-        ; Normalize model names for comparison (handle "PRO" vs "Pro", etc.)
-        currentModelNormalized := StrLower(RegExReplace(currentModel, "\s", ""))
-        targetModelNormalized := StrLower(RegExReplace(modelName, "\s", ""))
-
-        ; Map to standard names for state machine
-        if (currentModelNormalized = "fast") {
-            if (targetModelNormalized = "thinking") {
-                arrowKeysToSend := 1
-                arrowDirection := "Down"
-            } else if (targetModelNormalized = "pro") {
-                arrowKeysToSend := 2
-                arrowDirection := "Down"
-            }
-        } else if (currentModelNormalized = "thinking") {
-            if (targetModelNormalized = "fast") {
-                arrowKeysToSend := 1
-                arrowDirection := "Up"
-            } else if (targetModelNormalized = "pro") {
-                arrowKeysToSend := 1
-                arrowDirection := "Down"
-            }
-        } else if (currentModelNormalized = "pro") {
-            if (targetModelNormalized = "fast") {
-                arrowKeysToSend := 2
-                arrowDirection := "Up"
-            } else if (targetModelNormalized = "thinking") {
-                arrowKeysToSend := 1
-                arrowDirection := "Up"
-            }
+        ; Focus the input field
+        promptField.SetFocus()
+        Sleep 50
+        ; Ensure focus was successful
+        if (!promptField.HasKeyboardFocus) {
+            ; Fallback: try clicking if SetFocus didn't work
+            promptField.Click()
+            Sleep 50
         }
 
-        ; Send arrow keys
-        if (arrowKeysToSend > 0) {
-            arrowKey := "{" . arrowDirection . "}"
-            loop arrowKeysToSend {
-                Send arrowKey
-                Sleep 50  ; Small delay between arrow key presses
-            }
-        }
+        ; Map model name to lowercase command
+        modelCommand := "@" . StrLower(modelName)
 
-        ; Step 7: Press Enter to select
-        Sleep 100  ; Small delay before Enter
+        ; Type the model command
+        Send modelCommand
+        Sleep 100
+
+        ; Submit by pressing Enter
         Send "{Enter}"
 
         ; Update global state
