@@ -11206,51 +11206,9 @@ ToggleGeminiDrawer() {
     }
 }
 
-; Shift + N : Click the New chat button - New
+; Shift + N : New chat in Gemini (sends Ctrl-Shift-O)
 +n:: {
-    try {
-        uia := UIA_Browser()
-        Sleep 300
-
-        ; Primary strategy: Find by Name "New chat" with Type 50000 (Button)
-        newChatButton := uia.FindFirst({ Name: "New chat", Type: 50000 })
-
-        ; Fallback 1: Try by Type "Button" and Name "New chat"
-        if !newChatButton {
-            newChatButton := uia.FindFirst({ Type: "Button", Name: "New chat" })
-        }
-
-        ; Fallback 2: Try by ClassName containing "side-nav-action-button" (substring match)
-        if !newChatButton {
-            allButtons := uia.FindAll({ Type: 50000 })
-            for button in allButtons {
-                if InStr(button.ClassName, "side-nav-action-button") && InStr(button.Name, "New chat") {
-                    newChatButton := button
-                    break
-                }
-            }
-        }
-
-        ; Fallback 3: Try finding by Name with substring match (in case of localization variations)
-        if !newChatButton {
-            allButtons := uia.FindAll({ Type: 50000 })
-            for button in allButtons {
-                if InStr(button.Name, "New chat") || InStr(button.Name, "Nova conversa") {
-                    newChatButton := button
-                    break
-                }
-            }
-        }
-
-        if (newChatButton) {
-            newChatButton.Click()
-        } else {
-            ; Last resort: Could try keyboard navigation if Gemini has a keyboard shortcut for new chat
-            ; For now, we'll just not do anything if we can't find the button
-        }
-    } catch Error as e {
-        ; If all else fails, silently fail (no fallback action defined)
-    }
+    Send "^+o"
 }
 
 ; Shift + S : Click the Search button - Search
@@ -11644,8 +11602,8 @@ HandleGeminiModelSelection(char) {
         ; Ignore cleanup errors
     }
 
-    ; Small delay to ensure Gemini window has focus
-    Sleep 150
+    ; Small delay to ensure GUI cleanup is complete
+    Sleep 100
 
     ; Show loading indicator (with error handling)
     try {
@@ -11655,158 +11613,52 @@ HandleGeminiModelSelection(char) {
     }
 
     try {
-        ; Initialize uia variable first
-        uia := ""
+        ; Activate Gemini window
+        SetTitleMatchMode(2)
+        geminiHwnd := 0
         try {
-            uia := UIA_Browser()
-        } catch Error as browserErr {
-            return
-        }
-
-        if (!IsObject(uia)) {
-            return
-        }
-
-        Sleep 100  ; Small settle time
-
-        ; NEW STRATEGY: Find Group element with Name "Open mode picker", then get its first child Button
-        ; Step 1: Find the Group element with Name "Open mode picker"
-        modePickerGroup := ""
-        try {
-            ; Try finding by exact name match
-            modePickerGroup := uia.FindFirst({ Type: "Group", Name: "Open mode picker" })
-        } catch {
-        }
-
-        ; Fallback: Search all Groups and find by name
-        if (!modePickerGroup) {
-            try {
-                allGroups := uia.FindAll({ Type: "Group" })
-                for group in allGroups {
-                    try {
-                        groupName := group.Name
-                        groupClassName := ""
-                        try {
-                            groupClassName := group.ClassName
-                        } catch {
-                        }
-                        if (groupName = "Open mode picker" || (InStr(groupClassName, "pill-ui-logo-container") && InStr(
-                            groupClassName, "mat-mdc-menu-trigger"))) {
-                            modePickerGroup := group
-                            break
-                        }
-                    } catch {
+            ; Find Gemini window by searching Chrome windows with "gemini" in title
+            for hwnd in WinGetList("ahk_exe chrome.exe") {
+                try {
+                    if InStr(WinGetTitle("ahk_id " hwnd), "gemini", false) {
+                        geminiHwnd := hwnd
+                        break
                     }
+                } catch {
+                    ; Silently skip invalid windows
                 }
-            } catch {
-            }
-        }
-
-        if (!modePickerGroup) {
-            return
-        }
-
-        ; Step 2: Get the first child Button of the Group (this button shows current model name)
-        modelButton := ""
-        try {
-            ; Get all children of the Group
-            groupChildren := modePickerGroup.FindAll({ Type: "Button" })
-            if (groupChildren && groupChildren.Length > 0) {
-                modelButton := groupChildren[1]  ; First child button
-            }
-        } catch Error as btnErr {
-        }
-
-        if (!modelButton) {
-            return
-        }
-
-        ; Step 3: Read current model from button Name
-        currentModel := ""
-        try {
-            currentModel := modelButton.Name
-        } catch {
-            return
-        }
-
-        ; Step 4: Compare current model with target - if same, do nothing
-        currentModelLower := StrLower(currentModel)
-        targetModelLower := StrLower(modelName)
-        if (currentModelLower = targetModelLower) {
-            ShowSmallLoadingIndicator_ChatGPT(modelName . " model already active")
-            Sleep 150
-            return
-        }
-
-        ; Step 5: Click button to open menu
-        clicked := false
-        try {
-            if (modelButton.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)) {
-                modelButton.Invoke()
-                clicked := true
             }
         } catch {
-            try {
-                modelButton.Click()
-                clicked := true
-            } catch {
+            ; Silently handle WinGetList errors
+        }
+
+        if (geminiHwnd) {
+            WinActivate("ahk_id " geminiHwnd)
+            if !WinWaitActive("ahk_id " geminiHwnd, , 2) {
+                return
+            }
+        } else {
+            ; Fallback: try to activate any Chrome window
+            WinActivate("ahk_exe chrome.exe")
+            if !WinWaitActive("ahk_exe chrome.exe", , 2) {
+                return
             }
         }
 
-        if (!clicked) {
-            return
-        }
+        ; Small settle time for window activation
+        Sleep 50
 
-        ; Wait for menu to open
-        Sleep 200
+        ; Send space first to prevent errors
+        Send "{Space}"
 
-        ; Step 6: Navigate menu using arrow keys based on state machine logic
-        arrowKeysToSend := 0
-        arrowDirection := ""
+        ; Map model name to lowercase command
+        modelCommand := "@" . StrLower(modelName)
 
-        ; State machine navigation logic (all comparisons case-insensitive)
-        ; Normalize model names for comparison (handle "PRO" vs "Pro", etc.)
-        currentModelNormalized := StrLower(RegExReplace(currentModel, "\s", ""))
-        targetModelNormalized := StrLower(RegExReplace(modelName, "\s", ""))
+        ; Type the model command directly (no need to find input field)
+        Send modelCommand
+        Sleep 50
 
-        ; Map to standard names for state machine
-        if (currentModelNormalized = "fast") {
-            if (targetModelNormalized = "thinking") {
-                arrowKeysToSend := 1
-                arrowDirection := "Down"
-            } else if (targetModelNormalized = "pro") {
-                arrowKeysToSend := 2
-                arrowDirection := "Down"
-            }
-        } else if (currentModelNormalized = "thinking") {
-            if (targetModelNormalized = "fast") {
-                arrowKeysToSend := 1
-                arrowDirection := "Up"
-            } else if (targetModelNormalized = "pro") {
-                arrowKeysToSend := 1
-                arrowDirection := "Down"
-            }
-        } else if (currentModelNormalized = "pro") {
-            if (targetModelNormalized = "fast") {
-                arrowKeysToSend := 2
-                arrowDirection := "Up"
-            } else if (targetModelNormalized = "thinking") {
-                arrowKeysToSend := 1
-                arrowDirection := "Up"
-            }
-        }
-
-        ; Send arrow keys
-        if (arrowKeysToSend > 0) {
-            arrowKey := "{" . arrowDirection . "}"
-            loop arrowKeysToSend {
-                Send arrowKey
-                Sleep 50  ; Small delay between arrow key presses
-            }
-        }
-
-        ; Step 7: Press Enter to select
-        Sleep 100  ; Small delay before Enter
+        ; Submit by pressing Enter
         Send "{Enter}"
 
         ; Update global state

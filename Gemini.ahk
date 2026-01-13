@@ -519,60 +519,102 @@ CenterMouse() {
         }
         Sleep 150  ; keep snappy per README (short settle after activation)
 
-        ; Step 2: Find all Copy buttons
+        ; Step 2: Initialize UIA
         uia := UIA_Browser()
         Sleep 120  ; minimal settle before querying UIA
 
-        allCopyButtons := []
-
-        ; Primary pass: Find all buttons, filter for any "Copy" variant
-        allButtons := uia.FindAll({ Type: 50000 })
-        for button in allButtons {
-            if (button.Name = "Copy" || InStr(button.Name, "Copy", false)) {
-                ; Additional check: ensure it has the Copy button className pattern
-                if (InStr(button.ClassName, "icon-button") || InStr(button.ClassName, "mdc-button")) {
-                    allCopyButtons.Push(button)
-                }
-            }
-        }
-
-        ; Fallback: broaden type if none found on primary pass (still single filter loop)
-        if (allCopyButtons.Length = 0) {
-            allButtons := uia.FindAll({ Type: "Button" })
-            for button in allButtons {
-                if (button.Name = "Copy" || InStr(button.Name, "Copy", false)) {
-                    allCopyButtons.Push(button)
-                }
-            }
-        }
-
-        if (allCopyButtons.Length = 0) {
-            ; No Copy buttons found
-            return
-        }
-
-        ; Find the last Copy button (the one with the highest Y position, meaning furthest down the page)
         lastCopyButton := 0
-        highestY := -1
 
-        for copyButton in allCopyButtons {
+        ; Optimization: Bottom-up search starting from the Prompt field
+        ; The "Copy" button for the last message is typically a preceding sibling of the Prompt field.
+        
+        promptField := 0
+        ; Try to find the prompt field using robust strategies
+        try {
+            promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
+        }
+        if !promptField {
+            try promptField := uia.FindFirst({ Type: "Edit", Name: "Enter a prompt here" })
+        }
+        if !promptField {
             try {
-                btnPos := copyButton.Location
-                btnBottomY := btnPos.y + btnPos.h
+                allEdits := uia.FindAll({ Type: 50004 })
+                for edit in allEdits {
+                    if (InStr(edit.ClassName, "ql-editor")) {
+                        promptField := edit
+                        break
+                    }
+                }
+            }
+        }
 
-                ; The last button will be the one with the highest bottom Y coordinate
-                if (btnBottomY > highestY) {
-                    highestY := btnBottomY
-                    lastCopyButton := copyButton
+        ; If prompt found, walk backwards to find the Copy button
+        if (promptField) {
+            try {
+                sibling := promptField
+                loop 20 { ; Look at the last 20 siblings (usually it's within 2-3)
+                    sibling := sibling.Navigate("PreviousSibling")
+                    if (!sibling)
+                        break
+                    
+                    ; Check if this sibling is the Copy button
+                    if (sibling.Type == 50000 && (sibling.Name = "Copy" || InStr(sibling.Name, "Copy", false))) {
+                        lastCopyButton := sibling
+                        break
+                    }
                 }
             } catch {
-                ; If getting location fails, skip this button
+                ; If navigation fails, fall back to full search
             }
         }
 
-        ; If position-based approach didn't work, just use the last one in the array
-        if (!lastCopyButton && allCopyButtons.Length > 0) {
-            lastCopyButton := allCopyButtons[allCopyButtons.Length]
+        ; Fallback: If optimized search failed, use the original top-down FindAll approach
+        if (!lastCopyButton) {
+            allCopyButtons := []
+
+            ; Primary pass: Find all buttons, filter for any "Copy" variant
+            allButtons := uia.FindAll({ Type: 50000 })
+            for button in allButtons {
+                if (button.Name = "Copy" || InStr(button.Name, "Copy", false)) {
+                    ; Additional check: ensure it has the Copy button className pattern
+                    if (InStr(button.ClassName, "icon-button") || InStr(button.ClassName, "mdc-button")) {
+                        allCopyButtons.Push(button)
+                    }
+                }
+            }
+
+            ; Fallback: broaden type if none found on primary pass (still single filter loop)
+            if (allCopyButtons.Length = 0) {
+                allButtons := uia.FindAll({ Type: "Button" })
+                for button in allButtons {
+                    if (button.Name = "Copy" || InStr(button.Name, "Copy", false)) {
+                        allCopyButtons.Push(button)
+                    }
+                }
+            }
+
+            ; Find the last Copy button (the one with the highest Y position, meaning furthest down the page)
+            highestY := -1
+
+            for copyButton in allCopyButtons {
+                try {
+                    btnPos := copyButton.Location
+                    btnBottomY := btnPos.y + btnPos.h
+
+                    ; The last button will be the one with the highest bottom Y coordinate
+                    if (btnBottomY > highestY) {
+                        highestY := btnBottomY
+                        lastCopyButton := copyButton
+                    }
+                } catch {
+                    ; If getting location fails, skip this button
+                }
+            }
+            
+            ; If position-based approach didn't work, just use the last one in the array
+            if (!lastCopyButton && allCopyButtons.Length > 0) {
+                lastCopyButton := allCopyButtons[allCopyButtons.Length]
+            }
         }
 
         if (lastCopyButton) {
@@ -880,8 +922,6 @@ InitializeGeminiFirstTime() {
                     promptField.Click()
                     Sleep 50 ; Reduced from 100ms
                 }
-                ; Play chime when field is successfully focused
-                PlayCopyCompletedChime()
             }
         }
     } else {
