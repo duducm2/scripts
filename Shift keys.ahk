@@ -11206,51 +11206,9 @@ ToggleGeminiDrawer() {
     }
 }
 
-; Shift + N : Click the New chat button - New
+; Shift + N : New chat in Gemini (sends Ctrl-Shift-O)
 +n:: {
-    try {
-        uia := UIA_Browser()
-        Sleep 300
-
-        ; Primary strategy: Find by Name "New chat" with Type 50000 (Button)
-        newChatButton := uia.FindFirst({ Name: "New chat", Type: 50000 })
-
-        ; Fallback 1: Try by Type "Button" and Name "New chat"
-        if !newChatButton {
-            newChatButton := uia.FindFirst({ Type: "Button", Name: "New chat" })
-        }
-
-        ; Fallback 2: Try by ClassName containing "side-nav-action-button" (substring match)
-        if !newChatButton {
-            allButtons := uia.FindAll({ Type: 50000 })
-            for button in allButtons {
-                if InStr(button.ClassName, "side-nav-action-button") && InStr(button.Name, "New chat") {
-                    newChatButton := button
-                    break
-                }
-            }
-        }
-
-        ; Fallback 3: Try finding by Name with substring match (in case of localization variations)
-        if !newChatButton {
-            allButtons := uia.FindAll({ Type: 50000 })
-            for button in allButtons {
-                if InStr(button.Name, "New chat") || InStr(button.Name, "Nova conversa") {
-                    newChatButton := button
-                    break
-                }
-            }
-        }
-
-        if (newChatButton) {
-            newChatButton.Click()
-        } else {
-            ; Last resort: Could try keyboard navigation if Gemini has a keyboard shortcut for new chat
-            ; For now, we'll just not do anything if we can't find the button
-        }
-    } catch Error as e {
-        ; If all else fails, silently fail (no fallback action defined)
-    }
+    Send "^+o"
 }
 
 ; Shift + S : Click the Search button - Search
