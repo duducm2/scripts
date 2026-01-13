@@ -11648,6 +11648,9 @@ HandleGeminiModelSelection(char) {
         ; Small settle time for window activation
         Sleep 50
 
+        ; Send space first to prevent errors
+        Send "{Space}"
+
         ; Map model name to lowercase command
         modelCommand := "@" . StrLower(modelName)
 
