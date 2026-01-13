@@ -5,6 +5,7 @@
 ; This script consolidates various utility hotkeys.
 ; -----------------------------------------------------------------------------
 
+global UIA := "" ; Suppress "UIA never assigned a value" warning, initialized by UIA.ahk
 ; =============================================================================
 ; Hotstring Core Functions
 ; =============================================================================
@@ -306,10 +307,54 @@ QuickUpdateScripts() {
     }
 }
 
+; Add specific word to Handy macro function
+AddWordToHandy() {
+    global UIA
+    targetPath := "C:\Users\fie7ca\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Handy.lnk"
+    
+    try {
+        if WinExist("Handy ahk_class Tauri Window") {
+            WinActivate
+        } else {
+            Run targetPath
+            if !WinWait("Handy ahk_class Tauri Window",, 5) {
+                MsgBox "Failed to launch Handy."
+                return
+            }
+        }
+        
+        WinWaitActive("Handy ahk_class Tauri Window",, 2)
+        hwnd := WinExist("Handy ahk_class Tauri Window")
+        
+        ; Initialize UIA
+        el := UIA.ElementFromHandle(hwnd)
+        if !el
+            return
+
+        ; Locate and click "Advanced" button
+        advancedBtn := el.FindFirst({Type: 50020, Name: "Advanced"})
+        if advancedBtn {
+            advancedBtn.Click()
+        }
+        
+        Sleep 200
+        
+        ; Locate and focus "Add a word" text field
+        addWordEdit := el.FindFirst({Type: 50004, Name: "Add a word"})
+        if addWordEdit {
+            addWordEdit.SetFocus()
+        }
+    } catch Error as e {
+        MsgBox "Error in AddWordToHandy macro: " e.Message
+    }
+}
+
 ; Initialize macros
 InitMacros() {
     ; Quick Update to Your Scripts macro
     RegisterMacro(QuickUpdateScripts, "⚡ Quick Update to Your Scripts")
+    ; Add specific word to Handy macro
+    RegisterMacro(AddWordToHandy, "➕ Add specific word to Handy")
 }
 InitMacros()
 
