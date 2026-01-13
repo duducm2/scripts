@@ -2728,3 +2728,20 @@
 {"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"Utils.ahk:3646","message":"Window check result","data":"windowExists=0,g_DictationActive=0","timestamp":333628484}
 {"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"Utils.ahk:3636","message":"CheckDictationRecordingWindow entry","data":"tickCount=333628937","timestamp":333628937}
 {"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"Utils.ahk:3646","message":"Window check result","data":"windowExists=0,g_DictationActive=0","timestamp":333628937}
+{"id":"log_5250703_6755","timestamp":5250703,"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"id":"log_5251937_1495","timestamp":5251937,"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"id":"log_5268906_5191","timestamp":5268906,"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"id":"log_5270093_2007","timestamp":5270093,"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"id":"log_5271437_6917","timestamp":5271437,"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"id":"log_5272625_5757","timestamp":5272625,"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"id":"log_5275218_7490","timestamp":5275218,"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"id":"log_5275812_5014","timestamp":5275812,"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"id":"log_5284312_8279","timestamp":5284312,"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"id":"log_5285578_7609","timestamp":5285578,"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"id":"log_5291015_2424","timestamp":5291015,"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"id":"log_5291640_6522","timestamp":5291640,"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"id":"log_5308312_1217","timestamp":5308312,"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"id":"log_5311328_6713","timestamp":5311328,"location":"Shift keys.ahk:9822","message":"TryAttachBrowser chrome failed, trying edge","data":{"error":"0"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"id":"log_5311328_7435","timestamp":5311328,"location":"Shift keys.ahk:9837","message":"TryAttachBrowser failed both browsers","data":{"error":"183"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"id":"log_5329390_6905","timestamp":5329390,"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"id":"log_5330031_9809","timestamp":5330031,"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}

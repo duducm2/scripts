@@ -880,8 +880,6 @@ InitializeGeminiFirstTime() {
                     promptField.Click()
                     Sleep 50 ; Reduced from 100ms
                 }
-                ; Play chime when field is successfully focused
-                PlayCopyCompletedChime()
             }
         }
     } else {
