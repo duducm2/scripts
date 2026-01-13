@@ -1,11 +1,12 @@
 #Requires AutoHotkey v2.0+
 #SingleInstance Force
 
+#include UIA-v2\Lib\UIA.ahk
+
 ; -----------------------------------------------------------------------------
 ; This script consolidates various utility hotkeys.
 ; -----------------------------------------------------------------------------
 
-global UIA := "" ; Suppress "UIA never assigned a value" warning, initialized by UIA.ahk
 ; =============================================================================
 ; Hotstring Core Functions
 ; =============================================================================
@@ -309,7 +310,6 @@ QuickUpdateScripts() {
 
 ; Add specific word to Handy macro function
 AddWordToHandy() {
-    global UIA
     targetPath := "C:\Users\fie7ca\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Handy.lnk"
     
     try {
@@ -331,10 +331,58 @@ AddWordToHandy() {
         if !el
             return
 
-        ; Locate and click "Advanced" button
-        advancedBtn := el.FindFirst({Type: 50020, Name: "Advanced"})
+        ; Locate and click "Advanced" - find Group element directly by Type and ClassName pattern
+        ; The clickable target is the Group (50026) with ClassName containing "cursor-pointer" and "flex gap-2 items-center"
+        advancedBtn := ""
+        try {
+            allGroups := el.FindAll({Type: 50026})
+            if allGroups {
+                for group in allGroups {
+                    try {
+                        groupClassName := group.ClassName
+                        ; Look for Group with cursor-pointer and flex gap-2 items-center (Advanced button pattern)
+                        if (InStr(groupClassName, "cursor-pointer") && InStr(groupClassName, "flex gap-2 items-center")) {
+                            ; Verify it contains "Advanced" text by checking children
+                            try {
+                                advancedText := group.FindFirst({Type: 50020, Name: "Advanced"})
+                                if advancedText {
+                                    advancedBtn := group
+                                    break
+                                }
+                            } catch {
+                            }
+                        }
+                    } catch {
+                    }
+                }
+            }
+        } catch {
+        }
+        
+        ; Fallback: Find by Name "Advanced" and verify parent has correct ClassName
+        if !advancedBtn {
+            advancedElement := el.FindFirst({Name: "Advanced"})
+            if advancedElement {
+                try {
+                    parentGroup := advancedElement.GetParentElement()
+                    ; Verify parent is a Group with cursor-pointer class (clickable)
+                    if (parentGroup && parentGroup.Type = 50026 && InStr(parentGroup.ClassName, "cursor-pointer")) {
+                        advancedBtn := parentGroup
+                    }
+                } catch {
+                }
+            }
+        }
+        
         if advancedBtn {
-            advancedBtn.Click()
+            try {
+                advancedBtn.Click()
+            } catch Error as clickErr {
+                try {
+                    advancedBtn.Invoke()
+                } catch {
+                }
+            }
         }
         
         Sleep 200
