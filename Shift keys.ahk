@@ -11602,8 +11602,8 @@ HandleGeminiModelSelection(char) {
         ; Ignore cleanup errors
     }
 
-l    ; Small delay to ensure GUI cleanup is complete
-    Sleep 150
+    ; Small delay to ensure GUI cleanup is complete
+    Sleep 100
 
     ; Show loading indicator (with error handling)
     try {
@@ -11645,107 +11645,15 @@ l    ; Small delay to ensure GUI cleanup is complete
             }
         }
 
-        Sleep 150  ; Small settle time
-
-        ; Initialize UIA
-        uia := ""
-        try {
-            uia := UIA_Browser()
-        } catch Error as browserErr {
-            return
-        }
-
-        if (!IsObject(uia)) {
-            return
-        }
-
-        Sleep 120  ; Minimal settle before querying UIA
-
-        ; Find the Gemini prompt input field
-        promptField := 0
-
-        ; Primary strategy: Find by Name "Enter a prompt here" with Type 50004 (Edit)
-        try {
-            promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
-        } catch {
-            ; Silently continue to fallbacks
-        }
-
-        ; Fallback 1: Try by Type "Edit" and Name "Enter a prompt here"
-        if !promptField {
-            try {
-                promptField := uia.FindFirst({ Type: "Edit", Name: "Enter a prompt here" })
-            } catch {
-            }
-        }
-
-        ; Fallback 2: Try by ClassName containing "ql-editor" or "new-input-ui" (substring match)
-        if !promptField {
-            try {
-                allEdits := uia.FindAll({ Type: 50004 })
-                for edit in allEdits {
-                    if (InStr(edit.ClassName, "ql-editor") || InStr(edit.ClassName, "new-input-ui")) {
-                        if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "prompt") {
-                            promptField := edit
-                            break
-                        }
-                    }
-                }
-            } catch {
-            }
-        }
-
-        ; Fallback 3: Try finding by ClassName containing "ql-editor" (most specific identifier)
-        if !promptField {
-            try {
-                allEdits := uia.FindAll({ Type: 50004 })
-                for edit in allEdits {
-                    if InStr(edit.ClassName, "ql-editor") {
-                        promptField := edit
-                        break
-                    }
-                }
-            } catch {
-            }
-        }
-
-        ; Fallback 4: Try finding by Name with substring match (in case of localization variations)
-        if !promptField {
-            try {
-                allEdits := uia.FindAll({ Type: 50004 })
-                for edit in allEdits {
-                    if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "Digite um prompt") || InStr(edit.Name, "prompt") {
-                        ; Additional check to ensure it's the prompt field (has ql-editor in className)
-                        if InStr(edit.ClassName, "ql-editor") {
-                            promptField := edit
-                            break
-                        }
-                    }
-                }
-            } catch {
-            }
-        }
-
-        if (!promptField) {
-            return
-        }
-
-        ; Focus the input field
-        promptField.SetFocus()
+        ; Small settle time for window activation
         Sleep 50
-        ; Ensure focus was successful
-        if (!promptField.HasKeyboardFocus) {
-            ; Fallback: try clicking if SetFocus didn't work
-            promptField.Click()
-            Sleep 50
-        }
 
         ; Map model name to lowercase command
         modelCommand := "@" . StrLower(modelName)
 
-        ; Type the model command
+        ; Type the model command directly (no need to find input field)
         Send modelCommand
-        Sleep 100
+        Sleep 50
 
         ; Submit by pressing Enter
         Send "{Enter}"
