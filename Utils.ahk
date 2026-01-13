@@ -485,9 +485,55 @@ ToggleOutlookAndTeams() {
                 MsgBox "Error launching Teams: " e.Message
             }
             
-            ; Activate Outlook at the end
+            ; Wait for applications to start and then activate in sequence
+            ; First: Activate Teams (even if minimized to system tray)
+            try {
+                ; Wait for Teams process to exist
+                if (teamsRunning || ProcessExist("ms-teams.exe")) {
+                    ; Wait for Teams window to appear (up to 5 seconds)
+                    WinWait("ahk_exe ms-teams.exe", , 5)
+                    
+                    ; Find and activate Teams window (handle system tray case)
+                    teamsActivated := false
+                    static teamsProcesses := ["ms-teams.exe", "Teams.exe", "MSTeams.exe"]
+                    for proc in teamsProcesses {
+                        if (teamsActivated) {
+                            break
+                        }
+                        for hwnd in WinGetList("ahk_exe " proc) {
+                            try {
+                                ; Check if window is minimized
+                                windowState := WinGetMinMax(hwnd)
+                                if (windowState = -1) {
+                                    ; Window is minimized, restore it first
+                                    WinRestore(hwnd)
+                                    Sleep 100
+                                }
+                                ; Activate the window
+                                WinActivate(hwnd)
+                                if WinWaitActive("ahk_id " hwnd, , 1) {
+                                    ; Successfully activated
+                                    teamsActivated := true
+                                    break
+                                }
+                            } catch {
+                                ; Try next window
+                                continue
+                            }
+                        }
+                    }
+                }
+            } catch Error as e {
+                ; Silently fail if Teams activation doesn't work
+            }
+            
+            ; Second: Activate Outlook last (so it gets final focus)
             try {
                 if (ProcessExist("OUTLOOK.EXE")) {
+                    ; Wait for Outlook window to appear (up to 5 seconds)
+                    WinWait("ahk_exe OUTLOOK.EXE", , 5)
+                    
+                    ; Activate Outlook (this will bring it to foreground, overriding Teams)
                     WinActivate("ahk_exe OUTLOOK.EXE")
                     WinWaitActive("ahk_exe OUTLOOK.EXE", , 2)
                 }
