@@ -398,6 +398,79 @@ AddWordToHandy() {
 }
 
 ; =============================================================================
+; Helper: EnumWindows callback to find Teams windows
+; =============================================================================
+; Global variables for EnumWindows callback
+global g_EnumTeamsPID := 0
+global g_EnumTeamsWindows := []
+
+EnumWindowsCallback(hwnd, lParam) {
+    global g_EnumTeamsPID, g_EnumTeamsWindows
+    try {
+        ; Get window's process ID
+        winPID := 0
+        DllCall("GetWindowThreadProcessId", "Ptr", hwnd, "UInt*", &winPID)
+        
+        ; Check if this window belongs to Teams process
+        if (winPID = g_EnumTeamsPID) {
+            ; Only add main windows (not child windows)
+            ; Check if it's a top-level window
+            parent := DllCall("GetParent", "Ptr", hwnd, "Ptr")
+            if (parent = 0) {
+                ; It's a top-level window, add it
+                g_EnumTeamsWindows.Push(hwnd)
+            }
+        }
+    } catch {
+        ; Ignore errors for inaccessible windows
+    }
+    return true  ; Continue enumeration
+}
+
+; =============================================================================
+; Helper: Show centered overlay banner (reused from Microsoft Teams.ahk pattern)
+; =============================================================================
+ShowCenteredOverlay_Utils(text, duration := 1500) {
+    ; High-contrast centered banner
+    target := WinGetID("A")
+    hasWindow := false
+    if target && WinExist("ahk_id " target) {
+        try {
+            WinGetPos(&wx, &wy, &ww, &wh, target)
+            hasWindow := (ww > 0 && wh > 0)
+        } catch {
+            hasWindow := false
+        }
+    }
+
+    ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
+    ov.BackColor := "3772FF"          ; strong blue
+    ov.SetFont("s24 cFFFFFF Bold", "Segoe UI")
+    msg := ov.Add("Text", "w500 Center", text)
+    ov.Show("AutoSize Hide")          ; measure the GUI first
+    ov.GetPos(&gx, &gy, &gw, &gh)
+
+    if hasWindow {
+        cx := wx + (ww - gw)//2
+        cy := wy + (wh - gh)//2
+        ov.Show("x" . cx . " y" . cy . " NA")
+    } else {
+        ; Screen center fallback (virtual screen across monitors)
+        vx := SysGet(76)  ; SM_XVIRTUALSCREEN
+        vy := SysGet(77)  ; SM_YVIRTUALSCREEN
+        vw := SysGet(78)  ; SM_CXVIRTUALSCREEN
+        vh := SysGet(79)  ; SM_CYVIRTUALSCREEN
+        cx := vx + (vw - gw)//2
+        cy := vy + (vh - gh)//2
+        ov.Show("x" . cx . " y" . cy . " NA")
+    }
+
+    WinSetTransparent(178, ov)        ; ~70% opacity for visibility
+    Sleep duration
+    ov.Destroy()
+}
+
+; =============================================================================
 ; Toggle Outlook and Teams
 ; Toggles Outlook and Teams applications to manage RAM usage.
 ; If both are open: Closes Outlook and minimizes Teams to system tray.
@@ -490,41 +563,145 @@ ToggleOutlookAndTeams() {
             try {
                 ; Wait for Teams process to exist
                 if (teamsRunning || ProcessExist("ms-teams.exe")) {
-                    ; Wait for Teams window to appear (up to 5 seconds)
-                    WinWait("ahk_exe ms-teams.exe", , 5)
-                    
-                    ; Find and activate Teams window (handle system tray case)
                     teamsActivated := false
+                    
+                    ; Strategy 1: Try WinGetList (standard approach)
                     static teamsProcesses := ["ms-teams.exe", "Teams.exe", "MSTeams.exe"]
                     for proc in teamsProcesses {
                         if (teamsActivated) {
                             break
                         }
-                        for hwnd in WinGetList("ahk_exe " proc) {
+                        windowList := WinGetList("ahk_exe " proc)
+                        for hwnd in windowList {
                             try {
-                                ; Check if window is minimized
                                 windowState := WinGetMinMax(hwnd)
                                 if (windowState = -1) {
-                                    ; Window is minimized, restore it first
                                     WinRestore(hwnd)
                                     Sleep 100
                                 }
-                                ; Activate the window
                                 WinActivate(hwnd)
                                 if WinWaitActive("ahk_id " hwnd, , 1) {
-                                    ; Successfully activated
                                     teamsActivated := true
                                     break
                                 }
                             } catch {
-                                ; Try next window
                                 continue
                             }
                         }
                     }
+                    
+                    ; Strategy 2: Try WinExist with regex patterns (finds hidden windows)
+                    if (!teamsActivated) {
+                        ; Try regex patterns to find Teams windows
+                        regexPatterns := ["RegEx)^.*\| Microsoft Teams$", "RegEx)^Chat \| .* \| Microsoft Teams$", "RegEx)Microsoft Teams"]
+                        for pattern in regexPatterns {
+                            if hwnd := WinExist(pattern) {
+                                try {
+                                    ; Force show using ShowWindow API (SW_SHOW = 5)
+                                    DllCall("ShowWindow", "Ptr", hwnd, "Int", 5)
+                                    Sleep 100
+                                    WinActivate(hwnd)
+                                    if WinWaitActive("ahk_id " hwnd, , 1) {
+                                        teamsActivated := true
+                                        break
+                                    }
+                                } catch {
+                                    continue
+                                }
+                            }
+                        }
+                    }
+                    
+                    ; Strategy 3: Use EnumWindows API to find ALL Teams windows (including hidden in system tray)
+                    if (!teamsActivated) {
+                        teamsPID := ProcessExist("ms-teams.exe")
+                        if (!teamsPID) {
+                            teamsPID := ProcessExist("Teams.exe")
+                        }
+                        if (!teamsPID) {
+                            teamsPID := ProcessExist("MSTeams.exe")
+                        }
+                        
+                        if (teamsPID) {
+                            ; Use EnumWindows API to enumerate ALL windows (including hidden)
+                            global g_EnumTeamsPID, g_EnumTeamsWindows
+                            g_EnumTeamsPID := teamsPID
+                            g_EnumTeamsWindows := []
+                            
+                            EnumWindowsProc := CallbackCreate(EnumWindowsCallback, "Fast", 2)
+                            
+                            ; Call EnumWindows
+                            DllCall("EnumWindows", "Ptr", EnumWindowsProc, "Int64", 0)
+                            CallbackFree(EnumWindowsProc)
+                            
+                            ; Try to restore and activate each Teams window found
+                            for hwnd in g_EnumTeamsWindows {
+                                try {
+                                    ; Try multiple ShowWindow commands to restore
+                                    restoreCommands := [
+                                        {cmd: 9, name: "SW_RESTORE"},
+                                        {cmd: 5, name: "SW_SHOW"},
+                                        {cmd: 3, name: "SW_SHOWMAXIMIZED"},
+                                        {cmd: 1, name: "SW_SHOWNORMAL"}
+                                    ]
+                                    
+                                    for restoreCmd in restoreCommands {
+                                        try {
+                                            DllCall("ShowWindow", "Ptr", hwnd, "Int", restoreCmd.cmd)
+                                            Sleep 150
+                                            WinActivate(hwnd)
+                                            if WinWaitActive("ahk_id " hwnd, , 1) {
+                                                teamsActivated := true
+                                                break 2
+                                            }
+                                        } catch {
+                                            continue
+                                        }
+                                    }
+                                } catch {
+                                    continue
+                                }
+                            }
+                        }
+                    }
+                    
+                    ; Strategy 4: Try finding by window class name patterns
+                    if (!teamsActivated) {
+                        ; Try common Teams window class names
+                        classPatterns := ["Chrome_WidgetWin_1", "Chrome_WidgetWin_0"]
+                        for classPattern in classPatterns {
+                            for hwnd in WinGetList("ahk_class " classPattern) {
+                                try {
+                                    winPID := WinGetPID(hwnd)
+                                    winTitle := WinGetTitle(hwnd)
+                                    
+                                    ; Check if this belongs to Teams process
+                                    if (InStr(winTitle, "Teams", false) || winPID = ProcessExist("ms-teams.exe") || winPID = ProcessExist("Teams.exe")) {
+                                        ; Try to restore and activate
+                                        DllCall("ShowWindow", "Ptr", hwnd, "Int", 5)  ; SW_SHOW
+                                        Sleep 150
+                                        WinActivate(hwnd)
+                                        if WinWaitActive("ahk_id " hwnd, , 1) {
+                                            teamsActivated := true
+                                            break 2
+                                        }
+                                    }
+                                } catch {
+                                    continue
+                                }
+                            }
+                        }
+                    }
+                    
+                    ; Show banner with status
+                    if (teamsActivated) {
+                        ShowCenteredOverlay_Utils("Teams activated", 1500)
+                    } else {
+                        ShowCenteredOverlay_Utils("Teams: Window not found", 2000)
+                    }
                 }
             } catch Error as e {
-                ; Silently fail if Teams activation doesn't work
+                ShowCenteredOverlay_Utils("Teams: Error - " . e.Message, 2000)
             }
             
             ; Second: Activate Outlook last (so it gets final focus)

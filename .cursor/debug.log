@@ -1,0 +1,121 @@
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"Utils.ahk:490","message":"Teams activation entry","data":{"teamsRunning":21736,"processExists":true},"timestamp":38168218}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"Utils.ahk:494","message":"Before WinWait","data":{},"timestamp":38168218}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"Utils.ahk:494","message":"After WinWait","data":{"winWaitResult":false},"timestamp":38173250}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:503","message":"Before WinGetList","data":{"proc":"ms-teams.exe"},"timestamp":38173250}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:503","message":"After WinGetList","data":{"proc":"ms-teams.exe","windowCount":0},"timestamp":38173265}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:503","message":"Before WinGetList","data":{"proc":"Teams.exe"},"timestamp":38173265}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:503","message":"After WinGetList","data":{"proc":"Teams.exe","windowCount":0},"timestamp":38173281}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:503","message":"Before WinGetList","data":{"proc":"MSTeams.exe"},"timestamp":38173281}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:503","message":"After WinGetList","data":{"proc":"MSTeams.exe","windowCount":0},"timestamp":38173296}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"Utils.ahk:525","message":"Teams activation exit","data":{"teamsActivated":false},"timestamp":38173296}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"Utils.ahk:490","message":"Teams activation entry","data":{"teamsRunning":21736,"processExists":true},"timestamp":38201718}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"Utils.ahk:494","message":"Before WinWait","data":{},"timestamp":38201718}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"Utils.ahk:494","message":"After WinWait","data":{"winWaitResult":false},"timestamp":38206734}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:503","message":"Before WinGetList","data":{"proc":"ms-teams.exe"},"timestamp":38206734}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:503","message":"After WinGetList","data":{"proc":"ms-teams.exe","windowCount":0},"timestamp":38206750}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:503","message":"Before WinGetList","data":{"proc":"Teams.exe"},"timestamp":38206750}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:503","message":"After WinGetList","data":{"proc":"Teams.exe","windowCount":0},"timestamp":38206765}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:503","message":"Before WinGetList","data":{"proc":"MSTeams.exe"},"timestamp":38206781}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:503","message":"After WinGetList","data":{"proc":"MSTeams.exe","windowCount":0},"timestamp":38206781}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"Utils.ahk:525","message":"Teams activation exit","data":{"teamsActivated":false},"timestamp":38206796}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"Utils.ahk:490","message":"Teams activation entry","data":{"teamsRunning":21736,"processExists":true},"timestamp":38366328}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:496","message":"Strategy 1: WinGetList","data":{},"timestamp":38366328}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:503","message":"WinGetList result","data":{"proc":"ms-teams.exe","windowCount":0},"timestamp":38366328}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:503","message":"WinGetList result","data":{"proc":"Teams.exe","windowCount":0},"timestamp":38366343}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:503","message":"WinGetList result","data":{"proc":"MSTeams.exe","windowCount":0},"timestamp":38366343}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"F","location":"Utils.ahk:530","message":"Strategy 2: WinExist regex","data":{},"timestamp":38366359}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"G","location":"Utils.ahk:558","message":"Strategy 3: EnumWindows","data":{},"timestamp":38366359}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"G","location":"Utils.ahk:570","message":"Teams PID found","data":{"teamsPID":21736},"timestamp":38366375}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"Utils.ahk:600","message":"Teams activation exit","data":{"teamsActivated":false},"timestamp":38368375}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"Utils.ahk:490","message":"Teams activation entry","data":{"teamsRunning":21736,"processExists":true},"timestamp":38384718}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:496","message":"Strategy 1: WinGetList","data":{},"timestamp":38384718}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:503","message":"WinGetList result","data":{"proc":"ms-teams.exe","windowCount":0},"timestamp":38384718}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:503","message":"WinGetList result","data":{"proc":"Teams.exe","windowCount":0},"timestamp":38384734}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:503","message":"WinGetList result","data":{"proc":"MSTeams.exe","windowCount":0},"timestamp":38384750}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"F","location":"Utils.ahk:530","message":"Strategy 2: WinExist regex","data":{},"timestamp":38384750}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"G","location":"Utils.ahk:558","message":"Strategy 3: EnumWindows","data":{},"timestamp":38384765}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"G","location":"Utils.ahk:570","message":"Teams PID found","data":{"teamsPID":21736},"timestamp":38384781}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"Utils.ahk:600","message":"Teams activation exit","data":{"teamsActivated":false},"timestamp":38386781}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"Utils.ahk:490","message":"Teams activation entry","data":{"teamsRunning":21736,"processExists":true},"timestamp":38582468}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:496","message":"Strategy 1: WinGetList","data":{},"timestamp":38582468}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:503","message":"WinGetList result","data":{"proc":"ms-teams.exe","windowCount":0},"timestamp":38582484}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:503","message":"WinGetList result","data":{"proc":"Teams.exe","windowCount":0},"timestamp":38582484}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:503","message":"WinGetList result","data":{"proc":"MSTeams.exe","windowCount":0},"timestamp":38582500}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"F","location":"Utils.ahk:530","message":"Strategy 2: WinExist regex","data":{},"timestamp":38582500}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"G","location":"Utils.ahk:558","message":"Strategy 3: EnumWindows by PID","data":{},"timestamp":38582515}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"G","location":"Utils.ahk:570","message":"Teams PID found","data":{"teamsPID":21736},"timestamp":38582531}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"G","location":"Utils.ahk:576","message":"Total windows enumerated","data":{"totalWindows":17},"timestamp":38582531}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H","location":"Utils.ahk:623","message":"Strategy 4: Find by class name","data":{},"timestamp":38582546}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"Utils.ahk:600","message":"Teams activation exit","data":{"teamsActivated":false},"timestamp":38584656}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"Utils.ahk:490","message":"Teams activation entry","data":{"teamsRunning":21736,"processExists":true},"timestamp":38780093}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:496","message":"Strategy 1: WinGetList","data":{},"timestamp":38780093}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:503","message":"WinGetList result","data":{"proc":"ms-teams.exe","windowCount":0},"timestamp":38780093}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:503","message":"WinGetList result","data":{"proc":"Teams.exe","windowCount":0},"timestamp":38780109}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:503","message":"WinGetList result","data":{"proc":"MSTeams.exe","windowCount":0},"timestamp":38780109}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"F","location":"Utils.ahk:530","message":"Strategy 2: WinExist regex","data":{},"timestamp":38780125}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"G","location":"Utils.ahk:613","message":"Strategy 3: EnumWindows API","data":{},"timestamp":38780140}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"G","location":"Utils.ahk:625","message":"Teams PID found","data":{"teamsPID":21736},"timestamp":38780156}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"G","location":"Utils.ahk:639","message":"EnumWindows complete","data":{"teamsWindowsFound":6},"timestamp":38780156}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"G","location":"Utils.ahk:649","message":"Teams window found by EnumWindows","data":{"hwnd":591684,"title":"Microsoft Teams","class":"TeamsWebView","visible":false,"state":0},"timestamp":38780156}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"G","location":"Utils.ahk:668","message":"Strategy 3 success","data":{"hwnd":591684,"command":"SW_RESTORE"},"timestamp":38780625}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"Utils.ahk:600","message":"Teams activation exit","data":{"teamsActivated":true},"timestamp":38782187}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"Utils.ahk:490","message":"Teams activation entry","data":{"teamsRunning":21736,"processExists":true},"timestamp":38798000}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:496","message":"Strategy 1: WinGetList","data":{},"timestamp":38798000}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:503","message":"WinGetList result","data":{"proc":"ms-teams.exe","windowCount":0},"timestamp":38798015}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:503","message":"WinGetList result","data":{"proc":"Teams.exe","windowCount":0},"timestamp":38798015}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:503","message":"WinGetList result","data":{"proc":"MSTeams.exe","windowCount":0},"timestamp":38798031}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"F","location":"Utils.ahk:530","message":"Strategy 2: WinExist regex","data":{},"timestamp":38798046}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"G","location":"Utils.ahk:613","message":"Strategy 3: EnumWindows API","data":{},"timestamp":38798046}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"G","location":"Utils.ahk:625","message":"Teams PID found","data":{"teamsPID":21736},"timestamp":38798062}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"G","location":"Utils.ahk:639","message":"EnumWindows complete","data":{"teamsWindowsFound":5},"timestamp":38798062}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"G","location":"Utils.ahk:649","message":"Teams window found by EnumWindows","data":{"hwnd":3673020,"title":"Microsoft Teams","class":"TeamsWebView","visible":false,"state":0},"timestamp":38798093}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"G","location":"Utils.ahk:668","message":"Strategy 3 success","data":{"hwnd":3673020,"command":"SW_SHOW"},"timestamp":38799812}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"Utils.ahk:600","message":"Teams activation exit","data":{"teamsActivated":true},"timestamp":38801312}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"Utils.ahk:490","message":"Teams activation entry","data":{"teamsRunning":21736,"processExists":true},"timestamp":38903250}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:496","message":"Strategy 1: WinGetList","data":{},"timestamp":38903250}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:503","message":"WinGetList result","data":{"proc":"ms-teams.exe","windowCount":0},"timestamp":38903265}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:503","message":"WinGetList result","data":{"proc":"Teams.exe","windowCount":0},"timestamp":38903265}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:503","message":"WinGetList result","data":{"proc":"MSTeams.exe","windowCount":0},"timestamp":38903281}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"F","location":"Utils.ahk:530","message":"Strategy 2: WinExist regex","data":{},"timestamp":38903296}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"G","location":"Utils.ahk:613","message":"Strategy 3: EnumWindows API","data":{},"timestamp":38903296}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"G","location":"Utils.ahk:625","message":"Teams PID found","data":{"teamsPID":21736},"timestamp":38903312}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"G","location":"Utils.ahk:639","message":"EnumWindows complete","data":{"teamsWindowsFound":4},"timestamp":38903312}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"G","location":"Utils.ahk:649","message":"Teams window found by EnumWindows","data":{"hwnd":132698,"title":"","class":"MonitorChangeProbeWindow","visible":false,"state":0},"timestamp":38903328}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"G","location":"Utils.ahk:668","message":"Strategy 3 success","data":{"hwnd":132698,"command":"SW_RESTORE"},"timestamp":38903750}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"Utils.ahk:600","message":"Teams activation exit","data":{"teamsActivated":true},"timestamp":38905250}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"Utils.ahk:490","message":"Teams activation entry","data":{"teamsRunning":21736,"processExists":true},"timestamp":39008171}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:496","message":"Strategy 1: WinGetList","data":{},"timestamp":39008171}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:503","message":"WinGetList result","data":{"proc":"ms-teams.exe","windowCount":0},"timestamp":39008187}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:503","message":"WinGetList result","data":{"proc":"Teams.exe","windowCount":0},"timestamp":39008187}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:503","message":"WinGetList result","data":{"proc":"MSTeams.exe","windowCount":0},"timestamp":39008203}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"F","location":"Utils.ahk:530","message":"Strategy 2: WinExist regex","data":{},"timestamp":39008203}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"G","location":"Utils.ahk:613","message":"Strategy 3: EnumWindows API","data":{},"timestamp":39008218}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"G","location":"Utils.ahk:625","message":"Teams PID found","data":{"teamsPID":21736},"timestamp":39008234}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"G","location":"Utils.ahk:639","message":"EnumWindows complete","data":{"teamsWindowsFound":3},"timestamp":39008234}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"G","location":"Utils.ahk:649","message":"Teams window found by EnumWindows","data":{"hwnd":67240,"title":"Chat | UX Lovers | Microsoft Teams","class":"TeamsWebView","visible":false,"state":1},"timestamp":39008250}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"G","location":"Utils.ahk:668","message":"Strategy 3 success","data":{"hwnd":67240,"command":"SW_SHOW"},"timestamp":39009953}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"Utils.ahk:603","message":"Teams activation exception","data":{"error":"(32) The process cannot access the file because it is being used by another process."},"timestamp":39011453}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"Utils.ahk:490","message":"Teams activation entry","data":{"teamsRunning":21736,"processExists":true},"timestamp":39020421}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:496","message":"Strategy 1: WinGetList","data":{},"timestamp":39020421}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:503","message":"WinGetList result","data":{"proc":"ms-teams.exe","windowCount":0},"timestamp":39020437}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:503","message":"WinGetList result","data":{"proc":"Teams.exe","windowCount":0},"timestamp":39020437}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:503","message":"WinGetList result","data":{"proc":"MSTeams.exe","windowCount":0},"timestamp":39020453}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"F","location":"Utils.ahk:530","message":"Strategy 2: WinExist regex","data":{},"timestamp":39020468}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"G","location":"Utils.ahk:613","message":"Strategy 3: EnumWindows API","data":{},"timestamp":39020484}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"G","location":"Utils.ahk:625","message":"Teams PID found","data":{"teamsPID":21736},"timestamp":39020484}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"G","location":"Utils.ahk:639","message":"EnumWindows complete","data":{"teamsWindowsFound":3},"timestamp":39020500}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"G","location":"Utils.ahk:649","message":"Teams window found by EnumWindows","data":{"hwnd":67240,"title":"Chat | UX Lovers | Microsoft Teams","class":"TeamsWebView","visible":false,"state":0},"timestamp":39020500}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"G","location":"Utils.ahk:668","message":"Strategy 3 success","data":{"hwnd":67240,"command":"SW_SHOW"},"timestamp":39022203}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"Utils.ahk:600","message":"Teams activation exit","data":{"teamsActivated":true},"timestamp":39023703}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"Utils.ahk:490","message":"Teams activation entry","data":{"teamsRunning":21736,"processExists":true},"timestamp":39107546}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:496","message":"Strategy 1: WinGetList","data":{},"timestamp":39107546}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:503","message":"WinGetList result","data":{"proc":"ms-teams.exe","windowCount":0},"timestamp":39107562}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:503","message":"WinGetList result","data":{"proc":"Teams.exe","windowCount":0},"timestamp":39107578}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:503","message":"WinGetList result","data":{"proc":"MSTeams.exe","windowCount":0},"timestamp":39107578}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"F","location":"Utils.ahk:530","message":"Strategy 2: WinExist regex","data":{},"timestamp":39107593}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"G","location":"Utils.ahk:613","message":"Strategy 3: EnumWindows API","data":{},"timestamp":39107593}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"G","location":"Utils.ahk:625","message":"Teams PID found","data":{"teamsPID":21736},"timestamp":39107625}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"G","location":"Utils.ahk:639","message":"EnumWindows complete","data":{"teamsWindowsFound":3},"timestamp":39107625}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"G","location":"Utils.ahk:649","message":"Teams window found by EnumWindows","data":{"hwnd":67240,"title":"Chat | UX Lovers | Microsoft Teams","class":"TeamsWebView","visible":false,"state":0},"timestamp":39107625}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"G","location":"Utils.ahk:668","message":"Strategy 3 success","data":{"hwnd":67240,"command":"SW_RESTORE"},"timestamp":39108031}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"Utils.ahk:600","message":"Teams activation exit","data":{"teamsActivated":true},"timestamp":39109546}
