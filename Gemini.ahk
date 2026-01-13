@@ -216,9 +216,9 @@ CenterMouse() {
 
 ; --- Hotkeys ----------------------------------------------------------------
 
-; Win+Alt+Shift+7 : Read aloud and copy the last message in Gemini (activates Gemini window first, copies the message, then clicks last "Show more options" then "Text to speech")
+; Win+Alt+Shift+O : Read aloud and copy the last message in Gemini (activates Gemini window first, copies the message, then clicks last "Show more options" then "Text to speech")
 ; If reading is active, clicking this shortcut again will pause the reading
-#!+7:: {
+#!+o:: {
 
     try {
         ; Step 1: Activate Gemini window globally
@@ -507,8 +507,8 @@ CenterMouse() {
     }
 }
 
-; Win+Alt+Shift+J : Click the last Copy button in Gemini (activates Gemini window first, then copies the preceding message)
-#!+j:: {
+; Win+Alt+Shift+P : Click the last Copy button in Gemini (activates Gemini window first, then copies the preceding message)
+#!+p:: {
     try {
         ; Step 1: Activate Gemini window globally
         SetTitleMatchMode(2)
@@ -527,7 +527,7 @@ CenterMouse() {
 
         ; Optimization: Bottom-up search starting from the Prompt field
         ; The "Copy" button for the last message is typically a preceding sibling of the Prompt field.
-        
+
         promptField := 0
         ; Try to find the prompt field using robust strategies
         try {
@@ -556,7 +556,7 @@ CenterMouse() {
                     sibling := sibling.Navigate("PreviousSibling")
                     if (!sibling)
                         break
-                    
+
                     ; Check if this sibling is the Copy button
                     if (sibling.Type == 50000 && (sibling.Name = "Copy" || InStr(sibling.Name, "Copy", false))) {
                         lastCopyButton := sibling
@@ -610,7 +610,7 @@ CenterMouse() {
                     ; If getting location fails, skip this button
                 }
             }
-            
+
             ; If position-based approach didn't work, just use the last one in the array
             if (!lastCopyButton && allCopyButtons.Length > 0) {
                 lastCopyButton := allCopyButtons[allCopyButtons.Length]
