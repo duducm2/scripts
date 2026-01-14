@@ -768,7 +768,7 @@ DictationLoopStart() {
 }
 
 DictationLoopStop() {
-    global g_DictationLoopActive
+    global g_DictationLoopActive, g_DictationLoopSound
     
     ; Safety check
     if (!g_DictationLoopActive) {
@@ -777,6 +777,9 @@ DictationLoopStop() {
     
     ; Send Win+Alt+Shift+0 to stop dictation (triggers transcription)
     SendInput "#!+0"
+    
+    ; Play sound to notify that transcription has started
+    SoundPlay(g_DictationLoopSound)
     
     ; Schedule next start after 2 seconds (buffer for processing)
     SetTimer(DictationLoopStart, 2000)
@@ -3922,6 +3925,7 @@ global g_DictationCompletionChimeScheduled := false  ; Flag to prevent multiple 
 global g_LastDictationSoundTick := 0  ; Timestamp of last dictation sound to throttle audio output
 global g_DictationStartSound := A_ScriptDir . "\sounds\speach-start.wav"
 global g_DictationStopSound := A_ScriptDir . "\sounds\speach-finished.wav"
+global g_DictationLoopSound := A_ScriptDir . "\sounds\retro1.wav"
 global g_PendingDictationAction := ""  ; Action to execute after transcription: "Paste" or "PasteEnter"
 global g_KeepIndicatorVisible := false  ; Flag to keep indicator visible until paste action completes
 global g_LastStateTransitionTick := 0  ; Timestamp of last state transition to prevent rapid re-detection
