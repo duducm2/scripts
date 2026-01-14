@@ -3868,6 +3868,7 @@ global g_LastDictationSoundTick := 0  ; Timestamp of last dictation sound to thr
 global g_DictationStartSound := A_ScriptDir . "\sounds\speach-start.wav"
 global g_DictationStopSound := A_ScriptDir . "\sounds\speach-finished.wav"
 global g_PendingDictationAction := ""  ; Action to execute after transcription: "Paste" or "PasteEnter"
+global g_KeepIndicatorVisible := false  ; Flag to keep indicator visible until paste action completes
 
 ; Constants for dictation indicator
 global DICTATION_SQUARE_SIZE := 150  ; 3x bigger (was 50)
@@ -4046,7 +4047,7 @@ SafePlayDictationSound(filePath) {
 
 ; Play completion chime after transcription finishes
 PlayDictationCompletionChime(*) {
-    global g_DictationCompletionChimeScheduled, g_PendingDictationAction
+    global g_DictationCompletionChimeScheduled, g_PendingDictationAction, g_KeepIndicatorVisible
 
     ; CRITICAL: Test-and-set pattern - clear flag IMMEDIATELY to prevent duplicates
     ; Read flag value, clear it immediately, then check if we should play
@@ -4062,9 +4063,21 @@ PlayDictationCompletionChime(*) {
         g_PendingDictationAction := ""  ; Clear immediately after reading
 
         if (pendingAction = "Paste") {
+            ; Show banner notification
+            ShowCenteredOverlay_Utils("Pasting transcribed text...", 800)
             Send "^v"
+            ; Hide indicator after paste completes
+            Sleep 100  ; Small delay to ensure paste completes
+            HideDictationIndicator()
+            g_KeepIndicatorVisible := false
         } else if (pendingAction = "PasteEnter") {
+            ; Show banner notification
+            ShowCenteredOverlay_Utils("Pasting and submitting...", 800)
             Send "^v{Enter}"
+            ; Hide indicator after paste and submit completes
+            Sleep 100  ; Small delay to ensure paste and enter completes
+            HideDictationIndicator()
+            g_KeepIndicatorVisible := false
         }
     }
 }
@@ -4109,7 +4122,12 @@ CheckDictationRecordingWindow() {
         g_DictationActive := false
 
         StopDictationPulseTimer()
-        HideDictationIndicator()
+
+        ; Only hide indicator if there's no pending action (keep visible for 7 and J workflows)
+        global g_KeepIndicatorVisible
+        if (!g_KeepIndicatorVisible) {
+            HideDictationIndicator()
+        }
 
         ; Schedule completion chime
         g_DictationCompletionChimeScheduled := true
@@ -4192,12 +4210,14 @@ OnExit(CleanupDictationIndicator)
 ; Step 3: Execute paste action
 ~#!+7::
 {
-    global g_PendingDictationAction, g_DictationActive
+    global g_PendingDictationAction, g_DictationActive, g_KeepIndicatorVisible
 
     ; Only proceed if dictation is currently active
     if (g_DictationActive) {
         ; Set pending action to execute after transcription completes
         g_PendingDictationAction := "Paste"
+        ; Keep indicator visible until paste completes
+        g_KeepIndicatorVisible := true
 
         ; Programmatically send Win+Alt+Shift+0 to stop dictation
         ; Use SendInput for reliable key sending
@@ -4211,12 +4231,14 @@ OnExit(CleanupDictationIndicator)
 ; Step 3: Execute paste and enter action
 ~#!+j::
 {
-    global g_PendingDictationAction, g_DictationActive
+    global g_PendingDictationAction, g_DictationActive, g_KeepIndicatorVisible
 
     ; Only proceed if dictation is currently active
     if (g_DictationActive) {
         ; Set pending action to execute after transcription completes
         g_PendingDictationAction := "PasteEnter"
+        ; Keep indicator visible until paste and submit completes
+        g_KeepIndicatorVisible := true
 
         ; Programmatically send Win+Alt+Shift+0 to stop dictation
         ; Use SendInput for reliable key sending
