@@ -3870,6 +3870,21 @@ global g_DictationStartSound := A_ScriptDir . "\sounds\speach-start.wav"
 global g_DictationStopSound := A_ScriptDir . "\sounds\speach-finished.wav"
 global g_PendingDictationAction := ""  ; Action to execute after transcription: "Paste" or "PasteEnter"
 global g_KeepIndicatorVisible := false  ; Flag to keep indicator visible until paste action completes
+global g_LastStateTransitionTick := 0  ; Timestamp of last state transition to prevent rapid re-detection
+
+; Debug logging helper for dictation workflow
+LogDebug(sessionId, runId, hypothesisId, location, message, data := "") {
+    logPath := A_ScriptDir "\.cursor\debug.log"
+    timestamp := A_Now "." Format("{:03}", A_MSec)
+    logEntry := Format(
+        '{{"sessionId":"{}","runId":"{}","hypothesisId":"{}","location":"{}","message":"{}","timestamp":"{}","data":{}}}',
+        sessionId, runId, hypothesisId, location, message, timestamp, data ? '"' . data . '"' : '""')
+    try {
+        FileAppend(logEntry . "`n", logPath)
+    } catch {
+        ; Silently ignore logging errors
+    }
+}
 
 ; Constants for dictation indicator
 global DICTATION_SQUARE_SIZE := 150  ; 3x bigger (was 50)
@@ -4072,13 +4087,22 @@ SafePlayDictationSound(filePath) {
 PlayDictationCompletionChime(*) {
     global g_DictationCompletionChimeScheduled, g_PendingDictationAction, g_KeepIndicatorVisible
 
+    ; #region agent log
+    LogDebug("debug-session", "run1", "D", "Utils.ahk:4086", "PlayDictationCompletionChime called",
+        "g_DictationCompletionChimeScheduled=" . (g_DictationCompletionChimeScheduled ? "true" : "false"))
+    ; #endregion
     ; CRITICAL: Test-and-set pattern - clear flag IMMEDIATELY to prevent duplicates
-    ; Read flag value, clear it immediately, then check if we should play
+    ; Use Critical to ensure atomicity
+    Critical "On"
     chimeShouldPlay := g_DictationCompletionChimeScheduled
     g_DictationCompletionChimeScheduled := false  ; Clear IMMEDIATELY to prevent other calls
+    Critical "Off"
 
     ; Only play if flag was set (prevent duplicate execution)
     if (chimeShouldPlay) {
+        ; #region agent log
+        LogDebug("debug-session", "run1", "D", "Utils.ahk:4081", "Chime executing", "chimeShouldPlay=true")
+        ; #endregion
         SafePlayDictationSound(g_DictationStopSound)
 
         ; Execute pending action if one was set (from Win+Alt+Shift+J or 7)
@@ -4086,17 +4110,36 @@ PlayDictationCompletionChime(*) {
         g_PendingDictationAction := ""  ; Clear immediately after reading
 
         if (pendingAction = "Paste") {
+            ; #region agent log
+            LogDebug("debug-session", "run1", "D", "Utils.ahk:4109", "Paste Action Triggered", "pendingAction=Paste")
+            ; #endregion
             ; Update indicator text to show status
             UpdateDictationIndicatorText("Pasting...")
+            ; #region agent log
+            LogDebug("debug-session", "run1", "D", "Utils.ahk:4115", "Sending Ctrl+V", "")
+            ; #endregion
             Send "^v"
+            ; #region agent log
+            LogDebug("debug-session", "run1", "D", "Utils.ahk:4117", "Ctrl+V sent", "")
+            ; #endregion
             ; Hide indicator after paste completes
             Sleep 100  ; Small delay to ensure paste completes
             HideDictationIndicator()
             g_KeepIndicatorVisible := false
         } else if (pendingAction = "PasteEnter") {
+            ; #region agent log
+            LogDebug("debug-session", "run1", "D", "Utils.ahk:4120", "PasteEnter Action Triggered",
+                "pendingAction=PasteEnter")
+            ; #endregion
             ; Update indicator text to show status
             UpdateDictationIndicatorText("Pasting & Submitting...")
+            ; #region agent log
+            LogDebug("debug-session", "run1", "D", "Utils.ahk:4127", "Sending Ctrl+V+Enter", "")
+            ; #endregion
             Send "^v{Enter}"
+            ; #region agent log
+            LogDebug("debug-session", "run1", "D", "Utils.ahk:4129", "Ctrl+V+Enter sent", "")
+            ; #endregion
             ; Hide indicator after paste and submit completes
             Sleep 100  ; Small delay to ensure paste and enter completes
             HideDictationIndicator()
@@ -4109,7 +4152,7 @@ PlayDictationCompletionChime(*) {
 ; Also updates indicator position to follow active window
 ; Refactored with state locking/cooldown pattern to prevent window flicker issues
 CheckDictationRecordingWindow() {
-    global g_DictationActive, g_DictationCompletionChimeScheduled
+    global g_DictationActive, g_DictationCompletionChimeScheduled, g_LastStateTransitionTick
 
     ; Check if the "Recording" window exists
     windowExists := false
@@ -4118,9 +4161,18 @@ CheckDictationRecordingWindow() {
     } catch {
         windowExists := false
     }
+    ; #region agent log
+    LogDebug("debug-session", "run1", "C,F", "Utils.ahk:4159", "Window exists check", windowExists ? "true" : "false")
+    LogDebug("debug-session", "run1", "C", "Utils.ahk:4153", "CheckDictationRecordingWindow entry",
+        "g_DictationActive=" . (g_DictationActive ? "true" : "false") . ", g_DictationCompletionChimeScheduled=" . (
+            g_DictationCompletionChimeScheduled ? "true" : "false"))
+    ; #endregion
 
     ; Step 3: Handle Start - if window exists AND not active
     if (windowExists && !g_DictationActive) {
+        ; #region agent log
+        LogDebug("debug-session", "run1", "C", "Utils.ahk:4172", "State Change Detected", "Start: inactive->active")
+        ; #endregion
         g_DictationActive := true
 
         ; Run PowerShell script to set mic volume to 100%
@@ -4142,7 +4194,44 @@ CheckDictationRecordingWindow() {
     }
     ; Step 4: Handle Stop - if window does NOT exist AND active
     else if (!windowExists && g_DictationActive) {
-        g_DictationActive := false
+        ; CRITICAL: Use Critical section to make entire stop transition atomic
+        ; This prevents multiple simultaneous calls from processing the same transition
+        Critical "On"
+
+        ; Double-check conditions inside critical section (they may have changed)
+        if (!g_DictationActive || g_DictationCompletionChimeScheduled) {
+            Critical "Off"
+            ; #region agent log
+            LogDebug("debug-session", "run1", "C", "Utils.ahk:4199", "State transition skipped",
+                "Already processed or chime scheduled")
+            ; #endregion
+            return
+        }
+
+        ; Cooldown check: prevent rapid re-detection of same transition (1 second cooldown)
+        ; #region agent log
+        LogDebug("debug-session", "run1", "C", "Utils.ahk:4211", "Cooldown check",
+            "A_TickCount=" . A_TickCount . ", g_LastStateTransitionTick=" . g_LastStateTransitionTick . ", diff=" . (
+                A_TickCount - g_LastStateTransitionTick))
+        ; #endregion
+        if (g_LastStateTransitionTick && (A_TickCount - g_LastStateTransitionTick < 1000)) {
+            Critical "Off"
+            ; #region agent log
+            LogDebug("debug-session", "run1", "C", "Utils.ahk:4217", "State transition skipped",
+                "Within cooldown period")
+            ; #endregion
+            return
+        }
+
+        ; Claim this transition: set flag, timestamp, and state atomically
+        g_DictationCompletionChimeScheduled := true
+        g_LastStateTransitionTick := A_TickCount
+        g_DictationActive := false  ; Move inside Critical block for atomicity
+        Critical "Off"
+
+        ; #region agent log
+        LogDebug("debug-session", "run1", "C", "Utils.ahk:4228", "State Change Detected", "Stop: active->inactive")
+        ; #endregion
 
         StopDictationPulseTimer()
 
@@ -4152,8 +4241,11 @@ CheckDictationRecordingWindow() {
             HideDictationIndicator()
         }
 
-        ; Schedule completion chime
-        g_DictationCompletionChimeScheduled := true
+        ; Schedule completion chime (flag already set in atomic check above)
+        ; #region agent log
+        LogDebug("debug-session", "run1", "D", "Utils.ahk:4231", "Chime Scheduled",
+            "g_DictationCompletionChimeScheduled=true")
+        ; #endregion
         SetTimer(PlayDictationCompletionChime, -2500)
     }
     ; If already active and window exists, just update indicator position
@@ -4191,6 +4283,9 @@ StopDictationCheckTimer() {
 ; Toggle dictation mode on/off
 ; The check timer handles everything automatically, this just triggers an immediate check
 ToggleDictationMode() {
+    ; #region agent log
+    LogDebug("debug-session", "run1", "B,C", "Utils.ahk:4193", "ToggleDictationMode called", "")
+    ; #endregion
     ; Trigger immediate check (the timer will handle showing/hiding)
     CheckDictationRecordingWindow()
 }
@@ -4223,6 +4318,9 @@ OnExit(CleanupDictationIndicator)
 ; First press starts dictation, second press stops and copies to clipboard
 ~#!+0::
 {
+    ; #region agent log
+    LogDebug("debug-session", "run1", "A,B,E", "Utils.ahk:4224", "Hotkey 0 pressed", "")
+    ; #endregion
     ; Just trigger the check - chimes are handled by state transitions
     ToggleDictationMode()
 }
@@ -4231,17 +4329,23 @@ OnExit(CleanupDictationIndicator)
 ; Step 1: Programmatically stop dictation (send Win+Alt+Shift+0)
 ; Step 2: Wait for transcription to complete
 ; Step 3: Execute paste action
-~#!+7::
+#!+7::
 {
     global g_PendingDictationAction, g_DictationActive, g_KeepIndicatorVisible
 
+    ; #region agent log
+    LogDebug("debug-session", "run1", "B", "Utils.ahk:4234", "Hotkey 7 pressed", "g_DictationActive=" . (
+        g_DictationActive ? "true" : "false"))
+    ; #endregion
     ; Only proceed if dictation is currently active
     if (g_DictationActive) {
         ; Set pending action to execute after transcription completes
         g_PendingDictationAction := "Paste"
         ; Keep indicator visible until paste completes
         g_KeepIndicatorVisible := true
-
+        ; #region agent log
+        LogDebug("debug-session", "run1", "B", "Utils.ahk:4240", "SendInput #!+0", "g_PendingDictationAction=Paste")
+        ; #endregion
         ; Programmatically send Win+Alt+Shift+0 to stop dictation
         ; Use SendInput for reliable key sending
         SendInput "#!+0"
@@ -4252,17 +4356,24 @@ OnExit(CleanupDictationIndicator)
 ; Step 1: Programmatically stop dictation (send Win+Alt+Shift+0)
 ; Step 2: Wait for transcription to complete
 ; Step 3: Execute paste and enter action
-~#!+j::
+#!+j::
 {
     global g_PendingDictationAction, g_DictationActive, g_KeepIndicatorVisible
 
+    ; #region agent log
+    LogDebug("debug-session", "run1", "B", "Utils.ahk:4250", "Hotkey J pressed", "g_DictationActive=" . (
+        g_DictationActive ? "true" : "false"))
+    ; #endregion
     ; Only proceed if dictation is currently active
     if (g_DictationActive) {
         ; Set pending action to execute after transcription completes
         g_PendingDictationAction := "PasteEnter"
         ; Keep indicator visible until paste and submit completes
         g_KeepIndicatorVisible := true
-
+        ; #region agent log
+        LogDebug("debug-session", "run1", "B", "Utils.ahk:4256", "SendInput #!+0",
+            "g_PendingDictationAction=PasteEnter")
+        ; #endregion
         ; Programmatically send Win+Alt+Shift+0 to stop dictation
         ; Use SendInput for reliable key sending
         SendInput "#!+0"
