@@ -2790,7 +2790,8 @@ global g_WikipediaScrollHistory := []
                 }
                 if (!searchToggle) {
                     try {
-                        searchToggle := searchGroup.FindElement({ Type: 50005, Value: "https://en.wikipedia.org/wiki/Special:Search", cs: false })
+                        searchToggle := searchGroup.FindElement({ Type: 50005, Value: "https://en.wikipedia.org/wiki/Special:Search",
+                            cs: false })
                     } catch {
                     }
                 }
@@ -2801,7 +2802,8 @@ global g_WikipediaScrollHistory := []
         ; Strategy 2: Search by Value (URL) directly from root
         if (!searchToggle) {
             try {
-                searchToggle := root.FindElement({ Type: 50005, Value: "https://en.wikipedia.org/wiki/Special:Search", cs: false })
+                searchToggle := root.FindElement({ Type: 50005, Value: "https://en.wikipedia.org/wiki/Special:Search",
+                    cs: false })
             } catch {
             }
         }
@@ -2878,7 +2880,7 @@ global g_WikipediaScrollHistory := []
             ; Try multiple click strategies if element is still valid
             if (searchToggle) {
                 clicked := false
-                
+
                 ; Strategy 1: Try Invoke pattern (most reliable for links/buttons)
                 try {
                     searchToggle.Invoke()
@@ -7983,6 +7985,17 @@ IsEditorActive() {
 ; Cursor Shortcuts
 ;-------------------------------------------------------------------
 #HotIf IsEditorActive() && WinGetClass("A") != "#32770"
+
+^e::
+{
+    Send "^e"
+    Sleep 400
+    Send "!+e"
+    Sleep 300
+    Send "{Escape}"  ; ESC
+    Send "{Escape}"  ; ESC
+    Send "^i"
+}
 
 ; Ctrl + 1 : Remove clustering and focus on the code
 ^1::
