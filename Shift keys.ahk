@@ -1258,8 +1258,11 @@ r=== CLIP ANGEL ===
 [Win+Alt+Shift+8] > Get word pronunciation, definition, and Portuguese translation (Gemini)
 [Win+Alt+Shift+O] > Read aloud the last message in Gemini
 [Win+Alt+Shift+P] > Copy the last message in Gemini
-[Win+Alt+Shift+7] > Empty
-[Win+Alt+Shift+J] > Empty
+
+=== HANDY DICTATION ===
+[Win+Alt+Shift+0] > Voice-to-text
+[Win+Alt+Shift+7] > Voice-to-text and paste
+[Win+Alt+Shift+J] > Voice-to-text, paste and submit
 
 === YOUTUBE ===
 [Win+Alt+Shift+H] > Activates Youtube
@@ -1300,7 +1303,6 @@ r=== CLIP ANGEL ===
 === GENERAL ===
 [Win+Alt+Shift+U] > Quick string shortcuts
 [Win+Alt+Shift+Q] > Jump mouse on the middle
-[Win+Alt+Shift+0] > Voice-to-text
 [Win+Alt+Shift+X] > Activate hunt and Peck
 [Win+Alt+Shift+→] > Show square selector (right direction)
 [Win+Alt+Shift+←] > Show square selector (left direction)

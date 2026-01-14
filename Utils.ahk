@@ -3867,6 +3867,7 @@ global g_DictationCompletionChimeScheduled := false  ; Flag to prevent multiple 
 global g_LastDictationSoundTick := 0  ; Timestamp of last dictation sound to throttle audio output
 global g_DictationStartSound := A_ScriptDir . "\sounds\speach-start.wav"
 global g_DictationStopSound := A_ScriptDir . "\sounds\speach-finished.wav"
+global g_PendingDictationAction := ""  ; Action to execute after transcription: "Paste" or "PasteEnter"
 
 ; Constants for dictation indicator
 global DICTATION_SQUARE_SIZE := 150  ; 3x bigger (was 50)
@@ -4045,7 +4046,7 @@ SafePlayDictationSound(filePath) {
 
 ; Play completion chime after transcription finishes
 PlayDictationCompletionChime(*) {
-    global g_DictationCompletionChimeScheduled
+    global g_DictationCompletionChimeScheduled, g_PendingDictationAction
 
     ; CRITICAL: Test-and-set pattern - clear flag IMMEDIATELY to prevent duplicates
     ; Read flag value, clear it immediately, then check if we should play
@@ -4055,6 +4056,16 @@ PlayDictationCompletionChime(*) {
     ; Only play if flag was set (prevent duplicate execution)
     if (chimeShouldPlay) {
         SafePlayDictationSound(g_DictationStopSound)
+
+        ; Execute pending action if one was set (from Win+Alt+Shift+J or 7)
+        pendingAction := g_PendingDictationAction
+        g_PendingDictationAction := ""  ; Clear immediately after reading
+
+        if (pendingAction = "Paste") {
+            Send "^v"
+        } else if (pendingAction = "PasteEnter") {
+            Send "^v{Enter}"
+        }
     }
 }
 
@@ -4168,10 +4179,49 @@ OnExit(CleanupDictationIndicator)
 
 ; Toggle dictation mode with Win+Alt+Shift+0
 ; The ~ prefix allows the key combination to pass through to handy.exe
+; First press starts dictation, second press stops and copies to clipboard
 ~#!+0::
 {
     ; Just trigger the check - chimes are handled by state transitions
     ToggleDictationMode()
+}
+
+; Dictation with paste action - Win+Alt+Shift+7
+; Step 1: Programmatically stop dictation (send Win+Alt+Shift+0)
+; Step 2: Wait for transcription to complete
+; Step 3: Execute paste action
+~#!+7::
+{
+    global g_PendingDictationAction, g_DictationActive
+
+    ; Only proceed if dictation is currently active
+    if (g_DictationActive) {
+        ; Set pending action to execute after transcription completes
+        g_PendingDictationAction := "Paste"
+
+        ; Programmatically send Win+Alt+Shift+0 to stop dictation
+        ; Use SendInput for reliable key sending
+        SendInput "#!+0"
+    }
+}
+
+; Dictation with paste and submit action - Win+Alt+Shift+J
+; Step 1: Programmatically stop dictation (send Win+Alt+Shift+0)
+; Step 2: Wait for transcription to complete
+; Step 3: Execute paste and enter action
+~#!+j::
+{
+    global g_PendingDictationAction, g_DictationActive
+
+    ; Only proceed if dictation is currently active
+    if (g_DictationActive) {
+        ; Set pending action to execute after transcription completes
+        g_PendingDictationAction := "PasteEnter"
+
+        ; Programmatically send Win+Alt+Shift+0 to stop dictation
+        ; Use SendInput for reliable key sending
+        SendInput "#!+0"
+    }
 }
 
 ; Start the check timer automatically when script loads
