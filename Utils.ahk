@@ -3858,6 +3858,7 @@ Escape::
 ; Global variables for dictation indicator
 global g_DictationActive := false
 global g_DictationIndicatorGui := false
+global g_DictationIndicatorText := false  ; Text control for status messages
 global g_DictationPulseTimer := false
 global g_DictationCheckTimer := false  ; Timer to check if Recording window still exists
 global g_DictationPulseDirection := 1  ; 1 = fading in, -1 = fading out
@@ -3931,6 +3932,8 @@ ShowDictationIndicator() {
                 DICTATION_SQUARE_SIZE)
             g_LastActiveMonitor := monitorIndex
         }
+        ; Clear any status text when starting new dictation
+        UpdateDictationIndicatorText("")
         return
     }
 
@@ -3944,6 +3947,12 @@ ShowDictationIndicator() {
     g_DictationIndicatorGui.Opt("-DPIScale")
     g_DictationIndicatorGui.BackColor := "FF0000"  ; Red
 
+    ; Add text control for status messages (centered, white text, bold)
+    g_DictationIndicatorGui.SetFont("s14 cFFFFFF Bold", "Segoe UI")
+    g_DictationIndicatorGui.MarginX := 10
+    g_DictationIndicatorGui.MarginY := 10
+    g_DictationIndicatorText := g_DictationIndicatorGui.Add("Text", "w" . (DICTATION_SQUARE_SIZE - 20) . " Center", "")
+
     ; Reset pulse opacity
     g_DictationPulseOpacity := 128
     g_LastActiveMonitor := monitorIndex
@@ -3954,9 +3963,22 @@ ShowDictationIndicator() {
     WinSetTransparent(g_DictationPulseOpacity, g_DictationIndicatorGui)
 }
 
+; Update indicator text (for status messages)
+UpdateDictationIndicatorText(message := "") {
+    global g_DictationIndicatorGui, g_DictationIndicatorText
+
+    if (IsObject(g_DictationIndicatorGui) && g_DictationIndicatorGui.Hwnd && IsObject(g_DictationIndicatorText)) {
+        try {
+            g_DictationIndicatorText.Value := message
+        } catch {
+            ; Ignore errors
+        }
+    }
+}
+
 ; Hide and destroy the dictation indicator
 HideDictationIndicator() {
-    global g_DictationIndicatorGui
+    global g_DictationIndicatorGui, g_DictationIndicatorText
 
     if (IsObject(g_DictationIndicatorGui)) {
         try {
@@ -3967,6 +3989,7 @@ HideDictationIndicator() {
             ; Ignore errors
         }
         g_DictationIndicatorGui := false
+        g_DictationIndicatorText := false
     }
 }
 
@@ -4063,16 +4086,16 @@ PlayDictationCompletionChime(*) {
         g_PendingDictationAction := ""  ; Clear immediately after reading
 
         if (pendingAction = "Paste") {
-            ; Show banner notification
-            ShowCenteredOverlay_Utils("Pasting transcribed text...", 800)
+            ; Update indicator text to show status
+            UpdateDictationIndicatorText("Pasting...")
             Send "^v"
             ; Hide indicator after paste completes
             Sleep 100  ; Small delay to ensure paste completes
             HideDictationIndicator()
             g_KeepIndicatorVisible := false
         } else if (pendingAction = "PasteEnter") {
-            ; Show banner notification
-            ShowCenteredOverlay_Utils("Pasting and submitting...", 800)
+            ; Update indicator text to show status
+            UpdateDictationIndicatorText("Pasting & Submitting...")
             Send "^v{Enter}"
             ; Hide indicator after paste and submit completes
             Sleep 100  ; Small delay to ensure paste and enter completes
