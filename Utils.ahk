@@ -551,9 +551,10 @@ ToggleOutlookAndTeams() {
                 if (!teamsRunning) {
                     if (IS_WORK_ENVIRONMENT) {
                         ; Use direct executable path for work environment
-                        teamsExePath := "C:\Program Files\WindowsApps\MSTeams_25332.1210.4188.1171_x64__8wekyb3d8bbwe\ms-teams.exe"
+                        teamsExePath :=
+                            "C:\Program Files\WindowsApps\MSTeams_25332.1210.4188.1171_x64__8wekyb3d8bbwe\ms-teams.exe"
                         shortcutPath := "c:\Users\fie7ca\Documents\Atalhos\Microsoft Teams - Shortcut.lnk"
-                        
+
                         ; Prefer direct executable if it exists, otherwise fallback to shortcut
                         if (FileExist(teamsExePath)) {
                             Run teamsExePath
@@ -587,10 +588,10 @@ ToggleOutlookAndTeams() {
                 while (!ProcessExist("ms-teams.exe") && (A_TickCount - processWaitStart < processWaitTimeout)) {
                     Sleep 200
                 }
-                
+
                 ; Additional wait for Teams to fully initialize (prevent white screen)
                 Sleep 2000  ; Give Teams 2 seconds to initialize before activation attempts
-                
+
                 if (teamsRunning || ProcessExist("ms-teams.exe")) {
                     teamsActivated := false
 
@@ -755,13 +756,15 @@ ToggleOutlookAndTeams() {
 ; Automatically cycles dictation on/off every 40 seconds to prevent transcription timeouts
 ToggleDictationLoop() {
     global g_DictationLoopActive
-    
+
     if (g_DictationLoopActive) {
         ; Stop the loop
         g_DictationLoopActive := false
         ; Turn off timers
         SetTimer(DictationLoopStop, 0)
         SetTimer(DictationLoopStart, 0)
+        ; Send Win+Alt+Shift+0 to finish dictation
+        SendInput "#!+0"
         ShowCenteredOverlay_Utils("Dictation Loop Stopped", 1500)
     } else {
         ; Start the loop
@@ -777,39 +780,39 @@ ToggleDictationLoop() {
 
 DictationLoopStart() {
     global g_DictationLoopActive
-    
+
     ; Safety check
     if (!g_DictationLoopActive) {
         return
     }
-    
+
     ; Send Win+Alt+Shift+0 to start dictation
     SendInput "#!+0"
-    
+
     ; Clear any existing timer first to prevent accumulation
     SetTimer(DictationLoopStop, 0)
-    
+
     ; Schedule stop after 60 seconds - negative period = one-shot timer
     SetTimer(DictationLoopStop, -60000)
 }
 
 DictationLoopStop() {
     global g_DictationLoopActive, g_DictationLoopSound
-    
+
     ; Safety check
     if (!g_DictationLoopActive) {
         return
     }
-    
+
     ; Send Win+Alt+Shift+0 to stop dictation (triggers transcription)
     SendInput "#!+0"
-    
+
     ; Play sound to notify that transcription has started
     SoundPlay(g_DictationLoopSound)
-    
+
     ; Clear any existing timer first to prevent accumulation
     SetTimer(DictationLoopStart, 0)
-    
+
     ; Schedule next start after 4 seconds (buffer for processing) - negative period = one-shot timer
     SetTimer(DictationLoopStart, -4000)
 }
