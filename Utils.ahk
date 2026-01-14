@@ -736,42 +736,78 @@ ToggleOutlookAndTeams() {
 ToggleDictationLoop() {
     global g_DictationLoopActive
     
+    ; #region agent log
+    LogDebug("debug-session", "run1", "A,B,C,D,E", "Utils.ahk:736", "ToggleDictationLoop entry", Format('{{"g_DictationLoopActive":{},"tickCount":{}}}', g_DictationLoopActive, A_TickCount))
+    ; #endregion
+    
     if (g_DictationLoopActive) {
         ; Stop the loop
         g_DictationLoopActive := false
         ; Turn off timers
         SetTimer(DictationLoopStop, 0)
         SetTimer(DictationLoopStart, 0)
+        ; #region agent log
+        LogDebug("debug-session", "run1", "A,B,C,D,E", "Utils.ahk:743", "ToggleDictationLoop stopping", Format('{{"tickCount":{}}}', A_TickCount))
+        ; #endregion
         ShowCenteredOverlay_Utils("Dictation Loop Stopped", 1500)
     } else {
         ; Start the loop
         g_DictationLoopActive := true
+        ; #region agent log
+        LogDebug("debug-session", "run1", "A,B,C,D,E", "Utils.ahk:750", "ToggleDictationLoop starting", Format('{{"tickCount":{}}}', A_TickCount))
+        ; #endregion
         ShowCenteredOverlay_Utils("Dictation Loop Started", 1500)
         ; Begin the cycle
         DictationLoopStart()
     }
+    
+    ; #region agent log
+    LogDebug("debug-session", "run1", "A,B,C,D,E", "Utils.ahk:753", "ToggleDictationLoop exit", Format('{{"g_DictationLoopActive":{},"tickCount":{}}}', g_DictationLoopActive, A_TickCount))
+    ; #endregion
 }
 
 DictationLoopStart() {
     global g_DictationLoopActive
     
+    ; #region agent log
+    LogDebug("debug-session", "run1", "A,B,C,D,E", "Utils.ahk:755", "DictationLoopStart entry", Format('{{"g_DictationLoopActive":{},"tickCount":{}}}', g_DictationLoopActive, A_TickCount))
+    ; #endregion
+    
     ; Safety check
     if (!g_DictationLoopActive) {
+        ; #region agent log
+        LogDebug("debug-session", "run1", "D", "Utils.ahk:760", "DictationLoopStart early return - inactive", Format('{{"tickCount":{}}}', A_TickCount))
+        ; #endregion
         return
     }
     
     ; Send Win+Alt+Shift+0 to start dictation
     SendInput "#!+0"
     
-    ; Schedule stop after 40 seconds
-    SetTimer(DictationLoopStop, 40000)
+    ; #region agent log
+    LogDebug("debug-session", "run1", "A,B,C,E", "Utils.ahk:767", "DictationLoopStart before SetTimer", Format('{{"timerPeriod":-20000,"tickCount":{}}}', A_TickCount))
+    ; #endregion
+    
+    ; Schedule stop after 20 seconds (reduced for debugging) - negative period = one-shot timer
+    SetTimer(DictationLoopStop, -20000)
+    
+    ; #region agent log
+    LogDebug("debug-session", "run1", "A,B,C,E", "Utils.ahk:768", "DictationLoopStart after SetTimer", Format('{{"tickCount":{}}}', A_TickCount))
+    ; #endregion
 }
 
 DictationLoopStop() {
     global g_DictationLoopActive, g_DictationLoopSound
     
+    ; #region agent log
+    LogDebug("debug-session", "run1", "A,B,C,D,E", "Utils.ahk:770", "DictationLoopStop entry", Format('{{"g_DictationLoopActive":{},"tickCount":{}}}', g_DictationLoopActive, A_TickCount))
+    ; #endregion
+    
     ; Safety check
     if (!g_DictationLoopActive) {
+        ; #region agent log
+        LogDebug("debug-session", "run1", "D", "Utils.ahk:775", "DictationLoopStop early return - inactive", Format('{{"tickCount":{}}}', A_TickCount))
+        ; #endregion
         return
     }
     
@@ -781,8 +817,16 @@ DictationLoopStop() {
     ; Play sound to notify that transcription has started
     SoundPlay(g_DictationLoopSound)
     
-    ; Schedule next start after 2 seconds (buffer for processing)
-    SetTimer(DictationLoopStart, 2000)
+    ; #region agent log
+    LogDebug("debug-session", "run1", "A,B,C,E", "Utils.ahk:782", "DictationLoopStop before SetTimer", Format('{{"timerPeriod":-4000,"tickCount":{}}}', A_TickCount))
+    ; #endregion
+    
+    ; Schedule next start after 4 seconds (buffer for processing) - negative period = one-shot timer
+    SetTimer(DictationLoopStart, -4000)
+    
+    ; #region agent log
+    LogDebug("debug-session", "run1", "A,B,C,E", "Utils.ahk:785", "DictationLoopStop after SetTimer", Format('{{"tickCount":{}}}', A_TickCount))
+    ; #endregion
 }
 
 ; Initialize macros
