@@ -267,19 +267,20 @@ QuickUpdateScripts() {
         ; Work environment file paths
         files := [
             "C:\Users\fie7ca\Documents\scripts\WindowManagement.ahk",
-            "C:\Users\fie7ca\Documents\scripts\Utils.ahk",
             "C:\Users\fie7ca\Documents\scripts\Spotify.ahk",
             "C:\Users\fie7ca\Documents\scripts\Shift keys.ahk",
             "C:\Users\fie7ca\Documents\scripts\Outlook.ahk",
             "C:\Users\fie7ca\Documents\scripts\Microsoft Teams.ahk",
             "C:\Users\fie7ca\Documents\scripts\Gemini.ahk",
-            "C:\Users\fie7ca\Documents\scripts\AppLaunchers.ahk"
+            "C:\Users\fie7ca\Documents\scripts\AppLaunchers.ahk",
+            "C:\Users\fie7ca\Documents\scripts\Utils.ahk"
         ]
 
         ; Execute each script file
         for index, file in files {
             try {
                 Run file
+                Sleep 300
             } catch Error as e {
                 ; Continue with next file if one fails
             }
@@ -288,19 +289,20 @@ QuickUpdateScripts() {
         ; Personal environment file paths
         files := [
             "C:\Users\eduev\Meu Drive\12 - Scripts\WindowManagement.ahk",
-            "C:\Users\eduev\Meu Drive\12 - Scripts\Utils.ahk",
             "C:\Users\eduev\Meu Drive\12 - Scripts\Spotify.ahk",
             "C:\Users\eduev\Meu Drive\12 - Scripts\Shift keys.ahk",
             "C:\Users\eduev\Meu Drive\12 - Scripts\Outlook.ahk",
             "C:\Users\eduev\Meu Drive\12 - Scripts\Microsoft Teams.ahk",
             "C:\Users\eduev\Meu Drive\12 - Scripts\Gemini.ahk",
-            "C:\Users\eduev\Meu Drive\12 - Scripts\AppLaunchers.ahk"
+            "C:\Users\eduev\Meu Drive\12 - Scripts\AppLaunchers.ahk",
+            "C:\Users\eduev\Meu Drive\12 - Scripts\Utils.ahk"
         ]
 
         ; Execute each script file
         for index, file in files {
             try {
                 Run file
+                Sleep 300
             } catch Error as e {
                 ; Continue with next file if one fails
             }
@@ -311,21 +313,21 @@ QuickUpdateScripts() {
 ; Add specific word to Handy macro function
 AddWordToHandy() {
     targetPath := "C:\Users\fie7ca\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Handy.lnk"
-    
+
     try {
         if WinExist("Handy ahk_class Tauri Window") {
             WinActivate
         } else {
             Run targetPath
-            if !WinWait("Handy ahk_class Tauri Window",, 5) {
+            if !WinWait("Handy ahk_class Tauri Window", , 5) {
                 MsgBox "Failed to launch Handy."
                 return
             }
         }
-        
-        WinWaitActive("Handy ahk_class Tauri Window",, 2)
+
+        WinWaitActive("Handy ahk_class Tauri Window", , 2)
         hwnd := WinExist("Handy ahk_class Tauri Window")
-        
+
         ; Initialize UIA
         el := UIA.ElementFromHandle(hwnd)
         if !el
@@ -335,7 +337,7 @@ AddWordToHandy() {
         ; The clickable target is the Group (50026) with ClassName containing "cursor-pointer" and "flex gap-2 items-center"
         advancedBtn := ""
         try {
-            allGroups := el.FindAll({Type: 50026})
+            allGroups := el.FindAll({ Type: 50026 })
             if allGroups {
                 for group in allGroups {
                     try {
@@ -344,7 +346,7 @@ AddWordToHandy() {
                         if (InStr(groupClassName, "cursor-pointer") && InStr(groupClassName, "flex gap-2 items-center")) {
                             ; Verify it contains "Advanced" text by checking children
                             try {
-                                advancedText := group.FindFirst({Type: 50020, Name: "Advanced"})
+                                advancedText := group.FindFirst({ Type: 50020, Name: "Advanced" })
                                 if advancedText {
                                     advancedBtn := group
                                     break
@@ -358,10 +360,10 @@ AddWordToHandy() {
             }
         } catch {
         }
-        
+
         ; Fallback: Find by Name "Advanced" and verify parent has correct ClassName
         if !advancedBtn {
-            advancedElement := el.FindFirst({Name: "Advanced"})
+            advancedElement := el.FindFirst({ Name: "Advanced" })
             if advancedElement {
                 try {
                     parentGroup := advancedElement.GetParentElement()
@@ -373,7 +375,7 @@ AddWordToHandy() {
                 }
             }
         }
-        
+
         if advancedBtn {
             try {
                 advancedBtn.Click()
@@ -384,11 +386,11 @@ AddWordToHandy() {
                 }
             }
         }
-        
+
         Sleep 200
-        
+
         ; Locate and focus "Add a word" text field
-        addWordEdit := el.FindFirst({Type: 50004, Name: "Add a word"})
+        addWordEdit := el.FindFirst({ Type: 50004, Name: "Add a word" })
         if addWordEdit {
             addWordEdit.SetFocus()
         }
@@ -410,7 +412,7 @@ EnumWindowsCallback(hwnd, lParam) {
         ; Get window's process ID
         winPID := 0
         DllCall("GetWindowThreadProcessId", "Ptr", hwnd, "UInt*", &winPID)
-        
+
         ; Check if this window belongs to Teams process
         if (winPID = g_EnumTeamsPID) {
             ; Only add main windows (not child windows)
@@ -451,8 +453,8 @@ ShowCenteredOverlay_Utils(text, duration := 1500) {
     ov.GetPos(&gx, &gy, &gw, &gh)
 
     if hasWindow {
-        cx := wx + (ww - gw)//2
-        cy := wy + (wh - gh)//2
+        cx := wx + (ww - gw) // 2
+        cy := wy + (wh - gh) // 2
         ov.Show("x" . cx . " y" . cy . " NA")
     } else {
         ; Screen center fallback (virtual screen across monitors)
@@ -460,8 +462,8 @@ ShowCenteredOverlay_Utils(text, duration := 1500) {
         vy := SysGet(77)  ; SM_YVIRTUALSCREEN
         vw := SysGet(78)  ; SM_CXVIRTUALSCREEN
         vh := SysGet(79)  ; SM_CYVIRTUALSCREEN
-        cx := vx + (vw - gw)//2
-        cy := vy + (vh - gh)//2
+        cx := vx + (vw - gw) // 2
+        cy := vy + (vh - gh) // 2
         ov.Show("x" . cx . " y" . cy . " NA")
     }
 
@@ -481,7 +483,7 @@ ToggleOutlookAndTeams() {
         ; Check if both applications are running
         outlookRunning := ProcessExist("OUTLOOK.EXE")
         teamsRunning := ProcessExist("ms-teams.exe")
-        
+
         if (outlookRunning && teamsRunning) {
             ; Both are open: Close Outlook and minimize Teams to system tray
             ; Close Outlook process
@@ -490,7 +492,7 @@ ToggleOutlookAndTeams() {
             } catch Error as e {
                 MsgBox "Error closing Outlook: " e.Message
             }
-            
+
             ; Close all Teams windows (this keeps Teams in system tray)
             try {
                 ; Teams can have multiple process names, check all
@@ -521,12 +523,13 @@ ToggleOutlookAndTeams() {
                         }
                     } else {
                         ; Try personal environment shortcut path
-                        outlookPath := "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Microsoft Outlook.lnk"
+                        outlookPath :=
+                            "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Microsoft Outlook.lnk"
                         if (!FileExist(outlookPath)) {
                             outlookPath := ""
                         }
                     }
-                    
+
                     ; Launch using shortcut if available, otherwise use executable
                     if (outlookPath != "") {
                         Run outlookPath
@@ -537,7 +540,7 @@ ToggleOutlookAndTeams() {
                     MsgBox "Error launching Outlook: " e.Message
                 }
             }
-            
+
             ; Launch Teams
             try {
                 if (!teamsRunning) {
@@ -545,7 +548,8 @@ ToggleOutlookAndTeams() {
                         Run "c:\Users\fie7ca\Documents\Atalhos\Microsoft Teams - Shortcut.lnk"
                     } else {
                         ; Try personal environment path
-                        teamsPath := "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Microsoft Teams.lnk"
+                        teamsPath :=
+                            "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Microsoft Teams.lnk"
                         if (FileExist(teamsPath)) {
                             Run teamsPath
                         } else {
@@ -557,14 +561,14 @@ ToggleOutlookAndTeams() {
             } catch Error as e {
                 MsgBox "Error launching Teams: " e.Message
             }
-            
+
             ; Wait for applications to start and then activate in sequence
             ; First: Activate Teams (even if minimized to system tray)
             try {
                 ; Wait for Teams process to exist
                 if (teamsRunning || ProcessExist("ms-teams.exe")) {
                     teamsActivated := false
-                    
+
                     ; Strategy 1: Try WinGetList (standard approach)
                     static teamsProcesses := ["ms-teams.exe", "Teams.exe", "MSTeams.exe"]
                     for proc in teamsProcesses {
@@ -589,11 +593,12 @@ ToggleOutlookAndTeams() {
                             }
                         }
                     }
-                    
+
                     ; Strategy 2: Try WinExist with regex patterns (finds hidden windows)
                     if (!teamsActivated) {
                         ; Try regex patterns to find Teams windows
-                        regexPatterns := ["RegEx)^.*\| Microsoft Teams$", "RegEx)^Chat \| .* \| Microsoft Teams$", "RegEx)Microsoft Teams"]
+                        regexPatterns := ["RegEx)^.*\| Microsoft Teams$", "RegEx)^Chat \| .* \| Microsoft Teams$",
+                            "RegEx)Microsoft Teams"]
                         for pattern in regexPatterns {
                             if hwnd := WinExist(pattern) {
                                 try {
@@ -611,7 +616,7 @@ ToggleOutlookAndTeams() {
                             }
                         }
                     }
-                    
+
                     ; Strategy 3: Use EnumWindows API to find ALL Teams windows (including hidden in system tray)
                     if (!teamsActivated) {
                         teamsPID := ProcessExist("ms-teams.exe")
@@ -621,30 +626,27 @@ ToggleOutlookAndTeams() {
                         if (!teamsPID) {
                             teamsPID := ProcessExist("MSTeams.exe")
                         }
-                        
+
                         if (teamsPID) {
                             ; Use EnumWindows API to enumerate ALL windows (including hidden)
                             global g_EnumTeamsPID, g_EnumTeamsWindows
                             g_EnumTeamsPID := teamsPID
                             g_EnumTeamsWindows := []
-                            
+
                             EnumWindowsProc := CallbackCreate(EnumWindowsCallback, "Fast", 2)
-                            
+
                             ; Call EnumWindows
                             DllCall("EnumWindows", "Ptr", EnumWindowsProc, "Int64", 0)
                             CallbackFree(EnumWindowsProc)
-                            
+
                             ; Try to restore and activate each Teams window found
                             for hwnd in g_EnumTeamsWindows {
                                 try {
                                     ; Try multiple ShowWindow commands to restore
-                                    restoreCommands := [
-                                        {cmd: 9, name: "SW_RESTORE"},
-                                        {cmd: 5, name: "SW_SHOW"},
-                                        {cmd: 3, name: "SW_SHOWMAXIMIZED"},
-                                        {cmd: 1, name: "SW_SHOWNORMAL"}
+                                    restoreCommands := [{ cmd: 9, name: "SW_RESTORE" }, { cmd: 5, name: "SW_SHOW" }, { cmd: 3,
+                                        name: "SW_SHOWMAXIMIZED" }, { cmd: 1, name: "SW_SHOWNORMAL" }
                                     ]
-                                    
+
                                     for restoreCmd in restoreCommands {
                                         try {
                                             DllCall("ShowWindow", "Ptr", hwnd, "Int", restoreCmd.cmd)
@@ -664,7 +666,7 @@ ToggleOutlookAndTeams() {
                             }
                         }
                     }
-                    
+
                     ; Strategy 4: Try finding by window class name patterns
                     if (!teamsActivated) {
                         ; Try common Teams window class names
@@ -674,9 +676,10 @@ ToggleOutlookAndTeams() {
                                 try {
                                     winPID := WinGetPID(hwnd)
                                     winTitle := WinGetTitle(hwnd)
-                                    
+
                                     ; Check if this belongs to Teams process
-                                    if (InStr(winTitle, "Teams", false) || winPID = ProcessExist("ms-teams.exe") || winPID = ProcessExist("Teams.exe")) {
+                                    if (InStr(winTitle, "Teams", false) || winPID = ProcessExist("ms-teams.exe") ||
+                                    winPID = ProcessExist("Teams.exe")) {
                                         ; Try to restore and activate
                                         DllCall("ShowWindow", "Ptr", hwnd, "Int", 5)  ; SW_SHOW
                                         Sleep 150
@@ -692,7 +695,7 @@ ToggleOutlookAndTeams() {
                             }
                         }
                     }
-                    
+
                     ; Show banner with status
                     if (teamsActivated) {
                         ShowCenteredOverlay_Utils("Teams activated", 1500)
@@ -703,13 +706,13 @@ ToggleOutlookAndTeams() {
             } catch Error as e {
                 ShowCenteredOverlay_Utils("Teams: Error - " . e.Message, 2000)
             }
-            
+
             ; Second: Activate Outlook last (so it gets final focus)
             try {
                 if (ProcessExist("OUTLOOK.EXE")) {
                     ; Wait for Outlook window to appear (up to 5 seconds)
                     WinWait("ahk_exe OUTLOOK.EXE", , 5)
-                    
+
                     ; Activate Outlook (this will bring it to foreground, overriding Teams)
                     WinActivate("ahk_exe OUTLOOK.EXE")
                     WinWaitActive("ahk_exe OUTLOOK.EXE", , 2)
