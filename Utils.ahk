@@ -743,18 +743,30 @@ ToggleDictationLoop() {
     if (g_DictationLoopActive) {
         ; Stop the loop
         g_DictationLoopActive := false
-        ; Turn off timers
+        ; #region agent log
+        LogDebug("debug-session", "run1", "F,G,H,I,J", "Utils.ahk:745", "ToggleDictationLoop before clearing timers", Format('{{"tickCount":{}}}', A_TickCount))
+        ; #endregion
+        ; Turn off timers - use -0 to ensure one-shot timers are properly cancelled
         SetTimer(DictationLoopStop, 0)
         SetTimer(DictationLoopStart, 0)
         ; #region agent log
-        LogDebug("debug-session", "run1", "A,B,C,D,E", "Utils.ahk:743", "ToggleDictationLoop stopping", Format('{{"tickCount":{}}}', A_TickCount))
+        LogDebug("debug-session", "run1", "F,G,H,I,J", "Utils.ahk:750", "ToggleDictationLoop after clearing timers", Format('{{"tickCount":{}}}', A_TickCount))
         ; #endregion
         ShowCenteredOverlay_Utils("Dictation Loop Stopped", 1500)
     } else {
         ; Start the loop
+        ; #region agent log
+        LogDebug("debug-session", "run1", "F,G,H,I,J", "Utils.ahk:757", "ToggleDictationLoop before clearing timers (starting)", Format('{{"tickCount":{}}}', A_TickCount))
+        ; #endregion
+        ; Clear any existing timers first to prevent old timers from firing
+        SetTimer(DictationLoopStop, 0)
+        SetTimer(DictationLoopStart, 0)
+        ; #region agent log
+        LogDebug("debug-session", "run1", "F,G,H,I,J", "Utils.ahk:762", "ToggleDictationLoop after clearing timers (starting)", Format('{{"tickCount":{}}}', A_TickCount))
+        ; #endregion
         g_DictationLoopActive := true
         ; #region agent log
-        LogDebug("debug-session", "run1", "A,B,C,D,E", "Utils.ahk:750", "ToggleDictationLoop starting", Format('{{"tickCount":{}}}', A_TickCount))
+        LogDebug("debug-session", "run1", "A,B,C,D,E", "Utils.ahk:765", "ToggleDictationLoop starting", Format('{{"tickCount":{}}}', A_TickCount))
         ; #endregion
         ShowCenteredOverlay_Utils("Dictation Loop Started", 1500)
         ; Begin the cycle
@@ -785,14 +797,17 @@ DictationLoopStart() {
     SendInput "#!+0"
     
     ; #region agent log
-    LogDebug("debug-session", "run1", "A,B,C,E", "Utils.ahk:767", "DictationLoopStart before SetTimer", Format('{{"timerPeriod":-20000,"tickCount":{}}}', A_TickCount))
+    LogDebug("debug-session", "run1", "F,G,H,I,J", "Utils.ahk:791", "DictationLoopStart before SetTimer", Format('{{"timerPeriod":-20000,"tickCount":{}}}', A_TickCount))
     ; #endregion
+    
+    ; Clear any existing timer first to prevent accumulation
+    SetTimer(DictationLoopStop, 0)
     
     ; Schedule stop after 20 seconds (reduced for debugging) - negative period = one-shot timer
     SetTimer(DictationLoopStop, -20000)
     
     ; #region agent log
-    LogDebug("debug-session", "run1", "A,B,C,E", "Utils.ahk:768", "DictationLoopStart after SetTimer", Format('{{"tickCount":{}}}', A_TickCount))
+    LogDebug("debug-session", "run1", "F,G,H,I,J", "Utils.ahk:797", "DictationLoopStart after SetTimer", Format('{{"tickCount":{}}}', A_TickCount))
     ; #endregion
 }
 
@@ -818,14 +833,17 @@ DictationLoopStop() {
     SoundPlay(g_DictationLoopSound)
     
     ; #region agent log
-    LogDebug("debug-session", "run1", "A,B,C,E", "Utils.ahk:782", "DictationLoopStop before SetTimer", Format('{{"timerPeriod":-4000,"tickCount":{}}}', A_TickCount))
+    LogDebug("debug-session", "run1", "F,G,H,I,J", "Utils.ahk:806", "DictationLoopStop before SetTimer", Format('{{"timerPeriod":-4000,"tickCount":{}}}', A_TickCount))
     ; #endregion
+    
+    ; Clear any existing timer first to prevent accumulation
+    SetTimer(DictationLoopStart, 0)
     
     ; Schedule next start after 4 seconds (buffer for processing) - negative period = one-shot timer
     SetTimer(DictationLoopStart, -4000)
     
     ; #region agent log
-    LogDebug("debug-session", "run1", "A,B,C,E", "Utils.ahk:785", "DictationLoopStop after SetTimer", Format('{{"tickCount":{}}}', A_TickCount))
+    LogDebug("debug-session", "run1", "F,G,H,I,J", "Utils.ahk:812", "DictationLoopStop after SetTimer", Format('{{"tickCount":{}}}', A_TickCount))
     ; #endregion
 }
 
