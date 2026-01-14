@@ -257,6 +257,7 @@ InitQuickOpenFiles()
 ; Global variables for macros
 global g_Macros := []
 global g_MacroCharMap := Map()  ; Maps character to macro function
+global g_DictationLoopActive := false
 
 ; Register a macro
 RegisterMacro(func, title) {
@@ -730,6 +731,57 @@ ToggleOutlookAndTeams() {
     }
 }
 
+; Dictation Loop Macro
+; Automatically cycles dictation on/off every 40 seconds to prevent transcription timeouts
+ToggleDictationLoop() {
+    global g_DictationLoopActive
+    
+    if (g_DictationLoopActive) {
+        ; Stop the loop
+        g_DictationLoopActive := false
+        ; Turn off timers
+        SetTimer(DictationLoopStop, 0)
+        SetTimer(DictationLoopStart, 0)
+        ShowCenteredOverlay_Utils("Dictation Loop Stopped", 1500)
+    } else {
+        ; Start the loop
+        g_DictationLoopActive := true
+        ShowCenteredOverlay_Utils("Dictation Loop Started", 1500)
+        ; Begin the cycle
+        DictationLoopStart()
+    }
+}
+
+DictationLoopStart() {
+    global g_DictationLoopActive
+    
+    ; Safety check
+    if (!g_DictationLoopActive) {
+        return
+    }
+    
+    ; Send Win+Alt+Shift+0 to start dictation
+    SendInput "#!+0"
+    
+    ; Schedule stop after 40 seconds
+    SetTimer(DictationLoopStop, 40000)
+}
+
+DictationLoopStop() {
+    global g_DictationLoopActive
+    
+    ; Safety check
+    if (!g_DictationLoopActive) {
+        return
+    }
+    
+    ; Send Win+Alt+Shift+0 to stop dictation (triggers transcription)
+    SendInput "#!+0"
+    
+    ; Schedule next start after 2 seconds (buffer for processing)
+    SetTimer(DictationLoopStart, 2000)
+}
+
 ; Initialize macros
 InitMacros() {
     ; Quick Update to Your Scripts macro
@@ -738,6 +790,8 @@ InitMacros() {
     RegisterMacro(AddWordToHandy, "➕ Add specific word to Handy")
     ; Toggle Outlook and Teams macro
     RegisterMacro(ToggleOutlookAndTeams, "🔄 Toggle Outlook & Teams")
+    ; Dictation Loop macro
+    RegisterMacro(ToggleDictationLoop, "🎙️ Dictation Loop (40s)")
 }
 InitMacros()
 
