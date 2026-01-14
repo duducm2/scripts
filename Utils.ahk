@@ -4346,6 +4346,9 @@ OnExit(CleanupDictationIndicator)
 {
     global g_PendingDictationAction, g_DictationActive, g_KeepIndicatorVisible
 
+    ; Play sound signal
+    SoundPlay(A_ScriptDir . "\sounds\retro3.wav")
+
     ; Only proceed if dictation is currently active
     if (g_DictationActive) {
         ; Set pending action to execute after transcription completes
@@ -4365,6 +4368,9 @@ OnExit(CleanupDictationIndicator)
 #!+j::
 {
     global g_PendingDictationAction, g_DictationActive, g_KeepIndicatorVisible
+
+    ; Play sound signal
+    SoundPlay(A_ScriptDir . "\sounds\retro4.wav")
 
     ; Only proceed if dictation is currently active
     if (g_DictationActive) {
