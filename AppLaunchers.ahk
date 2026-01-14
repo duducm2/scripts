@@ -276,10 +276,10 @@ global g_WikipediaScrollPositionsFile := A_ScriptDir "\data\wikipedia_scroll_pos
 global g_WikipediaFocusMonitorTimer := false
 
 ; Wikipedia article items configuration
-; Item 1: Taoism
+; Item 1: Taoist philosophy
 ; Item 2: Claude Debussy
 ; Items 3-5: Placeholders (no action)
-global g_WikipediaItems := [{ char: "1", title: "Taoism", url: "https://en.wikipedia.org/wiki/Taoism" }, { char: "2",
+global g_WikipediaItems := [{ char: "1", title: "Taoist philosophy", url: "https://en.wikipedia.org/wiki/Taoist_philosophy" }, { char: "2",
     title: "Claude Debussy", url: "https://en.wikipedia.org/wiki/Claude_Debussy" }, { char: "3", title: "Placeholder",
         url: "" }, { char: "4", title: "Placeholder",
             url: "" }, { char: "5", title: "Placeholder", url: "" }
