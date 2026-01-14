@@ -550,7 +550,18 @@ ToggleOutlookAndTeams() {
             try {
                 if (!teamsRunning) {
                     if (IS_WORK_ENVIRONMENT) {
-                        Run "c:\Users\fie7ca\Documents\Atalhos\Microsoft Teams - Shortcut.lnk"
+                        ; Use direct executable path for work environment
+                        teamsExePath := "C:\Program Files\WindowsApps\MSTeams_25332.1210.4188.1171_x64__8wekyb3d8bbwe\ms-teams.exe"
+                        shortcutPath := "c:\Users\fie7ca\Documents\Atalhos\Microsoft Teams - Shortcut.lnk"
+                        
+                        ; Prefer direct executable if it exists, otherwise fallback to shortcut
+                        if (FileExist(teamsExePath)) {
+                            Run teamsExePath
+                        } else if (FileExist(shortcutPath)) {
+                            Run shortcutPath
+                        } else {
+                            Run "ms-teams.exe"
+                        }
                     } else {
                         ; Try personal environment path
                         teamsPath :=
@@ -570,7 +581,16 @@ ToggleOutlookAndTeams() {
             ; Wait for applications to start and then activate in sequence
             ; First: Activate Teams (even if minimized to system tray)
             try {
-                ; Wait for Teams process to exist
+                ; Wait for Teams process to exist (with timeout)
+                processWaitStart := A_TickCount
+                processWaitTimeout := 10000  ; 10 seconds max wait
+                while (!ProcessExist("ms-teams.exe") && (A_TickCount - processWaitStart < processWaitTimeout)) {
+                    Sleep 200
+                }
+                
+                ; Additional wait for Teams to fully initialize (prevent white screen)
+                Sleep 2000  ; Give Teams 2 seconds to initialize before activation attempts
+                
                 if (teamsRunning || ProcessExist("ms-teams.exe")) {
                     teamsActivated := false
 
