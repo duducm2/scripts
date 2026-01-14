@@ -1240,8 +1240,6 @@ ShowGlobalShortcutsHelp() {
 [Symbol Layer] Win+Alt+Shift - Primary combination 
 [Window Management] Ctrl+Alt+Win - Secondary combination
 
-=== AVAILABLE (unused) ===
-
 
 === PROJECT SELECTOR ===
 [Win+Alt+Shift+L] > Project Quick Selector (opens project folder in Cursor)
