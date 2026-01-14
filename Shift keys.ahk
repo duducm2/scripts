@@ -2728,6 +2728,10 @@ global g_WikipediaScrollHistory := []
 +s::
 {
     try {
+        ; Step 1: Always scroll to the beginning of the page first
+        Send "^Home"
+        Sleep 300 ; Give page time to scroll
+
         uia := UIA_Browser("ahk_exe chrome.exe")
         Sleep 200 ; Give UIA time to attach
 
@@ -2738,11 +2742,8 @@ global g_WikipediaScrollHistory := []
             root := uia.BrowserElement
         }
 
-        ; Try to locate the "Search Wikipedia" field by name (combo box / edit),
-        ; avoiding fragile AutomationId/ClassName dependencies.
+        ; Step 2: Try to locate the "Search Wikipedia" field by name (combo box / edit)
         searchBox := 0
-
-        Send "{Click}"
 
         ; First try: ComboBox with the expected name (Type 50003)
         try {
@@ -2776,14 +2777,44 @@ global g_WikipediaScrollHistory := []
             return
         }
 
-        ; If the field is not available yet, try clicking the "Search" toggle button/link first.
+        ; Step 3: If the field is not available, try clicking the "Search" toggle button/link first.
         searchToggle := 0
 
-        ; Prefer a hyperlink/link named "Search"
+        ; Strategy 1: Try finding the search group first, then the button within it (most reliable)
         try {
-            searchToggle := root.FindElement({ Type: 50005, Name: "Search", cs: false })
+            searchGroup := root.FindElement({ AutomationId: "p-search", cs: false })
+            if (searchGroup) {
+                try {
+                    searchToggle := searchGroup.FindElement({ Type: 50005, Name: "Search", cs: false })
+                } catch {
+                }
+                if (!searchToggle) {
+                    try {
+                        searchToggle := searchGroup.FindElement({ Type: 50005, Value: "https://en.wikipedia.org/wiki/Special:Search", cs: false })
+                    } catch {
+                    }
+                }
+            }
         } catch {
         }
+
+        ; Strategy 2: Search by Value (URL) directly from root
+        if (!searchToggle) {
+            try {
+                searchToggle := root.FindElement({ Type: 50005, Value: "https://en.wikipedia.org/wiki/Special:Search", cs: false })
+            } catch {
+            }
+        }
+
+        ; Strategy 3: Search by Type and Name (original method)
+        if (!searchToggle) {
+            try {
+                searchToggle := root.FindElement({ Type: 50005, Name: "Search", cs: false })
+            } catch {
+            }
+        }
+
+        ; Strategy 4: Search by ControlType and Name
         if (!searchToggle) {
             try {
                 searchToggle := root.FindElement({ ControlType: "Hyperlink", Name: "Search", cs: false })
@@ -2791,45 +2822,127 @@ global g_WikipediaScrollHistory := []
             }
         }
 
+        ; Strategy 5: Search for any link with the Special:Search URL
+        if (!searchToggle) {
+            try {
+                searchToggle := root.FindElement({ Type: 50005, Value: "*Special:Search*", cs: false })
+            } catch {
+            }
+        }
+
+        ; Strategy 6: Try finding by LocalizedType "link" and Name
+        if (!searchToggle) {
+            try {
+                searchToggle := root.FindElement({ LocalizedType: "link", Name: "Search", cs: false })
+            } catch {
+            }
+        }
+
         if (searchToggle) {
+            ; Validate element before clicking: check if it's offscreen or disabled
+            isValid := true
             try {
-                searchToggle.Click()
-            } catch {
-                ; If the click fails for some reason, fall back to the accelerator
-                try {
-                    uia.ControlSend("!f")
-                } catch {
+                isOffscreen := searchToggle.GetPropertyValue(UIA.Property.IsOffscreen)
+                if (isOffscreen) {
+                    isValid := false
                 }
+            } catch {
+                ; Continue even if property check fails
             }
 
-            ; Give the UI a moment to reveal the field, then try again to find it.
-            Sleep 250
-
-            searchBox := 0
             try {
-                searchBox := root.FindElement({ Type: 50003, Name: "Search Wikipedia", cs: false })
+                isEnabled := searchToggle.GetPropertyValue(UIA.Property.IsEnabled)
+                if (!isEnabled) {
+                    isValid := false
+                }
             } catch {
+                ; Continue even if property check fails
             }
-            if (!searchBox) {
+
+            ; If element is invalid, try re-finding it
+            if (!isValid) {
+                Sleep 200
+                searchToggle := 0
                 try {
-                    searchBox := root.FindElement({ Type: 50004, Name: "Search Wikipedia", cs: false })
+                    searchToggle := root.FindElement({ Type: 50005, Name: "Search", cs: false })
                 } catch {
                 }
-            }
-            if (!searchBox) {
-                try {
-                    searchBox := root.FindElement({ Name: "Search Wikipedia", cs: false })
-                } catch {
+                if (!searchToggle) {
+                    try {
+                        searchToggle := root.FindElement({ ControlType: "Hyperlink", Name: "Search", cs: false })
+                    } catch {
+                    }
                 }
             }
 
-            if (searchBox) {
+            ; Try multiple click strategies if element is still valid
+            if (searchToggle) {
+                clicked := false
+                
+                ; Strategy 1: Try Invoke pattern (most reliable for links/buttons)
                 try {
-                    searchBox.SetFocus()
-                } catch {
-                    searchBox.Click()
+                    searchToggle.Invoke()
+                    clicked := true
+                } catch Error as invokeErr {
                 }
-                return
+
+                ; Strategy 2: Try SetFocus then Click
+                if (!clicked) {
+                    try {
+                        searchToggle.SetFocus()
+                        Sleep 50
+                        searchToggle.Click()
+                        clicked := true
+                    } catch Error as focusClickErr {
+                    }
+                }
+
+                ; Strategy 3: Try direct Click
+                if (!clicked) {
+                    try {
+                        searchToggle.Click()
+                        clicked := true
+                    } catch Error as clickErr {
+                    }
+                }
+
+                ; If all click strategies failed, fall back to accelerator
+                if (!clicked) {
+                    try {
+                        uia.ControlSend("!f")
+                    } catch {
+                    }
+                }
+
+                ; Give the UI a moment to reveal the field, then try again to find it.
+                Sleep 250
+
+                searchBox := 0
+                try {
+                    searchBox := root.FindElement({ Type: 50003, Name: "Search Wikipedia", cs: false })
+                } catch {
+                }
+                if (!searchBox) {
+                    try {
+                        searchBox := root.FindElement({ Type: 50004, Name: "Search Wikipedia", cs: false })
+                    } catch {
+                    }
+                }
+                if (!searchBox) {
+                    try {
+                        searchBox := root.FindElement({ Name: "Search Wikipedia", cs: false })
+                    } catch {
+                    }
+                }
+
+                if (searchBox) {
+                    try {
+                        searchBox.SetFocus()
+                    } catch {
+                        searchBox.Click()
+                    }
+                    return
+                }
             }
         }
 
@@ -2839,9 +2952,9 @@ global g_WikipediaScrollHistory := []
             return
         } catch {
         }
+
         MsgBox "Could not find the 'Search Wikipedia' field."
-    }
-    catch Error as e {
+    } catch Error as e {
         MsgBox "An error occurred: " e.Message
     }
 }
