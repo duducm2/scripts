@@ -13791,3 +13791,51 @@
 {{"sessionId":"debug-session","runId":"run1","hypothesisId":"C","location":"Utils.ahk:4172","message":"State Change Detected","timestamp":"20260113224232.081","data":}}
 {{"sessionId":"debug-session","runId":"run1","hypothesisId":"C,F","location":"Utils.ahk:4159","message":"Window exists check","timestamp":"20260113224233.683","data":}}
 {{"sessionId":"debug-session","runId":"run1","hypothesisId":"C","location":"Utils.ahk:4153","message":"CheckDictationRecordingWindow entry","timestamp":"20260113224233.683","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4278","message":"Hotkey 7 pressed","timestamp":"20260113225817.988","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4285","message":"Setting Paste action","timestamp":"20260113225817.989","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4290","message":"Sending #!+0","timestamp":"20260113225818.003","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4292","message":"SendInput #!+0 completed","timestamp":"20260113225818.044","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4087","message":"PlayDictationCompletionChime called","timestamp":"20260113225821.276","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4098","message":"Chime check result","timestamp":"20260113225821.276","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4087","message":"PlayDictationCompletionChime called","timestamp":"20260113225821.308","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4098","message":"Chime check result","timestamp":"20260113225821.308","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4087","message":"PlayDictationCompletionChime called","timestamp":"20260113225821.556","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4098","message":"Chime check result","timestamp":"20260113225821.557","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4102","message":"Pending action read","timestamp":"20260113225821.592","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4105","message":"Executing Paste action","timestamp":"20260113225821.592","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4109","message":"Sending Ctrl+V","timestamp":"20260113225821.608","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4111","message":"Ctrl+V sent, waiting 100ms","timestamp":"20260113225821.637","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4114","message":"Hiding indicator","timestamp":"20260113225821.751","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4118","message":"Paste action completed","timestamp":"20260113225821.753","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4298","message":"Hotkey J pressed","timestamp":"20260113225826.713","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4305","message":"Setting PasteEnter action","timestamp":"20260113225826.713","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4310","message":"Sending #!+0","timestamp":"20260113225826.728","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4312","message":"SendInput #!+0 completed","timestamp":"20260113225826.759","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4087","message":"PlayDictationCompletionChime called","timestamp":"20260113225830.356","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4087","message":"PlayDictationCompletionChime called","timestamp":"20260113225830.356","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4098","message":"Chime check result","timestamp":"20260113225830.373","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4087","message":"PlayDictationCompletionChime called","timestamp":"20260113225830.440","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4098","message":"Chime check result","timestamp":"20260113225830.440","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4102","message":"Pending action read","timestamp":"20260113225830.616","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4102","message":"Pending action read","timestamp":"20260113225830.633","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4120","message":"Executing PasteEnter action","timestamp":"20260113225830.654","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4124","message":"Sending Ctrl+V","timestamp":"20260113225830.669","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4127","message":"Ctrl+V sent, waiting 50ms before Enter","timestamp":"20260113225830.697","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4130","message":"Sending Enter","timestamp":"20260113225830.761","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4133","message":"Enter sent, waiting 100ms","timestamp":"20260113225830.763","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4136","message":"Hiding indicator","timestamp":"20260113225830.893","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4140","message":"PasteEnter action completed","timestamp":"20260113225830.895","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4298","message":"Hotkey J pressed","timestamp":"20260113225844.732","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4305","message":"Setting PasteEnter action","timestamp":"20260113225844.733","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4310","message":"Sending #!+0","timestamp":"20260113225844.742","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4312","message":"SendInput #!+0 completed","timestamp":"20260113225844.770","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4087","message":"PlayDictationCompletionChime called","timestamp":"20260113225848.269","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4098","message":"Chime check result","timestamp":"20260113225848.269","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4087","message":"PlayDictationCompletionChime called","timestamp":"20260113225848.300","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4098","message":"Chime check result","timestamp":"20260113225848.300","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4087","message":"PlayDictationCompletionChime called","timestamp":"20260113225848.506","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4098","message":"Chime check result","timestamp":"20260113225848.506","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4130","message":"Sending Enter","timestamp":"20260113225848.559","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4133","message":"Enter sent, waiting 100ms","timestamp":"20260113225848.564","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4136","message":"Hiding indicator","timestamp":"20260113225848.706","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"J","location":"Utils.ahk:4140","message":"PasteEnter action completed","timestamp":"20260113225848.711","data":}}
