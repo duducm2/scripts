@@ -32,3 +32,18 @@
 {{"sessionId":"debug-session","runId":"run1","hypothesisId":"F,G,H,I,J","location":"Utils.ahk:745","message":"ToggleDictationLoop before clearing timers","timestamp":"20260114093850.416","data":}}
 {{"sessionId":"debug-session","runId":"run1","hypothesisId":"F,G,H,I,J","location":"Utils.ahk:750","message":"ToggleDictationLoop after clearing timers","timestamp":"20260114093850.425","data":}}
 {{"sessionId":"debug-session","runId":"run1","hypothesisId":"A,B,C,D,E","location":"Utils.ahk:753","message":"ToggleDictationLoop exit","timestamp":"20260114093851.941","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"A,B,C,D,E","location":"Utils.ahk:736","message":"ToggleDictationLoop entry","timestamp":"20260114094023.420","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"F,G,H,I,J","location":"Utils.ahk:757","message":"ToggleDictationLoop before clearing timers (starting)","timestamp":"20260114094023.420","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"F,G,H,I,J","location":"Utils.ahk:762","message":"ToggleDictationLoop after clearing timers (starting)","timestamp":"20260114094023.433","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"A,B,C,D,E","location":"Utils.ahk:765","message":"ToggleDictationLoop starting","timestamp":"20260114094023.441","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"A,B,C,D,E","location":"Utils.ahk:755","message":"DictationLoopStart entry","timestamp":"20260114094024.960","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"F,G,H,I,J","location":"Utils.ahk:791","message":"DictationLoopStart before SetTimer","timestamp":"20260114094024.970","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"F,G,H,I,J","location":"Utils.ahk:797","message":"DictationLoopStart after SetTimer","timestamp":"20260114094024.970","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"A,B,C,D,E","location":"Utils.ahk:753","message":"ToggleDictationLoop exit","timestamp":"20260114094024.979","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"A,B,C,D,E","location":"Utils.ahk:770","message":"DictationLoopStop entry","timestamp":"20260114094044.978","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"F,G,H,I,J","location":"Utils.ahk:806","message":"DictationLoopStop before SetTimer","timestamp":"20260114094047.721","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"F,G,H,I,J","location":"Utils.ahk:812","message":"DictationLoopStop after SetTimer","timestamp":"20260114094047.722","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"A,B,C,D,E","location":"Utils.ahk:736","message":"ToggleDictationLoop entry","timestamp":"20260114094048.916","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"F,G,H,I,J","location":"Utils.ahk:745","message":"ToggleDictationLoop before clearing timers","timestamp":"20260114094048.916","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"F,G,H,I,J","location":"Utils.ahk:750","message":"ToggleDictationLoop after clearing timers","timestamp":"20260114094048.926","data":}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"A,B,C,D,E","location":"Utils.ahk:753","message":"ToggleDictationLoop exit","timestamp":"20260114094050.447","data":}}

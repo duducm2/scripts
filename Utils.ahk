@@ -736,93 +736,48 @@ ToggleOutlookAndTeams() {
 ToggleDictationLoop() {
     global g_DictationLoopActive
     
-    ; #region agent log
-    LogDebug("debug-session", "run1", "A,B,C,D,E", "Utils.ahk:736", "ToggleDictationLoop entry", Format('{{"g_DictationLoopActive":{},"tickCount":{}}}', g_DictationLoopActive, A_TickCount))
-    ; #endregion
-    
     if (g_DictationLoopActive) {
         ; Stop the loop
         g_DictationLoopActive := false
-        ; #region agent log
-        LogDebug("debug-session", "run1", "F,G,H,I,J", "Utils.ahk:745", "ToggleDictationLoop before clearing timers", Format('{{"tickCount":{}}}', A_TickCount))
-        ; #endregion
-        ; Turn off timers - use -0 to ensure one-shot timers are properly cancelled
+        ; Turn off timers
         SetTimer(DictationLoopStop, 0)
         SetTimer(DictationLoopStart, 0)
-        ; #region agent log
-        LogDebug("debug-session", "run1", "F,G,H,I,J", "Utils.ahk:750", "ToggleDictationLoop after clearing timers", Format('{{"tickCount":{}}}', A_TickCount))
-        ; #endregion
         ShowCenteredOverlay_Utils("Dictation Loop Stopped", 1500)
     } else {
         ; Start the loop
-        ; #region agent log
-        LogDebug("debug-session", "run1", "F,G,H,I,J", "Utils.ahk:757", "ToggleDictationLoop before clearing timers (starting)", Format('{{"tickCount":{}}}', A_TickCount))
-        ; #endregion
         ; Clear any existing timers first to prevent old timers from firing
         SetTimer(DictationLoopStop, 0)
         SetTimer(DictationLoopStart, 0)
-        ; #region agent log
-        LogDebug("debug-session", "run1", "F,G,H,I,J", "Utils.ahk:762", "ToggleDictationLoop after clearing timers (starting)", Format('{{"tickCount":{}}}', A_TickCount))
-        ; #endregion
         g_DictationLoopActive := true
-        ; #region agent log
-        LogDebug("debug-session", "run1", "A,B,C,D,E", "Utils.ahk:765", "ToggleDictationLoop starting", Format('{{"tickCount":{}}}', A_TickCount))
-        ; #endregion
         ShowCenteredOverlay_Utils("Dictation Loop Started", 1500)
         ; Begin the cycle
         DictationLoopStart()
     }
-    
-    ; #region agent log
-    LogDebug("debug-session", "run1", "A,B,C,D,E", "Utils.ahk:753", "ToggleDictationLoop exit", Format('{{"g_DictationLoopActive":{},"tickCount":{}}}', g_DictationLoopActive, A_TickCount))
-    ; #endregion
 }
 
 DictationLoopStart() {
     global g_DictationLoopActive
     
-    ; #region agent log
-    LogDebug("debug-session", "run1", "A,B,C,D,E", "Utils.ahk:755", "DictationLoopStart entry", Format('{{"g_DictationLoopActive":{},"tickCount":{}}}', g_DictationLoopActive, A_TickCount))
-    ; #endregion
-    
     ; Safety check
     if (!g_DictationLoopActive) {
-        ; #region agent log
-        LogDebug("debug-session", "run1", "D", "Utils.ahk:760", "DictationLoopStart early return - inactive", Format('{{"tickCount":{}}}', A_TickCount))
-        ; #endregion
         return
     }
     
     ; Send Win+Alt+Shift+0 to start dictation
     SendInput "#!+0"
     
-    ; #region agent log
-    LogDebug("debug-session", "run1", "F,G,H,I,J", "Utils.ahk:791", "DictationLoopStart before SetTimer", Format('{{"timerPeriod":-20000,"tickCount":{}}}', A_TickCount))
-    ; #endregion
-    
     ; Clear any existing timer first to prevent accumulation
     SetTimer(DictationLoopStop, 0)
     
-    ; Schedule stop after 20 seconds (reduced for debugging) - negative period = one-shot timer
-    SetTimer(DictationLoopStop, -20000)
-    
-    ; #region agent log
-    LogDebug("debug-session", "run1", "F,G,H,I,J", "Utils.ahk:797", "DictationLoopStart after SetTimer", Format('{{"tickCount":{}}}', A_TickCount))
-    ; #endregion
+    ; Schedule stop after 60 seconds - negative period = one-shot timer
+    SetTimer(DictationLoopStop, -60000)
 }
 
 DictationLoopStop() {
     global g_DictationLoopActive, g_DictationLoopSound
     
-    ; #region agent log
-    LogDebug("debug-session", "run1", "A,B,C,D,E", "Utils.ahk:770", "DictationLoopStop entry", Format('{{"g_DictationLoopActive":{},"tickCount":{}}}', g_DictationLoopActive, A_TickCount))
-    ; #endregion
-    
     ; Safety check
     if (!g_DictationLoopActive) {
-        ; #region agent log
-        LogDebug("debug-session", "run1", "D", "Utils.ahk:775", "DictationLoopStop early return - inactive", Format('{{"tickCount":{}}}', A_TickCount))
-        ; #endregion
         return
     }
     
@@ -832,19 +787,11 @@ DictationLoopStop() {
     ; Play sound to notify that transcription has started
     SoundPlay(g_DictationLoopSound)
     
-    ; #region agent log
-    LogDebug("debug-session", "run1", "F,G,H,I,J", "Utils.ahk:806", "DictationLoopStop before SetTimer", Format('{{"timerPeriod":-4000,"tickCount":{}}}', A_TickCount))
-    ; #endregion
-    
     ; Clear any existing timer first to prevent accumulation
     SetTimer(DictationLoopStart, 0)
     
     ; Schedule next start after 4 seconds (buffer for processing) - negative period = one-shot timer
     SetTimer(DictationLoopStart, -4000)
-    
-    ; #region agent log
-    LogDebug("debug-session", "run1", "F,G,H,I,J", "Utils.ahk:812", "DictationLoopStop after SetTimer", Format('{{"tickCount":{}}}', A_TickCount))
-    ; #endregion
 }
 
 ; Initialize macros
@@ -856,7 +803,7 @@ InitMacros() {
     ; Toggle Outlook and Teams macro
     RegisterMacro(ToggleOutlookAndTeams, "🔄 Toggle Outlook & Teams")
     ; Dictation Loop macro
-    RegisterMacro(ToggleDictationLoop, "🎙️ Dictation Loop (40s)")
+    RegisterMacro(ToggleDictationLoop, "🎙️ Dictation Loop (60s)")
 }
 InitMacros()
 
