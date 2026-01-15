@@ -260,9 +260,9 @@ global g_MacroCharMap := Map()  ; Maps character to macro function
 global g_DictationLoopActive := false
 
 ; Register a macro
-RegisterMacro(func, title) {
+RegisterMacro(func, title, char := "") {
     global g_Macros
-    g_Macros.Push({ func: func, title: title, category: "Macros" })
+    g_Macros.Push({ func: func, title: title, category: "Macros", char: char })
 }
 
 ; Quick Update Scripts macro function
@@ -817,6 +817,39 @@ DictationLoopStop() {
     SetTimer(DictationLoopStart, -4000)
 }
 
+; Clean the Clipboard macro function
+CleanClipboard() {
+    ; Initialize Yes/No modal dialog
+    result := MsgBox("Do you want to continue running the algorithm to exclude all clips?", "Clean the Clipboard", "YesNo")
+    
+    ; If user selects "No", terminate macro execution
+    if (result = "No") {
+        return
+    }
+    
+    Sleep 200
+
+    ; User selected "Yes" - proceed with the workflow
+    ; Send Alt+V
+    SendInput "!v"
+    
+    ; Wait for UI to respond
+    Sleep 100
+    
+    ; Send Ctrl+Alt+K
+    SendInput "^!k"
+    
+    ; Wait for UI to respond
+    Sleep 100
+    
+    SendInput "{Enter}"
+    
+    ; Wait for UI to respond
+    Sleep 300
+    
+    SendInput "{Escape}"
+}
+
 ; Initialize macros
 InitMacros() {
     ; Quick Update to Your Scripts macro
@@ -827,6 +860,8 @@ InitMacros() {
     RegisterMacro(ToggleOutlookAndTeams, "🔄 Toggle Outlook & Teams")
     ; Dictation Loop macro
     RegisterMacro(ToggleDictationLoop, "🎙️ Dictation Loop (60s)")
+    ; Clean the Clipboard macro (assigned to "P")
+    RegisterMacro(CleanClipboard, "🧹 Clean the Clipboard", "p")
 }
 InitMacros()
 
@@ -2712,10 +2747,48 @@ BuildHotstringCharMap() {
         } else if (category = "Macros") {
             ; Handle macros
             if (IsSet(g_Macros) && g_Macros.Length > 0) {
+                ; First pass: assign macros with explicit character assignments
                 for macroEntry in g_Macros {
-                    if (charIndex <= g_HotstringCharSequence.Length) {
+                    if (macroEntry.HasProp("char") && macroEntry.char != "") {
+                        ; Check if character is in the sequence and not already assigned
+                        charIndexInSequence := 0
+                        for idx, seqChar in g_HotstringCharSequence {
+                            if (seqChar = macroEntry.char) {
+                                charIndexInSequence := idx
+                                break
+                            }
+                        }
+                        if (charIndexInSequence > 0) {
+                            ; Check if this character is already assigned
+                            if (!g_MacroCharMap.Has(macroEntry.char)) {
+                                g_MacroCharMap[macroEntry.char] := macroEntry.func
+                            }
+                        }
+                    }
+                }
+                ; Second pass: assign remaining macros sequentially, skipping already assigned characters
+                for macroEntry in g_Macros {
+                    ; Skip if this macro already has a character assigned
+                    alreadyAssigned := false
+                    for assignedChar, assignedFunc in g_MacroCharMap {
+                        if (assignedFunc = macroEntry.func) {
+                            alreadyAssigned := true
+                            break
+                        }
+                    }
+                    if (alreadyAssigned) {
+                        continue
+                    }
+                    
+                    ; Find next available character
+                    while (charIndex <= g_HotstringCharSequence.Length) {
                         char := g_HotstringCharSequence[charIndex]
-                        g_MacroCharMap[char] := macroEntry.func
+                        ; Check if this character is already assigned to a macro
+                        if (!g_MacroCharMap.Has(char)) {
+                            g_MacroCharMap[char] := macroEntry.func
+                            charIndex++
+                            break
+                        }
                         charIndex++
                     }
                 }
