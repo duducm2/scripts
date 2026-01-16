@@ -820,33 +820,34 @@ DictationLoopStop() {
 ; Clean the Clipboard macro function
 CleanClipboard() {
     ; Initialize Yes/No modal dialog
-    result := MsgBox("Do you want to continue running the algorithm to exclude all clips?", "Clean the Clipboard", "YesNo")
-    
+    result := MsgBox("Do you want to continue running the algorithm to exclude all clips?", "Clean the Clipboard",
+        "YesNo")
+
     ; If user selects "No", terminate macro execution
     if (result = "No") {
         return
     }
-    
-    Sleep 200
+
+    Sleep 100
 
     ; User selected "Yes" - proceed with the workflow
     ; Send Alt+V
     SendInput "!v"
-    
+
     ; Wait for UI to respond
     Sleep 100
-    
+
     ; Send Ctrl+Alt+K
     SendInput "^!k"
-    
+
     ; Wait for UI to respond
     Sleep 100
-    
+
     SendInput "{Enter}"
-    
+
     ; Wait for UI to respond
-    Sleep 300
-    
+    Sleep 100
+
     SendInput "{Escape}"
 }
 
@@ -2779,7 +2780,7 @@ BuildHotstringCharMap() {
                     if (alreadyAssigned) {
                         continue
                     }
-                    
+
                     ; Find next available character
                     while (charIndex <= g_HotstringCharSequence.Length) {
                         char := g_HotstringCharSequence[charIndex]
