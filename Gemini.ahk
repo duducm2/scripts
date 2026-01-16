@@ -420,89 +420,125 @@ CenterMouse() {
         }
 
         ; Step 5 & 6: Click "Show more options" and navigate to "Text to speech"
-        ; Note: For first-time read-aloud, Gemini requires doing this twice
-        loop 2 {
-            ; Click the last "Show more options" button
-            lastMoreOptionsButton.Click()
-            Sleep 200 ; Wait for menu to appear
+        ; Implements retry logic: Click -> Wait 1500ms -> Check Pause -> Retry if needed
 
-            ; Hide search banner after first attempt
-            if (A_Index = 1 && IsObject(searchBanner) && searchBanner.Hwnd) {
-                searchBanner.Destroy()
-            }
-
-            ; Find and click "Text to speech" menu item using UIA
-            textToSpeechMenuItem := 0
+        PerformReadAloudAction := () {
             try {
-                ; Primary strategy: Find by Name "Text to speech" with Type 50011 (MenuItem)
-                textToSpeechMenuItem := uia.FindFirst({ Name: "Text to speech", Type: 50011 })
-            } catch {
-                ; Silently continue to fallbacks
-            }
+                ; Click the last "Show more options" button
+                lastMoreOptionsButton.Click()
+                Sleep 200 ; Wait for menu to appear
 
-            ; Fallback 1: Try by Type "MenuItem" and Name "Text to speech"
-            if !textToSpeechMenuItem {
+                ; Find and click "Text to speech" menu item using UIA
+                textToSpeechMenuItem := 0
                 try {
-                    textToSpeechMenuItem := uia.FindFirst({ Type: "MenuItem", Name: "Text to speech" })
+                    ; Primary strategy: Find by Name "Text to speech" with Type 50011 (MenuItem)
+                    textToSpeechMenuItem := uia.FindFirst({ Name: "Text to speech", Type: 50011 })
                 } catch {
-                    ; Silently continue
+                    ; Silently continue to fallbacks
                 }
-            }
 
-            ; Fallback 2: Search all MenuItems for one with "Text to speech" name and matching className
-            if !textToSpeechMenuItem {
-                try {
-                    allMenuItems := uia.FindAll({ Type: 50011 })
-                    for menuItem in allMenuItems {
-                        if (menuItem.Name = "Text to speech" || InStr(menuItem.Name, "Text to speech", false) = 1) {
-                            if (InStr(menuItem.ClassName, "mat-mdc-menu-item")) {
+                ; Fallback 1: Try by Type "MenuItem" and Name "Text to speech"
+                if !textToSpeechMenuItem {
+                    try {
+                        textToSpeechMenuItem := uia.FindFirst({ Type: "MenuItem", Name: "Text to speech" })
+                    } catch {
+                        ; Silently continue
+                    }
+                }
+
+                ; Fallback 2: Search all MenuItems for one with "Text to speech" name and matching className
+                if !textToSpeechMenuItem {
+                    try {
+                        allMenuItems := uia.FindAll({ Type: 50011 })
+                        for menuItem in allMenuItems {
+                            if (menuItem.Name = "Text to speech" || InStr(menuItem.Name, "Text to speech", false) = 1) {
+                                if (InStr(menuItem.ClassName, "mat-mdc-menu-item")) {
+                                    textToSpeechMenuItem := menuItem
+                                    break
+                                }
+                            }
+                        }
+                    } catch {
+                        ; Silently continue
+                    }
+                }
+
+                ; Fallback 3: Search all MenuItems by name only (broader match)
+                if !textToSpeechMenuItem {
+                    try {
+                        allMenuItems := uia.FindAll({ Type: 50011 })
+                        for menuItem in allMenuItems {
+                            if (menuItem.Name = "Text to speech" || InStr(menuItem.Name, "Text to speech", false) = 1) {
                                 textToSpeechMenuItem := menuItem
                                 break
                             }
                         }
+                    } catch {
+                        ; Silently continue
                     }
-                } catch {
-                    ; Silently continue
                 }
-            }
 
-            ; Fallback 3: Search all MenuItems by name only (broader match)
-            if !textToSpeechMenuItem {
-                try {
-                    allMenuItems := uia.FindAll({ Type: 50011 })
-                    for menuItem in allMenuItems {
-                        if (menuItem.Name = "Text to speech" || InStr(menuItem.Name, "Text to speech", false) = 1) {
-                            textToSpeechMenuItem := menuItem
+                ; Click the menu item if found
+                if (textToSpeechMenuItem) {
+                    textToSpeechMenuItem.Click()
+                    Sleep 200 ; Brief pause to ensure menu action completes
+                } else {
+                    ; If UIA method fails, fallback to keyboard navigation
+                    Send "{Down}"
+                    Sleep 200
+                    Send "{Enter}"
+                }
+            } catch {
+                ; Ignore errors during action
+            }
+        }
+
+        ; First attempt
+        PerformReadAloudAction()
+
+        ; Hide search banner
+        if IsObject(searchBanner) && searchBanner.Hwnd {
+            searchBanner.Destroy()
+        }
+
+        ; Wait 1500ms for UI to update (Pause button to appear)
+        Sleep 1500
+
+        ; Check if Pause button exists (indicating reading started)
+        isReading := false
+        try {
+            ; Reuse logic from Step 2 to find Pause button
+            if uia.FindFirst({ Name: "Pause", Type: 50000 })
+                isReading := true
+            else if uia.FindFirst({ Type: "Button", Name: "Pause" })
+                isReading := true
+            else {
+                allButtons := uia.FindAll({ Type: 50000 })
+                for button in allButtons {
+                    if (button.Name = "Pause" || InStr(button.Name, "Pause", false) = 1) {
+                        if (InStr(button.ClassName, "tts-button") || InStr(button.ClassName, "mdc-icon-button")) {
+                            isReading := true
                             break
                         }
                     }
-                } catch {
-                    ; Silently continue
                 }
             }
+        } catch {
+            ; Assume false
+        }
 
-            ; Click the menu item if found
-            if (textToSpeechMenuItem) {
-                textToSpeechMenuItem.Click()
-                Sleep 200 ; Brief pause to ensure menu action completes
-            } else {
-                ; If UIA method fails, fallback to keyboard navigation
-                Send "{Down}"
-                Sleep 200
-                Send "{Enter}"
-            }
-
-            ; Wait before next attempt (if needed) or before finishing
-            if (A_Index = 1) {
-                Sleep 200 ; Wait after first attempt before retrying
-            }
+        ; If not reading, retry
+        if (!isReading) {
+            ShowNotification("Retrying read aloud...", 800, "FFFF00", "000000", 24)
+            PerformReadAloudAction()
         }
 
         ; Show notification that both copy and read-aloud actions completed
         ShowNotification("Copied & Reading aloud", 800, "FFFF00", "000000", 24)
         ; Return to previous window
         Send "!{Tab}"
-    } catch Error as e {
+    }
+    catch Error as e {
         ; If all else fails, silently fail (no fallback action defined)
     }
 }
