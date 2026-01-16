@@ -387,6 +387,7 @@ CenterMouse() {
             return
         }
 
+        ; *********
         ; Find the last "Show more options" button (the one with the highest Y position, meaning furthest down the page)
         lastMoreOptionsButton := 0
         highestY := -1
@@ -422,79 +423,75 @@ CenterMouse() {
         ; Step 5 & 6: Click "Show more options" and navigate to "Text to speech"
         ; Implements retry logic: Click -> Wait 1500ms -> Check Pause -> Retry if needed
 
-        PerformReadAloudAction := () {
+        ; First attempt - Click "Show more options" and navigate to "Text to speech"
+        try {
+            ; Click the last "Show more options" button
+            lastMoreOptionsButton.Click()
+            Sleep 200 ; Wait for menu to appear
+
+            ; Find and click "Text to speech" menu item using UIA
+            textToSpeechMenuItem := 0
             try {
-                ; Click the last "Show more options" button
-                lastMoreOptionsButton.Click()
-                Sleep 200 ; Wait for menu to appear
+                ; Primary strategy: Find by Name "Text to speech" with Type 50011 (MenuItem)
+                textToSpeechMenuItem := uia.FindFirst({ Name: "Text to speech", Type: 50011 })
+            } catch {
+                ; Silently continue to fallbacks
+            }
 
-                ; Find and click "Text to speech" menu item using UIA
-                textToSpeechMenuItem := 0
+            ; Fallback 1: Try by Type "MenuItem" and Name "Text to speech"
+            if !textToSpeechMenuItem {
                 try {
-                    ; Primary strategy: Find by Name "Text to speech" with Type 50011 (MenuItem)
-                    textToSpeechMenuItem := uia.FindFirst({ Name: "Text to speech", Type: 50011 })
+                    textToSpeechMenuItem := uia.FindFirst({ Type: "MenuItem", Name: "Text to speech" })
                 } catch {
-                    ; Silently continue to fallbacks
+                    ; Silently continue
                 }
+            }
 
-                ; Fallback 1: Try by Type "MenuItem" and Name "Text to speech"
-                if !textToSpeechMenuItem {
-                    try {
-                        textToSpeechMenuItem := uia.FindFirst({ Type: "MenuItem", Name: "Text to speech" })
-                    } catch {
-                        ; Silently continue
-                    }
-                }
-
-                ; Fallback 2: Search all MenuItems for one with "Text to speech" name and matching className
-                if !textToSpeechMenuItem {
-                    try {
-                        allMenuItems := uia.FindAll({ Type: 50011 })
-                        for menuItem in allMenuItems {
-                            if (menuItem.Name = "Text to speech" || InStr(menuItem.Name, "Text to speech", false) = 1) {
-                                if (InStr(menuItem.ClassName, "mat-mdc-menu-item")) {
-                                    textToSpeechMenuItem := menuItem
-                                    break
-                                }
-                            }
-                        }
-                    } catch {
-                        ; Silently continue
-                    }
-                }
-
-                ; Fallback 3: Search all MenuItems by name only (broader match)
-                if !textToSpeechMenuItem {
-                    try {
-                        allMenuItems := uia.FindAll({ Type: 50011 })
-                        for menuItem in allMenuItems {
-                            if (menuItem.Name = "Text to speech" || InStr(menuItem.Name, "Text to speech", false) = 1) {
+            ; Fallback 2: Search all MenuItems for one with "Text to speech" name and matching className
+            if !textToSpeechMenuItem {
+                try {
+                    allMenuItems := uia.FindAll({ Type: 50011 })
+                    for menuItem in allMenuItems {
+                        if (menuItem.Name = "Text to speech" || InStr(menuItem.Name, "Text to speech", false) = 1) {
+                            if (InStr(menuItem.ClassName, "mat-mdc-menu-item")) {
                                 textToSpeechMenuItem := menuItem
                                 break
                             }
                         }
-                    } catch {
-                        ; Silently continue
                     }
+                } catch {
+                    ; Silently continue
                 }
-
-                ; Click the menu item if found
-                if (textToSpeechMenuItem) {
-                    textToSpeechMenuItem.Click()
-                    Sleep 200 ; Brief pause to ensure menu action completes
-                } else {
-                    ; If UIA method fails, fallback to keyboard navigation
-                    Send "{Down}"
-                    Sleep 200
-                    Send "{Enter}"
-                }
-            } catch {
-                ; Ignore errors during action
             }
-        }
 
-        ; First attempt
-        PerformReadAloudAction()
+            ; Fallback 3: Search all MenuItems by name only (broader match)
+            if !textToSpeechMenuItem {
+                try {
+                    allMenuItems := uia.FindAll({ Type: 50011 })
+                    for menuItem in allMenuItems {
+                        if (menuItem.Name = "Text to speech" || InStr(menuItem.Name, "Text to speech", false) = 1) {
+                            textToSpeechMenuItem := menuItem
+                            break
+                        }
+                    }
+                } catch {
+                    ; Silently continue
+                }
+            }
+
+            ; Click the menu item if found
+            if (textToSpeechMenuItem) {
+                textToSpeechMenuItem.Click()
+                Sleep 200 ; Brief pause to ensure menu action completes
+            } else {
+                ; If UIA method fails, fallback to keyboard navigation
+                Send "{Down}"
+                Sleep 200
+                Send "{Enter}"
+            }
+        } catch {
+            ; Ignore errors during action
+        }
 
         ; Hide search banner
         if IsObject(searchBanner) && searchBanner.Hwnd {
@@ -530,15 +527,56 @@ CenterMouse() {
         ; If not reading, retry
         if (!isReading) {
             ShowNotification("Retrying read aloud...", 800, "FFFF00", "000000", 24)
-            PerformReadAloudAction()
+            ; Retry the read aloud action
+            try {
+                ; Click the last "Show more options" button
+                lastMoreOptionsButton.Click()
+                Sleep 200 ; Wait for menu to appear
+
+                ; Find and click "Text to speech" menu item using UIA
+                textToSpeechMenuItem := 0
+                try {
+                    textToSpeechMenuItem := uia.FindFirst({ Name: "Text to speech", Type: 50011 })
+                } catch {
+                }
+
+                if !textToSpeechMenuItem {
+                    try {
+                        textToSpeechMenuItem := uia.FindFirst({ Type: "MenuItem", Name: "Text to speech" })
+                    } catch {
+                    }
+                }
+
+                if !textToSpeechMenuItem {
+                    try {
+                        allMenuItems := uia.FindAll({ Type: 50011 })
+                        for menuItem in allMenuItems {
+                            if (menuItem.Name = "Text to speech" || InStr(menuItem.Name, "Text to speech", false) = 1) {
+                                textToSpeechMenuItem := menuItem
+                                break
+                            }
+                        }
+                    } catch {
+                    }
+                }
+
+                if (textToSpeechMenuItem) {
+                    textToSpeechMenuItem.Click()
+                    Sleep 200
+                } else {
+                    Send "{Down}"
+                    Sleep 200
+                    Send "{Enter}"
+                }
+            } catch {
+            }
         }
 
         ; Show notification that both copy and read-aloud actions completed
         ShowNotification("Copied & Reading aloud", 800, "FFFF00", "000000", 24)
         ; Return to previous window
         Send "!{Tab}"
-    }
-    catch Error as e {
+    } catch Error as e {
         ; If all else fails, silently fail (no fallback action defined)
     }
 }
@@ -568,9 +606,15 @@ CenterMouse() {
         ; Try to find the prompt field using robust strategies
         try {
             promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
+        } catch {
+            ; Silently continue to fallbacks
         }
         if !promptField {
-            try promptField := uia.FindFirst({ Type: "Edit", Name: "Enter a prompt here" })
+            try {
+                promptField := uia.FindFirst({ Type: "Edit", Name: "Enter a prompt here" })
+            } catch {
+                ; Silently continue
+            }
         }
         if !promptField {
             try {
@@ -581,6 +625,8 @@ CenterMouse() {
                         break
                     }
                 }
+            } catch {
+                ; Silently continue
             }
         }
 
