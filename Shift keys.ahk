@@ -473,6 +473,8 @@ Cursor
 📊 [3] CSV: Edit CSV
 💾 [4] CSV: Apply changes to source file and save
 🔄 [5] Reload (ahk)
+🔨 [6] Build LaTeX project
+📄 [7] View LaTeX PDF file
 🤖 [M]Ask [M]essage, wait 6s, then paste (ahk)
 ⚡ [G]Kill terminal ([G]o away)
 📉 [Y]Fold all (tuck awa[Y])
@@ -590,7 +592,7 @@ MS Paint (Shift)
 [Ctrl+I] > 🔄 Invert colors
 [F11] > 🖥️ Fullscreen view
 [Ctrl++] > 🔍 Zoom in
-[Ctrl+-] > 🔍 Zoom out
+[Ctrl+-] > 🔍 Zoom outd
 )"  ; end MS Paint
 
 ; --- ClipAngel -------------------------------------------------------------
