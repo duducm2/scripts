@@ -3971,27 +3971,52 @@ StopFocusModeWindowMonitor() {
 ; manually triggers the screenshot, and plays a single chime
 ; =============================================================================
 global g_LastPrintScreenSound := 0  ; Track last sound time for debouncing
+global g_PrintScreenInProgress := false  ; Prevents recursion from Send
 
-!PrintScreen::  ; Removed ~ prefix to CONSUME the hotkey (prevents other apps from receiving it)
-{
-    global g_LastPrintScreenSound  ; Reference the global variable
+; Audio firewall for PrintScreen: Throttle sounds to prevent duplicates
+; Uses Critical section to ensure atomic check-and-update (like dictation mode)
+SafePlayPrintScreenSound() {
+    Critical  ; Prevents thread interruption - ensures atomic check-and-update sequence
+    global g_LastPrintScreenSound
 
-    ; Debounce: Only play sound if at least 300ms have passed since last sound
-    ; This is a safety measure in case of rapid repeated presses
-    currentTime := A_TickCount
-    if (currentTime - g_LastPrintScreenSound < 300) {
-        return  ; Skip if called too recently (prevents duplicate sounds from this script)
+    ; If less than 1000ms has passed since last sound, ignore this call
+    if (A_TickCount - g_LastPrintScreenSound < 1000) {
+        return
     }
-    g_LastPrintScreenSound := currentTime
 
-    ; Manually send Alt+PrintScreen to Windows to trigger the screenshot
-    ; This ensures the screenshot functionality still works while we consume the hotkey
-    Send("!{PrintScreen}")
-
-    ; Brief delay to ensure screenshot is captured, then play single chime
-    Sleep 10
+    ; Update timestamp and play sound
+    g_LastPrintScreenSound := A_TickCount
     SoundBeep(800, 200)
 }
+
+; Set higher InputLevel to ensure our handler processes before others
+#InputLevel 10
+!PrintScreen::  ; Removed ~ prefix to CONSUME the hotkey (prevents other apps from receiving it)
+{
+    global g_PrintScreenInProgress
+
+    ; Prevent recursion: if we're already processing, skip (this handles Send retriggering)
+    if (g_PrintScreenInProgress) {
+        return
+    }
+
+    ; Set flag to prevent recursion from the Send below
+    g_PrintScreenInProgress := true
+
+    ; Manually send Alt+PrintScreen to Windows to trigger the screenshot
+    ; SendInput is more reliable and won't retrigger our hotkey due to SendLevel
+    SendInput("!{PrintScreen}")
+
+    ; Brief delay to ensure screenshot is captured, then play single chime
+    ; Uses Critical section to prevent duplicate sounds from concurrent handlers
+    Sleep 10
+    SafePlayPrintScreenSound()
+
+    ; Reset flag after a brief delay to allow normal operation
+    Sleep 100
+    g_PrintScreenInProgress := false
+}
+#InputLevel 0
 
 ; =============================================================================
 ; Block Escape Key from handy.exe
