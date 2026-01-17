@@ -3967,16 +3967,28 @@ StopFocusModeWindowMonitor() {
 ; =============================================================================
 ; Print Screen with Chime
 ; Hotkey: Alt+PrintScreen
-; Lets the native Alt+PrintScreen pass through (captures active window)
-; and plays a chime sound to confirm the action
+; Intercepts the hotkey to prevent other apps from handling it,
+; manually triggers the screenshot, and plays a single chime
 ; =============================================================================
-~!PrintScreen::
-{
-    ; Let the key combination pass through to Windows (captures active window)
-    ; The ~ prefix allows the original key to work normally
+global g_LastPrintScreenSound := 0  ; Track last sound time for debouncing
 
-    ; Brief delay to ensure screenshot is taken, then play chime
-    ; This is safe - one-shot timer automatically cleans up after execution
+!PrintScreen::  ; Removed ~ prefix to CONSUME the hotkey (prevents other apps from receiving it)
+{
+    global g_LastPrintScreenSound  ; Reference the global variable
+
+    ; Debounce: Only play sound if at least 300ms have passed since last sound
+    ; This is a safety measure in case of rapid repeated presses
+    currentTime := A_TickCount
+    if (currentTime - g_LastPrintScreenSound < 300) {
+        return  ; Skip if called too recently (prevents duplicate sounds from this script)
+    }
+    g_LastPrintScreenSound := currentTime
+
+    ; Manually send Alt+PrintScreen to Windows to trigger the screenshot
+    ; This ensures the screenshot functionality still works while we consume the hotkey
+    Send("!{PrintScreen}")
+
+    ; Brief delay to ensure screenshot is captured, then play single chime
     Sleep 10
     SoundBeep(800, 200)
 }
