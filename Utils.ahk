@@ -846,7 +846,7 @@ CleanClipboard() {
     SendInput "{Enter}"
 
     ; Wait for UI to respond
-    Sleep 100
+    Sleep 250
 
     SendInput "{Escape}"
 }
