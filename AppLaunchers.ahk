@@ -174,7 +174,9 @@ ShowCursorFallbackPanel() {
 #!+f::
 {
     Run "chrome.exe"
-    WinWaitActive("ahk_exe chrome.exe")
+    WinWait("ahk_exe chrome.exe", , 10)  ; Wait for window to exist (up to 10 seconds)
+    WinActivate("ahk_exe chrome.exe")    ; Explicitly activate the window
+    WinWaitActive("ahk_exe chrome.exe", , 2)  ; Wait for activation to complete
     CenterMouse()
 }
 
