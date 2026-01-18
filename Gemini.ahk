@@ -972,6 +972,16 @@ InitializeGeminiFirstTime() {
             }
 
             if (promptField) {
+                ; Check if field is already focused - if so, play sound and return
+                if (promptField.HasKeyboardFocus) {
+                    try {
+                        SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
+                    } catch {
+                        ; Silently ignore sound errors
+                    }
+                    return
+                }
+
                 promptField.SetFocus()
                 Sleep 50 ; Reduced from 100ms
                 ; Ensure focus was successful
