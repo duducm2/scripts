@@ -12417,6 +12417,26 @@ ShowGeminiModelSelector() {
     }
 }
 
+; Enter : Send Enter and automatically monitor for response completion
+; This automates the notification process so Ctrl+Enter is no longer needed
+; Shift+Enter continues to work normally (for line breaks) as it's not intercepted
+Enter:: {
+    ; Only trigger if Shift or Ctrl are NOT pressed
+    ; Shift+Enter = line break (should not trigger monitoring)
+    ; Ctrl+Enter = handled by the ^Enter hotkey below
+    if (GetKeyState("Shift", "P") || GetKeyState("Ctrl", "P")) {
+        ; Pass through to let browser handle it normally
+        Send "{Enter}"
+        return
+    }
+
+    ; Send Enter key to submit the prompt
+    Send "{Enter}"
+
+    ; Monitor for response completion and play sound when done
+    WaitForStopResponseButton_Gemini()
+}
+
 ; Control + Enter : Send Enter and monitor for response completion
 ^Enter:: {
     ; Send Enter key to submit the prompt
