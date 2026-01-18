@@ -851,6 +851,567 @@ CleanClipboard() {
     SendInput "{Escape}"
 }
 
+; =============================================================================
+; Project Data (for Cursor Window Focus Selector)
+; Ported from WindowManagement.ahk to ensure consistent key mapping
+; =============================================================================
+
+; Character sequence for assignment: 1 2 3 4 5 q w e r t a s d f g z x c v b 6 7 8 9 0 y u i o p h j k l n m , .
+global g_ProjectCharSequence := ["1", "2", "3", "4", "5", "q", "w", "e", "r", "t", "a", "s", "d", "f", "g", "z", "x",
+    "c", "v", "b", "6", "7", "8", "9", "0", "y", "u", "i", "o", "p", "h", "j", "k", "l", "n", "m", ",", "."]
+
+; Category display order (General first, Personal second, Work last)
+global g_ProjectCategories := ["General", "Personal", "Work"]
+
+; Global project list - must match WindowManagement.ahk for consistent key mapping
+; Each project should have: name, path, workPath, and category ("General", "Personal", or "Work")
+global g_Projects := [
+    ; General category
+    { name: "Scripts", path: "C:\Users\eduev\Meu Drive\12 - Scripts", workPath: "C:\Users\fie7ca\Documents\scripts",
+        category: "General" }, { name: "14-my-notes", path: "C:\Users\eduev\Meu Drive\14 - Notes", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes",
+            category: "General" }, { name: "", path: "", workPath: "", category: "General" }, { name: "", path: "",
+                workPath: "", category: "General" }, { name: "", path: "", workPath: "", category: "General" },
+                ; Personal category
+                { name: "ZMK Sofle", path: "C:\Users\eduev\Documents\ZMK\zmk-sofle", workPath: "", category: "Personal" }, { name: "AI Experiment",
+                    path: "C:\Users\eduev\Meu Drive\04 - Pós-graduação\01 - Mestrado\26-ai-experiment", workPath: "",
+                    category: "Personal" }, { name: "", path: "", workPath: "", category: "Personal" }, { name: "",
+                        path: "", workPath: "", category: "Personal" }, { name: "", path: "", workPath: "", category: "Personal" },
+                        ; Work category
+                        { name: "dashboard-model-research", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_E&S_CIP Dashboard research and design workspace folder\dashboard-model-research",
+                            category: "Work" }, { name: "GS_UX core team_UX and CIP Integration", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_UX core team_UX and CIP Integration",
+                                category: "Work" }, { name: "", path: "", workPath: "", category: "Work" }, { name: "",
+                                    path: "", workPath: "", category: "Work" }, { name: "", path: "", workPath: "",
+                                        category: "Work" }
+]
+
+; Extract matching segments from project path for window title matching
+; Cursor window titles have format: "filename - folder-name - Cursor" or "filename - path-segment - Cursor"
+ExtractProjectMatchSegments(projectPath) {
+    ; Normalize the project path (remove trailing backslashes)
+    normalizedPath := RTrim(projectPath, "\")
+
+    ; Split path into segments
+    pathSegments := StrSplit(normalizedPath, "\")
+
+    ; Extract the last folder name (e.g., "zmk-sofle", "26-ai-experiment", "12 - Scripts")
+    lastSegment := pathSegments[pathSegments.Length]
+
+    ; Build list of potential match strings
+    matchSegments := [lastSegment]
+
+    ; If we have at least 2 segments, also try the combination
+    if (pathSegments.Length >= 2) {
+        ; Try last two segments joined with " - " (for cases like "14 - Notes")
+        lastTwoJoined := pathSegments[pathSegments.Length - 1] . " - " . pathSegments[pathSegments.Length]
+        if (lastTwoJoined != lastSegment) {  ; Only add if different
+            matchSegments.Push(lastTwoJoined)
+        }
+    }
+
+    return matchSegments
+}
+
+; Check if a window title matches a project path
+WindowMatchesProject(winTitle, projectPath) {
+    if (projectPath = "") {
+        return false
+    }
+
+    matchSegments := ExtractProjectMatchSegments(projectPath)
+
+    ; Check if window title contains any of the match segments
+    for segment in matchSegments {
+        if (InStr(winTitle, segment)) {
+            return true
+        }
+    }
+
+    return false
+}
+
+; Get the project index that matches a window title
+GetMatchingProjectIndex(winTitle) {
+    global g_Projects, IS_WORK_ENVIRONMENT
+
+    ; Check each project
+    loop g_Projects.Length {
+        projectIndex := A_Index
+        project := g_Projects[projectIndex]
+
+        ; Skip empty placeholders
+        if (project.name = "" && project.path = "" && project.workPath = "") {
+            continue
+        }
+
+        ; Select path based on environment
+        projectPath := IS_WORK_ENVIRONMENT ? project.workPath : project.path
+
+        ; If work environment but no workPath set, fall back to personal path
+        if (IS_WORK_ENVIRONMENT && projectPath = "") {
+            projectPath := project.path
+        }
+
+        ; Check if window matches this project
+        if (WindowMatchesProject(winTitle, projectPath)) {
+            return projectIndex
+        }
+    }
+
+    return 0  ; No match found
+}
+
+; Build project index to character mapping (replicating ShowProjectSelector logic)
+BuildProjectIndexToCharMap() {
+    global g_Projects, g_ProjectCategories, g_ProjectCharSequence
+
+    projectIndexToChar := Map()
+    projectIndexToCategory := Map()
+
+    ; Build map of project index to category
+    loop g_Projects.Length {
+        projectIndex := A_Index
+        project := g_Projects[projectIndex]
+        category := project.HasProp("category") ? project.category : "Personal"
+        projectIndexToCategory[projectIndex] := category
+    }
+
+    charIndex := 1
+
+    ; Assign characters sequentially within each category (same logic as ShowProjectSelector)
+    for category in g_ProjectCategories {
+        ; Find all project indices in this category
+        categoryProjectIndices := []
+        for projectIndex, cat in projectIndexToCategory {
+            if (cat = category) {
+                categoryProjectIndices.Push(projectIndex)
+            }
+        }
+
+        ; Assign characters to projects in this category
+        for projectIndex in categoryProjectIndices {
+            project := g_Projects[projectIndex]
+
+            ; Skip empty placeholders
+            if (project.name = "" && project.path = "" && project.workPath = "") {
+                charIndex++
+                continue
+            }
+
+            ; Check if we have a character available
+            if (charIndex > g_ProjectCharSequence.Length) {
+                break
+            }
+
+            char := g_ProjectCharSequence[charIndex]
+
+            ; Skip character "3" - it's reserved for preview window activation
+            if (char = "3") {
+                charIndex++
+                if (charIndex > g_ProjectCharSequence.Length) {
+                    break
+                }
+                char := g_ProjectCharSequence[charIndex]
+            }
+
+            projectIndexToChar[projectIndex] := char
+            charIndex++
+        }
+    }
+
+    return projectIndexToChar
+}
+
+; =============================================================================
+; Cursor Window Focus Selector
+; =============================================================================
+
+; Global variables for Cursor focus selector
+global g_CursorFocusSelectorGui := false
+global g_CursorFocusSelectorActive := false
+global g_CursorFocusWindowMap := Map()  ; Maps character to window HWND
+global g_CursorFocusHotkeyHandlers := []  ; Store hotkey handlers for cleanup
+
+; Get Cursor windows with assigned keys (matching Project Selector key assignments)
+GetCursorWindowsWithKeys() {
+    global g_Projects, g_ProjectCharSequence
+
+    ; Build project index to character mapping
+    projectIndexToChar := BuildProjectIndexToCharMap()
+
+    ; Get all Cursor windows
+    cursorWindows := WinGetList("ahk_exe Cursor.exe")
+
+    ; Build list of windows with their assigned keys
+    windowsWithKeys := []
+    usedKeys := Map()
+    usedProjectIndices := Map()
+
+    ; First pass: assign keys to windows that match projects
+    for hwnd in cursorWindows {
+        try {
+            winTitle := WinGetTitle("ahk_id " . hwnd)
+            if (winTitle = "") {
+                winTitle := "Untitled"
+            }
+
+            ; Check if this window matches a project
+            matchingProjectIndex := GetMatchingProjectIndex(winTitle)
+
+            if (matchingProjectIndex > 0 && projectIndexToChar.Has(matchingProjectIndex)) {
+                char := projectIndexToChar[matchingProjectIndex]
+                ; Only use this key once
+                if (!usedKeys.Has(char) && !usedProjectIndices.Has(matchingProjectIndex)) {
+                    windowsWithKeys.Push({ hwnd: hwnd, title: winTitle, char: char, projectIndex: matchingProjectIndex })
+                    usedKeys[char] := true
+                    usedProjectIndices[matchingProjectIndex] := true
+                } else {
+                    ; Mark as unassigned for now, will assign in second pass
+                    windowsWithKeys.Push({ hwnd: hwnd, title: winTitle, char: "", projectIndex: matchingProjectIndex })
+                }
+            } else {
+                ; No project match, will assign in second pass
+                windowsWithKeys.Push({ hwnd: hwnd, title: winTitle, char: "", projectIndex: 0 })
+            }
+        } catch {
+            ; Skip windows we can't access
+            continue
+        }
+    }
+
+    ; Second pass: assign remaining keys to unmatched windows
+    charIndex := 1
+    for window in windowsWithKeys {
+        ; Skip if already assigned
+        if (window.char != "") {
+            continue
+        }
+
+        ; Find next available character
+        while (charIndex <= g_ProjectCharSequence.Length) {
+            char := g_ProjectCharSequence[charIndex]
+
+            ; Skip character "3" - reserved for preview windows
+            if (char = "3") {
+                charIndex++
+                continue
+            }
+
+            ; Check if this character is already used
+            if (!usedKeys.Has(char)) {
+                window.char := char
+                usedKeys[char] := true
+                charIndex++
+                break
+            }
+
+            charIndex++
+        }
+    }
+
+    ; Remove windows without assigned keys (shouldn't happen, but safety check)
+    filtered := []
+    for window in windowsWithKeys {
+        if (window.char != "") {
+            filtered.Push(window)
+        }
+    }
+
+    return filtered
+}
+
+; Focus Cursor window and close all others
+FocusCursorWindowAndCloseOthers(targetHwnd) {
+    ; Get all Cursor windows
+    allCursorWindows := WinGetList("ahk_exe Cursor.exe")
+
+    ; Iterate through all windows and close those that don't match target
+    for hwnd in allCursorWindows {
+        if (hwnd != targetHwnd) {
+            try {
+                WinClose("ahk_id " . hwnd)
+            } catch {
+                ; Silently ignore if window close fails
+            }
+        }
+    }
+
+    ; Activate the target window
+    try {
+        WinActivate("ahk_id " . targetHwnd)
+        WinWaitActive("ahk_id " . targetHwnd, , 1)
+    } catch {
+        ; Ignore if activation fails
+    }
+}
+
+; Cleanup function for Cursor focus selector
+CleanupCursorFocusSelector() {
+    global g_CursorFocusSelectorActive, g_CursorFocusSelectorGui, g_CursorFocusHotkeyHandlers
+    global g_CursorFocusWindowMap
+
+    ; Disable active flag
+    g_CursorFocusSelectorActive := false
+
+    ; Disable all character hotkeys
+    for handler in g_CursorFocusHotkeyHandlers {
+        try {
+            char := handler.char
+            ; Handle special VK codes
+            if (char = ",") {
+                Hotkey("vkBC", "Off")
+            } else if (char = ".") {
+                Hotkey("vkBE", "Off")
+            } else {
+                Hotkey(char, "Off")
+                ; Also disable uppercase for lowercase letters
+                if (RegExMatch(char, "^[a-z]$")) {
+                    Hotkey(StrUpper(char), "Off")
+                }
+            }
+        } catch {
+            ; Silently ignore errors
+        }
+    }
+
+    ; Disable Escape hotkey
+    try {
+        Hotkey("Escape", HandleCursorFocusEscape, "Off")
+    } catch {
+        ; Ignore
+    }
+
+    ; Clear handlers array
+    g_CursorFocusHotkeyHandlers := []
+
+    ; Close and destroy GUI
+    if (IsObject(g_CursorFocusSelectorGui)) {
+        try {
+            g_CursorFocusSelectorGui.Destroy()
+        } catch {
+            ; Ignore
+        }
+        g_CursorFocusSelectorGui := false
+    }
+
+    ; Clear window map
+    g_CursorFocusWindowMap := Map()
+}
+
+; Handler for Escape key in Cursor focus selector
+HandleCursorFocusEscape(*) {
+    global g_CursorFocusSelectorActive
+    if (g_CursorFocusSelectorActive) {
+        CleanupCursorFocusSelector()
+    }
+}
+
+; Handler for character key press in Cursor focus selector
+HandleCursorFocusChar(char) {
+    global g_CursorFocusSelectorActive, g_CursorFocusWindowMap
+
+    ; Only process if selector is active
+    if (!g_CursorFocusSelectorActive) {
+        return
+    }
+
+    ; Get the HWND for this character
+    targetHwnd := g_CursorFocusWindowMap.Get(char, "")
+    if (targetHwnd = "") {
+        ; Try lowercase if uppercase
+        targetHwnd := g_CursorFocusWindowMap.Get(StrLower(char), "")
+    }
+
+    if (targetHwnd != "") {
+        ; Cleanup first (closes GUI, disables hotkeys)
+        CleanupCursorFocusSelector()
+
+        ; Focus the window and close others
+        FocusCursorWindowAndCloseOthers(targetHwnd)
+    }
+}
+
+; Factory function to create a handler for Cursor focus selection
+CreateCursorFocusCharHandler(char) {
+    ; Return a function that captures the char value at creation time
+    return (*) => HandleCursorFocusChar(char)
+}
+
+; Show Cursor focus selector GUI
+ShowCursorFocusSelector() {
+    global g_CursorFocusSelectorGui, g_CursorFocusSelectorActive, g_CursorFocusWindowMap
+    global g_CursorFocusHotkeyHandlers
+
+    ; Close existing selector if open
+    if (g_CursorFocusSelectorActive && IsObject(g_CursorFocusSelectorGui)) {
+        CleanupCursorFocusSelector()
+        Sleep 50
+    }
+
+    ; Also close hotstring selector if it's open (since we're called from within it)
+    global g_HotstringSelectorActive
+    if (g_HotstringSelectorActive) {
+        CleanupHotstringSelector()
+        Sleep 50
+    }
+
+    ; Get Cursor windows with assigned keys
+    windowsWithKeys := GetCursorWindowsWithKeys()
+
+    if (windowsWithKeys.Length = 0) {
+        ; Use tray notification to avoid stealing focus
+        TrayTip("Focus Cursor Window", "No Cursor windows found.", "IconX")
+        SetTimer(() => TrayTip(), -5000)  ; Auto-hide after ~5s
+        return
+    }
+
+    ; If only one window, just focus it and return
+    if (windowsWithKeys.Length = 1) {
+        CleanupHotstringSelector()
+        FocusCursorWindowAndCloseOthers(windowsWithKeys[1].hwnd)
+        return
+    }
+
+    ; Clear window map
+    g_CursorFocusWindowMap := Map()
+
+    ; Get active monitor for positioning
+    activeWin := 0
+    try {
+        activeWin := WinGetID("A")
+    } catch {
+        activeWin := 0
+    }
+
+    ; Default to primary monitor work area
+    MonitorGetWorkArea(1, &monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
+    monitorWidth := monitorRight - monitorLeft
+    monitorHeight := monitorBottom - monitorTop
+
+    ; If we have an active window, find which monitor contains its center
+    if (activeWin && activeWin != 0) {
+        rect := Buffer(16, 0)
+        if (DllCall("GetWindowRect", "ptr", activeWin, "ptr", rect)) {
+            ; Calculate window center
+            winLeft := NumGet(rect, 0, "int")
+            winTop := NumGet(rect, 4, "int")
+            winRight := NumGet(rect, 8, "int")
+            winBottom := NumGet(rect, 12, "int")
+
+            centerX := winLeft + (winRight - winLeft) // 2
+            centerY := winTop + (winBottom - winTop) // 2
+
+            ; Find which monitor contains the window center
+            monitorCount := MonitorGetCount()
+            loop monitorCount {
+                idx := A_Index
+                MonitorGetWorkArea(idx, &l, &t, &r, &b)
+                if (centerX >= l && centerX <= r && centerY >= t && centerY <= b) {
+                    monitorLeft := l
+                    monitorTop := t
+                    monitorRight := r
+                    monitorBottom := b
+                    monitorWidth := r - l
+                    monitorHeight := b - t
+                    break
+                }
+            }
+        }
+    }
+
+    ; Create GUI - non-activating so it doesn't steal focus
+    g_CursorFocusSelectorGui := Gui("+AlwaysOnTop +ToolWindow +E0x08000000", "Focus Window (Close Others)")
+    fontSize := (monitorHeight < 800) ? 9 : 10
+    g_CursorFocusSelectorGui.SetFont("s" . fontSize, "Segoe UI")
+    g_CursorFocusSelectorGui.MarginX := 15
+    g_CursorFocusSelectorGui.MarginY := 10
+
+    ; Build display text
+    displayText := "=== FOCUS WINDOW (CLOSE OTHERS) ===`n`n"
+
+    for window in windowsWithKeys {
+        ; Map character to HWND
+        g_CursorFocusWindowMap[window.char] := window.hwnd
+
+        ; Add to display
+        displayText .= "[" . window.char . "] " . window.title . "`n"
+    }
+
+    displayText .= "`n[ESC] Cancel"
+
+    ; Calculate text dimensions
+    baseWidth := 450
+    lineHeight := fontSize + 6
+    lineCount := StrSplit(displayText, "`n").Length
+    textControlHeight := Min(400, lineCount * lineHeight + 20)
+
+    ; Add text control
+    g_CursorFocusSelectorGui.Add("Text", "w" . (baseWidth - 30), displayText)
+
+    ; Add close button
+    closeBtn := g_CursorFocusSelectorGui.Add("Button", "w80 Center", "Close")
+    closeBtn.OnEvent("Click", (*) => CleanupCursorFocusSelector())
+
+    ; Calculate total height
+    totalHeight := 20 + textControlHeight + 40 + 10
+
+    ; Calculate center position
+    marginX := 20
+    marginY := 20
+    guiX := monitorLeft + (monitorWidth - baseWidth) // 2
+    guiY := monitorTop + (monitorHeight - totalHeight) // 2
+
+    ; Ensure GUI stays within monitor bounds
+    if (guiX < monitorLeft + marginX)
+        guiX := monitorLeft + marginX
+    if (guiY < monitorTop + marginY)
+        guiY := monitorTop + marginY
+    if (guiX + baseWidth > monitorLeft + monitorWidth - marginX)
+        guiX := monitorLeft + monitorWidth - baseWidth - marginX
+    if (guiY + totalHeight > monitorTop + monitorHeight - marginY)
+        guiY := monitorTop + monitorHeight - totalHeight - marginY
+
+    ; Show GUI
+    g_CursorFocusSelectorGui.Show("NA w" . baseWidth . " h" . totalHeight . " x" . guiX . " y" . guiY)
+
+    ; Set active flag
+    g_CursorFocusSelectorActive := true
+
+    ; Clear handlers array
+    g_CursorFocusHotkeyHandlers := []
+
+    ; Enable hotkeys for assigned characters
+    for window in windowsWithKeys {
+        char := window.char
+
+        ; Create handler
+        handler := CreateCursorFocusCharHandler(char)
+
+        ; Store handler for cleanup
+        g_CursorFocusHotkeyHandlers.Push({ char: char, handler: handler })
+
+        ; Enable hotkey
+        try {
+            ; Handle special characters that need VK codes
+            if (char = ",") {
+                Hotkey("vkBC", handler, "On")
+            } else if (char = ".") {
+                Hotkey("vkBE", handler, "On")
+            } else {
+                Hotkey(char, handler, "On")
+                ; Also enable uppercase for lowercase letters
+                if (RegExMatch(char, "^[a-z]$")) {
+                    Hotkey(StrUpper(char), handler, "On")
+                }
+            }
+        } catch {
+            ; Silently ignore if we can't create hotkey for this character
+        }
+    }
+
+    ; Enable Escape hotkey
+    Hotkey("Escape", HandleCursorFocusEscape, "On")
+}
+
 ; Initialize macros
 InitMacros() {
     ; Quick Update to Your Scripts macro
@@ -863,6 +1424,8 @@ InitMacros() {
     RegisterMacro(ToggleDictationLoop, "🎙️ Dictation Loop (60s)")
     ; Clean the Clipboard macro (assigned to "P")
     RegisterMacro(CleanClipboard, "🧹 Clean the Clipboard", "p")
+    ; Focus Cursor Window macro (assigned to "C")
+    RegisterMacro(ShowCursorFocusSelector, "Focus Cursor Window (Close Others)", "c")
 }
 InitMacros()
 
@@ -3348,7 +3911,35 @@ ShowHotstringSelector() {
         }
     }
 
-    ; Collect all items with their categories
+    ; First, add explicitly assigned macros at their character positions
+    global g_MacroCharMap
+    for char, macroFunc in g_MacroCharMap {
+        ; Find the macro entry for this function
+        macroEntry := ""
+        for macro in g_Macros {
+            if (macro.func = macroFunc) {
+                macroEntry := macro
+                break
+            }
+        }
+        if (macroEntry != "") {
+            ; Find the index of this character in the sequence
+            charIndexInSeq := 0
+            for idx, seqChar in g_HotstringCharSequence {
+                if (seqChar = char) {
+                    charIndexInSeq := idx
+                    break
+                }
+            }
+            if (charIndexInSeq > 0) {
+                itemText := "[" . char . "] > " . macroEntry.title
+                hotstringCount++
+                allItems.Push({ category: "Macros", char: char, text: itemText, isEmpty: false, explicitIndex: charIndexInSeq })
+            }
+        }
+    }
+
+    ; Collect all items with their categories (sequential assignment for non-explicit items)
     currentCharIndex := 1
     for category in g_HotstringCategories {
         ; Calculate how many character slots belong to this category
@@ -3359,6 +3950,13 @@ ShowHotstringSelector() {
             loop categorySlotCount {
                 if (currentCharIndex <= g_HotstringCharSequence.Length) {
                     char := g_HotstringCharSequence[currentCharIndex]
+
+                    ; Skip if this character is already explicitly assigned to a macro
+                    if (g_MacroCharMap.Has(char)) {
+                        currentCharIndex++
+                        continue
+                    }
+
                     itemText := ""
                     isEmpty := false
 
@@ -3366,6 +3964,13 @@ ShowHotstringSelector() {
                     if (charIndexToHotstring.Has(currentCharIndex)) {
                         hsInfo := charIndexToHotstring[currentCharIndex]
                         hs := hsInfo.hotstring
+
+                        ; Skip macros that have explicit char assignments
+                        if (hsInfo.category = "Macros" && hs.HasProp("char") && hs.char != "") {
+                            ; This macro has an explicit assignment, skip it here
+                            currentCharIndex++
+                            continue
+                        }
 
                         ; Use title if available (for all categories including quick open files), otherwise use preview text
                         if (hs.HasProp("title") && hs.title != "") {
@@ -3392,6 +3997,42 @@ ShowHotstringSelector() {
             }
         }
     }
+
+    ; Sort allItems by explicitIndex (if exists) or sequential position, then by category order
+    ; Items with explicitIndex should be at their explicit position
+    sortedItems := []
+    for idx, seqChar in g_HotstringCharSequence {
+        ; First check for explicitly assigned items at this position
+        found := false
+        for item in allItems {
+            if (item.HasProp("explicitIndex") && item.explicitIndex = idx) {
+                sortedItems.Push(item)
+                found := true
+                break
+            }
+        }
+        ; If not found as explicit, check for sequential items
+        if (!found) {
+            for item in allItems {
+                if (!item.HasProp("explicitIndex") && item.char = seqChar) {
+                    ; Check if this item was already added
+                    alreadyAdded := false
+                    for added in sortedItems {
+                        if (added.char = item.char && added.text = item.text) {
+                            alreadyAdded := true
+                            break
+                        }
+                    }
+                    if (!alreadyAdded) {
+                        sortedItems.Push(item)
+                        break
+                    }
+                }
+            }
+        }
+    }
+
+    allItems := sortedItems
 
     ; Show any remaining unassigned character slots
     if (currentCharIndex <= g_HotstringCharSequence.Length) {

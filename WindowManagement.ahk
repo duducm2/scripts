@@ -1408,7 +1408,8 @@ HandleCursorWindowSelectorEscape(*) {
 ; Show Cursor window selector sub-menu GUI
 ShowCursorWindowSelectorSubMenu() {
     global g_CursorWindowSelectorGui, g_CursorWindowMap, g_CursorWindowHotkeyHandlers
-    global g_ProjectCharSequence, g_ProjectSelectorActive
+    global g_ProjectCharSequence, g_ProjectSelectorActive, g_Projects, g_ProjectCategories
+    global IS_WORK_ENVIRONMENT
 
     ; Only show if project selector is active
     if (!g_ProjectSelectorActive) {
@@ -1434,6 +1435,177 @@ ShowCursorWindowSelectorSubMenu() {
         }
         CleanupProjectSelector()
         return
+    }
+
+    ; Build project index to character mapping (same as ShowProjectSelector)
+    projectIndexToChar := Map()
+    projectIndexToCategory := Map()
+
+    ; Build map of project index to category
+    loop g_Projects.Length {
+        projectIndex := A_Index
+        project := g_Projects[projectIndex]
+        category := project.HasProp("category") ? project.category : "Personal"
+        projectIndexToCategory[projectIndex] := category
+    }
+
+    charIndex := 1
+
+    ; Assign characters sequentially within each category (same logic as ShowProjectSelector)
+    for category in g_ProjectCategories {
+        ; Find all project indices in this category
+        categoryProjectIndices := []
+        for projectIndex, cat in projectIndexToCategory {
+            if (cat = category) {
+                categoryProjectIndices.Push(projectIndex)
+            }
+        }
+
+        ; Assign characters to projects in this category
+        for projectIndex in categoryProjectIndices {
+            project := g_Projects[projectIndex]
+
+            ; Skip empty placeholders
+            if (project.name = "" && project.path = "" && project.workPath = "") {
+                charIndex++
+                continue
+            }
+
+            ; Check if we have a character available
+            if (charIndex > g_ProjectCharSequence.Length) {
+                break
+            }
+
+            char := g_ProjectCharSequence[charIndex]
+
+            ; Skip character "3" - it's reserved for preview window activation
+            if (char = "3") {
+                charIndex++
+                if (charIndex > g_ProjectCharSequence.Length) {
+                    break
+                }
+                char := g_ProjectCharSequence[charIndex]
+            }
+
+            projectIndexToChar[projectIndex] := char
+            charIndex++
+        }
+    }
+
+    ; Helper function to check if a window title matches a project path
+    WindowMatchesProject(winTitle, projectPath) {
+        if (projectPath = "") {
+            return false
+        }
+        matchSegments := ExtractProjectMatchSegments(projectPath)
+        for segment in matchSegments {
+            if (InStr(winTitle, segment)) {
+                return true
+            }
+        }
+        return false
+    }
+
+    ; Helper function to get matching project index for a window
+    GetMatchingProjectIndex(winTitle) {
+        loop g_Projects.Length {
+            projectIndex := A_Index
+            project := g_Projects[projectIndex]
+
+            ; Skip empty placeholders
+            if (project.name = "" && project.path = "" && project.workPath = "") {
+                continue
+            }
+
+            ; Select path based on environment
+            projectPath := IS_WORK_ENVIRONMENT ? project.workPath : project.path
+
+            ; If work environment but no workPath set, fall back to personal path
+            if (IS_WORK_ENVIRONMENT && projectPath = "") {
+                projectPath := project.path
+            }
+
+            ; Check if window matches this project
+            if (WindowMatchesProject(winTitle, projectPath)) {
+                return projectIndex
+            }
+        }
+        return 0
+    }
+
+    ; Build list of windows with their assigned keys
+    windowsWithKeys := []
+    usedKeys := Map()
+    usedProjectIndices := Map()
+
+    ; First pass: assign keys to windows that match projects
+    for hwnd in cursorWindows {
+        try {
+            winTitle := WinGetTitle("ahk_id " . hwnd)
+            if (winTitle = "") {
+                winTitle := "Untitled"
+            }
+
+            ; Check if this window matches a project
+            matchingProjectIndex := GetMatchingProjectIndex(winTitle)
+
+            if (matchingProjectIndex > 0 && projectIndexToChar.Has(matchingProjectIndex)) {
+                char := projectIndexToChar[matchingProjectIndex]
+                ; Only use this key once
+                if (!usedKeys.Has(char) && !usedProjectIndices.Has(matchingProjectIndex)) {
+                    windowsWithKeys.Push({ hwnd: hwnd, title: winTitle, char: char, projectIndex: matchingProjectIndex })
+                    usedKeys[char] := true
+                    usedProjectIndices[matchingProjectIndex] := true
+                } else {
+                    ; Mark as unassigned for now, will assign in second pass
+                    windowsWithKeys.Push({ hwnd: hwnd, title: winTitle, char: "", projectIndex: matchingProjectIndex })
+                }
+            } else {
+                ; No project match, will assign in second pass
+                windowsWithKeys.Push({ hwnd: hwnd, title: winTitle, char: "", projectIndex: 0 })
+            }
+        } catch {
+            ; Skip windows we can't access
+            continue
+        }
+    }
+
+    ; Second pass: assign remaining keys to unmatched windows
+    charIndex := 1
+    for window in windowsWithKeys {
+        ; Skip if already assigned
+        if (window.char != "") {
+            continue
+        }
+
+        ; Find next available character
+        while (charIndex <= g_ProjectCharSequence.Length) {
+            char := g_ProjectCharSequence[charIndex]
+
+            ; Skip character "3" - reserved for preview windows
+            if (char = "3") {
+                charIndex++
+                continue
+            }
+
+            ; Check if this character is already used
+            if (!usedKeys.Has(char)) {
+                window.char := char
+                usedKeys[char] := true
+                charIndex++
+                break
+            }
+
+            charIndex++
+        }
+    }
+
+    ; Filter out windows without assigned keys
+    filteredWindows := []
+    for window in windowsWithKeys {
+        if (window.char != "") {
+            filteredWindows.Push(window)
+        }
     }
 
     ; Clear window map
@@ -1493,38 +1665,12 @@ ShowCursorWindowSelectorSubMenu() {
     ; Build display text
     displayText := "=== FOCUS CURSOR WINDOW ===`n`n"
 
-    charIndex := 1
-    for hwnd in cursorWindows {
-        if (charIndex <= g_ProjectCharSequence.Length) {
-            char := g_ProjectCharSequence[charIndex]
+    for window in filteredWindows {
+        ; Map character to HWND
+        g_CursorWindowMap[window.char] := window.hwnd
 
-            ; Skip character "3" - it's reserved for preview window activation in project selector
-            if (char = "3") {
-                charIndex++
-                if (charIndex > g_ProjectCharSequence.Length) {
-                    break
-                }
-                char := g_ProjectCharSequence[charIndex]
-            }
-
-            ; Get window title
-            try {
-                winTitle := WinGetTitle("ahk_id " . hwnd)
-                if (winTitle = "") {
-                    winTitle := "Untitled"
-                }
-            } catch {
-                winTitle := "Unknown Window"
-            }
-
-            ; Map character to HWND
-            g_CursorWindowMap[char] := hwnd
-
-            ; Add to display
-            displayText .= "[" . char . "] " . winTitle . "`n"
-
-            charIndex++
-        }
+        ; Add to display
+        displayText .= "[" . window.char . "] " . window.title . "`n"
     }
 
     displayText .= "`n[ESC] Cancel"
@@ -1568,45 +1714,31 @@ ShowCursorWindowSelectorSubMenu() {
     g_CursorWindowHotkeyHandlers := []
 
     ; Enable hotkeys for assigned characters
-    charIndex := 1
-    for hwnd in cursorWindows {
-        if (charIndex <= g_ProjectCharSequence.Length) {
-            char := g_ProjectCharSequence[charIndex]
+    for window in filteredWindows {
+        char := window.char
 
-            ; Skip character "3"
-            if (char = "3") {
-                charIndex++
-                if (charIndex > g_ProjectCharSequence.Length) {
-                    break
+        ; Create handler
+        handler := CreateCursorWindowSelectionHandler(char)
+
+        ; Store handler for cleanup
+        g_CursorWindowHotkeyHandlers.Push({ char: char, handler: handler })
+
+        ; Enable hotkey
+        try {
+            ; Handle special characters that need VK codes
+            if (char = ",") {
+                Hotkey("vkBC", handler, "On")
+            } else if (char = ".") {
+                Hotkey("vkBE", handler, "On")
+            } else {
+                Hotkey(char, handler, "On")
+                ; Also enable uppercase for lowercase letters
+                if (RegExMatch(char, "^[a-z]$")) {
+                    Hotkey(StrUpper(char), handler, "On")
                 }
-                char := g_ProjectCharSequence[charIndex]
             }
-
-            ; Create handler
-            handler := CreateCursorWindowSelectionHandler(char)
-
-            ; Store handler for cleanup
-            g_CursorWindowHotkeyHandlers.Push({ char: char, handler: handler })
-
-            ; Enable hotkey
-            try {
-                ; Handle special characters that need VK codes
-                if (char = ",") {
-                    Hotkey("vkBC", handler, "On")
-                } else if (char = ".") {
-                    Hotkey("vkBE", handler, "On")
-                } else {
-                    Hotkey(char, handler, "On")
-                    ; Also enable uppercase for lowercase letters
-                    if (RegExMatch(char, "^[a-z]$")) {
-                        Hotkey(StrUpper(char), handler, "On")
-                    }
-                }
-            } catch {
-                ; Silently ignore if we can't create hotkey for this character
-            }
-
-            charIndex++
+        } catch {
+            ; Silently ignore if we can't create hotkey for this character
         }
     }
 
@@ -1619,7 +1751,7 @@ ShowCursorWindowSelectorSubMenu() {
     }
 }
 
-; Handler for Cursor window selection trigger (character "h" in project selector)
+; Handler for Cursor window selection trigger (character "c" in project selector)
 HandleCursorWindowSelectionTrigger(*) {
     global g_ProjectSelectorActive
 
@@ -1802,7 +1934,7 @@ ShowProjectSelector() {
         displayText .= "`n"  ; Space between categories
     }
 
-    displayText .= "`n[h] Focus Cursor Window`n"
+    displayText .= "`n[c] Focus Cursor Window`n"
     displayText .= "[3] Activate Preview Windows`n"
     displayText .= "[ESC] Cancel"
 
@@ -1872,12 +2004,12 @@ ShowProjectSelector() {
         }
     }
 
-    ; Enable hotkey for Cursor window selection (character "h")
+    ; Enable hotkey for Cursor window selection (character "c")
     try {
         cursorWindowHandler := HandleCursorWindowSelectionTrigger
-        g_ProjectHotkeyHandlers.Push({ char: "h", handler: cursorWindowHandler })
-        Hotkey("h", cursorWindowHandler, "On")
-        Hotkey("H", cursorWindowHandler, "On")  ; Also enable uppercase
+        g_ProjectHotkeyHandlers.Push({ char: "c", handler: cursorWindowHandler })
+        Hotkey("c", cursorWindowHandler, "On")
+        Hotkey("C", cursorWindowHandler, "On")  ; Also enable uppercase
     } catch {
         ; Silently ignore if we can't create hotkey
     }
