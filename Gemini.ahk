@@ -932,43 +932,21 @@ InitializeGeminiFirstTime() {
 
             promptField := 0
 
-            ; Primary strategy: Find by Name "Enter a prompt here" with Type 50004 (Edit)
+            ; Optimized strategy: Single precise FindFirst using specific UIA properties
+            ; Type: 50004 (Edit), Name: "Enter a prompt here", ClassName contains "ql-editor" and "new-input-ui"
             try {
+                ; First try exact match on Name and Type
                 promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
-            } catch {
-                ; Silently continue to fallbacks
-            }
 
-            ; If primary strategy failed, use single-pass scoring over all edits
-            if !promptField {
-                try {
-                    allEdits := uia.FindAll({ Type: 50004 })
-                    best := 0, bestScore := -1
-                    for edit in allEdits {
-                        cls := edit.ClassName
-                        name := edit.Name
-                        score := 0
-                        if InStr(cls, "ql-editor")
-                            score += 3
-                        if InStr(cls, "new-input-ui")
-                            score += 2
-                        if InStr(name, "Enter a prompt")
-                            score += 3
-                        else if InStr(name, "prompt")
-                            score += 2
-                        else if InStr(name, "Digite um prompt")
-                            score += 2
-                        if (score > bestScore) {
-                            bestScore := score
-                            best := edit
-                        }
+                ; Verify it has the correct ClassName pattern (contains both "ql-editor" and "new-input-ui")
+                if (promptField) {
+                    cls := promptField.ClassName
+                    if (!InStr(cls, "ql-editor") || !InStr(cls, "new-input-ui")) {
+                        promptField := 0  ; Not the right element, reset
                     }
-                    if (bestScore >= 0) {
-                        promptField := best
-                    }
-                } catch {
-                    ; Silently continue if fallback fails
                 }
+            } catch {
+                ; Silently continue if search fails
             }
 
             if (promptField) {
@@ -982,13 +960,27 @@ InitializeGeminiFirstTime() {
                     return
                 }
 
+                ; Set focus and verify it was successful
                 promptField.SetFocus()
-                Sleep 50 ; Reduced from 100ms
-                ; Ensure focus was successful
-                if (!promptField.HasKeyboardFocus) {
+                Sleep 50 ; Small delay for focus to take effect
+
+                ; Robust verification: Check HasKeyboardFocus and retry if needed
+                maxRetries := 3
+                retryCount := 0
+                while (!promptField.HasKeyboardFocus && retryCount < maxRetries) {
                     ; Fallback: try clicking if SetFocus didn't work
                     promptField.Click()
-                    Sleep 50 ; Reduced from 100ms
+                    Sleep 50
+                    retryCount++
+                }
+
+                ; Play sound only after focus is explicitly verified
+                if (promptField.HasKeyboardFocus) {
+                    try {
+                        SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
+                    } catch {
+                        ; Silently ignore sound errors
+                    }
                 }
             }
         }
