@@ -610,6 +610,11 @@ ClipAngel (Shift)
 💾 [S][S]ave as file
 🔗 [M][M]erge clips
 🔍 [Y]File t[Y]pe filter (Quick Wizard)
+⌨️ [Alt+1] [S]elect current item
+⌨️ [Alt+2] [M]ove down once and select
+⌨️ [Alt+3] [M]ove down twice and select
+⌨️ [Alt+4] [M]ove down three times and select
+⌨️ [Alt+5] [M]ove down four times and select
 )"  ; end ClipAngel
 
 ; --- Figma -----------------------------------------------------------------
@@ -805,6 +810,11 @@ Command Palette (Shift)
 ⌨️ [Ctrl+4] [M]ove down three times and select
 ⌨️ [Ctrl+5] [M]ove down four times and select
 ⌨️ [Ctrl+6] [M]ove down five times and select
+⌨️ [Alt+1] [S]elect current item
+⌨️ [Alt+2] [M]ove down once and select
+⌨️ [Alt+3] [M]ove down twice and select
+⌨️ [Alt+4] [M]ove down three times and select
+⌨️ [Alt+5] [M]ove down four times and select
 )"
 
 ; --- Excel ------------------------------------------------------------
@@ -1580,6 +1590,39 @@ global g_ClipAngelFilterCharSequence := ["1", "2", "3", "4", "5"]
 
 ; Shift + M : Merge clips
 +m:: Send "^!j"
+
+; Alt + 1 : Select current item
+!1:: Send "{Enter}"
+
+; Alt + 2 : Move down once and select
+!2:: {
+    Send "{Down}"
+    Send "{Enter}"
+}
+
+; Alt + 3 : Move down twice and select
+!3:: {
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
+}
+
+; Alt + 4 : Move down three times and select
+!4:: {
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
+}
+
+; Alt + 5 : Move down four times and select
+!5:: {
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
+}
 
 ; =============================================================================
 ; ClipAngel Filter Selector Functions
