@@ -12531,29 +12531,7 @@ PlayCompletionChime_Gemini() {
             return
         lastTick := A_TickCount
 
-        played := false
-        ; Prefer Windows MessageBeep (reliable through default output)
-        try {
-            rc := DllCall("User32\\MessageBeep", "UInt", 0xFFFFFFFF)
-            if (rc)
-                played := true
-        } catch {
-        }
-
-        ; Fallback to system asterisk sound
-        if !played {
-            try {
-                played := SoundPlay("*64", false)
-            } catch {
-            }
-        }
-
-        ; Last resort, attempt the classic beep
-        if !played {
-            try SoundBeep(1100, 130)
-            catch {
-            }
-        }
+        SoundPlay(A_ScriptDir . "\sounds\gemini-completion.wav")
     } catch {
     }
 }

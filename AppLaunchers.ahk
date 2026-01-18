@@ -1459,6 +1459,12 @@ StartPomodoroTimer() {
     }
     g_PomodoroTinyIndicator := ShowTinyWaterBottleIndicator()
 
+    ; Play start sound
+    try {
+        SoundPlay(A_ScriptDir . "\sounds\pomodo-start.wav")
+    } catch {
+    }
+
     ; Set up 25-minute completion timer (1,500,000 ms = 25 minutes)
     g_PomodoroTimer := OnPomodoroComplete
     SetTimer(g_PomodoroTimer, -1500000)
