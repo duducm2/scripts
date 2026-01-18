@@ -863,6 +863,8 @@ InitMacros() {
     RegisterMacro(ToggleDictationLoop, "🎙️ Dictation Loop (60s)")
     ; Clean the Clipboard macro (assigned to "P")
     RegisterMacro(CleanClipboard, "🧹 Clean the Clipboard", "p")
+    ; Focus Specific Cursor Window macro (assigned to "h")
+    RegisterMacro(ShowCursorWindowSelector, "🪟 Focus Specific Cursor Window", "h")
 }
 InitMacros()
 
@@ -2702,6 +2704,12 @@ global g_HotstringSelectorActive := false
 global g_HotstringCharMap := Map()  ; Maps character to expansion text
 global g_HotstringHotkeyHandlers := []  ; Store hotkey handlers for cleanup
 
+; Global variables for Cursor window selector
+global g_CursorSelectorGui := false
+global g_CursorSelectorActive := false
+global g_CursorSelectorWindowMap := Map()  ; Maps character to window HWND
+global g_CursorSelectorHotkeyHandlers := []  ; Store hotkey handlers for cleanup
+
 ; Character sequence for assignment: 1 2 3 4 5 q w e r t a s d f g z x c v b 6 7 8 9 0 y u i o p h j k l n m , .
 global g_HotstringCharSequence := ["1", "2", "3", "4", "5", "q", "w", "e", "r", "t", "a", "s", "d", "f", "g", "z", "x",
     "c", "v", "b", "6", "7", "8", "9", "0", "y", "u", "i", "o", "p", "h", "j", "k", "l", "n", "m", ",", "."]
@@ -3692,6 +3700,302 @@ ShowHotstringSelector() {
 
     ; Enable Escape hotkey
     Hotkey("Escape", HandleHotstringEscape, "On")
+}
+
+; =============================================================================
+; Cursor Window Selector
+; =============================================================================
+
+; Cleanup function for Cursor window selector
+CleanupCursorWindowSelector() {
+    global g_CursorSelectorActive, g_CursorSelectorGui, g_CursorSelectorHotkeyHandlers
+    global g_CursorSelectorWindowMap
+
+    ; Disable active flag
+    g_CursorSelectorActive := false
+
+    ; Disable all character hotkeys
+    for handler in g_CursorSelectorHotkeyHandlers {
+        try {
+            char := handler.char
+            ; Handle special VK codes
+            if (char = ",") {
+                Hotkey("vkBC", "Off")
+            } else if (char = ".") {
+                Hotkey("vkBE", "Off")
+            } else {
+                Hotkey(char, "Off")
+                ; Also disable uppercase for lowercase letters
+                if (RegExMatch(char, "^[a-z]$")) {
+                    Hotkey(StrUpper(char), "Off")
+                }
+            }
+        } catch {
+            ; Silently ignore errors
+        }
+    }
+
+    ; Disable Escape hotkey
+    try {
+        Hotkey("Escape", HandleCursorWindowSelectorEscape, "Off")
+    } catch {
+        ; Ignore
+    }
+
+    ; Clear handlers array
+    g_CursorSelectorHotkeyHandlers := []
+
+    ; Close and destroy GUI
+    if (IsObject(g_CursorSelectorGui)) {
+        try {
+            g_CursorSelectorGui.Destroy()
+        } catch {
+            ; Ignore
+        }
+        g_CursorSelectorGui := false
+    }
+
+    ; Clear window map
+    g_CursorSelectorWindowMap := Map()
+}
+
+; Handler for Escape key in Cursor window selector
+HandleCursorWindowSelectorEscape(*) {
+    global g_CursorSelectorActive
+    if (g_CursorSelectorActive) {
+        CleanupCursorWindowSelector()
+    }
+}
+
+; Handler for Cursor window selection
+HandleCursorWindowSelection(targetHwnd, allCursorWindows) {
+    global g_CursorSelectorActive
+
+    ; Only process if selector is active
+    if (!g_CursorSelectorActive) {
+        return
+    }
+
+    ; Iterate through all windows and close those that don't match target
+    for hwnd in allCursorWindows {
+        if (hwnd != targetHwnd) {
+            try {
+                WinClose("ahk_id " . hwnd)
+            } catch {
+                ; Silently ignore if window close fails
+            }
+        }
+    }
+
+    ; Activate the target window
+    try {
+        WinActivate("ahk_id " . targetHwnd)
+        WinWaitActive("ahk_id " . targetHwnd, , 1)
+    } catch {
+        ; Ignore if activation fails
+    }
+
+    ; Cleanup the selector
+    CleanupCursorWindowSelector()
+}
+
+; Factory function to create a handler for Cursor window selection
+CreateCursorWindowSelectionHandler(char) {
+    ; Return a function that captures the char value at creation time
+    return (*) => HandleCursorWindowSelectionByChar(char)
+}
+
+; Handler for character key press in Cursor window selector
+HandleCursorWindowSelectionByChar(char) {
+    global g_CursorSelectorActive, g_CursorSelectorWindowMap
+
+    ; Only process if selector is active
+    if (!g_CursorSelectorActive) {
+        return
+    }
+
+    ; Get the HWND for this character
+    targetHwnd := g_CursorSelectorWindowMap.Get(char, "")
+    if (targetHwnd = "") {
+        ; Try lowercase if uppercase
+        targetHwnd := g_CursorSelectorWindowMap.Get(StrLower(char), "")
+    }
+
+    if (targetHwnd != "") {
+        ; Get all Cursor windows (need to rebuild the list)
+        allCursorWindows := WinGetList("ahk_exe Cursor.exe")
+        HandleCursorWindowSelection(targetHwnd, allCursorWindows)
+    }
+}
+
+; Show Cursor window selector GUI
+ShowCursorWindowSelector() {
+    global g_CursorSelectorGui, g_CursorSelectorActive, g_CursorSelectorWindowMap
+    global g_CursorSelectorHotkeyHandlers, g_HotstringCharSequence
+
+    ; Close existing selector if open
+    if (g_CursorSelectorActive && IsObject(g_CursorSelectorGui)) {
+        CleanupCursorWindowSelector()
+        Sleep 50
+    }
+
+    ; Also close hotstring selector if it's open (since we're called from within it)
+    global g_HotstringSelectorActive
+    if (g_HotstringSelectorActive) {
+        CleanupHotstringSelector()
+        Sleep 50
+    }
+
+    ; Get all Cursor windows
+    cursorWindows := WinGetList("ahk_exe Cursor.exe")
+
+    if (cursorWindows.Length = 0) {
+        ; Use tray notification to avoid stealing focus
+        TrayTip("Cursor Window Selector", "No Cursor windows found.", "IconX")
+        SetTimer(() => TrayTip(), -5000)  ; Auto-hide after ~5s
+        return
+    }
+
+    ; If only one window, just activate it and return
+    if (cursorWindows.Length = 1) {
+        try {
+            WinActivate("ahk_id " . cursorWindows[1])
+            WinWaitActive("ahk_id " . cursorWindows[1], , 1)
+        } catch {
+            ; Ignore if activation fails
+        }
+        return
+    }
+
+    ; Clear window map
+    g_CursorSelectorWindowMap := Map()
+
+    ; Get active monitor for positioning
+    activeMonitor := MonitorGetPrimary()
+    MonitorGet(activeMonitor, &monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
+    monitorWidth := monitorRight - monitorLeft
+    monitorHeight := monitorBottom - monitorTop
+
+    ; Create GUI
+    g_CursorSelectorGui := Gui("+AlwaysOnTop -MaximizeBox -MinimizeBox +ToolWindow")
+    g_CursorSelectorGui.BackColor := "1a1a1a"
+    g_CursorSelectorGui.SetFont("s10", "Segoe UI")
+
+    ; Build display text
+    displayLines := []
+    displayLines.Push("🪟 Focus Specific Cursor Window")
+    displayLines.Push("")
+
+    charIndex := 1
+    for hwnd in cursorWindows {
+        if (charIndex <= g_HotstringCharSequence.Length) {
+            char := g_HotstringCharSequence[charIndex]
+
+            ; Get window title
+            try {
+                winTitle := WinGetTitle("ahk_id " . hwnd)
+                if (winTitle = "") {
+                    winTitle := "Untitled"
+                }
+            } catch {
+                winTitle := "Unknown Window"
+            }
+
+            ; Map character to HWND
+            g_CursorSelectorWindowMap[char] := hwnd
+
+            ; Add to display
+            displayLines.Push(char . " > " . winTitle)
+
+            charIndex++
+        }
+    }
+
+    displayText := ""
+    for index, line in displayLines {
+        displayText .= line . "`n"
+    }
+
+    ; Calculate GUI size
+    baseWidth := 400
+    lineHeight := 20
+    lineCount := displayLines.Length
+    textControlHeight := Min(400, lineCount * lineHeight + 20)
+    textControlWidth := baseWidth - 30
+
+    ; Add text control
+    textCtrl := g_CursorSelectorGui.AddEdit("w" . textControlWidth . " h" . textControlHeight . " ReadOnly VScroll",
+        displayText)
+
+    ; Add Close button
+    closeBtn := g_CursorSelectorGui.AddButton("w100 Default Center", "Close")
+    closeBtn.OnEvent("Click", (*) => CleanupCursorWindowSelector())
+
+    ; Calculate total height
+    totalHeight := 10 + textControlHeight + 40 + 10
+    guiWidth := baseWidth
+
+    ; Calculate center position
+    marginX := 20
+    marginY := 20
+    guiX := monitorLeft + (monitorWidth - guiWidth) // 2
+    guiY := monitorTop + (monitorHeight - totalHeight) // 2
+
+    ; Ensure GUI stays within monitor bounds
+    if (guiX < monitorLeft + marginX)
+        guiX := monitorLeft + marginX
+    if (guiY < monitorTop + marginY)
+        guiY := monitorTop + marginY
+    if (guiX + guiWidth > monitorLeft + monitorWidth - marginX)
+        guiX := monitorLeft + monitorWidth - guiWidth - marginX
+    if (guiY + totalHeight > monitorTop + monitorHeight - marginY)
+        guiY := monitorTop + monitorHeight - totalHeight - marginY
+
+    ; Show GUI
+    g_CursorSelectorGui.Show("NA w" . guiWidth . " h" . totalHeight . " x" . guiX . " y" . guiY)
+
+    ; Set active flag
+    g_CursorSelectorActive := true
+
+    ; Clear handlers array
+    g_CursorSelectorHotkeyHandlers := []
+
+    ; Enable hotkeys for assigned characters
+    charIndex := 1
+    for hwnd in cursorWindows {
+        if (charIndex <= g_HotstringCharSequence.Length) {
+            char := g_HotstringCharSequence[charIndex]
+
+            ; Create handler
+            handler := CreateCursorWindowSelectionHandler(char)
+
+            ; Store handler for cleanup
+            g_CursorSelectorHotkeyHandlers.Push({ char: char, handler: handler })
+
+            ; Enable hotkey
+            try {
+                ; Handle special characters that need VK codes
+                if (char = ",") {
+                    Hotkey("vkBC", handler, "On")
+                } else if (char = ".") {
+                    Hotkey("vkBE", handler, "On")
+                } else {
+                    Hotkey(char, handler, "On")
+                    ; Also enable uppercase for lowercase letters
+                    if (RegExMatch(char, "^[a-z]$")) {
+                        Hotkey(StrUpper(char), handler, "On")
+                    }
+                }
+            } catch {
+                ; Silently ignore if we can't create hotkey for this character
+            }
+
+            charIndex++
+        }
+    }
+
+    ; Enable Escape hotkey
+    Hotkey("Escape", HandleCursorWindowSelectorEscape, "On")
 }
 
 ; AI NOTE: keep the hotstring selector message consistent. The sequence of
