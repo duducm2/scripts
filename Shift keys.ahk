@@ -5526,8 +5526,9 @@ RunOutlookAppointmentWizard() {
     }
     selCategory := step4Options[choice4]
 
-    ; STEP 5 – Reminder (6 options)
+    ; STEP 5 – Reminder (7 options)
     step5Options := Map()
+    step5Options["0"] := { Label: "🔕 None", Reminder: "0 minutes" }
     step5Options["1"] := { Label: "⏰ 15 minutes", Reminder: "15 minutes" }
     step5Options["2"] := { Label: "⏰ 4 hours", Reminder: "4 hours" }
     step5Options["3"] := { Label: "🗓️ 1 day", Reminder: "1 day" }

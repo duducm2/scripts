@@ -931,7 +931,7 @@ InitializeGeminiFirstTime() {
             Sleep 120  ; minimal settle before querying UIA
 
             promptField := 0
-y
+
             ; Strategy 1: Direct find by Name and Type (most reliable)
             try {
                 promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
