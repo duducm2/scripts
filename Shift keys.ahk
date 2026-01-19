@@ -8389,7 +8389,7 @@ IsEditorActive() {
             Send "+v"
             HideSmallLoadingIndicator_ChatGPT()
             ; Play sound when banner is hidden
-            SoundPlay "C:\Users\eduev\Meu Drive\12 - Scripts\sounds\cursor-git-commit.wav"
+            SoundPlay A_ScriptDir "\sounds\cursor-git-commit.wav"
 
             Sleep 1000
             ; Execute stored decision (if any) after commit is sent
@@ -8415,7 +8415,7 @@ IsEditorActive() {
     Send "+v"
     HideSmallLoadingIndicator_ChatGPT()
     ; Play sound when banner is hidden
-    SoundPlay "C:\Users\eduev\Meu Drive\12 - Scripts\sounds\cursor-git-commit.wav"
+    SoundPlay A_ScriptDir "\sounds\cursor-git-commit.wav"
     Sleep 2000
     ExecuteStoredCommitPushDecision()
 
