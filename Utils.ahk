@@ -20,9 +20,9 @@ global g_lastExpansion := 0
 ; Trigger only on Space or Tab, not Enter or punctuation
 Hotstring("EndChars", " `t")
 
-RegisterHotstring(trigger, expansion, category := "", title := "") {
+RegisterHotstring(trigger, expansion, category := "", title := "", char := "") {
     global g_hotstrings
-    g_hotstrings.Push({ trigger: trigger, expansion: expansion, category: category, title: title })
+    g_hotstrings.Push({ trigger: trigger, expansion: expansion, category: category, title: title, char: char })
 }
 
 GetHotstringsCheatSheetText() {
@@ -201,7 +201,7 @@ InitHotstringsCheatSheet() {
     ; New project for the X slot in the selector
     RegisterHotstring(":o:14notes", "14-my-notes", "Projects", "📝 14-my-notes")
     ; Remaining projects (previously after X/C/7) shift left one character each
-    RegisterHotstring(":o:gpm", "GS_UX_Project_Management_Activities_LA", "Projects", "📋 Project Management LA")
+    RegisterHotstring(":o:gpm", "GS_UX_Project_Management_Activities_LA", "Projects", "📋 Project Management LA", "c")
     RegisterHotstring(":o:guxcip", "GS_UX_and_CIP", "Projects", "🔗 UX and CIP")
     RegisterHotstring(":o:gtrain", "GS_UX core team_Trainings Management", "Projects", "🎓 Trainings Management")
     RegisterHotstring(":o:26ai", "26-ai-experiment", "Projects", "🤖 26-ai-experiment")
@@ -1277,8 +1277,6 @@ InitMacros() {
     RegisterMacro(ToggleDictationLoop, "🎙️ Dictation Loop (60s)")
     ; Clean the Clipboard macro (assigned to "P")
     RegisterMacro(CleanClipboard, "🧹 Clean the Clipboard", "p")
-    ; Focus Cursor Window macro (assigned to "C")
-    RegisterMacro(ShowCursorFocusSelector, "Focus Cursor Window (Close Others)", "c")
 }
 InitMacros()
 
@@ -3213,14 +3211,51 @@ BuildHotstringCharMap() {
         } else {
             ; Handle hotstring categories
             if (categorized.Has(category)) {
+                ; First pass: assign hotstrings with explicit character assignments
                 for hs in categorized[category] {
-                    if (charIndex <= g_HotstringCharSequence.Length) {
-                        char := g_HotstringCharSequence[charIndex]
-                        ; Only assign characters to hotstrings that have an expansion (skip empty placeholders)
-                        if (hs.expansion != "") {
-                            charMap[char] := hs.expansion
+                    if (hs.HasProp("char") && hs.char != "") {
+                        ; Check if character is in the sequence and not already assigned
+                        charIndexInSequence := 0
+                        for idx, seqChar in g_HotstringCharSequence {
+                            if (seqChar = hs.char) {
+                                charIndexInSequence := idx
+                                break
+                            }
                         }
-                        ; Always increment charIndex to reserve slots for placeholders
+                        if (charIndexInSequence > 0) {
+                            ; Check if this character is already assigned
+                            if (!charMap.Has(hs.char) && hs.expansion != "") {
+                                charMap[hs.char] := hs.expansion
+                            }
+                        }
+                    }
+                }
+                ; Second pass: assign remaining hotstrings sequentially, skipping already assigned characters
+                for hs in categorized[category] {
+                    ; Skip if this hotstring already has a character assigned
+                    alreadyAssigned := false
+                    for assignedChar, assignedExpansion in charMap {
+                        if (assignedExpansion = hs.expansion) {
+                            alreadyAssigned := true
+                            break
+                        }
+                    }
+                    if (alreadyAssigned) {
+                        continue
+                    }
+
+                    ; Find next available character
+                    while (charIndex <= g_HotstringCharSequence.Length) {
+                        char := g_HotstringCharSequence[charIndex]
+                        ; Check if this character is already assigned
+                        if (!charMap.Has(char)) {
+                            ; Only assign characters to hotstrings that have an expansion (skip empty placeholders)
+                            if (hs.expansion != "") {
+                                charMap[char] := hs.expansion
+                            }
+                            charIndex++
+                            break
+                        }
                         charIndex++
                     }
                 }
