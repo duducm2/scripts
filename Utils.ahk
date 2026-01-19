@@ -546,188 +546,31 @@ ToggleOutlookAndTeams() {
                 }
             }
 
-            ; Launch Teams
+            ; Launch/Activate Teams
+            ; Simplified approach: Just run the executable. This handles both launching and bringing to front.
             try {
-                if (!teamsRunning) {
-                    if (IS_WORK_ENVIRONMENT) {
-                        ; Use direct executable path for work environment
-                        teamsExePath :=
-                            "C:\Program Files\WindowsApps\MSTeams_25332.1210.4188.1171_x64__8wekyb3d8bbwe\ms-teams.exe"
-                        shortcutPath := "c:\Users\fie7ca\Documents\Atalhos\Microsoft Teams - Shortcut.lnk"
-
-                        ; Prefer direct executable if it exists, otherwise fallback to shortcut
-                        if (FileExist(teamsExePath)) {
-                            Run teamsExePath
-                        } else if (FileExist(shortcutPath)) {
-                            Run shortcutPath
-                        } else {
-                            Run "ms-teams.exe"
-                        }
+                if (IS_WORK_ENVIRONMENT) {
+                    teamsExePath := "C:\Program Files\WindowsApps\MSTeams_25332.1210.4188.1171_x64__8wekyb3d8bbwe\ms-teams.exe"
+                    if (FileExist(teamsExePath)) {
+                        Run teamsExePath
                     } else {
-                        ; Try personal environment path
-                        teamsPath :=
-                            "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Microsoft Teams.lnk"
-                        if (FileExist(teamsPath)) {
-                            Run teamsPath
-                        } else {
-                            ; Fallback to executable
-                            Run "ms-teams.exe"
-                        }
+                        Run "ms-teams.exe"
+                    }
+                } else {
+                    ; Personal environment
+                    teamsPath := "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Microsoft Teams.lnk"
+                    if (FileExist(teamsPath)) {
+                        Run teamsPath
+                    } else {
+                        Run "ms-teams.exe"
                     }
                 }
-            } catch Error as e {
-                MsgBox "Error launching Teams: " e.Message
-            }
 
-            ; Wait for applications to start and then activate in sequence
-            ; First: Activate Teams (even if minimized to system tray)
-            try {
-                ; Wait for Teams process to exist (with timeout)
-                processWaitStart := A_TickCount
-                processWaitTimeout := 10000  ; 10 seconds max wait
-                while (!ProcessExist("ms-teams.exe") && (A_TickCount - processWaitStart < processWaitTimeout)) {
-                    Sleep 200
-                }
-
-                ; Additional wait for Teams to fully initialize (prevent white screen)
-                Sleep 2000  ; Give Teams 2 seconds to initialize before activation attempts
-
-                if (teamsRunning || ProcessExist("ms-teams.exe")) {
-                    teamsActivated := false
-
-                    ; Strategy 1: Try WinGetList (standard approach)
-                    static teamsProcesses := ["ms-teams.exe", "Teams.exe", "MSTeams.exe"]
-                    for proc in teamsProcesses {
-                        if (teamsActivated) {
-                            break
-                        }
-                        windowList := WinGetList("ahk_exe " proc)
-                        for hwnd in windowList {
-                            try {
-                                windowState := WinGetMinMax(hwnd)
-                                if (windowState = -1) {
-                                    WinRestore(hwnd)
-                                    Sleep 100
-                                }
-                                WinActivate(hwnd)
-                                if WinWaitActive("ahk_id " hwnd, , 1) {
-                                    teamsActivated := true
-                                    break
-                                }
-                            } catch {
-                                continue
-                            }
-                        }
-                    }
-
-                    ; Strategy 2: Try WinExist with regex patterns (finds hidden windows)
-                    if (!teamsActivated) {
-                        ; Try regex patterns to find Teams windows
-                        regexPatterns := ["RegEx)^.*\| Microsoft Teams$", "RegEx)^Chat \| .* \| Microsoft Teams$",
-                            "RegEx)Microsoft Teams"]
-                        for pattern in regexPatterns {
-                            if hwnd := WinExist(pattern) {
-                                try {
-                                    ; Force show using ShowWindow API (SW_SHOW = 5)
-                                    DllCall("ShowWindow", "Ptr", hwnd, "Int", 5)
-                                    Sleep 100
-                                    WinActivate(hwnd)
-                                    if WinWaitActive("ahk_id " hwnd, , 1) {
-                                        teamsActivated := true
-                                        break
-                                    }
-                                } catch {
-                                    continue
-                                }
-                            }
-                        }
-                    }
-
-                    ; Strategy 3: Use EnumWindows API to find ALL Teams windows (including hidden in system tray)
-                    if (!teamsActivated) {
-                        teamsPID := ProcessExist("ms-teams.exe")
-                        if (!teamsPID) {
-                            teamsPID := ProcessExist("Teams.exe")
-                        }
-                        if (!teamsPID) {
-                            teamsPID := ProcessExist("MSTeams.exe")
-                        }
-
-                        if (teamsPID) {
-                            ; Use EnumWindows API to enumerate ALL windows (including hidden)
-                            global g_EnumTeamsPID, g_EnumTeamsWindows
-                            g_EnumTeamsPID := teamsPID
-                            g_EnumTeamsWindows := []
-
-                            EnumWindowsProc := CallbackCreate(EnumWindowsCallback, "Fast", 2)
-
-                            ; Call EnumWindows
-                            DllCall("EnumWindows", "Ptr", EnumWindowsProc, "Int64", 0)
-                            CallbackFree(EnumWindowsProc)
-
-                            ; Try to restore and activate each Teams window found
-                            for hwnd in g_EnumTeamsWindows {
-                                try {
-                                    ; Try multiple ShowWindow commands to restore
-                                    restoreCommands := [{ cmd: 9, name: "SW_RESTORE" }, { cmd: 5, name: "SW_SHOW" }, { cmd: 3,
-                                        name: "SW_SHOWMAXIMIZED" }, { cmd: 1, name: "SW_SHOWNORMAL" }
-                                    ]
-
-                                    for restoreCmd in restoreCommands {
-                                        try {
-                                            DllCall("ShowWindow", "Ptr", hwnd, "Int", restoreCmd.cmd)
-                                            Sleep 150
-                                            WinActivate(hwnd)
-                                            if WinWaitActive("ahk_id " hwnd, , 1) {
-                                                teamsActivated := true
-                                                break 2
-                                            }
-                                        } catch {
-                                            continue
-                                        }
-                                    }
-                                } catch {
-                                    continue
-                                }
-                            }
-                        }
-                    }
-
-                    ; Strategy 4: Try finding by window class name patterns
-                    if (!teamsActivated) {
-                        ; Try common Teams window class names
-                        classPatterns := ["Chrome_WidgetWin_1", "Chrome_WidgetWin_0"]
-                        for classPattern in classPatterns {
-                            for hwnd in WinGetList("ahk_class " classPattern) {
-                                try {
-                                    winPID := WinGetPID(hwnd)
-                                    winTitle := WinGetTitle(hwnd)
-
-                                    ; Check if this belongs to Teams process
-                                    if (InStr(winTitle, "Teams", false) || winPID = ProcessExist("ms-teams.exe") ||
-                                    winPID = ProcessExist("Teams.exe")) {
-                                        ; Try to restore and activate
-                                        DllCall("ShowWindow", "Ptr", hwnd, "Int", 5)  ; SW_SHOW
-                                        Sleep 150
-                                        WinActivate(hwnd)
-                                        if WinWaitActive("ahk_id " hwnd, , 1) {
-                                            teamsActivated := true
-                                            break 2
-                                        }
-                                    }
-                                } catch {
-                                    continue
-                                }
-                            }
-                        }
-                    }
-
-                    ; Show banner with status
-                    if (teamsActivated) {
-                        ShowCenteredOverlay_Utils("Teams activated", 1500)
-                    } else {
-                        ShowCenteredOverlay_Utils("Teams: Window not found", 2000)
-                    }
+                ; Wait for window to appear and become active
+                if (WinWaitActive("ahk_exe ms-teams.exe", , 10)) {
+                    ShowCenteredOverlay_Utils("Teams activated", 1500)
+                } else {
+                    ShowCenteredOverlay_Utils("Teams: Window not found", 2000)
                 }
             } catch Error as e {
                 ShowCenteredOverlay_Utils("Teams: Error - " . e.Message, 2000)
