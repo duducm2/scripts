@@ -472,7 +472,7 @@ Cursor
 📁 [2] Copy path (cursor)
 📊 [3] CSV: Edit CSV
 💾 [4] CSV: Apply changes to source file and save
-🔄 [5] Reload (ahk)
+[5] 
 🤖 [6] Context-aware agent panel actions
 🔨 [7] Build LaTeX project
 📄 [8] View LaTeX PDF file
