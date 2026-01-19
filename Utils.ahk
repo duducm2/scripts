@@ -489,6 +489,13 @@ ToggleOutlookAndTeams() {
         outlookRunning := ProcessExist("OUTLOOK.EXE")
         teamsRunning := ProcessExist("ms-teams.exe")
 
+        ; Show start banner
+        if (outlookRunning && teamsRunning) {
+            ShowCenteredOverlay_Utils("Closing Outlook and Teams...", 1500)
+        } else {
+            ShowCenteredOverlay_Utils("Opening Outlook and Teams...", 1500)
+        }
+
         if (outlookRunning && teamsRunning) {
             ; Both are open: Close Outlook and minimize Teams to system tray
             ; Close Outlook process
@@ -590,6 +597,9 @@ ToggleOutlookAndTeams() {
                 ; Silently fail if activation doesn't work
             }
         }
+
+        ; Show finish banner
+        ShowCenteredOverlay_Utils("Done", 1500)
     } catch Error as e {
         MsgBox "Error in ToggleOutlookAndTeams macro: " e.Message
     }
