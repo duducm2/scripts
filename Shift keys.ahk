@@ -12647,33 +12647,82 @@ WaitForStopResponseButton_Gemini(timeout := 300000) {
 
         if btn {
             buttonFound := true
-            ; Monitor the button until it disappears
-            while btn && (timeout <= 0 || (A_TickCount < deadline)) {
-                Sleep 250
-                btn := ""
-
-                ; Check if button still exists
-                try {
-                    btn := uia.FindFirst({ Type: "50000", Name: "Stop response" })
-                } catch {
+            ; Monitor the button until it disappears (with confirmation layer)
+            while (timeout <= 0 || (A_TickCount < deadline)) {
+                ; Monitor the button while it exists
+                while btn && (timeout <= 0 || (A_TickCount < deadline)) {
+                    Sleep 250
                     btn := ""
-                }
 
-                if !btn {
+                    ; Check if button still exists
                     try {
-                        btn := uia.FindFirst({ Type: "Button", Name: "Stop response" })
+                        btn := uia.FindFirst({ Type: "50000", Name: "Stop response" })
                     } catch {
                         btn := ""
                     }
-                }
 
-                if !btn {
+                    if !btn {
+                        try {
+                            btn := uia.FindFirst({ Type: "Button", Name: "Stop response" })
+                        } catch {
+                            btn := ""
+                        }
+                    }
+
+                    if !btn {
+                        try {
+                            btn := uia.FindFirst({ Name: "Stop response", matchmode: "Substring" })
+                        } catch {
+                            btn := ""
+                        }
+                    }
+                }
+                
+                ; Button has disappeared - add confirmation layer
+                ; Wait 1.5 seconds and check if it reappears (to avoid false positives)
+                confirmationStart := A_TickCount
+                confirmationPeriod := 1500  ; 1.5 seconds
+                buttonReappeared := false
+                
+                ; Check multiple times during the confirmation period
+                while ((A_TickCount - confirmationStart) < confirmationPeriod) && (timeout <= 0 || (A_TickCount < deadline)) {
+                    Sleep 300
+                    
+                    ; Check if button reappeared
                     try {
-                        btn := uia.FindFirst({ Name: "Stop response", matchmode: "Substring" })
+                        btn := uia.FindFirst({ Type: "50000", Name: "Stop response" })
                     } catch {
                         btn := ""
                     }
+                    
+                    if !btn {
+                        try {
+                            btn := uia.FindFirst({ Type: "Button", Name: "Stop response" })
+                        } catch {
+                            btn := ""
+                        }
+                    }
+                    
+                    if !btn {
+                        try {
+                            btn := uia.FindFirst({ Name: "Stop response", matchmode: "Substring" })
+                        } catch {
+                            btn := ""
+                        }
+                    }
+                    
+                    if btn {
+                        ; Button reappeared - break out of confirmation loop and continue monitoring
+                        buttonReappeared := true
+                        break  ; Exit confirmation loop, will continue outer monitoring loop
+                    }
                 }
+                
+                ; If button didn't reappear during confirmation period, response is truly complete
+                if !buttonReappeared {
+                    break  ; Exit the outer monitoring loop
+                }
+                ; Otherwise, continue the outer loop to monitor the reappeared button
             }
             break
         }
