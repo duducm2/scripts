@@ -8386,7 +8386,24 @@ IsEditorActive() {
                 WinActivate gCommitPushTargetWin
                 Sleep 200
             }
+
+            ; Verify commit message has content before submitting
+            if (!VerifyCommitMessageHasContent()) {
+                HideSmallLoadingIndicator_ChatGPT()
+                ShowSmallLoadingIndicator_ChatGPT("Waiting for commit message...")
+                ; Wait an additional 3 seconds and verify again
+                Sleep 3000
+                if (!VerifyCommitMessageHasContent()) {
+                    ; Still no content, abort commit
+                    HideSmallLoadingIndicator_ChatGPT()
+                    BlockInput "Off"
+                    MsgBox "Commit message is empty. Aborting commit.", "Empty Commit Message", "IconX"
+                    return
+                }
+            }
+
             Send "^!,"
+            Sleep 100
             Send "+v"
             HideSmallLoadingIndicator_ChatGPT()
             ; Play sound when banner is hidden
@@ -8411,6 +8428,22 @@ IsEditorActive() {
         WinActivate gCommitPushTargetWin
         Sleep 200
     }
+
+    ; Verify commit message has content before submitting
+    if (!VerifyCommitMessageHasContent()) {
+        HideSmallLoadingIndicator_ChatGPT()
+        ShowSmallLoadingIndicator_ChatGPT("Waiting for commit message...")
+        ; Wait an additional 3 seconds and verify again
+        Sleep 3000
+        if (!VerifyCommitMessageHasContent()) {
+            ; Still no content, abort commit
+            HideSmallLoadingIndicator_ChatGPT()
+            BlockInput "Off"
+            MsgBox "Commit message is empty. Aborting commit.", "Empty Commit Message", "IconX"
+            return
+        }
+    }
+
     Send "^!,"
     Sleep 100
     Send "+v"
@@ -8422,6 +8455,63 @@ IsEditorActive() {
 
     ; Restore input after all operations complete
     BlockInput "Off"
+}
+
+; Function to verify commit message has content before submitting
+VerifyCommitMessageHasContent() {
+    ; Store current clipboard content
+    originalClipboard := ""
+    try {
+        originalClipboard := A_Clipboard
+    } catch {
+        ; If clipboard access fails, continue anyway
+    }
+
+    try {
+        ; Clear clipboard first to ensure we get fresh content
+        A_Clipboard := ""
+        Sleep 50
+
+        ; Focus on the commit message field (usually the active field when dialog opens)
+        ; Select all text in the commit message field
+        Send "^a"
+        Sleep 150
+
+        ; Copy the selected text
+        Send "^c"
+        Sleep 150
+
+        ; Wait a bit for clipboard to update
+        Sleep 100
+
+        ; Get clipboard content
+        clipboardText := ""
+        try {
+            clipboardText := A_Clipboard
+        } catch {
+            clipboardText := ""
+        }
+
+        ; Restore original clipboard
+        try {
+            A_Clipboard := originalClipboard
+        } catch {
+            ; If restoration fails, continue anyway
+        }
+
+        ; Trim whitespace and check if content exists
+        trimmedText := Trim(clipboardText)
+
+        ; Return true if there's meaningful content (at least 3 characters to avoid false positives)
+        hasContent := StrLen(trimmedText) >= 3
+        return hasContent
+    } catch {
+        ; If error occurs, restore clipboard and return false (safer to not commit)
+        try {
+            A_Clipboard := originalClipboard
+        }
+        return false
+    }
 }
 
 ; Global variable for commit push selector target window
