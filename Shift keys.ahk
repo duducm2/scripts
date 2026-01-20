@@ -10246,67 +10246,117 @@ PrevMobillsMonth() {
         }
         btn := ""
 
-        ; PRIMARY LOGIC: Try UIA path-based detection first (most reliable)
-        ; Path: {T:30}, {T:26}, {T:26}, {T:8}, {T:7}, {T:0}
-        try {
-            ; Try with Type property (T:30 = Type:30)
-            btn := uia.ElementFromPath({ Type: 30 }, { Type: 26 }, { Type: 26 }, { Type: 8 }, { Type: 7 }, { Type: 0 })
-        } catch Error as e {
-            ; UIA path failed, continue to fallbacks
-        }
-
-        ; FALLBACK 1: Try by Name "Go to previous page" (keep existing fallback for compatibility)
-        if !btn {
+        ; Retry logic: Try multiple times with delays to allow UI to load
+        maxRetries := 3
+        retryDelay := 300  ; milliseconds between retries
+        
+        loop maxRetries {
+            ; PRIMARY LOGIC: Try UIA path-based detection first (most reliable)
+            ; Path: {T:30}, {T:26}, {T:26}, {T:8}, {T:7}, {T:0}
             try {
-                ; Try with Type 50000 (Button) and Name match
-                btn := uia.FindElement({ Name: "Go to previous page", Type: 50000, matchmode: "Substring" })
-                if !btn {
-                    ; Also try with ClassName filter
-                    btn := uia.FindElement({ Name: "Go to previous page", Type: 50000, ClassName: "MuiPaginationItem",
-                        matchmode: "Substring" })
-                }
-                ; Verify button is not disabled
+                ; Try with Type property (T:30 = Type:30)
+                btn := uia.ElementFromPath({ Type: 30 }, { Type: 26 }, { Type: 26 }, { Type: 8 }, { Type: 7 }, { Type: 0 })
                 if btn {
+                    ; Confirm element exists and is valid
                     try {
-                        className := ""
-                        try className := btn.GetPropertyValue(UIA.Property.ClassName)
-                        if InStr(className, "Mui-disabled")
-                            btn := ""  ; Button is disabled, don't use it
+                        btnName := btn.GetPropertyValue(UIA.Property.Name)
+                        if btnName {
+                            break  ; Found valid button, exit retry loop
+                        }
                     } catch {
-                        ; If we can't check className, assume button is usable
+                        ; Element found but couldn't verify, continue to next attempt
+                        btn := ""
                     }
                 }
-            } catch {
-                ; Fallback search failed, btn remains empty
+            } catch Error as e {
+                ; UIA path failed, continue to fallbacks
             }
-        }
+            
+            Sleep retryDelay  ; Wait before next attempt
 
-        ; FALLBACK 2: Try month group-based detection (keep for backward compatibility)
-        if !btn {
-            grp := FindMonthGroup(uia)
-            if grp {
-                ; PRIMARY LOGIC: First try: immediate previous sibling
-                btn := grp.WalkTree("-1", { Type: "Button" })
-                if !btn {
-                    ; PRIMARY LOGIC: Fallback: search all buttons inside parent and pick the one to the LEFT of the group
-                    parent := UIA.TreeWalkerTrue.GetParentElement(grp)
-                    if (parent) {
-                        grpPos := grp.Location
-                        for , el in parent.FindAll({ Type: "Button" }) {
-                            pos := el.Location
-                            if (pos.y >= grpPos.y - 10 && pos.y <= grpPos.y + grpPos.h + 10 && pos.x < grpPos.x) {
-                                btn := el                          ; closest left candidate
-                            }
+            ; FALLBACK 1: Try by Name "Go to previous page" (keep existing fallback for compatibility)
+            if !btn {
+                try {
+                    ; Try with Type 50000 (Button) and Name match
+                    btn := uia.FindElement({ Name: "Go to previous page", Type: 50000, matchmode: "Substring" })
+                    if !btn {
+                        ; Also try with ClassName filter
+                        btn := uia.FindElement({ Name: "Go to previous page", Type: 50000, ClassName: "MuiPaginationItem",
+                            matchmode: "Substring" })
+                    }
+                    ; Verify button is not disabled
+                    if btn {
+                        try {
+                            className := ""
+                            try className := btn.GetPropertyValue(UIA.Property.ClassName)
+                            if InStr(className, "Mui-disabled")
+                                btn := ""  ; Button is disabled, don't use it
+                            else
+                                break  ; Found valid button, exit retry loop
+                        } catch {
+                            ; If we can't check className, assume button is usable
+                            break  ; Found button, exit retry loop
                         }
                     }
+                } catch {
+                    ; Fallback search failed, btn remains empty
                 }
+            }
+            
+            if btn {
+                break  ; Found button, exit retry loop
+            }
+            
+            Sleep retryDelay  ; Wait before next attempt
+
+            ; FALLBACK 2: Try month group-based detection (keep for backward compatibility)
+            if !btn {
+                grp := FindMonthGroup(uia)
+                if grp {
+                    ; PRIMARY LOGIC: First try: immediate previous sibling
+                    btn := grp.WalkTree("-1", { Type: "Button" })
+                    if !btn {
+                        ; PRIMARY LOGIC: Fallback: search all buttons inside parent and pick the one to the LEFT of the group
+                        parent := UIA.TreeWalkerTrue.GetParentElement(grp)
+                        if (parent) {
+                            grpPos := grp.Location
+                            for , el in parent.FindAll({ Type: "Button" }) {
+                                pos := el.Location
+                                if (pos.y >= grpPos.y - 10 && pos.y <= grpPos.y + grpPos.h + 10 && pos.x < grpPos.x) {
+                                    btn := el                          ; closest left candidate
+                                    break  ; Found button, exit retry loop
+                                }
+                            }
+                        }
+                    } else {
+                        break  ; Found button via WalkTree, exit retry loop
+                    }
+                }
+            }
+            
+            if btn {
+                break  ; Found button, exit retry loop
             }
         }
 
+        ; Confirmation layer: Verify button was found before clicking
         if btn {
-            btn.Click()
+            ; Additional verification: ensure button is still valid and clickable
+            try {
+                ; Small delay to ensure button is ready
+                Sleep 150
+                ; Verify button still exists
+                btnName := btn.GetPropertyValue(UIA.Property.Name)
+                if btnName {
+                    btn.Click()
+                } else {
+                    MsgBox "Button found but could not be verified. Please try again.", "Mobills Navigation", "IconX"
+                }
+            } catch Error as e {
+                MsgBox "Button found but could not be clicked:`n" e.Message, "Mobills Navigation", "IconX"
+            }
         } else {
-            MsgBox "Could not find the previous-month button.", "Mobills Navigation", "IconX"
+            MsgBox "Could not find the previous-month button after " . maxRetries . " attempts.", "Mobills Navigation", "IconX"
         }
     } catch Error as e {
         MsgBox "Error navigating to previous month:`n" e.Message, "Mobills Error", "IconX"
@@ -10322,68 +10372,118 @@ NextMobillsMonth() {
         }
         btn := ""
 
-        ; PRIMARY LOGIC: Try UIA path-based detection first (most reliable)
-        ; Path: {T:30}, {T:26}, {T:26}, {T:8}, {T:7, i:-1}, {T:0}
-        try {
-            ; Try with Type property (T:30 = Type:30, i:-1 means last of that type)
-            btn := uia.ElementFromPath({ Type: 30 }, { Type: 26 }, { Type: 26 }, { Type: 8 }, { Type: 7, i: -1 }, { Type: 0 })
-        } catch Error as e {
-            ; UIA path failed, continue to fallbacks
-        }
-
-        ; FALLBACK 1: Try by Name "Go to next page" (keep existing fallback for compatibility)
-        if !btn {
+        ; Retry logic: Try multiple times with delays to allow UI to load
+        maxRetries := 3
+        retryDelay := 300  ; milliseconds between retries
+        
+        loop maxRetries {
+            ; PRIMARY LOGIC: Try UIA path-based detection first (most reliable)
+            ; Path: {T:30}, {T:26}, {T:26}, {T:8}, {T:7, i:-1}, {T:0}
             try {
-                ; Try with Type 50000 (Button) and Name match
-                btn := uia.FindElement({ Name: "Go to next page", Type: 50000, matchmode: "Substring" })
-                if !btn {
-                    ; Also try with ClassName filter
-                    btn := uia.FindElement({ Name: "Go to next page", Type: 50000, ClassName: "MuiPaginationItem",
-                        matchmode: "Substring" })
-                }
-                ; Verify button is not disabled
+                ; Try with Type property (T:30 = Type:30, i:-1 means last of that type)
+                btn := uia.ElementFromPath({ Type: 30 }, { Type: 26 }, { Type: 26 }, { Type: 8 }, { Type: 7, i: -1 }, { Type: 0 })
                 if btn {
+                    ; Confirm element exists and is valid
                     try {
-                        className := ""
-                        try className := btn.GetPropertyValue(UIA.Property.ClassName)
-                        if InStr(className, "Mui-disabled")
-                            btn := ""  ; Button is disabled, don't use it
+                        btnName := btn.GetPropertyValue(UIA.Property.Name)
+                        if btnName {
+                            break  ; Found valid button, exit retry loop
+                        }
                     } catch {
-                        ; If we can't check className, assume button is usable
+                        ; Element found but couldn't verify, continue to next attempt
+                        btn := ""
                     }
                 }
-            } catch {
-                ; Fallback search failed, btn remains empty
+            } catch Error as e {
+                ; UIA path failed, continue to fallbacks
             }
-        }
+            
+            Sleep retryDelay  ; Wait before next attempt
 
-        ; FALLBACK 2: Try month group-based detection (keep for backward compatibility)
-        if !btn {
-            grp := FindMonthGroup(uia)
-            if grp {
-                ; PRIMARY LOGIC: First try: immediate next sibling
-                btn := grp.WalkTree("+1", { Type: "Button" })
-                if !btn {
-                    ; PRIMARY LOGIC: Fallback: search all buttons inside parent and pick the one to the RIGHT of the group
-                    parent := UIA.TreeWalkerTrue.GetParentElement(grp)
-                    if (parent) {
-                        grpPos := grp.Location
-                        for , el in parent.FindAll({ Type: "Button" }) {
-                            pos := el.Location
-                            if (pos.y >= grpPos.y - 10 && pos.y <= grpPos.y + grpPos.h + 10 && pos.x > grpPos.x +
-                                grpPos.w) {
-                                btn := el                          ; closest right candidate
-                            }
+            ; FALLBACK 1: Try by Name "Go to next page" (keep existing fallback for compatibility)
+            if !btn {
+                try {
+                    ; Try with Type 50000 (Button) and Name match
+                    btn := uia.FindElement({ Name: "Go to next page", Type: 50000, matchmode: "Substring" })
+                    if !btn {
+                        ; Also try with ClassName filter
+                        btn := uia.FindElement({ Name: "Go to next page", Type: 50000, ClassName: "MuiPaginationItem",
+                            matchmode: "Substring" })
+                    }
+                    ; Verify button is not disabled
+                    if btn {
+                        try {
+                            className := ""
+                            try className := btn.GetPropertyValue(UIA.Property.ClassName)
+                            if InStr(className, "Mui-disabled")
+                                btn := ""  ; Button is disabled, don't use it
+                            else
+                                break  ; Found valid button, exit retry loop
+                        } catch {
+                            ; If we can't check className, assume button is usable
+                            break  ; Found button, exit retry loop
                         }
                     }
+                } catch {
+                    ; Fallback search failed, btn remains empty
                 }
+            }
+            
+            if btn {
+                break  ; Found button, exit retry loop
+            }
+            
+            Sleep retryDelay  ; Wait before next attempt
+
+            ; FALLBACK 2: Try month group-based detection (keep for backward compatibility)
+            if !btn {
+                grp := FindMonthGroup(uia)
+                if grp {
+                    ; PRIMARY LOGIC: First try: immediate next sibling
+                    btn := grp.WalkTree("+1", { Type: "Button" })
+                    if !btn {
+                        ; PRIMARY LOGIC: Fallback: search all buttons inside parent and pick the one to the RIGHT of the group
+                        parent := UIA.TreeWalkerTrue.GetParentElement(grp)
+                        if (parent) {
+                            grpPos := grp.Location
+                            for , el in parent.FindAll({ Type: "Button" }) {
+                                pos := el.Location
+                                if (pos.y >= grpPos.y - 10 && pos.y <= grpPos.y + grpPos.h + 10 && pos.x > grpPos.x +
+                                    grpPos.w) {
+                                    btn := el                          ; closest right candidate
+                                    break  ; Found button, exit retry loop
+                                }
+                            }
+                        }
+                    } else {
+                        break  ; Found button via WalkTree, exit retry loop
+                    }
+                }
+            }
+            
+            if btn {
+                break  ; Found button, exit retry loop
             }
         }
 
+        ; Confirmation layer: Verify button was found before clicking
         if btn {
-            btn.Click()
+            ; Additional verification: ensure button is still valid and clickable
+            try {
+                ; Small delay to ensure button is ready
+                Sleep 150
+                ; Verify button still exists
+                btnName := btn.GetPropertyValue(UIA.Property.Name)
+                if btnName {
+                    btn.Click()
+                } else {
+                    MsgBox "Button found but could not be verified. Please try again.", "Mobills Navigation", "IconX"
+                }
+            } catch Error as e {
+                MsgBox "Button found but could not be clicked:`n" e.Message, "Mobills Navigation", "IconX"
+            }
         } else {
-            MsgBox "Could not find the next-month button.", "Mobills Navigation", "IconX"
+            MsgBox "Could not find the next-month button after " . maxRetries . " attempts.", "Mobills Navigation", "IconX"
         }
     } catch Error as e {
         MsgBox "Error navigating to next month:`n" e.Message, "Mobills Error", "IconX"
