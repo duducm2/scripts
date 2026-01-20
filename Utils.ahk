@@ -640,37 +640,21 @@ ToggleOutlookAndTeams() {
 ToggleDictationLoop() {
     global g_DictationLoopActive
 
-    ; #region agent log
-    FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"A,B,C,D,E","location":"Utils.ahk:{1}","message":"ToggleDictationLoop entry","data":{{"currentState":{2}}},"timestamp":{3}}`n', A_LineNumber, g_DictationLoopActive, A_TickCount), "c:\Users\fie7ca\Documents\scripts\.cursor\debug.log"
-    ; #endregion
-
     if (g_DictationLoopActive) {
         ; Stop the loop
         g_DictationLoopActive := false
-        ; #region agent log
-        FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"A,B","location":"Utils.ahk:{1}","message":"Setting flag to false, disabling timers","data":{{"flagSetTo":false}},"timestamp":{2}}`n', A_LineNumber, A_TickCount), "c:\Users\fie7ca\Documents\scripts\.cursor\debug.log"
-        ; #endregion
         ; Turn off timers
         SetTimer(DictationLoopStop, 0)
         SetTimer(DictationLoopStart, 0)
-        ; #region agent log
-        FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"A,C","location":"Utils.ahk:{1}","message":"Timers disabled","data":{{"stopTimerDisabled":true,"startTimerDisabled":true}},"timestamp":{2}}`n', A_LineNumber, A_TickCount), "c:\Users\fie7ca\Documents\scripts\.cursor\debug.log"
-        ; #endregion
         ; Send Win+Alt+Shift+0 to finish dictation
         SendInput "#!+0"
         ShowCenteredOverlay_Utils("Dictation Loop Stopped", 1500)
-        ; #region agent log
-        FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"A,B","location":"Utils.ahk:{1}","message":"Stop sequence complete","data":{{"flagState":{2}}},"timestamp":{3}}`n', A_LineNumber, g_DictationLoopActive, A_TickCount), "c:\Users\fie7ca\Documents\scripts\.cursor\debug.log"
-        ; #endregion
     } else {
         ; Start the loop
         ; Clear any existing timers first to prevent old timers from firing
         SetTimer(DictationLoopStop, 0)
         SetTimer(DictationLoopStart, 0)
         g_DictationLoopActive := true
-        ; #region agent log
-        FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"D","location":"Utils.ahk:{1}","message":"Setting flag to true, starting loop","data":{{"flagSetTo":true}},"timestamp":{2}}`n', A_LineNumber, A_TickCount), "c:\Users\fie7ca\Documents\scripts\.cursor\debug.log"
-        ; #endregion
         ShowCenteredOverlay_Utils("Dictation Loop Started", 1500)
         ; Begin the cycle
         DictationLoopStart()
@@ -680,16 +664,9 @@ ToggleDictationLoop() {
 DictationLoopStart() {
     global g_DictationLoopActive
 
-    ; #region agent log
-    FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"A,B,E","location":"Utils.ahk:{1}","message":"DictationLoopStart entry","data":{{"flagState":{2}}},"timestamp":{3}}`n', A_LineNumber, g_DictationLoopActive, A_TickCount), "c:\Users\fie7ca\Documents\scripts\.cursor\debug.log"
-    ; #endregion
-
     ; Safety check: Only proceed if loop is still active
     ; This prevents starting if user manually stopped the loop
     if (!g_DictationLoopActive) {
-        ; #region agent log
-        FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:{1}","message":"Early return - flag is false","data":{{"flagState":false}},"timestamp":{2}}`n', A_LineNumber, A_TickCount), "c:\Users\fie7ca\Documents\scripts\.cursor\debug.log"
-        ; #endregion
         return
     }
 
@@ -699,39 +676,23 @@ DictationLoopStart() {
     ; Double-check loop is still active before scheduling stop timer
     ; User may have stopped it during the dictation start delay
     if (!g_DictationLoopActive) {
-        ; #region agent log
-        FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:{1}","message":"Late return - flag became false","data":{{"flagState":false}},"timestamp":{2}}`n', A_LineNumber, A_TickCount), "c:\Users\fie7ca\Documents\scripts\.cursor\debug.log"
-        ; #endregion
         return
     }
 
     ; Clear any existing timer first to prevent accumulation
     SetTimer(DictationLoopStop, 0)
-    ; #region agent log
-    FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"A,C","location":"Utils.ahk:{1}","message":"Cleared existing stop timer before scheduling","data":{{"flagState":{2}}},"timestamp":{3}}`n', A_LineNumber, g_DictationLoopActive, A_TickCount), "c:\Users\fie7ca\Documents\scripts\.cursor\debug.log"
-    ; #endregion
 
     ; Schedule stop after 60 seconds - negative period = one-shot timer
     ; Only schedules if loop is still active (checked above)
     SetTimer(DictationLoopStop, -60000)
-    ; #region agent log
-    FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"A,E","location":"Utils.ahk:{1}","message":"Scheduled stop timer (60s)","data":{{"flagState":{2},"timerScheduled":true}},"timestamp":{3}}`n', A_LineNumber, g_DictationLoopActive, A_TickCount), "c:\Users\fie7ca\Documents\scripts\.cursor\debug.log"
-    ; #endregion
 }
 
 DictationLoopStop() {
     global g_DictationLoopActive, g_DictationLoopSound
 
-    ; #region agent log
-    FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"A,B,E","location":"Utils.ahk:{1}","message":"DictationLoopStop entry","data":{{"flagState":{2}}},"timestamp":{3}}`n', A_LineNumber, g_DictationLoopActive, A_TickCount), "c:\Users\fie7ca\Documents\scripts\.cursor\debug.log"
-    ; #endregion
-
     ; Safety check: Only proceed if loop is still active
     ; This prevents restarting if user manually stopped the loop via ToggleDictationLoop()
     if (!g_DictationLoopActive) {
-        ; #region agent log
-        FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:{1}","message":"Early return - flag is false","data":{{"flagState":false}},"timestamp":{2}}`n', A_LineNumber, A_TickCount), "c:\Users\fie7ca\Documents\scripts\.cursor\debug.log"
-        ; #endregion
         return
     }
 
@@ -746,24 +707,15 @@ DictationLoopStop() {
     ; Double-check loop is still active before scheduling restart
     ; User may have stopped it during the sound playback delay
     if (!g_DictationLoopActive) {
-        ; #region agent log
-        FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:{1}","message":"Late return - flag became false","data":{{"flagState":false}},"timestamp":{2}}`n', A_LineNumber, A_TickCount), "c:\Users\fie7ca\Documents\scripts\.cursor\debug.log"
-        ; #endregion
         return
     }
 
     ; Clear any existing timer first to prevent accumulation
     SetTimer(DictationLoopStart, 0)
-    ; #region agent log
-    FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"A,C","location":"Utils.ahk:{1}","message":"Cleared existing start timer before scheduling","data":{{"flagState":{2}}},"timestamp":{3}}`n', A_LineNumber, g_DictationLoopActive, A_TickCount), "c:\Users\fie7ca\Documents\scripts\.cursor\debug.log"
-    ; #endregion
 
     ; Schedule next start after 4 seconds (buffer for processing) - negative period = one-shot timer
     ; Only schedules if loop is still active (checked above)
     SetTimer(DictationLoopStart, -4000)
-    ; #region agent log
-    FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"A,E","location":"Utils.ahk:{1}","message":"Scheduled start timer (4s)","data":{{"flagState":{2},"timerScheduled":true}},"timestamp":{3}}`n', A_LineNumber, g_DictationLoopActive, A_TickCount), "c:\Users\fie7ca\Documents\scripts\.cursor\debug.log"
-    ; #endregion
 }
 
 ; Internal helper: Performs clipboard cleanup without showing prompt
@@ -813,25 +765,15 @@ CleanClipboard() {
 DictationStartWithClipboardOption() {
     global g_DictationLoopActive
     
-    ; #region agent log
-    FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"D","location":"Utils.ahk:{1}","message":"DictationStartWithClipboardOption entry","data":{{"currentState":{2}}},"timestamp":{3}}`n', A_LineNumber, g_DictationLoopActive, A_TickCount), "c:\Users\fie7ca\Documents\scripts\.cursor\debug.log"
-    ; #endregion
-    
     if (g_DictationLoopActive) {
         ; Stop the loop - NO clipboard cleanup prompt when stopping
         g_DictationLoopActive := false
-        ; #region agent log
-        FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"D","location":"Utils.ahk:{1}","message":"Stopping loop - no clipboard prompt","data":{{"flagSetTo":false}},"timestamp":{2}}`n', A_LineNumber, A_TickCount), "c:\Users\fie7ca\Documents\scripts\.cursor\debug.log"
-        ; #endregion
         ; Turn off timers
         SetTimer(DictationLoopStop, 0)
         SetTimer(DictationLoopStart, 0)
         ; Send Win+Alt+Shift+0 to finish dictation
         SendInput "#!+0"
         ShowCenteredOverlay_Utils("Dictation Loop Stopped", 1500)
-        ; #region agent log
-        FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"D","location":"Utils.ahk:{1}","message":"Stop sequence complete","data":{{"flagState":{2}}},"timestamp":{3}}`n', A_LineNumber, g_DictationLoopActive, A_TickCount), "c:\Users\fie7ca\Documents\scripts\.cursor\debug.log"
-        ; #endregion
     } else {
         ; Start the loop - show clipboard cleanup prompt ONLY when starting
         ; Show message box asking about clipboard cleanup
@@ -843,10 +785,6 @@ DictationStartWithClipboardOption() {
             CleanClipboardInternal()
         }
         ; If No, continue with dictation loop without cleanup
-        
-        ; #region agent log
-        FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"D","location":"Utils.ahk:{1}","message":"Starting loop - clipboard prompt shown","data":{{"flagSetTo":true,"clipboardCleaned":{2}}},"timestamp":{3}}`n', A_LineNumber, (result = "Yes"), A_TickCount), "c:\Users\fie7ca\Documents\scripts\.cursor\debug.log"
-        ; #endregion
         
         ; Clear any existing timers first to prevent old timers from firing
         SetTimer(DictationLoopStop, 0)
