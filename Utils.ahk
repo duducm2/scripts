@@ -1309,8 +1309,8 @@ InitMacros() {
     RegisterMacro(ToggleDictationLoop, "🎙️ Dictation Loop (60s)")
     ; Clean the Clipboard macro (assigned to "P")
     RegisterMacro(CleanClipboard, "🧹 Clean the Clipboard", "p")
-    ; Toggle Sound macro (assigned to "S")
-    RegisterMacro(ToggleSoundState, "🔊 Toggle Sound (Mute/Unmute)", "s")
+    ; Toggle Sound macro
+    RegisterMacro(ToggleSoundState, "🔊 Toggle Sound (Mute/Unmute)")
 }
 InitMacros()
 
