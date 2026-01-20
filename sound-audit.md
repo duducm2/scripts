@@ -10,8 +10,9 @@ This document catalogs all instances of sound reproduction (beeps, chimes, audio
 - **File Path:** `Utils.ahk`
 - **Line Reference:** ~3989
 - **Trigger:** `!PrintScreen` hotkey (Alt+PrintScreen) - triggers `SafePlayPrintScreenSound()`
-- **Sound Type:** Beep
-- **Code:** `SoundBeep(800, 200)` - 800 Hz frequency, 200ms duration
+- **Sound Type:** WAV file
+- **Sound File:** `sounds\print-screen.wav`
+- **Code:** `SoundPlay(A_ScriptDir . "\sounds\print-screen.wav")`
 - **Function:** `SafePlayPrintScreenSound()` (debounced to prevent duplicates within 1000ms)
 
 ### 2. Dictation Start Sound
@@ -61,13 +62,17 @@ This document catalogs all instances of sound reproduction (beeps, chimes, audio
 ### 7. Pomodoro Chime (Multiple Sounds)
 - **File Path:** `AppLaunchers.ahk`
 - **Line Reference:** ~1304-1323
-- **Trigger:** `PlayCompletionChime(30000)` called when Pomodoro timer completes - triggers `PomodoroChimeCallback()` every 1 second for 30 seconds
+- **Trigger (completion loop):** `PlayCompletionChime(30000)` called when Pomodoro timer completes - triggers `PomodoroChimeCallback()` every 1 second for 30 seconds
 - **Sound Type:** Multiple (Beep, System Sound, DLL Call)
 - **Function:** `PomodoroChimeCallback()` plays three sounds simultaneously:
   1. **Beep:** `SoundBeep(2000, 300)` - 2000 Hz frequency, 300ms duration
   2. **MessageBeep:** `DllCall("User32\MessageBeep", "UInt", 0xFFFFFFFF)` - Windows system beep
   3. **System Sound:** `SoundPlay("*16")` - System asterisk sound
 - **Note:** All three sounds play simultaneously for maximum audibility, repeated every 1 second for 30 seconds
+ - **Trigger (start):** When a Pomodoro session is started, a separate chime is played.
+ - **Start Sound Type:** WAV file
+ - **Start Sound File:** `sounds\pomodo-start.wav`
+ - **Start Code:** `SoundPlay(A_ScriptDir . "\sounds\pomodo-start.wav")`
 
 ---
 

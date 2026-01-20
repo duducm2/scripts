@@ -8390,7 +8390,9 @@ IsEditorActive() {
             Send "+v"
             HideSmallLoadingIndicator_ChatGPT()
             ; Play sound when banner is hidden
-            SoundPlay A_ScriptDir "\sounds\cursor-git-commit.wav"
+            if (IsSoundEnabled()) {
+                SoundPlay A_ScriptDir "\sounds\cursor-git-commit.wav"
+            }
 
             Sleep 1000
             ; Execute stored decision (if any) after commit is sent
@@ -8416,7 +8418,9 @@ IsEditorActive() {
     Send "+v"
     HideSmallLoadingIndicator_ChatGPT()
     ; Play sound when banner is hidden
-    SoundPlay A_ScriptDir "\sounds\cursor-git-commit.wav"
+    if (IsSoundEnabled()) {
+        SoundPlay A_ScriptDir "\sounds\cursor-git-commit.wav"
+    }
     Sleep 2000
     ExecuteStoredCommitPushDecision()
 
@@ -12695,7 +12699,9 @@ PlayCompletionChime_Gemini() {
             return
         lastTick := A_TickCount
 
-        SoundPlay(A_ScriptDir . "\sounds\gemini-completion.wav")
+        if (IsSoundEnabled()) {
+            SoundPlay(A_ScriptDir . "\sounds\gemini-completion.wav")
+        }
     } catch {
     }
 }
@@ -13634,6 +13640,10 @@ PlayCompletionChime_ChatGPT() {
         if (A_TickCount - lastTick < 1500)
             return
         lastTick := A_TickCount
+
+        if (!IsSoundEnabled()) {
+            return
+        }
 
         played := false
         ; Prefer Windows MessageBeep (reliable through default output)

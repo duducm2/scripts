@@ -478,6 +478,36 @@ ShowCenteredOverlay_Utils(text, duration := 1500) {
 }
 
 ; =============================================================================
+; Global Sound Toggle System
+; File-backed state management for muting/unmuting sounds across all scripts
+; =============================================================================
+
+; Check if sound is enabled (reads from INI file for cross-process persistence)
+IsSoundEnabled() {
+    settingsFile := A_ScriptDir . "\data\settings.ini"
+    ; Default to enabled (1) if file doesn't exist or key is missing
+    soundEnabled := IniRead(settingsFile, "Settings", "SoundEnabled", "1")
+    return (soundEnabled = "1")
+}
+
+; Toggle sound state and show visual feedback
+ToggleSoundState() {
+    settingsFile := A_ScriptDir . "\data\settings.ini"
+    currentState := IsSoundEnabled()
+    newState := currentState ? "0" : "1"
+    
+    ; Update INI file
+    IniWrite(newState, settingsFile, "Settings", "SoundEnabled")
+    
+    ; Show visual feedback
+    if (newState = "1") {
+        ShowCenteredOverlay_Utils("🔊 Sound: ON", 2000)
+    } else {
+        ShowCenteredOverlay_Utils("🔇 Sound: OFF", 2000)
+    }
+}
+
+; =============================================================================
 ; Toggle Outlook and Teams
 ; Toggles Outlook and Teams applications to manage RAM usage.
 ; If both are open: Closes Outlook and minimizes Teams to system tray.
@@ -660,8 +690,10 @@ DictationLoopStop() {
     ; Send Win+Alt+Shift+0 to stop dictation (triggers transcription)
     SendInput "#!+0"
 
-    ; Play sound to notify that transcription has started
-    SoundPlay(g_DictationLoopSound)
+    ; Play sound to notify that transcription has started (if enabled)
+    if (IsSoundEnabled()) {
+        SoundPlay(g_DictationLoopSound)
+    }
 
     ; Clear any existing timer first to prevent accumulation
     SetTimer(DictationLoopStart, 0)
@@ -1277,6 +1309,8 @@ InitMacros() {
     RegisterMacro(ToggleDictationLoop, "🎙️ Dictation Loop (60s)")
     ; Clean the Clipboard macro (assigned to "P")
     RegisterMacro(CleanClipboard, "🧹 Clean the Clipboard", "p")
+    ; Toggle Sound macro (assigned to "S")
+    RegisterMacro(ToggleSoundState, "🔊 Toggle Sound (Mute/Unmute)", "s")
 }
 InitMacros()
 
@@ -4513,9 +4547,11 @@ SafePlayPrintScreenSound() {
         return
     }
 
-    ; Update timestamp and play sound
+    ; Update timestamp and play sound (if enabled)
     g_LastPrintScreenSound := A_TickCount
-    SoundPlay(A_ScriptDir . "\sounds\print-screen.wav")
+    if (IsSoundEnabled()) {
+        SoundPlay(A_ScriptDir . "\sounds\print-screen.wav")
+    }
 }
 
 ; Set higher InputLevel to ensure our handler processes before others
@@ -4808,9 +4844,11 @@ SafePlayDictationSound(filePath) {
         return
     }
 
-    ; Update timestamp and play sound
+    ; Update timestamp and play sound (if enabled)
     g_LastDictationSoundTick := A_TickCount
-    SoundPlay(filePath)
+    if (IsSoundEnabled()) {
+        SoundPlay(filePath)
+    }
 }
 
 ; Play completion chime after transcription finishes
@@ -5010,7 +5048,9 @@ OnExit(CleanupDictationIndicator)
     global g_PendingDictationAction, g_DictationActive, g_KeepIndicatorVisible
 
     ; Play sound signal
-    SoundPlay(A_ScriptDir . "\sounds\retro3.wav")
+    if (IsSoundEnabled()) {
+        SoundPlay(A_ScriptDir . "\sounds\retro3.wav")
+    }
 
     ; Only proceed if dictation is currently active
     if (g_DictationActive) {
@@ -5033,7 +5073,9 @@ OnExit(CleanupDictationIndicator)
     global g_PendingDictationAction, g_DictationActive, g_KeepIndicatorVisible
 
     ; Play sound signal
-    SoundPlay(A_ScriptDir . "\sounds\retro4.wav")
+    if (IsSoundEnabled()) {
+        SoundPlay(A_ScriptDir . "\sounds\retro4.wav")
+    }
 
     ; Only proceed if dictation is currently active
     if (g_DictationActive) {
