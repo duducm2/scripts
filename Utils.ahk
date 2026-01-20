@@ -640,21 +640,37 @@ ToggleOutlookAndTeams() {
 ToggleDictationLoop() {
     global g_DictationLoopActive
 
+    ; #region agent log
+    FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"A,B,C,D,E","location":"Utils.ahk:{1}","message":"ToggleDictationLoop entry","data":{{"currentState":{2}}},"timestamp":{3}}`n', A_LineNumber, g_DictationLoopActive, A_TickCount), "c:\Users\fie7ca\Documents\scripts\.cursor\debug.log"
+    ; #endregion
+
     if (g_DictationLoopActive) {
         ; Stop the loop
         g_DictationLoopActive := false
+        ; #region agent log
+        FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"A,B","location":"Utils.ahk:{1}","message":"Setting flag to false, disabling timers","data":{{"flagSetTo":false}},"timestamp":{2}}`n', A_LineNumber, A_TickCount), "c:\Users\fie7ca\Documents\scripts\.cursor\debug.log"
+        ; #endregion
         ; Turn off timers
         SetTimer(DictationLoopStop, 0)
         SetTimer(DictationLoopStart, 0)
+        ; #region agent log
+        FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"A,C","location":"Utils.ahk:{1}","message":"Timers disabled","data":{{"stopTimerDisabled":true,"startTimerDisabled":true}},"timestamp":{2}}`n', A_LineNumber, A_TickCount), "c:\Users\fie7ca\Documents\scripts\.cursor\debug.log"
+        ; #endregion
         ; Send Win+Alt+Shift+0 to finish dictation
         SendInput "#!+0"
         ShowCenteredOverlay_Utils("Dictation Loop Stopped", 1500)
+        ; #region agent log
+        FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"A,B","location":"Utils.ahk:{1}","message":"Stop sequence complete","data":{{"flagState":{2}}},"timestamp":{3}}`n', A_LineNumber, g_DictationLoopActive, A_TickCount), "c:\Users\fie7ca\Documents\scripts\.cursor\debug.log"
+        ; #endregion
     } else {
         ; Start the loop
         ; Clear any existing timers first to prevent old timers from firing
         SetTimer(DictationLoopStop, 0)
         SetTimer(DictationLoopStart, 0)
         g_DictationLoopActive := true
+        ; #region agent log
+        FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"D","location":"Utils.ahk:{1}","message":"Setting flag to true, starting loop","data":{{"flagSetTo":true}},"timestamp":{2}}`n', A_LineNumber, A_TickCount), "c:\Users\fie7ca\Documents\scripts\.cursor\debug.log"
+        ; #endregion
         ShowCenteredOverlay_Utils("Dictation Loop Started", 1500)
         ; Begin the cycle
         DictationLoopStart()
@@ -664,26 +680,58 @@ ToggleDictationLoop() {
 DictationLoopStart() {
     global g_DictationLoopActive
 
-    ; Safety check
+    ; #region agent log
+    FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"A,B,E","location":"Utils.ahk:{1}","message":"DictationLoopStart entry","data":{{"flagState":{2}}},"timestamp":{3}}`n', A_LineNumber, g_DictationLoopActive, A_TickCount), "c:\Users\fie7ca\Documents\scripts\.cursor\debug.log"
+    ; #endregion
+
+    ; Safety check: Only proceed if loop is still active
+    ; This prevents starting if user manually stopped the loop
     if (!g_DictationLoopActive) {
+        ; #region agent log
+        FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:{1}","message":"Early return - flag is false","data":{{"flagState":false}},"timestamp":{2}}`n', A_LineNumber, A_TickCount), "c:\Users\fie7ca\Documents\scripts\.cursor\debug.log"
+        ; #endregion
         return
     }
 
     ; Send Win+Alt+Shift+0 to start dictation
     SendInput "#!+0"
 
+    ; Double-check loop is still active before scheduling stop timer
+    ; User may have stopped it during the dictation start delay
+    if (!g_DictationLoopActive) {
+        ; #region agent log
+        FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:{1}","message":"Late return - flag became false","data":{{"flagState":false}},"timestamp":{2}}`n', A_LineNumber, A_TickCount), "c:\Users\fie7ca\Documents\scripts\.cursor\debug.log"
+        ; #endregion
+        return
+    }
+
     ; Clear any existing timer first to prevent accumulation
     SetTimer(DictationLoopStop, 0)
+    ; #region agent log
+    FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"A,C","location":"Utils.ahk:{1}","message":"Cleared existing stop timer before scheduling","data":{{"flagState":{2}}},"timestamp":{3}}`n', A_LineNumber, g_DictationLoopActive, A_TickCount), "c:\Users\fie7ca\Documents\scripts\.cursor\debug.log"
+    ; #endregion
 
     ; Schedule stop after 60 seconds - negative period = one-shot timer
+    ; Only schedules if loop is still active (checked above)
     SetTimer(DictationLoopStop, -60000)
+    ; #region agent log
+    FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"A,E","location":"Utils.ahk:{1}","message":"Scheduled stop timer (60s)","data":{{"flagState":{2},"timerScheduled":true}},"timestamp":{3}}`n', A_LineNumber, g_DictationLoopActive, A_TickCount), "c:\Users\fie7ca\Documents\scripts\.cursor\debug.log"
+    ; #endregion
 }
 
 DictationLoopStop() {
     global g_DictationLoopActive, g_DictationLoopSound
 
-    ; Safety check
+    ; #region agent log
+    FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"A,B,E","location":"Utils.ahk:{1}","message":"DictationLoopStop entry","data":{{"flagState":{2}}},"timestamp":{3}}`n', A_LineNumber, g_DictationLoopActive, A_TickCount), "c:\Users\fie7ca\Documents\scripts\.cursor\debug.log"
+    ; #endregion
+
+    ; Safety check: Only proceed if loop is still active
+    ; This prevents restarting if user manually stopped the loop via ToggleDictationLoop()
     if (!g_DictationLoopActive) {
+        ; #region agent log
+        FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:{1}","message":"Early return - flag is false","data":{{"flagState":false}},"timestamp":{2}}`n', A_LineNumber, A_TickCount), "c:\Users\fie7ca\Documents\scripts\.cursor\debug.log"
+        ; #endregion
         return
     }
 
@@ -695,27 +743,34 @@ DictationLoopStop() {
         SoundPlay(g_DictationLoopSound)
     }
 
-    ; Clear any existing timer first to prevent accumulation
-    SetTimer(DictationLoopStart, 0)
-
-    ; Schedule next start after 4 seconds (buffer for processing) - negative period = one-shot timer
-    SetTimer(DictationLoopStart, -4000)
-}
-
-; Clean the Clipboard macro function
-CleanClipboard() {
-    ; Initialize Yes/No modal dialog
-    result := MsgBox("Do you want to continue running the algorithm to exclude all clips?", "Clean the Clipboard",
-        "YesNo")
-
-    ; If user selects "No", terminate macro execution
-    if (result = "No") {
+    ; Double-check loop is still active before scheduling restart
+    ; User may have stopped it during the sound playback delay
+    if (!g_DictationLoopActive) {
+        ; #region agent log
+        FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"Utils.ahk:{1}","message":"Late return - flag became false","data":{{"flagState":false}},"timestamp":{2}}`n', A_LineNumber, A_TickCount), "c:\Users\fie7ca\Documents\scripts\.cursor\debug.log"
+        ; #endregion
         return
     }
 
+    ; Clear any existing timer first to prevent accumulation
+    SetTimer(DictationLoopStart, 0)
+    ; #region agent log
+    FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"A,C","location":"Utils.ahk:{1}","message":"Cleared existing start timer before scheduling","data":{{"flagState":{2}}},"timestamp":{3}}`n', A_LineNumber, g_DictationLoopActive, A_TickCount), "c:\Users\fie7ca\Documents\scripts\.cursor\debug.log"
+    ; #endregion
+
+    ; Schedule next start after 4 seconds (buffer for processing) - negative period = one-shot timer
+    ; Only schedules if loop is still active (checked above)
+    SetTimer(DictationLoopStart, -4000)
+    ; #region agent log
+    FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"A,E","location":"Utils.ahk:{1}","message":"Scheduled start timer (4s)","data":{{"flagState":{2},"timerScheduled":true}},"timestamp":{3}}`n', A_LineNumber, g_DictationLoopActive, A_TickCount), "c:\Users\fie7ca\Documents\scripts\.cursor\debug.log"
+    ; #endregion
+}
+
+; Internal helper: Performs clipboard cleanup without showing prompt
+; Used when user has already confirmed they want to clean clipboard
+CleanClipboardInternal() {
     Sleep 100
 
-    ; User selected "Yes" - proceed with the workflow
     ; Send Alt+V
     SendInput "!v"
 
@@ -734,6 +789,73 @@ CleanClipboard() {
     Sleep 250
 
     SendInput "{Escape}"
+}
+
+; Clean the Clipboard macro function
+; Shows a confirmation prompt before executing cleanup
+CleanClipboard() {
+    ; Initialize Yes/No modal dialog
+    result := MsgBox("Do you want to continue running the algorithm to exclude all clips?", "Clean the Clipboard",
+        "YesNo")
+
+    ; If user selects "No", terminate macro execution
+    if (result = "No") {
+        return
+    }
+
+    ; User selected "Yes" - proceed with the workflow
+    CleanClipboardInternal()
+}
+
+; Dictation Toggle with Clipboard Cleanup Option (on start only)
+; Toggles dictation loop on/off. When starting, optionally asks to clean clipboard.
+; When stopping, does NOT show clipboard cleanup prompt.
+DictationStartWithClipboardOption() {
+    global g_DictationLoopActive
+    
+    ; #region agent log
+    FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"D","location":"Utils.ahk:{1}","message":"DictationStartWithClipboardOption entry","data":{{"currentState":{2}}},"timestamp":{3}}`n', A_LineNumber, g_DictationLoopActive, A_TickCount), "c:\Users\fie7ca\Documents\scripts\.cursor\debug.log"
+    ; #endregion
+    
+    if (g_DictationLoopActive) {
+        ; Stop the loop - NO clipboard cleanup prompt when stopping
+        g_DictationLoopActive := false
+        ; #region agent log
+        FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"D","location":"Utils.ahk:{1}","message":"Stopping loop - no clipboard prompt","data":{{"flagSetTo":false}},"timestamp":{2}}`n', A_LineNumber, A_TickCount), "c:\Users\fie7ca\Documents\scripts\.cursor\debug.log"
+        ; #endregion
+        ; Turn off timers
+        SetTimer(DictationLoopStop, 0)
+        SetTimer(DictationLoopStart, 0)
+        ; Send Win+Alt+Shift+0 to finish dictation
+        SendInput "#!+0"
+        ShowCenteredOverlay_Utils("Dictation Loop Stopped", 1500)
+        ; #region agent log
+        FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"D","location":"Utils.ahk:{1}","message":"Stop sequence complete","data":{{"flagState":{2}}},"timestamp":{3}}`n', A_LineNumber, g_DictationLoopActive, A_TickCount), "c:\Users\fie7ca\Documents\scripts\.cursor\debug.log"
+        ; #endregion
+    } else {
+        ; Start the loop - show clipboard cleanup prompt ONLY when starting
+        ; Show message box asking about clipboard cleanup
+        result := MsgBox("Would you like to clean up the clipboard?", "Dictation Start", "YesNo")
+        
+        if (result = "Yes") {
+            ; Execute clipboard cleanup algorithm without showing second prompt
+            ; (User already confirmed they want to clean clipboard)
+            CleanClipboardInternal()
+        }
+        ; If No, continue with dictation loop without cleanup
+        
+        ; #region agent log
+        FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"D","location":"Utils.ahk:{1}","message":"Starting loop - clipboard prompt shown","data":{{"flagSetTo":true,"clipboardCleaned":{2}}},"timestamp":{3}}`n', A_LineNumber, (result = "Yes"), A_TickCount), "c:\Users\fie7ca\Documents\scripts\.cursor\debug.log"
+        ; #endregion
+        
+        ; Clear any existing timers first to prevent old timers from firing
+        SetTimer(DictationLoopStop, 0)
+        SetTimer(DictationLoopStart, 0)
+        g_DictationLoopActive := true
+        ShowCenteredOverlay_Utils("Dictation Loop Started", 1500)
+        ; Begin the cycle
+        DictationLoopStart()
+    }
 }
 
 ; =============================================================================
@@ -1307,6 +1429,8 @@ InitMacros() {
     RegisterMacro(ToggleOutlookAndTeams, "🔄 Toggle Outlook & Teams")
     ; Dictation Loop macro
     RegisterMacro(ToggleDictationLoop, "🎙️ Dictation Loop (60s)")
+    ; Dictation Start with Clipboard Option macro (assigned to "O")
+    RegisterMacro(DictationStartWithClipboardOption, "🎤 Dictation Start (with clipboard option)", "o")
     ; Clean the Clipboard macro (assigned to "P")
     RegisterMacro(CleanClipboard, "🧹 Clean the Clipboard", "p")
     ; Toggle Sound macro
@@ -3138,26 +3262,60 @@ ScheduleHnPCleanup() {
 }
 
 ; =============================================================================
-; Hotstring Selector with Character Shortcuts
-; Hotkey: Win+Alt+Shift+U
-; Shows a GUI with all hotstrings and their assigned characters. Pressing
-; a character immediately pastes the corresponding text.
+; Hotstring Selector System
+; =============================================================================
+; PURPOSE: Provides a modal GUI-based interface for accessing hotstrings, quick-open files,
+;          and executable macros via single-character keyboard shortcuts.
+;
+; HOTKEY: Windows + Alt + Shift + U (#!+U)
+;
+; FUNCTIONALITY:
+;   - Displays categorized list of available actions (Prompts, General, Projects, Files & Links, Macros)
+;   - Each action is assigned a unique character from g_HotstringCharSequence
+;   - User presses assigned character to execute corresponding action
+;   - Actions include: text expansion (hotstrings), file opening, macro execution
+;
+; ARCHITECTURE:
+;   - Character-to-action mapping built dynamically via BuildHotstringCharMap()
+;   - Character assignments follow sequential order within each category
+;   - Explicit character assignments (via RegisterMacro/RegisterHotstring char parameter) take precedence
+;   - GUI adapts to monitor configuration (landscape/portrait, resolution, scaling)
+;
 ; =============================================================================
 
-; Global variables for hotstring selector
-global g_HotstringSelectorGui := false
-global g_HotstringSelectorActive := false
-global g_HotstringCharMap := Map()  ; Maps character to expansion text
-global g_HotstringHotkeyHandlers := []  ; Store hotkey handlers for cleanup
+; Global state variables for hotstring selector system
+global g_HotstringSelectorGui := false          ; GUI object reference (false when not initialized)
+global g_HotstringSelectorActive := false       ; Boolean flag indicating selector is currently displayed
+global g_HotstringCharMap := Map()              ; Character-to-text-expansion mapping for hotstrings
+global g_HotstringHotkeyHandlers := []          ; Array of hotkey handler objects for cleanup on close
 
-; Character sequence for assignment: 1 2 3 4 5 q w e r t a s d f g z x c v b 6 7 8 9 0 y u i o p h j k l n m , .
+; Character assignment sequence: defines order in which characters are assigned to actions
+; Format: ["1", "2", "3", "4", "5", "q", "w", "e", "r", "t", "a", "s", "d", "f", "g", "z", "x",
+;          "c", "v", "b", "6", "7", "8", "9", "0", "y", "u", "i", "o", "p", "h", "j", "k", "l", "n", "m", ",", "."]
 global g_HotstringCharSequence := ["1", "2", "3", "4", "5", "q", "w", "e", "r", "t", "a", "s", "d", "f", "g", "z", "x",
     "c", "v", "b", "6", "7", "8", "9", "0", "y", "u", "i", "o", "p", "h", "j", "k", "l", "n", "m", ",", "."]
 
-; Category display order (Prompts first, General second, Projects last, Files & Links, Macros last)
+; Category display order: defines the sequence in which action categories appear in the GUI
+; Order: Prompts → General → Projects → Files & Links → Macros
 global g_HotstringCategories := ["Prompts", "General", "Projects", "Files & Links", "Macros"]
 
-; Build character-to-expansion mapping grouped by category
+; =============================================================================
+; BuildHotstringCharMap()
+; =============================================================================
+; PURPOSE: Constructs character-to-action mappings for all registered items (hotstrings, files, macros)
+;          and assigns characters sequentially within each category according to g_HotstringCharSequence.
+;
+; PROCESS:
+;   1. Groups hotstrings by category (Projects, Prompts, General)
+;   2. Processes each category in g_HotstringCategories order:
+;      - Files & Links: Maps characters to file paths for quick-open functionality
+;      - Macros: Maps characters to executable macro functions (explicit assignments first, then sequential)
+;      - Other categories: Maps characters to hotstring expansion text
+;   3. Returns Map of character → expansion text for hotstrings
+;
+; RETURNS: Map object where keys are characters and values are expansion text strings
+; SIDE EFFECTS: Populates global maps g_QuickOpenFileCharMap and g_MacroCharMap
+; =============================================================================
 BuildHotstringCharMap() {
     global g_hotstrings, g_QuickOpenFiles, g_HotstringCategories, g_Macros
     charMap := Map()
@@ -3300,7 +3458,21 @@ BuildHotstringCharMap() {
     return charMap
 }
 
-; Get categorized hotstrings for display
+; =============================================================================
+; GetCategorizedHotstrings()
+; =============================================================================
+; PURPOSE: Organizes all registered items (hotstrings, quick-open files, macros) into category-based
+;          data structure for GUI display purposes.
+;
+; PROCESS:
+;   1. Initializes empty arrays for each category: Projects, Prompts, General, Files & Links, Macros
+;   2. Groups hotstrings by their category property
+;   3. Adds quick-open file entries to "Files & Links" category
+;   4. Adds macro entries to "Macros" category
+;
+; RETURNS: Map object where keys are category names and values are arrays of item objects
+;          Each item object contains: trigger, expansion, title, category, and optionally char
+; =============================================================================
 GetCategorizedHotstrings() {
     global g_hotstrings, g_QuickOpenFiles, g_Macros
     categorized := Map()
@@ -3523,7 +3695,24 @@ FindAndActivateMiroWindow(url, titleKeywords) {
     }
 }
 
-; Cleanup hotstring selector
+; =============================================================================
+; CleanupHotstringSelector()
+; =============================================================================
+; PURPOSE: Closes hotstring selector GUI and disables all associated hotkeys.
+;          Called when selector is closed via Escape key, character selection, or toggle.
+;
+; PROCESS:
+;   1. Sets g_HotstringSelectorActive = false to prevent further character processing
+;   2. Disables all character hotkeys (including uppercase variants for lowercase letters)
+;   3. Handles special VK codes for comma (vkBC) and period (vkBE)
+;   4. Disables Escape key handler
+;   5. Destroys GUI object if it exists
+;   6. Clears hotkey handlers array
+;   7. Clears character mapping maps
+;
+; RETURNS: None (void function)
+; SIDE EFFECTS: Resets all global state variables to initial values
+; =============================================================================
 CleanupHotstringSelector() {
     global g_HotstringSelectorActive, g_HotstringSelectorGui, g_HotstringHotkeyHandlers
     global g_HotstringCharMap
@@ -3576,7 +3765,30 @@ CleanupHotstringSelector() {
     g_HotstringCharMap := Map()
 }
 
-; Handler for character key press
+; =============================================================================
+; HandleHotstringChar(char)
+; =============================================================================
+; PURPOSE: Processes character key press events when hotstring selector is active.
+;          Executes the action (text expansion, file open, or macro) associated with the character.
+;
+; PARAMETERS:
+;   char: String - Single character that was pressed (e.g., "a", "1", ",")
+;
+; EXECUTION ORDER:
+;   1. Special cases: Characters "9" and "0" trigger Miro board activation (hardcoded)
+;   2. Quick-open files: Check g_QuickOpenFileCharMap for file path mappings
+;   3. Macros: Check g_MacroCharMap for executable macro functions
+;   4. Hotstrings: Check g_HotstringCharMap for text expansion mappings
+;
+; BEHAVIOR:
+;   - Performs case-insensitive lookup (tries both original and lowercase)
+;   - Closes selector GUI before executing action
+;   - For hotstrings: Inserts text using InsertText() after 150ms delay
+;   - For files: Opens file based on extension (Power BI files use special handler)
+;   - For macros: Executes macro function directly
+;
+; RETURNS: None (void function)
+; =============================================================================
 HandleHotstringChar(char) {
     global g_HotstringSelectorActive, g_HotstringCharMap, g_QuickOpenFileCharMap, g_MacroCharMap
 
@@ -3669,14 +3881,30 @@ HandleHotstringChar(char) {
     }
 }
 
-; Factory function to create a handler that properly captures the character
-; This ensures each handler gets its own copy of the char value
+; =============================================================================
+; CreateHotstringCharHandler(char)
+; =============================================================================
+; PURPOSE: Factory function that creates a hotkey handler function with proper closure over character value.
+;          Required because AutoHotkey hotkey handlers need unique function instances per character.
+;
+; PARAMETERS:
+;   char: String - Character to create handler for
+;
+; RETURNS: Function object that calls HandleHotstringChar(char) when invoked
+; =============================================================================
 CreateHotstringCharHandler(char) {
-    ; Return a function that captures the char value at creation time
+    ; Return a function that captures the char value at creation time via closure
     return (*) => HandleHotstringChar(char)
 }
 
-; Handler for Escape key
+; =============================================================================
+; HandleHotstringEscape(*)
+; =============================================================================
+; PURPOSE: Handles Escape key press to close hotstring selector without executing any action.
+;
+; PARAMETERS: None (varargs function signature for hotkey compatibility)
+; RETURNS: None (void function)
+; =============================================================================
 HandleHotstringEscape(*) {
     global g_HotstringSelectorActive
     if (g_HotstringSelectorActive) {
@@ -3684,7 +3912,31 @@ HandleHotstringEscape(*) {
     }
 }
 
-; Show hotstring selector GUI
+; =============================================================================
+; ShowHotstringSelector()
+; =============================================================================
+; PURPOSE: Displays the hotstring selector modal GUI and enables character-based hotkeys.
+;          GUI shows categorized list of available actions with their assigned characters.
+;
+; PROCESS:
+;   1. Closes existing selector if already open
+;   2. Builds character-to-action mappings via BuildHotstringCharMap()
+;   3. Validates that at least one action is available (shows tray tip if none)
+;   4. Gets categorized hotstring data via GetCategorizedHotstrings()
+;   5. Calculates optimal GUI size based on monitor configuration
+;   6. Creates and displays GUI with categorized action list
+;   7. Enables hotkeys for all assigned characters
+;   8. Enables Escape key handler for cancellation
+;
+; GUI FEATURES:
+;   - Responsive layout: Adapts to monitor orientation (landscape/portrait)
+;   - Dual-column layout for landscape monitors
+;   - Single-column layout for portrait monitors
+;   - Categories displayed in order: Prompts → General → Projects → Files & Links → Macros
+;
+; RETURNS: None (void function)
+; SIDE EFFECTS: Sets g_HotstringSelectorActive = true, creates GUI object, enables hotkeys
+; =============================================================================
 ShowHotstringSelector() {
     global g_HotstringSelectorGui, g_HotstringSelectorActive, g_HotstringCharMap
     global g_HotstringHotkeyHandlers, g_HotstringCategories
@@ -4257,19 +4509,27 @@ ShowHotstringSelector() {
     Hotkey("Escape", HandleHotstringEscape, "On")
 }
 
-; AI NOTE: keep the hotstring selector message consistent. The sequence of
-; characters is fixed and should list every slot in order, even when a slot
-; is empty, so downstream AI/debugging always sees the full set.
-; Win+Alt+Shift+U hotkey
+; =============================================================================
+; Hotkey Handler: Windows + Alt + Shift + U (#!+U)
+; =============================================================================
+; PURPOSE: Toggles the hotstring selector GUI on/off.
+;
+; BEHAVIOR:
+;   - If selector is currently open: Closes selector via CleanupHotstringSelector()
+;   - If selector is closed: Opens selector via ShowHotstringSelector()
+;
+; TECHNICAL NOTE: The character sequence displayed in the GUI must remain consistent
+;                  and list every slot in order, even when empty, to ensure downstream
+;                  AI systems and debugging tools can reliably parse the full character set.
+; =============================================================================
 #!+U::
 {
     global g_HotstringSelectorActive, g_HotstringSelectorGui
 
-    ; If selector is already open, close it
+    ; Toggle behavior: Close if open, open if closed
     if (g_HotstringSelectorActive && IsObject(g_HotstringSelectorGui)) {
         CleanupHotstringSelector()
     } else {
-        ; Otherwise, open it
         ShowHotstringSelector()
     }
 }
