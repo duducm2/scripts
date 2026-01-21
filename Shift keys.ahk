@@ -476,6 +476,7 @@ Cursor
 🤖 [6] Context-aware agent panel actions
 🔨 [7] Build LaTeX project
 📄 [8] View LaTeX PDF file
+📄 [9] Markdown Preview Enhanced: Insert Page Break
 🤖 [M]Ask [M]essage, wait 6s, then paste (ahk)
 ⚡ [G]Kill terminal ([G]o away)
 📉 [Y]Fold all (tuck awa[Y])
