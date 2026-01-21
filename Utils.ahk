@@ -732,26 +732,29 @@ DictationLoopStop() {
 ; Internal helper: Performs clipboard cleanup without showing prompt
 ; Used when user has already confirmed they want to clean clipboard
 CleanClipboardInternal() {
-    Sleep 100
+    Sleep 200
 
     ; Send Alt+V
     SendInput "!v"
 
-    ; Wait for UI to respond
-    Sleep 100
+    ; Wait for UI to respond (menu needs time to appear)
+    Sleep 300
 
     ; Send Ctrl+Alt+K
     SendInput "^!k"
 
-    ; Wait for UI to respond
-    Sleep 100
+    ; Wait for UI to respond (dialog needs time to open)
+    Sleep 300
 
     SendInput "{Enter}"
 
-    ; Wait for UI to respond
-    Sleep 250
+    ; Wait for UI to respond (processing needs time to complete)
+    Sleep 500
 
     SendInput "{Escape}"
+
+    ; Brief pause to ensure Escape is processed
+    Sleep 100
 }
 
 ; Clean the Clipboard macro function
