@@ -148,6 +148,13 @@ InsertText(text) {
     )
 }
 
+:o:cplant::
+{
+    InsertText(
+        "---`nname: [Title Case Name of the Plan]`noverview: [A concise, 1-2 sentence summary of the high-level objective.]`ntodos:`n  - id: [unique_string_id]`n    content: [Specific, actionable step]`n    status: pending`n    dependencies: [] # Optional: list IDs of prerequisite steps`n---"
+    )
+}
+
 ; ----------------------
 ; Register hotstrings for cheat sheet display
 ; ----------------------
@@ -180,7 +187,11 @@ InitHotstringsCheatSheet() {
         "Prompts",
         "📋 Technical Architect & Code Planner"
     )
-    RegisterHotstring("", "", "Prompts", "Reserved 2")
+    RegisterHotstring(":o:cplant",
+        "---`nname: [Title Case Name of the Plan]`noverview: [A concise, 1-2 sentence summary of the high-level objective.]`ntodos:`n  - id: [unique_string_id]`n    content: [Specific, actionable step]`n    status: pending`n    dependencies: [] # Optional: list IDs of prerequisite steps`n---",
+        "Prompts",
+        "📝 Plan File Template"
+    )
     RegisterHotstring("", "", "Prompts", "Reserved 3")
     RegisterHotstring("", "", "Prompts", "Reserved 4")
     RegisterHotstring("", "", "Prompts", "Reserved 5")
