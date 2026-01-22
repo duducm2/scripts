@@ -148,6 +148,13 @@ InsertText(text) {
     )
 }
 
+:o:cplant::
+{
+    InsertText(
+        "---`nname: [Title Case Name of the Plan]`noverview: [A concise, 1-2 sentence summary of the high-level objective.]`ntodos:`n  - id: [unique_string_id]`n    content: [Specific, actionable step]`n    status: pending`n    dependencies: [] # Optional: list IDs of prerequisite steps`n---"
+    )
+}
+
 ; ----------------------
 ; Register hotstrings for cheat sheet display
 ; ----------------------
@@ -180,7 +187,11 @@ InitHotstringsCheatSheet() {
         "Prompts",
         "📋 Technical Architect & Code Planner"
     )
-    RegisterHotstring("", "", "Prompts", "Reserved 2")
+    RegisterHotstring(":o:cplant",
+        "---`nname: [Title Case Name of the Plan]`noverview: [A concise, 1-2 sentence summary of the high-level objective.]`ntodos:`n  - id: [unique_string_id]`n    content: [Specific, actionable step]`n    status: pending`n    dependencies: [] # Optional: list IDs of prerequisite steps`n---",
+        "Prompts",
+        "📝 Plan File Template"
+    )
     RegisterHotstring("", "", "Prompts", "Reserved 3")
     RegisterHotstring("", "", "Prompts", "Reserved 4")
     RegisterHotstring("", "", "Prompts", "Reserved 5")
@@ -636,7 +647,7 @@ ToggleOutlookAndTeams() {
 }
 
 ; Dictation Loop Macro
-; Automatically cycles dictation on/off every 40 seconds to prevent transcription timeouts
+; Automatically cycles dictation on/off every 60 seconds to prevent transcription timeouts
 ToggleDictationLoop() {
     global g_DictationLoopActive
 
@@ -682,9 +693,9 @@ DictationLoopStart() {
     ; Clear any existing timer first to prevent accumulation
     SetTimer(DictationLoopStop, 0)
 
-    ; Schedule stop after 50 seconds - negative period = one-shot timer
+    ; Schedule stop after 60 seconds - negative period = one-shot timer
     ; Only schedules if loop is still active (checked above)
-    SetTimer(DictationLoopStop, -50000)
+    SetTimer(DictationLoopStop, -60000)
 }
 
 DictationLoopStop() {
@@ -721,26 +732,29 @@ DictationLoopStop() {
 ; Internal helper: Performs clipboard cleanup without showing prompt
 ; Used when user has already confirmed they want to clean clipboard
 CleanClipboardInternal() {
-    Sleep 100
+    Sleep 200
 
     ; Send Alt+V
     SendInput "!v"
 
-    ; Wait for UI to respond
-    Sleep 100
+    ; Wait for UI to respond (menu needs time to appear)
+    Sleep 300
 
     ; Send Ctrl+Alt+K
     SendInput "^!k"
 
-    ; Wait for UI to respond
-    Sleep 100
+    ; Wait for UI to respond (dialog needs time to open)
+    Sleep 300
 
     SendInput "{Enter}"
 
-    ; Wait for UI to respond
-    Sleep 250
+    ; Wait for UI to respond (processing needs time to complete)
+    Sleep 500
 
     SendInput "{Escape}"
+
+    ; Brief pause to ensure Escape is processed
+    Sleep 100
 }
 
 ; Clean the Clipboard macro function
@@ -1365,10 +1379,6 @@ InitMacros() {
     RegisterMacro(AddWordToHandy, "➕ Add specific word to Handy")
     ; Toggle Outlook and Teams macro
     RegisterMacro(ToggleOutlookAndTeams, "🔄 Toggle Outlook & Teams")
-    ; Dictation Loop macro
-    RegisterMacro(ToggleDictationLoop, "🎙️ Dictation Loop (60s)")
-    ; Dictation Start with Clipboard Option macro (assigned to "O")
-    RegisterMacro(DictationStartWithClipboardOption, "🎤 Dictation Start (with clipboard option)", "o")
     ; Clean the Clipboard macro (assigned to "P")
     RegisterMacro(CleanClipboard, "🧹 Clean the Clipboard", "p")
     ; Toggle Sound macro
@@ -5237,28 +5247,40 @@ OnExit(CleanupDictationIndicator)
     ToggleDictationMode()
 }
 
-; Dictation with paste action - Win+Alt+Shift+7
-; Step 1: Programmatically stop dictation (send Win+Alt+Shift+0)
-; Step 2: Wait for transcription to complete
-; Step 3: Execute paste action
+; Dictation Loop - Win+Alt+Shift+7
+; Automatically cycles dictation on/off every 60 seconds to prevent transcription timeouts
 #!+7::
 {
-    global g_PendingDictationAction, g_DictationActive, g_KeepIndicatorVisible
+    global g_DictationLoopActive
 
-    ; Play sound signal
-    if (IsSoundEnabled()) {
-        SoundPlay(A_ScriptDir . "\sounds\retro3.wav")
-    }
-
-    ; Only proceed if dictation is currently active
-    if (g_DictationActive) {
-        ; Set pending action to execute after transcription completes
-        g_PendingDictationAction := "Paste"
-        ; Keep indicator visible until paste completes
-        g_KeepIndicatorVisible := true
-        ; Programmatically send Win+Alt+Shift+0 to stop dictation
-        ; Use SendInput for reliable key sending
+    if (g_DictationLoopActive) {
+        ; Stop the loop - NO clipboard cleanup prompt when stopping
+        g_DictationLoopActive := false
+        ; Turn off timers
+        SetTimer(DictationLoopStop, 0)
+        SetTimer(DictationLoopStart, 0)
+        ; Send Win+Alt+Shift+0 to finish dictation
         SendInput "#!+0"
+        ShowCenteredOverlay_Utils("Dictation Loop Stopped", 1500)
+    } else {
+        ; Start the loop - show clipboard cleanup prompt ONLY when starting
+        ; Show message box asking about clipboard cleanup
+        result := MsgBox("Would you like to clean up the clipboard?", "Dictation Start", "YesNo")
+        
+        if (result = "Yes") {
+            ; Execute clipboard cleanup algorithm without showing second prompt
+            ; (User already confirmed they want to clean clipboard)
+            CleanClipboardInternal()
+        }
+        ; If No, continue with dictation loop without cleanup
+        
+        ; Clear any existing timers first to prevent old timers from firing
+        SetTimer(DictationLoopStop, 0)
+        SetTimer(DictationLoopStart, 0)
+        g_DictationLoopActive := true
+        ShowCenteredOverlay_Utils("Dictation Loop Started", 1500)
+        ; Begin the cycle
+        DictationLoopStart()
     }
 }
 
