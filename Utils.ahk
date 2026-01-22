@@ -1379,8 +1379,6 @@ InitMacros() {
     RegisterMacro(AddWordToHandy, "➕ Add specific word to Handy")
     ; Toggle Outlook and Teams macro
     RegisterMacro(ToggleOutlookAndTeams, "🔄 Toggle Outlook & Teams")
-    ; Dictation Start with Clipboard Option macro (assigned to "O")
-    RegisterMacro(DictationStartWithClipboardOption, "🎤 Dictation Start (with clipboard option)", "o")
     ; Clean the Clipboard macro (assigned to "P")
     RegisterMacro(CleanClipboard, "🧹 Clean the Clipboard", "p")
     ; Toggle Sound macro
