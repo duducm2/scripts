@@ -2299,6 +2299,101 @@ ClickGenerateCommitMessageButton() {
 }
 
 ; ---------------------------------------------------------------------------
+; Check if commit message has been written (has content)
+; Returns true if message exists and has content, false otherwise
+; ---------------------------------------------------------------------------
+HasCommitMessageContent() {
+    try {
+        uia := UIA_Browser()
+        if !IsObject(uia) {
+            return false
+        }
+
+        ; Try to find the commit message text field/textarea
+        ; Common patterns: Edit control, TextArea, or contenteditable div
+        commitMessageField := ""
+        
+        ; Strategy 1: Find by Type Edit (50004)
+        commitMessageField := uia.FindFirst({ Type: "50004", ControlType: "Edit" })
+        
+        ; Strategy 2: Find by Type Edit with common class names
+        if !commitMessageField {
+            allEdits := uia.FindAll({ Type: "50004" })
+            for edit in allEdits {
+                className := edit.ClassName
+                ; Look for common commit message field indicators
+                if (InStr(className, "input") || InStr(className, "textarea") || 
+                    InStr(className, "editor") || InStr(className, "commit")) {
+                    ; Check if it has content
+                    try {
+                        value := edit.Value
+                        if (value && StrLen(Trim(value)) > 0) {
+                            commitMessageField := edit
+                            break
+                        }
+                    } catch {
+                        ; Try Name property as fallback
+                        try {
+                            name := edit.Name
+                            if (name && StrLen(Trim(name)) > 0 && !InStr(name, "Enter") && !InStr(name, "prompt")) {
+                                commitMessageField := edit
+                                break
+                            }
+                        } catch {
+                            continue
+                        }
+                    }
+                }
+            }
+        }
+        
+        ; Strategy 3: Find by looking for text content in the commit dialog area
+        if !commitMessageField {
+            ; Look for any element with substantial text content that might be the commit message
+            allElements := uia.FindAll({ Type: "50020" })  ; Text elements
+            for textEl in allElements {
+                try {
+                    textContent := textEl.Name
+                    ; If text is substantial (more than 20 chars) and doesn't look like UI labels
+                    if (textContent && StrLen(Trim(textContent)) > 20 && 
+                        !InStr(textContent, "Ctrl+") && !InStr(textContent, "commit on") &&
+                        !InStr(textContent, "Generate")) {
+                        ; This might be commit message content
+                        return true
+                    }
+                } catch {
+                    continue
+                }
+            }
+        }
+        
+        ; If we found a field, check if it has content
+        if (commitMessageField) {
+            try {
+                value := commitMessageField.Value
+                if (value && StrLen(Trim(value)) > 0) {
+                    return true
+                }
+            } catch {
+                ; Try to get text content another way
+                try {
+                    name := commitMessageField.Name
+                    if (name && StrLen(Trim(name)) > 0 && !InStr(name, "Enter") && !InStr(name, "prompt")) {
+                        return true
+                    }
+                } catch {
+                    return false
+                }
+            }
+        }
+        
+        return false
+    } catch Error {
+        return false
+    }
+}
+
+; ---------------------------------------------------------------------------
 ; WaitForButton(root, pattern, timeout := 5000)
 ;   â€¢ Searches all descendant buttons of `root` until Name matches `pattern`
 ;   â€¢ Returns the UIA element or 0 if none matched within `timeout` ms
@@ -8477,6 +8572,7 @@ IsEditorActive() {
 
         ; Check if the message text is present - ultra simple approach
         elementFound := false
+        messageHasContent := false
 
         try {
             if WinExist("A") {
@@ -8486,20 +8582,32 @@ IsEditorActive() {
                 ; Look for the unique shortcut text
                 if InStr(windowText, "Ctrl+⏎") {
                     elementFound := true
-                    MsgBox "Found Ctrl+⏎ - element present"
                 } else if InStr(windowText, "commit on") {
                     elementFound := true
-                    MsgBox "Found 'commit on' - element present"
                 } else if InStr(windowText, "Message") {
                     elementFound := true
-                    MsgBox "Found 'Message' - element present"
                 }
             }
         }
 
-        ; Simple logic: if element found, continue; if not found, exit early
+        ; Additional verification: Check if commit message has actual content
         if (elementFound) {
-            ShowSmallLoadingIndicator_ChatGPT("Element present, continuing...")
+            try {
+                messageHasContent := HasCommitMessageContent()
+            } catch {
+                messageHasContent := false
+            }
+        }
+
+        ; Logic: Only proceed if both UI element is present AND message has content
+        if (elementFound && messageHasContent) {
+            ShowSmallLoadingIndicator_ChatGPT("Message ready, committing...")
+            Sleep 1000
+            ; Break out of loop and proceed with commit
+            break
+        } else if (elementFound && !messageHasContent) {
+            ; UI element found but no message content yet - continue waiting
+            ShowSmallLoadingIndicator_ChatGPT("Waiting for message generation...")
             Sleep 1000
             continue
         } else {
@@ -8531,7 +8639,24 @@ IsEditorActive() {
         Sleep 1000
     }
 
-    ; If we reach here, the loop completed normally (element was found)
+    ; If we reach here, either the loop completed normally or we broke early with message ready
+    ; Final verification: Double-check that commit message has content before committing
+    messageReady := false
+    try {
+        messageReady := HasCommitMessageContent()
+    } catch {
+        messageReady := false
+    }
+    
+    ; Only proceed with commit if message has content
+    if (!messageReady) {
+        ShowSmallLoadingIndicator_ChatGPT("No commit message found. Aborting commit.")
+        Sleep 2000
+        HideSmallLoadingIndicator_ChatGPT()
+        BlockInput "Off"
+        return
+    }
+    
     ; Send the commit and show push selector popup
     ; Ensure target window is active before sending commit command
     if (gCommitPushTargetWin && WinExist("ahk_id " gCommitPushTargetWin)) {
