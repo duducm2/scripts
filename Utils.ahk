@@ -1379,8 +1379,6 @@ InitMacros() {
     RegisterMacro(AddWordToHandy, "➕ Add specific word to Handy")
     ; Toggle Outlook and Teams macro
     RegisterMacro(ToggleOutlookAndTeams, "🔄 Toggle Outlook & Teams")
-    ; Dictation Loop macro
-    RegisterMacro(ToggleDictationLoop, "🎙️ Dictation Loop (60s)")
     ; Dictation Start with Clipboard Option macro (assigned to "O")
     RegisterMacro(DictationStartWithClipboardOption, "🎤 Dictation Start (with clipboard option)", "o")
     ; Clean the Clipboard macro (assigned to "P")
@@ -5251,28 +5249,40 @@ OnExit(CleanupDictationIndicator)
     ToggleDictationMode()
 }
 
-; Dictation with paste action - Win+Alt+Shift+7
-; Step 1: Programmatically stop dictation (send Win+Alt+Shift+0)
-; Step 2: Wait for transcription to complete
-; Step 3: Execute paste action
+; Dictation Loop - Win+Alt+Shift+7
+; Automatically cycles dictation on/off every 60 seconds to prevent transcription timeouts
 #!+7::
 {
-    global g_PendingDictationAction, g_DictationActive, g_KeepIndicatorVisible
+    global g_DictationLoopActive
 
-    ; Play sound signal
-    if (IsSoundEnabled()) {
-        SoundPlay(A_ScriptDir . "\sounds\retro3.wav")
-    }
-
-    ; Only proceed if dictation is currently active
-    if (g_DictationActive) {
-        ; Set pending action to execute after transcription completes
-        g_PendingDictationAction := "Paste"
-        ; Keep indicator visible until paste completes
-        g_KeepIndicatorVisible := true
-        ; Programmatically send Win+Alt+Shift+0 to stop dictation
-        ; Use SendInput for reliable key sending
+    if (g_DictationLoopActive) {
+        ; Stop the loop - NO clipboard cleanup prompt when stopping
+        g_DictationLoopActive := false
+        ; Turn off timers
+        SetTimer(DictationLoopStop, 0)
+        SetTimer(DictationLoopStart, 0)
+        ; Send Win+Alt+Shift+0 to finish dictation
         SendInput "#!+0"
+        ShowCenteredOverlay_Utils("Dictation Loop Stopped", 1500)
+    } else {
+        ; Start the loop - show clipboard cleanup prompt ONLY when starting
+        ; Show message box asking about clipboard cleanup
+        result := MsgBox("Would you like to clean up the clipboard?", "Dictation Start", "YesNo")
+        
+        if (result = "Yes") {
+            ; Execute clipboard cleanup algorithm without showing second prompt
+            ; (User already confirmed they want to clean clipboard)
+            CleanClipboardInternal()
+        }
+        ; If No, continue with dictation loop without cleanup
+        
+        ; Clear any existing timers first to prevent old timers from firing
+        SetTimer(DictationLoopStop, 0)
+        SetTimer(DictationLoopStart, 0)
+        g_DictationLoopActive := true
+        ShowCenteredOverlay_Utils("Dictation Loop Started", 1500)
+        ; Begin the cycle
+        DictationLoopStart()
     }
 }
 
