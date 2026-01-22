@@ -8590,7 +8590,7 @@ IsEditorActive() {
             }
         }
 
-        ; Additional verification: Check if commit message has actual content 2
+        ; Additional verification: Check if commit message has actual content 3
         if (elementFound) {
             try {
                 messageHasContent := HasCommitMessageContent()
