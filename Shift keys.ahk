@@ -4567,6 +4567,46 @@ SelectExplorerSidebarFirstPinned() {
 ; Shift + L : Send F6
 +L:: Send "{F6}"
 
+; Ctrl + 1 : Move down once and select (Command Palette)
+^1:: {
+    Send "{Down}"
+    Send "{Enter}"
+}
+
+; Ctrl + 2 : Move down twice and select (Command Palette)
+^2:: {
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
+}
+
+; Ctrl + 3 : Move down three times and select (Command Palette)
+^3:: {
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
+}
+
+; Ctrl + 4 : Move down four times and select (Command Palette)
+^4:: {
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
+}
+
+; Ctrl + 5 : Move down five times and select (Command Palette)
+^5:: {
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
+}
+
 ; Message inspector-specific hotkeys (Subject/To/DatePicker/Body)
 #HotIf IsOutlookMessageActive()
 
