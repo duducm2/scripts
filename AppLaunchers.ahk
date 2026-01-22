@@ -1302,7 +1302,11 @@ IsLeapYear(year) {
 
 ; Play chime callback - plays sound every 1 second with multiple methods for maximum audibility
 PomodoroChimeCallback(*) {
-    ; Play multiple sounds simultaneously for maximum audibility
+    ; Play multiple sounds simultaneously for maximum audibility (if enabled)
+    if (!IsSoundEnabled()) {
+        return
+    }
+    
     ; Method 1: Primary - SoundBeep with high frequency and longer duration (most reliable and audible)
     try {
         SoundBeep(2000, 300)  ; High frequency (2000 Hz) and longer duration (300 ms) for better audibility
@@ -1459,9 +1463,11 @@ StartPomodoroTimer() {
     }
     g_PomodoroTinyIndicator := ShowTinyWaterBottleIndicator()
 
-    ; Play start sound
+    ; Play start sound (if enabled)
     try {
-        SoundPlay(A_ScriptDir . "\sounds\pomodo-start.wav")
+        if (IsSoundEnabled()) {
+            SoundPlay(A_ScriptDir . "\sounds\pomodo-start.wav")
+        }
     } catch {
     }
 

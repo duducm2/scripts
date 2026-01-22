@@ -5,6 +5,7 @@
 #include UIA-v2\Lib\UIA.ahk
 #include UIA-v2\Lib\UIA_Browser.ahk
 #include %A_ScriptDir%\env.ahk
+#include %A_ScriptDir%\Utils.ahk
 
 ; --- Config ---------------------------------------------------------------
 ; Path to the file containing the initial prompt Gemini should receive.
@@ -80,7 +81,9 @@ PlayCopyCompletedChime() {
             return
         lastTick := A_TickCount
 
-        SoundPlay(A_ScriptDir . "\sounds\copy.wav")
+        if (IsSoundEnabled()) {
+            SoundPlay(A_ScriptDir . "\sounds\copy.wav")
+        }
     } catch {
         ; Silently ignore errors
     }
@@ -1057,7 +1060,9 @@ InitializeGeminiFirstTime() {
                 ; Check if field is already focused - if so, play sound and return
                 if (promptField.HasKeyboardFocus) {
                     try {
-                        SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
+                        if (IsSoundEnabled()) {
+                            SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
+                        }
                     } catch {
                         ; Silently ignore sound errors
                     }
@@ -1081,7 +1086,9 @@ InitializeGeminiFirstTime() {
                 ; Play sound only after focus is explicitly verified
                 if (promptField.HasKeyboardFocus) {
                     try {
-                        SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
+                        if (IsSoundEnabled()) {
+                            SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
+                        }
                     } catch {
                         ; Silently ignore sound errors
                     }

@@ -704,7 +704,8 @@ global g_Projects := [
                     category: "Personal" }, { name: "", path: "", workPath: "", category: "Personal" }, { name: "",
                         path: "", workPath: "", category: "Personal" }, { name: "", path: "", workPath: "", category: "Personal" },
                         ; Work category
-                        { name: "dashboard-model-research", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_E&S_CIP Dashboard research and design workspace folder\dashboard-model-research",
+                        { name: "GS_E&S_CIP Dashboard research and design workspace folder", path: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_E&S_CIP Dashboard research and design workspace folder",
+                            workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_E&S_CIP Dashboard research and design workspace folder",
                             category: "Work" }, { name: "GS_UX core team_UX and CIP Integration", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_UX core team_UX and CIP Integration",
                                 category: "Work" }, { name: "", path: "", workPath: "", category: "Work" }, { name: "",
                                     path: "", workPath: "", category: "Work" }, { name: "", path: "", workPath: "",

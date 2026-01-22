@@ -7,6 +7,7 @@
 
 ; --- Includes ----------------------------------------------------------------
 #include UIA-v2\Lib\UIA.ahk
+#include %A_ScriptDir%\Utils.ahk
 
 ; --- Helper Functions --------------------------------------------------------
 
@@ -275,8 +276,10 @@ ShowCenteredOverlay(hwndTarget, text, duration := 1500) {
 
 ; --- Audio feedback helper ---
 PlayMicrophoneBeep() {
-    ; Play a single short beep to indicate microphone action
-    SoundBeep(800, 150)
+    ; Play a single short beep to indicate microphone action (if enabled)
+    if (IsSoundEnabled()) {
+        SoundBeep(800, 150)
+    }
 }
 
 ; --- Microphone state verification ---

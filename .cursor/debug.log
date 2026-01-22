@@ -1,4 +1,0 @@
-{"sessionId":"debug-session", "hypothesisId":"A", "location":"VerifyCommitMessageHasContent:8462", "message":"Entering VerifyCommitMessageHasContent", "timestamp":213285000}
-{"sessionId":"debug-session", "hypothesisId":"B", "location":"VerifyCommitMessageHasContent:8482", "message":"Clipboard after Ctrl+C", "data":{"content":"\n"}, "timestamp":213285375}
-{"sessionId":"debug-session", "hypothesisId":"A", "location":"VerifyCommitMessageHasContent:8462", "message":"Entering VerifyCommitMessageHasContent", "timestamp":213288500}
-{"sessionId":"debug-session", "hypothesisId":"B", "location":"VerifyCommitMessageHasContent:8482", "message":"Clipboard after Ctrl+C", "data":{"content":"Revise 'introducao' chapter to enhance clarity and"}, "timestamp":213288890}
