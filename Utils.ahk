@@ -647,7 +647,7 @@ ToggleOutlookAndTeams() {
 }
 
 ; Dictation Loop Macro
-; Automatically cycles dictation on/off every 40 seconds to prevent transcription timeouts
+; Automatically cycles dictation on/off every 60 seconds to prevent transcription timeouts
 ToggleDictationLoop() {
     global g_DictationLoopActive
 
@@ -693,9 +693,9 @@ DictationLoopStart() {
     ; Clear any existing timer first to prevent accumulation
     SetTimer(DictationLoopStop, 0)
 
-    ; Schedule stop after 50 seconds - negative period = one-shot timer
+    ; Schedule stop after 60 seconds - negative period = one-shot timer
     ; Only schedules if loop is still active (checked above)
-    SetTimer(DictationLoopStop, -50000)
+    SetTimer(DictationLoopStop, -60000)
 }
 
 DictationLoopStop() {
