@@ -4567,6 +4567,51 @@ SelectExplorerSidebarFirstPinned() {
 ; Shift + L : Send F6
 +L:: Send "{F6}"
 
+; Shift + M : Toggle Mail / Calendar - Mail/Calendar
++M:: {
+    try {
+        root := UIA.ElementFromHandle(WinExist("A"))
+        
+        ; Find Mail and Calendar list items
+        mailItem := root.FindFirst({ Name: "Mail", Type: "50007" })
+        if !mailItem {
+            mailItem := root.FindFirst({ Name: "Mail", ClassName: "NetUIListViewItem" })
+        }
+        
+        calendarItem := root.FindFirst({ Name: "Calendar", Type: "50007" })
+        if !calendarItem {
+            calendarItem := root.FindFirst({ Name: "Calendar", ClassName: "NetUIListViewItem" })
+        }
+        
+        ; Check which is selected and toggle
+        if (mailItem && calendarItem) {
+            try {
+                isMailSelected := mailItem.IsSelected
+                isCalendarSelected := calendarItem.IsSelected
+                
+                if (isMailSelected) {
+                    calendarItem.SetFocus()
+                    Sleep 50
+                    calendarItem.Click()
+                } else {
+                    mailItem.SetFocus()
+                    Sleep 50
+                    mailItem.Click()
+                }
+            } catch Error as err {
+                ; Fallback: if pattern check fails, try clicking Calendar
+                calendarItem.SetFocus()
+                Sleep 50
+                calendarItem.Click()
+            }
+        } else {
+            MsgBox "Could not find Mail or Calendar items.", "Outlook Toggle", "IconX"
+        }
+    } catch Error as err {
+        MsgBox "Error toggling Mail/Calendar:`n" err.Message, "Outlook Toggle", "IconX"
+    }
+}
+
 ; Ctrl + 1 : Move down once and select (Command Palette)
 ^1:: {
     Send "{Down}"
