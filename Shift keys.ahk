@@ -4095,26 +4095,48 @@ RestorePreviousWikipediaScrollPosition() {
 ; Shift + O : Open home panel - Open
 +o::
 {
-    Send "^1"
-    Sleep "80"          ; 80 ms
-    ; Send "^+{Home}"
-    Send "^e"
-    Sleep "200"
-    Send "^a"
-    Sleep "200"
-    Send "{Del}"
-    Sleep "200"
-    Send "Figueiredo E"
-    Sleep "700"
-    Send "{Down}"
-    Sleep "50"
-    Send "{Down}"
-    Sleep "50"
-    Send "{Enter}"
-    Sleep "300"
-    Send "^1"
-    Sleep "80"          ; 80 ms
-    Send "^+{Home}"
+    try {
+        root := UIA.ElementFromHandle(WinExist("A"))
+        
+        ; Step 1: Click the "Mentions" element (TreeItem)
+        mentionsEl := root.FindFirst({ Name: "Mentions", Type: "50024" })
+        if !mentionsEl {
+            ; Fallback: try with ControlType instead of Type
+            mentionsEl := root.FindFirst({ Name: "Mentions", ControlType: "TreeItem" })
+        }
+        if (mentionsEl) {
+            mentionsEl.SetFocus()
+            Sleep 50
+            mentionsEl.Click()
+        } else {
+            MsgBox "Could not find the 'Mentions' element.", "Shift+O Error", "IconX"
+            return
+        }
+        
+        ; Step 2: Wait 200 milliseconds
+        Sleep 300
+        
+        ; Step 3: Click the "Chat (Ctrl+1)" button
+        chatBtn := root.FindFirst({ AutomationId: "3b64df9d-7e97-4d9c-ac5c-2e0a5d8e6f40", Type: "50000" })
+        if !chatBtn {
+            ; Fallback: try by Name
+            chatBtn := root.FindFirst({ Name: "Chat (Ctrl+1)", Type: "50000" })
+        }
+        if !chatBtn {
+            ; Fallback: try with ControlType
+            chatBtn := root.FindFirst({ AutomationId: "3b64df9d-7e97-4d9c-ac5c-2e0a5d8e6f40", ControlType: "Button" })
+        }
+        if (chatBtn) {
+            chatBtn.SetFocus()
+            Sleep 50
+            chatBtn.Click()
+        } else {
+            MsgBox "Could not find the 'Chat (Ctrl+1)' button.", "Shift+O Error", "IconX"
+        }
+        
+    } catch Error as err {
+        MsgBox "Error in Shift+O:`n" err.Message, "Shift+O Error", "IconX"
+    }
 }
 
 ; Shift + L : Like reaction - Like
