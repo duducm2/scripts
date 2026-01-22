@@ -4097,6 +4097,23 @@ RestorePreviousWikipediaScrollPosition() {
 {
     Send "^1"
     Sleep "80"          ; 80 ms
+    ; Send "^+{Home}"
+    Send "^e"
+    Sleep "200"
+    Send "^a"
+    Sleep "200"
+    Send "{Del}"
+    Sleep "200"
+    Send "Figueiredo E"
+    Sleep "700"
+    Send "{Down}"
+    Sleep "50"
+    Send "{Down}"
+    Sleep "50"
+    Send "{Enter}"
+    Sleep "300"
+    Send "^1"
+    Sleep "80"          ; 80 ms
     Send "^+{Home}"
 }
 
