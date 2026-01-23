@@ -930,35 +930,29 @@ InitializeGeminiFirstTime() {
 
             ; Focus the Gemini prompt field using Anchor & Backtrack strategy
             ; Strategy: Find "Open upload file menu" button (anchor), focus it, then Shift+Tab to prompt field
-            Sleep 150  ; small settle per README (keep snappy)
+            Sleep 100  ; reduced settle time
             uia := UIA_Browser()
-            Sleep 120  ; minimal settle before querying UIA
+            Sleep 80   ; reduced settle before querying UIA
 
             anchorButton := 0
 
             ; Find the anchor element: "Open upload file menu" button
-            ; Type: 50000 (Button), Name: "Open upload file menu", LocalizedType: "button"
+            ; Combined search: Try exact match first, then case-insensitive (most efficient)
             try {
                 anchorButton := uia.FindFirst({ Type: "50000", Name: "Open upload file menu", ControlType: "Button" })
+                if (!anchorButton) {
+                    anchorButton := uia.FindFirst({ Type: "50000", Name: "Open upload file menu", cs: false })
+                }
             } catch {
             }
 
-            ; Fallback: Try case-insensitive search
-            if (!anchorButton) {
-                try {
-                    anchorButton := uia.FindFirst({ Type: "50000", Name: "Open upload file menu", cs: false })
-                } catch {
-                }
-            }
-
-            ; Fallback: Try by ControlType only
+            ; Fallback: Only use expensive FindAll if first two strategies failed
             if (!anchorButton) {
                 try {
                     allButtons := uia.FindAll({ Type: "50000" })
                     for button in allButtons {
                         try {
-                            btnName := button.Name
-                            if (InStr(btnName, "Open upload file menu") || InStr(btnName, "upload file menu")) {
+                            if (InStr(button.Name, "Open upload file menu", false)) {
                                 anchorButton := button
                                 break
                             }
@@ -971,55 +965,47 @@ InitializeGeminiFirstTime() {
             }
 
             if (anchorButton) {
-                ; Focus the anchor button (do NOT click)
+                ; Focus the anchor button (do NOT click) and navigate back
                 try {
                     anchorButton.SetFocus()
-                    Sleep 100  ; Wait for focus to take effect
-
-                    ; Send Shift+Tab to navigate back to the prompt field
+                    Sleep 50   ; reduced wait time
                     Send "+{Tab}"
-
-                    ; Small delay to ensure navigation completes
-                    Sleep 50
-
-                    ; Play sound to confirm focus
-                    try {
-                        if (IsSoundEnabled()) {
+                    Sleep 30   ; reduced delay for navigation
+                    
+                    ; Play sound to confirm focus (non-blocking)
+                    if (IsSoundEnabled()) {
+                        try {
                             SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
+                        } catch {
                         }
-                    } catch {
-                        ; Silently ignore sound errors
                     }
-                } catch Error as err {
-                    ; If anchor strategy fails, fall back to direct prompt field search
-                    ; This maintains backward compatibility
+                } catch {
+                    ; Fallback: direct prompt field search if anchor strategy fails
                     try {
                         promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
                         if (promptField) {
                             promptField.SetFocus()
-                            Sleep 50
-                            try {
-                                if (IsSoundEnabled()) {
+                            if (IsSoundEnabled()) {
+                                try {
                                     SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
+                                } catch {
                                 }
-                            } catch {
                             }
                         }
                     } catch {
                     }
                 }
             } else {
-                ; If anchor button not found, fall back to direct prompt field search
+                ; Fallback: direct prompt field search if anchor not found
                 try {
                     promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
                     if (promptField) {
                         promptField.SetFocus()
-                        Sleep 50
-                        try {
-                            if (IsSoundEnabled()) {
+                        if (IsSoundEnabled()) {
+                            try {
                                 SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
+                            } catch {
                             }
-                        } catch {
                         }
                     }
                 } catch {
