@@ -276,6 +276,13 @@ Outlook (Shift)
 🎯 [F][F]ocused / Other
 🔀 [K]Cycle bac[K]ward pane
 🔀 [L]Cyc[L]e forward pane
+📋 [M]Toggle Mail / Calendar
+
+⌨️ [Ctrl+1] Move down once and select
+⌨️ [Ctrl+2] Move down twice and select
+⌨️ [Ctrl+3] Move down three times and select
+⌨️ [Ctrl+4] Move down four times and select
+⌨️ [Ctrl+5] Move down five times and select
 )"  ; end Outlook
 
 ; --- Outlook Reminder window -------------------------------------------------
@@ -287,6 +294,12 @@ Outlook - Reminders (Shift)
 ⏰ [D]Snooze 1 [D]ay
 ❌ [X]E[X]it all reminders (Dismiss)
 🌐 [J][J]oin Online
+
+⌨️ [Ctrl+1] Move down once and select
+⌨️ [Ctrl+2] Move down twice and select
+⌨️ [Ctrl+3] Move down three times and select
+⌨️ [Ctrl+4] Move down four times and select
+⌨️ [Ctrl+5] Move down five times and select
 )"  ; end Outlook Reminder
 
 ; --- Outlook Appointment window ---------------------------------------------
@@ -305,6 +318,12 @@ Outlook - Appointment (Shift)
 📝 [B][B]ody
 🔄 [C]Make Re[C]urring
 🧙 [W][W]izard (configure)
+
+⌨️ [Ctrl+1] Move down once and select
+⌨️ [Ctrl+2] Move down twice and select
+⌨️ [Ctrl+3] Move down three times and select
+⌨️ [Ctrl+4] Move down four times and select
+⌨️ [Ctrl+5] Move down five times and select
 )"  ; end Outlook Appointment
 
 ; --- Outlook Message window ---------------------------------------------------
@@ -314,6 +333,12 @@ Outlook - Message (Shift)
 📝 [S][S]ubject / Title
 👥 [T][T]o / Required
 📝 [B][B]ody (Location → Body)
+
+⌨️ [Ctrl+1] Move down once and select
+⌨️ [Ctrl+2] Move down twice and select
+⌨️ [Ctrl+3] Move down three times and select
+⌨️ [Ctrl+4] Move down four times and select
+⌨️ [Ctrl+5] Move down five times and select
 )"  ; end Outlook Message
 
 ; --- Microsoft Teams â€" meeting window --------------------------------------
@@ -2628,6 +2653,46 @@ Confirm(t) {
     }
 }
 
+; Ctrl + 1 : Move down once and select (Command Palette)
+^1:: {
+    Send "{Down}"
+    Send "{Enter}"
+}
+
+; Ctrl + 2 : Move down twice and select (Command Palette)
+^2:: {
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
+}
+
+; Ctrl + 3 : Move down three times and select (Command Palette)
+^3:: {
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
+}
+
+; Ctrl + 4 : Move down four times and select (Command Palette)
+^4:: {
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
+}
+
+; Ctrl + 5 : Move down five times and select (Command Palette)
+^5:: {
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
+}
+
 #HotIf
 
 ;-------------------------------------------------------------------
@@ -4784,6 +4849,46 @@ SelectExplorerSidebarFirstPinned() {
     }
 }
 
+; Ctrl + 1 : Move down once and select (Command Palette)
+^1:: {
+    Send "{Down}"
+    Send "{Enter}"
+}
+
+; Ctrl + 2 : Move down twice and select (Command Palette)
+^2:: {
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
+}
+
+; Ctrl + 3 : Move down three times and select (Command Palette)
+^3:: {
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
+}
+
+; Ctrl + 4 : Move down four times and select (Command Palette)
+^4:: {
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
+}
+
+; Ctrl + 5 : Move down five times and select (Command Palette)
+^5:: {
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
+}
+
 #HotIf
 
 ; Appointment/Meeting inspector-specific hotkeys
@@ -5802,6 +5907,46 @@ RunOutlookAppointmentWizard() {
         return
     }
     RunOutlookAppointmentWizard()
+}
+
+; Ctrl + 1 : Move down once and select (Command Palette)
+^1:: {
+    Send "{Down}"
+    Send "{Enter}"
+}
+
+; Ctrl + 2 : Move down twice and select (Command Palette)
+^2:: {
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
+}
+
+; Ctrl + 3 : Move down three times and select (Command Palette)
+^3:: {
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
+}
+
+; Ctrl + 4 : Move down four times and select (Command Palette)
+^4:: {
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
+}
+
+; Ctrl + 5 : Move down five times and select (Command Palette)
+^5:: {
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
 }
 
 #HotIf
