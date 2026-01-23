@@ -2312,18 +2312,18 @@ HasCommitMessageContent() {
         ; Try to find the commit message text field/textarea
         ; Common patterns: Edit control, TextArea, or contenteditable div
         commitMessageField := ""
-        
+
         ; Strategy 1: Find by Type Edit (50004)
         commitMessageField := uia.FindFirst({ Type: "50004", ControlType: "Edit" })
-        
+
         ; Strategy 2: Find by Type Edit with common class names
         if !commitMessageField {
             allEdits := uia.FindAll({ Type: "50004" })
             for edit in allEdits {
                 className := edit.ClassName
                 ; Look for common commit message field indicators
-                if (InStr(className, "input") || InStr(className, "textarea") || 
-                    InStr(className, "editor") || InStr(className, "commit")) {
+                if (InStr(className, "input") || InStr(className, "textarea") ||
+                InStr(className, "editor") || InStr(className, "commit")) {
                     ; Check if it has content
                     try {
                         value := edit.Value
@@ -2346,7 +2346,7 @@ HasCommitMessageContent() {
                 }
             }
         }
-        
+
         ; Strategy 3: Find by looking for text content in the commit dialog area
         if !commitMessageField {
             ; Look for any element with substantial text content that might be the commit message
@@ -2355,9 +2355,9 @@ HasCommitMessageContent() {
                 try {
                     textContent := textEl.Name
                     ; If text is substantial (more than 20 chars) and doesn't look like UI labels
-                    if (textContent && StrLen(Trim(textContent)) > 20 && 
-                        !InStr(textContent, "Ctrl+") && !InStr(textContent, "commit on") &&
-                        !InStr(textContent, "Generate")) {
+                    if (textContent && StrLen(Trim(textContent)) > 20 &&
+                    !InStr(textContent, "Ctrl+") && !InStr(textContent, "commit on") &&
+                    !InStr(textContent, "Generate")) {
                         ; This might be commit message content
                         return true
                     }
@@ -2366,7 +2366,7 @@ HasCommitMessageContent() {
                 }
             }
         }
-        
+
         ; If we found a field, check if it has content
         if (commitMessageField) {
             try {
@@ -2386,7 +2386,7 @@ HasCommitMessageContent() {
                 }
             }
         }
-        
+
         return false
     } catch Error {
         return false
@@ -4192,7 +4192,7 @@ RestorePreviousWikipediaScrollPosition() {
 {
     try {
         root := UIA.ElementFromHandle(WinExist("A"))
-        
+
         ; Step 1: Click the "Mentions" element (TreeItem)
         mentionsEl := root.FindFirst({ Name: "Mentions", Type: "50024" })
         if !mentionsEl {
@@ -4207,10 +4207,10 @@ RestorePreviousWikipediaScrollPosition() {
             MsgBox "Could not find the 'Mentions' element.", "Shift+O Error", "IconX"
             return
         }
-        
+
         ; Step 2: Wait 200 milliseconds
         Sleep 300
-        
+
         ; Step 3: Click the "Chat (Ctrl+1)" button
         chatBtn := root.FindFirst({ AutomationId: "3b64df9d-7e97-4d9c-ac5c-2e0a5d8e6f40", Type: "50000" })
         if !chatBtn {
@@ -4228,7 +4228,7 @@ RestorePreviousWikipediaScrollPosition() {
         } else {
             MsgBox "Could not find the 'Chat (Ctrl+1)' button.", "Shift+O Error", "IconX"
         }
-        
+
     } catch Error as err {
         MsgBox "Error in Shift+O:`n" err.Message, "Shift+O Error", "IconX"
     }
@@ -4666,24 +4666,24 @@ SelectExplorerSidebarFirstPinned() {
 +M:: {
     try {
         root := UIA.ElementFromHandle(WinExist("A"))
-        
+
         ; Find Mail and Calendar list items
         mailItem := root.FindFirst({ Name: "Mail", Type: "50007" })
         if !mailItem {
             mailItem := root.FindFirst({ Name: "Mail", ClassName: "NetUIListViewItem" })
         }
-        
+
         calendarItem := root.FindFirst({ Name: "Calendar", Type: "50007" })
         if !calendarItem {
             calendarItem := root.FindFirst({ Name: "Calendar", ClassName: "NetUIListViewItem" })
         }
-        
+
         ; Check which is selected and toggle
         if (mailItem && calendarItem) {
             try {
                 isMailSelected := mailItem.IsSelected
                 isCalendarSelected := calendarItem.IsSelected
-                
+
                 if (isMailSelected) {
                     calendarItem.SetFocus()
                     Sleep 50
@@ -8664,7 +8664,7 @@ IsEditorActive() {
     } catch {
         messageReady := false
     }
-    
+
     ; Only proceed with commit if message has content
     if (!messageReady) {
         ShowSmallLoadingIndicator_ChatGPT("No commit message found. Aborting commit.")
@@ -8673,7 +8673,7 @@ IsEditorActive() {
         BlockInput "Off"
         return
     }
-    
+
     ; Send the commit and show push selector popup
     ; Ensure target window is active before sending commit command
     if (gCommitPushTargetWin && WinExist("ahk_id " gCommitPushTargetWin)) {
@@ -10593,7 +10593,7 @@ PrevMobillsMonth() {
         ; Retry logic: Try multiple times with delays to allow UI to load
         maxRetries := 3
         retryDelay := 300  ; milliseconds between retries
-        
+
         loop maxRetries {
             ; PRIMARY LOGIC: Try UIA path-based detection first (most reliable)
             ; Path: {T:30}, {T:26}, {T:26}, {T:8}, {T:7}, {T:0}
@@ -10615,7 +10615,7 @@ PrevMobillsMonth() {
             } catch Error as e {
                 ; UIA path failed, continue to fallbacks
             }
-            
+
             Sleep retryDelay  ; Wait before next attempt
 
             ; FALLBACK 1: Try by Name "Go to previous page" (keep existing fallback for compatibility)
@@ -10646,11 +10646,11 @@ PrevMobillsMonth() {
                     ; Fallback search failed, btn remains empty
                 }
             }
-            
+
             if btn {
                 break  ; Found button, exit retry loop
             }
-            
+
             Sleep retryDelay  ; Wait before next attempt
 
             ; FALLBACK 2: Try month group-based detection (keep for backward compatibility)
@@ -10677,7 +10677,7 @@ PrevMobillsMonth() {
                     }
                 }
             }
-            
+
             if btn {
                 break  ; Found button, exit retry loop
             }
@@ -10700,7 +10700,8 @@ PrevMobillsMonth() {
                 MsgBox "Button found but could not be clicked:`n" e.Message, "Mobills Navigation", "IconX"
             }
         } else {
-            MsgBox "Could not find the previous-month button after " . maxRetries . " attempts.", "Mobills Navigation", "IconX"
+            MsgBox "Could not find the previous-month button after " . maxRetries . " attempts.", "Mobills Navigation",
+                "IconX"
         }
     } catch Error as e {
         MsgBox "Error navigating to previous month:`n" e.Message, "Mobills Error", "IconX"
@@ -10719,7 +10720,7 @@ NextMobillsMonth() {
         ; Retry logic: Try multiple times with delays to allow UI to load
         maxRetries := 3
         retryDelay := 300  ; milliseconds between retries
-        
+
         loop maxRetries {
             ; PRIMARY LOGIC: Try UIA path-based detection first (most reliable)
             ; Path: {T:30}, {T:26}, {T:26}, {T:8}, {T:7, i:-1}, {T:0}
@@ -10741,7 +10742,7 @@ NextMobillsMonth() {
             } catch Error as e {
                 ; UIA path failed, continue to fallbacks
             }
-            
+
             Sleep retryDelay  ; Wait before next attempt
 
             ; FALLBACK 1: Try by Name "Go to next page" (keep existing fallback for compatibility)
@@ -10772,11 +10773,11 @@ NextMobillsMonth() {
                     ; Fallback search failed, btn remains empty
                 }
             }
-            
+
             if btn {
                 break  ; Found button, exit retry loop
             }
-            
+
             Sleep retryDelay  ; Wait before next attempt
 
             ; FALLBACK 2: Try month group-based detection (keep for backward compatibility)
@@ -10804,7 +10805,7 @@ NextMobillsMonth() {
                     }
                 }
             }
-            
+
             if btn {
                 break  ; Found button, exit retry loop
             }
@@ -10827,7 +10828,8 @@ NextMobillsMonth() {
                 MsgBox "Button found but could not be clicked:`n" e.Message, "Mobills Navigation", "IconX"
             }
         } else {
-            MsgBox "Could not find the next-month button after " . maxRetries . " attempts.", "Mobills Navigation", "IconX"
+            MsgBox "Could not find the next-month button after " . maxRetries . " attempts.", "Mobills Navigation",
+                "IconX"
         }
     } catch Error as e {
         MsgBox "Error navigating to next month:`n" e.Message, "Mobills Error", "IconX"
@@ -12223,13 +12225,6 @@ HandleGeminiModelSelection(char) {
     ; Small delay to ensure GUI cleanup is complete
     Sleep 100
 
-    ; Show loading indicator (with error handling)
-    try {
-        ShowSmallLoadingIndicator_ChatGPT("Switching to " . modelName . " model...")
-    } catch {
-        ; Ignore indicator errors
-    }
-
     try {
         ; Activate Gemini window
         SetTitleMatchMode(2)
@@ -12269,11 +12264,11 @@ HandleGeminiModelSelection(char) {
         ; Send space first to prevent errors
         Send "{Space}"
 
-        ; Map model name to lowercase command
-        modelCommand := "@" . StrLower(modelName)
+        ; Map model name to command with @ symbol (preserve original casing)
+        modelCommand := "@" . modelName
 
-        ; Type the model command directly (no need to find input field)
-        Send modelCommand
+        ; Type the model command directly (send entire text at once for efficiency)
+        SendText modelCommand
         Sleep 50
 
         ; Submit by pressing Enter
@@ -12281,13 +12276,8 @@ HandleGeminiModelSelection(char) {
 
         ; Update global state
         isGeminiFastModel := modelName
-        ShowSmallLoadingIndicator_ChatGPT(modelName . " model selected")
-        Sleep 150
     } catch Error as err {
         ; Silently fail if anything goes wrong
-    } finally {
-        ; Hide the banner shortly after finishing
-        SetTimer(() => HideSmallLoadingIndicator_ChatGPT(), -900)
     }
 }
 
@@ -13017,24 +13007,25 @@ WaitForStopResponseButton_Gemini(timeout := 300000) {
                         }
                     }
                 }
-                
+
                 ; Button has disappeared - add confirmation layer
                 ; Wait 1.5 seconds and check if it reappears (to avoid false positives)
                 confirmationStart := A_TickCount
                 confirmationPeriod := 1500  ; 1.5 seconds
                 buttonReappeared := false
-                
+
                 ; Check multiple times during the confirmation period
-                while ((A_TickCount - confirmationStart) < confirmationPeriod) && (timeout <= 0 || (A_TickCount < deadline)) {
+                while ((A_TickCount - confirmationStart) < confirmationPeriod) && (timeout <= 0 || (A_TickCount <
+                    deadline)) {
                     Sleep 300
-                    
+
                     ; Check if button reappeared
                     try {
                         btn := uia.FindFirst({ Type: "50000", Name: "Stop response" })
                     } catch {
                         btn := ""
                     }
-                    
+
                     if !btn {
                         try {
                             btn := uia.FindFirst({ Type: "Button", Name: "Stop response" })
@@ -13042,7 +13033,7 @@ WaitForStopResponseButton_Gemini(timeout := 300000) {
                             btn := ""
                         }
                     }
-                    
+
                     if !btn {
                         try {
                             btn := uia.FindFirst({ Name: "Stop response", matchmode: "Substring" })
@@ -13050,14 +13041,14 @@ WaitForStopResponseButton_Gemini(timeout := 300000) {
                             btn := ""
                         }
                     }
-                    
+
                     if btn {
                         ; Button reappeared - break out of confirmation loop and continue monitoring
                         buttonReappeared := true
                         break  ; Exit confirmation loop, will continue outer monitoring loop
                     }
                 }
-                
+
                 ; If button didn't reappear during confirmation period, response is truly complete
                 if !buttonReappeared {
                     break  ; Exit the outer monitoring loop
