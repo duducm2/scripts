@@ -6629,11 +6629,18 @@ Excel_CSVToColumns(autoSelectSemicolon := false) {
     Sleep 200
     Excel_CSVToColumns(true)    ; Auto-select semicolon, bypass dialog
     Sleep 200
+    Send "^{Down}"
     Send "{Down}"
-    Sleep 200
-    Excel_RemoveRows(10)
-    Sleep 200
-    Send "^{Up}"
+    Send "{Shift down}"
+    Send "^{Down}"
+    Send "{Shift up}"
+    Send "{Alt}"
+    Send "3"
+    Send "r"
+    ; Send "{Down}"
+    ; Excel_RemoveRows(10)
+    ; Sleep 200
+    ; Send "^{Up}"
 }
 
 ; Shift + C : Turn CSV delimited by semicolon into columns (Alt, 0, 5, D, Enter, M, Enter, Enter)
