@@ -5254,11 +5254,31 @@ OnExit(CleanupDictationIndicator)
 ; First press starts dictation, second press stops and copies to clipboard
 ~#!+0::
 {
-    ; Optimization: Play start sound immediately if we are starting (not currently active)
-    ; The Audio Firewall in SafePlayDictationSound will prevent duplicate sounds
-    ; when the window detection logic fires shortly after.
+    global g_DictationActive, g_LastStateTransitionTick, g_DictationStartSound
+
+    ; Optimization: Immediate feedback loop
+    ; If we are starting dictation (currently inactive), trigger feedback immediately
+    ; instead of waiting for the window detection polling loop.
     if (!g_DictationActive) {
+        ; 1. Optimistically set state to prevent race conditions with the polling timer
+        g_DictationActive := true
+        g_LastStateTransitionTick := A_TickCount
+
+        ; 2. Visual Feedback: Show red square immediately
+        ShowDictationIndicator()
+        StartDictationPulseTimer()
+
+        ; 3. Audio Feedback: Play start sound immediately
         SafePlayDictationSound(g_DictationStartSound)
+
+        ; 4. System Prep: Ensure mic volume is up
+        try {
+            micVolumeScript := A_ScriptDir "\scripts\Set-MicVolume.ps1"
+            if (FileExist(micVolumeScript)) {
+                RunWait "powershell.exe -ExecutionPolicy Bypass -File `"" micVolumeScript "`"", , "Hide"
+            }
+        } catch {
+        }
     }
 
     ; Just trigger the check - chimes are handled by state transitions
