@@ -276,6 +276,13 @@ Outlook (Shift)
 🎯 [F][F]ocused / Other
 🔀 [K]Cycle bac[K]ward pane
 🔀 [L]Cyc[L]e forward pane
+📋 [M]Toggle Mail / Calendar
+
+⌨️ [Ctrl+1] Move down once and select
+⌨️ [Ctrl+2] Move down twice and select
+⌨️ [Ctrl+3] Move down three times and select
+⌨️ [Ctrl+4] Move down four times and select
+⌨️ [Ctrl+5] Move down five times and select
 )"  ; end Outlook
 
 ; --- Outlook Reminder window -------------------------------------------------
@@ -287,6 +294,12 @@ Outlook - Reminders (Shift)
 ⏰ [D]Snooze 1 [D]ay
 ❌ [X]E[X]it all reminders (Dismiss)
 🌐 [J][J]oin Online
+
+⌨️ [Ctrl+1] Move down once and select
+⌨️ [Ctrl+2] Move down twice and select
+⌨️ [Ctrl+3] Move down three times and select
+⌨️ [Ctrl+4] Move down four times and select
+⌨️ [Ctrl+5] Move down five times and select
 )"  ; end Outlook Reminder
 
 ; --- Outlook Appointment window ---------------------------------------------
@@ -305,6 +318,12 @@ Outlook - Appointment (Shift)
 📝 [B][B]ody
 🔄 [C]Make Re[C]urring
 🧙 [W][W]izard (configure)
+
+⌨️ [Ctrl+1] Move down once and select
+⌨️ [Ctrl+2] Move down twice and select
+⌨️ [Ctrl+3] Move down three times and select
+⌨️ [Ctrl+4] Move down four times and select
+⌨️ [Ctrl+5] Move down five times and select
 )"  ; end Outlook Appointment
 
 ; --- Outlook Message window ---------------------------------------------------
@@ -314,6 +333,12 @@ Outlook - Message (Shift)
 📝 [S][S]ubject / Title
 👥 [T][T]o / Required
 📝 [B][B]ody (Location → Body)
+
+⌨️ [Ctrl+1] Move down once and select
+⌨️ [Ctrl+2] Move down twice and select
+⌨️ [Ctrl+3] Move down three times and select
+⌨️ [Ctrl+4] Move down four times and select
+⌨️ [Ctrl+5] Move down five times and select
 )"  ; end Outlook Message
 
 ; --- Microsoft Teams â€" meeting window --------------------------------------
@@ -2628,6 +2653,46 @@ Confirm(t) {
     }
 }
 
+; Ctrl + 1 : Move down once and select (Command Palette)
+^1:: {
+    Send "{Down}"
+    Send "{Enter}"
+}
+
+; Ctrl + 2 : Move down twice and select (Command Palette)
+^2:: {
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
+}
+
+; Ctrl + 3 : Move down three times and select (Command Palette)
+^3:: {
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
+}
+
+; Ctrl + 4 : Move down four times and select (Command Palette)
+^4:: {
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
+}
+
+; Ctrl + 5 : Move down five times and select (Command Palette)
+^5:: {
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
+}
+
 #HotIf
 
 ;-------------------------------------------------------------------
@@ -4784,6 +4849,46 @@ SelectExplorerSidebarFirstPinned() {
     }
 }
 
+; Ctrl + 1 : Move down once and select (Command Palette)
+^1:: {
+    Send "{Down}"
+    Send "{Enter}"
+}
+
+; Ctrl + 2 : Move down twice and select (Command Palette)
+^2:: {
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
+}
+
+; Ctrl + 3 : Move down three times and select (Command Palette)
+^3:: {
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
+}
+
+; Ctrl + 4 : Move down four times and select (Command Palette)
+^4:: {
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
+}
+
+; Ctrl + 5 : Move down five times and select (Command Palette)
+^5:: {
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
+}
+
 #HotIf
 
 ; Appointment/Meeting inspector-specific hotkeys
@@ -5802,6 +5907,46 @@ RunOutlookAppointmentWizard() {
         return
     }
     RunOutlookAppointmentWizard()
+}
+
+; Ctrl + 1 : Move down once and select (Command Palette)
+^1:: {
+    Send "{Down}"
+    Send "{Enter}"
+}
+
+; Ctrl + 2 : Move down twice and select (Command Palette)
+^2:: {
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
+}
+
+; Ctrl + 3 : Move down three times and select (Command Palette)
+^3:: {
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
+}
+
+; Ctrl + 4 : Move down four times and select (Command Palette)
+^4:: {
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
+}
+
+; Ctrl + 5 : Move down five times and select (Command Palette)
+^5:: {
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Down}"
+    Send "{Enter}"
 }
 
 #HotIf
@@ -13811,6 +13956,182 @@ IsFileDialogActive() {
 
 ; Shift + K : Add/Edit Link (Alt+Ctrl+K)
 +k:: Send "!^k"
+
+; Shift + X : Close sidebar - Close sidebar
++x:: {
+    try {
+        uia := UIA_Browser()
+        if !IsObject(uia) {
+            ; Fallback: try keyboard shortcut if UIA fails
+            Send "^+s"
+            return
+        }
+
+        ; Retry logic: Try multiple times with delays to allow UI to load
+        maxRetries := 3
+        retryDelay := 300  ; milliseconds between retries
+        closeButton := ""
+
+        loop maxRetries {
+            ; Strategy 1: Find by Name "Close sidebar" with Type Button (50000)
+            try {
+                closeButton := uia.FindFirst({ Type: "50000", Name: "Close sidebar", cs: false })
+                if (closeButton) {
+                    ; Verify button is valid
+                    try {
+                        btnName := closeButton.Name
+                        if (btnName) {
+                            break  ; Found valid button, exit retry loop
+                        }
+                    } catch {
+                        closeButton := ""
+                    }
+                }
+            } catch {
+            }
+
+            ; Strategy 2: Try case-sensitive search
+            if (!closeButton) {
+                try {
+                    closeButton := uia.FindFirst({ Type: "50000", Name: "Close sidebar" })
+                    if (closeButton) {
+                        try {
+                            btnName := closeButton.Name
+                            if (btnName) {
+                                break
+                            }
+                        } catch {
+                            closeButton := ""
+                        }
+                    }
+                } catch {
+                }
+            }
+
+            ; Strategy 3: Try by ControlType "Button" and Name substring
+            if (!closeButton) {
+                try {
+                    closeButton := uia.FindFirst({ ControlType: "Button", Name: "Close sidebar", matchmode: "Substring" })
+                    if (closeButton) {
+                        try {
+                            btnName := closeButton.Name
+                            if (btnName) {
+                                break
+                            }
+                        } catch {
+                            closeButton := ""
+                        }
+                    }
+                } catch {
+                }
+            }
+
+            ; Strategy 4: Search all buttons and find by name match
+            if (!closeButton) {
+                try {
+                    allButtons := uia.FindAll({ Type: "50000" })
+                    for button in allButtons {
+                        try {
+                            btnName := button.Name
+                            if (InStr(btnName, "Close sidebar") || InStr(btnName, "close sidebar")) {
+                                closeButton := button
+                                break
+                            }
+                        } catch {
+                            continue
+                        }
+                    }
+                    if (closeButton) {
+                        break
+                    }
+                } catch {
+                }
+            }
+
+            Sleep retryDelay  ; Wait before next attempt
+        }
+
+        ; Confirmation layer: Verify button was found before clicking
+        if (closeButton) {
+            ; Additional verification: ensure button is still valid and clickable
+            try {
+                ; Check if button is enabled and visible
+                isEnabled := closeButton.GetPropertyValue(UIA.Property.IsEnabled)
+                isOffscreen := closeButton.GetPropertyValue(UIA.Property.IsOffscreen)
+                
+                if (!isEnabled || isOffscreen) {
+                    ; Button found but not usable, try keyboard shortcut fallback
+                    Send "^+s"
+                    return
+                }
+            } catch {
+                ; Property check failed, continue with click attempt
+            }
+
+            ; Try multiple click strategies in order of preference
+            clicked := false
+
+            ; Strategy 1: Try Invoke pattern (most reliable for buttons)
+            try {
+                closeButton.Invoke()
+                clicked := true
+            } catch {
+            }
+
+            ; Strategy 2: Try SetFocus then Click
+            if (!clicked) {
+                try {
+                    closeButton.SetFocus()
+                    Sleep 50
+                    closeButton.Click()
+                    clicked := true
+                } catch {
+                }
+            }
+
+            ; Strategy 3: Force coordinate-based click using "left" parameter
+            if (!clicked) {
+                try {
+                    closeButton.Click("left")
+                    clicked := true
+                } catch {
+                }
+            }
+
+            ; Strategy 4: Direct coordinate click using element Location
+            if (!clicked) {
+                try {
+                    pos := closeButton.Location
+                    if (pos && pos.w > 0 && pos.h > 0) {
+                        ; Save current mouse position
+                        MouseGetPos(&prevX, &prevY)
+
+                        ; Click at center of element
+                        CoordMode("Mouse", "Screen")
+                        Click(pos.x + pos.w // 2, pos.y + pos.h // 2)
+                        Sleep 50
+
+                        ; Restore mouse position
+                        MouseMove(prevX, prevY)
+                        clicked := true
+                    }
+                } catch {
+                }
+            }
+
+            ; If all click strategies failed, use keyboard shortcut fallback
+            if (!clicked) {
+                Send "^+s"
+            }
+        } else {
+            ; Button not found after all retries, use keyboard shortcut fallback
+            Send "^+s"
+        }
+    } catch Error as err {
+        ; If any error occurs, use keyboard shortcut as fallback
+        Send "^+s"
+    }
+}
 
 #HotIf
 

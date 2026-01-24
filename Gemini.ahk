@@ -926,172 +926,76 @@ InitializeGeminiFirstTime() {
     if hwnd := GetGeminiWindowHwnd() {
         WinActivate("ahk_id " hwnd)
         if WinWaitActive("ahk_id " hwnd, , 2) {
-            CenterMouse()
-
-            ; Focus the Gemini prompt field - optimized for speed
-            Sleep 150  ; small settle per README (keep snappy)
+            ; Focus the Gemini prompt field using Anchor & Backtrack strategy
+            ; Strategy: Find "Open upload file menu" button (anchor), focus it, then Shift+Tab to prompt field
             uia := UIA_Browser()
-            Sleep 120  ; minimal settle before querying UIA
+            Sleep 80   ; combined settle time for UIA initialization
 
-            promptField := 0
-
-            ; Strategy 1: Direct find by Name and Type (most reliable)
+            ; Find the anchor element: "Open upload file menu" button
+            ; Combined search: Try exact match first, then case-insensitive (most efficient)
+            anchorButton := 0
             try {
-                promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
-                ; Verify ClassName if found - should contain at least one of the expected patterns
-                if (promptField) {
-                    cls := promptField.ClassName
-                    ; Keep if it contains either pattern, reset only if both are missing
-                    if (!InStr(cls, "ql-editor") && !InStr(cls, "new-input-ui")) {
-                        promptField := 0
-                    }
+                anchorButton := uia.FindFirst({ Type: "50000", Name: "Open upload file menu", ControlType: "Button" })
+                if (!anchorButton) {
+                    anchorButton := uia.FindFirst({ Type: "50000", Name: "Open upload file menu", cs: false })
                 }
             } catch {
             }
 
-            ; Strategy 2: Find by "Ask Gemini" text label (Type: 50020), then navigate to edit field
-            ; This handles work environment where the label may be "Ask Gemini 3" or other variants
-            if (!promptField) {
+            ; Fallback: Only use expensive FindAll if first two strategies failed
+            if (!anchorButton) {
                 try {
-                    ; First try direct search for text elements containing "Ask Gemini"
-                    askGeminiText := 0
-                    try {
-                        askGeminiText := uia.FindFirst({ Type: 50020, Name: "Ask Gemini" })
-                    } catch {
-                    }
-                    
-                    ; If direct search failed, try finding by substring match in all text elements
-                    if (!askGeminiText) {
-                        allTextElements := uia.FindAll({ Type: 50020 })
-                        for textElem in allTextElements {
-                            textName := textElem.Name
-                            ; Check for "Ask Gemini" variants (work environment may use "Ask Gemini 3" or similar)
-                            ; Also check for "horse" as mentioned in requirements
-                            if (InStr(textName, "Ask Gemini", false) || InStr(textName, "horse", false)) {
-                                askGeminiText := textElem
+                    allButtons := uia.FindAll({ Type: "50000" })
+                    for button in allButtons {
+                        try {
+                            if (InStr(button.Name, "Open upload file menu", false)) {
+                                anchorButton := button
                                 break
                             }
-                        }
-                    }
-                    
-                    ; If we found the "Ask Gemini" text element, navigate to the edit field
-                    if (askGeminiText) {
-                        textElem := askGeminiText
-                        ; Method 1: Try NextSibling
-                        try {
-                            sibling := textElem.Navigate("NextSibling")
-                            if (sibling && sibling.Type == 50004) {
-                                promptField := sibling
-                            }
                         } catch {
-                        }
-                        
-                        ; Method 2: Try Parent's children (if Method 1 didn't work)
-                        if (!promptField) {
-                            try {
-                                parent := textElem.Navigate("Parent")
-                                if (parent) {
-                                    children := parent.FindAll({ Type: 50004 })
-                                    if (children.Length > 0) {
-                                        ; Get the first edit field (usually the prompt field)
-                                        promptField := children[1]
-                                    }
-                                }
-                            } catch {
-                            }
-                        }
-                        
-                        ; Method 3: Search all edit fields and find one near this text element (if Methods 1-2 didn't work)
-                        if (!promptField) {
-                            try {
-                                allEdits := uia.FindAll({ Type: 50004 })
-                                textPos := textElem.Location
-                                for edit in allEdits {
-                                    editPos := edit.Location
-                                    ; Check if edit is below or near the text element
-                                    if (editPos.y >= textPos.y && editPos.y < textPos.y + 200) {
-                                        cls := edit.ClassName
-                                        if (InStr(cls, "ql-editor") || InStr(cls, "new-input-ui")) {
-                                            promptField := edit
-                                            break
-                                        }
-                                    }
-                                }
-                            } catch {
-                            }
+                            continue
                         }
                     }
                 } catch {
                 }
             }
 
-            ; Strategy 3: Fallback to scoring-based approach (original fallback)
-            if (!promptField) {
+            if (anchorButton) {
+                ; Focus the anchor button (do NOT click) and navigate back
                 try {
-                    allEdits := uia.FindAll({ Type: 50004 })
-                    best := 0, bestScore := -1
-                    for edit in allEdits {
-                        cls := edit.ClassName
-                        name := edit.Name
-                        score := 0
-                        if InStr(cls, "ql-editor")
-                            score += 3
-                        if InStr(cls, "new-input-ui")
-                            score += 2
-                        if InStr(name, "Enter a prompt")
-                            score += 3
-                        else if InStr(name, "prompt")
-                            score += 2
-                        else if InStr(name, "Digite um prompt")
-                            score += 2
-                        if (score > bestScore) {
-                            bestScore := score
-                            best := edit
-                        }
-                    }
-                    if (bestScore >= 0) {
-                        promptField := best
+                    anchorButton.SetFocus()
+                    Sleep 25   ; minimal wait for focus
+                    SendInput "+{Tab}"  ; Use SendInput for faster keystroke
+                    Sleep 15   ; minimal delay for navigation
+                    
+                    ; Play sound (non-blocking, no try-catch needed - SoundPlay is safe)
+                    if (IsSoundEnabled()) {
+                        SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
                     }
                 } catch {
-                }
-            }
-
-            if (promptField) {
-                ; Check if field is already focused - if so, play sound and return
-                if (promptField.HasKeyboardFocus) {
+                    ; Fallback: direct prompt field search if anchor strategy fails
                     try {
+                        promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
+                        if (promptField) {
+                            promptField.SetFocus()
+                            if (IsSoundEnabled()) {
+                                SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
+                            }
+                        }
+                    } catch {
+                    }
+                }
+            } else {
+                ; Fallback: direct prompt field search if anchor not found
+                try {
+                    promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
+                    if (promptField) {
+                        promptField.SetFocus()
                         if (IsSoundEnabled()) {
                             SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
                         }
-                    } catch {
-                        ; Silently ignore sound errors
                     }
-                    return
-                }
-
-                ; Set focus and verify it was successful
-                promptField.SetFocus()
-                Sleep 50 ; Small delay for focus to take effect
-
-                ; Robust verification: Check HasKeyboardFocus and retry if needed
-                maxRetries := 3
-                retryCount := 0
-                while (!promptField.HasKeyboardFocus && retryCount < maxRetries) {
-                    ; Fallback: try clicking if SetFocus didn't work
-                    promptField.Click()
-                    Sleep 50
-                    retryCount++
-                }
-
-                ; Play sound only after focus is explicitly verified
-                if (promptField.HasKeyboardFocus) {
-                    try {
-                        if (IsSoundEnabled()) {
-                            SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
-                        }
-                    } catch {
-                        ; Silently ignore sound errors
-                    }
+                } catch {
                 }
             }
         }
