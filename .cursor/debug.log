@@ -1,96 +1,221 @@
-{"id":"log_15188312_3096","timestamp":15188312,"location":"Shift keys.ahk:1727","message":"WaitForButton entry","data":{"pattern":"i)^(Main menu|Menu principal)$","timeout":1500},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
-{"id":"log_15188437_6734","timestamp":15188437,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":110},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
-{"id":"log_15188437_8879","timestamp":15188437,"location":"Shift keys.ahk:1770","message":"Matching button found","data":{"name":"Main menu","className":"","hasClassName":0,"supportsInvoke":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C"}
-{"id":"log_15188468_6971","timestamp":15188468,"location":"Shift keys.ahk:1813","message":"WaitForButton returning button","data":{"name":"Main menu","className":"","type":"50000","score":5},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}
-{"id":"log_20438718_6376","timestamp":20438718,"location":"Shift keys.ahk:1727","message":"WaitForButton entry","data":{"pattern":"i)^(Main menu|Menu principal)$","timeout":1500},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
-{"id":"log_20438828_6461","timestamp":20438828,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":112},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
-{"id":"log_20438828_1434","timestamp":20438828,"location":"Shift keys.ahk:1770","message":"Matching button found","data":{"name":"Main menu","className":"","hasClassName":0,"supportsInvoke":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C"}
-{"id":"log_20438875_9156","timestamp":20438875,"location":"Shift keys.ahk:1813","message":"WaitForButton returning button","data":{"name":"Main menu","className":"","type":"50000","score":5},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}
-<<<<<<< HEAD
-{"id":"log_470034203_5335","timestamp":470034203,"location":"Shift keys.ahk:1727","message":"WaitForButton entry","data":{"pattern":"i)^Enter Full[- ]?screen$","timeout":500},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
-{"id":"log_470034250_9531","timestamp":470034250,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":221},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
-{"id":"log_470034281_2635","timestamp":470034281,"location":"Shift keys.ahk:1770","message":"Matching button found","data":{"name":"Enter Full screen","className":"Button-sc-1dqy6lx-0 fprjoI e-91000-overflow-wrap-anywhere e-91000-button-tertiary--icon-only pJ7RQa2Lqdi9JOvfKGAA","hasClassName":1,"supportsInvoke":0},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C"}
-{"id":"log_470034312_6600","timestamp":470034312,"location":"Shift keys.ahk:1813","message":"WaitForButton returning button","data":{"name":"Enter Full screen","className":"Button-sc-1dqy6lx-0 fprjoI e-91000-overflow-wrap-anywhere e-91000-button-tertiary--icon-only pJ7RQa2Lqdi9JOvfKGAA","type":"50000","score":10},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}
-{"id":"log_473007312_3558","timestamp":473007312,"location":"Shift keys.ahk:1727","message":"WaitForButton entry","data":{"pattern":"i)^Enter Full[- ]?screen$","timeout":500},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
-{"id":"log_473007343_7868","timestamp":473007343,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":87},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
-{"id":"log_473007437_2773","timestamp":473007437,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":87},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
-{"id":"log_473007531_8563","timestamp":473007531,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":87},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
-{"id":"log_473007609_1480","timestamp":473007609,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":87},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
-{"id":"log_473007718_6339","timestamp":473007718,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":87},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
-{"id":"log_473007828_6948","timestamp":473007828,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":87},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
-{"id":"log_473007906_3919","timestamp":473007906,"location":"Shift keys.ahk:1818","message":"WaitForButton timeout - no button found","data":{"pattern":"i)^Enter Full[- ]?screen$"},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
-{"id":"log_473007906_7886","timestamp":473007906,"location":"Shift keys.ahk:1727","message":"WaitForButton entry","data":{"pattern":"i)^Exit Full[- ]?screen$","timeout":500},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
-{"id":"log_473007937_1033","timestamp":473007937,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":87},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
-{"id":"log_473007984_1279","timestamp":473007984,"location":"Shift keys.ahk:1770","message":"Matching button found","data":{"name":"Exit full screen","className":"Button-sc-1dqy6lx-0 fprjoI e-91000-overflow-wrap-anywhere e-91000-button-tertiary--icon-only pJ7RQa2Lqdi9JOvfKGAA","hasClassName":1,"supportsInvoke":0},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C"}
-{"id":"log_473007984_2847","timestamp":473007984,"location":"Shift keys.ahk:1770","message":"Matching button found","data":{"name":"Exit full screen","className":"Button-sc-1dqy6lx-0 fprjoI e-91000-overflow-wrap-anywhere e-91000-button-tertiary--icon-only zJPU_JpC13g8CJ_tgKIV","hasClassName":1,"supportsInvoke":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C"}
-{"id":"log_473008015_1020","timestamp":473008015,"location":"Shift keys.ahk:1813","message":"WaitForButton returning button","data":{"name":"Exit full screen","className":"Button-sc-1dqy6lx-0 fprjoI e-91000-overflow-wrap-anywhere e-91000-button-tertiary--icon-only zJPU_JpC13g8CJ_tgKIV","type":"50000","score":15},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}
-{"id":"log_473018421_9706","timestamp":473018421,"location":"Shift keys.ahk:1727","message":"WaitForButton entry","data":{"pattern":"i)^Enter Full[- ]?screen$","timeout":500},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
-{"id":"log_473018468_6390","timestamp":473018468,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":92},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
-{"id":"log_473018484_5289","timestamp":473018484,"location":"Shift keys.ahk:1770","message":"Matching button found","data":{"name":"Enter Full screen","className":"Button-sc-1dqy6lx-0 fprjoI e-91000-overflow-wrap-anywhere e-91000-button-tertiary--icon-only pJ7RQa2Lqdi9JOvfKGAA","hasClassName":1,"supportsInvoke":0},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C"}
-{"id":"log_473018500_7027","timestamp":473018500,"location":"Shift keys.ahk:1770","message":"Matching button found","data":{"name":"Enter Full screen","className":"Button-sc-1dqy6lx-0 fprjoI e-91000-overflow-wrap-anywhere e-91000-button-tertiary--icon-only zJPU_JpC13g8CJ_tgKIV","hasClassName":1,"supportsInvoke":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C"}
-{"id":"log_473018515_3134","timestamp":473018515,"location":"Shift keys.ahk:1813","message":"WaitForButton returning button","data":{"name":"Enter Full screen","className":"Button-sc-1dqy6lx-0 fprjoI e-91000-overflow-wrap-anywhere e-91000-button-tertiary--icon-only zJPU_JpC13g8CJ_tgKIV","type":"50000","score":15},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}
-{"id":"log_473023171_5180","timestamp":473023171,"location":"Shift keys.ahk:1727","message":"WaitForButton entry","data":{"pattern":"i)^Enter Full[- ]?screen$","timeout":500},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
-{"id":"log_473023187_4516","timestamp":473023187,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":87},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
-{"id":"log_473023265_2806","timestamp":473023265,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":87},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
-{"id":"log_473023343_7854","timestamp":473023343,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":87},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
-{"id":"log_473023421_2276","timestamp":473023421,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":87},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
-{"id":"log_473023515_3008","timestamp":473023515,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":87},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
-{"id":"log_473023593_8227","timestamp":473023593,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":87},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
-{"id":"log_473023687_2257","timestamp":473023687,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":87},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
-{"id":"log_473023750_6986","timestamp":473023750,"location":"Shift keys.ahk:1818","message":"WaitForButton timeout - no button found","data":{"pattern":"i)^Enter Full[- ]?screen$"},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
-{"id":"log_473023750_4033","timestamp":473023750,"location":"Shift keys.ahk:1727","message":"WaitForButton entry","data":{"pattern":"i)^Exit Full[- ]?screen$","timeout":500},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
-{"id":"log_473023781_4880","timestamp":473023781,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":87},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
-{"id":"log_473023812_6619","timestamp":473023812,"location":"Shift keys.ahk:1770","message":"Matching button found","data":{"name":"Exit full screen","className":"Button-sc-1dqy6lx-0 fprjoI e-91000-overflow-wrap-anywhere e-91000-button-tertiary--icon-only pJ7RQa2Lqdi9JOvfKGAA","hasClassName":1,"supportsInvoke":0},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C"}
-{"id":"log_473023812_9192","timestamp":473023812,"location":"Shift keys.ahk:1770","message":"Matching button found","data":{"name":"Exit full screen","className":"Button-sc-1dqy6lx-0 fprjoI e-91000-overflow-wrap-anywhere e-91000-button-tertiary--icon-only zJPU_JpC13g8CJ_tgKIV","hasClassName":1,"supportsInvoke":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C"}
-{"id":"log_473023828_8136","timestamp":473023828,"location":"Shift keys.ahk:1813","message":"WaitForButton returning button","data":{"name":"Exit full screen","className":"Button-sc-1dqy6lx-0 fprjoI e-91000-overflow-wrap-anywhere e-91000-button-tertiary--icon-only zJPU_JpC13g8CJ_tgKIV","type":"50000","score":15},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}
-{"id":"log_602242187_6460","timestamp":602242187,"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
-{"id":"log_602242781_4495","timestamp":602242781,"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
-{"id":"log_602246859_7628","timestamp":602246859,"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
-{"id":"log_602247343_7493","timestamp":602247343,"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
-{"id":"log_602255125_6169","timestamp":602255125,"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
-{"id":"log_602257500_5324","timestamp":602257500,"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
-{"id":"log_602257968_2514","timestamp":602257968,"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
-{"id":"log_602295265_2950","timestamp":602295265,"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
-{"id":"log_602295859_7379","timestamp":602295859,"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
-{"id":"log_602299734_3186","timestamp":602299734,"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
-{"id":"log_602300218_5360","timestamp":602300218,"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
-{"id":"log_602355031_7963","timestamp":602355031,"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
-{"id":"log_602355562_4820","timestamp":602355562,"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
-{"id":"log_602428875_1595","timestamp":602428875,"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
-{"id":"log_602429406_3539","timestamp":602429406,"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
-{"id":"log_602457687_8597","timestamp":602457687,"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
-{"id":"log_602458234_8675","timestamp":602458234,"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
-=======
-{"id":"log_6456859_7660","timestamp":6456859,"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
-{"id":"log_6459906_1021","timestamp":6459906,"location":"Shift keys.ahk:9822","message":"TryAttachBrowser chrome failed, trying edge","data":{"error":"0"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
-{"id":"log_6459906_4949","timestamp":6459906,"location":"Shift keys.ahk:9837","message":"TryAttachBrowser failed both browsers","data":{"error":"183"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
-{"id":"log_6461609_1290","timestamp":6461609,"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
-{"id":"log_6462921_9209","timestamp":6462921,"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
-{"id":"log_6505734_2350","timestamp":6505734,"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
-{"id":"log_6507093_8969","timestamp":6507093,"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
-{"id":"log_6547062_2301","timestamp":6547062,"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
-{"id":"log_6548375_4399","timestamp":6548375,"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
-{"id":"log_6551031_2251","timestamp":6551031,"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
-{"id":"log_6551640_7125","timestamp":6551640,"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
-{"id":"log_6567656_3914","timestamp":6567656,"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
-{"id":"log_6570656_9421","timestamp":6570656,"location":"Shift keys.ahk:9822","message":"TryAttachBrowser chrome failed, trying edge","data":{"error":"0"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
-{"id":"log_6570671_4040","timestamp":6570671,"location":"Shift keys.ahk:9837","message":"TryAttachBrowser failed both browsers","data":{"error":"183"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
-{"id":"log_6572031_2300","timestamp":6572031,"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
-{"id":"log_6572640_9536","timestamp":6572640,"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
-{"id":"log_6584343_1655","timestamp":6584343,"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
-{"id":"log_6585000_4236","timestamp":6585000,"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
-{"id":"log_14544015_1675","timestamp":14544015,"location":"Shift keys.ahk:1727","message":"WaitForButton entry","data":{"pattern":"i)^(Voice message|Record voice message)$","timeout":3000},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
-{"id":"log_14544265_3826","timestamp":14544265,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":56},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
-{"id":"log_14544281_3524","timestamp":14544281,"location":"Shift keys.ahk:1770","message":"Matching button found","data":{"name":"Voice message","className":"","hasClassName":0,"supportsInvoke":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C"}
-{"id":"log_14544281_4882","timestamp":14544281,"location":"Shift keys.ahk:1770","message":"Matching button found","data":{"name":"Voice message","className":"","hasClassName":0,"supportsInvoke":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C"}
-{"id":"log_14544296_9650","timestamp":14544296,"location":"Shift keys.ahk:1813","message":"WaitForButton returning button","data":{"name":"Voice message","className":"","type":"50000","score":5},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}
-{"id":"log_14554875_9978","timestamp":14554875,"location":"Shift keys.ahk:1727","message":"WaitForButton entry","data":{"pattern":"i)^(Send|Stop recording)$","timeout":3000},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
-{"id":"log_14555359_1159","timestamp":14555359,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":61},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
-{"id":"log_14555390_6066","timestamp":14555390,"location":"Shift keys.ahk:1770","message":"Matching button found","data":{"name":"Send","className":"","hasClassName":0,"supportsInvoke":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C"}
-{"id":"log_14555390_4009","timestamp":14555390,"location":"Shift keys.ahk:1770","message":"Matching button found","data":{"name":"Send","className":"","hasClassName":0,"supportsInvoke":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C"}
-{"id":"log_14555421_1729","timestamp":14555421,"location":"Shift keys.ahk:1813","message":"WaitForButton returning button","data":{"name":"Send","className":"","type":"50000","score":8},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}
-{"id":"log_22910343_7358","timestamp":22910343,"location":"Shift keys.ahk:1727","message":"WaitForButton entry","data":{"pattern":"i)^(Main menu|Menu principal)$","timeout":1500},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
-{"id":"log_22910515_5046","timestamp":22910515,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":108},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
-{"id":"log_22910515_5740","timestamp":22910515,"location":"Shift keys.ahk:1770","message":"Matching button found","data":{"name":"Main menu","className":"","hasClassName":0,"supportsInvoke":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C"}
-{"id":"log_22910562_4811","timestamp":22910562,"location":"Shift keys.ahk:1813","message":"WaitForButton returning button","data":{"name":"Main menu","className":"","type":"50000","score":5},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}
->>>>>>> eac0d7d68f593958ac0013dc96648b819f39324c
+{"sessionId":"debug-session", "hypothesisId":"A", "location":"FoldAllDirectoriesInExplorer:9677", "message":"Entering FoldAllDirectoriesInExplorer", "timestamp":616200234}
+{"sessionId":"debug-session", "hypothesisId":"B", "location":"FoldAllDirectoriesInExplorer:9752", "message":"Items found", "data":{"count":32, "iteration":1}, "timestamp":616200468}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"images", "state":0}, "timestamp":616200468}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"pictures", "state":0}, "timestamp":616200500}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"scripts", "state":0}, "timestamp":616200515}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"sounds", "state":1}, "timestamp":616200531}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"copy.wav", "state":3}, "timestamp":616200671}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Collapse Error", "data":{"error":"Invalid IUnknown interface pointer"}, "timestamp":616200718}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Collapse Error", "data":{"error":"Invalid IUnknown interface pointer"}, "timestamp":616200734}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Collapse Error", "data":{"error":"Invalid IUnknown interface pointer"}, "timestamp":616200750}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Collapse Error", "data":{"error":"Invalid IUnknown interface pointer"}, "timestamp":616200765}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Collapse Error", "data":{"error":"Invalid IUnknown interface pointer"}, "timestamp":616200781}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Collapse Error", "data":{"error":"Invalid IUnknown interface pointer"}, "timestamp":616200796}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Collapse Error", "data":{"error":"Invalid IUnknown interface pointer"}, "timestamp":616200812}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":".cursor", "state":0}, "timestamp":616200828}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"data", "state":0}, "timestamp":616200843}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"docs", "state":0}, "timestamp":616200859}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"UIA-v2", "state":0}, "timestamp":616200875}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":".gitignore", "state":3}, "timestamp":616200890}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Act.ahk", "state":3}, "timestamp":616201000}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"AppLaunchers.ahk", "state":3}, "timestamp":616201140}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"cursor-tree.txt", "state":3}, "timestamp":616201265}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"cursor-tree2.txt", "state":3}, "timestamp":616201421}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"env.ahk", "state":3}, "timestamp":616201562}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Gemini.ahk", "state":3}, "timestamp":616201718}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Microsoft Teams.ahk", "state":3}, "timestamp":616201859}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"outlook-tree.ahk", "state":3}, "timestamp":616202000}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Outlook.ahk", "state":3}, "timestamp":616202156}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"README.md", "state":3}, "timestamp":616202281}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Shift keys.ahk", "state":3}, "timestamp":616202421}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"sound-audit.md", "state":3}, "timestamp":616202609}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Spotify.ahk", "state":3}, "timestamp":616202750}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Utils.ahk", "state":3}, "timestamp":616202890}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"WindowManagement.ahk", "state":3}, "timestamp":616203046}
+{"sessionId":"debug-session", "hypothesisId":"B", "location":"FoldAllDirectoriesInExplorer:9752", "message":"Items found", "data":{"count":24, "iteration":2}, "timestamp":616203250}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":".cursor", "state":0}, "timestamp":616203250}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"data", "state":0}, "timestamp":616203281}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"images", "state":0}, "timestamp":616203312}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"pictures", "state":0}, "timestamp":616203328}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"scripts", "state":0}, "timestamp":616203343}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"sounds", "state":0}, "timestamp":616203375}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"UIA-v2", "state":0}, "timestamp":616203390}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":".gitignore", "state":3}, "timestamp":616203406}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Act.ahk", "state":3}, "timestamp":616203578}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"AppLaunchers.ahk", "state":3}, "timestamp":616203734}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"cursor-tree.txt", "state":3}, "timestamp":616203890}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"cursor-tree2.txt", "state":3}, "timestamp":616204062}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"env.ahk", "state":3}, "timestamp":616204187}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Gemini.ahk", "state":3}, "timestamp":616204343}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Microsoft Teams.ahk", "state":3}, "timestamp":616204484}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"outlook-tree.ahk", "state":3}, "timestamp":616204625}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Outlook.ahk", "state":3}, "timestamp":616204750}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"README.md", "state":3}, "timestamp":616204906}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Shift keys.ahk", "state":3}, "timestamp":616205062}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"sound-audit.md", "state":3}, "timestamp":616205203}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Spotify.ahk", "state":3}, "timestamp":616205375}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Utils.ahk", "state":3}, "timestamp":616205515}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"WindowManagement.ahk", "state":3}, "timestamp":616205687}
+{"sessionId":"debug-session", "hypothesisId":"B", "location":"FoldAllDirectoriesInExplorer:9752", "message":"Items found", "data":{"count":24, "iteration":3}, "timestamp":616205906}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":".cursor", "state":0}, "timestamp":616205906}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"data", "state":0}, "timestamp":616205937}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"docs", "state":0}, "timestamp":616205953}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"images", "state":0}, "timestamp":616205968}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"pictures", "state":0}, "timestamp":616205984}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"scripts", "state":0}, "timestamp":616206000}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"sounds", "state":0}, "timestamp":616206015}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"UIA-v2", "state":0}, "timestamp":616206062}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":".gitignore", "state":3}, "timestamp":616206078}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Act.ahk", "state":3}, "timestamp":616206218}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"AppLaunchers.ahk", "state":3}, "timestamp":616206359}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"cursor-tree.txt", "state":3}, "timestamp":616206484}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"cursor-tree2.txt", "state":3}, "timestamp":616206640}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"env.ahk", "state":3}, "timestamp":616206796}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Gemini.ahk", "state":3}, "timestamp":616206968}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Microsoft Teams.ahk", "state":3}, "timestamp":616207093}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"outlook-tree.ahk", "state":3}, "timestamp":616207234}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Outlook.ahk", "state":3}, "timestamp":616207406}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"README.md", "state":3}, "timestamp":616207562}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Shift keys.ahk", "state":3}, "timestamp":616207703}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"sound-audit.md", "state":3}, "timestamp":616207859}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Spotify.ahk", "state":3}, "timestamp":616208000}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Utils.ahk", "state":3}, "timestamp":616208140}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"WindowManagement.ahk", "state":3}, "timestamp":616208281}
+{"sessionId":"debug-session", "hypothesisId":"A", "location":"FoldAllDirectoriesInExplorer:9677", "message":"Entering FoldAllDirectoriesInExplorer", "timestamp":616245031}
+{"sessionId":"debug-session", "hypothesisId":"B", "location":"FoldAllDirectoriesInExplorer:9752", "message":"Items found", "data":{"count":34, "iteration":1}, "timestamp":616245390}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":".crossnote", "state":0}, "timestamp":616245390}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":".cursor", "state":0}, "timestamp":616245406}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":".vscode", "state":0}, "timestamp":616245421}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"agentic-ai", "state":0}, "timestamp":616245437}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"backend", "state":0}, "timestamp":616245453}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"frontend", "state":0}, "timestamp":616245468}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"infoVis", "state":1}, "timestamp":616245484}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"data", "state":1}, "timestamp":616245625}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"introducao.tex", "state":3}, "timestamp":616245812}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"levantamento.aux", "state":3}, "timestamp":616245953}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"sus_subscale", "state":0}, "timestamp":616246093}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"top-bottom-attributes-small-multiples-americanas", "state":0}, "timestamp":616246109}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"top-bottom-attributes-small-multiples-analysis", "state":0}, "timestamp":616246125}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"top-bottom-attributes-small-multiples-kabum", "state":0}, "timestamp":616246140}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"top-bottom-attributes-small-multiples-madeira-madeira", "state":0}, "timestamp":616246156}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"weight-comparison-matrix", "state":0}, "timestamp":616246171}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"weight-score-comparison-matrix-americanas", "state":0}, "timestamp":616246187}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"weight-score-comparison-matrix-comparative-analysis", "state":0}, "timestamp":616246203}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"weight-score-comparison-matrix-kabum", "state":0}, "timestamp":616246218}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"latex", "state":0}, "timestamp":616246234}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"reactive-ai", "state":1}, "timestamp":616246250}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"weight-score-comparison-matrix-madeiramadeira", "state":0}, "timestamp":616246390}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"styles", "state":1}, "timestamp":616246406}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"main.md", "state":3}, "timestamp":616246546}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"results", "state":1}, "timestamp":616246671}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Collapse Error", "data":{"error":"Invalid IUnknown interface pointer"}, "timestamp":616246843}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Collapse Error", "data":{"error":"Invalid IUnknown interface pointer"}, "timestamp":616246859}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Collapse Error", "data":{"error":"Invalid IUnknown interface pointer"}, "timestamp":616246890}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Collapse Error", "data":{"error":"Invalid IUnknown interface pointer"}, "timestamp":616246921}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Collapse Error", "data":{"error":"Invalid IUnknown interface pointer"}, "timestamp":616246937}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Collapse Error", "data":{"error":"Invalid IUnknown interface pointer"}, "timestamp":616246953}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Collapse Error", "data":{"error":"Invalid IUnknown interface pointer"}, "timestamp":616246984}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Collapse Error", "data":{"error":"Invalid IUnknown interface pointer"}, "timestamp":616247015}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Collapse Error", "data":{"error":"Invalid IUnknown interface pointer"}, "timestamp":616247031}
+{"sessionId":"debug-session", "hypothesisId":"B", "location":"FoldAllDirectoriesInExplorer:9752", "message":"Items found", "data":{"count":12, "iteration":2}, "timestamp":616247109}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":".crossnote", "state":0}, "timestamp":616247109}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":".cursor", "state":0}, "timestamp":616247140}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":".vscode", "state":0}, "timestamp":616247156}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"agentic-ai", "state":0}, "timestamp":616247171}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"backend", "state":0}, "timestamp":616247187}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"frontend", "state":0}, "timestamp":616247203}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"infoVis", "state":0}, "timestamp":616247218}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"latex", "state":0}, "timestamp":616247234}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"reactive-ai", "state":0}, "timestamp":616247265}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"results", "state":0}, "timestamp":616247281}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"styles", "state":0}, "timestamp":616247328}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"main.md", "state":3}, "timestamp":616247343}
+{"sessionId":"debug-session", "hypothesisId":"B", "location":"FoldAllDirectoriesInExplorer:9752", "message":"Items found", "data":{"count":12, "iteration":3}, "timestamp":616247531}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":".crossnote", "state":0}, "timestamp":616247546}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":".cursor", "state":0}, "timestamp":616247562}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":".vscode", "state":0}, "timestamp":616247578}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"agentic-ai", "state":0}, "timestamp":616247609}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"backend", "state":0}, "timestamp":616247625}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"frontend", "state":0}, "timestamp":616247656}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"infoVis", "state":0}, "timestamp":616247687}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"latex", "state":0}, "timestamp":616247703}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"reactive-ai", "state":0}, "timestamp":616247718}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"results", "state":0}, "timestamp":616247734}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"styles", "state":0}, "timestamp":616247750}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"main.md", "state":3}, "timestamp":616247765}
+{"sessionId":"debug-session", "hypothesisId":"A", "location":"FoldAllDirectoriesInExplorer:9677", "message":"Entering FoldAllDirectoriesInExplorer", "timestamp":616250546}
+{"sessionId":"debug-session", "hypothesisId":"B", "location":"FoldAllDirectoriesInExplorer:9752", "message":"Items found", "data":{"count":24, "iteration":1}, "timestamp":616250859}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":".cursor", "state":0}, "timestamp":616250859}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"data", "state":0}, "timestamp":616250890}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"docs", "state":0}, "timestamp":616250906}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"images", "state":0}, "timestamp":616250921}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"pictures", "state":0}, "timestamp":616250937}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"scripts", "state":0}, "timestamp":616250953}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"sounds", "state":0}, "timestamp":616250968}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"UIA-v2", "state":0}, "timestamp":616250984}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":".gitignore", "state":3}, "timestamp":616251000}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Act.ahk", "state":3}, "timestamp":616251156}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"AppLaunchers.ahk", "state":3}, "timestamp":616251296}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"cursor-tree.txt", "state":3}, "timestamp":616251437}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"cursor-tree2.txt", "state":3}, "timestamp":616251593}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"env.ahk", "state":3}, "timestamp":616251703}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Gemini.ahk", "state":3}, "timestamp":616251859}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Microsoft Teams.ahk", "state":3}, "timestamp":616251984}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"outlook-tree.ahk", "state":3}, "timestamp":616252125}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Outlook.ahk", "state":3}, "timestamp":616252265}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"README.md", "state":3}, "timestamp":616252406}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Shift keys.ahk", "state":3}, "timestamp":616252562}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"sound-audit.md", "state":3}, "timestamp":616252671}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Spotify.ahk", "state":3}, "timestamp":616252843}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Utils.ahk", "state":3}, "timestamp":616252984}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"WindowManagement.ahk", "state":3}, "timestamp":616253156}
+{"sessionId":"debug-session", "hypothesisId":"B", "location":"FoldAllDirectoriesInExplorer:9752", "message":"Items found", "data":{"count":24, "iteration":2}, "timestamp":616253343}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":".cursor", "state":0}, "timestamp":616253343}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"data", "state":0}, "timestamp":616253375}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"docs", "state":0}, "timestamp":616253390}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"images", "state":0}, "timestamp":616253406}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"pictures", "state":0}, "timestamp":616253421}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"scripts", "state":0}, "timestamp":616253437}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"sounds", "state":0}, "timestamp":616253453}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"UIA-v2", "state":0}, "timestamp":616253468}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":".gitignore", "state":3}, "timestamp":616253484}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Act.ahk", "state":3}, "timestamp":616253609}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"AppLaunchers.ahk", "state":3}, "timestamp":616253765}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"cursor-tree.txt", "state":3}, "timestamp":616253921}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"cursor-tree2.txt", "state":3}, "timestamp":616254078}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"env.ahk", "state":3}, "timestamp":616254203}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Gemini.ahk", "state":3}, "timestamp":616254390}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Microsoft Teams.ahk", "state":3}, "timestamp":616254531}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"outlook-tree.ahk", "state":3}, "timestamp":616254687}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Outlook.ahk", "state":3}, "timestamp":616254843}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"README.md", "state":3}, "timestamp":616254984}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Shift keys.ahk", "state":3}, "timestamp":616255140}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"sound-audit.md", "state":3}, "timestamp":616255281}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Spotify.ahk", "state":3}, "timestamp":616255421}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Utils.ahk", "state":3}, "timestamp":616255562}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"WindowManagement.ahk", "state":3}, "timestamp":616255671}
+{"sessionId":"debug-session", "hypothesisId":"B", "location":"FoldAllDirectoriesInExplorer:9752", "message":"Items found", "data":{"count":24, "iteration":3}, "timestamp":616255859}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":".cursor", "state":0}, "timestamp":616255859}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"data", "state":0}, "timestamp":616255890}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"docs", "state":0}, "timestamp":616255906}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"images", "state":0}, "timestamp":616255937}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"pictures", "state":0}, "timestamp":616255953}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"scripts", "state":0}, "timestamp":616255968}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"sounds", "state":0}, "timestamp":616255984}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"UIA-v2", "state":0}, "timestamp":616256015}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":".gitignore", "state":3}, "timestamp":616256031}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Act.ahk", "state":3}, "timestamp":616256203}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"AppLaunchers.ahk", "state":3}, "timestamp":616256359}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"cursor-tree.txt", "state":3}, "timestamp":616256500}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"cursor-tree2.txt", "state":3}, "timestamp":616256625}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"env.ahk", "state":3}, "timestamp":616256750}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Gemini.ahk", "state":3}, "timestamp":616256906}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Microsoft Teams.ahk", "state":3}, "timestamp":616257031}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"outlook-tree.ahk", "state":3}, "timestamp":616257187}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Outlook.ahk", "state":3}, "timestamp":616257328}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"README.md", "state":3}, "timestamp":616257484}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Shift keys.ahk", "state":3}, "timestamp":616257625}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"sound-audit.md", "state":3}, "timestamp":616257750}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Spotify.ahk", "state":3}, "timestamp":616257875}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"Utils.ahk", "state":3}, "timestamp":616258000}
+{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"WindowManagement.ahk", "state":3}, "timestamp":616258140}

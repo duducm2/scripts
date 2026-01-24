@@ -9675,10 +9675,20 @@ FoldAllGitDirectoriesInCursor() {
 
 ; Collapse all expandable directories in the Explorer (FileExplorer3) for all workspace roots
 FoldAllDirectoriesInExplorer() {
+    ; #region agent log
     try {
+        FileAppend('{"sessionId":"debug-session", "hypothesisId":"A", "location":"FoldAllDirectoriesInExplorer:9677", "message":"Entering FoldAllDirectoriesInExplorer", "timestamp":' . A_TickCount . '}`n', 'c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log')
+    }
+    ; #endregion
+    try {
+        ; Show banner immediately
+        ShowSmallLoadingIndicator_ChatGPT("Folding directories...")
+
         hwnd := WinExist("A")
-        if !hwnd
+        if !hwnd {
+            HideSmallLoadingIndicator_ChatGPT()
             return
+        }
         root := UIA.ElementFromHandle(hwnd)
 
         ; Ensure Explorer is focused if not already
@@ -9719,6 +9729,18 @@ FoldAllDirectoriesInExplorer() {
         if !fileTree {
             try fileTree := expRoot.FindElement(treeType, UIA.TreeScope.Descendants)
         }
+        
+        ; Fallback: Try finding by specific Name "Files Explorer" (common in Cursor/VSCode)
+        if !fileTree {
+            try {
+                feEn := UIA.CreatePropertyCondition(UIA.Property.Name, "Files Explorer")
+                fePt := UIA.CreatePropertyCondition(UIA.Property.Name, "Explorador de Arquivos")
+                feName := UIA.CreateOrCondition(feEn, fePt)
+                feCond := UIA.CreateAndCondition(treeType, feName)
+                fileTree := root.FindElement(feCond, UIA.TreeScope.Descendants)
+            }
+        }
+
         if !fileTree
             return
 
@@ -9750,6 +9772,13 @@ FoldAllDirectoriesInExplorer() {
         loop 3 {
             ; Re-find items each iteration as tree structure may change after collapsing
             items := fileTree.FindElements(dirCond, UIA.TreeScope.Descendants)
+            
+            ; #region agent log
+            try {
+                FileAppend('{"sessionId":"debug-session", "hypothesisId":"B", "location":"FoldAllDirectoriesInExplorer:9752", "message":"Items found", "data":{"count":' . (items ? items.Length : 0) . ', "iteration":' . A_Index . '}, "timestamp":' . A_TickCount . '}`n', 'c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log')
+            }
+            ; #endregion
+
             if !items
                 break
 
@@ -9759,27 +9788,75 @@ FoldAllDirectoriesInExplorer() {
                     continue
                 try {
                     pat := item.ExpandCollapsePattern
-                    if pat.ExpandCollapseState != UIA.ExpandCollapseState.Collapsed
-                        pat.Collapse()
-                } catch Error {
-                    ; Fallback: try clicking the chevron/glyph if found (e.g., text "îª´" or button)
-                    btnType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Button)
-                    txtType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Text)
-                    glyphName := UIA.CreatePropertyCondition(UIA.Property.Name, "îª´")
-                    dotName := UIA.CreatePropertyCondition(UIA.Property.Name, ".")
-                    chevronCond := UIA.CreateOrCondition(btnType, UIA.CreateOrCondition(UIA.CreateAndCondition(txtType,
-                        glyphName), UIA.CreateAndCondition(txtType, dotName)))
-                    chevron := ""
-                    try chevron := item.FindElement(chevronCond, UIA.TreeScope.Children)
-                    if !chevron
-                        try chevron := item.FindElement(chevronCond, UIA.TreeScope.Descendants)
-                    if chevron {
-                        if chevron.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
-                            try chevron.InvokePattern.Invoke()
-                        } else {
-                            try chevron.Click()
+                    state := pat.ExpandCollapseState
+                    
+                    ; #region agent log
+                    try {
+                        name := item.GetPropertyValue(UIA.Property.Name)
+                        FileAppend('{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"' . name . '", "state":' . state . '}, "timestamp":' . A_TickCount . '}`n', 'c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log')
+                    }
+                    ; #endregion
+
+                    if state != UIA.ExpandCollapseState.Collapsed {
+                        ; Method 1: Scroll into view (helper)
+                        try {
+                            if item.GetPropertyValue(UIA.Property.IsScrollItemPatternAvailable)
+                                item.ScrollItemPattern.ScrollIntoView()
+                        } catch {
+                        }
+                        
+                        ; Method 2: UIA Collapse Pattern
+                        try {
+                            pat.Collapse()
+                            Sleep 50 
+                        } catch {
+                        }
+
+                        ; Check if it worked
+                        if item.ExpandCollapsePattern.ExpandCollapseState != UIA.ExpandCollapseState.Collapsed {
+                            ; Method 3: Keyboard Navigation (Select + Left Arrow)
+                            try {
+                                if item.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
+                                    item.SelectionItemPattern.Select()
+                                else
+                                    item.SetFocus()
+                                Send "{Left}"
+                                Sleep 50
+                            } catch {
+                            }
+                        }
+
+                        ; Check if it worked
+                        if item.ExpandCollapsePattern.ExpandCollapseState != UIA.ExpandCollapseState.Collapsed {
+                            ; Method 4: Click Chevron (Moved from catch block)
+                            try {
+                                btnType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Button)
+                                txtType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Text)
+                                glyphName := UIA.CreatePropertyCondition(UIA.Property.Name, "îª´")
+                                dotName := UIA.CreatePropertyCondition(UIA.Property.Name, ".")
+                                chevronCond := UIA.CreateOrCondition(btnType, UIA.CreateOrCondition(UIA.CreateAndCondition(txtType,
+                                    glyphName), UIA.CreateAndCondition(txtType, dotName)))
+                                chevron := ""
+                                try chevron := item.FindElement(chevronCond, UIA.TreeScope.Children)
+                                if !chevron
+                                    try chevron := item.FindElement(chevronCond, UIA.TreeScope.Descendants)
+                                if chevron {
+                                    if chevron.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
+                                        chevron.InvokePattern.Invoke()
+                                    } else {
+                                        chevron.Click()
+                                    }
+                                }
+                            } catch {
+                            }
                         }
                     }
+                } catch Error as e {
+                    ; #region agent log
+                    try {
+                        FileAppend('{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Collapse Error", "data":{"error":"' . e.Message . '"}, "timestamp":' . A_TickCount . '}`n', 'c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log')
+                    }
+                    ; #endregion
                 }
                 Sleep 10
             }
@@ -9811,19 +9888,25 @@ FoldAllDirectoriesInExplorer() {
         }
 
         ; Optional brief toast
-        ToolTip "Directories folded"
-        SetTimer () => ToolTip(), -800
+        ShowSmallLoadingIndicator_ChatGPT("Directories folded")
     } catch Error as e {
         try MsgBox "UIA error folding Explorer directories: " e.Message, "Cursor Explorer Fold", "IconX"
+    } finally {
+        SetTimer () => HideSmallLoadingIndicator_ChatGPT(), -800
     }
 }
 
 ; Expand all expandable directories in the Explorer (FileExplorer3) for all workspace roots
 UnfoldAllDirectoriesInExplorer() {
     try {
+        ; Show banner immediately
+        ShowSmallLoadingIndicator_ChatGPT("Unfolding directories...")
+
         hwnd := WinExist("A")
-        if !hwnd
+        if !hwnd {
+            HideSmallLoadingIndicator_ChatGPT()
             return
+        }
         root := UIA.ElementFromHandle(hwnd)
 
         ; Ensure Explorer is focused if not already
@@ -9866,8 +9949,22 @@ UnfoldAllDirectoriesInExplorer() {
         if !fileTree {
             try fileTree := expRoot.FindElement(treeType, UIA.TreeScope.Descendants)
         }
-        if !fileTree
+        
+        ; Fallback: Try finding by specific Name "Files Explorer"
+        if !fileTree {
+            try {
+                feEn := UIA.CreatePropertyCondition(UIA.Property.Name, "Files Explorer")
+                fePt := UIA.CreatePropertyCondition(UIA.Property.Name, "Explorador de Arquivos")
+                feName := UIA.CreateOrCondition(feEn, fePt)
+                feCond := UIA.CreateAndCondition(treeType, feName)
+                fileTree := root.FindElement(feCond, UIA.TreeScope.Descendants)
+            }
+        }
+
+        if !fileTree {
+            HideSmallLoadingIndicator_ChatGPT()
             return
+        }
 
         ; Preserve scroll position when possible
         hPerc := vPerc := ""
@@ -9884,41 +9981,106 @@ UnfoldAllDirectoriesInExplorer() {
         itemType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.TreeItem)
         canExpand := UIA.CreatePropertyCondition(UIA.Property.IsExpandCollapsePatternAvailable, true)
         dirCond := UIA.CreateAndCondition(itemType, canExpand)
-        items := ""
-        try items := fileTree.FindElements(dirCond, UIA.TreeScope.Descendants)
-        if !items
-            return
 
-        ; Expand each collapsed directory. Do not toggle; skip already expanded.
-        for item in items {
-            if !item
-                continue
-            try {
-                pat := item.ExpandCollapsePattern
-                if pat.ExpandCollapseState == UIA.ExpandCollapseState.Collapsed
-                    pat.Expand()
-            } catch Error {
-                ; Fallback: try clicking the chevron/glyph if found (e.g., text "îª´" or button)
-                btnType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Button)
-                txtType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Text)
-                glyphName := UIA.CreatePropertyCondition(UIA.Property.Name, "îª´")
-                dotName := UIA.CreatePropertyCondition(UIA.Property.Name, ".")
-                chevronCond := UIA.CreateOrCondition(btnType, UIA.CreateOrCondition(UIA.CreateAndCondition(txtType,
-                    glyphName), UIA.CreateAndCondition(txtType, dotName)))
-                chevron := ""
-                try chevron := item.FindElement(chevronCond, UIA.TreeScope.Children)
-                if !chevron {
-                    try chevron := item.FindElement(chevronCond, UIA.TreeScope.Descendants)
-                }
-                if chevron {
-                    if chevron.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
-                        try chevron.InvokePattern.Invoke()
-                    } else {
-                        try chevron.Click()
+        ; Loop 3 times to ensure nested directories are expanded
+        loop 3 {
+            items := ""
+            try items := fileTree.FindElements(dirCond, UIA.TreeScope.Descendants)
+            if !items
+                break
+
+            ; Expand each collapsed directory. Do not toggle; skip already expanded.
+            for item in items {
+                if !item
+                    continue
+                try {
+                    pat := item.ExpandCollapsePattern
+                    state := pat.ExpandCollapseState
+                    
+                    if state == UIA.ExpandCollapseState.Collapsed {
+                        ; Method 1: Scroll into view
+                        try {
+                            if item.GetPropertyValue(UIA.Property.IsScrollItemPatternAvailable)
+                                item.ScrollItemPattern.ScrollIntoView()
+                        } catch {
+                        }
+                        
+                        ; Method 2: UIA Expand Pattern
+                        try {
+                            pat.Expand()
+                            Sleep 50
+                        } catch {
+                        }
+
+                        ; Check if it worked
+                        if item.ExpandCollapsePattern.ExpandCollapseState == UIA.ExpandCollapseState.Collapsed {
+                            ; Method 3: Keyboard Navigation (Select + Right Arrow)
+                            try {
+                                if item.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
+                                    item.SelectionItemPattern.Select()
+                                else
+                                    item.SetFocus()
+                                Send "{Right}"
+                                Sleep 50
+                            } catch {
+                            }
+                        }
+
+                        ; Check if it worked
+                        if item.ExpandCollapsePattern.ExpandCollapseState == UIA.ExpandCollapseState.Collapsed {
+                            ; Method 4: Click Chevron (Moved from catch block)
+                            try {
+                                btnType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Button)
+                                txtType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Text)
+                                glyphName := UIA.CreatePropertyCondition(UIA.Property.Name, "îª´")
+                                dotName := UIA.CreatePropertyCondition(UIA.Property.Name, ".")
+                                chevronCond := UIA.CreateOrCondition(btnType, UIA.CreateOrCondition(UIA.CreateAndCondition(txtType,
+                                    glyphName), UIA.CreateAndCondition(txtType, dotName)))
+                                chevron := ""
+                                try chevron := item.FindElement(chevronCond, UIA.TreeScope.Children)
+                                if !chevron {
+                                    try chevron := item.FindElement(chevronCond, UIA.TreeScope.Descendants)
+                                }
+                                if chevron {
+                                    if chevron.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
+                                        chevron.InvokePattern.Invoke()
+                                    } else {
+                                        chevron.Click()
+                                    }
+                                }
+                            } catch {
+                            }
+                        }
+                    }
+                } catch Error {
+                    ; Fallback in case getting pattern fails completely
+                    try {
+                        btnType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Button)
+                        txtType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Text)
+                        glyphName := UIA.CreatePropertyCondition(UIA.Property.Name, "îª´")
+                        dotName := UIA.CreatePropertyCondition(UIA.Property.Name, ".")
+                        chevronCond := UIA.CreateOrCondition(btnType, UIA.CreateOrCondition(UIA.CreateAndCondition(txtType,
+                            glyphName), UIA.CreateAndCondition(txtType, dotName)))
+                        chevron := ""
+                        try chevron := item.FindElement(chevronCond, UIA.TreeScope.Children)
+                        if !chevron {
+                            try chevron := item.FindElement(chevronCond, UIA.TreeScope.Descendants)
+                        }
+                        if chevron {
+                            if chevron.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
+                                chevron.InvokePattern.Invoke()
+                            } else {
+                                chevron.Click()
+                            }
+                        }
+                    } catch {
                     }
                 }
+                Sleep 10
             }
-            Sleep 10
+            
+            ; Brief pause between iterations to allow UI to update
+            Sleep 50
         }
 
         ; Restore scroll position if it changed
@@ -9927,10 +10089,11 @@ UnfoldAllDirectoriesInExplorer() {
         }
 
         ; Optional brief toast
-        ToolTip "Directories unfolded"
-        SetTimer () => ToolTip(), -800
+        ShowSmallLoadingIndicator_ChatGPT("Directories unfolded")
     } catch Error as e {
         try MsgBox "UIA error unfolding Explorer directories: " e.Message, "Cursor Explorer Unfold", "IconX"
+    } finally {
+        SetTimer () => HideSmallLoadingIndicator_ChatGPT(), -800
     }
 }
 
