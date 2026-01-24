@@ -506,10 +506,10 @@ ToggleSoundState() {
     settingsFile := A_ScriptDir . "\data\settings.ini"
     currentState := IsSoundEnabled()
     newState := currentState ? "0" : "1"
-    
+
     ; Update INI file
     IniWrite(newState, settingsFile, "Settings", "SoundEnabled")
-    
+
     ; Show visual feedback
     if (newState = "1") {
         ShowCenteredOverlay_Utils("🔊 Sound: ON", 2000)
@@ -598,7 +598,8 @@ ToggleOutlookAndTeams() {
             ; Simplified approach: Just run the executable. This handles both launching and bringing to front.
             try {
                 if (IS_WORK_ENVIRONMENT) {
-                    teamsExePath := "C:\Program Files\WindowsApps\MSTeams_25332.1210.4188.1171_x64__8wekyb3d8bbwe\ms-teams.exe"
+                    teamsExePath :=
+                        "C:\Program Files\WindowsApps\MSTeams_25332.1210.4188.1171_x64__8wekyb3d8bbwe\ms-teams.exe"
                     if (FileExist(teamsExePath)) {
                         Run teamsExePath
                     } else {
@@ -606,7 +607,8 @@ ToggleOutlookAndTeams() {
                     }
                 } else {
                     ; Personal environment
-                    teamsPath := "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Microsoft Teams.lnk"
+                    teamsPath :=
+                        "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Microsoft Teams.lnk"
                     if (FileExist(teamsPath)) {
                         Run teamsPath
                     } else {
@@ -778,7 +780,7 @@ CleanClipboard() {
 ; When stopping, does NOT show clipboard cleanup prompt.
 DictationStartWithClipboardOption() {
     global g_DictationLoopActive
-    
+
     if (g_DictationLoopActive) {
         ; Stop the loop - NO clipboard cleanup prompt when stopping
         g_DictationLoopActive := false
@@ -792,14 +794,14 @@ DictationStartWithClipboardOption() {
         ; Start the loop - show clipboard cleanup prompt ONLY when starting
         ; Show message box asking about clipboard cleanup
         result := MsgBox("Would you like to clean up the clipboard?", "Dictation Start", "YesNo")
-        
+
         if (result = "Yes") {
             ; Execute clipboard cleanup algorithm without showing second prompt
             ; (User already confirmed they want to clean clipboard)
             CleanClipboardInternal()
         }
         ; If No, continue with dictation loop without cleanup
-        
+
         ; Clear any existing timers first to prevent old timers from firing
         SetTimer(DictationLoopStop, 0)
         SetTimer(DictationLoopStart, 0)
@@ -5213,6 +5215,15 @@ StopDictationCheckTimer() {
 ToggleDictationMode() {
     ; Trigger immediate check (the timer will handle showing/hiding)
     CheckDictationRecordingWindow()
+
+    ; Optimization: Temporarily increase polling frequency to detect window appearance faster
+    ; This ensures the visual indicator appears as soon as the window exists
+    SetTimer(CheckDictationRecordingWindow, 50)
+    SetTimer(RevertDictationPolling, -2000)
+}
+
+RevertDictationPolling() {
+    SetTimer(CheckDictationRecordingWindow, 500)
 }
 
 ; Force end dictation immediately (e.g., when Ask action is triggered)
@@ -5243,6 +5254,13 @@ OnExit(CleanupDictationIndicator)
 ; First press starts dictation, second press stops and copies to clipboard
 ~#!+0::
 {
+    ; Optimization: Play start sound immediately if we are starting (not currently active)
+    ; The Audio Firewall in SafePlayDictationSound will prevent duplicate sounds
+    ; when the window detection logic fires shortly after.
+    if (!g_DictationActive) {
+        SafePlayDictationSound(g_DictationStartSound)
+    }
+
     ; Just trigger the check - chimes are handled by state transitions
     ToggleDictationMode()
 }
@@ -5266,14 +5284,14 @@ OnExit(CleanupDictationIndicator)
         ; Start the loop - show clipboard cleanup prompt ONLY when starting
         ; Show message box asking about clipboard cleanup
         result := MsgBox("Would you like to clean up the clipboard?", "Dictation Start", "YesNo")
-        
+
         if (result = "Yes") {
             ; Execute clipboard cleanup algorithm without showing second prompt
             ; (User already confirmed they want to clean clipboard)
             CleanClipboardInternal()
         }
         ; If No, continue with dictation loop without cleanup
-        
+
         ; Clear any existing timers first to prevent old timers from firing
         SetTimer(DictationLoopStop, 0)
         SetTimer(DictationLoopStart, 0)
