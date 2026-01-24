@@ -9758,90 +9758,91 @@ FoldAllDirectoriesInExplorer() {
             }
         }
 
-        ; Get all TreeItem nodes that support expand/collapse (i.e., directories)
+        ; Get all TreeItem nodes that support expand/collapse (i.e., directories) AND are currently Expanded
         itemType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.TreeItem)
         canExpand := UIA.CreatePropertyCondition(UIA.Property.IsExpandCollapsePatternAvailable, true)
-        dirCond := UIA.CreateAndCondition(itemType, canExpand)
+        isExpanded := UIA.CreatePropertyCondition(UIA.Property.ExpandCollapseExpandCollapseState, UIA.ExpandCollapseState.Expanded)
+        
+        ; Combine conditions: TreeItem AND CanExpand AND IsExpanded
+        dirCond := UIA.CreateAndCondition(itemType, UIA.CreateAndCondition(canExpand, isExpanded))
 
-        ; Loop 3 times to ensure all nested directories are collapsed
-        loop 3 {
+        ; Loop 2 times to ensure all nested directories are collapsed (reduced from 3)
+        loop 2 {
             ; Re-find items each iteration as tree structure may change after collapsing
             items := fileTree.FindElements(dirCond, UIA.TreeScope.Descendants)
             
-
-            if !items
+            if !items || !items.Length
                 break
 
-            ; Collapse each expanded directory. Do not toggle; skip already collapsed.
+            ; Collapse each expanded directory.
             for item in items {
                 if !item
                     continue
                 try {
+                    ; Since we filtered by Expanded, we know it's expanded (or was when found)
                     pat := item.ExpandCollapsePattern
-                    state := pat.ExpandCollapseState
                     
-
-                    if state != UIA.ExpandCollapseState.Collapsed {
-                        ; Method 1: Scroll into view (helper)
+                    ; Method 2: UIA Collapse Pattern (Primary method)
+                    try {
+                        pat.Collapse()
+                        Sleep 10 
+                    } catch {
+                    }
+                    
+                    ; Check if it worked (only check if we really need to try other methods)
+                    if item.ExpandCollapsePattern.ExpandCollapseState != UIA.ExpandCollapseState.Collapsed {
+                         ; Method 1: Scroll into view (if needed)
                         try {
                             if item.GetPropertyValue(UIA.Property.IsScrollItemPatternAvailable)
                                 item.ScrollItemPattern.ScrollIntoView()
+                             pat.Collapse()
                         } catch {
                         }
-                        
-                        ; Method 2: UIA Collapse Pattern
+                    }
+
+                    if item.ExpandCollapsePattern.ExpandCollapseState != UIA.ExpandCollapseState.Collapsed {
+                        ; Method 3: Keyboard Navigation
                         try {
-                            pat.Collapse()
-                            Sleep 50 
+                            if item.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
+                                item.SelectionItemPattern.Select()
+                            else
+                                item.SetFocus()
+                            Send "{Left}"
+                            Sleep 10
                         } catch {
                         }
+                    }
 
-                        ; Check if it worked
-                        if item.ExpandCollapsePattern.ExpandCollapseState != UIA.ExpandCollapseState.Collapsed {
-                            ; Method 3: Keyboard Navigation (Select + Left Arrow)
-                            try {
-                                if item.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
-                                    item.SelectionItemPattern.Select()
-                                else
-                                    item.SetFocus()
-                                Send "{Left}"
-                                Sleep 50
-                            } catch {
-                            }
-                        }
-
-                        ; Check if it worked
-                        if item.ExpandCollapsePattern.ExpandCollapseState != UIA.ExpandCollapseState.Collapsed {
-                            ; Method 4: Click Chevron (Moved from catch block)
-                            try {
-                                btnType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Button)
-                                txtType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Text)
-                                glyphName := UIA.CreatePropertyCondition(UIA.Property.Name, "îª´")
-                                dotName := UIA.CreatePropertyCondition(UIA.Property.Name, ".")
-                                chevronCond := UIA.CreateOrCondition(btnType, UIA.CreateOrCondition(UIA.CreateAndCondition(txtType,
-                                    glyphName), UIA.CreateAndCondition(txtType, dotName)))
-                                chevron := ""
-                                try chevron := item.FindElement(chevronCond, UIA.TreeScope.Children)
-                                if !chevron
-                                    try chevron := item.FindElement(chevronCond, UIA.TreeScope.Descendants)
-                                if chevron {
-                                    if chevron.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
-                                        chevron.InvokePattern.Invoke()
-                                    } else {
-                                        chevron.Click()
-                                    }
+                     if item.ExpandCollapsePattern.ExpandCollapseState != UIA.ExpandCollapseState.Collapsed {
+                         ; Method 4: Click Chevron
+                         try {
+                            btnType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Button)
+                            txtType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Text)
+                            glyphName := UIA.CreatePropertyCondition(UIA.Property.Name, "îª´")
+                            dotName := UIA.CreatePropertyCondition(UIA.Property.Name, ".")
+                            chevronCond := UIA.CreateOrCondition(btnType, UIA.CreateOrCondition(UIA.CreateAndCondition(txtType,
+                                glyphName), UIA.CreateAndCondition(txtType, dotName)))
+                            chevron := ""
+                            try chevron := item.FindElement(chevronCond, UIA.TreeScope.Children)
+                            if !chevron
+                                try chevron := item.FindElement(chevronCond, UIA.TreeScope.Descendants)
+                            if chevron {
+                                if chevron.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
+                                    chevron.InvokePattern.Invoke()
+                                } else {
+                                    chevron.Click()
                                 }
-                            } catch {
                             }
+                        } catch {
                         }
                     }
                 } catch Error as e {
                 }
-                Sleep 10
+                Sleep 5
             }
 
             ; Brief pause between iterations to allow UI to update
-            Sleep 50
+            Sleep 20
         }
 
         ; Restore scroll position if it changed
