@@ -5047,16 +5047,44 @@ StopDictationPulseTimer() {
 ; Enforces a minimum 1000ms gap between sounds regardless of how many times logic fires
 SafePlayDictationSound(filePath) {
     Critical  ; Prevents thread interruption - ensures atomic check-and-update sequence
-    global g_LastDictationSoundTick
+    global g_LastDictationSoundTick, g_DictationStartSound
+    static lastStartSoundTick := 0
 
-    ; If less than 1000ms has passed since last sound, ignore this call
-    if (A_TickCount - g_LastDictationSoundTick < 1000) {
-        return
+    ; DEBUG: Log all sound attempts (Hypothesis A debugging)
+    ; Get caller info for debugging
+    callerInfo := ""
+    try {
+        ; Try to get stack trace info
+        if (InStr(filePath, "speach-start.wav")) {
+            ; Check cooldown first
+            timeSinceLastSound := A_TickCount - lastStartSoundTick
+            if (timeSinceLastSound < 7000) {
+                ; Log blocked attempt
+                FileAppend("[" . A_TickCount . "] BLOCKED start sound - cooldown: " . timeSinceLastSound . "ms, path: " . filePath . "`n", A_ScriptDir . "\dictation-sound-debug.log")
+                return
+            }
+            lastStartSoundTick := A_TickCount
+            callerInfo := "START_SOUND"
+        } else {
+            ; Standard 1 second cooldown for other sounds
+            if (A_TickCount - g_LastDictationSoundTick < 1000) {
+                FileAppend("[" . A_TickCount . "] BLOCKED other sound - cooldown active, path: " . filePath . "`n", A_ScriptDir . "\dictation-sound-debug.log")
+                return
+            }
+            callerInfo := "OTHER_SOUND"
+        }
+    } catch {
+        ; If logging fails, continue normally
     }
 
     ; Update timestamp and play sound (if enabled)
     g_LastDictationSoundTick := A_TickCount
     if (IsSoundEnabled()) {
+        ; Log successful sound play
+        try {
+            FileAppend("[" . A_TickCount . "] PLAYING " . callerInfo . " - path: " . filePath . ", g_DictationActive: " . (g_DictationActive ? "true" : "false") . "`n", A_ScriptDir . "\dictation-sound-debug.log")
+        } catch {
+        }
         SoundPlay(filePath)
     }
 }
@@ -5124,7 +5152,14 @@ CheckDictationRecordingWindow() {
 
     ; Step 3: Handle Start - if window exists AND not active
     if (windowExists && !g_DictationActive) {
+        ; DEBUG: Log monitoring loop start detection (Hypothesis A debugging)
+        try {
+            FileAppend("[" . A_TickCount . "] MONITOR: Detected window exists AND !g_DictationActive - About to set active`n", A_ScriptDir . "\dictation-sound-debug.log")
+        } catch {
+        }
+        
         g_DictationActive := true
+        g_LastStateTransitionTick := A_TickCount
 
         ; Run PowerShell script to set mic volume to 100%
         try {
@@ -5140,8 +5175,11 @@ CheckDictationRecordingWindow() {
         ShowDictationIndicator()
         StartDictationPulseTimer()
 
-        ; Play start chime (throttled by audio firewall)
-        SafePlayDictationSound(g_DictationStartSound)
+        ; NOTE: Do NOT play start sound here - it's already played by the hotkey handler
+        ; Following the print screen pattern: sound is played only once in the hotkey handler
+        ; The monitoring loop only handles state management and UI updates
+        ; This prevents duplicate sounds when hotkey is used
+        ; If dictation starts without hotkey (edge case), the cooldown in SafePlayDictationSound will prevent issues
     }
     ; Step 4: Handle Stop - if window does NOT exist AND active
     else if (!windowExists && g_DictationActive) {
@@ -5155,8 +5193,8 @@ CheckDictationRecordingWindow() {
             return
         }
 
-        ; Cooldown check: prevent rapid re-detection of same transition (1 second cooldown)
-        if (g_LastStateTransitionTick && (A_TickCount - g_LastStateTransitionTick < 1000)) {
+        ; Cooldown check: prevent rapid re-detection of same transition (7 second cooldown)
+        if (g_LastStateTransitionTick && (A_TickCount - g_LastStateTransitionTick < 7000)) {
             Critical "Off"
             return
         }
@@ -5252,9 +5290,44 @@ OnExit(CleanupDictationIndicator)
 ; Toggle dictation mode with Win+Alt+Shift+0
 ; The ~ prefix allows the key combination to pass through to handy.exe
 ; First press starts dictation, second press stops and copies to clipboard
+; 
+; ARCHITECTURAL FIXES APPLIED (Based on Research Findings):
+; 1. KeyWait: Prevents "Machine Gun" effect from OS typematic key repeats
+; 2. Strict State Machine: Uses static variable to track logical state, ignoring physical key repeats
+; 3. Recursion Guard: Prevents handler from retriggering during execution
 ~#!+0::
 {
     global g_DictationActive, g_LastStateTransitionTick, g_DictationStartSound
+    static lastHotkeyTick := 0
+    static isProcessing := false
+    
+    ; RECURSION GUARD: Prevent handler from retriggering during execution
+    if (isProcessing) {
+        return
+    }
+    
+    ; STRICT STATE MACHINE: Ignore key repeats within 200ms (faster than OS typematic rate of 10-30/sec)
+    ; This prevents "Machine Gun" effect from holding the key
+    currentTick := A_TickCount
+    timeSinceLast := currentTick - lastHotkeyTick
+    if (timeSinceLast < 200) {
+        ; This is a key repeat, ignore it
+        return
+    }
+    lastHotkeyTick := currentTick
+    isProcessing := true
+    
+    ; KEYWAIT: Block execution until main key (0) is released to prevent OS key repeats
+    ; This ensures we only process one logical key press, not multiple repeats from typematic rate
+    ; Using "L" flag to check logical state (not physical)
+    ; Only wait for main key, not modifiers (modifiers may be held for other purposes)
+    KeyWait("0", "L")
+    
+    ; DEBUG: Log hotkey trigger (Hypothesis A debugging)
+    try {
+        FileAppend("[" . A_TickCount . "] HOTKEY TRIGGERED - g_DictationActive: " . (g_DictationActive ? "true" : "false") . ", timeSinceLast: " . timeSinceLast . "ms`n", A_ScriptDir . "\dictation-sound-debug.log")
+    } catch {
+    }
 
     ; Optimization: Immediate feedback loop
     ; If we are starting dictation (currently inactive), trigger feedback immediately
@@ -5264,12 +5337,25 @@ OnExit(CleanupDictationIndicator)
         g_DictationActive := true
         g_LastStateTransitionTick := A_TickCount
 
+        ; DEBUG: Log state change
+        try {
+            FileAppend("[" . A_TickCount . "] HOTKEY: Set g_DictationActive = true`n", A_ScriptDir . "\dictation-sound-debug.log")
+        } catch {
+        }
+
         ; 2. Visual Feedback: Show red square immediately
         ShowDictationIndicator()
         StartDictationPulseTimer()
 
-        ; 3. Audio Feedback: Play start sound immediately
-        SafePlayDictationSound(g_DictationStartSound)
+        ; 3. Audio Feedback: DISABLED - handy.exe (v0.1.5+) plays its own native sound
+        ; Suppressing AHK sound to prevent duplicate sounds (user hears 2 sounds: AHK + handy.exe)
+        ; If you want AHK sound instead, uncomment the line below and configure handy.exe to disable its sound
+        ; DEBUG: Log before sound call (disabled)
+        ; try {
+        ;     FileAppend("[" . A_TickCount . "] HOTKEY: About to call SafePlayDictationSound with: " . g_DictationStartSound . "`n", A_ScriptDir . "\dictation-sound-debug.log")
+        ; } catch {
+        ; }
+        ; SafePlayDictationSound(g_DictationStartSound)
 
         ; 4. System Prep: Ensure mic volume is up
         try {
@@ -5282,7 +5368,15 @@ OnExit(CleanupDictationIndicator)
     }
 
     ; Just trigger the check - chimes are handled by state transitions
+    ; DEBUG: Log before ToggleDictationMode
+    try {
+        FileAppend("[" . A_TickCount . "] HOTKEY: About to call ToggleDictationMode, g_DictationActive: " . (g_DictationActive ? "true" : "false") . "`n", A_ScriptDir . "\dictation-sound-debug.log")
+    } catch {
+    }
     ToggleDictationMode()
+    
+    ; Release recursion guard
+    isProcessing := false
 }
 
 ; Dictation Loop - Win+Alt+Shift+7

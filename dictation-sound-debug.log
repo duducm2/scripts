@@ -1,0 +1,202 @@
+[630329515] HOTKEY TRIGGERED - g_DictationActive: false
+[630329515] HOTKEY TRIGGERED - g_DictationActive: false
+[630329531] HOTKEY: Set g_DictationActive = true
+[630329546] PLAYING START_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav, g_DictationActive: true
+[630329546] HOTKEY: About to call SafePlayDictationSound with: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav
+[630329562] PLAYING START_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav, g_DictationActive: true
+[630331406] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[630331421] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[630331437] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[630331453] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[630335953] HOTKEY TRIGGERED - g_DictationActive: true
+[630335953] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[630339593] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[630341359] HOTKEY TRIGGERED - g_DictationActive: false
+[630341359] HOTKEY TRIGGERED - g_DictationActive: false
+[630341375] HOTKEY: Set g_DictationActive = true
+[630341390] HOTKEY: About to call SafePlayDictationSound with: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav
+[630341406] PLAYING START_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav, g_DictationActive: true
+[630342218] MONITOR: Detected window exists AND !g_DictationActive - About to set active and play sound
+[630343062] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[630343093] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[630343109] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[630343593] MONITOR: About to call SafePlayDictationSound with: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav
+[630343593] PLAYING START_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav, g_DictationActive: true
+[630343843] MONITOR: Detected window exists AND !g_DictationActive - About to set active and play sound
+[630344906] MONITOR: About to call SafePlayDictationSound with: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav
+[630344906] PLAYING START_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav, g_DictationActive: true
+[630350015] HOTKEY TRIGGERED - g_DictationActive: true
+[630350015] HOTKEY TRIGGERED - g_DictationActive: true
+[630350015] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[630354140] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[630354140] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[630354171] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[630372281] HOTKEY TRIGGERED - g_DictationActive: false
+[630372281] HOTKEY: Set g_DictationActive = true
+[630372312] HOTKEY: About to call SafePlayDictationSound with: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav
+[630372328] PLAYING START_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav, g_DictationActive: true
+[630374328] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[630374343] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[630374375] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[630374390] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[630402937] HOTKEY TRIGGERED - g_DictationActive: true
+[630402937] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[630410953] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[630410953] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[630424156] HOTKEY TRIGGERED - g_DictationActive: false
+[630424156] HOTKEY TRIGGERED - g_DictationActive: false
+[630424171] HOTKEY: Set g_DictationActive = true
+[630424187] HOTKEY: About to call SafePlayDictationSound with: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav
+[630424203] PLAYING START_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav, g_DictationActive: true
+[630424765] MONITOR: Detected window exists AND !g_DictationActive - About to set active
+[630426234] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[630426281] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[630426312] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[630427109] MONITOR: Detected window exists AND !g_DictationActive - About to set active
+[630427390] MONITOR: Detected window exists AND !g_DictationActive - About to set active
+[630427453] HOTKEY TRIGGERED - g_DictationActive: true
+[630427453] HOTKEY TRIGGERED - g_DictationActive: true
+[630427468] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[630433953] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[630434484] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[630437015] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[630437015] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[630698859] HOTKEY TRIGGERED - g_DictationActive: false
+[630698875] HOTKEY: Set g_DictationActive = true
+[630698890] HOTKEY: About to call SafePlayDictationSound with: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav
+[630698890] HOTKEY: About to call SafePlayDictationSound with: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav
+[630698906] PLAYING START_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav, g_DictationActive: true
+[630701109] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[630701156] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[630701218] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[630737734] HOTKEY TRIGGERED - g_DictationActive: true
+[630737734] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[630746234] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[630746234] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[630746250] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[630784890] HOTKEY TRIGGERED - g_DictationActive: false
+[630784890] HOTKEY: Set g_DictationActive = true
+[630784921] HOTKEY: About to call SafePlayDictationSound with: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav
+[630784921] PLAYING START_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav, g_DictationActive: true
+[630784937] PLAYING START_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav, g_DictationActive: true
+[630786968] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[630786968] HOTKEY TRIGGERED - g_DictationActive: true
+[630786984] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[630786984] HOTKEY TRIGGERED - g_DictationActive: true
+[630787000] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[630787031] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[630794484] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[630794500] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[630794546] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[630794546] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[630796984] MONITOR: Detected window exists AND !g_DictationActive - About to set active
+[630797000] MONITOR: Detected window exists AND !g_DictationActive - About to set active
+[630797031] MONITOR: Detected window exists AND !g_DictationActive - About to set active
+[630797046] MONITOR: Detected window exists AND !g_DictationActive - About to set active
+[630847687] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[630847687] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[630847734] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[631305453] HOTKEY TRIGGERED - g_DictationActive: false
+[631305453] HOTKEY: Set g_DictationActive = true
+[631305484] HOTKEY: About to call SafePlayDictationSound with: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav
+[631305484] PLAYING START_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav, g_DictationActive: true
+[631308468] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631308484] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631308546] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631308562] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631320718] HOTKEY TRIGGERED - g_DictationActive: true
+[631320718] HOTKEY TRIGGERED - g_DictationActive: true
+[631320750] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631324906] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[631324906] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[631446500] HOTKEY TRIGGERED - g_DictationActive: false, timeSinceLast: 631446500ms
+[631446500] HOTKEY TRIGGERED - g_DictationActive: false, timeSinceLast: 631446500ms
+[631446531] HOTKEY: Set g_DictationActive = true
+[631446546] HOTKEY: About to call SafePlayDictationSound with: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav
+[631446546] PLAYING START_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav, g_DictationActive: true
+[631448546] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631448562] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631448578] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631453578] HOTKEY TRIGGERED - g_DictationActive: true, timeSinceLast: 7078ms
+[631453578] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631457375] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[631457375] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[631457390] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[631460046] HOTKEY TRIGGERED - g_DictationActive: false, timeSinceLast: 6468ms
+[631460046] HOTKEY: Set g_DictationActive = true
+[631460093] HOTKEY: About to call SafePlayDictationSound with: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav
+[631460093] HOTKEY: About to call SafePlayDictationSound with: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav
+[631460109] PLAYING START_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav, g_DictationActive: true
+[631461890] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631461906] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631461921] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631464546] HOTKEY TRIGGERED - g_DictationActive: true, timeSinceLast: 4500ms
+[631464546] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631469578] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[631469578] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[631469593] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[631524390] HOTKEY TRIGGERED - g_DictationActive: false, timeSinceLast: 631524390ms
+[631524390] HOTKEY TRIGGERED - g_DictationActive: false, timeSinceLast: 631524390ms
+[631524421] HOTKEY: Set g_DictationActive = true
+[631526015] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631526031] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631526031] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631540250] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[631540250] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[631540265] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[631542656] HOTKEY TRIGGERED - g_DictationActive: false, timeSinceLast: 5985ms
+[631542656] HOTKEY TRIGGERED - g_DictationActive: false, timeSinceLast: 5985ms
+[631542687] HOTKEY: Set g_DictationActive = true
+[631544546] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631544578] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631544609] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631555515] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[631555531] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[631557500] HOTKEY TRIGGERED - g_DictationActive: false, timeSinceLast: 5422ms
+[631557500] HOTKEY: Set g_DictationActive = true
+[631557531] HOTKEY TRIGGERED - g_DictationActive: false, timeSinceLast: 5422ms
+[631557531] HOTKEY: Set g_DictationActive = true
+[631559093] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631559125] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631559156] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631561093] HOTKEY TRIGGERED - g_DictationActive: true, timeSinceLast: 3593ms
+[631561093] HOTKEY TRIGGERED - g_DictationActive: true, timeSinceLast: 3593ms
+[631561109] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631566984] HOTKEY TRIGGERED - g_DictationActive: false, timeSinceLast: 5891ms
+[631566984] HOTKEY TRIGGERED - g_DictationActive: false, timeSinceLast: 5891ms
+[631567015] HOTKEY: Set g_DictationActive = true
+[631567031] HOTKEY TRIGGERED - g_DictationActive: false, timeSinceLast: 5891ms
+[631567046] HOTKEY: Set g_DictationActive = true
+[631567109] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: true
+[631567109] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: true
+[631567125] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: true
+[631568687] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631568703] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631568718] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631570390] HOTKEY TRIGGERED - g_DictationActive: true, timeSinceLast: 3406ms
+[631570390] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631579062] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631579093] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631579109] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631582406] HOTKEY TRIGGERED - g_DictationActive: true, timeSinceLast: 4953ms
+[631582406] HOTKEY TRIGGERED - g_DictationActive: true, timeSinceLast: 4953ms
+[631582437] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631585968] HOTKEY TRIGGERED - g_DictationActive: false, timeSinceLast: 3562ms
+[631585968] HOTKEY: Set g_DictationActive = true
+[631586000] HOTKEY TRIGGERED - g_DictationActive: false, timeSinceLast: 3562ms
+[631586015] HOTKEY: Set g_DictationActive = true
+[631587406] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: true
+[631587437] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: true
+[631587453] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: true
+[631587625] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631587640] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631587671] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631587703] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631589015] HOTKEY TRIGGERED - g_DictationActive: true, timeSinceLast: 3047ms
+[631589015] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631589031] HOTKEY TRIGGERED - g_DictationActive: true, timeSinceLast: 3047ms
+[631589062] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631594906] HOTKEY TRIGGERED - g_DictationActive: false, timeSinceLast: 5891ms
+[631594906] HOTKEY: Set g_DictationActive = true
+[631594937] HOTKEY TRIGGERED - g_DictationActive: false, timeSinceLast: 5891ms
+[631594937] HOTKEY: Set g_DictationActive = true
