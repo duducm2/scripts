@@ -1013,6 +1013,7 @@ cheatSheets["Google"] := "
 (
 Google (Shift)
 🔍 [S][S]earch box focus
+🥇 [U][U]se first result
 )"
 
 ; --- ChatGPT ---------------------------------------------------------------
@@ -13283,6 +13284,53 @@ PlayCompletionChime_Gemini() {
     }
 }
 
+; Shift + U : Select first search result
++u:: {
+    try {
+        uia := UIA_Browser()
+        if !uia
+            return
+
+        ; Find the main results container
+        centerCol := uia.FindFirst({AutomationId: "center_col"})
+        
+        targetLink := ""
+
+        if (centerCol) {
+            ; Find the first result title text inside center_col
+            ; ClassName "LC20lb" is standard for Google result titles
+            titleText := centerCol.FindFirst({ClassName: "LC20lb", MatchMode: "Substring"})
+            
+            if (titleText) {
+                ; The link is the parent of the title text
+                targetLink := titleText.WalkTree("p") ; Get Parent
+            }
+        } else {
+             ; Fallback: search from root if center_col not found
+             titleText := uia.FindFirst({ClassName: "LC20lb", MatchMode: "Substring"})
+             if (titleText) {
+                 targetLink := titleText.WalkTree("p")
+             }
+        }
+
+        if (targetLink) {
+             ; Try to invoke (click) the link
+             try {
+                 targetLink.Invoke()
+             } catch {
+                 targetLink.Click()
+             }
+        } else {
+             ToolTip("First result not found")
+             SetTimer(() => ToolTip(), -2000)
+        }
+
+    } catch Error as e {
+        ToolTip("Error: " . e.Message)
+        SetTimer(() => ToolTip(), -2000)
+    }
+}
+
 #HotIf
 
 ;-------------------------------------------------------------------
@@ -14058,7 +14106,7 @@ IsFileDialogActive() {
                 ; Check if button is enabled and visible
                 isEnabled := closeButton.GetPropertyValue(UIA.Property.IsEnabled)
                 isOffscreen := closeButton.GetPropertyValue(UIA.Property.IsOffscreen)
-                
+
                 if (!isEnabled || isOffscreen) {
                     ; Button found but not usable, try keyboard shortcut fallback
                     Send "^+s"
