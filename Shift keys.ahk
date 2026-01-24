@@ -9675,11 +9675,6 @@ FoldAllGitDirectoriesInCursor() {
 
 ; Collapse all expandable directories in the Explorer (FileExplorer3) for all workspace roots
 FoldAllDirectoriesInExplorer() {
-    ; #region agent log
-    try {
-        FileAppend('{"sessionId":"debug-session", "hypothesisId":"A", "location":"FoldAllDirectoriesInExplorer:9677", "message":"Entering FoldAllDirectoriesInExplorer", "timestamp":' . A_TickCount . '}`n', 'c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log')
-    }
-    ; #endregion
     try {
         ; Show banner immediately
         ShowSmallLoadingIndicator_ChatGPT("Folding directories...")
@@ -9773,11 +9768,6 @@ FoldAllDirectoriesInExplorer() {
             ; Re-find items each iteration as tree structure may change after collapsing
             items := fileTree.FindElements(dirCond, UIA.TreeScope.Descendants)
             
-            ; #region agent log
-            try {
-                FileAppend('{"sessionId":"debug-session", "hypothesisId":"B", "location":"FoldAllDirectoriesInExplorer:9752", "message":"Items found", "data":{"count":' . (items ? items.Length : 0) . ', "iteration":' . A_Index . '}, "timestamp":' . A_TickCount . '}`n', 'c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log')
-            }
-            ; #endregion
 
             if !items
                 break
@@ -9790,12 +9780,6 @@ FoldAllDirectoriesInExplorer() {
                     pat := item.ExpandCollapsePattern
                     state := pat.ExpandCollapseState
                     
-                    ; #region agent log
-                    try {
-                        name := item.GetPropertyValue(UIA.Property.Name)
-                        FileAppend('{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Item state check", "data":{"name":"' . name . '", "state":' . state . '}, "timestamp":' . A_TickCount . '}`n', 'c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log')
-                    }
-                    ; #endregion
 
                     if state != UIA.ExpandCollapseState.Collapsed {
                         ; Method 1: Scroll into view (helper)
@@ -9852,11 +9836,6 @@ FoldAllDirectoriesInExplorer() {
                         }
                     }
                 } catch Error as e {
-                    ; #region agent log
-                    try {
-                        FileAppend('{"sessionId":"debug-session", "hypothesisId":"C", "location":"FoldLoop", "message":"Collapse Error", "data":{"error":"' . e.Message . '"}, "timestamp":' . A_TickCount . '}`n', 'c:\Users\eduev\Meu Drive\12 - Scripts\.cursor\debug.log')
-                    }
-                    ; #endregion
                 }
                 Sleep 10
             }
