@@ -298,7 +298,29 @@ MonitorWikipediaFocus() {
     ; Check if Wikipedia is still the active window
     SetTitleMatchMode 2
     if (!WinActive("Wikipedia")) {
-        ; Wikipedia is no longer active - disable focus mode and stop monitoring
+        ; Wikipedia is no longer active - exit fullscreen and disable focus mode
+        ; Send F11 to exit fullscreen mode before disabling focus
+        SetTitleMatchMode 2
+        if (WinExist("Wikipedia")) {
+            ; Get the window handle
+            wikipediaHwnd := WinExist("Wikipedia")
+            if (wikipediaHwnd) {
+                ; Store current active window to restore focus after
+                currentActiveHwnd := WinExist("A")
+                
+                ; Briefly activate Wikipedia window to send F11
+                WinActivate("ahk_id " . wikipediaHwnd)
+                Sleep(50)  ; Brief delay to ensure window is active
+                Send("{F11}")
+                Sleep(100)  ; Allow time for fullscreen exit
+                
+                ; Restore focus to the window that was previously active
+                if (currentActiveHwnd && WinExist("ahk_id " . currentActiveHwnd)) {
+                    WinActivate("ahk_id " . currentActiveHwnd)
+                }
+            }
+        }
+        ; Disable focus mode and stop monitoring
         DisableFocusMode()
         StopWikipediaFocusMonitor()
     }
@@ -561,7 +583,34 @@ HandleWikipediaChar(char) {
             if WinWait("Wikipedia", , 10) {
                 WinActivate("Wikipedia")
                 WinWaitActive("Wikipedia", , 5)
-                Sleep(1500)  ; Additional wait for page to stabilize
+                
+                ; Check if page is ready by attempting to get URL
+                ; This ensures the page has loaded before proceeding
+                pageReady := false
+                loadingRetries := 5
+                loop loadingRetries {
+                    try {
+                        url := GetWikipediaURL()
+                        if (url != "") {
+                            pageReady := true
+                            break
+                        }
+                    } catch {
+                        ; URL not accessible yet, page may still be loading
+                    }
+                    if (A_Index < loadingRetries) {
+                        Sleep(300)  ; Wait 300ms before retry
+                    }
+                }
+                
+                ; If page wasn't ready after retries, wait a bit more for loading
+                if (!pageReady) {
+                    Sleep(500)  ; Additional delay for page loading
+                }
+                
+                ; Enter fullscreen mode once page is ready
+                Send("{F11}")
+                Sleep(200)  ; Allow time for fullscreen transition
 
                 ; Enable focus mode to darken other monitors
                 EnableFocusMode()
@@ -849,12 +898,49 @@ ShowWikipediaSelector() {
 {
     SetTitleMatchMode 2
     if WinExist("Wikipedia") {
+        ; Window already exists - use reduced delay for activation
+        windowAlreadyOpen := true
         WinActivate
         WinWaitActive("Wikipedia", , 2)
         ; Ensure Chrome is active (Wikipedia windows are Chrome windows)
         WinWaitActive("ahk_exe chrome.exe", , 2)
-        Sleep(200)  ; Small delay to ensure window is fully ready
+        Sleep(100)  ; Reduced delay since window is already open
         CenterMouse()
+    } else {
+        ; Window doesn't exist yet - it will be created by selector
+        ; This path is handled by the selector logic below
+        windowAlreadyOpen := false
+    }
+    
+    ; If window was activated (already existed), proceed with fullscreen setup
+    if (windowAlreadyOpen) {
+        ; Check if page is loading by attempting to get URL
+        ; If page is still loading, wait longer
+        pageReady := false
+        loadingRetries := 5
+        loop loadingRetries {
+            try {
+                url := GetWikipediaURL()
+                if (url != "") {
+                    pageReady := true
+                    break
+                }
+            } catch {
+                ; URL not accessible yet, page may still be loading
+            }
+            if (A_Index < loadingRetries) {
+                Sleep(300)  ; Wait 300ms before retry
+            }
+        }
+        
+        ; If page wasn't ready after retries, wait a bit more for loading
+        if (!pageReady) {
+            Sleep(500)  ; Additional delay for page loading
+        }
+
+        ; Enter fullscreen mode
+        Send("{F11}")
+        Sleep(200)  ; Allow time for fullscreen transition
 
         ; Enable focus mode to darken other monitors
         EnableFocusMode()
