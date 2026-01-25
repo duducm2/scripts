@@ -200,3 +200,77 @@
 [631594906] HOTKEY: Set g_DictationActive = true
 [631594937] HOTKEY TRIGGERED - g_DictationActive: false, timeSinceLast: 5891ms
 [631594937] HOTKEY: Set g_DictationActive = true
+[631656375] HOTKEY TRIGGERED - g_DictationActive: true, timeSinceLast: 61469ms
+[631656375] HOTKEY TRIGGERED - g_DictationActive: true, timeSinceLast: 61469ms
+[631656406] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631667390] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[631667390] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[631667437] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[631778187] HOTKEY TRIGGERED - g_DictationActive: false, timeSinceLast: 631778187ms
+[631778187] HOTKEY: Set g_DictationActive = true
+[631778218] PLAYING START_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav, g_DictationActive: true
+[631778343] PLAYING START_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav, g_DictationActive: true
+[631778500] PLAYING START_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav, g_DictationActive: true
+[631778546] MONITOR: Playing instant audio feedback - handy.exe confirmed ready
+[631778546] PLAYING START_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav, g_DictationActive: true
+[631778593] MONITOR: Playing instant audio feedback - handy.exe confirmed ready
+[631778734] MONITOR: Playing instant audio feedback - handy.exe confirmed ready
+[631779843] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631779890] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631780468] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631782890] HOTKEY TRIGGERED - g_DictationActive: true, timeSinceLast: 4703ms
+[631782890] HOTKEY TRIGGERED - g_DictationActive: true, timeSinceLast: 4703ms
+[631782906] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631787687] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[631787718] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[631790859] HOTKEY TRIGGERED - g_DictationActive: false, timeSinceLast: 7969ms
+[631790859] HOTKEY TRIGGERED - g_DictationActive: false, timeSinceLast: 7969ms
+[631790875] HOTKEY: Set g_DictationActive = true
+[631790906] PLAYING START_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav, g_DictationActive: true
+[631790921] PLAYING START_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav, g_DictationActive: true
+[631791046] MONITOR: Playing instant audio feedback - handy.exe confirmed ready
+[631791062] MONITOR: Playing instant audio feedback - handy.exe confirmed ready
+[631792500] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631792515] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631792546] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631846375] HOTKEY TRIGGERED - g_DictationActive: true, timeSinceLast: 55516ms
+[631846375] HOTKEY TRIGGERED - g_DictationActive: true, timeSinceLast: 55516ms
+[631846390] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631856890] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[631856890] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[631953406] HOTKEY TRIGGERED - g_DictationActive: false, timeSinceLast: 107031ms
+[631953406] HOTKEY TRIGGERED - g_DictationActive: false, timeSinceLast: 107031ms
+[631953437] HOTKEY: Set g_DictationActive = true
+[631953468] PLAYING START_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav, g_DictationActive: true
+[631953484] PLAYING START_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav, g_DictationActive: true
+[631953500] PLAYING START_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav, g_DictationActive: true
+[631953781] MONITOR: Playing instant audio feedback - handy.exe confirmed ready
+[631953796] MONITOR: Playing instant audio feedback - handy.exe confirmed ready
+[631953812] MONITOR: Playing instant audio feedback - handy.exe confirmed ready (atomic)
+[631953828] PLAYING START_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav, g_DictationActive: true
+[631954031] MONITOR: Playing instant audio feedback - handy.exe confirmed ready (atomic)
+[631955156] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631955187] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631955203] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631955250] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631955937] MONITOR: Detected window exists AND !g_DictationActive - About to set active
+[631956281] MONITOR: Detected window exists AND !g_DictationActive - About to set active
+[631957109] PLAYING START_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav, g_DictationActive: true
+[631957250] MONITOR: Playing instant audio feedback - handy.exe confirmed ready (atomic)
+[631957437] PLAYING START_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav, g_DictationActive: true
+[631957484] MONITOR: Playing instant audio feedback - handy.exe confirmed ready (atomic)
+[631957750] HOTKEY TRIGGERED - g_DictationActive: true, timeSinceLast: 4344ms
+[631957750] HOTKEY TRIGGERED - g_DictationActive: true, timeSinceLast: 4344ms
+[631957781] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[631962921] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[631962953] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[631965796] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[631966265] PLAYING OTHER_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-finished.wav, g_DictationActive: false
+[633088312] HOTKEY TRIGGERED - g_DictationActive: false, timeSinceLast: 1130562ms
+[633088312] HOTKEY: Set g_DictationActive = true
+[633088765] PLAYING START_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav, g_DictationActive: true
+[633088781] PLAYING START_SOUND - path: C:\Users\eduev\Meu Drive\12 - Scripts\sounds\speach-start.wav, g_DictationActive: true
+[633088843] MONITOR: Playing instant audio feedback - handy.exe confirmed ready (atomic)
+[633088890] MONITOR: Playing instant audio feedback - handy.exe confirmed ready (atomic)
+[633089890] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true
+[633089921] HOTKEY: About to call ToggleDictationMode, g_DictationActive: true

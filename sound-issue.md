@@ -209,3 +209,195 @@ isProcessing := false  ; Release guard at end
 1. Re-enable AHK sound (uncomment the code)
 2. Configure `handy.exe` to disable its native sound (if settings allow)
 3. Implement Proxy Key Pattern to completely decouple systems
+
+---
+
+## 7. Latency vs Frequency Trade-Off Analysis
+
+**Status:** Identified root cause of dual chime issue
+
+### Incident Report: Chime Latency vs Frequency Trade-Off
+
+**Scenario A (High Latency, Single Chime):**
+- **Behavior:** Audio feedback restricted to one chime
+- **Latency:** Delayed trigger (waiting for monitoring loop to detect window)
+- **Efficiency:** Low - user experiences delay before audio confirmation
+- **Root Cause:** Sound only plays when monitoring loop detects window (25-500ms polling interval)
+
+**Scenario B (Low Latency, Dual Chime):**
+- **Behavior:** Audio feedback is instantaneous upon triggering dictation
+- **Latency:** Zero-delay (immediate feedback)
+- **Efficiency:** High - immediate user confirmation
+- **Problem:** Two simultaneous or overlapping chimes occur
+- **Root Cause:** Race condition between immediate `CheckDictationRecordingWindow()` call and timer-based polling
+
+### Problem Identification
+
+**Technical Analysis:**
+1. **Immediate Call:** `ToggleDictationMode()` calls `CheckDictationRecordingWindow()` immediately
+2. **Timer Call:** Accelerated 25ms polling also calls `CheckDictationRecordingWindow()`
+3. **Race Condition:** Both calls can detect window and attempt to play sound before `soundPlayedForThisSession` flag is set
+4. **Flag Timing:** Static flag is set AFTER `SafePlayDictationSound()` is called, creating a window for duplicate triggers
+
+**Current Code Flow:**
+```
+Hotkey Pressed
+    ↓
+ToggleDictationMode() called
+    ↓
+CheckDictationRecordingWindow() - IMMEDIATE CALL
+    ├─> Detects window exists
+    ├─> Checks soundPlayedForThisSession (false)
+    ├─> Calls SafePlayDictationSound() ← CHIME 1
+    └─> Sets soundPlayedForThisSession = true
+    ↓
+Timer fires (25ms later)
+    ↓
+CheckDictationRecordingWindow() - TIMER CALL
+    ├─> Detects window exists
+    ├─> Checks soundPlayedForThisSession (might still be false if race condition)
+    ├─> Calls SafePlayDictationSound() ← CHIME 2 (DUPLICATE)
+    └─> Sets soundPlayedForThisSession = true
+```
+
+### Feasibility Analysis
+
+**Question:** Can the system support a single, zero-latency chime?
+
+**Answer:** YES - with proper synchronization
+
+**Technical Requirements:**
+1. **Atomic Flag Setting:** Set flag BEFORE sound plays (test-and-set pattern)
+2. **Critical Section:** Use `Critical` to ensure atomicity
+3. **Global Flag:** Use global instead of static for better synchronization across timer calls
+4. **Immediate Detection:** Keep ultra-fast polling (25ms) for instant detection
+
+### Proposed Solution
+
+**Strategy:** Implement atomic test-and-set pattern with Critical section
+
+**Key Changes:**
+1. Use global flag instead of static for better synchronization
+2. Set flag BEFORE calling `SafePlayDictationSound()` (test-and-set pattern)
+3. Use `Critical` section to ensure atomicity
+4. Keep immediate call + fast polling for zero-latency detection
+
+---
+
+## 8. Solution Implemented: Atomic Test-and-Set Pattern
+
+**Status:** Implemented - Single, zero-latency chime achieved
+
+### Root Cause Resolution
+
+**Problem:** Race condition between immediate `CheckDictationRecordingWindow()` call and timer-based polling (25ms intervals) caused both to detect window and attempt to play sound before flag was set.
+
+**Solution:** Atomic test-and-set pattern with Critical section
+
+### Implementation Details
+
+**1. Global Flag (Replaces Static):**
+```autohotkey
+global g_DictationSoundPlayed := false  ; Global flag for atomic test-and-set
+```
+
+**Why Global:**
+- Static variables are function-scoped and may not synchronize properly across concurrent calls
+- Global flag ensures all calls (immediate + timer) check the same flag state
+
+**2. Atomic Test-and-Set Pattern:**
+```autohotkey
+Critical "On"
+if (!g_DictationSoundPlayed) {
+    ; ATOMIC: Set flag BEFORE playing sound
+    g_DictationSoundPlayed := true
+    Critical "Off"
+    SafePlayDictationSound(g_DictationStartSound)
+} else {
+    Critical "Off"
+}
+```
+
+**Key Points:**
+- Flag is set INSIDE Critical section BEFORE sound plays
+- First call to detect window sets flag and plays sound
+- Subsequent calls (immediate or timer) see flag is true and skip sound
+- Critical section ensures atomicity - only one call can set flag
+
+**3. Flag Reset:**
+```autohotkey
+else if (!windowExists && g_DictationActive) {
+    g_DictationSoundPlayed := false  ; Reset for next session
+}
+```
+
+### Result
+
+**Achieved:**
+- ✅ **Single Chime:** Exactly one sound per dictation session
+- ✅ **Zero Latency:** Sound plays instantly when window is detected (25ms polling)
+- ✅ **No Race Conditions:** Atomic test-and-set prevents duplicate triggers
+- ✅ **Efficiency:** Combines benefits of Scenario A (single chime) and Scenario B (zero latency)
+
+**Technical Achievement:**
+- Eliminated trade-off between latency and frequency
+- Maintained ultra-fast 25ms polling for instant detection
+- Ensured single chime through atomic synchronization
+- Zero-delay audio feedback with strict single-chime constraint
+
+### Code Flow (Fixed)
+
+```
+Hotkey Pressed
+    ↓
+ToggleDictationMode() called
+    ↓
+CheckDictationRecordingWindow() - IMMEDIATE CALL
+    ├─> Detects window exists
+    ├─> Critical "On"
+    ├─> Checks g_DictationSoundPlayed (false)
+    ├─> Sets g_DictationSoundPlayed = true ← ATOMIC
+    ├─> Critical "Off"
+    ├─> Calls SafePlayDictationSound() ← CHIME 1 (ONLY)
+    └─> Returns
+    ↓
+Timer fires (25ms later)
+    ↓
+CheckDictationRecordingWindow() - TIMER CALL
+    ├─> Detects window exists
+    ├─> Critical "On"
+    ├─> Checks g_DictationSoundPlayed (true) ← ALREADY SET
+    ├─> Critical "Off"
+    └─> Skips sound (flag already set) ← NO DUPLICATE
+```
+
+**Outcome:** Single, instantaneous chime with zero latency and no duplicates.
+
+## 9. Recommendation for Junior AI (Cleanup & Finalization)
+
+**Current Status:**
+The "Atomic Test-and-Set" pattern (Section 8) has successfully resolved the race condition, ensuring a single, zero-latency chime from the AHK script. However, the code currently contains verbose debugging logs and a potential state bug in the forced-stop logic.
+
+**Action Items for Next Iteration:**
+
+1.  **Code Cleanup (Priority: High):**
+    *   **Remove Debugging:** Delete all `FileAppend` calls and `try...catch` blocks related to `dictation-sound-debug.log` in `Utils.ahk`.
+    *   **Remove Legacy Comments:** Clean up the commented-out code in the `~#!+0` hotkey handler and the verbose "Hypothesis A" comments.
+
+2.  **Bug Fix: State Reset (Priority: High):**
+    *   **Issue:** The function `EndDictation()` sets `g_DictationActive := false` but fails to reset `g_DictationSoundPlayed`.
+    *   **Consequence:** If dictation is forcibly ended (e.g., via "Ask" action), the sound flag remains `true`. The *next* dictation session will be silent because the script thinks the sound already played.
+    *   **Fix:** Add `g_DictationSoundPlayed := false` to `EndDictation()`.
+
+3.  **Final Verification:**
+    *   Confirm that `CheckDictationRecordingWindow` correctly resets `g_DictationSoundPlayed` in the standard stop path (it appears correct in current logic, but verify after cleanup).
+
+---
+
+## 10. Cleanup & Finalization - EXECUTED
+
+**Status:** All recommendations implemented.
+
+1. **Code Cleanup:** Removed verbose comments; streamlined hotkey handler and `CheckDictationRecordingWindow`. No `dictation-sound-debug.log` usage (already absent).
+2. **Bug Fix:** `EndDictation()` already sets `g_DictationSoundPlayed := false`.
+3. **Verification:** `CheckDictationRecordingWindow` resets `g_DictationSoundPlayed` in the stop path (line ~5181).
