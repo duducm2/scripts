@@ -4848,6 +4848,7 @@ global g_PendingDictationAction := ""  ; Action to execute after transcription: 
 global g_KeepIndicatorVisible := false  ; Flag to keep indicator visible until paste action completes
 global g_LastStateTransitionTick := 0  ; Timestamp of last state transition to prevent rapid re-detection
 global g_DictationSoundPlayed := false  ; Atomic test-and-set: one start chime per session
+global g_DictationStartClipboardText := "" ; Track clipboard content at start to detect changes
 
 ; Debug logging helper for dictation workflow
 LogDebug(sessionId, runId, hypothesisId, location, message, data := "") {
@@ -5075,9 +5076,26 @@ SafePlayDictationSound(filePath) {
     }
 }
 
+; Handler for clipboard changes during dictation completion
+DictationClipboardHandler(DataType) {
+    ; Remove handler immediately to prevent multiple triggers
+    OnClipboardChange(DictationClipboardHandler, 0)
+
+    ; Trigger completion logic immediately
+    PlayDictationCompletionChime()
+}
+
 ; Play completion chime after transcription finishes
 PlayDictationCompletionChime(*) {
     global g_DictationCompletionChimeScheduled, g_PendingDictationAction, g_KeepIndicatorVisible
+
+    ; Ensure clipboard handler is removed (safe to call even if already removed)
+    try {
+        OnClipboardChange(DictationClipboardHandler, 0)
+    }
+
+    ; Cancel fallback timer to prevent redundant calls
+    SetTimer(PlayDictationCompletionChime, 0)
 
     ; CRITICAL: Test-and-set pattern - clear flag IMMEDIATELY to prevent duplicates
     ; Use Critical to ensure atomicity
@@ -5125,7 +5143,7 @@ PlayDictationCompletionChime(*) {
 ; Check Recording window (handy.exe) and update indicator; play start chime when detected.
 CheckDictationRecordingWindow() {
     global g_DictationActive, g_DictationCompletionChimeScheduled, g_LastStateTransitionTick, g_DictationStartSound,
-        g_DictationSoundPlayed
+        g_DictationSoundPlayed, g_DictationStartClipboardText
 
     ; Check if the "Recording" window exists
     windowExists := false
@@ -5140,6 +5158,13 @@ CheckDictationRecordingWindow() {
         if (!g_DictationActive) {
             g_DictationActive := true
             g_LastStateTransitionTick := A_TickCount
+
+            ; Capture current clipboard content to detect changes later
+            try {
+                g_DictationStartClipboardText := A_Clipboard
+            } catch {
+                g_DictationStartClipboardText := ""
+            }
 
             try {
                 micVolumeScript := A_ScriptDir "\scripts\Set-MicVolume.ps1"
@@ -5189,7 +5214,21 @@ CheckDictationRecordingWindow() {
             HideDictationIndicator()
         }
 
-        SetTimer(PlayDictationCompletionChime, -2500)
+        ; Check if clipboard has already changed (Handy might have updated it before window closed)
+        currentClip := ""
+        try {
+            currentClip := A_Clipboard
+        }
+
+        if (currentClip != g_DictationStartClipboardText) {
+            ; Clipboard already updated, trigger sound immediately
+            PlayDictationCompletionChime()
+        } else {
+            ; Clipboard not yet updated, wait for change
+            OnClipboardChange(DictationClipboardHandler)
+            ; Set fallback timer (reduced to 1.5s)
+            SetTimer(PlayDictationCompletionChime, -1500)
+        }
     }
     else if (g_DictationActive && windowExists) {
         ShowDictationIndicator()
