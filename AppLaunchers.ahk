@@ -699,31 +699,54 @@ HandleWikipediaChar(char) {
                 
                 ; Check if page is ready by attempting to get URL
                 ; This ensures the page has loaded before proceeding
+                ; For new windows, we need more time for the page to fully load
                 pageReady := false
-                loadingRetries := 5
+                loadingRetries := 8  ; Increased retries for new windows
                 loop loadingRetries {
                     try {
                         url := GetWikipediaURL()
-                        if (url != "") {
-                            pageReady := true
-                            break
+                        if (url != "" && InStr(url, "wikipedia.org")) {
+                            ; Verify the page is actually interactive, not just loaded
+                            ; Try to access UIA to ensure the page is ready for automation
+                            try {
+                                testUia := UIA_Browser("ahk_exe chrome.exe")
+                                if (testUia) {
+                                    ; Try to get document height to verify page is fully interactive
+                                    ; This is the same operation we'll need for scroll restoration
+                                    testDocHeight := testUia.JSReturnThroughClipboard("document.documentElement.scrollHeight")
+                                    if (testDocHeight != "" && testDocHeight != "undefined" && testDocHeight != "null") {
+                                        testHeightFloat := Float(testDocHeight)
+                                        if (testHeightFloat > 0) {
+                                            ; Page is ready and UIA can access it
+                                            pageReady := true
+                                            break
+                                        }
+                                    }
+                                }
+                            } catch {
+                                ; UIA not ready yet, continue waiting
+                            }
                         }
                     } catch {
                         ; URL not accessible yet, page may still be loading
                     }
                     if (A_Index < loadingRetries) {
-                        Sleep(300)  ; Wait 300ms before retry
+                        Sleep(500)  ; Longer wait for new windows
                     }
                 }
                 
                 ; If page wasn't ready after retries, wait a bit more for loading
+                ; For new windows, we need extra time for all resources to load
                 if (!pageReady) {
-                    Sleep(500)  ; Additional delay for page loading
+                    Sleep(1000)  ; Additional delay for new window page loading
+                } else {
+                    ; Even if page seems ready, give it a moment for layout to stabilize
+                    Sleep(800)  ; Additional stabilization time for new windows
                 }
                 
                 ; Enter fullscreen mode once page is ready
                 Send("{F11}")
-                Sleep(200)  ; Allow time for fullscreen transition
+                Sleep(300)  ; Allow time for fullscreen transition (increased for new windows)
 
                 ; Enable focus mode to darken other monitors
                 EnableFocusMode()
@@ -739,50 +762,199 @@ HandleWikipediaChar(char) {
                     }
                     savedPercentage := LoadWikipediaScrollPosition(item.url)
                     if (savedPercentage > 0.0) {
+                        ; Exit fullscreen before scroll restoration (REQUIRED: UIA unreliable in fullscreen)
+                        Send("{F11}")
+                        Sleep(300)  ; Allow time for fullscreen exit
+
                         ; Show banner immediately to give user instant feedback
                         restoreBanner := CreateCenteredBanner_Launchers("Restoring scroll position... Please wait",
                             "3772FF", "FFFFFF", 10, 178, 180)
-                        Sleep(10)  ; Brief pause to ensure banner is rendered and visible
 
                         ; Block all keyboard and mouse input during scroll restoration
                         BlockInput("On")
 
-                        uia := UIA_Browser("ahk_exe chrome.exe")
-                        ; Wait a bit more for page to be fully ready
-                        Sleep(500)
-                        ; Get current document height to calculate pixel position
-                        docHeight := uia.JSReturnThroughClipboard("document.documentElement.scrollHeight")
-                        if (docHeight != "" && docHeight != "undefined" && docHeight != "null") {
-                            docHeightFloat := Float(docHeight)
-                            if (docHeightFloat > 0) {
-                                targetScrollY := savedPercentage * docHeightFloat
-                                uia.JSExecute("window.scrollTo(0, " . Round(targetScrollY) . ");")
-                                Sleep(500)  ; Longer wait after scroll to check result
-
-                                ; Update banner to show success
-                                try {
-                                    if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
-                                        restoreBanner.Controls[1].Text := "Scroll position restored!"
-                                        Sleep(1000)  ; Show success message for 1 second
+                        ; Initialize UIA_Browser with retry logic
+                        ; For new windows, UIA needs more time to initialize and attach to the browser
+                        uia := false
+                        uiaRetries := 5  ; Increased retries for new windows
+                        loop uiaRetries {
+                            try {
+                                uia := UIA_Browser("ahk_exe chrome.exe")
+                                if (uia) {
+                                    ; Verify UIA can actually access the page (not just initialized)
+                                    ; Try a simple operation to ensure the connection is ready
+                                    try {
+                                        testUrl := uia.GetCurrentURL()
+                                        if (testUrl != "" && InStr(testUrl, "wikipedia.org")) {
+                                            ; UIA is ready and can access the page
+                                            break
+                                        }
+                                    } catch {
+                                        ; UIA initialized but not ready yet, continue retrying
+                                        uia := false
                                     }
-                                } catch {
                                 }
-
-                                ; Hide banner after restoration
-                                try {
-                                    if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
-                                        Sleep(500)  ; Brief delay before hiding
-                                        restoreBanner.Destroy()
-                                    }
-                                } catch {
-                                }
-
-                                Sleep(200)  ; Brief wait after scroll
+                            } catch Error as uiaErr {
+                                ; UIA initialization failed, will retry
+                            }
+                            if (A_Index < uiaRetries) {
+                                Sleep(800)  ; Longer wait for new windows (UIA initialization takes time)
                             }
                         }
 
-                        ; Restore input after scroll restoration is complete
-                        BlockInput("Off")
+                        if (!uia) {
+                            BlockInput("Off")
+                            if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
+                                restoreBanner.Controls[1].Text := "Error: Could not access browser"
+                                Sleep(2000)
+                                restoreBanner.Destroy()
+                            }
+                            ; Re-enter fullscreen after error
+                            Send("{F11}")
+                            Sleep(300)
+                            return
+                        }
+
+                        ; Wait longer for page to be ready and stabilize (critical for portrait orientation)
+                        ; For new windows, the page needs more time to fully render and become interactive
+                        ; Portrait orientation (1080x1920) can cause layout shifts that affect document height
+                        Sleep(2500)  ; Increased wait for new window page stabilization
+
+                        ; Get current document height with retry logic and stabilization
+                        ; Monitor 3 is portrait (1080x1920), so we need to ensure layout is stable
+                        ; For new windows, we need more retries and longer waits
+                        docHeight := ""
+                        docHeightRetries := 8  ; Increased retries for new windows
+                        lastDocHeight := 0
+                        stableCount := 0
+                        loop docHeightRetries {
+                            try {
+                                docHeight := uia.JSReturnThroughClipboard("document.documentElement.scrollHeight")
+                                if (docHeight != "" && docHeight != "undefined" && docHeight != "null") {
+                                    docHeightFloat := Float(docHeight)
+                                    ; For new windows, require 3 consecutive stable readings (more strict)
+                                    if (docHeightFloat = lastDocHeight) {
+                                        stableCount++
+                                        if (stableCount >= 3) {
+                                            ; Document height is stable, use it
+                                            break
+                                        }
+                                    } else {
+                                        stableCount := 0
+                                        lastDocHeight := docHeightFloat
+                                    }
+                                }
+                            } catch Error as docErr {
+                                if (A_Index < docHeightRetries) {
+                                    Sleep(600)  ; Longer wait for new windows
+                                }
+                            }
+                            if (A_Index < docHeightRetries) {
+                                Sleep(400)  ; Longer wait between measurements for new windows
+                            }
+                        }
+
+                        if (docHeight = "" || docHeight = "undefined" || docHeight = "null") {
+                            BlockInput("Off")
+                            if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
+                                restoreBanner.Controls[1].Text := "Error: Page not ready"
+                                Sleep(2000)
+                                restoreBanner.Destroy()
+                            }
+                            ; Re-enter fullscreen after error
+                            Send("{F11}")
+                            Sleep(300)
+                            return
+                        }
+
+                        docHeightFloat := Float(docHeight)
+                        if (docHeightFloat <= 0) {
+                            BlockInput("Off")
+                            if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
+                                restoreBanner.Controls[1].Text := "Error: Invalid page height"
+                                Sleep(2000)
+                                restoreBanner.Destroy()
+                            }
+                            ; Re-enter fullscreen after error
+                            Send("{F11}")
+                            Sleep(300)
+                            return
+                        }
+
+                        ; Execute scroll restoration
+                        ; For portrait orientation (1080x1920 on Monitor 3), use precise calculation
+                        targetScrollY := savedPercentage * docHeightFloat
+                        try {
+                            ; Use precise scrolling for portrait orientation (requires precise pixel positioning)
+                            scrollCommand := "window.scrollTo({top: " . targetScrollY . ", behavior: 'instant'});"
+                            uia.JSExecute(scrollCommand)
+                            Sleep(1000)  ; Increased wait for portrait orientation (layout may need more time)
+                            
+                            ; Verify scroll position was applied correctly with retry
+                            ; Portrait orientation may require multiple verification attempts
+                            verificationRetries := 3
+                            actualScrollYFloat := 0
+                            scrollDiff := 999999
+                            loop verificationRetries {
+                                try {
+                                    actualScrollY := uia.JSReturnThroughClipboard("window.pageYOffset")
+                                    actualScrollYFloat := Float(actualScrollY)
+                                    scrollDiff := Abs(actualScrollYFloat - targetScrollY)
+                                    ; If difference is small enough (within 2 pixels for portrait), consider it successful
+                                    if (scrollDiff <= 2.0) {
+                                        break
+                                    }
+                                } catch {
+                                }
+                                if (A_Index < verificationRetries) {
+                                    Sleep(300)  ; Wait before retry
+                                }
+                            }
+                            
+                            ; If scroll is significantly off, try to correct it
+                            if (scrollDiff > 5.0) {
+                                ; Re-scroll to correct position
+                                uia.JSExecute(scrollCommand)
+                                Sleep(500)
+                                ; Verify again
+                                try {
+                                    actualScrollY := uia.JSReturnThroughClipboard("window.pageYOffset")
+                                    actualScrollYFloat := Float(actualScrollY)
+                                    scrollDiff := Abs(actualScrollYFloat - targetScrollY)
+                                } catch {
+                                }
+                            }
+
+                            ; Restore input after scroll restoration
+                            BlockInput("Off")
+
+                            ; Update banner to show success, then hide
+                            if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
+                                try {
+                                    restoreBanner.Controls[1].Text := "Scroll position restored!"
+                                    Sleep(1000)  ; Show success message
+                                } catch {
+                                }
+                                try {
+                                    restoreBanner.Destroy()
+                                } catch {
+                                }
+                            }
+
+                            ; Re-enter fullscreen after successful scroll restoration
+                            Send("{F11}")
+                            Sleep(300)  ; Allow time for fullscreen transition
+                        } catch Error as scrollErr {
+                            BlockInput("Off")
+                            if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
+                                restoreBanner.Controls[1].Text := "Error: Scroll failed"
+                                Sleep(2000)
+                                restoreBanner.Destroy()
+                            }
+                            ; Re-enter fullscreen after error
+                            Send("{F11}")
+                            Sleep(300)
+                        }
                     }
                 } catch Error as err {
                     ; Always restore input on error
@@ -790,8 +962,16 @@ HandleWikipediaChar(char) {
                     ; Hide banner on error
                     try {
                         if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
+                            restoreBanner.Controls[1].Text := "Error: " . SubStr(err.Message, 1, 50)
+                            Sleep(2000)
                             restoreBanner.Destroy()
                         }
+                    } catch {
+                    }
+                    ; Re-enter fullscreen after error
+                    try {
+                        Send("{F11}")
+                        Sleep(300)
                     } catch {
                     }
                 }
