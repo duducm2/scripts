@@ -5066,8 +5066,12 @@ SafePlayDictationSound(filePath) {
 
     ; Update timestamp and play sound (if enabled)
     g_LastDictationSoundTick := A_TickCount
-    if (IsSoundEnabled()) {
-        SoundPlay(filePath)
+    if (IsSoundEnabled() && FileExist(filePath)) {
+        try {
+            SoundPlay(filePath)
+        } catch {
+            ; Silently ignore playback failures (missing file, sync placeholder, format, etc.)
+        }
     }
 }
 
