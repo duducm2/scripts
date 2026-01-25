@@ -3281,52 +3281,21 @@ GetWikipediaURLNormalized() {
 
 ; Wikipedia scroll position save function (duplicated from AppLaunchers.ahk)
 SaveWikipediaScrollPositionManually_ShiftKeys() {
-    ; #region agent log
-    SafeDebugLog(
-        '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H6","location":"Shift keys.ahk:3283","message":"SaveWikipediaScrollPositionManually_ShiftKeys entry","data":{"timestamp":' A_TickCount '},"timestamp":' A_Now '}' "`n"
-    )
-    ; #endregion
-
     try {
         ; Check if Wikipedia window is currently active
         activeWindow := WinGetTitle("A")
         isChromeActive := WinActive("ahk_exe chrome.exe")
         hasWikipedia := InStr(activeWindow, "Wikipedia")
-        ; #region agent log
-        SafeDebugLog(
-            '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H6","location":"Shift keys.ahk:3289","message":"Window check","data":{"isChromeActive":' isChromeActive ',"hasWikipedia":' hasWikipedia ',"activeWindow":"' activeWindow '"},"timestamp":' A_Now '}' "`n"
-        )
-        ; #endregion
         if (!isChromeActive || !hasWikipedia) {
-            ; #region agent log
-            SafeDebugLog(
-                '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H6","location":"Shift keys.ahk:3290","message":"Early return: Wikipedia not active","data":{},"timestamp":' A_Now '}' "`n"
-            )
-            ; #endregion
             return false
         }
     } catch Error as err {
-        ; #region agent log
-        SafeDebugLog(
-            '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H6","location":"Shift keys.ahk:3293","message":"Exception in window check","data":{"error":"' err
-            .Message '"},"timestamp":' A_Now '}' "`n")
-        ; #endregion
         return false
     }
 
     ; Exit fullscreen before scroll position save (REQUIRED: UIA unreliable in fullscreen)
-    ; #region agent log
-    SafeDebugLog(
-        '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H1","location":"Shift keys.ahk:3297","message":"Before F11 exit (save)","data":{"timestamp":' A_TickCount '},"timestamp":' A_Now '}' "`n"
-    )
-    ; #endregion
     Send("{F11}")
     Sleep(300)  ; Allow time for fullscreen exit (increased for reliability)
-    ; #region agent log
-    SafeDebugLog(
-        '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H1","location":"Shift keys.ahk:3300","message":"After F11 exit (save)","data":{"timestamp":' A_TickCount '},"timestamp":' A_Now '}' "`n"
-    )
-    ; #endregion
 
     ; Show banner to inform user that scroll position is being saved
     saveBanner := CreateCenteredBanner_ChatGPT("Saving scroll position... Please wait", "3772FF", "FFFFFF", 24, 178)
@@ -3334,11 +3303,6 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
     try {
         ; Get normalized Wikipedia URL
         url := GetWikipediaURLNormalized()
-        ; #region agent log
-        SafeDebugLog(
-            '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"Shift keys.ahk:3308","message":"URL retrieved","data":{"url":"' url '","isEmpty":' (
-                url = "") '},"timestamp":' A_Now '}' "`n")
-        ; #endregion
         if (url = "") {
             ; Re-enter fullscreen before returning
             Send("{F11}")
@@ -3349,18 +3313,8 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
 
         ; Create UIA_Browser for getting scroll position
         uia := false
-        ; #region agent log
-        SafeDebugLog(
-            '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"Shift keys.ahk:3318","message":"Before UIA_Browser (save)","data":{"timestamp":' A_TickCount '},"timestamp":' A_Now '}' "`n"
-        )
-        ; #endregion
         try {
             uia := UIA_Browser("ahk_exe chrome.exe")
-            ; #region agent log
-            SafeDebugLog(
-                '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"Shift keys.ahk:3320","message":"After UIA_Browser (save)","data":{"uiaExists":' (
-                    uia != false) '},"timestamp":' A_Now '}' "`n")
-            ; #endregion
         } catch Error as uiaErr {
             if (IsObject(saveBanner) && saveBanner.Hwnd) {
                 try {
@@ -3368,6 +3322,10 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
                 } catch {
                 }
             }
+            ; Re-enter fullscreen before returning
+            Send("{F11}")
+            Sleep(300)
+            fullscreenRestored := true
             return false
         }
 
@@ -3378,6 +3336,10 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
                 } catch {
                 }
             }
+            ; Re-enter fullscreen before returning
+            Send("{F11}")
+            Sleep(300)
+            fullscreenRestored := true
             return false
         }
 
@@ -3396,22 +3358,12 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
                 scrollYFloat := Float(scrollY)
                 ; Check if scroll position is stable
                 if (scrollYFloat = lastScrollY || lastScrollY = -1) {
-                    ; #region agent log
-                    SafeDebugLog(
-                        '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2,H5","location":"Shift keys.ahk:3334","message":"scrollY retrieved","data":{"scrollY":"' scrollY '","attempt":' A_Index ',"stable":' (
-                            scrollYFloat = lastScrollY) '},"timestamp":' A_Now '}' "`n")
-                    ; #endregion
                     if (scrollYFloat = lastScrollY) {
                         break  ; Stable, use this value
                     }
                     lastScrollY := scrollYFloat
                 }
             } catch Error as scrollErr {
-                ; #region agent log
-                SafeDebugLog(
-                    '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2,H5","location":"Shift keys.ahk:3335","message":"scrollY exception","data":{"error":"' scrollErr
-                    .Message '","attempt":' A_Index '},"timestamp":' A_Now '}' "`n")
-                ; #endregion
             }
             if (A_Index < scrollYRetries) {
                 Sleep(200)  ; Wait between attempts
@@ -3427,22 +3379,12 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
                 docHeightFloat := Float(docHeight)
                 ; Check if document height is stable
                 if (docHeightFloat = lastDocHeight || lastDocHeight = -1) {
-                    ; #region agent log
-                    SafeDebugLog(
-                        '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2,H5","location":"Shift keys.ahk:3340","message":"docHeight retrieved","data":{"docHeight":"' docHeight '","attempt":' A_Index ',"stable":' (
-                            docHeightFloat = lastDocHeight) '},"timestamp":' A_Now '}' "`n")
-                    ; #endregion
                     if (docHeightFloat = lastDocHeight) {
                         break  ; Stable, use this value
                     }
                     lastDocHeight := docHeightFloat
                 }
             } catch Error as docErr {
-                ; #region agent log
-                SafeDebugLog(
-                    '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2,H5","location":"Shift keys.ahk:3341","message":"docHeight exception","data":{"error":"' docErr
-                    .Message '","attempt":' A_Index '},"timestamp":' A_Now '}' "`n")
-                ; #endregion
             }
             if (A_Index < docHeightRetries) {
                 Sleep(200)  ; Wait between attempts
@@ -3454,22 +3396,12 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
             "undefined" && docHeight != "null") {
             scrollYFloat := Float(scrollY)
             docHeightFloat := Float(docHeight)
-            ; #region agent log
-            SafeDebugLog(
-                '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H5,H6","location":"Shift keys.ahk:3347","message":"Values converted","data":{"scrollYFloat":' scrollYFloat ',"docHeightFloat":' docHeightFloat '},"timestamp":' A_Now '}' "`n"
-            )
-            ; #endregion
             if (scrollYFloat >= 0 && docHeightFloat > 0) {
                 scrollPercentage := scrollYFloat / docHeightFloat
                 ; Clamp to valid range
                 if (scrollPercentage > 1.0) {
                     scrollPercentage := 1.0
                 }
-                ; #region agent log
-                SafeDebugLog(
-                    '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H5,H6","location":"Shift keys.ahk:3350","message":"scrollPercentage calculated","data":{"scrollPercentage":' scrollPercentage '},"timestamp":' A_Now '}' "`n"
-                )
-                ; #endregion
 
                 ; Save to INI file
                 scrollPositionsFile := A_ScriptDir "\data\wikipedia_scroll_positions.ini"
@@ -3488,31 +3420,70 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
 
                 ; Try to save to INI file (for persistence across sessions)
                 saved := false
-                ; #region agent log
-                SafeDebugLog(
-                    '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H4","location":"Shift keys.ahk:3374","message":"Before IniWrite","data":{"url":"' url '","scrollPercentage":' scrollPercentage ',"scrollYFloat":' scrollYFloat ',"docHeightFloat":' docHeightFloat ',"filePath":"' scrollPositionsFile '"},"timestamp":' A_Now '}' "`n"
-                )
-                ; #endregion
                 try {
-                    ; Delete file if it exists to ensure UTF-8 encoding (AutoHotkey writes UTF-8 by default)
+                    ; Read existing entries first (before deleting file) to preserve them
+                    existingEntries := Map()
+                    if (FileExist(scrollPositionsFile)) {
+                        try {
+                            ; Read all existing entries from the Positions section
+                            fileContent := FileRead(scrollPositionsFile)
+                            ; Parse INI format manually
+                            inPositionsSection := false
+                            loop Parse fileContent, "`n", "`r" {
+                                line := Trim(A_LoopField)
+                                if (line = "[Positions]") {
+                                    inPositionsSection := true
+                                    continue
+                                }
+                                if (inPositionsSection && SubStr(line, 1, 1) = "[") {
+                                    ; Hit another section, stop reading
+                                    break
+                                }
+                                if (inPositionsSection && InStr(line, "=")) {
+                                    pos := InStr(line, "=")
+                                    key := Trim(SubStr(line, 1, pos - 1))
+                                    value := Trim(SubStr(line, pos + 1))
+                                    if (key != "" && value != "") {
+                                        existingEntries[key] := value
+                                    }
+                                }
+                            }
+                        } catch {
+                            ; If read fails, we'll just write the new entry
+                        }
+                    }
+                    
+                    ; Update with new entry
+                    existingEntries[url] := scrollPercentage
+                    
+                    ; Delete file to recreate in UTF-8
                     if (FileExist(scrollPositionsFile)) {
                         try {
                             FileDelete(scrollPositionsFile)
+                            Sleep(100)  ; Small delay to ensure file system updates
                         } catch {
                         }
                     }
-                    saved := IniWrite(scrollPercentage, scrollPositionsFile, "Positions", url)
-                    ; #region agent log
-                    SafeDebugLog(
-                        '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H4","location":"Shift keys.ahk:3374","message":"After IniWrite","data":{"saved":' saved '},"timestamp":' A_Now '}' "`n"
-                    )
-                    ; #endregion
+                    
+                    ; Write all entries back in UTF-8 encoding
+                    try {
+                        ; Write UTF-8 BOM and section header
+                        FileAppend("[Positions]`r`n", scrollPositionsFile, "UTF-8")
+                        ; Write each entry
+                        for key, value in existingEntries {
+                            ; Escape special INI characters in key and value
+                            escapedKey := StrReplace(key, "=", "`=")
+                            escapedKey := StrReplace(escapedKey, ";", "`;")
+                            escapedValue := StrReplace(value, "`n", "`;")
+                            escapedValue := StrReplace(escapedValue, "`r", "")
+                            FileAppend(escapedKey . "=" . escapedValue . "`r`n", scrollPositionsFile, "UTF-8")
+                        }
+                        saved := true
+                    } catch {
+                        ; Fallback to IniWrite if manual write fails
+                        saved := IniWrite(scrollPercentage, scrollPositionsFile, "Positions", url)
+                    }
                 } catch Error as iniErr {
-                    ; #region agent log
-                    SafeDebugLog(
-                        '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H4","location":"Shift keys.ahk:3376","message":"IniWrite exception","data":{"error":"' iniErr
-                        .Message '","number":' iniErr.Number '},"timestamp":' A_Now '}' "`n")
-                    ; #endregion
                     saved := false
                 }
 
@@ -3532,11 +3503,6 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
                     return true
                 } else {
                     ; INI save failed - show error message
-                    ; #region agent log
-                    SafeDebugLog(
-                        '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H4","location":"Shift keys.ahk:3411","message":"INI save failed","data":{"saved":false},"timestamp":' A_Now '}' "`n"
-                    )
-                    ; #endregion
                     try {
                         if (IsObject(saveBanner) && saveBanner.Hwnd) {
                             saveBanner.Controls[1].Text := "Error: Save failed"
@@ -3562,6 +3528,14 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
             }
         } catch {
         }
+        ; Re-enter fullscreen if we haven't already (e.g., if exception occurred or validation failed)
+        if (!fullscreenRestored) {
+            try {
+                Send("{F11}")
+                Sleep(300)
+            } catch {
+            }
+        }
     }
     return false
 }
@@ -3569,75 +3543,21 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
 ; Restore previous scroll position from history
 RestorePreviousWikipediaScrollPosition() {
     global g_WikipediaScrollHistory
-    ; #region agent log
-    try {
-        FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-        ',"location":"Shift keys.ahk:3122","message":"RestorePreviousWikipediaScrollPosition entry","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n',
-        DEBUG_LOG_PATH
-    } catch {
-    }
-    ; #endregion
 
     try {
         ; Check if Wikipedia window is currently active
         activeWindow := WinGetTitle("A")
         isChromeActive := WinActive("ahk_exe chrome.exe")
         hasWikipedia := InStr(activeWindow, "Wikipedia")
-        ; #region agent log
-        try {
-            FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-            ',"location":"Shift keys.ahk:3126","message":"Window check in restore","data":{"activeWindow":"' .
-            activeWindow . '","isChromeActive":' .
-            (isChromeActive ? 1 : 0) . ',"hasWikipedia":' . (hasWikipedia ? 1 : 0) .
-            '},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}`n', DEBUG_LOG_PATH
-        } catch {
-        }
-        ; #endregion
         if (!isChromeActive || !hasWikipedia) {
-            ; #region agent log
-            try {
-                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-                ',"location":"Shift keys.ahk:3130","message":"Window check failed in restore - early return","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}`n',
-                DEBUG_LOG_PATH
-            } catch {
-            }
-            ; #endregion
             return false
         }
     } catch Error as err {
-        ; #region agent log
-        try {
-            FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-            ',"location":"Shift keys.ahk:3133","message":"Window check exception in restore","data":{"error":"' . err.Message .
-            '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}`n', DEBUG_LOG_PATH
-        } catch {
-        }
-        ; #endregion
         return false
     }
 
-    ; Check if we have any history
-    ; #region agent log
-    try {
-        FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-        ',"location":"Shift keys.ahk:3137","message":"Checking history length","data":{"historyLength":' .
-        g_WikipediaScrollHistory.Length . '},"sessionId":"debug-session","runId":"post-fix","hypothesisId":"H"}`n',
-        DEBUG_LOG_PATH
-    } catch {
-    }
-    ; #endregion
-
     ; If history is empty, try to fall back to INI file (for positions saved via activation restore or previous sessions)
     if (g_WikipediaScrollHistory.Length = 0) {
-        ; #region agent log
-        try {
-            FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-            ',"location":"Shift keys.ahk:3211","message":"History empty - trying INI fallback","data":{},"sessionId":"debug-session","runId":"post-fix","hypothesisId":"H"}`n',
-            DEBUG_LOG_PATH
-        } catch {
-        }
-        ; #endregion
-
         ; Get current URL to load from INI
         try {
             url := GetWikipediaURLNormalized()
@@ -3660,17 +3580,6 @@ RestorePreviousWikipediaScrollPosition() {
             savedPercentage := IniRead(scrollPositionsFile, "Positions", url, "0")
             savedPercentageFloat := Float(savedPercentage)
 
-            ; #region agent log
-            try {
-                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-                ',"location":"Shift keys.ahk:3230","message":"INI fallback - loaded position","data":{"url":"' . url .
-                '","savedPercentage":' .
-                savedPercentageFloat . '},"sessionId":"debug-session","runId":"post-fix","hypothesisId":"H"}`n',
-                DEBUG_LOG_PATH
-            } catch {
-            }
-            ; #endregion
-
             if (savedPercentageFloat > 0.0) {
                 ; Found a saved position in INI, restore it using helper function
                 return RestoreWikipediaScrollPosition(savedPercentageFloat,
@@ -3689,14 +3598,6 @@ RestorePreviousWikipediaScrollPosition() {
                 return false
             }
         } catch Error as err {
-            ; #region agent log
-            try {
-                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-                ',"location":"Shift keys.ahk:3245","message":"INI fallback exception","data":{"error":"' . err.Message .
-                '"},"sessionId":"debug-session","runId":"post-fix","hypothesisId":"H"}`n', DEBUG_LOG_PATH
-            } catch {
-            }
-            ; #endregion
             ; Show brief message that no history exists
             restoreBanner := CreateCenteredBanner_ChatGPT("No previous scroll position found", "FF6B6B", "FFFFFF", 24,
                 178)
@@ -3724,87 +3625,32 @@ RestorePreviousWikipediaScrollPosition() {
         }
         ; #endregion
         if (url = "") {
-            ; #region agent log
-            try {
-                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-                ',"location":"Shift keys.ahk:3422","message":"URL check failed in restore - early return","data":{},"sessionId":"debug-session","runId":"post-fix","hypothesisId":"F"}`n',
-                DEBUG_LOG_PATH
-            } catch {
-            }
-            ; #endregion
             return false
         }
 
         ; Create UIA_Browser for checking scroll differences
         uia := UIA_Browser("ahk_exe chrome.exe")
     } catch Error as err {
-        ; #region agent log
-        try {
-            FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-            ',"location":"Shift keys.ahk:3161","message":"Exception getting URL in restore","data":{"error":"' . err.Message .
-            '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}`n', DEBUG_LOG_PATH
-        } catch {
-        }
-        ; #endregion
         return false
     }
 
     ; Find the most recent previous position (not the current one)
     previousPosition := 0
     foundIndex := 0
-    ; #region agent log
-    try {
-        FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-        ',"location":"Shift keys.ahk:3230","message":"Starting history search","data":{"currentUrl":"' . url .
-        '","historyLength":' .
-        g_WikipediaScrollHistory.Length . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"H"}`n',
-        DEBUG_LOG_PATH
-    } catch {
-    }
-    ; #endregion
     ; Search backwards through history to find a different position
     loop g_WikipediaScrollHistory.Length {
         idx := g_WikipediaScrollHistory.Length - A_Index + 1
         historyItem := g_WikipediaScrollHistory[idx]
-        ; #region agent log
-        try {
-            FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-            ',"location":"Shift keys.ahk:3234","message":"Checking history item","data":{"idx":' . idx .
-            ',"historyUrl":"' . historyItem.url .
-            '","historyPercentage":' . historyItem.scrollPercentage . ',"currentUrl":"' . url . '","urlMatch":' . (
-                historyItem.url = url ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"H"}`n',
-            DEBUG_LOG_PATH
-        } catch {
-        }
-        ; #endregion
         ; Check if this is a different position (different URL or different scroll percentage)
         if (historyItem.url != url) {
             ; Different article, use this one
             previousPosition := historyItem
             foundIndex := idx
-            ; #region agent log
-            try {
-                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-                ',"location":"Shift keys.ahk:3237","message":"Found different article in history","data":{"foundIndex":' .
-                foundIndex . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"H"}`n', DEBUG_LOG_PATH
-            } catch {
-            }
-            ; #endregion
             break
         } else {
             ; Same article, check if scroll position is different
             currentScroll := uia.JSReturnThroughClipboard("window.pageYOffset")
             docHeight := uia.JSReturnThroughClipboard("document.documentElement.scrollHeight")
-            ; #region agent log
-            try {
-                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-                ',"location":"Shift keys.ahk:3240","message":"Same article - checking scroll difference","data":{"currentScroll":"' .
-                currentScroll .
-                '","docHeight":"' . docHeight . '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}`n',
-                DEBUG_LOG_PATH
-            } catch {
-            }
-            ; #endregion
             if (currentScroll != "" && currentScroll != "undefined" && currentScroll != "null" &&
                 docHeight != "" && docHeight != "undefined" && docHeight != "null") {
                 currentScrollFloat := Float(currentScroll)
@@ -3812,33 +3658,10 @@ RestorePreviousWikipediaScrollPosition() {
                 if (docHeightFloat > 0) {
                     currentPercentage := currentScrollFloat / docHeightFloat
                     diff := Abs(currentPercentage - historyItem.scrollPercentage)
-                    ; #region agent log
-                    try {
-                        FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' .
-                        A_TickCount .
-                        ',"location":"Shift keys.ahk:3247","message":"Calculated scroll difference","data":{"currentPercentage":' .
-                        currentPercentage .
-                        ',"historyPercentage":' . historyItem.scrollPercentage . ',"diff":' . diff .
-                        ',"threshold":0.01,"isDifferent":' .
-                        (diff > 0.01 ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}`n',
-                        DEBUG_LOG_PATH
-                    } catch {
-                    }
-                    ; #endregion
                     ; If the saved percentage is different from current, use it
                     if (diff > 0.01) {
                         previousPosition := historyItem
                         foundIndex := idx
-                        ; #region agent log
-                        try {
-                            FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' .
-                            A_TickCount .
-                            ',"location":"Shift keys.ahk:3250","message":"Found different scroll position in history","data":{"foundIndex":' .
-                            foundIndex . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"H"}`n',
-                            DEBUG_LOG_PATH
-                        } catch {
-                        }
-                        ; #endregion
                         break
                     }
                 }
@@ -3846,24 +3669,7 @@ RestorePreviousWikipediaScrollPosition() {
         }
     }
 
-    ; #region agent log
-    try {
-        FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-        ',"location":"Shift keys.ahk:3199","message":"History search complete","data":{"previousPosition":' . (
-            previousPosition ? 1 : 0) . ',"foundIndex":' . foundIndex .
-        '},"sessionId":"debug-session","runId":"run1","hypothesisId":"H"}`n', DEBUG_LOG_PATH
-    } catch {
-    }
-    ; #endregion
     if (!previousPosition) {
-        ; #region agent log
-        try {
-            FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-            ',"location":"Shift keys.ahk:3200","message":"No previous position found in history","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"H"}`n',
-            DEBUG_LOG_PATH
-        } catch {
-        }
-        ; #endregion
         ; No different position found in history
         restoreBanner := CreateCenteredBanner_ChatGPT("No previous scroll position found", "FF6B6B", "FFFFFF", 24, 178)
         Sleep(1500)
@@ -3887,14 +3693,6 @@ RestorePreviousWikipediaScrollPosition() {
             g_WikipediaScrollHistory.Pop()
         }
     }
-    ; #region agent log
-    try {
-        FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-        ',"location":"Shift keys.ahk:3263","message":"RestorePreviousWikipediaScrollPosition returning true","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n',
-        DEBUG_LOG_PATH
-    } catch {
-    }
-    ; #endregion
     return true
 }
 

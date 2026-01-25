@@ -504,25 +504,81 @@ SaveWikipediaScrollPosition(url, scrollPercentage) {
         if (url = "" || scrollPercentage = "" || scrollPercentage < 0 || scrollPercentage > 1) {
             return false
         }
+        ; Normalize URL to match load format - remove trailing slashes and fragments
+        normalizedUrl := RegExReplace(url, "/#.*$", "")
+        normalizedUrl := RegExReplace(normalizedUrl, "/+$", "")
         ; Ensure directory exists
         SplitPath(g_WikipediaScrollPositionsFile, , &dir)
         if (dir != "" && !DirExist(dir)) {
             DirCreate(dir)
         }
-        ; Delete file if it exists to ensure UTF-8 encoding (fixes UTF-16 encoding issues)
+        ; Read existing entries first (before deleting file) to preserve them
+        existingEntries := Map()
+        if (FileExist(g_WikipediaScrollPositionsFile)) {
+            try {
+                ; Read all existing entries from the Positions section
+                ; We'll read the file manually to handle UTF-16 encoding issues
+                fileContent := FileRead(g_WikipediaScrollPositionsFile)
+                ; Parse INI format manually
+                inPositionsSection := false
+                loop Parse fileContent, "`n", "`r" {
+                    line := Trim(A_LoopField)
+                    if (line = "[Positions]") {
+                        inPositionsSection := true
+                        continue
+                    }
+                    if (inPositionsSection && SubStr(line, 1, 1) = "[") {
+                        ; Hit another section, stop reading
+                        break
+                    }
+                    if (inPositionsSection && InStr(line, "=")) {
+                        pos := InStr(line, "=")
+                        key := Trim(SubStr(line, 1, pos - 1))
+                        value := Trim(SubStr(line, pos + 1))
+                        if (key != "" && value != "") {
+                            existingEntries[key] := value
+                        }
+                    }
+                }
+            } catch {
+                ; If read fails, try IniRead as fallback
+                try {
+                    ; Get all keys in Positions section (this is a workaround)
+                    ; We'll just update the one we need
+                } catch {
+                }
+            }
+        }
+        
+        ; Update with new entry
+        existingEntries[normalizedUrl] := scrollPercentage
+        
+        ; Delete file to recreate in UTF-8
         if (FileExist(g_WikipediaScrollPositionsFile)) {
             try {
                 FileDelete(g_WikipediaScrollPositionsFile)
+                Sleep(100)  ; Small delay to ensure file system updates
             } catch {
             }
         }
-        ; #region agent log
-        SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H4","location":"AppLaunchers.ahk:512","message":"Before IniWrite","data":{"url":"' url '","scrollPercentage":' scrollPercentage ',"filePath":"' g_WikipediaScrollPositionsFile '"},"timestamp":' A_Now '}' "`n")
-        ; #endregion
-        IniWrite(scrollPercentage, g_WikipediaScrollPositionsFile, "Positions", url)
-        ; #region agent log
-        SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H4","location":"AppLaunchers.ahk:513","message":"After IniWrite","data":{"success":true},"timestamp":' A_Now '}' "`n")
-        ; #endregion
+        
+        ; Write all entries back in UTF-8 encoding
+        try {
+            ; Write UTF-8 BOM and section header
+            FileAppend("[Positions]`r`n", g_WikipediaScrollPositionsFile, "UTF-8")
+            ; Write each entry
+            for key, value in existingEntries {
+                ; Escape special INI characters in key and value
+                escapedKey := StrReplace(key, "=", "`=")
+                escapedKey := StrReplace(escapedKey, ";", "`;")
+                escapedValue := StrReplace(value, "`n", "`;")
+                escapedValue := StrReplace(escapedValue, "`r", "")
+                FileAppend(escapedKey . "=" . escapedValue . "`r`n", g_WikipediaScrollPositionsFile, "UTF-8")
+            }
+        } catch {
+            ; Fallback to IniWrite if manual write fails
+            IniWrite(scrollPercentage, g_WikipediaScrollPositionsFile, "Positions", normalizedUrl)
+        }
         return true
     } catch Error as err {
         return false
@@ -554,14 +610,52 @@ LoadWikipediaScrollPosition(url) {
         }
 
         ; Read from INI file
-        ; #region agent log
-        SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"AppLaunchers.ahk:554","message":"Before IniRead","data":{"filePath":"' g_WikipediaScrollPositionsFile '","section":"Positions","key":"' normalizedUrl '","fileExists":' FileExist(g_WikipediaScrollPositionsFile) '},"timestamp":' A_Now '}' "`n")
-        ; #endregion
-        scrollPos := IniRead(g_WikipediaScrollPositionsFile, "Positions", normalizedUrl, "0")
+        ; Try manual parsing first (handles UTF-8 BOM and encoding issues better)
+        scrollPos := "0"
+        try {
+            if (FileExist(g_WikipediaScrollPositionsFile)) {
+                fileContent := FileRead(g_WikipediaScrollPositionsFile)
+                ; Parse INI format manually
+                inPositionsSection := false
+                loop Parse fileContent, "`n", "`r" {
+                    line := Trim(A_LoopField)
+                    ; Skip empty lines and comments
+                    if (line = "" || SubStr(line, 1, 1) = ";") {
+                        continue
+                    }
+                    if (line = "[Positions]") {
+                        inPositionsSection := true
+                        continue
+                    }
+                    if (inPositionsSection && SubStr(line, 1, 1) = "[") {
+                        ; Hit another section, stop reading
+                        break
+                    }
+                    if (inPositionsSection && InStr(line, "=")) {
+                        pos := InStr(line, "=")
+                        key := Trim(SubStr(line, 1, pos - 1))
+                        value := Trim(SubStr(line, pos + 1))
+                        ; Unescape special characters that were escaped during save
+                        key := StrReplace(key, "`=", "=")
+                        key := StrReplace(key, "`;", ";")
+                        ; Compare normalized URLs (case-sensitive for Wikipedia URLs)
+                        if (key = normalizedUrl && value != "" && value != "0") {
+                            scrollPos := value
+                            break
+                        }
+                    }
+                }
+            }
+        } catch {
+            ; If manual parsing fails, fall back to IniRead
+            try {
+                scrollPos := IniRead(g_WikipediaScrollPositionsFile, "Positions", normalizedUrl, "0")
+            } catch {
+                scrollPos := "0"
+            }
+        }
+        
         scrollPercentage := Float(scrollPos)
-        ; #region agent log
-        SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"AppLaunchers.ahk:557","message":"After IniRead","data":{"scrollPos":"' scrollPos '","scrollPercentage":' scrollPercentage ',"isZero":' (scrollPercentage = 0.0) '},"timestamp":' A_Now '}' "`n")
-        ; #endregion
         return scrollPercentage
     } catch Error as err {
         return 0.0
@@ -988,29 +1082,14 @@ ShowWikipediaSelector() {
             }
 
             ; Load saved position
-            ; #region agent log
-            SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"AppLaunchers.ahk:985","message":"Before LoadWikipediaScrollPosition","data":{"url":"' url '"},"timestamp":' A_Now '}' "`n")
-            ; #endregion
             savedPercentage := LoadWikipediaScrollPosition(url)
-            ; #region agent log
-            SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"AppLaunchers.ahk:986","message":"After LoadWikipediaScrollPosition","data":{"savedPercentage":' savedPercentage '},"timestamp":' A_Now '}' "`n")
-            ; #endregion
             if (savedPercentage <= 0.0) {
-                ; #region agent log
-                SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"AppLaunchers.ahk:987","message":"No saved position found","data":{"savedPercentage":' savedPercentage '},"timestamp":' A_Now '}' "`n")
-                ; #endregion
                 return  ; Early return if no saved position
             }
 
             ; Exit fullscreen before scroll restoration (REQUIRED: UIA unreliable in fullscreen)
-            ; #region agent log
-            SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H1","location":"AppLaunchers.ahk:990","message":"Before F11 exit (restore)","data":{"timestamp":' A_TickCount '},"timestamp":' A_Now '}' "`n")
-            ; #endregion
             Send("{F11}")
             Sleep(300)  ; Allow time for fullscreen exit (increased for reliability)
-            ; #region agent log
-            SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H1","location":"AppLaunchers.ahk:993","message":"After F11 exit (restore)","data":{"timestamp":' A_TickCount '},"timestamp":' A_Now '}' "`n")
-            ; #endregion
 
             ; Only show banner if we actually have a position to restore
             restoreBanner := CreateCenteredBanner_Launchers("Restoring scroll position... Please wait",
@@ -1022,22 +1101,13 @@ ShowWikipediaSelector() {
             ; Initialize UIA_Browser with retry logic
             uia := false
             uiaRetries := 3
-            ; #region agent log
-            SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"AppLaunchers.ahk:1000","message":"Before UIA_Browser (restore)","data":{"timestamp":' A_TickCount '},"timestamp":' A_Now '}' "`n")
-            ; #endregion
             loop uiaRetries {
                 try {
                     uia := UIA_Browser("ahk_exe chrome.exe")
                     if (uia) {
-                        ; #region agent log
-                        SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"AppLaunchers.ahk:1003","message":"UIA_Browser success","data":{"attempt":' A_Index '},"timestamp":' A_Now '}' "`n")
-                        ; #endregion
                         break
                     }
                 } catch Error as uiaErr {
-                    ; #region agent log
-                    SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"AppLaunchers.ahk:1006","message":"UIA_Browser attempt failed","data":{"attempt":' A_Index ',"error":"' uiaErr.Message '"},"timestamp":' A_Now '}' "`n")
-                    ; #endregion
                     if (A_Index < uiaRetries) {
                         Sleep(500)  ; Wait before retry
                     }
@@ -1124,22 +1194,14 @@ ShowWikipediaSelector() {
             ; Execute scroll restoration
             ; For portrait orientation (1080x1920 on Monitor 3), use precise calculation
             targetScrollY := savedPercentage * docHeightFloat
-            ; #region agent log
-            SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H5","location":"AppLaunchers.ahk:1107","message":"Before scroll execution","data":{"targetScrollY":' targetScrollY ',"savedPercentage":' savedPercentage ',"docHeightFloat":' docHeightFloat ',"monitor3Portrait":true},"timestamp":' A_Now '}' "`n")
-            ; #endregion
             try {
-                ; Use Math.round for more precise scrolling (better than Round() for fractional pixels)
-                ; Portrait orientation requires precise pixel positioning
+                ; Use precise scrolling for portrait orientation (requires precise pixel positioning)
                 scrollCommand := "window.scrollTo({top: " . targetScrollY . ", behavior: 'instant'});"
                 uia.JSExecute(scrollCommand)
-                ; #region agent log
-                SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H5","location":"AppLaunchers.ahk:1112","message":"After scroll execution","data":{"success":true,"command":"' scrollCommand '"},"timestamp":' A_Now '}' "`n")
-                ; #endregion
                 Sleep(1000)  ; Increased wait for portrait orientation (layout may need more time)
                 
                 ; Verify scroll position was applied correctly with retry
                 ; Portrait orientation may require multiple verification attempts
-                ; #region agent log
                 verificationRetries := 3
                 actualScrollYFloat := 0
                 scrollDiff := 999999
@@ -1148,13 +1210,11 @@ ShowWikipediaSelector() {
                         actualScrollY := uia.JSReturnThroughClipboard("window.pageYOffset")
                         actualScrollYFloat := Float(actualScrollY)
                         scrollDiff := Abs(actualScrollYFloat - targetScrollY)
-                        SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H5","location":"AppLaunchers.ahk:1122","message":"Scroll verification attempt","data":{"attempt":' A_Index ',"targetScrollY":' targetScrollY ',"actualScrollY":' actualScrollYFloat ',"difference":' scrollDiff '},"timestamp":' A_Now '}' "`n")
                         ; If difference is small enough (within 2 pixels for portrait), consider it successful
                         if (scrollDiff <= 2.0) {
                             break
                         }
                     } catch {
-                        SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H5","location":"AppLaunchers.ahk:1127","message":"Scroll verification exception","data":{"attempt":' A_Index ',"error":"Could not verify scroll"},"timestamp":' A_Now '}' "`n")
                     }
                     if (A_Index < verificationRetries) {
                         Sleep(300)  ; Wait before retry
@@ -1163,9 +1223,6 @@ ShowWikipediaSelector() {
                 
                 ; If scroll is significantly off, try to correct it
                 if (scrollDiff > 5.0) {
-                    ; #region agent log
-                    SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H5","location":"AppLaunchers.ahk:1135","message":"Scroll correction needed","data":{"difference":' scrollDiff ',"targetScrollY":' targetScrollY ',"actualScrollY":' actualScrollYFloat '},"timestamp":' A_Now '}' "`n")
-                    ; #endregion
                     ; Re-scroll to correct position
                     uia.JSExecute(scrollCommand)
                     Sleep(500)
@@ -1174,15 +1231,10 @@ ShowWikipediaSelector() {
                         actualScrollY := uia.JSReturnThroughClipboard("window.pageYOffset")
                         actualScrollYFloat := Float(actualScrollY)
                         scrollDiff := Abs(actualScrollYFloat - targetScrollY)
-                        SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H5","location":"AppLaunchers.ahk:1144","message":"After scroll correction","data":{"targetScrollY":' targetScrollY ',"actualScrollY":' actualScrollYFloat ',"difference":' scrollDiff '},"timestamp":' A_Now '}' "`n")
                     } catch {
                     }
                 }
-                ; #endregion
             } catch Error as scrollErr {
-                ; #region agent log
-                SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H5","location":"AppLaunchers.ahk:1068","message":"Scroll execution exception","data":{"error":"' scrollErr.Message '","number":' scrollErr.Number '},"timestamp":' A_Now '}' "`n")
-                ; #endregion
                 BlockInput("Off")
                 if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
                     restoreBanner.Controls[1].Text := "Error: Scroll failed"
@@ -1212,19 +1264,10 @@ ShowWikipediaSelector() {
             }
 
             ; Re-enter fullscreen after successful scroll restoration
-            ; #region agent log
-            SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H1","location":"AppLaunchers.ahk:1095","message":"Before F11 re-entry (restore)","data":{"timestamp":' A_TickCount '},"timestamp":' A_Now '}' "`n")
-            ; #endregion
             Send("{F11}")
             Sleep(300)  ; Allow time for fullscreen transition
-            ; #region agent log
-            SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H1","location":"AppLaunchers.ahk:1098","message":"After F11 re-entry (restore)","data":{"timestamp":' A_TickCount '},"timestamp":' A_Now '}' "`n")
-            ; #endregion
 
         } catch Error as err {
-            ; #region agent log
-            SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2,H5","location":"AppLaunchers.ahk:1100","message":"Exception in restore","data":{"error":"' err.Message '","number":' err.Number '},"timestamp":' A_Now '}' "`n")
-            ; #endregion
             ; Always restore input on error
             BlockInput("Off")
             ; Hide banner on error with error message
