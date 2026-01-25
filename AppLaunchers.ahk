@@ -509,7 +509,20 @@ SaveWikipediaScrollPosition(url, scrollPercentage) {
         if (dir != "" && !DirExist(dir)) {
             DirCreate(dir)
         }
+        ; Delete file if it exists to ensure UTF-8 encoding (fixes UTF-16 encoding issues)
+        if (FileExist(g_WikipediaScrollPositionsFile)) {
+            try {
+                FileDelete(g_WikipediaScrollPositionsFile)
+            } catch {
+            }
+        }
+        ; #region agent log
+        SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H4","location":"AppLaunchers.ahk:512","message":"Before IniWrite","data":{"url":"' url '","scrollPercentage":' scrollPercentage ',"filePath":"' g_WikipediaScrollPositionsFile '"},"timestamp":' A_Now '}' "`n")
+        ; #endregion
         IniWrite(scrollPercentage, g_WikipediaScrollPositionsFile, "Positions", url)
+        ; #region agent log
+        SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H4","location":"AppLaunchers.ahk:513","message":"After IniWrite","data":{"success":true},"timestamp":' A_Now '}' "`n")
+        ; #endregion
         return true
     } catch Error as err {
         return false
@@ -541,8 +554,14 @@ LoadWikipediaScrollPosition(url) {
         }
 
         ; Read from INI file
+        ; #region agent log
+        SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"AppLaunchers.ahk:554","message":"Before IniRead","data":{"filePath":"' g_WikipediaScrollPositionsFile '","section":"Positions","key":"' normalizedUrl '","fileExists":' FileExist(g_WikipediaScrollPositionsFile) '},"timestamp":' A_Now '}' "`n")
+        ; #endregion
         scrollPos := IniRead(g_WikipediaScrollPositionsFile, "Positions", normalizedUrl, "0")
         scrollPercentage := Float(scrollPos)
+        ; #region agent log
+        SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"AppLaunchers.ahk:557","message":"After IniRead","data":{"scrollPos":"' scrollPos '","scrollPercentage":' scrollPercentage ',"isZero":' (scrollPercentage = 0.0) '},"timestamp":' A_Now '}' "`n")
+        ; #endregion
         return scrollPercentage
     } catch Error as err {
         return 0.0
@@ -969,10 +988,29 @@ ShowWikipediaSelector() {
             }
 
             ; Load saved position
+            ; #region agent log
+            SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"AppLaunchers.ahk:985","message":"Before LoadWikipediaScrollPosition","data":{"url":"' url '"},"timestamp":' A_Now '}' "`n")
+            ; #endregion
             savedPercentage := LoadWikipediaScrollPosition(url)
+            ; #region agent log
+            SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"AppLaunchers.ahk:986","message":"After LoadWikipediaScrollPosition","data":{"savedPercentage":' savedPercentage '},"timestamp":' A_Now '}' "`n")
+            ; #endregion
             if (savedPercentage <= 0.0) {
+                ; #region agent log
+                SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"AppLaunchers.ahk:987","message":"No saved position found","data":{"savedPercentage":' savedPercentage '},"timestamp":' A_Now '}' "`n")
+                ; #endregion
                 return  ; Early return if no saved position
             }
+
+            ; Exit fullscreen before scroll restoration (REQUIRED: UIA unreliable in fullscreen)
+            ; #region agent log
+            SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H1","location":"AppLaunchers.ahk:990","message":"Before F11 exit (restore)","data":{"timestamp":' A_TickCount '},"timestamp":' A_Now '}' "`n")
+            ; #endregion
+            Send("{F11}")
+            Sleep(300)  ; Allow time for fullscreen exit (increased for reliability)
+            ; #region agent log
+            SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H1","location":"AppLaunchers.ahk:993","message":"After F11 exit (restore)","data":{"timestamp":' A_TickCount '},"timestamp":' A_Now '}' "`n")
+            ; #endregion
 
             ; Only show banner if we actually have a position to restore
             restoreBanner := CreateCenteredBanner_Launchers("Restoring scroll position... Please wait",
@@ -984,13 +1022,22 @@ ShowWikipediaSelector() {
             ; Initialize UIA_Browser with retry logic
             uia := false
             uiaRetries := 3
+            ; #region agent log
+            SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"AppLaunchers.ahk:1000","message":"Before UIA_Browser (restore)","data":{"timestamp":' A_TickCount '},"timestamp":' A_Now '}' "`n")
+            ; #endregion
             loop uiaRetries {
                 try {
                     uia := UIA_Browser("ahk_exe chrome.exe")
                     if (uia) {
+                        ; #region agent log
+                        SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"AppLaunchers.ahk:1003","message":"UIA_Browser success","data":{"attempt":' A_Index '},"timestamp":' A_Now '}' "`n")
+                        ; #endregion
                         break
                     }
                 } catch Error as uiaErr {
+                    ; #region agent log
+                    SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"AppLaunchers.ahk:1006","message":"UIA_Browser attempt failed","data":{"attempt":' A_Index ',"error":"' uiaErr.Message '"},"timestamp":' A_Now '}' "`n")
+                    ; #endregion
                     if (A_Index < uiaRetries) {
                         Sleep(500)  ; Wait before retry
                     }
@@ -1004,25 +1051,46 @@ ShowWikipediaSelector() {
                     Sleep(2000)
                     restoreBanner.Destroy()
                 }
+                ; Re-enter fullscreen after error
+                Send("{F11}")
+                Sleep(300)
                 return
             }
 
-            ; Wait longer for page to be ready (increased from 500ms)
-            Sleep(1000)
+            ; Wait longer for page to be ready and stabilize (critical for portrait orientation)
+            ; Portrait orientation (1080x1920) can cause layout shifts that affect document height
+            Sleep(1500)  ; Increased wait for page stabilization
 
-            ; Get current document height with retry logic
+            ; Get current document height with retry logic and stabilization
+            ; Monitor 3 is portrait (1080x1920), so we need to ensure layout is stable
             docHeight := ""
-            docHeightRetries := 3
+            docHeightRetries := 5  ; Increased retries for portrait orientation
+            lastDocHeight := 0
+            stableCount := 0
             loop docHeightRetries {
                 try {
                     docHeight := uia.JSReturnThroughClipboard("document.documentElement.scrollHeight")
                     if (docHeight != "" && docHeight != "undefined" && docHeight != "null") {
-                        break
+                        docHeightFloat := Float(docHeight)
+                        ; Check if document height is stable (same value twice in a row)
+                        if (docHeightFloat = lastDocHeight) {
+                            stableCount++
+                            if (stableCount >= 2) {
+                                ; Document height is stable, use it
+                                break
+                            }
+                        } else {
+                            stableCount := 0
+                            lastDocHeight := docHeightFloat
+                        }
                     }
                 } catch Error as docErr {
                     if (A_Index < docHeightRetries) {
                         Sleep(500)  ; Wait before retry
                     }
+                }
+                if (A_Index < docHeightRetries) {
+                    Sleep(300)  ; Additional wait between measurements for stability
                 }
             }
 
@@ -1033,6 +1101,9 @@ ShowWikipediaSelector() {
                     Sleep(2000)
                     restoreBanner.Destroy()
                 }
+                ; Re-enter fullscreen after error
+                Send("{F11}")
+                Sleep(300)
                 return
             }
 
@@ -1044,21 +1115,83 @@ ShowWikipediaSelector() {
                     Sleep(2000)
                     restoreBanner.Destroy()
                 }
+                ; Re-enter fullscreen after error
+                Send("{F11}")
+                Sleep(300)
                 return
             }
 
             ; Execute scroll restoration
+            ; For portrait orientation (1080x1920 on Monitor 3), use precise calculation
             targetScrollY := savedPercentage * docHeightFloat
+            ; #region agent log
+            SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H5","location":"AppLaunchers.ahk:1107","message":"Before scroll execution","data":{"targetScrollY":' targetScrollY ',"savedPercentage":' savedPercentage ',"docHeightFloat":' docHeightFloat ',"monitor3Portrait":true},"timestamp":' A_Now '}' "`n")
+            ; #endregion
             try {
-                uia.JSExecute("window.scrollTo(0, " . Round(targetScrollY) . ");")
-                Sleep(800)  ; Increased wait after scroll to ensure it completes
+                ; Use Math.round for more precise scrolling (better than Round() for fractional pixels)
+                ; Portrait orientation requires precise pixel positioning
+                scrollCommand := "window.scrollTo({top: " . targetScrollY . ", behavior: 'instant'});"
+                uia.JSExecute(scrollCommand)
+                ; #region agent log
+                SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H5","location":"AppLaunchers.ahk:1112","message":"After scroll execution","data":{"success":true,"command":"' scrollCommand '"},"timestamp":' A_Now '}' "`n")
+                ; #endregion
+                Sleep(1000)  ; Increased wait for portrait orientation (layout may need more time)
+                
+                ; Verify scroll position was applied correctly with retry
+                ; Portrait orientation may require multiple verification attempts
+                ; #region agent log
+                verificationRetries := 3
+                actualScrollYFloat := 0
+                scrollDiff := 999999
+                loop verificationRetries {
+                    try {
+                        actualScrollY := uia.JSReturnThroughClipboard("window.pageYOffset")
+                        actualScrollYFloat := Float(actualScrollY)
+                        scrollDiff := Abs(actualScrollYFloat - targetScrollY)
+                        SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H5","location":"AppLaunchers.ahk:1122","message":"Scroll verification attempt","data":{"attempt":' A_Index ',"targetScrollY":' targetScrollY ',"actualScrollY":' actualScrollYFloat ',"difference":' scrollDiff '},"timestamp":' A_Now '}' "`n")
+                        ; If difference is small enough (within 2 pixels for portrait), consider it successful
+                        if (scrollDiff <= 2.0) {
+                            break
+                        }
+                    } catch {
+                        SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H5","location":"AppLaunchers.ahk:1127","message":"Scroll verification exception","data":{"attempt":' A_Index ',"error":"Could not verify scroll"},"timestamp":' A_Now '}' "`n")
+                    }
+                    if (A_Index < verificationRetries) {
+                        Sleep(300)  ; Wait before retry
+                    }
+                }
+                
+                ; If scroll is significantly off, try to correct it
+                if (scrollDiff > 5.0) {
+                    ; #region agent log
+                    SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H5","location":"AppLaunchers.ahk:1135","message":"Scroll correction needed","data":{"difference":' scrollDiff ',"targetScrollY":' targetScrollY ',"actualScrollY":' actualScrollYFloat '},"timestamp":' A_Now '}' "`n")
+                    ; #endregion
+                    ; Re-scroll to correct position
+                    uia.JSExecute(scrollCommand)
+                    Sleep(500)
+                    ; Verify again
+                    try {
+                        actualScrollY := uia.JSReturnThroughClipboard("window.pageYOffset")
+                        actualScrollYFloat := Float(actualScrollY)
+                        scrollDiff := Abs(actualScrollYFloat - targetScrollY)
+                        SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H5","location":"AppLaunchers.ahk:1144","message":"After scroll correction","data":{"targetScrollY":' targetScrollY ',"actualScrollY":' actualScrollYFloat ',"difference":' scrollDiff '},"timestamp":' A_Now '}' "`n")
+                    } catch {
+                    }
+                }
+                ; #endregion
             } catch Error as scrollErr {
+                ; #region agent log
+                SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H5","location":"AppLaunchers.ahk:1068","message":"Scroll execution exception","data":{"error":"' scrollErr.Message '","number":' scrollErr.Number '},"timestamp":' A_Now '}' "`n")
+                ; #endregion
                 BlockInput("Off")
                 if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
                     restoreBanner.Controls[1].Text := "Error: Scroll failed"
                     Sleep(2000)
                     restoreBanner.Destroy()
                 }
+                ; Re-enter fullscreen after error
+                Send("{F11}")
+                Sleep(300)
                 return
             }
 
@@ -1078,7 +1211,20 @@ ShowWikipediaSelector() {
                 }
             }
 
+            ; Re-enter fullscreen after successful scroll restoration
+            ; #region agent log
+            SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H1","location":"AppLaunchers.ahk:1095","message":"Before F11 re-entry (restore)","data":{"timestamp":' A_TickCount '},"timestamp":' A_Now '}' "`n")
+            ; #endregion
+            Send("{F11}")
+            Sleep(300)  ; Allow time for fullscreen transition
+            ; #region agent log
+            SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H1","location":"AppLaunchers.ahk:1098","message":"After F11 re-entry (restore)","data":{"timestamp":' A_TickCount '},"timestamp":' A_Now '}' "`n")
+            ; #endregion
+
         } catch Error as err {
+            ; #region agent log
+            SafeDebugLog('{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2,H5","location":"AppLaunchers.ahk:1100","message":"Exception in restore","data":{"error":"' err.Message '","number":' err.Number '},"timestamp":' A_Now '}' "`n")
+            ; #endregion
             ; Always restore input on error
             BlockInput("Off")
             ; Hide banner on error with error message
@@ -1095,6 +1241,9 @@ ShowWikipediaSelector() {
                     }
                 }
             }
+            ; Re-enter fullscreen after error
+            Send("{F11}")
+            Sleep(300)
         }
     } else {
         ShowWikipediaSelector()

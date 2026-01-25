@@ -3281,31 +3281,86 @@ GetWikipediaURLNormalized() {
 
 ; Wikipedia scroll position save function (duplicated from AppLaunchers.ahk)
 SaveWikipediaScrollPositionManually_ShiftKeys() {
+    ; #region agent log
+    SafeDebugLog(
+        '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H6","location":"Shift keys.ahk:3283","message":"SaveWikipediaScrollPositionManually_ShiftKeys entry","data":{"timestamp":' A_TickCount '},"timestamp":' A_Now '}' "`n"
+    )
+    ; #endregion
+
     try {
         ; Check if Wikipedia window is currently active
         activeWindow := WinGetTitle("A")
         isChromeActive := WinActive("ahk_exe chrome.exe")
         hasWikipedia := InStr(activeWindow, "Wikipedia")
+        ; #region agent log
+        SafeDebugLog(
+            '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H6","location":"Shift keys.ahk:3289","message":"Window check","data":{"isChromeActive":' isChromeActive ',"hasWikipedia":' hasWikipedia ',"activeWindow":"' activeWindow '"},"timestamp":' A_Now '}' "`n"
+        )
+        ; #endregion
         if (!isChromeActive || !hasWikipedia) {
+            ; #region agent log
+            SafeDebugLog(
+                '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H6","location":"Shift keys.ahk:3290","message":"Early return: Wikipedia not active","data":{},"timestamp":' A_Now '}' "`n"
+            )
+            ; #endregion
             return false
         }
     } catch Error as err {
+        ; #region agent log
+        SafeDebugLog(
+            '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H6","location":"Shift keys.ahk:3293","message":"Exception in window check","data":{"error":"' err
+            .Message '"},"timestamp":' A_Now '}' "`n")
+        ; #endregion
         return false
     }
 
+    ; Exit fullscreen before scroll position save (REQUIRED: UIA unreliable in fullscreen)
+    ; #region agent log
+    SafeDebugLog(
+        '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H1","location":"Shift keys.ahk:3297","message":"Before F11 exit (save)","data":{"timestamp":' A_TickCount '},"timestamp":' A_Now '}' "`n"
+    )
+    ; #endregion
+    Send("{F11}")
+    Sleep(300)  ; Allow time for fullscreen exit (increased for reliability)
+    ; #region agent log
+    SafeDebugLog(
+        '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H1","location":"Shift keys.ahk:3300","message":"After F11 exit (save)","data":{"timestamp":' A_TickCount '},"timestamp":' A_Now '}' "`n"
+    )
+    ; #endregion
+
     ; Show banner to inform user that scroll position is being saved
     saveBanner := CreateCenteredBanner_ChatGPT("Saving scroll position... Please wait", "3772FF", "FFFFFF", 24, 178)
+    fullscreenRestored := false  ; Track if we've re-entered fullscreen
     try {
         ; Get normalized Wikipedia URL
         url := GetWikipediaURLNormalized()
+        ; #region agent log
+        SafeDebugLog(
+            '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"Shift keys.ahk:3308","message":"URL retrieved","data":{"url":"' url '","isEmpty":' (
+                url = "") '},"timestamp":' A_Now '}' "`n")
+        ; #endregion
         if (url = "") {
+            ; Re-enter fullscreen before returning
+            Send("{F11}")
+            Sleep(300)
+            fullscreenRestored := true
             return false
         }
 
         ; Create UIA_Browser for getting scroll position
         uia := false
+        ; #region agent log
+        SafeDebugLog(
+            '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"Shift keys.ahk:3318","message":"Before UIA_Browser (save)","data":{"timestamp":' A_TickCount '},"timestamp":' A_Now '}' "`n"
+        )
+        ; #endregion
         try {
             uia := UIA_Browser("ahk_exe chrome.exe")
+            ; #region agent log
+            SafeDebugLog(
+                '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"Shift keys.ahk:3320","message":"After UIA_Browser (save)","data":{"uiaExists":' (
+                    uia != false) '},"timestamp":' A_Now '}' "`n")
+            ; #endregion
         } catch Error as uiaErr {
             if (IsObject(saveBanner) && saveBanner.Hwnd) {
                 try {
@@ -3326,19 +3381,72 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
             return false
         }
 
-        ; Get scroll position
+        ; Wait for page to stabilize before measuring (critical for portrait orientation)
+        ; Monitor 3 is portrait (1080x1920), layout may shift during measurement
+        Sleep(500)  ; Brief stabilization wait
+
+        ; Get scroll position with retry for stability
         scrollY := ""
         docHeight := ""
-
-        try {
-            scrollY := uia.JSReturnThroughClipboard("window.pageYOffset")
-        } catch Error as scrollErr {
+        scrollYRetries := 3
+        lastScrollY := -1
+        loop scrollYRetries {
+            try {
+                scrollY := uia.JSReturnThroughClipboard("window.pageYOffset")
+                scrollYFloat := Float(scrollY)
+                ; Check if scroll position is stable
+                if (scrollYFloat = lastScrollY || lastScrollY = -1) {
+                    ; #region agent log
+                    SafeDebugLog(
+                        '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2,H5","location":"Shift keys.ahk:3334","message":"scrollY retrieved","data":{"scrollY":"' scrollY '","attempt":' A_Index ',"stable":' (
+                            scrollYFloat = lastScrollY) '},"timestamp":' A_Now '}' "`n")
+                    ; #endregion
+                    if (scrollYFloat = lastScrollY) {
+                        break  ; Stable, use this value
+                    }
+                    lastScrollY := scrollYFloat
+                }
+            } catch Error as scrollErr {
+                ; #region agent log
+                SafeDebugLog(
+                    '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2,H5","location":"Shift keys.ahk:3335","message":"scrollY exception","data":{"error":"' scrollErr
+                    .Message '","attempt":' A_Index '},"timestamp":' A_Now '}' "`n")
+                ; #endregion
+            }
+            if (A_Index < scrollYRetries) {
+                Sleep(200)  ; Wait between attempts
+            }
         }
 
-        ; Get document height to calculate percentage
-        try {
-            docHeight := uia.JSReturnThroughClipboard("document.documentElement.scrollHeight")
-        } catch Error as docErr {
+        ; Get document height to calculate percentage (with stability check)
+        docHeightRetries := 3
+        lastDocHeight := -1
+        loop docHeightRetries {
+            try {
+                docHeight := uia.JSReturnThroughClipboard("document.documentElement.scrollHeight")
+                docHeightFloat := Float(docHeight)
+                ; Check if document height is stable
+                if (docHeightFloat = lastDocHeight || lastDocHeight = -1) {
+                    ; #region agent log
+                    SafeDebugLog(
+                        '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2,H5","location":"Shift keys.ahk:3340","message":"docHeight retrieved","data":{"docHeight":"' docHeight '","attempt":' A_Index ',"stable":' (
+                            docHeightFloat = lastDocHeight) '},"timestamp":' A_Now '}' "`n")
+                    ; #endregion
+                    if (docHeightFloat = lastDocHeight) {
+                        break  ; Stable, use this value
+                    }
+                    lastDocHeight := docHeightFloat
+                }
+            } catch Error as docErr {
+                ; #region agent log
+                SafeDebugLog(
+                    '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2,H5","location":"Shift keys.ahk:3341","message":"docHeight exception","data":{"error":"' docErr
+                    .Message '","attempt":' A_Index '},"timestamp":' A_Now '}' "`n")
+                ; #endregion
+            }
+            if (A_Index < docHeightRetries) {
+                Sleep(200)  ; Wait between attempts
+            }
         }
 
         ; Convert to numbers and calculate percentage
@@ -3346,12 +3454,22 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
             "undefined" && docHeight != "null") {
             scrollYFloat := Float(scrollY)
             docHeightFloat := Float(docHeight)
+            ; #region agent log
+            SafeDebugLog(
+                '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H5,H6","location":"Shift keys.ahk:3347","message":"Values converted","data":{"scrollYFloat":' scrollYFloat ',"docHeightFloat":' docHeightFloat '},"timestamp":' A_Now '}' "`n"
+            )
+            ; #endregion
             if (scrollYFloat >= 0 && docHeightFloat > 0) {
                 scrollPercentage := scrollYFloat / docHeightFloat
                 ; Clamp to valid range
                 if (scrollPercentage > 1.0) {
                     scrollPercentage := 1.0
                 }
+                ; #region agent log
+                SafeDebugLog(
+                    '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H5,H6","location":"Shift keys.ahk:3350","message":"scrollPercentage calculated","data":{"scrollPercentage":' scrollPercentage '},"timestamp":' A_Now '}' "`n"
+                )
+                ; #endregion
 
                 ; Save to INI file
                 scrollPositionsFile := A_ScriptDir "\data\wikipedia_scroll_positions.ini"
@@ -3370,9 +3488,31 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
 
                 ; Try to save to INI file (for persistence across sessions)
                 saved := false
+                ; #region agent log
+                SafeDebugLog(
+                    '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H4","location":"Shift keys.ahk:3374","message":"Before IniWrite","data":{"url":"' url '","scrollPercentage":' scrollPercentage ',"scrollYFloat":' scrollYFloat ',"docHeightFloat":' docHeightFloat ',"filePath":"' scrollPositionsFile '"},"timestamp":' A_Now '}' "`n"
+                )
+                ; #endregion
                 try {
+                    ; Delete file if it exists to ensure UTF-8 encoding (AutoHotkey writes UTF-8 by default)
+                    if (FileExist(scrollPositionsFile)) {
+                        try {
+                            FileDelete(scrollPositionsFile)
+                        } catch {
+                        }
+                    }
                     saved := IniWrite(scrollPercentage, scrollPositionsFile, "Positions", url)
+                    ; #region agent log
+                    SafeDebugLog(
+                        '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H4","location":"Shift keys.ahk:3374","message":"After IniWrite","data":{"saved":' saved '},"timestamp":' A_Now '}' "`n"
+                    )
+                    ; #endregion
                 } catch Error as iniErr {
+                    ; #region agent log
+                    SafeDebugLog(
+                        '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H4","location":"Shift keys.ahk:3376","message":"IniWrite exception","data":{"error":"' iniErr
+                        .Message '","number":' iniErr.Number '},"timestamp":' A_Now '}' "`n")
+                    ; #endregion
                     saved := false
                 }
 
@@ -3385,18 +3525,30 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
                         }
                     } catch {
                     }
+                    ; Re-enter fullscreen after successful save
+                    Send("{F11}")
+                    Sleep(300)
+                    fullscreenRestored := true
                     return true
                 } else {
-                    ; Still return true since history was added successfully
-                    ; Update banner to show success (history saved even if INI failed)
+                    ; INI save failed - show error message
+                    ; #region agent log
+                    SafeDebugLog(
+                        '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H4","location":"Shift keys.ahk:3411","message":"INI save failed","data":{"saved":false},"timestamp":' A_Now '}' "`n"
+                    )
+                    ; #endregion
                     try {
                         if (IsObject(saveBanner) && saveBanner.Hwnd) {
-                            saveBanner.Controls[1].Text := "Scroll position saved!"
-                            Sleep(1000)  ; Show success message for 1 second
+                            saveBanner.Controls[1].Text := "Error: Save failed"
+                            Sleep(2000)  ; Show error message
                         }
                     } catch {
                     }
-                    return true
+                    ; Re-enter fullscreen even on failure
+                    Send("{F11}")
+                    Sleep(300)
+                    fullscreenRestored := true
+                    return false
                 }
             }
         }
@@ -9724,7 +9876,7 @@ FoldAllDirectoriesInExplorer() {
         if !fileTree {
             try fileTree := expRoot.FindElement(treeType, UIA.TreeScope.Descendants)
         }
-        
+
         ; Fallback: Try finding by specific Name "Files Explorer" (common in Cursor/VSCode)
         if !fileTree {
             try {
@@ -9761,8 +9913,9 @@ FoldAllDirectoriesInExplorer() {
         ; Get all TreeItem nodes that support expand/collapse (i.e., directories) AND are currently Expanded
         itemType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.TreeItem)
         canExpand := UIA.CreatePropertyCondition(UIA.Property.IsExpandCollapsePatternAvailable, true)
-        isExpanded := UIA.CreatePropertyCondition(UIA.Property.ExpandCollapseExpandCollapseState, UIA.ExpandCollapseState.Expanded)
-        
+        isExpanded := UIA.CreatePropertyCondition(UIA.Property.ExpandCollapseExpandCollapseState, UIA.ExpandCollapseState
+            .Expanded)
+
         ; Combine conditions: TreeItem AND CanExpand AND IsExpanded
         dirCond := UIA.CreateAndCondition(itemType, UIA.CreateAndCondition(canExpand, isExpanded))
 
@@ -9770,7 +9923,7 @@ FoldAllDirectoriesInExplorer() {
         loop 2 {
             ; Re-find items each iteration as tree structure may change after collapsing
             items := fileTree.FindElements(dirCond, UIA.TreeScope.Descendants)
-            
+
             if !items || !items.Length
                 break
 
@@ -9781,21 +9934,21 @@ FoldAllDirectoriesInExplorer() {
                 try {
                     ; Since we filtered by Expanded, we know it's expanded (or was when found)
                     pat := item.ExpandCollapsePattern
-                    
+
                     ; Method 2: UIA Collapse Pattern (Primary method)
                     try {
                         pat.Collapse()
-                        Sleep 10 
+                        Sleep 10
                     } catch {
                     }
-                    
+
                     ; Check if it worked (only check if we really need to try other methods)
                     if item.ExpandCollapsePattern.ExpandCollapseState != UIA.ExpandCollapseState.Collapsed {
-                         ; Method 1: Scroll into view (if needed)
+                        ; Method 1: Scroll into view (if needed)
                         try {
                             if item.GetPropertyValue(UIA.Property.IsScrollItemPatternAvailable)
                                 item.ScrollItemPattern.ScrollIntoView()
-                             pat.Collapse()
+                            pat.Collapse()
                         } catch {
                         }
                     }
@@ -9813,14 +9966,15 @@ FoldAllDirectoriesInExplorer() {
                         }
                     }
 
-                     if item.ExpandCollapsePattern.ExpandCollapseState != UIA.ExpandCollapseState.Collapsed {
-                         ; Method 4: Click Chevron
-                         try {
+                    if item.ExpandCollapsePattern.ExpandCollapseState != UIA.ExpandCollapseState.Collapsed {
+                        ; Method 4: Click Chevron
+                        try {
                             btnType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Button)
                             txtType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Text)
                             glyphName := UIA.CreatePropertyCondition(UIA.Property.Name, "îª´")
                             dotName := UIA.CreatePropertyCondition(UIA.Property.Name, ".")
-                            chevronCond := UIA.CreateOrCondition(btnType, UIA.CreateOrCondition(UIA.CreateAndCondition(txtType,
+                            chevronCond := UIA.CreateOrCondition(btnType, UIA.CreateOrCondition(UIA.CreateAndCondition(
+                                txtType,
                                 glyphName), UIA.CreateAndCondition(txtType, dotName)))
                             chevron := ""
                             try chevron := item.FindElement(chevronCond, UIA.TreeScope.Children)
@@ -9929,7 +10083,7 @@ UnfoldAllDirectoriesInExplorer() {
         if !fileTree {
             try fileTree := expRoot.FindElement(treeType, UIA.TreeScope.Descendants)
         }
-        
+
         ; Fallback: Try finding by specific Name "Files Explorer"
         if !fileTree {
             try {
@@ -9976,7 +10130,7 @@ UnfoldAllDirectoriesInExplorer() {
                 try {
                     pat := item.ExpandCollapsePattern
                     state := pat.ExpandCollapseState
-                    
+
                     if state == UIA.ExpandCollapseState.Collapsed {
                         ; Method 1: Scroll into view
                         try {
@@ -9984,7 +10138,7 @@ UnfoldAllDirectoriesInExplorer() {
                                 item.ScrollItemPattern.ScrollIntoView()
                         } catch {
                         }
-                        
+
                         ; Method 2: UIA Expand Pattern
                         try {
                             pat.Expand()
@@ -10014,7 +10168,8 @@ UnfoldAllDirectoriesInExplorer() {
                                 txtType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Text)
                                 glyphName := UIA.CreatePropertyCondition(UIA.Property.Name, "îª´")
                                 dotName := UIA.CreatePropertyCondition(UIA.Property.Name, ".")
-                                chevronCond := UIA.CreateOrCondition(btnType, UIA.CreateOrCondition(UIA.CreateAndCondition(txtType,
+                                chevronCond := UIA.CreateOrCondition(btnType, UIA.CreateOrCondition(UIA.CreateAndCondition(
+                                    txtType,
                                     glyphName), UIA.CreateAndCondition(txtType, dotName)))
                                 chevron := ""
                                 try chevron := item.FindElement(chevronCond, UIA.TreeScope.Children)
@@ -10039,7 +10194,8 @@ UnfoldAllDirectoriesInExplorer() {
                         txtType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Text)
                         glyphName := UIA.CreatePropertyCondition(UIA.Property.Name, "îª´")
                         dotName := UIA.CreatePropertyCondition(UIA.Property.Name, ".")
-                        chevronCond := UIA.CreateOrCondition(btnType, UIA.CreateOrCondition(UIA.CreateAndCondition(txtType,
+                        chevronCond := UIA.CreateOrCondition(btnType, UIA.CreateOrCondition(UIA.CreateAndCondition(
+                            txtType,
                             glyphName), UIA.CreateAndCondition(txtType, dotName)))
                         chevron := ""
                         try chevron := item.FindElement(chevronCond, UIA.TreeScope.Children)
@@ -10058,7 +10214,7 @@ UnfoldAllDirectoriesInExplorer() {
                 }
                 Sleep 10
             }
-            
+
             ; Brief pause between iterations to allow UI to update
             Sleep 50
         }
@@ -13435,37 +13591,37 @@ PlayCompletionChime_Gemini() {
             return
 
         ; Find the main results container
-        centerCol := uia.FindFirst({AutomationId: "center_col"})
-        
+        centerCol := uia.FindFirst({ AutomationId: "center_col" })
+
         targetLink := ""
 
         if (centerCol) {
             ; Find the first result title text inside center_col
             ; ClassName "LC20lb" is standard for Google result titles
-            titleText := centerCol.FindFirst({ClassName: "LC20lb", MatchMode: "Substring"})
-            
+            titleText := centerCol.FindFirst({ ClassName: "LC20lb", MatchMode: "Substring" })
+
             if (titleText) {
                 ; The link is the parent of the title text
                 targetLink := titleText.WalkTree("p") ; Get Parent
             }
         } else {
-             ; Fallback: search from root if center_col not found
-             titleText := uia.FindFirst({ClassName: "LC20lb", MatchMode: "Substring"})
-             if (titleText) {
-                 targetLink := titleText.WalkTree("p")
-             }
+            ; Fallback: search from root if center_col not found
+            titleText := uia.FindFirst({ ClassName: "LC20lb", MatchMode: "Substring" })
+            if (titleText) {
+                targetLink := titleText.WalkTree("p")
+            }
         }
 
         if (targetLink) {
-             ; Try to invoke (click) the link
-             try {
-                 targetLink.Invoke()
-             } catch {
-                 targetLink.Click()
-             }
+            ; Try to invoke (click) the link
+            try {
+                targetLink.Invoke()
+            } catch {
+                targetLink.Click()
+            }
         } else {
-             ToolTip("First result not found")
-             SetTimer(() => ToolTip(), -2000)
+            ToolTip("First result not found")
+            SetTimer(() => ToolTip(), -2000)
         }
 
     } catch Error as e {
