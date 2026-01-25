@@ -277,14 +277,19 @@ global g_WikipediaScrollPositionsFile := A_ScriptDir "\data\wikipedia_scroll_pos
 ; Global variable for Wikipedia focus monitoring (automatic blackout cancellation)
 global g_WikipediaFocusMonitorTimer := false
 
+; Global variable for Wikipedia completed articles CSV file
+global g_WikipediaCompletedFile := A_ScriptDir "\data\wikipedia_completed.csv"
+
 ; Wikipedia article items configuration
 ; Item 1: Taoist philosophy
 ; Item 2: Claude Debussy
-; Items 3-5: Placeholders (no action)
+; Item 3: Daoshi
+; Item 4: Self-cultivation
+; Item 5: Cognitive therapy
 global g_WikipediaItems := [{ char: "1", title: "Taoist philosophy", url: "https://en.wikipedia.org/wiki/Taoist_philosophy" }, { char: "2",
-    title: "Claude Debussy", url: "https://en.wikipedia.org/wiki/Claude_Debussy" }, { char: "3", title: "Placeholder",
-        url: "" }, { char: "4", title: "Placeholder",
-            url: "" }, { char: "5", title: "Placeholder", url: "" }
+    title: "Claude Debussy", url: "https://en.wikipedia.org/wiki/Claude_Debussy" }, { char: "3", title: "Daoshi",
+        url: "https://en.wikipedia.org/wiki/Daoshi" }, { char: "4", title: "Self-cultivation",
+            url: "https://en.wikipedia.org/wiki/Self-cultivation" }, { char: "5", title: "Cognitive therapy", url: "https://en.wikipedia.org/wiki/Cognitive_therapy" }
 ]
 
 ; =============================================================================
@@ -996,6 +1001,38 @@ HandleWikipediaEscape(*) {
     }
 }
 
+; Load completed Wikipedia articles from CSV file
+LoadCompletedArticles() {
+    global g_WikipediaCompletedFile
+    completedArticles := []
+    
+    try {
+        if (!FileExist(g_WikipediaCompletedFile)) {
+            return completedArticles
+        }
+        
+        fileContent := FileRead(g_WikipediaCompletedFile)
+        lines := StrSplit(fileContent, "`n")
+        
+        ; Skip header line and process each line
+        loop lines.Length {
+            if (A_Index = 1) {
+                continue  ; Skip header
+            }
+            
+            line := Trim(lines[A_Index])
+            if (line != "") {
+                completedArticles.Push(line)
+            }
+        }
+    } catch Error as err {
+        ; Return empty array on error
+        return completedArticles
+    }
+    
+    return completedArticles
+}
+
 ; Cleanup Wikipedia selector
 CleanupWikipediaSelector() {
     global g_WikipediaSelectorActive, g_WikipediaSelectorGui, g_WikipediaSelectorHandlers
@@ -1098,11 +1135,25 @@ ShowWikipediaSelector() {
     g_WikipediaSelectorGui.MarginX := 10
     g_WikipediaSelectorGui.MarginY := 5
 
+    ; Load completed articles
+    completedArticles := LoadCompletedArticles()
+    
     ; Build display text
     displayText := ""
+    displayText .= "Available Articles:`n"
     for i, item in g_WikipediaItems {
         displayText .= "[" . item.char . "] > " . item.title . "`n"
     }
+    
+    ; Add History section if there are completed articles
+    if (completedArticles.Length > 0) {
+        displayText .= "`n─────────────────────────`n"
+        displayText .= "History (Read):`n"
+        for i, article in completedArticles {
+            displayText .= "  • " . article . "`n"
+        }
+    }
+    
     displayText .= "`nPress Escape to cancel."
 
     ; Calculate text control height based on actual content (number of lines)
