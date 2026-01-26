@@ -844,18 +844,18 @@ CleanClipboardInternal() {
     SendInput "!v"
 
     ; Wait for UI to respond (menu needs time to appear)
-    Sleep 300
+    Sleep 400
 
     ; Send Ctrl+Alt+K
     SendInput "^!k"
 
     ; Wait for UI to respond (dialog needs time to open)
-    Sleep 300
+    Sleep 400
 
     SendInput "{Enter}"
 
     ; Wait for UI to respond (processing needs time to complete)
-    Sleep 500
+    Sleep 600
 
     SendInput "{Escape}"
 
