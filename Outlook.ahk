@@ -7,6 +7,7 @@
 
 ; --- Includes ----------------------------------------------------------------
 #include UIA-v2\Lib\UIA.ahk
+#include %A_ScriptDir%\Utils.ahk
 
 ; --- Hotkeys & Functions -----------------------------------------------------
 
@@ -17,6 +18,11 @@
 ; =============================================================================
 #!+b::
 {
+    ; Check if Outlook is closed and prompt to open if needed
+    if (!CheckAndOpenOutlookTeams(true, false)) {
+        return  ; User cancelled opening Outlook
+    }
+    
     email := "Eduardo.Figueiredo@br.bosch.com"
     exclusion := "Calendar"
     for hwnd in WinGetList("ahk_exe OUTLOOK.EXE") {
@@ -35,6 +41,11 @@
 ; =============================================================================
 #!+g::
 {
+    ; Check if Outlook is closed and prompt to open if needed
+    if (!CheckAndOpenOutlookTeams(true, false)) {
+        return  ; User cancelled opening Outlook
+    }
+    
     SetTitleMatchMode 1
     WinActivate "Calendar - Eduardo"
 }
@@ -46,6 +57,11 @@
 ; =============================================================================
 #!+v::
 {
+    ; Check if Outlook is closed and prompt to open if needed
+    if (!CheckAndOpenOutlookTeams(true, false)) {
+        return  ; User cancelled opening Outlook
+    }
+    
     SetTitleMatchMode 2
     WinActivate "Reminder"
 }

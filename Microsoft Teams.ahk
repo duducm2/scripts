@@ -413,6 +413,11 @@ GetCameraState(hwndTeams, maxRetries := 3) {
 ; Original File: Microsoft Teams - meeting shortcuts.ahk
 ; =============================================================================
 #!+5:: {
+    ; Check if Teams is closed and prompt to open if needed
+    if (!CheckAndOpenOutlookTeams(false, true)) {
+        return  ; User cancelled opening Teams
+    }
+    
     prev := WinGetID("A")                     ; window you were in
     if !ActivateTeamsMeetingWindow()
         return
@@ -456,6 +461,11 @@ GetCameraState(hwndTeams, maxRetries := 3) {
 ; Original File: Microsoft Teams - meeting shortcuts.ahk
 ; =============================================================================
 #!+4:: {
+    ; Check if Teams is closed and prompt to open if needed
+    if (!CheckAndOpenOutlookTeams(false, true)) {
+        return  ; User cancelled opening Teams
+    }
+    
     prev := WinGetID("A")
     if !ActivateTeamsMeetingWindow()
         return
@@ -497,6 +507,11 @@ GetCameraState(hwndTeams, maxRetries := 3) {
 ; Meeting: Toggle Screen Share  (Win Alt Shift T)
 ; =============================================================================
 #!+t:: {
+    ; Check if Teams is closed and prompt to open if needed
+    if (!CheckAndOpenOutlookTeams(false, true)) {
+        return  ; User cancelled opening Teams
+    }
+    
     prev := WinGetID("A")                 ; remember the window you were in
     if !ActivateTeamsMeetingWindow()
         return
@@ -560,6 +575,11 @@ GetCameraState(hwndTeams, maxRetries := 3) {
 ; Original File: Microsoft Teams - meeting shortcuts.ahk
 ; =============================================================================
 #!+2:: {
+    ; Check if Teams is closed and prompt to open if needed
+    if (!CheckAndOpenOutlookTeams(false, true)) {
+        return  ; User cancelled opening Teams
+    }
+    
     if !ActivateTeamsMeetingWindow()
         return
     response := MsgBox("Tem certeza de que deseja sair da reunião?", "Sair da reunião?", "YesNo Icon!")
@@ -573,17 +593,40 @@ GetCameraState(hwndTeams, maxRetries := 3) {
 ; Original File: Microsoft Teams - meeting shortcuts.ahk
 ; =============================================================================
 #!+E:: {
+    ; Check if Teams is closed and prompt to open if needed
+    if (!CheckAndOpenOutlookTeams(false, true)) {
+        return  ; User cancelled opening Teams
+    }
+    
     if !ActivateTeamsChatWindow() {
         RunTeams()
     }
 }
 
 RunTeams() {
-    ; Example for Microsoft Store Teams
-    ; Run("shell:AppsFolder\MicrosoftTeams_8wekyb3d8bbwe!App")
-    
-    ; Example for desktop Teams
-    Run("c:\Users\fie7ca\Documents\Atalhos\Microsoft Teams - Shortcut.lnk")
+    ; Use the same logic as CheckAndOpenOutlookTeams for consistency
+    global IS_WORK_ENVIRONMENT
+    try {
+        if (IS_WORK_ENVIRONMENT) {
+            teamsExePath := "C:\Program Files\WindowsApps\MSTeams_25332.1210.4188.1171_x64__8wekyb3d8bbwe\ms-teams.exe"
+            if (FileExist(teamsExePath)) {
+                Run teamsExePath
+            } else {
+                Run "ms-teams.exe"
+            }
+        } else {
+            ; Personal environment
+            teamsPath := "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Microsoft Teams.lnk"
+            if (FileExist(teamsPath)) {
+                Run teamsPath
+            } else {
+                Run "ms-teams.exe"
+            }
+        }
+    } catch Error as e {
+        ; Fallback to just running the executable
+        Run "ms-teams.exe"
+    }
 }
 
 ; =============================================================================
@@ -592,6 +635,11 @@ RunTeams() {
 ; Original File: Microsoft Teams - meeting shortcuts.ahk
 ; =============================================================================
 #!+3:: {
+    ; Check if Teams is closed and prompt to open if needed
+    if (!CheckAndOpenOutlookTeams(false, true)) {
+        return  ; User cancelled opening Teams
+    }
+    
     if !ActivateTeamsMeetingWindow()
         ShowCenteredOverlay(WinGetID("A"), "NO ACTIVE MEETING WINDOW", 3000)
 }
@@ -603,6 +651,11 @@ RunTeams() {
 ; =============================================================================
 #!+r::
 {
+    ; Check if Teams is closed and prompt to open if needed
+    if (!CheckAndOpenOutlookTeams(false, true)) {
+        return  ; User cancelled opening Teams
+    }
+    
     contact := Trim(InputBox("Enter a Teams contact name:", "Jump to Chat").Value)
     if contact = ""
         return

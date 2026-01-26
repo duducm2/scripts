@@ -648,6 +648,110 @@ ToggleOutlookAndTeams() {
     }
 }
 
+; =============================================================================
+; Check and Prompt to Open Outlook/Teams
+; Checks if Outlook or Teams are closed and prompts user to open them if needed
+; Parameters:
+;   - checkOutlook: true to check Outlook, false otherwise
+;   - checkTeams: true to check Teams, false otherwise
+; Returns: true if applications are running (or were opened), false if user cancelled
+; =============================================================================
+CheckAndOpenOutlookTeams(checkOutlook := false, checkTeams := false) {
+    outlookClosed := false
+    teamsClosed := false
+    
+    ; Check Outlook status
+    if (checkOutlook) {
+        outlookRunning := ProcessExist("OUTLOOK.EXE")
+        if (!outlookRunning) {
+            outlookClosed := true
+        }
+    }
+    
+    ; Check Teams status
+    if (checkTeams) {
+        teamsRunning := ProcessExist("ms-teams.exe")
+        if (!teamsRunning) {
+            teamsClosed := true
+        }
+    }
+    
+    ; If both are open, no action needed
+    if (!outlookClosed && !teamsClosed) {
+        return true
+    }
+    
+    ; Build message based on what's closed
+    message := ""
+    if (outlookClosed && teamsClosed) {
+        message := "Outlook and Teams are closed. Do you want to open them?"
+    } else if (outlookClosed) {
+        message := "Outlook is closed. Do you want to open it?"
+    } else if (teamsClosed) {
+        message := "Teams is closed. Do you want to open it?"
+    }
+    
+    ; Show message box
+    response := MsgBox(message, "Open Applications?", "YesNo Icon?")
+    
+    ; If user confirms, open the applications (only open, don't toggle)
+    if (response = "Yes") {
+        ; Only open the closed applications, don't toggle
+        try {
+            ; Launch Outlook if closed
+            if (outlookClosed) {
+                outlookPath := ""
+                if (IS_WORK_ENVIRONMENT) {
+                    outlookPath := "C:\Users\fie7ca\Documents\Atalhos\Microsoft Outlook.lnk"
+                    if (!FileExist(outlookPath)) {
+                        outlookPath := ""
+                    }
+                } else {
+                    outlookPath := "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Microsoft Outlook.lnk"
+                    if (!FileExist(outlookPath)) {
+                        outlookPath := ""
+                    }
+                }
+                
+                if (outlookPath != "") {
+                    Run outlookPath
+                } else {
+                    Run "OUTLOOK.EXE"
+                }
+            }
+            
+            ; Launch Teams if closed
+            if (teamsClosed) {
+                if (IS_WORK_ENVIRONMENT) {
+                    teamsExePath := "C:\Program Files\WindowsApps\MSTeams_25332.1210.4188.1171_x64__8wekyb3d8bbwe\ms-teams.exe"
+                    if (FileExist(teamsExePath)) {
+                        Run teamsExePath
+                    } else {
+                        Run "ms-teams.exe"
+                    }
+                } else {
+                    teamsPath := "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Microsoft Teams.lnk"
+                    if (FileExist(teamsPath)) {
+                        Run teamsPath
+                    } else {
+                        Run "ms-teams.exe"
+                    }
+                }
+            }
+            
+            ; Wait a bit for applications to start
+            Sleep 2000
+            return true
+        } catch Error as e {
+            MsgBox "Error opening applications: " e.Message, "Error", "IconX"
+            return false
+        }
+    }
+    
+    ; User cancelled
+    return false
+}
+
 ; Dictation Loop Macro
 ; Automatically cycles dictation on/off every 60 seconds to prevent transcription timeouts
 ToggleDictationLoop() {
