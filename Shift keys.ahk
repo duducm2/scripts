@@ -497,7 +497,7 @@ Cursor
 📁 [2] Copy path (cursor)
 📊 [3] CSV: Edit CSV
 💾 [4] CSV: Apply changes to source file and save
-[5] 
+📋 [5] Context menu navigation sequence
 🤖 [6] Context-aware agent panel actions
 🔨 [7] Build LaTeX project
 📄 [8] View LaTeX PDF file
@@ -8382,53 +8382,21 @@ IsEditorActive() {
     Send "#!o"
 }
 
-; Ctrl + 5 : Click Reload button - Reload
+; Ctrl + 5 : Context menu navigation sequence
 ^5::
 {
-    try {
-        win := WinExist("A")
-        if (!win) {
-            return
-        }
-        root := UIA.ElementFromHandle(win)
-        Sleep 100  ; Allow UI to update
-
-        ; Primary strategy: Find by Name "Reload" with Type 50000 (Button)
-        reloadButton := root.FindFirst({ Name: "Reload", Type: 50000 })
-
-        ; Fallback: Try by Type "Button" and Name "Reload"
-        if !reloadButton {
-            reloadButton := root.FindFirst({ Type: "Button", Name: "Reload" })
-        }
-
-        ; Fallback: Search all buttons for one with "Reload" name
-        if !reloadButton {
-            allButtons := root.FindAll({ Type: 50000 })
-            for button in allButtons {
-                if (button.Name = "Reload" || InStr(button.Name, "Reload", false) = 1) {
-                    reloadButton := button
-                    break
-                }
-            }
-        }
-
-        if (reloadButton) {
-            ; Try Invoke pattern first, fallback to Click
-            try {
-                if (reloadButton.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)) {
-                    reloadButton.Invoke()
-                } else {
-                    reloadButton.Click()
-                }
-            } catch {
-                reloadButton.Click()
-            }
-        } else {
-            ; Last resort: Could not find Reload button
-        }
-    } catch Error as e {
-        ; If all else fails, silently fail (no fallback action defined)
-    }
+    Click "Right"         ; 1. Right mouse click
+    Sleep 100
+    Send "{Down}"         ; 2. Press Down Arrow twice
+    Send "{Down}"
+    Sleep 50
+    Send "{Right}"        ; 3. Press Right Arrow once
+    Sleep 50
+    Send "{Down}"         ; 4. Press Down Arrow once
+    Sleep 50
+    Send "{Right}"        ; 5. Press Right Arrow once
+    Sleep 50
+    Send "{Enter}"        ; 6. Press Enter
 }
 
 ; Shift + F : Fold - Fold
