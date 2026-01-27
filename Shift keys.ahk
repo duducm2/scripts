@@ -10848,6 +10848,49 @@ Mobills_IsButton(el) {
     }
 }
 
+; Budgets: resolve BOTH arrows by index, then pick by dir.
+; Target:
+;   Prev => {T:30}, {T:26}, {T:0, i:7}
+;   Next => {T:30}, {T:26}, {T:0, i:8}
+Mobills_GetBudgetsPrevNext(uia, &prevBtn, &nextBtn) {
+    prevBtn := ""
+    nextBtn := ""
+
+    prev := ""
+    next := ""
+    try {
+        prev := uia.ElementFromPath({ Type: 30 }, { Type: 26 }, { Type: 0, i: 7 })
+    } catch {
+        prev := ""
+    }
+    try {
+        next := uia.ElementFromPath({ Type: 30 }, { Type: 26 }, { Type: 0, i: 8 })
+    } catch {
+        next := ""
+    }
+
+    if (prev && Mobills_IsButton(prev) && !Mobills_IsDisabled(prev))
+        prevBtn := prev
+    if (next && Mobills_IsButton(next) && !Mobills_IsDisabled(next))
+        nextBtn := next
+
+    ; Sanity check: ensure prev is physically left of next (swap if needed).
+    if (prevBtn && nextBtn) {
+        try {
+            p := prevBtn.Location
+            n := nextBtn.Location
+            if (p.x > n.x) {
+                tmp := prevBtn
+                prevBtn := nextBtn
+                nextBtn := tmp
+            }
+        } catch {
+        }
+    }
+
+    return (prevBtn || nextBtn)
+}
+
 Mobills_FindPagerByName(uia, dir) {
     ; Try common labels (EN/PT). Substring match.
     namesPrev := ["Go to previous page", "Previous", "Prev", "Anterior", "Página anterior", "Ir para a página anterior"]
@@ -10922,14 +10965,13 @@ Mobills_FindPagerByPath(uia, dir, context) {
     ;   Next  => {T:30}, {T:26}, {T:0, i:8}
     ;   Prev  => {T:30}, {T:26}, {T:0, i:7}
     if (context = "budgets") {
-        try {
-            idx := (dir = "Prev") ? 7 : 8
-            btn := uia.ElementFromPath({ Type: 30 }, { Type: 26 }, { Type: 0, i: idx })
-            if btn && Mobills_IsButton(btn) && !Mobills_IsDisabled(btn)
-                return btn
-        } catch {
+        if Mobills_GetBudgetsPrevNext(uia, &prevBtn, &nextBtn) {
+            if (dir = "Prev")
+                return prevBtn ? prevBtn : ""
+            return nextBtn ? nextBtn : ""
         }
-        ; If budgets-specific path fails, fall through to other button-only strategies
+        ; IMPORTANT: Do not fall through on budgets (prevents picking the wrong control)
+        return ""
     }
 
     ; Legacy paths (worked across some pages previously)
@@ -11012,6 +11054,118 @@ Mobills_ClickPager(el) {
     }
 }
 
+; One-shot pager resolution (no waiting/retries). Returns element or "".
+Mobills_FindPagerOnce(uia, dir, context) {
+    btn := ""
+    ; Context-specific ordering (per plan)
+    if (context = "transactions") {
+        btn := Mobills_FindPagerByName(uia, dir)
+        if !btn
+            btn := Mobills_FindPagerByMonthHeader(uia, dir)
+    } else if (context = "accounts") {
+        btn := Mobills_FindPagerByPath(uia, dir, context)
+        if !btn
+            btn := Mobills_FindPagerByName(uia, dir)
+    } else if (context = "budgets") {
+        ; Highest priority: budgets-specific button paths (see Mobills_FindPagerByPath)
+        btn := Mobills_FindPagerByPath(uia, dir, context)
+        if !btn
+            btn := Mobills_FindPagerByName(uia, dir)          ; button-only
+        if !btn
+            btn := Mobills_FindPagerByMonthHeader(uia, dir)   ; button-only
+    } else if (context = "planning") {
+        btn := Mobills_FindPagerByPath(uia, dir, context)
+        if !btn
+            btn := Mobills_FindPagerByName(uia, dir)
+    } else {
+        ; Generic fallback: try name -> month header -> legacy path
+        btn := Mobills_FindPagerByName(uia, dir)
+        if !btn
+            btn := Mobills_FindPagerByMonthHeader(uia, dir)
+        if !btn
+            btn := Mobills_FindPagerByPath(uia, dir, context)
+    }
+    return btn
+}
+
+; Multi-layer verification to confirm absence (prevents false negatives).
+; Returns an element if found in any layer; otherwise returns "".
+Mobills_VerifyPagerMissing(dir, context) {
+    ; Layer 1: Short wait, same attachment.
+    try {
+        uia1 := TryAttachBrowser()
+        if uia1 {
+            Sleep 150
+            btn := Mobills_FindPagerOnce(uia1, dir, context)
+            if btn
+                return btn
+        }
+    } catch {
+    }
+
+    ; Layer 2: Re-attach browser (fresh UIA tree) + longer wait.
+    try {
+        uia2 := TryAttachBrowser()
+        if uia2 {
+            Sleep 450
+            btn := Mobills_FindPagerOnce(uia2, dir, context)
+            if btn
+                return btn
+        }
+    } catch {
+    }
+
+    ; Layer 3 (extra reliability): budgets-specific geometric button fallback
+    ; (ensures we pick real Button controls, not the month/year Text nodes).
+    if (context = "budgets") {
+        try {
+            uia3 := TryAttachBrowser()
+            if uia3 {
+                Sleep 250
+                container := ""
+                try container := uia3.ElementFromPath({ Type: 30 }, { Type: 26 })
+                if container {
+                    grp := ""
+                    try grp := FindMonthGroup(uia3)
+                    grpPos := ""
+                    if grp
+                        try grpPos := grp.Location
+
+                    best := ""
+                    bestX := ""
+                    for , b in container.FindAll({ Type: "Button" }) {
+                        if Mobills_IsDisabled(b)
+                            continue
+                        pos := b.Location
+                        ; Prefer same row as month header when available
+                        if (grpPos != "") {
+                            sameRow := (pos.y >= grpPos.y - 12 && pos.y <= grpPos.y + grpPos.h + 12)
+                            if !sameRow
+                                continue
+                        }
+                        if (dir = "Prev") {
+                            if (best = "" || pos.x < bestX) {
+                                best := b
+                                bestX := pos.x
+                            }
+                        } else {
+                            if (best = "" || pos.x > bestX) {
+                                best := b
+                                bestX := pos.x
+                            }
+                        }
+                    }
+                    if best
+                        return best
+                }
+            }
+        } catch {
+        }
+    }
+
+    return ""
+}
+
 Mobills_Navigate(dir) {
     try {
         uia := TryAttachBrowser()
@@ -11025,36 +11179,7 @@ Mobills_Navigate(dir) {
         retryDelay := 300
 
         Loop maxRetries {
-            btn := ""
-
-            ; Context-specific ordering (per plan)
-            if (context = "transactions") {
-                btn := Mobills_FindPagerByName(uia, dir)
-                if !btn
-                    btn := Mobills_FindPagerByMonthHeader(uia, dir)
-            } else if (context = "accounts") {
-                btn := Mobills_FindPagerByPath(uia, dir, context)
-                if !btn
-                    btn := Mobills_FindPagerByName(uia, dir)
-            } else if (context = "budgets") {
-                ; Highest priority: budgets-specific button paths (see Mobills_FindPagerByPath)
-                btn := Mobills_FindPagerByPath(uia, dir, context)
-                if !btn
-                    btn := Mobills_FindPagerByName(uia, dir)          ; button-only
-                if !btn
-                    btn := Mobills_FindPagerByMonthHeader(uia, dir)   ; button-only
-            } else if (context = "planning") {
-                btn := Mobills_FindPagerByPath(uia, dir, context)
-                if !btn
-                    btn := Mobills_FindPagerByName(uia, dir)
-            } else {
-                ; Generic fallback: try name -> month header -> legacy path
-                btn := Mobills_FindPagerByName(uia, dir)
-                if !btn
-                    btn := Mobills_FindPagerByMonthHeader(uia, dir)
-                if !btn
-                    btn := Mobills_FindPagerByPath(uia, dir, context)
-            }
+            btn := Mobills_FindPagerOnce(uia, dir, context)
 
             if btn && Mobills_ClickPager(btn)
                 return
@@ -11062,7 +11187,16 @@ Mobills_Navigate(dir) {
             Sleep retryDelay
         }
 
-        MsgBox "Could not find the " . ((dir = "Prev") ? "previous" : "next") . " page/month control.", "Mobills Navigation", "IconX"
+        ; Multi-layer verification before declaring "not present"
+        verifiedBtn := Mobills_VerifyPagerMissing(dir, context)
+        if verifiedBtn {
+            if Mobills_ClickPager(verifiedBtn)
+                return
+            MsgBox "Pager control was found but could not be clicked.", "Mobills Navigation", "IconX"
+            return
+        }
+
+        MsgBox "Could not find the " . ((dir = "Prev") ? "previous" : "next") . " page/month control (verified missing).", "Mobills Navigation", "IconX"
     } catch Error as e {
         MsgBox "Error navigating Mobills:`n" e.Message, "Mobills Error", "IconX"
     }
