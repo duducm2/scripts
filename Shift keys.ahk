@@ -10794,265 +10794,242 @@ ContainsWord(norm, word) {
 }
 
 ; Shift + K : Previous month
-+k:: PrevMobillsMonth()
++k:: Mobills_Navigate("Prev")
 
 ; Shift + L : Next month
-+l:: NextMobillsMonth()
++l:: Mobills_Navigate("Next")
 
-PrevMobillsMonth() {
+; =============================================================================
+; Mobills pagination (unified)
+; =============================================================================
+Mobills_GetContext(uia) {
+    try {
+        url := uia.GetCurrentURL()
+        url := StrLower(url)
+    } catch {
+        url := ""
+    }
+    if InStr(url, "/transactions")
+        return "transactions"
+    if InStr(url, "/accounts")
+        return "accounts"
+    if InStr(url, "/planning") || InStr(url, "/budgets")
+        return "planning"
+    return "unknown"
+}
+
+Mobills_IsDisabled(el) {
+    try {
+        cls := ""
+        try cls := el.GetPropertyValue(UIA.Property.ClassName)
+        if (cls != "" && InStr(cls, "Mui-disabled"))
+            return true
+    } catch {
+    }
+    return false
+}
+
+Mobills_FindPagerByName(uia, dir) {
+    ; Try common labels (EN/PT). Substring match.
+    namesPrev := ["Go to previous page", "Previous", "Prev", "Anterior", "Página anterior", "Ir para a página anterior"]
+    namesNext := ["Go to next page", "Next", "Próximo", "Proximo", "Página seguinte", "Ir para a próxima página", "Ir para a proxima página"]
+    names := (dir = "Prev") ? namesPrev : namesNext
+
+    for , nm in names {
+        try {
+            btn := uia.FindElement({ Name: nm, Type: 50000, matchmode: "Substring" })
+            if btn && !Mobills_IsDisabled(btn)
+                return btn
+        } catch {
+        }
+    }
+    return ""
+}
+
+Mobills_FindPagerByMonthHeader(uia, dir) {
+    grp := ""
+    try grp := FindMonthGroup(uia)
+    if !grp
+        return ""
+
+    step := (dir = "Prev") ? "-1" : "+1"
+    try {
+        btn := grp.WalkTree(step, { Type: "Button" })
+        if btn && !Mobills_IsDisabled(btn)
+            return btn
+    } catch {
+    }
+
+    ; fallback: scan sibling buttons in parent and choose closest left/right
+    try parent := UIA.TreeWalkerTrue.GetParentElement(grp)
+    if !parent
+        return ""
+
+    try grpPos := grp.Location
+    best := ""
+    bestX := ""
+    try {
+        for , el in parent.FindAll({ Type: "Button" }) {
+            if Mobills_IsDisabled(el)
+                continue
+            pos := el.Location
+            sameRow := (pos.y >= grpPos.y - 10 && pos.y <= grpPos.y + grpPos.h + 10)
+            if !sameRow
+                continue
+            if (dir = "Prev") {
+                if (pos.x < grpPos.x) {
+                    if (best = "" || pos.x > bestX) {
+                        best := el
+                        bestX := pos.x
+                    }
+                }
+            } else {
+                if (pos.x > grpPos.x + grpPos.w) {
+                    if (best = "" || pos.x < bestX) {
+                        best := el
+                        bestX := pos.x
+                    }
+                }
+            }
+        }
+    } catch {
+    }
+    return best
+}
+
+Mobills_FindPagerByPath(uia, dir, context) {
+    ; Legacy paths (worked across some pages previously)
+    try {
+        if (dir = "Prev") {
+            btn := uia.ElementFromPath({ Type: 30 }, { Type: 26 }, { Type: 26 }, { Type: 8 }, { Type: 7 }, { Type: 0 })
+        } else {
+            btn := uia.ElementFromPath({ Type: 30 }, { Type: 26 }, { Type: 26 }, { Type: 8 }, { Type: 7, i: -1 }, { Type: 0 })
+        }
+        if btn
+            return btn
+    } catch {
+    }
+
+    ; Accounts: prefer toolbar-ish container if present (avoid hardcoding a single index)
+    if (context = "accounts") {
+        try {
+            toolbar := uia.ElementFromPath({ Type: 30 }, { Type: 26 })
+            if toolbar {
+                buttons := toolbar.FindAll({ Type: "Button" })
+                best := ""
+                bestKey := ""
+                for , b in buttons {
+                    if Mobills_IsDisabled(b)
+                        continue
+                    pos := b.Location
+                    ; prefer top-most row
+                    key := pos.y * 100000 + pos.x
+                    if (dir = "Prev") {
+                        ; left-most among top candidates
+                        if (best = "" || key < bestKey) {
+                            best := b
+                            bestKey := key
+                        }
+                    } else {
+                        ; right-most among top candidates (approx: invert x)
+                        key2 := pos.y * 100000 - pos.x
+                        if (best = "" || key2 < bestKey) {
+                            best := b
+                            bestKey := key2
+                        }
+                    }
+                }
+                if best
+                    return best
+            }
+        } catch {
+        }
+    }
+
+    ; Planning: sometimes the "button" is a Text element
+    if (context = "planning") {
+        try {
+            el := uia.ElementFromPath({ Type: 30 }, { Type: 26 }, { Type: 20, i: 2 })
+            if el
+                return el
+        } catch {
+        }
+    }
+
+    return ""
+}
+
+Mobills_ClickPager(el) {
+    if !el
+        return false
+    try {
+        ; Prefer Invoke when available, otherwise click.
+        try {
+            if (el.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)) {
+                el.Invoke()
+                return true
+            }
+        } catch {
+        }
+        el.Click()
+        return true
+    } catch {
+        return false
+    }
+}
+
+Mobills_Navigate(dir) {
     try {
         uia := TryAttachBrowser()
         if !uia {
             MsgBox "Could not attach to the browser window.", "Mobills Navigation", "IconX"
             return
         }
-        btn := ""
 
-        ; Retry logic: Try multiple times with delays to allow UI to load
+        context := Mobills_GetContext(uia)
         maxRetries := 3
-        retryDelay := 300  ; milliseconds between retries
+        retryDelay := 300
 
-        loop maxRetries {
-            ; PRIMARY LOGIC: Try UIA path-based detection first (most reliable)
-            ; Path: {T:30}, {T:26}, {T:26}, {T:8}, {T:7}, {T:0}
-            try {
-                ; Try with Type property (T:30 = Type:30)
-                btn := uia.ElementFromPath({ Type: 30 }, { Type: 26 }, { Type: 26 }, { Type: 8 }, { Type: 7 }, { Type: 0 })
-                if btn {
-                    ; Confirm element exists and is valid
-                    try {
-                        btnName := btn.GetPropertyValue(UIA.Property.Name)
-                        if btnName {
-                            break  ; Found valid button, exit retry loop
-                        }
-                    } catch {
-                        ; Element found but couldn't verify, continue to next attempt
-                        btn := ""
-                    }
-                }
-            } catch Error as e {
-                ; UIA path failed, continue to fallbacks
+        Loop maxRetries {
+            btn := ""
+
+            ; Context-specific ordering (per plan)
+            if (context = "transactions") {
+                btn := Mobills_FindPagerByName(uia, dir)
+                if !btn
+                    btn := Mobills_FindPagerByMonthHeader(uia, dir)
+            } else if (context = "accounts") {
+                btn := Mobills_FindPagerByPath(uia, dir, context)
+                if !btn
+                    btn := Mobills_FindPagerByName(uia, dir)
+            } else if (context = "planning") {
+                btn := Mobills_FindPagerByPath(uia, dir, context)
+                if !btn
+                    btn := Mobills_FindPagerByName(uia, dir)
+            } else {
+                ; Generic fallback: try name -> month header -> legacy path
+                btn := Mobills_FindPagerByName(uia, dir)
+                if !btn
+                    btn := Mobills_FindPagerByMonthHeader(uia, dir)
+                if !btn
+                    btn := Mobills_FindPagerByPath(uia, dir, context)
             }
 
-            Sleep retryDelay  ; Wait before next attempt
+            if btn && Mobills_ClickPager(btn)
+                return
 
-            ; FALLBACK 1: Try by Name "Go to previous page" (keep existing fallback for compatibility)
-            if !btn {
-                try {
-                    ; Try with Type 50000 (Button) and Name match
-                    btn := uia.FindElement({ Name: "Go to previous page", Type: 50000, matchmode: "Substring" })
-                    if !btn {
-                        ; Also try with ClassName filter
-                        btn := uia.FindElement({ Name: "Go to previous page", Type: 50000, ClassName: "MuiPaginationItem",
-                            matchmode: "Substring" })
-                    }
-                    ; Verify button is not disabled
-                    if btn {
-                        try {
-                            className := ""
-                            try className := btn.GetPropertyValue(UIA.Property.ClassName)
-                            if InStr(className, "Mui-disabled")
-                                btn := ""  ; Button is disabled, don't use it
-                            else
-                                break  ; Found valid button, exit retry loop
-                        } catch {
-                            ; If we can't check className, assume button is usable
-                            break  ; Found button, exit retry loop
-                        }
-                    }
-                } catch {
-                    ; Fallback search failed, btn remains empty
-                }
-            }
-
-            if btn {
-                break  ; Found button, exit retry loop
-            }
-
-            Sleep retryDelay  ; Wait before next attempt
-
-            ; FALLBACK 2: Try month group-based detection (keep for backward compatibility)
-            if !btn {
-                grp := FindMonthGroup(uia)
-                if grp {
-                    ; PRIMARY LOGIC: First try: immediate previous sibling
-                    btn := grp.WalkTree("-1", { Type: "Button" })
-                    if !btn {
-                        ; PRIMARY LOGIC: Fallback: search all buttons inside parent and pick the one to the LEFT of the group
-                        parent := UIA.TreeWalkerTrue.GetParentElement(grp)
-                        if (parent) {
-                            grpPos := grp.Location
-                            for , el in parent.FindAll({ Type: "Button" }) {
-                                pos := el.Location
-                                if (pos.y >= grpPos.y - 10 && pos.y <= grpPos.y + grpPos.h + 10 && pos.x < grpPos.x) {
-                                    btn := el                          ; closest left candidate
-                                    break  ; Found button, exit retry loop
-                                }
-                            }
-                        }
-                    } else {
-                        break  ; Found button via WalkTree, exit retry loop
-                    }
-                }
-            }
-
-            if btn {
-                break  ; Found button, exit retry loop
-            }
+            Sleep retryDelay
         }
 
-        ; Confirmation layer: Verify button was found before clicking
-        if btn {
-            ; Additional verification: ensure button is still valid and clickable
-            try {
-                ; Small delay to ensure button is ready
-                Sleep 150
-                ; Verify button still exists
-                btnName := btn.GetPropertyValue(UIA.Property.Name)
-                if btnName {
-                    btn.Click()
-                } else {
-                    MsgBox "Button found but could not be verified. Please try again.", "Mobills Navigation", "IconX"
-                }
-            } catch Error as e {
-                MsgBox "Button found but could not be clicked:`n" e.Message, "Mobills Navigation", "IconX"
-            }
-        } else {
-            MsgBox "Could not find the previous-month button after " . maxRetries . " attempts.", "Mobills Navigation",
-                "IconX"
-        }
+        MsgBox "Could not find the " . ((dir = "Prev") ? "previous" : "next") . " page/month control.", "Mobills Navigation", "IconX"
     } catch Error as e {
-        MsgBox "Error navigating to previous month:`n" e.Message, "Mobills Error", "IconX"
+        MsgBox "Error navigating Mobills:`n" e.Message, "Mobills Error", "IconX"
     }
 }
 
-NextMobillsMonth() {
-    try {
-        uia := TryAttachBrowser()
-        if !uia {
-            MsgBox "Could not attach to the browser window.", "Mobills Navigation", "IconX"
-            return
-        }
-        btn := ""
-
-        ; Retry logic: Try multiple times with delays to allow UI to load
-        maxRetries := 3
-        retryDelay := 300  ; milliseconds between retries
-
-        loop maxRetries {
-            ; PRIMARY LOGIC: Try UIA path-based detection first (most reliable)
-            ; Path: {T:30}, {T:26}, {T:26}, {T:8}, {T:7, i:-1}, {T:0}
-            try {
-                ; Try with Type property (T:30 = Type:30, i:-1 means last of that type)
-                btn := uia.ElementFromPath({ Type: 30 }, { Type: 26 }, { Type: 26 }, { Type: 8 }, { Type: 7, i: -1 }, { Type: 0 })
-                if btn {
-                    ; Confirm element exists and is valid
-                    try {
-                        btnName := btn.GetPropertyValue(UIA.Property.Name)
-                        if btnName {
-                            break  ; Found valid button, exit retry loop
-                        }
-                    } catch {
-                        ; Element found but couldn't verify, continue to next attempt
-                        btn := ""
-                    }
-                }
-            } catch Error as e {
-                ; UIA path failed, continue to fallbacks
-            }
-
-            Sleep retryDelay  ; Wait before next attempt
-
-            ; FALLBACK 1: Try by Name "Go to next page" (keep existing fallback for compatibility)
-            if !btn {
-                try {
-                    ; Try with Type 50000 (Button) and Name match
-                    btn := uia.FindElement({ Name: "Go to next page", Type: 50000, matchmode: "Substring" })
-                    if !btn {
-                        ; Also try with ClassName filter
-                        btn := uia.FindElement({ Name: "Go to next page", Type: 50000, ClassName: "MuiPaginationItem",
-                            matchmode: "Substring" })
-                    }
-                    ; Verify button is not disabled
-                    if btn {
-                        try {
-                            className := ""
-                            try className := btn.GetPropertyValue(UIA.Property.ClassName)
-                            if InStr(className, "Mui-disabled")
-                                btn := ""  ; Button is disabled, don't use it
-                            else
-                                break  ; Found valid button, exit retry loop
-                        } catch {
-                            ; If we can't check className, assume button is usable
-                            break  ; Found button, exit retry loop
-                        }
-                    }
-                } catch {
-                    ; Fallback search failed, btn remains empty
-                }
-            }
-
-            if btn {
-                break  ; Found button, exit retry loop
-            }
-
-            Sleep retryDelay  ; Wait before next attempt
-
-            ; FALLBACK 2: Try month group-based detection (keep for backward compatibility)
-            if !btn {
-                grp := FindMonthGroup(uia)
-                if grp {
-                    ; PRIMARY LOGIC: First try: immediate next sibling
-                    btn := grp.WalkTree("+1", { Type: "Button" })
-                    if !btn {
-                        ; PRIMARY LOGIC: Fallback: search all buttons inside parent and pick the one to the RIGHT of the group
-                        parent := UIA.TreeWalkerTrue.GetParentElement(grp)
-                        if (parent) {
-                            grpPos := grp.Location
-                            for , el in parent.FindAll({ Type: "Button" }) {
-                                pos := el.Location
-                                if (pos.y >= grpPos.y - 10 && pos.y <= grpPos.y + grpPos.h + 10 && pos.x > grpPos.x +
-                                    grpPos.w) {
-                                    btn := el                          ; closest right candidate
-                                    break  ; Found button, exit retry loop
-                                }
-                            }
-                        }
-                    } else {
-                        break  ; Found button via WalkTree, exit retry loop
-                    }
-                }
-            }
-
-            if btn {
-                break  ; Found button, exit retry loop
-            }
-        }
-
-        ; Confirmation layer: Verify button was found before clicking
-        if btn {
-            ; Additional verification: ensure button is still valid and clickable
-            try {
-                ; Small delay to ensure button is ready
-                Sleep 150
-                ; Verify button still exists
-                btnName := btn.GetPropertyValue(UIA.Property.Name)
-                if btnName {
-                    btn.Click()
-                } else {
-                    MsgBox "Button found but could not be verified. Please try again.", "Mobills Navigation", "IconX"
-                }
-            } catch Error as e {
-                MsgBox "Button found but could not be clicked:`n" e.Message, "Mobills Navigation", "IconX"
-            }
-        } else {
-            MsgBox "Could not find the next-month button after " . maxRetries . " attempts.", "Mobills Navigation",
-                "IconX"
-        }
-    } catch Error as e {
-        MsgBox "Error navigating to next month:`n" e.Message, "Mobills Error", "IconX"
-    }
-}
+; Backwards-compatible wrappers (old names kept, logic refactored)
+PrevMobillsMonth() => Mobills_Navigate("Prev")
+NextMobillsMonth() => Mobills_Navigate("Next")
 
 ; ---- New helper to jump from "Open" button ----
 FocusViaOpenButton(tabs, pressSpace := false) {
