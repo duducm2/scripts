@@ -11054,6 +11054,74 @@ Mobills_ClickPager(el) {
     }
 }
 
+; =============================================================================
+; Mobills "running" banner (non-blocking, overlay style)
+; =============================================================================
+global g_MobillsRunningBannerGui := 0
+
+Mobills_ShowRunningBanner(dir, duration := 900) {
+    global g_MobillsRunningBannerGui
+
+    ; Close any existing banner first
+    try {
+        if IsObject(g_MobillsRunningBannerGui)
+            g_MobillsRunningBannerGui.Destroy()
+    } catch {
+    }
+    g_MobillsRunningBannerGui := 0
+
+    text := "Mobills: " . ((dir = "Prev") ? "Previous" : "Next") . " (running...)"
+
+    ; Match the overlay style used in Utils.ahk / Teams.ahk
+    target := WinGetID("A")
+    hasWindow := false
+    if target && WinExist("ahk_id " target) {
+        try {
+            WinGetPos(&wx, &wy, &ww, &wh, target)
+            hasWindow := (ww > 0 && wh > 0)
+        } catch {
+            hasWindow := false
+        }
+    }
+
+    ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
+    ov.BackColor := "3772FF"
+    ov.SetFont("s24 cFFFFFF Bold", "Segoe UI")
+    ov.Add("Text", "w500 Center", text)
+    ov.Show("AutoSize Hide")
+    ov.GetPos(&gx, &gy, &gw, &gh)
+
+    if hasWindow {
+        cx := wx + (ww - gw) // 2
+        cy := wy + (wh - gh) // 2
+        ov.Show("x" . cx . " y" . cy . " NA")
+    } else {
+        vx := SysGet(76)  ; SM_XVIRTUALSCREEN
+        vy := SysGet(77)  ; SM_YVIRTUALSCREEN
+        vw := SysGet(78)  ; SM_CXVIRTUALSCREEN
+        vh := SysGet(79)  ; SM_CYVIRTUALSCREEN
+        cx := vx + (vw - gw) // 2
+        cy := vy + (vh - gh) // 2
+        ov.Show("x" . cx . " y" . cy . " NA")
+    }
+
+    WinSetTransparent(178, ov)
+    g_MobillsRunningBannerGui := ov
+
+    ; Auto-hide asynchronously
+    SetTimer(Mobills_HideRunningBanner, -duration)
+}
+
+Mobills_HideRunningBanner() {
+    global g_MobillsRunningBannerGui
+    try {
+        if IsObject(g_MobillsRunningBannerGui)
+            g_MobillsRunningBannerGui.Destroy()
+    } catch {
+    }
+    g_MobillsRunningBannerGui := 0
+}
+
 ; One-shot pager resolution (no waiting/retries). Returns element or "".
 Mobills_FindPagerOnce(uia, dir, context) {
     btn := ""
@@ -11128,6 +11196,7 @@ Mobills_VerifyPagerMissing(dir, context, uiaCurrent := 0) {
 }
 
 Mobills_Navigate(dir) {
+    Mobills_ShowRunningBanner(dir)
     try {
         uia := TryAttachBrowser()
         if !uia {
@@ -11164,6 +11233,8 @@ Mobills_Navigate(dir) {
         MsgBox "Could not find the " . ((dir = "Prev") ? "previous" : "next") . " page/month control (verified missing).", "Mobills Navigation", "IconX"
     } catch Error as e {
         MsgBox "Error navigating Mobills:`n" e.Message, "Mobills Error", "IconX"
+    } finally {
+        Mobills_HideRunningBanner()
     }
 }
 
