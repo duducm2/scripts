@@ -844,23 +844,181 @@ CleanClipboardInternal() {
     SendInput "!v"
 
     ; Wait for UI to respond (menu needs time to appear)
-    Sleep 400
+    Sleep 600
 
     ; Send Ctrl+Alt+K
     SendInput "^!k"
 
     ; Wait for UI to respond (dialog needs time to open)
-    Sleep 400
+    Sleep 600
 
     SendInput "{Enter}"
 
     ; Wait for UI to respond (processing needs time to complete)
-    Sleep 600
+    Sleep 800
 
-    SendInput "{Escape}"
+    SendInput "!v"
 
     ; Brief pause to ensure Escape is processed
-    Sleep 100
+    Sleep 400
+}
+
+; =============================================================================
+; Dictation: Non-modal clipboard cleanup countdown (used by Win+Alt+Shift+7)
+; =============================================================================
+global g_DictationCleanupGui := 0
+global g_DictationCleanupTextCtrl := 0
+global g_DictationCleanupRemaining := 0
+global g_DictationCleanupCanceled := false
+
+DictationCleanup_SetCancelHotkeys(enable := true) {
+    ; Use ~ to let the key pass through to the active app.
+    if (enable) {
+        Hotkey("~*n", DictationCleanup_Cancel, "On")
+        Hotkey("~*End", DictationCleanup_Cancel, "On")
+    } else {
+        try Hotkey("~*n", "Off")
+        catch {
+        }
+        try Hotkey("~*End", "Off")
+        catch {
+        }
+    }
+}
+
+DictationCleanup_ShowBanner() {
+    global g_DictationCleanupGui, g_DictationCleanupTextCtrl, g_DictationCleanupRemaining
+
+    ; Destroy any previous banner instance
+    try {
+        if IsObject(g_DictationCleanupGui)
+            g_DictationCleanupGui.Destroy()
+    } catch {
+    }
+    g_DictationCleanupGui := 0
+    g_DictationCleanupTextCtrl := 0
+
+    target := WinGetID("A")
+    hasWindow := false
+    if target && WinExist("ahk_id " target) {
+        try {
+            WinGetPos(&wx, &wy, &ww, &wh, target)
+            hasWindow := (ww > 0 && wh > 0)
+        } catch {
+            hasWindow := false
+        }
+    }
+
+    ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
+    ov.BackColor := "3772FF"
+    ov.SetFont("s24 cFFFFFF Bold", "Segoe UI")
+    g_DictationCleanupTextCtrl := ov.Add("Text", "w650 Center", "Clearing clipboard in " g_DictationCleanupRemaining "… (press N or End to cancel)")
+    ov.Show("AutoSize Hide")
+    ov.GetPos(&gx, &gy, &gw, &gh)
+
+    if hasWindow {
+        cx := wx + (ww - gw) // 2
+        cy := wy + (wh - gh) // 2
+        ov.Show("x" . cx . " y" . cy . " NA")
+    } else {
+        vx := SysGet(76)  ; SM_XVIRTUALSCREEN
+        vy := SysGet(77)  ; SM_YVIRTUALSCREEN
+        vw := SysGet(78)  ; SM_CXVIRTUALSCREEN
+        vh := SysGet(79)  ; SM_CYVIRTUALSCREEN
+        cx := vx + (vw - gw) // 2
+        cy := vy + (vh - gh) // 2
+        ov.Show("x" . cx . " y" . cy . " NA")
+    }
+
+    WinSetTransparent(178, ov)
+    g_DictationCleanupGui := ov
+}
+
+DictationCleanup_HideBanner() {
+    global g_DictationCleanupGui, g_DictationCleanupTextCtrl
+    try {
+        if IsObject(g_DictationCleanupGui)
+            g_DictationCleanupGui.Destroy()
+    } catch {
+    }
+    g_DictationCleanupGui := 0
+    g_DictationCleanupTextCtrl := 0
+}
+
+DictationCleanup_UpdateBannerText() {
+    global g_DictationCleanupTextCtrl, g_DictationCleanupRemaining
+    try {
+        if IsObject(g_DictationCleanupTextCtrl) {
+            g_DictationCleanupTextCtrl.Text := "Clearing clipboard in " g_DictationCleanupRemaining "… (press N or End to cancel)"
+        }
+    } catch {
+    }
+}
+
+DictationCleanup_StartCountdown(seconds := 3) {
+    global g_DictationCleanupRemaining, g_DictationCleanupCanceled
+
+    ; Reset state
+    g_DictationCleanupCanceled := false
+    g_DictationCleanupRemaining := seconds
+
+    ; Show initial banner + enable cancel keys
+    DictationCleanup_ShowBanner()
+    DictationCleanup_SetCancelHotkeys(true)
+
+    ; Start ticking immediately (1s cadence)
+    SetTimer(DictationCleanup_Tick, 0)
+    SetTimer(DictationCleanup_Tick, 1000)
+}
+
+DictationCleanup_StopCountdown(showCancelledBanner := false) {
+    global g_DictationCleanupCanceled
+
+    ; Stop timer + disable cancel keys
+    SetTimer(DictationCleanup_Tick, 0)
+    DictationCleanup_SetCancelHotkeys(false)
+
+    if (showCancelledBanner) {
+        ; Reuse the same banner GUI for a short "cancelled" message (non-blocking)
+        global g_DictationCleanupTextCtrl
+        try {
+            if IsObject(g_DictationCleanupTextCtrl) {
+                g_DictationCleanupTextCtrl.Text := "Clipboard cleanup cancelled"
+            }
+        } catch {
+        }
+        SetTimer(DictationCleanup_HideBanner, -900)
+    } else {
+        DictationCleanup_HideBanner()
+    }
+}
+
+DictationCleanup_Cancel(*) {
+    global g_DictationCleanupCanceled
+    g_DictationCleanupCanceled := true
+    DictationCleanup_StopCountdown(true)
+}
+
+DictationCleanup_Tick() {
+    global g_DictationCleanupRemaining, g_DictationCleanupCanceled
+
+    ; If already cancelled, ensure everything is stopped
+    if (g_DictationCleanupCanceled) {
+        DictationCleanup_StopCountdown(true)
+        return
+    }
+
+    ; Decrement remaining time
+    g_DictationCleanupRemaining -= 1
+
+    if (g_DictationCleanupRemaining <= 0) {
+        ; Countdown finished -> hide banner and clear clipboard using the existing workflow (Alt+V, Ctrl+Alt+K, etc.)
+        DictationCleanup_StopCountdown(false)
+        CleanClipboardInternal()
+        return
+    }
+
+    DictationCleanup_UpdateBannerText()
 }
 
 ; Clean the Clipboard macro function
@@ -5461,16 +5619,9 @@ OnExit(CleanupDictationIndicator)
         SendInput "#!+0"
         ShowCenteredOverlay_Utils("Dictation Loop Stopped", 1500)
     } else {
-        ; Start the loop - show clipboard cleanup prompt ONLY when starting
-        ; Show message box asking about clipboard cleanup
-        result := MsgBox("Would you like to clean up the clipboard?", "Dictation Start", "YesNo")
-
-        if (result = "Yes") {
-            ; Execute clipboard cleanup algorithm without showing second prompt
-            ; (User already confirmed they want to clean clipboard)
-            CleanClipboardInternal()
-        }
-        ; If No, continue with dictation loop without cleanup
+        ; Start the loop - non-modal 3-second countdown (default: clear clipboard)
+        ; User can cancel by pressing N or End during the countdown.
+        DictationCleanup_StartCountdown(3)
 
         ; Clear any existing timers first to prevent old timers from firing
         SetTimer(DictationLoopStop, 0)
