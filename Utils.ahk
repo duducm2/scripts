@@ -772,7 +772,6 @@ ToggleDictationLoop() {
         SetTimer(DictationLoopStop, 0)
         SetTimer(DictationLoopStart, 0)
         g_DictationLoopActive := true
-        ShowCenteredOverlay_Utils("Dictation Loop Started", 1500)
         ; Begin the cycle
         DictationLoopStart()
     }
@@ -1068,7 +1067,6 @@ DictationStartWithClipboardOption() {
         SetTimer(DictationLoopStop, 0)
         SetTimer(DictationLoopStart, 0)
         g_DictationLoopActive := true
-        ShowCenteredOverlay_Utils("Dictation Loop Started", 1500)
         ; Begin the cycle
         DictationLoopStart()
     }
@@ -5627,7 +5625,6 @@ OnExit(CleanupDictationIndicator)
         SetTimer(DictationLoopStop, 0)
         SetTimer(DictationLoopStart, 0)
         g_DictationLoopActive := true
-        ShowCenteredOverlay_Utils("Dictation Loop Started", 1500)
         ; Begin the cycle
         DictationLoopStart()
     }
