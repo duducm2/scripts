@@ -269,6 +269,70 @@ InitQuickOpenFiles()
 global g_Macros := []
 global g_MacroCharMap := Map()  ; Maps character to macro function
 global g_DictationLoopActive := false
+; Authoritative mode for the *pulsing* dictation indicator:
+; - "manual": user-triggered dictation (Win+Alt+Shift+0) => red
+; - "loop": loop-triggered dictation (Win+Alt+Shift+7) => blue
+global g_DictationIndicatorMode := "manual"
+
+; Separate loop-mode indicator (colorblind-friendly)
+; This intentionally does NOT reuse the dictation indicator GUI, because dictation (#0)
+; is also used internally by the loop and can recreate/redraw the dictation indicator.
+global g_DictationLoopIndicatorGui := false
+global g_DictationLoopIndicatorText := false
+global g_DictationLoopIndicatorMonitor := 0
+
+global DICTATION_LOOP_INDICATOR_SIZE := 90
+global DICTATION_LOOP_INDICATOR_COLOR := "0000FF" ; Blue
+global DICTATION_LOOP_INDICATOR_TEXT_COLOR := "FFFFFF"
+
+ShowDictationLoopIndicator() {
+    global g_DictationLoopIndicatorGui, g_DictationLoopIndicatorText, g_DictationLoopIndicatorMonitor
+    global DICTATION_LOOP_INDICATOR_SIZE, DICTATION_LOOP_INDICATOR_COLOR, DICTATION_LOOP_INDICATOR_TEXT_COLOR
+
+    monitorIndex := GetDictationActiveMonitor()
+    MonitorGet(monitorIndex, &monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
+
+    x := monitorLeft + 20
+    y := monitorTop + 20
+
+    if (IsObject(g_DictationLoopIndicatorGui) && g_DictationLoopIndicatorGui.Hwnd) {
+        if (monitorIndex != g_DictationLoopIndicatorMonitor) {
+            g_DictationLoopIndicatorGui.Show("NA x" . x . " y" . y . " w" . DICTATION_LOOP_INDICATOR_SIZE . " h" . DICTATION_LOOP_INDICATOR_SIZE)
+            g_DictationLoopIndicatorMonitor := monitorIndex
+        } else {
+            ; Ensure it's visible
+            g_DictationLoopIndicatorGui.Show("NA")
+        }
+        return
+    }
+
+    g_DictationLoopIndicatorGui := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x20")
+    g_DictationLoopIndicatorGui.Opt("-DPIScale")
+    g_DictationLoopIndicatorGui.BackColor := DICTATION_LOOP_INDICATOR_COLOR
+    g_DictationLoopIndicatorGui.SetFont("s22 c" DICTATION_LOOP_INDICATOR_TEXT_COLOR " Bold", "Segoe UI")
+    g_DictationLoopIndicatorGui.MarginX := 0
+    g_DictationLoopIndicatorGui.MarginY := 0
+    g_DictationLoopIndicatorText := g_DictationLoopIndicatorGui.Add("Text", "w" . DICTATION_LOOP_INDICATOR_SIZE . " h" . DICTATION_LOOP_INDICATOR_SIZE . " Center 0x201", "LOOP")
+
+    g_DictationLoopIndicatorMonitor := monitorIndex
+    g_DictationLoopIndicatorGui.Show("NA x" . x . " y" . y . " w" . DICTATION_LOOP_INDICATOR_SIZE . " h" . DICTATION_LOOP_INDICATOR_SIZE)
+    try WinSetTransparent(230, g_DictationLoopIndicatorGui)
+}
+
+HideDictationLoopIndicator() {
+    global g_DictationLoopIndicatorGui, g_DictationLoopIndicatorText, g_DictationLoopIndicatorMonitor
+
+    if (IsObject(g_DictationLoopIndicatorGui)) {
+        try {
+            if (g_DictationLoopIndicatorGui.Hwnd)
+                g_DictationLoopIndicatorGui.Destroy()
+        } catch {
+        }
+    }
+    g_DictationLoopIndicatorGui := false
+    g_DictationLoopIndicatorText := false
+    g_DictationLoopIndicatorMonitor := 0
+}
 
 ; Register a macro
 RegisterMacro(func, title, char := "") {
@@ -760,6 +824,10 @@ ToggleDictationLoop() {
     if (g_DictationLoopActive) {
         ; Stop the loop
         g_DictationLoopActive := false
+        global g_DictationIndicatorMode
+        g_DictationIndicatorMode := "manual"
+        ; If indicator is visible, immediately reflect mode change
+        ApplyDictationIndicatorStyle()
         ; Turn off timers
         SetTimer(DictationLoopStop, 0)
         SetTimer(DictationLoopStart, 0)
@@ -772,6 +840,10 @@ ToggleDictationLoop() {
         SetTimer(DictationLoopStop, 0)
         SetTimer(DictationLoopStart, 0)
         g_DictationLoopActive := true
+        global g_DictationIndicatorMode
+        g_DictationIndicatorMode := "loop"
+        ; If indicator is visible, immediately reflect mode change
+        ApplyDictationIndicatorStyle()
         ; Begin the cycle
         DictationLoopStart()
     }
@@ -788,6 +860,9 @@ DictationLoopStart() {
 
     ; Send Win+Alt+Shift+0 to start dictation
     SendInput "#!+0"
+    ; Re-apply indicator style shortly after the synthetic hotkey.
+    ; (Some paths can recreate/repaint the GUI and momentarily show manual styling.)
+    SetTimer(ApplyDictationIndicatorStyle, -150)
 
     ; Double-check loop is still active before scheduling stop timer
     ; User may have stopped it during the dictation start delay
@@ -814,6 +889,8 @@ DictationLoopStop() {
 
     ; Send Win+Alt+Shift+0 to stop dictation (triggers transcription)
     SendInput "#!+0"
+    ; Keep loop styling applied during stop/transcription window.
+    SetTimer(ApplyDictationIndicatorStyle, -150)
 
     ; Play sound to notify that transcription has started (if enabled)
     if (IsSoundEnabled()) {
@@ -5131,6 +5208,58 @@ global DICTATION_PULSE_MAX := 255     ; Maximum opacity (100%)
 global DICTATION_PULSE_STEP := 15     ; Opacity change per tick
 global DICTATION_PULSE_INTERVAL := 50 ; Timer interval in ms (smooth animation)
 
+; Dictation indicator styles
+global DICTATION_COLOR_LOOP := "0000FF"     ; Blue (loop mode)
+global DICTATION_COLOR_MANUAL := "FF0000"   ; Red (manual dictation mode)
+global DICTATION_TEXT_LOOP := "FFFFFF"      ; White text on blue
+global DICTATION_TEXT_MANUAL := "FFFFFF"    ; White text on red
+
+GetDictationIndicatorStyle() {
+    global g_DictationIndicatorMode
+    global DICTATION_COLOR_LOOP, DICTATION_COLOR_MANUAL, DICTATION_TEXT_LOOP, DICTATION_TEXT_MANUAL
+
+    if (g_DictationIndicatorMode = "loop") {
+        ; Loop mode: BLUE pulsing square
+        return { backColor: DICTATION_COLOR_LOOP, textColor: DICTATION_TEXT_LOOP, pulsing: true }
+    }
+    ; Manual mode: RED pulsing square
+    return { backColor: DICTATION_COLOR_MANUAL, textColor: DICTATION_TEXT_MANUAL, pulsing: true }
+}
+
+ApplyDictationIndicatorStyle() {
+    global g_DictationIndicatorGui, g_DictationIndicatorText, g_DictationPulseOpacity
+
+    if (!IsObject(g_DictationIndicatorGui) || !g_DictationIndicatorGui.Hwnd) {
+        return
+    }
+
+    style := GetDictationIndicatorStyle()
+
+    try g_DictationIndicatorGui.BackColor := style.backColor
+    if (IsObject(g_DictationIndicatorText)) {
+        try g_DictationIndicatorText.SetFont("c" style.textColor)
+    }
+
+    if (style.pulsing) {
+        ; Ensure we start the pulse at a visible mid-opacity when switching modes
+        g_DictationPulseOpacity := 128
+        try WinSetTransparent(g_DictationPulseOpacity, g_DictationIndicatorGui)
+        StartDictationPulseTimer()
+    } else {
+        StopDictationPulseTimer()
+        g_DictationPulseOpacity := 255
+        try WinSetTransparent(255, g_DictationIndicatorGui)
+    }
+
+    ; Refresh mode label if no status message is showing
+    try {
+        if (IsObject(g_DictationIndicatorText) && (g_DictationIndicatorText.Value = "" || g_DictationIndicatorText.Value = "LOOP")) {
+            UpdateDictationIndicatorText("")
+        }
+    } catch {
+    }
+}
+
 ; Get the monitor that contains the active window
 ; Returns monitor index (1-based) or 0 if not found
 GetDictationActiveMonitor() {
@@ -5167,6 +5296,7 @@ GetDictationActiveMonitor() {
 ShowDictationIndicator() {
     global g_DictationIndicatorGui, g_DictationPulseOpacity, g_LastActiveMonitor
     global DICTATION_SQUARE_SIZE
+    style := GetDictationIndicatorStyle()
 
     ; Get active monitor bounds
     monitorIndex := GetDictationActiveMonitor()
@@ -5187,6 +5317,8 @@ ShowDictationIndicator() {
         }
         ; Clear any status text when starting new dictation
         UpdateDictationIndicatorText("")
+        ; Ensure style matches current mode (manual vs loop)
+        ApplyDictationIndicatorStyle()
         return
     }
 
@@ -5198,10 +5330,10 @@ ShowDictationIndicator() {
     ; -DPIScale: use raw screen coordinates
     g_DictationIndicatorGui := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x20")
     g_DictationIndicatorGui.Opt("-DPIScale")
-    g_DictationIndicatorGui.BackColor := "FF0000"  ; Red
+    g_DictationIndicatorGui.BackColor := style.backColor
 
     ; Add text control for status messages (centered, white text, bold)
-    g_DictationIndicatorGui.SetFont("s14 cFFFFFF Bold", "Segoe UI")
+    g_DictationIndicatorGui.SetFont("s14 c" style.textColor " Bold", "Segoe UI")
     g_DictationIndicatorGui.MarginX := 10
     g_DictationIndicatorGui.MarginY := 10
     g_DictationIndicatorText := g_DictationIndicatorGui.Add("Text", "w" . (DICTATION_SQUARE_SIZE - 20) . " Center", "")
@@ -5213,16 +5345,23 @@ ShowDictationIndicator() {
     ; Show the indicator without activating it
     g_DictationIndicatorGui.Show("NA x" . squareX . " y" . squareY . " w" . DICTATION_SQUARE_SIZE . " h" .
         DICTATION_SQUARE_SIZE)
+    ; Default to pulsing opacity; manual mode will be forced to opaque by ApplyDictationIndicatorStyle()
     WinSetTransparent(g_DictationPulseOpacity, g_DictationIndicatorGui)
+    ApplyDictationIndicatorStyle()
 }
 
 ; Update indicator text (for status messages)
 UpdateDictationIndicatorText(message := "") {
-    global g_DictationIndicatorGui, g_DictationIndicatorText
+    global g_DictationIndicatorGui, g_DictationIndicatorText, g_DictationLoopActive
 
     if (IsObject(g_DictationIndicatorGui) && g_DictationIndicatorGui.Hwnd && IsObject(g_DictationIndicatorText)) {
         try {
-            g_DictationIndicatorText.Value := message
+            ; Colorblind-friendly: show a mode label when not displaying a status message.
+            if (message = "") {
+                g_DictationIndicatorText.Value := g_DictationLoopActive ? "LOOP" : ""
+            } else {
+                g_DictationIndicatorText.Value := message
+            }
         } catch {
             ; Ignore errors
         }
@@ -5254,6 +5393,13 @@ UpdateDictationIndicatorPulse() {
     ; Check if indicator GUI is still valid
     if (!IsObject(g_DictationIndicatorGui) || !g_DictationIndicatorGui.Hwnd) {
         return
+    }
+
+    ; Enforce correct color while pulsing (prevents rare repaint/state glitches)
+    try {
+        style := GetDictationIndicatorStyle()
+        g_DictationIndicatorGui.BackColor := style.backColor
+    } catch {
     }
 
     ; Update opacity based on direction
@@ -5436,7 +5582,7 @@ CheckDictationRecordingWindow() {
             }
 
             ShowDictationIndicator()
-            StartDictationPulseTimer()
+            ApplyDictationIndicatorStyle()
         }
 
         ; Atomic test-and-set: one sound per session when window first detected
@@ -5492,6 +5638,7 @@ CheckDictationRecordingWindow() {
     }
     else if (g_DictationActive && windowExists) {
         ShowDictationIndicator()
+        ApplyDictationIndicatorStyle()
     }
 }
 
@@ -5586,7 +5733,7 @@ OnExit(CleanupDictationIndicator)
         g_DictationActive := true
         g_LastStateTransitionTick := A_TickCount
         ShowDictationIndicator()
-        StartDictationPulseTimer()
+        ApplyDictationIndicatorStyle()
         ; Sound: monitoring loop plays when window detected (zero latency)
 
         try {
@@ -5605,17 +5752,20 @@ OnExit(CleanupDictationIndicator)
 ; Automatically cycles dictation on/off every 60 seconds to prevent transcription timeouts
 #!+7::
 {
-    global g_DictationLoopActive
+    global g_DictationLoopActive, g_DictationIndicatorMode
 
     if (g_DictationLoopActive) {
         ; Stop the loop - NO clipboard cleanup prompt when stopping
         g_DictationLoopActive := false
+        g_DictationIndicatorMode := "manual"
         ; Turn off timers
         SetTimer(DictationLoopStop, 0)
         SetTimer(DictationLoopStart, 0)
         ; Send Win+Alt+Shift+0 to finish dictation
         SendInput "#!+0"
         ShowCenteredOverlay_Utils("Dictation Loop Stopped", 1500)
+        ; If indicator is currently visible, update it to manual mode styling immediately
+        ApplyDictationIndicatorStyle()
     } else {
         ; Start the loop - non-modal 3-second countdown (default: clear clipboard)
         ; User can cancel by pressing N or End during the countdown.
@@ -5625,8 +5775,11 @@ OnExit(CleanupDictationIndicator)
         SetTimer(DictationLoopStop, 0)
         SetTimer(DictationLoopStart, 0)
         g_DictationLoopActive := true
+        g_DictationIndicatorMode := "loop"
         ; Begin the cycle
         DictationLoopStart()
+        ; If indicator is currently visible, update it to loop styling immediately
+        ApplyDictationIndicatorStyle()
     }
 }
 
