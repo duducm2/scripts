@@ -10813,7 +10813,10 @@ Mobills_GetContext(uia) {
         return "transactions"
     if InStr(url, "/accounts")
         return "accounts"
-    if InStr(url, "/planning") || InStr(url, "/budgets")
+    ; Budgets has its own pager controls (avoid selecting month/year text)
+    if InStr(url, "/budgets")
+        return "budgets"
+    if InStr(url, "/planning")
         return "planning"
     return "unknown"
 }
@@ -10827,6 +10830,22 @@ Mobills_IsDisabled(el) {
     } catch {
     }
     return false
+}
+
+Mobills_IsButton(el) {
+    if !el
+        return false
+    try {
+        ct := el.GetPropertyValue(UIA.Property.ControlType)
+        return (ct = UIA.Type.Button || ct = 50000)
+    } catch {
+        ; Some wrappers expose .Type directly
+        try {
+            return (el.Type = 50000 || el.Type = UIA.Type.Button)
+        } catch {
+            return false
+        }
+    }
 }
 
 Mobills_FindPagerByName(uia, dir) {
@@ -10898,6 +10917,21 @@ Mobills_FindPagerByMonthHeader(uia, dir) {
 }
 
 Mobills_FindPagerByPath(uia, dir, context) {
+    ; Budgets page: force the known arrow BUTTONs and avoid adjacent Text elements.
+    ; Target:
+    ;   Next  => {T:30}, {T:26}, {T:0, i:8}
+    ;   Prev  => {T:30}, {T:26}, {T:0, i:7}
+    if (context = "budgets") {
+        try {
+            idx := (dir = "Prev") ? 7 : 8
+            btn := uia.ElementFromPath({ Type: 30 }, { Type: 26 }, { Type: 0, i: idx })
+            if btn && Mobills_IsButton(btn) && !Mobills_IsDisabled(btn)
+                return btn
+        } catch {
+        }
+        ; If budgets-specific path fails, fall through to other button-only strategies
+    }
+
     ; Legacy paths (worked across some pages previously)
     try {
         if (dir = "Prev") {
@@ -10905,7 +10939,7 @@ Mobills_FindPagerByPath(uia, dir, context) {
         } else {
             btn := uia.ElementFromPath({ Type: 30 }, { Type: 26 }, { Type: 26 }, { Type: 8 }, { Type: 7, i: -1 }, { Type: 0 })
         }
-        if btn
+        if btn && Mobills_IsButton(btn) && !Mobills_IsDisabled(btn)
             return btn
     } catch {
     }
@@ -11002,6 +11036,13 @@ Mobills_Navigate(dir) {
                 btn := Mobills_FindPagerByPath(uia, dir, context)
                 if !btn
                     btn := Mobills_FindPagerByName(uia, dir)
+            } else if (context = "budgets") {
+                ; Highest priority: budgets-specific button paths (see Mobills_FindPagerByPath)
+                btn := Mobills_FindPagerByPath(uia, dir, context)
+                if !btn
+                    btn := Mobills_FindPagerByName(uia, dir)          ; button-only
+                if !btn
+                    btn := Mobills_FindPagerByMonthHeader(uia, dir)   ; button-only
             } else if (context = "planning") {
                 btn := Mobills_FindPagerByPath(uia, dir, context)
                 if !btn
