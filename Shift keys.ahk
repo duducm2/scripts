@@ -11067,12 +11067,8 @@ Mobills_FindPagerOnce(uia, dir, context) {
         if !btn
             btn := Mobills_FindPagerByName(uia, dir)
     } else if (context = "budgets") {
-        ; Highest priority: budgets-specific button paths (see Mobills_FindPagerByPath)
+        ; Budgets: ONLY use the known arrow buttons by index (avoid misclicking "Next").
         btn := Mobills_FindPagerByPath(uia, dir, context)
-        if !btn
-            btn := Mobills_FindPagerByName(uia, dir)          ; button-only
-        if !btn
-            btn := Mobills_FindPagerByMonthHeader(uia, dir)   ; button-only
     } else if (context = "planning") {
         btn := Mobills_FindPagerByPath(uia, dir, context)
         if !btn
@@ -11090,24 +11086,23 @@ Mobills_FindPagerOnce(uia, dir, context) {
 
 ; Multi-layer verification to confirm absence (prevents false negatives).
 ; Returns an element if found in any layer; otherwise returns "".
-Mobills_VerifyPagerMissing(dir, context) {
-    ; Layer 1: Short wait, same attachment.
+Mobills_VerifyPagerMissing(dir, context, uiaCurrent := 0) {
+    ; Layer 1: Re-check using the current attachment (cheap).
     try {
-        uia1 := TryAttachBrowser()
-        if uia1 {
-            Sleep 150
-            btn := Mobills_FindPagerOnce(uia1, dir, context)
+        if uiaCurrent {
+            Sleep 120
+            btn := Mobills_FindPagerOnce(uiaCurrent, dir, context)
             if btn
                 return btn
         }
     } catch {
     }
 
-    ; Layer 2: Re-attach browser (fresh UIA tree) + longer wait.
+    ; Layer 2: Fresh re-attach (new UIA tree) + wait.
     try {
         uia2 := TryAttachBrowser()
         if uia2 {
-            Sleep 450
+            Sleep 350
             btn := Mobills_FindPagerOnce(uia2, dir, context)
             if btn
                 return btn
@@ -11115,48 +11110,14 @@ Mobills_VerifyPagerMissing(dir, context) {
     } catch {
     }
 
-    ; Layer 3 (extra reliability): budgets-specific geometric button fallback
-    ; (ensures we pick real Button controls, not the month/year Text nodes).
+    ; Layer 3 (budgets only): re-attach + long wait + ONLY the known i:7/i:8 buttons.
     if (context = "budgets") {
         try {
             uia3 := TryAttachBrowser()
             if uia3 {
-                Sleep 250
-                container := ""
-                try container := uia3.ElementFromPath({ Type: 30 }, { Type: 26 })
-                if container {
-                    grp := ""
-                    try grp := FindMonthGroup(uia3)
-                    grpPos := ""
-                    if grp
-                        try grpPos := grp.Location
-
-                    best := ""
-                    bestX := ""
-                    for , b in container.FindAll({ Type: "Button" }) {
-                        if Mobills_IsDisabled(b)
-                            continue
-                        pos := b.Location
-                        ; Prefer same row as month header when available
-                        if (grpPos != "") {
-                            sameRow := (pos.y >= grpPos.y - 12 && pos.y <= grpPos.y + grpPos.h + 12)
-                            if !sameRow
-                                continue
-                        }
-                        if (dir = "Prev") {
-                            if (best = "" || pos.x < bestX) {
-                                best := b
-                                bestX := pos.x
-                            }
-                        } else {
-                            if (best = "" || pos.x > bestX) {
-                                best := b
-                                bestX := pos.x
-                            }
-                        }
-                    }
-                    if best
-                        return best
+                Sleep 600
+                if Mobills_GetBudgetsPrevNext(uia3, &prevBtn, &nextBtn) {
+                    return (dir = "Prev") ? (prevBtn ? prevBtn : "") : (nextBtn ? nextBtn : "")
                 }
             }
         } catch {
@@ -11175,10 +11136,14 @@ Mobills_Navigate(dir) {
         }
 
         context := Mobills_GetContext(uia)
-        maxRetries := 3
-        retryDelay := 300
+        maxRetries := 2
+        retryDelay := 200
 
         Loop maxRetries {
+            if (A_Index > 1) {
+                ; Refresh UIA tree on subsequent attempts (more reliable than just waiting).
+                try uia := TryAttachBrowser()
+            }
             btn := Mobills_FindPagerOnce(uia, dir, context)
 
             if btn && Mobills_ClickPager(btn)
@@ -11188,7 +11153,7 @@ Mobills_Navigate(dir) {
         }
 
         ; Multi-layer verification before declaring "not present"
-        verifiedBtn := Mobills_VerifyPagerMissing(dir, context)
+        verifiedBtn := Mobills_VerifyPagerMissing(dir, context, uia)
         if verifiedBtn {
             if Mobills_ClickPager(verifiedBtn)
                 return
