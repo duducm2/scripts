@@ -112,3 +112,7 @@
 {"id":"log_1220421_1324","timestamp":1220421,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":71},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
 {"id":"log_1220437_4861","timestamp":1220437,"location":"Shift keys.ahk:1770","message":"Matching button found","data":{"name":"Main menu","className":"","hasClassName":0,"supportsInvoke":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C"}
 {"id":"log_1220468_7366","timestamp":1220468,"location":"Shift keys.ahk:1813","message":"WaitForButton returning button","data":{"name":"Main menu","className":"","type":"50000","score":5},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}
+{"id":"log_6894046_9757","timestamp":6894046,"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"id":"log_6895515_9227","timestamp":6895515,"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"id":"log_6913296_6835","timestamp":6913296,"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"id":"log_6914765_9848","timestamp":6914765,"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}

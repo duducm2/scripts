@@ -12,26 +12,50 @@
 ; --- Hotkeys & Functions -----------------------------------------------------
 
 ; =============================================================================
-; Open Outlook Mail
-; Hotkey: Win+Alt+Shift+B
-; Original File: Outlook - Open mail.ahk
+; Outlook window activation helpers (Mailbox/Calendar)
 ; =============================================================================
-#!+b::
-{
-    ; Check if Outlook is closed and prompt to open if needed
-    if (!CheckAndOpenOutlookTeams(true, false)) {
-        return  ; User cancelled opening Outlook
-    }
-    
+ActivateOutlookMailbox() {
     email := "Eduardo.Figueiredo@br.bosch.com"
     exclusion := "Calendar"
     for hwnd in WinGetList("ahk_exe OUTLOOK.EXE") {
         title := WinGetTitle(hwnd)
         if InStr(title, email) && !InStr(title, exclusion) {
             WinActivate(hwnd)
-            return
+            return true
         }
     }
+    return false
+}
+
+ActivateOutlookCalendar() {
+    oldMatch := A_TitleMatchMode
+    SetTitleMatchMode 1
+    try {
+        if WinExist("Calendar - Eduardo") {
+            WinActivate "Calendar - Eduardo"
+            return true
+        }
+        return false
+    } finally {
+        SetTitleMatchMode oldMatch
+    }
+}
+
+; =============================================================================
+; Open Outlook Mail
+; Hotkey: Win+Alt+Shift+B
+; Original File: Outlook - Open mail.ahk
+; =============================================================================
+#!+b::
+{
+    ; If Mailbox is inactive, attempt to open Calendar.
+    if ActivateOutlookMailbox()
+        return
+    if ActivateOutlookCalendar()
+        return
+
+    ; If both are closed, show banner stating activation failed.
+    ShowCenteredOverlay_Utils("Outlook: Mailbox and Calendar are not open (activation failed)", 3000)
 }
 
 ; =============================================================================
@@ -41,13 +65,14 @@
 ; =============================================================================
 #!+g::
 {
-    ; Check if Outlook is closed and prompt to open if needed
-    if (!CheckAndOpenOutlookTeams(true, false)) {
-        return  ; User cancelled opening Outlook
-    }
-    
-    SetTitleMatchMode 1
-    WinActivate "Calendar - Eduardo"
+    ; If Calendar is closed, attempt to open Mailbox.
+    if ActivateOutlookCalendar()
+        return
+    if ActivateOutlookMailbox()
+        return
+
+    ; If both are closed, show banner stating activation failed.
+    ShowCenteredOverlay_Utils("Outlook: Calendar and Mailbox are not open (activation failed)", 3000)
 }
 
 ; =============================================================================
