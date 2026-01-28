@@ -487,6 +487,13 @@ Chrome (Shift)
 🏷️ [Ctrl+Alt+Y] [N]ame ChatGPT Window as "ChatGPT"
 )"  ; end Chrome
 
+; --- Chrome PDF Viewer ------------------------------------------------------
+cheatSheets["Chrome PDF Viewer"] := "
+(
+Chrome PDF Viewer (Shift)
+⬇️ [D] [D]ownload PDF
+)"  ; end Chrome PDF Viewer
+
 ; --- Cursor ------------------------------------------------------
 cheatSheets["Cursor.exe"] := "
 (
@@ -1099,6 +1106,10 @@ GetCheatSheetText() {
 
         ; Normalize Chrome window title by removing the trailing " - Google Chrome"
         chromeTitle := RegExReplace(title, "i) - Google Chrome$", "")
+
+        ; Chrome PDF Viewer: detect via UIA (more reliable than title substring matching)
+        if IsChromePdfViewerActive()
+            appShortcuts := cheatSheets.Has("Chrome PDF Viewer") ? cheatSheets["Chrome PDF Viewer"] : ""
 
         if InStr(chromeTitle, "WhatsApp")
             appShortcuts := cheatSheets.Has("WhatsApp") ? cheatSheets["WhatsApp"] : ""
@@ -3429,7 +3440,7 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
                             fileContent := FileRead(scrollPositionsFile)
                             ; Parse INI format manually
                             inPositionsSection := false
-                            loop Parse fileContent, "`n", "`r" {
+                            loop parse fileContent, "`n", "`r" {
                                 line := Trim(A_LoopField)
                                 if (line = "[Positions]") {
                                     inPositionsSection := true
@@ -3452,10 +3463,10 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
                             ; If read fails, we'll just write the new entry
                         }
                     }
-                    
+
                     ; Update with new entry
                     existingEntries[url] := scrollPercentage
-                    
+
                     ; Delete file to recreate in UTF-8
                     if (FileExist(scrollPositionsFile)) {
                         try {
@@ -3464,7 +3475,7 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
                         } catch {
                         }
                     }
-                    
+
                     ; Write all entries back in UTF-8 encoding
                     try {
                         ; Write UTF-8 BOM and section header
@@ -3694,6 +3705,76 @@ RestorePreviousWikipediaScrollPosition() {
         }
     }
     return true
+}
+
+#HotIf
+
+;-------------------------------------------------------------------
+; Chrome PDF Viewer Shortcuts
+;-------------------------------------------------------------------
+IsChromePdfViewerActive() {
+    ; Hard gate: avoid conflicts with non-Chrome apps
+    if !WinActive("ahk_exe chrome.exe")
+        return false
+
+    try {
+        uia := UIA_Browser("ahk_exe chrome.exe")
+
+        ; Strong fingerprint: Chrome's built-in PDF viewer extension web area
+        ; From UIA tree: chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/index.html
+        if (uia.FindElement({ Type: 50030, Value: "chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai", matchmode: "Substring" }))
+            return true
+
+        ; Fallback: stable, non-localized PDF toolbar controls
+        if (uia.FindElement({ AutomationId: "pageSelector" }) && uia.FindElement({ AutomationId: "save" }))
+            return true
+    } catch {
+    }
+
+    return false
+}
+
+#HotIf IsChromePdfViewerActive()
+
+; Shift + D : Download PDF - Download
++d::
+{
+    try {
+        uia := UIA_Browser("ahk_exe chrome.exe")
+        Sleep 100
+
+        ; Prefer searching within the PDF viewer's extension web area
+        pdfRoot := 0
+        try pdfRoot := uia.FindElement({ Type: 50030, Value: "chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai",
+            matchmode: "Substring" })
+        if (!pdfRoot) {
+            try pdfRoot := uia.GetCurrentDocumentElement()
+        }
+        if (!pdfRoot) {
+            try pdfRoot := uia.BrowserElement
+        }
+
+        btn := 0
+        ; Best: language-agnostic AutomationId for the Download button
+        try btn := pdfRoot.FindFirst({ Type: 50000, AutomationId: "save" })
+        if (!btn)
+            try btn := pdfRoot.FindFirst({ AutomationId: "save" })
+
+        ; Fallback: Portuguese / English names (in case AutomationId is unavailable)
+        if (!btn)
+            try btn := pdfRoot.FindFirst({ Type: 50000, Name: "Baixar" })
+        if (!btn)
+            try btn := pdfRoot.FindFirst({ Type: 50000, Name: "Download" })
+
+        if (btn) {
+            try btn.Invoke()
+            catch {
+                try btn.Click()
+            }
+        }
+    } catch {
+        ; Fail silently (consistent with other mnemonic UIA hotkeys)
+    }
 }
 
 #HotIf
@@ -10894,7 +10975,8 @@ Mobills_GetBudgetsPrevNext(uia, &prevBtn, &nextBtn) {
 Mobills_FindPagerByName(uia, dir) {
     ; Try common labels (EN/PT). Substring match.
     namesPrev := ["Go to previous page", "Previous", "Prev", "Anterior", "Página anterior", "Ir para a página anterior"]
-    namesNext := ["Go to next page", "Next", "Próximo", "Proximo", "Página seguinte", "Ir para a próxima página", "Ir para a proxima página"]
+    namesNext := ["Go to next page", "Next", "Próximo", "Proximo", "Página seguinte", "Ir para a próxima página",
+        "Ir para a proxima página"]
     names := (dir = "Prev") ? namesPrev : namesNext
 
     for , nm in names {
@@ -11205,7 +11287,7 @@ Mobills_Navigate(dir) {
         maxRetries := 2
         retryDelay := 200
 
-        Loop maxRetries {
+        loop maxRetries {
             if (A_Index > 1) {
                 ; Refresh UIA tree on subsequent attempts (more reliable than just waiting).
                 try uia := TryAttachBrowser()
@@ -11227,7 +11309,8 @@ Mobills_Navigate(dir) {
             return
         }
 
-        MsgBox "Could not find the " . ((dir = "Prev") ? "previous" : "next") . " page/month control (verified missing).", "Mobills Navigation", "IconX"
+        MsgBox "Could not find the " . ((dir = "Prev") ? "previous" : "next") .
+        " page/month control (verified missing).", "Mobills Navigation", "IconX"
     } catch Error as e {
         MsgBox "Error navigating Mobills:`n" e.Message, "Mobills Error", "IconX"
     } finally {
