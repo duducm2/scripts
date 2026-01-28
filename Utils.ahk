@@ -329,12 +329,16 @@ QuickUpdateScripts() {
 
 ; Add specific word to Handy macro function
 AddWordToHandy() {
-    targetPath := "C:\Users\fie7ca\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Handy.lnk"
+    targetPath := GetHandyShortcutPath()
 
     try {
         if WinExist("Handy ahk_class Tauri Window") {
             WinActivate
         } else {
+            if (targetPath = "" || !FileExist(targetPath)) {
+                MsgBox "Failed to launch Handy.`n`nShortcut not found.", "Utils.ahk", "IconX"
+                return
+            }
             Run targetPath
             if !WinWait("Handy ahk_class Tauri Window", , 5) {
                 MsgBox "Failed to launch Handy."
@@ -413,6 +417,100 @@ AddWordToHandy() {
         }
     } catch Error as e {
         MsgBox "Error in AddWordToHandy macro: " e.Message
+    }
+}
+
+; Resolve Handy shortcut path (prefers existing file, supports work/personal)
+GetHandyShortcutPath() {
+    global IS_WORK_ENVIRONMENT
+
+    candidates := []
+
+    ; Personal: user-provided stable ProgramData shortcut
+    candidates.Push("C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Handy\Handy.lnk")
+
+    ; Personal: common per-user Start Menu shortcut location
+    candidates.Push("C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Handy\Handy.lnk")
+    candidates.Push("C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Handy.lnk")
+
+    ; Work: legacy path used previously in this file
+    candidates.Push("C:\Users\fie7ca\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Handy\Handy.lnk")
+    candidates.Push("C:\Users\fie7ca\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Handy.lnk")
+
+    ; Prefer environment-specific candidates first by ordering (no harm if missing)
+    for , p in candidates {
+        try {
+            if (p != "" && FileExist(p)) {
+                return p
+            }
+        } catch {
+        }
+    }
+
+    return ""
+}
+
+; Select AI model in Handy (anchor: "Check for updates" button)
+SelectAiModelInHandy() {
+    targetPath := GetHandyShortcutPath()
+
+    try {
+        if WinExist("Handy ahk_class Tauri Window") {
+            WinActivate
+        } else {
+            if (targetPath = "" || !FileExist(targetPath)) {
+                MsgBox "Failed to launch Handy.`n`nShortcut not found.", "Utils.ahk", "IconX"
+                return
+            }
+            Run targetPath
+            if !WinWait("Handy ahk_class Tauri Window", , 5) {
+                MsgBox "Failed to launch Handy."
+                return
+            }
+        }
+
+        WinWaitActive("Handy ahk_class Tauri Window", , 2)
+        hwnd := WinExist("Handy ahk_class Tauri Window")
+
+        ; Initialize UIA
+        el := UIA.ElementFromHandle(hwnd)
+        if !el
+            return
+
+        ; Anchor: "Check for updates" button (stable reference point)
+        ; Spec: Type 50000 (Button), Name "Check for updates", ClassName includes:
+        ; "transition-colors disabled:opacity-50 tabular-nums text-text/60 hover:text-text/80"
+        anchor := 0
+
+        ; Strategy 1: Find by exact class name match (most stable if Name changes)
+        try anchor := el.FindFirst({
+            Type: 50000,
+            ClassName: "transition-colors disabled:opacity-50 tabular-nums text-text/60 hover:text-text/80"
+        })
+
+        ; Strategy 2: Find by Name (English), then Portuguese fallback
+        if (!anchor) {
+            try anchor := el.FindFirst({ Type: 50000, Name: "Check for updates" })
+        }
+        if (!anchor) {
+            try anchor := el.FindFirst({ Type: 50000, Name: "Verificar atualizações" })
+        }
+
+        if (!anchor)
+            return
+
+        ; Focus the anchor, then Shift+Tab to the dynamic model button, Enter to activate
+        try anchor.SetFocus()
+        catch {
+            try anchor.Click()
+        }
+
+        Sleep 80
+        Send "+{Tab}"
+        Sleep 80
+        Send "{Enter}"
+    } catch Error as e {
+        MsgBox "Error in SelectAiModelInHandy macro: " e.Message
     }
 }
 
@@ -722,7 +820,7 @@ ToggleOutlookAndTeams() {
 CheckAndOpenOutlookTeams(checkOutlook := false, checkTeams := false) {
     outlookClosed := false
     teamsClosed := false
-    
+
     ; Check Outlook status
     if (checkOutlook) {
         outlookRunning := ProcessExist("OUTLOOK.EXE")
@@ -730,7 +828,7 @@ CheckAndOpenOutlookTeams(checkOutlook := false, checkTeams := false) {
             outlookClosed := true
         }
     }
-    
+
     ; Check Teams status
     if (checkTeams) {
         teamsRunning := ProcessExist("ms-teams.exe")
@@ -738,12 +836,12 @@ CheckAndOpenOutlookTeams(checkOutlook := false, checkTeams := false) {
             teamsClosed := true
         }
     }
-    
+
     ; If both are open, no action needed
     if (!outlookClosed && !teamsClosed) {
         return true
     }
-    
+
     ; Build message based on what's closed
     message := ""
     if (outlookClosed && teamsClosed) {
@@ -753,10 +851,10 @@ CheckAndOpenOutlookTeams(checkOutlook := false, checkTeams := false) {
     } else if (teamsClosed) {
         message := "Teams is closed. Do you want to open it?"
     }
-    
+
     ; Show message box
     response := MsgBox(message, "Open Applications?", "YesNo Icon?")
-    
+
     ; If user confirms, open the applications (only open, don't toggle)
     if (response = "Yes") {
         ; Only open the closed applications, don't toggle
@@ -770,30 +868,33 @@ CheckAndOpenOutlookTeams(checkOutlook := false, checkTeams := false) {
                         outlookPath := ""
                     }
                 } else {
-                    outlookPath := "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Microsoft Outlook.lnk"
+                    outlookPath :=
+                        "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Microsoft Outlook.lnk"
                     if (!FileExist(outlookPath)) {
                         outlookPath := ""
                     }
                 }
-                
+
                 if (outlookPath != "") {
                     Run outlookPath
                 } else {
                     Run "OUTLOOK.EXE"
                 }
             }
-            
+
             ; Launch Teams if closed
             if (teamsClosed) {
                 if (IS_WORK_ENVIRONMENT) {
-                    teamsExePath := "C:\Program Files\WindowsApps\MSTeams_25332.1210.4188.1171_x64__8wekyb3d8bbwe\ms-teams.exe"
+                    teamsExePath :=
+                        "C:\Program Files\WindowsApps\MSTeams_25332.1210.4188.1171_x64__8wekyb3d8bbwe\ms-teams.exe"
                     if (FileExist(teamsExePath)) {
                         Run teamsExePath
                     } else {
                         Run "ms-teams.exe"
                     }
                 } else {
-                    teamsPath := "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Microsoft Teams.lnk"
+                    teamsPath :=
+                        "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Microsoft Teams.lnk"
                     if (FileExist(teamsPath)) {
                         Run teamsPath
                     } else {
@@ -801,7 +902,7 @@ CheckAndOpenOutlookTeams(checkOutlook := false, checkTeams := false) {
                     }
                 }
             }
-            
+
             ; Wait a bit for applications to start
             Sleep 2000
             return true
@@ -810,7 +911,7 @@ CheckAndOpenOutlookTeams(checkOutlook := false, checkTeams := false) {
             return false
         }
     }
-    
+
     ; User cancelled
     return false
 }
@@ -974,7 +1075,8 @@ DictationCleanup_ShowBanner() {
     ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
     ov.BackColor := "3772FF"
     ov.SetFont("s24 cFFFFFF Bold", "Segoe UI")
-    g_DictationCleanupTextCtrl := ov.Add("Text", "w650 Center", "Clearing clipboard in " g_DictationCleanupRemaining "… (press N or End to cancel)")
+    g_DictationCleanupTextCtrl := ov.Add("Text", "w650 Center", "Clearing clipboard in " g_DictationCleanupRemaining "… (press N or End to cancel)"
+    )
     ov.Show("AutoSize Hide")
     ov.GetPos(&gx, &gy, &gw, &gh)
 
@@ -1702,6 +1804,8 @@ InitMacros() {
     RegisterMacro(QuickUpdateScripts, "⚡ Quick Update to Your Scripts")
     ; Add specific word to Handy macro
     RegisterMacro(AddWordToHandy, "➕ Add specific word to Handy")
+    ; Select AI model in Handy (anchor: Check for updates)
+    RegisterMacro(SelectAiModelInHandy, "🤖 Handy: Select AI model", "u")
     ; Toggle Outlook and Teams macro
     RegisterMacro(ToggleOutlookAndTeams, "🔄 Toggle Outlook & Teams")
     ; Clean the Clipboard macro (assigned to "P")
@@ -4634,7 +4738,8 @@ ShowHotstringSelector() {
         while (currentCharIndex <= g_HotstringCharSequence.Length) {
             char := g_HotstringCharSequence[currentCharIndex]
             if (char = "l") {
-                allItems.Push({ category: "Unassigned", char: char, text: "[L] > Gemini modifier (press L, then a prompt key)", isEmpty: false })
+                allItems.Push({ category: "Unassigned", char: char, text: "[L] > Gemini modifier (press L, then a prompt key)",
+                    isEmpty: false })
             } else {
                 allItems.Push({ category: "Unassigned", char: char, text: "[" . char . "] > (empty)", isEmpty: true })
             }
@@ -4904,7 +5009,8 @@ ShowHotstringSelector() {
     ; Enable hotkeys for all assigned characters (hotstrings, quick open files, macros),
     ; plus the reserved modifier key 'L' (Gemini redirect mode).
     for char in g_HotstringCharSequence {
-        if (char = "l" || char = "L" || g_HotstringCharMap.Has(char) || g_QuickOpenFileCharMap.Has(char) || g_MacroCharMap.Has(char)) {
+        if (char = "l" || char = "L" || g_HotstringCharMap.Has(char) || g_QuickOpenFileCharMap.Has(char) ||
+        g_MacroCharMap.Has(char)) {
             ; Use factory function to create handler with properly captured char value
             handler := CreateHotstringCharHandler(char)
 
