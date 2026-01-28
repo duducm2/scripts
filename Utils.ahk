@@ -490,6 +490,68 @@ ShowCenteredOverlay_Utils(text, duration := 1500) {
 }
 
 ; =============================================================================
+; Hotstring Selector: Gemini Redirect Banner (non-blocking)
+; =============================================================================
+global g_HotstringGeminiBannerGui := false
+
+HotstringGeminiBanner_Show(text := "Gemini: inserting prompt...") {
+    global g_HotstringGeminiBannerGui
+
+    ; Destroy any previous banner instance
+    if (IsObject(g_HotstringGeminiBannerGui) && g_HotstringGeminiBannerGui.Hwnd) {
+        try g_HotstringGeminiBannerGui.Destroy()
+    }
+
+    target := WinGetID("A")
+    hasWindow := false
+    if target && WinExist("ahk_id " target) {
+        try {
+            WinGetPos(&wx, &wy, &ww, &wh, target)
+            hasWindow := (ww > 0 && wh > 0)
+        } catch {
+            hasWindow := false
+        }
+    }
+
+    ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
+    ov.BackColor := "3772FF"
+    ov.SetFont("s22 cFFFFFF Bold", "Segoe UI")
+    ov.Add("Text", "w520 Center", text)
+    ov.Show("AutoSize Hide")
+    ov.GetPos(, , &gw, &gh)
+
+    if hasWindow {
+        cx := wx + (ww - gw) // 2
+        cy := wy + (wh - gh) // 2
+        ov.Show("x" . cx . " y" . cy . " NA")
+    } else {
+        vx := SysGet(76)  ; SM_XVIRTUALSCREEN
+        vy := SysGet(77)  ; SM_YVIRTUALSCREEN
+        vw := SysGet(78)  ; SM_CXVIRTUALSCREEN
+        vh := SysGet(79)  ; SM_CYVIRTUALSCREEN
+        cx := vx + (vw - gw) // 2
+        cy := vy + (vh - gh) // 2
+        ov.Show("x" . cx . " y" . cy . " NA")
+    }
+
+    WinSetTransparent(178, ov)
+    g_HotstringGeminiBannerGui := ov
+}
+
+HotstringGeminiBanner_Hide(*) {
+    global g_HotstringGeminiBannerGui
+    if (IsObject(g_HotstringGeminiBannerGui)) {
+        try {
+            if (g_HotstringGeminiBannerGui.Hwnd) {
+                g_HotstringGeminiBannerGui.Destroy()
+            }
+        } catch {
+        }
+    }
+    g_HotstringGeminiBannerGui := false
+}
+
+; =============================================================================
 ; Global Sound Toggle System
 ; File-backed state management for muting/unmuting sounds across all scripts
 ; =============================================================================
@@ -4107,71 +4169,82 @@ HandleHotstringChar(char) {
 
         if (useGemini) {
             ; L+Prompt selection: redirect to Gemini (focus prompt field, paste, do NOT submit).
-            SetTitleMatchMode(2)
-            geminiHwnd := 0
+            HotstringGeminiBanner_Show("Gemini: inserting prompt...")
             try {
-                for hwnd in WinGetList("ahk_exe chrome.exe") {
-                    try {
-                        if InStr(WinGetTitle("ahk_id " hwnd), "gemini", false) {
-                            geminiHwnd := hwnd
-                            break
-                        }
-                    } catch {
-                        ; Skip invalid windows
-                    }
-                }
-            } catch {
-                ; Ignore WinGetList errors
-            }
-
-            if (geminiHwnd) {
-                WinActivate("ahk_id " geminiHwnd)
-                WinWaitActive("ahk_id " geminiHwnd, , 2)
-            } else {
-                ; Per your preference: fallback to any Chrome window if Gemini isn't found.
-                WinActivate("ahk_exe chrome.exe")
-                WinWaitActive("ahk_exe chrome.exe", , 2)
-            }
-
-            ; Focus the Gemini prompt field using the Anchor & Backtrack strategy (copied from Win+Alt+Shift+I),
-            ; with sound/file behaviors removed (no external file refs, no side effects).
-            try {
-                uia := UIA_Browser()
-                Sleep 80
-
-                anchorButton := 0
+                SetTitleMatchMode(2)
+                geminiHwnd := 0
                 try {
-                    anchorButton := uia.FindFirst({ Type: "50000", Name: "Open upload file menu", ControlType: "Button" })
-                    if (!anchorButton) {
-                        anchorButton := uia.FindFirst({ Type: "50000", Name: "Open upload file menu", cs: false })
+                    for hwnd in WinGetList("ahk_exe chrome.exe") {
+                        try {
+                            if InStr(WinGetTitle("ahk_id " hwnd), "gemini", false) {
+                                geminiHwnd := hwnd
+                                break
+                            }
+                        } catch {
+                            ; Skip invalid windows
+                        }
                     }
                 } catch {
+                    ; Ignore WinGetList errors
                 }
 
-                if (!anchorButton) {
+                if (geminiHwnd) {
+                    WinActivate("ahk_id " geminiHwnd)
+                    WinWaitActive("ahk_id " geminiHwnd, , 2)
+                } else {
+                    ; Per your preference: fallback to any Chrome window if Gemini isn't found.
+                    WinActivate("ahk_exe chrome.exe")
+                    WinWaitActive("ahk_exe chrome.exe", , 2)
+                }
+
+                ; Focus the Gemini prompt field using the Anchor & Backtrack strategy (copied from Win+Alt+Shift+I),
+                ; with sound/file behaviors removed (no external file refs, no side effects).
+                try {
+                    uia := UIA_Browser()
+                    Sleep 80
+
+                    anchorButton := 0
                     try {
-                        allButtons := uia.FindAll({ Type: "50000" })
-                        for button in allButtons {
-                            try {
-                                if (InStr(button.Name, "Open upload file menu", false)) {
-                                    anchorButton := button
-                                    break
-                                }
-                            } catch {
-                                continue
-                            }
+                        anchorButton := uia.FindFirst({ Type: "50000", Name: "Open upload file menu", ControlType: "Button" })
+                        if (!anchorButton) {
+                            anchorButton := uia.FindFirst({ Type: "50000", Name: "Open upload file menu", cs: false })
                         }
                     } catch {
                     }
-                }
 
-                if (anchorButton) {
-                    try {
-                        anchorButton.SetFocus()
-                        Sleep 25
-                        SendInput "+{Tab}"
-                        Sleep 15
-                    } catch {
+                    if (!anchorButton) {
+                        try {
+                            allButtons := uia.FindAll({ Type: "50000" })
+                            for button in allButtons {
+                                try {
+                                    if (InStr(button.Name, "Open upload file menu", false)) {
+                                        anchorButton := button
+                                        break
+                                    }
+                                } catch {
+                                    continue
+                                }
+                            }
+                        } catch {
+                        }
+                    }
+
+                    if (anchorButton) {
+                        try {
+                            anchorButton.SetFocus()
+                            Sleep 25
+                            SendInput "+{Tab}"
+                            Sleep 15
+                        } catch {
+                            try {
+                                promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
+                                if (promptField) {
+                                    promptField.SetFocus()
+                                }
+                            } catch {
+                            }
+                        }
+                    } else {
                         try {
                             promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
                             if (promptField) {
@@ -4180,21 +4253,15 @@ HandleHotstringChar(char) {
                         } catch {
                         }
                     }
-                } else {
-                    try {
-                        promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
-                        if (promptField) {
-                            promptField.SetFocus()
-                        }
-                    } catch {
-                    }
+                } catch {
+                    ; If focus fails, we still attempt to paste (user can click manually).
                 }
-            } catch {
-                ; If focus fails, we still attempt to paste (user can click manually).
-            }
 
-            ; Paste the text (do NOT send Enter)
-            InsertText(expansion)
+                ; Paste the text (do NOT send Enter)
+                InsertText(expansion)
+            } finally {
+                HotstringGeminiBanner_Hide()
+            }
             return
         }
 
