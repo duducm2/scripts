@@ -2,6 +2,7 @@
 #SingleInstance Force
 
 #include UIA-v2\Lib\UIA.ahk
+#include UIA-v2\Lib\UIA_Browser.ahk
 
 ; -----------------------------------------------------------------------------
 ; This script consolidates various utility hotkeys.
@@ -486,6 +487,68 @@ ShowCenteredOverlay_Utils(text, duration := 1500) {
     WinSetTransparent(178, ov)        ; ~70% opacity for visibility
     Sleep duration
     ov.Destroy()
+}
+
+; =============================================================================
+; Hotstring Selector: Gemini Redirect Banner (non-blocking)
+; =============================================================================
+global g_HotstringGeminiBannerGui := false
+
+HotstringGeminiBanner_Show(text := "Gemini: inserting prompt...") {
+    global g_HotstringGeminiBannerGui
+
+    ; Destroy any previous banner instance
+    if (IsObject(g_HotstringGeminiBannerGui) && g_HotstringGeminiBannerGui.Hwnd) {
+        try g_HotstringGeminiBannerGui.Destroy()
+    }
+
+    target := WinGetID("A")
+    hasWindow := false
+    if target && WinExist("ahk_id " target) {
+        try {
+            WinGetPos(&wx, &wy, &ww, &wh, target)
+            hasWindow := (ww > 0 && wh > 0)
+        } catch {
+            hasWindow := false
+        }
+    }
+
+    ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
+    ov.BackColor := "3772FF"
+    ov.SetFont("s22 cFFFFFF Bold", "Segoe UI")
+    ov.Add("Text", "w520 Center", text)
+    ov.Show("AutoSize Hide")
+    ov.GetPos(, , &gw, &gh)
+
+    if hasWindow {
+        cx := wx + (ww - gw) // 2
+        cy := wy + (wh - gh) // 2
+        ov.Show("x" . cx . " y" . cy . " NA")
+    } else {
+        vx := SysGet(76)  ; SM_XVIRTUALSCREEN
+        vy := SysGet(77)  ; SM_YVIRTUALSCREEN
+        vw := SysGet(78)  ; SM_CXVIRTUALSCREEN
+        vh := SysGet(79)  ; SM_CYVIRTUALSCREEN
+        cx := vx + (vw - gw) // 2
+        cy := vy + (vh - gh) // 2
+        ov.Show("x" . cx . " y" . cy . " NA")
+    }
+
+    WinSetTransparent(178, ov)
+    g_HotstringGeminiBannerGui := ov
+}
+
+HotstringGeminiBanner_Hide(*) {
+    global g_HotstringGeminiBannerGui
+    if (IsObject(g_HotstringGeminiBannerGui)) {
+        try {
+            if (g_HotstringGeminiBannerGui.Hwnd) {
+                g_HotstringGeminiBannerGui.Destroy()
+            }
+        } catch {
+        }
+    }
+    g_HotstringGeminiBannerGui := false
 }
 
 ; =============================================================================
@@ -3498,6 +3561,8 @@ global g_HotstringSelectorGui := false          ; GUI object reference (false wh
 global g_HotstringSelectorActive := false       ; Boolean flag indicating selector is currently displayed
 global g_HotstringCharMap := Map()              ; Character-to-text-expansion mapping for hotstrings
 global g_HotstringHotkeyHandlers := []          ; Array of hotkey handler objects for cleanup on close
+global g_HotstringPromptCharMap := Map()        ; Map of prompt-assigned chars => true (rebuilt on each ShowHotstringSelector)
+global g_HotstringGeminiArmed := false          ; When true, next Prompts selection is redirected to Gemini
 
 ; Character assignment sequence: defines order in which characters are assigned to actions
 ; Format: ["1", "2", "3", "4", "5", "q", "w", "e", "r", "t", "a", "s", "d", "f", "g", "z", "x",
@@ -3925,6 +3990,7 @@ FindAndActivateMiroWindow(url, titleKeywords) {
 ; =============================================================================
 CleanupHotstringSelector() {
     global g_HotstringSelectorActive, g_HotstringSelectorGui, g_HotstringHotkeyHandlers
+    global g_HotstringPromptCharMap, g_HotstringGeminiArmed
     global g_HotstringCharMap
 
     ; Disable active flag
@@ -3960,6 +4026,8 @@ CleanupHotstringSelector() {
 
     ; Clear handlers array
     g_HotstringHotkeyHandlers := []
+    g_HotstringPromptCharMap := Map()
+    g_HotstringGeminiArmed := false
 
     ; Close and destroy GUI
     if (IsObject(g_HotstringSelectorGui)) {
@@ -4001,10 +4069,26 @@ CleanupHotstringSelector() {
 ; =============================================================================
 HandleHotstringChar(char) {
     global g_HotstringSelectorActive, g_HotstringCharMap, g_QuickOpenFileCharMap, g_MacroCharMap
+    global g_HotstringPromptCharMap, g_HotstringGeminiArmed
 
     ; Only process if selector is active
     if (!g_HotstringSelectorActive) {
         return
+    }
+
+    ; Modal modifier: Press L, then a prompt key to redirect to Gemini.
+    if (char = "l" || char = "L") {
+        g_HotstringGeminiArmed := true
+        ; Auto-disarm after a short time to avoid sticky state.
+        SetTimer(DisarmHotstringGeminiMode, -4000)
+        return
+    }
+
+    ; Consume the armed state on the next selection (any selection), but only redirect Prompts.
+    useGemini := false
+    if (g_HotstringGeminiArmed) {
+        useGemini := g_HotstringPromptCharMap.Has(StrLower(char)) || g_HotstringPromptCharMap.Has(char)
+        g_HotstringGeminiArmed := false
     }
 
     ; Special handling for Miro boards (characters "9" and "0")
@@ -4083,10 +4167,107 @@ HandleHotstringChar(char) {
         ; Cleanup first (closes GUI, disables hotkeys)
         CleanupHotstringSelector()
 
+        if (useGemini) {
+            ; L+Prompt selection: redirect to Gemini (focus prompt field, paste, do NOT submit).
+            HotstringGeminiBanner_Show("Gemini: inserting prompt...")
+            try {
+                SetTitleMatchMode(2)
+                geminiHwnd := 0
+                try {
+                    for hwnd in WinGetList("ahk_exe chrome.exe") {
+                        try {
+                            if InStr(WinGetTitle("ahk_id " hwnd), "gemini", false) {
+                                geminiHwnd := hwnd
+                                break
+                            }
+                        } catch {
+                            ; Skip invalid windows
+                        }
+                    }
+                } catch {
+                    ; Ignore WinGetList errors
+                }
+
+                if (geminiHwnd) {
+                    WinActivate("ahk_id " geminiHwnd)
+                    WinWaitActive("ahk_id " geminiHwnd, , 2)
+                } else {
+                    ; Per your preference: fallback to any Chrome window if Gemini isn't found.
+                    WinActivate("ahk_exe chrome.exe")
+                    WinWaitActive("ahk_exe chrome.exe", , 2)
+                }
+
+                ; Focus the Gemini prompt field using the Anchor & Backtrack strategy (copied from Win+Alt+Shift+I),
+                ; with sound/file behaviors removed (no external file refs, no side effects).
+                try {
+                    uia := UIA_Browser()
+                    Sleep 80
+
+                    anchorButton := 0
+                    try {
+                        anchorButton := uia.FindFirst({ Type: "50000", Name: "Open upload file menu", ControlType: "Button" })
+                        if (!anchorButton) {
+                            anchorButton := uia.FindFirst({ Type: "50000", Name: "Open upload file menu", cs: false })
+                        }
+                    } catch {
+                    }
+
+                    if (!anchorButton) {
+                        try {
+                            allButtons := uia.FindAll({ Type: "50000" })
+                            for button in allButtons {
+                                try {
+                                    if (InStr(button.Name, "Open upload file menu", false)) {
+                                        anchorButton := button
+                                        break
+                                    }
+                                } catch {
+                                    continue
+                                }
+                            }
+                        } catch {
+                        }
+                    }
+
+                    if (anchorButton) {
+                        try {
+                            anchorButton.SetFocus()
+                            Sleep 25
+                            SendInput "+{Tab}"
+                            Sleep 15
+                        } catch {
+                            try {
+                                promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
+                                if (promptField) {
+                                    promptField.SetFocus()
+                                }
+                            } catch {
+                            }
+                        }
+                    } else {
+                        try {
+                            promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
+                            if (promptField) {
+                                promptField.SetFocus()
+                            }
+                        } catch {
+                        }
+                    }
+                } catch {
+                    ; If focus fails, we still attempt to paste (user can click manually).
+                }
+
+                ; Paste the text (do NOT send Enter)
+                InsertText(expansion)
+            } finally {
+                HotstringGeminiBanner_Hide()
+            }
+            return
+        }
+
+        ; Standard behavior: paste into current active text field.
         ; Small delay to ensure target window has focus before pasting
         Sleep 150
-
-        ; Paste the text
         InsertText(expansion)
     }
 }
@@ -4102,6 +4283,11 @@ HandleHotstringChar(char) {
 ;
 ; RETURNS: Function object that calls HandleHotstringChar(char) when invoked
 ; =============================================================================
+DisarmHotstringGeminiMode(*) {
+    global g_HotstringGeminiArmed
+    g_HotstringGeminiArmed := false
+}
+
 CreateHotstringCharHandler(char) {
     ; Return a function that captures the char value at creation time via closure
     return (*) => HandleHotstringChar(char)
@@ -4278,6 +4464,26 @@ ShowHotstringSelector() {
         expansionToChar[expansion] := char
     }
 
+    ; Track which selector characters belong to the Prompts category (non-empty expansions only).
+    ; Used to restrict the L-modifier redirect behavior to Prompts only.
+    global g_HotstringPromptCharMap
+    g_HotstringPromptCharMap := Map()
+    try {
+        if (categorized.Has("Prompts")) {
+            for hs in categorized["Prompts"] {
+                try {
+                    if (hs.HasProp("expansion") && hs.expansion != "" && expansionToChar.Has(hs.expansion)) {
+                        g_HotstringPromptCharMap[expansionToChar[hs.expansion]] := true
+                    }
+                } catch {
+                    ; Ignore malformed entries
+                }
+            }
+        }
+    } catch {
+        ; Ignore prompt-char tracking failures (selector still works normally)
+    }
+
     ; Build items list grouped by category for two-column layout
     ; Collect all items first, then format in two columns
     hotstringCount := 0
@@ -4371,8 +4577,13 @@ ShowHotstringSelector() {
                         }
                     } else {
                         ; Character slot exists but no hotstring assigned
-                        itemText := "[" . char . "] > (empty)"
-                        isEmpty := true
+                        if (char = "l") {
+                            itemText := "[L] > Gemini modifier (press L, then a prompt key)"
+                            isEmpty := false
+                        } else {
+                            itemText := "[" . char . "] > (empty)"
+                            isEmpty := true
+                        }
                     }
 
                     allItems.Push({ category: category, char: char, text: itemText, isEmpty: isEmpty })
@@ -4422,7 +4633,11 @@ ShowHotstringSelector() {
     if (currentCharIndex <= g_HotstringCharSequence.Length) {
         while (currentCharIndex <= g_HotstringCharSequence.Length) {
             char := g_HotstringCharSequence[currentCharIndex]
-            allItems.Push({ category: "Unassigned", char: char, text: "[" . char . "] > (empty)", isEmpty: true })
+            if (char = "l") {
+                allItems.Push({ category: "Unassigned", char: char, text: "[L] > Gemini modifier (press L, then a prompt key)", isEmpty: false })
+            } else {
+                allItems.Push({ category: "Unassigned", char: char, text: "[" . char . "] > (empty)", isEmpty: true })
+            }
             currentCharIndex++
         }
     }
@@ -4686,9 +4901,10 @@ ShowHotstringSelector() {
     ; Clear handlers array
     g_HotstringHotkeyHandlers := []
 
-    ; Enable hotkeys for all assigned characters (hotstrings, quick open files, and macros)
+    ; Enable hotkeys for all assigned characters (hotstrings, quick open files, macros),
+    ; plus the reserved modifier key 'L' (Gemini redirect mode).
     for char in g_HotstringCharSequence {
-        if (g_HotstringCharMap.Has(char) || g_QuickOpenFileCharMap.Has(char) || g_MacroCharMap.Has(char)) {
+        if (char = "l" || char = "L" || g_HotstringCharMap.Has(char) || g_QuickOpenFileCharMap.Has(char) || g_MacroCharMap.Has(char)) {
             ; Use factory function to create handler with properly captured char value
             handler := CreateHotstringCharHandler(char)
 

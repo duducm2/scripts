@@ -11059,7 +11059,7 @@ Mobills_ClickPager(el) {
 ; =============================================================================
 global g_MobillsRunningBannerGui := 0
 
-Mobills_ShowRunningBanner(dir, duration := 900) {
+Mobills_ShowRunningBanner(dir) {
     global g_MobillsRunningBannerGui
 
     ; Close any existing banner first
@@ -11107,9 +11107,6 @@ Mobills_ShowRunningBanner(dir, duration := 900) {
 
     WinSetTransparent(178, ov)
     g_MobillsRunningBannerGui := ov
-
-    ; Auto-hide asynchronously
-    SetTimer(Mobills_HideRunningBanner, -duration)
 }
 
 Mobills_HideRunningBanner() {
@@ -11748,6 +11745,35 @@ GetMobillsButton(autoId, btnName) {
 ;-------------------------------------------
 ; Helper functions
 ;-------------------------------------------
+; When Mobills is visible but not focused, UIA_Browser attach can fail.
+; Recovery: activate browser window, retry once. (No clicking.)
+Mobills_ActivateBrowserForAttach(exe := "ahk_exe chrome.exe", titleNeedle := "Mobills") {
+    try {
+        bestHwnd := 0
+        hwnds := WinGetList(exe)
+        for hwnd in hwnds {
+            try {
+                t := WinGetTitle("ahk_id " hwnd)
+                if (t != "" && InStr(t, titleNeedle)) {
+                    bestHwnd := hwnd
+                    break
+                }
+            } catch {
+            }
+        }
+        if (!bestHwnd && hwnds.Length)
+            bestHwnd := hwnds[1]
+        if (!bestHwnd)
+            return false
+
+        WinActivate("ahk_id " bestHwnd)
+        WinWaitActive("ahk_id " bestHwnd, , 1)
+        return true
+    } catch {
+        return false
+    }
+}
+
 TryAttachBrowser() {
     ; #region agent log
     try {
@@ -11757,9 +11783,25 @@ TryAttachBrowser() {
     } catch {
     }
     ; #endregion
-    ; Try Chrome first, then Edge
+    ; Try Chrome first, then Edge (with one focus recovery retry)
     try {
-        result := UIA_Browser("ahk_exe chrome.exe")
+        result := ""
+        try result := UIA_Browser("ahk_exe chrome.exe")
+        if (result) {
+            ; #region agent log
+            try {
+                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+                ',"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":' .
+                (result ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n', DEBUG_LOG_PATH
+            } catch {
+            }
+            ; #endregion
+            return result
+        }
+
+        ; Recovery: activate + retry
+        Mobills_ActivateBrowserForAttach("ahk_exe chrome.exe", "Mobills")
+        try result := UIA_Browser("ahk_exe chrome.exe")
         ; #region agent log
         try {
             FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
@@ -11780,7 +11822,12 @@ TryAttachBrowser() {
         }
         ; #endregion
         try {
-            result := UIA_Browser("ahk_exe msedge.exe")
+            result := ""
+            try result := UIA_Browser("ahk_exe msedge.exe")
+            if (!result) {
+                Mobills_ActivateBrowserForAttach("ahk_exe msedge.exe", "Mobills")
+                try result := UIA_Browser("ahk_exe msedge.exe")
+            }
             ; #region agent log
             try {
                 FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
