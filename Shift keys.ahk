@@ -492,6 +492,9 @@ cheatSheets["Chrome PDF Viewer"] := "
 (
 Chrome PDF Viewer (Shift)
 ⬇️ [D] [D]ownload PDF
+📏 [F] [F]it to page (zoom to fit)
+🔢 [P] [P]age number field (focus)
+🗂️ [T] [T]humbnails sidebar (toggle)
 )"  ; end Chrome PDF Viewer
 
 ; --- Cursor ------------------------------------------------------
@@ -3736,45 +3739,111 @@ IsChromePdfViewerActive() {
 
 #HotIf IsChromePdfViewerActive()
 
-; Shift + D : Download PDF - Download
-+d::
-{
+ChromePdf_GetViewerRoot(uia) {
+    ; Prefer the extension's RootWebArea (most stable for the PDF viewer UI)
+    root := 0
+    try root := uia.FindElement({ Type: 50030, Value: "chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai",
+        matchmode: "Substring" })
+    if (root)
+        return root
+
+    ; Fallbacks
+    try root := uia.GetCurrentDocumentElement()
+    if (root)
+        return root
+    try root := uia.BrowserElement
+    return root
+}
+
+ChromePdf_ClickByAutomationId(automationId, fallbackNames := 0) {
     try {
         uia := UIA_Browser("ahk_exe chrome.exe")
-        Sleep 100
+        Sleep 80
 
-        ; Prefer searching within the PDF viewer's extension web area
-        pdfRoot := 0
-        try pdfRoot := uia.FindElement({ Type: 50030, Value: "chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai",
-            matchmode: "Substring" })
-        if (!pdfRoot) {
-            try pdfRoot := uia.GetCurrentDocumentElement()
-        }
-        if (!pdfRoot) {
-            try pdfRoot := uia.BrowserElement
-        }
+        root := ChromePdf_GetViewerRoot(uia)
+        if (!root)
+            return false
 
         btn := 0
-        ; Best: language-agnostic AutomationId for the Download button
-        try btn := pdfRoot.FindFirst({ Type: 50000, AutomationId: "save" })
+        try btn := root.FindFirst({ Type: 50000, AutomationId: automationId })
         if (!btn)
-            try btn := pdfRoot.FindFirst({ AutomationId: "save" })
+            try btn := root.FindFirst({ AutomationId: automationId })
 
-        ; Fallback: Portuguese / English names (in case AutomationId is unavailable)
-        if (!btn)
-            try btn := pdfRoot.FindFirst({ Type: 50000, Name: "Baixar" })
-        if (!btn)
-            try btn := pdfRoot.FindFirst({ Type: 50000, Name: "Download" })
+        if (!btn && IsObject(fallbackNames)) {
+            for , name in fallbackNames {
+                try btn := root.FindFirst({ Type: 50000, Name: name })
+                if (btn)
+                    break
+            }
+        }
 
         if (btn) {
             try btn.Invoke()
             catch {
                 try btn.Click()
             }
+            return true
         }
     } catch {
-        ; Fail silently (consistent with other mnemonic UIA hotkeys)
     }
+    return false
+}
+
+ChromePdf_FocusByAutomationId(automationId, controlType := 0) {
+    try {
+        uia := UIA_Browser("ahk_exe chrome.exe")
+        Sleep 80
+
+        root := ChromePdf_GetViewerRoot(uia)
+        if (!root)
+            return false
+
+        el := 0
+        if (controlType) {
+            try el := root.FindFirst({ Type: controlType, AutomationId: automationId })
+        }
+        if (!el)
+            try el := root.FindFirst({ AutomationId: automationId })
+
+        if (el) {
+            try el.SetFocus()
+            catch {
+                try el.Click()
+            }
+            return true
+        }
+    } catch {
+    }
+    return false
+}
+
+; Shift + F : Fit to page (Zoom to Fit) - Fit
++f::
+{
+    ; UIA tree: AutomationId "fit"
+    ChromePdf_ClickByAutomationId("fit")
+}
+
+; Shift + P : Focus page number field - Page
++p::
+{
+    ; UIA tree: Edit AutomationId "pageSelector"
+    ; Per requirement: focus only (no select-all)
+    ChromePdf_FocusByAutomationId("pageSelector", 50004)
+}
+
+; Shift + T : Toggle thumbnails sidebar - Thumbnails
++t::
+{
+    ; UIA tree: AutomationId "sidenavToggle"
+    ChromePdf_ClickByAutomationId("sidenavToggle")
+}
+
+; Shift + D : Download PDF - Download
++d::
+{
+    ; UIA tree: AutomationId "save" (button label is localized)
+    ChromePdf_ClickByAutomationId("save", ["Baixar", "Download"])
 }
 
 #HotIf
