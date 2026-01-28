@@ -11059,7 +11059,7 @@ Mobills_ClickPager(el) {
 ; =============================================================================
 global g_MobillsRunningBannerGui := 0
 
-Mobills_ShowRunningBanner(dir, duration := 900) {
+Mobills_ShowRunningBanner(dir) {
     global g_MobillsRunningBannerGui
 
     ; Close any existing banner first
@@ -11107,9 +11107,6 @@ Mobills_ShowRunningBanner(dir, duration := 900) {
 
     WinSetTransparent(178, ov)
     g_MobillsRunningBannerGui := ov
-
-    ; Auto-hide asynchronously
-    SetTimer(Mobills_HideRunningBanner, -duration)
 }
 
 Mobills_HideRunningBanner() {
