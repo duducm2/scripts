@@ -420,43 +420,77 @@ AddWordToHandy() {
     }
 }
 
-; Resolve Handy shortcut path (prefers existing file, supports work/personal)
+; Resolve Handy shortcut/executable path (environment-aware: work vs home)
+; Work: uses Documents\Handy\handy.exe; Home: uses Start Menu shortcuts.
 GetHandyShortcutPath() {
     global IS_WORK_ENVIRONMENT
 
-    candidates := []
+    if (IS_WORK_ENVIRONMENT) {
+        ; Work: direct exe path first, then work shortcut fallback
+        workExe := "C:\Users\fie7ca\Documents\Handy\handy.exe"
+        if (FileExist(workExe))
+            return workExe
+        for , p in ["C:\Users\fie7ca\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Handy\Handy.lnk", "C:\Users\fie7ca\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Handy.lnk"] {
+            if (p != "" && FileExist(p))
+                return p
+        }
+        return ""
+    }
 
-    ; Personal: user-provided stable ProgramData shortcut
-    candidates.Push("C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Handy\Handy.lnk")
-
-    ; Personal: common per-user Start Menu shortcut location
-    candidates.Push("C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Handy\Handy.lnk")
-    candidates.Push("C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Handy.lnk")
-
-    ; Work: legacy path used previously in this file
-    candidates.Push("C:\Users\fie7ca\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Handy\Handy.lnk")
-    candidates.Push("C:\Users\fie7ca\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Handy.lnk")
-
-    ; Prefer environment-specific candidates first by ordering (no harm if missing)
+    ; Home/personal: Start Menu shortcuts only
+    candidates := [
+        "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Handy\Handy.lnk",
+        "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Handy\Handy.lnk",
+        "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Handy.lnk"
+    ]
     for , p in candidates {
         try {
-            if (p != "" && FileExist(p)) {
+            if (p != "" && FileExist(p))
                 return p
-            }
         } catch {
         }
     }
-
     return ""
 }
 
-; Select AI model in Handy (anchor: "Check for updates" button)
+; Expected Handy process exe path for current environment (for targeting correct instance).
+; Work: work exe path; Home: "" (any Handy window).
+GetHandyProcessPath() {
+    global IS_WORK_ENVIRONMENT
+    if (IS_WORK_ENVIRONMENT) {
+        workExe := "C:\Users\fie7ca\Documents\Handy\handy.exe"
+        return FileExist(workExe) ? workExe : ""
+    }
+    return ""
+}
+
+; Select AI model in Handy (anchor: "Check for updates" button).
+; Targets the correct Handy instance by environment: work = Documents\Handy\handy.exe, home = any.
 SelectAiModelInHandy() {
     targetPath := GetHandyShortcutPath()
+    expectedExePath := GetHandyProcessPath()
 
     try {
-        if WinExist("Handy ahk_class Tauri Window") {
-            WinActivate
+        ; Find a Handy window matching current environment (by process path when at work)
+        matchingHwnd := 0
+        for hwnd in WinGetList("Handy ahk_class Tauri Window") {
+            try {
+                procPath := WinGetProcessPath(hwnd)
+                if (expectedExePath = "" || StrCompare(procPath, expectedExePath, false) = 0) {
+                    matchingHwnd := hwnd
+                    break
+                }
+            } catch {
+                ; If we can't get path, at home accept first window; at work skip
+                if (expectedExePath = "") {
+                    matchingHwnd := hwnd
+                    break
+                }
+            }
+        }
+
+        if (matchingHwnd) {
+            WinActivate("ahk_id " matchingHwnd)
         } else {
             if (targetPath = "" || !FileExist(targetPath)) {
                 MsgBox "Failed to launch Handy.`n`nShortcut not found.", "Utils.ahk", "IconX"
@@ -467,10 +501,28 @@ SelectAiModelInHandy() {
                 MsgBox "Failed to launch Handy."
                 return
             }
+            ; After launch, ensure we activate the instance we just started (match by process path)
+            matchingHwnd := 0
+            for h in WinGetList("Handy ahk_class Tauri Window") {
+                try {
+                    procPath := WinGetProcessPath(h)
+                    if (expectedExePath = "" || StrCompare(procPath, expectedExePath, false) = 0) {
+                        matchingHwnd := h
+                        break
+                    }
+                } catch {
+                    if (expectedExePath = "") {
+                        matchingHwnd := h
+                        break
+                    }
+                }
+            }
+            if (matchingHwnd)
+                WinActivate("ahk_id " matchingHwnd)
         }
 
-        WinWaitActive("Handy ahk_class Tauri Window", , 2)
-        hwnd := WinExist("Handy ahk_class Tauri Window")
+        WinWaitActive(, , 2)
+        hwnd := WinExist("A")
 
         ; Initialize UIA
         el := UIA.ElementFromHandle(hwnd)
