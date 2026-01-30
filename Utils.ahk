@@ -1593,7 +1593,7 @@ ToggleDictationLoop() {
 }
 
 DictationLoopStart() {
-    global g_DictationLoopActive
+    global g_DictationLoopActive, g_DictationStartRetries
 
     ; Safety check: Only proceed if loop is still active
     ; This prevents starting if user manually stopped the loop
@@ -1601,8 +1601,23 @@ DictationLoopStart() {
         return
     }
 
+    ; Ensure Handy is running before attempting to start dictation
+    if (!ProcessExist("handy.exe")) {
+        Handy_ActivateOrLaunch()
+        Sleep 2000 ; Wait for launch
+    }
+
+    ; Check if already recording to prevent toggling off
+    if (WinExist("Recording ahk_exe handy.exe")) {
+        ; Already recording, just ensure timer is running
+        SetTimer(DictationLoopStop, 0)
+        SetTimer(DictationLoopStop, -15000)  ; 15s for testing (was 60s)
+        return
+    }
+
+    g_DictationStartRetries := 0
     ; Send Win+Alt+Shift+0 to start dictation
-    SendInput "#!+0"
+    SendEvent "#!+0"
 
     ; Double-check loop is still active before scheduling stop timer
     ; User may have stopped it during the dictation start delay
@@ -1613,9 +1628,37 @@ DictationLoopStart() {
     ; Clear any existing timer first to prevent accumulation
     SetTimer(DictationLoopStop, 0)
 
-    ; Schedule stop after 60 seconds - negative period = one-shot timer
+
+    ; Schedule stop after 15 seconds (testing) - negative period = one-shot timer
     ; Only schedules if loop is still active (checked above)
-    SetTimer(DictationLoopStop, -60000)
+    SetTimer(DictationLoopStop, -15000)
+
+    ; Verification: Check if window appeared after a delay
+    SetTimer(VerifyDictationStart, -1500)
+}
+
+global g_DictationStartRetries := 0
+
+VerifyDictationStart() {
+    global g_DictationLoopActive, g_DictationStartRetries
+    if (!g_DictationLoopActive) {
+        return
+    }
+
+    if (!WinExist("Recording ahk_exe handy.exe")) {
+        g_DictationStartRetries++
+        if (g_DictationStartRetries <= 3) {
+            ; Retry start if window didn't appear
+            SendEvent "#!+0"
+            ; Reschedule stop timer just in case
+            SetTimer(DictationLoopStop, 0)
+            SetTimer(DictationLoopStop, -15000)  ; 15s for testing (was 60s)
+            SetTimer(VerifyDictationStart, -1500)
+        } else {
+            ShowCenteredOverlay_Utils("Failed to start dictation", 2000)
+            g_DictationLoopActive := false
+        }
+    }
 }
 
 DictationLoopStop() {
@@ -1627,12 +1670,19 @@ DictationLoopStop() {
         return
     }
 
-    ; Send Win+Alt+Shift+0 to stop dictation (triggers transcription)
-    SendInput "#!+0"
+    ; Only send stop command if actually recording
+    if (WinExist("Recording ahk_exe handy.exe")) {
+        ; Send Win+Alt+Shift+0 to stop dictation (triggers transcription)
+        SendEvent "#!+0"
 
-    ; Play sound to notify that transcription has started (if enabled)
-    if (IsSoundEnabled()) {
-        SoundPlay(g_DictationLoopSound)
+        ; Play sound to notify that transcription has started (if enabled)
+        if (IsSoundEnabled()) {
+            SoundPlay(g_DictationLoopSound)
+        }
+    } else {
+        ; If not recording, we might have stopped early or crashed.
+        ; Restart loop immediately to recover.
+        SetTimer(DictationLoopStart, -1000)
     }
 
     ; Double-check loop is still active before scheduling restart
@@ -1644,9 +1694,9 @@ DictationLoopStop() {
     ; Clear any existing timer first to prevent accumulation
     SetTimer(DictationLoopStart, 0)
 
-    ; Schedule next start after 1 second (buffer for processing) - negative period = one-shot timer
-    ; Only schedules if loop is still active (checked above)
-    SetTimer(DictationLoopStart, -1000)
+    ; REMOVED: Schedule next start after 1 second
+    ; We now rely on PlayDictationCompletionChime to trigger next loop
+    ; after transcription is complete.
 }
 
 ; Internal helper: Performs clipboard cleanup without showing prompt
@@ -6285,6 +6335,7 @@ DictationClipboardHandler(DataType) {
 ; Play completion chime after transcription finishes
 PlayDictationCompletionChime(*) {
     global g_DictationCompletionChimeScheduled, g_PendingDictationAction, g_KeepIndicatorVisible
+    global g_DictationLoopActive
 
     ; Ensure clipboard handler is removed (safe to call even if already removed)
     try {
@@ -6333,6 +6384,11 @@ PlayDictationCompletionChime(*) {
             ; Hide indicator only after both commands complete
             HideDictationIndicator()
             g_KeepIndicatorVisible := false
+        }
+
+        ; Trigger next loop iteration if active
+        if (g_DictationLoopActive) {
+            SetTimer(DictationLoopStart, -2000)
         }
     }
 }
