@@ -464,106 +464,354 @@ GetHandyProcessPath() {
     return ""
 }
 
-; Select AI model in Handy (anchor: "Check for updates" button).
-; Targets the correct Handy instance by environment: work = Documents\Handy\handy.exe, home = any.
-SelectAiModelInHandy() {
+; =============================================================================
+; AI Model Selection System for Handy
+; =============================================================================
+; Configuration: Maps selection numbers (1, 2, 3) to AI model names.
+; These are partial name prefixes used to find buttons in the UIA tree.
+global g_HandyAiModels := Map(
+    1, { name: "Whisper Large", desc: "Good accuracy, but slow" },
+    2, { name: "Whisper Medium", desc: "Good accuracy, medium speed" },
+    3, { name: "Moonshine Base", desc: "Very fast, English only" }
+)
+
+; GUI state for AI model selector
+global g_AiModelSelectorGui := false
+global g_AiModelSelectorActive := false
+global g_AiModelBannerGui := false
+
+; =============================================================================
+; ShowAiModelSelector() - Display selection GUI with immediate key capture
+; =============================================================================
+ShowAiModelSelector() {
+    global g_AiModelSelectorGui, g_AiModelSelectorActive, g_HandyAiModels
+
+    ; Don't show if already active
+    if (g_AiModelSelectorActive)
+        return
+
+    ; Create selection GUI
+    g_AiModelSelectorGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner")
+    g_AiModelSelectorGui.BackColor := "1E1E2E"
+    g_AiModelSelectorGui.MarginX := 20
+    g_AiModelSelectorGui.MarginY := 15
+
+    ; Title
+    g_AiModelSelectorGui.SetFont("s14 cCDD6F4 Bold", "Segoe UI")
+    g_AiModelSelectorGui.Add("Text", "w280 Center", "🎙️ Select AI Model")
+    g_AiModelSelectorGui.Add("Text", "w280 h1 Background45475A")  ; separator
+
+    ; Model options
+    g_AiModelSelectorGui.SetFont("s12 cCDD6F4", "Segoe UI")
+    for num, model in g_HandyAiModels {
+        g_AiModelSelectorGui.Add("Text", "w280", "[" . num . "] " . model.name)
+        g_AiModelSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
+        g_AiModelSelectorGui.Add("Text", "w280 y+2", "    " . model.desc)
+        g_AiModelSelectorGui.SetFont("s12 cCDD6F4", "Segoe UI")
+    }
+
+    ; Footer
+    g_AiModelSelectorGui.Add("Text", "w280 h1 Background45475A y+10")
+    g_AiModelSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
+    g_AiModelSelectorGui.Add("Text", "w280 Center", "Press 1, 2, or 3 | Esc to cancel")
+
+    ; Position GUI at screen center
+    g_AiModelSelectorGui.Show("AutoSize Hide")
+    g_AiModelSelectorGui.GetPos(&gx, &gy, &gw, &gh)
+    vx := SysGet(76)
+    vy := SysGet(77)
+    vw := SysGet(78)
+    vh := SysGet(79)
+    cx := vx + (vw - gw) // 2
+    cy := vy + (vh - gh) // 2
+    g_AiModelSelectorGui.Show("x" . cx . " y" . cy . " NA")
+
+    g_AiModelSelectorActive := true
+
+    ; Enable hotkeys for 1, 2, 3 and Escape
+    Hotkey("1", AiModelSelector_HandleKey, "On")
+    Hotkey("2", AiModelSelector_HandleKey, "On")
+    Hotkey("3", AiModelSelector_HandleKey, "On")
+    Hotkey("Escape", AiModelSelector_Cancel, "On")
+}
+
+; Handle key press in AI model selector
+AiModelSelector_HandleKey(key) {
+    global g_AiModelSelectorGui, g_AiModelSelectorActive, g_HandyAiModels
+
+    if (!g_AiModelSelectorActive)
+        return
+
+    ; Get the selection number
+    selection := Integer(key)
+
+    ; Close selector GUI
+    AiModelSelector_Close()
+
+    ; Execute the selection
+    if (g_HandyAiModels.Has(selection)) {
+        ExecuteAiModelSelection(selection)
+    }
+}
+
+; Cancel AI model selector
+AiModelSelector_Cancel(*) {
+    AiModelSelector_Close()
+}
+
+; Close the selector GUI and disable hotkeys
+AiModelSelector_Close() {
+    global g_AiModelSelectorGui, g_AiModelSelectorActive
+
+    if (!g_AiModelSelectorActive)
+        return
+
+    g_AiModelSelectorActive := false
+
+    ; Disable hotkeys
+    try Hotkey("1", "Off")
+    try Hotkey("2", "Off")
+    try Hotkey("3", "Off")
+    try Hotkey("Escape", AiModelSelector_Cancel, "Off")
+
+    ; Destroy GUI
+    if (IsObject(g_AiModelSelectorGui) && g_AiModelSelectorGui.Hwnd) {
+        try g_AiModelSelectorGui.Destroy()
+    }
+    g_AiModelSelectorGui := false
+}
+
+; =============================================================================
+; Status Banner Functions (non-blocking)
+; =============================================================================
+AiModelBanner_Show(text, bgColor := "3772FF") {
+    global g_AiModelBannerGui
+
+    ; Destroy any previous banner
+    AiModelBanner_Hide()
+
+    g_AiModelBannerGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
+    g_AiModelBannerGui.BackColor := bgColor
+    g_AiModelBannerGui.SetFont("s18 cFFFFFF Bold", "Segoe UI")
+    g_AiModelBannerGui.Add("Text", "w450 Center", text)
+
+    ; Position at top-center of screen
+    g_AiModelBannerGui.Show("AutoSize Hide")
+    g_AiModelBannerGui.GetPos(&gx, &gy, &gw, &gh)
+    vx := SysGet(76)
+    vw := SysGet(78)
+    cx := vx + (vw - gw) // 2
+    g_AiModelBannerGui.Show("x" . cx . " y50 NA")
+    WinSetTransparent(200, g_AiModelBannerGui)
+}
+
+AiModelBanner_Hide() {
+    global g_AiModelBannerGui
+    if (IsObject(g_AiModelBannerGui) && g_AiModelBannerGui.Hwnd) {
+        try g_AiModelBannerGui.Destroy()
+    }
+    g_AiModelBannerGui := false
+}
+
+; =============================================================================
+; ExecuteAiModelSelection() - Main automation logic
+; =============================================================================
+ExecuteAiModelSelection(selection) {
+    global g_HandyAiModels
+
+    modelInfo := g_HandyAiModels[selection]
+    modelName := modelInfo.name
+
+    try {
+        ; Step 1: Launch/activate Handy
+        AiModelBanner_Show("🚀 Launching Handy...")
+        handyHwnd := Handy_ActivateOrLaunch()
+        if (!handyHwnd) {
+            AiModelBanner_Show("❌ Failed to launch Handy", "E74C3C")
+            Sleep 2000
+            AiModelBanner_Hide()
+            return
+        }
+        Sleep 500
+
+        ; Step 2: Open AI model menu
+        AiModelBanner_Show("📋 Opening AI model menu...")
+        if (!Handy_OpenAiModelMenu(handyHwnd)) {
+            AiModelBanner_Show("❌ Could not open AI menu", "E74C3C")
+            Sleep 2000
+            AiModelBanner_Hide()
+            return
+        }
+        Sleep 800
+
+        ; Step 3: Select the model
+        AiModelBanner_Show("🎯 Selecting " . modelName . "...")
+        if (!Handy_ClickAiModel(handyHwnd, modelName)) {
+            AiModelBanner_Show("❌ Model not found: " . modelName, "E74C3C")
+            Sleep 2000
+            AiModelBanner_Hide()
+            return
+        }
+
+        ; Step 4: Wait for processing (5 seconds)
+        AiModelBanner_Show("⏳ Processing... (5s)", "27AE60")
+        Sleep 5000
+
+        ; Step 5: Close Handy window
+        AiModelBanner_Show("✅ Done! Closing Handy...", "27AE60")
+        try WinClose("ahk_id " . handyHwnd)
+        Sleep 500
+
+        AiModelBanner_Hide()
+
+    } catch Error as e {
+        AiModelBanner_Show("❌ Error: " . e.Message, "E74C3C")
+        Sleep 2000
+        AiModelBanner_Hide()
+    }
+}
+
+; =============================================================================
+; Handy UIA Helper Functions
+; =============================================================================
+
+; Activate existing Handy window or launch it; returns hwnd or 0
+Handy_ActivateOrLaunch() {
     targetPath := GetHandyShortcutPath()
     expectedExePath := GetHandyProcessPath()
 
-    try {
-        ; Find a Handy window matching current environment (by process path when at work)
-        matchingHwnd := 0
-        for hwnd in WinGetList("Handy ahk_class Tauri Window") {
-            try {
-                procPath := WinGetProcessPath(hwnd)
-                if (expectedExePath = "" || StrCompare(procPath, expectedExePath, false) = 0) {
-                    matchingHwnd := hwnd
-                    break
-                }
-            } catch {
-                ; If we can't get path, at home accept first window; at work skip
-                if (expectedExePath = "") {
-                    matchingHwnd := hwnd
-                    break
-                }
+    ; Find existing Handy window
+    matchingHwnd := 0
+    for hwnd in WinGetList("Handy ahk_class Tauri Window") {
+        try {
+            procPath := WinGetProcessPath(hwnd)
+            if (expectedExePath = "" || StrCompare(procPath, expectedExePath, false) = 0) {
+                matchingHwnd := hwnd
+                break
+            }
+        } catch {
+            if (expectedExePath = "") {
+                matchingHwnd := hwnd
+                break
             }
         }
-
-        if (matchingHwnd) {
-            WinActivate("ahk_id " matchingHwnd)
-        } else {
-            if (targetPath = "" || !FileExist(targetPath)) {
-                MsgBox "Failed to launch Handy.`n`nShortcut not found.", "Utils.ahk", "IconX"
-                return
-            }
-            Run targetPath
-            if !WinWait("Handy ahk_class Tauri Window", , 5) {
-                MsgBox "Failed to launch Handy."
-                return
-            }
-            ; After launch, ensure we activate the instance we just started (match by process path)
-            matchingHwnd := 0
-            for h in WinGetList("Handy ahk_class Tauri Window") {
-                try {
-                    procPath := WinGetProcessPath(h)
-                    if (expectedExePath = "" || StrCompare(procPath, expectedExePath, false) = 0) {
-                        matchingHwnd := h
-                        break
-                    }
-                } catch {
-                    if (expectedExePath = "") {
-                        matchingHwnd := h
-                        break
-                    }
-                }
-            }
-            if (matchingHwnd)
-                WinActivate("ahk_id " matchingHwnd)
-        }
-
-        WinWaitActive(, , 2)
-        hwnd := WinExist("A")
-
-        ; Initialize UIA
-        el := UIA.ElementFromHandle(hwnd)
-        if !el
-            return
-
-        ; Anchor: "Check for updates" button (stable reference point)
-        ; Spec: Type 50000 (Button), Name "Check for updates", ClassName includes:
-        ; "transition-colors disabled:opacity-50 tabular-nums text-text/60 hover:text-text/80"
-        anchor := 0
-
-        ; Strategy 1: Find by exact class name match (most stable if Name changes)
-        try anchor := el.FindFirst({
-            Type: 50000,
-            ClassName: "transition-colors disabled:opacity-50 tabular-nums text-text/60 hover:text-text/80"
-        })
-
-        ; Strategy 2: Find by Name (English), then Portuguese fallback
-        if (!anchor) {
-            try anchor := el.FindFirst({ Type: 50000, Name: "Check for updates" })
-        }
-        if (!anchor) {
-            try anchor := el.FindFirst({ Type: 50000, Name: "Verificar atualizações" })
-        }
-
-        if (!anchor)
-            return
-
-        ; Focus the anchor, then Shift+Tab to the dynamic model button, Enter to activate
-        try anchor.SetFocus()
-        catch {
-            try anchor.Click()
-        }
-
-        Sleep 80
-        Send "+{Tab}"
-        Sleep 80
-        Send "{Enter}"
-    } catch Error as e {
-        MsgBox "Error in SelectAiModelInHandy macro: " e.Message
     }
+
+    if (matchingHwnd) {
+        WinActivate("ahk_id " . matchingHwnd)
+        WinWaitActive("ahk_id " . matchingHwnd, , 2)
+        return matchingHwnd
+    }
+
+    ; Launch Handy
+    if (targetPath = "" || !FileExist(targetPath))
+        return 0
+
+    Run targetPath
+    if !WinWait("Handy ahk_class Tauri Window", , 5)
+        return 0
+
+    ; Find the window we just launched
+    for h in WinGetList("Handy ahk_class Tauri Window") {
+        try {
+            procPath := WinGetProcessPath(h)
+            if (expectedExePath = "" || StrCompare(procPath, expectedExePath, false) = 0) {
+                WinActivate("ahk_id " . h)
+                WinWaitActive("ahk_id " . h, , 2)
+                return h
+            }
+        } catch {
+            if (expectedExePath = "") {
+                WinActivate("ahk_id " . h)
+                WinWaitActive("ahk_id " . h, , 2)
+                return h
+            }
+        }
+    }
+    return 0
+}
+
+; Open the AI model dropdown menu using keyboard navigation
+Handy_OpenAiModelMenu(hwnd) {
+    el := UIA.ElementFromHandle(hwnd)
+    if !el
+        return false
+
+    ; Find anchor: "Check for updates" button
+    anchor := 0
+    try anchor := el.FindFirst({
+        Type: 50000,
+        ClassName: "transition-colors disabled:opacity-50 tabular-nums text-text/60 hover:text-text/80"
+    })
+    if (!anchor)
+        try anchor := el.FindFirst({ Type: 50000, Name: "Check for updates" })
+    if (!anchor)
+        try anchor := el.FindFirst({ Type: 50000, Name: "Verificar atualizações" })
+
+    if (!anchor)
+        return false
+
+    ; Focus anchor, Shift+Tab to model button, Enter to open menu
+    try anchor.SetFocus()
+    catch {
+        try anchor.Click()
+    }
+    Sleep 100
+    Send "+{Tab}"
+    Sleep 100
+    Send "{Enter}"
+    Sleep 300
+    return true
+}
+
+; Find and click the AI model button by partial name match
+Handy_ClickAiModel(hwnd, modelName) {
+    el := UIA.ElementFromHandle(hwnd)
+    if !el
+        return false
+
+    ; Model buttons have class containing "w-full px-3 py-2 text-left"
+    ; and names starting with the model name (e.g., "Whisper Large Good accuracy...")
+    ; Try to find by partial name match
+    modelBtn := 0
+
+    ; Strategy 1: Find button whose Name starts with modelName
+    try {
+        buttons := el.FindAll({ Type: 50000 })
+        for btn in buttons {
+            btnName := ""
+            try btnName := btn.Name
+            if (btnName != "" && InStr(btnName, modelName) = 1) {
+                ; Verify it's a model button by checking class
+                btnClass := ""
+                try btnClass := btn.ClassName
+                if (InStr(btnClass, "w-full px-3 py-2 text-left")) {
+                    modelBtn := btn
+                    break
+                }
+            }
+        }
+    }
+
+    if (!modelBtn)
+        return false
+
+    ; Click the model button
+    try {
+        modelBtn.Click()
+        return true
+    } catch {
+        return false
+    }
+}
+
+; =============================================================================
+; SelectAiModelInHandy() - Opens the selector GUI (hotkey entry point)
+; =============================================================================
+; Select AI model in Handy via interactive GUI selector.
+; Targets the correct Handy instance by environment: work = Documents\Handy\handy.exe, home = any.
+SelectAiModelInHandy() {
+    ShowAiModelSelector()
 }
 
 ; =============================================================================
