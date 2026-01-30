@@ -7,6 +7,7 @@
 
 ; --- Includes ----------------------------------------------------------------
 #include %A_ScriptDir%\env.ahk
+#include UIA-v2\Lib\UIA.ahk
 
 ; --- Helper Functions --------------------------------------------------------
 ; Unified banner builder for WindowManagement notifications
@@ -722,6 +723,10 @@ global g_CursorWindowMap := Map()  ; Maps character to window HWND
 global g_CursorWindowHotkeyHandlers := []  ; Store hotkey handlers for cleanup
 global g_CursorWindowSelectorGui := false
 
+; Global variable for Selection Mode
+global g_SelectionModeActive := false
+global g_SelectionModeHotkeyHandlers := []  ; Store hotkey handlers for selection mode cleanup
+
 ; Get categorized projects for display
 GetCategorizedProjects() {
     global g_Projects
@@ -745,10 +750,15 @@ GetCategorizedProjects() {
 }
 ; Cleanup project selector: destroy GUI, disable hotkeys, reset state
 CleanupProjectSelector() {
-    global g_ProjectSelectorActive, g_ProjectSelectorGui, g_ProjectHotkeyHandlers
+    global g_ProjectSelectorActive, g_ProjectSelectorGui, g_ProjectHotkeyHandlers, g_SelectionModeActive
 
     ; Disable active flag
     g_ProjectSelectorActive := false
+
+    ; Also cleanup selection mode if active
+    if (g_SelectionModeActive) {
+        CleanupSelectionMode()
+    }
 
     ; Disable all character hotkeys
     for handler in g_ProjectHotkeyHandlers {
@@ -1068,6 +1078,338 @@ HandleProjectEscape(*) {
     if (g_ProjectSelectorActive) {
         CleanupProjectSelector()
     }
+}
+
+; =============================================================================
+; Selection Mode: Focus Cursor AI Text Field using UIA
+; =============================================================================
+
+; Focus the Cursor AI text field by locating the "New Chat" anchor and navigating with Tab
+; Anchor: Button "New Chat (Ctrl+N) [Alt] Replace Chat (Ctrl+N)" via conditional path from UIA inspector:
+; {T:33,CN:"RootView"}, {T:33}, {T:33}, {T:33,CN:"ClientView"}, {T:33}, {T:33}, {T:33}, {T:30}, {T:26}, {T:33}, {T:21,CN:"actions-container", i:3}, {T:0}
+FocusCursorAITextField() {
+    try {
+        ; Get the active Cursor window handle
+        cursorHwnd := WinExist("ahk_exe Cursor.exe")
+        if (!cursorHwnd) {
+            return false
+        }
+
+        ; Wait for window to be active
+        WinWaitActive("ahk_id " . cursorHwnd, , 2)
+        Sleep 200  ; Allow window to fully settle
+
+        ; Initialize UIA from window root
+        root := UIA.ElementFromHandle(cursorHwnd)
+        Sleep 100  ; Allow UIA to initialize
+
+        ; Conditional path from UIA inspector (T:X = Type 50000+X, CN = ClassName, i = index)
+        ; RootView -> Pane -> Pane -> ClientView -> ... -> actions-container (3rd) -> Button
+        pathConditions := [
+            { Type: 50033, ClassName: "RootView" },      ; T:33, CN:"RootView"
+            { Type: 50033 },                             ; T:33
+            { Type: 50033 },                             ; T:33
+            { Type: 50033, ClassName: "ClientView" },    ; T:33, CN:"ClientView"
+            { Type: 50033 },                             ; T:33
+            { Type: 50033 },                             ; T:33
+            { Type: 50033 },                             ; T:33
+            { Type: 50030 },                             ; T:30 Document
+            { Type: 50026 },                             ; T:26 Group
+            { Type: 50033 },                             ; T:33
+            { Type: 50021, ClassName: "actions-container", i: 3 },  ; T:21, CN:"actions-container", i:3
+            { Type: 50000 }                              ; T:0 Button (New Chat)
+        ]
+
+        anchor := ""
+        try {
+            anchor := root.ElementFromPath(pathConditions*)
+        } catch {
+            ; Path failed (e.g. index or structure changed); try Button by Name+ClassName as fallback
+            try {
+                anchor := root.FindFirst({ Type: 50000, ClassName: "action-label codicon codicon-add-two" })
+                if (anchor) {
+                    try {
+                        if (!InStr(anchor.Name, "New Chat")) {
+                            anchor := ""
+                        }
+                    } catch {
+                        anchor := ""
+                    }
+                }
+            } catch {
+            }
+        }
+
+        if (!anchor) {
+            return false
+        }
+
+        ; Focus the anchor (do NOT click)
+        try {
+            anchor.SetFocus()
+            Sleep 100  ; Wait for focus to settle
+        } catch {
+            return false
+        }
+
+        ; Send Tab twice to navigate from anchor to AI text input field
+        Send "{Tab 2}"
+        Sleep 100  ; Wait for navigation to complete
+
+        return true
+    } catch Error as e {
+        return false
+    }
+}
+
+; Handler for project selection in Selection Mode
+HandleSelectionModeProjectSelection(index) {
+    global g_SelectionModeActive, g_Projects, g_ProjectSelectorActive
+
+    ; Only process if selection mode is active
+    if (!g_SelectionModeActive) {
+        return
+    }
+
+    ; Validate index
+    if (index < 1 || index > g_Projects.Length) {
+        return
+    }
+
+    ; Get project
+    project := g_Projects[index]
+
+    ; Skip empty placeholders (no name or path)
+    if (project.name = "" && project.path = "" && project.workPath = "") {
+        return
+    }
+
+    ; Temporarily disable selection mode to allow HandleProjectSelection to work normally
+    g_SelectionModeActive := false
+
+    ; Select path based on environment
+    projectPath := IS_WORK_ENVIRONMENT ? project.workPath : project.path
+
+    ; If work environment but no workPath set, fall back to personal path
+    if (IS_WORK_ENVIRONMENT && projectPath = "") {
+        projectPath := project.path
+    }
+
+    ; Validate project path exists
+    if (projectPath = "" || !DirExist(projectPath)) {
+        ShowNotification_WM("Project folder not found: " . projectPath)
+        CleanupSelectionMode()
+        CleanupProjectSelector()
+        return
+    }
+
+    ; Try to find and activate an existing Cursor window for this project
+    windowFound := false
+    if (FindAndActivateCursorWindow(projectPath)) {
+        windowFound := true
+    } else {
+        ; No existing window found, launch a new Cursor window
+        cursorPath := IS_WORK_ENVIRONMENT ?
+            "C:\Users\fie7ca\AppData\Local\Programs\cursor\Cursor.exe" :
+            "C:\Users\eduev\AppData\Local\Programs\cursor\Cursor.exe"
+
+        try {
+            Run cursorPath . ' "' . projectPath . '"'
+            ; Wait for window to appear
+            WinWait("ahk_exe Cursor.exe", , 5)
+            windowFound := true
+        } catch Error as e {
+            ShowNotification_WM("Failed to launch Cursor: " . e.Message)
+            CleanupSelectionMode()
+            CleanupProjectSelector()
+            return
+        }
+    }
+
+    if (windowFound) {
+        ; Wait for Cursor window to become active
+        WinWaitActive("ahk_exe Cursor.exe", , 3)
+        Sleep 300  ; Allow window to fully initialize
+
+        ; Focus the AI text field using UIA
+        if (FocusCursorAITextField()) {
+            ; Play success sound
+            try {
+                SoundPlay(A_ScriptDir . "\sounds\into-cursor-textfield.wav")
+            } catch {
+                ; Silently ignore if sound file is missing
+            }
+        } else {
+            ; Show notification if focus failed
+            ShowNotification_WM("Could not focus AI text field")
+        }
+    }
+
+    ; Cleanup selection mode and project selector
+    CleanupSelectionMode()
+    CleanupProjectSelector()
+}
+
+; Factory function to create a handler for selection mode project selection
+CreateSelectionModeProjectHandler(index) {
+    return (*) => HandleSelectionModeProjectSelection(index)
+}
+
+; Handler for Selection Mode trigger (L key in project selector)
+HandleSelectionModeTrigger(*) {
+    global g_ProjectSelectorActive, g_SelectionModeActive, g_Projects, g_ProjectCharSequence
+    global g_ProjectCategories, g_SelectionModeHotkeyHandlers, g_ProjectHotkeyHandlers
+
+    ; Only process if project selector is active
+    if (!g_ProjectSelectorActive) {
+        return
+    }
+
+    ; Show banner
+    ShowNotification_WM("Entering Selection Mode - Select Project")
+
+    ; Set selection mode active flag
+    g_SelectionModeActive := true
+
+    ; Disable existing project hotkeys temporarily (but keep special keys like 'c', '3', 'l', Escape)
+    for handler in g_ProjectHotkeyHandlers {
+        try {
+            char := handler.char
+            ; Skip special keys: 'L' (selection mode), 'c' (cursor window), '3' (preview), Escape
+            if (char = "l" || char = "L" || char = "c" || char = "C" || char = "3") {
+                continue
+            }
+            ; Handle special VK codes for comma and period
+            if (char = ",") {
+                Hotkey("vkBC", "Off")
+            } else if (char = ".") {
+                Hotkey("vkBE", "Off")
+            } else {
+                Hotkey(char, "Off")
+                ; Also disable uppercase for lowercase letters
+                if (RegExMatch(char, "^[a-z]$")) {
+                    Hotkey(StrUpper(char), "Off")
+                }
+            }
+        } catch {
+            ; Silently ignore errors
+        }
+    }
+
+    ; Build project index to character mapping (same logic as ShowProjectSelector)
+    projectIndexToChar := Map()
+    projectIndexToCategory := Map()
+
+    ; Build map of project index to category
+    loop g_Projects.Length {
+        projectIndex := A_Index
+        project := g_Projects[projectIndex]
+        category := project.HasProp("category") ? project.category : "Personal"
+        projectIndexToCategory[projectIndex] := category
+    }
+
+    charIndex := 1
+
+    ; Assign characters sequentially within each category
+    for category in g_ProjectCategories {
+        ; Find all project indices in this category
+        categoryProjectIndices := []
+        for projectIndex, cat in projectIndexToCategory {
+            if (cat = category) {
+                categoryProjectIndices.Push(projectIndex)
+            }
+        }
+
+        ; Assign characters to projects in this category
+        for projectIndex in categoryProjectIndices {
+            project := g_Projects[projectIndex]
+
+            ; Skip empty placeholders
+            if (project.name = "" && project.path = "" && project.workPath = "") {
+                charIndex++
+                continue
+            }
+
+            ; Check if we have a character available
+            if (charIndex > g_ProjectCharSequence.Length) {
+                break
+            }
+
+            char := g_ProjectCharSequence[charIndex]
+
+            ; Skip character "3" - it's reserved for preview window activation
+            if (char = "3") {
+                charIndex++
+                if (charIndex > g_ProjectCharSequence.Length) {
+                    break
+                }
+                char := g_ProjectCharSequence[charIndex]
+            }
+
+            projectIndexToChar[projectIndex] := char
+            charIndex++
+        }
+    }
+
+    ; Clear selection mode handlers array
+    g_SelectionModeHotkeyHandlers := []
+
+    ; Enable hotkeys for selection mode using the same character mapping
+    for projectIndex, char in projectIndexToChar {
+        handler := CreateSelectionModeProjectHandler(projectIndex)
+
+        ; Store handler for cleanup
+        g_SelectionModeHotkeyHandlers.Push({ char: char, handler: handler })
+
+        ; Enable hotkey (handle special VK codes for comma and period)
+        try {
+            if (char = ",") {
+                Hotkey("vkBC", handler, "On")  ; VK code for comma
+            } else if (char = ".") {
+                Hotkey("vkBE", handler, "On")  ; VK code for period
+            } else {
+                Hotkey(char, handler, "On")
+                ; Also enable uppercase for lowercase letters
+                if (RegExMatch(char, "^[a-z]$")) {
+                    Hotkey(StrUpper(char), handler, "On")
+                }
+            }
+        } catch {
+            ; Silently ignore if we can't create hotkey
+        }
+    }
+}
+
+; Cleanup selection mode: disable hotkeys and reset state
+CleanupSelectionMode() {
+    global g_SelectionModeActive, g_SelectionModeHotkeyHandlers
+
+    ; Disable active flag
+    g_SelectionModeActive := false
+
+    ; Disable all selection mode character hotkeys
+    for handler in g_SelectionModeHotkeyHandlers {
+        try {
+            char := handler.char
+            ; Handle special VK codes for comma and period
+            if (char = ",") {
+                Hotkey("vkBC", "Off")
+            } else if (char = ".") {
+                Hotkey("vkBE", "Off")
+            } else {
+                Hotkey(char, "Off")
+                ; Also disable uppercase for lowercase letters
+                if (RegExMatch(char, "^[a-z]$")) {
+                    Hotkey(StrUpper(char), "Off")
+                }
+            }
+        } catch {
+            ; Silently ignore errors
+        }
+    }
+
+    ; Clear handlers array
+    g_SelectionModeHotkeyHandlers := []
 }
 
 ; Handler for preview window activation (character "3")
@@ -1937,6 +2279,7 @@ ShowProjectSelector() {
 
     displayText .= "`n[c] Focus Cursor Window`n"
     displayText .= "[3] Activate Preview Windows`n"
+    displayText .= "[L] Selection Mode`n"
     displayText .= "[ESC] Cancel"
 
     ; Calculate text dimensions
@@ -2020,6 +2363,16 @@ ShowProjectSelector() {
         previewHandler := HandlePreviewWindowSelection
         g_ProjectHotkeyHandlers.Push({ char: "3", handler: previewHandler })
         Hotkey("3", previewHandler, "On")
+    } catch {
+        ; Silently ignore if we can't create hotkey
+    }
+
+    ; Enable hotkey for Selection Mode (character "L")
+    try {
+        selectionModeHandler := HandleSelectionModeTrigger
+        g_ProjectHotkeyHandlers.Push({ char: "l", handler: selectionModeHandler })
+        Hotkey("l", selectionModeHandler, "On")
+        Hotkey("L", selectionModeHandler, "On")  ; Also enable uppercase
     } catch {
         ; Silently ignore if we can't create hotkey
     }
