@@ -5033,7 +5033,7 @@ HandleHotstringChar(char) {
         return
     }
 
-    ; L key: first press = arm Gemini mode; second press (double-tap) = navigate to Gemini, focus field, paste first snippet.
+    ; L key: first press = arm Gemini mode (show banner); second press (double-tap) = navigate to Gemini, focus field, paste first snippet.
     if (char = "l" || char = "L") {
         if (g_HotstringGeminiArmed) {
             ; Double-tap L: navigate to Gemini, focus prompt field, execute Win+Alt+Shift+1 (first snippet).
@@ -5043,6 +5043,9 @@ HandleHotstringChar(char) {
             return
         }
         g_HotstringGeminiArmed := true
+        ; Show banner when entering Gemini mode (same pattern as Project Selector "Entering Selection Mode").
+        HotstringGeminiBanner_Show("Entering Gemini Mode - Select prompt")
+        SetTimer(HotstringGeminiBanner_Hide, -1500)  ; Hide banner after 1.5 s
         SetTimer(DisarmHotstringGeminiMode, -4000)
         return
     }
