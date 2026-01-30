@@ -1856,8 +1856,6 @@ InitMacros() {
     RegisterMacro(QuickUpdateScripts, "⚡ Quick Update to Your Scripts")
     ; Add specific word to Handy macro
     RegisterMacro(AddWordToHandy, "➕ Add specific word to Handy")
-    ; Select AI model in Handy (anchor: Check for updates)
-    RegisterMacro(SelectAiModelInHandy, "🤖 Handy: Select AI model", "u")
     ; Toggle Outlook and Teams macro
     RegisterMacro(ToggleOutlookAndTeams, "🔄 Toggle Outlook & Teams")
     ; Clean the Clipboard macro (assigned to "P")
@@ -1912,120 +1910,12 @@ InitDpiAwareness()
 }
 
 ; =============================================================================
-; Activate Cursor and Send Key Sequence with Options
+; Select AI Model in Handy
 ; Hotkey: Win+Alt+Shift+C
 ; =============================================================================
-
-; Global variable to remember target window for Cursor action
-global gCursorActionTargetWin := 0
-
-; Auto-submit handler for Cursor action modal
-AutoSubmitCursorAction(ctrl, *) {
-    currentValue := ctrl.Text
-    if (currentValue != "" && IsInteger(currentValue)) {
-        choice := Integer(currentValue)
-        if (choice >= 1 && choice <= 3) {
-            ctrl.Gui.Destroy()
-            ExecuteCursorAction(choice)
-        }
-    }
-}
-
-; Manual submit handler (OK button)
-SubmitCursorAction(ctrl, *) {
-    currentValue := ctrl.Gui["CursorActionInput"].Text
-    if (currentValue != "" && IsInteger(currentValue)) {
-        choice := Integer(currentValue)
-        if (choice >= 1 && choice <= 3) {
-            ctrl.Gui.Destroy()
-            ExecuteCursorAction(choice)
-        } else {
-            MsgBox "Invalid selection. Please choose 1-3.", "Cursor Action Selection", "IconX"
-        }
-    }
-}
-
-; Cancel handler
-CancelCursorAction(ctrl, *) {
-    ctrl.Gui.Destroy()
-}
-
-; Execute the Cursor key sequence based on numeric choice
-ExecuteCursorAction(choice) {
-    try {
-        ; First activate Cursor
-        SetTitleMatchMode 2
-        if WinExist("ahk_exe Cursor.exe") {
-            WinActivate
-            WinWaitActive("ahk_exe Cursor.exe", "", 2)
-        } else {
-            target := IS_WORK_ENVIRONMENT ?
-                "C:\\Users\\fie7ca\\AppData\\Local\\Programs\\cursor\\Cursor.exe" :
-                    "C:\\Users\\eduev\\AppData\\Local\\Programs\\cursor\\Cursor.exe"
-            Run target
-            WinWaitActive("ahk_exe Cursor.exe", "", 10)
-        }
-
-        Sleep 200
-
-        switch choice {
-            case 1:
-            {
-                Send "^+e"
-                Sleep 100
-                Send "^i"
-                Sleep 100
-                Send "+{Backspace}"
-            }
-            case 2:
-            {
-                Send "^+e"
-                Sleep 100
-                Send "^i"
-                Sleep 100
-                Send "{Enter}"
-            }
-            case 3:
-            {
-                Send "^+e"
-                Sleep 100
-                Send "^i"
-                Sleep 100
-                Send "{Up}"
-                Sleep 100
-                Send "{Enter}"
-            }
-        }
-    } catch Error as e {
-        MsgBox "Error executing Cursor action: " e.Message, "Cursor Action Error", "IconX"
-    }
-}
-
-; Function to show auto-submit modal and then run Cursor action
-CursorKeySequence() {
-    try {
-        gCursorActionTargetWin := WinExist("A")
-
-        cursorGui := Gui("+AlwaysOnTop +ToolWindow", "Cursor Action Selection")
-        cursorGui.SetFont("s10", "Segoe UI")
-
-        cursorGui.AddText("w360 Center",
-            "Choose Action:`n`n1. Shift backspace`n2. Enter`n3. Allow`n`nType a number (1-3):")
-        cursorGui.AddEdit("w50 Center vCursorActionInput Limit1 Number")
-        cursorGui.AddButton("w80 xp-40 y+10", "OK").OnEvent("Click", SubmitCursorAction)
-        cursorGui.AddButton("w80 xp+90", "Cancel").OnEvent("Click", CancelCursorAction)
-        cursorGui["CursorActionInput"].OnEvent("Change", AutoSubmitCursorAction)
-
-        cursorGui.Show("w360 h200")
-        cursorGui["CursorActionInput"].Focus()
-    } catch Error as e {
-        MsgBox "Error opening Cursor action selector: " e.Message, "Cursor Action Error", "IconX"
-    }
-}
-
 #!+C::
 {
-    CursorKeySequence()
+    SelectAiModelInHandy()
 }
 
 ; =============================================================================

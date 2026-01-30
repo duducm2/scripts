@@ -1329,7 +1329,7 @@ r=== CLIP ANGEL ===
 
 === CURSOR ===
 [Win+Alt+Shift+,] > Opens or activates Cursor
-[Win+Alt+Shift+C] > Activates Cursor with action options: 1) Proceed with terminal 2) Hit Enter 3) Allow
+[Win+Alt+Shift+C] > Select AI model (Handy)
 
 === OUTLOOK ===
 [Win+Alt+Shift+B] > Open mail
