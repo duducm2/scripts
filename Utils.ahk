@@ -883,12 +883,17 @@ Handy_ClickAiModel(hwnd, modelName) {
 }
 
 ; =============================================================================
-; SelectAiModelInHandy() - Opens the selector GUI (hotkey entry point)
+; SelectAiModelInHandy() - Opens or closes the selector GUI (hotkey entry point)
 ; =============================================================================
 ; Select AI model in Handy via interactive GUI selector.
+; Win+Alt+Shift+C toggles: open when closed, close when open.
 ; Targets the correct Handy instance by environment: work = Documents\Handy\handy.exe, home = any.
 SelectAiModelInHandy() {
-    ShowAiModelSelector()
+    global g_AiModelSelectorActive
+    if (g_AiModelSelectorActive)
+        AiModelSelector_Close()
+    else
+        ShowAiModelSelector()
 }
 
 ; =============================================================================
