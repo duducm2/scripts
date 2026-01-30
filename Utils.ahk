@@ -3620,6 +3620,9 @@ global g_HotstringCharSequence := ["1", "2", "3", "4", "5", "q", "w", "e", "r", 
 ; Order: Prompts → General → Projects → Files & Links → Macros
 global g_HotstringCategories := ["Prompts", "General", "Projects", "Files & Links", "Macros"]
 
+; Reserved empty character: never assigned to any action; always shows [U] > (empty) in selector
+global g_ReservedEmptyChar := "u"
+
 ; =============================================================================
 ; BuildHotstringCharMap()
 ; =============================================================================
@@ -3665,6 +3668,8 @@ BuildHotstringCharMap() {
             ; Handle quick open files
             if (IsSet(g_QuickOpenFiles) && g_QuickOpenFiles.Length > 0) {
                 for fileEntry in g_QuickOpenFiles {
+                    while (charIndex <= g_HotstringCharSequence.Length && g_HotstringCharSequence[charIndex] = g_ReservedEmptyChar)
+                        charIndex++
                     if (charIndex <= g_HotstringCharSequence.Length) {
                         char := g_HotstringCharSequence[charIndex]
                         g_QuickOpenFileCharMap[char] := fileEntry.filePath
@@ -3677,7 +3682,7 @@ BuildHotstringCharMap() {
             if (IsSet(g_Macros) && g_Macros.Length > 0) {
                 ; First pass: assign macros with explicit character assignments
                 for macroEntry in g_Macros {
-                    if (macroEntry.HasProp("char") && macroEntry.char != "") {
+                    if (macroEntry.HasProp("char") && macroEntry.char != "" && macroEntry.char != g_ReservedEmptyChar) {
                         ; Check if character is in the sequence and not already assigned
                         charIndexInSequence := 0
                         for idx, seqChar in g_HotstringCharSequence {
@@ -3708,9 +3713,13 @@ BuildHotstringCharMap() {
                         continue
                     }
 
-                    ; Find next available character
+                    ; Find next available character (skip reserved empty "u")
                     while (charIndex <= g_HotstringCharSequence.Length) {
                         char := g_HotstringCharSequence[charIndex]
+                        if (char = g_ReservedEmptyChar) {
+                            charIndex++
+                            continue
+                        }
                         ; Check if this character is already assigned to a macro
                         if (!g_MacroCharMap.Has(char)) {
                             g_MacroCharMap[char] := macroEntry.func
@@ -3726,7 +3735,7 @@ BuildHotstringCharMap() {
             if (categorized.Has(category)) {
                 ; First pass: assign hotstrings with explicit character assignments
                 for hs in categorized[category] {
-                    if (hs.HasProp("char") && hs.char != "") {
+                    if (hs.HasProp("char") && hs.char != "" && hs.char != g_ReservedEmptyChar) {
                         ; Check if character is in the sequence and not already assigned
                         charIndexInSequence := 0
                         for idx, seqChar in g_HotstringCharSequence {
@@ -3757,9 +3766,13 @@ BuildHotstringCharMap() {
                         continue
                     }
 
-                    ; Find next available character
+                    ; Find next available character (skip reserved empty "u")
                     while (charIndex <= g_HotstringCharSequence.Length) {
                         char := g_HotstringCharSequence[charIndex]
+                        if (char = g_ReservedEmptyChar) {
+                            charIndex++
+                            continue
+                        }
                         ; Check if this character is already assigned
                         if (!charMap.Has(char)) {
                             ; Only assign characters to hotstrings that have an expansion (skip empty placeholders)
@@ -4585,6 +4598,11 @@ ShowHotstringSelector() {
             ; Collect all character slots for this category (including empty ones)
             loop categorySlotCount {
                 if (currentCharIndex <= g_HotstringCharSequence.Length) {
+                    ; Skip reserved empty "u" so it always shows as (empty)
+                    while (currentCharIndex <= g_HotstringCharSequence.Length && g_HotstringCharSequence[currentCharIndex] = g_ReservedEmptyChar)
+                        currentCharIndex++
+                    if (currentCharIndex > g_HotstringCharSequence.Length)
+                        break
                     char := g_HotstringCharSequence[currentCharIndex]
 
                     ; Skip if this character is already explicitly assigned to a macro
@@ -4675,6 +4693,17 @@ ShowHotstringSelector() {
 
     allItems := sortedItems
 
+    ; Ensure reserved empty "u" always appears as [U] > (empty)
+    hasReservedEmpty := false
+    for item in allItems {
+        if (item.char = g_ReservedEmptyChar) {
+            hasReservedEmpty := true
+            break
+        }
+    }
+    if (!hasReservedEmpty)
+        allItems.Push({ category: "Unassigned", char: g_ReservedEmptyChar, text: "[" . g_ReservedEmptyChar . "] > (empty)", isEmpty: true })
+
     ; Show any remaining unassigned character slots
     if (currentCharIndex <= g_HotstringCharSequence.Length) {
         while (currentCharIndex <= g_HotstringCharSequence.Length) {
@@ -4682,12 +4711,45 @@ ShowHotstringSelector() {
             if (char = "l") {
                 allItems.Push({ category: "Unassigned", char: char, text: "[L] > Gemini modifier (press L, then a prompt key)",
                     isEmpty: false })
+            } else if (char = g_ReservedEmptyChar) {
+                ; Already added above; skip to avoid duplicate
             } else {
                 allItems.Push({ category: "Unassigned", char: char, text: "[" . char . "] > (empty)", isEmpty: true })
             }
             currentCharIndex++
         }
     }
+
+    ; Re-sort so explicit "u" (empty) is in sequence order
+    sortedItems := []
+    for idx, seqChar in g_HotstringCharSequence {
+        found := false
+        for item in allItems {
+            if (item.HasProp("explicitIndex") && item.explicitIndex = idx) {
+                sortedItems.Push(item)
+                found := true
+                break
+            }
+        }
+        if (!found) {
+            for item in allItems {
+                if (!item.HasProp("explicitIndex") && item.char = seqChar) {
+                    alreadyAdded := false
+                    for added in sortedItems {
+                        if (added.char = item.char && added.text = item.text) {
+                            alreadyAdded := true
+                            break
+                        }
+                    }
+                    if (!alreadyAdded) {
+                        sortedItems.Push(item)
+                        break
+                    }
+                }
+            }
+        }
+    }
+    allItems := sortedItems
 
     ; Helper function to pad string to specified width
     PadString(str, width) {
