@@ -599,8 +599,16 @@ MergeNonFavoriteClips() {
                         Sleep 150
                         ; Merge the selected clips
                         Send "^!j"
+                        Sleep 300  ; Wait for merge to complete
                         
-                        ShowCenteredOverlay_Utils("Merged non-favorite clips", 2000)
+                        ; Step 15: Copy merged clip to clipboard
+                        Send "{Tab}"   ; Focus merged content area
+                        Sleep 150
+                        Send "^a"     ; Select all
+                        Sleep 100
+                        Send "^c"     ; Copy
+                        
+                        ShowCenteredOverlay_Utils("Merged non-favorite clips (copied)", 2000)
                         break
                     }
                 }
