@@ -662,6 +662,23 @@ ParseRTFToPlainText(rtf) {
 }
 
 ; =============================================================================
+; Clip Angel: Mark Last Clip as Favorite
+; =============================================================================
+; Open Clip Angel, mark current (last) clip as favorite, then close.
+MarkLastClipAsFavorite() {
+    ; Step 1: Open Clip Angel
+    Send "!v"
+    Sleep 400
+    
+    ; Step 2: Mark current clip as favorite
+    Send "!q"
+    Sleep 400
+    
+    ; Step 3: Close Clip Angel
+    Send "!v"
+}
+
+; =============================================================================
 ; AI Model Selection System for Handy
 ; =============================================================================
 ; Configuration: Maps selection numbers (1, 2, 3) to AI model names.
@@ -2391,6 +2408,8 @@ InitMacros() {
     RegisterMacro(ToggleSoundState, "🔊 Toggle Sound (Mute/Unmute)")
     ; Merge Non-Favorite Clips macro (assigned to "U")
     RegisterMacro(MergeNonFavoriteClips, "📋 Merge Non-Favorite Clips", "u")
+    ; Mark Last Clip as Favorite macro (assigned to "J")
+    RegisterMacro(MarkLastClipAsFavorite, "⭐ Mark Last Clip as Favorite", "j")
 }
 InitMacros()
 
