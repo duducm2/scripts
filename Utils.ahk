@@ -515,15 +515,55 @@ ShowAiModelSelector() {
     g_AiModelSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
     g_AiModelSelectorGui.Add("Text", "w280 Center", "Press 1, 2, or 3 | Esc to cancel")
 
-    ; Position GUI at screen center
+    ; Get active window to determine which monitor to center on
+    activeWin := 0
+    try {
+        activeWin := WinGetID("A")
+    } catch {
+        activeWin := 0
+    }
+
+    ; Default to primary monitor work area
+    MonitorGetWorkArea(1, &monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
+    monitorWidth := monitorRight - monitorLeft
+    monitorHeight := monitorBottom - monitorTop
+
+    ; If we have an active window, find which monitor contains its center
+    if (activeWin && activeWin != 0) {
+        rect := Buffer(16, 0)
+        if (DllCall("GetWindowRect", "ptr", activeWin, "ptr", rect)) {
+            ; Calculate window center
+            winLeft := NumGet(rect, 0, "int")
+            winTop := NumGet(rect, 4, "int")
+            winRight := NumGet(rect, 8, "int")
+            winBottom := NumGet(rect, 12, "int")
+
+            centerX := winLeft + (winRight - winLeft) // 2
+            centerY := winTop + (winBottom - winTop) // 2
+
+            ; Find which monitor contains the window center
+            monitorCount := MonitorGetCount()
+            loop monitorCount {
+                idx := A_Index
+                MonitorGetWorkArea(idx, &l, &t, &r, &b)
+                if (centerX >= l && centerX <= r && centerY >= t && centerY <= b) {
+                    monitorLeft := l
+                    monitorTop := t
+                    monitorRight := r
+                    monitorBottom := b
+                    monitorWidth := r - l
+                    monitorHeight := b - t
+                    break
+                }
+            }
+        }
+    }
+
+    ; Measure GUI size and center on the active monitor
     g_AiModelSelectorGui.Show("AutoSize Hide")
     g_AiModelSelectorGui.GetPos(&gx, &gy, &gw, &gh)
-    vx := SysGet(76)
-    vy := SysGet(77)
-    vw := SysGet(78)
-    vh := SysGet(79)
-    cx := vx + (vw - gw) // 2
-    cy := vy + (vh - gh) // 2
+    cx := monitorLeft + (monitorWidth - gw) // 2
+    cy := monitorTop + (monitorHeight - gh) // 2
     g_AiModelSelectorGui.Show("x" . cx . " y" . cy . " NA")
 
     g_AiModelSelectorActive := true
@@ -550,7 +590,7 @@ AiModelSelector_HandleKey(key) {
 
     ; Execute the selection
     if (g_HandyAiModels.Has(selection)) {
-        ExecuteAiModelSelection(selection)
+        ExecuteHandyAiModelSelection(selection)
     }
 }
 
@@ -595,13 +635,50 @@ AiModelBanner_Show(text, bgColor := "3772FF") {
     g_AiModelBannerGui.SetFont("s18 cFFFFFF Bold", "Segoe UI")
     g_AiModelBannerGui.Add("Text", "w450 Center", text)
 
-    ; Position at top-center of screen
+    ; Get active window to determine which monitor to show banner on
+    activeWin := 0
+    try {
+        activeWin := WinGetID("A")
+    } catch {
+        activeWin := 0
+    }
+
+    ; Default to primary monitor work area
+    MonitorGetWorkArea(1, &monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
+    monitorWidth := monitorRight - monitorLeft
+
+    ; If we have an active window, find which monitor contains its center
+    if (activeWin && activeWin != 0) {
+        rect := Buffer(16, 0)
+        if (DllCall("GetWindowRect", "ptr", activeWin, "ptr", rect)) {
+            winLeft := NumGet(rect, 0, "int")
+            winTop := NumGet(rect, 4, "int")
+            winRight := NumGet(rect, 8, "int")
+            winBottom := NumGet(rect, 12, "int")
+
+            centerX := winLeft + (winRight - winLeft) // 2
+            centerY := winTop + (winBottom - winTop) // 2
+
+            monitorCount := MonitorGetCount()
+            loop monitorCount {
+                idx := A_Index
+                MonitorGetWorkArea(idx, &l, &t, &r, &b)
+                if (centerX >= l && centerX <= r && centerY >= t && centerY <= b) {
+                    monitorLeft := l
+                    monitorTop := t
+                    monitorWidth := r - l
+                    break
+                }
+            }
+        }
+    }
+
+    ; Position at top-center of the active monitor
     g_AiModelBannerGui.Show("AutoSize Hide")
     g_AiModelBannerGui.GetPos(&gx, &gy, &gw, &gh)
-    vx := SysGet(76)
-    vw := SysGet(78)
-    cx := vx + (vw - gw) // 2
-    g_AiModelBannerGui.Show("x" . cx . " y50 NA")
+    cx := monitorLeft + (monitorWidth - gw) // 2
+    cy := monitorTop + 50  ; 50px from top of the active monitor
+    g_AiModelBannerGui.Show("x" . cx . " y" . cy . " NA")
     WinSetTransparent(200, g_AiModelBannerGui)
 }
 
@@ -614,9 +691,9 @@ AiModelBanner_Hide() {
 }
 
 ; =============================================================================
-; ExecuteAiModelSelection() - Main automation logic
+; ExecuteHandyAiModelSelection() - Main automation logic for Handy
 ; =============================================================================
-ExecuteAiModelSelection(selection) {
+ExecuteHandyAiModelSelection(selection) {
     global g_HandyAiModels
 
     modelInfo := g_HandyAiModels[selection]
