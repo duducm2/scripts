@@ -522,14 +522,86 @@ MergeNonFavoriteClips() {
             return
         }
         
-        ; Step 8: Parse RTF to extract plain text
-        plainText := ParseRTFToPlainText(rtfValue)
+        ; Step 8: Parse RTF to extract plain text (this is our target favorite clip title)
+        favoriteClipTitle := ParseRTFToPlainText(rtfValue)
         
-        ; Step 9: Copy to clipboard
-        A_Clipboard := plainText
+        ; Step 9: Switch to "All Clips" view to search for this favorite clip
+        Send "!b"  ; Close current view
+        Sleep 300
+        Send "!v"  ; Open "All Clips" view (non-favorites first, favorites second)
+        Sleep 500  ; Wait for view to update
         
-        ; Step 10: Show success banner
-        ShowCenteredOverlay_Utils("Copied: " . plainText, 2000)
+        ; Step 10: Re-initialize UIA for the updated view
+        hwnd := WinExist("A")
+        el := UIA.ElementFromHandle(hwnd)
+        if !el {
+            MsgBox "Failed to re-initialize UIA after switching views.", "Merge Clips", "IconX"
+            return
+        }
+        
+        ; Step 11: Find DataGridView again
+        dataGrid := 0
+        try dataGrid := el.FindFirst({Type: 50036, AutomationId: "dataGridView"})
+        if !dataGrid {
+            MsgBox "Could not find DataGridView in All Clips view.", "Merge Clips", "IconX"
+            return
+        }
+        
+        ; Step 12: Focus on Row 0 to start the search
+        try {
+            row0 := dataGrid.FindFirst({Type: 50025, Name: "Row 0"})
+            if row0 {
+                row0.SetFocus()
+                Sleep 100
+            }
+        }
+        
+        ; Step 13: Iterative search through rows (max 40 iterations)
+        maxIterations := 40
+        foundMatch := false
+        currentRow := 0
+        
+        loop maxIterations {
+            currentRow := A_Index - 1  ; 0-based row index
+            
+            ; Find current row
+            currentRowElement := 0
+            try currentRowElement := dataGrid.FindFirst({Type: 50025, Name: "Row " . currentRow})
+            
+            if !currentRowElement {
+                ; No more rows, stop searching
+                break
+            }
+            
+            ; Find title element in current row
+            currentTitleElement := 0
+            try currentTitleElement := currentRowElement.FindFirst({Type: 50006, Name: "Title Row " . currentRow})
+            
+            if currentTitleElement {
+                ; Extract and parse the title
+                currentRtfValue := ""
+                try currentRtfValue := currentTitleElement.Value
+                
+                if (currentRtfValue != "" && currentRtfValue != "System.Drawing.Bitmap") {
+                    currentTitle := ParseRTFToPlainText(currentRtfValue)
+                    
+                    ; Compare with the favorite clip title
+                    if (currentTitle = favoriteClipTitle) {
+                        foundMatch := true
+                        ShowCenteredOverlay_Utils("Found favorite clip at Row " . currentRow . ": " . currentTitle, 2000)
+                        break
+                    }
+                }
+            }
+            
+            ; Move to next row
+            Send "{Down}"
+            Sleep 100  ; Small delay between iterations
+        }
+        
+        if !foundMatch {
+            ShowCenteredOverlay_Utils("Favorite clip not found in first " . maxIterations . " rows", 2000)
+        }
         
     } catch Error as e {
         MsgBox "Error in MergeNonFavoriteClips: " . e.Message, "Merge Clips", "IconX"
