@@ -1580,7 +1580,8 @@ ToggleDictationLoop() {
         SetTimer(DictationLoopStart, 0)
         ; Send Win+Alt+Shift+0 to finish dictation
         SendInput "#!+0"
-        ShowCenteredOverlay_Utils("Dictation Loop Stopped", 1500)
+        ; Merge non-favorite clips: 3s countdown when user finishes the entire loop (N or End to cancel)
+        DictationMerge_StartCountdown(3)
     } else {
         ; Start the loop
         ; Clear any existing timers first to prevent old timers from firing
@@ -1611,7 +1612,7 @@ DictationLoopStart() {
     if (WinExist("Recording ahk_exe handy.exe")) {
         ; Already recording, just ensure timer is running
         SetTimer(DictationLoopStop, 0)
-        SetTimer(DictationLoopStop, -15000)  ; 15s for testing (was 60s)
+        SetTimer(DictationLoopStop, -60000)
         return
     }
 
@@ -1629,9 +1630,9 @@ DictationLoopStart() {
     SetTimer(DictationLoopStop, 0)
 
 
-    ; Schedule stop after 15 seconds (testing) - negative period = one-shot timer
+    ; Schedule stop after 60 seconds - negative period = one-shot timer
     ; Only schedules if loop is still active (checked above)
-    SetTimer(DictationLoopStop, -15000)
+    SetTimer(DictationLoopStop, -60000)
 
     ; Verification: Check if window appeared after a delay
     SetTimer(VerifyDictationStart, -1500)
@@ -1652,7 +1653,7 @@ VerifyDictationStart() {
             SendEvent "#!+0"
             ; Reschedule stop timer just in case
             SetTimer(DictationLoopStop, 0)
-            SetTimer(DictationLoopStop, -15000)  ; 15s for testing (was 60s)
+            SetTimer(DictationLoopStop, -60000)
             SetTimer(VerifyDictationStart, -1500)
         } else {
             ShowCenteredOverlay_Utils("Failed to start dictation", 2000)
@@ -1886,6 +1887,144 @@ DictationCleanup_Tick() {
     DictationCleanup_UpdateBannerText()
 }
 
+; =============================================================================
+; Dictation: Merge non-favorite clips countdown (at end of loop)
+; Same UI pattern as clipboard cleanup: 3s banner, N or End to cancel.
+; =============================================================================
+global g_DictationMergeGui := 0
+global g_DictationMergeTextCtrl := 0
+global g_DictationMergeRemaining := 0
+global g_DictationMergeCanceled := false
+
+DictationMerge_SetCancelHotkeys(enable := true) {
+    if (enable) {
+        Hotkey("~*n", DictationMerge_Cancel, "On")
+        Hotkey("~*End", DictationMerge_Cancel, "On")
+    } else {
+        try Hotkey("~*n", "Off")
+        catch {
+        }
+        try Hotkey("~*End", "Off")
+        catch {
+        }
+    }
+}
+
+DictationMerge_ShowBanner() {
+    global g_DictationMergeGui, g_DictationMergeTextCtrl, g_DictationMergeRemaining
+
+    try {
+        if IsObject(g_DictationMergeGui)
+            g_DictationMergeGui.Destroy()
+    } catch {
+    }
+    g_DictationMergeGui := 0
+    g_DictationMergeTextCtrl := 0
+
+    target := WinGetID("A")
+    hasWindow := false
+    if target && WinExist("ahk_id " target) {
+        try {
+            WinGetPos(&wx, &wy, &ww, &wh, target)
+            hasWindow := (ww > 0 && wh > 0)
+        } catch {
+            hasWindow := false
+        }
+    }
+
+    ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
+    ov.BackColor := "3772FF"
+    ov.SetFont("s24 cFFFFFF Bold", "Segoe UI")
+    g_DictationMergeTextCtrl := ov.Add("Text", "w650 Center", "Merging non-favorite clips in " g_DictationMergeRemaining "… (press N or End to cancel)")
+    ov.Show("AutoSize Hide")
+    try {
+        if (hasWindow)
+            ov.Show("AutoSize x" (wx + (ww - 650) // 2) " y" (wy + (wh - 80) // 2))
+        else
+            ov.Show("AutoSize")
+    } catch {
+        ov.Show("AutoSize")
+    }
+    g_DictationMergeGui := ov
+}
+
+DictationMerge_HideBanner() {
+    global g_DictationMergeGui, g_DictationMergeTextCtrl
+    try {
+        if IsObject(g_DictationMergeGui)
+            g_DictationMergeGui.Destroy()
+    } catch {
+    }
+    g_DictationMergeGui := 0
+    g_DictationMergeTextCtrl := 0
+}
+
+DictationMerge_UpdateBannerText() {
+    global g_DictationMergeTextCtrl, g_DictationMergeRemaining
+    try {
+        if IsObject(g_DictationMergeTextCtrl) {
+            g_DictationMergeTextCtrl.Text := "Merging non-favorite clips in " g_DictationMergeRemaining "… (press N or End to cancel)"
+        }
+    } catch {
+    }
+}
+
+DictationMerge_StartCountdown(seconds := 3) {
+    global g_DictationMergeRemaining, g_DictationMergeCanceled
+
+    g_DictationMergeCanceled := false
+    g_DictationMergeRemaining := seconds
+
+    DictationMerge_ShowBanner()
+    DictationMerge_SetCancelHotkeys(true)
+
+    SetTimer(DictationMerge_Tick, 0)
+    SetTimer(DictationMerge_Tick, 1000)
+}
+
+DictationMerge_StopCountdown(showCancelledBanner := false) {
+    SetTimer(DictationMerge_Tick, 0)
+    DictationMerge_SetCancelHotkeys(false)
+
+    if (showCancelledBanner) {
+        global g_DictationMergeTextCtrl
+        try {
+            if IsObject(g_DictationMergeTextCtrl) {
+                g_DictationMergeTextCtrl.Text := "Merge cancelled"
+            }
+        } catch {
+        }
+        SetTimer(DictationMerge_HideBanner, -900)
+    } else {
+        DictationMerge_HideBanner()
+    }
+}
+
+DictationMerge_Cancel(*) {
+    global g_DictationMergeCanceled
+    g_DictationMergeCanceled := true
+    DictationMerge_StopCountdown(true)
+}
+
+DictationMerge_Tick() {
+    global g_DictationMergeRemaining, g_DictationMergeCanceled
+
+    if (g_DictationMergeCanceled) {
+        DictationMerge_StopCountdown(true)
+        return
+    }
+
+    g_DictationMergeRemaining -= 1
+
+    if (g_DictationMergeRemaining <= 0) {
+        DictationMerge_StopCountdown(false)
+        MergeNonFavoriteClips()
+        return
+    }
+
+    DictationMerge_UpdateBannerText()
+}
+
 ; Clean the Clipboard macro function
 ; Shows a confirmation prompt before executing cleanup
 CleanClipboard() {
@@ -1909,14 +2048,15 @@ DictationStartWithClipboardOption() {
     global g_DictationLoopActive
 
     if (g_DictationLoopActive) {
-        ; Stop the loop - NO clipboard cleanup prompt when stopping
+        ; Stop the loop - show merge countdown when user finishes the entire loop
         g_DictationLoopActive := false
         ; Turn off timers
         SetTimer(DictationLoopStop, 0)
         SetTimer(DictationLoopStart, 0)
         ; Send Win+Alt+Shift+0 to finish dictation
         SendInput "#!+0"
-        ShowCenteredOverlay_Utils("Dictation Loop Stopped", 1500)
+        ; Merge non-favorite clips: 3s countdown (N or End to cancel)
+        DictationMerge_StartCountdown(3)
     } else {
         ; Start the loop - show clipboard cleanup prompt ONLY when starting
         ; Show message box asking about clipboard cleanup
@@ -6604,14 +6744,15 @@ OnExit(CleanupDictationIndicator)
     global g_DictationLoopActive
 
     if (g_DictationLoopActive) {
-        ; Stop the loop - NO clipboard cleanup prompt when stopping
+        ; Stop the loop - show merge countdown when user finishes the entire loop
         g_DictationLoopActive := false
         ; Turn off timers
         SetTimer(DictationLoopStop, 0)
         SetTimer(DictationLoopStart, 0)
         ; Send Win+Alt+Shift+0 to finish dictation
         SendInput "#!+0"
-        ShowCenteredOverlay_Utils("Dictation Loop Stopped", 1500)
+        ; Merge non-favorite clips: 3s countdown (N or End to cancel)
+        DictationMerge_StartCountdown(3)
     } else {
         ; Start the loop - non-modal 3-second countdown (default: clear clipboard)
         ; User can cancel by pressing N or End during the countdown.
