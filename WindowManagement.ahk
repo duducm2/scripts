@@ -1085,8 +1085,8 @@ HandleProjectEscape(*) {
 ; =============================================================================
 
 ; Focus the Cursor AI text field by locating the "New Chat" anchor and navigating with Tab
-; Anchor: Button "New Chat (Ctrl+N) [Alt] Replace Chat (Ctrl+N)" via conditional path from UIA inspector:
-; {T:33,CN:"RootView"}, {T:33}, {T:33}, {T:33,CN:"ClientView"}, {T:33}, {T:33}, {T:33}, {T:30}, {T:26}, {T:33}, {T:21,CN:"actions-container", i:3}, {T:0}
+; Strategy: Scope to the "New Chat actions" toolbar first, then get the add-two button inside it.
+; This avoids picking a different actions-container's add button (path index i:3 vs i:5 varies by project).
 FocusCursorAITextField() {
     try {
         ; Get the active Cursor window handle
@@ -1103,30 +1103,14 @@ FocusCursorAITextField() {
         root := UIA.ElementFromHandle(cursorHwnd)
         Sleep 100  ; Allow UIA to initialize
 
-        ; Conditional path from UIA inspector (T:X = Type 50000+X, CN = ClassName, i = index)
-        ; RootView -> Pane -> Pane -> ClientView -> ... -> actions-container (3rd) -> Button
-        pathConditions := [
-            { Type: 50033, ClassName: "RootView" },      ; T:33, CN:"RootView"
-            { Type: 50033 },                             ; T:33
-            { Type: 50033 },                             ; T:33
-            { Type: 50033, ClassName: "ClientView" },    ; T:33, CN:"ClientView"
-            { Type: 50033 },                             ; T:33
-            { Type: 50033 },                             ; T:33
-            { Type: 50033 },                             ; T:33
-            { Type: 50030 },                             ; T:30 Document
-            { Type: 50026 },                             ; T:26 Group
-            { Type: 50033 },                             ; T:33
-            { Type: 50021, ClassName: "actions-container", i: 3 },  ; T:21, CN:"actions-container", i:3
-            { Type: 50000 }                              ; T:0 Button (New Chat)
-        ]
-
+        ; Primary: Find the "New Chat actions" toolbar (unique per window), then the add-two button inside it.
+        ; In cursor-tree: ToolBar Name "New Chat actions" (16) contains Button "New Chat (Ctrl+N)..." (16,1).
+        ; This is stable across projects regardless of actions-container index (i:3 vs i:5).
         anchor := ""
         try {
-            anchor := root.ElementFromPath(pathConditions*)
-        } catch {
-            ; Path failed (e.g. index or structure changed); try Button by Name+ClassName as fallback
-            try {
-                anchor := root.FindFirst({ Type: 50000, ClassName: "action-label codicon codicon-add-two" })
+            newChatToolbar := root.FindFirst({ Type: 50021, Name: "New Chat actions" })
+            if (newChatToolbar) {
+                anchor := newChatToolbar.FindFirst({ Type: 50000, ClassName: "action-label codicon codicon-add-two" })
                 if (anchor) {
                     try {
                         if (!InStr(anchor.Name, "New Chat")) {
@@ -1134,6 +1118,25 @@ FocusCursorAITextField() {
                         }
                     } catch {
                         anchor := ""
+                    }
+                }
+            }
+        } catch {
+        }
+
+        ; Fallback: Find any Button with add-two class whose Name identifies "New Chat" (whole-window search).
+        if (!anchor) {
+            try {
+                allAddButtons := root.FindAll({ Type: 50000, ClassName: "action-label codicon codicon-add-two" })
+                for btn in allAddButtons {
+                    try {
+                        name := btn.Name
+                        if (InStr(name, "New Chat") && (InStr(name, "Replace Chat") || InStr(name, "Ctrl+N"))) {
+                            anchor := btn
+                            break
+                        }
+                    } catch {
+                        continue
                     }
                 }
             } catch {
