@@ -465,6 +465,97 @@ GetHandyProcessPath() {
 }
 
 ; =============================================================================
+; Clip Angel: Merge Non-Favorite Clips
+; =============================================================================
+; Extract title from first non-favorite clip in ClipAngel
+MergeNonFavoriteClips() {
+    try {
+        ; Step 1: Send Alt+B to activate ClipAngel (this opens the window if not visible)
+        Send "!b"
+        Sleep 500  ; Wait for ClipAngel window to appear
+        
+        ; Step 2: Check if ClipAngel window exists now
+        if !WinExist("ClipAngel") {
+            MsgBox "ClipAngel window did not appear. Make sure ClipAngel is running.", "Merge Clips", "IconX"
+            return
+        }
+        WinActivate("ClipAngel")
+        WinWaitActive("ClipAngel", , 2)
+        
+        ; Step 3: Initialize UIA on ClipAngel window
+        hwnd := WinExist("A")
+        el := UIA.ElementFromHandle(hwnd)
+        if !el {
+            MsgBox "Failed to initialize UIA for ClipAngel.", "Merge Clips", "IconX"
+            return
+        }
+        
+        ; Step 4: Find DataGridView by AutomationId
+        dataGrid := 0
+        try dataGrid := el.FindFirst({Type: 50036, AutomationId: "dataGridView"})
+        if !dataGrid {
+            MsgBox "Could not find DataGridView in ClipAngel.", "Merge Clips", "IconX"
+            return
+        }
+        
+        ; Step 5: Find Row 0
+        row0 := 0
+        try row0 := dataGrid.FindFirst({Type: 50025, Name: "Row 0"})
+        if !row0 {
+            MsgBox "No clips found in Row 0.", "Merge Clips", "IconX"
+            return
+        }
+        
+        ; Step 6: Find "Title Row 0" element
+        titleElement := 0
+        try titleElement := row0.FindFirst({Type: 50006, Name: "Title Row 0"})
+        if !titleElement {
+            MsgBox "Could not find Title element in Row 0.", "Merge Clips", "IconX"
+            return
+        }
+        
+        ; Step 7: Extract RTF value
+        rtfValue := ""
+        try rtfValue := titleElement.Value
+        if (rtfValue = "" || rtfValue = "System.Drawing.Bitmap") {
+            MsgBox "Title Row 0 contains no text data.", "Merge Clips", "IconX"
+            return
+        }
+        
+        ; Step 8: Parse RTF to extract plain text
+        plainText := ParseRTFToPlainText(rtfValue)
+        
+        ; Step 9: Copy to clipboard
+        A_Clipboard := plainText
+        
+        ; Step 10: Show success banner
+        ShowCenteredOverlay_Utils("Copied: " . plainText, 2000)
+        
+    } catch Error as e {
+        MsgBox "Error in MergeNonFavoriteClips: " . e.Message, "Merge Clips", "IconX"
+    }
+}
+
+; Helper function to parse RTF and extract plain text
+ParseRTFToPlainText(rtf) {
+    ; Remove RTF header and formatting
+    ; Pattern: extract text between last formatting and \par
+    plainText := rtf
+    
+    ; Remove RTF control sequences (backslash followed by letters/numbers)
+    plainText := RegExReplace(plainText, "\\[a-z]+[0-9]*\s?", "")
+    ; Remove braces
+    plainText := RegExReplace(plainText, "[{}]", "")
+    ; Remove everything after \par
+    plainText := RegExReplace(plainText, "\\par.*$", "")
+    
+    ; Trim whitespace
+    plainText := Trim(plainText)
+    
+    return plainText
+}
+
+; =============================================================================
 ; AI Model Selection System for Handy
 ; =============================================================================
 ; Configuration: Maps selection numbers (1, 2, 3) to AI model names.
@@ -2192,6 +2283,8 @@ InitMacros() {
     RegisterMacro(CleanClipboard, "🧹 Clean the Clipboard", "p")
     ; Toggle Sound macro
     RegisterMacro(ToggleSoundState, "🔊 Toggle Sound (Mute/Unmute)")
+    ; Merge Non-Favorite Clips macro (assigned to "U")
+    RegisterMacro(MergeNonFavoriteClips, "📋 Merge Non-Favorite Clips", "u")
 }
 InitMacros()
 
@@ -3950,8 +4043,9 @@ global g_HotstringCharSequence := ["1", "2", "3", "4", "5", "q", "w", "e", "r", 
 ; Order: Prompts → General → Projects → Files & Links → Macros
 global g_HotstringCategories := ["Prompts", "General", "Projects", "Files & Links", "Macros"]
 
-; Reserved empty character: never assigned to any action; always shows [U] > (empty) in selector
-global g_ReservedEmptyChar := "u"
+; Reserved empty character: never assigned to any action; always shows as (empty) in selector
+; Set to "" to disable reservation
+global g_ReservedEmptyChar := ""
 
 ; =============================================================================
 ; BuildHotstringCharMap()
@@ -3998,7 +4092,7 @@ BuildHotstringCharMap() {
             ; Handle quick open files
             if (IsSet(g_QuickOpenFiles) && g_QuickOpenFiles.Length > 0) {
                 for fileEntry in g_QuickOpenFiles {
-                    while (charIndex <= g_HotstringCharSequence.Length && g_HotstringCharSequence[charIndex] = g_ReservedEmptyChar)
+                    while (charIndex <= g_HotstringCharSequence.Length && g_ReservedEmptyChar != "" && g_HotstringCharSequence[charIndex] = g_ReservedEmptyChar)
                         charIndex++
                     if (charIndex <= g_HotstringCharSequence.Length) {
                         char := g_HotstringCharSequence[charIndex]
@@ -4012,7 +4106,7 @@ BuildHotstringCharMap() {
             if (IsSet(g_Macros) && g_Macros.Length > 0) {
                 ; First pass: assign macros with explicit character assignments
                 for macroEntry in g_Macros {
-                    if (macroEntry.HasProp("char") && macroEntry.char != "" && macroEntry.char != g_ReservedEmptyChar) {
+                    if (macroEntry.HasProp("char") && macroEntry.char != "" && (g_ReservedEmptyChar = "" || macroEntry.char != g_ReservedEmptyChar)) {
                         ; Check if character is in the sequence and not already assigned
                         charIndexInSequence := 0
                         for idx, seqChar in g_HotstringCharSequence {
@@ -4043,10 +4137,10 @@ BuildHotstringCharMap() {
                         continue
                     }
 
-                    ; Find next available character (skip reserved empty "u")
+                    ; Find next available character (skip reserved empty char if set)
                     while (charIndex <= g_HotstringCharSequence.Length) {
                         char := g_HotstringCharSequence[charIndex]
-                        if (char = g_ReservedEmptyChar) {
+                        if (g_ReservedEmptyChar != "" && char = g_ReservedEmptyChar) {
                             charIndex++
                             continue
                         }
@@ -4065,7 +4159,7 @@ BuildHotstringCharMap() {
             if (categorized.Has(category)) {
                 ; First pass: assign hotstrings with explicit character assignments
                 for hs in categorized[category] {
-                    if (hs.HasProp("char") && hs.char != "" && hs.char != g_ReservedEmptyChar) {
+                    if (hs.HasProp("char") && hs.char != "" && (g_ReservedEmptyChar = "" || hs.char != g_ReservedEmptyChar)) {
                         ; Check if character is in the sequence and not already assigned
                         charIndexInSequence := 0
                         for idx, seqChar in g_HotstringCharSequence {
@@ -4096,10 +4190,10 @@ BuildHotstringCharMap() {
                         continue
                     }
 
-                    ; Find next available character (skip reserved empty "u")
+                    ; Find next available character (skip reserved empty char if set)
                     while (charIndex <= g_HotstringCharSequence.Length) {
                         char := g_HotstringCharSequence[charIndex]
-                        if (char = g_ReservedEmptyChar) {
+                        if (g_ReservedEmptyChar != "" && char = g_ReservedEmptyChar) {
                             charIndex++
                             continue
                         }
@@ -4928,8 +5022,8 @@ ShowHotstringSelector() {
             ; Collect all character slots for this category (including empty ones)
             loop categorySlotCount {
                 if (currentCharIndex <= g_HotstringCharSequence.Length) {
-                    ; Skip reserved empty "u" so it always shows as (empty)
-                    while (currentCharIndex <= g_HotstringCharSequence.Length && g_HotstringCharSequence[currentCharIndex] = g_ReservedEmptyChar)
+                    ; Skip reserved empty char if set so it always shows as (empty)
+                    while (currentCharIndex <= g_HotstringCharSequence.Length && g_ReservedEmptyChar != "" && g_HotstringCharSequence[currentCharIndex] = g_ReservedEmptyChar)
                         currentCharIndex++
                     if (currentCharIndex > g_HotstringCharSequence.Length)
                         break
@@ -5023,16 +5117,18 @@ ShowHotstringSelector() {
 
     allItems := sortedItems
 
-    ; Ensure reserved empty "u" always appears as [U] > (empty)
-    hasReservedEmpty := false
-    for item in allItems {
-        if (item.char = g_ReservedEmptyChar) {
-            hasReservedEmpty := true
-            break
+    ; Ensure reserved empty char always appears as (empty) if set
+    if (g_ReservedEmptyChar != "") {
+        hasReservedEmpty := false
+        for item in allItems {
+            if (item.char = g_ReservedEmptyChar) {
+                hasReservedEmpty := true
+                break
+            }
         }
+        if (!hasReservedEmpty)
+            allItems.Push({ category: "Unassigned", char: g_ReservedEmptyChar, text: "[" . g_ReservedEmptyChar . "] > (empty)", isEmpty: true })
     }
-    if (!hasReservedEmpty)
-        allItems.Push({ category: "Unassigned", char: g_ReservedEmptyChar, text: "[" . g_ReservedEmptyChar . "] > (empty)", isEmpty: true })
 
     ; Show any remaining unassigned character slots
     if (currentCharIndex <= g_HotstringCharSequence.Length) {
@@ -5041,7 +5137,7 @@ ShowHotstringSelector() {
             if (char = "l") {
                 allItems.Push({ category: "Unassigned", char: char, text: "[L] > Gemini modifier (press L, then a prompt key)",
                     isEmpty: false })
-            } else if (char = g_ReservedEmptyChar) {
+            } else if (g_ReservedEmptyChar != "" && char = g_ReservedEmptyChar) {
                 ; Already added above; skip to avoid duplicate
             } else {
                 allItems.Push({ category: "Unassigned", char: char, text: "[" . char . "] > (empty)", isEmpty: true })

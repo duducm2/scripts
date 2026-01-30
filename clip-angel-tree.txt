@@ -1,0 +1,409 @@
+Type: 50032 (Window) Name: "ClipAngel 2.17 >> UIATreeInspector [AutoHotkey64]" LocalizedType: "janela" AutomationId: "Main" ClassName: "WindowsForms10.Window.8.app.0.3b93019_r7_ad1"
+1: Type: 50021 (ToolBar) Name: "toolStrip1" LocalizedType: "barra de ferramentas" AutomationId: "toolStripTop" ClassName: "WindowsForms10.Window.8.app.0.3b93019_r7_ad1"
+1,1: Type: 50027 (Thumb) Name: "Grip" LocalizedType: "elevador"
+1,2: Type: 50000 (Button) Name: "Native formatting" LocalizedType: "botão"
+1,3: Type: 50000 (Button) Name: "Word wrap" LocalizedType: "botão"
+1,4: Type: 50000 (Button) Name: "Monospaced font" LocalizedType: "botão"
+1,5: Type: 50000 (Button) Name: "Move to top after use" LocalizedType: "botão"
+1,6: Type: 50000 (Button) LocalizedType: "botão"
+1,7: Type: 50000 (Button) LocalizedType: "botão"
+1,8: Type: 50000 (Button) Name: "Edit clip text" LocalizedType: "botão"
+1,9: Type: 50011 (MenuItem) Name: "Open clip file" LocalizedType: "item de menu"
+1,10: Type: 50000 (Button) Name: "Secondary columns" LocalizedType: "botão"
+1,11: Type: 50000 (Button) Name: "Window always on top" LocalizedType: "botão"
+1,12: Type: 50038 (Separator) LocalizedType: "separador"
+1,13: Type: 50000 (Button) Name: "Update to 2.21" LocalizedType: "botão"
+2: Type: 50033 (Pane) LocalizedType: "painel" AutomationId: "splitContainer1" ClassName: "WindowsForms10.Window.8.app.0.3b93019_r7_ad1"
+2,1: Type: 50033 (Pane) LocalizedType: "painel" AutomationId: "9570900" ClassName: "WindowsForms10.Window.8.app.0.3b93019_r7_ad1"
+2,1,1: Type: 50021 (ToolBar) Name: "toolStrip2" LocalizedType: "barra de ferramentas" AutomationId: "toolStripBottom" ClassName: "WindowsForms10.Window.8.app.0.3b93019_r7_ad1"
+2,1,1,1: Type: 50000 (Button) LocalizedType: "botão"
+2,1,1,2: Type: 50000 (Button) Name: "toolStripDropDownButton1" LocalizedType: "botão"
+2,1,1,3: Type: 50000 (Button) LocalizedType: "botão"
+2,1,1,4: Type: 50000 (Button) LocalizedType: "botão"
+2,1,2: Type: 50003 (ComboBox) Name: "favorite" Value: "favorite" LocalizedType: "caixa de combinação" AutomationId: "MarkFilter" ClassName: "WindowsForms10.COMBOBOX.app.0.3b93019_r7_ad1"
+2,1,2,1: Type: 50020 (Text) LocalizedType: "text"
+2,1,2,2: Type: 50000 (Button) Name: "Open" LocalizedType: "botão"
+2,1,3: Type: 50003 (ComboBox) Name: "all types" Value: "all types" LocalizedType: "caixa de combinação" AutomationId: "TypeFilter" ClassName: "WindowsForms10.COMBOBOX.app.0.3b93019_r7_ad1"
+2,1,3,1: Type: 50020 (Text) LocalizedType: "text"
+2,1,3,2: Type: 50000 (Button) Name: "Open" LocalizedType: "botão"
+2,1,4: Type: 50003 (ComboBox) LocalizedType: "caixa de combinação" AutomationId: "comboBoxSearchString" ClassName: "WindowsForms10.COMBOBOX.app.0.3b93019_r7_ad1"
+2,1,4,1: Type: 50004 (Edit) LocalizedType: "editar" AutomationId: "1001" ClassName: "Edit"
+2,1,4,2: Type: 50000 (Button) Name: "Open" LocalizedType: "botão"
+2,1,5: Type: 50036 (Table) Name: "DataGridView" LocalizedType: "tabela" AutomationId: "dataGridView" ClassName: "WindowsForms10.Window.8.app.0.3b93019_r7_ad1"
+2,1,5,1: Type: 50025 (Custom) Name: "Row 0"
+2,1,5,1,1: Type: 50006 (Image) Name: "AppImage Row 0" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4251972470"
+2,1,5,1,2: Type: 50006 (Image) Name: "TypeImg Row 0" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "425477191"
+2,1,5,1,3: Type: 50006 (Image) Name: "Title Row 0" Value: x LocalizedType: "Imagem" AutomationId: "4238178826"
+2,1,5,1,4: Type: 50004 (Edit) Name: "VisualWeight Row 0" Value: "4" LocalizedType: "editar" AutomationId: "4249294721"
+2,1,5,2: Type: 50025 (Custom) Name: "Row 1"
+2,1,5,2,1: Type: 50006 (Image) Name: "AppImage Row 1" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4233449458"
+2,1,5,2,2: Type: 50006 (Image) Name: "TypeImg Row 1" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4232609666"
+2,1,5,2,3: Type: 50006 (Image) Name: "Title Row 1" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs18\lang1046 Missing Literature for Manual Integration into Levantamento.tex\par
+}
+" LocalizedType: "Imagem" AutomationId: "4211241901"
+2,1,5,2,4: Type: 50004 (Edit) Name: "VisualWeight Row 1" Value: "(null)" LocalizedType: "editar" AutomationId: "4225051543"
+2,1,5,3: Type: 50025 (Custom) Name: "Row 2"
+2,1,5,3,1: Type: 50006 (Image) Name: "AppImage Row 2" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4215909080"
+2,1,5,3,2: Type: 50006 (Image) Name: "TypeImg Row 2" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "428963999"
+2,1,5,3,3: Type: 50006 (Image) Name: "Title Row 2" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs18\lang1046 3840 x 2160, Overleaf - Pesquisa Eduardo Figueiredo - Online LaTeX...\par
+}
+" LocalizedType: "Imagem" AutomationId: "4213567135"
+2,1,5,3,4: Type: 50004 (Edit) Name: "VisualWeight Row 2" Value: "7" LocalizedType: "editar" AutomationId: "4254995351"
+2,1,5,4: Type: 50025 (Custom) Name: "Row 3"
+2,1,5,4,1: Type: 50006 (Image) Name: "AppImage Row 3" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4225438431"
+2,1,5,4,2: Type: 50006 (Image) Name: "TypeImg Row 3" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4227619288"
+2,1,5,4,3: Type: 50006 (Image) Name: "Title Row 3" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs18\lang1046 ITQM\par
+}
+" LocalizedType: "Imagem" AutomationId: "4247247007"
+2,1,5,4,4: Type: 50004 (Edit) Name: "VisualWeight Row 3" Value: "7" LocalizedType: "editar" AutomationId: "4222569884"
+2,1,5,5: Type: 50025 (Custom) Name: "Row 4"
+2,1,5,5,1: Type: 50006 (Image) Name: "AppImage Row 4" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4216221316"
+2,1,5,5,2: Type: 50006 (Image) Name: "TypeImg Row 4" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4211774121"
+2,1,5,5,3: Type: 50006 (Image) Name: "Title Row 4" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs18\lang1046 Trustmate - last question\par
+}
+" LocalizedType: "Imagem" AutomationId: "4238858233"
+2,1,5,5,4: Type: 50004 (Edit) Name: "VisualWeight Row 4" Value: "(null)" LocalizedType: "editar" AutomationId: "4214179779"
+2,1,5,6: Type: 50025 (Custom) Name: "Row 5"
+2,1,5,6,1: Type: 50006 (Image) Name: "AppImage Row 5" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "427711478"
+2,1,5,6,2: Type: 50006 (Image) Name: "TypeImg Row 5" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "422294440"
+2,1,5,6,3: Type: 50006 (Image) Name: "Title Row 5" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs18\lang1046 Cursor prices\par
+}
+" LocalizedType: "Imagem" AutomationId: "4220649961"
+2,1,5,6,4: Type: 50004 (Edit) Name: "VisualWeight Row 5" Value: "3" LocalizedType: "editar" AutomationId: "4251631922"
+2,1,5,7: Type: 50025 (Custom) Name: "Row 6"
+2,1,5,7,1: Type: 50006 (Image) Name: "AppImage Row 6" Value: "(null)" LocalizedType: "Imagem" AutomationId: "4221436136"
+2,1,5,7,2: Type: 50006 (Image) Name: "TypeImg Row 6" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4258707504"
+2,1,5,7,3: Type: 50006 (Image) Name: "Title Row 6" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs18\lang1046 B Life\par
+}
+" LocalizedType: "Imagem" AutomationId: "4258605492"
+2,1,5,7,4: Type: 50004 (Edit) Name: "VisualWeight Row 6" Value: "(null)" LocalizedType: "editar" AutomationId: "4257687380"
+2,1,5,8: Type: 50025 (Custom) Name: "Row 7"
+2,1,5,8,1: Type: 50006 (Image) Name: "AppImage Row 7" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4242166233"
+2,1,5,8,2: Type: 50006 (Image) Name: "TypeImg Row 7" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4243951783"
+2,1,5,8,3: Type: 50006 (Image) Name: "Title Row 7" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs18\lang1046 Go\par
+}
+" LocalizedType: "Imagem" AutomationId: "4260021735"
+2,1,5,8,4: Type: 50004 (Edit) Name: "VisualWeight Row 7" Value: "(null)" LocalizedType: "editar" AutomationId: "423324704"
+2,1,5,9: Type: 50025 (Custom) Name: "Row 8"
+2,1,5,9,1: Type: 50006 (Image) Name: "AppImage Row 8" Value: "(null)" LocalizedType: "Imagem" AutomationId: "42865613"
+2,1,5,9,2: Type: 50006 (Image) Name: "TypeImg Row 8" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "427790523"
+2,1,5,9,3: Type: 50006 (Image) Name: "Title Row 8" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs18\lang1046 FGT\par
+}
+" LocalizedType: "Imagem" AutomationId: "423005847"
+2,1,5,9,4: Type: 50004 (Edit) Name: "VisualWeight Row 8" Value: "(null)" LocalizedType: "editar" AutomationId: "4227052626"
+2,1,5,10: Type: 50025 (Custom) Name: "Row 9"
+2,1,5,10,1: Type: 50006 (Image) Name: "AppImage Row 9" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4243779089"
+2,1,5,10,2: Type: 50006 (Image) Name: "TypeImg Row 9" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4258467488"
+2,1,5,10,3: Type: 50006 (Image) Name: "Title Row 9" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs18\lang1046 adb devices\par
+}
+" LocalizedType: "Imagem" AutomationId: "4256445345"
+2,1,5,10,4: Type: 50004 (Edit) Name: "VisualWeight Row 9" Value: "(null)" LocalizedType: "editar" AutomationId: "4238246063"
+2,1,5,11: Type: 50025 (Custom) Name: "Row 10"
+2,1,5,11,1: Type: 50006 (Image) Name: "AppImage Row 10" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4210923387"
+2,1,5,11,2: Type: 50006 (Image) Name: "TypeImg Row 10" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4231201619"
+2,1,5,11,3: Type: 50006 (Image) Name: "Title Row 10" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs18\lang1046 Below, you will find a word or phrase. I'd like you to answer in f...\par
+}
+" LocalizedType: "Imagem" AutomationId: "4212379115"
+2,1,5,11,4: Type: 50004 (Edit) Name: "VisualWeight Row 10" Value: "3" LocalizedType: "editar" AutomationId: "4244303172"
+2,1,5,12: Type: 50025 (Custom) Name: "Row 11"
+2,1,5,12,1: Type: 50006 (Image) Name: "AppImage Row 11" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4231787174"
+2,1,5,12,2: Type: 50006 (Image) Name: "TypeImg Row 11" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4217649112"
+2,1,5,12,3: Type: 50006 (Image) Name: "Title Row 11" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs18\lang1046 pdflatex\par
+}
+" LocalizedType: "Imagem" AutomationId: "4224624288"
+2,1,5,12,4: Type: 50004 (Edit) Name: "VisualWeight Row 11" Value: "3" LocalizedType: "editar" AutomationId: "4220292006"
+2,1,5,13: Type: 50025 (Custom) Name: "Row 12"
+2,1,5,13,1: Type: 50006 (Image) Name: "AppImage Row 12" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4233039800"
+2,1,5,13,2: Type: 50006 (Image) Name: "TypeImg Row 12" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4228922751"
+2,1,5,13,3: Type: 50006 (Image) Name: "Title Row 12" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs18\lang1046 Dev - Activate server\par
+}
+" LocalizedType: "Imagem" AutomationId: "4258978167"
+2,1,5,13,4: Type: 50004 (Edit) Name: "VisualWeight Row 12" Value: "(null)" LocalizedType: "editar" AutomationId: "4261041458"
+2,1,5,14: Type: 50025 (Custom) Name: "Row 13"
+2,1,5,14,1: Type: 50006 (Image) Name: "AppImage Row 13" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4245411103"
+2,1,5,14,2: Type: 50006 (Image) Name: "TypeImg Row 13" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "426046746"
+2,1,5,14,3: Type: 50006 (Image) Name: "Title Row 13" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs18\lang1046 . .venv/Scripts/Activate.ps1\par
+}
+" LocalizedType: "Imagem" AutomationId: "4254420716"
+2,1,5,14,4: Type: 50004 (Edit) Name: "VisualWeight Row 13" Value: "(null)" LocalizedType: "editar" AutomationId: "4220024398"
+2,1,5,15: Type: 50025 (Custom) Name: "Row 14"
+2,1,5,15,1: Type: 50006 (Image) Name: "AppImage Row 14" Value: "(null)" LocalizedType: "Imagem" AutomationId: "4211363535"
+2,1,5,15,2: Type: 50006 (Image) Name: "TypeImg Row 14" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4235162951"
+2,1,5,15,3: Type: 50006 (Image) Name: "Title Row 14" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset1 Segoe UI Symbol;}{\f1\fswiss\fcharset0 Calibri;}{\f2\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs18\lang1046\u-10178?\u-8938?\f1  AI: AI-Oriented Prompt (Note)\f2\par
+}
+" LocalizedType: "Imagem" AutomationId: "4248031108"
+2,1,5,15,4: Type: 50004 (Edit) Name: "VisualWeight Row 14" Value: "3" LocalizedType: "editar" AutomationId: "4229626789"
+2,1,5,16: Type: 50025 (Custom) Name: "Row 15"
+2,1,5,16,1: Type: 50006 (Image) Name: "AppImage Row 15" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4250959748"
+2,1,5,16,2: Type: 50006 (Image) Name: "TypeImg Row 15" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4255984556"
+2,1,5,16,3: Type: 50006 (Image) Name: "Title Row 15" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs18\lang1046 Language: Conjunctive adverbs.\par
+}
+" LocalizedType: "Imagem" AutomationId: "4234098956"
+2,1,5,16,4: Type: 50004 (Edit) Name: "VisualWeight Row 15" Value: "6" LocalizedType: "editar" AutomationId: "4238455150"
+2,1,5,17: Type: 50025 (Custom) Name: "Row 16"
+2,1,5,17,1: Type: 50006 (Image) Name: "AppImage Row 16" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4227859461"
+2,1,5,17,2: Type: 50006 (Image) Name: "TypeImg Row 16" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4249408564"
+2,1,5,17,3: Type: 50006 (Image) Name: "Title Row 16" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs18\lang1046 # Corrected ITQM Question Mapping Table This table provides the co...\par
+}
+" LocalizedType: "Imagem" AutomationId: "4242023897"
+2,1,5,17,4: Type: 50004 (Edit) Name: "VisualWeight Row 16" Value: "5" LocalizedType: "editar" AutomationId: "4242670757"
+2,1,5,18: Type: 50025 (Custom) Name: "Row 17"
+2,1,5,18,1: Type: 50006 (Image) Name: "AppImage Row 17" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4233779294"
+2,1,5,18,2: Type: 50006 (Image) Name: "TypeImg Row 17" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4235578198"
+2,1,5,18,3: Type: 50006 (Image) Name: "Title Row 17" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset1 Segoe UI Symbol;}{\f1\fswiss\fcharset0 Calibri;}{\f2\fnil\fcharset1 Segoe UI Symbol;}{\f3\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs18\lang1046\u-10179?\u-8910?\f1  Tasks/Checklist items \f2\u9203?\f1  Time-sensitive tasks \f2\u9889?\f1  First priority 2...\f3\par
+}
+" LocalizedType: "Imagem" AutomationId: "4251768328"
+2,1,5,18,4: Type: 50004 (Edit) Name: "VisualWeight Row 17" Value: "3" LocalizedType: "editar" AutomationId: "4263261775"
+2,1,5,19: Type: 50025 (Custom) Name: "Row 18"
+2,1,5,19,1: Type: 50006 (Image) Name: "AppImage Row 18" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4223930149"
+2,1,5,19,2: Type: 50006 (Image) Name: "TypeImg Row 18" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4214044750"
+2,1,5,19,3: Type: 50006 (Image) Name: "Title Row 18" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs18\lang1046 Hand stretch\par
+}
+" LocalizedType: "Imagem" AutomationId: "4259293887"
+2,1,5,19,4: Type: 50004 (Edit) Name: "VisualWeight Row 18" Value: "7" LocalizedType: "editar" AutomationId: "4263882937"
+2,1,5,20: Type: 50025 (Custom) Name: "Row 19"
+2,1,5,20,1: Type: 50006 (Image) Name: "AppImage Row 19" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4265099051"
+2,1,5,20,2: Type: 50006 (Image) Name: "TypeImg Row 19" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "427135413"
+2,1,5,20,3: Type: 50006 (Image) Name: "Title Row 19" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs18\lang1046 Dev - Dock composer cheat sheet\par
+}
+" LocalizedType: "Imagem" AutomationId: "4249020554"
+2,1,5,20,4: Type: 50004 (Edit) Name: "VisualWeight Row 19" Value: "4" LocalizedType: "editar" AutomationId: "4264218721"
+2,1,5,21: Type: 50025 (Custom) Name: "Row 20"
+2,1,5,21,1: Type: 50006 (Image) Name: "AppImage Row 20" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4234333880"
+2,1,5,21,2: Type: 50006 (Image) Name: "TypeImg Row 20" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4240569470"
+2,1,5,21,3: Type: 50006 (Image) Name: "Title Row 20" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset1 Segoe UI Emoji;}{\f1\fnil\fcharset1 Segoe UI Symbol;}{\f2\fswiss\fcharset0 Calibri;}{\f3\fswiss Calibri;}{\f4\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs18\lang1046\u-10178?\u-8751?\u8205?\f1\u-10179?\u-9029?\f2  Dev: Command Palette \f3\emdash\f2  Save Bookmarks (Command)\f4\par
+}
+" LocalizedType: "Imagem" AutomationId: "4229580916"
+2,1,5,21,4: Type: 50004 (Edit) Name: "VisualWeight Row 20" Value: "3" LocalizedType: "editar" AutomationId: "4264901660"
+2,1,5,22: Type: 50025 (Custom) Name: "Row 21"
+2,1,5,22,1: Type: 50006 (Image) Name: "AppImage Row 21" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4222543082"
+2,1,5,22,2: Type: 50006 (Image) Name: "TypeImg Row 21" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "421561146"
+2,1,5,22,3: Type: 50006 (Image) Name: "Title Row 21" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset1 Segoe UI Emoji;}{\f1\fnil\fcharset1 Segoe UI Symbol;}{\f2\fswiss\fcharset0 Calibri;}{\f3\fswiss Calibri;}{\f4\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs18\lang1046\u-10178?\u-8751?\u8205?\f1\u-10179?\u-9029?\f2  Dev: Command Palette \f3\emdash\f2  Save Bookmarks (Command)\f4\par
+}
+" LocalizedType: "Imagem" AutomationId: "4214050320"
+2,1,5,22,4: Type: 50004 (Edit) Name: "VisualWeight Row 21" Value: "3" LocalizedType: "editar" AutomationId: "4259344020"
+2,1,5,23: Type: 50025 (Custom) Name: "Row 22"
+2,1,5,23,1: Type: 50006 (Image) Name: "AppImage Row 22" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4242136306"
+2,1,5,23,2: Type: 50006 (Image) Name: "TypeImg Row 22" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4243682438"
+2,1,5,23,3: Type: 50006 (Image) Name: "Title Row 22" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset1 Segoe UI Emoji;}{\f1\fnil\fcharset1 Segoe UI Symbol;}{\f2\fswiss\fcharset0 Calibri;}{\f3\fswiss Calibri;}{\f4\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs18\lang1046\u-10178?\u-8751?\u8205?\f1\u-10179?\u-9029?\f2  Dev: Code \f3\emdash\f2  AgentDesk Browser Tools Server (Command)\f4\par
+}
+" LocalizedType: "Imagem" AutomationId: "4257597629"
+2,1,5,23,4: Type: 50004 (Edit) Name: "VisualWeight Row 22" Value: "(null)" LocalizedType: "editar" AutomationId: "4248616614"
+2,1,5,24: Type: 50025 (Custom) Name: "Row 23"
+2,1,5,24,1: Type: 50006 (Image) Name: "AppImage Row 23" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4245631679"
+2,1,5,24,2: Type: 50006 (Image) Name: "TypeImg Row 23" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "428031928"
+2,1,5,24,3: Type: 50006 (Image) Name: "Title Row 23" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset1 Segoe UI Emoji;}{\f1\fnil\fcharset1 Segoe UI Symbol;}{\f2\fswiss\fcharset0 Calibri;}{\f3\fswiss Calibri;}{\f4\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs18\lang1046\u-10178?\u-8751?\u8205?\f1\u-10179?\u-9029?\f2  Dev: Ubuntu \f3\emdash\f2  PowerToys Run Path (Snippet)\f4\par
+}
+" LocalizedType: "Imagem" AutomationId: "425178488"
+2,1,5,24,4: Type: 50004 (Edit) Name: "VisualWeight Row 23" Value: "(null)" LocalizedType: "editar" AutomationId: "4246606392"
+2,1,5,25: Type: 50025 (Custom) Name: "Row 24"
+2,1,5,25,1: Type: 50006 (Image) Name: "AppImage Row 24" Value: "(null)" LocalizedType: "Imagem" AutomationId: "4217021380"
+2,1,5,25,2: Type: 50006 (Image) Name: "TypeImg Row 24" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4218974699"
+2,1,5,25,3: Type: 50006 (Image) Name: "Title Row 24" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset1 Segoe UI Emoji;}{\f1\fnil\fcharset1 Segoe UI Symbol;}{\f2\fswiss\fcharset0 Calibri;}{\f3\fswiss Calibri;}{\f4\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs18\lang1046\u-10178?\u-8751?\u8205?\f1\u-10179?\u-9029?\f2  Dev: Figma \f3\emdash\f2  Medindo a Confian\'e7a Percebida (Screenshot)\f4\par
+}
+" LocalizedType: "Imagem" AutomationId: "4236554565"
+2,1,5,25,4: Type: 50004 (Edit) Name: "VisualWeight Row 24" Value: "7" LocalizedType: "editar" AutomationId: "4260555637"
+2,1,5,26: Type: 50025 (Custom) Name: "Row 25"
+2,1,5,26,1: Type: 50006 (Image) Name: "AppImage Row 25" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "426059584"
+2,1,5,26,2: Type: 50006 (Image) Name: "TypeImg Row 25" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4254536261"
+2,1,5,26,3: Type: 50006 (Image) Name: "Title Row 25" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset1 Segoe UI Symbol;}{\f1\fswiss\fcharset0 Calibri;}{\f2\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs18\lang1046\u-10178?\u-8938?\f1  AI: Documentation Usage (Screenshot)\f2\par
+}
+" LocalizedType: "Imagem" AutomationId: "4221064308"
+2,1,5,26,4: Type: 50004 (Edit) Name: "VisualWeight Row 25" Value: "7" LocalizedType: "editar" AutomationId: "4255361044"
+2,1,5,27: Type: 50025 (Custom) Name: "Row 26"
+2,1,5,27,1: Type: 50006 (Image) Name: "AppImage Row 26" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4255059575"
+2,1,5,27,2: Type: 50006 (Image) Name: "TypeImg Row 26" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4225774132"
+2,1,5,27,3: Type: 50006 (Image) Name: "Title Row 26" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset1 Segoe UI Symbol;}{\f1\fswiss\fcharset0 Calibri;}{\f2\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs18\lang1046\u-10178?\u-8938?\f1  AI: Planning Prompt (Note)\f2\par
+}
+" LocalizedType: "Imagem" AutomationId: "4230640599"
+2,1,5,27,4: Type: 50004 (Edit) Name: "VisualWeight Row 26" Value: "3" LocalizedType: "editar" AutomationId: "427329937"
+2,1,5,28: Type: 50025 (Custom) Name: "Row 27"
+2,1,5,28,1: Type: 50006 (Image) Name: "AppImage Row 27" Value: "(null)" LocalizedType: "Imagem" AutomationId: "4256854006"
+2,1,5,28,2: Type: 50006 (Image) Name: "TypeImg Row 27" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4241924012"
+2,1,5,28,3: Type: 50006 (Image) Name: "Title Row 27" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset1 Segoe UI Symbol;}{\f1\fswiss\fcharset0 Calibri;}{\f2\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs18\lang1046\u-10178?\u-8938?\f1  AI: LLM Models (Screenshot)\f2\par
+}
+" LocalizedType: "Imagem" AutomationId: "4241771788"
+2,1,5,28,4: Type: 50004 (Edit) Name: "VisualWeight Row 27" Value: "6" LocalizedType: "editar" AutomationId: "4240401777"
+2,1,5,29: Type: 50025 (Custom) Name: "Row 28"
+2,1,5,29,1: Type: 50006 (Image) Name: "AppImage Row 28" Value: "(null)" LocalizedType: "Imagem" AutomationId: "4251318482"
+2,1,5,29,2: Type: 50006 (Image) Name: "TypeImg Row 28" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4259213161"
+2,1,5,29,3: Type: 50006 (Image) Name: "Title Row 28" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset1 Segoe UI Symbol;}{\f1\fswiss\fcharset0 Calibri;}{\f2\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs18\lang1046\u-10178?\u-8938?\f1  AI: Enhance ChatGPT (Note)\f2\par
+}
+" LocalizedType: "Imagem" AutomationId: "4263156409"
+2,1,5,29,4: Type: 50004 (Edit) Name: "VisualWeight Row 28" Value: "3" LocalizedType: "editar" AutomationId: "4231536769"
+2,1,5,30: Type: 50025 (Custom) Name: "Row 29"
+2,1,5,30,1: Type: 50006 (Image) Name: "AppImage Row 29" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "424341481"
+2,1,5,30,2: Type: 50006 (Image) Name: "TypeImg Row 29" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4239073330"
+2,1,5,30,3: Type: 50006 (Image) Name: "Title Row 29" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset1 Segoe UI Symbol;}{\f1\fswiss\fcharset0 Calibri;}{\f2\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs18\lang1046\u-10178?\u-8938?\f1  AI: Uncertainty Rule (Note)\f2\par
+}
+" LocalizedType: "Imagem" AutomationId: "4216115657"
+2,1,5,30,4: Type: 50004 (Edit) Name: "VisualWeight Row 29" Value: "4" LocalizedType: "editar" AutomationId: "4210823190"
+2,1,5,31: Type: 50025 (Custom) Name: "Row 30"
+2,1,5,31,1: Type: 50006 (Image) Name: "AppImage Row 30" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "424263198"
+2,1,5,31,2: Type: 50006 (Image) Name: "TypeImg Row 30" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4238368787"
+2,1,5,31,3: Type: 50006 (Image) Name: "Title Row 30" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset1 Segoe UI Symbol;}{\f1\fswiss\fcharset0 Calibri;}{\f2\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs18\lang1046\u-10179?\u-8998?\f1  Language: Conectores (List)\f2\par
+}
+" LocalizedType: "Imagem" AutomationId: "429774771"
+2,1,5,31,4: Type: 50004 (Edit) Name: "VisualWeight Row 30" Value: "4" LocalizedType: "editar" AutomationId: "4220864077"
+2,1,5,32: Type: 50025 (Custom) Name: "Row 31"
+2,1,5,32,1: Type: 50006 (Image) Name: "AppImage Row 31" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4212268704"
+2,1,5,32,2: Type: 50006 (Image) Name: "TypeImg Row 31" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4243309474"
+2,1,5,32,3: Type: 50006 (Image) Name: "Title Row 31" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset1 Segoe UI Emoji;}{\f1\fnil\fcharset1 Segoe UI Symbol;}{\f2\fswiss\fcharset0 Calibri;}{\f3\fswiss Calibri;}{\f4\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs18\lang1046\u-10178?\u-8751?\u8205?\f1\u-10179?\u-9029?\f2  Dev: TrustMate \f3\emdash\f2  Crawl Command (Snippet)\f4\par
+}
+" LocalizedType: "Imagem" AutomationId: "4254240947"
+2,1,5,32,4: Type: 50004 (Edit) Name: "VisualWeight Row 31" Value: "3" LocalizedType: "editar" AutomationId: "4218406476"
+2,1,5,33: Type: 50025 (Custom) Name: "Row 32"
+2,1,5,33,1: Type: 50006 (Image) Name: "AppImage Row 32" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4214529570"
+2,1,5,33,2: Type: 50006 (Image) Name: "TypeImg Row 32" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4263657274"
+2,1,5,33,3: Type: 50006 (Image) Name: "Title Row 32" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset1 Segoe UI Emoji;}{\f1\fnil\fcharset1 Segoe UI Symbol;}{\f2\fswiss\fcharset0 Calibri;}{\f3\fswiss Calibri;}{\f4\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs18\lang1046\u-10178?\u-8751?\u8205?\f1\u-10179?\u-9029?\f2  Dev: Code \f3\emdash\f2  Python (Snippet)\f4\par
+}
+" LocalizedType: "Imagem" AutomationId: "4236044558"
+2,1,5,33,4: Type: 50004 (Edit) Name: "VisualWeight Row 32" Value: "(null)" LocalizedType: "editar" AutomationId: "4255965566"
+2,1,5,34: Type: 50025 (Custom) Name: "Row 33"
+2,1,5,34,1: Type: 50006 (Image) Name: "AppImage Row 33" Value: "(null)" LocalizedType: "Imagem" AutomationId: "4236917027"
+2,1,5,34,2: Type: 50006 (Image) Name: "TypeImg Row 33" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4263817793"
+2,1,5,34,3: Type: 50006 (Image) Name: "Title Row 33" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset1 Segoe UI Emoji;}{\f1\fnil\fcharset1 Segoe UI Symbol;}{\f2\fswiss\fcharset0 Calibri;}{\f3\fswiss Calibri;}{\f4\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs18\lang1046\u-10178?\u-8751?\u8205?\f1\u-10179?\u-9029?\f2  Dev: Code \f3\emdash\f2  LaTeX (Snippet)\f4\par
+}
+" LocalizedType: "Imagem" AutomationId: "4237489233"
+2,1,5,34,4: Type: 50004 (Edit) Name: "VisualWeight Row 33" Value: "(null)" LocalizedType: "editar" AutomationId: "421858778"
+2,1,5,35: Type: 50025 (Custom) Name: "Row 34"
+2,1,5,35,1: Type: 50006 (Image) Name: "AppImage Row 34" Value: "(null)" LocalizedType: "Imagem" AutomationId: "4216343335"
+2,1,5,35,2: Type: 50006 (Image) Name: "TypeImg Row 34" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4212872293"
+2,1,5,35,3: Type: 50006 (Image) Name: "Title Row 34" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset1 Segoe UI Emoji;}{\f1\fnil\fcharset1 Segoe UI Symbol;}{\f2\fswiss\fcharset0 Calibri;}{\f3\fswiss Calibri;}{\f4\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs18\lang1046\u-10178?\u-8751?\u8205?\f1\u-10179?\u-9029?\f2  Dev: TrustMate \f3\emdash\f2  Info (Clip)\f4\par
+}
+" LocalizedType: "Imagem" AutomationId: "4248741777"
+2,1,5,35,4: Type: 50004 (Edit) Name: "VisualWeight Row 34" Value: "(null)" LocalizedType: "editar" AutomationId: "4236022812"
+2,2: Type: 50033 (Pane) LocalizedType: "painel" AutomationId: "4326754" ClassName: "WindowsForms10.Window.8.app.0.3b93019_r7_ad1"
+2,2,1: Type: 50033 (Pane) LocalizedType: "painel" AutomationId: "pictureBoxSource" ClassName: "WindowsForms10.Window.8.app.0.3b93019_r7_ad1"
+2,2,2: Type: 50033 (Pane) LocalizedType: "painel" AutomationId: "tableLayoutPanelData" ClassName: "WindowsForms10.Window.8.app.0.3b93019_r7_ad1"
+2,2,2,1: Type: 50004 (Edit) Name: "RichEdit Control" Value: "
+" LocalizedType: "editar" AutomationId: "urlTextBox" ClassName: "WindowsForms10.RICHEDIT50W.app.0.3b93019_r7_ad1"
+2,2,2,2: Type: 50030 (Document) Name: "RichEdit Control" Value: "### Refactoring Request: Automated AI Model Selection Macro
+
+**Objective**
+Automate the AI model selection process within `handy.exe` to mirror the behavior of the `LWin + LAlt + LShift + U` macro.
+
+**Functional Requirements**
+
+1. **Selection Interface:** Display a model/menu presenting three numbered options (1, 2, 3).
+2. **Trigger Mechanism:** Capture the numeric input immediately. The user must not be required to press "Enter."
+3. **Process Flow:**
+* Launch or activate `handy.exe`.
+* Open the AI models context menu (existing functionality).
+* Map the user's numeric selection (1, 2, or 3) to the corresponding AI model button in the interface.
+* Execute the selection automatically based on the chosen number.
+
+
+4. **Post-Selection Actions:**
+* **Latency Handling:** Implement a 5-second wait period to ensure the AI model selection is processed by the system.
+* **Cleanup:** Close the `handy.exe` window automatically after the selection is confirmed.
+
+
+5. **User Feedback:** Display a visual banner/notification throughout the process to inform the user of the current execution status.
+
+**Instructions for AIB**
+
+1. Develop a technical plan to implement this automated selection logic.
+2. Ensure the logic for button mapping correctly identifies the three AI model targets.
+3. Integrate the timing delays and UI feedback (banner) as specified.
+
+Would you like me to draft the specific logic for the status banner or the button mapping coordinates?<END>
+
+" LocalizedType: "documento" AutomationId: "richTextBox" ClassName: "WindowsForms10.RICHEDIT50W.app.0.3b93019_r7_ad1"
+2,2,2,3: Type: 50033 (Pane) LocalizedType: "painel" AutomationId: "htmlTextBox" ClassName: "WindowsForms10.Window.8.app.0.3b93019_r7_ad1"
+2,2,2,3,1: Type: 50033 (Pane) LocalizedType: "painel" ClassName: "Shell Embedding"
+2,2,2,3,1,1: Type: 50033 (Pane) LocalizedType: "painel" ClassName: "Shell DocObject View"
+2,2,2,3,1,1,1: Type: 50033 (Pane) Name: "about:blank" LocalizedType: "painel" ClassName: "Internet Explorer_Server"
+2,2,2,3,1,1,1,1: Type: 50033 (Pane) LocalizedType: "painel"
+2,2,2,3,1,1,1,1,1: Type: 50020 (Text) Name: "Missing Literature for Manual Integration into Levantamento.tex" LocalizedType: "text"
+2,2,2,4: Type: 50033 (Pane) LocalizedType: "painel" AutomationId: "ImageControl" ClassName: "WindowsForms10.Window.8.app.0.3b93019_r7_ad1"
+2,2,2,4,1: Type: 50033 (Pane) LocalizedType: "painel" AutomationId: "OuterPanel" ClassName: "WindowsForms10.Window.8.app.0.3b93019_r7_ad1"
+2,2,3: Type: 50017 (StatusBar) Name: "statusStrip" LocalizedType: "Barra de status" AutomationId: "statusStrip" ClassName: "WindowsForms10.Window.8.app.0.3b93019_r7_ad1"
+2,2,3,1: Type: 50020 (Text) Name: "Filtered 35" LocalizedType: "text"
+2,2,3,2: Type: 50020 (Text) Name: "0(1:1)" LocalizedType: "text"
+2,2,3,3: Type: 50020 (Text) Name: "1 488 С" LocalizedType: "text"
+2,2,3,4: Type: 50020 (Text) Name: "2 976 B" LocalizedType: "text"
+2,2,3,5: Type: 50020 (Text) Name: "text" LocalizedType: "text"
+2,2,3,6: Type: 50020 (Text) Name: "29/01/2026 21:21:14" LocalizedType: "text"
+2,2,4: Type: 50004 (Edit) Value: "AutoHotkey64" LocalizedType: "editar" AutomationId: "textBoxApplication" ClassName: "WindowsForms10.EDIT.app.0.3b93019_r7_ad1"
+2,2,5: Type: 50004 (Edit) Value: "Shift keys.ahk" LocalizedType: "editar" AutomationId: "textBoxWindow" ClassName: "WindowsForms10.EDIT.app.0.3b93019_r7_ad1"
+3: Type: 50010 (MenuBar) Name: "menuStrip1" LocalizedType: "barra de menus" AutomationId: "MainMenu" ClassName: "WindowsForms10.Window.8.app.0.3b93019_r7_ad1"
+3,1: Type: 50011 (MenuItem) Name: "Window" LocalizedType: "item de menu"
+3,2: Type: 50011 (MenuItem) Name: "List" LocalizedType: "item de menu"
+3,3: Type: 50011 (MenuItem) Name: "Clip" LocalizedType: "item de menu"
+3,4: Type: 50011 (MenuItem) Name: "Settings" LocalizedType: "item de menu"
+3,5: Type: 50011 (MenuItem) Name: "Help" LocalizedType: "item de menu"
+4: Type: 50037 (TitleBar) Value: "ClipAngel 2.17 >> UIATreeInspector [AutoHotkey64]" LocalizedType: "barra de título" AutomationId: "TitleBar"
+4,1: Type: 50010 (MenuBar) Name: "Sistema" LocalizedType: "barra de menus" AutomationId: "MenuBar"
+4,1,1: Type: 50011 (MenuItem) Name: "Sistema" LocalizedType: "item de menu"
+4,2: Type: 50000 (Button) Name: "Minimizar" LocalizedType: "botão"
+4,3: Type: 50000 (Button) Name: "Restaurar" LocalizedType: "botão"
+4,4: Type: 50000 (Button) Name: "Fechar" LocalizedType: "botão"
