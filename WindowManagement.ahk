@@ -1084,28 +1084,24 @@ HandleProjectEscape(*) {
 ; Selection Mode: Focus Cursor AI Text Field using UIA
 ; =============================================================================
 
-; Focus the Cursor AI text field by locating the "New Chat" anchor and navigating with Tab
-; Strategy: Scope to the "New Chat actions" toolbar first, then get the add-two button inside it.
-; This avoids picking a different actions-container's add button (path index i:3 vs i:5 varies by project).
-FocusCursorAITextField() {
+; Try to find and focus the AI text field (Edit) directly. Returns true if found and focused.
+FocusCursorAITextField_Direct(root) {
     try {
-        ; Get the active Cursor window handle
-        cursorHwnd := WinExist("ahk_exe Cursor.exe")
-        if (!cursorHwnd) {
-            return false
+        ; cursor-tree: Type 50004 (Edit) ClassName "aislash-editor-input"
+        editEl := root.FindFirst({ Type: 50004, ClassName: "aislash-editor-input" })
+        if (editEl) {
+            editEl.SetFocus()
+            Sleep 100
+            return true
         }
+    } catch {
+    }
+    return false
+}
 
-        ; Wait for window to be active
-        WinWaitActive("ahk_id " . cursorHwnd, , 2)
-        Sleep 200  ; Allow window to fully settle
-
-        ; Initialize UIA from window root
-        root := UIA.ElementFromHandle(cursorHwnd)
-        Sleep 100  ; Allow UIA to initialize
-
-        ; Primary: Find the "New Chat actions" toolbar (unique per window), then the add-two button inside it.
-        ; In cursor-tree: ToolBar Name "New Chat actions" (16) contains Button "New Chat (Ctrl+N)..." (16,1).
-        ; This is stable across projects regardless of actions-container index (i:3 vs i:5).
+; Try to focus the AI text field via "New Chat" anchor + Tab. Returns true on success.
+FocusCursorAITextField_Anchor(root) {
+    try {
         anchor := ""
         try {
             newChatToolbar := root.FindFirst({ Type: 50021, Name: "New Chat actions" })
@@ -1123,8 +1119,6 @@ FocusCursorAITextField() {
             }
         } catch {
         }
-
-        ; Fallback: Find any Button with add-two class whose Name identifies "New Chat" (whole-window search).
         if (!anchor) {
             try {
                 allAddButtons := root.FindAll({ Type: 50000, ClassName: "action-label codicon codicon-add-two" })
@@ -1142,24 +1136,58 @@ FocusCursorAITextField() {
             } catch {
             }
         }
-
-        if (!anchor) {
+        if (!anchor)
             return false
-        }
-
-        ; Focus the anchor (do NOT click)
         try {
             anchor.SetFocus()
-            Sleep 100  ; Wait for focus to settle
+            Sleep 100
         } catch {
             return false
         }
-
-        ; Send Tab twice to navigate from anchor to AI text input field
         Send "{Tab 2}"
-        Sleep 100  ; Wait for navigation to complete
-
+        Sleep 100
         return true
+    } catch {
+        return false
+    }
+}
+
+; Focus the Cursor AI text field. If not found (panel hidden), send Ctrl+I and retry once.
+; Flow: (1) Try to locate AI text field or anchor; (2) if failed, Ctrl+I and retry.
+FocusCursorAITextField() {
+    try {
+        cursorHwnd := WinExist("ahk_exe Cursor.exe")
+        if (!cursorHwnd)
+            return false
+
+        WinWaitActive("ahk_id " . cursorHwnd, , 2)
+        Sleep 200
+
+        root := UIA.ElementFromHandle(cursorHwnd)
+        Sleep 100
+
+        ; Initial detection: try direct (AI Edit) then anchor+Tab
+        if (FocusCursorAITextField_Direct(root))
+            return true
+        if (FocusCursorAITextField_Anchor(root))
+            return true
+
+        ; Conditional fallback: field not detected (e.g. AI panel closed) -> open with Ctrl+I and retry
+        Send "^i"
+        Sleep 1200  ; Wait for AI chat interface to initialize and field to become visible
+
+        ; Retry: direct then anchor+Tab
+        try {
+            root := UIA.ElementFromHandle(cursorHwnd)
+        } catch {
+            return false
+        }
+        if (FocusCursorAITextField_Direct(root))
+            return true
+        if (FocusCursorAITextField_Anchor(root))
+            return true
+
+        return false
     } catch Error as e {
         return false
     }
