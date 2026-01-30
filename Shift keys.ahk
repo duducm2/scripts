@@ -8580,113 +8580,36 @@ IsEditorActive() {
 +k::
 {
     ; Show banner while algorithm is executing
-    ShowSmallLoadingIndicator_ChatGPT("Processing...")
+    ; ShowSmallLoadingIndicator_ChatGPT("Processing...")
 
+    ; Step 1: Trigger markdown preview (Shift+M -> +i in Cursor)
     Send "+i"
-    Sleep 2300
+    Sleep 1800
 
-    ; Find and select the Preview tab using UIA
-    try {
-        win := WinExist("A")
-        if !win
-            return
-        root := UIA.ElementFromHandle(win)
+    ; Step 2: Center mouse in active window (Win+Alt+Shift+Q)
+    Send "#!+q"
+    Sleep 150
 
-        ; Small delay to allow UIA to settle after getting root
-        Sleep 100
+    ; Step 3: Offset mouse right into Markdown Preview Enhanced pane
+    PREVIEW_OFFSET_PX := 60
+    MouseGetPos(&x, &y)
+    x += PREVIEW_OFFSET_PX
+    DllCall("SetCursorPos", "int", x, "int", y)
+    Sleep 100
 
-        previewTab := 0
+    ; Step 4: Click to focus preview area
+    Click
 
-        ; Strategy 1: Try ElementFromPath using the provided path
-        ; Path: {T:30}, {T:32}, {T:26}, {T:18, i:-1}, {T:19}
-        try {
-            previewTab := root.ElementFromPath({ Type: 30 }, { Type: 32 }, { Type: 26 }, { Type: 18, i: -1 }, { Type: 19 })
-            ; Verify it contains "Preview" in name
-            if previewTab {
-                tabName := previewTab.Name
-                if !InStr(tabName, "Preview") {
-                    previewTab := 0
-                }
-            }
-            Sleep 50
-        } catch {
-            previewTab := 0
-        }
+    ; Step 5: Detach tab (Shift+W -> +o in Cursor)
+    Sleep 2000
+    Send "+o"
 
-        ; Strategy 2: Find by Type 50019 (TabItem) with Name containing "Preview"
-        if (!previewTab) {
-            try {
-                previewTab := root.FindFirst({ Type: 50019, Name: "Preview", matchmode: "Substring" })
-            } catch {
-                try {
-                    previewTab := root.FindFirst({ Type: "TabItem", Name: "Preview", matchmode: "Substring" })
-                } catch {
-                }
-            }
-            Sleep 50
-        }
+    Sleep 300
 
-        ; Strategy 3: Find all TabItems and filter for ones with "Preview" in name
-        if (!previewTab) {
-            try {
-                tabCond := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.TabItem)
-                tabs := root.FindElements(tabCond, UIA.TreeScope.Descendants)
-                if tabs {
-                    for tab in tabs {
-                        if !tab
-                            continue
-                        tabName := tab.Name
-                        if InStr(tabName, "Preview") {
-                            previewTab := tab
-                            break
-                        }
-                    }
-                }
-            } catch {
-            }
-            Sleep 50
-        }
-
-        ; Select the Preview tab if found
-        if previewTab {
-            try {
-                previewTab.Click()
-                ; Delay to allow tab to fully activate
-                Sleep 300
-            } catch {
-                try {
-                    previewTab.SetFocus()
-                    Sleep 100
-                    previewTab.Click()
-                    ; Delay to allow tab to fully activate
-                    Sleep 300
-                } catch {
-                    ; If Click fails, try Invoke if available
-                    try {
-                        if previewTab.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
-                            previewTab.Invoke()
-                            ; Delay to allow tab to fully activate
-                            Sleep 300
-                        }
-                    } catch {
-                    }
-                }
-            }
-        }
-
-        ; Delay before sending next command to allow UI to settle
-        Sleep 300
-        Send "+o"
-        ; Delay to allow command to process before maximizing
-        Sleep 500
-        WinMaximize "A"
-
-    } catch Error as e {
-        ; Silently fail if tab selection fails
-    }
+    WinMaximize "A"
 
     ; Hide banner after completion
-    HideSmallLoadingIndicator_ChatGPT()
+    ; HideSmallLoadingIndicator_ChatGPT()
 }
 
 ; Shift + C : Command palette - Command
