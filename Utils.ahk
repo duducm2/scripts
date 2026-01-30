@@ -430,7 +430,8 @@ GetHandyShortcutPath() {
         workExe := "C:\Users\fie7ca\Documents\Handy\handy.exe"
         if (FileExist(workExe))
             return workExe
-        for , p in ["C:\Users\fie7ca\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Handy\Handy.lnk", "C:\Users\fie7ca\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Handy.lnk"] {
+        for , p in ["C:\Users\fie7ca\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Handy\Handy.lnk",
+            "C:\Users\fie7ca\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Handy.lnk"] {
             if (p != "" && FileExist(p))
                 return p
         }
@@ -473,7 +474,7 @@ MergeNonFavoriteClips() {
         ; Step 1: Send Alt+B to activate ClipAngel (this opens the window if not visible)
         Send "!b"
         Sleep 500  ; Wait for ClipAngel window to appear
-        
+
         ; Step 2: Check if ClipAngel window exists now
         if !WinExist("ClipAngel") {
             MsgBox "ClipAngel window did not appear. Make sure ClipAngel is running.", "Merge Clips", "IconX"
@@ -481,7 +482,7 @@ MergeNonFavoriteClips() {
         }
         WinActivate("ClipAngel")
         WinWaitActive("ClipAngel", , 2)
-        
+
         ; Step 3: Initialize UIA on ClipAngel window
         hwnd := WinExist("A")
         el := UIA.ElementFromHandle(hwnd)
@@ -489,31 +490,31 @@ MergeNonFavoriteClips() {
             MsgBox "Failed to initialize UIA for ClipAngel.", "Merge Clips", "IconX"
             return
         }
-        
+
         ; Step 4: Find DataGridView by AutomationId
         dataGrid := 0
-        try dataGrid := el.FindFirst({Type: 50036, AutomationId: "dataGridView"})
+        try dataGrid := el.FindFirst({ Type: 50036, AutomationId: "dataGridView" })
         if !dataGrid {
             MsgBox "Could not find DataGridView in ClipAngel.", "Merge Clips", "IconX"
             return
         }
-        
+
         ; Step 5: Find Row 0
         row0 := 0
-        try row0 := dataGrid.FindFirst({Type: 50025, Name: "Row 0"})
+        try row0 := dataGrid.FindFirst({ Type: 50025, Name: "Row 0" })
         if !row0 {
             MsgBox "No clips found in Row 0.", "Merge Clips", "IconX"
             return
         }
-        
+
         ; Step 6: Find "Title Row 0" element
         titleElement := 0
-        try titleElement := row0.FindFirst({Type: 50006, Name: "Title Row 0"})
+        try titleElement := row0.FindFirst({ Type: 50006, Name: "Title Row 0" })
         if !titleElement {
             MsgBox "Could not find Title element in Row 0.", "Merge Clips", "IconX"
             return
         }
-        
+
         ; Step 7: Extract RTF value
         rtfValue := ""
         try rtfValue := titleElement.Value
@@ -521,16 +522,16 @@ MergeNonFavoriteClips() {
             MsgBox "Title Row 0 contains no text data.", "Merge Clips", "IconX"
             return
         }
-        
+
         ; Step 8: Parse RTF to extract plain text (this is our target favorite clip title)
         favoriteClipTitle := ParseRTFToPlainText(rtfValue)
-        
+
         ; Step 9: Switch to "All Clips" view to search for this favorite clip
         Send "!b"  ; Close current view
-        Sleep 300
+        Sleep 600
         Send "!v"  ; Open "All Clips" view (non-favorites first, favorites second)
         Sleep 500  ; Wait for view to update
-        
+
         ; Step 10: Re-initialize UIA for the updated view
         hwnd := WinExist("A")
         el := UIA.ElementFromHandle(hwnd)
@@ -538,71 +539,82 @@ MergeNonFavoriteClips() {
             MsgBox "Failed to re-initialize UIA after switching views.", "Merge Clips", "IconX"
             return
         }
-        
+
         ; Step 11: Find DataGridView again
         dataGrid := 0
-        try dataGrid := el.FindFirst({Type: 50036, AutomationId: "dataGridView"})
+        try dataGrid := el.FindFirst({ Type: 50036, AutomationId: "dataGridView" })
         if !dataGrid {
             MsgBox "Could not find DataGridView in All Clips view.", "Merge Clips", "IconX"
             return
         }
-        
+
         ; Step 12: Focus on Row 0 to start the search
         try {
-            row0 := dataGrid.FindFirst({Type: 50025, Name: "Row 0"})
+            row0 := dataGrid.FindFirst({ Type: 50025, Name: "Row 0" })
             if row0 {
                 row0.SetFocus()
                 Sleep 100
             }
         }
-        
+
         ; Step 13: Iterative search through rows (max 40 iterations)
         maxIterations := 40
         foundMatch := false
         currentRow := 0
-        
+
         loop maxIterations {
             currentRow := A_Index - 1  ; 0-based row index
-            
+
             ; Find current row
             currentRowElement := 0
-            try currentRowElement := dataGrid.FindFirst({Type: 50025, Name: "Row " . currentRow})
-            
+            try currentRowElement := dataGrid.FindFirst({ Type: 50025, Name: "Row " . currentRow })
+
             if !currentRowElement {
                 ; No more rows, stop searching
                 break
             }
-            
+
             ; Find title element in current row
             currentTitleElement := 0
-            try currentTitleElement := currentRowElement.FindFirst({Type: 50006, Name: "Title Row " . currentRow})
-            
+            try currentTitleElement := currentRowElement.FindFirst({ Type: 50006, Name: "Title Row " . currentRow })
+
             if currentTitleElement {
                 ; Extract and parse the title
                 currentRtfValue := ""
                 try currentRtfValue := currentTitleElement.Value
-                
+
                 if (currentRtfValue != "" && currentRtfValue != "System.Drawing.Bitmap") {
                     currentTitle := ParseRTFToPlainText(currentRtfValue)
-                    
+
                     ; Compare with the favorite clip title
                     if (currentTitle = favoriteClipTitle) {
                         foundMatch := true
-                        ShowCenteredOverlay_Utils("Found favorite clip at Row " . currentRow . ": " . currentTitle, 2000)
+                        
+                        ; Step 14: Select and merge non-favorite clips (cursor is on first favorite)
+                        ; Move up once to last non-favorite clip
+                        Send "{Up}"
+                        Sleep 150
+                        ; Select from current position to top of list (all non-favorites)
+                        Send "^+{Home}"
+                        Sleep 150
+                        ; Merge the selected clips
+                        Send "^!j"
+                        
+                        ShowCenteredOverlay_Utils("Merged non-favorite clips", 2000)
                         break
                     }
                 }
             }
-            
+
             ; Move to next row
             Send "{Down}"
             Sleep 100  ; Small delay between iterations
         }
-        
+
         if !foundMatch {
             ShowCenteredOverlay_Utils("Favorite clip not found in first " . maxIterations . " rows", 2000)
         }
-        
+
     } catch Error as e {
         MsgBox "Error in MergeNonFavoriteClips: " . e.Message, "Merge Clips", "IconX"
     }
@@ -613,17 +625,17 @@ ParseRTFToPlainText(rtf) {
     ; Remove RTF header and formatting
     ; Pattern: extract text between last formatting and \par
     plainText := rtf
-    
+
     ; Remove RTF control sequences (backslash followed by letters/numbers)
     plainText := RegExReplace(plainText, "\\[a-z]+[0-9]*\s?", "")
     ; Remove braces
     plainText := RegExReplace(plainText, "[{}]", "")
     ; Remove everything after \par
     plainText := RegExReplace(plainText, "\\par.*$", "")
-    
+
     ; Trim whitespace
     plainText := Trim(plainText)
-    
+
     return plainText
 }
 
@@ -4164,7 +4176,8 @@ BuildHotstringCharMap() {
             ; Handle quick open files
             if (IsSet(g_QuickOpenFiles) && g_QuickOpenFiles.Length > 0) {
                 for fileEntry in g_QuickOpenFiles {
-                    while (charIndex <= g_HotstringCharSequence.Length && g_ReservedEmptyChar != "" && g_HotstringCharSequence[charIndex] = g_ReservedEmptyChar)
+                    while (charIndex <= g_HotstringCharSequence.Length && g_ReservedEmptyChar != "" &&
+                        g_HotstringCharSequence[charIndex] = g_ReservedEmptyChar)
                         charIndex++
                     if (charIndex <= g_HotstringCharSequence.Length) {
                         char := g_HotstringCharSequence[charIndex]
@@ -4178,7 +4191,8 @@ BuildHotstringCharMap() {
             if (IsSet(g_Macros) && g_Macros.Length > 0) {
                 ; First pass: assign macros with explicit character assignments
                 for macroEntry in g_Macros {
-                    if (macroEntry.HasProp("char") && macroEntry.char != "" && (g_ReservedEmptyChar = "" || macroEntry.char != g_ReservedEmptyChar)) {
+                    if (macroEntry.HasProp("char") && macroEntry.char != "" && (g_ReservedEmptyChar = "" || macroEntry.char !=
+                        g_ReservedEmptyChar)) {
                         ; Check if character is in the sequence and not already assigned
                         charIndexInSequence := 0
                         for idx, seqChar in g_HotstringCharSequence {
@@ -4231,7 +4245,8 @@ BuildHotstringCharMap() {
             if (categorized.Has(category)) {
                 ; First pass: assign hotstrings with explicit character assignments
                 for hs in categorized[category] {
-                    if (hs.HasProp("char") && hs.char != "" && (g_ReservedEmptyChar = "" || hs.char != g_ReservedEmptyChar)) {
+                    if (hs.HasProp("char") && hs.char != "" && (g_ReservedEmptyChar = "" || hs.char !=
+                        g_ReservedEmptyChar)) {
                         ; Check if character is in the sequence and not already assigned
                         charIndexInSequence := 0
                         for idx, seqChar in g_HotstringCharSequence {
@@ -5095,7 +5110,8 @@ ShowHotstringSelector() {
             loop categorySlotCount {
                 if (currentCharIndex <= g_HotstringCharSequence.Length) {
                     ; Skip reserved empty char if set so it always shows as (empty)
-                    while (currentCharIndex <= g_HotstringCharSequence.Length && g_ReservedEmptyChar != "" && g_HotstringCharSequence[currentCharIndex] = g_ReservedEmptyChar)
+                    while (currentCharIndex <= g_HotstringCharSequence.Length && g_ReservedEmptyChar != "" &&
+                        g_HotstringCharSequence[currentCharIndex] = g_ReservedEmptyChar)
                         currentCharIndex++
                     if (currentCharIndex > g_HotstringCharSequence.Length)
                         break
@@ -5199,7 +5215,8 @@ ShowHotstringSelector() {
             }
         }
         if (!hasReservedEmpty)
-            allItems.Push({ category: "Unassigned", char: g_ReservedEmptyChar, text: "[" . g_ReservedEmptyChar . "] > (empty)", isEmpty: true })
+            allItems.Push({ category: "Unassigned", char: g_ReservedEmptyChar, text: "[" . g_ReservedEmptyChar .
+                "] > (empty)", isEmpty: true })
     }
 
     ; Show any remaining unassigned character slots
