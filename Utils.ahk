@@ -668,11 +668,11 @@ ParseRTFToPlainText(rtf) {
 MarkLastClipAsFavorite() {
     ; Step 1: Open Clip Angel
     Send "!v"
-    Sleep 400
+    Sleep 600
     
     ; Step 2: Mark current clip as favorite
     Send "!q"
-    Sleep 400
+    Sleep 600
     
     ; Step 3: Close Clip Angel
     Send "!v"
