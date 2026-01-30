@@ -707,12 +707,13 @@ MarkLastClipAsFavorite() {
 ; =============================================================================
 ; AI Model Selection System for Handy
 ; =============================================================================
-; Configuration: Maps selection numbers (1, 2, 3) to AI model names.
-; These are partial name prefixes used to find buttons in the UIA tree.
+; Configuration: Maps selection numbers (1, 2, 3, 4) to AI model names.
+; These are partial name prefixes used to find buttons in the UIA tree (Type 50000, botão).
 global g_HandyAiModels := Map(
     1, { name: "Whisper Large", desc: "Good accuracy, but slow" },
     2, { name: "Whisper Medium", desc: "Good accuracy, medium speed" },
-    3, { name: "Moonshine Base", desc: "Very fast, English only" }
+    3, { name: "Moonshine Base", desc: "Very fast, English only" },
+    4, { name: "Parakeet V3", desc: "Fast and accurate" }
 )
 
 ; GUI state for AI model selector
@@ -753,7 +754,7 @@ ShowAiModelSelector() {
     ; Footer
     g_AiModelSelectorGui.Add("Text", "w280 h1 Background45475A y+10")
     g_AiModelSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_AiModelSelectorGui.Add("Text", "w280 Center", "Press 1, 2, or 3 | Esc to cancel")
+    g_AiModelSelectorGui.Add("Text", "w280 Center", "Press 1, 2, 3, or 4 | Esc to cancel")
 
     ; Get active window to determine which monitor to center on
     activeWin := 0
@@ -808,10 +809,11 @@ ShowAiModelSelector() {
 
     g_AiModelSelectorActive := true
 
-    ; Enable hotkeys for 1, 2, 3 and Escape
+    ; Enable hotkeys for 1, 2, 3, 4 and Escape
     Hotkey("1", AiModelSelector_HandleKey, "On")
     Hotkey("2", AiModelSelector_HandleKey, "On")
     Hotkey("3", AiModelSelector_HandleKey, "On")
+    Hotkey("4", AiModelSelector_HandleKey, "On")
     Hotkey("Escape", AiModelSelector_Cancel, "On")
 }
 
@@ -852,6 +854,7 @@ AiModelSelector_Close() {
     try Hotkey("1", "Off")
     try Hotkey("2", "Off")
     try Hotkey("3", "Off")
+    try Hotkey("4", "Off")
     try Hotkey("Escape", AiModelSelector_Cancel, "Off")
 
     ; Destroy GUI
@@ -1099,10 +1102,10 @@ Handy_ClickAiModel(hwnd, modelName) {
             btnName := ""
             try btnName := btn.Name
             if (btnName != "" && InStr(btnName, modelName) = 1) {
-                ; Verify it's a model button by checking class
+                ; Verify it's a model button by checking class (list items or header-style, e.g. Parakeet V3)
                 btnClass := ""
                 try btnClass := btn.ClassName
-                if (InStr(btnClass, "w-full px-3 py-2 text-left")) {
+                if (InStr(btnClass, "w-full px-3 py-2 text-left") || InStr(btnClass, "flex items-center gap-2")) {
                     modelBtn := btn
                     break
                 }
