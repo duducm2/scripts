@@ -471,12 +471,16 @@ GetHandyProcessPath() {
 ; Extract title from first non-favorite clip in ClipAngel
 MergeNonFavoriteClips() {
     try {
+        ; Show persistent banner for the duration of the algorithm
+        AiModelBanner_Show("Merging non-favorite clips...", "3772FF")
+        
         ; Step 1: Send Alt+B to activate ClipAngel (this opens the window if not visible)
         Send "!b"
         Sleep 500  ; Wait for ClipAngel window to appear
 
         ; Step 2: Check if ClipAngel window exists now
         if !WinExist("ClipAngel") {
+            AiModelBanner_Hide()
             MsgBox "ClipAngel window did not appear. Make sure ClipAngel is running.", "Merge Clips", "IconX"
             return
         }
@@ -487,6 +491,7 @@ MergeNonFavoriteClips() {
         hwnd := WinExist("A")
         el := UIA.ElementFromHandle(hwnd)
         if !el {
+            AiModelBanner_Hide()
             MsgBox "Failed to initialize UIA for ClipAngel.", "Merge Clips", "IconX"
             return
         }
@@ -495,6 +500,7 @@ MergeNonFavoriteClips() {
         dataGrid := 0
         try dataGrid := el.FindFirst({ Type: 50036, AutomationId: "dataGridView" })
         if !dataGrid {
+            AiModelBanner_Hide()
             MsgBox "Could not find DataGridView in ClipAngel.", "Merge Clips", "IconX"
             return
         }
@@ -503,6 +509,7 @@ MergeNonFavoriteClips() {
         row0 := 0
         try row0 := dataGrid.FindFirst({ Type: 50025, Name: "Row 0" })
         if !row0 {
+            AiModelBanner_Hide()
             MsgBox "No clips found in Row 0.", "Merge Clips", "IconX"
             return
         }
@@ -511,6 +518,7 @@ MergeNonFavoriteClips() {
         titleElement := 0
         try titleElement := row0.FindFirst({ Type: 50006, Name: "Title Row 0" })
         if !titleElement {
+            AiModelBanner_Hide()
             MsgBox "Could not find Title element in Row 0.", "Merge Clips", "IconX"
             return
         }
@@ -519,6 +527,7 @@ MergeNonFavoriteClips() {
         rtfValue := ""
         try rtfValue := titleElement.Value
         if (rtfValue = "" || rtfValue = "System.Drawing.Bitmap") {
+            AiModelBanner_Hide()
             MsgBox "Title Row 0 contains no text data.", "Merge Clips", "IconX"
             return
         }
@@ -536,6 +545,7 @@ MergeNonFavoriteClips() {
         hwnd := WinExist("A")
         el := UIA.ElementFromHandle(hwnd)
         if !el {
+            AiModelBanner_Hide()
             MsgBox "Failed to re-initialize UIA after switching views.", "Merge Clips", "IconX"
             return
         }
@@ -544,6 +554,7 @@ MergeNonFavoriteClips() {
         dataGrid := 0
         try dataGrid := el.FindFirst({ Type: 50036, AutomationId: "dataGridView" })
         if !dataGrid {
+            AiModelBanner_Hide()
             MsgBox "Could not find DataGridView in All Clips view.", "Merge Clips", "IconX"
             return
         }
@@ -608,6 +619,7 @@ MergeNonFavoriteClips() {
                         Sleep 100
                         Send "^c"     ; Copy
                         
+                        AiModelBanner_Hide()
                         ShowCenteredOverlay_Utils("Merged non-favorite clips (copied)", 2000)
                         break
                     }
@@ -620,10 +632,12 @@ MergeNonFavoriteClips() {
         }
 
         if !foundMatch {
+            AiModelBanner_Hide()
             ShowCenteredOverlay_Utils("Favorite clip not found in first " . maxIterations . " rows", 2000)
         }
 
     } catch Error as e {
+        AiModelBanner_Hide()
         MsgBox "Error in MergeNonFavoriteClips: " . e.Message, "Merge Clips", "IconX"
     }
 }
