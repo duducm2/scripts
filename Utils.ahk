@@ -5019,6 +5019,9 @@ GeminiNavigateFocusAndPasteFirstSnippet() {
     Send "!v"
     Sleep 50
     Send "^!b"
+    ; Same sound as when opening Gemini (focus/paste feedback)
+    if (IsSoundEnabled())
+        SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
 }
 
 HandleHotstringChar(char) {
@@ -5219,6 +5222,9 @@ HandleHotstringChar(char) {
 
                 ; Paste the text (do NOT send Enter)
                 InsertText(expansion)
+                ; Same sound as when opening Gemini (focus/paste feedback)
+                if (IsSoundEnabled())
+                    SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
             } finally {
                 HotstringGeminiBanner_Hide()
             }
