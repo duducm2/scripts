@@ -1589,9 +1589,9 @@ DictationLoopStop() {
     ; Clear any existing timer first to prevent accumulation
     SetTimer(DictationLoopStart, 0)
 
-    ; Schedule next start after 4 seconds (buffer for processing) - negative period = one-shot timer
+    ; Schedule next start after 1 second (buffer for processing) - negative period = one-shot timer
     ; Only schedules if loop is still active (checked above)
-    SetTimer(DictationLoopStart, -4000)
+    SetTimer(DictationLoopStart, -1500)
 }
 
 ; Internal helper: Performs clipboard cleanup without showing prompt
@@ -6339,7 +6339,7 @@ CheckDictationRecordingWindow() {
             return
         }
 
-        if (g_LastStateTransitionTick && (A_TickCount - g_LastStateTransitionTick < 7000)) {
+        if (g_LastStateTransitionTick && (A_TickCount - g_LastStateTransitionTick < 500)) {
             Critical "Off"
             return
         }
@@ -6374,6 +6374,9 @@ CheckDictationRecordingWindow() {
     }
     else if (g_DictationActive && windowExists) {
         ShowDictationIndicator()
+        if (!g_DictationPulseTimer) {
+            StartDictationPulseTimer()
+        }
     }
 }
 
