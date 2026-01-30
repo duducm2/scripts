@@ -9505,7 +9505,8 @@ CancelCommit(ctrl, *) {
     }
 }
 
-; Alt + N : Review next file - Review next file
+; Alt + N : Review next file - Click the button that contains "Review next file" (Type 50020 Text)
+; Path from UIA tree: workbench.parts.editor -> editor-instance -> ... -> Group (anysphere-text-button) -> Text "Review next file"
 !n::
 {
     try {
@@ -9516,29 +9517,74 @@ CancelCommit(ctrl, *) {
         root := UIA.ElementFromHandle(win)
         Sleep 100  ; Allow UI to update
 
-        ; Find the "Review next file" button by Type 50020 (Text) and Name
-        reviewButton := root.FindFirst({ Name: "Review next file", Type: "50020" })
-
-        ; Fallback: Try by Type "Text" and Name
-        if !reviewButton {
-            reviewButton := root.FindFirst({ Name: "Review next file", Type: "Text" })
+        ; Strategy 1: Scope to editor part (workbench.parts.editor), find "Review next file" Text, then click its parent Group (the button)
+        editorPart := ""
+        try editorPart := root.FindFirst({ AutomationId: "workbench.parts.editor", Type: 50026 })
+        if (editorPart) {
+            reviewText := ""
+            try reviewText := editorPart.FindFirst({ Name: "Review next file", Type: 50020 })
+            if (reviewText) {
+                try {
+                    parentBtn := UIA.TreeWalkerTrue.GetParentElement(reviewText)
+                    if (parentBtn) {
+                        try {
+                            if parentBtn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
+                                parentBtn.InvokePattern.Invoke()
+                            } else {
+                                parentBtn.Click()
+                            }
+                            return
+                        } catch {
+                            try reviewText.Click()
+                            return
+                        }
+                    }
+                } catch {
+                    try reviewText.Click()
+                    return
+                }
+            }
         }
 
-        ; Fallback: Try by Name with substring match (in case of localization variations)
-        if !reviewButton {
-            allTexts := root.FindAll({ Type: "50020" })
+        ; Strategy 2: Root-level find by Name "Review next file" or "Review" (Type 50020)
+        reviewEl := root.FindFirst({ Name: "Review next file", Type: 50020 })
+        if !reviewEl {
+            reviewEl := root.FindFirst({ Name: "Review", Type: 50020 })
+        }
+        if !reviewEl {
+            allTexts := root.FindAll({ Type: 50020 })
             for text in allTexts {
-                if InStr(text.Name, "Review next file") {
-                    reviewButton := text
+                name := ""
+                try name := text.Name
+                if (name = "Review" || name = "Review next file" || InStr(name, "Review next file")) {
+                    reviewEl := text
                     break
                 }
             }
         }
 
-        if (reviewButton) {
-            reviewButton.Click()
-        } else {
-            ; Last resort: Could not find the button
+        if (reviewEl) {
+            ; Prefer clicking parent (the button Group) so the clickable area is used
+            try {
+                parentBtn := UIA.TreeWalkerTrue.GetParentElement(reviewEl)
+                if (parentBtn) {
+                    try parentBtn.Click()
+                    catch {
+                        try reviewEl.Click()
+                    }
+                    return
+                }
+            } catch {
+            }
+            try {
+                if reviewEl.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
+                    reviewEl.InvokePattern.Invoke()
+                } else {
+                    reviewEl.Click()
+                }
+            } catch {
+                try reviewEl.Click()
+            }
         }
     } catch Error as e {
         ; If all else fails, silently fail (no fallback action defined)
