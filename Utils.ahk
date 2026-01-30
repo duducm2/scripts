@@ -944,9 +944,9 @@ ExecuteHandyAiModelSelection(selection) {
             return
         }
 
-        ; Step 4: Wait for processing (5 seconds)
-        AiModelBanner_Show("⏳ Processing... (5s)", "27AE60")
-        Sleep 5000
+        ; Step 4: Wait for model to finish loading (poll button name until "loading" disappears)
+        AiModelBanner_Show("⏳ Waiting for model...", "27AE60")
+        Handy_WaitForModelReady(handyHwnd, 20000)
 
         ; Step 5: Close Handy window
         AiModelBanner_Show("✅ Done! Closing Handy...", "27AE60")
@@ -1093,6 +1093,35 @@ Handy_ClickAiModel(hwnd, modelName) {
         return true
     } catch {
         return false
+    }
+}
+
+; Poll the AI model selection button until Name no longer contains "loading", or maxWaitMs elapses.
+; Button: Type 50000, ClassName "flex items-center gap-2 hover:text-text/80 transition-colors "
+; Returns true when loading text disappeared, false on timeout or if button not found.
+Handy_WaitForModelReady(hwnd, maxWaitMs) {
+    global UIA
+    pollInterval := 250
+    start := A_TickCount
+    loop {
+        if ((A_TickCount - start) >= maxWaitMs)
+            return false
+        el := UIA.ElementFromHandle(hwnd)
+        if !el {
+            Sleep pollInterval
+            continue
+        }
+        btn := 0
+        try btn := el.FindFirst({ Type: 50000, ClassName: "flex items-center gap-2 hover:text-text/80 transition-colors " })
+        if (!btn) {
+            Sleep pollInterval
+            continue
+        }
+        btnName := ""
+        try btnName := btn.Name
+        if (InStr(btnName, "loading") = 0)
+            return true
+        Sleep pollInterval
     }
 }
 
@@ -1591,7 +1620,7 @@ DictationLoopStop() {
 
     ; Schedule next start after 1 second (buffer for processing) - negative period = one-shot timer
     ; Only schedules if loop is still active (checked above)
-    SetTimer(DictationLoopStart, -1500)
+    SetTimer(DictationLoopStart, -1000)
 }
 
 ; Internal helper: Performs clipboard cleanup without showing prompt
