@@ -4926,6 +4926,101 @@ CleanupHotstringSelector() {
 ;
 ; RETURNS: None (void function)
 ; =============================================================================
+
+; Navigate to Gemini, focus the prompt field, then paste first clipboard snippet (same as Win+Alt+Shift+1).
+; Reference: "order called snippets" – Clip Angel top item sent via !v then ^!b.
+GeminiNavigateFocusAndPasteFirstSnippet() {
+    SetTitleMatchMode(2)
+    geminiHwnd := 0
+    try {
+        for hwnd in WinGetList("ahk_exe chrome.exe") {
+            try {
+                if InStr(WinGetTitle("ahk_id " hwnd), "gemini", false) {
+                    geminiHwnd := hwnd
+                    break
+                }
+            } catch {
+            }
+        }
+    } catch {
+    }
+
+    if (!geminiHwnd) {
+        ; Navigate to Gemini website
+        Run "chrome.exe --new-window https://gemini.google.com/"
+        if !WinWaitActive("ahk_exe chrome.exe", , 5)
+            return
+        Sleep 2500  ; Allow page to load
+        geminiHwnd := WinExist("A")
+    }
+
+    if (geminiHwnd) {
+        WinActivate("ahk_id " geminiHwnd)
+        WinWaitActive("ahk_id " geminiHwnd, , 2)
+        Sleep 200
+    } else {
+        WinActivate("ahk_exe chrome.exe")
+        WinWaitActive("ahk_exe chrome.exe", , 2)
+    }
+
+    ; Focus the Gemini prompt field (Anchor & Backtrack strategy)
+    try {
+        uia := UIA_Browser()
+        Sleep 80
+        anchorButton := 0
+        try {
+            anchorButton := uia.FindFirst({ Type: "50000", Name: "Open upload file menu", ControlType: "Button" })
+            if (!anchorButton)
+                anchorButton := uia.FindFirst({ Type: "50000", Name: "Open upload file menu", cs: false })
+        } catch {
+        }
+        if (!anchorButton) {
+            try {
+                allButtons := uia.FindAll({ Type: "50000" })
+                for button in allButtons {
+                    try {
+                        if (InStr(button.Name, "Open upload file menu", false)) {
+                            anchorButton := button
+                            break
+                        }
+                    } catch {
+                        continue
+                    }
+                }
+            } catch {
+            }
+        }
+        if (anchorButton) {
+            try {
+                anchorButton.SetFocus()
+                Sleep 25
+                SendInput "+{Tab}"
+                Sleep 15
+            } catch {
+                try {
+                    promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
+                    if (promptField)
+                        promptField.SetFocus()
+                } catch {
+                }
+            }
+        } else {
+            try {
+                promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
+                if (promptField)
+                    promptField.SetFocus()
+            } catch {
+            }
+        }
+    } catch {
+    }
+
+    ; Paste first clipboard snippet (same as Win+Alt+Shift+1: order called snippets)
+    Send "!v"
+    Sleep 50
+    Send "^!b"
+}
+
 HandleHotstringChar(char) {
     global g_HotstringSelectorActive, g_HotstringCharMap, g_QuickOpenFileCharMap, g_MacroCharMap
     global g_HotstringPromptCharMap, g_HotstringGeminiArmed
@@ -4935,10 +5030,16 @@ HandleHotstringChar(char) {
         return
     }
 
-    ; Modal modifier: Press L, then a prompt key to redirect to Gemini.
+    ; L key: first press = arm Gemini mode; second press (double-tap) = navigate to Gemini, focus field, paste first snippet.
     if (char = "l" || char = "L") {
+        if (g_HotstringGeminiArmed) {
+            ; Double-tap L: navigate to Gemini, focus prompt field, execute Win+Alt+Shift+1 (first snippet).
+            CleanupHotstringSelector()
+            GeminiNavigateFocusAndPasteFirstSnippet()
+            g_HotstringGeminiArmed := false
+            return
+        }
         g_HotstringGeminiArmed := true
-        ; Auto-disarm after a short time to avoid sticky state.
         SetTimer(DisarmHotstringGeminiMode, -4000)
         return
     }
@@ -5443,7 +5544,7 @@ ShowHotstringSelector() {
                     } else {
                         ; Character slot exists but no hotstring assigned
                         if (char = "l") {
-                            itemText := "[L] > Gemini modifier (press L, then a prompt key)"
+                            itemText := "[L] > Gemini: L = arm; L+L = open Gemini + paste first snippet"
                             isEmpty := false
                         } else {
                             itemText := "[" . char . "] > (empty)"
@@ -5513,7 +5614,7 @@ ShowHotstringSelector() {
         while (currentCharIndex <= g_HotstringCharSequence.Length) {
             char := g_HotstringCharSequence[currentCharIndex]
             if (char = "l") {
-                allItems.Push({ category: "Unassigned", char: char, text: "[L] > Gemini modifier (press L, then a prompt key)",
+                allItems.Push({ category: "Unassigned", char: char, text: "[L] > Gemini: L = arm; L+L = open Gemini + paste first snippet",
                     isEmpty: false })
             } else if (g_ReservedEmptyChar != "" && char = g_ReservedEmptyChar) {
                 ; Already added above; skip to avoid duplicate
