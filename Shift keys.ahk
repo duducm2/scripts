@@ -649,6 +649,11 @@ ClipAngel (Shift)
 ⌨️ [Alt+3] [M]ove down twice and select
 ⌨️ [Alt+4] [M]ove down three times and select
 ⌨️ [Alt+5] [M]ove down four times and select
+📋 [Ctrl+1] Copy current item
+📋 [Ctrl+2] Move down 1, copy
+📋 [Ctrl+3] Move down 2, copy
+📋 [Ctrl+4] Move down 3, copy
+📋 [Ctrl+5] Move down 4, copy
 )"  ; end ClipAngel
 
 ; --- Figma -----------------------------------------------------------------
@@ -1662,6 +1667,13 @@ global g_ClipAngelFilterCharSequence := ["1", "2", "3", "4", "5"]
     Send "{Down}"
     Send "{Enter}"
 }
+
+; Ctrl + 1–5 : Copy current item, or move down N rows and copy
+^1:: Send "^c"
+^2:: Send "{Down 1}^c"
+^3:: Send "{Down 2}^c"
+^4:: Send "{Down 3}^c"
+^5:: Send "{Down 4}^c"
 
 ; =============================================================================
 ; ClipAngel Filter Selector Functions
