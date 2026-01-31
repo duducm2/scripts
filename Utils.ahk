@@ -487,8 +487,8 @@ EnsureClipAngelClosed() {
 MergeNonFavoriteClips() {
     try {
         ; Show persistent banner for the duration of the algorithm
-        AiModelBanner_Show("Merging non-favorite clips...", "3772FF")
-        
+        AiModelBanner_Show("Merging non-favorite clips...", "728e1e")
+
         ; Step 1: Send Alt+B to activate ClipAngel (this opens the window if not visible)
         Send "!b"
         Sleep 500  ; Wait for ClipAngel window to appear
@@ -622,7 +622,7 @@ MergeNonFavoriteClips() {
                     ; Compare with the favorite clip title
                     if (currentTitle = favoriteClipTitle) {
                         foundMatch := true
-                        
+
                         ; Step 14: Select and merge non-favorite clips (cursor is on first favorite)
                         ; Move up once to last non-favorite clip
                         Send "{Up}"
@@ -633,14 +633,14 @@ MergeNonFavoriteClips() {
                         ; Merge the selected clips
                         Send "^!j"
                         Sleep 300  ; Wait for merge to complete
-                        
+
                         ; Step 15: Copy merged clip to clipboard
                         Send "{Tab}"   ; Focus merged content area
                         Sleep 150
                         Send "^a"     ; Select all
                         Sleep 100
                         Send "^c"     ; Copy
-                        
+
                         AiModelBanner_Hide()
                         ShowCenteredOverlay_Utils("Merged non-favorite clips (copied)", 2000)
                         break
@@ -763,11 +763,11 @@ MarkLastClipAsFavorite() {
     ; Step 1: Open Clip Angel
     Send "!v"
     Sleep 600
-    
+
     ; Step 2: Mark current clip as favorite
     Send "!q"
     Sleep 600
-    
+
     ; Step 3: Close Clip Angel
     Send "!v"
 }
@@ -1752,7 +1752,6 @@ DictationLoopStart() {
     ; Clear any existing timer first to prevent accumulation
     SetTimer(DictationLoopStop, 0)
 
-
     ; Schedule stop after 60 seconds - negative period = one-shot timer
     ; Only schedules if loop is still active (checked above)
     SetTimer(DictationLoopStop, -60000)
@@ -2058,7 +2057,8 @@ DictationMerge_ShowBanner() {
     ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
     ov.BackColor := "3772FF"
     ov.SetFont("s24 cFFFFFF Bold", "Segoe UI")
-    g_DictationMergeTextCtrl := ov.Add("Text", "w650 Center", "Merging non-favorite clips in " g_DictationMergeRemaining "… (press N or End to cancel)")
+    g_DictationMergeTextCtrl := ov.Add("Text", "w650 Center", "Merging non-favorite clips in " g_DictationMergeRemaining "… (press N or End to cancel)"
+    )
     ov.Show("AutoSize Hide")
     try {
         if (hasWindow)
@@ -6722,7 +6722,8 @@ DictationClipboardHandler(DataType) {
 
 ; Play completion chime after transcription finishes
 PlayDictationCompletionChime(*) {
-    global g_DictationCompletionChimeScheduled, g_PendingDictationAction, g_PendingDictationMerge, g_KeepIndicatorVisible
+    global g_DictationCompletionChimeScheduled, g_PendingDictationAction, g_PendingDictationMerge,
+        g_KeepIndicatorVisible
     global g_DictationLoopActive
 
     ; Ensure clipboard handler is removed (safe to call even if already removed)
@@ -6778,7 +6779,7 @@ PlayDictationCompletionChime(*) {
         ; This ensures AI transcription and handy.exe finish before Clip Angel merge begins
         pendingMerge := g_PendingDictationMerge
         g_PendingDictationMerge := false  ; Clear immediately after reading
-        
+
         if (pendingMerge) {
             ; Transcription is complete, now safe to start merge countdown
             DictationMerge_StartCountdown(3)

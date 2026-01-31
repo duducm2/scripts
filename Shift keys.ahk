@@ -5,14 +5,14 @@
     /********************************************************************
      *   AVAILABLE WIN+ALT+SHIFT COMBINATIONS
      *   The following combinations are not currently in use:
-     *   
+     *
      *   Letters: P, U
      *   Numbers: (all numbers 0-9 are used)
      *   Symbols: ; ' [ ] \ | ` ~ @ # $ % ^ & * ( ) - _ = + { } : " < > ? /
-     *   
+     *
      *   Note: Some combinations use Ctrl+Alt+Shift+Arrow keys for extended mouse movement
-     ********************************************************************/
-    #Requires AutoHotkey v2.0+
+********************************************************************/
+#Requires AutoHotkey v2.0+
 
 #SingleInstance Force
 
@@ -649,11 +649,11 @@ ClipAngel (Shift)
 ⌨️ [Alt+3] [M]ove down twice and select
 ⌨️ [Alt+4] [M]ove down three times and select
 ⌨️ [Alt+5] [M]ove down four times and select
-📋 [Ctrl+1] Copy current item
-📋 [Ctrl+2] Move down 1, copy
-📋 [Ctrl+3] Move down 2, copy
-📋 [Ctrl+4] Move down 3, copy
-📋 [Ctrl+5] Move down 4, copy
+📋 [Ctrl+1] Tab, Select All, Copy
+📋 [Ctrl+2] Down 1, Tab, Select All, Copy
+📋 [Ctrl+3] Down 2, Tab, Select All, Copy
+📋 [Ctrl+4] Down 3, Tab, Select All, Copy
+📋 [Ctrl+5] Down 4, Tab, Select All, Copy
 )"  ; end ClipAngel
 
 ; --- Figma -----------------------------------------------------------------
@@ -1668,12 +1668,12 @@ global g_ClipAngelFilterCharSequence := ["1", "2", "3", "4", "5"]
     Send "{Enter}"
 }
 
-; Ctrl + 1–5 : Copy current item, or move down N rows and copy
-^1:: Send "^c"
-^2:: Send "{Down 1}^c"
-^3:: Send "{Down 2}^c"
-^4:: Send "{Down 3}^c"
-^5:: Send "{Down 4}^c"
+; Ctrl + 1–5 : Down N, Tab, Select All, Copy
+^1:: Send "{Tab}^a^c"
+^2:: Send "{Down 1}{Tab}^a^c{F10}"
+^3:: Send "{Down 2}{Tab}^a^c{F10}"
+^4:: Send "{Down 3}{Tab}^a^c{F10}"
+^5:: Send "{Down 4}{Tab}^a^c{F10}"
 
 ; =============================================================================
 ; ClipAngel Filter Selector Functions
