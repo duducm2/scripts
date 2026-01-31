@@ -281,16 +281,14 @@ global g_WikipediaFocusMonitorTimer := false
 ; Global variable for Wikipedia completed articles CSV file
 global g_WikipediaCompletedFile := A_ScriptDir "\data\wikipedia_completed.csv"
 
-; Wikipedia article items configuration
-; Item 1: Taoist philosophy
-; Item 2: Claude Debussy
-; Item 3: Daoshi
-; Item 4: Self-cultivation
-; Item 5: Cognitive therapy
-global g_WikipediaItems := [{ char: "1", title: "Taoist philosophy", url: "https://en.wikipedia.org/wiki/Taoist_philosophy" }, { char: "2",
-    title: "Claude Debussy", url: "https://en.wikipedia.org/wiki/Claude_Debussy" }, { char: "3", title: "Daoshi",
-        url: "https://en.wikipedia.org/wiki/Daoshi" }, { char: "4", title: "Self-cultivation",
-            url: "https://en.wikipedia.org/wiki/Self-cultivation" }, { char: "5", title: "Cognitive therapy", url: "https://en.wikipedia.org/wiki/Cognitive_therapy" }
+; Wikipedia article items configuration (Taoist philosophy completed and removed)
+; Item 1: Claude Debussy
+; Item 2: Daoshi
+; Item 3: Self-cultivation
+; Item 4: Cognitive therapy
+global g_WikipediaItems := [{ char: "1", title: "Claude Debussy", url: "https://en.wikipedia.org/wiki/Claude_Debussy" }, { char: "2",
+    title: "Daoshi", url: "https://en.wikipedia.org/wiki/Daoshi" }, { char: "3", title: "Self-cultivation",
+        url: "https://en.wikipedia.org/wiki/Self-cultivation" }, { char: "4", title: "Cognitive therapy", url: "https://en.wikipedia.org/wiki/Cognitive_therapy" }
 ]
 
 ; =============================================================================
