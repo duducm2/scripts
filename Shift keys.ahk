@@ -1,20 +1,18 @@
-/********************************************************************
- *   Win+Alt+Shift symbol layer shortcuts (AHK v2)
- *   â€¢ Provides system-wide symbol shortcuts
- ********************************************************************/
-
-/********************************************************************
- *   AVAILABLE WIN+ALT+SHIFT COMBINATIONS
- *   The following combinations are not currently in use:
- *   
- *   Letters: P, U
- *   Numbers: (all numbers 0-9 are used)
- *   Symbols: ; ' [ ] \ | ` ~ @ # $ % ^ & * ( ) - _ = + { } : " < > ? /
- *   
- *   Note: Some combinations use Ctrl+Alt+Shift+Arrow keys for extended mouse movement
- ********************************************************************/
-
-#Requires AutoHotkey v2.0+
+l / ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** **
+    * Win + Alt + Shift symbol layer shortcuts (AHK v2)
+    * â€¢ Provides system - wide symbol shortcuts
+    ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** /
+    /********************************************************************
+     *   AVAILABLE WIN+ALT+SHIFT COMBINATIONS
+     *   The following combinations are not currently in use:
+     *   
+     *   Letters: P, U
+     *   Numbers: (all numbers 0-9 are used)
+     *   Symbols: ; ' [ ] \ | ` ~ @ # $ % ^ & * ( ) - _ = + { } : " < > ? /
+     *   
+     *   Note: Some combinations use Ctrl+Alt+Shift+Arrow keys for extended mouse movement
+     ********************************************************************/
+    #Requires AutoHotkey v2.0+
 
 #SingleInstance Force
 
