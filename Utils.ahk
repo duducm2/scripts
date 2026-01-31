@@ -2048,7 +2048,7 @@ CleanClipboard() {
 ; Toggles dictation loop on/off. When starting, optionally asks to clean clipboard.
 ; When stopping, does NOT show clipboard cleanup prompt.
 DictationStartWithClipboardOption() {
-    global g_DictationLoopActive
+    global g_DictationLoopActive, g_PendingDictationMerge
 
     if (g_DictationLoopActive) {
         ; Stop the loop - show merge countdown when user finishes the entire loop
@@ -2058,8 +2058,9 @@ DictationStartWithClipboardOption() {
         SetTimer(DictationLoopStart, 0)
         ; Send Win+Alt+Shift+0 to finish dictation
         SendInput "#!+0"
-        ; Merge non-favorite clips: 3s countdown (N or End to cancel)
-        DictationMerge_StartCountdown(3)
+        ; Set flag to start merge countdown after transcription completes
+        ; This ensures AI transcription and handy.exe finish before Clip Angel merge begins
+        g_PendingDictationMerge := true
     } else {
         ; Start the loop - show clipboard cleanup prompt ONLY when starting
         ; Show message box asking about clipboard cleanup
@@ -6345,6 +6346,7 @@ global g_DictationStartSound := A_ScriptDir . "\sounds\speach-start.wav"
 global g_DictationStopSound := A_ScriptDir . "\sounds\speach-finished.wav"
 global g_DictationLoopSound := A_ScriptDir . "\sounds\retro1.wav"
 global g_PendingDictationAction := ""  ; Action to execute after transcription: "Paste" or "PasteEnter"
+global g_PendingDictationMerge := false  ; Flag to trigger merge countdown after transcription completes
 global g_KeepIndicatorVisible := false  ; Flag to keep indicator visible until paste action completes
 global g_LastStateTransitionTick := 0  ; Timestamp of last state transition to prevent rapid re-detection
 global g_DictationSoundPlayed := false  ; Atomic test-and-set: one start chime per session
@@ -6587,7 +6589,7 @@ DictationClipboardHandler(DataType) {
 
 ; Play completion chime after transcription finishes
 PlayDictationCompletionChime(*) {
-    global g_DictationCompletionChimeScheduled, g_PendingDictationAction, g_KeepIndicatorVisible
+    global g_DictationCompletionChimeScheduled, g_PendingDictationAction, g_PendingDictationMerge, g_KeepIndicatorVisible
     global g_DictationLoopActive
 
     ; Ensure clipboard handler is removed (safe to call even if already removed)
@@ -6637,6 +6639,16 @@ PlayDictationCompletionChime(*) {
             ; Hide indicator only after both commands complete
             HideDictationIndicator()
             g_KeepIndicatorVisible := false
+        }
+
+        ; Check if merge countdown should start after transcription completes
+        ; This ensures AI transcription and handy.exe finish before Clip Angel merge begins
+        pendingMerge := g_PendingDictationMerge
+        g_PendingDictationMerge := false  ; Clear immediately after reading
+        
+        if (pendingMerge) {
+            ; Transcription is complete, now safe to start merge countdown
+            DictationMerge_StartCountdown(3)
         }
 
         ; Trigger next loop iteration if active
@@ -6854,7 +6866,7 @@ OnExit(CleanupDictationIndicator)
 ; Automatically cycles dictation on/off every 60 seconds to prevent transcription timeouts
 #!+7::
 {
-    global g_DictationLoopActive
+    global g_DictationLoopActive, g_PendingDictationMerge
 
     if (g_DictationLoopActive) {
         ; Stop the loop - show merge countdown when user finishes the entire loop
@@ -6864,8 +6876,9 @@ OnExit(CleanupDictationIndicator)
         SetTimer(DictationLoopStart, 0)
         ; Send Win+Alt+Shift+0 to finish dictation
         SendInput "#!+0"
-        ; Merge non-favorite clips: 3s countdown (N or End to cancel)
-        DictationMerge_StartCountdown(3)
+        ; Set flag to start merge countdown after transcription completes
+        ; This ensures AI transcription and handy.exe finish before Clip Angel merge begins
+        g_PendingDictationMerge := true
     } else {
         ; Start the loop - non-modal 3-second countdown (default: clear clipboard)
         ; User can cancel by pressing N or End during the countdown.
