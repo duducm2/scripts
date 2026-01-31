@@ -175,6 +175,7 @@ ShowCursorFallbackPanel() {
 {
     Run "chrome.exe"
     WinWait("ahk_exe chrome.exe", , 10)  ; Wait for window to exist (up to 10 seconds)
+    Sleep(300)
     WinActivate("ahk_exe chrome.exe")    ; Explicitly activate the window
     WinWaitActive("ahk_exe chrome.exe", , 2)  ; Wait for activation to complete
     CenterMouse()
@@ -1005,21 +1006,21 @@ HandleWikipediaEscape(*) {
 LoadCompletedArticles() {
     global g_WikipediaCompletedFile
     completedArticles := []
-    
+
     try {
         if (!FileExist(g_WikipediaCompletedFile)) {
             return completedArticles
         }
-        
+
         fileContent := FileRead(g_WikipediaCompletedFile)
         lines := StrSplit(fileContent, "`n")
-        
+
         ; Skip header line and process each line
         loop lines.Length {
             if (A_Index = 1) {
                 continue  ; Skip header
             }
-            
+
             line := Trim(lines[A_Index])
             if (line != "") {
                 completedArticles.Push(line)
@@ -1029,7 +1030,7 @@ LoadCompletedArticles() {
         ; Return empty array on error
         return completedArticles
     }
-    
+
     return completedArticles
 }
 
@@ -1137,14 +1138,14 @@ ShowWikipediaSelector() {
 
     ; Load completed articles
     completedArticles := LoadCompletedArticles()
-    
+
     ; Build display text
     displayText := ""
     displayText .= "Available Articles:`n"
     for i, item in g_WikipediaItems {
         displayText .= "[" . item.char . "] > " . item.title . "`n"
     }
-    
+
     ; Add History section if there are completed articles
     if (completedArticles.Length > 0) {
         displayText .= "`n─────────────────────────`n"
@@ -1153,7 +1154,7 @@ ShowWikipediaSelector() {
             displayText .= "  • " . article . "`n"
         }
     }
-    
+
     displayText .= "`nPress Escape to cancel."
 
     ; Calculate text control height based on actual content (number of lines)
