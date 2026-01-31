@@ -2785,10 +2785,14 @@ InitDpiAwareness()
 
 ; =============================================================================
 ; Clip Angel: Open/Activate with focus correction (Row 0)
-; Hotkey: Alt+V
+; Hotkey: Alt+V — when closed: open + focus Row 0; when open: pass Alt+V to close (toggle).
 ; =============================================================================
 !v::
 {
+    if WinExist("ClipAngel") {
+        Send "!v"   ; Already open: close it (Clip Angel toggle)
+        return
+    }
     ActivateClipAngelWithFocusCorrection()
 }
 
