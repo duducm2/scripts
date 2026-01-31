@@ -688,6 +688,74 @@ ParseRTFToPlainText(rtf) {
 }
 
 ; =============================================================================
+; Clip Angel: Open/Activate with focus correction (Row 0)
+; =============================================================================
+; Alt+V: Activate Clip Angel and ensure focus is on "Row 0" (fixes bug where focus
+; defaults to upper tabs). Uses UIA: Type 50025, Name "Row 0" per clipangel-tree.txt.
+ActivateClipAngelWithFocusCorrection() {
+    needBanner := false
+    if WinExist("ClipAngel") {
+        WinActivate("ClipAngel")
+        WinWaitActive("ClipAngel", , 2)
+    } else {
+        needBanner := true
+        AiModelBanner_Show("Opening Clip Angel...", "3772FF")
+        Send "!v"
+        if !WinWait("ClipAngel", , 10) {
+            AiModelBanner_Hide()
+            return
+        }
+        WinActivate("ClipAngel")
+        WinWaitActive("ClipAngel", , 2)
+    }
+    Sleep 50
+    hwnd := WinExist("A")
+    el := UIA.ElementFromHandle(hwnd)
+    if !el {
+        if needBanner
+            AiModelBanner_Hide()
+        return
+    }
+    try {
+        dataGrid := el.FindFirst({ Type: 50036, AutomationId: "dataGridView" })
+        if !dataGrid {
+            if needBanner
+                AiModelBanner_Hide()
+            return
+        }
+        row0 := dataGrid.FindFirst({ Type: 50025, Name: "Row 0" })
+        if !row0 {
+            if needBanner
+                AiModelBanner_Hide()
+            return
+        }
+        hasSel := row0.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
+        isSelected := hasSel && row0.SelectionItemPattern.IsSelected
+        if (!isSelected) {
+            if !needBanner
+                AiModelBanner_Show("Focusing Row 0...", "3772FF")
+            needBanner := true
+            try {
+                if hasSel
+                    row0.SelectionItemPattern.Select()
+                else
+                    row0.SetFocus()
+            } catch {
+                try row0.SetFocus()
+            }
+        }
+    } catch {
+        if needBanner
+            AiModelBanner_Hide()
+        return
+    }
+    if needBanner {
+        AiModelBanner_Show("Done", "27AE60")
+        SetTimer(AiModelBanner_Hide, -500)
+    }
+}
+
+; =============================================================================
 ; Clip Angel: Mark Last Clip as Favorite
 ; =============================================================================
 ; Open Clip Angel, mark current (last) clip as favorite, then close.
@@ -2713,6 +2781,15 @@ InitDpiAwareness()
 #!+C::
 {
     SelectAiModelInHandy()
+}
+
+; =============================================================================
+; Clip Angel: Open/Activate with focus correction (Row 0)
+; Hotkey: Alt+V
+; =============================================================================
+!v::
+{
+    ActivateClipAngelWithFocusCorrection()
 }
 
 ; =============================================================================
