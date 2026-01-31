@@ -1703,8 +1703,8 @@ ToggleDictationLoop() {
         SetTimer(DictationLoopStart, 0)
         ; Send Win+Alt+Shift+0 to finish dictation
         SendInput "#!+0"
-        ; Merge non-favorite clips: 3s countdown when user finishes the entire loop (N or End to cancel)
-        DictationMerge_StartCountdown(3)
+        ; Merge non-favorite clips: 5s countdown when user finishes the entire loop (N or End to cancel)
+        DictationMerge_StartCountdown(5)
     } else {
         ; Start the loop
         ; Clear any existing timers first to prevent old timers from firing
@@ -1943,7 +1943,7 @@ DictationCleanup_UpdateBannerText() {
     }
 }
 
-DictationCleanup_StartCountdown(seconds := 3) {
+DictationCleanup_StartCountdown(seconds := 5) {
     global g_DictationCleanupRemaining, g_DictationCleanupCanceled
 
     ; Reset state
@@ -2011,7 +2011,7 @@ DictationCleanup_Tick() {
 
 ; =============================================================================
 ; Dictation: Merge non-favorite clips countdown (at end of loop)
-; Same UI pattern as clipboard cleanup: 3s banner, N or End to cancel.
+; Same UI pattern as clipboard cleanup: 5s banner, N or End to cancel.
 ; =============================================================================
 global g_DictationMergeGui := 0
 global g_DictationMergeTextCtrl := 0
@@ -2092,7 +2092,7 @@ DictationMerge_UpdateBannerText() {
     }
 }
 
-DictationMerge_StartCountdown(seconds := 3) {
+DictationMerge_StartCountdown(seconds := 5) {
     global g_DictationMergeRemaining, g_DictationMergeCanceled
 
     g_DictationMergeCanceled := false
@@ -6782,7 +6782,7 @@ PlayDictationCompletionChime(*) {
 
         if (pendingMerge) {
             ; Transcription is complete, now safe to start merge countdown
-            DictationMerge_StartCountdown(3)
+            DictationMerge_StartCountdown(5)
         }
 
         ; Trigger next loop iteration if active
@@ -7014,9 +7014,9 @@ OnExit(CleanupDictationIndicator)
         ; This ensures AI transcription and handy.exe finish before Clip Angel merge begins
         g_PendingDictationMerge := true
     } else {
-        ; Start the loop - non-modal 3-second countdown (default: clear clipboard)
+        ; Start the loop - non-modal 5-second countdown (default: clear clipboard)
         ; User can cancel by pressing N or End during the countdown.
-        DictationCleanup_StartCountdown(3)
+        DictationCleanup_StartCountdown(5)
 
         ; Clear any existing timers first to prevent old timers from firing
         SetTimer(DictationLoopStop, 0)
