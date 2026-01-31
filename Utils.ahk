@@ -487,7 +487,7 @@ EnsureClipAngelClosed() {
 MergeNonFavoriteClips() {
     try {
         ; Show persistent banner for the duration of the algorithm
-        AiModelBanner_Show("Merging non-favorite clips...", "728e1e")
+        AiModelBanner_Show("Merging non-favorite clips...", "FFCC00")
 
         ; Step 1: Send Alt+B to activate ClipAngel (this opens the window if not visible)
         Send "!b"
@@ -642,7 +642,7 @@ MergeNonFavoriteClips() {
                         Send "^c"     ; Copy
 
                         AiModelBanner_Hide()
-                        ShowCenteredOverlay_Utils("Merged non-favorite clips (copied)", 2000)
+                        ShowCenteredOverlay_Utils("Merged non-favorite clips (copied)", 2000, "FFCC00")
                         break
                     }
                 }
@@ -1321,7 +1321,7 @@ EnumWindowsCallback(hwnd, lParam) {
 ; =============================================================================
 ; Helper: Show centered overlay banner (reused from Microsoft Teams.ahk pattern)
 ; =============================================================================
-ShowCenteredOverlay_Utils(text, duration := 1500) {
+ShowCenteredOverlay_Utils(text, duration := 1500, bgColor := "3772FF") {
     ; High-contrast centered banner
     target := WinGetID("A")
     hasWindow := false
@@ -1335,8 +1335,8 @@ ShowCenteredOverlay_Utils(text, duration := 1500) {
     }
 
     ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
-    ov.BackColor := "3772FF"          ; strong blue
-    ov.SetFont("s24 cFFFFFF Bold", "Segoe UI")
+    ov.BackColor := bgColor
+    ov.SetFont("s24 c" (bgColor = "FFCC00" ? "000000" : "FFFFFF") " Bold", "Segoe UI")
     msg := ov.Add("Text", "w500 Center", text)
     ov.Show("AutoSize Hide")          ; measure the GUI first
     ov.GetPos(&gx, &gy, &gw, &gh)
@@ -2055,8 +2055,8 @@ DictationMerge_ShowBanner() {
     }
 
     ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
-    ov.BackColor := "3772FF"
-    ov.SetFont("s24 cFFFFFF Bold", "Segoe UI")
+    ov.BackColor := "FFCC00"
+    ov.SetFont("s24 c000000 Bold", "Segoe UI")
     g_DictationMergeTextCtrl := ov.Add("Text", "w650 Center", "Merging non-favorite clips in " g_DictationMergeRemaining "… (press N or End to cancel)"
     )
     ov.Show("AutoSize Hide")
