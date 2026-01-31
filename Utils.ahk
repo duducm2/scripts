@@ -699,10 +699,10 @@ ActivateClipAngelWithFocusCorrection() {
         WinWaitActive("ClipAngel", , 2)
     } else {
         needBanner := true
-        AiModelBanner_Show("Opening Clip Angel...", "3772FF")
+        ClipAngelBanner_Show("Opening Clip Angel...", "3772FF")
         Send "!v"
         if !WinWait("ClipAngel", , 10) {
-            AiModelBanner_Hide()
+            ClipAngelBanner_Hide()
             return
         }
         WinActivate("ClipAngel")
@@ -713,27 +713,27 @@ ActivateClipAngelWithFocusCorrection() {
     el := UIA.ElementFromHandle(hwnd)
     if !el {
         if needBanner
-            AiModelBanner_Hide()
+            ClipAngelBanner_Hide()
         return
     }
     try {
         dataGrid := el.FindFirst({ Type: 50036, AutomationId: "dataGridView" })
         if !dataGrid {
             if needBanner
-                AiModelBanner_Hide()
+                ClipAngelBanner_Hide()
             return
         }
         row0 := dataGrid.FindFirst({ Type: 50025, Name: "Row 0" })
         if !row0 {
             if needBanner
-                AiModelBanner_Hide()
+                ClipAngelBanner_Hide()
             return
         }
         hasSel := row0.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
         isSelected := hasSel && row0.SelectionItemPattern.IsSelected
         if (!isSelected) {
             if !needBanner
-                AiModelBanner_Show("Focusing Row 0...", "3772FF")
+                ClipAngelBanner_Show("Focusing Row 0...", "3772FF")
             needBanner := true
             try {
                 if hasSel
@@ -746,12 +746,12 @@ ActivateClipAngelWithFocusCorrection() {
         }
     } catch {
         if needBanner
-            AiModelBanner_Hide()
+            ClipAngelBanner_Hide()
         return
     }
     if needBanner {
-        AiModelBanner_Show("Done", "27AE60")
-        SetTimer(AiModelBanner_Hide, -500)
+        ClipAngelBanner_Show("Done", "27AE60")
+        SetTimer(ClipAngelBanner_Hide, -500)
     }
 }
 
@@ -957,6 +957,7 @@ AiModelBanner_Show(text, bgColor := "3772FF") {
     ; Default to primary monitor work area
     MonitorGetWorkArea(1, &monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
     monitorWidth := monitorRight - monitorLeft
+    monitorHeight := monitorBottom - monitorTop
 
     ; If we have an active window, find which monitor contains its center
     if (activeWin && activeWin != 0) {
@@ -978,6 +979,7 @@ AiModelBanner_Show(text, bgColor := "3772FF") {
                     monitorLeft := l
                     monitorTop := t
                     monitorWidth := r - l
+                    monitorHeight := b - t
                     break
                 }
             }
@@ -991,6 +993,56 @@ AiModelBanner_Show(text, bgColor := "3772FF") {
     cy := monitorTop + 50  ; 50px from top of the active monitor
     g_AiModelBannerGui.Show("x" . cx . " y" . cy . " NA")
     WinSetTransparent(200, g_AiModelBannerGui)
+}
+
+; Small banner: centered on current monitor (for Clip Angel, multi-monitor safe).
+global g_ClipAngelSmallBannerGui := false
+ClipAngelBanner_Show(text, bgColor := "3772FF") {
+    global g_ClipAngelSmallBannerGui
+    ClipAngelBanner_Hide()
+    g_ClipAngelSmallBannerGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
+    g_ClipAngelSmallBannerGui.BackColor := bgColor
+    g_ClipAngelSmallBannerGui.SetFont("s10 cFFFFFF Bold", "Segoe UI")
+    g_ClipAngelSmallBannerGui.Add("Text", "w200 Center", text)
+    activeWin := 0
+    try {
+        activeWin := WinGetID("A")
+    } catch {
+        activeWin := 0
+    }
+    MonitorGetWorkArea(1, &monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
+    monitorWidth := monitorRight - monitorLeft
+    monitorHeight := monitorBottom - monitorTop
+    if (activeWin && activeWin != 0) {
+        rect := Buffer(16, 0)
+        if (DllCall("GetWindowRect", "ptr", activeWin, "ptr", rect)) {
+            centerX := (NumGet(rect, 0, "int") + NumGet(rect, 8, "int")) // 2
+            centerY := (NumGet(rect, 4, "int") + NumGet(rect, 12, "int")) // 2
+            loop MonitorGetCount() {
+                MonitorGetWorkArea(A_Index, &l, &t, &r, &b)
+                if (centerX >= l && centerX <= r && centerY >= t && centerY <= b) {
+                    monitorLeft := l
+                    monitorTop := t
+                    monitorWidth := r - l
+                    monitorHeight := b - t
+                    break
+                }
+            }
+        }
+    }
+    g_ClipAngelSmallBannerGui.Show("AutoSize Hide")
+    g_ClipAngelSmallBannerGui.GetPos(&gx, &gy, &gw, &gh)
+    cx := monitorLeft + (monitorWidth - gw) // 2
+    cy := monitorTop + (monitorHeight - gh) // 2
+    g_ClipAngelSmallBannerGui.Show("x" . cx . " y" . cy . " NA")
+    WinSetTransparent(220, g_ClipAngelSmallBannerGui)
+}
+ClipAngelBanner_Hide() {
+    global g_ClipAngelSmallBannerGui
+    if (IsObject(g_ClipAngelSmallBannerGui) && g_ClipAngelSmallBannerGui.Hwnd) {
+        try g_ClipAngelSmallBannerGui.Destroy()
+    }
+    g_ClipAngelSmallBannerGui := false
 }
 
 AiModelBanner_Hide() {
