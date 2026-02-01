@@ -1859,15 +1859,19 @@ global g_DictationCleanupRemaining := 0
 global g_DictationCleanupCanceled := false
 
 DictationCleanup_SetCancelHotkeys(enable := true) {
-    ; Use ~ to let the key pass through to the active app.
+    ; Removed ~ prefix to prevent key leakage into active applications
     if (enable) {
-        Hotkey("~*n", DictationCleanup_Cancel, "On")
-        Hotkey("~*End", DictationCleanup_Cancel, "On")
+        Hotkey("*n", DictationCleanup_Cancel, "On")
+        Hotkey("*y", DictationCleanup_Proceed, "On")
+        Hotkey("*End", DictationCleanup_Cancel, "On")
     } else {
-        try Hotkey("~*n", "Off")
+        try Hotkey("*n", "Off")
         catch {
         }
-        try Hotkey("~*End", "Off")
+        try Hotkey("*y", "Off")
+        catch {
+        }
+        try Hotkey("*End", "Off")
         catch {
         }
     }
@@ -1899,7 +1903,7 @@ DictationCleanup_ShowBanner() {
     ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
     ov.BackColor := "3772FF"
     ov.SetFont("s24 cFFFFFF Bold", "Segoe UI")
-    g_DictationCleanupTextCtrl := ov.Add("Text", "w650 Center", "Clearing clipboard in " g_DictationCleanupRemaining "… (press N or End to cancel)"
+    g_DictationCleanupTextCtrl := ov.Add("Text", "w650 Center", "Clearing clipboard in " g_DictationCleanupRemaining "… (press Y to proceed, N or End to cancel)"
     )
     ov.Show("AutoSize Hide")
     ov.GetPos(&gx, &gy, &gw, &gh)
@@ -1937,7 +1941,7 @@ DictationCleanup_UpdateBannerText() {
     global g_DictationCleanupTextCtrl, g_DictationCleanupRemaining
     try {
         if IsObject(g_DictationCleanupTextCtrl) {
-            g_DictationCleanupTextCtrl.Text := "Clearing clipboard in " g_DictationCleanupRemaining "… (press N or End to cancel)"
+            g_DictationCleanupTextCtrl.Text := "Clearing clipboard in " g_DictationCleanupRemaining "… (press Y to proceed, N or End to cancel)"
         }
     } catch {
     }
@@ -1987,6 +1991,12 @@ DictationCleanup_Cancel(*) {
     DictationCleanup_StopCountdown(true)
 }
 
+DictationCleanup_Proceed(*) {
+    ; Immediately proceed with clipboard cleanup, skipping countdown
+    DictationCleanup_StopCountdown(false)
+    CleanClipboardInternal()
+}
+
 DictationCleanup_Tick() {
     global g_DictationCleanupRemaining, g_DictationCleanupCanceled
 
@@ -2019,14 +2029,19 @@ global g_DictationMergeRemaining := 0
 global g_DictationMergeCanceled := false
 
 DictationMerge_SetCancelHotkeys(enable := true) {
+    ; Removed ~ prefix to prevent key leakage into active applications
     if (enable) {
-        Hotkey("~*n", DictationMerge_Cancel, "On")
-        Hotkey("~*End", DictationMerge_Cancel, "On")
+        Hotkey("*n", DictationMerge_Cancel, "On")
+        Hotkey("*y", DictationMerge_Proceed, "On")
+        Hotkey("*End", DictationMerge_Cancel, "On")
     } else {
-        try Hotkey("~*n", "Off")
+        try Hotkey("*n", "Off")
         catch {
         }
-        try Hotkey("~*End", "Off")
+        try Hotkey("*y", "Off")
+        catch {
+        }
+        try Hotkey("*End", "Off")
         catch {
         }
     }
@@ -2057,7 +2072,7 @@ DictationMerge_ShowBanner() {
     ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
     ov.BackColor := "FFCC00"
     ov.SetFont("s24 c000000 Bold", "Segoe UI")
-    g_DictationMergeTextCtrl := ov.Add("Text", "w650 Center", "Merging non-favorite clips in " g_DictationMergeRemaining "… (press N or End to cancel)"
+    g_DictationMergeTextCtrl := ov.Add("Text", "w650 Center", "Merging non-favorite clips in " g_DictationMergeRemaining "… (press Y to proceed, N or End to cancel)"
     )
     ov.Show("AutoSize Hide")
     try {
@@ -2086,7 +2101,7 @@ DictationMerge_UpdateBannerText() {
     global g_DictationMergeTextCtrl, g_DictationMergeRemaining
     try {
         if IsObject(g_DictationMergeTextCtrl) {
-            g_DictationMergeTextCtrl.Text := "Merging non-favorite clips in " g_DictationMergeRemaining "… (press N or End to cancel)"
+            g_DictationMergeTextCtrl.Text := "Merging non-favorite clips in " g_DictationMergeRemaining "… (press Y to proceed, N or End to cancel)"
         }
     } catch {
     }
@@ -2127,6 +2142,12 @@ DictationMerge_Cancel(*) {
     global g_DictationMergeCanceled
     g_DictationMergeCanceled := true
     DictationMerge_StopCountdown(true)
+}
+
+DictationMerge_Proceed(*) {
+    ; Immediately proceed with merge, skipping countdown
+    DictationMerge_StopCountdown(false)
+    MergeNonFavoriteClips()
 }
 
 DictationMerge_Tick() {
