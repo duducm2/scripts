@@ -150,18 +150,48 @@ ShowCursorFallbackPanel() {
 +#e::
 {
     SetTitleMatchMode 2
-    if WinExist("Área de Trabalho ahk_class CabinetWClass") || WinExist("Desktop ahk_class CabinetWClass") {
-        WinActivate
-        WinWaitActive("ahk_class CabinetWClass", , 2)  ; Wait up to 2 seconds for activation
-        Sleep(100)  ; Small additional delay to ensure window is ready
-        CenterMouse()
-    } else {
+    targetHwnd := 0
+
+    ; Check for existing window (PT or EN)
+    if WinExist("Área de Trabalho ahk_class CabinetWClass")
+        targetHwnd := WinExist("Área de Trabalho ahk_class CabinetWClass")
+    else if WinExist("Desktop ahk_class CabinetWClass")
+        targetHwnd := WinExist("Desktop ahk_class CabinetWClass")
+
+    if (!targetHwnd) {
         target := IS_WORK_ENVIRONMENT ? "C:\Users\fie7ca\Desktop" : "C:\Users\eduev\OneDrive\Desktop"
         Run 'explorer.exe "' target '"'
-        ; Wait until Explorer window appears AND becomes active
-        WinWait("ahk_class CabinetWClass")
-        WinWaitActive("ahk_class CabinetWClass", , 2)  ; Wait up to 2 seconds for activation
-        Sleep(100)  ; Small additional delay to ensure window is ready
+
+        ; Wait for window to appear
+        loop 40 { ; Wait up to 2 seconds
+            if WinExist("Área de Trabalho ahk_class CabinetWClass") {
+                targetHwnd := WinExist("Área de Trabalho ahk_class CabinetWClass")
+                break
+            }
+            if WinExist("Desktop ahk_class CabinetWClass") {
+                targetHwnd := WinExist("Desktop ahk_class CabinetWClass")
+                break
+            }
+            Sleep 50
+        }
+    }
+
+    if (targetHwnd) {
+        ; Layer 1: Restore if minimized
+        if (WinGetMinMax("ahk_id " targetHwnd) = -1) {
+            WinRestore("ahk_id " targetHwnd)
+        }
+
+        ; Layer 2: Standard Activation
+        WinActivate("ahk_id " targetHwnd)
+
+        ; Layer 3: Aggressive Activation if not active immediately
+        if !WinWaitActive("ahk_id " targetHwnd, , 0.2) {
+            DllCall("SwitchToThisWindow", "Ptr", targetHwnd, "Int", 1)
+            DllCall("SetForegroundWindow", "Ptr", targetHwnd)
+            WinActivate("ahk_id " targetHwnd)
+        }
+
         CenterMouse()
     }
 }
