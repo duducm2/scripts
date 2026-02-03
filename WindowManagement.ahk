@@ -708,8 +708,8 @@ global g_Projects := [
                         { name: "GS_E&S_CIP Dashboard research and design workspace folder", path: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_E&S_CIP Dashboard research and design workspace folder",
                             workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_E&S_CIP Dashboard research and design workspace folder",
                             category: "Work" }, { name: "GS_UX core team_UX and CIP Integration", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_UX core team_UX and CIP Integration",
-                                category: "Work" }, { name: "", path: "", workPath: "", category: "Work" }, { name: "",
-                                    path: "", workPath: "", category: "Work" }, { name: "", path: "", workPath: "",
+                                category: "Work" }, { name: "PT_Project", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\PT_Project",
+                                    category: "Work" }, { name: "", path: "", workPath: "", category: "Work" }, { name: "", path: "", workPath: "",
                                         category: "Work" }
 ]
 ; TODO: Fill in workPath for each project above when configuring work environment
