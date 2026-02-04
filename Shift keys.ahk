@@ -506,6 +506,7 @@ Cursor
 📊 [3] CSV: Edit CSV
 💾 [4] CSV: Apply changes to source file and save
 📋 [5] MarkDown Enhanced: Export in PDF format. 
+📽️ [6] Marp export (PDF)
 🔨 [7] Build LaTeX project
 📄 [8] View LaTeX PDF file
 📄 [9] Markdown Preview Enhanced: Insert Page Break
@@ -8621,6 +8622,76 @@ IsEditorActive() {
     Send "{Right}"        ; 5. Press Right Arrow once
     Sleep 50
     Send "{Enter}"        ; 6. Press Enter
+}
+
+; Ctrl + 6 : Marp export - trigger export, handle Save As and Replace dialogs
+^6::
+{
+    ; 1. Trigger Marp export
+    mainHwnd := WinGetID("A")
+    Send "^6"
+    Sleep 300
+
+    ; 2. Wait for Save As / Export dialog
+    ; Try: native #32770, title match, or active window change (modal steals focus)
+    prevMatchMode := A_TitleMatchMode
+    SetTitleMatchMode 2
+    saveDialogHwnd := 0
+    deadline := A_TickCount + 15000
+    while (A_TickCount < deadline) {
+        ; Native Windows dialog (standard Save As)
+        h := WinExist("ahk_class #32770")
+        if h {
+            saveDialogHwnd := h
+            break
+        }
+        ; Title contains Save/Export (any window)
+        for str in ["Save As", "Export", "Salvar como", "Guardar como", "Save File", "Save PDF", "Marp", "Export PDF"] {
+            h := WinExist(str)
+            if h {
+                saveDialogHwnd := h
+                break 2
+            }
+        }
+        ; Fallback: modal dialog stole focus (active window changed from main)
+        curr := WinGetID("A")
+        if curr && curr != mainHwnd {
+            currTitle := WinGetTitle("ahk_id " curr)
+            currClass := WinGetClass("ahk_id " curr)
+            ; Likely a dialog: different window, and (has dialog-like title or is Chrome_WidgetWin)
+            if InStr(currClass, "Chrome_WidgetWin") || InStr(currClass, "32770")
+                || InStr(currTitle, "Save") || InStr(currTitle, "Export") || InStr(currTitle, "?") {
+                saveDialogHwnd := curr
+                break
+            }
+        }
+        Sleep 150
+    }
+    SetTitleMatchMode prevMatchMode
+    if !saveDialogHwnd {
+        return
+    }
+    try WinActivate("ahk_id " saveDialogHwnd)
+    Sleep 400
+    Send "{Enter}"  ; Confirm initial save
+
+    ; 3. Handle Confirm Save As / Replace dialog (ClassName #32770, Name: "Confirm Save As")
+    ; WinGetText doesn't capture UIA Text elements; use window title. Yes button has Alt+Y.
+    SetTitleMatchMode 2
+    Loop 10 {
+        Sleep 200
+        replaceHwnd := WinExist("ahk_class #32770")
+        if replaceHwnd {
+            title := WinGetTitle("ahk_id " replaceHwnd)
+            if InStr(title, "Confirm Save As") || InStr(title, "Confirmar Salvar")
+                || InStr(title, "Confirmar Guardar") || InStr(title, "Confirm Replace") {
+                try WinActivate("ahk_id " replaceHwnd)
+                Sleep 100
+                Send "!y"   ; Alt+Y = Yes (per UIA: AcceleratorKey: "Alt+Y")
+                break
+            }
+        }
+    }
 }
 
 ; Shift + F : Fold - Fold
