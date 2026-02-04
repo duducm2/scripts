@@ -505,8 +505,7 @@ Cursor
 📁 [2] Copy path (cursor)
 📊 [3] CSV: Edit CSV
 💾 [4] CSV: Apply changes to source file and save
-📋 [5] Context menu navigation sequence
-🤖 [6] Context-aware agent panel actions
+📋 [5] MarkDown Enhanced: Export in PDF format. 
 🔨 [7] Build LaTeX project
 📄 [8] View LaTeX PDF file
 📄 [9] Markdown Preview Enhanced: Insert Page Break
@@ -9463,57 +9462,6 @@ CancelCommit(ctrl, *) {
 
 ; Ctrl + Alt + O : Unfold all directories in VS Code Explorer
 ^q:: UnfoldAllDirectoriesInExplorer()
-
-; Ctrl + 6 : Context-aware agent panel actions in Cursor
-^6::
-{
-    targetHwnd := WinExist("A")
-
-    toggleVisible := Cursor_IsElementVisibleByName("Toggle Agents Side Bar (Ctrl+Shift+S)", targetHwnd)
-    if toggleVisible {
-        Send "^e"
-        return
-    }
-
-    Send "^e"
-    Sleep 800
-
-    newAgentVisible := Cursor_IsElementVisibleByName("New Agent", targetHwnd)
-    if newAgentVisible {
-        Sleep 700
-        Send "^!s"
-    }
-
-    moreActionsEl := Cursor_GetVisibleElementByName("More Actions...", targetHwnd, ["Link", 50005, "Button", 50000])
-    if moreActionsEl {
-        try {
-            if moreActionsEl.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
-                moreActionsEl.InvokePattern.Invoke()
-            } else {
-                moreActionsEl.Click()
-            }
-            Sleep 250
-        } catch Error as e {
-        }
-
-        maximizeBtn := Cursor_GetVisibleElementByName("Maximize Chat Size", targetHwnd, ["Button", 50000], "Substring")
-        if (maximizeBtn) {
-
-            try {
-                if maximizeBtn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
-                    maximizeBtn.InvokePattern.Invoke()
-                } else {
-                    maximizeBtn.Click()
-                }
-            } catch Error as e {
-            }
-        }
-        else {
-        }
-    } else {
-
-    }
-}
 
 ; Alt + N : Review next file - Click the button that contains "Review next file" (Type 50020 Text)
 ; Path from UIA tree: workbench.parts.editor -> editor-instance -> ... -> Group (anysphere-text-button) -> Text "Review next file"
