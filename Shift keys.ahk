@@ -2490,6 +2490,25 @@ HasCommitMessageContent() {
 }
 
 ; ---------------------------------------------------------------------------
+; Wait for commit to finish (message box clears)
+; Returns true if commit finished (content gone), false if timed out
+; ---------------------------------------------------------------------------
+WaitForCommitToFinish(timeout := 5000) {
+    start := A_TickCount
+    ; Wait a bit for the commit to actually start processing
+    Sleep 500 
+    
+    while (A_TickCount - start < timeout) {
+        ; If content is gone, commit is likely done
+        if (!HasCommitMessageContent()) {
+            return true
+        }
+        Sleep 200
+    }
+    return false
+}
+
+; ---------------------------------------------------------------------------
 ; WaitForButton(root, pattern, timeout := 5000)
 ;   â€¢ Searches all descendant buttons of `root` until Name matches `pattern`
 ;   â€¢ Returns the UIA element or 0 if none matched within `timeout` ms
@@ -8844,9 +8863,14 @@ IsEditorActive() {
                 SoundPlay A_ScriptDir "\sounds\cursor-git-commit.wav"
             }
 
-            Sleep 1000
-            ; Execute stored decision (if any) after commit is sent
-            ExecuteStoredCommitPushDecision()
+            ; Wait for commit to finish before pushing
+            ShowSmallLoadingIndicator_ChatGPT("Committing...")
+            if (WaitForCommitToFinish()) {
+                HideSmallLoadingIndicator_ChatGPT()
+                ExecuteStoredCommitPushDecision()
+            } else {
+                HideSmallLoadingIndicator_ChatGPT()
+            }
 
             ; Restore input before exiting
             BlockInput "Off"
@@ -8904,8 +8928,15 @@ IsEditorActive() {
     if (IsSoundEnabled()) {
         SoundPlay A_ScriptDir "\sounds\cursor-git-commit.wav"
     }
-    Sleep 2000
-    ExecuteStoredCommitPushDecision()
+    
+    ; Wait for commit to finish before pushing
+    ShowSmallLoadingIndicator_ChatGPT("Committing...")
+    if (WaitForCommitToFinish()) {
+        HideSmallLoadingIndicator_ChatGPT()
+        ExecuteStoredCommitPushDecision()
+    } else {
+        HideSmallLoadingIndicator_ChatGPT()
+    }
 
     ; Restore input after all operations complete
     BlockInput "Off"
