@@ -208,6 +208,25 @@ ShowCursorFallbackPanel() {
     Sleep(300)
     WinActivate("ahk_exe chrome.exe")    ; Explicitly activate the window
     WinWaitActive("ahk_exe chrome.exe", , 2)  ; Wait for activation to complete
+    ClipAngelBanner_Show("Checking search bar...", "3772FF")
+    try {
+        hwnd := WinGetID("ahk_exe chrome.exe")
+        root := UIA.ElementFromHandle(hwnd)
+        addrBar := root.FindFirst({ Type: 50004, AutomationId: "view_1012" })
+        if (addrBar) {
+            focused := UIA.GetFocusedElement()
+            if (!UIA.CompareElements(addrBar, focused)) {
+                try
+                    addrBar.SetFocus()
+                catch
+                    Send "^l"
+            }
+        }
+    } catch {
+        ; UIA failed; banner still shows Done below
+    }
+    ClipAngelBanner_Show("Done", "27AE60")
+    SetTimer(ClipAngelBanner_Hide, -500)
     CenterMouse()
 }
 
