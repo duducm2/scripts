@@ -493,6 +493,8 @@ Chrome PDF Viewer (Shift)
 📏 [F] [F]it to page (zoom to fit)
 🔢 [P] [P]age number field (focus)
 🗂️ [T] [T]humbnails sidebar (toggle)
+🔲 [2] Two-page view ([2] pages)
+🎬 [E] Present mode (pr[E]sent)
 )"  ; end Chrome PDF Viewer
 
 ; --- Cursor ------------------------------------------------------
@@ -3919,6 +3921,31 @@ ChromePdf_FocusByAutomationId(automationId, controlType := 0) {
 {
     ; UIA tree: AutomationId "save" (button label is localized)
     ChromePdf_ClickByAutomationId("save", ["Baixar", "Download"])
+}
+
+; Shift + 2 : Two-page view (mnemonic: 2 = two pages)
++2::
+{
+    ; UIA: Button Type 50000, Name "More actions", AutomationId "more"
+    if ChromePdf_ClickByAutomationId("more", ["More actions"]) {
+        Sleep 150
+        Send "{Down}"
+        Sleep 50
+        Send "{Enter}"
+    }
+}
+
+; Shift + E : Present mode (mnemonic: E from prEsent)
++E::
+{
+    ; UIA: Button Type 50000, Name "More actions", AutomationId "more"
+    if ChromePdf_ClickByAutomationId("more", ["More actions"]) {
+        Sleep 150
+        Send "{Up}"
+        Send "{Up}"
+        Sleep 50
+        Send "{Enter}"
+    }
 }
 
 #HotIf
