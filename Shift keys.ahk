@@ -13204,12 +13204,18 @@ ShowGeminiModelSelector() {
         uia := UIA_Browser()
         Sleep 150  ; small settle per README (keep this snappy)
 
-        ; Primary strategy: Find by Name "Enter a prompt here" with Type 50004 (Edit)
-        promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
+        ; Primary strategy: Find by Name (Gemini updated placeholder in 2025)
+        try
+            promptField := uia.FindFirst({ Name: "Enter a prompt for Gemini", Type: 50004 })
+        catch
+            promptField := ""
 
-        ; Fallback 1: Try by Type "Edit" and Name "Enter a prompt here"
+        ; Fallback 1: Legacy name "Enter a prompt here"
         if !promptField {
-            promptField := uia.FindFirst({ Type: "Edit", Name: "Enter a prompt here" })
+            try
+                promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
+            catch
+                promptField := ""
         }
 
         ; Shared scan for remaining fallbacks (single FindAll + scoring for efficiency)
@@ -13452,12 +13458,18 @@ ShowGeminiModelSelector() {
         uia := UIA_Browser()
         Sleep 300
 
-        ; Primary strategy: Find by Name "Enter a prompt here" with Type 50004 (Edit)
-        promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
+        ; Primary strategy: Find by Name (Gemini updated placeholder in 2025)
+        try
+            promptField := uia.FindFirst({ Name: "Enter a prompt for Gemini", Type: 50004 })
+        catch
+            promptField := ""
 
-        ; Fallback 1: Try by Type "Edit" and Name "Enter a prompt here"
+        ; Fallback 1: Legacy name "Enter a prompt here"
         if !promptField {
-            promptField := uia.FindFirst({ Type: "Edit", Name: "Enter a prompt here" })
+            try
+                promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
+            catch
+                promptField := ""
         }
 
         ; Fallback 2: Try by ClassName containing "ql-editor" or "new-input-ui" (substring match)
