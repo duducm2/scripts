@@ -1,5 +1,6 @@
 ; Infinite Dictation Module
 ; Isolated state and loop logic for Handy.exe lifecycle and ClipAngel merge.
+; State is persisted to data/infinite_dictation.ini so only one instance is ever active (single process or across reloads).
 ; Requires Utils.ahk (or host script) to provide: DictationCleanup_StartCountdown,
 ; Handy_ActivateOrLaunch, DictationMerge_StartCountdown, MergeNonFavoriteClips,
 ; globals g_PendingDictationMerge, g_ProgrammaticDictationStop, g_DictationLoopActive,
@@ -12,16 +13,67 @@ class InfiniteDictation {
     static StartRetries := 0
     static MonitorTimer := "" ; high-frequency exit monitor (optional)
 
-    ; Start Infinite Dictation: countdown (clear clipboard), then first cycle.
+    static _IniPath() {
+        return A_ScriptDir "\data\infinite_dictation.ini"
+    }
+
+    ; Read persisted state. Returns {Active: 0|1, Pid: number}. If Active=1 and Pid is another running process, another instance owns the loop.
+    static _ReadPersistedState() {
+        path := InfiniteDictation._IniPath()
+        active := Integer(IniRead(path, "State", "Active", "0"))
+        pid := Integer(IniRead(path, "State", "Pid", "0"))
+        return { Active: active, Pid: pid }
+    }
+
+    static _WritePersistedState(active, pid := 0) {
+        IniWrite(String(active), InfiniteDictation._IniPath(), "State", "Active")
+        IniWrite(String(pid), InfiniteDictation._IniPath(), "State", "Pid")
+    }
+
+    ; Ensure only one Infinite Dictation can be active. Returns true if we may proceed to start, false if another instance owns it.
+    static _ClaimOrRejectStart() {
+        s := InfiniteDictation._ReadPersistedState()
+        if (s.Active = 0)
+            return true
+        if (s.Pid = A_ProcessId)
+            return true
+        if (ProcessExist(s.Pid))
+            return false
+        InfiniteDictation._WritePersistedState(0, 0)
+        return true
+    }
+
     static Start() {
+        if (!InfiniteDictation._ClaimOrRejectStart()) {
+            try ShowCenteredOverlay_Utils("Infinite Dictation already active in another process", 3000)
+            catch {
+            }
+            return
+        }
         try
             DbgLog("#!+7", "start branch hyp=A")
-        catch
-            {}
-        ; Non-modal 5s countdown; user can cancel with N or End.
+        catch {
+        }
         DictationCleanup_StartCountdown(5)
         InfiniteDictation.IsActive := true
         global g_DictationLoopActive := true
+        InfiniteDictation._WritePersistedState(1, A_ProcessId)
+        SetTimer(ObjBindMethod(InfiniteDictation, "StopHandyAndRestart"), 0)
+        SetTimer(ObjBindMethod(InfiniteDictation, "LoopCycle"), 0)
+        InfiniteDictation.LoopCycle()
+    }
+
+    ; Start without the 5s clipboard cleanup countdown (e.g. for ToggleDictationLoop / DictationStartWithClipboardOption).
+    static StartWithoutCleanup() {
+        if (!InfiniteDictation._ClaimOrRejectStart()) {
+            try ShowCenteredOverlay_Utils("Infinite Dictation already active in another process", 3000)
+            catch {
+            }
+            return
+        }
+        InfiniteDictation.IsActive := true
+        global g_DictationLoopActive := true
+        InfiniteDictation._WritePersistedState(1, A_ProcessId)
         SetTimer(ObjBindMethod(InfiniteDictation, "StopHandyAndRestart"), 0)
         SetTimer(ObjBindMethod(InfiniteDictation, "LoopCycle"), 0)
         InfiniteDictation.LoopCycle()
@@ -33,6 +85,7 @@ class InfiniteDictation {
         global g_DictationLoopActive := false
         global g_PendingDictationMerge := true
         global g_ProgrammaticDictationStop := true
+        InfiniteDictation._WritePersistedState(0, 0)
         SetTimer(ObjBindMethod(InfiniteDictation, "StopHandyAndRestart"), 0)
         SetTimer(ObjBindMethod(InfiniteDictation, "LoopCycle"), 0)
         SetTimer(ObjBindMethod(InfiniteDictation, "VerifyStart"), 0)
@@ -44,8 +97,8 @@ class InfiniteDictation {
     static LoopCycle() {
         try
             DbgLog("DictationLoopStart", "entry loopActive=" InfiniteDictation.IsActive " hyp=A")
-        catch
-            {}
+        catch {
+        }
         if (!InfiniteDictation.IsActive)
             return
         if (!ProcessExist("handy.exe")) {
@@ -55,8 +108,8 @@ class InfiniteDictation {
         if (WinExist("Recording ahk_exe handy.exe")) {
             try
                 DbgLog("DictationLoopStart", "already recording reschedule stop hyp=B")
-            catch
-                {}
+            catch {
+            }
             SetTimer(ObjBindMethod(InfiniteDictation, "StopHandyAndRestart"), 0)
             SetTimer(ObjBindMethod(InfiniteDictation, "StopHandyAndRestart"), -15000)
             return
@@ -70,8 +123,8 @@ class InfiniteDictation {
         SetTimer(ObjBindMethod(InfiniteDictation, "StopHandyAndRestart"), -15000)
         try
             DbgLog("DictationLoopStart", "scheduled StopHandyAndRestart -15000 hyp=A")
-        catch
-            {}
+        catch {
+        }
         SetTimer(ObjBindMethod(InfiniteDictation, "VerifyStart"), -1500)
     }
 
@@ -85,28 +138,28 @@ class InfiniteDictation {
     static StopHandyAndRestart() {
         try
             DbgLog("DictationLoopStop", "entry loopActive=" InfiniteDictation.IsActive " hyp=A")
-        catch
-            {}
+        catch {
+        }
         if (!InfiniteDictation.IsActive)
             return
         if (WinExist("Recording ahk_exe handy.exe")) {
             try
                 DbgLog("DictationLoopStop", "sending #!+0 progStop=true hyp=C")
-            catch
-                {}
+            catch {
+            }
             global g_ProgrammaticDictationStop := true
             global g_DictationLoopSound
             SendEvent "#!+0"
             try {
                 if (IsSoundEnabled())
                     SoundPlay(g_DictationLoopSound)
-            } catch
-                {}
+            } catch {
+            }
         } else {
             try
                 DbgLog("DictationLoopStop", "NOT recording schedule restart -1000 hyp=E")
-            catch
-                {}
+            catch {
+            }
             SetTimer(ObjBindMethod(InfiniteDictation, "LoopCycle"), -1000)
         }
         ; Next loop is started by Utils.PlayDictationCompletionChime -> SetTimer(DictationLoopStart, -2000) -> Utils must call back to InfiniteDictation.LoopCycle
@@ -120,8 +173,8 @@ class InfiniteDictation {
         if (ProcessExist("handy.exe")) {
             try
                 ProcessClose("handy.exe")
-            catch
-                {}
+            catch {
+            }
         }
     }
 
@@ -151,10 +204,11 @@ class InfiniteDictation {
         } else {
             try
                 ShowCenteredOverlay_Utils("Failed to start dictation", 2000)
-            catch
-                {}
+            catch {
+            }
             InfiniteDictation.IsActive := false
             global g_DictationLoopActive := false
+            InfiniteDictation._WritePersistedState(0, 0)
         }
     }
 
@@ -164,8 +218,8 @@ class InfiniteDictation {
             return
         try
             DbgLog("PlayDictationCompletionChime", "scheduling LoopCycle -2000 hyp=B")
-        catch
-            {}
+        catch {
+        }
         SetTimer(ObjBindMethod(InfiniteDictation, "LoopCycle"), -2000)
     }
 }
