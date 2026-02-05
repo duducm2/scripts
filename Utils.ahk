@@ -1702,13 +1702,13 @@ CheckAndOpenOutlookTeams(checkOutlook := false, checkTeams := false) {
     return false
 }
 
-; Dictation Loop Macro
-; Automatically cycles dictation on/off every 15 seconds to prevent transcription timeouts
+; Infinite Dictation Macro
+; Each loop = one 60s cycle; dictation cycles on/off every 15s within a loop to prevent transcription timeouts
 ToggleDictationLoop() {
     global g_DictationLoopActive, g_ProgrammaticDictationStop
 
     if (g_DictationLoopActive) {
-        ; Stop the loop
+        ; Stop Infinite Dictation
         g_DictationLoopActive := false
         ; Turn off timers
         SetTimer(DictationLoopStop, 0)
@@ -1716,15 +1716,15 @@ ToggleDictationLoop() {
         ; Send Win+Alt+Shift+0 to finish dictation
         g_ProgrammaticDictationStop := true
         SendInput "#!+0"
-        ; Merge non-favorite clips: 5s countdown when user finishes the entire loop (N or End to cancel)
+        ; Merge non-favorite clips: 5s countdown when user finishes Infinite Dictation (N or End to cancel)
         DictationMerge_StartCountdown(5)
     } else {
-        ; Start the loop
+        ; Start Infinite Dictation (first loop)
         ; Clear any existing timers first to prevent old timers from firing
         SetTimer(DictationLoopStop, 0)
         SetTimer(DictationLoopStart, 0)
         g_DictationLoopActive := true
-        ; Begin the cycle
+        ; Begin the first loop
         DictationLoopStart()
     }
 }
@@ -1735,8 +1735,8 @@ DictationLoopStart() {
     DbgLog("DictationLoopStart", "entry loopActive=" g_DictationLoopActive " hyp=A")
     ; #endregion
 
-    ; Safety check: Only proceed if loop is still active
-    ; This prevents starting if user manually stopped the loop
+    ; Safety check: Only proceed if Infinite Dictation is still active
+    ; This prevents starting if user manually stopped it
     if (!g_DictationLoopActive) {
         ; #region agent log
         DbgLog("DictationLoopStart", "early return loop inactive hyp=A")
@@ -1766,7 +1766,7 @@ DictationLoopStart() {
     g_ProgrammaticDictationStop := true
     SendEvent "#!+0"
 
-    ; Double-check loop is still active before scheduling stop timer
+    ; Double-check Infinite Dictation is still active before scheduling next loop
     ; User may have stopped it during the dictation start delay
     if (!g_DictationLoopActive) {
         return
@@ -1775,8 +1775,8 @@ DictationLoopStart() {
     ; Clear any existing timer first to prevent accumulation
     SetTimer(DictationLoopStop, 0)
 
-    ; Schedule stop after 15 seconds - negative period = one-shot timer
-    ; Only schedules if loop is still active (checked above)
+    ; Schedule stop after 15s (one loop segment) - negative period = one-shot timer
+    ; Only schedules if Infinite Dictation is still active (checked above)
     SetTimer(DictationLoopStop, -15000)
     ; #region agent log
     DbgLog("DictationLoopStart", "scheduled DictationLoopStop -15000 hyp=A")
@@ -1817,8 +1817,8 @@ DictationLoopStop() {
     DbgLog("DictationLoopStop", "entry loopActive=" g_DictationLoopActive " hyp=A")
     ; #endregion
 
-    ; Safety check: Only proceed if loop is still active
-    ; This prevents restarting if user manually stopped the loop via ToggleDictationLoop()
+    ; Safety check: Only proceed if Infinite Dictation is still active
+    ; This prevents restarting next loop if user manually stopped via ToggleDictationLoop()
     if (!g_DictationLoopActive) {
         ; #region agent log
         DbgLog("DictationLoopStop", "early return loop inactive hyp=A")
@@ -2226,13 +2226,13 @@ CleanClipboard() {
 }
 
 ; Dictation Toggle with Clipboard Cleanup Option (on start only)
-; Toggles dictation loop on/off. When starting, optionally asks to clean clipboard.
+; Toggles Infinite Dictation on/off. When starting, optionally asks to clean clipboard.
 ; When stopping, does NOT show clipboard cleanup prompt.
 DictationStartWithClipboardOption() {
     global g_DictationLoopActive, g_PendingDictationMerge, g_ProgrammaticDictationStop
 
     if (g_DictationLoopActive) {
-        ; Stop the loop - show merge countdown when user finishes the entire loop
+        ; Stop Infinite Dictation - show merge countdown when user finishes
         g_DictationLoopActive := false
         ; Turn off timers
         SetTimer(DictationLoopStop, 0)
@@ -2244,7 +2244,7 @@ DictationStartWithClipboardOption() {
         ; This ensures AI transcription and handy.exe finish before Clip Angel merge begins
         g_PendingDictationMerge := true
     } else {
-        ; Start the loop - show clipboard cleanup prompt ONLY when starting
+        ; Start Infinite Dictation - show clipboard cleanup prompt ONLY when starting
         ; Show message box asking about clipboard cleanup
         result := MsgBox("Would you like to clean up the clipboard?", "Dictation Start", "YesNo")
 
@@ -2253,13 +2253,13 @@ DictationStartWithClipboardOption() {
             ; (User already confirmed they want to clean clipboard)
             CleanClipboardInternal()
         }
-        ; If No, continue with dictation loop without cleanup
+        ; If No, continue with Infinite Dictation without cleanup
 
         ; Clear any existing timers first to prevent old timers from firing
         SetTimer(DictationLoopStop, 0)
         SetTimer(DictationLoopStart, 0)
         g_DictationLoopActive := true
-        ; Begin the cycle
+        ; Begin the first loop
         DictationLoopStart()
     }
 }
@@ -7042,7 +7042,7 @@ OnExit(CleanupDictationIndicator)
     static lastHotkeyTick := 0
     static isProcessing := false
 
-    ; Skip when script sends #!+0 programmatically (DictationLoopStop/Start, #!+7 stop, etc.)
+    ; Skip when script sends #!+0 programmatically (Infinite Dictation stop/start, #!+7 stop, etc.)
     if (g_ProgrammaticDictationStop) {
         ; #region agent log
         DbgLog("~#!+0", "early return progStop hyp=C")
@@ -7060,7 +7060,7 @@ OnExit(CleanupDictationIndicator)
     lastHotkeyTick := currentTick
     isProcessing := true
 
-    ; If dictation loop is active, treat as loop interrupt (same as Win+Alt+Shift+7)
+    ; If Infinite Dictation is active, treat as interrupt (same as Win+Alt+Shift+7)
     ; Logic gate: Only allow termination during Recording state; block during Transcribing state
     if (g_DictationLoopActive) {
         if (!WinExist("Recording ahk_exe handy.exe")) {
@@ -7098,9 +7098,9 @@ OnExit(CleanupDictationIndicator)
     isProcessing := false
 }
 
-; Dictation Loop - Win+Alt+Shift+7 (start/stop); Win+Alt+Shift+0 also stops when loop active
+; Infinite Dictation - Win+Alt+Shift+7 (start/stop); Win+Alt+Shift+0 also stops when active
 ; Termination allowed ONLY during Recording (60s window); blocked during Transcribing to avoid workflow errors
-; Automatically cycles dictation on/off every 15 seconds to prevent transcription timeouts
+; Each loop = one 60s cycle; dictation cycles on/off every 15s within a loop to prevent transcription timeouts
 #!+7::
 {
     global g_DictationLoopActive, g_PendingDictationMerge, g_ProgrammaticDictationStop
@@ -7133,7 +7133,7 @@ OnExit(CleanupDictationIndicator)
         SetTimer(DictationLoopStop, 0)
         SetTimer(DictationLoopStart, 0)
         g_DictationLoopActive := true
-        ; Begin the cycle
+        ; Begin the first loop
         DictationLoopStart()
     }
 }
