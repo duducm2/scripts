@@ -1730,6 +1730,11 @@ ToggleDictationLoop() {
 }
 
 DictationLoopStart() {
+    ; Delegate to Infinite Dictation module when it owns the loop
+    if (InfiniteDictation.IsActive) {
+        InfiniteDictation.LoopCycle()
+        return
+    }
     global g_DictationLoopActive, g_DictationStartRetries, g_ProgrammaticDictationStop
     ; #region agent log
     DbgLog("DictationLoopStart", "entry loopActive=" g_DictationLoopActive " hyp=A")
@@ -6854,8 +6859,10 @@ PlayDictationCompletionChime(*) {
             DictationMerge_StartCountdown(5)
         }
 
-        ; Trigger next loop iteration if active
-        if (g_DictationLoopActive) {
+        ; Trigger next loop iteration if active (module or legacy)
+        if (InfiniteDictation.IsActive) {
+            InfiniteDictation.OnTranscriptionComplete()
+        } else if (g_DictationLoopActive) {
             ; #region agent log
             DbgLog("PlayDictationCompletionChime", "scheduling DictationLoopStart -2000 hyp=B")
             ; #endregion
@@ -7038,7 +7045,7 @@ OnExit(CleanupDictationIndicator)
 ~#!+0::
 {
     global g_DictationActive, g_LastStateTransitionTick, g_DictationStartSound
-    global g_DictationLoopActive, g_PendingDictationMerge, g_ProgrammaticDictationStop
+    global g_ProgrammaticDictationStop
     static lastHotkeyTick := 0
     static isProcessing := false
 
@@ -7062,17 +7069,14 @@ OnExit(CleanupDictationIndicator)
 
     ; If Infinite Dictation is active, treat as interrupt (same as Win+Alt+Shift+7)
     ; Logic gate: Only allow termination during Recording state; block during Transcribing state
-    if (g_DictationLoopActive) {
+    if (InfiniteDictation.IsActive) {
         if (!WinExist("Recording ahk_exe handy.exe")) {
             ; Transcribing - block termination to prevent interrupting active transcription
             isProcessing := false
             return
         }
         ; Recording - allow termination
-        g_DictationLoopActive := false
-        SetTimer(DictationLoopStop, 0)
-        SetTimer(DictationLoopStart, 0)
-        g_PendingDictationMerge := true
+        InfiniteDictation.Stop()
         isProcessing := false
         return
     }
@@ -7098,43 +7102,30 @@ OnExit(CleanupDictationIndicator)
     isProcessing := false
 }
 
+; Infinite Dictation module (state and loop logic)
+#Include "Lib\InfiniteDictation.ahk"
+
 ; Infinite Dictation - Win+Alt+Shift+7 (start/stop); Win+Alt+Shift+0 also stops when active
 ; Termination allowed ONLY during Recording (60s window); blocked during Transcribing to avoid workflow errors
 ; Each loop = one 60s cycle; dictation cycles on/off every 15s within a loop to prevent transcription timeouts
 #!+7::
 {
-    global g_DictationLoopActive, g_PendingDictationMerge, g_ProgrammaticDictationStop
     ; #region agent log
-    DbgLog("#!+7", "entry loopActive=" g_DictationLoopActive)
+    DbgLog("#!+7", "entry loopActive=" InfiniteDictation.IsActive)
     ; #endregion
 
-    if (g_DictationLoopActive) {
+    if (InfiniteDictation.IsActive) {
         ; Logic gate: Only allow termination during Recording state; block during Transcribing state
         if (!WinExist("Recording ahk_exe handy.exe")) {
             ; Transcribing - block termination to prevent interrupting active transcription
             return
         }
         ; Recording - allow termination
-        g_DictationLoopActive := false
-        SetTimer(DictationLoopStop, 0)
-        SetTimer(DictationLoopStart, 0)
-        g_ProgrammaticDictationStop := true
-        SendInput "#!+0"
-        g_PendingDictationMerge := true
+        InfiniteDictation.Stop()
     } else {
-        ; #region agent log
-        DbgLog("#!+7", "start branch hyp=A")
-        ; #endregion
         ; Start the loop - non-modal 5-second countdown (default: clear clipboard)
         ; User can cancel by pressing N or End during the countdown.
-        DictationCleanup_StartCountdown(5)
-
-        ; Clear any existing timers first to prevent old timers from firing
-        SetTimer(DictationLoopStop, 0)
-        SetTimer(DictationLoopStart, 0)
-        g_DictationLoopActive := true
-        ; Begin the first loop
-        DictationLoopStart()
+        InfiniteDictation.Start()
     }
 }
 
