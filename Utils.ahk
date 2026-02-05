@@ -7,7 +7,8 @@ DbgLog(loc, msg) {
         m := StrReplace(msg, '"', "'")
         line := '{"ts":' A_TickCount ',"loc":"' loc '","msg":"' m '"}'
         FileAppend line Chr(10), A_ScriptDir "\.cursor\debug.log"
-    } catch (e) {}
+    } catch as e {
+    }
 }
 ; #endregion
 
@@ -7060,11 +7061,14 @@ OnExit(CleanupDictationIndicator)
     isProcessing := true
 
     ; If dictation loop is active, treat as loop interrupt (same as Win+Alt+Shift+7)
-    ; Key passes through to handy.exe via ~ - dictation will stop; yellow banner + merge prompt follows transcription
+    ; Logic gate: Only allow termination during Recording state; block during Transcribing state
     if (g_DictationLoopActive) {
-        ; #region agent log
-        DbgLog("~#!+0", "interrupt branch loopActive was true hyp=C")
-        ; #endregion
+        if (!WinExist("Recording ahk_exe handy.exe")) {
+            ; Transcribing - block termination to prevent interrupting active transcription
+            isProcessing := false
+            return
+        }
+        ; Recording - allow termination
         g_DictationLoopActive := false
         SetTimer(DictationLoopStop, 0)
         SetTimer(DictationLoopStart, 0)
@@ -7095,6 +7099,7 @@ OnExit(CleanupDictationIndicator)
 }
 
 ; Dictation Loop - Win+Alt+Shift+7 (start/stop); Win+Alt+Shift+0 also stops when loop active
+; Termination allowed ONLY during Recording (60s window); blocked during Transcribing to avoid workflow errors
 ; Automatically cycles dictation on/off every 15 seconds to prevent transcription timeouts
 #!+7::
 {
@@ -7104,20 +7109,18 @@ OnExit(CleanupDictationIndicator)
     ; #endregion
 
     if (g_DictationLoopActive) {
-        ; Stop the loop - show merge countdown when user finishes the entire loop
+        ; Logic gate: Only allow termination during Recording state; block during Transcribing state
+        if (!WinExist("Recording ahk_exe handy.exe")) {
+            ; Transcribing - block termination to prevent interrupting active transcription
+            return
+        }
+        ; Recording - allow termination
         g_DictationLoopActive := false
-        ; Turn off timers
         SetTimer(DictationLoopStop, 0)
         SetTimer(DictationLoopStart, 0)
-        ; Send Win+Alt+Shift+0 to finish dictation
         g_ProgrammaticDictationStop := true
         SendInput "#!+0"
-        ; Set flag to start merge countdown after transcription completes
-        ; This ensures AI transcription and handy.exe finish before Clip Angel merge begins
         g_PendingDictationMerge := true
-        ; #region agent log
-        DbgLog("#!+7", "stop branch hyp=A")
-        ; #endregion
     } else {
         ; #region agent log
         DbgLog("#!+7", "start branch hyp=A")
