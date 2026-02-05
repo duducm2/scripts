@@ -1691,7 +1691,7 @@ CheckAndOpenOutlookTeams(checkOutlook := false, checkTeams := false) {
 }
 
 ; Dictation Loop Macro
-; Automatically cycles dictation on/off every 60 seconds to prevent transcription timeouts
+; Automatically cycles dictation on/off every 15 seconds to prevent transcription timeouts
 ToggleDictationLoop() {
     global g_DictationLoopActive
 
@@ -1735,7 +1735,7 @@ DictationLoopStart() {
     if (WinExist("Recording ahk_exe handy.exe")) {
         ; Already recording, just ensure timer is running
         SetTimer(DictationLoopStop, 0)
-        SetTimer(DictationLoopStop, -60000)
+        SetTimer(DictationLoopStop, -15000)
         return
     }
 
@@ -1752,9 +1752,9 @@ DictationLoopStart() {
     ; Clear any existing timer first to prevent accumulation
     SetTimer(DictationLoopStop, 0)
 
-    ; Schedule stop after 60 seconds - negative period = one-shot timer
+    ; Schedule stop after 15 seconds - negative period = one-shot timer
     ; Only schedules if loop is still active (checked above)
-    SetTimer(DictationLoopStop, -60000)
+    SetTimer(DictationLoopStop, -15000)
 
     ; Verification: Check if window appeared after a delay
     SetTimer(VerifyDictationStart, -1500)
@@ -1775,7 +1775,7 @@ VerifyDictationStart() {
             SendEvent "#!+0"
             ; Reschedule stop timer just in case
             SetTimer(DictationLoopStop, 0)
-            SetTimer(DictationLoopStop, -60000)
+            SetTimer(DictationLoopStop, -15000)
             SetTimer(VerifyDictationStart, -1500)
         } else {
             ShowCenteredOverlay_Utils("Failed to start dictation", 2000)
@@ -6984,6 +6984,7 @@ OnExit(CleanupDictationIndicator)
 ~#!+0::
 {
     global g_DictationActive, g_LastStateTransitionTick, g_DictationStartSound
+    global g_DictationLoopActive, g_PendingDictationMerge
     static lastHotkeyTick := 0
     static isProcessing := false
 
@@ -6995,6 +6996,17 @@ OnExit(CleanupDictationIndicator)
         return
     lastHotkeyTick := currentTick
     isProcessing := true
+
+    ; If dictation loop is active, treat as loop interrupt (same as Win+Alt+Shift+7)
+    ; Key passes through to handy.exe via ~ - dictation will stop; yellow banner + merge prompt follows transcription
+    if (g_DictationLoopActive) {
+        g_DictationLoopActive := false
+        SetTimer(DictationLoopStop, 0)
+        SetTimer(DictationLoopStart, 0)
+        g_PendingDictationMerge := true
+        isProcessing := false
+        return
+    }
 
     KeyWait("0", "L")
 
@@ -7017,8 +7029,8 @@ OnExit(CleanupDictationIndicator)
     isProcessing := false
 }
 
-; Dictation Loop - Win+Alt+Shift+7
-; Automatically cycles dictation on/off every 60 seconds to prevent transcription timeouts
+; Dictation Loop - Win+Alt+Shift+7 (start/stop); Win+Alt+Shift+0 also stops when loop active
+; Automatically cycles dictation on/off every 15 seconds to prevent transcription timeouts
 #!+7::
 {
     global g_DictationLoopActive, g_PendingDictationMerge
