@@ -1,6 +1,16 @@
 #Requires AutoHotkey v2.0+
 #SingleInstance Force
 
+; #region agent log
+DbgLog(loc, msg) {
+    try {
+        m := StrReplace(msg, '"', "'")
+        line := '{"ts":' A_TickCount ',"loc":"' loc '","msg":"' m '"}'
+        FileAppend line Chr(10), A_ScriptDir "\.cursor\debug.log"
+    } catch (e) {}
+}
+; #endregion
+
 #include UIA-v2\Lib\UIA.ahk
 #include UIA-v2\Lib\UIA_Browser.ahk
 
@@ -270,6 +280,7 @@ InitQuickOpenFiles()
 global g_Macros := []
 global g_MacroCharMap := Map()  ; Maps character to macro function
 global g_DictationLoopActive := false
+global g_ProgrammaticDictationStop := false  ; Skip ~#!+0 handler when script sends #!+0 (loop cycle)
 
 ; Register a macro
 RegisterMacro(func, title, char := "") {
@@ -1693,7 +1704,7 @@ CheckAndOpenOutlookTeams(checkOutlook := false, checkTeams := false) {
 ; Dictation Loop Macro
 ; Automatically cycles dictation on/off every 15 seconds to prevent transcription timeouts
 ToggleDictationLoop() {
-    global g_DictationLoopActive
+    global g_DictationLoopActive, g_ProgrammaticDictationStop
 
     if (g_DictationLoopActive) {
         ; Stop the loop
@@ -1702,6 +1713,7 @@ ToggleDictationLoop() {
         SetTimer(DictationLoopStop, 0)
         SetTimer(DictationLoopStart, 0)
         ; Send Win+Alt+Shift+0 to finish dictation
+        g_ProgrammaticDictationStop := true
         SendInput "#!+0"
         ; Merge non-favorite clips: 5s countdown when user finishes the entire loop (N or End to cancel)
         DictationMerge_StartCountdown(5)
@@ -1717,11 +1729,17 @@ ToggleDictationLoop() {
 }
 
 DictationLoopStart() {
-    global g_DictationLoopActive, g_DictationStartRetries
+    global g_DictationLoopActive, g_DictationStartRetries, g_ProgrammaticDictationStop
+    ; #region agent log
+    DbgLog("DictationLoopStart", "entry loopActive=" g_DictationLoopActive " hyp=A")
+    ; #endregion
 
     ; Safety check: Only proceed if loop is still active
     ; This prevents starting if user manually stopped the loop
     if (!g_DictationLoopActive) {
+        ; #region agent log
+        DbgLog("DictationLoopStart", "early return loop inactive hyp=A")
+        ; #endregion
         return
     }
 
@@ -1733,6 +1751,9 @@ DictationLoopStart() {
 
     ; Check if already recording to prevent toggling off
     if (WinExist("Recording ahk_exe handy.exe")) {
+        ; #region agent log
+        DbgLog("DictationLoopStart", "already recording reschedule stop hyp=B")
+        ; #endregion
         ; Already recording, just ensure timer is running
         SetTimer(DictationLoopStop, 0)
         SetTimer(DictationLoopStop, -15000)
@@ -1741,6 +1762,7 @@ DictationLoopStart() {
 
     g_DictationStartRetries := 0
     ; Send Win+Alt+Shift+0 to start dictation
+    g_ProgrammaticDictationStop := true
     SendEvent "#!+0"
 
     ; Double-check loop is still active before scheduling stop timer
@@ -1755,6 +1777,9 @@ DictationLoopStart() {
     ; Schedule stop after 15 seconds - negative period = one-shot timer
     ; Only schedules if loop is still active (checked above)
     SetTimer(DictationLoopStop, -15000)
+    ; #region agent log
+    DbgLog("DictationLoopStart", "scheduled DictationLoopStop -15000 hyp=A")
+    ; #endregion
 
     ; Verification: Check if window appeared after a delay
     SetTimer(VerifyDictationStart, -1500)
@@ -1763,7 +1788,7 @@ DictationLoopStart() {
 global g_DictationStartRetries := 0
 
 VerifyDictationStart() {
-    global g_DictationLoopActive, g_DictationStartRetries
+    global g_DictationLoopActive, g_DictationStartRetries, g_ProgrammaticDictationStop
     if (!g_DictationLoopActive) {
         return
     }
@@ -1772,6 +1797,7 @@ VerifyDictationStart() {
         g_DictationStartRetries++
         if (g_DictationStartRetries <= 3) {
             ; Retry start if window didn't appear
+            g_ProgrammaticDictationStop := true
             SendEvent "#!+0"
             ; Reschedule stop timer just in case
             SetTimer(DictationLoopStop, 0)
@@ -1785,17 +1811,27 @@ VerifyDictationStart() {
 }
 
 DictationLoopStop() {
-    global g_DictationLoopActive, g_DictationLoopSound
+    global g_DictationLoopActive, g_DictationLoopSound, g_ProgrammaticDictationStop
+    ; #region agent log
+    DbgLog("DictationLoopStop", "entry loopActive=" g_DictationLoopActive " hyp=A")
+    ; #endregion
 
     ; Safety check: Only proceed if loop is still active
     ; This prevents restarting if user manually stopped the loop via ToggleDictationLoop()
     if (!g_DictationLoopActive) {
+        ; #region agent log
+        DbgLog("DictationLoopStop", "early return loop inactive hyp=A")
+        ; #endregion
         return
     }
 
     ; Only send stop command if actually recording
     if (WinExist("Recording ahk_exe handy.exe")) {
+        ; #region agent log
+        DbgLog("DictationLoopStop", "sending #!+0 progStop=true hyp=C")
+        ; #endregion
         ; Send Win+Alt+Shift+0 to stop dictation (triggers transcription)
+        g_ProgrammaticDictationStop := true
         SendEvent "#!+0"
 
         ; Play sound to notify that transcription has started (if enabled)
@@ -1803,6 +1839,9 @@ DictationLoopStop() {
             SoundPlay(g_DictationLoopSound)
         }
     } else {
+        ; #region agent log
+        DbgLog("DictationLoopStop", "NOT recording schedule restart -1000 hyp=E")
+        ; #endregion
         ; If not recording, we might have stopped early or crashed.
         ; Restart loop immediately to recover.
         SetTimer(DictationLoopStart, -1000)
@@ -2189,7 +2228,7 @@ CleanClipboard() {
 ; Toggles dictation loop on/off. When starting, optionally asks to clean clipboard.
 ; When stopping, does NOT show clipboard cleanup prompt.
 DictationStartWithClipboardOption() {
-    global g_DictationLoopActive, g_PendingDictationMerge
+    global g_DictationLoopActive, g_PendingDictationMerge, g_ProgrammaticDictationStop
 
     if (g_DictationLoopActive) {
         ; Stop the loop - show merge countdown when user finishes the entire loop
@@ -2198,6 +2237,7 @@ DictationStartWithClipboardOption() {
         SetTimer(DictationLoopStop, 0)
         SetTimer(DictationLoopStart, 0)
         ; Send Win+Alt+Shift+0 to finish dictation
+        g_ProgrammaticDictationStop := true
         SendInput "#!+0"
         ; Set flag to start merge countdown after transcription completes
         ; This ensures AI transcription and handy.exe finish before Clip Angel merge begins
@@ -6734,6 +6774,9 @@ SafePlayDictationSound(filePath) {
 
 ; Handler for clipboard changes during dictation completion
 DictationClipboardHandler(DataType) {
+    ; #region agent log
+    DbgLog("DictationClipboardHandler", "fired hyp=B")
+    ; #endregion
     ; Remove handler immediately to prevent multiple triggers
     OnClipboardChange(DictationClipboardHandler, 0)
 
@@ -6761,6 +6804,10 @@ PlayDictationCompletionChime(*) {
     chimeShouldPlay := g_DictationCompletionChimeScheduled
     g_DictationCompletionChimeScheduled := false  ; Clear IMMEDIATELY to prevent other calls
     Critical "Off"
+
+    ; #region agent log
+    DbgLog("PlayDictationCompletionChime", "chimeShouldPlay=" chimeShouldPlay " loopActive=" g_DictationLoopActive " hyp=B")
+    ; #endregion
 
     ; Only play if flag was set (prevent duplicate execution)
     if (chimeShouldPlay) {
@@ -6808,6 +6855,9 @@ PlayDictationCompletionChime(*) {
 
         ; Trigger next loop iteration if active
         if (g_DictationLoopActive) {
+            ; #region agent log
+            DbgLog("PlayDictationCompletionChime", "scheduling DictationLoopStart -2000 hyp=B")
+            ; #endregion
             SetTimer(DictationLoopStart, -2000)
         }
     }
@@ -6879,6 +6929,9 @@ CheckDictationRecordingWindow() {
         g_LastStateTransitionTick := A_TickCount
         g_DictationActive := false
         Critical "Off"
+        ; #region agent log
+        DbgLog("CheckDictationRecordingWindow", "window gone set chimeScheduled hyp=D")
+        ; #endregion
         g_DictationSoundPlayed := false
 
         StopDictationPulseTimer()
@@ -6984,9 +7037,18 @@ OnExit(CleanupDictationIndicator)
 ~#!+0::
 {
     global g_DictationActive, g_LastStateTransitionTick, g_DictationStartSound
-    global g_DictationLoopActive, g_PendingDictationMerge
+    global g_DictationLoopActive, g_PendingDictationMerge, g_ProgrammaticDictationStop
     static lastHotkeyTick := 0
     static isProcessing := false
+
+    ; Skip when script sends #!+0 programmatically (DictationLoopStop/Start, #!+7 stop, etc.)
+    if (g_ProgrammaticDictationStop) {
+        ; #region agent log
+        DbgLog("~#!+0", "early return progStop hyp=C")
+        ; #endregion
+        g_ProgrammaticDictationStop := false
+        return
+    }
 
     if (isProcessing)
         return
@@ -7000,6 +7062,9 @@ OnExit(CleanupDictationIndicator)
     ; If dictation loop is active, treat as loop interrupt (same as Win+Alt+Shift+7)
     ; Key passes through to handy.exe via ~ - dictation will stop; yellow banner + merge prompt follows transcription
     if (g_DictationLoopActive) {
+        ; #region agent log
+        DbgLog("~#!+0", "interrupt branch loopActive was true hyp=C")
+        ; #endregion
         g_DictationLoopActive := false
         SetTimer(DictationLoopStop, 0)
         SetTimer(DictationLoopStart, 0)
@@ -7033,7 +7098,10 @@ OnExit(CleanupDictationIndicator)
 ; Automatically cycles dictation on/off every 15 seconds to prevent transcription timeouts
 #!+7::
 {
-    global g_DictationLoopActive, g_PendingDictationMerge
+    global g_DictationLoopActive, g_PendingDictationMerge, g_ProgrammaticDictationStop
+    ; #region agent log
+    DbgLog("#!+7", "entry loopActive=" g_DictationLoopActive)
+    ; #endregion
 
     if (g_DictationLoopActive) {
         ; Stop the loop - show merge countdown when user finishes the entire loop
@@ -7042,11 +7110,18 @@ OnExit(CleanupDictationIndicator)
         SetTimer(DictationLoopStop, 0)
         SetTimer(DictationLoopStart, 0)
         ; Send Win+Alt+Shift+0 to finish dictation
+        g_ProgrammaticDictationStop := true
         SendInput "#!+0"
         ; Set flag to start merge countdown after transcription completes
         ; This ensures AI transcription and handy.exe finish before Clip Angel merge begins
         g_PendingDictationMerge := true
+        ; #region agent log
+        DbgLog("#!+7", "stop branch hyp=A")
+        ; #endregion
     } else {
+        ; #region agent log
+        DbgLog("#!+7", "start branch hyp=A")
+        ; #endregion
         ; Start the loop - non-modal 5-second countdown (default: clear clipboard)
         ; User can cancel by pressing N or End during the countdown.
         DictationCleanup_StartCountdown(5)
@@ -7066,7 +7141,7 @@ OnExit(CleanupDictationIndicator)
 ; Step 3: Execute paste and enter action
 #!+j::
 {
-    global g_PendingDictationAction, g_DictationActive, g_KeepIndicatorVisible
+    global g_PendingDictationAction, g_DictationActive, g_KeepIndicatorVisible, g_ProgrammaticDictationStop
 
     ; Play sound signal
     if (IsSoundEnabled()) {
@@ -7081,6 +7156,7 @@ OnExit(CleanupDictationIndicator)
         g_KeepIndicatorVisible := true
         ; Programmatically send Win+Alt+Shift+0 to stop dictation
         ; Use SendInput for reliable key sending
+        g_ProgrammaticDictationStop := true
         SendInput "#!+0"
     }
 }
