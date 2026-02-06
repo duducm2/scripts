@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {"id":"log_32770515_8433","timestamp":32770515,"location":"Shift keys.ahk:1727","message":"WaitForButton entry","data":{"pattern":"i)^(Voice message|Record voice message)$","timeout":3000},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
 {"id":"log_32770781_5541","timestamp":32770781,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":45},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
 {"id":"log_32770796_3404","timestamp":32770796,"location":"Shift keys.ahk:1770","message":"Matching button found","data":{"name":"Voice message","className":"","hasClassName":0,"supportsInvoke":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C"}
@@ -40,3 +41,13 @@
 {"id":"log_7400593_3545","timestamp":7400593,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":66},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
 {"id":"log_7400593_4425","timestamp":7400593,"location":"Shift keys.ahk:1770","message":"Matching button found","data":{"name":"Main menu","className":"","hasClassName":0,"supportsInvoke":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C"}
 {"id":"log_7400656_6234","timestamp":7400656,"location":"Shift keys.ahk:1813","message":"WaitForButton returning button","data":{"name":"Main menu","className":"","type":"50000","score":5},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}
+=======
+{{"id":"log_345250812_9376","timestamp":345250812,"location":"Shift keys.ahk:13450","message":"+g fired","data":{{"exe":"chrome.exe","title":"Google Gemini - Google Chrome"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A,E"}}
+{{"id":"log_345251328_6877","timestamp":345251328,"location":"Shift keys.ahk:13465","message":"UIA_Browser result","data":{{"uiaValid":true}},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}}
+{{"id":"log_345251656_5953","timestamp":345251656,"location":"Shift keys.ahk:13562","message":"Outer exception","data":{{"error":"An element matching the condition was not found"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C,D,E"}}
+{{"id":"log_345432156_1684","timestamp":345432156,"location":"Shift keys.ahk:13450","message":"+g fired","data":{{"exe":"chrome.exe","title":"Google Gemini - Google Chrome"}},"sessionId":"debug-session","runId":"run1","hypothesisId":"A,E"}}
+{{"id":"log_345432671_6442","timestamp":345432671,"location":"Shift keys.ahk:13465","message":"UIA_Browser result","data":{{"uiaValid":true}},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}}
+{{"id":"log_345433000_3316","timestamp":345433000,"location":"Shift keys.ahk:13515","message":"Prompt field search result","data":{{"promptFieldFound":true}},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}}
+{{"id":"log_345433109_2013","timestamp":345433109,"location":"Shift keys.ahk:13525","message":"File check","data":{{"fileExists":true}},"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}}
+{{"id":"log_345433703_7819","timestamp":345433703,"location":"Shift keys.ahk:13545","message":"Paste and Enter sent","data":{},"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}}
+>>>>>>> 463cb652a7d5110259dbad770f29ebaa5d8b530b
