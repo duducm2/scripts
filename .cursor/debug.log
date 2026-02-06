@@ -1,0 +1,4 @@
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2,H3","location":"Shift keys.ahk:13457","message":"+g entry","data":{},"timestamp":14054203}}
+{{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"Shift keys.ahk:13462","message":"after UIA_Browser","data":{{"uiaIsObject":1}},"timestamp":14054687}}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H1,H4","location":"Shift keys.ahk:13520","message":"after strategies","data":{"strategy":1,"found":true,"name":"Enter a prompt for Gemini","className":""},"timestamp":14054703}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H5","location":"Shift keys.ahk:13526","message":"after SetFocus","data":{"HasKeyboardFocus":true},"timestamp":14054828}
