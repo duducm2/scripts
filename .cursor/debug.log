@@ -1,8 +1,0 @@
-{"id":"log_9003500_7045","timestamp":9003500,"location":"Shift keys.ahk:1727","message":"WaitForButton entry","data":{"pattern":"i)^(Main menu|Menu principal)$","timeout":1500},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
-{"id":"log_9003562_5230","timestamp":9003562,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":29},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
-{"id":"log_9003578_1119","timestamp":9003578,"location":"Shift keys.ahk:1770","message":"Matching button found","data":{"name":"Main menu","className":"","hasClassName":0,"supportsInvoke":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C"}
-{"id":"log_9003609_8147","timestamp":9003609,"location":"Shift keys.ahk:1813","message":"WaitForButton returning button","data":{"name":"Main menu","className":"","type":"50000","score":5},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}
-{{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2,H3","location":"Shift keys.ahk:13457","message":"+g entry","data":{},"timestamp":11923421}}
-{{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"Shift keys.ahk:13462","message":"after UIA_Browser","data":{{"uiaIsObject":1}},"timestamp":11924500}}
-{"sessionId":"debug-session","runId":"run1","hypothesisId":"H1,H4","location":"Shift keys.ahk:13520","message":"after strategies","data":{"strategy":1,"found":true,"name":"Enter a prompt for Gemini","className":""},"timestamp":11924546}
-{"sessionId":"debug-session","runId":"run1","hypothesisId":"H5","location":"Shift keys.ahk:13526","message":"after SetFocus","data":{"HasKeyboardFocus":true},"timestamp":11924656}

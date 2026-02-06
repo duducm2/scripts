@@ -1691,7 +1691,7 @@ CheckAndOpenOutlookTeams(checkOutlook := false, checkTeams := false) {
 }
 
 ; Dictation Loop Macro
-; Automatically cycles dictation on/off every 15 seconds to prevent transcription timeouts
+; Automatically cycles dictation on/off every 60 seconds to prevent transcription timeouts
 ToggleDictationLoop() {
     global g_DictationLoopActive
 
@@ -1735,7 +1735,7 @@ DictationLoopStart() {
     if (WinExist("Recording ahk_exe handy.exe")) {
         ; Already recording, just ensure timer is running
         SetTimer(DictationLoopStop, 0)
-        SetTimer(DictationLoopStop, -15000)
+        SetTimer(DictationLoopStop, -60000)
         return
     }
 
@@ -1752,7 +1752,7 @@ DictationLoopStart() {
     ; Clear any existing timer first to prevent accumulation
     SetTimer(DictationLoopStop, 0)
 
-    ; Schedule stop after 15 seconds - negative period = one-shot timer
+    ; Schedule stop after 60 seconds - negative period = one-shot timer
     ; Only schedules if loop is still active (checked above)
     SetTimer(DictationLoopStop, -15000)
 
@@ -1775,7 +1775,7 @@ VerifyDictationStart() {
             SendEvent "#!+0"
             ; Reschedule stop timer just in case
             SetTimer(DictationLoopStop, 0)
-            SetTimer(DictationLoopStop, -15000)
+            SetTimer(DictationLoopStop, -60000)
             SetTimer(VerifyDictationStart, -1500)
         } else {
             ShowCenteredOverlay_Utils("Failed to start dictation", 2000)
@@ -7030,7 +7030,7 @@ OnExit(CleanupDictationIndicator)
 }
 
 ; Dictation Loop - Win+Alt+Shift+7 (start/stop); Win+Alt+Shift+0 also stops when loop active
-; Automatically cycles dictation on/off every 15 seconds to prevent transcription timeouts
+; Automatically cycles dictation on/off every 60 seconds to prevent transcription timeouts
 #!+7::
 {
     global g_DictationLoopActive, g_PendingDictationMerge
