@@ -32,10 +32,11 @@ class InfiniteDictation {
 
     ; Ensure only one Infinite Dictation can be active. Returns true if we may proceed to start, false if another instance owns it.
     static _ClaimOrRejectStart() {
+        myPid := DllCall("GetCurrentProcessId", "UInt")  ; current script's PID (avoids #Warn on A_ProcessId)
         s := InfiniteDictation._ReadPersistedState()
         if (s.Active = 0)
             return true
-        if (s.Pid = A_ProcessId)
+        if (s.Pid = myPid)
             return true
         if (ProcessExist(s.Pid))
             return false
@@ -57,7 +58,7 @@ class InfiniteDictation {
         DictationCleanup_StartCountdown(5)
         InfiniteDictation.IsActive := true
         global g_DictationLoopActive := true
-        InfiniteDictation._WritePersistedState(1, A_ProcessId)
+        InfiniteDictation._WritePersistedState(1, DllCall("GetCurrentProcessId", "UInt"))
         SetTimer(ObjBindMethod(InfiniteDictation, "StopHandyAndRestart"), 0)
         SetTimer(ObjBindMethod(InfiniteDictation, "LoopCycle"), 0)
         InfiniteDictation.LoopCycle()
@@ -73,7 +74,7 @@ class InfiniteDictation {
         }
         InfiniteDictation.IsActive := true
         global g_DictationLoopActive := true
-        InfiniteDictation._WritePersistedState(1, A_ProcessId)
+        InfiniteDictation._WritePersistedState(1, DllCall("GetCurrentProcessId", "UInt"))
         SetTimer(ObjBindMethod(InfiniteDictation, "StopHandyAndRestart"), 0)
         SetTimer(ObjBindMethod(InfiniteDictation, "LoopCycle"), 0)
         InfiniteDictation.LoopCycle()
