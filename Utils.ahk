@@ -6819,7 +6819,8 @@ PlayDictationCompletionChime(*) {
     Critical "Off"
 
     ; #region agent log
-    DbgLog("PlayDictationCompletionChime", "chimeShouldPlay=" chimeShouldPlay " loopActive=" g_DictationLoopActive " hyp=B")
+    DbgLog("PlayDictationCompletionChime", "chimeShouldPlay=" chimeShouldPlay " loopActive=" g_DictationLoopActive " hyp=B"
+    )
     ; #endregion
 
     ; Only play if flag was set (prevent duplicate execution)
