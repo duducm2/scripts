@@ -805,8 +805,8 @@ global g_HandyAiModels := Map(
     3, { name: "Whisper Medium", desc: "Good accuracy, medium speed" },
     4, { name: "Whisper Large", desc: "Good accuracy, but slow" },
     5, { name: "Parakeet V3", desc: "Fast and accurate" },
-    6, { name: "Moonshine Base", desc: "Very fast, English only" },
-    7, { name: "Parakeet V2", desc: "Fast and accurate (V2)" }
+    6, { name: "Parakeet V2", desc: "Fast and accurate (V2)" },
+    7, { name: "Moonshine", desc: "Very fast, English only" }
 )
 
 ; GUI state for AI model selector
