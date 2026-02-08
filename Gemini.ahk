@@ -749,6 +749,22 @@ CopyLastGeminiMessageToClipboard(options := "", geminiHwnd := 0) {
     }
 }
 
+; Custom message so WindowManagement.ahk can trigger copy without Send (Send does not trigger hotkeys in another script).
+WM_COPY_LAST_GEMINI := 0x8001
+; #region agent log
+_DebugLog_Gemini(msg, data := "") {
+    path := A_ScriptDir "\.cursor\debug.log"
+    line := '{"location":"Gemini.ahk","message":"' . msg . '","data":' . (data = "" ? "{}" : data) . ',"timestamp":' . A_TickCount . '}' . "`n"
+    FileAppend line, path
+}
+; #endregion
+OnMessage(WM_COPY_LAST_GEMINI, copyFromBridge)
+copyFromBridge(*) {
+    _DebugLog_Gemini("WM_COPY_LAST_GEMINI received", "{}")
+    r := CopyLastGeminiMessageToClipboard({ restoreWindow: false, playChimeAndNotify: false })
+    _DebugLog_Gemini("CopyLastGeminiMessageToClipboard result", (r ? '{"ok":1}' : '{"ok":0}'))
+}
+
 ; =============================================================================
 ; Get Pronunciation
 ; Hotkey: Win+Alt+Shift+8 — async: submit to Gemini, restore focus, show result in banner when ready
