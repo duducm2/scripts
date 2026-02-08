@@ -986,8 +986,21 @@ class GeminiAsyncLookup {
         Sleep 500
         Send("{Enter}")
         Sleep 300
-        ; Restore focus immediately so user can keep working
-        WinActivate("ahk_id " this.OriginalHwnd)
+        ; Go back to the window where you triggered the hotkey so you can keep working
+        origHwnd := this.OriginalHwnd
+        try {
+            if WinExist("ahk_id " origHwnd) {
+                WinRestore("ahk_id " origHwnd)
+                WinActivate("ahk_id " origHwnd)
+                WinWaitActive("ahk_id " origHwnd, , 1)
+            }
+        } catch {
+            WinActivate("ahk_id " origHwnd)
+        }
+        ; Delayed restore in case Chrome stole focus after Enter
+        SetTimer(() => WinActivate("ahk_id " origHwnd), -400)
+        ; Small "Loading" banner in the middle of the screen until we show the response
+        ShowSmallLoadingIndicator("Loading…")
         this.RetryCount := 0
         this.TimerCallback := this.CheckCompletion.Bind(this)
         SetTimer(this.TimerCallback, 500)
@@ -997,9 +1010,10 @@ class GeminiAsyncLookup {
         this.RetryCount++
         if (this.RetryCount > this.MaxRetries) {
             SetTimer(this.TimerCallback, 0)
+            HideSmallLoadingIndicator()
             return
         }
-        ; Check Gemini state via background UIA to avoid window flicker/jumping
+        ; Poll in background (no window switch) so you can keep working
         btn := ""
         ; Use the same button names as in Shift keys.ahk for consistency
         buttonNames := ["Stop streaming", "Interromper transmissão", "Stop response"]
@@ -1059,12 +1073,16 @@ class GeminiAsyncLookup {
     }
 
     RetrieveResponse() {
-        ; Run copy logic synchronously and wait for completion before showing banner
-        if !CopyLastGeminiMessageToClipboard({ restoreWindow: false, playChimeAndNotify: false }, this.GeminiHwnd)
+        ; Only now activate Gemini: copy the response, then restore focus and show banner so you can keep multitasking
+        if !CopyLastGeminiMessageToClipboard({ restoreWindow: false, playChimeAndNotify: false }, this.GeminiHwnd) {
+            HideSmallLoadingIndicator()
             return
-        ; Brief wait so the new content is in the clipboard before we read and show it
-        Sleep 400
+        }
+        ; Restore your window right away so you can keep working
         WinActivate("ahk_id " this.OriginalHwnd)
+        ; Wait for clipboard to update with the new content before showing the banner
+        Sleep 400
+        HideSmallLoadingIndicator()
         this.ShowResultBanner(A_Clipboard)
     }
 
