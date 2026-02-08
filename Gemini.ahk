@@ -952,22 +952,31 @@ class GeminiAsyncLookup {
         this.OriginalHwnd := WinExist("A")
         if !this.OriginalHwnd
             return
+        ; Show loading banner immediately as the first action
+        ShowSmallLoadingIndicator("Loading…")
+        
         A_Clipboard := ""
         Send "^c"
         if !ClipWait(2)
             return
         SetTitleMatchMode(2)
         this.GeminiHwnd := GetGeminiWindowHwnd()
-        if !this.GeminiHwnd
+        if !this.GeminiHwnd {
+            HideSmallLoadingIndicator()
             return
+        }
         WinActivate("ahk_id " this.GeminiHwnd)
-        if !WinWaitActive("ahk_exe chrome.exe", , 2)
+        if !WinWaitActive("ahk_exe chrome.exe", , 2) {
+            HideSmallLoadingIndicator()
             return
+        }
         uia := UIA_Browser()
         Sleep 300
         promptField := FindGeminiPromptField(uia)
-        if (!promptField)
+        if (!promptField) {
+            HideSmallLoadingIndicator()
             return
+        }
         promptField.SetFocus()
         Sleep 100
         if (!promptField.HasKeyboardFocus) {
@@ -999,8 +1008,6 @@ class GeminiAsyncLookup {
         }
         ; Delayed restore in case Chrome stole focus after Enter
         SetTimer(() => WinActivate("ahk_id " origHwnd), -400)
-        ; Small "Loading" banner in the middle of the screen until we show the response
-        ShowSmallLoadingIndicator("Loading…")
         this.RetryCount := 0
         this.TimerCallback := this.CheckCompletion.Bind(this)
         SetTimer(this.TimerCallback, 500)

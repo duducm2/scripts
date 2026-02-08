@@ -59,3 +59,21 @@
 {"ts":86310078,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
 {"ts":86310093,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
 {"ts":86310109,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":86451406,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":86451421,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":86451421,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":86451437,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":86451453,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":86452968,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":86468890,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":86468890,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":86468921,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":86468953,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":86468968,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":86469000,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":86622359,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":86622359,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":86622390,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":86623140,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":86623296,"loc":"DictationClipboardHandler","msg":"fired hyp=B"}
+{"ts":86623296,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
