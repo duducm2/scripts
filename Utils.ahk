@@ -796,17 +796,17 @@ MarkLastClipAsFavorite() {
 ; =============================================================================
 ; AI Model Selection System for Handy
 ; =============================================================================
-; Configuration: Maps selection numbers (1–6) to AI model names.
+; Configuration: Maps selection numbers (1–7) to AI model names.
 ; These are partial name prefixes used to find buttons in the UIA tree (Type 50000, botão).
-; Whisper models grouped first, then Parakeet, then Moonshine.
+; Descriptions match Handy Transcription Models UI for quick verification.
 global g_HandyAiModels := Map(
-    1, { name: "Whisper Turbo", desc: "Balanced accuracy and speed" },
-    2, { name: "Whisper Small", desc: "Fast and fairly accurate" },
-    3, { name: "Whisper Medium", desc: "Good accuracy, medium speed" },
-    4, { name: "Whisper Large", desc: "Good accuracy, but slow" },
-    5, { name: "Parakeet V3", desc: "Fast and accurate" },
-    6, { name: "Parakeet V2", desc: "Fast and accurate (V2)" },
-    7, { name: "Moonshine", desc: "Very fast, English only" }
+    1, { name: "Whisper Turbo", desc: "Balanced accuracy and speed. Multi-language." },
+    2, { name: "Whisper Small", desc: "Fast and fairly accurate. Multi-language, translate to English." },
+    3, { name: "Whisper Medium", desc: "Good accuracy, medium speed. Multi-language, translate to English." },
+    4, { name: "Whisper Large", desc: "Good accuracy, but slow. Multi-language, translate to English." },
+    5, { name: "Parakeet V3", desc: "Fast and accurate. Multi-language." },
+    6, { name: "Parakeet V2", desc: "English only. Best model for English speakers." },
+    7, { name: "Moonshine Base", desc: "Very fast, English only. Handles accents well." }
 )
 
 ; GUI state for AI model selector

@@ -1,14 +1,10 @@
-{"ts":76957671,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
-{"ts":76957671,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
-{"ts":76957687,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"ts":76957718,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"ts":76957734,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"ts":76973390,"loc":"Handy_OpenAiModelMenu","msg":"entry","data":{},"hypothesisId":"H1"}
-{"ts":76973421,"loc":"Handy_OpenAiModelMenu","msg":"anchor by ClassName","data":{"by":"ClassName"},"hypothesisId":"H1"}
-{"ts":76973984,"loc":"Handy_OpenAiModelMenu","msg":"exit true","data":{},"hypothesisId":"H1"}
-{"ts":76974796,"loc":"Handy_ClickAiModel","msg":"entry","data":{"modelName":"Whisper Medium"},"hypothesisId":"H2"}
-{"ts":76974828,"loc":"Handy_ClickAiModel","msg":"name match","data":{"btnName":"Whisper Medium Good accuracy, medium speed","btnClass":"w-full px-3 py-2 text-start hover:bg-mid-gray/10 transition-colors cursor-pointer focus:outline-none ","hasWfull":0,"hasTextStart":1,"hasFlex":0},"hypothesisId":"H2"}
-{"ts":76974828,"loc":"Handy_ClickAiModel","msg":"buttons scanned","data":{"count":17,"nameMatchNoClass":"","found":1},"hypothesisId":"H2"}
-{"ts":76974843,"loc":"Handy_ClickAiModel","msg":"click ok","data":{},"hypothesisId":"H2"}
-{"ts":76974859,"loc":"Handy_WaitForModelReady","msg":"entry","data":{},"hypothesisId":"H3"}
-{"ts":76977062,"loc":"Handy_WaitForModelReady","msg":"ready","data":{"btnName":"Whisper Medium"},"hypothesisId":"H3"}
+{"ts":77088578,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":77088578,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":77088593,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":77088609,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":77088625,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":77162437,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":77162437,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":77162437,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":77162468,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":77162484,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
