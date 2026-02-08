@@ -1057,16 +1057,14 @@ class GeminiAsyncLookup {
             HideSmallLoadingIndicator()
             return
         }
-        ; Poll in background (no window switch) so you can keep working
+        ; Poll in background using raw UIA (no UIA_Browser) so the library never activates Gemini
         btn := ""
-        ; Use the same button names as in Shift keys.ahk for consistency
         buttonNames := ["Stop streaming", "Interromper transmissão", "Stop response"]
         try {
-            ; Use ahk_id to target the specific Gemini window without activating it
-            cUIA := UIA_Browser("ahk_id " this.GeminiHwnd)
+            root := UIA.ElementFromHandle(this.GeminiHwnd)
             for n in buttonNames {
                 try {
-                    btn := cUIA.FindElement({ Name: n, Type: "Button" })
+                    btn := root.FindElement({ Name: n, Type: "Button" })
                 } catch {
                     btn := ""
                 }
@@ -1084,13 +1082,12 @@ class GeminiAsyncLookup {
 
         ; If button was found and now is gone, verify it's truly finished
         if (this.ButtonEverFound) {
-            ; Double-check for a short period to ensure it didn't just flicker
             isTrulyGone := true
             loop 4 {
                 Sleep 200
                 try {
                     for n in buttonNames {
-                        if cUIA.ElementExist({ Name: n, Type: "Button" }) {
+                        if root.ElementExist({ Name: n, Type: "Button" }) {
                             isTrulyGone := false
                             break
                         }
