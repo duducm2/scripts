@@ -10,6 +10,15 @@ DbgLog(loc, msg) {
     } catch as e {
     }
 }
+; NDJSON debug (hypothesisId, data as JSON string)
+DbgLogEx(loc, msg, data := "{}", hypothesisId := "") {
+    try {
+        m := StrReplace(msg, '"', "'")
+        line := '{"ts":' A_TickCount ',"loc":"' loc '","msg":"' m '","data":' data ',"hypothesisId":"' hypothesisId '"}'
+        FileAppend line Chr(10), A_ScriptDir "\.cursor\debug.log"
+    } catch {
+    }
+}
 ; #endregion
 
 #include UIA-v2\Lib\UIA.ahk
@@ -796,7 +805,8 @@ global g_HandyAiModels := Map(
     3, { name: "Whisper Medium", desc: "Good accuracy, medium speed" },
     4, { name: "Whisper Large", desc: "Good accuracy, but slow" },
     5, { name: "Parakeet V3", desc: "Fast and accurate" },
-    6, { name: "Moonshine Base", desc: "Very fast, English only" }
+    6, { name: "Moonshine Base", desc: "Very fast, English only" },
+    7, { name: "Parakeet V2", desc: "Fast and accurate (V2)" }
 )
 
 ; GUI state for AI model selector
@@ -837,7 +847,7 @@ ShowAiModelSelector() {
     ; Footer
     g_AiModelSelectorGui.Add("Text", "w280 h1 Background45475A y+10")
     g_AiModelSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_AiModelSelectorGui.Add("Text", "w280 Center", "Press 1–6 | Esc to cancel")
+    g_AiModelSelectorGui.Add("Text", "w280 Center", "Press 1–7 | Esc to cancel")
 
     ; Get active window to determine which monitor to center on
     activeWin := 0
@@ -899,6 +909,7 @@ ShowAiModelSelector() {
     Hotkey("4", AiModelSelector_HandleKey, "On")
     Hotkey("5", AiModelSelector_HandleKey, "On")
     Hotkey("6", AiModelSelector_HandleKey, "On")
+    Hotkey("7", AiModelSelector_HandleKey, "On")
     Hotkey("Escape", AiModelSelector_Cancel, "On")
 }
 
@@ -942,6 +953,7 @@ AiModelSelector_Close() {
     try Hotkey("4", "Off")
     try Hotkey("5", "Off")
     try Hotkey("6", "Off")
+    try Hotkey("7", "Off")
     try Hotkey("Escape", AiModelSelector_Cancel, "Off")
 
     ; Destroy GUI
@@ -1192,9 +1204,14 @@ Handy_ActivateOrLaunch() {
 
 ; Open the AI model dropdown menu using keyboard navigation
 Handy_OpenAiModelMenu(hwnd) {
+    ; #region agent log
+    DbgLogEx("Handy_OpenAiModelMenu", "entry", "{}", "H1")
+    ; #endregion
     el := UIA.ElementFromHandle(hwnd)
-    if !el
+    if !el {
+        DbgLogEx("Handy_OpenAiModelMenu", "ElementFromHandle failed", "{}", "H1")
         return false
+    }
 
     ; Find anchor: "Check for updates" button
     anchor := 0
@@ -1202,13 +1219,23 @@ Handy_OpenAiModelMenu(hwnd) {
         Type: 50000,
         ClassName: "transition-colors disabled:opacity-50 tabular-nums text-text/60 hover:text-text/80"
     })
-    if (!anchor)
+    if (anchor)
+        DbgLogEx("Handy_OpenAiModelMenu", "anchor by ClassName", '{"by":"ClassName"}', "H1")
+    if (!anchor) {
         try anchor := el.FindFirst({ Type: 50000, Name: "Check for updates" })
-    if (!anchor)
+        if (anchor)
+            DbgLogEx("Handy_OpenAiModelMenu", "anchor by Name", '{"by":"Name"}', "H1")
+    }
+    if (!anchor) {
         try anchor := el.FindFirst({ Type: 50000, Name: "Verificar atualizações" })
+        if (anchor)
+            DbgLogEx("Handy_OpenAiModelMenu", "anchor by Name Pt", '{"by":"NamePt"}', "H1")
+    }
 
-    if (!anchor)
+    if (!anchor) {
+        DbgLogEx("Handy_OpenAiModelMenu", "anchor not found", "{}", "H1")
         return false
+    }
 
     ; Focus anchor, Shift+Tab to model button, Enter to open menu
     try anchor.SetFocus()
@@ -1220,37 +1247,56 @@ Handy_OpenAiModelMenu(hwnd) {
     Sleep 100
     Send "{Enter}"
     Sleep 300
+    ; #region agent log
+    DbgLogEx("Handy_OpenAiModelMenu", "exit true", "{}", "H1")
+    ; #endregion
     return true
 }
 
 ; Find and click the AI model button by partial name match
 Handy_ClickAiModel(hwnd, modelName) {
+    ; #region agent log
+    DbgLogEx("Handy_ClickAiModel", "entry", '{"modelName":"' modelName '"}', "H2")
+    ; #endregion
     el := UIA.ElementFromHandle(hwnd)
-    if !el
+    if !el {
+        DbgLogEx("Handy_ClickAiModel", "ElementFromHandle failed", "{}", "H2")
         return false
+    }
 
     ; Model buttons have class containing "w-full px-3 py-2 text-left"
     ; and names starting with the model name (e.g., "Whisper Large Good accuracy...")
     ; Try to find by partial name match
     modelBtn := 0
+    buttonCount := 0
+    nameMatchNoClass := ""
 
     ; Strategy 1: Find button whose Name starts with modelName
     try {
         buttons := el.FindAll({ Type: 50000 })
         for btn in buttons {
+            buttonCount++
             btnName := ""
             try btnName := btn.Name
             if (btnName != "" && InStr(btnName, modelName) = 1) {
-                ; Verify it's a model button by checking class (list items or header-style, e.g. Parakeet V3)
                 btnClass := ""
                 try btnClass := btn.ClassName
-                if (InStr(btnClass, "w-full px-3 py-2 text-left") || InStr(btnClass, "flex items-center gap-2")) {
+                ; #region agent log
+                DbgLogEx("Handy_ClickAiModel", "name match", '{"btnName":"' StrReplace(btnName, "`"", "'") '","btnClass":"' StrReplace(btnClass, "`"", "'") '","hasWfull":' (InStr(btnClass,"w-full px-3 py-2 text-left")?1:0) ',"hasTextStart":' (InStr(btnClass,"w-full px-3 py-2 text-start")?1:0) ',"hasFlex":' (InStr(btnClass,"flex items-center gap-2")?1:0) '}', "H2")
+                ; #endregion
+                ; Menu items: w-full px-3 py-2 text-left (legacy) or text-start (new Handy UI); header: flex items-center gap-2
+                if (InStr(btnClass, "w-full px-3 py-2 text-left") || InStr(btnClass, "w-full px-3 py-2 text-start") || InStr(btnClass, "flex items-center gap-2")) {
                     modelBtn := btn
                     break
                 }
+                if (nameMatchNoClass = "")
+                    nameMatchNoClass := btnClass
             }
         }
     }
+    ; #region agent log
+    DbgLogEx("Handy_ClickAiModel", "buttons scanned", '{"count":' buttonCount ',"nameMatchNoClass":"' StrReplace(nameMatchNoClass, "`"", "'") '","found":' (modelBtn ? 1 : 0) '}', "H2")
+    ; #endregion
 
     if (!modelBtn)
         return false
@@ -1258,8 +1304,10 @@ Handy_ClickAiModel(hwnd, modelName) {
     ; Click the model button
     try {
         modelBtn.Click()
+        DbgLogEx("Handy_ClickAiModel", "click ok", "{}", "H2")
         return true
-    } catch {
+    } catch as e {
+        DbgLogEx("Handy_ClickAiModel", "click failed", '{"err":"' StrReplace(e.Message, "`"", "'") '"}', "H2")
         return false
     }
 }
@@ -1269,11 +1317,17 @@ Handy_ClickAiModel(hwnd, modelName) {
 ; Returns true when loading text disappeared, false on timeout or if button not found.
 Handy_WaitForModelReady(hwnd, maxWaitMs) {
     global UIA
+    ; #region agent log
+    DbgLogEx("Handy_WaitForModelReady", "entry", "{}", "H3")
+    ; #endregion
     pollInterval := 250
     start := A_TickCount
+    firstLog := true
     loop {
-        if ((A_TickCount - start) >= maxWaitMs)
+        if ((A_TickCount - start) >= maxWaitMs) {
+            DbgLogEx("Handy_WaitForModelReady", "timeout", "{}", "H3")
             return false
+        }
         el := UIA.ElementFromHandle(hwnd)
         if !el {
             Sleep pollInterval
@@ -1282,13 +1336,19 @@ Handy_WaitForModelReady(hwnd, maxWaitMs) {
         btn := 0
         try btn := el.FindFirst({ Type: 50000, ClassName: "flex items-center gap-2 hover:text-text/80 transition-colors " })
         if (!btn) {
+            if (firstLog) {
+                DbgLogEx("Handy_WaitForModelReady", "model button not found by ClassName", "{}", "H3")
+                firstLog := false
+            }
             Sleep pollInterval
             continue
         }
         btnName := ""
         try btnName := btn.Name
-        if (InStr(btnName, "loading") = 0)
+        if (InStr(btnName, "loading") = 0) {
+            DbgLogEx("Handy_WaitForModelReady", "ready", '{"btnName":"' StrReplace(btnName, "`"", "'") '"}', "H3")
             return true
+        }
         Sleep pollInterval
     }
 }
