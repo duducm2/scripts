@@ -713,63 +713,78 @@ CenterMouse() {
     Sleep 300
 
     promptField := 0
-
-    ; Primary strategy: Find by Name "Enter a prompt here" with Type 50004 (Edit)
-    promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
+    try {
+        ; Primary strategy: Find by Name "Enter a prompt here" with Type 50004 (Edit)
+        promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
+    } catch
+        promptField := 0
 
     ; Fallback 1: Try by Type "Edit" and Name "Enter a prompt here"
     if !promptField {
-        promptField := uia.FindFirst({ Type: "Edit", Name: "Enter a prompt here" })
+        try
+            promptField := uia.FindFirst({ Type: "Edit", Name: "Enter a prompt here" })
+        catch
+            promptField := 0
     }
 
     ; Fallback 2: Try by ClassName containing "ql-editor" or "new-input-ui" (substring match)
     if !promptField {
-        allEdits := uia.FindAll({ Type: 50004 })
-        for edit in allEdits {
-            if (InStr(edit.ClassName, "ql-editor") || InStr(edit.ClassName, "new-input-ui")) {
-                if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "prompt") {
-                    promptField := edit
-                    break
+        try {
+            allEdits := uia.FindAll({ Type: 50004 })
+            for edit in allEdits {
+                if (InStr(edit.ClassName, "ql-editor") || InStr(edit.ClassName, "new-input-ui")) {
+                    if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "prompt") {
+                        promptField := edit
+                        break
+                    }
                 }
             }
-        }
+        } catch
+            promptField := 0
     }
 
     ; Fallback 3: Try finding by ClassName containing "ql-editor" (most specific identifier)
     if !promptField {
-        allEdits := uia.FindAll({ Type: 50004 })
-        for edit in allEdits {
-            if InStr(edit.ClassName, "ql-editor") {
-                promptField := edit
-                break
-            }
-        }
-    }
-
-    ; Fallback 4: Try finding by Name with substring match (in case of localization variations)
-    if !promptField {
-        allEdits := uia.FindAll({ Type: 50004 })
-        for edit in allEdits {
-            if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "Digite um prompt") || InStr(edit.Name, "prompt") {
-                ; Additional check to ensure it's the prompt field (has ql-editor in className)
+        try {
+            allEdits := uia.FindAll({ Type: 50004 })
+            for edit in allEdits {
                 if InStr(edit.ClassName, "ql-editor") {
                     promptField := edit
                     break
                 }
             }
-        }
+        } catch
+            promptField := 0
     }
 
-    if (promptField) {
-        ; Focus the prompt field
-        promptField.SetFocus()
+    ; Fallback 4: Try finding by Name with substring match (in case of localization variations)
+    if !promptField {
+        try {
+            allEdits := uia.FindAll({ Type: 50004 })
+            for edit in allEdits {
+                if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "Digite um prompt") || InStr(edit.Name, "prompt") {
+                    ; Additional check to ensure it's the prompt field (has ql-editor in className)
+                    if InStr(edit.ClassName, "ql-editor") {
+                        promptField := edit
+                        break
+                    }
+                }
+            }
+        } catch
+            promptField := 0
+    }
+
+    if (!promptField)
+        return  ; Prompt field not found; avoid pasting into wrong place
+
+    ; Focus the prompt field
+    promptField.SetFocus()
+    Sleep 100
+    ; Ensure focus was successful
+    if (!promptField.HasKeyboardFocus) {
+        ; Fallback: try clicking if SetFocus didn't work
+        promptField.Click()
         Sleep 100
-        ; Ensure focus was successful
-        if (!promptField.HasKeyboardFocus) {
-            ; Fallback: try clicking if SetFocus didn't work
-            promptField.Click()
-            Sleep 100
-        }
     }
 
     searchString :=
