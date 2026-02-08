@@ -73,7 +73,8 @@ FindGeminiPromptField(uia) {
         try {
             allEdits := uia.FindAll({ Type: 50004 })
             for edit in allEdits {
-                if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "Digite um prompt") || InStr(edit.Name, "prompt") {
+                if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "Digite um prompt") || InStr(edit.Name,
+                    "prompt") {
                     if InStr(edit.ClassName, "ql-editor") {
                         promptField := edit
                         break
@@ -893,7 +894,7 @@ InitializeGeminiFirstTime() {
                     Sleep 25   ; minimal wait for focus
                     SendInput "+{Tab}"  ; Use SendInput for faster keystroke
                     Sleep 15   ; minimal delay for navigation
-                    
+
                     ; Play sound (non-blocking, no try-catch needed - SoundPlay is safe)
                     if (IsSoundEnabled()) {
                         SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
@@ -935,7 +936,8 @@ InitializeGeminiFirstTime() {
 ; User keeps focus; timer polls for completion; result shown in banner.
 ; =============================================================================
 class GeminiAsyncLookup {
-    static PronunciationPrompt := "Below, you will find a word or phrase. I'd like you to answer in five sections: the 1st section you will repeat the word twice. For each time you repeat, use a point to finish the phrase. The 2nd section should have the definition of the word (You should also say each part of speech does the different definitions belong to). The 3d section should have the pronunciation of this word using the Internation Phonetic Alphabet characters (for American English).The 4th section should have the same word applied in a real sentence (put that in quotations, so I can identify that). In the 5th, Write down the translation of the word into Portuguese. Please, do not title any section. Thanks!"
+    static PronunciationPrompt :=
+        "Below, you will find a word or phrase. I'd like you to answer in five sections: the 1st section you will repeat the word twice. For each time you repeat, use a point to finish the phrase. The 2nd section should have the definition of the word (You should also say each part of speech does the different definitions belong to). The 3d section should have the pronunciation of this word using the Internation Phonetic Alphabet characters (for American English).The 4th section should have the same word applied in a real sentence (put that in quotations, so I can identify that). In the 5th, Write down the translation of the word into Portuguese. Please, do not title any section. Thanks!"
 
     __New() {
         this.OriginalHwnd := 0
@@ -972,6 +974,9 @@ class GeminiAsyncLookup {
             try promptField.Click()
             Sleep 100
         }
+        ; Switch to Fast model before the prompt (enough for this task)
+        Send("@fast ")
+        Sleep 200
         searchString := GeminiAsyncLookup.PronunciationPrompt
         A_Clipboard := searchString . "`n`nContent: " . A_Clipboard
         Sleep 100
