@@ -30,6 +30,62 @@ GetGeminiWindowHwnd() {
     return 0
 }
 
+; Find the Gemini prompt field via UIA (returns element or 0). Used by pronunciation workflow.
+FindGeminiPromptField(uia) {
+    promptField := 0
+    try {
+        promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
+    } catch
+        promptField := 0
+    if !promptField {
+        try
+            promptField := uia.FindFirst({ Type: "Edit", Name: "Enter a prompt here" })
+        catch
+            promptField := 0
+    }
+    if !promptField {
+        try {
+            allEdits := uia.FindAll({ Type: 50004 })
+            for edit in allEdits {
+                if (InStr(edit.ClassName, "ql-editor") || InStr(edit.ClassName, "new-input-ui")) {
+                    if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "prompt") {
+                        promptField := edit
+                        break
+                    }
+                }
+            }
+        } catch
+            promptField := 0
+    }
+    if !promptField {
+        try {
+            allEdits := uia.FindAll({ Type: 50004 })
+            for edit in allEdits {
+                if InStr(edit.ClassName, "ql-editor") {
+                    promptField := edit
+                    break
+                }
+            }
+        } catch
+            promptField := 0
+    }
+    if !promptField {
+        try {
+            allEdits := uia.FindAll({ Type: 50004 })
+            for edit in allEdits {
+                if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "Digite um prompt") || InStr(edit.Name, "prompt") {
+                    if InStr(edit.ClassName, "ql-editor") {
+                        promptField := edit
+                        break
+                    }
+                }
+            }
+        } catch
+            promptField := 0
+    }
+    return promptField
+}
+
 ; =============================================================================
 ; Unified banner builder – consistent shape/font/opacity for all banners here
 ; =============================================================================
@@ -44,9 +100,8 @@ CreateCenteredBanner(message, bgColor := "3772FF", fontColor := "FFFFFF", fontSi
     if (activeWin) {
         WinGetPos(&winX, &winY, &winW, &winH, activeWin)
     } else {
-        workArea := SysGet.MonitorWorkArea(SysGet.MonitorPrimary)
-        winX := workArea.Left, winY := workArea.Top, winW := workArea.Right - workArea.Left, winH := workArea.Bottom -
-            workArea.Top
+        MonitorGetWorkArea(, &wLeft, &wTop, &wRight, &wBottom)
+        winX := wLeft, winY := wTop, winW := wRight - wLeft, winH := wBottom - wTop
     }
 
     bGui.Show("AutoSize Hide")
@@ -696,114 +751,10 @@ CenterMouse() {
 
 ; =============================================================================
 ; Get Pronunciation
-; Hotkey: Win+Alt+Shift+8
+; Hotkey: Win+Alt+Shift+8 — async: submit to Gemini, restore focus, show result in banner when ready
 ; =============================================================================
 #!+8:: {
-    A_Clipboard := ""
-    Send "^c"
-    ClipWait
-    SetTitleMatchMode(2)
-    if hwnd := GetGeminiWindowHwnd()
-        WinActivate("ahk_id " hwnd)
-    if !WinWaitActive("ahk_exe chrome.exe", , 2)
-        return
-
-    ; Find the Gemini prompt field
-    uia := UIA_Browser()
-    Sleep 300
-
-    promptField := 0
-    try {
-        ; Primary strategy: Find by Name "Enter a prompt here" with Type 50004 (Edit)
-        promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
-    } catch
-        promptField := 0
-
-    ; Fallback 1: Try by Type "Edit" and Name "Enter a prompt here"
-    if !promptField {
-        try
-            promptField := uia.FindFirst({ Type: "Edit", Name: "Enter a prompt here" })
-        catch
-            promptField := 0
-    }
-
-    ; Fallback 2: Try by ClassName containing "ql-editor" or "new-input-ui" (substring match)
-    if !promptField {
-        try {
-            allEdits := uia.FindAll({ Type: 50004 })
-            for edit in allEdits {
-                if (InStr(edit.ClassName, "ql-editor") || InStr(edit.ClassName, "new-input-ui")) {
-                    if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "prompt") {
-                        promptField := edit
-                        break
-                    }
-                }
-            }
-        } catch
-            promptField := 0
-    }
-
-    ; Fallback 3: Try finding by ClassName containing "ql-editor" (most specific identifier)
-    if !promptField {
-        try {
-            allEdits := uia.FindAll({ Type: 50004 })
-            for edit in allEdits {
-                if InStr(edit.ClassName, "ql-editor") {
-                    promptField := edit
-                    break
-                }
-            }
-        } catch
-            promptField := 0
-    }
-
-    ; Fallback 4: Try finding by Name with substring match (in case of localization variations)
-    if !promptField {
-        try {
-            allEdits := uia.FindAll({ Type: 50004 })
-            for edit in allEdits {
-                if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "Digite um prompt") || InStr(edit.Name, "prompt") {
-                    ; Additional check to ensure it's the prompt field (has ql-editor in className)
-                    if InStr(edit.ClassName, "ql-editor") {
-                        promptField := edit
-                        break
-                    }
-                }
-            }
-        } catch
-            promptField := 0
-    }
-
-    if (!promptField)
-        return  ; Prompt field not found; avoid pasting into wrong place
-
-    ; Focus the prompt field
-    promptField.SetFocus()
-    Sleep 100
-    ; Ensure focus was successful
-    if (!promptField.HasKeyboardFocus) {
-        ; Fallback: try clicking if SetFocus didn't work
-        promptField.Click()
-        Sleep 100
-    }
-
-    searchString :=
-        "Below, you will find a word or phrase. I'd like you to answer in five sections: the 1st section you will repeat the word twice. For each time you repeat, use a point to finish the phrase. The 2nd section should have the definition of the word (You should also say each part of speech does the different definitions belong to). The 3d section should have the pronunciation of this word using the Internation Phonetic Alphabet characters (for American English).The 4th section should have the same word applied in a real sentence (put that in quotations, so I can identify that). In the 5th, Write down the translation of the word into Portuguese. Please, do not title any section. Thanks!"
-    A_Clipboard := searchString . "`n`nContent: " . A_Clipboard
-    Sleep 100
-    Send("^a")
-    Sleep 500
-    Send("^v")
-    Sleep 500
-    Send("{Enter}")
-    Sleep 500
-    ; After sending, show loading for Stop streaming
-    Send "!{Tab}" ; Return to previous window
-    buttonNames := ["Stop streaming", "Interromper transmissão"]
-    WaitForButtonAndShowSmallLoading(buttonNames, "Waiting for response...")
-
-    ; Go back to previous window
-    Send "!{Tab}"
+    (GeminiAsyncLookup()).Start()
 }
 
 ; =============================================================================
@@ -1016,5 +967,168 @@ InitializeGeminiFirstTime() {
         }
     } else {
         InitializeGeminiFirstTime()
+    }
+}
+
+; =============================================================================
+; GeminiAsyncLookup – async pronunciation lookup (Win+Alt+Shift+8)
+; User keeps focus; timer polls for completion; result shown in banner.
+; =============================================================================
+class GeminiAsyncLookup {
+    static PronunciationPrompt := "Below, you will find a word or phrase. I'd like you to answer in five sections: the 1st section you will repeat the word twice. For each time you repeat, use a point to finish the phrase. The 2nd section should have the definition of the word (You should also say each part of speech does the different definitions belong to). The 3d section should have the pronunciation of this word using the Internation Phonetic Alphabet characters (for American English).The 4th section should have the same word applied in a real sentence (put that in quotations, so I can identify that). In the 5th, Write down the translation of the word into Portuguese. Please, do not title any section. Thanks!"
+
+    __New() {
+        this.OriginalHwnd := 0
+        this.GeminiHwnd := 0
+        this.TimerCallback := ""
+        this.RetryCount := 0
+        this.MaxRetries := 60   ; 60 * 500ms = 30s timeout
+        this.ButtonEverFound := false
+    }
+
+    Start() {
+        this.OriginalHwnd := WinExist("A")
+        if !this.OriginalHwnd
+            return
+        A_Clipboard := ""
+        Send "^c"
+        if !ClipWait(2)
+            return
+        SetTitleMatchMode(2)
+        this.GeminiHwnd := GetGeminiWindowHwnd()
+        if !this.GeminiHwnd
+            return
+        WinActivate("ahk_id " this.GeminiHwnd)
+        if !WinWaitActive("ahk_exe chrome.exe", , 2)
+            return
+        uia := UIA_Browser()
+        Sleep 300
+        promptField := FindGeminiPromptField(uia)
+        if (!promptField)
+            return
+        promptField.SetFocus()
+        Sleep 100
+        if (!promptField.HasKeyboardFocus) {
+            try promptField.Click()
+            Sleep 100
+        }
+        searchString := GeminiAsyncLookup.PronunciationPrompt
+        A_Clipboard := searchString . "`n`nContent: " . A_Clipboard
+        Sleep 100
+        Send("^a")
+        Sleep 500
+        Send("^v")
+        Sleep 500
+        Send("{Enter}")
+        Sleep 300
+        ; Restore focus immediately so user can keep working
+        WinActivate("ahk_id " this.OriginalHwnd)
+        this.RetryCount := 0
+        this.TimerCallback := this.CheckCompletion.Bind(this)
+        SetTimer(this.TimerCallback, 500)
+    }
+
+    CheckCompletion() {
+        this.RetryCount++
+        if (this.RetryCount > this.MaxRetries) {
+            SetTimer(this.TimerCallback, 0)
+            return
+        }
+        ; Check Gemini state via background UIA to avoid window flicker/jumping
+        btn := ""
+        ; Use the same button names as in Shift keys.ahk for consistency
+        buttonNames := ["Stop streaming", "Interromper transmissão", "Stop response"]
+        try {
+            ; Use ahk_id to target the specific Gemini window without activating it
+            cUIA := UIA_Browser("ahk_id " this.GeminiHwnd)
+            for n in buttonNames {
+                try {
+                    btn := cUIA.FindElement({ Name: n, Type: "Button" })
+                } catch {
+                    btn := ""
+                }
+                if btn
+                    break
+            }
+        } catch {
+            return
+        }
+
+        if btn {
+            this.ButtonEverFound := true
+            return   ; Still streaming
+        }
+
+        ; If button was found and now is gone, verify it's truly finished
+        if (this.ButtonEverFound) {
+            ; Double-check for a short period to ensure it didn't just flicker
+            isTrulyGone := true
+            loop 4 {
+                Sleep 200
+                try {
+                    for n in buttonNames {
+                        if cUIA.ElementExist({ Name: n, Type: "Button" }) {
+                            isTrulyGone := false
+                            break
+                        }
+                    }
+                } catch
+                    isTrulyGone := true
+                if !isTrulyGone
+                    break
+            }
+
+            if isTrulyGone {
+                SetTimer(this.TimerCallback, 0)
+                ; Use the same sound as Shift keys.ahk for consistency
+                try {
+                    if (IsSoundEnabled()) {
+                        SoundPlay(A_ScriptDir . "\sounds\gemini-completion.wav")
+                    }
+                } catch {
+                    PlayCopyCompletedChime()
+                }
+                this.RetrieveResponse()
+            }
+        }
+    }
+
+    RetrieveResponse() {
+        SetTitleMatchMode(2)
+        if !WinExist("ahk_id " this.GeminiHwnd)
+            return
+        WinActivate("ahk_id " this.GeminiHwnd)
+        if !WinWaitActive("ahk_exe chrome.exe", , 2)
+            return
+        Sleep 200
+        Send "#!+p"
+        if !ClipWait(3)
+            return
+        WinActivate("ahk_id " this.OriginalHwnd)
+        this.ShowResultBanner(A_Clipboard)
+    }
+
+    ShowResultBanner(text) {
+        if (!text || StrLen(Trim(text)) = 0)
+            return
+        banner := Gui("+AlwaysOnTop -Caption +ToolWindow")
+        banner.BackColor := "3772FF"
+        banner.SetFont("s14 cFFFFFF", "Segoe UI")
+        banner.Add("Text", "w600 Center Wrap", text)
+        MonitorGetWorkArea(, &wLeft, &wTop, &wRight, &wBottom)
+        w := wRight - wLeft
+        h := wBottom - wTop
+        banner.Show("AutoSize Hide")
+        banner.GetPos(, , &gw, &gh)
+        banner.Show("x" . Round(wLeft + (w - gw) / 2) . " y" . Round(wTop + (h - gh) / 2) . " NA")
+        WinSetTransparent(220, banner)
+        closeBanner(*) {
+            SetTimer(closeBanner, 0)
+            try Hotkey("Escape", closeBanner, "Off")
+            try banner.Destroy()
+        }
+        banner.OnEvent("Close", closeBanner)
+        SetTimer(closeBanner, -12000)
+        Hotkey("Escape", closeBanner, "On")
     }
 }
