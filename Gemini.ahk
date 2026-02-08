@@ -653,21 +653,25 @@ CenterMouse() {
 
 ; Copy last Gemini message to clipboard. Used by #!+p and by async pronunciation flow.
 ; options.restoreWindow (default true): send !{Tab} after copy. options.playChimeAndNotify (default true): play chime and show "Copied!".
+; options.alreadyActive (default false): when true, skip activation; assume Gemini is already the active window (use UIA_Browser() with no arg).
 ; geminiHwnd: optional; if 0, uses GetGeminiWindowHwnd(). Returns true if copy succeeded, false otherwise.
 CopyLastGeminiMessageToClipboard(options := "", geminiHwnd := 0) {
     restoreWindow := (options = "" || !options.HasProp("restoreWindow")) ? true : options.restoreWindow
     playChimeAndNotify := (options = "" || !options.HasProp("playChimeAndNotify")) ? true : options.playChimeAndNotify
+    alreadyActive := (options != "" && options.HasProp("alreadyActive")) ? options.alreadyActive : false
     try {
         SetTitleMatchMode(2)
         if !geminiHwnd
             geminiHwnd := GetGeminiWindowHwnd()
         if !geminiHwnd
             return false
-        WinActivate("ahk_id " geminiHwnd)
-        if !WinWaitActive("ahk_exe chrome.exe", , 2)
-            return false
-        Sleep 150
-        uia := UIA_Browser()
+        if (!alreadyActive) {
+            WinActivate("ahk_id " geminiHwnd)
+            if !WinWaitActive("ahk_exe chrome.exe", , 2)
+                return false
+            Sleep 150
+        }
+        uia := alreadyActive ? UIA_Browser() : UIA_Browser("ahk_id " geminiHwnd)
         Sleep 120
 
         lastCopyButton := 0
@@ -1041,8 +1045,6 @@ class GeminiAsyncLookup {
         } catch {
             WinActivate("ahk_id " origHwnd)
         }
-        ; Delayed restore in case Chrome stole focus after Enter
-        SetTimer(() => WinActivate("ahk_id " origHwnd), -400)
         this.RetryCount := 0
         this.TimerCallback := this.CheckCompletion.Bind(this)
         SetTimer(this.TimerCallback, 500)
@@ -1115,26 +1117,28 @@ class GeminiAsyncLookup {
     }
 
     RetrieveResponse() {
-        ; Only now activate Gemini: copy the response, then restore focus and show banner so you can keep multitasking
+        ; Activate Gemini once, then copy (and retries if needed) without switching back until done
         contentBefore := A_Clipboard
-        if !CopyLastGeminiMessageToClipboard({ restoreWindow: false, playChimeAndNotify: false }, this.GeminiHwnd) {
+        WinActivate("ahk_id " this.GeminiHwnd)
+        if !WinWaitActive("ahk_exe chrome.exe", , 2) {
             HideSmallLoadingIndicator()
             return
         }
-        WinActivate("ahk_id " this.OriginalHwnd)
+        copyOpt := { restoreWindow: false, playChimeAndNotify: false, alreadyActive: true }
+        if !CopyLastGeminiMessageToClipboard(copyOpt, this.GeminiHwnd) {
+            HideSmallLoadingIndicator()
+            return
+        }
         Sleep 400
-        ; Verification layer 1: if clipboard didn't change, run copy again
         if (A_Clipboard = "" || A_Clipboard = contentBefore) {
-            CopyLastGeminiMessageToClipboard({ restoreWindow: false, playChimeAndNotify: false }, this.GeminiHwnd)
-            WinActivate("ahk_id " this.OriginalHwnd)
+            CopyLastGeminiMessageToClipboard(copyOpt, this.GeminiHwnd)
             Sleep 400
         }
-        ; Verification layer 2: if still wrong, try copy one more time
         if (A_Clipboard = "" || A_Clipboard = contentBefore) {
-            CopyLastGeminiMessageToClipboard({ restoreWindow: false, playChimeAndNotify: false }, this.GeminiHwnd)
-            WinActivate("ahk_id " this.OriginalHwnd)
+            CopyLastGeminiMessageToClipboard(copyOpt, this.GeminiHwnd)
             Sleep 400
         }
+        WinActivate("ahk_id " this.OriginalHwnd)
         HideSmallLoadingIndicator()
         this.ShowResultBanner(A_Clipboard)
     }
