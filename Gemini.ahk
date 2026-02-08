@@ -113,14 +113,15 @@ GetWorkAreaForWindow(hwnd) {
 ; =============================================================================
 ; Unified banner builder – consistent shape/font/opacity for all banners here
 ; centerOnHwnd: optional; when set, banner is centered on that window's monitor
+; textWidth: optional width of the text control (default 500)
 ; =============================================================================
 CreateCenteredBanner(message, bgColor := "3772FF", fontColor := "FFFFFF", fontSize := 24, alpha := 178, centerOnHwnd :=
-    0) {
+    0, textWidth := 500) {
     bGui := Gui()
     bGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
     bGui.BackColor := bgColor
     bGui.SetFont("s" . fontSize . " c" . fontColor . " Bold", "Segoe UI")
-    bGui.Add("Text", "w500 Center", message)
+    bGui.Add("Text", "w" . textWidth . " Center Wrap", message)
 
     workArea := (centerOnHwnd && GetWorkAreaForWindow(centerOnHwnd) != "") ? GetWorkAreaForWindow(centerOnHwnd) : ""
     if (workArea != "") {
@@ -183,7 +184,8 @@ PlayCopyCompletedChime() {
 ; =============================================================================
 global smallLoadingGuis_Gemini := []
 
-ShowSmallLoadingIndicator(state := "Loading…", bgColor := "3772FF", centerOnHwnd := 0) {
+ShowSmallLoadingIndicator(state := "Loading…", bgColor := "3772FF", centerOnHwnd := 0, textWidth := 500, fontSize := 24
+) {
     global smallLoadingGuis_Gemini
 
     ; If GUIs exist, just update the text of the topmost one (the message)
@@ -199,7 +201,7 @@ ShowSmallLoadingIndicator(state := "Loading…", bgColor := "3772FF", centerOnHw
     }
 
     ; Create a single, high-contrast, centered banner (on given window's monitor if centerOnHwnd)
-    textGui := CreateCenteredBanner(state, bgColor, "FFFFFF", 24, 178, centerOnHwnd)
+    textGui := CreateCenteredBanner(state, bgColor, "FFFFFF", fontSize, 178, centerOnHwnd, textWidth)
     smallLoadingGuis_Gemini.Push(textGui)
 }
 
@@ -985,8 +987,9 @@ class GeminiAsyncLookup {
         this.OriginalHwnd := WinExist("A")
         if !this.OriginalHwnd
             return
-        ; Show loading banner immediately, centered on the monitor where this window is
-        ShowSmallLoadingIndicator("Loading…", "3772FF", this.OriginalHwnd)
+        ; Show loading banner immediately, centered on the monitor where this window is (with warning)
+        ShowSmallLoadingIndicator("Loading…`n`n⚠️ Please do not click or use the keyboard", "3772FF", this.OriginalHwnd,
+            320, 20)
 
         A_Clipboard := ""
         Send "^c"
@@ -1114,14 +1117,21 @@ class GeminiAsyncLookup {
 
     RetrieveResponse() {
         ; Only now activate Gemini: copy the response, then restore focus and show banner so you can keep multitasking
+        contentBefore := A_Clipboard
         if !CopyLastGeminiMessageToClipboard({ restoreWindow: false, playChimeAndNotify: false }, this.GeminiHwnd) {
             HideSmallLoadingIndicator()
             return
         }
         ; Restore your window right away so you can keep working
         WinActivate("ahk_id " this.OriginalHwnd)
-        ; Wait for clipboard to update with the new content before showing the banner
+        ; Wait for clipboard to update with the new content
         Sleep 400
+        ; If clipboard didn't change, run the copy algorithm again
+        if (A_Clipboard = "" || A_Clipboard = contentBefore) {
+            CopyLastGeminiMessageToClipboard({ restoreWindow: false, playChimeAndNotify: false }, this.GeminiHwnd)
+            WinActivate("ahk_id " this.OriginalHwnd)
+            Sleep 400
+        }
         HideSmallLoadingIndicator()
         this.ShowResultBanner(A_Clipboard)
     }
