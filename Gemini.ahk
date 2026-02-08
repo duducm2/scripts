@@ -615,137 +615,97 @@ CenterMouse() {
     }
 }
 
-; Win+Alt+Shift+P : Click the last Copy button in Gemini (activates Gemini window first, then copies the preceding message)
-#!+p:: {
+; Copy last Gemini message to clipboard. Used by #!+p and by async pronunciation flow.
+; options.restoreWindow (default true): send !{Tab} after copy. options.playChimeAndNotify (default true): play chime and show "Copied!".
+; geminiHwnd: optional; if 0, uses GetGeminiWindowHwnd(). Returns true if copy succeeded, false otherwise.
+CopyLastGeminiMessageToClipboard(options := "", geminiHwnd := 0) {
+    restoreWindow := (options = "" || !options.HasProp("restoreWindow")) ? true : options.restoreWindow
+    playChimeAndNotify := (options = "" || !options.HasProp("playChimeAndNotify")) ? true : options.playChimeAndNotify
     try {
-        ; Step 1: Activate Gemini window globally
         SetTitleMatchMode(2)
-        if hwnd := GetGeminiWindowHwnd()
-            WinActivate("ahk_id " hwnd)
-        if !WinWaitActive("ahk_exe chrome.exe", , 2) {
-            return
-        }
-        Sleep 150  ; keep snappy per README (short settle after activation)
-
-        ; Step 2: Initialize UIA
+        if !geminiHwnd
+            geminiHwnd := GetGeminiWindowHwnd()
+        if !geminiHwnd
+            return false
+        WinActivate("ahk_id " geminiHwnd)
+        if !WinWaitActive("ahk_exe chrome.exe", , 2)
+            return false
+        Sleep 150
         uia := UIA_Browser()
-        Sleep 120  ; minimal settle before querying UIA
+        Sleep 120
 
         lastCopyButton := 0
-
-        ; Optimization: Bottom-up search starting from the Prompt field
-        ; The "Copy" button for the last message is typically a preceding sibling of the Prompt field.
-
-        promptField := 0
-        ; Try to find the prompt field using robust strategies
-        try {
-            promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
-        } catch {
-            ; Silently continue to fallbacks
-        }
-        if !promptField {
-            try {
-                promptField := uia.FindFirst({ Type: "Edit", Name: "Enter a prompt here" })
-            } catch {
-                ; Silently continue
-            }
-        }
-        if !promptField {
-            try {
-                allEdits := uia.FindAll({ Type: 50004 })
-                for edit in allEdits {
-                    if (InStr(edit.ClassName, "ql-editor")) {
-                        promptField := edit
-                        break
-                    }
-                }
-            } catch {
-                ; Silently continue
-            }
-        }
-
-        ; If prompt found, walk backwards to find the Copy button
+        promptField := FindGeminiPromptField(uia)
         if (promptField) {
             try {
                 sibling := promptField
-                loop 20 { ; Look at the last 20 siblings (usually it's within 2-3)
+                loop 20 {
                     sibling := sibling.Navigate("PreviousSibling")
                     if (!sibling)
                         break
-
-                    ; Check if this sibling is the Copy button
                     if (sibling.Type == 50000 && (sibling.Name = "Copy" || InStr(sibling.Name, "Copy", false))) {
                         lastCopyButton := sibling
                         break
                     }
                 }
             } catch {
-                ; If navigation fails, fall back to full search
             }
         }
 
-        ; Fallback: If optimized search failed, use the original top-down FindAll approach
         if (!lastCopyButton) {
             allCopyButtons := []
-
-            ; Primary pass: Find all buttons, filter for any "Copy" variant
             allButtons := uia.FindAll({ Type: 50000 })
             for button in allButtons {
                 if (button.Name = "Copy" || InStr(button.Name, "Copy", false)) {
-                    ; Additional check: ensure it has the Copy button className pattern
-                    if (InStr(button.ClassName, "icon-button") || InStr(button.ClassName, "mdc-button")) {
+                    if (InStr(button.ClassName, "icon-button") || InStr(button.ClassName, "mdc-button"))
                         allCopyButtons.Push(button)
-                    }
                 }
             }
-
-            ; Fallback: broaden type if none found on primary pass (still single filter loop)
             if (allCopyButtons.Length = 0) {
                 allButtons := uia.FindAll({ Type: "Button" })
                 for button in allButtons {
-                    if (button.Name = "Copy" || InStr(button.Name, "Copy", false)) {
+                    if (button.Name = "Copy" || InStr(button.Name, "Copy", false))
                         allCopyButtons.Push(button)
-                    }
                 }
             }
-
-            ; Find the last Copy button (the one with the highest Y position, meaning furthest down the page)
             highestY := -1
-
             for copyButton in allCopyButtons {
                 try {
                     btnPos := copyButton.Location
                     btnBottomY := btnPos.y + btnPos.h
-
-                    ; The last button will be the one with the highest bottom Y coordinate
                     if (btnBottomY > highestY) {
                         highestY := btnBottomY
                         lastCopyButton := copyButton
                     }
                 } catch {
-                    ; If getting location fails, skip this button
                 }
             }
-
-            ; If position-based approach didn't work, just use the last one in the array
-            if (!lastCopyButton && allCopyButtons.Length > 0) {
+            if (!lastCopyButton && allCopyButtons.Length > 0)
                 lastCopyButton := allCopyButtons[allCopyButtons.Length]
-            }
         }
 
-        if (lastCopyButton) {
-            lastCopyButton.Click()
-            ; Play chime when copy completes
+        if (!lastCopyButton)
+            return false
+        lastCopyButton.Click()
+        if !ClipWait(2)
+            return false
+        if (playChimeAndNotify) {
             PlayCopyCompletedChime()
-            ; Show notification banner when copy button is clicked
             ShowNotification("Copied!", 800, "FFFF00", "000000", 24)
-            ; Return to previous window
-            Send "!{Tab}"
-        } else {
-            ; Last resort: Could not find last Copy button
         }
-    } catch Error as e {
-        ; If all else fails, silently fail (no fallback action defined)
+        if (restoreWindow)
+            Send "!{Tab}"
+        return true
+    } catch {
+        return false
+    }
+}
+
+; Win+Alt+Shift+P : Click the last Copy button in Gemini (activates Gemini window first, then copies the preceding message)
+#!+p:: {
+    try {
+        CopyLastGeminiMessageToClipboard()
+    } catch {
     }
 }
 
@@ -1094,16 +1054,11 @@ class GeminiAsyncLookup {
     }
 
     RetrieveResponse() {
-        SetTitleMatchMode(2)
-        if !WinExist("ahk_id " this.GeminiHwnd)
+        ; Run copy logic synchronously and wait for completion before showing banner
+        if !CopyLastGeminiMessageToClipboard({ restoreWindow: false, playChimeAndNotify: false }, this.GeminiHwnd)
             return
-        WinActivate("ahk_id " this.GeminiHwnd)
-        if !WinWaitActive("ahk_exe chrome.exe", , 2)
-            return
-        Sleep 200
-        Send "#!+p"
-        if !ClipWait(3)
-            return
+        ; Brief wait so the new content is in the clipboard before we read and show it
+        Sleep 400
         WinActivate("ahk_id " this.OriginalHwnd)
         this.ShowResultBanner(A_Clipboard)
     }
@@ -1115,6 +1070,8 @@ class GeminiAsyncLookup {
         banner.BackColor := "3772FF"
         banner.SetFont("s14 cFFFFFF", "Segoe UI")
         banner.Add("Text", "w600 Center Wrap", text)
+        banner.SetFont("s11 cFFFFFF Bold", "Segoe UI")
+        banner.Add("Text", "w600 Center", "Press Enter to close")
         MonitorGetWorkArea(, &wLeft, &wTop, &wRight, &wBottom)
         w := wRight - wLeft
         h := wBottom - wTop
@@ -1125,10 +1082,13 @@ class GeminiAsyncLookup {
         closeBanner(*) {
             SetTimer(closeBanner, 0)
             try Hotkey("Escape", closeBanner, "Off")
+            try Hotkey("Enter", closeBanner, "Off")
             try banner.Destroy()
         }
         banner.OnEvent("Close", closeBanner)
         SetTimer(closeBanner, -12000)
+        ; Press Escape or Enter to remove the banner
         Hotkey("Escape", closeBanner, "On")
+        Hotkey("Enter", closeBanner, "On")
     }
 }
