@@ -88,21 +88,54 @@ FindGeminiPromptField(uia) {
 }
 
 ; =============================================================================
-; Unified banner builder – consistent shape/font/opacity for all banners here
+; Get work area (left, top, right, bottom) of the monitor that contains the given window
 ; =============================================================================
-CreateCenteredBanner(message, bgColor := "3772FF", fontColor := "FFFFFF", fontSize := 24, alpha := 178) {
+GetWorkAreaForWindow(hwnd) {
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return ""
+    try {
+        WinGetPos(&winX, &winY, &winW, &winH, "ahk_id " hwnd)
+        centerX := winX + winW / 2
+        centerY := winY + winH / 2
+        n := MonitorGetCount()
+        loop n {
+            MonitorGet(A_Index, &L, &T, &R, &B)
+            if (centerX >= L && centerX < R && centerY >= T && centerY < B) {
+                MonitorGetWorkArea(A_Index, &wLeft, &wTop, &wRight, &wBottom)
+                return { left: wLeft, top: wTop, right: wRight, bottom: wBottom }
+            }
+        }
+    } catch {
+    }
+    return ""
+}
+
+; =============================================================================
+; Unified banner builder – consistent shape/font/opacity for all banners here
+; centerOnHwnd: optional; when set, banner is centered on that window's monitor
+; =============================================================================
+CreateCenteredBanner(message, bgColor := "3772FF", fontColor := "FFFFFF", fontSize := 24, alpha := 178, centerOnHwnd :=
+    0) {
     bGui := Gui()
     bGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
     bGui.BackColor := bgColor
     bGui.SetFont("s" . fontSize . " c" . fontColor . " Bold", "Segoe UI")
     bGui.Add("Text", "w500 Center", message)
 
-    activeWin := WinGetID("A")
-    if (activeWin) {
-        WinGetPos(&winX, &winY, &winW, &winH, activeWin)
+    workArea := (centerOnHwnd && GetWorkAreaForWindow(centerOnHwnd) != "") ? GetWorkAreaForWindow(centerOnHwnd) : ""
+    if (workArea != "") {
+        winX := workArea.left
+        winY := workArea.top
+        winW := workArea.right - workArea.left
+        winH := workArea.bottom - workArea.top
     } else {
-        MonitorGetWorkArea(, &wLeft, &wTop, &wRight, &wBottom)
-        winX := wLeft, winY := wTop, winW := wRight - wLeft, winH := wBottom - wTop
+        activeWin := WinGetID("A")
+        if (activeWin) {
+            WinGetPos(&winX, &winY, &winW, &winH, activeWin)
+        } else {
+            MonitorGetWorkArea(, &wLeft, &wTop, &wRight, &wBottom)
+            winX := wLeft, winY := wTop, winW := wRight - wLeft, winH := wBottom - wTop
+        }
     }
 
     bGui.Show("AutoSize Hide")
@@ -150,7 +183,7 @@ PlayCopyCompletedChime() {
 ; =============================================================================
 global smallLoadingGuis_Gemini := []
 
-ShowSmallLoadingIndicator(state := "Loading…", bgColor := "3772FF") {
+ShowSmallLoadingIndicator(state := "Loading…", bgColor := "3772FF", centerOnHwnd := 0) {
     global smallLoadingGuis_Gemini
 
     ; If GUIs exist, just update the text of the topmost one (the message)
@@ -165,8 +198,8 @@ ShowSmallLoadingIndicator(state := "Loading…", bgColor := "3772FF") {
         return
     }
 
-    ; Create a single, high-contrast, centered banner using the unified builder
-    textGui := CreateCenteredBanner(state, bgColor, "FFFFFF", 24, 178)
+    ; Create a single, high-contrast, centered banner (on given window's monitor if centerOnHwnd)
+    textGui := CreateCenteredBanner(state, bgColor, "FFFFFF", 24, 178, centerOnHwnd)
     smallLoadingGuis_Gemini.Push(textGui)
 }
 
@@ -952,9 +985,9 @@ class GeminiAsyncLookup {
         this.OriginalHwnd := WinExist("A")
         if !this.OriginalHwnd
             return
-        ; Show loading banner immediately as the first action
-        ShowSmallLoadingIndicator("Loading…")
-        
+        ; Show loading banner immediately, centered on the monitor where this window is
+        ShowSmallLoadingIndicator("Loading…", "3772FF", this.OriginalHwnd)
+
         A_Clipboard := ""
         Send "^c"
         if !ClipWait(2)
@@ -1102,12 +1135,22 @@ class GeminiAsyncLookup {
         banner.Add("Text", "w600 Center Wrap", text)
         banner.SetFont("s11 cFFFFFF Bold", "Segoe UI")
         banner.Add("Text", "w600 Center", "Press Enter to close")
-        MonitorGetWorkArea(, &wLeft, &wTop, &wRight, &wBottom)
-        w := wRight - wLeft
-        h := wBottom - wTop
-        banner.Show("AutoSize Hide")
-        banner.GetPos(, , &gw, &gh)
-        banner.Show("x" . Round(wLeft + (w - gw) / 2) . " y" . Round(wTop + (h - gh) / 2) . " NA")
+        ; Center on the same monitor as the window that triggered the hotkey
+        workArea := GetWorkAreaForWindow(this.OriginalHwnd)
+        if (workArea = "") {
+            MonitorGetWorkArea(, &wLeft, &wTop, &wRight, &wBottom)
+            w := wRight - wLeft
+            h := wBottom - wTop
+            banner.Show("AutoSize Hide")
+            banner.GetPos(, , &gw, &gh)
+            banner.Show("x" . Round(wLeft + (w - gw) / 2) . " y" . Round(wTop + (h - gh) / 2) . " NA")
+        } else {
+            w := workArea.right - workArea.left
+            h := workArea.bottom - workArea.top
+            banner.Show("AutoSize Hide")
+            banner.GetPos(, , &gw, &gh)
+            banner.Show("x" . Round(workArea.left + (w - gw) / 2) . " y" . Round(workArea.top + (h - gh) / 2) . " NA")
+        }
         WinSetTransparent(220, banner)
         closeBanner(*) {
             SetTimer(closeBanner, 0)
