@@ -988,8 +988,7 @@ class GeminiAsyncLookup {
         if !this.OriginalHwnd
             return
         ; Show loading banner immediately, centered on the monitor where this window is (with warning)
-        ShowSmallLoadingIndicator("Loading…`n`n⚠️ Please do not click or use the keyboard", "3772FF", this.OriginalHwnd,
-            320, 20)
+        ShowSmallLoadingIndicator("Loading…`n`n⚠️ Please do not click or use the keyboard", "3772FF", this.OriginalHwnd, 200, 16)
 
         A_Clipboard := ""
         Send "^c"
@@ -1122,11 +1121,15 @@ class GeminiAsyncLookup {
             HideSmallLoadingIndicator()
             return
         }
-        ; Restore your window right away so you can keep working
         WinActivate("ahk_id " this.OriginalHwnd)
-        ; Wait for clipboard to update with the new content
         Sleep 400
-        ; If clipboard didn't change, run the copy algorithm again
+        ; Verification layer 1: if clipboard didn't change, run copy again
+        if (A_Clipboard = "" || A_Clipboard = contentBefore) {
+            CopyLastGeminiMessageToClipboard({ restoreWindow: false, playChimeAndNotify: false }, this.GeminiHwnd)
+            WinActivate("ahk_id " this.OriginalHwnd)
+            Sleep 400
+        }
+        ; Verification layer 2: if still wrong, try copy one more time
         if (A_Clipboard = "" || A_Clipboard = contentBefore) {
             CopyLastGeminiMessageToClipboard({ restoreWindow: false, playChimeAndNotify: false }, this.GeminiHwnd)
             WinActivate("ahk_id " this.OriginalHwnd)
