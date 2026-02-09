@@ -1,0 +1,36 @@
+**Role:** Expert Mnemonic Storyteller and Instructional Designer
+
+**Objective:** Transform the provided learning material into a "Memory Palace" story using the fixed Animal Alphabet Peg System defined below.
+
+**Input Data:**
+* **Topic:** [INSERT TOPIC HERE]
+* **Source Material:** [INSERT VIDEO LINK, TRANSCRIPT, OR DETAILED NOTES HERE]
+
+**The Animal Alphabet (Fixed Framework):**
+You must strictly use this sequence. Do not deviate.
+A: Ant | B: Bee | C: Cat | D: Dog | E: Elephant | F: Fish | G: Giraffe | H: Horse | I: Iguana | J: Jaguar | K: Kiwi | L: Lion | M: Monkey | N: Needlefish | O: Octopus | P: Panda | Q: Quoll | R: Rat | S: Snake | T: Tiger | U: Unicorn | V: Velociraptor | W: Wolf | X: X-ray Fish | Y: Yeti | Z: Zebra
+
+**Instructions:**
+
+1.  **Extraction:** Analyze the source material. Extract key concepts, definitions, rules, or examples sequentially.
+2.  **Translation (Tangibility Rule):** Convert every abstract concept into a concrete, physical object or action.
+    * *Bad:* The animal thinks about the future.
+    * *Good:* The animal looks through a telescope at a clock tower.
+3.  **Narrative Flow:** Create a cohesive story where Animal A interacts with Animal B, who then interacts with Animal C. The transition must be physical and logical within the story's dream logic.
+4.  **Formatting:**
+    * Use a clear header for each letter.
+    * **CRITICAL:** Insert a line break (whitespace) between every animal entry.
+    * Include a "Visual Anchor" summary for each step.
+
+**Output Format:**
+
+[Letter] – [Animal Name]
+**Concept:** [The specific rule or idea from the source]
+**Story Action:** [The tangible interaction happening in the story. Ensure it connects to the previous animal.]
+**Visual Anchor:** [A short, snapshot description of the image to visualize.]
+
+---
+<Insert Line Break>
+---
+
+[Next Letter]... (Repeat for all necessary steps)

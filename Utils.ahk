@@ -289,6 +289,13 @@ InitHotstringsCheatSheet() {
         "Prompts",
         "📝 Plan File Template"
     )
+    ; Mnemonic stories prompt from prompt.txt (character w)
+    mnemonicPath := A_ScriptDir "\prompt.txt"
+    mnemonicPromptText := ""
+    try mnemonicPromptText := FileRead(mnemonicPath, "UTF-8")
+    if (mnemonicPromptText = "")
+        mnemonicPromptText := "[Mnemonic prompt: add content in prompt.txt]"
+    RegisterHotstring(":o:mnemonic", Trim(mnemonicPromptText), "Prompts", "📚 Creating mnemonic stories", "w")
     RegisterHotstring("", "", "Prompts", "Reserved 3")
     RegisterHotstring("", "", "Prompts", "Reserved 4")
     RegisterHotstring("", "", "Prompts", "Reserved 5")
