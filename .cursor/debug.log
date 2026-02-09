@@ -1,76 +1,58 @@
-{"location":"WindowManagement.ahk:HandleCopyFromGeminiModeTrigger","message":"K pressed","data":{"selectorActive":1},"hypothesisId":"H0","timestamp":101555000}
-{"location":"WindowManagement.ahk:HandleCopyFromGeminiProjectSelection","message":"entry","data":{"index":1},"hypothesisId":"H1","timestamp":101556125}
-{"location":"WindowManagement.ahk:clipBefore","message":"before trigger","data":{"clipBeforeLen":2,"clipEmpty":0},"hypothesisId":"H3","timestamp":101556125}
-{"location":"WindowManagement.ahk:geminiHwnd","message":"find Gemini.ahk","data":{"hwnd":14814196},"hypothesisId":"H1","timestamp":101556125}
-{"location":"WindowManagement.ahk:after PostMessage","message":"sent WM_COPY_LAST_GEMINI","data":{},"hypothesisId":"H1","timestamp":101556156}
-{"location":"WindowManagement.ahk:wait loop","message":"poll","data":{"iter":1,"clipLen":2,"sameAsBefore":1,"clipEmpty":0},"hypothesisId":"H2","timestamp":101556281}
-{"location":"WindowManagement.ahk:wait loop","message":"poll","data":{"iter":10,"clipLen":2,"sameAsBefore":1,"clipEmpty":0},"hypothesisId":"H2","timestamp":101557296}
-{"location":"WindowManagement.ahk:wait loop","message":"poll","data":{"iter":25,"clipLen":2,"sameAsBefore":1,"clipEmpty":0},"hypothesisId":"H2","timestamp":101558937}
-{"location":"WindowManagement.ahk:wait loop","message":"poll","data":{"iter":50,"clipLen":2,"sameAsBefore":1,"clipEmpty":0},"hypothesisId":"H2","timestamp":101561703}
-{"location":"WindowManagement.ahk:after loop","message":"exit","data":{"copyDone":0,"finalClipLen":2},"hypothesisId":"H2","timestamp":101561703}
-{"ts":101654578,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
-{"ts":101654578,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"ts":101654625,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
-{"ts":101654625,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
-{"ts":101654656,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"ts":101878281,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
-{"ts":101878281,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
-{"ts":101878296,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"ts":101878328,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"ts":101878359,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"ts":102079296,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
-{"ts":102079296,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
-{"ts":102079312,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"ts":102079343,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"ts":102079359,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"ts":102262015,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
-{"ts":102262015,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
-{"ts":102262031,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"ts":102262046,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"ts":102262062,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"ts":102459984,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
-{"ts":102459984,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
-{"ts":102460000,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
-{"ts":102460015,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"ts":102460046,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"location":"WindowManagement.ahk:HandleCopyFromGeminiModeTrigger","message":"K pressed","data":{"selectorActive":1},"hypothesisId":"H0","timestamp":102571359}
-{"location":"WindowManagement.ahk:HandleCopyFromGeminiProjectSelection","message":"entry","data":{"index":1},"hypothesisId":"H1","timestamp":102571671}
-{"location":"WindowManagement.ahk:HandleCopyFromGeminiModeTrigger","message":"K pressed","data":{"selectorActive":1},"hypothesisId":"H0","timestamp":102642390}
-{"location":"WindowManagement.ahk:HandleCopyFromGeminiProjectSelection","message":"entry","data":{"index":1},"hypothesisId":"H1","timestamp":102642687}
-{"location":"WindowManagement.ahk:RequestCopyLastGemini","message":"entry","data":{"clipBeforeLen":331},"hypothesisId":"H1","timestamp":102642687}
-{"location":"WindowManagement.ahk:RequestCopyLastGemini","message":"find Gemini","data":{"hwnd":0},"hypothesisId":"H1","timestamp":102642703}
-{"location":"WindowManagement.ahk:HandleCopyFromGeminiModeTrigger","message":"K pressed","data":{"selectorActive":1},"hypothesisId":"H0","timestamp":102645453}
-{"location":"WindowManagement.ahk:HandleCopyFromGeminiProjectSelection","message":"entry","data":{"index":1},"hypothesisId":"H1","timestamp":102645609}
-{"location":"WindowManagement.ahk:RequestCopyLastGemini","message":"entry","data":{"clipBeforeLen":331},"hypothesisId":"H1","timestamp":102645609}
-{"location":"WindowManagement.ahk:RequestCopyLastGemini","message":"find Gemini","data":{"hwnd":17173062},"hypothesisId":"H1","timestamp":102645625}
-{"location":"WindowManagement.ahk:RequestCopyLastGemini","message":"after PostMessage","data":{},"hypothesisId":"H1","timestamp":102645640}
-{"location":"WindowManagement.ahk:RequestCopyLastGemini","message":"wait poll","data":{"iter":1,"clipLen":331,"sameAsBefore":1},"hypothesisId":"H2","timestamp":102645765}
-{"location":"WindowManagement.ahk:RequestCopyLastGemini","message":"wait poll","data":{"iter":10,"clipLen":331,"sameAsBefore":1},"hypothesisId":"H2","timestamp":102646750}
-{"location":"WindowManagement.ahk:RequestCopyLastGemini","message":"wait poll","data":{"iter":25,"clipLen":331,"sameAsBefore":1},"hypothesisId":"H2","timestamp":102648515}
-{"location":"WindowManagement.ahk:RequestCopyLastGemini","message":"wait poll","data":{"iter":50,"clipLen":331,"sameAsBefore":1},"hypothesisId":"H2","timestamp":102651578}
-{"location":"WindowManagement.ahk:RequestCopyLastGemini","message":"exit","data":{"copyDone":0},"hypothesisId":"H2","timestamp":102651578}
-{"ts":102675734,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
-{"ts":102675750,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"ts":102675765,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
-{"ts":102675796,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"ts":102675812,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"location":"WindowManagement.ahk:HandleCopyFromGeminiModeTrigger","message":"K pressed","data":{"selectorActive":1},"hypothesisId":"H0","timestamp":102878968}
-{"location":"WindowManagement.ahk:HandleCopyFromGeminiProjectSelection","message":"entry","data":{"index":1},"hypothesisId":"H1","timestamp":102879203}
-{"location":"WindowManagement.ahk:RequestCopyLastGemini","message":"entry","data":{"clipBeforeLen":170},"hypothesisId":"H1","timestamp":102879218}
-{"location":"WindowManagement.ahk:RequestCopyLastGemini","message":"find Gemini","data":{"hwnd":11209182},"hypothesisId":"H1","timestamp":102879218}
-{"location":"Gemini.ahk","message":"WM_COPY_LAST_GEMINI received","data":{},"timestamp":102879250}
-{"location":"WindowManagement.ahk:RequestCopyLastGemini","message":"wait poll","data":{"iter":1,"clipLen":170,"sameAsBefore":1},"hypothesisId":"H2","timestamp":102879406}
-{"location":"WindowManagement.ahk:RequestCopyLastGemini","message":"wait poll","data":{"iter":10,"clipLen":170,"sameAsBefore":1},"hypothesisId":"H2","timestamp":102880406}
-{"location":"Gemini.ahk","message":"CopyLastGeminiMessageToClipboard result","data":{"ok":1},"timestamp":102881125}
-{"location":"WindowManagement.ahk:RequestCopyLastGemini","message":"exit","data":{"copyDone":1},"hypothesisId":"H2","timestamp":102881281}
-{"location":"WindowManagement.ahk:ActivateCursorProject","message":"entry","data":{"pathLen":37,"dirExists":1},"hypothesisId":"H3","timestamp":102881281}
-{"location":"WindowManagement.ahk:ActivateCursorProject","message":"after FindAndActivate","data":{"windowFound":1},"hypothesisId":"H3","timestamp":102881531}
-{"location":"WindowManagement.ahk:ActivateCursorProject","message":"after FocusCursorAITextField","data":{"focusOk":1},"hypothesisId":"H4","timestamp":102883593}
-{"location":"WindowManagement.ahk:ActivateCursorProject","message":"return true","data":{},"hypothesisId":"H3","timestamp":102883953}
-{"location":"WindowManagement.ahk:HandleCopyFromGemini","message":"after ActivateCursorProject","data":{"activateOk":1},"hypothesisId":"H3","timestamp":102883953}
-{"location":"WindowManagement.ahk:HandleCopyFromGemini","message":"before paste","data":{"activeHwnd":528070,"titleLen":44},"hypothesisId":"H5","timestamp":102883968}
-{"location":"WindowManagement.ahk:HandleCopyFromGemini","message":"after paste (Enter disabled)","data":{},"hypothesisId":"H5","timestamp":102884000}
-{"ts":102902968,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
-{"ts":102902968,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
-{"ts":102903015,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"ts":102903031,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"location":"WindowManagement.ahk:HandleCopyFromGeminiModeTrigger","message":"K pressed","data":{"selectorActive":1},"hypothesisId":"H0","timestamp":105436859}
+{"location":"WindowManagement.ahk:HandleCopyFromGeminiModeTrigger","message":"K pressed","data":{"selectorActive":1},"hypothesisId":"H0","timestamp":105440468}
+{"location":"WindowManagement.ahk:HandleCopyFromGeminiProjectSelection","message":"entry","data":{"index":1},"hypothesisId":"H1","timestamp":105440734}
+{"location":"GeminiToCursorBridge.ahk:CopyFromGemini","message":"entry","data":{"pathLast":"12 - Scripts"},"hypothesisId":"H5","timestamp":105440734}
+{"location":"GeminiToCursorBridge.ahk:Bridge_CopyGemini","message":"geminiScriptHwnd found","data":{"hwnd":12454354},"hypothesisId":"H1","timestamp":105440750}
+{"location":"GeminiToCursorBridge.ahk:Bridge_CopyGemini","message":"before PostMessage","data":{"hwnd":12454354},"hypothesisId":"H2","timestamp":105441203}
+{"location":"GeminiToCursorBridge.ahk:Bridge_CopyGemini","message":"PostMessage catch","data":{"message":"Target window not found.","what":"PostMessage"},"hypothesisId":"H3","timestamp":105441203}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"entry","data":{"pathLen":37,"dirExists":1},"hypothesisId":"H3","timestamp":105462687}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"after FindAndActivate","data":{"targetHwnd":528070},"hypothesisId":"H3","timestamp":105462796}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"after FocusCursorAITextField","data":{"focusOk":1},"hypothesisId":"H4","timestamp":105465062}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"return true","data":{},"hypothesisId":"H3","timestamp":105465390}
+{"location":"WindowManagement.ahk:HandleCopyFromGeminiModeTrigger","message":"K pressed","data":{"selectorActive":1},"hypothesisId":"H0","timestamp":105687625}
+{"location":"WindowManagement.ahk:HandleCopyFromGeminiProjectSelection","message":"entry","data":{"index":1},"hypothesisId":"H1","timestamp":105687828}
+{"location":"GeminiToCursorBridge.ahk:CopyFromGemini","message":"entry","data":{"pathLast":"12 - Scripts"},"hypothesisId":"H5","timestamp":105687828}
+{"location":"GeminiToCursorBridge.ahk:Bridge_CopyGemini","message":"geminiScriptHwnd found","data":{"hwnd":6491534},"hypothesisId":"H1","timestamp":105687843}
+{"location":"GeminiToCursorBridge.ahk:Bridge_CopyGemini","message":"before PostMessage","data":{"hwnd":6491534},"hypothesisId":"H2","timestamp":105688296}
+{"location":"Gemini.ahk","message":"WM_COPY_LAST_GEMINI received","data":{},"timestamp":105688296}
+{"location":"Gemini.ahk","message":"CopyLastGeminiMessageToClipboard result","data":{"ok":1},"timestamp":105689421}
+{"location":"GeminiToCursorBridge.ahk:ActivateProject","message":"entry","data":{"pathLen":37,"pathLast":"12 - Scripts"},"hypothesisId":"H3","timestamp":105689546}
+{"location":"GeminiToCursorBridge.ahk:FindAndActivate","message":"match result","data":{"pathLast":"12 - Scripts","matchCount":1},"hypothesisId":"H1","timestamp":105689546}
+{"location":"GeminiToCursorBridge.ahk:FindAndActivate","message":"picked first","data":{"hwnd":528070,"titleLen":48,"titleStart":"GeminiToCursorBridge.ahk - 12 - Scripts - Cursor"},"hypothesisId":"H2","timestamp":105689562}
+{"location":"GeminiToCursorBridge.ahk:ActivateProject","message":"after Find","data":{"targetHwnd":528070},"hypothesisId":"H3","timestamp":105689796}
+{"location":"GeminiToCursorBridge.ahk:ActivateProject","message":"return hwnd","data":{"hwnd":528070,"titleStart":"GeminiToCursorBridge.ahk - 12 - Scripts - Cursor"},"hypothesisId":"H3","timestamp":105692078}
+{"location":"GeminiToCursorBridge.ahk:CopyFromGemini","message":"before paste","data":{"hwnd":528070,"titleStart":"GeminiToCursorBridge.ahk - 12 - Scripts - Cursor"},"hypothesisId":"H5","timestamp":105692406}
+{"location":"GeminiToCursorBridge.ahk:Bridge_CopyGemini","message":"before PostMessage","data":{"hwnd":6491534},"hypothesisId":"H2","timestamp":105700687}
+{"location":"Gemini.ahk","message":"WM_COPY_LAST_GEMINI received","data":{},"timestamp":105700687}
+{"location":"Gemini.ahk","message":"CopyLastGeminiMessageToClipboard result","data":{"ok":1},"timestamp":105701812}
+{"location":"Gemini.ahk","message":"WM_COPY_LAST_GEMINI received","data":{},"timestamp":105719796}
+{"location":"Gemini.ahk","message":"CopyLastGeminiMessageToClipboard result","data":{"ok":1},"timestamp":105721031}
+{"location":"WindowManagement.ahk:HandleCopyFromGeminiModeTrigger","message":"K pressed","data":{"selectorActive":1},"hypothesisId":"H0","timestamp":105823062}
+{"location":"WindowManagement.ahk:HandleCopyFromGeminiProjectSelection","message":"entry","data":{"index":1},"hypothesisId":"H1","timestamp":105823218}
+{"location":"GeminiToCursorBridge.ahk:CopyFromGemini","message":"entry","data":{"pathLast":"12 - Scripts"},"hypothesisId":"H5","timestamp":105823218}
+{"location":"GeminiToCursorBridge.ahk:Bridge_CopyGemini","message":"geminiScriptHwnd found","data":{"hwnd":7212748},"hypothesisId":"H1","timestamp":105823234}
+{"location":"GeminiToCursorBridge.ahk:Bridge_CopyGemini","message":"before PostMessage","data":{"hwnd":7212748},"hypothesisId":"H2","timestamp":105823687}
+{"location":"Gemini.ahk","message":"WM_COPY_LAST_GEMINI received","data":{},"timestamp":105823687}
+{"location":"Gemini.ahk","message":"CopyLastGeminiMessageToClipboard result","data":{"ok":1},"timestamp":105824781}
+{"location":"Gemini.ahk","message":"WM_COPY_LAST_GEMINI received","data":{},"timestamp":105842796}
+{"location":"Gemini.ahk","message":"CopyLastGeminiMessageToClipboard result","data":{"ok":1},"timestamp":105843984}
+{"location":"WindowManagement.ahk:HandleCopyFromGeminiModeTrigger","message":"K pressed","data":{"selectorActive":1},"hypothesisId":"H0","timestamp":106012828}
+{"location":"WindowManagement.ahk:HandleCopyFromGeminiProjectSelection","message":"entry","data":{"index":1},"hypothesisId":"H1","timestamp":106013125}
+{"location":"WindowManagement.ahk:CopyFromGeminiSelection","message":"calling bridge","data":{"index":1,"pathLast":"12 - Scripts","pathLen":37},"hypothesisId":"WM1","timestamp":106013125}
+{"location":"GeminiToCursorBridge.ahk:CopyFromGemini","message":"entry","data":{"pathLast":"12 - Scripts"},"hypothesisId":"H5","timestamp":106013125}
+{"location":"GeminiToCursorBridge.ahk:Bridge_CopyGemini","message":"geminiScriptHwnd found","data":{"hwnd":26870450},"hypothesisId":"H1","timestamp":106013125}
+{"location":"GeminiToCursorBridge.ahk:Bridge_CopyGemini","message":"before PostMessage","data":{"hwnd":26870450},"hypothesisId":"H2","timestamp":106013578}
+{"location":"Gemini.ahk","message":"WM_COPY_LAST_GEMINI received","data":{},"timestamp":106013578}
+{"location":"Gemini.ahk","message":"CopyLastGeminiMessageToClipboard result","data":{"ok":1},"timestamp":106014718}
+{"location":"Gemini.ahk","message":"WM_COPY_LAST_GEMINI received","data":{},"timestamp":106033140}
+{"location":"Gemini.ahk","message":"CopyLastGeminiMessageToClipboard result","data":{"ok":1},"timestamp":106034328}
+{"location":"WindowManagement.ahk:HandleCopyFromGeminiModeTrigger","message":"K pressed","data":{"selectorActive":1},"hypothesisId":"H0","timestamp":106188234}
+{"location":"WindowManagement.ahk:HandleCopyFromGeminiProjectSelection","message":"entry","data":{"index":1},"hypothesisId":"H1","timestamp":106188421}
+{"location":"WindowManagement.ahk:CopyFromGeminiSelection","message":"calling bridge","data":{"index":1,"pathLast":"12 - Scripts","pathLen":37},"hypothesisId":"WM1","timestamp":106188421}
+{"location":"GeminiToCursorBridge.ahk:CopyFromGemini","message":"entry","data":{"pathLen":37},"hypothesisId":"H5","timestamp":106188437}
+{"location":"GeminiToCursorBridge.ahk:Bridge_CopyGemini","message":"geminiScriptHwnd found","data":{"hwnd":13831070},"hypothesisId":"H1","timestamp":106188453}
+{"location":"GeminiToCursorBridge.ahk:Bridge_CopyGemini","message":"before PostMessage","data":{"hwnd":13831070},"hypothesisId":"H2","timestamp":106188906}
+{"location":"Gemini.ahk","message":"WM_COPY_LAST_GEMINI received","data":{},"timestamp":106188906}
+{"location":"Gemini.ahk","message":"CopyLastGeminiMessageToClipboard result","data":{"ok":1},"timestamp":106190031}
+{"location":"Gemini.ahk","message":"WM_COPY_LAST_GEMINI received","data":{},"timestamp":106207796}
+{"location":"Gemini.ahk","message":"CopyLastGeminiMessageToClipboard result","data":{"ok":1},"timestamp":106208968}

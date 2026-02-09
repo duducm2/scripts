@@ -758,10 +758,22 @@ _DebugLog_Gemini(msg, data := "") {
     FileAppend line, path
 }
 ; #endregion
+; Path for bridge to verify that Copy Last Response (same as #!+p) actually succeeded
+GEMINI_COPY_RESULT_PATH := A_ScriptDir "\.cursor\gemini_copy_result.txt"
+
 OnMessage(WM_COPY_LAST_GEMINI, copyFromBridge)
 copyFromBridge(*) {
     _DebugLog_Gemini("WM_COPY_LAST_GEMINI received", "{}")
+    ; Guarantee layer: write result so bridge can confirm we copied Gemini's last response (same path as #!+p).
+    try
+        FileDelete(GEMINI_COPY_RESULT_PATH)
+    try
+        FileAppend("0", GEMINI_COPY_RESULT_PATH)
     r := CopyLastGeminiMessageToClipboard({ restoreWindow: false, playChimeAndNotify: false })
+    try
+        FileDelete(GEMINI_COPY_RESULT_PATH)
+    try
+        FileAppend(r ? "1" : "0", GEMINI_COPY_RESULT_PATH)
     _DebugLog_Gemini("CopyLastGeminiMessageToClipboard result", (r ? '{"ok":1}' : '{"ok":0}'))
 }
 

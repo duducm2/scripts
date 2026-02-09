@@ -9,6 +9,9 @@
 ; Environment: set to true for work, false for personal (was env.ahk).
 global IS_WORK_ENVIRONMENT := false
 
+; --- Copy-from-Gemini to Cursor bridge (self-contained module) --------------
+#include %A_ScriptDir%\GeminiToCursorBridge.ahk
+
 ; #region agent log
 ; Debug log path for Copy-from-Gemini instrumentation (NDJSON, one object per line)
 _DebugLogPath_WM() => A_ScriptDir "\.cursor\debug.log"
@@ -749,40 +752,52 @@ global g_CopyFromGeminiModeActive := false
 global g_CopyFromGeminiHotkeyHandlers := []
 
 ; Activate a Cursor project by path: find or launch window, then focus the AI text field. Returns true on success.
+; Ensures the target project window is explicitly activated before focus/paste, regardless of current active window.
 ActivateCursorProject(projectPath) {
     ; #region agent log
-    _DebugLog_WM("WindowManagement.ahk:ActivateCursorProject", "entry", '{"pathLen":' . StrLen(projectPath) . ',"dirExists":' . (DirExist(projectPath) ? 1 : 0) . '}', "H3")
+    _DebugLog_WM("WindowManagement.ahk:ActivateCursorProject", "entry", '{"pathLen":' . StrLen(projectPath) .
+    ',"dirExists":' . (DirExist(projectPath) ? 1 : 0) . '}', "H3")
     ; #endregion
     if (projectPath = "" || !DirExist(projectPath)) {
         return false
     }
-    windowFound := false
-    if (FindAndActivateCursorWindow(projectPath)) {
-        windowFound := true
-    }
+    targetHwnd := FindAndActivateCursorWindow(projectPath)
     ; #region agent log
-    _DebugLog_WM("WindowManagement.ahk:ActivateCursorProject", "after FindAndActivate", '{"windowFound":' . (windowFound ? 1 : 0) . '}', "H3")
+    _DebugLog_WM("WindowManagement.ahk:ActivateCursorProject", "after FindAndActivate", '{"targetHwnd":' . targetHwnd .
+        '}', "H3")
     ; #endregion
-    if (!windowFound) {
+    if (!targetHwnd) {
         cursorPath := IS_WORK_ENVIRONMENT ?
             "C:\Users\fie7ca\AppData\Local\Programs\cursor\Cursor.exe" :
                 "C:\Users\eduev\AppData\Local\Programs\cursor\Cursor.exe"
         try {
             Run cursorPath . ' "' . projectPath . '"'
-            WinWait("ahk_exe Cursor.exe", , 5)
-            windowFound := true
         } catch {
             return false
         }
+        ; Wait for the new window to appear and match our project
+        loop 30 {
+            Sleep 200
+            targetHwnd := GetCursorHwndForProject(projectPath)
+            if (targetHwnd)
+                break
+        }
+        if (!targetHwnd) {
+            return false
+        }
     }
-    if (!windowFound) {
+    ; Explicitly activate the target window so paste goes to the correct project (works regardless of current active window).
+    try {
+        WinActivate("ahk_id " targetHwnd)
+        WinWaitActive("ahk_id " targetHwnd, , 3)
+    } catch {
         return false
     }
-    WinWaitActive("ahk_exe Cursor.exe", , 3)
     Sleep 300
-    focusOk := FocusCursorAITextField()
+    focusOk := FocusCursorAITextField(targetHwnd)
     ; #region agent log
-    _DebugLog_WM("WindowManagement.ahk:ActivateCursorProject", "after FocusCursorAITextField", '{"focusOk":' . (focusOk ? 1 : 0) . '}', "H4")
+    _DebugLog_WM("WindowManagement.ahk:ActivateCursorProject", "after FocusCursorAITextField", '{"focusOk":' . (focusOk ?
+        1 : 0) . '}', "H4")
     ; #endregion
     if (focusOk) {
         try {
@@ -1006,8 +1021,30 @@ FindAndActivatePreviewWindow(projectPath) {
     return false
 }
 
-; Find and activate the last used Cursor window for a project path
-; Returns true if a window was found and activated, false otherwise
+; Return the hwnd of a Cursor window whose title matches the project path, or 0. Does not activate.
+GetCursorHwndForProject(projectPath) {
+    matchSegments := ExtractProjectMatchSegments(projectPath)
+    try {
+        for hwnd in WinGetList("ahk_exe Cursor.exe") {
+            try {
+                winTitle := WinGetTitle("ahk_id " hwnd)
+                if (InStr(StrLower(winTitle), "preview"))
+                    continue
+                for segment in matchSegments {
+                    if (InStr(winTitle, segment))
+                        return hwnd
+                }
+            } catch {
+                continue
+            }
+        }
+    } catch {
+    }
+    return 0
+}
+
+; Find and activate the last used Cursor window for a project path.
+; Returns the activated window's hwnd, or 0 if not found / activation failed.
 FindAndActivateCursorWindow(projectPath) {
     ; Extract match segments from the project path
     matchSegments := ExtractProjectMatchSegments(projectPath)
@@ -1040,46 +1077,36 @@ FindAndActivateCursorWindow(projectPath) {
         }
     } catch {
         ; No Cursor windows found or error accessing them
-        return false
+        return 0
     }
 
-    ; If no matching windows found, return false
     if (cursorWindows.Length = 0) {
-        return false
+        return 0
     }
 
-    ; Find the last used window
-    ; First, check if any of them is currently active
+    ; Prefer the window that is already active
     try {
         activeHwnd := WinGetID("A")
         for window in cursorWindows {
             if (window.hwnd = activeHwnd) {
-                ; This window is already active, just center mouse
                 WinActivate("ahk_id " window.hwnd)
                 MoveMouseToCenter(window.hwnd)
-                return true
+                return window.hwnd
             }
         }
     } catch {
-        ; Could not get active window, continue
     }
 
-    ; If no active window matches, get the first window in the list
-    ; WinGetList returns windows in z-order (most recently used first)
-    if (cursorWindows.Length > 0) {
-        targetWindow := cursorWindows[1]
-        try {
-            WinActivate("ahk_id " targetWindow.hwnd)
-            WinWaitActive("ahk_id " targetWindow.hwnd, , 2)
-            MoveMouseToCenter(targetWindow.hwnd)
-            return true
-        } catch {
-            ; Failed to activate, return false
-            return false
-        }
+    ; Otherwise activate the first in z-order (most recently used)
+    targetWindow := cursorWindows[1]
+    try {
+        WinActivate("ahk_id " targetWindow.hwnd)
+        WinWaitActive("ahk_id " targetWindow.hwnd, , 2)
+        MoveMouseToCenter(targetWindow.hwnd)
+        return targetWindow.hwnd
+    } catch {
+        return 0
     }
-
-    return false
 }
 
 ; Handle project selection - activates existing Cursor window or launches new one
@@ -1156,14 +1183,19 @@ HandleProjectEscape(*) {
 
 ; =============================================================================
 ; Focus Cursor AI text field (self-contained, no UIA dependency)
-; Replicates L-key / Copy-from-Gemini behavior: open AI panel with Ctrl+I, then Tab to input.
+; targetHwnd: if provided, explicitly activate this window first (ensures paste goes to correct project).
 ; =============================================================================
-FocusCursorAITextField() {
+FocusCursorAITextField(targetHwnd := 0) {
     try {
-        cursorHwnd := WinExist("ahk_exe Cursor.exe")
-        if (!cursorHwnd)
-            return false
-        WinWaitActive("ahk_id " . cursorHwnd, , 2)
+        if (targetHwnd) {
+            WinActivate("ahk_id " targetHwnd)
+            WinWaitActive("ahk_id " targetHwnd, , 2)
+        } else {
+            targetHwnd := WinExist("ahk_exe Cursor.exe")
+            if (!targetHwnd)
+                return false
+            WinWaitActive("ahk_id " targetHwnd, , 2)
+        }
         Sleep 200
         ; Open AI chat panel and focus input (keyboard-only; no external libs)
         Send "^i"
@@ -1398,89 +1430,7 @@ CleanupCopyFromGeminiMode() {
     g_CopyFromGeminiHotkeyHandlers := []
 }
 
-; Request Gemini.ahk to run Copy Last Gemini Response (same algorithm as #!+p) and wait for clipboard.
-; Returns an object: { ok: true } on success, or { ok: false, reason: "no_script"|"send_failed"|"timeout" } on failure.
-RequestCopyLastGeminiToClipboard() {
-    clipBefore := A_Clipboard
-    ; #region agent log
-    _DebugLog_WM("WindowManagement.ahk:RequestCopyLastGemini", "entry", '{"clipBeforeLen":' . StrLen(clipBefore) . '}', "H1")
-    ; #endregion
-    prevMatch := A_TitleMatchMode
-    SetTitleMatchMode 2
-    DetectHiddenWindows true
-    geminiScriptHwnd := 0
-    for hwnd in WinGetList("ahk_exe AutoHotkey64.exe") {
-        try {
-            if InStr(WinGetTitle("ahk_id " hwnd), "Gemini.ahk") {
-                geminiScriptHwnd := hwnd
-                break
-            }
-        } catch {
-            continue
-        }
-    }
-    if (!geminiScriptHwnd) {
-        for hwnd in WinGetList("ahk_exe AutoHotkey32.exe") {
-            try {
-                if InStr(WinGetTitle("ahk_id " hwnd), "Gemini.ahk") {
-                    geminiScriptHwnd := hwnd
-                    break
-                }
-            } catch {
-                continue
-            }
-        }
-    }
-    DetectHiddenWindows false
-    SetTitleMatchMode prevMatch
-    ; #region agent log
-    _DebugLog_WM("WindowManagement.ahk:RequestCopyLastGemini", "find Gemini", '{"hwnd":' . geminiScriptHwnd . '}', "H1")
-    ; #endregion
-    if (!geminiScriptHwnd) {
-        return { ok: false, reason: "no_script" }
-    }
-    DetectHiddenWindows true
-    try {
-        PostMessage(0x8001, 0, 0, , "ahk_id " geminiScriptHwnd)
-    } catch {
-        DetectHiddenWindows false
-        return { ok: false, reason: "send_failed" }
-    }
-    DetectHiddenWindows false
-    ; #region agent log
-    _DebugLog_WM("WindowManagement.ahk:RequestCopyLastGemini", "after PostMessage", "{}", "H1")
-    ; #endregion
-    copyWaitMax := 50
-    copyWaitMs := 100
-    copyDone := false
-    loop copyWaitMax {
-        Sleep copyWaitMs
-        ; #region agent log
-        if (A_Index = 1 || A_Index = 10 || A_Index = 25 || A_Index = 50) {
-            sameAsBefore := (A_Clipboard = clipBefore) ? 1 : 0
-            _DebugLog_WM("WindowManagement.ahk:RequestCopyLastGemini", "wait poll", '{"iter":' . A_Index . ',"clipLen":' . StrLen(A_Clipboard) . ',"sameAsBefore":' . sameAsBefore . '}', "H2")
-        }
-        ; #endregion
-        if (A_Clipboard != "" && A_Clipboard != clipBefore) {
-            copyDone := true
-            break
-        }
-    }
-    ; #region agent log
-    _DebugLog_WM("WindowManagement.ahk:RequestCopyLastGemini", "exit", '{"copyDone":' . (copyDone ? 1 : 0) . '}', "H2")
-    ; #endregion
-    if (copyDone)
-        return { ok: true }
-    return { ok: false, reason: "timeout" }
-}
-
-; Handler for project selection in Copy from Gemini mode.
-; Workflow (reuse existing algorithms):
-;   1. Copy: same as Gemini.ahk #!+p — WM_COPY_LAST_GEMINI → CopyLastGeminiMessageToClipboard.
-;   2. Target: activate selected Cursor project (find or launch).
-;   3. Focus: same as L key in selector — ActivateCursorProject → FocusCursorAITextField.
-;   4. Paste: paste into AI text field.
-;   5. Constraint: do not send Enter (do not send the message).
+; Handler for project selection in Copy from Gemini mode. Delegates to GeminiToCursorBridge module.
 HandleCopyFromGeminiProjectSelection(index) {
     global g_CopyFromGeminiModeActive, g_Projects
     ; #region agent log
@@ -1509,50 +1459,43 @@ HandleCopyFromGeminiProjectSelection(index) {
         CleanupProjectSelector()
         return
     }
+    ; #region agent log
+    pathLast := ""
+    try {
+        pNorm := RTrim(projectPath, "\")
+        parts := StrSplit(pNorm, "\")
+        pathLast := parts.Length ? parts[parts.Length] : ""
+    } catch {
+        pathLast := "?"
+    }
+    _DebugLog_WM("WindowManagement.ahk:CopyFromGeminiSelection", "calling bridge", '{"index":' . index .
+        ',"pathLast":"' . pathLast . '","pathLen":' . StrLen(projectPath) . '}', "WM1")
+    ; #endregion
 
-    ; Step 1: Copy — same algorithm as Gemini.ahk #!+p (via WM_COPY_LAST_GEMINI).
-    copyResult := RequestCopyLastGeminiToClipboard()
-    if (!copyResult.ok) {
-        if (copyResult.reason = "no_script")
+    ; Close selector before bridge so the modal cannot steal focus when we activate the Cursor window.
+    CleanupCopyFromGeminiMode()
+    CleanupProjectSelector()
+
+    result := CopyFromGeminiToCursor(projectPath, IS_WORK_ENVIRONMENT)
+    if (!result.ok) {
+        if (result.reason = "no_script")
             ShowNotification_WM("Gemini.ahk not running")
-        else if (copyResult.reason = "send_failed")
+        else if (result.reason = "no_gemini_window")
+            ShowNotification_WM("Open Gemini in Chrome first")
+        else if (result.reason = "gemini_activate_failed")
+            ShowNotification_WM("Could not activate Gemini window")
+        else if (result.reason = "send_failed")
             ShowNotification_WM("Could not trigger Gemini copy")
+        else if (result.reason = "validation_failed")
+            ShowNotification_WM("Copy from Gemini: clipboard not updated")
+        else if (result.reason = "cursor_activate_failed")
+            ShowNotification_WM("Failed to open project or focus AI field")
         else
             ShowNotification_WM("Copy from Gemini timed out")
         CleanupCopyFromGeminiMode()
         CleanupProjectSelector()
         return
     }
-
-    ; Steps 2 & 3: Activate Cursor project and focus AI field — same as L key (ActivateCursorProject → FocusCursorAITextField).
-    activateOk := ActivateCursorProject(projectPath)
-    ; #region agent log
-    _DebugLog_WM("WindowManagement.ahk:HandleCopyFromGemini", "after ActivateCursorProject", '{"activateOk":' . (activateOk ? 1 : 0) . '}', "H3")
-    ; #endregion
-    if (!activateOk) {
-        ShowNotification_WM("Failed to open project or focus AI field")
-        CleanupCopyFromGeminiMode()
-        CleanupProjectSelector()
-        return
-    }
-    ; Step 4: Paste into AI field. Constraint: do not send Enter (do not send the message).
-    ; #region agent log
-    activeHwnd := 0
-    activeTitle := ""
-    try
-        activeHwnd := WinGetID("A")
-    catch
-        activeHwnd := 0
-    try
-        activeTitle := WinGetTitle("A")
-    catch
-        activeTitle := ""
-    _DebugLog_WM("WindowManagement.ahk:HandleCopyFromGemini", "before paste", '{"activeHwnd":' . activeHwnd . ',"titleLen":' . StrLen(activeTitle) . '}', "H5")
-    ; #endregion
-    Send "^v"
-    ; #region agent log
-    _DebugLog_WM("WindowManagement.ahk:HandleCopyFromGemini", "after paste (Enter disabled)", "{}", "H5")
-    ; #endregion
     CleanupCopyFromGeminiMode()
     CleanupProjectSelector()
 }
@@ -1568,7 +1511,8 @@ HandleCopyFromGeminiModeTrigger(*) {
     global g_ProjectCategories, g_CopyFromGeminiHotkeyHandlers, g_ProjectHotkeyHandlers
 
     ; #region agent log
-    _DebugLog_WM("WindowManagement.ahk:HandleCopyFromGeminiModeTrigger", "K pressed", '{"selectorActive":' . (g_ProjectSelectorActive ? 1 : 0) . '}', "H0")
+    _DebugLog_WM("WindowManagement.ahk:HandleCopyFromGeminiModeTrigger", "K pressed", '{"selectorActive":' . (
+        g_ProjectSelectorActive ? 1 : 0) . '}', "H0")
     ; #endregion
     if (!g_ProjectSelectorActive) {
         return
