@@ -22,8 +22,9 @@ A: Ant | B: Bee | C: Cat | D: Dog | E: Elephant | F: Fish | G: Giraffe | H: Hors
     * **CRITICAL:** Insert a line break (whitespace) between every animal entry.
     * Include a "Visual Anchor" summary for each step.
 
-**Output Format:**
+**Output Structure:**
 
+**Part 1: The Story**
 [Letter] – [Animal Name]
 **Concept:** [The specific rule or idea from the source]
 **Story Action:** [The tangible interaction happening in the story. Ensure it connects to the previous animal.]
@@ -33,4 +34,11 @@ A: Ant | B: Bee | C: Cat | D: Dog | E: Elephant | F: Fish | G: Giraffe | H: Hors
 <Insert Line Break>
 ---
 
-[Next Letter]... (Repeat for all necessary steps)
+**(Repeat for all necessary steps)**
+
+**Part 2: Summary of the Path (The Cinematic Chain)**
+At the very end, provide a quick-scan summary grouped by story "Acts" or logical chunks (e.g., 5-6 animals per line).
+* **Format:** [Scene Name]: **Animal** (1-2 Word Keyword) → **Animal** (1-2 Word Keyword) → ...
+* **Example:**
+    **Entrance:** **Ant** (Map) → **Bee** (Lips) → **Cat** (Teeth)
+    **Roof:** **Dog** (Ridge) → **Elephant** (Palate) → **Fish** (Velum)
