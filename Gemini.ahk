@@ -12,6 +12,7 @@
 PROMPT_FILE := A_ScriptDir "\data\Gemini_Prompt.txt"
 
 ; --- Helper Functions --------------------------------------------------------
+; FindGeminiPromptField and GEMINI_PROMPT_FIELD_NAMES are defined in Utils.ahk (included above).
 
 ; Find Gemini browser window (case-insensitive contains match for "gemini")
 GetGeminiWindowHwnd() {
@@ -28,63 +29,6 @@ GetGeminiWindowHwnd() {
         ; Silently handle WinGetList errors
     }
     return 0
-}
-
-; Find the Gemini prompt field via UIA (returns element or 0). Used by pronunciation workflow.
-FindGeminiPromptField(uia) {
-    promptField := 0
-    try {
-        promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
-    } catch
-        promptField := 0
-    if !promptField {
-        try
-            promptField := uia.FindFirst({ Type: "Edit", Name: "Enter a prompt here" })
-        catch
-            promptField := 0
-    }
-    if !promptField {
-        try {
-            allEdits := uia.FindAll({ Type: 50004 })
-            for edit in allEdits {
-                if (InStr(edit.ClassName, "ql-editor") || InStr(edit.ClassName, "new-input-ui")) {
-                    if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "prompt") {
-                        promptField := edit
-                        break
-                    }
-                }
-            }
-        } catch
-            promptField := 0
-    }
-    if !promptField {
-        try {
-            allEdits := uia.FindAll({ Type: 50004 })
-            for edit in allEdits {
-                if InStr(edit.ClassName, "ql-editor") {
-                    promptField := edit
-                    break
-                }
-            }
-        } catch
-            promptField := 0
-    }
-    if !promptField {
-        try {
-            allEdits := uia.FindAll({ Type: 50004 })
-            for edit in allEdits {
-                if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "Digite um prompt") || InStr(edit.Name,
-                    "prompt") {
-                    if InStr(edit.ClassName, "ql-editor") {
-                        promptField := edit
-                        break
-                    }
-                }
-            }
-        } catch
-            promptField := 0
-    }
-    return promptField
 }
 
 ; =============================================================================
@@ -818,58 +762,11 @@ InitializeGeminiFirstTime() {
         ; Wait for page to load fully
         Sleep 300
 
-        ; Find and focus the Gemini prompt field
+        ; Find and focus the Gemini prompt field (EN/PT aware)
         uia := UIA_Browser()
         Sleep 300
 
-        promptField := 0
-
-        ; Primary strategy: Find by Name "Enter a prompt here" with Type 50004 (Edit)
-        promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
-
-        ; Fallback 1: Try by Type "Edit" and Name "Enter a prompt here"
-        if !promptField {
-            promptField := uia.FindFirst({ Type: "Edit", Name: "Enter a prompt here" })
-        }
-
-        ; Fallback 2: Try by ClassName containing "ql-editor" or "new-input-ui" (substring match)
-        if !promptField {
-            allEdits := uia.FindAll({ Type: 50004 })
-            for edit in allEdits {
-                if (InStr(edit.ClassName, "ql-editor") || InStr(edit.ClassName, "new-input-ui")) {
-                    if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "prompt") {
-                        promptField := edit
-                        break
-                    }
-                }
-            }
-        }
-
-        ; Fallback 3: Try finding by ClassName containing "ql-editor" (most specific identifier)
-        if !promptField {
-            allEdits := uia.FindAll({ Type: 50004 })
-            for edit in allEdits {
-                if InStr(edit.ClassName, "ql-editor") {
-                    promptField := edit
-                    break
-                }
-            }
-        }
-
-        ; Fallback 4: Try finding by Name with substring match (in case of localization variations)
-        if !promptField {
-            allEdits := uia.FindAll({ Type: 50004 })
-            for edit in allEdits {
-                if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "Digite um prompt") || InStr(edit.Name,
-                    "prompt") {
-                    ; Additional check to ensure it's the prompt field (has ql-editor in className)
-                    if InStr(edit.ClassName, "ql-editor") {
-                        promptField := edit
-                        break
-                    }
-                }
-            }
-        }
+        promptField := FindGeminiPromptField(uia)
 
         if (promptField) {
             ; Focus the prompt field
@@ -967,29 +864,21 @@ InitializeGeminiFirstTime() {
                         SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
                     }
                 } catch {
-                    ; Fallback: direct prompt field search if anchor strategy fails
-                    try {
-                        promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
-                        if (promptField) {
-                            promptField.SetFocus()
-                            if (IsSoundEnabled()) {
-                                SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
-                            }
-                        }
-                    } catch {
+                    ; Fallback: direct prompt field search if anchor strategy fails (EN/PT aware)
+                    promptField := FindGeminiPromptField(uia)
+                    if (promptField) {
+                        try promptField.SetFocus()
+                        if (IsSoundEnabled())
+                            SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
                     }
                 }
             } else {
-                ; Fallback: direct prompt field search if anchor not found
-                try {
-                    promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
-                    if (promptField) {
-                        promptField.SetFocus()
-                        if (IsSoundEnabled()) {
-                            SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
-                        }
-                    }
-                } catch {
+                ; Fallback: direct prompt field search if anchor not found (EN/PT aware)
+                promptField := FindGeminiPromptField(uia)
+                if (promptField) {
+                    try promptField.SetFocus()
+                    if (IsSoundEnabled())
+                        SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
                 }
             }
         }

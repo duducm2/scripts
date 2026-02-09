@@ -24,6 +24,82 @@ DbgLogEx(loc, msg, data := "{}", hypothesisId := "") {
 #include UIA-v2\Lib\UIA.ahk
 #include UIA-v2\Lib\UIA_Browser.ahk
 
+; Possible Gemini prompt field names (EN and PT) for work/personal env. Used by FindGeminiPromptField.
+global GEMINI_PROMPT_FIELD_NAMES := ["Enter a prompt for Gemini", "Enter a prompt here", "Digite um prompt para o Gemini", "Digite um prompt aqui"]
+
+; Find the Gemini prompt field via UIA (returns element or 0). Supports EN and PT labels. Used by Gemini.ahk and Utils.ahk.
+FindGeminiPromptField(uia) {
+    ; #region agent log
+    try {
+        FileAppend('{"ts":' A_TickCount ',"loc":"FindGeminiPromptField","msg":"entry","hypothesisId":"H1"}' "`n", A_ScriptDir "\.cursor\debug.log")
+    } catch {
+    }
+    ; #endregion
+    promptField := 0
+    for name in GEMINI_PROMPT_FIELD_NAMES {
+        try {
+            promptField := uia.FindFirst({ Name: name, Type: 50004 })
+            if (promptField) {
+                ; #region agent log
+                try {
+                    FileAppend('{"ts":' A_TickCount ',"loc":"FindGeminiPromptField","msg":"return found","data":{"name":"' StrReplace(name, '"', "'") '"},"hypothesisId":"H1"}' "`n", A_ScriptDir "\.cursor\debug.log")
+                } catch {
+                }
+                ; #endregion
+                return promptField
+            }
+        } catch
+            continue
+    }
+    try {
+        promptField := uia.FindFirst({ Type: "Edit", Name: GEMINI_PROMPT_FIELD_NAMES[1] })
+        if (promptField)
+            return promptField
+    } catch {
+    }
+    try {
+        allEdits := uia.FindAll({ Type: 50004 })
+        for edit in allEdits {
+            if (InStr(edit.ClassName, "ql-editor") || InStr(edit.ClassName, "new-input-ui")) {
+                for name in GEMINI_PROMPT_FIELD_NAMES {
+                    if InStr(edit.Name, name) || InStr(edit.Name, "prompt") {
+                        return edit
+                    }
+                }
+            }
+        }
+    } catch {
+    }
+    try {
+        allEdits := uia.FindAll({ Type: 50004 })
+        for edit in allEdits {
+            if InStr(edit.ClassName, "ql-editor") {
+                return edit
+            }
+        }
+    } catch {
+    }
+    try {
+        allEdits := uia.FindAll({ Type: 50004 })
+        for edit in allEdits {
+            if InStr(edit.ClassName, "ql-editor") {
+                for name in GEMINI_PROMPT_FIELD_NAMES {
+                    if InStr(edit.Name, name) || InStr(edit.Name, "prompt")
+                        return edit
+                }
+            }
+        }
+    } catch {
+    }
+    ; #region agent log
+    try {
+        FileAppend('{"ts":' A_TickCount ',"loc":"FindGeminiPromptField","msg":"return 0 (not found)","hypothesisId":"H1"}' "`n", A_ScriptDir "\.cursor\debug.log")
+    } catch {
+    }
+    ; #endregion
+    return 0
+}
+
 ; -----------------------------------------------------------------------------
 ; This script consolidates various utility hotkeys.
 ; -----------------------------------------------------------------------------
@@ -5265,19 +5341,37 @@ GeminiNavigateFocusAndPasteFirstSnippet() {
                 SendInput "+{Tab}"
                 Sleep 15
             } catch {
+                ; #region agent log
+                DbgLogEx("Utils.ahk:5268", "Utils fallback: resolving prompt field (EN/PT)", "{}", "H2")
+                ; #endregion
                 try {
-                    promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
+                    promptField := FindGeminiPromptField(uia)
+                    ; #region agent log
+                    DbgLogEx("Utils.ahk:5272", "Utils fallback: prompt field result", (promptField ? '{"found":true}' : '{"found":false}'), "H2")
+                    ; #endregion
                     if (promptField)
                         promptField.SetFocus()
-                } catch {
+                } catch as e {
+                    ; #region agent log
+                    DbgLogEx("Utils.ahk:5278", "Utils fallback: FindGeminiPromptField threw", '{"msg":"' StrReplace(StrReplace(e.Message, "\", "\\"), '"', "'") '"}', "H2")
+                    ; #endregion
                 }
             }
         } else {
+            ; #region agent log
+            DbgLogEx("Utils.ahk:5284", "Utils else: resolving prompt field (EN/PT)", "{}", "H2")
+            ; #endregion
             try {
-                promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
+                promptField := FindGeminiPromptField(uia)
+                ; #region agent log
+                DbgLogEx("Utils.ahk:5289", "Utils else: prompt field result", (promptField ? '{"found":true}' : '{"found":false}'), "H2")
+                ; #endregion
                 if (promptField)
                     promptField.SetFocus()
-            } catch {
+            } catch as e {
+                ; #region agent log
+                DbgLogEx("Utils.ahk:5295", "Utils else: FindGeminiPromptField threw", '{"msg":"' StrReplace(StrReplace(e.Message, "\", "\\"), '"', "'") '"}', "H2")
+                ; #endregion
             }
         }
     } catch {
@@ -5470,21 +5564,35 @@ HandleHotstringChar(char) {
                             SendInput "+{Tab}"
                             Sleep 15
                         } catch {
+                            ; #region agent log
+                            DbgLogEx("Utils.ahk:5474", "Utils expand fallback: resolving prompt field", "{}", "H2")
+                            ; #endregion
                             try {
-                                promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
+                                promptField := FindGeminiPromptField(uia)
+                                ; #region agent log
+                                DbgLogEx("Utils.ahk:5479", "Utils expand fallback: prompt field result", (promptField ? '{"found":true}' : '{"found":false}'), "H2")
+                                ; #endregion
                                 if (promptField) {
                                     promptField.SetFocus()
                                 }
-                            } catch {
+                            } catch as e {
+                                DbgLogEx("Utils.ahk:5486", "Utils expand fallback: threw", '{"msg":"' StrReplace(StrReplace(e.Message, "\", "\\"), '"', "'") '"}', "H2")
                             }
                         }
                     } else {
+                        ; #region agent log
+                        DbgLogEx("Utils.ahk:5492", "Utils expand else: resolving prompt field", "{}", "H2")
+                        ; #endregion
                         try {
-                            promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
+                            promptField := FindGeminiPromptField(uia)
+                            ; #region agent log
+                            DbgLogEx("Utils.ahk:5497", "Utils expand else: prompt field result", (promptField ? '{"found":true}' : '{"found":false}'), "H2")
+                            ; #endregion
                             if (promptField) {
                                 promptField.SetFocus()
                             }
-                        } catch {
+                        } catch as e {
+                            DbgLogEx("Utils.ahk:5504", "Utils expand else: threw", '{"msg":"' StrReplace(StrReplace(e.Message, "\", "\\"), '"', "'") '"}', "H2")
                         }
                     }
                 } catch {
