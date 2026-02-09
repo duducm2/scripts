@@ -11,8 +11,22 @@
 ; Path to the file containing the initial prompt Gemini should receive.
 PROMPT_FILE := A_ScriptDir "\data\Gemini_Prompt.txt"
 
+; Copy response button names (EN/PT). Excludes "Copy prompt" / "Copiar prompt" which are different controls.
+GEMINI_COPY_RESPONSE_NAMES := ["Copy", "Copiar"]
+
 ; --- Helper Functions --------------------------------------------------------
 ; FindGeminiPromptField and GEMINI_PROMPT_FIELD_NAMES are defined in Utils.ahk (included above).
+
+; True if button name is the "Copy [last response]" button (EN or PT), not "Copy prompt".
+IsGeminiCopyResponseButton(name) {
+    if (!name || InStr(name, "prompt"))
+        return false
+    for n in GEMINI_COPY_RESPONSE_NAMES {
+        if (name = n || InStr(name, n, false))
+            return true
+    }
+    return false
+}
 
 ; Find Gemini browser window (case-insensitive contains match for "gemini")
 GetGeminiWindowHwnd() {
@@ -319,52 +333,30 @@ CenterMouse() {
         }
 
         ; Step 3: Find and click the last Copy button (copy the message we're about to read)
-        allCopyButtons := []
+        ; Scroll to bottom first so the last response is in the tree.
+        Send "^End"
+        Sleep 350
 
-        ; Primary strategy: Single pass - find all buttons and filter for any "Copy" variant
+        allCopyButtons := []
         allButtons := uia.FindAll({ Type: 50000 })
         for button in allButtons {
-            if (button.Name = "Copy" || InStr(button.Name, "Copy", false)) {
-                ; Additional check: ensure it has the Copy button className pattern
+            if (IsGeminiCopyResponseButton(button.Name)) {
                 if (InStr(button.ClassName, "icon-button") || InStr(button.ClassName, "mdc-button")) {
                     allCopyButtons.Push(button)
                 }
             }
         }
-
-        ; Fallback: broaden type only if none found on primary pass
         if (allCopyButtons.Length = 0) {
             allButtons := uia.FindAll({ Type: "Button" })
             for button in allButtons {
-                if (button.Name = "Copy" || InStr(button.Name, "Copy", false)) {
+                if (IsGeminiCopyResponseButton(button.Name)) {
                     allCopyButtons.Push(button)
                 }
             }
         }
 
-        ; Find the last Copy button (the one with the highest Y position, meaning furthest down the page)
-        lastCopyButton := 0
-        highestY := -1
-
-        for copyButton in allCopyButtons {
-            try {
-                btnPos := copyButton.Location
-                btnBottomY := btnPos.y + btnPos.h
-
-                ; The last button will be the one with the highest bottom Y coordinate
-                if (btnBottomY > highestY) {
-                    highestY := btnBottomY
-                    lastCopyButton := copyButton
-                }
-            } catch {
-                ; If getting location fails, skip this button
-            }
-        }
-
-        ; If position-based approach didn't work, just use the last one in the array
-        if (!lastCopyButton && allCopyButtons.Length > 0) {
-            lastCopyButton := allCopyButtons[allCopyButtons.Length]
-        }
+        ; Last in array = last in chat (tree order).
+        lastCopyButton := (allCopyButtons.Length > 0) ? allCopyButtons[allCopyButtons.Length] : 0
 
         ; Click the copy button if found
         if (lastCopyButton) {
@@ -615,58 +607,33 @@ CopyLastGeminiMessageToClipboard(options := "", geminiHwnd := 0) {
                 return false
             Sleep 150
         }
+
+        ; Scroll to bottom *before* UIA so the last response is in the tree and we go down the chat.
+        Send "^End"
+        Sleep 350
+
         uia := alreadyActive ? UIA_Browser() : UIA_Browser("ahk_id " geminiHwnd)
         Sleep 120
 
-        lastCopyButton := 0
-        promptField := FindGeminiPromptField(uia)
-        if (promptField) {
-            try {
-                sibling := promptField
-                loop 20 {
-                    sibling := sibling.Navigate("PreviousSibling")
-                    if (!sibling)
-                        break
-                    if (sibling.Type == 50000 && (sibling.Name = "Copy" || InStr(sibling.Name, "Copy", false))) {
-                        lastCopyButton := sibling
-                        break
-                    }
-                }
-            } catch {
+        ; Bottom-up by tree order: FindAll returns elements in document order, so the *last* Copy button in the array is the last response.
+        allCopyButtons := []
+        allButtons := uia.FindAll({ Type: 50000 })
+        for button in allButtons {
+            if (IsGeminiCopyResponseButton(button.Name)) {
+                if (InStr(button.ClassName, "icon-button") || InStr(button.ClassName, "mdc-button"))
+                    allCopyButtons.Push(button)
+            }
+        }
+        if (allCopyButtons.Length = 0) {
+            allButtons := uia.FindAll({ Type: "Button" })
+            for button in allButtons {
+                if (IsGeminiCopyResponseButton(button.Name))
+                    allCopyButtons.Push(button)
             }
         }
 
-        if (!lastCopyButton) {
-            allCopyButtons := []
-            allButtons := uia.FindAll({ Type: 50000 })
-            for button in allButtons {
-                if (button.Name = "Copy" || InStr(button.Name, "Copy", false)) {
-                    if (InStr(button.ClassName, "icon-button") || InStr(button.ClassName, "mdc-button"))
-                        allCopyButtons.Push(button)
-                }
-            }
-            if (allCopyButtons.Length = 0) {
-                allButtons := uia.FindAll({ Type: "Button" })
-                for button in allButtons {
-                    if (button.Name = "Copy" || InStr(button.Name, "Copy", false))
-                        allCopyButtons.Push(button)
-                }
-            }
-            highestY := -1
-            for copyButton in allCopyButtons {
-                try {
-                    btnPos := copyButton.Location
-                    btnBottomY := btnPos.y + btnPos.h
-                    if (btnBottomY > highestY) {
-                        highestY := btnBottomY
-                        lastCopyButton := copyButton
-                    }
-                } catch {
-                }
-            }
-            if (!lastCopyButton && allCopyButtons.Length > 0)
-                lastCopyButton := allCopyButtons[allCopyButtons.Length]
-        }
+        ; Last in array = last in chat (tree order). Ignore all previous Copy buttons.
+        lastCopyButton := (allCopyButtons.Length > 0) ? allCopyButtons[allCopyButtons.Length] : 0
 
         if (!lastCopyButton)
             return false
@@ -685,11 +652,14 @@ CopyLastGeminiMessageToClipboard(options := "", geminiHwnd := 0) {
     }
 }
 
-; Win+Alt+Shift+P : Click the last Copy button in Gemini (activates Gemini window first, then copies the preceding message)
+; Win+Alt+Shift+P : Click the last Copy button in Gemini (activates Gemini, scrolls to bottom with Ctrl+End, then copies last response)
+; Works in EN ("Copy") and PT ("Copiar") UI. Uses tree order: last Copy button in the UI tree = last response.
 #!+p:: {
     try {
-        CopyLastGeminiMessageToClipboard()
-    } catch {
+        if (!CopyLastGeminiMessageToClipboard())
+            ShowNotification("Copy failed – ensure Gemini is open and has a response", 2500, "FF6666", "FFFFFF", 22)
+    } catch as err {
+        ShowNotification("Copy error: " (err.Message ? err.Message : "unknown"), 2500, "FF6666", "FFFFFF", 22)
     }
 }
 
