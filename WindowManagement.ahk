@@ -7,7 +7,7 @@
 
 ; --- Inlined config (no external includes for stability) --------------------
 ; Environment: set to true for work, false for personal (was env.ahk).
-global IS_WORK_ENVIRONMENT := false
+global IS_WORK_ENVIRONMENT := true
 
 ; --- Copy-from-Gemini to Cursor bridge (self-contained module) --------------
 #include %A_ScriptDir%\GeminiToCursorBridge.ahk
