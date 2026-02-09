@@ -13455,23 +13455,14 @@ ShowGeminiModelSelector() {
 ; Shift + G : Focus the prompt text field and send Gemini prompt text - Gemini
 +g:: {
     try {
-        ; #region agent log
-        logPath := "c:\Users\fie7ca\Documents\scripts\.cursor\debug.log"
-        try FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2,H3","location":"Shift keys.ahk:13457","message":"+g entry","data":{{}},"timestamp":{1}}}', A_TickCount) "`n", logPath
-        ; #endregion
         uia := UIA_Browser()
         Sleep 300
-        ; #region agent log
-        try FileAppend Format('{{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"Shift keys.ahk:13462","message":"after UIA_Browser","data":{{"uiaIsObject":{1}}},"timestamp":{2}}}', !!uia, A_TickCount) "`n", logPath
-        ; #endregion
 
         ; Primary strategy: Find by Name (Gemini updated placeholder in 2025)
-        try {
+        try
             promptField := uia.FindFirst({ Name: "Enter a prompt for Gemini", Type: 50004 })
-        } catch {
+        catch
             promptField := ""
-        }
-        strategy := promptField ? 1 : 0
 
         ; Fallback 1: Legacy name "Enter a prompt here"
         if !promptField {
@@ -13479,8 +13470,6 @@ ShowGeminiModelSelector() {
                 promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
             catch
                 promptField := ""
-            if (promptField)
-                strategy := 2
         }
 
         ; Fallback 2: Try by ClassName containing "ql-editor" or "new-input-ui" (substring match)
@@ -13490,7 +13479,6 @@ ShowGeminiModelSelector() {
                 if (InStr(edit.ClassName, "ql-editor") || InStr(edit.ClassName, "new-input-ui")) {
                     if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "prompt") {
                         promptField := edit
-                        strategy := 3
                         break
                     }
                 }
@@ -13503,7 +13491,6 @@ ShowGeminiModelSelector() {
             for edit in allEdits {
                 if InStr(edit.ClassName, "ql-editor") {
                     promptField := edit
-                    strategy := 4
                     break
                 }
             }
@@ -13518,31 +13505,15 @@ ShowGeminiModelSelector() {
                     ; Additional check to ensure it's the prompt field (has ql-editor in className)
                     if InStr(edit.ClassName, "ql-editor") {
                         promptField := edit
-                        strategy := 5
                         break
                     }
                 }
             }
         }
 
-        ; #region agent log
-        n := "", c := ""
-        if (promptField) {
-            try n := promptField.Name
-            try c := promptField.ClassName
-        }
-        nEsc := StrReplace(StrReplace(n, "\", "\\"), Chr(34), "\" . Chr(34)), cEsc := StrReplace(StrReplace(c, "\", "\\"), Chr(34), "\" . Chr(34))
-        try FileAppend '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H1,H4","location":"Shift keys.ahk:13520","message":"after strategies","data":{"strategy":' . strategy . ',"found":' . (!!promptField ? "true" : "false") . ',"name":"' . SubStr(nEsc, 1, 80) . '","className":"' . SubStr(cEsc, 1, 60) . '"},"timestamp":' . A_TickCount . '}' "`n", logPath
-        ; #endregion
-
         if (promptField) {
             promptField.SetFocus()
             Sleep 100
-            ; #region agent log
-            hkf := false
-            try hkf := promptField.HasKeyboardFocus
-            try FileAppend '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H5","location":"Shift keys.ahk:13526","message":"after SetFocus","data":{"HasKeyboardFocus":' . (hkf ? "true" : "false") . '},"timestamp":' . A_TickCount . '}' "`n", logPath
-            ; #endregion
             ; Ensure focus was successful
             if (!promptField.HasKeyboardFocus) {
                 ; Fallback: try clicking if SetFocus didn't work
@@ -13586,30 +13557,9 @@ ShowGeminiModelSelector() {
                 ; File not found - could show a message or just silently fail
             }
         } else {
-            ; #region agent log
-            editCount := 0
-            firstEditName := ""
-            firstEditClassName := ""
-            try {
-                allEdits := uia.FindAll({ Type: 50004 })
-                for edit in allEdits {
-                    editCount++
-                    if (editCount = 1) {
-                        firstEditName := edit.Name
-                        firstEditClassName := edit.ClassName
-                    }
-                }
-            }
-            nEsc := StrReplace(StrReplace(firstEditName, "\", "\\"), Chr(34), "\" . Chr(34)), cEsc := StrReplace(StrReplace(firstEditClassName, "\", "\\"), Chr(34), "\" . Chr(34))
-            try FileAppend '{"sessionId":"debug-session","runId":"run1","hypothesisId":"H1,H4","location":"Shift keys.ahk:13565","message":"promptField not found","data":{"editCount":' . editCount . ',"firstEditName":"' . SubStr(nEsc, 1, 80) . '","firstEditClassName":"' . SubStr(cEsc, 1, 60) . '"},"timestamp":' . A_TickCount . '}' "`n", logPath
-            ; #endregion
             ; Last resort: Could not find prompt field
         }
-    } catch as err {
-        ; #region agent log
-        errMsg := StrReplace(StrReplace(err.Message, "\", "\\"), Chr(34), "\" . Chr(34))
-        try FileAppend '{"sessionId":"debug-session","runId":"run1","hypothesisId":"all","location":"Shift keys.ahk:13572","message":"+g catch","data":{"what":"' . errMsg . '"},"timestamp":' . A_TickCount . '}' "`n", logPath
-        ; #endregion
+    } catch Error as e {
         ; If all else fails, silently fail (no fallback action defined)
     }
 }

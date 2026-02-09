@@ -5,9 +5,25 @@
 ; This script consolidates all Window Management hotkeys.
 ; -----------------------------------------------------------------------------
 
-; --- Includes ----------------------------------------------------------------
-#include %A_ScriptDir%\env.ahk
-#include UIA-v2\Lib\UIA.ahk
+; --- Inlined config (no external includes for stability) --------------------
+; Environment: set to true for work, false for personal (was env.ahk).
+global IS_WORK_ENVIRONMENT := false
+
+; --- Copy-from-Gemini to Cursor bridge (self-contained module) --------------
+#include %A_ScriptDir%\GeminiToCursorBridge.ahk
+
+; #region agent log
+; Debug log path for Copy-from-Gemini instrumentation (NDJSON, one object per line)
+_DebugLogPath_WM() => A_ScriptDir "\.cursor\debug.log"
+_DebugLog_WM(loc, msg, data, hypothesisId := "") {
+    j := '{"location":"' . loc . '","message":"' . msg . '","data":' . (data is String ? data : "{}") .
+    ',"hypothesisId":"' . hypothesisId . '","timestamp":' . A_TickCount . '}'
+    try
+        FileAppend j "`n", _DebugLogPath_WM()
+    catch
+        return  ; File in use by another process — skip this log line
+}
+; #endregion
 
 ; --- Helper Functions --------------------------------------------------------
 ; Unified banner builder for WindowManagement notifications
@@ -703,16 +719,18 @@ global g_Projects := [
                 { name: "ZMK Sofle", path: "C:\Users\eduev\Documents\ZMK\zmk-sofle", workPath: "", category: "Personal" }, { name: "AI Experiment",
                     path: "C:\Users\eduev\Meu Drive\04 - Pós-graduação\01 - Mestrado\26-ai-experiment", workPath: "",
                     category: "Personal" }, { name: "my-personal-repo", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\my-personal-repo",
-                    category: "Personal" }, { name: "",
-                        path: "", workPath: "", category: "Personal" }, { name: "", path: "", workPath: "", category: "Personal" },
-                        ; Work category
-                        { name: "GS_E&S_CIP Dashboard research and design workspace folder", path: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_E&S_CIP Dashboard research and design workspace folder",
-                            workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_E&S_CIP Dashboard research and design workspace folder",
-                            category: "Work" }, { name: "GS_UX core team_UX and CIP Integration", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_UX core team_UX and CIP Integration",
-                                category: "Work" }, { name: "PT_Project", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\PT_Project",
-                                    category: "Work" }, { name: "🪂 Avante", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\General - GS_BDU_Team\00_UX_GS_Team\AM_Planning\🪂 Avante",
-                                    category: "Work" }, { name: "", path: "", workPath: "", category: "Work" }, { name: "", path: "", workPath: "",
-                                        category: "Work" }
+                        category: "Personal" }, { name: "",
+                            path: "", workPath: "", category: "Personal" }, { name: "", path: "", workPath: "",
+                                category: "Personal" },
+                            ; Work category
+                            { name: "GS_E&S_CIP Dashboard research and design workspace folder", path: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_E&S_CIP Dashboard research and design workspace folder",
+                                workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_E&S_CIP Dashboard research and design workspace folder",
+                                category: "Work" }, { name: "GS_UX core team_UX and CIP Integration", path: "",
+                                    workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_UX core team_UX and CIP Integration",
+                                    category: "Work" }, { name: "PT_Project", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\PT_Project",
+                                        category: "Work" }, { name: "", path: "", workPath: "", category: "Work" }, { name: "",
+                                            path: "", workPath: "",
+                                            category: "Work" }
 ]
 ; TODO: Fill in workPath for each project above when configuring work environment
 ; Global variables for project selector
@@ -728,6 +746,74 @@ global g_CursorWindowSelectorGui := false
 ; Global variable for Selection Mode
 global g_SelectionModeActive := false
 global g_SelectionModeHotkeyHandlers := []  ; Store hotkey handlers for selection mode cleanup
+
+; Global variables for Copy from Gemini mode (K in project selector)
+global g_CopyFromGeminiModeActive := false
+global g_CopyFromGeminiHotkeyHandlers := []
+
+; Activate a Cursor project by path: find or launch window, then focus the AI text field. Returns true on success.
+; Ensures the target project window is explicitly activated before focus/paste, regardless of current active window.
+ActivateCursorProject(projectPath) {
+    ; #region agent log
+    _DebugLog_WM("WindowManagement.ahk:ActivateCursorProject", "entry", '{"pathLen":' . StrLen(projectPath) .
+    ',"dirExists":' . (DirExist(projectPath) ? 1 : 0) . '}', "H3")
+    ; #endregion
+    if (projectPath = "" || !DirExist(projectPath)) {
+        return false
+    }
+    targetHwnd := FindAndActivateCursorWindow(projectPath)
+    ; #region agent log
+    _DebugLog_WM("WindowManagement.ahk:ActivateCursorProject", "after FindAndActivate", '{"targetHwnd":' . targetHwnd .
+        '}', "H3")
+    ; #endregion
+    if (!targetHwnd) {
+        cursorPath := IS_WORK_ENVIRONMENT ?
+            "C:\Users\fie7ca\AppData\Local\Programs\cursor\Cursor.exe" :
+                "C:\Users\eduev\AppData\Local\Programs\cursor\Cursor.exe"
+        try {
+            Run cursorPath . ' "' . projectPath . '"'
+        } catch {
+            return false
+        }
+        ; Wait for the new window to appear and match our project
+        loop 30 {
+            Sleep 200
+            targetHwnd := GetCursorHwndForProject(projectPath)
+            if (targetHwnd)
+                break
+        }
+        if (!targetHwnd) {
+            return false
+        }
+    }
+    ; Explicitly activate the target window so paste goes to the correct project (works regardless of current active window).
+    try {
+        WinActivate("ahk_id " targetHwnd)
+        WinWaitActive("ahk_id " targetHwnd, , 3)
+    } catch {
+        return false
+    }
+    Sleep 300
+    focusOk := FocusCursorAITextField(targetHwnd)
+    ; #region agent log
+    _DebugLog_WM("WindowManagement.ahk:ActivateCursorProject", "after FocusCursorAITextField", '{"focusOk":' . (focusOk ?
+        1 : 0) . '}', "H4")
+    ; #endregion
+    if (focusOk) {
+        try {
+            SoundPlay(A_ScriptDir . "\sounds\into-cursor-textfield.wav")
+        } catch {
+        }
+        ; #region agent log
+        _DebugLog_WM("WindowManagement.ahk:ActivateCursorProject", "return true", "{}", "H3")
+        ; #endregion
+        return true
+    }
+    ; #region agent log
+    _DebugLog_WM("WindowManagement.ahk:ActivateCursorProject", "return false (focus failed)", "{}", "H4")
+    ; #endregion
+    return false
+}
 
 ; Get categorized projects for display
 GetCategorizedProjects() {
@@ -752,14 +838,15 @@ GetCategorizedProjects() {
 }
 ; Cleanup project selector: destroy GUI, disable hotkeys, reset state
 CleanupProjectSelector() {
-    global g_ProjectSelectorActive, g_ProjectSelectorGui, g_ProjectHotkeyHandlers, g_SelectionModeActive
+    global g_ProjectSelectorActive, g_ProjectSelectorGui, g_ProjectHotkeyHandlers, g_SelectionModeActive,
+        g_CopyFromGeminiModeActive
 
-    ; Disable active flag
     g_ProjectSelectorActive := false
-
-    ; Also cleanup selection mode if active
     if (g_SelectionModeActive) {
         CleanupSelectionMode()
+    }
+    if (g_CopyFromGeminiModeActive) {
+        CleanupCopyFromGeminiMode()
     }
 
     ; Disable all character hotkeys
@@ -934,8 +1021,30 @@ FindAndActivatePreviewWindow(projectPath) {
     return false
 }
 
-; Find and activate the last used Cursor window for a project path
-; Returns true if a window was found and activated, false otherwise
+; Return the hwnd of a Cursor window whose title matches the project path, or 0. Does not activate.
+GetCursorHwndForProject(projectPath) {
+    matchSegments := ExtractProjectMatchSegments(projectPath)
+    try {
+        for hwnd in WinGetList("ahk_exe Cursor.exe") {
+            try {
+                winTitle := WinGetTitle("ahk_id " hwnd)
+                if (InStr(StrLower(winTitle), "preview"))
+                    continue
+                for segment in matchSegments {
+                    if (InStr(winTitle, segment))
+                        return hwnd
+                }
+            } catch {
+                continue
+            }
+        }
+    } catch {
+    }
+    return 0
+}
+
+; Find and activate the last used Cursor window for a project path.
+; Returns the activated window's hwnd, or 0 if not found / activation failed.
 FindAndActivateCursorWindow(projectPath) {
     ; Extract match segments from the project path
     matchSegments := ExtractProjectMatchSegments(projectPath)
@@ -968,46 +1077,36 @@ FindAndActivateCursorWindow(projectPath) {
         }
     } catch {
         ; No Cursor windows found or error accessing them
-        return false
+        return 0
     }
 
-    ; If no matching windows found, return false
     if (cursorWindows.Length = 0) {
-        return false
+        return 0
     }
 
-    ; Find the last used window
-    ; First, check if any of them is currently active
+    ; Prefer the window that is already active
     try {
         activeHwnd := WinGetID("A")
         for window in cursorWindows {
             if (window.hwnd = activeHwnd) {
-                ; This window is already active, just center mouse
                 WinActivate("ahk_id " window.hwnd)
                 MoveMouseToCenter(window.hwnd)
-                return true
+                return window.hwnd
             }
         }
     } catch {
-        ; Could not get active window, continue
     }
 
-    ; If no active window matches, get the first window in the list
-    ; WinGetList returns windows in z-order (most recently used first)
-    if (cursorWindows.Length > 0) {
-        targetWindow := cursorWindows[1]
-        try {
-            WinActivate("ahk_id " targetWindow.hwnd)
-            WinWaitActive("ahk_id " targetWindow.hwnd, , 2)
-            MoveMouseToCenter(targetWindow.hwnd)
-            return true
-        } catch {
-            ; Failed to activate, return false
-            return false
-        }
+    ; Otherwise activate the first in z-order (most recently used)
+    targetWindow := cursorWindows[1]
+    try {
+        WinActivate("ahk_id " targetWindow.hwnd)
+        WinWaitActive("ahk_id " targetWindow.hwnd, , 2)
+        MoveMouseToCenter(targetWindow.hwnd)
+        return targetWindow.hwnd
+    } catch {
+        return 0
     }
-
-    return false
 }
 
 ; Handle project selection - activates existing Cursor window or launches new one
@@ -1083,69 +1182,24 @@ HandleProjectEscape(*) {
 }
 
 ; =============================================================================
-; Selection Mode: Focus Cursor AI Text Field using UIA
+; Focus Cursor AI text field (self-contained, no UIA dependency)
+; targetHwnd: if provided, explicitly activate this window first (ensures paste goes to correct project).
 ; =============================================================================
-
-; Try to find and focus the AI text field (Edit) directly. Returns true if found and focused.
-FocusCursorAITextField_Direct(root) {
+FocusCursorAITextField(targetHwnd := 0) {
     try {
-        ; cursor-tree: Type 50004 (Edit) ClassName "aislash-editor-input"
-        editEl := root.FindFirst({ Type: 50004, ClassName: "aislash-editor-input" })
-        if (editEl) {
-            editEl.SetFocus()
-            Sleep 100
-            return true
+        if (targetHwnd) {
+            WinActivate("ahk_id " targetHwnd)
+            WinWaitActive("ahk_id " targetHwnd, , 2)
+        } else {
+            targetHwnd := WinExist("ahk_exe Cursor.exe")
+            if (!targetHwnd)
+                return false
+            WinWaitActive("ahk_id " targetHwnd, , 2)
         }
-    } catch {
-    }
-    return false
-}
-
-; Try to focus the AI text field via "New Chat" anchor + Tab. Returns true on success.
-FocusCursorAITextField_Anchor(root) {
-    try {
-        anchor := ""
-        try {
-            newChatToolbar := root.FindFirst({ Type: 50021, Name: "New Chat actions" })
-            if (newChatToolbar) {
-                anchor := newChatToolbar.FindFirst({ Type: 50000, ClassName: "action-label codicon codicon-add-two" })
-                if (anchor) {
-                    try {
-                        if (!InStr(anchor.Name, "New Chat")) {
-                            anchor := ""
-                        }
-                    } catch {
-                        anchor := ""
-                    }
-                }
-            }
-        } catch {
-        }
-        if (!anchor) {
-            try {
-                allAddButtons := root.FindAll({ Type: 50000, ClassName: "action-label codicon codicon-add-two" })
-                for btn in allAddButtons {
-                    try {
-                        name := btn.Name
-                        if (InStr(name, "New Chat") && (InStr(name, "Replace Chat") || InStr(name, "Ctrl+N"))) {
-                            anchor := btn
-                            break
-                        }
-                    } catch {
-                        continue
-                    }
-                }
-            } catch {
-            }
-        }
-        if (!anchor)
-            return false
-        try {
-            anchor.SetFocus()
-            Sleep 100
-        } catch {
-            return false
-        }
+        Sleep 200
+        ; Open AI chat panel and focus input (keyboard-only; no external libs)
+        Send "^i"
+        Sleep 1200
         Send "{Tab 2}"
         Sleep 100
         return true
@@ -1154,81 +1208,26 @@ FocusCursorAITextField_Anchor(root) {
     }
 }
 
-; Focus the Cursor AI text field. If not found (panel hidden), send Ctrl+I and retry once.
-; Flow: (1) Try to locate AI text field or anchor; (2) if failed, Ctrl+I and retry.
-FocusCursorAITextField() {
-    try {
-        cursorHwnd := WinExist("ahk_exe Cursor.exe")
-        if (!cursorHwnd)
-            return false
-
-        WinWaitActive("ahk_id " . cursorHwnd, , 2)
-        Sleep 200
-
-        root := UIA.ElementFromHandle(cursorHwnd)
-        Sleep 100
-
-        ; Initial detection: try direct (AI Edit) then anchor+Tab
-        if (FocusCursorAITextField_Direct(root))
-            return true
-        if (FocusCursorAITextField_Anchor(root))
-            return true
-
-        ; Conditional fallback: field not detected (e.g. AI panel closed) -> open with Ctrl+I and retry
-        Send "^i"
-        Sleep 1200  ; Wait for AI chat interface to initialize and field to become visible
-
-        ; Retry: direct then anchor+Tab
-        try {
-            root := UIA.ElementFromHandle(cursorHwnd)
-        } catch {
-            return false
-        }
-        if (FocusCursorAITextField_Direct(root))
-            return true
-        if (FocusCursorAITextField_Anchor(root))
-            return true
-
-        return false
-    } catch Error as e {
-        return false
-    }
-}
-
 ; Handler for project selection in Selection Mode
 HandleSelectionModeProjectSelection(index) {
-    global g_SelectionModeActive, g_Projects, g_ProjectSelectorActive
+    global g_SelectionModeActive, g_Projects
 
-    ; Only process if selection mode is active
     if (!g_SelectionModeActive) {
         return
     }
-
-    ; Validate index
     if (index < 1 || index > g_Projects.Length) {
         return
     }
-
-    ; Get project
     project := g_Projects[index]
-
-    ; Skip empty placeholders (no name or path)
     if (project.name = "" && project.path = "" && project.workPath = "") {
         return
     }
 
-    ; Temporarily disable selection mode to allow HandleProjectSelection to work normally
     g_SelectionModeActive := false
-
-    ; Select path based on environment
     projectPath := IS_WORK_ENVIRONMENT ? project.workPath : project.path
-
-    ; If work environment but no workPath set, fall back to personal path
     if (IS_WORK_ENVIRONMENT && projectPath = "") {
         projectPath := project.path
     }
-
-    ; Validate project path exists
     if (projectPath = "" || !DirExist(projectPath)) {
         ShowNotification_WM("Project folder not found: " . projectPath)
         CleanupSelectionMode()
@@ -1236,49 +1235,11 @@ HandleSelectionModeProjectSelection(index) {
         return
     }
 
-    ; Try to find and activate an existing Cursor window for this project
-    windowFound := false
-    if (FindAndActivateCursorWindow(projectPath)) {
-        windowFound := true
+    if (ActivateCursorProject(projectPath)) {
+        ; Success
     } else {
-        ; No existing window found, launch a new Cursor window
-        cursorPath := IS_WORK_ENVIRONMENT ?
-            "C:\Users\fie7ca\AppData\Local\Programs\cursor\Cursor.exe" :
-            "C:\Users\eduev\AppData\Local\Programs\cursor\Cursor.exe"
-
-        try {
-            Run cursorPath . ' "' . projectPath . '"'
-            ; Wait for window to appear
-            WinWait("ahk_exe Cursor.exe", , 5)
-            windowFound := true
-        } catch Error as e {
-            ShowNotification_WM("Failed to launch Cursor: " . e.Message)
-            CleanupSelectionMode()
-            CleanupProjectSelector()
-            return
-        }
+        ShowNotification_WM("Failed to launch Cursor or focus AI field")
     }
-
-    if (windowFound) {
-        ; Wait for Cursor window to become active
-        WinWaitActive("ahk_exe Cursor.exe", , 3)
-        Sleep 300  ; Allow window to fully initialize
-
-        ; Focus the AI text field using UIA
-        if (FocusCursorAITextField()) {
-            ; Play success sound
-            try {
-                SoundPlay(A_ScriptDir . "\sounds\into-cursor-textfield.wav")
-            } catch {
-                ; Silently ignore if sound file is missing
-            }
-        } else {
-            ; Show notification if focus failed
-            ShowNotification_WM("Could not focus AI text field")
-        }
-    }
-
-    ; Cleanup selection mode and project selector
     CleanupSelectionMode()
     CleanupProjectSelector()
 }
@@ -1443,6 +1404,200 @@ CleanupSelectionMode() {
 
     ; Clear handlers array
     g_SelectionModeHotkeyHandlers := []
+}
+
+; Cleanup Copy from Gemini mode: disable hotkeys and reset state
+CleanupCopyFromGeminiMode() {
+    global g_CopyFromGeminiModeActive, g_CopyFromGeminiHotkeyHandlers
+
+    g_CopyFromGeminiModeActive := false
+    for handler in g_CopyFromGeminiHotkeyHandlers {
+        try {
+            char := handler.char
+            if (char = ",") {
+                Hotkey("vkBC", "Off")
+            } else if (char = ".") {
+                Hotkey("vkBE", "Off")
+            } else {
+                Hotkey(char, "Off")
+                if (RegExMatch(char, "^[a-z]$")) {
+                    Hotkey(StrUpper(char), "Off")
+                }
+            }
+        } catch {
+        }
+    }
+    g_CopyFromGeminiHotkeyHandlers := []
+}
+
+; Handler for project selection in Copy from Gemini mode. Delegates to GeminiToCursorBridge module.
+HandleCopyFromGeminiProjectSelection(index) {
+    global g_CopyFromGeminiModeActive, g_Projects
+    ; #region agent log
+    _DebugLog_WM("WindowManagement.ahk:HandleCopyFromGeminiProjectSelection", "entry", '{"index":' . index . '}', "H1")
+    ; #endregion
+
+    if (!g_CopyFromGeminiModeActive) {
+        return
+    }
+    if (index < 1 || index > g_Projects.Length) {
+        return
+    }
+    project := g_Projects[index]
+    if (project.name = "" && project.path = "" && project.workPath = "") {
+        return
+    }
+
+    g_CopyFromGeminiModeActive := false
+    projectPath := IS_WORK_ENVIRONMENT ? project.workPath : project.path
+    if (IS_WORK_ENVIRONMENT && projectPath = "") {
+        projectPath := project.path
+    }
+    if (projectPath = "" || !DirExist(projectPath)) {
+        ShowNotification_WM("Project folder not found: " . projectPath)
+        CleanupCopyFromGeminiMode()
+        CleanupProjectSelector()
+        return
+    }
+    ; #region agent log
+    pathLast := ""
+    try {
+        pNorm := RTrim(projectPath, "\")
+        parts := StrSplit(pNorm, "\")
+        pathLast := parts.Length ? parts[parts.Length] : ""
+    } catch {
+        pathLast := "?"
+    }
+    _DebugLog_WM("WindowManagement.ahk:CopyFromGeminiSelection", "calling bridge", '{"index":' . index .
+        ',"pathLast":"' . pathLast . '","pathLen":' . StrLen(projectPath) . '}', "WM1")
+    ; #endregion
+
+    ; Close selector before bridge so the modal cannot steal focus when we activate the Cursor window.
+    CleanupCopyFromGeminiMode()
+    CleanupProjectSelector()
+
+    result := CopyFromGeminiToCursor(projectPath, IS_WORK_ENVIRONMENT)
+    if (!result.ok) {
+        if (result.reason = "no_script")
+            ShowNotification_WM("Gemini.ahk not running")
+        else if (result.reason = "no_gemini_window")
+            ShowNotification_WM("Open Gemini in Chrome first")
+        else if (result.reason = "gemini_activate_failed")
+            ShowNotification_WM("Could not activate Gemini window")
+        else if (result.reason = "send_failed")
+            ShowNotification_WM("Could not trigger Gemini copy")
+        else if (result.reason = "validation_failed")
+            ShowNotification_WM("Copy from Gemini: clipboard not updated")
+        else if (result.reason = "cursor_activate_failed")
+            ShowNotification_WM("Failed to open project or focus AI field")
+        else
+            ShowNotification_WM("Copy from Gemini timed out")
+        CleanupCopyFromGeminiMode()
+        CleanupProjectSelector()
+        return
+    }
+    CleanupCopyFromGeminiMode()
+    CleanupProjectSelector()
+}
+
+; Factory for Copy from Gemini mode project handler
+CreateCopyFromGeminiProjectHandler(index) {
+    return (*) => HandleCopyFromGeminiProjectSelection(index)
+}
+
+; Handler for Copy from Gemini mode trigger (K key in project selector)
+HandleCopyFromGeminiModeTrigger(*) {
+    global g_ProjectSelectorActive, g_CopyFromGeminiModeActive, g_Projects, g_ProjectCharSequence
+    global g_ProjectCategories, g_CopyFromGeminiHotkeyHandlers, g_ProjectHotkeyHandlers
+
+    ; #region agent log
+    _DebugLog_WM("WindowManagement.ahk:HandleCopyFromGeminiModeTrigger", "K pressed", '{"selectorActive":' . (
+        g_ProjectSelectorActive ? 1 : 0) . '}', "H0")
+    ; #endregion
+    if (!g_ProjectSelectorActive) {
+        return
+    }
+    ShowNotification_WM("Copy from Gemini - Select Project")
+    g_CopyFromGeminiModeActive := true
+
+    ; Disable existing project hotkeys (keep special keys c, 3, l, k, Escape)
+    for handler in g_ProjectHotkeyHandlers {
+        try {
+            char := handler.char
+            if (char = "l" || char = "L" || char = "k" || char = "K" || char = "c" || char = "C" || char = "3") {
+                continue
+            }
+            if (char = ",") {
+                Hotkey("vkBC", "Off")
+            } else if (char = ".") {
+                Hotkey("vkBE", "Off")
+            } else {
+                Hotkey(char, "Off")
+                if (RegExMatch(char, "^[a-z]$")) {
+                    Hotkey(StrUpper(char), "Off")
+                }
+            }
+        } catch {
+        }
+    }
+
+    ; Build projectIndexToChar (same logic as ShowProjectSelector)
+    projectIndexToChar := Map()
+    projectIndexToCategory := Map()
+    loop g_Projects.Length {
+        projectIndex := A_Index
+        project := g_Projects[projectIndex]
+        category := project.HasProp("category") ? project.category : "Personal"
+        projectIndexToCategory[projectIndex] := category
+    }
+    charIndex := 1
+    for category in g_ProjectCategories {
+        categoryProjectIndices := []
+        for projectIndex, cat in projectIndexToCategory {
+            if (cat = category) {
+                categoryProjectIndices.Push(projectIndex)
+            }
+        }
+        for projectIndex in categoryProjectIndices {
+            project := g_Projects[projectIndex]
+            if (project.name = "" && project.path = "" && project.workPath = "") {
+                charIndex++
+                continue
+            }
+            if (charIndex > g_ProjectCharSequence.Length) {
+                break
+            }
+            char := g_ProjectCharSequence[charIndex]
+            if (char = "3") {
+                charIndex++
+                if (charIndex > g_ProjectCharSequence.Length) {
+                    break
+                }
+                char := g_ProjectCharSequence[charIndex]
+            }
+            projectIndexToChar[projectIndex] := char
+            charIndex++
+        }
+    }
+
+    g_CopyFromGeminiHotkeyHandlers := []
+    for projectIndex, char in projectIndexToChar {
+        handler := CreateCopyFromGeminiProjectHandler(projectIndex)
+        g_CopyFromGeminiHotkeyHandlers.Push({ char: char, handler: handler })
+        try {
+            if (char = ",") {
+                Hotkey("vkBC", handler, "On")
+            } else if (char = ".") {
+                Hotkey("vkBE", handler, "On")
+            } else {
+                Hotkey(char, handler, "On")
+                if (RegExMatch(char, "^[a-z]$")) {
+                    Hotkey(StrUpper(char), handler, "On")
+                }
+            }
+        } catch {
+        }
+    }
 }
 
 ; Handler for preview window activation (character "3")
@@ -2313,6 +2468,7 @@ ShowProjectSelector() {
     displayText .= "`n[c] Focus Cursor Window`n"
     displayText .= "[3] Activate Preview Windows`n"
     displayText .= "[L] Selection Mode`n"
+    displayText .= "[K] Copy from Gemini`n"
     displayText .= "[ESC] Cancel"
 
     ; Calculate text dimensions
@@ -2405,9 +2561,17 @@ ShowProjectSelector() {
         selectionModeHandler := HandleSelectionModeTrigger
         g_ProjectHotkeyHandlers.Push({ char: "l", handler: selectionModeHandler })
         Hotkey("l", selectionModeHandler, "On")
-        Hotkey("L", selectionModeHandler, "On")  ; Also enable uppercase
+        Hotkey("L", selectionModeHandler, "On")
     } catch {
-        ; Silently ignore if we can't create hotkey
+    }
+
+    ; Enable hotkey for Copy from Gemini mode (character "K")
+    try {
+        copyFromGeminiHandler := HandleCopyFromGeminiModeTrigger
+        g_ProjectHotkeyHandlers.Push({ char: "k", handler: copyFromGeminiHandler })
+        Hotkey("k", copyFromGeminiHandler, "On")
+        Hotkey("K", copyFromGeminiHandler, "On")
+    } catch {
     }
 
     ; Enable Escape hotkey

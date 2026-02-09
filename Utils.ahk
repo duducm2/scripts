@@ -1,6 +1,26 @@
 #Requires AutoHotkey v2.0+
 #SingleInstance Force
 
+; #region agent log
+DbgLog(loc, msg) {
+    try {
+        m := StrReplace(msg, '"', "'")
+        line := '{"ts":' A_TickCount ',"loc":"' loc '","msg":"' m '"}'
+        FileAppend line Chr(10), A_ScriptDir "\.cursor\debug.log"
+    } catch as e {
+    }
+}
+; NDJSON debug (hypothesisId, data as JSON string)
+DbgLogEx(loc, msg, data := "{}", hypothesisId := "") {
+    try {
+        m := StrReplace(msg, '"', "'")
+        line := '{"ts":' A_TickCount ',"loc":"' loc '","msg":"' m '","data":' data ',"hypothesisId":"' hypothesisId '"}'
+        FileAppend line Chr(10), A_ScriptDir "\.cursor\debug.log"
+    } catch {
+    }
+}
+; #endregion
+
 #include UIA-v2\Lib\UIA.ahk
 #include UIA-v2\Lib\UIA_Browser.ahk
 
@@ -270,6 +290,7 @@ InitQuickOpenFiles()
 global g_Macros := []
 global g_MacroCharMap := Map()  ; Maps character to macro function
 global g_DictationLoopActive := false
+global g_ProgrammaticDictationStop := false  ; Skip ~#!+0 handler when script sends #!+0 (loop cycle)
 
 ; Register a macro
 RegisterMacro(func, title, char := "") {
@@ -775,13 +796,17 @@ MarkLastClipAsFavorite() {
 ; =============================================================================
 ; AI Model Selection System for Handy
 ; =============================================================================
-; Configuration: Maps selection numbers (1, 2, 3, 4) to AI model names.
+; Configuration: Maps selection numbers (1–7) to AI model names.
 ; These are partial name prefixes used to find buttons in the UIA tree (Type 50000, botão).
+; Descriptions match Handy Transcription Models UI for quick verification.
 global g_HandyAiModels := Map(
-    1, { name: "Whisper Large", desc: "Good accuracy, but slow" },
-    2, { name: "Whisper Medium", desc: "Good accuracy, medium speed" },
-    3, { name: "Moonshine Base", desc: "Very fast, English only" },
-    4, { name: "Parakeet V3", desc: "Fast and accurate" }
+    1, { name: "Whisper Turbo", desc: "Balanced accuracy and speed. Multi-language." },
+    2, { name: "Whisper Small", desc: "Fast and fairly accurate. Multi-language, translate to English." },
+    3, { name: "Whisper Medium", desc: "Good accuracy, medium speed. Multi-language, translate to English." },
+    4, { name: "Whisper Large", desc: "Good accuracy, but slow. Multi-language, translate to English." },
+    5, { name: "Parakeet V3", desc: "Fast and accurate. Multi-language." },
+    6, { name: "Parakeet V2", desc: "English only. Best model for English speakers." },
+    7, { name: "Moonshine Base", desc: "Very fast, English only. Handles accents well." }
 )
 
 ; GUI state for AI model selector
@@ -822,7 +847,7 @@ ShowAiModelSelector() {
     ; Footer
     g_AiModelSelectorGui.Add("Text", "w280 h1 Background45475A y+10")
     g_AiModelSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_AiModelSelectorGui.Add("Text", "w280 Center", "Press 1, 2, 3, or 4 | Esc to cancel")
+    g_AiModelSelectorGui.Add("Text", "w280 Center", "Press 1–7 | Esc to cancel")
 
     ; Get active window to determine which monitor to center on
     activeWin := 0
@@ -877,11 +902,14 @@ ShowAiModelSelector() {
 
     g_AiModelSelectorActive := true
 
-    ; Enable hotkeys for 1, 2, 3, 4 and Escape
+    ; Enable hotkeys for 1–6 and Escape
     Hotkey("1", AiModelSelector_HandleKey, "On")
     Hotkey("2", AiModelSelector_HandleKey, "On")
     Hotkey("3", AiModelSelector_HandleKey, "On")
     Hotkey("4", AiModelSelector_HandleKey, "On")
+    Hotkey("5", AiModelSelector_HandleKey, "On")
+    Hotkey("6", AiModelSelector_HandleKey, "On")
+    Hotkey("7", AiModelSelector_HandleKey, "On")
     Hotkey("Escape", AiModelSelector_Cancel, "On")
 }
 
@@ -923,6 +951,9 @@ AiModelSelector_Close() {
     try Hotkey("2", "Off")
     try Hotkey("3", "Off")
     try Hotkey("4", "Off")
+    try Hotkey("5", "Off")
+    try Hotkey("6", "Off")
+    try Hotkey("7", "Off")
     try Hotkey("Escape", AiModelSelector_Cancel, "Off")
 
     ; Destroy GUI
@@ -1173,9 +1204,14 @@ Handy_ActivateOrLaunch() {
 
 ; Open the AI model dropdown menu using keyboard navigation
 Handy_OpenAiModelMenu(hwnd) {
+    ; #region agent log
+    DbgLogEx("Handy_OpenAiModelMenu", "entry", "{}", "H1")
+    ; #endregion
     el := UIA.ElementFromHandle(hwnd)
-    if !el
+    if !el {
+        DbgLogEx("Handy_OpenAiModelMenu", "ElementFromHandle failed", "{}", "H1")
         return false
+    }
 
     ; Find anchor: "Check for updates" button
     anchor := 0
@@ -1183,13 +1219,23 @@ Handy_OpenAiModelMenu(hwnd) {
         Type: 50000,
         ClassName: "transition-colors disabled:opacity-50 tabular-nums text-text/60 hover:text-text/80"
     })
-    if (!anchor)
+    if (anchor)
+        DbgLogEx("Handy_OpenAiModelMenu", "anchor by ClassName", '{"by":"ClassName"}', "H1")
+    if (!anchor) {
         try anchor := el.FindFirst({ Type: 50000, Name: "Check for updates" })
-    if (!anchor)
+        if (anchor)
+            DbgLogEx("Handy_OpenAiModelMenu", "anchor by Name", '{"by":"Name"}', "H1")
+    }
+    if (!anchor) {
         try anchor := el.FindFirst({ Type: 50000, Name: "Verificar atualizações" })
+        if (anchor)
+            DbgLogEx("Handy_OpenAiModelMenu", "anchor by Name Pt", '{"by":"NamePt"}', "H1")
+    }
 
-    if (!anchor)
+    if (!anchor) {
+        DbgLogEx("Handy_OpenAiModelMenu", "anchor not found", "{}", "H1")
         return false
+    }
 
     ; Focus anchor, Shift+Tab to model button, Enter to open menu
     try anchor.SetFocus()
@@ -1201,37 +1247,56 @@ Handy_OpenAiModelMenu(hwnd) {
     Sleep 100
     Send "{Enter}"
     Sleep 300
+    ; #region agent log
+    DbgLogEx("Handy_OpenAiModelMenu", "exit true", "{}", "H1")
+    ; #endregion
     return true
 }
 
 ; Find and click the AI model button by partial name match
 Handy_ClickAiModel(hwnd, modelName) {
+    ; #region agent log
+    DbgLogEx("Handy_ClickAiModel", "entry", '{"modelName":"' modelName '"}', "H2")
+    ; #endregion
     el := UIA.ElementFromHandle(hwnd)
-    if !el
+    if !el {
+        DbgLogEx("Handy_ClickAiModel", "ElementFromHandle failed", "{}", "H2")
         return false
+    }
 
     ; Model buttons have class containing "w-full px-3 py-2 text-left"
     ; and names starting with the model name (e.g., "Whisper Large Good accuracy...")
     ; Try to find by partial name match
     modelBtn := 0
+    buttonCount := 0
+    nameMatchNoClass := ""
 
     ; Strategy 1: Find button whose Name starts with modelName
     try {
         buttons := el.FindAll({ Type: 50000 })
         for btn in buttons {
+            buttonCount++
             btnName := ""
             try btnName := btn.Name
             if (btnName != "" && InStr(btnName, modelName) = 1) {
-                ; Verify it's a model button by checking class (list items or header-style, e.g. Parakeet V3)
                 btnClass := ""
                 try btnClass := btn.ClassName
-                if (InStr(btnClass, "w-full px-3 py-2 text-left") || InStr(btnClass, "flex items-center gap-2")) {
+                ; #region agent log
+                DbgLogEx("Handy_ClickAiModel", "name match", '{"btnName":"' StrReplace(btnName, "`"", "'") '","btnClass":"' StrReplace(btnClass, "`"", "'") '","hasWfull":' (InStr(btnClass,"w-full px-3 py-2 text-left")?1:0) ',"hasTextStart":' (InStr(btnClass,"w-full px-3 py-2 text-start")?1:0) ',"hasFlex":' (InStr(btnClass,"flex items-center gap-2")?1:0) '}', "H2")
+                ; #endregion
+                ; Menu items: w-full px-3 py-2 text-left (legacy) or text-start (new Handy UI); header: flex items-center gap-2
+                if (InStr(btnClass, "w-full px-3 py-2 text-left") || InStr(btnClass, "w-full px-3 py-2 text-start") || InStr(btnClass, "flex items-center gap-2")) {
                     modelBtn := btn
                     break
                 }
+                if (nameMatchNoClass = "")
+                    nameMatchNoClass := btnClass
             }
         }
     }
+    ; #region agent log
+    DbgLogEx("Handy_ClickAiModel", "buttons scanned", '{"count":' buttonCount ',"nameMatchNoClass":"' StrReplace(nameMatchNoClass, "`"", "'") '","found":' (modelBtn ? 1 : 0) '}', "H2")
+    ; #endregion
 
     if (!modelBtn)
         return false
@@ -1239,8 +1304,10 @@ Handy_ClickAiModel(hwnd, modelName) {
     ; Click the model button
     try {
         modelBtn.Click()
+        DbgLogEx("Handy_ClickAiModel", "click ok", "{}", "H2")
         return true
-    } catch {
+    } catch as e {
+        DbgLogEx("Handy_ClickAiModel", "click failed", '{"err":"' StrReplace(e.Message, "`"", "'") '"}', "H2")
         return false
     }
 }
@@ -1250,11 +1317,17 @@ Handy_ClickAiModel(hwnd, modelName) {
 ; Returns true when loading text disappeared, false on timeout or if button not found.
 Handy_WaitForModelReady(hwnd, maxWaitMs) {
     global UIA
+    ; #region agent log
+    DbgLogEx("Handy_WaitForModelReady", "entry", "{}", "H3")
+    ; #endregion
     pollInterval := 250
     start := A_TickCount
+    firstLog := true
     loop {
-        if ((A_TickCount - start) >= maxWaitMs)
+        if ((A_TickCount - start) >= maxWaitMs) {
+            DbgLogEx("Handy_WaitForModelReady", "timeout", "{}", "H3")
             return false
+        }
         el := UIA.ElementFromHandle(hwnd)
         if !el {
             Sleep pollInterval
@@ -1263,13 +1336,19 @@ Handy_WaitForModelReady(hwnd, maxWaitMs) {
         btn := 0
         try btn := el.FindFirst({ Type: 50000, ClassName: "flex items-center gap-2 hover:text-text/80 transition-colors " })
         if (!btn) {
+            if (firstLog) {
+                DbgLogEx("Handy_WaitForModelReady", "model button not found by ClassName", "{}", "H3")
+                firstLog := false
+            }
             Sleep pollInterval
             continue
         }
         btnName := ""
         try btnName := btn.Name
-        if (InStr(btnName, "loading") = 0)
+        if (InStr(btnName, "loading") = 0) {
+            DbgLogEx("Handy_WaitForModelReady", "ready", '{"btnName":"' StrReplace(btnName, "`"", "'") '"}', "H3")
             return true
+        }
         Sleep pollInterval
     }
 }
@@ -1690,38 +1769,50 @@ CheckAndOpenOutlookTeams(checkOutlook := false, checkTeams := false) {
     return false
 }
 
-; Dictation Loop Macro
-; Automatically cycles dictation on/off every 60 seconds to prevent transcription timeouts
+; Infinite Dictation Macro
+; Each loop = one 60s cycle; dictation cycles on/off every 15s within a loop to prevent transcription timeouts
 ToggleDictationLoop() {
-    global g_DictationLoopActive
+    global g_DictationLoopActive, g_ProgrammaticDictationStop
 
     if (g_DictationLoopActive) {
-        ; Stop the loop
+        ; Stop Infinite Dictation
         g_DictationLoopActive := false
         ; Turn off timers
         SetTimer(DictationLoopStop, 0)
         SetTimer(DictationLoopStart, 0)
         ; Send Win+Alt+Shift+0 to finish dictation
+        g_ProgrammaticDictationStop := true
         SendInput "#!+0"
-        ; Merge non-favorite clips: 5s countdown when user finishes the entire loop (N or End to cancel)
+        ; Merge non-favorite clips: 5s countdown when user finishes Infinite Dictation (N or End to cancel)
         DictationMerge_StartCountdown(5)
     } else {
-        ; Start the loop
+        ; Start Infinite Dictation (first loop)
         ; Clear any existing timers first to prevent old timers from firing
         SetTimer(DictationLoopStop, 0)
         SetTimer(DictationLoopStart, 0)
         g_DictationLoopActive := true
-        ; Begin the cycle
+        ; Begin the first loop
         DictationLoopStart()
     }
 }
 
 DictationLoopStart() {
-    global g_DictationLoopActive, g_DictationStartRetries
+    ; Delegate to Infinite Dictation module when it owns the loop
+    if (InfiniteDictation.IsActive) {
+        InfiniteDictation.LoopCycle()
+        return
+    }
+    global g_DictationLoopActive, g_DictationStartRetries, g_ProgrammaticDictationStop
+    ; #region agent log
+    DbgLog("DictationLoopStart", "entry loopActive=" g_DictationLoopActive " hyp=A")
+    ; #endregion
 
-    ; Safety check: Only proceed if loop is still active
-    ; This prevents starting if user manually stopped the loop
+    ; Safety check: Only proceed if Infinite Dictation is still active
+    ; This prevents starting if user manually stopped it
     if (!g_DictationLoopActive) {
+        ; #region agent log
+        DbgLog("DictationLoopStart", "early return loop inactive hyp=A")
+        ; #endregion
         return
     }
 
@@ -1733,17 +1824,21 @@ DictationLoopStart() {
 
     ; Check if already recording to prevent toggling off
     if (WinExist("Recording ahk_exe handy.exe")) {
+        ; #region agent log
+        DbgLog("DictationLoopStart", "already recording reschedule stop hyp=B")
+        ; #endregion
         ; Already recording, just ensure timer is running
         SetTimer(DictationLoopStop, 0)
-        SetTimer(DictationLoopStop, -60000)
+        SetTimer(DictationLoopStop, -15000)
         return
     }
 
     g_DictationStartRetries := 0
     ; Send Win+Alt+Shift+0 to start dictation
+    g_ProgrammaticDictationStop := true
     SendEvent "#!+0"
 
-    ; Double-check loop is still active before scheduling stop timer
+    ; Double-check Infinite Dictation is still active before scheduling next loop
     ; User may have stopped it during the dictation start delay
     if (!g_DictationLoopActive) {
         return
@@ -1752,9 +1847,12 @@ DictationLoopStart() {
     ; Clear any existing timer first to prevent accumulation
     SetTimer(DictationLoopStop, 0)
 
-    ; Schedule stop after 60 seconds - negative period = one-shot timer
-    ; Only schedules if loop is still active (checked above)
+    ; Schedule stop after 15s (one loop segment) - negative period = one-shot timer
+    ; Only schedules if Infinite Dictation is still active (checked above)
     SetTimer(DictationLoopStop, -15000)
+    ; #region agent log
+    DbgLog("DictationLoopStart", "scheduled DictationLoopStop -15000 hyp=A")
+    ; #endregion
 
     ; Verification: Check if window appeared after a delay
     SetTimer(VerifyDictationStart, -1500)
@@ -1763,7 +1861,7 @@ DictationLoopStart() {
 global g_DictationStartRetries := 0
 
 VerifyDictationStart() {
-    global g_DictationLoopActive, g_DictationStartRetries
+    global g_DictationLoopActive, g_DictationStartRetries, g_ProgrammaticDictationStop
     if (!g_DictationLoopActive) {
         return
     }
@@ -1772,10 +1870,11 @@ VerifyDictationStart() {
         g_DictationStartRetries++
         if (g_DictationStartRetries <= 3) {
             ; Retry start if window didn't appear
+            g_ProgrammaticDictationStop := true
             SendEvent "#!+0"
             ; Reschedule stop timer just in case
             SetTimer(DictationLoopStop, 0)
-            SetTimer(DictationLoopStop, -60000)
+            SetTimer(DictationLoopStop, -15000)
             SetTimer(VerifyDictationStart, -1500)
         } else {
             ShowCenteredOverlay_Utils("Failed to start dictation", 2000)
@@ -1785,17 +1884,27 @@ VerifyDictationStart() {
 }
 
 DictationLoopStop() {
-    global g_DictationLoopActive, g_DictationLoopSound
+    global g_DictationLoopActive, g_DictationLoopSound, g_ProgrammaticDictationStop
+    ; #region agent log
+    DbgLog("DictationLoopStop", "entry loopActive=" g_DictationLoopActive " hyp=A")
+    ; #endregion
 
-    ; Safety check: Only proceed if loop is still active
-    ; This prevents restarting if user manually stopped the loop via ToggleDictationLoop()
+    ; Safety check: Only proceed if Infinite Dictation is still active
+    ; This prevents restarting next loop if user manually stopped via ToggleDictationLoop()
     if (!g_DictationLoopActive) {
+        ; #region agent log
+        DbgLog("DictationLoopStop", "early return loop inactive hyp=A")
+        ; #endregion
         return
     }
 
     ; Only send stop command if actually recording
     if (WinExist("Recording ahk_exe handy.exe")) {
+        ; #region agent log
+        DbgLog("DictationLoopStop", "sending #!+0 progStop=true hyp=C")
+        ; #endregion
         ; Send Win+Alt+Shift+0 to stop dictation (triggers transcription)
+        g_ProgrammaticDictationStop := true
         SendEvent "#!+0"
 
         ; Play sound to notify that transcription has started (if enabled)
@@ -1803,6 +1912,9 @@ DictationLoopStop() {
             SoundPlay(g_DictationLoopSound)
         }
     } else {
+        ; #region agent log
+        DbgLog("DictationLoopStop", "NOT recording schedule restart -1000 hyp=E")
+        ; #endregion
         ; If not recording, we might have stopped early or crashed.
         ; Restart loop immediately to recover.
         SetTimer(DictationLoopStart, -1000)
@@ -2186,24 +2298,25 @@ CleanClipboard() {
 }
 
 ; Dictation Toggle with Clipboard Cleanup Option (on start only)
-; Toggles dictation loop on/off. When starting, optionally asks to clean clipboard.
+; Toggles Infinite Dictation on/off. When starting, optionally asks to clean clipboard.
 ; When stopping, does NOT show clipboard cleanup prompt.
 DictationStartWithClipboardOption() {
-    global g_DictationLoopActive, g_PendingDictationMerge
+    global g_DictationLoopActive, g_PendingDictationMerge, g_ProgrammaticDictationStop
 
     if (g_DictationLoopActive) {
-        ; Stop the loop - show merge countdown when user finishes the entire loop
+        ; Stop Infinite Dictation - show merge countdown when user finishes
         g_DictationLoopActive := false
         ; Turn off timers
         SetTimer(DictationLoopStop, 0)
         SetTimer(DictationLoopStart, 0)
         ; Send Win+Alt+Shift+0 to finish dictation
+        g_ProgrammaticDictationStop := true
         SendInput "#!+0"
         ; Set flag to start merge countdown after transcription completes
         ; This ensures AI transcription and handy.exe finish before Clip Angel merge begins
         g_PendingDictationMerge := true
     } else {
-        ; Start the loop - show clipboard cleanup prompt ONLY when starting
+        ; Start Infinite Dictation - show clipboard cleanup prompt ONLY when starting
         ; Show message box asking about clipboard cleanup
         result := MsgBox("Would you like to clean up the clipboard?", "Dictation Start", "YesNo")
 
@@ -2212,13 +2325,13 @@ DictationStartWithClipboardOption() {
             ; (User already confirmed they want to clean clipboard)
             CleanClipboardInternal()
         }
-        ; If No, continue with dictation loop without cleanup
+        ; If No, continue with Infinite Dictation without cleanup
 
         ; Clear any existing timers first to prevent old timers from firing
         SetTimer(DictationLoopStop, 0)
         SetTimer(DictationLoopStart, 0)
         g_DictationLoopActive := true
-        ; Begin the cycle
+        ; Begin the first loop
         DictationLoopStart()
     }
 }
@@ -6734,6 +6847,9 @@ SafePlayDictationSound(filePath) {
 
 ; Handler for clipboard changes during dictation completion
 DictationClipboardHandler(DataType) {
+    ; #region agent log
+    DbgLog("DictationClipboardHandler", "fired hyp=B")
+    ; #endregion
     ; Remove handler immediately to prevent multiple triggers
     OnClipboardChange(DictationClipboardHandler, 0)
 
@@ -6761,6 +6877,11 @@ PlayDictationCompletionChime(*) {
     chimeShouldPlay := g_DictationCompletionChimeScheduled
     g_DictationCompletionChimeScheduled := false  ; Clear IMMEDIATELY to prevent other calls
     Critical "Off"
+
+    ; #region agent log
+    DbgLog("PlayDictationCompletionChime", "chimeShouldPlay=" chimeShouldPlay " loopActive=" g_DictationLoopActive " hyp=B"
+    )
+    ; #endregion
 
     ; Only play if flag was set (prevent duplicate execution)
     if (chimeShouldPlay) {
@@ -6806,8 +6927,13 @@ PlayDictationCompletionChime(*) {
             DictationMerge_StartCountdown(5)
         }
 
-        ; Trigger next loop iteration if active
-        if (g_DictationLoopActive) {
+        ; Trigger next loop iteration if active (module or legacy)
+        if (InfiniteDictation.IsActive) {
+            InfiniteDictation.OnTranscriptionComplete()
+        } else if (g_DictationLoopActive) {
+            ; #region agent log
+            DbgLog("PlayDictationCompletionChime", "scheduling DictationLoopStart -2000 hyp=B")
+            ; #endregion
             SetTimer(DictationLoopStart, -2000)
         }
     }
@@ -6879,6 +7005,9 @@ CheckDictationRecordingWindow() {
         g_LastStateTransitionTick := A_TickCount
         g_DictationActive := false
         Critical "Off"
+        ; #region agent log
+        DbgLog("CheckDictationRecordingWindow", "window gone set chimeScheduled hyp=D")
+        ; #endregion
         g_DictationSoundPlayed := false
 
         StopDictationPulseTimer()
@@ -6984,9 +7113,18 @@ OnExit(CleanupDictationIndicator)
 ~#!+0::
 {
     global g_DictationActive, g_LastStateTransitionTick, g_DictationStartSound
-    global g_DictationLoopActive, g_PendingDictationMerge
+    global g_ProgrammaticDictationStop
     static lastHotkeyTick := 0
     static isProcessing := false
+
+    ; Skip when script sends #!+0 programmatically (Infinite Dictation stop/start, #!+7 stop, etc.)
+    if (g_ProgrammaticDictationStop) {
+        ; #region agent log
+        DbgLog("~#!+0", "early return progStop hyp=C")
+        ; #endregion
+        g_ProgrammaticDictationStop := false
+        return
+    }
 
     if (isProcessing)
         return
@@ -6997,13 +7135,16 @@ OnExit(CleanupDictationIndicator)
     lastHotkeyTick := currentTick
     isProcessing := true
 
-    ; If dictation loop is active, treat as loop interrupt (same as Win+Alt+Shift+7)
-    ; Key passes through to handy.exe via ~ - dictation will stop; yellow banner + merge prompt follows transcription
-    if (g_DictationLoopActive) {
-        g_DictationLoopActive := false
-        SetTimer(DictationLoopStop, 0)
-        SetTimer(DictationLoopStart, 0)
-        g_PendingDictationMerge := true
+    ; If Infinite Dictation is active, treat as interrupt (same as Win+Alt+Shift+7)
+    ; Logic gate: Only allow termination during Recording state; block during Transcribing state
+    if (InfiniteDictation.IsActive) {
+        if (!WinExist("Recording ahk_exe handy.exe")) {
+            ; Transcribing - block termination to prevent interrupting active transcription
+            isProcessing := false
+            return
+        }
+        ; Recording - allow termination
+        InfiniteDictation.Stop()
         isProcessing := false
         return
     }
@@ -7029,34 +7170,30 @@ OnExit(CleanupDictationIndicator)
     isProcessing := false
 }
 
-; Dictation Loop - Win+Alt+Shift+7 (start/stop); Win+Alt+Shift+0 also stops when loop active
-; Automatically cycles dictation on/off every 60 seconds to prevent transcription timeouts
+; Infinite Dictation module (state and loop logic)
+#Include "Lib\InfiniteDictation.ahk"
+
+; Infinite Dictation - Win+Alt+Shift+7 (start/stop); Win+Alt+Shift+0 also stops when active
+; Termination allowed ONLY during Recording (60s window); blocked during Transcribing to avoid workflow errors
+; Each loop = one 60s cycle; dictation cycles on/off every 15s within a loop to prevent transcription timeouts
 #!+7::
 {
-    global g_DictationLoopActive, g_PendingDictationMerge
+    ; #region agent log
+    DbgLog("#!+7", "entry loopActive=" InfiniteDictation.IsActive)
+    ; #endregion
 
-    if (g_DictationLoopActive) {
-        ; Stop the loop - show merge countdown when user finishes the entire loop
-        g_DictationLoopActive := false
-        ; Turn off timers
-        SetTimer(DictationLoopStop, 0)
-        SetTimer(DictationLoopStart, 0)
-        ; Send Win+Alt+Shift+0 to finish dictation
-        SendInput "#!+0"
-        ; Set flag to start merge countdown after transcription completes
-        ; This ensures AI transcription and handy.exe finish before Clip Angel merge begins
-        g_PendingDictationMerge := true
+    if (InfiniteDictation.IsActive) {
+        ; Logic gate: Only allow termination during Recording state; block during Transcribing state
+        if (!WinExist("Recording ahk_exe handy.exe")) {
+            ; Transcribing - block termination to prevent interrupting active transcription
+            return
+        }
+        ; Recording - allow termination
+        InfiniteDictation.Stop()
     } else {
         ; Start the loop - non-modal 5-second countdown (default: clear clipboard)
         ; User can cancel by pressing N or End during the countdown.
-        DictationCleanup_StartCountdown(5)
-
-        ; Clear any existing timers first to prevent old timers from firing
-        SetTimer(DictationLoopStop, 0)
-        SetTimer(DictationLoopStart, 0)
-        g_DictationLoopActive := true
-        ; Begin the cycle
-        DictationLoopStart()
+        InfiniteDictation.Start()
     }
 }
 
@@ -7066,7 +7203,7 @@ OnExit(CleanupDictationIndicator)
 ; Step 3: Execute paste and enter action
 #!+j::
 {
-    global g_PendingDictationAction, g_DictationActive, g_KeepIndicatorVisible
+    global g_PendingDictationAction, g_DictationActive, g_KeepIndicatorVisible, g_ProgrammaticDictationStop
 
     ; Play sound signal
     if (IsSoundEnabled()) {
@@ -7081,6 +7218,7 @@ OnExit(CleanupDictationIndicator)
         g_KeepIndicatorVisible := true
         ; Programmatically send Win+Alt+Shift+0 to stop dictation
         ; Use SendInput for reliable key sending
+        g_ProgrammaticDictationStop := true
         SendInput "#!+0"
     }
 }

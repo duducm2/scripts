@@ -30,23 +30,113 @@ GetGeminiWindowHwnd() {
     return 0
 }
 
+; Find the Gemini prompt field via UIA (returns element or 0). Used by pronunciation workflow.
+FindGeminiPromptField(uia) {
+    promptField := 0
+    try {
+        promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
+    } catch
+        promptField := 0
+    if !promptField {
+        try
+            promptField := uia.FindFirst({ Type: "Edit", Name: "Enter a prompt here" })
+        catch
+            promptField := 0
+    }
+    if !promptField {
+        try {
+            allEdits := uia.FindAll({ Type: 50004 })
+            for edit in allEdits {
+                if (InStr(edit.ClassName, "ql-editor") || InStr(edit.ClassName, "new-input-ui")) {
+                    if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "prompt") {
+                        promptField := edit
+                        break
+                    }
+                }
+            }
+        } catch
+            promptField := 0
+    }
+    if !promptField {
+        try {
+            allEdits := uia.FindAll({ Type: 50004 })
+            for edit in allEdits {
+                if InStr(edit.ClassName, "ql-editor") {
+                    promptField := edit
+                    break
+                }
+            }
+        } catch
+            promptField := 0
+    }
+    if !promptField {
+        try {
+            allEdits := uia.FindAll({ Type: 50004 })
+            for edit in allEdits {
+                if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "Digite um prompt") || InStr(edit.Name,
+                    "prompt") {
+                    if InStr(edit.ClassName, "ql-editor") {
+                        promptField := edit
+                        break
+                    }
+                }
+            }
+        } catch
+            promptField := 0
+    }
+    return promptField
+}
+
+; =============================================================================
+; Get work area (left, top, right, bottom) of the monitor that contains the given window
+; =============================================================================
+GetWorkAreaForWindow(hwnd) {
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return ""
+    try {
+        WinGetPos(&winX, &winY, &winW, &winH, "ahk_id " hwnd)
+        centerX := winX + winW / 2
+        centerY := winY + winH / 2
+        n := MonitorGetCount()
+        loop n {
+            MonitorGet(A_Index, &L, &T, &R, &B)
+            if (centerX >= L && centerX < R && centerY >= T && centerY < B) {
+                MonitorGetWorkArea(A_Index, &wLeft, &wTop, &wRight, &wBottom)
+                return { left: wLeft, top: wTop, right: wRight, bottom: wBottom }
+            }
+        }
+    } catch {
+    }
+    return ""
+}
+
 ; =============================================================================
 ; Unified banner builder – consistent shape/font/opacity for all banners here
+; centerOnHwnd: optional; when set, banner is centered on that window's monitor
+; textWidth: optional width of the text control (default 500)
 ; =============================================================================
-CreateCenteredBanner(message, bgColor := "3772FF", fontColor := "FFFFFF", fontSize := 24, alpha := 178) {
+CreateCenteredBanner(message, bgColor := "3772FF", fontColor := "FFFFFF", fontSize := 24, alpha := 178, centerOnHwnd :=
+    0, textWidth := 500) {
     bGui := Gui()
     bGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
     bGui.BackColor := bgColor
     bGui.SetFont("s" . fontSize . " c" . fontColor . " Bold", "Segoe UI")
-    bGui.Add("Text", "w500 Center", message)
+    bGui.Add("Text", "w" . textWidth . " Center Wrap", message)
 
-    activeWin := WinGetID("A")
-    if (activeWin) {
-        WinGetPos(&winX, &winY, &winW, &winH, activeWin)
+    workArea := (centerOnHwnd && GetWorkAreaForWindow(centerOnHwnd) != "") ? GetWorkAreaForWindow(centerOnHwnd) : ""
+    if (workArea != "") {
+        winX := workArea.left
+        winY := workArea.top
+        winW := workArea.right - workArea.left
+        winH := workArea.bottom - workArea.top
     } else {
-        workArea := SysGet.MonitorWorkArea(SysGet.MonitorPrimary)
-        winX := workArea.Left, winY := workArea.Top, winW := workArea.Right - workArea.Left, winH := workArea.Bottom -
-            workArea.Top
+        activeWin := WinGetID("A")
+        if (activeWin) {
+            WinGetPos(&winX, &winY, &winW, &winH, activeWin)
+        } else {
+            MonitorGetWorkArea(, &wLeft, &wTop, &wRight, &wBottom)
+            winX := wLeft, winY := wTop, winW := wRight - wLeft, winH := wBottom - wTop
+        }
     }
 
     bGui.Show("AutoSize Hide")
@@ -94,7 +184,8 @@ PlayCopyCompletedChime() {
 ; =============================================================================
 global smallLoadingGuis_Gemini := []
 
-ShowSmallLoadingIndicator(state := "Loading…", bgColor := "3772FF") {
+ShowSmallLoadingIndicator(state := "Loading…", bgColor := "3772FF", centerOnHwnd := 0, textWidth := 500, fontSize := 24
+) {
     global smallLoadingGuis_Gemini
 
     ; If GUIs exist, just update the text of the topmost one (the message)
@@ -109,8 +200,8 @@ ShowSmallLoadingIndicator(state := "Loading…", bgColor := "3772FF") {
         return
     }
 
-    ; Create a single, high-contrast, centered banner using the unified builder
-    textGui := CreateCenteredBanner(state, bgColor, "FFFFFF", 24, 178)
+    ; Create a single, high-contrast, centered banner (on given window's monitor if centerOnHwnd)
+    textGui := CreateCenteredBanner(state, bgColor, "FFFFFF", fontSize, 178, centerOnHwnd, textWidth)
     smallLoadingGuis_Gemini.Push(textGui)
 }
 
@@ -560,235 +651,138 @@ CenterMouse() {
     }
 }
 
-; Win+Alt+Shift+P : Click the last Copy button in Gemini (activates Gemini window first, then copies the preceding message)
-#!+p:: {
+; Copy last Gemini message to clipboard. Used by #!+p and by async pronunciation flow.
+; options.restoreWindow (default true): send !{Tab} after copy. options.playChimeAndNotify (default true): play chime and show "Copied!".
+; options.alreadyActive (default false): when true, skip activation; assume Gemini is already the active window (use UIA_Browser() with no arg).
+; geminiHwnd: optional; if 0, uses GetGeminiWindowHwnd(). Returns true if copy succeeded, false otherwise.
+CopyLastGeminiMessageToClipboard(options := "", geminiHwnd := 0) {
+    restoreWindow := (options = "" || !options.HasProp("restoreWindow")) ? true : options.restoreWindow
+    playChimeAndNotify := (options = "" || !options.HasProp("playChimeAndNotify")) ? true : options.playChimeAndNotify
+    alreadyActive := (options != "" && options.HasProp("alreadyActive")) ? options.alreadyActive : false
     try {
-        ; Step 1: Activate Gemini window globally
         SetTitleMatchMode(2)
-        if hwnd := GetGeminiWindowHwnd()
-            WinActivate("ahk_id " hwnd)
-        if !WinWaitActive("ahk_exe chrome.exe", , 2) {
-            return
+        if !geminiHwnd
+            geminiHwnd := GetGeminiWindowHwnd()
+        if !geminiHwnd
+            return false
+        if (!alreadyActive) {
+            WinActivate("ahk_id " geminiHwnd)
+            if !WinWaitActive("ahk_exe chrome.exe", , 2)
+                return false
+            Sleep 150
         }
-        Sleep 150  ; keep snappy per README (short settle after activation)
-
-        ; Step 2: Initialize UIA
-        uia := UIA_Browser()
-        Sleep 120  ; minimal settle before querying UIA
+        uia := alreadyActive ? UIA_Browser() : UIA_Browser("ahk_id " geminiHwnd)
+        Sleep 120
 
         lastCopyButton := 0
-
-        ; Optimization: Bottom-up search starting from the Prompt field
-        ; The "Copy" button for the last message is typically a preceding sibling of the Prompt field.
-
-        promptField := 0
-        ; Try to find the prompt field using robust strategies
-        try {
-            promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
-        } catch {
-            ; Silently continue to fallbacks
-        }
-        if !promptField {
-            try {
-                promptField := uia.FindFirst({ Type: "Edit", Name: "Enter a prompt here" })
-            } catch {
-                ; Silently continue
-            }
-        }
-        if !promptField {
-            try {
-                allEdits := uia.FindAll({ Type: 50004 })
-                for edit in allEdits {
-                    if (InStr(edit.ClassName, "ql-editor")) {
-                        promptField := edit
-                        break
-                    }
-                }
-            } catch {
-                ; Silently continue
-            }
-        }
-
-        ; If prompt found, walk backwards to find the Copy button
+        promptField := FindGeminiPromptField(uia)
         if (promptField) {
             try {
                 sibling := promptField
-                loop 20 { ; Look at the last 20 siblings (usually it's within 2-3)
+                loop 20 {
                     sibling := sibling.Navigate("PreviousSibling")
                     if (!sibling)
                         break
-
-                    ; Check if this sibling is the Copy button
                     if (sibling.Type == 50000 && (sibling.Name = "Copy" || InStr(sibling.Name, "Copy", false))) {
                         lastCopyButton := sibling
                         break
                     }
                 }
             } catch {
-                ; If navigation fails, fall back to full search
             }
         }
 
-        ; Fallback: If optimized search failed, use the original top-down FindAll approach
         if (!lastCopyButton) {
             allCopyButtons := []
-
-            ; Primary pass: Find all buttons, filter for any "Copy" variant
             allButtons := uia.FindAll({ Type: 50000 })
             for button in allButtons {
                 if (button.Name = "Copy" || InStr(button.Name, "Copy", false)) {
-                    ; Additional check: ensure it has the Copy button className pattern
-                    if (InStr(button.ClassName, "icon-button") || InStr(button.ClassName, "mdc-button")) {
+                    if (InStr(button.ClassName, "icon-button") || InStr(button.ClassName, "mdc-button"))
                         allCopyButtons.Push(button)
-                    }
                 }
             }
-
-            ; Fallback: broaden type if none found on primary pass (still single filter loop)
             if (allCopyButtons.Length = 0) {
                 allButtons := uia.FindAll({ Type: "Button" })
                 for button in allButtons {
-                    if (button.Name = "Copy" || InStr(button.Name, "Copy", false)) {
+                    if (button.Name = "Copy" || InStr(button.Name, "Copy", false))
                         allCopyButtons.Push(button)
-                    }
                 }
             }
-
-            ; Find the last Copy button (the one with the highest Y position, meaning furthest down the page)
             highestY := -1
-
             for copyButton in allCopyButtons {
                 try {
                     btnPos := copyButton.Location
                     btnBottomY := btnPos.y + btnPos.h
-
-                    ; The last button will be the one with the highest bottom Y coordinate
                     if (btnBottomY > highestY) {
                         highestY := btnBottomY
                         lastCopyButton := copyButton
                     }
                 } catch {
-                    ; If getting location fails, skip this button
                 }
             }
-
-            ; If position-based approach didn't work, just use the last one in the array
-            if (!lastCopyButton && allCopyButtons.Length > 0) {
+            if (!lastCopyButton && allCopyButtons.Length > 0)
                 lastCopyButton := allCopyButtons[allCopyButtons.Length]
-            }
         }
 
-        if (lastCopyButton) {
-            lastCopyButton.Click()
-            ; Play chime when copy completes
+        if (!lastCopyButton)
+            return false
+        lastCopyButton.Click()
+        if !ClipWait(2)
+            return false
+        if (playChimeAndNotify) {
             PlayCopyCompletedChime()
-            ; Show notification banner when copy button is clicked
             ShowNotification("Copied!", 800, "FFFF00", "000000", 24)
-            ; Return to previous window
-            Send "!{Tab}"
-        } else {
-            ; Last resort: Could not find last Copy button
         }
-    } catch Error as e {
-        ; If all else fails, silently fail (no fallback action defined)
+        if (restoreWindow)
+            Send "!{Tab}"
+        return true
+    } catch {
+        return false
     }
+}
+
+; Win+Alt+Shift+P : Click the last Copy button in Gemini (activates Gemini window first, then copies the preceding message)
+#!+p:: {
+    try {
+        CopyLastGeminiMessageToClipboard()
+    } catch {
+    }
+}
+
+; Custom message so WindowManagement.ahk can trigger copy without Send (Send does not trigger hotkeys in another script).
+WM_COPY_LAST_GEMINI := 0x8001
+; #region agent log
+_DebugLog_Gemini(msg, data := "") {
+    path := A_ScriptDir "\.cursor\debug.log"
+    line := '{"location":"Gemini.ahk","message":"' . msg . '","data":' . (data = "" ? "{}" : data) . ',"timestamp":' . A_TickCount . '}' . "`n"
+    FileAppend line, path
+}
+; #endregion
+; Path for bridge to verify that Copy Last Response (same as #!+p) actually succeeded
+GEMINI_COPY_RESULT_PATH := A_ScriptDir "\.cursor\gemini_copy_result.txt"
+
+OnMessage(WM_COPY_LAST_GEMINI, copyFromBridge)
+copyFromBridge(*) {
+    _DebugLog_Gemini("WM_COPY_LAST_GEMINI received", "{}")
+    ; Guarantee layer: write result so bridge can confirm we copied Gemini's last response (same path as #!+p).
+    try
+        FileDelete(GEMINI_COPY_RESULT_PATH)
+    try
+        FileAppend("0", GEMINI_COPY_RESULT_PATH)
+    r := CopyLastGeminiMessageToClipboard({ restoreWindow: false, playChimeAndNotify: false })
+    try
+        FileDelete(GEMINI_COPY_RESULT_PATH)
+    try
+        FileAppend(r ? "1" : "0", GEMINI_COPY_RESULT_PATH)
+    _DebugLog_Gemini("CopyLastGeminiMessageToClipboard result", (r ? '{"ok":1}' : '{"ok":0}'))
 }
 
 ; =============================================================================
 ; Get Pronunciation
-; Hotkey: Win+Alt+Shift+8
+; Hotkey: Win+Alt+Shift+8 — async: submit to Gemini, restore focus, show result in banner when ready
 ; =============================================================================
 #!+8:: {
-    A_Clipboard := ""
-    Send "^c"
-    ClipWait
-    SetTitleMatchMode(2)
-    if hwnd := GetGeminiWindowHwnd()
-        WinActivate("ahk_id " hwnd)
-    if !WinWaitActive("ahk_exe chrome.exe", , 2)
-        return
-
-    ; Find the Gemini prompt field
-    uia := UIA_Browser()
-    Sleep 300
-
-    promptField := 0
-
-    ; Primary strategy: Find by Name "Enter a prompt here" with Type 50004 (Edit)
-    promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
-
-    ; Fallback 1: Try by Type "Edit" and Name "Enter a prompt here"
-    if !promptField {
-        promptField := uia.FindFirst({ Type: "Edit", Name: "Enter a prompt here" })
-    }
-
-    ; Fallback 2: Try by ClassName containing "ql-editor" or "new-input-ui" (substring match)
-    if !promptField {
-        allEdits := uia.FindAll({ Type: 50004 })
-        for edit in allEdits {
-            if (InStr(edit.ClassName, "ql-editor") || InStr(edit.ClassName, "new-input-ui")) {
-                if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "prompt") {
-                    promptField := edit
-                    break
-                }
-            }
-        }
-    }
-
-    ; Fallback 3: Try finding by ClassName containing "ql-editor" (most specific identifier)
-    if !promptField {
-        allEdits := uia.FindAll({ Type: 50004 })
-        for edit in allEdits {
-            if InStr(edit.ClassName, "ql-editor") {
-                promptField := edit
-                break
-            }
-        }
-    }
-
-    ; Fallback 4: Try finding by Name with substring match (in case of localization variations)
-    if !promptField {
-        allEdits := uia.FindAll({ Type: 50004 })
-        for edit in allEdits {
-            if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "Digite um prompt") || InStr(edit.Name, "prompt") {
-                ; Additional check to ensure it's the prompt field (has ql-editor in className)
-                if InStr(edit.ClassName, "ql-editor") {
-                    promptField := edit
-                    break
-                }
-            }
-        }
-    }
-
-    if (promptField) {
-        ; Focus the prompt field
-        promptField.SetFocus()
-        Sleep 100
-        ; Ensure focus was successful
-        if (!promptField.HasKeyboardFocus) {
-            ; Fallback: try clicking if SetFocus didn't work
-            promptField.Click()
-            Sleep 100
-        }
-    }
-
-    searchString :=
-        "Below, you will find a word or phrase. I'd like you to answer in five sections: the 1st section you will repeat the word twice. For each time you repeat, use a point to finish the phrase. The 2nd section should have the definition of the word (You should also say each part of speech does the different definitions belong to). The 3d section should have the pronunciation of this word using the Internation Phonetic Alphabet characters (for American English).The 4th section should have the same word applied in a real sentence (put that in quotations, so I can identify that). In the 5th, Write down the translation of the word into Portuguese. Please, do not title any section. Thanks!"
-    A_Clipboard := searchString . "`n`nContent: " . A_Clipboard
-    Sleep 100
-    Send("^a")
-    Sleep 500
-    Send("^v")
-    Sleep 500
-    Send("{Enter}")
-    Sleep 500
-    ; After sending, show loading for Stop streaming
-    Send "!{Tab}" ; Return to previous window
-    buttonNames := ["Stop streaming", "Interromper transmissão"]
-    WaitForButtonAndShowSmallLoading(buttonNames, "Waiting for response...")
-
-    ; Go back to previous window
-    Send "!{Tab}"
+    (GeminiAsyncLookup()).Start()
 }
 
 ; =============================================================================
@@ -967,7 +961,7 @@ InitializeGeminiFirstTime() {
                     Sleep 25   ; minimal wait for focus
                     SendInput "+{Tab}"  ; Use SendInput for faster keystroke
                     Sleep 15   ; minimal delay for navigation
-                    
+
                     ; Play sound (non-blocking, no try-catch needed - SoundPlay is safe)
                     if (IsSoundEnabled()) {
                         SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
@@ -1001,5 +995,215 @@ InitializeGeminiFirstTime() {
         }
     } else {
         InitializeGeminiFirstTime()
+    }
+}
+
+; =============================================================================
+; GeminiAsyncLookup – async pronunciation lookup (Win+Alt+Shift+8)
+; User keeps focus; timer polls for completion; result shown in banner.
+; =============================================================================
+class GeminiAsyncLookup {
+    static PronunciationPrompt :=
+        "Below, you will find a word or phrase. I'd like you to answer in five sections: the 1st section you will repeat the word twice. For each time you repeat, use a point to finish the phrase. The 2nd section should have the definition of the word (You should also say each part of speech does the different definitions belong to). The 3d section should have the pronunciation of this word using the Internation Phonetic Alphabet characters (for American English).The 4th section should have the same word applied in a real sentence (put that in quotations, so I can identify that). In the 5th, Write down the translation of the word into Portuguese. Please, do not title any section. Thanks!"
+
+    __New() {
+        this.OriginalHwnd := 0
+        this.GeminiHwnd := 0
+        this.TimerCallback := ""
+        this.RetryCount := 0
+        this.MaxRetries := 60   ; 60 * 500ms = 30s timeout
+        this.ButtonEverFound := false
+    }
+
+    Start() {
+        this.OriginalHwnd := WinExist("A")
+        if !this.OriginalHwnd
+            return
+        ; Show loading banner immediately, centered on the monitor where this window is (with warning)
+        ShowSmallLoadingIndicator("Loading…`n`n⚠️ Please do not click or use the keyboard", "3772FF", this.OriginalHwnd, 200, 16)
+
+        A_Clipboard := ""
+        Send "^c"
+        if !ClipWait(2)
+            return
+        SetTitleMatchMode(2)
+        this.GeminiHwnd := GetGeminiWindowHwnd()
+        if !this.GeminiHwnd {
+            HideSmallLoadingIndicator()
+            return
+        }
+        WinActivate("ahk_id " this.GeminiHwnd)
+        if !WinWaitActive("ahk_exe chrome.exe", , 2) {
+            HideSmallLoadingIndicator()
+            return
+        }
+        uia := UIA_Browser()
+        Sleep 300
+        promptField := FindGeminiPromptField(uia)
+        if (!promptField) {
+            HideSmallLoadingIndicator()
+            return
+        }
+        promptField.SetFocus()
+        Sleep 100
+        if (!promptField.HasKeyboardFocus) {
+            try promptField.Click()
+            Sleep 100
+        }
+        ; Switch to Fast model before the prompt (enough for this task)
+        Send("@fast ")
+        Sleep 200
+        searchString := GeminiAsyncLookup.PronunciationPrompt
+        A_Clipboard := searchString . "`n`nContent: " . A_Clipboard
+        Sleep 100
+        Send("^a")
+        Sleep 500
+        Send("^v")
+        Sleep 500
+        Send("{Enter}")
+        Sleep 300
+        ; Go back to the window where you triggered the hotkey so you can keep working
+        origHwnd := this.OriginalHwnd
+        try {
+            if WinExist("ahk_id " origHwnd) {
+                WinRestore("ahk_id " origHwnd)
+                WinActivate("ahk_id " origHwnd)
+                WinWaitActive("ahk_id " origHwnd, , 1)
+            }
+        } catch {
+            WinActivate("ahk_id " origHwnd)
+        }
+        this.RetryCount := 0
+        this.TimerCallback := this.CheckCompletion.Bind(this)
+        SetTimer(this.TimerCallback, 500)
+    }
+
+    CheckCompletion() {
+        this.RetryCount++
+        if (this.RetryCount > this.MaxRetries) {
+            SetTimer(this.TimerCallback, 0)
+            HideSmallLoadingIndicator()
+            return
+        }
+        ; Poll in background using raw UIA (no UIA_Browser) so the library never activates Gemini
+        btn := ""
+        buttonNames := ["Stop streaming", "Interromper transmissão", "Stop response"]
+        try {
+            root := UIA.ElementFromHandle(this.GeminiHwnd)
+            for n in buttonNames {
+                try {
+                    btn := root.FindElement({ Name: n, Type: "Button" })
+                } catch {
+                    btn := ""
+                }
+                if btn
+                    break
+            }
+        } catch {
+            return
+        }
+
+        if btn {
+            this.ButtonEverFound := true
+            return   ; Still streaming
+        }
+
+        ; If button was found and now is gone, verify it's truly finished
+        if (this.ButtonEverFound) {
+            isTrulyGone := true
+            loop 4 {
+                Sleep 200
+                try {
+                    for n in buttonNames {
+                        if root.ElementExist({ Name: n, Type: "Button" }) {
+                            isTrulyGone := false
+                            break
+                        }
+                    }
+                } catch
+                    isTrulyGone := true
+                if !isTrulyGone
+                    break
+            }
+
+            if isTrulyGone {
+                SetTimer(this.TimerCallback, 0)
+                ; Use the same sound as Shift keys.ahk for consistency
+                try {
+                    if (IsSoundEnabled()) {
+                        SoundPlay(A_ScriptDir . "\sounds\gemini-completion.wav")
+                    }
+                } catch {
+                    PlayCopyCompletedChime()
+                }
+                this.RetrieveResponse()
+            }
+        }
+    }
+
+    RetrieveResponse() {
+        ; Activate Gemini once, then copy (and retries if needed) without switching back until done
+        contentBefore := A_Clipboard
+        WinActivate("ahk_id " this.GeminiHwnd)
+        if !WinWaitActive("ahk_exe chrome.exe", , 2) {
+            HideSmallLoadingIndicator()
+            return
+        }
+        copyOpt := { restoreWindow: false, playChimeAndNotify: false, alreadyActive: true }
+        if !CopyLastGeminiMessageToClipboard(copyOpt, this.GeminiHwnd) {
+            HideSmallLoadingIndicator()
+            return
+        }
+        Sleep 400
+        if (A_Clipboard = "" || A_Clipboard = contentBefore) {
+            CopyLastGeminiMessageToClipboard(copyOpt, this.GeminiHwnd)
+            Sleep 400
+        }
+        if (A_Clipboard = "" || A_Clipboard = contentBefore) {
+            CopyLastGeminiMessageToClipboard(copyOpt, this.GeminiHwnd)
+            Sleep 400
+        }
+        WinActivate("ahk_id " this.OriginalHwnd)
+        HideSmallLoadingIndicator()
+        this.ShowResultBanner(A_Clipboard)
+    }
+
+    ShowResultBanner(text) {
+        if (!text || StrLen(Trim(text)) = 0)
+            return
+        banner := Gui("+AlwaysOnTop -Caption +ToolWindow")
+        banner.BackColor := "3772FF"
+        banner.SetFont("s14 cFFFFFF", "Segoe UI")
+        banner.Add("Text", "w600 Center Wrap", text)
+        banner.SetFont("s11 cFFFFFF Bold", "Segoe UI")
+        banner.Add("Text", "w600 Center", "Press Enter to close")
+        ; Center on the same monitor as the window that triggered the hotkey
+        workArea := GetWorkAreaForWindow(this.OriginalHwnd)
+        if (workArea = "") {
+            MonitorGetWorkArea(, &wLeft, &wTop, &wRight, &wBottom)
+            w := wRight - wLeft
+            h := wBottom - wTop
+            banner.Show("AutoSize Hide")
+            banner.GetPos(, , &gw, &gh)
+            banner.Show("x" . Round(wLeft + (w - gw) / 2) . " y" . Round(wTop + (h - gh) / 2) . " NA")
+        } else {
+            w := workArea.right - workArea.left
+            h := workArea.bottom - workArea.top
+            banner.Show("AutoSize Hide")
+            banner.GetPos(, , &gw, &gh)
+            banner.Show("x" . Round(workArea.left + (w - gw) / 2) . " y" . Round(workArea.top + (h - gh) / 2) . " NA")
+        }
+        WinSetTransparent(220, banner)
+        closeBanner(*) {
+            SetTimer(closeBanner, 0)
+            try Hotkey("Escape", closeBanner, "Off")
+            try Hotkey("Enter", closeBanner, "Off")
+            try banner.Destroy()
+        }
+        banner.OnEvent("Close", closeBanner)
+        SetTimer(closeBanner, -12000)
+        ; Press Escape or Enter to remove the banner
+        Hotkey("Escape", closeBanner, "On")
+        Hotkey("Enter", closeBanner, "On")
     }
 }
