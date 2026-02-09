@@ -275,6 +275,8 @@ Outlook (Shift)
 🔀 [K]Cycle bac[K]ward pane
 🔀 [L]Cyc[L]e forward pane
 📋 [M]Toggle Mail / Calendar
+📅 [W]eek view
+📅 M[o]nth view
 
 ⌨️ [Ctrl+1] Move down once and select
 ⌨️ [Ctrl+2] Move down twice and select
@@ -4756,6 +4758,26 @@ IsOutlookMainActive() {
     Send "{Enter}"
     Sleep 500
     HideSmallLoadingIndicator_ChatGPT()
+}
+
+; Shift+W : Calendar [W]eek view
++W:: {
+    try {
+        if !ClickOutlookByIdThenNameClass("WeeklyView", "Week", "NetUIRibbonButton", 50000)
+            Send "^!3"
+    } catch {
+        Send "^!3"
+    }
+}
+
+; Shift+O : Calendar m[O]nth view
++O:: {
+    try {
+        if !ClickOutlookByIdThenNameClass("MonthlyView", "Month", "NetUIRibbonButton", 50000)
+            Send "^!4"
+    } catch {
+        Send "^!4"
+    }
 }
 
 ; -------------------------------------------------------------------
