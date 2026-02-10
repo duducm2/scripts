@@ -17,6 +17,9 @@ A: Ant | B: Bee | C: Cat | D: Dog | E: Elephant | F: Fish | G: Giraffe | H: Hors
     * *Bad:* The animal thinks about the future.
     * *Good:* The animal looks through a telescope at a clock tower.
 3.  **Narrative Flow:** Create a cohesive story where Animal A interacts with Animal B, who then interacts with Animal C. The transition must be physical and logical within the story's dream logic.
+    * When you are at **Bee**, it must interact with **Ant** in some concrete way.
+    * When you are at **Cat**, it must interact with **Bee**, and so on for every next animal.
+    * Never jump to a new animal without explicitly showing how it connects to the previous one in the scene.
 4.  **Formatting:**
     * Use a clear header for each letter.
     * **CRITICAL:** Insert a line break (whitespace) between every animal entry.
