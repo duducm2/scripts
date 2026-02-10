@@ -1,0 +1,1 @@
+Correct grammar and spelling. Remove any dashes from the text. The text should be plain with no styles. Give back only the text. Use linebreaks and a space between paragraphs and look like a human.

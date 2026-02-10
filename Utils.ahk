@@ -256,42 +256,46 @@ InsertText(text) {
 ; Register hotstrings for cheat sheet display
 ; ----------------------
 InitHotstringsCheatSheet() {
+    promptDir := A_ScriptDir "\prompt"
+
     ; Prompts (4 items) - First category
-    RegisterHotstring(":o:cgrammar",
-        "Correct grammar and spelling. Remove any dashes from the text. The text should be plain with no styles. Give back only the text. Use linebreaks and a space between paragraphs and look like a human.",
-        "Prompts",
-        "✏️ Grammar & Spelling Corrector"
-    )
-    RegisterHotstring(":o:mtask",
-        "This is a message, summary, text or any textual information that translates into a task for me to do. Translate this into a task. OUTPUT RULES: Output ONLY the task itself. Start with the emoji 🔲. Make it clear, concise, coherent, and cohesive. Do not add any additional text, explanations, or commentary beyond the task itself.",
-        "Prompts",
-        "🔲 Convert to Task"
-    )
-    RegisterHotstring(":o:flog",
-        "Food_Log dictation → Excel CSV`n`nROLE`nYou transcribe my meal dictation (PT/EN) into rows for my Excel Food_Log.`n`nHOW IT WORKS`n- I will dictate one or more meals in free speech.`n- Process immediately without asking questions.`n`nOUTPUT FORMAT (STRICT)`n- Output ONLY the final CSV block. NO bullet points, NO analysis, NO extra text.`n- Plain text CSV. NO markdown, NO header, NO commentary.`n- Output a single block of text. NO empty lines between rows.`n- Separator: semicolon (;)`n`nEXAMPLE OUTPUT`n2025-10-25;Breakfast;08:30;coffee;caffeine;0;`n2025-10-25;Lunch;12:15;rice, beans;protein;0;`n`nOUTPUT RULES`n- STRICTLY CONTINUOUS LINES. Do not insert empty lines between rows.`n- Do not group by meal. List all sequentially in one block.`n- Use single newlines (\n) only. No paragraph breaks.`n- Trim whitespace from each row.`n- Each row format: Date;Meal;Time;Main_Items;Tags;Satisfaction_with_Speech;Notes`n- Sort by Date then Time.`n`nFIELD RULES`n- Date: YYYY‑MM‑DD. Use " "today" " for current date in America/Sao_Paulo timezone.`n  (IMPORTANT: For the date always consider one day before the current one, unless specified otherwise.)`n- Time: HH:MM in 24h; pad leading zeros (e.g., 08:05).`n- Meal: Breakfast | Lunch | Dinner | Snack.`n  PT mapping: café da manhã→Breakfast; almoço→Lunch; jantar/janta→Dinner; lanche→Snack.`n- Main_Items: comma‑separated simple item names (e.g., coffee, bread, butter).`n- Tags: comma‑separated, from this set when present or inferable:`n  caffeine, sugar, alcohol, dairy, gluten, fried, spicy, high-carb, low-carb, processed, protein, fiber, late-night, home-cooked, fast-food.`n  Add " "late-night" " automatically if Time ≥ 22:00.`n- Satisfaction_with_Speech: integer 0–3 (0 = liked a lot; 3 = disliked a lot). If not stated, leave empty.`n- Notes: short free text when I provide context.`n`nMISSING INFO`n- If Date or Time is missing, use " "today" " and infer time from meal type (Breakfast=08:00, Lunch=12:00, Dinner=19:00, Snack=15:00).`n`nACK`n- Process the dictation immediately and output CSV rows only.)",
-        "Prompts",
-        "🍽️ Food Log Dictation"
-    )
-    RegisterHotstring(":o:aiopt",
-        "Task: Rewrite the input text so it becomes AI-oriented.`n`nGoal: Produce a version that is concise, unambiguous, free of redundancy, and easy for an AI to parse.`n`nContext: The input text contains instructions and requests intended for a second AI (AIB). You must preserve ALL important information, especially any instructions, requests, or requirements meant for AIB. Do not remove information in the name of clarity or conciseness.`n`nInstructions:`n`n1. Preserve all essential information, especially instructions and requests for the second AI.`n2. Use positive, direct instructions.`n3. Maintain consistent terminology and simple syntax.`n4. Resolve ambiguity and clarify references.`n5. Output in a clean, structured format with no extra commentary.`n6. Do NOT omit any important information, requests, or instructions that the user provided for the second AI.`n7. Do NOT bias the prompt with your own concerns, interpretations, or modifications. Process the text as-is without adding your own perspective or concerns.`n`nInput: <insert text here>`n`nOutput:`nCRITICAL: The output must contain ONLY the processed result with no additional text, commentary, explanations, or formatting. The output must be ready for direct copy and paste without any modification.`n`nA rewritten version of the input text that is optimized for AI interpretation and contains:`n`n* Clear meaning`n* No repeated ideas`n* No filler wording`n* No contradictions`n* Stable terminology`n* Straightforward sentence structure`n* ALL important information preserved, especially instructions for the second AI)",
-        "Prompts",
-        "🤖 AI Text Optimizer"
-    )
+    try {
+        RegisterHotstring(":o:cgrammar", FileRead(promptDir "\grammar.txt"), "Prompts", "✏️ Grammar & Spelling Corrector")
+    } catch {
+        RegisterHotstring(":o:cgrammar", "Correct grammar and spelling. Give back only the text.`n", "Prompts", "✏️ Grammar & Spelling Corrector")
+    }
+    try {
+        RegisterHotstring(":o:mtask", FileRead(promptDir "\mtask.txt"), "Prompts", "🔲 Convert to Task")
+    } catch {
+        RegisterHotstring(":o:mtask", "Translate this into a task. Output ONLY the task. Start with 🔲.`n", "Prompts", "🔲 Convert to Task")
+    }
+    try {
+        RegisterHotstring(":o:flog", FileRead(promptDir "\flog.txt"), "Prompts", "🍽️ Food Log Dictation")
+    } catch {
+        RegisterHotstring(":o:flog", "Food_Log dictation → Excel CSV. Output ONLY the final CSV block.`n", "Prompts", "🍽️ Food Log Dictation")
+    }
+    try {
+        RegisterHotstring(":o:aiopt", FileRead(promptDir "\aiopt.txt"), "Prompts", "🤖 AI Text Optimizer")
+    } catch {
+        RegisterHotstring(":o:aiopt", "Rewrite the input text so it becomes AI-oriented. Preserve all important information.`n", "Prompts", "🤖 AI Text Optimizer")
+    }
 
     ; Placeholder prompts (6 slots reserved for future prompts)
-    RegisterHotstring(":o:cplan",
-        "You are an expert Technical Architect and Code Planner. Your goal is to generate a structural plan file (````.plan.md````) that breaks down a complex coding objective into atomic, sequential, and context-aware tasks.`n`n### 1. Output File Naming Convention`n`nGenerate a filename using this format: ``````[snake_case_description]_[8_char_random_hex].plan.md``````.`n`n* Example: ``````refactor_auth_logic_a1b2c3d4.plan.md```````n`n### 2. File Content Structure`n`nThe file must be valid Markdown with a strict YAML frontmatter block at the top.`n`n**A. YAML Frontmatter:**`n`n``````yaml`n---`nname: [Title Case Name of the Plan]`noverview: [A concise, 1-2 sentence summary of the high-level objective.]`ntodos:`n  - id: [unique_string_id]`n    content: [Specific, actionable step]`n    status: pending`n    dependencies: [] # Optional: list IDs of prerequisite steps`n---`n```````n`n**B. Markdown Body:**`nImmediately following the frontmatter, provide the detailed context.`n`n* **# [Title Matching YAML Name]**`n* **## Analysis / Context:** Briefly explain the current state and why this change is needed.`n* **## Proposed Changes:** Detail the technical approach (e.g., `"Create function X,`" `"Refactor class Y`").`n* **## Files to Modify:** List specific file paths. If known, cite specific line numbers or regions (e.g., `"Utils.ahk lines 200-250`").`n* **## Implementation Strategy:** A step-by-step logic flow.`n`n### 3. Planning Rules`n`n1. **Atomicity:** Break tasks down into the smallest logical units (e.g., `"Define global variable`" and `"Create handler function`" should be separate todos).`n2. **Precision:** Do not use vague language. Use specific function names, variable names, and file paths.`n3. **Dependency Management:** If a task relies on a previous one (e.g., `"Update Hotkey`" relies on `"Create Function`"), note this in the logic.`n4. **No Code blocks in Frontmatter:** Keep the YAML clean. Put code snippets or logic examples in the Markdown body.`n`n**Input Task:**`n)",
-        "Prompts",
-        "📋 Technical Architect & Code Planner"
-    )
-    RegisterHotstring(":o:cplant",
-        "---`nname: [Title Case Name of the Plan]`noverview: [A concise, 1-2 sentence summary of the high-level objective.]`ntodos:`n  - id: [unique_string_id]`n    content: [Specific, actionable step]`n    status: pending`n    dependencies: [] # Optional: list IDs of prerequisite steps`n---",
-        "Prompts",
-        "📝 Plan File Template"
-    )
-    ; Character w: creating mnemonic stories (content from prompt_mnemonic.txt)
+    ; Technical Architect & Code Planner (content from prompt/markdown-plan.txt)
     try {
-        mnemonicPrompt := FileRead(A_ScriptDir "\prompt_mnemonic.txt")
+        planPrompt := FileRead(promptDir "\markdown-plan.txt")
+        RegisterHotstring(":o:cplan", planPrompt, "Prompts", "📋 Technical Architect & Code Planner")
+    } catch {
+        RegisterHotstring(":o:cplan", "You are an expert Technical Architect and Code Planner. Generate a .plan.md file. **Input Task:**`n", "Prompts", "📋 Technical Architect & Code Planner")
+    }
+    try {
+        RegisterHotstring(":o:cplant", FileRead(promptDir "\cplant.txt"), "Prompts", "📝 Plan File Template")
+    } catch {
+        RegisterHotstring(":o:cplant", "---`nname: [Title]`noverview: [Summary]`ntodos:`n  - id: x`n    content: [Step]`n    status: pending`n---`n", "Prompts", "📝 Plan File Template")
+    }
+    ; Character w: creating mnemonic stories (content from prompt/mnemonic.txt)
+    try {
+        mnemonicPrompt := FileRead(promptDir "\mnemonic.txt")
         RegisterHotstring(":o:mnemonic", mnemonicPrompt, "Prompts", "📖 Creating mnemonic stories")
     } catch {
         RegisterHotstring("", "", "Prompts", "Reserved 3")

@@ -1,0 +1,9 @@
+---
+name: [Title Case Name of the Plan]
+overview: [A concise, 1-2 sentence summary of the high-level objective.]
+todos:
+  - id: [unique_string_id]
+    content: [Specific, actionable step]
+    status: pending
+    dependencies: [] # Optional: list IDs of prerequisite steps
+---
