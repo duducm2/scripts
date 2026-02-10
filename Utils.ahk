@@ -1210,6 +1210,14 @@ ExecuteHandyAiModelSelection(selection) {
         AiModelBanner_Show("⏳ Waiting for model...", "27AE60")
         Handy_WaitForModelReady(handyHwnd, 20000)
 
+        ; Step 4.5: Play confirmation sound when model is ready
+        if (IsSoundEnabled()) {
+            soundPath := A_ScriptDir . "\sounds\handy-model-chosen.mp3"
+            if (FileExist(soundPath)) {
+                try SoundPlay(soundPath)
+            }
+        }
+
         ; Step 5: Close Handy window
         AiModelBanner_Show("✅ Done! Closing Handy...", "27AE60")
         try WinClose("ahk_id " . handyHwnd)
