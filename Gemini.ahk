@@ -339,18 +339,32 @@ GeminiTriggerReadAloud(copyFirst := true) {
         }
     }
 
-    ; Step 4: Find last "Show more options" and click "Text to speech"
+    ; Step 4: Find the final "More options" / "Show more options" in the Gemini response tree (bottom-up).
+    ; We target only the most recent Gemini response to avoid reading older messages. See gemini-tree.txt for tree structure.
     searchBanner := CreateCenteredBanner(copyFirst ? "Finding read aloud button and copying..." : "Finding read aloud button...", "3772FF", "FFFFFF", 24, 178)
     Sleep 250
 
     allMoreOptionsButtons := []
     try {
+        ; Primary: "Show more options" (EN); include "More options" for alternate labels
         allMoreOptionsButtons := uia.FindAll({ Name: "Show more options" })
+        try {
+            moreOpt := uia.FindAll({ Name: "More options" })
+            for btn in moreOpt
+                allMoreOptionsButtons.Push(btn)
+        } catch {
+        }
     } catch {
-        allMenuItems := uia.FindAll({ Type: 50011 })
-        for menuItem in allMenuItems {
-            if (menuItem.Name = "Show more options" || InStr(menuItem.Name, "Show more options", false) = 1)
-                allMoreOptionsButtons.Push(menuItem)
+    }
+    if (allMoreOptionsButtons.Length = 0) {
+        try {
+            allMenuItems := uia.FindAll({ Type: 50011 })
+            for menuItem in allMenuItems {
+                name := menuItem.Name
+                if (name = "Show more options" || name = "More options" || InStr(name, "Show more options", false) = 1 || InStr(name, "More options", false) = 1)
+                    allMoreOptionsButtons.Push(menuItem)
+            }
+        } catch {
         }
     }
 
@@ -360,17 +374,21 @@ GeminiTriggerReadAloud(copyFirst := true) {
         return
     }
 
+    ; Bottom-up: select the last instance in the response tree = most recent response only.
+    ; 1) Prefer button with the largest bottom Y (true bottom of page = final response).
+    ; 2) Fallback: last element in FindAll order (document/tree order = last in tree).
     lastMoreOptionsButton := 0
-    highestY := -1
+    highestBottomY := -1
     for moreOptionsButton in allMoreOptionsButtons {
         try {
             btnPos := moreOptionsButton.Location
-            btnBottomY := btnPos.y + btnPos.h
-            if (btnBottomY > highestY) {
-                highestY := btnBottomY
+            bottomY := btnPos.y + btnPos.h
+            if (bottomY > highestBottomY) {
+                highestBottomY := bottomY
                 lastMoreOptionsButton := moreOptionsButton
             }
         } catch {
+            continue
         }
     }
     if (!lastMoreOptionsButton && allMoreOptionsButtons.Length > 0)
