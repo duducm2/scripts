@@ -244,233 +244,235 @@ CenterMouse() {
 
 ; --- Hotkeys ----------------------------------------------------------------
 
-; Win+Alt+Shift+O : Read aloud and copy the last message in Gemini (activates Gemini window first, copies the message, then clicks last "Show more options" then "Text to speech")
-; If reading is active, clicking this shortcut again will pause the reading
-#!+o:: {
+; Reusable: activate Gemini, handle Pause/Resume, or copy last message and trigger "Text to speech". Caller can use for #!+o or after TTS workflow.
+GeminiTriggerReadAloud() {
+    ; Step 1: Activate Gemini window globally
+    SetTitleMatchMode(2)
+    if hwnd := GetGeminiWindowHwnd()
+        WinActivate("ahk_id " hwnd)
+    if !WinWaitActive("ahk_exe chrome.exe", , 2)
+        return
+    Sleep 150
+
+    ; Step 2: Check if "Pause" button exists (if reading is active, pause it)
+    uia := UIA_Browser()
+    Sleep 120
+
+    pauseButton := 0
+    try {
+        pauseButton := uia.FindFirst({ Name: "Pause", Type: 50000 })
+        if !pauseButton
+            pauseButton := uia.FindFirst({ Type: "Button", Name: "Pause" })
+        if !pauseButton {
+            allButtons := uia.FindAll({ Type: 50000 })
+            for button in allButtons {
+                if (button.Name = "Pause" || InStr(button.Name, "Pause", false) = 1) {
+                    if (InStr(button.ClassName, "tts-button") || InStr(button.ClassName, "mdc-icon-button")) {
+                        pauseButton := button
+                        break
+                    }
+                }
+            }
+        }
+    } catch {
+    }
+
+    if (pauseButton) {
+        pauseButton.Click()
+        ShowNotification("Paused", 800, "FFFF00", "000000", 24)
+        Send "!{Tab}"
+        return
+    }
+
+    resumeButton := 0
+    try {
+        resumeButton := uia.FindFirst({ Name: "Resume", Type: 50000 })
+        if !resumeButton
+            resumeButton := uia.FindFirst({ Type: "Button", Name: "Resume" })
+        if !resumeButton {
+            allButtons := uia.FindAll({ Type: 50000 })
+            for button in allButtons {
+                if (button.Name = "Resume" || InStr(button.Name, "Resume", false) = 1) {
+                    if (InStr(button.ClassName, "tts-button") || InStr(button.ClassName, "mdc-icon-button")) {
+                        resumeButton := button
+                        break
+                    }
+                }
+            }
+        }
+    } catch {
+    }
+
+    if (resumeButton) {
+        resumeButton.Click()
+        ShowNotification("Resumed", 800, "FFFF00", "000000", 24)
+        Send "!{Tab}"
+        return
+    }
+
+    ; Step 3: Find and click the last Copy button
+    Send "^End"
+    Sleep 350
+
+    allCopyButtons := []
+    allButtons := uia.FindAll({ Type: 50000 })
+    for button in allButtons {
+        if (IsGeminiCopyResponseButton(button.Name)) {
+            if (InStr(button.ClassName, "icon-button") || InStr(button.ClassName, "mdc-button"))
+                allCopyButtons.Push(button)
+        }
+    }
+    if (allCopyButtons.Length = 0) {
+        allButtons := uia.FindAll({ Type: "Button" })
+        for button in allButtons {
+            if (IsGeminiCopyResponseButton(button.Name))
+                allCopyButtons.Push(button)
+        }
+    }
+
+    lastCopyButton := (allCopyButtons.Length > 0) ? allCopyButtons[allCopyButtons.Length] : 0
+    if (lastCopyButton) {
+        lastCopyButton.Click()
+        PlayCopyCompletedChime()
+    }
+
+    ; Step 4: Find last "Show more options" and click "Text to speech"
+    searchBanner := CreateCenteredBanner("Finding read aloud button and copying...", "3772FF", "FFFFFF", 24, 178)
+    Sleep 250
+
+    allMoreOptionsButtons := []
+    try {
+        allMoreOptionsButtons := uia.FindAll({ Name: "Show more options" })
+    } catch {
+        allMenuItems := uia.FindAll({ Type: 50011 })
+        for menuItem in allMenuItems {
+            if (menuItem.Name = "Show more options" || InStr(menuItem.Name, "Show more options", false) = 1)
+                allMoreOptionsButtons.Push(menuItem)
+        }
+    }
+
+    if (allMoreOptionsButtons.Length = 0) {
+        if IsObject(searchBanner) && searchBanner.Hwnd
+            searchBanner.Destroy()
+        return
+    }
+
+    lastMoreOptionsButton := 0
+    highestY := -1
+    for moreOptionsButton in allMoreOptionsButtons {
+        try {
+            btnPos := moreOptionsButton.Location
+            btnBottomY := btnPos.y + btnPos.h
+            if (btnBottomY > highestY) {
+                highestY := btnBottomY
+                lastMoreOptionsButton := moreOptionsButton
+            }
+        } catch {
+        }
+    }
+    if (!lastMoreOptionsButton && allMoreOptionsButtons.Length > 0)
+        lastMoreOptionsButton := allMoreOptionsButtons[allMoreOptionsButtons.Length]
+    if (!lastMoreOptionsButton) {
+        if IsObject(searchBanner) && searchBanner.Hwnd
+            searchBanner.Destroy()
+        return
+    }
 
     try {
-        ; Step 1: Activate Gemini window globally
-        SetTitleMatchMode(2)
-        if hwnd := GetGeminiWindowHwnd()
-            WinActivate("ahk_id " hwnd)
-        if !WinWaitActive("ahk_exe chrome.exe", , 2) {
-            return
-        }
-        Sleep 150  ; small settle per README (keep this snappy)
+        lastMoreOptionsButton.Click()
+        Sleep 200
 
-        ; Step 2: Check if "Pause" button exists (if reading is active, pause it)
-        uia := UIA_Browser()
-        Sleep 120  ; minimal settle before querying UIA
-
-        ; Try to find "Pause" button
-        pauseButton := 0
+        textToSpeechMenuItem := 0
         try {
-            ; Primary strategy: Find by Name "Pause" with Type 50000 (Button)
-            pauseButton := uia.FindFirst({ Name: "Pause", Type: 50000 })
-
-            ; Fallback: Try by Type "Button" and Name "Pause"
-            if !pauseButton {
-                pauseButton := uia.FindFirst({ Type: "Button", Name: "Pause" })
-            }
-
-            ; Fallback: Search all buttons for one with "Pause" name and tts-button className
-            if !pauseButton {
-                allButtons := uia.FindAll({ Type: 50000 })
-                for button in allButtons {
-                    if (button.Name = "Pause" || InStr(button.Name, "Pause", false) = 1) {
-                        if (InStr(button.ClassName, "tts-button") || InStr(button.ClassName, "mdc-icon-button")) {
-                            pauseButton := button
-                            break
-                        }
-                    }
-                }
-            }
+            textToSpeechMenuItem := uia.FindFirst({ Name: "Text to speech", Type: 50011 })
         } catch {
-            ; Silently continue if pause button search fails
         }
-
-        ; If "Pause" button found, click it and return to previous window
-        if (pauseButton) {
-            pauseButton.Click()
-            ShowNotification("Paused", 800, "FFFF00", "000000", 24)
-            Send "!{Tab}"
-            return
-        }
-
-        ; Try to find "Resume" button (if reading is paused, resume it)
-        resumeButton := 0
-        try {
-            ; Primary strategy: Find by Name "Resume" with Type 50000 (Button)
-            resumeButton := uia.FindFirst({ Name: "Resume", Type: 50000 })
-
-            ; Fallback: Try by Type "Button" and Name "Resume"
-            if !resumeButton {
-                resumeButton := uia.FindFirst({ Type: "Button", Name: "Resume" })
-            }
-
-            ; Fallback: Search all buttons for one with "Resume" name and tts-button className
-            if !resumeButton {
-                allButtons := uia.FindAll({ Type: 50000 })
-                for button in allButtons {
-                    if (button.Name = "Resume" || InStr(button.Name, "Resume", false) = 1) {
-                        if (InStr(button.ClassName, "tts-button") || InStr(button.ClassName, "mdc-icon-button")) {
-                            resumeButton := button
-                            break
-                        }
-                    }
-                }
-            }
-        } catch {
-            ; Silently continue if resume button search fails
-        }
-
-        ; If "Resume" button found, click it and return to previous window
-        if (resumeButton) {
-            resumeButton.Click()
-            ShowNotification("Resumed", 800, "FFFF00", "000000", 24)
-            Send "!{Tab}"
-            return
-        }
-
-        ; Step 3: Find and click the last Copy button (copy the message we're about to read)
-        ; Scroll to bottom first so the last response is in the tree.
-        Send "^End"
-        Sleep 350
-
-        allCopyButtons := []
-        allButtons := uia.FindAll({ Type: 50000 })
-        for button in allButtons {
-            if (IsGeminiCopyResponseButton(button.Name)) {
-                if (InStr(button.ClassName, "icon-button") || InStr(button.ClassName, "mdc-button")) {
-                    allCopyButtons.Push(button)
-                }
-            }
-        }
-        if (allCopyButtons.Length = 0) {
-            allButtons := uia.FindAll({ Type: "Button" })
-            for button in allButtons {
-                if (IsGeminiCopyResponseButton(button.Name)) {
-                    allCopyButtons.Push(button)
-                }
-            }
-        }
-
-        ; Last in array = last in chat (tree order).
-        lastCopyButton := (allCopyButtons.Length > 0) ? allCopyButtons[allCopyButtons.Length] : 0
-
-        ; Click the copy button if found
-        if (lastCopyButton) {
-            lastCopyButton.Click()
-            ; Play chime when copy completes
-            PlayCopyCompletedChime()
-        }
-
-        ; Step 4: Find all "Show more options" elements (normal read-aloud flow)
-        ; Show banner while searching
-        searchBanner := CreateCenteredBanner("Finding read aloud button and copying...", "3772FF", "FFFFFF", 24, 178)
-        Sleep 250  ; small delay to ensure UI is ready without feeling sluggish
-
-        allMoreOptionsButtons := []
-
-        ; Primary strategy: Search directly by name (most efficient - finds 8 elements vs searching 120+ buttons)
-        try {
-            allMoreOptionsButtons := uia.FindAll({ Name: "Show more options" })
-        } catch {
-            ; If direct name search fails, try Type 50011 (MenuItem) as fallback
-            allMenuItems := uia.FindAll({ Type: 50011 })
-            for menuItem in allMenuItems {
-                if (menuItem.Name = "Show more options" || InStr(menuItem.Name, "Show more options", false) = 1) {
-                    allMoreOptionsButtons.Push(menuItem)
-                }
-            }
-        }
-
-        if (allMoreOptionsButtons.Length = 0) {
-            ; No "Show more options" buttons found
-            if IsObject(searchBanner) && searchBanner.Hwnd {
-                searchBanner.Destroy()
-            }
-            return
-        }
-
-        ; *********
-        ; Find the last "Show more options" button (the one with the highest Y position, meaning furthest down the page)
-        lastMoreOptionsButton := 0
-        highestY := -1
-
-        for moreOptionsButton in allMoreOptionsButtons {
+        if !textToSpeechMenuItem {
             try {
-                btnPos := moreOptionsButton.Location
-                btnBottomY := btnPos.y + btnPos.h
-
-                ; The last button will be the one with the highest bottom Y coordinate
-                if (btnBottomY > highestY) {
-                    highestY := btnBottomY
-                    lastMoreOptionsButton := moreOptionsButton
+                textToSpeechMenuItem := uia.FindFirst({ Type: "MenuItem", Name: "Text to speech" })
+            } catch {
+            }
+        }
+        if !textToSpeechMenuItem {
+            try {
+                allMenuItems := uia.FindAll({ Type: 50011 })
+                for menuItem in allMenuItems {
+                    if (menuItem.Name = "Text to speech" || InStr(menuItem.Name, "Text to speech", false) = 1) {
+                        if (InStr(menuItem.ClassName, "mat-mdc-menu-item")) {
+                            textToSpeechMenuItem := menuItem
+                            break
+                        }
+                    }
                 }
             } catch {
-                ; If getting location fails, skip this button
+            }
+        }
+        if !textToSpeechMenuItem {
+            try {
+                allMenuItems := uia.FindAll({ Type: 50011 })
+                for menuItem in allMenuItems {
+                    if (menuItem.Name = "Text to speech" || InStr(menuItem.Name, "Text to speech", false) = 1) {
+                        textToSpeechMenuItem := menuItem
+                        break
+                    }
+                }
+            } catch {
             }
         }
 
-        ; If position-based approach didn't work, just use the last one in the array
-        if (!lastMoreOptionsButton && allMoreOptionsButtons.Length > 0) {
-            lastMoreOptionsButton := allMoreOptionsButtons[allMoreOptionsButtons.Length]
+        if (textToSpeechMenuItem) {
+            textToSpeechMenuItem.Click()
+            Sleep 200
+        } else {
+            Send "{Down}"
+            Sleep 200
+            Send "{Enter}"
         }
+    } catch {
+    }
 
-        if (!lastMoreOptionsButton) {
-            ; Could not find last "Show more options" button
-            if IsObject(searchBanner) && searchBanner.Hwnd {
-                searchBanner.Destroy()
+    if IsObject(searchBanner) && searchBanner.Hwnd
+        searchBanner.Destroy()
+
+    Sleep 1500
+
+    isReading := false
+    try {
+        if uia.FindFirst({ Name: "Pause", Type: 50000 })
+            isReading := true
+        else if uia.FindFirst({ Type: "Button", Name: "Pause" })
+            isReading := true
+        else {
+            allButtons := uia.FindAll({ Type: 50000 })
+            for button in allButtons {
+                if (button.Name = "Pause" || InStr(button.Name, "Pause", false) = 1) {
+                    if (InStr(button.ClassName, "tts-button") || InStr(button.ClassName, "mdc-icon-button")) {
+                        isReading := true
+                        break
+                    }
+                }
             }
-            return
         }
+    } catch {
+    }
 
-        ; Step 5 & 6: Click "Show more options" and navigate to "Text to speech"
-        ; Implements retry logic: Click -> Wait 1500ms -> Check Pause -> Retry if needed
-
-        ; First attempt - Click "Show more options" and navigate to "Text to speech"
+    if (!isReading) {
+        ShowNotification("Retrying read aloud...", 800, "FFFF00", "000000", 24)
         try {
-            ; Click the last "Show more options" button
             lastMoreOptionsButton.Click()
-            Sleep 200 ; Wait for menu to appear
+            Sleep 200
 
-            ; Find and click "Text to speech" menu item using UIA
             textToSpeechMenuItem := 0
             try {
-                ; Primary strategy: Find by Name "Text to speech" with Type 50011 (MenuItem)
                 textToSpeechMenuItem := uia.FindFirst({ Name: "Text to speech", Type: 50011 })
             } catch {
-                ; Silently continue to fallbacks
             }
-
-            ; Fallback 1: Try by Type "MenuItem" and Name "Text to speech"
             if !textToSpeechMenuItem {
                 try {
                     textToSpeechMenuItem := uia.FindFirst({ Type: "MenuItem", Name: "Text to speech" })
                 } catch {
-                    ; Silently continue
                 }
             }
-
-            ; Fallback 2: Search all MenuItems for one with "Text to speech" name and matching className
-            if !textToSpeechMenuItem {
-                try {
-                    allMenuItems := uia.FindAll({ Type: 50011 })
-                    for menuItem in allMenuItems {
-                        if (menuItem.Name = "Text to speech" || InStr(menuItem.Name, "Text to speech", false) = 1) {
-                            if (InStr(menuItem.ClassName, "mat-mdc-menu-item")) {
-                                textToSpeechMenuItem := menuItem
-                                break
-                            }
-                        }
-                    }
-                } catch {
-                    ; Silently continue
-                }
-            }
-
-            ; Fallback 3: Search all MenuItems by name only (broader match)
             if !textToSpeechMenuItem {
                 try {
                     allMenuItems := uia.FindAll({ Type: 50011 })
@@ -481,109 +483,31 @@ CenterMouse() {
                         }
                     }
                 } catch {
-                    ; Silently continue
                 }
             }
 
-            ; Click the menu item if found
             if (textToSpeechMenuItem) {
                 textToSpeechMenuItem.Click()
-                Sleep 200 ; Brief pause to ensure menu action completes
+                Sleep 200
             } else {
-                ; If UIA method fails, fallback to keyboard navigation
                 Send "{Down}"
                 Sleep 200
                 Send "{Enter}"
             }
         } catch {
-            ; Ignore errors during action
         }
+    }
 
-        ; Hide search banner
-        if IsObject(searchBanner) && searchBanner.Hwnd {
-            searchBanner.Destroy()
-        }
+    ShowNotification("Copied & Reading aloud", 800, "FFFF00", "000000", 24)
+    Send "!{Tab}"
+}
 
-        ; Wait 1500ms for UI to update (Pause button to appear)
-        Sleep 1500
-
-        ; Check if Pause button exists (indicating reading started)
-        isReading := false
-        try {
-            ; Reuse logic from Step 2 to find Pause button
-            if uia.FindFirst({ Name: "Pause", Type: 50000 })
-                isReading := true
-            else if uia.FindFirst({ Type: "Button", Name: "Pause" })
-                isReading := true
-            else {
-                allButtons := uia.FindAll({ Type: 50000 })
-                for button in allButtons {
-                    if (button.Name = "Pause" || InStr(button.Name, "Pause", false) = 1) {
-                        if (InStr(button.ClassName, "tts-button") || InStr(button.ClassName, "mdc-icon-button")) {
-                            isReading := true
-                            break
-                        }
-                    }
-                }
-            }
-        } catch {
-            ; Assume false
-        }
-
-        ; If not reading, retry
-        if (!isReading) {
-            ShowNotification("Retrying read aloud...", 800, "FFFF00", "000000", 24)
-            ; Retry the read aloud action
-            try {
-                ; Click the last "Show more options" button
-                lastMoreOptionsButton.Click()
-                Sleep 200 ; Wait for menu to appear
-
-                ; Find and click "Text to speech" menu item using UIA
-                textToSpeechMenuItem := 0
-                try {
-                    textToSpeechMenuItem := uia.FindFirst({ Name: "Text to speech", Type: 50011 })
-                } catch {
-                }
-
-                if !textToSpeechMenuItem {
-                    try {
-                        textToSpeechMenuItem := uia.FindFirst({ Type: "MenuItem", Name: "Text to speech" })
-                    } catch {
-                    }
-                }
-
-                if !textToSpeechMenuItem {
-                    try {
-                        allMenuItems := uia.FindAll({ Type: 50011 })
-                        for menuItem in allMenuItems {
-                            if (menuItem.Name = "Text to speech" || InStr(menuItem.Name, "Text to speech", false) = 1) {
-                                textToSpeechMenuItem := menuItem
-                                break
-                            }
-                        }
-                    } catch {
-                    }
-                }
-
-                if (textToSpeechMenuItem) {
-                    textToSpeechMenuItem.Click()
-                    Sleep 200
-                } else {
-                    Send "{Down}"
-                    Sleep 200
-                    Send "{Enter}"
-                }
-            } catch {
-            }
-        }
-
-        ; Show notification that both copy and read-aloud actions completed
-        ShowNotification("Copied & Reading aloud", 800, "FFFF00", "000000", 24)
-        ; Return to previous window
-        Send "!{Tab}"
+; Win+Alt+Shift+O : Read aloud the last message in Gemini (or Pause/Resume if already reading)
+#!+o:: {
+    try {
+        GeminiTriggerReadAloud()
     } catch Error as e {
-        ; If all else fails, silently fail (no fallback action defined)
+        ;
     }
 }
 
@@ -689,6 +613,13 @@ copyFromBridge(*) {
     try
         FileAppend(r ? "1" : "0", GEMINI_COPY_RESULT_PATH)
     _DebugLog_Gemini("CopyLastGeminiMessageToClipboard result", (r ? '{"ok":1}' : '{"ok":0}'))
+}
+
+; =============================================================================
+; TTS from selection – Win+Alt+Shift+7: copy selection, send "repeat exactly" to Gemini, then trigger read aloud
+; =============================================================================
+#!+7:: {
+    (GeminiAsyncTTS()).Start()
 }
 
 ; =============================================================================
@@ -1064,5 +995,141 @@ class GeminiAsyncLookup {
         ; Press Escape or Enter to remove the banner
         Hotkey("Escape", closeBanner, "On")
         Hotkey("Enter", closeBanner, "On")
+    }
+}
+
+; =============================================================================
+; GeminiAsyncTTS – copy selection, send "repeat exactly" to Gemini, then trigger read aloud (Win+Alt+Shift+7)
+; =============================================================================
+class GeminiAsyncTTS {
+    static TTSPrompt := "Repeat the following text exactly as it is. Do not add any introduction, explanation, or markdown formatting. Just output the text itself:`n`n"
+
+    __New() {
+        this.OriginalHwnd := 0
+        this.GeminiHwnd := 0
+        this.TimerCallback := ""
+        this.RetryCount := 0
+        this.MaxRetries := 60   ; 60 * 500ms = 30s timeout
+        this.ButtonEverFound := false
+    }
+
+    Start() {
+        this.OriginalHwnd := WinExist("A")
+        if !this.OriginalHwnd
+            return
+        ShowSmallLoadingIndicator("Loading…`n`n⚠️ Please do not click or use the keyboard", "3772FF", this.OriginalHwnd, 200, 16)
+
+        A_Clipboard := ""
+        Send "^c"
+        if !ClipWait(2) {
+            HideSmallLoadingIndicator()
+            return
+        }
+        SetTitleMatchMode(2)
+        this.GeminiHwnd := GetGeminiWindowHwnd()
+        if !this.GeminiHwnd {
+            HideSmallLoadingIndicator()
+            return
+        }
+        WinActivate("ahk_id " this.GeminiHwnd)
+        if !WinWaitActive("ahk_exe chrome.exe", , 2) {
+            HideSmallLoadingIndicator()
+            return
+        }
+        uia := UIA_Browser()
+        Sleep 300
+        promptField := FindGeminiPromptField(uia)
+        if (!promptField) {
+            HideSmallLoadingIndicator()
+            return
+        }
+        promptField.SetFocus()
+        Sleep 100
+        if (!promptField.HasKeyboardFocus) {
+            try promptField.Click()
+            Sleep 100
+        }
+        ; Paste prompt + selected text and submit
+        A_Clipboard := GeminiAsyncTTS.TTSPrompt . A_Clipboard
+        Sleep 100
+        Send("^a")
+        Sleep 500
+        Send("^v")
+        Sleep 500
+        Send("{Enter}")
+        Sleep 300
+        origHwnd := this.OriginalHwnd
+        try {
+            if WinExist("ahk_id " origHwnd) {
+                WinRestore("ahk_id " origHwnd)
+                WinActivate("ahk_id " origHwnd)
+                WinWaitActive("ahk_id " origHwnd, , 1)
+            }
+        } catch {
+            WinActivate("ahk_id " origHwnd)
+        }
+        this.RetryCount := 0
+        this.TimerCallback := this.CheckCompletion.Bind(this)
+        SetTimer(this.TimerCallback, 500)
+    }
+
+    CheckCompletion() {
+        this.RetryCount++
+        if (this.RetryCount > this.MaxRetries) {
+            SetTimer(this.TimerCallback, 0)
+            HideSmallLoadingIndicator()
+            return
+        }
+        btn := ""
+        buttonNames := ["Stop streaming", "Interromper transmissão", "Stop response"]
+        try {
+            root := UIA.ElementFromHandle(this.GeminiHwnd)
+            for n in buttonNames {
+                try {
+                    btn := root.FindElement({ Name: n, Type: "Button" })
+                } catch {
+                    btn := ""
+                }
+                if btn
+                    break
+            }
+        } catch {
+            return
+        }
+
+        if btn {
+            this.ButtonEverFound := true
+            return
+        }
+
+        if (this.ButtonEverFound) {
+            isTrulyGone := true
+            loop 4 {
+                Sleep 200
+                try {
+                    for n in buttonNames {
+                        if root.ElementExist({ Name: n, Type: "Button" }) {
+                            isTrulyGone := false
+                            break
+                        }
+                    }
+                } catch
+                    isTrulyGone := true
+                if !isTrulyGone
+                    break
+            }
+
+            if isTrulyGone {
+                SetTimer(this.TimerCallback, 0)
+                HideSmallLoadingIndicator()
+                try {
+                    if (IsSoundEnabled())
+                        SoundPlay(A_ScriptDir . "\sounds\gemini-completion.wav")
+                } catch {
+                    PlayCopyCompletedChime()
+                }
+                GeminiTriggerReadAloud()
+            }
+        }
     }
 }

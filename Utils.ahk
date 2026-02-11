@@ -7299,29 +7299,7 @@ OnExit(CleanupDictationIndicator)
 ; Infinite Dictation module (state and loop logic)
 #Include "Lib\InfiniteDictation.ahk"
 
-; Infinite Dictation - Win+Alt+Shift+7 (start/stop); Win+Alt+Shift+0 also stops when active
-; Termination allowed ONLY during Recording (60s window); blocked during Transcribing to avoid workflow errors
-; Each loop = one 60s cycle; dictation cycles on/off every 15s within a loop to prevent transcription timeouts
-#!+7::
-{
-    ; #region agent log
-    DbgLog("#!+7", "entry loopActive=" InfiniteDictation.IsActive)
-    ; #endregion
-
-    if (InfiniteDictation.IsActive) {
-        ; Logic gate: Only allow termination during Recording state; block during Transcribing state
-        if (!WinExist("Recording ahk_exe handy.exe")) {
-            ; Transcribing - block termination to prevent interrupting active transcription
-            return
-        }
-        ; Recording - allow termination
-        InfiniteDictation.Stop()
-    } else {
-        ; Start the loop - non-modal 5-second countdown (default: clear clipboard)
-        ; User can cancel by pressing N or End during the countdown.
-        InfiniteDictation.Start()
-    }
-}
+; Win+Alt+Shift+7 is defined in Gemini.ahk (TTS from selection: repeat exactly + read aloud).
 
 ; Dictation with paste and submit action - Win+Alt+Shift+J
 ; Step 1: Programmatically stop dictation (send Win+Alt+Shift+0)
