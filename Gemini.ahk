@@ -244,8 +244,9 @@ CenterMouse() {
 
 ; --- Hotkeys ----------------------------------------------------------------
 
-; Reusable: activate Gemini, handle Pause/Resume, or copy last message and trigger "Text to speech". Caller can use for #!+o or after TTS workflow.
-GeminiTriggerReadAloud() {
+; Reusable: activate Gemini, handle Pause/Resume, then optionally copy last message and trigger "Text to speech".
+; copyFirst: true = copy last response then read aloud (#!+o); false = only read aloud (#!+7).
+GeminiTriggerReadAloud(copyFirst := true) {
     ; Step 1: Activate Gemini window globally
     SetTitleMatchMode(2)
     if hwnd := GetGeminiWindowHwnd()
@@ -310,34 +311,36 @@ GeminiTriggerReadAloud() {
         return
     }
 
-    ; Step 3: Find and click the last Copy button
+    ; Step 3: If copyFirst, find and click the last Copy button; else just scroll so last response is in view
     Send "^End"
     Sleep 350
 
-    allCopyButtons := []
-    allButtons := uia.FindAll({ Type: 50000 })
-    for button in allButtons {
-        if (IsGeminiCopyResponseButton(button.Name)) {
-            if (InStr(button.ClassName, "icon-button") || InStr(button.ClassName, "mdc-button"))
-                allCopyButtons.Push(button)
-        }
-    }
-    if (allCopyButtons.Length = 0) {
-        allButtons := uia.FindAll({ Type: "Button" })
+    if (copyFirst) {
+        allCopyButtons := []
+        allButtons := uia.FindAll({ Type: 50000 })
         for button in allButtons {
-            if (IsGeminiCopyResponseButton(button.Name))
-                allCopyButtons.Push(button)
+            if (IsGeminiCopyResponseButton(button.Name)) {
+                if (InStr(button.ClassName, "icon-button") || InStr(button.ClassName, "mdc-button"))
+                    allCopyButtons.Push(button)
+            }
         }
-    }
+        if (allCopyButtons.Length = 0) {
+            allButtons := uia.FindAll({ Type: "Button" })
+            for button in allButtons {
+                if (IsGeminiCopyResponseButton(button.Name))
+                    allCopyButtons.Push(button)
+            }
+        }
 
-    lastCopyButton := (allCopyButtons.Length > 0) ? allCopyButtons[allCopyButtons.Length] : 0
-    if (lastCopyButton) {
-        lastCopyButton.Click()
-        PlayCopyCompletedChime()
+        lastCopyButton := (allCopyButtons.Length > 0) ? allCopyButtons[allCopyButtons.Length] : 0
+        if (lastCopyButton) {
+            lastCopyButton.Click()
+            PlayCopyCompletedChime()
+        }
     }
 
     ; Step 4: Find last "Show more options" and click "Text to speech"
-    searchBanner := CreateCenteredBanner("Finding read aloud button and copying...", "3772FF", "FFFFFF", 24, 178)
+    searchBanner := CreateCenteredBanner(copyFirst ? "Finding read aloud button and copying..." : "Finding read aloud button...", "3772FF", "FFFFFF", 24, 178)
     Sleep 250
 
     allMoreOptionsButtons := []
@@ -498,7 +501,7 @@ GeminiTriggerReadAloud() {
         }
     }
 
-    ShowNotification("Copied & Reading aloud", 800, "FFFF00", "000000", 24)
+    ShowNotification(copyFirst ? "Copied & Reading aloud" : "Reading aloud", 800, "FFFF00", "000000", 24)
     Send "!{Tab}"
 }
 
@@ -1128,7 +1131,7 @@ class GeminiAsyncTTS {
                 } catch {
                     PlayCopyCompletedChime()
                 }
-                GeminiTriggerReadAloud()
+                GeminiTriggerReadAloud(false)   ; read aloud only, no copy (text was just sent via #!+7)
             }
         }
     }
