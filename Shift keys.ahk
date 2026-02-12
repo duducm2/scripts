@@ -7021,6 +7021,8 @@ Excel_CSVToColumns(autoSelectSemicolon := false) {
 ; Helper function: Add multiple rows (repeat Alt, Alt, 0, 2 with delays)
 Excel_AddMultipleRows(count := 15) {
     ShowSmallLoadingIndicator_ChatGPT("Adding " . count . " rows...")
+    ; Extra initial delay so the first Alt+0,2 sequence isn't too fast
+    Sleep 300
     loop count {
         Send "{Alt down}"
         Send "{Alt up}"
