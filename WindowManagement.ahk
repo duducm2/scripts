@@ -5,9 +5,8 @@
 ; This script consolidates all Window Management hotkeys.
 ; -----------------------------------------------------------------------------
 
-; --- Inlined config (no external includes for stability) --------------------
-; Environment: set to true for work, false for personal (was env.ahk).
-global IS_WORK_ENVIRONMENT := true
+; --- Environment (use env.ahk so personal vs work matches Act/Utils) --------
+#include %A_ScriptDir%\env.ahk
 
 ; --- Copy-from-Gemini to Cursor bridge (self-contained module) --------------
 #include %A_ScriptDir%\GeminiToCursorBridge.ahk
