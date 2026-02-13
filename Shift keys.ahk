@@ -1462,7 +1462,7 @@ r=== CLIP ANGEL ===
 ; Environment paths (unchanged)
 ;-------------------------------------------------------------------
 global WORK_SCRIPTS_PATH := "C:\Users\fie7ca\Documents\01 - Scripts"
-global PERSONAL_SCRIPTS_PATH := "G:\Meu Drive\12 - Scripts"
+global PERSONAL_SCRIPTS_PATH := "C:\Users\eduev\Meu Drive\17 - Projects\scripts"
 ; global IS_WORK_ENVIRONMENT   := true    ; set to false on personal rig // This will now be loaded from env.ahk
 
 ; ---------------------------------------------------------------------------

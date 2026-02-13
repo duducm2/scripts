@@ -13,7 +13,7 @@ if (IS_WORK_ENVIRONMENT) {
     ; TODO: Replace with the actual scripts folder path on the work laptop
     scriptsFolder := "C:\Users\fie7ca\Documents\scripts"
 } else {
-    scriptsFolder := "C:\Users\eduev\Meu Drive\12 - Scripts"
+    scriptsFolder := "C:\Users\eduev\Meu Drive\17 - Projects\scripts"
 }
 
 ; Ensure the scripts folder is up to date before launching any scripts
@@ -27,7 +27,7 @@ if (IS_WORK_ENVIRONMENT) {
     ; TODO: Update with actual work environment path
     notesFolder := "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes"
 } else {
-    notesFolder := "C:\Users\eduev\Meu Drive\14 - Notes"
+    notesFolder := "C:\Users\eduev\Meu Drive\17 - Projects\notes"
 }
 
 ; Ensure the notes folder is up to date before working with habits

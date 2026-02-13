@@ -390,7 +390,7 @@ GetScriptsDirectory() {
     if (IS_WORK_ENVIRONMENT) {
         return "C:\Users\fie7ca\Documents\scripts"
     } else {
-        return "C:\Users\eduev\Meu Drive\12 - Scripts"
+        return "C:\Users\eduev\Meu Drive\17 - Projects\scripts"
     }
 }
 
@@ -2598,8 +2598,8 @@ global g_ProjectCategories := ["General", "Personal", "Work"]
 ; Each project should have: name, path, workPath, and category ("General", "Personal", or "Work")
 global g_Projects := [
     ; General category
-    { name: "Scripts", path: "C:\Users\eduev\Meu Drive\12 - Scripts", workPath: "C:\Users\fie7ca\Documents\scripts",
-        category: "General" }, { name: "14-my-notes", path: "C:\Users\eduev\Meu Drive\14 - Notes", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes",
+    { name: "Scripts", path: "C:\Users\eduev\Meu Drive\17 - Projects\scripts", workPath: "C:\Users\fie7ca\Documents\scripts",
+        category: "General" }, { name: "14-my-notes", path: "C:\Users\eduev\Meu Drive\17 - Projects\notes", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes",
             category: "General" }, { name: "", path: "", workPath: "", category: "General" }, { name: "", path: "",
                 workPath: "", category: "General" }, { name: "", path: "", workPath: "", category: "General" },
                 ; Personal category
@@ -2624,7 +2624,7 @@ ExtractProjectMatchSegments(projectPath) {
     ; Split path into segments
     pathSegments := StrSplit(normalizedPath, "\")
 
-    ; Extract the last folder name (e.g., "zmk-sofle", "26-ai-experiment", "12 - Scripts")
+    ; Extract the last folder name (e.g., "zmk-sofle", "26-ai-experiment", "scripts")
     lastSegment := pathSegments[pathSegments.Length]
 
     ; Build list of potential match strings
@@ -2632,7 +2632,7 @@ ExtractProjectMatchSegments(projectPath) {
 
     ; If we have at least 2 segments, also try the combination
     if (pathSegments.Length >= 2) {
-        ; Try last two segments joined with " - " (for cases like "14 - Notes")
+        ; Try last two segments joined with " - " (for cases like "17 - Projects")
         lastTwoJoined := pathSegments[pathSegments.Length - 1] . " - " . pathSegments[pathSegments.Length]
         if (lastTwoJoined != lastSegment) {  ; Only add if different
             matchSegments.Push(lastTwoJoined)

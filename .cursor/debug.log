@@ -1,4 +1,14 @@
-{"ts":2032640,"loc":"Handy_OpenAiModelMenu","msg":"entry","data":{},"hypothesisId":"H1"}
-{"ts":2032953,"loc":"Handy_OpenAiModelMenu","msg":"anchor not found","data":{},"hypothesisId":"H1"}
-{"ts":2038187,"loc":"Handy_OpenAiModelMenu","msg":"entry","data":{},"hypothesisId":"H1"}
-{"ts":2038312,"loc":"Handy_OpenAiModelMenu","msg":"anchor not found","data":{},"hypothesisId":"H1"}
+{"ts":3161437,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":3161437,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":3161453,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":3161468,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":3167390,"loc":"Handy_OpenAiModelMenu","msg":"entry","data":{},"hypothesisId":"H1"}
+{"ts":3167437,"loc":"Handy_OpenAiModelMenu","msg":"anchor by ClassName","data":{"by":"ClassName"},"hypothesisId":"H1"}
+{"ts":3170812,"loc":"Handy_WaitForModelReady","msg":"ready","data":{"btnName":"Parakeet V3"},"hypothesisId":"H3"}
+{"ts":3191296,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":3191296,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":3191312,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":3191328,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":3207656,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":3207656,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":3207656,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
