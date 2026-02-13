@@ -384,53 +384,205 @@ RegisterMacro(func, title, char := "") {
     g_Macros.Push({ func: func, title: title, category: "Macros", char: char })
 }
 
+; Get scripts directory path based on environment
+GetScriptsDirectory() {
+    global IS_WORK_ENVIRONMENT
+    if (IS_WORK_ENVIRONMENT) {
+        return "C:\Users\fie7ca\Documents\scripts"
+    } else {
+        return "C:\Users\eduev\Meu Drive\12 - Scripts"
+    }
+}
+
+; Get list of script files to update
+GetScriptFiles() {
+    scriptsDir := GetScriptsDirectory()
+    return [
+        scriptsDir "\WindowManagement.ahk",
+        scriptsDir "\Spotify.ahk",
+        scriptsDir "\Shift keys.ahk",
+        scriptsDir "\Outlook.ahk",
+        scriptsDir "\Microsoft Teams.ahk",
+        scriptsDir "\Gemini.ahk",
+        scriptsDir "\AppLaunchers.ahk",
+        scriptsDir "\Utils.ahk"
+    ]
+}
+
+; Check which scripts have uncommitted changes or need updates (returns array of script names)
+CheckScriptsNeedingUpdates() {
+    scriptsDir := GetScriptsDirectory()
+    scriptsNeedingUpdates := []
+    
+    try {
+        ; Change to scripts directory
+        SetWorkingDir(scriptsDir)
+        
+        ; Check git status for modified files using temp file
+        tempFile := A_Temp "\git_status_" A_TickCount ".txt"
+        try {
+            RunWait('git status --porcelain > "' tempFile '"', scriptsDir, "Hide")
+            if (FileExist(tempFile)) {
+                gitOutput := FileRead(tempFile)
+                FileDelete(tempFile)
+                
+                if (gitOutput && StrLen(gitOutput) > 0) {
+                    ; Parse git status output to find modified .ahk files
+                    lines := StrSplit(gitOutput, "`n")
+                    for line in lines {
+                        if (InStr(line, ".ahk")) {
+                            ; Extract filename from git status line (format: " M filename" or "M  filename")
+                            parts := StrSplit(Trim(line), " ")
+                            if (parts.Length > 0) {
+                                fileName := parts[parts.Length]
+                                ; Extract just the script name without path
+                                if (InStr(fileName, "\")) {
+                                    parts := StrSplit(fileName, "\")
+                                    fileName := parts[parts.Length]
+                                }
+                                scriptsNeedingUpdates.Push(fileName)
+                            }
+                        }
+                    }
+                }
+            }
+        } catch {
+            ; Ignore temp file errors
+        }
+        
+        ; Also check if there are remote updates available
+        RunWait("git fetch", scriptsDir, "Hide")
+        tempStatusFile := A_Temp "\git_status_sb_" A_TickCount ".txt"
+        try {
+            RunWait('git status -sb > "' tempStatusFile '"', scriptsDir, "Hide")
+            if (FileExist(tempStatusFile)) {
+                gitStatusOutput := FileRead(tempStatusFile)
+                FileDelete(tempStatusFile)
+                if (gitStatusOutput && InStr(gitStatusOutput, "behind")) {
+                    ; There are remote updates, add all scripts to the list
+                    allScripts := GetScriptFiles()
+                    for scriptPath in allScripts {
+                        fileName := ""
+                        if (InStr(scriptPath, "\")) {
+                            parts := StrSplit(scriptPath, "\")
+                            fileName := parts[parts.Length]
+                        } else {
+                            fileName := scriptPath
+                        }
+                        ; Only add if not already in list
+                        if (!scriptsNeedingUpdates.Has(fileName)) {
+                            scriptsNeedingUpdates.Push(fileName)
+                        }
+                    }
+                }
+            }
+        } catch {
+            ; Ignore temp file errors
+        }
+    } catch Error as e {
+        ; If git commands fail, return empty array (scripts may not be in git repo)
+    }
+    
+    return scriptsNeedingUpdates
+}
+
 ; Quick Update Scripts macro function
 QuickUpdateScripts() {
-    ; Check if we're in work environment
-    if (IS_WORK_ENVIRONMENT) {
-        ; Work environment file paths
-        files := [
-            "C:\Users\fie7ca\Documents\scripts\WindowManagement.ahk",
-            "C:\Users\fie7ca\Documents\scripts\Spotify.ahk",
-            "C:\Users\fie7ca\Documents\scripts\Shift keys.ahk",
-            "C:\Users\fie7ca\Documents\scripts\Outlook.ahk",
-            "C:\Users\fie7ca\Documents\scripts\Microsoft Teams.ahk",
-            "C:\Users\fie7ca\Documents\scripts\Gemini.ahk",
-            "C:\Users\fie7ca\Documents\scripts\AppLaunchers.ahk",
-            "C:\Users\fie7ca\Documents\scripts\Utils.ahk"
-        ]
-
-        ; Execute each script file
-        for index, file in files {
-            try {
-                Run file
-                Sleep 300
-            } catch Error as e {
-                ; Continue with next file if one fails
-            }
+    scriptsDir := GetScriptsDirectory()
+    files := GetScriptFiles()
+    failedScripts := []
+    
+    try {
+        ; Pull latest changes from git first
+        SetWorkingDir(scriptsDir)
+        RunWait("git fetch", scriptsDir, "Hide")
+        pullResult := RunWait("git pull", scriptsDir, "Hide")
+        if (pullResult != 0) {
+            ShowCenteredOverlay_Utils("Git pull failed. Continuing with script updates...", 2000, "FFFF00")
         }
+    } catch Error as e {
+        ShowCenteredOverlay_Utils("Git update failed: " e.Message, 2000, "FF0000")
+    }
+    
+    ; Execute each script file
+    for index, file in files {
+        try {
+            if (!FileExist(file)) {
+                failedScripts.Push(file " (not found)")
+                continue
+            }
+            Run file
+            Sleep 300
+        } catch Error as e {
+            fileName := ""
+            if (InStr(file, "\")) {
+                parts := StrSplit(file, "\")
+                fileName := parts[parts.Length]
+            } else {
+                fileName := file
+            }
+            failedScripts.Push(fileName " (" e.Message ")")
+        }
+    }
+    
+    ; Show notification if any scripts failed
+    if (failedScripts.Length > 0) {
+        failedList := ""
+        for script in failedScripts {
+            failedList .= script "`n"
+        }
+        ShowCenteredOverlay_Utils("Some scripts failed to update:`n" failedList, 4000, "FF0000")
     } else {
-        ; Personal environment file paths
-        files := [
-            "C:\Users\eduev\Meu Drive\12 - Scripts\WindowManagement.ahk",
-            "C:\Users\eduev\Meu Drive\12 - Scripts\Spotify.ahk",
-            "C:\Users\eduev\Meu Drive\12 - Scripts\Shift keys.ahk",
-            "C:\Users\eduev\Meu Drive\12 - Scripts\Outlook.ahk",
-            "C:\Users\eduev\Meu Drive\12 - Scripts\Microsoft Teams.ahk",
-            "C:\Users\eduev\Meu Drive\12 - Scripts\Gemini.ahk",
-            "C:\Users\eduev\Meu Drive\12 - Scripts\AppLaunchers.ahk",
-            "C:\Users\eduev\Meu Drive\12 - Scripts\Utils.ahk"
-        ]
+        ShowCenteredOverlay_Utils("All scripts updated successfully!", 1500, "00FF00")
+    }
+}
 
-        ; Execute each script file
-        for index, file in files {
-            try {
-                Run file
-                Sleep 300
-            } catch Error as e {
-                ; Continue with next file if one fails
-            }
+; Update Gemini script specifically, checking other scripts first
+UpdateGeminiScript() {
+    scriptsDir := GetScriptsDirectory()
+    geminiPath := scriptsDir "\Gemini.ahk"
+    
+    ; Check which scripts need updates
+    scriptsNeedingUpdates := CheckScriptsNeedingUpdates()
+    
+    ; Filter out Gemini.ahk from the list
+    otherScriptsNeedingUpdates := []
+    for script in scriptsNeedingUpdates {
+        if (script != "Gemini.ahk") {
+            otherScriptsNeedingUpdates.Push(script)
         }
+    }
+    
+    ; Notify if other scripts need updates
+    if (otherScriptsNeedingUpdates.Length > 0) {
+        otherScriptsList := ""
+        for script in otherScriptsNeedingUpdates {
+            otherScriptsList .= script "`n"
+        }
+        response := MsgBox("Other scripts need updates before Gemini:`n`n" otherScriptsList "`nUpdate all scripts now, or update only Gemini?", "Script Updates Available", "YesNo")
+        if (response = "Yes") {
+            ; Update all scripts
+            QuickUpdateScripts()
+            return
+        }
+    }
+    
+    ; Update only Gemini
+    try {
+        ; Pull latest changes first
+        SetWorkingDir(scriptsDir)
+        RunWait("git fetch", scriptsDir, "Hide")
+        RunWait("git pull", scriptsDir, "Hide")
+        
+        ; Run Gemini script
+        if (!FileExist(geminiPath)) {
+            MsgBox "Gemini.ahk not found at: " geminiPath, "Update Failed", "IconX"
+            return
+        }
+        Run geminiPath
+        ShowCenteredOverlay_Utils("Gemini script updated!", 1500, "00FF00")
+    } catch Error as e {
+        MsgBox "Failed to update Gemini script: " e.Message, "Update Failed", "IconX"
     }
 }
 
