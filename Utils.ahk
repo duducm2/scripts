@@ -535,6 +535,17 @@ QuickUpdateScripts() {
     } else {
         ShowCenteredOverlay_Utils("All scripts updated successfully!", 1500, "00FF00")
     }
+
+    ; Second layer: run Act.ahk so the full startup sequence runs again (scripts + apps + shortcuts).
+    ; Guarantees all shortcuts are re-registered in the current environment.
+    try {
+        actPath := GetScriptPath("Act.ahk")
+        if (FileExist(actPath)) {
+            Run actPath
+        }
+    } catch {
+        ; Silently skip if GetScriptPath or Run fails
+    }
 }
 
 ; Update Gemini script specifically, checking other scripts first
