@@ -36,6 +36,7 @@ SafeDebugLog(text) {
     return false
 }
 
+
 ; --- Hotkeys & Functions -----------------------------------------------------
 
 ; =============================================================================
@@ -149,6 +150,7 @@ ShowCursorFallbackPanel() {
 ; =============================================================================
 +#e::
 {
+    ClipAngelBanner_Show("Opening desktop...", "3772FF")
     SetTitleMatchMode 2
     targetHwnd := 0
 
@@ -193,7 +195,93 @@ ShowCursorFallbackPanel() {
         }
 
         CenterMouse()
-    }
+
+        Sleep 150
+        ; Inlined "select first file" (from Shift keys.ahk +f, EnsureItemsViewFocus, EnsureFocus) - no function calls
+        ; Do Right-click and focus work first (like original), then check for items before selecting
+        ; #region agent log
+        activeWin := WinExist("A")
+        DbgLogEx("AppLaunchers.ahk:199", "After Sleep 150, starting selection", '{"activeWinHwnd":' activeWin ',"targetHwnd":' targetHwnd '}', "H1,H2")
+        ; #endregion
+        Click "Right"
+        Sleep 100
+        Send "{ESC}"
+        ; #region agent log
+        DbgLogEx("AppLaunchers.ahk:204", "After Right-click, ESC, starting EnsureItemsViewFocus", "", "H3")
+        ; #endregion
+        try {
+            explorerHwnd := WinExist("A")
+            root := UIA.ElementFromHandle(explorerHwnd)
+            iv := root.FindFirst({ AutomationId: "ItemsView", Type: "List" })
+            ; #region agent log
+            DbgLogEx("AppLaunchers.ahk:210", "Found ItemsView", '{"ivExists":' (iv ? "true" : "false") ',"hasKeyboardFocus":' (iv && iv.HasKeyboardFocus ? "true" : "false") '}', "H3")
+            ; #endregion
+            if !(iv && iv.HasKeyboardFocus) {
+                loop 6 {
+                    Send "{F6}"
+                    Sleep 120
+                    iv := root.FindFirst({ AutomationId: "ItemsView", Type: "List" })
+                    ; #region agent log
+                    DbgLogEx("AppLaunchers.ahk:217", "F6 cycle", '{"iteration":' A_Index ',"ivExists":' (iv ? "true" : "false") ',"hasKeyboardFocus":' (iv && iv.HasKeyboardFocus ? "true" : "false") '}', "H3")
+                    ; #endregion
+                    if iv && iv.HasKeyboardFocus
+                        break
+                }
+            }
+        } catch as err {
+            ; #region agent log
+            DbgLogEx("AppLaunchers.ahk:223", "Exception in EnsureItemsViewFocus", '{"error":' err.Message '}', "H3,H6")
+            ; #endregion
+        }
+        ; Scroll to top of list
+        Send "^{Home}"
+        ; #region agent log
+        DbgLogEx("AppLaunchers.ahk:236", "Sent Ctrl+Home to scroll to top", "", "H3")
+        ; #endregion
+        ; Now check if folder has items (after focus work, UIA should be ready)
+        hasItem := false
+        firstItem := ""
+        try {
+            explorerEl := UIA.ElementFromHandle(WinExist("A"))
+            itemsView := explorerEl.FindFirst({ AutomationId: "ItemsView", Type: "List" })
+                ? explorerEl.FindFirst({ AutomationId: "ItemsView", Type: "List" })
+                : explorerEl.FindFirst({ ClassName: "UIItemsView", Type: "List" })
+                    ? explorerEl.FindFirst({ ClassName: "UIItemsView", Type: "List" })
+                    : explorerEl.FindFirst({ Name: "Items View", Type: "List", matchmode: "Substring" })
+            listRoot := itemsView ? itemsView : explorerEl
+            firstItem := listRoot.FindFirst({ Type: "ListItem" })
+            ; #region agent log
+            DbgLogEx("AppLaunchers.ahk:234", "Checking for ListItem after focus", '{"firstItemExists":' (firstItem ? "true" : "false") ',"itemsViewExists":' (itemsView ? "true" : "false") ',"listRootIsExplorerEl":' (listRoot == explorerEl ? "true" : "false") '}', "H1,H4")
+            ; #endregion
+            if (firstItem)
+                hasItem := true
+        } catch as err {
+            ; #region agent log
+            DbgLogEx("AppLaunchers.ahk:239", "Exception finding ListItem", '{"error":' err.Message '}', "H1,H4,H6")
+            ; #endregion
+        }
+        ; Only select if folder has items
+        if (hasItem && firstItem) {
+            ; #region agent log
+            DbgLogEx("AppLaunchers.ahk:243", "hasItem is true, selecting firstItem", "", "H1,H4")
+            ; #endregion
+            firstItem.ScrollIntoView()
+            firstItem.Select()
+            firstItem.SetFocus()
+            ; #region agent log
+            DbgLogEx("AppLaunchers.ahk:247", "Called ScrollIntoView, Select, SetFocus on firstItem", "", "H4")
+            ; #endregion
+            Send "{Down}"
+            Send "{Up}"
+        } else {
+            ; #region agent log
+            DbgLogEx("AppLaunchers.ahk:252", "hasItem is false or firstItem not found, skipping selection", '{"hasItem":' (hasItem ? "true" : "false") ',"firstItemExists":' (firstItem ? "true" : "false") '}', "H1,H4")
+            ; #endregion
+        }
+        ClipAngelBanner_Show("Done", "27AE60")
+        SetTimer(ClipAngelBanner_Hide, -500)
+    } else
+        ClipAngelBanner_Hide()
 }
 
 ; =============================================================================
