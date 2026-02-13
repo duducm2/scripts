@@ -192,6 +192,9 @@ ShowCursorFallbackPanel() {
             WinActivate("ahk_id " targetHwnd)
         }
 
+        Sleep 350
+        Send "^{Up}"
+
         CenterMouse()
     }
 }
@@ -338,7 +341,8 @@ global g_WikipediaCompletedFile := A_ScriptDir "\data\wikipedia_completed.csv"
 ; Item 5: Key
 global g_WikipediaItems := [{ char: "1", title: "Claude Debussy", url: "https://en.wikipedia.org/wiki/Claude_Debussy" }, { char: "2",
     title: "Daoshi", url: "https://en.wikipedia.org/wiki/Daoshi" }, { char: "3", title: "Self-cultivation",
-        url: "https://en.wikipedia.org/wiki/Self-cultivation" }, { char: "4", title: "Cognitive therapy", url: "https://en.wikipedia.org/wiki/Cognitive_therapy" }, { char: "5", title: "Key", url: "https://en.wikipedia.org/wiki/Key_(music)" }
+        url: "https://en.wikipedia.org/wiki/Self-cultivation" }, { char: "4", title: "Cognitive therapy", url: "https://en.wikipedia.org/wiki/Cognitive_therapy" }, { char: "5",
+            title: "Key", url: "https://en.wikipedia.org/wiki/Key_(music)" }
 ]
 
 ; =============================================================================
