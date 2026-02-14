@@ -3171,6 +3171,8 @@ InitMacros() {
     RegisterMacro(MergeNonFavoriteClips, "📋 Merge Non-Favorite Clips", "u")
     ; Mark Last Clip as Favorite macro (assigned to "J")
     RegisterMacro(MarkLastClipAsFavorite, "⭐ Mark Last Clip as Favorite", "j")
+    ; Move Desktop to Recycle Bin (assigned to "N") — red banner, Y/N confirm
+    RegisterMacro(DesktopToRecycle_Trigger, "🗑️ Move Desktop to Recycle Bin", "n")
 }
 InitMacros()
 
@@ -3225,6 +3227,143 @@ InitDpiAwareness()
 #!+C::
 {
     SelectAiModelInHandy()
+}
+
+; =============================================================================
+; Move all Desktop items to Recycle Bin (recoverable)
+; Trigger: Win+Alt+Shift+U selector → letter N
+; Target path: OneDrive Desktop. Red confirmation (with path), then success banner.
+; =============================================================================
+global g_DesktopToRecycleGui := 0
+global g_DesktopToRecycleTextCtrl := 0
+global g_DesktopToRecyclePath := "C:\Users\eduev\OneDrive\Desktop"
+
+DesktopToRecycle_ShowBanner() {
+    global g_DesktopToRecycleGui, g_DesktopToRecycleTextCtrl, g_DesktopToRecyclePath
+    ; #region agent log
+    pathSlash := StrReplace(StrReplace(g_DesktopToRecyclePath, "\", "/"), "`"", "'")
+    DbgLogEx("Utils.ahk:DesktopToRecycle_ShowBanner", "entry", "{`"path`":`"" . pathSlash . "`"}", "H2")
+    ; #endregion
+    try {
+        if IsObject(g_DesktopToRecycleGui)
+            g_DesktopToRecycleGui.Destroy()
+    } catch {
+    }
+    g_DesktopToRecycleGui := 0
+    g_DesktopToRecycleTextCtrl := 0
+
+    target := WinGetID("A")
+    hasWindow := false
+    if target && WinExist("ahk_id " target) {
+        try {
+            WinGetPos(&wx, &wy, &ww, &wh, target)
+            hasWindow := (ww > 0 && wh > 0)
+        } catch {
+            hasWindow := false
+        }
+    }
+
+    confirmText := "Move all items from:`n" . g_DesktopToRecyclePath . "`nto Recycle Bin? (Y = Yes, N = No)"
+    ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
+    ov.BackColor := "C0392B"
+    ov.SetFont("s22 cFFFFFF Bold", "Segoe UI")
+    g_DesktopToRecycleTextCtrl := ov.Add("Text", "w700 Center", confirmText)
+    ov.Show("AutoSize Hide")
+    ov.GetPos(&gx, &gy, &gw, &gh)
+
+    if hasWindow {
+        cx := wx + (ww - gw) // 2
+        cy := wy + (wh - gh) // 2
+        ov.Show("x" . cx . " y" . cy . " NA")
+    } else {
+        vx := SysGet(76)
+        vy := SysGet(77)
+        vw := SysGet(78)
+        vh := SysGet(79)
+        cx := vx + (vw - gw) // 2
+        cy := vy + (vh - gh) // 2
+        ov.Show("x" . cx . " y" . cy . " NA")
+    }
+
+    WinSetTransparent(178, ov)
+    g_DesktopToRecycleGui := ov
+}
+
+DesktopToRecycle_HideBanner() {
+    global g_DesktopToRecycleGui, g_DesktopToRecycleTextCtrl
+    try {
+        if IsObject(g_DesktopToRecycleGui)
+            g_DesktopToRecycleGui.Destroy()
+    } catch {
+    }
+    g_DesktopToRecycleGui := 0
+    g_DesktopToRecycleTextCtrl := 0
+}
+
+DesktopToRecycle_SetConfirmHotkeys(enable := true) {
+    if (enable) {
+        Hotkey("*y", DesktopToRecycle_Confirm, "On")
+        Hotkey("*n", DesktopToRecycle_Cancel, "On")
+    } else {
+        try Hotkey("*y", "Off")
+        catch {
+        }
+        try Hotkey("*n", "Off")
+        catch {
+        }
+    }
+}
+
+DesktopToRecycle_Cancel(*) {
+    DesktopToRecycle_SetConfirmHotkeys(false)
+    DesktopToRecycle_HideBanner()
+}
+
+DesktopToRecycle_Confirm(*) {
+    ; #region agent log
+    DbgLogEx("Utils.ahk:DesktopToRecycle_Confirm", "Y pressed, running", "{}", "H2")
+    ; #endregion
+    DesktopToRecycle_SetConfirmHotkeys(false)
+    DesktopToRecycle_HideBanner()
+    DesktopToRecycle_Run()
+}
+
+DesktopToRecycle_Run() {
+    global g_DesktopToRecyclePath
+    ; #region agent log
+    pathExists := DirExist(g_DesktopToRecyclePath)
+    pathSlash := StrReplace(StrReplace(g_DesktopToRecyclePath, "\", "/"), "`"", "'")
+    DbgLogEx("Utils.ahk:DesktopToRecycle_Run", "entry", "{`"path`":`"" . pathSlash . "`",`"pathExists`":" . (pathExists ? "true" : "false") . "}", "H3")
+    ; #endregion
+    ; Use .NET FileIO.FileSystem SendToRecycleBin (no Shell verbs); process dirs last so parent exists
+    ui := "[Microsoft.VisualBasic.FileIO.UIOption]::OnlyErrorDialogs"
+    rec := "[Microsoft.VisualBasic.FileIO.RecycleOption]::SendToRecycleBin"
+    ps := "Add-Type -AssemblyName Microsoft.VisualBasic;$d='" . g_DesktopToRecyclePath . "';if(-not(Test-Path -LiteralPath $d)){exit 1};$files=@(Get-ChildItem -LiteralPath $d -Force|Where-Object{-not $_.PSIsContainer});$dirs=@(Get-ChildItem -LiteralPath $d -Force|Where-Object{$_.PSIsContainer});foreach($f in $files){try{[Microsoft.VisualBasic.FileIO.FileSystem]::DeleteFile($f.FullName," . ui . "," . rec . ")}catch{}};foreach($dir in $dirs){try{[Microsoft.VisualBasic.FileIO.FileSystem]::DeleteDirectory($dir.FullName," . ui . "," . rec . ")}catch{}};exit 0"
+    try {
+        exitCode := RunWait('powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "' . ps . '"', "", "Hide")
+        ; #region agent log
+        DbgLogEx("Utils.ahk:DesktopToRecycle_Run", "RunWait done", "{`"exitCode`":" . Integer(exitCode) . "}", "H3")
+        ; #endregion
+        if (exitCode = 0)
+            ShowCenteredOverlay_Utils("Desktop items moved to Recycle Bin", 2000, "27AE60")
+        else
+            ShowCenteredOverlay_Utils("Desktop path not found or error", 2500, "C0392B")
+    } catch as err {
+        ; #region agent log
+        errMsg := StrReplace(StrReplace(err.Message, "\", "/"), "`"", "'")
+        DbgLogEx("Utils.ahk:DesktopToRecycle_Run", "RunWait throw", "{`"msg`":`"" . errMsg . "`"}", "H3")
+        ; #endregion
+        ShowCenteredOverlay_Utils("Error moving to Recycle Bin", 2500, "C0392B")
+    }
+}
+
+; Entry point when "N" is pressed in Win+Alt+Shift+U selector
+DesktopToRecycle_Trigger() {
+    ; #region agent log
+    DbgLogEx("Utils.ahk:DesktopToRecycle_Trigger", "entry", "{}", "H1")
+    ; #endregion
+    DesktopToRecycle_ShowBanner()
+    DesktopToRecycle_SetConfirmHotkeys(true)
 }
 
 ; =============================================================================
@@ -5653,9 +5792,21 @@ HandleHotstringChar(char) {
         macroFunc := g_MacroCharMap.Get(StrLower(char), "")
     }
 
+    ; #region agent log
+    if (char = "n" || char = "N") {
+        hasMacro := (macroFunc != "")
+        DbgLogEx("Utils.ahk:HandleHotstringChar", "N key: hasMacro", "{`"hasMacro`":" . (hasMacro ? "true" : "false") . "}", "H1")
+    }
+    ; #endregion
+
     if (macroFunc != "") {
         ; Cleanup first (closes GUI, disables hotkeys)
         CleanupHotstringSelector()
+
+        ; #region agent log
+        if (char = "n" || char = "N")
+            DbgLogEx("Utils.ahk:HandleHotstringChar", "calling macro for N", "{}", "H1")
+        ; #endregion
 
         ; Execute the macro function
         try {
