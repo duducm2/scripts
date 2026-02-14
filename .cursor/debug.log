@@ -12,3 +12,13 @@
 {"ts":89875421,"loc":"Utils.ahk:DesktopToRecycle_Confirm","msg":"Y pressed, running","data":{},"hypothesisId":"H2"}
 {"ts":89875421,"loc":"Utils.ahk:DesktopToRecycle_Run","msg":"entry","data":{"path":"C:/Users/eduev/OneDrive/Desktop","pathExists":true},"hypothesisId":"H3"}
 {"ts":89876250,"loc":"Utils.ahk:DesktopToRecycle_Run","msg":"RunWait done","data":{"exitCode":0},"hypothesisId":"H3"}
+{"ts":90257078,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":90257078,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":90257078,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":90257109,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":90257125,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":90572078,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":90572078,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":90572093,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":90572109,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":90572125,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
