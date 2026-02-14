@@ -3240,10 +3240,6 @@ global g_DesktopToRecyclePath := "C:\Users\eduev\OneDrive\Desktop"
 
 DesktopToRecycle_ShowBanner() {
     global g_DesktopToRecycleGui, g_DesktopToRecycleTextCtrl, g_DesktopToRecyclePath
-    ; #region agent log
-    pathSlash := StrReplace(StrReplace(g_DesktopToRecyclePath, "\", "/"), "`"", "'")
-    DbgLogEx("Utils.ahk:DesktopToRecycle_ShowBanner", "entry", "{`"path`":`"" . pathSlash . "`"}", "H2")
-    ; #endregion
     try {
         if IsObject(g_DesktopToRecycleGui)
             g_DesktopToRecycleGui.Destroy()
@@ -3320,9 +3316,6 @@ DesktopToRecycle_Cancel(*) {
 }
 
 DesktopToRecycle_Confirm(*) {
-    ; #region agent log
-    DbgLogEx("Utils.ahk:DesktopToRecycle_Confirm", "Y pressed, running", "{}", "H2")
-    ; #endregion
     DesktopToRecycle_SetConfirmHotkeys(false)
     DesktopToRecycle_HideBanner()
     DesktopToRecycle_Run()
@@ -3330,38 +3323,23 @@ DesktopToRecycle_Confirm(*) {
 
 DesktopToRecycle_Run() {
     global g_DesktopToRecyclePath
-    ; #region agent log
-    pathExists := DirExist(g_DesktopToRecyclePath)
-    pathSlash := StrReplace(StrReplace(g_DesktopToRecyclePath, "\", "/"), "`"", "'")
-    DbgLogEx("Utils.ahk:DesktopToRecycle_Run", "entry", "{`"path`":`"" . pathSlash . "`",`"pathExists`":" . (pathExists ? "true" : "false") . "}", "H3")
-    ; #endregion
     ; Use .NET FileIO.FileSystem SendToRecycleBin (no Shell verbs); process dirs last so parent exists
     ui := "[Microsoft.VisualBasic.FileIO.UIOption]::OnlyErrorDialogs"
     rec := "[Microsoft.VisualBasic.FileIO.RecycleOption]::SendToRecycleBin"
     ps := "Add-Type -AssemblyName Microsoft.VisualBasic;$d='" . g_DesktopToRecyclePath . "';if(-not(Test-Path -LiteralPath $d)){exit 1};$files=@(Get-ChildItem -LiteralPath $d -Force|Where-Object{-not $_.PSIsContainer});$dirs=@(Get-ChildItem -LiteralPath $d -Force|Where-Object{$_.PSIsContainer});foreach($f in $files){try{[Microsoft.VisualBasic.FileIO.FileSystem]::DeleteFile($f.FullName," . ui . "," . rec . ")}catch{}};foreach($dir in $dirs){try{[Microsoft.VisualBasic.FileIO.FileSystem]::DeleteDirectory($dir.FullName," . ui . "," . rec . ")}catch{}};exit 0"
     try {
         exitCode := RunWait('powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "' . ps . '"', "", "Hide")
-        ; #region agent log
-        DbgLogEx("Utils.ahk:DesktopToRecycle_Run", "RunWait done", "{`"exitCode`":" . Integer(exitCode) . "}", "H3")
-        ; #endregion
         if (exitCode = 0)
             ShowCenteredOverlay_Utils("Desktop items moved to Recycle Bin", 2000, "27AE60")
         else
             ShowCenteredOverlay_Utils("Desktop path not found or error", 2500, "C0392B")
     } catch as err {
-        ; #region agent log
-        errMsg := StrReplace(StrReplace(err.Message, "\", "/"), "`"", "'")
-        DbgLogEx("Utils.ahk:DesktopToRecycle_Run", "RunWait throw", "{`"msg`":`"" . errMsg . "`"}", "H3")
-        ; #endregion
         ShowCenteredOverlay_Utils("Error moving to Recycle Bin", 2500, "C0392B")
     }
 }
 
 ; Entry point when "N" is pressed in Win+Alt+Shift+U selector
 DesktopToRecycle_Trigger() {
-    ; #region agent log
-    DbgLogEx("Utils.ahk:DesktopToRecycle_Trigger", "entry", "{}", "H1")
-    ; #endregion
     DesktopToRecycle_ShowBanner()
     DesktopToRecycle_SetConfirmHotkeys(true)
 }
@@ -5792,21 +5770,9 @@ HandleHotstringChar(char) {
         macroFunc := g_MacroCharMap.Get(StrLower(char), "")
     }
 
-    ; #region agent log
-    if (char = "n" || char = "N") {
-        hasMacro := (macroFunc != "")
-        DbgLogEx("Utils.ahk:HandleHotstringChar", "N key: hasMacro", "{`"hasMacro`":" . (hasMacro ? "true" : "false") . "}", "H1")
-    }
-    ; #endregion
-
     if (macroFunc != "") {
         ; Cleanup first (closes GUI, disables hotkeys)
         CleanupHotstringSelector()
-
-        ; #region agent log
-        if (char = "n" || char = "N")
-            DbgLogEx("Utils.ahk:HandleHotstringChar", "calling macro for N", "{}", "H1")
-        ; #endregion
 
         ; Execute the macro function
         try {
