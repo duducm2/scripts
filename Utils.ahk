@@ -335,7 +335,15 @@ InitHotstringsCheatSheet() {
     } catch {
         RegisterHotstring("", "", "Prompts", "Reserved 5")
     }
-    RegisterHotstring("", "", "Prompts", "Reserved 6")
+    ; Character t: story revision (content from notes/studies/technique/prompts/revision-prompt.txt)
+    ; NOTE: Code will be updated upon access to the work laptop (work-env path placeholder)
+    revisionPromptPath := "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\technique\prompts\revision-prompt.txt"  ; Work env: replace with work path
+    try {
+        revisionPrompt := FileRead(revisionPromptPath)
+        RegisterHotstring(":o:revision", revisionPrompt, "Prompts", "📝 Story revision", "t")
+    } catch {
+        RegisterHotstring("", "", "Prompts", "Reserved 6")
+    }
     RegisterHotstring("", "", "Prompts", "Reserved 7")
 
     ; General Information (2 items) - Second category
