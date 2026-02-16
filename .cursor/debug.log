@@ -971,3 +971,5 @@
 {"ts":245187312,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
 {"ts":245187312,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
 {"ts":245187343,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":245564765,"loc":"FindGeminiPromptField","msg":"entry","hypothesisId":"H1"}
+{"ts":245564812,"loc":"FindGeminiPromptField","msg":"return found","data":{"name":"Enter a prompt for Gemini"},"hypothesisId":"H1"}
