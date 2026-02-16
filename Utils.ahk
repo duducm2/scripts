@@ -309,7 +309,7 @@ InitHotstringsCheatSheet() {
     }
     ; Character w: creating mnemonic stories (content from notes/studies/technique/story-prompt.txt)
     ; NOTE: Code will be updated upon access to the work laptop (work-env path placeholder)
-    mnemonicPromptPath := "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\technique\story-prompt.txt"  ; Work env: replace with work path
+    mnemonicPromptPath := "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\technique\prompts\story-prompt.txt"  ; Work env: replace with work path
     try {
         mnemonicPrompt := FileRead(mnemonicPromptPath)
         RegisterHotstring(":o:mnemonic", mnemonicPrompt, "Prompts", "📖 Creating mnemonic stories")
@@ -318,14 +318,23 @@ InitHotstringsCheatSheet() {
     }
     ; Character e: transcript YouTube video (content from notes/studies/technique/video-transcription-prompt.txt)
     ; NOTE: Code will be updated upon access to the work laptop (work-env path placeholder)
-    transcriptPromptPath := "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\technique\video-transcription-prompt.txt"  ; Work env: replace with work path
+    transcriptPromptPath :=
+        "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\technique\prompts\video-transcription-prompt.txt"  ; Work env: replace with work path
     try {
         transcriptPrompt := FileRead(transcriptPromptPath)
         RegisterHotstring(":o:ytranscript", transcriptPrompt, "Prompts", "🎬 Transcript Youtube Video")
     } catch {
         RegisterHotstring("", "", "Prompts", "Reserved 4")
     }
-    RegisterHotstring("", "", "Prompts", "Reserved 5")
+    ; Character r: read aloud this story (content from notes/studies/technique/prompts/read-aloud-prompt.txt)
+    ; NOTE: Code will be updated upon access to the work laptop (work-env path placeholder)
+    readAloudPromptPath := "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\technique\prompts\read-aloud-prompt.txt"  ; Work env: replace with work path
+    try {
+        readAloudPrompt := FileRead(readAloudPromptPath)
+        RegisterHotstring(":o:readaloud", readAloudPrompt, "Prompts", "📖 read aloud this story", "r")
+    } catch {
+        RegisterHotstring("", "", "Prompts", "Reserved 5")
+    }
     RegisterHotstring("", "", "Prompts", "Reserved 6")
     RegisterHotstring("", "", "Prompts", "Reserved 7")
 
