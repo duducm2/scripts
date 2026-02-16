@@ -8947,8 +8947,8 @@ class CommitMessageAsync {
         this.OriginalHwnd := 0
         this.TimerCallback := ""
         this.RetryCount := 0
-        this.MaxRetries := 120   ; 120 * 500ms = 60s timeout
-        this.MinRetriesBeforeFailure := 20   ; 20 * 500ms = 10s minimum wait before any failure
+        this.MaxRetries := 180   ; 180 * 500ms = 90s timeout
+        this.MinRetriesBeforeFailure := 30   ; 30 * 500ms = 15s minimum wait before any failure
         this.ContentFoundOnce := false
     }
 
@@ -9015,7 +9015,7 @@ class CommitMessageAsync {
         if (this.RetryCount > this.MinRetriesBeforeFailure && this.RetryCount > this.MaxRetries) {
             SetTimer(this.TimerCallback, 0)
             HideSmallLoadingIndicator_ChatGPT()
-            MsgBox "Commit message generation timed out after 60 seconds.", "Commit Timeout", "Icon!"
+            MsgBox "Commit message generation timed out after 90 seconds.", "Commit Timeout", "Icon!"
             return
         }
 
