@@ -8746,8 +8746,8 @@ IsEditorActive() {
 +b:: Send "+b"
 
 ; ---------------------------------------------------------------------------
-; Ctrl + M : Generate commit message (sync), wait 20s, return focus, commit
-; No banners; sound cue 3s before end; shortcuts from cheat sheet (Shift+V, Shift+B)
+; Ctrl + M : Generate commit message (sync), wait 10s, return focus, commit
+; No banners; sound cue 1s before end; shortcuts from cheat sheet (Shift+V, Shift+B)
 ; ---------------------------------------------------------------------------
 ^M:: {
     global gCommitPushTargetWin
@@ -8763,12 +8763,12 @@ IsEditorActive() {
     SoundPlay A_ScriptDir "\sounds\commit-start.wav"
     Send "^!a"
 
-    ; 2. Wait 20s; user can interact with any window
-    Sleep 17000
-    ; 3. Audio cue 3s before end
+    ; 2. Wait 10s; user can interact with any window
+    Sleep 9000
+    ; 3. Audio cue 1s before end
     if (IsSoundEnabled())
         SoundPlay A_ScriptDir "\sounds\go-back-commit.wav"
-    Sleep 3000
+    Sleep 1000
 
     ; 4. Return focus to Cursor
     WinActivate("ahk_id " hwnd)
