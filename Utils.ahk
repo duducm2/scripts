@@ -3287,6 +3287,7 @@ InitDpiAwareness()
 global g_DesktopToRecycleGui := 0
 global g_DesktopToRecycleTextCtrl := 0
 global g_DesktopToRecyclePath := "C:\Users\eduev\OneDrive\Desktop"
+global g_DesktopToRecycleCloseHwnd := 0
 
 DesktopToRecycle_ShowBanner() {
     global g_DesktopToRecycleGui, g_DesktopToRecycleTextCtrl, g_DesktopToRecyclePath
@@ -3390,10 +3391,27 @@ DesktopToRecycle_Run() {
     } catch as err {
         ShowCenteredOverlay_Utils("Error moving to Recycle Bin", 2500, "C0392B")
     }
+    ; Close Desktop Explorer window if it was active when macro was triggered
+    global g_DesktopToRecycleCloseHwnd
+    if (g_DesktopToRecycleCloseHwnd && WinExist("ahk_id " g_DesktopToRecycleCloseHwnd)) {
+        try WinClose("ahk_id " g_DesktopToRecycleCloseHwnd)
+        g_DesktopToRecycleCloseHwnd := 0
+    }
 }
 
 ; Entry point when "N" is pressed in Win+Alt+Shift+U selector
 DesktopToRecycle_Trigger() {
+    global g_DesktopToRecycleCloseHwnd
+    ; Remember active window if it's Explorer showing Desktop - close it after cleaning
+    hwnd := WinExist("A")
+    g_DesktopToRecycleCloseHwnd := 0
+    if (hwnd && WinGetProcessName("ahk_id " hwnd) = "explorer.exe") {
+        try {
+            if (InStr(WinGetTitle("ahk_id " hwnd), "Desktop", false))
+                g_DesktopToRecycleCloseHwnd := hwnd
+        } catch {
+        }
+    }
     DesktopToRecycle_ShowBanner()
     DesktopToRecycle_SetConfirmHotkeys(true)
 }
