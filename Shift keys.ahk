@@ -8760,6 +8760,7 @@ IsEditorActive() {
     PromptCommitPushDecisionBlocking()
 
     ; 1. Trigger generation (Ctrl+Alt+A)
+    SoundPlay A_ScriptDir "\sounds\commit-start.wav"
     Send "^!a"
 
     ; 2. Wait 20s; user can interact with any window
