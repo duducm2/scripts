@@ -8948,6 +8948,7 @@ class CommitMessageAsync {
         this.TimerCallback := ""
         this.RetryCount := 0
         this.MaxRetries := 120   ; 120 * 500ms = 60s timeout
+        this.MinRetriesBeforeFailure := 20   ; 20 * 500ms = 10s minimum wait before any failure
         this.ContentFoundOnce := false
     }
 
@@ -9010,7 +9011,8 @@ class CommitMessageAsync {
 
     CheckCompletion() {
         this.RetryCount++
-        if (this.RetryCount > this.MaxRetries) {
+        ; Minimum 10s wait before any failure - do not timeout until at least 10s have elapsed
+        if (this.RetryCount > this.MinRetriesBeforeFailure && this.RetryCount > this.MaxRetries) {
             SetTimer(this.TimerCallback, 0)
             HideSmallLoadingIndicator_ChatGPT()
             MsgBox "Commit message generation timed out after 60 seconds.", "Commit Timeout", "Icon!"
@@ -9051,19 +9053,33 @@ class CommitMessageAsync {
         ShowSmallLoadingIndicator_ChatGPT("Message ready, committing…")
 
         WinActivate("ahk_id " this.OriginalHwnd)
-        if !WinWaitActive("ahk_id " this.OriginalHwnd, , 2) {
+        if !WinWaitActive("ahk_id " this.OriginalHwnd, , 3) {
             HideSmallLoadingIndicator_ChatGPT()
             return
         }
 
-        ; Final verification before commit
-        if (!VerifyCommitMessageHasContent()) {
-            HideSmallLoadingIndicator_ChatGPT()
-            Sleep 2000
-            if (!VerifyCommitMessageHasContent()) {
-                MsgBox "Commit message is empty. Aborting commit.", "Empty Commit Message", "IconX"
-                return
+        ; Initial grace period for UI to stabilize
+        Sleep 1000
+
+        ; Multi-source verification: try both clipboard and UIA; retry up to 4 attempts
+        messageReady := false
+        loop 4 {
+            try {
+                if (VerifyCommitMessageHasContent() || HasCommitMessageContent()) {
+                    messageReady := true
+                    break
+                }
+            } catch {
+                ; Transient error, retry
             }
+            if (A_Index < 4)
+                Sleep 1500
+        }
+
+        if (!messageReady) {
+            HideSmallLoadingIndicator_ChatGPT()
+            MsgBox "Commit message is empty. Aborting commit.", "Empty Commit Message", "IconX"
+            return
         }
 
         Send "^!,"

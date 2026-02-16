@@ -341,7 +341,8 @@ GeminiTriggerReadAloud(copyFirst := true) {
 
     ; Step 4: Find the final "More options" / "Show more options" in the Gemini response tree (bottom-up).
     ; We target only the most recent Gemini response to avoid reading older messages. See gemini-tree.txt for tree structure.
-    searchBanner := CreateCenteredBanner(copyFirst ? "Finding read aloud button and copying..." : "Finding read aloud button...", "3772FF", "FFFFFF", 24, 178)
+    searchBanner := CreateCenteredBanner(copyFirst ? "Finding read aloud button and copying..." :
+        "Finding read aloud button...", "3772FF", "FFFFFF", 24, 178)
     Sleep 250
 
     allMoreOptionsButtons := []
@@ -361,7 +362,8 @@ GeminiTriggerReadAloud(copyFirst := true) {
             allMenuItems := uia.FindAll({ Type: 50011 })
             for menuItem in allMenuItems {
                 name := menuItem.Name
-                if (name = "Show more options" || name = "More options" || InStr(name, "Show more options", false) = 1 || InStr(name, "More options", false) = 1)
+                if (name = "Show more options" || name = "More options" || InStr(name, "Show more options", false) = 1 ||
+                InStr(name, "More options", false) = 1)
                     allMoreOptionsButtons.Push(menuItem)
             }
         } catch {
@@ -613,7 +615,8 @@ WM_COPY_LAST_GEMINI := 0x8001
 ; #region agent log
 _DebugLog_Gemini(msg, data := "") {
     path := A_ScriptDir "\.cursor\debug.log"
-    line := '{"location":"Gemini.ahk","message":"' . msg . '","data":' . (data = "" ? "{}" : data) . ',"timestamp":' . A_TickCount . '}' . "`n"
+    line := '{"location":"Gemini.ahk","message":"' . msg . '","data":' . (data = "" ? "{}" : data) . ',"timestamp":' .
+    A_TickCount . '}' . "`n"
     FileAppend line, path
 }
 ; #endregion
@@ -831,7 +834,8 @@ class GeminiAsyncLookup {
         if !this.OriginalHwnd
             return
         ; Show loading banner immediately, centered on the monitor where this window is (with warning)
-        ShowSmallLoadingIndicator("Loading…`n`n⚠️ Please do not click or use the keyboard", "3772FF", this.OriginalHwnd, 200, 16)
+        ShowSmallLoadingIndicator("Loading…`n`n⚠️ Please do not click or use the keyboard", "3772FF", this.OriginalHwnd,
+            200, 16)
 
         A_Clipboard := ""
         Send "^c"
@@ -1023,7 +1027,8 @@ class GeminiAsyncLookup {
 ; GeminiAsyncTTS – copy selection, send "repeat exactly" to Gemini, then trigger read aloud (Win+Alt+Shift+7)
 ; =============================================================================
 class GeminiAsyncTTS {
-    static TTSPrompt := "Repeat the following text exactly as it is. Do not add any introduction, explanation, or markdown formatting. Just output the text itself:`n`n"
+    static TTSPrompt :=
+        "Repeat the following text exactly as it is. Do not add any introduction, explanation, or markdown formatting. Just output the text itself:`n`n"
 
     __New() {
         this.OriginalHwnd := 0
@@ -1038,7 +1043,8 @@ class GeminiAsyncTTS {
         this.OriginalHwnd := WinExist("A")
         if !this.OriginalHwnd
             return
-        ShowSmallLoadingIndicator("Loading…`n`n⚠️ Please do not click or use the keyboard", "3772FF", this.OriginalHwnd, 200, 16)
+        ShowSmallLoadingIndicator("Loading…`n`n⚠️ Please do not click or use the keyboard", "3772FF", this.OriginalHwnd,
+            200, 16)
 
         A_Clipboard := ""
         Send "^c"
