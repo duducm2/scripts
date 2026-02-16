@@ -1012,7 +1012,7 @@ class GeminiAsyncLookup {
             try banner.Destroy()
         }
         banner.OnEvent("Close", closeBanner)
-        SetTimer(closeBanner, -50000)
+l        SetTimer(closeBanner, -50000)
         ; Press Escape or Enter to remove the banner
         Hotkey("Escape", closeBanner, "On")
         Hotkey("Enter", closeBanner, "On")
