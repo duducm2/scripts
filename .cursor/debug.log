@@ -1,55 +1,13 @@
-{"ts":263834421,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
-{"ts":263834421,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
-{"ts":263834437,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"ts":263834453,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"ts":263834468,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"ts":263879921,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
-{"ts":263879921,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
-{"ts":263879921,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"ts":263879953,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"ts":263883625,"loc":"Handy_OpenAiModelMenu","msg":"entry","data":{},"hypothesisId":"H1"}
-{"ts":263883671,"loc":"Handy_OpenAiModelMenu","msg":"anchor by ClassName","data":{"by":"ClassName"},"hypothesisId":"H1"}
-{"ts":263884265,"loc":"Handy_OpenAiModelMenu","msg":"exit true","data":{},"hypothesisId":"H1"}
-{"ts":263885078,"loc":"Handy_ClickAiModel","msg":"entry","data":{"modelName":"Parakeet V2"},"hypothesisId":"H2"}
-{"ts":263885109,"loc":"Handy_ClickAiModel","msg":"buttons scanned","data":{"count":20,"nameMatchNoClass":"","found":0},"hypothesisId":"H2"}
-{"ts":263897546,"loc":"Handy_OpenAiModelMenu","msg":"entry","data":{},"hypothesisId":"H1"}
-{"ts":263897578,"loc":"Handy_OpenAiModelMenu","msg":"anchor by ClassName","data":{"by":"ClassName"},"hypothesisId":"H1"}
-{"ts":263898125,"loc":"Handy_OpenAiModelMenu","msg":"exit true","data":{},"hypothesisId":"H1"}
-{"ts":263898937,"loc":"Handy_ClickAiModel","msg":"entry","data":{"modelName":"Parakeet V2"},"hypothesisId":"H2"}
-{"ts":263898984,"loc":"Handy_ClickAiModel","msg":"name match","data":{"btnName":"Parakeet V2 English only. The best model for English speakers.","btnClass":"w-full px-3 py-2 text-start hover:bg-mid-gray/10 transition-colors cursor-pointer focus:outline-none ","hasWfull":0,"hasTextStart":1,"hasFlex":0},"hypothesisId":"H2"}
-{"ts":263898984,"loc":"Handy_ClickAiModel","msg":"buttons scanned","data":{"count":23,"nameMatchNoClass":"","found":1},"hypothesisId":"H2"}
-{"ts":263899000,"loc":"Handy_ClickAiModel","msg":"click ok","data":{},"hypothesisId":"H2"}
-{"ts":263899015,"loc":"Handy_WaitForModelReady","msg":"entry","data":{},"hypothesisId":"H3"}
-{"ts":263901281,"loc":"Handy_WaitForModelReady","msg":"ready","data":{"btnName":"Parakeet V2"},"hypothesisId":"H3"}
-{"ts":264015625,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
-{"ts":264015625,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"ts":264015687,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
-{"ts":264015687,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"ts":264015734,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
-{"ts":264015734,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"ts":264015765,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
-{"ts":264015765,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"ts":264015781,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
-{"ts":264015781,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"ts":264015796,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
-{"ts":264015796,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"ts":264272843,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
-{"ts":264272843,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
-{"ts":264272859,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"ts":264272875,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"ts":264272890,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"ts":265087312,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
-{"ts":265087312,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
-{"ts":265087328,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
-{"ts":265087343,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"ts":265087359,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"ts":265495359,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
-{"ts":265495359,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"ts":265495375,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"ts":265495375,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"ts":265495406,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"ts":265495406,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
-{"ts":265618453,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
-{"ts":265618453,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
-{"ts":265618468,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
-{"ts":265618484,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":265835140,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":265835140,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":265835156,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":265835171,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":265853421,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":265853437,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":265853437,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":265853468,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":265962500,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":265962500,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":265962500,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":265962515,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":265962531,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}

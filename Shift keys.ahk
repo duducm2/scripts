@@ -8746,8 +8746,8 @@ IsEditorActive() {
 +b:: Send "+b"
 
 ; ---------------------------------------------------------------------------
-; Ctrl + M : 1) Wait 10s. 2) Focus Cursor. 3) Commit and push if chosen.
-; 4) Return to previous window. Sound cue 1s before end.
+; Ctrl + M : 1) Generate immediately. 2) Yellow banner 5s (Y to push). 3) Wait 10s.
+; 4) Focus Cursor, commit, push if Y pressed. 5) Return to previous window.
 ; ---------------------------------------------------------------------------
 ^M:: {
     global gCommitPushTargetWin
@@ -8756,12 +8756,12 @@ IsEditorActive() {
     if !hwnd
         return
     gCommitPushTargetWin := hwnd
+    gCommitPushDecision := ""
 
-    PromptCommitPushDecisionBlocking()
-
-    ; 1. Trigger generation (Ctrl+Alt+A)
+    ; 1. Trigger generation immediately (Ctrl+Alt+A)
     SoundPlay A_ScriptDir "\sounds\commit-start.wav"
     Send "^!a"
+    ShowCommitPushBanner()
 
     ; 2. Wait 10s; user can interact with any window
     Sleep 9000
@@ -8792,6 +8792,68 @@ IsEditorActive() {
 global gCommitPushTargetWin := 0
 ; Global variable to store the user's push decision ("push" | "dont_push" | "")
 global gCommitPushDecision := ""
+; Global variable for non-blocking commit push banner GUI
+global g_CommitPushBannerGui := ""
+
+; Non-blocking yellow banner: "Push? Press Y within 5 seconds"
+ShowCommitPushBanner() {
+    global g_CommitPushBannerGui
+    try {
+        if IsObject(g_CommitPushBannerGui) && g_CommitPushBannerGui.Hwnd
+            g_CommitPushBannerGui.Destroy()
+    } catch {
+    }
+    bannerGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
+    bannerGui.BackColor := "E6E600"
+    bannerGui.SetFont("s14 c000000 Bold", "Segoe UI")
+    bannerGui.Add("Text", "w400 Center", "Push? Press Y within 5 seconds")
+    activeWin := WinGetID("A")
+    if (activeWin)
+        WinGetPos(&winX, &winY, &winW, &winH, activeWin)
+    else {
+        workArea := SysGet.MonitorWorkArea(SysGet.MonitorPrimary)
+        winX := workArea.Left
+        winY := workArea.Top
+        winW := workArea.Right - workArea.Left
+        winH := workArea.Bottom - workArea.Top
+    }
+    bannerGui.Show("AutoSize Hide")
+    guiW := 0
+    guiH := 0
+    bannerGui.GetPos(, , &guiW, &guiH)
+    guiX := winX + (winW - guiW) / 2
+    guiY := winY + (winH - guiH) / 2
+    bannerGui.Show("x" . Round(guiX) . " y" . Round(guiY) . " NA")
+    WinSetTransparent(220, bannerGui)
+    g_CommitPushBannerGui := bannerGui
+    Hotkey("y", CommitPushBanner_YHandler, "On")
+    Hotkey("Y", CommitPushBanner_YHandler, "On")
+    SetTimer(CloseCommitPushBanner, -5000)
+}
+
+CommitPushBanner_YHandler(*) {
+    global gCommitPushDecision
+    gCommitPushDecision := "push"
+    CloseCommitPushBanner()
+}
+
+CloseCommitPushBanner() {
+    global g_CommitPushBannerGui
+    try {
+        if IsObject(g_CommitPushBannerGui) && g_CommitPushBannerGui.Hwnd {
+            g_CommitPushBannerGui.Destroy()
+            g_CommitPushBannerGui := ""
+        }
+    } catch {
+    }
+    try Hotkey("y", "Off")
+    catch {
+    }
+    try Hotkey("Y", "Off")
+    catch {
+    }
+    SetTimer(CloseCommitPushBanner, 0)
+}
 
 ; Function to get commit push action by number
 GetCommitPushActionByNumber(numberText) {
@@ -8803,39 +8865,6 @@ GetCommitPushActionByNumber(numberText) {
     actionMap[1] := "push"
     actionMap[2] := "dont_push"
     return (actionMap.Has(number)) ? actionMap[number] : ""
-}
-
-; Record-only auto-submit handler for the upfront decision prompt
-CommitPushDecision_AutoSubmit(ctrl, *) {
-    global gCommitPushDecision
-    currentValue := ctrl.Text
-    if (currentValue != "" && IsInteger(currentValue)) {
-        action := GetCommitPushActionByNumber(currentValue)
-        if (action != "") {
-            gCommitPushDecision := action
-            ctrl.Gui.Destroy()
-        }
-    }
-}
-
-; Blocking, topmost prompt to capture push decision upfront
-PromptCommitPushDecisionBlocking() {
-    global gCommitPushDecision
-    try {
-        gCommitPushDecision := ""
-        decisionGui := Gui("+AlwaysOnTop +ToolWindow", "Commit Push Selector")
-        decisionGui.SetFont("s10", "Segoe UI")
-        decisionGui.AddText("w350 Center"
-            , "Push after commit?`n`n1. Push (Shift+B)`n2. Don't push`n`nType a number (1-2):")
-        decisionGui.AddEdit("w50 Center vCommitPushInput", "")
-        decisionGui["CommitPushInput"].OnEvent("Change", CommitPushDecision_AutoSubmit)
-        decisionGui.AddButton("w80", "Cancel").OnEvent("Click", (*) => decisionGui.Destroy())
-        decisionGui.Show("w350 h150")
-        decisionGui["CommitPushInput"].Focus()
-        WinWaitClose("ahk_id " decisionGui.Hwnd)
-    } catch Error as e {
-        MsgBox "Error in upfront push decision: " e.Message, "Commit Push Selector Error", "IconX"
-    }
 }
 
 ; Execute stored decision at the exact current push moment
