@@ -1807,57 +1807,42 @@ HotstringGeminiBanner_Hide(*) {
 }
 
 ; =============================================================================
-; Commit flow: non-blocking "Do not leave the screen" banner (orange when user must stay)
+; Commit flow: tiny screen-centered banners (status + error)
+; Size: w170, font 10 (1/3 of standard). Non-blocking.
 ; =============================================================================
-global g_CommitBannerGui := false
+global g_CommitFlowBannerGui := false
 
-CommitBanner_Show(text := "Do not leave the screen", bgColor := "E67E22") {
-    global g_CommitBannerGui
-    if (IsObject(g_CommitBannerGui) && g_CommitBannerGui.Hwnd) {
-        try g_CommitBannerGui.Destroy()
-    }
-    target := WinGetID("A")
-    hasWindow := false
-    if target && WinExist("ahk_id " target) {
-        try {
-            WinGetPos(&wx, &wy, &ww, &wh, target)
-            hasWindow := (ww > 0 && wh > 0)
-        } catch {
-            hasWindow := false
-        }
+CommitFlowBanner_Show(text := "Committing message.", bgColor := "3772FF") {
+    global g_CommitFlowBannerGui
+    if (IsObject(g_CommitFlowBannerGui) && g_CommitFlowBannerGui.Hwnd) {
+        try g_CommitFlowBannerGui.Destroy()
     }
     ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
     ov.BackColor := bgColor
-    ov.SetFont("s24 cFFFFFF Bold", "Segoe UI")
-    ov.Add("Text", "w500 Center", text)
+    ov.SetFont("s10 cFFFFFF Bold", "Segoe UI")
+    ov.Add("Text", "w170 Center", text)
     ov.Show("AutoSize Hide")
     ov.GetPos(, , &gw, &gh)
-    if hasWindow {
-        cx := wx + (ww - gw) // 2
-        cy := wy + (wh - gh) // 2
-        ov.Show("x" . cx . " y" . cy . " NA")
-    } else {
-        vx := SysGet(76)
-        vy := SysGet(77)
-        vw := SysGet(78)
-        vh := SysGet(79)
-        cx := vx + (vw - gw) // 2
-        cy := vy + (vh - gh) // 2
-        ov.Show("x" . cx . " y" . cy . " NA")
-    }
+    vx := SysGet(76)
+    vy := SysGet(77)
+    vw := SysGet(78)
+    vh := SysGet(79)
+    cx := vx + (vw - gw) // 2
+    cy := vy + (vh - gh) // 2
+    ov.Show("x" . cx . " y" . cy . " NA")
     WinSetTransparent(178, ov)
-    g_CommitBannerGui := ov
+    g_CommitFlowBannerGui := ov
 }
 
-CommitBanner_Hide(*) {
-    global g_CommitBannerGui
-    if (IsObject(g_CommitBannerGui)) {
+CommitFlowBanner_Hide(*) {
+    global g_CommitFlowBannerGui
+    if (IsObject(g_CommitFlowBannerGui)) {
         try {
-            if (g_CommitBannerGui.Hwnd)
-                g_CommitBannerGui.Destroy()
+            if (g_CommitFlowBannerGui.Hwnd)
+                g_CommitFlowBannerGui.Destroy()
         } catch {
         }
-        g_CommitBannerGui := false
+        g_CommitFlowBannerGui := false
     }
 }
 

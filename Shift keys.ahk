@@ -2415,14 +2415,8 @@ FocusCommitMessageFieldViaGenerateButton(hwnd := "") {
             if IsObject(uia)
                 root := uia.BrowserElement
         }
-        if !IsObject(root) {
-            ; #region agent log
-            try SafeDebugLog(Format(
-                '{{"id":"log_{1}_{2}","timestamp":{3},"location":"FocusCommitMessageFieldViaGenerateButton","message":"No root","data":{{"hasHwnd":{4},"rootOk":false}},"hypothesisId":"H1"}}' .
-                "`n", A_TickCount, Random(1000, 9999), A_TickCount, hwnd ? "true" : "false"))
-            ; #endregion
+        if !IsObject(root)
             return false
-        }
         ; Build condition with UIA API to avoid multi-key object path that can trigger "variable has not been assigned" in __ConditionBuilder
         typeCond := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Button)
         btn := ""
@@ -2456,24 +2450,9 @@ FocusCommitMessageFieldViaGenerateButton(hwnd := "") {
             Sleep 80
             Send "+{Tab}"
             Sleep 120
-            ; #region agent log
-            try SafeDebugLog(Format(
-                '{{"id":"log_{1}_{2}","timestamp":{3},"location":"FocusCommitMessageFieldViaGenerateButton","message":"Focus sent","data":{{"btnFound":true,"return":true}},"hypothesisId":"H1"}}' .
-                "`n", A_TickCount, Random(1000, 9999), A_TickCount))
-            ; #endregion
             return true
         }
-        ; #region agent log
-        try SafeDebugLog(Format(
-            '{{"id":"log_{1}_{2}","timestamp":{3},"location":"FocusCommitMessageFieldViaGenerateButton","message":"Button not found","data":{{"btnFound":false,"return":false}},"hypothesisId":"H1"}}' .
-            "`n", A_TickCount, Random(1000, 9999), A_TickCount))
-        ; #endregion
-    } catch as err {
-        ; #region agent log
-        try SafeDebugLog(Format(
-            '{{"id":"log_{1}_{2}","timestamp":{3},"location":"FocusCommitMessageFieldViaGenerateButton","message":"Exception","data":{{"err":"{4}"}},"hypothesisId":"H1"}}' .
-            "`n", A_TickCount, Random(1000, 9999), A_TickCount, StrReplace(IsSet(err) ? err.Message : "?", '"', "'")))
-        ; #endregion
+    } catch {
     }
     return false
 }
@@ -2569,85 +2548,6 @@ HasCommitMessageContent() {
 
         return false
     } catch Error {
-        return false
-    }
-}
-
-; ---------------------------------------------------------------------------
-; HasCommitMessageContentFromHandle(hwnd)
-; Same logic as HasCommitMessageContent but uses UIA.ElementFromHandle so it does
-; NOT activate the window. Use for background monitoring per async workflow standards.
-; ---------------------------------------------------------------------------
-HasCommitMessageContentFromHandle(hwnd) {
-    try {
-        if !hwnd || !WinExist("ahk_id " hwnd)
-            return false
-        root := UIA.ElementFromHandle(hwnd)
-        if !IsObject(root)
-            return false
-
-        ; Strategy 1: Find Edit with content
-        try {
-            allEdits := root.FindAll({ Type: "50004", ControlType: "Edit" })
-            for edit in allEdits {
-                try {
-                    value := edit.Value
-                    if (value && StrLen(Trim(value)) > 0)
-                        return true
-                } catch {
-                    try {
-                        name := edit.Name
-                        if (name && StrLen(Trim(name)) > 0 && !InStr(name, "Enter") && !InStr(name, "prompt"))
-                            return true
-                    } catch {
-                        continue
-                    }
-                }
-            }
-        } catch {
-        }
-
-        ; Strategy 2: Find Edit by class names
-        try {
-            allEdits := root.FindAll({ Type: "50004" })
-            for edit in allEdits {
-                try {
-                    className := edit.ClassName
-                    if (InStr(className, "input") || InStr(className, "textarea") ||
-                    InStr(className, "editor") || InStr(className, "commit")) {
-                        value := edit.Value
-                        if (value && StrLen(Trim(value)) > 0)
-                            return true
-                        name := edit.Name
-                        if (name && StrLen(Trim(name)) > 0 && !InStr(name, "Enter") && !InStr(name, "prompt"))
-                            return true
-                    }
-                } catch {
-                    continue
-                }
-            }
-        } catch {
-        }
-
-        ; Strategy 3: Find substantial text content
-        try {
-            allText := root.FindAll({ Type: "50020" })
-            for textEl in allText {
-                try {
-                    textContent := textEl.Name
-                    if (textContent && StrLen(Trim(textContent)) > 20 &&
-                    !InStr(textContent, "Ctrl+") && !InStr(textContent, "commit on") &&
-                    !InStr(textContent, "Generate"))
-                        return true
-                } catch {
-                    continue
-                }
-            }
-        } catch {
-        }
-
-        return false
-    } catch {
         return false
     }
 }
@@ -9025,10 +8925,6 @@ IsEditorActive() {
 class CommitMessageAsync {
     __New() {
         this.OriginalHwnd := 0
-        this.TimerCallback := ""
-        this.RetryCount := 0
-        this.MaxRetries := 60   ; 60 * 500ms = 30s max wait for AI generation
-        this.ContentFoundOnce := false
     }
 
     Start() {
@@ -9049,7 +8945,6 @@ class CommitMessageAsync {
         if (!this.OriginalHwnd || !WinExist("ahk_id " this.OriginalHwnd))
             return
 
-        ShowSmallLoadingIndicator_ChatGPT("Opening Git panel…")
         WinActivate("ahk_id " this.OriginalHwnd)
         Sleep 100
 
@@ -9070,10 +8965,9 @@ class CommitMessageAsync {
         if (!generateClicked)
             ClickGenerateCommitMessageButton()
 
-        ; Return focus to source window (async standard: immediate return after submit)
+        ; Return focus to source window (no WinRestore - avoid un-maximizing)
         try {
             if WinExist("ahk_id " this.OriginalHwnd) {
-                WinRestore("ahk_id " this.OriginalHwnd)
                 WinActivate("ahk_id " this.OriginalHwnd)
                 WinWaitActive("ahk_id " this.OriginalHwnd, , 1)
             }
@@ -9081,147 +8975,70 @@ class CommitMessageAsync {
             WinActivate("ahk_id " this.OriginalHwnd)
         }
 
-        ShowSmallLoadingIndicator_ChatGPT("Waiting for AI message…")
-        this.RetryCount := 0
-        this.ContentFoundOnce := false
-        this.TimerCallback := this.CheckCompletion.Bind(this)
-        SetTimer(this.TimerCallback, 500)
-    }
-
-    CheckCompletion() {
-        this.RetryCount++
-        ; Timeout after 30s if no message generated
-        if (this.RetryCount > this.MaxRetries) {
-            SetTimer(this.TimerCallback, 0)
-            HideSmallLoadingIndicator_ChatGPT()
-            try WinActivate("ahk_id " this.OriginalHwnd)
-            ShowCenteredOverlay_Utils("Commit could not be completed. Message generation timed out.", 3000, "C0392B")
-            return
-        }
-
-        ; Non-activating poll per async standard
-        hasContent := false
-        try {
-            hasContent := HasCommitMessageContentFromHandle(this.OriginalHwnd)
-        } catch {
-            hasContent := false
-        }
-
-        ; Stable-content check: two consecutive polls with content
-        ; Commit as soon as message is detected (no minimum wait)
-        if (hasContent) {
-            if (this.ContentFoundOnce) {
-                ; #region agent log
-                try SafeDebugLog(Format(
-                    '{{"id":"log_{1}_{2}","timestamp":{3},"location":"CheckCompletion","message":"Proceeding to RetrieveAndCommit","data":{{"retryCount":{4},"hasContent":{5},"contentFoundOnce":{6}}},"hypothesisId":"H1"}}' .
-                    "`n", A_TickCount, Random(1000, 9999), A_TickCount, this.RetryCount, hasContent ? "true" : "false",
-                    this.ContentFoundOnce ? "true" : "false"))
-                ; #endregion
-                SetTimer(this.TimerCallback, 0)
-                ; Audio alert: play before returning focus
-                try {
-                    if (IsSoundEnabled()) {
-                        SoundPlay A_ScriptDir "\sounds\go-back-commit.wav"
-                    }
-                } catch {
-                }
-                this.RetrieveAndCommit()
-            } else {
-                this.ContentFoundOnce := true
-            }
-        } else {
-            this.ContentFoundOnce := false
-        }
-    }
-
-    RetrieveAndCommit() {
-        global gCommitPushTargetWin
-        HideSmallLoadingIndicator_ChatGPT()
-        ShowSmallLoadingIndicator_ChatGPT("Message ready, committing…")
-
-        ; Initial grace period for UI to stabilize (no activation yet)
-        Sleep 1000
-
-        ; Multi-source verification: clipboard, UIA_Browser, and handle-based UIA; retry up to 4 attempts
-        ; Use HasCommitMessageContentFromHandle - same check that got us here, reliable when content exists
-        ; Focus commit message field via Generate button + Shift+Tab so clipboard read gets correct content (editor is UIA-inaccessible)
+        ; Loop: max 30s, interval 3s. Focus Generate -> Shift+Tab -> Ctrl+A Ctrl+C -> validate clipboard changed
+        deadline := A_TickCount + 30000
+        previousClipboard := ""
         messageReady := false
-        verifyResult := false
-        hasResult := false
-        hasFromHandle := false
-        loop 4 {
+
+        while (A_TickCount < deadline) {
+            BlockInput("On")
             try {
-                focusResult := FocusCommitMessageFieldViaGenerateButton(this.OriginalHwnd)
-                ; #region agent log
-                try SafeDebugLog(Format(
-                    '{{"id":"log_{1}_{2}","timestamp":{3},"location":"RetrieveAndCommit","message":"Focus attempt","data":{{"attempt":{4},"focusResult":{5}}},"hypothesisId":"H1,H2"}}' .
-                    "`n", A_TickCount, Random(1000, 9999), A_TickCount, A_Index, focusResult ? "true" : "false"))
-                ; #endregion
+                WinActivate("ahk_id " this.OriginalHwnd)
+                if !WinWaitActive("ahk_id " this.OriginalHwnd, , 2)
+                    continue
+                FocusCommitMessageFieldViaGenerateButton(this.OriginalHwnd)
                 Sleep 100
-                verifyResult := VerifyCommitMessageHasContent()
-                hasResult := HasCommitMessageContent()
-                hasFromHandle := HasCommitMessageContentFromHandle(this.OriginalHwnd)
-                if (verifyResult || hasResult || hasFromHandle) {
+                A_Clipboard := ""
+                Sleep 50
+                Send "^a"
+                Sleep 150
+                Send "^c"
+                Sleep 150
+                currentClipboard := ""
+                try currentClipboard := A_Clipboard
+                trimmed := Trim(currentClipboard)
+                if (StrLen(trimmed) >= 3 && currentClipboard != previousClipboard) {
                     messageReady := true
-                    ; #region agent log
-                    try SafeDebugLog(Format(
-                        '{{"id":"log_{1}_{2}","timestamp":{3},"location":"RetrieveAndCommit","message":"Content found","data":{{"attempt":{4},"verifyResult":{5},"hasResult":{6},"hasFromHandle":{7}}},"hypothesisId":"H1,H2"}}' .
-                        "`n", A_TickCount, Random(1000, 9999), A_TickCount, A_Index, verifyResult ? "true" : "false",
-                        hasResult ? "true" : "false", hasFromHandle ? "true" : "false"))
-                    ; #endregion
                     break
                 }
-            } catch as err {
-                ; #region agent log
-                try SafeDebugLog(Format(
-                    '{{"id":"log_{1}_{2}","timestamp":{3},"location":"RetrieveAndCommit","message":"Verification threw","data":{{"attempt":{4},"err":"{5}"}},"hypothesisId":"H3"}}' .
-                    "`n", A_TickCount, Random(1000, 9999), A_TickCount, A_Index, StrReplace(IsSet(err) ? err.Message :
-                        "?", '"', "'")))
-                ; #endregion
+                previousClipboard := currentClipboard
+            } catch {
             }
-            if (A_Index < 4)
-                Sleep 1500
+            BlockInput("Off")
+            Sleep 3000
         }
+        BlockInput("Off")
 
         if (!messageReady) {
-            ; #region agent log
-            try SafeDebugLog(Format(
-                '{{"id":"log_{1}_{2}","timestamp":{3},"location":"RetrieveAndCommit","message":"Showing empty-message error","data":{{"verifyResult":{4},"hasResult":{5},"hasFromHandle":{6},"finalMessageReady":false}},"hypothesisId":"H1,H2,H3,H4"}}' .
-                "`n", A_TickCount, Random(1000, 9999), A_TickCount, verifyResult ? "true" : "false", hasResult ? "true" :
-                    "false", hasFromHandle ? "true" : "false"))
-            ; #endregion
-            HideSmallLoadingIndicator_ChatGPT()
-            ShowCenteredOverlay_Utils("Commit could not be completed. Message is empty.", 3000, "C0392B")
+            CommitFlowBanner_Show("No message found.", "C0392B")
+            Sleep 3000
+            CommitFlowBanner_Hide()
             return
         }
 
-        ; 3s: user can leave — show green banner (blocking, then it goes away)
-        HideSmallLoadingIndicator_ChatGPT()
-        ShowCenteredOverlay_Utils("You can leave the screen", 3000, "a987cb")
-        ; Now bring back and commit — user must not leave: show orange banner (non-blocking), remove when done
-        CommitBanner_Show("Do not leave the screen", "E67E22")
-        WinActivate("ahk_id " this.OriginalHwnd)
-        if !WinWaitActive("ahk_id " this.OriginalHwnd, , 3) {
-            CommitBanner_Hide()
-            return
-        }
+        CommitFlowBanner_Show("Committing message.", "3772FF")
+        BlockInput("On")
+        try {
+            WinActivate("ahk_id " this.OriginalHwnd)
+            if !WinWaitActive("ahk_id " this.OriginalHwnd, , 3) {
+                CommitFlowBanner_Hide()
+                return
+            }
+            Send "^!,"
+            Sleep 100
+            Send "+v"
 
-        Send "^!,"
-        Sleep 100
-        Send "+v"
+            if (IsSoundEnabled()) {
+                SoundPlay A_ScriptDir "\sounds\cursor-git-commit.wav"
+            }
 
-        if (IsSoundEnabled()) {
-            SoundPlay A_ScriptDir "\sounds\cursor-git-commit.wav"
+            if (WaitForCommitToFinish()) {
+                ExecuteStoredCommitPushDecision()
+            }
+        } catch {
         }
-
-        ShowSmallLoadingIndicator_ChatGPT("Committing...")
-        if (WaitForCommitToFinish()) {
-            HideSmallLoadingIndicator_ChatGPT()
-            ExecuteStoredCommitPushDecision()
-        } else {
-            HideSmallLoadingIndicator_ChatGPT()
-        }
-        CommitBanner_Hide()
+        BlockInput("Off")
+        CommitFlowBanner_Hide()
         WinActivate("ahk_id " this.OriginalHwnd)
     }
 }
@@ -9229,73 +9046,6 @@ class CommitMessageAsync {
 ; Ctrl + M : Ask, generate commit message (async), wait for AI, then commit
 ^M:: {
     (CommitMessageAsync()).Start()
-}
-
-; Function to verify commit message has content before submitting
-VerifyCommitMessageHasContent() {
-    ; Store current clipboard content
-    originalClipboard := ""
-    try {
-        originalClipboard := A_Clipboard
-    } catch {
-        ; If clipboard access fails, continue anyway
-    }
-
-    try {
-        ; Clear clipboard first to ensure we get fresh content
-        A_Clipboard := ""
-        Sleep 50
-
-        ; Focus on the commit message field (usually the active field when dialog opens)
-        ; Select all text in the commit message field
-        Send "^a"
-        Sleep 150
-
-        ; Copy the selected text
-        Send "^c"
-        Sleep 150
-
-        ; Wait a bit for clipboard to update
-        Sleep 100
-
-        ; Get clipboard content
-        clipboardText := ""
-        try {
-            clipboardText := A_Clipboard
-        } catch {
-            clipboardText := ""
-        }
-
-        ; Restore original clipboard
-        try {
-            A_Clipboard := originalClipboard
-        } catch {
-            ; If restoration fails, continue anyway
-        }
-
-        ; Trim whitespace and check if content exists
-        trimmedText := Trim(clipboardText)
-
-        ; Return true if there's meaningful content (at least 3 characters to avoid false positives)
-        hasContent := StrLen(trimmedText) >= 3
-        ; #region agent log
-        if (!hasContent) {
-            preview := StrReplace(StrReplace(StrReplace(SubStr(Trim(clipboardText), 1, 100), "\", "\\"), "`"", "\`""),
-            "`n", " ")
-            try SafeDebugLog(Format(
-                '{{"id":"log_{1}_{2}","timestamp":{3},"location":"VerifyCommitMessageHasContent","message":"Clipboard check returned false","data":{{"clipboardLen":{4},"trimmedLen":{5},"hasContent":false,"clipboardPreview":"{6}"}},"hypothesisId":"H1,H2"}}' .
-                "`n", A_TickCount, Random(1000, 9999), A_TickCount, StrLen(clipboardText), StrLen(trimmedText), preview
-            ))
-        }
-        ; #endregion
-        return hasContent
-    } catch {
-        ; If error occurs, restore clipboard and return false (safer to not commit)
-        try {
-            A_Clipboard := originalClipboard
-        }
-        return false
-    }
 }
 
 ; Global variable for commit push selector target window
