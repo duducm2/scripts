@@ -1807,12 +1807,13 @@ HotstringGeminiBanner_Hide(*) {
 }
 
 ; =============================================================================
-; Commit flow: tiny screen-centered banners (status + error)
+; Commit flow: tiny banners centered on target window (or screen fallback)
 ; Size: w170, font 10 (1/3 of standard). Non-blocking.
+; hwnd: window to center on (e.g. Cursor). If omitted, uses active window or screen center.
 ; =============================================================================
 global g_CommitFlowBannerGui := false
 
-CommitFlowBanner_Show(text := "Committing message.", bgColor := "3772FF") {
+CommitFlowBanner_Show(text := "Don't press anything.", bgColor := "C0392B", hwnd := "") {
     global g_CommitFlowBannerGui
     if (IsObject(g_CommitFlowBannerGui) && g_CommitFlowBannerGui.Hwnd) {
         try g_CommitFlowBannerGui.Destroy()
@@ -1823,13 +1824,30 @@ CommitFlowBanner_Show(text := "Committing message.", bgColor := "3772FF") {
     ov.Add("Text", "w170 Center", text)
     ov.Show("AutoSize Hide")
     ov.GetPos(, , &gw, &gh)
-    vx := SysGet(76)
-    vy := SysGet(77)
-    vw := SysGet(78)
-    vh := SysGet(79)
-    cx := vx + (vw - gw) // 2
-    cy := vy + (vh - gh) // 2
-    ov.Show("x" . cx . " y" . cy . " NA")
+
+    target := hwnd ? hwnd : WinGetID("A")
+    hasWindow := false
+    if target && WinExist("ahk_id " target) {
+        try {
+            WinGetPos(&wx, &wy, &ww, &wh, target)
+            hasWindow := (ww > 0 && wh > 0)
+        } catch {
+            hasWindow := false
+        }
+    }
+    if hasWindow {
+        cx := wx + (ww - gw) // 2
+        cy := wy + (wh - gh) // 2
+        ov.Show("x" . cx . " y" . cy . " NA")
+    } else {
+        vx := SysGet(76)
+        vy := SysGet(77)
+        vw := SysGet(78)
+        vh := SysGet(79)
+        cx := vx + (vw - gw) // 2
+        cy := vy + (vh - gh) // 2
+        ov.Show("x" . cx . " y" . cy . " NA")
+    }
     WinSetTransparent(178, ov)
     g_CommitFlowBannerGui := ov
 }

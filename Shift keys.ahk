@@ -9010,13 +9010,13 @@ class CommitMessageAsync {
         BlockInput("Off")
 
         if (!messageReady) {
-            CommitFlowBanner_Show("No message found.", "C0392B")
+            CommitFlowBanner_Show("No message found.", "C0392B", this.OriginalHwnd)
             Sleep 3000
             CommitFlowBanner_Hide()
             return
         }
 
-        CommitFlowBanner_Show("Committing message.", "3772FF")
+        CommitFlowBanner_Show("Don't press anything.", "C0392B", this.OriginalHwnd)
         BlockInput("On")
         try {
             WinActivate("ahk_id " this.OriginalHwnd)
