@@ -9195,11 +9195,14 @@ class CommitMessageAsync {
             return
         }
 
-        ; Extra delay after message is confirmed; then bring user back and commit
-        Sleep 3000
+        ; 3s: user can leave — show green banner (blocking, then it goes away)
+        HideSmallLoadingIndicator_ChatGPT()
+        ShowCenteredOverlay_Utils("You can leave the screen", 3000, "27AE60")
+        ; Now bring back and commit — user must not leave: show orange banner (non-blocking), remove when done
+        CommitBanner_Show("Do not leave the screen", "E67E22")
         WinActivate("ahk_id " this.OriginalHwnd)
         if !WinWaitActive("ahk_id " this.OriginalHwnd, , 3) {
-            HideSmallLoadingIndicator_ChatGPT()
+            CommitBanner_Hide()
             return
         }
 
@@ -9218,7 +9221,7 @@ class CommitMessageAsync {
         } else {
             HideSmallLoadingIndicator_ChatGPT()
         }
-
+        CommitBanner_Hide()
         WinActivate("ahk_id " this.OriginalHwnd)
     }
 }

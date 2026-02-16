@@ -1807,6 +1807,61 @@ HotstringGeminiBanner_Hide(*) {
 }
 
 ; =============================================================================
+; Commit flow: non-blocking "Do not leave the screen" banner (orange when user must stay)
+; =============================================================================
+global g_CommitBannerGui := false
+
+CommitBanner_Show(text := "Do not leave the screen", bgColor := "E67E22") {
+    global g_CommitBannerGui
+    if (IsObject(g_CommitBannerGui) && g_CommitBannerGui.Hwnd) {
+        try g_CommitBannerGui.Destroy()
+    }
+    target := WinGetID("A")
+    hasWindow := false
+    if target && WinExist("ahk_id " target) {
+        try {
+            WinGetPos(&wx, &wy, &ww, &wh, target)
+            hasWindow := (ww > 0 && wh > 0)
+        } catch {
+            hasWindow := false
+        }
+    }
+    ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
+    ov.BackColor := bgColor
+    ov.SetFont("s24 cFFFFFF Bold", "Segoe UI")
+    ov.Add("Text", "w500 Center", text)
+    ov.Show("AutoSize Hide")
+    ov.GetPos(, , &gw, &gh)
+    if hasWindow {
+        cx := wx + (ww - gw) // 2
+        cy := wy + (wh - gh) // 2
+        ov.Show("x" . cx . " y" . cy . " NA")
+    } else {
+        vx := SysGet(76)
+        vy := SysGet(77)
+        vw := SysGet(78)
+        vh := SysGet(79)
+        cx := vx + (vw - gw) // 2
+        cy := vy + (vh - gh) // 2
+        ov.Show("x" . cx . " y" . cy . " NA")
+    }
+    WinSetTransparent(178, ov)
+    g_CommitBannerGui := ov
+}
+
+CommitBanner_Hide(*) {
+    global g_CommitBannerGui
+    if (IsObject(g_CommitBannerGui)) {
+        try {
+            if (g_CommitBannerGui.Hwnd)
+                g_CommitBannerGui.Destroy()
+        } catch {
+        }
+        g_CommitBannerGui := false
+    }
+}
+
+; =============================================================================
 ; Global Sound Toggle System
 ; File-backed state management for muting/unmuting sounds across all scripts
 ; =============================================================================
