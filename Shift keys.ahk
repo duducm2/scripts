@@ -8746,8 +8746,8 @@ IsEditorActive() {
 +b:: Send "+b"
 
 ; ---------------------------------------------------------------------------
-; Ctrl + M : Generate commit message (sync), wait 10s, return focus, commit
-; No banners; sound cue 1s before end; shortcuts from cheat sheet (Shift+V, Shift+B)
+; Ctrl + M : 1) Wait 10s. 2) Focus Cursor. 3) Commit and push if chosen.
+; 4) Return to previous window. Sound cue 1s before end.
 ; ---------------------------------------------------------------------------
 ^M:: {
     global gCommitPushTargetWin
@@ -8765,23 +8765,27 @@ IsEditorActive() {
 
     ; 2. Wait 10s; user can interact with any window
     Sleep 9000
-    ; 3. Audio cue 1s before end
     if (IsSoundEnabled())
         SoundPlay A_ScriptDir "\sounds\go-back-commit.wav"
     Sleep 1000
 
-    ; 4. Return focus to Cursor
+    ; 3. Focus Cursor IDE (save current foreground to return later)
+    prevHwnd := WinExist("A")
     WinActivate("ahk_id " hwnd)
     if !WinWaitActive("ahk_id " hwnd, , 3)
         return
 
-    ; 5. Commit (Shift+V) then Push if user chose (Shift+B)
+    ; 4. Execute commit and push if necessary
     Send "+v"
     if (gCommitPushDecision = "push") {
         Sleep 500
         Send "+b"
     }
     gCommitPushDecision := ""
+
+    ; 5. Return to previous screen
+    if (prevHwnd && prevHwnd != hwnd)
+        WinActivate("ahk_id " prevHwnd)
 }
 
 ; Global variable for commit push selector target window
