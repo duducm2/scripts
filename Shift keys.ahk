@@ -2399,179 +2399,6 @@ ClickGenerateCommitMessageButton() {
 }
 
 ; ---------------------------------------------------------------------------
-; Focus the commit message field by focusing Generate button then Shift+Tab.
-; The editor is reported as "not accessible" via UIA; navigation ensures
-; clipboard-based read (^a ^c) gets the message content.
-; hwnd: optional. When provided (e.g. this.OriginalHwnd), search inside that window so we target Cursor precisely.
-; ---------------------------------------------------------------------------
-FocusCommitMessageFieldViaGenerateButton(hwnd := "") {
-    try {
-        root := ""
-        if (hwnd && WinExist("ahk_id " hwnd)) {
-            root := UIA.ElementFromHandle(hwnd)
-        }
-        if !IsObject(root) {
-            uia := UIA_Browser()
-            if IsObject(uia)
-                root := uia.BrowserElement
-        }
-        if !IsObject(root)
-            return false
-        ; Build condition with UIA API to avoid multi-key object path that can trigger "variable has not been assigned" in __ConditionBuilder
-        typeCond := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Button)
-        btn := ""
-        for name in ["Generate Commit Message (Ctrl+Alt+A)", "Generate Commit Message (Ctrl+M)",
-            "Generate Commit Message"] {
-            nameCond := UIA.CreatePropertyCondition(UIA.Property.Name, name)
-            andCond := UIA.CreateAndCondition(nameCond, typeCond)
-            try {
-                btn := root.FindFirst(andCond)
-                if IsObject(btn)
-                    break
-            } catch {
-                btn := ""
-            }
-        }
-        if !IsObject(btn) {
-            buttons := root.FindAll(typeCond)
-            for button in buttons {
-                try {
-                    if InStr(button.Name, "Generate Commit Message") {
-                        btn := button
-                        break
-                    }
-                } catch {
-                    continue
-                }
-            }
-        }
-        if btn {
-            btn.SetFocus()
-            Sleep 80
-            Send "+{Tab}"
-            Sleep 120
-            return true
-        }
-    } catch {
-    }
-    return false
-}
-
-; ---------------------------------------------------------------------------
-; Check if commit message has been written (has content)
-; Returns true if message exists and has content, false otherwise
-; ---------------------------------------------------------------------------
-HasCommitMessageContent() {
-    try {
-        uia := UIA_Browser()
-        if !IsObject(uia) {
-            return false
-        }
-
-        ; Try to find the commit message text field/textarea
-        ; Common patterns: Edit control, TextArea, or contenteditable div
-        commitMessageField := ""
-
-        ; Strategy 1: Find by Type Edit (50004)
-        commitMessageField := uia.FindFirst({ Type: "50004", ControlType: "Edit" })
-
-        ; Strategy 2: Find by Type Edit with common class names
-        if !commitMessageField {
-            allEdits := uia.FindAll({ Type: "50004" })
-            for edit in allEdits {
-                className := edit.ClassName
-                ; Look for common commit message field indicators
-                if (InStr(className, "input") || InStr(className, "textarea") ||
-                InStr(className, "editor") || InStr(className, "commit")) {
-                    ; Check if it has content
-                    try {
-                        value := edit.Value
-                        if (value && StrLen(Trim(value)) > 0) {
-                            commitMessageField := edit
-                            break
-                        }
-                    } catch {
-                        ; Try Name property as fallback
-                        try {
-                            name := edit.Name
-                            if (name && StrLen(Trim(name)) > 0 && !InStr(name, "Enter") && !InStr(name, "prompt")) {
-                                commitMessageField := edit
-                                break
-                            }
-                        } catch {
-                            continue
-                        }
-                    }
-                }
-            }
-        }
-
-        ; Strategy 3: Find by looking for text content in the commit dialog area
-        if !commitMessageField {
-            ; Look for any element with substantial text content that might be the commit message
-            allElements := uia.FindAll({ Type: "50020" })  ; Text elements
-            for textEl in allElements {
-                try {
-                    textContent := textEl.Name
-                    ; If text is substantial (more than 20 chars) and doesn't look like UI labels
-                    if (textContent && StrLen(Trim(textContent)) > 20 &&
-                    !InStr(textContent, "Ctrl+") && !InStr(textContent, "commit on") &&
-                    !InStr(textContent, "Generate")) {
-                        ; This might be commit message content
-                        return true
-                    }
-                } catch {
-                    continue
-                }
-            }
-        }
-
-        ; If we found a field, check if it has content
-        if (commitMessageField) {
-            try {
-                value := commitMessageField.Value
-                if (value && StrLen(Trim(value)) > 0) {
-                    return true
-                }
-            } catch {
-                ; Try to get text content another way
-                try {
-                    name := commitMessageField.Name
-                    if (name && StrLen(Trim(name)) > 0 && !InStr(name, "Enter") && !InStr(name, "prompt")) {
-                        return true
-                    }
-                } catch {
-                    return false
-                }
-            }
-        }
-
-        return false
-    } catch Error {
-        return false
-    }
-}
-
-; ---------------------------------------------------------------------------
-; Wait for commit to finish (message box clears)
-; Returns true if commit finished (content gone), false if timed out
-; ---------------------------------------------------------------------------
-WaitForCommitToFinish(timeout := 5000) {
-    start := A_TickCount
-    ; Wait a bit for the commit to actually start processing
-    Sleep 500
-
-    while (A_TickCount - start < timeout) {
-        ; If content is gone, commit is likely done
-        if (!HasCommitMessageContent()) {
-            return true
-        }
-        Sleep 200
-    }
-    return false
-}
-
-; ---------------------------------------------------------------------------
 ; WaitForButton(root, pattern, timeout := 5000)
 ;   â€¢ Searches all descendant buttons of `root` until Name matches `pattern`
 ;   â€¢ Returns the UIA element or 0 if none matched within `timeout` ms
@@ -8919,133 +8746,41 @@ IsEditorActive() {
 +b:: Send "+b"
 
 ; ---------------------------------------------------------------------------
-; CommitMessageAsync - async commit message generation (Ctrl+M)
-; Follows docs/asynchronous_workflow_standards.md: submission -> monitoring (timer) -> retrieval
+; Ctrl + M : Generate commit message (sync), wait 20s, return focus, commit
+; No banners; sound cue 3s before end; shortcuts from cheat sheet (Shift+V, Shift+B)
 ; ---------------------------------------------------------------------------
-class CommitMessageAsync {
-    __New() {
-        this.OriginalHwnd := 0
-    }
-
-    Start() {
-        global gCommitPushTargetWin
-        this.OriginalHwnd := WinExist("A")
-        if !this.OriginalHwnd
-            return
-        gCommitPushTargetWin := this.OriginalHwnd
-
-        PromptCommitPushDecisionBlocking()
-
-        if (this.OriginalHwnd) {
-            WinActivate("ahk_id " this.OriginalHwnd)
-            WinWaitActive("ahk_id " this.OriginalHwnd, , 1)
-            Sleep 200
-        }
-
-        if (!this.OriginalHwnd || !WinExist("ahk_id " this.OriginalHwnd))
-            return
-
-        WinActivate("ahk_id " this.OriginalHwnd)
-        Sleep 100
-
-        Send "+d"
-        Sleep 200
-        Send "^!a"
-        Sleep 200
-
-        ; Validation layer: explicitly click Generate button with retry
-        generateClicked := false
-        loop 3 {
-            if (ClickGenerateCommitMessageButton()) {
-                generateClicked := true
-                break
-            }
-            Sleep 300
-        }
-        if (!generateClicked)
-            ClickGenerateCommitMessageButton()
-
-        ; Return focus to source window (no WinRestore - avoid un-maximizing)
-        try {
-            if WinExist("ahk_id " this.OriginalHwnd) {
-                WinActivate("ahk_id " this.OriginalHwnd)
-                WinWaitActive("ahk_id " this.OriginalHwnd, , 1)
-            }
-        } catch {
-            WinActivate("ahk_id " this.OriginalHwnd)
-        }
-
-        ; Loop: max 30s, interval 3s. Focus Generate -> Shift+Tab -> Ctrl+A Ctrl+C -> validate clipboard changed
-        deadline := A_TickCount + 30000
-        previousClipboard := ""
-        messageReady := false
-
-        while (A_TickCount < deadline) {
-            BlockInput("On")
-            try {
-                WinActivate("ahk_id " this.OriginalHwnd)
-                if !WinWaitActive("ahk_id " this.OriginalHwnd, , 2)
-                    continue
-                FocusCommitMessageFieldViaGenerateButton(this.OriginalHwnd)
-                Sleep 100
-                A_Clipboard := ""
-                Sleep 50
-                Send "^a"
-                Sleep 150
-                Send "^c"
-                Sleep 150
-                currentClipboard := ""
-                try currentClipboard := A_Clipboard
-                trimmed := Trim(currentClipboard)
-                if (StrLen(trimmed) >= 3 && currentClipboard != previousClipboard) {
-                    messageReady := true
-                    break
-                }
-                previousClipboard := currentClipboard
-            } catch {
-            }
-            BlockInput("Off")
-            Sleep 3000
-        }
-        BlockInput("Off")
-
-        if (!messageReady) {
-            CommitFlowBanner_Show("No message found.", "C0392B", this.OriginalHwnd)
-            Sleep 3000
-            CommitFlowBanner_Hide()
-            return
-        }
-
-        CommitFlowBanner_Show("Don't press anything.", "C0392B", this.OriginalHwnd)
-        BlockInput("On")
-        try {
-            WinActivate("ahk_id " this.OriginalHwnd)
-            if !WinWaitActive("ahk_id " this.OriginalHwnd, , 3) {
-                CommitFlowBanner_Hide()
-                return
-            }
-            Send "^!,"
-            Sleep 100
-            Send "+v"
-
-            if (IsSoundEnabled()) {
-                SoundPlay A_ScriptDir "\sounds\cursor-git-commit.wav"
-            }
-
-            if (WaitForCommitToFinish()) {
-                ExecuteStoredCommitPushDecision()
-            }
-        } catch {
-        }
-        BlockInput("Off")
-        CommitFlowBanner_Hide()
-        WinActivate("ahk_id " this.OriginalHwnd)
-    }
-}
-
-; Ctrl + M : Ask, generate commit message (async), wait for AI, then commit
 ^M:: {
-    (CommitMessageAsync()).Start()
+    global gCommitPushTargetWin
+    global gCommitPushDecision
+    hwnd := WinExist("A")
+    if !hwnd
+        return
+    gCommitPushTargetWin := hwnd
+
+    PromptCommitPushDecisionBlocking()
+
+    ; 1. Trigger generation (Ctrl+Alt+A)
+    Send "^!a"
+
+    ; 2. Wait 20s; user can interact with any window
+    Sleep 17000
+    ; 3. Audio cue 3s before end
+    if (IsSoundEnabled())
+        SoundPlay A_ScriptDir "\sounds\go-back-commit.wav"
+    Sleep 3000
+
+    ; 4. Return focus to Cursor
+    WinActivate("ahk_id " hwnd)
+    if !WinWaitActive("ahk_id " hwnd, , 3)
+        return
+
+    ; 5. Commit (Shift+V) then Push if user chose (Shift+B)
+    Send "+v"
+    if (gCommitPushDecision = "push") {
+        Sleep 500
+        Send "+b"
+    }
+    gCommitPushDecision := ""
 }
 
 ; Global variable for commit push selector target window
