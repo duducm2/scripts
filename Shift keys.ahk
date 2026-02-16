@@ -2351,45 +2351,28 @@ ToggleVoiceMessage() {
 }
 
 ; ---------------------------------------------------------------------------
-ClickGenerateCommitMessageButton(hwnd := 0) {
+ClickGenerateCommitMessageButton() {
     try {
-        if !hwnd
-            hwnd := WinExist("A")
-
-        ; Cursor context: use UIA.ElementFromHandle (avoids UIA_Browser activation)
-        if (hwnd && WinActive("ahk_id " hwnd) && WinGetProcessName("ahk_id " hwnd) = "Cursor.exe") {
-            for btnName in ["Generate Commit Message (Ctrl+M)", "Generate Commit Message"] {
-                btn := Cursor_FindElementByName(btnName, hwnd, "Button")
-                if btn {
-                    try {
-                        if btn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)
-                            btn.InvokePattern.Invoke()
-                        else
-                            btn.Click()
-                        return true
-                    } catch {
-                        try {
-                            btn.Click()
-                            return true
-                        } catch {
-                            break
-                        }
-                    }
-                }
-            }
-        }
-
-        ; Fallback: UIA_Browser
+        ; Use UIA_Browser to get the root element (similar to other functions in the script)
         uia := UIA_Browser()
         if !IsObject(uia) {
+            ; Fallback: try Ctrl+M shortcut if UIA fails
             Send "^m"
             return true
         }
 
+        ; Find the "Generate Commit Message (Ctrl+M)" button
+        ; Try multiple search strategies
         btn := uia.FindFirst({ Name: "Generate Commit Message (Ctrl+M)", ControlType: "Button" })
-        if !btn
-            btn := uia.FindFirst({ Name: "Generate Commit Message", ControlType: "Button" })
+
+        ; If not found by exact name, try partial match
         if !btn {
+            btn := uia.FindFirst({ Name: "Generate Commit Message", ControlType: "Button" })
+        }
+
+        ; If still not found, try by ControlType only (Type: 50000 = Button)
+        if !btn {
+            ; Get all buttons and find the one with the right name
             buttons := uia.FindAll({ ControlType: "Button" })
             for button in buttons {
                 if InStr(button.Name, "Generate Commit Message") {
@@ -2402,11 +2385,14 @@ ClickGenerateCommitMessageButton(hwnd := 0) {
         if btn {
             btn.Click()
             return true
+        } else {
+            ; Fallback: try Ctrl+M shortcut
+            Send "^m"
+            return true
         }
-
-        Send "^m"
-        return true
-    } catch Error {
+    }
+    catch Error as e {
+        ; Fallback: try Ctrl+M shortcut if UIA fails
         Send "^m"
         return true
     }
@@ -2508,94 +2494,80 @@ HasCommitMessageContent() {
 }
 
 ; ---------------------------------------------------------------------------
-; Check if commit message has content from a UIA root (monitoring-safe, no activation)
-; Uses UIA.ElementFromHandle so the window is never activated during polling
+; HasCommitMessageContentFromHandle(hwnd)
+; Same logic as HasCommitMessageContent but uses UIA.ElementFromHandle so it does
+; NOT activate the window. Use for background monitoring per async workflow standards.
 ; ---------------------------------------------------------------------------
-HasCommitMessageContentFromRoot(root) {
+HasCommitMessageContentFromHandle(hwnd) {
     try {
+        if !hwnd || !WinExist("ahk_id " hwnd)
+            return false
+        root := UIA.ElementFromHandle(hwnd)
         if !IsObject(root)
             return false
 
-        commitMessageField := ""
-
-        ; Strategy 1: Find by Type Edit (50004)
-        try commitMessageField := root.FindFirst({ Type: "50004", ControlType: "Edit" })
-
-        ; Strategy 2: Find by Type Edit with common class names
-        if !commitMessageField {
-            try {
-                allEdits := root.FindAll({ Type: "50004" })
-                for edit in allEdits {
-                    try {
-                        className := edit.ClassName
-                        if (InStr(className, "input") || InStr(className, "textarea") ||
-                        InStr(className, "editor") || InStr(className, "commit")) {
-                            try {
-                                value := edit.Value
-                                if (value && StrLen(Trim(value)) > 0) {
-                                    commitMessageField := edit
-                                    break
-                                }
-                            } catch {
-                                try {
-                                    name := edit.Name
-                                    if (name && StrLen(Trim(name)) > 0 && !InStr(name, "Enter") && !InStr(name, "prompt")) {
-                                        commitMessageField := edit
-                                        break
-                                    }
-                                } catch {
-                                    continue
-                                }
-                            }
-                        }
-                    } catch {
-                        continue
-                    }
-                }
-            } catch {
-                ;
-            }
-        }
-
-        ; Strategy 3: Find by looking for text content in the commit dialog area
-        if !commitMessageField {
-            try {
-                allElements := root.FindAll({ Type: "50020" })
-                for textEl in allElements {
-                    try {
-                        textContent := textEl.Name
-                        if (textContent && StrLen(Trim(textContent)) > 20 &&
-                        !InStr(textContent, "Ctrl+") && !InStr(textContent, "commit on") &&
-                        !InStr(textContent, "Generate")) {
-                            return true
-                        }
-                    } catch {
-                        continue
-                    }
-                }
-            } catch {
-                ;
-            }
-        }
-
-        if (commitMessageField) {
-            try {
-                value := commitMessageField.Value
-                if (value && StrLen(Trim(value)) > 0)
-                    return true
-            } catch {
+        ; Strategy 1: Find Edit with content
+        try {
+            allEdits := root.FindAll({ Type: "50004", ControlType: "Edit" })
+            for edit in allEdits {
                 try {
-                    name := commitMessageField.Name
-                    if (name && StrLen(Trim(name)) > 0 && !InStr(name, "Enter") && !InStr(name, "prompt"))
+                    value := edit.Value
+                    if (value && StrLen(Trim(value)) > 0)
                         return true
                 } catch {
-                    return false
+                    try {
+                        name := edit.Name
+                        if (name && StrLen(Trim(name)) > 0 && !InStr(name, "Enter") && !InStr(name, "prompt"))
+                            return true
+                    } catch {
+                        continue
+                    }
                 }
             }
+        } catch {
+        }
+
+        ; Strategy 2: Find Edit by class names
+        try {
+            allEdits := root.FindAll({ Type: "50004" })
+            for edit in allEdits {
+                try {
+                    className := edit.ClassName
+                    if (InStr(className, "input") || InStr(className, "textarea") ||
+                        InStr(className, "editor") || InStr(className, "commit")) {
+                        value := edit.Value
+                        if (value && StrLen(Trim(value)) > 0)
+                            return true
+                        name := edit.Name
+                        if (name && StrLen(Trim(name)) > 0 && !InStr(name, "Enter") && !InStr(name, "prompt"))
+                            return true
+                    }
+                } catch {
+                    continue
+                }
+            }
+        } catch {
+        }
+
+        ; Strategy 3: Find substantial text content
+        try {
+            allText := root.FindAll({ Type: "50020" })
+            for textEl in allText {
+                try {
+                    textContent := textEl.Name
+                    if (textContent && StrLen(Trim(textContent)) > 20 &&
+                        !InStr(textContent, "Ctrl+") && !InStr(textContent, "commit on") &&
+                        !InStr(textContent, "Generate"))
+                        return true
+                } catch {
+                    continue
+                }
+            }
+        } catch {
         }
 
         return false
-    } catch Error {
+    } catch {
         return false
     }
 }
@@ -2607,8 +2579,8 @@ HasCommitMessageContentFromRoot(root) {
 WaitForCommitToFinish(timeout := 5000) {
     start := A_TickCount
     ; Wait a bit for the commit to actually start processing
-    Sleep 500 
-    
+    Sleep 500
+
     while (A_TickCount - start < timeout) {
         ; If content is gone, commit is likely done
         if (!HasCommitMessageContent()) {
@@ -8818,7 +8790,7 @@ IsEditorActive() {
             currClass := WinGetClass("ahk_id " curr)
             ; Likely a dialog: different window, and (has dialog-like title or is Chrome_WidgetWin)
             if InStr(currClass, "Chrome_WidgetWin") || InStr(currClass, "32770")
-                || InStr(currTitle, "Save") || InStr(currTitle, "Export") || InStr(currTitle, "?") {
+            || InStr(currTitle, "Save") || InStr(currTitle, "Export") || InStr(currTitle, "?") {
                 saveDialogHwnd := curr
                 break
             }
@@ -8836,13 +8808,13 @@ IsEditorActive() {
     ; 3. Handle Confirm Save As / Replace dialog (ClassName #32770, Name: "Confirm Save As")
     ; WinGetText doesn't capture UIA Text elements; use window title. Yes button has Alt+Y.
     SetTitleMatchMode 2
-    Loop 10 {
+    loop 10 {
         Sleep 200
         replaceHwnd := WinExist("ahk_class #32770")
         if replaceHwnd {
             title := WinGetTitle("ahk_id " replaceHwnd)
             if InStr(title, "Confirm Save As") || InStr(title, "Confirmar Salvar")
-                || InStr(title, "Confirmar Guardar") || InStr(title, "Confirm Replace") {
+            || InStr(title, "Confirmar Guardar") || InStr(title, "Confirm Replace") {
                 try WinActivate("ahk_id " replaceHwnd)
                 Sleep 100
                 Send "!y"   ; Alt+Y = Yes (per UIA: AcceleratorKey: "Alt+Y")
@@ -8966,80 +8938,72 @@ IsEditorActive() {
 ; Shift + B : Git Push - Push
 +b:: Send "+b"
 
-; Ctrl + M : Generate commit message async, then commit when ready (per async workflow standards)
-^M::
-{
-    gCommitPushTargetWin := WinExist("A")
-    if !gCommitPushTargetWin
-        return
-    PromptCommitPushDecisionBlocking()
-
-    if (gCommitPushTargetWin) {
-        WinActivate gCommitPushTargetWin
-        WinWaitActive("ahk_id " gCommitPushTargetWin, , 1)
-        Sleep 200
-    }
-
-    (new CommitAsyncGenerate()).Start()
-}
-
 ; ---------------------------------------------------------------------------
-; CommitAsyncGenerate – async commit message generation (Ctrl+M)
-; Submission -> immediate return -> background timer polls -> retrieval on completion
-; Per docs/asynchronous_workflow_standards.md (reference: GeminiAsyncLookup in Gemini.ahk)
+; CommitMessageAsync - async commit message generation (Ctrl+M)
+; Follows docs/asynchronous_workflow_standards.md: submission -> monitoring (timer) -> retrieval
 ; ---------------------------------------------------------------------------
-class CommitAsyncGenerate {
+class CommitMessageAsync {
     __New() {
-        this.TargetHwnd := 0
+        this.OriginalHwnd := 0
         this.TimerCallback := ""
         this.RetryCount := 0
         this.MaxRetries := 120   ; 120 * 500ms = 60s timeout
+        this.ContentFoundOnce := false
     }
 
     Start() {
-        this.TargetHwnd := gCommitPushTargetWin
-        if !this.TargetHwnd || !WinExist("ahk_id " this.TargetHwnd) {
+        global gCommitPushTargetWin
+        this.OriginalHwnd := WinExist("A")
+        if !this.OriginalHwnd
             return
+        gCommitPushTargetWin := this.OriginalHwnd
+
+        PromptCommitPushDecisionBlocking()
+
+        if (this.OriginalHwnd) {
+            WinActivate("ahk_id " this.OriginalHwnd)
+            WinWaitActive("ahk_id " this.OriginalHwnd, , 1)
+            Sleep 200
         }
 
-        ShowSmallLoadingIndicator_ChatGPT("Generating commit message…`n`n⚠️ You can keep working")
-
-        WinActivate("ahk_id " this.TargetHwnd)
-        if !WinWaitActive("ahk_id " this.TargetHwnd, , 2) {
-            HideSmallLoadingIndicator_ChatGPT()
+        if (!this.OriginalHwnd || !WinExist("ahk_id " this.OriginalHwnd))
             return
-        }
 
-        Send("+d")
-        Sleep 500
+        ShowSmallLoadingIndicator_ChatGPT("Opening Git panel…")
+        WinActivate("ahk_id " this.OriginalHwnd)
+        Sleep 100
 
-        ; Click Generate with retry validation
+        Send "+d"
+        Sleep 200
+        Send "^!a"
+        Sleep 200
+
+        ; Validation layer: explicitly click Generate button with retry
+        generateClicked := false
         loop 3 {
-            ClickGenerateCommitMessageButton(this.TargetHwnd)
-            Sleep 500
-            root := ""
-            try root := UIA.ElementFromHandle(this.TargetHwnd)
-            if (root && HasCommitMessageContentFromRoot(root)) {
-                ; Content appeared quickly, may already be done
+            if (ClickGenerateCommitMessageButton()) {
+                generateClicked := true
                 break
             }
-            ; After first attempt, wait and retry if no content
-            if (A_Index < 3)
-                Sleep 1000
+            Sleep 300
         }
+        if (!generateClicked)
+            ClickGenerateCommitMessageButton()
 
-        ; Restore focus so user can work during monitoring (no BlockInput)
+        ; Return focus to source window (async standard: immediate return after submit)
         try {
-            if WinExist("ahk_id " this.TargetHwnd) {
-                WinRestore("ahk_id " this.TargetHwnd)
-                WinActivate("ahk_id " this.TargetHwnd)
-                WinWaitActive("ahk_id " this.TargetHwnd, , 1)
+            if WinExist("ahk_id " this.OriginalHwnd) {
+                WinRestore("ahk_id " this.OriginalHwnd)
+                WinActivate("ahk_id " this.OriginalHwnd)
+                WinWaitActive("ahk_id " this.OriginalHwnd, , 1)
             }
         } catch {
-            WinActivate("ahk_id " this.TargetHwnd)
+            WinActivate("ahk_id " this.OriginalHwnd)
         }
 
+        ShowSmallLoadingIndicator_ChatGPT("Waiting for AI message…")
         this.RetryCount := 0
+        this.ContentFoundOnce := false
         this.TimerCallback := this.CheckCompletion.Bind(this)
         SetTimer(this.TimerCallback, 500)
     }
@@ -9049,46 +9013,66 @@ class CommitAsyncGenerate {
         if (this.RetryCount > this.MaxRetries) {
             SetTimer(this.TimerCallback, 0)
             HideSmallLoadingIndicator_ChatGPT()
+            MsgBox "Commit message generation timed out after 60 seconds.", "Commit Timeout", "Icon!"
             return
         }
 
-        if !WinExist("ahk_id " this.TargetHwnd) {
-            SetTimer(this.TimerCallback, 0)
+        ; Non-activating poll per async standard
+        hasContent := false
+        try {
+            hasContent := HasCommitMessageContentFromHandle(this.OriginalHwnd)
+        } catch {
+            hasContent := false
+        }
+
+        ; Stable-content check: two consecutive polls with content
+        if (hasContent) {
+            if (this.ContentFoundOnce) {
+                SetTimer(this.TimerCallback, 0)
+                ; Audio alert: play before returning focus
+                try {
+                    if (IsSoundEnabled()) {
+                        SoundPlay A_ScriptDir "\sounds\go-back-commit.wav"
+                    }
+                } catch {
+                }
+                this.RetrieveAndCommit()
+            } else {
+                this.ContentFoundOnce := true
+            }
+        } else {
+            this.ContentFoundOnce := false
+        }
+    }
+
+    RetrieveAndCommit() {
+        global gCommitPushTargetWin
+        HideSmallLoadingIndicator_ChatGPT()
+        ShowSmallLoadingIndicator_ChatGPT("Message ready, committing…")
+
+        WinActivate("ahk_id " this.OriginalHwnd)
+        if !WinWaitActive("ahk_id " this.OriginalHwnd, , 2) {
             HideSmallLoadingIndicator_ChatGPT()
             return
         }
 
-        root := ""
-        try root := UIA.ElementFromHandle(this.TargetHwnd)
-        if !root
-            return
-
-        if !HasCommitMessageContentFromRoot(root)
-            return
-
-        SetTimer(this.TimerCallback, 0)
-        this.RetrieveAndCommit()
-    }
-
-    RetrieveAndCommit() {
-        if (IsSoundEnabled()) {
-            try SoundPlay(A_ScriptDir "\sounds\go-back-commit.wav")
-        }
-
-        HideSmallLoadingIndicator_ChatGPT()
-
-        WinActivate("ahk_id " this.TargetHwnd)
-        if !WinWaitActive("ahk_id " this.TargetHwnd, , 2)
-            return
-
+        ; Final verification before commit
         if (!VerifyCommitMessageHasContent()) {
-            MsgBox "Commit message is empty. Aborting commit.", "Empty Commit Message", "IconX"
-            return
+            HideSmallLoadingIndicator_ChatGPT()
+            Sleep 2000
+            if (!VerifyCommitMessageHasContent()) {
+                MsgBox "Commit message is empty. Aborting commit.", "Empty Commit Message", "IconX"
+                return
+            }
         }
 
-        Send("^!,")
+        Send "^!,"
         Sleep 100
-        Send("+v")
+        Send "+v"
+
+        if (IsSoundEnabled()) {
+            SoundPlay A_ScriptDir "\sounds\cursor-git-commit.wav"
+        }
 
         ShowSmallLoadingIndicator_ChatGPT("Committing...")
         if (WaitForCommitToFinish()) {
@@ -9097,8 +9081,16 @@ class CommitAsyncGenerate {
         } else {
             HideSmallLoadingIndicator_ChatGPT()
         }
+
+        WinActivate("ahk_id " this.OriginalHwnd)
     }
 }
+
+; Ctrl + M : Ask, generate commit message (async), wait for AI, then commit
+^M:: {
+    (CommitMessageAsync()).Start()
+}
+
 
 ; Function to verify commit message has content before submitting
 VerifyCommitMessageHasContent() {

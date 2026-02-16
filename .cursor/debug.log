@@ -943,3 +943,31 @@
 {"ts":243452234,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
 {"ts":243452312,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
 {"ts":243452312,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":244639890,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":244639906,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":244639921,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":244639937,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":244639953,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":244639968,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":244639984,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":245050500,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":245050500,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":245050562,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":245050562,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":245050890,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":245050890,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":245050921,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":245050937,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":245121390,"loc":"Handy_OpenAiModelMenu","msg":"entry","data":{},"hypothesisId":"H1"}
+{"ts":245121453,"loc":"Handy_OpenAiModelMenu","msg":"anchor by ClassName","data":{"by":"ClassName"},"hypothesisId":"H1"}
+{"ts":245122062,"loc":"Handy_OpenAiModelMenu","msg":"exit true","data":{},"hypothesisId":"H1"}
+{"ts":245122859,"loc":"Handy_ClickAiModel","msg":"entry","data":{"modelName":"Parakeet V3"},"hypothesisId":"H2"}
+{"ts":245122937,"loc":"Handy_ClickAiModel","msg":"name match","data":{"btnName":"Parakeet V3 Fast and accurate","btnClass":"w-full px-3 py-2 text-start hover:bg-mid-gray/10 transition-colors cursor-pointer focus:outline-none ","hasWfull":0,"hasTextStart":1,"hasFlex":0},"hypothesisId":"H2"}
+{"ts":245122937,"loc":"Handy_ClickAiModel","msg":"buttons scanned","data":{"count":21,"nameMatchNoClass":"","found":1},"hypothesisId":"H2"}
+{"ts":245122953,"loc":"Handy_ClickAiModel","msg":"click ok","data":{},"hypothesisId":"H2"}
+{"ts":245122968,"loc":"Handy_WaitForModelReady","msg":"entry","data":{},"hypothesisId":"H3"}
+{"ts":245123031,"loc":"Handy_WaitForModelReady","msg":"ready","data":{"btnName":"Parakeet V3"},"hypothesisId":"H3"}
+{"ts":245124984,"loc":"~#!+0","msg":"early return progStop hyp=C"}
+{"ts":245187312,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":245187312,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":245187343,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
