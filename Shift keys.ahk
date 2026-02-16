@@ -9197,7 +9197,7 @@ class CommitMessageAsync {
 
         ; 3s: user can leave — show green banner (blocking, then it goes away)
         HideSmallLoadingIndicator_ChatGPT()
-        ShowCenteredOverlay_Utils("You can leave the screen", 3000, "27AE60")
+        ShowCenteredOverlay_Utils("You can leave the screen", 3000, "a987cb")
         ; Now bring back and commit — user must not leave: show orange banner (non-blocking), remove when done
         CommitBanner_Show("Do not leave the screen", "E67E22")
         WinActivate("ahk_id " this.OriginalHwnd)
