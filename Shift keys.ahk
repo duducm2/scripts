@@ -519,7 +519,7 @@ Cursor
 📉 [Y]Fold all (tuck awa[Y])
 📈 [U] [U]nfold all
 📋 [O]Open Paste As... ([O]pen)
-📁 [H]Reveal in file explorer (s[H]ow)
+📁 [H]Smart nav: Editor→Explorer / Explorer→Reveal (s[H]ow)
 🔲 [J]Select to Bracket (ad[J]acent)
 📉 [,] Fold all directories
 💬 [.] Toggle chat or agent
