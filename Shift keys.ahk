@@ -8746,7 +8746,7 @@ IsEditorActive() {
 +b:: Send "+b"
 
 ; ---------------------------------------------------------------------------
-; Ctrl + M : 1) Generate immediately. 2) Yellow banner 5s (Y to push). 3) Wait 10s.
+; Ctrl + M : 1) Generate immediately. 2) Yellow banner 5s (Y to push). 3) Wait 12s.
 ; 4) Focus Cursor, commit, push if Y pressed. 5) Return to previous window.
 ; ---------------------------------------------------------------------------
 ^M:: {
@@ -8763,8 +8763,8 @@ IsEditorActive() {
     Send "^!a"
     ShowCommitPushBanner()
 
-    ; 2. Wait 10s; user can interact with any window
-    Sleep 9000
+    ; 2. Wait 12s; user can interact with any window
+    Sleep 11000
     if (IsSoundEnabled())
         SoundPlay A_ScriptDir "\sounds\go-back-commit.wav"
     Sleep 1000
