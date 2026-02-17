@@ -716,7 +716,7 @@ global g_Projects := [
                 workPath: "", category: "General" }, { name: "", path: "", workPath: "", category: "General" },
                 ; Personal category
                 { name: "ZMK Sofle", path: "C:\Users\eduev\Documents\ZMK\zmk-sofle", workPath: "", category: "Personal" }, { name: "AI Experiment",
-                    path: "C:\Users\eduev\Meu Drive\04 - Pós-graduação\01 - Mestrado\26-ai-experiment", workPath: "",
+                    path: "C:\Users\eduev\Documents\Web projects\ai-experiments", workPath: "",
                     category: "Personal" }, { name: "my-personal-repo", path: "C:\Users\eduev\Meu Drive\17 - Projects\my-personal-repo", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\my-personal-repo",
                         category: "Personal" }, { name: "",
                             path: "", workPath: "", category: "Personal" }, { name: "", path: "", workPath: "",
