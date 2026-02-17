@@ -8546,11 +8546,18 @@ IsCursorMainEditorFocused() {
 ;-------------------------------------------------------------------
 #HotIf IsEditorActive() && WinGetClass("A") != "#32770"
 
-; Ctrl + H : POC - confirm focus is in main editor via UIA
+; Ctrl + H : Smart navigation - Editor → Explorer, Explorer → Reveal in Explorer
 ^h::
 {
-    if (IsCursorMainEditorFocused())
-        MsgBox "We are in the main editor", "Cursor UIA POC", "Iconi"
+    if (IsCursorMainEditorFocused()) {
+        ; User is in main editor: move focus to File Explorer
+        Send "^!+e"
+        Sleep 200
+        Send "^h"
+    } else {
+        ; User is NOT in main editor (likely in Explorer): trigger Reveal in File Explorer
+        Send "^h"
+    }
 }
 
 ^e::
