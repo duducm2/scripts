@@ -8513,10 +8513,45 @@ IsEditorActive() {
     return WinActive("ahk_exe Cursor.exe")
 }
 
+;-----------------------------------------
+;  UIA POC: detect if focus is in Cursor main editor (Monaco inputarea)
+;  Target: Type 50004 (Edit), Name "The editor is not accessible...",
+;  LocalizedType "editor", ClassName "inputarea monaco-mouse-cursor-text"
+;-----------------------------------------
+IsCursorMainEditorFocused() {
+    try {
+        fe := UIA.GetFocusedElement()
+        if (!fe)
+            return false
+        ; Type 50004 = Edit
+        if (fe.Type != 50004)
+            return false
+        name := fe.Name
+        if (InStr(name, "Shift+Alt+F1") = 0 && InStr(name, "The editor is not accessible") = 0)
+            return false
+        try lct := fe.LocalizedType
+        if (IsSet(lct) && lct != "" && lct != "editor")
+            return false
+        try cn := fe.ClassName
+        if (IsSet(cn) && cn != "" && InStr(cn, "inputarea") = 0)
+            return false
+        return true
+    }
+    catch
+        return false
+}
+
 ;-------------------------------------------------------------------
 ; Cursor Shortcuts
 ;-------------------------------------------------------------------
 #HotIf IsEditorActive() && WinGetClass("A") != "#32770"
+
+; Ctrl + H : POC - confirm focus is in main editor via UIA
+^h::
+{
+    if (IsCursorMainEditorFocused())
+        MsgBox "We are in the main editor", "Cursor UIA POC", "Iconi"
+}
 
 ^e::
 {
