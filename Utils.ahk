@@ -4980,10 +4980,10 @@ HnPLoopMode() {
         if (g_HnPTargetWindow && WinExist("ahk_id " g_HnPTargetWindow)) {
             SafeActivateTarget(g_HnPTargetWindow)
             Sleep 30
-            Send "{Esc}"
+            SendEscape()
 
             ; Safeguard: after 1000 ms send Esc to dismiss any late overlay.
-            SetTimer(() => Send("{Esc}"), -1000)
+            SetTimer(() => SendEscape(), -1000)
 
             ; Ensure the Hunt-and-Peck process is fully terminated
             CloseHuntAndPeckProcess()
@@ -5032,8 +5032,8 @@ ActivateHnP() {
         ShowLoopIndicator(false)
 
         ; Ensure any residual Hunt-and-Peck overlay is cleared
-        Send "{Esc}"
-        SetTimer(() => Send("{Esc}"), -1000)
+        SendEscape()
+        SetTimer(() => SendEscape(), -1000)
 
         ; Terminate any lingering hap.exe process
         CloseHuntAndPeckProcess()
@@ -7048,6 +7048,19 @@ SafePlayPrintScreenSound() {
     g_PrintScreenInProgress := false
 }
 #InputLevel 0
+
+; Helper to send Escape while respecting dictation state.
+; When dictation is active, this becomes a no-op so Handy is not closed.
+SendEscape(count := 1) {
+    global g_DictationActive
+    if (g_DictationActive) {
+        return
+    }
+    if (count > 1)
+        Send("{Escape " . count . "}")
+    else
+        Send("{Escape}")
+}
 
 ; =============================================================================
 ; Block Escape Key from handy.exe

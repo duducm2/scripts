@@ -4021,7 +4021,7 @@ ChromePdf_FocusByAutomationId(automationId, controlType := 0) {
     Send "{Down}"
     Send "{Right}"
     Send "{Enter}"
-    Send "{Esc}"
+    SendEscape()
     Sleep "200"
     Send "^1"
     Sleep "500"          ; 80 ms
@@ -4395,7 +4395,7 @@ ChromePdf_FocusByAutomationId(automationId, controlType := 0) {
 {
     Send "{Enter}"
     Send "{Enter}"
-    Send "{Esc}"
+    SendEscape()
 }
 
 ; Shift + G : Heart reaction - Heart
@@ -4404,7 +4404,7 @@ ChromePdf_FocusByAutomationId(automationId, controlType := 0) {
     Send "{Enter}"
     Send "{Down}"
     Send "{Enter}"
-    Send "{Esc}"
+    SendEscape()
 }
 
 ; Shift + J : Laugh reaction - Laugh
@@ -4414,7 +4414,7 @@ ChromePdf_FocusByAutomationId(automationId, controlType := 0) {
     Send "{Down}"
     Send "{Down}"
     Send "{Enter}"
-    Send "{Esc}"
+    SendEscape()
 }
 
 ; Alt + 1 : Select 1st search result - Search
@@ -6463,7 +6463,7 @@ RenameChatGPTWindowToChatGPT() {
 +o::
 {
     ; Ensure composer is focused
-    Send "{Esc}"
+    SendEscape()
     Sleep 150
 
     promptText := ""
@@ -6519,7 +6519,7 @@ SubmitChatGPTMessage() {
     currentStopStreamingName := IS_WORK_ENVIRONMENT ? pt_stopStreamingName : en_stopStreamingName
 
     ; Step 1: Send Escape to ensure composer is focused
-    Send "{Esc}"
+    SendEscape()
     Sleep 100
     ; Step 2: Send Enter to submit the prompt
     Send "{Enter}"
@@ -7039,8 +7039,8 @@ Excel_RemoveRows(iterations := 8) {
 
 ; Shift + U : Close and apply (Alt, H, C, C)
 +u:: {
-    Send "{Esc}"
-    Send "{Esc}"
+    SendEscape()
+    SendEscape()
     Send "{Alt down}"
     Send "{Alt down}"
     Sleep 200
@@ -7484,7 +7484,7 @@ Excel_RemoveRows(iterations := 8) {
     } catch Error {
     }
     ; Fallback: Try common keyboard shortcuts
-    Send "{Esc}"  ; Escape key is universal for cancels
+    SendEscape()  ; Escape key is universal for cancels
 }
 
 ; Shift + A : Right-click All pages button in Power BI
@@ -8524,8 +8524,8 @@ IsEditorActive() {
     Sleep 400
     Send "!+e"
     Sleep 300
-    Send "{Escape}"  ; ESC
-    Send "{Escape}"  ; ESC
+    SendEscape()  ; ESC
+    SendEscape()  ; ESC
     Send "^i"
 }
 
@@ -8533,9 +8533,9 @@ IsEditorActive() {
 ^1::
 {
     ; Send ESC two times
-    Send "{Escape}"  ; ESC
+    SendEscape()  ; ESC
     Sleep 50
-    Send "{Escape}"  ; ESC again
+    SendEscape()  ; ESC again
     Sleep 100
     Send "^!n"
     Sleep 100
@@ -9096,7 +9096,7 @@ CancelAIModel(ctrl, *) {
 ExecuteAIModelSelection(choice) {
     try {
         ; Send Escape twice, then select the edit field based on on-screen Agent/Ask
-        Send "{Escape 2}"
+        SendEscape(2)
         Sleep 200
         if !SendCtrlKeyBasedOnAgentAsk() {
             ; Fallback to Ctrl+I if no relevant text is found
@@ -9115,7 +9115,7 @@ ExecuteAIModelSelection(choice) {
                 Sleep 500
                 Send "{Enter}"
                 Sleep 300
-                Send "{Escape}"
+                SendEscape()
             }
             case 2:
             {
@@ -10026,7 +10026,7 @@ SwitchAIMode() {
         }
 
         ; Send Escape twice, then select the edit field based on on-screen Agent/Ask
-        Send "{Escape 2}"
+        SendEscape(2)
         Sleep 200
         if !SendCtrlKeyBasedOnAgentAsk() {
             ; Fallback to Ctrl+I if no relevant text is found
@@ -10061,7 +10061,7 @@ SwitchAIModel() {
             return
 
         ; Send Escape twice, then select the edit field based on on-screen Agent/Ask
-        Send "{Escape 2}"
+        SendEscape(2)
         Sleep 200
         if !SendCtrlKeyBasedOnAgentAsk() {
             ; Fallback to Ctrl+I if no relevant text is found
@@ -10080,7 +10080,7 @@ SwitchAIModel() {
                 Sleep 500
                 Send "{Enter}"
                 Sleep 300
-                Send "{Escape}"
+                SendEscape()
             }
             case "2":
             {
@@ -11614,7 +11614,7 @@ FocusDescriptionField() {
         Sleep 200
 
         ; Send Escape to clear any current selection/focus
-        Send "{Esc}"
+        SendEscape()
         Sleep 300
 
         ; Open search with Ctrl+F
@@ -11626,7 +11626,7 @@ FocusDescriptionField() {
         Sleep 900
 
         ; Press Escape to close search
-        Send "{Esc}"
+        SendEscape()
         Sleep 300
 
         ; Press Enter to confirm selection
@@ -12213,7 +12213,7 @@ ToggleGeminiDrawer() {
         uia := UIA_Browser()
         if !IsObject(uia) {
             ; If we can't attach to Chrome, fall back to Escape like before
-            Send "{Escape}"
+            SendEscape()
             return
         }
 
@@ -12246,11 +12246,11 @@ ToggleGeminiDrawer() {
             Sleep 200
         } else {
             ; If we couldn't find the button at all, keep behavior similar to previous version
-            Send "{Escape}"
+            SendEscape()
         }
     } catch Error as e {
         ; If anything goes wrong, graceful fallback
-        Send "{Escape}"
+        SendEscape()
     }
 }
 
@@ -13906,7 +13906,7 @@ PlayCompletionChime_Gemini() {
     } catch Error {
     }
     ; Fallback: Try common keyboard shortcuts
-    Send "{Esc}"  ; Escape key is universal for cancel
+    SendEscape()  ; Escape key is universal for cancel
 }
 
 #HotIf
