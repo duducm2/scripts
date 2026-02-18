@@ -8877,9 +8877,24 @@ FocusCursorFilesExplorer() {
     }
     gCommitPushDecision := ""
 
-    ; 5. Return to previous screen
-    if (prevHwnd && prevHwnd != hwnd)
-        WinActivate("ahk_id " prevHwnd)
+    ; 5. Return to previous screen (graceful error if window no longer exists)
+    if (prevHwnd && prevHwnd != hwnd) {
+        if (!WinExist("ahk_id " prevHwnd)) {
+            TrayTip("Commit Push", "Previous window no longer available; staying in Cursor.", "Iconi")
+            SetTimer(() => TrayTip(), -5000)
+        } else {
+            try {
+                WinActivate("ahk_id " prevHwnd)
+                if (!WinWaitActive("ahk_id " prevHwnd, , 2)) {
+                    TrayTip("Commit Push", "Could not switch back to previous window.", "Iconi")
+                    SetTimer(() => TrayTip(), -5000)
+                }
+            } catch {
+                TrayTip("Commit Push", "Could not switch back to previous window.", "Iconi")
+                SetTimer(() => TrayTip(), -5000)
+            }
+        }
+    }
 }
 
 ; Global variable for commit push selector target window
