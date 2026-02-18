@@ -8593,18 +8593,27 @@ FocusCursorFilesExplorer() {
 #HotIf IsEditorActive() && WinGetClass("A") != "#32770"
 
 ; Ctrl + H : Smart navigation - Editor → Explorer, Explorer → Reveal in Explorer
+; Works from main editor even when the left Explorer sidebar is closed (opens it first).
 ^h::
 {
     if (IsCursorMainEditorFocused()) {
-        ; Main editor: focus Files Explorer via UIA, then trigger reveal
+        ; Main editor: ensure Explorer sidebar is available, focus Files Explorer, then trigger reveal
         if (FocusCursorFilesExplorer()) {
             Sleep 150
             Send "^h"
         } else {
-            ; Fallback: legacy keybinding path if UIA fails
-            Send "^!+e"
-            Sleep 200
-            Send "^h"
+            ; Sidebar may be closed: open Explorer (Ctrl+Shift+E), then retry UIA focus
+            Send "^+e"
+            Sleep 350
+            if (FocusCursorFilesExplorer()) {
+                Sleep 150
+                Send "^h"
+            } else {
+                ; Fallback: legacy keybinding path if UIA still fails
+                Send "^!+e"
+                Sleep 200
+                Send "^h"
+            }
         }
     } else {
         ; User is NOT in main editor (likely in Explorer): trigger Reveal in File Explorer
