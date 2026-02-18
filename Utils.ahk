@@ -1543,7 +1543,7 @@ Handy_OpenAiModelMenu(hwnd) {
         return false
     }
 
-    ; Find anchor: "Check for updates" button
+    ; Find anchor: primary "Check for updates" button
     anchor := 0
     try anchor := el.FindFirst({
         Type: 50000,
@@ -1560,6 +1560,42 @@ Handy_OpenAiModelMenu(hwnd) {
         try anchor := el.FindFirst({ Type: 50000, Name: "Verificar atualizações" })
         if (anchor)
             DbgLogEx("Handy_OpenAiModelMenu", "anchor by Name Pt", '{"by":"NamePt"}', "H1")
+    }
+
+    ; Fallback: "Update available" anchor when a system update banner is shown
+    if (!anchor) {
+        try anchor := el.FindFirst({
+            Type: 50000,
+            ClassName: "transition-colors disabled:opacity-50 tabular-nums text-logo-primary hover:text-logo-primary/80 font-medium"
+        })
+        if (anchor)
+            DbgLogEx("Handy_OpenAiModelMenu", "anchor by UpdateAvailable ClassName", '{"by":"UpdateClassName"}', "H1")
+    }
+    if (!anchor) {
+        try anchor := el.FindFirst({ Type: 50000, Name: "Update available" })
+        if (anchor)
+            DbgLogEx("Handy_OpenAiModelMenu", "anchor by UpdateAvailable Name", '{"by":"UpdateName"}', "H1")
+    }
+    if (!anchor) {
+        ; Last-resort: use technical condition path to reach the "Update available" button
+        try anchor := el.ElementFromPath(
+            {T:33},
+            {T:33},
+            {T:33},
+            {T:33,CN:"BrowserRootView"},
+            {T:33},
+            {T:33,CN:"EmbeddedBrowserFrameView"},
+            {T:33,CN:"BrowserView"},
+            {T:33,CN:"SidebarContentsSplitView"},
+            {T:33},
+            {T:33},
+            {T:33},
+            {T:30},
+            {T:26},
+            {T:0,CN:"transition-colors disabled:opacity-50 tabular-nums text-logo-primary hover:text-logo-primary/80 font-medium"}
+        )
+        if (anchor)
+            DbgLogEx("Handy_OpenAiModelMenu", "anchor by UpdateAvailable Path", '{"by":"UpdatePath"}', "H1")
     }
 
     if (!anchor) {
