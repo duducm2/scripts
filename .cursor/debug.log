@@ -464,3 +464,18 @@
 {"ts":12002687,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
 {"ts":12002687,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
 {"ts":12002687,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":13327359,"loc":"Handy_OpenAiModelMenu","msg":"entry","data":{},"hypothesisId":"H1"}
+{"ts":13327500,"loc":"Handy_OpenAiModelMenu","msg":"anchor not found","data":{},"hypothesisId":"H1"}
+{"ts":13331687,"loc":"Handy_OpenAiModelMenu","msg":"entry","data":{},"hypothesisId":"H1"}
+{"ts":13331750,"loc":"Handy_OpenAiModelMenu","msg":"anchor not found","data":{},"hypothesisId":"H1"}
+{"ts":13457984,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":13457984,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":13458000,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":13458015,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":13458046,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":14458406,"loc":"FindGeminiPromptField","msg":"entry","hypothesisId":"H1"}
+{"ts":14458531,"loc":"FindGeminiPromptField","msg":"return found","data":{"name":"Enter a prompt for Gemini"},"hypothesisId":"H1"}
+{"ts":14475796,"loc":"FindGeminiPromptField","msg":"entry","hypothesisId":"H1"}
+{"ts":14475875,"loc":"FindGeminiPromptField","msg":"return found","data":{"name":"Enter a prompt for Gemini"},"hypothesisId":"H1"}
+{"ts":14558734,"loc":"Handy_OpenAiModelMenu","msg":"entry","data":{},"hypothesisId":"H1"}
+{"ts":14559671,"loc":"Handy_OpenAiModelMenu","msg":"anchor not found","data":{},"hypothesisId":"H1"}
