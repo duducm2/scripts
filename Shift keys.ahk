@@ -8712,7 +8712,7 @@ FocusCursorFilesExplorer() {
         return
     }
     try WinActivate("ahk_id " saveDialogHwnd)
-    Sleep 400
+    Sleep 600
     Send "{Enter}"  ; Confirm initial save
 
     ; 3. Handle Confirm Save As / Replace dialog (ClassName #32770, Name: "Confirm Save As")
