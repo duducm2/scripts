@@ -308,8 +308,16 @@ InitHotstringsCheatSheet() {
             "Prompts", "📝 Plan File Template")
     }
     ; Character w: creating mnemonic stories (content from notes/studies/technique/story-prompt.txt)
-    ; NOTE: Code will be updated upon access to the work laptop (work-env path placeholder)
-    mnemonicPromptPath := "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\technique\prompts\story-prompt.txt"  ; Work env: replace with work path
+    ; Supports personal (Google Drive) and work (OneDrive - Bosch Group) environments
+    mnemonicPromptPath := ""
+    mnemonicWorkPath := "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes\studies\technique\prompts\story-prompt.txt"
+    mnemonicPersonalPath := "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\technique\prompts\story-prompt.txt"
+    if FileExist(mnemonicWorkPath)
+        mnemonicPromptPath := mnemonicWorkPath
+    else if FileExist(mnemonicPersonalPath)
+        mnemonicPromptPath := mnemonicPersonalPath
+    else
+        mnemonicPromptPath := mnemonicWorkPath
     try {
         mnemonicPrompt := FileRead(mnemonicPromptPath)
         RegisterHotstring(":o:mnemonic", mnemonicPrompt, "Prompts", "📖 Creating mnemonic stories")
@@ -317,9 +325,16 @@ InitHotstringsCheatSheet() {
         RegisterHotstring("", "", "Prompts", "Reserved 3")
     }
     ; Character e: transcript YouTube video (content from notes/studies/technique/video-transcription-prompt.txt)
-    ; NOTE: Code will be updated upon access to the work laptop (work-env path placeholder)
-    transcriptPromptPath :=
-        "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\technique\prompts\video-transcription-prompt.txt"  ; Work env: replace with work path
+    ; Supports personal (Google Drive) and work (OneDrive - Bosch Group) environments
+    transcriptPromptPath := ""
+    transcriptWorkPath := "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes\studies\technique\prompts\video-transcription-prompt.txt"
+    transcriptPersonalPath := "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\technique\prompts\video-transcription-prompt.txt"
+    if FileExist(transcriptWorkPath)
+        transcriptPromptPath := transcriptWorkPath
+    else if FileExist(transcriptPersonalPath)
+        transcriptPromptPath := transcriptPersonalPath
+    else
+        transcriptPromptPath := transcriptWorkPath
     try {
         transcriptPrompt := FileRead(transcriptPromptPath)
         RegisterHotstring(":o:ytranscript", transcriptPrompt, "Prompts", "🎬 Transcript Youtube Video")
@@ -327,9 +342,16 @@ InitHotstringsCheatSheet() {
         RegisterHotstring("", "", "Prompts", "Reserved 4")
     }
     ; Character r: read aloud this story (content from notes/studies/technique/prompts/read-aloud-prompt.txt)
-    ; NOTE: Code will be updated upon access to the work laptop (work-env path placeholder)
-    readAloudPromptPath :=
-        "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\technique\prompts\read-aloud-prompt.txt"  ; Work env: replace with work path
+    ; Supports personal (Google Drive) and work (OneDrive - Bosch Group) environments
+    readAloudPromptPath := ""
+    readAloudWorkPath := "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes\studies\technique\prompts\read-aloud-prompt.txt"
+    readAloudPersonalPath := "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\technique\prompts\read-aloud-prompt.txt"
+    if FileExist(readAloudWorkPath)
+        readAloudPromptPath := readAloudWorkPath
+    else if FileExist(readAloudPersonalPath)
+        readAloudPromptPath := readAloudPersonalPath
+    else
+        readAloudPromptPath := readAloudWorkPath
     try {
         readAloudPrompt := FileRead(readAloudPromptPath)
         RegisterHotstring(":o:readaloud", readAloudPrompt, "Prompts", "📖 read aloud this story", "r")
@@ -337,8 +359,16 @@ InitHotstringsCheatSheet() {
         RegisterHotstring("", "", "Prompts", "Reserved 5")
     }
     ; Character t: story revision (content from notes/studies/technique/prompts/revision-prompt.txt)
-    ; NOTE: Code will be updated upon access to the work laptop (work-env path placeholder)
-    revisionPromptPath := "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\technique\prompts\revision-prompt.txt"  ; Work env: replace with work path
+    ; Supports personal (Google Drive) and work (OneDrive - Bosch Group) environments
+    revisionPromptPath := ""
+    revisionWorkPath := "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes\studies\technique\prompts\revision-prompt.txt"
+    revisionPersonalPath := "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\technique\prompts\revision-prompt.txt"
+    if FileExist(revisionWorkPath)
+        revisionPromptPath := revisionWorkPath
+    else if FileExist(revisionPersonalPath)
+        revisionPromptPath := revisionPersonalPath
+    else
+        revisionPromptPath := revisionWorkPath
     try {
         revisionPrompt := FileRead(revisionPromptPath)
         RegisterHotstring(":o:revision", revisionPrompt, "Prompts", "📝 Story revision", "t")

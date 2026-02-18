@@ -434,3 +434,33 @@
 {"ts":10880703,"loc":"FindGeminiPromptField","msg":"entry","hypothesisId":"H1"}
 {"ts":10880765,"loc":"FindGeminiPromptField","msg":"return found","data":{"name":"Enter a prompt for Gemini"},"hypothesisId":"H1"}
 {"ts":10880765,"loc":"Utils.ahk:5289","msg":"Utils else: prompt field result","data":{"found":true},"hypothesisId":"H2"}
+{"id":"log_11721328_7182","timestamp":11721328,"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"id":"log_11722171_4557","timestamp":11722171,"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"ts":11770515,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":11770515,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":11770531,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":11770546,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":11831062,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":11831437,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":11831437,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":11831484,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":11846421,"loc":"FindGeminiPromptField","msg":"entry","hypothesisId":"H1"}
+{"ts":11846500,"loc":"FindGeminiPromptField","msg":"return found","data":{"name":"Enter a prompt for Gemini"},"hypothesisId":"H1"}
+{"ts":11871984,"loc":"Utils.ahk:5284","msg":"Utils else: resolving prompt field (EN/PT)","data":{},"hypothesisId":"H2"}
+{"ts":11871984,"loc":"FindGeminiPromptField","msg":"entry","hypothesisId":"H1"}
+{"ts":11872093,"loc":"FindGeminiPromptField","msg":"return found","data":{"name":"Enter a prompt for Gemini"},"hypothesisId":"H1"}
+{"ts":11872093,"loc":"Utils.ahk:5289","msg":"Utils else: prompt field result","data":{"found":true},"hypothesisId":"H2"}
+{"ts":11889406,"loc":"Handy_OpenAiModelMenu","msg":"entry","data":{},"hypothesisId":"H1"}
+{"ts":11889421,"loc":"Handy_OpenAiModelMenu","msg":"anchor by ClassName","data":{"by":"ClassName"},"hypothesisId":"H1"}
+{"ts":11889968,"loc":"Handy_OpenAiModelMenu","msg":"exit true","data":{},"hypothesisId":"H1"}
+{"ts":11890781,"loc":"Handy_ClickAiModel","msg":"entry","data":{"modelName":"Parakeet V3"},"hypothesisId":"H2"}
+{"ts":11890812,"loc":"Handy_ClickAiModel","msg":"buttons scanned","data":{"count":20,"nameMatchNoClass":"","found":0},"hypothesisId":"H2"}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"entry","data":{"pathLen":33,"dirExists":1},"hypothesisId":"H3","timestamp":11943140}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"after FindAndActivate","data":{"targetHwnd":922254},"hypothesisId":"H3","timestamp":11943375}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"after FocusCursorAITextField","data":{"focusOk":1},"hypothesisId":"H4","timestamp":11945656}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"return true","data":{},"hypothesisId":"H3","timestamp":11946968}
+{"ts":12002578,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":12002578,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":12002687,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":12002687,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":12002687,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
