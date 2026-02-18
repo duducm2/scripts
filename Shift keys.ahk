@@ -8514,31 +8514,77 @@ IsEditorActive() {
 }
 
 ;-----------------------------------------
-;  UIA POC: detect if focus is in Cursor main editor (Monaco inputarea)
-;  Target: Type 50004 (Edit), Name "The editor is not accessible...",
-;  LocalizedType "editor", ClassName "inputarea monaco-mouse-cursor-text"
+;  UIA: detect if focus is in Cursor main editor (Monaco inputarea)
+;  Uses conditional path to locate editor element, then compares with focused element
+;  Conditional path: RootView -> ... -> workbench.parts.editor -> editor-instance -> Edit
 ;-----------------------------------------
 IsCursorMainEditorFocused() {
     try {
+        winHandle := WinExist("ahk_exe Cursor.exe")
+        if (!winHandle)
+            return false
+
+        root := UIA.ElementFromHandle(winHandle)
+        if (!root)
+            return false
+
+        editorEl := root.ElementFromPath(
+            {T:33,CN:"RootView"},
+            {T:33},
+            {T:33},
+            {T:33,CN:"ClientView"},
+            {T:33},
+            {T:33},
+            {T:33},
+            {T:30},
+            {T:26},
+            {T:33},
+            {T:26,A:"workbench.parts.editor"},
+            {T:26,CN:"editor-instance"},
+            {T:20},
+            {T:4}
+        )
+        if (!editorEl)
+            return false
+
         fe := UIA.GetFocusedElement()
         if (!fe)
             return false
-        ; Type 50004 = Edit
-        if (fe.Type != 50004)
-            return false
-        name := fe.Name
-        if (InStr(name, "Shift+Alt+F1") = 0 && InStr(name, "The editor is not accessible") = 0)
-            return false
-        try lct := fe.LocalizedType
-        if (IsSet(lct) && lct != "" && lct != "editor")
-            return false
-        try cn := fe.ClassName
-        if (IsSet(cn) && cn != "" && InStr(cn, "inputarea") = 0)
-            return false
-        return true
-    }
-    catch
+
+        return UIA.CompareElementsEx(editorEl, fe)
+    } catch {
         return false
+    }
+}
+
+; Focus the Cursor "Files Explorer" tree using UIA
+FocusCursorFilesExplorer() {
+    try {
+        hwnd := WinExist("ahk_exe Cursor.exe")
+        if (!hwnd)
+            return false
+
+        root := UIA.ElementFromHandle(hwnd)
+        if (!root)
+            return false
+
+        treeType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Tree)
+        feEn := UIA.CreatePropertyCondition(UIA.Property.Name, "Files Explorer")
+        fePt := UIA.CreatePropertyCondition(UIA.Property.Name, "Explorador de Arquivos")
+        feName := UIA.CreateOrCondition(feEn, fePt)
+        feCond := UIA.CreateAndCondition(treeType, feName)
+
+        fileTree := ""
+        try fileTree := root.FindElement(feCond, UIA.TreeScope.Descendants)
+
+        if !fileTree
+            return false
+
+        fileTree.SetFocus()
+        return true
+    } catch {
+        return false
+    }
 }
 
 ;-------------------------------------------------------------------
@@ -8550,10 +8596,16 @@ IsCursorMainEditorFocused() {
 ^h::
 {
     if (IsCursorMainEditorFocused()) {
-        ; User is in main editor: move focus to File Explorer
-        Send "^!+e"
-        Sleep 200
-        Send "^h"
+        ; Main editor: focus Files Explorer via UIA, then trigger reveal
+        if (FocusCursorFilesExplorer()) {
+            Sleep 150
+            Send "^h"
+        } else {
+            ; Fallback: legacy keybinding path if UIA fails
+            Send "^!+e"
+            Sleep 200
+            Send "^h"
+        }
     } else {
         ; User is NOT in main editor (likely in Explorer): trigger Reveal in File Explorer
         Send "^h"
