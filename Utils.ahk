@@ -25,13 +25,15 @@ DbgLogEx(loc, msg, data := "{}", hypothesisId := "") {
 #include UIA-v2\Lib\UIA_Browser.ahk
 
 ; Possible Gemini prompt field names (EN and PT) for work/personal env. Used by FindGeminiPromptField.
-global GEMINI_PROMPT_FIELD_NAMES := ["Enter a prompt for Gemini", "Enter a prompt here", "Digite um prompt para o Gemini", "Digite um prompt aqui"]
+global GEMINI_PROMPT_FIELD_NAMES := ["Enter a prompt for Gemini", "Enter a prompt here",
+    "Digite um prompt para o Gemini", "Digite um prompt aqui"]
 
 ; Find the Gemini prompt field via UIA (returns element or 0). Supports EN and PT labels. Used by Gemini.ahk and Utils.ahk.
 FindGeminiPromptField(uia) {
     ; #region agent log
     try {
-        FileAppend('{"ts":' A_TickCount ',"loc":"FindGeminiPromptField","msg":"entry","hypothesisId":"H1"}' "`n", A_ScriptDir "\.cursor\debug.log")
+        FileAppend('{"ts":' A_TickCount ',"loc":"FindGeminiPromptField","msg":"entry","hypothesisId":"H1"}' "`n",
+            A_ScriptDir "\.cursor\debug.log")
     } catch {
     }
     ; #endregion
@@ -42,7 +44,8 @@ FindGeminiPromptField(uia) {
             if (promptField) {
                 ; #region agent log
                 try {
-                    FileAppend('{"ts":' A_TickCount ',"loc":"FindGeminiPromptField","msg":"return found","data":{"name":"' StrReplace(name, '"', "'") '"},"hypothesisId":"H1"}' "`n", A_ScriptDir "\.cursor\debug.log")
+                    FileAppend('{"ts":' A_TickCount ',"loc":"FindGeminiPromptField","msg":"return found","data":{"name":"' StrReplace(
+                        name, '"', "'") '"},"hypothesisId":"H1"}' "`n", A_ScriptDir "\.cursor\debug.log")
                 } catch {
                 }
                 ; #endregion
@@ -93,7 +96,8 @@ FindGeminiPromptField(uia) {
     }
     ; #region agent log
     try {
-        FileAppend('{"ts":' A_TickCount ',"loc":"FindGeminiPromptField","msg":"return 0 (not found)","hypothesisId":"H1"}' "`n", A_ScriptDir "\.cursor\debug.log")
+        FileAppend('{"ts":' A_TickCount ',"loc":"FindGeminiPromptField","msg":"return 0 (not found)","hypothesisId":"H1"}' "`n",
+            A_ScriptDir "\.cursor\debug.log")
     } catch {
     }
     ; #endregion
@@ -260,24 +264,30 @@ InitHotstringsCheatSheet() {
 
     ; Prompts (4 items) - First category
     try {
-        RegisterHotstring(":o:cgrammar", FileRead(promptDir "\grammar.txt"), "Prompts", "✏️ Grammar & Spelling Corrector")
+        RegisterHotstring(":o:cgrammar", FileRead(promptDir "\grammar.txt"), "Prompts",
+        "✏️ Grammar & Spelling Corrector")
     } catch {
-        RegisterHotstring(":o:cgrammar", "Correct grammar and spelling. Give back only the text.`n", "Prompts", "✏️ Grammar & Spelling Corrector")
+        RegisterHotstring(":o:cgrammar", "Correct grammar and spelling. Give back only the text.`n", "Prompts",
+            "✏️ Grammar & Spelling Corrector")
     }
     try {
         RegisterHotstring(":o:mtask", FileRead(promptDir "\mtask.txt"), "Prompts", "🔲 Convert to Task")
     } catch {
-        RegisterHotstring(":o:mtask", "Translate this into a task. Output ONLY the task. Start with 🔲.`n", "Prompts", "🔲 Convert to Task")
+        RegisterHotstring(":o:mtask", "Translate this into a task. Output ONLY the task. Start with 🔲.`n", "Prompts",
+            "🔲 Convert to Task")
     }
     try {
         RegisterHotstring(":o:flog", FileRead(promptDir "\flog.txt"), "Prompts", "🍽️ Food Log Dictation")
     } catch {
-        RegisterHotstring(":o:flog", "Food_Log dictation → Excel CSV. Output ONLY the final CSV block.`n", "Prompts", "🍽️ Food Log Dictation")
+        RegisterHotstring(":o:flog", "Food_Log dictation → Excel CSV. Output ONLY the final CSV block.`n", "Prompts",
+            "🍽️ Food Log Dictation")
     }
     try {
         RegisterHotstring(":o:aiopt", FileRead(promptDir "\aiopt.txt"), "Prompts", "🤖 AI Text Optimizer")
     } catch {
-        RegisterHotstring(":o:aiopt", "Rewrite the input text so it becomes AI-oriented. Preserve all important information.`n", "Prompts", "🤖 AI Text Optimizer")
+        RegisterHotstring(":o:aiopt",
+            "Rewrite the input text so it becomes AI-oriented. Preserve all important information.`n", "Prompts",
+            "🤖 AI Text Optimizer")
     }
 
     ; Placeholder prompts (6 slots reserved for future prompts)
@@ -286,23 +296,55 @@ InitHotstringsCheatSheet() {
         planPrompt := FileRead(promptDir "\markdown-plan.txt")
         RegisterHotstring(":o:cplan", planPrompt, "Prompts", "📋 Technical Architect & Code Planner")
     } catch {
-        RegisterHotstring(":o:cplan", "You are an expert Technical Architect and Code Planner. Generate a .plan.md file. **Input Task:**`n", "Prompts", "📋 Technical Architect & Code Planner")
+        RegisterHotstring(":o:cplan",
+            "You are an expert Technical Architect and Code Planner. Generate a .plan.md file. **Input Task:**`n",
+            "Prompts", "📋 Technical Architect & Code Planner")
     }
     try {
         RegisterHotstring(":o:cplant", FileRead(promptDir "\cplant.txt"), "Prompts", "📝 Plan File Template")
     } catch {
-        RegisterHotstring(":o:cplant", "---`nname: [Title]`noverview: [Summary]`ntodos:`n  - id: x`n    content: [Step]`n    status: pending`n---`n", "Prompts", "📝 Plan File Template")
+        RegisterHotstring(":o:cplant",
+            "---`nname: [Title]`noverview: [Summary]`ntodos:`n  - id: x`n    content: [Step]`n    status: pending`n---`n",
+            "Prompts", "📝 Plan File Template")
     }
-    ; Character w: creating mnemonic stories (content from prompt/mnemonic.txt)
+    ; Character w: creating mnemonic stories (content from notes/studies/technique/story-prompt.txt)
+    ; NOTE: Code will be updated upon access to the work laptop (work-env path placeholder)
+    mnemonicPromptPath := "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\technique\prompts\story-prompt.txt"  ; Work env: replace with work path
     try {
-        mnemonicPrompt := FileRead(promptDir "\mnemonic.txt")
+        mnemonicPrompt := FileRead(mnemonicPromptPath)
         RegisterHotstring(":o:mnemonic", mnemonicPrompt, "Prompts", "📖 Creating mnemonic stories")
     } catch {
         RegisterHotstring("", "", "Prompts", "Reserved 3")
     }
-    RegisterHotstring("", "", "Prompts", "Reserved 4")
-    RegisterHotstring("", "", "Prompts", "Reserved 5")
-    RegisterHotstring("", "", "Prompts", "Reserved 6")
+    ; Character e: transcript YouTube video (content from notes/studies/technique/video-transcription-prompt.txt)
+    ; NOTE: Code will be updated upon access to the work laptop (work-env path placeholder)
+    transcriptPromptPath :=
+        "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\technique\prompts\video-transcription-prompt.txt"  ; Work env: replace with work path
+    try {
+        transcriptPrompt := FileRead(transcriptPromptPath)
+        RegisterHotstring(":o:ytranscript", transcriptPrompt, "Prompts", "🎬 Transcript Youtube Video")
+    } catch {
+        RegisterHotstring("", "", "Prompts", "Reserved 4")
+    }
+    ; Character r: read aloud this story (content from notes/studies/technique/prompts/read-aloud-prompt.txt)
+    ; NOTE: Code will be updated upon access to the work laptop (work-env path placeholder)
+    readAloudPromptPath :=
+        "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\technique\prompts\read-aloud-prompt.txt"  ; Work env: replace with work path
+    try {
+        readAloudPrompt := FileRead(readAloudPromptPath)
+        RegisterHotstring(":o:readaloud", readAloudPrompt, "Prompts", "📖 read aloud this story", "r")
+    } catch {
+        RegisterHotstring("", "", "Prompts", "Reserved 5")
+    }
+    ; Character t: story revision (content from notes/studies/technique/prompts/revision-prompt.txt)
+    ; NOTE: Code will be updated upon access to the work laptop (work-env path placeholder)
+    revisionPromptPath := "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\technique\prompts\revision-prompt.txt"  ; Work env: replace with work path
+    try {
+        revisionPrompt := FileRead(revisionPromptPath)
+        RegisterHotstring(":o:revision", revisionPrompt, "Prompts", "📝 Story revision", "t")
+    } catch {
+        RegisterHotstring("", "", "Prompts", "Reserved 6")
+    }
     RegisterHotstring("", "", "Prompts", "Reserved 7")
 
     ; General Information (2 items) - Second category
@@ -390,7 +432,7 @@ GetScriptsDirectory() {
     if (IS_WORK_ENVIRONMENT) {
         return "C:\Users\fie7ca\Documents\scripts"
     } else {
-        return "C:\Users\eduev\Meu Drive\12 - Scripts"
+        return "C:\Users\eduev\Meu Drive\17 - Projects\scripts"
     }
 }
 
@@ -413,11 +455,11 @@ GetScriptFiles() {
 CheckScriptsNeedingUpdates() {
     scriptsDir := GetScriptsDirectory()
     scriptsNeedingUpdates := []
-    
+
     try {
         ; Change to scripts directory
         SetWorkingDir(scriptsDir)
-        
+
         ; Check git status for modified files using temp file
         tempFile := A_Temp "\git_status_" A_TickCount ".txt"
         try {
@@ -425,7 +467,7 @@ CheckScriptsNeedingUpdates() {
             if (FileExist(tempFile)) {
                 gitOutput := FileRead(tempFile)
                 FileDelete(tempFile)
-                
+
                 if (gitOutput && StrLen(gitOutput) > 0) {
                     ; Parse git status output to find modified .ahk files
                     lines := StrSplit(gitOutput, "`n")
@@ -449,7 +491,7 @@ CheckScriptsNeedingUpdates() {
         } catch {
             ; Ignore temp file errors
         }
-        
+
         ; Also check if there are remote updates available
         RunWait("git fetch", scriptsDir, "Hide")
         tempStatusFile := A_Temp "\git_status_sb_" A_TickCount ".txt"
@@ -482,7 +524,7 @@ CheckScriptsNeedingUpdates() {
     } catch Error as e {
         ; If git commands fail, return empty array (scripts may not be in git repo)
     }
-    
+
     return scriptsNeedingUpdates
 }
 
@@ -491,7 +533,7 @@ QuickUpdateScripts() {
     scriptsDir := GetScriptsDirectory()
     files := GetScriptFiles()
     failedScripts := []
-    
+
     try {
         ; Pull latest changes from git first
         SetWorkingDir(scriptsDir)
@@ -503,7 +545,7 @@ QuickUpdateScripts() {
     } catch Error as e {
         ShowCenteredOverlay_Utils("Git update failed: " e.Message, 2000, "FF0000")
     }
-    
+
     ; Execute each script file
     for index, file in files {
         try {
@@ -524,7 +566,7 @@ QuickUpdateScripts() {
             failedScripts.Push(fileName " (" e.Message ")")
         }
     }
-    
+
     ; Show notification if any scripts failed
     if (failedScripts.Length > 0) {
         failedList := ""
@@ -535,16 +577,27 @@ QuickUpdateScripts() {
     } else {
         ShowCenteredOverlay_Utils("All scripts updated successfully!", 1500, "00FF00")
     }
+
+    ; Second layer: run Act.ahk so the full startup sequence runs again (scripts + apps + shortcuts).
+    ; Guarantees all shortcuts are re-registered in the current environment.
+    try {
+        actPath := GetScriptPath("Act.ahk")
+        if (FileExist(actPath)) {
+            Run actPath
+        }
+    } catch {
+        ; Silently skip if GetScriptPath or Run fails
+    }
 }
 
 ; Update Gemini script specifically, checking other scripts first
 UpdateGeminiScript() {
     scriptsDir := GetScriptsDirectory()
     geminiPath := scriptsDir "\Gemini.ahk"
-    
+
     ; Check which scripts need updates
     scriptsNeedingUpdates := CheckScriptsNeedingUpdates()
-    
+
     ; Filter out Gemini.ahk from the list
     otherScriptsNeedingUpdates := []
     for script in scriptsNeedingUpdates {
@@ -552,28 +605,29 @@ UpdateGeminiScript() {
             otherScriptsNeedingUpdates.Push(script)
         }
     }
-    
+
     ; Notify if other scripts need updates
     if (otherScriptsNeedingUpdates.Length > 0) {
         otherScriptsList := ""
         for script in otherScriptsNeedingUpdates {
             otherScriptsList .= script "`n"
         }
-        response := MsgBox("Other scripts need updates before Gemini:`n`n" otherScriptsList "`nUpdate all scripts now, or update only Gemini?", "Script Updates Available", "YesNo")
+        response := MsgBox("Other scripts need updates before Gemini:`n`n" otherScriptsList "`nUpdate all scripts now, or update only Gemini?",
+            "Script Updates Available", "YesNo")
         if (response = "Yes") {
             ; Update all scripts
             QuickUpdateScripts()
             return
         }
     }
-    
+
     ; Update only Gemini
     try {
         ; Pull latest changes first
         SetWorkingDir(scriptsDir)
         RunWait("git fetch", scriptsDir, "Hide")
         RunWait("git pull", scriptsDir, "Hide")
-        
+
         ; Run Gemini script
         if (!FileExist(geminiPath)) {
             MsgBox "Gemini.ahk not found at: " geminiPath, "Update Failed", "IconX"
@@ -1528,10 +1582,14 @@ Handy_ClickAiModel(hwnd, modelName) {
                 btnClass := ""
                 try btnClass := btn.ClassName
                 ; #region agent log
-                DbgLogEx("Handy_ClickAiModel", "name match", '{"btnName":"' StrReplace(btnName, "`"", "'") '","btnClass":"' StrReplace(btnClass, "`"", "'") '","hasWfull":' (InStr(btnClass,"w-full px-3 py-2 text-left")?1:0) ',"hasTextStart":' (InStr(btnClass,"w-full px-3 py-2 text-start")?1:0) ',"hasFlex":' (InStr(btnClass,"flex items-center gap-2")?1:0) '}', "H2")
+                DbgLogEx("Handy_ClickAiModel", "name match", '{"btnName":"' StrReplace(btnName, "`"", "'") '","btnClass":"' StrReplace(
+                    btnClass, "`"", "'") '","hasWfull":' (InStr(btnClass, "w-full px-3 py-2 text-left") ? 1 : 0) ',"hasTextStart":' (
+                        InStr(btnClass, "w-full px-3 py-2 text-start") ? 1 : 0) ',"hasFlex":' (InStr(btnClass,
+                            "flex items-center gap-2") ? 1 : 0) '}', "H2")
                 ; #endregion
                 ; Menu items: w-full px-3 py-2 text-left (legacy) or text-start (new Handy UI); header: flex items-center gap-2
-                if (InStr(btnClass, "w-full px-3 py-2 text-left") || InStr(btnClass, "w-full px-3 py-2 text-start") || InStr(btnClass, "flex items-center gap-2")) {
+                if (InStr(btnClass, "w-full px-3 py-2 text-left") || InStr(btnClass, "w-full px-3 py-2 text-start") ||
+                InStr(btnClass, "flex items-center gap-2")) {
                     modelBtn := btn
                     break
                 }
@@ -1541,7 +1599,8 @@ Handy_ClickAiModel(hwnd, modelName) {
         }
     }
     ; #region agent log
-    DbgLogEx("Handy_ClickAiModel", "buttons scanned", '{"count":' buttonCount ',"nameMatchNoClass":"' StrReplace(nameMatchNoClass, "`"", "'") '","found":' (modelBtn ? 1 : 0) '}', "H2")
+    DbgLogEx("Handy_ClickAiModel", "buttons scanned", '{"count":' buttonCount ',"nameMatchNoClass":"' StrReplace(
+        nameMatchNoClass, "`"", "'") '","found":' (modelBtn ? 1 : 0) '}', "H2")
     ; #endregion
 
     if (!modelBtn)
@@ -2598,21 +2657,25 @@ global g_ProjectCategories := ["General", "Personal", "Work"]
 ; Each project should have: name, path, workPath, and category ("General", "Personal", or "Work")
 global g_Projects := [
     ; General category
-    { name: "Scripts", path: "C:\Users\eduev\Meu Drive\12 - Scripts", workPath: "C:\Users\fie7ca\Documents\scripts",
-        category: "General" }, { name: "14-my-notes", path: "C:\Users\eduev\Meu Drive\14 - Notes", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes",
+    { name: "Scripts", path: "C:\Users\eduev\Meu Drive\17 - Projects\scripts", workPath: "C:\Users\fie7ca\Documents\scripts",
+        category: "General" }, { name: "14-my-notes", path: "C:\Users\eduev\Meu Drive\17 - Projects\notes", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes",
             category: "General" }, { name: "", path: "", workPath: "", category: "General" }, { name: "", path: "",
                 workPath: "", category: "General" }, { name: "", path: "", workPath: "", category: "General" },
                 ; Personal category
                 { name: "ZMK Sofle", path: "C:\Users\eduev\Documents\ZMK\zmk-sofle", workPath: "", category: "Personal" }, { name: "AI Experiment",
                     path: "C:\Users\eduev\Meu Drive\04 - Pós-graduação\01 - Mestrado\26-ai-experiment", workPath: "",
-                    category: "Personal" }, { name: "", path: "", workPath: "", category: "Personal" }, { name: "",
-                        path: "", workPath: "", category: "Personal" }, { name: "", path: "", workPath: "", category: "Personal" },
-                        ; Work category
-                        { name: "dashboard-model-research", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_E&S_CIP Dashboard research and design workspace folder\dashboard-model-research",
-                            category: "Work" }, { name: "GS_UX core team_UX and CIP Integration", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_UX core team_UX and CIP Integration",
-                                category: "Work" }, { name: "🪂 Avante", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\General - GS_BDU_Team\00_UX_GS_Team\AM_Planning\🪂 Avante",
-                                    category: "Work" }, { name: "", path: "", workPath: "", category: "Work" }, { name: "",
-                                        path: "", workPath: "", category: "Work" }
+                    category: "Personal" }, { name: "my-personal-repo", path: "C:\Users\eduev\Meu Drive\17 - Projects\my-personal-repo",
+                        workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\my-personal-repo",
+                        category: "Personal" }, { name: "",
+                            path: "", workPath: "", category: "Personal" }, { name: "", path: "", workPath: "",
+                                category: "Personal" },
+                            ; Work category
+                            { name: "dashboard-model-research", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_E&S_CIP Dashboard research and design workspace folder\dashboard-model-research",
+                                category: "Work" }, { name: "GS_UX core team_UX and CIP Integration", path: "",
+                                    workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_UX core team_UX and CIP Integration",
+                                    category: "Work" }, { name: "🪂 Avante", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\General - GS_BDU_Team\00_UX_GS_Team\AM_Planning\🪂 Avante",
+                                        category: "Work" }, { name: "", path: "", workPath: "", category: "Work" }, { name: "",
+                                            path: "", workPath: "", category: "Work" }
 ]
 
 ; Extract matching segments from project path for window title matching
@@ -2624,7 +2687,7 @@ ExtractProjectMatchSegments(projectPath) {
     ; Split path into segments
     pathSegments := StrSplit(normalizedPath, "\")
 
-    ; Extract the last folder name (e.g., "zmk-sofle", "26-ai-experiment", "12 - Scripts")
+    ; Extract the last folder name (e.g., "zmk-sofle", "26-ai-experiment", "scripts")
     lastSegment := pathSegments[pathSegments.Length]
 
     ; Build list of potential match strings
@@ -2632,7 +2695,7 @@ ExtractProjectMatchSegments(projectPath) {
 
     ; If we have at least 2 segments, also try the combination
     if (pathSegments.Length >= 2) {
-        ; Try last two segments joined with " - " (for cases like "14 - Notes")
+        ; Try last two segments joined with " - " (for cases like "17 - Projects")
         lastTwoJoined := pathSegments[pathSegments.Length - 1] . " - " . pathSegments[pathSegments.Length]
         if (lastTwoJoined != lastSegment) {  ; Only add if different
             matchSegments.Push(lastTwoJoined)
@@ -3159,6 +3222,8 @@ InitMacros() {
     RegisterMacro(MergeNonFavoriteClips, "📋 Merge Non-Favorite Clips", "u")
     ; Mark Last Clip as Favorite macro (assigned to "J")
     RegisterMacro(MarkLastClipAsFavorite, "⭐ Mark Last Clip as Favorite", "j")
+    ; Move Desktop to Recycle Bin (assigned to "N") — red banner, Y/N confirm
+    RegisterMacro(DesktopToRecycle_Trigger, "🗑️ Move Desktop to Recycle Bin", "n")
 }
 InitMacros()
 
@@ -3213,6 +3278,143 @@ InitDpiAwareness()
 #!+C::
 {
     SelectAiModelInHandy()
+}
+
+; =============================================================================
+; Move all Desktop items to Recycle Bin (recoverable)
+; Trigger: Win+Alt+Shift+U selector → letter N
+; Target path: OneDrive Desktop. Red confirmation (with path), then success banner.
+; =============================================================================
+global g_DesktopToRecycleGui := 0
+global g_DesktopToRecycleTextCtrl := 0
+global g_DesktopToRecyclePath := "C:\Users\eduev\OneDrive\Desktop"
+global g_DesktopToRecycleCloseHwnd := 0
+
+DesktopToRecycle_ShowBanner() {
+    global g_DesktopToRecycleGui, g_DesktopToRecycleTextCtrl, g_DesktopToRecyclePath
+    try {
+        if IsObject(g_DesktopToRecycleGui)
+            g_DesktopToRecycleGui.Destroy()
+    } catch {
+    }
+    g_DesktopToRecycleGui := 0
+    g_DesktopToRecycleTextCtrl := 0
+
+    target := WinGetID("A")
+    hasWindow := false
+    if target && WinExist("ahk_id " target) {
+        try {
+            WinGetPos(&wx, &wy, &ww, &wh, target)
+            hasWindow := (ww > 0 && wh > 0)
+        } catch {
+            hasWindow := false
+        }
+    }
+
+    confirmText := "Move all items from:`n" . g_DesktopToRecyclePath . "`nto Recycle Bin? (Y = Yes, N = No)"
+    ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
+    ov.BackColor := "C0392B"
+    ov.SetFont("s22 cFFFFFF Bold", "Segoe UI")
+    g_DesktopToRecycleTextCtrl := ov.Add("Text", "w700 Center", confirmText)
+    ov.Show("AutoSize Hide")
+    ov.GetPos(&gx, &gy, &gw, &gh)
+
+    if hasWindow {
+        cx := wx + (ww - gw) // 2
+        cy := wy + (wh - gh) // 2
+        ov.Show("x" . cx . " y" . cy . " NA")
+    } else {
+        vx := SysGet(76)
+        vy := SysGet(77)
+        vw := SysGet(78)
+        vh := SysGet(79)
+        cx := vx + (vw - gw) // 2
+        cy := vy + (vh - gh) // 2
+        ov.Show("x" . cx . " y" . cy . " NA")
+    }
+
+    WinSetTransparent(178, ov)
+    g_DesktopToRecycleGui := ov
+}
+
+DesktopToRecycle_HideBanner() {
+    global g_DesktopToRecycleGui, g_DesktopToRecycleTextCtrl
+    try {
+        if IsObject(g_DesktopToRecycleGui)
+            g_DesktopToRecycleGui.Destroy()
+    } catch {
+    }
+    g_DesktopToRecycleGui := 0
+    g_DesktopToRecycleTextCtrl := 0
+}
+
+DesktopToRecycle_SetConfirmHotkeys(enable := true) {
+    if (enable) {
+        Hotkey("*y", DesktopToRecycle_Confirm, "On")
+        Hotkey("*n", DesktopToRecycle_Cancel, "On")
+    } else {
+        try Hotkey("*y", "Off")
+        catch {
+        }
+        try Hotkey("*n", "Off")
+        catch {
+        }
+    }
+}
+
+DesktopToRecycle_Cancel(*) {
+    DesktopToRecycle_SetConfirmHotkeys(false)
+    DesktopToRecycle_HideBanner()
+}
+
+DesktopToRecycle_Confirm(*) {
+    DesktopToRecycle_SetConfirmHotkeys(false)
+    DesktopToRecycle_HideBanner()
+    DesktopToRecycle_Run()
+}
+
+DesktopToRecycle_Run() {
+    global g_DesktopToRecyclePath
+    ; Use .NET FileIO.FileSystem SendToRecycleBin (no Shell verbs); process dirs last so parent exists
+    ui := "[Microsoft.VisualBasic.FileIO.UIOption]::OnlyErrorDialogs"
+    rec := "[Microsoft.VisualBasic.FileIO.RecycleOption]::SendToRecycleBin"
+    ps := "Add-Type -AssemblyName Microsoft.VisualBasic;$d='" . g_DesktopToRecyclePath .
+        "';if(-not(Test-Path -LiteralPath $d)){exit 1};$files=@(Get-ChildItem -LiteralPath $d -Force|Where-Object{-not $_.PSIsContainer});$dirs=@(Get-ChildItem -LiteralPath $d -Force|Where-Object{$_.PSIsContainer});foreach($f in $files){try{[Microsoft.VisualBasic.FileIO.FileSystem]::DeleteFile($f.FullName," .
+        ui . "," . rec .
+        ")}catch{}};foreach($dir in $dirs){try{[Microsoft.VisualBasic.FileIO.FileSystem]::DeleteDirectory($dir.FullName," .
+        ui . "," . rec . ")}catch{}};exit 0"
+    try {
+        exitCode := RunWait('powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "' . ps . '"', "", "Hide")
+        if (exitCode = 0)
+            ShowCenteredOverlay_Utils("Desktop items moved to Recycle Bin", 2000, "27AE60")
+        else
+            ShowCenteredOverlay_Utils("Desktop path not found or error", 2500, "C0392B")
+    } catch as err {
+        ShowCenteredOverlay_Utils("Error moving to Recycle Bin", 2500, "C0392B")
+    }
+    ; Close Desktop Explorer window if it was active when macro was triggered
+    global g_DesktopToRecycleCloseHwnd
+    if (g_DesktopToRecycleCloseHwnd && WinExist("ahk_id " g_DesktopToRecycleCloseHwnd)) {
+        try WinClose("ahk_id " g_DesktopToRecycleCloseHwnd)
+        g_DesktopToRecycleCloseHwnd := 0
+    }
+}
+
+; Entry point when "N" is pressed in Win+Alt+Shift+U selector
+DesktopToRecycle_Trigger() {
+    global g_DesktopToRecycleCloseHwnd
+    ; Remember active window if it's Explorer showing Desktop - close it after cleaning
+    hwnd := WinExist("A")
+    g_DesktopToRecycleCloseHwnd := 0
+    if (hwnd && WinGetProcessName("ahk_id " hwnd) = "explorer.exe") {
+        try {
+            if (InStr(WinGetTitle("ahk_id " hwnd), "Desktop", false))
+                g_DesktopToRecycleCloseHwnd := hwnd
+        } catch {
+        }
+    }
+    DesktopToRecycle_ShowBanner()
+    DesktopToRecycle_SetConfirmHotkeys(true)
 }
 
 ; =============================================================================
@@ -4778,10 +4980,10 @@ HnPLoopMode() {
         if (g_HnPTargetWindow && WinExist("ahk_id " g_HnPTargetWindow)) {
             SafeActivateTarget(g_HnPTargetWindow)
             Sleep 30
-            Send "{Esc}"
+            SendEscape()
 
             ; Safeguard: after 1000 ms send Esc to dismiss any late overlay.
-            SetTimer(() => Send("{Esc}"), -1000)
+            SetTimer(() => SendEscape(), -1000)
 
             ; Ensure the Hunt-and-Peck process is fully terminated
             CloseHuntAndPeckProcess()
@@ -4830,8 +5032,8 @@ ActivateHnP() {
         ShowLoopIndicator(false)
 
         ; Ensure any residual Hunt-and-Peck overlay is cleared
-        Send "{Esc}"
-        SetTimer(() => Send("{Esc}"), -1000)
+        SendEscape()
+        SetTimer(() => SendEscape(), -1000)
 
         ; Terminate any lingering hap.exe process
         CloseHuntAndPeckProcess()
@@ -5517,13 +5719,15 @@ GeminiNavigateFocusAndPasteFirstSnippet() {
                 try {
                     promptField := FindGeminiPromptField(uia)
                     ; #region agent log
-                    DbgLogEx("Utils.ahk:5272", "Utils fallback: prompt field result", (promptField ? '{"found":true}' : '{"found":false}'), "H2")
+                    DbgLogEx("Utils.ahk:5272", "Utils fallback: prompt field result", (promptField ? '{"found":true}' :
+                        '{"found":false}'), "H2")
                     ; #endregion
                     if (promptField)
                         promptField.SetFocus()
                 } catch as e {
                     ; #region agent log
-                    DbgLogEx("Utils.ahk:5278", "Utils fallback: FindGeminiPromptField threw", '{"msg":"' StrReplace(StrReplace(e.Message, "\", "\\"), '"', "'") '"}', "H2")
+                    DbgLogEx("Utils.ahk:5278", "Utils fallback: FindGeminiPromptField threw", '{"msg":"' StrReplace(
+                        StrReplace(e.Message, "\", "\\"), '"', "'") '"}', "H2")
                     ; #endregion
                 }
             }
@@ -5534,13 +5738,15 @@ GeminiNavigateFocusAndPasteFirstSnippet() {
             try {
                 promptField := FindGeminiPromptField(uia)
                 ; #region agent log
-                DbgLogEx("Utils.ahk:5289", "Utils else: prompt field result", (promptField ? '{"found":true}' : '{"found":false}'), "H2")
+                DbgLogEx("Utils.ahk:5289", "Utils else: prompt field result", (promptField ? '{"found":true}' :
+                    '{"found":false}'), "H2")
                 ; #endregion
                 if (promptField)
                     promptField.SetFocus()
             } catch as e {
                 ; #region agent log
-                DbgLogEx("Utils.ahk:5295", "Utils else: FindGeminiPromptField threw", '{"msg":"' StrReplace(StrReplace(e.Message, "\", "\\"), '"', "'") '"}', "H2")
+                DbgLogEx("Utils.ahk:5295", "Utils else: FindGeminiPromptField threw", '{"msg":"' StrReplace(StrReplace(
+                    e.Message, "\", "\\"), '"', "'") '"}', "H2")
                 ; #endregion
             }
         }
@@ -5740,13 +5946,15 @@ HandleHotstringChar(char) {
                             try {
                                 promptField := FindGeminiPromptField(uia)
                                 ; #region agent log
-                                DbgLogEx("Utils.ahk:5479", "Utils expand fallback: prompt field result", (promptField ? '{"found":true}' : '{"found":false}'), "H2")
+                                DbgLogEx("Utils.ahk:5479", "Utils expand fallback: prompt field result", (promptField ?
+                                    '{"found":true}' : '{"found":false}'), "H2")
                                 ; #endregion
                                 if (promptField) {
                                     promptField.SetFocus()
                                 }
                             } catch as e {
-                                DbgLogEx("Utils.ahk:5486", "Utils expand fallback: threw", '{"msg":"' StrReplace(StrReplace(e.Message, "\", "\\"), '"', "'") '"}', "H2")
+                                DbgLogEx("Utils.ahk:5486", "Utils expand fallback: threw", '{"msg":"' StrReplace(
+                                    StrReplace(e.Message, "\", "\\"), '"', "'") '"}', "H2")
                             }
                         }
                     } else {
@@ -5756,13 +5964,15 @@ HandleHotstringChar(char) {
                         try {
                             promptField := FindGeminiPromptField(uia)
                             ; #region agent log
-                            DbgLogEx("Utils.ahk:5497", "Utils expand else: prompt field result", (promptField ? '{"found":true}' : '{"found":false}'), "H2")
+                            DbgLogEx("Utils.ahk:5497", "Utils expand else: prompt field result", (promptField ?
+                                '{"found":true}' : '{"found":false}'), "H2")
                             ; #endregion
                             if (promptField) {
                                 promptField.SetFocus()
                             }
                         } catch as e {
-                            DbgLogEx("Utils.ahk:5504", "Utils expand else: threw", '{"msg":"' StrReplace(StrReplace(e.Message, "\", "\\"), '"', "'") '"}', "H2")
+                            DbgLogEx("Utils.ahk:5504", "Utils expand else: threw", '{"msg":"' StrReplace(StrReplace(e.Message,
+                                "\", "\\"), '"', "'") '"}', "H2")
                         }
                     }
                 } catch {
@@ -6838,6 +7048,19 @@ SafePlayPrintScreenSound() {
     g_PrintScreenInProgress := false
 }
 #InputLevel 0
+
+; Helper to send Escape while respecting dictation state.
+; When dictation is active, this becomes a no-op so Handy is not closed.
+SendEscape(count := 1) {
+    global g_DictationActive
+    if (g_DictationActive) {
+        return
+    }
+    if (count > 1)
+        Send("{Escape " . count . "}")
+    else
+        Send("{Escape}")
+}
 
 ; =============================================================================
 ; Block Escape Key from handy.exe

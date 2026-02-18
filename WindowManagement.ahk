@@ -5,9 +5,8 @@
 ; This script consolidates all Window Management hotkeys.
 ; -----------------------------------------------------------------------------
 
-; --- Inlined config (no external includes for stability) --------------------
-; Environment: set to true for work, false for personal (was env.ahk).
-global IS_WORK_ENVIRONMENT := true
+; --- Environment (use env.ahk so personal vs work matches Act/Utils) --------
+#include %A_ScriptDir%\env.ahk
 
 ; --- Copy-from-Gemini to Cursor bridge (self-contained module) --------------
 #include %A_ScriptDir%\GeminiToCursorBridge.ahk
@@ -711,14 +710,14 @@ global g_ProjectCategories := ["General", "Personal", "Work"]
 ; Each project should have: name, path, workPath, and category ("General", "Personal", or "Work")
 global g_Projects := [
     ; General category
-    { name: "Scripts", path: "C:\Users\eduev\Meu Drive\12 - Scripts", workPath: "C:\Users\fie7ca\Documents\scripts",
-        category: "General" }, { name: "14-my-notes", path: "C:\Users\eduev\Meu Drive\14 - Notes", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes",
+    { name: "Scripts", path: "C:\Users\eduev\Meu Drive\17 - Projects\scripts", workPath: "C:\Users\fie7ca\Documents\scripts",
+        category: "General" }, { name: "14-my-notes", path: "C:\Users\eduev\Meu Drive\17 - Projects\notes", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes",
             category: "General" }, { name: "", path: "", workPath: "", category: "General" }, { name: "", path: "",
                 workPath: "", category: "General" }, { name: "", path: "", workPath: "", category: "General" },
                 ; Personal category
                 { name: "ZMK Sofle", path: "C:\Users\eduev\Documents\ZMK\zmk-sofle", workPath: "", category: "Personal" }, { name: "AI Experiment",
-                    path: "C:\Users\eduev\Meu Drive\04 - Pós-graduação\01 - Mestrado\26-ai-experiment", workPath: "",
-                    category: "Personal" }, { name: "my-personal-repo", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\my-personal-repo",
+                    path: "C:\Users\eduev\Documents\Web projects\ai-experiments", workPath: "",
+                    category: "Personal" }, { name: "my-personal-repo", path: "C:\Users\eduev\Meu Drive\17 - Projects\my-personal-repo", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\my-personal-repo",
                         category: "Personal" }, { name: "",
                             path: "", workPath: "", category: "Personal" }, { name: "", path: "", workPath: "",
                                 category: "Personal" },
@@ -894,7 +893,7 @@ CleanupProjectSelector() {
 ; Cursor window titles have format: "filename - folder-name - Cursor" or "filename - path-segment - Cursor"
 ; Examples:
 ;   "eyelash_sofle.keymap - zmk-sofle - Cursor" matches path ending in "zmk-sofle"
-;   "WindowManagement.ahk - 12 - Scripts - Cursor" matches path ending in "12 - Scripts"
+;   "WindowManagement.ahk - scripts - Cursor" matches path ending in "scripts"
 ;   "argument.md - 26-ai-experiment - Cursor" matches path ending in "26-ai-experiment"
 ExtractProjectMatchSegments(projectPath) {
     ; Normalize the project path (remove trailing backslashes)
@@ -903,22 +902,22 @@ ExtractProjectMatchSegments(projectPath) {
     ; Split path into segments
     pathSegments := StrSplit(normalizedPath, "\")
 
-    ; Extract the last folder name (e.g., "zmk-sofle", "26-ai-experiment", "12 - Scripts")
+    ; Extract the last folder name (e.g., "zmk-sofle", "26-ai-experiment", "scripts")
     lastSegment := pathSegments[pathSegments.Length]
 
     ; Build list of potential match strings
     matchSegments := [lastSegment]
 
-    ; If the last segment contains " - ", it's already a compound name like "12 - Scripts"
+    ; If the last segment contains " - ", it's already a compound name like "17 - Projects"
     ; We also want to check if the last two segments together form a pattern
-    ; For example: path "C:\Users\eduev\Meu Drive\12 - Scripts"
-    ;   Last segment: "12 - Scripts" (this should match)
-    ;   But window might show just "12 - Scripts" or the full path segment
+    ; For example: path "C:\Users\eduev\Meu Drive\17 - Projects\scripts"
+    ;   Last segment: "scripts" (this should match)
+    ;   But window might show "scripts" or the full path segment
 
     ; If we have at least 2 segments, also try the combination
     ; This handles cases where the folder structure might be represented differently
     if (pathSegments.Length >= 2) {
-        ; Try last two segments joined with " - " (for cases like "14 - Notes")
+        ; Try last two segments joined with " - " (for cases like "17 - Projects")
         lastTwoJoined := pathSegments[pathSegments.Length - 1] . " - " . pathSegments[pathSegments.Length]
         if (lastTwoJoined != lastSegment) {  ; Only add if different
             matchSegments.Push(lastTwoJoined)

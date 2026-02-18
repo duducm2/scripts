@@ -519,7 +519,7 @@ Cursor
 📉 [Y]Fold all (tuck awa[Y])
 📈 [U] [U]nfold all
 📋 [O]Open Paste As... ([O]pen)
-📁 [H]Reveal in file explorer (s[H]ow)
+📁 [H]Smart nav: Editor→Explorer / Explorer→Reveal (s[H]ow)
 🔲 [J]Select to Bracket (ad[J]acent)
 📉 [,] Fold all directories
 💬 [.] Toggle chat or agent
@@ -1462,7 +1462,7 @@ r=== CLIP ANGEL ===
 ; Environment paths (unchanged)
 ;-------------------------------------------------------------------
 global WORK_SCRIPTS_PATH := "C:\Users\fie7ca\Documents\01 - Scripts"
-global PERSONAL_SCRIPTS_PATH := "G:\Meu Drive\12 - Scripts"
+global PERSONAL_SCRIPTS_PATH := "C:\Users\eduev\Meu Drive\17 - Projects\scripts"
 ; global IS_WORK_ENVIRONMENT   := true    ; set to false on personal rig // This will now be loaded from env.ahk
 
 ; ---------------------------------------------------------------------------
@@ -2396,120 +2396,6 @@ ClickGenerateCommitMessageButton() {
         Send "^m"
         return true
     }
-}
-
-; ---------------------------------------------------------------------------
-; Check if commit message has been written (has content)
-; Returns true if message exists and has content, false otherwise
-; ---------------------------------------------------------------------------
-HasCommitMessageContent() {
-    try {
-        uia := UIA_Browser()
-        if !IsObject(uia) {
-            return false
-        }
-
-        ; Try to find the commit message text field/textarea
-        ; Common patterns: Edit control, TextArea, or contenteditable div
-        commitMessageField := ""
-
-        ; Strategy 1: Find by Type Edit (50004)
-        commitMessageField := uia.FindFirst({ Type: "50004", ControlType: "Edit" })
-
-        ; Strategy 2: Find by Type Edit with common class names
-        if !commitMessageField {
-            allEdits := uia.FindAll({ Type: "50004" })
-            for edit in allEdits {
-                className := edit.ClassName
-                ; Look for common commit message field indicators
-                if (InStr(className, "input") || InStr(className, "textarea") ||
-                InStr(className, "editor") || InStr(className, "commit")) {
-                    ; Check if it has content
-                    try {
-                        value := edit.Value
-                        if (value && StrLen(Trim(value)) > 0) {
-                            commitMessageField := edit
-                            break
-                        }
-                    } catch {
-                        ; Try Name property as fallback
-                        try {
-                            name := edit.Name
-                            if (name && StrLen(Trim(name)) > 0 && !InStr(name, "Enter") && !InStr(name, "prompt")) {
-                                commitMessageField := edit
-                                break
-                            }
-                        } catch {
-                            continue
-                        }
-                    }
-                }
-            }
-        }
-
-        ; Strategy 3: Find by looking for text content in the commit dialog area
-        if !commitMessageField {
-            ; Look for any element with substantial text content that might be the commit message
-            allElements := uia.FindAll({ Type: "50020" })  ; Text elements
-            for textEl in allElements {
-                try {
-                    textContent := textEl.Name
-                    ; If text is substantial (more than 20 chars) and doesn't look like UI labels
-                    if (textContent && StrLen(Trim(textContent)) > 20 &&
-                    !InStr(textContent, "Ctrl+") && !InStr(textContent, "commit on") &&
-                    !InStr(textContent, "Generate")) {
-                        ; This might be commit message content
-                        return true
-                    }
-                } catch {
-                    continue
-                }
-            }
-        }
-
-        ; If we found a field, check if it has content
-        if (commitMessageField) {
-            try {
-                value := commitMessageField.Value
-                if (value && StrLen(Trim(value)) > 0) {
-                    return true
-                }
-            } catch {
-                ; Try to get text content another way
-                try {
-                    name := commitMessageField.Name
-                    if (name && StrLen(Trim(name)) > 0 && !InStr(name, "Enter") && !InStr(name, "prompt")) {
-                        return true
-                    }
-                } catch {
-                    return false
-                }
-            }
-        }
-
-        return false
-    } catch Error {
-        return false
-    }
-}
-
-; ---------------------------------------------------------------------------
-; Wait for commit to finish (message box clears)
-; Returns true if commit finished (content gone), false if timed out
-; ---------------------------------------------------------------------------
-WaitForCommitToFinish(timeout := 5000) {
-    start := A_TickCount
-    ; Wait a bit for the commit to actually start processing
-    Sleep 500 
-    
-    while (A_TickCount - start < timeout) {
-        ; If content is gone, commit is likely done
-        if (!HasCommitMessageContent()) {
-            return true
-        }
-        Sleep 200
-    }
-    return false
 }
 
 ; ---------------------------------------------------------------------------
@@ -4135,7 +4021,7 @@ ChromePdf_FocusByAutomationId(automationId, controlType := 0) {
     Send "{Down}"
     Send "{Right}"
     Send "{Enter}"
-    Send "{Esc}"
+    SendEscape()
     Sleep "200"
     Send "^1"
     Sleep "500"          ; 80 ms
@@ -4509,7 +4395,7 @@ ChromePdf_FocusByAutomationId(automationId, controlType := 0) {
 {
     Send "{Enter}"
     Send "{Enter}"
-    Send "{Esc}"
+    SendEscape()
 }
 
 ; Shift + G : Heart reaction - Heart
@@ -4518,7 +4404,7 @@ ChromePdf_FocusByAutomationId(automationId, controlType := 0) {
     Send "{Enter}"
     Send "{Down}"
     Send "{Enter}"
-    Send "{Esc}"
+    SendEscape()
 }
 
 ; Shift + J : Laugh reaction - Laugh
@@ -4528,7 +4414,7 @@ ChromePdf_FocusByAutomationId(automationId, controlType := 0) {
     Send "{Down}"
     Send "{Down}"
     Send "{Enter}"
-    Send "{Esc}"
+    SendEscape()
 }
 
 ; Alt + 1 : Select 1st search result - Search
@@ -6577,7 +6463,7 @@ RenameChatGPTWindowToChatGPT() {
 +o::
 {
     ; Ensure composer is focused
-    Send "{Esc}"
+    SendEscape()
     Sleep 150
 
     promptText := ""
@@ -6633,7 +6519,7 @@ SubmitChatGPTMessage() {
     currentStopStreamingName := IS_WORK_ENVIRONMENT ? pt_stopStreamingName : en_stopStreamingName
 
     ; Step 1: Send Escape to ensure composer is focused
-    Send "{Esc}"
+    SendEscape()
     Sleep 100
     ; Step 2: Send Enter to submit the prompt
     Send "{Enter}"
@@ -7153,8 +7039,8 @@ Excel_RemoveRows(iterations := 8) {
 
 ; Shift + U : Close and apply (Alt, H, C, C)
 +u:: {
-    Send "{Esc}"
-    Send "{Esc}"
+    SendEscape()
+    SendEscape()
     Send "{Alt down}"
     Send "{Alt down}"
     Sleep 200
@@ -7598,7 +7484,7 @@ Excel_RemoveRows(iterations := 8) {
     } catch Error {
     }
     ; Fallback: Try common keyboard shortcuts
-    Send "{Esc}"  ; Escape key is universal for cancels
+    SendEscape()  ; Escape key is universal for cancels
 }
 
 ; Shift + A : Right-click All pages button in Power BI
@@ -8627,10 +8513,52 @@ IsEditorActive() {
     return WinActive("ahk_exe Cursor.exe")
 }
 
+;-----------------------------------------
+;  UIA POC: detect if focus is in Cursor main editor (Monaco inputarea)
+;  Target: Type 50004 (Edit), Name "The editor is not accessible...",
+;  LocalizedType "editor", ClassName "inputarea monaco-mouse-cursor-text"
+;-----------------------------------------
+IsCursorMainEditorFocused() {
+    try {
+        fe := UIA.GetFocusedElement()
+        if (!fe)
+            return false
+        ; Type 50004 = Edit
+        if (fe.Type != 50004)
+            return false
+        name := fe.Name
+        if (InStr(name, "Shift+Alt+F1") = 0 && InStr(name, "The editor is not accessible") = 0)
+            return false
+        try lct := fe.LocalizedType
+        if (IsSet(lct) && lct != "" && lct != "editor")
+            return false
+        try cn := fe.ClassName
+        if (IsSet(cn) && cn != "" && InStr(cn, "inputarea") = 0)
+            return false
+        return true
+    }
+    catch
+        return false
+}
+
 ;-------------------------------------------------------------------
 ; Cursor Shortcuts
 ;-------------------------------------------------------------------
 #HotIf IsEditorActive() && WinGetClass("A") != "#32770"
+
+; Ctrl + H : Smart navigation - Editor → Explorer, Explorer → Reveal in Explorer
+^h::
+{
+    if (IsCursorMainEditorFocused()) {
+        ; User is in main editor: move focus to File Explorer
+        Send "^!+e"
+        Sleep 200
+        Send "^h"
+    } else {
+        ; User is NOT in main editor (likely in Explorer): trigger Reveal in File Explorer
+        Send "^h"
+    }
+}
 
 ^e::
 {
@@ -8638,8 +8566,8 @@ IsEditorActive() {
     Sleep 400
     Send "!+e"
     Sleep 300
-    Send "{Escape}"  ; ESC
-    Send "{Escape}"  ; ESC
+    SendEscape()  ; ESC
+    SendEscape()  ; ESC
     Send "^i"
 }
 
@@ -8647,9 +8575,9 @@ IsEditorActive() {
 ^1::
 {
     ; Send ESC two times
-    Send "{Escape}"  ; ESC
+    SendEscape()  ; ESC
     Sleep 50
-    Send "{Escape}"  ; ESC again
+    SendEscape()  ; ESC again
     Sleep 100
     Send "^!n"
     Sleep 100
@@ -8711,7 +8639,7 @@ IsEditorActive() {
             currClass := WinGetClass("ahk_id " curr)
             ; Likely a dialog: different window, and (has dialog-like title or is Chrome_WidgetWin)
             if InStr(currClass, "Chrome_WidgetWin") || InStr(currClass, "32770")
-                || InStr(currTitle, "Save") || InStr(currTitle, "Export") || InStr(currTitle, "?") {
+            || InStr(currTitle, "Save") || InStr(currTitle, "Export") || InStr(currTitle, "?") {
                 saveDialogHwnd := curr
                 break
             }
@@ -8729,13 +8657,13 @@ IsEditorActive() {
     ; 3. Handle Confirm Save As / Replace dialog (ClassName #32770, Name: "Confirm Save As")
     ; WinGetText doesn't capture UIA Text elements; use window title. Yes button has Alt+Y.
     SetTitleMatchMode 2
-    Loop 10 {
+    loop 10 {
         Sleep 200
         replaceHwnd := WinExist("ahk_class #32770")
         if replaceHwnd {
             title := WinGetTitle("ahk_id " replaceHwnd)
             if InStr(title, "Confirm Save As") || InStr(title, "Confirmar Salvar")
-                || InStr(title, "Confirmar Guardar") || InStr(title, "Confirm Replace") {
+            || InStr(title, "Confirmar Guardar") || InStr(title, "Confirm Replace") {
                 try WinActivate("ahk_id " replaceHwnd)
                 Sleep 100
                 Send "!y"   ; Alt+Y = Yes (per UIA: AcceleratorKey: "Alt+Y")
@@ -8859,271 +8787,115 @@ IsEditorActive() {
 ; Shift + B : Git Push - Push
 +b:: Send "+b"
 
-; Ctrl + M : Ask, wait banner 8s, then Shift+V
-^M::
-{
-    ; Remember current target window so later keystrokes go to the right app
-    gCommitPushTargetWin := WinExist("A")
-    ; Prompt push decision upfront (blocking, topmost). Store for later execution.
-    PromptCommitPushDecisionBlocking()
-
-    ; Reactivate the target window after dialog closes (dialog steals focus)
-    if (gCommitPushTargetWin) {
-        WinActivate gCommitPushTargetWin
-        WinWaitActive("ahk_id " gCommitPushTargetWin, , 1)
-        Sleep 200
-    }
-
-    ; Block all mouse and keyboard input to prevent user interference
-    ; This ensures the script can complete its automation without interruption
-    BlockInput "On"
-
-    ; Ensure target window stays active throughout the operation
-    try {
-        if (gCommitPushTargetWin && WinExist("ahk_id " gCommitPushTargetWin)) {
-            WinActivate gCommitPushTargetWin
-            WinWaitActive("ahk_id " gCommitPushTargetWin, , 1)
-        }
-    } catch {
-        ; If window no longer exists, restore input and exit
-        BlockInput "Off"
+; ---------------------------------------------------------------------------
+; Ctrl + M : 1) Generate immediately. 2) Yellow banner 5s (Y to push). 3) Wait 15s.
+; 4) Focus Cursor, commit, push if Y pressed. 5) Return to previous window.
+; ---------------------------------------------------------------------------
+^M:: {
+    global gCommitPushTargetWin
+    global gCommitPushDecision
+    hwnd := WinExist("A")
+    if !hwnd
         return
-    }
+    gCommitPushTargetWin := hwnd
+    gCommitPushDecision := ""
 
-    Send "+d"
-    Sleep 200
+    ; 1. Trigger generation immediately (Ctrl+Alt+A)
+    SoundPlay A_ScriptDir "\sounds\commit-start.wav"
     Send "^!a"
-    Sleep 200
-    loop 8 {
-        secondsLeft := 9 - A_Index
-        ShowSmallLoadingIndicator_ChatGPT("Waiting " . secondsLeft . "s…")
+    ShowCommitPushBanner()
 
-        ; Keep target window active during the loop
-        try {
-            if (gCommitPushTargetWin && WinExist("ahk_id " gCommitPushTargetWin)) {
-                WinActivate gCommitPushTargetWin
-            }
-        } catch {
-            ; Window closed, restore input and exit
-            BlockInput "Off"
-            HideSmallLoadingIndicator_ChatGPT()
-            return
-        }
+    ; 2. Wait 15s; user can interact with any window
+    Sleep 14000
+    if (IsSoundEnabled())
+        SoundPlay A_ScriptDir "\sounds\go-back-commit.wav"
+    Sleep 1000
 
-        ; Check if the message text is present - ultra simple approach
-        elementFound := false
-        messageHasContent := false
-
-        try {
-            if WinExist("A") {
-                ; Just search for the most distinctive part
-                windowText := WinGetText("A")
-
-                ; Look for the unique shortcut text
-                if InStr(windowText, "Ctrl+⏎") {
-                    elementFound := true
-                } else if InStr(windowText, "commit on") {
-                    elementFound := true
-                } else if InStr(windowText, "Message") {
-                    elementFound := true
-                }
-            }
-        }
-
-        ; Additional verification: Check if commit message has actual content 3
-        if (elementFound) {
-            try {
-                messageHasContent := HasCommitMessageContent()
-            } catch {
-                messageHasContent := false
-            }
-        }
-
-        ; Logic: Only proceed if both UI element is present AND message has content
-        if (elementFound && messageHasContent) {
-            ShowSmallLoadingIndicator_ChatGPT("Message ready, committing...")
-            Sleep 1000
-            ; Break out of loop and proceed with commit
-            break
-        } else if (elementFound && !messageHasContent) {
-            ; UI element found but no message content yet - continue waiting
-            ShowSmallLoadingIndicator_ChatGPT("Waiting for message generation...")
-            Sleep 1000
-            continue
-        } else {
-            ; Element not found, exit early
-            ShowSmallLoadingIndicator_ChatGPT("Element not found, stopping...")
-            Sleep 5500
-            ; Ensure target window is active before sending commit command
-            if (gCommitPushTargetWin && WinExist("ahk_id " gCommitPushTargetWin)) {
-                WinActivate gCommitPushTargetWin
-                Sleep 200
-            }
-
-            ; Verify commit message has content before submitting
-            if (!VerifyCommitMessageHasContent()) {
-                HideSmallLoadingIndicator_ChatGPT()
-                ShowSmallLoadingIndicator_ChatGPT("Waiting for commit message...")
-                ; Wait an additional 3 seconds and verify again
-                Sleep 3000
-                if (!VerifyCommitMessageHasContent()) {
-                    ; Still no content, abort commit
-                    HideSmallLoadingIndicator_ChatGPT()
-                    BlockInput "Off"
-                    MsgBox "Commit message is empty. Aborting commit.", "Empty Commit Message", "IconX"
-                    return
-                }
-            }
-
-            Send "^!,"
-            Sleep 100
-            Send "+v"
-            HideSmallLoadingIndicator_ChatGPT()
-            ; Play sound when banner is hidden
-            if (IsSoundEnabled()) {
-                SoundPlay A_ScriptDir "\sounds\cursor-git-commit.wav"
-            }
-
-            ; Wait for commit to finish before pushing
-            ShowSmallLoadingIndicator_ChatGPT("Committing...")
-            if (WaitForCommitToFinish()) {
-                HideSmallLoadingIndicator_ChatGPT()
-                ExecuteStoredCommitPushDecision()
-            } else {
-                HideSmallLoadingIndicator_ChatGPT()
-            }
-
-            ; Restore input before exiting
-            BlockInput "Off"
-            return
-        }
-
-        Sleep 1000
-    }
-
-    ; If we reach here, either the loop completed normally or we broke early with message ready
-    ; Final verification: Double-check that commit message has content before committing
-    messageReady := false
-    try {
-        messageReady := HasCommitMessageContent()
-    } catch {
-        messageReady := false
-    }
-
-    ; Only proceed with commit if message has content
-    if (!messageReady) {
-        ShowSmallLoadingIndicator_ChatGPT("No commit message found. Aborting commit.")
-        Sleep 2000
-        HideSmallLoadingIndicator_ChatGPT()
-        BlockInput "Off"
+    ; 3. Focus Cursor IDE (save current foreground to return later)
+    prevHwnd := WinExist("A")
+    WinActivate("ahk_id " hwnd)
+    if !WinWaitActive("ahk_id " hwnd, , 3)
         return
-    }
 
-    ; Send the commit and show push selector popup
-    ; Ensure target window is active before sending commit command
-    if (gCommitPushTargetWin && WinExist("ahk_id " gCommitPushTargetWin)) {
-        WinActivate gCommitPushTargetWin
-        Sleep 200
-    }
-
-    ; Verify commit message has content before submitting
-    if (!VerifyCommitMessageHasContent()) {
-        HideSmallLoadingIndicator_ChatGPT()
-        ShowSmallLoadingIndicator_ChatGPT("Waiting for commit message...")
-        ; Wait an additional 3 seconds and verify again
-        Sleep 3000
-        if (!VerifyCommitMessageHasContent()) {
-            ; Still no content, abort commit
-            HideSmallLoadingIndicator_ChatGPT()
-            BlockInput "Off"
-            MsgBox "Commit message is empty. Aborting commit.", "Empty Commit Message", "IconX"
-            return
-        }
-    }
-
-    Send "^!,"
-    Sleep 100
+    ; 4. Execute commit and push if necessary
     Send "+v"
-    HideSmallLoadingIndicator_ChatGPT()
-    ; Play sound when banner is hidden
-    if (IsSoundEnabled()) {
-        SoundPlay A_ScriptDir "\sounds\cursor-git-commit.wav"
+    if (gCommitPushDecision = "push") {
+        Sleep 500
+        Send "+b"
     }
-    
-    ; Wait for commit to finish before pushing
-    ShowSmallLoadingIndicator_ChatGPT("Committing...")
-    if (WaitForCommitToFinish()) {
-        HideSmallLoadingIndicator_ChatGPT()
-        ExecuteStoredCommitPushDecision()
-    } else {
-        HideSmallLoadingIndicator_ChatGPT()
-    }
+    gCommitPushDecision := ""
 
-    ; Restore input after all operations complete
-    BlockInput "Off"
-}
-
-; Function to verify commit message has content before submitting
-VerifyCommitMessageHasContent() {
-    ; Store current clipboard content
-    originalClipboard := ""
-    try {
-        originalClipboard := A_Clipboard
-    } catch {
-        ; If clipboard access fails, continue anyway
-    }
-
-    try {
-        ; Clear clipboard first to ensure we get fresh content
-        A_Clipboard := ""
-        Sleep 50
-
-        ; Focus on the commit message field (usually the active field when dialog opens)
-        ; Select all text in the commit message field
-        Send "^a"
-        Sleep 150
-
-        ; Copy the selected text
-        Send "^c"
-        Sleep 150
-
-        ; Wait a bit for clipboard to update
-        Sleep 100
-
-        ; Get clipboard content
-        clipboardText := ""
-        try {
-            clipboardText := A_Clipboard
-        } catch {
-            clipboardText := ""
-        }
-
-        ; Restore original clipboard
-        try {
-            A_Clipboard := originalClipboard
-        } catch {
-            ; If restoration fails, continue anyway
-        }
-
-        ; Trim whitespace and check if content exists
-        trimmedText := Trim(clipboardText)
-
-        ; Return true if there's meaningful content (at least 3 characters to avoid false positives)
-        hasContent := StrLen(trimmedText) >= 3
-        return hasContent
-    } catch {
-        ; If error occurs, restore clipboard and return false (safer to not commit)
-        try {
-            A_Clipboard := originalClipboard
-        }
-        return false
-    }
+    ; 5. Return to previous screen
+    if (prevHwnd && prevHwnd != hwnd)
+        WinActivate("ahk_id " prevHwnd)
 }
 
 ; Global variable for commit push selector target window
 global gCommitPushTargetWin := 0
 ; Global variable to store the user's push decision ("push" | "dont_push" | "")
 global gCommitPushDecision := ""
+; Global variable for non-blocking commit push banner GUI
+global g_CommitPushBannerGui := ""
+
+; Non-blocking yellow banner: "Push? Press Y within 5 seconds"
+ShowCommitPushBanner() {
+    global g_CommitPushBannerGui
+    try {
+        if IsObject(g_CommitPushBannerGui) && g_CommitPushBannerGui.Hwnd
+            g_CommitPushBannerGui.Destroy()
+    } catch {
+    }
+    bannerGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
+    bannerGui.BackColor := "E6E600"
+    bannerGui.SetFont("s14 c000000 Bold", "Segoe UI")
+    bannerGui.Add("Text", "w400 Center", "Push? Press Y within 5 seconds")
+    activeWin := WinGetID("A")
+    if (activeWin)
+        WinGetPos(&winX, &winY, &winW, &winH, activeWin)
+    else {
+        workArea := SysGet.MonitorWorkArea(SysGet.MonitorPrimary)
+        winX := workArea.Left
+        winY := workArea.Top
+        winW := workArea.Right - workArea.Left
+        winH := workArea.Bottom - workArea.Top
+    }
+    bannerGui.Show("AutoSize Hide")
+    guiW := 0
+    guiH := 0
+    bannerGui.GetPos(, , &guiW, &guiH)
+    guiX := winX + (winW - guiW) / 2
+    guiY := winY + (winH - guiH) / 2
+    bannerGui.Show("x" . Round(guiX) . " y" . Round(guiY) . " NA")
+    WinSetTransparent(220, bannerGui)
+    g_CommitPushBannerGui := bannerGui
+    Hotkey("y", CommitPushBanner_YHandler, "On")
+    Hotkey("Y", CommitPushBanner_YHandler, "On")
+    SetTimer(CloseCommitPushBanner, -5000)
+}
+
+CommitPushBanner_YHandler(*) {
+    global gCommitPushDecision
+    gCommitPushDecision := "push"
+    CloseCommitPushBanner()
+}
+
+CloseCommitPushBanner() {
+    global g_CommitPushBannerGui
+    try {
+        if IsObject(g_CommitPushBannerGui) && g_CommitPushBannerGui.Hwnd {
+            g_CommitPushBannerGui.Destroy()
+            g_CommitPushBannerGui := ""
+        }
+    } catch {
+    }
+    try Hotkey("y", "Off")
+    catch {
+    }
+    try Hotkey("Y", "Off")
+    catch {
+    }
+    SetTimer(CloseCommitPushBanner, 0)
+}
 
 ; Function to get commit push action by number
 GetCommitPushActionByNumber(numberText) {
@@ -9135,39 +8907,6 @@ GetCommitPushActionByNumber(numberText) {
     actionMap[1] := "push"
     actionMap[2] := "dont_push"
     return (actionMap.Has(number)) ? actionMap[number] : ""
-}
-
-; Record-only auto-submit handler for the upfront decision prompt
-CommitPushDecision_AutoSubmit(ctrl, *) {
-    global gCommitPushDecision
-    currentValue := ctrl.Text
-    if (currentValue != "" && IsInteger(currentValue)) {
-        action := GetCommitPushActionByNumber(currentValue)
-        if (action != "") {
-            gCommitPushDecision := action
-            ctrl.Gui.Destroy()
-        }
-    }
-}
-
-; Blocking, topmost prompt to capture push decision upfront
-PromptCommitPushDecisionBlocking() {
-    global gCommitPushDecision
-    try {
-        gCommitPushDecision := ""
-        decisionGui := Gui("+AlwaysOnTop +ToolWindow", "Commit Push Selector")
-        decisionGui.SetFont("s10", "Segoe UI")
-        decisionGui.AddText("w350 Center"
-            , "Push after commit?`n`n1. Push (Shift+B)`n2. Don't push`n`nType a number (1-2):")
-        decisionGui.AddEdit("w50 Center vCommitPushInput", "")
-        decisionGui["CommitPushInput"].OnEvent("Change", CommitPushDecision_AutoSubmit)
-        decisionGui.AddButton("w80", "Cancel").OnEvent("Click", (*) => decisionGui.Destroy())
-        decisionGui.Show("w350 h150")
-        decisionGui["CommitPushInput"].Focus()
-        WinWaitClose("ahk_id " decisionGui.Hwnd)
-    } catch Error as e {
-        MsgBox "Error in upfront push decision: " e.Message, "Commit Push Selector Error", "IconX"
-    }
 }
 
 ; Execute stored decision at the exact current push moment
@@ -9399,7 +9138,7 @@ CancelAIModel(ctrl, *) {
 ExecuteAIModelSelection(choice) {
     try {
         ; Send Escape twice, then select the edit field based on on-screen Agent/Ask
-        Send "{Escape 2}"
+        SendEscape(2)
         Sleep 200
         if !SendCtrlKeyBasedOnAgentAsk() {
             ; Fallback to Ctrl+I if no relevant text is found
@@ -9418,7 +9157,7 @@ ExecuteAIModelSelection(choice) {
                 Sleep 500
                 Send "{Enter}"
                 Sleep 300
-                Send "{Escape}"
+                SendEscape()
             }
             case 2:
             {
@@ -10329,7 +10068,7 @@ SwitchAIMode() {
         }
 
         ; Send Escape twice, then select the edit field based on on-screen Agent/Ask
-        Send "{Escape 2}"
+        SendEscape(2)
         Sleep 200
         if !SendCtrlKeyBasedOnAgentAsk() {
             ; Fallback to Ctrl+I if no relevant text is found
@@ -10364,7 +10103,7 @@ SwitchAIModel() {
             return
 
         ; Send Escape twice, then select the edit field based on on-screen Agent/Ask
-        Send "{Escape 2}"
+        SendEscape(2)
         Sleep 200
         if !SendCtrlKeyBasedOnAgentAsk() {
             ; Fallback to Ctrl+I if no relevant text is found
@@ -10383,7 +10122,7 @@ SwitchAIModel() {
                 Sleep 500
                 Send "{Enter}"
                 Sleep 300
-                Send "{Escape}"
+                SendEscape()
             }
             case "2":
             {
@@ -11917,7 +11656,7 @@ FocusDescriptionField() {
         Sleep 200
 
         ; Send Escape to clear any current selection/focus
-        Send "{Esc}"
+        SendEscape()
         Sleep 300
 
         ; Open search with Ctrl+F
@@ -11929,7 +11668,7 @@ FocusDescriptionField() {
         Sleep 900
 
         ; Press Escape to close search
-        Send "{Esc}"
+        SendEscape()
         Sleep 300
 
         ; Press Enter to confirm selection
@@ -12516,7 +12255,7 @@ ToggleGeminiDrawer() {
         uia := UIA_Browser()
         if !IsObject(uia) {
             ; If we can't attach to Chrome, fall back to Escape like before
-            Send "{Escape}"
+            SendEscape()
             return
         }
 
@@ -12549,11 +12288,11 @@ ToggleGeminiDrawer() {
             Sleep 200
         } else {
             ; If we couldn't find the button at all, keep behavior similar to previous version
-            Send "{Escape}"
+            SendEscape()
         }
     } catch Error as e {
         ; If anything goes wrong, graceful fallback
-        Send "{Escape}"
+        SendEscape()
     }
 }
 
@@ -14209,7 +13948,7 @@ PlayCompletionChime_Gemini() {
     } catch Error {
     }
     ; Fallback: Try common keyboard shortcuts
-    Send "{Esc}"  ; Escape key is universal for cancel
+    SendEscape()  ; Escape key is universal for cancel
 }
 
 #HotIf
