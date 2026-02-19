@@ -4894,27 +4894,16 @@ PeekPdf_NormalizePath(path) {
     return Trim(path)
 }
 
-; Resolve the Peek executable path.
-; Priority:
-; 1) INI override: [Peek] ExePath in peek_pdf.ini
-; 2) Fallback: plain "peek.exe" (assumes it's on PATH or handled by caller)
-GetPeekExePath() {
+; Resolve the Peek executable path (INI override, then env.ahk GetPeekExePath).
+; Priority: 1) INI [Peek] ExePath  2) GetPeekExePath() from env.ahk
+PeekPdf_ResolvePeekExePath() {
     iniPath := PeekPdf_GetIniPath()
     exePath := ""
-
-    ; 1) INI override, if set
     try exePath := IniRead(iniPath, "Peek", "ExePath", "")
     exePath := PeekPdf_NormalizePath(exePath)
     if (exePath != "" && FileExist(exePath))
         return exePath
-
-    ; 2) Work‑env default path (PowerToys Peek on work machine)
-    workExe := "C:\Users\fie7ca\AppData\Local\PowerToys\WinUI3Apps\PowerToys.Peek.UI.exe"
-    if (FileExist(workExe))
-        return workExe
-
-    ; 3) Fallback: rely on PATH / default resolution
-    return "peek.exe"
+    return GetPeekExePath()
 }
 
 PeekPdf_OpenStored() {
@@ -4939,7 +4928,7 @@ PeekPdf_OpenStored() {
         try ShowCenteredOverlay_Utils("No PDF path set. Hold Win+Alt+Shift+X to set.", 3000, "FFAA00")
         return
     }
-    peekExe := GetPeekExePath()
+    peekExe := PeekPdf_ResolvePeekExePath()
     if (!FileExist(peekExe)) {
         try ShowCenteredOverlay_Utils("Peek executable not found.", 2500, "FF0000")
         return
