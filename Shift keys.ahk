@@ -8850,7 +8850,7 @@ FocusCursorFilesExplorer() {
 
     ; 1. Trigger generation immediately (Ctrl+Alt+A)
     SoundPlay A_ScriptDir "\sounds\commit-start.wav"
-    Send "^!a"
+    Send "^!."
     ShowCommitPushBanner()
 
     ; 2. Wait 15s; user can interact with any window
