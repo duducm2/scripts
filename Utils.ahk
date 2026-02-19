@@ -473,7 +473,8 @@ GetScriptsDirectory() {
     }
 }
 
-; Get list of script files to update
+; Get list of script files to update.
+; Utils.ahk must be last so QuickUpdateScripts can reload all other scripts before this instance is replaced.
 GetScriptFiles() {
     scriptsDir := GetScriptsDirectory()
     return [
@@ -565,26 +566,52 @@ CheckScriptsNeedingUpdates() {
     return scriptsNeedingUpdates
 }
 
-; Quick Update Scripts macro function
+; Quick Update Scripts macro function (three layers: Git, sequential reload, Act.ahk + Utils last)
 QuickUpdateScripts() {
     scriptsDir := GetScriptsDirectory()
     files := GetScriptFiles()
     failedScripts := []
 
+    ; Layer 1: Git synchronization
     try {
-        ; Pull latest changes from git first
         SetWorkingDir(scriptsDir)
         RunWait("git fetch", scriptsDir, "Hide")
         pullResult := RunWait("git pull", scriptsDir, "Hide")
         if (pullResult != 0) {
-            ShowCenteredOverlay_Utils("Git pull failed. Continuing with script updates...", 2000, "FFFF00")
+            ShowCenteredOverlay_Utils("Git pull failed. Proceeding with local reload...", 2000, "FFFF00")
         }
     } catch Error as e {
         ShowCenteredOverlay_Utils("Git update failed: " e.Message, 2000, "FF0000")
     }
 
-    ; Execute each script file
+    ; Layer 2 & 3: Sequential script reload; Utils.ahk last so this instance stays alive until others are updated
     for index, file in files {
+        isUtils := InStr(file, "Utils.ahk")
+
+        if (isUtils) {
+            ; Show result of Layer 2 before running Layer 3 and reloading self
+            if (failedScripts.Length > 0) {
+                failedList := ""
+                for script in failedScripts {
+                    failedList .= script "`n"
+                }
+                ShowCenteredOverlay_Utils("Some scripts failed to update:`n" failedList, 4000, "FF0000")
+            } else {
+                ShowCenteredOverlay_Utils("All scripts updated successfully!", 1500, "00FF00")
+            }
+            ; Layer 3: Run Act.ahk so full startup sequence (scripts + apps + shortcuts) runs again
+            try {
+                actPath := GetScriptPath("Act.ahk")
+                if (FileExist(actPath)) {
+                    Run actPath
+                    Sleep 500
+                }
+            } catch {
+                ; Ignore Act.ahk failures
+            }
+        }
+
+        ; Reload the script (when file is Utils.ahk, new instance starts; this one may keep running briefly)
         try {
             if (!FileExist(file)) {
                 failedScripts.Push(file " (not found)")
@@ -604,7 +631,7 @@ QuickUpdateScripts() {
         }
     }
 
-    ; Show notification if any scripts failed
+    ; Only reached if Utils.ahk was not in the list or reload was skipped
     if (failedScripts.Length > 0) {
         failedList := ""
         for script in failedScripts {
@@ -613,17 +640,6 @@ QuickUpdateScripts() {
         ShowCenteredOverlay_Utils("Some scripts failed to update:`n" failedList, 4000, "FF0000")
     } else {
         ShowCenteredOverlay_Utils("All scripts updated successfully!", 1500, "00FF00")
-    }
-
-    ; Second layer: run Act.ahk so the full startup sequence runs again (scripts + apps + shortcuts).
-    ; Guarantees all shortcuts are re-registered in the current environment.
-    try {
-        actPath := GetScriptPath("Act.ahk")
-        if (FileExist(actPath)) {
-            Run actPath
-        }
-    } catch {
-        ; Silently skip if GetScriptPath or Run fails
     }
 }
 
