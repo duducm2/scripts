@@ -1319,11 +1319,11 @@ r=== CLIP ANGEL ===
 [Win+Alt+Shift+8] > Get word pronunciation, definition, and Portuguese translation (Gemini)
 [Win+Alt+Shift+O] > Read aloud the last message in Gemini
 [Win+Alt+Shift+P] > Copy the last message in Gemini
+[Win+Alt+Shift+7] > Copy selected text and read aloud (Gemini)
 
 === HANDY DICTATION ===
-[Win+Alt+Shift+0] > Voice-to-text
-[Win+Alt+Shift+7] > Voice-to-text and paste
-[Win+Alt+Shift+J] > Voice-to-text, paste and submit
+[Win+Alt+Shift+0] > Start/stop dictation (transcription to clipboard)
+[Win+Alt+Shift+J] > Stop dictation, paste and submit (e.g. chat prompt)
 
 === YOUTUBE ===
 [Win+Alt+Shift+H] > Activates Youtube
@@ -1364,7 +1364,7 @@ r=== CLIP ANGEL ===
 === GENERAL ===
 [Win+Alt+Shift+U] > Quick string shortcuts
 [Win+Alt+Shift+Q] > Jump mouse on the middle
-[Win+Alt+Shift+X] > Activate hunt and Peck
+[Win+Alt+Shift+X] > Peek PDF (tap) / Set PDF path (hold 700ms+)
 [Win+Alt+Shift+→] > Show square selector (right direction)
 [Win+Alt+Shift+←] > Show square selector (left direction)
 [Win+Alt+Shift+↓] > Show square selector (down direction)
@@ -8528,21 +8528,8 @@ IsCursorMainEditorFocused() {
         if (!root)
             return false
 
-        editorEl := root.ElementFromPath(
-            {T:33,CN:"RootView"},
-            {T:33},
-            {T:33},
-            {T:33,CN:"ClientView"},
-            {T:33},
-            {T:33},
-            {T:33},
-            {T:30},
-            {T:26},
-            {T:33},
-            {T:26,A:"workbench.parts.editor"},
-            {T:26,CN:"editor-instance"},
-            {T:20},
-            {T:4}
+        editorEl := root.ElementFromPath({ T: 33, CN: "RootView" }, { T: 33 }, { T: 33 }, { T: 33, CN: "ClientView" }, { T: 33 }, { T: 33 }, { T: 33 }, { T: 30 }, { T: 26 }, { T: 33 }, { T: 26,
+            A: "workbench.parts.editor" }, { T: 26, CN: "editor-instance" }, { T: 20 }, { T: 4 }
         )
         if (!editorEl)
             return false
