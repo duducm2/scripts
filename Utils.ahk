@@ -4915,13 +4915,12 @@ PeekPdf_OpenStored() {
     pdfEsc := StrReplace(pdfPath, "'", "''")
     psArg := "& " . Chr(39) . peekEsc . Chr(39) . " " . Chr(39) . pdfEsc . Chr(39)
     cmd := "powershell.exe -NoProfile -ExecutionPolicy Bypass -Command " . Chr(34) . psArg . Chr(34)
-    try Run cmd
+    try Run cmd, "", "Hide"
     catch as e {
         try ShowCenteredOverlay_Utils("Failed to open Peek: " e.Message, 3000, "FF0000")
         return
     }
-    Sleep 600
-    if WinExist("Peek")
+    if WinWait("Peek", "", 3)
         WinMaximize
 }
 
