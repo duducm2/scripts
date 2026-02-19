@@ -611,8 +611,20 @@ QuickUpdateScripts() {
                 for script in failedScripts {
                     failedList .= script "`n"
                 }
+                try {
+                    if (FileExist(scriptsDir "\sounds\quick-update-failure.wav"))
+                        SoundPlay(scriptsDir "\sounds\quick-update-failure.wav")
+                } catch {
+                    ; Ignore sound play errors
+                }
                 ShowCenteredOverlay_Utils("Some scripts failed to update:`n" failedList, 4000, "FF0000")
             } else {
+                try {
+                    if (FileExist(scriptsDir "\sounds\quick-update-success.wav"))
+                        SoundPlay(scriptsDir "\sounds\quick-update-success.wav")
+                } catch {
+                    ; Ignore sound play errors
+                }
                 ShowCenteredOverlay_Utils("All scripts updated successfully!", 1500, "00FF00")
             }
         }
@@ -653,8 +665,20 @@ QuickUpdateScripts() {
         for script in failedScripts {
             failedList .= script "`n"
         }
+        try {
+            if (FileExist(scriptsDir "\sounds\quick-update-failure.wav"))
+                SoundPlay(scriptsDir "\sounds\quick-update-failure.wav")
+        } catch {
+            ; Ignore sound play errors
+        }
         ShowCenteredOverlay_Utils("Some scripts failed to update:`n" failedList, 4000, "FF0000")
     } else {
+        try {
+            if (FileExist(scriptsDir "\sounds\quick-update-success.wav"))
+                SoundPlay(scriptsDir "\sounds\quick-update-success.wav")
+        } catch {
+            ; Ignore sound play errors
+        }
         ShowCenteredOverlay_Utils("All scripts updated successfully!", 1500, "00FF00")
     }
 }
