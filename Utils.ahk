@@ -4894,6 +4894,20 @@ PeekPdf_NormalizePath(path) {
     return Trim(path)
 }
 
+; Resolve the Peek executable path.
+; Priority:
+; 1) INI override: [Peek] ExePath in peek_pdf.ini
+; 2) Fallback: plain "peek.exe" (assumes it's on PATH or handled by caller)
+GetPeekExePath() {
+    iniPath := PeekPdf_GetIniPath()
+    exePath := ""
+    try exePath := IniRead(iniPath, "Peek", "ExePath", "")
+    exePath := PeekPdf_NormalizePath(exePath)
+    if (exePath != "")
+        return exePath
+    return "peek.exe"
+}
+
 PeekPdf_OpenStored() {
     iniPath := PeekPdf_GetIniPath()
     pdfPath := IniRead(iniPath, "Peek", "PdfPath", "")

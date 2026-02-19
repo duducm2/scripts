@@ -12794,20 +12794,18 @@ HandleGeminiModelSelection(char) {
         ; Small settle time for window activation
         Sleep 50
 
-        ; Send space first to prevent errors
-        Send "{Space}"
+        ; Focus the Gemini prompt field so we can edit the current prompt in-place
+        if (FocusGeminiPromptField()) {
+            ; 1) Move caret to beginning, 2) insert @model name, 3) move back to end of prompt
+            Send "^{Home}"
+            Sleep 50
+            modelCommand := "@" . modelName . " "
+            SendText modelCommand
+            Sleep 50
+            Send "^{End}"
+        }
 
-        ; Map model name to command with @ symbol (preserve original casing)
-        modelCommand := "@" . modelName
-
-        ; Type the model command directly (send entire text at once for efficiency)
-        SendText modelCommand
-        Sleep 50
-
-        ; Submit by pressing Enter
-        Send "{Enter}"
-
-        ; Update global state
+        ; Update global state (tracks which model is conceptually active)
         isGeminiFastModel := modelName
     } catch Error as err {
         ; Silently fail if anything goes wrong
@@ -13024,8 +13022,8 @@ ShowGeminiModelSelector() {
     }
 }
 
-; Shift + P : Focus the prompt text field - Prompt
-+p:: {
+; Helper: Focus the Gemini prompt text field using UIA
+FocusGeminiPromptField() {
     try {
         uia := UIA_Browser()
         Sleep 150  ; small settle per README (keep this snappy)
@@ -13082,12 +13080,17 @@ ShowGeminiModelSelector() {
                 promptField.Click()
                 Sleep 100
             }
-        } else {
-            ; Last resort: Could not find prompt field
+            return true
         }
     } catch Error as e {
         ; If all else fails, silently fail (no fallback action defined)
     }
+    return false
+}
+
+; Shift + P : Focus the prompt text field - Prompt
++p:: {
+    FocusGeminiPromptField()
 }
 
 ; Shift + C : Click the last Copy button (copies the preceding message) - Copy
