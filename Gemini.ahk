@@ -312,7 +312,7 @@ GeminiTriggerReadAloud(copyFirst := true) {
     }
 
     ; Step 3: If copyFirst, find and click the last Copy button; else just scroll so last response is in view
-    Send "^End"
+    Send "^{End}"
     Sleep 350
 
     if (copyFirst) {
@@ -556,7 +556,7 @@ CopyLastGeminiMessageToClipboard(options := "", geminiHwnd := 0) {
         }
 
         ; Scroll to bottom *before* UIA so the last response is in the tree and we go down the chat.
-        Send "^End"
+        Send "^{End}"
         Sleep 350
 
         uia := alreadyActive ? UIA_Browser() : UIA_Browser("ahk_id " geminiHwnd)
