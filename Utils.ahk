@@ -4920,8 +4920,11 @@ PeekPdf_OpenStored() {
         try ShowCenteredOverlay_Utils("Failed to open Peek: " e.Message, 3000, "FF0000")
         return
     }
-    if WinWait("Peek", "", 3)
+    if WinWait("Peek", "", 3) {
         WinMaximize
+        Sleep 1000
+        Click "Left"
+    }
 }
 
 PeekPdf_ShowInputAndSave() {
