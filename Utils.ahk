@@ -4919,7 +4919,21 @@ GetPeekExePath() {
 
 PeekPdf_OpenStored() {
     iniPath := PeekPdf_GetIniPath()
-    pdfPath := IniRead(iniPath, "Peek", "PdfPath", "")
+
+    ; Resolve PDF path per environment, with legacy fallback
+    pdfPath := ""
+    try {
+        if (IS_WORK_ENVIRONMENT) {
+            pdfPath := IniRead(iniPath, "Peek", "PdfPathWork", "")
+            if (pdfPath = "")
+                pdfPath := IniRead(iniPath, "Peek", "PdfPath", "")
+        } else {
+            pdfPath := IniRead(iniPath, "Peek", "PdfPathPersonal", "")
+            if (pdfPath = "")
+                pdfPath := IniRead(iniPath, "Peek", "PdfPath", "")
+        }
+    }
+
     pdfPath := PeekPdf_NormalizePath(pdfPath)
     if (pdfPath = "") {
         try ShowCenteredOverlay_Utils("No PDF path set. Hold Win+Alt+Shift+X to set.", 3000, "FFAA00")
@@ -4951,18 +4965,36 @@ PeekPdf_OpenStored() {
 }
 
 PeekPdf_ShowInputAndSave() {
-    result := InputBox("Enter the target PDF file path:", "Peek PDF Path", "w500 h120")
-    if (result.Result != "OK" || result.Value = "")
-        return
-    path := PeekPdf_NormalizePath(result.Value)
-    if (path = "")
-        return
     iniPath := PeekPdf_GetIniPath()
     SplitPath(iniPath, , &iniDir)
     if (!DirExist(iniDir))
         DirCreate(iniDir)
-    try IniWrite(path, iniPath, "Peek", "PdfPath")
-    try ShowCenteredOverlay_Utils("PDF path saved.", 1500, "00AA00")
+
+    ; Determine which environment we're configuring
+    envLabel := IS_WORK_ENVIRONMENT ? "WORK (office PC)" : "PERSONAL (home PC)"
+    keyName := IS_WORK_ENVIRONMENT ? "PdfPathWork" : "PdfPathPersonal"
+
+    ; Load existing value for this environment (if any) to prefill
+    existing := ""
+    try existing := IniRead(iniPath, "Peek", keyName, "")
+
+    ; Prompt only for the current environment
+    promptText := "Enter the " . envLabel . " PDF file path:`n`n" . "(Leave blank to keep existing value or skip.)"
+    result := InputBox(promptText, "Peek PDF Path – " . envLabel, "w650 h150", existing)
+    if (result.Result = "Cancel")
+        return
+
+    newPath := PeekPdf_NormalizePath(result.Value)
+
+    if (newPath != "") {
+        ; Persist for this environment
+        try IniWrite(newPath, iniPath, "Peek", keyName)
+        ; Also maintain legacy key for backward compatibility
+        try IniWrite(newPath, iniPath, "Peek", "PdfPath")
+        try ShowCenteredOverlay_Utils("PDF path saved for " . envLabel . ".", 2000, "00AA00")
+    } else {
+        try ShowCenteredOverlay_Utils("No PDF path changed for " . envLabel . ".", 2000, "FFAA00")
+    }
 }
 
 #!+x::
