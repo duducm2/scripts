@@ -1,5 +1,6 @@
 #Requires AutoHotkey v2.0+
 #SingleInstance Force
+#include %A_ScriptDir%\env.ahk
 
 ; #region agent log
 DbgLog(loc, msg) {
@@ -327,8 +328,10 @@ InitHotstringsCheatSheet() {
     ; Character e: transcript YouTube video (content from notes/studies/technique/video-transcription-prompt.txt)
     ; Supports personal (Google Drive) and work (OneDrive - Bosch Group) environments
     transcriptPromptPath := ""
-    transcriptWorkPath := "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes\studies\technique\prompts\video-transcription-prompt.txt"
-    transcriptPersonalPath := "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\technique\prompts\video-transcription-prompt.txt"
+    transcriptWorkPath :=
+        "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes\studies\technique\prompts\video-transcription-prompt.txt"
+    transcriptPersonalPath :=
+        "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\technique\prompts\video-transcription-prompt.txt"
     if FileExist(transcriptWorkPath)
         transcriptPromptPath := transcriptWorkPath
     else if FileExist(transcriptPersonalPath)
@@ -344,8 +347,10 @@ InitHotstringsCheatSheet() {
     ; Character r: read aloud this story (content from notes/studies/technique/prompts/read-aloud-prompt.txt)
     ; Supports personal (Google Drive) and work (OneDrive - Bosch Group) environments
     readAloudPromptPath := ""
-    readAloudWorkPath := "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes\studies\technique\prompts\read-aloud-prompt.txt"
-    readAloudPersonalPath := "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\technique\prompts\read-aloud-prompt.txt"
+    readAloudWorkPath :=
+        "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes\studies\technique\prompts\read-aloud-prompt.txt"
+    readAloudPersonalPath :=
+        "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\technique\prompts\read-aloud-prompt.txt"
     if FileExist(readAloudWorkPath)
         readAloudPromptPath := readAloudWorkPath
     else if FileExist(readAloudPersonalPath)
@@ -361,8 +366,10 @@ InitHotstringsCheatSheet() {
     ; Character t: story revision (content from notes/studies/technique/prompts/revision-prompt.txt)
     ; Supports personal (Google Drive) and work (OneDrive - Bosch Group) environments
     revisionPromptPath := ""
-    revisionWorkPath := "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes\studies\technique\prompts\revision-prompt.txt"
-    revisionPersonalPath := "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\technique\prompts\revision-prompt.txt"
+    revisionWorkPath :=
+        "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes\studies\technique\prompts\revision-prompt.txt"
+    revisionPersonalPath :=
+        "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\technique\prompts\revision-prompt.txt"
     if FileExist(revisionWorkPath)
         revisionPromptPath := revisionWorkPath
     else if FileExist(revisionPersonalPath)
@@ -1578,21 +1585,9 @@ Handy_OpenAiModelMenu(hwnd) {
     }
     if (!anchor) {
         ; Last-resort: use technical condition path to reach the "Update available" button
-        try anchor := el.ElementFromPath(
-            {T:33},
-            {T:33},
-            {T:33},
-            {T:33,CN:"BrowserRootView"},
-            {T:33},
-            {T:33,CN:"EmbeddedBrowserFrameView"},
-            {T:33,CN:"BrowserView"},
-            {T:33,CN:"SidebarContentsSplitView"},
-            {T:33},
-            {T:33},
-            {T:33},
-            {T:30},
-            {T:26},
-            {T:0,CN:"transition-colors disabled:opacity-50 tabular-nums text-logo-primary hover:text-logo-primary/80 font-medium"}
+        try anchor := el.ElementFromPath({ T: 33 }, { T: 33 }, { T: 33 }, { T: 33, CN: "BrowserRootView" }, { T: 33 }, { T: 33,
+            CN: "EmbeddedBrowserFrameView" }, { T: 33, CN: "BrowserView" }, { T: 33, CN: "SidebarContentsSplitView" }, { T: 33 }, { T: 33 }, { T: 33 }, { T: 30 }, { T: 26 }, { T: 0,
+                CN: "transition-colors disabled:opacity-50 tabular-nums text-logo-primary hover:text-logo-primary/80 font-medium" }
         )
         if (anchor)
             DbgLogEx("Handy_OpenAiModelMenu", "anchor by UpdateAvailable Path", '{"by":"UpdatePath"}', "H1")
@@ -4880,6 +4875,81 @@ HandleLoopModeUp() {
 #!+Up::
 {
     HandleDirectionHotkey("Up")
+}
+
+; =============================================================================
+; Peek PDF – Win+Alt+Shift+X
+; Tap: open stored PDF in PowerToys Peek. Hold (700ms+): prompt to set PDF path.
+; =============================================================================
+
+PeekPdf_GetIniPath() {
+    return A_ScriptDir "\data\peek_pdf.ini"
+}
+
+PeekPdf_NormalizePath(path) {
+    path := Trim(path)
+    q := Chr(34)
+    if (SubStr(path, 1, 1) = q && SubStr(path, -1) = q)
+        path := SubStr(path, 2, StrLen(path) - 2)
+    return Trim(path)
+}
+
+PeekPdf_OpenStored() {
+    iniPath := PeekPdf_GetIniPath()
+    pdfPath := IniRead(iniPath, "Peek", "PdfPath", "")
+    pdfPath := PeekPdf_NormalizePath(pdfPath)
+    if (pdfPath = "") {
+        try ShowCenteredOverlay_Utils("No PDF path set. Hold Win+Alt+Shift+X to set.", 3000, "FFAA00")
+        return
+    }
+    peekExe := GetPeekExePath()
+    if (!FileExist(peekExe)) {
+        try ShowCenteredOverlay_Utils("Peek executable not found.", 2500, "FF0000")
+        return
+    }
+    if (!FileExist(pdfPath)) {
+        try ShowCenteredOverlay_Utils("PDF file not found: " pdfPath, 3500, "FF0000")
+        return
+    }
+    peekEsc := StrReplace(peekExe, "'", "''")
+    pdfEsc := StrReplace(pdfPath, "'", "''")
+    psArg := "& " . Chr(39) . peekEsc . Chr(39) . " " . Chr(39) . pdfEsc . Chr(39)
+    cmd := "powershell.exe -NoProfile -ExecutionPolicy Bypass -Command " . Chr(34) . psArg . Chr(34)
+    try Run cmd
+    catch as e {
+        try ShowCenteredOverlay_Utils("Failed to open Peek: " e.Message, 3000, "FF0000")
+        return
+    }
+    Sleep 600
+    if WinExist("Peek")
+        WinMaximize
+}
+
+PeekPdf_ShowInputAndSave() {
+    result := InputBox("Enter the target PDF file path:", "Peek PDF Path", "w500 h120")
+    if (result.Result != "OK" || result.Value = "")
+        return
+    path := PeekPdf_NormalizePath(result.Value)
+    if (path = "")
+        return
+    iniPath := PeekPdf_GetIniPath()
+    SplitPath(iniPath, , &iniDir)
+    if (!DirExist(iniDir))
+        DirCreate(iniDir)
+    try IniWrite(path, iniPath, "Peek", "PdfPath")
+    try ShowCenteredOverlay_Utils("PDF path saved.", 1500, "00AA00")
+}
+
+#!+x::
+{
+    pressTime := A_TickCount
+    KeyWait "x", "T1"
+    holdTime := A_TickCount - pressTime
+    if (holdTime >= 700) {
+        PeekPdf_ShowInputAndSave()
+    } else {
+        PeekPdf_OpenStored()
+    }
 }
 
 ; =============================================================================

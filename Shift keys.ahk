@@ -1364,7 +1364,7 @@ r=== CLIP ANGEL ===
 === GENERAL ===
 [Win+Alt+Shift+U] > Quick string shortcuts
 [Win+Alt+Shift+Q] > Jump mouse on the middle
-[Win+Alt+Shift+X] > (available)
+[Win+Alt+Shift+X] > Peek PDF (tap) / Set PDF path (hold 700ms+)
 [Win+Alt+Shift+→] > Show square selector (right direction)
 [Win+Alt+Shift+←] > Show square selector (left direction)
 [Win+Alt+Shift+↓] > Show square selector (down direction)
