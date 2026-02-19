@@ -1323,7 +1323,6 @@ r=== CLIP ANGEL ===
 
 === HANDY DICTATION ===
 [Win+Alt+Shift+0] > Start/stop dictation (transcription to clipboard)
-[Win+Alt+Shift+7] > Stop dictation 
 [Win+Alt+Shift+J] > Stop dictation, paste and submit (e.g. chat prompt)
 
 === YOUTUBE ===
@@ -1365,7 +1364,7 @@ r=== CLIP ANGEL ===
 === GENERAL ===
 [Win+Alt+Shift+U] > Quick string shortcuts
 [Win+Alt+Shift+Q] > Jump mouse on the middle
-[Win+Alt+Shift+X] > Activate hunt and Peck
+[Win+Alt+Shift+X] > (available)
 [Win+Alt+Shift+→] > Show square selector (right direction)
 [Win+Alt+Shift+←] > Show square selector (left direction)
 [Win+Alt+Shift+↓] > Show square selector (down direction)
