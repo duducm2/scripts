@@ -12796,13 +12796,15 @@ HandleGeminiModelSelection(char) {
 
         ; Focus the Gemini prompt field so we can edit the current prompt in-place
         if (FocusGeminiPromptField()) {
-            ; 1) Move caret to beginning, 2) insert @model name, 3) move back to end of prompt
+            ; 1) Move caret to beginning, 2) insert @model name, 3) move back to end of prompt, 4) add a trailing space
             Send "^{Home}"
             Sleep 50
             modelCommand := "@" . modelName . " "
             SendText modelCommand
             Sleep 50
             Send "^{End}"
+            Sleep 50
+            Send " "
         }
 
         ; Update global state (tracks which model is conceptually active)
