@@ -566,7 +566,8 @@ CheckScriptsNeedingUpdates() {
     return scriptsNeedingUpdates
 }
 
-; Quick Update Scripts macro function (three layers: Git, sequential reload, Act.ahk + Utils last)
+; Quick Update Scripts macro (three procedure layers: Git, sequential reload with Utils last; Act.ahk is NOT updated - it is the starting point).
+; Three quality-check layers ensure we really update all scripts: (1) post-Git file presence, (2) pre-run file valid, (3) post-run process started.
 QuickUpdateScripts() {
     scriptsDir := GetScriptsDirectory()
     files := GetScriptFiles()
@@ -584,12 +585,27 @@ QuickUpdateScripts() {
         ShowCenteredOverlay_Utils("Git update failed: " e.Message, 2000, "FF0000")
     }
 
-    ; Layer 2 & 3: Sequential script reload; Utils.ahk last so this instance stays alive until others are updated
+    ; Quality check 1: After Git, verify all script files exist (pre-flight so we know what we can run)
+    missingPre := []
+    for file in files {
+        if (!FileExist(file)) {
+            parts := StrSplit(file, "\")
+            missingPre.Push(parts[parts.Length])
+        }
+    }
+    if (missingPre.Length > 0) {
+        list := ""
+        for n in missingPre
+            list .= n "`n"
+        ShowCenteredOverlay_Utils("QC1: Missing after pull:`n" list, 3000, "FF6600")
+    }
+
+    ; Layer 2: Sequential script reload; Utils.ahk last so this instance stays alive until others are updated. Act.ahk is never run (entry point).
     for index, file in files {
         isUtils := InStr(file, "Utils.ahk")
 
         if (isUtils) {
-            ; Show result of Layer 2 before running Layer 3 and reloading self
+            ; Show result before reloading self
             if (failedScripts.Length > 0) {
                 failedList := ""
                 for script in failedScripts {
@@ -599,34 +615,34 @@ QuickUpdateScripts() {
             } else {
                 ShowCenteredOverlay_Utils("All scripts updated successfully!", 1500, "00FF00")
             }
-            ; Layer 3: Run Act.ahk so full startup sequence (scripts + apps + shortcuts) runs again
-            try {
-                actPath := GetScriptPath("Act.ahk")
-                if (FileExist(actPath)) {
-                    Run actPath
-                    Sleep 500
-                }
-            } catch {
-                ; Ignore Act.ahk failures
-            }
         }
 
-        ; Reload the script (when file is Utils.ahk, new instance starts; this one may keep running briefly)
+        ; Quality check 2: Before Run - file must exist and be non-empty
+        parts := StrSplit(file, "\")
+        fileName := parts[parts.Length]
+        if (!FileExist(file)) {
+            failedScripts.Push(fileName " (not found)")
+            continue
+        }
         try {
-            if (!FileExist(file)) {
-                failedScripts.Push(file " (not found)")
+            if (FileGetSize(file) = 0) {
+                failedScripts.Push(fileName " (empty file)")
                 continue
             }
-            Run file
+        } catch {
+            failedScripts.Push(fileName " (unreadable)")
+            continue
+        }
+
+        ; Reload the script
+        try {
+            pid := Run(file)
+            ; Quality check 3: Verify process started (Run returns PID or 0 on failure)
+            if (pid = 0) {
+                failedScripts.Push(fileName " (process did not start)")
+            }
             Sleep 300
         } catch Error as e {
-            fileName := ""
-            if (InStr(file, "\")) {
-                parts := StrSplit(file, "\")
-                fileName := parts[parts.Length]
-            } else {
-                fileName := file
-            }
             failedScripts.Push(fileName " (" e.Message ")")
         }
     }
