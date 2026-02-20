@@ -3407,6 +3407,10 @@ global g_DesktopToRecycleTextCtrl := 0
 global g_DesktopToRecyclePath := ""  ; Set from GetDesktopToRecyclePath() when macro runs
 global g_DesktopToRecycleCloseHwnd := 0
 
+GetDesktopToRecyclePath() {
+    return A_Desktop
+}
+
 DesktopToRecycle_ShowBanner() {
     global g_DesktopToRecycleGui, g_DesktopToRecycleTextCtrl, g_DesktopToRecyclePath
     try {
