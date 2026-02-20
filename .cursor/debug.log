@@ -302,3 +302,9 @@
 {"ts":80125281,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
 {"ts":80125296,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
 {"ts":80125312,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":2876000,"loc":"FindGeminiPromptField","msg":"entry","hypothesisId":"H1"}
+{"ts":2876000,"loc":"FindGeminiPromptField","msg":"return 0 (not found)","hypothesisId":"H1"}
+{"id":"log_3233218_3806","timestamp":3233218,"location":"Shift keys.ahk:1727","message":"WaitForButton entry","data":{"pattern":"i)^(Main menu|Menu principal)$","timeout":1500},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_3233437_4140","timestamp":3233437,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":84},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_3233437_9271","timestamp":3233437,"location":"Shift keys.ahk:1770","message":"Matching button found","data":{"name":"Main menu","className":"","hasClassName":0,"supportsInvoke":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C"}
+{"id":"log_3233531_1994","timestamp":3233531,"location":"Shift keys.ahk:1813","message":"WaitForButton returning button","data":{"name":"Main menu","className":"","type":"50000","score":5},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}

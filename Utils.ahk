@@ -3327,7 +3327,7 @@ ShowCursorFocusSelector() {
 InitMacros() {
     ; Quick Update to Your Scripts macro
     RegisterMacro(QuickUpdateScripts, "⚡ Quick Update to Your Scripts")
-    ; Add specific word to Handy macro
+    ; Add specific word to Handy macroh
     RegisterMacro(AddWordToHandy, "➕ Add specific word to Handy")
     ; Toggle Outlook and Teams macro
     RegisterMacro(ToggleOutlookAndTeams, "🔄 Toggle Outlook & Teams")
@@ -3404,7 +3404,7 @@ InitDpiAwareness()
 ; =============================================================================
 global g_DesktopToRecycleGui := 0
 global g_DesktopToRecycleTextCtrl := 0
-global g_DesktopToRecyclePath := "C:\Users\eduev\OneDrive\Desktop"
+global g_DesktopToRecyclePath := ""  ; Set from GetDesktopToRecyclePath() when macro runs
 global g_DesktopToRecycleCloseHwnd := 0
 
 DesktopToRecycle_ShowBanner() {
@@ -3519,7 +3519,8 @@ DesktopToRecycle_Run() {
 
 ; Entry point when "N" is pressed in Win+Alt+Shift+U selector
 DesktopToRecycle_Trigger() {
-    global g_DesktopToRecycleCloseHwnd
+    global g_DesktopToRecycleCloseHwnd, g_DesktopToRecyclePath
+    g_DesktopToRecyclePath := GetDesktopToRecyclePath()
     ; Remember active window if it's Explorer showing Desktop - close it after cleaning
     hwnd := WinExist("A")
     g_DesktopToRecycleCloseHwnd := 0
