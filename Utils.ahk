@@ -4994,7 +4994,7 @@ PeekPdf_NormalizePath(path) {
 }
 
 ; Resolve the Peek executable path.
-; Priority: 1) INI [Peek] ExePath  2) Work default (PowerToys Peek)  3) "peek.exe" (PATH)
+; Priority: 1) INI [Peek] ExePath  2) Environment-specific path (GetPeekExePath)  3) "peek.exe" (PATH)
 PeekPdf_ResolvePeekExePath() {
     iniPath := PeekPdf_GetIniPath()
     exePath := ""
@@ -5002,9 +5002,9 @@ PeekPdf_ResolvePeekExePath() {
     exePath := PeekPdf_NormalizePath(exePath)
     if (exePath != "" && FileExist(exePath))
         return exePath
-    workExe := "C:\Users\fie7ca\AppData\Local\PowerToys\WinUI3Apps\PowerToys.Peek.UI.exe"
-    if (FileExist(workExe))
-        return workExe
+    envExe := GetPeekExePath()
+    if (FileExist(envExe))
+        return envExe
     return "peek.exe"
 }
 
