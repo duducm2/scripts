@@ -5129,6 +5129,8 @@ global g_HotstringCharMap := Map()              ; Character-to-text-expansion ma
 global g_HotstringHotkeyHandlers := []          ; Array of hotkey handler objects for cleanup on close
 global g_HotstringPromptCharMap := Map()        ; Map of prompt-assigned chars => true (rebuilt on each ShowHotstringSelector)
 global g_HotstringGeminiArmed := false          ; When true, next Prompts selection is redirected to Gemini
+global g_HotstringGeminiAutoSubmit := true      ; During delayed flow: true = send Enter after paste; false = paste only
+global g_HotstringGeminiSubmitTimer := false   ; Timer reference for 4s delayed submit (for cleanup if needed)
 
 ; Character assignment sequence: defines order in which characters are assigned to actions
 ; Format: ["1", "2", "3", "4", "5", "q", "w", "e", "r", "t", "a", "s", "d", "f", "g", "z", "x",
@@ -5770,6 +5772,47 @@ GeminiNavigateFocusAndPasteFirstSnippet() {
         SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
 }
 
+; Delayed submit flow: show 4s banner, allow N to cancel auto-submit; then navigate+paste and optionally send Enter.
+
+GeminiDelayedSubmitFlow() {
+    global g_HotstringGeminiAutoSubmit
+    g_HotstringGeminiAutoSubmit := true
+
+    HotstringGeminiBanner_Show("Submitting in 4s... Press N to cancel auto-submit")
+
+    Hotkey("n", GeminiCancelAutoSubmit, "On")
+    Hotkey("N", GeminiCancelAutoSubmit, "On")
+
+    SetTimer(GeminiFinalizeSubmit, -4000)
+}
+
+GeminiCancelAutoSubmit(*) {
+    global g_HotstringGeminiAutoSubmit
+    g_HotstringGeminiAutoSubmit := false
+    try Hotkey("n", "Off")
+    try Hotkey("N", "Off")
+    HotstringGeminiBanner_Hide()
+    HotstringGeminiBanner_Show("Auto-submit CANCELLED (Paste only)")
+    SetTimer(HotstringGeminiBanner_Hide, -1500)
+}
+
+GeminiFinalizeSubmit() {
+    global g_HotstringGeminiAutoSubmit
+
+    try Hotkey("n", "Off")
+    try Hotkey("N", "Off")
+    HotstringGeminiBanner_Hide()
+
+    GeminiNavigateFocusAndPasteFirstSnippet()
+
+    if (g_HotstringGeminiAutoSubmit) {
+        Sleep 300
+        Send("{Enter}")
+    }
+
+    g_HotstringGeminiAutoSubmit := true
+}
+
 HandleHotstringChar(char) {
     global g_HotstringSelectorActive, g_HotstringCharMap, g_QuickOpenFileCharMap, g_MacroCharMap
     global g_HotstringPromptCharMap, g_HotstringGeminiArmed
@@ -5782,9 +5825,9 @@ HandleHotstringChar(char) {
     ; L key: first press = arm Gemini mode (show banner); second press (double-tap) = navigate to Gemini, focus field, paste first snippet.
     if (char = "l" || char = "L") {
         if (g_HotstringGeminiArmed) {
-            ; Double-tap L: navigate to Gemini, focus prompt field, execute Win+Alt+Shift+1 (first snippet).
+            ; Double-tap L: delayed submit flow (4s banner, N to cancel auto-submit; then navigate+paste, optionally Enter).
             CleanupHotstringSelector()
-            GeminiNavigateFocusAndPasteFirstSnippet()
+            GeminiDelayedSubmitFlow()
             g_HotstringGeminiArmed := false
             return
         }
