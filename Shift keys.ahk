@@ -8657,7 +8657,7 @@ FocusCursorFilesExplorer() {
     ; 1. Trigger Marp export
     mainHwnd := WinGetID("A")
     Send "^6"
-    Sleep 300
+    Sleep 500
 
     ; 2. Wait for Save As / Export dialog
     ; Try: native #32770, title match, or active window change (modal steals focus)
@@ -8692,28 +8692,28 @@ FocusCursorFilesExplorer() {
                 break
             }
         }
-        Sleep 150
+        Sleep 250
     }
     SetTitleMatchMode prevMatchMode
     if !saveDialogHwnd {
         return
     }
     try WinActivate("ahk_id " saveDialogHwnd)
-    Sleep 600
+    Sleep 700
     Send "{Enter}"  ; Confirm initial save
 
     ; 3. Handle Confirm Save As / Replace dialog (ClassName #32770, Name: "Confirm Save As")
     ; WinGetText doesn't capture UIA Text elements; use window title. Yes button has Alt+Y.
     SetTitleMatchMode 2
     loop 10 {
-        Sleep 200
+        Sleep 300
         replaceHwnd := WinExist("ahk_class #32770")
         if replaceHwnd {
             title := WinGetTitle("ahk_id " replaceHwnd)
             if InStr(title, "Confirm Save As") || InStr(title, "Confirmar Salvar")
             || InStr(title, "Confirmar Guardar") || InStr(title, "Confirm Replace") {
                 try WinActivate("ahk_id " replaceHwnd)
-                Sleep 100
+                Sleep 200
                 Send "!y"   ; Alt+Y = Yes (per UIA: AcceleratorKey: "Alt+Y")
                 break
             }
