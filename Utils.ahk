@@ -5118,12 +5118,20 @@ PeekPdf_OpenStored() {
 ;  7) Click window center  8) Ctrl+End. Fallback: Sleep 1000 + Click if UIA or anchor fails.
 PeekPdf_WaitAndConfigure() {
     global UIA
+    ; #region agent log
+    try FileAppend '{"sessionId":"e6a536","location":"Utils.ahk:PeekPdf_WaitAndConfigure","message":"entry","data":{},"timestamp":' A_TickCount ',"hypothesisId":"H5"}' "`n",
+        A_ScriptDir "\debug-e6a536.log"
+    ; #endregion
     ; Banner: show for the whole process so user knows when we started and when we finished
     AiModelBanner_Show("Peek PDF: configuring...", "3772FF")
     ; 1) Get Peek window hwnd
     hwnd := WinExist("Peek")
     if (!hwnd)
         hwnd := WinExist("ahk_exe PowerToys.Peek.UI.exe")
+    ; #region agent log
+    try FileAppend '{"sessionId":"e6a536","location":"Utils.ahk:after_hwnd","message":"hwnd","data":{"hwnd":' hwnd '},"timestamp":' A_TickCount ',"hypothesisId":"H1"}' "`n",
+        A_ScriptDir "\debug-e6a536.log"
+    ; #endregion
     if (!hwnd) {
         AiModelBanner_Show("Peek PDF: window not found", "FFAA00")
         SetTimer(AiModelBanner_Hide, -2000)
@@ -5135,16 +5143,29 @@ PeekPdf_WaitAndConfigure() {
         ; 2) UIA root
         el := UIA.ElementFromHandle(hwnd)
         ; 3) Poll for Page view (layouts) anchor (up to 20s to accommodate Peek load > 5s)
+        ; FindFirst throws when no element matches; catch so we keep polling instead of exiting.
         pageViewBtn := ""
+        pollIter := 0
         loop 80 {
-            pageViewBtn := el.FindFirst({ Type: 50000, Name: "Page view", AutomationId: "layouts" })
+            pollIter := A_Index
+            try
+                pageViewBtn := el.FindFirst({ Type: 50000, Name: "Page view", AutomationId: "layouts" })
+            catch
+                pageViewBtn := ""
             if (pageViewBtn)
                 break
             Sleep 250
         }
+        ; #region agent log
+        try FileAppend '{"sessionId":"e6a536","location":"Utils.ahk:after_poll","message":"poll","data":{"found":' (
+            pageViewBtn ? "true" : "false") ',"iter":' pollIter '},"timestamp":' A_TickCount ',"hypothesisId":"H1"}' "`n",
+        A_ScriptDir "\debug-e6a536.log"
+        ; #endregion
         if (pageViewBtn) {
             ; 4) Ensure anchor is visible, then extended delay so Peek is fully ready before click
+            visIter := 0
             loop 20 {
+                visIter := A_Index
                 try {
                     if (!pageViewBtn.GetPropertyValue(UIA.Property.IsOffscreen)) {
                         br := pageViewBtn.BoundingRectangle
@@ -5155,16 +5176,141 @@ PeekPdf_WaitAndConfigure() {
                 }
                 Sleep 50
             }
+            ; #region agent log
+            try FileAppend '{"sessionId":"e6a536","location":"Utils.ahk:after_visibility","message":"visibility","data":{"visIter":' visIter '},"timestamp":' A_TickCount ',"hypothesisId":"H2"}' "`n",
+                A_ScriptDir "\debug-e6a536.log"
+            ; #endregion
             ; Extended delay (6s) before clicking "two pages"; click only after this completes
             Sleep 6000
             ; 5) Click Page view button
-            try pageViewBtn.Invoke()
-            catch
-                try pageViewBtn.Click()
-            Sleep 300
-            ; 6) Right Arrow (two-page view)
-            Send "{Right}"
-            Sleep 300
+            ; #region agent log
+            try FileAppend '{"sessionId":"e6a536","location":"Utils.ahk:before_invoke","message":"beforeInvoke","data":{},"timestamp":' A_TickCount ',"hypothesisId":"H3"}' "`n",
+                A_ScriptDir "\debug-e6a536.log"
+            ; #endregion
+            invokeOk := false
+            clickOk := false
+            try {
+                pageViewBtn.Invoke()
+                invokeOk := true
+            } catch as invErr {
+                try {
+                    pageViewBtn.Click()
+                    clickOk := true
+                } catch as clickErr {
+                }
+            }
+            ; #region agent log
+            try FileAppend '{"sessionId":"e6a536","location":"Utils.ahk:after_click","message":"invokeClick","data":{"invokeOk":' (
+                invokeOk ? "true" : "false") ',"clickOk":' (clickOk ? "true" : "false") '},"timestamp":' A_TickCount ',"hypothesisId":"H3"}' "`n",
+            A_ScriptDir "\debug-e6a536.log"
+            ; #endregion
+            Sleep 3000
+            ; #region agent log
+            try {
+                activeHwnd := WinGetID("A")
+                activeProc := ""
+                try activeProc := WinGetProcessName("ahk_id " activeHwnd)
+                menuHint := false
+                try {
+                    elActive := UIA.ElementFromHandle(activeHwnd)
+                    ; Menu items may not be Type=50000; scan visible elements for labels.
+                    scanned := 0
+                    for cand in elActive.FindAll({ IsOffscreen: 0 }) {
+                        scanned++
+                        try {
+                            nm := cand.Name
+                            if (nm != "" && (InStr(nm, "Two page") || InStr(nm, "Single page"))) {
+                                menuHint := true
+                                break
+                            }
+                        } catch {
+                        }
+                        if (scanned >= 300)
+                            break
+                    }
+                } catch {
+                    menuHint := false
+                }
+                FileAppend '{"sessionId":"e6a536","location":"Utils.ahk:pre_step6","message":"preTwoPage","data":{"activeProc":"' activeProc '","menuHint":' (
+                    menuHint ? "true" : "false") '},"timestamp":' A_TickCount ',"hypothesisId":"H6"}' "`n", A_ScriptDir "\debug-e6a536.log"
+            } catch {
+            }
+            ; #endregion
+            ; 6) Select "Two page" from the open Page view menu (main window + foreground popup; else ControlSend Right to Peek)
+            fgHwnd := 0
+            try fgHwnd := WinGetID("A")
+            PeekPdf_DumpPeekUiaContext("page_view_menu_open", hwnd, fgHwnd, pageViewBtn)
+
+            twoPageEl := ""
+            twoPageClicked := false
+
+            twoPageScope := "none"
+            menuRect := ""
+            try {
+                abr := pageViewBtn.BoundingRectangle
+                if (IsObject(abr))
+                    menuRect := { l: abr.l - 700, t: abr.b, r: abr.r + 700, b: abr.b + 650 }
+            } catch {
+                menuRect := ""
+            }
+
+            ; Search in active window region (menu is visible on screen but may not be exposed as Buttons).
+            try {
+                elActive := UIA.ElementFromHandle(fgHwnd ? fgHwnd : hwnd)
+                if (IsObject(menuRect)) {
+                    for cand in elActive.FindAll({ IsOffscreen: 0 }) {
+                        try {
+                            br := cand.BoundingRectangle
+                            if (!IsObject(br))
+                                continue
+                            inRegion := (br.l < menuRect.r && br.r > menuRect.l && br.t < menuRect.b && br.b > menuRect
+                                .t)
+                            if (!inRegion)
+                                continue
+                            nm := ""
+                            try nm := cand.Name
+                            if (nm != "" && InStr(nm, "Two page")) {
+                                twoPageEl := cand
+                                twoPageScope := (fgHwnd ? "active_region" : "peek_region")
+                                break
+                            }
+                        } catch {
+                        }
+                    }
+                }
+            } catch {
+            }
+
+            if (twoPageEl) {
+                try {
+                    ; Click by coordinates for maximum compatibility (works even if Invoke/Click patterns are absent).
+                    br := twoPageEl.BoundingRectangle
+                    if (IsObject(br)) {
+                        cx := br.l + (br.r - br.l) // 2
+                        cy := br.t + (br.b - br.t) // 2
+                        Click cx, cy
+                        twoPageClicked := true
+                    }
+                } catch {
+                    twoPageClicked := false
+                }
+            } else {
+                ; Last-resort: keystroke fallback (kept for robustness)
+                try ControlSend "{Right}", "ahk_id " hwnd
+                catch
+                    Send "{Right}"
+            }
+
+            PeekPdf_DumpPeekUiaContext("after_two_page_attempt", hwnd, fgHwnd, pageViewBtn, twoPageEl)
+
+            ; #region agent log
+            try FileAppend '{"sessionId":"e6a536","location":"Utils.ahk:two_page","message":"twoPage","data":{"found":' (
+                twoPageEl ? "true" : "false") ',"clicked":' (twoPageClicked ? "true" : "false") ',"scope":"' twoPageScope '","fgDiff":' ((
+                    fgHwnd && fgHwnd != hwnd) ? "true" : "false") '},"timestamp":' A_TickCount ',"hypothesisId":"H7"}' "`n",
+            A_ScriptDir "\debug-e6a536.log"
+            ; #endregion
+
+            Sleep 3000
             ; 7) Click center of Peek window (focus)
             WinGetPos(&wx, &wy, &ww, &wh, "ahk_id " hwnd)
             if (ww > 0 && wh > 0) {
@@ -5177,17 +5323,195 @@ PeekPdf_WaitAndConfigure() {
             Send "^End"
             AiModelBanner_Show("Peek PDF: done", "27AE60")
             SetTimer(AiModelBanner_Hide, -2000)
+            ; #region agent log
+            try FileAppend '{"sessionId":"e6a536","location":"Utils.ahk:branch","message":"branch","data":{"path":"success"},"timestamp":' A_TickCount ',"hypothesisId":"H1"}' "`n",
+                A_ScriptDir "\debug-e6a536.log"
+            ; #endregion
         } else {
+            ; #region agent log
+            try FileAppend '{"sessionId":"e6a536","location":"Utils.ahk:branch","message":"branch","data":{"path":"fallback_no_button"},"timestamp":' A_TickCount ',"hypothesisId":"H1"}' "`n",
+                A_ScriptDir "\debug-e6a536.log"
+            ; #endregion
             AiModelBanner_Show("Peek PDF: finished (fallback)", "FFAA00")
             SetTimer(AiModelBanner_Hide, -2000)
             Sleep 1000
             Click "Left"
         }
-    } catch {
+    } catch as outerErr {
+        ; #region agent log
+        try FileAppend '{"sessionId":"e6a536","location":"Utils.ahk:branch","message":"branch","data":{"path":"fallback_catch","msg":"' StrReplace(
+            outerErr.Message, '"', "'") '"},"timestamp":' A_TickCount ',"hypothesisId":"H2"}' "`n", A_ScriptDir "\debug-e6a536.log"
+        ; #endregion
         AiModelBanner_Show("Peek PDF: finished (fallback)", "FFAA00")
         SetTimer(AiModelBanner_Hide, -2000)
         Sleep 1000
         Click "Left"
+    }
+}
+
+; Persist a compact UIA snapshot for Peek PDF automation tuning.
+; Writes NDJSON lines to: data\peek_uia_context_dump.ndjson (append-only).
+PeekPdf_DumpPeekUiaContext(stage, peekHwnd, fgHwnd, pageViewBtn := "", twoPageEl := "") {
+    global UIA
+    dumpPath := A_ScriptDir "\data\peek_uia_context_dump.ndjson"
+    try {
+        if (!DirExist(A_ScriptDir "\data"))
+            DirCreate(A_ScriptDir "\data")
+    } catch {
+    }
+
+    ts := A_TickCount
+    ; helper writer
+    try FileAppend '{"ts":' ts ',"stage":"' stage '","scope":"peek","hwnd":' peekHwnd '}' "`n", dumpPath
+
+    ; Anchor + nearby toolbar buttons
+    try {
+        el := UIA.ElementFromHandle(peekHwnd)
+        br := ""
+        try br := IsObject(pageViewBtn) ? pageViewBtn.BoundingRectangle : ""
+        if (IsObject(br)) {
+            try FileAppend '{"ts":' ts ',"stage":"' stage '","scope":"anchor","name":"Page view","automationId":"layouts","br":{"l":' br
+                .l ',"t":' br.t ',"r":' br.r ',"b":' br.b '}}' "`n", dumpPath
+            try {
+                for btn in el.FindAll({ Type: 50000 }) {
+                    try {
+                        bbr := btn.BoundingRectangle
+                        if (!IsObject(bbr))
+                            continue
+                        sameBand := Abs(bbr.t - br.t) <= 60
+                        nearX := (bbr.l >= br.l - 900) && (bbr.r <= br.r + 900)
+                        if (!sameBand || !nearX)
+                            continue
+                        nm := "", aid := "", cn := ""
+                        try nm := btn.Name
+                        try aid := btn.AutomationId
+                        try cn := btn.ClassName
+                        try FileAppend '{"ts":' ts ',"stage":"' stage '","scope":"toolbar_btn","name":"' StrReplace(nm,
+                            '"', "'") '","automationId":"' StrReplace(aid, '"', "'") '","className":"' StrReplace(cn,
+                                '"', "'") '","br":{"l":' bbr.l ',"t":' bbr.t ',"r":' bbr.r ',"b":' bbr.b '}}' "`n",
+                        dumpPath
+                    } catch {
+                    }
+                }
+            } catch {
+            }
+        }
+    } catch {
+    }
+
+    ; Region dump: elements under the toolbar where the Page view popup menu appears (screen coords).
+    try {
+        el := UIA.ElementFromHandle(peekHwnd)
+        abr := ""
+        try abr := IsObject(pageViewBtn) ? pageViewBtn.BoundingRectangle : ""
+        if (IsObject(abr)) {
+            menuRect := { l: abr.l - 700, t: abr.b, r: abr.r + 700, b: abr.b + 650 }
+            try FileAppend '{"ts":' ts ',"stage":"' stage '","scope":"menu_rect","br":{"l":' menuRect.l ',"t":' menuRect
+                .t ',"r":' menuRect.r ',"b":' menuRect.b '}}' "`n", dumpPath
+            dumped := 0
+            for e in el.FindAll({ IsOffscreen: 0 }) {
+                if (dumped >= 250)
+                    break
+                try {
+                    ebr := e.BoundingRectangle
+                    if (!IsObject(ebr))
+                        continue
+                    inRegion := (ebr.l < menuRect.r && ebr.r > menuRect.l && ebr.t < menuRect.b && ebr.b > menuRect.t)
+                    if (!inRegion)
+                        continue
+                    t := "", lt := "", nm := "", aid := "", cn := ""
+                    try t := e.Type
+                    try lt := e.LocalizedType
+                    try nm := e.Name
+                    try aid := e.AutomationId
+                    try cn := e.ClassName
+                    try FileAppend '{"ts":' ts ',"stage":"' stage '","scope":"region_el","type":' t ',"localizedType":"' StrReplace(
+                        lt, '"', "'") '","name":"' StrReplace(nm, '"', "'") '","automationId":"' StrReplace(aid, '"',
+                            "'") '","className":"' StrReplace(cn, '"', "'") '","br":{"l":' ebr.l ',"t":' ebr.t ',"r":' ebr
+                    .r ',"b":' ebr.b '}}' "`n", dumpPath
+                    dumped++
+                } catch {
+                }
+            }
+        }
+    } catch {
+    }
+
+    ; Foreground (menu popup) buttons containing "page"
+    if (fgHwnd && fgHwnd != 0) {
+        try {
+            elMenu := UIA.ElementFromHandle(fgHwnd)
+            for btn in elMenu.FindAll({ Type: 50000 }) {
+                try {
+                    nm := btn.Name
+                    if (!InStr(nm, "page"))
+                        continue
+                    aid := "", cn := ""
+                    bbr := btn.BoundingRectangle
+                    try aid := btn.AutomationId
+                    try cn := btn.ClassName
+                    try FileAppend '{"ts":' ts ',"stage":"' stage '","scope":"menu_btn","name":"' StrReplace(nm, '"',
+                        "'") '","automationId":"' StrReplace(aid, '"', "'") '","className":"' StrReplace(cn, '"', "'") '","br":{"l":' bbr
+                    .l ',"t":' bbr.t ',"r":' bbr.r ',"b":' bbr.b '}}' "`n", dumpPath
+                } catch {
+                }
+            }
+        } catch {
+        }
+    }
+
+    ; Foreground region dump (if menu is exposed as a popup window)
+    if (fgHwnd && fgHwnd != 0 && fgHwnd != peekHwnd) {
+        try {
+            abr := ""
+            try abr := IsObject(pageViewBtn) ? pageViewBtn.BoundingRectangle : ""
+            if (IsObject(abr)) {
+                menuRect := { l: abr.l - 700, t: abr.b, r: abr.r + 700, b: abr.b + 650 }
+                dumped := 0
+                elMenu := UIA.ElementFromHandle(fgHwnd)
+                for e in elMenu.FindAll({ IsOffscreen: 0 }) {
+                    if (dumped >= 250)
+                        break
+                    try {
+                        ebr := e.BoundingRectangle
+                        if (!IsObject(ebr))
+                            continue
+                        inRegion := (ebr.l < menuRect.r && ebr.r > menuRect.l && ebr.t < menuRect.b && ebr.b > menuRect
+                            .t)
+                        if (!inRegion)
+                            continue
+                        t := "", lt := "", nm := "", aid := "", cn := ""
+                        try t := e.Type
+                        try lt := e.LocalizedType
+                        try nm := e.Name
+                        try aid := e.AutomationId
+                        try cn := e.ClassName
+                        try FileAppend '{"ts":' ts ',"stage":"' stage '","scope":"fg_region_el","type":' t ',"localizedType":"' StrReplace(
+                            lt, '"', "'") '","name":"' StrReplace(nm, '"', "'") '","automationId":"' StrReplace(aid,
+                                '"', "'") '","className":"' StrReplace(cn, '"', "'") '","br":{"l":' ebr.l ',"t":' ebr.t ',"r":' ebr
+                        .r ',"b":' ebr.b '}}' "`n", dumpPath
+                        dumped++
+                    } catch {
+                    }
+                }
+            }
+        } catch {
+        }
+    }
+
+    ; Explicit record for the Two page element when found (for later analysis)
+    if (IsObject(twoPageEl)) {
+        try {
+            nm := "", aid := "", cn := ""
+            bbr := twoPageEl.BoundingRectangle
+            try nm := twoPageEl.Name
+            try aid := twoPageEl.AutomationId
+            try cn := twoPageEl.ClassName
+            try FileAppend '{"ts":' ts ',"stage":"' stage '","scope":"two_page_el","name":"' StrReplace(nm, '"', "'") '","automationId":"' StrReplace(
+                aid, '"', "'") '","className":"' StrReplace(cn, '"', "'") '","br":{"l":' bbr.l ',"t":' bbr.t ',"r":' bbr
+            .r ',"b":' bbr.b '}}' "`n", dumpPath
+        } catch {
+        }
     }
 }
 

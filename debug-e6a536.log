@@ -1,0 +1,9 @@
+{"sessionId":"e6a536","location":"Utils.ahk:PeekPdf_WaitAndConfigure","message":"entry","data":{},"timestamp":274093281,"hypothesisId":"H5"}
+{"sessionId":"e6a536","location":"Utils.ahk:after_hwnd","message":"hwnd","data":{"hwnd":31263774},"timestamp":274093312,"hypothesisId":"H1"}
+{"sessionId":"e6a536","location":"Utils.ahk:after_poll","message":"poll","data":{"found":true,"iter":7},"timestamp":274096578,"hypothesisId":"H1"}
+{"sessionId":"e6a536","location":"Utils.ahk:after_visibility","message":"visibility","data":{"visIter":1},"timestamp":274096578,"hypothesisId":"H2"}
+{"sessionId":"e6a536","location":"Utils.ahk:before_invoke","message":"beforeInvoke","data":{},"timestamp":274102609,"hypothesisId":"H3"}
+{"sessionId":"e6a536","location":"Utils.ahk:after_click","message":"invokeClick","data":{"invokeOk":false,"clickOk":true},"timestamp":274102609,"hypothesisId":"H3"}
+{"sessionId":"e6a536","location":"Utils.ahk:pre_step6","message":"preTwoPage","data":{"activeProc":"PowerToys.Peek.UI.exe","menuHint":true},"timestamp":274105687,"hypothesisId":"H6"}
+{"sessionId":"e6a536","location":"Utils.ahk:two_page","message":"twoPage","data":{"found":true,"clicked":true,"scope":"active_region","fgDiff":false},"timestamp":274107984,"hypothesisId":"H7"}
+{"sessionId":"e6a536","location":"Utils.ahk:branch","message":"branch","data":{"path":"success"},"timestamp":274111656,"hypothesisId":"H1"}
