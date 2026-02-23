@@ -382,7 +382,25 @@ InitHotstringsCheatSheet() {
     } catch {
         RegisterHotstring("", "", "Prompts", "Reserved 6")
     }
-    RegisterHotstring("", "", "Prompts", "Reserved 7")
+    ; Character a: story reduction (content from notes/studies/technique/prompts/story-reduction-prompt.txt)
+    ; Supports personal (Google Drive) and work (OneDrive - Bosch Group) environments
+    storyReductionPromptPath := ""
+    storyReductionWorkPath :=
+        "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes\studies\technique\prompts\story-reduction-prompt.txt"
+    storyReductionPersonalPath :=
+        "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\technique\prompts\story-reduction-prompt.txt"
+    if FileExist(storyReductionWorkPath)
+        storyReductionPromptPath := storyReductionWorkPath
+    else if FileExist(storyReductionPersonalPath)
+        storyReductionPromptPath := storyReductionPersonalPath
+    else
+        storyReductionPromptPath := storyReductionWorkPath
+    try {
+        storyReductionPrompt := FileRead(storyReductionPromptPath)
+        RegisterHotstring(":o:storyreduction", storyReductionPrompt, "Prompts", "📝 Story reduction", "a")
+    } catch {
+        RegisterHotstring("", "", "Prompts", "Reserved 7")
+    }
 
     ; General Information (2 items) - Second category
     RegisterHotstring(":o:ebosch", "eduardo.figueiredo@br.bosch.com", "General", "💼 Bosch Email")
