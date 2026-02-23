@@ -584,12 +584,14 @@ CheckScriptsNeedingUpdates() {
     return scriptsNeedingUpdates
 }
 
-; Quick Update Scripts macro (three procedure layers: Git, sequential reload with Utils last; Act.ahk is NOT updated - it is the starting point).
-; Three quality-check layers ensure we really update all scripts: (1) post-Git file presence, (2) pre-run file valid, (3) post-run process started.
+; Quick Update Scripts macro (four layers: Git, sequential reload with Utils last, delay, PowerShell verification).
+; Final notification (banner + sound) runs only after all layers and verification succeed. Act.ahk is NOT updated (entry point).
 QuickUpdateScripts() {
     scriptsDir := GetScriptsDirectory()
     files := GetScriptFiles()
     failedScripts := []
+    deferredUtils := false
+    utilsPath := ""
 
     ; Layer 1: Git synchronization
     try {
@@ -618,33 +620,13 @@ QuickUpdateScripts() {
         ShowCenteredOverlay_Utils("QC1: Missing after pull:`n" list, 3000, "FF6600")
     }
 
-    ; Layer 2: Sequential script reload; Utils.ahk last so this instance stays alive until others are updated. Act.ahk is never run (entry point).
+    ; Layer 2: Sequential script reload; Utils.ahk is deferred (run after verification + notification).
     for index, file in files {
         isUtils := InStr(file, "Utils.ahk")
 
         if (isUtils) {
-            ; Show result before reloading self
-            if (failedScripts.Length > 0) {
-                failedList := ""
-                for script in failedScripts {
-                    failedList .= script "`n"
-                }
-                try {
-                    if (FileExist(scriptsDir "\sounds\quick-update-failure.wav"))
-                        SoundPlay(scriptsDir "\sounds\quick-update-failure.wav")
-                } catch {
-                    ; Ignore sound play errors
-                }
-                ShowCenteredOverlay_Utils("Some scripts failed to update:`n" failedList, 4000, "FF0000")
-            } else {
-                try {
-                    if (FileExist(scriptsDir "\sounds\quick-update-success.wav"))
-                        SoundPlay(scriptsDir "\sounds\quick-update-success.wav")
-                } catch {
-                    ; Ignore sound play errors
-                }
-                ShowCenteredOverlay_Utils("All scripts updated successfully!", 1500, "00FF00")
-            }
+            deferredUtils := true
+            utilsPath := file
         }
 
         ; Quality check 2: Before Run - file must exist and be non-empty
@@ -664,6 +646,10 @@ QuickUpdateScripts() {
             continue
         }
 
+        ; Skip launching Utils.ahk here; it runs after verification and notification
+        if (isUtils)
+            continue
+
         ; Reload the script
         try {
             pid := Run(file)
@@ -677,7 +663,50 @@ QuickUpdateScripts() {
         }
     }
 
-    ; Only reached if Utils.ahk was not in the list or reload was skipped
+    ; Brief delay before verification so all processes and filesystem are settled
+    Sleep 1500
+
+    ; Layer 3: PowerShell verification - confirm every target script exists, is non-empty, and readable
+    pathsFile := A_Temp "\quick-update-paths_" A_TickCount ".txt"
+    reportFile := A_Temp "\quick-update-verify-report_" A_TickCount ".txt"
+    try {
+        pathList := ""
+        for file in files
+            pathList .= file "`n"
+        FileDelete(pathsFile)
+        FileAppend(pathList, pathsFile)
+    } catch {
+        failedScripts.Push("Verify (could not write paths file)")
+    }
+
+    verifyExitCode := 0
+    if (FileExist(pathsFile)) {
+        verifyScript := scriptsDir "\Verify-ScriptUpdate.ps1"
+        if (FileExist(verifyScript)) {
+            verifyExitCode := RunWait('powershell.exe -NoProfile -ExecutionPolicy Bypass -File "' verifyScript '" -ScriptsDir "' scriptsDir '" -PathsFile "' pathsFile '" -ReportFile "' reportFile '"', scriptsDir, "Hide")
+            try {
+                if (FileExist(reportFile)) {
+                    verifyReport := FileRead(reportFile)
+                    FileDelete(reportFile)
+                    lines := StrSplit(Trim(verifyReport), "`n")
+                    for line in lines {
+                        if (StrLen(Trim(line)) > 0)
+                            failedScripts.Push("Verify: " Trim(line))
+                    }
+                }
+            } catch {
+                ; Ignore cleanup errors
+            }
+        } else {
+            failedScripts.Push("Verify: Verify-ScriptUpdate.ps1 not found")
+        }
+        try {
+            FileDelete(pathsFile)
+        } catch {
+        }
+    }
+
+    ; Final notification only after all layers (Git, reload, delay, verification) have run
     if (failedScripts.Length > 0) {
         failedList := ""
         for script in failedScripts {
@@ -698,6 +727,14 @@ QuickUpdateScripts() {
             ; Ignore sound play errors
         }
         ShowCenteredOverlay_Utils("All scripts updated successfully!", 1500, "00FF00")
+    }
+
+    ; Reload Utils.ahk last so this instance is replaced only after notification
+    if (deferredUtils && utilsPath != "") {
+        try {
+            Run(utilsPath)
+        } catch {
+        }
     }
 }
 
