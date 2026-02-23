@@ -705,3 +705,65 @@
 {"ts":13591390,"loc":"Utils.ahk:5289","msg":"Utils else: prompt field result","data":{"found":true},"hypothesisId":"H2"}
 {"ts":13650781,"loc":"FindGeminiPromptField","msg":"entry","hypothesisId":"H1"}
 {"ts":13650906,"loc":"FindGeminiPromptField","msg":"return found","data":{"name":"Enter a prompt for Gemini"},"hypothesisId":"H1"}
+{"id":"log_19352812_6586","timestamp":19352812,"location":"Shift keys.ahk:1727","message":"WaitForButton entry","data":{"pattern":"i)^(Voice message|Record voice message)$","timeout":3000},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_19353156_4070","timestamp":19353156,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":131},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_19353203_2172","timestamp":19353203,"location":"Shift keys.ahk:1770","message":"Matching button found","data":{"name":"Voice message","className":"","hasClassName":0,"supportsInvoke":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C"}
+{"id":"log_19353218_8361","timestamp":19353218,"location":"Shift keys.ahk:1770","message":"Matching button found","data":{"name":"Voice message","className":"","hasClassName":0,"supportsInvoke":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C"}
+{"id":"log_19353234_5536","timestamp":19353234,"location":"Shift keys.ahk:1813","message":"WaitForButton returning button","data":{"name":"Voice message","className":"","type":"50000","score":5},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}
+{"id":"log_19369828_8983","timestamp":19369828,"location":"Shift keys.ahk:1727","message":"WaitForButton entry","data":{"pattern":"i)^(Send|Stop recording)$","timeout":3000},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_19370125_1866","timestamp":19370125,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":132},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_19370500_2857","timestamp":19370500,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":132},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_19370953_3888","timestamp":19370953,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":132},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_19371390_9647","timestamp":19371390,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":132},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_19371843_5611","timestamp":19371843,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":132},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_19372250_9427","timestamp":19372250,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":132},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_19372656_5943","timestamp":19372656,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":132},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_19373046_5846","timestamp":19373046,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":132},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_19373156_2219","timestamp":19373156,"location":"Shift keys.ahk:1818","message":"WaitForButton timeout - no button found","data":{"pattern":"i)^(Send|Stop recording)$"},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_19373156_9023","timestamp":19373156,"location":"Shift keys.ahk:1727","message":"WaitForButton entry","data":{"pattern":"i)^(Voice message|Record voice message)$","timeout":3000},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_19373468_9007","timestamp":19373468,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":132},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_19373531_6264","timestamp":19373531,"location":"Shift keys.ahk:1770","message":"Matching button found","data":{"name":"Voice message","className":"","hasClassName":0,"supportsInvoke":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C"}
+{"id":"log_19373531_8312","timestamp":19373531,"location":"Shift keys.ahk:1770","message":"Matching button found","data":{"name":"Voice message","className":"","hasClassName":0,"supportsInvoke":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C"}
+{"id":"log_19373546_8833","timestamp":19373546,"location":"Shift keys.ahk:1813","message":"WaitForButton returning button","data":{"name":"Voice message","className":"","type":"50000","score":5},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}
+{"ts":19379921,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":19379921,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":19380078,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":19380140,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":19380171,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":19380265,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":19381421,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":19381453,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":19381578,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":19381640,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":19381671,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":19381765,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"id":"log_19389218_3959","timestamp":19389218,"location":"Shift keys.ahk:1727","message":"WaitForButton entry","data":{"pattern":"i)^(Send|Stop recording)$","timeout":3000},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_19389515_3978","timestamp":19389515,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":131},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_19389921_3391","timestamp":19389921,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":131},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_19390296_5839","timestamp":19390296,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":131},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_19390671_1463","timestamp":19390671,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":131},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_19391062_5921","timestamp":19391062,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":131},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_19391437_7927","timestamp":19391437,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":131},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_19391843_6532","timestamp":19391843,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":131},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_19392234_1143","timestamp":19392234,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":131},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_19392328_9539","timestamp":19392328,"location":"Shift keys.ahk:1818","message":"WaitForButton timeout - no button found","data":{"pattern":"i)^(Send|Stop recording)$"},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_19392328_3317","timestamp":19392328,"location":"Shift keys.ahk:1727","message":"WaitForButton entry","data":{"pattern":"i)^(Voice message|Record voice message)$","timeout":3000},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_19392640_5954","timestamp":19392640,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":131},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_19392687_9827","timestamp":19392687,"location":"Shift keys.ahk:1770","message":"Matching button found","data":{"name":"Voice message","className":"","hasClassName":0,"supportsInvoke":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C"}
+{"id":"log_19392687_7461","timestamp":19392687,"location":"Shift keys.ahk:1770","message":"Matching button found","data":{"name":"Voice message","className":"","hasClassName":0,"supportsInvoke":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C"}
+{"id":"log_19392703_8468","timestamp":19392703,"location":"Shift keys.ahk:1813","message":"WaitForButton returning button","data":{"name":"Voice message","className":"","type":"50000","score":5},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}
+{"id":"log_19403390_9112","timestamp":19403390,"location":"Shift keys.ahk:1727","message":"WaitForButton entry","data":{"pattern":"i)^(Send|Stop recording)$","timeout":3000},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_19403687_8845","timestamp":19403687,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":131},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_19404109_1993","timestamp":19404109,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":131},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_19404500_2498","timestamp":19404500,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":131},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_19404875_9151","timestamp":19404875,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":131},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_19405281_7728","timestamp":19405281,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":131},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_19405671_7165","timestamp":19405671,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":131},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_19406062_2066","timestamp":19406062,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":131},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_19406468_7955","timestamp":19406468,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":131},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_19406562_5780","timestamp":19406562,"location":"Shift keys.ahk:1818","message":"WaitForButton timeout - no button found","data":{"pattern":"i)^(Send|Stop recording)$"},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_19406562_6433","timestamp":19406562,"location":"Shift keys.ahk:1727","message":"WaitForButton entry","data":{"pattern":"i)^(Voice message|Record voice message)$","timeout":3000},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_19406875_5617","timestamp":19406875,"location":"Shift keys.ahk:1733","message":"Found buttons count","data":{"count":131},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_19406937_1416","timestamp":19406937,"location":"Shift keys.ahk:1770","message":"Matching button found","data":{"name":"Voice message","className":"","hasClassName":0,"supportsInvoke":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C"}
+{"id":"log_19406937_8613","timestamp":19406937,"location":"Shift keys.ahk:1770","message":"Matching button found","data":{"name":"Voice message","className":"","hasClassName":0,"supportsInvoke":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C"}
+{"id":"log_19406953_4500","timestamp":19406953,"location":"Shift keys.ahk:1813","message":"WaitForButton returning button","data":{"name":"Voice message","className":"","type":"50000","score":5},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}
