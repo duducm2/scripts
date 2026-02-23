@@ -382,26 +382,7 @@ InitHotstringsCheatSheet() {
     } catch {
         RegisterHotstring("", "", "Prompts", "Reserved 6")
     }
-    ; Character a: story reduction (content from notes/studies/technique/prompts/story-reduction-prompt.txt)
-    ; Personal path is active config; work path is temporary placeholder (same path duplicated).
-    storyReductionPromptPath := ""
-    storyReductionWorkPath :=
-        "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\technique\prompts\story-reduction-prompt.txt"
-    storyReductionPersonalPath :=
-        "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\technique\prompts\story-reduction-prompt.txt"
-    if FileExist(storyReductionWorkPath)
-        storyReductionPromptPath := storyReductionWorkPath
-    else if FileExist(storyReductionPersonalPath)
-        storyReductionPromptPath := storyReductionPersonalPath
-    else
-        storyReductionPromptPath := storyReductionWorkPath
-    try {
-        storyReductionPrompt := FileRead(storyReductionPromptPath)
-        RegisterHotstring(":o:storyreduction", storyReductionPrompt, "Prompts", "📝 Story reduction", "a")
-    } catch {
-        RegisterHotstring("", "", "Prompts", "Reserved 7")
-    }
-    RegisterHotstring("", "", "Prompts", "Reserved 8")
+    RegisterHotstring("", "", "Prompts", "Reserved 7")
 
     ; General Information (2 items) - Second category
     RegisterHotstring(":o:ebosch", "eduardo.figueiredo@br.bosch.com", "General", "💼 Bosch Email")

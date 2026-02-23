@@ -566,8 +566,7 @@ CheckScriptsNeedingUpdates() {
     return scriptsNeedingUpdates
 }
 
-; Quick Update Scripts macro (three procedure layers: Git, sequential reload with Utils last; Act.ahk is NOT updated - it is the starting point).
-; Three quality-check layers ensure we really update all scripts: (1) post-Git file presence, (2) pre-run file valid, (3) post-run process started.
+; Quick Update Scripts macro function (three layers: Git, sequential reload, Act.ahk + Utils last)
 QuickUpdateScripts() {
     scriptsDir := GetScriptsDirectory()
     files := GetScriptFiles()
@@ -585,76 +584,49 @@ QuickUpdateScripts() {
         ShowCenteredOverlay_Utils("Git update failed: " e.Message, 2000, "FF0000")
     }
 
-    ; Quality check 1: After Git, verify all script files exist (pre-flight so we know what we can run)
-    missingPre := []
-    for file in files {
-        if (!FileExist(file)) {
-            parts := StrSplit(file, "\")
-            missingPre.Push(parts[parts.Length])
-        }
-    }
-    if (missingPre.Length > 0) {
-        list := ""
-        for n in missingPre
-            list .= n "`n"
-        ShowCenteredOverlay_Utils("QC1: Missing after pull:`n" list, 3000, "FF6600")
-    }
-
-    ; Layer 2: Sequential script reload; Utils.ahk last so this instance stays alive until others are updated. Act.ahk is never run (entry point).
+    ; Layer 2 & 3: Sequential script reload; Utils.ahk last so this instance stays alive until others are updated
     for index, file in files {
         isUtils := InStr(file, "Utils.ahk")
 
         if (isUtils) {
-            ; Show result before reloading self
+            ; Show result of Layer 2 before running Layer 3 and reloading self
             if (failedScripts.Length > 0) {
                 failedList := ""
                 for script in failedScripts {
                     failedList .= script "`n"
                 }
-                try {
-                    if (FileExist(scriptsDir "\sounds\quick-update-failure.wav"))
-                        SoundPlay(scriptsDir "\sounds\quick-update-failure.wav")
-                } catch {
-                    ; Ignore sound play errors
-                }
                 ShowCenteredOverlay_Utils("Some scripts failed to update:`n" failedList, 4000, "FF0000")
             } else {
-                try {
-                    if (FileExist(scriptsDir "\sounds\quick-update-success.wav"))
-                        SoundPlay(scriptsDir "\sounds\quick-update-success.wav")
-                } catch {
-                    ; Ignore sound play errors
-                }
                 ShowCenteredOverlay_Utils("All scripts updated successfully!", 1500, "00FF00")
             }
+            ; Layer 3: Run Act.ahk so full startup sequence (scripts + apps + shortcuts) runs again
+            try {
+                actPath := GetScriptPath("Act.ahk")
+                if (FileExist(actPath)) {
+                    Run actPath
+                    Sleep 500
+                }
+            } catch {
+                ; Ignore Act.ahk failures
+            }
         }
 
-        ; Quality check 2: Before Run - file must exist and be non-empty
-        parts := StrSplit(file, "\")
-        fileName := parts[parts.Length]
-        if (!FileExist(file)) {
-            failedScripts.Push(fileName " (not found)")
-            continue
-        }
+        ; Reload the script (when file is Utils.ahk, new instance starts; this one may keep running briefly)
         try {
-            if (FileGetSize(file) = 0) {
-                failedScripts.Push(fileName " (empty file)")
+            if (!FileExist(file)) {
+                failedScripts.Push(file " (not found)")
                 continue
             }
-        } catch {
-            failedScripts.Push(fileName " (unreadable)")
-            continue
-        }
-
-        ; Reload the script
-        try {
-            pid := Run(file)
-            ; Quality check 3: Verify process started (Run returns PID or 0 on failure)
-            if (pid = 0) {
-                failedScripts.Push(fileName " (process did not start)")
-            }
+            Run file
             Sleep 300
         } catch Error as e {
+            fileName := ""
+            if (InStr(file, "\")) {
+                parts := StrSplit(file, "\")
+                fileName := parts[parts.Length]
+            } else {
+                fileName := file
+            }
             failedScripts.Push(fileName " (" e.Message ")")
         }
     }
@@ -665,20 +637,8 @@ QuickUpdateScripts() {
         for script in failedScripts {
             failedList .= script "`n"
         }
-        try {
-            if (FileExist(scriptsDir "\sounds\quick-update-failure.wav"))
-                SoundPlay(scriptsDir "\sounds\quick-update-failure.wav")
-        } catch {
-            ; Ignore sound play errors
-        }
         ShowCenteredOverlay_Utils("Some scripts failed to update:`n" failedList, 4000, "FF0000")
     } else {
-        try {
-            if (FileExist(scriptsDir "\sounds\quick-update-success.wav"))
-                SoundPlay(scriptsDir "\sounds\quick-update-success.wav")
-        } catch {
-            ; Ignore sound play errors
-        }
         ShowCenteredOverlay_Utils("All scripts updated successfully!", 1500, "00FF00")
     }
 }
@@ -3327,7 +3287,7 @@ ShowCursorFocusSelector() {
 InitMacros() {
     ; Quick Update to Your Scripts macro
     RegisterMacro(QuickUpdateScripts, "⚡ Quick Update to Your Scripts")
-    ; Add specific word to Handy macroh
+    ; Add specific word to Handy macro
     RegisterMacro(AddWordToHandy, "➕ Add specific word to Handy")
     ; Toggle Outlook and Teams macro
     RegisterMacro(ToggleOutlookAndTeams, "🔄 Toggle Outlook & Teams")
@@ -3404,12 +3364,8 @@ InitDpiAwareness()
 ; =============================================================================
 global g_DesktopToRecycleGui := 0
 global g_DesktopToRecycleTextCtrl := 0
-global g_DesktopToRecyclePath := ""  ; Set from GetDesktopToRecyclePath() when macro runs
+global g_DesktopToRecyclePath := "C:\Users\eduev\OneDrive\Desktop"
 global g_DesktopToRecycleCloseHwnd := 0
-
-GetDesktopToRecyclePath() {
-    return A_Desktop
-}
 
 DesktopToRecycle_ShowBanner() {
     global g_DesktopToRecycleGui, g_DesktopToRecycleTextCtrl, g_DesktopToRecyclePath
@@ -3494,75 +3450,36 @@ DesktopToRecycle_Confirm(*) {
     DesktopToRecycle_Run()
 }
 
-; Normalize folder path for comparison (trim trailing backslash, lowercase on Windows)
-DesktopToRecycle_NormalizePath(p) {
-    p := RTrim(p, "\")
-    try return StrLower(p)
-    return p
-}
-
-; Close any Explorer window(s) showing the given folder path (via Shell.Application)
-DesktopToRecycle_CloseDesktopExplorer(targetPath) {
-    if (!targetPath || targetPath = "")
-        return
-    normTarget := DesktopToRecycle_NormalizePath(targetPath)
-    try {
-        shell := ComObject("Shell.Application")
-        for window in shell.Windows {
-            try {
-                if (!window || !window.hwnd)
-                    continue
-                path := window.Document.Folder.Self.Path
-                if (DesktopToRecycle_NormalizePath(path) = normTarget) {
-                    window.Quit()
-                    return
-                }
-            } catch
-                continue
-        }
-    } catch {
-    }
-    ; Fallback: close by hwnd if we had stored it at trigger time
-    global g_DesktopToRecycleCloseHwnd
-    if (g_DesktopToRecycleCloseHwnd && WinExist("ahk_id " g_DesktopToRecycleCloseHwnd)) {
-        try WinClose("ahk_id " g_DesktopToRecycleCloseHwnd)
-    }
-    g_DesktopToRecycleCloseHwnd := 0
-}
-
 DesktopToRecycle_Run() {
-    global g_DesktopToRecyclePath, g_DesktopToRecycleCloseHwnd
-    ; Resolve path: use configured path; if empty or missing, fall back to A_Desktop (works on any PC)
-    path := g_DesktopToRecyclePath
-    if (!path || path = "" || !DirExist(path))
-        path := A_Desktop
+    global g_DesktopToRecyclePath
     ; Use .NET FileIO.FileSystem SendToRecycleBin (no Shell verbs); process dirs last so parent exists
     ui := "[Microsoft.VisualBasic.FileIO.UIOption]::OnlyErrorDialogs"
     rec := "[Microsoft.VisualBasic.FileIO.RecycleOption]::SendToRecycleBin"
-    ps := "Add-Type -AssemblyName Microsoft.VisualBasic;$d='" . path .
+    ps := "Add-Type -AssemblyName Microsoft.VisualBasic;$d='" . g_DesktopToRecyclePath .
         "';if(-not(Test-Path -LiteralPath $d)){exit 1};$files=@(Get-ChildItem -LiteralPath $d -Force|Where-Object{-not $_.PSIsContainer});$dirs=@(Get-ChildItem -LiteralPath $d -Force|Where-Object{$_.PSIsContainer});foreach($f in $files){try{[Microsoft.VisualBasic.FileIO.FileSystem]::DeleteFile($f.FullName," .
         ui . "," . rec .
         ")}catch{}};foreach($dir in $dirs){try{[Microsoft.VisualBasic.FileIO.FileSystem]::DeleteDirectory($dir.FullName," .
         ui . "," . rec . ")}catch{}};exit 0"
     try {
         exitCode := RunWait('powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "' . ps . '"', "", "Hide")
-        if (exitCode = 0) {
+        if (exitCode = 0)
             ShowCenteredOverlay_Utils("Desktop items moved to Recycle Bin", 2000, "27AE60")
-            DesktopToRecycle_CloseDesktopExplorer(path)
-        } else {
-            ShowCenteredOverlay_Utils("Desktop path not found or error: " path, 3500, "C0392B")
-            DesktopToRecycle_CloseDesktopExplorer(path)
-        }
+        else
+            ShowCenteredOverlay_Utils("Desktop path not found or error", 2500, "C0392B")
     } catch as err {
         ShowCenteredOverlay_Utils("Error moving to Recycle Bin", 2500, "C0392B")
     }
-    g_DesktopToRecycleCloseHwnd := 0
+    ; Close Desktop Explorer window if it was active when macro was triggered
+    global g_DesktopToRecycleCloseHwnd
+    if (g_DesktopToRecycleCloseHwnd && WinExist("ahk_id " g_DesktopToRecycleCloseHwnd)) {
+        try WinClose("ahk_id " g_DesktopToRecycleCloseHwnd)
+        g_DesktopToRecycleCloseHwnd := 0
+    }
 }
 
 ; Entry point when "N" is pressed in Win+Alt+Shift+U selector
 DesktopToRecycle_Trigger() {
-    global g_DesktopToRecycleCloseHwnd, g_DesktopToRecyclePath
-    g_DesktopToRecyclePath := GetDesktopToRecyclePath()
+    global g_DesktopToRecycleCloseHwnd
     ; Remember active window if it's Explorer showing Desktop - close it after cleaning
     hwnd := WinExist("A")
     g_DesktopToRecycleCloseHwnd := 0
@@ -4994,7 +4911,7 @@ PeekPdf_NormalizePath(path) {
 }
 
 ; Resolve the Peek executable path.
-; Priority: 1) INI [Peek] ExePath  2) Environment-specific path (GetPeekExePath)  3) "peek.exe" (PATH)
+; Priority: 1) INI [Peek] ExePath  2) Work default (PowerToys Peek)  3) "peek.exe" (PATH)
 PeekPdf_ResolvePeekExePath() {
     iniPath := PeekPdf_GetIniPath()
     exePath := ""
@@ -5002,9 +4919,9 @@ PeekPdf_ResolvePeekExePath() {
     exePath := PeekPdf_NormalizePath(exePath)
     if (exePath != "" && FileExist(exePath))
         return exePath
-    envExe := GetPeekExePath()
-    if (FileExist(envExe))
-        return envExe
+    workExe := "C:\Users\fie7ca\AppData\Local\PowerToys\WinUI3Apps\PowerToys.Peek.UI.exe"
+    if (FileExist(workExe))
+        return workExe
     return "peek.exe"
 }
 
@@ -5129,9 +5046,6 @@ global g_HotstringCharMap := Map()              ; Character-to-text-expansion ma
 global g_HotstringHotkeyHandlers := []          ; Array of hotkey handler objects for cleanup on close
 global g_HotstringPromptCharMap := Map()        ; Map of prompt-assigned chars => true (rebuilt on each ShowHotstringSelector)
 global g_HotstringGeminiArmed := false          ; When true, next Prompts selection is redirected to Gemini
-global g_HotstringGeminiAutoSubmit := true      ; During delayed flow: true = send Enter after paste; false = paste only
-global g_HotstringGeminiSubmitTimer := false   ; Timer reference for 4s delayed submit (for cleanup if needed)
-global g_HotstringGeminiRestoreHwnd := 0        ; Window to restore focus to after 4s banner + paste (set at start of GeminiDelayedSubmitFlow)
 
 ; Character assignment sequence: defines order in which characters are assigned to actions
 ; Format: ["1", "2", "3", "4", "5", "q", "w", "e", "r", "t", "a", "s", "d", "f", "g", "z", "x",
@@ -5773,53 +5687,6 @@ GeminiNavigateFocusAndPasteFirstSnippet() {
         SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
 }
 
-; Delayed submit flow: show 4s banner, allow N to cancel auto-submit; then navigate+paste and optionally send Enter.
-
-GeminiDelayedSubmitFlow() {
-    global g_HotstringGeminiAutoSubmit, g_HotstringGeminiRestoreHwnd
-    g_HotstringGeminiRestoreHwnd := WinExist("A")  ; Store window to restore focus to after 4s sequence
-    g_HotstringGeminiAutoSubmit := true
-
-    HotstringGeminiBanner_Show("Submitting in 4s... Press N to cancel auto-submit")
-
-    Hotkey("n", GeminiCancelAutoSubmit, "On")
-    Hotkey("N", GeminiCancelAutoSubmit, "On")
-
-    SetTimer(GeminiFinalizeSubmit, -4000)
-}
-
-GeminiCancelAutoSubmit(*) {
-    global g_HotstringGeminiAutoSubmit
-    g_HotstringGeminiAutoSubmit := false
-    try Hotkey("n", "Off")
-    try Hotkey("N", "Off")
-    HotstringGeminiBanner_Hide()
-    HotstringGeminiBanner_Show("Auto-submit CANCELLED (Paste only)")
-    SetTimer(HotstringGeminiBanner_Hide, -1500)
-}
-
-GeminiFinalizeSubmit() {
-    global g_HotstringGeminiAutoSubmit, g_HotstringGeminiRestoreHwnd
-
-    try Hotkey("n", "Off")
-    try Hotkey("N", "Off")
-    HotstringGeminiBanner_Hide()
-
-    GeminiNavigateFocusAndPasteFirstSnippet()
-
-    if (g_HotstringGeminiAutoSubmit) {
-        Sleep 300
-        Send("{Enter}")
-    }
-
-    g_HotstringGeminiAutoSubmit := true
-
-    ; Return focus to the window the user had before the 4s banner + paste (whether Enter was sent or not)
-    if (g_HotstringGeminiRestoreHwnd && WinExist("ahk_id " g_HotstringGeminiRestoreHwnd)) {
-        WinActivate("ahk_id " g_HotstringGeminiRestoreHwnd)
-    }
-}
-
 HandleHotstringChar(char) {
     global g_HotstringSelectorActive, g_HotstringCharMap, g_QuickOpenFileCharMap, g_MacroCharMap
     global g_HotstringPromptCharMap, g_HotstringGeminiArmed
@@ -5832,9 +5699,9 @@ HandleHotstringChar(char) {
     ; L key: first press = arm Gemini mode (show banner); second press (double-tap) = navigate to Gemini, focus field, paste first snippet.
     if (char = "l" || char = "L") {
         if (g_HotstringGeminiArmed) {
-            ; Double-tap L: delayed submit flow (4s banner, N to cancel auto-submit; then navigate+paste, optionally Enter).
+            ; Double-tap L: navigate to Gemini, focus prompt field, execute Win+Alt+Shift+1 (first snippet).
             CleanupHotstringSelector()
-            GeminiDelayedSubmitFlow()
+            GeminiNavigateFocusAndPasteFirstSnippet()
             g_HotstringGeminiArmed := false
             return
         }
