@@ -1672,56 +1672,56 @@ global g_ClipAngelFilterCharSequence := ["1", "2", "3", "4", "5"]
     Send "{Enter}"
 }
 
-; Ctrl + 1–5 : Down N, Tab, Select All, Copy (50ms between each step)
+; Ctrl + 1–5 : Down N, F10, Select All, Copy (150ms between each step)
 ^1:: {
-    Send "{Tab}"
-    Sleep 50
+    Send "{F10}"
+    Sleep 150
     Send "^a"
-    Sleep 50
+    Sleep 150
     Send "^c"
 }
 ^2:: {
     Send "{Down 1}"
-    Sleep 50
-    Send "{Tab}"
-    Sleep 50
+    Sleep 150
+    Send "{F10}"
+    Sleep 150
     Send "^a"
-    Sleep 50
+    Sleep 150
     Send "^c"
-    Sleep 50
+    Sleep 150
     Send "{F10}"
 }
 ^3:: {
     Send "{Down 2}"
-    Sleep 50
-    Send "{Tab}"
-    Sleep 50
+    Sleep 150
+    Send "{F10}"
+    Sleep 150
     Send "^a"
-    Sleep 50
+    Sleep 150
     Send "^c"
-    Sleep 50
+    Sleep 150
     Send "{F10}"
 }
 ^4:: {
     Send "{Down 3}"
-    Sleep 50
-    Send "{Tab}"
-    Sleep 50
+    Sleep 150
+    Send "{F10}"
+    Sleep 150
     Send "^a"
-    Sleep 50
+    Sleep 150
     Send "^c"
-    Sleep 50
+    Sleep 150
     Send "{F10}"
 }
 ^5:: {
     Send "{Down 4}"
-    Sleep 50
-    Send "{Tab}"
-    Sleep 50
+    Sleep 150
+    Send "{F10}"
+    Sleep 150
     Send "^a"
-    Sleep 50
+    Sleep 150
     Send "^c"
-    Sleep 50
+    Sleep 150
     Send "{F10}"
 }
 
