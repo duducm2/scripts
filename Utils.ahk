@@ -688,7 +688,8 @@ QuickUpdateScripts() {
         if (!FileExist(verifyScript))
             verifyScript := scriptsDir "\Verify-ScriptUpdate.ps1"
         if (FileExist(verifyScript)) {
-            verifyExitCode := RunWait('powershell.exe -NoProfile -ExecutionPolicy Bypass -File "' verifyScript '" -ScriptsDir "' scriptsDir '" -PathsFile "' pathsFile '" -ReportFile "' reportFile '"', scriptsDir, "Hide")
+            verifyExitCode := RunWait('powershell.exe -NoProfile -ExecutionPolicy Bypass -File "' verifyScript '" -ScriptsDir "' scriptsDir '" -PathsFile "' pathsFile '" -ReportFile "' reportFile '"',
+                scriptsDir, "Hide")
             try {
                 if (FileExist(reportFile)) {
                     verifyReport := FileRead(reportFile)
@@ -5104,8 +5105,87 @@ PeekPdf_OpenStored() {
         try ShowCenteredOverlay_Utils("Failed to open Peek: " e.Message, 3000, "FF0000")
         return
     }
-    if WinWait("Peek", "", 3) {
+    if WinWait("Peek", "", 5) {
         WinMaximize
+        PeekPdf_WaitAndConfigure()
+    }
+}
+
+; Wait for Peek PDF toolbar to load (Page view button), click it, two-page view, focus, go to last page.
+; Current state: PDF opening and window maximization are working correctly.
+; Execution order: 1) Get Peek hwnd  2) UIA root from hwnd  3) Poll for "Page view" anchor
+;  4) Wait for anchor visible + extended delay before click  5) Click Page view  6) Right Arrow
+;  7) Click window center  8) Ctrl+End. Fallback: Sleep 1000 + Click if UIA or anchor fails.
+PeekPdf_WaitAndConfigure() {
+    global UIA
+    ; Banner: show for the whole process so user knows when we started and when we finished
+    AiModelBanner_Show("Peek PDF: configuring...", "3772FF")
+    ; 1) Get Peek window hwnd
+    hwnd := WinExist("Peek")
+    if (!hwnd)
+        hwnd := WinExist("ahk_exe PowerToys.Peek.UI.exe")
+    if (!hwnd) {
+        AiModelBanner_Show("Peek PDF: window not found", "FFAA00")
+        SetTimer(AiModelBanner_Hide, -2000)
+        Sleep 1000
+        Click "Left"
+        return
+    }
+    try {
+        ; 2) UIA root
+        el := UIA.ElementFromHandle(hwnd)
+        ; 3) Poll for Page view (layouts) anchor (up to 20s to accommodate Peek load > 5s)
+        pageViewBtn := ""
+        loop 80 {
+            pageViewBtn := el.FindFirst({ Type: 50000, Name: "Page view", AutomationId: "layouts" })
+            if (pageViewBtn)
+                break
+            Sleep 250
+        }
+        if (pageViewBtn) {
+            ; 4) Ensure anchor is visible, then extended delay so Peek is fully ready before click
+            loop 20 {
+                try {
+                    if (!pageViewBtn.GetPropertyValue(UIA.Property.IsOffscreen)) {
+                        br := pageViewBtn.BoundingRectangle
+                        if (IsObject(br) && (br.r - br.l) > 0 && (br.b - br.t) > 0)
+                            break
+                    }
+                } catch {
+                }
+                Sleep 50
+            }
+            ; Extended delay (6s) before clicking "two pages"; click only after this completes
+            Sleep 6000
+            ; 5) Click Page view button
+            try pageViewBtn.Invoke()
+            catch
+                try pageViewBtn.Click()
+            Sleep 300
+            ; 6) Right Arrow (two-page view)
+            Send "{Right}"
+            Sleep 300
+            ; 7) Click center of Peek window (focus)
+            WinGetPos(&wx, &wy, &ww, &wh, "ahk_id " hwnd)
+            if (ww > 0 && wh > 0) {
+                cx := wx + ww // 2
+                cy := wy + wh // 2
+                Click cx, cy
+            }
+            Sleep 300
+            ; 8) Ctrl+End (final page)
+            Send "^End"
+            AiModelBanner_Show("Peek PDF: done", "27AE60")
+            SetTimer(AiModelBanner_Hide, -2000)
+        } else {
+            AiModelBanner_Show("Peek PDF: finished (fallback)", "FFAA00")
+            SetTimer(AiModelBanner_Hide, -2000)
+            Sleep 1000
+            Click "Left"
+        }
+    } catch {
+        AiModelBanner_Show("Peek PDF: finished (fallback)", "FFAA00")
+        SetTimer(AiModelBanner_Hide, -2000)
         Sleep 1000
         Click "Left"
     }
