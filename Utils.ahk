@@ -3577,7 +3577,7 @@ DesktopToRecycle_Run() {
 ; Entry point when "N" is pressed in Win+Alt+Shift+U selector
 DesktopToRecycle_Trigger() {
     global g_DesktopToRecycleCloseHwnd, g_DesktopToRecyclePath
-    g_DesktopToRecyclePath := Func("GetDesktopToRecyclePath").Call()
+    g_DesktopToRecyclePath := GetDesktopToRecyclePath()
     ; Remember active window if it's Explorer showing Desktop - close it after cleaning
     hwnd := WinExist("A")
     g_DesktopToRecycleCloseHwnd := 0
@@ -5017,7 +5017,7 @@ PeekPdf_ResolvePeekExePath() {
     exePath := PeekPdf_NormalizePath(exePath)
     if (exePath != "" && FileExist(exePath))
         return exePath
-    envExe := Func("GetPeekExePath").Call()
+    envExe := GetPeekExePath()
     if (FileExist(envExe))
         return envExe
     return "peek.exe"
