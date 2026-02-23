@@ -5131,6 +5131,7 @@ global g_HotstringPromptCharMap := Map()        ; Map of prompt-assigned chars =
 global g_HotstringGeminiArmed := false          ; When true, next Prompts selection is redirected to Gemini
 global g_HotstringGeminiAutoSubmit := true      ; During delayed flow: true = send Enter after paste; false = paste only
 global g_HotstringGeminiSubmitTimer := false   ; Timer reference for 4s delayed submit (for cleanup if needed)
+global g_HotstringGeminiRestoreHwnd := 0        ; Window to restore focus to after 4s banner + paste (set at start of GeminiDelayedSubmitFlow)
 
 ; Character assignment sequence: defines order in which characters are assigned to actions
 ; Format: ["1", "2", "3", "4", "5", "q", "w", "e", "r", "t", "a", "s", "d", "f", "g", "z", "x",
@@ -5775,7 +5776,8 @@ GeminiNavigateFocusAndPasteFirstSnippet() {
 ; Delayed submit flow: show 4s banner, allow N to cancel auto-submit; then navigate+paste and optionally send Enter.
 
 GeminiDelayedSubmitFlow() {
-    global g_HotstringGeminiAutoSubmit
+    global g_HotstringGeminiAutoSubmit, g_HotstringGeminiRestoreHwnd
+    g_HotstringGeminiRestoreHwnd := WinExist("A")  ; Store window to restore focus to after 4s sequence
     g_HotstringGeminiAutoSubmit := true
 
     HotstringGeminiBanner_Show("Submitting in 4s... Press N to cancel auto-submit")
@@ -5797,7 +5799,7 @@ GeminiCancelAutoSubmit(*) {
 }
 
 GeminiFinalizeSubmit() {
-    global g_HotstringGeminiAutoSubmit
+    global g_HotstringGeminiAutoSubmit, g_HotstringGeminiRestoreHwnd
 
     try Hotkey("n", "Off")
     try Hotkey("N", "Off")
@@ -5811,6 +5813,11 @@ GeminiFinalizeSubmit() {
     }
 
     g_HotstringGeminiAutoSubmit := true
+
+    ; Return focus to the window the user had before the 4s banner + paste (whether Enter was sent or not)
+    if (g_HotstringGeminiRestoreHwnd && WinExist("ahk_id " g_HotstringGeminiRestoreHwnd)) {
+        WinActivate("ahk_id " g_HotstringGeminiRestoreHwnd)
+    }
 }
 
 HandleHotstringChar(char) {
