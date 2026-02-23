@@ -631,3 +631,40 @@
 {"ts":198236484,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
 {"ts":198236484,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
 {"ts":198236500,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":5784265,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":5784265,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":5784281,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":5784296,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":5784312,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":5789421,"loc":"Handy_OpenAiModelMenu","msg":"entry","data":{},"hypothesisId":"H1"}
+{"ts":5789468,"loc":"Handy_OpenAiModelMenu","msg":"anchor by ClassName","data":{"by":"ClassName"},"hypothesisId":"H1"}
+{"ts":5790046,"loc":"Handy_OpenAiModelMenu","msg":"exit true","data":{},"hypothesisId":"H1"}
+{"ts":5790890,"loc":"Handy_ClickAiModel","msg":"entry","data":{"modelName":"Parakeet V2"},"hypothesisId":"H2"}
+{"ts":5790921,"loc":"Handy_ClickAiModel","msg":"name match","data":{"btnName":"Parakeet V2 English only. The best model for English speakers.","btnClass":"w-full px-3 py-2 text-start hover:bg-mid-gray/10 transition-colors cursor-pointer focus:outline-none ","hasWfull":0,"hasTextStart":1,"hasFlex":0},"hypothesisId":"H2"}
+{"ts":5790921,"loc":"Handy_ClickAiModel","msg":"buttons scanned","data":{"count":22,"nameMatchNoClass":"","found":1},"hypothesisId":"H2"}
+{"ts":5790937,"loc":"Handy_ClickAiModel","msg":"click ok","data":{},"hypothesisId":"H2"}
+{"ts":5790953,"loc":"Handy_WaitForModelReady","msg":"entry","data":{},"hypothesisId":"H3"}
+{"ts":5792390,"loc":"Handy_WaitForModelReady","msg":"ready","data":{"btnName":"Parakeet V2"},"hypothesisId":"H3"}
+{"ts":5864328,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":5864328,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":5864343,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":5924562,"loc":"FindGeminiPromptField","msg":"entry","hypothesisId":"H1"}
+{"ts":5924578,"loc":"FindGeminiPromptField","msg":"return found","data":{"name":"Enter a prompt for Gemini"},"hypothesisId":"H1"}
+{"ts":6056828,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":6056843,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":6056859,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":6062515,"loc":"FindGeminiPromptField","msg":"entry","hypothesisId":"H1"}
+{"ts":6062562,"loc":"FindGeminiPromptField","msg":"return found","data":{"name":"Enter a prompt for Gemini"},"hypothesisId":"H1"}
+{"ts":6068937,"loc":"Utils.ahk:5492","msg":"Utils expand else: resolving prompt field","data":{},"hypothesisId":"H2"}
+{"ts":6068937,"loc":"FindGeminiPromptField","msg":"entry","hypothesisId":"H1"}
+{"ts":6068984,"loc":"FindGeminiPromptField","msg":"return found","data":{"name":"Enter a prompt for Gemini"},"hypothesisId":"H1"}
+{"ts":6068984,"loc":"Utils.ahk:5497","msg":"Utils expand else: prompt field result","data":{"found":true},"hypothesisId":"H2"}
+{"ts":6081656,"loc":"Utils.ahk:5284","msg":"Utils else: resolving prompt field (EN/PT)","data":{},"hypothesisId":"H2"}
+{"ts":6081656,"loc":"FindGeminiPromptField","msg":"entry","hypothesisId":"H1"}
+{"ts":6081703,"loc":"FindGeminiPromptField","msg":"return found","data":{"name":"Enter a prompt for Gemini"},"hypothesisId":"H1"}
+{"ts":6081703,"loc":"Utils.ahk:5289","msg":"Utils else: prompt field result","data":{"found":true},"hypothesisId":"H2"}
+{"ts":6402078,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":6402078,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":6402109,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":6411015,"loc":"FindGeminiPromptField","msg":"entry","hypothesisId":"H1"}
+{"ts":6411078,"loc":"FindGeminiPromptField","msg":"return found","data":{"name":"Enter a prompt for Gemini"},"hypothesisId":"H1"}
