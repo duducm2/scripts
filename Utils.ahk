@@ -593,6 +593,14 @@ QuickUpdateScripts() {
     deferredUtils := false
     utilsPath := ""
 
+    ; #region agent log
+    try {
+        log := '{"sessionId":"9220fe","id":"log_' A_TickCount '","timestamp":' A_TickCount ',"location":"Utils.ahk:QuickUpdateScripts:start","message":"QuickUpdateScripts start","data":{"filesCount":' files.Length '},"runId":"pre-fix","hypothesisId":"H1"}'
+        FileAppend(log "`n", A_ScriptDir "\debug-9220fe.log")
+    } catch {
+    }
+    ; #endregion
+
     ; Layer 1: Git synchronization
     try {
         SetWorkingDir(scriptsDir)
@@ -663,6 +671,14 @@ QuickUpdateScripts() {
         }
     }
 
+    ; #region agent log
+    try {
+        log := '{"sessionId":"9220fe","id":"log_' A_TickCount '","timestamp":' A_TickCount ',"location":"Utils.ahk:QuickUpdateScripts:afterReload","message":"After reload layer","data":{"failedScriptsCount":' failedScripts.Length '},"runId":"pre-fix","hypothesisId":"H1"}'
+        FileAppend(log "`n", A_ScriptDir "\debug-9220fe.log")
+    } catch {
+    }
+    ; #endregion
+
     ; Brief delay before verification so all processes and filesystem are settled
     Sleep 1500
 
@@ -673,7 +689,8 @@ QuickUpdateScripts() {
         pathList := ""
         for file in files
             pathList .= file "`n"
-        FileDelete(pathsFile)
+        if (FileExist(pathsFile))
+            FileDelete(pathsFile)
         FileAppend(pathList, pathsFile)
     } catch {
         failedScripts.Push("Verify (could not write paths file)")
@@ -681,7 +698,19 @@ QuickUpdateScripts() {
 
     verifyExitCode := 0
     if (FileExist(pathsFile)) {
-        verifyScript := scriptsDir "\Verify-ScriptUpdate.ps1"
+        ; Resolve verification script: first next to Utils.ahk (A_LineFile), then scriptsDir fallback (covers Act.ahk parent launch and direct run)
+        utilsDir := SubStr(A_LineFile, 1, InStr(A_LineFile, "\", false, -1) - 1)
+        verifyScript := utilsDir "\Verify-ScriptUpdate.ps1"
+        if (!FileExist(verifyScript))
+            verifyScript := scriptsDir "\Verify-ScriptUpdate.ps1"
+        ; #region agent log
+        try {
+            fe := FileExist(verifyScript) ? 1 : 0
+            log := '{"sessionId":"9220fe","id":"log_' A_TickCount '","timestamp":' A_TickCount ',"location":"Utils.ahk:QuickUpdateScripts:verifyPath","message":"Verification script path","data":{"verifyScript":"' StrReplace(verifyScript, '\', '\\') '","fileExists":' fe '},"runId":"post-fix","hypothesisId":"H2"}' 
+            FileAppend(log "`n", A_ScriptDir "\debug-9220fe.log")
+        } catch {
+        }
+        ; #endregion
         if (FileExist(verifyScript)) {
             verifyExitCode := RunWait('powershell.exe -NoProfile -ExecutionPolicy Bypass -File "' verifyScript '" -ScriptsDir "' scriptsDir '" -PathsFile "' pathsFile '" -ReportFile "' reportFile '"', scriptsDir, "Hide")
             try {
@@ -705,6 +734,14 @@ QuickUpdateScripts() {
         } catch {
         }
     }
+
+    ; #region agent log
+    try {
+        log := '{"sessionId":"9220fe","id":"log_' A_TickCount '","timestamp":' A_TickCount ',"location":"Utils.ahk:QuickUpdateScripts:afterVerify","message":"After verification","data":{"verifyExitCode":' verifyExitCode ',"failedScriptsCount":' failedScripts.Length '},"runId":"pre-fix","hypothesisId":"H1"}'
+        FileAppend(log "`n", A_ScriptDir "\debug-9220fe.log")
+    } catch {
+    }
+    ; #endregion
 
     ; Final notification only after all layers (Git, reload, delay, verification) have run
     if (failedScripts.Length > 0) {
