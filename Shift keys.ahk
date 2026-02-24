@@ -8651,6 +8651,78 @@ FocusCursorFilesExplorer() {
     Send "{Enter}"        ; 6. Press Enter
 }
 
+; Ensure only one Chrome window shows the given PDF: close any window whose Document.Value ends with fileNameOnly, then open the PDF in a new window.
+EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
+    if (fileNameOnly = "")
+        return
+
+    ; Prepare escaped values for debug logging
+    escFileNameOnly := StrReplace(fileNameOnly, "\","\\")
+    escFileNameOnly := StrReplace(escFileNameOnly, '"', "'")
+    escFilePath := StrReplace(filePath, "\","\\")
+    escFilePath := StrReplace(escFilePath, '"', "'")
+
+    ; Collect Chrome window hwnds whose document URL ends with fileNameOnly (case-insensitive)
+    toClose := []
+    for hwnd in WinGetList("ahk_exe chrome.exe") {
+        try {
+            cUIA := UIA_Browser("ahk_id " hwnd)
+            doc := cUIA.GetCurrentDocumentElement()
+            url := doc.Value
+            if (url = "")
+                continue
+
+            ; Extract filename from URL: last path segment (file:///C:/.../proposal.pdf or https://.../x.pdf)
+            parts := StrSplit(url, "/")
+            lastSeg := parts.Length ? parts[parts.Length] : ""
+            ; Decode %XX for comparison
+            while RegExMatch(lastSeg, "i)%([0-9A-F]{2})", &m)
+                lastSeg := StrReplace(lastSeg, m[0], Chr(Integer("0x" m[1])))
+
+            matched := (StrLower(lastSeg) = StrLower(fileNameOnly))
+            if matched
+                toClose.Push(hwnd)
+
+            ; #region agent log
+            try {
+                escUrl := StrReplace(url, "\","\\")
+                escUrl := StrReplace(escUrl, '"', "'")
+                escLastSeg := StrReplace(lastSeg, "\","\\")
+                escLastSeg := StrReplace(escLastSeg, '"', "'")
+                payload := '{"sessionId":"ff09de","runId":"pre-fix-1","hypothesisId":"H2","location":"Shift keys.ahk:EnsureSingleChromePdfInstance","message":"chrome window inspected","data":{"hwnd":' hwnd ',"url":"' escUrl '","lastSeg":"' escLastSeg '","fileNameOnly":"' escFileNameOnly '","matched":' (matched ? "true" : "false") '},"timestamp":' A_TickCount '}'
+                FileAppend payload "`n", A_ScriptDir "\debug-ff09de.log"
+            } catch {
+            }
+            ; #endregion
+
+        } catch {
+            continue
+        }
+    }
+
+    ; #region agent log
+    try {
+        payload := '{"sessionId":"ff09de","runId":"pre-fix-1","hypothesisId":"H3","location":"Shift keys.ahk:EnsureSingleChromePdfInstance","message":"ensure summary","data":{"filePath":"' escFilePath '","fileNameOnly":"' escFileNameOnly '","closedCount":' toClose.Length '},"timestamp":' A_TickCount '}'
+        FileAppend payload "`n", A_ScriptDir "\debug-ff09de.log"
+    } catch {
+    }
+    ; #endregion
+
+    for hwnd in toClose {
+        try {
+            WinActivate("ahk_id " hwnd)
+            Sleep 150
+            Send "!{F4}"
+            Sleep 200
+        } catch {
+        }
+    }
+    Sleep 300
+    ; Open a fresh, empty Chrome window. Marp will open the PDF itself
+    ; in the last activated Chrome window after export completes.
+    try Run "chrome.exe --new-window"
+}
+
 ; Ctrl + 6 : Marp export - trigger export, handle Save As and Replace dialogs
 ^6::
 {
@@ -8703,6 +8775,111 @@ FocusCursorFilesExplorer() {
         }
         try WinActivate("ahk_id " saveDialogHwnd)
         Sleep 700
+
+        ; 2b. Extract PDF path and filename from the Save dialog via UIA (before confirming save)
+        filePath := ""
+        fileNameOnly := ""
+        try {
+            root := UIA.ElementFromHandle(saveDialogHwnd)
+            fileNameEdit := ""
+
+            ; Inspect all Edit controls for debugging AND detect the filename field
+            try {
+                edits := root.FindElements({ Type: "Edit" })
+                idx := 0
+                for el in edits {
+                    idx += 1
+                    safeName := StrReplace(el.Name, '"', "'")
+                    safeAutoId := StrReplace(el.AutomationId, '"', "'")
+                    val := ""
+                    try val := el.Value
+                    catch {
+                    }
+                    ; Only log short, sanitized value (suffix or empty)
+                    suffix := ""
+                    if (val != "") {
+                        parts := StrSplit(val, "\")
+                        suffix := parts.Length ? parts[parts.Length] : val
+                        suffix := StrReplace(suffix, '"', "'")
+                    }
+
+                    ; If this Edit looks like the File name field (based on name/id and .pdf suffix), capture it
+                    if (suffix != "" && InStr(StrLower(suffix), ".pdf")
+                        && (el.AutomationId = "1001" || el.Name = "File name:")) {
+                        filePath := val
+                        SplitPath filePath, , , &ext, &nameNoExt
+                        fileNameOnly := (nameNoExt != "") ? (nameNoExt . (ext != "" ? "." ext : "")) : suffix
+                    }
+
+                    payload := '{"sessionId":"ff09de","runId":"pre-fix-1","hypothesisId":"H5","location":"Shift keys.ahk:^6","message":"save dialog edit probe","data":{"index":' idx ',"name":"' safeName '","automationId":"' safeAutoId '","suffix":"' suffix '"},"timestamp":' A_TickCount '}'
+                    FileAppend payload "`n", A_ScriptDir "\debug-ff09de.log"
+                }
+            } catch {
+            }
+
+            ; First attempt: Edit with AutomationId 1148 (matches file dialog helper)
+            fileNameEdit := root.FindFirst({ Type: "Edit", AutomationId: "1148" })
+
+            ; Second attempt: ComboBox 1148 -> inner Edit
+            if !fileNameEdit {
+                fileNameCombo := root.FindFirst({ Type: "ComboBox", AutomationId: "1148" })
+                if fileNameCombo
+                    fileNameEdit := fileNameCombo.FindFirst({ Type: "Edit" })
+            }
+
+            ; Third attempt: Edit by common localized names
+            if !fileNameEdit {
+                for name in ["File name:", "Nome:", "Filename:", "File Name:", "Name:", "Nome do arquivo:"] {
+                    fileNameEdit := root.FindFirst({ Type: "Edit", Name: name })
+                    if fileNameEdit
+                        break
+                }
+            }
+            if fileNameEdit {
+                pathOrName := Trim(fileNameEdit.Value)
+                if (pathOrName != "") {
+                    if (InStr(pathOrName, "\") || InStr(pathOrName, ":"))
+                        filePath := pathOrName
+                    else {
+                        ; Filename only: try to get current folder from another Edit in the dialog
+                        for el in root.FindElements({ Type: "Edit" }) {
+                            try {
+                                val := Trim(el.Value)
+                                if (val != "" && InStr(val, "\") && InStr(val, ":")) {
+                                    filePath := RTrim(val, "\") "\" pathOrName
+                                    break
+                                }
+                            } catch {
+                                continue
+                            }
+                        }
+                        if (filePath = "")
+                            filePath := pathOrName
+                    }
+                    SplitPath filePath, , , &ext, &nameNoExt
+                    fileNameOnly := (nameNoExt != "") ? (nameNoExt . (ext != "" ? "." ext : "")) : pathOrName
+                }
+            }
+        } catch {
+            ; Fallback: no filename extracted; we will just open a new Chrome window at the end
+        }
+
+        ; #region agent log
+        try {
+            escPath := StrReplace(filePath, "\","\\")
+            escPath := StrReplace(escPath, '"', "'")
+            escName := StrReplace(fileNameOnly, "\","\\")
+            escName := StrReplace(escName, '"', "'")
+            payload := '{"sessionId":"ff09de","runId":"pre-fix-1","hypothesisId":"H1","location":"Shift keys.ahk:^6","message":"after filename extraction","data":{"filePath":"' escPath '","fileNameOnly":"' escName '"},"timestamp":' A_TickCount '}'
+            FileAppend payload "`n", A_ScriptDir "\debug-ff09de.log"
+        } catch {
+        }
+        ; #endregion
+
+        ; Prepare Chrome context for this PDF: close old windows and open a new one
+        if (fileNameOnly != "")
+            EnsureSingleChromePdfInstance(filePath, fileNameOnly)
+
         Send "{Enter}"  ; Confirm initial save
 
         ; 3. Handle Confirm Save As / Replace dialog (ClassName #32770, Name: "Confirm Save As")
@@ -8723,9 +8900,8 @@ FocusCursorFilesExplorer() {
             }
         }
 
-        ; 4. Open a new Chrome window at the conclusion of the process
-        Sleep 300
-        Run "chrome.exe --new-window"
+        ; 4. Wait for Marp export and viewer open to complete
+        Sleep 500
     } finally {
         ; Always hide the banner when the flow completes or aborts
         HideSmallLoadingIndicator_ChatGPT()
