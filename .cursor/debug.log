@@ -1193,3 +1193,38 @@
 {"ts":11825734,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
 {"ts":11825734,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
 {"ts":11825765,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":11929640,"loc":"FindGeminiPromptField","msg":"entry","hypothesisId":"H1"}
+{"ts":11929921,"loc":"FindGeminiPromptField","msg":"return found","data":{"name":"Enter a prompt for Gemini"},"hypothesisId":"H1"}
+{"ts":11933781,"loc":"Utils.ahk:5492","msg":"Utils expand else: resolving prompt field","data":{},"hypothesisId":"H2"}
+{"ts":11933781,"loc":"FindGeminiPromptField","msg":"entry","hypothesisId":"H1"}
+{"ts":11934093,"loc":"FindGeminiPromptField","msg":"return found","data":{"name":"Enter a prompt for Gemini"},"hypothesisId":"H1"}
+{"ts":11934093,"loc":"Utils.ahk:5497","msg":"Utils expand else: prompt field result","data":{"found":true},"hypothesisId":"H2"}
+{"ts":12063671,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":12063671,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":12063687,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":12074093,"loc":"Utils.ahk:5284","msg":"Utils else: resolving prompt field (EN/PT)","data":{},"hypothesisId":"H2"}
+{"ts":12074093,"loc":"FindGeminiPromptField","msg":"entry","hypothesisId":"H1"}
+{"ts":12074359,"loc":"FindGeminiPromptField","msg":"return found","data":{"name":"Enter a prompt for Gemini"},"hypothesisId":"H1"}
+{"ts":12074359,"loc":"Utils.ahk:5289","msg":"Utils else: prompt field result","data":{"found":true},"hypothesisId":"H2"}
+{"ts":12232968,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":12232968,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":12232984,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":12244203,"loc":"Utils.ahk:5284","msg":"Utils else: resolving prompt field (EN/PT)","data":{},"hypothesisId":"H2"}
+{"ts":12244203,"loc":"FindGeminiPromptField","msg":"entry","hypothesisId":"H1"}
+{"ts":12244500,"loc":"FindGeminiPromptField","msg":"return found","data":{"name":"Enter a prompt for Gemini"},"hypothesisId":"H1"}
+{"ts":12244500,"loc":"Utils.ahk:5289","msg":"Utils else: prompt field result","data":{"found":true},"hypothesisId":"H2"}
+{"ts":12265859,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":12265875,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":12265875,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":12265890,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":12265906,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":12265921,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":12284437,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":12284437,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":12284453,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":12284468,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":12284484,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"entry","data":{"pathLen":33,"dirExists":1},"hypothesisId":"H3","timestamp":12306515}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"after FindAndActivate","data":{"targetHwnd":397050},"hypothesisId":"H3","timestamp":12306750}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"after FocusCursorAITextField","data":{"focusOk":1},"hypothesisId":"H4","timestamp":12309015}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"return true","data":{},"hypothesisId":"H3","timestamp":12310250}

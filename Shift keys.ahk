@@ -8651,36 +8651,53 @@ FocusCursorFilesExplorer() {
     Send "{Enter}"        ; 6. Press Enter
 }
 
-; Ensure only one Chrome window shows the given PDF: close any window whose Document.Value ends with fileNameOnly, then open a fresh Chrome window.
+; Ensure only one Chrome window shows the given PDF: close any Chrome window whose title matches the filename, then open a fresh Chrome window.
 EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
     if (fileNameOnly = "")
         return
 
-    ; Collect Chrome window hwnds whose document URL ends with fileNameOnly (case-insensitive)
+    ; Include all Chrome top-level windows (visible, minimized, or hidden)
+    prevDetectHidden := A_DetectHiddenWindows
+    DetectHiddenWindows true
+
+    ; Collect Chrome window hwnds whose title contains the filename (with or without .pdf, case-insensitive)
     toClose := []
+    fileNameLower := StrLower(fileNameOnly)
+    baseNameLower := ""
+    try {
+        SplitPath fileNameOnly, , , &ext, &baseName
+        if (baseName != "")
+            baseNameLower := StrLower(baseName)
+    }
+    catch {
+    }
     for hwnd in WinGetList("ahk_exe chrome.exe") {
         try {
-            cUIA := UIA_Browser("ahk_id " hwnd)
-            doc := cUIA.GetCurrentDocumentElement()
-            url := doc.Value
-            if (url = "")
+            title := WinGetTitle("ahk_id " hwnd)
+            if (title = "")
                 continue
-
-            ; Extract filename from URL: last path segment (file:///C:/.../proposal.pdf or https://.../x.pdf)
-            parts := StrSplit(url, "/")
-            lastSeg := parts.Length ? parts[parts.Length] : ""
-            ; Decode %XX for comparison
-            while RegExMatch(lastSeg, "i)%([0-9A-F]{2})", &m)
-                lastSeg := StrReplace(lastSeg, m[0], Chr(Integer("0x" m[1])))
-
-            matched := (StrLower(lastSeg) = StrLower(fileNameOnly))
+            titleLower := StrLower(title)
+            matched := (fileNameLower != "" && InStr(titleLower, fileNameLower) != 0)
+            if (!matched && baseNameLower != "")
+                matched := InStr(titleLower, baseNameLower) != 0
             if matched
                 toClose.Push(hwnd)
 
+            ; #region agent log
+            try {
+                safeTitle := StrReplace(title, '"', "'")
+                payload := '{"sessionId":"ff09de","runId":"chrome-scan-1","hypothesisId":"H1","location":"Shift keys.ahk:EnsureSingleChromePdfInstance","message":"chrome window scanned","data":{"hwnd":' hwnd ',"title":"' safeTitle '","matched":' (matched ? "true" : "false") '},"timestamp":' A_TickCount '}'
+                FileAppend payload "`n", A_ScriptDir "\debug-ff09de.log"
+            } catch {
+            }
+            ; #endregion
         } catch {
             continue
         }
     }
+
+    ; Restore previous DetectHiddenWindows setting
+    DetectHiddenWindows prevDetectHidden
 
     for hwnd in toClose {
         try {
@@ -8829,6 +8846,16 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
             ; Fallback: no filename extracted; we will just open a new Chrome window at the end
         }
 
+        ; #region agent log
+        try {
+            safePath := StrReplace(filePath, '"', "'")
+            safeName := StrReplace(fileNameOnly, '"', "'")
+            payload := '{"sessionId":"ff09de","runId":"chrome-scan-1","hypothesisId":"H0","location":"Shift keys.ahk:^6","message":"after filename extraction","data":{"filePath":"' safePath '","fileNameOnly":"' safeName '"},"timestamp":' A_TickCount '}'
+            FileAppend payload "`n", A_ScriptDir "\debug-ff09de.log"
+        } catch {
+        }
+        ; #endregion
+
         ; Prepare Chrome context for this PDF: close old windows and open a new one
         if (fileNameOnly != "")
             EnsureSingleChromePdfInstance(filePath, fileNameOnly)
@@ -8846,7 +8873,7 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
                 if InStr(title, "Confirm Save As") || InStr(title, "Confirmar Salvar")
                 || InStr(title, "Confirmar Guardar") || InStr(title, "Confirm Replace") {
                     try WinActivate("ahk_id " replaceHwnd)
-                    Sleep 200
+                    Sleep 600  ; Increased delay for dialog to stabilize before confirming
                     Send "!y"   ; Alt+Y = Yes (per UIA: AcceleratorKey: "Alt+Y")
                     break
                 }
