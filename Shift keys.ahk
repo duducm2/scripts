@@ -8651,16 +8651,10 @@ FocusCursorFilesExplorer() {
     Send "{Enter}"        ; 6. Press Enter
 }
 
-; Ensure only one Chrome window shows the given PDF: close any window whose Document.Value ends with fileNameOnly, then open the PDF in a new window.
+; Ensure only one Chrome window shows the given PDF: close any window whose Document.Value ends with fileNameOnly, then open a fresh Chrome window.
 EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
     if (fileNameOnly = "")
         return
-
-    ; Prepare escaped values for debug logging
-    escFileNameOnly := StrReplace(fileNameOnly, "\","\\")
-    escFileNameOnly := StrReplace(escFileNameOnly, '"', "'")
-    escFilePath := StrReplace(filePath, "\","\\")
-    escFilePath := StrReplace(escFilePath, '"', "'")
 
     ; Collect Chrome window hwnds whose document URL ends with fileNameOnly (case-insensitive)
     toClose := []
@@ -8683,30 +8677,10 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
             if matched
                 toClose.Push(hwnd)
 
-            ; #region agent log
-            try {
-                escUrl := StrReplace(url, "\","\\")
-                escUrl := StrReplace(escUrl, '"', "'")
-                escLastSeg := StrReplace(lastSeg, "\","\\")
-                escLastSeg := StrReplace(escLastSeg, '"', "'")
-                payload := '{"sessionId":"ff09de","runId":"pre-fix-1","hypothesisId":"H2","location":"Shift keys.ahk:EnsureSingleChromePdfInstance","message":"chrome window inspected","data":{"hwnd":' hwnd ',"url":"' escUrl '","lastSeg":"' escLastSeg '","fileNameOnly":"' escFileNameOnly '","matched":' (matched ? "true" : "false") '},"timestamp":' A_TickCount '}'
-                FileAppend payload "`n", A_ScriptDir "\debug-ff09de.log"
-            } catch {
-            }
-            ; #endregion
-
         } catch {
             continue
         }
     }
-
-    ; #region agent log
-    try {
-        payload := '{"sessionId":"ff09de","runId":"pre-fix-1","hypothesisId":"H3","location":"Shift keys.ahk:EnsureSingleChromePdfInstance","message":"ensure summary","data":{"filePath":"' escFilePath '","fileNameOnly":"' escFileNameOnly '","closedCount":' toClose.Length '},"timestamp":' A_TickCount '}'
-        FileAppend payload "`n", A_ScriptDir "\debug-ff09de.log"
-    } catch {
-    }
-    ; #endregion
 
     for hwnd in toClose {
         try {
@@ -8783,25 +8757,19 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
             root := UIA.ElementFromHandle(saveDialogHwnd)
             fileNameEdit := ""
 
-            ; Inspect all Edit controls for debugging AND detect the filename field
+            ; Scan Edit controls and detect the filename field
             try {
                 edits := root.FindElements({ Type: "Edit" })
-                idx := 0
                 for el in edits {
-                    idx += 1
-                    safeName := StrReplace(el.Name, '"', "'")
-                    safeAutoId := StrReplace(el.AutomationId, '"', "'")
                     val := ""
                     try val := el.Value
                     catch {
                     }
-                    ; Only log short, sanitized value (suffix or empty)
-                    suffix := ""
-                    if (val != "") {
-                        parts := StrSplit(val, "\")
-                        suffix := parts.Length ? parts[parts.Length] : val
-                        suffix := StrReplace(suffix, '"', "'")
-                    }
+                    if (val = "")
+                        continue
+
+                    parts := StrSplit(val, "\")
+                    suffix := parts.Length ? parts[parts.Length] : val
 
                     ; If this Edit looks like the File name field (based on name/id and .pdf suffix), capture it
                     if (suffix != "" && InStr(StrLower(suffix), ".pdf")
@@ -8810,9 +8778,6 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
                         SplitPath filePath, , , &ext, &nameNoExt
                         fileNameOnly := (nameNoExt != "") ? (nameNoExt . (ext != "" ? "." ext : "")) : suffix
                     }
-
-                    payload := '{"sessionId":"ff09de","runId":"pre-fix-1","hypothesisId":"H5","location":"Shift keys.ahk:^6","message":"save dialog edit probe","data":{"index":' idx ',"name":"' safeName '","automationId":"' safeAutoId '","suffix":"' suffix '"},"timestamp":' A_TickCount '}'
-                    FileAppend payload "`n", A_ScriptDir "\debug-ff09de.log"
                 }
             } catch {
             }
@@ -8863,18 +8828,6 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
         } catch {
             ; Fallback: no filename extracted; we will just open a new Chrome window at the end
         }
-
-        ; #region agent log
-        try {
-            escPath := StrReplace(filePath, "\","\\")
-            escPath := StrReplace(escPath, '"', "'")
-            escName := StrReplace(fileNameOnly, "\","\\")
-            escName := StrReplace(escName, '"', "'")
-            payload := '{"sessionId":"ff09de","runId":"pre-fix-1","hypothesisId":"H1","location":"Shift keys.ahk:^6","message":"after filename extraction","data":{"filePath":"' escPath '","fileNameOnly":"' escName '"},"timestamp":' A_TickCount '}'
-            FileAppend payload "`n", A_ScriptDir "\debug-ff09de.log"
-        } catch {
-        }
-        ; #endregion
 
         ; Prepare Chrome context for this PDF: close old windows and open a new one
         if (fileNameOnly != "")
