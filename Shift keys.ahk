@@ -8682,15 +8682,6 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
                 matched := InStr(titleLower, baseNameLower) != 0
             if matched
                 toClose.Push(hwnd)
-
-            ; #region agent log
-            try {
-                safeTitle := StrReplace(title, '"', "'")
-                payload := '{"sessionId":"ff09de","runId":"chrome-scan-1","hypothesisId":"H1","location":"Shift keys.ahk:EnsureSingleChromePdfInstance","message":"chrome window scanned","data":{"hwnd":' hwnd ',"title":"' safeTitle '","matched":' (matched ? "true" : "false") '},"timestamp":' A_TickCount '}'
-                FileAppend payload "`n", A_ScriptDir "\debug-ff09de.log"
-            } catch {
-            }
-            ; #endregion
         } catch {
             continue
         }
@@ -8845,16 +8836,6 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
         } catch {
             ; Fallback: no filename extracted; we will just open a new Chrome window at the end
         }
-
-        ; #region agent log
-        try {
-            safePath := StrReplace(filePath, '"', "'")
-            safeName := StrReplace(fileNameOnly, '"', "'")
-            payload := '{"sessionId":"ff09de","runId":"chrome-scan-1","hypothesisId":"H0","location":"Shift keys.ahk:^6","message":"after filename extraction","data":{"filePath":"' safePath '","fileNameOnly":"' safeName '"},"timestamp":' A_TickCount '}'
-            FileAppend payload "`n", A_ScriptDir "\debug-ff09de.log"
-        } catch {
-        }
-        ; #endregion
 
         ; Prepare Chrome context for this PDF: close old windows and open a new one
         if (fileNameOnly != "")
