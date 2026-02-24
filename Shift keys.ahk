@@ -8841,22 +8841,21 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
         if (fileNameOnly != "")
             EnsureSingleChromePdfInstance(filePath, fileNameOnly)
 
-        Sleep 300
-        
+       
         Send "{Enter}"  ; Confirm initial save
 
         ; 3. Handle Confirm Save As / Replace dialog (ClassName #32770, Name: "Confirm Save As")
         ; WinGetText doesn't capture UIA Text elements; use window title. Yes button has Alt+Y.
         SetTitleMatchMode 2
         loop 10 {
-            Sleep 300
+            Sleep 500
             replaceHwnd := WinExist("ahk_class #32770")
             if replaceHwnd {
                 title := WinGetTitle("ahk_id " replaceHwnd)
                 if InStr(title, "Confirm Save As") || InStr(title, "Confirmar Salvar")
                 || InStr(title, "Confirmar Guardar") || InStr(title, "Confirm Replace") {
                     try WinActivate("ahk_id " replaceHwnd)
-                    Sleep 600  ; Increased delay for dialog to stabilize before confirming
+                    Sleep 900  ; Delay for dialog to stabilize before confirming
                     Send "!y"   ; Alt+Y = Yes (per UIA: AcceleratorKey: "Alt+Y")
                     break
                 }
@@ -8864,7 +8863,7 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
         }
 
         ; 4. Wait for Marp export and viewer open to complete
-        Sleep 500
+        Sleep 800
     } finally {
         ; Always hide the banner when the flow completes or aborts
         HideSmallLoadingIndicator_ChatGPT()
