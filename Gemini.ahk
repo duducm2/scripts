@@ -834,7 +834,7 @@ class GeminiAsyncLookup {
         if !this.OriginalHwnd
             return
         ; Show loading banner immediately, centered on the monitor where this window is (with warning)
-        ShowSmallLoadingIndicator("Loading…`n`n⚠️ Please do not click or use the keyboard", "3772FF", this.OriginalHwnd,
+        ShowSmallLoadingIndicator("Loading…", "3772FF", this.OriginalHwnd,
             200, 16)
 
         A_Clipboard := ""
@@ -1043,7 +1043,7 @@ class GeminiAsyncTTS {
         this.OriginalHwnd := WinExist("A")
         if !this.OriginalHwnd
             return
-        ShowSmallLoadingIndicator("Loading…`n`n⚠️ Please do not click or use the keyboard", "3772FF", this.OriginalHwnd,
+        ShowSmallLoadingIndicator("Loading…", "3772FF", this.OriginalHwnd,
             200, 16)
 
         A_Clipboard := ""
