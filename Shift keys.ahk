@@ -8841,6 +8841,8 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
         if (fileNameOnly != "")
             EnsureSingleChromePdfInstance(filePath, fileNameOnly)
 
+        Sleep 300
+        
         Send "{Enter}"  ; Confirm initial save
 
         ; 3. Handle Confirm Save As / Replace dialog (ClassName #32770, Name: "Confirm Save As")
