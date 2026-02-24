@@ -728,7 +728,8 @@ global g_Projects := [
                                     workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_UX core team_UX and CIP Integration",
                                     category: "Work" }, { name: "PT_Project", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\PT_Project",
                                         category: "Work" }, { name: "🪂 Avante", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\General - GS_BDU_Team\00_UX_GS_Team\AM_Planning\🪂 Avante",
-                                            category: "Work" }, { name: "", path: "", workPath: "",
+                                            category: "Work" }, { name: "E&S OPEX CIM Journey Mapping", path: "",
+                                            workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\opex-cim-journey-mapping",
                                             category: "Work" }
 ]
 ; TODO: Fill in workPath for each project above when configuring work environment
