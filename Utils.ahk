@@ -5348,6 +5348,17 @@ PeekPdf_ShowInputAndSave() {
 
 #!+x::
 {
+    hwnd := WinExist("ahk_exe PowerToys.Peek.UI.exe")
+    if !hwnd
+        hwnd := WinExist("Peek")
+    if hwnd {
+        try {
+            WinShow("ahk_id " hwnd)
+            WinActivate("ahk_id " hwnd)
+        }
+        return
+    }
+
     pressTime := A_TickCount
     KeyWait "x", "T1"
     holdTime := A_TickCount - pressTime
