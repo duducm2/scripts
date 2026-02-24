@@ -5252,8 +5252,70 @@ PeekPdf_WaitAndConfigure() {
                 Click cx, cy
             }
             Sleep 150
-            ; 8) Ctrl+End (final page)
-            Send "^End"
+            ; 8) Go to final page via UIA (keystrokes do not reach the embedded Edge PDF viewer)
+            lastPageSet := false
+            ; #region agent log
+            logPath := A_ScriptDir "\debug-e6a536.log"
+            ; #endregion
+            try {
+                docNames := []
+                for doc in el.FindAll({ Type: 50030 }) {
+                    try {
+                        nm := doc.Name
+                        docNames.Push(nm)
+                        ; Match "containing N pages" (EN) or "N pages"/"N páginas" (avoid "Page 1")
+                        if (RegExMatch(nm, "containing\s+(\d+)\s+pages", &m) || RegExMatch(nm,
+                            "document.*?(\d+)\s*(?:pages|páginas)", &m)) {
+                            totalPages := Integer(m[1])
+                            if (totalPages > 0) {
+                                pageSel := el.FindFirst({ Type: 50004, AutomationId: "pageselector" })
+                                if (pageSel) {
+                                    try {
+                                        pageSel.SetFocus()
+                                        Sleep(200)
+                                        WinActivate("ahk_id " hwnd)
+                                        Sleep(120)
+                                        Send("^a")
+                                        Sleep(50)
+                                        Send(String(totalPages))
+                                        Sleep(50)
+                                        Send("{Enter}")
+                                        lastPageSet := true
+                                    } catch as setErr {
+                                        try FileAppend '{"sessionId":"e6a536","location":"Utils.ahk:lastPage","message":"focus/send failed","data":{"err":"' StrReplace(
+                                            StrReplace(setErr.Message, "\", "\\"), '"', "'") '"},"ts":' A_TickCount '}' "`n",
+                                        logPath
+                                    }
+                                    if (lastPageSet)
+                                        try FileAppend '{"sessionId":"e6a536","location":"Utils.ahk:lastPage","message":"UIA set page","data":{"totalPages":' totalPages '},"ts":' A_TickCount '}' "`n",
+                                            logPath
+                                } else
+                                    try FileAppend '{"sessionId":"e6a536","location":"Utils.ahk:lastPage","message":"pageselector not found","data":{"totalPages":' totalPages '},"ts":' A_TickCount '}' "`n",
+                                        logPath
+                                break
+                            }
+                        }
+                    } catch {
+                        ; ignore per-doc errors
+                    }
+                }
+                if (!lastPageSet) {
+                    namesStr := ""
+                    for i, n in docNames
+                        namesStr .= (i > 1 ? " | " : "") StrReplace(StrReplace(n, "\", "\\"), '"', "'")
+                    try FileAppend '{"sessionId":"e6a536","location":"Utils.ahk:lastPage","message":"no match or fail","data":{"docNames":"' namesStr '","count":' docNames
+                        .Length '},"ts":' A_TickCount '}' "`n", logPath
+                }
+            } catch as e {
+                try FileAppend '{"sessionId":"e6a536","location":"Utils.ahk:lastPage","message":"exception","data":{"what":"' StrReplace(
+                    StrReplace(e.Message, "\", "\\"), '"', "'") '"},"ts":' A_TickCount '}' "`n", logPath
+            }
+            if (!lastPageSet) {
+                try
+                    ControlSend("^End", "ahk_id " hwnd)
+                catch
+                    Send("^End")
+            }
             Sleep 100
             AiModelBanner_Show("Peek PDF: done", "27AE60")
             SetTimer(AiModelBanner_Hide, -2000)
