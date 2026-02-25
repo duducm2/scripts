@@ -6228,10 +6228,22 @@ HandleHotstringChar(char) {
                     WinWaitActive("ahk_exe chrome.exe", , 2)
                 }
 
-                ; Explicitly target Gemini Tab 2 (right tab) for L+1/2/3 flows.
-                ; Chrome convention: Ctrl+2 selects the second tab in the window.
+                ; Explicitly target Gemini tabs based on character:
+                ; - L+1/2/3  -> Tab 2 (right Gemini tab, temporary prompts)
+                ; - L+4/5/Q/W/E/R/T/A -> Tab 1 (left Gemini tab, main workflow)
                 if (char = "1" || char = "2" || char = "3") {
+                    ; Chrome convention: Ctrl+2 selects the second tab in the window.
                     Send("^2")
+                    Sleep 120
+                } else if (char = "4" || char = "5"
+                    || char = "q" || char = "Q"
+                    || char = "w" || char = "W"
+                    || char = "e" || char = "E"
+                    || char = "r" || char = "R"
+                    || char = "t" || char = "T"
+                    || char = "a" || char = "A") {
+                    ; Ensure Tab 1 is active before inserting the prompt.
+                    Send("^1")
                     Sleep 120
                 }
 
