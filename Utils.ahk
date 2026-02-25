@@ -5959,6 +5959,11 @@ GeminiNavigateFocusAndPasteFirstSnippet() {
         WinWaitActive("ahk_exe chrome.exe", , 2)
     }
 
+    ; Ensure Tab 1 (left/main Gemini tab) is active for the \"nice mode\" flow (double-L).
+    ; Chrome convention: Ctrl+1 selects the first tab in the window.
+    Send("^1")
+    Sleep 120
+
     ; Focus the Gemini prompt field (Anchor & Backtrack strategy)
     try {
         uia := UIA_Browser()
