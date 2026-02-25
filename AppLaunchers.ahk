@@ -192,6 +192,8 @@ ShowCursorFallbackPanel() {
             WinActivate("ahk_id " targetHwnd)
         }
 
+        WinMaximize("ahk_id " targetHwnd)
+
         Sleep 350
         Send "^{Up}"
 
