@@ -2151,6 +2151,7 @@ ToggleOutlookAndTeams() {
 
                     if (!WinExist("ahk_exe OUTLOOK.EXE")) {
                         ShowCenteredOverlay_Utils("Outlook not running.", 2000)
+                        return
                     } else {
                         ; Activate Outlook (this will bring it to foreground, overriding Teams)
                         WinActivate("ahk_exe OUTLOOK.EXE")
