@@ -1144,7 +1144,7 @@ GetCheatSheetText() {
             appShortcuts := cheatSheets.Has("Miro") ? cheatSheets["Miro"] : ""
         if InStr(chromeTitle, "Wikipedia", false) || InStr(chromeTitle, "wikipedia.org", false)
             appShortcuts := cheatSheets.Has("Wikipedia") ? cheatSheets["Wikipedia"] : ""
-        if InStr(chromeTitle, "Mercado Livre", false)
+        if IsMercadoLivreActive()
             appShortcuts := cheatSheets.Has("Mercado Livre") ? cheatSheets["Mercado Livre"] : ""
         if InStr(chromeTitle, "gemini", false)
             appShortcuts :=
@@ -3856,7 +3856,27 @@ ChromePdf_FocusByAutomationId(automationId, controlType := 0) {
 ;-------------------------------------------------------------------
 ; Mercado Livre (Brazil) Shortcuts
 ;-------------------------------------------------------------------
-#HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "Mercado Livre", false)
+IsMercadoLivreActive() {
+    if !WinActive("ahk_exe chrome.exe")
+        return false
+    ; Fast check: title (when present)
+    if InStr(WinGetTitle("A"), "Mercado Livre", false)
+        return true
+    ; URL check via UIA (address bar by AccessKey "Ctrl+L" – standard in Chrome)
+    try {
+        hwnd := WinExist("A")
+        root := UIA.ElementFromHandle(hwnd)
+        addressBar := root.FindFirst({ Type: 50004, AccessKey: "Ctrl+L" })
+        if (addressBar) {
+            url := addressBar.Value
+            if InStr(url, "mercadolivre.com") || InStr(url, "mercadolibre.com")
+                return true
+        }
+    }
+    return false
+}
+
+#HotIf IsMercadoLivreActive()
 
 ; Shift + S: Focus Mercado Livre search field
 +s::
