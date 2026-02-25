@@ -657,13 +657,48 @@ copyFromBridge(*) {
 ; =============================================================================
 ; Initialize Gemini window on first-time opening
 ; =============================================================================
+SendPromptToActiveGeminiTab(promptText) {
+    try {
+        if (StrLen(promptText) = 0)
+            return false
+
+        uia := UIA_Browser()
+        Sleep 300
+
+        promptField := FindGeminiPromptField(uia)
+        if (!promptField)
+            return false
+
+        promptField.SetFocus()
+        Sleep 100
+        if (!promptField.HasKeyboardFocus) {
+            try
+                promptField.Click()
+            Sleep 100
+        }
+
+        oldClip := A_Clipboard
+        A_Clipboard := ""
+        A_Clipboard := promptText
+        ClipWait 1
+        Send("^v")
+        Sleep 100
+        Send("{Enter}")
+        Sleep 100
+        A_Clipboard := oldClip
+        return true
+    } catch {
+        return false
+    }
+}
+
 InitializeGeminiFirstTime() {
     try {
         ; Show banner to inform user
-        ShowSmallLoadingIndicator("Opening Gemini...")
+        ShowSmallLoadingIndicator("Opening Gemini (2 tabs)...")
 
-        ; Run Chrome with new window
-        Run "chrome.exe --new-window https://gemini.google.com/"
+        ; Run Chrome with new window and two Gemini tabs
+        Run "chrome.exe --new-window https://gemini.google.com/ https://gemini.google.com/"
         if !WinWaitActive("ahk_exe chrome.exe", , 5) {
             HideSmallLoadingIndicator()
             return
@@ -678,52 +713,30 @@ InitializeGeminiFirstTime() {
 
         ; Activate the Gemini window
         WinActivate("ahk_id " geminiHwnd)
-        WinWaitActive("ahk_id " geminiHwnd, , 2)
-        Sleep 200 ; Give window time to fully activate
-
-        ; Update banner status
-        ShowSmallLoadingIndicator("Loading Gemini page...")
-
-        ; Wait for page to load fully
-        Sleep 300
-
-        ; Find and focus the Gemini prompt field (EN/PT aware)
-        uia := UIA_Browser()
-        Sleep 300
-
-        promptField := FindGeminiPromptField(uia)
-
-        if (promptField) {
-            ; Focus the prompt field
-            promptField.SetFocus()
-            Sleep 100
-            ; Ensure focus was successful
-            if (!promptField.HasKeyboardFocus) {
-                ; Fallback: try clicking if SetFocus didn't work
-                promptField.Click()
-                Sleep 100
-            }
+        if !WinWaitActive("ahk_id " geminiHwnd, , 2) {
+            HideSmallLoadingIndicator()
+            return
         }
+        Sleep 300  ; Give window time to fully activate
 
-        ; Update banner status
-        ShowSmallLoadingIndicator("Sending initial prompt...")
-
-        ; Read initial prompt from external file & paste it
+        ; Read initial prompt from external file
         promptText := ""
         try promptText := FileRead(PROMPT_FILE, "UTF-8")
         if (StrLen(promptText) = 0)
             promptText := "hey, what's up?"
 
-        ; Copy–paste to handle Unicode & speed
-        oldClip := A_Clipboard
-        A_Clipboard := ""
-        A_Clipboard := promptText
-        ClipWait 1
-        Send("^v")
-        Sleep 100
-        Send("{Enter}")
-        Sleep 100
-        A_Clipboard := oldClip
+        ; Update banner status
+        ShowSmallLoadingIndicator("Sending prompt to Gemini tabs...")
+
+        ; Ensure first tab is active and send prompt
+        Send("^1")
+        Sleep 150
+        SendPromptToActiveGeminiTab(promptText)
+
+        ; Switch to second tab and send the same prompt
+        Send("^2")
+        Sleep 150
+        SendPromptToActiveGeminiTab(promptText)
 
         ; Hide banner on success
         HideSmallLoadingIndicator()
