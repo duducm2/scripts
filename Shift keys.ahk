@@ -565,6 +565,7 @@ Cursor
 
 --- CTRL+ALT Shortcuts (Cursor-defined) ---
 📄 [Ctrl+Alt+L] Markdown Preview Enhanced: Toggle Live Update
+📄 [Ctrl+Alt+T] Markdown Preview Enhanced: Toggle Scroll Sync
 ⬆️ [Ctrl+Alt+Up] Go to [P]arent Fold
 ⬅️ [Ctrl+Alt+Left] Go to sibling fold [P]revious
 ➡️ [Ctrl+Alt+Right] Go to sibling fold [N]ext
