@@ -1362,6 +1362,7 @@
 {"ts":21177890,"loc":"FindGeminiPromptField","msg":"entry","hypothesisId":"H1"}
 {"ts":21178312,"loc":"FindGeminiPromptField","msg":"return found","data":{"name":"Enter a prompt for Gemini"},"hypothesisId":"H1"}
 {"ts":21178312,"loc":"Utils.ahk:5289","msg":"Utils else: prompt field result","data":{"found":true},"hypothesisId":"H2"}
+<<<<<<< Updated upstream
 {"ts":21422078,"loc":"FindGeminiPromptField","msg":"entry","hypothesisId":"H1"}
 {"ts":21422625,"loc":"FindGeminiPromptField","msg":"return found","data":{"name":"Enter a prompt for Gemini"},"hypothesisId":"H1"}
 {"ts":21430515,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
@@ -2653,3 +2654,20 @@
 {"ts":34408453,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
 {"ts":34408484,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
 {"ts":34408500,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+=======
+{"ts":444761968,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":444761968,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":444761984,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":444762000,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+>>>>>>> Stashed changes
+{"ts":444834156,"loc":"FindGeminiPromptField","msg":"entry","hypothesisId":"H1"}
+{"ts":444834640,"loc":"FindGeminiPromptField","msg":"return 0 (not found)","hypothesisId":"H1"}
+{"ts":444836343,"loc":"FindGeminiPromptField","msg":"entry","hypothesisId":"H1"}
+{"ts":444836390,"loc":"FindGeminiPromptField","msg":"return found","data":{"name":"Enter a prompt for Gemini"},"hypothesisId":"H1"}
+{"ts":444884687,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":444884718,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":444884812,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":445267500,"loc":"FindGeminiPromptField","msg":"entry","hypothesisId":"H1"}
+{"ts":445267531,"loc":"FindGeminiPromptField","msg":"return found","data":{"name":"Enter a prompt for Gemini"},"hypothesisId":"H1"}
+{"ts":445268984,"loc":"FindGeminiPromptField","msg":"entry","hypothesisId":"H1"}
+{"ts":445269000,"loc":"FindGeminiPromptField","msg":"return found","data":{"name":"Enter a prompt for Gemini"},"hypothesisId":"H1"}

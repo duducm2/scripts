@@ -719,6 +719,7 @@ InitializeGeminiFirstTime() {
 
         ; Run Chrome with new window and two Gemini tabs
         Run "chrome.exe --new-window https://gemini.google.com/ https://gemini.google.com/"
+        Sleep 700   ; Give the system time to start Chrome before waiting for it
         if !WinWaitActive("ahk_exe chrome.exe", , 5) {
             HideSmallLoadingIndicator()
             return
@@ -743,7 +744,7 @@ InitializeGeminiFirstTime() {
             HideSmallLoadingIndicator()
             return
         }
-        Sleep 300  ; Give window time to fully activate
+        Sleep 550   ; Give window and tabs time to fully activate
 
         ; Read initial prompt from external file
         promptText := ""
@@ -756,12 +757,12 @@ InitializeGeminiFirstTime() {
 
         ; Ensure first tab is active and send prompt
         Send("^1")
-        Sleep 150
+        Sleep 280
         SendPromptToActiveGeminiTab(promptText)
 
         ; Switch to second tab and send the same prompt
         Send("^2")
-        Sleep 150
+        Sleep 280
         SendPromptToActiveGeminiTab(promptText)
 
         ; Hide banner on success

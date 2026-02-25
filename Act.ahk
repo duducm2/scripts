@@ -65,6 +65,3 @@ Sleep 1000
 
 ; Open the Excel file
 Run(excelFile)
-
-; Run #!+i for both environments
-Send "#!+i"
