@@ -3858,43 +3858,42 @@ ChromePdf_FocusByAutomationId(automationId, controlType := 0) {
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "Mercado Livre", false)
 
-; Shift + Y: Focus Mercado Livre search field
-+y::
+; Shift + S: Focus Mercado Livre search field
++s::
 {
     try {
         uia := UIA_Browser("ahk_exe chrome.exe")
         Sleep 200
-        ; Prefer the document root; fall back to browser element
+
+        ; Prefer the document root; fall back to browser element only if needed
+        isDocRoot := false
         try {
             root := uia.GetCurrentDocumentElement()
+            isDocRoot := true
         } catch {
             root := uia.BrowserElement
         }
 
         field := 0
-        ; Try AutomationId first
+
+        ; 1) Try AutomationId from the current document (or fallback root)
         try {
             field := root.FindElement({ AutomationId: "cb1-edit" })
         } catch {
         }
-        if (!field) {
-            ; Try by ComboBox name (Type 50003)
+
+        ; 2) From the document root, try the numeric path 1,1,4,2 if available
+        if (!field && isDocRoot) {
             try {
-                field := root.FindElement({ Type: 50003, Name: "Digite o que vocÃª quer encontrar", cs: false })
+                field := root.ElementFromPath("1,1,4,2")
             } catch {
             }
         }
+
+        ; 3) As a last resort, search from the browser element with Descendants scope
         if (!field) {
-            ; Try by Edit control name
             try {
-                field := root.FindElement({ Type: "Edit", Name: "Digite o que vocÃª quer encontrar", cs: false })
-            } catch {
-            }
-        }
-        if (!field) {
-            ; Try by class name
-            try {
-                field := root.FindElement({ ClassName: "nav-search-input" })
+                field := uia.BrowserElement.FindElement({ AutomationId: "cb1-edit" }, UIA.TreeScope.Descendants)
             } catch {
             }
         }
@@ -3903,19 +3902,22 @@ ChromePdf_FocusByAutomationId(automationId, controlType := 0) {
             try {
                 field.SetFocus()
             } catch {
-                field.Click()
+                try {
+                    field.Click()
+                } catch {
+                }
             }
             return
-        } else {
-            MsgBox "Could not find Mercado Livre search field."
         }
+
+        MsgBox "Could not find Mercado Livre search field."
     } catch Error as e {
         MsgBox "An error occurred: " e.Message
     }
 }
 
-; Shift + U: Carrinho de compras (Cart)
-+u::
+; Shift + C: Carrinho de compras (Cart)
++c::
 {
     try {
         uia := UIA_Browser("ahk_exe chrome.exe")
@@ -3960,8 +3962,8 @@ ChromePdf_FocusByAutomationId(automationId, controlType := 0) {
     }
 }
 
-; Shift + I: Compras (Purchases)
-+i::
+; Shift + P: Compras (Purchases)
++p::
 {
     try {
         uia := UIA_Browser("ahk_exe chrome.exe")
