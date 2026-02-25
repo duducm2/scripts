@@ -246,7 +246,8 @@ CenterMouse() {
 
 ; Reusable: activate Gemini, handle Pause/Resume, then optionally copy last message and trigger "Text to speech".
 ; copyFirst: true = copy last response then read aloud (#!+o); false = only read aloud (#!+7).
-GeminiTriggerReadAloud(copyFirst := true) {
+; useTrashTab: when true, explicitly target the second Gemini tab (trash tab) instead of the main tab.
+GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false) {
     ; Step 1: Activate Gemini window globally
     SetTitleMatchMode(2)
     if hwnd := GetGeminiWindowHwnd()
@@ -254,6 +255,13 @@ GeminiTriggerReadAloud(copyFirst := true) {
     if !WinWaitActive("ahk_exe chrome.exe", , 2)
         return
     Sleep 150
+
+    ; When requested (#!+o trash tab), explicitly switch to the second Gemini tab.
+    ; Chrome convention: Ctrl+2 selects the second tab in the window.
+    if (useTrashTab) {
+        Send("^2")
+        Sleep 150
+    }
 
     ; Step 2: Check if "Pause" button exists (if reading is active, pause it)
     uia := UIA_Browser()
@@ -528,6 +536,7 @@ GeminiTriggerReadAloud(copyFirst := true) {
 ; Win+Alt+Shift+O : Read aloud the last message in Gemini (or Pause/Resume if already reading)
 #!+o:: {
     try {
+        ; Standard behavior: operate on the currently active Gemini tab.
         GeminiTriggerReadAloud()
     } catch Error as e {
         ;
@@ -865,6 +874,10 @@ class GeminiAsyncLookup {
             HideSmallLoadingIndicator()
             return
         }
+        ; For pronunciation lookup (#!+8), always use the trash tab (second Gemini tab).
+        ; Chrome convention: Ctrl+2 selects the second tab in the window.
+        Send("^2")
+        Sleep 150
         uia := UIA_Browser()
         Sleep 300
         promptField := FindGeminiPromptField(uia)
@@ -1168,7 +1181,8 @@ class GeminiAsyncTTS {
                 } catch {
                     PlayCopyCompletedChime()
                 }
-                GeminiTriggerReadAloud(false)   ; read aloud only, no copy (text was just sent via #!+7)
+                ; After TTS from selection (#!+7), read aloud from the trash tab (second Gemini tab).
+                GeminiTriggerReadAloud(false, true)   ; read aloud only, no copy (text was just sent via #!+7)
             }
         }
     }
