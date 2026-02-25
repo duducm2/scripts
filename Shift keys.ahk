@@ -8603,6 +8603,115 @@ FocusCursorFilesExplorer() {
 ;-------------------------------------------------------------------
 #HotIf IsEditorActive() && WinGetClass("A") != "#32770"
 
+; Alt + M : Quick shortcut menu for Cursor
+; GUI styled like Select AI Model (Utils.ahk): dark theme, Press 1–2 | Esc to cancel.
+global g_CursorShortcutMenuGui := false
+global g_CursorShortcutMenuActive := false
+
+!m::
+{
+    ShowCursorShortcutMenu()
+}
+
+ShowCursorShortcutMenu() {
+    global g_CursorShortcutMenuGui, g_CursorShortcutMenuActive
+    if (g_CursorShortcutMenuActive)
+        return
+
+    g_CursorShortcutMenuGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner")
+    g_CursorShortcutMenuGui.BackColor := "1E1E2E"
+    g_CursorShortcutMenuGui.MarginX := 20
+    g_CursorShortcutMenuGui.MarginY := 15
+
+    g_CursorShortcutMenuGui.SetFont("s14 cCDD6F4 Bold", "Segoe UI")
+    g_CursorShortcutMenuGui.Add("Text", "w280 Center", "Select shortcut")
+    g_CursorShortcutMenuGui.Add("Text", "w280 h1 Background45475A")
+
+    g_CursorShortcutMenuGui.SetFont("s12 cCDD6F4", "Segoe UI")
+    g_CursorShortcutMenuGui.Add("Text", "w280", "[1] hello world one")
+    g_CursorShortcutMenuGui.Add("Text", "w280", "[2] hello world two")
+
+    g_CursorShortcutMenuGui.Add("Text", "w280 h1 Background45475A y+10")
+    g_CursorShortcutMenuGui.SetFont("s9 c6C7086", "Segoe UI")
+    g_CursorShortcutMenuGui.Add("Text", "w280 Center", "Press 1–2 | Esc to cancel")
+
+    ; Center on same monitor as active window (same logic as Utils ShowAiModelSelector)
+    activeWin := 0
+    try
+        activeWin := WinGetID("A")
+    catch
+        activeWin := 0
+    MonitorGetWorkArea(1, &monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
+    monitorWidth := monitorRight - monitorLeft
+    monitorHeight := monitorBottom - monitorTop
+    if (activeWin && activeWin != 0) {
+        rect := Buffer(16, 0)
+        if (DllCall("GetWindowRect", "ptr", activeWin, "ptr", rect)) {
+            centerX := NumGet(rect, 0, "int") + (NumGet(rect, 8, "int") - NumGet(rect, 0, "int")) // 2
+            centerY := NumGet(rect, 4, "int") + (NumGet(rect, 12, "int") - NumGet(rect, 4, "int")) // 2
+            loop MonitorGetCount() {
+                MonitorGetWorkArea(A_Index, &l, &t, &r, &b)
+                if (centerX >= l && centerX <= r && centerY >= t && centerY <= b) {
+                    monitorLeft := l
+                    monitorTop := t
+                    monitorWidth := r - l
+                    monitorHeight := b - t
+                    break
+                }
+            }
+        }
+    }
+    g_CursorShortcutMenuGui.Show("AutoSize Hide")
+    g_CursorShortcutMenuGui.GetPos(&gx, &gy, &gw, &gh)
+    cx := monitorLeft + (monitorWidth - gw) // 2
+    cy := monitorTop + (monitorHeight - gh) // 2
+    g_CursorShortcutMenuGui.Show("x" . cx . " y" . cy . " NA")
+
+    g_CursorShortcutMenuActive := true
+    Hotkey("1", (*) => CursorShortcutMenu_HandleKey("1"), "On")
+    Hotkey("2", (*) => CursorShortcutMenu_HandleKey("2"), "On")
+    Hotkey("Escape", CursorShortcutMenu_Cancel, "On")
+}
+
+CursorShortcutMenu_HandleKey(key) {
+    global g_CursorShortcutMenuActive
+    if (!g_CursorShortcutMenuActive)
+        return
+    CursorShortcutMenu_Close()
+    if (key = "1")
+        CursorShortcutMenu_Action1()
+    else if (key = "2")
+        CursorShortcutMenu_Action2()
+}
+
+CursorShortcutMenu_Cancel(*) {
+    CursorShortcutMenu_Close()
+}
+
+CursorShortcutMenu_Close() {
+    global g_CursorShortcutMenuGui, g_CursorShortcutMenuActive
+    if (!g_CursorShortcutMenuActive)
+        return
+    g_CursorShortcutMenuActive := false
+    try Hotkey("1", "Off")
+    try Hotkey("2", "Off")
+    try Hotkey("Escape", CursorShortcutMenu_Cancel, "Off")
+    if (IsObject(g_CursorShortcutMenuGui) && g_CursorShortcutMenuGui.Hwnd) {
+        try g_CursorShortcutMenuGui.Destroy()
+    }
+    g_CursorShortcutMenuGui := false
+}
+
+CursorShortcutMenu_Action1(*) {
+    ; Replace with your command for "hello world one"
+    return
+}
+
+CursorShortcutMenu_Action2(*) {
+    ; Replace with your command for "hello world two"
+    return
+}
+
 ; Ctrl + H : Smart navigation - Editor → Explorer, Explorer → Reveal in Explorer
 ; Works from main editor even when the left Explorer sidebar is closed (opens it first).
 ^h::
