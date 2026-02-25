@@ -8986,7 +8986,8 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
 
 ; ---------------------------------------------------------------------------
 ; Ctrl + M : 1) Generate immediately. 2) Yellow banner 5s (Y to push). 3) Wait 15s.
-; 4) Focus Cursor, commit, push if Y pressed. 5) Return to previous window.
+; 4) Focus Cursor, commit, push if Y pressed. 5) Open Git panel to verify.
+; 6) Return to previous window (skipped if push so you can review).
 ; ---------------------------------------------------------------------------
 ^M:: {
     global gCommitPushTargetWin
@@ -9016,14 +9017,26 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
 
     ; 4. Execute commit and push if necessary
     Send "+v"
-    if (gCommitPushDecision = "push") {
+    didPush := (gCommitPushDecision = "push")
+    if (didPush) {
         Sleep 500
         Send "+b"
     }
+
+    ; 5. Wait for git operations to complete, then open Git panel to verify
+    if (didPush) {
+        Sleep 4000
+    } else {
+        Sleep 1500
+    }
+    Send "+d"
+
+    ; Decide whether to return to previous window: stay in Cursor if we pushed
+    shouldReturn := !didPush
     gCommitPushDecision := ""
 
-    ; 5. Return to previous screen (graceful error if window no longer exists)
-    if (prevHwnd && prevHwnd != hwnd) {
+    ; 6. Return to previous screen (graceful error if window no longer exists)
+    if (shouldReturn && prevHwnd && prevHwnd != hwnd) {
         if (!WinExist("ahk_id " prevHwnd)) {
             TrayTip("Commit Push", "Previous window no longer available; staying in Cursor.", "Iconi")
             SetTimer(() => TrayTip(), -5000)
