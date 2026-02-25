@@ -564,6 +564,7 @@ Cursor
 ⬆️ [B]Push (Git pu[B]lish) (cursor)
 
 --- CTRL+ALT Shortcuts (Cursor-defined) ---
+📄 [Ctrl+Alt+L] Markdown Preview Enhanced: Toggle Live Update
 ⬆️ [Ctrl+Alt+Up] Go to [P]arent Fold
 ⬅️ [Ctrl+Alt+Left] Go to sibling fold [P]revious
 ➡️ [Ctrl+Alt+Right] Go to sibling fold [N]ext
@@ -571,6 +572,7 @@ Cursor
 ⬇️ [Ctrl+Alt+↓] Add cursor [B]elow
 
 --- ALT Shortcuts (ahk = AutoHotkey) ---
+📋 [M] Quick shortcut menu (ahk)
 📄 [N] Review [N]ext file (ahk)
 📄 [R] efresh preview
 
