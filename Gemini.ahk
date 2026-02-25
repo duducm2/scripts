@@ -1089,6 +1089,10 @@ class GeminiAsyncTTS {
             HideSmallLoadingIndicator()
             return
         }
+        ; For TTS from selection (#!+7), always use the trash tab (second Gemini tab) when sending the prompt.
+        ; Chrome convention: Ctrl+2 selects the second tab in the window.
+        Send("^2")
+        Sleep 150
         uia := UIA_Browser()
         Sleep 300
         promptField := FindGeminiPromptField(uia)
