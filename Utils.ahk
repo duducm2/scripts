@@ -813,7 +813,10 @@ AddWordToHandy() {
             }
         }
 
-        WinWaitActive("Handy ahk_class Tauri Window", , 2)
+        if (!WinWaitActive("Handy ahk_class Tauri Window", , 2)) {
+            ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+            return
+        }
         hwnd := WinExist("Handy ahk_class Tauri Window")
 
         ; Initialize UIA
@@ -966,7 +969,13 @@ MergeNonFavoriteClips() {
             MsgBox "ClipAngel window did not appear. Make sure ClipAngel is running.", "Merge Clips", "IconX"
             return
         }
-        WinActivate("ClipAngel")
+        try {
+            WinActivate("ClipAngel")
+        } catch {
+            AiModelBanner_Hide()
+            ShowCenteredOverlay_Utils("ClipAngel window not found.", 2000)
+            return
+        }
         WinWaitActive("ClipAngel", , 2)
 
         ; Step 3: Initialize UIA on ClipAngel window
@@ -1162,7 +1171,12 @@ ParseRTFToPlainText(rtf) {
 ActivateClipAngelWithFocusCorrection() {
     needBanner := false
     if WinExist("ClipAngel") {
-        WinActivate("ClipAngel")
+        try {
+            WinActivate("ClipAngel")
+        } catch {
+            ShowCenteredOverlay_Utils("ClipAngel window not found.", 2000)
+            return
+        }
         WinWaitActive("ClipAngel", , 2)
     } else {
         needBanner := true
@@ -1172,7 +1186,13 @@ ActivateClipAngelWithFocusCorrection() {
             ClipAngelBanner_Hide()
             return
         }
-        WinActivate("ClipAngel")
+        try {
+            WinActivate("ClipAngel")
+        } catch {
+            ClipAngelBanner_Hide()
+            ShowCenteredOverlay_Utils("ClipAngel window not found.", 2000)
+            return
+        }
         WinWaitActive("ClipAngel", , 2)
     }
     Sleep 50
@@ -2129,9 +2149,13 @@ ToggleOutlookAndTeams() {
                     ; Wait for Outlook window to appear (up to 5 seconds)
                     WinWait("ahk_exe OUTLOOK.EXE", , 5)
 
-                    ; Activate Outlook (this will bring it to foreground, overriding Teams)
-                    WinActivate("ahk_exe OUTLOOK.EXE")
-                    WinWaitActive("ahk_exe OUTLOOK.EXE", , 2)
+                    if (!WinExist("ahk_exe OUTLOOK.EXE")) {
+                        ShowCenteredOverlay_Utils("Outlook not running.", 2000)
+                    } else {
+                        ; Activate Outlook (this will bring it to foreground, overriding Teams)
+                        WinActivate("ahk_exe OUTLOOK.EXE")
+                        WinWaitActive("ahk_exe OUTLOOK.EXE", , 2)
+                    }
                 }
             } catch Error as e {
                 ; Silently fail if activation doesn't work
@@ -3108,6 +3132,10 @@ FocusCursorWindowAndCloseOthers(targetHwnd) {
     }
 
     ; Activate the target window
+    if (!WinExist("ahk_id " . targetHwnd)) {
+        ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+        return
+    }
     try {
         WinActivate("ahk_id " . targetHwnd)
         WinWaitActive("ahk_id " . targetHwnd, , 1)
@@ -4615,7 +4643,7 @@ SelectSquareByIndex(index) {
                 WinActivate("ahk_id " . targetHwnd)
                 WinWaitActive("ahk_id " . targetHwnd, , 0.35)
             } catch {
-                ; Ignore if activation fails
+                ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
             }
         }
 

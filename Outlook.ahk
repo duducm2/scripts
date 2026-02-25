@@ -20,8 +20,13 @@ ActivateOutlookMailbox() {
     for hwnd in WinGetList("ahk_exe OUTLOOK.EXE") {
         title := WinGetTitle(hwnd)
         if InStr(title, email) && !InStr(title, exclusion) {
-            WinActivate(hwnd)
-            return true
+            try {
+                WinActivate(hwnd)
+                return true
+            } catch {
+                ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+                return false
+            }
         }
     }
     return false
@@ -32,8 +37,13 @@ ActivateOutlookCalendar() {
     SetTitleMatchMode 1
     try {
         if WinExist("Calendar - Eduardo") {
-            WinActivate "Calendar - Eduardo"
-            return true
+            try {
+                WinActivate "Calendar - Eduardo"
+                return true
+            } catch {
+                ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+                return false
+            }
         }
         return false
     } finally {

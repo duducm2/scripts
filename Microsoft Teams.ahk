@@ -12,6 +12,13 @@
 ; --- Helper Functions --------------------------------------------------------
 
 ActivateWindowWithRetry(hwnd, attempts := 6, waitMs := 500) {
+    if (!WinExist("ahk_id " hwnd)) {
+        try {
+            ShowCenteredOverlay(WinGetID("A"), "Error: Target window not found.", 2000)
+        } catch {
+        }
+        return false
+    }
     ; Get original window state to preserve size and prevent unwanted maximization
     originalState := ""
     try {
@@ -36,6 +43,8 @@ ActivateWindowWithRetry(hwnd, attempts := 6, waitMs := 500) {
             if WinWaitActive("ahk_id " hwnd, , waitMs/1000) {
                 return true
             }
+        } catch {
+            try ShowCenteredOverlay(WinGetID("A"), "Error: Target window not found.", 2000)
         }
         
         ; Strategy 2: Show window using ShowWindow API (only if minimized)
@@ -48,6 +57,8 @@ ActivateWindowWithRetry(hwnd, attempts := 6, waitMs := 500) {
             if WinWaitActive("ahk_id " hwnd, , waitMs/1000) {
                 return true
             }
+        } catch {
+            try ShowCenteredOverlay(WinGetID("A"), "Error: Target window not found.", 2000)
         }
         
         ; Strategy 3: Force to front using BringWindowToTop
@@ -58,6 +69,8 @@ ActivateWindowWithRetry(hwnd, attempts := 6, waitMs := 500) {
             if WinWaitActive("ahk_id " hwnd, , waitMs/1000) {
                 return true
             }
+        } catch {
+            try ShowCenteredOverlay(WinGetID("A"), "Error: Target window not found.", 2000)
         }
         
         ; Strategy 4: Alt+Tab simulation to bring window up
@@ -69,6 +82,8 @@ ActivateWindowWithRetry(hwnd, attempts := 6, waitMs := 500) {
                 if WinWaitActive("ahk_id " hwnd, , waitMs/1000) {
                     return true
                 }
+            } catch {
+                try ShowCenteredOverlay(WinGetID("A"), "Error: Target window not found.", 2000)
             }
         }
         
@@ -156,14 +171,19 @@ ActivateTeamsChatWindow() {
     for proc in processes {
         for hwnd in WinGetList("ahk_exe " proc) {
             if IsTeamsChatTitle(title := WinGetTitle(hwnd)) {
-                WinActivate(hwnd)
-                return true
+                if (WinExist("ahk_id " hwnd)) {
+                    WinActivate(hwnd)
+                    return true
+                }
             }
         }
     }
     if hwnd := WinExist("RegEx)^Chat \| .* \| Microsoft Teams$") {
-        WinActivate(hwnd)
-        return true
+        if (WinExist("ahk_id " hwnd)) {
+            WinActivate(hwnd)
+            return true
+        }
+        try ShowCenteredOverlay(WinGetID("A"), "Error: Target window not found.", 2000)
     }
     ; No message box here - just return false
     return false
@@ -666,6 +686,10 @@ RunTeams() {
     if !WinExist("ahk_exe ms-teams.exe") && !WinExist("ahk_exe Teams.exe") {
         Run "ms-teams:"
         WinWait(teamsWindow, , 15)
+    }
+    if (!WinExist(teamsWindow)) {
+        try ShowCenteredOverlay(WinGetID("A"), "Error: Target window not found.", 2000)
+        return
     }
     WinActivate(teamsWindow)
     WinWaitActive(teamsWindow, , 5)

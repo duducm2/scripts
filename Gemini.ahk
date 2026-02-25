@@ -250,8 +250,14 @@ CenterMouse() {
 GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false) {
     ; Step 1: Activate Gemini window globally
     SetTitleMatchMode(2)
-    if hwnd := GetGeminiWindowHwnd()
-        WinActivate("ahk_id " hwnd)
+    if hwnd := GetGeminiWindowHwnd() {
+        try {
+            WinActivate("ahk_id " hwnd)
+        } catch {
+            ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+            return
+        }
+    }
     if !WinWaitActive("ahk_exe chrome.exe", , 2)
         return
     Sleep 150
@@ -558,7 +564,12 @@ CopyLastGeminiMessageToClipboard(options := "", geminiHwnd := 0) {
         if !geminiHwnd
             return false
         if (!alreadyActive) {
-            WinActivate("ahk_id " geminiHwnd)
+            try {
+                WinActivate("ahk_id " geminiHwnd)
+            } catch {
+                ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+                return false
+            }
             if !WinWaitActive("ahk_exe chrome.exe", , 2)
                 return false
             Sleep 150
@@ -721,7 +732,13 @@ InitializeGeminiFirstTime() {
         }
 
         ; Activate the Gemini window
-        WinActivate("ahk_id " geminiHwnd)
+        try {
+            WinActivate("ahk_id " geminiHwnd)
+        } catch {
+            HideSmallLoadingIndicator()
+            ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+            return
+        }
         if !WinWaitActive("ahk_id " geminiHwnd, , 2) {
             HideSmallLoadingIndicator()
             return
@@ -762,7 +779,12 @@ InitializeGeminiFirstTime() {
 #!+i:: {
     SetTitleMatchMode(2)
     if hwnd := GetGeminiWindowHwnd() {
-        WinActivate("ahk_id " hwnd)
+        try {
+            WinActivate("ahk_id " hwnd)
+        } catch {
+            ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+            return
+        }
         if WinWaitActive("ahk_id " hwnd, , 2) {
             ; Focus the Gemini prompt field using Anchor & Backtrack strategy
             ; Strategy: Find "Open upload file menu" button (anchor), focus it, then Shift+Tab to prompt field
@@ -869,7 +891,13 @@ class GeminiAsyncLookup {
             HideSmallLoadingIndicator()
             return
         }
-        WinActivate("ahk_id " this.GeminiHwnd)
+        try {
+            WinActivate("ahk_id " this.GeminiHwnd)
+        } catch {
+            HideSmallLoadingIndicator()
+            ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+            return
+        }
         if !WinWaitActive("ahk_exe chrome.exe", , 2) {
             HideSmallLoadingIndicator()
             return
@@ -912,7 +940,8 @@ class GeminiAsyncLookup {
                 WinWaitActive("ahk_id " origHwnd, , 1)
             }
         } catch {
-            WinActivate("ahk_id " origHwnd)
+            if (WinExist("ahk_id " origHwnd))
+                WinActivate("ahk_id " origHwnd)
         }
         this.RetryCount := 0
         this.TimerCallback := this.CheckCompletion.Bind(this)
@@ -985,7 +1014,13 @@ class GeminiAsyncLookup {
     RetrieveResponse() {
         ; Activate Gemini once, then copy (and retries if needed) without switching back until done
         contentBefore := A_Clipboard
-        WinActivate("ahk_id " this.GeminiHwnd)
+        try {
+            WinActivate("ahk_id " this.GeminiHwnd)
+        } catch {
+            HideSmallLoadingIndicator()
+            ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+            return
+        }
         if !WinWaitActive("ahk_exe chrome.exe", , 2) {
             HideSmallLoadingIndicator()
             return
@@ -1084,7 +1119,13 @@ class GeminiAsyncTTS {
             HideSmallLoadingIndicator()
             return
         }
-        WinActivate("ahk_id " this.GeminiHwnd)
+        try {
+            WinActivate("ahk_id " this.GeminiHwnd)
+        } catch {
+            HideSmallLoadingIndicator()
+            ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+            return
+        }
         if !WinWaitActive("ahk_exe chrome.exe", , 2) {
             HideSmallLoadingIndicator()
             return
@@ -1123,7 +1164,8 @@ class GeminiAsyncTTS {
                 WinWaitActive("ahk_id " origHwnd, , 1)
             }
         } catch {
-            WinActivate("ahk_id " origHwnd)
+            if (WinExist("ahk_id " origHwnd))
+                WinActivate("ahk_id " origHwnd)
         }
         this.RetryCount := 0
         this.TimerCallback := this.CheckCompletion.Bind(this)

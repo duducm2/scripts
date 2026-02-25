@@ -137,6 +137,12 @@ ActivateSpotify() {
     hwnd := WinExist(winTitle)
     wasMinimized := hwnd && (WinGetMinMax(hwnd) == -1) ; -1 = minimized
 
+    if (!hwnd) {
+        ToolTip("Spotify not running")
+        SetTimer(() => ToolTip(), -2000)
+        return { hwnd: 0, wasMinimized: false }
+    }
+
     ; Bring the window to the foreground (restores if it was minimized)
     WinActivate(winTitle)
 
@@ -153,9 +159,13 @@ FocusYouTube() {
         title := WinGetTitle(win)
         if InStr(title, "YouTube") {
             wasMinimized := (WinGetMinMax(win) == -1) ; check state before activation
-            WinActivate(win)
-            WinWaitActive(win, , 2)
-            return { hwnd: win, wasMinimized: wasMinimized }
+            try {
+                WinActivate(win)
+                WinWaitActive(win, , 2)
+                return { hwnd: win, wasMinimized: wasMinimized }
+            } catch {
+                return false
+            }
         }
     }
     return false ; not found

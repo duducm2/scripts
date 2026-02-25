@@ -2563,6 +2563,10 @@ WaitForList(root, pattern := "", timeout := 5000) {
 
 ; ativa a janela de lembretes do Outlook
 ActivateReminder() {
+    if (!WinExist("ahk_exe OUTLOOK.EXE")) {
+        ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+        return
+    }
     WinActivate("ahk_exe OUTLOOK.EXE")
     WinWaitActive("ahk_exe OUTLOOK.EXE", , 1)
 }
@@ -2770,15 +2774,23 @@ IsTeamsChatActive() {
 
     ; If found, switch to the normal meeting window
     if (normalMeetingHwnd) {
+        if (!WinExist("ahk_id " normalMeetingHwnd)) {
+            ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+            return
+        }
         try {
             WinActivate("ahk_id " normalMeetingHwnd)
             ; Optional: Show a brief tooltip to confirm the switch
             ToolTip("Switched to normal meeting view")
             SetTimer(() => ToolTip(), -1000) ; Hide tooltip after 1 second
         } catch as e {
-            ; Fallback: try to bring window to front
-            WinShow("ahk_id " normalMeetingHwnd)
-            WinActivate("ahk_id " normalMeetingHwnd)
+            ; Fallback: try to bring window to front (only if window still exists)
+            if (WinExist("ahk_id " normalMeetingHwnd)) {
+                WinShow("ahk_id " normalMeetingHwnd)
+                WinActivate("ahk_id " normalMeetingHwnd)
+            } else {
+                ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+            }
         }
     } else {
         ; No corresponding normal window found - show notification
@@ -5815,6 +5827,10 @@ ApplyOutlookAppointmentSettings(privacy, allDay, status, category, reminder) {
     }
 
     ; Forcefully activate the window
+    if (!WinExist("ahk_id " targetHwnd)) {
+        ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+        return
+    }
     WinActivate("ahk_id " targetHwnd)
     WinShow("ahk_id " targetHwnd)  ; Ensure window is visible
     WinRestore("ahk_id " targetHwnd)  ; Restore if minimized
@@ -5892,6 +5908,10 @@ RunOutlookAppointmentWizard() {
     }
 
     ; Forcefully activate the window
+    if (!WinExist("ahk_id " targetHwnd)) {
+        ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+        return
+    }
     WinActivate("ahk_id " targetHwnd)
     WinShow("ahk_id " targetHwnd)  ; Ensure window is visible
     WinRestore("ahk_id " targetHwnd)  ; Restore if minimized
@@ -6345,6 +6365,10 @@ RenameChatGPTWindowToChatGPT() {
                 pos := openConversationButton.Location
                 if (pos && pos.w > 0 && pos.h > 0) {
                     ; Activate window first
+                    if (!WinExist("ahk_id " chatGPTHwnd)) {
+                        ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+                        return
+                    }
                     WinActivate("ahk_id " chatGPTHwnd)
                     WinWaitActive("ahk_id " chatGPTHwnd, , 1)
                     Sleep 100
@@ -8697,6 +8721,7 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
             Send "!{F4}"
             Sleep 200
         } catch {
+            ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
         }
     }
     Sleep 300
@@ -8755,7 +8780,12 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
         if !saveDialogHwnd {
             return
         }
-        try WinActivate("ahk_id " saveDialogHwnd)
+        try {
+            WinActivate("ahk_id " saveDialogHwnd)
+        } catch {
+            ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+            return
+        }
         Sleep 700
 
         ; 2b. Extract PDF path and filename from the Save dialog via UIA (before confirming save)
@@ -8854,7 +8884,12 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
                 title := WinGetTitle("ahk_id " replaceHwnd)
                 if InStr(title, "Confirm Save As") || InStr(title, "Confirmar Salvar")
                 || InStr(title, "Confirmar Guardar") || InStr(title, "Confirm Replace") {
-                    try WinActivate("ahk_id " replaceHwnd)
+                    try {
+                        WinActivate("ahk_id " replaceHwnd)
+                    } catch {
+                        ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+                        break
+                    }
                     Sleep 900  ; Delay for dialog to stabilize before confirming
                     Send "!y"   ; Alt+Y = Yes (per UIA: AcceleratorKey: "Alt+Y")
                     break
@@ -9143,9 +9178,13 @@ ExecuteStoredCommitPushDecision() {
         Sleep 500
         ; Ensure the intended window has focus before sending the push hotkey
         if (gCommitPushTargetWin) {
-            WinActivate gCommitPushTargetWin
-            WinWaitActive("ahk_id " gCommitPushTargetWin, , 2)
-            Sleep 200
+            if (WinExist("ahk_id " gCommitPushTargetWin)) {
+                WinActivate gCommitPushTargetWin
+                WinWaitActive("ahk_id " gCommitPushTargetWin, , 2)
+                Sleep 200
+            } else {
+                ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+            }
         }
         Send "+b"
     }
@@ -9252,8 +9291,12 @@ InsertEmojiToTarget(emoji) {
         return
     ; Activate the target window if we have it stored
     if (gEmojiTargetWin) {
-        WinActivate gEmojiTargetWin
-        Sleep 150
+        if (WinExist("ahk_id " gEmojiTargetWin)) {
+            WinActivate gEmojiTargetWin
+            Sleep 150
+        } else {
+            ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+        }
     }
 
     ; Use direct text insertion - no clipboard manipulation
@@ -10643,6 +10686,10 @@ SwitchAIModel() {
         Sleep(200)
         if (!spot) {
             Send("{Media_Play_Pause}")
+            return
+        }
+        if (!WinExist("ahk_exe Spotify.exe")) {
+            ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
             return
         }
         WinActivate("ahk_exe Spotify.exe")
@@ -12757,6 +12804,10 @@ ToggleGeminiModel() {
 
                     ; Activate the browser window BEFORE clicking to prevent activating wrong window
                     if (browserHwnd) {
+                        if (!WinExist("ahk_id " browserHwnd)) {
+                            ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+                            return
+                        }
                         WinActivate("ahk_id " browserHwnd)
                         WinWaitActive("ahk_id " browserHwnd, , 1)
                         Sleep 50  ; Brief pause after activation
@@ -12941,12 +12992,20 @@ HandleGeminiModelSelection(char) {
         }
 
         if (geminiHwnd) {
+            if (!WinExist("ahk_id " geminiHwnd)) {
+                ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+                return
+            }
             WinActivate("ahk_id " geminiHwnd)
             if !WinWaitActive("ahk_id " geminiHwnd, , 2) {
                 return
             }
         } else {
             ; Fallback: try to activate any Chrome window
+            if (!WinExist("ahk_exe chrome.exe")) {
+                ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+                return
+            }
             WinActivate("ahk_exe chrome.exe")
             if !WinWaitActive("ahk_exe chrome.exe", , 2) {
                 return

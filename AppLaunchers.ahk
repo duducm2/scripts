@@ -83,6 +83,10 @@ SafeDebugLog(text) {
 
     if (targetWindow) {
         ; Found a matching Cursor window
+        if (!WinExist(targetWindow)) {
+            ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+            return
+        }
         WinActivate(targetWindow)
         if WinWaitActive(targetWindow, , 2) {
             CenterMouse()
@@ -91,6 +95,10 @@ SafeDebugLog(text) {
         }
     } else if (fallbackWindow) {
         ; No specific window found, but found a general Cursor window - use fallback
+        if (!WinExist(fallbackWindow)) {
+            ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+            return
+        }
         WinActivate(fallbackWindow)
         if WinWaitActive(fallbackWindow, , 2) {
             CenterMouse()
@@ -177,6 +185,10 @@ ShowCursorFallbackPanel() {
     }
 
     if (targetHwnd) {
+        if (!WinExist("ahk_id " targetHwnd)) {
+            ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+            return
+        }
         ; Layer 1: Restore if minimized
         if (WinGetMinMax("ahk_id " targetHwnd) = -1) {
             WinRestore("ahk_id " targetHwnd)
@@ -211,6 +223,10 @@ ShowCursorFallbackPanel() {
     Run "chrome.exe"
     WinWait("ahk_exe chrome.exe", , 10)  ; Wait for window to exist (up to 10 seconds)
     Sleep(300)
+    if (!WinExist("ahk_exe chrome.exe")) {
+        ShowCenteredOverlay_Utils("Chrome did not start in time.", 2000)
+        return
+    }
     WinActivate("ahk_exe chrome.exe")    ; Explicitly activate the window
     WinWaitActive("ahk_exe chrome.exe", , 2)  ; Wait for activation to complete
     ClipAngelBanner_Show("Checking search bar...", "3772FF")
@@ -309,7 +325,10 @@ ShowCursorFallbackPanel() {
         target := IS_WORK_ENVIRONMENT ? "C:\\Users\\fie7ca\\AppData\\Local\\Programs\\cursor\\Cursor.exe" :
             "C:\\Users\\eduev\\AppData\\Local\\Programs\\cursor\\Cursor.exe"
         Run target
-        WinWaitActive("ahk_exe Cursor.exe")
+        if (!WinWaitActive("ahk_exe Cursor.exe", , 10)) {
+            ShowCenteredOverlay_Utils("Cursor did not start.", 2000)
+            return
+        }
         CenterMouse()
     }
 }
@@ -369,14 +388,23 @@ MonitorWikipediaFocus() {
                 currentActiveHwnd := WinExist("A")
 
                 ; Briefly activate Wikipedia window to send F11
-                WinActivate("ahk_id " . wikipediaHwnd)
+                try {
+                    WinActivate("ahk_id " . wikipediaHwnd)
+                } catch {
+                    ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+                    return
+                }
                 Sleep(50)  ; Brief delay to ensure window is active
                 Send("{F11}")
                 Sleep(100)  ; Allow time for fullscreen exit
 
                 ; Restore focus to the window that was previously active
                 if (currentActiveHwnd && WinExist("ahk_id " . currentActiveHwnd)) {
-                    WinActivate("ahk_id " . currentActiveHwnd)
+                    try {
+                        WinActivate("ahk_id " . currentActiveHwnd)
+                    } catch {
+                        ; Window closed, skip restore
+                    }
                 }
             }
         }
@@ -753,11 +781,14 @@ HandleWikipediaChar(char) {
 
             ; Wait for the page to load (check for Wikipedia in title)
             SetTitleMatchMode 2
-            if WinWait("Wikipedia", , 10) {
-                WinActivate("Wikipedia")
-                WinWaitActive("Wikipedia", , 5)
+            if (!WinWait("Wikipedia", , 10)) {
+                ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+                return
+            }
+            WinActivate("Wikipedia")
+            WinWaitActive("Wikipedia", , 5)
 
-                ; Check if page is ready by attempting to get URL
+            ; Check if page is ready by attempting to get URL
                 ; This ensures the page has loaded before proceeding
                 ; For new windows, we need more time for the page to fully load
                 pageReady := false
@@ -1036,7 +1067,6 @@ HandleWikipediaChar(char) {
                     } catch {
                     }
                 }
-            }
         }
         ; Items 2-5 have no URL, so no action is taken
     }

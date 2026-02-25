@@ -537,6 +537,7 @@ CycleWindowsOnMonitor(order) {
     target := windows[pos]
     try WinActivate "ahk_id " target.hwnd
     catch {
+        ShowNotification_WM("Error: Target window not found.")
         return
     }
     ; Wait until the window is active to avoid race conditions during rapid cycling
@@ -806,6 +807,7 @@ ActivateCursorProject(projectPath) {
         WinActivate("ahk_id " targetHwnd)
         WinWaitActive("ahk_id " targetHwnd, , 3)
     } catch {
+        ShowNotification_WM("Error: Target window not found.")
         return false
     }
     Sleep 300
@@ -1833,7 +1835,7 @@ HandleCursorWindowSelection(targetHwnd, allCursorWindows) {
         WinActivate("ahk_id " . targetHwnd)
         WinWaitActive("ahk_id " . targetHwnd, , 1)
     } catch {
-        ; Ignore if activation fails
+        ShowNotification_WM("Error: Target window not found.")
     }
 
     ; Cleanup the selector
@@ -1977,7 +1979,7 @@ ShowCursorWindowSelectorSubMenu() {
             WinActivate("ahk_id " . cursorWindows[1])
             WinWaitActive("ahk_id " . cursorWindows[1], , 1)
         } catch {
-            ; Ignore if activation fails
+            ShowNotification_WM("Error: Target window not found.")
         }
         CleanupProjectSelector()
         return
