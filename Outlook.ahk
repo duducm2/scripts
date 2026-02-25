@@ -88,6 +88,10 @@ ActivateOutlookCalendar() {
     }
     
     SetTitleMatchMode 2
+    if (!WinExist("Reminder")) {
+        ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+        return
+    }
     WinActivate "Reminder"
 }
 

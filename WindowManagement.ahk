@@ -71,6 +71,21 @@ ShowNotification_WM(message, durationMs := 1500) {
     SetTimer(() => notificationGui.Destroy(), -durationMs)
 }
 
+; Activate window by winSpec; show graceful error and return false if not found.
+TryActivateWindow_WM(winSpec, errorMessage := "Error: Target window not found.") {
+    if (!WinExist(winSpec)) {
+        ShowNotification_WM(errorMessage)
+        return false
+    }
+    try {
+        WinActivate(winSpec)
+        return true
+    } catch {
+        ShowNotification_WM(errorMessage)
+        return false
+    }
+}
+
 ; --- Globals & Timers --------------------------------------------------------
 global g_LastActiveHwnd := 0
 global g_LastMouseClickTick := 0   ; Timestamp of the most recent mouse click (A_TickCount)
