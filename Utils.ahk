@@ -6228,6 +6228,13 @@ HandleHotstringChar(char) {
                     WinWaitActive("ahk_exe chrome.exe", , 2)
                 }
 
+                ; Explicitly target Gemini Tab 2 (right tab) for L+1/2/3 flows.
+                ; Chrome convention: Ctrl+2 selects the second tab in the window.
+                if (char = "1" || char = "2" || char = "3") {
+                    Send("^2")
+                    Sleep 120
+                }
+
                 ; Focus the Gemini prompt field using the Anchor & Backtrack strategy (copied from Win+Alt+Shift+I),
                 ; with sound/file behaviors removed (no external file refs, no side effects).
                 try {
