@@ -71,7 +71,7 @@ GeminiHasMoreOptionsForResponse(uia) {
             for menuItem in allMenuItems {
                 name := menuItem.Name
                 if (name = "Show more options" || name = "More options" || InStr(name, "Show more options", false) = 1 ||
-                    InStr(name, "More options", false) = 1)
+                InStr(name, "More options", false) = 1)
                     allMoreOptionsButtons.Push(menuItem)
             }
         } catch {
@@ -769,22 +769,42 @@ InitializeGeminiFirstTime() {
         ; Show banner to inform user
         ShowSmallLoadingIndicator("Opening Gemini (2 tabs)...")
 
+        ; Remember existing Chrome windows so we can find the one we're about to create
+        existingChromeHwnds := []
+        try {
+            for hwnd in WinGetList("ahk_exe chrome.exe")
+                existingChromeHwnds.Push(hwnd)
+        } catch {
+        }
+
         ; Run Chrome with new window and two Gemini tabs
         Run "chrome.exe --new-window https://gemini.google.com/ https://gemini.google.com/"
         Sleep 700   ; Give the system time to start Chrome before waiting for it
-        if !WinWaitActive("ahk_exe chrome.exe", , 5) {
-            HideSmallLoadingIndicator()
-            return
-        }
 
-        ; Get the Gemini window handle
-        geminiHwnd := WinExist("A")
+        ; Find the newly created Chrome window (not one that was already open)
+        geminiHwnd := 0
+        loop 35 {   ; 35 * 300ms ≈ 10.5s max wait for new window to appear
+            for hwnd in WinGetList("ahk_exe chrome.exe") {
+                isNew := true
+                for existing in existingChromeHwnds {
+                    if (existing = hwnd) {
+                        isNew := false
+                        break
+                    }
+                }
+                if (isNew) {
+                    geminiHwnd := hwnd
+                    break 2
+                }
+            }
+            Sleep 300
+        }
         if !geminiHwnd {
             HideSmallLoadingIndicator()
             return
         }
 
-        ; Activate the Gemini window
+        ; Activate the new Gemini window and wait until it is actually active
         try {
             WinActivate("ahk_id " geminiHwnd)
         } catch {
@@ -792,11 +812,22 @@ InitializeGeminiFirstTime() {
             ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
             return
         }
-        if !WinWaitActive("ahk_id " geminiHwnd, , 2) {
+        if !WinWaitActive("ahk_id " geminiHwnd, , 4) {
             HideSmallLoadingIndicator()
             return
         }
-        Sleep 550   ; Give window and tabs time to fully activate
+        ; Wait for the first tab to load so the title contains "Gemini" before sending the prompt
+        SetTitleMatchMode(2)
+        start := A_TickCount
+        while (A_TickCount - start < 6000) {
+            try {
+                if InStr(WinGetTitle("ahk_id " geminiHwnd), "Gemini", false)
+                    break
+            } catch {
+            }
+            Sleep 250
+        }
+        Sleep 550   ; Give window and tabs time to fully settle
 
         ; Read initial prompt from external file
         promptText := ""
