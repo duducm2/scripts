@@ -6927,7 +6927,7 @@ ShowHotstringSelector() {
         }
     }
 
-    displayText .= "Press Escape to cancel."
+    displayText .= "Press Escape to close."
     ; Calculate text control height based on actual content (number of lines)
     ; Count actual lines in displayText (including empty lines for spacing)
     lineCount := 1  ; Start at 1 (first line doesn't have a newline before it)
@@ -6985,14 +6985,11 @@ ShowHotstringSelector() {
     g_HotstringSelectorGui.AddEdit("w" . textControlWidth . " h" . textControlHeight .
         " ReadOnly VScroll Background1E1E2E", displayText
     )
+    g_HotstringSelectorGui.SetFont("s9 c89B4FA", "Segoe UI")
+    g_HotstringSelectorGui.Add("Text", "w" . textControlWidth . " Center", "Press Escape to close.")
 
-    ; Add Close button (set as default so it gets focus, not the Edit control)
-    g_HotstringSelectorGui.SetFont("s9 cCDD6F4", "Segoe UI")
-    closeBtn := g_HotstringSelectorGui.AddButton("w80 Default Center", "Close")
-    closeBtn.OnEvent("Click", (*) => CleanupHotstringSelector())
-
-    ; Total height: margins + title + separator + gap + content + button + spacing (compact)
-    totalHeight := 10 + 20 + 1 + 4 + textControlHeight + 6 + 32 + 10
+    ; Total height: margins + title + separator + gap + content + hint + spacing (no button)
+    totalHeight := 10 + 20 + 1 + 4 + textControlHeight + 6 + 18 + 10
     guiWidth := baseWidth
 
     ; Calculate center position for the GUI with margins
