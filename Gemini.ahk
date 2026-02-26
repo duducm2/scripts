@@ -870,10 +870,10 @@ InitializeGeminiFirstTime() {
             return
         }
         if WinWaitActive("ahk_id " hwnd, , 2) {
-            ; Focus the Gemini prompt field using Anchor & Backtrack strategy
-            ; Strategy: Find "Open upload file menu" button (anchor), focus it, then Shift+Tab to prompt field
-            uia := UIA_Browser()
-            Sleep 80   ; combined settle time for UIA initialization
+            Sleep 120   ; Let the window and Chrome content settle before UIA attaches
+            ; Bind UIA to this window so we never attach to a different Chrome window
+            uia := UIA_Browser("ahk_id " hwnd)
+            Sleep 120   ; UIA settle time (align with CopyLastGeminiMessageToClipboard)
 
             ; Find the anchor element: "Open upload file menu" button
             ; Combined search: Try exact match first, then case-insensitive (most efficient)
@@ -911,28 +911,24 @@ InitializeGeminiFirstTime() {
                     Sleep 25   ; minimal wait for focus
                     SendInput "+{Tab}"  ; Use SendInput for faster keystroke
                     Sleep 15   ; minimal delay for navigation
-
-                    ; Play sound (non-blocking, no try-catch needed - SoundPlay is safe)
-                    if (IsSoundEnabled()) {
-                        SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
+                } catch {
+                    ; Anchor strategy failed; will use direct prompt field below
+                }
+            }
+            ; Ensure the prompt field actually has keyboard focus (same as SendPromptToActiveGeminiTab)
+            promptField := FindGeminiPromptField(uia)
+            if (promptField) {
+                try {
+                    promptField.SetFocus()
+                    Sleep 100
+                    if (!promptField.HasKeyboardFocus) {
+                        try promptField.Click()
+                        Sleep 100
                     }
                 } catch {
-                    ; Fallback: direct prompt field search if anchor strategy fails (EN/PT aware)
-                    promptField := FindGeminiPromptField(uia)
-                    if (promptField) {
-                        try promptField.SetFocus()
-                        if (IsSoundEnabled())
-                            SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
-                    }
                 }
-            } else {
-                ; Fallback: direct prompt field search if anchor not found (EN/PT aware)
-                promptField := FindGeminiPromptField(uia)
-                if (promptField) {
-                    try promptField.SetFocus()
-                    if (IsSoundEnabled())
-                        SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
-                }
+                if (IsSoundEnabled())
+                    SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
             }
         }
     } else {
