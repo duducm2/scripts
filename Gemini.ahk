@@ -11,6 +11,13 @@
 ; Path to the file containing the initial prompt Gemini should receive.
 PROMPT_FILE := A_ScriptDir "\data\Gemini_Prompt.txt"
 
+; #region agent log
+_AgentDebugLog(location, message, dataStr := "{}", hypothesisId := "") {
+    try
+        FileAppend '{"sessionId":"5497a2","location":"' . location . '","message":"' . message . '","data":' . dataStr . ',"timestamp":' . A_TickCount . ',"hypothesisId":"' . hypothesisId . '"}' . "`n", A_ScriptDir "\debug-5497a2.log"
+}
+; #endregion
+
 ; Copy response button names (EN/PT). Excludes "Copy prompt" / "Copiar prompt" which are different controls.
 GEMINI_COPY_RESPONSE_NAMES := ["Copy", "Copiar"]
 
@@ -26,6 +33,58 @@ IsGeminiCopyResponseButton(name) {
             return true
     }
     return false
+}
+
+; Return count of Gemini "Copy response" buttons (same logic as CopyLastGeminiMessageToClipboard). Caller must ensure tab is active and scrolled to bottom.
+GetGeminiCopyButtonCount(uia) {
+    allCopyButtons := []
+    try {
+        allButtons := uia.FindAll({ Type: 50000 })
+        for button in allButtons {
+            if (IsGeminiCopyResponseButton(button.Name)) {
+                if (InStr(button.ClassName, "icon-button") || InStr(button.ClassName, "mdc-button"))
+                    allCopyButtons.Push(button)
+            }
+        }
+        if (allCopyButtons.Length = 0) {
+            allButtons := uia.FindAll({ Type: "Button" })
+            for button in allButtons {
+                if (IsGeminiCopyResponseButton(button.Name))
+                    allCopyButtons.Push(button)
+            }
+        }
+    } catch {
+        return 0
+    }
+    return allCopyButtons.Length
+}
+
+; True if at least one "Show more options" / "More options" exists (last response can then offer read aloud). Same labels as GeminiTriggerReadAloud.
+GeminiHasMoreOptionsForResponse(uia) {
+    allMoreOptionsButtons := []
+    try {
+        allMoreOptionsButtons := uia.FindAll({ Name: "Show more options" })
+        try {
+            moreOpt := uia.FindAll({ Name: "More options" })
+            for btn in moreOpt
+                allMoreOptionsButtons.Push(btn)
+        } catch {
+        }
+    } catch {
+    }
+    if (allMoreOptionsButtons.Length = 0) {
+        try {
+            allMenuItems := uia.FindAll({ Type: 50011 })
+            for menuItem in allMenuItems {
+                name := menuItem.Name
+                if (name = "Show more options" || name = "More options" || InStr(name, "Show more options", false) = 1 ||
+                    InStr(name, "More options", false) = 1)
+                    allMoreOptionsButtons.Push(menuItem)
+            }
+        } catch {
+        }
+    }
+    return allMoreOptionsButtons.Length > 0
 }
 
 ; Find Gemini browser window (case-insensitive contains match for "gemini")
@@ -1091,6 +1150,7 @@ class GeminiAsyncLookup {
 class GeminiAsyncTTS {
     static TTSPrompt :=
         "Repeat the following text exactly as it is. Do not add any introduction, explanation, or markdown formatting. Just output the text itself:`n`n"
+    static PostStreamingDelayMs := 600
 
     __New() {
         this.OriginalHwnd := 0
@@ -1099,6 +1159,7 @@ class GeminiAsyncTTS {
         this.RetryCount := 0
         this.MaxRetries := 60   ; 60 * 500ms = 30s timeout
         this.ButtonEverFound := false
+        this.CopyCountAtSubmit := 0
     }
 
     Start() {
@@ -1155,6 +1216,13 @@ class GeminiAsyncTTS {
         Sleep 500
         Send("^v")
         Sleep 500
+        ; Record Copy button count before submit (used when multiple-message validation is needed).
+        Send("^{End}")
+        Sleep 350
+        this.CopyCountAtSubmit := GetGeminiCopyButtonCount(uia)
+        ; #region agent log
+        _AgentDebugLog("Gemini.ahk:Start", "CopyCountAtSubmit", "{`"copyCount`":" . this.CopyCountAtSubmit . "}", "H2")
+        ; #endregion
         Send("{Enter}")
         Sleep 300
         origHwnd := this.OriginalHwnd
@@ -1202,6 +1270,7 @@ class GeminiAsyncTTS {
             return
         }
 
+        ; Layer 1: streaming stopped
         if (this.ButtonEverFound) {
             isTrulyGone := true
             loop 4 {
@@ -1220,14 +1289,32 @@ class GeminiAsyncTTS {
             }
 
             if isTrulyGone {
+                ; #region agent log
+                _AgentDebugLog("Gemini.ahk:CheckCompletion", "Layer1Passed", "{}", "H1")
+                ; #endregion
                 SetTimer(this.TimerCallback, 0)
                 HideSmallLoadingIndicator()
+                ; Completion detection matches GeminiAsyncLookup (#!+8): Layer 1 only (Stop button gone). No extra Layer 2 so we don't miss completion.
                 try {
                     if (IsSoundEnabled())
                         SoundPlay(A_ScriptDir . "\sounds\gemini-completion.wav")
                 } catch {
                     PlayCopyCompletedChime()
                 }
+                ; Allow DOM to finish rendering, then activate trash tab and trigger read aloud (same pattern as #!+8 RetrieveResponse).
+                Sleep(GeminiAsyncTTS.PostStreamingDelayMs)
+                try {
+                    WinActivate("ahk_id " this.GeminiHwnd)
+                } catch {
+                    return
+                }
+                if !WinWaitActive("ahk_exe chrome.exe", , 2)
+                    return
+                Send("^2")
+                Sleep 200
+                ; #region agent log
+                _AgentDebugLog("Gemini.ahk:CheckCompletion", "ReadAloudTriggered", "{}", "H1")
+                ; #endregion
                 ; After TTS from selection (#!+7), read aloud from the trash tab (second Gemini tab).
                 GeminiTriggerReadAloud(false, true)   ; read aloud only, no copy (text was just sent via #!+7)
             }
