@@ -2487,14 +2487,14 @@ ShowProjectSelector() {
     displayText .= "[K] Copy from Gemini`n"
     displayText .= "[ESC] Cancel"
 
-    ; Calculate text dimensions (match Hotstring U: lineHeight 14, textControlWidth baseWidth - 20)
-    baseWidth := 350
+    ; Calculate text dimensions (match Hotstring U: lineHeight 14; slightly larger window to show more projects)
+    baseWidth := 400
     textControlWidth := baseWidth - 20
     lineCount := StrSplit(displayText, "`n").Length
     lineHeight := 14
     textControlHeight := lineCount * lineHeight
     minHeight := 150
-    maxHeight := Floor(monitorHeight * 0.75)
+    maxHeight := Floor(monitorHeight * 0.85)
     if (textControlHeight < minHeight)
         textControlHeight := minHeight
     if (textControlHeight > maxHeight)
@@ -2607,9 +2607,14 @@ ShowProjectSelector() {
     ; Enable Escape hotkey
     Hotkey("Escape", HandleProjectEscape, "On")
 }
-; Win+Alt+Shift+L hotkey for Project Quick Selector
+; Win+Alt+Shift+L hotkey for Project Quick Selector (toggle: close if open, open if closed)
 #!+l:: {
-    ShowProjectSelector()
+    global g_ProjectSelectorActive, g_ProjectSelectorGui
+    if (g_ProjectSelectorActive && IsObject(g_ProjectSelectorGui)) {
+        CleanupProjectSelector()
+    } else {
+        ShowProjectSelector()
+    }
 }
 ; =============================================================================
 ; SCRIPT SUMMARY & OPTIMIZATION DOCUMENTATION
