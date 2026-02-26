@@ -2499,18 +2499,6 @@ ShowProjectSelector() {
     ; No maxHeight cap so all content (projects + Commands) is visible without scroll
     if (textControlHeight < minHeight)
         textControlHeight := minHeight
-    ; #region agent log
-    logPath := A_ScriptDir . "\debug-ccb494.log"
-    try {
-        logLine :=
-            '{"sessionId":"ccb494","location":"WM.ahk:sizing","message":"Project selector height","data":{"lineCount":' .
-            lineCount . ',"lineHeight":' . lineHeight . ',"textControlHeight":' . textControlHeight . ',"totalHeight":' .
-            (10 + 20 + 1 + 4 + textControlHeight + 6 + 18 + 10) . ',"monitorHeight":' . monitorHeight .
-            '},"timestamp":' . A_Now . '}' . "`n"
-        FileAppend(logLine, logPath, "UTF-8")
-    } catch {
-    }
-    ; #endregion
 
     ; Title and separator (compact, match U)
     g_ProjectSelectorGui.SetFont("s11 cCDD6F4 Bold", "Segoe UI")
