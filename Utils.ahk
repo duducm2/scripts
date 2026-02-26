@@ -6557,10 +6557,10 @@ ShowHotstringSelector() {
     ; Create non-activating GUI so PowerToys Command Palette stays open
     g_HotstringSelectorGui := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x08000000", "Hotstring Shortcuts")
     g_HotstringSelectorGui.BackColor := "1E1E2E"
-    g_HotstringSelectorGui.MarginX := 20
-    g_HotstringSelectorGui.MarginY := 15
-    ; Use slightly smaller font for better fit on small monitors; Segoe UI to match C menu
-    fontSize := (monitorHeight < 800) ? 9 : 10
+    g_HotstringSelectorGui.MarginX := 14
+    g_HotstringSelectorGui.MarginY := 10
+    ; Use slightly smaller font for compact display; Segoe UI to match C menu
+    fontSize := (monitorHeight < 800) ? 9 : 9
     g_HotstringSelectorGui.SetFont("s" . fontSize . " cCDD6F4", "Segoe UI")
 
     ; Build reverse map: expansion -> character
@@ -6848,23 +6848,13 @@ ShowHotstringSelector() {
         currentCategory := ""
         for item in allItems {
             if (item.category != currentCategory) {
-                ; Process previous category if exists
-                if (currentCategory != "") {
-                    displayText .= "`n"  ; Space between categories
-                }
-
-                ; Update to new category and add category header
+                if (currentCategory != "")
+                    displayText .= "`n"
                 currentCategory := item.category
-                displayText .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`n"
-                displayText .= currentCategory . "`n"
-                displayText .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`n"
+                displayText .= "— " . currentCategory . " —`n"
             }
-
-            ; Add item
             displayText .= item.text . "`n"
         }
-
-        ; Add final spacing
         displayText .= "`n"
     } else {
         ; LANDSCAPE MODE: Two-column layout optimized for horizontal space
@@ -6874,104 +6864,66 @@ ShowHotstringSelector() {
             if (StrLen(item.text) > maxItemLength)
                 maxItemLength := StrLen(item.text)
         }
-        ; Set column width to accommodate longest item + padding
-        columnWidth := maxItemLength + 5
-        ; Ensure minimum column width
-        if (columnWidth < 40)
-            columnWidth := 40
+        columnWidth := maxItemLength + 2
+        if (columnWidth < 36)
+            columnWidth := 36
+        totalWidth := columnWidth * 2 + 6
+        columnSpacing := "  "
 
-        ; Total width for category headers (two columns + spacing)
-        totalWidth := columnWidth * 2 + 10
-        columnSpacing := "    "  ; 4 spaces between columns
-
-        ; Build two-column display text with category headers
         currentCategory := ""
         categoryItems := []
 
-        ; First, collect items by category and build two-column layout
         for item in allItems {
             if (item.category != currentCategory) {
-                ; Process previous category if exists
                 if (currentCategory != "" && categoryItems.Length > 0) {
-                    ; Add category header spanning both columns
-                    separator := CreateSeparator(totalWidth)
-                    displayText .= separator . "`n"
-                    displayText .= CenterString(currentCategory, totalWidth) . "`n"
-                    displayText .= separator . "`n"
-
-                    ; Split category items into two columns
+                    displayText .= "— " . currentCategory . " —`n"
                     midPoint := Ceil(categoryItems.Length / 2)
                     maxLines := categoryItems.Length - midPoint
                     if (midPoint > maxLines)
                         maxLines := midPoint
-
                     loop maxLines {
                         leftText := ""
                         rightText := ""
-
-                        ; Left column item
-                        if (A_Index <= midPoint) {
+                        if (A_Index <= midPoint)
                             leftText := PadString(categoryItems[A_Index].text, columnWidth)
-                        } else {
+                        else
                             leftText := PadString("", columnWidth)
-                        }
-
-                        ; Right column item
                         rightIdx := A_Index + midPoint
-                        if (rightIdx <= categoryItems.Length) {
+                        if (rightIdx <= categoryItems.Length)
                             rightText := categoryItems[rightIdx].text
-                        } else {
+                        else
                             rightText := ""
-                        }
-
                         displayText .= leftText . columnSpacing . rightText . "`n"
                     }
-                    displayText .= "`n"  ; Space between categories
+                    displayText .= "`n"
                 }
-
-                ; Start new category
                 currentCategory := item.category
                 categoryItems := []
             }
             categoryItems.Push(item)
         }
 
-        ; Process last category
         if (currentCategory != "" && categoryItems.Length > 0) {
-            ; Add category header spanning both columns
-            separator := CreateSeparator(totalWidth)
-            displayText .= separator . "`n"
-            displayText .= CenterString(currentCategory, totalWidth) . "`n"
-            displayText .= separator . "`n"
-
-            ; Split category items into two columns
+            displayText .= "— " . currentCategory . " —`n"
             midPoint := Ceil(categoryItems.Length / 2)
             maxLines := categoryItems.Length - midPoint
             if (midPoint > maxLines)
                 maxLines := midPoint
-
             loop maxLines {
                 leftText := ""
                 rightText := ""
-
-                ; Left column item
-                if (A_Index <= midPoint) {
+                if (A_Index <= midPoint)
                     leftText := PadString(categoryItems[A_Index].text, columnWidth)
-                } else {
+                else
                     leftText := PadString("", columnWidth)
-                }
-
-                ; Right column item
                 rightIdx := A_Index + midPoint
-                if (rightIdx <= categoryItems.Length) {
+                if (rightIdx <= categoryItems.Length)
                     rightText := categoryItems[rightIdx].text
-                } else {
+                else
                     rightText := ""
-                }
-
                 displayText .= leftText . columnSpacing . rightText . "`n"
             }
-            displayText .= "`n"  ; Space between categories
+            displayText .= "`n"
         }
     }
 
@@ -6982,8 +6934,8 @@ ShowHotstringSelector() {
     loop parse, displayText, "`n" {
         lineCount++
     }
-    ; Calculate height: ~16 pixels per line (reduced for more compact display)
-    lineHeight := 16
+    ; Calculate height: ~14 pixels per line (compact display)
+    lineHeight := 14
     textControlHeight := lineCount * lineHeight
     ; Ensure minimum and maximum bounds
     minHeight := 150
@@ -7023,23 +6975,24 @@ ShowHotstringSelector() {
     }
     textControlWidth := baseWidth - 20  ; Account for margins
 
-    ; Title and separator (match Win+Alt+Shift+C structure)
-    g_HotstringSelectorGui.SetFont("s14 cCDD6F4 Bold", "Segoe UI")
+    ; Title and separator (compact)
+    g_HotstringSelectorGui.SetFont("s11 cCDD6F4 Bold", "Segoe UI")
     g_HotstringSelectorGui.Add("Text", "w" . textControlWidth . " Center", "Hotstring Shortcuts")
-    g_HotstringSelectorGui.Add("Text", "w" . textControlWidth . " h1 Background45475A")  ; separator
+    g_HotstringSelectorGui.Add("Text", "w" . textControlWidth . " h1 Background45475A")
     g_HotstringSelectorGui.SetFont("s" . fontSize . " cCDD6F4", "Segoe UI")
 
     ; Enable vertical scrolling for long content
-    g_HotstringSelectorGui.AddEdit("w" . textControlWidth . " h" . textControlHeight . " ReadOnly VScroll Background1E1E2E", displayText
+    g_HotstringSelectorGui.AddEdit("w" . textControlWidth . " h" . textControlHeight .
+        " ReadOnly VScroll Background1E1E2E", displayText
     )
 
     ; Add Close button (set as default so it gets focus, not the Edit control)
     g_HotstringSelectorGui.SetFont("s9 cCDD6F4", "Segoe UI")
-    closeBtn := g_HotstringSelectorGui.AddButton("w100 Default Center", "Close")
+    closeBtn := g_HotstringSelectorGui.AddButton("w80 Default Center", "Close")
     closeBtn.OnEvent("Click", (*) => CleanupHotstringSelector())
 
-    ; Calculate total height: margins + title + separator + gap + content + button + spacing (match C style margins)
-    totalHeight := 15 + 24 + 1 + 5 + textControlHeight + 10 + 40 + 15
+    ; Total height: margins + title + separator + gap + content + button + spacing (compact)
+    totalHeight := 10 + 20 + 1 + 4 + textControlHeight + 6 + 32 + 10
     guiWidth := baseWidth
 
     ; Calculate center position for the GUI with margins
