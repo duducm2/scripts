@@ -733,7 +733,8 @@ global g_Projects := [
                 ; Personal category
                 { name: "ZMK Sofle", path: "C:\Users\eduev\Documents\ZMK\zmk-sofle", workPath: "", category: "Personal" }, { name: "AI Experiment",
                     path: "C:\Users\eduev\Documents\Web projects\ai-experiments", workPath: "",
-                    category: "Personal" }, { name: "my-personal-repo", path: "C:\Users\eduev\Meu Drive\17 - Projects\my-personal-repo", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\my-personal-repo",
+                    category: "Personal" }, { name: "my-personal-repo", path: "C:\Users\eduev\Meu Drive\17 - Projects\my-personal-repo",
+                        workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\my-personal-repo",
                         category: "Personal" }, { name: "",
                             path: "", workPath: "", category: "Personal" }, { name: "", path: "", workPath: "",
                                 category: "Personal" },
@@ -745,8 +746,8 @@ global g_Projects := [
                                     category: "Work" }, { name: "PT_Project", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\PT_Project",
                                         category: "Work" }, { name: "🪂 Avante", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\General - GS_BDU_Team\00_UX_GS_Team\AM_Planning\🪂 Avante",
                                             category: "Work" }, { name: "E&S OPEX CIM Journey Mapping", path: "",
-                                            workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\opex-cim-journey-mapping",
-                                            category: "Work" }
+                                                workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\opex-cim-journey-mapping",
+                                                category: "Work" }
 ]
 ; TODO: Fill in workPath for each project above when configuring work environment
 ; Global variables for project selector
@@ -2373,13 +2374,13 @@ ShowProjectSelector() {
         }
     }
 
-    ; Create GUI - non-activating so it doesn't steal focus
-    g_ProjectSelectorGui := Gui("+AlwaysOnTop +ToolWindow +E0x08000000", "Project Selector")
-    ; Use slightly smaller font for better fit on small monitors
-    fontSize := (monitorHeight < 800) ? 9 : 10
-    g_ProjectSelectorGui.SetFont("s" . fontSize, "Segoe UI")
-    g_ProjectSelectorGui.MarginX := 15
+    ; Create GUI - non-activating so it doesn't steal focus (match Hotstring U aesthetics)
+    g_ProjectSelectorGui := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x08000000", "Project Selector")
+    g_ProjectSelectorGui.BackColor := "1E1E2E"
+    g_ProjectSelectorGui.MarginX := 14
     g_ProjectSelectorGui.MarginY := 10
+    fontSize := (monitorHeight < 800) ? 9 : 9
+    g_ProjectSelectorGui.SetFont("s" . fontSize . " cCDD6F4", "Segoe UI")
 
     ; Get categorized projects
     categorized := GetCategorizedProjects()
@@ -2440,8 +2441,8 @@ ShowProjectSelector() {
         }
     }
 
-    ; Build display text with category headers
-    displayText := "=== PROJECT QUICK SELECTOR ===`n`n"
+    ; Build display text with category headers (match Hotstring U: single-line "— Category —")
+    displayText := ""
 
     ; Display each category with header
     for category in g_ProjectCategories {
@@ -2458,10 +2459,8 @@ ShowProjectSelector() {
             continue
         }
 
-        ; Add category header
-        displayText .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`n"
-        displayText .= category . "`n"
-        displayText .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`n"
+        ; Add category header (compact single line)
+        displayText .= "— " . category . " —`n"
 
         ; Display projects in this category
         for projectIndex in categoryProjectIndices {
@@ -2488,21 +2487,35 @@ ShowProjectSelector() {
     displayText .= "[K] Copy from Gemini`n"
     displayText .= "[ESC] Cancel"
 
-    ; Calculate text dimensions
+    ; Calculate text dimensions (match Hotstring U: lineHeight 14, textControlWidth baseWidth - 20)
     baseWidth := 350
-    lineHeight := fontSize + 6
+    textControlWidth := baseWidth - 20
     lineCount := StrSplit(displayText, "`n").Length
-    textControlHeight := lineCount * lineHeight + 10
+    lineHeight := 14
+    textControlHeight := lineCount * lineHeight
+    minHeight := 150
+    maxHeight := Floor(monitorHeight * 0.75)
+    if (textControlHeight < minHeight)
+        textControlHeight := minHeight
+    if (textControlHeight > maxHeight)
+        textControlHeight := maxHeight
 
-    ; Add text control
-    g_ProjectSelectorGui.Add("Text", "w" . (baseWidth - 30), displayText)
+    ; Title and separator (compact, match U)
+    g_ProjectSelectorGui.SetFont("s11 cCDD6F4 Bold", "Segoe UI")
+    g_ProjectSelectorGui.Add("Text", "w" . textControlWidth . " Center", "Project Selector")
+    g_ProjectSelectorGui.Add("Text", "w" . textControlWidth . " h1 Background45475A")
+    g_ProjectSelectorGui.SetFont("s" . fontSize . " cCDD6F4", "Segoe UI")
 
-    ; Add close button
-    closeBtn := g_ProjectSelectorGui.Add("Button", "w80 Center", "Close")
-    closeBtn.OnEvent("Click", (*) => CleanupProjectSelector())
+    ; Content: scrollable Edit (match U)
+    g_ProjectSelectorGui.AddEdit("w" . textControlWidth . " h" . textControlHeight .
+        " ReadOnly VScroll Background1E1E2E", displayText)
 
-    ; Calculate total height
-    totalHeight := 20 + textControlHeight + 40 + 10
+    ; Footer hint (match U)
+    g_ProjectSelectorGui.SetFont("s9 c89B4FA", "Segoe UI")
+    g_ProjectSelectorGui.Add("Text", "w" . textControlWidth . " Center", "Press Escape to close.")
+
+    ; Total height: margins + title + separator + gap + content + hint + spacing (no button, match U)
+    totalHeight := 10 + 20 + 1 + 4 + textControlHeight + 6 + 18 + 10
 
     ; Calculate center position for the GUI
     marginX := 20
