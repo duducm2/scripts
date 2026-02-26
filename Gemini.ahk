@@ -11,13 +11,6 @@
 ; Path to the file containing the initial prompt Gemini should receive.
 PROMPT_FILE := A_ScriptDir "\data\Gemini_Prompt.txt"
 
-; #region agent log
-_AgentDebugLog(location, message, dataStr := "{}", hypothesisId := "") {
-    try
-        FileAppend '{"sessionId":"5497a2","location":"' . location . '","message":"' . message . '","data":' . dataStr . ',"timestamp":' . A_TickCount . ',"hypothesisId":"' . hypothesisId . '"}' . "`n", A_ScriptDir "\debug-5497a2.log"
-}
-; #endregion
-
 ; Copy response button names (EN/PT). Excludes "Copy prompt" / "Copiar prompt" which are different controls.
 GEMINI_COPY_RESPONSE_NAMES := ["Copy", "Copiar"]
 
@@ -1220,9 +1213,6 @@ class GeminiAsyncTTS {
         Send("^{End}")
         Sleep 350
         this.CopyCountAtSubmit := GetGeminiCopyButtonCount(uia)
-        ; #region agent log
-        _AgentDebugLog("Gemini.ahk:Start", "CopyCountAtSubmit", "{`"copyCount`":" . this.CopyCountAtSubmit . "}", "H2")
-        ; #endregion
         Send("{Enter}")
         Sleep 300
         origHwnd := this.OriginalHwnd
@@ -1289,9 +1279,6 @@ class GeminiAsyncTTS {
             }
 
             if isTrulyGone {
-                ; #region agent log
-                _AgentDebugLog("Gemini.ahk:CheckCompletion", "Layer1Passed", "{}", "H1")
-                ; #endregion
                 SetTimer(this.TimerCallback, 0)
                 HideSmallLoadingIndicator()
                 ; Completion detection matches GeminiAsyncLookup (#!+8): Layer 1 only (Stop button gone). No extra Layer 2 so we don't miss completion.
@@ -1312,9 +1299,6 @@ class GeminiAsyncTTS {
                     return
                 Send("^2")
                 Sleep 200
-                ; #region agent log
-                _AgentDebugLog("Gemini.ahk:CheckCompletion", "ReadAloudTriggered", "{}", "H1")
-                ; #endregion
                 ; After TTS from selection (#!+7), read aloud from the trash tab (second Gemini tab).
                 GeminiTriggerReadAloud(false, true)   ; read aloud only, no copy (text was just sent via #!+7)
             }
