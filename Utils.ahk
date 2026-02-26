@@ -6553,15 +6553,15 @@ ShowHotstringSelector() {
     ; Detect monitor orientation: portrait (height > width) vs landscape (width >= height)
     isPortrait := (monitorHeight > monitorWidth)
 
-    ; Create GUI
+    ; Create GUI (match Win+Alt+Shift+C AI Model Selector visual style)
     ; Create non-activating GUI so PowerToys Command Palette stays open
-    g_HotstringSelectorGui := Gui("+AlwaysOnTop +ToolWindow +E0x08000000", "Hotstring Shortcuts")
-    ; Use slightly smaller font for better fit on small monitors
-    ; Use Consolas (monospace) for better column alignment in two-column layout
+    g_HotstringSelectorGui := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x08000000", "Hotstring Shortcuts")
+    g_HotstringSelectorGui.BackColor := "1E1E2E"
+    g_HotstringSelectorGui.MarginX := 20
+    g_HotstringSelectorGui.MarginY := 15
+    ; Use slightly smaller font for better fit on small monitors; Segoe UI to match C menu
     fontSize := (monitorHeight < 800) ? 9 : 10
-    g_HotstringSelectorGui.SetFont("s" . fontSize, "Consolas")
-    g_HotstringSelectorGui.MarginX := 10
-    g_HotstringSelectorGui.MarginY := 5
+    g_HotstringSelectorGui.SetFont("s" . fontSize . " cCDD6F4", "Segoe UI")
 
     ; Build reverse map: expansion -> character
     expansionToChar := Map()
@@ -7023,16 +7023,23 @@ ShowHotstringSelector() {
     }
     textControlWidth := baseWidth - 20  ; Account for margins
 
+    ; Title and separator (match Win+Alt+Shift+C structure)
+    g_HotstringSelectorGui.SetFont("s14 cCDD6F4 Bold", "Segoe UI")
+    g_HotstringSelectorGui.Add("Text", "w" . textControlWidth . " Center", "Hotstring Shortcuts")
+    g_HotstringSelectorGui.Add("Text", "w" . textControlWidth . " h1 Background45475A")  ; separator
+    g_HotstringSelectorGui.SetFont("s" . fontSize . " cCDD6F4", "Segoe UI")
+
     ; Enable vertical scrolling for long content
-    g_HotstringSelectorGui.AddEdit("w" . textControlWidth . " h" . textControlHeight . " ReadOnly VScroll", displayText
+    g_HotstringSelectorGui.AddEdit("w" . textControlWidth . " h" . textControlHeight . " ReadOnly VScroll Background1E1E2E", displayText
     )
 
     ; Add Close button (set as default so it gets focus, not the Edit control)
+    g_HotstringSelectorGui.SetFont("s9 cCDD6F4", "Segoe UI")
     closeBtn := g_HotstringSelectorGui.AddButton("w100 Default Center", "Close")
     closeBtn.OnEvent("Click", (*) => CleanupHotstringSelector())
 
-    ; Calculate total height: margins + text control + button + spacing
-    totalHeight := 10 + textControlHeight + 40 + 10  ; margins + content + button + spacing
+    ; Calculate total height: margins + title + separator + gap + content + button + spacing (match C style margins)
+    totalHeight := 15 + 24 + 1 + 5 + textControlHeight + 10 + 40 + 15
     guiWidth := baseWidth
 
     ; Calculate center position for the GUI with margins
