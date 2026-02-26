@@ -2481,24 +2481,36 @@ ShowProjectSelector() {
         displayText .= "`n"  ; Space between categories
     }
 
-    displayText .= "`n[c] Focus Cursor Window`n"
+    ; Commands section so [c], [3], [L], [K], [ESC] are always visible and grouped
+    displayText .= "— Commands —`n"
+    displayText .= "[c] Focus Cursor Window`n"
     displayText .= "[3] Activate Preview Windows`n"
     displayText .= "[L] Selection Mode`n"
     displayText .= "[K] Copy from Gemini`n"
-    displayText .= "[ESC] Cancel"
+    displayText .= "[ESC] Close"
 
-    ; Calculate text dimensions (match Hotstring U: lineHeight 14; slightly larger window to show more projects)
+    ; Calculate text dimensions: use 18px per line so Edit control fits all lines without scroll (14px was too small for font)
     baseWidth := 400
     textControlWidth := baseWidth - 20
     lineCount := StrSplit(displayText, "`n").Length
-    lineHeight := 14
+    lineHeight := 18
     textControlHeight := lineCount * lineHeight
     minHeight := 150
-    maxHeight := Floor(monitorHeight * 0.85)
+    ; No maxHeight cap so all content (projects + Commands) is visible without scroll
     if (textControlHeight < minHeight)
         textControlHeight := minHeight
-    if (textControlHeight > maxHeight)
-        textControlHeight := maxHeight
+    ; #region agent log
+    logPath := A_ScriptDir . "\debug-ccb494.log"
+    try {
+        logLine :=
+            '{"sessionId":"ccb494","location":"WM.ahk:sizing","message":"Project selector height","data":{"lineCount":' .
+            lineCount . ',"lineHeight":' . lineHeight . ',"textControlHeight":' . textControlHeight . ',"totalHeight":' .
+            (10 + 20 + 1 + 4 + textControlHeight + 6 + 18 + 10) . ',"monitorHeight":' . monitorHeight .
+            '},"timestamp":' . A_Now . '}' . "`n"
+        FileAppend(logLine, logPath, "UTF-8")
+    } catch {
+    }
+    ; #endregion
 
     ; Title and separator (compact, match U)
     g_ProjectSelectorGui.SetFont("s11 cCDD6F4 Bold", "Segoe UI")
