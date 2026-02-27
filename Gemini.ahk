@@ -1011,11 +1011,10 @@ class GeminiAsyncLookup {
         Sleep 500
         Send("{Enter}")
         Sleep 300
-        ; Go back to the window where you triggered the hotkey so you can keep working
+        ; Go back to the window where you triggered the hotkey so you can keep working (activate only; do not WinRestore or we lose maximized state)
         origHwnd := this.OriginalHwnd
         try {
             if WinExist("ahk_id " origHwnd) {
-                WinRestore("ahk_id " origHwnd)
                 WinActivate("ahk_id " origHwnd)
                 WinWaitActive("ahk_id " origHwnd, , 1)
             }
@@ -1242,10 +1241,10 @@ class GeminiAsyncTTS {
         this.CopyCountAtSubmit := GetGeminiCopyButtonCount(uia)
         Send("{Enter}")
         Sleep 300
+        ; Return focus to original window (activate only; do not WinRestore or we lose maximized state)
         origHwnd := this.OriginalHwnd
         try {
             if WinExist("ahk_id " origHwnd) {
-                WinRestore("ahk_id " origHwnd)
                 WinActivate("ahk_id " origHwnd)
                 WinWaitActive("ahk_id " origHwnd, , 1)
             }
