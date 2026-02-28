@@ -2,6 +2,20 @@
 #SingleInstance Force
 #include %A_ScriptDir%\env.ahk
 
+; #region agent log
+DebugBannerLog(location, message, dataStr := "", hypothesisId := "") {
+    logPath := A_ScriptDir "\debug-5ecf82.log"
+    q := Chr(34)
+    line := "{" q "sessionId" q ":" q "5ecf82" q "," q "location" q ":" q location q "," q "message" q ":" q message q "," q "timestamp" q ":" A_TickCount
+    if (dataStr != "")
+        line .= "," q "data" q ":" q dataStr q ""
+    if (hypothesisId != "")
+        line .= "," q "hypothesisId" q ":" q hypothesisId q ""
+    line .= "}"
+    try FileAppend line "`n", logPath
+}
+; #endregion
+
 #include UIA-v2\Lib\UIA.ahk
 #include UIA-v2\Lib\UIA_Browser.ahk
 
@@ -1921,6 +1935,10 @@ global g_HotstringGeminiBannerGui := false
 HotstringGeminiBanner_Show(text := "Gemini: inserting prompt...") {
     global g_HotstringGeminiBannerGui
 
+    ; Strict sync: only one banner at a time; remove dictation confirm banner first
+    DictationGeminiConfirm_Hide()
+    Sleep 50
+
     ; Destroy any previous banner instance
     if (IsObject(g_HotstringGeminiBannerGui) && g_HotstringGeminiBannerGui.Hwnd) {
         try g_HotstringGeminiBannerGui.Destroy()
@@ -1937,10 +1955,11 @@ HotstringGeminiBanner_Show(text := "Gemini: inserting prompt...") {
         }
     }
 
+    ; Match other banners: w320, s14, alpha 220 (same as "Send to Gemini" / "Copy? [N]")
     ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
     ov.BackColor := "3772FF"
-    ov.SetFont("s22 cFFFFFF Bold", "Segoe UI")
-    ov.Add("Text", "w520 Center", text)
+    ov.SetFont("s14 cFFFFFF", "Segoe UI")
+    ov.Add("Text", "w320 Center", text)
     ov.Show("AutoSize Hide")
     ov.GetPos(, , &gw, &gh)
 
@@ -1958,7 +1977,7 @@ HotstringGeminiBanner_Show(text := "Gemini: inserting prompt...") {
         ov.Show("x" . cx . " y" . cy . " NA")
     }
 
-    WinSetTransparent(178, ov)
+    WinSetTransparent(220, ov)
     g_HotstringGeminiBannerGui := ov
 }
 
@@ -1973,6 +1992,110 @@ HotstringGeminiBanner_Hide(*) {
         }
     }
     g_HotstringGeminiBannerGui := false
+}
+
+; =============================================================================
+; Dictation: "Send to Gemini?" confirmation banner (4s, Y to confirm)
+; Size and opacity match "Copy? [N]" banner (Gemini.ahk ShowCopyDecisionBanner): w320, s14, alpha 220.
+; =============================================================================
+global g_DictationGeminiConfirmGui := false
+
+DictationGeminiConfirm_Show() {
+    global g_DictationGeminiConfirmGui
+
+    ; #region agent log
+    DebugBannerLog("Utils.ahk:DictationGeminiConfirm_Show", "Show entry", "", "H4")
+    ; #endregion
+    ; Strict sync: only one banner at a time; remove Hotstring Gemini banner first
+    HotstringGeminiBanner_Hide()
+    Sleep 50
+
+    if (IsObject(g_DictationGeminiConfirmGui) && g_DictationGeminiConfirmGui.Hwnd) {
+        try g_DictationGeminiConfirmGui.Destroy()
+    }
+
+    target := WinGetID("A")
+    hasWindow := false
+    if target && WinExist("ahk_id " target) {
+        try {
+            WinGetPos(&wx, &wy, &ww, &wh, target)
+            hasWindow := (ww > 0 && wh > 0)
+        } catch {
+            hasWindow := false
+        }
+    }
+
+    ; Match "Copy? [N]" banner: w320, s14, no Bold, alpha 220
+    ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
+    ov.BackColor := "3772FF"
+    ov.SetFont("s14 cFFFFFF", "Segoe UI")
+    ov.Add("Text", "w320 Center", "Send transcription to Gemini? Press Y (4s)")
+    ov.Show("AutoSize Hide")
+    ov.GetPos(, , &gw, &gh)
+
+    if hasWindow {
+        cx := wx + (ww - gw) // 2
+        cy := wy + (wh - gh) // 2
+        ov.Show("x" . cx . " y" . cy . " NA")
+    } else {
+        vx := SysGet(76)
+        vy := SysGet(77)
+        vw := SysGet(78)
+        vh := SysGet(79)
+        cx := vx + (vw - gw) // 2
+        cy := vy + (vh - gh) // 2
+        ov.Show("x" . cx . " y" . cy . " NA")
+    }
+
+    ; Full opacity so banner is clearly visible (no transparency)
+    WinSetTransparent(255, ov)
+    g_DictationGeminiConfirmGui := ov
+    ; #region agent log
+    DebugBannerLog("Utils.ahk:DictationGeminiConfirm_Show", "Show done", "gw=" . gw . " gh=" . gh, "H4")
+    ; #endregion
+}
+
+DictationGeminiConfirm_Hide(*) {
+    global g_DictationGeminiConfirmGui
+    if (IsObject(g_DictationGeminiConfirmGui)) {
+        try {
+            if (g_DictationGeminiConfirmGui.Hwnd)
+                g_DictationGeminiConfirmGui.Destroy()
+        } catch {
+        }
+    }
+    g_DictationGeminiConfirmGui := false
+}
+
+DictationGeminiConfirm_CleanupAndMaybeSubmit(submitToGemini) {
+    try Hotkey("y", "Off")
+    try Hotkey("Y", "Off")
+    SetTimer(DictationGeminiConfirm_OnTimeout, 0)
+    DictationGeminiConfirm_Hide()
+    if (submitToGemini) {
+        ; Ensure "Send to Gemini" banner is fully removed before showing "Submitting in 4s..." banner
+        Sleep 100
+        GeminiDelayedSubmitFlow()
+    }
+}
+
+DictationGeminiConfirm_OnY(*) {
+    DictationGeminiConfirm_CleanupAndMaybeSubmit(true)
+}
+
+DictationGeminiConfirm_OnTimeout(*) {
+    DictationGeminiConfirm_CleanupAndMaybeSubmit(false)
+}
+
+; Show banner and wait 4s for Y; on Y call GeminiDelayedSubmitFlow(), else just close.
+DictationGeminiConfirm_ShowAndWait() {
+    ; #region agent log
+    DebugBannerLog("Utils.ahk:DictationGeminiConfirm_ShowAndWait", "ShowAndWait entry", "", "H5")
+    ; #endregion
+    DictationGeminiConfirm_Show()
+    Hotkey("y", DictationGeminiConfirm_OnY, "On")
+    Hotkey("Y", DictationGeminiConfirm_OnY, "On")
+    SetTimer(DictationGeminiConfirm_OnTimeout, -4000)
 }
 
 ; =============================================================================
@@ -7599,6 +7722,7 @@ global g_DictationStopSound := A_ScriptDir . "\sounds\speach-finished.wav"
 global g_DictationLoopSound := A_ScriptDir . "\sounds\retro1.wav"
 global g_PendingDictationAction := ""  ; Action to execute after transcription: "Paste" or "PasteEnter"
 global g_PendingDictationMerge := false  ; Flag to trigger merge countdown after transcription completes
+global g_PendingGeminiPromptAfterDictation := false  ; When set by ~#!+0 stop, show "Send to Gemini? Y (4s)" after completion
 global g_KeepIndicatorVisible := false  ; Flag to keep indicator visible until paste action completes
 global g_LastStateTransitionTick := 0  ; Timestamp of last state transition to prevent rapid re-detection
 global g_DictationSoundPlayed := false  ; Atomic test-and-set: one start chime per session
@@ -7842,7 +7966,7 @@ DictationClipboardHandler(DataType) {
 ; Play completion chime after transcription finishes
 PlayDictationCompletionChime(*) {
     global g_DictationCompletionChimeScheduled, g_PendingDictationAction, g_PendingDictationMerge,
-        g_KeepIndicatorVisible
+        g_KeepIndicatorVisible, g_PendingGeminiPromptAfterDictation
     global g_DictationLoopActive
 
     ; Ensure clipboard handler is removed (safe to call even if already removed)
@@ -7902,6 +8026,21 @@ PlayDictationCompletionChime(*) {
         if (pendingMerge) {
             ; Transcription is complete, now safe to start merge countdown
             DictationMerge_StartCountdown(5)
+        }
+
+        ; If user stopped dictation with Win+Alt+Shift+0 (no Paste/PasteEnter), show Gemini confirm banner
+        pendingGemini := g_PendingGeminiPromptAfterDictation
+        g_PendingGeminiPromptAfterDictation := false
+        ; #region agent log
+        DebugBannerLog("Utils.ahk:PlayDictationCompletionChime", "Completion chime branch",
+            "chimeShouldPlay=1 pendingAction=" . pendingAction . " pendingGemini=" . (pendingGemini ? 1 : 0), "H2")
+        ; #endregion
+        if (pendingGemini && pendingAction = "") {
+            ; #region agent log
+            DebugBannerLog("Utils.ahk:PlayDictationCompletionChime", "Calling ShowAndWait", "pendingAction empty", "H3"
+            )
+            ; #endregion
+            DictationGeminiConfirm_ShowAndWait()
         }
 
         ; Trigger next loop iteration if active (module or legacy)
@@ -8084,7 +8223,7 @@ OnExit(CleanupDictationIndicator)
 ~#!+0::
 {
     global g_DictationActive, g_LastStateTransitionTick, g_DictationStartSound
-    global g_ProgrammaticDictationStop
+    global g_ProgrammaticDictationStop, g_PendingGeminiPromptAfterDictation
     static lastHotkeyTick := 0
     static isProcessing := false
 
@@ -8102,6 +8241,10 @@ OnExit(CleanupDictationIndicator)
         return
     lastHotkeyTick := currentTick
     isProcessing := true
+
+    ; Capture before KeyWait: check timer may clear g_DictationActive when Recording window closes,
+    ; so by the time we reach if/else it can be false even when user intended to stop.
+    dictationWasActiveOnKeyPress := g_DictationActive
 
     ; If Infinite Dictation is active, treat as interrupt (same as Win+Alt+Shift+7)
     ; Logic gate: Only allow termination during Recording state; block during Transcribing state
@@ -8132,6 +8275,14 @@ OnExit(CleanupDictationIndicator)
                 RunWait "powershell.exe -ExecutionPolicy Bypass -File `"" micVolumeScript "`"", , "Hide"
         } catch {
         }
+    }
+
+    ; User was stopping dictation (had been active when they pressed key) -> show Gemini confirm after completion
+    if (dictationWasActiveOnKeyPress) {
+        g_PendingGeminiPromptAfterDictation := true
+        ; #region agent log
+        DebugBannerLog("Utils.ahk:~#!+0", "Set pending Gemini flag", "dictationWasActiveOnKeyPress=1", "H1")
+        ; #endregion
     }
 
     ToggleDictationMode()
