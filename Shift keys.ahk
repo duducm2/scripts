@@ -1298,7 +1298,7 @@ ShowGlobalShortcutsHelp() {
     globalText := "
 (
 [Win+Alt+Shift] - PRIMARY triple modifier (most used for system-wide shortcuts)
-[Ctrl+Alt+Win] - SECONDARY triple modifier (reserved for future use, window management)
+[Ctrl+Alt+Win] - SECONDARY triple modifier 
 
 === MAIN KEY COMBINATIONS ===
 [Symbol Layer] Win+Alt+Shift - Primary combination 
@@ -1323,6 +1323,7 @@ r=== CLIP ANGEL ===
 [Win+Alt+Shift+O] > Read aloud the last message in Gemini
 [Win+Alt+Shift+P] > Copy the last message in Gemini
 [Win+Alt+Shift+7] > Copy selected text and read aloud (Gemini)
+[Ctrl+Alt+Win+L] > Open Gemini and paste first snippet (same as Win+Alt+Shift+U then L, L)
 
 === HANDY DICTATION ===
 [Win+Alt+Shift+0] > Start/stop dictation (transcription to clipboard)

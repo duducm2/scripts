@@ -6689,7 +6689,8 @@ ShowHotstringSelector() {
                     } else {
                         ; Character slot exists but no hotstring assigned
                         if (char = "l") {
-                            itemText := "[L] > Gemini: L = arm; L+L = open Gemini + paste first snippet"
+                            itemText :=
+                                "[L] > Gemini: L = arm; L+L = open Gemini + paste first snippet (or Ctrl+Alt+Win+L)"
                             isEmpty := false
                         } else {
                             itemText := "[" . char . "] > (empty)"
@@ -6759,7 +6760,7 @@ ShowHotstringSelector() {
         while (currentCharIndex <= g_HotstringCharSequence.Length) {
             char := g_HotstringCharSequence[currentCharIndex]
             if (char = "l") {
-                allItems.Push({ category: "Unassigned", char: char, text: "[L] > Gemini: L = arm; L+L = open Gemini + paste first snippet",
+                allItems.Push({ category: "Unassigned", char: char, text: "[L] > Gemini: L = arm; L+L = open Gemini + paste first snippet (or Ctrl+Alt+Win+L)",
                     isEmpty: false })
             } else if (g_ReservedEmptyChar != "" && char = g_ReservedEmptyChar) {
                 ; Already added above; skip to avoid duplicate
@@ -7076,6 +7077,9 @@ ShowHotstringSelector() {
         ShowHotstringSelector()
     }
 }
+
+; Ctrl+Alt+Win+L - Same as Win+Alt+Shift+U then L,L: banner, 4s delay, N to cancel; then open Gemini + paste first snippet (+ Enter unless cancelled)
+^!#L:: GeminiDelayedSubmitFlow()
 
 ; =============================================================================
 ; Alt+Shift+W Shortcut
