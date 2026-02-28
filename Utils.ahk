@@ -6207,6 +6207,56 @@ GetAioptPromptText() {
 }
 
 ; Delayed submit flow: show 4s banner, allow N to cancel auto-submit; then navigate+paste and optionally send Enter.
+; Tell Gemini.ahk to start background completion monitor (must match WM_START_DELAYED_SUBMIT_MONITOR in Gemini.ahk).
+GeminiDelayedSubmitMonitorStartFromUtils(originalHwnd, geminiChromeHwnd) {
+    ; #region agent log
+    try FileAppend '{"sessionId":"886cc7","location":"Utils.ahk:MonitorStartFromUtils","message":"entry","data":{"originalHwnd":' originalHwnd ',"geminiChromeHwnd":' geminiChromeHwnd '},"hypothesisId":"A","timestamp":' A_TickCount '}' "`n",
+        A_ScriptDir "\debug-886cc7.log"
+    ; #endregion
+    WM_START_DELAYED_SUBMIT_MONITOR := 0x8002
+    DetectHiddenWindows true
+    SetTitleMatchMode 2
+    geminiPid := 0
+    for hwnd in WinGetList("ahk_exe AutoHotkey64.exe") {
+        try {
+            if (InStr(WinGetTitle("ahk_id " hwnd), "Gemini.ahk")) {
+                geminiPid := WinGetPID("ahk_id " hwnd)
+                break
+            }
+        } catch {
+            continue
+        }
+    }
+    if (!geminiPid) {
+        for hwnd in WinGetList("ahk_exe AutoHotkey32.exe") {
+            try {
+                if (InStr(WinGetTitle("ahk_id " hwnd), "Gemini.ahk")) {
+                    geminiPid := WinGetPID("ahk_id " hwnd)
+                    break
+                }
+            } catch {
+                continue
+            }
+        }
+    }
+    sent := false
+    if (geminiPid) {
+        for hwnd in WinGetList("ahk_pid " geminiPid) {
+            try {
+                SendMessage(WM_START_DELAYED_SUBMIT_MONITOR, originalHwnd, geminiChromeHwnd, , "ahk_id " hwnd)
+                sent := true
+                break
+            } catch {
+                continue
+            }
+        }
+    }
+    DetectHiddenWindows false
+    ; #region agent log
+    try FileAppend '{"sessionId":"886cc7","location":"Utils.ahk:MonitorStartFromUtils","message":"postTarget","data":{"geminiPid":' geminiPid ',"sent":' (
+        sent ? "true" : "false") '},"hypothesisId":"A","timestamp":' A_TickCount '}' "`n", A_ScriptDir "\debug-886cc7.log"
+    ; #endregion
+}
 
 GeminiDelayedSubmitFlow() {
     global g_HotstringGeminiAutoSubmit, g_HotstringGeminiRestoreHwnd
@@ -6240,9 +6290,13 @@ GeminiFinalizeSubmit() {
 
     GeminiNavigateFocusAndPasteFirstSnippet()
 
+    didAutoSubmit := false
+    geminiChromeHwnd := 0
     if (g_HotstringGeminiAutoSubmit) {
         Sleep 300
         Send("{Enter}")
+        geminiChromeHwnd := WinExist("A")
+        didAutoSubmit := true
     }
 
     g_HotstringGeminiAutoSubmit := true
@@ -6251,6 +6305,16 @@ GeminiFinalizeSubmit() {
     if (g_HotstringGeminiRestoreHwnd && WinExist("ahk_id " g_HotstringGeminiRestoreHwnd)) {
         WinActivate("ahk_id " g_HotstringGeminiRestoreHwnd)
     }
+
+    ; If we auto-submitted (user did not cancel), ask Gemini.ahk to monitor for completion and show "Copy? [N]" when done
+    ; #region agent log
+    try FileAppend Format(
+        '{"sessionId":"886cc7","location":"Utils.ahk:6291","message":"FinalizeSubmit","data":{"didAutoSubmit":{1},"geminiChromeHwnd":{2},"restoreHwnd":{3},"willCallMonitor":{4}},"hypothesisId":"A","timestamp":{5}}' "`n",
+        didAutoSubmit ? "true" : "false", geminiChromeHwnd, g_HotstringGeminiRestoreHwnd, (didAutoSubmit &&
+            geminiChromeHwnd) ? "true" : "false", A_TickCount), A_ScriptDir "\debug-886cc7.log"
+    ; #endregion
+    if (didAutoSubmit && geminiChromeHwnd)
+        GeminiDelayedSubmitMonitorStartFromUtils(g_HotstringGeminiRestoreHwnd, geminiChromeHwnd)
 }
 
 HandleHotstringChar(char) {

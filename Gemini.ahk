@@ -684,6 +684,8 @@ CopyLastGeminiMessageToClipboard(options := "", geminiHwnd := 0) {
 
 ; Custom message so WindowManagement.ahk can trigger copy without Send (Send does not trigger hotkeys in another script).
 WM_COPY_LAST_GEMINI := 0x8001
+; Start background completion monitor for Ctrl+Alt+Win+L (wParam = originalHwnd, lParam = geminiHwnd). Sent from Utils.ahk.
+WM_START_DELAYED_SUBMIT_MONITOR := 0x8002
 ; #region agent log
 _DebugLog_Gemini(msg, data := "") {
     path := A_ScriptDir "\.cursor\debug.log"
@@ -696,6 +698,14 @@ _DebugLog_Gemini(msg, data := "") {
 GEMINI_COPY_RESULT_PATH := A_ScriptDir "\.cursor\gemini_copy_result.txt"
 
 OnMessage(WM_COPY_LAST_GEMINI, copyFromBridge)
+OnMessage(WM_START_DELAYED_SUBMIT_MONITOR, handleStartDelayedSubmitMonitor)
+handleStartDelayedSubmitMonitor(wParam, lParam, msg, hwnd) {
+    ; #region agent log
+    try FileAppend '{"sessionId":"886cc7","location":"Gemini.ahk:handleStartDelayedSubmitMonitor","message":"WM received","data":{"wParam":' wParam ',"lParam":' lParam '},"hypothesisId":"A,D","timestamp":' A_TickCount '}' "`n",
+        A_ScriptDir "\debug-886cc7.log"
+    ; #endregion
+    GeminiDelayedSubmitMonitorStart(wParam, lParam)
+}
 copyFromBridge(*) {
     _DebugLog_Gemini("WM_COPY_LAST_GEMINI received", "{}")
     ; Guarantee layer: write result so bridge can confirm we copied Gemini's last response (same path as #!+p).
@@ -1161,6 +1171,211 @@ class GeminiAsyncLookup {
         Hotkey("Escape", closeBanner, "On")
         Hotkey("Enter", closeBanner, "On")
     }
+}
+
+; =============================================================================
+; GeminiDelayedSubmitMonitor – background completion monitor for Ctrl+Alt+Win+L
+; Reuses #!+8 completion detection; on completion shows "Copy? [N]" with 4s timeout.
+; =============================================================================
+class GeminiDelayedSubmitMonitor {
+    __New() {
+        this.OriginalHwnd := 0
+        this.GeminiHwnd := 0
+        this.TimerCallback := ""
+        this.RetryCount := 0
+        this.MaxRetries := 300   ; 300 * 500ms = 150s timeout (covers Gemini Pro deep thinking)
+        this.ButtonEverFound := false
+        this.CopyBannerGui := ""
+        this.CopyTimeoutTimer := ""
+    }
+
+    Start(originalHwnd, geminiHwnd) {
+        ; #region agent log
+        try FileAppend '{"sessionId":"886cc7","location":"Gemini.ahk:Monitor.Start","message":"entry","data":{"originalHwnd":' originalHwnd ',"geminiHwnd":' geminiHwnd '},"hypothesisId":"D","timestamp":' A_TickCount '}' "`n",
+            A_ScriptDir "\debug-886cc7.log"
+        ; #endregion
+        if (!originalHwnd || !geminiHwnd) {
+            ; #region agent log
+            try FileAppend '{"sessionId":"886cc7","location":"Gemini.ahk:Monitor.Start","message":"early return","data":{"reason":"invalid hwnd"},"hypothesisId":"D","timestamp":' A_TickCount '}' "`n",
+                A_ScriptDir "\debug-886cc7.log"
+            ; #endregion
+            return
+        }
+        this.OriginalHwnd := originalHwnd
+        this.GeminiHwnd := geminiHwnd
+        this.RetryCount := 0
+        this.ButtonEverFound := false
+        this.TimerCallback := this.CheckCompletion.Bind(this)
+        SetTimer(this.TimerCallback, 500)
+    }
+
+    CheckCompletion() {
+        this.RetryCount++
+        if (this.RetryCount > this.MaxRetries) {
+            ; #region agent log
+            try FileAppend '{"sessionId":"886cc7","location":"Gemini.ahk:Monitor.CheckCompletion","message":"MaxRetries","data":{"RetryCount":' this
+                .RetryCount ',"MaxRetries":' this.MaxRetries ',"ButtonEverFound":' (this.ButtonEverFound ? "true" :
+                    "false") '},"hypothesisId":"C","timestamp":' A_TickCount '}' "`n", A_ScriptDir "\debug-886cc7.log"
+            ; #endregion
+            SetTimer(this.TimerCallback, 0)
+            return
+        }
+        btn := ""
+        buttonNames := ["Stop streaming", "Interromper transmissão", "Stop response"]
+        try {
+            root := UIA.ElementFromHandle(this.GeminiHwnd)
+            for n in buttonNames {
+                try {
+                    btn := root.FindElement({ Name: n, Type: "Button" })
+                } catch {
+                    btn := ""
+                }
+                if btn
+                    break
+            }
+        } catch {
+            return
+        }
+
+        ; #region agent log
+        if (!this.ButtonEverFound && Mod(this.RetryCount, 10) = 0)
+            try FileAppend '{"sessionId":"886cc7","location":"Gemini.ahk:Monitor.CheckCompletion","message":"polling","data":{"RetryCount":' this
+                .RetryCount ',"btnFound":' (btn ? "true" : "false") '},"hypothesisId":"E","timestamp":' A_TickCount '}' "`n",
+                A_ScriptDir "\debug-886cc7.log"
+        ; #endregion
+
+        if btn {
+            this.ButtonEverFound := true
+            ; #region agent log
+            if (this.RetryCount = 1 || Mod(this.RetryCount, 10) = 0)
+                try FileAppend '{"sessionId":"886cc7","location":"Gemini.ahk:Monitor.CheckCompletion","message":"streaming","data":{"RetryCount":' this
+                    .RetryCount '},"hypothesisId":"B","timestamp":' A_TickCount '}' "`n", A_ScriptDir "\debug-886cc7.log"
+            ; #endregion
+            return
+        }
+
+        if (this.ButtonEverFound) {
+            isTrulyGone := true
+            loop 4 {
+                Sleep 200
+                try {
+                    for n in buttonNames {
+                        if root.ElementExist({ Name: n, Type: "Button" }) {
+                            isTrulyGone := false
+                            break
+                        }
+                    }
+                } catch
+                    isTrulyGone := true
+                if !isTrulyGone
+                    break
+            }
+
+            if isTrulyGone {
+                ; #region agent log
+                try FileAppend '{"sessionId":"886cc7","location":"Gemini.ahk:Monitor.CheckCompletion","message":"completion detected","data":{"RetryCount":' this
+                    .RetryCount '},"hypothesisId":"B","timestamp":' A_TickCount '}' "`n", A_ScriptDir "\debug-886cc7.log"
+                ; #endregion
+                SetTimer(this.TimerCallback, 0)
+                try {
+                    if (IsSoundEnabled())
+                        SoundPlay(A_ScriptDir . "\sounds\gemini-completion.wav")
+                } catch {
+                    PlayCopyCompletedChime()
+                }
+                this.ShowCopyDecisionBanner()
+            }
+        }
+    }
+
+    ShowCopyDecisionBanner() {
+        ; #region agent log
+        try FileAppend '{"sessionId":"886cc7","location":"Gemini.ahk:Monitor.ShowCopyDecisionBanner","message":"showing banner","data":{},"hypothesisId":"B","timestamp":' A_TickCount '}' "`n",
+            A_ScriptDir "\debug-886cc7.log"
+        ; #endregion
+        banner := Gui("+AlwaysOnTop -Caption +ToolWindow")
+        banner.BackColor := "3772FF"
+        banner.SetFont("s14 cFFFFFF", "Segoe UI")
+        banner.Add("Text", "w320 Center", "Copy? [N]")
+        workArea := GetWorkAreaForWindow(this.OriginalHwnd)
+        if (workArea = "") {
+            MonitorGetWorkArea(, &wLeft, &wTop, &wRight, &wBottom)
+            w := wRight - wLeft
+            h := wBottom - wTop
+            banner.Show("AutoSize Hide")
+            banner.GetPos(, , &gw, &gh)
+            banner.Show("x" . Round(wLeft + (w - gw) / 2) . " y" . Round(wTop + (h - gh) / 2) . " NA")
+        } else {
+            w := workArea.right - workArea.left
+            h := workArea.bottom - workArea.top
+            banner.Show("AutoSize Hide")
+            banner.GetPos(, , &gw, &gh)
+            banner.Show("x" . Round(workArea.left + (w - gw) / 2) . " y" . Round(workArea.top + (h - gh) / 2) . " NA")
+        }
+        WinSetTransparent(220, banner)
+        this.CopyBannerGui := banner
+        this.CopyTimeoutTimer := this.DoCopyOnTimeout.Bind(this)
+        Hotkey("n", this.CancelCopy.Bind(this), "On")
+        Hotkey("N", this.CancelCopy.Bind(this), "On")
+        SetTimer(this.CopyTimeoutTimer, -4000)
+    }
+
+    CancelCopy(*) {
+        try SetTimer(this.CopyTimeoutTimer, 0)
+        try Hotkey("n", "Off")
+        try Hotkey("N", "Off")
+        if (IsObject(this.CopyBannerGui) && this.CopyBannerGui.Hwnd)
+            try this.CopyBannerGui.Destroy()
+        this.CopyBannerGui := ""
+    }
+
+    DoCopyOnTimeout(*) {
+        try SetTimer(this.CopyTimeoutTimer, 0)
+        try Hotkey("n", "Off")
+        try Hotkey("N", "Off")
+        if (IsObject(this.CopyBannerGui) && this.CopyBannerGui.Hwnd)
+            try this.CopyBannerGui.Destroy()
+        this.CopyBannerGui := ""
+
+        contentBefore := A_Clipboard
+        try {
+            WinActivate("ahk_id " this.GeminiHwnd)
+        } catch {
+            if (WinExist("ahk_id " this.OriginalHwnd))
+                WinActivate("ahk_id " this.OriginalHwnd)
+            return
+        }
+        if !WinWaitActive("ahk_exe chrome.exe", , 2) {
+            if (WinExist("ahk_id " this.OriginalHwnd))
+                WinActivate("ahk_id " this.OriginalHwnd)
+            return
+        }
+        ; Delayed submit uses first tab (^1 in GeminiNavigateFocusAndPasteFirstSnippet); ensure we copy from same tab.
+        Send("^1")
+        Sleep 200
+        copyOpt := { restoreWindow: false, playChimeAndNotify: false, alreadyActive: true }
+        if !CopyLastGeminiMessageToClipboard(copyOpt, this.GeminiHwnd) {
+            if (WinExist("ahk_id " this.OriginalHwnd))
+                WinActivate("ahk_id " this.OriginalHwnd)
+            return
+        }
+        Sleep 400
+        if (A_Clipboard = "" || A_Clipboard = contentBefore) {
+            CopyLastGeminiMessageToClipboard(copyOpt, this.GeminiHwnd)
+            Sleep 400
+        }
+        if (A_Clipboard = "" || A_Clipboard = contentBefore) {
+            CopyLastGeminiMessageToClipboard(copyOpt, this.GeminiHwnd)
+            Sleep 400
+        }
+        if (WinExist("ahk_id " this.OriginalHwnd))
+            WinActivate("ahk_id " this.OriginalHwnd)
+    }
+}
+
+; Callable from Utils.ahk after successful auto-send (Ctrl+Alt+Win+L).
+GeminiDelayedSubmitMonitorStart(originalHwnd, geminiHwnd) {
+    (GeminiDelayedSubmitMonitor()).Start(originalHwnd, geminiHwnd)
 }
 
 ; =============================================================================
