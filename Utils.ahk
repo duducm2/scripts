@@ -2073,8 +2073,8 @@ DictationGeminiConfirm_CleanupAndMaybeSubmit(submitToGemini) {
     SetTimer(DictationGeminiConfirm_OnTimeout, 0)
     DictationGeminiConfirm_Hide()
     if (submitToGemini) {
-        ; Ensure "Send to Gemini" banner is fully removed before showing "Submitting in 4s..." banner
-        Sleep 100
+        ; Ensure "Send to Gemini" banner is fully gone before showing next banner (no overlap)
+        Sleep 350
         GeminiDelayedSubmitFlow()
     }
 }
@@ -6218,10 +6218,11 @@ GeminiNavigateFocusAndPasteFirstSnippet(optionalPromptText := "") {
     if (geminiHwnd) {
         WinActivate("ahk_id " geminiHwnd)
         WinWaitActive("ahk_id " geminiHwnd, , 2)
-        Sleep 200
+        Sleep 350  ; Let UI finish processing the window transition before tab/focus/paste
     } else {
         WinActivate("ahk_exe chrome.exe")
         WinWaitActive("ahk_exe chrome.exe", , 2)
+        Sleep 350
     }
 
     ; Ensure Tab 1 (left/main Gemini tab) is active for the \"nice mode\" flow (double-L).
@@ -6280,6 +6281,13 @@ GeminiNavigateFocusAndPasteFirstSnippet(optionalPromptText := "") {
             }
         }
     } catch {
+    }
+
+    ; Explicitly target Gemini window again before paste so paste goes to Gemini, not the trigger window
+    if (geminiHwnd && WinExist("ahk_id " geminiHwnd)) {
+        WinActivate("ahk_id " geminiHwnd)
+        WinWaitActive("ahk_id " geminiHwnd, , 2)
+        Sleep 150
     }
 
     if (optionalPromptText != "") {
@@ -6363,13 +6371,24 @@ GeminiDelayedSubmitFlow() {
 }
 
 GeminiCancelAutoSubmit(*) {
-    global g_HotstringGeminiAutoSubmit
+    global g_HotstringGeminiAutoSubmit, g_HotstringGeminiRestoreHwnd
     g_HotstringGeminiAutoSubmit := false
     try Hotkey("n", "Off")
     try Hotkey("N", "Off")
+    SetTimer(GeminiFinalizeSubmit, 0)  ; cancel 4s timer so paste runs in deferred callback only
     HotstringGeminiBanner_Hide()
     HotstringGeminiBanner_Show("Auto-submit CANCELLED (Paste only)")
     SetTimer(HotstringGeminiBanner_Hide, -1500)
+    ; Defer paste so it runs outside hotkey context; sync works and paste goes to Gemini
+    SetTimer(GeminiCancelAutoSubmit_DoPaste, -400)
+}
+
+GeminiCancelAutoSubmit_DoPaste(*) {
+    global g_HotstringGeminiRestoreHwnd
+    GeminiNavigateFocusAndPasteFirstSnippet()
+    Sleep 200  ; Let paste be received by Gemini before switching focus back
+    if (g_HotstringGeminiRestoreHwnd && WinExist("ahk_id " g_HotstringGeminiRestoreHwnd))
+        WinActivate("ahk_id " g_HotstringGeminiRestoreHwnd)
 }
 
 GeminiFinalizeSubmit() {
