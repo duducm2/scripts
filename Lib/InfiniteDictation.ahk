@@ -4,7 +4,7 @@
 ; Requires Utils.ahk (or host script) to provide: DictationCleanup_StartCountdown,
 ; Handy_ActivateOrLaunch, DictationMerge_StartCountdown, MergeNonFavoriteClips,
 ; globals g_PendingDictationMerge, g_ProgrammaticDictationStop, g_DictationLoopActive,
-; g_DictationLoopSound, IsSoundEnabled, ShowCenteredOverlay_Utils, DbgLog (optional).
+; g_DictationLoopSound, IsSoundEnabled, ShowCenteredOverlay_Utils.
 
 class InfiniteDictation {
     ; Static state
@@ -51,10 +51,6 @@ class InfiniteDictation {
             }
             return
         }
-        try
-            DbgLog("#!+7", "start branch hyp=A")
-        catch {
-        }
         DictationCleanup_StartCountdown(5)
         InfiniteDictation.IsActive := true
         global g_DictationLoopActive := true
@@ -96,10 +92,6 @@ class InfiniteDictation {
 
     ; One loop cycle: ensure Handy running, trigger start, schedule stop after 15s.
     static LoopCycle() {
-        try
-            DbgLog("DictationLoopStart", "entry loopActive=" InfiniteDictation.IsActive " hyp=A")
-        catch {
-        }
         if (!InfiniteDictation.IsActive)
             return
         if (!ProcessExist("handy.exe")) {
@@ -107,10 +99,6 @@ class InfiniteDictation {
             Sleep 2000
         }
         if (WinExist("Recording ahk_exe handy.exe")) {
-            try
-                DbgLog("DictationLoopStart", "already recording reschedule stop hyp=B")
-            catch {
-            }
             SetTimer(ObjBindMethod(InfiniteDictation, "StopHandyAndRestart"), 0)
             SetTimer(ObjBindMethod(InfiniteDictation, "StopHandyAndRestart"), -15000)
             return
@@ -122,10 +110,6 @@ class InfiniteDictation {
             return
         SetTimer(ObjBindMethod(InfiniteDictation, "StopHandyAndRestart"), 0)
         SetTimer(ObjBindMethod(InfiniteDictation, "StopHandyAndRestart"), -15000)
-        try
-            DbgLog("DictationLoopStart", "scheduled StopHandyAndRestart -15000 hyp=A")
-        catch {
-        }
         SetTimer(ObjBindMethod(InfiniteDictation, "VerifyStart"), -1500)
     }
 
@@ -137,17 +121,9 @@ class InfiniteDictation {
 
     ; Scheduled after 15s: stop recording (send #!+0), play sound; next cycle is scheduled by PlayDictationCompletionChime in Utils.
     static StopHandyAndRestart() {
-        try
-            DbgLog("DictationLoopStop", "entry loopActive=" InfiniteDictation.IsActive " hyp=A")
-        catch {
-        }
         if (!InfiniteDictation.IsActive)
             return
         if (WinExist("Recording ahk_exe handy.exe")) {
-            try
-                DbgLog("DictationLoopStop", "sending #!+0 progStop=true hyp=C")
-            catch {
-            }
             global g_ProgrammaticDictationStop := true
             global g_DictationLoopSound
             SendEvent "#!+0"
@@ -157,10 +133,6 @@ class InfiniteDictation {
             } catch {
             }
         } else {
-            try
-                DbgLog("DictationLoopStop", "NOT recording schedule restart -1000 hyp=E")
-            catch {
-            }
             SetTimer(ObjBindMethod(InfiniteDictation, "LoopCycle"), -1000)
         }
         ; Next loop is started by Utils.PlayDictationCompletionChime -> SetTimer(DictationLoopStart, -2000) -> Utils must call back to InfiniteDictation.LoopCycle
@@ -217,10 +189,6 @@ class InfiniteDictation {
     static OnTranscriptionComplete() {
         if (!InfiniteDictation.IsActive)
             return
-        try
-            DbgLog("PlayDictationCompletionChime", "scheduling LoopCycle -2000 hyp=B")
-        catch {
-        }
         SetTimer(ObjBindMethod(InfiniteDictation, "LoopCycle"), -2000)
     }
 }

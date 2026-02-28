@@ -695,14 +695,6 @@ CopyLastGeminiMessageToClipboard(options := "", geminiHwnd := 0) {
 WM_COPY_LAST_GEMINI := 0x8001
 ; Start background completion monitor for Ctrl+Alt+Win+L (wParam = originalHwnd, lParam = geminiHwnd). Sent from Utils.ahk.
 WM_START_DELAYED_SUBMIT_MONITOR := 0x8002
-; #region agent log
-_DebugLog_Gemini(msg, data := "") {
-    path := A_ScriptDir "\.cursor\debug.log"
-    line := '{"location":"Gemini.ahk","message":"' . msg . '","data":' . (data = "" ? "{}" : data) . ',"timestamp":' .
-    A_TickCount . '}' . "`n"
-    FileAppend line, path
-}
-; #endregion
 ; Path for bridge to verify that Copy Last Response (same as #!+p) actually succeeded
 GEMINI_COPY_RESULT_PATH := A_ScriptDir "\.cursor\gemini_copy_result.txt"
 
@@ -712,7 +704,6 @@ handleStartDelayedSubmitMonitor(wParam, lParam, msg, hwnd) {
     GeminiDelayedSubmitMonitorStart(wParam, lParam)
 }
 copyFromBridge(*) {
-    _DebugLog_Gemini("WM_COPY_LAST_GEMINI received", "{}")
     ; Guarantee layer: write result so bridge can confirm we copied Gemini's last response (same path as #!+p).
     try
         FileDelete(GEMINI_COPY_RESULT_PATH)
@@ -723,7 +714,6 @@ copyFromBridge(*) {
         FileDelete(GEMINI_COPY_RESULT_PATH)
     try
         FileAppend(r ? "1" : "0", GEMINI_COPY_RESULT_PATH)
-    _DebugLog_Gemini("CopyLastGeminiMessageToClipboard result", (r ? '{"ok":1}' : '{"ok":0}'))
 }
 
 ; =============================================================================

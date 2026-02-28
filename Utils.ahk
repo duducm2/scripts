@@ -2,26 +2,6 @@
 #SingleInstance Force
 #include %A_ScriptDir%\env.ahk
 
-; #region agent log
-DbgLog(loc, msg) {
-    try {
-        m := StrReplace(msg, '"', "'")
-        line := '{"ts":' A_TickCount ',"loc":"' loc '","msg":"' m '"}'
-        FileAppend line Chr(10), A_ScriptDir "\.cursor\debug.log"
-    } catch as e {
-    }
-}
-; NDJSON debug (hypothesisId, data as JSON string)
-DbgLogEx(loc, msg, data := "{}", hypothesisId := "") {
-    try {
-        m := StrReplace(msg, '"', "'")
-        line := '{"ts":' A_TickCount ',"loc":"' loc '","msg":"' m '","data":' data ',"hypothesisId":"' hypothesisId '"}'
-        FileAppend line Chr(10), A_ScriptDir "\.cursor\debug.log"
-    } catch {
-    }
-}
-; #endregion
-
 #include UIA-v2\Lib\UIA.ahk
 #include UIA-v2\Lib\UIA_Browser.ahk
 
@@ -31,25 +11,11 @@ global GEMINI_PROMPT_FIELD_NAMES := ["Enter a prompt for Gemini", "Enter a promp
 
 ; Find the Gemini prompt field via UIA (returns element or 0). Supports EN and PT labels. Used by Gemini.ahk and Utils.ahk.
 FindGeminiPromptField(uia) {
-    ; #region agent log
-    try {
-        FileAppend('{"ts":' A_TickCount ',"loc":"FindGeminiPromptField","msg":"entry","hypothesisId":"H1"}' "`n",
-            A_ScriptDir "\.cursor\debug.log")
-    } catch {
-    }
-    ; #endregion
     promptField := 0
     for name in GEMINI_PROMPT_FIELD_NAMES {
         try {
             promptField := uia.FindFirst({ Name: name, Type: 50004 })
             if (promptField) {
-                ; #region agent log
-                try {
-                    FileAppend('{"ts":' A_TickCount ',"loc":"FindGeminiPromptField","msg":"return found","data":{"name":"' StrReplace(
-                        name, '"', "'") '"},"hypothesisId":"H1"}' "`n", A_ScriptDir "\.cursor\debug.log")
-                } catch {
-                }
-                ; #endregion
                 return promptField
             }
         } catch
@@ -95,13 +61,6 @@ FindGeminiPromptField(uia) {
         }
     } catch {
     }
-    ; #region agent log
-    try {
-        FileAppend('{"ts":' A_TickCount ',"loc":"FindGeminiPromptField","msg":"return 0 (not found)","hypothesisId":"H1"}' "`n",
-            A_ScriptDir "\.cursor\debug.log")
-    } catch {
-    }
-    ; #endregion
     return 0
 }
 
@@ -1731,12 +1690,8 @@ Handy_ActivateOrLaunch() {
 
 ; Open the AI model dropdown menu using keyboard navigation
 Handy_OpenAiModelMenu(hwnd) {
-    ; #region agent log
-    DbgLogEx("Handy_OpenAiModelMenu", "entry", "{}", "H1")
-    ; #endregion
     el := UIA.ElementFromHandle(hwnd)
     if !el {
-        DbgLogEx("Handy_OpenAiModelMenu", "ElementFromHandle failed", "{}", "H1")
         return false
     }
 
@@ -1746,17 +1701,11 @@ Handy_OpenAiModelMenu(hwnd) {
         Type: 50000,
         ClassName: "transition-colors disabled:opacity-50 tabular-nums text-text/60 hover:text-text/80"
     })
-    if (anchor)
-        DbgLogEx("Handy_OpenAiModelMenu", "anchor by ClassName", '{"by":"ClassName"}', "H1")
     if (!anchor) {
         try anchor := el.FindFirst({ Type: 50000, Name: "Check for updates" })
-        if (anchor)
-            DbgLogEx("Handy_OpenAiModelMenu", "anchor by Name", '{"by":"Name"}', "H1")
     }
     if (!anchor) {
         try anchor := el.FindFirst({ Type: 50000, Name: "Verificar atualizações" })
-        if (anchor)
-            DbgLogEx("Handy_OpenAiModelMenu", "anchor by Name Pt", '{"by":"NamePt"}', "H1")
     }
 
     ; Fallback: "Update available" anchor when a system update banner is shown
@@ -1765,13 +1714,9 @@ Handy_OpenAiModelMenu(hwnd) {
             Type: 50000,
             ClassName: "transition-colors disabled:opacity-50 tabular-nums text-logo-primary hover:text-logo-primary/80 font-medium"
         })
-        if (anchor)
-            DbgLogEx("Handy_OpenAiModelMenu", "anchor by UpdateAvailable ClassName", '{"by":"UpdateClassName"}', "H1")
     }
     if (!anchor) {
         try anchor := el.FindFirst({ Type: 50000, Name: "Update available" })
-        if (anchor)
-            DbgLogEx("Handy_OpenAiModelMenu", "anchor by UpdateAvailable Name", '{"by":"UpdateName"}', "H1")
     }
     if (!anchor) {
         ; Last-resort: use technical condition path to reach the "Update available" button
@@ -1779,12 +1724,9 @@ Handy_OpenAiModelMenu(hwnd) {
             CN: "EmbeddedBrowserFrameView" }, { T: 33, CN: "BrowserView" }, { T: 33, CN: "SidebarContentsSplitView" }, { T: 33 }, { T: 33 }, { T: 33 }, { T: 30 }, { T: 26 }, { T: 0,
                 CN: "transition-colors disabled:opacity-50 tabular-nums text-logo-primary hover:text-logo-primary/80 font-medium" }
         )
-        if (anchor)
-            DbgLogEx("Handy_OpenAiModelMenu", "anchor by UpdateAvailable Path", '{"by":"UpdatePath"}', "H1")
     }
 
     if (!anchor) {
-        DbgLogEx("Handy_OpenAiModelMenu", "anchor not found", "{}", "H1")
         return false
     }
 
@@ -1798,20 +1740,13 @@ Handy_OpenAiModelMenu(hwnd) {
     Sleep 100
     Send "{Enter}"
     Sleep 300
-    ; #region agent log
-    DbgLogEx("Handy_OpenAiModelMenu", "exit true", "{}", "H1")
-    ; #endregion
     return true
 }
 
 ; Find and click the AI model button by partial name match
 Handy_ClickAiModel(hwnd, modelName) {
-    ; #region agent log
-    DbgLogEx("Handy_ClickAiModel", "entry", '{"modelName":"' modelName '"}', "H2")
-    ; #endregion
     el := UIA.ElementFromHandle(hwnd)
     if !el {
-        DbgLogEx("Handy_ClickAiModel", "ElementFromHandle failed", "{}", "H2")
         return false
     }
 
@@ -1832,12 +1767,6 @@ Handy_ClickAiModel(hwnd, modelName) {
             if (btnName != "" && InStr(btnName, modelName) = 1) {
                 btnClass := ""
                 try btnClass := btn.ClassName
-                ; #region agent log
-                DbgLogEx("Handy_ClickAiModel", "name match", '{"btnName":"' StrReplace(btnName, "`"", "'") '","btnClass":"' StrReplace(
-                    btnClass, "`"", "'") '","hasWfull":' (InStr(btnClass, "w-full px-3 py-2 text-left") ? 1 : 0) ',"hasTextStart":' (
-                        InStr(btnClass, "w-full px-3 py-2 text-start") ? 1 : 0) ',"hasFlex":' (InStr(btnClass,
-                            "flex items-center gap-2") ? 1 : 0) '}', "H2")
-                ; #endregion
                 ; Menu items: w-full px-3 py-2 text-left (legacy) or text-start (new Handy UI); header: flex items-center gap-2
                 if (InStr(btnClass, "w-full px-3 py-2 text-left") || InStr(btnClass, "w-full px-3 py-2 text-start") ||
                 InStr(btnClass, "flex items-center gap-2")) {
@@ -1849,10 +1778,6 @@ Handy_ClickAiModel(hwnd, modelName) {
             }
         }
     }
-    ; #region agent log
-    DbgLogEx("Handy_ClickAiModel", "buttons scanned", '{"count":' buttonCount ',"nameMatchNoClass":"' StrReplace(
-        nameMatchNoClass, "`"", "'") '","found":' (modelBtn ? 1 : 0) '}', "H2")
-    ; #endregion
 
     if (!modelBtn)
         return false
@@ -1860,10 +1785,8 @@ Handy_ClickAiModel(hwnd, modelName) {
     ; Click the model button
     try {
         modelBtn.Click()
-        DbgLogEx("Handy_ClickAiModel", "click ok", "{}", "H2")
         return true
     } catch as e {
-        DbgLogEx("Handy_ClickAiModel", "click failed", '{"err":"' StrReplace(e.Message, "`"", "'") '"}', "H2")
         return false
     }
 }
@@ -1873,15 +1796,11 @@ Handy_ClickAiModel(hwnd, modelName) {
 ; Returns true when loading text disappeared, false on timeout or if button not found.
 Handy_WaitForModelReady(hwnd, maxWaitMs) {
     global UIA
-    ; #region agent log
-    DbgLogEx("Handy_WaitForModelReady", "entry", "{}", "H3")
-    ; #endregion
     pollInterval := 250
     start := A_TickCount
     firstLog := true
     loop {
         if ((A_TickCount - start) >= maxWaitMs) {
-            DbgLogEx("Handy_WaitForModelReady", "timeout", "{}", "H3")
             return false
         }
         el := UIA.ElementFromHandle(hwnd)
@@ -1893,7 +1812,6 @@ Handy_WaitForModelReady(hwnd, maxWaitMs) {
         try btn := el.FindFirst({ Type: 50000, ClassName: "flex items-center gap-2 hover:text-text/80 transition-colors " })
         if (!btn) {
             if (firstLog) {
-                DbgLogEx("Handy_WaitForModelReady", "model button not found by ClassName", "{}", "H3")
                 firstLog := false
             }
             Sleep pollInterval
@@ -1902,7 +1820,6 @@ Handy_WaitForModelReady(hwnd, maxWaitMs) {
         btnName := ""
         try btnName := btn.Name
         if (InStr(btnName, "loading") = 0) {
-            DbgLogEx("Handy_WaitForModelReady", "ready", '{"btnName":"' StrReplace(btnName, "`"", "'") '"}', "H3")
             return true
         }
         Sleep pollInterval
@@ -2364,16 +2281,10 @@ DictationLoopStart() {
         return
     }
     global g_DictationLoopActive, g_DictationStartRetries, g_ProgrammaticDictationStop
-    ; #region agent log
-    DbgLog("DictationLoopStart", "entry loopActive=" g_DictationLoopActive " hyp=A")
-    ; #endregion
 
     ; Safety check: Only proceed if Infinite Dictation is still active
     ; This prevents starting if user manually stopped it
     if (!g_DictationLoopActive) {
-        ; #region agent log
-        DbgLog("DictationLoopStart", "early return loop inactive hyp=A")
-        ; #endregion
         return
     }
 
@@ -2385,9 +2296,6 @@ DictationLoopStart() {
 
     ; Check if already recording to prevent toggling off
     if (WinExist("Recording ahk_exe handy.exe")) {
-        ; #region agent log
-        DbgLog("DictationLoopStart", "already recording reschedule stop hyp=B")
-        ; #endregion
         ; Already recording, just ensure timer is running
         SetTimer(DictationLoopStop, 0)
         SetTimer(DictationLoopStop, -15000)
@@ -2411,9 +2319,6 @@ DictationLoopStart() {
     ; Schedule stop after 15s (one loop segment) - negative period = one-shot timer
     ; Only schedules if Infinite Dictation is still active (checked above)
     SetTimer(DictationLoopStop, -15000)
-    ; #region agent log
-    DbgLog("DictationLoopStart", "scheduled DictationLoopStop -15000 hyp=A")
-    ; #endregion
 
     ; Verification: Check if window appeared after a delay
     SetTimer(VerifyDictationStart, -1500)
@@ -2446,24 +2351,15 @@ VerifyDictationStart() {
 
 DictationLoopStop() {
     global g_DictationLoopActive, g_DictationLoopSound, g_ProgrammaticDictationStop
-    ; #region agent log
-    DbgLog("DictationLoopStop", "entry loopActive=" g_DictationLoopActive " hyp=A")
-    ; #endregion
 
     ; Safety check: Only proceed if Infinite Dictation is still active
     ; This prevents restarting next loop if user manually stopped via ToggleDictationLoop()
     if (!g_DictationLoopActive) {
-        ; #region agent log
-        DbgLog("DictationLoopStop", "early return loop inactive hyp=A")
-        ; #endregion
         return
     }
 
     ; Only send stop command if actually recording
     if (WinExist("Recording ahk_exe handy.exe")) {
-        ; #region agent log
-        DbgLog("DictationLoopStop", "sending #!+0 progStop=true hyp=C")
-        ; #endregion
         ; Send Win+Alt+Shift+0 to stop dictation (triggers transcription)
         g_ProgrammaticDictationStop := true
         SendEvent "#!+0"
@@ -2473,9 +2369,6 @@ DictationLoopStop() {
             SoundPlay(g_DictationLoopSound)
         }
     } else {
-        ; #region agent log
-        DbgLog("DictationLoopStop", "NOT recording schedule restart -1000 hyp=E")
-        ; #endregion
         ; If not recording, we might have stopped early or crashed.
         ; Restart loop immediately to recover.
         SetTimer(DictationLoopStart, -1000)
@@ -6197,41 +6090,19 @@ GeminiNavigateFocusAndPasteFirstSnippet(optionalPromptText := "") {
                 SendInput "+{Tab}"
                 Sleep 15
             } catch {
-                ; #region agent log
-                DbgLogEx("Utils.ahk:5268", "Utils fallback: resolving prompt field (EN/PT)", "{}", "H2")
-                ; #endregion
                 try {
                     promptField := FindGeminiPromptField(uia)
-                    ; #region agent log
-                    DbgLogEx("Utils.ahk:5272", "Utils fallback: prompt field result", (promptField ? '{"found":true}' :
-                        '{"found":false}'), "H2")
-                    ; #endregion
                     if (promptField)
                         promptField.SetFocus()
                 } catch as e {
-                    ; #region agent log
-                    DbgLogEx("Utils.ahk:5278", "Utils fallback: FindGeminiPromptField threw", '{"msg":"' StrReplace(
-                        StrReplace(e.Message, "\", "\\"), '"', "'") '"}', "H2")
-                    ; #endregion
                 }
             }
         } else {
-            ; #region agent log
-            DbgLogEx("Utils.ahk:5284", "Utils else: resolving prompt field (EN/PT)", "{}", "H2")
-            ; #endregion
             try {
                 promptField := FindGeminiPromptField(uia)
-                ; #region agent log
-                DbgLogEx("Utils.ahk:5289", "Utils else: prompt field result", (promptField ? '{"found":true}' :
-                    '{"found":false}'), "H2")
-                ; #endregion
                 if (promptField)
                     promptField.SetFocus()
             } catch as e {
-                ; #region agent log
-                DbgLogEx("Utils.ahk:5295", "Utils else: FindGeminiPromptField threw", '{"msg":"' StrReplace(StrReplace(
-                    e.Message, "\", "\\"), '"', "'") '"}', "H2")
-                ; #endregion
             }
         }
     } catch {
@@ -6556,39 +6427,21 @@ HandleHotstringChar(char) {
                             SendInput "+{Tab}"
                             Sleep 15
                         } catch {
-                            ; #region agent log
-                            DbgLogEx("Utils.ahk:5474", "Utils expand fallback: resolving prompt field", "{}", "H2")
-                            ; #endregion
                             try {
                                 promptField := FindGeminiPromptField(uia)
-                                ; #region agent log
-                                DbgLogEx("Utils.ahk:5479", "Utils expand fallback: prompt field result", (promptField ?
-                                    '{"found":true}' : '{"found":false}'), "H2")
-                                ; #endregion
                                 if (promptField) {
                                     promptField.SetFocus()
                                 }
                             } catch as e {
-                                DbgLogEx("Utils.ahk:5486", "Utils expand fallback: threw", '{"msg":"' StrReplace(
-                                    StrReplace(e.Message, "\", "\\"), '"', "'") '"}', "H2")
                             }
                         }
                     } else {
-                        ; #region agent log
-                        DbgLogEx("Utils.ahk:5492", "Utils expand else: resolving prompt field", "{}", "H2")
-                        ; #endregion
                         try {
                             promptField := FindGeminiPromptField(uia)
-                            ; #region agent log
-                            DbgLogEx("Utils.ahk:5497", "Utils expand else: prompt field result", (promptField ?
-                                '{"found":true}' : '{"found":false}'), "H2")
-                            ; #endregion
                             if (promptField) {
                                 promptField.SetFocus()
                             }
                         } catch as e {
-                            DbgLogEx("Utils.ahk:5504", "Utils expand else: threw", '{"msg":"' StrReplace(StrReplace(e.Message,
-                                "\", "\\"), '"', "'") '"}', "H2")
                         }
                     }
                 } catch {
@@ -7928,9 +7781,6 @@ SafePlayDictationSound(filePath) {
 
 ; Handler for clipboard changes during dictation completion
 DictationClipboardHandler(DataType) {
-    ; #region agent log
-    DbgLog("DictationClipboardHandler", "fired hyp=B")
-    ; #endregion
     ; Remove handler immediately to prevent multiple triggers
     OnClipboardChange(DictationClipboardHandler, 0)
 
@@ -7958,11 +7808,6 @@ PlayDictationCompletionChime(*) {
     chimeShouldPlay := g_DictationCompletionChimeScheduled
     g_DictationCompletionChimeScheduled := false  ; Clear IMMEDIATELY to prevent other calls
     Critical "Off"
-
-    ; #region agent log
-    DbgLog("PlayDictationCompletionChime", "chimeShouldPlay=" chimeShouldPlay " loopActive=" g_DictationLoopActive " hyp=B"
-    )
-    ; #endregion
 
     ; Only play if flag was set (prevent duplicate execution)
     if (chimeShouldPlay) {
@@ -8012,9 +7857,6 @@ PlayDictationCompletionChime(*) {
         if (InfiniteDictation.IsActive) {
             InfiniteDictation.OnTranscriptionComplete()
         } else if (g_DictationLoopActive) {
-            ; #region agent log
-            DbgLog("PlayDictationCompletionChime", "scheduling DictationLoopStart -2000 hyp=B")
-            ; #endregion
             SetTimer(DictationLoopStart, -2000)
         }
     }
@@ -8086,9 +7928,6 @@ CheckDictationRecordingWindow() {
         g_LastStateTransitionTick := A_TickCount
         g_DictationActive := false
         Critical "Off"
-        ; #region agent log
-        DbgLog("CheckDictationRecordingWindow", "window gone set chimeScheduled hyp=D")
-        ; #endregion
         g_DictationSoundPlayed := false
 
         StopDictationPulseTimer()
@@ -8200,9 +8039,6 @@ OnExit(CleanupDictationIndicator)
 
     ; Skip when script sends #!+0 programmatically (Infinite Dictation stop/start, #!+7 stop, etc.)
     if (g_ProgrammaticDictationStop) {
-        ; #region agent log
-        DbgLog("~#!+0", "early return progStop hyp=C")
-        ; #endregion
         g_ProgrammaticDictationStop := false
         return
     }
