@@ -5954,7 +5954,8 @@ CleanupHotstringSelector() {
 
 ; Navigate to Gemini, focus the prompt field, then paste first clipboard snippet (same as Win+Alt+Shift+1).
 ; Reference: "order called snippets" – Clip Angel top item sent via !v then ^!b.
-GeminiNavigateFocusAndPasteFirstSnippet() {
+; If optionalPromptText is non-empty, inserts that text into the prompt field instead (same as Win+Alt+Shift+U then L, prompt char).
+GeminiNavigateFocusAndPasteFirstSnippet(optionalPromptText := "") {
     SetTitleMatchMode(2)
     geminiHwnd := 0
     try {
@@ -6067,13 +6068,27 @@ GeminiNavigateFocusAndPasteFirstSnippet() {
     } catch {
     }
 
-    ; Paste first clipboard snippet (same as Win+Alt+Shift+1: order called snippets)
-    Send "!v"
-    Sleep 50
-    Send "^!b"
+    if (optionalPromptText != "") {
+        InsertText(optionalPromptText)
+    } else {
+        ; Paste first clipboard snippet (same as Win+Alt+Shift+1: order called snippets)
+        Send "!v"
+        Sleep 50
+        Send "^!b"
+    }
     ; Same sound as when opening Gemini (focus/paste feedback)
     if (IsSoundEnabled())
         SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
+}
+
+; Returns the AI Text Optimizer prompt text (from prompt/aiopt.txt or fallback). Used by Ctrl+Alt+Win+4 and L+4 flow.
+GetAioptPromptText() {
+    promptDir := A_ScriptDir "\prompt"
+    try {
+        return FileRead(promptDir "\aiopt.txt")
+    } catch {
+        return "Rewrite the input text so it becomes AI-oriented. Preserve all important information.`n"
+    }
 }
 
 ; Delayed submit flow: show 4s banner, allow N to cancel auto-submit; then navigate+paste and optionally send Enter.
@@ -7080,6 +7095,9 @@ ShowHotstringSelector() {
 
 ; Ctrl+Alt+Win+L - Same as Win+Alt+Shift+U then L,L: banner, 4s delay, N to cancel; then open Gemini + paste first snippet (+ Enter unless cancelled)
 ^!#L:: GeminiDelayedSubmitFlow()
+
+; Ctrl+Alt+Win+4 - Send AI Text Optimizer prompt to Gemini (same as Win+Alt+Shift+U then L, 4)
+^!#4:: GeminiNavigateFocusAndPasteFirstSnippet(GetAioptPromptText())
 
 ; =============================================================================
 ; Alt+Shift+W Shortcut

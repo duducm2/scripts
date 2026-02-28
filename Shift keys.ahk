@@ -1367,6 +1367,7 @@ r=== CLIP ANGEL ===
 
 === GENERAL ===
 [Win+Alt+Shift+U] > Quick string shortcuts
+[Ctrl+Alt+Win+4] > Send AI Text Optimizer prompt to Gemini (same as Win+Alt+Shift+U then L, 4)
 [Win+Alt+Shift+Q] > Jump mouse on the middle
 [Win+Alt+Shift+X] > Peek PDF (tap) / Set PDF path (hold 700ms+)
 [Win+Alt+Shift+→] > Show square selector (right direction)
@@ -8890,7 +8891,8 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
                 break
             }
             ; Title contains Save/Export (any window)
-            for str in ["Save As", "Export", "Salvar como", "Guardar como", "Save File", "Save PDF", "Marp", "Export PDF"] {
+            for str in ["Save As", "Export", "Salvar como", "Guardar como", "Save File", "Save PDF", "Marp",
+                "Export PDF"] {
                 h := WinExist(str)
                 if h {
                     saveDialogHwnd := h
@@ -8946,7 +8948,7 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
 
                     ; If this Edit looks like the File name field (based on name/id and .pdf suffix), capture it
                     if (suffix != "" && InStr(StrLower(suffix), ".pdf")
-                        && (el.AutomationId = "1001" || el.Name = "File name:")) {
+                    && (el.AutomationId = "1001" || el.Name = "File name:")) {
                         filePath := val
                         SplitPath filePath, , , &ext, &nameNoExt
                         fileNameOnly := (nameNoExt != "") ? (nameNoExt . (ext != "" ? "." ext : "")) : suffix
@@ -9006,7 +9008,6 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
         if (fileNameOnly != "")
             EnsureSingleChromePdfInstance(filePath, fileNameOnly)
 
-       
         Send "{Enter}"  ; Confirm initial save
 
         ; 3. Handle Confirm Save As / Replace dialog (ClassName #32770, Name: "Confirm Save As")
