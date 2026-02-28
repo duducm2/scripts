@@ -5024,6 +5024,53 @@ global g_StudyTopics := Map(
 global g_StudyTopicSelectorGui := false
 global g_StudyTopicSelectorActive := false
 
+; PDF focus monitoring for automatic blackout cancellation (Win+Alt+Shift+X)
+global g_PdfFocusMonitorTimer := false
+global g_PdfFocusTrackedHwnd := 0
+
+; Monitor PDF (Peek) window focus and automatically disable focus mode when it loses focus
+MonitorPdfFocus() {
+    global g_PdfFocusTrackedHwnd
+
+    ; Check if tracked window still exists
+    if (g_PdfFocusTrackedHwnd && !WinExist("ahk_id " . g_PdfFocusTrackedHwnd)) {
+        DisableFocusMode()
+        StopPdfFocusMonitor()
+        return
+    }
+
+    ; Check if PDF window is still the active window
+    if (!WinActive("ahk_id " . g_PdfFocusTrackedHwnd)) {
+        DisableFocusMode()
+        StopPdfFocusMonitor()
+    }
+}
+
+; Start monitoring PDF window focus
+StartPdfFocusMonitor(hwnd := 0) {
+    global g_PdfFocusMonitorTimer, g_PdfFocusTrackedHwnd
+
+    StopPdfFocusMonitor()
+
+    g_PdfFocusTrackedHwnd := hwnd ? hwnd : WinExist("A")
+    if (!g_PdfFocusTrackedHwnd)
+        return
+
+    g_PdfFocusMonitorTimer := MonitorPdfFocus
+    SetTimer(g_PdfFocusMonitorTimer, 200)
+}
+
+; Stop monitoring PDF window focus
+StopPdfFocusMonitor() {
+    global g_PdfFocusMonitorTimer, g_PdfFocusTrackedHwnd
+
+    if (g_PdfFocusMonitorTimer) {
+        SetTimer(g_PdfFocusMonitorTimer, 0)
+        g_PdfFocusMonitorTimer := false
+    }
+    g_PdfFocusTrackedHwnd := 0
+}
+
 ShowStudyTopicSelector() {
     global g_StudyTopicSelectorGui, g_StudyTopicSelectorActive, g_StudyTopics
 
@@ -5193,6 +5240,8 @@ PeekPdf_OpenPath(pdfPath) {
     if WinWait("Peek", "", 5) {
         WinMaximize
         PeekPdf_WaitAndConfigure()
+        EnableFocusMode()
+        StartPdfFocusMonitor()
     }
 }
 
@@ -5454,6 +5503,8 @@ PeekPdf_WaitAndConfigure() {
             WinShow("ahk_id " hwnd)
             WinActivate("ahk_id " hwnd)
         }
+        EnableFocusMode()
+        StartPdfFocusMonitor(hwnd)
         return
     }
     ShowStudyTopicSelector()
