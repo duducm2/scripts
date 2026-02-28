@@ -3470,3 +3470,70 @@
 {"ts":97962812,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
 {"ts":97962828,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
 {"ts":97962843,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":98224687,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":98224687,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":98224703,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":98224703,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":98224718,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":98224734,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":98224750,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":98368515,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":98368515,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":98368531,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":98368531,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":98368546,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":98368562,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":98368578,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":98649828,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":98649828,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":98649843,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":98649859,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":98649859,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":98649859,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":98649937,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":98649937,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":99098046,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":99098046,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":99098062,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":99098078,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":99098078,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":99098093,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":99291937,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":99291937,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":99291953,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":99291984,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":99292390,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":99292390,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":99292421,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":99538750,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":99538750,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":99538765,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":99538781,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":99593562,"loc":"FindGeminiPromptField","msg":"entry","hypothesisId":"H1"}
+{"ts":99593593,"loc":"FindGeminiPromptField","msg":"return found","data":{"name":"Enter a prompt for Gemini"},"hypothesisId":"H1"}
+{"ts":99967156,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":99967171,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":99967171,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":99967187,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":99967203,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":99967218,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":100064812,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":100064812,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":100064828,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":100065296,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":100065296,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":100065312,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":100284953,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":100284953,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":100285000,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":100285015,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":100285015,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":100285046,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":100924984,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":100924984,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":100925000,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":100925046,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":100925046,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":100925062,"loc":"CheckDictationRecordingWindow","msg":"window gone set chimeScheduled hyp=D"}
+{"ts":100925078,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}
+{"ts":100925078,"loc":"PlayDictationCompletionChime","msg":"chimeShouldPlay=1 loopActive=0 hyp=B"}

@@ -5064,8 +5064,146 @@ HandleLoopModeUp() {
 
 ; =============================================================================
 ; Peek PDF – Win+Alt+Shift+X
-; Tap: open stored PDF in PowerToys Peek. Hold (700ms+): prompt to set PDF path.
+; If Peek is open: activate it. Otherwise: show study-topic selector (same aesthetic as Win+Alt+Shift+C).
 ; =============================================================================
+
+; Study topics for Win+Alt+Shift+X selector. Paths are relative to notes repo (GetNotesRepoPath()).
+global g_StudyTopics := Map(
+    1, { name: "English", path: "\studies\english\lists\1\1.pdf" },
+    2, { name: "Piano", path: "\studies\piano\lists\1\1.pdf" },
+    3, { name: "Communication", path: "\studies\communication\lists\1\1.pdf" },
+    4, { name: "Statistics", path: "\studies\statistics\lists\1\1.pdf" },
+    5, { name: "Mnemonics README", path: "\studies\technique\README.pdf" }
+)
+global g_StudyTopicSelectorGui := false
+global g_StudyTopicSelectorActive := false
+
+ShowStudyTopicSelector() {
+    global g_StudyTopicSelectorGui, g_StudyTopicSelectorActive, g_StudyTopics
+
+    if (g_StudyTopicSelectorActive)
+        return
+
+    g_StudyTopicSelectorGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner")
+    g_StudyTopicSelectorGui.BackColor := "1E1E2E"
+    g_StudyTopicSelectorGui.MarginX := 20
+    g_StudyTopicSelectorGui.MarginY := 15
+
+    g_StudyTopicSelectorGui.SetFont("s14 cCDD6F4 Bold", "Segoe UI")
+    g_StudyTopicSelectorGui.Add("Text", "w280 Center", "📚 Study topic (Peek)")
+    g_StudyTopicSelectorGui.Add("Text", "w280 h1 Background45475A")
+
+    g_StudyTopicSelectorGui.SetFont("s12 cCDD6F4", "Segoe UI")
+    for num, topic in g_StudyTopics {
+        g_StudyTopicSelectorGui.Add("Text", "w280", "[" . num . "] " . topic.name)
+    }
+
+    g_StudyTopicSelectorGui.Add("Text", "w280 h1 Background45475A y+10")
+    g_StudyTopicSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
+    g_StudyTopicSelectorGui.Add("Text", "w280 Center", "Press 1–5 | Esc to cancel")
+
+    activeWin := 0
+    try {
+        activeWin := WinGetID("A")
+    } catch {
+        activeWin := 0
+    }
+
+    MonitorGetWorkArea(1, &monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
+    monitorWidth := monitorRight - monitorLeft
+    monitorHeight := monitorBottom - monitorTop
+
+    if (activeWin && activeWin != 0) {
+        rect := Buffer(16, 0)
+        if (DllCall("GetWindowRect", "ptr", activeWin, "ptr", rect)) {
+            winLeft := NumGet(rect, 0, "int")
+            winTop := NumGet(rect, 4, "int")
+            winRight := NumGet(rect, 8, "int")
+            winBottom := NumGet(rect, 12, "int")
+            centerX := winLeft + (winRight - winLeft) // 2
+            centerY := winTop + (winBottom - winTop) // 2
+            monitorCount := MonitorGetCount()
+            loop monitorCount {
+                idx := A_Index
+                MonitorGetWorkArea(idx, &l, &t, &r, &b)
+                if (centerX >= l && centerX <= r && centerY >= t && centerY <= b) {
+                    monitorLeft := l
+                    monitorTop := t
+                    monitorRight := r
+                    monitorBottom := b
+                    monitorWidth := r - l
+                    monitorHeight := b - t
+                    break
+                }
+            }
+        }
+    }
+
+    g_StudyTopicSelectorGui.Show("AutoSize Hide")
+    g_StudyTopicSelectorGui.GetPos(&gx, &gy, &gw, &gh)
+    cx := monitorLeft + (monitorWidth - gw) // 2
+    cy := monitorTop + (monitorHeight - gh) // 2
+    g_StudyTopicSelectorGui.Show("x" . cx . " y" . cy . " NA")
+
+    g_StudyTopicSelectorActive := true
+    Hotkey("1", StudyTopicSelector_HandleKey, "On")
+    Hotkey("2", StudyTopicSelector_HandleKey, "On")
+    Hotkey("3", StudyTopicSelector_HandleKey, "On")
+    Hotkey("4", StudyTopicSelector_HandleKey, "On")
+    Hotkey("5", StudyTopicSelector_HandleKey, "On")
+    Hotkey("Escape", StudyTopicSelector_Cancel, "On")
+}
+
+StudyTopicSelector_HandleKey(key) {
+    global g_StudyTopicSelectorActive, g_StudyTopics
+
+    if (!g_StudyTopicSelectorActive)
+        return
+    selection := Integer(key)
+    StudyTopicSelector_Close()
+    if (!g_StudyTopics.Has(selection))
+        return
+
+    topic := g_StudyTopics[selection]
+    basePath := GetNotesRepoPath()
+    if (basePath = "") {
+        try ShowCenteredOverlay_Utils("Notes repo path not set (env.ahk).", 3000, "FFAA00")
+        return
+    }
+    fullPath := RTrim(basePath, "\") . topic.path
+    if (!FileExist(fullPath)) {
+        try ShowCenteredOverlay_Utils("PDF not found: " fullPath, 3500, "FF0000")
+        return
+    }
+    peekExe := PeekPdf_ResolvePeekExePath()
+    if (!FileExist(peekExe)) {
+        try ShowCenteredOverlay_Utils("Peek executable not found.", 2500, "FF0000")
+        return
+    }
+    PeekPdf_OpenPath(fullPath)
+}
+
+StudyTopicSelector_Cancel(*) {
+    StudyTopicSelector_Close()
+}
+
+StudyTopicSelector_Close() {
+    global g_StudyTopicSelectorGui, g_StudyTopicSelectorActive
+
+    if (!g_StudyTopicSelectorActive)
+        return
+    g_StudyTopicSelectorActive := false
+    try Hotkey("1", "Off")
+    try Hotkey("2", "Off")
+    try Hotkey("3", "Off")
+    try Hotkey("4", "Off")
+    try Hotkey("5", "Off")
+    try Hotkey("Escape", StudyTopicSelector_Cancel, "Off")
+    if (IsObject(g_StudyTopicSelectorGui) && g_StudyTopicSelectorGui.Hwnd) {
+        try g_StudyTopicSelectorGui.Destroy()
+    }
+    g_StudyTopicSelectorGui := false
+}
 
 PeekPdf_GetIniPath() {
     return A_ScriptDir "\data\peek_pdf.ini"
@@ -5092,6 +5230,24 @@ PeekPdf_ResolvePeekExePath() {
     if (FileExist(envExe))
         return envExe
     return "peek.exe"
+}
+
+; Open a specific PDF in PowerToys Peek and run WaitAndConfigure. Caller must validate pdfPath and exe exist.
+PeekPdf_OpenPath(pdfPath) {
+    peekExe := PeekPdf_ResolvePeekExePath()
+    peekEsc := StrReplace(peekExe, "'", "''")
+    pdfEsc := StrReplace(pdfPath, "'", "''")
+    psArg := "& " . Chr(39) . peekEsc . Chr(39) . " " . Chr(39) . pdfEsc . Chr(39)
+    cmd := "powershell.exe -NoProfile -ExecutionPolicy Bypass -Command " . Chr(34) . psArg . Chr(34)
+    try Run cmd, "", "Hide"
+    catch as e {
+        try ShowCenteredOverlay_Utils("Failed to open Peek: " e.Message, 3000, "FF0000")
+        return
+    }
+    if WinWait("Peek", "", 5) {
+        WinMaximize
+        PeekPdf_WaitAndConfigure()
+    }
 }
 
 PeekPdf_OpenStored() {
@@ -5342,39 +5498,6 @@ PeekPdf_WaitAndConfigure() {
     }
 }
 
-PeekPdf_ShowInputAndSave() {
-    iniPath := PeekPdf_GetIniPath()
-    SplitPath(iniPath, , &iniDir)
-    if (!DirExist(iniDir))
-        DirCreate(iniDir)
-
-    ; Determine which environment we're configuring
-    envLabel := IS_WORK_ENVIRONMENT ? "WORK (office PC)" : "PERSONAL (home PC)"
-    keyName := IS_WORK_ENVIRONMENT ? "PdfPathWork" : "PdfPathPersonal"
-
-    ; Load existing value for this environment (if any) to prefill
-    existing := ""
-    try existing := IniRead(iniPath, "Peek", keyName, "")
-
-    ; Prompt only for the current environment
-    promptText := "Enter the " . envLabel . " PDF file path:`n`n" . "(Leave blank to keep existing value or skip.)"
-    result := InputBox(promptText, "Peek PDF Path – " . envLabel, "w650 h150", existing)
-    if (result.Result = "Cancel")
-        return
-
-    newPath := PeekPdf_NormalizePath(result.Value)
-
-    if (newPath != "") {
-        ; Persist for this environment
-        try IniWrite(newPath, iniPath, "Peek", keyName)
-        ; Also maintain legacy key for backward compatibility
-        try IniWrite(newPath, iniPath, "Peek", "PdfPath")
-        try ShowCenteredOverlay_Utils("PDF path saved for " . envLabel . ".", 2000, "00AA00")
-    } else {
-        try ShowCenteredOverlay_Utils("No PDF path changed for " . envLabel . ".", 2000, "FFAA00")
-    }
-}
-
 #!+x::
 {
     hwnd := WinExist("ahk_exe PowerToys.Peek.UI.exe")
@@ -5387,15 +5510,7 @@ PeekPdf_ShowInputAndSave() {
         }
         return
     }
-
-    pressTime := A_TickCount
-    KeyWait "x", "T1"
-    holdTime := A_TickCount - pressTime
-    if (holdTime >= 700) {
-        PeekPdf_ShowInputAndSave()
-    } else {
-        PeekPdf_OpenStored()
-    }
+    ShowStudyTopicSelector()
 }
 
 ; =============================================================================
