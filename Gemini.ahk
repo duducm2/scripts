@@ -700,10 +700,6 @@ GEMINI_COPY_RESULT_PATH := A_ScriptDir "\.cursor\gemini_copy_result.txt"
 OnMessage(WM_COPY_LAST_GEMINI, copyFromBridge)
 OnMessage(WM_START_DELAYED_SUBMIT_MONITOR, handleStartDelayedSubmitMonitor)
 handleStartDelayedSubmitMonitor(wParam, lParam, msg, hwnd) {
-    ; #region agent log
-    try FileAppend '{"sessionId":"886cc7","location":"Gemini.ahk:handleStartDelayedSubmitMonitor","message":"WM received","data":{"wParam":' wParam ',"lParam":' lParam '},"hypothesisId":"A,D","timestamp":' A_TickCount '}' "`n",
-        A_ScriptDir "\debug-886cc7.log"
-    ; #endregion
     GeminiDelayedSubmitMonitorStart(wParam, lParam)
 }
 copyFromBridge(*) {
@@ -1190,17 +1186,8 @@ class GeminiDelayedSubmitMonitor {
     }
 
     Start(originalHwnd, geminiHwnd) {
-        ; #region agent log
-        try FileAppend '{"sessionId":"886cc7","location":"Gemini.ahk:Monitor.Start","message":"entry","data":{"originalHwnd":' originalHwnd ',"geminiHwnd":' geminiHwnd '},"hypothesisId":"D","timestamp":' A_TickCount '}' "`n",
-            A_ScriptDir "\debug-886cc7.log"
-        ; #endregion
-        if (!originalHwnd || !geminiHwnd) {
-            ; #region agent log
-            try FileAppend '{"sessionId":"886cc7","location":"Gemini.ahk:Monitor.Start","message":"early return","data":{"reason":"invalid hwnd"},"hypothesisId":"D","timestamp":' A_TickCount '}' "`n",
-                A_ScriptDir "\debug-886cc7.log"
-            ; #endregion
+        if (!originalHwnd || !geminiHwnd)
             return
-        }
         this.OriginalHwnd := originalHwnd
         this.GeminiHwnd := geminiHwnd
         this.RetryCount := 0
@@ -1212,11 +1199,6 @@ class GeminiDelayedSubmitMonitor {
     CheckCompletion() {
         this.RetryCount++
         if (this.RetryCount > this.MaxRetries) {
-            ; #region agent log
-            try FileAppend '{"sessionId":"886cc7","location":"Gemini.ahk:Monitor.CheckCompletion","message":"MaxRetries","data":{"RetryCount":' this
-                .RetryCount ',"MaxRetries":' this.MaxRetries ',"ButtonEverFound":' (this.ButtonEverFound ? "true" :
-                    "false") '},"hypothesisId":"C","timestamp":' A_TickCount '}' "`n", A_ScriptDir "\debug-886cc7.log"
-            ; #endregion
             SetTimer(this.TimerCallback, 0)
             return
         }
@@ -1237,20 +1219,8 @@ class GeminiDelayedSubmitMonitor {
             return
         }
 
-        ; #region agent log
-        if (!this.ButtonEverFound && Mod(this.RetryCount, 10) = 0)
-            try FileAppend '{"sessionId":"886cc7","location":"Gemini.ahk:Monitor.CheckCompletion","message":"polling","data":{"RetryCount":' this
-                .RetryCount ',"btnFound":' (btn ? "true" : "false") '},"hypothesisId":"E","timestamp":' A_TickCount '}' "`n",
-                A_ScriptDir "\debug-886cc7.log"
-        ; #endregion
-
         if btn {
             this.ButtonEverFound := true
-            ; #region agent log
-            if (this.RetryCount = 1 || Mod(this.RetryCount, 10) = 0)
-                try FileAppend '{"sessionId":"886cc7","location":"Gemini.ahk:Monitor.CheckCompletion","message":"streaming","data":{"RetryCount":' this
-                    .RetryCount '},"hypothesisId":"B","timestamp":' A_TickCount '}' "`n", A_ScriptDir "\debug-886cc7.log"
-            ; #endregion
             return
         }
 
@@ -1272,10 +1242,6 @@ class GeminiDelayedSubmitMonitor {
             }
 
             if isTrulyGone {
-                ; #region agent log
-                try FileAppend '{"sessionId":"886cc7","location":"Gemini.ahk:Monitor.CheckCompletion","message":"completion detected","data":{"RetryCount":' this
-                    .RetryCount '},"hypothesisId":"B","timestamp":' A_TickCount '}' "`n", A_ScriptDir "\debug-886cc7.log"
-                ; #endregion
                 SetTimer(this.TimerCallback, 0)
                 try {
                     if (IsSoundEnabled())
@@ -1289,10 +1255,6 @@ class GeminiDelayedSubmitMonitor {
     }
 
     ShowCopyDecisionBanner() {
-        ; #region agent log
-        try FileAppend '{"sessionId":"886cc7","location":"Gemini.ahk:Monitor.ShowCopyDecisionBanner","message":"showing banner","data":{},"hypothesisId":"B","timestamp":' A_TickCount '}' "`n",
-            A_ScriptDir "\debug-886cc7.log"
-        ; #endregion
         banner := Gui("+AlwaysOnTop -Caption +ToolWindow")
         banner.BackColor := "3772FF"
         banner.SetFont("s14 cFFFFFF", "Segoe UI")
