@@ -1514,6 +1514,14 @@ AiModelBanner_Hide() {
 ; tabNumber 1 = blue background, 2 = yellow background (character in contrasting color). Auto-hides after 700 ms. Utils-only (no external refs).
 ; =============================================================================
 ShowSingleCharTabBanner_Utils(tabNumber) {
+    ; #region agent log
+    try {
+        logPath := A_ScriptDir "\debug-9ef4bd.log"
+        FileAppend '{"sessionId":"9ef4bd","location":"Utils.ahk:ShowSingleCharTabBanner_Utils","message":"entry","data":{"tabNumber":' tabNumber '},"timestamp":' A_TickCount ',"hypothesisId":"H4"}' "`n",
+            logPath
+    } catch {
+    }
+    ; #endregion
     msg := String(tabNumber)
     if (tabNumber = 1) {
         bgColor := "0000FF"
