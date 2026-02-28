@@ -161,6 +161,14 @@ CreateCenteredBanner(message, bgColor := "3772FF", fontColor := "FFFFFF", fontSi
 }
 
 ; =============================================================================
+; Show tab indicator banner (1 = blue, 2 = yellow): square, center of active-window monitor.
+; Delegates to Utils for identical behavior as #!+U tab-switching in Utils.ahk. Auto-hides after 700 ms.
+; =============================================================================
+ShowGeminiTabBanner(tabNumber, geminiHwnd := 0) {
+    ShowSingleCharTabBanner_Utils(tabNumber)
+}
+
+; =============================================================================
 ; Helper function to show a notification on the active window
 ; =============================================================================
 ShowNotification(message, durationMs := 500, bgColor := "FFFF00", fontColor := "000000", fontSize := 24) {
@@ -319,6 +327,7 @@ GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false) {
     if (useTrashTab) {
         Send("^2")
         Sleep 150
+        ShowGeminiTabBanner(2, hwnd)
     }
 
     ; Step 2: Check if "Pause" button exists (if reading is active, pause it)
@@ -844,14 +853,17 @@ InitializeGeminiFirstTime() {
         ; Update banner status
         ShowSmallLoadingIndicator("Sending prompt to Gemini tabs...")
 
+        geminiHwnd := GetGeminiWindowHwnd()
         ; Ensure first tab is active and send prompt
         Send("^1")
         Sleep 280
+        ShowGeminiTabBanner(1, geminiHwnd)
         SendPromptToActiveGeminiTab(promptText)
 
         ; Switch to second tab and send the same prompt
         Send("^2")
         Sleep 280
+        ShowGeminiTabBanner(2, geminiHwnd)
         SendPromptToActiveGeminiTab(promptText)
 
         ; Hide banner on success
@@ -992,6 +1004,7 @@ class GeminiAsyncLookup {
         ; Chrome convention: Ctrl+2 selects the second tab in the window.
         Send("^2")
         Sleep 150
+        ShowGeminiTabBanner(2, this.GeminiHwnd)
         uia := UIA_Browser()
         Sleep 300
         promptField := FindGeminiPromptField(uia)
@@ -1315,6 +1328,7 @@ class GeminiDelayedSubmitMonitor {
         ; Delayed submit uses first tab (^1 in GeminiNavigateFocusAndPasteFirstSnippet); ensure we copy from same tab.
         Send("^1")
         Sleep 200
+        ShowGeminiTabBanner(1, this.GeminiHwnd)
         copyOpt := { restoreWindow: false, playChimeAndNotify: false, alreadyActive: true }
         if !CopyLastGeminiMessageToClipboard(copyOpt, this.GeminiHwnd) {
             if (WinExist("ahk_id " this.OriginalHwnd))
@@ -1392,6 +1406,7 @@ class GeminiAsyncTTS {
         ; Chrome convention: Ctrl+2 selects the second tab in the window.
         Send("^2")
         Sleep 150
+        ShowGeminiTabBanner(2, this.GeminiHwnd)
         uia := UIA_Browser()
         Sleep 300
         promptField := FindGeminiPromptField(uia)
@@ -1502,6 +1517,7 @@ class GeminiAsyncTTS {
                     return
                 Send("^2")
                 Sleep 200
+                ShowGeminiTabBanner(2, this.GeminiHwnd)
                 ; After TTS from selection (#!+7), read aloud from the trash tab (second Gemini tab).
                 GeminiTriggerReadAloud(false, true)   ; read aloud only, no copy (text was just sent via #!+7)
             }

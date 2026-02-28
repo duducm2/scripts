@@ -1551,6 +1551,59 @@ AiModelBanner_Hide() {
 }
 
 ; =============================================================================
+; Single-character tab banner: square, centered on monitor containing active window.
+; tabNumber 1 = blue background, 2 = yellow background (character in contrasting color). Auto-hides after 700 ms. Utils-only (no external refs).
+; =============================================================================
+ShowSingleCharTabBanner_Utils(tabNumber) {
+    msg := String(tabNumber)
+    if (tabNumber = 1) {
+        bgColor := "0000FF"
+        fontColor := "FFFFFF"
+    } else {
+        bgColor := "FFFF00"
+        fontColor := "000000"
+    }
+    side := 120
+    ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
+    ov.BackColor := bgColor
+    ov.SetFont("s72 c" . fontColor . " Bold", "Segoe UI")
+    ov.Add("Text", "w" . side . " h" . side . " Center", msg)
+    activeWin := 0
+    try {
+        activeWin := WinGetID("A")
+    } catch {
+        activeWin := 0
+    }
+    MonitorGetWorkArea(1, &monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
+    monitorWidth := monitorRight - monitorLeft
+    monitorHeight := monitorBottom - monitorTop
+    if (activeWin && activeWin != 0) {
+        rect := Buffer(16, 0)
+        if (DllCall("GetWindowRect", "ptr", activeWin, "ptr", rect)) {
+            centerX := (NumGet(rect, 0, "int") + NumGet(rect, 8, "int")) // 2
+            centerY := (NumGet(rect, 4, "int") + NumGet(rect, 12, "int")) // 2
+            loop MonitorGetCount() {
+                MonitorGetWorkArea(A_Index, &l, &t, &r, &b)
+                if (centerX >= l && centerX <= r && centerY >= t && centerY <= b) {
+                    monitorLeft := l
+                    monitorTop := t
+                    monitorWidth := r - l
+                    monitorHeight := b - t
+                    break
+                }
+            }
+        }
+    }
+    ov.Show("AutoSize Hide")
+    ov.GetPos(&gx, &gy, &gw, &gh)
+    cx := monitorLeft + (monitorWidth - gw) // 2
+    cy := monitorTop + (monitorHeight - gh) // 2
+    ov.Show("x" . cx . " y" . cy . " NA")
+    WinSetTransparent(178, ov)
+    SetTimer(() => (ov.Destroy()), -700)
+}
+
+; =============================================================================
 ; ExecuteHandyAiModelSelection() - Main automation logic for Handy
 ; =============================================================================
 ExecuteHandyAiModelSelection(selection) {
@@ -6108,6 +6161,7 @@ GeminiNavigateFocusAndPasteFirstSnippet(optionalPromptText := "") {
     ; Chrome convention: Ctrl+1 selects the first tab in the window.
     Send("^1")
     Sleep 120
+    ShowSingleCharTabBanner_Utils(1)
 
     ; Focus the Gemini prompt field (Anchor & Backtrack strategy)
     try {
@@ -6449,6 +6503,7 @@ HandleHotstringChar(char) {
                     ; Chrome convention: Ctrl+2 selects the second tab in the window.
                     Send("^2")
                     Sleep 120
+                    ShowSingleCharTabBanner_Utils(2)
                 } else if (char = "4" || char = "5"
                     || char = "q" || char = "Q"
                     || char = "w" || char = "W"
@@ -6459,6 +6514,7 @@ HandleHotstringChar(char) {
                     ; Ensure Tab 1 is active before inserting the prompt.
                     Send("^1")
                     Sleep 120
+                    ShowSingleCharTabBanner_Utils(1)
                 }
 
                 ; Focus the Gemini prompt field using the Anchor & Backtrack strategy (copied from Win+Alt+Shift+I),
