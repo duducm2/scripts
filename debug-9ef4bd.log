@@ -43,3 +43,4 @@
 {"sessionId":"9ef4bd","location":"Gemini.ahk:#!+i","message":"tabInfo first","data":{"isObject":1,"index":2,"count":2},"timestamp":148321625,"hypothesisId":"H1,H2"}
 {"sessionId":"9ef4bd","location":"Gemini.ahk:#!+i","message":"calling ShowSingleCharTabBanner_Utils","data":{"tabPosition":2},"timestamp":148321640,"hypothesisId":"H4"}
 {"sessionId":"9ef4bd","location":"Utils.ahk:ShowSingleCharTabBanner_Utils","message":"entry","data":{"tabNumber":2},"timestamp":148321640,"hypothesisId":"H4"}
+{"sessionId":"9ef4bd","location":"Utils.ahk:ShowSingleCharTabBanner_Utils","message":"entry","data":{"tabNumber":1},"timestamp":148401984,"hypothesisId":"H4"}

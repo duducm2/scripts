@@ -135,62 +135,24 @@ GetWorkAreaForWindow(hwnd) {
 ;      can query tabs via HTTP/json. More setup, not used here.
 ; =============================================================================
 GetChromeActiveTabIndex(uia) {
-    ; #region agent log
-    logPath := A_ScriptDir "\debug-9ef4bd.log"
-    try {
-        FileAppend '{"sessionId":"9ef4bd","location":"Gemini.ahk:GetChromeActiveTabIndex","message":"entry","data":{},"timestamp":' A_TickCount ',"hypothesisId":"H1"}' "`n",
-            logPath
-    } catch {
-    }
-    ; #endregion
     try {
         uia.GetCurrentMainPaneElement()
         tabs := uia.GetTabs()
-        ; #region agent log
-        try {
-            FileAppend '{"sessionId":"9ef4bd","location":"Gemini.ahk:GetChromeActiveTabIndex","message":"after GetTabs","data":{"tabLen":' (
-                tabs ? tabs.Length : 0) '},"timestamp":' A_TickCount ',"hypothesisId":"H1"}' "`n", logPath
-        } catch {
-        }
-        ; #endregion
         if (!tabs.Length)
             return 0
         current := uia.GetTab("")
-        ; #region agent log
-        try {
-            FileAppend '{"sessionId":"9ef4bd","location":"Gemini.ahk:GetChromeActiveTabIndex","message":"after GetTab","data":{"hasCurrent":' (
-                current ? 1 : 0) '},"timestamp":' A_TickCount ',"hypothesisId":"H1"}' "`n", logPath
-        } catch {
-        }
-        ; #endregion
         if (!current)
             return 0
         rid := current.RuntimeId
         for i, tab in tabs {
             try {
-                if (tab.RuntimeId = rid) {
-                    ; #region agent log
-                    try {
-                        FileAppend '{"sessionId":"9ef4bd","location":"Gemini.ahk:GetChromeActiveTabIndex","message":"return success","data":{"index":' i ',"count":' tabs
-                            .Length '},"timestamp":' A_TickCount ',"hypothesisId":"H1"}' "`n", logPath
-                    } catch {
-                    }
-                    ; #endregion
+                if (tab.RuntimeId = rid)
                     return { index: i, count: tabs.Length }
-                }
             } catch {
                 continue
             }
         }
-    } catch as err {
-        ; #region agent log
-        try {
-            errMsg := StrReplace(StrReplace(err.Message, "\", "\\"), '"', "'")
-            FileAppend '{"sessionId":"9ef4bd","location":"Gemini.ahk:GetChromeActiveTabIndex","message":"catch","data":{"err":"' errMsg '"},"timestamp":' A_TickCount ',"hypothesisId":"H1"}' "`n",
-                logPath
-        } catch {
-        }
-        ; #endregion
+    } catch {
     }
     return 0
 }
@@ -943,15 +905,6 @@ InitializeGeminiFirstTime() {
 ; =============================================================================
 #!+i:: {
     SetTitleMatchMode(2)
-    ; #region agent log
-    try {
-        logPath := A_ScriptDir "\debug-9ef4bd.log"
-        line := '{"sessionId":"9ef4bd","location":"Gemini.ahk:#!+i","message":"entry","data":{"hasHwnd":' (
-            GetGeminiWindowHwnd() ? 1 : 0) '},"timestamp":' A_TickCount ',"hypothesisId":"H3"}' "`n"
-        FileAppend line, logPath
-    } catch {
-    }
-    ; #endregion
     if hwnd := GetGeminiWindowHwnd() {
         try {
             WinActivate("ahk_id " hwnd)
@@ -960,14 +913,6 @@ InitializeGeminiFirstTime() {
             return
         }
         if WinWaitActive("ahk_id " hwnd, , 2) {
-            ; #region agent log
-            try {
-                logPath := A_ScriptDir "\debug-9ef4bd.log"
-                FileAppend '{"sessionId":"9ef4bd","location":"Gemini.ahk:#!+i","message":"WinWaitActive ok","data":{},"timestamp":' A_TickCount ',"hypothesisId":"H5"}' "`n",
-                    logPath
-            } catch {
-            }
-            ; #endregion
             Sleep 120   ; Let the window and Chrome content settle before UIA attaches
             ; Bind UIA to this window so we never attach to a different Chrome window
             uia := UIA_Browser("ahk_id " hwnd)
@@ -977,40 +922,12 @@ InitializeGeminiFirstTime() {
             ; Brief extra delay so Chrome tab bar is ready for UIA; retry once if first attempt fails (timing).
             Sleep 80
             tabInfo := GetChromeActiveTabIndex(uia)
-            ; #region agent log
-            try {
-                logPath := A_ScriptDir "\debug-9ef4bd.log"
-                idx := (tabInfo && tabInfo.HasProp("index")) ? tabInfo.index : 0
-                cnt := (tabInfo && tabInfo.HasProp("count")) ? tabInfo.count : 0
-                FileAppend '{"sessionId":"9ef4bd","location":"Gemini.ahk:#!+i","message":"tabInfo first","data":{"isObject":' (
-                    IsObject(tabInfo) ? 1 : 0) ',"index":' idx ',"count":' cnt '},"timestamp":' A_TickCount ',"hypothesisId":"H1,H2"}' "`n",
-                logPath
-            } catch {
-            }
-            ; #endregion
             if (!tabInfo) {
                 Sleep 150
                 tabInfo := GetChromeActiveTabIndex(uia)
-                ; #region agent log
-                try {
-                    idx2 := (tabInfo && tabInfo.HasProp("index")) ? tabInfo.index : 0
-                    cnt2 := (tabInfo && tabInfo.HasProp("count")) ? tabInfo.count : 0
-                    FileAppend '{"sessionId":"9ef4bd","location":"Gemini.ahk:#!+i","message":"tabInfo retry","data":{"isObject":' (
-                        IsObject(tabInfo) ? 1 : 0) ',"index":' idx2 ',"count":' cnt2 '},"timestamp":' A_TickCount ',"hypothesisId":"H1,H2"}' "`n",
-                    logPath
-                } catch {
-                }
-                ; #endregion
             }
             ; Show tab-position banner: use UIA index when available, otherwise assume position 1 so banner always appears
             tabPosition := (tabInfo && tabInfo.count >= 2 && tabInfo.index) ? tabInfo.index : 1
-            ; #region agent log
-            try {
-                FileAppend '{"sessionId":"9ef4bd","location":"Gemini.ahk:#!+i","message":"calling ShowSingleCharTabBanner_Utils","data":{"tabPosition":' tabPosition '},"timestamp":' A_TickCount ',"hypothesisId":"H4"}' "`n",
-                    logPath
-            } catch {
-            }
-            ; #endregion
             ShowSingleCharTabBanner_Utils(tabPosition)
 
             ; Find the anchor element: "Open upload file menu" button
