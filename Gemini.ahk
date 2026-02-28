@@ -1307,8 +1307,8 @@ class GeminiDelayedSubmitMonitor {
     ShowCopyDecisionBanner() {
         banner := Gui("+AlwaysOnTop -Caption +ToolWindow")
         banner.BackColor := "3772FF"
-        banner.SetFont("s14 cFFFFFF", "Segoe UI")
-        banner.Add("Text", "w320 Center", "Copy? [N]")
+        banner.SetFont("s8 cFFFFFF", "Segoe UI")
+        banner.Add("Text", "w160 Center", "Copy? [N]")
         workArea := GetWorkAreaForWindow(this.OriginalHwnd)
         if (workArea = "") {
             MonitorGetWorkArea(, &wLeft, &wTop, &wRight, &wBottom)
@@ -1324,7 +1324,7 @@ class GeminiDelayedSubmitMonitor {
             banner.GetPos(, , &gw, &gh)
             banner.Show("x" . Round(workArea.left + (w - gw) / 2) . " y" . Round(workArea.top + (h - gh) / 2) . " NA")
         }
-        WinSetTransparent(220, banner)
+        WinSetTransparent(204, banner)  ; 80% opacity, half-size banner
         this.CopyBannerGui := banner
         this.CopyTimeoutTimer := this.DoCopyOnTimeout.Bind(this)
         Hotkey("n", this.CancelCopy.Bind(this), "On")

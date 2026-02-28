@@ -1955,11 +1955,11 @@ HotstringGeminiBanner_Show(text := "Gemini: inserting prompt...") {
         }
     }
 
-    ; Match other banners: w320, s14, alpha 220 (same as "Send to Gemini" / "Copy? [N]")
+    ; Half size: w160, s8 (was w320, s14)
     ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
     ov.BackColor := "3772FF"
-    ov.SetFont("s14 cFFFFFF", "Segoe UI")
-    ov.Add("Text", "w320 Center", text)
+    ov.SetFont("s8 cFFFFFF", "Segoe UI")
+    ov.Add("Text", "w160 Center", text)
     ov.Show("AutoSize Hide")
     ov.GetPos(, , &gw, &gh)
 
@@ -1977,7 +1977,8 @@ HotstringGeminiBanner_Show(text := "Gemini: inserting prompt...") {
         ov.Show("x" . cx . " y" . cy . " NA")
     }
 
-    WinSetTransparent(220, ov)
+    ; 80% opacity (204/255)
+    WinSetTransparent(204, ov)
     g_HotstringGeminiBannerGui := ov
 }
 
@@ -1995,8 +1996,8 @@ HotstringGeminiBanner_Hide(*) {
 }
 
 ; =============================================================================
-; Dictation: "Send to Gemini?" confirmation banner (4s, Y to confirm)
-; Size and opacity match "Copy? [N]" banner (Gemini.ahk ShowCopyDecisionBanner): w320, s14, alpha 220.
+; Dictation: "Send to Gemini?" confirmation banner (6s, Y to confirm)
+; Half size: w160, s8; 80% opacity (204).
 ; =============================================================================
 global g_DictationGeminiConfirmGui := false
 
@@ -2025,11 +2026,11 @@ DictationGeminiConfirm_Show() {
         }
     }
 
-    ; Match "Copy? [N]" banner: w320, s14, no Bold, alpha 220
+    ; Half size: w160, s8 (was w320, s14)
     ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
     ov.BackColor := "3772FF"
-    ov.SetFont("s14 cFFFFFF", "Segoe UI")
-    ov.Add("Text", "w320 Center", "Send transcription to Gemini? Press Y (4s)")
+    ov.SetFont("s8 cFFFFFF", "Segoe UI")
+    ov.Add("Text", "w160 Center", "Send transcription to Gemini? Press Y (6s)")
     ov.Show("AutoSize Hide")
     ov.GetPos(, , &gw, &gh)
 
@@ -2047,8 +2048,8 @@ DictationGeminiConfirm_Show() {
         ov.Show("x" . cx . " y" . cy . " NA")
     }
 
-    ; Full opacity so banner is clearly visible (no transparency)
-    WinSetTransparent(255, ov)
+    ; 80% opacity (204/255)
+    WinSetTransparent(204, ov)
     g_DictationGeminiConfirmGui := ov
     ; #region agent log
     DebugBannerLog("Utils.ahk:DictationGeminiConfirm_Show", "Show done", "gw=" . gw . " gh=" . gh, "H4")
@@ -2087,7 +2088,7 @@ DictationGeminiConfirm_OnTimeout(*) {
     DictationGeminiConfirm_CleanupAndMaybeSubmit(false)
 }
 
-; Show banner and wait 4s for Y; on Y call GeminiDelayedSubmitFlow(), else just close.
+; Show banner and wait 6s for Y; on Y call GeminiDelayedSubmitFlow(), else just close.
 DictationGeminiConfirm_ShowAndWait() {
     ; #region agent log
     DebugBannerLog("Utils.ahk:DictationGeminiConfirm_ShowAndWait", "ShowAndWait entry", "", "H5")
@@ -2095,7 +2096,7 @@ DictationGeminiConfirm_ShowAndWait() {
     DictationGeminiConfirm_Show()
     Hotkey("y", DictationGeminiConfirm_OnY, "On")
     Hotkey("Y", DictationGeminiConfirm_OnY, "On")
-    SetTimer(DictationGeminiConfirm_OnTimeout, -4000)
+    SetTimer(DictationGeminiConfirm_OnTimeout, -6000)
 }
 
 ; =============================================================================
@@ -6362,12 +6363,12 @@ GeminiDelayedSubmitFlow() {
     g_HotstringGeminiRestoreHwnd := WinExist("A")  ; Store window to restore focus to after 4s sequence
     g_HotstringGeminiAutoSubmit := true
 
-    HotstringGeminiBanner_Show("Submitting in 4s... Press N to cancel auto-submit")
+    HotstringGeminiBanner_Show("Submitting in 6s... Press N to cancel auto-submit")
 
     Hotkey("n", GeminiCancelAutoSubmit, "On")
     Hotkey("N", GeminiCancelAutoSubmit, "On")
 
-    SetTimer(GeminiFinalizeSubmit, -4000)
+    SetTimer(GeminiFinalizeSubmit, -6000)
 }
 
 GeminiCancelAutoSubmit(*) {
