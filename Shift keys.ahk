@@ -10013,12 +10013,12 @@ FoldAllGitDirectoriesInCursor() {
 ; Collapse all expandable directories in the Explorer (FileExplorer3) for all workspace roots
 FoldAllDirectoriesInExplorer() {
     try {
-        ; Show banner immediately
-        ShowSmallLoadingIndicator_ChatGPT("Folding directories...")
+        ; Show progress overlay immediately (yellow for folding)
+        ShowProgressOverlay("Folding directories...", "FFFF00")
 
         hwnd := WinExist("A")
         if !hwnd {
-            HideSmallLoadingIndicator_ChatGPT()
+            HideProgressOverlay()
             return
         }
         root := UIA.ElementFromHandle(hwnd)
@@ -10207,23 +10207,23 @@ FoldAllDirectoriesInExplorer() {
         }
 
         ; Optional brief toast
-        ShowSmallLoadingIndicator_ChatGPT("Directories folded")
+        UpdateProgressOverlay("Directories folded")
     } catch Error as e {
         try MsgBox "UIA error folding Explorer directories: " e.Message, "Cursor Explorer Fold", "IconX"
     } finally {
-        SetTimer () => HideSmallLoadingIndicator_ChatGPT(), -800
+        HideProgressOverlay(800)
     }
 }
 
 ; Expand all expandable directories in the Explorer (FileExplorer3) for all workspace roots
 UnfoldAllDirectoriesInExplorer() {
     try {
-        ; Show banner immediately
-        ShowSmallLoadingIndicator_ChatGPT("Unfolding directories...")
+        ; Show progress overlay immediately (yellow for unfolding)
+        ShowProgressOverlay("Unfolding directories...", "FFFF00")
 
         hwnd := WinExist("A")
         if !hwnd {
-            HideSmallLoadingIndicator_ChatGPT()
+            HideProgressOverlay()
             return
         }
         root := UIA.ElementFromHandle(hwnd)
@@ -10281,7 +10281,7 @@ UnfoldAllDirectoriesInExplorer() {
         }
 
         if !fileTree {
-            HideSmallLoadingIndicator_ChatGPT()
+            HideProgressOverlay()
             return
         }
 
@@ -10410,11 +10410,11 @@ UnfoldAllDirectoriesInExplorer() {
         }
 
         ; Optional brief toast
-        ShowSmallLoadingIndicator_ChatGPT("Directories unfolded")
+        UpdateProgressOverlay("Directories unfolded")
     } catch Error as e {
         try MsgBox "UIA error unfolding Explorer directories: " e.Message, "Cursor Explorer Unfold", "IconX"
     } finally {
-        SetTimer () => HideSmallLoadingIndicator_ChatGPT(), -800
+        HideProgressOverlay(800)
     }
 }
 
@@ -15141,6 +15141,143 @@ HideSmallLoadingIndicator_ChatGPT() {
         }
         smallLoadingGuis_ChatGPT := []
     }
+}
+
+; --- Standardized progress overlay (monitor-aware, color-configurable) ---
+global g_ProgressOverlayGui := 0
+global g_ProgressOverlayValue := 0
+
+GetActiveMonitorWorkArea_ForOverlay(&left, &top, &right, &bottom) {
+    left := top := 0
+    right := A_ScreenWidth
+    bottom := A_ScreenHeight
+
+    activeWin := 0
+    try {
+        activeWin := WinGetID("A")
+    } catch {
+        activeWin := 0
+    }
+
+    MonitorGetWorkArea(1, &monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
+    mLeft := monitorLeft, mTop := monitorTop, mRight := monitorRight, mBottom := monitorBottom
+
+    if (activeWin && activeWin != 0) {
+        rect := Buffer(16, 0)
+        if (DllCall("GetWindowRect", "ptr", activeWin, "ptr", rect)) {
+            winLeft := NumGet(rect, 0, "int")
+            winTop := NumGet(rect, 4, "int")
+            winRight := NumGet(rect, 8, "int")
+            winBottom := NumGet(rect, 12, "int")
+
+            centerX := winLeft + (winRight - winLeft) // 2
+            centerY := winTop + (winBottom - winTop) // 2
+
+            monitorCount := MonitorGetCount()
+            loop monitorCount {
+                idx := A_Index
+                MonitorGetWorkArea(idx, &l, &t, &r, &b)
+                if (centerX >= l && centerX <= r && centerY >= t && centerY <= b) {
+                    mLeft := l
+                    mTop := t
+                    mRight := r
+                    mBottom := b
+                    break
+                }
+            }
+        }
+    }
+
+    left := mLeft
+    top := mTop
+    right := mRight
+    bottom := mBottom
+}
+
+ShowProgressOverlay(state := "Working...", barColor := "3772FF") {
+    global g_ProgressOverlayGui, g_ProgressOverlayValue
+
+    try HideProgressOverlay()
+
+    GetActiveMonitorWorkArea_ForOverlay(&ml, &mt, &mr, &mb)
+    monitorWidth := mr - ml
+
+    overlayGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
+    overlayGui.BackColor := "1E1E2E"
+    overlayGui.MarginX := 16
+    overlayGui.MarginY := 10
+    overlayGui.SetFont("s9 cFFFFFF", "Segoe UI")
+
+    overlayGui.Add("Text", "w260", state)
+    progressOpts := "w260 h6 c" . barColor . " Background45475A Smooth vOverlayProg"
+    overlayGui.Add("Progress", progressOpts, 0)
+
+    overlayGui.Show("AutoSize Hide")
+    overlayGui.GetPos(, , &gw, &gh)
+
+    guiX := ml + (monitorWidth - gw) // 2
+    guiY := mt + 30
+    overlayGui.Show("x" . guiX . " y" . guiY . " NA")
+    WinSetTransparent(220, overlayGui)
+
+    g_ProgressOverlayGui := overlayGui
+    g_ProgressOverlayValue := 0
+    SetTimer(ProgressOverlay_Tick, 40)
+}
+
+ProgressOverlay_Tick() {
+    global g_ProgressOverlayGui, g_ProgressOverlayValue
+
+    if !IsObject(g_ProgressOverlayGui) {
+        SetTimer(ProgressOverlay_Tick, 0)
+        return
+    }
+
+    try {
+        g_ProgressOverlayValue += 4
+        if (g_ProgressOverlayValue > 100)
+            g_ProgressOverlayValue := 0
+        g_ProgressOverlayGui["OverlayProg"].Value := g_ProgressOverlayValue
+    } catch {
+        SetTimer(ProgressOverlay_Tick, 0)
+    }
+}
+
+UpdateProgressOverlay(state := "", barColor := "") {
+    global g_ProgressOverlayGui
+    if !IsObject(g_ProgressOverlayGui)
+        return
+
+    try {
+        if (state != "") {
+            if (g_ProgressOverlayGui.Controls.Length > 0)
+                g_ProgressOverlayGui.Controls[1].Text := state
+        }
+        if (barColor != "") {
+            g_ProgressOverlayGui["OverlayProg"].Opt("c" . barColor)
+        }
+    } catch {
+    }
+}
+
+HideProgressOverlay(delayMs := 0) {
+    global g_ProgressOverlayGui, g_ProgressOverlayValue
+
+    if (delayMs > 0) {
+        SetTimer(() => HideProgressOverlay(0), -delayMs)
+        return
+    }
+
+    SetTimer(ProgressOverlay_Tick, 0)
+
+    try {
+        if IsObject(g_ProgressOverlayGui)
+            g_ProgressOverlayGui.Destroy()
+    } catch {
+    }
+
+    g_ProgressOverlayGui := 0
+    g_ProgressOverlayValue := 0
 }
 
 ; Short completion chime for ChatGPT responses (debounced)
