@@ -15201,6 +15201,7 @@ ShowProgressOverlay(state := "Working...", barColor := "3772FF") {
 
     GetActiveMonitorWorkArea_ForOverlay(&ml, &mt, &mr, &mb)
     monitorWidth := mr - ml
+    barWidth := Min(900, Max(360, Floor(monitorWidth * 0.6)))
 
     overlayGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
     overlayGui.BackColor := "1E1E2E"
@@ -15208,17 +15209,17 @@ ShowProgressOverlay(state := "Working...", barColor := "3772FF") {
     overlayGui.MarginY := 10
     overlayGui.SetFont("s9 cFFFFFF", "Segoe UI")
 
-    overlayGui.Add("Text", "w260", state)
-    progressOpts := "w260 h6 c" . barColor . " Background45475A Smooth vOverlayProg"
+    overlayGui.Add("Text", "w" . barWidth, state)
+    progressOpts := "w" . barWidth . " h10 c" . barColor . " Background45475A Smooth vOverlayProg"
     overlayGui.Add("Progress", progressOpts, 0)
 
     overlayGui.Show("AutoSize Hide")
     overlayGui.GetPos(, , &gw, &gh)
 
     guiX := ml + (monitorWidth - gw) // 2
-    guiY := mt + 30
+    guiY := mt + 40
     overlayGui.Show("x" . guiX . " y" . guiY . " NA")
-    WinSetTransparent(220, overlayGui)
+    WinSetTransparent(235, overlayGui)
 
     g_ProgressOverlayGui := overlayGui
     g_ProgressOverlayValue := 0
