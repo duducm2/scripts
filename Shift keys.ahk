@@ -15216,7 +15216,31 @@ ShowProgressOverlay(state := "Working...", barColor := "3772FF") {
     overlayGui.Show("AutoSize Hide")
     overlayGui.GetPos(, , &gw, &gh)
 
+    ; Center horizontally over the active window when possible, otherwise over the monitor
     guiX := ml + (monitorWidth - gw) // 2
+    activeWin := 0
+    try {
+        activeWin := WinGetID("A")
+    } catch {
+        activeWin := 0
+    }
+    if (activeWin && activeWin != 0) {
+        rect := Buffer(16, 0)
+        if (DllCall("GetWindowRect", "ptr", activeWin, "ptr", rect)) {
+            winLeft := NumGet(rect, 0, "int")
+            winTop := NumGet(rect, 4, "int")
+            winRight := NumGet(rect, 8, "int")
+            winBottom := NumGet(rect, 12, "int")
+            centerX := winLeft + (winRight - winLeft) // 2
+            guiX := centerX - (gw // 2)
+        }
+    }
+    ; Clamp within monitor bounds
+    if (guiX < ml)
+        guiX := ml
+    if (guiX + gw > mr)
+        guiX := mr - gw
+
     guiY := mt + 40
     overlayGui.Show("x" . guiX . " y" . guiY . " NA")
     WinSetTransparent(235, overlayGui)
