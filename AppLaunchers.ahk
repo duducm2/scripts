@@ -208,6 +208,8 @@ ShowCursorFallbackPanel() {
 
         Sleep 350
         Send "^{Up}"
+        Sleep 100
+        Send "{F5}"
 
         CenterMouse()
     }
