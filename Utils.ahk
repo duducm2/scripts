@@ -6396,9 +6396,36 @@ GeminiCancelAutoSubmit_DoPaste(*) {
 
 ; Delay (ms) after paste and before Send Enter in Gemini delayed-submit flow. Prevents premature send and lets the UI register paste + character limits.
 global g_GeminiDelayedSubmit_PreEnterDelayMs := 1000
+; Max ms to wait for prompt field to show content before sending Enter (guarantee layer). Poll interval = 200 ms.
+global g_GeminiDelayedSubmit_WaitContentMaxMs := 5000
+
+; Returns non-empty trimmed text if Gemini prompt field has content (Value or TextPattern); "" on failure or empty. Used to guarantee message is present before submit.
+GeminiPromptFieldGetText() {
+    try {
+        uia := UIA_Browser()
+        pf := FindGeminiPromptField(uia)
+        if (!pf)
+            return ""
+        try {
+            text := Trim(pf.Value)
+            if (text != "")
+                return text
+        } catch {
+        }
+        try {
+            text := Trim(pf.TextPattern.DocumentRange.GetText(-1))
+            if (text != "")
+                return text
+        } catch {
+        }
+    } catch {
+    }
+    return ""
+}
 
 GeminiFinalizeSubmit() {
-    global g_HotstringGeminiAutoSubmit, g_HotstringGeminiRestoreHwnd, g_GeminiDelayedSubmit_PreEnterDelayMs
+    global g_HotstringGeminiAutoSubmit, g_HotstringGeminiRestoreHwnd, g_GeminiDelayedSubmit_PreEnterDelayMs,
+        g_GeminiDelayedSubmit_WaitContentMaxMs
 
     try Hotkey("n", "Off")
     try Hotkey("N", "Off")
@@ -6411,6 +6438,17 @@ GeminiFinalizeSubmit() {
     if (g_HotstringGeminiAutoSubmit) {
         ; Execution delay so paste is fully received and UI/character limits register before submit
         Sleep (g_GeminiDelayedSubmit_PreEnterDelayMs)
+        ; Guarantee layer: wait until prompt field has content (or timeout) so we don't send Enter prematurely
+        pollIntervalMs := 200
+        endTick := A_TickCount + g_GeminiDelayedSubmit_WaitContentMaxMs
+        contentFound := false
+        while (A_TickCount < endTick) {
+            if (GeminiPromptFieldGetText() != "") {
+                contentFound := true
+                break
+            }
+            Sleep pollIntervalMs
+        }
         Send("{Enter}")
         geminiChromeHwnd := WinExist("A")
         didAutoSubmit := true

@@ -1,0 +1,5 @@
+{"sessionId":"a495c9","timestamp":4556218,"location":"Utils.ahk:GeminiDelayedSubmitFlow","message":"Flow started; timer 6s","data":{"autoSubmit":true},"hypothesisId":"C"}
+{"sessionId":"a495c9","timestamp":4562265,"location":"Utils.ahk:GeminiFinalizeSubmit","message":"Entry; g_HotstringGeminiAutoSubmit","data":{"autoSubmit":true},"hypothesisId":"A"}
+{"sessionId":"a495c9","timestamp":4564421,"location":"Utils.ahk:GeminiFinalizeSubmit","message":"Inside if(autoSubmit); will delay then wait for content","hypothesisId":"A"}
+{"sessionId":"a495c9","timestamp":4565906,"location":"Utils.ahk:GeminiFinalizeSubmit","message":"After wait loop; about to Send Enter","data":{"contentFound":true,"tick":4565906},"hypothesisId":"B"}
+{"sessionId":"a495c9","timestamp":4565906,"location":"Utils.ahk:GeminiFinalizeSubmit","message":"After if block","data":{"didAutoSubmit":true},"hypothesisId":"D"}
