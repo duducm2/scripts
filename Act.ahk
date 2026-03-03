@@ -3,6 +3,7 @@
 ;---------------------------------------- Scripts -------------------------------
 
 #Include env.ahk
+#Include %A_ScriptDir%\Utils.ahk
 
 if (IS_WORK_ENVIRONMENT) {
     response := MsgBox("Can we proceed with Act?", "Act automation", "YesNo")
@@ -16,11 +17,11 @@ if (IS_WORK_ENVIRONMENT) {
     scriptsFolder := "C:\Users\eduev\Meu Drive\17 - Projects\scripts"
 }
 
-; Ensure the scripts folder is up to date before launching any scripts
+StandardLoadingBar_Show("Updating scripts...", "3772FF")
 SetWorkingDir(scriptsFolder)
 RunWait("git fetch", scriptsFolder, "Hide")
 RunWait("git pull", scriptsFolder, "Hide")
-
+StandardLoadingBar_Update("Waiting...")
 Sleep 10000
 
 if (IS_WORK_ENVIRONMENT) {
@@ -30,11 +31,11 @@ if (IS_WORK_ENVIRONMENT) {
     notesFolder := "C:\Users\eduev\Meu Drive\17 - Projects\notes"
 }
 
-; Ensure the notes folder is up to date before working with habits
+StandardLoadingBar_Update("Updating notes...")
 SetWorkingDir(notesFolder)
 RunWait("git fetch", notesFolder, "Hide")
 RunWait("git pull", notesFolder, "Hide")
-
+StandardLoadingBar_Update("Launching apps...")
 Sleep 10000
 
 Run GetScriptPath("Shift keys.ahk")
@@ -60,8 +61,7 @@ if (IS_WORK_ENVIRONMENT) {
 
 habitsFolder := notesFolder . "\habits"
 excelFile := habitsFolder . "\habit_sleep_food_tracker.xlsx"
-
+StandardLoadingBar_Update("Done")
+StandardLoadingBar_Hide(500)
 Sleep 1000
-
-; Open the Excel file
 Run(excelFile)

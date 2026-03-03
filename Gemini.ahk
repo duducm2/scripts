@@ -261,16 +261,7 @@ ShowSmallLoadingIndicator(state := "Loading…", bgColor := "3772FF", centerOnHw
 }
 
 HideSmallLoadingIndicator() {
-    global smallLoadingGuis_Gemini
-    if (smallLoadingGuis_Gemini.Length > 0) {
-        for gui in smallLoadingGuis_Gemini {
-            try gui.Destroy()
-            catch {
-                ; Silently ignore GUI destroy errors
-            }
-        }
-        smallLoadingGuis_Gemini := [] ; Reset the array
-    }
+    StandardLoadingBar_Hide(0)
 }
 
 WaitForButtonAndShowSmallLoading(buttonNames, stateText := "Loading…", timeout := 15000) {
@@ -299,7 +290,7 @@ WaitForButtonAndShowSmallLoading(buttonNames, stateText := "Loading…", timeout
         if btn {
             buttonEverFound := true
             if (!indicatorShown) {
-                ShowSmallLoadingIndicator(stateText)
+                StandardLoadingBar_Show(stateText, "3772FF")
                 indicatorShown := true
             }
             while btn && (timeout <= 0 || A_TickCount < deadline) {
@@ -328,7 +319,7 @@ WaitForButtonAndShowSmallLoading(buttonNames, stateText := "Loading…", timeout
     } catch {
         ; Silently ignore errors
     }
-    HideSmallLoadingIndicator()
+    StandardLoadingBar_Hide(0)
 }
 
 ; =============================================================================
@@ -809,7 +800,7 @@ SendPromptToActiveGeminiTab(promptText) {
 InitializeGeminiFirstTime() {
     try {
         ; Show banner to inform user
-        ShowSmallLoadingIndicator("Opening Gemini (2 tabs)...")
+        StandardLoadingBar_Show("Opening Gemini (2 tabs)...", "3772FF")
 
         ; Remember existing Chrome windows so we can find the one we're about to create
         existingChromeHwnds := []
@@ -842,7 +833,7 @@ InitializeGeminiFirstTime() {
             Sleep 300
         }
         if !geminiHwnd {
-            HideSmallLoadingIndicator()
+            StandardLoadingBar_Hide(0)
             return
         }
 
@@ -850,12 +841,12 @@ InitializeGeminiFirstTime() {
         try {
             WinActivate("ahk_id " geminiHwnd)
         } catch {
-            HideSmallLoadingIndicator()
+            StandardLoadingBar_Hide(0)
             ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
             return
         }
         if !WinWaitActive("ahk_id " geminiHwnd, , 4) {
-            HideSmallLoadingIndicator()
+            StandardLoadingBar_Hide(0)
             return
         }
         ; Wait for the first tab to load so the title contains "Gemini" before sending the prompt
@@ -878,7 +869,7 @@ InitializeGeminiFirstTime() {
             promptText := "hey, what's up?"
 
         ; Update banner status
-        ShowSmallLoadingIndicator("Sending prompt to Gemini tabs...")
+        StandardLoadingBar_Show("Sending prompt to Gemini tabs...", "3772FF")
 
         geminiHwnd := GetGeminiWindowHwnd()
         ; Ensure first tab is active and send prompt (no tab banner during initial launch)
@@ -892,10 +883,10 @@ InitializeGeminiFirstTime() {
         SendPromptToActiveGeminiTab(promptText)
 
         ; Hide banner on success
-        HideSmallLoadingIndicator()
+        StandardLoadingBar_Hide(0)
     } catch Error as err {
         ; Hide banner on error
-        HideSmallLoadingIndicator()
+        StandardLoadingBar_Hide(0)
     }
 }
 
@@ -1013,8 +1004,7 @@ class GeminiAsyncLookup {
         if !this.OriginalHwnd
             return
         ; Show loading banner immediately, centered on the monitor where this window is (with warning)
-        ShowSmallLoadingIndicator("Loading…", "3772FF", this.OriginalHwnd,
-            200, 16)
+        StandardLoadingBar_Show("Loading…", "3772FF")
 
         A_Clipboard := ""
         Send "^c"
@@ -1023,18 +1013,18 @@ class GeminiAsyncLookup {
         SetTitleMatchMode(2)
         this.GeminiHwnd := GetGeminiWindowHwnd()
         if !this.GeminiHwnd {
-            HideSmallLoadingIndicator()
+            StandardLoadingBar_Hide(0)
             return
         }
         try {
             WinActivate("ahk_id " this.GeminiHwnd)
         } catch {
-            HideSmallLoadingIndicator()
+            StandardLoadingBar_Hide(0)
             ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
             return
         }
         if !WinWaitActive("ahk_exe chrome.exe", , 2) {
-            HideSmallLoadingIndicator()
+            StandardLoadingBar_Hide(0)
             return
         }
         ; For pronunciation lookup (#!+8), always use the trash tab (second Gemini tab).
@@ -1046,7 +1036,7 @@ class GeminiAsyncLookup {
         Sleep 300
         promptField := FindGeminiPromptField(uia)
         if (!promptField) {
-            HideSmallLoadingIndicator()
+            StandardLoadingBar_Hide(0)
             return
         }
         promptField.SetFocus()
@@ -1087,7 +1077,7 @@ class GeminiAsyncLookup {
         this.RetryCount++
         if (this.RetryCount > this.MaxRetries) {
             SetTimer(this.TimerCallback, 0)
-            HideSmallLoadingIndicator()
+            StandardLoadingBar_Hide(0)
             return
         }
         ; Poll in background using raw UIA (no UIA_Browser) so the library never activates Gemini
@@ -1152,17 +1142,17 @@ class GeminiAsyncLookup {
         try {
             WinActivate("ahk_id " this.GeminiHwnd)
         } catch {
-            HideSmallLoadingIndicator()
+            StandardLoadingBar_Hide(0)
             ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
             return
         }
         if !WinWaitActive("ahk_exe chrome.exe", , 2) {
-            HideSmallLoadingIndicator()
+            StandardLoadingBar_Hide(0)
             return
         }
         copyOpt := { restoreWindow: false, playChimeAndNotify: false, alreadyActive: true }
         if !CopyLastGeminiMessageToClipboard(copyOpt, this.GeminiHwnd) {
-            HideSmallLoadingIndicator()
+            StandardLoadingBar_Hide(0)
             return
         }
         Sleep 400
@@ -1175,7 +1165,7 @@ class GeminiAsyncLookup {
             Sleep 400
         }
         WinActivate("ahk_id " this.OriginalHwnd)
-        HideSmallLoadingIndicator()
+        StandardLoadingBar_Hide(0)
         this.ShowResultBanner(A_Clipboard)
     }
 
@@ -1457,30 +1447,29 @@ class GeminiAsyncTTS {
         this.OriginalHwnd := WinExist("A")
         if !this.OriginalHwnd
             return
-        ShowSmallLoadingIndicator("Loading…", "3772FF", this.OriginalHwnd,
-            200, 16)
+        StandardLoadingBar_Show("Loading…", "3772FF")
 
         A_Clipboard := ""
         Send "^c"
         if !ClipWait(2) {
-            HideSmallLoadingIndicator()
+            StandardLoadingBar_Hide(0)
             return
         }
         SetTitleMatchMode(2)
         this.GeminiHwnd := GetGeminiWindowHwnd()
         if !this.GeminiHwnd {
-            HideSmallLoadingIndicator()
+            StandardLoadingBar_Hide(0)
             return
         }
         try {
             WinActivate("ahk_id " this.GeminiHwnd)
         } catch {
-            HideSmallLoadingIndicator()
+            StandardLoadingBar_Hide(0)
             ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
             return
         }
         if !WinWaitActive("ahk_exe chrome.exe", , 2) {
-            HideSmallLoadingIndicator()
+            StandardLoadingBar_Hide(0)
             return
         }
         ; For TTS from selection (#!+7), always use the trash tab (second Gemini tab) when sending the prompt.
@@ -1492,7 +1481,7 @@ class GeminiAsyncTTS {
         Sleep 300
         promptField := FindGeminiPromptField(uia)
         if (!promptField) {
-            HideSmallLoadingIndicator()
+            StandardLoadingBar_Hide(0)
             return
         }
         promptField.SetFocus()
@@ -1534,7 +1523,7 @@ class GeminiAsyncTTS {
         this.RetryCount++
         if (this.RetryCount > this.MaxRetries) {
             SetTimer(this.TimerCallback, 0)
-            HideSmallLoadingIndicator()
+            StandardLoadingBar_Hide(0)
             return
         }
         btn := ""
@@ -1579,7 +1568,7 @@ class GeminiAsyncTTS {
 
             if isTrulyGone {
                 SetTimer(this.TimerCallback, 0)
-                HideSmallLoadingIndicator()
+                StandardLoadingBar_Hide(0)
                 ; Completion detection matches GeminiAsyncLookup (#!+8): Layer 1 only (Stop button gone). No extra Layer 2 so we don't miss completion.
                 try {
                     if (IsSoundEnabled())

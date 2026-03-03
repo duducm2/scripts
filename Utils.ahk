@@ -1928,6 +1928,135 @@ ShowCenteredOverlay_Utils(text, duration := 1500, bgColor := "3772FF") {
 }
 
 ; =============================================================================
+; Standard loading bar (monitor-aware, show/update/hide lifecycle)
+; Use for long-running shortcuts; replace ad-hoc banners/overlays with this.
+; =============================================================================
+global g_StandardLoadingBarGui := 0
+global g_StandardLoadingBarValue := 0
+
+GetActiveMonitorWorkArea_StandardBar(&left, &top, &right, &bottom) {
+    left := top := 0
+    right := A_ScreenWidth
+    bottom := A_ScreenHeight
+    activeWin := 0
+    try activeWin := WinGetID("A")
+    catch
+        activeWin := 0
+    MonitorGetWorkArea(1, &monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
+    mLeft := monitorLeft
+    mTop := monitorTop
+    mRight := monitorRight
+    mBottom := monitorBottom
+    if (activeWin && activeWin != 0) {
+        rect := Buffer(16, 0)
+        if (DllCall("GetWindowRect", "ptr", activeWin, "ptr", rect)) {
+            winLeft := NumGet(rect, 0, "int")
+            winTop := NumGet(rect, 4, "int")
+            winRight := NumGet(rect, 8, "int")
+            winBottom := NumGet(rect, 12, "int")
+            centerX := winLeft + (winRight - winLeft) // 2
+            centerY := winTop + (winBottom - winTop) // 2
+            monitorCount := MonitorGetCount()
+            loop monitorCount {
+                idx := A_Index
+                MonitorGetWorkArea(idx, &l, &t, &r, &b)
+                if (centerX >= l && centerX <= r && centerY >= t && centerY <= b) {
+                    mLeft := l
+                    mTop := t
+                    mRight := r
+                    mBottom := b
+                    break
+                }
+            }
+        }
+    }
+    left := mLeft
+    top := mTop
+    right := mRight
+    bottom := mBottom
+}
+
+StandardLoadingBar_Show(state := "Working...", barColor := "3772FF") {
+    global g_StandardLoadingBarGui, g_StandardLoadingBarValue
+    try StandardLoadingBar_Hide(0)
+    GetActiveMonitorWorkArea_StandardBar(&ml, &mt, &mr, &mb)
+    monitorWidth := mr - ml
+    barWidth := Min(900, Max(360, Floor(monitorWidth * 0.6)))
+    overlayGui := Gui("+AlwaysOnTop -Caption +ToolWindow -DPIScale")
+    overlayGui.BackColor := "1E1E2E"
+    overlayGui.MarginX := 16
+    overlayGui.MarginY := 10
+    overlayGui.SetFont("s9 cFFFFFF", "Segoe UI")
+    overlayGui.Add("Text", "w" . barWidth, state)
+    progressOpts := "w" . barWidth . " h10 c" . barColor . " Background45475A Smooth vOverlayProg"
+    overlayGui.Add("Progress", progressOpts, 0)
+    overlayGui.Show("AutoSize Hide")
+    overlayGui.GetPos(, , &gw, &gh)
+    guiX := Round(ml + (monitorWidth - gw) / 2)
+    if (guiX < ml)
+        guiX := ml
+    if (guiX + gw > mr)
+        guiX := mr - gw
+    guiY := mt + 40
+    overlayGui.Show("x" . guiX . " y" . guiY . " NA")
+    try {
+        hwnd := overlayGui.Hwnd
+        if (hwnd)
+            DllCall("SetWindowPos", "Ptr", hwnd, "Ptr", 0, "Int", guiX, "Int", guiY, "Int", 0, "Int", 0, "UInt", 0x0015
+            )
+    }
+    WinSetTransparent(235, overlayGui)
+    g_StandardLoadingBarGui := overlayGui
+    g_StandardLoadingBarValue := 0
+    SetTimer(StandardLoadingBar_Tick, 40)
+}
+
+StandardLoadingBar_Tick() {
+    global g_StandardLoadingBarGui, g_StandardLoadingBarValue
+    if !IsObject(g_StandardLoadingBarGui) {
+        SetTimer(StandardLoadingBar_Tick, 0)
+        return
+    }
+    try {
+        g_StandardLoadingBarValue += 4
+        if (g_StandardLoadingBarValue > 100)
+            g_StandardLoadingBarValue := 0
+        g_StandardLoadingBarGui["OverlayProg"].Value := g_StandardLoadingBarValue
+    } catch {
+        SetTimer(StandardLoadingBar_Tick, 0)
+    }
+}
+
+StandardLoadingBar_Update(state := "", barColor := "") {
+    global g_StandardLoadingBarGui
+    if !IsObject(g_StandardLoadingBarGui)
+        return
+    try {
+        if (state != "" && g_StandardLoadingBarGui.Controls.Length > 0)
+            g_StandardLoadingBarGui.Controls[1].Text := state
+        if (barColor != "")
+            g_StandardLoadingBarGui["OverlayProg"].Opt("c" . barColor)
+    } catch {
+    }
+}
+
+StandardLoadingBar_Hide(delayMs := 0) {
+    global g_StandardLoadingBarGui, g_StandardLoadingBarValue
+    if (delayMs > 0) {
+        SetTimer(() => StandardLoadingBar_Hide(0), -delayMs)
+        return
+    }
+    SetTimer(StandardLoadingBar_Tick, 0)
+    try {
+        if IsObject(g_StandardLoadingBarGui)
+            g_StandardLoadingBarGui.Destroy()
+    } catch {
+    }
+    g_StandardLoadingBarGui := 0
+    g_StandardLoadingBarValue := 0
+}
+
+; =============================================================================
 ; Hotstring Selector: Gemini Redirect Banner (non-blocking)
 ; =============================================================================
 global g_HotstringGeminiBannerGui := false

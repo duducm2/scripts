@@ -10014,11 +10014,11 @@ FoldAllGitDirectoriesInCursor() {
 FoldAllDirectoriesInExplorer() {
     try {
         ; Show progress overlay immediately (yellow for folding)
-        ShowProgressOverlay("Folding directories...", "FFFF00")
+        StandardLoadingBar_Show("Folding directories...", "FFFF00")
 
         hwnd := WinExist("A")
         if !hwnd {
-            HideProgressOverlay()
+            StandardLoadingBar_Hide(0)
             return
         }
         root := UIA.ElementFromHandle(hwnd)
@@ -10207,11 +10207,11 @@ FoldAllDirectoriesInExplorer() {
         }
 
         ; Optional brief toast
-        UpdateProgressOverlay("Directories folded")
+        StandardLoadingBar_Update("Directories folded")
     } catch Error as e {
         try MsgBox "UIA error folding Explorer directories: " e.Message, "Cursor Explorer Fold", "IconX"
     } finally {
-        HideProgressOverlay(800)
+        StandardLoadingBar_Hide(800)
     }
 }
 
@@ -10219,11 +10219,11 @@ FoldAllDirectoriesInExplorer() {
 UnfoldAllDirectoriesInExplorer() {
     try {
         ; Show progress overlay immediately (yellow for unfolding)
-        ShowProgressOverlay("Unfolding directories...", "FFFF00")
+        StandardLoadingBar_Show("Unfolding directories...", "FFFF00")
 
         hwnd := WinExist("A")
         if !hwnd {
-            HideProgressOverlay()
+            StandardLoadingBar_Hide(0)
             return
         }
         root := UIA.ElementFromHandle(hwnd)
@@ -10281,7 +10281,7 @@ UnfoldAllDirectoriesInExplorer() {
         }
 
         if !fileTree {
-            HideProgressOverlay()
+            StandardLoadingBar_Hide(0)
             return
         }
 
@@ -10410,11 +10410,11 @@ UnfoldAllDirectoriesInExplorer() {
         }
 
         ; Optional brief toast
-        UpdateProgressOverlay("Directories unfolded")
+        StandardLoadingBar_Update("Directories unfolded")
     } catch Error as e {
         try MsgBox "UIA error unfolding Explorer directories: " e.Message, "Cursor Explorer Unfold", "IconX"
     } finally {
-        HideProgressOverlay(800)
+        StandardLoadingBar_Hide(800)
     }
 }
 
@@ -15141,207 +15141,6 @@ HideSmallLoadingIndicator_ChatGPT() {
         }
         smallLoadingGuis_ChatGPT := []
     }
-}
-
-; --- Standardized progress overlay (monitor-aware, color-configurable) ---
-global g_ProgressOverlayGui := 0
-global g_ProgressOverlayValue := 0
-
-GetActiveMonitorWorkArea_ForOverlay(&left, &top, &right, &bottom) {
-    left := top := 0
-    right := A_ScreenWidth
-    bottom := A_ScreenHeight
-
-    activeWin := 0
-    try {
-        activeWin := WinGetID("A")
-    } catch {
-        activeWin := 0
-    }
-
-    MonitorGetWorkArea(1, &monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
-    mLeft := monitorLeft, mTop := monitorTop, mRight := monitorRight, mBottom := monitorBottom
-
-    if (activeWin && activeWin != 0) {
-        rect := Buffer(16, 0)
-        if (DllCall("GetWindowRect", "ptr", activeWin, "ptr", rect)) {
-            winLeft := NumGet(rect, 0, "int")
-            winTop := NumGet(rect, 4, "int")
-            winRight := NumGet(rect, 8, "int")
-            winBottom := NumGet(rect, 12, "int")
-
-            centerX := winLeft + (winRight - winLeft) // 2
-            centerY := winTop + (winBottom - winTop) // 2
-
-            monitorCount := MonitorGetCount()
-            loop monitorCount {
-                idx := A_Index
-                MonitorGetWorkArea(idx, &l, &t, &r, &b)
-                if (centerX >= l && centerX <= r && centerY >= t && centerY <= b) {
-                    mLeft := l
-                    mTop := t
-                    mRight := r
-                    mBottom := b
-                    break
-                }
-            }
-        }
-    }
-
-    left := mLeft
-    top := mTop
-    right := mRight
-    bottom := mBottom
-}
-
-; Returns the horizontal center X of the editor pane (for overlay centering), or "" if not found.
-GetEditorPaneCenterX(winHwnd) {
-    try {
-        root := UIA.ElementFromHandle(winHwnd)
-        el := ""
-        for attempt in ["workbench.parts.editor", "workbench.editor"] {
-            try {
-                el := root.FindFirst({ AutomationId: attempt })
-                if el
-                    break
-            }
-        }
-        if (!el) {
-            try el := root.FindFirst({ Name: "Editor", Type: UIA.Type.Pane })
-            if (!el)
-                try el := root.FindFirst({ Name: "Code", Type: UIA.Type.Pane })
-        }
-        if (el) {
-            br := el.BoundingRectangle
-            if (br && (br.r - br.l) > 200)
-                return (br.l + br.r) / 2
-        }
-        ; Fallback: pick the largest Pane that looks like the main content (center of window)
-        WinGetClientPos(&cX, &cY, &cW, &cH, "ahk_id " . winHwnd)
-        if (cW > 0) {
-            paneCond := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Pane)
-            panes := root.FindElements(paneCond, UIA.TreeScope.Descendants)
-            bestCenter := ""
-            bestW := 0
-            minW := Max(300, cW * 0.25)
-            maxW := cW * 0.98
-            for p in panes {
-                try {
-                    br := p.BoundingRectangle
-                    w := br.r - br.l
-                    if (w >= minW && w <= maxW && w > bestW) {
-                        bestW := w
-                        bestCenter := (br.l + br.r) / 2
-                    }
-                }
-            }
-            if (bestCenter != "")
-                return bestCenter
-        }
-    }
-    return ""
-}
-
-ShowProgressOverlay(state := "Working...", barColor := "3772FF") {
-    global g_ProgressOverlayGui, g_ProgressOverlayValue
-
-    try HideProgressOverlay()
-
-    GetActiveMonitorWorkArea_ForOverlay(&ml, &mt, &mr, &mb)
-    monitorWidth := mr - ml
-    barWidth := Min(900, Max(360, Floor(monitorWidth * 0.6)))
-
-    overlayGui := Gui("+AlwaysOnTop -Caption +ToolWindow -DPIScale")
-    overlayGui.BackColor := "1E1E2E"
-    overlayGui.MarginX := 16
-    overlayGui.MarginY := 10
-    overlayGui.SetFont("s9 cFFFFFF", "Segoe UI")
-
-    overlayGui.Add("Text", "w" . barWidth, state)
-    progressOpts := "w" . barWidth . " h10 c" . barColor . " Background45475A Smooth vOverlayProg"
-    overlayGui.Add("Progress", progressOpts, 0)
-
-    overlayGui.Show("AutoSize Hide")
-    overlayGui.GetPos(, , &gw, &gh)
-
-    ; Horizontal center: use only the work area of the monitor that contains the active window
-    ; (per 4-monitor config: resolution and scaling are handled by MonitorGetWorkArea / DPI-aware coordinates)
-    guiX := Round(ml + (monitorWidth - gw) / 2)
-    ; Clamp within monitor bounds
-    if (guiX < ml)
-        guiX := ml
-    if (guiX + gw > mr)
-        guiX := mr - gw
-
-    guiY := mt + 40
-    overlayGui.Show("x" . guiX . " y" . guiY . " NA")
-    ; Force position in physical screen coordinates (avoids DPI scaling mismatch with MonitorGetWorkArea)
-    try {
-        hwnd := overlayGui.Hwnd
-        if (hwnd)
-            DllCall("SetWindowPos", "Ptr", hwnd, "Ptr", 0, "Int", guiX, "Int", guiY, "Int", 0, "Int", 0, "UInt", 0x0015
-            )  ; SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE
-    }
-    WinSetTransparent(235, overlayGui)
-
-    g_ProgressOverlayGui := overlayGui
-    g_ProgressOverlayValue := 0
-    SetTimer(ProgressOverlay_Tick, 40)
-}
-
-ProgressOverlay_Tick() {
-    global g_ProgressOverlayGui, g_ProgressOverlayValue
-
-    if !IsObject(g_ProgressOverlayGui) {
-        SetTimer(ProgressOverlay_Tick, 0)
-        return
-    }
-
-    try {
-        g_ProgressOverlayValue += 4
-        if (g_ProgressOverlayValue > 100)
-            g_ProgressOverlayValue := 0
-        g_ProgressOverlayGui["OverlayProg"].Value := g_ProgressOverlayValue
-    } catch {
-        SetTimer(ProgressOverlay_Tick, 0)
-    }
-}
-
-UpdateProgressOverlay(state := "", barColor := "") {
-    global g_ProgressOverlayGui
-    if !IsObject(g_ProgressOverlayGui)
-        return
-
-    try {
-        if (state != "") {
-            if (g_ProgressOverlayGui.Controls.Length > 0)
-                g_ProgressOverlayGui.Controls[1].Text := state
-        }
-        if (barColor != "") {
-            g_ProgressOverlayGui["OverlayProg"].Opt("c" . barColor)
-        }
-    } catch {
-    }
-}
-
-HideProgressOverlay(delayMs := 0) {
-    global g_ProgressOverlayGui, g_ProgressOverlayValue
-
-    if (delayMs > 0) {
-        SetTimer(() => HideProgressOverlay(0), -delayMs)
-        return
-    }
-
-    SetTimer(ProgressOverlay_Tick, 0)
-
-    try {
-        if IsObject(g_ProgressOverlayGui)
-            g_ProgressOverlayGui.Destroy()
-    } catch {
-    }
-
-    g_ProgressOverlayGui := 0
-    g_ProgressOverlayValue := 0
 }
 
 ; Short completion chime for ChatGPT responses (debounced)
