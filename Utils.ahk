@@ -3075,7 +3075,7 @@ global g_Projects := [
                             { name: "dashboard-model-research", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_E&S_CIP Dashboard research and design workspace folder\dashboard-model-research",
                                 category: "Work" }, { name: "GS_UX core team_UX and CIP Integration", path: "",
                                     workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_UX core team_UX and CIP Integration",
-                                    category: "Work" }, { name: "🪂 Avante", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\General - GS_BDU_Team\00_UX_GS_Team\AM_Planning\🪂 Avante",
+                                    category: "Work" }, { name: "🪂 Avante", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\General - GS_BDU_Team\00_UX_GS_Team\AM_Planning\Avante",
                                         category: "Work" }, { name: "", path: "", workPath: "", category: "Work" }, { name: "",
                                             path: "", workPath: "", category: "Work" }
 ]

@@ -744,7 +744,7 @@ global g_Projects := [
                                 category: "Work" }, { name: "GS_UX core team_UX and CIP Integration", path: "",
                                     workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_UX core team_UX and CIP Integration",
                                     category: "Work" }, { name: "PT_Project", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\PT_Project",
-                                        category: "Work" }, { name: "🪂 Avante", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\General - GS_BDU_Team\00_UX_GS_Team\AM_Planning\🪂 Avante",
+                                        category: "Work" }, { name: "🪂 Avante", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\General - GS_BDU_Team\00_UX_GS_Team\AM_Planning\Avante",
                                             category: "Work" }, { name: "E&S OPEX CIM Journey Mapping", path: "",
                                                 workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\opex-cim-journey-mapping",
                                                 category: "Work" }
