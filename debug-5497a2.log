@@ -1,3 +1,0 @@
-{"sessionId":"5497a2","location":"Gemini.ahk:Start","message":"CopyCountAtSubmit","data":{"copyCount":5},"timestamp":18721718,"hypothesisId":"H2"}
-{"sessionId":"5497a2","location":"Gemini.ahk:CheckCompletion","message":"Layer1Passed","data":{},"timestamp":18731390,"hypothesisId":"H1"}
-{"sessionId":"5497a2","location":"Gemini.ahk:CheckCompletion","message":"ReadAloudTriggered","data":{},"timestamp":18732578,"hypothesisId":"H1"}
