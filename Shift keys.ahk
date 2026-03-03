@@ -26,9 +26,6 @@ SetTitleMatchMode 2
 ; --- Global Variables ---
 global smallLoadingGuis_ChatGPT := []
 global DEBUG_LOG_PATH := A_ScriptDir "\.cursor\debug.log"
-; #region agent log
-global DBG_OVERLAY_LOG := A_ScriptDir "\debug-b1eae8.log"
-; #endregion
 
 ; Helper function for safe debug logging with retry on file lock
 ; Handles file locking gracefully by retrying with exponential backoff
@@ -15270,19 +15267,11 @@ ShowProgressOverlay(state := "Working...", barColor := "3772FF") {
     ; Horizontal center: use only the work area of the monitor that contains the active window
     ; (per 4-monitor config: resolution and scaling are handled by MonitorGetWorkArea / DPI-aware coordinates)
     guiX := Round(ml + (monitorWidth - gw) / 2)
-    ; #region agent log
-    try FileAppend '{"sessionId":"b1eae8","hypothesisId":"H3","location":"Shift keys.ahk:15255","message":"overlay GetPos and monitor","data":{"ml":' ml ',"mr":' mr ',"monitorWidth":' monitorWidth ',"gw":' gw ',"gh":' gh ',"guiX_monitor":' guiX '},"timestamp":' A_TickCount '}`n',
-        DBG_OVERLAY_LOG
-    ; #endregion
     ; Clamp within monitor bounds
     if (guiX < ml)
         guiX := ml
     if (guiX + gw > mr)
         guiX := mr - gw
-    ; #region agent log
-    try FileAppend '{"sessionId":"b1eae8","hypothesisId":"H5","location":"Shift keys.ahk:15255","message":"after clamp","data":{"guiX_after_clamp":' guiX ',"ml":' ml ',"mr":' mr ',"gw":' gw '},"timestamp":' A_TickCount '}`n',
-        DBG_OVERLAY_LOG
-    ; #endregion
 
     guiY := mt + 40
     overlayGui.Show("x" . guiX . " y" . guiY . " NA")
@@ -15293,10 +15282,6 @@ ShowProgressOverlay(state := "Working...", barColor := "3772FF") {
             DllCall("SetWindowPos", "Ptr", hwnd, "Ptr", 0, "Int", guiX, "Int", guiY, "Int", 0, "Int", 0, "UInt", 0x0015
             )  ; SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE
     }
-    ; #region agent log
-    try FileAppend '{"sessionId":"b1eae8","hypothesisId":"H3","location":"Shift keys.ahk:15260","message":"final position","data":{"guiX":' guiX ',"guiY":' guiY '},"timestamp":' A_TickCount '}`n',
-        DBG_OVERLAY_LOG
-    ; #endregion
     WinSetTransparent(235, overlayGui)
 
     g_ProgressOverlayGui := overlayGui
