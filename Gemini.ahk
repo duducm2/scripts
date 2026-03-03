@@ -1356,10 +1356,6 @@ class GeminiDelayedSubmitMonitor {
                 WinActivate("ahk_id " this.OriginalHwnd)
             return
         }
-        ; Delayed submit uses first tab (^1 in GeminiNavigateFocusAndPasteFirstSnippet); ensure we copy from same tab.
-        Send("^1")
-        Sleep 200
-        ShowGeminiTabBanner(1, this.GeminiHwnd)
         copyOpt := { restoreWindow: false, playChimeAndNotify: false, alreadyActive: true }
         if !CopyLastGeminiMessageToClipboard(copyOpt, this.GeminiHwnd) {
             if (WinExist("ahk_id " this.OriginalHwnd))
@@ -1396,9 +1392,6 @@ class GeminiDelayedSubmitMonitor {
                 WinActivate("ahk_id " this.OriginalHwnd)
             return
         }
-        Send("^1")
-        Sleep 200
-        ShowGeminiTabBanner(1, this.GeminiHwnd)
         copyOpt := { restoreWindow: false, playChimeAndNotify: false, alreadyActive: true }
         if !CopyLastGeminiMessageToClipboard(copyOpt, this.GeminiHwnd) {
             if (WinExist("ahk_id " this.OriginalHwnd))
