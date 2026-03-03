@@ -1,0 +1,6 @@
+{"sessionId":"b1eae8","hypothesisId":"H3","location":"Shift keys.ahk:15255","message":"overlay GetPos and monitor","data":{"ml":-2880,"mr":-576,"monitorWidth":2304,"gw":932,"gh":65,"guiX_monitor":-2194},"timestamp":6893625}
+{"sessionId":"b1eae8","hypothesisId":"H5","location":"Shift keys.ahk:15255","message":"after clamp","data":{"guiX_after_clamp":-2194,"ml":-2880,"mr":-576,"gw":932},"timestamp":6893625}
+{"sessionId":"b1eae8","hypothesisId":"H3","location":"Shift keys.ahk:15260","message":"final position","data":{"guiX":-2194,"guiY":1428},"timestamp":6893640}
+{"sessionId":"b1eae8","hypothesisId":"H3","location":"Shift keys.ahk:15255","message":"overlay GetPos and monitor","data":{"ml":0,"mr":3840,"monitorWidth":3840,"gw":932,"gh":65,"guiX_monitor":1454},"timestamp":6898296}
+{"sessionId":"b1eae8","hypothesisId":"H5","location":"Shift keys.ahk:15255","message":"after clamp","data":{"guiX_after_clamp":1454,"ml":0,"mr":3840,"gw":932},"timestamp":6898296}
+{"sessionId":"b1eae8","hypothesisId":"H3","location":"Shift keys.ahk:15260","message":"final position","data":{"guiX":1454,"guiY":40},"timestamp":6898312}

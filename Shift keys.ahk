@@ -26,6 +26,9 @@ SetTitleMatchMode 2
 ; --- Global Variables ---
 global smallLoadingGuis_ChatGPT := []
 global DEBUG_LOG_PATH := A_ScriptDir "\.cursor\debug.log"
+; #region agent log
+global DBG_OVERLAY_LOG := A_ScriptDir "\debug-b1eae8.log"
+; #endregion
 
 ; Helper function for safe debug logging with retry on file lock
 ; Handles file locking gracefully by retrying with exponential backoff
@@ -15194,6 +15197,54 @@ GetActiveMonitorWorkArea_ForOverlay(&left, &top, &right, &bottom) {
     bottom := mBottom
 }
 
+; Returns the horizontal center X of the editor pane (for overlay centering), or "" if not found.
+GetEditorPaneCenterX(winHwnd) {
+    try {
+        root := UIA.ElementFromHandle(winHwnd)
+        el := ""
+        for attempt in ["workbench.parts.editor", "workbench.editor"] {
+            try {
+                el := root.FindFirst({ AutomationId: attempt })
+                if el
+                    break
+            }
+        }
+        if (!el) {
+            try el := root.FindFirst({ Name: "Editor", Type: UIA.Type.Pane })
+            if (!el)
+                try el := root.FindFirst({ Name: "Code", Type: UIA.Type.Pane })
+        }
+        if (el) {
+            br := el.BoundingRectangle
+            if (br && (br.r - br.l) > 200)
+                return (br.l + br.r) / 2
+        }
+        ; Fallback: pick the largest Pane that looks like the main content (center of window)
+        WinGetClientPos(&cX, &cY, &cW, &cH, "ahk_id " . winHwnd)
+        if (cW > 0) {
+            paneCond := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Pane)
+            panes := root.FindElements(paneCond, UIA.TreeScope.Descendants)
+            bestCenter := ""
+            bestW := 0
+            minW := Max(300, cW * 0.25)
+            maxW := cW * 0.98
+            for p in panes {
+                try {
+                    br := p.BoundingRectangle
+                    w := br.r - br.l
+                    if (w >= minW && w <= maxW && w > bestW) {
+                        bestW := w
+                        bestCenter := (br.l + br.r) / 2
+                    }
+                }
+            }
+            if (bestCenter != "")
+                return bestCenter
+        }
+    }
+    return ""
+}
+
 ShowProgressOverlay(state := "Working...", barColor := "3772FF") {
     global g_ProgressOverlayGui, g_ProgressOverlayValue
 
@@ -15203,7 +15254,7 @@ ShowProgressOverlay(state := "Working...", barColor := "3772FF") {
     monitorWidth := mr - ml
     barWidth := Min(900, Max(360, Floor(monitorWidth * 0.6)))
 
-    overlayGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
+    overlayGui := Gui("+AlwaysOnTop -Caption +ToolWindow -DPIScale")
     overlayGui.BackColor := "1E1E2E"
     overlayGui.MarginX := 16
     overlayGui.MarginY := 10
@@ -15216,33 +15267,36 @@ ShowProgressOverlay(state := "Working...", barColor := "3772FF") {
     overlayGui.Show("AutoSize Hide")
     overlayGui.GetPos(, , &gw, &gh)
 
-    ; Center horizontally over the active window when possible, otherwise over the monitor
-    guiX := ml + (monitorWidth - gw) // 2
-    activeWin := 0
-    try {
-        activeWin := WinGetID("A")
-    } catch {
-        activeWin := 0
-    }
-    if (activeWin && activeWin != 0) {
-        rect := Buffer(16, 0)
-        if (DllCall("GetWindowRect", "ptr", activeWin, "ptr", rect)) {
-            winLeft := NumGet(rect, 0, "int")
-            winTop := NumGet(rect, 4, "int")
-            winRight := NumGet(rect, 8, "int")
-            winBottom := NumGet(rect, 12, "int")
-            centerX := winLeft + (winRight - winLeft) // 2
-            guiX := centerX - (gw // 2)
-        }
-    }
+    ; Horizontal center: use only the work area of the monitor that contains the active window
+    ; (per 4-monitor config: resolution and scaling are handled by MonitorGetWorkArea / DPI-aware coordinates)
+    guiX := Round(ml + (monitorWidth - gw) / 2)
+    ; #region agent log
+    try FileAppend '{"sessionId":"b1eae8","hypothesisId":"H3","location":"Shift keys.ahk:15255","message":"overlay GetPos and monitor","data":{"ml":' ml ',"mr":' mr ',"monitorWidth":' monitorWidth ',"gw":' gw ',"gh":' gh ',"guiX_monitor":' guiX '},"timestamp":' A_TickCount '}`n',
+        DBG_OVERLAY_LOG
+    ; #endregion
     ; Clamp within monitor bounds
     if (guiX < ml)
         guiX := ml
     if (guiX + gw > mr)
         guiX := mr - gw
+    ; #region agent log
+    try FileAppend '{"sessionId":"b1eae8","hypothesisId":"H5","location":"Shift keys.ahk:15255","message":"after clamp","data":{"guiX_after_clamp":' guiX ',"ml":' ml ',"mr":' mr ',"gw":' gw '},"timestamp":' A_TickCount '}`n',
+        DBG_OVERLAY_LOG
+    ; #endregion
 
     guiY := mt + 40
     overlayGui.Show("x" . guiX . " y" . guiY . " NA")
+    ; Force position in physical screen coordinates (avoids DPI scaling mismatch with MonitorGetWorkArea)
+    try {
+        hwnd := overlayGui.Hwnd
+        if (hwnd)
+            DllCall("SetWindowPos", "Ptr", hwnd, "Ptr", 0, "Int", guiX, "Int", guiY, "Int", 0, "Int", 0, "UInt", 0x0015
+            )  ; SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE
+    }
+    ; #region agent log
+    try FileAppend '{"sessionId":"b1eae8","hypothesisId":"H3","location":"Shift keys.ahk:15260","message":"final position","data":{"guiX":' guiX ',"guiY":' guiY '},"timestamp":' A_TickCount '}`n',
+        DBG_OVERLAY_LOG
+    ; #endregion
     WinSetTransparent(235, overlayGui)
 
     g_ProgressOverlayGui := overlayGui
