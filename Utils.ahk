@@ -6461,7 +6461,7 @@ GeminiFinalizeSubmit() {
         WinActivate("ahk_id " g_HotstringGeminiRestoreHwnd)
     }
 
-    ; If we auto-submitted (user did not cancel), ask Gemini.ahk to monitor for completion and show "Copy? [N]" when done
+    ; If we auto-submitted (user did not cancel), ask Gemini.ahk to monitor for completion and show "Copy? [N] [R]" when done
     if (didAutoSubmit && geminiChromeHwnd)
         GeminiDelayedSubmitMonitorStartFromUtils(g_HotstringGeminiRestoreHwnd, geminiChromeHwnd)
 }

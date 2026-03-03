@@ -1221,7 +1221,7 @@ class GeminiAsyncLookup {
 
 ; =============================================================================
 ; GeminiDelayedSubmitMonitor – background completion monitor for Ctrl+Alt+Win+L
-; Reuses #!+8 completion detection; on completion shows "Copy? [N]" with 4s timeout.
+; Reuses #!+8 completion detection; on completion shows "Copy? [N] [R]" with 4s timeout (N = no copy, R = copy + read aloud).
 ; =============================================================================
 class GeminiDelayedSubmitMonitor {
     __New() {
@@ -1308,7 +1308,7 @@ class GeminiDelayedSubmitMonitor {
         banner := Gui("+AlwaysOnTop -Caption +ToolWindow")
         banner.BackColor := "3772FF"
         banner.SetFont("s8 cFFFFFF", "Segoe UI")
-        banner.Add("Text", "w160 Center", "Copy? [N]")
+        banner.Add("Text", "w200 Center", "Copy? [N] [R]")
         workArea := GetWorkAreaForWindow(this.OriginalHwnd)
         if (workArea = "") {
             MonitorGetWorkArea(, &wLeft, &wTop, &wRight, &wBottom)
@@ -1329,25 +1329,29 @@ class GeminiDelayedSubmitMonitor {
         this.CopyTimeoutTimer := this.DoCopyOnTimeout.Bind(this)
         Hotkey("n", this.CancelCopy.Bind(this), "On")
         Hotkey("N", this.CancelCopy.Bind(this), "On")
+        Hotkey("r", this.CopyAndReadAloud.Bind(this), "On")
+        Hotkey("R", this.CopyAndReadAloud.Bind(this), "On")
         SetTimer(this.CopyTimeoutTimer, -4000)
     }
 
-    CancelCopy(*) {
+    ; Shared cleanup: stop timeout timer, disable N/R hotkeys, destroy banner. Used by CancelCopy, DoCopyOnTimeout, CopyAndReadAloud.
+    CleanupCopyBanner() {
         try SetTimer(this.CopyTimeoutTimer, 0)
         try Hotkey("n", "Off")
         try Hotkey("N", "Off")
+        try Hotkey("r", "Off")
+        try Hotkey("R", "Off")
         if (IsObject(this.CopyBannerGui) && this.CopyBannerGui.Hwnd)
             try this.CopyBannerGui.Destroy()
         this.CopyBannerGui := ""
     }
 
+    CancelCopy(*) {
+        this.CleanupCopyBanner()
+    }
+
     DoCopyOnTimeout(*) {
-        try SetTimer(this.CopyTimeoutTimer, 0)
-        try Hotkey("n", "Off")
-        try Hotkey("N", "Off")
-        if (IsObject(this.CopyBannerGui) && this.CopyBannerGui.Hwnd)
-            try this.CopyBannerGui.Destroy()
-        this.CopyBannerGui := ""
+        this.CleanupCopyBanner()
 
         contentBefore := A_Clipboard
         try {
@@ -1381,6 +1385,46 @@ class GeminiDelayedSubmitMonitor {
             CopyLastGeminiMessageToClipboard(copyOpt, this.GeminiHwnd)
             Sleep 400
         }
+        if (WinExist("ahk_id " this.OriginalHwnd))
+            WinActivate("ahk_id " this.OriginalHwnd)
+    }
+
+    ; R key: copy last message and read it aloud, then restore focus (same tab as delayed submit).
+    CopyAndReadAloud(*) {
+        this.CleanupCopyBanner()
+
+        contentBefore := A_Clipboard
+        try {
+            WinActivate("ahk_id " this.GeminiHwnd)
+        } catch {
+            if (WinExist("ahk_id " this.OriginalHwnd))
+                WinActivate("ahk_id " this.OriginalHwnd)
+            return
+        }
+        if !WinWaitActive("ahk_exe chrome.exe", , 2) {
+            if (WinExist("ahk_id " this.OriginalHwnd))
+                WinActivate("ahk_id " this.OriginalHwnd)
+            return
+        }
+        Send("^1")
+        Sleep 200
+        ShowGeminiTabBanner(1, this.GeminiHwnd)
+        copyOpt := { restoreWindow: false, playChimeAndNotify: false, alreadyActive: true }
+        if !CopyLastGeminiMessageToClipboard(copyOpt, this.GeminiHwnd) {
+            if (WinExist("ahk_id " this.OriginalHwnd))
+                WinActivate("ahk_id " this.OriginalHwnd)
+            return
+        }
+        Sleep 400
+        if (A_Clipboard = "" || A_Clipboard = contentBefore) {
+            CopyLastGeminiMessageToClipboard(copyOpt, this.GeminiHwnd)
+            Sleep 400
+        }
+        if (A_Clipboard = "" || A_Clipboard = contentBefore) {
+            CopyLastGeminiMessageToClipboard(copyOpt, this.GeminiHwnd)
+            Sleep 400
+        }
+        GeminiTriggerReadAloud(false, false)   ; read aloud only (already copied)
         if (WinExist("ahk_id " this.OriginalHwnd))
             WinActivate("ahk_id " this.OriginalHwnd)
     }
