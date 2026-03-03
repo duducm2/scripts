@@ -6299,6 +6299,8 @@ GeminiNavigateFocusAndPasteFirstSnippet(optionalPromptText := "") {
         Sleep 50
         Send "^!b"
     }
+    ; Brief delay so paste is received and UI/character limits register before any submit or focus change
+    Sleep 250
     ; Same sound as when opening Gemini (focus/paste feedback)
     if (IsSoundEnabled())
         SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
@@ -6392,8 +6394,11 @@ GeminiCancelAutoSubmit_DoPaste(*) {
         WinActivate("ahk_id " g_HotstringGeminiRestoreHwnd)
 }
 
+; Delay (ms) after paste and before Send Enter in Gemini delayed-submit flow. Prevents premature send and lets the UI register paste + character limits.
+global g_GeminiDelayedSubmit_PreEnterDelayMs := 1000
+
 GeminiFinalizeSubmit() {
-    global g_HotstringGeminiAutoSubmit, g_HotstringGeminiRestoreHwnd
+    global g_HotstringGeminiAutoSubmit, g_HotstringGeminiRestoreHwnd, g_GeminiDelayedSubmit_PreEnterDelayMs
 
     try Hotkey("n", "Off")
     try Hotkey("N", "Off")
@@ -6404,7 +6409,8 @@ GeminiFinalizeSubmit() {
     didAutoSubmit := false
     geminiChromeHwnd := 0
     if (g_HotstringGeminiAutoSubmit) {
-        Sleep 300
+        ; Execution delay so paste is fully received and UI/character limits register before submit
+        Sleep (g_GeminiDelayedSubmit_PreEnterDelayMs)
         Send("{Enter}")
         geminiChromeHwnd := WinExist("A")
         didAutoSubmit := true
