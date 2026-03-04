@@ -5551,15 +5551,15 @@ PeekPdf_OpenStored() {
 ;  7) Click window center  8) Ctrl+End. Fallback: Sleep 400 + Click if UIA or anchor fails.
 PeekPdf_WaitAndConfigure() {
     global UIA
-    ; Banner: show for the whole process so user knows when we started and when we finished
-    AiModelBanner_Show("Peek PDF: configuring...", "3772FF")
+    ; Standard loading bar: show for the whole process so user knows when we started and when we finished
+    StandardLoadingBar_Show("Peek PDF: configuring...", "3772FF")
     ; 1) Get Peek window hwnd
     hwnd := WinExist("Peek")
     if (!hwnd)
         hwnd := WinExist("ahk_exe PowerToys.Peek.UI.exe")
     if (!hwnd) {
-        AiModelBanner_Show("Peek PDF: window not found", "FFAA00")
-        SetTimer(AiModelBanner_Hide, -2000)
+        StandardLoadingBar_Update("Peek PDF: window not found", "FFAA00")
+        StandardLoadingBar_Hide(2000)
         Sleep 300
         Click "Left"
         return
@@ -5730,17 +5730,17 @@ PeekPdf_WaitAndConfigure() {
                     Send("^End")
             }
             Sleep 100
-            AiModelBanner_Show("Peek PDF: done", "27AE60")
-            SetTimer(AiModelBanner_Hide, -2000)
+            StandardLoadingBar_Update("Peek PDF: done", "27AE60")
+            StandardLoadingBar_Hide(2000)
         } else {
-            AiModelBanner_Show("Peek PDF: finished (fallback)", "FFAA00")
-            SetTimer(AiModelBanner_Hide, -2000)
+            StandardLoadingBar_Update("Peek PDF: finished (fallback)", "FFAA00")
+            StandardLoadingBar_Hide(2000)
             Sleep 400
             Click "Left"
         }
     } catch {
-        AiModelBanner_Show("Peek PDF: finished (fallback)", "FFAA00")
-        SetTimer(AiModelBanner_Hide, -2000)
+        StandardLoadingBar_Update("Peek PDF: finished (fallback)", "FFAA00")
+        StandardLoadingBar_Hide(2000)
         Sleep 400
         Click "Left"
     }
