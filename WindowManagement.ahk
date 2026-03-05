@@ -11,6 +11,8 @@
 ; --- Copy-from-Gemini to Cursor bridge (self-contained module) --------------
 #include %A_ScriptDir%\GeminiToCursorBridge.ahk
 
+#include %A_ScriptDir%\Utils.ahk
+
 ; #region agent log
 ; Debug log path for Copy-from-Gemini instrumentation (NDJSON, one object per line)
 _DebugLogPath_WM() => A_ScriptDir "\.cursor\debug.log"
@@ -25,50 +27,8 @@ _DebugLog_WM(loc, msg, data, hypothesisId := "") {
 ; #endregion
 
 ; --- Helper Functions --------------------------------------------------------
-; Unified banner builder for WindowManagement notifications
-CreateCenteredBanner_WM(message, bgColor := "DF2935", fontColor := "FFFFFF", fontSize := 20, alpha := 178) {
-    bGui := Gui()
-    bGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
-    bGui.BackColor := bgColor
-    bGui.SetFont("s" . fontSize . " c" . fontColor . " Bold", "Segoe UI")
-    bGui.Add("Text", "w500 Center", message)
-
-    ; Safely get active window - handle case where no window is active
-    activeWin := 0
-    try {
-        activeWin := WinGetID("A")
-    } catch {
-        ; No active window available, will use primary monitor
-        activeWin := 0
-    }
-
-    if (activeWin) {
-        try {
-            WinGetPos(&winX, &winY, &winW, &winH, activeWin)
-        } catch {
-            ; If we can't get window position, fall back to primary monitor
-            MonitorGetWorkArea(1, &l, &t, &r, &b)
-            winX := l, winY := t, winW := r - l, winH := b - t
-        }
-    } else {
-        MonitorGetWorkArea(1, &l, &t, &r, &b)
-        winX := l, winY := t, winW := r - l, winH := b - t
-    }
-
-    bGui.Show("AutoSize Hide")
-    guiW := 0, guiH := 0
-    bGui.GetPos(, , &guiW, &guiH)
-
-    guiX := winX + (winW - guiW) / 2
-    guiY := winY + (winH - guiH) / 2
-    bGui.Show("x" . Round(guiX) . " y" . Round(guiY) . " NA")
-    WinSetTransparent(alpha, bGui)
-    return bGui
-}
-
 ShowNotification_WM(message, durationMs := 1500) {
-    notificationGui := CreateCenteredBanner_WM(message)
-    SetTimer(() => notificationGui.Destroy(), -durationMs)
+    ShowCenteredOverlay_Utils(message, durationMs, "DF2935")
 }
 
 ; Activate window by winSpec; show graceful error and return false if not found.
@@ -907,43 +867,6 @@ CleanupProjectSelector() {
         }
         g_ProjectSelectorGui := false
     }
-}
-; Extract matching segments from project path for window title matching
-; Cursor window titles have format: "filename - folder-name - Cursor" or "filename - path-segment - Cursor"
-; Examples:
-;   "eyelash_sofle.keymap - zmk-sofle - Cursor" matches path ending in "zmk-sofle"
-;   "WindowManagement.ahk - scripts - Cursor" matches path ending in "scripts"
-;   "argument.md - 26-ai-experiment - Cursor" matches path ending in "26-ai-experiment"
-ExtractProjectMatchSegments(projectPath) {
-    ; Normalize the project path (remove trailing backslashes)
-    normalizedPath := RTrim(projectPath, "\")
-
-    ; Split path into segments
-    pathSegments := StrSplit(normalizedPath, "\")
-
-    ; Extract the last folder name (e.g., "zmk-sofle", "26-ai-experiment", "scripts")
-    lastSegment := pathSegments[pathSegments.Length]
-
-    ; Build list of potential match strings
-    matchSegments := [lastSegment]
-
-    ; If the last segment contains " - ", it's already a compound name like "17 - Projects"
-    ; We also want to check if the last two segments together form a pattern
-    ; For example: path "C:\Users\eduev\Meu Drive\17 - Projects\scripts"
-    ;   Last segment: "scripts" (this should match)
-    ;   But window might show "scripts" or the full path segment
-
-    ; If we have at least 2 segments, also try the combination
-    ; This handles cases where the folder structure might be represented differently
-    if (pathSegments.Length >= 2) {
-        ; Try last two segments joined with " - " (for cases like "17 - Projects")
-        lastTwoJoined := pathSegments[pathSegments.Length - 1] . " - " . pathSegments[pathSegments.Length]
-        if (lastTwoJoined != lastSegment) {  ; Only add if different
-            matchSegments.Push(lastTwoJoined)
-        }
-    }
-
-    return matchSegments
 }
 
 ; Find and activate the last used Cursor PREVIEW window for a project path
