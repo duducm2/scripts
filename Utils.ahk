@@ -6604,7 +6604,7 @@ HandleHotstringChar(char) {
     }
 
     ; L key: first press = arm Gemini mode (show banner); second press (double-tap) = navigate to Gemini, focus field, paste first snippet.
-    if (char = "l" || char = "L") {
+    if (char = "l" || char = "L") { 
         if (g_HotstringGeminiArmed) {
             ; Double-tap L: delayed submit flow (4s banner, N to cancel auto-submit; then navigate+paste, optionally Enter).
             CleanupHotstringSelector()
