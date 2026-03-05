@@ -246,49 +246,13 @@ IsTeamsChatTitle(title) {
     return InStr(title, "Chat |") && RegExMatch(title, "i)\| Microsoft Teams$")
 }
 
-; --- NEW helper --------------------------------------------------------------
+; --- Standard overlay (uses Utils) -------------------------------------------
 ShowCenteredOverlay(hwndTarget, text, duration := 1500) {
-    ; High-contrast centered banner (consistent with other scripts)
-    ; Validate target window, fall back to active window, then screen center
-    target := hwndTarget
-    if !(IsSet(target) && target && WinExist("ahk_id " target)) {
-        target := WinGetID("A")
-    }
-    hasWindow := false
-    if target && WinExist("ahk_id " target) {
-        try {
-            WinGetPos(&wx, &wy, &ww, &wh, target)
-            hasWindow := (ww > 0 && wh > 0)
-        } catch {
-            hasWindow := false
-        }
-    }
-
-    ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
-    ov.BackColor := "3772FF"          ; strong blue
-    ov.SetFont("s24 cFFFFFF Bold", "Segoe UI")
-    msg := ov.Add("Text", "w500 Center", text)
-    ov.Show("AutoSize Hide")          ; measure the GUI first
-    ov.GetPos(&gx, &gy, &gw, &gh)
-
-    if hasWindow {
-        cx := wx + (ww - gw)//2
-        cy := wy + (wh - gh)//2
-        ov.Show("x" . cx . " y" . cy . " NA")
-    } else {
-        ; Screen center fallback (virtual screen across monitors)
-        vx := SysGet(76)  ; SM_XVIRTUALSCREEN
-        vy := SysGet(77)  ; SM_YVIRTUALSCREEN
-        vw := SysGet(78)  ; SM_CXVIRTUALSCREEN
-        vh := SysGet(79)  ; SM_CYVIRTUALSCREEN
-        cx := vx + (vw - gw)//2
-        cy := vy + (vh - gh)//2
-        ov.Show("x" . cx . " y" . cy . " NA")
-    }
-
-    WinSetTransparent(178, ov)        ; ~70% opacity for visibility
-    Sleep duration
-    ov.Destroy()
+    centerOnHwnd := (hwndTarget && WinExist("ahk_id " hwndTarget)) ? hwndTarget : WinGetID("A")
+    if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
+        centerOnHwnd := 0
+    StandardLoadingBar_Show(text, "3772FF", { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 500, fontSize: 24, passiveBgColor: "3772FF" })
+    StandardLoadingBar_Hide(duration)
 }
 
 
