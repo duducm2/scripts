@@ -2190,27 +2190,6 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
     }
 }
 
-; #region agent log
-Debug4191_Log(location, message, dataStr := "", hypothesisId := "", runId := "") {
-    logPath := A_ScriptDir "\debug-4191cd.log"
-    q := Chr(34)
-    line := "{"
-    line .= q "sessionId" q ":" q "4191cd" q
-    line .= "," q "id" q ":" q "log_" A_TickCount q
-    line .= "," q "timestamp" q ":" A_TickCount
-    line .= "," q "location" q ":" q location q
-    line .= "," q "message" q ":" q message q
-    if (dataStr != "")
-        line .= "," q "data" q ":" q dataStr q
-    if (runId != "")
-        line .= "," q "runId" q ":" q runId q
-    if (hypothesisId != "")
-        line .= "," q "hypothesisId" q ":" q hypothesisId q
-    line .= "}"
-    try FileAppend line "`n", logPath
-}
-; #endregion
-
 StandardLoadingBar_RegisterKeyHandler(key, cb) {
     global g_StandardLoadingBarKeysHotkeys
     if (!cb)
@@ -2220,17 +2199,11 @@ StandardLoadingBar_RegisterKeyHandler(key, cb) {
     try {
         Hotkey(key, fn, "On")
         g_StandardLoadingBarKeysHotkeys.Push(key)
-        ; #region agent log
-        Debug4191_Log("Utils.ahk:StandardLoadingBar_RegisterKeyHandler", "registered hotkey", "key=" . key, "H1", "post-fix")
-        ; #endregion
     } catch {
     }
 }
 
 StandardLoadingBar_KeyWrapper(key, cb, *) {
-    ; #region agent log
-    Debug4191_Log("Utils.ahk:StandardLoadingBar_KeyWrapper", "hotkey fired", "key=" . key, "H1", "post-fix")
-    ; #endregion
     StandardLoadingBar_CloseKeysOverlay()
     if (cb) {
         try cb.Call()
