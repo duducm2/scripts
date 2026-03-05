@@ -691,21 +691,21 @@ QuickUpdateScripts() {
         for script in failedScripts {
             failedList .= script "`n"
         }
+        ShowCenteredOverlay_Utils("Some scripts failed to update:`n" failedList, 4000, "FF0000")
         try {
             if (FileExist(scriptsDir "\sounds\quick-update-failure.wav"))
                 SoundPlay(scriptsDir "\sounds\quick-update-failure.wav")
         } catch {
-            ; Ignore sound play errors
         }
-        ShowCenteredOverlay_Utils("Some scripts failed to update:`n" failedList, 4000, "FF0000")
     } else {
+        ShowCenteredOverlay_Utils("All scripts updated successfully!", 3500, "00FF00")
         try {
             if (FileExist(scriptsDir "\sounds\quick-update-success.wav"))
                 SoundPlay(scriptsDir "\sounds\quick-update-success.wav")
         } catch {
-            ; Ignore sound play errors
         }
-        ShowCenteredOverlay_Utils("All scripts updated successfully!", 1500, "00FF00")
+        ; Wait for overlay to be readable before reloading Utils (otherwise reload can replace process and hide it)
+        Sleep 5500
     }
 
     ; Reload Utils.ahk last so this instance is replaced only after notification
@@ -1403,177 +1403,51 @@ AiModelSelector_Close() {
 }
 
 ; =============================================================================
-; Status Banner Functions (non-blocking)
+; Status Banner Functions (non-blocking; use standard loading indicator)
 ; =============================================================================
 AiModelBanner_Show(text, bgColor := "3772FF") {
-    global g_AiModelBannerGui
-
-    ; Destroy any previous banner
-    AiModelBanner_Hide()
-
-    g_AiModelBannerGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
-    g_AiModelBannerGui.BackColor := bgColor
-    g_AiModelBannerGui.SetFont("s18 cFFFFFF Bold", "Segoe UI")
-    g_AiModelBannerGui.Add("Text", "w450 Center", text)
-
-    ; Get active window to determine which monitor to show banner on
-    activeWin := 0
-    try {
-        activeWin := WinGetID("A")
-    } catch {
-        activeWin := 0
+    centerOnHwnd := 0
+    try centerOnHwnd := WinGetID("A")
+    catch {
     }
-
-    ; Default to primary monitor work area
-    MonitorGetWorkArea(1, &monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
-    monitorWidth := monitorRight - monitorLeft
-    monitorHeight := monitorBottom - monitorTop
-
-    ; If we have an active window, find which monitor contains its center
-    if (activeWin && activeWin != 0) {
-        rect := Buffer(16, 0)
-        if (DllCall("GetWindowRect", "ptr", activeWin, "ptr", rect)) {
-            winLeft := NumGet(rect, 0, "int")
-            winTop := NumGet(rect, 4, "int")
-            winRight := NumGet(rect, 8, "int")
-            winBottom := NumGet(rect, 12, "int")
-
-            centerX := winLeft + (winRight - winLeft) // 2
-            centerY := winTop + (winBottom - winTop) // 2
-
-            monitorCount := MonitorGetCount()
-            loop monitorCount {
-                idx := A_Index
-                MonitorGetWorkArea(idx, &l, &t, &r, &b)
-                if (centerX >= l && centerX <= r && centerY >= t && centerY <= b) {
-                    monitorLeft := l
-                    monitorTop := t
-                    monitorWidth := r - l
-                    monitorHeight := b - t
-                    break
-                }
-            }
-        }
-    }
-
-    ; Position at top-center of the active monitor
-    g_AiModelBannerGui.Show("AutoSize Hide")
-    g_AiModelBannerGui.GetPos(&gx, &gy, &gw, &gh)
-    cx := monitorLeft + (monitorWidth - gw) // 2
-    cy := monitorTop + 50  ; 50px from top of the active monitor
-    g_AiModelBannerGui.Show("x" . cx . " y" . cy . " NA")
-    WinSetTransparent(200, g_AiModelBannerGui)
-}
-
-; Small banner: centered on current monitor (for Clip Angel, multi-monitor safe).
-global g_ClipAngelSmallBannerGui := false
-ClipAngelBanner_Show(text, bgColor := "3772FF") {
-    global g_ClipAngelSmallBannerGui
-    ClipAngelBanner_Hide()
-    g_ClipAngelSmallBannerGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
-    g_ClipAngelSmallBannerGui.BackColor := bgColor
-    g_ClipAngelSmallBannerGui.SetFont("s10 cFFFFFF Bold", "Segoe UI")
-    g_ClipAngelSmallBannerGui.Add("Text", "w200 Center", text)
-    activeWin := 0
-    try {
-        activeWin := WinGetID("A")
-    } catch {
-        activeWin := 0
-    }
-    MonitorGetWorkArea(1, &monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
-    monitorWidth := monitorRight - monitorLeft
-    monitorHeight := monitorBottom - monitorTop
-    if (activeWin && activeWin != 0) {
-        rect := Buffer(16, 0)
-        if (DllCall("GetWindowRect", "ptr", activeWin, "ptr", rect)) {
-            centerX := (NumGet(rect, 0, "int") + NumGet(rect, 8, "int")) // 2
-            centerY := (NumGet(rect, 4, "int") + NumGet(rect, 12, "int")) // 2
-            loop MonitorGetCount() {
-                MonitorGetWorkArea(A_Index, &l, &t, &r, &b)
-                if (centerX >= l && centerX <= r && centerY >= t && centerY <= b) {
-                    monitorLeft := l
-                    monitorTop := t
-                    monitorWidth := r - l
-                    monitorHeight := b - t
-                    break
-                }
-            }
-        }
-    }
-    g_ClipAngelSmallBannerGui.Show("AutoSize Hide")
-    g_ClipAngelSmallBannerGui.GetPos(&gx, &gy, &gw, &gh)
-    cx := monitorLeft + (monitorWidth - gw) // 2
-    cy := monitorTop + (monitorHeight - gh) // 2
-    g_ClipAngelSmallBannerGui.Show("x" . cx . " y" . cy . " NA")
-    WinSetTransparent(220, g_ClipAngelSmallBannerGui)
-}
-ClipAngelBanner_Hide() {
-    global g_ClipAngelSmallBannerGui
-    if (IsObject(g_ClipAngelSmallBannerGui) && g_ClipAngelSmallBannerGui.Hwnd) {
-        try g_ClipAngelSmallBannerGui.Destroy()
-    }
-    g_ClipAngelSmallBannerGui := false
+    if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
+        centerOnHwnd := 0
+    StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 450, fontSize: 18, passiveBgColor: bgColor, alpha: 200 })
 }
 
 AiModelBanner_Hide() {
-    global g_AiModelBannerGui
-    if (IsObject(g_AiModelBannerGui) && g_AiModelBannerGui.Hwnd) {
-        try g_AiModelBannerGui.Destroy()
+    StandardLoadingBar_Hide(0)
+}
+
+; Small banner for Clip Angel (uses standard loading indicator).
+ClipAngelBanner_Show(text, bgColor := "3772FF") {
+    centerOnHwnd := 0
+    try centerOnHwnd := WinGetID("A")
+    catch {
     }
-    g_AiModelBannerGui := false
+    if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
+        centerOnHwnd := 0
+    StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 200, fontSize: 10, passiveBgColor: bgColor, alpha: 220 })
+}
+
+ClipAngelBanner_Hide() {
+    StandardLoadingBar_Hide(0)
 }
 
 ; =============================================================================
-; Single-character tab banner: square, centered on monitor containing active window.
-; tabNumber 1 = blue background, 2 = yellow background (character in contrasting color). Auto-hides after 700 ms. Utils-only (no external refs).
+; Single-character tab banner (uses standard loading indicator). tabNumber 1 = blue, 2 = yellow. Auto-hides after 700 ms.
 ; =============================================================================
 ShowSingleCharTabBanner_Utils(tabNumber) {
     msg := String(tabNumber)
-    if (tabNumber = 1) {
-        bgColor := "0000FF"
-        fontColor := "FFFFFF"
-    } else {
-        bgColor := "FFFF00"
-        fontColor := "000000"
+    bgColor := (tabNumber = 1) ? "0000FF" : "FFFF00"
+    centerOnHwnd := 0
+    try centerOnHwnd := WinGetID("A")
+    catch {
     }
-    side := 120
-    ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
-    ov.BackColor := bgColor
-    ov.SetFont("s72 c" . fontColor . " Bold", "Segoe UI")
-    ov.Add("Text", "w" . side . " h" . side . " Center", msg)
-    activeWin := 0
-    try {
-        activeWin := WinGetID("A")
-    } catch {
-        activeWin := 0
-    }
-    MonitorGetWorkArea(1, &monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
-    monitorWidth := monitorRight - monitorLeft
-    monitorHeight := monitorBottom - monitorTop
-    if (activeWin && activeWin != 0) {
-        rect := Buffer(16, 0)
-        if (DllCall("GetWindowRect", "ptr", activeWin, "ptr", rect)) {
-            centerX := (NumGet(rect, 0, "int") + NumGet(rect, 8, "int")) // 2
-            centerY := (NumGet(rect, 4, "int") + NumGet(rect, 12, "int")) // 2
-            loop MonitorGetCount() {
-                MonitorGetWorkArea(A_Index, &l, &t, &r, &b)
-                if (centerX >= l && centerX <= r && centerY >= t && centerY <= b) {
-                    monitorLeft := l
-                    monitorTop := t
-                    monitorWidth := r - l
-                    monitorHeight := b - t
-                    break
-                }
-            }
-        }
-    }
-    ov.Show("AutoSize Hide")
-    ov.GetPos(&gx, &gy, &gw, &gh)
-    cx := monitorLeft + (monitorWidth - gw) // 2
-    cy := monitorTop + (monitorHeight - gh) // 2
-    ov.Show("x" . cx . " y" . cy . " NA")
-    WinSetTransparent(178, ov)
-    SetTimer(() => (ov.Destroy()), -700)
+    if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
+        centerOnHwnd := 0
+    StandardLoadingBar_Show(msg, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 120, fontSize: 72, passiveBgColor: bgColor, alpha: 178 })
+    StandardLoadingBar_Hide(700)
 }
 
 ; =============================================================================
@@ -1885,46 +1759,14 @@ EnumWindowsCallback(hwnd, lParam) {
 }
 
 ; =============================================================================
-; Helper: Show centered overlay banner (reused from Microsoft Teams.ahk pattern)
+; Helper: Show centered overlay banner (uses standard loading indicator; non-blocking).
 ; =============================================================================
 ShowCenteredOverlay_Utils(text, duration := 1500, bgColor := "3772FF") {
-    ; High-contrast centered banner
-    target := WinGetID("A")
-    hasWindow := false
-    if target && WinExist("ahk_id " target) {
-        try {
-            WinGetPos(&wx, &wy, &ww, &wh, target)
-            hasWindow := (ww > 0 && wh > 0)
-        } catch {
-            hasWindow := false
-        }
-    }
-
-    ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
-    ov.BackColor := bgColor
-    ov.SetFont("s24 c" (bgColor = "FFCC00" ? "000000" : "FFFFFF") " Bold", "Segoe UI")
-    msg := ov.Add("Text", "w500 Center", text)
-    ov.Show("AutoSize Hide")          ; measure the GUI first
-    ov.GetPos(&gx, &gy, &gw, &gh)
-
-    if hasWindow {
-        cx := wx + (ww - gw) // 2
-        cy := wy + (wh - gh) // 2
-        ov.Show("x" . cx . " y" . cy . " NA")
-    } else {
-        ; Screen center fallback (virtual screen across monitors)
-        vx := SysGet(76)  ; SM_XVIRTUALSCREEN
-        vy := SysGet(77)  ; SM_YVIRTUALSCREEN
-        vw := SysGet(78)  ; SM_CXVIRTUALSCREEN
-        vh := SysGet(79)  ; SM_CYVIRTUALSCREEN
-        cx := vx + (vw - gw) // 2
-        cy := vy + (vh - gh) // 2
-        ov.Show("x" . cx . " y" . cy . " NA")
-    }
-
-    WinSetTransparent(178, ov)        ; ~70% opacity for visibility
-    Sleep duration
-    ov.Destroy()
+    centerOnHwnd := WinGetID("A")
+    if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
+        centerOnHwnd := 0
+    StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 500, fontSize: 24, passiveBgColor: bgColor })
+    StandardLoadingBar_Hide(duration)
 }
 
 ; =============================================================================
@@ -2011,6 +1853,7 @@ StandardLoadingBar_Show(state := "Working...", barColor := "3772FF", options := 
     textWidth := options && options.HasProp("textWidth") ? options.textWidth : 0
     fontSize := options && options.HasProp("fontSize") ? options.fontSize : 9
     alpha := options && options.HasProp("alpha") ? options.alpha : 235
+    passiveBgColor := options && options.HasProp("passiveBgColor") ? options.passiveBgColor : ""
 
     if (centerOnHwnd) {
         workArea := GetWorkAreaForWindow_StandardBar(centerOnHwnd)
@@ -2027,7 +1870,7 @@ StandardLoadingBar_Show(state := "Working...", barColor := "3772FF", options := 
     monitorHeight := mb - mt
     barWidth := textWidth > 0 ? textWidth : Min(900, Max(360, Floor(monitorWidth * 0.6)))
     overlayGui := Gui("+AlwaysOnTop -Caption +ToolWindow -DPIScale")
-    overlayGui.BackColor := "1E1E2E"
+    overlayGui.BackColor := (passive && passiveBgColor != "") ? passiveBgColor : "1E1E2E"
     overlayGui.MarginX := 16
     overlayGui.MarginY := 10
     overlayGui.SetFont("s" . fontSize . " cFFFFFF", "Segoe UI")
@@ -2221,144 +2064,33 @@ StandardLoadingBar_KeysTimeoutFired(timeoutCallback) {
 }
 
 ; =============================================================================
-; Hotstring Selector: Gemini Redirect Banner (non-blocking)
+; Hotstring Selector: Gemini Redirect Banner (non-blocking; uses standard loading indicator)
 ; =============================================================================
-global g_HotstringGeminiBannerGui := false
-
 HotstringGeminiBanner_Show(text := "Gemini: inserting prompt...") {
-    global g_HotstringGeminiBannerGui
-
-    ; Strict sync: only one banner at a time; remove dictation confirm banner first
     DictationGeminiConfirm_Hide()
     Sleep 50
-
-    ; Destroy any previous banner instance
-    if (IsObject(g_HotstringGeminiBannerGui) && g_HotstringGeminiBannerGui.Hwnd) {
-        try g_HotstringGeminiBannerGui.Destroy()
+    centerOnHwnd := 0
+    try centerOnHwnd := WinGetID("A")
+    catch {
     }
-
-    target := WinGetID("A")
-    hasWindow := false
-    if target && WinExist("ahk_id " target) {
-        try {
-            WinGetPos(&wx, &wy, &ww, &wh, target)
-            hasWindow := (ww > 0 && wh > 0)
-        } catch {
-            hasWindow := false
-        }
-    }
-
-    ; Half size: w160, s8 (was w320, s14)
-    ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
-    ov.BackColor := "3772FF"
-    ov.SetFont("s8 cFFFFFF", "Segoe UI")
-    ov.Add("Text", "w160 Center", text)
-    ov.Show("AutoSize Hide")
-    ov.GetPos(, , &gw, &gh)
-
-    if hasWindow {
-        cx := wx + (ww - gw) // 2
-        cy := wy + (wh - gh) // 2
-        ov.Show("x" . cx . " y" . cy . " NA")
-    } else {
-        vx := SysGet(76)  ; SM_XVIRTUALSCREEN
-        vy := SysGet(77)  ; SM_YVIRTUALSCREEN
-        vw := SysGet(78)  ; SM_CXVIRTUALSCREEN
-        vh := SysGet(79)  ; SM_CYVIRTUALSCREEN
-        cx := vx + (vw - gw) // 2
-        cy := vy + (vh - gh) // 2
-        ov.Show("x" . cx . " y" . cy . " NA")
-    }
-
-    ; 80% opacity (204/255)
-    WinSetTransparent(204, ov)
-    g_HotstringGeminiBannerGui := ov
+    if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
+        centerOnHwnd := 0
+    StandardLoadingBar_Show(text, "3772FF", { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 160, fontSize: 8, alpha: 204 })
 }
 
 HotstringGeminiBanner_Hide(*) {
-    global g_HotstringGeminiBannerGui
-    if (IsObject(g_HotstringGeminiBannerGui)) {
-        try {
-            if (g_HotstringGeminiBannerGui.Hwnd) {
-                g_HotstringGeminiBannerGui.Destroy()
-            }
-        } catch {
-        }
-    }
-    g_HotstringGeminiBannerGui := false
+    StandardLoadingBar_Hide(0)
 }
 
 ; =============================================================================
-; Dictation: "Send to Gemini?" confirmation banner (6s, Y to confirm)
-; Half size: w160, s8; 80% opacity (204).
+; Dictation: "Send to Gemini?" confirmation banner (6s, Y to confirm; uses standard loading indicator)
 ; =============================================================================
-global g_DictationGeminiConfirmGui := false
-
 DictationGeminiConfirm_Show() {
-    global g_DictationGeminiConfirmGui
-
-    ; #region agent log
-    DebugBannerLog("Utils.ahk:DictationGeminiConfirm_Show", "Show entry", "", "H4")
-    ; #endregion
-    ; Strict sync: only one banner at a time; remove Hotstring Gemini banner first
-    HotstringGeminiBanner_Hide()
-    Sleep 50
-
-    if (IsObject(g_DictationGeminiConfirmGui) && g_DictationGeminiConfirmGui.Hwnd) {
-        try g_DictationGeminiConfirmGui.Destroy()
-    }
-
-    target := WinGetID("A")
-    hasWindow := false
-    if target && WinExist("ahk_id " target) {
-        try {
-            WinGetPos(&wx, &wy, &ww, &wh, target)
-            hasWindow := (ww > 0 && wh > 0)
-        } catch {
-            hasWindow := false
-        }
-    }
-
-    ; Half size: w160, s8 (was w320, s14)
-    ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
-    ov.BackColor := "3772FF"
-    ov.SetFont("s8 cFFFFFF", "Segoe UI")
-    ov.Add("Text", "w160 Center", "Send transcription to Gemini? Press Y (6s)")
-    ov.Show("AutoSize Hide")
-    ov.GetPos(, , &gw, &gh)
-
-    if hasWindow {
-        cx := wx + (ww - gw) // 2
-        cy := wy + (wh - gh) // 2
-        ov.Show("x" . cx . " y" . cy . " NA")
-    } else {
-        vx := SysGet(76)
-        vy := SysGet(77)
-        vw := SysGet(78)
-        vh := SysGet(79)
-        cx := vx + (vw - gw) // 2
-        cy := vy + (vh - gh) // 2
-        ov.Show("x" . cx . " y" . cy . " NA")
-    }
-
-    ; 80% opacity (204/255)
-    WinSetTransparent(204, ov)
-    g_DictationGeminiConfirmGui := ov
-    ; #region agent log
-    DebugBannerLog("Utils.ahk:DictationGeminiConfirm_Show", "Show done", "gw=" . gw . " gh=" . gh, "H4")
-    ; #endregion
+    ; No-op; use DictationGeminiConfirm_ShowAndWait() which uses StandardLoadingBar_ShowWithKeys.
 }
 
 DictationGeminiConfirm_Hide(*) {
-    global g_DictationGeminiConfirmGui
-    if (IsObject(g_DictationGeminiConfirmGui)) {
-        try {
-            if (g_DictationGeminiConfirmGui.Hwnd)
-                g_DictationGeminiConfirmGui.Destroy()
-        } catch {
-        }
-    }
-    g_DictationGeminiConfirmGui := false
+    StandardLoadingBar_CloseKeysOverlay()
 }
 
 DictationGeminiConfirm_CleanupAndMaybeSubmit(submitToGemini) {
@@ -2367,7 +2099,6 @@ DictationGeminiConfirm_CleanupAndMaybeSubmit(submitToGemini) {
     SetTimer(DictationGeminiConfirm_OnTimeout, 0)
     DictationGeminiConfirm_Hide()
     if (submitToGemini) {
-        ; Ensure "Send to Gemini" banner is fully gone before showing next banner (no overlap)
         Sleep 350
         GeminiDelayedSubmitFlow()
     }
@@ -2381,15 +2112,17 @@ DictationGeminiConfirm_OnTimeout(*) {
     DictationGeminiConfirm_CleanupAndMaybeSubmit(false)
 }
 
-; Show banner and wait 6s for Y; on Y call GeminiDelayedSubmitFlow(), else just close.
 DictationGeminiConfirm_ShowAndWait() {
-    ; #region agent log
-    DebugBannerLog("Utils.ahk:DictationGeminiConfirm_ShowAndWait", "ShowAndWait entry", "", "H5")
-    ; #endregion
-    DictationGeminiConfirm_Show()
-    Hotkey("y", DictationGeminiConfirm_OnY, "On")
-    Hotkey("Y", DictationGeminiConfirm_OnY, "On")
-    SetTimer(DictationGeminiConfirm_OnTimeout, -6000)
+    HotstringGeminiBanner_Hide()
+    Sleep 50
+    centerOnHwnd := 0
+    try centerOnHwnd := WinGetID("A")
+    catch {
+    }
+    if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
+        centerOnHwnd := 0
+    yCallbacks := Map("Y", DictationGeminiConfirm_OnY)
+    StandardLoadingBar_ShowWithKeys("Send transcription to Gemini? Press Y (6s)", yCallbacks, 6000, centerOnHwnd, DictationGeminiConfirm_OnTimeout, "3772FF", 300, 9)
 }
 
 ; =============================================================================
