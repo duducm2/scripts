@@ -1365,6 +1365,24 @@ r=== CLIP ANGEL ===
 [Win+Alt+Shift+M] > Maximizes the current window
 [Win+Alt+Shift+Y] > Focus Mode: Black out all monitors except the one with the active window (toggle)
 
+=== WINDOW MANAGEMENT (Ctrl+Alt+Win) ===
+[Ctrl+Alt+Win+A] > Move window to monitor 1 (left-most)
+[Ctrl+Alt+Win+S] > Move window to monitor 2
+[Ctrl+Alt+Win+D] > Move window to monitor 3
+[Ctrl+Alt+Win+F] > Move window to monitor 4
+[Ctrl+Alt+Win+Shift+A] > Close window on monitor 1
+[Ctrl+Alt+Win+Shift+S] > Close window on monitor 2
+[Ctrl+Alt+Win+Shift+D] > Close window on monitor 3
+[Ctrl+Alt+Win+Shift+F] > Close window on monitor 4
+[Ctrl+Alt+Win+Q] > Cycle windows on monitor 1
+[Ctrl+Alt+Win+W] > Cycle windows on monitor 2
+[Ctrl+Alt+Win+E] > Cycle windows on monitor 3
+[Ctrl+Alt+Win+R] > Cycle windows on monitor 4
+[Ctrl+Alt+Win+Shift+Q] > Minimize window on monitor 1
+[Ctrl+Alt+Win+Shift+W] > Minimize window on monitor 2
+[Ctrl+Alt+Win+Shift+E] > Minimize window on monitor 3
+[Ctrl+Alt+Win+Shift+R] > Minimize window on monitor 4
+
 === GENERAL ===
 [Win+Alt+Shift+U] > Quick string shortcuts
 [Ctrl+Alt+Win+4] > Send AI Text Optimizer prompt to Gemini (same as Win+Alt+Shift+U then L, 4)

@@ -6355,6 +6355,11 @@ GeminiNavigateFocusAndPasteFirstSnippet(optionalPromptText := "") {
         Sleep 350
     }
 
+    ; Switch to first Gemini tab (Ctrl+1) and show number-one banner (consistent with Gemini.ahk)
+    Send("^1")
+    Sleep 280
+    ShowSingleCharTabBanner_Utils(1)
+
     ; Focus the Gemini prompt field (Anchor & Backtrack strategy)
     try {
         uia := UIA_Browser()
