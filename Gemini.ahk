@@ -158,46 +158,6 @@ GetChromeActiveTabIndex(uia) {
 }
 
 ; =============================================================================
-; Unified banner builder – consistent shape/font/opacity for all banners here
-; centerOnHwnd: optional; when set, banner is centered on that window's monitor
-; textWidth: optional width of the text control (default 500)
-; =============================================================================
-CreateCenteredBanner(message, bgColor := "3772FF", fontColor := "FFFFFF", fontSize := 24, alpha := 178, centerOnHwnd :=
-    0, textWidth := 500) {
-    bGui := Gui()
-    bGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
-    bGui.BackColor := bgColor
-    bGui.SetFont("s" . fontSize . " c" . fontColor . " Bold", "Segoe UI")
-    bGui.Add("Text", "w" . textWidth . " Center Wrap", message)
-
-    workArea := (centerOnHwnd && GetWorkAreaForWindow(centerOnHwnd) != "") ? GetWorkAreaForWindow(centerOnHwnd) : ""
-    if (workArea != "") {
-        winX := workArea.left
-        winY := workArea.top
-        winW := workArea.right - workArea.left
-        winH := workArea.bottom - workArea.top
-    } else {
-        activeWin := WinGetID("A")
-        if (activeWin) {
-            WinGetPos(&winX, &winY, &winW, &winH, activeWin)
-        } else {
-            MonitorGetWorkArea(, &wLeft, &wTop, &wRight, &wBottom)
-            winX := wLeft, winY := wTop, winW := wRight - wLeft, winH := wBottom - wTop
-        }
-    }
-
-    bGui.Show("AutoSize Hide")
-    guiW := 0, guiH := 0
-    bGui.GetPos(, , &guiW, &guiH)
-
-    guiX := winX + (winW - guiW) / 2
-    guiY := winY + (winH - guiH) / 2
-    bGui.Show("x" . Round(guiX) . " y" . Round(guiY) . " NA")
-    WinSetTransparent(alpha, bGui)
-    return bGui
-}
-
-; =============================================================================
 ; Show tab indicator banner (1 = blue, 2 = yellow): square, center of active-window monitor.
 ; Delegates to Utils for identical behavior as #!+U tab-switching in Utils.ahk. Auto-hides after 700 ms.
 ; =============================================================================
@@ -206,14 +166,11 @@ ShowGeminiTabBanner(tabNumber, geminiHwnd := 0) {
 }
 
 ; =============================================================================
-; Helper function to show a notification on the active window
+; Helper function to show a notification using the standard loading indicator (passive, auto-hide).
 ; =============================================================================
 ShowNotification(message, durationMs := 500, bgColor := "FFFF00", fontColor := "000000", fontSize := 24) {
-    notificationGui := CreateCenteredBanner(message, bgColor, fontColor, fontSize, 178)
-    Sleep(durationMs)
-    if IsObject(notificationGui) && notificationGui.Hwnd {
-        notificationGui.Destroy()
-    }
+    StandardLoadingBar_Show(message, "3772FF", { passive: true })
+    StandardLoadingBar_Hide(durationMs)
 }
 
 ; =============================================================================
@@ -235,29 +192,14 @@ PlayCopyCompletedChime() {
 }
 
 ; =============================================================================
-; Small Loading Indicator Helpers
+; Small Loading Indicator Helpers (delegate to standard loading bar in Utils)
 ; =============================================================================
-global smallLoadingGuis_Gemini := []
-
-ShowSmallLoadingIndicator(state := "Loading…", bgColor := "3772FF", centerOnHwnd := 0, textWidth := 500, fontSize := 24
-) {
-    global smallLoadingGuis_Gemini
-
-    ; If GUIs exist, just update the text of the topmost one (the message)
-    if (smallLoadingGuis_Gemini.Length > 0) {
-        try {
-            ; The text control is expected to be in the first GUI of the stack
-            if (smallLoadingGuis_Gemini[1].Controls.Length > 0)
-                smallLoadingGuis_Gemini[1].Controls[1].Text := state
-        } catch {
-            ; Silently handle GUI/control errors and recreate
-        }
-        return
-    }
-
-    ; Create a single, high-contrast, centered banner (on given window's monitor if centerOnHwnd)
-    textGui := CreateCenteredBanner(state, bgColor, "FFFFFF", fontSize, 178, centerOnHwnd, textWidth)
-    smallLoadingGuis_Gemini.Push(textGui)
+ShowSmallLoadingIndicator(state := "Loading…", bgColor := "3772FF", centerOnHwnd := 0, textWidth := 500, fontSize := 24) {
+    global g_StandardLoadingBarGui
+    if (g_StandardLoadingBarGui)
+        StandardLoadingBar_Update(state)
+    else
+        StandardLoadingBar_Show(state, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: textWidth, fontSize: fontSize })
 }
 
 HideSmallLoadingIndicator() {
@@ -444,8 +386,8 @@ GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false) {
 
     ; Step 4: Find the final "More options" / "Show more options" in the Gemini response tree (bottom-up).
     ; We target only the most recent Gemini response to avoid reading older messages. See gemini-tree.txt for tree structure.
-    searchBanner := CreateCenteredBanner(copyFirst ? "Finding read aloud button and copying..." :
-        "Finding read aloud button...", "3772FF", "FFFFFF", 24, 178)
+    centerHwnd := WinExist("A")
+    StandardLoadingBar_Show(copyFirst ? "Finding read aloud button and copying..." : "Finding read aloud button...", "3772FF", { passive: true, centerOnHwnd: centerHwnd })
     Sleep 250
 
     allMoreOptionsButtons := []
@@ -474,8 +416,7 @@ GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false) {
     }
 
     if (allMoreOptionsButtons.Length = 0) {
-        if IsObject(searchBanner) && searchBanner.Hwnd
-            searchBanner.Destroy()
+        StandardLoadingBar_Hide(0)
         return
     }
 
@@ -499,8 +440,7 @@ GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false) {
     if (!lastMoreOptionsButton && allMoreOptionsButtons.Length > 0)
         lastMoreOptionsButton := allMoreOptionsButtons[allMoreOptionsButtons.Length]
     if (!lastMoreOptionsButton) {
-        if IsObject(searchBanner) && searchBanner.Hwnd
-            searchBanner.Destroy()
+        StandardLoadingBar_Hide(0)
         return
     }
 
@@ -557,8 +497,7 @@ GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false) {
     } catch {
     }
 
-    if IsObject(searchBanner) && searchBanner.Hwnd
-        searchBanner.Destroy()
+    StandardLoadingBar_Hide(0)
 
     Sleep 1500
 
@@ -1172,40 +1111,11 @@ class GeminiAsyncLookup {
     ShowResultBanner(text) {
         if (!text || StrLen(Trim(text)) = 0)
             return
-        banner := Gui("+AlwaysOnTop -Caption +ToolWindow")
-        banner.BackColor := "3772FF"
-        banner.SetFont("s14 cFFFFFF", "Segoe UI")
-        banner.Add("Text", "w600 Center Wrap", text)
-        banner.SetFont("s11 cFFFFFF Bold", "Segoe UI")
-        banner.Add("Text", "w600 Center", "Press Enter to close")
-        ; Center on the same monitor as the window that triggered the hotkey
-        workArea := GetWorkAreaForWindow(this.OriginalHwnd)
-        if (workArea = "") {
-            MonitorGetWorkArea(, &wLeft, &wTop, &wRight, &wBottom)
-            w := wRight - wLeft
-            h := wBottom - wTop
-            banner.Show("AutoSize Hide")
-            banner.GetPos(, , &gw, &gh)
-            banner.Show("x" . Round(wLeft + (w - gw) / 2) . " y" . Round(wTop + (h - gh) / 2) . " NA")
-        } else {
-            w := workArea.right - workArea.left
-            h := workArea.bottom - workArea.top
-            banner.Show("AutoSize Hide")
-            banner.GetPos(, , &gw, &gh)
-            banner.Show("x" . Round(workArea.left + (w - gw) / 2) . " y" . Round(workArea.top + (h - gh) / 2) . " NA")
+        state := text . "`n`nPress Enter or E to close"
+        closeNoOp(*) {
         }
-        WinSetTransparent(220, banner)
-        closeBanner(*) {
-            SetTimer(closeBanner, 0)
-            try Hotkey("Escape", closeBanner, "Off")
-            try Hotkey("Enter", closeBanner, "Off")
-            try banner.Destroy()
-        }
-        banner.OnEvent("Close", closeBanner)
-        SetTimer(closeBanner, -50000)
-        ; Press Escape or Enter to remove the banner
-        Hotkey("Escape", closeBanner, "On")
-        Hotkey("Enter", closeBanner, "On")
+        closeKeys := Map("Enter", closeNoOp, "Escape", closeNoOp, "E", closeNoOp)
+        StandardLoadingBar_ShowWithKeys(state, closeKeys, 50000, this.OriginalHwnd, "", "3772FF", 600, 14)
     }
 }
 
@@ -1295,45 +1205,16 @@ class GeminiDelayedSubmitMonitor {
     }
 
     ShowCopyDecisionBanner() {
-        banner := Gui("+AlwaysOnTop -Caption +ToolWindow")
-        banner.BackColor := "3772FF"
-        banner.SetFont("s8 cFFFFFF", "Segoe UI")
-        banner.Add("Text", "w200 Center", "Copy? [N] [R]")
-        workArea := GetWorkAreaForWindow(this.OriginalHwnd)
-        if (workArea = "") {
-            MonitorGetWorkArea(, &wLeft, &wTop, &wRight, &wBottom)
-            w := wRight - wLeft
-            h := wBottom - wTop
-            banner.Show("AutoSize Hide")
-            banner.GetPos(, , &gw, &gh)
-            banner.Show("x" . Round(wLeft + (w - gw) / 2) . " y" . Round(wTop + (h - gh) / 2) . " NA")
-        } else {
-            w := workArea.right - workArea.left
-            h := workArea.bottom - workArea.top
-            banner.Show("AutoSize Hide")
-            banner.GetPos(, , &gw, &gh)
-            banner.Show("x" . Round(workArea.left + (w - gw) / 2) . " y" . Round(workArea.top + (h - gh) / 2) . " NA")
-        }
-        WinSetTransparent(204, banner)  ; 80% opacity, half-size banner
-        this.CopyBannerGui := banner
-        this.CopyTimeoutTimer := this.DoCopyOnTimeout.Bind(this)
-        Hotkey("n", this.CancelCopy.Bind(this), "On")
-        Hotkey("N", this.CancelCopy.Bind(this), "On")
-        Hotkey("r", this.CopyAndReadAloud.Bind(this), "On")
-        Hotkey("R", this.CopyAndReadAloud.Bind(this), "On")
-        SetTimer(this.CopyTimeoutTimer, -4000)
+        this.CopyBannerGui := ""
+        this.CopyTimeoutTimer := ""
+        copyKeyCallbacks := Map("N", this.CancelCopy.Bind(this), "R", this.CopyAndReadAloud.Bind(this), "E", this.CancelCopy.Bind(this))
+        StandardLoadingBar_ShowWithKeys("Copy? [N] [R] [E=close]", copyKeyCallbacks, 4000, this.OriginalHwnd, this.DoCopyOnTimeout.Bind(this), "3772FF", 300, 9)
     }
 
-    ; Shared cleanup: stop timeout timer, disable N/R hotkeys, destroy banner. Used by CancelCopy, DoCopyOnTimeout, CopyAndReadAloud.
+    ; Shared cleanup: clear Gemini-side state only. Key/timer unregister and overlay hide are handled by Utils.
     CleanupCopyBanner() {
-        try SetTimer(this.CopyTimeoutTimer, 0)
-        try Hotkey("n", "Off")
-        try Hotkey("N", "Off")
-        try Hotkey("r", "Off")
-        try Hotkey("R", "Off")
-        if (IsObject(this.CopyBannerGui) && this.CopyBannerGui.Hwnd)
-            try this.CopyBannerGui.Destroy()
         this.CopyBannerGui := ""
+        this.CopyTimeoutTimer := ""
     }
 
     CancelCopy(*) {

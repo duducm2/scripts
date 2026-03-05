@@ -1930,9 +1930,35 @@ ShowCenteredOverlay_Utils(text, duration := 1500, bgColor := "3772FF") {
 ; =============================================================================
 ; Standard loading bar (monitor-aware, show/update/hide lifecycle)
 ; Use for long-running shortcuts; replace ad-hoc banners/overlays with this.
+; Supports passive (text-only) mode and ShowWithKeys for letter-keystroke commands.
 ; =============================================================================
 global g_StandardLoadingBarGui := 0
 global g_StandardLoadingBarValue := 0
+global g_StandardLoadingBarIsKeysOverlay := false
+global g_StandardLoadingBarKeysHotkeys := []
+global g_StandardLoadingBarKeysTimeoutTimer := ""
+global g_StandardLoadingBarBorderGui := 0
+
+; Return work area { left, top, right, bottom } for the monitor containing hwnd, or "" on failure.
+GetWorkAreaForWindow_StandardBar(hwnd) {
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return ""
+    try {
+        WinGetPos(&winX, &winY, &winW, &winH, "ahk_id " hwnd)
+        centerX := winX + winW / 2
+        centerY := winY + winH / 2
+        n := MonitorGetCount()
+        loop n {
+            MonitorGet(A_Index, &L, &T, &R, &B)
+            if (centerX >= L && centerX < R && centerY >= T && centerY < B) {
+                MonitorGetWorkArea(A_Index, &wLeft, &wTop, &wRight, &wBottom)
+                return { left: wLeft, top: wTop, right: wRight, bottom: wBottom }
+            }
+        }
+    } catch {
+    }
+    return ""
+}
 
 GetActiveMonitorWorkArea_StandardBar(&left, &top, &right, &bottom) {
     left := top := 0
@@ -1976,20 +2002,40 @@ GetActiveMonitorWorkArea_StandardBar(&left, &top, &right, &bottom) {
     bottom := mBottom
 }
 
-StandardLoadingBar_Show(state := "Working...", barColor := "3772FF") {
-    global g_StandardLoadingBarGui, g_StandardLoadingBarValue
+StandardLoadingBar_Show(state := "Working...", barColor := "3772FF", options := "") {
+    global g_StandardLoadingBarGui, g_StandardLoadingBarValue, g_StandardLoadingBarIsKeysOverlay, g_StandardLoadingBarBorderGui
+    try StandardLoadingBar_CloseKeysOverlay()
     try StandardLoadingBar_Hide(0)
-    GetActiveMonitorWorkArea_StandardBar(&ml, &mt, &mr, &mb)
+    passive := options && options.HasProp("passive") && options.passive
+    centerOnHwnd := options && options.HasProp("centerOnHwnd") ? options.centerOnHwnd : 0
+    textWidth := options && options.HasProp("textWidth") ? options.textWidth : 0
+    fontSize := options && options.HasProp("fontSize") ? options.fontSize : 9
+    alpha := options && options.HasProp("alpha") ? options.alpha : 235
+
+    if (centerOnHwnd) {
+        workArea := GetWorkAreaForWindow_StandardBar(centerOnHwnd)
+        if (workArea != "") {
+            ml := workArea.left
+            mt := workArea.top
+            mr := workArea.right
+            mb := workArea.bottom
+        } else
+            GetActiveMonitorWorkArea_StandardBar(&ml, &mt, &mr, &mb)
+    } else
+        GetActiveMonitorWorkArea_StandardBar(&ml, &mt, &mr, &mb)
     monitorWidth := mr - ml
-    barWidth := Min(900, Max(360, Floor(monitorWidth * 0.6)))
+    monitorHeight := mb - mt
+    barWidth := textWidth > 0 ? textWidth : Min(900, Max(360, Floor(monitorWidth * 0.6)))
     overlayGui := Gui("+AlwaysOnTop -Caption +ToolWindow -DPIScale")
     overlayGui.BackColor := "1E1E2E"
     overlayGui.MarginX := 16
     overlayGui.MarginY := 10
-    overlayGui.SetFont("s9 cFFFFFF", "Segoe UI")
-    overlayGui.Add("Text", "w" . barWidth, state)
-    progressOpts := "w" . barWidth . " h10 c" . barColor . " Background45475A Smooth vOverlayProg"
-    overlayGui.Add("Progress", progressOpts, 0)
+    overlayGui.SetFont("s" . fontSize . " cFFFFFF", "Segoe UI")
+    overlayGui.Add("Text", "w" . barWidth . (passive ? " Wrap" : ""), state)
+    if (!passive) {
+        progressOpts := "w" . barWidth . " h10 c" . barColor . " Background45475A Smooth vOverlayProg"
+        overlayGui.Add("Progress", progressOpts, 0)
+    }
     overlayGui.Show("AutoSize Hide")
     overlayGui.GetPos(, , &gw, &gh)
     guiX := Round(ml + (monitorWidth - gw) / 2)
@@ -1998,6 +2044,18 @@ StandardLoadingBar_Show(state := "Working...", barColor := "3772FF") {
     if (guiX + gw > mr)
         guiX := mr - gw
     guiY := mt + 40
+
+    ; Create yellow border frame behind the overlay for visibility.
+    borderWidth := 6
+    try {
+        if IsObject(g_StandardLoadingBarBorderGui)
+            g_StandardLoadingBarBorderGui.Destroy()
+    } catch {
+    }
+    borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow -DPIScale")
+    borderGui.BackColor := "FFFF00"
+    borderGui.Show("NA x" . (guiX - borderWidth) . " y" . (guiY - borderWidth) . " w" . (gw + 2 * borderWidth) . " h" . (gh + 2 * borderWidth))
+    g_StandardLoadingBarBorderGui := borderGui
     overlayGui.Show("x" . guiX . " y" . guiY . " NA")
     try {
         hwnd := overlayGui.Hwnd
@@ -2005,10 +2063,11 @@ StandardLoadingBar_Show(state := "Working...", barColor := "3772FF") {
             DllCall("SetWindowPos", "Ptr", hwnd, "Ptr", 0, "Int", guiX, "Int", guiY, "Int", 0, "Int", 0, "UInt", 0x0015
             )
     }
-    WinSetTransparent(235, overlayGui)
+    WinSetTransparent(alpha, overlayGui)
     g_StandardLoadingBarGui := overlayGui
     g_StandardLoadingBarValue := 0
-    SetTimer(StandardLoadingBar_Tick, 40)
+    if (!passive)
+        SetTimer(StandardLoadingBar_Tick, 40)
 }
 
 StandardLoadingBar_Tick() {
@@ -2034,16 +2093,24 @@ StandardLoadingBar_Update(state := "", barColor := "") {
     try {
         if (state != "" && g_StandardLoadingBarGui.Controls.Length > 0)
             g_StandardLoadingBarGui.Controls[1].Text := state
-        if (barColor != "")
-            g_StandardLoadingBarGui["OverlayProg"].Opt("c" . barColor)
     } catch {
+    }
+    if (barColor != "") {
+        try
+            g_StandardLoadingBarGui["OverlayProg"].Opt("c" . barColor)
+        catch {
+        }
     }
 }
 
 StandardLoadingBar_Hide(delayMs := 0) {
-    global g_StandardLoadingBarGui, g_StandardLoadingBarValue
+    global g_StandardLoadingBarGui, g_StandardLoadingBarValue, g_StandardLoadingBarIsKeysOverlay, g_StandardLoadingBarBorderGui
     if (delayMs > 0) {
         SetTimer(() => StandardLoadingBar_Hide(0), -delayMs)
+        return
+    }
+    if (g_StandardLoadingBarIsKeysOverlay) {
+        StandardLoadingBar_CloseKeysOverlay()
         return
     }
     SetTimer(StandardLoadingBar_Tick, 0)
@@ -2054,6 +2121,130 @@ StandardLoadingBar_Hide(delayMs := 0) {
     }
     g_StandardLoadingBarGui := 0
     g_StandardLoadingBarValue := 0
+    try {
+        if IsObject(g_StandardLoadingBarBorderGui)
+            g_StandardLoadingBarBorderGui.Destroy()
+    } catch {
+    }
+    g_StandardLoadingBarBorderGui := 0
+}
+
+; Unregister keys and timeout timer for the "ShowWithKeys" overlay, then hide. Idempotent.
+StandardLoadingBar_CloseKeysOverlay() {
+    global g_StandardLoadingBarKeysHotkeys, g_StandardLoadingBarKeysTimeoutTimer
+    global g_StandardLoadingBarGui, g_StandardLoadingBarValue, g_StandardLoadingBarIsKeysOverlay, g_StandardLoadingBarBorderGui
+    g_StandardLoadingBarIsKeysOverlay := false
+    try SetTimer(g_StandardLoadingBarKeysTimeoutTimer, 0)
+    catch {
+    }
+    g_StandardLoadingBarKeysTimeoutTimer := ""
+    for key in g_StandardLoadingBarKeysHotkeys {
+        try Hotkey(key, "Off")
+        catch {
+        }
+    }
+    g_StandardLoadingBarKeysHotkeys := []
+    SetTimer(StandardLoadingBar_Tick, 0)
+    try {
+        if IsObject(g_StandardLoadingBarGui)
+            g_StandardLoadingBarGui.Destroy()
+    } catch {
+    }
+    g_StandardLoadingBarGui := 0
+    g_StandardLoadingBarValue := 0
+    try {
+        if IsObject(g_StandardLoadingBarBorderGui)
+            g_StandardLoadingBarBorderGui.Destroy()
+    } catch {
+    }
+    g_StandardLoadingBarBorderGui := 0
+}
+
+; Show passive overlay and register hotkeys; optional timeout. keyCallbacks: Map/object key -> callback (e.g. "N" -> fn, "R" -> fn).
+; timeoutCallback: called when timeout fires (can be empty). Registers both upper and lower case for letter keys.
+StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwnd := 0, timeoutCallback := "", barColor := "3772FF", textWidth := 500, fontSize := 9) {
+    global g_StandardLoadingBarIsKeysOverlay, g_StandardLoadingBarKeysHotkeys, g_StandardLoadingBarKeysTimeoutTimer
+    StandardLoadingBar_Show(state, barColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: textWidth, fontSize: fontSize })
+    g_StandardLoadingBarIsKeysOverlay := true
+    g_StandardLoadingBarKeysHotkeys := []
+
+    ; Register primary and case-variant keys directly from the keyCallbacks map.
+    for keyName, cb in keyCallbacks {
+        if (!cb)
+            continue
+        StandardLoadingBar_RegisterKeyHandler(keyName, cb)
+        if (StrLen(keyName) = 1) {
+            o := Ord(keyName)
+            alt := ""
+            if (o >= Ord("a") && o <= Ord("z"))
+                alt := StrUpper(keyName)
+            else if (o >= Ord("A") && o <= Ord("Z"))
+                alt := StrLower(keyName)
+            if (alt != "" && alt != keyName)
+                StandardLoadingBar_RegisterKeyHandler(alt, cb)
+        }
+    }
+
+    if (timeoutMs > 0) {
+        g_StandardLoadingBarKeysTimeoutTimer := SetTimer(StandardLoadingBar_KeysTimeoutFired.Bind(timeoutCallback), -timeoutMs)
+    }
+}
+
+; #region agent log
+Debug4191_Log(location, message, dataStr := "", hypothesisId := "", runId := "") {
+    logPath := A_ScriptDir "\debug-4191cd.log"
+    q := Chr(34)
+    line := "{"
+    line .= q "sessionId" q ":" q "4191cd" q
+    line .= "," q "id" q ":" q "log_" A_TickCount q
+    line .= "," q "timestamp" q ":" A_TickCount
+    line .= "," q "location" q ":" q location q
+    line .= "," q "message" q ":" q message q
+    if (dataStr != "")
+        line .= "," q "data" q ":" q dataStr q
+    if (runId != "")
+        line .= "," q "runId" q ":" q runId q
+    if (hypothesisId != "")
+        line .= "," q "hypothesisId" q ":" q hypothesisId q
+    line .= "}"
+    try FileAppend line "`n", logPath
+}
+; #endregion
+
+StandardLoadingBar_RegisterKeyHandler(key, cb) {
+    global g_StandardLoadingBarKeysHotkeys
+    if (!cb)
+        return
+    ; Bind key first (string), then cb (BoundFunc), to avoid "Invalid base" when cb is first arg
+    fn := StandardLoadingBar_KeyWrapper.Bind(key, cb)
+    try {
+        Hotkey(key, fn, "On")
+        g_StandardLoadingBarKeysHotkeys.Push(key)
+        ; #region agent log
+        Debug4191_Log("Utils.ahk:StandardLoadingBar_RegisterKeyHandler", "registered hotkey", "key=" . key, "H1", "post-fix")
+        ; #endregion
+    } catch {
+    }
+}
+
+StandardLoadingBar_KeyWrapper(key, cb, *) {
+    ; #region agent log
+    Debug4191_Log("Utils.ahk:StandardLoadingBar_KeyWrapper", "hotkey fired", "key=" . key, "H1", "post-fix")
+    ; #endregion
+    StandardLoadingBar_CloseKeysOverlay()
+    if (cb) {
+        try cb.Call()
+        catch {
+        }
+    }
+}
+
+StandardLoadingBar_KeysTimeoutFired(timeoutCallback) {
+    if (timeoutCallback)
+        try timeoutCallback.Call()
+    catch {
+    }
+    StandardLoadingBar_CloseKeysOverlay()
 }
 
 ; =============================================================================
