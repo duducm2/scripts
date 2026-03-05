@@ -6320,20 +6320,33 @@ CleanupHotstringSelector() {
 ; Navigate to Gemini, focus the prompt field, then paste first clipboard snippet (same as Win+Alt+Shift+1).
 ; Reference: "order called snippets" – Clip Angel top item sent via !v then ^!b.
 ; If optionalPromptText is non-empty, inserts that text into the prompt field instead (same as Win+Alt+Shift+U then L, prompt char).
-GeminiNavigateFocusAndPasteFirstSnippet(optionalPromptText := "") {
+; switchToFirstTab: when true (default), send Ctrl+1 and show tab-1 banner (AI Text Optimizer / ^!#4). When false, use currently active Gemini tab if any, else first Gemini window, without changing tab (delay-submit flow).
+GeminiNavigateFocusAndPasteFirstSnippet(optionalPromptText := "", switchToFirstTab := true) {
     SetTitleMatchMode(2)
     geminiHwnd := 0
-    try {
-        for hwnd in WinGetList("ahk_exe chrome.exe") {
-            try {
-                if InStr(WinGetTitle("ahk_id " hwnd), "gemini", false) {
-                    geminiHwnd := hwnd
-                    break
-                }
-            } catch {
-            }
+    if (!switchToFirstTab) {
+        ; Prefer the currently active window if it is already a Gemini tab (do not switch tabs).
+        try {
+            activeHwnd := WinExist("A")
+            if (activeHwnd && WinGetProcessName("ahk_id " activeHwnd) = "chrome.exe" && InStr(WinGetTitle("ahk_id " activeHwnd
+            ), "gemini", false))
+                geminiHwnd := activeHwnd
+        } catch {
         }
-    } catch {
+    }
+    if (!geminiHwnd) {
+        try {
+            for hwnd in WinGetList("ahk_exe chrome.exe") {
+                try {
+                    if InStr(WinGetTitle("ahk_id " hwnd), "gemini", false) {
+                        geminiHwnd := hwnd
+                        break
+                    }
+                } catch {
+                }
+            }
+        } catch {
+        }
     }
 
     if (!geminiHwnd) {
@@ -6355,10 +6368,12 @@ GeminiNavigateFocusAndPasteFirstSnippet(optionalPromptText := "") {
         Sleep 350
     }
 
-    ; Switch to first Gemini tab (Ctrl+1) and show number-one banner (consistent with Gemini.ahk)
-    Send("^1")
-    Sleep 280
-    ShowSingleCharTabBanner_Utils(1)
+    if (switchToFirstTab) {
+        ; Switch to first Gemini tab (Ctrl+1) and show number-one banner (consistent with Gemini.ahk)
+        Send("^1")
+        Sleep 280
+        ShowSingleCharTabBanner_Utils(1)
+    }
 
     ; Focus the Gemini prompt field (Anchor & Backtrack strategy)
     try {
@@ -6516,7 +6531,8 @@ GeminiCancelAutoSubmit(*) {
 
 GeminiCancelAutoSubmit_DoPaste(*) {
     global g_HotstringGeminiRestoreHwnd
-    GeminiNavigateFocusAndPasteFirstSnippet()
+    ; Delay-submit flow: do not switch tabs; paste to currently active Gemini tab
+    GeminiNavigateFocusAndPasteFirstSnippet("", false)
     Sleep 200  ; Let paste be received by Gemini before switching focus back
     if (g_HotstringGeminiRestoreHwnd && WinExist("ahk_id " g_HotstringGeminiRestoreHwnd))
         WinActivate("ahk_id " g_HotstringGeminiRestoreHwnd)
@@ -6559,7 +6575,8 @@ GeminiFinalizeSubmit() {
     try Hotkey("N", "Off")
     HotstringGeminiBanner_Hide()
 
-    GeminiNavigateFocusAndPasteFirstSnippet()
+    ; Delay-submit flow: do not switch tabs; paste to currently active Gemini tab
+    GeminiNavigateFocusAndPasteFirstSnippet("", false)
 
     didAutoSubmit := false
     geminiChromeHwnd := 0
@@ -6604,7 +6621,7 @@ HandleHotstringChar(char) {
     }
 
     ; L key: first press = arm Gemini mode (show banner); second press (double-tap) = navigate to Gemini, focus field, paste first snippet.
-    if (char = "l" || char = "L") { 
+    if (char = "l" || char = "L") {
         if (g_HotstringGeminiArmed) {
             ; Double-tap L: delayed submit flow (4s banner, N to cancel auto-submit; then navigate+paste, optionally Enter).
             CleanupHotstringSelector()

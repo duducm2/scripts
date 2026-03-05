@@ -668,3 +668,23 @@
 {"sessionId":"5ecf82","location":"Utils.ahk:PlayDictationCompletionChime","message":"Completion chime branch","timestamp":600359,"data":"chimeShouldPlay=1 pendingAction= pendingGemini=0","hypothesisId":"H2"}
 {"sessionId":"5ecf82","location":"Utils.ahk:DictationGeminiConfirm_Show","message":"Show done","timestamp":600437,"data":"gw=180 gh=40","hypothesisId":"H4"}
 {"sessionId":"5ecf82","location":"Utils.ahk:DictationGeminiConfirm_Show","message":"Show done","timestamp":600437,"data":"gw=180 gh=40","hypothesisId":"H4"}
+{"sessionId":"5ecf82","location":"Utils.ahk:~#!+0","message":"Set pending Gemini flag","timestamp":847093,"data":"dictationWasActiveOnKeyPress=1","hypothesisId":"H1"}
+{"sessionId":"5ecf82","location":"Utils.ahk:~#!+0","message":"Set pending Gemini flag","timestamp":847093,"data":"dictationWasActiveOnKeyPress=1","hypothesisId":"H1"}
+{"sessionId":"5ecf82","location":"Utils.ahk:PlayDictationCompletionChime","message":"Completion chime branch","timestamp":1208750,"data":"chimeShouldPlay=1 pendingAction= pendingGemini=0","hypothesisId":"H2"}
+{"sessionId":"5ecf82","location":"Utils.ahk:PlayDictationCompletionChime","message":"Completion chime branch","timestamp":1209156,"data":"chimeShouldPlay=1 pendingAction= pendingGemini=0","hypothesisId":"H2"}
+{"sessionId":"5ecf82","location":"Utils.ahk:PlayDictationCompletionChime","message":"Completion chime branch","timestamp":1209171,"data":"chimeShouldPlay=1 pendingAction= pendingGemini=0","hypothesisId":"H2"}
+{"sessionId":"5ecf82","location":"Utils.ahk:PlayDictationCompletionChime","message":"Completion chime branch","timestamp":1209265,"data":"chimeShouldPlay=1 pendingAction= pendingGemini=0","hypothesisId":"H2"}
+{"sessionId":"5ecf82","location":"Utils.ahk:PlayDictationCompletionChime","message":"Completion chime branch","timestamp":1209187,"data":"chimeShouldPlay=1 pendingAction= pendingGemini=0","hypothesisId":"H2"}
+{"sessionId":"5ecf82","location":"Utils.ahk:PlayDictationCompletionChime","message":"Completion chime branch","timestamp":1209578,"data":"chimeShouldPlay=1 pendingAction= pendingGemini=0","hypothesisId":"H2"}
+{"sessionId":"5ecf82","location":"Utils.ahk:~#!+0","message":"Set pending Gemini flag","timestamp":1222656,"data":"dictationWasActiveOnKeyPress=1","hypothesisId":"H1"}
+{"sessionId":"5ecf82","location":"Utils.ahk:~#!+0","message":"Set pending Gemini flag","timestamp":1222656,"data":"dictationWasActiveOnKeyPress=1","hypothesisId":"H1"}
+{"sessionId":"5ecf82","location":"Utils.ahk:~#!+0","message":"Set pending Gemini flag","timestamp":1222671,"data":"dictationWasActiveOnKeyPress=1","hypothesisId":"H1"}
+{"sessionId":"5ecf82","location":"Utils.ahk:PlayDictationCompletionChime","message":"Completion chime branch","timestamp":1224218,"data":"chimeShouldPlay=1 pendingAction= pendingGemini=1","hypothesisId":"H2"}
+{"sessionId":"5ecf82","location":"Utils.ahk:PlayDictationCompletionChime","message":"Calling ShowAndWait","timestamp":1224218,"data":"pendingAction empty","hypothesisId":"H3"}
+{"sessionId":"5ecf82","location":"Utils.ahk:DictationGeminiConfirm_ShowAndWait","message":"ShowAndWait entry","timestamp":1224234,"hypothesisId":"H5"}
+{"sessionId":"5ecf82","location":"Utils.ahk:PlayDictationCompletionChime","message":"Completion chime branch","timestamp":1224250,"data":"chimeShouldPlay=1 pendingAction= pendingGemini=1","hypothesisId":"H2"}
+{"sessionId":"5ecf82","location":"Utils.ahk:PlayDictationCompletionChime","message":"Calling ShowAndWait","timestamp":1224281,"data":"pendingAction empty","hypothesisId":"H3"}
+{"sessionId":"5ecf82","location":"Utils.ahk:DictationGeminiConfirm_ShowAndWait","message":"ShowAndWait entry","timestamp":1224296,"hypothesisId":"H5"}
+{"sessionId":"5ecf82","location":"Utils.ahk:DictationGeminiConfirm_Show","message":"Show entry","timestamp":1224328,"hypothesisId":"H4"}
+{"sessionId":"5ecf82","location":"Utils.ahk:DictationGeminiConfirm_Show","message":"Show done","timestamp":1224343,"data":"gw=180 gh=40","hypothesisId":"H4"}
+{"sessionId":"5ecf82","location":"Utils.ahk:DictationGeminiConfirm_Show","message":"Show done","timestamp":1224406,"data":"gw=180 gh=40","hypothesisId":"H4"}
