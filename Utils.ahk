@@ -1412,7 +1412,8 @@ AiModelBanner_Show(text, bgColor := "3772FF") {
     }
     if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
         centerOnHwnd := 0
-    StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 450, fontSize: 18, passiveBgColor: bgColor, alpha: 200 })
+    StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 450, fontSize: 18,
+        passiveBgColor: bgColor, alpha: 200 })
 }
 
 AiModelBanner_Hide() {
@@ -1427,7 +1428,8 @@ ClipAngelBanner_Show(text, bgColor := "3772FF") {
     }
     if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
         centerOnHwnd := 0
-    StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 200, fontSize: 10, passiveBgColor: bgColor, alpha: 220 })
+    StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 200, fontSize: 10,
+        passiveBgColor: bgColor, alpha: 220 })
 }
 
 ClipAngelBanner_Hide() {
@@ -1446,7 +1448,8 @@ ShowSingleCharTabBanner_Utils(tabNumber) {
     }
     if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
         centerOnHwnd := 0
-    StandardLoadingBar_Show(msg, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 120, fontSize: 72, passiveBgColor: bgColor, alpha: 178 })
+    StandardLoadingBar_Show(msg, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 120, fontSize: 72,
+        passiveBgColor: bgColor, alpha: 178 })
     StandardLoadingBar_Hide(700)
 }
 
@@ -1765,7 +1768,8 @@ ShowCenteredOverlay_Utils(text, duration := 1500, bgColor := "3772FF") {
     centerOnHwnd := WinGetID("A")
     if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
         centerOnHwnd := 0
-    StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 500, fontSize: 24, passiveBgColor: bgColor })
+    StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 500, fontSize: 24,
+        passiveBgColor: bgColor })
     StandardLoadingBar_Hide(duration)
 }
 
@@ -1845,7 +1849,8 @@ GetActiveMonitorWorkArea_StandardBar(&left, &top, &right, &bottom) {
 }
 
 StandardLoadingBar_Show(state := "Working...", barColor := "3772FF", options := "") {
-    global g_StandardLoadingBarGui, g_StandardLoadingBarValue, g_StandardLoadingBarIsKeysOverlay, g_StandardLoadingBarBorderGui
+    global g_StandardLoadingBarGui, g_StandardLoadingBarValue, g_StandardLoadingBarIsKeysOverlay,
+        g_StandardLoadingBarBorderGui
     try StandardLoadingBar_CloseKeysOverlay()
     try StandardLoadingBar_Hide(0)
     passive := options && options.HasProp("passive") && options.passive
@@ -1897,7 +1902,8 @@ StandardLoadingBar_Show(state := "Working...", barColor := "3772FF", options := 
     }
     borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow -DPIScale")
     borderGui.BackColor := "FFFF00"
-    borderGui.Show("NA x" . (guiX - borderWidth) . " y" . (guiY - borderWidth) . " w" . (gw + 2 * borderWidth) . " h" . (gh + 2 * borderWidth))
+    borderGui.Show("NA x" . (guiX - borderWidth) . " y" . (guiY - borderWidth) . " w" . (gw + 2 * borderWidth) . " h" .
+    (gh + 2 * borderWidth))
     g_StandardLoadingBarBorderGui := borderGui
     overlayGui.Show("x" . guiX . " y" . guiY . " NA")
     try {
@@ -1947,7 +1953,8 @@ StandardLoadingBar_Update(state := "", barColor := "") {
 }
 
 StandardLoadingBar_Hide(delayMs := 0) {
-    global g_StandardLoadingBarGui, g_StandardLoadingBarValue, g_StandardLoadingBarIsKeysOverlay, g_StandardLoadingBarBorderGui
+    global g_StandardLoadingBarGui, g_StandardLoadingBarValue, g_StandardLoadingBarIsKeysOverlay,
+        g_StandardLoadingBarBorderGui
     if (delayMs > 0) {
         SetTimer(() => StandardLoadingBar_Hide(0), -delayMs)
         return
@@ -1975,7 +1982,8 @@ StandardLoadingBar_Hide(delayMs := 0) {
 ; Unregister keys and timeout timer for the "ShowWithKeys" overlay, then hide. Idempotent.
 StandardLoadingBar_CloseKeysOverlay() {
     global g_StandardLoadingBarKeysHotkeys, g_StandardLoadingBarKeysTimeoutTimer
-    global g_StandardLoadingBarGui, g_StandardLoadingBarValue, g_StandardLoadingBarIsKeysOverlay, g_StandardLoadingBarBorderGui
+    global g_StandardLoadingBarGui, g_StandardLoadingBarValue, g_StandardLoadingBarIsKeysOverlay,
+        g_StandardLoadingBarBorderGui
     g_StandardLoadingBarIsKeysOverlay := false
     try SetTimer(g_StandardLoadingBarKeysTimeoutTimer, 0)
     catch {
@@ -2005,9 +2013,14 @@ StandardLoadingBar_CloseKeysOverlay() {
 
 ; Show passive overlay and register hotkeys; optional timeout. keyCallbacks: Map/object key -> callback (e.g. "N" -> fn, "R" -> fn).
 ; timeoutCallback: called when timeout fires (can be empty). Registers both upper and lower case for letter keys.
-StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwnd := 0, timeoutCallback := "", barColor := "3772FF", textWidth := 500, fontSize := 9) {
+; passiveBgColor: optional; when set, used as overlay background (e.g. "FFFF00" for yellow, no blue).
+StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwnd := 0, timeoutCallback := "", barColor :=
+    "3772FF", textWidth := 500, fontSize := 9, passiveBgColor := "") {
     global g_StandardLoadingBarIsKeysOverlay, g_StandardLoadingBarKeysHotkeys, g_StandardLoadingBarKeysTimeoutTimer
-    StandardLoadingBar_Show(state, barColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: textWidth, fontSize: fontSize })
+    opts := { passive: true, centerOnHwnd: centerOnHwnd, textWidth: textWidth, fontSize: fontSize }
+    if (passiveBgColor != "")
+        opts.passiveBgColor := passiveBgColor
+    StandardLoadingBar_Show(state, barColor, opts)
     g_StandardLoadingBarIsKeysOverlay := true
     g_StandardLoadingBarKeysHotkeys := []
 
@@ -2029,7 +2042,8 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
     }
 
     if (timeoutMs > 0) {
-        g_StandardLoadingBarKeysTimeoutTimer := SetTimer(StandardLoadingBar_KeysTimeoutFired.Bind(timeoutCallback), -timeoutMs)
+        g_StandardLoadingBarKeysTimeoutTimer := SetTimer(StandardLoadingBar_KeysTimeoutFired.Bind(timeoutCallback), -
+        timeoutMs)
     }
 }
 
@@ -2058,8 +2072,8 @@ StandardLoadingBar_KeyWrapper(key, cb, *) {
 StandardLoadingBar_KeysTimeoutFired(timeoutCallback) {
     if (timeoutCallback)
         try timeoutCallback.Call()
-    catch {
-    }
+        catch {
+        }
     StandardLoadingBar_CloseKeysOverlay()
 }
 
@@ -2075,7 +2089,8 @@ HotstringGeminiBanner_Show(text := "Gemini: inserting prompt...") {
     }
     if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
         centerOnHwnd := 0
-    StandardLoadingBar_Show(text, "3772FF", { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 160, fontSize: 8, alpha: 204 })
+    StandardLoadingBar_Show(text, "3772FF", { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 160, fontSize: 8,
+        alpha: 204 })
 }
 
 HotstringGeminiBanner_Hide(*) {
@@ -2113,7 +2128,10 @@ DictationGeminiConfirm_OnTimeout(*) {
 }
 
 DictationGeminiConfirm_ShowAndWait() {
-    HotstringGeminiBanner_Hide()
+    ; Keep only the official banner: hide any existing bar/overlay and the dictation indicator so only one "Send to Gemini?" shows.
+    StandardLoadingBar_CloseKeysOverlay()
+    StandardLoadingBar_Hide(0)
+    HideDictationIndicator()
     Sleep 50
     centerOnHwnd := 0
     try centerOnHwnd := WinGetID("A")
@@ -2122,7 +2140,9 @@ DictationGeminiConfirm_ShowAndWait() {
     if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
         centerOnHwnd := 0
     yCallbacks := Map("Y", DictationGeminiConfirm_OnY)
-    StandardLoadingBar_ShowWithKeys("Send transcription to Gemini? Press Y (6s)", yCallbacks, 6000, centerOnHwnd, DictationGeminiConfirm_OnTimeout, "3772FF", 300, 9)
+    ; Official banner only: yellow background (no blue), consistent with standard loading bar border.
+    StandardLoadingBar_ShowWithKeys("Send transcription to Gemini? Press Y (6s)", yCallbacks, 6000, centerOnHwnd,
+        DictationGeminiConfirm_OnTimeout, "FFFF00", 300, 9, "FFFF00")
 }
 
 ; =============================================================================
