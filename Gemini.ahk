@@ -1371,6 +1371,8 @@ class GeminiDelayedSubmitMonitor {
             CopyLastGeminiMessageToClipboard(copyOpt, this.GeminiHwnd)
             Sleep 400
         }
+        if (A_Clipboard != "" && A_Clipboard != contentBefore)
+            PlayCopyCompletedChime()
         if (WinExist("ahk_id " this.OriginalHwnd))
             WinActivate("ahk_id " this.OriginalHwnd)
     }
@@ -1407,6 +1409,8 @@ class GeminiDelayedSubmitMonitor {
             CopyLastGeminiMessageToClipboard(copyOpt, this.GeminiHwnd)
             Sleep 400
         }
+        if (A_Clipboard != "" && A_Clipboard != contentBefore)
+            PlayCopyCompletedChime()
         GeminiTriggerReadAloud(false, false)   ; read aloud only (already copied)
         if (WinExist("ahk_id " this.OriginalHwnd))
             WinActivate("ahk_id " this.OriginalHwnd)
