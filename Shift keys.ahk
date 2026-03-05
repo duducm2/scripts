@@ -24,7 +24,6 @@ SetTitleMatchMode 2
 #include %A_ScriptDir%\Utils.ahk
 
 ; --- Global Variables ---
-global smallLoadingGuis_ChatGPT := []
 global DEBUG_LOG_PATH := A_ScriptDir "\.cursor\debug.log"
 
 ; Helper function for safe debug logging with retry on file lock
@@ -1753,62 +1752,6 @@ global g_ClipAngelFilterCharSequence := ["1", "2", "3", "4", "5"]
 ; ClipAngel Filter Selector Functions
 ; =============================================================================
 
-; Global variable for banner GUI
-global g_ClipAngelBannerGui := ""
-
-; Helper function to show a notification banner
-ShowNotification_ClipAngel(message, durationMs := 800, bgColor := "3772FF", fontColor := "FFFFFF", fontSize := 24) {
-    global g_ClipAngelBannerGui
-
-    ; Destroy previous banner if exists
-    try {
-        if IsObject(g_ClipAngelBannerGui) && g_ClipAngelBannerGui.Hwnd {
-            g_ClipAngelBannerGui.Destroy()
-        }
-    } catch {
-    }
-
-    bGui := Gui()
-    bGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
-    bGui.BackColor := bgColor
-    bGui.SetFont("s" . fontSize . " c" . fontColor . " Bold", "Segoe UI")
-    bGui.Add("Text", "w500 Center", message)
-
-    activeWin := WinGetID("A")
-    if (activeWin) {
-        WinGetPos(&winX, &winY, &winW, &winH, activeWin)
-    } else {
-        workArea := SysGet.MonitorWorkArea(SysGet.MonitorPrimary)
-        winX := workArea.Left, winY := workArea.Top, winW := workArea.Right - workArea.Left, winH := workArea.Bottom -
-            workArea.Top
-    }
-
-    bGui.Show("AutoSize Hide")
-    guiW := 0, guiH := 0
-    bGui.GetPos(, , &guiW, &guiH)
-
-    guiX := winX + (winW - guiW) / 2
-    guiY := winY + (winH - guiH) / 2
-    bGui.Show("x" . Round(guiX) . " y" . Round(guiY) . " NA")
-    WinSetTransparent(178, bGui)
-
-    ; Store GUI reference globally and set timer
-    g_ClipAngelBannerGui := bGui
-    SetTimer(CloseClipAngelBanner, -durationMs)
-}
-
-CloseClipAngelBanner() {
-    global g_ClipAngelBannerGui
-    try {
-        if IsObject(g_ClipAngelBannerGui) && g_ClipAngelBannerGui.Hwnd {
-            g_ClipAngelBannerGui.Destroy()
-            g_ClipAngelBannerGui := ""
-        }
-    } catch {
-    }
-    SetTimer(CloseClipAngelBanner, 0) ; Disable timer
-}
-
 ; Navigate ClipAngel ComboBox to select a specific file type
 NavigateClipAngelComboBox(typeIndex) {
     try {
@@ -1861,7 +1804,7 @@ NavigateClipAngelComboBox(typeIndex) {
         }
 
         ; Show banner notification
-        ShowNotification_ClipAngel("Selecting: " . displayName)
+        ShowCenteredOverlay_Utils("Selecting: " . displayName, 800, "3772FF")
 
         ; Set focus and click to open dropdown
         try {
@@ -2805,8 +2748,7 @@ IsTeamsChatActive() {
         try {
             WinActivate("ahk_id " normalMeetingHwnd)
             ; Optional: Show a brief tooltip to confirm the switch
-            ToolTip("Switched to normal meeting view")
-            SetTimer(() => ToolTip(), -1000) ; Hide tooltip after 1 second
+            ShowCenteredOverlay_Utils("Switched to normal meeting view", 1000)
         } catch as e {
             ; Fallback: try to bring window to front (only if window still exists)
             if (WinExist("ahk_id " normalMeetingHwnd)) {
@@ -2818,8 +2760,7 @@ IsTeamsChatActive() {
         }
     } else {
         ; No corresponding normal window found - show notification
-        ToolTip("No normal meeting window found")
-        SetTimer(() => ToolTip(), -1500) ; Hide tooltip after 1.5 seconds
+        ShowCenteredOverlay_Utils("No normal meeting window found", 1500)
     }
 }
 
@@ -3205,7 +3146,8 @@ RestoreWikipediaScrollPosition(scrollPercentage, bannerText := "Restoring scroll
         }
 
         ; Show banner
-        restoreBanner := CreateCenteredBanner_ChatGPT(bannerText, "3772FF", "FFFFFF", 24, 178)
+        centerOnHwnd := WinGetID("A")
+        StandardLoadingBar_Show(bannerText, "3772FF", { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 500, fontSize: 24, passiveBgColor: "3772FF" })
 
         ; Block input during restoration
         BlockInput("On")
@@ -3217,18 +3159,14 @@ RestoreWikipediaScrollPosition(scrollPercentage, bannerText := "Restoring scroll
         docHeight := uia.JSReturnThroughClipboard("document.documentElement.scrollHeight")
         if (docHeight = "" || docHeight = "undefined" || docHeight = "null") {
             BlockInput("Off")
-            if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
-                restoreBanner.Destroy()
-            }
+            StandardLoadingBar_Hide(0)
             return false
         }
 
         docHeightFloat := Float(docHeight)
         if (docHeightFloat <= 0) {
             BlockInput("Off")
-            if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
-                restoreBanner.Destroy()
-            }
+            StandardLoadingBar_Hide(0)
             return false
         }
 
@@ -3239,31 +3177,24 @@ RestoreWikipediaScrollPosition(scrollPercentage, bannerText := "Restoring scroll
 
         ; Update banner to show success
         try {
-            if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
-                restoreBanner.Controls[1].Text := "Scroll position restored!"
-                Sleep(1000)
-            }
+            StandardLoadingBar_Update("Scroll position restored!")
+            Sleep(1000)
         } catch {
         }
 
         ; Cleanup
         BlockInput("Off")
         try {
-            if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
-                Sleep(500)
-                restoreBanner.Destroy()
-            }
+            Sleep(500)
+            StandardLoadingBar_Hide(0)
         } catch {
         }
 
         return true
     } catch Error as err {
         BlockInput("Off")
-        try {
-            if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
-                restoreBanner.Destroy()
-            }
-        } catch {
+        try StandardLoadingBar_Hide(0)
+        catch {
         }
         return false
     }
@@ -3313,7 +3244,8 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
     Sleep(300)  ; Allow time for fullscreen exit (increased for reliability)
 
     ; Show banner to inform user that scroll position is being saved
-    saveBanner := CreateCenteredBanner_ChatGPT("Saving scroll position... Please wait", "3772FF", "FFFFFF", 24, 178)
+    centerOnHwnd := WinGetID("A")
+    StandardLoadingBar_Show("Saving scroll position... Please wait", "3772FF", { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 500, fontSize: 24, passiveBgColor: "3772FF" })
     fullscreenRestored := false  ; Track if we've re-entered fullscreen
     try {
         ; Get normalized Wikipedia URL
@@ -3331,11 +3263,8 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
         try {
             uia := UIA_Browser("ahk_exe chrome.exe")
         } catch Error as uiaErr {
-            if (IsObject(saveBanner) && saveBanner.Hwnd) {
-                try {
-                    saveBanner.Destroy()
-                } catch {
-                }
+            try StandardLoadingBar_Hide(0)
+            catch {
             }
             ; Re-enter fullscreen before returning
             Send("{F11}")
@@ -3345,11 +3274,8 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
         }
 
         if (!uia) {
-            if (IsObject(saveBanner) && saveBanner.Hwnd) {
-                try {
-                    saveBanner.Destroy()
-                } catch {
-                }
+            try StandardLoadingBar_Hide(0)
+            catch {
             }
             ; Re-enter fullscreen before returning
             Send("{F11}")
@@ -3505,10 +3431,8 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
                 if (saved) {
                     ; Update banner to show success
                     try {
-                        if (IsObject(saveBanner) && saveBanner.Hwnd) {
-                            saveBanner.Controls[1].Text := "Scroll position saved!"
-                            Sleep(1000)  ; Show success message for 1 second
-                        }
+                        StandardLoadingBar_Update("Scroll position saved!")
+                        Sleep(1000)  ; Show success message for 1 second
                     } catch {
                     }
                     ; Re-enter fullscreen after successful save
@@ -3519,10 +3443,8 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
                 } else {
                     ; INI save failed - show error message
                     try {
-                        if (IsObject(saveBanner) && saveBanner.Hwnd) {
-                            saveBanner.Controls[1].Text := "Error: Save failed"
-                            Sleep(2000)  ; Show error message
-                        }
+                        StandardLoadingBar_Update("Error: Save failed")
+                        Sleep(2000)  ; Show error message
                     } catch {
                     }
                     ; Re-enter fullscreen even on failure
@@ -3537,10 +3459,8 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
     } finally {
         ; Always hide the banner after save operation completes
         try {
-            if (IsObject(saveBanner) && saveBanner.Hwnd) {
-                Sleep(500)  ; Brief delay before hiding
-                saveBanner.Destroy()
-            }
+            Sleep(500)  ; Brief delay before hiding
+            StandardLoadingBar_Hide(0)
         } catch {
         }
         ; Re-enter fullscreen if we haven't already (e.g., if exception occurred or validation failed)
@@ -3578,15 +3498,7 @@ RestorePreviousWikipediaScrollPosition() {
             url := GetWikipediaURLNormalized()
             if (url = "") {
                 ; Show brief message that no history exists
-                restoreBanner := CreateCenteredBanner_ChatGPT("No previous scroll position found", "FF6B6B", "FFFFFF",
-                    24, 178)
-                Sleep(1500)
-                try {
-                    if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
-                        restoreBanner.Destroy()
-                    }
-                } catch {
-                }
+                ShowCenteredOverlay_Utils("No previous scroll position found", 1500, "FF6B6B")
                 return false
             }
 
@@ -3601,28 +3513,12 @@ RestorePreviousWikipediaScrollPosition() {
                     "Restoring previous scroll position... Please wait")
             } else {
                 ; No saved position found in INI either
-                restoreBanner := CreateCenteredBanner_ChatGPT("No previous scroll position found", "FF6B6B", "FFFFFF",
-                    24, 178)
-                Sleep(1500)
-                try {
-                    if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
-                        restoreBanner.Destroy()
-                    }
-                } catch {
-                }
+                ShowCenteredOverlay_Utils("No previous scroll position found", 1500, "FF6B6B")
                 return false
             }
         } catch Error as err {
             ; Show brief message that no history exists
-            restoreBanner := CreateCenteredBanner_ChatGPT("No previous scroll position found", "FF6B6B", "FFFFFF", 24,
-                178)
-            Sleep(1500)
-            try {
-                if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
-                    restoreBanner.Destroy()
-                }
-            } catch {
-            }
+            ShowCenteredOverlay_Utils("No previous scroll position found", 1500, "FF6B6B")
             return false
         }
     }
@@ -3686,14 +3582,7 @@ RestorePreviousWikipediaScrollPosition() {
 
     if (!previousPosition) {
         ; No different position found in history
-        restoreBanner := CreateCenteredBanner_ChatGPT("No previous scroll position found", "FF6B6B", "FFFFFF", 24, 178)
-        Sleep(1500)
-        try {
-            if (IsObject(restoreBanner) && restoreBanner.Hwnd) {
-                restoreBanner.Destroy()
-            }
-        } catch {
-        }
+        ShowCenteredOverlay_Utils("No previous scroll position found", 1500, "FF6B6B")
         return false
     }
 
@@ -15120,57 +15009,14 @@ IsFileDialogActive() {
 
 #HotIf
 
-; --- Unified banner helpers for ChatGPT indicators (match ChatGPT.ahk style) ---
-global smallLoadingGuis_ChatGPT := []
-
-CreateCenteredBanner_ChatGPT(message, bgColor := "3772FF", fontColor := "FFFFFF", fontSize := 24, alpha := 178) {
-    bGui := Gui()
-    bGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
-    bGui.BackColor := bgColor
-    bGui.SetFont("s" . fontSize . " c" . fontColor . " Bold", "Segoe UI")
-    bGui.Add("Text", "w500 Center", message)
-
-    activeWin := WinGetID("A")
-    if (activeWin) {
-        WinGetPos(&winX, &winY, &winW, &winH, activeWin)
-    } else {
-        workArea := SysGet.MonitorWorkArea(SysGet.MonitorPrimary)
-        winX := workArea.Left, winY := workArea.Top, winW := workArea.Right - workArea.Left, winH := workArea.Bottom -
-            workArea.Top
-    }
-
-    bGui.Show("AutoSize Hide")
-    guiW := 0, guiH := 0
-    bGui.GetPos(, , &guiW, &guiH)
-
-    guiX := winX + (winW - guiW) / 2
-    guiY := winY + (winH - guiH) / 2
-    bGui.Show("x" . Round(guiX) . " y" . Round(guiY) . " NA")
-    WinSetTransparent(alpha, bGui)
-    return bGui
-}
-
-ShowSmallLoadingIndicator_ChatGPT(state := "Loadingâ€¦", bgColor := "3772FF") {
-    global smallLoadingGuis_ChatGPT
-    if (smallLoadingGuis_ChatGPT.Length > 0) {
-        try if (smallLoadingGuis_ChatGPT[1].Controls.Length > 0)
-            smallLoadingGuis_ChatGPT[1].Controls[1].Text := state
-        catch {
-        }
-        return
-    }
-    textGui := CreateCenteredBanner_ChatGPT(state, bgColor, "FFFFFF", 24, 178)
-    smallLoadingGuis_ChatGPT.Push(textGui)
+; --- Unified banner helpers for ChatGPT indicators (use Utils standard loading bar) ---
+ShowSmallLoadingIndicator_ChatGPT(state := "Loading…", bgColor := "3772FF") {
+    centerOnHwnd := WinGetID("A")
+    StandardLoadingBar_Show(state, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 500, fontSize: 24, passiveBgColor: bgColor })
 }
 
 HideSmallLoadingIndicator_ChatGPT() {
-    global smallLoadingGuis_ChatGPT
-    if (smallLoadingGuis_ChatGPT.Length > 0) {
-        for gui in smallLoadingGuis_ChatGPT {
-            try gui.Destroy()
-        }
-        smallLoadingGuis_ChatGPT := []
-    }
+    StandardLoadingBar_Hide(0)
 }
 
 ; Short completion chime for ChatGPT responses (debounced)
