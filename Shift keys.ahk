@@ -277,6 +277,7 @@ Outlook (Shift)
 📋 [M]Toggle Mail / Calendar
 📅 [W]eek view
 📅 M[o]nth view
+🪟 [P][P]op Out (Type 50000, Name Pop Out, LocalizedType button, Path {T:33,CN:rctrl_renwnd32}, {T:33}, {T:33}, {T:21}, {T:0, i:-1})
 
 ⌨️ [Ctrl+1] Move down once and select
 ⌨️ [Ctrl+2] Move down twice and select
@@ -4720,6 +4721,17 @@ IsOutlookMainActive() {
             Send "^!4"
     } catch {
         Send "^!4"
+    }
+}
+
+; Shift + P : Pop Out current item - Pop Out
++P:: {
+    try {
+        if !ClickOutlookByIdThenNameClass("", "Pop Out", "", 50000) {
+            MsgBox("Couldn't find 'Pop Out' button.", "Outlook Pop Out", "IconX")
+        }
+    } catch Error as err {
+        ShowErr(err)
     }
 }
 
