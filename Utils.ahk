@@ -391,7 +391,7 @@ InitHotstringsCheatSheet() {
     ; Remaining projects (previously after X/C/7) shift left one character each
     RegisterHotstring(":o:gpm", "GS_UX_Project_Management_Activities_LA", "Projects", "📋 Project Management LA", "c")
     RegisterHotstring(":o:guxcip", "GS_UX_and_CIP", "Projects", "🔗 UX and CIP")
-    RegisterHotstring(":o:gavante", "Avante", "Projects", "🎓 Avante")
+    RegisterHotstring(":o:gtrain", "GS_UX core team_Trainings Management", "Projects", "🎓 Trainings Management")
     RegisterHotstring(":o:26ai", "26-ai-experiment", "Projects", "🤖 26-ai-experiment")
 }
 InitHotstringsCheatSheet()
@@ -1859,6 +1859,7 @@ StandardLoadingBar_Show(state := "Working...", barColor := "3772FF", options := 
     fontSize := options && options.HasProp("fontSize") ? options.fontSize : 9
     alpha := options && options.HasProp("alpha") ? options.alpha : 235
     passiveBgColor := options && options.HasProp("passiveBgColor") ? options.passiveBgColor : ""
+    noBorder := options && options.HasProp("noBorder") ? options.noBorder : false
 
     if (centerOnHwnd) {
         workArea := GetWorkAreaForWindow_StandardBar(centerOnHwnd)
@@ -1893,18 +1894,28 @@ StandardLoadingBar_Show(state := "Working...", barColor := "3772FF", options := 
         guiX := mr - gw
     guiY := mt + 40
 
-    ; Create yellow border frame behind the overlay for visibility.
-    borderWidth := 6
-    try {
-        if IsObject(g_StandardLoadingBarBorderGui)
-            g_StandardLoadingBarBorderGui.Destroy()
-    } catch {
+    ; Create yellow border frame behind the overlay for visibility (optional; skip when noBorder to show a single banner).
+    if (!noBorder) {
+        borderWidth := 6
+        try {
+            if IsObject(g_StandardLoadingBarBorderGui)
+                g_StandardLoadingBarBorderGui.Destroy()
+        } catch {
+        }
+        borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow -DPIScale")
+        borderGui.BackColor := "FFFF00"
+        borderGui.Show("NA x" . (guiX - borderWidth) . " y" . (guiY - borderWidth) . " w" . (gw + 2 * borderWidth) .
+        " h" .
+        (gh + 2 * borderWidth))
+        g_StandardLoadingBarBorderGui := borderGui
+    } else {
+        try {
+            if IsObject(g_StandardLoadingBarBorderGui)
+                g_StandardLoadingBarBorderGui.Destroy()
+        } catch {
+        }
+        g_StandardLoadingBarBorderGui := 0
     }
-    borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow -DPIScale")
-    borderGui.BackColor := "FFFF00"
-    borderGui.Show("NA x" . (guiX - borderWidth) . " y" . (guiY - borderWidth) . " w" . (gw + 2 * borderWidth) . " h" .
-    (gh + 2 * borderWidth))
-    g_StandardLoadingBarBorderGui := borderGui
     overlayGui.Show("x" . guiX . " y" . guiY . " NA")
     try {
         hwnd := overlayGui.Hwnd
@@ -2014,12 +2025,15 @@ StandardLoadingBar_CloseKeysOverlay() {
 ; Show passive overlay and register hotkeys; optional timeout. keyCallbacks: Map/object key -> callback (e.g. "N" -> fn, "R" -> fn).
 ; timeoutCallback: called when timeout fires (can be empty). Registers both upper and lower case for letter keys.
 ; passiveBgColor: optional; when set, used as overlay background (e.g. "FFFF00" for yellow, no blue).
+; noBorder: when true, do not create the yellow border (single banner only).
 StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwnd := 0, timeoutCallback := "", barColor :=
-    "3772FF", textWidth := 500, fontSize := 9, passiveBgColor := "") {
+    "3772FF", textWidth := 500, fontSize := 9, passiveBgColor := "", noBorder := false) {
     global g_StandardLoadingBarIsKeysOverlay, g_StandardLoadingBarKeysHotkeys, g_StandardLoadingBarKeysTimeoutTimer
     opts := { passive: true, centerOnHwnd: centerOnHwnd, textWidth: textWidth, fontSize: fontSize }
     if (passiveBgColor != "")
         opts.passiveBgColor := passiveBgColor
+    if (noBorder)
+        opts.noBorder := true
     StandardLoadingBar_Show(state, barColor, opts)
     g_StandardLoadingBarIsKeysOverlay := true
     g_StandardLoadingBarKeysHotkeys := []
@@ -2109,18 +2123,19 @@ DictationGeminiConfirm_Hide(*) {
 }
 
 DictationGeminiConfirm_CleanupAndMaybeSubmit(submitToGemini) {
+    global g_DictationGeminiConfirmBannerVisible
+    g_DictationGeminiConfirmBannerVisible := false  ; Allow future show
     try Hotkey("y", "Off")
     try Hotkey("Y", "Off")
     SetTimer(DictationGeminiConfirm_OnTimeout, 0)
     DictationGeminiConfirm_Hide()
     if (submitToGemini) {
+        Sleep 350
         GeminiDelayedSubmitFlow()
     }
 }
 
 DictationGeminiConfirm_OnY(*) {
-    ; Vanish banner immediately, then send to Gemini (no delay).
-    DictationGeminiConfirm_Hide()
     DictationGeminiConfirm_CleanupAndMaybeSubmit(true)
 }
 
@@ -2129,7 +2144,12 @@ DictationGeminiConfirm_OnTimeout(*) {
 }
 
 DictationGeminiConfirm_ShowAndWait() {
-    ; Keep only the official banner: hide any existing bar/overlay and the dictation indicator so only one "Send to Gemini?" shows.
+    global g_DictationGeminiConfirmBannerVisible
+    ; Only one banner: skip if already visible (prevents duplicate from multiple PlayDictationCompletionChime runs).
+    if (g_DictationGeminiConfirmBannerVisible)
+        return
+    g_DictationGeminiConfirmBannerVisible := true
+    ; Only the official loading bar (standard loading indicator) may show this content. Hide any other bar/overlay first.
     StandardLoadingBar_CloseKeysOverlay()
     StandardLoadingBar_Hide(0)
     HideDictationIndicator()
@@ -2141,9 +2161,9 @@ DictationGeminiConfirm_ShowAndWait() {
     if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
         centerOnHwnd := 0
     yCallbacks := Map("Y", DictationGeminiConfirm_OnY)
-    ; Canon banner: dark background with yellow border, consistent with other loading indicators.
+    ; Official loading bar only; no blue; single banner (no border) so only one GUI shows.
     StandardLoadingBar_ShowWithKeys("Send transcription to Gemini? Press Y (6s)", yCallbacks, 6000, centerOnHwnd,
-        DictationGeminiConfirm_OnTimeout, "3772FF", 300, 9)
+        DictationGeminiConfirm_OnTimeout, "1E1E2E", 300, 9, "", true)
 }
 
 ; =============================================================================
@@ -6426,12 +6446,12 @@ GeminiDelayedSubmitFlow() {
     g_HotstringGeminiRestoreHwnd := WinExist("A")  ; Store window to restore focus to after 4s sequence
     g_HotstringGeminiAutoSubmit := true
 
-    HotstringGeminiBanner_Show("Submitting in 6s... Press N to cancel auto-submit")
+    HotstringGeminiBanner_Show("Submitting in 4s... Press N to cancel auto-submit")
 
     Hotkey("n", GeminiCancelAutoSubmit, "On")
     Hotkey("N", GeminiCancelAutoSubmit, "On")
 
-    SetTimer(GeminiFinalizeSubmit, -6000)
+    SetTimer(GeminiFinalizeSubmit, -4000)
 }
 
 GeminiCancelAutoSubmit(*) {
@@ -6493,10 +6513,6 @@ GeminiFinalizeSubmit() {
     try Hotkey("N", "Off")
     HotstringGeminiBanner_Hide()
 
-    ; Show standard loading indicator for the auto-submit background process
-    if (g_HotstringGeminiAutoSubmit)
-        StandardLoadingBar_Show("Sending to Gemini…", "3772FF")
-
     ; Delay-submit flow: do not switch tabs; paste to currently active Gemini tab
     GeminiNavigateFocusAndPasteFirstSnippet("", false)
 
@@ -6529,11 +6545,8 @@ GeminiFinalizeSubmit() {
     }
 
     ; If we auto-submitted (user did not cancel), ask Gemini.ahk to monitor for completion and show "Copy? [N] [R]" when done
-    if (didAutoSubmit && geminiChromeHwnd) {
+    if (didAutoSubmit && geminiChromeHwnd)
         GeminiDelayedSubmitMonitorStartFromUtils(g_HotstringGeminiRestoreHwnd, geminiChromeHwnd)
-        ; Hide "Sending to Gemini…" in this process; the monitor (Gemini.ahk) shows "Waiting for Gemini response…" in its process.
-        StandardLoadingBar_Hide(0)
-    }
 }
 
 HandleHotstringChar(char) {
@@ -7857,6 +7870,7 @@ global g_DictationLoopSound := A_ScriptDir . "\sounds\retro1.wav"
 global g_PendingDictationAction := ""  ; Action to execute after transcription: "Paste" or "PasteEnter"
 global g_PendingDictationMerge := false  ; Flag to trigger merge countdown after transcription completes
 global g_PendingGeminiPromptAfterDictation := false  ; When set by ~#!+0 stop, show "Send to Gemini? Y (4s)" after completion
+global g_DictationGeminiConfirmBannerVisible := false  ; Guard: only one "Send to Gemini?" banner at a time
 global g_KeepIndicatorVisible := false  ; Flag to keep indicator visible until paste action completes
 global g_LastStateTransitionTick := 0  ; Timestamp of last state transition to prevent rapid re-detection
 global g_DictationSoundPlayed := false  ; Atomic test-and-set: one start chime per session
@@ -8162,9 +8176,11 @@ PlayDictationCompletionChime(*) {
             DictationMerge_StartCountdown(5)
         }
 
-        ; If user stopped dictation with Win+Alt+Shift+0 (no Paste/PasteEnter), show Gemini confirm banner
+        ; If user stopped dictation with Win+Alt+Shift+0 (no Paste/PasteEnter), show Gemini confirm banner (once only).
+        Critical "On"
         pendingGemini := g_PendingGeminiPromptAfterDictation
-        g_PendingGeminiPromptAfterDictation := false
+        g_PendingGeminiPromptAfterDictation := false  ; Claim atomically so only one invocation shows the banner
+        Critical "Off"
         ; #region agent log
         DebugBannerLog("Utils.ahk:PlayDictationCompletionChime", "Completion chime branch",
             "chimeShouldPlay=1 pendingAction=" . pendingAction . " pendingGemini=" . (pendingGemini ? 1 : 0), "H2")

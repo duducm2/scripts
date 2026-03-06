@@ -1143,9 +1143,6 @@ class GeminiDelayedSubmitMonitor {
         this.RetryCount := 0
         this.ButtonEverFound := false
         this.TimerCallback := this.CheckCompletion.Bind(this)
-        ; Same animated bar as FoldAllDirectoriesInExplorer (^,): progress bar + yellow border, not passive.
-        StandardLoadingBar_Show("Waiting for Gemini response…", "3772FF",
-            { centerOnHwnd: originalHwnd, textWidth: 500, fontSize: 14 })
         SetTimer(this.TimerCallback, 500)
     }
 
@@ -1153,7 +1150,6 @@ class GeminiDelayedSubmitMonitor {
         this.RetryCount++
         if (this.RetryCount > this.MaxRetries) {
             SetTimer(this.TimerCallback, 0)
-            StandardLoadingBar_Hide(0)
             return
         }
         btn := ""
@@ -1223,7 +1219,6 @@ class GeminiDelayedSubmitMonitor {
 
     CancelCopy(*) {
         this.CleanupCopyBanner()
-        StandardLoadingBar_Hide(0)
     }
 
     DoCopyOnTimeout(*) {
@@ -1261,8 +1256,6 @@ class GeminiDelayedSubmitMonitor {
             PlayCopyCompletedChime()
         if (WinExist("ahk_id " this.OriginalHwnd))
             WinActivate("ahk_id " this.OriginalHwnd)
-        ; Ensure any remaining loading/banner indicator is closed when timeout copy flow ends.
-        StandardLoadingBar_Hide(0)
     }
 
     ; R key: copy last message and read it aloud, then restore focus (same tab as delayed submit).
@@ -1302,8 +1295,6 @@ class GeminiDelayedSubmitMonitor {
         GeminiTriggerReadAloud(false, false)   ; read aloud only (already copied)
         if (WinExist("ahk_id " this.OriginalHwnd))
             WinActivate("ahk_id " this.OriginalHwnd)
-        ; Ensure any remaining loading/banner indicator is closed after successful copy+read-aloud.
-        StandardLoadingBar_Hide(0)
     }
 }
 
