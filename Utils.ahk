@@ -2140,9 +2140,9 @@ DictationGeminiConfirm_ShowAndWait() {
     if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
         centerOnHwnd := 0
     yCallbacks := Map("Y", DictationGeminiConfirm_OnY)
-    ; Official banner only: yellow background (no blue), consistent with standard loading bar border.
+    ; Canon banner: dark background with yellow border, consistent with other loading indicators.
     StandardLoadingBar_ShowWithKeys("Send transcription to Gemini? Press Y (6s)", yCallbacks, 6000, centerOnHwnd,
-        DictationGeminiConfirm_OnTimeout, "FFFF00", 300, 9, "FFFF00")
+        DictationGeminiConfirm_OnTimeout, "3772FF", 300, 9)
 }
 
 ; =============================================================================
