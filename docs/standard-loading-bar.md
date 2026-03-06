@@ -1,0 +1,118 @@
+# Standard Loading Bar Component
+
+A shared UI component for loading and progress feedback across all AHK scripts. Defined in `Utils.ahk` and used by scripts that include it.
+
+## Overview and Purpose
+
+- **Single shared component** for loading/progress feedback across all AHK scripts
+- **Replaces ad-hoc banners and overlays** with a consistent user experience
+- **Monitor-aware positioning** – centers on the active window's monitor or the primary monitor
+- **Dual modes** – passive (text-only) display and interactive mode with key callbacks and timeouts
+
+## API Reference
+
+### Core Functions
+
+| Function                              | Signature                                                                                                                  | Purpose                                                                                            |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `StandardLoadingBar_Show`             | `(state, barColor, options)`                                                                                               | Show overlay; options: passive, centerOnHwnd, textWidth, fontSize, alpha, passiveBgColor, noBorder |
+| `StandardLoadingBar_Update`           | `(state, barColor)`                                                                                                        | Update text/progress of visible bar                                                                |
+| `StandardLoadingBar_Hide`             | `(delayMs)`                                                                                                                | Hide bar; `delayMs > 0` shows briefly before hiding                                                |
+| `StandardLoadingBar_ShowWithKeys`     | `(state, keyCallbacks, timeoutMs, centerOnHwnd, timeoutCallback, barColor, textWidth, fontSize, passiveBgColor, noBorder)` | Show with hotkey handlers and optional timeout                                                     |
+| `StandardLoadingBar_CloseKeysOverlay` | (internal)                                                                                                                 | Unregister keys, cancel timeout, destroy overlay                                                   |
+
+### Options Reference
+
+| Option           | Type    | Default | Description                                                         |
+| ---------------- | ------- | ------- | ------------------------------------------------------------------- |
+| `passive`        | boolean | false   | Text-only mode (no progress bar animation)                          |
+| `centerOnHwnd`   | integer | 0       | Window to center on; 0 = active monitor                             |
+| `textWidth`      | integer | 0       | Overlay width in pixels; 0 = auto (60% of monitor width)            |
+| `fontSize`       | integer | 9       | Font size in points                                                 |
+| `alpha`          | integer | 235     | Window transparency (0–255)                                         |
+| `passiveBgColor` | string  | ""      | Overlay background (e.g. "3772FF", "FFFF00"); default dark "1E1E2E" |
+| `noBorder`       | boolean | false   | Skip yellow border frame (single GUI); used for dictation confirm   |
+
+## Helper Wrappers (Utils.ahk)
+
+These wrap `StandardLoadingBar_*` with preset styles:
+
+| Function                                                    | Purpose                                                                                                    |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `AiModelBanner_Show` / `AiModelBanner_Hide`                 | AI model selection (textWidth 450, fontSize 18)                                                            |
+| `ClipAngelBanner_Show` / `ClipAngelBanner_Hide`             | Clip Angel (textWidth 200, fontSize 10)                                                                    |
+| `ShowSingleCharTabBanner_Utils(tabNumber)`                  | Tab number (1 or 2); auto-hides after 700 ms                                                               |
+| `ShowCenteredOverlay_Utils(text, duration, bgColor)`        | Short message with duration; Show + Hide(duration)                                                         |
+| `HotstringGeminiBanner_Show` / `HotstringGeminiBanner_Hide` | Gemini redirect (textWidth 160, fontSize 8)                                                                |
+| `DictationGeminiConfirm_ShowAndWait()`                      | "Send transcription to Gemini? Press Y (6s)" with Y key and 6 s timeout; uses `noBorder` for single banner |
+
+## Implementation Instances
+
+### Utils.ahk
+
+| Lines     | Context                                                                                                                                                                                                                   |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1781–1786 | Global variables: `g_StandardLoadingBarGui`, `g_StandardLoadingBarValue`, `g_StandardLoadingBarIsKeysOverlay`, `g_StandardLoadingBarKeysHotkeys`, `g_StandardLoadingBarKeysTimeoutTimer`, `g_StandardLoadingBarBorderGui` |
+| 1788–1849 | `GetWorkAreaForWindow_StandardBar`, `GetActiveMonitorWorkArea_StandardBar`                                                                                                                                                |
+| 1851–1931 | `StandardLoadingBar_Show`, `StandardLoadingBar_Tick`                                                                                                                                                                      |
+| 1949–1992 | `StandardLoadingBar_Update`, `StandardLoadingBar_Hide`, `StandardLoadingBar_CloseKeysOverlay`                                                                                                                             |
+| 2029–2091 | `StandardLoadingBar_ShowWithKeys`, `StandardLoadingBar_RegisterKeyHandler`, `StandardLoadingBar_KeyWrapper`, `StandardLoadingBar_KeysTimeoutFired`                                                                        |
+| 1408–1453 | `AiModelBanner_Show`/`Hide`, `ClipAngelBanner_Show`/`Hide`, `ShowSingleCharTabBanner_Utils`                                                                                                                               |
+| 1767–1774 | `ShowCenteredOverlay_Utils`                                                                                                                                                                                               |
+| 2097–2166 | `HotstringGeminiBanner_Show`/`Hide`, `DictationGeminiConfirm_ShowAndWait` (ShowWithKeys)                                                                                                                                  |
+| 5493–5500 | Peek PDF flow                                                                                                                                                                                                             |
+
+### Gemini.ahk
+
+| Lines     | Context                                                            |
+| --------- | ------------------------------------------------------------------ |
+| 172–206   | `ShowSmallLoadingIndicator` / `HideSmallLoadingIndicator` wrappers |
+| 235–264   | Async TTS state display                                            |
+| 390–500   | Read aloud flow                                                    |
+| 742–828   | First-time init (Opening Gemini, Sending prompt)                   |
+| 946–1107  | Async lookup/TTS loading                                           |
+| 1118      | `ShowWithKeys` for long-running state                              |
+| 1211      | `ShowWithKeys` for "Copy? [N] [R] [E=close]" completion            |
+| 1328–1449 | Additional loading states                                          |
+
+### Shift keys.ahk
+
+| Lines       | Context                       |
+| ----------- | ----------------------------- |
+| 3150–3196   | Wikipedia restore scroll      |
+| 3248–3463   | Wikipedia save scroll         |
+| 9936–10336  | Fold/Unfold Explorer          |
+| 15034–15038 | `ShowCenteredOverlay` wrapper |
+
+### AppLaunchers.ahk
+
+| Lines     | Context                          |
+| --------- | -------------------------------- |
+| 522–563   | Restore scroll (short path)      |
+| 842–1003  | Restore scroll (new window, UIA) |
+| 1296–1392 | Restore scroll (existing window) |
+| 1912–1941 | Save scroll position             |
+
+### Act.ahk
+
+| Lines | Context                                                                   |
+| ----- | ------------------------------------------------------------------------- |
+| 20–65 | Startup sequence (Updating scripts, Updating notes, Launching apps, Done) |
+
+### Microsoft Teams.ahk
+
+| Lines   | Context                                                   |
+| ------- | --------------------------------------------------------- |
+| 254–255 | `ShowCenteredOverlay` wrapper (Show + Hide with duration) |
+
+## Lifecycle and Best Practices
+
+1. **Show → Update → Hide** – Call `Show` at start, `Update` at milestones, `Hide` in all exit paths (including `try`/`finally` and error branches).
+2. **Delayed hide** – Use `Hide(delayMs)` to show a final message briefly before hiding.
+3. **Keys overlay** – `ShowWithKeys` registers hotkeys; `CloseKeysOverlay` or `Hide(0)` unregisters and destroys.
+4. **Include Utils** – Scripts that use the bar must include `Utils.ahk` (`#Include %A_ScriptDir%\Utils.ahk`).
+5. **No stuck bar** – Ensure every code path that calls `Show` eventually calls `Hide`.
+
+## Related Documentation
+
+- [loading-bar-rollout-locations.md](../loading-bar-rollout-locations.md) – Rollout status and migration candidates
