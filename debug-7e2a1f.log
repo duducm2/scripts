@@ -1,0 +1,320 @@
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":20764921,"data":"script=Gemini.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":20764921,"data":"script=Gemini.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":20764953,"data":"script=Gemini.ahk delayMs=700 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":20765781,"data":"script=Gemini.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":20777640,"data":"script=AppLaunchers.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":20777640,"data":"script=AppLaunchers.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":20777671,"data":"script=Microsoft Teams.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":20777671,"data":"script=Microsoft Teams.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":20777703,"data":"script=AppLaunchers.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":20777718,"data":"script=AppLaunchers.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":20777734,"data":"script=Microsoft Teams.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":20777734,"data":"script=Gemini.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":20777750,"data":"script=Gemini.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":20777765,"data":"script=WindowManagement.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":20777765,"data":"script=WindowManagement.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":20777796,"data":"script=Outlook.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":20777812,"data":"script=Outlook.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":20777843,"data":"script=WindowManagement.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":20777843,"data":"script=WindowManagement.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":20777875,"data":"script=Utils.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":20777875,"data":"script=Utils.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":20777937,"data":"script=Shift keys.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":20777937,"data":"script=Shift keys.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":20777953,"data":"script=Utils.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":20777953,"data":"script=Utils.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:KeyWrapper","message":"key pressed","timestamp":20778265,"data":"script=Utils.ahk key=Y","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":20778265,"data":"script=Utils.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":20778281,"data":"script=Utils.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":20778640,"data":"script=Utils.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":20778687,"data":"script=Utils.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":20778687,"data":"script=Utils.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":20783781,"data":"script=AppLaunchers.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":20783781,"data":"script=Microsoft Teams.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":20783781,"data":"script=Microsoft Teams.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":20783843,"data":"script=Outlook.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":20783843,"data":"script=Outlook.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":20783875,"data":"script=WindowManagement.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":20783875,"data":"script=WindowManagement.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":20783984,"data":"script=Shift keys.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":20784000,"data":"script=Utils.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":20784000,"data":"script=Utils.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":20784734,"data":"script=Utils.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:GeminiFinalizeSubmit","message":"Showing Sending to Gemini bar","timestamp":20784734,"data":"script=Utils.ahk","hypothesisId":"A"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":20784750,"data":"script=Utils.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":20784750,"data":"script=Utils.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:GeminiFinalizeSubmit","message":"Calling StartFromUtils","timestamp":20789609,"data":"script=Utils.ahk","hypothesisId":"A"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":20789609,"data":"script=Gemini.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":20789625,"data":"script=Gemini.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Gemini.ahk:ShowCopyDecisionBanner","message":"showing Copy decision bar","timestamp":20800812,"data":"script=Gemini.ahk","hypothesisId":"A"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":20800812,"data":"script=Gemini.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":20800843,"data":"script=Gemini.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Gemini.ahk:DoCopyOnTimeout","message":"entry","timestamp":20804890,"data":"script=Gemini.ahk","hypothesisId":"C"}
+{"sessionId":"7e2a1f","location":"Gemini.ahk:DoCopyOnTimeout","message":"calling StandardLoadingBar_Hide","timestamp":20807312,"data":"script=Gemini.ahk","hypothesisId":"C"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":20807312,"data":"script=Gemini.ahk delayMs=0 isKeysOverlay=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":20807328,"data":"script=Gemini.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":20807328,"data":"script=Gemini.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":20854125,"data":"script=Utils.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":20854125,"data":"script=Utils.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":20854156,"data":"script=Utils.ahk delayMs=3500 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":20857656,"data":"script=Utils.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21075531,"data":"script=AppLaunchers.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21075531,"data":"script=AppLaunchers.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21075593,"data":"script=Gemini.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21075593,"data":"script=Gemini.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21075625,"data":"script=Outlook.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21075640,"data":"script=Outlook.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21075703,"data":"script=WindowManagement.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21075703,"data":"script=Outlook.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21075734,"data":"script=Utils.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21075734,"data":"script=Utils.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21075812,"data":"script=Utils.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21075812,"data":"script=Utils.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21075843,"data":"script=Shift keys.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21075843,"data":"script=Shift keys.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21075937,"data":"script=Shift keys.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21075953,"data":"script=Shift keys.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:KeyWrapper","message":"key pressed","timestamp":21076578,"data":"script=Utils.ahk key=Y","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21076578,"data":"script=Utils.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21076593,"data":"script=Utils.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21076953,"data":"script=Utils.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21077000,"data":"script=Utils.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21077000,"data":"script=Utils.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21081625,"data":"script=AppLaunchers.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21081640,"data":"script=AppLaunchers.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21081718,"data":"script=Gemini.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21081718,"data":"script=Gemini.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21081765,"data":"script=Microsoft Teams.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21081765,"data":"script=WindowManagement.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21081765,"data":"script=WindowManagement.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21081890,"data":"script=Utils.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21081890,"data":"script=Utils.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21081984,"data":"script=Shift keys.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21081984,"data":"script=Shift keys.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21083031,"data":"script=Utils.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:GeminiFinalizeSubmit","message":"Showing Sending to Gemini bar","timestamp":21083031,"data":"script=Utils.ahk","hypothesisId":"A"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21083046,"data":"script=Utils.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21083046,"data":"script=Utils.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:GeminiFinalizeSubmit","message":"Calling StartFromUtils","timestamp":21093046,"data":"script=Utils.ahk","hypothesisId":"A"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21093062,"data":"script=Gemini.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21093062,"data":"script=Gemini.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21100125,"data":"script=Utils.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21100125,"data":"script=Utils.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21100156,"data":"script=Utils.ahk delayMs=3500 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21103812,"data":"script=Utils.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21108343,"data":"script=Outlook.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21108343,"data":"script=Outlook.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21108375,"data":"script=WindowManagement.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21108390,"data":"script=WindowManagement.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21108421,"data":"script=Outlook.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21108453,"data":"script=Outlook.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21108468,"data":"script=Gemini.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21108500,"data":"script=Gemini.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21108546,"data":"script=AppLaunchers.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21108546,"data":"script=AppLaunchers.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21108640,"data":"script=AppLaunchers.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21108640,"data":"script=AppLaunchers.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:KeyWrapper","message":"key pressed","timestamp":21109171,"data":"script=Gemini.ahk key=Y","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21109171,"data":"script=Gemini.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21109187,"data":"script=Gemini.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21109437,"data":"script=Utils.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21109437,"data":"script=Utils.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21109515,"data":"script=Utils.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21109515,"data":"script=Utils.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21109578,"data":"script=Gemini.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21109656,"data":"script=Gemini.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21109656,"data":"script=Gemini.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21114562,"data":"script=WindowManagement.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21114562,"data":"script=Shift keys.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21114578,"data":"script=Microsoft Teams.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21114578,"data":"script=Microsoft Teams.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21114625,"data":"script=Gemini.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21114625,"data":"script=Gemini.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21114703,"data":"script=AppLaunchers.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21114703,"data":"script=AppLaunchers.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21115546,"data":"script=Utils.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21115546,"data":"script=Utils.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21115718,"data":"script=Gemini.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:GeminiFinalizeSubmit","message":"Showing Sending to Gemini bar","timestamp":21115718,"data":"script=Gemini.ahk","hypothesisId":"A"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21115718,"data":"script=Gemini.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21115734,"data":"script=Gemini.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:GeminiFinalizeSubmit","message":"Calling StartFromUtils","timestamp":21120640,"data":"script=Gemini.ahk","hypothesisId":"A"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21120656,"data":"script=Gemini.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21120656,"data":"script=Gemini.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21120703,"data":"script=Gemini.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21149562,"data":"script=Microsoft Teams.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21149562,"data":"script=Microsoft Teams.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21149609,"data":"script=WindowManagement.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21149625,"data":"script=WindowManagement.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21149640,"data":"script=Microsoft Teams.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21149671,"data":"script=Shift keys.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21149703,"data":"script=Shift keys.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21149734,"data":"script=Utils.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21149734,"data":"script=Utils.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21149750,"data":"script=Outlook.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21149750,"data":"script=Outlook.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21149796,"data":"script=AppLaunchers.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21149812,"data":"script=AppLaunchers.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21149859,"data":"script=Gemini.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21149875,"data":"script=Gemini.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21149890,"data":"script=AppLaunchers.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21149906,"data":"script=AppLaunchers.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21149937,"data":"script=Gemini.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21149937,"data":"script=Gemini.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:KeyWrapper","message":"key pressed","timestamp":21150375,"data":"script=Utils.ahk key=Y","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21150375,"data":"script=Utils.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21150375,"data":"script=Utils.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Gemini.ahk:ShowCopyDecisionBanner","message":"showing Copy decision bar","timestamp":21150593,"data":"script=Gemini.ahk","hypothesisId":"A"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21150593,"data":"script=Gemini.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21150609,"data":"script=Gemini.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21150750,"data":"script=Utils.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21150796,"data":"script=Utils.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21150796,"data":"script=Utils.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Gemini.ahk:DoCopyOnTimeout","message":"entry","timestamp":21154671,"data":"script=Gemini.ahk","hypothesisId":"C"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21155734,"data":"script=Microsoft Teams.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21155734,"data":"script=Microsoft Teams.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21155765,"data":"script=WindowManagement.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21155765,"data":"script=WindowManagement.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21155781,"data":"script=Utils.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21155781,"data":"script=Shift keys.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21155859,"data":"script=Outlook.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21155859,"data":"script=Outlook.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21156000,"data":"script=Gemini.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21156000,"data":"script=AppLaunchers.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21156000,"data":"script=AppLaunchers.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21156828,"data":"script=Utils.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:GeminiFinalizeSubmit","message":"Showing Sending to Gemini bar","timestamp":21156828,"data":"script=Utils.ahk","hypothesisId":"A"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21156843,"data":"script=Utils.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21156843,"data":"script=Utils.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Gemini.ahk:DoCopyOnTimeout","message":"calling StandardLoadingBar_Hide","timestamp":21157171,"data":"script=Gemini.ahk","hypothesisId":"C"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21157171,"data":"script=Gemini.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21157171,"data":"script=Gemini.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:GeminiFinalizeSubmit","message":"Calling StartFromUtils","timestamp":21161140,"data":"script=Utils.ahk","hypothesisId":"A"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21161140,"data":"script=Gemini.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21161140,"data":"script=Gemini.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21161187,"data":"script=Utils.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Gemini.ahk:ShowCopyDecisionBanner","message":"showing Copy decision bar","timestamp":21171375,"data":"script=Gemini.ahk","hypothesisId":"A"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21171375,"data":"script=Gemini.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21171406,"data":"script=Gemini.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Gemini.ahk:DoCopyOnTimeout","message":"entry","timestamp":21175437,"data":"script=Gemini.ahk","hypothesisId":"C"}
+{"sessionId":"7e2a1f","location":"Gemini.ahk:DoCopyOnTimeout","message":"return early WinWaitActive","timestamp":21177703,"data":"script=Gemini.ahk","hypothesisId":"C"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21177703,"data":"script=Gemini.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21215312,"data":"script=Utils.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21215312,"data":"script=Utils.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21215343,"data":"script=Utils.ahk delayMs=3500 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21218843,"data":"script=Utils.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21225812,"data":"script=Microsoft Teams.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21225828,"data":"script=Microsoft Teams.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21225859,"data":"script=Shift keys.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21225859,"data":"script=Shift keys.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21225890,"data":"script=Microsoft Teams.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21225921,"data":"script=Microsoft Teams.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21225953,"data":"script=Gemini.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21225968,"data":"script=Gemini.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21226000,"data":"script=Outlook.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21226000,"data":"script=Outlook.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21226046,"data":"script=Utils.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21226046,"data":"script=Utils.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21226093,"data":"script=AppLaunchers.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21226093,"data":"script=AppLaunchers.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21226109,"data":"script=Utils.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21226109,"data":"script=Utils.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:KeyWrapper","message":"key pressed","timestamp":21227687,"data":"script=Utils.ahk key=Y","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21227687,"data":"script=Utils.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21227703,"data":"script=Utils.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21228062,"data":"script=Utils.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21228109,"data":"script=Utils.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21228109,"data":"script=Utils.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21231984,"data":"script=WindowManagement.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21231984,"data":"script=WindowManagement.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21232000,"data":"script=Shift keys.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21232000,"data":"script=Shift keys.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21232015,"data":"script=Microsoft Teams.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21232015,"data":"script=Microsoft Teams.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21232031,"data":"script=Gemini.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21232031,"data":"script=Gemini.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21232093,"data":"script=Outlook.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21232109,"data":"script=Outlook.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21232140,"data":"script=Utils.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21232156,"data":"script=AppLaunchers.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21232187,"data":"script=AppLaunchers.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21234156,"data":"script=Utils.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:GeminiFinalizeSubmit","message":"Showing Sending to Gemini bar","timestamp":21234156,"data":"script=Utils.ahk","hypothesisId":"A"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21234203,"data":"script=Utils.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21234218,"data":"script=Utils.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:GeminiFinalizeSubmit","message":"Calling StartFromUtils","timestamp":21239375,"data":"script=Utils.ahk","hypothesisId":"A"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21239375,"data":"script=Gemini.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21239375,"data":"script=Gemini.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21239421,"data":"script=Utils.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Gemini.ahk:ShowCopyDecisionBanner","message":"showing Copy decision bar","timestamp":21252000,"data":"script=Gemini.ahk","hypothesisId":"A"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21252000,"data":"script=Gemini.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21252031,"data":"script=Gemini.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:KeyWrapper","message":"key pressed","timestamp":21252734,"data":"script=Gemini.ahk key=N","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21252734,"data":"script=Gemini.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Gemini.ahk:CancelCopy","message":"entry","timestamp":21252750,"data":"script=Gemini.ahk","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21252750,"data":"script=Gemini.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Gemini.ahk:DoCopyOnTimeout","message":"entry","timestamp":21256093,"data":"script=Gemini.ahk","hypothesisId":"C"}
+{"sessionId":"7e2a1f","location":"Gemini.ahk:DoCopyOnTimeout","message":"calling StandardLoadingBar_Hide","timestamp":21258687,"data":"script=Gemini.ahk","hypothesisId":"C"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21258687,"data":"script=Gemini.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21258703,"data":"script=Gemini.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21355953,"data":"script=Gemini.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21355953,"data":"script=Gemini.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21355984,"data":"script=Gemini.ahk delayMs=700 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21357125,"data":"script=Gemini.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21368671,"data":"script=Utils.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21368671,"data":"script=Utils.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21368703,"data":"script=Utils.ahk delayMs=3500 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21372218,"data":"script=Utils.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21373171,"data":"script=Gemini.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21373171,"data":"script=Gemini.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21373234,"data":"script=Gemini.ahk delayMs=700 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21374000,"data":"script=Gemini.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21385859,"data":"script=WindowManagement.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21385859,"data":"script=WindowManagement.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21385906,"data":"script=WindowManagement.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21385906,"data":"script=WindowManagement.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21385953,"data":"script=Microsoft Teams.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21385953,"data":"script=Microsoft Teams.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21385984,"data":"script=Utils.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21386015,"data":"script=Utils.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21386046,"data":"script=Shift keys.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21386093,"data":"script=Shift keys.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21386156,"data":"script=AppLaunchers.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21386156,"data":"script=AppLaunchers.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21386171,"data":"script=Outlook.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21386171,"data":"script=Outlook.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21386250,"data":"script=Outlook.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21386250,"data":"script=Outlook.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:KeyWrapper","message":"key pressed","timestamp":21387609,"data":"script=Utils.ahk key=Y","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21387609,"data":"script=Utils.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21387625,"data":"script=Utils.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21387984,"data":"script=Utils.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21388031,"data":"script=Utils.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21388031,"data":"script=Utils.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21391953,"data":"script=WindowManagement.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21391953,"data":"script=WindowManagement.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21392062,"data":"script=Microsoft Teams.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21392078,"data":"script=Microsoft Teams.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21392140,"data":"script=Utils.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21392140,"data":"script=Gemini.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21392156,"data":"script=Gemini.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21392203,"data":"script=AppLaunchers.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21392203,"data":"script=AppLaunchers.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21392296,"data":"script=Outlook.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21392296,"data":"script=Outlook.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21394062,"data":"script=Utils.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:GeminiFinalizeSubmit","message":"Showing Sending to Gemini bar","timestamp":21394062,"data":"script=Utils.ahk","hypothesisId":"A"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21394078,"data":"script=Utils.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21394093,"data":"script=Utils.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:GeminiFinalizeSubmit","message":"Calling StartFromUtils","timestamp":21399171,"data":"script=Utils.ahk","hypothesisId":"A"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21399171,"data":"script=Gemini.ahk hasGui=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21399171,"data":"script=Gemini.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21399218,"data":"script=Utils.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Gemini.ahk:ShowCopyDecisionBanner","message":"showing Copy decision bar","timestamp":21410562,"data":"script=Gemini.ahk","hypothesisId":"A"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21410562,"data":"script=Gemini.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21410593,"data":"script=Gemini.ahk delayMs=0 isKeysOverlay=0","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Gemini.ahk:DoCopyOnTimeout","message":"entry","timestamp":21414640,"data":"script=Gemini.ahk","hypothesisId":"C"}
+{"sessionId":"7e2a1f","location":"Gemini.ahk:DoCopyOnTimeout","message":"calling StandardLoadingBar_Hide","timestamp":21417281,"data":"script=Gemini.ahk","hypothesisId":"C"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":21417281,"data":"script=Gemini.ahk delayMs=0 isKeysOverlay=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21417296,"data":"script=Gemini.ahk hasGui=1","hypothesisId":"B"}
+{"sessionId":"7e2a1f","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":21417296,"data":"script=Gemini.ahk hasGui=0","hypothesisId":"B"}

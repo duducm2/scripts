@@ -1143,8 +1143,9 @@ class GeminiDelayedSubmitMonitor {
         this.RetryCount := 0
         this.ButtonEverFound := false
         this.TimerCallback := this.CheckCompletion.Bind(this)
+        ; Same animated bar as FoldAllDirectoriesInExplorer (^,): progress bar + yellow border, not passive.
         StandardLoadingBar_Show("Waiting for Gemini response…", "3772FF",
-            { passive: true, centerOnHwnd: originalHwnd, textWidth: 500, fontSize: 14 })
+            { centerOnHwnd: originalHwnd, textWidth: 500, fontSize: 14 })
         SetTimer(this.TimerCallback, 500)
     }
 
@@ -1210,6 +1211,9 @@ class GeminiDelayedSubmitMonitor {
     ShowCopyDecisionBanner() {
         this.CopyBannerGui := ""
         this.CopyTimeoutTimer := ""
+        ; #region agent log
+        DebugBannerLog_7e2a1f("Gemini.ahk:ShowCopyDecisionBanner", "showing Copy decision bar", "script=" A_ScriptName, "A")
+        ; #endregion
         copyKeyCallbacks := Map("N", this.CancelCopy.Bind(this), "R", this.CopyAndReadAloud.Bind(this), "E", this.CancelCopy.Bind(this))
         StandardLoadingBar_ShowWithKeys("Copy? [N] [R] [E=close]", copyKeyCallbacks, 4000, this.OriginalHwnd, this.DoCopyOnTimeout.Bind(this), "3772FF", 300, 9)
     }
@@ -1221,10 +1225,17 @@ class GeminiDelayedSubmitMonitor {
     }
 
     CancelCopy(*) {
+        ; #region agent log
+        DebugBannerLog_7e2a1f("Gemini.ahk:CancelCopy", "entry", "script=" A_ScriptName, "B")
+        ; #endregion
         this.CleanupCopyBanner()
+        StandardLoadingBar_Hide(0)
     }
 
     DoCopyOnTimeout(*) {
+        ; #region agent log
+        DebugBannerLog_7e2a1f("Gemini.ahk:DoCopyOnTimeout", "entry", "script=" A_ScriptName, "C")
+        ; #endregion
         this.CleanupCopyBanner()
 
         contentBefore := A_Clipboard
@@ -1233,17 +1244,26 @@ class GeminiDelayedSubmitMonitor {
         } catch {
             if (WinExist("ahk_id " this.OriginalHwnd))
                 WinActivate("ahk_id " this.OriginalHwnd)
+            ; #region agent log
+            DebugBannerLog_7e2a1f("Gemini.ahk:DoCopyOnTimeout", "return early WinActivate catch", "script=" A_ScriptName, "C")
+            ; #endregion
             return
         }
         if !WinWaitActive("ahk_exe chrome.exe", , 2) {
             if (WinExist("ahk_id " this.OriginalHwnd))
                 WinActivate("ahk_id " this.OriginalHwnd)
+            ; #region agent log
+            DebugBannerLog_7e2a1f("Gemini.ahk:DoCopyOnTimeout", "return early WinWaitActive", "script=" A_ScriptName, "C")
+            ; #endregion
             return
         }
         copyOpt := { restoreWindow: false, playChimeAndNotify: false, alreadyActive: true }
         if !CopyLastGeminiMessageToClipboard(copyOpt, this.GeminiHwnd) {
             if (WinExist("ahk_id " this.OriginalHwnd))
                 WinActivate("ahk_id " this.OriginalHwnd)
+            ; #region agent log
+            DebugBannerLog_7e2a1f("Gemini.ahk:DoCopyOnTimeout", "return early CopyLast failed", "script=" A_ScriptName, "C")
+            ; #endregion
             return
         }
         Sleep 400
@@ -1259,10 +1279,18 @@ class GeminiDelayedSubmitMonitor {
             PlayCopyCompletedChime()
         if (WinExist("ahk_id " this.OriginalHwnd))
             WinActivate("ahk_id " this.OriginalHwnd)
+        ; Ensure any remaining loading/banner indicator is closed when timeout copy flow ends.
+        ; #region agent log
+        DebugBannerLog_7e2a1f("Gemini.ahk:DoCopyOnTimeout", "calling StandardLoadingBar_Hide", "script=" A_ScriptName, "C")
+        ; #endregion
+        StandardLoadingBar_Hide(0)
     }
 
     ; R key: copy last message and read it aloud, then restore focus (same tab as delayed submit).
     CopyAndReadAloud(*) {
+        ; #region agent log
+        DebugBannerLog_7e2a1f("Gemini.ahk:CopyAndReadAloud", "entry", "script=" A_ScriptName, "C")
+        ; #endregion
         this.CleanupCopyBanner()
 
         contentBefore := A_Clipboard
@@ -1271,17 +1299,26 @@ class GeminiDelayedSubmitMonitor {
         } catch {
             if (WinExist("ahk_id " this.OriginalHwnd))
                 WinActivate("ahk_id " this.OriginalHwnd)
+            ; #region agent log
+            DebugBannerLog_7e2a1f("Gemini.ahk:CopyAndReadAloud", "return early WinActivate catch", "script=" A_ScriptName, "C")
+            ; #endregion
             return
         }
         if !WinWaitActive("ahk_exe chrome.exe", , 2) {
             if (WinExist("ahk_id " this.OriginalHwnd))
                 WinActivate("ahk_id " this.OriginalHwnd)
+            ; #region agent log
+            DebugBannerLog_7e2a1f("Gemini.ahk:CopyAndReadAloud", "return early WinWaitActive", "script=" A_ScriptName, "C")
+            ; #endregion
             return
         }
         copyOpt := { restoreWindow: false, playChimeAndNotify: false, alreadyActive: true }
         if !CopyLastGeminiMessageToClipboard(copyOpt, this.GeminiHwnd) {
             if (WinExist("ahk_id " this.OriginalHwnd))
                 WinActivate("ahk_id " this.OriginalHwnd)
+            ; #region agent log
+            DebugBannerLog_7e2a1f("Gemini.ahk:CopyAndReadAloud", "return early CopyLast failed", "script=" A_ScriptName, "C")
+            ; #endregion
             return
         }
         Sleep 400
@@ -1298,6 +1335,11 @@ class GeminiDelayedSubmitMonitor {
         GeminiTriggerReadAloud(false, false)   ; read aloud only (already copied)
         if (WinExist("ahk_id " this.OriginalHwnd))
             WinActivate("ahk_id " this.OriginalHwnd)
+        ; Ensure any remaining loading/banner indicator is closed after successful copy+read-aloud.
+        ; #region agent log
+        DebugBannerLog_7e2a1f("Gemini.ahk:CopyAndReadAloud", "calling StandardLoadingBar_Hide", "script=" A_ScriptName, "C")
+        ; #endregion
+        StandardLoadingBar_Hide(0)
     }
 }
 
