@@ -1143,6 +1143,8 @@ class GeminiDelayedSubmitMonitor {
         this.RetryCount := 0
         this.ButtonEverFound := false
         this.TimerCallback := this.CheckCompletion.Bind(this)
+        StandardLoadingBar_Show("Waiting for Gemini response…", "3772FF",
+            { passive: true, centerOnHwnd: originalHwnd, textWidth: 500, fontSize: 14 })
         SetTimer(this.TimerCallback, 500)
     }
 
@@ -1150,6 +1152,7 @@ class GeminiDelayedSubmitMonitor {
         this.RetryCount++
         if (this.RetryCount > this.MaxRetries) {
             SetTimer(this.TimerCallback, 0)
+            StandardLoadingBar_Hide(0)
             return
         }
         btn := ""

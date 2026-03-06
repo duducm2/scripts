@@ -6492,6 +6492,10 @@ GeminiFinalizeSubmit() {
     try Hotkey("N", "Off")
     HotstringGeminiBanner_Hide()
 
+    ; Show standard loading indicator for the auto-submit background process
+    if (g_HotstringGeminiAutoSubmit)
+        StandardLoadingBar_Show("Sending to Gemini…", "3772FF")
+
     ; Delay-submit flow: do not switch tabs; paste to currently active Gemini tab
     GeminiNavigateFocusAndPasteFirstSnippet("", false)
 
