@@ -1877,11 +1877,11 @@ StandardLoadingBar_Show(state := "Working...", barColor := "3772FF", options := 
     monitorHeight := mb - mt
     barWidth := textWidth > 0 ? textWidth : Min(900, Max(360, Floor(monitorWidth * 0.6)))
     overlayGui := Gui("+AlwaysOnTop -Caption +ToolWindow -DPIScale")
-    overlayGui.BackColor := (passive && passiveBgColor != "") ? passiveBgColor : "1E1E2E"
+    overlayGui.BackColor := "1E1E2E"
     overlayGui.MarginX := 16
     overlayGui.MarginY := 10
     overlayGui.SetFont("s" . fontSize . " cFFFFFF", "Segoe UI")
-    overlayGui.Add("Text", "w" . barWidth . (passive ? " Wrap" : ""), state)
+    overlayGui.Add("Text", "w" . barWidth . (passive ? " Wrap Center" : " Center"), state)
     if (promptKeys != "") {
         overlayGui.SetFont("s" . fontSize . " cFFFFFF", "Segoe UI")
         overlayGui.Add("Text", "xm w" . barWidth . " Center", promptKeys)
@@ -1899,7 +1899,7 @@ StandardLoadingBar_Show(state := "Working...", barColor := "3772FF", options := 
         guiX := mr - gw
     guiY := mt + 40
 
-    ; Create yellow border frame behind the overlay for visibility (optional; skip when noBorder to show a single banner).
+    ; Create border frame behind the overlay for visibility (optional; skip when noBorder to show a single banner). Accent color when passiveBgColor set, else yellow.
     if (!noBorder) {
         borderWidth := 6
         try {
@@ -1908,7 +1908,7 @@ StandardLoadingBar_Show(state := "Working...", barColor := "3772FF", options := 
         } catch {
         }
         borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow -DPIScale")
-        borderGui.BackColor := "FFFF00"
+        borderGui.BackColor := (passiveBgColor != "") ? passiveBgColor : "FFFF00"
         borderGui.Show("NA x" . (guiX - borderWidth) . " y" . (guiY - borderWidth) . " w" . (gw + 2 * borderWidth) .
         " h" .
         (gh + 2 * borderWidth))
@@ -2029,7 +2029,7 @@ StandardLoadingBar_CloseKeysOverlay() {
 
 ; Show passive overlay and register hotkeys; optional timeout. keyCallbacks: Map/object key -> callback (e.g. "N" -> fn, "R" -> fn).
 ; timeoutCallback: called when timeout fires (can be empty). Registers both upper and lower case for letter keys.
-; passiveBgColor: optional; when set, used as overlay background (e.g. "FFFF00" for yellow, no blue).
+; passiveBgColor: optional; when set, used as border color (e.g. "00FF00" green, "FF0000" red). Overlay background stays dark.
 ; noBorder: when true, do not create the yellow border (single banner only).
 ; promptKeys: optional; fixed bottom strip text (e.g. "[Y] Confirm  [N] Cancel"). Shown in uniform position below main message.
 StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwnd := 0, timeoutCallback := "", barColor :=
@@ -2619,6 +2619,7 @@ CleanClipboardInternal() {
 ; Dictation: Non-modal clipboard cleanup countdown (used by Win+Alt+Shift+7)
 ; =============================================================================
 global g_DictationCleanupGui := 0
+global g_DictationCleanupBorderGui := 0
 global g_DictationCleanupTextCtrl := 0
 global g_DictationCleanupRemaining := 0
 global g_DictationCleanupCanceled := false
@@ -2666,7 +2667,7 @@ DictationCleanup_ShowBanner() {
     }
 
     ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
-    ov.BackColor := "3772FF"
+    ov.BackColor := "1E1E2E"
     ov.SetFont("s24 cFFFFFF Bold", "Segoe UI")
     g_DictationCleanupTextCtrl := ov.Add("Text", "w650 Center", "Clearing clipboard in " g_DictationCleanupRemaining "… (press Y to proceed, N or End to cancel)"
     )
@@ -2676,7 +2677,6 @@ DictationCleanup_ShowBanner() {
     if hasWindow {
         cx := wx + (ww - gw) // 2
         cy := wy + (wh - gh) // 2
-        ov.Show("x" . cx . " y" . cy . " NA")
     } else {
         vx := SysGet(76)  ; SM_XVIRTUALSCREEN
         vy := SysGet(77)  ; SM_YVIRTUALSCREEN
@@ -2684,15 +2684,33 @@ DictationCleanup_ShowBanner() {
         vh := SysGet(79)  ; SM_CYVIRTUALSCREEN
         cx := vx + (vw - gw) // 2
         cy := vy + (vh - gh) // 2
-        ov.Show("x" . cx . " y" . cy . " NA")
     }
 
+    borderWidth := 6
+    try {
+        if IsObject(g_DictationCleanupBorderGui)
+            g_DictationCleanupBorderGui.Destroy()
+    } catch {
+    }
+    borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
+    borderGui.BackColor := "3772FF"
+    borderGui.Show("NA x" . (cx - borderWidth) . " y" . (cy - borderWidth) . " w" . (gw + 2 * borderWidth) . " h" . (gh +
+        2 * borderWidth))
+    g_DictationCleanupBorderGui := borderGui
+
+    ov.Show("x" . cx . " y" . cy . " NA")
     WinSetTransparent(178, ov)
     g_DictationCleanupGui := ov
 }
 
 DictationCleanup_HideBanner() {
-    global g_DictationCleanupGui, g_DictationCleanupTextCtrl
+    global g_DictationCleanupGui, g_DictationCleanupBorderGui, g_DictationCleanupTextCtrl
+    try {
+        if IsObject(g_DictationCleanupBorderGui)
+            g_DictationCleanupBorderGui.Destroy()
+    } catch {
+    }
+    g_DictationCleanupBorderGui := 0
     try {
         if IsObject(g_DictationCleanupGui)
             g_DictationCleanupGui.Destroy()
@@ -2789,6 +2807,7 @@ DictationCleanup_Tick() {
 ; Same UI pattern as clipboard cleanup: 5s banner, N or End to cancel.
 ; =============================================================================
 global g_DictationMergeGui := 0
+global g_DictationMergeBorderGui := 0
 global g_DictationMergeTextCtrl := 0
 global g_DictationMergeRemaining := 0
 global g_DictationMergeCanceled := false
@@ -2835,24 +2854,46 @@ DictationMerge_ShowBanner() {
     }
 
     ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
-    ov.BackColor := "FFCC00"
-    ov.SetFont("s24 c000000 Bold", "Segoe UI")
+    ov.BackColor := "1E1E2E"
+    ov.SetFont("s24 cFFFFFF Bold", "Segoe UI")
     g_DictationMergeTextCtrl := ov.Add("Text", "w650 Center", "Merging non-favorite clips in " g_DictationMergeRemaining "… (press Y to proceed, N or End to cancel)"
     )
     ov.Show("AutoSize Hide")
-    try {
-        if (hasWindow)
-            ov.Show("AutoSize x" (wx + (ww - 650) // 2) " y" (wy + (wh - 80) // 2))
-        else
-            ov.Show("AutoSize")
-    } catch {
-        ov.Show("AutoSize")
+    ov.GetPos(&gx, &gy, &gw, &gh)
+    if (hasWindow) {
+        cx := wx + (ww - gw) // 2
+        cy := wy + (wh - gh) // 2
+    } else {
+        vx := SysGet(76)
+        vy := SysGet(77)
+        vw := SysGet(78)
+        vh := SysGet(79)
+        cx := vx + (vw - gw) // 2
+        cy := vy + (vh - gh) // 2
     }
+    borderWidth := 6
+    try {
+        if IsObject(g_DictationMergeBorderGui)
+            g_DictationMergeBorderGui.Destroy()
+    } catch {
+    }
+    borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
+    borderGui.BackColor := "FFCC00"
+    borderGui.Show("NA x" . (cx - borderWidth) . " y" . (cy - borderWidth) . " w" . (gw + 2 * borderWidth) . " h" . (gh +
+        2 * borderWidth))
+    g_DictationMergeBorderGui := borderGui
+    ov.Show("x" . cx . " y" . cy . " NA")
     g_DictationMergeGui := ov
 }
 
 DictationMerge_HideBanner() {
-    global g_DictationMergeGui, g_DictationMergeTextCtrl
+    global g_DictationMergeGui, g_DictationMergeBorderGui, g_DictationMergeTextCtrl
+    try {
+        if IsObject(g_DictationMergeBorderGui)
+            g_DictationMergeBorderGui.Destroy()
+    } catch {
+    }
+    g_DictationMergeBorderGui := 0
     try {
         if IsObject(g_DictationMergeGui)
             g_DictationMergeGui.Destroy()
@@ -3638,12 +3679,19 @@ InitDpiAwareness()
 ; Target path: OneDrive Desktop. Red confirmation (with path), then success banner.
 ; =============================================================================
 global g_DesktopToRecycleGui := 0
+global g_DesktopToRecycleBorderGui := 0
 global g_DesktopToRecycleTextCtrl := 0
 global g_DesktopToRecyclePath := ""  ; Set from GetDesktopToRecyclePath() when macro runs
 global g_DesktopToRecycleCloseHwnd := 0
 
 DesktopToRecycle_ShowBanner() {
-    global g_DesktopToRecycleGui, g_DesktopToRecycleTextCtrl, g_DesktopToRecyclePath
+    global g_DesktopToRecycleGui, g_DesktopToRecycleBorderGui, g_DesktopToRecycleTextCtrl, g_DesktopToRecyclePath
+    try {
+        if IsObject(g_DesktopToRecycleBorderGui)
+            g_DesktopToRecycleBorderGui.Destroy()
+    } catch {
+    }
+    g_DesktopToRecycleBorderGui := 0
     try {
         if IsObject(g_DesktopToRecycleGui)
             g_DesktopToRecycleGui.Destroy()
@@ -3665,7 +3713,7 @@ DesktopToRecycle_ShowBanner() {
 
     confirmText := "Move all items from:`n" . g_DesktopToRecyclePath . "`nto Recycle Bin? (Y = Yes, N = No)"
     ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
-    ov.BackColor := "C0392B"
+    ov.BackColor := "1E1E2E"
     ov.SetFont("s22 cFFFFFF Bold", "Segoe UI")
     g_DesktopToRecycleTextCtrl := ov.Add("Text", "w700 Center", confirmText)
     ov.Show("AutoSize Hide")
@@ -3674,7 +3722,6 @@ DesktopToRecycle_ShowBanner() {
     if hasWindow {
         cx := wx + (ww - gw) // 2
         cy := wy + (wh - gh) // 2
-        ov.Show("x" . cx . " y" . cy . " NA")
     } else {
         vx := SysGet(76)
         vy := SysGet(77)
@@ -3682,15 +3729,28 @@ DesktopToRecycle_ShowBanner() {
         vh := SysGet(79)
         cx := vx + (vw - gw) // 2
         cy := vy + (vh - gh) // 2
-        ov.Show("x" . cx . " y" . cy . " NA")
     }
 
+    borderWidth := 6
+    borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
+    borderGui.BackColor := "C0392B"
+    borderGui.Show("NA x" . (cx - borderWidth) . " y" . (cy - borderWidth) . " w" . (gw + 2 * borderWidth) . " h" . (gh +
+        2 * borderWidth))
+    g_DesktopToRecycleBorderGui := borderGui
+
+    ov.Show("x" . cx . " y" . cy . " NA")
     WinSetTransparent(178, ov)
     g_DesktopToRecycleGui := ov
 }
 
 DesktopToRecycle_HideBanner() {
-    global g_DesktopToRecycleGui, g_DesktopToRecycleTextCtrl
+    global g_DesktopToRecycleGui, g_DesktopToRecycleBorderGui, g_DesktopToRecycleTextCtrl
+    try {
+        if IsObject(g_DesktopToRecycleBorderGui)
+            g_DesktopToRecycleBorderGui.Destroy()
+    } catch {
+    }
+    g_DesktopToRecycleBorderGui := 0
     try {
         if IsObject(g_DesktopToRecycleGui)
             g_DesktopToRecycleGui.Destroy()

@@ -1968,13 +1968,24 @@ CenterMouse() {
 }
 
 ; =============================================================================
-; Centered banner helper (AppLaunchers aesthetic)
+; Centered banner helper (AppLaunchers): dark background, accent color on border.
+; Caller should destroy both the returned gui and g_LaunchersCenteredBannerBorderGui when hiding.
 ; =============================================================================
+global g_LaunchersCenteredBannerBorderGui := ""
+
 CreateCenteredBanner_Launchers(message, bgColor := "be4747", fontColor := "FFFFFF", fontSize := 24, alpha := 178, width :=
     500) {
+    global g_LaunchersCenteredBannerBorderGui
+    try {
+        if IsObject(g_LaunchersCenteredBannerBorderGui) && g_LaunchersCenteredBannerBorderGui.Hwnd
+            g_LaunchersCenteredBannerBorderGui.Destroy()
+    } catch {
+    }
+    g_LaunchersCenteredBannerBorderGui := ""
+
     bGui := Gui()
     bGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
-    bGui.BackColor := bgColor
+    bGui.BackColor := "1E1E2E"
     bGui.SetFont("s" . fontSize . " c" . fontColor . " Bold", "Segoe UI")
     bGui.Add("Text", "w" . width . " Center", message)
 
@@ -1994,6 +2005,12 @@ CreateCenteredBanner_Launchers(message, bgColor := "be4747", fontColor := "FFFFF
 
     guiX := winX + (winW - guiW) / 2
     guiY := winY + (winH - guiH) / 2
+    borderWidth := 6
+    borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
+    borderGui.BackColor := bgColor
+    borderGui.Show("NA x" . Round(guiX - borderWidth) . " y" . Round(guiY - borderWidth) . " w" . (guiW + 2 *
+        borderWidth) . " h" . (guiH + 2 * borderWidth))
+    g_LaunchersCenteredBannerBorderGui := borderGui
     bGui.Show("x" . Round(guiX) . " y" . Round(guiY) . " NA")
     WinSetTransparent(alpha, bGui)
     return bGui

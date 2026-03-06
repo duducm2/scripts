@@ -9153,18 +9153,25 @@ global gCommitPushTargetWin := 0
 global gCommitPushDecision := ""
 ; Global variable for non-blocking commit push banner GUI
 global g_CommitPushBannerGui := ""
+global g_CommitPushBannerBorderGui := ""
 
-; Non-blocking yellow banner: "Push? Press Y within 5 seconds"
+; Non-blocking banner: "Push? Press Y within 5 seconds" (dark background, yellow accent border)
 ShowCommitPushBanner() {
-    global g_CommitPushBannerGui
+    global g_CommitPushBannerGui, g_CommitPushBannerBorderGui
+    try {
+        if IsObject(g_CommitPushBannerBorderGui) && g_CommitPushBannerBorderGui.Hwnd
+            g_CommitPushBannerBorderGui.Destroy()
+    } catch {
+    }
+    g_CommitPushBannerBorderGui := ""
     try {
         if IsObject(g_CommitPushBannerGui) && g_CommitPushBannerGui.Hwnd
             g_CommitPushBannerGui.Destroy()
     } catch {
     }
     bannerGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
-    bannerGui.BackColor := "E6E600"
-    bannerGui.SetFont("s14 c000000 Bold", "Segoe UI")
+    bannerGui.BackColor := "1E1E2E"
+    bannerGui.SetFont("s14 cFFFFFF Bold", "Segoe UI")
     bannerGui.Add("Text", "w400 Center", "Push? Press Y within 5 seconds")
     activeWin := WinGetID("A")
     if (activeWin)
@@ -9182,6 +9189,12 @@ ShowCommitPushBanner() {
     bannerGui.GetPos(, , &guiW, &guiH)
     guiX := winX + (winW - guiW) / 2
     guiY := winY + (winH - guiH) / 2
+    borderWidth := 6
+    borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
+    borderGui.BackColor := "E6E600"
+    borderGui.Show("NA x" . Round(guiX - borderWidth) . " y" . Round(guiY - borderWidth) . " w" . (guiW + 2 *
+        borderWidth) . " h" . (guiH + 2 * borderWidth))
+    g_CommitPushBannerBorderGui := borderGui
     bannerGui.Show("x" . Round(guiX) . " y" . Round(guiY) . " NA")
     WinSetTransparent(220, bannerGui)
     g_CommitPushBannerGui := bannerGui
@@ -9197,7 +9210,14 @@ CommitPushBanner_YHandler(*) {
 }
 
 CloseCommitPushBanner() {
-    global g_CommitPushBannerGui
+    global g_CommitPushBannerGui, g_CommitPushBannerBorderGui
+    try {
+        if IsObject(g_CommitPushBannerBorderGui) && g_CommitPushBannerBorderGui.Hwnd {
+            g_CommitPushBannerBorderGui.Destroy()
+            g_CommitPushBannerBorderGui := ""
+        }
+    } catch {
+    }
     try {
         if IsObject(g_CommitPushBannerGui) && g_CommitPushBannerGui.Hwnd {
             g_CommitPushBannerGui.Destroy()
@@ -11400,14 +11420,21 @@ Mobills_ClickPager(el) {
 }
 
 ; =============================================================================
-; Mobills "running" banner (non-blocking, overlay style)
+; Mobills "running" banner (non-blocking, overlay style; dark background, blue accent border)
 ; =============================================================================
 global g_MobillsRunningBannerGui := 0
+global g_MobillsRunningBannerBorderGui := 0
 
 Mobills_ShowRunningBanner(dir) {
-    global g_MobillsRunningBannerGui
+    global g_MobillsRunningBannerGui, g_MobillsRunningBannerBorderGui
 
     ; Close any existing banner first
+    try {
+        if IsObject(g_MobillsRunningBannerBorderGui)
+            g_MobillsRunningBannerBorderGui.Destroy()
+    } catch {
+    }
+    g_MobillsRunningBannerBorderGui := 0
     try {
         if IsObject(g_MobillsRunningBannerGui)
             g_MobillsRunningBannerGui.Destroy()
@@ -11417,7 +11444,6 @@ Mobills_ShowRunningBanner(dir) {
 
     text := "Mobills: " . ((dir = "Prev") ? "Previous" : "Next") . " (running...)"
 
-    ; Match the overlay style used in Utils.ahk / Teams.ahk
     target := WinGetID("A")
     hasWindow := false
     if target && WinExist("ahk_id " target) {
@@ -11430,7 +11456,7 @@ Mobills_ShowRunningBanner(dir) {
     }
 
     ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
-    ov.BackColor := "3772FF"
+    ov.BackColor := "1E1E2E"
     ov.SetFont("s24 cFFFFFF Bold", "Segoe UI")
     ov.Add("Text", "w500 Center", text)
     ov.Show("AutoSize Hide")
@@ -11439,7 +11465,6 @@ Mobills_ShowRunningBanner(dir) {
     if hasWindow {
         cx := wx + (ww - gw) // 2
         cy := wy + (wh - gh) // 2
-        ov.Show("x" . cx . " y" . cy . " NA")
     } else {
         vx := SysGet(76)  ; SM_XVIRTUALSCREEN
         vy := SysGet(77)  ; SM_YVIRTUALSCREEN
@@ -11447,15 +11472,28 @@ Mobills_ShowRunningBanner(dir) {
         vh := SysGet(79)  ; SM_CYVIRTUALSCREEN
         cx := vx + (vw - gw) // 2
         cy := vy + (vh - gh) // 2
-        ov.Show("x" . cx . " y" . cy . " NA")
     }
 
+    borderWidth := 6
+    borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
+    borderGui.BackColor := "3772FF"
+    borderGui.Show("NA x" . (cx - borderWidth) . " y" . (cy - borderWidth) . " w" . (gw + 2 * borderWidth) . " h" . (gh +
+        2 * borderWidth))
+    g_MobillsRunningBannerBorderGui := borderGui
+
+    ov.Show("x" . cx . " y" . cy . " NA")
     WinSetTransparent(178, ov)
     g_MobillsRunningBannerGui := ov
 }
 
 Mobills_HideRunningBanner() {
-    global g_MobillsRunningBannerGui
+    global g_MobillsRunningBannerGui, g_MobillsRunningBannerBorderGui
+    try {
+        if IsObject(g_MobillsRunningBannerBorderGui)
+            g_MobillsRunningBannerBorderGui.Destroy()
+    } catch {
+    }
+    g_MobillsRunningBannerBorderGui := 0
     try {
         if IsObject(g_MobillsRunningBannerGui)
             g_MobillsRunningBannerGui.Destroy()
