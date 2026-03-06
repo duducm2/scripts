@@ -14,18 +14,6 @@ DebugBannerLog(location, message, dataStr := "", hypothesisId := "") {
     line .= "}"
     try FileAppend line "`n", logPath
 }
-; Session 7e2a1f: banner-not-vanishing debug
-DebugBannerLog_7e2a1f(location, message, dataStr := "", hypothesisId := "") {
-    logPath := A_ScriptDir "\debug-7e2a1f.log"
-    q := Chr(34)
-    line := "{" q "sessionId" q ":" q "7e2a1f" q "," q "location" q ":" q location q "," q "message" q ":" q message q "," q "timestamp" q ":" A_TickCount
-    if (dataStr != "")
-        line .= "," q "data" q ":" q dataStr q ""
-    if (hypothesisId != "")
-        line .= "," q "hypothesisId" q ":" q hypothesisId q ""
-    line .= "}"
-    try FileAppend line "`n", logPath
-}
 ; #endregion
 
 #include UIA-v2\Lib\UIA.ahk
@@ -1967,9 +1955,6 @@ StandardLoadingBar_Update(state := "", barColor := "") {
 StandardLoadingBar_Hide(delayMs := 0) {
     global g_StandardLoadingBarGui, g_StandardLoadingBarValue, g_StandardLoadingBarIsKeysOverlay,
         g_StandardLoadingBarBorderGui
-    ; #region agent log
-    DebugBannerLog_7e2a1f("Utils.ahk:StandardLoadingBar_Hide", "entry", "script=" A_ScriptName " delayMs=" delayMs " isKeysOverlay=" (g_StandardLoadingBarIsKeysOverlay ? 1 : 0), "B")
-    ; #endregion
     if (delayMs > 0) {
         SetTimer(() => StandardLoadingBar_Hide(0), -delayMs)
         return
@@ -1983,9 +1968,6 @@ StandardLoadingBar_Hide(delayMs := 0) {
         if IsObject(g_StandardLoadingBarGui)
             g_StandardLoadingBarGui.Destroy()
     } catch {
-        ; #region agent log
-        DebugBannerLog_7e2a1f("Utils.ahk:StandardLoadingBar_Hide", "catch main gui destroy", "script=" A_ScriptName, "D")
-        ; #endregion
     }
     g_StandardLoadingBarGui := 0
     g_StandardLoadingBarValue := 0
@@ -1993,9 +1975,6 @@ StandardLoadingBar_Hide(delayMs := 0) {
         if IsObject(g_StandardLoadingBarBorderGui)
             g_StandardLoadingBarBorderGui.Destroy()
     } catch {
-        ; #region agent log
-        DebugBannerLog_7e2a1f("Utils.ahk:StandardLoadingBar_Hide", "catch border destroy", "script=" A_ScriptName, "D")
-        ; #endregion
     }
     g_StandardLoadingBarBorderGui := 0
 }
@@ -2005,9 +1984,6 @@ StandardLoadingBar_CloseKeysOverlay() {
     global g_StandardLoadingBarKeysHotkeys, g_StandardLoadingBarKeysTimeoutTimer
     global g_StandardLoadingBarGui, g_StandardLoadingBarValue, g_StandardLoadingBarIsKeysOverlay,
         g_StandardLoadingBarBorderGui
-    ; #region agent log
-    DebugBannerLog_7e2a1f("Utils.ahk:CloseKeysOverlay", "entry", "script=" A_ScriptName " hasGui=" (IsObject(g_StandardLoadingBarGui) ? 1 : 0), "B")
-    ; #endregion
     g_StandardLoadingBarIsKeysOverlay := false
     try SetTimer(g_StandardLoadingBarKeysTimeoutTimer, 0)
     catch {
@@ -2024,9 +2000,6 @@ StandardLoadingBar_CloseKeysOverlay() {
         if IsObject(g_StandardLoadingBarGui)
             g_StandardLoadingBarGui.Destroy()
     } catch {
-        ; #region agent log
-        DebugBannerLog_7e2a1f("Utils.ahk:CloseKeysOverlay", "catch main gui", "script=" A_ScriptName, "D")
-        ; #endregion
     }
     g_StandardLoadingBarGui := 0
     g_StandardLoadingBarValue := 0
@@ -2034,9 +2007,6 @@ StandardLoadingBar_CloseKeysOverlay() {
         if IsObject(g_StandardLoadingBarBorderGui)
             g_StandardLoadingBarBorderGui.Destroy()
     } catch {
-        ; #region agent log
-        DebugBannerLog_7e2a1f("Utils.ahk:CloseKeysOverlay", "catch border gui", "script=" A_ScriptName, "D")
-        ; #endregion
     }
     g_StandardLoadingBarBorderGui := 0
 }
@@ -2091,9 +2061,6 @@ StandardLoadingBar_RegisterKeyHandler(key, cb) {
 }
 
 StandardLoadingBar_KeyWrapper(key, cb, *) {
-    ; #region agent log
-    DebugBannerLog_7e2a1f("Utils.ahk:KeyWrapper", "key pressed", "script=" A_ScriptName " key=" key, "B")
-    ; #endregion
     StandardLoadingBar_CloseKeysOverlay()
     if (cb) {
         try cb.Call()
@@ -6526,12 +6493,8 @@ GeminiFinalizeSubmit() {
     HotstringGeminiBanner_Hide()
 
     ; Show standard loading indicator for the auto-submit background process
-    if (g_HotstringGeminiAutoSubmit) {
-        ; #region agent log
-        DebugBannerLog_7e2a1f("Utils.ahk:GeminiFinalizeSubmit", "Showing Sending to Gemini bar", "script=" A_ScriptName, "A")
-        ; #endregion
+    if (g_HotstringGeminiAutoSubmit)
         StandardLoadingBar_Show("Sending to Gemini…", "3772FF")
-    }
 
     ; Delay-submit flow: do not switch tabs; paste to currently active Gemini tab
     GeminiNavigateFocusAndPasteFirstSnippet("", false)
@@ -6566,9 +6529,6 @@ GeminiFinalizeSubmit() {
 
     ; If we auto-submitted (user did not cancel), ask Gemini.ahk to monitor for completion and show "Copy? [N] [R]" when done
     if (didAutoSubmit && geminiChromeHwnd) {
-        ; #region agent log
-        DebugBannerLog_7e2a1f("Utils.ahk:GeminiFinalizeSubmit", "Calling StartFromUtils", "script=" A_ScriptName, "A")
-        ; #endregion
         GeminiDelayedSubmitMonitorStartFromUtils(g_HotstringGeminiRestoreHwnd, geminiChromeHwnd)
         ; Hide "Sending to Gemini…" in this process; the monitor (Gemini.ahk) shows "Waiting for Gemini response…" in its process.
         StandardLoadingBar_Hide(0)
