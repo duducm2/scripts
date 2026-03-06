@@ -1804,7 +1804,7 @@ NavigateClipAngelComboBox(typeIndex) {
         }
 
         ; Show banner notification
-        ShowCenteredOverlay_Utils("Selecting: " . displayName, 800, "3772FF")
+        ShowCenteredOverlay_Utils("📌 Selecting: " . displayName, 800, "3772FF")
 
         ; Set focus and click to open dropdown
         try {
@@ -2531,7 +2531,7 @@ WaitForList(root, pattern := "", timeout := 5000) {
 ; ativa a janela de lembretes do Outlook
 ActivateReminder() {
     if (!WinExist("ahk_exe OUTLOOK.EXE")) {
-        ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+        ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
         return
     }
     WinActivate("ahk_exe OUTLOOK.EXE")
@@ -2742,25 +2742,25 @@ IsTeamsChatActive() {
     ; If found, switch to the normal meeting window
     if (normalMeetingHwnd) {
         if (!WinExist("ahk_id " normalMeetingHwnd)) {
-            ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
             return
         }
         try {
             WinActivate("ahk_id " normalMeetingHwnd)
             ; Optional: Show a brief tooltip to confirm the switch
-            ShowCenteredOverlay_Utils("Switched to normal meeting view", 1000)
+            ShowCenteredOverlay_Utils("✅ Switched to normal meeting view", 1000)
         } catch as e {
             ; Fallback: try to bring window to front (only if window still exists)
             if (WinExist("ahk_id " normalMeetingHwnd)) {
                 WinShow("ahk_id " normalMeetingHwnd)
                 WinActivate("ahk_id " normalMeetingHwnd)
             } else {
-                ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+                ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
             }
         }
     } else {
         ; No corresponding normal window found - show notification
-        ShowCenteredOverlay_Utils("No normal meeting window found", 1500)
+        ShowCenteredOverlay_Utils("⚠ No normal meeting window found", 1500)
     }
 }
 
@@ -3133,7 +3133,7 @@ global g_WikipediaScrollHistory := []
 
 ; Helper function to restore scroll position to a given percentage
 ; Returns true on success, false on failure
-RestoreWikipediaScrollPosition(scrollPercentage, bannerText := "Restoring scroll position... Please wait") {
+RestoreWikipediaScrollPosition(scrollPercentage, bannerText := "📜 Restoring scroll position... Please wait") {
     if (scrollPercentage <= 0.0 || scrollPercentage > 1.0) {
         return false
     }
@@ -3147,7 +3147,8 @@ RestoreWikipediaScrollPosition(scrollPercentage, bannerText := "Restoring scroll
 
         ; Show banner
         centerOnHwnd := WinGetID("A")
-        StandardLoadingBar_Show(bannerText, "3772FF", { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 500, fontSize: 24, passiveBgColor: "3772FF" })
+        StandardLoadingBar_Show(bannerText, "3772FF", { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 500,
+            fontSize: 17, passiveBgColor: "3772FF" })
 
         ; Block input during restoration
         BlockInput("On")
@@ -3245,7 +3246,8 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
 
     ; Show banner to inform user that scroll position is being saved
     centerOnHwnd := WinGetID("A")
-    StandardLoadingBar_Show("Saving scroll position... Please wait", "3772FF", { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 500, fontSize: 24, passiveBgColor: "3772FF" })
+    StandardLoadingBar_Show("💾 Saving scroll position... Please wait", "3772FF", { passive: true, centerOnHwnd: centerOnHwnd,
+        textWidth: 500, fontSize: 17, passiveBgColor: "3772FF" })
     fullscreenRestored := false  ; Track if we've re-entered fullscreen
     try {
         ; Get normalized Wikipedia URL
@@ -3498,7 +3500,7 @@ RestorePreviousWikipediaScrollPosition() {
             url := GetWikipediaURLNormalized()
             if (url = "") {
                 ; Show brief message that no history exists
-                ShowCenteredOverlay_Utils("No previous scroll position found", 1500, "FF6B6B")
+                ShowCenteredOverlay_Utils("⚠ No previous scroll position found", 1500, "FF6B6B")
                 return false
             }
 
@@ -3513,12 +3515,12 @@ RestorePreviousWikipediaScrollPosition() {
                     "Restoring previous scroll position... Please wait")
             } else {
                 ; No saved position found in INI either
-                ShowCenteredOverlay_Utils("No previous scroll position found", 1500, "FF6B6B")
+                ShowCenteredOverlay_Utils("⚠ No previous scroll position found", 1500, "FF6B6B")
                 return false
             }
         } catch Error as err {
             ; Show brief message that no history exists
-            ShowCenteredOverlay_Utils("No previous scroll position found", 1500, "FF6B6B")
+            ShowCenteredOverlay_Utils("⚠ No previous scroll position found", 1500, "FF6B6B")
             return false
         }
     }
@@ -3582,7 +3584,7 @@ RestorePreviousWikipediaScrollPosition() {
 
     if (!previousPosition) {
         ; No different position found in history
-        ShowCenteredOverlay_Utils("No previous scroll position found", 1500, "FF6B6B")
+        ShowCenteredOverlay_Utils("⚠ No previous scroll position found", 1500, "FF6B6B")
         return false
     }
 
@@ -5774,7 +5776,7 @@ ApplyOutlookAppointmentSettings(privacy, allDay, status, category, reminder) {
 
     ; Forcefully activate the window
     if (!WinExist("ahk_id " targetHwnd)) {
-        ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+        ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
         return
     }
     WinActivate("ahk_id " targetHwnd)
@@ -5855,7 +5857,7 @@ RunOutlookAppointmentWizard() {
 
     ; Forcefully activate the window
     if (!WinExist("ahk_id " targetHwnd)) {
-        ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+        ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
         return
     }
     WinActivate("ahk_id " targetHwnd)
@@ -6312,7 +6314,7 @@ RenameChatGPTWindowToChatGPT() {
                 if (pos && pos.w > 0 && pos.h > 0) {
                     ; Activate window first
                     if (!WinExist("ahk_id " chatGPTHwnd)) {
-                        ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+                        ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
                         return
                     }
                     WinActivate("ahk_id " chatGPTHwnd)
@@ -8776,7 +8778,7 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
             Send "!{F4}"
             Sleep 200
         } catch {
-            ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
         }
     }
     Sleep 300
@@ -8839,7 +8841,7 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
         try {
             WinActivate("ahk_id " saveDialogHwnd)
         } catch {
-            ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
             return
         }
         Sleep 700
@@ -8942,7 +8944,7 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
                     try {
                         WinActivate("ahk_id " replaceHwnd)
                     } catch {
-                        ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+                        ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
                         break
                     }
                     Sleep 900  ; Delay for dialog to stabilize before confirming
@@ -9238,7 +9240,7 @@ ExecuteStoredCommitPushDecision() {
                 WinWaitActive("ahk_id " gCommitPushTargetWin, , 2)
                 Sleep 200
             } else {
-                ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+                ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
             }
         }
         Send "+b"
@@ -9350,7 +9352,7 @@ InsertEmojiToTarget(emoji) {
             WinActivate gEmojiTargetWin
             Sleep 150
         } else {
-            ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
         }
     }
 
@@ -9933,7 +9935,7 @@ FoldAllGitDirectoriesInCursor() {
 FoldAllDirectoriesInExplorer() {
     try {
         ; Show progress overlay immediately (yellow for folding)
-        StandardLoadingBar_Show("Folding directories...", "FFFF00")
+        StandardLoadingBar_Show("📁 Folding directories...", "FFFF00")
 
         hwnd := WinExist("A")
         if !hwnd {
@@ -10138,7 +10140,7 @@ FoldAllDirectoriesInExplorer() {
 UnfoldAllDirectoriesInExplorer() {
     try {
         ; Show progress overlay immediately (yellow for unfolding)
-        StandardLoadingBar_Show("Unfolding directories...", "FFFF00")
+        StandardLoadingBar_Show("📁 Unfolding directories...", "FFFF00")
 
         hwnd := WinExist("A")
         if !hwnd {
@@ -10744,7 +10746,7 @@ SwitchAIModel() {
             return
         }
         if (!WinExist("ahk_exe Spotify.exe")) {
-            ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
             return
         }
         WinActivate("ahk_exe Spotify.exe")
@@ -12860,7 +12862,7 @@ ToggleGeminiModel() {
                     ; Activate the browser window BEFORE clicking to prevent activating wrong window
                     if (browserHwnd) {
                         if (!WinExist("ahk_id " browserHwnd)) {
-                            ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+                            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
                             return
                         }
                         WinActivate("ahk_id " browserHwnd)
@@ -13048,7 +13050,7 @@ HandleGeminiModelSelection(char) {
 
         if (geminiHwnd) {
             if (!WinExist("ahk_id " geminiHwnd)) {
-                ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+                ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
                 return
             }
             WinActivate("ahk_id " geminiHwnd)
@@ -13058,7 +13060,7 @@ HandleGeminiModelSelection(char) {
         } else {
             ; Fallback: try to activate any Chrome window
             if (!WinExist("ahk_exe chrome.exe")) {
-                ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+                ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
                 return
             }
             WinActivate("ahk_exe chrome.exe")
@@ -15031,7 +15033,8 @@ IsFileDialogActive() {
 ; --- Unified banner helpers for ChatGPT indicators (use Utils standard loading bar) ---
 ShowSmallLoadingIndicator_ChatGPT(state := "Loading…", bgColor := "3772FF") {
     centerOnHwnd := WinGetID("A")
-    StandardLoadingBar_Show(state, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 500, fontSize: 24, passiveBgColor: bgColor })
+    StandardLoadingBar_Show(state, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 500, fontSize: 17,
+        passiveBgColor: bgColor })
 }
 
 HideSmallLoadingIndicator_ChatGPT() {

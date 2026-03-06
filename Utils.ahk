@@ -572,10 +572,10 @@ QuickUpdateScripts() {
         RunWait("git fetch", scriptsDir, "Hide")
         pullResult := RunWait("git pull", scriptsDir, "Hide")
         if (pullResult != 0) {
-            ShowCenteredOverlay_Utils("Git pull failed. Proceeding with local reload...", 2000, "FFFF00")
+            ShowCenteredOverlay_Utils("⚠ Git pull failed. Proceeding with local reload...", 2000, "FFFF00")
         }
     } catch Error as e {
-        ShowCenteredOverlay_Utils("Git update failed: " e.Message, 2000, "FF0000")
+        ShowCenteredOverlay_Utils("❌ Git update failed: " e.Message, 2000, "FF0000")
     }
 
     ; Quality check 1: After Git, verify all script files exist (pre-flight so we know what we can run)
@@ -590,7 +590,7 @@ QuickUpdateScripts() {
         list := ""
         for n in missingPre
             list .= n "`n"
-        ShowCenteredOverlay_Utils("QC1: Missing after pull:`n" list, 3000, "FF6600")
+        ShowCenteredOverlay_Utils("⚠ QC1: Missing after pull:`n" list, 3000, "FF6600")
     }
 
     ; Layer 2: Sequential script reload; Utils.ahk is deferred (run after verification + notification).
@@ -691,14 +691,14 @@ QuickUpdateScripts() {
         for script in failedScripts {
             failedList .= script "`n"
         }
-        ShowCenteredOverlay_Utils("Some scripts failed to update:`n" failedList, 4000, "FF0000")
+        ShowCenteredOverlay_Utils("❌ Some scripts failed to update:`n" failedList, 4000, "FF0000")
         try {
             if (FileExist(scriptsDir "\sounds\quick-update-failure.wav"))
                 SoundPlay(scriptsDir "\sounds\quick-update-failure.wav")
         } catch {
         }
     } else {
-        ShowCenteredOverlay_Utils("All scripts updated successfully!", 3500, "00FF00")
+        ShowCenteredOverlay_Utils("✅ All scripts updated successfully!", 3500, "00FF00")
         try {
             if (FileExist(scriptsDir "\sounds\quick-update-success.wav"))
                 SoundPlay(scriptsDir "\sounds\quick-update-success.wav")
@@ -761,7 +761,7 @@ UpdateGeminiScript() {
             return
         }
         Run geminiPath
-        ShowCenteredOverlay_Utils("Gemini script updated!", 1500, "00FF00")
+        ShowCenteredOverlay_Utils("✅ Gemini script updated!", 1500, "00FF00")
     } catch Error as e {
         MsgBox "Failed to update Gemini script: " e.Message, "Update Failed", "IconX"
     }
@@ -787,7 +787,7 @@ AddWordToHandy() {
         }
 
         if (!WinWaitActive("Handy ahk_class Tauri Window", , 2)) {
-            ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
             return
         }
         hwnd := WinExist("Handy ahk_class Tauri Window")
@@ -930,7 +930,7 @@ EnsureClipAngelClosed() {
 MergeNonFavoriteClips() {
     try {
         ; Show persistent banner for the duration of the algorithm
-        AiModelBanner_Show("Merging non-favorite clips...", "FFCC00")
+        AiModelBanner_Show("📋 Merging non-favorite clips...", "FFCC00")
 
         ; Step 1: Send Alt+B to activate ClipAngel (this opens the window if not visible)
         Send "!b"
@@ -946,7 +946,7 @@ MergeNonFavoriteClips() {
             WinActivate("ClipAngel")
         } catch {
             AiModelBanner_Hide()
-            ShowCenteredOverlay_Utils("ClipAngel window not found.", 2000)
+            ShowCenteredOverlay_Utils("❌ ClipAngel window not found.", 2000)
             return
         }
         WinWaitActive("ClipAngel", , 2)
@@ -1091,7 +1091,7 @@ MergeNonFavoriteClips() {
                         Send "^c"     ; Copy
 
                         AiModelBanner_Hide()
-                        ShowCenteredOverlay_Utils("Merged non-favorite clips (copied)", 2000, "FFCC00")
+                        ShowCenteredOverlay_Utils("✅ Merged non-favorite clips (copied)", 2000, "FFCC00")
                         break
                     }
                 }
@@ -1104,7 +1104,7 @@ MergeNonFavoriteClips() {
 
         if !foundMatch {
             AiModelBanner_Hide()
-            ShowCenteredOverlay_Utils("Favorite clip not found in first " . maxIterations . " rows", 2000)
+            ShowCenteredOverlay_Utils("⚠ Favorite clip not found in first " . maxIterations . " rows", 2000)
         }
 
         ; Guarantee Clip Angel is closed when macro finishes (success or not found)
@@ -1147,13 +1147,13 @@ ActivateClipAngelWithFocusCorrection() {
         try {
             WinActivate("ClipAngel")
         } catch {
-            ShowCenteredOverlay_Utils("ClipAngel window not found.", 2000)
+            ShowCenteredOverlay_Utils("❌ ClipAngel window not found.", 2000)
             return
         }
         WinWaitActive("ClipAngel", , 2)
     } else {
         needBanner := true
-        ClipAngelBanner_Show("Opening Clip Angel...", "3772FF")
+        ClipAngelBanner_Show("📂 Opening Clip Angel...", "3772FF")
         Send "!v"
         if !WinWait("ClipAngel", , 10) {
             ClipAngelBanner_Hide()
@@ -1163,7 +1163,7 @@ ActivateClipAngelWithFocusCorrection() {
             WinActivate("ClipAngel")
         } catch {
             ClipAngelBanner_Hide()
-            ShowCenteredOverlay_Utils("ClipAngel window not found.", 2000)
+            ShowCenteredOverlay_Utils("❌ ClipAngel window not found.", 2000)
             return
         }
         WinWaitActive("ClipAngel", , 2)
@@ -1193,7 +1193,7 @@ ActivateClipAngelWithFocusCorrection() {
         isSelected := hasSel && row0.SelectionItemPattern.IsSelected
         if (!isSelected) {
             if !needBanner
-                ClipAngelBanner_Show("Focusing Row 0...", "3772FF")
+                ClipAngelBanner_Show("🎯 Focusing Row 0...", "3772FF")
             needBanner := true
             try {
                 if hasSel
@@ -1210,7 +1210,7 @@ ActivateClipAngelWithFocusCorrection() {
         return
     }
     if needBanner {
-        ClipAngelBanner_Show("Done", "27AE60")
+        ClipAngelBanner_Show("✅ Done", "27AE60")
         SetTimer(ClipAngelBanner_Hide, -500)
     }
 }
@@ -1412,7 +1412,7 @@ AiModelBanner_Show(text, bgColor := "3772FF") {
     }
     if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
         centerOnHwnd := 0
-    StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 450, fontSize: 18,
+    StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 450, fontSize: 17,
         passiveBgColor: bgColor, alpha: 200 })
 }
 
@@ -1428,7 +1428,7 @@ ClipAngelBanner_Show(text, bgColor := "3772FF") {
     }
     if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
         centerOnHwnd := 0
-    StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 200, fontSize: 10,
+    StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 200, fontSize: 17,
         passiveBgColor: bgColor, alpha: 220 })
 }
 
@@ -1768,7 +1768,7 @@ ShowCenteredOverlay_Utils(text, duration := 1500, bgColor := "3772FF") {
     centerOnHwnd := WinGetID("A")
     if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
         centerOnHwnd := 0
-    StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 500, fontSize: 24,
+    StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 500, fontSize: 17,
         passiveBgColor: bgColor })
     StandardLoadingBar_Hide(duration)
 }
@@ -1856,10 +1856,11 @@ StandardLoadingBar_Show(state := "Working...", barColor := "3772FF", options := 
     passive := options && options.HasProp("passive") && options.passive
     centerOnHwnd := options && options.HasProp("centerOnHwnd") ? options.centerOnHwnd : 0
     textWidth := options && options.HasProp("textWidth") ? options.textWidth : 0
-    fontSize := options && options.HasProp("fontSize") ? options.fontSize : 9
+    fontSize := options && options.HasProp("fontSize") ? options.fontSize : 17
     alpha := options && options.HasProp("alpha") ? options.alpha : 235
     passiveBgColor := options && options.HasProp("passiveBgColor") ? options.passiveBgColor : ""
     noBorder := options && options.HasProp("noBorder") ? options.noBorder : false
+    promptKeys := options && options.HasProp("promptKeys") ? options.promptKeys : ""
 
     if (centerOnHwnd) {
         workArea := GetWorkAreaForWindow_StandardBar(centerOnHwnd)
@@ -1881,6 +1882,10 @@ StandardLoadingBar_Show(state := "Working...", barColor := "3772FF", options := 
     overlayGui.MarginY := 10
     overlayGui.SetFont("s" . fontSize . " cFFFFFF", "Segoe UI")
     overlayGui.Add("Text", "w" . barWidth . (passive ? " Wrap" : ""), state)
+    if (promptKeys != "") {
+        overlayGui.SetFont("s" . fontSize . " cFFFFFF", "Segoe UI")
+        overlayGui.Add("Text", "xm w" . barWidth . " Center", promptKeys)
+    }
     if (!passive) {
         progressOpts := "w" . barWidth . " h10 c" . barColor . " Background45475A Smooth vOverlayProg"
         overlayGui.Add("Progress", progressOpts, 0)
@@ -2026,14 +2031,17 @@ StandardLoadingBar_CloseKeysOverlay() {
 ; timeoutCallback: called when timeout fires (can be empty). Registers both upper and lower case for letter keys.
 ; passiveBgColor: optional; when set, used as overlay background (e.g. "FFFF00" for yellow, no blue).
 ; noBorder: when true, do not create the yellow border (single banner only).
+; promptKeys: optional; fixed bottom strip text (e.g. "[Y] Confirm  [N] Cancel"). Shown in uniform position below main message.
 StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwnd := 0, timeoutCallback := "", barColor :=
-    "3772FF", textWidth := 500, fontSize := 9, passiveBgColor := "", noBorder := false) {
+    "3772FF", textWidth := 500, fontSize := 17, passiveBgColor := "", noBorder := false, promptKeys := "") {
     global g_StandardLoadingBarIsKeysOverlay, g_StandardLoadingBarKeysHotkeys, g_StandardLoadingBarKeysTimeoutTimer
     opts := { passive: true, centerOnHwnd: centerOnHwnd, textWidth: textWidth, fontSize: fontSize }
     if (passiveBgColor != "")
         opts.passiveBgColor := passiveBgColor
     if (noBorder)
         opts.noBorder := true
+    if (promptKeys != "")
+        opts.promptKeys := promptKeys
     StandardLoadingBar_Show(state, barColor, opts)
     g_StandardLoadingBarIsKeysOverlay := true
     g_StandardLoadingBarKeysHotkeys := []
@@ -2094,7 +2102,7 @@ StandardLoadingBar_KeysTimeoutFired(timeoutCallback) {
 ; =============================================================================
 ; Hotstring Selector: Gemini Redirect Banner (non-blocking; uses standard loading indicator)
 ; =============================================================================
-HotstringGeminiBanner_Show(text := "Gemini: inserting prompt...") {
+HotstringGeminiBanner_Show(text := "📤 Gemini: inserting prompt...") {
     DictationGeminiConfirm_Hide()
     Sleep 50
     centerOnHwnd := 0
@@ -2103,7 +2111,7 @@ HotstringGeminiBanner_Show(text := "Gemini: inserting prompt...") {
     }
     if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
         centerOnHwnd := 0
-    StandardLoadingBar_Show(text, "3772FF", { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 160, fontSize: 8,
+    StandardLoadingBar_Show(text, "3772FF", { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 280, fontSize: 17,
         alpha: 204 })
 }
 
@@ -2161,9 +2169,9 @@ DictationGeminiConfirm_ShowAndWait() {
     if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
         centerOnHwnd := 0
     yCallbacks := Map("Y", DictationGeminiConfirm_OnY)
-    ; Official loading bar only; no blue; single banner (no border) so only one GUI shows.
-    StandardLoadingBar_ShowWithKeys("Send transcription to Gemini? Press Y (6s)", yCallbacks, 6000, centerOnHwnd,
-        DictationGeminiConfirm_OnTimeout, "1E1E2E", 300, 9, "", true)
+    ; Official loading bar only; no blue; single banner (no border); fixed bottom strip for input.
+    StandardLoadingBar_ShowWithKeys("❓ Send transcription to Gemini? (6s)", yCallbacks, 6000, centerOnHwnd,
+        DictationGeminiConfirm_OnTimeout, "1E1E2E", 380, 17, "", true, "[Y] Confirm  [N] Cancel")
 }
 
 ; =============================================================================
@@ -2210,9 +2218,9 @@ ToggleOutlookAndTeams() {
 
         ; Show start banner
         if (outlookRunning && teamsRunning) {
-            ShowCenteredOverlay_Utils("Closing Outlook and Teams...", 1500)
+            ShowCenteredOverlay_Utils("📤 Closing Outlook and Teams...", 1500)
         } else {
-            ShowCenteredOverlay_Utils("Opening Outlook and Teams...", 1500)
+            ShowCenteredOverlay_Utils("📤 Opening Outlook and Teams...", 1500)
         }
 
         if (outlookRunning && teamsRunning) {
@@ -2296,12 +2304,12 @@ ToggleOutlookAndTeams() {
 
                 ; Wait for window to appear and become active
                 if (WinWaitActive("ahk_exe ms-teams.exe", , 10)) {
-                    ShowCenteredOverlay_Utils("Teams activated", 1500)
+                    ShowCenteredOverlay_Utils("✅ Teams activated", 1500)
                 } else {
-                    ShowCenteredOverlay_Utils("Teams: Window not found", 2000)
+                    ShowCenteredOverlay_Utils("❌ Teams: Window not found", 2000)
                 }
             } catch Error as e {
-                ShowCenteredOverlay_Utils("Teams: Error - " . e.Message, 2000)
+                ShowCenteredOverlay_Utils("❌ Teams: Error - " . e.Message, 2000)
             }
 
             ; Second: Activate Outlook last (so it gets final focus)
@@ -2311,7 +2319,7 @@ ToggleOutlookAndTeams() {
                     WinWait("ahk_exe OUTLOOK.EXE", , 5)
 
                     if (!WinExist("ahk_exe OUTLOOK.EXE")) {
-                        ShowCenteredOverlay_Utils("Outlook not running.", 2000)
+                        ShowCenteredOverlay_Utils("❌ Outlook not running.", 2000)
                         return
                     } else {
                         ; Activate Outlook (this will bring it to foreground, overriding Teams)
@@ -2325,7 +2333,7 @@ ToggleOutlookAndTeams() {
         }
 
         ; Show finish banner
-        ShowCenteredOverlay_Utils("Done", 1500)
+        ShowCenteredOverlay_Utils("✅ Done", 1500)
     } catch Error as e {
         MsgBox "Error in ToggleOutlookAndTeams macro: " e.Message
     }
@@ -2534,7 +2542,7 @@ VerifyDictationStart() {
             SetTimer(DictationLoopStop, -15000)
             SetTimer(VerifyDictationStart, -1500)
         } else {
-            ShowCenteredOverlay_Utils("Failed to start dictation", 2000)
+            ShowCenteredOverlay_Utils("❌ Failed to start dictation", 2000)
             g_DictationLoopActive := false
         }
     }
@@ -3271,7 +3279,7 @@ FocusCursorWindowAndCloseOthers(targetHwnd) {
 
     ; Activate the target window
     if (!WinExist("ahk_id " . targetHwnd)) {
-        ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+        ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
         return
     }
     try {
@@ -3770,14 +3778,14 @@ DesktopToRecycle_Run() {
     try {
         exitCode := RunWait('powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "' . ps . '"', "", "Hide")
         if (exitCode = 0) {
-            ShowCenteredOverlay_Utils("Desktop items moved to Recycle Bin", 2000, "27AE60")
+            ShowCenteredOverlay_Utils("✅ Desktop items moved to Recycle Bin", 2000, "27AE60")
             DesktopToRecycle_CloseDesktopExplorer(path)
         } else {
-            ShowCenteredOverlay_Utils("Desktop path not found or error: " path, 3500, "C0392B")
+            ShowCenteredOverlay_Utils("❌ Desktop path not found or error: " path, 3500, "C0392B")
             DesktopToRecycle_CloseDesktopExplorer(path)
         }
     } catch as err {
-        ShowCenteredOverlay_Utils("Error moving to Recycle Bin", 2500, "C0392B")
+        ShowCenteredOverlay_Utils("❌ Error moving to Recycle Bin", 2500, "C0392B")
     }
     g_DesktopToRecycleCloseHwnd := 0
 }
@@ -4781,7 +4789,7 @@ SelectSquareByIndex(index) {
                 WinActivate("ahk_id " . targetHwnd)
                 WinWaitActive("ahk_id " . targetHwnd, , 0.35)
             } catch {
-                ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+                ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
             }
         }
 
@@ -5351,17 +5359,17 @@ StudyTopicSelector_HandleKey(key) {
     topic := g_StudyTopics[selection]
     basePath := GetNotesRepoPath()
     if (basePath = "") {
-        try ShowCenteredOverlay_Utils("Notes repo path not set (env.ahk).", 3000, "FFAA00")
+        try ShowCenteredOverlay_Utils("⚠ Notes repo path not set (env.ahk).", 3000, "FFAA00")
         return
     }
     fullPath := RTrim(basePath, "\") . topic.path
     if (!FileExist(fullPath)) {
-        try ShowCenteredOverlay_Utils("PDF not found: " fullPath, 3500, "FF0000")
+        try ShowCenteredOverlay_Utils("❌ PDF not found: " fullPath, 3500, "FF0000")
         return
     }
     peekExe := PeekPdf_ResolvePeekExePath()
     if (!FileExist(peekExe)) {
-        try ShowCenteredOverlay_Utils("Peek executable not found.", 2500, "FF0000")
+        try ShowCenteredOverlay_Utils("❌ Peek executable not found.", 2500, "FF0000")
         return
     }
     PeekPdf_OpenPath(fullPath)
@@ -5425,7 +5433,7 @@ PeekPdf_OpenPath(pdfPath) {
     cmd := "powershell.exe -NoProfile -ExecutionPolicy Bypass -Command " . Chr(34) . psArg . Chr(34)
     try Run cmd, "", "Hide"
     catch as e {
-        try ShowCenteredOverlay_Utils("Failed to open Peek: " e.Message, 3000, "FF0000")
+        try ShowCenteredOverlay_Utils("❌ Failed to open Peek: " e.Message, 3000, "FF0000")
         return
     }
     if WinWait("Peek", "", 5) {
@@ -5455,16 +5463,16 @@ PeekPdf_OpenStored() {
 
     pdfPath := PeekPdf_NormalizePath(pdfPath)
     if (pdfPath = "") {
-        try ShowCenteredOverlay_Utils("No PDF path set. Hold Win+Alt+Shift+X to set.", 3000, "FFAA00")
+        try ShowCenteredOverlay_Utils("⚠ No PDF path set. Hold Win+Alt+Shift+X to set.", 3000, "FFAA00")
         return
     }
     peekExe := PeekPdf_ResolvePeekExePath()
     if (!FileExist(peekExe)) {
-        try ShowCenteredOverlay_Utils("Peek executable not found.", 2500, "FF0000")
+        try ShowCenteredOverlay_Utils("❌ Peek executable not found.", 2500, "FF0000")
         return
     }
     if (!FileExist(pdfPath)) {
-        try ShowCenteredOverlay_Utils("PDF file not found: " pdfPath, 3500, "FF0000")
+        try ShowCenteredOverlay_Utils("❌ PDF file not found: " pdfPath, 3500, "FF0000")
         return
     }
     peekEsc := StrReplace(peekExe, "'", "''")
@@ -5473,7 +5481,7 @@ PeekPdf_OpenStored() {
     cmd := "powershell.exe -NoProfile -ExecutionPolicy Bypass -Command " . Chr(34) . psArg . Chr(34)
     try Run cmd, "", "Hide"
     catch as e {
-        try ShowCenteredOverlay_Utils("Failed to open Peek: " e.Message, 3000, "FF0000")
+        try ShowCenteredOverlay_Utils("❌ Failed to open Peek: " e.Message, 3000, "FF0000")
         return
     }
     if WinWait("Peek", "", 5) {
@@ -5490,13 +5498,13 @@ PeekPdf_OpenStored() {
 PeekPdf_WaitAndConfigure() {
     global UIA
     ; Standard loading bar: show for the whole process so user knows when we started and when we finished
-    StandardLoadingBar_Show("Peek PDF: configuring...", "3772FF")
+    StandardLoadingBar_Show("⏳ Peek PDF: configuring...", "3772FF")
     ; 1) Get Peek window hwnd
     hwnd := WinExist("Peek")
     if (!hwnd)
         hwnd := WinExist("ahk_exe PowerToys.Peek.UI.exe")
     if (!hwnd) {
-        StandardLoadingBar_Update("Peek PDF: window not found", "FFAA00")
+        StandardLoadingBar_Update("❌ Peek PDF: window not found", "FFAA00")
         StandardLoadingBar_Hide(2000)
         Sleep 300
         Click "Left"
@@ -5668,16 +5676,16 @@ PeekPdf_WaitAndConfigure() {
                     Send("^End")
             }
             Sleep 100
-            StandardLoadingBar_Update("Peek PDF: done", "27AE60")
+            StandardLoadingBar_Update("✅ Peek PDF: done", "27AE60")
             StandardLoadingBar_Hide(2000)
         } else {
-            StandardLoadingBar_Update("Peek PDF: finished (fallback)", "FFAA00")
+            StandardLoadingBar_Update("✅ Peek PDF: finished (fallback)", "FFAA00")
             StandardLoadingBar_Hide(2000)
             Sleep 400
             Click "Left"
         }
     } catch {
-        StandardLoadingBar_Update("Peek PDF: finished (fallback)", "FFAA00")
+        StandardLoadingBar_Update("✅ Peek PDF: finished (fallback)", "FFAA00")
         StandardLoadingBar_Hide(2000)
         Sleep 400
         Click "Left"
@@ -6446,7 +6454,7 @@ GeminiDelayedSubmitFlow() {
     g_HotstringGeminiRestoreHwnd := WinExist("A")  ; Store window to restore focus to after 4s sequence
     g_HotstringGeminiAutoSubmit := true
 
-    HotstringGeminiBanner_Show("Submitting in 3s... Press N to cancel auto-submit")
+    HotstringGeminiBanner_Show("⏳ Submitting in 4s... Press N to cancel auto-submit")
 
     Hotkey("n", GeminiCancelAutoSubmit, "On")
     Hotkey("N", GeminiCancelAutoSubmit, "On")
@@ -6461,7 +6469,7 @@ GeminiCancelAutoSubmit(*) {
     try Hotkey("N", "Off")
     SetTimer(GeminiFinalizeSubmit, 0)  ; cancel 4s timer so paste runs in deferred callback only
     HotstringGeminiBanner_Hide()
-    HotstringGeminiBanner_Show("Auto-submit CANCELLED (Paste only)")
+    HotstringGeminiBanner_Show("⚠ Auto-submit CANCELLED (Paste only)")
     SetTimer(HotstringGeminiBanner_Hide, -1500)
     ; Defer paste so it runs outside hotkey context; sync works and paste goes to Gemini
     SetTimer(GeminiCancelAutoSubmit_DoPaste, -400)
@@ -6569,7 +6577,7 @@ HandleHotstringChar(char) {
         }
         g_HotstringGeminiArmed := true
         ; Show banner when entering Gemini mode (same pattern as Project Selector "Entering Selection Mode").
-        HotstringGeminiBanner_Show("Entering Gemini Mode - Select prompt")
+        HotstringGeminiBanner_Show("⌨ Entering Gemini Mode - Select prompt")
         SetTimer(HotstringGeminiBanner_Hide, -1500)  ; Hide banner after 1.5 s
         SetTimer(DisarmHotstringGeminiMode, -4000)
         return
@@ -6660,7 +6668,7 @@ HandleHotstringChar(char) {
 
         if (useGemini) {
             ; L+Prompt selection: redirect to Gemini (focus prompt field, paste, do NOT submit).
-            HotstringGeminiBanner_Show("Gemini: inserting prompt...")
+            HotstringGeminiBanner_Show("📤 Gemini: inserting prompt...")
             try {
                 SetTitleMatchMode(2)
                 geminiHwnd := 0

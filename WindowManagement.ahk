@@ -32,7 +32,7 @@ ShowNotification_WM(message, durationMs := 1500) {
 }
 
 ; Activate window by winSpec; show graceful error and return false if not found.
-TryActivateWindow_WM(winSpec, errorMessage := "Error: Target window not found.") {
+TryActivateWindow_WM(winSpec, errorMessage := "❌ Error: Target window not found.") {
     if (!WinExist(winSpec)) {
         ShowNotification_WM(errorMessage)
         return false

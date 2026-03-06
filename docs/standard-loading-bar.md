@@ -8,43 +8,56 @@ A shared UI component for loading and progress feedback across all AHK scripts. 
 - **Replaces ad-hoc banners and overlays** with a consistent user experience
 - **Monitor-aware positioning** – centers on the active window's monitor or the primary monitor
 - **Dual modes** – passive (text-only) display and interactive mode with key callbacks and timeouts
+- **Standard font size** – 17px for all banners and loading indicators (except `ShowSingleCharTabBanner_Utils`, which keeps 72px)
+- **Emoji** – every banner message must start with an emoji (e.g. ⏳ loading, ✅ success, ❌ error, ❓ user input)
+
+## Banner Types
+
+| Type            | Label / prefix   | Use case                                      |
+| --------------- | ---------------- | --------------------------------------------- |
+| **Loading**     | ⏳, 🔄           | Progress bar + emoji; passive: false          |
+| **Information** | ✅, ℹ, 📋, ❌, ⚠ | Passive text-only; emoji + message            |
+| **User input**  | ❓, ⌨            | `ShowWithKeys` + fixed bottom strip with keys |
+
+User-input banners use an optional **fixed bottom strip** (e.g. `[Y] Confirm  [N] Cancel  [E] Close`) via the `promptKeys` option so the main message and key hints stay clearly separated.
 
 ## API Reference
 
 ### Core Functions
 
-| Function                              | Signature                                                                                                                  | Purpose                                                                                            |
-| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `StandardLoadingBar_Show`             | `(state, barColor, options)`                                                                                               | Show overlay; options: passive, centerOnHwnd, textWidth, fontSize, alpha, passiveBgColor, noBorder |
-| `StandardLoadingBar_Update`           | `(state, barColor)`                                                                                                        | Update text/progress of visible bar                                                                |
-| `StandardLoadingBar_Hide`             | `(delayMs)`                                                                                                                | Hide bar; `delayMs > 0` shows briefly before hiding                                                |
-| `StandardLoadingBar_ShowWithKeys`     | `(state, keyCallbacks, timeoutMs, centerOnHwnd, timeoutCallback, barColor, textWidth, fontSize, passiveBgColor, noBorder)` | Show with hotkey handlers and optional timeout                                                     |
-| `StandardLoadingBar_CloseKeysOverlay` | (internal)                                                                                                                 | Unregister keys, cancel timeout, destroy overlay                                                   |
+| Function                              | Signature                                                                                                                                  | Purpose                                                                                                                                 |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `StandardLoadingBar_Show`             | `(state, barColor, options)`                                                                                                               | Show overlay; options: passive, centerOnHwnd, textWidth, fontSize, alpha, passiveBgColor, noBorder, **promptKeys** (fixed bottom strip) |
+| `StandardLoadingBar_Update`           | `(state, barColor)`                                                                                                                        | Update text/progress of visible bar (main message only; prompt strip is not updated)                                                    |
+| `StandardLoadingBar_Hide`             | `(delayMs)`                                                                                                                                | Hide bar; `delayMs > 0` shows briefly before hiding                                                                                     |
+| `StandardLoadingBar_ShowWithKeys`     | `(state, keyCallbacks, timeoutMs, centerOnHwnd, timeoutCallback, barColor, textWidth, fontSize, passiveBgColor, noBorder, **promptKeys**)` | Show with hotkey handlers, optional timeout, and optional fixed bottom strip for key hints                                              |
+| `StandardLoadingBar_CloseKeysOverlay` | (internal)                                                                                                                                 | Unregister keys, cancel timeout, destroy overlay                                                                                        |
 
 ### Options Reference
 
-| Option           | Type    | Default | Description                                                         |
-| ---------------- | ------- | ------- | ------------------------------------------------------------------- |
-| `passive`        | boolean | false   | Text-only mode (no progress bar animation)                          |
-| `centerOnHwnd`   | integer | 0       | Window to center on; 0 = active monitor                             |
-| `textWidth`      | integer | 0       | Overlay width in pixels; 0 = auto (60% of monitor width)            |
-| `fontSize`       | integer | 9       | Font size in points                                                 |
-| `alpha`          | integer | 235     | Window transparency (0–255)                                         |
-| `passiveBgColor` | string  | ""      | Overlay background (e.g. "3772FF", "FFFF00"); default dark "1E1E2E" |
-| `noBorder`       | boolean | false   | Skip yellow border frame (single GUI); used for dictation confirm   |
+| Option           | Type    | Default | Description                                                                          |
+| ---------------- | ------- | ------- | ------------------------------------------------------------------------------------ |
+| `passive`        | boolean | false   | Text-only mode (no progress bar animation)                                           |
+| `centerOnHwnd`   | integer | 0       | Window to center on; 0 = active monitor                                              |
+| `textWidth`      | integer | 0       | Overlay width in pixels; 0 = auto (60% of monitor width)                             |
+| `fontSize`       | integer | **17**  | Font size in points (standard for all banners)                                       |
+| `alpha`          | integer | 235     | Window transparency (0–255)                                                          |
+| `passiveBgColor` | string  | ""      | Overlay background (e.g. "3772FF", "FFFF00"); default dark "1E1E2E"                  |
+| `noBorder`       | boolean | false   | Skip yellow border frame (single GUI); used for dictation confirm                    |
+| `promptKeys`     | string  | ""      | Optional fixed bottom strip text (e.g. "[Y] Confirm [N] Cancel"); user-input banners |
 
 ## Helper Wrappers (Utils.ahk)
 
 These wrap `StandardLoadingBar_*` with preset styles:
 
-| Function                                                    | Purpose                                                                                                    |
-| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `AiModelBanner_Show` / `AiModelBanner_Hide`                 | AI model selection (textWidth 450, fontSize 18)                                                            |
-| `ClipAngelBanner_Show` / `ClipAngelBanner_Hide`             | Clip Angel (textWidth 200, fontSize 10)                                                                    |
-| `ShowSingleCharTabBanner_Utils(tabNumber)`                  | Tab number (1 or 2); auto-hides after 700 ms                                                               |
-| `ShowCenteredOverlay_Utils(text, duration, bgColor)`        | Short message with duration; Show + Hide(duration)                                                         |
-| `HotstringGeminiBanner_Show` / `HotstringGeminiBanner_Hide` | Gemini redirect (textWidth 160, fontSize 8)                                                                |
-| `DictationGeminiConfirm_ShowAndWait()`                      | "Send transcription to Gemini? Press Y (6s)" with Y key and 6 s timeout; uses `noBorder` for single banner |
+| Function                                                    | Purpose                                                                                                                           |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `AiModelBanner_Show` / `AiModelBanner_Hide`                 | AI model selection (textWidth 450, fontSize 17)                                                                                   |
+| `ClipAngelBanner_Show` / `ClipAngelBanner_Hide`             | Clip Angel (textWidth 200, fontSize 17)                                                                                           |
+| `ShowSingleCharTabBanner_Utils(tabNumber)`                  | Tab number (1 or 2); auto-hides after 700 ms; **fontSize 72** (excluded from 17px standard)                                       |
+| `ShowCenteredOverlay_Utils(text, duration, bgColor)`        | Short message with duration; Show + Hide(duration); fontSize 17; message should start with emoji                                  |
+| `HotstringGeminiBanner_Show` / `HotstringGeminiBanner_Hide` | Gemini redirect (textWidth 280, fontSize 17); default text with emoji                                                             |
+| `DictationGeminiConfirm_ShowAndWait()`                      | "❓ Send transcription to Gemini? (6s)" with Y/N keys, prompt strip `[Y] Confirm  [N] Cancel`, 6 s timeout; noBorder; fontSize 17 |
 
 ## Implementation Instances
 
@@ -112,6 +125,9 @@ These wrap `StandardLoadingBar_*` with preset styles:
 3. **Keys overlay** – `ShowWithKeys` registers hotkeys; `CloseKeysOverlay` or `Hide(0)` unregisters and destroys.
 4. **Include Utils** – Scripts that use the bar must include `Utils.ahk` (`#Include %A_ScriptDir%\Utils.ahk`).
 5. **No stuck bar** – Ensure every code path that calls `Show` eventually calls `Hide`.
+6. **Font size 17** – Use default `fontSize` 17 for all new banners; only `ShowSingleCharTabBanner_Utils` keeps 72.
+7. **Emoji** – Start every banner message with an appropriate emoji (e.g. ⏳ loading, ✅ done, ❌ error, ❓ user input).
+8. **User-input banners** – When using `ShowWithKeys`, pass the 11th parameter `promptKeys` (e.g. `"[Y] Confirm  [N] Cancel"`) for a fixed bottom strip.
 
 ## Related Documentation
 
