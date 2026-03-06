@@ -391,7 +391,7 @@ InitHotstringsCheatSheet() {
     ; Remaining projects (previously after X/C/7) shift left one character each
     RegisterHotstring(":o:gpm", "GS_UX_Project_Management_Activities_LA", "Projects", "📋 Project Management LA", "c")
     RegisterHotstring(":o:guxcip", "GS_UX_and_CIP", "Projects", "🔗 UX and CIP")
-    RegisterHotstring(":o:gtrain", "GS_UX core team_Trainings Management", "Projects", "🎓 Trainings Management")
+    RegisterHotstring(":o:gavante", "Avante", "Projects", "🎓 Avante")
     RegisterHotstring(":o:26ai", "26-ai-experiment", "Projects", "🤖 26-ai-experiment")
 }
 InitHotstringsCheatSheet()
