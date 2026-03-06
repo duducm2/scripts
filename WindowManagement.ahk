@@ -28,7 +28,7 @@ _DebugLog_WM(loc, msg, data, hypothesisId := "") {
 
 ; --- Helper Functions --------------------------------------------------------
 ShowNotification_WM(message, durationMs := 1500) {
-    ShowCenteredOverlay_Utils(message, durationMs, "DF2935")
+    ShowCenteredOverlay_Utils(message, durationMs, BANNER_ACCENT_ERROR)
 }
 
 ; Activate window by winSpec; show graceful error and return false if not found.

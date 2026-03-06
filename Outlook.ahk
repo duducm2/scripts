@@ -24,7 +24,7 @@ ActivateOutlookMailbox() {
                 WinActivate(hwnd)
                 return true
             } catch {
-                ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
+                ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
                 return false
             }
         }
@@ -41,7 +41,7 @@ ActivateOutlookCalendar() {
                 WinActivate "Calendar - Eduardo"
                 return true
             } catch {
-                ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
+                ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
                 return false
             }
         }
@@ -65,7 +65,8 @@ ActivateOutlookCalendar() {
         return
 
     ; If both are closed, show banner stating activation failed.
-    ShowCenteredOverlay_Utils("⚠ Outlook: Mailbox and Calendar are not open (activation failed)", 3000)
+    ShowCenteredOverlay_Utils("⚠ Outlook: Mailbox and Calendar are not open (activation failed)", 3000,
+        BANNER_ACCENT_ERROR)
 }
 
 ; =============================================================================
@@ -82,7 +83,8 @@ ActivateOutlookCalendar() {
         return
 
     ; If both are closed, show banner stating activation failed.
-    ShowCenteredOverlay_Utils("⚠ Outlook: Calendar and Mailbox are not open (activation failed)", 3000)
+    ShowCenteredOverlay_Utils("⚠ Outlook: Calendar and Mailbox are not open (activation failed)", 3000,
+        BANNER_ACCENT_ERROR)
 }
 
 ; =============================================================================
@@ -99,7 +101,7 @@ ActivateOutlookCalendar() {
 
     SetTitleMatchMode 2
     if (!WinExist("Reminder")) {
-        ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
+        ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
         return
     }
     WinActivate "Reminder"

@@ -46,7 +46,8 @@ class InfiniteDictation {
 
     static Start() {
         if (!InfiniteDictation._ClaimOrRejectStart()) {
-            try ShowCenteredOverlay_Utils("⚠ Infinite Dictation already active in another process", 3000)
+            try ShowCenteredOverlay_Utils("⚠ Infinite Dictation already active in another process", 3000,
+                BANNER_ACCENT_INTERMEDIATE)
             catch {
             }
             return
@@ -63,7 +64,8 @@ class InfiniteDictation {
     ; Start without the 5s clipboard cleanup countdown (e.g. for ToggleDictationLoop / DictationStartWithClipboardOption).
     static StartWithoutCleanup() {
         if (!InfiniteDictation._ClaimOrRejectStart()) {
-            try ShowCenteredOverlay_Utils("⚠ Infinite Dictation already active in another process", 3000)
+            try ShowCenteredOverlay_Utils("⚠ Infinite Dictation already active in another process", 3000,
+                BANNER_ACCENT_INTERMEDIATE)
             catch {
             }
             return
@@ -176,7 +178,7 @@ class InfiniteDictation {
             SetTimer(ObjBindMethod(InfiniteDictation, "VerifyStart"), -1500)
         } else {
             try
-                ShowCenteredOverlay_Utils("❌ Failed to start dictation", 2000)
+                ShowCenteredOverlay_Utils("❌ Failed to start dictation", 2000, BANNER_ACCENT_ERROR)
             catch {
             }
             InfiniteDictation.IsActive := false

@@ -84,7 +84,7 @@ SafeDebugLog(text) {
     if (targetWindow) {
         ; Found a matching Cursor window
         if (!WinExist(targetWindow)) {
-            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
+            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
             return
         }
         WinActivate(targetWindow)
@@ -96,7 +96,7 @@ SafeDebugLog(text) {
     } else if (fallbackWindow) {
         ; No specific window found, but found a general Cursor window - use fallback
         if (!WinExist(fallbackWindow)) {
-            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
+            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
             return
         }
         WinActivate(fallbackWindow)
@@ -186,7 +186,7 @@ ShowCursorFallbackPanel() {
 
     if (targetHwnd) {
         if (!WinExist("ahk_id " targetHwnd)) {
-            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
+            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
             return
         }
         ; Layer 1: Restore if minimized
@@ -226,12 +226,12 @@ ShowCursorFallbackPanel() {
     WinWait("ahk_exe chrome.exe", , 10)  ; Wait for window to exist (up to 10 seconds)
     Sleep(300)
     if (!WinExist("ahk_exe chrome.exe")) {
-        ShowCenteredOverlay_Utils("⚠ Chrome did not start in time.", 2000)
+        ShowCenteredOverlay_Utils("⚠ Chrome did not start in time.", 2000, BANNER_ACCENT_ERROR)
         return
     }
     WinActivate("ahk_exe chrome.exe")    ; Explicitly activate the window
     WinWaitActive("ahk_exe chrome.exe", , 2)  ; Wait for activation to complete
-    ClipAngelBanner_Show("🔍 Checking search bar...", "3772FF")
+    ClipAngelBanner_Show("🔍 Checking search bar...", BANNER_ACCENT_INTERMEDIATE)
     try {
         hwnd := WinGetID("ahk_exe chrome.exe")
         root := UIA.ElementFromHandle(hwnd)
@@ -248,7 +248,7 @@ ShowCursorFallbackPanel() {
     } catch {
         ; UIA failed; banner still shows Done below
     }
-    ClipAngelBanner_Show("✅ Done", "27AE60")
+    ClipAngelBanner_Show("✅ Done", BANNER_ACCENT_SUCCESS)
     SetTimer(ClipAngelBanner_Hide, -500)
     CenterMouse()
 }
@@ -328,7 +328,7 @@ ShowCursorFallbackPanel() {
             "C:\\Users\\eduev\\AppData\\Local\\Programs\\cursor\\Cursor.exe"
         Run target
         if (!WinWaitActive("ahk_exe Cursor.exe", , 10)) {
-            ShowCenteredOverlay_Utils("⚠ Cursor did not start.", 2000)
+            ShowCenteredOverlay_Utils("⚠ Cursor did not start.", 2000, BANNER_ACCENT_ERROR)
             return
         }
         CenterMouse()
@@ -393,7 +393,7 @@ MonitorWikipediaFocus() {
                 try {
                     WinActivate("ahk_id " . wikipediaHwnd)
                 } catch {
-                    ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
+                    ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
                     return
                 }
                 Sleep(50)  ; Brief delay to ensure window is active
@@ -519,7 +519,7 @@ RestoreWikipediaScrollPosition(scrollPercentage, bannerText := "Restoring scroll
     }
 
     try {
-        StandardLoadingBar_Show(bannerText, "3772FF")
+        StandardLoadingBar_Show(bannerText, BANNER_ACCENT_INTERMEDIATE)
         Sleep(10)
 
         uia := UIA_Browser("ahk_exe chrome.exe")
@@ -763,7 +763,7 @@ HandleWikipediaChar(char) {
             ; Wait for the page to load (check for Wikipedia in title)
             SetTitleMatchMode 2
             if (!WinWait("Wikipedia", , 10)) {
-                ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
+                ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
                 return
             }
             WinActivate("Wikipedia")
@@ -839,7 +839,7 @@ HandleWikipediaChar(char) {
                     Send("{F11}")
                     Sleep(300)  ; Allow time for fullscreen exit
 
-                    StandardLoadingBar_Show("📜 Restoring scroll position... Please wait", "3772FF")
+                    StandardLoadingBar_Show("📜 Restoring scroll position... Please wait", BANNER_ACCENT_INTERMEDIATE)
                     BlockInput("On")
 
                     ; Initialize UIA_Browser with retry logic
@@ -1293,7 +1293,7 @@ ShowWikipediaSelector() {
         }
 
         if (savedPercentage > 0.0) {
-            StandardLoadingBar_Show("📜 Restoring scroll position... Please wait", "3772FF")
+            StandardLoadingBar_Show("📜 Restoring scroll position... Please wait", BANNER_ACCENT_INTERMEDIATE)
             BlockInput("On")
 
             ; Initialize UIA_Browser with retry logic
@@ -1909,7 +1909,7 @@ SaveWikipediaScrollPositionManually() {
         return false
     }
 
-    StandardLoadingBar_Show("💾 Saving scroll position... Please wait", "3772FF")
+    StandardLoadingBar_Show("💾 Saving scroll position... Please wait", BANNER_ACCENT_INTERMEDIATE)
     try {
         url := GetWikipediaURL()
         if (url = "") {
@@ -1973,7 +1973,8 @@ CenterMouse() {
 ; =============================================================================
 global g_LaunchersCenteredBannerBorderGui := ""
 
-CreateCenteredBanner_Launchers(message, bgColor := "be4747", fontColor := "FFFFFF", fontSize := 24, alpha := 178, width :=
+CreateCenteredBanner_Launchers(message, bgColor := BANNER_ACCENT_INTERMEDIATE, fontColor := "FFFFFF", fontSize := 24,
+    alpha := 178, width :=
     500) {
     global g_LaunchersCenteredBannerBorderGui
     try {

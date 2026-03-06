@@ -572,10 +572,11 @@ QuickUpdateScripts() {
         RunWait("git fetch", scriptsDir, "Hide")
         pullResult := RunWait("git pull", scriptsDir, "Hide")
         if (pullResult != 0) {
-            ShowCenteredOverlay_Utils("⚠ Git pull failed. Proceeding with local reload...", 2000, "FFFF00")
+            ShowCenteredOverlay_Utils("⚠ Git pull failed. Proceeding with local reload...", 2000,
+                BANNER_ACCENT_INTERMEDIATE)
         }
     } catch Error as e {
-        ShowCenteredOverlay_Utils("❌ Git update failed: " e.Message, 2000, "FF0000")
+        ShowCenteredOverlay_Utils("❌ Git update failed: " e.Message, 2000, BANNER_ACCENT_ERROR)
     }
 
     ; Quality check 1: After Git, verify all script files exist (pre-flight so we know what we can run)
@@ -590,7 +591,7 @@ QuickUpdateScripts() {
         list := ""
         for n in missingPre
             list .= n "`n"
-        ShowCenteredOverlay_Utils("⚠ QC1: Missing after pull:`n" list, 3000, "FF6600")
+        ShowCenteredOverlay_Utils("⚠ QC1: Missing after pull:`n" list, 3000, BANNER_ACCENT_INTERMEDIATE)
     }
 
     ; Layer 2: Sequential script reload; Utils.ahk is deferred (run after verification + notification).
@@ -691,14 +692,14 @@ QuickUpdateScripts() {
         for script in failedScripts {
             failedList .= script "`n"
         }
-        ShowCenteredOverlay_Utils("❌ Some scripts failed to update:`n" failedList, 4000, "FF0000")
+        ShowCenteredOverlay_Utils("❌ Some scripts failed to update:`n" failedList, 4000, BANNER_ACCENT_ERROR)
         try {
             if (FileExist(scriptsDir "\sounds\quick-update-failure.wav"))
                 SoundPlay(scriptsDir "\sounds\quick-update-failure.wav")
         } catch {
         }
     } else {
-        ShowCenteredOverlay_Utils("✅ All scripts updated successfully!", 3500, "00FF00")
+        ShowCenteredOverlay_Utils("✅ All scripts updated successfully!", 3500, BANNER_ACCENT_SUCCESS)
         try {
             if (FileExist(scriptsDir "\sounds\quick-update-success.wav"))
                 SoundPlay(scriptsDir "\sounds\quick-update-success.wav")
@@ -761,7 +762,7 @@ UpdateGeminiScript() {
             return
         }
         Run geminiPath
-        ShowCenteredOverlay_Utils("✅ Gemini script updated!", 1500, "00FF00")
+        ShowCenteredOverlay_Utils("✅ Gemini script updated!", 1500, BANNER_ACCENT_SUCCESS)
     } catch Error as e {
         MsgBox "Failed to update Gemini script: " e.Message, "Update Failed", "IconX"
     }
@@ -787,7 +788,7 @@ AddWordToHandy() {
         }
 
         if (!WinWaitActive("Handy ahk_class Tauri Window", , 2)) {
-            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
+            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
             return
         }
         hwnd := WinExist("Handy ahk_class Tauri Window")
@@ -946,7 +947,7 @@ MergeNonFavoriteClips() {
             WinActivate("ClipAngel")
         } catch {
             AiModelBanner_Hide()
-            ShowCenteredOverlay_Utils("❌ ClipAngel window not found.", 2000)
+            ShowCenteredOverlay_Utils("❌ ClipAngel window not found.", 2000, BANNER_ACCENT_ERROR)
             return
         }
         WinWaitActive("ClipAngel", , 2)
@@ -1091,7 +1092,7 @@ MergeNonFavoriteClips() {
                         Send "^c"     ; Copy
 
                         AiModelBanner_Hide()
-                        ShowCenteredOverlay_Utils("✅ Merged non-favorite clips (copied)", 2000, "FFCC00")
+                        ShowCenteredOverlay_Utils("✅ Merged non-favorite clips (copied)", 2000, BANNER_ACCENT_SUCCESS)
                         break
                     }
                 }
@@ -1104,7 +1105,8 @@ MergeNonFavoriteClips() {
 
         if !foundMatch {
             AiModelBanner_Hide()
-            ShowCenteredOverlay_Utils("⚠ Favorite clip not found in first " . maxIterations . " rows", 2000)
+            ShowCenteredOverlay_Utils("⚠ Favorite clip not found in first " . maxIterations . " rows", 2000,
+                BANNER_ACCENT_INTERMEDIATE)
         }
 
         ; Guarantee Clip Angel is closed when macro finishes (success or not found)
@@ -1147,13 +1149,13 @@ ActivateClipAngelWithFocusCorrection() {
         try {
             WinActivate("ClipAngel")
         } catch {
-            ShowCenteredOverlay_Utils("❌ ClipAngel window not found.", 2000)
+            ShowCenteredOverlay_Utils("❌ ClipAngel window not found.", 2000, BANNER_ACCENT_ERROR)
             return
         }
         WinWaitActive("ClipAngel", , 2)
     } else {
         needBanner := true
-        ClipAngelBanner_Show("📂 Opening Clip Angel...", "3772FF")
+        ClipAngelBanner_Show("📂 Opening Clip Angel...", BANNER_ACCENT_INTERMEDIATE)
         Send "!v"
         if !WinWait("ClipAngel", , 10) {
             ClipAngelBanner_Hide()
@@ -1163,7 +1165,7 @@ ActivateClipAngelWithFocusCorrection() {
             WinActivate("ClipAngel")
         } catch {
             ClipAngelBanner_Hide()
-            ShowCenteredOverlay_Utils("❌ ClipAngel window not found.", 2000)
+            ShowCenteredOverlay_Utils("❌ ClipAngel window not found.", 2000, BANNER_ACCENT_ERROR)
             return
         }
         WinWaitActive("ClipAngel", , 2)
@@ -1193,7 +1195,7 @@ ActivateClipAngelWithFocusCorrection() {
         isSelected := hasSel && row0.SelectionItemPattern.IsSelected
         if (!isSelected) {
             if !needBanner
-                ClipAngelBanner_Show("🎯 Focusing Row 0...", "3772FF")
+                ClipAngelBanner_Show("🎯 Focusing Row 0...", BANNER_ACCENT_INTERMEDIATE)
             needBanner := true
             try {
                 if hasSel
@@ -1210,7 +1212,7 @@ ActivateClipAngelWithFocusCorrection() {
         return
     }
     if needBanner {
-        ClipAngelBanner_Show("✅ Done", "27AE60")
+        ClipAngelBanner_Show("✅ Done", BANNER_ACCENT_SUCCESS)
         SetTimer(ClipAngelBanner_Hide, -500)
     }
 }
@@ -1405,7 +1407,7 @@ AiModelSelector_Close() {
 ; =============================================================================
 ; Status Banner Functions (non-blocking; use standard loading indicator)
 ; =============================================================================
-AiModelBanner_Show(text, bgColor := "3772FF") {
+AiModelBanner_Show(text, bgColor := BANNER_ACCENT_INTERMEDIATE) {
     centerOnHwnd := 0
     try centerOnHwnd := WinGetID("A")
     catch {
@@ -1421,7 +1423,7 @@ AiModelBanner_Hide() {
 }
 
 ; Small banner for Clip Angel (uses standard loading indicator).
-ClipAngelBanner_Show(text, bgColor := "3772FF") {
+ClipAngelBanner_Show(text, bgColor := BANNER_ACCENT_INTERMEDIATE) {
     centerOnHwnd := 0
     try centerOnHwnd := WinGetID("A")
     catch {
@@ -1494,7 +1496,7 @@ ExecuteHandyAiModelSelection(selection) {
         }
 
         ; Step 4: Wait for model to finish loading (poll button name until "loading" disappears)
-        AiModelBanner_Show("⏳ Waiting for model...", "27AE60")
+        AiModelBanner_Show("⏳ Waiting for model...", BANNER_ACCENT_INTERMEDIATE)
         Handy_WaitForModelReady(handyHwnd, 20000)
 
         ; Step 4.5: Play confirmation sound when model is ready
@@ -1506,7 +1508,7 @@ ExecuteHandyAiModelSelection(selection) {
         }
 
         ; Step 5: Close Handy window
-        AiModelBanner_Show("✅ Done! Closing Handy...", "27AE60")
+        AiModelBanner_Show("✅ Done! Closing Handy...", BANNER_ACCENT_SUCCESS)
         try WinClose("ahk_id " . handyHwnd)
         Sleep 500
 
@@ -1764,7 +1766,7 @@ EnumWindowsCallback(hwnd, lParam) {
 ; =============================================================================
 ; Helper: Show centered overlay banner (uses standard loading indicator; non-blocking).
 ; =============================================================================
-ShowCenteredOverlay_Utils(text, duration := 1500, bgColor := "3772FF") {
+ShowCenteredOverlay_Utils(text, duration := 1500, bgColor := BANNER_ACCENT_INTERMEDIATE) {
     centerOnHwnd := WinGetID("A")
     if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
         centerOnHwnd := 0
@@ -1777,7 +1779,11 @@ ShowCenteredOverlay_Utils(text, duration := 1500, bgColor := "3772FF") {
 ; Standard loading bar (monitor-aware, show/update/hide lifecycle)
 ; Use for long-running shortcuts; replace ad-hoc banners/overlays with this.
 ; Supports passive (text-only) mode and ShowWithKeys for letter-keystroke commands.
+; Semantic accent colors (colorblind accessibility): border only; background stays dark.
 ; =============================================================================
+global BANNER_ACCENT_SUCCESS := "27AE60"      ; Dark green: positive / success
+global BANNER_ACCENT_ERROR := "C0392B"        ; Red: negative / error
+global BANNER_ACCENT_INTERMEDIATE := "F1C40F" ; Yellow: loading, actionable, neutral
 global g_StandardLoadingBarGui := 0
 global g_StandardLoadingBarValue := 0
 global g_StandardLoadingBarIsKeysOverlay := false
@@ -1848,7 +1854,7 @@ GetActiveMonitorWorkArea_StandardBar(&left, &top, &right, &bottom) {
     bottom := mBottom
 }
 
-StandardLoadingBar_Show(state := "Working...", barColor := "3772FF", options := "") {
+StandardLoadingBar_Show(state := "Working...", barColor := BANNER_ACCENT_INTERMEDIATE, options := "") {
     global g_StandardLoadingBarGui, g_StandardLoadingBarValue, g_StandardLoadingBarIsKeysOverlay,
         g_StandardLoadingBarBorderGui
     try StandardLoadingBar_CloseKeysOverlay()
@@ -1908,7 +1914,7 @@ StandardLoadingBar_Show(state := "Working...", barColor := "3772FF", options := 
         } catch {
         }
         borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow -DPIScale")
-        borderGui.BackColor := (passiveBgColor != "") ? passiveBgColor : "FFFF00"
+        borderGui.BackColor := (passiveBgColor != "") ? passiveBgColor : BANNER_ACCENT_INTERMEDIATE
         borderGui.Show("NA x" . (guiX - borderWidth) . " y" . (guiY - borderWidth) . " w" . (gw + 2 * borderWidth) .
         " h" .
         (gh + 2 * borderWidth))
@@ -2029,11 +2035,12 @@ StandardLoadingBar_CloseKeysOverlay() {
 
 ; Show passive overlay and register hotkeys; optional timeout. keyCallbacks: Map/object key -> callback (e.g. "N" -> fn, "R" -> fn).
 ; timeoutCallback: called when timeout fires (can be empty). Registers both upper and lower case for letter keys.
-; passiveBgColor: optional; when set, used as border color (e.g. "00FF00" green, "FF0000" red). Overlay background stays dark.
+; passiveBgColor: optional; when set, used as border color. Prefer BANNER_ACCENT_SUCCESS / BANNER_ACCENT_ERROR / BANNER_ACCENT_INTERMEDIATE. Overlay background stays dark.
 ; noBorder: when true, do not create the yellow border (single banner only).
 ; promptKeys: optional; fixed bottom strip text (e.g. "[Y] Confirm  [N] Cancel"). Shown in uniform position below main message.
 StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwnd := 0, timeoutCallback := "", barColor :=
-    "3772FF", textWidth := 500, fontSize := 17, passiveBgColor := "", noBorder := false, promptKeys := "") {
+    BANNER_ACCENT_INTERMEDIATE, textWidth := 500, fontSize := 17, passiveBgColor := "", noBorder := false, promptKeys :=
+    "") {
     global g_StandardLoadingBarIsKeysOverlay, g_StandardLoadingBarKeysHotkeys, g_StandardLoadingBarKeysTimeoutTimer
     opts := { passive: true, centerOnHwnd: centerOnHwnd, textWidth: textWidth, fontSize: fontSize }
     if (passiveBgColor != "")
@@ -2111,7 +2118,8 @@ HotstringGeminiBanner_Show(text := "📤 Gemini: inserting prompt...") {
     }
     if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
         centerOnHwnd := 0
-    StandardLoadingBar_Show(text, "3772FF", { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 280, fontSize: 17,
+    StandardLoadingBar_Show(text, BANNER_ACCENT_INTERMEDIATE, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 280,
+        fontSize: 17,
         alpha: 204 })
 }
 
@@ -2198,9 +2206,9 @@ ToggleSoundState() {
 
     ; Show visual feedback
     if (newState = "1") {
-        ShowCenteredOverlay_Utils("🔊 Sound: ON", 2000)
+        ShowCenteredOverlay_Utils("🔊 Sound: ON", 2000, BANNER_ACCENT_INTERMEDIATE)
     } else {
-        ShowCenteredOverlay_Utils("🔇 Sound: OFF", 2000)
+        ShowCenteredOverlay_Utils("🔇 Sound: OFF", 2000, BANNER_ACCENT_INTERMEDIATE)
     }
 }
 
@@ -2218,9 +2226,9 @@ ToggleOutlookAndTeams() {
 
         ; Show start banner
         if (outlookRunning && teamsRunning) {
-            ShowCenteredOverlay_Utils("📤 Closing Outlook and Teams...", 1500)
+            ShowCenteredOverlay_Utils("📤 Closing Outlook and Teams...", 1500, BANNER_ACCENT_INTERMEDIATE)
         } else {
-            ShowCenteredOverlay_Utils("📤 Opening Outlook and Teams...", 1500)
+            ShowCenteredOverlay_Utils("📤 Opening Outlook and Teams...", 1500, BANNER_ACCENT_INTERMEDIATE)
         }
 
         if (outlookRunning && teamsRunning) {
@@ -2304,12 +2312,12 @@ ToggleOutlookAndTeams() {
 
                 ; Wait for window to appear and become active
                 if (WinWaitActive("ahk_exe ms-teams.exe", , 10)) {
-                    ShowCenteredOverlay_Utils("✅ Teams activated", 1500)
+                    ShowCenteredOverlay_Utils("✅ Teams activated", 1500, BANNER_ACCENT_SUCCESS)
                 } else {
-                    ShowCenteredOverlay_Utils("❌ Teams: Window not found", 2000)
+                    ShowCenteredOverlay_Utils("❌ Teams: Window not found", 2000, BANNER_ACCENT_ERROR)
                 }
             } catch Error as e {
-                ShowCenteredOverlay_Utils("❌ Teams: Error - " . e.Message, 2000)
+                ShowCenteredOverlay_Utils("❌ Teams: Error - " . e.Message, 2000, BANNER_ACCENT_ERROR)
             }
 
             ; Second: Activate Outlook last (so it gets final focus)
@@ -2319,7 +2327,7 @@ ToggleOutlookAndTeams() {
                     WinWait("ahk_exe OUTLOOK.EXE", , 5)
 
                     if (!WinExist("ahk_exe OUTLOOK.EXE")) {
-                        ShowCenteredOverlay_Utils("❌ Outlook not running.", 2000)
+                        ShowCenteredOverlay_Utils("❌ Outlook not running.", 2000, BANNER_ACCENT_ERROR)
                         return
                     } else {
                         ; Activate Outlook (this will bring it to foreground, overriding Teams)
@@ -2333,7 +2341,7 @@ ToggleOutlookAndTeams() {
         }
 
         ; Show finish banner
-        ShowCenteredOverlay_Utils("✅ Done", 1500)
+        ShowCenteredOverlay_Utils("✅ Done", 1500, BANNER_ACCENT_SUCCESS)
     } catch Error as e {
         MsgBox "Error in ToggleOutlookAndTeams macro: " e.Message
     }
@@ -2542,7 +2550,7 @@ VerifyDictationStart() {
             SetTimer(DictationLoopStop, -15000)
             SetTimer(VerifyDictationStart, -1500)
         } else {
-            ShowCenteredOverlay_Utils("❌ Failed to start dictation", 2000)
+            ShowCenteredOverlay_Utils("❌ Failed to start dictation", 2000, BANNER_ACCENT_ERROR)
             g_DictationLoopActive := false
         }
     }
@@ -2693,7 +2701,7 @@ DictationCleanup_ShowBanner() {
     } catch {
     }
     borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
-    borderGui.BackColor := "3772FF"
+    borderGui.BackColor := BANNER_ACCENT_INTERMEDIATE
     borderGui.Show("NA x" . (cx - borderWidth) . " y" . (cy - borderWidth) . " w" . (gw + 2 * borderWidth) . " h" . (gh +
         2 * borderWidth))
     g_DictationCleanupBorderGui := borderGui
@@ -2878,7 +2886,7 @@ DictationMerge_ShowBanner() {
     } catch {
     }
     borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
-    borderGui.BackColor := "FFCC00"
+    borderGui.BackColor := BANNER_ACCENT_INTERMEDIATE
     borderGui.Show("NA x" . (cx - borderWidth) . " y" . (cy - borderWidth) . " w" . (gw + 2 * borderWidth) . " h" . (gh +
         2 * borderWidth))
     g_DictationMergeBorderGui := borderGui
@@ -3320,7 +3328,7 @@ FocusCursorWindowAndCloseOthers(targetHwnd) {
 
     ; Activate the target window
     if (!WinExist("ahk_id " . targetHwnd)) {
-        ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
+        ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
         return
     }
     try {
@@ -3733,7 +3741,7 @@ DesktopToRecycle_ShowBanner() {
 
     borderWidth := 6
     borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
-    borderGui.BackColor := "C0392B"
+    borderGui.BackColor := BANNER_ACCENT_INTERMEDIATE
     borderGui.Show("NA x" . (cx - borderWidth) . " y" . (cy - borderWidth) . " w" . (gw + 2 * borderWidth) . " h" . (gh +
         2 * borderWidth))
     g_DesktopToRecycleBorderGui := borderGui
@@ -3838,14 +3846,14 @@ DesktopToRecycle_Run() {
     try {
         exitCode := RunWait('powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "' . ps . '"', "", "Hide")
         if (exitCode = 0) {
-            ShowCenteredOverlay_Utils("✅ Desktop items moved to Recycle Bin", 2000, "27AE60")
+            ShowCenteredOverlay_Utils("✅ Desktop items moved to Recycle Bin", 2000, BANNER_ACCENT_SUCCESS)
             DesktopToRecycle_CloseDesktopExplorer(path)
         } else {
-            ShowCenteredOverlay_Utils("❌ Desktop path not found or error: " path, 3500, "C0392B")
+            ShowCenteredOverlay_Utils("❌ Desktop path not found or error: " path, 3500, BANNER_ACCENT_ERROR)
             DesktopToRecycle_CloseDesktopExplorer(path)
         }
     } catch as err {
-        ShowCenteredOverlay_Utils("❌ Error moving to Recycle Bin", 2500, "C0392B")
+        ShowCenteredOverlay_Utils("❌ Error moving to Recycle Bin", 2500, BANNER_ACCENT_ERROR)
     }
     g_DesktopToRecycleCloseHwnd := 0
 }
@@ -4849,7 +4857,7 @@ SelectSquareByIndex(index) {
                 WinActivate("ahk_id " . targetHwnd)
                 WinWaitActive("ahk_id " . targetHwnd, , 0.35)
             } catch {
-                ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
+                ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
             }
         }
 
@@ -5419,17 +5427,17 @@ StudyTopicSelector_HandleKey(key) {
     topic := g_StudyTopics[selection]
     basePath := GetNotesRepoPath()
     if (basePath = "") {
-        try ShowCenteredOverlay_Utils("⚠ Notes repo path not set (env.ahk).", 3000, "FFAA00")
+        try ShowCenteredOverlay_Utils("⚠ Notes repo path not set (env.ahk).", 3000, BANNER_ACCENT_INTERMEDIATE)
         return
     }
     fullPath := RTrim(basePath, "\") . topic.path
     if (!FileExist(fullPath)) {
-        try ShowCenteredOverlay_Utils("❌ PDF not found: " fullPath, 3500, "FF0000")
+        try ShowCenteredOverlay_Utils("❌ PDF not found: " fullPath, 3500, BANNER_ACCENT_ERROR)
         return
     }
     peekExe := PeekPdf_ResolvePeekExePath()
     if (!FileExist(peekExe)) {
-        try ShowCenteredOverlay_Utils("❌ Peek executable not found.", 2500, "FF0000")
+        try ShowCenteredOverlay_Utils("❌ Peek executable not found.", 2500, BANNER_ACCENT_ERROR)
         return
     }
     PeekPdf_OpenPath(fullPath)
@@ -5493,7 +5501,7 @@ PeekPdf_OpenPath(pdfPath) {
     cmd := "powershell.exe -NoProfile -ExecutionPolicy Bypass -Command " . Chr(34) . psArg . Chr(34)
     try Run cmd, "", "Hide"
     catch as e {
-        try ShowCenteredOverlay_Utils("❌ Failed to open Peek: " e.Message, 3000, "FF0000")
+        try ShowCenteredOverlay_Utils("❌ Failed to open Peek: " e.Message, 3000, BANNER_ACCENT_ERROR)
         return
     }
     if WinWait("Peek", "", 5) {
@@ -5523,16 +5531,17 @@ PeekPdf_OpenStored() {
 
     pdfPath := PeekPdf_NormalizePath(pdfPath)
     if (pdfPath = "") {
-        try ShowCenteredOverlay_Utils("⚠ No PDF path set. Hold Win+Alt+Shift+X to set.", 3000, "FFAA00")
+        try ShowCenteredOverlay_Utils("⚠ No PDF path set. Hold Win+Alt+Shift+X to set.", 3000,
+            BANNER_ACCENT_INTERMEDIATE)
         return
     }
     peekExe := PeekPdf_ResolvePeekExePath()
     if (!FileExist(peekExe)) {
-        try ShowCenteredOverlay_Utils("❌ Peek executable not found.", 2500, "FF0000")
+        try ShowCenteredOverlay_Utils("❌ Peek executable not found.", 2500, BANNER_ACCENT_ERROR)
         return
     }
     if (!FileExist(pdfPath)) {
-        try ShowCenteredOverlay_Utils("❌ PDF file not found: " pdfPath, 3500, "FF0000")
+        try ShowCenteredOverlay_Utils("❌ PDF file not found: " pdfPath, 3500, BANNER_ACCENT_ERROR)
         return
     }
     peekEsc := StrReplace(peekExe, "'", "''")
@@ -5541,7 +5550,7 @@ PeekPdf_OpenStored() {
     cmd := "powershell.exe -NoProfile -ExecutionPolicy Bypass -Command " . Chr(34) . psArg . Chr(34)
     try Run cmd, "", "Hide"
     catch as e {
-        try ShowCenteredOverlay_Utils("❌ Failed to open Peek: " e.Message, 3000, "FF0000")
+        try ShowCenteredOverlay_Utils("❌ Failed to open Peek: " e.Message, 3000, BANNER_ACCENT_ERROR)
         return
     }
     if WinWait("Peek", "", 5) {
@@ -5558,13 +5567,13 @@ PeekPdf_OpenStored() {
 PeekPdf_WaitAndConfigure() {
     global UIA
     ; Standard loading bar: show for the whole process so user knows when we started and when we finished
-    StandardLoadingBar_Show("⏳ Peek PDF: configuring...", "3772FF")
+    StandardLoadingBar_Show("⏳ Peek PDF: configuring...", BANNER_ACCENT_INTERMEDIATE)
     ; 1) Get Peek window hwnd
     hwnd := WinExist("Peek")
     if (!hwnd)
         hwnd := WinExist("ahk_exe PowerToys.Peek.UI.exe")
     if (!hwnd) {
-        StandardLoadingBar_Update("❌ Peek PDF: window not found", "FFAA00")
+        StandardLoadingBar_Update("❌ Peek PDF: window not found", BANNER_ACCENT_ERROR)
         StandardLoadingBar_Hide(2000)
         Sleep 300
         Click "Left"
@@ -5736,16 +5745,16 @@ PeekPdf_WaitAndConfigure() {
                     Send("^End")
             }
             Sleep 100
-            StandardLoadingBar_Update("✅ Peek PDF: done", "27AE60")
+            StandardLoadingBar_Update("✅ Peek PDF: done", BANNER_ACCENT_SUCCESS)
             StandardLoadingBar_Hide(2000)
         } else {
-            StandardLoadingBar_Update("✅ Peek PDF: finished (fallback)", "FFAA00")
+            StandardLoadingBar_Update("✅ Peek PDF: finished (fallback)", BANNER_ACCENT_SUCCESS)
             StandardLoadingBar_Hide(2000)
             Sleep 400
             Click "Left"
         }
     } catch {
-        StandardLoadingBar_Update("✅ Peek PDF: finished (fallback)", "FFAA00")
+        StandardLoadingBar_Update("✅ Peek PDF: finished (fallback)", BANNER_ACCENT_SUCCESS)
         StandardLoadingBar_Hide(2000)
         Sleep 400
         Click "Left"

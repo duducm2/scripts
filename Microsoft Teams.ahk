@@ -14,7 +14,7 @@
 ActivateWindowWithRetry(hwnd, attempts := 6, waitMs := 500) {
     if (!WinExist("ahk_id " hwnd)) {
         try {
-            ShowCenteredOverlay(WinGetID("A"), "❌ Error: Target window not found.", 2000)
+            ShowCenteredOverlay(WinGetID("A"), "❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
         } catch {
         }
         return false
@@ -44,7 +44,7 @@ ActivateWindowWithRetry(hwnd, attempts := 6, waitMs := 500) {
                 return true
             }
         } catch {
-            try ShowCenteredOverlay(WinGetID("A"), "❌ Error: Target window not found.", 2000)
+            try ShowCenteredOverlay(WinGetID("A"), "❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
         }
 
         ; Strategy 2: Show window using ShowWindow API (only if minimized)
@@ -58,7 +58,7 @@ ActivateWindowWithRetry(hwnd, attempts := 6, waitMs := 500) {
                 return true
             }
         } catch {
-            try ShowCenteredOverlay(WinGetID("A"), "❌ Error: Target window not found.", 2000)
+            try ShowCenteredOverlay(WinGetID("A"), "❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
         }
 
         ; Strategy 3: Force to front using BringWindowToTop
@@ -70,7 +70,7 @@ ActivateWindowWithRetry(hwnd, attempts := 6, waitMs := 500) {
                 return true
             }
         } catch {
-            try ShowCenteredOverlay(WinGetID("A"), "❌ Error: Target window not found.", 2000)
+            try ShowCenteredOverlay(WinGetID("A"), "❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
         }
 
         ; Strategy 4: Alt+Tab simulation to bring window up
@@ -83,7 +83,7 @@ ActivateWindowWithRetry(hwnd, attempts := 6, waitMs := 500) {
                     return true
                 }
             } catch {
-                try ShowCenteredOverlay(WinGetID("A"), "❌ Error: Target window not found.", 2000)
+                try ShowCenteredOverlay(WinGetID("A"), "❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
             }
         }
 
@@ -162,7 +162,7 @@ ActivateTeamsMeetingWindow() {
     debugMsg := foundMeetingWindow ?
         "MEETING WINDOW FOUND BUT COULD NOT ACTIVATE" :
             "NO MEETING WINDOW FOUND"
-    ShowCenteredOverlay(WinGetID("A"), debugMsg, 3000)
+    ShowCenteredOverlay(WinGetID("A"), debugMsg, 3000, BANNER_ACCENT_ERROR)
     return false
 }
 
@@ -183,7 +183,7 @@ ActivateTeamsChatWindow() {
             WinActivate(hwnd)
             return true
         }
-        try ShowCenteredOverlay(WinGetID("A"), "❌ Error: Target window not found.", 2000)
+        try ShowCenteredOverlay(WinGetID("A"), "❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
     }
     ; No message box here - just return false
     return false
@@ -247,12 +247,12 @@ IsTeamsChatTitle(title) {
 }
 
 ; --- Standard overlay (uses Utils) -------------------------------------------
-ShowCenteredOverlay(hwndTarget, text, duration := 1500) {
+ShowCenteredOverlay(hwndTarget, text, duration := 1500, bgColor := BANNER_ACCENT_INTERMEDIATE) {
     centerOnHwnd := (hwndTarget && WinExist("ahk_id " hwndTarget)) ? hwndTarget : WinGetID("A")
     if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
         centerOnHwnd := 0
-    StandardLoadingBar_Show(text, "3772FF", { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 500, fontSize: 17,
-        passiveBgColor: "3772FF" })
+    StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 500, fontSize: 17,
+        passiveBgColor: bgColor })
     StandardLoadingBar_Hide(duration)
 }
 
@@ -624,7 +624,7 @@ RunTeams() {
     }
 
     if !ActivateTeamsMeetingWindow()
-        ShowCenteredOverlay(WinGetID("A"), "⚠ NO ACTIVE MEETING WINDOW", 3000)
+        ShowCenteredOverlay(WinGetID("A"), "⚠ NO ACTIVE MEETING WINDOW", 3000, BANNER_ACCENT_ERROR)
 }
 
 ; =============================================================================
@@ -651,7 +651,7 @@ RunTeams() {
         WinWait(teamsWindow, , 15)
     }
     if (!WinExist(teamsWindow)) {
-        try ShowCenteredOverlay(WinGetID("A"), "❌ Error: Target window not found.", 2000)
+        try ShowCenteredOverlay(WinGetID("A"), "❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
         return
     }
     WinActivate(teamsWindow)
@@ -671,7 +671,7 @@ RunTeams() {
         if A_Index = 5 {
             ; Restore clipboard and show error if we couldn't set it correctly
             A_Clipboard := ClipboardOld
-            ShowCenteredOverlay(WinGetID("A"), "❌ CLIPBOARD ERROR - TRY AGAIN", 3000)
+            ShowCenteredOverlay(WinGetID("A"), "❌ CLIPBOARD ERROR - TRY AGAIN", 3000, BANNER_ACCENT_ERROR)
             return
         }
         Sleep 100

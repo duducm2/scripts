@@ -21,6 +21,22 @@ A shared UI component for loading and progress feedback across all AHK scripts. 
 
 User-input banners use an optional **fixed bottom strip** (e.g. `[Y] Confirm  [N] Cancel  [E] Close`) via the `promptKeys` option so the main message and key hints stay clearly separated.
 
+## Semantic Colors (Colorblind Accessibility)
+
+Accent colors are applied to the **border** only; the overlay background stays dark (`1E1E2E`). Three global constants in `Utils.ahk` define semantic accent colors suitable for common color vision deficiencies:
+
+| Constant                     | Hex    | Meaning               | Use for                                                |
+| ---------------------------- | ------ | --------------------- | ------------------------------------------------------ |
+| `BANNER_ACCENT_SUCCESS`      | 27AE60 | Dark green (positive) | Success confirmations, "Done", "activated"             |
+| `BANNER_ACCENT_ERROR`        | C0392B | Red (negative)        | Errors, "not found", failures, activation failed       |
+| `BANNER_ACCENT_INTERMEDIATE` | F1C40F | Yellow (general)      | Loading, in-progress, actionable prompts, neutral info |
+
+- **Informational banners**: Use **success** for success messages, **error** for error/warning messages, **intermediate** for neutral (e.g. "Selecting X", "Sound ON/OFF").
+- **Actionable banners** (user input): Use **intermediate**.
+- **Loading banners**: Use **intermediate**.
+
+All new banner call sites should pass one of these constants (e.g. as `bgColor` for `ShowCenteredOverlay_Utils`, or as `passiveBgColor` / `barColor` for `StandardLoadingBar_Show`).
+
 ## API Reference
 
 ### Core Functions
@@ -35,16 +51,16 @@ User-input banners use an optional **fixed bottom strip** (e.g. `[Y] Confirm  [N
 
 ### Options Reference
 
-| Option           | Type    | Default | Description                                                                          |
-| ---------------- | ------- | ------- | ------------------------------------------------------------------------------------ |
-| `passive`        | boolean | false   | Text-only mode (no progress bar animation)                                           |
-| `centerOnHwnd`   | integer | 0       | Window to center on; 0 = active monitor                                              |
-| `textWidth`      | integer | 0       | Overlay width in pixels; 0 = auto (60% of monitor width)                             |
-| `fontSize`       | integer | **17**  | Font size in points (standard for all banners)                                       |
-| `alpha`          | integer | 235     | Window transparency (0–255)                                                          |
-| `passiveBgColor` | string  | ""      | Overlay background (e.g. "3772FF", "FFFF00"); default dark "1E1E2E"                  |
-| `noBorder`       | boolean | false   | Skip yellow border frame (single GUI); used for dictation confirm                    |
-| `promptKeys`     | string  | ""      | Optional fixed bottom strip text (e.g. "[Y] Confirm [N] Cancel"); user-input banners |
+| Option           | Type    | Default | Description                                                                                                                                |
+| ---------------- | ------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `passive`        | boolean | false   | Text-only mode (no progress bar animation)                                                                                                 |
+| `centerOnHwnd`   | integer | 0       | Window to center on; 0 = active monitor                                                                                                    |
+| `textWidth`      | integer | 0       | Overlay width in pixels; 0 = auto (60% of monitor width)                                                                                   |
+| `fontSize`       | integer | **17**  | Font size in points (standard for all banners)                                                                                             |
+| `alpha`          | integer | 235     | Window transparency (0–255)                                                                                                                |
+| `passiveBgColor` | string  | ""      | Border accent color. Prefer `BANNER_ACCENT_SUCCESS` / `BANNER_ACCENT_ERROR` / `BANNER_ACCENT_INTERMEDIATE`. Overlay background stays dark. |
+| `noBorder`       | boolean | false   | Skip yellow border frame (single GUI); used for dictation confirm                                                                          |
+| `promptKeys`     | string  | ""      | Optional fixed bottom strip text (e.g. "[Y] Confirm [N] Cancel"); user-input banners                                                       |
 
 ## Helper Wrappers (Utils.ahk)
 

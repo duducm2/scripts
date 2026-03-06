@@ -169,7 +169,7 @@ ShowGeminiTabBanner(tabNumber, geminiHwnd := 0) {
 ; Helper function to show a notification using the standard loading indicator (passive, auto-hide).
 ; =============================================================================
 ShowNotification(message, durationMs := 500, bgColor := "FFFF00", fontColor := "000000", fontSize := 17) {
-    StandardLoadingBar_Show(message, "3772FF", { passive: true, fontSize: fontSize })
+    StandardLoadingBar_Show(message, BANNER_ACCENT_INTERMEDIATE, { passive: true, fontSize: fontSize })
     StandardLoadingBar_Hide(durationMs)
 }
 
@@ -194,7 +194,8 @@ PlayCopyCompletedChime() {
 ; =============================================================================
 ; Small Loading Indicator Helpers (delegate to standard loading bar in Utils)
 ; =============================================================================
-ShowSmallLoadingIndicator(state := "⏳ Loading…", bgColor := "3772FF", centerOnHwnd := 0, textWidth := 500, fontSize :=
+ShowSmallLoadingIndicator(state := "⏳ Loading…", bgColor := BANNER_ACCENT_INTERMEDIATE, centerOnHwnd := 0, textWidth :=
+    500, fontSize :=
     17) {
     global g_StandardLoadingBarGui
     if (g_StandardLoadingBarGui)
@@ -234,7 +235,7 @@ WaitForButtonAndShowSmallLoading(buttonNames, stateText := "⏳ Loading…", tim
         if btn {
             buttonEverFound := true
             if (!indicatorShown) {
-                StandardLoadingBar_Show(stateText, "3772FF")
+                StandardLoadingBar_Show(stateText, BANNER_ACCENT_INTERMEDIATE)
                 indicatorShown := true
             }
             while btn && (timeout <= 0 || A_TickCount < deadline) {
@@ -286,7 +287,7 @@ GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false) {
         try {
             WinActivate("ahk_id " hwnd)
         } catch {
-            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
+            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
             return
         }
     }
@@ -390,7 +391,7 @@ GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false) {
     ; We target only the most recent Gemini response to avoid reading older messages. See gemini-tree.txt for tree structure.
     centerHwnd := WinExist("A")
     StandardLoadingBar_Show(copyFirst ? "🔍 Finding read aloud button and copying..." :
-        "🔍 Finding read aloud button...", "3772FF", { passive: true, centerOnHwnd: centerHwnd })
+        "🔍 Finding read aloud button...", BANNER_ACCENT_INTERMEDIATE, { passive: true, centerOnHwnd: centerHwnd })
     Sleep 250
 
     allMoreOptionsButtons := []
@@ -598,7 +599,7 @@ CopyLastGeminiMessageToClipboard(options := "", geminiHwnd := 0) {
             try {
                 WinActivate("ahk_id " geminiHwnd)
             } catch {
-                ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
+                ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
                 return false
             }
             if !WinWaitActive("ahk_exe chrome.exe", , 2)
@@ -742,7 +743,7 @@ SendPromptToActiveGeminiTab(promptText) {
 InitializeGeminiFirstTime() {
     try {
         ; Show banner to inform user
-        StandardLoadingBar_Show("📤 Opening Gemini (2 tabs)...", "3772FF")
+        StandardLoadingBar_Show("📤 Opening Gemini (2 tabs)...", BANNER_ACCENT_INTERMEDIATE)
 
         ; Remember existing Chrome windows so we can find the one we're about to create
         existingChromeHwnds := []
@@ -784,7 +785,7 @@ InitializeGeminiFirstTime() {
             WinActivate("ahk_id " geminiHwnd)
         } catch {
             StandardLoadingBar_Hide(0)
-            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
+            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
             return
         }
         if !WinWaitActive("ahk_id " geminiHwnd, , 4) {
@@ -811,7 +812,7 @@ InitializeGeminiFirstTime() {
             promptText := "hey, what's up?"
 
         ; Update banner status
-        StandardLoadingBar_Show("📤 Sending prompt to Gemini tabs...", "3772FF")
+        StandardLoadingBar_Show("📤 Sending prompt to Gemini tabs...", BANNER_ACCENT_INTERMEDIATE)
 
         geminiHwnd := GetGeminiWindowHwnd()
         ; Ensure first tab is active and send prompt (no tab banner during initial launch)
@@ -842,7 +843,7 @@ InitializeGeminiFirstTime() {
         try {
             WinActivate("ahk_id " hwnd)
         } catch {
-            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
+            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
             return
         }
         if WinWaitActive("ahk_id " hwnd, , 2) {
@@ -946,7 +947,7 @@ class GeminiAsyncLookup {
         if !this.OriginalHwnd
             return
         ; Show loading banner immediately, centered on the monitor where this window is (with warning)
-        StandardLoadingBar_Show("⏳ Loading…", "3772FF")
+        StandardLoadingBar_Show("⏳ Loading…", BANNER_ACCENT_INTERMEDIATE)
 
         A_Clipboard := ""
         Send "^c"
@@ -962,7 +963,7 @@ class GeminiAsyncLookup {
             WinActivate("ahk_id " this.GeminiHwnd)
         } catch {
             StandardLoadingBar_Hide(0)
-            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
+            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
             return
         }
         if !WinWaitActive("ahk_exe chrome.exe", , 2) {
@@ -1085,7 +1086,7 @@ class GeminiAsyncLookup {
             WinActivate("ahk_id " this.GeminiHwnd)
         } catch {
             StandardLoadingBar_Hide(0)
-            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
+            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
             return
         }
         if !WinWaitActive("ahk_exe chrome.exe", , 2) {
@@ -1118,7 +1119,8 @@ class GeminiAsyncLookup {
         closeNoOp(*) {
         }
         closeKeys := Map("Enter", closeNoOp, "Escape", closeNoOp, "E", closeNoOp)
-        StandardLoadingBar_ShowWithKeys(state, closeKeys, 50000, this.OriginalHwnd, "", "3772FF", 600, 17, "", false,
+        StandardLoadingBar_ShowWithKeys(state, closeKeys, 50000, this.OriginalHwnd, "", BANNER_ACCENT_INTERMEDIATE, 600,
+            17, "", false,
             "[Enter] [E] Close")
     }
 }
@@ -1214,7 +1216,7 @@ class GeminiDelayedSubmitMonitor {
         copyKeyCallbacks := Map("N", this.CancelCopy.Bind(this), "R", this.CopyAndReadAloud.Bind(this), "E", this.CancelCopy
         .Bind(this))
         StandardLoadingBar_ShowWithKeys("❓ Copy response?", copyKeyCallbacks, 4000, this.OriginalHwnd, this.DoCopyOnTimeout
-            .Bind(this), "3772FF", 380, 17, "", false, "[N] No copy  [R] Copy+Read  [E] Close")
+            .Bind(this), BANNER_ACCENT_INTERMEDIATE, 380, 17, "", false, "[N] No copy  [R] Copy+Read  [E] Close")
     }
 
     ; Shared cleanup: clear Gemini-side state only. Key/timer unregister and overlay hide are handled by Utils.
@@ -1331,7 +1333,7 @@ class GeminiAsyncTTS {
         this.OriginalHwnd := WinExist("A")
         if !this.OriginalHwnd
             return
-        StandardLoadingBar_Show("⏳ Loading…", "3772FF")
+        StandardLoadingBar_Show("⏳ Loading…", BANNER_ACCENT_INTERMEDIATE)
 
         A_Clipboard := ""
         Send "^c"
@@ -1349,7 +1351,7 @@ class GeminiAsyncTTS {
             WinActivate("ahk_id " this.GeminiHwnd)
         } catch {
             StandardLoadingBar_Hide(0)
-            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
+            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
             return
         }
         if !WinWaitActive("ahk_exe chrome.exe", , 2) {

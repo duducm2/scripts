@@ -1804,7 +1804,7 @@ NavigateClipAngelComboBox(typeIndex) {
         }
 
         ; Show banner notification
-        ShowCenteredOverlay_Utils("📌 Selecting: " . displayName, 800, "3772FF")
+        ShowCenteredOverlay_Utils("📌 Selecting: " . displayName, 800, BANNER_ACCENT_INTERMEDIATE)
 
         ; Set focus and click to open dropdown
         try {
@@ -2531,7 +2531,7 @@ WaitForList(root, pattern := "", timeout := 5000) {
 ; ativa a janela de lembretes do Outlook
 ActivateReminder() {
     if (!WinExist("ahk_exe OUTLOOK.EXE")) {
-        ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
+        ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
         return
     }
     WinActivate("ahk_exe OUTLOOK.EXE")
@@ -2742,25 +2742,25 @@ IsTeamsChatActive() {
     ; If found, switch to the normal meeting window
     if (normalMeetingHwnd) {
         if (!WinExist("ahk_id " normalMeetingHwnd)) {
-            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
+            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
             return
         }
         try {
             WinActivate("ahk_id " normalMeetingHwnd)
             ; Optional: Show a brief tooltip to confirm the switch
-            ShowCenteredOverlay_Utils("✅ Switched to normal meeting view", 1000)
+            ShowCenteredOverlay_Utils("✅ Switched to normal meeting view", 1000, BANNER_ACCENT_SUCCESS)
         } catch as e {
             ; Fallback: try to bring window to front (only if window still exists)
             if (WinExist("ahk_id " normalMeetingHwnd)) {
                 WinShow("ahk_id " normalMeetingHwnd)
                 WinActivate("ahk_id " normalMeetingHwnd)
             } else {
-                ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
+                ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
             }
         }
     } else {
         ; No corresponding normal window found - show notification
-        ShowCenteredOverlay_Utils("⚠ No normal meeting window found", 1500)
+        ShowCenteredOverlay_Utils("⚠ No normal meeting window found", 1500, BANNER_ACCENT_ERROR)
     }
 }
 
@@ -3147,8 +3147,9 @@ RestoreWikipediaScrollPosition(scrollPercentage, bannerText := "📜 Restoring s
 
         ; Show banner
         centerOnHwnd := WinGetID("A")
-        StandardLoadingBar_Show(bannerText, "3772FF", { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 500,
-            fontSize: 17, passiveBgColor: "3772FF" })
+        StandardLoadingBar_Show(bannerText, BANNER_ACCENT_INTERMEDIATE, { passive: true, centerOnHwnd: centerOnHwnd,
+            textWidth: 500,
+            fontSize: 17, passiveBgColor: BANNER_ACCENT_INTERMEDIATE })
 
         ; Block input during restoration
         BlockInput("On")
@@ -3246,8 +3247,9 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
 
     ; Show banner to inform user that scroll position is being saved
     centerOnHwnd := WinGetID("A")
-    StandardLoadingBar_Show("💾 Saving scroll position... Please wait", "3772FF", { passive: true, centerOnHwnd: centerOnHwnd,
-        textWidth: 500, fontSize: 17, passiveBgColor: "3772FF" })
+    StandardLoadingBar_Show("💾 Saving scroll position... Please wait", BANNER_ACCENT_INTERMEDIATE, { passive: true,
+        centerOnHwnd: centerOnHwnd,
+        textWidth: 500, fontSize: 17, passiveBgColor: BANNER_ACCENT_INTERMEDIATE })
     fullscreenRestored := false  ; Track if we've re-entered fullscreen
     try {
         ; Get normalized Wikipedia URL
@@ -3500,7 +3502,7 @@ RestorePreviousWikipediaScrollPosition() {
             url := GetWikipediaURLNormalized()
             if (url = "") {
                 ; Show brief message that no history exists
-                ShowCenteredOverlay_Utils("⚠ No previous scroll position found", 1500, "FF6B6B")
+                ShowCenteredOverlay_Utils("⚠ No previous scroll position found", 1500, BANNER_ACCENT_ERROR)
                 return false
             }
 
@@ -3515,12 +3517,12 @@ RestorePreviousWikipediaScrollPosition() {
                     "Restoring previous scroll position... Please wait")
             } else {
                 ; No saved position found in INI either
-                ShowCenteredOverlay_Utils("⚠ No previous scroll position found", 1500, "FF6B6B")
+                ShowCenteredOverlay_Utils("⚠ No previous scroll position found", 1500, BANNER_ACCENT_ERROR)
                 return false
             }
         } catch Error as err {
             ; Show brief message that no history exists
-            ShowCenteredOverlay_Utils("⚠ No previous scroll position found", 1500, "FF6B6B")
+            ShowCenteredOverlay_Utils("⚠ No previous scroll position found", 1500, BANNER_ACCENT_ERROR)
             return false
         }
     }
@@ -3584,7 +3586,7 @@ RestorePreviousWikipediaScrollPosition() {
 
     if (!previousPosition) {
         ; No different position found in history
-        ShowCenteredOverlay_Utils("⚠ No previous scroll position found", 1500, "FF6B6B")
+        ShowCenteredOverlay_Utils("⚠ No previous scroll position found", 1500, BANNER_ACCENT_ERROR)
         return false
     }
 
@@ -5776,7 +5778,7 @@ ApplyOutlookAppointmentSettings(privacy, allDay, status, category, reminder) {
 
     ; Forcefully activate the window
     if (!WinExist("ahk_id " targetHwnd)) {
-        ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
+        ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
         return
     }
     WinActivate("ahk_id " targetHwnd)
@@ -5857,7 +5859,7 @@ RunOutlookAppointmentWizard() {
 
     ; Forcefully activate the window
     if (!WinExist("ahk_id " targetHwnd)) {
-        ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
+        ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
         return
     }
     WinActivate("ahk_id " targetHwnd)
@@ -6314,7 +6316,7 @@ RenameChatGPTWindowToChatGPT() {
                 if (pos && pos.w > 0 && pos.h > 0) {
                     ; Activate window first
                     if (!WinExist("ahk_id " chatGPTHwnd)) {
-                        ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
+                        ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
                         return
                     }
                     WinActivate("ahk_id " chatGPTHwnd)
@@ -8778,7 +8780,7 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
             Send "!{F4}"
             Sleep 200
         } catch {
-            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
+            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
         }
     }
     Sleep 300
@@ -8841,7 +8843,7 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
         try {
             WinActivate("ahk_id " saveDialogHwnd)
         } catch {
-            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
+            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
             return
         }
         Sleep 700
@@ -8944,7 +8946,7 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
                     try {
                         WinActivate("ahk_id " replaceHwnd)
                     } catch {
-                        ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
+                        ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
                         break
                     }
                     Sleep 900  ; Delay for dialog to stabilize before confirming
@@ -9191,7 +9193,7 @@ ShowCommitPushBanner() {
     guiY := winY + (winH - guiH) / 2
     borderWidth := 6
     borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
-    borderGui.BackColor := "E6E600"
+    borderGui.BackColor := BANNER_ACCENT_INTERMEDIATE
     borderGui.Show("NA x" . Round(guiX - borderWidth) . " y" . Round(guiY - borderWidth) . " w" . (guiW + 2 *
         borderWidth) . " h" . (guiH + 2 * borderWidth))
     g_CommitPushBannerBorderGui := borderGui
@@ -9260,7 +9262,7 @@ ExecuteStoredCommitPushDecision() {
                 WinWaitActive("ahk_id " gCommitPushTargetWin, , 2)
                 Sleep 200
             } else {
-                ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
+                ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
             }
         }
         Send "+b"
@@ -9372,7 +9374,7 @@ InsertEmojiToTarget(emoji) {
             WinActivate gEmojiTargetWin
             Sleep 150
         } else {
-            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
+            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
         }
     }
 
@@ -9955,7 +9957,7 @@ FoldAllGitDirectoriesInCursor() {
 FoldAllDirectoriesInExplorer() {
     try {
         ; Show progress overlay immediately (yellow for folding)
-        StandardLoadingBar_Show("📁 Folding directories...", "FFFF00")
+        StandardLoadingBar_Show("📁 Folding directories...", BANNER_ACCENT_INTERMEDIATE)
 
         hwnd := WinExist("A")
         if !hwnd {
@@ -10160,7 +10162,7 @@ FoldAllDirectoriesInExplorer() {
 UnfoldAllDirectoriesInExplorer() {
     try {
         ; Show progress overlay immediately (yellow for unfolding)
-        StandardLoadingBar_Show("📁 Unfolding directories...", "FFFF00")
+        StandardLoadingBar_Show("📁 Unfolding directories...", BANNER_ACCENT_INTERMEDIATE)
 
         hwnd := WinExist("A")
         if !hwnd {
@@ -10766,7 +10768,7 @@ SwitchAIModel() {
             return
         }
         if (!WinExist("ahk_exe Spotify.exe")) {
-            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
+            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
             return
         }
         WinActivate("ahk_exe Spotify.exe")
@@ -11476,7 +11478,7 @@ Mobills_ShowRunningBanner(dir) {
 
     borderWidth := 6
     borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
-    borderGui.BackColor := "3772FF"
+    borderGui.BackColor := BANNER_ACCENT_INTERMEDIATE
     borderGui.Show("NA x" . (cx - borderWidth) . " y" . (cy - borderWidth) . " w" . (gw + 2 * borderWidth) . " h" . (gh +
         2 * borderWidth))
     g_MobillsRunningBannerBorderGui := borderGui
@@ -12900,7 +12902,7 @@ ToggleGeminiModel() {
                     ; Activate the browser window BEFORE clicking to prevent activating wrong window
                     if (browserHwnd) {
                         if (!WinExist("ahk_id " browserHwnd)) {
-                            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
+                            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
                             return
                         }
                         WinActivate("ahk_id " browserHwnd)
@@ -13088,7 +13090,7 @@ HandleGeminiModelSelection(char) {
 
         if (geminiHwnd) {
             if (!WinExist("ahk_id " geminiHwnd)) {
-                ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
+                ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
                 return
             }
             WinActivate("ahk_id " geminiHwnd)
@@ -13098,7 +13100,7 @@ HandleGeminiModelSelection(char) {
         } else {
             ; Fallback: try to activate any Chrome window
             if (!WinExist("ahk_exe chrome.exe")) {
-                ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000)
+                ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
                 return
             }
             WinActivate("ahk_exe chrome.exe")
@@ -15069,10 +15071,10 @@ IsFileDialogActive() {
 #HotIf
 
 ; --- Unified banner helpers for ChatGPT indicators (use Utils standard loading bar) ---
-ShowSmallLoadingIndicator_ChatGPT(state := "Loading…", bgColor := "3772FF") {
+ShowSmallLoadingIndicator_ChatGPT(state := "Loading…", bgColor := BANNER_ACCENT_INTERMEDIATE) {
     centerOnHwnd := WinGetID("A")
     StandardLoadingBar_Show(state, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 500, fontSize: 17,
-        passiveBgColor: bgColor })
+        passiveBgColor: bgColor })  ; callers pass BANNER_ACCENT_INTERMEDIATE or other semantic constant
 }
 
 HideSmallLoadingIndicator_ChatGPT() {
