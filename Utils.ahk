@@ -6446,12 +6446,12 @@ GeminiDelayedSubmitFlow() {
     g_HotstringGeminiRestoreHwnd := WinExist("A")  ; Store window to restore focus to after 4s sequence
     g_HotstringGeminiAutoSubmit := true
 
-    HotstringGeminiBanner_Show("Submitting in 4s... Press N to cancel auto-submit")
+    HotstringGeminiBanner_Show("Submitting in 3s... Press N to cancel auto-submit")
 
     Hotkey("n", GeminiCancelAutoSubmit, "On")
     Hotkey("N", GeminiCancelAutoSubmit, "On")
 
-    SetTimer(GeminiFinalizeSubmit, -4000)
+    SetTimer(GeminiFinalizeSubmit, -3000)
 }
 
 GeminiCancelAutoSubmit(*) {
