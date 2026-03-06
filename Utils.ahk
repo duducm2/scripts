@@ -2114,12 +2114,13 @@ DictationGeminiConfirm_CleanupAndMaybeSubmit(submitToGemini) {
     SetTimer(DictationGeminiConfirm_OnTimeout, 0)
     DictationGeminiConfirm_Hide()
     if (submitToGemini) {
-        Sleep 350
         GeminiDelayedSubmitFlow()
     }
 }
 
 DictationGeminiConfirm_OnY(*) {
+    ; Vanish banner immediately, then send to Gemini (no delay).
+    DictationGeminiConfirm_Hide()
     DictationGeminiConfirm_CleanupAndMaybeSubmit(true)
 }
 
