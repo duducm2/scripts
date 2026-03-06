@@ -1560,7 +1560,7 @@ CenterGuiOnActiveMonitor(guiObj) {
 ;-------------------------------------------------------------------
 ; OneNote Shortcuts
 ;-------------------------------------------------------------------
-#HotIf WinActive("ahk_exe onenote.exe")
+#HotIf WinActive("ahk_exe onenote.exe") && !IsFileDialogActive()
 
 ; Shift + P : Onenote: select line and children
 +p:: Send("^+-") ; Remaps to Ctrl + Shift + -
@@ -2526,7 +2526,7 @@ WaitForList(root, pattern := "", timeout := 5000) {
 ;-------------------------------------------------------------------
 ; Outlook Reminder Window Shortcuts
 ;-------------------------------------------------------------------
-#HotIf WinActive("ahk_exe OUTLOOK.EXE") && RegExMatch(WinGetTitle("A"), "i)Reminder")
+#HotIf WinActive("ahk_exe OUTLOOK.EXE") && RegExMatch(WinGetTitle("A"), "i)Reminder") && !IsFileDialogActive()
 
 ; ativa a janela de lembretes do Outlook
 ActivateReminder() {
@@ -6944,7 +6944,7 @@ Excel_RemoveRows(iterations := 8) {
 ;-------------------------------------------------------------------
 ; Power BI Shortcuts
 ;-------------------------------------------------------------------
-#HotIf WinActive("ahk_exe PBIDesktop.exe") || InStr(WinGetTitle("A"), "powerbi", false)
+#HotIf (WinActive("ahk_exe PBIDesktop.exe") || InStr(WinGetTitle("A"), "powerbi", false)) && !IsFileDialogActive()
 
 ; Shift + T : Transform data (Click Home tab, then T, then UIA click)
 +t:: {
@@ -10494,7 +10494,7 @@ SwitchAIModel() {
 ;-------------------------------------------------------------------
 ; Spotify Shortcuts
 ;-------------------------------------------------------------------
-#HotIf WinActive("ahk_exe Spotify.exe")
+#HotIf WinActive("ahk_exe Spotify.exe") && !IsFileDialogActive()
 
 ; Shift + C : Toggle Connect to a device - Connect to a device
 +c::
@@ -10968,7 +10968,7 @@ ContainsWord(norm, word) {
 ;-------------------------------------------------------------------
 ; Figma Shortcuts
 ;-------------------------------------------------------------------
-#HotIf WinActive("ahk_exe Figma.exe")
+#HotIf WinActive("ahk_exe Figma.exe") && !IsFileDialogActive()
 
 ; Shift + Y : Show/Hide UI (Ctrl + \)
 +y:: Send("^]")
@@ -14013,7 +14013,8 @@ PlayCompletionChime_Gemini() {
 
 ; Shift + F : Select first file - File
 +f:: {
-
+    if !IsFileDialogActive()
+        return
     try {
         root := UIA.ElementFromHandle(WinExist("A"))
 
@@ -14082,10 +14083,16 @@ PlayCompletionChime_Gemini() {
 }
 
 ; Shift + S : Focus search bar - Search bar
-+s:: Send "^e"
++s:: {
+    if !IsFileDialogActive()
+        return
+    Send "^e"
+}
 
 ; Shift + A : Focus address bar - Address bar
 +a:: {
+    if !IsFileDialogActive()
+        return
     try {
         root := UIA.ElementFromHandle(WinExist("A"))
         ; Try to find address bar by common names
@@ -14110,17 +14117,23 @@ PlayCompletionChime_Gemini() {
 }
 
 ; Shift + N : New folder - New Folder
-+n:: Send "^+n"
++n:: {
+    if !IsFileDialogActive()
+        return
+    Send "^+n"
+}
 
 ; Shift + P : Select first pinned item in sidebar - Pinned item
-+p::
-{
++p:: {
+    if !IsFileDialogActive()
+        return
     SelectExplorerSidebarFirstPinned()
 }
 
 ; Shift + T : Select "This PC" / "Este computador" in sidebar - This PC
-+t::
-{
++t:: {
+    if !IsFileDialogActive()
+        return
     SelectExplorerSidebarFirstPinned()
     Sleep 200
     Send "{End}"
@@ -14132,6 +14145,8 @@ PlayCompletionChime_Gemini() {
 
 ; Shift + M : Focus file name edit field - Name
 +m:: {
+    if !IsFileDialogActive()
+        return
     try {
         root := UIA.ElementFromHandle(WinExist("A"))
 
@@ -14179,6 +14194,8 @@ PlayCompletionChime_Gemini() {
 
 ; Shift + O : Click Insert/Open/Save button - Open/Save
 +o:: {
+    if !IsFileDialogActive()
+        return
     try {
         root := UIA.ElementFromHandle(WinExist("A"))
 
@@ -14242,6 +14259,8 @@ PlayCompletionChime_Gemini() {
 
 ; Shift + C : Click Cancel button - Cancel
 +c:: {
+    if !IsFileDialogActive()
+        return
     try {
         root := UIA.ElementFromHandle(WinExist("A"))
 
