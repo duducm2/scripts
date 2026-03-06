@@ -14125,9 +14125,16 @@ PlayCompletionChime_Gemini() {
 
 ; Shift + P : Select first pinned item in sidebar - Pinned item
 +p:: {
-    if !IsFileDialogActive()
+    StandardLoadingBar_Show("Going to pinned item...", "FFFF00")
+    if !IsFileDialogActive() {
+        StandardLoadingBar_Hide(0)
         return
-    SelectExplorerSidebarFirstPinned()
+    }
+    try {
+        SelectExplorerSidebarFirstPinned()
+    } finally {
+        StandardLoadingBar_Hide(800)
+    }
 }
 
 ; Shift + T : Select "This PC" / "Este computador" in sidebar - This PC
