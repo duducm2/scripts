@@ -93,52 +93,17 @@ GeminiIpcSend(requestObj) {
 UIA_ControlType_Button := 50000
 UIA_ControlType_MenuItem := 50011
 
-; #region agent log
-GeminiDebugLog(location, message, data, hypothesisId) {
-    logPath := A_ScriptDir "\debug-a6ae60.log"
-    try {
-        q := Chr(34)
-        dataStr := ""
-        for k, v in data {
-            vStr := String(v)
-            esc := StrReplace(StrReplace(StrReplace(vStr, "\", "\\"), q, "\" q), "`n", "\n")
-            dataStr .= (dataStr ? "," : "") q k q ":" q esc q
-        }
-        msgEsc := StrReplace(message, q, "\" q)
-        line := "{" q "sessionId" q ":" q "a6ae60" q "," q "location" q ":" q location q "," q "message" q ":" q msgEsc q "," q "data" q ":{" dataStr "}," q "timestamp" q ":" A_TickCount "," q "hypothesisId" q ":" q hypothesisId q "}"
-        FileAppend line "`n", logPath
-    } catch
-        return
-}
-; #endregion
-
 ; --- Phase 2: Centralized UIA discovery (single tree walk per element type) ------
 ; Returns array of Copy response buttons in document order; empty array on error. Caller must ensure tab active and scrolled to bottom.
 GetGeminiCopyButtonsArray(uia) {
-    ; #region agent log
-    GeminiDebugLog("Gemini.ahk:GetGeminiCopyButtonsArray", "entry", Map("caller", "discovery"), "A")
-    GeminiDebugLog("Gemini.ahk:GetGeminiCopyButtonsArray", "after entry", Map(), "A")
-    ; #endregion
     prevBatch := -1
     try prevBatch := A_BatchLines
     catch
         prevBatch := -1
     try {
         out := []
-        ; #region agent log
-        try FileAppend("step0`n", A_ScriptDir "\debug-a6ae60.log")
-        GeminiDebugLog("Gemini.ahk:GetGeminiCopyButtonsArray", "inside try", Map("step", "0"), "A")
-        ; #endregion
         A_BatchLines := -1
-        ; #region agent log
-        GeminiDebugLog("Gemini.ahk:GetGeminiCopyButtonsArray", "before FindAll", Map("step", "1"), "A")
-        ; #endregion
-        ; Use Type: "Button" (string); integer 50000 can fail in UIA condition/COM path (log showed no buttons count).
         allButtons := uia.FindAll({ Type: "Button" })
-        ; #region agent log
-        GeminiDebugLog("Gemini.ahk:GetGeminiCopyButtonsArray", "after FindAll Type Button", Map("totalButtons", String(
-            allButtons.Length)), "A")
-        ; #endregion
         nameMatchCount := 0
         classMatchCount := 0
         sampleNames := ""
@@ -157,33 +122,14 @@ GetGeminiCopyButtonsArray(uia) {
                     "(empty)")
             }
         }
-        ; #region agent log
-        GeminiDebugLog("Gemini.ahk:GetGeminiCopyButtonsArray", "filter result", Map("nameMatchCount", String(
-            nameMatchCount), "classMatchCount", String(classMatchCount), "outLength", String(out.Length), "sampleNames",
-        sampleNames, "sampleClasses", sampleClasses), "B")
-        ; #endregion
         if (out.Length = 0) {
             allButtons := uia.FindAll({ Type: "Button" })
-            ; #region agent log
-            GeminiDebugLog("Gemini.ahk:GetGeminiCopyButtonsArray", "fallback FindAll Button", Map("fallbackTotal",
-                String(allButtons.Length)), "E")
-            ; #endregion
             for button in allButtons {
                 if (IsGeminiCopyResponseButton(button.Name))
                     out.Push(button)
             }
         }
-        ; #region agent log
-        GeminiDebugLog("Gemini.ahk:GetGeminiCopyButtonsArray", "exit", Map("finalOutLength", String(out.Length)), "A")
-        ; #endregion
     } catch as err {
-        ; #region agent log
-        logP := A_ScriptDir "\debug-a6ae60.log"
-        try FileAppend("CATCH`n", logP)
-        try FileAppend("CATCH_MSG " (err.HasProp("Message") ? String(err.Message) : "?") "`n", logP)
-        GeminiDebugLog("Gemini.ahk:GetGeminiCopyButtonsArray", "catch", Map("err", err.Message ? String(err.Message) :
-            "null"), "A")
-        ; #endregion
         try A_BatchLines := prevBatch
         return []
     }

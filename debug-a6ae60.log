@@ -1,8 +1,0 @@
-{"sessionId":"a6ae60","location":"Gemini.ahk:GetGeminiCopyButtonsArray","message":"entry","data":{"caller":"discovery"},"timestamp":24793609,"hypothesisId":"A"}
-{"sessionId":"a6ae60","location":"Gemini.ahk:GetGeminiCopyButtonsArray","message":"after entry","data":{},"timestamp":24793609,"hypothesisId":"A"}
-step0
-{"sessionId":"a6ae60","location":"Gemini.ahk:GetGeminiCopyButtonsArray","message":"inside try","data":{"step":"0"},"timestamp":24793625,"hypothesisId":"A"}
-{"sessionId":"a6ae60","location":"Gemini.ahk:GetGeminiCopyButtonsArray","message":"before FindAll","data":{"step":"1"},"timestamp":24793640,"hypothesisId":"A"}
-{"sessionId":"a6ae60","location":"Gemini.ahk:GetGeminiCopyButtonsArray","message":"after FindAll Type Button","data":{"totalButtons":"135"},"timestamp":24793703,"hypothesisId":"A"}
-{"sessionId":"a6ae60","location":"Gemini.ahk:GetGeminiCopyButtonsArray","message":"filter result","data":{"classMatchCount":"13","nameMatchCount":"13","outLength":"13","sampleClasses":"mdc-button mat-mdc-button-base mat-mdc-tooltip-trigger icon-button mat-mdc-butto | mdc-button mat-mdc-button-base mat-mdc-tooltip-trigger icon-button mat-mdc-butto","sampleNames":"Copy | Copy"},"timestamp":24793718,"hypothesisId":"B"}
-{"sessionId":"a6ae60","location":"Gemini.ahk:GetGeminiCopyButtonsArray","message":"exit","data":{"finalOutLength":"13"},"timestamp":24793718,"hypothesisId":"A"}
