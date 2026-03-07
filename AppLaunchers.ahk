@@ -13,7 +13,7 @@ global AL_USE_WIKI_FSM := false
 
 ; --- Includes ----------------------------------------------------------------
 #include %A_ScriptDir%\env.ahk
-#include %A_ScriptDir%\AppLauncherIPC.ahk
+#include %A_ScriptDir%\aux\AppLauncherIPC.ahk
 OnExit(AL_AppLaunchersExit, 1)
 AL_AppLaunchersExit(*) {
     AL_RemoveInputGuard()

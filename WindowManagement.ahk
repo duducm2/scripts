@@ -15,7 +15,7 @@
 
 ; --- WindowManagement daemon integration (Phase 1: feature flags in WMIPC.ahk; Phase 3: use daemon) ---
 ; WM_USE_DAEMON, WM_USE_PIPE_IPC, WM_USE_SHM_IPC, WM_USE_EVENT_HOOK_CACHE (all default off)
-#include %A_ScriptDir%\WMIPC.ahk
+#include %A_ScriptDir%\aux\WMIPC.ahk
 
 ; #region agent log
 ; Debug log path for Copy-from-Gemini instrumentation (NDJSON, one object per line)

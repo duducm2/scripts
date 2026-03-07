@@ -22,7 +22,7 @@ SetTitleMatchMode 2
 #include UIA-v2\Lib\UIA.ahk
 #include UIA-v2\Lib\UIA_Browser.ahk
 #include %A_ScriptDir%\Utils.ahk
-#include %A_ScriptDir%\ShiftKeysIPC.ahk
+#include %A_ScriptDir%\aux\ShiftKeysIPC.ahk
 
 ; --- Global Variables ---
 global DEBUG_LOG_PATH := A_ScriptDir "\.cursor\debug.log"

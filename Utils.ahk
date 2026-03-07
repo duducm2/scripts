@@ -658,9 +658,9 @@ QuickUpdateScripts() {
     if (FileExist(pathsFile)) {
         ; Resolve verification script: first next to Utils.ahk (A_LineFile), then scriptsDir fallback (covers Act.ahk parent launch and direct run)
         utilsDir := SubStr(A_LineFile, 1, InStr(A_LineFile, "\", false, -1) - 1)
-        verifyScript := utilsDir "\Verify-ScriptUpdate.ps1"
+        verifyScript := utilsDir "\aux\Verify-ScriptUpdate.ps1"
         if (!FileExist(verifyScript))
-            verifyScript := scriptsDir "\Verify-ScriptUpdate.ps1"
+            verifyScript := scriptsDir "\aux\Verify-ScriptUpdate.ps1"
         if (FileExist(verifyScript)) {
             verifyExitCode := RunWait('powershell.exe -NoProfile -ExecutionPolicy Bypass -File "' verifyScript '" -ScriptsDir "' scriptsDir '" -PathsFile "' pathsFile '" -ReportFile "' reportFile '"',
                 scriptsDir, "Hide")
@@ -678,7 +678,7 @@ QuickUpdateScripts() {
                 ; Ignore cleanup errors
             }
         } else {
-            failedScripts.Push("Verify: Verify-ScriptUpdate.ps1 not found")
+            failedScripts.Push("Verify: aux\Verify-ScriptUpdate.ps1 not found")
         }
         try {
             FileDelete(pathsFile)
