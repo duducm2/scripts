@@ -5,14 +5,40 @@
 ; This script consolidates all Application/Website launcher hotkeys.
 ; -----------------------------------------------------------------------------
 
+; --- AppLauncher polyglot IPC feature flags (default off until phases verified) ---
+global AL_USE_DAEMON := false
+global AL_USE_MMF_IPC := false
+global AL_USE_EVENT_HOOKS := false
+global AL_USE_WIKI_FSM := false
+
 ; --- Includes ----------------------------------------------------------------
 #include %A_ScriptDir%\env.ahk
+#include %A_ScriptDir%\AppLauncherIPC.ahk
+OnExit(AL_AppLaunchersExit, 1)
+AL_AppLaunchersExit(*) {
+    AL_RemoveInputGuard()
+    AL_UnregisterForegroundHook()
+    AL_IPC_Teardown()
+}
 #include UIA-v2\Lib\UIA.ahk
 #include UIA-v2\Lib\UIA_Browser.ahk
 #include %A_ScriptDir%\Utils.ahk
 
 ; --- Global Variables ---
 global DEBUG_LOG_PATH := A_ScriptDir "\.cursor\debug.log"
+
+; Phase 3: WinEvent hook for foreground (replaces 200ms Wikipedia focus polling)
+global g_AL_WinEventHookHandle := 0
+global g_AL_LastForegroundHwnd := 0
+
+; Phase 4: Safe input guard (replaces BlockInput; escape = Ctrl+Shift+Escape)
+global g_AL_InputGuardEscaped := false
+global g_AL_hHookKbd := 0
+global g_AL_hHookMouse := 0
+global g_AL_InputGuardCallbackKbd := 0
+global g_AL_InputGuardCallbackMouse := 0
+; Phase 4: Wikipedia FSM state (Idle, LaunchRequested, AwaitWindow, AwaitPageReady, AwaitUIAReady, RestoreScroll, Verify, Completed, Failed)
+global AL_WikiState := "Idle"
 
 ; Helper function for safe debug logging with retry on file lock
 ; Handles file locking gracefully by retrying with exponential backoff
@@ -45,44 +71,48 @@ SafeDebugLog(text) {
 ; =============================================================================
 #!+n::
 {
-    ; Look for Cursor windows with specific names: habits, home, punctual, or work
-    ; Exclude windows containing "preview"
     targetWindow := ""
     fallbackWindow := ""
 
-    ; Get all Cursor windows (support both Cursor.exe and Code.exe just in case)
-    for proc in ["ahk_exe Cursor.exe", "ahk_exe Code.exe"] {
-        for hwnd in WinGetList(proc) {
-            try {
-                winTitle := WinGetTitle("ahk_id " hwnd)
-                winTitleLower := StrLower(winTitle)
-
-                ; Skip any preview windows
-                if InStr(winTitleLower, "preview")
-                    continue
-
-                ; Store the first valid Cursor window as fallback
-                if (!fallbackWindow)
-                    fallbackWindow := "ahk_id " hwnd
-
-                ; Check if window contains any of the target names
-                if (InStr(winTitleLower, "habits")
-                || InStr(winTitleLower, "home")
-                || InStr(winTitleLower, "punctual")
-                || InStr(winTitleLower, "work")) {
-                    targetWindow := "ahk_id " hwnd
-                    break
-                }
-            } catch {
-                ; Silently skip invalid windows
-            }
+    ; Phase 2: use daemon ResolveCursorTargets when IPC enabled
+    if (AL_USE_DAEMON && AL_USE_MMF_IPC) {
+        resp := AL_IPC_Call("ResolveCursorTargets", Map(), 3000)
+        if (resp.Has("ok") && resp["ok"]) {
+            pHwnd := AL_IPC_GetResultInt(resp, "primaryHwnd")
+            fHwnd := AL_IPC_GetResultInt(resp, "fallbackHwnd")
+            if (pHwnd)
+                targetWindow := "ahk_id " pHwnd
+            if (fHwnd)
+                fallbackWindow := "ahk_id " fHwnd
         }
-        if (targetWindow)
-            break
+    }
+
+    ; Legacy: WinGetList enumeration when daemon off or unavailable
+    if (targetWindow = "" && fallbackWindow = "") {
+        for proc in ["ahk_exe Cursor.exe", "ahk_exe Code.exe"] {
+            for hwnd in WinGetList(proc) {
+                try {
+                    winTitle := WinGetTitle("ahk_id " hwnd)
+                    winTitleLower := StrLower(winTitle)
+                    if InStr(winTitleLower, "preview")
+                        continue
+                    if (!fallbackWindow)
+                        fallbackWindow := "ahk_id " hwnd
+                    if (InStr(winTitleLower, "habits") || InStr(winTitleLower, "home") || InStr(winTitleLower,
+                        "punctual") || InStr(winTitleLower, "work")) {
+                        targetWindow := "ahk_id " hwnd
+                        break
+                    }
+                } catch {
+                    continue
+                }
+            }
+            if (targetWindow)
+                break
+        }
     }
 
     if (targetWindow) {
-        ; Found a matching Cursor window
         if (!WinExist(targetWindow)) {
             ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
             return
@@ -90,11 +120,10 @@ SafeDebugLog(text) {
         WinActivate(targetWindow)
         if WinWaitActive(targetWindow, , 2) {
             CenterMouse()
-            Sleep(100)  ; Small delay to ensure window is fully active
-            Send("^t")  ; Send Ctrl+Shift+O
+            Sleep(100)
+            Send("^t")
         }
     } else if (fallbackWindow) {
-        ; No specific window found, but found a general Cursor window - use fallback
         if (!WinExist(fallbackWindow)) {
             ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
             return
@@ -102,11 +131,10 @@ SafeDebugLog(text) {
         WinActivate(fallbackWindow)
         if WinWaitActive(fallbackWindow, , 2) {
             CenterMouse()
-            Sleep(100)  ; Small delay to ensure window is fully active
-            Send("^t")  ; Send Ctrl+Shift+O
+            Sleep(100)
+            Send("^t")
         }
     } else {
-        ; No Cursor window found at all - show fallback panel
         ShowCursorFallbackPanel()
     }
 }
@@ -420,12 +448,16 @@ MonitorWikipediaFocus() {
 StartWikipediaFocusMonitor() {
     global g_WikipediaFocusMonitorTimer
 
-    ; Stop any existing monitor first
     StopWikipediaFocusMonitor()
 
-    ; Start periodic monitoring (check every 200ms for responsive detection)
-    g_WikipediaFocusMonitorTimer := MonitorWikipediaFocus
-    SetTimer(g_WikipediaFocusMonitorTimer, 200)
+    ; Phase 3: event-driven foreground hook when enabled; else 200ms polling
+    if (AL_USE_EVENT_HOOKS) {
+        AL_RegisterForegroundHook()
+        g_WikipediaFocusMonitorTimer := true  ; flag only; no timer
+    } else {
+        g_WikipediaFocusMonitorTimer := MonitorWikipediaFocus
+        SetTimer(g_WikipediaFocusMonitorTimer, 200)
+    }
 }
 
 ; Stop monitoring Wikipedia window focus
@@ -433,9 +465,131 @@ StopWikipediaFocusMonitor() {
     global g_WikipediaFocusMonitorTimer
 
     if (g_WikipediaFocusMonitorTimer) {
-        SetTimer(g_WikipediaFocusMonitorTimer, 0)
+        if (Type(g_WikipediaFocusMonitorTimer) = "Func")
+            SetTimer(g_WikipediaFocusMonitorTimer, 0)
         g_WikipediaFocusMonitorTimer := false
     }
+}
+
+; Phase 3: Foreground hook callback (runs in hook thread; only schedule main-thread work)
+AL_ForegroundHookProc(hHook, event, hwnd, idObject, idChild, idEventThread, dwmsEventTime) {
+    global g_AL_LastForegroundHwnd
+    g_AL_LastForegroundHwnd := hwnd
+    SetTimer(AL_OnWikipediaForegroundChanged, -0)
+}
+
+; Phase 3: Main-thread handler when foreground changed (Wikipedia lost focus?)
+AL_OnWikipediaForegroundChanged() {
+    global g_WikipediaFocusMonitorTimer, g_AL_LastForegroundHwnd
+    if (!g_WikipediaFocusMonitorTimer)
+        return
+    try {
+        title := WinGetTitle("ahk_id " g_AL_LastForegroundHwnd)
+        if (InStr(title, "Wikipedia"))
+            return
+    } catch {
+        return
+    }
+    ; Wikipedia lost focus: same logic as MonitorWikipediaFocus()
+    SetTitleMatchMode 2
+    if (WinExist("Wikipedia")) {
+        wikipediaHwnd := WinExist("Wikipedia")
+        if (wikipediaHwnd) {
+            currentActiveHwnd := WinExist("A")
+            try {
+                WinActivate("ahk_id " wikipediaHwnd)
+            } catch {
+                DisableFocusMode()
+                StopWikipediaFocusMonitor()
+                return
+            }
+            Sleep(50)
+            Send("{F11}")
+            Sleep(100)
+            if (currentActiveHwnd && WinExist("ahk_id " currentActiveHwnd)) {
+                try
+                    WinActivate("ahk_id " currentActiveHwnd)
+                catch Any {
+                    ; window closed, skip restore
+                }
+            }
+        }
+    }
+    DisableFocusMode()
+    StopWikipediaFocusMonitor()
+}
+
+AL_RegisterForegroundHook() {
+    global g_AL_WinEventHookHandle
+    if (g_AL_WinEventHookHandle)
+        return
+    ; EVENT_SYSTEM_FOREGROUND = 0x0003, WINEVENT_OUTOFCONTEXT = 0
+    cb := CallbackCreate(AL_ForegroundHookProc, "F", 7)
+    h := DllCall("user32\SetWinEventHook", "UInt", 0x0003, "UInt", 0x0003, "Ptr", 0, "Ptr", cb, "UInt", 0, "UInt", 0,
+        "UInt", 0, "Ptr")
+    if (h) {
+        g_AL_WinEventHookHandle := h
+        ; Keep callback alive (store in global so not freed)
+        global g_AL_ForegroundHookCallback := cb
+    }
+}
+
+AL_UnregisterForegroundHook() {
+    global g_AL_WinEventHookHandle
+    if (g_AL_WinEventHookHandle) {
+        DllCall("user32\UnhookWinEvent", "Ptr", g_AL_WinEventHookHandle)
+        g_AL_WinEventHookHandle := 0
+    }
+}
+
+; Phase 4: Low-level input guard (replaces BlockInput); Ctrl+Shift+Escape = emergency escape
+AL_InstallInputGuard() {
+    global g_AL_InputGuardEscaped, g_AL_hHookKbd, g_AL_hHookMouse, g_AL_InputGuardCallbackKbd,
+        g_AL_InputGuardCallbackMouse
+    g_AL_InputGuardEscaped := false
+    if (g_AL_hHookKbd)
+        return
+    g_AL_InputGuardCallbackKbd := CallbackCreate(AL_InputGuardKeyboardProc, "F", 4)
+    g_AL_InputGuardCallbackMouse := CallbackCreate(AL_InputGuardMouseProc, "F", 4)
+    g_AL_hHookKbd := DllCall("user32\SetWindowsHookEx", "Int", 13, "Ptr", g_AL_InputGuardCallbackKbd, "Ptr", 0, "UInt",
+        0, "Ptr")
+    g_AL_hHookMouse := DllCall("user32\SetWindowsHookEx", "Int", 14, "Ptr", g_AL_InputGuardCallbackMouse, "Ptr", 0,
+        "UInt", 0, "Ptr")
+}
+
+AL_RemoveInputGuard() {
+    global g_AL_hHookKbd, g_AL_hHookMouse
+    if (g_AL_hHookKbd) {
+        DllCall("user32\UnhookWindowsHookEx", "Ptr", g_AL_hHookKbd)
+        g_AL_hHookKbd := 0
+    }
+    if (g_AL_hHookMouse) {
+        DllCall("user32\UnhookWindowsHookEx", "Ptr", g_AL_hHookMouse)
+        g_AL_hHookMouse := 0
+    }
+}
+
+AL_InputGuardKeyboardProc(nCode, wParam, lParam) {
+    global g_AL_InputGuardEscaped, g_AL_hHookKbd
+    if (nCode >= 0 && wParam = 0x100) {
+        vkCode := NumGet(lParam, 0, "UInt")
+        if (vkCode = 0x1B) {
+            if (DllCall("user32\GetAsyncKeyState", "Int", 0x11) & 0x8000 && DllCall("user32\GetAsyncKeyState", "Int",
+                0x10) & 0x8000) {
+                g_AL_InputGuardEscaped := true
+                AL_RemoveInputGuard()
+                return DllCall("user32\CallNextHookEx", "Ptr", 0, "Int", nCode, "Ptr", wParam, "Ptr", lParam, "Ptr")
+            }
+        }
+        return 1
+    }
+    return DllCall("user32\CallNextHookEx", "Ptr", 0, "Int", nCode, "Ptr", wParam, "Ptr", lParam, "Ptr")
+}
+
+AL_InputGuardMouseProc(nCode, wParam, lParam) {
+    if (nCode >= 0)
+        return 1
+    return DllCall("user32\CallNextHookEx", "Ptr", 0, "Int", nCode, "Ptr", wParam, "Ptr", lParam, "Ptr")
 }
 
 ; =============================================================================
@@ -529,7 +683,7 @@ RestoreWikipediaScrollPosition(scrollPercentage, bannerText := "Restoring scroll
         }
 
         ; Block input during restoration
-        BlockInput("On")
+        AL_InstallInputGuard()
 
         ; Wait for page to be ready
         Sleep(500)
@@ -537,14 +691,14 @@ RestoreWikipediaScrollPosition(scrollPercentage, bannerText := "Restoring scroll
         ; Get document height
         docHeight := uia.JSReturnThroughClipboard("document.documentElement.scrollHeight")
         if (docHeight = "" || docHeight = "undefined" || docHeight = "null") {
-            BlockInput("Off")
+            AL_RemoveInputGuard()
             StandardLoadingBar_Hide(0)
             return false
         }
 
         docHeightFloat := Float(docHeight)
         if (docHeightFloat <= 0) {
-            BlockInput("Off")
+            AL_RemoveInputGuard()
             StandardLoadingBar_Hide(0)
             return false
         }
@@ -554,12 +708,12 @@ RestoreWikipediaScrollPosition(scrollPercentage, bannerText := "Restoring scroll
         uia.JSExecute("window.scrollTo(0, " . Round(targetScrollY) . ");")
         Sleep(500)
 
-        BlockInput("Off")
+        AL_RemoveInputGuard()
         StandardLoadingBar_Update("Scroll position restored!")
         StandardLoadingBar_Hide(500)
         return true
     } catch Error as err {
-        BlockInput("Off")
+        AL_RemoveInputGuard()
         StandardLoadingBar_Hide(0)
         return false
     }
@@ -840,7 +994,7 @@ HandleWikipediaChar(char) {
                     Sleep(300)  ; Allow time for fullscreen exit
 
                     StandardLoadingBar_Show("📜 Restoring scroll position... Please wait", BANNER_ACCENT_INTERMEDIATE)
-                    BlockInput("On")
+                    AL_InstallInputGuard()
 
                     ; Initialize UIA_Browser with retry logic
                     ; For new windows, UIA needs more time to initialize and attach to the browser
@@ -872,7 +1026,7 @@ HandleWikipediaChar(char) {
                     }
 
                     if (!uia) {
-                        BlockInput("Off")
+                        AL_RemoveInputGuard()
                         StandardLoadingBar_Update("Error: Could not access browser")
                         StandardLoadingBar_Hide(2000)
                         Send("{F11}")
@@ -920,7 +1074,7 @@ HandleWikipediaChar(char) {
                     }
 
                     if (docHeight = "" || docHeight = "undefined" || docHeight = "null") {
-                        BlockInput("Off")
+                        AL_RemoveInputGuard()
                         StandardLoadingBar_Update("Error: Page not ready")
                         StandardLoadingBar_Hide(2000)
                         Send("{F11}")
@@ -930,7 +1084,7 @@ HandleWikipediaChar(char) {
 
                     docHeightFloat := Float(docHeight)
                     if (docHeightFloat <= 0) {
-                        BlockInput("Off")
+                        AL_RemoveInputGuard()
                         StandardLoadingBar_Update("Error: Invalid page height")
                         StandardLoadingBar_Hide(2000)
                         Send("{F11}")
@@ -982,7 +1136,7 @@ HandleWikipediaChar(char) {
                             }
                         }
 
-                        BlockInput("Off")
+                        AL_RemoveInputGuard()
                         StandardLoadingBar_Update("Scroll position restored!")
                         StandardLoadingBar_Hide(1000)
 
@@ -990,7 +1144,7 @@ HandleWikipediaChar(char) {
                         Send("{F11}")
                         Sleep(300)  ; Allow time for fullscreen transition
                     } catch Error as scrollErr {
-                        BlockInput("Off")
+                        AL_RemoveInputGuard()
                         StandardLoadingBar_Update("Error: Scroll failed")
                         StandardLoadingBar_Hide(2000)
                         Send("{F11}")
@@ -998,7 +1152,7 @@ HandleWikipediaChar(char) {
                     }
                 }
             } catch Error as err {
-                BlockInput("Off")
+                AL_RemoveInputGuard()
                 StandardLoadingBar_Update("Error: " . SubStr(err.Message, 1, 50))
                 StandardLoadingBar_Hide(2000)
                 ; Re-enter fullscreen after error
@@ -1294,7 +1448,7 @@ ShowWikipediaSelector() {
 
         if (savedPercentage > 0.0) {
             StandardLoadingBar_Show("📜 Restoring scroll position... Please wait", BANNER_ACCENT_INTERMEDIATE)
-            BlockInput("On")
+            AL_InstallInputGuard()
 
             ; Initialize UIA_Browser with retry logic
             uia := false
@@ -1313,7 +1467,7 @@ ShowWikipediaSelector() {
             }
 
             if (!uia) {
-                BlockInput("Off")
+                AL_RemoveInputGuard()
                 StandardLoadingBar_Update("Error: Could not access browser")
                 StandardLoadingBar_Hide(1000)
                 Send("{F11}")
@@ -1386,7 +1540,7 @@ ShowWikipediaSelector() {
                     StandardLoadingBar_Update("Error: Page not ready")
                 }
 
-                BlockInput("Off")
+                AL_RemoveInputGuard()
                 Send("{F11}")
                 Sleep(300)
                 StandardLoadingBar_Hide(1000)
