@@ -6523,12 +6523,20 @@ GeminiDelayedSubmitFlow() {
     g_HotstringGeminiRestoreHwnd := WinExist("A")  ; Store window to restore focus to after 4s sequence
     g_HotstringGeminiAutoSubmit := true
 
-    HotstringGeminiBanner_Show("⏳ Submitting in 4s... Press N to cancel auto-submit")
+    HotstringGeminiBanner_Show("⏳ Submitting in 4s... [Y] Submit now  [N] Cancel")
 
     Hotkey("n", GeminiCancelAutoSubmit, "On")
     Hotkey("N", GeminiCancelAutoSubmit, "On")
+    Hotkey("y", GeminiSpeedUpSubmit, "On")
+    Hotkey("Y", GeminiSpeedUpSubmit, "On")
 
     SetTimer(GeminiFinalizeSubmit, -3000)
+}
+
+; Y key: run submit immediately (paste + Enter to Gemini) and clean up banner/timers.
+GeminiSpeedUpSubmit(*) {
+    SetTimer(GeminiFinalizeSubmit, 0)
+    GeminiFinalizeSubmit()
 }
 
 GeminiCancelAutoSubmit(*) {
@@ -6588,6 +6596,8 @@ GeminiFinalizeSubmit() {
 
     try Hotkey("n", "Off")
     try Hotkey("N", "Off")
+    try Hotkey("y", "Off")
+    try Hotkey("Y", "Off")
     HotstringGeminiBanner_Hide()
 
     ; Delay-submit flow: do not switch tabs; paste to currently active Gemini tab
