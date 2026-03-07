@@ -40,6 +40,8 @@ GEMINI_ASYNC_TTS_MAX_RETRIES := 60
 GEMINI_COPY_MAX_RETRIES := 3
 ; Pronunciation result banner: long timeout so user can read (ms)
 GEMINI_PRONUNCIATION_BANNER_TIMEOUT_MS := 50000
+; Post-copy sync: wait before reading clipboard for banner so OS has committed (ms). Ensures banner shows current content, not stale.
+GEMINI_POST_COPY_SYNC_MS := 1200
 ; Performance instrumentation (set to true to log latencies to script dir)
 GEMINI_PERF_LOG_ENABLED := false
 GEMINI_PERF_LOG_PATH := A_ScriptDir "\.cursor\gemini_perf.log"
@@ -1232,9 +1234,23 @@ class GeminiAsyncLookup {
             StandardLoadingBar_Hide(0)
             return
         }
+        ; Post-copy sync: wait so clipboard is committed before we read for the banner (avoids stale data in UI).
+        ; Poll during the interval; use content once non-empty or after full delay.
+        syncElapsed := 0
+        syncStep := 150
+        while (syncElapsed < GEMINI_POST_COPY_SYNC_MS) {
+            Sleep syncStep
+            syncElapsed += syncStep
+            if (StrLen(Trim(A_Clipboard)) > 0)
+                break
+        }
+        if (syncElapsed < GEMINI_POST_COPY_SYNC_MS)
+            Sleep GEMINI_POST_COPY_SYNC_MS - syncElapsed
+        ; Use clipboard content only after the delay so the banner shows current content.
+        bannerText := A_Clipboard
         WinActivate("ahk_id " this.OriginalHwnd)
         StandardLoadingBar_Hide(0)
-        this.ShowResultBanner(A_Clipboard)
+        this.ShowResultBanner(bannerText)
     }
 
     ShowResultBanner(text) {
