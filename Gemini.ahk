@@ -40,8 +40,10 @@ GEMINI_ASYNC_TTS_MAX_RETRIES := 60
 GEMINI_COPY_MAX_RETRIES := 3
 ; Pronunciation result banner: long timeout so user can read (ms)
 GEMINI_PRONUNCIATION_BANNER_TIMEOUT_MS := 50000
-; Post-copy sync: wait before reading clipboard for banner so OS has committed (ms). Ensures banner shows current content, not stale.
-GEMINI_POST_COPY_SYNC_MS := 1200
+; Post-copy sync: max wait for clipboard change (sequence-number detection). Fallback if detection fails (ms).
+GEMINI_POST_COPY_SYNC_TIMEOUT_MS := 2000
+; Poll interval when waiting for clipboard sequence number to change (ms). Low value = minimal latency.
+GEMINI_CLIPBOARD_POLL_MS := 10
 ; Performance instrumentation (set to true to log latencies to script dir)
 GEMINI_PERF_LOG_ENABLED := false
 GEMINI_PERF_LOG_PATH := A_ScriptDir "\.cursor\gemini_perf.log"
@@ -58,6 +60,15 @@ GEMINI_PYTHON_IPC_TIMEOUT_MS := 5000
 ; EVENT_OBJECT_CREATE = 0x8000, OBJID_WINDOW = 0
 GEMINI_EVENT_OBJECT_CREATE := 0x8000
 GEMINI_OBJID_WINDOW := 0
+
+; --- Clipboard sequence number (user32) – O(1) change detection ------------------
+; Returns Windows clipboard sequence number (increments on any clipboard change). Used to wait for clipboard update with minimal latency instead of fixed sleep.
+GetClipboardSequenceNumber() {
+    try
+        return DllCall("user32\GetClipboardSequenceNumber", "UInt")
+    catch
+        return 0
+}
 
 ; --- Performance instrumentation (Phase 1) -------------------------------------
 ; Log latency for a flow; no-op if GEMINI_PERF_LOG_ENABLED is false. Non-blocking.
@@ -1230,23 +1241,20 @@ class GeminiAsyncLookup {
             return
         }
         copyOpt := { restoreWindow: false, playChimeAndNotify: false, alreadyActive: true }
+        seqBefore := GetClipboardSequenceNumber()
         if !CopyLastGeminiMessageWithRetry(copyOpt, this.GeminiHwnd) {
             StandardLoadingBar_Hide(0)
             return
         }
-        ; Post-copy sync: wait so clipboard is committed before we read for the banner (avoids stale data in UI).
-        ; Poll during the interval; use content once non-empty or after full delay.
+        ; Wait for clipboard change via sequence number (O(1) per check); proceed as soon as it changes instead of fixed delay.
         syncElapsed := 0
-        syncStep := 150
-        while (syncElapsed < GEMINI_POST_COPY_SYNC_MS) {
-            Sleep syncStep
-            syncElapsed += syncStep
-            if (StrLen(Trim(A_Clipboard)) > 0)
+        while (syncElapsed < GEMINI_POST_COPY_SYNC_TIMEOUT_MS) {
+            if (GetClipboardSequenceNumber() != seqBefore)
                 break
+            Sleep GEMINI_CLIPBOARD_POLL_MS
+            syncElapsed += GEMINI_CLIPBOARD_POLL_MS
         }
-        if (syncElapsed < GEMINI_POST_COPY_SYNC_MS)
-            Sleep GEMINI_POST_COPY_SYNC_MS - syncElapsed
-        ; Use clipboard content only after the delay so the banner shows current content.
+        ; Use clipboard content only after change detected (or timeout) so the banner shows current content.
         bannerText := A_Clipboard
         WinActivate("ahk_id " this.OriginalHwnd)
         StandardLoadingBar_Hide(0)
