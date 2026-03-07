@@ -14,27 +14,6 @@ PROMPT_FILE := A_ScriptDir "\data\Gemini_Prompt.txt"
 ; Copy response button names (EN/PT). Excludes "Copy prompt" / "Copiar prompt" which are different controls.
 GEMINI_COPY_RESPONSE_NAMES := ["Copy", "Copiar"]
 
-; #region agent log
-; Append one NDJSON line to debug-a6ae60.log for copy-index debugging.
-_GeminiCopyDebugLog(location, message, data := "") {
-    logPath := A_ScriptDir "\debug-a6ae60.log"
-    try {
-        q := Chr(34)
-        dataStr := ""
-        if (data && Type(data) = "Map") {
-            for k, v in data {
-                vStr := String(v)
-                esc := StrReplace(StrReplace(StrReplace(vStr, "\", "\\"), q, "\" q), "`n", "\n")
-                dataStr .= (dataStr ? "," : "") q k q ":" q esc q
-            }
-        }
-        line := "{" q "sessionId" q ":" q "a6ae60" q "," q "location" q ":" q location q "," q "message" q ":" q message q "," q "data" q ":{" dataStr "}," q "timestamp" q ":" A_TickCount "}"
-        FileAppend line "`n", logPath
-    } catch
-        return
-}
-; #endregion
-
 ; --- Refactor: threshold constants (no magic numbers) ---------------------------------
 ; Timeouts (ms)
 GEMINI_ACTIVATE_WAIT_MS := 2000
@@ -163,18 +142,6 @@ GetGeminiCopyButtonsArray(uia) {
                     out.Push(button)
             }
         }
-        ; #region agent log
-        if (out.Length > 0) {
-            lastBtn := out[out.Length]
-            _GeminiCopyDebugLog("GetGeminiCopyButtonsArray", "exit", Map("totalCopyButtons", String(out.Length),
-            "lastName", lastBtn.Name ? lastBtn.Name : "(empty)", "lastClass", lastBtn.ClassName ? SubStr(lastBtn.ClassName,
-                1, 100) : "(empty)"))
-            if (out.Length >= 2)
-                _GeminiCopyDebugLog("GetGeminiCopyButtonsArray", "penultimate", Map("idx", String(out.Length - 1),
-                "name", out[out.Length - 1].Name ? out[out.Length - 1].Name : "(empty)"))
-        } else
-            _GeminiCopyDebugLog("GetGeminiCopyButtonsArray", "exit", Map("totalCopyButtons", "0"))
-        ; #endregion
     } catch as err {
         try A_BatchLines := prevBatch
         return []
@@ -186,10 +153,6 @@ GetGeminiCopyButtonsArray(uia) {
 ; Returns the last Copy button (last response) or 0. Uses centralized discovery.
 GetLastGeminiCopyButton(uia) {
     arr := GetGeminiCopyButtonsArray(uia)
-    ; #region agent log
-    _GeminiCopyDebugLog("GetLastGeminiCopyButton", "return", Map("arrLen", String(arr.Length), "usingIdx", arr.Length >
-    0 ? String(arr.Length) : "0"))
-    ; #endregion
     return (arr.Length > 0) ? arr[arr.Length] : 0
 }
 
@@ -313,16 +276,10 @@ class GeminiState {
         if (geminiHwnd && GeminiState._hwnd = geminiHwnd && GeminiState._lastCopyButton != "") {
             try {
                 _ := GeminiState._lastCopyButton.Name
-                ; #region agent log
-                _GeminiCopyDebugLog("GetLastCopyButtonCached", "cached", Map("hwnd", String(geminiHwnd)))
-                ; #endregion
                 return GeminiState._lastCopyButton
             } catch
                 GeminiState.Invalidate()
         }
-        ; #region agent log
-        _GeminiCopyDebugLog("GetLastCopyButtonCached", "fresh", Map("hwnd", String(geminiHwnd)))
-        ; #endregion
         btn := GetLastGeminiCopyButton(uia)
         if (btn && geminiHwnd) {
             GeminiState._hwnd := geminiHwnd
