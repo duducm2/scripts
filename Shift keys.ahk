@@ -81,11 +81,6 @@ PROMPT_FILE := A_ScriptDir "\\ChatGPT_Prompt.txt"
 ; ShiftKeys daemon IPC: bootstrap connection on load (non-blocking)
 ShiftKeysIPC_Bootstrap()
 
-; Function to send symbol characters
-SendSymbol(sym) {
-    SendText(sym)
-}
-
 ; Function to pad shortcuts to consistent width for alignment
 PadShortcut(shortcut, targetWidth := 24) {
     ; Return shortcut without padding (spaces removed)
@@ -2508,25 +2503,6 @@ WaitForButton(root, pattern, timeout := 5000) {
         "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:1818`",`"message`":`"WaitForButton timeout - no button found`",`"data`":{`"pattern`":`"{4}`"},`"sessionId`":`"debug-session`",`"runId`":`"run1`",`"hypothesisId`":`"B`"}`n",
         A_TickCount, Random(1000, 9999), A_TickCount, pattern)
     ; #endregion
-    return 0
-}
-
-; ---------------------------------------------------------------------------
-; WaitForList(root, pattern := "", timeout := 5000)
-;   â€¢ Searches descendant List controls; Name must match `pattern` if provided
-;   â€¢ Returns the UIA element or 0 after `timeout` ms
-; ---------------------------------------------------------------------------
-WaitForList(root, pattern := "", timeout := 5000) {
-    if !IsObject(root)
-        return 0
-    deadline := A_TickCount + timeout
-    while (A_TickCount < deadline) {
-        for lst in root.FindAll({ Type: "List" }) {
-            if (!pattern || RegExMatch(lst.Name, pattern))
-                return lst
-        }
-        Sleep 150
-    }
     return 0
 }
 
