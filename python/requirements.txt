@@ -1,0 +1,2 @@
+# ShiftKeys daemon (Named Pipe server on Windows)
+pywin32>=306

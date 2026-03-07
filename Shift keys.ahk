@@ -22,13 +22,19 @@ SetTitleMatchMode 2
 #include UIA-v2\Lib\UIA.ahk
 #include UIA-v2\Lib\UIA_Browser.ahk
 #include %A_ScriptDir%\Utils.ahk
+#include %A_ScriptDir%\ShiftKeysIPC.ahk
 
 ; --- Global Variables ---
 global DEBUG_LOG_PATH := A_ScriptDir "\.cursor\debug.log"
+; Phase 5: Gate debug I/O; set to true only when diagnosing (avoids file I/O in hot paths).
+global DEBUG_SHIFTKEYS := false
 
 ; Helper function for safe debug logging with retry on file lock
 ; Handles file locking gracefully by retrying with exponential backoff
+; No-op when DEBUG_SHIFTKEYS is false (production).
 SafeDebugLog(text) {
+    if (!DEBUG_SHIFTKEYS)
+        return true
     maxRetries := 3
     retryDelay := 10
     loop maxRetries {
@@ -71,6 +77,9 @@ GetChatGPTWindowHwnd() {
 
 ; --- Config ---------------------------------------------------------------
 PROMPT_FILE := A_ScriptDir "\\ChatGPT_Prompt.txt"
+
+; ShiftKeys daemon IPC: bootstrap connection on load (non-blocking)
+ShiftKeysIPC_Bootstrap()
 
 ; Function to send symbol characters
 SendSymbol(sym) {
@@ -3151,48 +3160,65 @@ RestoreWikipediaScrollPosition(scrollPercentage, bannerText := "📜 Restoring s
             textWidth: 500,
             fontSize: 17, passiveBgColor: BANNER_ACCENT_INTERMEDIATE })
 
-        ; Block input during restoration
+        ; Block input during restoration (Phase 4: guaranteed cleanup in finally)
         BlockInput("On")
-
-        ; Wait for page to be ready
-        Sleep(500)
-
-        ; Get document height
-        docHeight := uia.JSReturnThroughClipboard("document.documentElement.scrollHeight")
-        if (docHeight = "" || docHeight = "undefined" || docHeight = "null") {
-            BlockInput("Off")
-            StandardLoadingBar_Hide(0)
-            return false
-        }
-
-        docHeightFloat := Float(docHeight)
-        if (docHeightFloat <= 0) {
-            BlockInput("Off")
-            StandardLoadingBar_Hide(0)
-            return false
-        }
-
-        ; Calculate and execute scroll
-        targetScrollY := scrollPercentage * docHeightFloat
-        uia.JSExecute("window.scrollTo(0, " . Round(targetScrollY) . ");")
-        Sleep(500)
-
-        ; Update banner to show success
         try {
-            StandardLoadingBar_Update("Scroll position restored!")
-            Sleep(1000)
-        } catch {
-        }
+            ; Wait for page to be ready (condition-based, up to 500ms) instead of fixed Sleep(500)
+            deadline := A_TickCount + 500
+            docHeight := ""
+            loop {
+                docHeight := uia.JSReturnThroughClipboard("document.documentElement.scrollHeight")
+                if (docHeight != "" && docHeight != "undefined" && docHeight != "null") {
+                    try h := Float(docHeight)
+                    catch {
+                        h := 0
+                    }
+                    if (h > 0)
+                        break
+                }
+                if (A_TickCount >= deadline)
+                    break
+                Sleep(50)
+            }
+            if (docHeight = "" || docHeight = "undefined" || docHeight = "null") {
+                StandardLoadingBar_Hide(0)
+                return false
+            }
+            docHeightFloat := Float(docHeight)
+            if (docHeightFloat <= 0) {
+                StandardLoadingBar_Hide(0)
+                return false
+            }
 
-        ; Cleanup
-        BlockInput("Off")
-        try {
-            Sleep(500)
-            StandardLoadingBar_Hide(0)
-        } catch {
-        }
+            ; Calculate and execute scroll
+            targetScrollY := scrollPercentage * docHeightFloat
+            uia.JSExecute("window.scrollTo(0, " . Round(targetScrollY) . ");")
+            deadline2 := A_TickCount + 500
+            while (A_TickCount < deadline2)
+                Sleep(50)
 
-        return true
+            ; Update banner to show success
+            try {
+                StandardLoadingBar_Update("Scroll position restored!")
+                Sleep(1000)
+            } catch {
+            }
+
+            try {
+                Sleep(500)
+                StandardLoadingBar_Hide(0)
+            } catch {
+            }
+
+            return true
+        } catch Error as err {
+            try StandardLoadingBar_Hide(0)
+            catch {
+            }
+            return false
+        } finally {
+            BlockInput("Off")
+        }
     } catch Error as err {
         BlockInput("Off")
         try StandardLoadingBar_Hide(0)
@@ -6424,9 +6450,9 @@ RenameChatGPTWindowToChatGPT() {
 #HotIf
 
 ;-------------------------------------------------------------------
-; ChatGPT Shortcuts
+; ChatGPT Shortcuts (Phase 2: O(1) predicate via IsChatGPTActiveForHotkey when USE_DAEMON_CONTEXT_CHATGPT)
 ;-------------------------------------------------------------------
-#HotIf (hwnd := GetChatGPTWindowHwnd()) && WinActive("ahk_id " hwnd)
+#HotIf IsChatGPTActiveForHotkey()
 
 ; Shift + U : (reserved for later script)
 
@@ -13779,7 +13805,11 @@ Enter:: {
     ; Send Enter key to submit the prompt
     Send "{Enter}"
 
-    ; Monitor for response completion and play sound when done
+    ; Phase 3: non-blocking daemon watch or legacy blocking monitor
+    if (USE_DAEMON_MONITOR_GEMINI) {
+        ShiftKeysIPC_StartGeminiWatch(300000, PlayCompletionChime_Gemini)
+        return
+    }
     WaitForStopResponseButton_Gemini()
 }
 
@@ -13788,7 +13818,11 @@ Enter:: {
     ; Send Enter key to submit the prompt
     Send "{Enter}"
 
-    ; Monitor for response completion
+    ; Phase 3: non-blocking daemon watch or legacy blocking monitor
+    if (USE_DAEMON_MONITOR_GEMINI) {
+        ShiftKeysIPC_StartGeminiWatch(300000, PlayCompletionChime_Gemini)
+        return
+    }
     WaitForStopResponseButton_Gemini()
 }
 
