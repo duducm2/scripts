@@ -1,0 +1,11 @@
+{"sessionId":"a6ae60","location":"GetLastCopyButtonCached","message":"fresh","data":{"hwnd":"5179910"},"timestamp":26757921}
+{"sessionId":"a6ae60","location":"GetGeminiCopyButtonsArray","message":"exit","data":{"lastClass":"mdc-button mat-mdc-button-base mat-mdc-tooltip-trigger icon-button mat-mdc-button mat-unthemed _mat-","lastName":"Copy","totalCopyButtons":"21"},"timestamp":26758000}
+{"sessionId":"a6ae60","location":"GetGeminiCopyButtonsArray","message":"penultimate","data":{"idx":"20","name":"Copy"},"timestamp":26758000}
+{"sessionId":"a6ae60","location":"GetLastGeminiCopyButton","message":"return","data":{"arrLen":"21","usingIdx":"21"},"timestamp":26758000}
+{"sessionId":"a6ae60","location":"GetLastCopyButtonCached","message":"fresh","data":{"hwnd":"5179910"},"timestamp":26759921}
+{"sessionId":"a6ae60","location":"GetGeminiCopyButtonsArray","message":"exit","data":{"lastClass":"mdc-button mat-mdc-button-base mat-mdc-tooltip-trigger icon-button mat-mdc-button mat-unthemed _mat-","lastName":"Copy","totalCopyButtons":"21"},"timestamp":26760000}
+{"sessionId":"a6ae60","location":"GetGeminiCopyButtonsArray","message":"penultimate","data":{"idx":"20","name":"Copy"},"timestamp":26760000}
+{"sessionId":"a6ae60","location":"GetLastGeminiCopyButton","message":"return","data":{"arrLen":"21","usingIdx":"21"},"timestamp":26760015}
+{"sessionId":"a6ae60","location":"GetLastCopyButtonCached","message":"cached","data":{"hwnd":"5179910"},"timestamp":26761421}
+{"sessionId":"a6ae60","location":"GetLastCopyButtonCached","message":"cached","data":{"hwnd":"5179910"},"timestamp":26763218}
+{"sessionId":"a6ae60","location":"GetLastCopyButtonCached","message":"cached","data":{"hwnd":"5179910"},"timestamp":26763953}
