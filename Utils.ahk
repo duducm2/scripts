@@ -445,8 +445,7 @@ InitQuickOpenFiles()
 ; Global variables for macros
 global g_Macros := []
 global g_MacroCharMap := Map()  ; Maps character to macro function
-global g_DictationLoopActive := false
-global g_ProgrammaticDictationStop := false  ; Skip ~#!+0 handler when script sends #!+0 (loop cycle)
+global g_ProgrammaticDictationStop := false  ; Skip ~#!+0 when script sends #!+0 (e.g. #!+j)
 
 ; Register a macro
 RegisterMacro(func, title, char := "") {
@@ -2454,147 +2453,6 @@ CheckAndOpenOutlookTeams(checkOutlook := false, checkTeams := false) {
     return false
 }
 
-; Infinite Dictation Macro
-; Each loop = one 60s cycle; dictation cycles on/off every 15s within a loop to prevent transcription timeouts
-ToggleDictationLoop() {
-    global g_DictationLoopActive, g_ProgrammaticDictationStop
-
-    if (g_DictationLoopActive) {
-        ; Stop Infinite Dictation
-        g_DictationLoopActive := false
-        ; Turn off timers
-        SetTimer(DictationLoopStop, 0)
-        SetTimer(DictationLoopStart, 0)
-        ; Send Win+Alt+Shift+0 to finish dictation
-        g_ProgrammaticDictationStop := true
-        SendInput "#!+0"
-        ; Merge non-favorite clips: 5s countdown when user finishes Infinite Dictation (N or End to cancel)
-        DictationMerge_StartCountdown(5)
-    } else {
-        ; Start Infinite Dictation (first loop)
-        ; Clear any existing timers first to prevent old timers from firing
-        SetTimer(DictationLoopStop, 0)
-        SetTimer(DictationLoopStart, 0)
-        g_DictationLoopActive := true
-        ; Begin the first loop
-        DictationLoopStart()
-    }
-}
-
-DictationLoopStart() {
-    ; Delegate to Infinite Dictation module when it owns the loop
-    if (InfiniteDictation.IsActive) {
-        InfiniteDictation.LoopCycle()
-        return
-    }
-    global g_DictationLoopActive, g_DictationStartRetries, g_ProgrammaticDictationStop
-
-    ; Safety check: Only proceed if Infinite Dictation is still active
-    ; This prevents starting if user manually stopped it
-    if (!g_DictationLoopActive) {
-        return
-    }
-
-    ; Ensure Handy is running before attempting to start dictation
-    if (!ProcessExist("handy.exe")) {
-        Handy_ActivateOrLaunch()
-        Sleep 2000 ; Wait for launch
-    }
-
-    ; Check if already recording to prevent toggling off
-    if (WinExist("Recording ahk_exe handy.exe")) {
-        ; Already recording, just ensure timer is running
-        SetTimer(DictationLoopStop, 0)
-        SetTimer(DictationLoopStop, -15000)
-        return
-    }
-
-    g_DictationStartRetries := 0
-    ; Send Win+Alt+Shift+0 to start dictation
-    g_ProgrammaticDictationStop := true
-    SendEvent "#!+0"
-
-    ; Double-check Infinite Dictation is still active before scheduling next loop
-    ; User may have stopped it during the dictation start delay
-    if (!g_DictationLoopActive) {
-        return
-    }
-
-    ; Clear any existing timer first to prevent accumulation
-    SetTimer(DictationLoopStop, 0)
-
-    ; Schedule stop after 15s (one loop segment) - negative period = one-shot timer
-    ; Only schedules if Infinite Dictation is still active (checked above)
-    SetTimer(DictationLoopStop, -15000)
-
-    ; Verification: Check if window appeared after a delay
-    SetTimer(VerifyDictationStart, -1500)
-}
-
-global g_DictationStartRetries := 0
-
-VerifyDictationStart() {
-    global g_DictationLoopActive, g_DictationStartRetries, g_ProgrammaticDictationStop
-    if (!g_DictationLoopActive) {
-        return
-    }
-
-    if (!WinExist("Recording ahk_exe handy.exe")) {
-        g_DictationStartRetries++
-        if (g_DictationStartRetries <= 3) {
-            ; Retry start if window didn't appear
-            g_ProgrammaticDictationStop := true
-            SendEvent "#!+0"
-            ; Reschedule stop timer just in case
-            SetTimer(DictationLoopStop, 0)
-            SetTimer(DictationLoopStop, -15000)
-            SetTimer(VerifyDictationStart, -1500)
-        } else {
-            ShowCenteredOverlay_Utils("❌ Failed to start dictation", 2000, BANNER_ACCENT_ERROR)
-            g_DictationLoopActive := false
-        }
-    }
-}
-
-DictationLoopStop() {
-    global g_DictationLoopActive, g_DictationLoopSound, g_ProgrammaticDictationStop
-
-    ; Safety check: Only proceed if Infinite Dictation is still active
-    ; This prevents restarting next loop if user manually stopped via ToggleDictationLoop()
-    if (!g_DictationLoopActive) {
-        return
-    }
-
-    ; Only send stop command if actually recording
-    if (WinExist("Recording ahk_exe handy.exe")) {
-        ; Send Win+Alt+Shift+0 to stop dictation (triggers transcription)
-        g_ProgrammaticDictationStop := true
-        SendEvent "#!+0"
-
-        ; Play sound to notify that transcription has started (if enabled)
-        if (IsSoundEnabled()) {
-            SoundPlay(g_DictationLoopSound)
-        }
-    } else {
-        ; If not recording, we might have stopped early or crashed.
-        ; Restart loop immediately to recover.
-        SetTimer(DictationLoopStart, -1000)
-    }
-
-    ; Double-check loop is still active before scheduling restart
-    ; User may have stopped it during the sound playback delay
-    if (!g_DictationLoopActive) {
-        return
-    }
-
-    ; Clear any existing timer first to prevent accumulation
-    SetTimer(DictationLoopStart, 0)
-
-    ; REMOVED: Schedule next start after 1 second
-    ; We now rely on PlayDictationCompletionChime to trigger next loop
-    ; after transcription is complete.
-}
-
 ; Internal helper: Performs clipboard cleanup without showing prompt
 ; Used when user has already confirmed they want to clean clipboard
 CleanClipboardInternal() {
@@ -2997,45 +2855,6 @@ CleanClipboard() {
 
     ; User selected "Yes" - proceed with the workflow
     CleanClipboardInternal()
-}
-
-; Dictation Toggle with Clipboard Cleanup Option (on start only)
-; Toggles Infinite Dictation on/off. When starting, optionally asks to clean clipboard.
-; When stopping, does NOT show clipboard cleanup prompt.
-DictationStartWithClipboardOption() {
-    global g_DictationLoopActive, g_PendingDictationMerge, g_ProgrammaticDictationStop
-
-    if (g_DictationLoopActive) {
-        ; Stop Infinite Dictation - show merge countdown when user finishes
-        g_DictationLoopActive := false
-        ; Turn off timers
-        SetTimer(DictationLoopStop, 0)
-        SetTimer(DictationLoopStart, 0)
-        ; Send Win+Alt+Shift+0 to finish dictation
-        g_ProgrammaticDictationStop := true
-        SendInput "#!+0"
-        ; Set flag to start merge countdown after transcription completes
-        ; This ensures AI transcription and handy.exe finish before Clip Angel merge begins
-        g_PendingDictationMerge := true
-    } else {
-        ; Start Infinite Dictation - show clipboard cleanup prompt ONLY when starting
-        ; Show message box asking about clipboard cleanup
-        result := MsgBox("Would you like to clean up the clipboard?", "Dictation Start", "YesNo")
-
-        if (result = "Yes") {
-            ; Execute clipboard cleanup algorithm without showing second prompt
-            ; (User already confirmed they want to clean clipboard)
-            CleanClipboardInternal()
-        }
-        ; If No, continue with Infinite Dictation without cleanup
-
-        ; Clear any existing timers first to prevent old timers from firing
-        SetTimer(DictationLoopStop, 0)
-        SetTimer(DictationLoopStart, 0)
-        g_DictationLoopActive := true
-        ; Begin the first loop
-        DictationLoopStart()
-    }
 }
 
 ; =============================================================================
@@ -7953,9 +7772,7 @@ global g_DictationCompletionChimeScheduled := false  ; Flag to prevent multiple 
 global g_LastDictationSoundTick := 0  ; Timestamp of last dictation sound to throttle audio output
 global g_DictationStartSound := A_ScriptDir . "\sounds\speach-start.wav"
 global g_DictationStopSound := A_ScriptDir . "\sounds\speach-finished.wav"
-global g_DictationLoopSound := A_ScriptDir . "\sounds\retro1.wav"
 global g_PendingDictationAction := ""  ; Action to execute after transcription: "Paste" or "PasteEnter"
-global g_PendingDictationMerge := false  ; Flag to trigger merge countdown after transcription completes
 global g_PendingGeminiPromptAfterDictation := false  ; When set by ~#!+0 stop, show "Send to Gemini? Y (4s)" after completion
 global g_DictationGeminiConfirmBannerVisible := false  ; Guard: only one "Send to Gemini?" banner at a time
 global g_KeepIndicatorVisible := false  ; Flag to keep indicator visible until paste action completes
@@ -8200,9 +8017,8 @@ DictationClipboardHandler(DataType) {
 
 ; Play completion chime after transcription finishes
 PlayDictationCompletionChime(*) {
-    global g_DictationCompletionChimeScheduled, g_PendingDictationAction, g_PendingDictationMerge,
+    global g_DictationCompletionChimeScheduled, g_PendingDictationAction,
         g_KeepIndicatorVisible, g_PendingGeminiPromptAfterDictation
-    global g_DictationLoopActive
 
     ; Ensure clipboard handler is removed (safe to call even if already removed)
     try {
@@ -8253,16 +8069,6 @@ PlayDictationCompletionChime(*) {
             g_KeepIndicatorVisible := false
         }
 
-        ; Check if merge countdown should start after transcription completes
-        ; This ensures AI transcription and handy.exe finish before Clip Angel merge begins
-        pendingMerge := g_PendingDictationMerge
-        g_PendingDictationMerge := false  ; Clear immediately after reading
-
-        if (pendingMerge) {
-            ; Transcription is complete, now safe to start merge countdown
-            DictationMerge_StartCountdown(5)
-        }
-
         ; If user stopped dictation with Win+Alt+Shift+0 (no Paste/PasteEnter), show Gemini confirm banner (once only).
         Critical "On"
         pendingGemini := g_PendingGeminiPromptAfterDictation
@@ -8279,21 +8085,27 @@ PlayDictationCompletionChime(*) {
             ; #endregion
             DictationGeminiConfirm_ShowAndWait()
         }
-
-        ; Trigger next loop iteration if active (module or legacy)
-        if (InfiniteDictation.IsActive) {
-            InfiniteDictation.OnTranscriptionComplete()
-        } else if (g_DictationLoopActive) {
-            SetTimer(DictationLoopStart, -2000)
-        }
     }
 }
 
-; Check Recording window (handy.exe) and update indicator; play start chime when detected.
-CheckDictationRecordingWindow() {
-    global g_DictationActive, g_DictationCompletionChimeScheduled, g_LastStateTransitionTick, g_DictationStartSound,
-        g_DictationSoundPlayed, g_DictationStartClipboardText
+; Called when dictation stop detected: play chime now if clipboard already changed, else wait for change
+DictationCompletionChimeOrWaitForClipboard() {
+    global g_DictationStartClipboardText
+    currentClip := ""
+    try {
+        currentClip := A_Clipboard
+    }
+    if (currentClip != g_DictationStartClipboardText) {
+        PlayDictationCompletionChime()
+    } else {
+        OnClipboardChange(DictationClipboardHandler)
+        SetTimer(PlayDictationCompletionChime, -1500)
+    }
+}
 
+CheckDictationRecordingWindow() {
+    global g_DictationActive, g_LastStateTransitionTick, g_DictationStartClipboardText
+    global g_DictationSoundPlayed, g_DictationCompletionChimeScheduled, g_DictationPulseTimer, g_KeepIndicatorVisible
     ; Check if the "Recording" window exists
     windowExists := false
     try {
@@ -8358,28 +8170,9 @@ CheckDictationRecordingWindow() {
         g_DictationSoundPlayed := false
 
         StopDictationPulseTimer()
-        global g_KeepIndicatorVisible
-        if (!g_KeepIndicatorVisible) {
-            HideDictationIndicator()
-        }
-
-        ; Check if clipboard has already changed (Handy might have updated it before window closed)
-        currentClip := ""
-        try {
-            currentClip := A_Clipboard
-        }
-
-        if (currentClip != g_DictationStartClipboardText) {
-            ; Clipboard already updated, trigger sound immediately
-            PlayDictationCompletionChime()
-        } else {
-            ; Clipboard not yet updated, wait for change
-            OnClipboardChange(DictationClipboardHandler)
-            ; Set fallback timer (reduced to 1.5s)
-            SetTimer(PlayDictationCompletionChime, -1500)
-        }
-    }
-    else if (g_DictationActive && windowExists) {
+        HideDictationIndicator()
+        DictationCompletionChimeOrWaitForClipboard()
+    } else if (g_DictationActive && windowExists) {
         ShowDictationIndicator()
         if (!g_DictationPulseTimer) {
             StartDictationPulseTimer()
@@ -8464,7 +8257,7 @@ OnExit(CleanupDictationIndicator)
     static lastHotkeyTick := 0
     static isProcessing := false
 
-    ; Skip when script sends #!+0 programmatically (Infinite Dictation stop/start, #!+7 stop, etc.)
+    ; Skip when script sends #!+0 programmatically (e.g. #!+j sending #!+0)
     if (g_ProgrammaticDictationStop) {
         g_ProgrammaticDictationStop := false
         return
@@ -8482,20 +8275,6 @@ OnExit(CleanupDictationIndicator)
     ; Capture before KeyWait: check timer may clear g_DictationActive when Recording window closes,
     ; so by the time we reach if/else it can be false even when user intended to stop.
     dictationWasActiveOnKeyPress := g_DictationActive
-
-    ; If Infinite Dictation is active, treat as interrupt (same as Win+Alt+Shift+7)
-    ; Logic gate: Only allow termination during Recording state; block during Transcribing state
-    if (InfiniteDictation.IsActive) {
-        if (!WinExist("Recording ahk_exe handy.exe")) {
-            ; Transcribing - block termination to prevent interrupting active transcription
-            isProcessing := false
-            return
-        }
-        ; Recording - allow termination
-        InfiniteDictation.Stop()
-        isProcessing := false
-        return
-    }
 
     KeyWait("0", "L")
 
@@ -8526,9 +8305,6 @@ OnExit(CleanupDictationIndicator)
     isProcessing := false
 }
 
-; Infinite Dictation module (state and loop logic)
-#Include "Lib\InfiniteDictation.ahk"
-
 ; Win+Alt+Shift+7 is defined in Gemini.ahk (TTS from selection: repeat exactly + read aloud).
 
 ; Dictation with paste and submit action - Win+Alt+Shift+J
@@ -8556,7 +8332,3 @@ OnExit(CleanupDictationIndicator)
         SendInput "#!+0"
     }
 }
-
-; Start the check timer automatically when script loads
-; This continuously monitors for the Recording window and updates indicator position
-StartDictationCheckTimer()
