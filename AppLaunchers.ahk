@@ -40,28 +40,6 @@ global g_AL_InputGuardCallbackMouse := 0
 ; Phase 4: Wikipedia FSM state (Idle, LaunchRequested, AwaitWindow, AwaitPageReady, AwaitUIAReady, RestoreScroll, Verify, Completed, Failed)
 global AL_WikiState := "Idle"
 
-; Helper function for safe debug logging with retry on file lock
-; Handles file locking gracefully by retrying with exponential backoff
-SafeDebugLog(text) {
-    maxRetries := 3
-    retryDelay := 10
-    loop maxRetries {
-        try {
-            FileAppend text, DEBUG_LOG_PATH
-            return true
-        } catch Error as err {
-            ; If it's a file lock error (32) and we have retries left, wait and retry
-            if (err.Number = 32 && A_Index < maxRetries) {
-                Sleep retryDelay * A_Index  ; Exponential backoff
-            } else {
-                ; For other errors or final retry, silently fail to not interrupt script execution
-                return false
-            }
-        }
-    }
-    return false
-}
-
 ; --- Hotkeys & Functions -----------------------------------------------------
 
 ; =============================================================================
@@ -2048,56 +2026,6 @@ StartPomodoroTimer() {
 }
 
 ; =============================================================================
-; Manual Wikipedia Scroll Position Save Function
-; Can be called manually to save the current scroll position
-; =============================================================================
-SaveWikipediaScrollPositionManually() {
-    ; Check if Wikipedia window is currently active
-    if (!WinActive("ahk_exe chrome.exe") || !InStr(WinGetTitle("A"), "Wikipedia")) {
-        return false
-    }
-
-    ; Check if window is on Monitor 3
-    isOnMonitor3 := IsWindowOnMonitor3()
-    if (!isOnMonitor3) {
-        return false
-    }
-
-    StandardLoadingBar_Show("💾 Saving scroll position... Please wait", BANNER_ACCENT_INTERMEDIATE)
-    try {
-        url := GetWikipediaURL()
-        if (url = "") {
-            return false
-        }
-
-        uia := UIA_Browser("ahk_exe chrome.exe")
-        scrollY := uia.JSReturnThroughClipboard("window.pageYOffset")
-        docHeight := uia.JSReturnThroughClipboard("document.documentElement.scrollHeight")
-
-        if (scrollY != "" && scrollY != "undefined" && scrollY != "null" && docHeight != "" && docHeight !=
-            "undefined" && docHeight != "null") {
-            scrollYFloat := Float(scrollY)
-            docHeightFloat := Float(docHeight)
-            if (scrollYFloat >= 0 && docHeightFloat > 0) {
-                scrollPercentage := scrollYFloat / docHeightFloat
-                if (scrollPercentage > 1.0)
-                    scrollPercentage := 1.0
-                saved := SaveWikipediaScrollPosition(url, scrollPercentage)
-                if (saved) {
-                    StandardLoadingBar_Update("Scroll position saved!")
-                    StandardLoadingBar_Hide(1000)
-                    return true
-                }
-            }
-        }
-    } catch Error as err {
-    } finally {
-        StandardLoadingBar_Hide(0)
-    }
-    return false
-}
-
-; =============================================================================
 ; Helper function to center mouse on the active window
 ; =============================================================================
 CenterMouse() {
@@ -2119,56 +2047,6 @@ CenterMouse() {
     Send("!q")
     Sleep(200)
     SendEscape()
-}
-
-; =============================================================================
-; Centered banner helper (AppLaunchers): dark background, accent color on border.
-; Caller should destroy both the returned gui and g_LaunchersCenteredBannerBorderGui when hiding.
-; =============================================================================
-global g_LaunchersCenteredBannerBorderGui := ""
-
-CreateCenteredBanner_Launchers(message, bgColor := BANNER_ACCENT_INTERMEDIATE, fontColor := "FFFFFF", fontSize := 24,
-    alpha := 178, width :=
-    500) {
-    global g_LaunchersCenteredBannerBorderGui
-    try {
-        if IsObject(g_LaunchersCenteredBannerBorderGui) && g_LaunchersCenteredBannerBorderGui.Hwnd
-            g_LaunchersCenteredBannerBorderGui.Destroy()
-    } catch {
-    }
-    g_LaunchersCenteredBannerBorderGui := ""
-
-    bGui := Gui()
-    bGui.Opt("+AlwaysOnTop -Caption +ToolWindow")
-    bGui.BackColor := "1E1E2E"
-    bGui.SetFont("s" . fontSize . " c" . fontColor . " Bold", "Segoe UI")
-    bGui.Add("Text", "w" . width . " Center", message)
-
-    activeWin := WinGetID("A")
-    if (activeWin) {
-        WinGetPos(&winX, &winY, &winW, &winH, activeWin)
-    } else {
-        ; Get primary monitor work area (monitor 1 is primary)
-        MonitorGetWorkArea(1, &winX, &winY, &winRight, &winBottom)
-        winW := winRight - winX
-        winH := winBottom - winY
-    }
-
-    bGui.Show("AutoSize Hide")
-    guiW := 0, guiH := 0
-    bGui.GetPos(, , &guiW, &guiH)
-
-    guiX := winX + (winW - guiW) / 2
-    guiY := winY + (winH - guiH) / 2
-    borderWidth := 6
-    borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
-    borderGui.BackColor := bgColor
-    borderGui.Show("NA x" . Round(guiX - borderWidth) . " y" . Round(guiY - borderWidth) . " w" . (guiW + 2 *
-        borderWidth) . " h" . (guiH + 2 * borderWidth))
-    g_LaunchersCenteredBannerBorderGui := borderGui
-    bGui.Show("x" . Round(guiX) . " y" . Round(guiY) . " NA")
-    WinSetTransparent(alpha, bGui)
-    return bGui
 }
 
 ; =============================================================================
