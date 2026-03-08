@@ -41,7 +41,7 @@ scripts/
 ├── UIA-v2/       — Lib/UIA.ahk, Lib/UIA_Browser.ahk; UIATreeInspector.ahk
 ├── python/       — Daemons (wm_daemon, applauncher_daemon, shiftkeys_daemon, gemini_daemon) and protocols
 ├── data/         — settings.ini, wikipedia_scroll_positions.ini, peek_pdf.ini, Gemini_Prompt.txt, *.csv
-├── docs/         — Standards (efficiency-canon, asynchronous_workflow_standards, standard-loading-bar, cheat-sheet-standard)
+├── docs/         — Standards (efficiency-canon, asynchronous_workflow_standards, standard_information_display, cheat-sheet-standard)
 ├── sounds/       — quick-update-success.wav, quick-update-failure.wav
 └── prompt/       — Text files for prompts/hotstrings
 ```
@@ -65,7 +65,7 @@ scripts/
 ### Dependencies and environment
 
 - **env.ahk (required, not in repo):** Must define `IS_WORK_ENVIRONMENT` (boolean). Scripts use it for paths and app sets (personal vs work). If you use `Act.ahk`, env.ahk must also define `GetScriptPath(scriptName)` returning a path or command to run that script (e.g. `GetScriptPath("Shift keys.ahk")`). env.ahk is listed in `.gitignore`.
-- **Utils.ahk:** Shared core for overlays (`StandardLoadingBar_*`, `ShowCenteredOverlay_Utils`), hotstrings, `FindGeminiPromptField`, path/config helpers, and many MEH hotkeys. See [docs/standard-loading-bar.md](docs/standard-loading-bar.md) for the loading bar API and [docs/efficiency-canon.md](docs/efficiency-canon.md) for strategic guidelines.
+- **Utils.ahk:** Shared core for overlays (`StandardLoadingBar_*`, `ShowCenteredOverlay_Utils`), hotstrings, `FindGeminiPromptField`, path/config helpers, and many MEH hotkeys. See [docs/standard_information_display.md](docs/standard_information_display.md) for the banner/loading API and [docs/efficiency-canon.md](docs/efficiency-canon.md) for strategic guidelines.
 - **UIA-v2:** [UIA-v2/README.md](UIA-v2/README.md). Use `UIA.ahk` and `UIA_Browser.ahk` for browser/window automation; no pixel/image matching for dynamic UIs.
 - **WaitForButton:** The canonical implementation lives in **Shift keys.ahk** (not Utils). Scripts that need similar behavior can copy the pattern or implement a local variant (e.g. Gemini.ahk has `WaitForButtonAndShowSmallLoading`). The README patterns below reference `WaitForButton(root, pattern, timeout)`; use that signature when reimplementing.
 
@@ -105,7 +105,7 @@ For **new hotkeys that only need AHK + UIA**, IPC is not required.
 
 - **docs/efficiency-canon.md** — Strategic guidelines and bottleneck taxonomy; AI agents should read before refactors; preserve behavior parity and use bounded timeouts.
 - **docs/asynchronous_workflow_standards.md** — Submit → monitor → retrieve pattern; context retention and focus restoration.
-- **docs/standard-loading-bar.md** — Banner/loading API (StandardLoadingBar, ShowCenteredOverlay_Utils), semantic colors.
+- **docs/standard_information_display.md** — Banner and information display API (StandardLoadingBar, ShowCenteredOverlay_Utils), display categories, semantic colors.
 - **docs/cheat-sheet-standard.md** — Mnemonic key format for shortcut documentation.
 - **docs/windowmanagement-daemon-verify.md** — WindowManagement daemon verification.
 
