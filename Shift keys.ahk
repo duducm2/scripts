@@ -236,9 +236,21 @@ cheatSheets := Map()
 cheatSheets["Mercado Livre"] := "
 (
 Mercado Livre (Shift)
-🔍 [S]Focus [S]earch field
-🛒 [C]arrinho de compras ([C]art)
-📦 [P]Compras feitas ([P]urchases)
+[S] Focus search field
+[C] Carrinho de compras (cart)
+[P] Compras feitas (purchases)
+[Y] Filtro Chegará amanhã
+[F] Filtro Full
+[I] Filtro Internacional
+[N] Filtro Envio local / Nacional
+[G] Filtro Frete grátis
+[O] Ordenar por (menu)
+[R] Faixa de preço (Mín/Máx)
+[L] Seguinte (paginação)
+[K] Anterior (paginação)
+[A] Adicionar ao carrinho
+[V] Favoritos (coração)
+[J] Continuar (fluxo compra/endereço)
 )"  ; end Mercado Livre
 
 ;---------------------------------------- Shift + keys ----------------------------------------------
@@ -3792,6 +3804,49 @@ IsMercadoLivreActive() {
     return false
 }
 
+; Mercado Livre UIA helpers: get document root and find/invoke elements (bounded, no global state).
+ML_GetDocRoot() {
+    try {
+        uia := UIA_Browser("ahk_exe chrome.exe")
+        try
+            return uia.GetCurrentDocumentElement()
+        catch
+            return uia.BrowserElement
+    } catch
+        return 0
+}
+
+; Try conditions in order; invoke or click first match. Returns true if invoked/clicked, false otherwise.
+ML_FindAndInvoke(conditionList) {
+    root := ML_GetDocRoot()
+    if (!root)
+        return false
+    for cond in conditionList {
+        try {
+            el := root.FindElement(cond, UIA.TreeScope.Descendants)
+            if (el) {
+                try el.Invoke()
+                catch {
+                    try el.Click()
+                    catch
+                        return false
+                }
+                return true
+            }
+        } catch
+            continue
+    }
+    return false
+}
+
+; Find single element by condition (Descendants). Returns element or 0.
+ML_Find(root, condition) {
+    try
+        return root.FindElement(condition, UIA.TreeScope.Descendants)
+    catch
+        return 0
+}
+
 #HotIf IsMercadoLivreActive()
 
 ; Shift + S: Focus Mercado Livre search field
@@ -3935,6 +3990,270 @@ IsMercadoLivreActive() {
     } catch Error as e {
         MsgBox "An error occurred: " e.Message
     }
+}
+
+; Shift + Y: Chegará amanhã (filter toggle)
++y::
+{
+    if ML_FindAndInvoke([{ Type: 50000, AutomationId: "shipping_time_highlighted_nextday" }])
+        return
+    MsgBox "Filtro 'Chegará amanhã' não encontrado."
+}
+
+; Shift + F: Full (frete grátis Full)
++f::
+{
+    if ML_FindAndInvoke([{ Type: 50000, AutomationId: "shipping_highlighted_fulfillment" }])
+        return
+    MsgBox "Filtro 'Full' não encontrado."
+}
+
+; Shift + I: Compra Internacional
++i::
+{
+    if ML_FindAndInvoke([{ Type: 50000, AutomationId: "SHIPPING_ORIGIN_HIGHLIGHTED" }])
+        return
+    MsgBox "Filtro 'Internacional' não encontrado."
+}
+
+; Shift + N: Envio local / Produtos com frete nacional
++n::
+{
+    if ML_FindAndInvoke([{ Type: 50000, AutomationId: "SHIPPING_ORIGIN_LOCAL_HIGHLIGHTED" }, { Type: 50000, Name: "Envio local",
+        cs: false, matchmode: "Substring" }])
+        return
+    MsgBox "Filtro 'Produtos com frete nacional' não encontrado."
+}
+
+; Shift + G: Frete grátis
++g::
+{
+    if ML_FindAndInvoke([{ Type: 50000, AutomationId: "shipping_cost_highlighted_free" }])
+        return
+    MsgBox "Filtro 'Frete grátis' não encontrado."
+}
+
+; Shift + O: Ordenar por – Handy-style menu and UIA execution
+ML_SortClose() {
+    try Hotkey("1", "Off")
+    catch {
+    }
+    try Hotkey("2", "Off")
+    catch {
+    }
+    try Hotkey("3", "Off")
+    catch {
+    }
+    try Hotkey("Escape", ML_SortCancel, "Off")
+    catch {
+    }
+    global g_ML_SortGui
+    if (g_ML_SortGui && IsObject(g_ML_SortGui) && g_ML_SortGui.Hwnd)
+        try g_ML_SortGui.Destroy()
+    g_ML_SortGui := 0
+}
+
+ML_SortCancel(*) {
+    ML_SortClose()
+}
+
+ML_SortSelect(idx) {
+    ML_SortClose()
+    ML_SortApply(idx)
+}
+
+ML_SortApply(idx) {
+    root := ML_GetDocRoot()
+    if (!root) {
+        MsgBox "Página do Mercado Livre não disponível."
+        return
+    }
+    trigger := ML_Find(root, { Type: 50003, AutomationId: "5clcjae", matchmode: "Substring" })
+    if (!trigger)
+        trigger := ML_Find(root, { Type: 50003, AutomationId: "trigger", matchmode: "Substring" })
+    if (!trigger)
+        trigger := ML_Find(root, { Type: 50003, Name: "Mais relevantes", cs: false, matchmode: "Substring" })
+    if (!trigger) {
+        MsgBox "Botão 'Ordenar por' não encontrado."
+        return
+    }
+    try trigger.Click()
+    catch {
+        MsgBox "Não foi possível abrir o menu Ordenar por."
+        return
+    }
+    Sleep 250
+    root2 := ML_GetDocRoot()
+    if (!root2)
+        return
+    optionSubstrings := ["menu-list-option-relevance", "menu-list-option-price_asc", "menu-list-option-price_desc"]
+    sub := optionSubstrings[idx]
+    item := ML_Find(root2, { Type: 50007, AutomationId: sub, matchmode: "Substring" })
+    if (!item)
+        item := ML_Find(root2, { Type: 50007, Name: ["Mais relevantes", "Menor preço", "Maior preço"][idx], cs: false })
+    if (item) {
+        try item.Click()
+        catch
+            try item.Invoke()
+    } else
+        MsgBox "Opção de ordenação não encontrada."
+}
+
++o::
+{
+    root := ML_GetDocRoot()
+    if (!root) {
+        MsgBox "Página do Mercado Livre não disponível."
+        return
+    }
+    global g_ML_SortGui
+    g_ML_SortGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner")
+    g_ML_SortGui.BackColor := "1E1E2E"
+    g_ML_SortGui.MarginX := 20
+    g_ML_SortGui.MarginY := 15
+    g_ML_SortGui.SetFont("s14 cCDD6F4 Bold", "Segoe UI")
+    g_ML_SortGui.Add("Text", "w280 Center", "Ordenar por")
+    g_ML_SortGui.Add("Text", "w280 h1 Background45475A")
+    g_ML_SortGui.SetFont("s12 cCDD6F4", "Segoe UI")
+    g_ML_SortGui.Add("Text", "w280", "[1] Mais relevantes")
+    g_ML_SortGui.SetFont("s9 c6C7086", "Segoe UI")
+    g_ML_SortGui.Add("Text", "w280 y+2", "    Relevância da busca")
+    g_ML_SortGui.SetFont("s12 cCDD6F4", "Segoe UI")
+    g_ML_SortGui.Add("Text", "w280", "[2] Menor preço")
+    g_ML_SortGui.SetFont("s9 c6C7086", "Segoe UI")
+    g_ML_SortGui.Add("Text", "w280 y+2", "    Preço crescente")
+    g_ML_SortGui.SetFont("s12 cCDD6F4", "Segoe UI")
+    g_ML_SortGui.Add("Text", "w280", "[3] Maior preço")
+    g_ML_SortGui.SetFont("s9 c6C7086", "Segoe UI")
+    g_ML_SortGui.Add("Text", "w280 y+2", "    Preço decrescente")
+    g_ML_SortGui.SetFont("s12 cCDD6F4", "Segoe UI")
+    g_ML_SortGui.Add("Text", "w280 h1 Background45475A y+10")
+    g_ML_SortGui.SetFont("s9 c6C7086", "Segoe UI")
+    g_ML_SortGui.Add("Text", "w280 Center", "Press 1-3 | Esc to cancel")
+    activeWin := 0
+    try
+        activeWin := WinGetID("A")
+    catch
+        activeWin := 0
+    MonitorGetWorkArea(1, &monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
+    monitorWidth := monitorRight - monitorLeft
+    monitorHeight := monitorBottom - monitorTop
+    if (activeWin && activeWin != 0) {
+        rect := Buffer(16, 0)
+        if (DllCall("GetWindowRect", "ptr", activeWin, "ptr", rect)) {
+            centerX := NumGet(rect, 0, "int") + (NumGet(rect, 8, "int") - NumGet(rect, 0, "int")) // 2
+            centerY := NumGet(rect, 4, "int") + (NumGet(rect, 12, "int") - NumGet(rect, 4, "int")) // 2
+            monitorCount := MonitorGetCount()
+            loop monitorCount {
+                idx := A_Index
+                MonitorGetWorkArea(idx, &l, &t, &r, &b)
+                if (centerX >= l && centerX <= r && centerY >= t && centerY <= b) {
+                    monitorLeft := l
+                    monitorTop := t
+                    monitorRight := r
+                    monitorBottom := b
+                    monitorWidth := r - l
+                    monitorHeight := b - t
+                    break
+                }
+            }
+        }
+    }
+    g_ML_SortGui.Show("AutoSize Hide")
+    g_ML_SortGui.GetPos(&gx, &gy, &gw, &gh)
+    cx := monitorLeft + (monitorWidth - gw) // 2
+    cy := monitorTop + (monitorHeight - gh) // 2
+    g_ML_SortGui.Show("x" . cx . " y" . cy . " NA")
+    Hotkey("1", (*) => ML_SortSelect(1), "On")
+    Hotkey("2", (*) => ML_SortSelect(2), "On")
+    Hotkey("3", (*) => ML_SortSelect(3), "On")
+    Hotkey("Escape", ML_SortCancel, "On")
+}
+
+; Shift + R: Faixa de preço – GUI Mínimo/Máximo e aplicar
++r::
+{
+    root := ML_GetDocRoot()
+    if (!root) {
+        MsgBox "Página do Mercado Livre não disponível."
+        return
+    }
+    g := Gui("+Owner" . A_ScriptHwnd)
+    g.Add("Text", "w200", "Mínimo (R$):")
+    edMin := g.Add("Edit", "w80 Number")
+    g.Add("Text", "w200", "Máximo (R$):")
+    edMax := g.Add("Edit", "w80 Number")
+    g.Add("Button", "Default w80", "Aplicar").OnEvent("Click", (*) => g.Submit())
+    g.Title := "Faixa de preço"
+    if (g.Show() != "OK")
+        return
+    minVal := Trim(edMin.Text)
+    maxVal := Trim(edMax.Text)
+    if (minVal = "" && maxVal = "") {
+        MsgBox "Preencha ao menos Mínimo ou Máximo."
+        return
+    }
+    ; Find first Preço section edits (Name "Mínimo" / "Máximo") and apply button
+    elMin := ML_Find(root, { Type: 50004, Name: "Mínimo", cs: false })
+    elMax := ML_Find(root, { Type: 50004, Name: "Máximo", cs: false })
+    if (elMin && minVal != "")
+        try elMin.Value := minVal
+    if (elMax && maxVal != "")
+        try elMax.Value := maxVal
+    btn := ML_Find(root, { Type: 50000, Name: "Aplicar", cs: false })
+    if (!btn)
+        btn := ML_Find(root, { ClassName: "ui-search-range-filter", matchmode: "Substring" })
+    if (btn) {
+        try btn.Click()
+        catch
+            try btn.Invoke()
+    } else
+        MsgBox "Botão Aplicar não encontrado."
+}
+
+; Shift + L: Paginação – Seguinte
++l::
+{
+    if ML_FindAndInvoke([{ Type: 50005, Name: "Seguinte", cs: false }, { Type: 50000, Name: "Seguinte", cs: false }])
+        return
+    MsgBox "Botão 'Seguinte' não encontrado."
+}
+
+; Shift + K: Paginação – Anterior
++k::
+{
+    if ML_FindAndInvoke([{ Type: 50005, Name: "Anterior", cs: false }, { Type: 50000, Name: "Anterior", cs: false }])
+        return
+    MsgBox "Botão 'Anterior' não encontrado."
+}
+
+; Shift + A: Adicionar ao carrinho (página do produto)
++a::
+{
+    if ML_FindAndInvoke([{ Type: 50000, Name: "Adicionar ao carrinho", cs: false }])
+        return
+    MsgBox "Botão 'Adicionar ao carrinho' não encontrado."
+}
+
+; Shift + V: Adicionar aos favoritos (coração)
++v::
+{
+    if ML_FindAndInvoke([{ Type: 50000, Name: "Adicionar aos favoritos", cs: false }, { Type: 50000, ClassName: "ui-pdp-bookmark",
+        matchmode: "Substring" }])
+        return
+    MsgBox "Botão 'Adicionar aos favoritos' não encontrado."
+}
+
+; Shift + J: Continuar fluxo (Continuar a compra / Continuar / OK)
++j::
+{
+    conditions := [{ Type: 50005, Name: "Continuar a compra", cs: false }, { Type: 50000, Name: "Continuar", cs: false }, { Type: 50000,
+        Name: "OK", cs: false }, { Type: 50000, AutomationId: "shipping_footer_confirm_button" }, { Type: 50005, Name: "Continuar",
+            cs: false }, { Type: 50000, Name: "Seguinte", cs: false }
+    ]
+    if ML_FindAndInvoke(conditions)
+        return
+    MsgBox "Botão de continuar não encontrado."
 }
 
 #HotIf
