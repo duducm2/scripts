@@ -81,26 +81,6 @@ GeminiPerfLog(flowName, startTick) {
         return
 }
 
-; Non-blocking error log for empty catch blocks (Phase 6). Does not interrupt workflow.
-GeminiLogError(context, err := "") {
-    try FileAppend(FormatTime(, "yyyy-MM-dd HH:mm:ss") " [Gemini] " context (err ? " " err : "") "`n", A_ScriptDir "\.cursor\gemini_err.log"
-    )
-    catch
-        return
-}
-
-; --- Phase 7: Python IPC client (socket bridge) ----------------------------------
-; Send a request to the persistent Python daemon; returns response map or empty on failure/timeout.
-; Protocol: 4-byte big-endian length + UTF-8 JSON. No RunWait; daemon runs separately.
-; When GEMINI_USE_PYTHON_IPC is false or daemon is unavailable, returns "" (AHK continues with local path).
-GeminiIpcSend(requestObj) {
-    if (!GEMINI_USE_PYTHON_IPC)
-        return ""
-    ; Placeholder: full implementation uses Winsock DllCall (connect to 127.0.0.1:GEMINI_PYTHON_DAEMON_PORT,
-    ; send framed JSON, recv with timeout). When implemented, return parsed response object.
-    return ""
-}
-
 ; --- Phase 2: UIA control type constants (strict integer; no string coercion) ----
 ; UIA ControlType: Button=50000, MenuItem=50011. Use these instead of magic numbers.
 UIA_ControlType_Button := 50000
@@ -416,29 +396,6 @@ GeminiWinEventProc(hWinEventHook, event, hwnd, idObject, idChild, idEventThread,
 }
 
 ; =============================================================================
-; Get work area (left, top, right, bottom) of the monitor that contains the given window
-; =============================================================================
-GetWorkAreaForWindow(hwnd) {
-    if (!hwnd || !WinExist("ahk_id " hwnd))
-        return ""
-    try {
-        WinGetPos(&winX, &winY, &winW, &winH, "ahk_id " hwnd)
-        centerX := winX + winW / 2
-        centerY := winY + winH / 2
-        n := MonitorGetCount()
-        loop n {
-            MonitorGet(A_Index, &L, &T, &R, &B)
-            if (centerX >= L && centerX < R && centerY >= T && centerY < B) {
-                MonitorGetWorkArea(A_Index, &wLeft, &wTop, &wRight, &wBottom)
-                return { left: wLeft, top: wTop, right: wRight, bottom: wBottom }
-            }
-        }
-    } catch {
-    }
-    return ""
-}
-
-; =============================================================================
 ; Get 1-based active tab index and tab count in Chrome via UIA (tab bar TabItem elements).
 ; Returns {index: n, count: c} on success; 0 if detection fails. Used when #!+i is triggered
 ; on an existing Gemini window (banner shown only when count >= 2).
@@ -583,14 +540,6 @@ WaitForButtonAndShowSmallLoading(buttonNames, stateText := "⏳ Loading…", tim
         ; Silently ignore errors
     }
     StandardLoadingBar_Hide(0)
-}
-
-; =============================================================================
-; Helper function to center mouse on the active window
-; =============================================================================
-CenterMouse() {
-    Sleep 200
-    Send("#!+q")
 }
 
 ; --- Hotkeys ----------------------------------------------------------------
