@@ -2891,6 +2891,52 @@ ExtractProjectMatchSegments(projectPath) {
     return matchSegments
 }
 
+; =============================================================================
+; Cursor: UIA detection of AI "generating" state via stop button (Win+Alt+Shift+U → U macro)
+; =============================================================================
+; Iterates Cursor.exe instances and searches for the stop button (Type 50026, ClassName
+; containing "stop-button") to detect generating state. Uses cache request and
+; FindFirstBuildCache per Efficiency Canon. Banner: "Stop Button Found: TRUE/FALSE".
+; =============================================================================
+Cursor_FindComposerIconAcrossInstances() {
+    global UIA, BANNER_ACCENT_SUCCESS, BANNER_ACCENT_ERROR
+    try {
+        cursorHwnds := WinGetList("ahk_exe Cursor.exe")
+        if (!cursorHwnds.Length) {
+            ShowCenteredOverlay_Utils("Stop Button Found: FALSE", 2000, BANNER_ACCENT_ERROR)
+            return
+        }
+        ; Reusable cache request (Efficiency Canon: bulk fetch)
+        cr := UIA.CreateCacheRequest(["Type", "ClassName"], , 5)
+        for hwnd in cursorHwnds {
+            if (!hwnd || !WinExist("ahk_id " hwnd))
+                continue
+            try {
+                root := UIA.ElementFromHandleBuildCache(cr, hwnd)
+            } catch {
+                try root := UIA.ElementFromHandle(hwnd)
+                catch
+                    continue
+            }
+            if (!root)
+                continue
+            ; Stop button: Type 50026 (Group), ClassName contains "stop-button"
+            try {
+                el := root.FindFirstBuildCache(cr, { Type: 50026, ClassName: "stop-button", matchmode: "Substring" }, 4
+                )
+                if (el) {
+                    ShowCenteredOverlay_Utils("Stop Button Found: TRUE", 2000, BANNER_ACCENT_SUCCESS)
+                    return
+                }
+            } catch {
+            }
+        }
+        ShowCenteredOverlay_Utils("Stop Button Found: FALSE", 2000, BANNER_ACCENT_ERROR)
+    } catch Error as e {
+        ShowCenteredOverlay_Utils("Stop Button Found: FALSE", 2000, BANNER_ACCENT_ERROR)
+    }
+}
+
 ; Initialize macros
 InitMacros() {
     ; Quick Update to Your Scripts macro
@@ -2903,8 +2949,8 @@ InitMacros() {
     RegisterMacro(CleanClipboard, "🧹 Clean the Clipboard", "p")
     ; Toggle Sound macro
     RegisterMacro(ToggleSoundState, "🔊 Toggle Sound (Mute/Unmute)")
-    ; Merge Non-Favorite Clips macro (assigned to "U")
-    RegisterMacro(MergeNonFavoriteClips, "📋 Merge Non-Favorite Clips", "u")
+    ; Cursor generating state (stop button) detection (assigned to "U")
+    RegisterMacro(Cursor_FindComposerIconAcrossInstances, "🔍 Cursor stop button (generating)", "u")
     ; Mark Last Clip as Favorite macro (assigned to "J")
     RegisterMacro(MarkLastClipAsFavorite, "⭐ Mark Last Clip as Favorite", "j")
     ; Move Desktop to Recycle Bin (assigned to "N") — red banner, Y/N confirm
