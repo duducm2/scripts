@@ -1177,7 +1177,9 @@ class GeminiAsyncLookup {
     }
 
     RetrieveResponse() {
-        ; Activate Gemini once, then copy with retry (exponential backoff) without switching back until done
+        ; Activate Gemini once, then copy with retry (exponential backoff) without switching back until done.
+        ; Invalidate last-Copy-button cache so we discover the newly completed response (avoid penultimate message).
+        GeminiState.Invalidate()
         try {
             WinActivate("ahk_id " this.GeminiHwnd)
         } catch {
