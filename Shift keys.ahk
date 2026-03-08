@@ -14596,133 +14596,58 @@ IsFileDialogActive() {
 ;-------------------------------------------------------------------
 ; SettleUp Shortcuts
 ;-------------------------------------------------------------------
+SettleUp_GetNewExpenseDialog() {
+    try {
+        uia := UIA_Browser()
+        return uia.FindElement({ Name: "New expense", Type: "Group" })
+    } catch
+        return 0
+}
+
 #HotIf WinActive("Settle Up")
 
-; Shift + A : Click "Adicionar transaÃ§Ã£o" button (UIA by Name substring)
+; Shift + A : Click Add Transaction button (UIA by Name, EN/PT)
 +a:: {
     try {
         uia := UIA_Browser()
-        Sleep 200
-        ; Keep it simple: search only by Name with substring
-        btn := uia.FindElement({
-            Name: "Adicionar transa",
-            matchmode: "Substring"
-        })
+        Sleep 150
+        btn := uia.FindElement({ Type: "Button", Name: "Add transaction", matchmode: "Substring" })
+        if (!btn)
+            btn := uia.FindElement({ Type: "Button", Name: "Adicionar transa", matchmode: "Substring" })
         if (btn) {
             btn.Click()
         } else {
-            MsgBox "Could not find the 'Adicionar transaÃ§Ã£o' button."
+            MsgBox "Could not find the Add Transaction button."
         }
     } catch Error as e {
-        MsgBox "Error clicking 'Adicionar transaÃ§Ã£o': " e.Message
+        MsgBox "Error clicking Add Transaction: " e.Message
     }
 }
 
-; Shift + N : Focus expense name field (via value field + tabs)
+; Shift + N : Focus expense name (Purpose) field in New expense dialog
 +n:: {
     try {
-        uia := UIA_Browser()
-        Sleep 300
-
-        ; Find the "who paid" combo box
-        paidByCombo := uia.FindFirst({
-            Type: "ComboBox",
-            Name: "Eduardo Figueiredo pagou"
-        })
-
-        ; If not found by exact match, try partial matches
-        if !paidByCombo {
-            possibleNames := [
-                " pagou",           ; Portuguese suffix
-                " paid",            ; English suffix
-                " pagÃ³",            ; Spanish suffix
-                " a payÃ©"           ; French suffix
-            ]
-            for suffix in possibleNames {
-                paidByCombo := uia.FindFirst({
-                    Type: "ComboBox",
-                    Name: A_UserName . suffix,
-                    matchmode: "Substring"
-                })
-                if paidByCombo
-                    break
-            }
-        }
-
-        ; Try by AutomationId if name matching failed
-        if !paidByCombo {
-            paidByCombo := uia.FindFirst({
-                Type: "ComboBox",
-                AutomationId: "mat-select-54"
-            })
-        }
-
-        if paidByCombo {
-            paidByCombo.Click()
-            Sleep 100
-            Send "{Tab}"  ; Move to expense value field
-            Sleep 200     ; Slow tab timing
-
-            ; Now tab 6 times slowly to reach expense name field
-            loop 6 {
-                Send "{Tab}"
-                Sleep 20  ; Slow timing between tabs
-            }
+        dialog := SettleUp_GetNewExpenseDialog()
+        if (!dialog)
             return
-        }
-    } catch Error as e {
-        ; Silently handle errors
-    }
+        nameEdit := dialog.FindElement({ Type: 50004, Name: "e.g.", matchmode: "Substring" })
+        if (nameEdit)
+            nameEdit.SetFocus()
+    } catch
+        return
 }
 
-; Shift + V : Focus expense value field
+; Shift + V : Focus expense value (amount) field in New expense dialog
 +v:: {
     try {
-        uia := UIA_Browser()
-        Sleep 300
-
-        ; Find the "who paid" combo box (same logic as +u)
-        paidByCombo := uia.FindFirst({
-            Type: "ComboBox",
-            Name: "Eduardo Figueiredo pagou"
-        })
-
-        ; If not found by exact match, try partial matches
-        if !paidByCombo {
-            possibleNames := [
-                " pagou",           ; Portuguese suffix
-                " paid",            ; English suffix
-                " pagÃ³",            ; Spanish suffix
-                " a payÃ©"           ; French suffix
-            ]
-            for suffix in possibleNames {
-                paidByCombo := uia.FindFirst({
-                    Type: "ComboBox",
-                    Name: A_UserName . suffix,
-                    matchmode: "Substring"
-                })
-                if paidByCombo
-                    break
-            }
-        }
-
-        ; Try by AutomationId if name matching failed
-        if !paidByCombo {
-            paidByCombo := uia.FindFirst({
-                Type: "ComboBox",
-                AutomationId: "mat-select-54"
-            })
-        }
-
-        if paidByCombo {
-            paidByCombo.Click()
-            Sleep 100
-            Send "{Tab}"  ; Move to expense value field
+        dialog := SettleUp_GetNewExpenseDialog()
+        if (!dialog)
             return
-        }
-    } catch Error as e {
-        ; Silently handle errors
-    }
+        valueEdit := dialog.FindElement({ Type: 50004 }, 4, 1)
+        if (valueEdit)
+            valueEdit.SetFocus()
+    } catch
+        return
 }
 
 #HotIf
