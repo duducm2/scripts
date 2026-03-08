@@ -707,6 +707,7 @@ CopyLastGeminiMessageToClipboard(options := "", geminiHwnd := 0) {
     playChimeAndNotify := (options = "" || !options.HasProp("playChimeAndNotify")) ? true : options.playChimeAndNotify
     alreadyActive := (options != "" && options.HasProp("alreadyActive")) ? options.alreadyActive : false
     try {
+        GeminiState.Invalidate()
         SetTitleMatchMode(2)
         if !geminiHwnd
             geminiHwnd := GetGeminiWindowHwnd()
