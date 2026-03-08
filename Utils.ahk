@@ -2892,21 +2892,17 @@ ExtractProjectMatchSegments(projectPath) {
 }
 
 ; =============================================================================
-; Cursor: UIA detection of AI "generating" state via stop button (Win+Alt+Shift+U → U macro)
+; Global AI generation state: Cursor + Gemini stop-button detectors (Efficiency Canon)
 ; =============================================================================
-; Iterates Cursor.exe instances and searches for the stop button (Type 50026, ClassName
-; containing "stop-button") to detect generating state. Uses cache request and
-; FindFirstBuildCache per Efficiency Canon. Banner: "Stop Button Found: TRUE/FALSE".
+; Cursor: Type 50026 (Group), ClassName contains "stop-button".
+; Gemini: Chrome window title contains "gemini"; Type 50000, Name "Stop response", ClassName match.
 ; =============================================================================
-Cursor_FindComposerIconAcrossInstances() {
-    global UIA, BANNER_ACCENT_SUCCESS, BANNER_ACCENT_ERROR
+Cursor_HasGeneratingStopButton() {
+    global UIA
     try {
         cursorHwnds := WinGetList("ahk_exe Cursor.exe")
-        if (!cursorHwnds.Length) {
-            ShowCenteredOverlay_Utils("Stop Button Found: FALSE", 2000, BANNER_ACCENT_ERROR)
-            return
-        }
-        ; Reusable cache request (Efficiency Canon: bulk fetch)
+        if (!cursorHwnds.Length)
+            return false
         cr := UIA.CreateCacheRequest(["Type", "ClassName"], , 5)
         for hwnd in cursorHwnds {
             if (!hwnd || !WinExist("ahk_id " hwnd))
@@ -2920,20 +2916,89 @@ Cursor_FindComposerIconAcrossInstances() {
             }
             if (!root)
                 continue
-            ; Stop button: Type 50026 (Group), ClassName contains "stop-button"
             try {
                 el := root.FindFirstBuildCache(cr, { Type: 50026, ClassName: "stop-button", matchmode: "Substring" }, 4
                 )
-                if (el) {
-                    ShowCenteredOverlay_Utils("Stop Button Found: TRUE", 2000, BANNER_ACCENT_SUCCESS)
-                    return
-                }
+                if (el)
+                    return true
             } catch {
             }
         }
-        ShowCenteredOverlay_Utils("Stop Button Found: FALSE", 2000, BANNER_ACCENT_ERROR)
+    } catch {
+    }
+    return false
+}
+
+Gemini_HasGeneratingStopButton() {
+    global UIA
+    try {
+        for hwnd in WinGetList("ahk_exe chrome.exe") {
+            if (!hwnd || !WinExist("ahk_id " hwnd))
+                continue
+            try {
+                if (InStr(WinGetTitle("ahk_id " hwnd), "gemini", false) = 0)
+                    continue
+            } catch {
+                continue
+            }
+            try {
+                cr := UIA.CreateCacheRequest(["Type", "ClassName", "Name"], , 5)
+                root := UIA.ElementFromHandleBuildCache(cr, hwnd)
+            } catch {
+                try root := UIA.ElementFromHandle(hwnd)
+                catch
+                    continue
+            }
+            if (!root)
+                continue
+            ; Stop response: Type 50000, Name "Stop response", ClassName contains "send-button" and "stop"
+            try {
+                el := root.FindFirstBuildCache(cr, { Type: 50000, Name: "Stop response", ClassName: "send-button",
+                    matchmode: "Substring" }, 4)
+                if (el)
+                    return true
+            } catch {
+            }
+        }
+    } catch {
+    }
+    return false
+}
+
+IsAnyAiGenerating() {
+    return Cursor_HasGeneratingStopButton() || Gemini_HasGeneratingStopButton()
+}
+
+PlayAiWorkingStateSound(isWorking) {
+    try {
+        if (!IsSoundEnabled())
+            return
+        if (isWorking)
+            SoundPlay(A_ScriptDir . "\sounds\robots-are-working.wav")
+        else
+            SoundPlay(A_ScriptDir . "\sounds\no-robot-working.wav")
+    } catch {
+    }
+}
+
+; =============================================================================
+; U macro: Global AI generation state (Cursor + Gemini) with sound and banner
+; =============================================================================
+; Runs Cursor + Gemini stop-button checks, plays robots-are-working / no-robot-working,
+; shows red banner when any AI is working, green when none.
+; =============================================================================
+Cursor_FindComposerIconAcrossInstances() {
+    global BANNER_ACCENT_SUCCESS, BANNER_ACCENT_ERROR
+    try {
+        isWorking := IsAnyAiGenerating()
+        PlayAiWorkingStateSound(isWorking)
+        if (isWorking)
+            ShowCenteredOverlay_Utils("AI is working (stop button found)", 2000, BANNER_ACCENT_ERROR)
+        else
+            ShowCenteredOverlay_Utils("No AI is working", 2000, BANNER_ACCENT_SUCCESS)
     } catch Error as e {
-        ShowCenteredOverlay_Utils("Stop Button Found: FALSE", 2000, BANNER_ACCENT_ERROR)
+        PlayAiWorkingStateSound(false)
+        ShowCenteredOverlay_Utils("No AI is working", 2000, BANNER_ACCENT_SUCCESS)
     }
 }
 
@@ -2949,8 +3014,8 @@ InitMacros() {
     RegisterMacro(CleanClipboard, "🧹 Clean the Clipboard", "p")
     ; Toggle Sound macro
     RegisterMacro(ToggleSoundState, "🔊 Toggle Sound (Mute/Unmute)")
-    ; Cursor generating state (stop button) detection (assigned to "U")
-    RegisterMacro(Cursor_FindComposerIconAcrossInstances, "🔍 Cursor stop button (generating)", "u")
+    ; Global AI generation state: Cursor + Gemini (assigned to "U")
+    RegisterMacro(Cursor_FindComposerIconAcrossInstances, "🔍 AI working? (Cursor + Gemini)", "u")
     ; Mark Last Clip as Favorite macro (assigned to "J")
     RegisterMacro(MarkLastClipAsFavorite, "⭐ Mark Last Clip as Favorite", "j")
     ; Move Desktop to Recycle Bin (assigned to "N") — red banner, Y/N confirm
