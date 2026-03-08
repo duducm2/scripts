@@ -4063,44 +4063,147 @@ ML_SortSelect(idx) {
 }
 
 ML_SortApply(idx) {
-    root := ML_GetDocRoot()
-    if (!root) {
-        MsgBox "Página do Mercado Livre não disponível."
-        return
-    }
-    trigger := ML_Find(root, { Type: 50003, AutomationId: "5clcjae", matchmode: "Substring" })
-    if (!trigger)
-        trigger := ML_Find(root, { Type: 50003, AutomationId: "trigger", matchmode: "Substring" })
-    if (!trigger)
-        trigger := ML_Find(root, { Type: 50003, Name: "Mais relevantes", cs: false, matchmode: "Substring" })
-    if (!trigger) {
-        MsgBox "Botão 'Ordenar por' não encontrado."
-        return
-    }
-    try trigger.Click()
+    centerOnHwnd := 0
+    try centerOnHwnd := WinGetID("A")
     catch {
-        MsgBox "Não foi possível abrir o menu Ordenar por."
-        return
     }
-    Sleep 250
-    root2 := ML_GetDocRoot()
-    if (!root2)
-        return
-    optionSubstrings := ["menu-list-option-relevance", "menu-list-option-price_asc", "menu-list-option-price_desc"]
-    sub := optionSubstrings[idx]
-    item := ML_Find(root2, { Type: 50007, AutomationId: sub, matchmode: "Substring" })
-    if (!item)
-        item := ML_Find(root2, { Type: 50007, Name: ["Mais relevantes", "Menor preço", "Maior preço"][idx], cs: false })
-    if (item) {
-        try item.Click()
-        catch
-            try item.Invoke()
-    } else
-        MsgBox "Opção de ordenação não encontrada."
+    StandardLoadingBar_Show("⏳ Ordenando...", BANNER_ACCENT_INTERMEDIATE, { passive: false, centerOnHwnd: centerOnHwnd,
+        textWidth: 380, fontSize: 17 })
+    try {
+        root := ML_GetDocRoot()
+        if (!root) {
+            StandardLoadingBar_Update("❌ Página do Mercado Livre não disponível.")
+            Sleep 1200
+            return
+        }
+        trigger := ML_Find(root, { Type: 50003, AutomationId: "5clcjae", matchmode: "Substring" })
+        if (!trigger)
+            trigger := ML_Find(root, { Type: 50003, AutomationId: "trigger", matchmode: "Substring" })
+        if (!trigger) {
+            StandardLoadingBar_Update("❌ Botão 'Ordenar por' não encontrado.")
+            Sleep 1200
+            return
+        }
+        ; Current selection: menu opens with this option highlighted. Order in menu: 1=Mais relevantes, 2=Menor preço, 3=Maior preço
+        current := 1
+        try {
+            label := Trim(trigger.Name)
+            if (label = "")
+                label := Trim(trigger.Value)
+            if (InStr(label, "Maior preço"))
+                current := 3
+            else if (InStr(label, "Menor preço"))
+                current := 2
+            else if (InStr(label, "Mais relevantes"))
+                current := 1
+        } catch {
+        }
+        StandardLoadingBar_Update("⏳ Abrindo menu...")
+        clickOk := false
+        try {
+            trigger.Click()
+            clickOk := true
+        } catch {
+        }
+        if (!clickOk) {
+            StandardLoadingBar_Update("❌ Não foi possível abrir o menu.")
+            Sleep 1200
+            return
+        }
+        Sleep 1100
+        StandardLoadingBar_Update("⏳ Selecionando opção...")
+        searchRoot := root
+        sortList := 0
+        try {
+            dropdownSibling := UIA.TreeWalkerTrue.TryGetNextSiblingElement(trigger)
+            if (dropdownSibling)
+                sortList := ML_Find(dropdownSibling, { Type: 50008, AutomationId: "menu-list", matchmode: "Substring" })
+        } catch {
+        }
+        if (!sortList)
+            sortList := ML_Find(searchRoot, { Type: 50008, AutomationId: "5clcjae_-menu-list", matchmode: "Substring" })
+        if (!sortList)
+            sortList := ML_Find(searchRoot, { Type: 50008, AutomationId: "menu-list", matchmode: "Substring" })
+        if (!sortList) {
+            Sleep 300
+            sortList := ML_Find(searchRoot, { Type: 50008, AutomationId: "menu-list", matchmode: "Substring" })
+        }
+        if (!sortList) {
+            try {
+                triggerParent := trigger.Parent
+                if (triggerParent)
+                    sortList := ML_Find(triggerParent, { Type: 50008, AutomationId: "menu-list", matchmode: "Substring" })
+            } catch {
+            }
+        }
+        if (!sortList)
+            sortList := ML_Find(searchRoot, { AutomationId: "menu-list", matchmode: "Substring" })
+        optionSubstrings := ["menu-list-option-relevance", "menu-list-option-price_asc", "menu-list-option-price_desc"]
+        sub := optionSubstrings[idx]
+        optionNames := ["Mais relevantes", "Menor preço", "Maior preço"]
+        item := 0
+        if (sortList) {
+            item := ML_Find(sortList, { Type: 50007, AutomationId: sub, matchmode: "Substring" })
+            if (!item)
+                item := ML_Find(sortList, { Type: 50007, Name: optionNames[idx], cs: false })
+        }
+        if (!item) {
+            item := ML_Find(searchRoot, { Type: 50007, AutomationId: sub, matchmode: "Substring" })
+            if (!item)
+                item := ML_Find(searchRoot, { Type: 50007, Name: optionNames[idx], cs: false })
+        }
+        if (item) {
+            try item.Click()
+            catch
+                try item.Invoke()
+            Sleep 200
+            StandardLoadingBar_Update("✅ Ordenação aplicada")
+            Sleep 500
+        } else {
+            ; Keyboard: menu opens with current option highlighted. Activate browser so keys reach the dropdown, then move Up/Down and Enter.
+            try WinActivate("ahk_exe chrome.exe")
+            catch {
+            }
+            Sleep 700
+            delta := idx - current
+            if (delta > 0) {
+                loop delta {
+                    Send "{Down}"
+                    Sleep 150
+                }
+            } else if (delta < 0) {
+                loop (-delta) {
+                    Send "{Up}"
+                    Sleep 150
+                }
+            }
+            Sleep 200
+            Send "{Enter}"
+            StandardLoadingBar_Update("✅ Ordenação aplicada")
+            Sleep 500
+        }
+    } catch Error as err {
+        try StandardLoadingBar_Update("❌ Erro: " SubStr(err.Message, 1, 40))
+        catch {
+        }
+        Sleep 1000
+    } finally {
+        try StandardLoadingBar_Hide(0)
+        catch {
+        }
+    }
 }
 
 +o::
 {
+    ; #region agent log
+    try {
+        FileAppend '{"sessionId":"db9199","location":"Shift keys.ahk:+o","message":"Sort hotkey fired","data":{},"timestamp":' A_TickCount ',"hypothesisId":"H4"}' "`n",
+            A_ScriptDir "\debug-db9199.log"
+    } catch {
+        ; ignore
+    }
+    ; #endregion
     root := ML_GetDocRoot()
     if (!root) {
         MsgBox "Página do Mercado Livre não disponível."
