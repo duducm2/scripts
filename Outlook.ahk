@@ -43,20 +43,6 @@ global OUTLOOK_USE_COM_CORE := false
 global OUTLOOK_USE_WMCOMMAND_READALOUD := false
 global OUTLOOK_USE_UIA_READALOUD := true
 
-; --- COM interop facade (Phase II; use when OUTLOOK_USE_COM_CORE is true) -------
-; Returns active Outlook.Application or "" on failure. Caller must check before use.
-OutlookComGetApplication() {
-    if !OUTLOOK_USE_COM_CORE
-        return ""
-    try {
-        app := ComObjActive("Outlook.Application")
-        if (Type(app) = "ComValue")
-            return app
-    } catch
-        return ""
-    return ""
-}
-
 ; --- Read Aloud UI-bound abstraction (Phase II) ------------------------------
 ; Invokes "Read Aloud" via UIA or WM_COMMAND when flags set; else synthetic Alt+1.
 ; Returns true if invocation was performed (UIA/keystroke), false on failure.
