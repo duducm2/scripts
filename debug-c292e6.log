@@ -1,0 +1,8 @@
+﻿{"sessionId":"c292e6","id":"log_26332687_N","timestamp":26332687,"location":"Utils.ahk:2061","message":"StandardLoadingBar_KeyWrapper","data":{"key":"N"},"runId":"pre-fix-1","hypothesisId":"H1_H2"}
+{"sessionId":"c292e6","id":"log_26332687_Cancel","timestamp":26332687,"location":"Utils.ahk:2135","message":"DictationGeminiConfirm_OnCancel","data":{"submitToGemini":false},"runId":"pre-fix-1","hypothesisId":"H4"}
+{"sessionId":"c292e6","id":"log_26337890_Timeout","timestamp":26337890,"location":"Utils.ahk:2127","message":"DictationGeminiConfirm_OnTimeout","data":{"submitToGemini":false},"runId":"pre-fix-1","hypothesisId":"H3"}
+{"sessionId":"c292e6","id":"log_26337921_Timeout","timestamp":26337921,"location":"Utils.ahk:2127","message":"DictationGeminiConfirm_OnTimeout","data":{"submitToGemini":false},"runId":"pre-fix-1","hypothesisId":"H3"}
+{"sessionId":"c292e6","id":"log_26337953_Timeout","timestamp":26337953,"location":"Utils.ahk:2127","message":"DictationGeminiConfirm_OnTimeout","data":{"submitToGemini":false},"runId":"pre-fix-1","hypothesisId":"H3"}
+{"sessionId":"c292e6","id":"log_26338078_Timeout","timestamp":26338078,"location":"Utils.ahk:2127","message":"DictationGeminiConfirm_OnTimeout","data":{"submitToGemini":false},"runId":"pre-fix-1","hypothesisId":"H3"}
+{"sessionId":"c292e6","id":"log_26338093_Timeout","timestamp":26338093,"location":"Utils.ahk:2127","message":"DictationGeminiConfirm_OnTimeout","data":{"submitToGemini":false},"runId":"pre-fix-1","hypothesisId":"H3"}
+{"sessionId":"c292e6","id":"log_26338234_Timeout","timestamp":26338234,"location":"Utils.ahk:2127","message":"DictationGeminiConfirm_OnTimeout","data":{"submitToGemini":false},"runId":"pre-fix-1","hypothesisId":"H3"}
