@@ -13,6 +13,10 @@
 
 #include %A_ScriptDir%\Utils.ahk
 
+; --- WindowManagement daemon integration (Phase 1: feature flags in WMIPC.ahk; Phase 3: use daemon) ---
+; WM_USE_DAEMON, WM_USE_PIPE_IPC, WM_USE_SHM_IPC, WM_USE_EVENT_HOOK_CACHE (all default off)
+#include %A_ScriptDir%\aux\WMIPC.ahk
+
 ; #region agent log
 ; Debug log path for Copy-from-Gemini instrumentation (NDJSON, one object per line)
 _DebugLogPath_WM() => A_ScriptDir "\.cursor\debug.log"
@@ -28,11 +32,11 @@ _DebugLog_WM(loc, msg, data, hypothesisId := "") {
 
 ; --- Helper Functions --------------------------------------------------------
 ShowNotification_WM(message, durationMs := 1500) {
-    ShowCenteredOverlay_Utils(message, durationMs, "DF2935")
+    ShowCenteredOverlay_Utils(message, durationMs, BANNER_ACCENT_ERROR)
 }
 
 ; Activate window by winSpec; show graceful error and return false if not found.
-TryActivateWindow_WM(winSpec, errorMessage := "Error: Target window not found.") {
+TryActivateWindow_WM(winSpec, errorMessage := "❌ Error: Target window not found.") {
     if (!WinExist(winSpec)) {
         ShowNotification_WM(errorMessage)
         return false
@@ -50,7 +54,11 @@ TryActivateWindow_WM(winSpec, errorMessage := "Error: Target window not found.")
 global g_LastActiveHwnd := 0
 global g_LastMouseClickTick := 0   ; Timestamp of the most recent mouse click (A_TickCount)
 global g_WindowCycleIndices := Map()  ; Keeps per-monitor cycling position
-SetTimer MonitorActiveWindow, 100  ; Check 10× per second
+; When daemon is used, foreground is driven by daemon cache (lower-frequency check); else legacy 100ms polling
+if (WM_USE_DAEMON && WM_USE_PIPE_IPC && WM_USE_EVENT_HOOK_CACHE)
+    SetTimer MonitorActiveWindow, 250
+else
+    SetTimer MonitorActiveWindow, 100
 
 ; --- Hotkeys & Functions -----------------------------------------------------
 
@@ -209,34 +217,42 @@ MonitorActiveWindow() {
     global g_LastMouseClickTick
     static lastHwnd := 0
     hwnd := 0
-    try {
-        hwnd := WinExist("A")
-    } catch {
-        ; No active window available
-        return
+    state := ""
+    if (WM_USE_DAEMON && WM_USE_PIPE_IPC && WM_USE_EVENT_HOOK_CACHE) {
+        try {
+            state := WMIPC_GetForegroundWindowState()
+            if (state.Has("hwnd"))
+                hwnd := Integer(state["hwnd"])
+        } catch {
+        }
+    }
+    if (!hwnd) {
+        try {
+            hwnd := WinExist("A")
+        } catch {
+            return
+        }
     }
     if (!hwnd || hwnd = lastHwnd)
         return
 
     lastHwnd := hwnd
 
-    ; If the window became active shortly after a mouse click, assume the user
-    ; activated it with the mouse and skip moving the pointer.
-    if (A_TickCount - g_LastMouseClickTick < 1000)  ; 1000 ms threshold
+    if (A_TickCount - g_LastMouseClickTick < 1000)
         return
 
-    ; --- Exclude specific applications (e.g., Snipping Tool) ---
-    ; Attempt to retrieve the process name; some system-level or UWP windows may
-    ; deny access, which would normally raise an exception and stop the script.
-    ; By catching the error we keep the timer running and simply ignore that
-    ; particular window.
-    try {
-        processName := WinGetProcessName("ahk_id " hwnd)
-    } catch {
-        return  ; Could not retrieve process name (e.g., access denied)
-    }
-    if (processName = "ScreenClippingHost.exe" || processName = "SnippingTool.exe" || processName = "hap.exe") {
-        return
+    if (WM_USE_DAEMON && state != "" && state.Has("exe")) {
+        exe := StrLower(state["exe"])
+        if (exe = "screenclippinghost.exe" || exe = "snippingtool.exe" || exe = "hap.exe")
+            return
+    } else {
+        try {
+            processName := WinGetProcessName("ahk_id " hwnd)
+        } catch {
+            return
+        }
+        if (processName = "ScreenClippingHost.exe" || processName = "SnippingTool.exe" || processName = "hap.exe")
+            return
     }
 
     MoveMouseToCenter(hwnd)
@@ -508,6 +524,21 @@ CycleWindowsOnMonitor(order) {
 }
 
 GetVisibleWindowsOnMonitor(mon) {
+    ; Daemon path: use O(1) cache when flags enabled (Phase 3)
+    if (WM_USE_DAEMON && WM_USE_PIPE_IPC && WM_USE_EVENT_HOOK_CACHE) {
+        try {
+            winList := WMIPC_GetVisibleWindowsByMonitor(mon)
+            if (winList.Length > 0) {
+                visible := []
+                for w in winList
+                    visible.Push({ hwnd: Integer(w["hwnd"]), left: Integer(w["left"]), top: Integer(w["top"]), right: Integer(
+                        w["right"]), bottom: Integer(w["bottom"]), z: Integer(w["z"]) })
+                return visible
+            }
+        } catch {
+            ; fall through to legacy
+        }
+    }
     ; Step-1: determine target monitor handle --------------------------------
     MonitorGet mon, &ml, &mt, &mr, &mb
     cx := (ml + mr) // 2
@@ -869,101 +900,16 @@ CleanupProjectSelector() {
     }
 }
 
-; Find and activate the last used Cursor PREVIEW window for a project path
-; Returns true if a preview window was found and activated, false otherwise
-FindAndActivatePreviewWindow(projectPath) {
-    ; Extract match segments from the project path
-    matchSegments := ExtractProjectMatchSegments(projectPath)
-
-    ; Get all Cursor windows
-    previewWindows := []
-    try {
-        for hwnd in WinGetList("ahk_exe Cursor.exe") {
-            try {
-                winTitle := WinGetTitle("ahk_id " hwnd)
-                winTitleLower := StrLower(winTitle)
-
-                ; ONLY include windows with "preview" in the title
-                if (!InStr(winTitleLower, "preview")) {
-                    continue
-                }
-
-                ; Check if window title contains any of the match segments
-                ; Cursor preview window titles have format: "Preview filename - folder-name - Cursor"
-                ; or "Preview filename - folder-name (Workspace) - Cursor"
-                for segment in matchSegments {
-                    ; Try exact match first
-                    if (InStr(winTitle, segment)) {
-                        previewWindows.Push({ hwnd: hwnd, title: winTitle })
-                        break  ; Found a match, no need to check other segments
-                    }
-                    ; Also try matching segment with "(Workspace)" suffix (for titles like "Trustmate Workspace (Workspace)")
-                    if (InStr(winTitle, segment . " (Workspace)")) {
-                        previewWindows.Push({ hwnd: hwnd, title: winTitle })
-                        break
-                    }
-                    ; Also try matching just the last word if segment contains spaces (e.g., "Workspace" from "Trustmate Workspace")
-                    if (InStr(segment, " ")) {
-                        segmentParts := StrSplit(segment, " ")
-                        lastPart := segmentParts[segmentParts.Length]
-                        if (InStr(winTitle, lastPart) && InStr(winTitle, segmentParts[1])) {
-                            ; Both first and last parts are in title, likely a match
-                            previewWindows.Push({ hwnd: hwnd, title: winTitle })
-                            break
-                        }
-                    }
-                }
-            } catch {
-                ; Skip windows we can't access
-                continue
-            }
-        }
-    } catch {
-        ; No Cursor windows found or error accessing them
-        return false
-    }
-
-    ; If no matching preview windows found, return false
-    if (previewWindows.Length = 0) {
-        return false
-    }
-
-    ; Find the last used preview window
-    ; First, check if any of them is currently active
-    try {
-        activeHwnd := WinGetID("A")
-        for window in previewWindows {
-            if (window.hwnd = activeHwnd) {
-                ; This window is already active, just center mouse
-                WinActivate("ahk_id " window.hwnd)
-                MoveMouseToCenter(window.hwnd)
-                return true
-            }
-        }
-    } catch {
-        ; Could not get active window, continue
-    }
-
-    ; If no active window matches, get the first window in the list
-    ; WinGetList returns windows in z-order (most recently used first)
-    if (previewWindows.Length > 0) {
-        targetWindow := previewWindows[1]
-        try {
-            WinActivate("ahk_id " targetWindow.hwnd)
-            WinWaitActive("ahk_id " targetWindow.hwnd, , 2)
-            MoveMouseToCenter(targetWindow.hwnd)
-            return true
-        } catch {
-            ; Failed to activate, return false
-            return false
-        }
-    }
-
-    return false
-}
-
 ; Return the hwnd of a Cursor window whose title matches the project path, or 0. Does not activate.
 GetCursorHwndForProject(projectPath) {
+    if (WM_USE_DAEMON && WM_USE_PIPE_IPC && WM_USE_EVENT_HOOK_CACHE) {
+        try {
+            r := WMIPC_ResolveProjectWindow(projectPath)
+            if (r.Has("hwnd") && Integer(r["hwnd"]) != 0)
+                return Integer(r["hwnd"])
+        } catch {
+        }
+    }
     matchSegments := ExtractProjectMatchSegments(projectPath)
     try {
         for hwnd in WinGetList("ahk_exe Cursor.exe") {
@@ -987,45 +933,51 @@ GetCursorHwndForProject(projectPath) {
 ; Find and activate the last used Cursor window for a project path.
 ; Returns the activated window's hwnd, or 0 if not found / activation failed.
 FindAndActivateCursorWindow(projectPath) {
-    ; Extract match segments from the project path
     matchSegments := ExtractProjectMatchSegments(projectPath)
-
-    ; Get all Cursor windows
     cursorWindows := []
-    try {
-        for hwnd in WinGetList("ahk_exe Cursor.exe") {
-            try {
-                winTitle := WinGetTitle("ahk_id " hwnd)
-                winTitleLower := StrLower(winTitle)
 
-                ; Skip windows with "preview" in the title
-                if (InStr(winTitleLower, "preview")) {
+    if (WM_USE_DAEMON && WM_USE_PIPE_IPC && WM_USE_EVENT_HOOK_CACHE) {
+        try {
+            for w in WMIPC_GetCursorWindows() {
+                title := w.Has("title") ? w["title"] : ""
+                if (!title || InStr(StrLower(title), "preview"))
                     continue
-                }
-
-                ; Check if window title contains any of the match segments
-                ; Cursor window titles have format: "filename - folder-name - Cursor"
                 for segment in matchSegments {
-                    if (InStr(winTitle, segment)) {
-                        cursorWindows.Push({ hwnd: hwnd, title: winTitle })
-                        break  ; Found a match, no need to check other segments
+                    if (InStr(title, segment)) {
+                        cursorWindows.Push({ hwnd: Integer(w["hwnd"]), title: title })
+                        break
                     }
                 }
-            } catch {
-                ; Skip windows we can't access
-                continue
             }
+        } catch {
         }
-    } catch {
-        ; No Cursor windows found or error accessing them
-        return 0
     }
 
     if (cursorWindows.Length = 0) {
-        return 0
+        try {
+            for hwnd in WinGetList("ahk_exe Cursor.exe") {
+                try {
+                    winTitle := WinGetTitle("ahk_id " hwnd)
+                    winTitleLower := StrLower(winTitle)
+                    if (InStr(winTitleLower, "preview"))
+                        continue
+                    for segment in matchSegments {
+                        if (InStr(winTitle, segment)) {
+                            cursorWindows.Push({ hwnd: hwnd, title: winTitle })
+                            break
+                        }
+                    }
+                } catch {
+                    continue
+                }
+            }
+        } catch {
+        }
     }
 
-    ; Prefer the window that is already active
+    if (cursorWindows.Length = 0)
+        return 0
+
     try {
         activeHwnd := WinGetID("A")
         for window in cursorWindows {
@@ -1038,7 +990,6 @@ FindAndActivateCursorWindow(projectPath) {
     } catch {
     }
 
-    ; Otherwise activate the first in z-order (most recently used)
     targetWindow := cursorWindows[1]
     try {
         WinActivate("ahk_id " targetWindow.hwnd)
@@ -1556,139 +1507,135 @@ HandlePreviewWindowSelection(*) {
     ; Small delay to ensure cleanup is complete
     Sleep 100
 
-    ; Try to find and activate preview windows for all projects
-    ; Check each project's path to find matching preview windows
     previewWindows := []
+    previewSource := []  ; list of {hwnd, title} from daemon or legacy
+    if (WM_USE_DAEMON && WM_USE_PIPE_IPC && WM_USE_EVENT_HOOK_CACHE) {
+        try {
+            for w in WMIPC_GetPreviewWindows()
+                previewSource.Push({ hwnd: Integer(w["hwnd"]), title: w.Has("title") ? w["title"] : "" })
+        } catch {
+        }
+    }
+    if (previewSource.Length = 0) {
+        try {
+            for hwnd in WinGetList("ahk_exe Cursor.exe") {
+                try {
+                    previewSource.Push({ hwnd: hwnd, title: WinGetTitle("ahk_id " hwnd) })
+                } catch {
+                }
+            }
+        } catch {
+        }
+    }
     try {
-        for hwnd in WinGetList("ahk_exe Cursor.exe") {
-            try {
-                winTitle := WinGetTitle("ahk_id " hwnd)
-                winTitleLower := StrLower(winTitle)
+        for item in previewSource {
+            hwnd := item.hwnd
+            winTitle := item.title
+            winTitleLower := StrLower(winTitle)
+            if (!InStr(winTitleLower, "preview"))
+                continue
 
-                ; ONLY include windows with "preview" in the title
-                if (!InStr(winTitleLower, "preview")) {
+            ; Extract workspace name from window title
+            ; Format: "Preview filename - WorkspaceName (Workspace) - Cursor"
+            ; We want to extract "WorkspaceName"
+            workspaceName := ""
+            if (RegExMatch(winTitle, "Preview .+? - (.+?) \(Workspace\)", &match)) {
+                workspaceName := match[1]
+            }
+
+            ; Check if this preview window matches any project
+            windowMatched := false
+            for project in g_Projects {
+                ; Skip empty placeholders
+                if (project.name = "" && project.path = "" && project.workPath = "") {
                     continue
                 }
 
-                ; Extract workspace name from window title
-                ; Format: "Preview filename - WorkspaceName (Workspace) - Cursor"
-                ; We want to extract "WorkspaceName"
+                ; Select path based on environment
+                projectPath := IS_WORK_ENVIRONMENT ? project.workPath : project.path
+                if (IS_WORK_ENVIRONMENT && projectPath = "") {
+                    projectPath := project.path
+                }
+
+                ; First, try matching by workspace name against project name
+                if (workspaceName != "" && project.name != "" && InStr(workspaceName, project.name)) {
+                    previewWindows.Push({ hwnd: hwnd, title: winTitle })
+                    windowMatched := true
+                    break
+                }
+
+                ; Also try matching workspace name directly in project path
+                if (workspaceName != "" && projectPath != "" && InStr(projectPath, workspaceName)) {
+                    previewWindows.Push({ hwnd: hwnd, title: winTitle })
+                    windowMatched := true
+                    break
+                }
+
+                ; Also try matching project name in window title (fallback)
+                if (project.name != "" && InStr(winTitle, project.name)) {
+                    previewWindows.Push({ hwnd: hwnd, title: winTitle })
+                    windowMatched := true
+                    break
+                }
+
+                if (projectPath = "") {
+                    continue
+                }
+
+                ; Extract match segments and check if window title matches
+                matchSegments := ExtractProjectMatchSegments(projectPath)
+                for segment in matchSegments {
+                    ; Try exact match first
+                    if (InStr(winTitle, segment)) {
+                        previewWindows.Push({ hwnd: hwnd, title: winTitle })
+                        windowMatched := true
+                        break  ; Found a match, no need to check other segments
+                    }
+                    ; Also try matching segment with "(Workspace)" suffix (for titles like "Trustmate Workspace (Workspace)")
+                    if (InStr(winTitle, segment . " (Workspace)")) {
+                        previewWindows.Push({ hwnd: hwnd, title: winTitle })
+                        windowMatched := true
+                        break
+                    }
+                    ; Also try matching just the last word if segment contains spaces (e.g., "Workspace" from "Trustmate Workspace")
+                    if (InStr(segment, " ")) {
+                        segmentParts := StrSplit(segment, " ")
+                        lastPart := segmentParts[segmentParts.Length]
+                        if (InStr(winTitle, lastPart) && InStr(winTitle, segmentParts[1])) {
+                            ; Both first and last parts are in title, likely a match
+                            previewWindows.Push({ hwnd: hwnd, title: winTitle })
+                            windowMatched := true
+                            break
+                        }
+                    }
+                }
+
+                ; If we found a match, break from project loop
+                if (windowMatched)
+                    break
+            }
+        }
+    } catch {
+        ShowNotification_WM("No preview windows found.")
+        return
+    }
+
+    if (previewWindows.Length = 0) {
+        try {
+            for item in previewSource {
+                winTitle := item.title
+                winTitleLower := StrLower(winTitle)
+                if (!InStr(winTitleLower, "preview"))
+                    continue
+
+                ; Extract workspace name
                 workspaceName := ""
                 if (RegExMatch(winTitle, "Preview .+? - (.+?) \(Workspace\)", &match)) {
                     workspaceName := match[1]
                 }
 
-                ; Check if this preview window matches any project
-                windowMatched := false
-                for project in g_Projects {
-                    ; Skip empty placeholders
-                    if (project.name = "" && project.path = "" && project.workPath = "") {
-                        continue
-                    }
-
-                    ; Select path based on environment
-                    projectPath := IS_WORK_ENVIRONMENT ? project.workPath : project.path
-                    if (IS_WORK_ENVIRONMENT && projectPath = "") {
-                        projectPath := project.path
-                    }
-
-                    ; First, try matching by workspace name against project name
-                    if (workspaceName != "" && project.name != "" && InStr(workspaceName, project.name)) {
-                        previewWindows.Push({ hwnd: hwnd, title: winTitle })
-                        windowMatched := true
-                        break
-                    }
-
-                    ; Also try matching workspace name directly in project path
-                    if (workspaceName != "" && projectPath != "" && InStr(projectPath, workspaceName)) {
-                        previewWindows.Push({ hwnd: hwnd, title: winTitle })
-                        windowMatched := true
-                        break
-                    }
-
-                    ; Also try matching project name in window title (fallback)
-                    if (project.name != "" && InStr(winTitle, project.name)) {
-                        previewWindows.Push({ hwnd: hwnd, title: winTitle })
-                        windowMatched := true
-                        break
-                    }
-
-                    if (projectPath = "") {
-                        continue
-                    }
-
-                    ; Extract match segments and check if window title matches
-                    matchSegments := ExtractProjectMatchSegments(projectPath)
-                    for segment in matchSegments {
-                        ; Try exact match first
-                        if (InStr(winTitle, segment)) {
-                            previewWindows.Push({ hwnd: hwnd, title: winTitle })
-                            windowMatched := true
-                            break  ; Found a match, no need to check other segments
-                        }
-                        ; Also try matching segment with "(Workspace)" suffix (for titles like "Trustmate Workspace (Workspace)")
-                        if (InStr(winTitle, segment . " (Workspace)")) {
-                            previewWindows.Push({ hwnd: hwnd, title: winTitle })
-                            windowMatched := true
-                            break
-                        }
-                        ; Also try matching just the last word if segment contains spaces (e.g., "Workspace" from "Trustmate Workspace")
-                        if (InStr(segment, " ")) {
-                            segmentParts := StrSplit(segment, " ")
-                            lastPart := segmentParts[segmentParts.Length]
-                            if (InStr(winTitle, lastPart) && InStr(winTitle, segmentParts[1])) {
-                                ; Both first and last parts are in title, likely a match
-                                previewWindows.Push({ hwnd: hwnd, title: winTitle })
-                                windowMatched := true
-                                break
-                            }
-                        }
-                    }
-
-                    ; If we found a match, break from project loop
-                    if (windowMatched) {
-                        break
-                    }
-                }
-            } catch {
-                ; Skip windows we can't access
-                continue
-            }
-        }
-    } catch {
-        ; No Cursor windows found
-        ShowNotification_WM("No preview windows found.")
-        return
-    }
-
-    ; If no matching preview windows found, check if we have any preview windows with extracted workspace names
-    ; that don't match any project - include them anyway so all preview windows are accessible
-    if (previewWindows.Length = 0) {
-        ; Re-scan all Cursor windows to find preview windows that weren't matched
-        try {
-            for hwnd in WinGetList("ahk_exe Cursor.exe") {
-                try {
-                    winTitle := WinGetTitle("ahk_id " hwnd)
-                    winTitleLower := StrLower(winTitle)
-
-                    ; Only include windows with "preview" in the title
-                    if (!InStr(winTitleLower, "preview")) {
-                        continue
-                    }
-
-                    ; Extract workspace name
-                    workspaceName := ""
-                    if (RegExMatch(winTitle, "Preview .+? - (.+?) \(Workspace\)", &match)) {
-                        workspaceName := match[1]
-                    }
-
-                    ; If we have a workspace name, include this preview window even if it doesn't match any project
-                    if (workspaceName != "") {
-                        previewWindows.Push({ hwnd: hwnd, title: winTitle })
-                    }
-                } catch {
-                    continue
-                }
+                if (workspaceName != "")
+                    previewWindows.Push({ hwnd: item.hwnd, title: winTitle })
             }
         } catch {
         }
@@ -1789,8 +1736,16 @@ HandleCursorWindowSelectionByChar(char) {
     }
 
     if (targetHwnd != "") {
-        ; Get all Cursor windows (need to rebuild the list)
-        allCursorWindows := WinGetList("ahk_exe Cursor.exe")
+        allCursorWindows := []
+        if (WM_USE_DAEMON && WM_USE_PIPE_IPC && WM_USE_EVENT_HOOK_CACHE) {
+            try {
+                for w in WMIPC_GetCursorWindows()
+                    allCursorWindows.Push(Integer(w["hwnd"]))
+            } catch {
+            }
+        }
+        if (allCursorWindows.Length = 0)
+            allCursorWindows := WinGetList("ahk_exe Cursor.exe")
         HandleCursorWindowSelection(targetHwnd, allCursorWindows)
 
         ; Also cleanup the cursor window selector GUI if it exists
@@ -1888,16 +1843,23 @@ ShowCursorWindowSelectorSubMenu() {
         return
     }
 
-    ; Get all Cursor windows
-    cursorWindows := WinGetList("ahk_exe Cursor.exe")
+    ; Get all Cursor windows (daemon cache or legacy)
+    cursorWindows := []
+    if (WM_USE_DAEMON && WM_USE_PIPE_IPC && WM_USE_EVENT_HOOK_CACHE) {
+        try {
+            for w in WMIPC_GetCursorWindows()
+                cursorWindows.Push(Integer(w["hwnd"]))
+        } catch {
+        }
+    }
+    if (cursorWindows.Length = 0)
+        cursorWindows := WinGetList("ahk_exe Cursor.exe")
 
     if (cursorWindows.Length = 0) {
-        ; Use notification to avoid stealing focus
         ShowNotification_WM("No Cursor windows found.")
         return
     }
 
-    ; If only one window, just activate it and return
     if (cursorWindows.Length = 1) {
         try {
             WinActivate("ahk_id " . cursorWindows[1])

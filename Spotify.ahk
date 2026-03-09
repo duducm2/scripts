@@ -10,6 +10,16 @@
 #include UIA-v2\Lib\UIA.ahk
 #include UIA-v2\Lib\UIA_Browser.ahk
 #include %A_ScriptDir%\env.ahk
+#include %A_ScriptDir%\SpotifyWASAPI.ahk
+
+; --- Feature: use WASAPI for Ctrl+Volume (no window activation). Set false to use legacy activate+send.
+global AL_USE_WASAPI := true
+
+; --- Browser group for YouTube targeting (Chrome, Edge, Firefox, Brave) -------
+GroupAdd "YouTubeBrowsers", "ahk_exe chrome.exe"
+GroupAdd "YouTubeBrowsers", "ahk_exe msedge.exe"
+GroupAdd "YouTubeBrowsers", "ahk_exe firefox.exe"
+GroupAdd "YouTubeBrowsers", "ahk_exe brave.exe"
 
 ; --- Hotkeys & Functions -----------------------------------------------------
 
@@ -21,174 +31,139 @@
 #!+s:: OpenSpotify()
 
 OpenSpotify() {
-    SetTitleMatchMode(2)
-
-    ; 1) If Spotify is already running, just activate it.
-    if WinExist("ahk_exe Spotify.exe") || WinExist("Spotify") {
-        WinActivate()
-        if WinWaitActive("ahk_exe Spotify.exe", , 2)
-            CenterMouse()
+    ; 1) If Spotify is already running, just activate it. Exact process only; no title substring.
+    if WinExist("ahk_exe Spotify.exe") {
+        WinActivate("ahk_exe Spotify.exe")
+        WinWaitActive("ahk_exe Spotify.exe", , 2)
         return
     }
 
-    ; 2) Decide how to open it based on the environment.
-    global IS_WORK_ENVIRONMENT
-    if IS_WORK_ENVIRONMENT {
-        ; Work PC: Try the shortcut first.
-        link := "C:\Users\fie7ca\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Spotify.lnk"
-        if FileExist(link) {
-            Run(link)
-            if WinWaitActive("ahk_exe Spotify.exe", , 5)
-                CenterMouse()
-            return
-        }
-
-        ; Fallback for Work PC: Use the Store App command.
-        Run("explorer.exe shell:AppsFolder\SpotifyAB.SpotifyMusic_zpdnekdrzrea0!Spotify")
-        if WinWaitActive("ahk_exe Spotify.exe", , 5)
-            CenterMouse()
+    ; 2) Resolve launch command: dynamic path then Store fallback.
+    link := GetSpotifyShortcutPath()
+    if (link != "") {
+        Run(link)
+        WinWaitActive("ahk_exe Spotify.exe", , 5)
+        return
     }
-    else {
-        ; Personal PC: Directly run the Microsoft Store App command.
-        Run("explorer.exe shell:AppsFolder\SpotifyAB.SpotifyMusic_zpdnekdrzrea0!Spotify")
-        if WinWaitActive("ahk_exe Spotify.exe", , 5)
-            CenterMouse()
-    }
+    ; Store / UWP fallback
+    Run("explorer.exe shell:AppsFolder\SpotifyAB.SpotifyMusic_zpdnekdrzrea0!Spotify")
+    WinWaitActive("ahk_exe Spotify.exe", , 5)
 }
 
-*Volume_Down:: {
+; Returns path to Spotify shortcut (Start Menu or Programs) or "" for Store-only. No hardcoded user paths.
+GetSpotifyShortcutPath() {
+    ; Prefer user Start Menu Programs (works for current user on any machine).
+    path := A_AppData "\Microsoft\Windows\Start Menu\Programs\Spotify.lnk"
+    if FileExist(path)
+        return path
+    ; Common alternate: All Users Start Menu (if installed for all users).
+    try {
+        path := A_ProgramsCommon "\Spotify.lnk"
+        if FileExist(path)
+            return path
+    } catch {
+        ;
+    }
+    ; Optional: resolve Store package from registry (HKCU ... AppModel\Repository\Packages).
+    ; For now we rely on shell:AppsFolder fallback in OpenSpotify; registry traversal can be added here.
+    return ""
+}
+
+*Volume_Down:: HandleVolumeDelta(-1)
+*Volume_Up:: HandleVolumeDelta(1)
+
+HandleVolumeDelta(deltaStep) {
+    prevHwnd := WinGetID("A")
     if GetKeyState("Ctrl", "P") {
-        ; Ctrl held: adjust Spotify volume
-        spotify := ActivateSpotify()
-        if WinWaitActive("ahk_exe Spotify.exe", , 2) {
-            Send("^{Down}")
+        ; Ctrl held: adjust Spotify volume (WASAPI = silent; else legacy activate+send)
+        hwnd := GetSpotifyHwnd()
+        if !(hwnd is Integer) || (hwnd <= 0) {
+            ToolTip("Spotify not running")
+            SetTimer(() => ToolTip(), -2000)
+            return
         }
-        ; Handle window state after action
-        if IsObject(spotify) {
-            if spotify.wasMinimized {
-                ; Re-minimize if the window was originally minimized
-                hwnd := spotify.hwnd
-                SetTimer((id := hwnd) => WinMinimize("ahk_id " id), -3500)
-            } else {
-                ; Use Alt+Tab to go back to previous window if it wasn't minimized
-                ScheduleAltTab()
+        if (AL_USE_WASAPI) {
+            try {
+                pid := WinGetPID("ahk_id " hwnd)
+                if (pid is Integer) && (pid > 0) && AdjustProcessVolumeByPid(pid, deltaStep > 0 ? 5 : -5)
+                    return
+            } catch {
+                ; Fall through to legacy
             }
+        }
+        wasMinimized := (WinGetMinMax(hwnd) == -1)
+        WinActivate("ahk_id " hwnd)
+        if WinWaitActive("ahk_id " hwnd, , 2) {
+            Send(deltaStep > 0 ? "^{Up}" : "^{Down}")
+        }
+        if wasMinimized {
+            SetTimer(VerifiedMinimize.Bind(hwnd), -3500)
+        } else {
+            SetTimer(RestoreFocus.Bind(prevHwnd), -800)
         }
     } else if GetKeyState("Alt", "P") {
         ; Alt held: adjust YouTube volume
-        yt := FocusYouTube()
-        if IsObject(yt) {
-            Send("{Down}")
-            if yt.wasMinimized {
-                hwnd := yt.hwnd
-                SetTimer((id := hwnd) => WinMinimize("ahk_id " id), -3500)
-            } else {
-                ; Use Alt+Tab to go back to previous window if it wasn't minimized
-                ScheduleAltTab()
-            }
-        } else {
-            Send("{Volume_Down}")
-        }
-    } else {
-        ; Default: master volume down
-        Send("{Volume_Down}")
-    }
-}
-
-*Volume_Up:: {
-    if GetKeyState("Ctrl", "P") {
-        spotify := ActivateSpotify()
-        if WinWaitActive("ahk_exe Spotify.exe", , 2) {
-            Send("^{Up}")
-        }
-        ; Handle window state after action
-        if IsObject(spotify) {
-            if spotify.wasMinimized {
-                ; Re-minimize if the window was originally minimized
-                hwnd := spotify.hwnd
-                SetTimer((id := hwnd) => WinMinimize("ahk_id " id), -3500)
-            } else {
-                ; Use Alt+Tab to go back to previous window if it wasn't minimized
-                ScheduleAltTab()
-            }
-        }
-    } else if GetKeyState("Alt", "P") {
-        yt := FocusYouTube()
-        if IsObject(yt) {
-            Send("{Up}")
-            if yt.wasMinimized {
-                hwnd := yt.hwnd
-                SetTimer((id := hwnd) => WinMinimize("ahk_id " id), -3500)
-            } else {
-                ; Use Alt+Tab to go back to previous window if it wasn't minimized
-                ScheduleAltTab()
-            }
-        } else {
-            Send("{Volume_Up}")
-        }
-    } else {
-        Send("{Volume_Up}")
-    }
-}
-
-ActivateSpotify() {
-    ; Activate Spotify and return information about its previous state
-    winTitle := "ahk_exe Spotify.exe"
-    hwnd := WinExist(winTitle)
-    wasMinimized := hwnd && (WinGetMinMax(hwnd) == -1) ; -1 = minimized
-
-    if (!hwnd) {
-        ToolTip("Spotify not running")
-        SetTimer(() => ToolTip(), -2000)
-        return { hwnd: 0, wasMinimized: false }
-    }
-
-    ; Bring the window to the foreground (restores if it was minimized)
-    WinActivate(winTitle)
-
-    ; Return a small object so callers can inspect state if desired
-    return { hwnd: hwnd, wasMinimized: wasMinimized }
-}
-
-; =============================================================================
-; Updated FocusYouTube to also return hwnd & minimized flag
-; =============================================================================
-FocusYouTube() {
-    winList := WinGetList("ahk_exe chrome.exe")
-    for win in winList {
-        title := WinGetTitle(win)
-        if InStr(title, "YouTube") {
-            wasMinimized := (WinGetMinMax(win) == -1) ; check state before activation
+        hwnd := GetYouTubeTabHwnd()
+        if (hwnd is Integer) && (hwnd > 0) {
+            wasMinimized := (WinGetMinMax(hwnd) == -1)
             try {
-                WinActivate(win)
-                WinWaitActive(win, , 2)
-                return { hwnd: win, wasMinimized: wasMinimized }
+                WinActivate(hwnd)
+                WinWaitActive(hwnd, , 2)
+                Send(deltaStep > 0 ? "{Up}" : "{Down}")
             } catch {
-                return false
+                Send(deltaStep > 0 ? "{Volume_Up}" : "{Volume_Down}")
+                return
             }
+            if wasMinimized {
+                SetTimer(VerifiedMinimize.Bind(hwnd), -3500)
+            } else {
+                SetTimer(RestoreFocus.Bind(prevHwnd), -800)
+            }
+        } else {
+            Send(deltaStep > 0 ? "{Volume_Up}" : "{Volume_Down}")
+        }
+    } else {
+        Send(deltaStep > 0 ? "{Volume_Up}" : "{Volume_Down}")
+    }
+}
+
+; Restore focus to previous window only if it still exists. Deterministic; no Alt+Tab.
+RestoreFocus(prevHwnd) {
+    if (prevHwnd is Integer) && (prevHwnd > 0) && WinExist("ahk_id " prevHwnd)
+        WinActivate("ahk_id " prevHwnd)
+}
+
+; Minimize only if window still exists. Avoids mutating wrong window after HWND reuse.
+VerifiedMinimize(hwnd) {
+    if (hwnd is Integer) && (hwnd > 0) && WinExist("ahk_id " hwnd)
+        WinMinimize("ahk_id " hwnd)
+}
+
+; Returns Spotify window HWND (integer) or 0 if not found. Strict sentinel contract.
+GetSpotifyHwnd() {
+    hwnd := WinExist("ahk_exe Spotify.exe")
+    return (hwnd) ? hwnd : 0
+}
+
+; Returns first browser window HWND whose current tab URL is a YouTube domain, or 0. Uses UIA + ahk_group.
+GetYouTubeTabHwnd() {
+    winList := WinGetList("ahk_group YouTubeBrowsers")
+    for win in winList {
+        try {
+            uia := UIA_Browser("ahk_id " win)
+            url := uia.GetCurrentURL()
+            if IsYouTubeDomain(url)
+                return win
+        } catch {
+            continue
         }
     }
-    return false ; not found
+    return 0
 }
 
-; =============================================================================
-; Helper function to center mouse on the active window
-; =============================================================================
-CenterMouse() {
-    Sleep(200)
-    Send("#!+q")
-}
-
-; =============================================================================
-; Helper function to schedule a single Alt+Tab after 3.5 seconds of inactivity
-; =============================================================================
-ScheduleAltTab() {
-    ; Cancel any existing scheduled Alt+Tab so we only trigger it once
-    SetTimer(DoAltTab, 0)
-    ; Schedule a new one-shot Alt+Tab for 0.8 second from now
-    SetTimer(DoAltTab, -800)
-}
-
-DoAltTab() {
-    Send("!{Tab}")
+; True only if url contains a YouTube domain (www.youtube.com, m.youtube.com, youtube.com, etc.).
+IsYouTubeDomain(url) {
+    if (url = "" || Type(url) != "String")
+        return false
+    return InStr(url, "youtube.com") > 0
 }

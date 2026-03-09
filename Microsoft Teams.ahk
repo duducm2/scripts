@@ -5,170 +5,136 @@
 ; This script consolidates all Microsoft Teams related hotkeys and functions.
 ; -----------------------------------------------------------------------------
 
+; --- Config and feature flags (Phase 1 / Phase 3 rollout) --------------------
+; Rollout order: 1) HWND cache 2) activation/wait params 3) UIA cache (always on)
+TEAMS_USE_HWND_CACHE := true
+TEAMS_ACTIVATION_ATTEMPTS := 3
+TEAMS_ACTIVATION_WAIT_MS := 300
+TEAMS_PROCESSES := ["ms-teams.exe", "Teams.exe", "MSTeams.exe"]
+WS_VISIBLE := 0x10000000
+
 ; --- Includes ----------------------------------------------------------------
 #include UIA-v2\Lib\UIA.ahk
 #include %A_ScriptDir%\Utils.ahk
 
+; --- Singleton HWND cache (Phase 1.3) ----------------------------------------
+class TeamsHwndCache {
+    static MeetingHwnd := 0
+    static ChatHwnd := 0
+    static IsValid(hwnd) {
+        if (!hwnd || hwnd <= 0)
+            return false
+        try {
+            if !WinExist("ahk_id " hwnd)
+                return false
+            style := WinGetStyle("ahk_id " hwnd)
+            return (style & WS_VISIBLE) != 0
+        } catch {
+            return false
+        }
+    }
+    static InvalidateMeeting() {
+        TeamsHwndCache.MeetingHwnd := 0
+    }
+    static InvalidateChat() {
+        TeamsHwndCache.ChatHwnd := 0
+    }
+}
+
 ; --- Helper Functions --------------------------------------------------------
 
-ActivateWindowWithRetry(hwnd, attempts := 6, waitMs := 500) {
-    if (!WinExist("ahk_id " hwnd)) {
-        try {
-            ShowCenteredOverlay(WinGetID("A"), "Error: Target window not found.", 2000)
-        } catch {
+; Returns meeting window HWND (integer) or 0. Uses cache when TEAMS_USE_HWND_CACHE.
+ResolveTeamsMeetingHwnd() {
+    if (TEAMS_USE_HWND_CACHE && TeamsHwndCache.IsValid(TeamsHwndCache.MeetingHwnd))
+        return TeamsHwndCache.MeetingHwnd
+    for proc in TEAMS_PROCESSES {
+        for hwnd in WinGetList("ahk_exe " proc) {
+            if IsTeamsMeetingTitle(WinGetTitle(hwnd)) {
+                if (TEAMS_USE_HWND_CACHE)
+                    TeamsHwndCache.MeetingHwnd := hwnd
+                return hwnd
+            }
+        }
+    }
+    hwnd := WinExist("RegEx)^.*\| Microsoft Teams$")
+    if (hwnd && IsTeamsMeetingTitle(WinGetTitle(hwnd))) {
+        if (TEAMS_USE_HWND_CACHE)
+            TeamsHwndCache.MeetingHwnd := hwnd
+        return hwnd
+    }
+    if (TEAMS_USE_HWND_CACHE)
+        TeamsHwndCache.InvalidateMeeting()
+    return 0
+}
+
+ActivateWindowWithRetry(hwnd, attempts := 3, waitMs := 300) {
+    if (!hwnd || hwnd <= 0 || !WinExist("ahk_id " hwnd)) {
+        try ShowCenteredOverlay(WinGetID("A"), "❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
+        catch {
         }
         return false
     }
-    ; Get original window state to preserve size and prevent unwanted maximization
     originalState := ""
     try {
         originalState := WinGetMinMax(hwnd)
-        ; Validate the state value (-1=minimized, 0=normal, 1=maximized)
-        if !(originalState = -1 || originalState = 0 || originalState = 1) {
-            originalState := ""  ; Reset if invalid state
-        }
+        if !(originalState = -1 || originalState = 0 || originalState = 1)
+            originalState := ""
     } catch {
-        originalState := ""  ; Reset on error
+        originalState := ""
     }
-    
-    ; Multiple strategies to restore and activate window
-    Loop attempts {
-        ; Strategy 1: Standard restore + activate (only if minimized)
+    loop attempts {
         try {
-            if (originalState = -1) {  ; Only restore if window was minimized (-1=minimized, 0=normal, 1=maximized)
+            if (originalState = -1) {
                 WinRestore(hwnd)
                 Sleep 100
             }
             WinActivate(hwnd)
-            if WinWaitActive("ahk_id " hwnd, , waitMs/1000) {
+            if WinWaitActive("ahk_id " hwnd, , waitMs / 1000)
                 return true
-            }
         } catch {
-            try ShowCenteredOverlay(WinGetID("A"), "Error: Target window not found.", 2000)
+            try ShowCenteredOverlay(WinGetID("A"), "❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
         }
-        
-        ; Strategy 2: Show window using ShowWindow API (only if minimized)
         try {
-            if (originalState = -1) {  ; Only restore if window was minimized (-1=minimized, 0=normal, 1=maximized)
-                DllCall("ShowWindow", "Ptr", hwnd, "Int", 9)  ; SW_RESTORE
+            if (originalState = -1) {
+                DllCall("ShowWindow", "Ptr", hwnd, "Int", 9)
                 Sleep 100
             }
             DllCall("SetForegroundWindow", "Ptr", hwnd)
-            if WinWaitActive("ahk_id " hwnd, , waitMs/1000) {
+            if WinWaitActive("ahk_id " hwnd, , waitMs / 1000)
                 return true
-            }
         } catch {
-            try ShowCenteredOverlay(WinGetID("A"), "Error: Target window not found.", 2000)
+            try ShowCenteredOverlay(WinGetID("A"), "❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
         }
-        
-        ; Strategy 3: Force to front using BringWindowToTop
         try {
             DllCall("BringWindowToTop", "Ptr", hwnd)
             Sleep 100
             WinActivate(hwnd)
-            if WinWaitActive("ahk_id " hwnd, , waitMs/1000) {
+            if WinWaitActive("ahk_id " hwnd, , waitMs / 1000)
                 return true
-            }
         } catch {
-            try ShowCenteredOverlay(WinGetID("A"), "Error: Target window not found.", 2000)
+            try ShowCenteredOverlay(WinGetID("A"), "❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
         }
-        
-        ; Strategy 4: Alt+Tab simulation to bring window up
-        if A_Index = attempts {
-            try {
-                Send "!{Tab}"
-                Sleep 200
-                WinActivate(hwnd)
-                if WinWaitActive("ahk_id " hwnd, , waitMs/1000) {
-                    return true
-                }
-            } catch {
-                try ShowCenteredOverlay(WinGetID("A"), "Error: Target window not found.", 2000)
-            }
-        }
-        
-        Sleep 300
+        Sleep 200
     }
     return false
 }
 
 ActivateTeamsMeetingWindow() {
-    static processes := ["ms-teams.exe", "Teams.exe", "MSTeams.exe"]
-    ; Debug: collect all Teams windows for troubleshooting
-    allTitles := ""
-    foundMeetingWindow := false
-    
-    for proc in processes {
-        for hwnd in WinGetList("ahk_exe " proc) {
-            title := WinGetTitle(hwnd)
-            allTitles .= "- " . title . " (hwnd: " . hwnd . ")`n"
-            if IsTeamsMeetingTitle(title) {
-                foundMeetingWindow := true
-                allTitles .= "  → MEETING WINDOW DETECTED, attempting activation...`n"
-                if ActivateWindowWithRetry(hwnd) {
-                    allTitles .= "  → SUCCESS: Window activated`n"
-                    return true
-                } else {
-                    allTitles .= "  → FAILED: Could not activate window`n"
-                }
-            }
-        }
+    hwnd := ResolveTeamsMeetingHwnd()
+    if (hwnd <= 0) {
+        TeamsHwndCache.InvalidateMeeting()
+        ShowCenteredOverlay(WinGetID("A"), "NO MEETING WINDOW FOUND", 3000, BANNER_ACCENT_ERROR)
+        return false
     }
-    
-    ; Try regex fallback
-    if hwnd := WinExist("RegEx)^.*\| Microsoft Teams$") {
-        foundMeetingWindow := true
-        title := WinGetTitle(hwnd)
-        allTitles .= "- REGEX MATCH: " . title . " (hwnd: " . hwnd . ")`n"
-        allTitles .= "  → Attempting activation via regex fallback...`n"
-        if ActivateWindowWithRetry(hwnd) {
-            allTitles .= "  → SUCCESS: Window activated via regex`n"
-            return true
-        } else {
-            allTitles .= "  → FAILED: Could not activate via regex`n"
-        }
-    }
-    
-    ; Final fallback: Click on Teams taskbar button
-    if foundMeetingWindow {
-        allTitles .= "`n→ FINAL ATTEMPT: Clicking Teams taskbar button...`n"
-        try {
-            ; Try to find and click Teams in taskbar
-            if WinExist("ahk_exe ms-teams.exe") || WinExist("ahk_exe Teams.exe") {
-                ; Send Win+T to cycle through taskbar and look for Teams
-                Send "#t"
-                Sleep 200
-                ; Try clicking where Teams might be
-                Loop 10 {
-                    Send "{Right}"
-                    Sleep 50
-                    if InStr(WinGetTitle("A"), "Teams") {
-                        Send "{Enter}"
-                        Sleep 500
-                        ; Check if we now have an active Teams window
-                        if WinActive("ahk_exe ms-teams.exe") || WinActive("ahk_exe Teams.exe") {
-                            allTitles .= "  → SUCCESS: Activated via taskbar`n"
-                            return true
-                        }
-                        break
-                    }
-                }
-            }
-        }
-        allTitles .= "  → FAILED: Taskbar activation failed`n"
-    }
-    
-    ; Show error as banner overlay
-    debugMsg := foundMeetingWindow ? 
-        "MEETING WINDOW FOUND BUT COULD NOT ACTIVATE" : 
-        "NO MEETING WINDOW FOUND"
-    ShowCenteredOverlay(WinGetID("A"), debugMsg, 3000)
+    if ActivateWindowWithRetry(hwnd, TEAMS_ACTIVATION_ATTEMPTS, TEAMS_ACTIVATION_WAIT_MS)
+        return true
+    TeamsHwndCache.InvalidateMeeting()
+    ShowCenteredOverlay(WinGetID("A"), "MEETING WINDOW FOUND BUT COULD NOT ACTIVATE", 3000, BANNER_ACCENT_ERROR)
     return false
 }
 
 ActivateTeamsChatWindow() {
-    static processes := ["ms-teams.exe", "Teams.exe", "MSTeams.exe"]
-    for proc in processes {
+    for proc in TEAMS_PROCESSES {
         for hwnd in WinGetList("ahk_exe " proc) {
             if IsTeamsChatTitle(title := WinGetTitle(hwnd)) {
                 if (WinExist("ahk_id " hwnd)) {
@@ -183,25 +149,18 @@ ActivateTeamsChatWindow() {
             WinActivate(hwnd)
             return true
         }
-        try ShowCenteredOverlay(WinGetID("A"), "Error: Target window not found.", 2000)
+        try ShowCenteredOverlay(WinGetID("A"), "❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
     }
     ; No message box here - just return false
     return false
 }
 
-FindListItemContaining(root, text) {
+; Phase 2.3: single list-item finder (string or array of strings).
+FindListItemByNames(root, nameOrNames) {
+    names := Type(nameOrNames) = "Array" ? nameOrNames : [nameOrNames]
     items := root.FindAll(UIA.CreateCondition({ ControlType: "ListItem" }))
     for item in items {
-        if InStr(item.Name, text)
-            return item
-    }
-    return false
-}
-
-FindListItemContainingMultiLang(root, textArray) {
-    items := root.FindAll(UIA.CreateCondition({ ControlType: "ListItem" }))
-    for item in items {
-        for text in textArray {
+        for text in names {
             if InStr(item.Name, text)
                 return item
         }
@@ -209,24 +168,14 @@ FindListItemContainingMultiLang(root, textArray) {
     return false
 }
 
-WaitListItem(root, partialName, timeout := 3000) {
+; Single wait helper; poll interval 150 ms.
+WaitListItemByNames(root, nameOrNames, timeout := 3000) {
     start := A_TickCount
     while (A_TickCount - start < timeout) {
-        item := FindListItemContaining(root, partialName)
+        item := FindListItemByNames(root, nameOrNames)
         if item
             return item
-        Sleep 100
-    }
-    return false
-}
-
-WaitListItemMultiLang(root, partialNameArray, timeout := 3000) {
-    start := A_TickCount
-    while (A_TickCount - start < timeout) {
-        item := FindListItemContainingMultiLang(root, partialNameArray)
-        if item
-            return item
-        Sleep 100
+        Sleep 150
     }
     return false
 }
@@ -247,14 +196,14 @@ IsTeamsChatTitle(title) {
 }
 
 ; --- Standard overlay (uses Utils) -------------------------------------------
-ShowCenteredOverlay(hwndTarget, text, duration := 1500) {
+ShowCenteredOverlay(hwndTarget, text, duration := 1500, bgColor := BANNER_ACCENT_INTERMEDIATE) {
     centerOnHwnd := (hwndTarget && WinExist("ahk_id " hwndTarget)) ? hwndTarget : WinGetID("A")
     if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
         centerOnHwnd := 0
-    StandardLoadingBar_Show(text, "3772FF", { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 500, fontSize: 24, passiveBgColor: "3772FF" })
+    StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 500, fontSize: 17,
+        passiveBgColor: bgColor })
     StandardLoadingBar_Hide(duration)
 }
-
 
 ; --- Hotkeys & Functions -----------------------------------------------------
 
@@ -266,129 +215,75 @@ PlayMicrophoneBeep() {
     }
 }
 
-; --- Microphone state verification ---
-GetMicrophoneState(hwndTeams, maxRetries := 3) {
-    ; Returns: "muted", "unmuted", or "unknown"
-    Loop maxRetries {
+; Phase 2.1/2.2: one cache request for toggle buttons; generic state resolver.
+TEAMS_TOGGLE_CACHE := UIA.CreateCacheRequest(["Name", "AutomationId"], ["Toggle"])
+
+; Returns state string from mapping, or "unknown". Uses cached UIA (Phase 2.1).
+GetTeamsToggleState(hwndTeams, automationId, namePatterns, stateFromToggle, stateFromName, maxRetries := 3) {
+    loop maxRetries {
         try {
-            root := UIA.ElementFromHandle(hwndTeams)
+            root := UIA.ElementFromHandleBuildCache(TEAMS_TOGGLE_CACHE, hwndTeams)
             if !root {
                 if A_Index < maxRetries
                     Sleep 150
                 continue
             }
-            
-            ; Try automation ID first
-            micBtn := root.FindFirst(UIA.CreateCondition({ AutomationId: "microphone-button" }))
-            
-            ; If automation ID fails, try finding by name patterns
-            if !micBtn {
-                ; English and Portuguese name patterns for microphone button
-                micNamePatterns := [
-                    "Microphone", "Mic", "Mute", "Unmute",
-                    "Microfone", "Mudo", "Desativar mudo", "Ativar mudo",
-                    "Turn on microphone", "Turn off microphone",
-                    "Ligar microfone", "Desligar microfone"
-                ]
-                
-                for pattern in micNamePatterns {
-                    micBtn := root.FindFirst(UIA.CreateCondition({ Name: pattern }))
-                    if micBtn
+            btn := root.FindFirstBuildCache(TEAMS_TOGGLE_CACHE, UIA.CreateCondition({ AutomationId: automationId }))
+            if !btn {
+                for pattern in namePatterns {
+                    btn := root.FindFirstBuildCache(TEAMS_TOGGLE_CACHE, UIA.CreateCondition({ Name: pattern }))
+                    if btn
                         break
                 }
             }
-            
-            if micBtn {
-                ; Prefer ToggleState when available
+            if btn {
                 try {
-                    state := micBtn.ToggleState  ; 0=Off, 1=On, 2=Indeterminate
-                    if (state = UIA.ToggleState.On)
-                        return "muted"          ; Toggle ON => mute active
-                    if (state = UIA.ToggleState.Off)
-                        return "unmuted"
+                    state := btn.CachedToggleState
+                    if (state is "Integer" && stateFromToggle.Has(state))
+                        return stateFromToggle[state]
+                } catch {
                 }
-                ; Fallback: infer from Name (action-based text)
-                try name := micBtn.Name
-                if name {
-                    ; Portuguese patterns
-                    if InStr(name, "Desativar mudo") || InStr(name, "Desligar microfone") ; "Disable mute" => currently muted
-                        return "muted"
-                    if InStr(name, "Ativar mudo") || InStr(name, "Ligar microfone")    ; "Enable mute" => currently unmuted
-                        return "unmuted"
-                    ; English patterns
-                    if InStr(name, "Unmute") || InStr(name, "Turn on microphone")
-                        return "muted"
-                    if InStr(name, "Mute") || InStr(name, "Turn off microphone")
-                        return "unmuted"
+                try {
+                    name := btn.CachedName
+                    if name
+                        for needle, result in stateFromName
+                            if InStr(name, needle)
+                                return result
+                } catch {
                 }
             }
+        } catch {
+            if A_Index < maxRetries
+                Sleep 200
         }
-        if A_Index < maxRetries
-            Sleep 200  ; Wait before retry
     }
     return "unknown"
 }
 
-; --- Camera state verification ---
+; stateFromToggle: map ToggleState (0/1/2) to label; stateFromName: map Name substring to label (or use Has + InStr).
+GetMicrophoneState(hwndTeams, maxRetries := 3) {
+    stateFromToggle := Map(UIA.ToggleState.On, "muted", UIA.ToggleState.Off, "unmuted")
+    stateFromName := Map(
+        "Desativar mudo", "muted", "Desligar microfone", "muted", "Ativar mudo", "unmuted", "Ligar microfone",
+        "unmuted",
+        "Unmute", "muted", "Turn on microphone", "muted", "Mute", "unmuted", "Turn off microphone", "unmuted")
+    return GetTeamsToggleState(hwndTeams, "microphone-button", [
+        "Microphone", "Mic", "Mute", "Unmute", "Microfone", "Mudo",
+        "Turn on microphone", "Turn off microphone", "Ligar microfone", "Desligar microfone"
+    ], stateFromToggle, stateFromName, maxRetries)
+}
+
 GetCameraState(hwndTeams, maxRetries := 3) {
-    ; Returns: "on", "off", or "unknown"
-    Loop maxRetries {
-        try {
-            root := UIA.ElementFromHandle(hwndTeams)
-            if !root {
-                if A_Index < maxRetries
-                    Sleep 150
-                continue
-            }
-            
-            ; Try automation ID first
-            camBtn := root.FindFirst(UIA.CreateCondition({ AutomationId: "video-button" }))
-            
-            ; If automation ID fails, try finding by name patterns
-            if !camBtn {
-                ; English and Portuguese name patterns for camera button
-                camNamePatterns := [
-                    "Camera", "Video", "Turn on camera", "Turn off camera", "Turn camera on", "Turn camera off",
-                    "Câmera", "Vídeo", "Ativar câmera", "Desativar câmera",
-                    "Start video", "Stop video", "Iniciar vídeo", "Parar vídeo"
-                ]
-                
-                for pattern in camNamePatterns {
-                    camBtn := root.FindFirst(UIA.CreateCondition({ Name: pattern }))
-                    if camBtn
-                        break
-                }
-            }
-            
-            if camBtn {
-                ; Prefer ToggleState when available
-                try {
-                    state := camBtn.ToggleState  ; 0=Off, 1=On, 2=Indeterminate
-                    if (state = UIA.ToggleState.On)
-                        return "on"
-                    if (state = UIA.ToggleState.Off)
-                        return "off"
-                }
-                ; Fallback: infer from Name (action-based text)
-                try name := camBtn.Name
-                if name {
-                    ; Portuguese patterns
-                    if InStr(name, "Desativar câmera") || InStr(name, "Parar vídeo") ; "Disable camera" => currently on
-                        return "on"
-                    if InStr(name, "Ativar câmera") || InStr(name, "Iniciar vídeo")    ; "Enable camera" => currently off
-                        return "off"
-                    ; English patterns
-                    if InStr(name, "Turn off camera") || InStr(name, "Turn camera off") || InStr(name, "Stop video")
-                        return "on"
-                    if InStr(name, "Turn on camera") || InStr(name, "Turn camera on") || InStr(name, "Start video")
-                        return "off"
-                }
-            }
-        }
-        if A_Index < maxRetries
-            Sleep 200
-    }
-    return "unknown"
+    stateFromToggle := Map(UIA.ToggleState.On, "on", UIA.ToggleState.Off, "off")
+    stateFromName := Map(
+        "Desativar câmera", "on", "Parar vídeo", "on", "Ativar câmera", "off", "Iniciar vídeo", "off",
+        "Turn off camera", "on", "Turn camera off", "on", "Stop video", "on",
+        "Turn on camera", "off", "Turn camera on", "off", "Start video", "off")
+    return GetTeamsToggleState(hwndTeams, "video-button", [
+        "Camera", "Video", "Turn on camera", "Turn off camera", "Turn camera on", "Turn camera off",
+        "Câmera", "Vídeo", "Ativar câmera", "Desativar câmera", "Start video", "Stop video", "Iniciar vídeo",
+        "Parar vídeo"
+    ], stateFromToggle, stateFromName, maxRetries)
 }
 
 ; =============================================================================
@@ -401,7 +296,7 @@ GetCameraState(hwndTeams, maxRetries := 3) {
     if (!CheckAndOpenOutlookTeams(false, true)) {
         return  ; User cancelled opening Teams
     }
-    
+
     prev := WinGetID("A")                     ; window you were in
     if !ActivateTeamsMeetingWindow()
         return
@@ -409,34 +304,34 @@ GetCameraState(hwndTeams, maxRetries := 3) {
     hwndTeams := WinGetID("A")
     ; Get initial state
     initialState := GetMicrophoneState(hwndTeams)
-    
+
     ; Toggle microphone once
     Send "^+m"
     Sleep 600
-    
+
     ; Verify the state changed (check only; do not re-toggle)
     finalState := "unknown"
-    Loop 3 {
+    loop 3 {
         Sleep 250
         finalState := GetMicrophoneState(hwndTeams)
         if (finalState != "unknown" && finalState != initialState)
             break
     }
-    
+
     ; On success, play single beep and show overlay
     if (finalState != "unknown" && finalState != initialState) {
         PlayMicrophoneBeep()
         WinActivate(prev)
         if finalState = "muted"
-            ShowCenteredOverlay(prev, "MIC MUTED")
+            ShowCenteredOverlay(prev, "🔇 MIC MUTED")
         else
-            ShowCenteredOverlay(prev, "MIC UNMUTED")
+            ShowCenteredOverlay(prev, "🔊 MIC UNMUTED")
         return
     }
-    
+
     ; On failure, show an error banner and do not beep
     WinActivate(prev)
-    ShowCenteredOverlay(prev, "MICROPHONE STATE UNKNOWN", 3000)
+    ShowCenteredOverlay(prev, "❓ MICROPHONE STATE UNKNOWN", 3000)
 }
 
 ; =============================================================================
@@ -449,7 +344,7 @@ GetCameraState(hwndTeams, maxRetries := 3) {
     if (!CheckAndOpenOutlookTeams(false, true)) {
         return  ; User cancelled opening Teams
     }
-    
+
     prev := WinGetID("A")
     if !ActivateTeamsMeetingWindow()
         return
@@ -465,7 +360,7 @@ GetCameraState(hwndTeams, maxRetries := 3) {
 
     ; Verify the state changed (check only; do not re-toggle)
     finalState := "unknown"
-    Loop 3 {
+    loop 3 {
         Sleep 250
         finalState := GetCameraState(hwndTeams)
         if (finalState != "unknown")
@@ -477,15 +372,14 @@ GetCameraState(hwndTeams, maxRetries := 3) {
     if (finalState = "on" || finalState = "off") {
         PlayMicrophoneBeep()
         if finalState = "on"
-            ShowCenteredOverlay(prev, "CAMERA ON")
+            ShowCenteredOverlay(prev, "📷 CAMERA ON")
         else
-            ShowCenteredOverlay(prev, "CAMERA OFF")
+            ShowCenteredOverlay(prev, "📷 CAMERA OFF")
         return
     }
 
-    ShowCenteredOverlay(prev, "CAMERA STATE UNKNOWN", 3000)
+    ShowCenteredOverlay(prev, "❓ CAMERA STATE UNKNOWN", 3000)
 }
-
 
 ; =============================================================================
 ; Meeting: Toggle Screen Share  (Win Alt Shift T)
@@ -495,7 +389,7 @@ GetCameraState(hwndTeams, maxRetries := 3) {
     if (!CheckAndOpenOutlookTeams(false, true)) {
         return  ; User cancelled opening Teams
     }
-    
+
     prev := WinGetID("A")                 ; remember the window you were in
     if !ActivateTeamsMeetingWindow()
         return
@@ -506,50 +400,40 @@ GetCameraState(hwndTeams, maxRetries := 3) {
         return
 
     ; --- perform the normal sharing workflow ---
-    ; Support both English and Portuguese
     windowListTexts := ["Opens list of", "Abre a lista de"]
-    listItem := FindListItemContainingMultiLang(root, windowListTexts)
+    listItem := FindListItemByNames(root, windowListTexts)
     if listItem {
         listItem.Invoke()
     } else {
-        ; Try automation ID first
         shareBtn := root.FindFirst(UIA.CreateCondition({ AutomationId: "share-button" }))
-        
-        ; If automation ID fails, try finding by name patterns
         if !shareBtn {
-            ; English and Portuguese name patterns for share button
-            shareNamePatterns := [
-                "Share", "Share content", "Share screen", "Start sharing",
-                "Compartilhar", "Compartilhar conteúdo", "Compartilhar tela", "Iniciar compartilhamento",
-                "Present", "Present screen", "Apresentar", "Apresentar tela"
-            ]
-            
-            for pattern in shareNamePatterns {
+            for pattern in ["Share", "Share content", "Share screen", "Start sharing", "Compartilhar",
+                "Compartilhar conteúdo", "Compartilhar tela", "Iniciar compartilhamento", "Present", "Present screen",
+                "Apresentar", "Apresentar tela"] {
                 shareBtn := root.FindFirst(UIA.CreateCondition({ Name: pattern }))
                 if shareBtn
                     break
             }
         }
-        
         if !shareBtn
             return
         shareBtn.Invoke()
         Sleep 1000
-        if li := WaitListItemMultiLang(root, windowListTexts)
+        if li := WaitListItemByNames(root, windowListTexts)
             li.Invoke()
     }
 
     ; --- Wait for the action to complete and ensure Teams window is activated ---
     Sleep 2000  ; Give Teams time to process the sharing toggle
-    
+
     ; Re-activate the Teams window while preserving its size
     if ActivateWindowWithRetry(hwndTeams, 3, 300) {
         PlayMicrophoneBeep()
-        ShowCenteredOverlay(hwndTeams, "SHARING TOGGLED")
+        ShowCenteredOverlay(hwndTeams, "🖥 SHARING TOGGLED")
     } else {
         ; Fallback: show overlay on previous window if Teams activation fails
         PlayMicrophoneBeep()
-        ShowCenteredOverlay(prev, "SHARING TOGGLED")
+        ShowCenteredOverlay(prev, "🖥 SHARING TOGGLED")
     }
 }
 
@@ -563,7 +447,7 @@ GetCameraState(hwndTeams, maxRetries := 3) {
     if (!CheckAndOpenOutlookTeams(false, true)) {
         return  ; User cancelled opening Teams
     }
-    
+
     if !ActivateTeamsMeetingWindow()
         return
     response := MsgBox("Tem certeza de que deseja sair da reunião?", "Sair da reunião?", "YesNo Icon!")
@@ -581,34 +465,52 @@ GetCameraState(hwndTeams, maxRetries := 3) {
     if (!CheckAndOpenOutlookTeams(false, true)) {
         return  ; User cancelled opening Teams
     }
-    
+
     if !ActivateTeamsChatWindow() {
         RunTeams()
     }
 }
 
-RunTeams() {
-    ; Use the same logic as CheckAndOpenOutlookTeams for consistency
+; Resolve Teams launch path: env/registry then fallback to ms-teams.exe (Phase 1.4).
+ResolveTeamsPath() {
     global IS_WORK_ENVIRONMENT
+    ; 1) Environment-based: WindowsApps alias or Start Menu
+    localAppData := EnvGet("LOCALAPPDATA")
+    if (localAppData) {
+        teamsExe := localAppData "\Microsoft\WindowsApps\ms-teams.exe"
+        if (FileExist(teamsExe))
+            return teamsExe
+    }
+    appData := EnvGet("APPDATA")
+    if (appData) {
+        shortcut := appData "\Microsoft\Windows\Start Menu\Programs\Microsoft Teams.lnk"
+        if (FileExist(shortcut))
+            return shortcut
+    }
+    ; 2) Registry: current user packages for MSTeams
     try {
-        if (IS_WORK_ENVIRONMENT) {
-            teamsExePath := "C:\Program Files\WindowsApps\MSTeams_25332.1210.4188.1171_x64__8wekyb3d8bbwe\ms-teams.exe"
-            if (FileExist(teamsExePath)) {
-                Run teamsExePath
-            } else {
-                Run "ms-teams.exe"
-            }
-        } else {
-            ; Personal environment
-            teamsPath := "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Microsoft Teams.lnk"
-            if (FileExist(teamsPath)) {
-                Run teamsPath
-            } else {
-                Run "ms-teams.exe"
+        loop reg "HKCU\SOFTWARE\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppModel\Repository\Packages",
+            "K" {
+            if InStr(A_LoopRegName, "MSTeams_") && InStr(A_LoopRegName, "8wekyb3d8bbwe") {
+                basePath := "C:\Program Files\WindowsApps\" A_LoopRegName "\ms-teams.exe"
+                if (FileExist(basePath))
+                    return basePath
             }
         }
-    } catch Error as e {
-        ; Fallback to just running the executable
+    } catch {
+    }
+    ; 3) Fallback: protocol or executable alias
+    return "ms-teams:"
+}
+
+RunTeams() {
+    path := ResolveTeamsPath()
+    try {
+        if (path = "ms-teams:")
+            Run "ms-teams:"
+        else
+            Run path
+    } catch {
         Run "ms-teams.exe"
     }
 }
@@ -623,9 +525,9 @@ RunTeams() {
     if (!CheckAndOpenOutlookTeams(false, true)) {
         return  ; User cancelled opening Teams
     }
-    
+
     if !ActivateTeamsMeetingWindow()
-        ShowCenteredOverlay(WinGetID("A"), "NO ACTIVE MEETING WINDOW", 3000)
+        ShowCenteredOverlay(WinGetID("A"), "⚠ NO ACTIVE MEETING WINDOW", 3000, BANNER_ACCENT_ERROR)
 }
 
 ; =============================================================================
@@ -633,58 +535,56 @@ RunTeams() {
 ; Hotkey: Win+Alt+Shift+R
 ; Original File: Microsoft Teams - New conversation.ahk
 ; =============================================================================
-#!+r::
-{
-    ; Check if Teams is closed and prompt to open if needed
-    if (!CheckAndOpenOutlookTeams(false, true)) {
-        return  ; User cancelled opening Teams
-    }
-    
+#!+r:: {
+    if (!CheckAndOpenOutlookTeams(false, true))
+        return
     contact := Trim(InputBox("Enter a Teams contact name:", "Jump to Chat").Value)
     if contact = ""
         return
-    SetWinDelay 0
-    SetKeyDelay 0, 0
-    SetControlDelay 0
-    teamsWindow := "Microsoft Teams"
-    if !WinExist("ahk_exe ms-teams.exe") && !WinExist("ahk_exe Teams.exe") {
-        Run "ms-teams:"
-        WinWait(teamsWindow, , 15)
-    }
-    if (!WinExist(teamsWindow)) {
-        try ShowCenteredOverlay(WinGetID("A"), "Error: Target window not found.", 2000)
-        return
-    }
-    WinActivate(teamsWindow)
-    WinWaitActive(teamsWindow, , 5)
-    Send "^g"
-    Sleep 100
-    ; Save current clipboard content
-    ClipboardOld := ClipboardAll()
-    
-    ; Ensure clipboard contains the correct contact name with retry logic
-    Loop 5 {
-        A_Clipboard := contact
-        ; Wait for clipboard to contain data and verify it's the correct content
-        if ClipWait(2) && (A_Clipboard = contact) {
-            break
+    ; Phase 1.1: capture global state and restore in finally
+    oldWinDelay := A_WinDelay
+    oldKeyDelay := A_KeyDelay
+    oldControlDelay := A_ControlDelay
+    clipSaved := ClipboardAll()
+    try {
+        SetWinDelay 0
+        SetKeyDelay 0, 0
+        SetControlDelay 0
+        teamsWindow := "Microsoft Teams"
+        if !WinExist("ahk_exe ms-teams.exe") && !WinExist("ahk_exe Teams.exe") {
+            Run "ms-teams:"
+            WinWait(teamsWindow, , 15)
         }
-        if A_Index = 5 {
-            ; Restore clipboard and show error if we couldn't set it correctly
-            A_Clipboard := ClipboardOld
-            ShowCenteredOverlay(WinGetID("A"), "CLIPBOARD ERROR - TRY AGAIN", 3000)
+        if (!WinExist(teamsWindow)) {
+            try ShowCenteredOverlay(WinGetID("A"), "❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
             return
         }
+        WinActivate(teamsWindow)
+        WinWaitActive(teamsWindow, , 5)
+        Send "^g"
         Sleep 100
+        loop 5 {
+            A_Clipboard := contact
+            if ClipWait(2) && (A_Clipboard = contact)
+                break
+            if A_Index = 5 {
+                ShowCenteredOverlay(WinGetID("A"), "❌ CLIPBOARD ERROR - TRY AGAIN", 3000, BANNER_ACCENT_ERROR)
+                return
+            }
+            Sleep 100
+        }
+        Send "^v"
+        Sleep 200
+        Sleep 600
+        Send "{Enter}"
+        Sleep 300
+        Send "^r"
+    } finally {
+        A_Clipboard := clipSaved
+        if (ClipWait(1)) {
+        }
+        SetWinDelay oldWinDelay
+        SetKeyDelay oldKeyDelay, 0
+        SetControlDelay oldControlDelay
     }
-    
-    Send "^v"
-    Sleep 200  ; Give more time for the paste operation
-    
-    ; Restore original clipboard content
-    A_Clipboard := ClipboardOld
-    Sleep 600
-    Send "{Enter}"
-    Sleep 300
-    Send "^r"
 }

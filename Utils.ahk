@@ -391,7 +391,7 @@ InitHotstringsCheatSheet() {
     ; Remaining projects (previously after X/C/7) shift left one character each
     RegisterHotstring(":o:gpm", "GS_UX_Project_Management_Activities_LA", "Projects", "📋 Project Management LA", "c")
     RegisterHotstring(":o:guxcip", "GS_UX_and_CIP", "Projects", "🔗 UX and CIP")
-    RegisterHotstring(":o:gavante", "Avante", "Projects", "🎓 Avante")
+    RegisterHotstring(":o:gtrain", "GS_UX core team_Trainings Management", "Projects", "🎓 Trainings Management")
     RegisterHotstring(":o:26ai", "26-ai-experiment", "Projects", "🤖 26-ai-experiment")
 }
 InitHotstringsCheatSheet()
@@ -445,8 +445,7 @@ InitQuickOpenFiles()
 ; Global variables for macros
 global g_Macros := []
 global g_MacroCharMap := Map()  ; Maps character to macro function
-global g_DictationLoopActive := false
-global g_ProgrammaticDictationStop := false  ; Skip ~#!+0 handler when script sends #!+0 (loop cycle)
+global g_ProgrammaticDictationStop := false  ; Skip ~#!+0 when script sends #!+0 (e.g. #!+j)
 
 ; Register a macro
 RegisterMacro(func, title, char := "") {
@@ -572,10 +571,11 @@ QuickUpdateScripts() {
         RunWait("git fetch", scriptsDir, "Hide")
         pullResult := RunWait("git pull", scriptsDir, "Hide")
         if (pullResult != 0) {
-            ShowCenteredOverlay_Utils("Git pull failed. Proceeding with local reload...", 2000, "FFFF00")
+            ShowCenteredOverlay_Utils("⚠ Git pull failed. Proceeding with local reload...", 2000,
+                BANNER_ACCENT_INTERMEDIATE)
         }
     } catch Error as e {
-        ShowCenteredOverlay_Utils("Git update failed: " e.Message, 2000, "FF0000")
+        ShowCenteredOverlay_Utils("❌ Git update failed: " e.Message, 2000, BANNER_ACCENT_ERROR)
     }
 
     ; Quality check 1: After Git, verify all script files exist (pre-flight so we know what we can run)
@@ -590,7 +590,7 @@ QuickUpdateScripts() {
         list := ""
         for n in missingPre
             list .= n "`n"
-        ShowCenteredOverlay_Utils("QC1: Missing after pull:`n" list, 3000, "FF6600")
+        ShowCenteredOverlay_Utils("⚠ QC1: Missing after pull:`n" list, 3000, BANNER_ACCENT_INTERMEDIATE)
     }
 
     ; Layer 2: Sequential script reload; Utils.ahk is deferred (run after verification + notification).
@@ -657,9 +657,9 @@ QuickUpdateScripts() {
     if (FileExist(pathsFile)) {
         ; Resolve verification script: first next to Utils.ahk (A_LineFile), then scriptsDir fallback (covers Act.ahk parent launch and direct run)
         utilsDir := SubStr(A_LineFile, 1, InStr(A_LineFile, "\", false, -1) - 1)
-        verifyScript := utilsDir "\Verify-ScriptUpdate.ps1"
+        verifyScript := utilsDir "\aux\Verify-ScriptUpdate.ps1"
         if (!FileExist(verifyScript))
-            verifyScript := scriptsDir "\Verify-ScriptUpdate.ps1"
+            verifyScript := scriptsDir "\aux\Verify-ScriptUpdate.ps1"
         if (FileExist(verifyScript)) {
             verifyExitCode := RunWait('powershell.exe -NoProfile -ExecutionPolicy Bypass -File "' verifyScript '" -ScriptsDir "' scriptsDir '" -PathsFile "' pathsFile '" -ReportFile "' reportFile '"',
                 scriptsDir, "Hide")
@@ -677,7 +677,7 @@ QuickUpdateScripts() {
                 ; Ignore cleanup errors
             }
         } else {
-            failedScripts.Push("Verify: Verify-ScriptUpdate.ps1 not found")
+            failedScripts.Push("Verify: aux\Verify-ScriptUpdate.ps1 not found")
         }
         try {
             FileDelete(pathsFile)
@@ -691,14 +691,14 @@ QuickUpdateScripts() {
         for script in failedScripts {
             failedList .= script "`n"
         }
-        ShowCenteredOverlay_Utils("Some scripts failed to update:`n" failedList, 4000, "FF0000")
+        ShowCenteredOverlay_Utils("❌ Some scripts failed to update:`n" failedList, 4000, BANNER_ACCENT_ERROR)
         try {
             if (FileExist(scriptsDir "\sounds\quick-update-failure.wav"))
                 SoundPlay(scriptsDir "\sounds\quick-update-failure.wav")
         } catch {
         }
     } else {
-        ShowCenteredOverlay_Utils("All scripts updated successfully!", 3500, "00FF00")
+        ShowCenteredOverlay_Utils("✅ All scripts updated successfully!", 3500, BANNER_ACCENT_SUCCESS)
         try {
             if (FileExist(scriptsDir "\sounds\quick-update-success.wav"))
                 SoundPlay(scriptsDir "\sounds\quick-update-success.wav")
@@ -761,7 +761,7 @@ UpdateGeminiScript() {
             return
         }
         Run geminiPath
-        ShowCenteredOverlay_Utils("Gemini script updated!", 1500, "00FF00")
+        ShowCenteredOverlay_Utils("✅ Gemini script updated!", 1500, BANNER_ACCENT_SUCCESS)
     } catch Error as e {
         MsgBox "Failed to update Gemini script: " e.Message, "Update Failed", "IconX"
     }
@@ -787,7 +787,7 @@ AddWordToHandy() {
         }
 
         if (!WinWaitActive("Handy ahk_class Tauri Window", , 2)) {
-            ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
             return
         }
         hwnd := WinExist("Handy ahk_class Tauri Window")
@@ -930,7 +930,7 @@ EnsureClipAngelClosed() {
 MergeNonFavoriteClips() {
     try {
         ; Show persistent banner for the duration of the algorithm
-        AiModelBanner_Show("Merging non-favorite clips...", "FFCC00")
+        AiModelBanner_Show("📋 Merging non-favorite clips...", "FFCC00")
 
         ; Step 1: Send Alt+B to activate ClipAngel (this opens the window if not visible)
         Send "!b"
@@ -946,7 +946,7 @@ MergeNonFavoriteClips() {
             WinActivate("ClipAngel")
         } catch {
             AiModelBanner_Hide()
-            ShowCenteredOverlay_Utils("ClipAngel window not found.", 2000)
+            ShowCenteredOverlay_Utils("❌ ClipAngel window not found.", 2000, BANNER_ACCENT_ERROR)
             return
         }
         WinWaitActive("ClipAngel", , 2)
@@ -1091,7 +1091,7 @@ MergeNonFavoriteClips() {
                         Send "^c"     ; Copy
 
                         AiModelBanner_Hide()
-                        ShowCenteredOverlay_Utils("Merged non-favorite clips (copied)", 2000, "FFCC00")
+                        ShowCenteredOverlay_Utils("✅ Merged non-favorite clips (copied)", 2000, BANNER_ACCENT_SUCCESS)
                         break
                     }
                 }
@@ -1104,7 +1104,8 @@ MergeNonFavoriteClips() {
 
         if !foundMatch {
             AiModelBanner_Hide()
-            ShowCenteredOverlay_Utils("Favorite clip not found in first " . maxIterations . " rows", 2000)
+            ShowCenteredOverlay_Utils("⚠ Favorite clip not found in first " . maxIterations . " rows", 2000,
+                BANNER_ACCENT_INTERMEDIATE)
         }
 
         ; Guarantee Clip Angel is closed when macro finishes (success or not found)
@@ -1147,13 +1148,13 @@ ActivateClipAngelWithFocusCorrection() {
         try {
             WinActivate("ClipAngel")
         } catch {
-            ShowCenteredOverlay_Utils("ClipAngel window not found.", 2000)
+            ShowCenteredOverlay_Utils("❌ ClipAngel window not found.", 2000, BANNER_ACCENT_ERROR)
             return
         }
         WinWaitActive("ClipAngel", , 2)
     } else {
         needBanner := true
-        ClipAngelBanner_Show("Opening Clip Angel...", "3772FF")
+        ClipAngelBanner_Show("📂 Opening Clip Angel...", BANNER_ACCENT_INTERMEDIATE)
         Send "!v"
         if !WinWait("ClipAngel", , 10) {
             ClipAngelBanner_Hide()
@@ -1163,7 +1164,7 @@ ActivateClipAngelWithFocusCorrection() {
             WinActivate("ClipAngel")
         } catch {
             ClipAngelBanner_Hide()
-            ShowCenteredOverlay_Utils("ClipAngel window not found.", 2000)
+            ShowCenteredOverlay_Utils("❌ ClipAngel window not found.", 2000, BANNER_ACCENT_ERROR)
             return
         }
         WinWaitActive("ClipAngel", , 2)
@@ -1193,7 +1194,7 @@ ActivateClipAngelWithFocusCorrection() {
         isSelected := hasSel && row0.SelectionItemPattern.IsSelected
         if (!isSelected) {
             if !needBanner
-                ClipAngelBanner_Show("Focusing Row 0...", "3772FF")
+                ClipAngelBanner_Show("🎯 Focusing Row 0...", BANNER_ACCENT_INTERMEDIATE)
             needBanner := true
             try {
                 if hasSel
@@ -1210,7 +1211,7 @@ ActivateClipAngelWithFocusCorrection() {
         return
     }
     if needBanner {
-        ClipAngelBanner_Show("Done", "27AE60")
+        ClipAngelBanner_Show("✅ Done", BANNER_ACCENT_SUCCESS)
         SetTimer(ClipAngelBanner_Hide, -500)
     }
 }
@@ -1405,14 +1406,14 @@ AiModelSelector_Close() {
 ; =============================================================================
 ; Status Banner Functions (non-blocking; use standard loading indicator)
 ; =============================================================================
-AiModelBanner_Show(text, bgColor := "3772FF") {
+AiModelBanner_Show(text, bgColor := BANNER_ACCENT_INTERMEDIATE) {
     centerOnHwnd := 0
     try centerOnHwnd := WinGetID("A")
     catch {
     }
     if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
         centerOnHwnd := 0
-    StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 450, fontSize: 18,
+    StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 450, fontSize: 17,
         passiveBgColor: bgColor, alpha: 200 })
 }
 
@@ -1421,14 +1422,14 @@ AiModelBanner_Hide() {
 }
 
 ; Small banner for Clip Angel (uses standard loading indicator).
-ClipAngelBanner_Show(text, bgColor := "3772FF") {
+ClipAngelBanner_Show(text, bgColor := BANNER_ACCENT_INTERMEDIATE) {
     centerOnHwnd := 0
     try centerOnHwnd := WinGetID("A")
     catch {
     }
     if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
         centerOnHwnd := 0
-    StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 200, fontSize: 10,
+    StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 200, fontSize: 17,
         passiveBgColor: bgColor, alpha: 220 })
 }
 
@@ -1494,7 +1495,7 @@ ExecuteHandyAiModelSelection(selection) {
         }
 
         ; Step 4: Wait for model to finish loading (poll button name until "loading" disappears)
-        AiModelBanner_Show("⏳ Waiting for model...", "27AE60")
+        AiModelBanner_Show("⏳ Waiting for model...", BANNER_ACCENT_INTERMEDIATE)
         Handy_WaitForModelReady(handyHwnd, 20000)
 
         ; Step 4.5: Play confirmation sound when model is ready
@@ -1506,7 +1507,7 @@ ExecuteHandyAiModelSelection(selection) {
         }
 
         ; Step 5: Close Handy window
-        AiModelBanner_Show("✅ Done! Closing Handy...", "27AE60")
+        AiModelBanner_Show("✅ Done! Closing Handy...", BANNER_ACCENT_SUCCESS)
         try WinClose("ahk_id " . handyHwnd)
         Sleep 500
 
@@ -1732,43 +1733,13 @@ SelectAiModelInHandy() {
 }
 
 ; =============================================================================
-; Helper: EnumWindows callback to find Teams windows
-; =============================================================================
-; Global variables for EnumWindows callback
-global g_EnumTeamsPID := 0
-global g_EnumTeamsWindows := []
-
-EnumWindowsCallback(hwnd, lParam) {
-    global g_EnumTeamsPID, g_EnumTeamsWindows
-    try {
-        ; Get window's process ID
-        winPID := 0
-        DllCall("GetWindowThreadProcessId", "Ptr", hwnd, "UInt*", &winPID)
-
-        ; Check if this window belongs to Teams process
-        if (winPID = g_EnumTeamsPID) {
-            ; Only add main windows (not child windows)
-            ; Check if it's a top-level window
-            parent := DllCall("GetParent", "Ptr", hwnd, "Ptr")
-            if (parent = 0) {
-                ; It's a top-level window, add it
-                g_EnumTeamsWindows.Push(hwnd)
-            }
-        }
-    } catch {
-        ; Ignore errors for inaccessible windows
-    }
-    return true  ; Continue enumeration
-}
-
-; =============================================================================
 ; Helper: Show centered overlay banner (uses standard loading indicator; non-blocking).
 ; =============================================================================
-ShowCenteredOverlay_Utils(text, duration := 1500, bgColor := "3772FF") {
+ShowCenteredOverlay_Utils(text, duration := 1500, bgColor := BANNER_ACCENT_INTERMEDIATE) {
     centerOnHwnd := WinGetID("A")
     if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
         centerOnHwnd := 0
-    StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 500, fontSize: 24,
+    StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 500, fontSize: 17,
         passiveBgColor: bgColor })
     StandardLoadingBar_Hide(duration)
 }
@@ -1777,7 +1748,11 @@ ShowCenteredOverlay_Utils(text, duration := 1500, bgColor := "3772FF") {
 ; Standard loading bar (monitor-aware, show/update/hide lifecycle)
 ; Use for long-running shortcuts; replace ad-hoc banners/overlays with this.
 ; Supports passive (text-only) mode and ShowWithKeys for letter-keystroke commands.
+; Semantic accent colors (colorblind accessibility): border only; background stays dark.
 ; =============================================================================
+global BANNER_ACCENT_SUCCESS := "27AE60"      ; Dark green: positive / success
+global BANNER_ACCENT_ERROR := "C0392B"        ; Red: negative / error
+global BANNER_ACCENT_INTERMEDIATE := "F1C40F" ; Yellow: loading, actionable, neutral
 global g_StandardLoadingBarGui := 0
 global g_StandardLoadingBarValue := 0
 global g_StandardLoadingBarIsKeysOverlay := false
@@ -1848,7 +1823,7 @@ GetActiveMonitorWorkArea_StandardBar(&left, &top, &right, &bottom) {
     bottom := mBottom
 }
 
-StandardLoadingBar_Show(state := "Working...", barColor := "3772FF", options := "") {
+StandardLoadingBar_Show(state := "Working...", barColor := BANNER_ACCENT_INTERMEDIATE, options := "") {
     global g_StandardLoadingBarGui, g_StandardLoadingBarValue, g_StandardLoadingBarIsKeysOverlay,
         g_StandardLoadingBarBorderGui
     try StandardLoadingBar_CloseKeysOverlay()
@@ -1856,9 +1831,11 @@ StandardLoadingBar_Show(state := "Working...", barColor := "3772FF", options := 
     passive := options && options.HasProp("passive") && options.passive
     centerOnHwnd := options && options.HasProp("centerOnHwnd") ? options.centerOnHwnd : 0
     textWidth := options && options.HasProp("textWidth") ? options.textWidth : 0
-    fontSize := options && options.HasProp("fontSize") ? options.fontSize : 9
+    fontSize := options && options.HasProp("fontSize") ? options.fontSize : 17
     alpha := options && options.HasProp("alpha") ? options.alpha : 235
     passiveBgColor := options && options.HasProp("passiveBgColor") ? options.passiveBgColor : ""
+    noBorder := options && options.HasProp("noBorder") ? options.noBorder : false
+    promptKeys := options && options.HasProp("promptKeys") ? options.promptKeys : ""
 
     if (centerOnHwnd) {
         workArea := GetWorkAreaForWindow_StandardBar(centerOnHwnd)
@@ -1875,11 +1852,15 @@ StandardLoadingBar_Show(state := "Working...", barColor := "3772FF", options := 
     monitorHeight := mb - mt
     barWidth := textWidth > 0 ? textWidth : Min(900, Max(360, Floor(monitorWidth * 0.6)))
     overlayGui := Gui("+AlwaysOnTop -Caption +ToolWindow -DPIScale")
-    overlayGui.BackColor := (passive && passiveBgColor != "") ? passiveBgColor : "1E1E2E"
+    overlayGui.BackColor := "1E1E2E"
     overlayGui.MarginX := 16
     overlayGui.MarginY := 10
     overlayGui.SetFont("s" . fontSize . " cFFFFFF", "Segoe UI")
-    overlayGui.Add("Text", "w" . barWidth . (passive ? " Wrap" : ""), state)
+    overlayGui.Add("Text", "w" . barWidth . (passive ? " Wrap Center" : " Center"), state)
+    if (promptKeys != "") {
+        overlayGui.SetFont("s" . fontSize . " cFFFFFF", "Segoe UI")
+        overlayGui.Add("Text", "xm w" . barWidth . " Center", promptKeys)
+    }
     if (!passive) {
         progressOpts := "w" . barWidth . " h10 c" . barColor . " Background45475A Smooth vOverlayProg"
         overlayGui.Add("Progress", progressOpts, 0)
@@ -1893,18 +1874,28 @@ StandardLoadingBar_Show(state := "Working...", barColor := "3772FF", options := 
         guiX := mr - gw
     guiY := mt + 40
 
-    ; Create yellow border frame behind the overlay for visibility.
-    borderWidth := 6
-    try {
-        if IsObject(g_StandardLoadingBarBorderGui)
-            g_StandardLoadingBarBorderGui.Destroy()
-    } catch {
+    ; Create border frame behind the overlay for visibility (optional; skip when noBorder to show a single banner). Accent color when passiveBgColor set, else yellow.
+    if (!noBorder) {
+        borderWidth := 6
+        try {
+            if IsObject(g_StandardLoadingBarBorderGui)
+                g_StandardLoadingBarBorderGui.Destroy()
+        } catch {
+        }
+        borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow -DPIScale")
+        borderGui.BackColor := (passiveBgColor != "") ? passiveBgColor : BANNER_ACCENT_INTERMEDIATE
+        borderGui.Show("NA x" . (guiX - borderWidth) . " y" . (guiY - borderWidth) . " w" . (gw + 2 * borderWidth) .
+        " h" .
+        (gh + 2 * borderWidth))
+        g_StandardLoadingBarBorderGui := borderGui
+    } else {
+        try {
+            if IsObject(g_StandardLoadingBarBorderGui)
+                g_StandardLoadingBarBorderGui.Destroy()
+        } catch {
+        }
+        g_StandardLoadingBarBorderGui := 0
     }
-    borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow -DPIScale")
-    borderGui.BackColor := "FFFF00"
-    borderGui.Show("NA x" . (guiX - borderWidth) . " y" . (guiY - borderWidth) . " w" . (gw + 2 * borderWidth) . " h" .
-    (gh + 2 * borderWidth))
-    g_StandardLoadingBarBorderGui := borderGui
     overlayGui.Show("x" . guiX . " y" . guiY . " NA")
     try {
         hwnd := overlayGui.Hwnd
@@ -2013,13 +2004,20 @@ StandardLoadingBar_CloseKeysOverlay() {
 
 ; Show passive overlay and register hotkeys; optional timeout. keyCallbacks: Map/object key -> callback (e.g. "N" -> fn, "R" -> fn).
 ; timeoutCallback: called when timeout fires (can be empty). Registers both upper and lower case for letter keys.
-; passiveBgColor: optional; when set, used as overlay background (e.g. "FFFF00" for yellow, no blue).
+; passiveBgColor: optional; when set, used as border color. Prefer BANNER_ACCENT_SUCCESS / BANNER_ACCENT_ERROR / BANNER_ACCENT_INTERMEDIATE. Overlay background stays dark.
+; noBorder: when true, do not create the yellow border (single banner only).
+; promptKeys: optional; fixed bottom strip text (e.g. "[Y] Confirm  [N] Cancel"). Shown in uniform position below main message.
 StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwnd := 0, timeoutCallback := "", barColor :=
-    "3772FF", textWidth := 500, fontSize := 9, passiveBgColor := "") {
+    BANNER_ACCENT_INTERMEDIATE, textWidth := 500, fontSize := 17, passiveBgColor := "", noBorder := false, promptKeys :=
+    "") {
     global g_StandardLoadingBarIsKeysOverlay, g_StandardLoadingBarKeysHotkeys, g_StandardLoadingBarKeysTimeoutTimer
     opts := { passive: true, centerOnHwnd: centerOnHwnd, textWidth: textWidth, fontSize: fontSize }
     if (passiveBgColor != "")
         opts.passiveBgColor := passiveBgColor
+    if (noBorder)
+        opts.noBorder := true
+    if (promptKeys != "")
+        opts.promptKeys := promptKeys
     StandardLoadingBar_Show(state, barColor, opts)
     g_StandardLoadingBarIsKeysOverlay := true
     g_StandardLoadingBarKeysHotkeys := []
@@ -2080,7 +2078,7 @@ StandardLoadingBar_KeysTimeoutFired(timeoutCallback) {
 ; =============================================================================
 ; Hotstring Selector: Gemini Redirect Banner (non-blocking; uses standard loading indicator)
 ; =============================================================================
-HotstringGeminiBanner_Show(text := "Gemini: inserting prompt...") {
+HotstringGeminiBanner_Show(text := "📤 Gemini: inserting prompt...") {
     DictationGeminiConfirm_Hide()
     Sleep 50
     centerOnHwnd := 0
@@ -2089,7 +2087,8 @@ HotstringGeminiBanner_Show(text := "Gemini: inserting prompt...") {
     }
     if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
         centerOnHwnd := 0
-    StandardLoadingBar_Show(text, "3772FF", { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 160, fontSize: 8,
+    StandardLoadingBar_Show(text, BANNER_ACCENT_INTERMEDIATE, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 280,
+        fontSize: 17,
         alpha: 204 })
 }
 
@@ -2109,18 +2108,19 @@ DictationGeminiConfirm_Hide(*) {
 }
 
 DictationGeminiConfirm_CleanupAndMaybeSubmit(submitToGemini) {
+    global g_DictationGeminiConfirmBannerVisible
+    g_DictationGeminiConfirmBannerVisible := false  ; Allow future show
     try Hotkey("y", "Off")
     try Hotkey("Y", "Off")
     SetTimer(DictationGeminiConfirm_OnTimeout, 0)
     DictationGeminiConfirm_Hide()
     if (submitToGemini) {
+        Sleep 350
         GeminiDelayedSubmitFlow()
     }
 }
 
 DictationGeminiConfirm_OnY(*) {
-    ; Vanish banner immediately, then send to Gemini (no delay).
-    DictationGeminiConfirm_Hide()
     DictationGeminiConfirm_CleanupAndMaybeSubmit(true)
 }
 
@@ -2129,7 +2129,12 @@ DictationGeminiConfirm_OnTimeout(*) {
 }
 
 DictationGeminiConfirm_ShowAndWait() {
-    ; Keep only the official banner: hide any existing bar/overlay and the dictation indicator so only one "Send to Gemini?" shows.
+    global g_DictationGeminiConfirmBannerVisible
+    ; Only one banner: skip if already visible (prevents duplicate from multiple PlayDictationCompletionChime runs).
+    if (g_DictationGeminiConfirmBannerVisible)
+        return
+    g_DictationGeminiConfirmBannerVisible := true
+    ; Only the official loading bar (standard loading indicator) may show this content. Hide any other bar/overlay first.
     StandardLoadingBar_CloseKeysOverlay()
     StandardLoadingBar_Hide(0)
     HideDictationIndicator()
@@ -2141,9 +2146,9 @@ DictationGeminiConfirm_ShowAndWait() {
     if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
         centerOnHwnd := 0
     yCallbacks := Map("Y", DictationGeminiConfirm_OnY)
-    ; Canon banner: dark background with yellow border, consistent with other loading indicators.
-    StandardLoadingBar_ShowWithKeys("Send transcription to Gemini? Press Y (6s)", yCallbacks, 6000, centerOnHwnd,
-        DictationGeminiConfirm_OnTimeout, "3772FF", 300, 9)
+    ; Official loading bar only; no blue; single banner (no border); fixed bottom strip for input.
+    StandardLoadingBar_ShowWithKeys("❓ Send transcription to Gemini? (6s)", yCallbacks, 6000, centerOnHwnd,
+        DictationGeminiConfirm_OnTimeout, "1E1E2E", 380, 17, "", true, "[Y] Confirm  [N] Cancel")
 }
 
 ; =============================================================================
@@ -2170,9 +2175,9 @@ ToggleSoundState() {
 
     ; Show visual feedback
     if (newState = "1") {
-        ShowCenteredOverlay_Utils("🔊 Sound: ON", 2000)
+        ShowCenteredOverlay_Utils("🔊 Sound: ON", 2000, BANNER_ACCENT_INTERMEDIATE)
     } else {
-        ShowCenteredOverlay_Utils("🔇 Sound: OFF", 2000)
+        ShowCenteredOverlay_Utils("🔇 Sound: OFF", 2000, BANNER_ACCENT_INTERMEDIATE)
     }
 }
 
@@ -2190,9 +2195,9 @@ ToggleOutlookAndTeams() {
 
         ; Show start banner
         if (outlookRunning && teamsRunning) {
-            ShowCenteredOverlay_Utils("Closing Outlook and Teams...", 1500)
+            ShowCenteredOverlay_Utils("📤 Closing Outlook and Teams...", 1500, BANNER_ACCENT_INTERMEDIATE)
         } else {
-            ShowCenteredOverlay_Utils("Opening Outlook and Teams...", 1500)
+            ShowCenteredOverlay_Utils("📤 Opening Outlook and Teams...", 1500, BANNER_ACCENT_INTERMEDIATE)
         }
 
         if (outlookRunning && teamsRunning) {
@@ -2276,12 +2281,12 @@ ToggleOutlookAndTeams() {
 
                 ; Wait for window to appear and become active
                 if (WinWaitActive("ahk_exe ms-teams.exe", , 10)) {
-                    ShowCenteredOverlay_Utils("Teams activated", 1500)
+                    ShowCenteredOverlay_Utils("✅ Teams activated", 1500, BANNER_ACCENT_SUCCESS)
                 } else {
-                    ShowCenteredOverlay_Utils("Teams: Window not found", 2000)
+                    ShowCenteredOverlay_Utils("❌ Teams: Window not found", 2000, BANNER_ACCENT_ERROR)
                 }
             } catch Error as e {
-                ShowCenteredOverlay_Utils("Teams: Error - " . e.Message, 2000)
+                ShowCenteredOverlay_Utils("❌ Teams: Error - " . e.Message, 2000, BANNER_ACCENT_ERROR)
             }
 
             ; Second: Activate Outlook last (so it gets final focus)
@@ -2291,7 +2296,7 @@ ToggleOutlookAndTeams() {
                     WinWait("ahk_exe OUTLOOK.EXE", , 5)
 
                     if (!WinExist("ahk_exe OUTLOOK.EXE")) {
-                        ShowCenteredOverlay_Utils("Outlook not running.", 2000)
+                        ShowCenteredOverlay_Utils("❌ Outlook not running.", 2000, BANNER_ACCENT_ERROR)
                         return
                     } else {
                         ; Activate Outlook (this will bring it to foreground, overriding Teams)
@@ -2305,7 +2310,7 @@ ToggleOutlookAndTeams() {
         }
 
         ; Show finish banner
-        ShowCenteredOverlay_Utils("Done", 1500)
+        ShowCenteredOverlay_Utils("✅ Done", 1500, BANNER_ACCENT_SUCCESS)
     } catch Error as e {
         MsgBox "Error in ToggleOutlookAndTeams macro: " e.Message
     }
@@ -2418,147 +2423,6 @@ CheckAndOpenOutlookTeams(checkOutlook := false, checkTeams := false) {
     return false
 }
 
-; Infinite Dictation Macro
-; Each loop = one 60s cycle; dictation cycles on/off every 15s within a loop to prevent transcription timeouts
-ToggleDictationLoop() {
-    global g_DictationLoopActive, g_ProgrammaticDictationStop
-
-    if (g_DictationLoopActive) {
-        ; Stop Infinite Dictation
-        g_DictationLoopActive := false
-        ; Turn off timers
-        SetTimer(DictationLoopStop, 0)
-        SetTimer(DictationLoopStart, 0)
-        ; Send Win+Alt+Shift+0 to finish dictation
-        g_ProgrammaticDictationStop := true
-        SendInput "#!+0"
-        ; Merge non-favorite clips: 5s countdown when user finishes Infinite Dictation (N or End to cancel)
-        DictationMerge_StartCountdown(5)
-    } else {
-        ; Start Infinite Dictation (first loop)
-        ; Clear any existing timers first to prevent old timers from firing
-        SetTimer(DictationLoopStop, 0)
-        SetTimer(DictationLoopStart, 0)
-        g_DictationLoopActive := true
-        ; Begin the first loop
-        DictationLoopStart()
-    }
-}
-
-DictationLoopStart() {
-    ; Delegate to Infinite Dictation module when it owns the loop
-    if (InfiniteDictation.IsActive) {
-        InfiniteDictation.LoopCycle()
-        return
-    }
-    global g_DictationLoopActive, g_DictationStartRetries, g_ProgrammaticDictationStop
-
-    ; Safety check: Only proceed if Infinite Dictation is still active
-    ; This prevents starting if user manually stopped it
-    if (!g_DictationLoopActive) {
-        return
-    }
-
-    ; Ensure Handy is running before attempting to start dictation
-    if (!ProcessExist("handy.exe")) {
-        Handy_ActivateOrLaunch()
-        Sleep 2000 ; Wait for launch
-    }
-
-    ; Check if already recording to prevent toggling off
-    if (WinExist("Recording ahk_exe handy.exe")) {
-        ; Already recording, just ensure timer is running
-        SetTimer(DictationLoopStop, 0)
-        SetTimer(DictationLoopStop, -15000)
-        return
-    }
-
-    g_DictationStartRetries := 0
-    ; Send Win+Alt+Shift+0 to start dictation
-    g_ProgrammaticDictationStop := true
-    SendEvent "#!+0"
-
-    ; Double-check Infinite Dictation is still active before scheduling next loop
-    ; User may have stopped it during the dictation start delay
-    if (!g_DictationLoopActive) {
-        return
-    }
-
-    ; Clear any existing timer first to prevent accumulation
-    SetTimer(DictationLoopStop, 0)
-
-    ; Schedule stop after 15s (one loop segment) - negative period = one-shot timer
-    ; Only schedules if Infinite Dictation is still active (checked above)
-    SetTimer(DictationLoopStop, -15000)
-
-    ; Verification: Check if window appeared after a delay
-    SetTimer(VerifyDictationStart, -1500)
-}
-
-global g_DictationStartRetries := 0
-
-VerifyDictationStart() {
-    global g_DictationLoopActive, g_DictationStartRetries, g_ProgrammaticDictationStop
-    if (!g_DictationLoopActive) {
-        return
-    }
-
-    if (!WinExist("Recording ahk_exe handy.exe")) {
-        g_DictationStartRetries++
-        if (g_DictationStartRetries <= 3) {
-            ; Retry start if window didn't appear
-            g_ProgrammaticDictationStop := true
-            SendEvent "#!+0"
-            ; Reschedule stop timer just in case
-            SetTimer(DictationLoopStop, 0)
-            SetTimer(DictationLoopStop, -15000)
-            SetTimer(VerifyDictationStart, -1500)
-        } else {
-            ShowCenteredOverlay_Utils("Failed to start dictation", 2000)
-            g_DictationLoopActive := false
-        }
-    }
-}
-
-DictationLoopStop() {
-    global g_DictationLoopActive, g_DictationLoopSound, g_ProgrammaticDictationStop
-
-    ; Safety check: Only proceed if Infinite Dictation is still active
-    ; This prevents restarting next loop if user manually stopped via ToggleDictationLoop()
-    if (!g_DictationLoopActive) {
-        return
-    }
-
-    ; Only send stop command if actually recording
-    if (WinExist("Recording ahk_exe handy.exe")) {
-        ; Send Win+Alt+Shift+0 to stop dictation (triggers transcription)
-        g_ProgrammaticDictationStop := true
-        SendEvent "#!+0"
-
-        ; Play sound to notify that transcription has started (if enabled)
-        if (IsSoundEnabled()) {
-            SoundPlay(g_DictationLoopSound)
-        }
-    } else {
-        ; If not recording, we might have stopped early or crashed.
-        ; Restart loop immediately to recover.
-        SetTimer(DictationLoopStart, -1000)
-    }
-
-    ; Double-check loop is still active before scheduling restart
-    ; User may have stopped it during the sound playback delay
-    if (!g_DictationLoopActive) {
-        return
-    }
-
-    ; Clear any existing timer first to prevent accumulation
-    SetTimer(DictationLoopStart, 0)
-
-    ; REMOVED: Schedule next start after 1 second
-    ; We now rely on PlayDictationCompletionChime to trigger next loop
-    ; after transcription is complete.
-}
-
 ; Internal helper: Performs clipboard cleanup without showing prompt
 ; Used when user has already confirmed they want to clean clipboard
 CleanClipboardInternal() {
@@ -2591,6 +2455,7 @@ CleanClipboardInternal() {
 ; Dictation: Non-modal clipboard cleanup countdown (used by Win+Alt+Shift+7)
 ; =============================================================================
 global g_DictationCleanupGui := 0
+global g_DictationCleanupBorderGui := 0
 global g_DictationCleanupTextCtrl := 0
 global g_DictationCleanupRemaining := 0
 global g_DictationCleanupCanceled := false
@@ -2638,7 +2503,7 @@ DictationCleanup_ShowBanner() {
     }
 
     ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
-    ov.BackColor := "3772FF"
+    ov.BackColor := "1E1E2E"
     ov.SetFont("s24 cFFFFFF Bold", "Segoe UI")
     g_DictationCleanupTextCtrl := ov.Add("Text", "w650 Center", "Clearing clipboard in " g_DictationCleanupRemaining "… (press Y to proceed, N or End to cancel)"
     )
@@ -2648,7 +2513,6 @@ DictationCleanup_ShowBanner() {
     if hasWindow {
         cx := wx + (ww - gw) // 2
         cy := wy + (wh - gh) // 2
-        ov.Show("x" . cx . " y" . cy . " NA")
     } else {
         vx := SysGet(76)  ; SM_XVIRTUALSCREEN
         vy := SysGet(77)  ; SM_YVIRTUALSCREEN
@@ -2656,15 +2520,33 @@ DictationCleanup_ShowBanner() {
         vh := SysGet(79)  ; SM_CYVIRTUALSCREEN
         cx := vx + (vw - gw) // 2
         cy := vy + (vh - gh) // 2
-        ov.Show("x" . cx . " y" . cy . " NA")
     }
 
+    borderWidth := 6
+    try {
+        if IsObject(g_DictationCleanupBorderGui)
+            g_DictationCleanupBorderGui.Destroy()
+    } catch {
+    }
+    borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
+    borderGui.BackColor := BANNER_ACCENT_INTERMEDIATE
+    borderGui.Show("NA x" . (cx - borderWidth) . " y" . (cy - borderWidth) . " w" . (gw + 2 * borderWidth) . " h" . (gh +
+        2 * borderWidth))
+    g_DictationCleanupBorderGui := borderGui
+
+    ov.Show("x" . cx . " y" . cy . " NA")
     WinSetTransparent(178, ov)
     g_DictationCleanupGui := ov
 }
 
 DictationCleanup_HideBanner() {
-    global g_DictationCleanupGui, g_DictationCleanupTextCtrl
+    global g_DictationCleanupGui, g_DictationCleanupBorderGui, g_DictationCleanupTextCtrl
+    try {
+        if IsObject(g_DictationCleanupBorderGui)
+            g_DictationCleanupBorderGui.Destroy()
+    } catch {
+    }
+    g_DictationCleanupBorderGui := 0
     try {
         if IsObject(g_DictationCleanupGui)
             g_DictationCleanupGui.Destroy()
@@ -2761,6 +2643,7 @@ DictationCleanup_Tick() {
 ; Same UI pattern as clipboard cleanup: 5s banner, N or End to cancel.
 ; =============================================================================
 global g_DictationMergeGui := 0
+global g_DictationMergeBorderGui := 0
 global g_DictationMergeTextCtrl := 0
 global g_DictationMergeRemaining := 0
 global g_DictationMergeCanceled := false
@@ -2807,24 +2690,46 @@ DictationMerge_ShowBanner() {
     }
 
     ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
-    ov.BackColor := "FFCC00"
-    ov.SetFont("s24 c000000 Bold", "Segoe UI")
+    ov.BackColor := "1E1E2E"
+    ov.SetFont("s24 cFFFFFF Bold", "Segoe UI")
     g_DictationMergeTextCtrl := ov.Add("Text", "w650 Center", "Merging non-favorite clips in " g_DictationMergeRemaining "… (press Y to proceed, N or End to cancel)"
     )
     ov.Show("AutoSize Hide")
-    try {
-        if (hasWindow)
-            ov.Show("AutoSize x" (wx + (ww - 650) // 2) " y" (wy + (wh - 80) // 2))
-        else
-            ov.Show("AutoSize")
-    } catch {
-        ov.Show("AutoSize")
+    ov.GetPos(&gx, &gy, &gw, &gh)
+    if (hasWindow) {
+        cx := wx + (ww - gw) // 2
+        cy := wy + (wh - gh) // 2
+    } else {
+        vx := SysGet(76)
+        vy := SysGet(77)
+        vw := SysGet(78)
+        vh := SysGet(79)
+        cx := vx + (vw - gw) // 2
+        cy := vy + (vh - gh) // 2
     }
+    borderWidth := 6
+    try {
+        if IsObject(g_DictationMergeBorderGui)
+            g_DictationMergeBorderGui.Destroy()
+    } catch {
+    }
+    borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
+    borderGui.BackColor := BANNER_ACCENT_INTERMEDIATE
+    borderGui.Show("NA x" . (cx - borderWidth) . " y" . (cy - borderWidth) . " w" . (gw + 2 * borderWidth) . " h" . (gh +
+        2 * borderWidth))
+    g_DictationMergeBorderGui := borderGui
+    ov.Show("x" . cx . " y" . cy . " NA")
     g_DictationMergeGui := ov
 }
 
 DictationMerge_HideBanner() {
-    global g_DictationMergeGui, g_DictationMergeTextCtrl
+    global g_DictationMergeGui, g_DictationMergeBorderGui, g_DictationMergeTextCtrl
+    try {
+        if IsObject(g_DictationMergeBorderGui)
+            g_DictationMergeBorderGui.Destroy()
+    } catch {
+    }
+    g_DictationMergeBorderGui := 0
     try {
         if IsObject(g_DictationMergeGui)
             g_DictationMergeGui.Destroy()
@@ -2922,45 +2827,6 @@ CleanClipboard() {
     CleanClipboardInternal()
 }
 
-; Dictation Toggle with Clipboard Cleanup Option (on start only)
-; Toggles Infinite Dictation on/off. When starting, optionally asks to clean clipboard.
-; When stopping, does NOT show clipboard cleanup prompt.
-DictationStartWithClipboardOption() {
-    global g_DictationLoopActive, g_PendingDictationMerge, g_ProgrammaticDictationStop
-
-    if (g_DictationLoopActive) {
-        ; Stop Infinite Dictation - show merge countdown when user finishes
-        g_DictationLoopActive := false
-        ; Turn off timers
-        SetTimer(DictationLoopStop, 0)
-        SetTimer(DictationLoopStart, 0)
-        ; Send Win+Alt+Shift+0 to finish dictation
-        g_ProgrammaticDictationStop := true
-        SendInput "#!+0"
-        ; Set flag to start merge countdown after transcription completes
-        ; This ensures AI transcription and handy.exe finish before Clip Angel merge begins
-        g_PendingDictationMerge := true
-    } else {
-        ; Start Infinite Dictation - show clipboard cleanup prompt ONLY when starting
-        ; Show message box asking about clipboard cleanup
-        result := MsgBox("Would you like to clean up the clipboard?", "Dictation Start", "YesNo")
-
-        if (result = "Yes") {
-            ; Execute clipboard cleanup algorithm without showing second prompt
-            ; (User already confirmed they want to clean clipboard)
-            CleanClipboardInternal()
-        }
-        ; If No, continue with Infinite Dictation without cleanup
-
-        ; Clear any existing timers first to prevent old timers from firing
-        SetTimer(DictationLoopStop, 0)
-        SetTimer(DictationLoopStart, 0)
-        g_DictationLoopActive := true
-        ; Begin the first loop
-        DictationLoopStart()
-    }
-}
-
 ; =============================================================================
 ; Project Data (for Cursor Window Focus Selector)
 ; Ported from WindowManagement.ahk to ensure consistent key mapping
@@ -3025,509 +2891,115 @@ ExtractProjectMatchSegments(projectPath) {
     return matchSegments
 }
 
-; Check if a window title matches a project path
-WindowMatchesProject(winTitle, projectPath) {
-    if (projectPath = "") {
-        return false
-    }
-
-    matchSegments := ExtractProjectMatchSegments(projectPath)
-
-    ; Check if window title contains any of the match segments
-    for segment in matchSegments {
-        if (InStr(winTitle, segment)) {
-            return true
+; =============================================================================
+; Global AI generation state: Cursor + Gemini stop-button detectors (Efficiency Canon)
+; =============================================================================
+; Cursor: Type 50026 (Group), ClassName contains "stop-button".
+; Gemini: Chrome window title contains "gemini"; Type 50000, Name "Stop response", ClassName match.
+; =============================================================================
+Cursor_HasGeneratingStopButton() {
+    global UIA
+    try {
+        cursorHwnds := WinGetList("ahk_exe Cursor.exe")
+        if (!cursorHwnds.Length)
+            return false
+        cr := UIA.CreateCacheRequest(["Type", "ClassName"], , 5)
+        for hwnd in cursorHwnds {
+            if (!hwnd || !WinExist("ahk_id " hwnd))
+                continue
+            try {
+                root := UIA.ElementFromHandleBuildCache(cr, hwnd)
+            } catch {
+                try root := UIA.ElementFromHandle(hwnd)
+                catch
+                    continue
+            }
+            if (!root)
+                continue
+            try {
+                el := root.FindFirstBuildCache(cr, { Type: 50026, ClassName: "stop-button", matchmode: "Substring" }, 4
+                )
+                if (el)
+                    return true
+            } catch {
+            }
         }
+    } catch {
     }
-
     return false
 }
 
-; Get the project index that matches a window title
-GetMatchingProjectIndex(winTitle) {
-    global g_Projects, IS_WORK_ENVIRONMENT
-
-    ; Check each project
-    loop g_Projects.Length {
-        projectIndex := A_Index
-        project := g_Projects[projectIndex]
-
-        ; Skip empty placeholders
-        if (project.name = "" && project.path = "" && project.workPath = "") {
-            continue
-        }
-
-        ; Select path based on environment
-        projectPath := IS_WORK_ENVIRONMENT ? project.workPath : project.path
-
-        ; If work environment but no workPath set, fall back to personal path
-        if (IS_WORK_ENVIRONMENT && projectPath = "") {
-            projectPath := project.path
-        }
-
-        ; Check if window matches this project
-        if (WindowMatchesProject(winTitle, projectPath)) {
-            return projectIndex
-        }
-    }
-
-    return 0  ; No match found
-}
-
-; Build project index to character mapping (replicating ShowProjectSelector logic)
-BuildProjectIndexToCharMap() {
-    global g_Projects, g_ProjectCategories, g_ProjectCharSequence
-
-    projectIndexToChar := Map()
-    projectIndexToCategory := Map()
-
-    ; Build map of project index to category
-    loop g_Projects.Length {
-        projectIndex := A_Index
-        project := g_Projects[projectIndex]
-        category := project.HasProp("category") ? project.category : "Personal"
-        projectIndexToCategory[projectIndex] := category
-    }
-
-    charIndex := 1
-
-    ; Assign characters sequentially within each category (same logic as ShowProjectSelector)
-    for category in g_ProjectCategories {
-        ; Find all project indices in this category
-        categoryProjectIndices := []
-        for projectIndex, cat in projectIndexToCategory {
-            if (cat = category) {
-                categoryProjectIndices.Push(projectIndex)
-            }
-        }
-
-        ; Assign characters to projects in this category
-        for projectIndex in categoryProjectIndices {
-            project := g_Projects[projectIndex]
-
-            ; Skip empty placeholders
-            if (project.name = "" && project.path = "" && project.workPath = "") {
-                charIndex++
+Gemini_HasGeneratingStopButton() {
+    global UIA
+    try {
+        for hwnd in WinGetList("ahk_exe chrome.exe") {
+            if (!hwnd || !WinExist("ahk_id " hwnd))
                 continue
-            }
-
-            ; Check if we have a character available
-            if (charIndex > g_ProjectCharSequence.Length) {
-                break
-            }
-
-            char := g_ProjectCharSequence[charIndex]
-
-            ; Skip character "3" - it's reserved for preview window activation
-            if (char = "3") {
-                charIndex++
-                if (charIndex > g_ProjectCharSequence.Length) {
-                    break
-                }
-                char := g_ProjectCharSequence[charIndex]
-            }
-
-            projectIndexToChar[projectIndex] := char
-            charIndex++
-        }
-    }
-
-    return projectIndexToChar
-}
-
-; =============================================================================
-; Cursor Window Focus Selector
-; =============================================================================
-
-; Global variables for Cursor focus selector
-global g_CursorFocusSelectorGui := false
-global g_CursorFocusSelectorActive := false
-global g_CursorFocusWindowMap := Map()  ; Maps character to window HWND
-global g_CursorFocusHotkeyHandlers := []  ; Store hotkey handlers for cleanup
-
-; Get Cursor windows with assigned keys (matching Project Selector key assignments)
-GetCursorWindowsWithKeys() {
-    global g_Projects, g_ProjectCharSequence
-
-    ; Build project index to character mapping
-    projectIndexToChar := BuildProjectIndexToCharMap()
-
-    ; Get all Cursor windows
-    cursorWindows := WinGetList("ahk_exe Cursor.exe")
-
-    ; Build list of windows with their assigned keys
-    windowsWithKeys := []
-    usedKeys := Map()
-    usedProjectIndices := Map()
-
-    ; First pass: assign keys to windows that match projects
-    for hwnd in cursorWindows {
-        try {
-            winTitle := WinGetTitle("ahk_id " . hwnd)
-            if (winTitle = "") {
-                winTitle := "Untitled"
-            }
-
-            ; Check if this window matches a project
-            matchingProjectIndex := GetMatchingProjectIndex(winTitle)
-
-            if (matchingProjectIndex > 0 && projectIndexToChar.Has(matchingProjectIndex)) {
-                char := projectIndexToChar[matchingProjectIndex]
-                ; Only use this key once
-                if (!usedKeys.Has(char) && !usedProjectIndices.Has(matchingProjectIndex)) {
-                    windowsWithKeys.Push({ hwnd: hwnd, title: winTitle, char: char, projectIndex: matchingProjectIndex })
-                    usedKeys[char] := true
-                    usedProjectIndices[matchingProjectIndex] := true
-                } else {
-                    ; Mark as unassigned for now, will assign in second pass
-                    windowsWithKeys.Push({ hwnd: hwnd, title: winTitle, char: "", projectIndex: matchingProjectIndex })
-                }
-            } else {
-                ; No project match, will assign in second pass
-                windowsWithKeys.Push({ hwnd: hwnd, title: winTitle, char: "", projectIndex: 0 })
-            }
-        } catch {
-            ; Skip windows we can't access
-            continue
-        }
-    }
-
-    ; Second pass: assign remaining keys to unmatched windows
-    charIndex := 1
-    for window in windowsWithKeys {
-        ; Skip if already assigned
-        if (window.char != "") {
-            continue
-        }
-
-        ; Find next available character
-        while (charIndex <= g_ProjectCharSequence.Length) {
-            char := g_ProjectCharSequence[charIndex]
-
-            ; Skip character "3" - reserved for preview windows
-            if (char = "3") {
-                charIndex++
-                continue
-            }
-
-            ; Check if this character is already used
-            if (!usedKeys.Has(char)) {
-                window.char := char
-                usedKeys[char] := true
-                charIndex++
-                break
-            }
-
-            charIndex++
-        }
-    }
-
-    ; Remove windows without assigned keys (shouldn't happen, but safety check)
-    filtered := []
-    for window in windowsWithKeys {
-        if (window.char != "") {
-            filtered.Push(window)
-        }
-    }
-
-    return filtered
-}
-
-; Focus Cursor window and close all others
-FocusCursorWindowAndCloseOthers(targetHwnd) {
-    ; Get all Cursor windows
-    allCursorWindows := WinGetList("ahk_exe Cursor.exe")
-
-    ; Iterate through all windows and close those that don't match target
-    for hwnd in allCursorWindows {
-        if (hwnd != targetHwnd) {
             try {
-                WinClose("ahk_id " . hwnd)
+                if (InStr(WinGetTitle("ahk_id " hwnd), "gemini", false) = 0)
+                    continue
             } catch {
-                ; Silently ignore if window close fails
+                continue
+            }
+            try {
+                cr := UIA.CreateCacheRequest(["Type", "ClassName", "Name"], , 5)
+                root := UIA.ElementFromHandleBuildCache(cr, hwnd)
+            } catch {
+                try root := UIA.ElementFromHandle(hwnd)
+                catch
+                    continue
+            }
+            if (!root)
+                continue
+            ; Stop response: Type 50000, Name "Stop response", ClassName contains "send-button" and "stop"
+            try {
+                el := root.FindFirstBuildCache(cr, { Type: 50000, Name: "Stop response", ClassName: "send-button",
+                    matchmode: "Substring" }, 4)
+                if (el)
+                    return true
+            } catch {
             }
         }
-    }
-
-    ; Activate the target window
-    if (!WinExist("ahk_id " . targetHwnd)) {
-        ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
-        return
-    }
-    try {
-        WinActivate("ahk_id " . targetHwnd)
-        WinWaitActive("ahk_id " . targetHwnd, , 1)
     } catch {
-        ; Ignore if activation fails
     }
+    return false
 }
 
-; Cleanup function for Cursor focus selector
-CleanupCursorFocusSelector() {
-    global g_CursorFocusSelectorActive, g_CursorFocusSelectorGui, g_CursorFocusHotkeyHandlers
-    global g_CursorFocusWindowMap
+IsAnyAiGenerating() {
+    return Cursor_HasGeneratingStopButton() || Gemini_HasGeneratingStopButton()
+}
 
-    ; Disable active flag
-    g_CursorFocusSelectorActive := false
-
-    ; Disable all character hotkeys
-    for handler in g_CursorFocusHotkeyHandlers {
-        try {
-            char := handler.char
-            ; Handle special VK codes
-            if (char = ",") {
-                Hotkey("vkBC", "Off")
-            } else if (char = ".") {
-                Hotkey("vkBE", "Off")
-            } else {
-                Hotkey(char, "Off")
-                ; Also disable uppercase for lowercase letters
-                if (RegExMatch(char, "^[a-z]$")) {
-                    Hotkey(StrUpper(char), "Off")
-                }
-            }
-        } catch {
-            ; Silently ignore errors
-        }
-    }
-
-    ; Disable Escape hotkey
+PlayAiWorkingStateSound(isWorking) {
     try {
-        Hotkey("Escape", HandleCursorFocusEscape, "Off")
+        if (!IsSoundEnabled())
+            return
+        if (isWorking)
+            SoundPlay(A_ScriptDir . "\sounds\robots-are-working.wav")
+        else
+            SoundPlay(A_ScriptDir . "\sounds\no-robot-working.wav")
     } catch {
-        ; Ignore
-    }
-
-    ; Clear handlers array
-    g_CursorFocusHotkeyHandlers := []
-
-    ; Close and destroy GUI
-    if (IsObject(g_CursorFocusSelectorGui)) {
-        try {
-            g_CursorFocusSelectorGui.Destroy()
-        } catch {
-            ; Ignore
-        }
-        g_CursorFocusSelectorGui := false
-    }
-
-    ; Clear window map
-    g_CursorFocusWindowMap := Map()
-}
-
-; Handler for Escape key in Cursor focus selector
-HandleCursorFocusEscape(*) {
-    global g_CursorFocusSelectorActive
-    if (g_CursorFocusSelectorActive) {
-        CleanupCursorFocusSelector()
     }
 }
 
-; Handler for character key press in Cursor focus selector
-HandleCursorFocusChar(char) {
-    global g_CursorFocusSelectorActive, g_CursorFocusWindowMap
-
-    ; Only process if selector is active
-    if (!g_CursorFocusSelectorActive) {
-        return
-    }
-
-    ; Get the HWND for this character
-    targetHwnd := g_CursorFocusWindowMap.Get(char, "")
-    if (targetHwnd = "") {
-        ; Try lowercase if uppercase
-        targetHwnd := g_CursorFocusWindowMap.Get(StrLower(char), "")
-    }
-
-    if (targetHwnd != "") {
-        ; Cleanup first (closes GUI, disables hotkeys)
-        CleanupCursorFocusSelector()
-
-        ; Focus the window and close others
-        FocusCursorWindowAndCloseOthers(targetHwnd)
-    }
-}
-
-; Factory function to create a handler for Cursor focus selection
-CreateCursorFocusCharHandler(char) {
-    ; Return a function that captures the char value at creation time
-    return (*) => HandleCursorFocusChar(char)
-}
-
-; Show Cursor focus selector GUI
-ShowCursorFocusSelector() {
-    global g_CursorFocusSelectorGui, g_CursorFocusSelectorActive, g_CursorFocusWindowMap
-    global g_CursorFocusHotkeyHandlers
-
-    ; Close existing selector if open
-    if (g_CursorFocusSelectorActive && IsObject(g_CursorFocusSelectorGui)) {
-        CleanupCursorFocusSelector()
-        Sleep 50
-    }
-
-    ; Also close hotstring selector if it's open (since we're called from within it)
-    global g_HotstringSelectorActive
-    if (g_HotstringSelectorActive) {
-        CleanupHotstringSelector()
-        Sleep 50
-    }
-
-    ; Get Cursor windows with assigned keys
-    windowsWithKeys := GetCursorWindowsWithKeys()
-
-    if (windowsWithKeys.Length = 0) {
-        ; Use tray notification to avoid stealing focus
-        TrayTip("Focus Cursor Window", "No Cursor windows found.", "IconX")
-        SetTimer(() => TrayTip(), -5000)  ; Auto-hide after ~5s
-        return
-    }
-
-    ; If only one window, just focus it and return
-    if (windowsWithKeys.Length = 1) {
-        CleanupHotstringSelector()
-        FocusCursorWindowAndCloseOthers(windowsWithKeys[1].hwnd)
-        return
-    }
-
-    ; Clear window map
-    g_CursorFocusWindowMap := Map()
-
-    ; Get active monitor for positioning
-    activeWin := 0
+; =============================================================================
+; U macro: Global AI generation state (Cursor + Gemini) with sound and banner
+; =============================================================================
+; Runs Cursor + Gemini stop-button checks, plays robots-are-working / no-robot-working,
+; shows red banner when any AI is working, green when none.
+; =============================================================================
+Cursor_FindComposerIconAcrossInstances() {
+    global BANNER_ACCENT_SUCCESS, BANNER_ACCENT_ERROR
     try {
-        activeWin := WinGetID("A")
-    } catch {
-        activeWin := 0
+        isWorking := IsAnyAiGenerating()
+        PlayAiWorkingStateSound(isWorking)
+        if (isWorking)
+            ShowCenteredOverlay_Utils("AI is working (stop button found)", 2000, BANNER_ACCENT_ERROR)
+        else
+            ShowCenteredOverlay_Utils("No AI is working", 2000, BANNER_ACCENT_SUCCESS)
+    } catch Error as e {
+        PlayAiWorkingStateSound(false)
+        ShowCenteredOverlay_Utils("No AI is working", 2000, BANNER_ACCENT_SUCCESS)
     }
-
-    ; Default to primary monitor work area
-    MonitorGetWorkArea(1, &monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
-    monitorWidth := monitorRight - monitorLeft
-    monitorHeight := monitorBottom - monitorTop
-
-    ; If we have an active window, find which monitor contains its center
-    if (activeWin && activeWin != 0) {
-        rect := Buffer(16, 0)
-        if (DllCall("GetWindowRect", "ptr", activeWin, "ptr", rect)) {
-            ; Calculate window center
-            winLeft := NumGet(rect, 0, "int")
-            winTop := NumGet(rect, 4, "int")
-            winRight := NumGet(rect, 8, "int")
-            winBottom := NumGet(rect, 12, "int")
-
-            centerX := winLeft + (winRight - winLeft) // 2
-            centerY := winTop + (winBottom - winTop) // 2
-
-            ; Find which monitor contains the window center
-            monitorCount := MonitorGetCount()
-            loop monitorCount {
-                idx := A_Index
-                MonitorGetWorkArea(idx, &l, &t, &r, &b)
-                if (centerX >= l && centerX <= r && centerY >= t && centerY <= b) {
-                    monitorLeft := l
-                    monitorTop := t
-                    monitorRight := r
-                    monitorBottom := b
-                    monitorWidth := r - l
-                    monitorHeight := b - t
-                    break
-                }
-            }
-        }
-    }
-
-    ; Create GUI - non-activating so it doesn't steal focus
-    g_CursorFocusSelectorGui := Gui("+AlwaysOnTop +ToolWindow +E0x08000000", "Focus Window (Close Others)")
-    fontSize := (monitorHeight < 800) ? 9 : 10
-    g_CursorFocusSelectorGui.SetFont("s" . fontSize, "Segoe UI")
-    g_CursorFocusSelectorGui.MarginX := 15
-    g_CursorFocusSelectorGui.MarginY := 10
-
-    ; Build display text
-    displayText := "=== FOCUS WINDOW (CLOSE OTHERS) ===`n`n"
-
-    for window in windowsWithKeys {
-        ; Map character to HWND
-        g_CursorFocusWindowMap[window.char] := window.hwnd
-
-        ; Add to display
-        displayText .= "[" . window.char . "] " . window.title . "`n"
-    }
-
-    displayText .= "`n[ESC] Cancel"
-
-    ; Calculate text dimensions
-    baseWidth := 450
-    lineHeight := fontSize + 6
-    lineCount := StrSplit(displayText, "`n").Length
-    textControlHeight := Min(400, lineCount * lineHeight + 20)
-
-    ; Add text control
-    g_CursorFocusSelectorGui.Add("Text", "w" . (baseWidth - 30), displayText)
-
-    ; Add close button
-    closeBtn := g_CursorFocusSelectorGui.Add("Button", "w80 Center", "Close")
-    closeBtn.OnEvent("Click", (*) => CleanupCursorFocusSelector())
-
-    ; Calculate total height
-    totalHeight := 20 + textControlHeight + 40 + 10
-
-    ; Calculate center position
-    marginX := 20
-    marginY := 20
-    guiX := monitorLeft + (monitorWidth - baseWidth) // 2
-    guiY := monitorTop + (monitorHeight - totalHeight) // 2
-
-    ; Ensure GUI stays within monitor bounds
-    if (guiX < monitorLeft + marginX)
-        guiX := monitorLeft + marginX
-    if (guiY < monitorTop + marginY)
-        guiY := monitorTop + marginY
-    if (guiX + baseWidth > monitorLeft + monitorWidth - marginX)
-        guiX := monitorLeft + monitorWidth - baseWidth - marginX
-    if (guiY + totalHeight > monitorTop + monitorHeight - marginY)
-        guiY := monitorTop + monitorHeight - totalHeight - marginY
-
-    ; Show GUI
-    g_CursorFocusSelectorGui.Show("NA w" . baseWidth . " h" . totalHeight . " x" . guiX . " y" . guiY)
-
-    ; Set active flag
-    g_CursorFocusSelectorActive := true
-
-    ; Clear handlers array
-    g_CursorFocusHotkeyHandlers := []
-
-    ; Enable hotkeys for assigned characters
-    for window in windowsWithKeys {
-        char := window.char
-
-        ; Create handler
-        handler := CreateCursorFocusCharHandler(char)
-
-        ; Store handler for cleanup
-        g_CursorFocusHotkeyHandlers.Push({ char: char, handler: handler })
-
-        ; Enable hotkey
-        try {
-            ; Handle special characters that need VK codes
-            if (char = ",") {
-                Hotkey("vkBC", handler, "On")
-            } else if (char = ".") {
-                Hotkey("vkBE", handler, "On")
-            } else {
-                Hotkey(char, handler, "On")
-                ; Also enable uppercase for lowercase letters
-                if (RegExMatch(char, "^[a-z]$")) {
-                    Hotkey(StrUpper(char), handler, "On")
-                }
-            }
-        } catch {
-            ; Silently ignore if we can't create hotkey for this character
-        }
-    }
-
-    ; Enable Escape hotkey
-    Hotkey("Escape", HandleCursorFocusEscape, "On")
 }
 
 ; Initialize macros
@@ -3542,8 +3014,8 @@ InitMacros() {
     RegisterMacro(CleanClipboard, "🧹 Clean the Clipboard", "p")
     ; Toggle Sound macro
     RegisterMacro(ToggleSoundState, "🔊 Toggle Sound (Mute/Unmute)")
-    ; Merge Non-Favorite Clips macro (assigned to "U")
-    RegisterMacro(MergeNonFavoriteClips, "📋 Merge Non-Favorite Clips", "u")
+    ; Global AI generation state: Cursor + Gemini (assigned to "U")
+    RegisterMacro(Cursor_FindComposerIconAcrossInstances, "🔍 AI working? (Cursor + Gemini)", "u")
     ; Mark Last Clip as Favorite macro (assigned to "J")
     RegisterMacro(MarkLastClipAsFavorite, "⭐ Mark Last Clip as Favorite", "j")
     ; Move Desktop to Recycle Bin (assigned to "N") — red banner, Y/N confirm
@@ -3610,12 +3082,19 @@ InitDpiAwareness()
 ; Target path: OneDrive Desktop. Red confirmation (with path), then success banner.
 ; =============================================================================
 global g_DesktopToRecycleGui := 0
+global g_DesktopToRecycleBorderGui := 0
 global g_DesktopToRecycleTextCtrl := 0
 global g_DesktopToRecyclePath := ""  ; Set from GetDesktopToRecyclePath() when macro runs
 global g_DesktopToRecycleCloseHwnd := 0
 
 DesktopToRecycle_ShowBanner() {
-    global g_DesktopToRecycleGui, g_DesktopToRecycleTextCtrl, g_DesktopToRecyclePath
+    global g_DesktopToRecycleGui, g_DesktopToRecycleBorderGui, g_DesktopToRecycleTextCtrl, g_DesktopToRecyclePath
+    try {
+        if IsObject(g_DesktopToRecycleBorderGui)
+            g_DesktopToRecycleBorderGui.Destroy()
+    } catch {
+    }
+    g_DesktopToRecycleBorderGui := 0
     try {
         if IsObject(g_DesktopToRecycleGui)
             g_DesktopToRecycleGui.Destroy()
@@ -3637,7 +3116,7 @@ DesktopToRecycle_ShowBanner() {
 
     confirmText := "Move all items from:`n" . g_DesktopToRecyclePath . "`nto Recycle Bin? (Y = Yes, N = No)"
     ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
-    ov.BackColor := "C0392B"
+    ov.BackColor := "1E1E2E"
     ov.SetFont("s22 cFFFFFF Bold", "Segoe UI")
     g_DesktopToRecycleTextCtrl := ov.Add("Text", "w700 Center", confirmText)
     ov.Show("AutoSize Hide")
@@ -3646,7 +3125,6 @@ DesktopToRecycle_ShowBanner() {
     if hasWindow {
         cx := wx + (ww - gw) // 2
         cy := wy + (wh - gh) // 2
-        ov.Show("x" . cx . " y" . cy . " NA")
     } else {
         vx := SysGet(76)
         vy := SysGet(77)
@@ -3654,15 +3132,28 @@ DesktopToRecycle_ShowBanner() {
         vh := SysGet(79)
         cx := vx + (vw - gw) // 2
         cy := vy + (vh - gh) // 2
-        ov.Show("x" . cx . " y" . cy . " NA")
     }
 
+    borderWidth := 6
+    borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
+    borderGui.BackColor := BANNER_ACCENT_INTERMEDIATE
+    borderGui.Show("NA x" . (cx - borderWidth) . " y" . (cy - borderWidth) . " w" . (gw + 2 * borderWidth) . " h" . (gh +
+        2 * borderWidth))
+    g_DesktopToRecycleBorderGui := borderGui
+
+    ov.Show("x" . cx . " y" . cy . " NA")
     WinSetTransparent(178, ov)
     g_DesktopToRecycleGui := ov
 }
 
 DesktopToRecycle_HideBanner() {
-    global g_DesktopToRecycleGui, g_DesktopToRecycleTextCtrl
+    global g_DesktopToRecycleGui, g_DesktopToRecycleBorderGui, g_DesktopToRecycleTextCtrl
+    try {
+        if IsObject(g_DesktopToRecycleBorderGui)
+            g_DesktopToRecycleBorderGui.Destroy()
+    } catch {
+    }
+    g_DesktopToRecycleBorderGui := 0
     try {
         if IsObject(g_DesktopToRecycleGui)
             g_DesktopToRecycleGui.Destroy()
@@ -3750,14 +3241,14 @@ DesktopToRecycle_Run() {
     try {
         exitCode := RunWait('powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "' . ps . '"', "", "Hide")
         if (exitCode = 0) {
-            ShowCenteredOverlay_Utils("Desktop items moved to Recycle Bin", 2000, "27AE60")
+            ShowCenteredOverlay_Utils("✅ Desktop items moved to Recycle Bin", 2000, BANNER_ACCENT_SUCCESS)
             DesktopToRecycle_CloseDesktopExplorer(path)
         } else {
-            ShowCenteredOverlay_Utils("Desktop path not found or error: " path, 3500, "C0392B")
+            ShowCenteredOverlay_Utils("❌ Desktop path not found or error: " path, 3500, BANNER_ACCENT_ERROR)
             DesktopToRecycle_CloseDesktopExplorer(path)
         }
     } catch as err {
-        ShowCenteredOverlay_Utils("Error moving to Recycle Bin", 2500, "C0392B")
+        ShowCenteredOverlay_Utils("❌ Error moving to Recycle Bin", 2500, BANNER_ACCENT_ERROR)
     }
     g_DesktopToRecycleCloseHwnd := 0
 }
@@ -4761,7 +4252,7 @@ SelectSquareByIndex(index) {
                 WinActivate("ahk_id " . targetHwnd)
                 WinWaitActive("ahk_id " . targetHwnd, , 0.35)
             } catch {
-                ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+                ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
             }
         }
 
@@ -5331,17 +4822,17 @@ StudyTopicSelector_HandleKey(key) {
     topic := g_StudyTopics[selection]
     basePath := GetNotesRepoPath()
     if (basePath = "") {
-        try ShowCenteredOverlay_Utils("Notes repo path not set (env.ahk).", 3000, "FFAA00")
+        try ShowCenteredOverlay_Utils("⚠ Notes repo path not set (env.ahk).", 3000, BANNER_ACCENT_INTERMEDIATE)
         return
     }
     fullPath := RTrim(basePath, "\") . topic.path
     if (!FileExist(fullPath)) {
-        try ShowCenteredOverlay_Utils("PDF not found: " fullPath, 3500, "FF0000")
+        try ShowCenteredOverlay_Utils("❌ PDF not found: " fullPath, 3500, BANNER_ACCENT_ERROR)
         return
     }
     peekExe := PeekPdf_ResolvePeekExePath()
     if (!FileExist(peekExe)) {
-        try ShowCenteredOverlay_Utils("Peek executable not found.", 2500, "FF0000")
+        try ShowCenteredOverlay_Utils("❌ Peek executable not found.", 2500, BANNER_ACCENT_ERROR)
         return
     }
     PeekPdf_OpenPath(fullPath)
@@ -5405,7 +4896,7 @@ PeekPdf_OpenPath(pdfPath) {
     cmd := "powershell.exe -NoProfile -ExecutionPolicy Bypass -Command " . Chr(34) . psArg . Chr(34)
     try Run cmd, "", "Hide"
     catch as e {
-        try ShowCenteredOverlay_Utils("Failed to open Peek: " e.Message, 3000, "FF0000")
+        try ShowCenteredOverlay_Utils("❌ Failed to open Peek: " e.Message, 3000, BANNER_ACCENT_ERROR)
         return
     }
     if WinWait("Peek", "", 5) {
@@ -5435,16 +4926,17 @@ PeekPdf_OpenStored() {
 
     pdfPath := PeekPdf_NormalizePath(pdfPath)
     if (pdfPath = "") {
-        try ShowCenteredOverlay_Utils("No PDF path set. Hold Win+Alt+Shift+X to set.", 3000, "FFAA00")
+        try ShowCenteredOverlay_Utils("⚠ No PDF path set. Hold Win+Alt+Shift+X to set.", 3000,
+            BANNER_ACCENT_INTERMEDIATE)
         return
     }
     peekExe := PeekPdf_ResolvePeekExePath()
     if (!FileExist(peekExe)) {
-        try ShowCenteredOverlay_Utils("Peek executable not found.", 2500, "FF0000")
+        try ShowCenteredOverlay_Utils("❌ Peek executable not found.", 2500, BANNER_ACCENT_ERROR)
         return
     }
     if (!FileExist(pdfPath)) {
-        try ShowCenteredOverlay_Utils("PDF file not found: " pdfPath, 3500, "FF0000")
+        try ShowCenteredOverlay_Utils("❌ PDF file not found: " pdfPath, 3500, BANNER_ACCENT_ERROR)
         return
     }
     peekEsc := StrReplace(peekExe, "'", "''")
@@ -5453,7 +4945,7 @@ PeekPdf_OpenStored() {
     cmd := "powershell.exe -NoProfile -ExecutionPolicy Bypass -Command " . Chr(34) . psArg . Chr(34)
     try Run cmd, "", "Hide"
     catch as e {
-        try ShowCenteredOverlay_Utils("Failed to open Peek: " e.Message, 3000, "FF0000")
+        try ShowCenteredOverlay_Utils("❌ Failed to open Peek: " e.Message, 3000, BANNER_ACCENT_ERROR)
         return
     }
     if WinWait("Peek", "", 5) {
@@ -5470,13 +4962,13 @@ PeekPdf_OpenStored() {
 PeekPdf_WaitAndConfigure() {
     global UIA
     ; Standard loading bar: show for the whole process so user knows when we started and when we finished
-    StandardLoadingBar_Show("Peek PDF: configuring...", "3772FF")
+    StandardLoadingBar_Show("⏳ Peek PDF: configuring...", BANNER_ACCENT_INTERMEDIATE)
     ; 1) Get Peek window hwnd
     hwnd := WinExist("Peek")
     if (!hwnd)
         hwnd := WinExist("ahk_exe PowerToys.Peek.UI.exe")
     if (!hwnd) {
-        StandardLoadingBar_Update("Peek PDF: window not found", "FFAA00")
+        StandardLoadingBar_Update("❌ Peek PDF: window not found", BANNER_ACCENT_ERROR)
         StandardLoadingBar_Hide(2000)
         Sleep 300
         Click "Left"
@@ -5648,16 +5140,16 @@ PeekPdf_WaitAndConfigure() {
                     Send("^End")
             }
             Sleep 100
-            StandardLoadingBar_Update("Peek PDF: done", "27AE60")
+            StandardLoadingBar_Update("✅ Peek PDF: done", BANNER_ACCENT_SUCCESS)
             StandardLoadingBar_Hide(2000)
         } else {
-            StandardLoadingBar_Update("Peek PDF: finished (fallback)", "FFAA00")
+            StandardLoadingBar_Update("✅ Peek PDF: finished (fallback)", BANNER_ACCENT_SUCCESS)
             StandardLoadingBar_Hide(2000)
             Sleep 400
             Click "Left"
         }
     } catch {
-        StandardLoadingBar_Update("Peek PDF: finished (fallback)", "FFAA00")
+        StandardLoadingBar_Update("✅ Peek PDF: finished (fallback)", BANNER_ACCENT_SUCCESS)
         StandardLoadingBar_Hide(2000)
         Sleep 400
         Click "Left"
@@ -6426,12 +5918,20 @@ GeminiDelayedSubmitFlow() {
     g_HotstringGeminiRestoreHwnd := WinExist("A")  ; Store window to restore focus to after 4s sequence
     g_HotstringGeminiAutoSubmit := true
 
-    HotstringGeminiBanner_Show("Submitting in 6s... Press N to cancel auto-submit")
+    HotstringGeminiBanner_Show("⏳ Submitting in 4s... [Y] Submit now  [N] Cancel")
 
     Hotkey("n", GeminiCancelAutoSubmit, "On")
     Hotkey("N", GeminiCancelAutoSubmit, "On")
+    Hotkey("y", GeminiSpeedUpSubmit, "On")
+    Hotkey("Y", GeminiSpeedUpSubmit, "On")
 
-    SetTimer(GeminiFinalizeSubmit, -6000)
+    SetTimer(GeminiFinalizeSubmit, -3000)
+}
+
+; Y key: run submit immediately (paste + Enter to Gemini) and clean up banner/timers.
+GeminiSpeedUpSubmit(*) {
+    SetTimer(GeminiFinalizeSubmit, 0)
+    GeminiFinalizeSubmit()
 }
 
 GeminiCancelAutoSubmit(*) {
@@ -6441,7 +5941,7 @@ GeminiCancelAutoSubmit(*) {
     try Hotkey("N", "Off")
     SetTimer(GeminiFinalizeSubmit, 0)  ; cancel 4s timer so paste runs in deferred callback only
     HotstringGeminiBanner_Hide()
-    HotstringGeminiBanner_Show("Auto-submit CANCELLED (Paste only)")
+    HotstringGeminiBanner_Show("⚠ Auto-submit CANCELLED (Paste only)")
     SetTimer(HotstringGeminiBanner_Hide, -1500)
     ; Defer paste so it runs outside hotkey context; sync works and paste goes to Gemini
     SetTimer(GeminiCancelAutoSubmit_DoPaste, -400)
@@ -6491,11 +5991,9 @@ GeminiFinalizeSubmit() {
 
     try Hotkey("n", "Off")
     try Hotkey("N", "Off")
+    try Hotkey("y", "Off")
+    try Hotkey("Y", "Off")
     HotstringGeminiBanner_Hide()
-
-    ; Show standard loading indicator for the auto-submit background process
-    if (g_HotstringGeminiAutoSubmit)
-        StandardLoadingBar_Show("Sending to Gemini…", "3772FF")
 
     ; Delay-submit flow: do not switch tabs; paste to currently active Gemini tab
     GeminiNavigateFocusAndPasteFirstSnippet("", false)
@@ -6529,11 +6027,8 @@ GeminiFinalizeSubmit() {
     }
 
     ; If we auto-submitted (user did not cancel), ask Gemini.ahk to monitor for completion and show "Copy? [N] [R]" when done
-    if (didAutoSubmit && geminiChromeHwnd) {
+    if (didAutoSubmit && geminiChromeHwnd)
         GeminiDelayedSubmitMonitorStartFromUtils(g_HotstringGeminiRestoreHwnd, geminiChromeHwnd)
-        ; Hide "Sending to Gemini…" in this process; the monitor (Gemini.ahk) shows "Waiting for Gemini response…" in its process.
-        StandardLoadingBar_Hide(0)
-    }
 }
 
 HandleHotstringChar(char) {
@@ -6556,7 +6051,7 @@ HandleHotstringChar(char) {
         }
         g_HotstringGeminiArmed := true
         ; Show banner when entering Gemini mode (same pattern as Project Selector "Entering Selection Mode").
-        HotstringGeminiBanner_Show("Entering Gemini Mode - Select prompt")
+        HotstringGeminiBanner_Show("⌨ Entering Gemini Mode - Select prompt")
         SetTimer(HotstringGeminiBanner_Hide, -1500)  ; Hide banner after 1.5 s
         SetTimer(DisarmHotstringGeminiMode, -4000)
         return
@@ -6647,7 +6142,7 @@ HandleHotstringChar(char) {
 
         if (useGemini) {
             ; L+Prompt selection: redirect to Gemini (focus prompt field, paste, do NOT submit).
-            HotstringGeminiBanner_Show("Gemini: inserting prompt...")
+            HotstringGeminiBanner_Show("📤 Gemini: inserting prompt...")
             try {
                 SetTitleMatchMode(2)
                 geminiHwnd := 0
@@ -7853,10 +7348,9 @@ global g_DictationCompletionChimeScheduled := false  ; Flag to prevent multiple 
 global g_LastDictationSoundTick := 0  ; Timestamp of last dictation sound to throttle audio output
 global g_DictationStartSound := A_ScriptDir . "\sounds\speach-start.wav"
 global g_DictationStopSound := A_ScriptDir . "\sounds\speach-finished.wav"
-global g_DictationLoopSound := A_ScriptDir . "\sounds\retro1.wav"
 global g_PendingDictationAction := ""  ; Action to execute after transcription: "Paste" or "PasteEnter"
-global g_PendingDictationMerge := false  ; Flag to trigger merge countdown after transcription completes
 global g_PendingGeminiPromptAfterDictation := false  ; When set by ~#!+0 stop, show "Send to Gemini? Y (4s)" after completion
+global g_DictationGeminiConfirmBannerVisible := false  ; Guard: only one "Send to Gemini?" banner at a time
 global g_KeepIndicatorVisible := false  ; Flag to keep indicator visible until paste action completes
 global g_LastStateTransitionTick := 0  ; Timestamp of last state transition to prevent rapid re-detection
 global g_DictationSoundPlayed := false  ; Atomic test-and-set: one start chime per session
@@ -8099,9 +7593,8 @@ DictationClipboardHandler(DataType) {
 
 ; Play completion chime after transcription finishes
 PlayDictationCompletionChime(*) {
-    global g_DictationCompletionChimeScheduled, g_PendingDictationAction, g_PendingDictationMerge,
+    global g_DictationCompletionChimeScheduled, g_PendingDictationAction,
         g_KeepIndicatorVisible, g_PendingGeminiPromptAfterDictation
-    global g_DictationLoopActive
 
     ; Ensure clipboard handler is removed (safe to call even if already removed)
     try {
@@ -8152,19 +7645,11 @@ PlayDictationCompletionChime(*) {
             g_KeepIndicatorVisible := false
         }
 
-        ; Check if merge countdown should start after transcription completes
-        ; This ensures AI transcription and handy.exe finish before Clip Angel merge begins
-        pendingMerge := g_PendingDictationMerge
-        g_PendingDictationMerge := false  ; Clear immediately after reading
-
-        if (pendingMerge) {
-            ; Transcription is complete, now safe to start merge countdown
-            DictationMerge_StartCountdown(5)
-        }
-
-        ; If user stopped dictation with Win+Alt+Shift+0 (no Paste/PasteEnter), show Gemini confirm banner
+        ; If user stopped dictation with Win+Alt+Shift+0 (no Paste/PasteEnter), show Gemini confirm banner (once only).
+        Critical "On"
         pendingGemini := g_PendingGeminiPromptAfterDictation
-        g_PendingGeminiPromptAfterDictation := false
+        g_PendingGeminiPromptAfterDictation := false  ; Claim atomically so only one invocation shows the banner
+        Critical "Off"
         ; #region agent log
         DebugBannerLog("Utils.ahk:PlayDictationCompletionChime", "Completion chime branch",
             "chimeShouldPlay=1 pendingAction=" . pendingAction . " pendingGemini=" . (pendingGemini ? 1 : 0), "H2")
@@ -8176,21 +7661,27 @@ PlayDictationCompletionChime(*) {
             ; #endregion
             DictationGeminiConfirm_ShowAndWait()
         }
-
-        ; Trigger next loop iteration if active (module or legacy)
-        if (InfiniteDictation.IsActive) {
-            InfiniteDictation.OnTranscriptionComplete()
-        } else if (g_DictationLoopActive) {
-            SetTimer(DictationLoopStart, -2000)
-        }
     }
 }
 
-; Check Recording window (handy.exe) and update indicator; play start chime when detected.
-CheckDictationRecordingWindow() {
-    global g_DictationActive, g_DictationCompletionChimeScheduled, g_LastStateTransitionTick, g_DictationStartSound,
-        g_DictationSoundPlayed, g_DictationStartClipboardText
+; Called when dictation stop detected: play chime now if clipboard already changed, else wait for change
+DictationCompletionChimeOrWaitForClipboard() {
+    global g_DictationStartClipboardText
+    currentClip := ""
+    try {
+        currentClip := A_Clipboard
+    }
+    if (currentClip != g_DictationStartClipboardText) {
+        PlayDictationCompletionChime()
+    } else {
+        OnClipboardChange(DictationClipboardHandler)
+        SetTimer(PlayDictationCompletionChime, -1500)
+    }
+}
 
+CheckDictationRecordingWindow() {
+    global g_DictationActive, g_LastStateTransitionTick, g_DictationStartClipboardText
+    global g_DictationSoundPlayed, g_DictationCompletionChimeScheduled, g_DictationPulseTimer, g_KeepIndicatorVisible
     ; Check if the "Recording" window exists
     windowExists := false
     try {
@@ -8255,28 +7746,9 @@ CheckDictationRecordingWindow() {
         g_DictationSoundPlayed := false
 
         StopDictationPulseTimer()
-        global g_KeepIndicatorVisible
-        if (!g_KeepIndicatorVisible) {
-            HideDictationIndicator()
-        }
-
-        ; Check if clipboard has already changed (Handy might have updated it before window closed)
-        currentClip := ""
-        try {
-            currentClip := A_Clipboard
-        }
-
-        if (currentClip != g_DictationStartClipboardText) {
-            ; Clipboard already updated, trigger sound immediately
-            PlayDictationCompletionChime()
-        } else {
-            ; Clipboard not yet updated, wait for change
-            OnClipboardChange(DictationClipboardHandler)
-            ; Set fallback timer (reduced to 1.5s)
-            SetTimer(PlayDictationCompletionChime, -1500)
-        }
-    }
-    else if (g_DictationActive && windowExists) {
+        HideDictationIndicator()
+        DictationCompletionChimeOrWaitForClipboard()
+    } else if (g_DictationActive && windowExists) {
         ShowDictationIndicator()
         if (!g_DictationPulseTimer) {
             StartDictationPulseTimer()
@@ -8361,7 +7833,7 @@ OnExit(CleanupDictationIndicator)
     static lastHotkeyTick := 0
     static isProcessing := false
 
-    ; Skip when script sends #!+0 programmatically (Infinite Dictation stop/start, #!+7 stop, etc.)
+    ; Skip when script sends #!+0 programmatically (e.g. #!+j sending #!+0)
     if (g_ProgrammaticDictationStop) {
         g_ProgrammaticDictationStop := false
         return
@@ -8379,20 +7851,6 @@ OnExit(CleanupDictationIndicator)
     ; Capture before KeyWait: check timer may clear g_DictationActive when Recording window closes,
     ; so by the time we reach if/else it can be false even when user intended to stop.
     dictationWasActiveOnKeyPress := g_DictationActive
-
-    ; If Infinite Dictation is active, treat as interrupt (same as Win+Alt+Shift+7)
-    ; Logic gate: Only allow termination during Recording state; block during Transcribing state
-    if (InfiniteDictation.IsActive) {
-        if (!WinExist("Recording ahk_exe handy.exe")) {
-            ; Transcribing - block termination to prevent interrupting active transcription
-            isProcessing := false
-            return
-        }
-        ; Recording - allow termination
-        InfiniteDictation.Stop()
-        isProcessing := false
-        return
-    }
 
     KeyWait("0", "L")
 
@@ -8423,9 +7881,6 @@ OnExit(CleanupDictationIndicator)
     isProcessing := false
 }
 
-; Infinite Dictation module (state and loop logic)
-#Include "Lib\InfiniteDictation.ahk"
-
 ; Win+Alt+Shift+7 is defined in Gemini.ahk (TTS from selection: repeat exactly + read aloud).
 
 ; Dictation with paste and submit action - Win+Alt+Shift+J
@@ -8453,7 +7908,3 @@ OnExit(CleanupDictationIndicator)
         SendInput "#!+0"
     }
 }
-
-; Start the check timer automatically when script loads
-; This continuously monitors for the Recording window and updates indicator position
-StartDictationCheckTimer()

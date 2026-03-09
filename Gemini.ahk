@@ -14,6 +14,261 @@ PROMPT_FILE := A_ScriptDir "\data\Gemini_Prompt.txt"
 ; Copy response button names (EN/PT). Excludes "Copy prompt" / "Copiar prompt" which are different controls.
 GEMINI_COPY_RESPONSE_NAMES := ["Copy", "Copiar"]
 
+; --- Refactor: threshold constants (no magic numbers) ---------------------------------
+; Timeouts (ms)
+GEMINI_ACTIVATE_WAIT_MS := 2000
+GEMINI_SCROLL_SETTLE_MS := 350
+GEMINI_UIA_SETTLE_MS := 120
+GEMINI_TAB_SWITCH_MS := 150
+GEMINI_MENU_OPEN_MS := 200
+GEMINI_READ_ALOUD_SETTLE_MS := 1500
+GEMINI_PROMPT_FOCUS_MS := 300
+GEMINI_FIRST_LAUNCH_POLL_MS := 300
+GEMINI_FIRST_LAUNCH_MAX_LOOPS := 35
+GEMINI_TITLE_READY_MS := 6000
+GEMINI_TITLE_POLL_MS := 250
+GEMINI_WAIT_BUTTON_POLL_MS := 250
+GEMINI_WAIT_BUTTON_TIMEOUT_MS := 15000
+GEMINI_ASYNC_POLL_MS := 500
+GEMINI_COPY_RETRY_SLEEP_MS := 400
+GEMINI_STREAM_GONE_VERIFY_MS := 200
+GEMINI_STREAM_GONE_LOOPS := 4
+; Retries
+GEMINI_ASYNC_LOOKUP_MAX_RETRIES := 60   ; 60 * 500ms = 30s
+GEMINI_DELAYED_SUBMIT_MAX_RETRIES := 300  ; 300 * 500ms = 150s
+GEMINI_ASYNC_TTS_MAX_RETRIES := 60
+GEMINI_COPY_MAX_RETRIES := 3
+; Pronunciation result banner: long timeout so user can read (ms)
+GEMINI_PRONUNCIATION_BANNER_TIMEOUT_MS := 50000
+; Post-copy sync: max wait for clipboard change (sequence-number detection). Fallback if detection fails (ms).
+GEMINI_POST_COPY_SYNC_TIMEOUT_MS := 2000
+; Poll interval when waiting for clipboard sequence number to change (ms). Low value = minimal latency.
+GEMINI_CLIPBOARD_POLL_MS := 10
+; Performance instrumentation (set to true to log latencies to script dir)
+GEMINI_PERF_LOG_ENABLED := false
+GEMINI_PERF_LOG_PATH := A_ScriptDir "\.cursor\gemini_perf.log"
+
+; Feature flags for refactor phases (set false to fall back to legacy behavior)
+GEMINI_USE_WIN_EVENT_HOOK := true
+GEMINI_USE_PYTHON_IPC := false
+
+; Phase 7: Python daemon IPC (local socket). Daemon must be started separately; AHK connects on demand.
+GEMINI_PYTHON_DAEMON_PORT := 29512
+GEMINI_PYTHON_IPC_TIMEOUT_MS := 5000
+
+; --- Phase 4: WinEvent hook constants (user32) ---------------------------------
+; EVENT_OBJECT_CREATE = 0x8000, OBJID_WINDOW = 0
+GEMINI_EVENT_OBJECT_CREATE := 0x8000
+GEMINI_OBJID_WINDOW := 0
+
+; --- Clipboard sequence number (user32) – O(1) change detection ------------------
+; Returns Windows clipboard sequence number (increments on any clipboard change). Used to wait for clipboard update with minimal latency instead of fixed sleep.
+GetClipboardSequenceNumber() {
+    try
+        return DllCall("user32\GetClipboardSequenceNumber", "UInt")
+    catch
+        return 0
+}
+
+; --- Performance instrumentation (Phase 1) -------------------------------------
+; Log latency for a flow; no-op if GEMINI_PERF_LOG_ENABLED is false. Non-blocking.
+GeminiPerfLog(flowName, startTick) {
+    if (!GEMINI_PERF_LOG_ENABLED)
+        return
+    elapsed := A_TickCount - startTick
+    try FileAppend(FormatTime(, "yyyy-MM-dd HH:mm:ss") "`t" flowName "`t" elapsed "`n", GEMINI_PERF_LOG_PATH)
+    catch
+        return
+}
+
+; --- Phase 2: UIA control type constants (strict integer; no string coercion) ----
+; UIA ControlType: Button=50000, MenuItem=50011. Use these instead of magic numbers.
+UIA_ControlType_Button := 50000
+UIA_ControlType_MenuItem := 50011
+
+; --- Phase 2: Centralized UIA discovery (single tree walk per element type) ------
+; Returns array of Copy response buttons in document order; empty array on error. Caller must ensure tab active and scrolled to bottom.
+GetGeminiCopyButtonsArray(uia) {
+    prevBatch := -1
+    try prevBatch := A_BatchLines
+    catch
+        prevBatch := -1
+    try {
+        out := []
+        A_BatchLines := -1
+        allButtons := uia.FindAll({ Type: "Button" })
+        nameMatchCount := 0
+        classMatchCount := 0
+        sampleNames := ""
+        sampleClasses := ""
+        for button in allButtons {
+            isNameMatch := IsGeminiCopyResponseButton(button.Name)
+            if (isNameMatch)
+                nameMatchCount++
+            if (isNameMatch && (InStr(button.ClassName, "icon-button") || InStr(button.ClassName, "mdc-button"))) {
+                classMatchCount++
+                out.Push(button)
+            }
+            if (out.Length <= 2 && isNameMatch) {
+                sampleNames .= (sampleNames ? " | " : "") (button.Name ? button.Name : "(empty)")
+                sampleClasses .= (sampleClasses ? " | " : "") (button.ClassName ? SubStr(button.ClassName, 1, 80) :
+                    "(empty)")
+            }
+        }
+        if (out.Length = 0) {
+            allButtons := uia.FindAll({ Type: "Button" })
+            for button in allButtons {
+                if (IsGeminiCopyResponseButton(button.Name))
+                    out.Push(button)
+            }
+        }
+    } catch as err {
+        try A_BatchLines := prevBatch
+        return []
+    }
+    try A_BatchLines := prevBatch
+    return out
+}
+
+; Returns the last Copy button (last response) or 0. Uses centralized discovery.
+GetLastGeminiCopyButton(uia) {
+    arr := GetGeminiCopyButtonsArray(uia)
+    return (arr.Length > 0) ? arr[arr.Length] : 0
+}
+
+; Copy last Gemini message with retry using exponential backoff (Phase 6). Returns true if clipboard changed.
+; options/geminiHwnd same as CopyLastGeminiMessageToClipboard. maxRetries includes first attempt.
+CopyLastGeminiMessageWithRetry(options := "", geminiHwnd := 0, maxRetries := GEMINI_COPY_MAX_RETRIES) {
+    baseDelay := GEMINI_COPY_RETRY_SLEEP_MS
+    contentBefore := A_Clipboard
+    loop maxRetries {
+        if (CopyLastGeminiMessageToClipboard(options, geminiHwnd) && A_Clipboard != "" && A_Clipboard != contentBefore)
+            return true
+        if (A_Index < maxRetries)
+            Sleep baseDelay * (1 << (A_Index - 1))
+    }
+    return false
+}
+
+; Find Pause or Resume button (TTS). which = "Pause" or "Resume". Returns element or 0. Uses UIA_ControlType_Button.
+FindGeminiPauseResumeButton(uia, which) {
+    try {
+        btn := uia.FindFirst({ Name: which, Type: UIA_ControlType_Button })
+        if (btn)
+            return btn
+        btn := uia.FindFirst({ Type: "Button", Name: which })
+        if (btn)
+            return btn
+        allButtons := uia.FindAll({ Type: UIA_ControlType_Button })
+        for button in allButtons {
+            if (button.Name = which || InStr(button.Name, which, false) = 1) {
+                if (InStr(button.ClassName, "tts-button") || InStr(button.ClassName, "mdc-icon-button"))
+                    return button
+            }
+        }
+    } catch {
+        return 0
+    }
+    return 0
+}
+
+; --- Phase 3: Scoped discovery (conversation panel / main pane to avoid full-doc traversal) ---
+; Get root for scoped search: main pane when available, else full tree. Returns element to call FindAll on.
+GetGeminiSearchRoot(uia) {
+    try {
+        root := uia.GetCurrentMainPaneElement()
+        if (root)
+            return root
+    } catch {
+    }
+    return uia
+}
+
+; Find "Show more options" / "More options" buttons scoped to main pane when possible. Returns array.
+GetGeminiMoreOptionsButtonsScoped(uia) {
+    root := GetGeminiSearchRoot(uia)
+    out := []
+    try {
+        els := root.FindAll({ Name: "Show more options" })
+        for e in els
+            out.Push(e)
+        try {
+            moreOpt := root.FindAll({ Name: "More options" })
+            for btn in moreOpt
+                out.Push(btn)
+        } catch {
+        }
+    } catch {
+    }
+    if (out.Length = 0) {
+        try {
+            allMenuItems := root.FindAll({ Type: UIA_ControlType_MenuItem })
+            for menuItem in allMenuItems {
+                name := menuItem.Name
+                if (name = "Show more options" || name = "More options" || InStr(name, "Show more options", false) = 1 ||
+                InStr(name, "More options", false) = 1)
+                    out.Push(menuItem)
+            }
+        } catch {
+        }
+    }
+    return out
+}
+
+; Find "Text to speech" menu item. Returns element or 0. Uses UIA_ControlType_MenuItem.
+FindGeminiTextToSpeechMenuItem(uia) {
+    try {
+        mi := uia.FindFirst({ Name: "Text to speech", Type: UIA_ControlType_MenuItem })
+        if (mi)
+            return mi
+        mi := uia.FindFirst({ Type: "MenuItem", Name: "Text to speech" })
+        if (mi)
+            return mi
+        allMenuItems := uia.FindAll({ Type: UIA_ControlType_MenuItem })
+        for menuItem in allMenuItems {
+            if (menuItem.Name = "Text to speech" || InStr(menuItem.Name, "Text to speech", false) = 1) {
+                if (InStr(menuItem.ClassName, "mat-mdc-menu-item"))
+                    return menuItem
+            }
+        }
+        for menuItem in allMenuItems {
+            if (menuItem.Name = "Text to speech" || InStr(menuItem.Name, "Text to speech", false) = 1)
+                return menuItem
+        }
+    } catch {
+        return 0
+    }
+    return 0
+}
+
+; --- GeminiState singleton: cache by hwnd for O(1) validation on subsequent use in same lifecycle ---
+class GeminiState {
+    static _hwnd := 0
+    static _lastCopyButton := ""
+
+    static Invalidate() {
+        GeminiState._hwnd := 0
+        GeminiState._lastCopyButton := ""
+    }
+
+    ; Get last copy button; use cached element if same hwnd and element still valid (O(1) check), else discover and cache.
+    static GetLastCopyButtonCached(uia, geminiHwnd) {
+        if (geminiHwnd && GeminiState._hwnd = geminiHwnd && GeminiState._lastCopyButton != "") {
+            try {
+                _ := GeminiState._lastCopyButton.Name
+                return GeminiState._lastCopyButton
+            } catch
+                GeminiState.Invalidate()
+        }
+        btn := GetLastGeminiCopyButton(uia)
+        if (btn && geminiHwnd) {
+            GeminiState._hwnd := geminiHwnd
+            GeminiState._lastCopyButton := btn
+        }
+        return btn
+    }
+}
+
 ; --- Helper Functions --------------------------------------------------------
 ; FindGeminiPromptField and GEMINI_PROMPT_FIELD_NAMES are defined in Utils.ahk (included above).
 
@@ -28,28 +283,9 @@ IsGeminiCopyResponseButton(name) {
     return false
 }
 
-; Return count of Gemini "Copy response" buttons (same logic as CopyLastGeminiMessageToClipboard). Caller must ensure tab is active and scrolled to bottom.
+; Return count of Gemini "Copy response" buttons. Uses centralized GetGeminiCopyButtonsArray. Caller must ensure tab is active and scrolled to bottom.
 GetGeminiCopyButtonCount(uia) {
-    allCopyButtons := []
-    try {
-        allButtons := uia.FindAll({ Type: 50000 })
-        for button in allButtons {
-            if (IsGeminiCopyResponseButton(button.Name)) {
-                if (InStr(button.ClassName, "icon-button") || InStr(button.ClassName, "mdc-button"))
-                    allCopyButtons.Push(button)
-            }
-        }
-        if (allCopyButtons.Length = 0) {
-            allButtons := uia.FindAll({ Type: "Button" })
-            for button in allButtons {
-                if (IsGeminiCopyResponseButton(button.Name))
-                    allCopyButtons.Push(button)
-            }
-        }
-    } catch {
-        return 0
-    }
-    return allCopyButtons.Length
+    return GetGeminiCopyButtonsArray(uia).Length
 }
 
 ; True if at least one "Show more options" / "More options" exists (last response can then offer read aloud). Same labels as GeminiTriggerReadAloud.
@@ -97,27 +333,66 @@ GetGeminiWindowHwnd() {
     return 0
 }
 
-; =============================================================================
-; Get work area (left, top, right, bottom) of the monitor that contains the given window
-; =============================================================================
-GetWorkAreaForWindow(hwnd) {
-    if (!hwnd || !WinExist("ahk_id " hwnd))
-        return ""
-    try {
-        WinGetPos(&winX, &winY, &winW, &winH, "ahk_id " hwnd)
-        centerX := winX + winW / 2
-        centerY := winY + winH / 2
-        n := MonitorGetCount()
-        loop n {
-            MonitorGet(A_Index, &L, &T, &R, &B)
-            if (centerX >= L && centerX < R && centerY >= T && centerY < B) {
-                MonitorGetWorkArea(A_Index, &wLeft, &wTop, &wRight, &wBottom)
-                return { left: wLeft, top: wTop, right: wRight, bottom: wBottom }
+; --- Phase 4: Event-driven new Chrome window detection (SetWinEventHook) ---------
+; Wait for a new Chrome window that is not in existingHwnds. Returns hwnd or 0. Timeout in ms.
+; Uses EVENT_OBJECT_CREATE hook when GEMINI_USE_WIN_EVENT_HOOK is true; else falls back to polling.
+WaitForNewChromeWindow(existingHwnds, timeoutMs) {
+    if (GEMINI_USE_WIN_EVENT_HOOK && timeoutMs > 0) {
+        global g_GeminiCreatedHwnds := []
+        cb := CallbackCreate(GeminiWinEventProc, "F Fast", 7)
+        hHook := DllCall("user32\SetWinEventHook", "UInt", GEMINI_EVENT_OBJECT_CREATE, "UInt",
+            GEMINI_EVENT_OBJECT_CREATE, "Ptr", 0, "Ptr", cb, "UInt", 0, "UInt", 0, "UInt", 0, "Ptr")
+        if (hHook) {
+            start := A_TickCount
+            while (A_TickCount - start < timeoutMs) {
+                Sleep 80
+                for hwnd in g_GeminiCreatedHwnds {
+                    try {
+                        if (WinGetProcessName("ahk_id " hwnd) = "chrome.exe") {
+                            isNew := true
+                            for ex in existingHwnds {
+                                if (ex = hwnd) {
+                                    isNew := false
+                                    break
+                                }
+                            }
+                            if (isNew) {
+                                DllCall("user32\UnhookWinEvent", "Ptr", hHook)
+                                return hwnd
+                            }
+                        }
+                    } catch {
+                    }
+                }
+                g_GeminiCreatedHwnds := []
             }
+            DllCall("user32\UnhookWinEvent", "Ptr", hHook)
         }
-    } catch {
     }
-    return ""
+    ; Fallback: polling loop (legacy or when hook failed)
+    deadline := A_TickCount + timeoutMs
+    loop {
+        if (A_TickCount >= deadline)
+            return 0
+        for hwnd in WinGetList("ahk_exe chrome.exe") {
+            isNew := true
+            for existing in existingHwnds {
+                if (existing = hwnd) {
+                    isNew := false
+                    break
+                }
+            }
+            if (isNew)
+                return hwnd
+        }
+        Sleep GEMINI_FIRST_LAUNCH_POLL_MS
+    }
+}
+
+GeminiWinEventProc(hWinEventHook, event, hwnd, idObject, idChild, idEventThread, dwmsEventTime) {
+    global g_GeminiCreatedHwnds
+    if (event = GEMINI_EVENT_OBJECT_CREATE && idObject = GEMINI_OBJID_WINDOW && hwnd)
+        g_GeminiCreatedHwnds.Push(hwnd)
 }
 
 ; =============================================================================
@@ -168,8 +443,8 @@ ShowGeminiTabBanner(tabNumber, geminiHwnd := 0) {
 ; =============================================================================
 ; Helper function to show a notification using the standard loading indicator (passive, auto-hide).
 ; =============================================================================
-ShowNotification(message, durationMs := 500, bgColor := "FFFF00", fontColor := "000000", fontSize := 24) {
-    StandardLoadingBar_Show(message, "3772FF", { passive: true })
+ShowNotification(message, durationMs := 500, bgColor := "FFFF00", fontColor := "000000", fontSize := 17) {
+    StandardLoadingBar_Show(message, BANNER_ACCENT_INTERMEDIATE, { passive: true, fontSize: fontSize })
     StandardLoadingBar_Hide(durationMs)
 }
 
@@ -194,19 +469,22 @@ PlayCopyCompletedChime() {
 ; =============================================================================
 ; Small Loading Indicator Helpers (delegate to standard loading bar in Utils)
 ; =============================================================================
-ShowSmallLoadingIndicator(state := "Loading…", bgColor := "3772FF", centerOnHwnd := 0, textWidth := 500, fontSize := 24) {
+ShowSmallLoadingIndicator(state := "⏳ Loading…", bgColor := BANNER_ACCENT_INTERMEDIATE, centerOnHwnd := 0, textWidth :=
+    500, fontSize :=
+    17) {
     global g_StandardLoadingBarGui
     if (g_StandardLoadingBarGui)
         StandardLoadingBar_Update(state)
     else
-        StandardLoadingBar_Show(state, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: textWidth, fontSize: fontSize })
+        StandardLoadingBar_Show(state, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: textWidth,
+            fontSize: fontSize })
 }
 
 HideSmallLoadingIndicator() {
     StandardLoadingBar_Hide(0)
 }
 
-WaitForButtonAndShowSmallLoading(buttonNames, stateText := "Loading…", timeout := 15000) {
+WaitForButtonAndShowSmallLoading(buttonNames, stateText := "⏳ Loading…", timeout := GEMINI_WAIT_BUTTON_TIMEOUT_MS) {
     try cUIA := UIA_Browser()
     catch {
         ; Silently ignore UIA browser errors
@@ -232,11 +510,11 @@ WaitForButtonAndShowSmallLoading(buttonNames, stateText := "Loading…", timeout
         if btn {
             buttonEverFound := true
             if (!indicatorShown) {
-                StandardLoadingBar_Show(stateText, "3772FF")
+                StandardLoadingBar_Show(stateText, BANNER_ACCENT_INTERMEDIATE)
                 indicatorShown := true
             }
             while btn && (timeout <= 0 || A_TickCount < deadline) {
-                Sleep 250
+                Sleep GEMINI_WAIT_BUTTON_POLL_MS
                 btn := ""
                 for n in buttonNames {
                     try {
@@ -252,7 +530,7 @@ WaitForButtonAndShowSmallLoading(buttonNames, stateText := "Loading…", timeout
                 buttonDisappeared := true
             break
         }
-        Sleep 250
+        Sleep GEMINI_WAIT_BUTTON_POLL_MS
     }
     ; Play completion sound only for actual AI responses when we saw the button and it disappeared
     try {
@@ -264,65 +542,40 @@ WaitForButtonAndShowSmallLoading(buttonNames, stateText := "Loading…", timeout
     StandardLoadingBar_Hide(0)
 }
 
-; =============================================================================
-; Helper function to center mouse on the active window
-; =============================================================================
-CenterMouse() {
-    Sleep 200
-    Send("#!+q")
-}
-
 ; --- Hotkeys ----------------------------------------------------------------
 
 ; Reusable: activate Gemini, handle Pause/Resume, then optionally copy last message and trigger "Text to speech".
 ; copyFirst: true = copy last response then read aloud (#!+o); false = only read aloud (#!+7).
 ; useTrashTab: when true, explicitly target the second Gemini tab (trash tab) instead of the main tab.
 GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false) {
+    t0 := A_TickCount
     ; Step 1: Activate Gemini window globally
     SetTitleMatchMode(2)
     if hwnd := GetGeminiWindowHwnd() {
         try {
             WinActivate("ahk_id " hwnd)
         } catch {
-            ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
             return
         }
     }
-    if !WinWaitActive("ahk_exe chrome.exe", , 2)
+    if !WinWaitActive("ahk_exe chrome.exe", , GEMINI_ACTIVATE_WAIT_MS // 1000)
         return
-    Sleep 150
+    Sleep GEMINI_TAB_SWITCH_MS
 
     ; When requested (#!+o trash tab), explicitly switch to the second Gemini tab.
     ; Chrome convention: Ctrl+2 selects the second tab in the window.
     if (useTrashTab) {
         Send("^2")
-        Sleep 150
+        Sleep GEMINI_TAB_SWITCH_MS
         ShowGeminiTabBanner(2, hwnd)
     }
 
     ; Step 2: Check if "Pause" button exists (if reading is active, pause it)
     uia := UIA_Browser()
-    Sleep 120
+    Sleep GEMINI_UIA_SETTLE_MS
 
-    pauseButton := 0
-    try {
-        pauseButton := uia.FindFirst({ Name: "Pause", Type: 50000 })
-        if !pauseButton
-            pauseButton := uia.FindFirst({ Type: "Button", Name: "Pause" })
-        if !pauseButton {
-            allButtons := uia.FindAll({ Type: 50000 })
-            for button in allButtons {
-                if (button.Name = "Pause" || InStr(button.Name, "Pause", false) = 1) {
-                    if (InStr(button.ClassName, "tts-button") || InStr(button.ClassName, "mdc-icon-button")) {
-                        pauseButton := button
-                        break
-                    }
-                }
-            }
-        }
-    } catch {
-    }
-
+    pauseButton := FindGeminiPauseResumeButton(uia, "Pause")
     if (pauseButton) {
         pauseButton.Click()
         ShowNotification("Paused", 800, "FFFF00", "000000", 24)
@@ -330,25 +583,7 @@ GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false) {
         return
     }
 
-    resumeButton := 0
-    try {
-        resumeButton := uia.FindFirst({ Name: "Resume", Type: 50000 })
-        if !resumeButton
-            resumeButton := uia.FindFirst({ Type: "Button", Name: "Resume" })
-        if !resumeButton {
-            allButtons := uia.FindAll({ Type: 50000 })
-            for button in allButtons {
-                if (button.Name = "Resume" || InStr(button.Name, "Resume", false) = 1) {
-                    if (InStr(button.ClassName, "tts-button") || InStr(button.ClassName, "mdc-icon-button")) {
-                        resumeButton := button
-                        break
-                    }
-                }
-            }
-        }
-    } catch {
-    }
-
+    resumeButton := FindGeminiPauseResumeButton(uia, "Resume")
     if (resumeButton) {
         resumeButton.Click()
         ShowNotification("Resumed", 800, "FFFF00", "000000", 24)
@@ -358,26 +593,10 @@ GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false) {
 
     ; Step 3: If copyFirst, find and click the last Copy button; else just scroll so last response is in view
     Send "^{End}"
-    Sleep 350
+    Sleep GEMINI_SCROLL_SETTLE_MS
 
     if (copyFirst) {
-        allCopyButtons := []
-        allButtons := uia.FindAll({ Type: 50000 })
-        for button in allButtons {
-            if (IsGeminiCopyResponseButton(button.Name)) {
-                if (InStr(button.ClassName, "icon-button") || InStr(button.ClassName, "mdc-button"))
-                    allCopyButtons.Push(button)
-            }
-        }
-        if (allCopyButtons.Length = 0) {
-            allButtons := uia.FindAll({ Type: "Button" })
-            for button in allButtons {
-                if (IsGeminiCopyResponseButton(button.Name))
-                    allCopyButtons.Push(button)
-            }
-        }
-
-        lastCopyButton := (allCopyButtons.Length > 0) ? allCopyButtons[allCopyButtons.Length] : 0
+        lastCopyButton := GeminiState.GetLastCopyButtonCached(uia, hwnd)
         if (lastCopyButton) {
             lastCopyButton.Click()
             PlayCopyCompletedChime()
@@ -387,33 +606,11 @@ GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false) {
     ; Step 4: Find the final "More options" / "Show more options" in the Gemini response tree (bottom-up).
     ; We target only the most recent Gemini response to avoid reading older messages. See gemini-tree.txt for tree structure.
     centerHwnd := WinExist("A")
-    StandardLoadingBar_Show(copyFirst ? "Finding read aloud button and copying..." : "Finding read aloud button...", "3772FF", { passive: true, centerOnHwnd: centerHwnd })
-    Sleep 250
+    StandardLoadingBar_Show(copyFirst ? "🔍 Finding read aloud button and copying..." :
+        "🔍 Finding read aloud button...", BANNER_ACCENT_INTERMEDIATE, { passive: true, centerOnHwnd: centerHwnd })
+    Sleep GEMINI_WAIT_BUTTON_POLL_MS
 
-    allMoreOptionsButtons := []
-    try {
-        ; Primary: "Show more options" (EN); include "More options" for alternate labels
-        allMoreOptionsButtons := uia.FindAll({ Name: "Show more options" })
-        try {
-            moreOpt := uia.FindAll({ Name: "More options" })
-            for btn in moreOpt
-                allMoreOptionsButtons.Push(btn)
-        } catch {
-        }
-    } catch {
-    }
-    if (allMoreOptionsButtons.Length = 0) {
-        try {
-            allMenuItems := uia.FindAll({ Type: 50011 })
-            for menuItem in allMenuItems {
-                name := menuItem.Name
-                if (name = "Show more options" || name = "More options" || InStr(name, "Show more options", false) = 1 ||
-                InStr(name, "More options", false) = 1)
-                    allMoreOptionsButtons.Push(menuItem)
-            }
-        } catch {
-        }
-    }
+    allMoreOptionsButtons := GetGeminiMoreOptionsButtonsScoped(uia)
 
     if (allMoreOptionsButtons.Length = 0) {
         StandardLoadingBar_Hide(0)
@@ -446,52 +643,15 @@ GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false) {
 
     try {
         lastMoreOptionsButton.Click()
-        Sleep 200
+        Sleep GEMINI_MENU_OPEN_MS
 
-        textToSpeechMenuItem := 0
-        try {
-            textToSpeechMenuItem := uia.FindFirst({ Name: "Text to speech", Type: 50011 })
-        } catch {
-        }
-        if !textToSpeechMenuItem {
-            try {
-                textToSpeechMenuItem := uia.FindFirst({ Type: "MenuItem", Name: "Text to speech" })
-            } catch {
-            }
-        }
-        if !textToSpeechMenuItem {
-            try {
-                allMenuItems := uia.FindAll({ Type: 50011 })
-                for menuItem in allMenuItems {
-                    if (menuItem.Name = "Text to speech" || InStr(menuItem.Name, "Text to speech", false) = 1) {
-                        if (InStr(menuItem.ClassName, "mat-mdc-menu-item")) {
-                            textToSpeechMenuItem := menuItem
-                            break
-                        }
-                    }
-                }
-            } catch {
-            }
-        }
-        if !textToSpeechMenuItem {
-            try {
-                allMenuItems := uia.FindAll({ Type: 50011 })
-                for menuItem in allMenuItems {
-                    if (menuItem.Name = "Text to speech" || InStr(menuItem.Name, "Text to speech", false) = 1) {
-                        textToSpeechMenuItem := menuItem
-                        break
-                    }
-                }
-            } catch {
-            }
-        }
-
+        textToSpeechMenuItem := FindGeminiTextToSpeechMenuItem(uia)
         if (textToSpeechMenuItem) {
             textToSpeechMenuItem.Click()
-            Sleep 200
+            Sleep GEMINI_MENU_OPEN_MS
         } else {
             Send "{Down}"
-            Sleep 200
+            Sleep GEMINI_MENU_OPEN_MS
             Send "{Enter}"
         }
     } catch {
@@ -499,70 +659,30 @@ GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false) {
 
     StandardLoadingBar_Hide(0)
 
-    Sleep 1500
+    Sleep GEMINI_READ_ALOUD_SETTLE_MS
 
-    isReading := false
-    try {
-        if uia.FindFirst({ Name: "Pause", Type: 50000 })
-            isReading := true
-        else if uia.FindFirst({ Type: "Button", Name: "Pause" })
-            isReading := true
-        else {
-            allButtons := uia.FindAll({ Type: 50000 })
-            for button in allButtons {
-                if (button.Name = "Pause" || InStr(button.Name, "Pause", false) = 1) {
-                    if (InStr(button.ClassName, "tts-button") || InStr(button.ClassName, "mdc-icon-button")) {
-                        isReading := true
-                        break
-                    }
-                }
-            }
-        }
-    } catch {
-    }
+    isReading := (FindGeminiPauseResumeButton(uia, "Pause") != 0)
 
     if (!isReading) {
         ShowNotification("Retrying read aloud...", 800, "FFFF00", "000000", 24)
         try {
             lastMoreOptionsButton.Click()
-            Sleep 200
+            Sleep GEMINI_MENU_OPEN_MS
 
-            textToSpeechMenuItem := 0
-            try {
-                textToSpeechMenuItem := uia.FindFirst({ Name: "Text to speech", Type: 50011 })
-            } catch {
-            }
-            if !textToSpeechMenuItem {
-                try {
-                    textToSpeechMenuItem := uia.FindFirst({ Type: "MenuItem", Name: "Text to speech" })
-                } catch {
-                }
-            }
-            if !textToSpeechMenuItem {
-                try {
-                    allMenuItems := uia.FindAll({ Type: 50011 })
-                    for menuItem in allMenuItems {
-                        if (menuItem.Name = "Text to speech" || InStr(menuItem.Name, "Text to speech", false) = 1) {
-                            textToSpeechMenuItem := menuItem
-                            break
-                        }
-                    }
-                } catch {
-                }
-            }
-
+            textToSpeechMenuItem := FindGeminiTextToSpeechMenuItem(uia)
             if (textToSpeechMenuItem) {
                 textToSpeechMenuItem.Click()
-                Sleep 200
+                Sleep GEMINI_MENU_OPEN_MS
             } else {
                 Send "{Down}"
-                Sleep 200
+                Sleep GEMINI_MENU_OPEN_MS
                 Send "{Enter}"
             }
         } catch {
         }
     }
 
+    GeminiPerfLog("read_aloud", t0)
     ShowNotification(copyFirst ? "Copied & Reading aloud" : "Reading aloud", 800, "FFFF00", "000000", 24)
     Send "!{Tab}"
 }
@@ -582,67 +702,59 @@ GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false) {
 ; options.alreadyActive (default false): when true, skip activation; assume Gemini is already the active window (use UIA_Browser() with no arg).
 ; geminiHwnd: optional; if 0, uses GetGeminiWindowHwnd(). Returns true if copy succeeded, false otherwise.
 CopyLastGeminiMessageToClipboard(options := "", geminiHwnd := 0) {
+    t0 := A_TickCount
     restoreWindow := (options = "" || !options.HasProp("restoreWindow")) ? true : options.restoreWindow
     playChimeAndNotify := (options = "" || !options.HasProp("playChimeAndNotify")) ? true : options.playChimeAndNotify
     alreadyActive := (options != "" && options.HasProp("alreadyActive")) ? options.alreadyActive : false
     try {
+        GeminiState.Invalidate()
         SetTitleMatchMode(2)
         if !geminiHwnd
             geminiHwnd := GetGeminiWindowHwnd()
-        if !geminiHwnd
+        if !geminiHwnd {
+            GeminiPerfLog("copy", t0)
             return false
+        }
         if (!alreadyActive) {
             try {
                 WinActivate("ahk_id " geminiHwnd)
             } catch {
-                ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+                ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
                 return false
             }
-            if !WinWaitActive("ahk_exe chrome.exe", , 2)
+            if !WinWaitActive("ahk_exe chrome.exe", , GEMINI_ACTIVATE_WAIT_MS // 1000)
                 return false
-            Sleep 150
+            Sleep GEMINI_TAB_SWITCH_MS
         }
 
         ; Scroll to bottom *before* UIA so the last response is in the tree and we go down the chat.
         Send "^{End}"
-        Sleep 350
+        Sleep GEMINI_SCROLL_SETTLE_MS
 
         uia := alreadyActive ? UIA_Browser() : UIA_Browser("ahk_id " geminiHwnd)
-        Sleep 120
+        Sleep GEMINI_UIA_SETTLE_MS
 
-        ; Bottom-up by tree order: FindAll returns elements in document order, so the *last* Copy button in the array is the last response.
-        allCopyButtons := []
-        allButtons := uia.FindAll({ Type: 50000 })
-        for button in allButtons {
-            if (IsGeminiCopyResponseButton(button.Name)) {
-                if (InStr(button.ClassName, "icon-button") || InStr(button.ClassName, "mdc-button"))
-                    allCopyButtons.Push(button)
-            }
-        }
-        if (allCopyButtons.Length = 0) {
-            allButtons := uia.FindAll({ Type: "Button" })
-            for button in allButtons {
-                if (IsGeminiCopyResponseButton(button.Name))
-                    allCopyButtons.Push(button)
-            }
-        }
+        lastCopyButton := GeminiState.GetLastCopyButtonCached(uia, geminiHwnd)
 
-        ; Last in array = last in chat (tree order). Ignore all previous Copy buttons.
-        lastCopyButton := (allCopyButtons.Length > 0) ? allCopyButtons[allCopyButtons.Length] : 0
-
-        if (!lastCopyButton)
+        if (!lastCopyButton) {
+            GeminiPerfLog("copy", t0)
             return false
+        }
         lastCopyButton.Click()
-        if !ClipWait(2)
+        if !ClipWait(2) {
+            GeminiPerfLog("copy", t0)
             return false
+        }
         if (playChimeAndNotify) {
             PlayCopyCompletedChime()
             ShowNotification("Copied!", 800, "FFFF00", "000000", 24)
         }
         if (restoreWindow)
             Send "!{Tab}"
+        GeminiPerfLog("copy", t0)
         return true
     } catch {
+        GeminiPerfLog("copy", t0)
         return false
     }
 }
@@ -651,8 +763,10 @@ CopyLastGeminiMessageToClipboard(options := "", geminiHwnd := 0) {
 ; Works in EN ("Copy") and PT ("Copiar") UI. Uses tree order: last Copy button in the UI tree = last response.
 #!+p:: {
     try {
+        t0 := A_TickCount
         if (!CopyLastGeminiMessageToClipboard())
             ShowNotification("Copy failed – ensure Gemini is open and has a response", 2500, "FF6666", "FFFFFF", 22)
+        GeminiPerfLog("hotkey_copy", t0)
     } catch as err {
         ShowNotification("Copy error: " (err.Message ? err.Message : "unknown"), 2500, "FF6666", "FFFFFF", 22)
     }
@@ -739,7 +853,7 @@ SendPromptToActiveGeminiTab(promptText) {
 InitializeGeminiFirstTime() {
     try {
         ; Show banner to inform user
-        StandardLoadingBar_Show("Opening Gemini (2 tabs)...", "3772FF")
+        StandardLoadingBar_Show("📤 Opening Gemini (2 tabs)...", BANNER_ACCENT_INTERMEDIATE)
 
         ; Remember existing Chrome windows so we can find the one we're about to create
         existingChromeHwnds := []
@@ -753,24 +867,9 @@ InitializeGeminiFirstTime() {
         Run "chrome.exe --new-window https://gemini.google.com/ https://gemini.google.com/"
         Sleep 700   ; Give the system time to start Chrome before waiting for it
 
-        ; Find the newly created Chrome window (not one that was already open)
-        geminiHwnd := 0
-        loop 35 {   ; 35 * 300ms ≈ 10.5s max wait for new window to appear
-            for hwnd in WinGetList("ahk_exe chrome.exe") {
-                isNew := true
-                for existing in existingChromeHwnds {
-                    if (existing = hwnd) {
-                        isNew := false
-                        break
-                    }
-                }
-                if (isNew) {
-                    geminiHwnd := hwnd
-                    break 2
-                }
-            }
-            Sleep 300
-        }
+        ; Find the newly created Chrome window: event-driven hook or polling fallback
+        geminiHwnd := WaitForNewChromeWindow(existingChromeHwnds, GEMINI_FIRST_LAUNCH_MAX_LOOPS *
+            GEMINI_FIRST_LAUNCH_POLL_MS)
         if !geminiHwnd {
             StandardLoadingBar_Hide(0)
             return
@@ -781,23 +880,23 @@ InitializeGeminiFirstTime() {
             WinActivate("ahk_id " geminiHwnd)
         } catch {
             StandardLoadingBar_Hide(0)
-            ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
             return
         }
         if !WinWaitActive("ahk_id " geminiHwnd, , 4) {
             StandardLoadingBar_Hide(0)
             return
         }
-        ; Wait for the first tab to load so the title contains "Gemini" before sending the prompt
+        ; Wait for the first tab to load so the title contains "Gemini" (timeout-bounded condition wait)
         SetTitleMatchMode(2)
         start := A_TickCount
-        while (A_TickCount - start < 6000) {
+        while (A_TickCount - start < GEMINI_TITLE_READY_MS) {
             try {
                 if InStr(WinGetTitle("ahk_id " geminiHwnd), "Gemini", false)
                     break
             } catch {
             }
-            Sleep 250
+            Sleep GEMINI_TITLE_POLL_MS
         }
         Sleep 550   ; Give window and tabs time to fully settle
 
@@ -808,7 +907,7 @@ InitializeGeminiFirstTime() {
             promptText := "hey, what's up?"
 
         ; Update banner status
-        StandardLoadingBar_Show("Sending prompt to Gemini tabs...", "3772FF")
+        StandardLoadingBar_Show("📤 Sending prompt to Gemini tabs...", BANNER_ACCENT_INTERMEDIATE)
 
         geminiHwnd := GetGeminiWindowHwnd()
         ; Ensure first tab is active and send prompt (no tab banner during initial launch)
@@ -834,19 +933,20 @@ InitializeGeminiFirstTime() {
 ; Hotkey: Win+Alt+Shift+I
 ; =============================================================================
 #!+i:: {
+    t0 := A_TickCount
     SetTitleMatchMode(2)
     if hwnd := GetGeminiWindowHwnd() {
         try {
             WinActivate("ahk_id " hwnd)
         } catch {
-            ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
             return
         }
-        if WinWaitActive("ahk_id " hwnd, , 2) {
-            Sleep 120   ; Let the window and Chrome content settle before UIA attaches
+        if WinWaitActive("ahk_id " hwnd, , GEMINI_ACTIVATE_WAIT_MS // 1000) {
+            Sleep GEMINI_UIA_SETTLE_MS   ; Let the window and Chrome content settle before UIA attaches
             ; Bind UIA to this window so we never attach to a different Chrome window
             uia := UIA_Browser("ahk_id " hwnd)
-            Sleep 120   ; UIA settle time (align with CopyLastGeminiMessageToClipboard)
+            Sleep GEMINI_UIA_SETTLE_MS   ; UIA settle time (align with CopyLastGeminiMessageToClipboard)
 
             ; Show current active tab only when this window already has two Gemini tabs (not during initial launch).
             ; Brief extra delay so Chrome tab bar is ready for UIA; retry once if first attempt fails (timing).
@@ -864,9 +964,10 @@ InitializeGeminiFirstTime() {
             ; Combined search: Try exact match first, then case-insensitive (most efficient)
             anchorButton := 0
             try {
-                anchorButton := uia.FindFirst({ Type: "50000", Name: "Open upload file menu", ControlType: "Button" })
+                anchorButton := uia.FindFirst({ Type: UIA_ControlType_Button, Name: "Open upload file menu",
+                    ControlType: "Button" })
                 if (!anchorButton) {
-                    anchorButton := uia.FindFirst({ Type: "50000", Name: "Open upload file menu", cs: false })
+                    anchorButton := uia.FindFirst({ Type: UIA_ControlType_Button, Name: "Open upload file menu", cs: false })
                 }
             } catch {
             }
@@ -874,7 +975,7 @@ InitializeGeminiFirstTime() {
             ; Fallback: Only use expensive FindAll if first two strategies failed
             if (!anchorButton) {
                 try {
-                    allButtons := uia.FindAll({ Type: "50000" })
+                    allButtons := uia.FindAll({ Type: UIA_ControlType_Button })
                     for button in allButtons {
                         try {
                             if (InStr(button.Name, "Open upload file menu", false)) {
@@ -915,6 +1016,7 @@ InitializeGeminiFirstTime() {
                 if (IsSoundEnabled())
                     SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
             }
+            GeminiPerfLog("activation", t0)
         }
     } else {
         InitializeGeminiFirstTime()
@@ -927,7 +1029,7 @@ InitializeGeminiFirstTime() {
 ; =============================================================================
 class GeminiAsyncLookup {
     static PronunciationPrompt :=
-        "Below, you will find a word or phrase. I'd like you to answer in five sections: the 1st section you will repeat the word twice. For each time you repeat, use a point to finish the phrase. The 2nd section should have the definition of the word (You should also say each part of speech does the different definitions belong to). The 3d section should have the pronunciation of this word using the Internation Phonetic Alphabet characters (for American English).The 4th section should have the same word applied in a real sentence (put that in quotations, so I can identify that). In the 5th, Write down the translation of the word into Portuguese. Please, do not title any section. Thanks!"
+        "Below, you will find a word or phrase. I'd like you to answer in five sections: the 1st section you will repeat the word twice. For each time you repeat, use a point to finish the phrase. The 2nd section should have the definition of the word (You should also say each part of speech does the different definitions belong to). The 3rd section should have the pronunciation of this word using the International Phonetic Alphabet characters (for American English).The 4th section should have the same word applied in a real sentence (put that in quotations, so I can identify that). In the 5th, Write down the translation of the word into Portuguese. Please, do not title any section. Thanks!"
 
     __New() {
         this.OriginalHwnd := 0
@@ -943,7 +1045,7 @@ class GeminiAsyncLookup {
         if !this.OriginalHwnd
             return
         ; Show loading banner immediately, centered on the monitor where this window is (with warning)
-        StandardLoadingBar_Show("Loading…", "3772FF")
+        StandardLoadingBar_Show("⏳ Loading…", BANNER_ACCENT_INTERMEDIATE)
 
         A_Clipboard := ""
         Send "^c"
@@ -959,7 +1061,7 @@ class GeminiAsyncLookup {
             WinActivate("ahk_id " this.GeminiHwnd)
         } catch {
             StandardLoadingBar_Hide(0)
-            ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
             return
         }
         if !WinWaitActive("ahk_exe chrome.exe", , 2) {
@@ -1042,11 +1144,11 @@ class GeminiAsyncLookup {
             return   ; Still streaming
         }
 
-        ; If button was found and now is gone, verify it's truly finished
+        ; If button was found and now is gone, verify it's truly finished (timeout-bounded)
         if (this.ButtonEverFound) {
             isTrulyGone := true
-            loop 4 {
-                Sleep 200
+            loop GEMINI_STREAM_GONE_LOOPS {
+                Sleep GEMINI_STREAM_GONE_VERIFY_MS
                 try {
                     for n in buttonNames {
                         if root.ElementExist({ Name: n, Type: "Button" }) {
@@ -1076,13 +1178,14 @@ class GeminiAsyncLookup {
     }
 
     RetrieveResponse() {
-        ; Activate Gemini once, then copy (and retries if needed) without switching back until done
-        contentBefore := A_Clipboard
+        ; Activate Gemini once, then copy with retry (exponential backoff) without switching back until done.
+        ; Invalidate last-Copy-button cache so we discover the newly completed response (avoid penultimate message).
+        GeminiState.Invalidate()
         try {
             WinActivate("ahk_id " this.GeminiHwnd)
         } catch {
             StandardLoadingBar_Hide(0)
-            ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
             return
         }
         if !WinWaitActive("ahk_exe chrome.exe", , 2) {
@@ -1090,32 +1193,37 @@ class GeminiAsyncLookup {
             return
         }
         copyOpt := { restoreWindow: false, playChimeAndNotify: false, alreadyActive: true }
-        if !CopyLastGeminiMessageToClipboard(copyOpt, this.GeminiHwnd) {
+        seqBefore := GetClipboardSequenceNumber()
+        if !CopyLastGeminiMessageWithRetry(copyOpt, this.GeminiHwnd) {
             StandardLoadingBar_Hide(0)
             return
         }
-        Sleep 400
-        if (A_Clipboard = "" || A_Clipboard = contentBefore) {
-            CopyLastGeminiMessageToClipboard(copyOpt, this.GeminiHwnd)
-            Sleep 400
+        ; Wait for clipboard change via sequence number (O(1) per check); proceed as soon as it changes instead of fixed delay.
+        syncElapsed := 0
+        while (syncElapsed < GEMINI_POST_COPY_SYNC_TIMEOUT_MS) {
+            if (GetClipboardSequenceNumber() != seqBefore)
+                break
+            Sleep GEMINI_CLIPBOARD_POLL_MS
+            syncElapsed += GEMINI_CLIPBOARD_POLL_MS
         }
-        if (A_Clipboard = "" || A_Clipboard = contentBefore) {
-            CopyLastGeminiMessageToClipboard(copyOpt, this.GeminiHwnd)
-            Sleep 400
-        }
+        ; Use clipboard content only after change detected (or timeout) so the banner shows current content.
+        bannerText := A_Clipboard
         WinActivate("ahk_id " this.OriginalHwnd)
         StandardLoadingBar_Hide(0)
-        this.ShowResultBanner(A_Clipboard)
+        this.ShowResultBanner(bannerText)
     }
 
     ShowResultBanner(text) {
         if (!text || StrLen(Trim(text)) = 0)
             return
-        state := text . "`n`nPress Enter or E to close"
+        state := "ℹ " . text
         closeNoOp(*) {
         }
         closeKeys := Map("Enter", closeNoOp, "Escape", closeNoOp, "E", closeNoOp)
-        StandardLoadingBar_ShowWithKeys(state, closeKeys, 50000, this.OriginalHwnd, "", "3772FF", 600, 14)
+        StandardLoadingBar_ShowWithKeys(state, closeKeys, GEMINI_PRONUNCIATION_BANNER_TIMEOUT_MS, this.OriginalHwnd, "",
+            BANNER_ACCENT_INTERMEDIATE, 600,
+            17, "", false,
+            "[Enter] [E] Close")
     }
 }
 
@@ -1143,9 +1251,6 @@ class GeminiDelayedSubmitMonitor {
         this.RetryCount := 0
         this.ButtonEverFound := false
         this.TimerCallback := this.CheckCompletion.Bind(this)
-        ; Same animated bar as FoldAllDirectoriesInExplorer (^,): progress bar + yellow border, not passive.
-        StandardLoadingBar_Show("Waiting for Gemini response…", "3772FF",
-            { centerOnHwnd: originalHwnd, textWidth: 500, fontSize: 14 })
         SetTimer(this.TimerCallback, 500)
     }
 
@@ -1153,7 +1258,6 @@ class GeminiDelayedSubmitMonitor {
         this.RetryCount++
         if (this.RetryCount > this.MaxRetries) {
             SetTimer(this.TimerCallback, 0)
-            StandardLoadingBar_Hide(0)
             return
         }
         btn := ""
@@ -1180,8 +1284,8 @@ class GeminiDelayedSubmitMonitor {
 
         if (this.ButtonEverFound) {
             isTrulyGone := true
-            loop 4 {
-                Sleep 200
+            loop GEMINI_STREAM_GONE_LOOPS {
+                Sleep GEMINI_STREAM_GONE_VERIFY_MS
                 try {
                     for n in buttonNames {
                         if root.ElementExist({ Name: n, Type: "Button" }) {
@@ -1211,8 +1315,15 @@ class GeminiDelayedSubmitMonitor {
     ShowCopyDecisionBanner() {
         this.CopyBannerGui := ""
         this.CopyTimeoutTimer := ""
-        copyKeyCallbacks := Map("N", this.CancelCopy.Bind(this), "R", this.CopyAndReadAloud.Bind(this), "E", this.CancelCopy.Bind(this))
-        StandardLoadingBar_ShowWithKeys("Copy? [N] [R] [E=close]", copyKeyCallbacks, 4000, this.OriginalHwnd, this.DoCopyOnTimeout.Bind(this), "3772FF", 300, 9)
+        copyKeyCallbacks := Map("N", this.CancelCopy.Bind(this), "Y", this.DoCopyOnly.Bind(this), "R", this.CopyAndReadAloud
+        .Bind(this), "E", this.CancelCopy.Bind(this))
+        StandardLoadingBar_ShowWithKeys("❓ Copy response?", copyKeyCallbacks, 4000, this.OriginalHwnd, this.DoCopyOnTimeout
+            .Bind(this), BANNER_ACCENT_INTERMEDIATE, 380, 17, "", false, "[Y] Copy  [N] No  [R] Copy+Read  [E] Close")
+    }
+
+    ; Y key: copy latest response only (same as timeout default), then close banner and restore focus.
+    DoCopyOnly(*) {
+        this.DoCopyOnTimeout()
     }
 
     ; Shared cleanup: clear Gemini-side state only. Key/timer unregister and overlay hide are handled by Utils.
@@ -1223,13 +1334,11 @@ class GeminiDelayedSubmitMonitor {
 
     CancelCopy(*) {
         this.CleanupCopyBanner()
-        StandardLoadingBar_Hide(0)
     }
 
     DoCopyOnTimeout(*) {
         this.CleanupCopyBanner()
-
-        contentBefore := A_Clipboard
+        GeminiState.Invalidate()
         try {
             WinActivate("ahk_id " this.GeminiHwnd)
         } catch {
@@ -1243,33 +1352,16 @@ class GeminiDelayedSubmitMonitor {
             return
         }
         copyOpt := { restoreWindow: false, playChimeAndNotify: false, alreadyActive: true }
-        if !CopyLastGeminiMessageToClipboard(copyOpt, this.GeminiHwnd) {
-            if (WinExist("ahk_id " this.OriginalHwnd))
-                WinActivate("ahk_id " this.OriginalHwnd)
-            return
-        }
-        Sleep 400
-        if (A_Clipboard = "" || A_Clipboard = contentBefore) {
-            CopyLastGeminiMessageToClipboard(copyOpt, this.GeminiHwnd)
-            Sleep 400
-        }
-        if (A_Clipboard = "" || A_Clipboard = contentBefore) {
-            CopyLastGeminiMessageToClipboard(copyOpt, this.GeminiHwnd)
-            Sleep 400
-        }
-        if (A_Clipboard != "" && A_Clipboard != contentBefore)
+        if CopyLastGeminiMessageWithRetry(copyOpt, this.GeminiHwnd)
             PlayCopyCompletedChime()
         if (WinExist("ahk_id " this.OriginalHwnd))
             WinActivate("ahk_id " this.OriginalHwnd)
-        ; Ensure any remaining loading/banner indicator is closed when timeout copy flow ends.
-        StandardLoadingBar_Hide(0)
     }
 
     ; R key: copy last message and read it aloud, then restore focus (same tab as delayed submit).
     CopyAndReadAloud(*) {
         this.CleanupCopyBanner()
-
-        contentBefore := A_Clipboard
+        GeminiState.Invalidate()
         try {
             WinActivate("ahk_id " this.GeminiHwnd)
         } catch {
@@ -1283,27 +1375,11 @@ class GeminiDelayedSubmitMonitor {
             return
         }
         copyOpt := { restoreWindow: false, playChimeAndNotify: false, alreadyActive: true }
-        if !CopyLastGeminiMessageToClipboard(copyOpt, this.GeminiHwnd) {
-            if (WinExist("ahk_id " this.OriginalHwnd))
-                WinActivate("ahk_id " this.OriginalHwnd)
-            return
-        }
-        Sleep 400
-        if (A_Clipboard = "" || A_Clipboard = contentBefore) {
-            CopyLastGeminiMessageToClipboard(copyOpt, this.GeminiHwnd)
-            Sleep 400
-        }
-        if (A_Clipboard = "" || A_Clipboard = contentBefore) {
-            CopyLastGeminiMessageToClipboard(copyOpt, this.GeminiHwnd)
-            Sleep 400
-        }
-        if (A_Clipboard != "" && A_Clipboard != contentBefore)
+        if CopyLastGeminiMessageWithRetry(copyOpt, this.GeminiHwnd)
             PlayCopyCompletedChime()
         GeminiTriggerReadAloud(false, false)   ; read aloud only (already copied)
         if (WinExist("ahk_id " this.OriginalHwnd))
             WinActivate("ahk_id " this.OriginalHwnd)
-        ; Ensure any remaining loading/banner indicator is closed after successful copy+read-aloud.
-        StandardLoadingBar_Hide(0)
     }
 }
 
@@ -1334,7 +1410,7 @@ class GeminiAsyncTTS {
         this.OriginalHwnd := WinExist("A")
         if !this.OriginalHwnd
             return
-        StandardLoadingBar_Show("Loading…", "3772FF")
+        StandardLoadingBar_Show("⏳ Loading…", BANNER_ACCENT_INTERMEDIATE)
 
         A_Clipboard := ""
         Send "^c"
@@ -1352,7 +1428,7 @@ class GeminiAsyncTTS {
             WinActivate("ahk_id " this.GeminiHwnd)
         } catch {
             StandardLoadingBar_Hide(0)
-            ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
+            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
             return
         }
         if !WinWaitActive("ahk_exe chrome.exe", , 2) {
@@ -1438,8 +1514,8 @@ class GeminiAsyncTTS {
         ; Layer 1: streaming stopped
         if (this.ButtonEverFound) {
             isTrulyGone := true
-            loop 4 {
-                Sleep 200
+            loop GEMINI_STREAM_GONE_LOOPS {
+                Sleep GEMINI_STREAM_GONE_VERIFY_MS
                 try {
                     for n in buttonNames {
                         if root.ElementExist({ Name: n, Type: "Button" }) {
@@ -1473,7 +1549,7 @@ class GeminiAsyncTTS {
                 if !WinWaitActive("ahk_exe chrome.exe", , 2)
                     return
                 Send("^2")
-                Sleep 200
+                Sleep GEMINI_TAB_SWITCH_MS
                 ShowGeminiTabBanner(2, this.GeminiHwnd)
                 ; After TTS from selection (#!+7), read aloud from the trash tab (second Gemini tab).
                 GeminiTriggerReadAloud(false, true)   ; read aloud only, no copy (text was just sent via #!+7)

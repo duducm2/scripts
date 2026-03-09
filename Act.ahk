@@ -17,11 +17,11 @@ if (IS_WORK_ENVIRONMENT) {
     scriptsFolder := "C:\Users\eduev\Meu Drive\17 - Projects\scripts"
 }
 
-StandardLoadingBar_Show("Updating scripts...", "3772FF")
+StandardLoadingBar_Show("⏳ Updating scripts...", BANNER_ACCENT_INTERMEDIATE)
 SetWorkingDir(scriptsFolder)
 RunWait("git fetch", scriptsFolder, "Hide")
 RunWait("git pull", scriptsFolder, "Hide")
-StandardLoadingBar_Update("Waiting...")
+StandardLoadingBar_Update("⏳ Waiting...")
 Sleep 10000
 
 if (IS_WORK_ENVIRONMENT) {
@@ -31,11 +31,11 @@ if (IS_WORK_ENVIRONMENT) {
     notesFolder := "C:\Users\eduev\Meu Drive\17 - Projects\notes"
 }
 
-StandardLoadingBar_Update("Updating notes...")
+StandardLoadingBar_Update("⏳ Updating notes...")
 SetWorkingDir(notesFolder)
 RunWait("git fetch", notesFolder, "Hide")
 RunWait("git pull", notesFolder, "Hide")
-StandardLoadingBar_Update("Launching apps...")
+StandardLoadingBar_Update("🚀 Launching apps...")
 Sleep 10000
 
 Run GetScriptPath("Shift keys.ahk")
@@ -61,7 +61,7 @@ if (IS_WORK_ENVIRONMENT) {
 
 habitsFolder := notesFolder . "\habits"
 excelFile := habitsFolder . "\habit_sleep_food_tracker.xlsx"
-StandardLoadingBar_Update("Done")
+StandardLoadingBar_Update("✅ Done", BANNER_ACCENT_SUCCESS)
 StandardLoadingBar_Hide(500)
 Sleep 1000
 Run(excelFile)

@@ -1,0 +1,136 @@
+{"sessionId":"db9199","location":"Shift keys.ahk:+o","message":"Sort hotkey fired","data":{},"timestamp":182328156,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"entry","data":{"idx":1},"timestamp":182329500,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"root after GetDocRoot","data":{"hasRoot":true},"timestamp":182330046,"hypothesisId":"H1,H5"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"trigger found","data":{"hasTrigger":true},"timestamp":182330062,"hypothesisId":"H1"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"after trigger Click","data":{"clickOk":true},"timestamp":182330078,"hypothesisId":"H2"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"searchRoot reused","data":{"hasRoot":true},"timestamp":182330484,"hypothesisId":"H5","runId":"post-fix2"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"sort list found","data":{"hasSortList":false},"timestamp":182330765,"hypothesisId":"H3","runId":"post-fix"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"list item found","data":{"hasItem":false,"idx":1,"sub":"menu-list-option-relevance"},"timestamp":182330828,"hypothesisId":"H3"}
+{"sessionId":"db9199","location":"Shift keys.ahk:+o","message":"Sort hotkey fired","data":{},"timestamp":182332265,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:+o","message":"Sort hotkey fired","data":{},"timestamp":182336828,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:+o","message":"Sort hotkey fired","data":{},"timestamp":182341031,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:+o","message":"Sort hotkey fired","data":{},"timestamp":182348468,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"entry","data":{"idx":3},"timestamp":182349500,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"root after GetDocRoot","data":{"hasRoot":true},"timestamp":182350062,"hypothesisId":"H1,H5"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"trigger found","data":{"hasTrigger":true},"timestamp":182350078,"hypothesisId":"H1"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"after trigger Click","data":{"clickOk":true},"timestamp":182350109,"hypothesisId":"H2"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"searchRoot reused","data":{"hasRoot":true},"timestamp":182350531,"hypothesisId":"H5","runId":"post-fix2"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"sort list found","data":{"hasSortList":false},"timestamp":182350828,"hypothesisId":"H3","runId":"post-fix"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"list item found","data":{"hasItem":false,"idx":3,"sub":"menu-list-option-price_desc"},"timestamp":182350890,"hypothesisId":"H3"}
+{"sessionId":"db9199","location":"Shift keys.ahk:+o","message":"Sort hotkey fired","data":{},"timestamp":182354718,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"entry","data":{"idx":2},"timestamp":182355859,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"root after GetDocRoot","data":{"hasRoot":true},"timestamp":182356375,"hypothesisId":"H1,H5"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"trigger found","data":{"hasTrigger":true},"timestamp":182356390,"hypothesisId":"H1"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"after trigger Click","data":{"clickOk":true},"timestamp":182356406,"hypothesisId":"H2"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"searchRoot reused","data":{"hasRoot":true},"timestamp":182356812,"hypothesisId":"H5","runId":"post-fix2"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"sort list found","data":{"hasSortList":false},"timestamp":182357093,"hypothesisId":"H3","runId":"post-fix"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"list item found","data":{"hasItem":false,"idx":2,"sub":"menu-list-option-price_asc"},"timestamp":182357156,"hypothesisId":"H3"}
+{"sessionId":"db9199","location":"Shift keys.ahk:+o","message":"Sort hotkey fired","data":{},"timestamp":182452484,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"entry","data":{"idx":3},"timestamp":182454171,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"root after GetDocRoot","data":{"hasRoot":true},"timestamp":182454750,"hypothesisId":"H1,H5"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"trigger found","data":{"hasTrigger":true},"timestamp":182454765,"hypothesisId":"H1"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"after trigger Click","data":{"clickOk":true},"timestamp":182454796,"hypothesisId":"H2"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"searchRoot reused","data":{"hasRoot":true},"timestamp":182455203,"hypothesisId":"H5","runId":"post-fix2"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"sort list found","data":{"hasSortList":false},"timestamp":182455468,"hypothesisId":"H3","runId":"post-fix"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"list item found","data":{"hasItem":false,"idx":3,"sub":"menu-list-option-price_desc"},"timestamp":182455546,"hypothesisId":"H3"}
+{"sessionId":"db9199","location":"Shift keys.ahk:+o","message":"Sort hotkey fired","data":{},"timestamp":182457437,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:+o","message":"Sort hotkey fired","data":{},"timestamp":182462921,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"sort list found","data":{"hasSortList":false},"timestamp":182465203,"hypothesisId":"H3","runId":"post-fix"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"list item found","data":{"hasItem":false,"idx":2,"sub":"menu-list-option-price_asc"},"timestamp":182465250,"hypothesisId":"H3"}
+{"sessionId":"db9199","location":"Shift keys.ahk:+o","message":"Sort hotkey fired","data":{},"timestamp":182469125,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"entry","data":{"idx":1},"timestamp":182470015,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"root after GetDocRoot","data":{"hasRoot":true},"timestamp":182470546,"hypothesisId":"H1,H5"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"trigger found","data":{"hasTrigger":true},"timestamp":182470546,"hypothesisId":"H1"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"after trigger Click","data":{"clickOk":true},"timestamp":182470578,"hypothesisId":"H2"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"searchRoot reused","data":{"hasRoot":true},"timestamp":182470984,"hypothesisId":"H5","runId":"post-fix2"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"sort list found","data":{"hasSortList":false},"timestamp":182471281,"hypothesisId":"H3","runId":"post-fix"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"list item found","data":{"hasItem":false,"idx":1,"sub":"menu-list-option-relevance"},"timestamp":182471359,"hypothesisId":"H3"}
+{"sessionId":"db9199","location":"Shift keys.ahk:+o","message":"Sort hotkey fired","data":{},"timestamp":182474859,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"entry","data":{"idx":3},"timestamp":182475843,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"root after GetDocRoot","data":{"hasRoot":true},"timestamp":182476390,"hypothesisId":"H1,H5"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"trigger found","data":{"hasTrigger":true},"timestamp":182476390,"hypothesisId":"H1"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"after trigger Click","data":{"clickOk":true},"timestamp":182476406,"hypothesisId":"H2"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"searchRoot reused","data":{"hasRoot":true},"timestamp":182476812,"hypothesisId":"H5","runId":"post-fix2"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"sort list found","data":{"hasSortList":false},"timestamp":182477093,"hypothesisId":"H3","runId":"post-fix"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"list item found","data":{"hasItem":false,"idx":3,"sub":"menu-list-option-price_desc"},"timestamp":182477171,"hypothesisId":"H3"}
+{"sessionId":"db9199","location":"Shift keys.ahk:+o","message":"Sort hotkey fired","data":{},"timestamp":182896046,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"entry","data":{"idx":1},"timestamp":182897656,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"root after GetDocRoot","data":{"hasRoot":true},"timestamp":182898187,"hypothesisId":"H1,H5"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"trigger found","data":{"hasTrigger":true},"timestamp":182898187,"hypothesisId":"H1"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"after trigger Click","data":{"clickOk":true},"timestamp":182898218,"hypothesisId":"H2"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"searchRoot reused","data":{"hasRoot":true},"timestamp":182898625,"hypothesisId":"H5","runId":"post-fix2"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"sort list found","data":{"hasSortList":false},"timestamp":182898937,"hypothesisId":"H3","runId":"post-fix"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"list item found","data":{"hasItem":false,"idx":1,"sub":"menu-list-option-relevance"},"timestamp":182899015,"hypothesisId":"H3"}
+{"sessionId":"db9199","location":"Shift keys.ahk:+o","message":"Sort hotkey fired","data":{},"timestamp":182902250,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"entry","data":{"idx":2},"timestamp":182903203,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"root after GetDocRoot","data":{"hasRoot":true},"timestamp":182903750,"hypothesisId":"H1,H5"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"trigger found","data":{"hasTrigger":true},"timestamp":182903781,"hypothesisId":"H1"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"after trigger Click","data":{"clickOk":true},"timestamp":182903796,"hypothesisId":"H2"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"searchRoot reused","data":{"hasRoot":true},"timestamp":182904203,"hypothesisId":"H5","runId":"post-fix2"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"sort list found","data":{"hasSortList":false},"timestamp":182904500,"hypothesisId":"H3","runId":"post-fix"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"list item found","data":{"hasItem":false,"idx":2,"sub":"menu-list-option-price_asc"},"timestamp":182904578,"hypothesisId":"H3"}
+{"sessionId":"db9199","location":"Shift keys.ahk:+o","message":"Sort hotkey fired","data":{},"timestamp":182907593,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"entry","data":{"idx":3},"timestamp":182908515,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"root after GetDocRoot","data":{"hasRoot":true},"timestamp":182909046,"hypothesisId":"H1,H5"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"trigger found","data":{"hasTrigger":true},"timestamp":182909062,"hypothesisId":"H1"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"after trigger Click","data":{"clickOk":true},"timestamp":182909078,"hypothesisId":"H2"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"searchRoot reused","data":{"hasRoot":true},"timestamp":182909484,"hypothesisId":"H5","runId":"post-fix2"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"sort list found","data":{"hasSortList":false},"timestamp":182909796,"hypothesisId":"H3","runId":"post-fix"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"list item found","data":{"hasItem":false,"idx":3,"sub":"menu-list-option-price_desc"},"timestamp":182909859,"hypothesisId":"H3"}
+{"sessionId":"db9199","location":"Shift keys.ahk:+o","message":"Sort hotkey fired","data":{},"timestamp":182978156,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:+o","message":"Sort hotkey fired","data":{},"timestamp":182983796,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"entry","data":{"idx":3},"timestamp":182984734,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"root after GetDocRoot","data":{"hasRoot":true},"timestamp":182985265,"hypothesisId":"H1,H5"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"trigger found","data":{"hasTrigger":true},"timestamp":182985281,"hypothesisId":"H1"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"after trigger Click","data":{"clickOk":true},"timestamp":182985312,"hypothesisId":"H2"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"searchRoot reused","data":{"hasRoot":true},"timestamp":182986109,"hypothesisId":"H5","runId":"post-fix2"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"sort list found","data":{"hasSortList":false},"timestamp":182986640,"hypothesisId":"H3","runId":"post-fix"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"list item found","data":{"hasItem":false,"idx":3,"sub":"menu-list-option-price_desc"},"timestamp":182986718,"hypothesisId":"H3"}
+{"sessionId":"db9199","location":"Shift keys.ahk:+o","message":"Sort hotkey fired","data":{},"timestamp":182990625,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"entry","data":{"idx":2},"timestamp":182991578,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"root after GetDocRoot","data":{"hasRoot":true},"timestamp":182992140,"hypothesisId":"H1,H5"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"trigger found","data":{"hasTrigger":true},"timestamp":182992140,"hypothesisId":"H1"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"after trigger Click","data":{"clickOk":true},"timestamp":182992171,"hypothesisId":"H2"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"searchRoot reused","data":{"hasRoot":true},"timestamp":182992984,"hypothesisId":"H5","runId":"post-fix2"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"sort list found","data":{"hasSortList":false},"timestamp":182993515,"hypothesisId":"H3","runId":"post-fix"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"list item found","data":{"hasItem":false,"idx":2,"sub":"menu-list-option-price_asc"},"timestamp":182993593,"hypothesisId":"H3"}
+{"sessionId":"db9199","location":"Shift keys.ahk:+o","message":"Sort hotkey fired","data":{},"timestamp":183097843,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"searchRoot reused","data":{"hasRoot":true},"timestamp":183106390,"hypothesisId":"H5","runId":"post-fix2"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"sort list found","data":{"hasSortList":false},"timestamp":183106937,"hypothesisId":"H3","runId":"post-fix"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"list item found","data":{"hasItem":false,"idx":2,"sub":"menu-list-option-price_asc"},"timestamp":183107015,"hypothesisId":"H3"}
+{"sessionId":"db9199","location":"Shift keys.ahk:+o","message":"Sort hotkey fired","data":{},"timestamp":183111375,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"entry","data":{"idx":3},"timestamp":183112640,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"root after GetDocRoot","data":{"hasRoot":true},"timestamp":183113203,"hypothesisId":"H1,H5"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"trigger found","data":{"hasTrigger":true},"timestamp":183113203,"hypothesisId":"H1"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"after trigger Click","data":{"clickOk":true},"timestamp":183113250,"hypothesisId":"H2"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"searchRoot reused","data":{"hasRoot":true},"timestamp":183114062,"hypothesisId":"H5","runId":"post-fix2"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"sort list found","data":{"hasSortList":false},"timestamp":183114562,"hypothesisId":"H3","runId":"post-fix"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"list item found","data":{"hasItem":false,"idx":3,"sub":"menu-list-option-price_desc"},"timestamp":183114625,"hypothesisId":"H3"}
+{"sessionId":"db9199","location":"Shift keys.ahk:+o","message":"Sort hotkey fired","data":{},"timestamp":183119421,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"entry","data":{"idx":3},"timestamp":183121609,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"root after GetDocRoot","data":{"hasRoot":true},"timestamp":183122109,"hypothesisId":"H1,H5"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"trigger found","data":{"hasTrigger":true},"timestamp":183122125,"hypothesisId":"H1"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"after trigger Click","data":{"clickOk":true},"timestamp":183122140,"hypothesisId":"H2"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"searchRoot reused","data":{"hasRoot":true},"timestamp":183122937,"hypothesisId":"H5","runId":"post-fix2"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"sort list found","data":{"hasSortList":false},"timestamp":183123437,"hypothesisId":"H3","runId":"post-fix"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"list item found","data":{"hasItem":false,"idx":3,"sub":"menu-list-option-price_desc"},"timestamp":183123484,"hypothesisId":"H3"}
+{"sessionId":"db9199","location":"Shift keys.ahk:+o","message":"Sort hotkey fired","data":{},"timestamp":183189375,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"entry","data":{"idx":3},"timestamp":183190875,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"root after GetDocRoot","data":{"hasRoot":true},"timestamp":183191390,"hypothesisId":"H1,H5"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"after trigger Click","data":{"clickOk":true},"timestamp":183191421,"hypothesisId":"H2"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"searchRoot reused","data":{"hasRoot":true},"timestamp":183192218,"hypothesisId":"H5","runId":"post-fix2"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"sort list found","data":{"hasSortList":false},"timestamp":183192718,"hypothesisId":"H3","runId":"post-fix"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"list item found","data":{"hasItem":false,"idx":3,"sub":"menu-list-option-price_desc"},"timestamp":183192781,"hypothesisId":"H3"}
+{"sessionId":"db9199","location":"Shift keys.ahk:+o","message":"Sort hotkey fired","data":{},"timestamp":183199640,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:ML_SortApply","message":"list item found","data":{"hasItem":false,"idx":1,"sub":"menu-list-option-relevance"},"timestamp":183202468,"hypothesisId":"H3"}
+{"sessionId":"db9199","location":"Shift keys.ahk:+o","message":"Sort hotkey fired","data":{},"timestamp":183494375,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:+o","message":"Sort hotkey fired","data":{},"timestamp":183504656,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:+o","message":"Sort hotkey fired","data":{},"timestamp":183600828,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:+o","message":"Sort hotkey fired","data":{},"timestamp":183614953,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:+o","message":"Sort hotkey fired","data":{},"timestamp":191905031,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:+o","message":"Sort hotkey fired","data":{},"timestamp":191915906,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:+o","message":"Sort hotkey fired","data":{},"timestamp":191929625,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:+o","message":"Sort hotkey fired","data":{},"timestamp":191939812,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:+o","message":"Sort hotkey fired","data":{},"timestamp":191971515,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:+o","message":"Sort hotkey fired","data":{},"timestamp":192208031,"hypothesisId":"H4"}
+{"sessionId":"db9199","location":"Shift keys.ahk:+o","message":"Sort hotkey fired","data":{},"timestamp":192221031,"hypothesisId":"H4"}

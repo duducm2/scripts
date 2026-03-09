@@ -9,46 +9,243 @@
 #include UIA-v2\Lib\UIA.ahk
 #include %A_ScriptDir%\Utils.ahk
 
-; --- Hotkeys & Functions -----------------------------------------------------
+; --- Configuration -----------------------------------------------------------
+; Process-bound targeting: ahk_class rctrl_renwnd32 ahk_exe OUTLOOK.EXE
+global OUTLOOK_EXE := "OUTLOOK.EXE"
+global OUTLOOK_CLASS := "rctrl_renwnd32"
+global OUTLOOK_BASE_CRIT := "ahk_class " OUTLOOK_CLASS " ahk_exe " OUTLOOK_EXE
+
+; Mailbox: window title must contain this (and not contain exclusion)
+global OUTLOOK_MAILBOX_TITLE_CONTAINS := "Eduardo.Figueiredo@br.bosch.com"
+global OUTLOOK_MAILBOX_TITLE_EXCLUDE := "Calendar"
+
+; Calendar: exact or partial title match (locale-specific; add fallbacks to array if needed)
+global OUTLOOK_CALENDAR_TITLES := ["Calendar - Eduardo"]
+
+; Reminders: partial title match
+global OUTLOOK_REMINDER_TITLE := "Reminder"
+
+; Timeouts (ms)
+global OUTLOOK_ACTIVATE_WAIT_MS := 2000
+global OUTLOOK_VOICE_WAIT_MS := 1500
+global OUTLOOK_BANNER_MS := 2000
+global OUTLOOK_BANNER_FAIL_MS := 3000
+
+; Voice Aloud option range
+global VOICE_ALOUD_OPTION_MIN := 1
+global VOICE_ALOUD_OPTION_MAX := 2
+
+; Feature flags. Rollout order: 1) HWND cache + state waits, 2) COM core, 3) WM_COMMAND/UIA Read Aloud.
+; Parity: #!+b #!+g #!+v #!+d behave as before. Safety: no blind key injection; no leaked SetTitleMatchMode.
+global OUTLOOK_USE_HWND_CACHE := true
+global OUTLOOK_USE_STATE_WAITS := true
+global OUTLOOK_USE_COM_CORE := false
+global OUTLOOK_USE_WMCOMMAND_READALOUD := false
+global OUTLOOK_USE_UIA_READALOUD := true
+
+; --- Read Aloud UI-bound abstraction (Phase II) ------------------------------
+; Invokes "Read Aloud" via UIA or WM_COMMAND when flags set; else synthetic Alt+1.
+; Returns true if invocation was performed (UIA/keystroke), false on failure.
+InvokeReadAloudStart(hwnd) {
+    if (hwnd <= 0)
+        return false
+    if OUTLOOK_USE_UIA_READALOUD {
+        try {
+            root := UIA.ElementFromHandle(hwnd)
+            for _, name in ["Read Aloud", "Ler em voz alta", "Read aloud"] {
+                btn := root.FindFirst({ Type: 50000, Name: name })
+                if btn {
+                    btn.Invoke()
+                    return true
+                }
+            }
+        } catch {
+        }
+    }
+    if OUTLOOK_USE_WMCOMMAND_READALOUD {
+        ; WM_COMMAND 0x0111; wParam high word = 0, low word = control ID (if known)
+        try {
+            if DllCall("PostMessage", "Ptr", hwnd, "UInt", 0x0111, "UPtr", 0, "Ptr", 0)
+                return true
+        } catch {
+        }
+    }
+    ; Fallback: synthetic keystroke (Outlook must be foreground).
+    Send "{Alt down}1{Alt up}"
+    return true
+}
+
+; --- Singleton HWND cache ----------------------------------------------------
+class OutlookHwndCache {
+    static MailboxHwnd := 0
+    static CalendarHwnd := 0
+    static ReminderHwnd := 0
+
+    static _Valid(hwnd) {
+        if (!(hwnd is Integer) || hwnd <= 0)
+            return false
+        if !WinExist("ahk_id " hwnd)
+            return false
+        try {
+            return WinGetProcessName("ahk_id " hwnd) = OUTLOOK_EXE
+        } catch {
+            return false
+        }
+    }
+
+    static GetMailboxHwnd() {
+        if OUTLOOK_USE_HWND_CACHE && OutlookHwndCache._Valid(OutlookHwndCache.MailboxHwnd)
+            return OutlookHwndCache.MailboxHwnd
+        hwnd := OutlookHwndCache._ResolveMailbox()
+        if (hwnd > 0)
+            OutlookHwndCache.MailboxHwnd := hwnd
+        else
+            OutlookHwndCache.MailboxHwnd := 0
+        return hwnd
+    }
+
+    static GetCalendarHwnd() {
+        if OUTLOOK_USE_HWND_CACHE && OutlookHwndCache._Valid(OutlookHwndCache.CalendarHwnd)
+            return OutlookHwndCache.CalendarHwnd
+        hwnd := OutlookHwndCache._ResolveCalendar()
+        if (hwnd > 0)
+            OutlookHwndCache.CalendarHwnd := hwnd
+        else
+            OutlookHwndCache.CalendarHwnd := 0
+        return hwnd
+    }
+
+    static GetReminderHwnd() {
+        if OUTLOOK_USE_HWND_CACHE && OutlookHwndCache._Valid(OutlookHwndCache.ReminderHwnd)
+            return OutlookHwndCache.ReminderHwnd
+        hwnd := OutlookHwndCache._ResolveReminder()
+        if (hwnd > 0)
+            OutlookHwndCache.ReminderHwnd := hwnd
+        else
+            OutlookHwndCache.ReminderHwnd := 0
+        return hwnd
+    }
+
+    static _ResolveMailbox() {
+        base := OUTLOOK_BASE_CRIT
+        for hwnd in WinGetList(base) {
+            title := WinGetTitle(hwnd)
+            if InStr(title, OUTLOOK_MAILBOX_TITLE_CONTAINS) && !InStr(title, OUTLOOK_MAILBOX_TITLE_EXCLUDE)
+                return (hwnd is Integer) && (hwnd > 0) ? hwnd : 0
+        }
+        return 0
+    }
+
+    static _ResolveCalendar() {
+        base := OUTLOOK_BASE_CRIT
+        for hwnd in WinGetList(base) {
+            title := WinGetTitle(hwnd)
+            for _, needle in OUTLOOK_CALENDAR_TITLES {
+                if InStr(title, needle)
+                    return (hwnd is Integer) && (hwnd > 0) ? hwnd : 0
+            }
+        }
+        return 0
+    }
+
+    static _ResolveReminder() {
+        base := OUTLOOK_BASE_CRIT
+        for hwnd in WinGetList(base) {
+            if InStr(WinGetTitle(hwnd), OUTLOOK_REMINDER_TITLE)
+                return (hwnd is Integer) && (hwnd > 0) ? hwnd : 0
+        }
+        return 0
+    }
+
+    static InvalidateMailbox() {
+        OutlookHwndCache.MailboxHwnd := 0
+    }
+    static InvalidateCalendar() {
+        OutlookHwndCache.CalendarHwnd := 0
+    }
+    static InvalidateReminder() {
+        OutlookHwndCache.ReminderHwnd := 0
+    }
+}
 
 ; =============================================================================
-; Outlook window activation helpers (Mailbox/Calendar)
+; Outlook window resolution (strict HWND contract: success = positive HWND, failure = 0)
+; =============================================================================
+ResolveOutlookMailboxHwnd() {
+    if OUTLOOK_USE_HWND_CACHE
+        return OutlookHwndCache.GetMailboxHwnd()
+    return OutlookHwndCache._ResolveMailbox()
+}
+
+ResolveOutlookCalendarHwnd() {
+    if OUTLOOK_USE_HWND_CACHE
+        return OutlookHwndCache.GetCalendarHwnd()
+    return OutlookHwndCache._ResolveCalendar()
+}
+
+ResolveOutlookReminderHwnd() {
+    if OUTLOOK_USE_HWND_CACHE
+        return OutlookHwndCache.GetReminderHwnd()
+    return OutlookHwndCache._ResolveReminder()
+}
+
+; =============================================================================
+; Outlook window activation helpers (return true if activated, false otherwise)
 ; =============================================================================
 ActivateOutlookMailbox() {
-    email := "Eduardo.Figueiredo@br.bosch.com"
-    exclusion := "Calendar"
-    for hwnd in WinGetList("ahk_exe OUTLOOK.EXE") {
-        title := WinGetTitle(hwnd)
-        if InStr(title, email) && !InStr(title, exclusion) {
-            try {
-                WinActivate(hwnd)
-                return true
-            } catch {
-                ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
-                return false
-            }
+    hwnd := ResolveOutlookMailboxHwnd()
+    if (hwnd > 0) {
+        try {
+            WinActivate("ahk_id " hwnd)
+            return true
+        } catch {
+            OutlookHwndCache.InvalidateMailbox()
+            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", OUTLOOK_BANNER_MS, BANNER_ACCENT_ERROR)
+            return false
         }
     }
     return false
 }
 
 ActivateOutlookCalendar() {
-    oldMatch := A_TitleMatchMode
-    SetTitleMatchMode 1
-    try {
-        if WinExist("Calendar - Eduardo") {
-            try {
-                WinActivate "Calendar - Eduardo"
-                return true
-            } catch {
-                ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
-                return false
-            }
+    hwnd := ResolveOutlookCalendarHwnd()
+    if (hwnd > 0) {
+        try {
+            WinActivate("ahk_id " hwnd)
+            return true
+        } catch {
+            OutlookHwndCache.InvalidateCalendar()
+            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", OUTLOOK_BANNER_MS, BANNER_ACCENT_ERROR)
+            return false
         }
-        return false
-    } finally {
-        SetTitleMatchMode oldMatch
     }
+    return false
+}
+
+; Ensures Outlook mailbox is active; returns true if Outlook is foreground within timeout, false otherwise.
+EnsureOutlookMailActive() {
+    hwnd := ResolveOutlookMailboxHwnd()
+    if (hwnd <= 0)
+        return false
+    try {
+        WinActivate("ahk_id " hwnd)
+    } catch {
+        OutlookHwndCache.InvalidateMailbox()
+        return false
+    }
+    if !OUTLOOK_USE_STATE_WAITS
+        return true
+    timeoutSec := OUTLOOK_VOICE_WAIT_MS / 1000.0
+    return WinWaitActive("ahk_id " hwnd, "", timeoutSec)
+}
+
+; Shared fallback executor for Mail/Calendar hotkeys (preserves message and priority order).
+ActivateOutlookWithFallback(primaryFn, secondaryFn, failureMsg) {
+    if primaryFn()
+        return
+    if secondaryFn()
+        return
+    ShowCenteredOverlay_Utils(failureMsg, OUTLOOK_BANNER_FAIL_MS, BANNER_ACCENT_ERROR)
 }
 
 ; =============================================================================
@@ -58,14 +255,8 @@ ActivateOutlookCalendar() {
 ; =============================================================================
 #!+b::
 {
-    ; If Mailbox is inactive, attempt to open Calendar.
-    if ActivateOutlookMailbox()
-        return
-    if ActivateOutlookCalendar()
-        return
-
-    ; If both are closed, show banner stating activation failed.
-    ShowCenteredOverlay_Utils("Outlook: Mailbox and Calendar are not open (activation failed)", 3000)
+    ActivateOutlookWithFallback(ActivateOutlookMailbox, ActivateOutlookCalendar,
+        "⚠ Outlook: Mailbox and Calendar are not open (activation failed)")
 }
 
 ; =============================================================================
@@ -75,14 +266,8 @@ ActivateOutlookCalendar() {
 ; =============================================================================
 #!+g::
 {
-    ; If Calendar is closed, attempt to open Mailbox.
-    if ActivateOutlookCalendar()
-        return
-    if ActivateOutlookMailbox()
-        return
-
-    ; If both are closed, show banner stating activation failed.
-    ShowCenteredOverlay_Utils("Outlook: Calendar and Mailbox are not open (activation failed)", 3000)
+    ActivateOutlookWithFallback(ActivateOutlookCalendar, ActivateOutlookMailbox,
+        "⚠ Outlook: Calendar and Mailbox are not open (activation failed)")
 }
 
 ; =============================================================================
@@ -96,13 +281,17 @@ ActivateOutlookCalendar() {
     if (!CheckAndOpenOutlookTeams(true, false)) {
         return  ; User cancelled opening Outlook
     }
-    
-    SetTitleMatchMode 2
-    if (!WinExist("Reminder")) {
-        ShowCenteredOverlay_Utils("Error: Target window not found.", 2000)
-        return
-    }
-    WinActivate "Reminder"
+
+    hwnd := ResolveOutlookReminderHwnd()
+    if (hwnd > 0) {
+        try
+            WinActivate("ahk_id " hwnd)
+        catch {
+            OutlookHwndCache.InvalidateReminder()
+            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", OUTLOOK_BANNER_MS, BANNER_ACCENT_ERROR)
+        }
+    } else
+        ShowCenteredOverlay_Utils("❌ Error: Target window not found.", OUTLOOK_BANNER_MS, BANNER_ACCENT_ERROR)
 }
 
 ; =============================================================================
@@ -112,8 +301,6 @@ ActivateOutlookCalendar() {
 #!+d::
 {
     try {
-        ; Remember current target window before showing GUI
-        gVoiceAloudTargetWin := WinExist("A")
         ; Create GUI for voice aloud selection with auto-submit
         voiceAloudGui := Gui("+AlwaysOnTop +ToolWindow", "Voice Aloud Email")
         voiceAloudGui.SetFont("s10", "Segoe UI")
@@ -142,8 +329,18 @@ ActivateOutlookCalendar() {
     }
 }
 
-; Global variable for voice aloud target window
-global gVoiceAloudTargetWin := 0
+; Single validation-and-execute helper for Voice Aloud (used by AutoSubmit and Submit).
+TryExecuteVoiceChoice(value, gui, showInvalidMsg := false) {
+    if (value = "" || !IsInteger(value))
+        return
+    choice := Integer(value)
+    if (choice >= VOICE_ALOUD_OPTION_MIN && choice <= VOICE_ALOUD_OPTION_MAX) {
+        gui.Destroy()
+        ExecuteVoiceAloudOption(GetVoiceAloudOptionByNumber(value))
+    } else if showInvalidMsg
+        MsgBox "Invalid selection. Please choose " VOICE_ALOUD_OPTION_MIN "-" VOICE_ALOUD_OPTION_MAX ".",
+            "Voice Aloud Selection", "IconX"
+}
 
 ; Function to get voice aloud option by number
 GetVoiceAloudOptionByNumber(numberText) {
@@ -154,64 +351,69 @@ GetVoiceAloudOptionByNumber(numberText) {
     optionMap := Map()
     optionMap[1] := "from_cursor"
     optionMap[2] := "from_beginning"
-    return (optionMap.Has(number)) ? optionMap[number] : ""
+    if (number >= VOICE_ALOUD_OPTION_MIN && number <= VOICE_ALOUD_OPTION_MAX)
+        return optionMap[number]
+    return ""
 }
 
-; Function to execute voice aloud option
+; Function to execute voice aloud option (state-driven: no blind key injection)
 ExecuteVoiceAloudOption(option) {
     if (option = "")
         return
 
-    ; First: Pause/stop music (do not risk resuming if already paused)
     Send "{Media_Stop}"
-    Sleep 200
+    if OUTLOOK_USE_STATE_WAITS
+        Sleep(80)
+    else
+        Sleep(200)
 
-    if (option = "from_cursor") {
-        ; Option 1: Voice aloud from cursor position
-        Send "#!+b"  ; Go to Outlook email
-        Sleep 300
-        Send "{Alt down}1{Alt up}"  ; Alt+1 to start voice aloud
-        Sleep 200
-        Send "{Escape}"  ; Stop voice aloud
+    ; Activate mailbox and wait for foreground with timeout; no synthetic hotkey.
+    if (!EnsureOutlookMailActive()) {
+        ShowCenteredOverlay_Utils("⚠ Outlook not active; aborting.", OUTLOOK_BANNER_MS, BANNER_ACCENT_ERROR)
+        return
     }
-    else if (option = "from_beginning") {
-        ; Option 2: Voice aloud from beginning
-        Send "#!+b"  ; Go to Outlook email
-        Sleep 100
+
+    if OUTLOOK_USE_STATE_WAITS
+        Sleep(80)
+    else
+        Sleep(200)
+
+    hwnd := WinGetID("A")
+    if (option = "from_cursor") {
+        InvokeReadAloudStart(hwnd)
+        if OUTLOOK_USE_STATE_WAITS
+            Sleep(80)
+        else
+            Sleep(200)
+        Send "{Escape}"
+    } else if (option = "from_beginning") {
         Send "{Right}"
-        Sleep 300
-        Send "^{Home}"  ; Go to beginning of email
-        Sleep 200
-        Send "{Alt down}1{Alt up}"  ; Alt+1 to start voice aloud
-        Sleep 200
-        Send "{Escape}"  ; Stop voice aloud
+        if OUTLOOK_USE_STATE_WAITS
+            Sleep(80)
+        else
+            Sleep(300)
+        Send "^{Home}"
+        if OUTLOOK_USE_STATE_WAITS
+            Sleep(80)
+        else
+            Sleep(200)
+        InvokeReadAloudStart(hwnd)
+        if OUTLOOK_USE_STATE_WAITS
+            Sleep(80)
+        else
+            Sleep(200)
+        Send "{Escape}"
     }
 }
 
 ; Auto-submit function for voice aloud
 AutoSubmitVoiceAloud(ctrl, *) {
-    currentValue := ctrl.Text
-    if (currentValue != "" && IsInteger(currentValue)) {
-        choice := Integer(currentValue)
-        if (choice >= 1 && choice <= 2) {
-            ctrl.Gui.Destroy()
-            ExecuteVoiceAloudOption(GetVoiceAloudOptionByNumber(currentValue))
-        }
-    }
+    TryExecuteVoiceChoice(ctrl.Text, ctrl.Gui, false)
 }
 
 ; Manual submit function for voice aloud (backup)
 SubmitVoiceAloud(ctrl, *) {
-    currentValue := ctrl.Gui["VoiceAloudInput"].Text
-    if (currentValue != "" && IsInteger(currentValue)) {
-        choice := Integer(currentValue)
-        if (choice >= 1 && choice <= 2) {
-            ctrl.Gui.Destroy()
-            ExecuteVoiceAloudOption(GetVoiceAloudOptionByNumber(currentValue))
-        } else {
-            MsgBox "Invalid selection. Please choose 1-2.", "Voice Aloud Selection", "IconX"
-        }
-    }
+    TryExecuteVoiceChoice(ctrl.Gui["VoiceAloudInput"].Text, ctrl.Gui, true)
 }
 
 ; Cancel function for voice aloud

@@ -1,5 +1,9 @@
 ## Scripts Toolkit (AutoHotkey v2)
 
+This repository is an AutoHotkey v2 scripts toolkit: multiple independent entry scripts (no single main script), shared utilities in `Utils.ahk`, UI Automation via the UIA-v2 library, and optional Python daemons for IPC. Scripts are typically launched by `Act.ahk` (bootstrap) or run separately. A local `env.ahk` (not in repo) is required for environment flags and script paths.
+
+**Quick reference for AI agents:** To add a hotkey: (1) Choose the script by domain (see Hotkey allocation below). (2) Add `#Include` for env, Utils, and UIA libs if the script does not already have them. (3) Follow the hotkey philosophy and pattern guide below. (4) Use overlays/loading bar, not `MsgBox`. (5) Document in Folder Inventory and Updating This Guide.
+
 ### Philosophy
 
 - Keep hotkeys predictable and memorable
@@ -11,12 +15,136 @@
 
 ### Folder Inventory
 
-- `Shift keys.ahk` — Global app shortcuts, UIA patterns, Spotify controls, Outlook helpers
-- `Spotify.ahk` — App launcher and media helpers (volume control with state-aware focus/return)
+- `Act.ahk` — Bootstrap: git pull (scripts + notes), then launches main scripts and environment-specific apps
+- `Shift keys.ahk` — Global app shortcuts, UIA patterns, Spotify/ChatGPT/Gemini/Outlook/Teams/WhatsApp helpers; defines `WaitForButton()`
+- `Utils.ahk` — Shared utilities: hotstrings, overlay/banner APIs, cursor centering, Peek PDF, Gemini prompt field helper, many MEH hotkeys
+- `WindowManagement.ahk` — Window move/maximize/minimize, multi‑monitor cycling, cursor centering halo; includes WM IPC
+- `AppLaunchers.ahk` — App launch, Wikipedia, Pomodoro, Cursor; includes AppLauncher IPC
+- `Gemini.ahk` — Gemini-specific flows (prompt, copy, read aloud, model toggle)
 - `Microsoft Teams.ahk` — Meeting/chat helpers, robust window activation, mic/camera state verification
-- `WindowManagement.ahk` — Window move/maximize, multi‑monitor cycling, cursor centering halo
-- `Utils.ahk` — Misc utilities (cursor centering, composite actions, prompts)
-- `UIA-v2/` — UI Automation v2 library (`UIA.ahk`, `UIA_Browser.ahk`)
+- `Outlook.ahk` — Outlook helpers
+- `Spotify.ahk`, `SpotifyWASAPI.ahk` — Media and volume (state-aware focus/return)
+- `GeminiToCursorBridge.ahk` — Copy-from-Gemini to Cursor (included by WindowManagement)
+- `UIA-v2/` — UI Automation v2 library (`UIA.ahk`, `UIA_Browser.ahk`); see [UIA-v2/README.md](UIA-v2/README.md)
+- `aux/` — IPC clients (WMIPC, AppLauncherIPC, ShiftKeysIPC) and harnesses
+
+### Repository structure
+
+**Directory tree (simplified):**
+
+```
+scripts/
+├── Act.ahk, Shift keys.ahk, Utils.ahk, WindowManagement.ahk, AppLaunchers.ahk
+├── Gemini.ahk, Microsoft Teams.ahk, Outlook.ahk, Spotify.ahk, SpotifyWASAPI.ahk
+├── GeminiToCursorBridge.ahk, Set-MicVolume.ps1
+├── aux/          — WMIPC.ahk, AppLauncherIPC.ahk, ShiftKeysIPC.ahk; *_Harness.ahk; Verify-ScriptUpdate.ps1
+├── UIA-v2/       — Lib/UIA.ahk, Lib/UIA_Browser.ahk; UIATreeInspector.ahk
+├── python/       — Daemons (wm_daemon, applauncher_daemon, shiftkeys_daemon, gemini_daemon) and protocols
+├── data/         — settings.ini, wikipedia_scroll_positions.ini, peek_pdf.ini, Gemini_Prompt.txt, *.csv
+├── docs/         — Standards (efficiency-canon, asynchronous_workflow_standards, standard_information_display, cheat-sheet-standard)
+├── sounds/       — quick-update-success.wav, quick-update-failure.wav
+└── prompt/       — Text files for prompts/hotstrings
+```
+
+**Entry points and bootstrap:** `Act.ahk` is the bootstrap: it runs `git fetch`/`git pull` on the scripts folder and (optionally) a notes folder, then launches the main scripts via `GetScriptPath(scriptName)` (from env.ahk) and starts environment-specific apps. Each script runs as a **separate** AutoHotkey process. Scripts can also be run directly (e.g. from Explorer or shortcuts) without Act.
+
+**Script inventory:**
+
+| Script               | Purpose                                                              | Main includes                               | Notes                                 |
+| -------------------- | -------------------------------------------------------------------- | ------------------------------------------- | ------------------------------------- |
+| Act.ahk              | Bootstrap, git pull, launch scripts                                  | env, Utils                                  | Requires `GetScriptPath()` in env.ahk |
+| Shift keys.ahk       | Global shortcuts, UIA, Spotify/ChatGPT/Gemini/Outlook/Teams/WhatsApp | env, UIA-v2, Utils, aux/ShiftKeysIPC        | `WaitForButton()` defined here        |
+| Utils.ahk            | Shared utilities, overlays, hotstrings, MEH hotkeys                  | env, UIA-v2                                 | Used by almost all scripts            |
+| WindowManagement.ahk | Move/maximize/minimize, multi-monitor, cursor halo                   | env, GeminiToCursorBridge, Utils, aux/WMIPC |                                       |
+| AppLaunchers.ahk     | App launch, Wikipedia, Pomodoro, Cursor                              | env, UIA-v2, Utils, aux/AppLauncherIPC      |                                       |
+| Gemini.ahk           | Gemini flows (prompt, copy, read aloud, model toggle)                | UIA-v2, env, Utils                          |                                       |
+| Microsoft Teams.ahk  | Meeting/chat, mic/camera state                                       | env, UIA-v2, Utils                          |                                       |
+| Outlook.ahk          | Outlook helpers                                                      | env, UIA-v2, Utils                          |                                       |
+| Spotify.ahk          | Media, volume                                                        | env, Utils; optional SpotifyWASAPI          |                                       |
+
+### Dependencies and environment
+
+- **env.ahk (required, not in repo):** Must define `IS_WORK_ENVIRONMENT` (boolean). Scripts use it for paths and app sets (personal vs work). If you use `Act.ahk`, env.ahk must also define `GetScriptPath(scriptName)` returning a path or command to run that script (e.g. `GetScriptPath("Shift keys.ahk")`). env.ahk is listed in `.gitignore`.
+- **Utils.ahk:** Shared core for overlays (`StandardLoadingBar_*`, `ShowCenteredOverlay_Utils`), hotstrings, `FindGeminiPromptField`, path/config helpers, and many MEH hotkeys. See [docs/standard_information_display.md](docs/standard_information_display.md) for the banner/loading API and [docs/efficiency-canon.md](docs/efficiency-canon.md) for strategic guidelines.
+- **UIA-v2:** [UIA-v2/README.md](UIA-v2/README.md). Use `UIA.ahk` and `UIA_Browser.ahk` for browser/window automation; no pixel/image matching for dynamic UIs.
+- **WaitForButton:** The canonical implementation lives in **Shift keys.ahk** (not Utils). Scripts that need similar behavior can copy the pattern or implement a local variant (e.g. Gemini.ahk has `WaitForButtonAndShowSmallLoading`). The README patterns below reference `WaitForButton(root, pattern, timeout)`; use that signature when reimplementing.
+
+### IPC and Python daemons
+
+IPC is **optional** and controlled by feature flags in the aux modules. AHK clients live in `aux/`; when a daemon is unavailable or disabled, scripts fall back to legacy (in-process) behavior.
+
+| Daemon             | Transport            | Purpose                                              | Protocol / entry                                  |
+| ------------------ | -------------------- | ---------------------------------------------------- | ------------------------------------------------- |
+| wm_daemon          | Named pipe           | Window state, Cursor/Gemini window resolution        | python/wm_protocol.py, wm_daemon.py               |
+| applauncher_daemon | MMF + mutex + events | App launcher / window enumeration                    | python/al_protocol.py, applauncher_daemon.py      |
+| shiftkeys_daemon   | Named pipe           | Context (e.g. ChatGPT) for #HotIf, Gemini monitoring | python/shiftkeys_protocol.py, shiftkeys_daemon.py |
+| gemini_daemon      | (optional)           | Gemini-related offload                               | python/gemini_daemon.py                           |
+
+For **new hotkeys that only need AHK + UIA**, IPC is not required.
+
+### Hotkey allocation and where to add hotkeys
+
+- **Primary set:** Shift+[Y U I O P H J K L N M , . W E R T D F G C V B]. When full, use **Win+Alt+Shift (MEH)** in the same order.
+- **Domain → script:** Window management → WindowManagement.ahk. Gemini → Gemini.ahk. Spotify / ChatGPT / Outlook / Teams / WhatsApp → Shift keys.ahk. App launch, Wikipedia, Pomodoro, Cursor → AppLaunchers.ahk. Shared/global utilities, cursor halo, MEH misc → Utils.ahk. Cheat sheet format: [docs/cheat-sheet-standard.md](docs/cheat-sheet-standard.md).
+
+**Checklist for adding a hotkey:**
+
+1. Choose the script by domain (see table above).
+2. Add `#Include` for env, Utils, and UIA libs if the script does not already have them.
+3. Follow UIA patterns (anchor, try/catch, tab strategy or WaitForButton-style).
+4. Use overlays/loading bar, not `MsgBox`.
+5. Use bounded timeouts and safe fallbacks.
+6. Update this README (Folder Inventory and Updating This Guide) if you add a new automation.
+
+### Configuration and data
+
+- **data/:** `settings.ini` (Utils), `wikipedia_scroll_positions.ini` (AppLaunchers, Shift keys), `peek_pdf.ini` (Utils), `Gemini_Prompt.txt` (Gemini), `pomodoro_log.csv` (AppLaunchers), `wikipedia_completed.csv`.
+- **sounds/:** `quick-update-success.wav`, `quick-update-failure.wav` — used for update feedback (e.g. Act or update scripts).
+
+### Related documentation
+
+- **docs/efficiency-canon.md** — Strategic guidelines and bottleneck taxonomy; AI agents should read before refactors; preserve behavior parity and use bounded timeouts.
+- **docs/asynchronous_workflow_standards.md** — Submit → monitor → retrieve pattern; context retention and focus restoration.
+- **docs/standard_information_display.md** — Banner and information display API (StandardLoadingBar, ShowCenteredOverlay_Utils), display categories, semantic colors.
+- **docs/cheat-sheet-standard.md** — Mnemonic key format for shortcut documentation.
+- **docs/windowmanagement-daemon-verify.md** — WindowManagement daemon verification.
+
+```mermaid
+flowchart LR
+  subgraph bootstrap [Bootstrap]
+    Act[Act.ahk]
+  end
+  subgraph scripts [Entry scripts]
+    Shift[Shift keys.ahk]
+    Utils[Utils.ahk]
+    WM[WindowManagement.ahk]
+    AL[AppLaunchers.ahk]
+    Gem[Gemini.ahk]
+  end
+  subgraph shared [Shared]
+    env[env.ahk]
+    UIA[UIA-v2]
+    aux[aux IPC]
+  end
+  Act --> Shift
+  Act --> Utils
+  Act --> WM
+  Act --> AL
+  Act --> Gem
+  Shift --> env
+  Shift --> UIA
+  Shift --> Utils
+  Shift --> aux
+  WM --> env
+  WM --> Utils
+  WM --> aux
+  AL --> env
+  AL --> UIA
+  AL --> Utils
+  AL --> aux
+  Gem --> UIA
+  Gem --> Utils
+```
 
 ---
 
@@ -234,22 +362,22 @@ ClickAnyOption() {
     try {
         uia := UIA_Browser()
         Sleep 100
-        
+
         ; Combined pattern finds ANY valid option in one search
         optionPattern := "i)^(Fast|Thinking|Custom)$"
         FindBtn(p) => WaitForButton(uia, p, 1500)
-        
+
         if (btn := FindBtn(optionPattern)) {
             btnName := ""
             try btnName := btn.Name
-            
+
             supportsInvoke := false
             try {
                 supportsInvoke := btn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)
             } catch {
                 supportsInvoke := false
             }
-            
+
             clicked := false
             if (supportsInvoke) {
                 try {
@@ -265,7 +393,7 @@ ClickAnyOption() {
                 } catch {
                 }
             }
-            
+
             if (clicked) {
                 ; Update state based on what was actually clicked
                 currentOption := btnName
@@ -348,3 +476,4 @@ When you add a new automation:
 - Document the anchor(s) and why they are reliable
 - Document the resolution strategy if multiple identical elements exist
 - Note the fallback behavior and limits (e.g., 6 tabs → media key)
+- Update **Folder Inventory** (and, if applicable, **Script inventory** and **Hotkey allocation**) when adding a new script or new hotkeys
