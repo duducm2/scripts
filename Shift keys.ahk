@@ -4177,7 +4177,12 @@ ML_SortApply(idx) {
                     Sleep 150
                 }
             }
-            Sleep 200
+            ; Ensure Chrome has focus, then send Enter to confirm the highlighted option
+            Sleep 350
+            try WinActivate("ahk_exe chrome.exe")
+            catch {
+            }
+            Sleep 150
             Send "{Enter}"
             StandardLoadingBar_Update("✅ Ordenação aplicada")
             Sleep 500
