@@ -149,10 +149,19 @@ class OutlookHwndCache {
     }
 
     static _ResolveReminder() {
-        base := OUTLOOK_BASE_CRIT
-        for hwnd in WinGetList(base) {
-            if InStr(WinGetTitle(hwnd), OUTLOOK_REMINDER_TITLE)
-                return (hwnd is Integer) && (hwnd > 0) ? hwnd : 0
+        ; Reminders use a different window class (#32770) than the main Outlook frame (rctrl_renwnd32),
+        ; so we cannot reuse OUTLOOK_BASE_CRIT here.
+        for hwnd in WinGetList("ahk_exe " OUTLOOK_EXE) {
+            try {
+                if (WinGetClass("ahk_id " hwnd) != "#32770")
+                    continue
+                title := WinGetTitle("ahk_id " hwnd)
+                ; Matches e.g. "14 Reminder(s)" and other localized variants containing "Reminder".
+                if InStr(title, OUTLOOK_REMINDER_TITLE)
+                    return (hwnd is Integer) && (hwnd > 0) ? hwnd : 0
+            } catch {
+                ; Ignore windows that disappear during enumeration
+            }
         }
         return 0
     }
