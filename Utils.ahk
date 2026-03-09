@@ -2059,10 +2059,6 @@ StandardLoadingBar_RegisterKeyHandler(key, cb) {
 }
 
 StandardLoadingBar_KeyWrapper(key, cb, *) {
-    ; #region agent log
-    logLine := '{"sessionId":"c292e6","id":"log_' A_TickCount '_' key '","timestamp":' A_TickCount ',"location":"Utils.ahk:2061","message":"StandardLoadingBar_KeyWrapper","data":{"key":"' key '"},"runId":"pre-fix-1","hypothesisId":"H1_H2"}'
-    FileAppend(logLine '`n', A_ScriptDir '\debug-c292e6.log', "UTF-8")
-    ; #endregion
     StandardLoadingBar_CloseKeysOverlay()
     if (cb) {
         try cb.Call()
@@ -2125,26 +2121,14 @@ DictationGeminiConfirm_CleanupAndMaybeSubmit(submitToGemini) {
 }
 
 DictationGeminiConfirm_OnY(*) {
-    ; #region agent log
-    logLine := '{"sessionId":"c292e6","id":"log_' A_TickCount '_Y","timestamp":' A_TickCount ',"location":"Utils.ahk:2123","message":"DictationGeminiConfirm_OnY","data":{"submitToGemini":true},"runId":"pre-fix-1","hypothesisId":"H3"}'
-    FileAppend(logLine '`n', A_ScriptDir '\debug-c292e6.log', "UTF-8")
-    ; #endregion
     DictationGeminiConfirm_CleanupAndMaybeSubmit(true)
 }
 
 DictationGeminiConfirm_OnTimeout(*) {
-    ; #region agent log
-    logLine := '{"sessionId":"c292e6","id":"log_' A_TickCount '_Timeout","timestamp":' A_TickCount ',"location":"Utils.ahk:2127","message":"DictationGeminiConfirm_OnTimeout","data":{"submitToGemini":false},"runId":"pre-fix-1","hypothesisId":"H3"}'
-    FileAppend(logLine '`n', A_ScriptDir '\debug-c292e6.log', "UTF-8")
-    ; #endregion
     DictationGeminiConfirm_CleanupAndMaybeSubmit(false)
 }
 
 DictationGeminiConfirm_OnCancel(*) {
-    ; #region agent log
-    logLine := '{"sessionId":"c292e6","id":"log_' A_TickCount '_Cancel","timestamp":' A_TickCount ',"location":"Utils.ahk:2135","message":"DictationGeminiConfirm_OnCancel","data":{"submitToGemini":false},"runId":"pre-fix-1","hypothesisId":"H4"}'
-    FileAppend(logLine '`n', A_ScriptDir '\debug-c292e6.log', "UTF-8")
-    ; #endregion
     DictationGeminiConfirm_CleanupAndMaybeSubmit(false)
     ShowCenteredOverlay_Utils("⚠ Gemini submission cancelled", 1500, BANNER_ACCENT_INTERMEDIATE)
 }
@@ -7480,7 +7464,13 @@ ShowDictationIndicator() {
     ; Show the indicator without activating it
     g_DictationIndicatorGui.Show("NA x" . squareX . " y" . squareY . " w" . DICTATION_SQUARE_SIZE . " h" .
         DICTATION_SQUARE_SIZE)
-    WinSetTransparent(g_DictationPulseOpacity, g_DictationIndicatorGui)
+    ; Apply initial transparency defensively (GUI may have been destroyed concurrently)
+    try {
+        if (g_DictationIndicatorGui.Hwnd)
+            WinSetTransparent(g_DictationPulseOpacity, g_DictationIndicatorGui)
+    } catch {
+        ; Ignore "target window not found" or similar errors
+    }
 }
 
 ; Update indicator text (for status messages)
