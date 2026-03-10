@@ -188,7 +188,7 @@ InsertText(text) {
 :o:cgrammar::
 {
     InsertText(
-        "Correct grammar and spelling. Remove any dashes from the text. The text should be plain with no styles. Give back only the text. Use lininebreaks and a space betetween paragraphs and look like a human."
+        "Correct grammar, spelling, punctuation, and casing. Remove any dashes from the text. The text should be plain with no styles. Give back only the text. Use line breaks and a space between paragraphs, and make it sound natural and human."
     )
 }
 
@@ -241,7 +241,7 @@ InitHotstringsCheatSheet() {
         RegisterHotstring(":o:cgrammar", FileRead(promptDir "\grammar.txt"), "Prompts",
         "✏️ Grammar & Spelling Corrector")
     } catch {
-        RegisterHotstring(":o:cgrammar", "Correct grammar and spelling. Give back only the text.`n", "Prompts",
+        RegisterHotstring(":o:cgrammar", "Correct grammar, spelling, punctuation, and casing. Give back only the text.`n", "Prompts",
             "✏️ Grammar & Spelling Corrector")
     }
     try {

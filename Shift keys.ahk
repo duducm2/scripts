@@ -29,6 +29,10 @@ global DEBUG_LOG_PATH := A_ScriptDir "\.cursor\debug.log"
 ; Phase 5: Gate debug I/O; set to true only when diagnosing (avoids file I/O in hot paths).
 global DEBUG_SHIFTKEYS := false
 
+; Debug mode agent logging (runtime evidence for this session only)
+global AGENT_DEBUG_LOG_PATH := A_ScriptDir "\debug-31b036.log"
+global AGENT_DEBUG_SESSION_ID := "31b036"
+
 ; Helper function for safe debug logging with retry on file lock
 ; Handles file locking gracefully by retrying with exponential backoff
 ; No-op when DEBUG_SHIFTKEYS is false (production).
@@ -64,6 +68,27 @@ SafeDebugLog(text) {
         }
     }
     return false
+}
+
+; Helper: write NDJSON log line for debug agent (no-op on failure)
+AgentDebugLog(hypothesisId, message, runId := "initial") {
+    try {
+        ts := A_TickCount
+        id := "log_" ts "_" hypothesisId
+        payload := Format(
+            "{{""sessionId"":""{1}"",""id"":""{2}"",""timestamp"":{3},""location"":""Shift keys.ahk:{4}"",""message"":""{5}"",""data"":{{""hypothesisId"":""{6}""}},""runId"":""{7}"",""hypothesisId"":""{8}""}}",
+            AGENT_DEBUG_SESSION_ID,
+            id,
+            ts,
+            A_LineNumber,
+            message,
+            hypothesisId,
+            runId,
+            hypothesisId
+        )
+        FileAppend payload "`n", AGENT_DEBUG_LOG_PATH
+    } catch {
+    }
 }
 
 ; Helper: find ChatGPT chrome window by case-insensitive contains match
@@ -504,7 +529,7 @@ Chrome (Shift)
 )"  ; end Chrome
 
 ; --- Chrome PDF Viewer ------------------------------------------------------
-cheatSheets["Chrome PDF Viewer"] := "
+        cheatSheets["Chrome PDF Viewer"] := "
 (
 Chrome PDF Viewer (Shift)
 ⬇️ [D] [D]ownload PDF
@@ -3629,19 +3654,33 @@ IsChromePdfViewerActive() {
         return false
 
     try {
+        ; #region agent log
+        AgentDebugLog("H1", "IsChromePdfViewerActive_entry")
+        ; #endregion
         uia := UIA_Browser("ahk_exe chrome.exe")
 
         ; Strong fingerprint: Chrome's built-in PDF viewer extension web area
         ; From UIA tree: chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/index.html
-        if (uia.FindElement({ Type: 50030, Value: "chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai", matchmode: "Substring" }))
+        if (uia.FindElement({ Type: 50030, Value: "chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai", matchmode: "Substring" })) {
+            ; #region agent log
+            AgentDebugLog("H2", "IsChromePdfViewerActive_extension_match")
+            ; #endregion
             return true
+        }
 
         ; Fallback: stable, non-localized PDF toolbar controls
-        if (uia.FindElement({ AutomationId: "pageSelector" }) && uia.FindElement({ AutomationId: "save" }))
+        if (uia.FindElement({ AutomationId: "pageSelector" }) && uia.FindElement({ AutomationId: "save" })) {
+            ; #region agent log
+            AgentDebugLog("H3", "IsChromePdfViewerActive_toolbar_match")
+            ; #endregion
             return true
+        }
     } catch {
     }
 
+    ; #region agent log
+    AgentDebugLog("H4", "IsChromePdfViewerActive_return_false")
+    ; #endregion
     return false
 }
 
@@ -3729,7 +3768,19 @@ ChromePdf_FocusByAutomationId(automationId, controlType := 0) {
 +f::
 {
     ; UIA tree: AutomationId "fit"
-    ChromePdf_ClickByAutomationId("fit")
+    ; #region agent log
+    AgentDebugLog("H5", "ShiftF_handler_enter")
+    ; #endregion
+    result := ChromePdf_ClickByAutomationId("fit")
+    if (result) {
+        ; #region agent log
+        AgentDebugLog("H6", "ShiftF_handler_click_success")
+        ; #endregion
+    } else {
+        ; #region agent log
+        AgentDebugLog("H7", "ShiftF_handler_click_failed")
+        ; #endregion
+    }
 }
 
 ; Shift + P : Focus page number field - Page
