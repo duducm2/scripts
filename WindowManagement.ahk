@@ -761,6 +761,23 @@ global g_SelectionModeHotkeyHandlers := []  ; Store hotkey handlers for selectio
 global g_CopyFromGeminiModeActive := false
 global g_CopyFromGeminiHotkeyHandlers := []
 
+; File-based IPC so Shift keys (or other process) can request project selector close on Escape
+global g_WM_SelectorOpenFile := A_ScriptDir "\.cursor\wm_selector_open"
+global g_WM_SelectorCloseRequestFile := A_ScriptDir "\.cursor\wm_selector_close_request"
+global g_WM_SelectorCloseCheckTimer := ""
+
+WM_CheckSelectorCloseRequest() {
+    global g_ProjectSelectorActive, g_WM_SelectorCloseRequestFile
+    if (!g_ProjectSelectorActive)
+        return
+    if (FileExist(g_WM_SelectorCloseRequestFile)) {
+        try FileDelete(g_WM_SelectorCloseRequestFile)
+        catch {
+        }
+        CleanupProjectSelector()
+    }
+}
+
 ; Activate a Cursor project by path: find or launch window, then focus the AI text field. Returns true on success.
 ; Ensures the target project window is explicitly activated before focus/paste, regardless of current active window.
 ActivateCursorProject(projectPath) {
@@ -850,9 +867,17 @@ GetCategorizedProjects() {
 ; Cleanup project selector: destroy GUI, disable hotkeys, reset state
 CleanupProjectSelector() {
     global g_ProjectSelectorActive, g_ProjectSelectorGui, g_ProjectHotkeyHandlers, g_SelectionModeActive,
-        g_CopyFromGeminiModeActive
+        g_CopyFromGeminiModeActive, g_WM_SelectorOpenFile, g_WM_SelectorCloseRequestFile, g_WM_SelectorCloseCheckTimer
 
     g_ProjectSelectorActive := false
+    SetTimer(WM_CheckSelectorCloseRequest, 0)
+    g_WM_SelectorCloseCheckTimer := ""
+    try FileDelete(g_WM_SelectorOpenFile)
+    catch {
+    }
+    try FileDelete(g_WM_SelectorCloseRequestFile)
+    catch {
+    }
     if (g_SelectionModeActive) {
         CleanupSelectionMode()
     }
@@ -881,12 +906,8 @@ CleanupProjectSelector() {
         }
     }
 
-    ; Disable Escape hotkey for project selector
-    try {
-        Hotkey("Escape", "Off")
-    } catch {
-        ; Ignore
-    }
+    ; Unregister Escape callback so Utils forwards Escape again
+    g_OnEscapePressed := ""
 
     ; Clear handlers array
     g_ProjectHotkeyHandlers := []
@@ -1067,6 +1088,7 @@ HandleProjectSelection(index) {
 CreateProjectHandler(index) {
     return (*) => HandleProjectSelection(index)
 }
+
 ; Handler for Escape key in project selector
 HandleProjectEscape(*) {
     global g_ProjectSelectorActive
@@ -1822,12 +1844,8 @@ HandleCursorWindowSelectorEscape(*) {
         }
     }
 
-    ; Disable Escape hotkey
-    try {
-        Hotkey("Escape", HandleProjectEscape, "On")
-    } catch {
-        ; Ignore
-    }
+    ; Restore Escape callback to project selector (main selector still open)
+    g_OnEscapePressed := HandleProjectEscape
 
     ; Clear handlers and map
     g_CursorWindowHotkeyHandlers := []
@@ -2178,13 +2196,8 @@ ShowCursorWindowSelectorSubMenu() {
         }
     }
 
-    ; Disable project selector Escape and enable cursor window selector Escape
-    try {
-        Hotkey("Escape", "Off")
-        Hotkey("Escape", HandleCursorWindowSelectorEscape, "On")
-    } catch {
-        ; Ignore
-    }
+    ; Switch Escape callback to cursor window selector (project selector still open)
+    g_OnEscapePressed := HandleCursorWindowSelectorEscape
 }
 
 ; Handler for Cursor window selection trigger (character "c" in project selector)
@@ -2423,8 +2436,15 @@ ShowProjectSelector() {
     ; Show GUI centered on the active window's monitor
     g_ProjectSelectorGui.Show("NA w" . baseWidth . " h" . totalHeight . " x" . guiX . " y" . guiY)
 
-    ; Set active flag
+    ; Set active flag and register Escape with Utils so Escape closes the selector (same process); file sentinel for cross-process Escape from Shift keys
     g_ProjectSelectorActive := true
+    g_OnEscapePressed := HandleProjectEscape
+    try {
+        DirCreate(A_ScriptDir "\.cursor")
+        FileAppend "", g_WM_SelectorOpenFile
+    } catch {
+    }
+    g_WM_SelectorCloseCheckTimer := SetTimer(WM_CheckSelectorCloseRequest, 120)
 
     ; Clear handlers array
     g_ProjectHotkeyHandlers := []
@@ -2490,9 +2510,6 @@ ShowProjectSelector() {
         Hotkey("K", copyFromGeminiHandler, "On")
     } catch {
     }
-
-    ; Enable Escape hotkey
-    Hotkey("Escape", HandleProjectEscape, "On")
 }
 ; Win+Alt+Shift+L hotkey for Project Quick Selector (toggle: close if open, open if closed)
 #!+l:: {

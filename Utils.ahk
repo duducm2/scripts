@@ -7252,6 +7252,9 @@ SendEscape(count := 1) {
 ; Escape to work normally in other applications
 ; =============================================================================
 
+; Optional escape callback: when set (e.g. by WindowManagement for project selector), Utils runs it and consumes Escape.
+global g_OnEscapePressed := ""
+
 ; Force hook-based hotkey to intercept Escape at a lower level
 ; This should catch it before handy.exe's hook processes it
 #UseHook
@@ -7260,7 +7263,29 @@ Escape::
 {
     ; Use state-based blocking: check g_DictationActive instead of checking window each time
     ; This ensures Esc remains restricted for the entire duration of dictation
-    global g_DictationActive
+    global g_DictationActive, g_OnEscapePressed
+
+    ; If a consumer (e.g. project selector) registered an escape handler, run it and consume the key
+    if (g_OnEscapePressed) {
+        try {
+            g_OnEscapePressed.Call()
+        } catch {
+        }
+        return
+    }
+
+    ; Cross-process: if project selector is open (WM process), request close via file so WM's timer will run CleanupProjectSelector
+    try {
+        sentinel := A_ScriptDir "\.cursor\wm_selector_open"
+        if (FileExist(sentinel)) {
+            closeReq := A_ScriptDir "\.cursor\wm_selector_close_request"
+            try FileAppend "", closeReq
+            catch {
+            }
+            return
+        }
+    } catch {
+    }
 
     ; Block Escape if dictation is active (state-based, no timeout)
     ; This restriction remains for the entire duration of dictation
