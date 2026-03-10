@@ -1241,6 +1241,8 @@ class GeminiDelayedSubmitMonitor {
         this.ButtonEverFound := false
         this.CopyBannerGui := ""
         this.CopyTimeoutTimer := ""
+        this.HasCopiedForThisResponse := false
+        this.CopyBannerShownForThisResponse := false
     }
 
     Start(originalHwnd, geminiHwnd) {
@@ -1250,6 +1252,8 @@ class GeminiDelayedSubmitMonitor {
         this.GeminiHwnd := geminiHwnd
         this.RetryCount := 0
         this.ButtonEverFound := false
+        this.HasCopiedForThisResponse := false
+        this.CopyBannerShownForThisResponse := false
         this.TimerCallback := this.CheckCompletion.Bind(this)
         SetTimer(this.TimerCallback, 500)
     }
@@ -1313,6 +1317,9 @@ class GeminiDelayedSubmitMonitor {
     }
 
     ShowCopyDecisionBanner() {
+        if (this.CopyBannerShownForThisResponse)
+            return
+        this.CopyBannerShownForThisResponse := true
         this.CopyBannerGui := ""
         this.CopyTimeoutTimer := ""
         copyKeyCallbacks := Map("N", this.CancelCopy.Bind(this), "Y", this.DoCopyOnly.Bind(this), "R", this.CopyAndReadAloud
@@ -1336,50 +1343,50 @@ class GeminiDelayedSubmitMonitor {
         this.CleanupCopyBanner()
     }
 
-    DoCopyOnTimeout(*) {
-        this.CleanupCopyBanner()
+    DoCopyCore(readAloud := false) {
+        if (this.HasCopiedForThisResponse)
+            return
+        this.HasCopiedForThisResponse := true
         GeminiState.Invalidate()
-        try {
-            WinActivate("ahk_id " this.GeminiHwnd)
-        } catch {
+        if !WinExist("ahk_id " this.GeminiHwnd) {
             if (WinExist("ahk_id " this.OriginalHwnd))
                 WinActivate("ahk_id " this.OriginalHwnd)
             return
         }
-        if !WinWaitActive("ahk_exe chrome.exe", , 2) {
-            if (WinExist("ahk_id " this.OriginalHwnd))
-                WinActivate("ahk_id " this.OriginalHwnd)
-            return
+        if !WinActive("ahk_id " this.GeminiHwnd) {
+            try {
+                WinActivate("ahk_id " this.GeminiHwnd)
+            } catch {
+                if (WinExist("ahk_id " this.OriginalHwnd))
+                    WinActivate("ahk_id " this.OriginalHwnd)
+                return
+            }
+            if !WinWaitActive("ahk_exe chrome.exe", , 0.5) {
+                if (WinExist("ahk_id " this.OriginalHwnd))
+                    WinActivate("ahk_id " this.OriginalHwnd)
+                return
+            }
         }
         copyOpt := { restoreWindow: false, playChimeAndNotify: false, alreadyActive: true }
         if CopyLastGeminiMessageWithRetry(copyOpt, this.GeminiHwnd)
             PlayCopyCompletedChime()
-        if (WinExist("ahk_id " this.OriginalHwnd))
+        if (readAloud)
+            GeminiTriggerReadAloud(false, false)
+        if (WinExist("ahk_id " this.OriginalHwnd) && !WinActive("ahk_id " this.OriginalHwnd)) {
             WinActivate("ahk_id " this.OriginalHwnd)
+            WinWaitActive("ahk_id " this.OriginalHwnd, , 0.5)
+        }
+    }
+
+    DoCopyOnTimeout(*) {
+        this.CleanupCopyBanner()
+        this.DoCopyCore(false)
     }
 
     ; R key: copy last message and read it aloud, then restore focus (same tab as delayed submit).
     CopyAndReadAloud(*) {
         this.CleanupCopyBanner()
-        GeminiState.Invalidate()
-        try {
-            WinActivate("ahk_id " this.GeminiHwnd)
-        } catch {
-            if (WinExist("ahk_id " this.OriginalHwnd))
-                WinActivate("ahk_id " this.OriginalHwnd)
-            return
-        }
-        if !WinWaitActive("ahk_exe chrome.exe", , 2) {
-            if (WinExist("ahk_id " this.OriginalHwnd))
-                WinActivate("ahk_id " this.OriginalHwnd)
-            return
-        }
-        copyOpt := { restoreWindow: false, playChimeAndNotify: false, alreadyActive: true }
-        if CopyLastGeminiMessageWithRetry(copyOpt, this.GeminiHwnd)
-            PlayCopyCompletedChime()
-        GeminiTriggerReadAloud(false, false)   ; read aloud only (already copied)
-        if (WinExist("ahk_id " this.OriginalHwnd))
-            WinActivate("ahk_id " this.OriginalHwnd)
+        this.DoCopyCore(true)
     }
 }
 
