@@ -76,15 +76,14 @@ AgentDebugLog(hypothesisId, message, runId := "initial") {
         ts := A_TickCount
         id := "log_" ts "_" hypothesisId
         payload := Format(
-            "{{""sessionId"":""{1}"",""id"":""{2}"",""timestamp"":{3},""location"":""Shift keys.ahk:{4}"",""message"":""{5}"",""data"":{{""hypothesisId"":""{6}""}},""runId"":""{7}"",""hypothesisId"":""{8}""}}",
+            "{{" "sessionId" ":" "{1}" "," "id" ":" "{2}" "," "timestamp" ":{3}," "location" ":" "Shift keys.ahk:{4}" "," "message" ":" "{5}" "," "data" ":{{" "hypothesisId" ":" "{6}" "}}," "runId" ":" "{7}" "}}",
             AGENT_DEBUG_SESSION_ID,
             id,
             ts,
             A_LineNumber,
             message,
             hypothesisId,
-            runId,
-            hypothesisId
+            runId
         )
         FileAppend payload "`n", AGENT_DEBUG_LOG_PATH
     } catch {
@@ -529,7 +528,7 @@ Chrome (Shift)
 )"  ; end Chrome
 
 ; --- Chrome PDF Viewer ------------------------------------------------------
-        cheatSheets["Chrome PDF Viewer"] := "
+cheatSheets["Chrome PDF Viewer"] := "
 (
 Chrome PDF Viewer (Shift)
 ⬇️ [D] [D]ownload PDF

@@ -241,7 +241,8 @@ InitHotstringsCheatSheet() {
         RegisterHotstring(":o:cgrammar", FileRead(promptDir "\grammar.txt"), "Prompts",
         "✏️ Grammar & Spelling Corrector")
     } catch {
-        RegisterHotstring(":o:cgrammar", "Correct grammar, spelling, punctuation, and casing. Give back only the text.`n", "Prompts",
+        RegisterHotstring(":o:cgrammar",
+            "Correct grammar, spelling, punctuation, and casing. Give back only the text.`n", "Prompts",
             "✏️ Grammar & Spelling Corrector")
     }
     try {
@@ -3084,112 +3085,20 @@ InitDpiAwareness()
 ; =============================================================================
 ; Move all Desktop items to Recycle Bin (recoverable)
 ; Trigger: Win+Alt+Shift+U selector → letter N
-; Target path: OneDrive Desktop. Red confirmation (with path), then success banner.
+; Target path: OneDrive Desktop. Standard banner with 4s timeout (N = cancel, Y or timeout = run); then success/error banner.
 ; =============================================================================
-global g_DesktopToRecycleGui := 0
-global g_DesktopToRecycleBorderGui := 0
-global g_DesktopToRecycleTextCtrl := 0
 global g_DesktopToRecyclePath := ""  ; Set from GetDesktopToRecyclePath() when macro runs
 global g_DesktopToRecycleCloseHwnd := 0
 
-DesktopToRecycle_ShowBanner() {
-    global g_DesktopToRecycleGui, g_DesktopToRecycleBorderGui, g_DesktopToRecycleTextCtrl, g_DesktopToRecyclePath
-    try {
-        if IsObject(g_DesktopToRecycleBorderGui)
-            g_DesktopToRecycleBorderGui.Destroy()
-    } catch {
-    }
-    g_DesktopToRecycleBorderGui := 0
-    try {
-        if IsObject(g_DesktopToRecycleGui)
-            g_DesktopToRecycleGui.Destroy()
-    } catch {
-    }
-    g_DesktopToRecycleGui := 0
-    g_DesktopToRecycleTextCtrl := 0
-
-    target := WinGetID("A")
-    hasWindow := false
-    if target && WinExist("ahk_id " target) {
-        try {
-            WinGetPos(&wx, &wy, &ww, &wh, target)
-            hasWindow := (ww > 0 && wh > 0)
-        } catch {
-            hasWindow := false
-        }
-    }
-
-    confirmText := "Move all items from:`n" . g_DesktopToRecyclePath . "`nto Recycle Bin? (Y = Yes, N = No)"
-    ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
-    ov.BackColor := "1E1E2E"
-    ov.SetFont("s22 cFFFFFF Bold", "Segoe UI")
-    g_DesktopToRecycleTextCtrl := ov.Add("Text", "w700 Center", confirmText)
-    ov.Show("AutoSize Hide")
-    ov.GetPos(&gx, &gy, &gw, &gh)
-
-    if hasWindow {
-        cx := wx + (ww - gw) // 2
-        cy := wy + (wh - gh) // 2
-    } else {
-        vx := SysGet(76)
-        vy := SysGet(77)
-        vw := SysGet(78)
-        vh := SysGet(79)
-        cx := vx + (vw - gw) // 2
-        cy := vy + (vh - gh) // 2
-    }
-
-    borderWidth := 6
-    borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
-    borderGui.BackColor := BANNER_ACCENT_INTERMEDIATE
-    borderGui.Show("NA x" . (cx - borderWidth) . " y" . (cy - borderWidth) . " w" . (gw + 2 * borderWidth) . " h" . (gh +
-        2 * borderWidth))
-    g_DesktopToRecycleBorderGui := borderGui
-
-    ov.Show("x" . cx . " y" . cy . " NA")
-    WinSetTransparent(178, ov)
-    g_DesktopToRecycleGui := ov
+DesktopToRecycle_OnConfirm(*) {
+    DesktopToRecycle_Run()
 }
 
-DesktopToRecycle_HideBanner() {
-    global g_DesktopToRecycleGui, g_DesktopToRecycleBorderGui, g_DesktopToRecycleTextCtrl
-    try {
-        if IsObject(g_DesktopToRecycleBorderGui)
-            g_DesktopToRecycleBorderGui.Destroy()
-    } catch {
-    }
-    g_DesktopToRecycleBorderGui := 0
-    try {
-        if IsObject(g_DesktopToRecycleGui)
-            g_DesktopToRecycleGui.Destroy()
-    } catch {
-    }
-    g_DesktopToRecycleGui := 0
-    g_DesktopToRecycleTextCtrl := 0
+DesktopToRecycle_OnCancel(*) {
+    ShowCenteredOverlay_Utils("⚠ Desktop cleanup cancelled", 1500, BANNER_ACCENT_INTERMEDIATE)
 }
 
-DesktopToRecycle_SetConfirmHotkeys(enable := true) {
-    if (enable) {
-        Hotkey("*y", DesktopToRecycle_Confirm, "On")
-        Hotkey("*n", DesktopToRecycle_Cancel, "On")
-    } else {
-        try Hotkey("*y", "Off")
-        catch {
-        }
-        try Hotkey("*n", "Off")
-        catch {
-        }
-    }
-}
-
-DesktopToRecycle_Cancel(*) {
-    DesktopToRecycle_SetConfirmHotkeys(false)
-    DesktopToRecycle_HideBanner()
-}
-
-DesktopToRecycle_Confirm(*) {
-    DesktopToRecycle_SetConfirmHotkeys(false)
-    DesktopToRecycle_HideBanner()
+DesktopToRecycle_OnTimeout(*) {
     DesktopToRecycle_Run()
 }
 
@@ -3272,8 +3181,20 @@ DesktopToRecycle_Trigger() {
         } catch {
         }
     }
-    DesktopToRecycle_ShowBanner()
-    DesktopToRecycle_SetConfirmHotkeys(true)
+    StandardLoadingBar_CloseKeysOverlay()
+    StandardLoadingBar_Hide(0)
+    Sleep 50
+    centerOnHwnd := 0
+    try {
+        centerOnHwnd := WinGetID("A")
+        if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
+            centerOnHwnd := 0
+    } catch {
+    }
+    state := "🗑️ Move all items from:`n" . g_DesktopToRecyclePath . "`nto Recycle Bin? (4s)"
+    keyCallbacks := Map("Y", DesktopToRecycle_OnConfirm, "N", DesktopToRecycle_OnCancel)
+    StandardLoadingBar_ShowWithKeys(state, keyCallbacks, 4000, centerOnHwnd, DesktopToRecycle_OnTimeout,
+        "1E1E2E", 0, 17, "", true, "[Y] Yes  [N] Cancel")
 }
 
 ; =============================================================================
