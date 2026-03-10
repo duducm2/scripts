@@ -4682,6 +4682,7 @@ HandleLoopModeUp() {
 
 ; Study topics for Win+Alt+Shift+X selector. Paths are relative to notes repo (GetNotesRepoPath()).
 global g_StudyTopics := Map(
+    0, { name: "Technique (how to create studies)", path: "\studies\technique\README.pdf", skipLastPage: true },
     1, { name: "English", path: "\studies\english\lists\1\1.pdf" },
     2, { name: "Piano", path: "\studies\piano\lists\1\1.pdf" },
     3, { name: "Communication", path: "\studies\communication\lists\1\1.pdf" },
@@ -4760,7 +4761,7 @@ ShowStudyTopicSelector() {
 
     g_StudyTopicSelectorGui.Add("Text", "w280 h1 Background45475A y+10")
     g_StudyTopicSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_StudyTopicSelectorGui.Add("Text", "w280 Center", "Press 1–5 | Esc to cancel")
+    g_StudyTopicSelectorGui.Add("Text", "w280 Center", "Press 0–5 | Esc to cancel")
 
     activeWin := 0
     try {
@@ -4806,6 +4807,7 @@ ShowStudyTopicSelector() {
     g_StudyTopicSelectorGui.Show("x" . cx . " y" . cy . " NA")
 
     g_StudyTopicSelectorActive := true
+    Hotkey("0", StudyTopicSelector_HandleKey, "On")
     Hotkey("1", StudyTopicSelector_HandleKey, "On")
     Hotkey("2", StudyTopicSelector_HandleKey, "On")
     Hotkey("3", StudyTopicSelector_HandleKey, "On")
@@ -4840,7 +4842,8 @@ StudyTopicSelector_HandleKey(key) {
         try ShowCenteredOverlay_Utils("❌ Peek executable not found.", 2500, BANNER_ACCENT_ERROR)
         return
     }
-    PeekPdf_OpenPath(fullPath)
+    skipLast := topic.HasProp("skipLastPage") && topic.skipLastPage
+    PeekPdf_OpenPath(fullPath, skipLast)
 }
 
 StudyTopicSelector_Cancel(*) {
@@ -4853,6 +4856,7 @@ StudyTopicSelector_Close() {
     if (!g_StudyTopicSelectorActive)
         return
     g_StudyTopicSelectorActive := false
+    try Hotkey("0", "Off")
     try Hotkey("1", "Off")
     try Hotkey("2", "Off")
     try Hotkey("3", "Off")
@@ -4893,7 +4897,8 @@ PeekPdf_ResolvePeekExePath() {
 }
 
 ; Open a specific PDF in PowerToys Peek and run WaitAndConfigure. Caller must validate pdfPath and exe exist.
-PeekPdf_OpenPath(pdfPath) {
+; skipGoToLastPage: if true, do not navigate to the last page (e.g. for short docs like technique README).
+PeekPdf_OpenPath(pdfPath, skipGoToLastPage := false) {
     peekExe := PeekPdf_ResolvePeekExePath()
     peekEsc := StrReplace(peekExe, "'", "''")
     pdfEsc := StrReplace(pdfPath, "'", "''")
@@ -4906,7 +4911,7 @@ PeekPdf_OpenPath(pdfPath) {
     }
     if WinWait("Peek", "", 5) {
         WinMaximize
-        PeekPdf_WaitAndConfigure()
+        PeekPdf_WaitAndConfigure(skipGoToLastPage)
         EnableFocusMode()
         StartPdfFocusMonitor()
     }
@@ -4959,12 +4964,12 @@ PeekPdf_OpenStored() {
     }
 }
 
-; Wait for Peek PDF toolbar to load (Page view button), click it, two-page view, focus, go to last page.
+; Wait for Peek PDF toolbar to load (Page view button), click it, two-page view, focus; optionally go to last page.
 ; Current state: PDF opening and window maximization are working correctly.
 ; Execution order: 1) Get Peek hwnd  2) UIA root from hwnd  3) Poll for "Page view" anchor
 ;  4) Wait for anchor visible + short delay before click  5) Click Page view  6) Right Arrow
-;  7) Click window center  8) Ctrl+End. Fallback: Sleep 400 + Click if UIA or anchor fails.
-PeekPdf_WaitAndConfigure() {
+;  7) Click window center  8) If not skipGoToLastPage: go to last page (UIA or Ctrl+End). Fallback: Sleep 400 + Click if UIA or anchor fails.
+PeekPdf_WaitAndConfigure(skipGoToLastPage := false) {
     global UIA
     ; Standard loading bar: show for the whole process so user knows when we started and when we finished
     StandardLoadingBar_Show("⏳ Peek PDF: configuring...", BANNER_ACCENT_INTERMEDIATE)
@@ -5100,49 +5105,51 @@ PeekPdf_WaitAndConfigure() {
                 Click cx, cy
             }
             Sleep 150
-            ; 8) Go to final page via UIA (keystrokes do not reach the embedded Edge PDF viewer)
-            lastPageSet := false
-            try {
-                for doc in el.FindAll({ Type: 50030 }) {
-                    try {
-                        nm := doc.Name
-                        ; Match "containing N pages" (EN) or "N pages"/"N páginas" (avoid "Page 1")
-                        if (RegExMatch(nm, "containing\s+(\d+)\s+pages", &m) || RegExMatch(nm,
-                            "document.*?(\d+)\s*(?:pages|páginas)", &m)) {
-                            totalPages := Integer(m[1])
-                            if (totalPages > 0) {
-                                pageSel := el.FindFirst({ Type: 50004, AutomationId: "pageselector" })
-                                if (pageSel) {
-                                    try {
-                                        pageSel.SetFocus()
-                                        Sleep(200)
-                                        WinActivate("ahk_id " hwnd)
-                                        Sleep(120)
-                                        Send("^a")
-                                        Sleep(50)
-                                        Send(String(totalPages))
-                                        Sleep(50)
-                                        Send("{Enter}")
-                                        lastPageSet := true
-                                    } catch {
-                                        ; ignore focus/send errors
+            ; 8) Go to final page via UIA (keystrokes do not reach the embedded Edge PDF viewer); skip if skipGoToLastPage
+            if (!skipGoToLastPage) {
+                lastPageSet := false
+                try {
+                    for doc in el.FindAll({ Type: 50030 }) {
+                        try {
+                            nm := doc.Name
+                            ; Match "containing N pages" (EN) or "N pages"/"N páginas" (avoid "Page 1")
+                            if (RegExMatch(nm, "containing\s+(\d+)\s+pages", &m) || RegExMatch(nm,
+                                "document.*?(\d+)\s*(?:pages|páginas)", &m)) {
+                                totalPages := Integer(m[1])
+                                if (totalPages > 0) {
+                                    pageSel := el.FindFirst({ Type: 50004, AutomationId: "pageselector" })
+                                    if (pageSel) {
+                                        try {
+                                            pageSel.SetFocus()
+                                            Sleep(200)
+                                            WinActivate("ahk_id " hwnd)
+                                            Sleep(120)
+                                            Send("^a")
+                                            Sleep(50)
+                                            Send(String(totalPages))
+                                            Sleep(50)
+                                            Send("{Enter}")
+                                            lastPageSet := true
+                                        } catch {
+                                            ; ignore focus/send errors
+                                        }
                                     }
+                                    break
                                 }
-                                break
                             }
+                        } catch {
+                            ; ignore per-doc errors
                         }
-                    } catch {
-                        ; ignore per-doc errors
                     }
+                } catch {
+                    ; ignore UIA errors for last-page navigation
                 }
-            } catch {
-                ; ignore UIA errors for last-page navigation
-            }
-            if (!lastPageSet) {
-                try
-                    ControlSend("^End", "ahk_id " hwnd)
-                catch
-                    Send("^End")
+                if (!lastPageSet) {
+                    try
+                        ControlSend("^End", "ahk_id " hwnd)
+                    catch
+                        Send("^End")
+                }
             }
             Sleep 100
             StandardLoadingBar_Update("✅ Peek PDF: done", BANNER_ACCENT_SUCCESS)
