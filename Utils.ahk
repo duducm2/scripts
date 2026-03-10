@@ -4910,7 +4910,11 @@ PeekPdf_OpenPath(pdfPath, skipGoToLastPage := false) {
         return
     }
     if WinWait("Peek", "", 5) {
-        WinMaximize
+        hwnd := WinExist("ahk_exe PowerToys.Peek.UI.exe")
+        if (!hwnd)
+            hwnd := WinExist("Peek")
+        MoveWindowToMonitor(hwnd, 2)
+        WinMaximize("ahk_id " hwnd)
         PeekPdf_WaitAndConfigure(skipGoToLastPage)
         EnableFocusMode()
         StartPdfFocusMonitor()
@@ -4959,9 +4963,26 @@ PeekPdf_OpenStored() {
         return
     }
     if WinWait("Peek", "", 5) {
-        WinMaximize
+        hwnd := WinExist("ahk_exe PowerToys.Peek.UI.exe")
+        if (!hwnd)
+            hwnd := WinExist("Peek")
+        MoveWindowToMonitor(hwnd, 2)
+        WinMaximize("ahk_id " hwnd)
         PeekPdf_WaitAndConfigure()
     }
+}
+
+MoveWindowToMonitor(hwnd, monitorIndex := 2) {
+    if (!hwnd)
+        return
+    try {
+        MonitorGetWorkArea(monitorIndex, &l, &t, &r, &b)
+    } catch {
+        return
+    }
+    w := r - l
+    h := b - t
+    try WinMove(l, t, w, h, "ahk_id " hwnd)
 }
 
 ; Wait for Peek PDF toolbar to load (Page view button), click it, two-page view, focus; optionally go to last page.
