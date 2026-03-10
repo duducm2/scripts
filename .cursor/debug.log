@@ -3873,6 +3873,7 @@
 {"id":"log_158373500_1485","timestamp":158373500,"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
 {"location":"WindowManagement.ahk:HandleCopyFromGeminiModeTrigger","message":"K pressed","data":{"selectorActive":0},"hypothesisId":"H0","timestamp":31051718}
 {"location":"WindowManagement.ahk:HandleCopyFromGeminiModeTrigger","message":"K pressed","data":{"selectorActive":0},"hypothesisId":"H0","timestamp":31053250}
+<<<<<<< HEAD
 {"id":"log_5502375_6418","timestamp":5502375,"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
 {"id":"log_5503453_8276","timestamp":5503453,"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
 {"id":"log_5506671_8963","timestamp":5506671,"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
@@ -3881,3 +3882,9 @@
 {"id":"log_5530109_2530","timestamp":5530109,"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
 {"id":"log_5559000_5299","timestamp":5559000,"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
 {"id":"log_5562843_2134","timestamp":5562843,"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+=======
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"entry","data":{"pathLen":52,"dirExists":1},"hypothesisId":"H3","timestamp":281829109}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"after FindAndActivate","data":{"targetHwnd":133856},"hypothesisId":"H3","timestamp":281829578}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"after FocusCursorAITextField","data":{"focusOk":1},"hypothesisId":"H4","timestamp":281831875}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"return true","data":{},"hypothesisId":"H3","timestamp":281832000}
+>>>>>>> 5d55ac80c472a9a631395eceac71ac0d61fa9b73
