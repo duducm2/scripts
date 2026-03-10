@@ -131,9 +131,31 @@ GetGeminiCopyButtonsArray(uia) {
 }
 
 ; Returns the last Copy button (last response) or 0. Uses centralized discovery.
+; Robust against Gemini UI changes that might add non-response Copy buttons after the chat history.
 GetLastGeminiCopyButton(uia) {
     arr := GetGeminiCopyButtonsArray(uia)
-    return (arr.Length > 0) ? arr[arr.Length] : 0
+    if (arr.Length = 0)
+        return 0
+    ; Prefer the visually lowest button (largest BoundingRectangle.t), which should correspond
+    ; to the last assistant response in the chat, and ignore offscreen/zero-size elements.
+    lastEl := 0
+    lastTop := ""
+    for btn in arr {
+        try {
+            br := btn.BoundingRectangle
+        } catch {
+            continue
+        }
+        if (!IsObject(br))
+            continue
+        if ((br.r - br.l) <= 0 || (br.b - br.t) <= 0)
+            continue
+        if (lastEl = 0 || br.t >= lastTop) {
+            lastEl := btn
+            lastTop := br.t
+        }
+    }
+    return lastEl ? lastEl : arr[arr.Length]
 }
 
 ; Copy last Gemini message with retry using exponential backoff (Phase 6). Returns true if clipboard changed.
