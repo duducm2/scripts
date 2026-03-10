@@ -3184,17 +3184,11 @@ DesktopToRecycle_Trigger() {
     StandardLoadingBar_CloseKeysOverlay()
     StandardLoadingBar_Hide(0)
     Sleep 50
-    centerOnHwnd := 0
-    try {
-        centerOnHwnd := WinGetID("A")
-        if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
-            centerOnHwnd := 0
-    } catch {
-    }
     state := "🗑️ Move all items from:`n" . g_DesktopToRecyclePath . "`nto Recycle Bin? (4s)"
     keyCallbacks := Map("Y", DesktopToRecycle_OnConfirm, "N", DesktopToRecycle_OnCancel)
-    StandardLoadingBar_ShowWithKeys(state, keyCallbacks, 4000, centerOnHwnd, DesktopToRecycle_OnTimeout,
-        "1E1E2E", 0, 17, "", true, "[Y] Yes  [N] Cancel")
+    ; Center on active monitor (centerOnHwnd := 0), use standard intermediate accent with border.
+    StandardLoadingBar_ShowWithKeys(state, keyCallbacks, 4000, 0, DesktopToRecycle_OnTimeout,
+        BANNER_ACCENT_INTERMEDIATE, 0, 17, "", false, "[Y] Yes  [N] Cancel")
 }
 
 ; =============================================================================
