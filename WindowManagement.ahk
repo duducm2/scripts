@@ -1116,6 +1116,7 @@ FocusCursorAITextField(targetHwnd := 0) {
         }
         Sleep 200
 
+        ; Track whether AI pane was detected as open so we only ever send Ctrl+I to open it (never to close it).
         paneWasOpen := false
         focusDone := false
         if (IsSet(UIA)) {
@@ -1160,6 +1161,7 @@ FocusCursorAITextField(targetHwnd := 0) {
         }
 
         if (!focusDone) {
+            ; Keyboard fallback: only send Ctrl+I if the pane was not previously detected as open.
             if (!paneWasOpen) {
                 Send "^i"
                 Sleep 1200
@@ -1202,6 +1204,8 @@ HandleSelectionModeProjectSelection(index) {
         return
     }
 
+    ; Activate the project in Cursor and rely on ActivateCursorProject/FocusCursorAITextField
+    ; to handle AI sidebar visibility (only open if hidden, never toggle closed).
     g_SelectionModeActive := false
     projectPath := IS_WORK_ENVIRONMENT ? project.workPath : project.path
     if (IS_WORK_ENVIRONMENT && projectPath = "") {
