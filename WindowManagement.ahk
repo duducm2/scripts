@@ -1098,8 +1098,9 @@ HandleProjectEscape(*) {
 }
 
 ; =============================================================================
-; Focus Cursor AI text field. Uses UIA when available to focus the composer input
-; without sending Ctrl+I, so the AI side panel is not closed when already open.
+; Focus Cursor AI text field. Handles both UI states via UIA when available:
+; - AI side panel hidden: send Ctrl+I to open, then wait for and focus composer input via UIA.
+; - AI side panel open: focus composer input via UIA only (do not send Ctrl+I or panel closes).
 ; targetHwnd: if provided, explicitly activate this window first (ensures paste goes to correct project).
 ; =============================================================================
 FocusCursorAITextField(targetHwnd := 0) {
@@ -1115,24 +1116,42 @@ FocusCursorAITextField(targetHwnd := 0) {
         }
         Sleep 200
 
-        ; When UIA is available and AI pane is already open, focus the composer input directly
-        ; so that Ctrl+I is not sent (it would toggle the panel closed).
+        paneWasOpen := false
+        focusDone := false
         if (IsSet(UIA)) {
             try {
                 root := UIA.ElementFromHandle(targetHwnd)
                 if (root) {
-                    ; Check if AI pane is open: "Toggle AI Pane (Ctrl+Alt+B)" CheckBox has "checked" in ClassName when open
+                    ; Detect AI pane state: "Toggle AI Pane (Ctrl+Alt+B)" CheckBox has "checked" in ClassName when open
                     toggleEl := root.FindFirst({ Type: UIA.Type.CheckBox, Name: "Toggle AI Pane", matchmode: 2 })
-                    if (toggleEl && InStr(toggleEl.ClassName, "checked")) {
-                        ; Pane is open: find the composer Edit (aislash-editor-input, not readonly) and focus it
-                        allEdits := root.FindAll({ Type: UIA.Type.Edit })
-                        for editEl in allEdits {
-                            cn := editEl.ClassName
-                            if (InStr(cn, "aislash-editor-input") && !InStr(cn, "readonly")) {
+                    paneOpen := toggleEl && InStr(toggleEl.ClassName, "checked")
+                    paneWasOpen := paneOpen
+
+                    if (paneOpen) {
+                        ; Panel already open: focus composer input directly (do not send Ctrl+I)
+                        editEl := _WM_FindCursorComposerInput(root)
+                        if (editEl) {
+                            editEl.SetFocus()
+                            focusDone := true
+                        }
+                    } else {
+                        ; Panel hidden: open with Ctrl+I, then wait for composer input and focus via UIA
+                        Send "^i"
+                        loop 15 {
+                            Sleep 200
+                            root := UIA.ElementFromHandle(targetHwnd)
+                            editEl := _WM_FindCursorComposerInput(root)
+                            if (editEl) {
                                 editEl.SetFocus()
-                                return true
+                                focusDone := true
+                                break
                             }
                         }
+                        if (!focusDone) {
+                            Send "{Tab 2}"
+                            Sleep 100
+                        }
+                        focusDone := true
                     }
                 }
             } catch {
@@ -1140,15 +1159,32 @@ FocusCursorAITextField(targetHwnd := 0) {
             }
         }
 
-        ; Fallback: open AI chat panel and focus input (or when pane was closed)
-        Send "^i"
-        Sleep 1200
-        Send "{Tab 2}"
-        Sleep 100
+        if (!focusDone) {
+            if (!paneWasOpen) {
+                Send "^i"
+                Sleep 1200
+            }
+            Send "{Tab 2}"
+            Sleep 100
+        }
         return true
     } catch {
         return false
     }
+}
+
+; Returns the Cursor composer input Edit (aislash-editor-input, not readonly) or "" if not found.
+_WM_FindCursorComposerInput(root) {
+    try {
+        allEdits := root.FindAll({ Type: UIA.Type.Edit })
+        for editEl in allEdits {
+            cn := editEl.ClassName
+            if (InStr(cn, "aislash-editor-input") && !InStr(cn, "readonly"))
+                return editEl
+        }
+    } catch {
+    }
+    return ""
 }
 
 ; Handler for project selection in Selection Mode
