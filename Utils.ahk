@@ -2817,18 +2817,39 @@ DictationMerge_Tick() {
 }
 
 ; Clean the Clipboard macro function
-; Shows a confirmation prompt before executing cleanup
+; Shows a non-modal 4s countdown; auto-continues unless user cancels with N.
 CleanClipboard() {
-    ; Initialize Yes/No modal dialog
-    result := MsgBox("Do you want to continue running the algorithm to exclude all clips?", "Clean the Clipboard",
-        "YesNo")
+    CleanClipboard_ShowCountdown()
+}
 
-    ; If user selects "No", terminate macro execution
-    if (result = "No") {
-        return
+CleanClipboard_ShowCountdown() {
+    ; Ensure any previous keys overlay is closed before showing a new one
+    try StandardLoadingBar_CloseKeysOverlay()
+    catch {
     }
+    StandardLoadingBar_Hide(0)
+    Sleep 50
 
-    ; User selected "Yes" - proceed with the workflow
+    state := "❓ Clean the clipboard? (removes stored clips, 4s)`nYou have 4 seconds to press [N] to cancel."
+    keyCallbacks := Map("N", CleanClipboard_OnCancel)
+
+    ; Center on active monitor (centerOnHwnd := 0), use red accent for destructive action.
+    StandardLoadingBar_ShowWithKeys(state, keyCallbacks, 4000, 0, CleanClipboard_OnTimeout,
+        BANNER_ACCENT_ERROR, 0, 17, "", false, "[N] Cancel (auto-continue in 4s)")
+}
+
+CleanClipboard_OnCancel(*) {
+    try StandardLoadingBar_CloseKeysOverlay()
+    catch {
+    }
+    StandardLoadingBar_Hide(0)
+}
+
+CleanClipboard_OnTimeout(*) {
+    try StandardLoadingBar_CloseKeysOverlay()
+    catch {
+    }
+    StandardLoadingBar_Hide(0)
     CleanClipboardInternal()
 }
 
