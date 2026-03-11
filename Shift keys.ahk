@@ -10631,10 +10631,10 @@ FoldAllDirectoriesInExplorer() {
                     ; Since we filtered by Expanded, we know it's expanded (or was when found)
                     pat := item.ExpandCollapsePattern
 
-                    ; Method 2: UIA Collapse Pattern (Primary method)
+                    ; Method 2: UIA Collapse Pattern (Primary method) – slowed down to reduce UI stress
                     try {
                         pat.Collapse()
-                        Sleep 10
+                        Sleep 40
                     } catch {
                     }
 
@@ -10650,14 +10650,14 @@ FoldAllDirectoriesInExplorer() {
                     }
 
                     if item.ExpandCollapsePattern.ExpandCollapseState != UIA.ExpandCollapseState.Collapsed {
-                        ; Method 3: Keyboard Navigation
+                        ; Method 3: Keyboard Navigation – slowed down to reduce UI stress
                         try {
                             if item.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
                                 item.SelectionItemPattern.Select()
                             else
                                 item.SetFocus()
                             Send "{Left}"
-                            Sleep 10
+                            Sleep 40
                         } catch {
                         }
                     }
@@ -10835,23 +10835,23 @@ UnfoldAllDirectoriesInExplorer() {
                         } catch {
                         }
 
-                        ; Method 2: UIA Expand Pattern
+                        ; Method 2: UIA Expand Pattern – slowed down to reduce UI stress
                         try {
                             pat.Expand()
-                            Sleep 50
+                            Sleep 120
                         } catch {
                         }
 
                         ; Check if it worked
                         if item.ExpandCollapsePattern.ExpandCollapseState == UIA.ExpandCollapseState.Collapsed {
-                            ; Method 3: Keyboard Navigation (Select + Right Arrow)
+                            ; Method 3: Keyboard Navigation (Select + Right Arrow) – slowed down to reduce UI stress
                             try {
                                 if item.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
                                     item.SelectionItemPattern.Select()
                                 else
                                     item.SetFocus()
                                 Send "{Right}"
-                                Sleep 50
+                                Sleep 120
                             } catch {
                             }
                         }
