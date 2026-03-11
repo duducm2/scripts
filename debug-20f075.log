@@ -1,4 +1,0 @@
-{{sessionId:20f075,id:log_362806390_wm_escape_project,timestamp:362806390,location:WindowManagement.ahk:HandleProjectEscape,message:Project Escape handler invoked,data:{{hypothesisId:H1,selectorActive:false}},runId:pre-fix,hypothesisId:H1}}
-{{sessionId:20f075,id:log_362817375_wm_escape_bound,timestamp:362817375,location:WindowManagement.ahk:ShowProjectSelector,message:Escape callback set for project selector,data:{{hypothesisId:H1}},runId:post-fix,hypothesisId:H1}}
-{{sessionId:20f075,id:log_362819562_wm_escape_bound,timestamp:362819562,location:WindowManagement.ahk:ShowProjectSelector,message:Escape callback set for project selector,data:{{hypothesisId:H1}},runId:post-fix,hypothesisId:H1}}
-{{sessionId:20f075,id:log_362845250_wm_escape_project,timestamp:362845250,location:WindowManagement.ahk:HandleProjectEscape,message:Project Escape handler invoked,data:{{hypothesisId:H1,selectorActive:false}},runId:pre-fix,hypothesisId:H1}}
