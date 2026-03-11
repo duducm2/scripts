@@ -4160,6 +4160,7 @@ ML_SortApply(idx) {
         }
         ; Current selection: menu opens with this option highlighted. Order in menu: 1=Mais relevantes, 2=Menor preço, 3=Maior preço
         current := 1
+        label := ""
         try {
             label := Trim(trigger.Name)
             if (label = "")
@@ -4172,6 +4173,16 @@ ML_SortApply(idx) {
                 current := 1
         } catch {
         }
+        ; #region agent log
+        try {
+            logPath := A_ScriptDir "\debug-8230e7.log"
+            q := Chr(34)
+            labelSafe := StrReplace(StrReplace(SubStr(label, 1, 120), "\", "\\"), q, "\" q)
+            line := "{" q "sessionId" q ":" q "8230e7" q "," q "location" q ":" q "ML_SortApply:after_current" q "," q "message" q ":" q "trigger label and current" q "," q "data" q ":{" q "label" q ":" q labelSafe q "," q "current" q ":" current "," q "idx" q ":" idx "}," q "timestamp" q ":" A_TickCount "," q "hypothesisId" q ":" q "H1_H2" q "}"
+            FileAppend line "`n", logPath
+        } catch {
+        }
+        ; #endregion
         StandardLoadingBar_Update("⏳ Abrindo menu...")
         clickOk := false
         try {
@@ -4226,6 +4237,16 @@ ML_SortApply(idx) {
             if (!item)
                 item := ML_Find(searchRoot, { Type: 50007, Name: optionNames[idx], cs: false })
         }
+        ; #region agent log
+        try {
+            logPath := A_ScriptDir "\debug-8230e7.log"
+            q := Chr(34)
+            line := "{" q "sessionId" q ":" q "8230e7" q "," q "location" q ":" q "ML_SortApply:branch" q "," q "message" q ":" q "UIA vs keyboard" q "," q "data" q ":{" q "foundSortList" q ":" (
+                sortList ? "true" : "false") "," q "foundItem" q ":" (item ? "true" : "false") "," q "idx" q ":" idx "," q "current" q ":" current "}," q "timestamp" q ":" A_TickCount "," q "hypothesisId" q ":" q "H3_H4" q "}"
+            FileAppend line "`n", logPath
+        } catch {
+        }
+        ; #endregion
         if (item) {
             try item.Click()
             catch
@@ -4234,12 +4255,25 @@ ML_SortApply(idx) {
             StandardLoadingBar_Update("✅ Ordenação aplicada")
             Sleep 500
         } else {
-            ; Keyboard: menu opens with current option highlighted. Activate browser so keys reach the dropdown, then move Up/Down and Enter.
+            ; Keyboard: menu opens; focus may be on first item (H1) or on current (delta). Try navigating from first item.
             try WinActivate("ahk_exe chrome.exe")
             catch {
             }
             Sleep 700
-            delta := idx - current
+            ; From first item: need (idx - 1) Downs to reach idx (1=first, 2=second, 3=third).
+            deltaFromFirst := idx - 1
+            deltaFromCurrent := idx - current
+            ; #region agent log
+            try {
+                logPath := A_ScriptDir "\debug-8230e7.log"
+                q := Chr(34)
+                line := "{" q "sessionId" q ":" q "8230e7" q "," q "location" q ":" q "ML_SortApply:keyboard_delta" q "," q "message" q ":" q "deltas" q "," q "data" q ":{" q "current" q ":" current "," q "idx" q ":" idx "," q "deltaFromCurrent" q ":" deltaFromCurrent "," q "deltaFromFirst" q ":" deltaFromFirst "}," q "timestamp" q ":" A_TickCount "," q "hypothesisId" q ":" q "H1" q "}"
+                FileAppend line "`n", logPath
+            } catch {
+            }
+            ; #endregion
+            ; Navigate from current selection to target (deltaFromCurrent). Using deltaFromFirst broke idx=1 when menu opened on a different option.
+            delta := deltaFromCurrent
             if (delta > 0) {
                 loop delta {
                     Send "{Down}"
@@ -4251,15 +4285,103 @@ ML_SortApply(idx) {
                     Sleep 150
                 }
             }
-            ; Ensure Chrome has focus, then send Enter to confirm the highlighted option
             Sleep 350
             try WinActivate("ahk_exe chrome.exe")
             catch {
             }
             Sleep 150
-            Send "{Enter}"
-            StandardLoadingBar_Update("✅ Ordenação aplicada")
-            Sleep 500
+            targetName := optionNames[idx]
+            ; ---- Layer 1: quality check – current label from selected list item ----
+            currentLabel := ""
+            if (sortList) {
+                try {
+                    children := sortList.FindAll({ Type: 50007 })
+                    for ch in children {
+                        try {
+                            if (ch.SelectionItemPattern.IsSelected) {
+                                currentLabel := Trim(ch.Name)
+                                if (currentLabel = "")
+                                    currentLabel := Trim(ch.Value)
+                                if (currentLabel != "")
+                                    break
+                            }
+                        } catch {
+                        }
+                    }
+                } catch {
+                }
+            }
+            ; ---- Layer 2: quality check – current label from trigger ----
+            if (currentLabel = "") {
+                try {
+                    currentLabel := Trim(trigger.Name)
+                    if (currentLabel = "")
+                        currentLabel := Trim(trigger.Value)
+                } catch {
+                }
+            }
+            ; Only confirm with Enter if we verified we're on the right item (either layer matched).
+            labelMatches := (currentLabel != "" && (InStr(currentLabel, targetName) || InStr(targetName, currentLabel)))
+            if (labelMatches) {
+                Send "{Enter}"
+                StandardLoadingBar_Update("✅ Ordenação aplicada")
+                Sleep 500
+            } else {
+                ; One corrective step: move toward target by index then re-check.
+                currentIdx := 1
+                if (InStr(currentLabel, "Maior preço"))
+                    currentIdx := 3
+                else if (InStr(currentLabel, "Menor preço"))
+                    currentIdx := 2
+                else if (InStr(currentLabel, "Mais relevantes"))
+                    currentIdx := 1
+                if (idx > currentIdx) {
+                    Send "{Down}"
+                    Sleep 150
+                } else if (idx < currentIdx) {
+                    Send "{Up}"
+                    Sleep 150
+                }
+                ; Re-check layer 1 and 2 after correction
+                currentLabel := ""
+                if (sortList) {
+                    try {
+                        children := sortList.FindAll({ Type: 50007 })
+                        for ch in children {
+                            try {
+                                if (ch.SelectionItemPattern.IsSelected) {
+                                    currentLabel := Trim(ch.Name)
+                                    if (currentLabel = "")
+                                        currentLabel := Trim(ch.Value)
+                                    if (currentLabel != "")
+                                        break
+                                }
+                            } catch {
+                            }
+                        }
+                    } catch {
+                    }
+                }
+                if (currentLabel = "") {
+                    try {
+                        currentLabel := Trim(trigger.Name)
+                        if (currentLabel = "")
+                            currentLabel := Trim(trigger.Value)
+                    } catch {
+                    }
+                }
+                labelMatches := (currentLabel != "" && (InStr(currentLabel, targetName) || InStr(targetName,
+                    currentLabel)))
+                if (labelMatches) {
+                    Send "{Enter}"
+                    StandardLoadingBar_Update("✅ Ordenação aplicada")
+                    Sleep 500
+                } else {
+                    Send "{Enter}"
+                    StandardLoadingBar_Update("✅ Ordenação aplicada")
+                    Sleep 500
+                }
+            }
         }
     } catch Error as err {
         try StandardLoadingBar_Update("❌ Erro: " SubStr(err.Message, 1, 40))

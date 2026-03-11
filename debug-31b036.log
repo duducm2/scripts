@@ -20,3 +20,5 @@
 {{sessionId:31b036,id:log_370605828_H4,timestamp:370605828,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_return_false,data:{{hypothesisId:H4}},runId:initial}}
 {{sessionId:31b036,id:log_370617593_H1,timestamp:370617593,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_entry,data:{{hypothesisId:H1}},runId:initial}}
 {{sessionId:31b036,id:log_370618187_H4,timestamp:370618187,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_return_false,data:{{hypothesisId:H4}},runId:initial}}
+{{sessionId:31b036,id:log_370713343_H1,timestamp:370713343,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_entry,data:{{hypothesisId:H1}},runId:initial}}
+{{sessionId:31b036,id:log_370713968_H4,timestamp:370713968,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_return_false,data:{{hypothesisId:H4}},runId:initial}}

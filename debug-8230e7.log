@@ -1,0 +1,36 @@
+{"sessionId":"8230e7","location":"ML_SortApply:after_current","message":"trigger label and current","data":{"label":"Menor preço","current":2,"idx":2},"timestamp":371675671,"hypothesisId":"H1_H2"}
+{"sessionId":"8230e7","location":"ML_SortApply:branch","message":"UIA vs keyboard","data":{"foundSortList":false,"foundItem":false,"idx":2,"current":2},"timestamp":371677328,"hypothesisId":"H3_H4"}
+{"sessionId":"8230e7","location":"ML_SortApply:keyboard_delta","message":"deltas","data":{"current":2,"idx":2,"deltaFromCurrent":0,"deltaFromFirst":1},"timestamp":371678140,"hypothesisId":"H1"}
+{"sessionId":"8230e7","location":"ML_SortApply:after_current","message":"trigger label and current","data":{"label":"Menor preço","current":2,"idx":3},"timestamp":371682734,"hypothesisId":"H1_H2"}
+{"sessionId":"8230e7","location":"ML_SortApply:branch","message":"UIA vs keyboard","data":{"foundSortList":false,"foundItem":false,"idx":3,"current":2},"timestamp":371684312,"hypothesisId":"H3_H4"}
+{"sessionId":"8230e7","location":"ML_SortApply:keyboard_delta","message":"deltas","data":{"current":2,"idx":3,"deltaFromCurrent":1,"deltaFromFirst":2},"timestamp":371685140,"hypothesisId":"H1"}
+{"sessionId":"8230e7","location":"ML_SortApply:after_current","message":"trigger label and current","data":{"label":"Maior preço","current":3,"idx":1},"timestamp":371689875,"hypothesisId":"H1_H2"}
+{"sessionId":"8230e7","location":"ML_SortApply:keyboard_delta","message":"deltas","data":{"current":3,"idx":1,"deltaFromCurrent":-2,"deltaFromFirst":0},"timestamp":371692328,"hypothesisId":"H1"}
+{"sessionId":"8230e7","location":"ML_SortApply:after_current","message":"trigger label and current","data":{"label":"Maior preço","current":3,"idx":1},"timestamp":371697281,"hypothesisId":"H1_H2"}
+{"sessionId":"8230e7","location":"ML_SortApply:branch","message":"UIA vs keyboard","data":{"foundSortList":false,"foundItem":false,"idx":1,"current":3},"timestamp":371698890,"hypothesisId":"H3_H4"}
+{"sessionId":"8230e7","location":"ML_SortApply:keyboard_delta","message":"deltas","data":{"current":3,"idx":1,"deltaFromCurrent":-2,"deltaFromFirst":0},"timestamp":371699703,"hypothesisId":"H1"}
+{"sessionId":"8230e7","location":"ML_SortApply:after_current","message":"trigger label and current","data":{"label":"Maior preço","current":3,"idx":1},"timestamp":371704359,"hypothesisId":"H1_H2"}
+{"sessionId":"8230e7","location":"ML_SortApply:branch","message":"UIA vs keyboard","data":{"foundSortList":false,"foundItem":false,"idx":1,"current":3},"timestamp":371705984,"hypothesisId":"H3_H4"}
+{"sessionId":"8230e7","location":"ML_SortApply:keyboard_delta","message":"deltas","data":{"current":3,"idx":1,"deltaFromCurrent":-2,"deltaFromFirst":0},"timestamp":371706796,"hypothesisId":"H1"}
+{"sessionId":"8230e7","location":"ML_SortApply:after_current","message":"trigger label and current","data":{"label":"Maior preço","current":3,"idx":2},"timestamp":371832734,"hypothesisId":"H1_H2"}
+{"sessionId":"8230e7","location":"ML_SortApply:branch","message":"UIA vs keyboard","data":{"foundSortList":false,"foundItem":false,"idx":2,"current":3},"timestamp":371834328,"hypothesisId":"H3_H4"}
+{"sessionId":"8230e7","location":"ML_SortApply:keyboard_delta","message":"deltas","data":{"current":3,"idx":2,"deltaFromCurrent":-1,"deltaFromFirst":1},"timestamp":371835156,"hypothesisId":"H1"}
+{"sessionId":"8230e7","location":"ML_SortApply:after_current","message":"trigger label and current","data":{"label":"Menor preço","current":2,"idx":1},"timestamp":371840578,"hypothesisId":"H1_H2"}
+{"sessionId":"8230e7","location":"ML_SortApply:keyboard_delta","message":"deltas","data":{"current":2,"idx":1,"deltaFromCurrent":-1,"deltaFromFirst":0},"timestamp":371842968,"hypothesisId":"H1"}
+{"sessionId":"8230e7","location":"ML_SortApply:branch","message":"UIA vs keyboard","data":{"foundSortList":false,"foundItem":false,"idx":1,"current":2},"timestamp":371851718,"hypothesisId":"H3_H4"}
+{"sessionId":"8230e7","location":"ML_SortApply:keyboard_delta","message":"deltas","data":{"current":2,"idx":1,"deltaFromCurrent":-1,"deltaFromFirst":0},"timestamp":371852531,"hypothesisId":"H1"}
+{"sessionId":"8230e7","location":"ML_SortApply:after_current","message":"trigger label and current","data":{"label":"Menor preço","current":2,"idx":3},"timestamp":371857718,"hypothesisId":"H1_H2"}
+{"sessionId":"8230e7","location":"ML_SortApply:branch","message":"UIA vs keyboard","data":{"foundSortList":false,"foundItem":false,"idx":3,"current":2},"timestamp":371859296,"hypothesisId":"H3_H4"}
+{"sessionId":"8230e7","location":"ML_SortApply:keyboard_delta","message":"deltas","data":{"current":2,"idx":3,"deltaFromCurrent":1,"deltaFromFirst":2},"timestamp":371860109,"hypothesisId":"H1"}
+{"sessionId":"8230e7","location":"ML_SortApply:after_current","message":"trigger label and current","data":{"label":"Maior preço","current":3,"idx":1},"timestamp":371887546,"hypothesisId":"H1_H2"}
+{"sessionId":"8230e7","location":"ML_SortApply:branch","message":"UIA vs keyboard","data":{"foundSortList":false,"foundItem":false,"idx":1,"current":3},"timestamp":371889171,"hypothesisId":"H3_H4"}
+{"sessionId":"8230e7","location":"ML_SortApply:keyboard_delta","message":"deltas","data":{"current":3,"idx":1,"deltaFromCurrent":-2,"deltaFromFirst":0},"timestamp":371889984,"hypothesisId":"H1"}
+{"sessionId":"8230e7","location":"ML_SortApply:after_current","message":"trigger label and current","data":{"label":"Maior preço","current":3,"idx":1},"timestamp":372010046,"hypothesisId":"H1_H2"}
+{"sessionId":"8230e7","location":"ML_SortApply:branch","message":"UIA vs keyboard","data":{"foundSortList":false,"foundItem":false,"idx":1,"current":3},"timestamp":372011656,"hypothesisId":"H3_H4"}
+{"sessionId":"8230e7","location":"ML_SortApply:keyboard_delta","message":"deltas","data":{"current":3,"idx":1,"deltaFromCurrent":-2,"deltaFromFirst":0},"timestamp":372012468,"hypothesisId":"H1"}
+{"sessionId":"8230e7","location":"ML_SortApply:after_current","message":"trigger label and current","data":{"label":"Mais relevantes","current":1,"idx":2},"timestamp":372017093,"hypothesisId":"H1_H2"}
+{"sessionId":"8230e7","location":"ML_SortApply:branch","message":"UIA vs keyboard","data":{"foundSortList":false,"foundItem":false,"idx":2,"current":1},"timestamp":372018718,"hypothesisId":"H3_H4"}
+{"sessionId":"8230e7","location":"ML_SortApply:keyboard_delta","message":"deltas","data":{"current":1,"idx":2,"deltaFromCurrent":1,"deltaFromFirst":1},"timestamp":372019531,"hypothesisId":"H1"}
+{"sessionId":"8230e7","location":"ML_SortApply:after_current","message":"trigger label and current","data":{"label":"Menor preço","current":2,"idx":3},"timestamp":372023875,"hypothesisId":"H1_H2"}
+{"sessionId":"8230e7","location":"ML_SortApply:branch","message":"UIA vs keyboard","data":{"foundSortList":false,"foundItem":false,"idx":3,"current":2},"timestamp":372025484,"hypothesisId":"H3_H4"}
+{"sessionId":"8230e7","location":"ML_SortApply:keyboard_delta","message":"deltas","data":{"current":2,"idx":3,"deltaFromCurrent":1,"deltaFromFirst":2},"timestamp":372026296,"hypothesisId":"H1"}
