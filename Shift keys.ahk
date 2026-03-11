@@ -4108,6 +4108,36 @@ ML_Find(root, condition) {
 }
 
 ; Shift + O: Ordenar por – Handy-style menu and UIA execution
+; Returns current option label from list selected item (Layer 1) or trigger (Layer 2). Single authority for quality-check reads.
+ML_SortGetCurrentLabel(sortList, trigger) {
+    currentLabel := ""
+    if (sortList) {
+        try {
+            children := sortList.FindAll({ Type: 50007 })
+            for ch in children {
+                try {
+                    if (ch.SelectionItemPattern.IsSelected) {
+                        currentLabel := Trim(ch.Name)
+                        if (currentLabel = "")
+                            currentLabel := Trim(ch.Value)
+                        if (currentLabel != "")
+                            return currentLabel
+                    }
+                } catch {
+                }
+            }
+        } catch {
+        }
+    }
+    try {
+        currentLabel := Trim(trigger.Name)
+        if (currentLabel = "")
+            currentLabel := Trim(trigger.Value)
+    } catch {
+    }
+    return currentLabel
+}
+
 ML_SortClose() {
     try Hotkey("1", "Off")
     catch {
@@ -4147,7 +4177,7 @@ ML_SortApply(idx) {
         root := ML_GetDocRoot()
         if (!root) {
             StandardLoadingBar_Update("❌ Página do Mercado Livre não disponível.")
-            Sleep 1200
+            Sleep 800
             return
         }
         trigger := ML_Find(root, { Type: 50003, AutomationId: "5clcjae", matchmode: "Substring" })
@@ -4155,7 +4185,7 @@ ML_SortApply(idx) {
             trigger := ML_Find(root, { Type: 50003, AutomationId: "trigger", matchmode: "Substring" })
         if (!trigger) {
             StandardLoadingBar_Update("❌ Botão 'Ordenar por' não encontrado.")
-            Sleep 1200
+            Sleep 800
             return
         }
         ; Current selection: menu opens with this option highlighted. Order in menu: 1=Mais relevantes, 2=Menor preço, 3=Maior preço
@@ -4173,16 +4203,6 @@ ML_SortApply(idx) {
                 current := 1
         } catch {
         }
-        ; #region agent log
-        try {
-            logPath := A_ScriptDir "\debug-8230e7.log"
-            q := Chr(34)
-            labelSafe := StrReplace(StrReplace(SubStr(label, 1, 120), "\", "\\"), q, "\" q)
-            line := "{" q "sessionId" q ":" q "8230e7" q "," q "location" q ":" q "ML_SortApply:after_current" q "," q "message" q ":" q "trigger label and current" q "," q "data" q ":{" q "label" q ":" q labelSafe q "," q "current" q ":" current "," q "idx" q ":" idx "}," q "timestamp" q ":" A_TickCount "," q "hypothesisId" q ":" q "H1_H2" q "}"
-            FileAppend line "`n", logPath
-        } catch {
-        }
-        ; #endregion
         StandardLoadingBar_Update("⏳ Abrindo menu...")
         clickOk := false
         try {
@@ -4192,37 +4212,41 @@ ML_SortApply(idx) {
         }
         if (!clickOk) {
             StandardLoadingBar_Update("❌ Não foi possível abrir o menu.")
-            Sleep 1200
+            Sleep 800
             return
         }
-        Sleep 1100
-        StandardLoadingBar_Update("⏳ Selecionando opção...")
+        ; Bounded wait for menu: poll for sortList up to 1.2s (canon: condition-based waits with timeout).
         searchRoot := root
         sortList := 0
-        try {
-            dropdownSibling := UIA.TreeWalkerTrue.TryGetNextSiblingElement(trigger)
-            if (dropdownSibling)
-                sortList := ML_Find(dropdownSibling, { Type: 50008, AutomationId: "menu-list", matchmode: "Substring" })
-        } catch {
-        }
-        if (!sortList)
+        loop 12 {
+            Sleep 100
+            try {
+                dropdownSibling := UIA.TreeWalkerTrue.TryGetNextSiblingElement(trigger)
+                if (dropdownSibling)
+                    sortList := ML_Find(dropdownSibling, { Type: 50008, AutomationId: "menu-list", matchmode: "Substring" })
+            } catch {
+            }
+            if (sortList)
+                break
             sortList := ML_Find(searchRoot, { Type: 50008, AutomationId: "5clcjae_-menu-list", matchmode: "Substring" })
-        if (!sortList)
+            if (sortList)
+                break
             sortList := ML_Find(searchRoot, { Type: 50008, AutomationId: "menu-list", matchmode: "Substring" })
-        if (!sortList) {
-            Sleep 300
-            sortList := ML_Find(searchRoot, { Type: 50008, AutomationId: "menu-list", matchmode: "Substring" })
-        }
-        if (!sortList) {
+            if (sortList)
+                break
             try {
                 triggerParent := trigger.Parent
                 if (triggerParent)
                     sortList := ML_Find(triggerParent, { Type: 50008, AutomationId: "menu-list", matchmode: "Substring" })
             } catch {
             }
-        }
-        if (!sortList)
+            if (sortList)
+                break
             sortList := ML_Find(searchRoot, { AutomationId: "menu-list", matchmode: "Substring" })
+            if (sortList)
+                break
+        }
+        StandardLoadingBar_Update("⏳ Selecionando opção...")
         optionSubstrings := ["menu-list-option-relevance", "menu-list-option-price_asc", "menu-list-option-price_desc"]
         sub := optionSubstrings[idx]
         optionNames := ["Mais relevantes", "Menor preço", "Maior preço"]
@@ -4237,97 +4261,40 @@ ML_SortApply(idx) {
             if (!item)
                 item := ML_Find(searchRoot, { Type: 50007, Name: optionNames[idx], cs: false })
         }
-        ; #region agent log
-        try {
-            logPath := A_ScriptDir "\debug-8230e7.log"
-            q := Chr(34)
-            line := "{" q "sessionId" q ":" q "8230e7" q "," q "location" q ":" q "ML_SortApply:branch" q "," q "message" q ":" q "UIA vs keyboard" q "," q "data" q ":{" q "foundSortList" q ":" (
-                sortList ? "true" : "false") "," q "foundItem" q ":" (item ? "true" : "false") "," q "idx" q ":" idx "," q "current" q ":" current "}," q "timestamp" q ":" A_TickCount "," q "hypothesisId" q ":" q "H3_H4" q "}"
-            FileAppend line "`n", logPath
-        } catch {
-        }
-        ; #endregion
         if (item) {
             try item.Click()
             catch
                 try item.Invoke()
-            Sleep 200
+            Sleep 150
             StandardLoadingBar_Update("✅ Ordenação aplicada")
-            Sleep 500
+            Sleep 300
         } else {
-            ; Keyboard: menu opens; focus may be on first item (H1) or on current (delta). Try navigating from first item.
+            ; Keyboard: navigate from current to target (delta), then confirm with Enter after label check.
             try WinActivate("ahk_exe chrome.exe")
             catch {
             }
-            Sleep 700
-            ; From first item: need (idx - 1) Downs to reach idx (1=first, 2=second, 3=third).
-            deltaFromFirst := idx - 1
-            deltaFromCurrent := idx - current
-            ; #region agent log
-            try {
-                logPath := A_ScriptDir "\debug-8230e7.log"
-                q := Chr(34)
-                line := "{" q "sessionId" q ":" q "8230e7" q "," q "location" q ":" q "ML_SortApply:keyboard_delta" q "," q "message" q ":" q "deltas" q "," q "data" q ":{" q "current" q ":" current "," q "idx" q ":" idx "," q "deltaFromCurrent" q ":" deltaFromCurrent "," q "deltaFromFirst" q ":" deltaFromFirst "}," q "timestamp" q ":" A_TickCount "," q "hypothesisId" q ":" q "H1" q "}"
-                FileAppend line "`n", logPath
-            } catch {
-            }
-            ; #endregion
-            ; Navigate from current selection to target (deltaFromCurrent). Using deltaFromFirst broke idx=1 when menu opened on a different option.
-            delta := deltaFromCurrent
+            Sleep 400
+            delta := idx - current
             if (delta > 0) {
                 loop delta {
                     Send "{Down}"
-                    Sleep 150
+                    Sleep 100
                 }
             } else if (delta < 0) {
                 loop (-delta) {
                     Send "{Up}"
-                    Sleep 150
+                    Sleep 100
                 }
             }
-            Sleep 350
-            try WinActivate("ahk_exe chrome.exe")
-            catch {
-            }
-            Sleep 150
+            Sleep 200
             targetName := optionNames[idx]
-            ; ---- Layer 1: quality check – current label from selected list item ----
-            currentLabel := ""
-            if (sortList) {
-                try {
-                    children := sortList.FindAll({ Type: 50007 })
-                    for ch in children {
-                        try {
-                            if (ch.SelectionItemPattern.IsSelected) {
-                                currentLabel := Trim(ch.Name)
-                                if (currentLabel = "")
-                                    currentLabel := Trim(ch.Value)
-                                if (currentLabel != "")
-                                    break
-                            }
-                        } catch {
-                        }
-                    }
-                } catch {
-                }
-            }
-            ; ---- Layer 2: quality check – current label from trigger ----
-            if (currentLabel = "") {
-                try {
-                    currentLabel := Trim(trigger.Name)
-                    if (currentLabel = "")
-                        currentLabel := Trim(trigger.Value)
-                } catch {
-                }
-            }
-            ; Only confirm with Enter if we verified we're on the right item (either layer matched).
+            currentLabel := ML_SortGetCurrentLabel(sortList, trigger)
             labelMatches := (currentLabel != "" && (InStr(currentLabel, targetName) || InStr(targetName, currentLabel)))
             if (labelMatches) {
                 Send "{Enter}"
                 StandardLoadingBar_Update("✅ Ordenação aplicada")
-                Sleep 500
+                Sleep 300
             } else {
-                ; One corrective step: move toward target by index then re-check.
                 currentIdx := 1
                 if (InStr(currentLabel, "Maior preço"))
                     currentIdx := 3
@@ -4337,57 +4304,24 @@ ML_SortApply(idx) {
                     currentIdx := 1
                 if (idx > currentIdx) {
                     Send "{Down}"
-                    Sleep 150
+                    Sleep 100
                 } else if (idx < currentIdx) {
                     Send "{Up}"
-                    Sleep 150
+                    Sleep 100
                 }
-                ; Re-check layer 1 and 2 after correction
-                currentLabel := ""
-                if (sortList) {
-                    try {
-                        children := sortList.FindAll({ Type: 50007 })
-                        for ch in children {
-                            try {
-                                if (ch.SelectionItemPattern.IsSelected) {
-                                    currentLabel := Trim(ch.Name)
-                                    if (currentLabel = "")
-                                        currentLabel := Trim(ch.Value)
-                                    if (currentLabel != "")
-                                        break
-                                }
-                            } catch {
-                            }
-                        }
-                    } catch {
-                    }
-                }
-                if (currentLabel = "") {
-                    try {
-                        currentLabel := Trim(trigger.Name)
-                        if (currentLabel = "")
-                            currentLabel := Trim(trigger.Value)
-                    } catch {
-                    }
-                }
+                currentLabel := ML_SortGetCurrentLabel(sortList, trigger)
                 labelMatches := (currentLabel != "" && (InStr(currentLabel, targetName) || InStr(targetName,
                     currentLabel)))
-                if (labelMatches) {
-                    Send "{Enter}"
-                    StandardLoadingBar_Update("✅ Ordenação aplicada")
-                    Sleep 500
-                } else {
-                    Send "{Enter}"
-                    StandardLoadingBar_Update("✅ Ordenação aplicada")
-                    Sleep 500
-                }
+                Send "{Enter}"
+                StandardLoadingBar_Update("✅ Ordenação aplicada")
+                Sleep 300
             }
         }
     } catch Error as err {
         try StandardLoadingBar_Update("❌ Erro: " SubStr(err.Message, 1, 40))
         catch {
         }
-        Sleep 1000
+        Sleep 700
     } finally {
         try StandardLoadingBar_Hide(0)
         catch {
@@ -4397,14 +4331,6 @@ ML_SortApply(idx) {
 
 +o::
 {
-    ; #region agent log
-    try {
-        FileAppend '{"sessionId":"db9199","location":"Shift keys.ahk:+o","message":"Sort hotkey fired","data":{},"timestamp":' A_TickCount ',"hypothesisId":"H4"}' "`n",
-            A_ScriptDir "\debug-db9199.log"
-    } catch {
-        ; ignore
-    }
-    ; #endregion
     root := ML_GetDocRoot()
     if (!root) {
         MsgBox "Página do Mercado Livre não disponível."
