@@ -1184,7 +1184,10 @@ GetCheatSheetText() {
             appShortcuts := cheatSheets.Has("Miro") ? cheatSheets["Miro"] : ""
         if InStr(chromeTitle, "Wikipedia", false) || InStr(chromeTitle, "wikipedia.org", false)
             appShortcuts := cheatSheets.Has("Wikipedia") ? cheatSheets["Wikipedia"] : ""
-        if IsMercadoLivreActive()
+        ; Mercado Livre: fast path by title first (avoids UIA when title already indicates ML)
+        if InStr(chromeTitle, "Mercado Livre", false)
+            appShortcuts := cheatSheets.Has("Mercado Livre") ? cheatSheets["Mercado Livre"] : ""
+        else if IsMercadoLivreActive()
             appShortcuts := cheatSheets.Has("Mercado Livre") ? cheatSheets["Mercado Livre"] : ""
         if InStr(chromeTitle, "gemini", false)
             appShortcuts :=
@@ -3834,23 +3837,44 @@ ChromePdf_FocusByAutomationId(automationId, controlType := 0) {
 ;-------------------------------------------------------------------
 ; Mercado Livre (Brazil) Shortcuts
 ;-------------------------------------------------------------------
+; Cache for IsMercadoLivreActive (per efficiency-canon: cache-first with validation).
+; Invalidated when foreground HWND changes so we only run UIA once per window/tab focus.
+global g_ML_CacheHwnd := 0
+global g_ML_CacheResult := false
+
 IsMercadoLivreActive() {
+    global g_ML_CacheHwnd, g_ML_CacheResult
     if !WinActive("ahk_exe chrome.exe")
         return false
-    ; Fast check: title (when present)
-    if InStr(WinGetTitle("A"), "Mercado Livre", false)
+    hwnd := WinExist("A")
+    if (!hwnd)
+        return false
+    ; Cache hit: same window as last check (avoids UIA on every keystroke / cheat sheet open)
+    if (hwnd = g_ML_CacheHwnd && WinExist("ahk_id " g_ML_CacheHwnd))
+        return g_ML_CacheResult
+    ; Fast path: title already indicates Mercado Livre (no UIA)
+    if InStr(WinGetTitle("A"), "Mercado Livre", false) {
+        g_ML_CacheHwnd := hwnd
+        g_ML_CacheResult := true
         return true
-    ; URL check via UIA (address bar by AccessKey "Ctrl+L" – standard in Chrome)
+    }
+    ; URL check via UIA (address bar by AccessKey "Ctrl+L" – standard in Chrome), bounded to this window only
     try {
-        hwnd := WinExist("A")
         root := UIA.ElementFromHandle(hwnd)
         addressBar := root.FindFirst({ Type: 50004, AccessKey: "Ctrl+L" })
         if (addressBar) {
             url := addressBar.Value
-            if InStr(url, "mercadolivre.com") || InStr(url, "mercadolibre.com")
+            if InStr(url, "mercadolivre.com") || InStr(url, "mercadolibre.com") {
+                g_ML_CacheHwnd := hwnd
+                g_ML_CacheResult := true
                 return true
+            }
         }
+    } catch {
+        ; UIA failed; do not cache so next call retries
     }
+    g_ML_CacheHwnd := hwnd
+    g_ML_CacheResult := false
     return false
 }
 
