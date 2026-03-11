@@ -1344,7 +1344,7 @@ ShowGlobalShortcutsHelp() {
     [Ctrl+Alt+Win] - SECONDARY triple modifier 
 
 === AVAILABLE SECONDARY (Ctrl+Alt+Win) SLOTS ===
-Letters: none (A–Z are already used)
+Letters available: B, C, G, H, I, J, K, M, N, O, P, T, U, V, X, Y, Z
 [Ctrl+Alt+Win+0] > Available for future shortcut
 [Ctrl+Alt+Win+1] > Available for future shortcut
 [Ctrl+Alt+Win+2] > Available for future shortcut
