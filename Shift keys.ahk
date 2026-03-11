@@ -616,6 +616,8 @@ Cursor
 📋 [M] Quick shortcut menu (ahk)
 📄 [N] Review [N]ext file (ahk)
 📄 [R] efresh preview
+📄 [F] File: New [F]ile
+📂 [O] File: New F[O]lder
 
 --- Additional Shortcuts ---
 👁️ [Alt+F12] [P]eek Definition
