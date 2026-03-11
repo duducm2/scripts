@@ -887,7 +887,7 @@ cheatSheets["Command Palette"] := "
 Command Palette (Shift)
 ⌨️ [Ctrl+H] Reveal in file explorer
 ⌨️ [C][C]opy file Path
-⌨️ [B]Send ten [B]ackspaces
+⌨️ [B]Go [H]ome
 ⌨️ [S]Precise [S]earch
 ⌨️ [I][I]nsert Favorite (Add)
 ⌨️ [Ctrl+1] [S]elect current item
@@ -15412,8 +15412,12 @@ SettleUp_GetNewExpenseDialog() {
 ; Shift + C : Trigger Ctrl+Shift+C (Copy file path)
 +c:: Send "^+c"
 
-; Shift + B : Send ten backspaces
-+b:: Send "{Backspace 10}"
+; Shift + B : Go Home (select all then delete 3 chars)
++b:: {
+    Send "^a"
+    Sleep 30
+    Send "{Backspace 3}"
+}
 
 ; Shift + U : Insert double quotes twice, then hit left arrow
 +u:: Send '""{Left}'
