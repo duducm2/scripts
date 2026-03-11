@@ -3907,6 +3907,91 @@ ML_GetDocRoot() {
         return 0
 }
 
+; #region agent log - debug helper
+ML_DebugLog(hypothesisId, message, detail, runId := "pre-fix") {
+    try {
+        filePath := "debug-22dd27.log"
+        ; Build a single JSON line using Format() with indexed placeholders.
+        line := Format(
+            '{{"sessionId":"22dd27","runId":"{1}","hypothesisId":"{2}","location":"Shift keys.ahk","message":"{3}","data":{{"detail":"{4}"}},"timestamp":{5}}}' . "`n",
+            runId,
+            hypothesisId,
+            message,
+            detail,
+            A_TickCount
+        )
+        FileAppend(line, filePath, "UTF-8")
+    } catch {
+    }
+}
+; #endregion agent log
+
+; Locate the Mercado Livre Preço filter container, scoped to the block that
+; contains the predefined price links (Até R$ 40 / R$ 40 a R$ 95 / Mais de R$ 95)
+; and the Mínimo/Máximo edits. Returns the container element or 0.
+ML_GetPriceFilter(root) {
+    if !root
+        return 0
+    priceLinkNames := ["Até R$ 40", "R$ 40 a R$ 95", "Mais de R$ 95"]
+    for _, name in priceLinkNames {
+        link := ML_Find(root, { Type: 50005, Name: name, cs: false })
+        if !link
+            continue
+        parent := link
+        ; Walk up a few levels to find a container that has the Mínimo edit as a descendant.
+        loop 6 {
+            try parent := parent.Parent
+            catch
+                break
+            if !parent
+                break
+            minimo := ML_Find(parent, { Type: 50004, Name: "Mínimo", cs: false })
+            if (minimo) {
+                return parent
+            }
+        }
+    }
+    return 0
+}
+
+; Best-effort helper to set text of an edit element. Tries ValuePattern first,
+; then falls back to focus + clear + send keys.
+ML_SetEditText(el, text) {
+    if (!el)
+        return false
+    if (text = "")
+        return false
+    ok := false
+    try {
+        if el.GetPropertyValue(UIA.Property.IsValuePatternAvailable) {
+            vp := el.ValuePattern
+            vp.SetValue(text)
+            ok := true
+        }
+    } catch {
+        ML_DebugLog("C", "ValuePattern attempt failed", "exception in SetValue", "run1")
+    }
+    if (!ok) {
+        try el.ScrollIntoView()
+        catch {
+        }
+        try {
+            el.SetFocus()
+        } catch {
+            try el.Click()
+            catch {
+            }
+        }
+        Sleep 50
+        ML_DebugLog("C", "Focus acquired for edit", text, "run1")
+        Send "^a{Del}"
+        Sleep 30
+        SendText(text)
+        ok := true
+    }
+    return ok
+}
+
 ; Try conditions in order; invoke or click first match. Returns true if invoked/clicked, false otherwise.
 ML_FindAndInvoke(conditionList) {
     root := ML_GetDocRoot()
@@ -4415,47 +4500,6 @@ ML_SortApply(idx) {
     Hotkey("2", (*) => ML_SortSelect(2), "On")
     Hotkey("3", (*) => ML_SortSelect(3), "On")
     Hotkey("Escape", ML_SortCancel, "On")
-}
-
-; Shift + R: Faixa de preço – GUI Mínimo/Máximo e aplicar
-+r::
-{
-    root := ML_GetDocRoot()
-    if (!root) {
-        MsgBox "Página do Mercado Livre não disponível."
-        return
-    }
-    g := Gui("+Owner" . A_ScriptHwnd)
-    g.Add("Text", "w200", "Mínimo (R$):")
-    edMin := g.Add("Edit", "w80 Number")
-    g.Add("Text", "w200", "Máximo (R$):")
-    edMax := g.Add("Edit", "w80 Number")
-    g.Add("Button", "Default w80", "Aplicar").OnEvent("Click", (*) => g.Submit())
-    g.Title := "Faixa de preço"
-    if (g.Show() != "OK")
-        return
-    minVal := Trim(edMin.Text)
-    maxVal := Trim(edMax.Text)
-    if (minVal = "" && maxVal = "") {
-        MsgBox "Preencha ao menos Mínimo ou Máximo."
-        return
-    }
-    ; Find first Preço section edits (Name "Mínimo" / "Máximo") and apply button
-    elMin := ML_Find(root, { Type: 50004, Name: "Mínimo", cs: false })
-    elMax := ML_Find(root, { Type: 50004, Name: "Máximo", cs: false })
-    if (elMin && minVal != "")
-        try elMin.Value := minVal
-    if (elMax && maxVal != "")
-        try elMax.Value := maxVal
-    btn := ML_Find(root, { Type: 50000, Name: "Aplicar", cs: false })
-    if (!btn)
-        btn := ML_Find(root, { ClassName: "ui-search-range-filter", matchmode: "Substring" })
-    if (btn) {
-        try btn.Click()
-        catch
-            try btn.Invoke()
-    } else
-        MsgBox "Botão Aplicar não encontrado."
 }
 
 ; Shift + L: Paginação – Seguinte
