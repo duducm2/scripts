@@ -1098,7 +1098,8 @@ HandleProjectEscape(*) {
 }
 
 ; =============================================================================
-; Focus Cursor AI text field (self-contained, no UIA dependency)
+; Focus Cursor AI text field. Uses UIA when available to focus the composer input
+; without sending Ctrl+I, so the AI side panel is not closed when already open.
 ; targetHwnd: if provided, explicitly activate this window first (ensures paste goes to correct project).
 ; =============================================================================
 FocusCursorAITextField(targetHwnd := 0) {
@@ -1113,7 +1114,33 @@ FocusCursorAITextField(targetHwnd := 0) {
             WinWaitActive("ahk_id " targetHwnd, , 2)
         }
         Sleep 200
-        ; Open AI chat panel and focus input (keyboard-only; no external libs)
+
+        ; When UIA is available and AI pane is already open, focus the composer input directly
+        ; so that Ctrl+I is not sent (it would toggle the panel closed).
+        if (IsSet(UIA)) {
+            try {
+                root := UIA.ElementFromHandle(targetHwnd)
+                if (root) {
+                    ; Check if AI pane is open: "Toggle AI Pane (Ctrl+Alt+B)" CheckBox has "checked" in ClassName when open
+                    toggleEl := root.FindFirst({ Type: UIA.Type.CheckBox, Name: "Toggle AI Pane", matchmode: 2 })
+                    if (toggleEl && InStr(toggleEl.ClassName, "checked")) {
+                        ; Pane is open: find the composer Edit (aislash-editor-input, not readonly) and focus it
+                        allEdits := root.FindAll({ Type: UIA.Type.Edit })
+                        for editEl in allEdits {
+                            cn := editEl.ClassName
+                            if (InStr(cn, "aislash-editor-input") && !InStr(cn, "readonly")) {
+                                editEl.SetFocus()
+                                return true
+                            }
+                        }
+                    }
+                }
+            } catch {
+                ; UIA failed; fall through to keyboard path
+            }
+        }
+
+        ; Fallback: open AI chat panel and focus input (or when pane was closed)
         Send "^i"
         Sleep 1200
         Send "{Tab 2}"
