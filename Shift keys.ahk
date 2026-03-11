@@ -1438,6 +1438,9 @@ r=== CLIP ANGEL ===
 [Ctrl+Alt+Win+Shift+E] > Minimize window on monitor 3
 [Ctrl+Alt+Win+Shift+R] > Minimize window on monitor 4
 
+=== COMMAND PALETTE BOOKMARKS ===
+[Ctrl+Alt+Win+B] > Create new shortcut in Command Palette Bookmark extension
+
 === GENERAL ===
 [Win+Alt+Shift+U] > Quick string shortcuts
 [Ctrl+Alt+Win+4] > Send AI Text Optimizer prompt to Gemini (same as Win+Alt+Shift+U then L, 4)
