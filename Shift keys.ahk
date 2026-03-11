@@ -1341,7 +1341,19 @@ ShowGlobalShortcutsHelp() {
     globalText := "
 (
 [Win+Alt+Shift] - PRIMARY triple modifier (most used for system-wide shortcuts)
-[Ctrl+Alt+Win] - SECONDARY triple modifier 
+    [Ctrl+Alt+Win] - SECONDARY triple modifier 
+
+=== AVAILABLE SECONDARY (Ctrl+Alt+Win) SLOTS ===
+Letters: none (A–Z are already used)
+[Ctrl+Alt+Win+0] > Available for future shortcut
+[Ctrl+Alt+Win+1] > Available for future shortcut
+[Ctrl+Alt+Win+2] > Available for future shortcut
+[Ctrl+Alt+Win+3] > Available for future shortcut
+[Ctrl+Alt+Win+5] > Available for future shortcut
+[Ctrl+Alt+Win+6] > Available for future shortcut
+[Ctrl+Alt+Win+7] > Available for future shortcut
+[Ctrl+Alt+Win+8] > Available for future shortcut
+[Ctrl+Alt+Win+9] > Available for future shortcut
 
 === MAIN KEY COMBINATIONS ===
 [Symbol Layer] Win+Alt+Shift - Primary combination 
