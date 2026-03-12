@@ -289,13 +289,16 @@ ShowCursorFallbackPanel() {
 #!+h::
 {
     SetTitleMatchMode 2
-    if WinExist("YouTube") {
+    ; Prefer focusing an existing YouTube tab/window to avoid duplicates.
+    if WinExist("YouTube ahk_exe chrome.exe") {
         WinActivate
         CenterMouse()
     } else {
-        Run "chrome.exe --new-window https://www.youtube.com/feed/playlists"
-        WinWaitActive("YouTube")
-        CenterMouse()
+        ; No YouTube window detected: open History URL in Chrome.
+        Run 'chrome.exe "https://www.youtube.com/feed/history"'
+        if WinWaitActive("YouTube ahk_exe chrome.exe", , 10) {
+            CenterMouse()
+        }
     }
 }
 
