@@ -28,21 +28,6 @@ _DebugLog_WM(loc, msg, data, hypothesisId := "") {
     catch
         return  ; File in use by another process — skip this log line
 }
-; Additional runtime logging for this debug session (writes to debug-22dd27.log as NDJSON).
-_RuntimeLog_WM(hypothesisId, msg, data := "{}") {
-    try {
-        filePath := A_ScriptDir "\debug-22dd27.log"
-        line := Format(
-            '{{"sessionId":"22dd27","runId":"focus-ai","hypothesisId":"{1}","location":"WindowManagement.ahk","message":"{2}","data":{3},"timestamp":{4}}}' . "`n",
-            hypothesisId,
-            msg,
-            data,
-            A_TickCount
-        )
-        FileAppend line, filePath, "UTF-8"
-    } catch {
-    }
-}
 ; #endregion
 
 ; --- Helper Functions --------------------------------------------------------
@@ -1121,7 +1106,6 @@ HandleProjectEscape(*) {
 ; =============================================================================
 FocusCursorAITextField(targetHwnd := 0) {
     try {
-        _RuntimeLog_WM("H1", "FocusCursorAITextField.entry", '{"targetHwndParam":' . (targetHwnd ? targetHwnd : 0) . '}')
         if (targetHwnd) {
             WinActivate("ahk_id " targetHwnd)
             WinWaitActive("ahk_id " targetHwnd, , 2)
@@ -1144,12 +1128,10 @@ FocusCursorAITextField(targetHwnd := 0) {
                     toggleEl := root.FindFirst({ Type: UIA.Type.CheckBox, Name: "Toggle AI Pane", matchmode: 2 })
                     paneOpen := toggleEl && InStr(toggleEl.ClassName, "checked")
                     paneWasOpen := paneOpen
-                    _RuntimeLog_WM("H2", "pane-state-detected", '{"toggleFound":' . (toggleEl ? 1 : 0) . ',"className":"' . (toggleEl ? toggleEl.ClassName : "") . '","paneOpen":' . (paneOpen ? 1 : 0) . '}')
 
                     if (paneOpen) {
                         ; Panel already open: focus composer input directly (do not send Ctrl+I)
                         editEl := _WM_FindCursorComposerInput(root)
-                        _RuntimeLog_WM("H3", "pane-open-edit-result", '{"hasEdit":' . (editEl ? 1 : 0) . '}')
                         if (editEl) {
                             editEl.SetFocus()
                             Sleep 80
@@ -1159,13 +1141,11 @@ FocusCursorAITextField(targetHwnd := 0) {
                         ; Additional safety: if we can already find the composer, treat as open and DO NOT send Ctrl+I.
                         editEl := _WM_FindCursorComposerInput(root)
                         if (editEl) {
-                            _RuntimeLog_WM("H4", "pane-closed-toggle-but-composer-present", '{"willSendCtrlI":0}')
                             editEl.SetFocus()
                             Sleep 80
                             focusDone := true
                         } else {
                             ; Panel hidden: open with Ctrl+I, then wait for composer input and focus via UIA
-                            _RuntimeLog_WM("H4", "sending-Ctrl+I-open-pane", '{"paneWasOpen":0}')
                             Send "^i"
                             loop 15 {
                                 Sleep 200
@@ -1175,7 +1155,6 @@ FocusCursorAITextField(targetHwnd := 0) {
                                     editEl.SetFocus()
                                     Sleep 80
                                     focusDone := true
-                                    _RuntimeLog_WM("H4", "edit-found-after-Ctrl+I", '{"iteration":' . A_Index . '}')
                                     break
                                 }
                             }
@@ -1195,7 +1174,6 @@ FocusCursorAITextField(targetHwnd := 0) {
                     if (root) {
                         editEl := _WM_FindCursorComposerInput(root)
                         if (editEl) {
-                            _RuntimeLog_WM("H5", "fallback-ui-find-composer-without-toggle", '{"willSendCtrlI":0}')
                             editEl.SetFocus()
                             Sleep 80
                             focusDone := true
@@ -1208,17 +1186,14 @@ FocusCursorAITextField(targetHwnd := 0) {
             if (!focusDone) {
                 ; Keyboard fallback: only send Ctrl+I if the pane was not previously detected as open.
                 if (!paneWasOpen) {
-                    _RuntimeLog_WM("H5", "fallback-sending-Ctrl+I", '{"paneWasOpen":0}')
                     Send "^i"
                     Sleep 1200
                 }
                 ; Avoid blind Tab navigation that can land on title-bar navigation buttons (Go Back / Forward).
                 ; Without a reliable target, leave focus as-is and report failure.
-                _RuntimeLog_WM("H5", "fallback-failed-no-focus", '{"paneWasOpen":' . (paneWasOpen ? 1 : 0) . '}')
                 return false
             }
         }
-        _RuntimeLog_WM("H6", "FocusCursorAITextField.success", '{"targetHwnd":' . targetHwnd . ',"paneWasOpen":' . (paneWasOpen ? 1 : 0) . '}')
         return true
     } catch {
         return false
@@ -1229,19 +1204,13 @@ FocusCursorAITextField(targetHwnd := 0) {
 _WM_FindCursorComposerInput(root) {
     try {
         allEdits := root.FindAll({ Type: UIA.Type.Edit })
-        count := allEdits ? allEdits.Length : 0
-        _RuntimeLog_WM("H7", "_WM_FindCursorComposerInput.edit-count", '{"count":' . count . '}')
         for editEl in allEdits {
             cn := editEl.ClassName
             if (InStr(cn, "aislash-editor-input") && !InStr(cn, "readonly"))
-            {
-                _RuntimeLog_WM("H7", "_WM_FindCursorComposerInput.match", '{"className":"' . cn . '"}')
                 return editEl
-            }
         }
     } catch {
     }
-    _RuntimeLog_WM("H7", "_WM_FindCursorComposerInput.no-match", "{}")
     return ""
 }
 
