@@ -9692,7 +9692,7 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
 ; ---------------------------------------------------------------------------
 ; Ctrl + M : 1) Generate immediately. 2) Yellow banner 5s (N to avoid push). 3) Wait 15s.
 ; 4) Focus Cursor, commit, push by default (skip push only if N pressed). 5) Open Git panel to verify.
-; 6) Return to previous window (skipped if push so you can review).
+; 6) Return to previous window (skipped if push so you can review). Little test
 ; ---------------------------------------------------------------------------
 ^M:: {
     global gCommitPushTargetWin
