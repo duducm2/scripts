@@ -9734,7 +9734,7 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
     } else {
         Sleep 1500
     }
-    Send "+d"
+    ; Send "+d"
 
     ; Decide whether to return to previous window: stay in Cursor if we pushed
     shouldReturn := !didPush
