@@ -1156,19 +1156,28 @@ FocusCursorAITextField(targetHwnd := 0) {
                             focusDone := true
                         }
                     } else {
-                        ; Panel hidden: open with Ctrl+I, then wait for composer input and focus via UIA
-                        _RuntimeLog_WM("H4", "sending-Ctrl+I-open-pane", '{"paneWasOpen":0}')
-                        Send "^i"
-                        loop 15 {
-                            Sleep 200
-                            root := UIA.ElementFromHandle(targetHwnd)
-                            editEl := _WM_FindCursorComposerInput(root)
-                            if (editEl) {
-                                editEl.SetFocus()
-                                Sleep 80
-                                focusDone := true
-                                _RuntimeLog_WM("H4", "edit-found-after-Ctrl+I", '{"iteration":' . A_Index . '}')
-                                break
+                        ; Additional safety: if we can already find the composer, treat as open and DO NOT send Ctrl+I.
+                        editEl := _WM_FindCursorComposerInput(root)
+                        if (editEl) {
+                            _RuntimeLog_WM("H4", "pane-closed-toggle-but-composer-present", '{"willSendCtrlI":0}')
+                            editEl.SetFocus()
+                            Sleep 80
+                            focusDone := true
+                        } else {
+                            ; Panel hidden: open with Ctrl+I, then wait for composer input and focus via UIA
+                            _RuntimeLog_WM("H4", "sending-Ctrl+I-open-pane", '{"paneWasOpen":0}')
+                            Send "^i"
+                            loop 15 {
+                                Sleep 200
+                                root := UIA.ElementFromHandle(targetHwnd)
+                                editEl := _WM_FindCursorComposerInput(root)
+                                if (editEl) {
+                                    editEl.SetFocus()
+                                    Sleep 80
+                                    focusDone := true
+                                    _RuntimeLog_WM("H4", "edit-found-after-Ctrl+I", '{"iteration":' . A_Index . '}')
+                                    break
+                                }
                             }
                         }
                     }
@@ -1179,16 +1188,35 @@ FocusCursorAITextField(targetHwnd := 0) {
         }
 
         if (!focusDone) {
-            ; Keyboard fallback: only send Ctrl+I if the pane was not previously detected as open.
-            if (!paneWasOpen) {
-                _RuntimeLog_WM("H5", "fallback-sending-Ctrl+I", '{"paneWasOpen":0}')
-                Send "^i"
-                Sleep 1200
+            ; Before any keyboard fallback, try one more UIA-based composer search without relying on the toggle.
+            if (IsSet(UIA)) {
+                try {
+                    root := UIA.ElementFromHandle(targetHwnd)
+                    if (root) {
+                        editEl := _WM_FindCursorComposerInput(root)
+                        if (editEl) {
+                            _RuntimeLog_WM("H5", "fallback-ui-find-composer-without-toggle", '{"willSendCtrlI":0}')
+                            editEl.SetFocus()
+                            Sleep 80
+                            focusDone := true
+                        }
+                    }
+                } catch {
+                }
             }
-            ; Avoid blind Tab navigation that can land on title-bar navigation buttons (Go Back / Forward).
-            ; Without a reliable target, leave focus as-is and report failure.
-            _RuntimeLog_WM("H5", "fallback-failed-no-focus", '{"paneWasOpen":' . (paneWasOpen ? 1 : 0) . '}')
-            return false
+
+            if (!focusDone) {
+                ; Keyboard fallback: only send Ctrl+I if the pane was not previously detected as open.
+                if (!paneWasOpen) {
+                    _RuntimeLog_WM("H5", "fallback-sending-Ctrl+I", '{"paneWasOpen":0}')
+                    Send "^i"
+                    Sleep 1200
+                }
+                ; Avoid blind Tab navigation that can land on title-bar navigation buttons (Go Back / Forward).
+                ; Without a reliable target, leave focus as-is and report failure.
+                _RuntimeLog_WM("H5", "fallback-failed-no-focus", '{"paneWasOpen":' . (paneWasOpen ? 1 : 0) . '}')
+                return false
+            }
         }
         _RuntimeLog_WM("H6", "FocusCursorAITextField.success", '{"targetHwnd":' . targetHwnd . ',"paneWasOpen":' . (paneWasOpen ? 1 : 0) . '}')
         return true
@@ -1246,11 +1274,9 @@ HandleSelectionModeProjectSelection(index) {
         return
     }
 
-    if (ActivateCursorProject(projectPath)) {
-        ; Success
-    } else {
-        ShowNotification_WM("Failed to launch Cursor or focus AI field")
-    }
+    ; Best-effort: even if focusing the AI field reports a soft failure,
+    ; the Cursor window may still be usable. Suppress noisy failure toast.
+    ActivateCursorProject(projectPath)
     CleanupSelectionMode()
     CleanupProjectSelector()
 }
