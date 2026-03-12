@@ -4674,6 +4674,53 @@ StopPdfFocusMonitor() {
     g_PdfFocusTrackedHwnd := 0
 }
 
+; YouTube focus monitoring for automatic blackout cancellation (Win+Alt+Shift+H)
+global g_YoutubeFocusMonitorTimer := false
+global g_YoutubeFocusTrackedHwnd := 0
+
+; Monitor YouTube window focus and automatically disable focus mode when it loses focus
+MonitorYoutubeFocus() {
+    global g_YoutubeFocusTrackedHwnd
+
+    ; Check if tracked window still exists
+    if (g_YoutubeFocusTrackedHwnd && !WinExist("ahk_id " . g_YoutubeFocusTrackedHwnd)) {
+        DisableFocusMode()
+        StopYoutubeFocusMonitor()
+        return
+    }
+
+    ; Check if YouTube window is still the active window
+    if (!WinActive("ahk_id " . g_YoutubeFocusTrackedHwnd)) {
+        DisableFocusMode()
+        StopYoutubeFocusMonitor()
+    }
+}
+
+; Start monitoring YouTube window focus
+StartYoutubeFocusMonitor(hwnd := 0) {
+    global g_YoutubeFocusMonitorTimer, g_YoutubeFocusTrackedHwnd
+
+    StopYoutubeFocusMonitor()
+
+    g_YoutubeFocusTrackedHwnd := hwnd ? hwnd : WinExist("A")
+    if (!g_YoutubeFocusTrackedHwnd)
+        return
+
+    g_YoutubeFocusMonitorTimer := MonitorYoutubeFocus
+    SetTimer(g_YoutubeFocusMonitorTimer, 200)
+}
+
+; Stop monitoring YouTube window focus
+StopYoutubeFocusMonitor() {
+    global g_YoutubeFocusMonitorTimer, g_YoutubeFocusTrackedHwnd
+
+    if (g_YoutubeFocusMonitorTimer) {
+        SetTimer(g_YoutubeFocusMonitorTimer, 0)
+        g_YoutubeFocusMonitorTimer := false
+    }
+    g_YoutubeFocusTrackedHwnd := 0
+}
+
 ShowStudyTopicSelector() {
     global g_StudyTopicSelectorGui, g_StudyTopicSelectorActive, g_StudyTopics
 

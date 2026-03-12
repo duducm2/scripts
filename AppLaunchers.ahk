@@ -294,15 +294,23 @@ ShowCursorFallbackPanel() {
         SetTitleMatchMode 2
 
         ; Prefer focusing an existing YouTube Chrome window to avoid duplicates.
-        if WinExist("YouTube ahk_exe chrome.exe") {
-            WinActivate
+        hwnd := WinExist("YouTube ahk_exe chrome.exe")
+        if hwnd {
+            WinActivate("ahk_id " hwnd)
             CenterMouse()
-        } else {
-            ; No YouTube window detected: open History URL in a new Chrome window
-            ; so it doesn't attach as a tab to an existing instance.
-            Run 'chrome.exe --new-window "https://www.youtube.com/feed/history"'
-            if WinWaitActive("YouTube ahk_exe chrome.exe", , 10) {
-                CenterMouse()
+            EnableFocusMode()
+            StartYoutubeFocusMonitor(hwnd)
+            return
+        }
+        ; No YouTube window detected: open History URL in a new Chrome window
+        ; so it doesn't attach as a tab to an existing instance.
+        Run 'chrome.exe --new-window "https://www.youtube.com/feed/history"'
+        if WinWaitActive("YouTube ahk_exe chrome.exe", , 10) {
+            CenterMouse()
+            hwnd := WinExist("A")
+            if hwnd {
+                EnableFocusMode()
+                StartYoutubeFocusMonitor(hwnd)
             }
         }
     } finally {
