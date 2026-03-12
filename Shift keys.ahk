@@ -1362,7 +1362,6 @@ Letters available: B, C, G, H, I, J, K, M, N, O, P, T, U, V, X, Y, Z
 [Window Management] Ctrl+Alt+Win - Secondary combination
 
 
-=== PROJECT SELECTOR ===
 [Win+Alt+Shift+L] > Available for future shortcut
 
 === CURSOR ===

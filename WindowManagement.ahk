@@ -2406,7 +2406,8 @@ ShowProjectSelector() {
 
     ; Create GUI - non-activating so it doesn't steal focus (match Hotstring U aesthetics)
     g_ProjectSelectorGui := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x08000000", "Project Selector")
-    g_ProjectSelectorGui.BackColor := "1E1E2E"
+    ; Use a distinct dark theme background (slightly bluish gray for contrast)
+    g_ProjectSelectorGui.BackColor := "BF092F"
     g_ProjectSelectorGui.MarginX := 14
     g_ProjectSelectorGui.MarginY := 10
     fontSize := (monitorHeight < 800) ? 9 : 9
