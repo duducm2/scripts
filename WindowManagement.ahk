@@ -1104,6 +1104,39 @@ HandleProjectEscape(*) {
 ; - If UIA cannot locate the composer input, do NOT fall back to generic Tab navigation (which can hit toolbar buttons like Go Back).
 ; targetHwnd: if provided, explicitly activate this window first (ensures paste goes to correct project).
 ; =============================================================================
+WM_EnsureComposerHasFocus(editEl) {
+    if (!editEl)
+        return false
+    try {
+        editEl.SetFocus()
+    } catch {
+    }
+    ; Bounded retry loop: check HasKeyboardFocus a few times with small delays.
+    loop 3 {
+        try {
+            if (editEl.HasKeyboardFocus)
+                return true
+        } catch {
+        }
+        Sleep 40
+    }
+    ; If simple SetFocus did not succeed, try scroll + click once, then re-check.
+    try {
+        editEl.ScrollIntoView()
+    } catch {
+    }
+    try {
+        editEl.Click()
+    } catch {
+    }
+    Sleep 60
+    try {
+        return editEl.HasKeyboardFocus
+    } catch {
+        return false
+    }
+}
+
 FocusCursorAITextField(targetHwnd := 0) {
     try {
         if (targetHwnd) {
@@ -1116,6 +1149,12 @@ FocusCursorAITextField(targetHwnd := 0) {
             WinWaitActive("ahk_id " targetHwnd, , 2)
         }
         Sleep 200
+
+        ; Show loading indicator while navigating to the AI text field.
+        ; Center on the Cursor window and use the standard intermediate accent color.
+        stateText := "⏳ Focando campo de texto da IA..."
+        StandardLoadingBar_Show(stateText, BANNER_ACCENT_INTERMEDIATE, { centerOnHwnd: targetHwnd, passive: false })
+        barShown := true
 
         ; Track whether AI pane was detected as open so we only ever send Ctrl+I to open it (never to close it).
         paneWasOpen := false
@@ -1133,17 +1172,15 @@ FocusCursorAITextField(targetHwnd := 0) {
                         ; Panel already open: focus composer input directly (do not send Ctrl+I)
                         editEl := _WM_FindCursorComposerInput(root)
                         if (editEl) {
-                            editEl.SetFocus()
-                            Sleep 80
-                            focusDone := true
+                            if (WM_EnsureComposerHasFocus(editEl))
+                                focusDone := true
                         }
                     } else {
                         ; Additional safety: if we can already find the composer, treat as open and DO NOT send Ctrl+I.
                         editEl := _WM_FindCursorComposerInput(root)
                         if (editEl) {
-                            editEl.SetFocus()
-                            Sleep 80
-                            focusDone := true
+                            if (WM_EnsureComposerHasFocus(editEl))
+                                focusDone := true
                         } else {
                             ; Panel hidden: open with Ctrl+I, then wait for composer input and focus via UIA
                             Send "^i"
@@ -1152,9 +1189,8 @@ FocusCursorAITextField(targetHwnd := 0) {
                                 root := UIA.ElementFromHandle(targetHwnd)
                                 editEl := _WM_FindCursorComposerInput(root)
                                 if (editEl) {
-                                    editEl.SetFocus()
-                                    Sleep 80
-                                    focusDone := true
+                                    if (WM_EnsureComposerHasFocus(editEl))
+                                        focusDone := true
                                     break
                                 }
                             }
@@ -1174,9 +1210,8 @@ FocusCursorAITextField(targetHwnd := 0) {
                     if (root) {
                         editEl := _WM_FindCursorComposerInput(root)
                         if (editEl) {
-                            editEl.SetFocus()
-                            Sleep 80
-                            focusDone := true
+                            if (WM_EnsureComposerHasFocus(editEl))
+                                focusDone := true
                         }
                     }
                 } catch {
@@ -1197,6 +1232,11 @@ FocusCursorAITextField(targetHwnd := 0) {
         return true
     } catch {
         return false
+    } finally {
+        ; Always hide the loading indicator once navigation is complete or has failed.
+        try StandardLoadingBar_Hide(0)
+        catch {
+        }
     }
 }
 
