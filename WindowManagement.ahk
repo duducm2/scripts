@@ -2601,14 +2601,25 @@ ShowProjectSelector() {
     } catch {
     }
 }
-; Win+Alt+Shift+L hotkey for Project Quick Selector (toggle: close if open, open if closed)
-#!+l:: {
+; Ctrl+Alt+Win+0: Project Quick Selector (opens project folder in Cursor)
+^!#0:: {
+    ShowProjectSelector()
+}
+
+; Ctrl+Alt+Win+1: Cursor AI quick action (Project Selector + Selection Mode)
+^!#1:: {
     global g_ProjectSelectorActive, g_ProjectSelectorGui
-    if (g_ProjectSelectorActive && IsObject(g_ProjectSelectorGui)) {
-        CleanupProjectSelector()
-    } else {
+
+    if (!g_ProjectSelectorActive || !IsObject(g_ProjectSelectorGui)) {
         ShowProjectSelector()
     }
+
+    if (!g_ProjectSelectorActive || !IsObject(g_ProjectSelectorGui)) {
+        try ShowNotification_WM("Project selector could not be opened.")
+        return
+    }
+
+    HandleSelectionModeTrigger()
 }
 ; =============================================================================
 ; SCRIPT SUMMARY & OPTIMIZATION DOCUMENTATION

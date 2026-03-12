@@ -1343,12 +1343,12 @@ ShowGlobalShortcutsHelp() {
     globalText := "
 (
 [Win+Alt+Shift] - PRIMARY triple modifier (most used for system-wide shortcuts)
-    [Ctrl+Alt+Win] - SECONDARY triple modifier 
+    [Ctrl+Alt+Win] - SECONDARY triple modifier
 
 === AVAILABLE SECONDARY (Ctrl+Alt+Win) SLOTS ===
 Letters available: B, C, G, H, I, J, K, M, N, O, P, T, U, V, X, Y, Z
-[Ctrl+Alt+Win+0] > Available for future shortcut
-[Ctrl+Alt+Win+1] > Available for future shortcut
+[Ctrl+Alt+Win+0] > Project Quick Selector (opens project folder in Cursor)
+[Ctrl+Alt+Win+1] > Cursor AI quick action (Project Selector + Selection Mode)
 [Ctrl+Alt+Win+2] > Available for future shortcut
 [Ctrl+Alt+Win+3] > Available for future shortcut
 [Ctrl+Alt+Win+5] > Available for future shortcut
@@ -1358,12 +1358,12 @@ Letters available: B, C, G, H, I, J, K, M, N, O, P, T, U, V, X, Y, Z
 [Ctrl+Alt+Win+9] > Available for future shortcut
 
 === MAIN KEY COMBINATIONS ===
-[Symbol Layer] Win+Alt+Shift - Primary combination 
+[Symbol Layer] Win+Alt+Shift - Primary combination
 [Window Management] Ctrl+Alt+Win - Secondary combination
 
 
 === PROJECT SELECTOR ===
-[Win+Alt+Shift+L] > Project Quick Selector (opens project folder in Cursor)
+[Win+Alt+Shift+L] > Available for future shortcut
 
 === CURSOR ===
 [Win+Alt+Shift+N] > Opens or activates Cursor (habits, home, punctual, or work windows)
