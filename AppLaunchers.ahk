@@ -288,17 +288,25 @@ ShowCursorFallbackPanel() {
 ; =============================================================================
 #!+h::
 {
-    SetTitleMatchMode 2
-    ; Prefer focusing an existing YouTube tab/window to avoid duplicates.
-    if WinExist("YouTube ahk_exe chrome.exe") {
-        WinActivate
-        CenterMouse()
-    } else {
-        ; No YouTube window detected: open History URL in Chrome.
-        Run 'chrome.exe "https://www.youtube.com/feed/history"'
-        if WinWaitActive("YouTube ahk_exe chrome.exe", , 10) {
+    ; Preserve and restore title match mode (efficiency-canon: no leaked global state)
+    prevTitleMode := A_TitleMatchMode
+    try {
+        SetTitleMatchMode 2
+
+        ; Prefer focusing an existing YouTube Chrome window to avoid duplicates.
+        if WinExist("YouTube ahk_exe chrome.exe") {
+            WinActivate
             CenterMouse()
+        } else {
+            ; No YouTube window detected: open History URL in a new Chrome window
+            ; so it doesn't attach as a tab to an existing instance.
+            Run 'chrome.exe --new-window "https://www.youtube.com/feed/history"'
+            if WinWaitActive("YouTube ahk_exe chrome.exe", , 10) {
+                CenterMouse()
+            }
         }
+    } finally {
+        try SetTitleMatchMode prevTitleMode
     }
 }
 
