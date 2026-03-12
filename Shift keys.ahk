@@ -9690,8 +9690,8 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
 +b:: Send "+b"
 
 ; ---------------------------------------------------------------------------
-; Ctrl + M : 1) Generate immediately. 2) Yellow banner 5s (Y to push). 3) Wait 15s.
-; 4) Focus Cursor, commit, push if Y pressed. 5) Open Git panel to verify.
+; Ctrl + M : 1) Generate immediately. 2) Yellow banner 5s (N to avoid push). 3) Wait 15s.
+; 4) Focus Cursor, commit, push by default (skip push only if N pressed). 5) Open Git panel to verify.
 ; 6) Return to previous window (skipped if push so you can review).
 ; ---------------------------------------------------------------------------
 ^M:: {
@@ -9701,7 +9701,8 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
     if !hwnd
         return
     gCommitPushTargetWin := hwnd
-    gCommitPushDecision := ""
+    ; Default behavior is now: commit + push, unless user opts out.
+    gCommitPushDecision := "push"
 
     ; 1. Trigger generation immediately (Ctrl+Alt+A)
     SoundPlay A_ScriptDir "\sounds\commit-start.wav"
@@ -9720,7 +9721,7 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
     if !WinWaitActive("ahk_id " hwnd, , 3)
         return
 
-    ; 4. Execute commit and push if necessary
+    ; 4. Execute commit and push if necessary (default: push; user can opt out)
     Send "+v"
     didPush := (gCommitPushDecision = "push")
     if (didPush) {
@@ -9768,7 +9769,7 @@ global gCommitPushDecision := ""
 global g_CommitPushBannerGui := ""
 global g_CommitPushBannerBorderGui := ""
 
-; Non-blocking banner: "Push? Press Y within 5 seconds" (dark background, yellow accent border)
+; Non-blocking banner: "Don't push? Press N within 5 seconds" (dark background, yellow accent border)
 ShowCommitPushBanner() {
     global g_CommitPushBannerGui, g_CommitPushBannerBorderGui
     try {
@@ -9785,7 +9786,7 @@ ShowCommitPushBanner() {
     bannerGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
     bannerGui.BackColor := "1E1E2E"
     bannerGui.SetFont("s14 cFFFFFF Bold", "Segoe UI")
-    bannerGui.Add("Text", "w400 Center", "Push? Press Y within 5 seconds")
+    bannerGui.Add("Text", "w400 Center", "Don't push? Press N within 5 seconds")
     activeWin := WinGetID("A")
     if (activeWin)
         WinGetPos(&winX, &winY, &winW, &winH, activeWin)
@@ -9811,14 +9812,15 @@ ShowCommitPushBanner() {
     bannerGui.Show("x" . Round(guiX) . " y" . Round(guiY) . " NA")
     WinSetTransparent(220, bannerGui)
     g_CommitPushBannerGui := bannerGui
-    Hotkey("y", CommitPushBanner_YHandler, "On")
-    Hotkey("Y", CommitPushBanner_YHandler, "On")
+    Hotkey("n", CommitPushBanner_NHandler, "On")
+    Hotkey("N", CommitPushBanner_NHandler, "On")
     SetTimer(CloseCommitPushBanner, -5000)
 }
 
-CommitPushBanner_YHandler(*) {
+CommitPushBanner_NHandler(*) {
     global gCommitPushDecision
-    gCommitPushDecision := "push"
+    ; User explicitly opted out of pushing; keep commit-only.
+    gCommitPushDecision := "dont_push"
     CloseCommitPushBanner()
 }
 
@@ -9838,10 +9840,10 @@ CloseCommitPushBanner() {
         }
     } catch {
     }
-    try Hotkey("y", "Off")
+    try Hotkey("n", "Off")
     catch {
     }
-    try Hotkey("Y", "Off")
+    try Hotkey("N", "Off")
     catch {
     }
     SetTimer(CloseCommitPushBanner, 0)
