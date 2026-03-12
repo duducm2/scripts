@@ -2601,9 +2601,14 @@ ShowProjectSelector() {
     } catch {
     }
 }
-; Ctrl+Alt+Win+0: Project Quick Selector (opens project folder in Cursor)
+; Ctrl+Alt+Win+0: Project Quick Selector (toggle: close if open, open if closed)
 ^!#0:: {
-    ShowProjectSelector()
+    global g_ProjectSelectorActive, g_ProjectSelectorGui
+    if (g_ProjectSelectorActive && IsObject(g_ProjectSelectorGui)) {
+        CleanupProjectSelector()
+    } else {
+        ShowProjectSelector()
+    }
 }
 
 ; Ctrl+Alt+Win+1: Cursor AI quick action (Project Selector + Selection Mode)

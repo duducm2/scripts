@@ -4100,3 +4100,13 @@
 {"location":"WindowManagement.ahk:ActivateCursorProject","message":"after FindAndActivate","data":{"targetHwnd":656610},"hypothesisId":"H3","timestamp":13344250}
 {"location":"WindowManagement.ahk:ActivateCursorProject","message":"after FocusCursorAITextField","data":{"focusOk":1},"hypothesisId":"H4","timestamp":13345343}
 {"location":"WindowManagement.ahk:ActivateCursorProject","message":"return true","data":{},"hypothesisId":"H3","timestamp":13345453}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"entry","data":{"pathLen":119,"dirExists":1},"hypothesisId":"H3","timestamp":18708953}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"after FindAndActivate","data":{"targetHwnd":0},"hypothesisId":"H3","timestamp":18708953}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"entry","data":{"pathLen":119,"dirExists":1},"hypothesisId":"H3","timestamp":18719843}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"after FindAndActivate","data":{"targetHwnd":0},"hypothesisId":"H3","timestamp":18719843}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"entry","data":{"pathLen":33,"dirExists":1},"hypothesisId":"H3","timestamp":18729468}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"after FindAndActivate","data":{"targetHwnd":3476584},"hypothesisId":"H3","timestamp":18729703}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"after FocusCursorAITextField","data":{"focusOk":1},"hypothesisId":"H4","timestamp":18730828}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"return true","data":{},"hypothesisId":"H3","timestamp":18730921}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"entry","data":{"pathLen":119,"dirExists":1},"hypothesisId":"H3","timestamp":18733906}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"after FindAndActivate","data":{"targetHwnd":0},"hypothesisId":"H3","timestamp":18733906}
