@@ -1412,6 +1412,7 @@ global g_CursorTransferSelectorActive := false
 global g_CursorTransferSelectorResult := ""   ; "" = waiting, 0 = cancel, integer = selected hwnd
 global g_CursorTransferWindowList := []      ; up to 9 { hwnd, title }
 global g_CursorTransferHotkeyHandlers := []
+global g_CursorTransferPidCmdCache := Map()
 
 CursorTransfer_SelectorClose() {
     global g_CursorTransferSelectorActive, g_CursorTransferSelectorGui, g_CursorTransferHotkeyHandlers
@@ -1519,6 +1520,62 @@ CursorTransfer_GetMatchingProjectIndexForTitle(winTitle) {
     return 0
 }
 
+; Return project path according to current environment for a given project object.
+CursorTransfer_GetEffectiveProjectPath(project) {
+    isWork := (IsSet(IS_WORK_ENVIRONMENT) && IS_WORK_ENVIRONMENT)
+    projectPath := isWork ? project.workPath : project.path
+    if (isWork && (projectPath = ""))
+        projectPath := project.path
+    return projectPath
+}
+
+; Get process command line by PID (cached). Returns "" on failure.
+CursorTransfer_GetProcessCommandLine(pid) {
+    global g_CursorTransferPidCmdCache
+    if (!pid)
+        return ""
+    if (g_CursorTransferPidCmdCache.Has(pid))
+        return g_CursorTransferPidCmdCache[pid]
+    cmd := ""
+    try {
+        locator := ComObject("WbemScripting.SWbemLocator")
+        svc := locator.ConnectServer(".", "root\cimv2")
+        for proc in svc.ExecQuery("SELECT CommandLine FROM Win32_Process WHERE ProcessId = " pid) {
+            try cmd := proc.CommandLine
+            break
+        }
+    } catch {
+        cmd := ""
+    }
+    g_CursorTransferPidCmdCache[pid] := cmd ? cmd : ""
+    return g_CursorTransferPidCmdCache[pid]
+}
+
+; Primary: match project by process command-line path. Fallback: title segment matching.
+CursorTransfer_GetMatchingProjectIndex(hwnd, winTitle := "") {
+    global g_Projects
+    if (!IsObject(g_Projects))
+        return 0
+    pid := 0
+    try pid := WinGetPID("ahk_id " hwnd)
+    cmdLine := CursorTransfer_GetProcessCommandLine(pid)
+    if (cmdLine != "") {
+        cmdLow := StrLower(cmdLine)
+        loop g_Projects.Length {
+            project := g_Projects[A_Index]
+            if (project.name = "" && project.path = "" && project.workPath = "")
+                continue
+            projectPath := CursorTransfer_GetEffectiveProjectPath(project)
+            if (projectPath = "")
+                continue
+            projLow := StrLower(RTrim(projectPath, "\"))
+            if (projLow != "" && InStr(cmdLow, projLow))
+                return A_Index
+        }
+    }
+    return CursorTransfer_GetMatchingProjectIndexForTitle(winTitle)
+}
+
 ; Stable insertion sort for small arrays by project order, then by title.
 CursorTransfer_SortWindowsByProjectOrder(&arr) {
     n := arr.Length
@@ -1576,6 +1633,7 @@ CursorTransfer_GetProjectNameForTitle(winTitle) {
 CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
     global g_CursorTransferSelectorGui, g_CursorTransferSelectorActive, g_CursorTransferSelectorResult
     global g_CursorTransferWindowList, g_CursorTransferHotkeyHandlers
+    global g_Projects, g_ProjectCharSequence
     ; #region agent log
     try FileAppend "{" . Chr(34) . "sessionId" . Chr(34) . ":" . Chr(34) . "502cc2" . Chr(34) . "," . Chr(34) .
     "location" . Chr(34) . ":" . Chr(34) . "Utils.ahk:CursorTransfer_ShowWindowSelector" . Chr(34) . "," . Chr(34) .
@@ -1617,28 +1675,36 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
     Chr(34) . "hypothesisId" . Chr(34) . ":" . Chr(34) . "G1" . Chr(34) . "," . Chr(34) . "timestamp" . Chr(34) . ":" .
     A_TickCount . "}`n", A_ScriptDir . "\debug-502cc2.log"
     ; #endregion
-    ; Enrich list, filter empty/placeholder entries, and sort by project order from g_Projects.
+    ; Enrich list using path-first project identification, then sort by canonical project order.
     enriched := []
+    matchedCount := 0
+    unmatchedCount := 0
     for w in list {
         winTitle := w.title ? w.title : ""
-        projName := CursorTransfer_GetProjectNameForTitle(winTitle)
-        projectOrder := CursorTransfer_GetProjectOrderForTitle(winTitle)
-        if (projName = "" && winTitle = "")
-            continue
+        projectIndex := CursorTransfer_GetMatchingProjectIndex(w.hwnd, winTitle)
+        projectOrder := projectIndex > 0 ? projectIndex : 10000 + enriched.Length
+        projName := ""
+        if (projectIndex > 0) {
+            try {
+                project := g_Projects[projectIndex]
+                projName := project.name
+            }
+        }
         displayName := ""
         if (projName != "") {
             displayName := projName
+            matchedCount++
         } else {
-            displayName := (StrLen(winTitle) > 50) ? SubStr(winTitle, 1, 47) . "..." : winTitle
-            if (displayName = "")
-                continue
+            displayName := (winTitle != "") ? ((StrLen(winTitle) > 50) ? SubStr(winTitle, 1, 47) . "..." : winTitle) :
+                ("Cursor Window " . w.hwnd)
+            unmatchedCount++
         }
         enriched.Push({
             hwnd: w.hwnd,
             title: winTitle,
             displayName: displayName,
-            projectOrder: projectOrder > 0 ? projectOrder : (10000 + enriched.Length),
-            projectIndex: projectOrder,
+            projectOrder: projectOrder,
+            projectIndex: projectIndex,
             hotkeyChar: ""
         })
     }
@@ -1655,24 +1721,41 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
     } else {
         list := enriched
     }
-    ; Assign canonical project hotkeys (same as standard selector) and hide unmatched/empty entries.
+    ; Assign canonical project hotkeys (same as standard selector). Keep unmatched windows with fallback keys.
     projectIndexToChar := CursorTransfer_BuildProjectIndexToChar()
-    filtered := []
+    usedChars := Map()
     for w in list {
         if (w.projectIndex > 0 && projectIndexToChar.Has(w.projectIndex)) {
             w.hotkeyChar := projectIndexToChar[w.projectIndex]
-            filtered.Push(w)
+            usedChars[w.hotkeyChar] := true
         }
     }
-    list := filtered
-    if (list.Length = 0) {
-        ShowCenteredOverlay_Utils("❌ No mapped Cursor projects found", 2000, BANNER_ACCENT_ERROR)
-        return 0
+    for w in list {
+        if (w.hotkeyChar != "")
+            continue
+        loop g_ProjectCharSequence.Length {
+            c := g_ProjectCharSequence[A_Index]
+            if (c = "3")
+                continue
+            if (!usedChars.Has(c)) {
+                w.hotkeyChar := c
+                usedChars[c] := true
+                break
+            }
+        }
     }
+    ; If any window still has no key, drop it (extremely rare: ran out of available chars).
+    filtered := []
+    for w in list {
+        if (w.hotkeyChar != "")
+            filtered.Push(w)
+    }
+    list := filtered
     ; #region agent log
     try FileAppend "{" . Chr(34) . "sessionId" . Chr(34) . ":" . Chr(34) . "502cc2" . Chr(34) . "," . Chr(34) .
     "location" . Chr(34) . ":" . Chr(34) . "Utils.ahk:CursorTransfer_ShowWindowSelector" . Chr(34) . "," . Chr(34) .
-    "message" . Chr(34) . ":" . Chr(34) . "after enrich" . Chr(34) . "," . Chr(34) . "data" . Chr(34) . ":{}," .
+    "message" . Chr(34) . ":" . Chr(34) . "after enrich" . Chr(34) . "," . Chr(34) . "data" . Chr(34) . ":{" . Chr(34) .
+    "matched" . Chr(34) . ":" . matchedCount . "," . Chr(34) . "unmatched" . Chr(34) . ":" . unmatchedCount . "}," .
     Chr(34) . "hypothesisId" . Chr(34) . ":" . Chr(34) . "G1" . Chr(34) . "," . Chr(34) . "timestamp" . Chr(34) . ":" .
     A_TickCount . "}`n", A_ScriptDir . "\debug-502cc2.log"
     ; #endregion
