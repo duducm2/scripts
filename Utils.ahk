@@ -1612,18 +1612,7 @@ CursorTransfer_GetProjectNameForTitle(winTitle) {
         project := g_Projects[idx]
         if (project.name != "")
             return project.name
-    } catch as err {
-        ; #region agent log
-        errMsg := ""
-        try errMsg := err.Message
-        try FileAppend "{" . Chr(34) . "sessionId" . Chr(34) . ":" . Chr(34) . "502cc2" . Chr(34) . "," . Chr(34) .
-        "location" . Chr(34) . ":" . Chr(34) . "Utils.ahk:CursorTransfer_GetProjectNameForTitle" . Chr(34) . "," .
-        Chr(34) . "message" . Chr(34) . ":" . Chr(34) . "catch" . Chr(34) . "," . Chr(34) . "data" . Chr(34) . ":{" .
-        Chr(34) . "titleLen" . Chr(34) . ":" . StrLen(winTitle) . "," . Chr(34) . "err" . Chr(34) . ":" . Chr(34) .
-        StrReplace(StrReplace(errMsg, "\", "\\"), Chr(34), "'") . Chr(34) . "}," . Chr(34) . "hypothesisId" . Chr(34) .
-        ":" . Chr(34) . "G3" . Chr(34) . "," . Chr(34) . "timestamp" . Chr(34) . ":" . A_TickCount . "}`n", A_ScriptDir .
-        "\debug-502cc2.log"
-        ; #endregion
+    } catch {
     }
     return ""
 }
@@ -1634,13 +1623,6 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
     global g_CursorTransferSelectorGui, g_CursorTransferSelectorActive, g_CursorTransferSelectorResult
     global g_CursorTransferWindowList, g_CursorTransferHotkeyHandlers
     global g_Projects, g_ProjectCharSequence
-    ; #region agent log
-    try FileAppend "{" . Chr(34) . "sessionId" . Chr(34) . ":" . Chr(34) . "502cc2" . Chr(34) . "," . Chr(34) .
-    "location" . Chr(34) . ":" . Chr(34) . "Utils.ahk:CursorTransfer_ShowWindowSelector" . Chr(34) . "," . Chr(34) .
-    "message" . Chr(34) . ":" . Chr(34) . "entry" . Chr(34) . "," . Chr(34) . "data" . Chr(34) . ":{}," . Chr(34) .
-    "hypothesisId" . Chr(34) . ":" . Chr(34) . "D" . Chr(34) . "," . Chr(34) . "timestamp" . Chr(34) . ":" .
-    A_TickCount . "}`n", A_ScriptDir . "\debug-502cc2.log"
-    ; #endregion
     CursorTransfer_SelectorClose()
     list := []
     DetectHiddenWindows true
@@ -1657,28 +1639,12 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
     } catch {
     }
     DetectHiddenWindows false
-    ; #region agent log
-    try FileAppend "{" . Chr(34) . "sessionId" . Chr(34) . ":" . Chr(34) . "502cc2" . Chr(34) . "," . Chr(34) .
-    "location" . Chr(34) . ":" . Chr(34) . "Utils.ahk:CursorTransfer_ShowWindowSelector" . Chr(34) . "," . Chr(34) .
-    "message" . Chr(34) . ":" . Chr(34) . "after enum" . Chr(34) . "," . Chr(34) . "data" . Chr(34) . ":{" . Chr(34) .
-    "listLen" . Chr(34) . ":" . list.Length . "}," . Chr(34) . "hypothesisId" . Chr(34) . ":" . Chr(34) . "D" . Chr(34) .
-    "," . Chr(34) . "timestamp" . Chr(34) . ":" . A_TickCount . "}`n", A_ScriptDir . "\debug-502cc2.log"
-    ; #endregion
     if (list.Length = 0) {
         ShowCenteredOverlay_Utils("❌ No Cursor windows found", 2000, BANNER_ACCENT_ERROR)
         return 0
     }
-    ; #region agent log
-    try FileAppend "{" . Chr(34) . "sessionId" . Chr(34) . ":" . Chr(34) . "502cc2" . Chr(34) . "," . Chr(34) .
-    "location" . Chr(34) . ":" . Chr(34) . "Utils.ahk:CursorTransfer_ShowWindowSelector" . Chr(34) . "," . Chr(34) .
-    "message" . Chr(34) . ":" . Chr(34) . "before enrich" . Chr(34) . "," . Chr(34) . "data" . Chr(34) . ":{}," .
-    Chr(34) . "hypothesisId" . Chr(34) . ":" . Chr(34) . "G1" . Chr(34) . "," . Chr(34) . "timestamp" . Chr(34) . ":" .
-    A_TickCount . "}`n", A_ScriptDir . "\debug-502cc2.log"
-    ; #endregion
     ; Enrich list using path-first project identification, then sort by canonical project order.
     enriched := []
-    matchedCount := 0
-    unmatchedCount := 0
     for w in list {
         winTitle := w.title ? w.title : ""
         projectIndex := CursorTransfer_GetMatchingProjectIndex(w.hwnd, winTitle)
@@ -1693,11 +1659,9 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
         displayName := ""
         if (projName != "") {
             displayName := projName
-            matchedCount++
         } else {
             displayName := (winTitle != "") ? ((StrLen(winTitle) > 50) ? SubStr(winTitle, 1, 47) . "..." : winTitle) :
                 ("Cursor Window " . w.hwnd)
-            unmatchedCount++
         }
         enriched.Push({
             hwnd: w.hwnd,
@@ -1751,24 +1715,9 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
             filtered.Push(w)
     }
     list := filtered
-    ; #region agent log
-    try FileAppend "{" . Chr(34) . "sessionId" . Chr(34) . ":" . Chr(34) . "502cc2" . Chr(34) . "," . Chr(34) .
-    "location" . Chr(34) . ":" . Chr(34) . "Utils.ahk:CursorTransfer_ShowWindowSelector" . Chr(34) . "," . Chr(34) .
-    "message" . Chr(34) . ":" . Chr(34) . "after enrich" . Chr(34) . "," . Chr(34) . "data" . Chr(34) . ":{" . Chr(34) .
-    "matched" . Chr(34) . ":" . matchedCount . "," . Chr(34) . "unmatched" . Chr(34) . ":" . unmatchedCount . "}," .
-    Chr(34) . "hypothesisId" . Chr(34) . ":" . Chr(34) . "G1" . Chr(34) . "," . Chr(34) . "timestamp" . Chr(34) . ":" .
-    A_TickCount . "}`n", A_ScriptDir . "\debug-502cc2.log"
-    ; #endregion
     g_CursorTransferWindowList := list
     g_CursorTransferSelectorResult := ""
     g_CursorTransferSelectorActive := true
-    ; #region agent log
-    try FileAppend "{" . Chr(34) . "sessionId" . Chr(34) . ":" . Chr(34) . "502cc2" . Chr(34) . "," . Chr(34) .
-    "location" . Chr(34) . ":" . Chr(34) . "Utils.ahk:CursorTransfer_ShowWindowSelector" . Chr(34) . "," . Chr(34) .
-    "message" . Chr(34) . ":" . Chr(34) . "before gui create" . Chr(34) . "," . Chr(34) . "data" . Chr(34) . ":{}," .
-    Chr(34) . "hypothesisId" . Chr(34) . ":" . Chr(34) . "G2" . Chr(34) . "," . Chr(34) . "timestamp" . Chr(34) . ":" .
-    A_TickCount . "}`n", A_ScriptDir . "\debug-502cc2.log"
-    ; #endregion
     g_CursorTransferSelectorGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner")
     g_CursorTransferSelectorGui.BackColor := "1E1E2E"
     g_CursorTransferSelectorGui.MarginX := 20
@@ -1803,13 +1752,6 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
     cy := mt + (mh - gh) // 2
     g_CursorTransferSelectorGui.Show("x" . cx . " y" . cy)
     try WinActivate("ahk_id " g_CursorTransferSelectorGui.Hwnd)
-    ; #region agent log
-    try FileAppend "{" . Chr(34) . "sessionId" . Chr(34) . ":" . Chr(34) . "502cc2" . Chr(34) . "," . Chr(34) .
-    "location" . Chr(34) . ":" . Chr(34) . "Utils.ahk:CursorTransfer_ShowWindowSelector" . Chr(34) . "," . Chr(34) .
-    "message" . Chr(34) . ":" . Chr(34) . "GUI shown" . Chr(34) . "," . Chr(34) . "data" . Chr(34) . ":{" . Chr(34) .
-    "listLen" . Chr(34) . ":" . list.Length . "}," . Chr(34) . "hypothesisId" . Chr(34) . ":" . Chr(34) . "E" . Chr(34) .
-    "," . Chr(34) . "timestamp" . Chr(34) . ":" . A_TickCount . "}`n", A_ScriptDir . "\debug-502cc2.log"
-    ; #endregion
     g_CursorTransferHotkeyHandlers := []
     loop list.Length {
         i := A_Index
@@ -1845,13 +1787,6 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
         Sleep 50
     }
     result := (g_CursorTransferSelectorResult = "") ? 0 : Integer(g_CursorTransferSelectorResult)
-    ; #region agent log
-    try FileAppend "{" . Chr(34) . "sessionId" . Chr(34) . ":" . Chr(34) . "502cc2" . Chr(34) . "," . Chr(34) .
-    "location" . Chr(34) . ":" . Chr(34) . "Utils.ahk:CursorTransfer_ShowWindowSelector" . Chr(34) . "," . Chr(34) .
-    "message" . Chr(34) . ":" . Chr(34) . "exit wait" . Chr(34) . "," . Chr(34) . "data" . Chr(34) . ":{" . Chr(34) .
-    "result" . Chr(34) . ":" . result . "}," . Chr(34) . "hypothesisId" . Chr(34) . ":" . Chr(34) . "F" . Chr(34) . "," .
-    Chr(34) . "timestamp" . Chr(34) . ":" . A_TickCount . "}`n", A_ScriptDir . "\debug-502cc2.log"
-    ; #endregion
     CursorTransfer_SelectorClose()
     return result
 }
