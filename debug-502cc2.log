@@ -1,0 +1,9 @@
+{"sessionId":"502cc2","location":"Gemini.ahk:CopyAndTransferToCursor","message":"entry","data":{},"hypothesisId":"A","timestamp":544031406}
+{"sessionId":"502cc2","location":"Gemini.ahk:CopyAndTransferToCursor","message":"after DoCopyCore","data":{"clipLen":1034,"minLen":10},"hypothesisId":"B","timestamp":544034265}
+{"sessionId":"502cc2","location":"Gemini.ahk:CopyAndTransferToCursor","message":"calling CursorTransfer_ShowWindowSelector","data":{},"hypothesisId":"C","timestamp":544034265}
+{"sessionId":"502cc2","location":"Utils.ahk:CursorTransfer_ShowWindowSelector","message":"entry","data":{},"hypothesisId":"D","timestamp":544034281}
+{"sessionId":"502cc2","location":"Utils.ahk:CursorTransfer_ShowWindowSelector","message":"after enum","data":{"listLen":9},"hypothesisId":"D","timestamp":544034296}
+{"sessionId":"502cc2","location":"Utils.ahk:CursorTransfer_ShowWindowSelector","message":"before enrich","data":{},"hypothesisId":"G1","timestamp":544034296}
+{"sessionId":"502cc2","location":"Utils.ahk:CursorTransfer_ShowWindowSelector","message":"after enrich","data":{},"hypothesisId":"G1","timestamp":544034312}
+{"sessionId":"502cc2","location":"Utils.ahk:CursorTransfer_ShowWindowSelector","message":"before gui create","data":{},"hypothesisId":"G2","timestamp":544034312}
+{"sessionId":"502cc2","location":"Utils.ahk:CursorTransfer_ShowWindowSelector","message":"GUI shown","data":{"listLen":2},"hypothesisId":"E","timestamp":544034484}

@@ -40,6 +40,8 @@ GEMINI_ASYNC_TTS_MAX_RETRIES := 60
 GEMINI_COPY_MAX_RETRIES := 3
 ; Pronunciation result banner: long timeout so user can read (ms)
 GEMINI_PRONUNCIATION_BANNER_TIMEOUT_MS := 50000
+; Minimum clipboard length for Gemini-to-Cursor transfer (same as bridge validation)
+GEMINI_TRANSFER_MIN_CLIPBOARD_LENGTH := 10
 ; Post-copy sync: max wait for clipboard change (sequence-number detection). Fallback if detection fails (ms).
 GEMINI_POST_COPY_SYNC_TIMEOUT_MS := 2000
 ; Poll interval when waiting for clipboard sequence number to change (ms). Low value = minimal latency.
@@ -55,6 +57,18 @@ GEMINI_USE_PYTHON_IPC := false
 ; Phase 7: Python daemon IPC (local socket). Daemon must be started separately; AHK connects on demand.
 GEMINI_PYTHON_DAEMON_PORT := 29512
 GEMINI_PYTHON_IPC_TIMEOUT_MS := 5000
+
+; #region agent log
+_DebugLog_Gemini(loc, msg, dataStr := "{}", hypothesisId := "") {
+    p := A_ScriptDir . "\debug-502cc2.log"
+    q(s) => Chr(34) . StrReplace(StrReplace(s, "\", "\\"), Chr(34), Chr(92) . Chr(34)) . Chr(34)
+    j := "{" . Chr(34) . "sessionId" . Chr(34) . ":" . Chr(34) . "502cc2" . Chr(34) . "," . Chr(34) . "location" . Chr(
+        34) . ":" . q(loc) . "," . Chr(34) . "message" . Chr(34) . ":" . q(msg) . "," . Chr(34) . "data" . Chr(34) .
+    ":" . (dataStr = "" ? "{}" : dataStr) . "," . Chr(34) . "hypothesisId" . Chr(34) . ":" . q(hypothesisId) . "," .
+    Chr(34) . "timestamp" . Chr(34) . ":" . A_TickCount . "}"
+    try FileAppend j "`n", p
+}
+; #endregion
 
 ; --- Phase 4: WinEvent hook constants (user32) ---------------------------------
 ; EVENT_OBJECT_CREATE = 0x8000, OBJID_WINDOW = 0
@@ -1345,9 +1359,10 @@ class GeminiDelayedSubmitMonitor {
         this.CopyBannerGui := ""
         this.CopyTimeoutTimer := ""
         copyKeyCallbacks := Map("N", this.CancelCopy.Bind(this), "Y", this.DoCopyOnly.Bind(this), "R", this.CopyAndReadAloud
-        .Bind(this), "E", this.CancelCopy.Bind(this))
-        StandardLoadingBar_ShowWithKeys("❓ Copy response?", copyKeyCallbacks, 4000, this.OriginalHwnd, this.DoCopyOnTimeout
-            .Bind(this), BANNER_ACCENT_INTERMEDIATE, 380, 17, "", false, "[Y] Copy  [N] No  [R] Copy+Read  [E] Close")
+        .Bind(this), "C", this.CopyAndTransferToCursor.Bind(this), "E", this.CancelCopy.Bind(this))
+        StandardLoadingBar_ShowWithKeys("❓ Copy response?", copyKeyCallbacks, 5000, this.OriginalHwnd, this.DoCopyOnTimeout
+            .Bind(this), BANNER_ACCENT_INTERMEDIATE, 380, 17, "", false,
+            "[Y] Copy  [N] No  [R] Copy+Read  [C] Transfer  [E] Close")
     }
 
     ; Y key: copy latest response only (same as timeout default), then close banner and restore focus.
@@ -1365,7 +1380,7 @@ class GeminiDelayedSubmitMonitor {
         this.CleanupCopyBanner()
     }
 
-    DoCopyCore(readAloud := false) {
+    DoCopyCore(readAloud := false, skipRestoreFocus := false) {
         if (this.HasCopiedForThisResponse)
             return
         this.HasCopiedForThisResponse := true
@@ -1394,7 +1409,7 @@ class GeminiDelayedSubmitMonitor {
             PlayCopyCompletedChime()
         if (readAloud)
             GeminiTriggerReadAloud(false, false)
-        if (WinExist("ahk_id " this.OriginalHwnd) && !WinActive("ahk_id " this.OriginalHwnd)) {
+        if (!skipRestoreFocus && WinExist("ahk_id " this.OriginalHwnd) && !WinActive("ahk_id " this.OriginalHwnd)) {
             WinActivate("ahk_id " this.OriginalHwnd)
             WinWaitActive("ahk_id " this.OriginalHwnd, , 0.5)
         }
@@ -1409,6 +1424,43 @@ class GeminiDelayedSubmitMonitor {
     CopyAndReadAloud(*) {
         this.CleanupCopyBanner()
         this.DoCopyCore(true)
+    }
+
+    ; C key: copy response, then show Cursor window selector (1–9), activate selected window, focus AI field, paste and send.
+    CopyAndTransferToCursor(*) {
+        ; #region agent log
+        _DebugLog_Gemini("Gemini.ahk:CopyAndTransferToCursor", "entry", "{}", "A")
+        ; #endregion
+        this.CleanupCopyBanner()
+        ; Skip restoring focus so clipboard is not overwritten by the previously focused window before we read it.
+        this.DoCopyCore(false, true)
+        clip := Trim(A_Clipboard)
+        ; Allow clipboard a moment to settle; retry once if empty (avoids false "Copy failed" when copy succeeded).
+        if (clip = "" || StrLen(clip) < GEMINI_TRANSFER_MIN_CLIPBOARD_LENGTH) {
+            Sleep 120
+            clip := Trim(A_Clipboard)
+        }
+        ; #region agent log
+        _DebugLog_Gemini("Gemini.ahk:CopyAndTransferToCursor", "after DoCopyCore", "{" . Chr(34) . "clipLen" . Chr(34) .
+        ":" . StrLen(clip) . "," . Chr(34) . "minLen" . Chr(34) . ":" . GEMINI_TRANSFER_MIN_CLIPBOARD_LENGTH . "}", "B"
+        )
+        ; #endregion
+        if (clip = "" || StrLen(clip) < GEMINI_TRANSFER_MIN_CLIPBOARD_LENGTH) {
+            ShowCenteredOverlay_Utils("❌ Copy failed or empty – try again", 2000, BANNER_ACCENT_ERROR)
+            if (WinExist("ahk_id " this.OriginalHwnd))
+                WinActivate("ahk_id " this.OriginalHwnd)
+            return
+        }
+        ; #region agent log
+        _DebugLog_Gemini("Gemini.ahk:CopyAndTransferToCursor", "calling CursorTransfer_ShowWindowSelector", "{}", "C")
+        ; #endregion
+        hwnd := CursorTransfer_ShowWindowSelector(this.OriginalHwnd)
+        if (!hwnd) {
+            if (WinExist("ahk_id " this.OriginalHwnd))
+                WinActivate("ahk_id " this.OriginalHwnd)
+            return
+        }
+        CursorTransfer_ActivateFocusPaste(hwnd)
     }
 }
 

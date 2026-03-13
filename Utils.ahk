@@ -1404,6 +1404,482 @@ AiModelSelector_Close() {
 }
 
 ; =============================================================================
+; Gemini-to-Cursor transfer: numeric Cursor window selector (1–9) and activate/focus/paste
+; Used when user presses [C] Transfer in Gemini copy-decision banner.
+; =============================================================================
+global g_CursorTransferSelectorGui := false
+global g_CursorTransferSelectorActive := false
+global g_CursorTransferSelectorResult := ""   ; "" = waiting, 0 = cancel, integer = selected hwnd
+global g_CursorTransferWindowList := []      ; up to 9 { hwnd, title }
+global g_CursorTransferHotkeyHandlers := []
+
+CursorTransfer_SelectorClose() {
+    global g_CursorTransferSelectorActive, g_CursorTransferSelectorGui, g_CursorTransferHotkeyHandlers
+    if (!g_CursorTransferSelectorActive)
+        return
+    g_CursorTransferSelectorActive := false
+    for h in g_CursorTransferHotkeyHandlers {
+        if (IsObject(h) && h.Has("key") && h.Has("callback")) {
+            try Hotkey(h.key, h.callback, "Off")
+        } else {
+            try Hotkey(h, "Off")
+        }
+    }
+    g_CursorTransferHotkeyHandlers := []
+    if (IsObject(g_CursorTransferSelectorGui) && g_CursorTransferSelectorGui.Hwnd) {
+        try g_CursorTransferSelectorGui.Destroy()
+    }
+    g_CursorTransferSelectorGui := false
+}
+
+CursorTransfer_SelectorHandleKey(index, *) {
+    global g_CursorTransferSelectorResult, g_CursorTransferWindowList
+    if (index >= 1 && index <= g_CursorTransferWindowList.Length)
+        g_CursorTransferSelectorResult := g_CursorTransferWindowList[index].hwnd
+    CursorTransfer_SelectorClose()
+}
+
+CursorTransfer_SelectorEscape(*) {
+    global g_CursorTransferSelectorResult
+    g_CursorTransferSelectorResult := 0
+    CursorTransfer_SelectorClose()
+}
+
+; Return project order index from g_Projects for a window title; 0 = no match.
+CursorTransfer_GetProjectOrderForTitle(winTitle) {
+    global g_Projects
+    if (!winTitle || !IsObject(g_Projects))
+        return 0
+    try {
+        isWork := (IsSet(IS_WORK_ENVIRONMENT) && IS_WORK_ENVIRONMENT)
+        loop g_Projects.Length {
+            project := g_Projects[A_Index]
+            if (project.name = "" && project.path = "" && project.workPath = "")
+                continue
+            projectPath := isWork ? project.workPath : project.path
+            if (isWork && (projectPath = ""))
+                projectPath := project.path
+            if (projectPath = "")
+                continue
+            matchSegments := ExtractProjectMatchSegments(projectPath)
+            for segment in matchSegments {
+                if (InStr(winTitle, segment))
+                    return A_Index
+            }
+        }
+    } catch {
+    }
+    return 0
+}
+
+; Stable insertion sort for small arrays by project order, then by title.
+CursorTransfer_SortWindowsByProjectOrder(&arr) {
+    n := arr.Length
+    if (n <= 1)
+        return
+    loop n - 1 {
+        i := A_Index + 1
+        key := arr[i]
+        j := i - 1
+        while (j >= 1) {
+            left := arr[j]
+            shouldShift := false
+            if (left.projectOrder > key.projectOrder) {
+                shouldShift := true
+            } else if (left.projectOrder = key.projectOrder && left.displayName > key.displayName) {
+                shouldShift := true
+            }
+            if (!shouldShift)
+                break
+            arr[j + 1] := left
+            j--
+        }
+        arr[j + 1] := key
+    }
+}
+
+; Return project name from g_Projects if window title matches a project path; otherwise "".
+CursorTransfer_GetProjectNameForTitle(winTitle) {
+    global g_Projects
+    if (!winTitle || !IsObject(g_Projects))
+        return ""
+    try {
+        isWork := (IsSet(IS_WORK_ENVIRONMENT) && IS_WORK_ENVIRONMENT)
+        loop g_Projects.Length {
+            project := g_Projects[A_Index]
+            if (project.name = "" && project.path = "" && project.workPath = "")
+                continue
+            projectPath := isWork ? project.workPath : project.path
+            if (isWork && (projectPath = ""))
+                projectPath := project.path
+            if (projectPath = "")
+                continue
+            matchSegments := ExtractProjectMatchSegments(projectPath)
+            for segment in matchSegments {
+                if (InStr(winTitle, segment))
+                    return project.name ? project.name : segment
+            }
+        }
+    } catch as err {
+        ; #region agent log
+        errMsg := ""
+        try errMsg := err.Message
+        try FileAppend "{" . Chr(34) . "sessionId" . Chr(34) . ":" . Chr(34) . "502cc2" . Chr(34) . "," . Chr(34) .
+        "location" . Chr(34) . ":" . Chr(34) . "Utils.ahk:CursorTransfer_GetProjectNameForTitle" . Chr(34) . "," .
+        Chr(34) . "message" . Chr(34) . ":" . Chr(34) . "catch" . Chr(34) . "," . Chr(34) . "data" . Chr(34) . ":{" .
+        Chr(34) . "titleLen" . Chr(34) . ":" . StrLen(winTitle) . "," . Chr(34) . "err" . Chr(34) . ":" . Chr(34) .
+        StrReplace(StrReplace(errMsg, "\", "\\"), Chr(34), "'") . Chr(34) . "}," . Chr(34) . "hypothesisId" . Chr(34) .
+        ":" . Chr(34) . "G3" . Chr(34) . "," . Chr(34) . "timestamp" . Chr(34) . ":" . A_TickCount . "}`n", A_ScriptDir .
+        "\debug-502cc2.log"
+        ; #endregion
+    }
+    return ""
+}
+
+; Returns selected Cursor window HWND or 0 on cancel/timeout/no windows. Blocking with timeout.
+; centerOnHwnd: optional window to center the modal on (uses that window's monitor); 0 = primary monitor.
+CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
+    global g_CursorTransferSelectorGui, g_CursorTransferSelectorActive, g_CursorTransferSelectorResult
+    global g_CursorTransferWindowList, g_CursorTransferHotkeyHandlers
+    ; #region agent log
+    try FileAppend "{" . Chr(34) . "sessionId" . Chr(34) . ":" . Chr(34) . "502cc2" . Chr(34) . "," . Chr(34) .
+    "location" . Chr(34) . ":" . Chr(34) . "Utils.ahk:CursorTransfer_ShowWindowSelector" . Chr(34) . "," . Chr(34) .
+    "message" . Chr(34) . ":" . Chr(34) . "entry" . Chr(34) . "," . Chr(34) . "data" . Chr(34) . ":{}," . Chr(34) .
+    "hypothesisId" . Chr(34) . ":" . Chr(34) . "D" . Chr(34) . "," . Chr(34) . "timestamp" . Chr(34) . ":" .
+    A_TickCount . "}`n", A_ScriptDir . "\debug-502cc2.log"
+    ; #endregion
+    CursorTransfer_SelectorClose()
+    list := []
+    DetectHiddenWindows true
+    try {
+        for hwnd in WinGetList("ahk_exe Cursor.exe") {
+            try {
+                list.Push({ hwnd: hwnd, title: WinGetTitle("ahk_id " hwnd) })
+                if (list.Length >= 9)
+                    break
+            } catch {
+                continue
+            }
+        }
+    } catch {
+    }
+    DetectHiddenWindows false
+    ; #region agent log
+    try FileAppend "{" . Chr(34) . "sessionId" . Chr(34) . ":" . Chr(34) . "502cc2" . Chr(34) . "," . Chr(34) .
+    "location" . Chr(34) . ":" . Chr(34) . "Utils.ahk:CursorTransfer_ShowWindowSelector" . Chr(34) . "," . Chr(34) .
+    "message" . Chr(34) . ":" . Chr(34) . "after enum" . Chr(34) . "," . Chr(34) . "data" . Chr(34) . ":{" . Chr(34) .
+    "listLen" . Chr(34) . ":" . list.Length . "}," . Chr(34) . "hypothesisId" . Chr(34) . ":" . Chr(34) . "D" . Chr(34) .
+    "," . Chr(34) . "timestamp" . Chr(34) . ":" . A_TickCount . "}`n", A_ScriptDir . "\debug-502cc2.log"
+    ; #endregion
+    if (list.Length = 0) {
+        ShowCenteredOverlay_Utils("❌ No Cursor windows found", 2000, BANNER_ACCENT_ERROR)
+        return 0
+    }
+    ; #region agent log
+    try FileAppend "{" . Chr(34) . "sessionId" . Chr(34) . ":" . Chr(34) . "502cc2" . Chr(34) . "," . Chr(34) .
+    "location" . Chr(34) . ":" . Chr(34) . "Utils.ahk:CursorTransfer_ShowWindowSelector" . Chr(34) . "," . Chr(34) .
+    "message" . Chr(34) . ":" . Chr(34) . "before enrich" . Chr(34) . "," . Chr(34) . "data" . Chr(34) . ":{}," .
+    Chr(34) . "hypothesisId" . Chr(34) . ":" . Chr(34) . "G1" . Chr(34) . "," . Chr(34) . "timestamp" . Chr(34) . ":" .
+    A_TickCount . "}`n", A_ScriptDir . "\debug-502cc2.log"
+    ; #endregion
+    ; Enrich list, filter empty/placeholder entries, and sort by project order from g_Projects.
+    enriched := []
+    for w in list {
+        winTitle := w.title ? w.title : ""
+        projName := CursorTransfer_GetProjectNameForTitle(winTitle)
+        projectOrder := CursorTransfer_GetProjectOrderForTitle(winTitle)
+        if (projName = "" && winTitle = "")
+            continue
+        displayName := ""
+        if (projName != "") {
+            displayName := projName
+        } else {
+            displayName := (StrLen(winTitle) > 50) ? SubStr(winTitle, 1, 47) . "..." : winTitle
+            if (displayName = "")
+                continue
+        }
+        enriched.Push({
+            hwnd: w.hwnd,
+            title: winTitle,
+            displayName: displayName,
+            projectOrder: projectOrder > 0 ? projectOrder : (10000 + enriched.Length)
+        })
+    }
+    if (enriched.Length = 0) {
+        ShowCenteredOverlay_Utils("❌ No mapped Cursor projects found", 2000, BANNER_ACCENT_ERROR)
+        return 0
+    }
+    CursorTransfer_SortWindowsByProjectOrder(&enriched)
+    if (enriched.Length > 9) {
+        trimmed := []
+        loop 9
+            trimmed.Push(enriched[A_Index])
+        list := trimmed
+    } else {
+        list := enriched
+    }
+    ; #region agent log
+    try FileAppend "{" . Chr(34) . "sessionId" . Chr(34) . ":" . Chr(34) . "502cc2" . Chr(34) . "," . Chr(34) .
+    "location" . Chr(34) . ":" . Chr(34) . "Utils.ahk:CursorTransfer_ShowWindowSelector" . Chr(34) . "," . Chr(34) .
+    "message" . Chr(34) . ":" . Chr(34) . "after enrich" . Chr(34) . "," . Chr(34) . "data" . Chr(34) . ":{}," .
+    Chr(34) . "hypothesisId" . Chr(34) . ":" . Chr(34) . "G1" . Chr(34) . "," . Chr(34) . "timestamp" . Chr(34) . ":" .
+    A_TickCount . "}`n", A_ScriptDir . "\debug-502cc2.log"
+    ; #endregion
+    g_CursorTransferWindowList := list
+    g_CursorTransferSelectorResult := ""
+    g_CursorTransferSelectorActive := true
+    ; #region agent log
+    try FileAppend "{" . Chr(34) . "sessionId" . Chr(34) . ":" . Chr(34) . "502cc2" . Chr(34) . "," . Chr(34) .
+    "location" . Chr(34) . ":" . Chr(34) . "Utils.ahk:CursorTransfer_ShowWindowSelector" . Chr(34) . "," . Chr(34) .
+    "message" . Chr(34) . ":" . Chr(34) . "before gui create" . Chr(34) . "," . Chr(34) . "data" . Chr(34) . ":{}," .
+    Chr(34) . "hypothesisId" . Chr(34) . ":" . Chr(34) . "G2" . Chr(34) . "," . Chr(34) . "timestamp" . Chr(34) . ":" .
+    A_TickCount . "}`n", A_ScriptDir . "\debug-502cc2.log"
+    ; #endregion
+    g_CursorTransferSelectorGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner")
+    g_CursorTransferSelectorGui.BackColor := "1E1E2E"
+    g_CursorTransferSelectorGui.MarginX := 20
+    g_CursorTransferSelectorGui.MarginY := 15
+    g_CursorTransferSelectorGui.OnEvent("Escape", CursorTransfer_SelectorEscape)
+    g_CursorTransferSelectorGui.SetFont("s14 cCDD6F4 Bold", "Segoe UI")
+    g_CursorTransferSelectorGui.Add("Text", "w320 Center", "📋 Transfer to Cursor")
+    g_CursorTransferSelectorGui.Add("Text", "w320 h1 Background45475A")
+    g_CursorTransferSelectorGui.SetFont("s12 cCDD6F4", "Segoe UI")
+    for i, w in list {
+        g_CursorTransferSelectorGui.Add("Text", "w320", "[" . i . "] " . w.displayName)
+    }
+    g_CursorTransferSelectorGui.Add("Text", "w320 h1 Background45475A y+10")
+    g_CursorTransferSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
+    g_CursorTransferSelectorGui.Add("Text", "w320 Center", "Press 1–" . list.Length . " | Esc to cancel")
+    g_CursorTransferSelectorGui.Show("AutoSize Hide")
+    g_CursorTransferSelectorGui.GetPos(&gx, &gy, &gw, &gh)
+    if (centerOnHwnd && WinExist("ahk_id " centerOnHwnd)) {
+        workArea := GetWorkAreaForWindow_StandardBar(centerOnHwnd)
+        if (workArea != "") {
+            ml := workArea.left
+            mt := workArea.top
+            mr := workArea.right
+            mb := workArea.bottom
+        } else
+            MonitorGetWorkArea(1, &ml, &mt, &mr, &mb)
+    } else
+        MonitorGetWorkArea(1, &ml, &mt, &mr, &mb)
+    mw := mr - ml
+    mh := mb - mt
+    cx := ml + (mw - gw) // 2
+    cy := mt + (mh - gh) // 2
+    g_CursorTransferSelectorGui.Show("x" . cx . " y" . cy)
+    try WinActivate("ahk_id " g_CursorTransferSelectorGui.Hwnd)
+    ; #region agent log
+    try FileAppend "{" . Chr(34) . "sessionId" . Chr(34) . ":" . Chr(34) . "502cc2" . Chr(34) . "," . Chr(34) .
+    "location" . Chr(34) . ":" . Chr(34) . "Utils.ahk:CursorTransfer_ShowWindowSelector" . Chr(34) . "," . Chr(34) .
+    "message" . Chr(34) . ":" . Chr(34) . "GUI shown" . Chr(34) . "," . Chr(34) . "data" . Chr(34) . ":{" . Chr(34) .
+    "listLen" . Chr(34) . ":" . list.Length . "}," . Chr(34) . "hypothesisId" . Chr(34) . ":" . Chr(34) . "E" . Chr(34) .
+    "," . Chr(34) . "timestamp" . Chr(34) . ":" . A_TickCount . "}`n", A_ScriptDir . "\debug-502cc2.log"
+    ; #endregion
+    g_CursorTransferHotkeyHandlers := []
+    loop list.Length {
+        i := A_Index
+        try {
+            Hotkey(String(i), CursorTransfer_SelectorHandleKey.Bind(i), "On")
+            g_CursorTransferHotkeyHandlers.Push(String(i))
+        } catch {
+        }
+    }
+    try {
+        Hotkey("Escape", CursorTransfer_SelectorEscape, "On")
+        g_CursorTransferHotkeyHandlers.Push({ key: "Escape", callback: CursorTransfer_SelectorEscape })
+    } catch {
+    }
+    start := A_TickCount
+    timeoutMs := 30000
+    while (g_CursorTransferSelectorResult = "") {
+        if ((A_TickCount - start) >= timeoutMs)
+            break
+        Sleep 50
+    }
+    result := (g_CursorTransferSelectorResult = "") ? 0 : Integer(g_CursorTransferSelectorResult)
+    ; #region agent log
+    try FileAppend "{" . Chr(34) . "sessionId" . Chr(34) . ":" . Chr(34) . "502cc2" . Chr(34) . "," . Chr(34) .
+    "location" . Chr(34) . ":" . Chr(34) . "Utils.ahk:CursorTransfer_ShowWindowSelector" . Chr(34) . "," . Chr(34) .
+    "message" . Chr(34) . ":" . Chr(34) . "exit wait" . Chr(34) . "," . Chr(34) . "data" . Chr(34) . ":{" . Chr(34) .
+    "result" . Chr(34) . ":" . result . "}," . Chr(34) . "hypothesisId" . Chr(34) . ":" . Chr(34) . "F" . Chr(34) . "," .
+    Chr(34) . "timestamp" . Chr(34) . ":" . A_TickCount . "}`n", A_ScriptDir . "\debug-502cc2.log"
+    ; #endregion
+    CursorTransfer_SelectorClose()
+    return result
+}
+
+; =============================================================================
+; Cursor AI text field focus (shared logic for Gemini transfer and WindowManagement)
+; =============================================================================
+Cursor_EnsureComposerHasFocus(editEl) {
+    if (!editEl)
+        return false
+    try {
+        editEl.SetFocus()
+    } catch {
+    }
+    loop 3 {
+        try {
+            if (editEl.HasKeyboardFocus)
+                return true
+        } catch {
+        }
+        Sleep 40
+    }
+    try {
+        editEl.ScrollIntoView()
+    } catch {
+    }
+    try {
+        editEl.Click()
+    } catch {
+    }
+    Sleep 60
+    try {
+        return editEl.HasKeyboardFocus
+    } catch {
+        return false
+    }
+}
+
+Cursor_FindComposerInput(root) {
+    try {
+        allEdits := root.FindAll({ Type: UIA.Type.Edit })
+        for editEl in allEdits {
+            cn := editEl.ClassName
+            if (InStr(cn, "aislash-editor-input") && !InStr(cn, "readonly"))
+                return editEl
+        }
+    } catch {
+    }
+    return ""
+}
+
+; Activate Cursor window and focus AI composer input. Returns true on success.
+Cursor_FocusAITextField(targetHwnd := 0) {
+    try {
+        if (targetHwnd) {
+            WinActivate("ahk_id " targetHwnd)
+            WinWaitActive("ahk_id " targetHwnd, , 2)
+        } else {
+            targetHwnd := WinExist("ahk_exe Cursor.exe")
+            if (!targetHwnd)
+                return false
+            WinWaitActive("ahk_id " targetHwnd, , 2)
+        }
+        Sleep 200
+        paneWasOpen := false
+        focusDone := false
+        if (IsSet(UIA)) {
+            try {
+                root := UIA.ElementFromHandle(targetHwnd)
+                if (root) {
+                    toggleEl := root.FindFirst({ Type: UIA.Type.CheckBox, Name: "Toggle AI Pane", matchmode: 2 })
+                    paneOpen := toggleEl && InStr(toggleEl.ClassName, "checked")
+                    paneWasOpen := paneOpen
+                    if (paneOpen) {
+                        editEl := Cursor_FindComposerInput(root)
+                        if (editEl) {
+                            if (Cursor_EnsureComposerHasFocus(editEl))
+                                focusDone := true
+                        }
+                    } else {
+                        editEl := Cursor_FindComposerInput(root)
+                        if (editEl) {
+                            if (Cursor_EnsureComposerHasFocus(editEl))
+                                focusDone := true
+                        } else {
+                            Send "^i"
+                            loop 15 {
+                                Sleep 200
+                                root := UIA.ElementFromHandle(targetHwnd)
+                                editEl := Cursor_FindComposerInput(root)
+                                if (editEl) {
+                                    if (Cursor_EnsureComposerHasFocus(editEl))
+                                        focusDone := true
+                                    break
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch {
+            }
+        }
+        if (!focusDone) {
+            if (IsSet(UIA)) {
+                try {
+                    root := UIA.ElementFromHandle(targetHwnd)
+                    if (root) {
+                        editEl := Cursor_FindComposerInput(root)
+                        if (editEl) {
+                            if (Cursor_EnsureComposerHasFocus(editEl))
+                                focusDone := true
+                        }
+                    }
+                } catch {
+                }
+            }
+            if (!focusDone) {
+                if (!paneWasOpen) {
+                    Send "^i"
+                    Sleep 1200
+                }
+                return false
+            }
+        }
+        return true
+    } catch {
+        return false
+    }
+}
+
+; Minimum clipboard length for transfer (match Gemini/bridge validation)
+CURSOR_TRANSFER_MIN_CLIPBOARD_LENGTH := 10
+
+; Activate Cursor window, focus AI field, paste clipboard, send Enter. Non-blocking feedback on failure.
+CursorTransfer_ActivateFocusPaste(targetHwnd) {
+    if (!targetHwnd || !WinExist("ahk_id " targetHwnd)) {
+        ShowCenteredOverlay_Utils("❌ Cursor window not found", 2000, BANNER_ACCENT_ERROR)
+        return
+    }
+    clip := Trim(A_Clipboard)
+    if (clip = "" || StrLen(clip) < CURSOR_TRANSFER_MIN_CLIPBOARD_LENGTH) {
+        ShowCenteredOverlay_Utils("❌ Clipboard empty or too short", 2000, BANNER_ACCENT_ERROR)
+        return
+    }
+    try {
+        WinActivate("ahk_id " targetHwnd)
+        if (!WinWaitActive("ahk_id " targetHwnd, , 2)) {
+            ShowCenteredOverlay_Utils("❌ Could not activate Cursor", 2000, BANNER_ACCENT_ERROR)
+            return
+        }
+        Sleep 100
+        if (!Cursor_FocusAITextField(targetHwnd)) {
+            ShowCenteredOverlay_Utils("❌ Could not focus AI field", 2000, BANNER_ACCENT_ERROR)
+            return
+        }
+        try {
+            if (WinGetID("A") != targetHwnd) {
+                WinActivate("ahk_id " targetHwnd)
+                WinWaitActive("ahk_id " targetHwnd, , 2)
+            }
+        } catch {
+        }
+        if (Trim(A_Clipboard) = "" || StrLen(Trim(A_Clipboard)) < CURSOR_TRANSFER_MIN_CLIPBOARD_LENGTH) {
+            ShowCenteredOverlay_Utils("❌ Clipboard lost before paste", 2000, BANNER_ACCENT_ERROR)
+            return
+        }
+        Send "^v"
+        Send "{Enter}"
+        ShowCenteredOverlay_Utils("✅ Sent to Cursor", 1500, BANNER_ACCENT_SUCCESS)
+    } catch as err {
+        ShowCenteredOverlay_Utils("❌ Transfer failed", 2000, BANNER_ACCENT_ERROR)
+    }
+}
+
+; =============================================================================
 ; Status Banner Functions (non-blocking; use standard loading indicator)
 ; =============================================================================
 AiModelBanner_Show(text, bgColor := BANNER_ACCENT_INTERMEDIATE) {
