@@ -4132,6 +4132,97 @@ Shopee_FindAndInvoke(conditionList) {
     return false
 }
 
+; Navigate Shopee search results pagination by relative offset (e.g. +1 next, -1 previous).
+Shopee_NavMove(offset) {
+    if (offset = 0)
+        return false
+    hwnd := WinExist("A")
+    if (!hwnd)
+        return false
+
+    ; Get current page index from Chrome address bar (?page=N), defaulting to 0 when absent.
+    currentPage := 0
+    try {
+        rootWin := UIA.ElementFromHandle(hwnd)
+        addressBar := rootWin.FindFirst({ Type: 50004, AccessKey: "Ctrl+L" })
+        if (addressBar) {
+            url := addressBar.Value
+            m := ""
+            if RegExMatch(url, "i)[?&]page=(\d+)", &m) {
+                try currentPage := Integer(m[1])
+            }
+        }
+    } catch {
+    }
+
+    root := Shopee_GetDocRoot()
+    if (!root)
+        return false
+
+    navGroup := Shopee_Find(root, { Type: 50026, Name: "Navegação entre páginas", cs: false })
+    if (!navGroup)
+        return false
+
+    links := 0
+    try links := navGroup.FindAll({ Type: 50005 })
+    catch {
+        return false
+    }
+    if (!links)
+        return false
+
+    bestEl := 0
+    bestDelta := 0x7FFFFFFF
+
+    for link in links {
+        value := ""
+        try value := link.Value
+        catch {
+            continue
+        }
+        if (value = "")
+            continue
+        m2 := ""
+        if !RegExMatch(value, "i)[?&]page=(\d+)", &m2)
+            continue
+        targetPage := 0
+        try targetPage := Integer(m2[1])
+        catch {
+            continue
+        }
+
+        ; Choose the nearest page ahead (offset>0) or behind (offset<0) relative to currentPage.
+        if (offset > 0 && targetPage > currentPage) {
+            delta := targetPage - currentPage
+            if (delta < bestDelta) {
+                bestDelta := delta
+                bestEl := link
+            }
+        } else if (offset < 0 && targetPage < currentPage) {
+            delta := currentPage - targetPage
+            if (delta < bestDelta) {
+                bestDelta := delta
+                bestEl := link
+            }
+        }
+    }
+
+    if (!bestEl)
+        return false
+
+    try {
+        bestEl.Invoke()
+        return true
+    } catch {
+        try {
+            bestEl.Click()
+            return true
+        } catch {
+            return false
+        }
+    }
+}
+
 #HotIf IsMercadoLivreActive()
 
 ; Shift + S: Focus Mercado Livre search field
@@ -4816,26 +4907,20 @@ ML_SortApply(idx) {
     }
 }
 
-; Shift + L: Paginação – Seguinte (speculative)
+; Shift + L: Paginação – Seguinte (results)
 +l::
 {
-    if Shopee_FindAndInvoke([
-        { Type: 50000, Name: "Próxima", cs: false, matchmode: "Substring" },
-        { Type: 50005, Name: "Próxima", cs: false, matchmode: "Substring" }
-    ])
+    if Shopee_NavMove(1)
         return
-    MsgBox "Botão de próxima página da Shopee não encontrado (atalho especulativo)."
+    MsgBox "Navegação 'Seguinte' da Shopee não encontrada ou não aplicável."
 }
 
-; Shift + K: Paginação – Anterior (speculative)
+; Shift + K: Paginação – Anterior (results)
 +k::
 {
-    if Shopee_FindAndInvoke([
-        { Type: 50000, Name: "Anterior", cs: false, matchmode: "Substring" },
-        { Type: 50005, Name: "Anterior", cs: false, matchmode: "Substring" }
-    ])
+    if Shopee_NavMove(-1)
         return
-    MsgBox "Botão de página anterior da Shopee não encontrado (atalho especulativo)."
+    MsgBox "Navegação 'Anterior' da Shopee não encontrada ou não aplicável."
 }
 
 ; Shift + A: Adicionar ao carrinho (página do produto)
