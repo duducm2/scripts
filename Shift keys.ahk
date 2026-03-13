@@ -277,6 +277,27 @@ Mercado Livre (Shift)
 [J] Continuar (fluxo compra/endereço)
 )"  ; end Mercado Livre
 
+; --- Shopee (Brazil) -------------------------------------------------------
+cheatSheets["Shopee"] := "
+(
+Shopee (Shift)
+[S] Buscar na Shopee (campo de busca)
+[C] Carrinho de compras
+[P] Minhas compras / Pedidos (especulativo)
+[Y] Filtro Entrega Rápida (analogia Chegará amanhã)
+[F] Filtro Promoções / Full (especulativo)
+[I] Filtro Internacional
+[N] Filtro Envio Nacional
+[G] Filtro Frete grátis (especulativo)
+[O] Ordenar por (menu)
+[R] Faixa de preço (Mín/Máx)
+[L] Seguinte (paginação) – especulativo
+[K] Anterior (paginação) – especulativo
+[A] Adicionar ao carrinho (página do produto)
+[V] Favoritar produto (coração)
+[J] Continuar (carrinho/checkout, incl. \"Fazer pedido\")
+)"  ; end Shopee
+
 ;---------------------------------------- Shift + keys ----------------------------------------------
 ; ----- Assignment policy: use Shift + <key> first. When all Shift slots in the sequence are consumed, continue with Ctrl + Alt + <key> in the same order.
 ; ----- You can have repeated keys, depending on the software.
@@ -1191,6 +1212,9 @@ GetCheatSheetText() {
             appShortcuts := cheatSheets.Has("Mercado Livre") ? cheatSheets["Mercado Livre"] : ""
         else if IsMercadoLivreActive()
             appShortcuts := cheatSheets.Has("Mercado Livre") ? cheatSheets["Mercado Livre"] : ""
+        ; Shopee / Shop P: title or URL-based detection
+        if (appShortcuts = "" && (InStr(chromeTitle, "Shopee", false) || IsShopeeActive()))
+            appShortcuts := cheatSheets.Has("Shopee") ? cheatSheets["Shopee"] : ""
         if InStr(chromeTitle, "gemini", false)
             appShortcuts :=
                 "Gemini (Shift)`r`n📂 [D]Toggle the[D]rawer`r`n💬 [N][N]ew chat`r`n🔍 [S][S]earch`r`n🔄 [M]Change[M]odel`r`n🛠️ [T][T]ools`r`n⌨️ [P]Focus[P]rompt field`r`n📋 [C][C]opy last message`r`n🔊 [R][R]ead aloud last message`r`n🤖 [G]Send[G]emini prompt text`r`n⛶ [F][F]ullscreen input`r`n🔔 [Ctrl+Enter]Send and notify on completion"
@@ -4021,6 +4045,93 @@ ML_Find(root, condition) {
         return 0
 }
 
+;-------------------------------------------------------------------
+; Shopee (Brazil) detection and UIA helpers
+;-------------------------------------------------------------------
+; Cache for IsShopeeActive (same pattern as IsMercadoLivreActive).
+global g_Shopee_CacheHwnd := 0
+global g_Shopee_CacheResult := false
+
+IsShopeeActive() {
+    global g_Shopee_CacheHwnd, g_Shopee_CacheResult
+    if !WinActive("ahk_exe chrome.exe")
+        return false
+    hwnd := WinExist("A")
+    if (!hwnd)
+        return false
+    ; Cache hit: same window as last check (avoids UIA on every keystroke / cheat sheet open)
+    if (hwnd = g_Shopee_CacheHwnd && WinExist("ahk_id " g_Shopee_CacheHwnd))
+        return g_Shopee_CacheResult
+
+    ; Fast path: window title already indicates Shopee (no UIA)
+    title := WinGetTitle("A")
+    if InStr(title, "Shopee", false) {
+        g_Shopee_CacheHwnd := hwnd
+        g_Shopee_CacheResult := true
+        return true
+    }
+
+    ; URL check via UIA (Chrome address bar, AccessKey Ctrl+L)
+    try {
+        root := UIA.ElementFromHandle(hwnd)
+        addressBar := root.FindFirst({ Type: 50004, AccessKey: "Ctrl+L" })
+        if (addressBar) {
+            url := addressBar.Value
+            if InStr(url, "shopee.com", false) {
+                g_Shopee_CacheHwnd := hwnd
+                g_Shopee_CacheResult := true
+                return true
+            }
+        }
+    } catch {
+        ; UIA failed; do not cache so next call retries
+    }
+
+    g_Shopee_CacheHwnd := hwnd
+    g_Shopee_CacheResult := false
+    return false
+}
+
+Shopee_GetDocRoot() {
+    try {
+        uia := UIA_Browser("ahk_exe chrome.exe")
+        try
+            return uia.GetCurrentDocumentElement()
+        catch
+            return uia.BrowserElement
+    } catch
+        return 0
+}
+
+Shopee_Find(root, condition) {
+    try
+        return root.FindElement(condition, UIA.TreeScope.Descendants)
+    catch
+        return 0
+}
+
+Shopee_FindAndInvoke(conditionList) {
+    root := Shopee_GetDocRoot()
+    if (!root)
+        return false
+    for cond in conditionList {
+        try {
+            el := root.FindElement(cond, UIA.TreeScope.Descendants)
+            if (el) {
+                try el.Invoke()
+                catch {
+                    try el.Click()
+                    catch
+                        return false
+                }
+                return true
+            }
+        } catch
+            continue
+    }
+    return false
+}
+
 #HotIf IsMercadoLivreActive()
 
 ; Shift + S: Focus Mercado Livre search field
@@ -4543,6 +4654,220 @@ ML_SortApply(idx) {
     if ML_FindAndInvoke(conditions)
         return
     MsgBox "Botão de continuar não encontrado."
+}
+
+;-------------------------------------------------------------------
+; Shopee (Brazil) Shortcuts
+;-------------------------------------------------------------------
+#HotIf IsShopeeActive()
+
+; Shift + S: Focus Shopee search field
++s::
+{
+    try {
+        root := Shopee_GetDocRoot()
+        if (!root) {
+            MsgBox "Página da Shopee não disponível."
+            return
+        }
+
+        field := 0
+        ; Prefer the main search combo box
+        try {
+            field := root.FindElement({ Type: 50003, Name: "Buscar na Shopee" })
+        } catch {
+        }
+        ; Fallback: any control with LocalizedType = "search"
+        if (!field) {
+            try field := root.FindElement({ LocalizedType: "search" })
+        }
+
+        if (field) {
+            try field.SetFocus()
+            catch {
+                try field.Click()
+            }
+            return
+        }
+        MsgBox "Campo de busca da Shopee não encontrado."
+    } catch Error as e {
+        MsgBox "Erro ao focar busca da Shopee: " e.Message
+    }
+}
+
+; Shift + C: Carrinho de compras (cart)
++c::
+{
+    if Shopee_FindAndInvoke([
+        { Type: 50005, AutomationId: "cart_drawer_target_id" },
+        { Type: 50005, Name: "Carrinho", cs: false, matchmode: "Substring" },
+        { Type: 50000, Name: "Carrinho", cs: false, matchmode: "Substring" }
+    ])
+        return
+    MsgBox "Link/botão de carrinho da Shopee não encontrado."
+}
+
+; Shift + P: Minhas compras / pedidos (speculative)
++p::
+{
+    if Shopee_FindAndInvoke([
+        { Type: 50005, Name: "Minhas compras", cs: false, matchmode: "Substring" },
+        { Type: 50005, Name: "Meus pedidos", cs: false, matchmode: "Substring" },
+        { Type: 50005, Name: "Pedidos", cs: false, matchmode: "Substring" }
+    ])
+        return
+    MsgBox "Link de compras/pedidos da Shopee não encontrado (atalho especulativo)."
+}
+
+; Shift + Y: Entrega Rápida (Chegará amanhã analog)
++y::
+{
+    if Shopee_FindAndInvoke([
+        { Type: 50002, Name: "Entrega Rápida", cs: false, matchmode: "Substring" }
+    ])
+        return
+    MsgBox "Filtro 'Entrega Rápida' não encontrado (atalho especulativo)."
+}
+
+; Shift + F: Promoções / produtos com desconto (Full analog, speculative)
++f::
+{
+    if Shopee_FindAndInvoke([
+        { Type: 50002, Name: "Produtos com Desconto", cs: false, matchmode: "Substring" }
+    ])
+        return
+    MsgBox "Filtro de promoções/produtos com desconto não encontrado (atalho especulativo)."
+}
+
+; Shift + I: Compra internacional
++i::
+{
+    if Shopee_FindAndInvoke([
+        { Type: 50002, Name: "Internacional", cs: false }
+    ])
+        return
+    MsgBox "Filtro 'Internacional' da Shopee não encontrado."
+}
+
+; Shift + N: Envio nacional
++n::
+{
+    if Shopee_FindAndInvoke([
+        { Type: 50002, Name: "Nacional", cs: false }
+    ])
+        return
+    MsgBox "Filtro 'Nacional' da Shopee não encontrado."
+}
+
+; Shift + G: Frete grátis (speculative)
++g::
+{
+    if Shopee_FindAndInvoke([
+        { Type: 50020, Name: "Frete grátis", cs: false, matchmode: "Substring" }
+    ])
+        return
+    MsgBox "Indicador/controle de 'Frete grátis' não encontrado (atalho especulativo)."
+}
+
+; Shift + O: Ordenar por (open sort menu)
++o::
+{
+    if Shopee_FindAndInvoke([
+        { Type: 50000, Name: "Classificar por relevância", cs: false, matchmode: "Substring" },
+        { Type: 50000, Name: "Classificar por", cs: false, matchmode: "Substring" }
+    ])
+        return
+    MsgBox "Botão 'Classificar por' da Shopee não encontrado."
+}
+
+; Shift + R: Faixa de preço (focus min/max price edits)
++r::
+{
+    try {
+        root := Shopee_GetDocRoot()
+        if (!root) {
+            MsgBox "Página da Shopee não disponível."
+            return
+        }
+
+        minimo := 0
+        try minimo := root.FindElement({ Type: 50004, Name: "Preço mínimo" })
+        catch {
+        }
+        maximo := 0
+        try maximo := root.FindElement({ Type: 50004, Name: "Preço máximo" })
+        catch {
+        }
+
+        target := minimo ? minimo : maximo
+        if (target) {
+            try target.SetFocus()
+            catch {
+                try target.Click()
+            }
+            Sleep 50
+            Send "^a"
+            return
+        }
+
+        MsgBox "Campos de faixa de preço da Shopee não encontrados."
+    } catch Error as e {
+        MsgBox "Erro ao focar faixa de preço da Shopee: " e.Message
+    }
+}
+
+; Shift + L: Paginação – Seguinte (speculative)
++l::
+{
+    if Shopee_FindAndInvoke([
+        { Type: 50000, Name: "Próxima", cs: false, matchmode: "Substring" },
+        { Type: 50005, Name: "Próxima", cs: false, matchmode: "Substring" }
+    ])
+        return
+    MsgBox "Botão de próxima página da Shopee não encontrado (atalho especulativo)."
+}
+
+; Shift + K: Paginação – Anterior (speculative)
++k::
+{
+    if Shopee_FindAndInvoke([
+        { Type: 50000, Name: "Anterior", cs: false, matchmode: "Substring" },
+        { Type: 50005, Name: "Anterior", cs: false, matchmode: "Substring" }
+    ])
+        return
+    MsgBox "Botão de página anterior da Shopee não encontrado (atalho especulativo)."
+}
+
+; Shift + A: Adicionar ao carrinho (página do produto)
++a::
+{
+    if Shopee_FindAndInvoke([
+        { Type: 50000, Name: "Adicionar Ao Carrinho", cs: false, matchmode: "Substring" }
+    ])
+        return
+    MsgBox "Botão 'Adicionar Ao Carrinho' não encontrado na página da Shopee."
+}
+
+; Shift + V: Favoritar (coração)
++v::
+{
+    if Shopee_FindAndInvoke([
+        { Type: 50000, Name: "Favoritar", cs: false, matchmode: "Substring" }
+    ])
+        return
+    MsgBox "Botão de favoritos da Shopee não encontrado."
+}
+
+; Shift + J: Continuar fluxo (Continuar / Fazer pedido)
++j::
+{
+    if Shopee_FindAndInvoke([
+        { Type: 50000, Name: "Continuar", cs: false, matchmode: "Substring" },
+        { Type: 50000, Name: "Fazer pedido", cs: false, matchmode: "Substring" },
+        { Type: 50000, Name: "OK", cs: false }
+    ])
+        return
+    MsgBox "Botão de continuar/fazer pedido da Shopee não encontrado."
 }
 
 #HotIf
