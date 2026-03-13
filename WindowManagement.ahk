@@ -766,6 +766,10 @@ global g_WM_SelectorOpenFile := A_ScriptDir "\.cursor\wm_selector_open"
 global g_WM_SelectorCloseRequestFile := A_ScriptDir "\.cursor\wm_selector_close_request"
 global g_WM_SelectorCloseCheckTimer := ""
 
+; Cross-process IPC for Hotstring Selector (Utils.ahk)
+global g_HS_SelectorOpenFile_WM := A_ScriptDir "\.cursor\hs_selector_open"
+global g_HS_SelectorCloseRequestFile_WM := A_ScriptDir "\.cursor\hs_selector_close_request"
+
 WM_CheckSelectorCloseRequest() {
     global g_ProjectSelectorActive, g_WM_SelectorCloseRequestFile
     if (!g_ProjectSelectorActive)
@@ -868,6 +872,18 @@ GetCategorizedProjects() {
 CleanupProjectSelector() {
     global g_ProjectSelectorActive, g_ProjectSelectorGui, g_ProjectHotkeyHandlers, g_SelectionModeActive,
         g_CopyFromGeminiModeActive, g_WM_SelectorOpenFile, g_WM_SelectorCloseRequestFile, g_WM_SelectorCloseCheckTimer
+
+    ; #region agent log
+    try {
+        logPath := A_ScriptDir "\debug-59dff9.log"
+        q := Chr(34)
+        line := "{" q "sessionId" q ":" q "59dff9" q "," q "runId" q ":" q "pre-fix" q "," q "hypothesisId" q ":" q "H_CLEAN_PROJ" q ","
+            . q "location" q ":" q "WindowManagement.ahk:CleanupProjectSelector" q "," q "message" q ":" q "CleanupProjectSelector called" q ","
+            . q "data" q ":" q "{}" q "," q "timestamp" q ":" A_TickCount "}"
+        FileAppend(line . "`n", logPath)
+    } catch {
+    }
+    ; #endregion
 
     g_ProjectSelectorActive := false
     SetTimer(WM_CheckSelectorCloseRequest, 0)
@@ -1093,6 +1109,17 @@ CreateProjectHandler(index) {
 HandleProjectEscape(*) {
     global g_ProjectSelectorActive
     if (g_ProjectSelectorActive) {
+        ; #region agent log
+        try {
+            logPath := A_ScriptDir "\debug-59dff9.log"
+            q := Chr(34)
+            line := "{" q "sessionId" q ":" q "59dff9" q "," q "runId" q ":" q "pre-fix" q "," q "hypothesisId" q ":" q "H_ESC_PROJ" q ","
+                . q "location" q ":" q "WindowManagement.ahk:HandleProjectEscape" q "," q "message" q ":" q "HandleProjectEscape called" q ","
+                . q "data" q ":" q "{}" q "," q "timestamp" q ":" A_TickCount "}"
+            FileAppend(line . "`n", logPath)
+        } catch {
+        }
+        ; #endregion
         CleanupProjectSelector()
     }
 }
@@ -2347,11 +2374,48 @@ HandleCursorWindowSelectionTrigger(*) {
 ShowProjectSelector() {
     global g_ProjectSelectorGui, g_ProjectSelectorActive, g_Projects
     global g_ProjectHotkeyHandlers
+    global g_HotstringSelectorGui, g_HotstringSelectorActive
+    global g_HS_SelectorOpenFile_WM, g_HS_SelectorCloseRequestFile_WM
+
+    ; #region agent log
+    try {
+        logPath := A_ScriptDir "\debug-59dff9.log"
+        q := Chr(34)
+        line := "{" q "sessionId" q ":" q "59dff9" q "," q "runId" q ":" q "pre-fix" q "," q "hypothesisId" q ":" q "H_OPEN_PROJ" q ","
+            . q "location" q ":" q "WindowManagement.ahk:ShowProjectSelector" q "," q "message" q ":" q "ShowProjectSelector called" q ","
+            . q "data" q ":" q "{}" q "," q "timestamp" q ":" A_TickCount "}"
+        FileAppend(line . "`n", logPath)
+    } catch {
+    }
+    ; #endregion
 
     ; Close existing GUI if open
     if (g_ProjectSelectorActive && IsObject(g_ProjectSelectorGui)) {
         CleanupProjectSelector()
         Sleep 50
+    }
+
+    ; In-process mutual exclusion: if the Hotstring Selector is active, close it first
+    try {
+        if (IsSet(g_HotstringSelectorActive) && g_HotstringSelectorActive && IsObject(g_HotstringSelectorGui)) {
+            CleanupHotstringSelector()
+            Sleep 50
+        }
+    } catch {
+        ; Ignore failures – project selector should still open
+    }
+
+    ; Cross-process mutual exclusion: if a Hotstring Selector sentinel exists in another process,
+    ; request it to close via hs_selector_close_request.
+    try {
+        if (FileExist(g_HS_SelectorOpenFile_WM)) {
+            try FileAppend("", g_HS_SelectorCloseRequestFile_WM)
+            catch {
+            }
+            Sleep 50
+        }
+    } catch {
+        ; Ignore IPC failures – project selector should still open
     }
 
     ; Check if we have projects configured
