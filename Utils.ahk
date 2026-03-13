@@ -6257,18 +6257,6 @@ CleanupHotstringSelector() {
     global g_HotstringCharMap
     global g_HS_SelectorOpenFile, g_HS_SelectorCloseRequestFile, g_HS_SelectorCloseCheckTimer
 
-    ; #region agent log
-    try {
-        logPath := A_ScriptDir "\debug-59dff9.log"
-        q := Chr(34)
-        line := "{" q "sessionId" q ":" q "59dff9" q "," q "runId" q ":" q "pre-fix" q "," q "hypothesisId" q ":" q "H_CLEAN_HS" q ","
-            . q "location" q ":" q "Utils.ahk:CleanupHotstringSelector" q "," q "message" q ":" q "CleanupHotstringSelector called" q ","
-            . q "data" q ":" q "{}" q "," q "timestamp" q ":" A_TickCount "}"
-        FileAppend(line . "`n", logPath)
-    } catch {
-    }
-    ; #endregion
-
     ; Disable active flag
     g_HotstringSelectorActive := false
 
@@ -6961,19 +6949,6 @@ ShowHotstringSelector() {
     global g_HotstringSelectorGui, g_HotstringSelectorActive, g_HotstringCharMap
     global g_HotstringHotkeyHandlers, g_HotstringCategories
     global g_HS_SelectorOpenFile, g_HS_SelectorCloseRequestFile, g_HS_SelectorCloseCheckTimer
-
-    ; #region agent log
-    try {
-        logPath := A_ScriptDir "\debug-59dff9.log"
-        q := Chr(34)
-        line := "{" q "sessionId" q ":" q "59dff9" q "," q "runId" q ":" q "pre-fix" q "," q "hypothesisId" q ":" q "H_OPEN_HS" q ","
-            . q "location" q ":" q "Utils.ahk:ShowHotstringSelector" q "," q "message" q ":" q "ShowHotstringSelector called" q ","
-            . q "data" q ":" q "{}" q "," q "timestamp" q ":" A_TickCount "}"
-        FileAppend(line . "`n", logPath)
-    } catch {
-    }
-    ; #endregion
-
     ; Close existing GUI if open
     if (g_HotstringSelectorActive && IsObject(g_HotstringSelectorGui)) {
         CleanupHotstringSelector()
@@ -7989,19 +7964,6 @@ Escape::
     ; Use state-based blocking: check g_DictationActive instead of checking window each time
     ; This ensures Esc remains restricted for the entire duration of dictation
     global g_DictationActive, g_OnEscapePressed
-
-    ; #region agent log
-    try {
-        logPath := A_ScriptDir "\debug-59dff9.log"
-        q := Chr(34)
-        handlerSet := g_OnEscapePressed ? 1 : 0
-        line := "{" q "sessionId" q ":" q "59dff9" q "," q "runId" q ":" q "pre-fix" q "," q "hypothesisId" q ":" q "H_ESC" q ","
-            . q "location" q ":" q "Utils.ahk:Escape" q "," q "message" q ":" q "Escape pressed in Utils" q ","
-            . q "data" q ":" q "{}" q "," q "timestamp" q ":" A_TickCount "}"
-        FileAppend(line . "`n", logPath)
-    } catch {
-    }
-    ; #endregion
 
     ; If a consumer (e.g. project selector) registered an escape handler, run it and consume the key
     if (g_OnEscapePressed) {

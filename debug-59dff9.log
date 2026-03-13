@@ -1,12 +1,2 @@
-{"sessionId":"59dff9","runId":"pre-fix","hypothesisId":"H_OPEN_HS","location":"Utils.ahk:ShowHotstringSelector","message":"ShowHotstringSelector called","data":"{}","timestamp":546859687}
-{"sessionId":"59dff9","runId":"pre-fix","hypothesisId":"H_CLEAN_HS","location":"Utils.ahk:CleanupHotstringSelector","message":"CleanupHotstringSelector called","data":"{}","timestamp":546860000}
-{"sessionId":"59dff9","runId":"pre-fix","hypothesisId":"H_OPEN_PROJ","location":"WindowManagement.ahk:ShowProjectSelector","message":"ShowProjectSelector called","data":"{}","timestamp":546870437}
-{"sessionId":"59dff9","runId":"pre-fix","hypothesisId":"H_OPEN_PROJ","location":"WindowManagement.ahk:ShowProjectSelector","message":"ShowProjectSelector called","data":"{}","timestamp":546873609}
-{"sessionId":"59dff9","runId":"pre-fix","hypothesisId":"H_CLEAN_HS","location":"Utils.ahk:CleanupHotstringSelector","message":"CleanupHotstringSelector called","data":"{}","timestamp":546873671}
-{"sessionId":"59dff9","runId":"pre-fix","hypothesisId":"H_CLEAN_PROJ","location":"WindowManagement.ahk:CleanupProjectSelector","message":"CleanupProjectSelector called","data":"{}","timestamp":546874687}
-{"sessionId":"59dff9","runId":"pre-fix","hypothesisId":"H_OPEN_PROJ","location":"WindowManagement.ahk:ShowProjectSelector","message":"ShowProjectSelector called","data":"{}","timestamp":546875234}
-{"sessionId":"59dff9","runId":"pre-fix","hypothesisId":"H_OPEN_HS","location":"Utils.ahk:ShowHotstringSelector","message":"ShowHotstringSelector called","data":"{}","timestamp":546876062}
-{"sessionId":"59dff9","runId":"pre-fix","hypothesisId":"H_CLEAN_PROJ","location":"WindowManagement.ahk:CleanupProjectSelector","message":"CleanupProjectSelector called","data":"{}","timestamp":546876156}
-{"sessionId":"59dff9","runId":"pre-fix","hypothesisId":"H_CLEAN_HS","location":"Utils.ahk:CleanupHotstringSelector","message":"CleanupHotstringSelector called","data":"{}","timestamp":546876953}
-{"sessionId":"59dff9","runId":"pre-fix","hypothesisId":"H_OPEN_PROJ","location":"WindowManagement.ahk:ShowProjectSelector","message":"ShowProjectSelector called","data":"{}","timestamp":546877718}
-{"sessionId":"59dff9","runId":"pre-fix","hypothesisId":"H_CLEAN_PROJ","location":"WindowManagement.ahk:CleanupProjectSelector","message":"CleanupProjectSelector called","data":"{}","timestamp":546878421}
+{"sessionId":"59dff9","runId":"pre-fix","hypothesisId":"H_OPEN_PROJ","location":"WindowManagement.ahk:ShowProjectSelector","message":"ShowProjectSelector called","data":"{}","timestamp":547093031}
+{"sessionId":"59dff9","runId":"pre-fix","hypothesisId":"H_CLEAN_PROJ","location":"WindowManagement.ahk:CleanupProjectSelector","message":"CleanupProjectSelector called","data":"{}","timestamp":547095328}
