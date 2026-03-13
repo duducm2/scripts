@@ -1419,7 +1419,7 @@ CursorTransfer_SelectorClose() {
         return
     g_CursorTransferSelectorActive := false
     for h in g_CursorTransferHotkeyHandlers {
-        if (IsObject(h) && h.Has("key") && h.Has("callback")) {
+        if (IsObject(h) && h.HasProp("key") && h.HasProp("callback")) {
             try Hotkey(h.key, h.callback, "Off")
         } else {
             try Hotkey(h, "Off")
@@ -1447,6 +1447,53 @@ CursorTransfer_SelectorEscape(*) {
 
 ; Return project order index from g_Projects for a window title; 0 = no match.
 CursorTransfer_GetProjectOrderForTitle(winTitle) {
+    idx := CursorTransfer_GetMatchingProjectIndexForTitle(winTitle)
+    return idx
+}
+
+; Build canonical project-index -> character mapping (same logic as standard project selector).
+CursorTransfer_BuildProjectIndexToChar() {
+    global g_Projects, g_ProjectCategories, g_ProjectCharSequence
+    projectIndexToChar := Map()
+    projectIndexToCategory := Map()
+    loop g_Projects.Length {
+        projectIndex := A_Index
+        project := g_Projects[projectIndex]
+        category := project.HasProp("category") ? project.category : "Personal"
+        projectIndexToCategory[projectIndex] := category
+    }
+    charIndex := 1
+    for category in g_ProjectCategories {
+        categoryProjectIndices := []
+        for projectIndex, cat in projectIndexToCategory {
+            if (cat = category)
+                categoryProjectIndices.Push(projectIndex)
+        }
+        for projectIndex in categoryProjectIndices {
+            project := g_Projects[projectIndex]
+            if (project.name = "" && project.path = "" && project.workPath = "") {
+                charIndex++
+                continue
+            }
+            if (charIndex > g_ProjectCharSequence.Length)
+                break
+            char := g_ProjectCharSequence[charIndex]
+            ; Keep parity with standard selector where 3 is reserved.
+            if (char = "3") {
+                charIndex++
+                if (charIndex > g_ProjectCharSequence.Length)
+                    break
+                char := g_ProjectCharSequence[charIndex]
+            }
+            projectIndexToChar[projectIndex] := char
+            charIndex++
+        }
+    }
+    return projectIndexToChar
+}
+
+; Return matching project index from g_Projects for a window title; 0 = no match.
+CursorTransfer_GetMatchingProjectIndexForTitle(winTitle) {
     global g_Projects
     if (!winTitle || !IsObject(g_Projects))
         return 0
@@ -1501,25 +1548,13 @@ CursorTransfer_SortWindowsByProjectOrder(&arr) {
 ; Return project name from g_Projects if window title matches a project path; otherwise "".
 CursorTransfer_GetProjectNameForTitle(winTitle) {
     global g_Projects
-    if (!winTitle || !IsObject(g_Projects))
+    idx := CursorTransfer_GetMatchingProjectIndexForTitle(winTitle)
+    if (!idx || !IsObject(g_Projects))
         return ""
     try {
-        isWork := (IsSet(IS_WORK_ENVIRONMENT) && IS_WORK_ENVIRONMENT)
-        loop g_Projects.Length {
-            project := g_Projects[A_Index]
-            if (project.name = "" && project.path = "" && project.workPath = "")
-                continue
-            projectPath := isWork ? project.workPath : project.path
-            if (isWork && (projectPath = ""))
-                projectPath := project.path
-            if (projectPath = "")
-                continue
-            matchSegments := ExtractProjectMatchSegments(projectPath)
-            for segment in matchSegments {
-                if (InStr(winTitle, segment))
-                    return project.name ? project.name : segment
-            }
-        }
+        project := g_Projects[idx]
+        if (project.name != "")
+            return project.name
     } catch as err {
         ; #region agent log
         errMsg := ""
@@ -1602,7 +1637,9 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
             hwnd: w.hwnd,
             title: winTitle,
             displayName: displayName,
-            projectOrder: projectOrder > 0 ? projectOrder : (10000 + enriched.Length)
+            projectOrder: projectOrder > 0 ? projectOrder : (10000 + enriched.Length),
+            projectIndex: projectOrder,
+            hotkeyChar: ""
         })
     }
     if (enriched.Length = 0) {
@@ -1617,6 +1654,20 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
         list := trimmed
     } else {
         list := enriched
+    }
+    ; Assign canonical project hotkeys (same as standard selector) and hide unmatched/empty entries.
+    projectIndexToChar := CursorTransfer_BuildProjectIndexToChar()
+    filtered := []
+    for w in list {
+        if (w.projectIndex > 0 && projectIndexToChar.Has(w.projectIndex)) {
+            w.hotkeyChar := projectIndexToChar[w.projectIndex]
+            filtered.Push(w)
+        }
+    }
+    list := filtered
+    if (list.Length = 0) {
+        ShowCenteredOverlay_Utils("❌ No mapped Cursor projects found", 2000, BANNER_ACCENT_ERROR)
+        return 0
     }
     ; #region agent log
     try FileAppend "{" . Chr(34) . "sessionId" . Chr(34) . ":" . Chr(34) . "502cc2" . Chr(34) . "," . Chr(34) .
@@ -1644,12 +1695,12 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
     g_CursorTransferSelectorGui.Add("Text", "w320 Center", "📋 Transfer to Cursor")
     g_CursorTransferSelectorGui.Add("Text", "w320 h1 Background45475A")
     g_CursorTransferSelectorGui.SetFont("s12 cCDD6F4", "Segoe UI")
-    for i, w in list {
-        g_CursorTransferSelectorGui.Add("Text", "w320", "[" . i . "] " . w.displayName)
+    for w in list {
+        g_CursorTransferSelectorGui.Add("Text", "w320", "[" . w.hotkeyChar . "] " . w.displayName)
     }
     g_CursorTransferSelectorGui.Add("Text", "w320 h1 Background45475A y+10")
     g_CursorTransferSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_CursorTransferSelectorGui.Add("Text", "w320 Center", "Press 1–" . list.Length . " | Esc to cancel")
+    g_CursorTransferSelectorGui.Add("Text", "w320 Center", "Press project key | Esc to cancel")
     g_CursorTransferSelectorGui.Show("AutoSize Hide")
     g_CursorTransferSelectorGui.GetPos(&gx, &gy, &gw, &gh)
     if (centerOnHwnd && WinExist("ahk_id " centerOnHwnd)) {
@@ -1679,9 +1730,22 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
     g_CursorTransferHotkeyHandlers := []
     loop list.Length {
         i := A_Index
+        keyChar := list[i].hotkeyChar
+        if (keyChar = "")
+            continue
         try {
-            Hotkey(String(i), CursorTransfer_SelectorHandleKey.Bind(i), "On")
-            g_CursorTransferHotkeyHandlers.Push(String(i))
+            fn := CursorTransfer_SelectorHandleKey.Bind(i)
+            Hotkey(keyChar, fn, "On")
+            g_CursorTransferHotkeyHandlers.Push({ key: keyChar, callback: fn })
+            if (RegExMatch(keyChar, "^[a-z]$")) {
+                up := StrUpper(keyChar)
+                Hotkey(up, fn, "On")
+                g_CursorTransferHotkeyHandlers.Push({ key: up, callback: fn })
+            } else if (RegExMatch(keyChar, "^[A-Z]$")) {
+                low := StrLower(keyChar)
+                Hotkey(low, fn, "On")
+                g_CursorTransferHotkeyHandlers.Push({ key: low, callback: fn })
+            }
         } catch {
         }
     }
