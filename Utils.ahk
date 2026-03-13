@@ -4691,6 +4691,20 @@ MonitorYoutubeFocus() {
 
     ; Check if YouTube window is still the active window
     if (!WinActive("ahk_id " . g_YoutubeFocusTrackedHwnd)) {
+        ; Pause video and restore focus before removing blackout (same pattern as Wikipedia on exit)
+        currentActiveHwnd := WinExist("A")
+        if (g_YoutubeFocusTrackedHwnd && WinExist("ahk_id " . g_YoutubeFocusTrackedHwnd)) {
+            try {
+                WinActivate("ahk_id " . g_YoutubeFocusTrackedHwnd)
+                Sleep(50)
+                Send("k")  ; YouTube play/pause toggle: pause when exiting
+                Sleep(100)
+            }
+            if (currentActiveHwnd && WinExist("ahk_id " . currentActiveHwnd)) {
+                try
+                    WinActivate("ahk_id " . currentActiveHwnd)
+            }
+        }
         DisableFocusMode()
         StopYoutubeFocusMonitor()
     }
