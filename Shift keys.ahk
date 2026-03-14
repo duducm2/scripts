@@ -3880,54 +3880,28 @@ global g_ML_CacheResult := false
 ; Cache for initial-page-load workaround: right-click + close context menu to make hotkeys work (once per window).
 global g_ML_ReceptivityHwnd := 0
 
-; #region agent log
-ML_Dbg(sessionId, hypothesisId, message, detail := "") {
-    try {
-        path := A_ScriptDir "\debug-803714.log"
-        q := Chr(34)
-        b := Chr(92)
-        esc := (s) => StrReplace(StrReplace(StrReplace(StrReplace(s, b, b b), q, b q), "`r", b "r"), "`n", b "n")
-        d := esc(SubStr(detail, 1, 400))
-        line := "{" q "sessionId" q ":" q sessionId q "," q "hypothesisId" q ":" q hypothesisId q "," q "message" q ":" q esc(
-            message) q "," q "data" q ":{" q "detail" q ":" q d q "}," q "timestamp" q ":" A_TickCount "}" "`n"
-        FileAppend(line, path, "UTF-8")
-    } catch {
-    }
-}
-; #endregion agent log
-
 ; Workaround for ML: hotkeys fail on initial page load until page is "initialized". Right-click on empty area then close context menu.
 ; force=true: run even if cache says we already did (error-driven retry when hotkey action failed).
 ML_EnsureHotkeyReceptivity(force := false) {
     global g_ML_ReceptivityHwnd
-    if !WinActive("ahk_exe chrome.exe") {
-        ML_Dbg("803714", "H2", "workaround skip", "not chrome")
+    if !WinActive("ahk_exe chrome.exe")
         return
-    }
     hwnd := WinExist("A")
-    if (!hwnd) {
-        ML_Dbg("803714", "H2", "workaround skip", "no hwnd")
+    if (!hwnd)
         return
-    }
-    if (!force && hwnd = g_ML_ReceptivityHwnd && WinExist("ahk_id " g_ML_ReceptivityHwnd)) {
-        ML_Dbg("803714", "H2", "workaround skip", "cache hwnd=" hwnd)
+    if (!force && hwnd = g_ML_ReceptivityHwnd && WinExist("ahk_id " g_ML_ReceptivityHwnd))
         return
-    }
     try {
         uia := UIA_Browser("ahk_exe chrome.exe")
         try
             root := uia.GetCurrentDocumentElement()
         catch
             root := uia.BrowserElement
-        if (!root) {
-            ML_Dbg("803714", "H3", "workaround no root", "")
+        if (!root)
             return
-        }
         br := root.BoundingRectangle
-        if (!br || (br.r <= br.l) || (br.b <= br.t)) {
-            ML_Dbg("803714", "H3", "workaround bad rect", "")
+        if (!br || (br.r <= br.l) || (br.b <= br.t))
             return
-        }
         x := br.l + (br.r - br.l) * 0.15
         y := br.t + (br.b - br.t) * 0.20
         prevMode := A_CoordModeMouse
@@ -3936,9 +3910,7 @@ ML_EnsureHotkeyReceptivity(force := false) {
         Send("{Escape}")
         CoordMode("Mouse", prevMode)
         g_ML_ReceptivityHwnd := hwnd
-        ML_Dbg("803714", "H1", "workaround ran", "x=" x " y=" y " force=" (force ? "1" : "0"))
-    } catch as err {
-        ML_Dbg("803714", "H3", "workaround exception", err.Message)
+    } catch {
     }
 }
 
@@ -4289,7 +4261,6 @@ Shopee_NavMove(offset) {
 ; Shift + S: Focus Mercado Livre search field
 +s::
 {
-    ML_Dbg("803714", "H5", "ML +s fired", "hwnd=" WinExist("A"))
     ML_EnsureHotkeyReceptivity()
     try {
         uia := UIA_Browser("ahk_exe chrome.exe")
@@ -4342,9 +4313,6 @@ Shopee_NavMove(offset) {
             }
             if (focusOk)
                 return
-            ML_Dbg("803714", "H4", "ML +s focus failed", "field found but SetFocus/Click failed")
-        } else {
-            ML_Dbg("803714", "H4", "ML +s field not found", "first attempt")
         }
 
         ; Error-driven workaround: force right-click + close menu, then retry once
@@ -4378,12 +4346,10 @@ Shopee_NavMove(offset) {
                     catch {
                     }
                 }
-                ML_Dbg("803714", "H4", "ML +s retry ok", "")
                 return
             }
         } catch {
         }
-        ML_Dbg("803714", "H4", "ML +s retry fail", "still no field or focus")
 
         MsgBox "Could not find Mercado Livre search field."
     } catch Error as e {

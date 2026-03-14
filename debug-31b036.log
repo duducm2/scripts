@@ -130,3 +130,5 @@
 {{sessionId:31b036,id:log_689048750_H4,timestamp:689048750,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_return_false,data:{{hypothesisId:H4}},runId:initial}}
 {{sessionId:31b036,id:log_690715015_H1,timestamp:690715015,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_entry,data:{{hypothesisId:H1}},runId:initial}}
 {{sessionId:31b036,id:log_690715531_H4,timestamp:690715531,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_return_false,data:{{hypothesisId:H4}},runId:initial}}
+{{sessionId:31b036,id:log_691817734_H1,timestamp:691817734,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_entry,data:{{hypothesisId:H1}},runId:initial}}
+{{sessionId:31b036,id:log_691818250_H4,timestamp:691818250,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_return_false,data:{{hypothesisId:H4}},runId:initial}}
