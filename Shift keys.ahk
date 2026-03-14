@@ -3873,22 +3873,6 @@ ChromePdf_FocusByAutomationId(automationId, controlType := 0) {
 ;-------------------------------------------------------------------
 ; Mercado Livre (Brazil) Shortcuts
 ;-------------------------------------------------------------------
-; #region agent log
-AgentLog803714(hypothesisId, message, detail, runId := "pre-fix") {
-    try {
-        path := A_ScriptDir "\debug-803714.log"
-        q := Chr(34)
-        b := Chr(92)
-        esc := (s) => StrReplace(StrReplace(StrReplace(StrReplace(s, b, b b), q, b q), "`r", b "r"), "`n", b "n")
-        d := esc(SubStr(detail, 1, 500))
-        m := esc(SubStr(message, 1, 200))
-        line := "{" q "sessionId" q ":" q "803714" q "," q "runId" q ":" q runId q "," q "hypothesisId" q ":" q hypothesisId q "," q "location" q ":" q "Shift keys.ahk" q "," q "message" q ":" q m q "," q "data" q ":{" q "detail" q ":" q d q "}," q "timestamp" q ":" A_TickCount "}" "`n"
-        FileAppend(line, path, "UTF-8")
-    } catch {
-    }
-}
-; #endregion agent log
-
 ; Cache for IsMercadoLivreActive (per efficiency-canon: cache-first with validation).
 ; Invalidated when foreground HWND changes so we only run UIA once per window/tab focus.
 global g_ML_CacheHwnd := 0
@@ -3896,43 +3880,29 @@ global g_ML_CacheResult := false
 
 IsMercadoLivreActive() {
     global g_ML_CacheHwnd, g_ML_CacheResult
-    winChrome := WinActive("ahk_exe chrome.exe")
+    if !WinActive("ahk_exe chrome.exe")
+        return false
     hwnd := WinExist("A")
-    if !winChrome {
-        AgentLog803714("H4", "ML: early exit", "WinActive(chrome)=0 hwnd=" hwnd)
+    if (!hwnd)
         return false
-    }
-    if (!hwnd) {
-        AgentLog803714("H4", "ML: early exit", "WinExist(A)=0")
-        return false
-    }
-    cacheHit := (hwnd = g_ML_CacheHwnd && WinExist("ahk_id " g_ML_CacheHwnd))
-    if (cacheHit) {
-        AgentLog803714("H3", "ML: cache hit", "hwnd=" hwnd " result=" (g_ML_CacheResult ? "true" : "false"))
+    ; Cache hit: same window as last check (avoids UIA on every keystroke / cheat sheet open)
+    if (hwnd = g_ML_CacheHwnd && WinExist("ahk_id " g_ML_CacheHwnd))
         return g_ML_CacheResult
-    }
     ; Platform identification by URL only (do not use window title; it changes to product name). See shopping uia3.md.
     ; URL check via UIA (address bar: Chrome exposes AcceleratorKey "Ctrl+L", not AccessKey). Bounded to this window only.
     try {
         root := UIA.ElementFromHandle(hwnd)
         addressBar := root.FindFirst({ Type: 50004, AcceleratorKey: "Ctrl+L" })
-        if (!addressBar) {
-            AgentLog803714("H1", "ML: address bar not found", "FindFirst returned no element")
-            g_ML_CacheHwnd := hwnd
-            g_ML_CacheResult := false
-            return false
+        if (addressBar) {
+            url := addressBar.Value
+            if InStr(url, "mercadolivre.com") || InStr(url, "mercadolibre.com") {
+                g_ML_CacheHwnd := hwnd
+                g_ML_CacheResult := true
+                return true
+            }
         }
-        url := addressBar.Value
-        matched := InStr(url, "mercadolivre.com") || InStr(url, "mercadolibre.com")
-        AgentLog803714("H2", "ML: URL read", "urlLen=" StrLen(url) " urlStart=" SubStr(url, 1, 80) " matched=" (matched ?
-            "true" : "false"))
-        if (matched) {
-            g_ML_CacheHwnd := hwnd
-            g_ML_CacheResult := true
-            return true
-        }
-    } catch as err {
-        AgentLog803714("H1", "ML: UIA exception", "msg=" err.Message)
+    } catch {
+        ; UIA failed; do not cache so next call retries
     }
     g_ML_CacheHwnd := hwnd
     g_ML_CacheResult := false
@@ -4077,43 +4047,29 @@ global g_Shopee_CacheResult := false
 
 IsShopeeActive() {
     global g_Shopee_CacheHwnd, g_Shopee_CacheResult
-    winChrome := WinActive("ahk_exe chrome.exe")
+    if !WinActive("ahk_exe chrome.exe")
+        return false
     hwnd := WinExist("A")
-    if !winChrome {
-        AgentLog803714("H4", "Shopee: early exit", "WinActive(chrome)=0 hwnd=" hwnd)
+    if (!hwnd)
         return false
-    }
-    if (!hwnd) {
-        AgentLog803714("H4", "Shopee: early exit", "WinExist(A)=0")
-        return false
-    }
-    cacheHit := (hwnd = g_Shopee_CacheHwnd && WinExist("ahk_id " g_Shopee_CacheHwnd))
-    if (cacheHit) {
-        AgentLog803714("H3", "Shopee: cache hit", "hwnd=" hwnd " result=" (g_Shopee_CacheResult ? "true" : "false"))
+    ; Cache hit: same window as last check (avoids UIA on every keystroke / cheat sheet open)
+    if (hwnd = g_Shopee_CacheHwnd && WinExist("ahk_id " g_Shopee_CacheHwnd))
         return g_Shopee_CacheResult
-    }
     ; Platform identification by URL only (do not use window title; it changes to product name). See shopping uia3.md.
     ; URL check via UIA (Chrome address bar: AcceleratorKey "Ctrl+L", not AccessKey)
     try {
         root := UIA.ElementFromHandle(hwnd)
         addressBar := root.FindFirst({ Type: 50004, AcceleratorKey: "Ctrl+L" })
-        if (!addressBar) {
-            AgentLog803714("H1", "Shopee: address bar not found", "FindFirst returned no element")
-            g_Shopee_CacheHwnd := hwnd
-            g_Shopee_CacheResult := false
-            return false
+        if (addressBar) {
+            url := addressBar.Value
+            if InStr(url, "shopee.com", false) {
+                g_Shopee_CacheHwnd := hwnd
+                g_Shopee_CacheResult := true
+                return true
+            }
         }
-        url := addressBar.Value
-        matched := InStr(url, "shopee.com", false)
-        AgentLog803714("H2", "Shopee: URL read", "urlLen=" StrLen(url) " urlStart=" SubStr(url, 1, 80) " matched=" (
-            matched ? "true" : "false"))
-        if (matched) {
-            g_Shopee_CacheHwnd := hwnd
-            g_Shopee_CacheResult := true
-            return true
-        }
-    } catch as err {
-        AgentLog803714("H1", "Shopee: UIA exception", "msg=" err.Message)
+    } catch {
+        ; UIA failed; do not cache so next call retries
     }
     g_Shopee_CacheHwnd := hwnd
     g_Shopee_CacheResult := false
