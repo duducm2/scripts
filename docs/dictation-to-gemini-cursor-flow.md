@@ -22,7 +22,7 @@ flowchart TB
     User6s --> |"Y"| DelayedFlow["DelayedSubmitFlow"]
     DelayedFlow --> Banner4s["Submitting 4s, 3s timer"]
     Banner4s --> User4s{"Y / N / 3s"}
-    User4s --> |"N"| Stop4s["Stop, paste only"]
+    User4s --> |"N"| Stop4s["Stop, no submit"]
     User4s --> |"Y or 3s"| Finalize["FinalizeSubmit"]
     Finalize --> PasteGemini["Focus Gemini, paste"]
     PasteGemini --> WaitContent["Wait content max 5s"]

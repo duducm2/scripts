@@ -2686,6 +2686,7 @@ DictationGeminiConfirm_Hide(*) {
     StandardLoadingBar_CloseKeysOverlay()
 }
 
+; submitToGemini=false (N or timeout): terminal – no further flow. submitToGemini=true: continue to delayed-submit.
 DictationGeminiConfirm_CleanupAndMaybeSubmit(submitToGemini) {
     global g_DictationGeminiConfirmBannerVisible
     g_DictationGeminiConfirmBannerVisible := false  ; Allow future show
@@ -6553,26 +6554,17 @@ GeminiSpeedUpSubmit(*) {
     GeminiFinalizeSubmit()
 }
 
+; N at 4s banner: full stop – no paste, no Enter, no monitor.
 GeminiCancelAutoSubmit(*) {
-    global g_HotstringGeminiAutoSubmit, g_HotstringGeminiRestoreHwnd
+    global g_HotstringGeminiAutoSubmit
     g_HotstringGeminiAutoSubmit := false
     try Hotkey("n", "Off")
     try Hotkey("N", "Off")
-    SetTimer(GeminiFinalizeSubmit, 0)  ; cancel 4s timer so paste runs in deferred callback only
+    try Hotkey("y", "Off")
+    try Hotkey("Y", "Off")
+    SetTimer(GeminiFinalizeSubmit, 0)
     HotstringGeminiBanner_Hide()
-    HotstringGeminiBanner_Show("⚠ Auto-submit CANCELLED (Paste only)")
-    SetTimer(HotstringGeminiBanner_Hide, -1500)
-    ; Defer paste so it runs outside hotkey context; sync works and paste goes to Gemini
-    SetTimer(GeminiCancelAutoSubmit_DoPaste, -400)
-}
-
-GeminiCancelAutoSubmit_DoPaste(*) {
-    global g_HotstringGeminiRestoreHwnd
-    ; Delay-submit flow: do not switch tabs; paste to currently active Gemini tab
-    GeminiNavigateFocusAndPasteFirstSnippet("", false)
-    Sleep 200  ; Let paste be received by Gemini before switching focus back
-    if (g_HotstringGeminiRestoreHwnd && WinExist("ahk_id " g_HotstringGeminiRestoreHwnd))
-        WinActivate("ahk_id " g_HotstringGeminiRestoreHwnd)
+    ShowCenteredOverlay_Utils("⚠ Auto-submit cancelled", 1500, BANNER_ACCENT_INTERMEDIATE)
 }
 
 ; Delay (ms) after paste and before Send Enter in Gemini delayed-submit flow. Prevents premature send and lets the UI register paste + character limits.
