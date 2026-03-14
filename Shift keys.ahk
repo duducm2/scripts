@@ -3877,6 +3877,41 @@ ChromePdf_FocusByAutomationId(automationId, controlType := 0) {
 ; Invalidated when foreground HWND changes so we only run UIA once per window/tab focus.
 global g_ML_CacheHwnd := 0
 global g_ML_CacheResult := false
+; Cache for initial-page-load workaround: right-click + close context menu to make hotkeys work (once per window).
+global g_ML_ReceptivityHwnd := 0
+
+; Workaround for ML: hotkeys fail on initial page load until page is "initialized". Right-click on empty area then close context menu.
+ML_EnsureHotkeyReceptivity() {
+    global g_ML_ReceptivityHwnd
+    if !WinActive("ahk_exe chrome.exe")
+        return
+    hwnd := WinExist("A")
+    if (!hwnd)
+        return
+    if (hwnd = g_ML_ReceptivityHwnd && WinExist("ahk_id " g_ML_ReceptivityHwnd))
+        return
+    try {
+        uia := UIA_Browser("ahk_exe chrome.exe")
+        try
+            root := uia.GetCurrentDocumentElement()
+        catch
+            root := uia.BrowserElement
+        if (!root)
+            return
+        br := root.BoundingRectangle
+        if (!br || (br.r <= br.l) || (br.b <= br.t))
+            return
+        x := br.l + (br.r - br.l) * 0.15
+        y := br.t + (br.b - br.t) * 0.20
+        prevMode := A_CoordModeMouse
+        CoordMode("Mouse", "Screen")
+        MouseClick("Right", x, y)
+        Send("{Escape}")
+        CoordMode("Mouse", prevMode)
+        g_ML_ReceptivityHwnd := hwnd
+    } catch {
+    }
+}
 
 IsMercadoLivreActive() {
     global g_ML_CacheHwnd, g_ML_CacheResult
@@ -4212,6 +4247,7 @@ Shopee_NavMove(offset) {
 ; Shift + S: Focus Mercado Livre search field
 +s::
 {
+    ML_EnsureHotkeyReceptivity()
     try {
         uia := UIA_Browser("ahk_exe chrome.exe")
         Sleep 200
@@ -4270,6 +4306,7 @@ Shopee_NavMove(offset) {
 ; Shift + C: Carrinho de compras (Cart)
 +c::
 {
+    ML_EnsureHotkeyReceptivity()
     try {
         uia := UIA_Browser("ahk_exe chrome.exe")
         Sleep 200
@@ -4316,6 +4353,7 @@ Shopee_NavMove(offset) {
 ; Shift + P: Compras (Purchases)
 +p::
 {
+    ML_EnsureHotkeyReceptivity()
     try {
         uia := UIA_Browser("ahk_exe chrome.exe")
         Sleep 200
@@ -4355,6 +4393,7 @@ Shopee_NavMove(offset) {
 ; Shift + Y: Chegará amanhã (filter toggle)
 +y::
 {
+    ML_EnsureHotkeyReceptivity()
     if ML_FindAndInvoke([{ Type: 50000, AutomationId: "shipping_time_highlighted_nextday" }])
         return
     MsgBox "Filtro 'Chegará amanhã' não encontrado."
@@ -4363,6 +4402,7 @@ Shopee_NavMove(offset) {
 ; Shift + F: Full (frete grátis Full)
 +f::
 {
+    ML_EnsureHotkeyReceptivity()
     if ML_FindAndInvoke([{ Type: 50000, AutomationId: "shipping_highlighted_fulfillment" }])
         return
     MsgBox "Filtro 'Full' não encontrado."
@@ -4371,6 +4411,7 @@ Shopee_NavMove(offset) {
 ; Shift + I: Compra Internacional
 +i::
 {
+    ML_EnsureHotkeyReceptivity()
     if ML_FindAndInvoke([{ Type: 50000, AutomationId: "SHIPPING_ORIGIN_HIGHLIGHTED" }])
         return
     MsgBox "Filtro 'Internacional' não encontrado."
@@ -4379,6 +4420,7 @@ Shopee_NavMove(offset) {
 ; Shift + N: Envio local / Produtos com frete nacional
 +n::
 {
+    ML_EnsureHotkeyReceptivity()
     if ML_FindAndInvoke([{ Type: 50000, AutomationId: "SHIPPING_ORIGIN_LOCAL_HIGHLIGHTED" }, { Type: 50000, Name: "Envio local",
         cs: false, matchmode: "Substring" }])
         return
@@ -4388,6 +4430,7 @@ Shopee_NavMove(offset) {
 ; Shift + G: Frete grátis
 +g::
 {
+    ML_EnsureHotkeyReceptivity()
     if ML_FindAndInvoke([{ Type: 50000, AutomationId: "shipping_cost_highlighted_free" }])
         return
     MsgBox "Filtro 'Frete grátis' não encontrado."
@@ -4617,6 +4660,7 @@ ML_SortApply(idx) {
 
 +o::
 {
+    ML_EnsureHotkeyReceptivity()
     root := ML_GetDocRoot()
     if (!root) {
         MsgBox "Página do Mercado Livre não disponível."
@@ -4689,6 +4733,7 @@ ML_SortApply(idx) {
 ; Shift + L: Paginação – Seguinte
 +l::
 {
+    ML_EnsureHotkeyReceptivity()
     if ML_FindAndInvoke([{ Type: 50005, Name: "Seguinte", cs: false }, { Type: 50000, Name: "Seguinte", cs: false }])
         return
     MsgBox "Botão 'Seguinte' não encontrado."
@@ -4697,6 +4742,7 @@ ML_SortApply(idx) {
 ; Shift + K: Paginação – Anterior
 +k::
 {
+    ML_EnsureHotkeyReceptivity()
     if ML_FindAndInvoke([{ Type: 50005, Name: "Anterior", cs: false }, { Type: 50000, Name: "Anterior", cs: false }])
         return
     MsgBox "Botão 'Anterior' não encontrado."
@@ -4705,6 +4751,7 @@ ML_SortApply(idx) {
 ; Shift + A: Adicionar ao carrinho (página do produto)
 +a::
 {
+    ML_EnsureHotkeyReceptivity()
     if ML_FindAndInvoke([{ Type: 50000, Name: "Adicionar ao carrinho", cs: false }])
         return
     MsgBox "Botão 'Adicionar ao carrinho' não encontrado."
@@ -4713,6 +4760,7 @@ ML_SortApply(idx) {
 ; Shift + V: Adicionar aos favoritos (coração)
 +v::
 {
+    ML_EnsureHotkeyReceptivity()
     if ML_FindAndInvoke([{ Type: 50000, Name: "Adicionar aos favoritos", cs: false }, { Type: 50000, ClassName: "ui-pdp-bookmark",
         matchmode: "Substring" }])
         return
@@ -4722,6 +4770,7 @@ ML_SortApply(idx) {
 ; Shift + J: Continuar fluxo (Continuar a compra / Continuar / OK)
 +j::
 {
+    ML_EnsureHotkeyReceptivity()
     conditions := [{ Type: 50005, Name: "Continuar a compra", cs: false }, { Type: 50000, Name: "Continuar", cs: false }, { Type: 50000,
         Name: "OK", cs: false }, { Type: 50000, AutomationId: "shipping_footer_confirm_button" }, { Type: 50005, Name: "Continuar",
             cs: false }, { Type: 50000, Name: "Seguinte", cs: false }
