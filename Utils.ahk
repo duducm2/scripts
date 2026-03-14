@@ -1716,7 +1716,7 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
             continue
         loop g_ProjectCharSequence.Length {
             c := g_ProjectCharSequence[A_Index]
-            if (c = "3")
+            if (c = "3" || c = "n")
                 continue
             if (!usedChars.Has(c)) {
                 w.hotkeyChar := c
@@ -1749,7 +1749,7 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
     }
     g_CursorTransferSelectorGui.Add("Text", "w320 h1 Background45475A y+10")
     g_CursorTransferSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_CursorTransferSelectorGui.Add("Text", "w320 Center", "Press project key | Esc to cancel")
+    g_CursorTransferSelectorGui.Add("Text", "w320 Center", "Press project key | N or Esc to cancel")
     g_CursorTransferSelectorGui.Show("AutoSize Hide")
     g_CursorTransferSelectorGui.GetPos(&gx, &gy, &gw, &gh)
     if (centerOnHwnd && WinExist("ahk_id " centerOnHwnd)) {
@@ -1794,6 +1794,10 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
     try {
         Hotkey("Escape", CursorTransfer_SelectorEscape, "On")
         g_CursorTransferHotkeyHandlers.Push({ key: "Escape", callback: CursorTransfer_SelectorEscape })
+        Hotkey("N", CursorTransfer_SelectorEscape, "On")
+        g_CursorTransferHotkeyHandlers.Push({ key: "N", callback: CursorTransfer_SelectorEscape })
+        Hotkey("n", CursorTransfer_SelectorEscape, "On")
+        g_CursorTransferHotkeyHandlers.Push({ key: "n", callback: CursorTransfer_SelectorEscape })
     } catch {
     }
     start := A_TickCount
