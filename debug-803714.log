@@ -1,0 +1,11 @@
+﻿{"sessionId":"803714","runId":"pre-fix","hypothesisId":"H2","location":"Shift keys.ahk","message":"ML: URL read","data":{"detail":"urlLen=121 urlStart=lista.mercadolivre.com.br/informatica/perifericos-pc/mouses-teclados/key-caps-br matched=true"},"timestamp":688394906}
+{"sessionId":"803714","runId":"pre-fix","hypothesisId":"H3","location":"Shift keys.ahk","message":"ML: cache hit","data":{"detail":"hwnd=1837220 result=true"},"timestamp":688396031}
+{"sessionId":"803714","runId":"pre-fix","hypothesisId":"H3","location":"Shift keys.ahk","message":"ML: cache hit","data":{"detail":"hwnd=1837220 result=true"},"timestamp":688397718}
+{"sessionId":"803714","runId":"pre-fix","hypothesisId":"H3","location":"Shift keys.ahk","message":"ML: cache hit","data":{"detail":"hwnd=1837220 result=true"},"timestamp":688403703}
+{"sessionId":"803714","runId":"pre-fix","hypothesisId":"H3","location":"Shift keys.ahk","message":"ML: cache hit","data":{"detail":"hwnd=1837220 result=true"},"timestamp":688408468}
+{"sessionId":"803714","runId":"pre-fix","hypothesisId":"H4","location":"Shift keys.ahk","message":"ML: early exit","data":{"detail":"WinActive(chrome)=0 hwnd=330226"},"timestamp":688411562}
+{"sessionId":"803714","runId":"pre-fix","hypothesisId":"H4","location":"Shift keys.ahk","message":"Shopee: early exit","data":{"detail":"WinActive(chrome)=0 hwnd=330226"},"timestamp":688411562}
+{"sessionId":"803714","runId":"pre-fix","hypothesisId":"H3","location":"Shift keys.ahk","message":"ML: cache hit","data":{"detail":"hwnd=1837220 result=true"},"timestamp":688413984}
+{"sessionId":"803714","runId":"pre-fix","hypothesisId":"H3","location":"Shift keys.ahk","message":"ML: cache hit","data":{"detail":"hwnd=1837220 result=true"},"timestamp":688416343}
+{"sessionId":"803714","runId":"pre-fix","hypothesisId":"H3","location":"Shift keys.ahk","message":"ML: cache hit","data":{"detail":"hwnd=1837220 result=true"},"timestamp":688417687}
+{"sessionId":"803714","runId":"pre-fix","hypothesisId":"H3","location":"Shift keys.ahk","message":"ML: cache hit","data":{"detail":"hwnd=1837220 result=true"},"timestamp":688419218}

@@ -1207,13 +1207,10 @@ GetCheatSheetText() {
             appShortcuts := cheatSheets.Has("Miro") ? cheatSheets["Miro"] : ""
         if InStr(chromeTitle, "Wikipedia", false) || InStr(chromeTitle, "wikipedia.org", false)
             appShortcuts := cheatSheets.Has("Wikipedia") ? cheatSheets["Wikipedia"] : ""
-        ; Mercado Livre: fast path by title first (avoids UIA when title already indicates ML)
-        if InStr(chromeTitle, "Mercado Livre", false)
+        ; Mercado Livre & Shopee: platform identification by URL only (no window title; it changes to product name). See shopping uia3.md.
+        if IsMercadoLivreActive()
             appShortcuts := cheatSheets.Has("Mercado Livre") ? cheatSheets["Mercado Livre"] : ""
-        else if IsMercadoLivreActive()
-            appShortcuts := cheatSheets.Has("Mercado Livre") ? cheatSheets["Mercado Livre"] : ""
-        ; Shopee / Shop P: title or URL-based detection
-        if (appShortcuts = "" && (InStr(chromeTitle, "Shopee", false) || IsShopeeActive()))
+        if (appShortcuts = "" && IsShopeeActive())
             appShortcuts := cheatSheets.Has("Shopee") ? cheatSheets["Shopee"] : ""
         if InStr(chromeTitle, "gemini", false)
             appShortcuts :=
@@ -3876,6 +3873,22 @@ ChromePdf_FocusByAutomationId(automationId, controlType := 0) {
 ;-------------------------------------------------------------------
 ; Mercado Livre (Brazil) Shortcuts
 ;-------------------------------------------------------------------
+; #region agent log
+AgentLog803714(hypothesisId, message, detail, runId := "pre-fix") {
+    try {
+        path := A_ScriptDir "\debug-803714.log"
+        q := Chr(34)
+        b := Chr(92)
+        esc := (s) => StrReplace(StrReplace(StrReplace(StrReplace(s, b, b b), q, b q), "`r", b "r"), "`n", b "n")
+        d := esc(SubStr(detail, 1, 500))
+        m := esc(SubStr(message, 1, 200))
+        line := "{" q "sessionId" q ":" q "803714" q "," q "runId" q ":" q runId q "," q "hypothesisId" q ":" q hypothesisId q "," q "location" q ":" q "Shift keys.ahk" q "," q "message" q ":" q m q "," q "data" q ":{" q "detail" q ":" q d q "}," q "timestamp" q ":" A_TickCount "}" "`n"
+        FileAppend(line, path, "UTF-8")
+    } catch {
+    }
+}
+; #endregion agent log
+
 ; Cache for IsMercadoLivreActive (per efficiency-canon: cache-first with validation).
 ; Invalidated when foreground HWND changes so we only run UIA once per window/tab focus.
 global g_ML_CacheHwnd := 0
@@ -3883,34 +3896,43 @@ global g_ML_CacheResult := false
 
 IsMercadoLivreActive() {
     global g_ML_CacheHwnd, g_ML_CacheResult
-    if !WinActive("ahk_exe chrome.exe")
-        return false
+    winChrome := WinActive("ahk_exe chrome.exe")
     hwnd := WinExist("A")
-    if (!hwnd)
+    if !winChrome {
+        AgentLog803714("H4", "ML: early exit", "WinActive(chrome)=0 hwnd=" hwnd)
         return false
-    ; Cache hit: same window as last check (avoids UIA on every keystroke / cheat sheet open)
-    if (hwnd = g_ML_CacheHwnd && WinExist("ahk_id " g_ML_CacheHwnd))
-        return g_ML_CacheResult
-    ; Fast path: title already indicates Mercado Livre (no UIA)
-    if InStr(WinGetTitle("A"), "Mercado Livre", false) {
-        g_ML_CacheHwnd := hwnd
-        g_ML_CacheResult := true
-        return true
     }
-    ; URL check via UIA (address bar by AccessKey "Ctrl+L" – standard in Chrome), bounded to this window only
+    if (!hwnd) {
+        AgentLog803714("H4", "ML: early exit", "WinExist(A)=0")
+        return false
+    }
+    cacheHit := (hwnd = g_ML_CacheHwnd && WinExist("ahk_id " g_ML_CacheHwnd))
+    if (cacheHit) {
+        AgentLog803714("H3", "ML: cache hit", "hwnd=" hwnd " result=" (g_ML_CacheResult ? "true" : "false"))
+        return g_ML_CacheResult
+    }
+    ; Platform identification by URL only (do not use window title; it changes to product name). See shopping uia3.md.
+    ; URL check via UIA (address bar: Chrome exposes AcceleratorKey "Ctrl+L", not AccessKey). Bounded to this window only.
     try {
         root := UIA.ElementFromHandle(hwnd)
-        addressBar := root.FindFirst({ Type: 50004, AccessKey: "Ctrl+L" })
-        if (addressBar) {
-            url := addressBar.Value
-            if InStr(url, "mercadolivre.com") || InStr(url, "mercadolibre.com") {
-                g_ML_CacheHwnd := hwnd
-                g_ML_CacheResult := true
-                return true
-            }
+        addressBar := root.FindFirst({ Type: 50004, AcceleratorKey: "Ctrl+L" })
+        if (!addressBar) {
+            AgentLog803714("H1", "ML: address bar not found", "FindFirst returned no element")
+            g_ML_CacheHwnd := hwnd
+            g_ML_CacheResult := false
+            return false
         }
-    } catch {
-        ; UIA failed; do not cache so next call retries
+        url := addressBar.Value
+        matched := InStr(url, "mercadolivre.com") || InStr(url, "mercadolibre.com")
+        AgentLog803714("H2", "ML: URL read", "urlLen=" StrLen(url) " urlStart=" SubStr(url, 1, 80) " matched=" (matched ?
+            "true" : "false"))
+        if (matched) {
+            g_ML_CacheHwnd := hwnd
+            g_ML_CacheResult := true
+            return true
+        }
+    } catch as err {
+        AgentLog803714("H1", "ML: UIA exception", "msg=" err.Message)
     }
     g_ML_CacheHwnd := hwnd
     g_ML_CacheResult := false
@@ -3935,7 +3957,8 @@ ML_DebugLog(hypothesisId, message, detail, runId := "pre-fix") {
         filePath := "debug-22dd27.log"
         ; Build a single JSON line using Format() with indexed placeholders.
         line := Format(
-            '{{"sessionId":"22dd27","runId":"{1}","hypothesisId":"{2}","location":"Shift keys.ahk","message":"{3}","data":{{"detail":"{4}"}},"timestamp":{5}}}' . "`n",
+            '{{"sessionId":"22dd27","runId":"{1}","hypothesisId":"{2}","location":"Shift keys.ahk","message":"{3}","data":{{"detail":"{4}"}},"timestamp":{5}}}' .
+            "`n",
             runId,
             hypothesisId,
             message,
@@ -4054,39 +4077,44 @@ global g_Shopee_CacheResult := false
 
 IsShopeeActive() {
     global g_Shopee_CacheHwnd, g_Shopee_CacheResult
-    if !WinActive("ahk_exe chrome.exe")
-        return false
+    winChrome := WinActive("ahk_exe chrome.exe")
     hwnd := WinExist("A")
-    if (!hwnd)
+    if !winChrome {
+        AgentLog803714("H4", "Shopee: early exit", "WinActive(chrome)=0 hwnd=" hwnd)
         return false
-    ; Cache hit: same window as last check (avoids UIA on every keystroke / cheat sheet open)
-    if (hwnd = g_Shopee_CacheHwnd && WinExist("ahk_id " g_Shopee_CacheHwnd))
-        return g_Shopee_CacheResult
-
-    ; Fast path: window title already indicates Shopee (no UIA)
-    title := WinGetTitle("A")
-    if InStr(title, "Shopee", false) {
-        g_Shopee_CacheHwnd := hwnd
-        g_Shopee_CacheResult := true
-        return true
     }
-
-    ; URL check via UIA (Chrome address bar, AccessKey Ctrl+L)
+    if (!hwnd) {
+        AgentLog803714("H4", "Shopee: early exit", "WinExist(A)=0")
+        return false
+    }
+    cacheHit := (hwnd = g_Shopee_CacheHwnd && WinExist("ahk_id " g_Shopee_CacheHwnd))
+    if (cacheHit) {
+        AgentLog803714("H3", "Shopee: cache hit", "hwnd=" hwnd " result=" (g_Shopee_CacheResult ? "true" : "false"))
+        return g_Shopee_CacheResult
+    }
+    ; Platform identification by URL only (do not use window title; it changes to product name). See shopping uia3.md.
+    ; URL check via UIA (Chrome address bar: AcceleratorKey "Ctrl+L", not AccessKey)
     try {
         root := UIA.ElementFromHandle(hwnd)
-        addressBar := root.FindFirst({ Type: 50004, AccessKey: "Ctrl+L" })
-        if (addressBar) {
-            url := addressBar.Value
-            if InStr(url, "shopee.com", false) {
-                g_Shopee_CacheHwnd := hwnd
-                g_Shopee_CacheResult := true
-                return true
-            }
+        addressBar := root.FindFirst({ Type: 50004, AcceleratorKey: "Ctrl+L" })
+        if (!addressBar) {
+            AgentLog803714("H1", "Shopee: address bar not found", "FindFirst returned no element")
+            g_Shopee_CacheHwnd := hwnd
+            g_Shopee_CacheResult := false
+            return false
         }
-    } catch {
-        ; UIA failed; do not cache so next call retries
+        url := addressBar.Value
+        matched := InStr(url, "shopee.com", false)
+        AgentLog803714("H2", "Shopee: URL read", "urlLen=" StrLen(url) " urlStart=" SubStr(url, 1, 80) " matched=" (
+            matched ? "true" : "false"))
+        if (matched) {
+            g_Shopee_CacheHwnd := hwnd
+            g_Shopee_CacheResult := true
+            return true
+        }
+    } catch as err {
+        AgentLog803714("H1", "Shopee: UIA exception", "msg=" err.Message)
     }
-
     g_Shopee_CacheHwnd := hwnd
     g_Shopee_CacheResult := false
     return false
@@ -4144,7 +4172,7 @@ Shopee_NavMove(offset) {
     currentPage := 0
     try {
         rootWin := UIA.ElementFromHandle(hwnd)
-        addressBar := rootWin.FindFirst({ Type: 50004, AccessKey: "Ctrl+L" })
+        addressBar := rootWin.FindFirst({ Type: 50004, AcceleratorKey: "Ctrl+L" })
         if (addressBar) {
             url := addressBar.Value
             m := ""
@@ -4772,6 +4800,10 @@ ML_SortApply(idx) {
         if (!field) {
             try field := root.FindElement({ LocalizedType: "search" })
         }
+        ; Fallback: numeric path from document root (see shopping uia3.md)
+        if (!field) {
+            try field := root.ElementFromPathExist("1,1,2,3,1")
+        }
 
         if (field) {
             try field.SetFocus()
@@ -4789,10 +4821,8 @@ ML_SortApply(idx) {
 ; Shift + C: Carrinho de compras (cart)
 +c::
 {
-    if Shopee_FindAndInvoke([
-        { Type: 50005, AutomationId: "cart_drawer_target_id" },
-        { Type: 50005, Name: "Carrinho", cs: false, matchmode: "Substring" },
-        { Type: 50000, Name: "Carrinho", cs: false, matchmode: "Substring" }
+    if Shopee_FindAndInvoke([{ Type: 50005, AutomationId: "cart_drawer_target_id" }, { Type: 50005, Name: "Carrinho",
+        cs: false, matchmode: "Substring" }, { Type: 50000, Name: "Carrinho", cs: false, matchmode: "Substring" }
     ])
         return
     MsgBox "Link/botão de carrinho da Shopee não encontrado."
@@ -4801,10 +4831,8 @@ ML_SortApply(idx) {
 ; Shift + P: Minhas compras / pedidos (speculative)
 +p::
 {
-    if Shopee_FindAndInvoke([
-        { Type: 50005, Name: "Minhas compras", cs: false, matchmode: "Substring" },
-        { Type: 50005, Name: "Meus pedidos", cs: false, matchmode: "Substring" },
-        { Type: 50005, Name: "Pedidos", cs: false, matchmode: "Substring" }
+    if Shopee_FindAndInvoke([{ Type: 50005, Name: "Minhas compras", cs: false, matchmode: "Substring" }, { Type: 50005,
+        Name: "Meus pedidos", cs: false, matchmode: "Substring" }, { Type: 50005, Name: "Pedidos", cs: false, matchmode: "Substring" }
     ])
         return
     MsgBox "Link de compras/pedidos da Shopee não encontrado (atalho especulativo)."
@@ -4813,9 +4841,7 @@ ML_SortApply(idx) {
 ; Shift + Y: Entrega Rápida (Chegará amanhã analog)
 +y::
 {
-    if Shopee_FindAndInvoke([
-        { Type: 50002, Name: "Entrega Rápida", cs: false, matchmode: "Substring" }
-    ])
+    if Shopee_FindAndInvoke([{ Type: 50002, Name: "Entrega Rápida", cs: false, matchmode: "Substring" }])
         return
     MsgBox "Filtro 'Entrega Rápida' não encontrado (atalho especulativo)."
 }
@@ -4823,9 +4849,7 @@ ML_SortApply(idx) {
 ; Shift + F: Promoções / produtos com desconto (Full analog, speculative)
 +f::
 {
-    if Shopee_FindAndInvoke([
-        { Type: 50002, Name: "Produtos com Desconto", cs: false, matchmode: "Substring" }
-    ])
+    if Shopee_FindAndInvoke([{ Type: 50002, Name: "Produtos com Desconto", cs: false, matchmode: "Substring" }])
         return
     MsgBox "Filtro de promoções/produtos com desconto não encontrado (atalho especulativo)."
 }
@@ -4833,9 +4857,7 @@ ML_SortApply(idx) {
 ; Shift + I: Compra internacional
 +i::
 {
-    if Shopee_FindAndInvoke([
-        { Type: 50002, Name: "Internacional", cs: false }
-    ])
+    if Shopee_FindAndInvoke([{ Type: 50002, Name: "Internacional", cs: false }])
         return
     MsgBox "Filtro 'Internacional' da Shopee não encontrado."
 }
@@ -4843,9 +4865,7 @@ ML_SortApply(idx) {
 ; Shift + N: Envio nacional
 +n::
 {
-    if Shopee_FindAndInvoke([
-        { Type: 50002, Name: "Nacional", cs: false }
-    ])
+    if Shopee_FindAndInvoke([{ Type: 50002, Name: "Nacional", cs: false }])
         return
     MsgBox "Filtro 'Nacional' da Shopee não encontrado."
 }
@@ -4853,9 +4873,7 @@ ML_SortApply(idx) {
 ; Shift + G: Frete grátis (speculative)
 +g::
 {
-    if Shopee_FindAndInvoke([
-        { Type: 50020, Name: "Frete grátis", cs: false, matchmode: "Substring" }
-    ])
+    if Shopee_FindAndInvoke([{ Type: 50020, Name: "Frete grátis", cs: false, matchmode: "Substring" }])
         return
     MsgBox "Indicador/controle de 'Frete grátis' não encontrado (atalho especulativo)."
 }
@@ -4863,10 +4881,8 @@ ML_SortApply(idx) {
 ; Shift + O: Ordenar por (open sort menu)
 +o::
 {
-    if Shopee_FindAndInvoke([
-        { Type: 50000, Name: "Classificar por relevância", cs: false, matchmode: "Substring" },
-        { Type: 50000, Name: "Classificar por", cs: false, matchmode: "Substring" }
-    ])
+    if Shopee_FindAndInvoke([{ Type: 50000, Name: "Classificar por relevância", cs: false, matchmode: "Substring" }, { Type: 50000,
+        Name: "Classificar por", cs: false, matchmode: "Substring" }])
         return
     MsgBox "Botão 'Classificar por' da Shopee não encontrado."
 }
@@ -4926,9 +4942,7 @@ ML_SortApply(idx) {
 ; Shift + A: Adicionar ao carrinho (página do produto)
 +a::
 {
-    if Shopee_FindAndInvoke([
-        { Type: 50000, Name: "Adicionar Ao Carrinho", cs: false, matchmode: "Substring" }
-    ])
+    if Shopee_FindAndInvoke([{ Type: 50000, Name: "Adicionar Ao Carrinho", cs: false, matchmode: "Substring" }])
         return
     MsgBox "Botão 'Adicionar Ao Carrinho' não encontrado na página da Shopee."
 }
@@ -4936,9 +4950,7 @@ ML_SortApply(idx) {
 ; Shift + V: Favoritar (coração)
 +v::
 {
-    if Shopee_FindAndInvoke([
-        { Type: 50000, Name: "Favoritar", cs: false, matchmode: "Substring" }
-    ])
+    if Shopee_FindAndInvoke([{ Type: 50000, Name: "Favoritar", cs: false, matchmode: "Substring" }])
         return
     MsgBox "Botão de favoritos da Shopee não encontrado."
 }
@@ -4946,10 +4958,8 @@ ML_SortApply(idx) {
 ; Shift + J: Continuar fluxo (Continuar / Fazer pedido)
 +j::
 {
-    if Shopee_FindAndInvoke([
-        { Type: 50000, Name: "Continuar", cs: false, matchmode: "Substring" },
-        { Type: 50000, Name: "Fazer pedido", cs: false, matchmode: "Substring" },
-        { Type: 50000, Name: "OK", cs: false }
+    if Shopee_FindAndInvoke([{ Type: 50000, Name: "Continuar", cs: false, matchmode: "Substring" }, { Type: 50000, Name: "Fazer pedido",
+        cs: false, matchmode: "Substring" }, { Type: 50000, Name: "OK", cs: false }
     ])
         return
     MsgBox "Botão de continuar/fazer pedido da Shopee não encontrado."
