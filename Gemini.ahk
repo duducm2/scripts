@@ -21,6 +21,8 @@ GEMINI_SCROLL_SETTLE_MS := 350
 GEMINI_UIA_SETTLE_MS := 120
 GEMINI_TAB_SWITCH_MS := 150
 GEMINI_MENU_OPEN_MS := 200
+GEMINI_LISTEN_MENU_WAIT_MS := 1500   ; Bounded wait for Listen menu item after opening More options.
+GEMINI_LISTEN_MENU_MAX_ATTEMPTS := 2 ; Max attempts to open menu and click Listen.
 GEMINI_READ_ALOUD_SETTLE_MS := 1500
 GEMINI_PROMPT_FOCUS_MS := 300
 GEMINI_FIRST_LAUNCH_POLL_MS := 300
@@ -261,6 +263,62 @@ FindGeminiTextToSpeechMenuItem(uia) {
         }
     } catch {
         return 0
+    }
+    return 0
+}
+
+; --- Listen menu item (Type 50011): strict Name+Type, last instance = newest response ---
+; Returns the last valid "Listen" MenuItem in the UI tree (belongs to newest message context menu).
+; When multiple responses exist, only one context menu is open; the last matching MenuItem in tree
+; order (by largest bottom Y, then last in FindAll order) is the one from that menu. No list-position
+; targeting. Search scoped to GetGeminiSearchRoot first; fallback to full uia if popup is outside pane.
+; Excludes stale/zero-size bounds. Returns element or 0.
+GetLastGeminiListenMenuItem(uia) {
+    listenItems := []
+    root := GetGeminiSearchRoot(uia)
+    try
+        listenItems := root.FindAll({ Name: "Listen", Type: UIA_ControlType_MenuItem })
+    catch
+        listenItems := []
+    if (listenItems.Length = 0) {
+        try
+            listenItems := uia.FindAll({ Name: "Listen", Type: UIA_ControlType_MenuItem })
+        catch
+            listenItems := []
+    }
+    if (listenItems.Length = 0)
+        return 0
+    ; Prefer candidate with largest bottom Y (last in layout); exclude zero-size/offscreen.
+    lastEl := 0
+    bestBottom := -1
+    for item in listenItems {
+        try {
+            br := item.BoundingRectangle
+        } catch {
+            continue
+        }
+        if (!IsObject(br))
+            continue
+        if ((br.r - br.l) <= 0 || (br.b - br.t) <= 0)
+            continue
+        if (br.b > bestBottom) {
+            bestBottom := br.b
+            lastEl := item
+        }
+    }
+    if (lastEl)
+        return lastEl
+    return listenItems[listenItems.Length]
+}
+
+; Poll for "Listen" MenuItem to appear after opening More options. Timeout-bounded; returns element or 0.
+WaitForListenMenuItem(uia, timeoutMs := GEMINI_LISTEN_MENU_WAIT_MS) {
+    deadline := A_TickCount + (timeoutMs > 0 ? timeoutMs : GEMINI_LISTEN_MENU_WAIT_MS)
+    while (A_TickCount < deadline) {
+        el := GetLastGeminiListenMenuItem(uia)
+        if (el)
+            return el
+        Sleep GEMINI_WAIT_BUTTON_POLL_MS
     }
     return 0
 }
@@ -665,20 +723,29 @@ GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false) {
         return
     }
 
-    try {
-        lastMoreOptionsButton.Click()
-        Sleep GEMINI_MENU_OPEN_MS
-
-        textToSpeechMenuItem := FindGeminiTextToSpeechMenuItem(uia)
-        if (textToSpeechMenuItem) {
-            textToSpeechMenuItem.Click()
+    listenClicked := false
+    loop GEMINI_LISTEN_MENU_MAX_ATTEMPTS {
+        try {
+            lastMoreOptionsButton.Click()
             Sleep GEMINI_MENU_OPEN_MS
-        } else {
-            Send "{Down}"
-            Sleep GEMINI_MENU_OPEN_MS
-            Send "{Enter}"
+            listenMenuItem := WaitForListenMenuItem(uia, GEMINI_LISTEN_MENU_WAIT_MS)
+            if (listenMenuItem) {
+                try {
+                    listenMenuItem.Click()
+                    Sleep GEMINI_MENU_OPEN_MS
+                    listenClicked := true
+                    break
+                } catch {
+                    ;
+                }
+            }
+        } catch {
+            ;
         }
-    } catch {
+        if (A_Index < GEMINI_LISTEN_MENU_MAX_ATTEMPTS) {
+            Send "{Escape}"
+            Sleep GEMINI_MENU_OPEN_MS
+        }
     }
 
     StandardLoadingBar_Hide(0)
@@ -687,22 +754,31 @@ GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false) {
 
     isReading := (FindGeminiPauseResumeButton(uia, "Pause") != 0)
 
-    if (!isReading) {
+    if (!isReading && listenClicked) {
         ShowNotification("Retrying read aloud...", 800, "FFFF00", "000000", 24)
-        try {
-            lastMoreOptionsButton.Click()
-            Sleep GEMINI_MENU_OPEN_MS
-
-            textToSpeechMenuItem := FindGeminiTextToSpeechMenuItem(uia)
-            if (textToSpeechMenuItem) {
-                textToSpeechMenuItem.Click()
+        Send "{Escape}"
+        Sleep GEMINI_MENU_OPEN_MS
+        loop GEMINI_LISTEN_MENU_MAX_ATTEMPTS {
+            try {
+                lastMoreOptionsButton.Click()
                 Sleep GEMINI_MENU_OPEN_MS
-            } else {
-                Send "{Down}"
-                Sleep GEMINI_MENU_OPEN_MS
-                Send "{Enter}"
+                listenMenuItem := WaitForListenMenuItem(uia, GEMINI_LISTEN_MENU_WAIT_MS)
+                if (listenMenuItem) {
+                    try {
+                        listenMenuItem.Click()
+                        Sleep GEMINI_MENU_OPEN_MS
+                        break
+                    } catch {
+                        ;
+                    }
+                }
+            } catch {
+                ;
             }
-        } catch {
+            if (A_Index < GEMINI_LISTEN_MENU_MAX_ATTEMPTS) {
+                Send "{Escape}"
+                Sleep GEMINI_MENU_OPEN_MS
+            }
         }
     }
 
