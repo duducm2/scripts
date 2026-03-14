@@ -105,16 +105,16 @@ These wrap `StandardLoadingBar_*` with preset styles:
 
 ### Gemini.ahk
 
-| Lines     | Context                                                                                             |
-| --------- | --------------------------------------------------------------------------------------------------- |
-| 172–206   | `ShowSmallLoadingIndicator` / `HideSmallLoadingIndicator` wrappers (Information Only / Loading)     |
-| 235–264   | Async TTS state display                                                                             |
-| 390–500   | Read aloud flow                                                                                     |
-| 742–828   | First-time init (Opening Gemini, Sending prompt)                                                    |
-| 946–1107  | Async lookup/TTS loading                                                                            |
-| 1220      | `ShowWithKeys` for pronunciation completion (close keys)                                            |
-| 1317–1318 | `ShowWithKeys` "❓ Copy response?" with `promptKeys` `"[Y] Copy  [N] No  [R] Copy+Read  [E] Close"` |
-| 1328–1449 | Additional loading states                                                                           |
+| Lines     | Context                                                                                                |
+| --------- | ------------------------------------------------------------------------------------------------------ |
+| 172–206   | `ShowSmallLoadingIndicator` / `HideSmallLoadingIndicator` wrappers (Information Only / Loading)        |
+| 235–264   | Async TTS state display                                                                                |
+| 390–500   | Read aloud flow                                                                                        |
+| 742–828   | First-time init (Opening Gemini, Sending prompt)                                                       |
+| 946–1107  | Async lookup/TTS loading                                                                               |
+| 1220      | `ShowWithKeys` for pronunciation completion (close keys)                                               |
+| 1317–1318 | `ShowWithKeys` "❓ Copy response?" with `promptKeys` `"[Y] Copy  [N] No  [R] Copy+Read  [C] Transfer"` |
+| 1328–1449 | Additional loading states                                                                              |
 
 ### Shift keys.ahk
 

@@ -30,9 +30,8 @@ flowchart TB
     SendEnter --> StartMonitor["MonitorStart"]
     StartMonitor --> ResponseDone["Response done"]
     ResponseDone --> BannerCopy["Copy response? 5s"]
-    BannerCopy --> UserCopy{"Y / N / R / C / E / timeout"}
+    BannerCopy --> UserCopy{"Y / N / R / C / timeout"}
     UserCopy --> |"N"| StopCopy["Stop, no copy"]
-    UserCopy --> |"E"| StopCopy
     UserCopy --> |"Y"| DoCopyOnly["DoCopyCore"]
     UserCopy --> |"R"| DoCopyRead["DoCopyCore + read"]
     UserCopy --> |"C"| DoTransfer["Copy + CursorTransfer"]
@@ -49,7 +48,7 @@ On the 6s banner, only **N** shows the “Gemini submission cancelled” overlay
 | ---- | -------------------------------------- | ------------------------------- | ------------------------------------------------------ |
 | 1    | **Send transcription to Gemini?** (6s) | Press **N** or no key (timeout) | Flow ends; no paste to Gemini, no Enter, no 4s banner. |
 | 2    | **Submitting in 4s...** (4s)           | Press **N**                     | No paste to Gemini, no Enter; no monitor started.      |
-| 3    | **Copy response?** (5s)                | Press **N** or **E**            | No copy, no read aloud, no transfer to Cursor.         |
+| 3    | **Copy response?** (5s)                | Press **N**                     | No copy, no read aloud, no transfer to Cursor.         |
 | 4    | **Transfer to Cursor** (window picker) | Press **Esc**                   | Transfer cancelled; no paste/Enter to Cursor.          |
 
 ## Hotkeys

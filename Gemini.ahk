@@ -1423,10 +1423,10 @@ class GeminiDelayedSubmitMonitor {
         this.CopyBannerGui := ""
         this.CopyTimeoutTimer := ""
         copyKeyCallbacks := Map("N", this.CancelCopy.Bind(this), "Y", this.DoCopyOnly.Bind(this), "R", this.CopyAndReadAloud
-        .Bind(this), "C", this.CopyAndTransferToCursor.Bind(this), "E", this.CancelCopy.Bind(this))
+        .Bind(this), "C", this.CopyAndTransferToCursor.Bind(this))
         StandardLoadingBar_ShowWithKeys("❓ Copy response?", copyKeyCallbacks, 5000, this.OriginalHwnd, this.DoCopyOnTimeout
             .Bind(this), BANNER_ACCENT_INTERMEDIATE, 380, 17, "", false,
-            "[Y] Copy  [N] No  [R] Copy+Read  [C] Transfer  [E] Close")
+            "[Y] Copy  [N] No  [R] Copy+Read  [C] Transfer")
     }
 
     ; Y key: copy latest response only (same as timeout default), then close banner and restore focus.
