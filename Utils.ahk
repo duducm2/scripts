@@ -462,7 +462,7 @@ InitQuickOpenFiles()
 ; Global variables for macros
 global g_Macros := []
 global g_MacroCharMap := Map()  ; Maps character to macro function
-global g_ProgrammaticDictationStop := false  ; Skip ~#!+0 when script sends #!+0 (e.g. #!+j)
+global g_ProgrammaticDictationStop := false  ; Skip ~#!+0 when script sends #!+0 programmatically
 
 ; Register a macro
 RegisterMacro(func, title, char := "") {
@@ -8021,7 +8021,7 @@ global g_DictationCompletionChimeScheduled := false  ; Flag to prevent multiple 
 global g_LastDictationSoundTick := 0  ; Timestamp of last dictation sound to throttle audio output
 global g_DictationStartSound := A_ScriptDir . "\sounds\speach-start.wav"
 global g_DictationStopSound := A_ScriptDir . "\sounds\speach-finished.wav"
-global g_PendingDictationAction := ""  ; Action to execute after transcription: "Paste" or "PasteEnter"
+global g_PendingDictationAction := ""  ; Action to execute after transcription: "Paste" (reserved for future)
 global g_PendingGeminiPromptAfterDictation := false  ; When set by ~#!+0 stop, show "Send to Gemini? Y (4s)" after completion
 global g_DictationGeminiConfirmBannerVisible := false  ; Guard: only one "Send to Gemini?" banner at a time
 global g_KeepIndicatorVisible := false  ; Flag to keep indicator visible until paste action completes
@@ -8294,7 +8294,7 @@ PlayDictationCompletionChime(*) {
     if (chimeShouldPlay) {
         SafePlayDictationSound(g_DictationStopSound)
 
-        ; Execute pending action if one was set (from Win+Alt+Shift+J or 7)
+        ; Execute pending action if one was set (reserved for future use).
         pendingAction := g_PendingDictationAction
         g_PendingDictationAction := ""  ; Clear immediately after reading
 
@@ -8308,23 +8308,9 @@ PlayDictationCompletionChime(*) {
             ; Hide indicator only after paste completes
             HideDictationIndicator()
             g_KeepIndicatorVisible := false
-        } else if (pendingAction = "PasteEnter") {
-            ; Update indicator text to show status
-            UpdateDictationIndicatorText("Pasting & Submitting...")
-            ; Execute paste command (same as #!+7)
-            Send "^v"
-            ; Small delay between paste and enter for reliability
-            Sleep 50
-            ; Execute enter command to submit
-            Send "{Enter}"
-            ; Wait for both paste and enter to complete before hiding indicator
-            Sleep 100  ; Small delay to ensure paste and enter completes
-            ; Hide indicator only after both commands complete
-            HideDictationIndicator()
-            g_KeepIndicatorVisible := false
         }
 
-        ; If user stopped dictation with Win+Alt+Shift+0 (no Paste/PasteEnter), show Gemini confirm banner (once only).
+        ; If user stopped dictation with Win+Alt+Shift+0 (no pending action), show Gemini confirm banner (once only).
         Critical "On"
         pendingGemini := g_PendingGeminiPromptAfterDictation
         g_PendingGeminiPromptAfterDictation := false  ; Claim atomically so only one invocation shows the banner
@@ -8512,7 +8498,7 @@ OnExit(CleanupDictationIndicator)
     static lastHotkeyTick := 0
     static isProcessing := false
 
-    ; Skip when script sends #!+0 programmatically (e.g. #!+j sending #!+0)
+    ; Skip when script sends #!+0 programmatically
     if (g_ProgrammaticDictationStop) {
         g_ProgrammaticDictationStop := false
         return
@@ -8561,29 +8547,3 @@ OnExit(CleanupDictationIndicator)
 }
 
 ; Win+Alt+Shift+7 is defined in Gemini.ahk (TTS from selection: repeat exactly + read aloud).
-
-; Dictation with paste and submit action - Win+Alt+Shift+J
-; Step 1: Programmatically stop dictation (send Win+Alt+Shift+0)
-; Step 2: Wait for transcription to complete
-; Step 3: Execute paste and enter action
-#!+j::
-{
-    global g_PendingDictationAction, g_DictationActive, g_KeepIndicatorVisible, g_ProgrammaticDictationStop
-
-    ; Play sound signal
-    if (IsSoundEnabled()) {
-        SoundPlay(A_ScriptDir . "\sounds\retro4.wav")
-    }
-
-    ; Only proceed if dictation is currently active
-    if (g_DictationActive) {
-        ; Set pending action to execute after transcription completes
-        g_PendingDictationAction := "PasteEnter"
-        ; Keep indicator visible until paste and submit completes
-        g_KeepIndicatorVisible := true
-        ; Programmatically send Win+Alt+Shift+0 to stop dictation
-        ; Use SendInput for reliable key sending
-        g_ProgrammaticDictationStop := true
-        SendInput "#!+0"
-    }
-}

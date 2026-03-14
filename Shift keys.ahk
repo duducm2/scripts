@@ -1388,6 +1388,8 @@ Letters available: B, C, G, H, I, J, K, M, N, O, P, T, U, V, X, Y, Z
 === CURSOR ===
 [Win+Alt+Shift+N] > Opens or activates Cursor (habits, home, punctual, or work windows)
 
+[Win+Alt+Shift+J] > Available
+
 === SPOTIFY ===
 [Win+Alt+Shift+S] > Opens or activates Spotify
 
@@ -1403,7 +1405,6 @@ r=== CLIP ANGEL ===
 
 === HANDY DICTATION ===
 [Win+Alt+Shift+0] > Start/stop dictation (transcription to clipboard)
-[Win+Alt+Shift+J] > Stop dictation, paste and submit (e.g. chat prompt)
 
 === YOUTUBE ===
 [Win+Alt+Shift+H] > Activates Youtube

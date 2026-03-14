@@ -15,7 +15,6 @@ flowchart TB
     WaitClip --> PlayChime["PlayDictationCompletionChime"]
     PlayChime --> Branch["Branch by action"]
     Branch --> |"Paste"| PasteOnly["^v, hide indicator"]
-    Branch --> |"PasteEnter"| PasteEnter["^v Enter, hide indicator"]
     Branch --> |"pendingGemini"| ShowAndWait["Send to Gemini? 6s"]
     ShowAndWait --> User6s{"Y / N / timeout"}
     User6s --> |"N"| Stop6s["Stop, no submit"]
@@ -55,16 +54,15 @@ On the 6s banner, only **N** shows the “Gemini submission cancelled” overlay
 
 ## Hotkeys
 
-| Hotkey                  | Role                                                                                                                           |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `~#!+0`                 | Start dictation (first press); stop dictation (second press). If stopped manually (not via #!+j), sets “Send to Gemini?” path. |
-| `#!+j`                  | Programmatic stop: set PasteEnter, send ~#!+0. Transcription is pasted and submitted in **current app** (no Gemini banner).    |
-| `Ctrl+Alt+Win+L`        | Direct delayed-submit flow (4s banner, paste + optional Enter to Gemini).                                                      |
-| `#!+U` then **L** twice | Same flow from hotstring selector (double-tap L in hotstring context).                                                         |
+| Hotkey                  | Role                                                                                                            |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `~#!+0`                 | Start dictation (first press); stop dictation (second press). If stopped manually, sets “Send to Gemini?” path. |
+| `Ctrl+Alt+Win+L`        | Direct delayed-submit flow (4s banner, paste + optional Enter to Gemini).                                       |
+| `#!+U` then **L** twice | Same flow from hotstring selector (double-tap L in hotstring context).                                          |
 
 ## Files and entry points
 
-- **Utils.ahk**: `~#!+0`, `#!+j`, `DictationGeminiConfirm_*`, `GeminiDelayedSubmitFlow`, `GeminiFinalizeSubmit`, `GeminiCancelAutoSubmit`, `CursorTransfer_ShowWindowSelector`, `CursorTransfer_ActivateFocusPaste`.
+- **Utils.ahk**: `~#!+0`, `DictationGeminiConfirm_*`, `GeminiDelayedSubmitFlow`, `GeminiFinalizeSubmit`, `GeminiCancelAutoSubmit`, `CursorTransfer_ShowWindowSelector`, `CursorTransfer_ActivateFocusPaste`.
 - **Gemini.ahk**: `GeminiDelayedSubmitMonitor` (completion detection, “Copy response?” banner, Copy/Read/Transfer actions).
 
 ## Simplified “happy path” (no cancel)
