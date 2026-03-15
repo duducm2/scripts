@@ -2730,15 +2730,20 @@ DictationGeminiConfirm_Hide(*) {
     StandardLoadingBar_CloseKeysOverlay()
 }
 
-; submitToGemini=false (N or timeout): terminal – no further flow. submitToGemini=true: continue to delayed-submit.
-DictationGeminiConfirm_CleanupAndMaybeSubmit(submitToGemini) {
+; submitToGemini=false (N or timeout): terminal. submitToGemini=true: delayed-submit (paste+Enter). pasteOnly=true: paste to Gemini only, no Enter.
+DictationGeminiConfirm_CleanupAndMaybeSubmit(submitToGemini, pasteOnly := false) {
     global g_DictationGeminiConfirmBannerVisible
     g_DictationGeminiConfirmBannerVisible := false  ; Allow future show
     try Hotkey("y", "Off")
     try Hotkey("Y", "Off")
+    try Hotkey("s", "Off")
+    try Hotkey("S", "Off")
     SetTimer(DictationGeminiConfirm_OnTimeout, 0)
     DictationGeminiConfirm_Hide()
-    if (submitToGemini) {
+    if (pasteOnly) {
+        Sleep 350
+        GeminiDictationPasteOnlyFlow()
+    } else if (submitToGemini) {
         Sleep 350
         GeminiDelayedSubmitFlow()
     }
@@ -2746,6 +2751,11 @@ DictationGeminiConfirm_CleanupAndMaybeSubmit(submitToGemini) {
 
 DictationGeminiConfirm_OnY(*) {
     DictationGeminiConfirm_CleanupAndMaybeSubmit(true)
+}
+
+; S = paste to Gemini only (no Enter, no 4s banner).
+DictationGeminiConfirm_OnS(*) {
+    DictationGeminiConfirm_CleanupAndMaybeSubmit(false, true)
 }
 
 DictationGeminiConfirm_OnTimeout(*) {
@@ -2774,11 +2784,13 @@ DictationGeminiConfirm_ShowAndWait() {
     }
     if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
         centerOnHwnd := 0
-    keyCallbacks := Map("Y", DictationGeminiConfirm_OnY, "N", DictationGeminiConfirm_OnCancel)
+    keyCallbacks := Map("Y", DictationGeminiConfirm_OnY, "S", DictationGeminiConfirm_OnS, "N",
+        DictationGeminiConfirm_OnCancel)
     ; Official loading bar only; no blue; single banner (no border); fixed bottom strip for input.
-    StandardLoadingBar_ShowWithKeys("❓ Send to Gemini? (6s) – Auto-send in 4s unless you cancel.", keyCallbacks, 6000,
+    StandardLoadingBar_ShowWithKeys("❓ Send to Gemini? (6s) – [Y] auto-send, [S] paste only, [N] cancel.", keyCallbacks,
+        6000,
         centerOnHwnd,
-        DictationGeminiConfirm_OnTimeout, "1E1E2E", 380, 17, "", true, "[Y] Send  [N] Cancel")
+        DictationGeminiConfirm_OnTimeout, "1E1E2E", 380, 17, "", true, "[Y] Send  [S] Paste only  [N] Cancel")
 }
 
 ; =============================================================================
@@ -6576,6 +6588,14 @@ GeminiDelayedSubmitMonitorStartFromUtils(originalHwnd, geminiChromeHwnd) {
         }
     }
     DetectHiddenWindows false
+}
+
+; Paste transcription to Gemini prompt only (no Enter, no 4s banner). Used when user presses S at 6s dictation confirm.
+GeminiDictationPasteOnlyFlow() {
+    restoreHwnd := WinExist("A")
+    GeminiNavigateFocusAndPasteFirstSnippet("", false)
+    if (restoreHwnd && WinExist("ahk_id " restoreHwnd))
+        WinActivate("ahk_id " restoreHwnd)
 }
 
 GeminiDelayedSubmitFlow() {
