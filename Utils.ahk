@@ -2791,7 +2791,7 @@ DictationGeminiConfirm_ShowAndWait() {
     keyCallbacks := Map("Y", DictationGeminiConfirm_OnY, "S", DictationGeminiConfirm_OnS, "N",
         DictationGeminiConfirm_OnCancel)
     ; Official loading bar only; no blue; single banner (no border); fixed bottom strip for input.
-    StandardLoadingBar_ShowWithKeys("❓ Send to Gemini? (6s) – [Y] auto-send, [S] paste only, [N] cancel.", keyCallbacks,
+    StandardLoadingBar_ShowWithKeys("❓ Send to Gemini? (6s)", keyCallbacks,
         6000,
         centerOnHwnd,
         DictationGeminiConfirm_OnTimeout, "1E1E2E", 380, 17, "", true, "[Y] Send  [S] Paste only  [N] Cancel")
@@ -8348,7 +8348,7 @@ DictationClipboardHandler(DataType) {
 ; Play completion chime after transcription finishes
 PlayDictationCompletionChime(*) {
     global g_DictationCompletionChimeScheduled, g_PendingDictationAction,
-        g_KeepIndicatorVisible, g_PendingGeminiPromptAfterDictation, g_DictationGeminiConfirmBannerVisible
+        g_KeepIndicatorVisible, g_PendingGeminiPromptAfterDictation
 
     ; Ensure clipboard handler is removed (safe to call even if already removed)
     try {
@@ -8399,8 +8399,7 @@ PlayDictationCompletionChime(*) {
             DebugBannerLog("Utils.ahk:PlayDictationCompletionChime", "Calling ShowAndWait", "pendingAction empty", "H3"
             )
             ; #endregion
-            ; Claim visibility before any yield so at most one banner shows per cycle (belt-and-suspenders with ShowAndWait guard).
-            g_DictationGeminiConfirmBannerVisible := true
+            ; Do not set g_DictationGeminiConfirmBannerVisible here: ShowAndWait sets it atomically. Setting it here would make ShowAndWait think the banner is already visible and return without showing.
             DictationGeminiConfirm_ShowAndWait()
         }
     }
