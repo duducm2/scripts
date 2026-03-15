@@ -2758,8 +2758,9 @@ DictationGeminiConfirm_OnS(*) {
     DictationGeminiConfirm_CleanupAndMaybeSubmit(false, true)
 }
 
+; Default action on 6s timeout: proceed as Yes (DelayedSubmitFlow), same as user pressing Y.
 DictationGeminiConfirm_OnTimeout(*) {
-    DictationGeminiConfirm_CleanupAndMaybeSubmit(false)
+    DictationGeminiConfirm_CleanupAndMaybeSubmit(true)
 }
 
 DictationGeminiConfirm_OnCancel(*) {

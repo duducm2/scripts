@@ -16,10 +16,11 @@ flowchart TB
     PlayChime --> Branch["Branch by action"]
     Branch --> |"Paste"| PasteOnly["^v, hide indicator"]
     Branch --> |"pendingGemini"| ShowAndWait["Send to Gemini? 6s"]
-    ShowAndWait --> User6s{"Y / N / timeout"}
+    ShowAndWait --> User6s{"Y / S / N / timeout"}
     User6s --> |"N"| Stop6s["Stop, no submit"]
-    User6s --> |"timeout"| Stop6s
+    User6s --> |"timeout"| DelayedFlow
     User6s --> |"Y"| DelayedFlow["DelayedSubmitFlow"]
+    User6s --> |"S"| PasteOnly6s["Paste only, no Enter"]
     DelayedFlow --> Banner4s["Submitting 4s, 3s timer"]
     Banner4s --> User4s{"Y / N / 3s"}
     User4s --> |"N"| Stop4s["Paste only, 4s banner"]
@@ -40,7 +41,7 @@ flowchart TB
     SelectWin --> ActivatePaste["ActivateFocusPaste ^v Enter"]
 ```
 
-On the 6s banner, only **N** shows the “Gemini submission cancelled” overlay; **timeout** ends the flow without that overlay.
+On the 6s banner, only **N** shows the “Gemini submission cancelled” overlay; **Y** or **timeout** (default) proceeds to DelayedSubmitFlow; **S** paste-only; only **N** cancels and shows that overlay.
 
 ## Where the user can stop the flow
 
