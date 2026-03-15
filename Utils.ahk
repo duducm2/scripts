@@ -2769,10 +2769,14 @@ DictationGeminiConfirm_OnCancel(*) {
 
 DictationGeminiConfirm_ShowAndWait() {
     global g_DictationGeminiConfirmBannerVisible
-    ; Only one banner: skip if already visible (prevents duplicate from multiple PlayDictationCompletionChime runs).
-    if (g_DictationGeminiConfirmBannerVisible)
+    ; Only one banner: atomic check-and-set so only one invocation can pass (prevents duplicate from multiple PlayDictationCompletionChime runs).
+    Critical "On"
+    if (g_DictationGeminiConfirmBannerVisible) {
+        Critical "Off"
         return
+    }
     g_DictationGeminiConfirmBannerVisible := true
+    Critical "Off"
     ; Only the official loading bar (standard loading indicator) may show this content. Hide any other bar/overlay first.
     StandardLoadingBar_CloseKeysOverlay()
     StandardLoadingBar_Hide(0)
@@ -8344,7 +8348,7 @@ DictationClipboardHandler(DataType) {
 ; Play completion chime after transcription finishes
 PlayDictationCompletionChime(*) {
     global g_DictationCompletionChimeScheduled, g_PendingDictationAction,
-        g_KeepIndicatorVisible, g_PendingGeminiPromptAfterDictation
+        g_KeepIndicatorVisible, g_PendingGeminiPromptAfterDictation, g_DictationGeminiConfirmBannerVisible
 
     ; Ensure clipboard handler is removed (safe to call even if already removed)
     try {
@@ -8395,6 +8399,8 @@ PlayDictationCompletionChime(*) {
             DebugBannerLog("Utils.ahk:PlayDictationCompletionChime", "Calling ShowAndWait", "pendingAction empty", "H3"
             )
             ; #endregion
+            ; Claim visibility before any yield so at most one banner shows per cycle (belt-and-suspenders with ShowAndWait guard).
+            g_DictationGeminiConfirmBannerVisible := true
             DictationGeminiConfirm_ShowAndWait()
         }
     }
