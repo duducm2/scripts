@@ -41,16 +41,15 @@ flowchart TB
     SelectWin --> ActivatePaste["ActivateFocusPaste ^v Enter"]
 ```
 
-On the 6s banner, only **N** shows the “Gemini submission cancelled” overlay; **Y** or **timeout** (default) proceeds to DelayedSubmitFlow; **S** paste-only; only **N** cancels and shows that overlay.
+On the 6s banner (step 1), **Y** = send (then 4s countdown, then paste + Enter; you can press N during 4s for paste-only). **S** = paste to Gemini only (no Enter, no 4s). **N** = cancel and show “Gemini submission cancelled”. **timeout** = same as Y. The 4s countdown is part of the send path, not a separate step.
 
 ## Where the user can stop the flow
 
-| Step | Banner / moment                        | User action to stop             | Effect                                                               |
-| ---- | -------------------------------------- | ------------------------------- | -------------------------------------------------------------------- |
-| 1    | **Send transcription to Gemini?** (6s) | Press **N** or no key (timeout) | Flow ends; no paste to Gemini, no Enter, no 4s banner.               |
-| 2    | **Submitting in 4s...** (4s)           | Press **N**                     | Paste to Gemini only (no Enter); 4s info banner; no monitor started. |
-| 3    | **Copy response?** (5s)                | Press **N**                     | No copy, no read aloud, no transfer to Cursor.                       |
-| 4    | **Transfer to Cursor** (window picker) | Press **N** or **Esc**          | Transfer cancelled; no paste/Enter to Cursor.                        |
+| Step | Banner / moment                        | User action to stop                                                                                                                  | Effect                                                                                          |
+| ---- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
+| 1    | **Send transcription to Gemini?** (6s) | **N**: cancel. **S**: paste only (no Enter). **Y** or **timeout**: send (4s countdown then paste + Enter; N during 4s = paste-only). | Flow ends at N; S = paste only; Y/timeout = proceed to paste + Enter (4s is part of this path). |
+| 2    | **Copy response?** (5s)                | Press **N**                                                                                                                          | No copy, no read aloud, no transfer to Cursor.                                                  |
+| 3    | **Transfer to Cursor** (window picker) | Press **N** or **Esc**                                                                                                               | Transfer cancelled; no paste/Enter to Cursor.                                                   |
 
 ## Hotkeys
 

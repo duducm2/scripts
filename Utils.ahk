@@ -14,6 +14,19 @@ DebugBannerLog(location, message, dataStr := "", hypothesisId := "") {
     line .= "}"
     try FileAppend line "`n", logPath
 }
+
+; Dictation-Gemini flow debug (session 7e3dd7): NDJSON to debug-7e3dd7.log
+DebugFlowLog(location, message, dataStr := "", hypothesisId := "") {
+    logPath := A_ScriptDir "\debug-7e3dd7.log"
+    q := Chr(34)
+    line := "{" q "sessionId" q ":" q "7e3dd7" q "," q "location" q ":" q location q "," q "message" q ":" q message q "," q "timestamp" q ":" A_TickCount
+    if (dataStr != "")
+        line .= "," q "data" q ":" q dataStr q ""
+    if (hypothesisId != "")
+        line .= "," q "hypothesisId" q ":" q hypothesisId q ""
+    line .= "}"
+    try FileAppend line "`n", logPath
+}
 ; #endregion
 
 #include UIA-v2\Lib\UIA.ahk
@@ -2525,6 +2538,10 @@ StandardLoadingBar_Update(state := "", barColor := "") {
 StandardLoadingBar_Hide(delayMs := 0) {
     global g_StandardLoadingBarGui, g_StandardLoadingBarValue, g_StandardLoadingBarIsKeysOverlay,
         g_StandardLoadingBarBorderGui
+    ; #region agent log
+    DebugFlowLog("Utils.ahk:StandardLoadingBar_Hide", "entry", "delay=" . delayMs . " isKeys=" . (
+        g_StandardLoadingBarIsKeysOverlay ? 1 : 0), "H2")
+    ; #endregion
     if (delayMs > 0) {
         SetTimer(() => StandardLoadingBar_Hide(0), -delayMs)
         return
@@ -2558,6 +2575,7 @@ StandardLoadingBar_CloseKeysOverlay() {
     try FileAppend '{"sessionId":"5cdde7","hypothesisId":"H7","location":"Utils.ahk:CloseKeysOverlay","message":"cancelling timeout","data":{"hasTimer":' (
         g_StandardLoadingBarKeysTimeoutTimer != "" ? "true" : "false") '},"timestamp":' A_TickCount '}`n',
     A_ScriptDir "\debug-5cdde7.log"
+    DebugFlowLog("Utils.ahk:CloseKeysOverlay", "entry", "keysCount=" . g_StandardLoadingBarKeysHotkeys.Length, "H2")
     ; #endregion
     g_StandardLoadingBarIsKeysOverlay := false
     try SetTimer(g_StandardLoadingBarKeysTimeoutTimer, 0)
@@ -2689,12 +2707,18 @@ StandardLoadingBar_KeysTimeoutFired(timeoutCallback) {
     ; #region agent log
     try FileAppend '{"sessionId":"5cdde7","hypothesisId":"H8","location":"Utils.ahk:KeysTimeoutFired","message":"timeout fired","data":{},"timestamp":' A_TickCount '}`n',
         A_ScriptDir "\debug-5cdde7.log"
+    DebugFlowLog("Utils.ahk:KeysTimeoutFired", "entry", "isKeysOverlay=" . (g_StandardLoadingBarIsKeysOverlay ? 1 : 0),
+    "H2")
     ; #endregion
     ; Only run timeout callback if overlay was not already dismissed (e.g. user pressed N); avoids copy when timer fires after cancel.
-    if (g_StandardLoadingBarIsKeysOverlay && timeoutCallback)
+    if (g_StandardLoadingBarIsKeysOverlay && timeoutCallback) {
+        DebugFlowLog("Utils.ahk:KeysTimeoutFired", "calling timeout callback", "", "H2")
         try timeoutCallback.Call()
         catch {
         }
+    } else
+        DebugFlowLog("Utils.ahk:KeysTimeoutFired", "skipped callback", "isKeys=" . (g_StandardLoadingBarIsKeysOverlay ?
+            1 : 0), "H2")
     StandardLoadingBar_CloseKeysOverlay()
 }
 
@@ -2702,6 +2726,9 @@ StandardLoadingBar_KeysTimeoutFired(timeoutCallback) {
 ; Hotstring Selector: Gemini Redirect Banner (non-blocking; uses standard loading indicator)
 ; =============================================================================
 HotstringGeminiBanner_Show(text := "📤 Gemini: inserting prompt...") {
+    ; #region agent log
+    DebugFlowLog("Utils.ahk:HotstringGeminiBanner_Show", "entry", "text=" . SubStr(text, 1, 40), "H3")
+    ; #endregion
     DictationGeminiConfirm_Hide()
     Sleep 50
     centerOnHwnd := 0
@@ -2733,13 +2760,25 @@ DictationGeminiConfirm_Hide(*) {
 ; submitToGemini=false (N or timeout): terminal. submitToGemini=true: delayed-submit (paste+Enter). pasteOnly=true: paste to Gemini only, no Enter.
 DictationGeminiConfirm_CleanupAndMaybeSubmit(submitToGemini, pasteOnly := false) {
     global g_DictationGeminiConfirmBannerVisible
-    g_DictationGeminiConfirmBannerVisible := false  ; Allow future show
-    try Hotkey("y", "Off")
-    try Hotkey("Y", "Off")
-    try Hotkey("s", "Off")
-    try Hotkey("S", "Off")
+    ; #region agent log
+    DebugFlowLog("Utils.ahk:CleanupAndMaybeSubmit", "entry", "submit=" . (submitToGemini ? 1 : 0) . " pasteOnly=" . (
+        pasteOnly ? 1 : 0), "H2")
+    ; #endregion
+    ; Only clear banner-visible when proceeding (Y/S/timeout); leave true on N so a stray ShowAndWait does not re-show and register a second 6s timer (logs showed second timeout firing after N).
+    if (submitToGemini || pasteOnly)
+        g_DictationGeminiConfirmBannerVisible := false
+    ; Unregister 6s banner keys (same * prefix as StandardLoadingBar_RegisterKeyHandler uses)
+    try Hotkey("*y", "Off")
+    try Hotkey("*Y", "Off")
+    try Hotkey("*s", "Off")
+    try Hotkey("*S", "Off")
+    try Hotkey("*n", "Off")
+    try Hotkey("*N", "Off")
     SetTimer(DictationGeminiConfirm_OnTimeout, 0)
     DictationGeminiConfirm_Hide()
+    ; S or N at 6s: no submit flow, so stop any running "Copy response?" monitor so it never shows.
+    if (!submitToGemini)
+        GeminiDelayedSubmitMonitorStopFromUtils()
     if (pasteOnly) {
         Sleep 350
         GeminiDictationPasteOnlyFlow()
@@ -2750,20 +2789,32 @@ DictationGeminiConfirm_CleanupAndMaybeSubmit(submitToGemini, pasteOnly := false)
 }
 
 DictationGeminiConfirm_OnY(*) {
+    ; #region agent log
+    DebugFlowLog("Utils.ahk:OnY", "Y pressed", "", "H1")
+    ; #endregion
     DictationGeminiConfirm_CleanupAndMaybeSubmit(true)
 }
 
 ; S = paste to Gemini only (no Enter, no 4s banner).
 DictationGeminiConfirm_OnS(*) {
+    ; #region agent log
+    DebugFlowLog("Utils.ahk:OnS", "S pressed", "", "H1")
+    ; #endregion
     DictationGeminiConfirm_CleanupAndMaybeSubmit(false, true)
 }
 
 ; Default action on 6s timeout: proceed as Yes (DelayedSubmitFlow), same as user pressing Y.
 DictationGeminiConfirm_OnTimeout(*) {
+    ; #region agent log
+    DebugFlowLog("Utils.ahk:OnTimeout", "6s timeout fired", "", "H4")
+    ; #endregion
     DictationGeminiConfirm_CleanupAndMaybeSubmit(true)
 }
 
 DictationGeminiConfirm_OnCancel(*) {
+    ; #region agent log
+    DebugFlowLog("Utils.ahk:OnCancel", "N pressed", "", "H1")
+    ; #endregion
     DictationGeminiConfirm_CleanupAndMaybeSubmit(false)
     ShowCenteredOverlay_Utils("⚠ Gemini submission cancelled", 1500, BANNER_ACCENT_INTERMEDIATE)
 }
@@ -2778,6 +2829,9 @@ DictationGeminiConfirm_ShowAndWait() {
     }
     g_DictationGeminiConfirmBannerVisible := true
     Critical "Off"
+    ; #region agent log
+    DebugFlowLog("Utils.ahk:ShowAndWait", "6s banner showing", "", "H1")
+    ; #endregion
     ; Only the official loading bar (standard loading indicator) may show this content. Hide any other bar/overlay first.
     StandardLoadingBar_CloseKeysOverlay()
     StandardLoadingBar_Hide(0)
@@ -6595,6 +6649,47 @@ GeminiDelayedSubmitMonitorStartFromUtils(originalHwnd, geminiChromeHwnd) {
     DetectHiddenWindows false
 }
 
+; Tell Gemini.ahk to stop the delayed-submit monitor so "Copy response?" is not shown (when user chose S or N at 6s).
+GeminiDelayedSubmitMonitorStopFromUtils() {
+    WM_STOP_DELAYED_SUBMIT_MONITOR := 0x8003
+    DetectHiddenWindows true
+    SetTitleMatchMode 2
+    geminiPid := 0
+    for hwnd in WinGetList("ahk_exe AutoHotkey64.exe") {
+        try {
+            if (InStr(WinGetTitle("ahk_id " hwnd), "Gemini.ahk")) {
+                geminiPid := WinGetPID("ahk_id " hwnd)
+                break
+            }
+        } catch {
+            continue
+        }
+    }
+    if (!geminiPid) {
+        for hwnd in WinGetList("ahk_exe AutoHotkey32.exe") {
+            try {
+                if (InStr(WinGetTitle("ahk_id " hwnd), "Gemini.ahk")) {
+                    geminiPid := WinGetPID("ahk_id " hwnd)
+                    break
+                }
+            } catch {
+                continue
+            }
+        }
+    }
+    if (geminiPid) {
+        for hwnd in WinGetList("ahk_pid " geminiPid) {
+            try {
+                SendMessage(WM_STOP_DELAYED_SUBMIT_MONITOR, 0, 0, , "ahk_id " hwnd)
+                break
+            } catch {
+                continue
+            }
+        }
+    }
+    DetectHiddenWindows false
+}
+
 ; Paste transcription to Gemini prompt only (no Enter, no 4s banner). Used when user presses S at 6s dictation confirm.
 GeminiDictationPasteOnlyFlow() {
     restoreHwnd := WinExist("A")
@@ -6605,6 +6700,9 @@ GeminiDictationPasteOnlyFlow() {
 
 GeminiDelayedSubmitFlow() {
     global g_HotstringGeminiAutoSubmit, g_HotstringGeminiRestoreHwnd
+    ; #region agent log
+    DebugFlowLog("Utils.ahk:GeminiDelayedSubmitFlow", "entry", "", "H3")
+    ; #endregion
     g_HotstringGeminiRestoreHwnd := WinExist("A")  ; Store window to restore focus to after 4s sequence
     g_HotstringGeminiAutoSubmit := true
 
@@ -6627,6 +6725,9 @@ GeminiSpeedUpSubmit(*) {
 ; N at 4s banner: paste to Gemini only (no Enter); show 4s info banner, then paste and restore focus.
 GeminiCancelAutoSubmit(*) {
     global g_HotstringGeminiAutoSubmit, g_HotstringGeminiRestoreHwnd
+    ; #region agent log
+    DebugFlowLog("Utils.ahk:GeminiCancelAutoSubmit", "N at 4s", "", "H5")
+    ; #endregion
     g_HotstringGeminiAutoSubmit := false
     try Hotkey("n", "Off")
     try Hotkey("N", "Off")
@@ -6680,6 +6781,10 @@ GeminiFinalizeSubmit() {
     global g_HotstringGeminiAutoSubmit, g_HotstringGeminiRestoreHwnd, g_GeminiDelayedSubmit_PreEnterDelayMs,
         g_GeminiDelayedSubmit_WaitContentMaxMs
 
+    ; #region agent log
+    DebugFlowLog("Utils.ahk:GeminiFinalizeSubmit", "entry", "autoSubmit=" . (g_HotstringGeminiAutoSubmit ? 1 : 0), "H5"
+    )
+    ; #endregion
     try Hotkey("n", "Off")
     try Hotkey("N", "Off")
     try Hotkey("y", "Off")
@@ -8614,6 +8719,7 @@ OnExit(CleanupDictationIndicator)
     ; User was stopping dictation (had been active when they pressed key) -> show Gemini confirm after completion
     if (dictationWasActiveOnKeyPress) {
         g_PendingGeminiPromptAfterDictation := true
+        g_DictationGeminiConfirmBannerVisible := false  ; Allow 6s banner to show for this cycle (reset from previous N cancel)
         ; #region agent log
         DebugBannerLog("Utils.ahk:~#!+0", "Set pending Gemini flag", "dictationWasActiveOnKeyPress=1", "H1")
         ; #endregion

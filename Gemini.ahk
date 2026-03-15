@@ -876,13 +876,19 @@ CopyLastGeminiMessageToClipboard(options := "", geminiHwnd := 0) {
 WM_COPY_LAST_GEMINI := 0x8001
 ; Start background completion monitor for Ctrl+Alt+Win+L (wParam = originalHwnd, lParam = geminiHwnd). Sent from Utils.ahk.
 WM_START_DELAYED_SUBMIT_MONITOR := 0x8002
+; Stop any running delayed-submit monitor (e.g. when user chose S or N at 6s dictation confirm). Sent from Utils.ahk.
+WM_STOP_DELAYED_SUBMIT_MONITOR := 0x8003
 ; Path for bridge to verify that Copy Last Response (same as #!+p) actually succeeded
 GEMINI_COPY_RESULT_PATH := A_ScriptDir "\.cursor\gemini_copy_result.txt"
 
 OnMessage(WM_COPY_LAST_GEMINI, copyFromBridge)
 OnMessage(WM_START_DELAYED_SUBMIT_MONITOR, handleStartDelayedSubmitMonitor)
+OnMessage(WM_STOP_DELAYED_SUBMIT_MONITOR, handleStopDelayedSubmitMonitor)
 handleStartDelayedSubmitMonitor(wParam, lParam, msg, hwnd) {
     GeminiDelayedSubmitMonitorStart(wParam, lParam)
+}
+handleStopDelayedSubmitMonitor(*) {
+    GeminiDelayedSubmitMonitorStop()
 }
 copyFromBridge(*) {
     ; Guarantee layer: write result so bridge can confirm we copied Gemini's last response (same path as #!+p).
@@ -1358,6 +1364,13 @@ class GeminiDelayedSubmitMonitor {
         SetTimer(this.TimerCallback, 500)
     }
 
+    ; Stop polling; used when user chose S or N at 6s so "Copy response?" is never shown for this flow.
+    Stop() {
+        if (this.TimerCallback)
+            SetTimer(this.TimerCallback, 0)
+        this.TimerCallback := ""
+    }
+
     CheckCompletion() {
         this.RetryCount++
         if (this.RetryCount > this.MaxRetries) {
@@ -1536,9 +1549,22 @@ class GeminiDelayedSubmitMonitor {
     }
 }
 
+; Current monitor instance so we can stop it when user chooses S or N at 6s (no copy/transfer follow-up).
+global g_GeminiDelayedSubmitMonitor := ""
+
 ; Callable from Utils.ahk after successful auto-send (Ctrl+Alt+Win+L).
 GeminiDelayedSubmitMonitorStart(originalHwnd, geminiHwnd) {
-    (GeminiDelayedSubmitMonitor()).Start(originalHwnd, geminiHwnd)
+    global g_GeminiDelayedSubmitMonitor
+    g_GeminiDelayedSubmitMonitor := GeminiDelayedSubmitMonitor()
+    g_GeminiDelayedSubmitMonitor.Start(originalHwnd, geminiHwnd)
+}
+
+; Stop any running monitor so "Copy response?" does not show (e.g. after S or N at 6s dictation confirm).
+GeminiDelayedSubmitMonitorStop() {
+    global g_GeminiDelayedSubmitMonitor
+    if (g_GeminiDelayedSubmitMonitor)
+        try g_GeminiDelayedSubmitMonitor.Stop()
+    g_GeminiDelayedSubmitMonitor := ""
 }
 
 ; =============================================================================
