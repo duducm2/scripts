@@ -22,7 +22,7 @@ flowchart TB
     User6s --> |"Y"| DelayedFlow["DelayedSubmitFlow"]
     DelayedFlow --> Banner4s["Submitting 4s, 3s timer"]
     Banner4s --> User4s{"Y / N / 3s"}
-    User4s --> |"N"| Stop4s["Stop, no submit"]
+    User4s --> |"N"| Stop4s["Paste only, 4s banner"]
     User4s --> |"Y or 3s"| Finalize["FinalizeSubmit"]
     Finalize --> PasteGemini["Focus Gemini, paste"]
     PasteGemini --> WaitContent["Wait content max 5s"]
@@ -44,12 +44,12 @@ On the 6s banner, only **N** shows the “Gemini submission cancelled” overlay
 
 ## Where the user can stop the flow
 
-| Step | Banner / moment                        | User action to stop             | Effect                                                 |
-| ---- | -------------------------------------- | ------------------------------- | ------------------------------------------------------ |
-| 1    | **Send transcription to Gemini?** (6s) | Press **N** or no key (timeout) | Flow ends; no paste to Gemini, no Enter, no 4s banner. |
-| 2    | **Submitting in 4s...** (4s)           | Press **N**                     | No paste to Gemini, no Enter; no monitor started.      |
-| 3    | **Copy response?** (5s)                | Press **N**                     | No copy, no read aloud, no transfer to Cursor.         |
-| 4    | **Transfer to Cursor** (window picker) | Press **N** or **Esc**          | Transfer cancelled; no paste/Enter to Cursor.          |
+| Step | Banner / moment                        | User action to stop             | Effect                                                               |
+| ---- | -------------------------------------- | ------------------------------- | -------------------------------------------------------------------- |
+| 1    | **Send transcription to Gemini?** (6s) | Press **N** or no key (timeout) | Flow ends; no paste to Gemini, no Enter, no 4s banner.               |
+| 2    | **Submitting in 4s...** (4s)           | Press **N**                     | Paste to Gemini only (no Enter); 4s info banner; no monitor started. |
+| 3    | **Copy response?** (5s)                | Press **N**                     | No copy, no read aloud, no transfer to Cursor.                       |
+| 4    | **Transfer to Cursor** (window picker) | Press **N** or **Esc**          | Transfer cancelled; no paste/Enter to Cursor.                        |
 
 ## Hotkeys
 

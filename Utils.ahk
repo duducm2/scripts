@@ -2554,6 +2554,11 @@ StandardLoadingBar_CloseKeysOverlay() {
     global g_StandardLoadingBarKeysHotkeys, g_StandardLoadingBarKeysTimeoutTimer
     global g_StandardLoadingBarGui, g_StandardLoadingBarValue, g_StandardLoadingBarIsKeysOverlay,
         g_StandardLoadingBarBorderGui
+    ; #region agent log
+    try FileAppend '{"sessionId":"5cdde7","hypothesisId":"H7","location":"Utils.ahk:CloseKeysOverlay","message":"cancelling timeout","data":{"hasTimer":' (
+        g_StandardLoadingBarKeysTimeoutTimer != "" ? "true" : "false") '},"timestamp":' A_TickCount '}`n',
+    A_ScriptDir "\debug-5cdde7.log"
+    ; #endregion
     g_StandardLoadingBarIsKeysOverlay := false
     try SetTimer(g_StandardLoadingBarKeysTimeoutTimer, 0)
     catch {
@@ -2601,7 +2606,7 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
     g_StandardLoadingBarIsKeysOverlay := true
     g_StandardLoadingBarKeysHotkeys := []
 
-    ; Register primary and case-variant keys directly from the keyCallbacks map.
+    ; Register primary and case-variant keys (single letters get * prefix in RegisterKeyHandler for reliable firing).
     for keyName, cb in keyCallbacks {
         if (!cb)
             continue
@@ -2621,6 +2626,10 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
     if (timeoutMs > 0) {
         g_StandardLoadingBarKeysTimeoutTimer := SetTimer(StandardLoadingBar_KeysTimeoutFired.Bind(timeoutCallback), -
         timeoutMs)
+        ; #region agent log
+        try FileAppend '{"sessionId":"5cdde7","hypothesisId":"H6","location":"Utils.ahk:ShowWithKeys","message":"timeout timer set","data":{"timeoutMs":' timeoutMs ',"timerId":' g_StandardLoadingBarKeysTimeoutTimer '},"timestamp":' A_TickCount '}`n',
+            A_ScriptDir "\debug-5cdde7.log"
+        ; #endregion
     }
 }
 
@@ -2628,26 +2637,61 @@ StandardLoadingBar_RegisterKeyHandler(key, cb) {
     global g_StandardLoadingBarKeysHotkeys
     if (!cb)
         return
-    ; Bind key first (string), then cb (BoundFunc), to avoid "Invalid base" when cb is first arg
+    ; Use * prefix for single letters so the hotkey fires even when overlay has focus or modifiers are held
+    keyToReg := key
+    if (StrLen(key) = 1) {
+        o := Ord(key)
+        if ((o >= Ord("a") && o <= Ord("z")) || (o >= Ord("A") && o <= Ord("Z")))
+            keyToReg := "*" . key
+    }
     fn := StandardLoadingBar_KeyWrapper.Bind(key, cb)
     try {
-        Hotkey(key, fn, "On")
-        g_StandardLoadingBarKeysHotkeys.Push(key)
-    } catch {
+        Hotkey(keyToReg, fn, "On")
+        g_StandardLoadingBarKeysHotkeys.Push(keyToReg)
+        ; #region agent log
+        try FileAppend '{"sessionId":"5cdde7","hypothesisId":"H1","location":"Utils.ahk:RegisterKeyHandler","message":"key registered","data":{"key":"' keyToReg '"},"timestamp":' A_TickCount '}`n',
+            A_ScriptDir "\debug-5cdde7.log"
+        ; #endregion
+    } catch as err {
+        ; #region agent log
+        try FileAppend '{"sessionId":"5cdde7","hypothesisId":"H1","location":"Utils.ahk:RegisterKeyHandler","message":"Hotkey failed","data":{"key":"' keyToReg '","error":"' err
+            .Message '"},"timestamp":' A_TickCount '}`n', A_ScriptDir "\debug-5cdde7.log"
+        ; #endregion
     }
 }
 
 StandardLoadingBar_KeyWrapper(key, cb, *) {
-    StandardLoadingBar_CloseKeysOverlay()
+    ; #region agent log
+    try FileAppend '{"sessionId":"5cdde7","hypothesisId":"H2","location":"Utils.ahk:KeyWrapper","message":"KeyWrapper entered","data":{"key":"' key '"},"timestamp":' A_TickCount '}`n',
+        A_ScriptDir "\debug-5cdde7.log"
+    ; #endregion
+    ; Run callback first so it can close the overlay (avoids destroying GUI from hotkey context before callback runs).
     if (cb) {
-        try cb.Call()
+        try {
+            ; #region agent log
+            try FileAppend '{"sessionId":"5cdde7","hypothesisId":"H4","location":"Utils.ahk:KeyWrapper","message":"calling cb","data":{"key":"' key '"},"timestamp":' A_TickCount '}`n',
+                A_ScriptDir "\debug-5cdde7.log"
+            ; #endregion
+            cb.Call()
+        }
         catch {
         }
     }
+    StandardLoadingBar_CloseKeysOverlay()
+    ; #region agent log
+    try FileAppend '{"sessionId":"5cdde7","hypothesisId":"H3","location":"Utils.ahk:KeyWrapper","message":"after CloseKeysOverlay","data":{"key":"' key '"},"timestamp":' A_TickCount '}`n',
+        A_ScriptDir "\debug-5cdde7.log"
+    ; #endregion
 }
 
 StandardLoadingBar_KeysTimeoutFired(timeoutCallback) {
-    if (timeoutCallback)
+    global g_StandardLoadingBarIsKeysOverlay
+    ; #region agent log
+    try FileAppend '{"sessionId":"5cdde7","hypothesisId":"H8","location":"Utils.ahk:KeysTimeoutFired","message":"timeout fired","data":{},"timestamp":' A_TickCount '}`n',
+        A_ScriptDir "\debug-5cdde7.log"
+    ; #endregion
+    ; Only run timeout callback if overlay was not already dismissed (e.g. user pressed N); avoids copy when timer fires after cancel.
+    if (g_StandardLoadingBarIsKeysOverlay && timeoutCallback)
         try timeoutCallback.Call()
         catch {
         }
@@ -2732,8 +2776,9 @@ DictationGeminiConfirm_ShowAndWait() {
         centerOnHwnd := 0
     keyCallbacks := Map("Y", DictationGeminiConfirm_OnY, "N", DictationGeminiConfirm_OnCancel)
     ; Official loading bar only; no blue; single banner (no border); fixed bottom strip for input.
-    StandardLoadingBar_ShowWithKeys("❓ Send transcription to Gemini? (6s)", keyCallbacks, 6000, centerOnHwnd,
-        DictationGeminiConfirm_OnTimeout, "1E1E2E", 380, 17, "", true, "[Y] Confirm  [N] Cancel")
+    StandardLoadingBar_ShowWithKeys("❓ Send to Gemini? (6s) – Auto-send in 4s unless you cancel.", keyCallbacks, 6000,
+        centerOnHwnd,
+        DictationGeminiConfirm_OnTimeout, "1E1E2E", 380, 17, "", true, "[Y] Send  [N] Cancel")
 }
 
 ; =============================================================================
@@ -6554,9 +6599,9 @@ GeminiSpeedUpSubmit(*) {
     GeminiFinalizeSubmit()
 }
 
-; N at 4s banner: full stop – no paste, no Enter, no monitor.
+; N at 4s banner: paste to Gemini only (no Enter); show 4s info banner, then paste and restore focus.
 GeminiCancelAutoSubmit(*) {
-    global g_HotstringGeminiAutoSubmit
+    global g_HotstringGeminiAutoSubmit, g_HotstringGeminiRestoreHwnd
     g_HotstringGeminiAutoSubmit := false
     try Hotkey("n", "Off")
     try Hotkey("N", "Off")
@@ -6564,7 +6609,17 @@ GeminiCancelAutoSubmit(*) {
     try Hotkey("Y", "Off")
     SetTimer(GeminiFinalizeSubmit, 0)
     HotstringGeminiBanner_Hide()
-    ShowCenteredOverlay_Utils("⚠ Auto-submit cancelled", 1500, BANNER_ACCENT_INTERMEDIATE)
+    HotstringGeminiBanner_Show("⚠ Paste only – no Enter (data transferred to Gemini)")
+    SetTimer(HotstringGeminiBanner_Hide, -4000)
+    SetTimer(GeminiCancelAutoSubmit_DoPaste, -400)
+}
+
+GeminiCancelAutoSubmit_DoPaste(*) {
+    global g_HotstringGeminiRestoreHwnd
+    GeminiNavigateFocusAndPasteFirstSnippet("", false)
+    Sleep 200
+    if (g_HotstringGeminiRestoreHwnd && WinExist("ahk_id " g_HotstringGeminiRestoreHwnd))
+        WinActivate("ahk_id " g_HotstringGeminiRestoreHwnd)
 }
 
 ; Delay (ms) after paste and before Send Enter in Gemini delayed-submit flow. Prevents premature send and lets the UI register paste + character limits.

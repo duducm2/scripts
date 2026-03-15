@@ -1440,8 +1440,23 @@ class GeminiDelayedSubmitMonitor {
         this.CopyTimeoutTimer := ""
     }
 
+    ; N key: close overlay and stop (no copy/read/transfer). Explicitly close Utils overlay so cancel always takes effect.
     CancelCopy(*) {
+        ; #region agent log
+        try FileAppend '{"sessionId":"5cdde7","hypothesisId":"H4","location":"Gemini.ahk:CancelCopy","message":"CancelCopy entered","data":{},"timestamp":' A_TickCount '}`n',
+            A_ScriptDir "\debug-5cdde7.log"
+        ; #endregion
+        try StandardLoadingBar_CloseKeysOverlay()
+        catch {
+        }
+        try StandardLoadingBar_Hide(0)
+        catch {
+        }
         this.CleanupCopyBanner()
+        ; #region agent log
+        try FileAppend '{"sessionId":"5cdde7","hypothesisId":"H5","location":"Gemini.ahk:CancelCopy","message":"CancelCopy exit","data":{},"timestamp":' A_TickCount '}`n',
+            A_ScriptDir "\debug-5cdde7.log"
+        ; #endregion
     }
 
     DoCopyCore(readAloud := false, skipRestoreFocus := false) {
@@ -1480,6 +1495,10 @@ class GeminiDelayedSubmitMonitor {
     }
 
     DoCopyOnTimeout(*) {
+        ; #region agent log
+        try FileAppend '{"sessionId":"5cdde7","hypothesisId":"H8","location":"Gemini.ahk:DoCopyOnTimeout","message":"DoCopyOnTimeout entered","data":{},"timestamp":' A_TickCount '}`n',
+            A_ScriptDir "\debug-5cdde7.log"
+        ; #endregion
         this.CleanupCopyBanner()
         this.DoCopyCore(false)
     }
