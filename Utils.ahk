@@ -2780,9 +2780,15 @@ DictationGeminiConfirm_CleanupAndMaybeSubmit(submitToGemini, pasteOnly := false)
     if (!submitToGemini)
         GeminiDelayedSubmitMonitorStopFromUtils()
     if (pasteOnly) {
+        ; #region agent log
+        DebugFlowLog("Utils.ahk:CleanupAndMaybeSubmit", "running pasteOnly flow", "", "H2")
+        ; #endregion
         Sleep 350
         GeminiDictationPasteOnlyFlow()
     } else if (submitToGemini) {
+        ; #region agent log
+        DebugFlowLog("Utils.ahk:CleanupAndMaybeSubmit", "running delayedSubmit flow", "", "H2")
+        ; #endregion
         Sleep 350
         GeminiDelayedSubmitFlow()
     }
@@ -2811,11 +2817,12 @@ DictationGeminiConfirm_OnTimeout(*) {
     DictationGeminiConfirm_CleanupAndMaybeSubmit(true)
 }
 
+; N = terminate flow: no paste, no Enter, no 4s, no copy; only cleanup and cancel overlay.
 DictationGeminiConfirm_OnCancel(*) {
     ; #region agent log
     DebugFlowLog("Utils.ahk:OnCancel", "N pressed", "", "H1")
     ; #endregion
-    DictationGeminiConfirm_CleanupAndMaybeSubmit(false)
+    DictationGeminiConfirm_CleanupAndMaybeSubmit(false)  ; submitToGemini=false, pasteOnly=false => no flow runs
     ShowCenteredOverlay_Utils("⚠ Gemini submission cancelled", 1500, BANNER_ACCENT_INTERMEDIATE)
 }
 
@@ -5929,7 +5936,7 @@ global g_HotstringPromptCharMap := Map()        ; Map of prompt-assigned chars =
 global g_HotstringGeminiArmed := false          ; When true, next Prompts selection is redirected to Gemini
 global g_HotstringGeminiAutoSubmit := true      ; During delayed flow: true = send Enter after paste; false = paste only
 global g_HotstringGeminiSubmitTimer := false   ; Timer reference for 4s delayed submit (for cleanup if needed)
-global g_HotstringGeminiRestoreHwnd := 0        ; Window to restore focus to after 4s banner + paste (set at start of GeminiDelayedSubmitFlow)
+global g_HotstringGeminiRestoreHwnd := 0        ; Window to restore focus to after paste (set at start of GeminiDelayedSubmitFlow)
 
 ; Character assignment sequence: defines order in which characters are assigned to actions
 ; Format: ["1", "2", "3", "4", "5", "q", "w", "e", "r", "t", "a", "s", "d", "f", "g", "z", "x",
@@ -6703,49 +6710,9 @@ GeminiDelayedSubmitFlow() {
     ; #region agent log
     DebugFlowLog("Utils.ahk:GeminiDelayedSubmitFlow", "entry", "", "H3")
     ; #endregion
-    g_HotstringGeminiRestoreHwnd := WinExist("A")  ; Store window to restore focus to after 4s sequence
+    g_HotstringGeminiRestoreHwnd := WinExist("A")
     g_HotstringGeminiAutoSubmit := true
-
-    HotstringGeminiBanner_Show("⏳ Submitting in 4s... [Y] Submit now  [N] Cancel")
-
-    Hotkey("n", GeminiCancelAutoSubmit, "On")
-    Hotkey("N", GeminiCancelAutoSubmit, "On")
-    Hotkey("y", GeminiSpeedUpSubmit, "On")
-    Hotkey("Y", GeminiSpeedUpSubmit, "On")
-
-    SetTimer(GeminiFinalizeSubmit, -3000)
-}
-
-; Y key: run submit immediately (paste + Enter to Gemini) and clean up banner/timers.
-GeminiSpeedUpSubmit(*) {
-    SetTimer(GeminiFinalizeSubmit, 0)
     GeminiFinalizeSubmit()
-}
-
-; N at 4s banner: paste to Gemini only (no Enter); show 4s info banner, then paste and restore focus.
-GeminiCancelAutoSubmit(*) {
-    global g_HotstringGeminiAutoSubmit, g_HotstringGeminiRestoreHwnd
-    ; #region agent log
-    DebugFlowLog("Utils.ahk:GeminiCancelAutoSubmit", "N at 4s", "", "H5")
-    ; #endregion
-    g_HotstringGeminiAutoSubmit := false
-    try Hotkey("n", "Off")
-    try Hotkey("N", "Off")
-    try Hotkey("y", "Off")
-    try Hotkey("Y", "Off")
-    SetTimer(GeminiFinalizeSubmit, 0)
-    HotstringGeminiBanner_Hide()
-    HotstringGeminiBanner_Show("⚠ Paste only – no Enter (data transferred to Gemini)")
-    SetTimer(HotstringGeminiBanner_Hide, -4000)
-    SetTimer(GeminiCancelAutoSubmit_DoPaste, -400)
-}
-
-GeminiCancelAutoSubmit_DoPaste(*) {
-    global g_HotstringGeminiRestoreHwnd
-    GeminiNavigateFocusAndPasteFirstSnippet("", false)
-    Sleep 200
-    if (g_HotstringGeminiRestoreHwnd && WinExist("ahk_id " g_HotstringGeminiRestoreHwnd))
-        WinActivate("ahk_id " g_HotstringGeminiRestoreHwnd)
 }
 
 ; Delay (ms) after paste and before Send Enter in Gemini delayed-submit flow. Prevents premature send and lets the UI register paste + character limits.
@@ -6817,7 +6784,7 @@ GeminiFinalizeSubmit() {
 
     g_HotstringGeminiAutoSubmit := true
 
-    ; Return focus to the window the user had before the 4s banner + paste (whether Enter was sent or not)
+    ; Return focus to the window the user had before paste (whether Enter was sent or not)
     if (g_HotstringGeminiRestoreHwnd && WinExist("ahk_id " g_HotstringGeminiRestoreHwnd)) {
         WinActivate("ahk_id " g_HotstringGeminiRestoreHwnd)
     }
@@ -6839,7 +6806,7 @@ HandleHotstringChar(char) {
     ; L key: first press = arm Gemini mode (show banner); second press (double-tap) = navigate to Gemini, focus field, paste first snippet.
     if (char = "l" || char = "L") {
         if (g_HotstringGeminiArmed) {
-            ; Double-tap L: delayed submit flow (4s banner, N to cancel auto-submit; then navigate+paste, optionally Enter).
+            ; Double-tap L: delayed submit flow (paste + Enter to Gemini).
             CleanupHotstringSelector()
             GeminiDelayedSubmitFlow()
             g_HotstringGeminiArmed := false
