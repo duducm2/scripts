@@ -54,3 +54,23 @@
 {"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":28478875,"data":"delay=1500 isKeys=0","hypothesisId":"H2"}
 {"sessionId":"7e3dd7","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":28478875,"data":"keysCount=0","hypothesisId":"H2"}
 {"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":28480375,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":4141546,"data":"keysCount=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":4141546,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":4141593,"data":"delay=3500 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":4145093,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":5043968,"data":"keysCount=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":5043968,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":5043984,"data":"delay=3500 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":5047500,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":5073875,"data":"keysCount=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":5073875,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":5079031,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":5093406,"data":"keysCount=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":5093406,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":5093437,"data":"delay=700 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":5095015,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":5555390,"data":"keysCount=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":5555390,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":5556093,"data":"keysCount=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":5556093,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":5556625,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
