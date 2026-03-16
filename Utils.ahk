@@ -3045,12 +3045,22 @@ class D2C_FlowManager {
     OnActionC(*) {
         if (this.CurrentPhase != "PromptingAction")
             return
+        ; #region agent log
+        try FileAppend '{"sessionId":"7432d8","runId":"step2-verify","hypothesisId":"H12","location":"Utils.ahk:D2C.OnActionC","message":"C pressed","data":{"phase":"' this
+            .CurrentPhase '"},"timestamp":' A_TickCount '}`n',
+            A_ScriptDir "\debug-7432d8.log"
+        ; #endregion
         this.PromptForCursorTransfer()
     }
 
     OnActionR(*) {
         if (this.CurrentPhase != "PromptingAction")
             return
+        ; #region agent log
+        try FileAppend '{"sessionId":"7432d8","runId":"step2-verify","hypothesisId":"H13","location":"Utils.ahk:D2C.OnActionR","message":"R pressed","data":{"phase":"' this
+            .CurrentPhase '"},"timestamp":' A_TickCount '}`n',
+            A_ScriptDir "\debug-7432d8.log"
+        ; #endregion
         this.ExecuteAction(true, false)
     }
 
@@ -3118,8 +3128,49 @@ class D2C_FlowManager {
         }
 
         if (readAloud) {
-            ; Reuse existing global Gemini read-aloud hotkey path (#!+o).
-            Send("#!+o")
+            ; IPC: trigger read aloud in Gemini.ahk (Send does not trigger hotkeys in another script).
+            WM_TRIGGER_READ_ALOUD := 0x8004
+            targetHwnd := 0
+            prevMatch := A_TitleMatchMode
+            DetectHiddenWindows(true)
+            SetTitleMatchMode(2)
+            for hwnd in WinGetList("ahk_exe AutoHotkey64.exe") {
+                try {
+                    if (InStr(WinGetTitle("ahk_id " hwnd), "Gemini.ahk")) {
+                        targetHwnd := hwnd
+                        break
+                    }
+                } catch {
+                    continue
+                }
+            }
+            if (!targetHwnd) {
+                for hwnd in WinGetList("ahk_exe AutoHotkey32.exe") {
+                    try {
+                        if (InStr(WinGetTitle("ahk_id " hwnd), "Gemini.ahk")) {
+                            targetHwnd := hwnd
+                            break
+                        }
+                    } catch {
+                        continue
+                    }
+                }
+            }
+            if (targetHwnd) {
+                ; #region agent log
+                try FileAppend '{"sessionId":"7432d8","runId":"step2-verify","hypothesisId":"H13","location":"Utils.ahk:D2C.DoCopyCore","message":"dispatch read aloud IPC","data":{"targetHwnd":' targetHwnd '},"timestamp":' A_TickCount '}`n',
+                    A_ScriptDir "\debug-7432d8.log"
+                ; #endregion
+                try PostMessage(WM_TRIGGER_READ_ALOUD, 0, 0, , "ahk_id " targetHwnd)
+            } else {
+                ; #region agent log
+                try FileAppend '{"sessionId":"7432d8","runId":"step2-verify","hypothesisId":"H13","location":"Utils.ahk:D2C.DoCopyCore","message":"gemini not found for read aloud IPC","data":{},"timestamp":' A_TickCount '}`n',
+                    A_ScriptDir "\debug-7432d8.log"
+                ; #endregion
+                ShowCenteredOverlay_Utils("❌ Gemini.ahk not running", 2000, BANNER_ACCENT_ERROR)
+            }
+            SetTitleMatchMode(prevMatch)
+            DetectHiddenWindows(false)
         } else {
             clipBefore := A_Clipboard
             WM_COPY_LAST_GEMINI := 0x8001
@@ -3158,6 +3209,11 @@ class D2C_FlowManager {
                     if (A_Clipboard != clipBefore && Trim(A_Clipboard) != "")
                         break
                 }
+                ; #region agent log
+                try FileAppend '{"sessionId":"7432d8","runId":"step2-verify","hypothesisId":"H12","location":"Utils.ahk:D2C.DoCopyCore","message":"copy IPC complete","data":{"targetHwnd":' targetHwnd ',"clipboardChanged":' ((
+                    A_Clipboard != clipBefore && Trim(A_Clipboard) != "") ? 1 : 0) '},"timestamp":' A_TickCount '}`n',
+                A_ScriptDir "\debug-7432d8.log"
+                ; #endregion
                 if (IsSoundEnabled())
                     try SoundPlay(A_ScriptDir . "\sounds\copy.wav")
             } else {
@@ -3207,6 +3263,11 @@ class D2C_FlowManager {
             }
 
             this.CursorHwnd := CursorTransfer_ShowWindowSelector(this.OriginHwnd)
+            ; #region agent log
+            try FileAppend '{"sessionId":"7432d8","runId":"step2-verify","hypothesisId":"H12","location":"Utils.ahk:D2C.PromptForCursorTransfer","message":"selector result","data":{"cursorHwnd":' this
+                .CursorHwnd ',"clipLen":' StrLen(clip) '},"timestamp":' A_TickCount '}`n',
+                A_ScriptDir "\debug-7432d8.log"
+            ; #endregion
             if (!this.CursorHwnd) {
                 if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
                     WinActivate("ahk_id " this.OriginHwnd)

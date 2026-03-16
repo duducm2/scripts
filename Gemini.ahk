@@ -635,10 +635,20 @@ WaitForButtonAndShowSmallLoading(buttonNames, stateText := "⏳ Loading…", tim
 ; copyFirst: true = copy last response then read aloud (#!+o); false = only read aloud (#!+7).
 ; useTrashTab: when true, explicitly target the second Gemini tab (trash tab) instead of the main tab.
 GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false) {
+    ; #region agent log
+    try FileAppend '{"sessionId":"7432d8","runId":"r-debug","hypothesisId":"H13A","location":"Gemini.ahk:GeminiTriggerReadAloud","message":"entry","data":{"copyFirst":' (
+        copyFirst ? 1 : 0) ',"useTrashTab":' (useTrashTab ? 1 : 0) ',"activeTitle":"' StrReplace(WinGetTitle("A"), '"',
+        "'") '"},"timestamp":' A_TickCount '}`n',
+    A_ScriptDir "\debug-7432d8.log"
+    ; #endregion
     t0 := A_TickCount
     ; Step 1: Activate Gemini window globally
     SetTitleMatchMode(2)
     if hwnd := GetGeminiWindowHwnd() {
+        ; #region agent log
+        try FileAppend '{"sessionId":"7432d8","runId":"r-debug","hypothesisId":"H13C","location":"Gemini.ahk:GeminiTriggerReadAloud","message":"gemini hwnd resolved","data":{"hwnd":' hwnd '},"timestamp":' A_TickCount '}`n',
+            A_ScriptDir "\debug-7432d8.log"
+        ; #endregion
         try {
             WinActivate("ahk_id " hwnd)
         } catch {
@@ -788,16 +798,31 @@ GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false) {
     }
 
     GeminiPerfLog("read_aloud", t0)
+    ; #region agent log
+    try FileAppend '{"sessionId":"7432d8","runId":"r-debug","hypothesisId":"H13C","location":"Gemini.ahk:GeminiTriggerReadAloud","message":"exit","data":{"copyFirst":' (
+        copyFirst ? 1 : 0) '},"timestamp":' A_TickCount '}`n',
+    A_ScriptDir "\debug-7432d8.log"
+    ; #endregion
     ShowNotification(copyFirst ? "Copied & Reading aloud" : "Reading aloud", 800, "FFFF00", "000000", 24)
     Send "!{Tab}"
 }
 
 ; Win+Alt+Shift+O : Read aloud the last message in Gemini (or Pause/Resume if already reading)
 #!+o:: {
+    ; #region agent log
+    try FileAppend '{"sessionId":"7432d8","runId":"r-debug","hypothesisId":"H13B","location":"Gemini.ahk:#!+o","message":"hotkey received","data":{"activeTitle":"' StrReplace(
+        WinGetTitle("A"), '"', "'") '"},"timestamp":' A_TickCount '}`n',
+    A_ScriptDir "\debug-7432d8.log"
+    ; #endregion
     try {
         ; Standard behavior: operate on the currently active Gemini tab.
         GeminiTriggerReadAloud()
     } catch Error as e {
+        ; #region agent log
+        try FileAppend '{"sessionId":"7432d8","runId":"r-debug","hypothesisId":"H13B","location":"Gemini.ahk:#!+o","message":"hotkey exception","data":{"error":"' StrReplace(
+            e.Message, '"', "'") '"},"timestamp":' A_TickCount '}`n',
+        A_ScriptDir "\debug-7432d8.log"
+        ; #endregion
         ;
     }
 }
@@ -863,7 +888,7 @@ CopyLastGeminiMessageToClipboard(options := "", geminiHwnd := 0) {
         return false
     }
 }
-r
+
 ; Win+Alt+Shift+P : Click the last Copy button in Gemini (activates Gemini, scrolls to bottom with Ctrl+End, then copies last response)
 ; Works in EN ("Copy") and PT ("Copiar") UI. Uses tree order: last Copy button in the UI tree = last response.
 #!+p:: {
@@ -883,17 +908,23 @@ WM_COPY_LAST_GEMINI := 0x8001
 WM_START_DELAYED_SUBMIT_MONITOR := 0x8002
 ; Stop any running delayed-submit monitor (e.g. when user chose S or N at 6s dictation confirm). Sent from Utils.ahk.
 WM_STOP_DELAYED_SUBMIT_MONITOR := 0x8003
+; Trigger read aloud from another script (e.g. D2C "Copy response?" R). Send does not trigger hotkeys in another script.
+WM_TRIGGER_READ_ALOUD := 0x8004
 ; Path for bridge to verify that Copy Last Response (same as #!+p) actually succeeded
 GEMINI_COPY_RESULT_PATH := A_ScriptDir "\.cursor\gemini_copy_result.txt"
 
 OnMessage(WM_COPY_LAST_GEMINI, copyFromBridge)
 OnMessage(WM_START_DELAYED_SUBMIT_MONITOR, handleStartDelayedSubmitMonitor)
 OnMessage(WM_STOP_DELAYED_SUBMIT_MONITOR, handleStopDelayedSubmitMonitor)
+OnMessage(WM_TRIGGER_READ_ALOUD, handleTriggerReadAloud)
 handleStartDelayedSubmitMonitor(wParam, lParam, msg, hwnd) {
     GeminiDelayedSubmitMonitorStart(wParam, lParam)
 }
 handleStopDelayedSubmitMonitor(*) {
     GeminiDelayedSubmitMonitorStop()
+}
+handleTriggerReadAloud(*) {
+    GeminiTriggerReadAloud()
 }
 copyFromBridge(*) {
     ; Guarantee layer: write result so bridge can confirm we copied Gemini's last response (same path as #!+p).
