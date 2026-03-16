@@ -635,144 +635,111 @@ WaitForButtonAndShowSmallLoading(buttonNames, stateText := "⏳ Loading…", tim
 ; copyFirst: true = copy last response then read aloud (#!+o); false = only read aloud (#!+7).
 ; useTrashTab: when true, explicitly target the second Gemini tab (trash tab) instead of the main tab.
 GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false) {
-    ; #region agent log
-    try FileAppend '{"sessionId":"7432d8","runId":"r-debug","hypothesisId":"H13A","location":"Gemini.ahk:GeminiTriggerReadAloud","message":"entry","data":{"copyFirst":' (
-        copyFirst ? 1 : 0) ',"useTrashTab":' (useTrashTab ? 1 : 0) ',"activeTitle":"' StrReplace(WinGetTitle("A"), '"',
-        "'") '"},"timestamp":' A_TickCount '}`n',
-    A_ScriptDir "\debug-7432d8.log"
-    ; #endregion
-    t0 := A_TickCount
-    ; Step 1: Activate Gemini window globally
-    SetTitleMatchMode(2)
-    if hwnd := GetGeminiWindowHwnd() {
+    try {
         ; #region agent log
-        try FileAppend '{"sessionId":"7432d8","runId":"r-debug","hypothesisId":"H13C","location":"Gemini.ahk:GeminiTriggerReadAloud","message":"gemini hwnd resolved","data":{"hwnd":' hwnd '},"timestamp":' A_TickCount '}`n',
-            A_ScriptDir "\debug-7432d8.log"
+        try FileAppend '{"sessionId":"7432d8","runId":"r-debug","hypothesisId":"H13A","location":"Gemini.ahk:GeminiTriggerReadAloud","message":"entry","data":{"copyFirst":' (
+            copyFirst ? 1 : 0) ',"useTrashTab":' (useTrashTab ? 1 : 0) ',"activeTitle":"' StrReplace(WinGetTitle("A"), '"',
+            "'") '"},"timestamp":' A_TickCount '}`n',
+        A_ScriptDir "\debug-7432d8.log"
         ; #endregion
-        try {
-            WinActivate("ahk_id " hwnd)
-        } catch {
-            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
+        t0 := A_TickCount
+        ; Step 1: Activate Gemini window globally
+        SetTitleMatchMode(2)
+        if hwnd := GetGeminiWindowHwnd() {
+            ; #region agent log
+            try FileAppend '{"sessionId":"7432d8","runId":"r-debug","hypothesisId":"H13C","location":"Gemini.ahk:GeminiTriggerReadAloud","message":"gemini hwnd resolved","data":{"hwnd":' hwnd '},"timestamp":' A_TickCount '}`n',
+                A_ScriptDir "\debug-7432d8.log"
+            ; #endregion
+            try {
+                WinActivate("ahk_id " hwnd)
+            } catch {
+                ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
+                return
+            }
+        }
+        if !WinWaitActive("ahk_exe chrome.exe", , GEMINI_ACTIVATE_WAIT_MS // 1000)
+            return
+        Sleep GEMINI_TAB_SWITCH_MS
+
+        ; When requested (#!+o trash tab), explicitly switch to the second Gemini tab.
+        ; Chrome convention: Ctrl+2 selects the second tab in the window.
+        if (useTrashTab) {
+            Send("^2")
+            Sleep GEMINI_TAB_SWITCH_MS
+            ShowGeminiTabBanner(2, hwnd)
+        }
+
+        ; Step 2: Check if "Pause" button exists (if reading is active, pause it)
+        uia := UIA_Browser()
+        Sleep GEMINI_UIA_SETTLE_MS
+
+        pauseButton := FindGeminiPauseResumeButton(uia, "Pause")
+        if (pauseButton) {
+            try pauseButton.Click()
+            ShowNotification("Paused", 800, "FFFF00", "000000", 24)
+            Send "!{Tab}"
             return
         }
-    }
-    if !WinWaitActive("ahk_exe chrome.exe", , GEMINI_ACTIVATE_WAIT_MS // 1000)
-        return
-    Sleep GEMINI_TAB_SWITCH_MS
 
-    ; When requested (#!+o trash tab), explicitly switch to the second Gemini tab.
-    ; Chrome convention: Ctrl+2 selects the second tab in the window.
-    if (useTrashTab) {
-        Send("^2")
-        Sleep GEMINI_TAB_SWITCH_MS
-        ShowGeminiTabBanner(2, hwnd)
-    }
-
-    ; Step 2: Check if "Pause" button exists (if reading is active, pause it)
-    uia := UIA_Browser()
-    Sleep GEMINI_UIA_SETTLE_MS
-
-    pauseButton := FindGeminiPauseResumeButton(uia, "Pause")
-    if (pauseButton) {
-        pauseButton.Click()
-        ShowNotification("Paused", 800, "FFFF00", "000000", 24)
-        Send "!{Tab}"
-        return
-    }
-
-    resumeButton := FindGeminiPauseResumeButton(uia, "Resume")
-    if (resumeButton) {
-        resumeButton.Click()
-        ShowNotification("Resumed", 800, "FFFF00", "000000", 24)
-        Send "!{Tab}"
-        return
-    }
-
-    ; Step 3: If copyFirst, find and click the last Copy button; else just scroll so last response is in view
-    Send "^{End}"
-    Sleep GEMINI_SCROLL_SETTLE_MS
-
-    if (copyFirst) {
-        lastCopyButton := GeminiState.GetLastCopyButtonCached(uia, hwnd)
-        if (lastCopyButton) {
-            lastCopyButton.Click()
-            PlayCopyCompletedChime()
+        resumeButton := FindGeminiPauseResumeButton(uia, "Resume")
+        if (resumeButton) {
+            try resumeButton.Click()
+            ShowNotification("Resumed", 800, "FFFF00", "000000", 24)
+            Send "!{Tab}"
+            return
         }
-    }
 
-    ; Step 4: Find the final "More options" / "Show more options" in the Gemini response tree (bottom-up).
-    ; We target only the most recent Gemini response to avoid reading older messages. See gemini-tree.txt for tree structure.
-    centerHwnd := WinExist("A")
-    StandardLoadingBar_Show(copyFirst ? "🔍 Finding read aloud button and copying..." :
-        "🔍 Finding read aloud button...", BANNER_ACCENT_INTERMEDIATE, { passive: true, centerOnHwnd: centerHwnd })
-    Sleep GEMINI_WAIT_BUTTON_POLL_MS
+        ; Step 3: If copyFirst, find and click the last Copy button; else just scroll so last response is in view
+        Send "^{End}"
+        Sleep GEMINI_SCROLL_SETTLE_MS
 
-    allMoreOptionsButtons := GetGeminiMoreOptionsButtonsScoped(uia)
-
-    if (allMoreOptionsButtons.Length = 0) {
-        StandardLoadingBar_Hide(0)
-        return
-    }
-
-    ; Bottom-up: select the last instance in the response tree = most recent response only.
-    ; 1) Prefer button with the largest bottom Y (true bottom of page = final response).
-    ; 2) Fallback: last element in FindAll order (document/tree order = last in tree).
-    lastMoreOptionsButton := 0
-    highestBottomY := -1
-    for moreOptionsButton in allMoreOptionsButtons {
-        try {
-            btnPos := moreOptionsButton.Location
-            bottomY := btnPos.y + btnPos.h
-            if (bottomY > highestBottomY) {
-                highestBottomY := bottomY
-                lastMoreOptionsButton := moreOptionsButton
+        if (copyFirst) {
+            lastCopyButton := GeminiState.GetLastCopyButtonCached(uia, hwnd)
+            if (lastCopyButton) {
+                try lastCopyButton.Click()
+                PlayCopyCompletedChime()
             }
-        } catch {
-            continue
         }
-    }
-    if (!lastMoreOptionsButton && allMoreOptionsButtons.Length > 0)
-        lastMoreOptionsButton := allMoreOptionsButtons[allMoreOptionsButtons.Length]
-    if (!lastMoreOptionsButton) {
-        StandardLoadingBar_Hide(0)
-        return
-    }
 
-    listenClicked := false
-    loop GEMINI_LISTEN_MENU_MAX_ATTEMPTS {
-        try {
-            lastMoreOptionsButton.Click()
-            Sleep GEMINI_MENU_OPEN_MS
-            listenMenuItem := WaitForListenMenuItem(uia, GEMINI_LISTEN_MENU_WAIT_MS)
-            if (listenMenuItem) {
-                try {
-                    listenMenuItem.Click()
-                    Sleep GEMINI_MENU_OPEN_MS
-                    listenClicked := true
-                    break
-                } catch {
-                    ;
+        ; Step 4: Find the final "More options" / "Show more options" in the Gemini response tree (bottom-up).
+        ; We target only the most recent Gemini response to avoid reading older messages. See gemini-tree.txt for tree structure.
+        centerHwnd := WinExist("A")
+        StandardLoadingBar_Show(copyFirst ? "🔍 Finding read aloud button and copying..." :
+            "🔍 Finding read aloud button...", BANNER_ACCENT_INTERMEDIATE, { passive: true, centerOnHwnd: centerHwnd })
+        Sleep GEMINI_WAIT_BUTTON_POLL_MS
+
+        allMoreOptionsButtons := GetGeminiMoreOptionsButtonsScoped(uia)
+
+        if (allMoreOptionsButtons.Length = 0) {
+            StandardLoadingBar_Hide(0)
+            return
+        }
+
+        ; Bottom-up: select the last instance in the response tree = most recent response only.
+        ; 1) Prefer button with the largest bottom Y (true bottom of page = final response).
+        ; 2) Fallback: last element in FindAll order (document/tree order = last in tree).
+        lastMoreOptionsButton := 0
+        highestBottomY := -1
+        for moreOptionsButton in allMoreOptionsButtons {
+            try {
+                btnPos := moreOptionsButton.Location
+                bottomY := btnPos.y + btnPos.h
+                if (bottomY > highestBottomY) {
+                    highestBottomY := bottomY
+                    lastMoreOptionsButton := moreOptionsButton
                 }
+            } catch {
+                continue
             }
-        } catch {
-            ;
         }
-        if (A_Index < GEMINI_LISTEN_MENU_MAX_ATTEMPTS) {
-            Send "{Escape}"
-            Sleep GEMINI_MENU_OPEN_MS
+        if (!lastMoreOptionsButton && allMoreOptionsButtons.Length > 0)
+            lastMoreOptionsButton := allMoreOptionsButtons[allMoreOptionsButtons.Length]
+        if (!lastMoreOptionsButton) {
+            StandardLoadingBar_Hide(0)
+            return
         }
-    }
 
-    StandardLoadingBar_Hide(0)
-
-    Sleep GEMINI_READ_ALOUD_SETTLE_MS
-
-    isReading := (FindGeminiPauseResumeButton(uia, "Pause") != 0)
-
-    if (!isReading && listenClicked) {
-        ShowNotification("Retrying read aloud...", 800, "FFFF00", "000000", 24)
-        Send "{Escape}"
-        Sleep GEMINI_MENU_OPEN_MS
+        listenClicked := false
         loop GEMINI_LISTEN_MENU_MAX_ATTEMPTS {
             try {
                 lastMoreOptionsButton.Click()
@@ -782,6 +749,7 @@ GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false) {
                     try {
                         listenMenuItem.Click()
                         Sleep GEMINI_MENU_OPEN_MS
+                        listenClicked := true
                         break
                     } catch {
                         ;
@@ -795,16 +763,58 @@ GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false) {
                 Sleep GEMINI_MENU_OPEN_MS
             }
         }
-    }
 
-    GeminiPerfLog("read_aloud", t0)
-    ; #region agent log
-    try FileAppend '{"sessionId":"7432d8","runId":"r-debug","hypothesisId":"H13C","location":"Gemini.ahk:GeminiTriggerReadAloud","message":"exit","data":{"copyFirst":' (
-        copyFirst ? 1 : 0) '},"timestamp":' A_TickCount '}`n',
-    A_ScriptDir "\debug-7432d8.log"
-    ; #endregion
-    ShowNotification(copyFirst ? "Copied & Reading aloud" : "Reading aloud", 800, "FFFF00", "000000", 24)
-    Send "!{Tab}"
+        StandardLoadingBar_Hide(0)
+
+        Sleep GEMINI_READ_ALOUD_SETTLE_MS
+
+        try
+            isReading := (FindGeminiPauseResumeButton(uia, "Pause") != 0)
+        catch
+            isReading := false
+
+        if (!isReading && listenClicked) {
+            ShowNotification("Retrying read aloud...", 800, "FFFF00", "000000", 24)
+            Send "{Escape}"
+            Sleep GEMINI_MENU_OPEN_MS
+            loop GEMINI_LISTEN_MENU_MAX_ATTEMPTS {
+                try {
+                    lastMoreOptionsButton.Click()
+                    Sleep GEMINI_MENU_OPEN_MS
+                    listenMenuItem := WaitForListenMenuItem(uia, GEMINI_LISTEN_MENU_WAIT_MS)
+                    if (listenMenuItem) {
+                        try {
+                            listenMenuItem.Click()
+                            Sleep GEMINI_MENU_OPEN_MS
+                            break
+                        } catch {
+                            ;
+                        }
+                    }
+                } catch {
+                    ;
+                }
+                if (A_Index < GEMINI_LISTEN_MENU_MAX_ATTEMPTS) {
+                    Send "{Escape}"
+                    Sleep GEMINI_MENU_OPEN_MS
+                }
+            }
+        }
+
+        GeminiPerfLog("read_aloud", t0)
+        ; #region agent log
+        try FileAppend '{"sessionId":"7432d8","runId":"r-debug","hypothesisId":"H13C","location":"Gemini.ahk:GeminiTriggerReadAloud","message":"exit","data":{"copyFirst":' (
+            copyFirst ? 1 : 0) '},"timestamp":' A_TickCount '}`n',
+        A_ScriptDir "\debug-7432d8.log"
+        ; #endregion
+        ShowNotification(copyFirst ? "Copied & Reading aloud" : "Reading aloud", 800, "FFFF00", "000000", 24)
+        Send "!{Tab}"
+    } catch Error as e {
+        ; Log and fail gracefully instead of letting UIA COM errors kill the thread.
+        try FileAppend '{"sessionId":"7432d8","runId":"r-debug","hypothesisId":"H13E","location":"Gemini.ahk:GeminiTriggerReadAloud","message":"exception","data":{"error":"' StrReplace(e.Message, '"', "'") '"},"timestamp":' A_TickCount '}`n',
+        A_ScriptDir "\debug-7432d8.log"
+        ShowNotification("Read aloud failed – Gemini UI not ready", 2000, "FF6666", "FFFFFF", 22)
+    }
 }
 
 ; Win+Alt+Shift+O : Read aloud the last message in Gemini (or Pause/Resume if already reading)

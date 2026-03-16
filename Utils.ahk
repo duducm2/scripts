@@ -586,7 +586,63 @@ CheckScriptsNeedingUpdates() {
     return scriptsNeedingUpdates
 }
 
-; Quick Update Scripts macro (four layers: Git, sequential reload with Utils last, delay, PowerShell verification).
+; Attempt to close all running AutoHotkey script processes except this one, so updates can proceed without file locks.
+; Returns true on success, false if any scripts could not be terminated (and shows a detailed error banner).
+QuickUpdate_ShutdownRunningScripts() {
+    scriptsDir := GetScriptsDirectory()
+    failed := []
+
+    try {
+        for exe in ["AutoHotkey64.exe", "AutoHotkey32.exe"] {
+            for hwnd in WinGetList("ahk_exe " exe) {
+                pid := 0
+                try pid := WinGetPID("ahk_id " hwnd)
+                catch
+                    continue
+                if (pid = A_Pid)
+                    continue
+                title := ""
+                try title := WinGetTitle("ahk_id " hwnd)
+
+                ; Try graceful close first
+                try WinClose("ahk_id " hwnd)
+                Sleep 300
+
+                ; If still running, attempt hard termination
+                if ProcessExist(pid) {
+                    try ProcessClose(pid)
+                    Sleep 300
+                }
+
+                ; If process is still alive, record failure
+                if ProcessExist(pid) {
+                    if (title = "")
+                        title := exe " (pid " pid ")"
+                    failed.Push(title)
+                }
+            }
+        }
+    } catch {
+        ; Treat unexpected errors as failure; details will surface via failed list or subsequent operations.
+    }
+
+    if (failed.Length > 0) {
+        list := ""
+        for name in failed
+            list .= name "`n"
+        ShowCenteredOverlay_Utils("❌ Could not close these scripts:`n" list, 4000, BANNER_ACCENT_ERROR)
+        try {
+            if (FileExist(scriptsDir "\sounds\quick-update-failure.wav"))
+                SoundPlay(scriptsDir "\sounds\quick-update-failure.wav")
+        } catch {
+        }
+        return false
+    }
+
+    return true
+}
+
+; Quick Update Scripts macro (four layers: script shutdown, Git, sequential reload with Utils last, delay + PowerShell verification).
 ; Final notification (banner + sound) runs only after all layers and verification succeed. Act.ahk is NOT updated (entry point).
 QuickUpdateScripts() {
     scriptsDir := GetScriptsDirectory()
@@ -594,6 +650,10 @@ QuickUpdateScripts() {
     failedScripts := []
     deferredUtils := false
     utilsPath := ""
+
+    ; Layer 0: Shut down running AutoHotkey scripts (except this updater instance)
+    if !QuickUpdate_ShutdownRunningScripts()
+        return
 
     ; Layer 1: Git synchronization
     try {
