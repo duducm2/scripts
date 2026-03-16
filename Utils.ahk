@@ -1715,7 +1715,9 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
         }
         displayName := ""
         if (projName != "") {
-            displayName := projName
+            shortTitle := (winTitle != "") ? ((StrLen(winTitle) > 40) ? SubStr(winTitle, 1, 37) . "..." : winTitle) :
+                ""
+            displayName := (shortTitle != "") ? ("[" . projName . "] " . shortTitle) : projName
         } else {
             displayName := (winTitle != "") ? ((StrLen(winTitle) > 50) ? SubStr(winTitle, 1, 47) . "..." : winTitle) :
                 ("Cursor Window " . w.hwnd)
