@@ -1,47 +1,66 @@
-{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H6","location":"Utils.ahk:~#!+0","message":"key released","data":{"keyWaitMs":0,"dictationWasActiveOnKeyPress":0},"timestamp":21908359}
-{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"Shift keys.ahk"},"timestamp":21908359}
-{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H7","location":"Utils.ahk:~#!+0","message":"mic script RunWait start","data":{"pathExists":1},"timestamp":21908390}
-{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H7","location":"Utils.ahk:~#!+0","message":"mic script RunWait end","data":{"elapsedMs":1328},"timestamp":21909718}
-{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"WindowManagement.ahk"},"timestamp":21916203}
-{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"Shift keys.ahk"},"timestamp":21916203}
-{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H6","location":"Utils.ahk:~#!+0","message":"key released","data":{"keyWaitMs":31,"dictationWasActiveOnKeyPress":0},"timestamp":21916234}
-{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H7","location":"Utils.ahk:~#!+0","message":"mic script RunWait start","data":{"pathExists":1},"timestamp":21916250}
-{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"WindowManagement.ahk"},"timestamp":21924000}
-{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"Shift keys.ahk"},"timestamp":21924000}
-{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H6","location":"Utils.ahk:~#!+0","message":"key released","data":{"keyWaitMs":15,"dictationWasActiveOnKeyPress":0},"timestamp":21924015}
-{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H7","location":"Utils.ahk:~#!+0","message":"mic script RunWait start","data":{"pathExists":1},"timestamp":21924046}
-{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H7","location":"Utils.ahk:~#!+0","message":"mic script RunWait end","data":{"elapsedMs":1047},"timestamp":21925093}
-{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"WindowManagement.ahk"},"timestamp":21930703}
-{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"Outlook.ahk"},"timestamp":21930703}
-{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H6","location":"Utils.ahk:~#!+0","message":"key released","data":{"keyWaitMs":15,"dictationWasActiveOnKeyPress":1},"timestamp":21930718}
-{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H8","location":"Utils.ahk:CheckDictationRecordingWindow","message":"stop candidate","data":{"deltaSinceTransition":7453,"chimeScheduled":0},"timestamp":21931484}
-{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H8","location":"Utils.ahk:CheckDictationRecordingWindow","message":"stop scheduled","data":{"deltaSinceTransition":7453},"timestamp":21931484}
-{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H1","location":"Utils.ahk:D2C.StartFromDictation","message":"flow start from dictation","data":{},"timestamp":21931562}
-{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"WindowManagement.ahk"},"timestamp":21938859}
-{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"Shift keys.ahk"},"timestamp":21938859}
-{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H6","location":"Utils.ahk:~#!+0","message":"key released","data":{"keyWaitMs":16,"dictationWasActiveOnKeyPress":0},"timestamp":21938875}
-{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H7","location":"Utils.ahk:~#!+0","message":"mic script RunWait start","data":{"pathExists":1},"timestamp":21938890}
-{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H7","location":"Utils.ahk:~#!+0","message":"mic script RunWait end","data":{"elapsedMs":1031},"timestamp":21939921}
-{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"WindowManagement.ahk"},"timestamp":21948890}
-{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"Outlook.ahk"},"timestamp":21948906}
-{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H6","location":"Utils.ahk:~#!+0","message":"key released","data":{"keyWaitMs":15,"dictationWasActiveOnKeyPress":1},"timestamp":21948921}
-{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H8","location":"Utils.ahk:CheckDictationRecordingWindow","message":"stop candidate","data":{"deltaSinceTransition":11156,"chimeScheduled":0},"timestamp":21950031}
-{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H8","location":"Utils.ahk:CheckDictationRecordingWindow","message":"stop scheduled","data":{"deltaSinceTransition":11156},"timestamp":21950031}
-{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H1","location":"Utils.ahk:D2C.StartFromDictation","message":"flow start from dictation","data":{},"timestamp":21950093}
-{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"Shift keys.ahk"},"timestamp":21958437}
-{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"WindowManagement.ahk"},"timestamp":21958437}
-{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H6","location":"Utils.ahk:~#!+0","message":"key released","data":{"keyWaitMs":16,"dictationWasActiveOnKeyPress":0},"timestamp":21958453}
-{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H7","location":"Utils.ahk:~#!+0","message":"mic script RunWait start","data":{"pathExists":1},"timestamp":21958531}
-{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"Outlook.ahk"},"timestamp":21963203}
-{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"AppLaunchers.ahk"},"timestamp":21963203}
-{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H6","location":"Utils.ahk:~#!+0","message":"key released","data":{"keyWaitMs":31,"dictationWasActiveOnKeyPress":1},"timestamp":21963234}
-{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H8","location":"Utils.ahk:CheckDictationRecordingWindow","message":"stop candidate","data":{"deltaSinceTransition":5531,"chimeScheduled":0},"timestamp":21963984}
-{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H8","location":"Utils.ahk:CheckDictationRecordingWindow","message":"stop scheduled","data":{"deltaSinceTransition":5531},"timestamp":21963984}
-{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H1","location":"Utils.ahk:D2C.StartFromDictation","message":"flow start from dictation","data":{},"timestamp":21964062}
-{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H2","location":"Utils.ahk:D2C.ExecuteGeminiSubmit","message":"entry","data":{"autoSubmit":0,"phase":"PromptingSubmit"},"timestamp":21964671}
-{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H2","location":"Utils.ahk:D2C.ExecuteGeminiSubmit","message":"post paste hwnd captured","data":{"geminiHwnd":3212068},"timestamp":21966734}
-{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"WindowManagement.ahk"},"timestamp":21975171}
-{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"Shift keys.ahk"},"timestamp":21975171}
-{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H6","location":"Utils.ahk:~#!+0","message":"key released","data":{"keyWaitMs":16,"dictationWasActiveOnKeyPress":0},"timestamp":21975187}
-{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H7","location":"Utils.ahk:~#!+0","message":"mic script RunWait start","data":{"pathExists":1},"timestamp":21975203}
-{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H7","location":"Utils.ahk:~#!+0","message":"mic script RunWait end","data":{"elapsedMs":1078},"timestamp":21976281}
+{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"WindowManagement.ahk"},"timestamp":22822765}
+{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"Outlook.ahk"},"timestamp":22822765}
+{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H6","location":"Utils.ahk:~#!+0","message":"key released","data":{"keyWaitMs":15,"dictationWasActiveOnKeyPress":0},"timestamp":22822796}
+{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H7","location":"Utils.ahk:~#!+0","message":"mic script RunWait start","data":{"pathExists":1},"timestamp":22822812}
+{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H7","location":"Utils.ahk:~#!+0","message":"mic script Run dispatched","data":{"queueMs":0},"timestamp":22822812}
+{"sessionId":"7432d8","runId":"hypothesis-4","hypothesisId":"H3","location":"Utils.ahk:~#!+0","message":"stop intent not detected","data":{"dictationWasActiveOnKeyPress":0,"recordingWindowNow":1,"dictationActiveNow":1},"timestamp":22822828}
+{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"Outlook.ahk"},"timestamp":22829281}
+{"sessionId":"7432d8","runId":"hypothesis-4","hypothesisId":"H4","location":"Utils.ahk:~#!+0","message":"post-debounce state snapshot","data":{"dictationActive":0,"recordingWindow":1,"handyRunning":1},"timestamp":22829296}
+{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H6","location":"Utils.ahk:~#!+0","message":"key released","data":{"keyWaitMs":16,"dictationWasActiveOnKeyPress":0},"timestamp":22829312}
+{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H7","location":"Utils.ahk:~#!+0","message":"mic script RunWait start","data":{"pathExists":1},"timestamp":22829343}
+{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H7","location":"Utils.ahk:~#!+0","message":"mic script Run dispatched","data":{"queueMs":157},"timestamp":22829500}
+{"sessionId":"7432d8","runId":"hypothesis-4","hypothesisId":"H3","location":"Utils.ahk:~#!+0","message":"stop intent not detected","data":{"dictationWasActiveOnKeyPress":0,"recordingWindowNow":1,"dictationActiveNow":1},"timestamp":22829500}
+{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"WindowManagement.ahk"},"timestamp":22833906}
+{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"Shift keys.ahk"},"timestamp":22833906}
+{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H6","location":"Utils.ahk:~#!+0","message":"key released","data":{"keyWaitMs":16,"dictationWasActiveOnKeyPress":0},"timestamp":22833937}
+{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H7","location":"Utils.ahk:~#!+0","message":"mic script RunWait start","data":{"pathExists":1},"timestamp":22833968}
+{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H7","location":"Utils.ahk:~#!+0","message":"mic script Run dispatched","data":{"queueMs":0},"timestamp":22833968}
+{"sessionId":"7432d8","runId":"hypothesis-4","hypothesisId":"H3","location":"Utils.ahk:~#!+0","message":"stop intent not detected","data":{"dictationWasActiveOnKeyPress":0,"recordingWindowNow":1,"dictationActiveNow":1},"timestamp":22833968}
+{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"WindowManagement.ahk"},"timestamp":22839625}
+{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"Gemini.ahk"},"timestamp":22839625}
+{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H6","location":"Utils.ahk:~#!+0","message":"key released","data":{"keyWaitMs":0,"dictationWasActiveOnKeyPress":1},"timestamp":22839640}
+{"sessionId":"7432d8","runId":"hypothesis-4","hypothesisId":"H3","location":"Utils.ahk:~#!+0","message":"stop intent detected","data":{"dictationWasActiveOnKeyPress":1,"recordingWindowNow":1,"dictationActiveNow":1},"timestamp":22839656}
+{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H8","location":"Utils.ahk:CheckDictationRecordingWindow","message":"stop candidate","data":{"deltaSinceTransition":6297,"chimeScheduled":0},"timestamp":22840234}
+{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H8","location":"Utils.ahk:CheckDictationRecordingWindow","message":"stop scheduled","data":{"deltaSinceTransition":6297},"timestamp":22840234}
+{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H1","location":"Utils.ahk:D2C.StartFromDictation","message":"flow start from dictation","data":{},"timestamp":22840312}
+{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"WindowManagement.ahk"},"timestamp":22847328}
+{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"Outlook.ahk"},"timestamp":22847328}
+{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H6","location":"Utils.ahk:~#!+0","message":"key released","data":{"keyWaitMs":0,"dictationWasActiveOnKeyPress":0},"timestamp":22847343}
+{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H7","location":"Utils.ahk:~#!+0","message":"mic script RunWait start","data":{"pathExists":1},"timestamp":22847375}
+{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H7","location":"Utils.ahk:~#!+0","message":"mic script Run dispatched","data":{"queueMs":0},"timestamp":22847375}
+{"sessionId":"7432d8","runId":"hypothesis-4","hypothesisId":"H3","location":"Utils.ahk:~#!+0","message":"stop intent not detected","data":{"dictationWasActiveOnKeyPress":0,"recordingWindowNow":1,"dictationActiveNow":1},"timestamp":22847375}
+{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"WindowManagement.ahk"},"timestamp":22864281}
+{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"Outlook.ahk"},"timestamp":22864281}
+{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H6","location":"Utils.ahk:~#!+0","message":"key released","data":{"keyWaitMs":15,"dictationWasActiveOnKeyPress":0},"timestamp":22864296}
+{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H7","location":"Utils.ahk:~#!+0","message":"mic script RunWait start","data":{"pathExists":1},"timestamp":22864312}
+{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H7","location":"Utils.ahk:~#!+0","message":"mic script Run dispatched","data":{"queueMs":16},"timestamp":22864328}
+{"sessionId":"7432d8","runId":"hypothesis-4","hypothesisId":"H3","location":"Utils.ahk:~#!+0","message":"stop intent not detected","data":{"dictationWasActiveOnKeyPress":0,"recordingWindowNow":1,"dictationActiveNow":1},"timestamp":22864328}
+{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"WindowManagement.ahk"},"timestamp":22872093}
+{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"Shift keys.ahk"},"timestamp":22872093}
+{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H6","location":"Utils.ahk:~#!+0","message":"key released","data":{"keyWaitMs":0,"dictationWasActiveOnKeyPress":1},"timestamp":22872109}
+{"sessionId":"7432d8","runId":"hypothesis-4","hypothesisId":"H3","location":"Utils.ahk:~#!+0","message":"stop intent detected","data":{"dictationWasActiveOnKeyPress":1,"recordingWindowNow":1,"dictationActiveNow":1},"timestamp":22872125}
+{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H2","location":"Utils.ahk:D2C.ExecuteGeminiSubmit","message":"post paste hwnd captured","data":{"geminiHwnd":3212068},"timestamp":22875515}
+{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"WindowManagement.ahk"},"timestamp":22878125}
+{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"Microsoft Teams.ahk"},"timestamp":22878125}
+{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H6","location":"Utils.ahk:~#!+0","message":"key released","data":{"keyWaitMs":0,"dictationWasActiveOnKeyPress":0},"timestamp":22878140}
+{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H7","location":"Utils.ahk:~#!+0","message":"mic script RunWait start","data":{"pathExists":1},"timestamp":22878203}
+{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H7","location":"Utils.ahk:~#!+0","message":"mic script Run dispatched","data":{"queueMs":15},"timestamp":22878218}
+{"sessionId":"7432d8","runId":"hypothesis-4","hypothesisId":"H3","location":"Utils.ahk:~#!+0","message":"stop intent not detected","data":{"dictationWasActiveOnKeyPress":0,"recordingWindowNow":1,"dictationActiveNow":1},"timestamp":22878218}
+{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"WindowManagement.ahk"},"timestamp":22886671}
+{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"AppLaunchers.ahk"},"timestamp":22886671}
+{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H6","location":"Utils.ahk:~#!+0","message":"key released","data":{"keyWaitMs":16,"dictationWasActiveOnKeyPress":1},"timestamp":22886687}
+{"sessionId":"7432d8","runId":"hypothesis-4","hypothesisId":"H3","location":"Utils.ahk:~#!+0","message":"stop intent detected","data":{"dictationWasActiveOnKeyPress":1,"recordingWindowNow":1,"dictationActiveNow":1},"timestamp":22886687}
+{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H3","location":"Utils.ahk:D2C.CheckGeminiCompletion","message":"tick","data":{"phase":"Monitoring","retry":0,"deltaMs":-1,"buttonEverFound":0},"timestamp":22892781}
+{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H3","location":"Utils.ahk:D2C.CheckGeminiCompletion","message":"tick","data":{"phase":"Monitoring","retry":1,"deltaMs":500,"buttonEverFound":1},"timestamp":22893281}
+{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H3","location":"Utils.ahk:D2C.CheckGeminiCompletion","message":"tick","data":{"phase":"Monitoring","retry":2,"deltaMs":500,"buttonEverFound":1},"timestamp":22893781}
+{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H3","location":"Utils.ahk:D2C.CheckGeminiCompletion","message":"tick","data":{"phase":"Monitoring","retry":3,"deltaMs":500,"buttonEverFound":1},"timestamp":22894281}
+{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H3","location":"Utils.ahk:D2C.CheckGeminiCompletion","message":"tick","data":{"phase":"Monitoring","retry":4,"deltaMs":500,"buttonEverFound":1},"timestamp":22894781}
+{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H3","location":"Utils.ahk:D2C.CheckGeminiCompletion","message":"tick","data":{"phase":"Monitoring","retry":5,"deltaMs":500,"buttonEverFound":1},"timestamp":22895281}
+{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H3","location":"Utils.ahk:D2C.CheckGeminiCompletion","message":"tick","data":{"phase":"Monitoring","retry":6,"deltaMs":500,"buttonEverFound":1},"timestamp":22895781}
+{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H3","location":"Utils.ahk:D2C.CheckGeminiCompletion","message":"tick","data":{"phase":"Monitoring","retry":7,"deltaMs":500,"buttonEverFound":1},"timestamp":22896281}
+{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H3","location":"Utils.ahk:D2C.CheckGeminiCompletion","message":"tick","data":{"phase":"Monitoring","retry":8,"deltaMs":500,"buttonEverFound":1},"timestamp":22896781}
+{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H3","location":"Utils.ahk:D2C.CheckGeminiCompletion","message":"tick","data":{"phase":"Monitoring","retry":9,"deltaMs":500,"buttonEverFound":1},"timestamp":22897281}
+{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H3","location":"Utils.ahk:D2C.CheckGeminiCompletion","message":"tick","data":{"phase":"Monitoring","retry":10,"deltaMs":500,"buttonEverFound":1},"timestamp":22897781}
+{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H3","location":"Utils.ahk:D2C.CheckGeminiCompletion","message":"tick","data":{"phase":"Monitoring","retry":11,"deltaMs":500,"buttonEverFound":1},"timestamp":22898281}
+{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H3","location":"Utils.ahk:D2C.CheckGeminiCompletion","message":"stream ended -> prompt action","data":{"retry":12},"timestamp":22899421}
+{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H4","location":"Utils.ahk:D2C.PromptForResponseAction","message":"entry","data":{"phase":"Monitoring"},"timestamp":22899468}

@@ -8860,6 +8860,10 @@ SafePlayDictationSound(filePath) {
 
 ; Handler for clipboard changes during dictation completion
 DictationClipboardHandler(DataType) {
+    ; #region agent log
+    try FileAppend '{"sessionId":"7432d8","runId":"hypothesis-4","hypothesisId":"H5","location":"Utils.ahk:DictationClipboardHandler","message":"clipboard event","data":{"dataType":' DataType '},"timestamp":' A_TickCount '}`n',
+        A_ScriptDir "\debug-7432d8.log"
+    ; #endregion
     ; Remove handler immediately to prevent multiple triggers
     OnClipboardChange(DictationClipboardHandler, 0)
 
@@ -8978,9 +8982,9 @@ CheckDictationRecordingWindow() {
                     try FileAppend '{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H7","location":"Utils.ahk:CheckDictationRecordingWindow","message":"mic script RunWait start","data":{"pathExists":1},"timestamp":' A_TickCount '}`n',
                         A_ScriptDir "\debug-7432d8.log"
                     ; #endregion
-                    RunWait "powershell.exe -ExecutionPolicy Bypass -File `"" micVolumeScript "`"", , "Hide"
+                    Run "powershell.exe -ExecutionPolicy Bypass -File `"" micVolumeScript "`"", , "Hide"
                     ; #region agent log
-                    try FileAppend '{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H7","location":"Utils.ahk:CheckDictationRecordingWindow","message":"mic script RunWait end","data":{"elapsedMs":' (
+                    try FileAppend '{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H7","location":"Utils.ahk:CheckDictationRecordingWindow","message":"mic script Run dispatched","data":{"queueMs":' (
                         A_TickCount - micRunStart) '},"timestamp":' A_TickCount '}`n',
                     A_ScriptDir "\debug-7432d8.log"
                     ; #endregion
@@ -9148,6 +9152,17 @@ OnExit(CleanupDictationIndicator)
         return
     lastHotkeyTick := currentTick
     isProcessing := true
+    ; #region agent log
+    try {
+        recordingNow := WinExist("Recording ahk_exe handy.exe") ? 1 : 0
+        handyRunning := ProcessExist("handy.exe") ? 1 : 0
+        FileAppend(
+            '{"sessionId":"7432d8","runId":"hypothesis-4","hypothesisId":"H4","location":"Utils.ahk:~#!+0","message":"post-debounce state snapshot","data":{"dictationActive":' (
+                g_DictationActive ? 1 : 0) ',"recordingWindow":' recordingNow ',"handyRunning":' handyRunning '},"timestamp":' A_TickCount '}`n',
+            A_ScriptDir "\debug-7432d8.log")
+    } catch {
+    }
+    ; #endregion
 
     ; Capture before KeyWait: check timer may clear g_DictationActive when Recording window closes,
     ; so by the time we reach if/else it can be false even when user intended to stop.
@@ -9176,9 +9191,9 @@ OnExit(CleanupDictationIndicator)
                 try FileAppend '{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H7","location":"Utils.ahk:~#!+0","message":"mic script RunWait start","data":{"pathExists":1},"timestamp":' A_TickCount '}`n',
                     A_ScriptDir "\debug-7432d8.log"
                 ; #endregion
-                RunWait "powershell.exe -ExecutionPolicy Bypass -File `"" micVolumeScript "`"", , "Hide"
+                Run "powershell.exe -ExecutionPolicy Bypass -File `"" micVolumeScript "`"", , "Hide"
                 ; #region agent log
-                try FileAppend '{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H7","location":"Utils.ahk:~#!+0","message":"mic script RunWait end","data":{"elapsedMs":' (
+                try FileAppend '{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H7","location":"Utils.ahk:~#!+0","message":"mic script Run dispatched","data":{"queueMs":' (
                     A_TickCount - micRunStart) '},"timestamp":' A_TickCount '}`n',
                 A_ScriptDir "\debug-7432d8.log"
                 ; #endregion
@@ -9189,10 +9204,31 @@ OnExit(CleanupDictationIndicator)
 
     ; User was stopping dictation (had been active when they pressed key) -> show Gemini confirm after completion
     if (dictationWasActiveOnKeyPress) {
+        ; #region agent log
+        try {
+            recordingNow := WinExist("Recording ahk_exe handy.exe") ? 1 : 0
+            FileAppend(
+                '{"sessionId":"7432d8","runId":"hypothesis-4","hypothesisId":"H3","location":"Utils.ahk:~#!+0","message":"stop intent detected","data":{"dictationWasActiveOnKeyPress":1,"recordingWindowNow":' recordingNow ',"dictationActiveNow":' (
+                    g_DictationActive ? 1 : 0) '},"timestamp":' A_TickCount '}`n',
+                A_ScriptDir "\debug-7432d8.log")
+        } catch {
+        }
+        ; #endregion
         g_PendingGeminiPromptAfterDictation := true
         g_DictationGeminiConfirmBannerVisible := false  ; Allow 6s banner to show for this cycle (reset from previous N cancel)
         ; #region agent log
         DebugBannerLog("Utils.ahk:~#!+0", "Set pending Gemini flag", "dictationWasActiveOnKeyPress=1", "H1")
+        ; #endregion
+    } else {
+        ; #region agent log
+        try {
+            recordingNow := WinExist("Recording ahk_exe handy.exe") ? 1 : 0
+            FileAppend(
+                '{"sessionId":"7432d8","runId":"hypothesis-4","hypothesisId":"H3","location":"Utils.ahk:~#!+0","message":"stop intent not detected","data":{"dictationWasActiveOnKeyPress":0,"recordingWindowNow":' recordingNow ',"dictationActiveNow":' (
+                    g_DictationActive ? 1 : 0) '},"timestamp":' A_TickCount '}`n',
+                A_ScriptDir "\debug-7432d8.log")
+        } catch {
+        }
         ; #endregion
     }
 
