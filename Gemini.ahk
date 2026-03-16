@@ -351,6 +351,11 @@ class GeminiState {
     }
 }
 
+; Callable by name from Utils.ahk (avoids #Warn UseUnsetLocal for GeminiState).
+GeminiStateInvalidate() {
+    GeminiState.Invalidate()
+}
+
 ; --- Helper Functions --------------------------------------------------------
 ; FindGeminiPromptField and GEMINI_PROMPT_FIELD_NAMES are defined in Utils.ahk (included above).
 
@@ -1430,6 +1435,11 @@ class GeminiDelayedSubmitMonitor {
     }
 
     ShowCopyDecisionBanner() {
+        ; #region agent log
+        try FileAppend '{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H5","location":"Gemini.ahk:GeminiDelayedSubmitMonitor.ShowCopyDecisionBanner","message":"legacy monitor banner request","data":{"alreadyShown":' (
+            this.CopyBannerShownForThisResponse ? 1 : 0) '},"timestamp":' A_TickCount '}`n',
+        A_ScriptDir "\debug-7432d8.log"
+        ; #endregion
         if (this.CopyBannerShownForThisResponse)
             return
         this.CopyBannerShownForThisResponse := true

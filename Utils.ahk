@@ -2729,7 +2729,7 @@ HotstringGeminiBanner_Show(text := "📤 Gemini: inserting prompt...") {
     ; #region agent log
     DebugFlowLog("Utils.ahk:HotstringGeminiBanner_Show", "entry", "text=" . SubStr(text, 1, 40), "H3")
     ; #endregion
-    DictationGeminiConfirm_Hide()
+    StandardLoadingBar_CloseKeysOverlay()
     Sleep 50
     centerOnHwnd := 0
     try centerOnHwnd := WinGetID("A")
@@ -2747,18 +2747,434 @@ HotstringGeminiBanner_Hide(*) {
 }
 
 ; =============================================================================
+; =============================================================================
+; D2C_FlowManager: Unified state machine for Dictation → Gemini → Cursor flow.
+; Replaces legacy fragmented functions with a central authority to prevent race conditions.
+; =============================================================================
+class D2C_FlowManager {
+    static _instance := 0
+
+    static GetInstance() {
+        if (!D2C_FlowManager._instance)
+            D2C_FlowManager._instance := D2C_FlowManager()
+        return D2C_FlowManager._instance
+    }
+
+    __New() {
+        this.Reset()
+    }
+
+    Reset() {
+        this.CurrentPhase := "Idle"
+        this.OriginHwnd := 0
+        this.GeminiHwnd := 0
+        this.CursorHwnd := 0
+        this.MonitorTimer := ""
+        this.MonitorRetryCount := 0
+        this.MonitorMaxRetries := 300 ; 150s
+        this.MonitorButtonEverFound := false
+        this.MonitorLastCheckTick := 0
+        this.HasCopiedForThisResponse := false
+    }
+
+    ; --- Entry Points ---
+
+    StartFromDictation() {
+        ; #region agent log
+        try FileAppend '{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H1","location":"Utils.ahk:D2C.StartFromDictation","message":"flow start from dictation","data":{},"timestamp":' A_TickCount '}`n',
+            A_ScriptDir "\debug-7432d8.log"
+        ; #endregion
+        if (this.CurrentPhase != "Idle") {
+            ; #region agent log
+            try FileAppend '{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:D2C.StartFromDictation","message":"reentry blocked","data":{"phase":"' this
+                .CurrentPhase '"},"timestamp":' A_TickCount '}`n',
+                A_ScriptDir "\debug-7432d8.log"
+            ; #endregion
+            return
+        }
+        this.Reset()
+        this.OriginHwnd := WinActive("A")
+        this.PromptForGeminiSubmit()
+    }
+
+    StartFromHotstring() {
+        ; #region agent log
+        try FileAppend '{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H1","location":"Utils.ahk:D2C.StartFromHotstring","message":"flow start from hotstring","data":{},"timestamp":' A_TickCount '}`n',
+            A_ScriptDir "\debug-7432d8.log"
+        ; #endregion
+        if (this.CurrentPhase != "Idle") {
+            ; #region agent log
+            try FileAppend '{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:D2C.StartFromHotstring","message":"reentry blocked","data":{"phase":"' this
+                .CurrentPhase '"},"timestamp":' A_TickCount '}`n',
+                A_ScriptDir "\debug-7432d8.log"
+            ; #endregion
+            return
+        }
+        this.Reset()
+        this.OriginHwnd := WinActive("A")
+        this.ExecuteGeminiSubmit(true)
+    }
+
+    ; --- Phase 1: Submit Prompt ---
+
+    PromptForGeminiSubmit() {
+        this.CurrentPhase := "PromptingSubmit"
+        keyCallbacks := Map(
+            "Y", this.OnSubmitY.Bind(this),
+            "S", this.OnSubmitS.Bind(this),
+            "N", this.OnSubmitN.Bind(this)
+        )
+        StandardLoadingBar_ShowWithKeys(
+            "❓ Send to Gemini? (6s)",
+            keyCallbacks,
+            6000,
+            this.OriginHwnd,
+            this.OnSubmitTimeout.Bind(this),
+            "1E1E2E", 380, 17, "", true,
+            "[Y] Send  [S] Paste only  [N] Cancel"
+        )
+    }
+
+    OnSubmitY(*) {
+        if (this.CurrentPhase != "PromptingSubmit")
+            return
+        this.ExecuteGeminiSubmit(true)
+    }
+
+    OnSubmitS(*) {
+        if (this.CurrentPhase != "PromptingSubmit")
+            return
+        this.ExecuteGeminiSubmit(false)
+    }
+
+    OnSubmitN(*) {
+        if (this.CurrentPhase != "PromptingSubmit")
+            return
+        this.CancelFlow("Gemini submission cancelled")
+    }
+
+    OnSubmitTimeout(*) {
+        if (this.CurrentPhase != "PromptingSubmit")
+            return
+        this.ExecuteGeminiSubmit(true)
+    }
+
+    ; --- Phase 2: Submit Execute ---
+
+    ExecuteGeminiSubmit(autoSubmit := true) {
+        ; #region agent log
+        try FileAppend '{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H2","location":"Utils.ahk:D2C.ExecuteGeminiSubmit","message":"entry","data":{"autoSubmit":' (
+            autoSubmit ? 1 : 0) ',"phase":"' this.CurrentPhase '"},"timestamp":' A_TickCount '}`n',
+        A_ScriptDir "\debug-7432d8.log"
+        ; #endregion
+        this.CurrentPhase := "Submitting"
+        StandardLoadingBar_CloseKeysOverlay()
+        StandardLoadingBar_Hide(0)
+        HideDictationIndicator()
+
+        ; Paste to Gemini (launches Chrome if needed); then capture active window as Gemini.
+        GeminiNavigateFocusAndPasteFirstSnippet("", false)
+        this.GeminiHwnd := WinExist("A")
+        ; #region agent log
+        try FileAppend '{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H2","location":"Utils.ahk:D2C.ExecuteGeminiSubmit","message":"post paste hwnd captured","data":{"geminiHwnd":' this
+            .GeminiHwnd '},"timestamp":' A_TickCount '}`n',
+            A_ScriptDir "\debug-7432d8.log"
+        ; #endregion
+
+        if (autoSubmit) {
+            Sleep 1000 ; Pre-enter delay
+            ; Wait for content (guarantee layer)
+            endTick := A_TickCount + 5000
+            while (A_TickCount < endTick) {
+                if (GeminiPromptFieldGetText() != "")
+                    break
+                Sleep 200
+            }
+            Send("{Enter}")
+            this.StartGeminiMonitor()
+        }
+
+        ; Return focus
+        if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+            WinActivate("ahk_id " this.OriginHwnd)
+
+        if (!autoSubmit)
+            this.Reset()
+    }
+
+    ; --- Phase 3: Monitor ---
+
+    StartGeminiMonitor() {
+        ; #region agent log
+        try FileAppend '{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H3","location":"Utils.ahk:D2C.StartGeminiMonitor","message":"monitor start","data":{"geminiHwnd":' this
+            .GeminiHwnd '},"timestamp":' A_TickCount '}`n',
+            A_ScriptDir "\debug-7432d8.log"
+        ; #endregion
+        this.CurrentPhase := "Monitoring"
+        this.MonitorRetryCount := 0
+        this.MonitorButtonEverFound := false
+        this.MonitorTimer := this.CheckGeminiCompletion.Bind(this)
+        SetTimer(this.MonitorTimer, 500)
+    }
+
+    CheckGeminiCompletion() {
+        delta := this.MonitorLastCheckTick ? (A_TickCount - this.MonitorLastCheckTick) : -1
+        this.MonitorLastCheckTick := A_TickCount
+        ; #region agent log
+        try FileAppend '{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H3","location":"Utils.ahk:D2C.CheckGeminiCompletion","message":"tick","data":{"phase":"' this
+            .CurrentPhase '","retry":' this.MonitorRetryCount ',"deltaMs":' delta ',"buttonEverFound":' (this.MonitorButtonEverFound ?
+                1 : 0) '},"timestamp":' A_TickCount '}`n',
+            A_ScriptDir "\debug-7432d8.log"
+        ; #endregion
+        if (this.CurrentPhase != "Monitoring") {
+            SetTimer(this.MonitorTimer, 0)
+            return
+        }
+
+        this.MonitorRetryCount++
+        if (this.MonitorRetryCount > this.MonitorMaxRetries) {
+            SetTimer(this.MonitorTimer, 0)
+            this.Reset()
+            return
+        }
+
+        btn := ""
+        buttonNames := ["Stop streaming", "Interromper transmissão", "Stop response"]
+        try {
+            root := UIA.ElementFromHandle(this.GeminiHwnd)
+            for n in buttonNames {
+                try {
+                    btn := root.FindElement({ Name: n, Type: "Button" })
+                } catch {
+                    btn := ""
+                }
+                if (btn)
+                    break
+            }
+        } catch {
+            return
+        }
+
+        if (btn) {
+            this.MonitorButtonEverFound := true
+            return
+        }
+
+        if (this.MonitorButtonEverFound) {
+            ; Suspend timer to prevent re-entrancy during the 800ms Sleep block
+            SetTimer(this.MonitorTimer, 0)
+
+            isTrulyGone := true
+            loop 4 {
+                Sleep 200
+                try {
+                    for n in buttonNames {
+                        if root.ElementExist({ Name: n, Type: "Button" }) {
+                            isTrulyGone := false
+                            break
+                        }
+                    }
+                } catch {
+                    isTrulyGone := true
+                }
+                if (!isTrulyGone)
+                    break
+            }
+
+            if (isTrulyGone) {
+                ; Timer is already stopped, proceed to next phase
+                ; #region agent log
+                try FileAppend '{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H3","location":"Utils.ahk:D2C.CheckGeminiCompletion","message":"stream ended -> prompt action","data":{"retry":' this
+                    .MonitorRetryCount '},"timestamp":' A_TickCount '}`n',
+                    A_ScriptDir "\debug-7432d8.log"
+                ; #endregion
+                try {
+                    if (IsSoundEnabled())
+                        SoundPlay(A_ScriptDir . "\sounds\gemini-completion.wav")
+                } catch {
+                    Func("PlayCopyCompletedChime").Call()
+                }
+                this.PromptForResponseAction()
+            } else {
+                ; False alarm, the button is still there. Resume polling.
+                SetTimer(this.MonitorTimer, 500)
+            }
+        }
+    }
+
+    ; --- Phase 4: Action Prompt ---
+
+    PromptForResponseAction() {
+        ; #region agent log
+        try FileAppend '{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H4","location":"Utils.ahk:D2C.PromptForResponseAction","message":"entry","data":{"phase":"' this
+            .CurrentPhase '"},"timestamp":' A_TickCount '}`n',
+            A_ScriptDir "\debug-7432d8.log"
+        ; #endregion
+        ; Prevent duplicate banner spawns from timer re-entrancy
+        if (this.CurrentPhase = "PromptingAction") {
+            ; #region agent log
+            try FileAppend '{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H4","location":"Utils.ahk:D2C.PromptForResponseAction","message":"guard return duplicate prompt","data":{},"timestamp":' A_TickCount '}`n',
+                A_ScriptDir "\debug-7432d8.log"
+            ; #endregion
+            return
+        }
+        this.CurrentPhase := "PromptingAction"
+        keyCallbacks := Map(
+            "Y", this.OnActionY.Bind(this),
+            "C", this.OnActionC.Bind(this),
+            "R", this.OnActionR.Bind(this),
+            "N", this.OnActionN.Bind(this)
+        )
+        StandardLoadingBar_ShowWithKeys(
+            "❓ Copy response?",
+            keyCallbacks,
+            5000,
+            this.OriginHwnd,
+            this.OnActionTimeout.Bind(this),
+            BANNER_ACCENT_INTERMEDIATE, 380, 17, "", false,
+            "[Y] Copy  [N] No  [R] Copy+Read  [C] Transfer"
+        )
+    }
+
+    OnActionY(*) {
+        if (this.CurrentPhase != "PromptingAction")
+            return
+        this.ExecuteAction(false, false)
+    }
+
+    OnActionC(*) {
+        if (this.CurrentPhase != "PromptingAction")
+            return
+        this.PromptForCursorTransfer()
+    }
+
+    OnActionR(*) {
+        if (this.CurrentPhase != "PromptingAction")
+            return
+        this.ExecuteAction(true, false)
+    }
+
+    OnActionN(*) {
+        if (this.CurrentPhase != "PromptingAction")
+            return
+        this.CleanupActionPrompt()
+        this.Reset()
+    }
+
+    OnActionTimeout(*) {
+        if (this.CurrentPhase != "PromptingAction")
+            return
+        this.ExecuteAction(false, false)
+    }
+
+    CleanupActionPrompt() {
+        StandardLoadingBar_CloseKeysOverlay()
+        StandardLoadingBar_Hide(0)
+    }
+
+    ExecuteAction(readAloud := false, skipRestoreFocus := false) {
+        this.CleanupActionPrompt()
+        this.DoCopyCore(readAloud, skipRestoreFocus)
+        this.Reset()
+    }
+
+    DoCopyCore(readAloud := false, skipRestoreFocus := false) {
+        if (this.HasCopiedForThisResponse)
+            return
+        this.HasCopiedForThisResponse := true
+
+        Func("GeminiStateInvalidate").Call()
+        if (!WinExist("ahk_id " this.GeminiHwnd)) {
+            if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                WinActivate("ahk_id " this.OriginHwnd)
+            return
+        }
+
+        if (!WinActive("ahk_id " this.GeminiHwnd)) {
+            try WinActivate("ahk_id " this.GeminiHwnd)
+            catch {
+                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                    WinActivate("ahk_id " this.OriginHwnd)
+                return
+            }
+            if (!WinWaitActive("ahk_exe chrome.exe", , 0.5)) {
+                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                    WinActivate("ahk_id " this.OriginHwnd)
+                return
+            }
+        }
+
+        copyOpt := { restoreWindow: false, playChimeAndNotify: false, alreadyActive: true }
+        if (Func("CopyLastGeminiMessageWithRetry").Call(copyOpt, this.GeminiHwnd))
+            Func("PlayCopyCompletedChime").Call()
+
+        if (readAloud)
+            Func("GeminiTriggerReadAloud").Call(false, false)
+
+        if (!skipRestoreFocus && this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd) && !WinActive("ahk_id " this.OriginHwnd
+        )) {
+            WinActivate("ahk_id " this.OriginHwnd)
+            WinWaitActive("ahk_id " this.OriginHwnd, , 0.5)
+        }
+    }
+
+    ; --- Phase 5: Cursor Transfer ---
+
+    PromptForCursorTransfer() {
+        this.CurrentPhase := "Transferring"
+        this.CleanupActionPrompt()
+        ; Skip restoring focus so clipboard is not overwritten
+        this.DoCopyCore(false, true)
+
+        clip := Trim(A_Clipboard)
+        if (clip = "" || StrLen(clip) < 10) {
+            Sleep 120
+            clip := Trim(A_Clipboard)
+        }
+
+        if (clip = "" || StrLen(clip) < 10) {
+            ShowCenteredOverlay_Utils("❌ Copy failed or empty – try again", 2000, BANNER_ACCENT_ERROR)
+            if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                WinActivate("ahk_id " this.OriginHwnd)
+            this.Reset()
+            return
+        }
+
+        this.CursorHwnd := CursorTransfer_ShowWindowSelector(this.OriginHwnd)
+        if (!this.CursorHwnd) {
+            if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                WinActivate("ahk_id " this.OriginHwnd)
+            this.Reset()
+            return
+        }
+
+        CursorTransfer_ActivateFocusPaste(this.CursorHwnd)
+        this.Reset()
+    }
+
+    ; --- Helpers ---
+
+    CancelFlow(message) {
+        StandardLoadingBar_CloseKeysOverlay()
+        StandardLoadingBar_Hide(0)
+        ShowCenteredOverlay_Utils("⚠ " . message, 1500, BANNER_ACCENT_INTERMEDIATE)
+        this.Reset()
+    }
+}
+
 ; Dictation: "Send to Gemini?" confirmation banner (6s, Y to confirm; uses standard loading indicator)
 ; =============================================================================
-DictationGeminiConfirm_Show() {
+; DEPRECATED: Use D2C_FlowManager
+DEPRECATED_DictationGeminiConfirm_Show() {
     ; No-op; use DictationGeminiConfirm_ShowAndWait() which uses StandardLoadingBar_ShowWithKeys.
 }
 
-DictationGeminiConfirm_Hide(*) {
+DEPRECATED_DictationGeminiConfirm_Hide(*) {
     StandardLoadingBar_CloseKeysOverlay()
 }
 
 ; submitToGemini=false (N or timeout): terminal. submitToGemini=true: delayed-submit (paste+Enter). pasteOnly=true: paste to Gemini only, no Enter.
-DictationGeminiConfirm_CleanupAndMaybeSubmit(submitToGemini, pasteOnly := false) {
+DEPRECATED_DictationGeminiConfirm_CleanupAndMaybeSubmit(submitToGemini, pasteOnly := false) {
     global g_DictationGeminiConfirmBannerVisible
     ; #region agent log
     DebugFlowLog("Utils.ahk:CleanupAndMaybeSubmit", "entry", "submit=" . (submitToGemini ? 1 : 0) . " pasteOnly=" . (
@@ -2774,8 +3190,8 @@ DictationGeminiConfirm_CleanupAndMaybeSubmit(submitToGemini, pasteOnly := false)
     try Hotkey("*S", "Off")
     try Hotkey("*n", "Off")
     try Hotkey("*N", "Off")
-    SetTimer(DictationGeminiConfirm_OnTimeout, 0)
-    DictationGeminiConfirm_Hide()
+    SetTimer(DEPRECATED_DictationGeminiConfirm_OnTimeout, 0)
+    DEPRECATED_DictationGeminiConfirm_Hide()
     ; S or N at 6s: no submit flow, so stop any running "Copy response?" monitor so it never shows.
     if (!submitToGemini)
         GeminiDelayedSubmitMonitorStopFromUtils()
@@ -2784,49 +3200,49 @@ DictationGeminiConfirm_CleanupAndMaybeSubmit(submitToGemini, pasteOnly := false)
         DebugFlowLog("Utils.ahk:CleanupAndMaybeSubmit", "running pasteOnly flow", "", "H2")
         ; #endregion
         Sleep 350
-        GeminiDictationPasteOnlyFlow()
+        DEPRECATED_GeminiDictationPasteOnlyFlow()
     } else if (submitToGemini) {
         ; #region agent log
         DebugFlowLog("Utils.ahk:CleanupAndMaybeSubmit", "running delayedSubmit flow", "", "H2")
         ; #endregion
         Sleep 350
-        GeminiDelayedSubmitFlow()
+        DEPRECATED_GeminiDelayedSubmitFlow()
     }
 }
 
-DictationGeminiConfirm_OnY(*) {
+DEPRECATED_DictationGeminiConfirm_OnY(*) {
     ; #region agent log
     DebugFlowLog("Utils.ahk:OnY", "Y pressed", "", "H1")
     ; #endregion
-    DictationGeminiConfirm_CleanupAndMaybeSubmit(true)
+    DEPRECATED_DictationGeminiConfirm_CleanupAndMaybeSubmit(true)
 }
 
 ; S = paste to Gemini only (no Enter, no 4s banner).
-DictationGeminiConfirm_OnS(*) {
+DEPRECATED_DictationGeminiConfirm_OnS(*) {
     ; #region agent log
     DebugFlowLog("Utils.ahk:OnS", "S pressed", "", "H1")
     ; #endregion
-    DictationGeminiConfirm_CleanupAndMaybeSubmit(false, true)
+    DEPRECATED_DictationGeminiConfirm_CleanupAndMaybeSubmit(false, true)
 }
 
 ; Default action on 6s timeout: proceed as Yes (DelayedSubmitFlow), same as user pressing Y.
-DictationGeminiConfirm_OnTimeout(*) {
+DEPRECATED_DictationGeminiConfirm_OnTimeout(*) {
     ; #region agent log
     DebugFlowLog("Utils.ahk:OnTimeout", "6s timeout fired", "", "H4")
     ; #endregion
-    DictationGeminiConfirm_CleanupAndMaybeSubmit(true)
+    DEPRECATED_DictationGeminiConfirm_CleanupAndMaybeSubmit(true)
 }
 
 ; N = terminate flow: no paste, no Enter, no 4s, no copy; only cleanup and cancel overlay.
-DictationGeminiConfirm_OnCancel(*) {
+DEPRECATED_DictationGeminiConfirm_OnCancel(*) {
     ; #region agent log
     DebugFlowLog("Utils.ahk:OnCancel", "N pressed", "", "H1")
     ; #endregion
-    DictationGeminiConfirm_CleanupAndMaybeSubmit(false)  ; submitToGemini=false, pasteOnly=false => no flow runs
+    DEPRECATED_DictationGeminiConfirm_CleanupAndMaybeSubmit(false)  ; submitToGemini=false, pasteOnly=false => no flow runs
     ShowCenteredOverlay_Utils("⚠ Gemini submission cancelled", 1500, BANNER_ACCENT_INTERMEDIATE)
 }
 
-DictationGeminiConfirm_ShowAndWait() {
+DEPRECATED_DictationGeminiConfirm_ShowAndWait() {
     global g_DictationGeminiConfirmBannerVisible
     ; Only one banner: atomic check-and-set so only one invocation can pass (prevents duplicate from multiple PlayDictationCompletionChime runs).
     Critical "On"
@@ -2850,13 +3266,14 @@ DictationGeminiConfirm_ShowAndWait() {
     }
     if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
         centerOnHwnd := 0
-    keyCallbacks := Map("Y", DictationGeminiConfirm_OnY, "S", DictationGeminiConfirm_OnS, "N",
-        DictationGeminiConfirm_OnCancel)
+    keyCallbacks := Map("Y", DEPRECATED_DictationGeminiConfirm_OnY, "S", DEPRECATED_DictationGeminiConfirm_OnS, "N",
+        DEPRECATED_DictationGeminiConfirm_OnCancel)
     ; Official loading bar only; no blue; single banner (no border); fixed bottom strip for input.
     StandardLoadingBar_ShowWithKeys("❓ Send to Gemini? (6s)", keyCallbacks,
         6000,
         centerOnHwnd,
-        DictationGeminiConfirm_OnTimeout, "1E1E2E", 380, 17, "", true, "[Y] Send  [S] Paste only  [N] Cancel")
+        DEPRECATED_DictationGeminiConfirm_OnTimeout, "1E1E2E", 380, 17, "", true,
+        "[Y] Send  [S] Paste only  [N] Cancel")
 }
 
 ; =============================================================================
@@ -6698,14 +7115,14 @@ GeminiDelayedSubmitMonitorStopFromUtils() {
 }
 
 ; Paste transcription to Gemini prompt only (no Enter, no 4s banner). Used when user presses S at 6s dictation confirm.
-GeminiDictationPasteOnlyFlow() {
+DEPRECATED_GeminiDictationPasteOnlyFlow() {
     restoreHwnd := WinExist("A")
     GeminiNavigateFocusAndPasteFirstSnippet("", false)
     if (restoreHwnd && WinExist("ahk_id " restoreHwnd))
         WinActivate("ahk_id " restoreHwnd)
 }
 
-GeminiDelayedSubmitFlow() {
+DEPRECATED_GeminiDelayedSubmitFlow() {
     global g_HotstringGeminiAutoSubmit, g_HotstringGeminiRestoreHwnd
     ; #region agent log
     DebugFlowLog("Utils.ahk:GeminiDelayedSubmitFlow", "entry", "", "H3")
@@ -6808,7 +7225,7 @@ HandleHotstringChar(char) {
         if (g_HotstringGeminiArmed) {
             ; Double-tap L: delayed submit flow (paste + Enter to Gemini).
             CleanupHotstringSelector()
-            GeminiDelayedSubmitFlow()
+            D2C_FlowManager.GetInstance().StartFromHotstring()
             g_HotstringGeminiArmed := false
             return
         }
@@ -7766,8 +8183,8 @@ ShowHotstringSelector() {
     }
 }
 
-; Ctrl+Alt+Win+L - Same as Win+Alt+Shift+U then L,L: banner, 4s delay, N to cancel; then open Gemini + paste first snippet (+ Enter unless cancelled)
-^!#L:: GeminiDelayedSubmitFlow()
+; Ctrl+Alt+Win+L - direct D2C submit path (paste + Enter, then monitor)
+^!#L:: D2C_FlowManager.GetInstance().StartFromHotstring()
 
 ; Ctrl+Alt+Win+4 - Send AI Text Optimizer prompt to Gemini (same as Win+Alt+Shift+U then L, 4)
 ^!#4:: GeminiNavigateFocusAndPasteFirstSnippet(GetAioptPromptText())
@@ -8176,6 +8593,38 @@ global g_KeepIndicatorVisible := false  ; Flag to keep indicator visible until p
 global g_LastStateTransitionTick := 0  ; Timestamp of last state transition to prevent rapid re-detection
 global g_DictationSoundPlayed := false  ; Atomic test-and-set: one start chime per session
 global g_DictationStartClipboardText := "" ; Track clipboard content at start to detect changes
+global g_DictationHotkeyOwnerHandle := 0 ; Named mutex handle for cross-process single-owner dictation hotkey
+global g_DictationHotkeyIsOwner := false ; True only in the single process that owns dictation hotkey handling
+
+; Ensure only one script process handles the dictation hotkey logic.
+InitializeDictationHotkeyOwnership() {
+    global g_DictationHotkeyOwnerHandle, g_DictationHotkeyIsOwner
+    mutexName := "Local\D2C_Dictation_Hotkey_Owner"
+    hMutex := DllCall("CreateMutex", "Ptr", 0, "Int", 0, "Str", mutexName, "Ptr")
+    if (!hMutex) {
+        g_DictationHotkeyIsOwner := false
+        return
+    }
+    err := DllCall("GetLastError", "UInt")
+    if (err = 183) { ; ERROR_ALREADY_EXISTS
+        g_DictationHotkeyIsOwner := false
+        DllCall("CloseHandle", "Ptr", hMutex)
+        return
+    }
+    g_DictationHotkeyOwnerHandle := hMutex
+    g_DictationHotkeyIsOwner := true
+}
+
+ReleaseDictationHotkeyOwnership(*) {
+    global g_DictationHotkeyOwnerHandle
+    if (g_DictationHotkeyOwnerHandle) {
+        try DllCall("CloseHandle", "Ptr", g_DictationHotkeyOwnerHandle)
+        g_DictationHotkeyOwnerHandle := 0
+    }
+}
+
+InitializeDictationHotkeyOwnership()
+OnExit(ReleaseDictationHotkeyOwnership)
 
 ; Debug logging helper for dictation workflow
 LogDebug(sessionId, runId, hypothesisId, location, message, data := "") {
@@ -8469,11 +8918,11 @@ PlayDictationCompletionChime(*) {
         ; #endregion
         if (pendingGemini && pendingAction = "") {
             ; #region agent log
-            DebugBannerLog("Utils.ahk:PlayDictationCompletionChime", "Calling ShowAndWait", "pendingAction empty", "H3"
+            DebugBannerLog("Utils.ahk:PlayDictationCompletionChime", "Calling D2C_FlowManager", "pendingAction empty",
+                "H3"
             )
             ; #endregion
-            ; Do not set g_DictationGeminiConfirmBannerVisible here: ShowAndWait sets it atomically. Setting it here would make ShowAndWait think the banner is already visible and return without showing.
-            DictationGeminiConfirm_ShowAndWait()
+            D2C_FlowManager.GetInstance().StartFromDictation()
         }
     }
 }
@@ -8507,6 +8956,10 @@ CheckDictationRecordingWindow() {
     ; Handle Start: window exists
     if (windowExists) {
         if (!g_DictationActive) {
+            ; #region agent log
+            try FileAppend '{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H8","location":"Utils.ahk:CheckDictationRecordingWindow","message":"start branch entered","data":{"windowExists":1,"dictationActiveBefore":0},"timestamp":' A_TickCount '}`n',
+                A_ScriptDir "\debug-7432d8.log"
+            ; #endregion
             g_DictationActive := true
             g_LastStateTransitionTick := A_TickCount
 
@@ -8520,7 +8973,17 @@ CheckDictationRecordingWindow() {
             try {
                 micVolumeScript := A_ScriptDir "\scripts\Set-MicVolume.ps1"
                 if (FileExist(micVolumeScript)) {
+                    ; #region agent log
+                    micRunStart := A_TickCount
+                    try FileAppend '{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H7","location":"Utils.ahk:CheckDictationRecordingWindow","message":"mic script RunWait start","data":{"pathExists":1},"timestamp":' A_TickCount '}`n',
+                        A_ScriptDir "\debug-7432d8.log"
+                    ; #endregion
                     RunWait "powershell.exe -ExecutionPolicy Bypass -File `"" micVolumeScript "`"", , "Hide"
+                    ; #region agent log
+                    try FileAppend '{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H7","location":"Utils.ahk:CheckDictationRecordingWindow","message":"mic script RunWait end","data":{"elapsedMs":' (
+                        A_TickCount - micRunStart) '},"timestamp":' A_TickCount '}`n',
+                    A_ScriptDir "\debug-7432d8.log"
+                    ; #endregion
                 }
             } catch Error as e {
                 ; Silently handle errors - don't interrupt dictation if script fails
@@ -8542,6 +9005,11 @@ CheckDictationRecordingWindow() {
     }
     ; Handle Stop: window gone and was active
     else if (!windowExists && g_DictationActive) {
+        ; #region agent log
+        try FileAppend '{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H8","location":"Utils.ahk:CheckDictationRecordingWindow","message":"stop candidate","data":{"deltaSinceTransition":' (
+            A_TickCount - g_LastStateTransitionTick) ',"chimeScheduled":' (g_DictationCompletionChimeScheduled ? 1 : 0) '},"timestamp":' A_TickCount '}`n',
+        A_ScriptDir "\debug-7432d8.log"
+        ; #endregion
         Critical "On"
         if (!g_DictationActive || g_DictationCompletionChimeScheduled) {
             Critical "Off"
@@ -8549,11 +9017,21 @@ CheckDictationRecordingWindow() {
         }
 
         if (g_LastStateTransitionTick && (A_TickCount - g_LastStateTransitionTick < 500)) {
+            ; #region agent log
+            try FileAppend '{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H8","location":"Utils.ahk:CheckDictationRecordingWindow","message":"stop blocked by grace","data":{"deltaSinceTransition":' (
+                A_TickCount - g_LastStateTransitionTick) '},"timestamp":' A_TickCount '}`n',
+            A_ScriptDir "\debug-7432d8.log"
+            ; #endregion
             Critical "Off"
             return
         }
 
         g_DictationCompletionChimeScheduled := true
+        ; #region agent log
+        try FileAppend '{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H8","location":"Utils.ahk:CheckDictationRecordingWindow","message":"stop scheduled","data":{"deltaSinceTransition":' (
+            A_TickCount - g_LastStateTransitionTick) '},"timestamp":' A_TickCount '}`n',
+        A_ScriptDir "\debug-7432d8.log"
+        ; #endregion
         g_LastStateTransitionTick := A_TickCount
         g_DictationActive := false
         Critical "Off"
@@ -8644,8 +9122,17 @@ OnExit(CleanupDictationIndicator)
 {
     global g_DictationActive, g_LastStateTransitionTick, g_DictationStartSound
     global g_ProgrammaticDictationStop, g_PendingGeminiPromptAfterDictation
+    global g_DictationHotkeyIsOwner
     static lastHotkeyTick := 0
     static isProcessing := false
+
+    if (!g_DictationHotkeyIsOwner) {
+        ; #region agent log
+        try FileAppend '{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"' A_ScriptName '"},"timestamp":' A_TickCount '}`n',
+            A_ScriptDir "\debug-7432d8.log"
+        ; #endregion
+        return
+    }
 
     ; Skip when script sends #!+0 programmatically
     if (g_ProgrammaticDictationStop) {
@@ -8666,7 +9153,13 @@ OnExit(CleanupDictationIndicator)
     ; so by the time we reach if/else it can be false even when user intended to stop.
     dictationWasActiveOnKeyPress := g_DictationActive
 
+    keyWaitStart := A_TickCount
     KeyWait("0", "L")
+    ; #region agent log
+    try FileAppend '{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H6","location":"Utils.ahk:~#!+0","message":"key released","data":{"keyWaitMs":' (
+        A_TickCount - keyWaitStart) ',"dictationWasActiveOnKeyPress":' (dictationWasActiveOnKeyPress ? 1 : 0) '},"timestamp":' A_TickCount '}`n',
+    A_ScriptDir "\debug-7432d8.log"
+    ; #endregion
 
     if (!g_DictationActive) {
         g_DictationActive := true
@@ -8677,8 +9170,19 @@ OnExit(CleanupDictationIndicator)
 
         try {
             micVolumeScript := A_ScriptDir "\scripts\Set-MicVolume.ps1"
-            if (FileExist(micVolumeScript))
+            if (FileExist(micVolumeScript)) {
+                ; #region agent log
+                micRunStart := A_TickCount
+                try FileAppend '{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H7","location":"Utils.ahk:~#!+0","message":"mic script RunWait start","data":{"pathExists":1},"timestamp":' A_TickCount '}`n',
+                    A_ScriptDir "\debug-7432d8.log"
+                ; #endregion
                 RunWait "powershell.exe -ExecutionPolicy Bypass -File `"" micVolumeScript "`"", , "Hide"
+                ; #region agent log
+                try FileAppend '{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H7","location":"Utils.ahk:~#!+0","message":"mic script RunWait end","data":{"elapsedMs":' (
+                    A_TickCount - micRunStart) '},"timestamp":' A_TickCount '}`n',
+                A_ScriptDir "\debug-7432d8.log"
+                ; #endregion
+            }
         } catch {
         }
     }

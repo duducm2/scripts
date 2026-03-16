@@ -157,3 +157,5 @@
 {{sessionId:31b036,id:log_12326687_H4,timestamp:12326687,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_return_false,data:{{hypothesisId:H4}},runId:initial}}
 {{sessionId:31b036,id:log_12328671_H1,timestamp:12328671,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_entry,data:{{hypothesisId:H1}},runId:initial}}
 {{sessionId:31b036,id:log_12329250_H4,timestamp:12329250,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_return_false,data:{{hypothesisId:H4}},runId:initial}}
+{{sessionId:31b036,id:log_20245937_H1,timestamp:20245937,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_entry,data:{{hypothesisId:H1}},runId:initial}}
+{{sessionId:31b036,id:log_20246484_H2,timestamp:20246484,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_extension_match,data:{{hypothesisId:H2}},runId:initial}}
