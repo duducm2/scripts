@@ -1525,6 +1525,7 @@ class GeminiDelayedSubmitMonitor {
         }
         if !WinActive("ahk_id " this.GeminiHwnd) {
             try {
+                PlayPreMovementWarning("Gemini")
                 WinActivate("ahk_id " this.GeminiHwnd)
             } catch {
                 if (WinExist("ahk_id " this.OriginalHwnd))
@@ -1543,6 +1544,7 @@ class GeminiDelayedSubmitMonitor {
         if (readAloud)
             GeminiTriggerReadAloud(false, false)
         if (!skipRestoreFocus && WinExist("ahk_id " this.OriginalHwnd) && !WinActive("ahk_id " this.OriginalHwnd)) {
+            PlayPreMovementWarning("Original Window")
             WinActivate("ahk_id " this.OriginalHwnd)
             WinWaitActive("ahk_id " this.OriginalHwnd, , 0.5)
         }
@@ -1586,6 +1588,7 @@ class GeminiDelayedSubmitMonitor {
                 WinActivate("ahk_id " this.OriginalHwnd)
             return
         }
+        PlayPreMovementWarning("Cursor")
         CursorTransfer_ActivateFocusPaste(hwnd)
     }
 }

@@ -2380,6 +2380,17 @@ ShowCenteredOverlay_Utils(text, duration := 1500, bgColor := BANNER_ACCENT_INTER
 }
 
 ; =============================================================================
+; Helper: Pre-movement warning (sound + 3s delay) before automated window changes.
+; =============================================================================
+PlayPreMovementWarning(targetName) {
+    if (IsSoundEnabled()) {
+        try SoundPlay(A_ScriptDir . "\sounds\pre-movement.mp3")
+    }
+    ShowCenteredOverlay_Utils("✋ Hands off! Moving to " . targetName . "...", 3000, BANNER_ACCENT_INTERMEDIATE)
+    Sleep 3000
+}
+
+; =============================================================================
 ; Standard loading bar (monitor-aware, show/update/hide lifecycle)
 ; Use for long-running shortcuts; replace ad-hoc banners/overlays with this.
 ; Supports passive (text-only) mode and ShowWithKeys for letter-keystroke commands.
@@ -2915,6 +2926,9 @@ class D2C_FlowManager {
         StandardLoadingBar_Hide(0)
         HideDictationIndicator()
 
+        ; Pre-movement warning before activating Gemini for paste.
+        PlayPreMovementWarning("Gemini")
+
         ; Paste to Gemini (launches Chrome if needed); then capture active window as Gemini.
         GeminiNavigateFocusAndPasteFirstSnippet("", false)
         this.GeminiHwnd := WinExist("A")
@@ -2938,8 +2952,10 @@ class D2C_FlowManager {
         }
 
         ; Return focus
-        if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+        if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd)) {
+            PlayPreMovementWarning("Original Window")
             WinActivate("ahk_id " this.OriginHwnd)
+        }
 
         if (!autoSubmit)
             this.Reset()
@@ -3161,6 +3177,7 @@ class D2C_FlowManager {
         }
 
         if (!WinActive("ahk_id " this.GeminiHwnd)) {
+            PlayPreMovementWarning("Gemini")
             try WinActivate("ahk_id " this.GeminiHwnd)
             catch {
                 ; #region agent log
@@ -3289,6 +3306,7 @@ class D2C_FlowManager {
 
         if (!skipRestoreFocus && this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd) && !WinActive("ahk_id " this.OriginHwnd
         )) {
+            PlayPreMovementWarning("Original Window")
             WinActivate("ahk_id " this.OriginHwnd)
             WinWaitActive("ahk_id " this.OriginHwnd, , 0.5)
         }
@@ -3333,6 +3351,7 @@ class D2C_FlowManager {
                 return
             }
 
+            PlayPreMovementWarning("Cursor")
             CursorTransfer_ActivateFocusPaste(this.CursorHwnd)
         } finally {
             this.Reset()
