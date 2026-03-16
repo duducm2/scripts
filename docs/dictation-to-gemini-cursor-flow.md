@@ -47,6 +47,16 @@ flowchart TB
     SelectWin --> ActivatePaste["ActivateFocusPaste ^v Enter"]
 ```
 
+## Pre-movement cue behavior
+
+- **When the cue plays**:  
+  - A 2-second pre-movement cue (sound + centered overlay \"✋ Hands off! Moving to Gemini...\") plays **only once**, when the flow first moves focus from the original trigger window to Gemini (Original → Gemini).
+- **When the cue does not play**:  
+  - **Returns** from Gemini or Cursor back to the original trigger window are **immediate** (no sound cue, no added delay).  
+  - Transitions between non-original windows (e.g., Gemini → Cursor during transfer) also run **without** the pre-movement cue.
+
+The cue is purely a synchronization guard rail for the first automated jump away from the window where the user initiated the flow; it does **not** change which windows are ultimately activated or the order in which they are activated.
+
 ## Where the user can stop the flow
 
 | Step | Banner                                 | Actions                                                                       | Effect                                                                              |

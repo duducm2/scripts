@@ -1523,9 +1523,10 @@ class GeminiDelayedSubmitMonitor {
                 WinActivate("ahk_id " this.OriginalHwnd)
             return
         }
+        ; If Gemini is not active when the monitor fires, just activate it directly (no warning:
+        ; this is not an Original → Gemini transition anymore).
         if !WinActive("ahk_id " this.GeminiHwnd) {
             try {
-                PlayPreMovementWarning("Gemini")
                 WinActivate("ahk_id " this.GeminiHwnd)
             } catch {
                 if (WinExist("ahk_id " this.OriginalHwnd))
@@ -1543,8 +1544,8 @@ class GeminiDelayedSubmitMonitor {
             PlayCopyCompletedChime()
         if (readAloud)
             GeminiTriggerReadAloud(false, false)
+        ; Gemini/Clipboard → Original: return transitions are immediate (no warning).
         if (!skipRestoreFocus && WinExist("ahk_id " this.OriginalHwnd) && !WinActive("ahk_id " this.OriginalHwnd)) {
-            PlayPreMovementWarning("Original Window")
             WinActivate("ahk_id " this.OriginalHwnd)
             WinWaitActive("ahk_id " this.OriginalHwnd, , 0.5)
         }
@@ -1588,7 +1589,7 @@ class GeminiDelayedSubmitMonitor {
                 WinActivate("ahk_id " this.OriginalHwnd)
             return
         }
-        PlayPreMovementWarning("Cursor")
+        ; Gemini → Cursor: no pre-movement warning (source is not Original).
         CursorTransfer_ActivateFocusPaste(hwnd)
     }
 }
