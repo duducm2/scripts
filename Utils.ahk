@@ -6193,14 +6193,41 @@ PeekPdf_ResolvePeekExePath() {
     exePath := PeekPdf_NormalizePath(exePath)
     if (exePath != "" && FileExist(exePath))
         return exePath
-    envExe := GetPeekExePath()
+    ; Legacy: this previously used GetPeekExePath() and PowerToys Peek.
+    ; QuickLook is now the primary study viewer; for compatibility, fall back to QuickLook.
+    envExe := GetQuickLookExePath()
     if (FileExist(envExe))
         return envExe
-    return "peek.exe"
+    return "QuickLook.exe"
+}
+
+QuickLook_GetIniPath() {
+    return A_ScriptDir "\data\quicklook.ini"
+}
+
+QuickLook_NormalizePath(path) {
+    path := Trim(path)
+    q := Chr(34)
+    if (SubStr(path, 1, 1) = q && SubStr(path, -1) = q)
+        path := SubStr(path, 2, StrLen(path) - 2)
+    return Trim(path)
+}
+
+QuickLook_ResolveExePath() {
+    iniPath := QuickLook_GetIniPath()
+    exePath := ""
+    try exePath := IniRead(iniPath, "QuickLook", "ExePath", "")
+    exePath := QuickLook_NormalizePath(exePath)
+    if (exePath != "" && FileExist(exePath))
+        return exePath
+    envExe := GetQuickLookExePath()
+    if (FileExist(envExe))
+        return envExe
+    return "QuickLook.exe"
 }
 
 QuickLook_OpenPath(path) {
-    quickLookExe := "C:\QuickLook\QuickLook.exe"
+    quickLookExe := QuickLook_ResolveExePath()
     if (!FileExist(quickLookExe)) {
         try ShowCenteredOverlay_Utils("❌ QuickLook executable not found: " quickLookExe, 2500, BANNER_ACCENT_ERROR)
         return
