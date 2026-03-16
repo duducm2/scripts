@@ -59,6 +59,8 @@ flowchart TB
 
 These cues are synchronization guard rails that appear only when the script is about to take control of focus for a significant action (sending to Gemini or copying Gemini's response); they do **not** change which windows are ultimately activated or the order in which they are activated.
 
+For a complete list of where Hand Off audio cues are used, see `docs/hand_off_warning_cues.md`.
+
 ## Where the user can stop the flow
 
 | Step | Banner                                 | Actions                                                                       | Effect                                                                              |
