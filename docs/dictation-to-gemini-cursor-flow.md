@@ -7,7 +7,8 @@
    If no action is taken within 6 seconds, **Y** (yes) is selected by default. When the script moves focus from the original window to Gemini to perform this paste, it first shows a **2-second “✋ Hands off!” pre-movement cue** so you can stop typing before the automated transition.
 4. **If you chose Y**, after Gemini responds you see **Copy response?**  
    **Y** = copy. **C** = send to Cursor. **R** = read aloud. **N** = cancel (flow ends).  
-   If no action is taken within 6 seconds, **N** (no) is selected by default and `DoCopyOnTimeout` may still copy Gemini's response in the background **without an additional “Hands off” cue**, because the flow is already operating in Gemini rather than jumping away from the original window.
+   If you press **Y**, a 2-second **“✋ Hands off!”** cue plays before the script copies the last Gemini response.  
+   If no action is taken within 6 seconds, **N** (no) is selected by default and `DoCopyOnTimeout` will still copy Gemini's response after playing the same 2-second **“✋ Hands off!”** cue, because the script is about to take control of focus to complete the copy.
 
 Pressing **N** at any banner terminates the whole flow.
 
@@ -50,12 +51,13 @@ flowchart TB
 ## Pre-movement cue behavior
 
 - **When the cue plays**:  
-  - A 2-second pre-movement cue (sound + centered overlay \"✋ Hands off! Moving to Gemini...\") plays **only once**, when the flow first moves focus from the original trigger window to Gemini (Original → Gemini).
+  - A 2-second pre-movement cue (sound + centered overlay \"✋ Hands off!\" warning) plays when the flow first moves focus from the original trigger window to Gemini (Original → Gemini) to submit the prompt.  
+  - The same 2-second cue also plays right before copying Gemini's last response, whether you press **Y** at **Copy response?** or the banner times out and `DoCopyOnTimeout` runs.
 - **When the cue does not play**:  
   - **Returns** from Gemini or Cursor back to the original trigger window are **immediate** (no sound cue, no added delay).  
   - Transitions between non-original windows (e.g., Gemini → Cursor during transfer) also run **without** the pre-movement cue.
 
-The cue is purely a synchronization guard rail for the first automated jump away from the window where the user initiated the flow; it does **not** change which windows are ultimately activated or the order in which they are activated.
+These cues are synchronization guard rails that appear only when the script is about to take control of focus for a significant action (sending to Gemini or copying Gemini's response); they do **not** change which windows are ultimately activated or the order in which they are activated.
 
 ## Where the user can stop the flow
 

@@ -3164,6 +3164,9 @@ class D2C_FlowManager {
         A_ScriptDir "\debug-7432d8.log"
         ; #endregion
 
+        ; Hands off cue before copying Gemini's last response (applies to both manual Y/R/C and timeout auto-copy).
+        PlayPreMovementWarning("Gemini")
+
         if (!WinExist("ahk_id " this.GeminiHwnd)) {
             ; #region agent log
             try FileAppend '{"sessionId":"7432d8","hypothesisId":"HC","location":"Utils.ahk:D2C.DoCopyCore","message":"early return: no GeminiHwnd","data":{"geminiHwnd":' this
