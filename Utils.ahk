@@ -6054,7 +6054,7 @@ ShowStudyTopicSelector() {
     g_StudyTopicSelectorGui.MarginY := 15
 
     g_StudyTopicSelectorGui.SetFont("s14 cCDD6F4 Bold", "Segoe UI")
-    g_StudyTopicSelectorGui.Add("Text", "w280 Center", "📚 Study topic (Peek)")
+    g_StudyTopicSelectorGui.Add("Text", "w280 Center", "📚 Study topic (QuickLook)")
     g_StudyTopicSelectorGui.Add("Text", "w280 h1 Background45475A")
 
     g_StudyTopicSelectorGui.SetFont("s12 cCDD6F4", "Segoe UI")
@@ -6136,17 +6136,17 @@ StudyTopicSelector_HandleKey(key) {
         return
     }
     fullPath := RTrim(basePath, "\") . topic.path
-    if (!FileExist(fullPath)) {
-        try ShowCenteredOverlay_Utils("❌ PDF not found: " fullPath, 3500, BANNER_ACCENT_ERROR)
+    ; Derive Markdown path from the PDF path by replacing the extension.
+    if (StrLower(SubStr(fullPath, -3)) = "pdf") {
+        mdPath := SubStr(fullPath, 1, StrLen(fullPath) - 3) . "md"
+    } else {
+        mdPath := fullPath
+    }
+    if (!FileExist(mdPath)) {
+        try ShowCenteredOverlay_Utils("❌ Markdown not found: " mdPath, 3500, BANNER_ACCENT_ERROR)
         return
     }
-    peekExe := PeekPdf_ResolvePeekExePath()
-    if (!FileExist(peekExe)) {
-        try ShowCenteredOverlay_Utils("❌ Peek executable not found.", 2500, BANNER_ACCENT_ERROR)
-        return
-    }
-    skipLast := topic.HasProp("skipLastPage") && topic.skipLastPage
-    PeekPdf_OpenPath(fullPath, skipLast)
+    QuickLook_OpenPath(mdPath)
 }
 
 StudyTopicSelector_Cancel(*) {
@@ -6197,6 +6197,33 @@ PeekPdf_ResolvePeekExePath() {
     if (FileExist(envExe))
         return envExe
     return "peek.exe"
+}
+
+QuickLook_OpenPath(path) {
+    quickLookExe := "C:\QuickLook\QuickLook.exe"
+    if (!FileExist(quickLookExe)) {
+        try ShowCenteredOverlay_Utils("❌ QuickLook executable not found: " quickLookExe, 2500, BANNER_ACCENT_ERROR)
+        return
+    }
+    if (!FileExist(path)) {
+        try ShowCenteredOverlay_Utils("❌ Markdown not found: " path, 3500, BANNER_ACCENT_ERROR)
+        return
+    }
+    try {
+        Run('"' quickLookExe '" "' path '"')
+    } catch as e {
+        try ShowCenteredOverlay_Utils("❌ Failed to open QuickLook: " e.Message, 3000, BANNER_ACCENT_ERROR)
+        return
+    }
+    if WinWait("ahk_exe QuickLook.exe", , 2) {
+        hwnd := WinExist("ahk_exe QuickLook.exe")
+        if (hwnd) {
+            MoveWindowToMonitor(hwnd, 2)
+            WinMaximize("ahk_id " hwnd)
+            EnableFocusMode()
+            StartPdfFocusMonitor(hwnd)
+        }
+    }
 }
 
 ; Open a specific PDF in PowerToys Peek and run WaitAndConfigure. Caller must validate pdfPath and exe exist.
@@ -6494,9 +6521,7 @@ PeekPdf_WaitAndConfigure(skipGoToLastPage := false) {
 
 #!+x::
 {
-    hwnd := WinExist("ahk_exe PowerToys.Peek.UI.exe")
-    if !hwnd
-        hwnd := WinExist("Peek")
+    hwnd := WinExist("ahk_exe QuickLook.exe")
     if hwnd {
         try {
             WinShow("ahk_id " hwnd)

@@ -1,0 +1,54 @@
+{"sessionId":"5cdde7","hypothesisId":"H7","location":"Utils.ahk:CloseKeysOverlay","message":"cancelling timeout","data":{"hasTimer":false},"timestamp":28244828}
+{"sessionId":"5cdde7","hypothesisId":"H7","location":"Utils.ahk:CloseKeysOverlay","message":"cancelling timeout","data":{"hasTimer":false},"timestamp":28268375}
+{"sessionId":"5cdde7","hypothesisId":"H1","location":"Utils.ahk:RegisterKeyHandler","message":"key registered","data":{"key":"*N"},"timestamp":28268406}
+{"sessionId":"5cdde7","hypothesisId":"H1","location":"Utils.ahk:RegisterKeyHandler","message":"key registered","data":{"key":"*S"},"timestamp":28268421}
+{"sessionId":"5cdde7","hypothesisId":"H1","location":"Utils.ahk:RegisterKeyHandler","message":"key registered","data":{"key":"*Y"},"timestamp":28268421}
+{"sessionId":"5cdde7","hypothesisId":"H6","location":"Utils.ahk:ShowWithKeys","message":"timeout timer set","data":{"timeoutMs":6000,"timerId":},"timestamp":28268437}
+{"sessionId":"5cdde7","hypothesisId":"H2","location":"Utils.ahk:KeyWrapper","message":"KeyWrapper entered","data":{"key":"Y"},"timestamp":28269140}
+{"sessionId":"5cdde7","hypothesisId":"H4","location":"Utils.ahk:KeyWrapper","message":"calling cb","data":{"key":"Y"},"timestamp":28269140}
+{"sessionId":"5cdde7","hypothesisId":"H7","location":"Utils.ahk:CloseKeysOverlay","message":"cancelling timeout","data":{"hasTimer":false},"timestamp":28269156}
+{"sessionId":"5cdde7","hypothesisId":"H7","location":"Utils.ahk:CloseKeysOverlay","message":"cancelling timeout","data":{"hasTimer":false},"timestamp":28273203}
+{"sessionId":"5cdde7","hypothesisId":"H3","location":"Utils.ahk:KeyWrapper","message":"after CloseKeysOverlay","data":{"key":"Y"},"timestamp":28273203}
+{"sessionId":"5cdde7","hypothesisId":"H8","location":"Utils.ahk:KeysTimeoutFired","message":"timeout fired","data":{},"timestamp":28274437}
+{"sessionId":"5cdde7","hypothesisId":"H7","location":"Utils.ahk:CloseKeysOverlay","message":"cancelling timeout","data":{"hasTimer":false},"timestamp":28274453}
+{"sessionId":"5cdde7","hypothesisId":"H7","location":"Utils.ahk:CloseKeysOverlay","message":"cancelling timeout","data":{"hasTimer":false},"timestamp":28400734}
+{"sessionId":"5cdde7","hypothesisId":"H7","location":"Utils.ahk:CloseKeysOverlay","message":"cancelling timeout","data":{"hasTimer":false},"timestamp":28402203}
+{"sessionId":"5cdde7","hypothesisId":"H7","location":"Utils.ahk:CloseKeysOverlay","message":"cancelling timeout","data":{"hasTimer":false},"timestamp":28404031}
+{"sessionId":"5cdde7","hypothesisId":"H7","location":"Utils.ahk:CloseKeysOverlay","message":"cancelling timeout","data":{"hasTimer":false},"timestamp":28421593}
+{"sessionId":"5cdde7","hypothesisId":"H1","location":"Utils.ahk:RegisterKeyHandler","message":"key registered","data":{"key":"*C"},"timestamp":28421687}
+{"sessionId":"5cdde7","hypothesisId":"H1","location":"Utils.ahk:RegisterKeyHandler","message":"key registered","data":{"key":"*N"},"timestamp":28421687}
+{"sessionId":"5cdde7","hypothesisId":"H1","location":"Utils.ahk:RegisterKeyHandler","message":"key registered","data":{"key":"*R"},"timestamp":28421703}
+{"sessionId":"5cdde7","hypothesisId":"H1","location":"Utils.ahk:RegisterKeyHandler","message":"key registered","data":{"key":"*Y"},"timestamp":28421718}
+{"sessionId":"5cdde7","hypothesisId":"H6","location":"Utils.ahk:ShowWithKeys","message":"timeout timer set","data":{"timeoutMs":5000,"timerId":},"timestamp":28421734}
+{"sessionId":"5cdde7","hypothesisId":"H7","location":"Utils.ahk:CloseKeysOverlay","message":"cancelling timeout","data":{"hasTimer":false},"timestamp":28422093}
+{"sessionId":"5cdde7","hypothesisId":"H1","location":"Utils.ahk:RegisterKeyHandler","message":"key registered","data":{"key":"*C"},"timestamp":28422156}
+{"sessionId":"5cdde7","hypothesisId":"H1","location":"Utils.ahk:RegisterKeyHandler","message":"key registered","data":{"key":"*N"},"timestamp":28422156}
+{"sessionId":"5cdde7","hypothesisId":"H1","location":"Utils.ahk:RegisterKeyHandler","message":"key registered","data":{"key":"*R"},"timestamp":28422187}
+{"sessionId":"5cdde7","hypothesisId":"H1","location":"Utils.ahk:RegisterKeyHandler","message":"key registered","data":{"key":"*Y"},"timestamp":28422203}
+{"sessionId":"5cdde7","hypothesisId":"H6","location":"Utils.ahk:ShowWithKeys","message":"timeout timer set","data":{"timeoutMs":5000,"timerId":},"timestamp":28422203}
+{"sessionId":"5cdde7","hypothesisId":"H2","location":"Utils.ahk:KeyWrapper","message":"KeyWrapper entered","data":{"key":"N"},"timestamp":28424890}
+{"sessionId":"5cdde7","hypothesisId":"H4","location":"Utils.ahk:KeyWrapper","message":"calling cb","data":{"key":"N"},"timestamp":28424890}
+{"sessionId":"5cdde7","hypothesisId":"H7","location":"Utils.ahk:CloseKeysOverlay","message":"cancelling timeout","data":{"hasTimer":false},"timestamp":28424906}
+{"sessionId":"5cdde7","hypothesisId":"H7","location":"Utils.ahk:CloseKeysOverlay","message":"cancelling timeout","data":{"hasTimer":false},"timestamp":28424937}
+{"sessionId":"5cdde7","hypothesisId":"H3","location":"Utils.ahk:KeyWrapper","message":"after CloseKeysOverlay","data":{"key":"N"},"timestamp":28424937}
+{"sessionId":"5cdde7","hypothesisId":"H8","location":"Utils.ahk:KeysTimeoutFired","message":"timeout fired","data":{},"timestamp":28426734}
+{"sessionId":"5cdde7","hypothesisId":"H7","location":"Utils.ahk:CloseKeysOverlay","message":"cancelling timeout","data":{"hasTimer":false},"timestamp":28426765}
+{"sessionId":"5cdde7","hypothesisId":"H7","location":"Utils.ahk:CloseKeysOverlay","message":"cancelling timeout","data":{"hasTimer":false},"timestamp":28427218}
+{"sessionId":"5cdde7","hypothesisId":"H7","location":"Utils.ahk:CloseKeysOverlay","message":"cancelling timeout","data":{"hasTimer":false},"timestamp":28428921}
+{"sessionId":"5cdde7","hypothesisId":"H7","location":"Utils.ahk:CloseKeysOverlay","message":"cancelling timeout","data":{"hasTimer":false},"timestamp":28459015}
+{"sessionId":"5cdde7","hypothesisId":"H1","location":"Utils.ahk:RegisterKeyHandler","message":"key registered","data":{"key":"*N"},"timestamp":28459046}
+{"sessionId":"5cdde7","hypothesisId":"H1","location":"Utils.ahk:RegisterKeyHandler","message":"key registered","data":{"key":"*S"},"timestamp":28459046}
+{"sessionId":"5cdde7","hypothesisId":"H1","location":"Utils.ahk:RegisterKeyHandler","message":"key registered","data":{"key":"*Y"},"timestamp":28459062}
+{"sessionId":"5cdde7","hypothesisId":"H6","location":"Utils.ahk:ShowWithKeys","message":"timeout timer set","data":{"timeoutMs":6000,"timerId":},"timestamp":28459078}
+{"sessionId":"5cdde7","hypothesisId":"H2","location":"Utils.ahk:KeyWrapper","message":"KeyWrapper entered","data":{"key":"Y"},"timestamp":28459734}
+{"sessionId":"5cdde7","hypothesisId":"H4","location":"Utils.ahk:KeyWrapper","message":"calling cb","data":{"key":"Y"},"timestamp":28459734}
+{"sessionId":"5cdde7","hypothesisId":"H7","location":"Utils.ahk:CloseKeysOverlay","message":"cancelling timeout","data":{"hasTimer":false},"timestamp":28459750}
+{"sessionId":"5cdde7","hypothesisId":"H7","location":"Utils.ahk:CloseKeysOverlay","message":"cancelling timeout","data":{"hasTimer":false},"timestamp":28463671}
+{"sessionId":"5cdde7","hypothesisId":"H3","location":"Utils.ahk:KeyWrapper","message":"after CloseKeysOverlay","data":{"key":"Y"},"timestamp":28463671}
+{"sessionId":"5cdde7","hypothesisId":"H8","location":"Utils.ahk:KeysTimeoutFired","message":"timeout fired","data":{},"timestamp":28465140}
+{"sessionId":"5cdde7","hypothesisId":"H7","location":"Utils.ahk:CloseKeysOverlay","message":"cancelling timeout","data":{"hasTimer":false},"timestamp":28465140}
+{"sessionId":"5cdde7","hypothesisId":"H8","location":"Utils.ahk:KeysTimeoutFired","message":"timeout fired","data":{},"timestamp":28476968}
+{"sessionId":"5cdde7","hypothesisId":"H7","location":"Utils.ahk:CloseKeysOverlay","message":"cancelling timeout","data":{"hasTimer":false},"timestamp":28476984}
+{"sessionId":"5cdde7","hypothesisId":"H7","location":"Utils.ahk:CloseKeysOverlay","message":"cancelling timeout","data":{"hasTimer":false},"timestamp":28478796}
+{"sessionId":"5cdde7","hypothesisId":"H7","location":"Utils.ahk:CloseKeysOverlay","message":"cancelling timeout","data":{"hasTimer":false},"timestamp":28478875}
+{"sessionId":"5cdde7","hypothesisId":"H3","location":"Utils.ahk:KeyWrapper","message":"after CloseKeysOverlay","data":{"key":"C"},"timestamp":28478890}
