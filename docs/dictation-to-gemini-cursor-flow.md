@@ -4,10 +4,10 @@
 2. **Finish dictating** (second press of `~#!+0` or stop manually).
 3. **First banner — Send to Gemini?**  
    **Y** = paste and auto-send (Enter) to Gemini. **S** = paste only (no Enter). **N** = cancel (flow ends).  
-   If no action is taken within 6 seconds, **Y** (yes) is selected by default.
+   If no action is taken within 6 seconds, **Y** (yes) is selected by default. When the script moves focus from the original window to Gemini to perform this paste, it first shows a **2-second “✋ Hands off!” pre-movement cue** so you can stop typing before the automated transition.
 4. **If you chose Y**, after Gemini responds you see **Copy response?**  
    **Y** = copy. **C** = send to Cursor. **R** = read aloud. **N** = cancel (flow ends).  
-   If no action is taken within 6 seconds, **N** (no) is selected by default.
+   If no action is taken within 6 seconds, **N** (no) is selected by default and `DoCopyOnTimeout` may still copy Gemini's response in the background **without an additional “Hands off” cue**, because the flow is already operating in Gemini rather than jumping away from the original window.
 
 Pressing **N** at any banner terminates the whole flow.
 
