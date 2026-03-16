@@ -3073,9 +3073,17 @@ class D2C_FlowManager {
     }
 
     ExecuteAction(readAloud := false, skipRestoreFocus := false) {
+        ; #region agent log
+        try FileAppend '{"sessionId":"7432d8","runId":"step2-debug","hypothesisId":"H10","location":"Utils.ahk:D2C.ExecuteAction","message":"entry","data":{"phase":"' this
+            .CurrentPhase '","readAloud":' (readAloud ? 1 : 0) ',"skipRestoreFocus":' (skipRestoreFocus ? 1 : 0) '},"timestamp":' A_TickCount '}`n',
+            A_ScriptDir "\debug-7432d8.log"
+        ; #endregion
         this.CleanupActionPrompt()
-        this.DoCopyCore(readAloud, skipRestoreFocus)
-        this.Reset()
+        try {
+            this.DoCopyCore(readAloud, skipRestoreFocus)
+        } finally {
+            this.Reset()
+        }
     }
 
     DoCopyCore(readAloud := false, skipRestoreFocus := false) {
@@ -3083,7 +3091,12 @@ class D2C_FlowManager {
             return
         this.HasCopiedForThisResponse := true
 
-        Func("GeminiStateInvalidate").Call()
+        ; #region agent log
+        try FileAppend '{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H9","location":"Utils.ahk:D2C.DoCopyCore","message":"entry","data":{"readAloud":' (
+            readAloud ? 1 : 0) ',"skipRestoreFocus":' (skipRestoreFocus ? 1 : 0) '},"timestamp":' A_TickCount '}`n',
+        A_ScriptDir "\debug-7432d8.log"
+        ; #endregion
+
         if (!WinExist("ahk_id " this.GeminiHwnd)) {
             if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
                 WinActivate("ahk_id " this.OriginHwnd)
@@ -3104,12 +3117,60 @@ class D2C_FlowManager {
             }
         }
 
-        copyOpt := { restoreWindow: false, playChimeAndNotify: false, alreadyActive: true }
-        if (Func("CopyLastGeminiMessageWithRetry").Call(copyOpt, this.GeminiHwnd))
-            Func("PlayCopyCompletedChime").Call()
+        if (readAloud) {
+            ; Reuse existing global Gemini read-aloud hotkey path (#!+o).
+            Send("#!+o")
+        } else {
+            clipBefore := A_Clipboard
+            WM_COPY_LAST_GEMINI := 0x8001
+            targetHwnd := 0
+            prevMatch := A_TitleMatchMode
+            DetectHiddenWindows(true)
+            SetTitleMatchMode(2)
 
-        if (readAloud)
-            Func("GeminiTriggerReadAloud").Call(false, false)
+            for hwnd in WinGetList("ahk_exe AutoHotkey64.exe") {
+                try {
+                    if (InStr(WinGetTitle("ahk_id " hwnd), "Gemini.ahk")) {
+                        targetHwnd := hwnd
+                        break
+                    }
+                } catch {
+                    continue
+                }
+            }
+            if (!targetHwnd) {
+                for hwnd in WinGetList("ahk_exe AutoHotkey32.exe") {
+                    try {
+                        if (InStr(WinGetTitle("ahk_id " hwnd), "Gemini.ahk")) {
+                            targetHwnd := hwnd
+                            break
+                        }
+                    } catch {
+                        continue
+                    }
+                }
+            }
+
+            if (targetHwnd) {
+                try PostMessage(WM_COPY_LAST_GEMINI, 0, 0, , "ahk_id " targetHwnd)
+                loop 40 {
+                    Sleep(50)
+                    if (A_Clipboard != clipBefore && Trim(A_Clipboard) != "")
+                        break
+                }
+                if (IsSoundEnabled())
+                    try SoundPlay(A_ScriptDir . "\sounds\copy.wav")
+            } else {
+                ; #region agent log
+                try FileAppend '{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H9","location":"Utils.ahk:D2C.DoCopyCore","message":"gemini process not found for copy IPC","data":{},"timestamp":' A_TickCount '}`n',
+                    A_ScriptDir "\debug-7432d8.log"
+                ; #endregion
+                ShowCenteredOverlay_Utils("❌ Gemini.ahk not running", 2000, BANNER_ACCENT_ERROR)
+            }
+
+            SetTitleMatchMode(prevMatch)
+            DetectHiddenWindows(false)
+        }
 
         if (!skipRestoreFocus && this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd) && !WinActive("ahk_id " this.OriginHwnd
         )) {
@@ -3121,35 +3182,41 @@ class D2C_FlowManager {
     ; --- Phase 5: Cursor Transfer ---
 
     PromptForCursorTransfer() {
+        ; #region agent log
+        try FileAppend '{"sessionId":"7432d8","runId":"step2-debug","hypothesisId":"H11","location":"Utils.ahk:D2C.PromptForCursorTransfer","message":"entry","data":{"phase":"' this
+            .CurrentPhase '"},"timestamp":' A_TickCount '}`n',
+            A_ScriptDir "\debug-7432d8.log"
+        ; #endregion
         this.CurrentPhase := "Transferring"
         this.CleanupActionPrompt()
-        ; Skip restoring focus so clipboard is not overwritten
-        this.DoCopyCore(false, true)
+        try {
+            ; Skip restoring focus so clipboard is not overwritten
+            this.DoCopyCore(false, true)
 
-        clip := Trim(A_Clipboard)
-        if (clip = "" || StrLen(clip) < 10) {
-            Sleep 120
             clip := Trim(A_Clipboard)
-        }
+            if (clip = "" || StrLen(clip) < 10) {
+                Sleep 120
+                clip := Trim(A_Clipboard)
+            }
 
-        if (clip = "" || StrLen(clip) < 10) {
-            ShowCenteredOverlay_Utils("❌ Copy failed or empty – try again", 2000, BANNER_ACCENT_ERROR)
-            if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
-                WinActivate("ahk_id " this.OriginHwnd)
+            if (clip = "" || StrLen(clip) < 10) {
+                ShowCenteredOverlay_Utils("❌ Copy failed or empty – try again", 2000, BANNER_ACCENT_ERROR)
+                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                    WinActivate("ahk_id " this.OriginHwnd)
+                return
+            }
+
+            this.CursorHwnd := CursorTransfer_ShowWindowSelector(this.OriginHwnd)
+            if (!this.CursorHwnd) {
+                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                    WinActivate("ahk_id " this.OriginHwnd)
+                return
+            }
+
+            CursorTransfer_ActivateFocusPaste(this.CursorHwnd)
+        } finally {
             this.Reset()
-            return
         }
-
-        this.CursorHwnd := CursorTransfer_ShowWindowSelector(this.OriginHwnd)
-        if (!this.CursorHwnd) {
-            if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
-                WinActivate("ahk_id " this.OriginHwnd)
-            this.Reset()
-            return
-        }
-
-        CursorTransfer_ActivateFocusPaste(this.CursorHwnd)
-        this.Reset()
     }
 
     ; --- Helpers ---

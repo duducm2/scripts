@@ -863,7 +863,7 @@ CopyLastGeminiMessageToClipboard(options := "", geminiHwnd := 0) {
         return false
     }
 }
-
+r
 ; Win+Alt+Shift+P : Click the last Copy button in Gemini (activates Gemini, scrolls to bottom with Ctrl+End, then copies last response)
 ; Works in EN ("Copy") and PT ("Copiar") UI. Uses tree order: last Copy button in the UI tree = last response.
 #!+p:: {
