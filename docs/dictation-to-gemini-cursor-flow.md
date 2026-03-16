@@ -49,11 +49,11 @@ flowchart TB
 
 ## Where the user can stop the flow
 
-| Step | Banner                                 | Actions                                                                                                      | Effect                                                                              |
-| ---- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
-| 1    | **Send to Gemini?** (6s)               | **Y** or timeout = send. **S** = paste only. **N** = cancel.                                                 | N ends flow; S = paste only; Y/timeout = paste + Enter, then Copy response? banner. |
-| 2    | **Copy response?** (5s)                | **Y** = copy. **C** = transfer to Cursor. **R** = read aloud. **N** = cancel. | N ends flow. Y/C/R/timeout perform their action.                                    |
-| 3    | **Transfer to Cursor** (window picker) | **N** or **Esc** = cancel. **1–9** = paste to that window.                                                   | Cancel = no paste to Cursor.                                                        |
+| Step | Banner                                 | Actions                                                                       | Effect                                                                              |
+| ---- | -------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| 1    | **Send to Gemini?** (6s)               | **Y** or timeout = send. **S** = paste only. **N** = cancel.                  | N ends flow; S = paste only; Y/timeout = paste + Enter, then Copy response? banner. |
+| 2    | **Copy response?** (5s)                | **Y** = copy. **C** = transfer to Cursor. **R** = read aloud. **N** = cancel. **Timeout** = DoCopyOnTimeout. | N ends flow. Y/C/R/timeout perform their action.                                    |
+| 3    | **Transfer to Cursor** (window picker) | **N** or **Esc** = cancel. **1–9** = paste to that window.                    | Cancel = no paste to Cursor.                                                        |
 
 ## Hotkeys
 

@@ -1618,10 +1618,30 @@ CursorTransfer_SortWindowsByProjectOrder(&arr) {
         while (j >= 1) {
             left := arr[j]
             shouldShift := false
-            if (left.projectOrder > key.projectOrder) {
+            ; Coerce to integer so comparison never sees a string (projectOrder can be string from g_Projects).
+            try
+                leftOrd := Integer(left.projectOrder)
+            catch
+                leftOrd := 0
+            try
+                keyOrd := Integer(key.projectOrder)
+            catch
+                keyOrd := 0
+            if (leftOrd > keyOrd) {
                 shouldShift := true
-            } else if (left.projectOrder = key.projectOrder && left.displayName > key.displayName) {
-                shouldShift := true
+            } else if (leftOrd = keyOrd) {
+                leftName := ""
+                keyName := ""
+                try
+                    leftName := String(left.displayName)
+                catch
+                    leftName := ""
+                try
+                    keyName := String(key.displayName)
+                catch
+                    keyName := ""
+                if (StrCompare(leftName, keyName) > 0)
+                    shouldShift := true
             }
             if (!shouldShift)
                 break
@@ -1659,7 +1679,10 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
     try {
         for hwnd in WinGetList("ahk_exe Cursor.exe") {
             try {
-                list.Push({ hwnd: hwnd, title: WinGetTitle("ahk_id " hwnd) })
+                title := WinGetTitle("ahk_id " hwnd)
+                if (title = "" || InStr(StrLower(title), "preview"))
+                    continue
+                list.Push({ hwnd: hwnd, title: title })
                 if (list.Length >= 9)
                     break
             } catch {
@@ -1669,6 +1692,10 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
     } catch {
     }
     DetectHiddenWindows false
+    ; #region agent log
+    try FileAppend '{"sessionId":"7432d8","hypothesisId":"HC","location":"Utils.ahk:CursorTransfer_ShowWindowSelector","message":"after enum","data":{"listLen":' list
+        .Length '},"timestamp":' A_TickCount '}`n', A_ScriptDir "\debug-7432d8.log"
+    ; #endregion
     if (list.Length = 0) {
         ShowCenteredOverlay_Utils("❌ No Cursor windows found", 2000, BANNER_ACCENT_ERROR)
         return 0
@@ -1678,7 +1705,7 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
     for w in list {
         winTitle := w.title ? w.title : ""
         projectIndex := CursorTransfer_GetMatchingProjectIndex(w.hwnd, winTitle)
-        projectOrder := projectIndex > 0 ? projectIndex : 10000 + enriched.Length
+        projectOrder := Integer(projectIndex > 0 ? projectIndex : 10000 + enriched.Length)
         projName := ""
         if (projectIndex > 0) {
             try {
@@ -1702,86 +1729,86 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
             hotkeyChar: ""
         })
     }
+    ; #region agent log
+    try FileAppend '{"sessionId":"7432d8","hypothesisId":"HC","location":"Utils.ahk:CursorTransfer_ShowWindowSelector","message":"enriched","data":{"enrichedLen":' enriched
+        .Length '},"timestamp":' A_TickCount '}`n', A_ScriptDir "\debug-7432d8.log"
+    ; #endregion
     if (enriched.Length = 0) {
         ShowCenteredOverlay_Utils("❌ No mapped Cursor projects found", 2000, BANNER_ACCENT_ERROR)
         return 0
     }
-    CursorTransfer_SortWindowsByProjectOrder(&enriched)
-    if (enriched.Length > 9) {
-        trimmed := []
-        loop 9
-            trimmed.Push(enriched[A_Index])
-        list := trimmed
-    } else {
-        list := enriched
-    }
-    ; Assign canonical project hotkeys (same as standard selector). Keep unmatched windows with fallback keys.
-    projectIndexToChar := CursorTransfer_BuildProjectIndexToChar()
-    usedChars := Map()
-    for w in list {
-        if (w.projectIndex > 0 && projectIndexToChar.Has(w.projectIndex)) {
-            w.hotkeyChar := projectIndexToChar[w.projectIndex]
-            usedChars[w.hotkeyChar] := true
-        }
-    }
-    for w in list {
-        if (w.hotkeyChar != "")
-            continue
-        loop g_ProjectCharSequence.Length {
-            c := g_ProjectCharSequence[A_Index]
-            if (c = "3" || c = "n")
-                continue
-            if (!usedChars.Has(c)) {
-                w.hotkeyChar := c
-                usedChars[c] := true
-                break
+    try {
+        CursorTransfer_SortWindowsByProjectOrder(&enriched)
+        ; Most important first: put active Cursor window at position 1 if it's in the list.
+        try {
+            activeHwnd := WinGetID("A")
+            if (activeHwnd) {
+                loop enriched.Length {
+                    if (enriched[A_Index].hwnd = activeHwnd) {
+                        if (A_Index > 1) {
+                            swap := enriched[1]
+                            enriched[1] := enriched[A_Index]
+                            enriched[A_Index] := swap
+                        }
+                        break
+                    }
+                }
             }
+        } catch {
         }
-    }
-    ; If any window still has no key, drop it (extremely rare: ran out of available chars).
-    filtered := []
-    for w in list {
-        if (w.hotkeyChar != "")
-            filtered.Push(w)
-    }
-    list := filtered
-    g_CursorTransferWindowList := list
-    g_CursorTransferSelectorResult := ""
-    g_CursorTransferSelectorActive := true
-    g_CursorTransferSelectorGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner")
-    g_CursorTransferSelectorGui.BackColor := "1E1E2E"
-    g_CursorTransferSelectorGui.MarginX := 20
-    g_CursorTransferSelectorGui.MarginY := 15
-    g_CursorTransferSelectorGui.OnEvent("Escape", CursorTransfer_SelectorEscape)
-    g_CursorTransferSelectorGui.SetFont("s14 cCDD6F4 Bold", "Segoe UI")
-    g_CursorTransferSelectorGui.Add("Text", "w320 Center", "📋 Transfer to Cursor")
-    g_CursorTransferSelectorGui.Add("Text", "w320 h1 Background45475A")
-    g_CursorTransferSelectorGui.SetFont("s12 cCDD6F4", "Segoe UI")
-    for w in list {
-        g_CursorTransferSelectorGui.Add("Text", "w320", "[" . w.hotkeyChar . "] " . w.displayName)
-    }
-    g_CursorTransferSelectorGui.Add("Text", "w320 h1 Background45475A y+10")
-    g_CursorTransferSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_CursorTransferSelectorGui.Add("Text", "w320 Center", "Press project key | N or Esc to cancel")
-    g_CursorTransferSelectorGui.Show("AutoSize Hide")
-    g_CursorTransferSelectorGui.GetPos(&gx, &gy, &gw, &gh)
-    if (centerOnHwnd && WinExist("ahk_id " centerOnHwnd)) {
-        workArea := GetWorkAreaForWindow_StandardBar(centerOnHwnd)
-        if (workArea != "") {
-            ml := workArea.left
-            mt := workArea.top
-            mr := workArea.right
-            mb := workArea.bottom
-        } else
-            MonitorGetWorkArea(1, &ml, &mt, &mr, &mb)
-    } else
+        if (enriched.Length > 9) {
+            trimmed := []
+            loop 9
+                trimmed.Push(enriched[A_Index])
+            list := trimmed
+        } else {
+            list := enriched
+        }
+        ; Number keys 1-9 (like #!+C / SelectAiModelInHandy modal).
+        loop list.Length {
+            list[A_Index].hotkeyChar := String(A_Index)
+        }
+        g_CursorTransferWindowList := list
+        g_CursorTransferSelectorResult := ""
+        g_CursorTransferSelectorActive := true
+        g_CursorTransferSelectorGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
+        g_CursorTransferSelectorGui.BackColor := "1E1E2E"
+        g_CursorTransferSelectorGui.MarginX := 20
+        g_CursorTransferSelectorGui.MarginY := 15
+        g_CursorTransferSelectorGui.OnEvent("Escape", CursorTransfer_SelectorEscape)
+        g_CursorTransferSelectorGui.SetFont("s14 cCDD6F4 Bold", "Segoe UI")
+        g_CursorTransferSelectorGui.Add("Text", "w320 Center", "📋 Transfer to Cursor")
+        g_CursorTransferSelectorGui.Add("Text", "w320 h1 Background45475A")
+        g_CursorTransferSelectorGui.SetFont("s12 cCDD6F4", "Segoe UI")
+        for w in list {
+            g_CursorTransferSelectorGui.Add("Text", "w320", "[" . w.hotkeyChar . "] " . w.displayName)
+        }
+        g_CursorTransferSelectorGui.Add("Text", "w320 h1 Background45475A y+10")
+        g_CursorTransferSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
+        g_CursorTransferSelectorGui.Add("Text", "w320 Center", "Press 1-9 | N or Esc to cancel")
+        g_CursorTransferSelectorGui.Show("AutoSize Hide")
+        g_CursorTransferSelectorGui.GetPos(&gx, &gy, &gw, &gh)
+        ; Center on primary monitor so the menu is always visible (avoid off-screen when OriginHwnd is on another monitor).
         MonitorGetWorkArea(1, &ml, &mt, &mr, &mb)
-    mw := mr - ml
-    mh := mb - mt
-    cx := ml + (mw - gw) // 2
-    cy := mt + (mh - gh) // 2
-    g_CursorTransferSelectorGui.Show("x" . cx . " y" . cy)
-    try WinActivate("ahk_id " g_CursorTransferSelectorGui.Hwnd)
+        mw := mr - ml
+        mh := mb - mt
+        cx := ml + (mw - gw) // 2
+        cy := mt + (mh - gh) // 2
+        ; #region agent log
+        try FileAppend '{"sessionId":"7432d8","hypothesisId":"HC","location":"Utils.ahk:CursorTransfer_ShowWindowSelector","message":"showing GUI","data":{"cx":' cx ',"cy":' cy ',"gw":' gw ',"gh":' gh ',"listLen":' list
+            .Length '},"timestamp":' A_TickCount '}`n', A_ScriptDir "\debug-7432d8.log"
+        ; #endregion
+        g_CursorTransferSelectorGui.Show("x" . cx . " y" . cy)
+    } catch as err {
+        ; #region agent log
+        try FileAppend '{"sessionId":"7432d8","hypothesisId":"HC","location":"Utils.ahk:CursorTransfer_ShowWindowSelector","message":"exception","data":{"error":"' StrReplace(
+            err.Message, '"', "'") '","file":"' StrReplace(err.File, '"', "'") '","line":' err.Line '},"timestamp":' A_TickCount '}`n',
+        A_ScriptDir "\debug-7432d8.log"
+        ; #endregion
+        ShowCenteredOverlay_Utils("❌ Selector error", 2000, BANNER_ACCENT_ERROR)
+        return 0
+    }
+    ; Wildcard prefix so hotkeys fire even when modifier held (e.g. C still down when modal opens).
     g_CursorTransferHotkeyHandlers := []
     loop list.Length {
         i := A_Index
@@ -1790,37 +1817,51 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
             continue
         try {
             fn := CursorTransfer_SelectorHandleKey.Bind(i)
-            Hotkey(keyChar, fn, "On")
-            g_CursorTransferHotkeyHandlers.Push({ key: keyChar, callback: fn })
-            if (RegExMatch(keyChar, "^[a-z]$")) {
-                up := StrUpper(keyChar)
-                Hotkey(up, fn, "On")
-                g_CursorTransferHotkeyHandlers.Push({ key: up, callback: fn })
-            } else if (RegExMatch(keyChar, "^[A-Z]$")) {
-                low := StrLower(keyChar)
-                Hotkey(low, fn, "On")
-                g_CursorTransferHotkeyHandlers.Push({ key: low, callback: fn })
-            }
+            hotkeyKey := "*" . keyChar
+            Hotkey(hotkeyKey, fn, "On")
+            g_CursorTransferHotkeyHandlers.Push({ key: hotkeyKey, callback: fn })
         } catch {
         }
     }
     try {
-        Hotkey("Escape", CursorTransfer_SelectorEscape, "On")
-        g_CursorTransferHotkeyHandlers.Push({ key: "Escape", callback: CursorTransfer_SelectorEscape })
-        Hotkey("N", CursorTransfer_SelectorEscape, "On")
-        g_CursorTransferHotkeyHandlers.Push({ key: "N", callback: CursorTransfer_SelectorEscape })
-        Hotkey("n", CursorTransfer_SelectorEscape, "On")
-        g_CursorTransferHotkeyHandlers.Push({ key: "n", callback: CursorTransfer_SelectorEscape })
+        Hotkey("*Escape", CursorTransfer_SelectorEscape, "On")
+        g_CursorTransferHotkeyHandlers.Push({ key: "*Escape", callback: CursorTransfer_SelectorEscape })
+        Hotkey("*N", CursorTransfer_SelectorEscape, "On")
+        g_CursorTransferHotkeyHandlers.Push({ key: "*N", callback: CursorTransfer_SelectorEscape })
+        Hotkey("*n", CursorTransfer_SelectorEscape, "On")
+        g_CursorTransferHotkeyHandlers.Push({ key: "*n", callback: CursorTransfer_SelectorEscape })
     } catch {
     }
+    ; #region agent log
+    try {
+        WinActivate("ahk_id " g_CursorTransferSelectorGui.Hwnd)
+        activeAfter := WinGetID("A")
+        try FileAppend '{"sessionId":"7432d8","hypothesisId":"HC","location":"Utils.ahk:CursorTransfer_ShowWindowSelector","message":"WinActivate","data":{"guiHwnd":' g_CursorTransferSelectorGui
+            .Hwnd ',"activeAfter":' activeAfter ',"hasFocus":' (activeAfter = g_CursorTransferSelectorGui.Hwnd ? 1 : 0) '},"timestamp":' A_TickCount '}`n',
+            A_ScriptDir "\debug-7432d8.log"
+    } catch as actErr {
+        try FileAppend '{"sessionId":"7432d8","hypothesisId":"HC","location":"Utils.ahk:CursorTransfer_ShowWindowSelector","message":"WinActivate exception","data":{"error":"' StrReplace(
+            actErr.Message, '"', "'") '},"timestamp":' A_TickCount '}`n', A_ScriptDir "\debug-7432d8.log"
+    }
+    ; #endregion
     start := A_TickCount
     timeoutMs := 30000
-    while (g_CursorTransferSelectorResult = "") {
-        if ((A_TickCount - start) >= timeoutMs)
-            break
-        Sleep 50
+    try {
+        while (g_CursorTransferSelectorResult = "") {
+            if ((A_TickCount - start) >= timeoutMs)
+                break
+            Sleep 50
+        }
+    } catch as loopErr {
+        try FileAppend '{"sessionId":"7432d8","hypothesisId":"HC","location":"Utils.ahk:CursorTransfer_ShowWindowSelector","message":"while-loop exception","data":{"error":"' StrReplace(
+            loopErr.Message, '"', "'") '},"timestamp":' A_TickCount '}`n', A_ScriptDir "\debug-7432d8.log"
     }
+    durationMs := A_TickCount - start
     result := (g_CursorTransferSelectorResult = "") ? 0 : Integer(g_CursorTransferSelectorResult)
+    ; #region agent log
+    try FileAppend '{"sessionId":"7432d8","hypothesisId":"HC","location":"Utils.ahk:CursorTransfer_ShowWindowSelector","message":"loop exit","data":{"durationMs":' durationMs ',"result":' result '},"timestamp":' A_TickCount '}`n',
+        A_ScriptDir "\debug-7432d8.log"
+    ; #endregion
     CursorTransfer_SelectorClose()
     return result
 }
@@ -3108,6 +3149,10 @@ class D2C_FlowManager {
         ; #endregion
 
         if (!WinExist("ahk_id " this.GeminiHwnd)) {
+            ; #region agent log
+            try FileAppend '{"sessionId":"7432d8","hypothesisId":"HC","location":"Utils.ahk:D2C.DoCopyCore","message":"early return: no GeminiHwnd","data":{"geminiHwnd":' this
+                .GeminiHwnd '},"timestamp":' A_TickCount '}`n', A_ScriptDir "\debug-7432d8.log"
+            ; #endregion
             if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
                 WinActivate("ahk_id " this.OriginHwnd)
             return
@@ -3116,11 +3161,19 @@ class D2C_FlowManager {
         if (!WinActive("ahk_id " this.GeminiHwnd)) {
             try WinActivate("ahk_id " this.GeminiHwnd)
             catch {
+                ; #region agent log
+                try FileAppend '{"sessionId":"7432d8","hypothesisId":"HC","location":"Utils.ahk:D2C.DoCopyCore","message":"early return: WinActivate failed","data":{},"timestamp":' A_TickCount '}`n',
+                    A_ScriptDir "\debug-7432d8.log"
+                ; #endregion
                 if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
                     WinActivate("ahk_id " this.OriginHwnd)
                 return
             }
             if (!WinWaitActive("ahk_exe chrome.exe", , 0.5)) {
+                ; #region agent log
+                try FileAppend '{"sessionId":"7432d8","hypothesisId":"HC","location":"Utils.ahk:D2C.DoCopyCore","message":"early return: WinWaitActive chrome failed","data":{},"timestamp":' A_TickCount '}`n',
+                    A_ScriptDir "\debug-7432d8.log"
+                ; #endregion
                 if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
                     WinActivate("ahk_id " this.OriginHwnd)
                 return
@@ -3172,6 +3225,10 @@ class D2C_FlowManager {
             SetTitleMatchMode(prevMatch)
             DetectHiddenWindows(false)
         } else {
+            ; #region agent log
+            try FileAppend '{"sessionId":"7432d8","hypothesisId":"HC","location":"Utils.ahk:D2C.DoCopyCore","message":"copy path start","data":{},"timestamp":' A_TickCount '}`n',
+                A_ScriptDir "\debug-7432d8.log"
+            ; #endregion
             clipBefore := A_Clipboard
             WM_COPY_LAST_GEMINI := 0x8001
             targetHwnd := 0
