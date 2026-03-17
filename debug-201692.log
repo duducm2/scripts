@@ -1,0 +1,27 @@
+{"sessionId":"201692","location":"Utils.ahk:QuickUpdateScripts","message":"started","timestamp":50010015,"hypothesisId":"H1"}
+{"sessionId":"201692","location":"Utils.ahk:QuickUpdateScripts","message":"shutdown ok","timestamp":50010015,"hypothesisId":"H3"}
+{"sessionId":"201692","location":"Utils.ahk:QuickUpdateScripts","message":"before git fetch","timestamp":50010015,"hypothesisId":"H6"}
+{"sessionId":"201692","location":"Utils.ahk:QuickUpdateScripts","message":"after git pull","timestamp":50011843,"data":"pullResult=0","hypothesisId":"H6"}
+{"sessionId":"201692","location":"Utils.ahk:QuickUpdateScripts","message":"before RunWait verify","timestamp":50011843,"hypothesisId":"H6"}
+{"sessionId":"201692","location":"Utils.ahk:QuickUpdateScripts","message":"after RunWait verify","timestamp":50012265,"data":"exitCode=1","hypothesisId":"H6"}
+{"sessionId":"201692","location":"Utils.ahk:QuickUpdateScripts","message":"branch check","timestamp":50012265,"data":"failedCount=0 preview=","hypothesisId":"H1 H4"}
+{"sessionId":"201692","location":"Utils.ahk:QuickUpdateScripts","message":"success branch showing overlay","timestamp":50012265,"data":"activeHwnd=5378778","hypothesisId":"H1 H5"}
+{"sessionId":"201692","location":"Utils.ahk:QuickUpdateScripts","message":"about to relaunch all scripts","timestamp":50017968,"hypothesisId":"H5"}
+{"sessionId":"201692","location":"Utils.ahk:QuickUpdateScripts","message":"started","timestamp":50027796,"hypothesisId":"H1"}
+{"sessionId":"201692","location":"Utils.ahk:QuickUpdateScripts","message":"shutdown ok","timestamp":50027796,"hypothesisId":"H3"}
+{"sessionId":"201692","location":"Utils.ahk:QuickUpdateScripts","message":"before git fetch","timestamp":50027796,"hypothesisId":"H6"}
+{"sessionId":"201692","location":"Utils.ahk:QuickUpdateScripts","message":"after git pull","timestamp":50029343,"data":"pullResult=0","hypothesisId":"H6"}
+{"sessionId":"201692","location":"Utils.ahk:QuickUpdateScripts","message":"before RunWait verify","timestamp":50029359,"hypothesisId":"H6"}
+{"sessionId":"201692","location":"Utils.ahk:QuickUpdateScripts","message":"after RunWait verify","timestamp":50029656,"data":"exitCode=1","hypothesisId":"H6"}
+{"sessionId":"201692","location":"Utils.ahk:QuickUpdateScripts","message":"branch check","timestamp":50029656,"data":"failedCount=0 preview=","hypothesisId":"H1 H4"}
+{"sessionId":"201692","location":"Utils.ahk:QuickUpdateScripts","message":"success branch showing overlay","timestamp":50029656,"data":"activeHwnd=5378778","hypothesisId":"H1 H5"}
+{"sessionId":"201692","location":"Utils.ahk:QuickUpdateScripts","message":"about to relaunch all scripts","timestamp":50035359,"hypothesisId":"H5"}
+{"sessionId":"201692","location":"Utils.ahk:QuickUpdateScripts","message":"started","timestamp":50046890,"hypothesisId":"H1"}
+{"sessionId":"201692","location":"Utils.ahk:QuickUpdateScripts","message":"shutdown ok","timestamp":50046890,"hypothesisId":"H3"}
+{"sessionId":"201692","location":"Utils.ahk:QuickUpdateScripts","message":"before git fetch","timestamp":50046906,"hypothesisId":"H6"}
+{"sessionId":"201692","location":"Utils.ahk:QuickUpdateScripts","message":"after git pull","timestamp":50048609,"data":"pullResult=0","hypothesisId":"H6"}
+{"sessionId":"201692","location":"Utils.ahk:QuickUpdateScripts","message":"before RunWait verify","timestamp":50048609,"hypothesisId":"H6"}
+{"sessionId":"201692","location":"Utils.ahk:QuickUpdateScripts","message":"after RunWait verify","timestamp":50048937,"data":"exitCode=1","hypothesisId":"H6"}
+{"sessionId":"201692","location":"Utils.ahk:QuickUpdateScripts","message":"branch check","timestamp":50048937,"data":"failedCount=0 preview=","hypothesisId":"H1 H4"}
+{"sessionId":"201692","location":"Utils.ahk:QuickUpdateScripts","message":"success branch showing overlay","timestamp":50048937,"data":"activeHwnd=5378778","hypothesisId":"H1 H5"}
+{"sessionId":"201692","location":"Utils.ahk:QuickUpdateScripts","message":"about to relaunch all scripts","timestamp":50054609,"hypothesisId":"H5"}

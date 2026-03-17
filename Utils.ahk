@@ -3,6 +3,18 @@
 #include %A_ScriptDir%\env.ahk
 
 ; #region agent log
+; Quick Update debug (session 201692): NDJSON to debug-201692.log
+QuickUpdateDebugLog(location, message, dataStr := "", hypothesisId := "") {
+    logPath := A_ScriptDir "\debug-201692.log"
+    q := Chr(34)
+    line := "{" q "sessionId" q ":" q "201692" q "," q "location" q ":" q location q "," q "message" q ":" q message q "," q "timestamp" q ":" A_TickCount
+    if (dataStr != "")
+        line .= "," q "data" q ":" q dataStr q ""
+    if (hypothesisId != "")
+        line .= "," q "hypothesisId" q ":" q hypothesisId q ""
+    line .= "}"
+    try FileAppend line "`n", logPath
+}
 DebugBannerLog(location, message, dataStr := "", hypothesisId := "") {
     logPath := A_ScriptDir "\debug-5ecf82.log"
     q := Chr(34)
@@ -586,85 +598,167 @@ CheckScriptsNeedingUpdates() {
     return scriptsNeedingUpdates
 }
 
-; Attempt to close all running AutoHotkey script processes except this one, so updates can proceed without file locks.
-; Returns true on success, false if any scripts could not be terminated (and shows a detailed error banner).
+; Terminate all running AutoHotkey script processes except this one so file locks are released before update.
+; Returns true if all other AHK processes closed; false otherwise (and shows a specific error overlay).
 QuickUpdate_ShutdownRunningScripts() {
     scriptsDir := GetScriptsDirectory()
-    failed := []
+    ourPID := DllCall("kernel32\GetCurrentProcessId", "UInt")
+    WM_CLOSE := 0x10
+    closeWaitMs := 8000
+    killWaitMs := 3000
+    intervalMs := 400
 
-    try {
-        for exe in ["AutoHotkey64.exe", "AutoHotkey32.exe"] {
+    ; Collect all AHK window hwnds excluding this process
+    otherHwnds := []
+    for exe in ["AutoHotkey64.exe", "AutoHotkey32.exe"] {
+        try {
             for hwnd in WinGetList("ahk_exe " exe) {
-                pid := 0
-                try pid := WinGetPID("ahk_id " hwnd)
-                catch
+                try {
+                    pid := WinGetPID("ahk_id " hwnd)
+                    if (pid != ourPID)
+                        otherHwnds.Push(hwnd)
+                } catch {
                     continue
-                if (pid = A_Pid)
-                    continue
-                title := ""
-                try title := WinGetTitle("ahk_id " hwnd)
-
-                ; Try graceful close first
-                try WinClose("ahk_id " hwnd)
-                Sleep 300
-
-                ; If still running, attempt hard termination
-                if ProcessExist(pid) {
-                    try ProcessClose(pid)
-                    Sleep 300
-                }
-
-                ; If process is still alive, record failure
-                if ProcessExist(pid) {
-                    if (title = "")
-                        title := exe " (pid " pid ")"
-                    failed.Push(title)
                 }
             }
+        } catch {
+            continue
         }
-    } catch {
-        ; Treat unexpected errors as failure; details will surface via failed list or subsequent operations.
+    }
+    if (otherHwnds.Length = 0)
+        return true
+
+    ; Request graceful close
+    for hwnd in otherHwnds {
+        try PostMessage(WM_CLOSE, 0, 0, , "ahk_id " hwnd)
+        catch {
+            continue
+        }
     }
 
-    if (failed.Length > 0) {
-        list := ""
-        for name in failed
-            list .= name "`n"
-        ShowCenteredOverlay_Utils("❌ Could not close these scripts:`n" list, 4000, BANNER_ACCENT_ERROR)
-        try {
-            if (FileExist(scriptsDir "\sounds\quick-update-failure.wav"))
-                SoundPlay(scriptsDir "\sounds\quick-update-failure.wav")
-        } catch {
+    ; Wait for windows to go away
+    deadline := A_TickCount + closeWaitMs
+    while (A_TickCount < deadline) {
+        remaining := []
+        for exe in ["AutoHotkey64.exe", "AutoHotkey32.exe"] {
+            try {
+                for hwnd in WinGetList("ahk_exe " exe) {
+                    try {
+                        if (WinGetPID("ahk_id " hwnd) = ourPID)
+                            continue
+                        if (WinExist("ahk_id " hwnd))
+                            remaining.Push(hwnd)
+                    } catch {
+                        continue
+                    }
+                }
+            } catch {
+                continue
+            }
         }
+        if (remaining.Length = 0)
+            return true
+        Sleep intervalMs
+    }
+
+    ; Force kill remaining
+    for exe in ["AutoHotkey64.exe", "AutoHotkey32.exe"] {
+        try {
+            for hwnd in WinGetList("ahk_exe " exe) {
+                try {
+                    pid := WinGetPID("ahk_id " hwnd)
+                    if (pid = ourPID)
+                        continue
+                    try ProcessClose(pid)
+                    catch {
+                        continue
+                    }
+                } catch {
+                    continue
+                }
+            }
+        } catch {
+            continue
+        }
+    }
+    Sleep Min(killWaitMs, 2000)
+    ; Re-check; build list of still-running script titles for error message
+    stuck := []
+    for exe in ["AutoHotkey64.exe", "AutoHotkey32.exe"] {
+        try {
+            for hwnd in WinGetList("ahk_exe " exe) {
+                try {
+                    if (WinGetPID("ahk_id " hwnd) = ourPID)
+                        continue
+                    if (WinExist("ahk_id " hwnd)) {
+                        title := WinGetTitle("ahk_id " hwnd)
+                        stuck.Push(title ? title : "AHK script")
+                    }
+                } catch {
+                    continue
+                }
+            }
+        } catch {
+            continue
+        }
+    }
+    if (stuck.Length > 0) {
+        list := ""
+        for t in stuck
+            list .= t "`n"
+        ShowCenteredOverlay_Utils("❌ Could not close these scripts:`n" list "Close them manually and retry.", 5000, BANNER_ACCENT_ERROR)
         return false
     }
-
     return true
 }
 
-; Quick Update Scripts macro (four layers: script shutdown, Git, sequential reload with Utils last, delay + PowerShell verification).
-; Final notification (banner + sound) runs only after all layers and verification succeed. Act.ahk is NOT updated (entry point).
+; Quick Update Scripts macro: shutdown other AHK scripts, Git pull, sequential reload (Utils last), verification.
+; Success sound and banner only after all steps succeed; specific error messages on failure.
 QuickUpdateScripts() {
+    ; #region agent log
+    QuickUpdateDebugLog("Utils.ahk:QuickUpdateScripts", "started", "", "H1")
+    ; #endregion
     scriptsDir := GetScriptsDirectory()
     files := GetScriptFiles()
     failedScripts := []
     deferredUtils := false
     utilsPath := ""
 
-    ; Layer 0: Shut down running AutoHotkey scripts (except this updater instance)
-    if !QuickUpdate_ShutdownRunningScripts()
+    ; Process management: close all other AHK scripts so file locks are released
+    if (!QuickUpdate_ShutdownRunningScripts()) {
+        ; #region agent log
+        QuickUpdateDebugLog("Utils.ahk:QuickUpdateScripts", "shutdown failed, returning", "", "H3")
+        ; #endregion
+        try {
+            if (FileExist(scriptsDir "\sounds\quick-update-failure.wav"))
+                SoundPlay(scriptsDir "\sounds\quick-update-failure.wav")
+        } catch {
+        }
         return
+    }
+    ; #region agent log
+    QuickUpdateDebugLog("Utils.ahk:QuickUpdateScripts", "shutdown ok", "", "H3")
+    ; #endregion
 
     ; Layer 1: Git synchronization
     try {
         SetWorkingDir(scriptsDir)
+        ; #region agent log
+        QuickUpdateDebugLog("Utils.ahk:QuickUpdateScripts", "before git fetch", "", "H6")
+        ; #endregion
         RunWait("git fetch", scriptsDir, "Hide")
         pullResult := RunWait("git pull", scriptsDir, "Hide")
+        ; #region agent log
+        QuickUpdateDebugLog("Utils.ahk:QuickUpdateScripts", "after git pull", "pullResult=" pullResult, "H6")
+        ; #endregion
         if (pullResult != 0) {
             ShowCenteredOverlay_Utils("⚠ Git pull failed. Proceeding with local reload...", 2000,
                 BANNER_ACCENT_INTERMEDIATE)
         }
     } catch Error as e {
+        ; #region agent log
+        QuickUpdateDebugLog("Utils.ahk:QuickUpdateScripts", "git catch", "err=" e.Message, "H6")
+        ; #endregion
         ShowCenteredOverlay_Utils("❌ Git update failed: " e.Message, 2000, BANNER_ACCENT_ERROR)
     }
 
@@ -683,16 +777,13 @@ QuickUpdateScripts() {
         ShowCenteredOverlay_Utils("⚠ QC1: Missing after pull:`n" list, 3000, BANNER_ACCENT_INTERMEDIATE)
     }
 
-    ; Layer 2: Sequential script reload; Utils.ahk is deferred (run after verification + notification).
+    ; QC2: file exists and non-empty; set deferredUtils/utilsPath. No relaunch yet – overlay is shown first so this process is not killed by a launched script.
     for index, file in files {
         isUtils := InStr(file, "Utils.ahk")
-
         if (isUtils) {
             deferredUtils := true
             utilsPath := file
         }
-
-        ; Quality check 2: Before Run - file must exist and be non-empty
         parts := StrSplit(file, "\")
         fileName := parts[parts.Length]
         if (!FileExist(file)) {
@@ -708,26 +799,7 @@ QuickUpdateScripts() {
             failedScripts.Push(fileName " (unreadable)")
             continue
         }
-
-        ; Skip launching Utils.ahk here; it runs after verification and notification
-        if (isUtils)
-            continue
-
-        ; Reload the script
-        try {
-            pid := Run(file)
-            ; Quality check 3: Verify process started (Run returns PID or 0 on failure)
-            if (pid = 0) {
-                failedScripts.Push(fileName " (process did not start)")
-            }
-            Sleep 300
-        } catch Error as e {
-            failedScripts.Push(fileName " (" e.Message ")")
-        }
     }
-
-    ; Brief delay before verification so all processes and filesystem are settled
-    Sleep 1500
 
     ; Layer 3: PowerShell verification - confirm every target script exists, is non-empty, and readable
     pathsFile := A_Temp "\quick-update-paths_" A_TickCount ".txt"
@@ -751,8 +823,14 @@ QuickUpdateScripts() {
         if (!FileExist(verifyScript))
             verifyScript := scriptsDir "\aux\Verify-ScriptUpdate.ps1"
         if (FileExist(verifyScript)) {
+            ; #region agent log
+            QuickUpdateDebugLog("Utils.ahk:QuickUpdateScripts", "before RunWait verify", "", "H6")
+            ; #endregion
             verifyExitCode := RunWait('powershell.exe -NoProfile -ExecutionPolicy Bypass -File "' verifyScript '" -ScriptsDir "' scriptsDir '" -PathsFile "' pathsFile '" -ReportFile "' reportFile '"',
                 scriptsDir, "Hide")
+            ; #region agent log
+            QuickUpdateDebugLog("Utils.ahk:QuickUpdateScripts", "after RunWait verify", "exitCode=" verifyExitCode, "H6")
+            ; #endregion
             try {
                 if (FileExist(reportFile)) {
                     verifyReport := FileRead(reportFile)
@@ -776,7 +854,18 @@ QuickUpdateScripts() {
     }
 
     ; Final notification only after all layers (Git, reload, delay, verification) have run
+    ; #region agent log
+    failedListPreview := ""
+    for i, script in failedScripts {
+        if (i <= 3)
+            failedListPreview .= script " "
+    }
+    QuickUpdateDebugLog("Utils.ahk:QuickUpdateScripts", "branch check", "failedCount=" failedScripts.Length " preview=" failedListPreview, "H1 H4")
+    ; #endregion
     if (failedScripts.Length > 0) {
+        ; #region agent log
+        QuickUpdateDebugLog("Utils.ahk:QuickUpdateScripts", "failure branch", "showing red overlay", "H1")
+        ; #endregion
         failedList := ""
         for script in failedScripts {
             failedList .= script "`n"
@@ -787,22 +876,46 @@ QuickUpdateScripts() {
                 SoundPlay(scriptsDir "\sounds\quick-update-failure.wav")
         } catch {
         }
+        ; Relaunch the 7 non-Utils scripts so user has them running
+        for index, file in files {
+            if (InStr(file, "Utils.ahk"))
+                continue
+            if (!FileExist(file))
+                continue
+            try {
+                Run(file)
+                Sleep 300
+            } catch {
+                continue
+            }
+        }
     } else {
-        ShowCenteredOverlay_Utils("✅ All scripts updated successfully!", 3500, BANNER_ACCENT_SUCCESS)
+        ; #region agent log
+        activeHwnd := ""
+        try activeHwnd := WinGetID("A")
+        QuickUpdateDebugLog("Utils.ahk:QuickUpdateScripts", "success branch showing overlay", "activeHwnd=" activeHwnd, "H1 H5")
+        ; #endregion
+        ShowCenteredOverlay_Utils("✅ All scripts updated and relaunched", 3500, BANNER_ACCENT_SUCCESS)
         try {
             if (FileExist(scriptsDir "\sounds\quick-update-success.wav"))
                 SoundPlay(scriptsDir "\sounds\quick-update-success.wav")
         } catch {
         }
-        ; Wait for overlay to be readable before reloading Utils (otherwise reload can replace process and hide it)
+        ; Wait for overlay to be readable before relaunching (so user always sees the green message).
         Sleep 5500
-    }
-
-    ; Reload Utils.ahk last so this instance is replaced only after notification
-    if (deferredUtils && utilsPath != "") {
-        try {
-            Run(utilsPath)
-        } catch {
+        ; #region agent log
+        QuickUpdateDebugLog("Utils.ahk:QuickUpdateScripts", "about to relaunch all scripts", "", "H5")
+        ; #endregion
+        ; Relaunch all scripts in order (Utils last); this process is replaced when Utils.ahk starts.
+        for index, file in files {
+            if (!FileExist(file))
+                continue
+            try {
+                Run(file)
+                Sleep 300
+            } catch {
+                continue
+            }
         }
     }
 }

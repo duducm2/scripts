@@ -22,3 +22,7 @@
 {{sessionId:31b036,id:log_5580515_H4,timestamp:5580515,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_return_false,data:{{hypothesisId:H4}},runId:initial}}
 {{sessionId:31b036,id:log_5580515_H1,timestamp:5580515,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_entry,data:{{hypothesisId:H1}},runId:initial}}
 {{sessionId:31b036,id:log_5581453_H4,timestamp:5581453,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_return_false,data:{{hypothesisId:H4}},runId:initial}}
+{{sessionId:31b036,id:log_45307531_H1,timestamp:45307531,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_entry,data:{{hypothesisId:H1}},runId:initial}}
+{{sessionId:31b036,id:log_45308171_H4,timestamp:45308171,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_return_false,data:{{hypothesisId:H4}},runId:initial}}
+{{sessionId:31b036,id:log_45349656_H1,timestamp:45349656,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_entry,data:{{hypothesisId:H1}},runId:initial}}
+{{sessionId:31b036,id:log_45350328_H4,timestamp:45350328,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_return_false,data:{{hypothesisId:H4}},runId:initial}}
