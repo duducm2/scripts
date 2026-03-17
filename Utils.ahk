@@ -3,18 +3,6 @@
 #include %A_ScriptDir%\env.ahk
 
 ; #region agent log
-; Quick Update debug (session 201692): NDJSON to debug-201692.log
-QuickUpdateDebugLog(location, message, dataStr := "", hypothesisId := "") {
-    logPath := A_ScriptDir "\debug-201692.log"
-    q := Chr(34)
-    line := "{" q "sessionId" q ":" q "201692" q "," q "location" q ":" q location q "," q "message" q ":" q message q "," q "timestamp" q ":" A_TickCount
-    if (dataStr != "")
-        line .= "," q "data" q ":" q dataStr q ""
-    if (hypothesisId != "")
-        line .= "," q "hypothesisId" q ":" q hypothesisId q ""
-    line .= "}"
-    try FileAppend line "`n", logPath
-}
 DebugBannerLog(location, message, dataStr := "", hypothesisId := "") {
     logPath := A_ScriptDir "\debug-5ecf82.log"
     q := Chr(34)
@@ -715,9 +703,6 @@ QuickUpdate_ShutdownRunningScripts() {
 ; Quick Update Scripts macro: shutdown other AHK scripts, Git pull, sequential reload (Utils last), verification.
 ; Success sound and banner only after all steps succeed; specific error messages on failure.
 QuickUpdateScripts() {
-    ; #region agent log
-    QuickUpdateDebugLog("Utils.ahk:QuickUpdateScripts", "started", "", "H1")
-    ; #endregion
     scriptsDir := GetScriptsDirectory()
     files := GetScriptFiles()
     failedScripts := []
@@ -726,9 +711,6 @@ QuickUpdateScripts() {
 
     ; Process management: close all other AHK scripts so file locks are released
     if (!QuickUpdate_ShutdownRunningScripts()) {
-        ; #region agent log
-        QuickUpdateDebugLog("Utils.ahk:QuickUpdateScripts", "shutdown failed, returning", "", "H3")
-        ; #endregion
         try {
             if (FileExist(scriptsDir "\sounds\quick-update-failure.wav"))
                 SoundPlay(scriptsDir "\sounds\quick-update-failure.wav")
@@ -736,29 +718,17 @@ QuickUpdateScripts() {
         }
         return
     }
-    ; #region agent log
-    QuickUpdateDebugLog("Utils.ahk:QuickUpdateScripts", "shutdown ok", "", "H3")
-    ; #endregion
 
     ; Layer 1: Git synchronization
     try {
         SetWorkingDir(scriptsDir)
-        ; #region agent log
-        QuickUpdateDebugLog("Utils.ahk:QuickUpdateScripts", "before git fetch", "", "H6")
-        ; #endregion
         RunWait("git fetch", scriptsDir, "Hide")
         pullResult := RunWait("git pull", scriptsDir, "Hide")
-        ; #region agent log
-        QuickUpdateDebugLog("Utils.ahk:QuickUpdateScripts", "after git pull", "pullResult=" pullResult, "H6")
-        ; #endregion
         if (pullResult != 0) {
             ShowCenteredOverlay_Utils("⚠ Git pull failed. Proceeding with local reload...", 2000,
                 BANNER_ACCENT_INTERMEDIATE)
         }
     } catch Error as e {
-        ; #region agent log
-        QuickUpdateDebugLog("Utils.ahk:QuickUpdateScripts", "git catch", "err=" e.Message, "H6")
-        ; #endregion
         ShowCenteredOverlay_Utils("❌ Git update failed: " e.Message, 2000, BANNER_ACCENT_ERROR)
     }
 
@@ -823,14 +793,8 @@ QuickUpdateScripts() {
         if (!FileExist(verifyScript))
             verifyScript := scriptsDir "\aux\Verify-ScriptUpdate.ps1"
         if (FileExist(verifyScript)) {
-            ; #region agent log
-            QuickUpdateDebugLog("Utils.ahk:QuickUpdateScripts", "before RunWait verify", "", "H6")
-            ; #endregion
             verifyExitCode := RunWait('powershell.exe -NoProfile -ExecutionPolicy Bypass -File "' verifyScript '" -ScriptsDir "' scriptsDir '" -PathsFile "' pathsFile '" -ReportFile "' reportFile '"',
                 scriptsDir, "Hide")
-            ; #region agent log
-            QuickUpdateDebugLog("Utils.ahk:QuickUpdateScripts", "after RunWait verify", "exitCode=" verifyExitCode, "H6")
-            ; #endregion
             try {
                 if (FileExist(reportFile)) {
                     verifyReport := FileRead(reportFile)
@@ -854,18 +818,7 @@ QuickUpdateScripts() {
     }
 
     ; Final notification only after all layers (Git, reload, delay, verification) have run
-    ; #region agent log
-    failedListPreview := ""
-    for i, script in failedScripts {
-        if (i <= 3)
-            failedListPreview .= script " "
-    }
-    QuickUpdateDebugLog("Utils.ahk:QuickUpdateScripts", "branch check", "failedCount=" failedScripts.Length " preview=" failedListPreview, "H1 H4")
-    ; #endregion
     if (failedScripts.Length > 0) {
-        ; #region agent log
-        QuickUpdateDebugLog("Utils.ahk:QuickUpdateScripts", "failure branch", "showing red overlay", "H1")
-        ; #endregion
         failedList := ""
         for script in failedScripts {
             failedList .= script "`n"
@@ -890,11 +843,6 @@ QuickUpdateScripts() {
             }
         }
     } else {
-        ; #region agent log
-        activeHwnd := ""
-        try activeHwnd := WinGetID("A")
-        QuickUpdateDebugLog("Utils.ahk:QuickUpdateScripts", "success branch showing overlay", "activeHwnd=" activeHwnd, "H1 H5")
-        ; #endregion
         ShowCenteredOverlay_Utils("✅ All scripts updated and relaunched", 3500, BANNER_ACCENT_SUCCESS)
         try {
             if (FileExist(scriptsDir "\sounds\quick-update-success.wav"))
@@ -903,9 +851,6 @@ QuickUpdateScripts() {
         }
         ; Wait for overlay to be readable before relaunching (so user always sees the green message).
         Sleep 5500
-        ; #region agent log
-        QuickUpdateDebugLog("Utils.ahk:QuickUpdateScripts", "about to relaunch all scripts", "", "H5")
-        ; #endregion
         ; Relaunch all scripts in order (Utils last); this process is replaced when Utils.ahk starts.
         for index, file in files {
             if (!FileExist(file))
