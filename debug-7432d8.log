@@ -4,3 +4,37 @@
 {"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H7","location":"Utils.ahk:~#!+0","message":"mic script RunWait start","data":{"pathExists":1},"timestamp":114766921}
 {"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H7","location":"Utils.ahk:~#!+0","message":"mic script Run dispatched","data":{"queueMs":16},"timestamp":114766937}
 {"sessionId":"7432d8","runId":"hypothesis-4","hypothesisId":"H3","location":"Utils.ahk:~#!+0","message":"stop intent not detected","data":{"dictationWasActiveOnKeyPress":0,"recordingWindowNow":1,"dictationActiveNow":1},"timestamp":114766937}
+{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"WindowManagement.ahk"},"timestamp":114781000}
+{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"Shift keys.ahk"},"timestamp":114781000}
+{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H6","location":"Utils.ahk:~#!+0","message":"key released","data":{"keyWaitMs":16,"dictationWasActiveOnKeyPress":1},"timestamp":114781031}
+{"sessionId":"7432d8","runId":"hypothesis-4","hypothesisId":"H3","location":"Utils.ahk:~#!+0","message":"stop intent detected","data":{"dictationWasActiveOnKeyPress":1,"recordingWindowNow":1,"dictationActiveNow":1},"timestamp":114781031}
+{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H8","location":"Utils.ahk:CheckDictationRecordingWindow","message":"stop candidate","data":{"deltaSinceTransition":15015,"chimeScheduled":0},"timestamp":114781843}
+{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H8","location":"Utils.ahk:CheckDictationRecordingWindow","message":"stop scheduled","data":{"deltaSinceTransition":15015},"timestamp":114781843}
+{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H1","location":"Utils.ahk:D2C.StartFromDictation","message":"flow start from dictation","data":{},"timestamp":114781937}
+{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"WindowManagement.ahk"},"timestamp":114790125}
+{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"Shift keys.ahk"},"timestamp":114790125}
+{"sessionId":"7432d8","runId":"hypothesis-4","hypothesisId":"H4","location":"Utils.ahk:~#!+0","message":"post-debounce state snapshot","data":{"dictationActive":0,"recordingWindow":0,"handyRunning":1},"timestamp":114790125}
+{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H6","location":"Utils.ahk:~#!+0","message":"key released","data":{"keyWaitMs":0,"dictationWasActiveOnKeyPress":0},"timestamp":114790140}
+{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H7","location":"Utils.ahk:~#!+0","message":"mic script RunWait start","data":{"pathExists":1},"timestamp":114790203}
+{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H7","location":"Utils.ahk:~#!+0","message":"mic script Run dispatched","data":{"queueMs":15},"timestamp":114790218}
+{"sessionId":"7432d8","runId":"hypothesis-4","hypothesisId":"H3","location":"Utils.ahk:~#!+0","message":"stop intent not detected","data":{"dictationWasActiveOnKeyPress":0,"recordingWindowNow":1,"dictationActiveNow":1},"timestamp":114790218}
+{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"Shift keys.ahk"},"timestamp":114819000}
+{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"AppLaunchers.ahk"},"timestamp":114819000}
+{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H6","location":"Utils.ahk:~#!+0","message":"key released","data":{"keyWaitMs":15,"dictationWasActiveOnKeyPress":1},"timestamp":114819015}
+{"sessionId":"7432d8","runId":"hypothesis-4","hypothesisId":"H3","location":"Utils.ahk:~#!+0","message":"stop intent detected","data":{"dictationWasActiveOnKeyPress":1,"recordingWindowNow":1,"dictationActiveNow":1},"timestamp":114819015}
+{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H8","location":"Utils.ahk:CheckDictationRecordingWindow","message":"stop candidate","data":{"deltaSinceTransition":30625,"chimeScheduled":0},"timestamp":114820765}
+{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H8","location":"Utils.ahk:CheckDictationRecordingWindow","message":"stop scheduled","data":{"deltaSinceTransition":30625},"timestamp":114820765}
+{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H1","location":"Utils.ahk:D2C.StartFromDictation","message":"flow start from dictation","data":{},"timestamp":114820906}
+{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"WindowManagement.ahk"},"timestamp":114895000}
+{"sessionId":"7432d8","runId":"hypothesis-4","hypothesisId":"H4","location":"Utils.ahk:~#!+0","message":"post-debounce state snapshot","data":{"dictationActive":0,"recordingWindow":0,"handyRunning":1},"timestamp":114895015}
+{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H6","location":"Utils.ahk:~#!+0","message":"key released","data":{"keyWaitMs":47,"dictationWasActiveOnKeyPress":0},"timestamp":114895078}
+{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H7","location":"Utils.ahk:~#!+0","message":"mic script RunWait start","data":{"pathExists":1},"timestamp":114895109}
+{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H7","location":"Utils.ahk:~#!+0","message":"mic script Run dispatched","data":{"queueMs":16},"timestamp":114895125}
+{"sessionId":"7432d8","runId":"hypothesis-4","hypothesisId":"H3","location":"Utils.ahk:~#!+0","message":"stop intent not detected","data":{"dictationWasActiveOnKeyPress":0,"recordingWindowNow":1,"dictationActiveNow":1},"timestamp":114895125}
+{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"WindowManagement.ahk"},"timestamp":114936609}
+{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"Shift keys.ahk"},"timestamp":114936609}
+{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H6","location":"Utils.ahk:~#!+0","message":"key released","data":{"keyWaitMs":0,"dictationWasActiveOnKeyPress":1},"timestamp":114936609}
+{"sessionId":"7432d8","runId":"hypothesis-4","hypothesisId":"H3","location":"Utils.ahk:~#!+0","message":"stop intent detected","data":{"dictationWasActiveOnKeyPress":1,"recordingWindowNow":1,"dictationActiveNow":1},"timestamp":114936625}
+{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H8","location":"Utils.ahk:CheckDictationRecordingWindow","message":"stop candidate","data":{"deltaSinceTransition":43156,"chimeScheduled":0},"timestamp":114938234}
+{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H8","location":"Utils.ahk:CheckDictationRecordingWindow","message":"stop scheduled","data":{"deltaSinceTransition":43156},"timestamp":114938234}
+{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H1","location":"Utils.ahk:D2C.StartFromDictation","message":"flow start from dictation","data":{},"timestamp":114938359}
