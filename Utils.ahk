@@ -590,11 +590,18 @@ CheckScriptsNeedingUpdates() {
 ; Returns true if all other AHK processes closed; false otherwise (and shows a specific error overlay).
 QuickUpdate_ShutdownRunningScripts() {
     scriptsDir := GetScriptsDirectory()
+    files := GetScriptFiles()
     ourPID := DllCall("kernel32\GetCurrentProcessId", "UInt")
     WM_CLOSE := 0x10
     closeWaitMs := 8000
     killWaitMs := 3000
     intervalMs := 400
+    targetPathsLow := []
+    for file in files {
+        try targetPathsLow.Push(StrLower(file))
+        catch
+            continue
+    }
 
     ; Collect all AHK window hwnds excluding this process
     otherHwnds := []
@@ -669,6 +676,41 @@ QuickUpdate_ShutdownRunningScripts() {
             continue
         }
     }
+    ; Additional kill pass: headless/background scripts may have no windows.
+    ; Target by process command-line containing one of our script paths.
+    try {
+        locator := ComObject("WbemScripting.SWbemLocator")
+        svc := locator.ConnectServer(".", "root\cimv2")
+        query := "SELECT ProcessId, Name, CommandLine FROM Win32_Process WHERE Name='AutoHotkey64.exe' OR Name='AutoHotkey32.exe' OR Name='AutoHotkey.exe'"
+        for proc in svc.ExecQuery(query) {
+            try {
+                pid := proc.ProcessId
+                if (!pid || pid = ourPID)
+                    continue
+                cmd := ""
+                try cmd := proc.CommandLine
+                cmdLow := cmd ? StrLower(cmd) : ""
+                if (cmdLow = "")
+                    continue
+                isTarget := false
+                for pLow in targetPathsLow {
+                    if (pLow != "" && InStr(cmdLow, pLow)) {
+                        isTarget := true
+                        break
+                    }
+                }
+                if (!isTarget)
+                    continue
+                try ProcessClose(pid)
+                catch {
+                    continue
+                }
+            } catch {
+                continue
+            }
+        }
+    } catch {
+    }
     Sleep Min(killWaitMs, 2000)
     ; Re-check; build list of still-running script titles for error message
     stuck := []
@@ -704,11 +746,23 @@ QuickUpdate_ShutdownRunningScripts() {
 ; Quick Update Scripts macro: shutdown other AHK scripts, Git pull, sequential reload (Utils last), verification.
 ; Success sound and banner only after all steps succeed; specific error messages on failure.
 QuickUpdateScripts() {
+    static s_isQuickUpdateRunning := false
+    if (s_isQuickUpdateRunning)
+        return
+    s_isQuickUpdateRunning := true
+    try {
     scriptsDir := GetScriptsDirectory()
     files := GetScriptFiles()
     failedScripts := []
-    deferredUtils := false
+    gitOk := true
     utilsPath := ""
+    otherFiles := []
+    for file in files {
+        if (InStr(file, "Utils.ahk"))
+            utilsPath := file
+        else
+            otherFiles.Push(file)
+    }
 
     ; Process management: close all other AHK scripts so file locks are released
     if (!QuickUpdate_ShutdownRunningScripts()) {
@@ -723,14 +777,12 @@ QuickUpdateScripts() {
     ; Layer 1: Git synchronization
     try {
         SetWorkingDir(scriptsDir)
-        RunWait("git fetch", scriptsDir, "Hide")
+        fetchResult := RunWait("git fetch", scriptsDir, "Hide")
         pullResult := RunWait("git pull", scriptsDir, "Hide")
-        if (pullResult != 0) {
-            ShowCenteredOverlay_Utils("⚠ Git pull failed. Proceeding with local reload...", 2000,
-                BANNER_ACCENT_INTERMEDIATE)
-        }
+        if (fetchResult != 0 || pullResult != 0)
+            gitOk := false
     } catch Error as e {
-        ShowCenteredOverlay_Utils("❌ Git update failed: " e.Message, 2000, BANNER_ACCENT_ERROR)
+        gitOk := false
     }
 
     ; Quality check 1: After Git, verify all script files exist (pre-flight so we know what we can run)
@@ -748,13 +800,8 @@ QuickUpdateScripts() {
         ShowCenteredOverlay_Utils("⚠ QC1: Missing after pull:`n" list, 3000, BANNER_ACCENT_INTERMEDIATE)
     }
 
-    ; QC2: file exists and non-empty; set deferredUtils/utilsPath. No relaunch yet – overlay is shown first so this process is not killed by a launched script.
+    ; QC2: file exists and non-empty. (Pre-flight before relaunch.)
     for index, file in files {
-        isUtils := InStr(file, "Utils.ahk")
-        if (isUtils) {
-            deferredUtils := true
-            utilsPath := file
-        }
         parts := StrSplit(file, "\")
         fileName := parts[parts.Length]
         if (!FileExist(file)) {
@@ -772,97 +819,95 @@ QuickUpdateScripts() {
         }
     }
 
-    ; Layer 3: PowerShell verification - confirm every target script exists, is non-empty, and readable
-    pathsFile := A_Temp "\quick-update-paths_" A_TickCount ".txt"
-    reportFile := A_Temp "\quick-update-verify-report_" A_TickCount ".txt"
-    try {
-        pathList := ""
-        for file in files
-            pathList .= file "`n"
-        if (FileExist(pathsFile))
-            FileDelete(pathsFile)
-        FileAppend(pathList, pathsFile)
-    } catch {
-        failedScripts.Push("Verify (could not write paths file)")
-    }
-
-    verifyExitCode := 0
-    if (FileExist(pathsFile)) {
-        ; Resolve verification script: first next to Utils.ahk (A_LineFile), then scriptsDir fallback (covers Act.ahk parent launch and direct run)
-        utilsDir := SubStr(A_LineFile, 1, InStr(A_LineFile, "\", false, -1) - 1)
-        verifyScript := utilsDir "\aux\Verify-ScriptUpdate.ps1"
-        if (!FileExist(verifyScript))
-            verifyScript := scriptsDir "\aux\Verify-ScriptUpdate.ps1"
-        if (FileExist(verifyScript)) {
-            verifyExitCode := RunWait('powershell.exe -NoProfile -ExecutionPolicy Bypass -File "' verifyScript '" -ScriptsDir "' scriptsDir '" -PathsFile "' pathsFile '" -ReportFile "' reportFile '"',
-                scriptsDir, "Hide")
-            try {
-                if (FileExist(reportFile)) {
-                    verifyReport := FileRead(reportFile)
-                    FileDelete(reportFile)
-                    lines := StrSplit(Trim(verifyReport), "`n")
-                    for line in lines {
-                        if (StrLen(Trim(line)) > 0)
-                            failedScripts.Push("Verify: " Trim(line))
-                    }
-                }
-            } catch {
-                ; Ignore cleanup errors
-            }
-        } else {
-            failedScripts.Push("Verify: aux\Verify-ScriptUpdate.ps1 not found")
-        }
-        try {
-            FileDelete(pathsFile)
-        } catch {
-        }
-    }
-
-    ; Final notification only after all layers (Git, reload, delay, verification) have run
+    ; If QC2 found issues, show them, but still attempt to relaunch what we can.
     if (failedScripts.Length > 0) {
         failedList := ""
-        for script in failedScripts {
+        for script in failedScripts
             failedList .= script "`n"
+        ShowCenteredOverlay_Utils("⚠ QC: Some scripts look wrong on disk:`n" failedList, 3000, BANNER_ACCENT_INTERMEDIATE)
+    }
+
+    ; Relaunch + quality gate: ensure each script fully closed and started again (best-effort: process alive).
+    startFailures := []
+    startTimeoutMs := 3500
+    feedbackChimeToBannerDelayMs := 250
+    successBannerMs := 6500
+    warnBannerMs := 7500
+    errorBannerMs := 6500
+    beforeUtilsLaunchHoldMs := 2500
+
+    QuickUpdate_RelaunchAndVerify(file) {
+        pid := 0
+        try Run(file, , , &pid)
+        catch {
+            return { ok: false, pid: 0 }
         }
-        ShowCenteredOverlay_Utils("❌ Some scripts failed to update:`n" failedList, 4000, BANNER_ACCENT_ERROR)
+        if (!pid)
+            return { ok: false, pid: 0 }
+        deadline := A_TickCount + startTimeoutMs
+        while (A_TickCount < deadline) {
+            try {
+                if (ProcessExist(pid)) {
+                    return { ok: true, pid: pid }
+                }
+            } catch {
+            }
+            Sleep 120
+        }
+        return { ok: false, pid: pid }
+    }
+
+    for file in otherFiles {
+        if (!FileExist(file))
+            continue
+        res := QuickUpdate_RelaunchAndVerify(file)
+        if (!res.ok) {
+            parts := StrSplit(file, "\")
+            startFailures.Push(parts[parts.Length] " (failed to start)")
+        }
+        Sleep 250
+    }
+
+    ; Final notification should happen BEFORE launching Utils.ahk.
+    ; Launching Utils may replace this process (#SingleInstance Force) and kill the banner early.
+    if (startFailures.Length > 0) {
+        failedList := ""
+        for item in startFailures
+            failedList .= item "`n"
+        ShowCenteredOverlay_Utils("❌ Some scripts failed to relaunch:`n" failedList, errorBannerMs, BANNER_ACCENT_ERROR)
         try {
             if (FileExist(scriptsDir "\sounds\quick-update-failure.wav"))
                 SoundPlay(scriptsDir "\sounds\quick-update-failure.wav")
         } catch {
         }
-        ; Relaunch the 7 non-Utils scripts so user has them running
-        for index, file in files {
-            if (InStr(file, "Utils.ahk"))
-                continue
-            if (!FileExist(file))
-                continue
-            try {
-                Run(file)
-                Sleep 300
-            } catch {
-                continue
-            }
-        }
     } else {
-        ShowCenteredOverlay_Utils("✅ All scripts updated and relaunched", 3500, BANNER_ACCENT_SUCCESS)
         try {
-            if (FileExist(scriptsDir "\sounds\quick-update-success.wav"))
+            if (gitOk && FileExist(scriptsDir "\sounds\quick-update-success.wav"))
                 SoundPlay(scriptsDir "\sounds\quick-update-success.wav")
+            else if (!gitOk && FileExist(scriptsDir "\sounds\quick-update-failure.wav"))
+                SoundPlay(scriptsDir "\sounds\quick-update-failure.wav")
         } catch {
         }
-        ; Wait for overlay to be readable before relaunching (so user always sees the green message).
-        Sleep 5500
-        ; Relaunch all scripts in order (Utils last); this process is replaced when Utils.ahk starts.
-        for index, file in files {
-            if (!FileExist(file))
-                continue
-            try {
-                Run(file)
-                Sleep 300
-            } catch {
-                continue
-            }
+        Sleep feedbackChimeToBannerDelayMs
+        if (gitOk) {
+            ShowCenteredOverlay_Utils("✅ Scripts updated and relaunched", successBannerMs, BANNER_ACCENT_SUCCESS)
+        } else {
+            ShowCenteredOverlay_Utils("⚠ Git update failed; local scripts relaunched", warnBannerMs, BANNER_ACCENT_INTERMEDIATE)
         }
+    }
+
+    ; Hold the UI long enough to read, then launch Utils last.
+    Sleep beforeUtilsLaunchHoldMs
+    if (utilsPath != "" && FileExist(utilsPath)) {
+        try Run(utilsPath)
+    } else if (utilsPath = "") {
+        ; If GetScriptFiles() was modified unexpectedly, at least report it.
+        ShowCenteredOverlay_Utils("⚠ Utils.ahk path missing from script list", warnBannerMs, BANNER_ACCENT_INTERMEDIATE)
+    } else {
+        ShowCenteredOverlay_Utils("❌ Utils.ahk not found on disk", errorBannerMs, BANNER_ACCENT_ERROR)
+    }
+    } finally {
+        s_isQuickUpdateRunning := false
     }
 }
 
@@ -3169,7 +3214,7 @@ class D2C_FlowManager {
                     if (IsSoundEnabled())
                         SoundPlay(A_ScriptDir . "\sounds\gemini-completion.wav")
                 } catch {
-                    Func("PlayCopyCompletedChime").Call()
+                    ; Ignore chime failures
                 }
                 this.PromptForResponseAction()
             } else {
