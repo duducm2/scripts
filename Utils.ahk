@@ -4495,6 +4495,7 @@ InitMacros() {
     ; Move Desktop to Recycle Bin (assigned to "N") — red banner, Y/N confirm
     RegisterMacro(DesktopToRecycle_Trigger, "🗑️ Move Desktop to Recycle Bin", "n")
 }
+
 InitMacros()
 
 ; ------------
@@ -4514,6 +4515,7 @@ InitDpiAwareness() {
     static PER_MONITOR_AWARE_V2 := -4 ; DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2
     try DllCall("SetProcessDpiAwarenessContext", "ptr", PER_MONITOR_AWARE_V2, "ptr")
 }
+
 InitDpiAwareness()
 
 ; =============================================================================

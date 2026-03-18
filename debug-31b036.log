@@ -84,3 +84,9 @@
 {{sessionId:31b036,id:log_90874500_H4,timestamp:90874500,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_return_false,data:{{hypothesisId:H4}},runId:initial}}
 {{sessionId:31b036,id:log_92896562_H1,timestamp:92896562,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_entry,data:{{hypothesisId:H1}},runId:initial}}
 {{sessionId:31b036,id:log_92897453_H2,timestamp:92897453,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_extension_match,data:{{hypothesisId:H2}},runId:initial}}
+{{sessionId:31b036,id:log_98685625_H1,timestamp:98685625,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_entry,data:{{hypothesisId:H1}},runId:initial}}
+{{sessionId:31b036,id:log_98686015_H2,timestamp:98686015,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_extension_match,data:{{hypothesisId:H2}},runId:initial}}
+{{sessionId:31b036,id:log_99342703_H1,timestamp:99342703,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_entry,data:{{hypothesisId:H1}},runId:initial}}
+{{sessionId:31b036,id:log_99342859_H4,timestamp:99342859,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_return_false,data:{{hypothesisId:H4}},runId:initial}}
+{{sessionId:31b036,id:log_99501125_H1,timestamp:99501125,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_entry,data:{{hypothesisId:H1}},runId:initial}}
+{{sessionId:31b036,id:log_99501312_H2,timestamp:99501312,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_extension_match,data:{{hypothesisId:H2}},runId:initial}}
