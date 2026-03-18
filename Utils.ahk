@@ -6530,27 +6530,49 @@ QuickLook_OpenPath(path) {
             }
             ; #endregion
 
-            ; Send navigation shortcuts in order: Ctrl+End, then Ctrl+Alt+End as fallback.
+            ; Send Ctrl+End using a foreground SendInput sequence (manual Ctrl+End works, so method matters).
+            sendMode := "unknown"
             try {
-                ControlSend("^End", "ahk_id " hwnd)
-                Sleep 50
-                ControlSend("^!End", "ahk_id " hwnd)
+                ; Ensure QuickLook is still active right before sending.
+                WinActivate("ahk_id " hwnd)
+                WinWaitActive("ahk_id " hwnd, , 1)
+
+                ; Preferred: SendInput to foreground window.
+                SendInput("^{End}")
+                sendMode := "SendInput"
             } catch {
-                ; Fallback to active-window keystrokes if ControlSend fails
+                ; Fallback: explicit down/up (some apps are picky about chord timing)
                 try {
                     WinActivate("ahk_id " hwnd)
                     WinWaitActive("ahk_id " hwnd, , 1)
-                    Send("^End")
-                    Sleep 50
-                    Send("^!End")
+                    Send("{Ctrl down}{End}{Ctrl up}")
+                    sendMode := "KeyDownUp"
                 } catch {
-                    ; ignore
+                    ; Last resort: ControlSend (often unreliable for WPF, but keep as backup)
+                    try {
+                        ControlSend("^End", "ahk_id " hwnd)
+                        sendMode := "ControlSend"
+                    } catch {
+                        sendMode := "failed"
+                    }
                 }
             }
 
-            ; #region agent log: QuickLook navigation shortcuts sent (H4)
+            ; #region agent log: QuickLook Ctrl+End send method (H6)
             try {
-                navLog := '{\"sessionId\":\"692bc5\",\"runId\":\"pre-fix\",\"hypothesisId\":\"H4\",\"location\":\"Utils.ahk:QuickLook_OpenPath\",\"message\":\"QuickLook_navigation_shortcuts_sent\",\"data\":{{\"ctrlEnd\":true,\"ctrlAltEnd\":true},\"timestamp\":' A_TickCount '}}'
+                isActiveAfter := WinActive("ahk_id " hwnd)
+                activeHwnd2 := WinExist("A")
+                activeExe2 := ""
+                if (activeHwnd2) {
+                    try activeExe2 := WinGetProcessName("ahk_id " activeHwnd2)
+                }
+                navLog := Format(
+                    '{\"sessionId\":\"692bc5\",\"runId\":\"pre-fix\",\"hypothesisId\":\"H6\",\"location\":\"Utils.ahk:QuickLook_OpenPath\",\"message\":\"QuickLook_ctrlEnd_sent\",\"data\":{{\"sendMode\":\"{}\",\"quicklookActiveAfter\":{},\"activeExeAfter\":\"{}\"}},\"timestamp\":{}}',
+                    sendMode,
+                    isActiveAfter ? "true" : "false",
+                    activeExe2,
+                    A_TickCount
+                )
                 FileAppend(navLog "`n", "debug-692bc5.log", "UTF-8")
             } catch {
                 ; ignore logging failures
