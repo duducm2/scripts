@@ -381,3 +381,15 @@
 {"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":120101218,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
 {"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":120101312,"data":"delay=2000 isKeys=0","hypothesisId":"H2"}
 {"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":120103312,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":121025484,"data":"keysCount=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":121025484,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":121026312,"data":"keysCount=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":121026312,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":121026937,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":121837796,"data":"keysCount=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":121837796,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":121848062,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":122154281,"data":"keysCount=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":122154296,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":122154390,"data":"delay=2000 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":122156390,"data":"delay=0 isKeys=0","hypothesisId":"H2"}

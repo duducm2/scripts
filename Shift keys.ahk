@@ -1461,7 +1461,7 @@ r=== CLIP ANGEL ===
 [Ctrl+Alt+Win+Shift+R] > Minimize window on monitor 4
 
 === COMMAND PALETTE BOOKMARKS ===
-[Ctrl+Alt+Win+B] > Add bookmark (Command Palette Bookmark extension)
+[Ctrl+Alt+Win+M] > Add bookmark (Command Palette Bookmark extension)
 
 === GENERAL ===
 [Win+Alt+Shift+U] > Quick string shortcuts
@@ -16111,7 +16111,7 @@ SettleUp_GetNewExpenseDialog() {
 
 ; Shift + I : Trigger Command Palette Bookmark "add new bookmark" shortcut
 +i:: {
-    Send "^!#b"
+    Send "^!#m"
 }
 
 ; Ctrl + 1 : Trigger Enter
