@@ -694,7 +694,8 @@ QuickUpdate_ShutdownRunningScripts() {
         list := ""
         for t in stuck
             list .= t "`n"
-        ShowCenteredOverlay_Utils("❌ Could not close these scripts:`n" list "Close them manually and retry.", 5000, BANNER_ACCENT_ERROR)
+        ShowCenteredOverlay_Utils("❌ Could not close these scripts:`n" list "Close them manually and retry.", 5000,
+            BANNER_ACCENT_ERROR)
         return false
     }
     return true
@@ -6350,6 +6351,15 @@ QuickLook_NormalizePath(path) {
     if (SubStr(path, 1, 1) = q && SubStr(path, -1) = q)
         path := SubStr(path, 2, StrLen(path) - 2)
     return Trim(path)
+}
+
+; Environment-specific QuickLook location (legacy/compat fallback).
+; Used when `quicklook.ini` doesn't specify an absolute path.
+GetQuickLookExePath() {
+    quickLookExe := "C:\QuickLook\QuickLook.exe"
+    if (FileExist(quickLookExe))
+        return quickLookExe
+    return ""
 }
 
 QuickLook_ResolveExePath() {
