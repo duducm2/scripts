@@ -1833,6 +1833,90 @@ CursorTransfer_GetProjectNameForTitle(winTitle) {
 
 ; Returns selected Cursor window HWND or 0 on cancel/timeout/no windows. Blocking with timeout.
 ; centerOnHwnd: optional window to center the modal on (uses that window's monitor); 0 = primary monitor.
+CursorTransfer_StripStaticScriptTokenForDisplay(projectName) {
+    ; Removes redundant static token(s) like "Script"/"Scripts" from the project label.
+    ; If the result is too short, return "" so the UI can omit the bracketed prefix.
+    if (!projectName)
+        return ""
+    cleaned := projectName
+    ; Match whole-word "Script" or "Scripts" (case-insensitive).
+    cleaned := RegExReplace(cleaned, "(?i)\bscript(s)?\b", "")
+    cleaned := RegExReplace(cleaned, "\s{2,}", " ")
+    cleaned := Trim(cleaned)
+    return (StrLen(cleaned) < 2) ? "" : cleaned
+}
+
+Clipboard_GetSequenceNumber() {
+    ; WinAPI: https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-getclipboardsequencenumber
+    try {
+        return DllCall("GetClipboardSequenceNumber", "uint")
+    } catch {
+        return 0
+    }
+}
+
+Clipboard_WaitForSequenceChange(seqBefore, totalTimeoutMs := 2000, fastPhaseMs := 850) {
+    ; Tight, bounded wait: returns true as soon as the clipboard sequence changes.
+    ; Uses a fast polling phase first, then a slower phase for the remainder.
+    start := A_TickCount
+    deadline := start + totalTimeoutMs
+    fastDeadline := start + fastPhaseMs
+    while (A_TickCount < deadline) {
+        seqNow := Clipboard_GetSequenceNumber()
+        if (seqNow && seqNow != seqBefore)
+            return true
+        Sleep((A_TickCount < fastDeadline) ? 20 : 50)
+    }
+    return false
+}
+
+GetGeminiScriptMsgTargetHwnd() {
+    ; Cache-first resolver for Gemini.ahk AutoHotkey script window.
+    static cached := 0
+    if (cached && WinExist("ahk_id " cached)) {
+        try {
+            if (InStr(WinGetTitle("ahk_id " cached), "Gemini.ahk"))
+                return cached
+        } catch {
+        }
+    }
+
+    prevMatch := A_TitleMatchMode
+    DetectHiddenWindows(true)
+    SetTitleMatchMode(2)
+    found := 0
+    try {
+        for hwnd in WinGetList("ahk_exe AutoHotkey64.exe") {
+            try {
+                if (InStr(WinGetTitle("ahk_id " hwnd), "Gemini.ahk")) {
+                    found := hwnd
+                    break
+                }
+            } catch {
+                continue
+            }
+        }
+        if (!found) {
+            for hwnd in WinGetList("ahk_exe AutoHotkey32.exe") {
+                try {
+                    if (InStr(WinGetTitle("ahk_id " hwnd), "Gemini.ahk")) {
+                        found := hwnd
+                        break
+                    }
+                } catch {
+                    continue
+                }
+            }
+        }
+    } finally {
+        SetTitleMatchMode(prevMatch)
+        DetectHiddenWindows(false)
+    }
+
+    if (found)
+        cached := found
+    return found
+}
 CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
     global g_CursorTransferSelectorGui, g_CursorTransferSelectorActive, g_CursorTransferSelectorResult
     global g_CursorTransferWindowList, g_CursorTransferHotkeyHandlers
@@ -1881,7 +1965,16 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
         if (projName != "") {
             shortTitle := (winTitle != "") ? ((StrLen(winTitle) > 40) ? SubStr(winTitle, 1, 37) . "..." : winTitle) :
                 ""
-            displayName := (shortTitle != "") ? ("[" . projName . "] " . shortTitle) : projName
+            cleanProjName := CursorTransfer_StripStaticScriptTokenForDisplay(projName)
+            if (cleanProjName != "") {
+                displayName := (shortTitle != "") ? ("[" . cleanProjName . "] " . shortTitle) : cleanProjName
+            } else {
+                ; Omit bracketed project prefix when the cleaned name is empty.
+                if (shortTitle != "")
+                    displayName := shortTitle
+                else
+                    displayName := ("Cursor Window " . w.hwnd)
+            }
         } else {
             displayName := (winTitle != "") ? ((StrLen(winTitle) > 50) ? SubStr(winTitle, 1, 47) . "..." : winTitle) :
                 ("Cursor Window " . w.hwnd)
@@ -1954,8 +2047,25 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
         g_CursorTransferSelectorGui.Add("Text", "w320 Center", "Press 1-9 | N or Esc to cancel")
         g_CursorTransferSelectorGui.Show("AutoSize Hide")
         g_CursorTransferSelectorGui.GetPos(&gx, &gy, &gw, &gh)
-        ; Center on primary monitor so the menu is always visible (avoid off-screen when OriginHwnd is on another monitor).
-        MonitorGetWorkArea(1, &ml, &mt, &mr, &mb)
+        ; Center on the monitor containing centerOnHwnd so the anchored visual context stays consistent.
+        monitorIndex := 1
+        if (centerOnHwnd && WinExist("ahk_id " centerOnHwnd)) {
+            rect := Buffer(16, 0)
+            if (DllCall("GetWindowRect", "ptr", centerOnHwnd, "ptr", rect)) {
+                cx := NumGet(rect, 0, "int") + (NumGet(rect, 8, "int") - NumGet(rect, 0, "int")) // 2
+                cy := NumGet(rect, 4, "int") + (NumGet(rect, 12, "int") - NumGet(rect, 4, "int")) // 2
+                monitorCount := MonitorGetCount()
+                loop monitorCount {
+                    idx := A_Index
+                    MonitorGet(idx, &ml, &mt, &mr, &mb)
+                    if (cx >= ml && cx <= mr && cy >= mt && cy <= mb) {
+                        monitorIndex := idx
+                        break
+                    }
+                }
+            }
+        }
+        MonitorGetWorkArea(monitorIndex, &ml, &mt, &mr, &mb)
         mw := mr - ml
         mh := mb - mt
         cx := ml + (mw - gw) // 2
@@ -3369,32 +3479,7 @@ class D2C_FlowManager {
         if (readAloud) {
             ; IPC: trigger read aloud in Gemini.ahk (Send does not trigger hotkeys in another script).
             WM_TRIGGER_READ_ALOUD := 0x8004
-            targetHwnd := 0
-            prevMatch := A_TitleMatchMode
-            DetectHiddenWindows(true)
-            SetTitleMatchMode(2)
-            for hwnd in WinGetList("ahk_exe AutoHotkey64.exe") {
-                try {
-                    if (InStr(WinGetTitle("ahk_id " hwnd), "Gemini.ahk")) {
-                        targetHwnd := hwnd
-                        break
-                    }
-                } catch {
-                    continue
-                }
-            }
-            if (!targetHwnd) {
-                for hwnd in WinGetList("ahk_exe AutoHotkey32.exe") {
-                    try {
-                        if (InStr(WinGetTitle("ahk_id " hwnd), "Gemini.ahk")) {
-                            targetHwnd := hwnd
-                            break
-                        }
-                    } catch {
-                        continue
-                    }
-                }
-            }
+            targetHwnd := GetGeminiScriptMsgTargetHwnd()
             if (targetHwnd) {
                 ; #region agent log
                 try FileAppend '{"sessionId":"7432d8","runId":"step2-verify","hypothesisId":"H13","location":"Utils.ahk:D2C.DoCopyCore","message":"dispatch read aloud IPC","data":{"targetHwnd":' targetHwnd '},"timestamp":' A_TickCount '}`n',
@@ -3408,53 +3493,24 @@ class D2C_FlowManager {
                 ; #endregion
                 ShowCenteredOverlay_Utils("❌ Gemini.ahk not running", 2000, BANNER_ACCENT_ERROR)
             }
-            SetTitleMatchMode(prevMatch)
-            DetectHiddenWindows(false)
         } else {
             ; #region agent log
             try FileAppend '{"sessionId":"7432d8","hypothesisId":"HC","location":"Utils.ahk:D2C.DoCopyCore","message":"copy path start","data":{},"timestamp":' A_TickCount '}`n',
                 A_ScriptDir "\debug-7432d8.log"
             ; #endregion
             clipBefore := A_Clipboard
+            seqBefore := Clipboard_GetSequenceNumber()
             WM_COPY_LAST_GEMINI := 0x8001
-            targetHwnd := 0
-            prevMatch := A_TitleMatchMode
-            DetectHiddenWindows(true)
-            SetTitleMatchMode(2)
-
-            for hwnd in WinGetList("ahk_exe AutoHotkey64.exe") {
-                try {
-                    if (InStr(WinGetTitle("ahk_id " hwnd), "Gemini.ahk")) {
-                        targetHwnd := hwnd
-                        break
-                    }
-                } catch {
-                    continue
-                }
-            }
-            if (!targetHwnd) {
-                for hwnd in WinGetList("ahk_exe AutoHotkey32.exe") {
-                    try {
-                        if (InStr(WinGetTitle("ahk_id " hwnd), "Gemini.ahk")) {
-                            targetHwnd := hwnd
-                            break
-                        }
-                    } catch {
-                        continue
-                    }
-                }
-            }
+            targetHwnd := GetGeminiScriptMsgTargetHwnd()
 
             if (targetHwnd) {
+                tDispatch := A_TickCount
                 try PostMessage(WM_COPY_LAST_GEMINI, 0, 0, , "ahk_id " targetHwnd)
-                loop 40 {
-                    Sleep(50)
-                    if (A_Clipboard != clipBefore && Trim(A_Clipboard) != "")
-                        break
-                }
+                changed := Clipboard_WaitForSequenceChange(seqBefore, 2000, 850)
+                ; Single validation after sequence change.
+                clipOk := (changed && A_Clipboard != clipBefore && Trim(A_Clipboard) != "")
                 ; #region agent log
-                try FileAppend '{"sessionId":"7432d8","runId":"step2-verify","hypothesisId":"H12","location":"Utils.ahk:D2C.DoCopyCore","message":"copy IPC complete","data":{"targetHwnd":' targetHwnd ',"clipboardChanged":' ((
-                    A_Clipboard != clipBefore && Trim(A_Clipboard) != "") ? 1 : 0) '},"timestamp":' A_TickCount '}`n',
+                try FileAppend '{"sessionId":"7432d8","runId":"step2-verify","hypothesisId":"H12","location":"Utils.ahk:D2C.DoCopyCore","message":"copy IPC complete","data":{"targetHwnd":' targetHwnd ',"seqChanged":' (changed ? 1 : 0) ',"clipboardOk":' (clipOk ? 1 : 0) ',"ipcMs":' (A_TickCount - tDispatch) '},"timestamp":' A_TickCount '}`n',
                 A_ScriptDir "\debug-7432d8.log"
                 ; #endregion
                 if (IsSoundEnabled())
@@ -3466,16 +3522,15 @@ class D2C_FlowManager {
                 ; #endregion
                 ShowCenteredOverlay_Utils("❌ Gemini.ahk not running", 2000, BANNER_ACCENT_ERROR)
             }
-
-            SetTitleMatchMode(prevMatch)
-            DetectHiddenWindows(false)
         }
 
         ; Gemini/Clipboard → Original: return transitions are immediate (no warning).
         if (!skipRestoreFocus && this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd) && !WinActive("ahk_id " this.OriginHwnd
         )) {
             WinActivate("ahk_id " this.OriginHwnd)
-            WinWaitActive("ahk_id " this.OriginHwnd, , 0.5)
+            ; Fast-path: avoid WinWaitActive if we are already active.
+            if (!WinActive("ahk_id " this.OriginHwnd))
+                WinWaitActive("ahk_id " this.OriginHwnd, , 0.5)
         }
     }
 
@@ -3493,12 +3548,8 @@ class D2C_FlowManager {
             ; Skip restoring focus so clipboard is not overwritten
             this.DoCopyCore(false, true)
 
-            clip := Trim(A_Clipboard)
-            if (clip = "" || StrLen(clip) < 10) {
-                Sleep 120
-                clip := Trim(A_Clipboard)
-            }
-
+            clipRaw := A_Clipboard
+            clip := Trim(clipRaw)
             if (clip = "" || StrLen(clip) < 10) {
                 ShowCenteredOverlay_Utils("❌ Copy failed or empty – try again", 2000, BANNER_ACCENT_ERROR)
                 if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
@@ -3506,19 +3557,36 @@ class D2C_FlowManager {
                 return
             }
 
+            ; Restore the pre-handoff anchored window so the user sees the selector/paste
+            ; happening in the exact app they were monitoring before the Gemini handoff.
+            if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd)) {
+                try {
+                    WinActivate("ahk_id " this.OriginHwnd)
+                    ; Fast-path: avoid WinWaitActive if we are already active.
+                    if (!WinActive("ahk_id " this.OriginHwnd))
+                        WinWaitActive("ahk_id " this.OriginHwnd, , 0.5)
+                } catch {
+                }
+            }
+            try A_Clipboard := clipRaw
+
+            tSelectorStart := A_TickCount
             this.CursorHwnd := CursorTransfer_ShowWindowSelector(this.OriginHwnd)
+            tSelectorMs := A_TickCount - tSelectorStart
             ; #region agent log
             try FileAppend '{"sessionId":"7432d8","runId":"step2-verify","hypothesisId":"H12","location":"Utils.ahk:D2C.PromptForCursorTransfer","message":"selector result","data":{"cursorHwnd":' this
-                .CursorHwnd ',"clipLen":' StrLen(clip) '},"timestamp":' A_TickCount '}`n',
+                .CursorHwnd ',"clipLen":' StrLen(clip) ',"selectorMs":' tSelectorMs '},"timestamp":' A_TickCount '}`n',
                 A_ScriptDir "\debug-7432d8.log"
             ; #endregion
             if (!this.CursorHwnd) {
                 if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
                     WinActivate("ahk_id " this.OriginHwnd)
+                try A_Clipboard := clipRaw
                 return
             }
 
             ; Gemini → Cursor: no pre-movement warning (source is not Original).
+            try A_Clipboard := clipRaw
             CursorTransfer_ActivateFocusPaste(this.CursorHwnd)
         } finally {
             this.Reset()
@@ -7585,85 +7653,19 @@ GetAioptPromptText() {
 ; Tell Gemini.ahk to start background completion monitor (must match WM_START_DELAYED_SUBMIT_MONITOR in Gemini.ahk).
 GeminiDelayedSubmitMonitorStartFromUtils(originalHwnd, geminiChromeHwnd) {
     WM_START_DELAYED_SUBMIT_MONITOR := 0x8002
-    DetectHiddenWindows true
-    SetTitleMatchMode 2
-    geminiPid := 0
-    for hwnd in WinGetList("ahk_exe AutoHotkey64.exe") {
-        try {
-            if (InStr(WinGetTitle("ahk_id " hwnd), "Gemini.ahk")) {
-                geminiPid := WinGetPID("ahk_id " hwnd)
-                break
-            }
-        } catch {
-            continue
-        }
+    targetHwnd := GetGeminiScriptMsgTargetHwnd()
+    if (targetHwnd) {
+        try SendMessage(WM_START_DELAYED_SUBMIT_MONITOR, originalHwnd, geminiChromeHwnd, , "ahk_id " targetHwnd)
     }
-    if (!geminiPid) {
-        for hwnd in WinGetList("ahk_exe AutoHotkey32.exe") {
-            try {
-                if (InStr(WinGetTitle("ahk_id " hwnd), "Gemini.ahk")) {
-                    geminiPid := WinGetPID("ahk_id " hwnd)
-                    break
-                }
-            } catch {
-                continue
-            }
-        }
-    }
-    sent := false
-    if (geminiPid) {
-        for hwnd in WinGetList("ahk_pid " geminiPid) {
-            try {
-                SendMessage(WM_START_DELAYED_SUBMIT_MONITOR, originalHwnd, geminiChromeHwnd, , "ahk_id " hwnd)
-                sent := true
-                break
-            } catch {
-                continue
-            }
-        }
-    }
-    DetectHiddenWindows false
 }
 
 ; Tell Gemini.ahk to stop the delayed-submit monitor so "Copy response?" is not shown (when user chose S or N at 6s).
 GeminiDelayedSubmitMonitorStopFromUtils() {
     WM_STOP_DELAYED_SUBMIT_MONITOR := 0x8003
-    DetectHiddenWindows true
-    SetTitleMatchMode 2
-    geminiPid := 0
-    for hwnd in WinGetList("ahk_exe AutoHotkey64.exe") {
-        try {
-            if (InStr(WinGetTitle("ahk_id " hwnd), "Gemini.ahk")) {
-                geminiPid := WinGetPID("ahk_id " hwnd)
-                break
-            }
-        } catch {
-            continue
-        }
+    targetHwnd := GetGeminiScriptMsgTargetHwnd()
+    if (targetHwnd) {
+        try SendMessage(WM_STOP_DELAYED_SUBMIT_MONITOR, 0, 0, , "ahk_id " targetHwnd)
     }
-    if (!geminiPid) {
-        for hwnd in WinGetList("ahk_exe AutoHotkey32.exe") {
-            try {
-                if (InStr(WinGetTitle("ahk_id " hwnd), "Gemini.ahk")) {
-                    geminiPid := WinGetPID("ahk_id " hwnd)
-                    break
-                }
-            } catch {
-                continue
-            }
-        }
-    }
-    if (geminiPid) {
-        for hwnd in WinGetList("ahk_pid " geminiPid) {
-            try {
-                SendMessage(WM_STOP_DELAYED_SUBMIT_MONITOR, 0, 0, , "ahk_id " hwnd)
-                break
-            } catch {
-                continue
-            }
-        }
-    }
-    DetectHiddenWindows false
 }
 
 ; Paste transcription to Gemini prompt only (no Enter, no 4s banner). Used when user presses S at 6s dictation confirm.
