@@ -643,6 +643,8 @@ GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false) {
         A_ScriptDir "\debug-7432d8.log"
         ; #endregion
         t0 := A_TickCount
+        ; Ensure we never reuse a stale cached "last response" element.
+        GeminiState.Invalidate()
         ; Step 1: Activate Gemini window globally
         SetTitleMatchMode(2)
         if hwnd := GetGeminiWindowHwnd() {
@@ -689,7 +691,10 @@ GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false) {
             return
         }
 
-        ; Step 3: If copyFirst, find and click the last Copy button; else just scroll so last response is in view
+        ; Step 3: Scroll to bottom so newest response controls are discoverable.
+        ; Prefer JS scroll (more deterministic in Chrome), with Ctrl+End fallback.
+        try uia.JSExecute("window.scrollTo(0, document.documentElement.scrollHeight);")
+        Sleep GEMINI_SCROLL_SETTLE_MS
         Send "^{End}"
         Sleep GEMINI_SCROLL_SETTLE_MS
 
@@ -867,12 +872,15 @@ CopyLastGeminiMessageToClipboard(options := "", geminiHwnd := 0) {
             Sleep GEMINI_TAB_SWITCH_MS
         }
 
-        ; Scroll to bottom *before* UIA so the last response is in the tree and we go down the chat.
-        Send "^{End}"
-        Sleep GEMINI_SCROLL_SETTLE_MS
-
         uia := alreadyActive ? UIA_Browser() : UIA_Browser("ahk_id " geminiHwnd)
         Sleep GEMINI_UIA_SETTLE_MS
+
+        ; Scroll to bottom so the newest response controls are discoverable.
+        ; Prefer JS scroll (more deterministic in Chrome), with Ctrl+End fallback.
+        try uia.JSExecute("window.scrollTo(0, document.documentElement.scrollHeight);")
+        Sleep GEMINI_SCROLL_SETTLE_MS
+        Send "^{End}"
+        Sleep GEMINI_SCROLL_SETTLE_MS
 
         lastCopyButton := GeminiState.GetLastCopyButtonCached(uia, geminiHwnd)
 
