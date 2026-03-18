@@ -2568,3 +2568,40 @@
 {"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":110335921,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
 {"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":110336000,"data":"delay=3500 isKeys=0","hypothesisId":"H2"}
 {"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":110339500,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":110418078,"data":"keysCount=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":110418078,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":110418125,"data":"delay=1500 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":110419625,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":110421562,"data":"keysCount=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":110421562,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":110425328,"data":"keysCount=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":110425328,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":110425500,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:KeysTimeoutFired","message":"entry","timestamp":110427640,"data":"isKeysOverlay=1","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:KeysTimeoutFired","message":"calling timeout callback","timestamp":110427640,"hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":110427656,"data":"keysCount=3","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":110427671,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":110427718,"data":"keysCount=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":110427734,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":110427781,"data":"delay=2000 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":110429781,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":110439562,"data":"keysCount=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":110457156,"data":"keysCount=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":110457156,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":110457203,"data":"delay=700 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":110457968,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":110480546,"data":"keysCount=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":110480546,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":110480625,"data":"delay=3500 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":110484125,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":110557343,"data":"keysCount=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":110557343,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":110558203,"data":"keysCount=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":110558203,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":110558781,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":110561031,"data":"keysCount=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":110561046,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":110561109,"data":"keysCount=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":110561109,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":110561187,"data":"delay=2000 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":110563187,"data":"delay=0 isKeys=0","hypothesisId":"H2"}

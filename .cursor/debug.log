@@ -4398,3 +4398,7 @@
 {"location":"WindowManagement.ahk:ActivateCursorProject","message":"after FindAndActivate","data":{"targetHwnd":15863862},"hypothesisId":"H3","timestamp":109740734}
 {"location":"WindowManagement.ahk:ActivateCursorProject","message":"after FocusCursorAITextField","data":{"focusOk":1},"hypothesisId":"H4","timestamp":109741875}
 {"location":"WindowManagement.ahk:ActivateCursorProject","message":"return true","data":{},"hypothesisId":"H3","timestamp":109742015}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"entry","data":{"pathLen":100,"dirExists":1},"hypothesisId":"H3","timestamp":110422140}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"after FindAndActivate","data":{"targetHwnd":0},"hypothesisId":"H3","timestamp":110422140}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"after FocusCursorAITextField","data":{"focusOk":0},"hypothesisId":"H4","timestamp":110425500}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"return false (focus failed)","data":{},"hypothesisId":"H4","timestamp":110425500}

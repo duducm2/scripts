@@ -6449,45 +6449,6 @@ QuickLook_OpenPath(path) {
                 ; ignore
             }
 
-            ; #region agent log: QuickLook before focus mode (H1/H2)
-            try {
-                activeBefore := GetActiveMonitorIndex()
-
-                rect := Buffer(16, 0)
-                winLeft := 0, winTop := 0, winRight := 0, winBottom := 0
-                quicklookMon := 0
-                if (DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)) {
-                    winLeft := NumGet(rect, 0, "int")
-                    winTop := NumGet(rect, 4, "int")
-                    winRight := NumGet(rect, 8, "int")
-                    winBottom := NumGet(rect, 12, "int")
-                    centerX := winLeft + (winRight - winLeft) // 2
-                    centerY := winTop + (winBottom - winTop) // 2
-                    monitorCount := MonitorGetCount()
-                    loop monitorCount {
-                        idx := A_Index
-                        MonitorGetWorkArea(idx, &ml, &mt, &mr, &mb)
-                        if (centerX >= ml && centerX <= mr && centerY >= mt && centerY <= mb) {
-                            quicklookMon := idx
-                            break
-                        }
-                    }
-                }
-
-                log := Format(
-                    '{\"sessionId\":\"692bc5\",\"runId\":\"pre-fix\",\"hypothesisId\":\"H1\",\"location\":\"Utils.ahk:QuickLook_OpenPath\",\"message\":\"QuickLook_Open_before_EnableFocusMode\",\"data\":{{\"targetMon\":{},\"moveOk\":{},\"activeBefore\":{},\"quicklookMon\":{}},\"timestamp\":{}}}',
-                    targetMon,
-                    moveOk ? "true" : "false",
-                    activeBefore,
-                    quicklookMon,
-                    A_TickCount
-                )
-                FileAppend(log "`n", "debug-692bc5.log", "UTF-8")
-            } catch {
-                ; ignore logging failures
-            }
-            ; #endregion
-
             ; Execute blackout only after move is verified and QuickLook is active.
             EnableFocusMode()
             StartPdfFocusMonitor(hwnd, "Debounced")
@@ -6507,31 +6468,7 @@ QuickLook_OpenPath(path) {
                 ; ignore
             }
 
-            ; #region agent log: QuickLook before Ctrl+End (H3/H4/H5)
-            try {
-                isActive := WinActive("ahk_id " hwnd)
-                activeHwnd := WinExist("A")
-                activeTitle := ""
-                activeExe := ""
-                if (activeHwnd) {
-                    try activeTitle := WinGetTitle("ahk_id " activeHwnd)
-                    try activeExe := WinGetProcessName("ahk_id " activeHwnd)
-                }
-                log2 := Format(
-                    '{\"sessionId\":\"692bc5\",\"runId\":\"pre-fix\",\"hypothesisId\":\"H3\",\"location\":\"Utils.ahk:6430\",\"message\":\"QuickLook_before_CtrlEnd\",\"data\":{{\"isActive\":{},\"activeTitle\":\"{}\",\"activeExe\":\"{}\"},\"timestamp\":{}}}',
-                    isActive ? "true" : "false",
-                    activeTitle,
-                    activeExe,
-                    A_TickCount
-                )
-                FileAppend(log2 "`n", "debug-692bc5.log", "UTF-8")
-            } catch {
-                ; ignore logging failures
-            }
-            ; #endregion
-
             ; Send Ctrl+End using a foreground SendInput sequence (manual Ctrl+End works, so method matters).
-            sendMode := "unknown"
             try {
                 ; Ensure QuickLook is still active right before sending.
                 WinActivate("ahk_id " hwnd)
@@ -6539,45 +6476,20 @@ QuickLook_OpenPath(path) {
 
                 ; Preferred: SendInput to foreground window.
                 SendInput("^{End}")
-                sendMode := "SendInput"
             } catch {
                 ; Fallback: explicit down/up (some apps are picky about chord timing)
                 try {
                     WinActivate("ahk_id " hwnd)
                     WinWaitActive("ahk_id " hwnd, , 1)
                     Send("{Ctrl down}{End}{Ctrl up}")
-                    sendMode := "KeyDownUp"
                 } catch {
                     ; Last resort: ControlSend (often unreliable for WPF, but keep as backup)
                     try {
                         ControlSend("^End", "ahk_id " hwnd)
-                        sendMode := "ControlSend"
                     } catch {
-                        sendMode := "failed"
                     }
                 }
             }
-
-            ; #region agent log: QuickLook Ctrl+End send method (H6)
-            try {
-                isActiveAfter := WinActive("ahk_id " hwnd)
-                activeHwnd2 := WinExist("A")
-                activeExe2 := ""
-                if (activeHwnd2) {
-                    try activeExe2 := WinGetProcessName("ahk_id " activeHwnd2)
-                }
-                navLog := Format(
-                    '{\"sessionId\":\"692bc5\",\"runId\":\"pre-fix\",\"hypothesisId\":\"H6\",\"location\":\"Utils.ahk:QuickLook_OpenPath\",\"message\":\"QuickLook_ctrlEnd_sent\",\"data\":{{\"sendMode\":\"{}\",\"quicklookActiveAfter\":{},\"activeExeAfter\":\"{}\"}},\"timestamp\":{}}',
-                    sendMode,
-                    isActiveAfter ? "true" : "false",
-                    activeExe2,
-                    A_TickCount
-                )
-                FileAppend(navLog "`n", "debug-692bc5.log", "UTF-8")
-            } catch {
-                ; ignore logging failures
-            }
-            ; #endregion
         }
     }
 }
@@ -8880,28 +8792,6 @@ EnableFocusMode() {
     }
 
     activeMon := GetActiveMonitorIndex()
-
-    ; #region agent log: EnableFocusMode entry (H1/H2)
-    try {
-        trackedHwnd := WinExist("A")
-        trackedTitle := ""
-        trackedExe := ""
-        if (trackedHwnd) {
-            try trackedTitle := WinGetTitle("ahk_id " trackedHwnd)
-            try trackedExe := WinGetProcessName("ahk_id " trackedHwnd)
-        }
-        log := Format(
-            '{\"sessionId\":\"692bc5\",\"runId\":\"pre-fix\",\"hypothesisId\":\"H2\",\"location\":\"Utils.ahk:8691\",\"message\":\"EnableFocusMode_entry\",\"data\":{{\"activeMon\":{},\"trackedTitle\":\"{}\",\"trackedExe\":\"{}\"},\"timestamp\":{}}}',
-            activeMon,
-            trackedTitle,
-            trackedExe,
-            A_TickCount
-        )
-        FileAppend(log "`n", "debug-692bc5.log", "UTF-8")
-    } catch {
-        ; ignore logging failures
-    }
-    ; #endregion
     if (!activeMon) {
         return
     }
