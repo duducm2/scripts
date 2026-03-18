@@ -9839,9 +9839,13 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
     prevDetectHidden := A_DetectHiddenWindows
     DetectHiddenWindows true
 
-    ; Collect Chrome window hwnds whose title contains the filename (with or without .pdf, case-insensitive)
+    ; Collect Chrome window hwnds that appear to be showing this PDF.
+    ; Title matching is unreliable because Chrome PDF viewer titles can reflect document content instead of filename.
     toClose := []
     fileNameLower := StrLower(fileNameOnly)
+    filePathLower := ""
+    if (filePath != "")
+        filePathLower := StrLower(StrReplace(filePath, "\", "/"))
     baseNameLower := ""
     try {
         SplitPath fileNameOnly, , , &ext, &baseName
@@ -9859,6 +9863,46 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
             matched := (fileNameLower != "" && InStr(titleLower, fileNameLower) != 0)
             if (!matched && baseNameLower != "")
                 matched := InStr(titleLower, baseNameLower) != 0
+            ; UIA-based match: look for a Document element whose Value contains the file path or filename.
+            ; This catches Chrome PDF viewer windows whose title doesn't include the filename.
+            matchedUia := false
+            docValue := ""
+            if (!matched) {
+                try {
+                    root := UIA.ElementFromHandle(hwnd)
+                    ; Find a document-like element that exposes the PDF file URL/path.
+                    docEl := root.FindFirst({ Type: "Document" })
+                    if docEl {
+                        try docValue := StrLower(docEl.Value)
+                        catch {
+                            docValue := ""
+                        }
+                        if (docValue != "") {
+                            docValue := StrReplace(docValue, "\", "/")
+                            if (filePathLower != "" && InStr(docValue, filePathLower))
+                                matchedUia := true
+                            else if (fileNameLower != "" && InStr(docValue, fileNameLower))
+                                matchedUia := true
+                        }
+                    }
+                } catch {
+                    matchedUia := false
+                }
+            }
+
+            ; #region agent log (debug-602d72)
+            try FileAppend(
+                "{`"sessionId`":`"602d72`",`"runId`":`"pre-fix`",`"hypothesisId`":`"H7`",`"location`":`"Shift keys.ahk:EnsureSingleChromePdfInstance`",`"message`":`"chrome_window_scan`",`"data`":{"
+                . "`"hwnd`":`"" . hwnd . "`",`"title`":`"" . title . "`",`"matchedTitle`":" . (matched?1:0) . ",`"matchedUia`":" . (matchedUia?1:0)
+                . ",`"docHasPdf`":" . ((docValue != "" && InStr(docValue, ".pdf"))?1:0) . "}"
+                . ",`"timestamp`":" . A_TickCount . "}" . "`n"
+            , A_ScriptDir "\debug-602d72.log")
+            catch {
+            }
+            ; #endregion agent log
+
+            if (!matched && matchedUia)
+                matched := true
             if matched
                 toClose.Push(hwnd)
         } catch {
@@ -9868,6 +9912,14 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
 
     ; Restore previous DetectHiddenWindows setting
     DetectHiddenWindows prevDetectHidden
+
+    ; #region agent log (debug-602d72)
+    try FileAppend(
+        "{`"sessionId`":`"602d72`",`"runId`":`"pre-fix`",`"hypothesisId`":`"H7`",`"location`":`"Shift keys.ahk:EnsureSingleChromePdfInstance`",`"message`":`"chrome_windows_to_close`",`"data`":{`"count`":" . toClose.Length . "},`"timestamp`":" . A_TickCount . "}" . "`n"
+    , A_ScriptDir "\debug-602d72.log")
+    catch {
+    }
+    ; #endregion agent log
 
     for hwnd in toClose {
         try {
@@ -9893,26 +9945,10 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
     slowStepMs := 300  ; used throughout this hotkey flow
     mainHwnd := 0
     try {
-        ; #region agent log (debug-602d72)
-        try FileAppend(
-            "{`"sessionId`":`"602d72`",`"runId`":`"pre-fix`",`"hypothesisId`":`"H1`",`"location`":`"Shift keys.ahk:^6 entry`",`"message`":`"hotkey_start`",`"data`":{`"ctrlP`":"
-            . (GetKeyState("Ctrl","P")?1:0) . ",`"shiftP`":" . (GetKeyState("Shift","P")?1:0) . ",`"altP`":" . (GetKeyState("Alt","P")?1:0)
-            . ",`"activeHwnd`":`"" . WinGetID("A") . "`"},`"timestamp`":" . A_TickCount . "}" . "`n"
-        , A_ScriptDir "\debug-602d72.log")
-        catch {
-        }
-        ; #endregion agent log
         ; 1. Trigger Marp export
         try {
             mainHwnd := WinGetID("A")
         } catch {
-            ; #region agent log (debug-602d72)
-            try FileAppend(
-                "{`"sessionId`":`"602d72`",`"runId`":`"pre-fix`",`"hypothesisId`":`"H3`",`"location`":`"Shift keys.ahk:^6 trigger_export`",`"message`":`"wingetid_A_failed_mainHwnd`",`"data`":{},`"timestamp`":" . A_TickCount . "}" . "`n"
-            , A_ScriptDir "\debug-602d72.log")
-            catch {
-            }
-            ; #endregion agent log
             ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
             return
         }
@@ -9931,13 +9967,6 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
             h := WinExist("ahk_class #32770")
             if h {
                 saveDialogHwnd := h
-                ; #region agent log (debug-602d72)
-                try FileAppend(
-                    "{`"sessionId`":`"602d72`",`"runId`":`"pre-fix`",`"hypothesisId`":`"H2`",`"location`":`"Shift keys.ahk:^6 wait_dialog`",`"message`":`"found_dialog_class_32770`",`"data`":{`"hwnd`":`"" . h . "`"},`"timestamp`":" . A_TickCount . "}" . "`n"
-                , A_ScriptDir "\debug-602d72.log")
-                catch {
-                }
-                ; #endregion agent log
                 break
             }
             ; Title contains Save/Export (any window)
@@ -9946,13 +9975,6 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
                 h := WinExist(str)
                 if h {
                     saveDialogHwnd := h
-                    ; #region agent log (debug-602d72)
-                    try FileAppend(
-                        "{`"sessionId`":`"602d72`",`"runId`":`"pre-fix`",`"hypothesisId`":`"H2`",`"location`":`"Shift keys.ahk:^6 wait_dialog`",`"message`":`"found_dialog_title_match`",`"data`":{`"match`":`"" . str . "`",`"hwnd`":`"" . h . "`"},`"timestamp`":" . A_TickCount . "}" . "`n"
-                    , A_ScriptDir "\debug-602d72.log")
-                    catch {
-                    }
-                    ; #endregion agent log
                     break 2
                 }
             }
@@ -9960,13 +9982,6 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
             try {
                 curr := WinGetID("A")
             } catch {
-                ; #region agent log (debug-602d72)
-                try FileAppend(
-                    "{`"sessionId`":`"602d72`",`"runId`":`"pre-fix`",`"hypothesisId`":`"H3`",`"location`":`"Shift keys.ahk:^6 wait_dialog`",`"message`":`"wingetid_A_failed`",`"data`":{},`"timestamp`":" . A_TickCount . "}" . "`n"
-                , A_ScriptDir "\debug-602d72.log")
-                catch {
-                }
-                ; #endregion agent log
                 ; Transient: no active window at this tick. Keep waiting for the dialog instead of aborting.
                 Sleep 250
                 continue
@@ -9982,13 +9997,6 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
                     || InStr(currTitle, "Salvar") || InStr(currTitle, "Guardar")
                 if InStr(currClass, "32770") || (InStr(currClass, "Chrome_WidgetWin") && isTitleDialogish) {
                     saveDialogHwnd := curr
-                    ; #region agent log (debug-602d72)
-                    try FileAppend(
-                        "{`"sessionId`":`"602d72`",`"runId`":`"pre-fix`",`"hypothesisId`":`"H2`",`"location`":`"Shift keys.ahk:^6 wait_dialog`",`"message`":`"found_dialog_active_window_fallback`",`"data`":{`"hwnd`":`"" . curr . "`",`"title`":`"" . currTitle . "`",`"class`":`"" . currClass . "`"},`"timestamp`":" . A_TickCount . "}" . "`n"
-                    , A_ScriptDir "\debug-602d72.log")
-                    catch {
-                    }
-                    ; #endregion agent log
                     break
                 }
             }
@@ -10011,14 +10019,6 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
         filePath := ""
         fileNameOnly := ""
         fileNameEditEl := 0
-        ; #region agent log (debug-602d72)
-        uiaT0 := A_TickCount
-        try FileAppend(
-            "{`"sessionId`":`"602d72`",`"runId`":`"pre-fix`",`"hypothesisId`":`"H5`",`"location`":`"Shift keys.ahk:^6 uia_extract`",`"message`":`"uia_extract_start`",`"data`":{`"saveDialogHwnd`":`"" . saveDialogHwnd . "`"},`"timestamp`":" . A_TickCount . "}" . "`n"
-        , A_ScriptDir "\debug-602d72.log")
-        catch {
-        }
-        ; #endregion agent log
         try {
             root := UIA.ElementFromHandle(saveDialogHwnd)
             fileNameEdit := ""
@@ -10095,13 +10095,6 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
         } catch {
             ; Fallback: no filename extracted; we will just open a new Chrome window at the end
         }
-        ; #region agent log (debug-602d72)
-        try FileAppend(
-            "{`"sessionId`":`"602d72`",`"runId`":`"pre-fix`",`"hypothesisId`":`"H5`",`"location`":`"Shift keys.ahk:^6 uia_extract`",`"message`":`"uia_extract_end`",`"data`":{`"elapsedMs`":" . (A_TickCount - uiaT0) . ",`"fileNameOnly`":`"" . fileNameOnly . "`",`"filePathLen`":" . StrLen(filePath) . "},`"timestamp`":" . A_TickCount . "}" . "`n"
-        , A_ScriptDir "\debug-602d72.log")
-        catch {
-        }
-        ; #endregion agent log
 
         ; Prepare Chrome context for this PDF: close old windows and open a new one
         if (fileNameOnly != "")
@@ -10111,32 +10104,15 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
         Send "{Enter}"  ; Confirm initial save
         Sleep slowStepMs
 
-        ; #region agent log (debug-602d72)
-        try {
-            stillThere := WinExist("ahk_id " saveDialogHwnd) ? 1 : 0
-            FileAppend(
-                "{`"sessionId`":`"602d72`",`"runId`":`"pre-fix`",`"hypothesisId`":`"H4`",`"location`":`"Shift keys.ahk:^6 post_enter`",`"message`":`"after_send_enter`",`"data`":{`"saveDialogStillExists`":" . stillThere . "},`"timestamp`":" . A_TickCount . "}" . "`n"
-            , A_ScriptDir "\debug-602d72.log")
-        } catch {
-        }
-        ; #endregion agent log
+        stillThere := WinExist("ahk_id " saveDialogHwnd) ? 1 : 0
 
         ; If Enter didn't confirm, click the dialog's Export button via UIA.
         if (stillThere) {
-            ; #region agent log (debug-602d72)
-            try FileAppend(
-                "{`"sessionId`":`"602d72`",`"runId`":`"pre-fix`",`"hypothesisId`":`"H6`",`"location`":`"Shift keys.ahk:^6 export_click`",`"message`":`"fallback_click_export_start`",`"data`":{`"saveDialogHwnd`":`"" . saveDialogHwnd . "`"},`"timestamp`":" . A_TickCount . "}" . "`n"
-            , A_ScriptDir "\debug-602d72.log")
-            catch {
-            }
-            ; #endregion agent log
-
             try WinActivate("ahk_id " saveDialogHwnd)
             catch {
             }
             Sleep 120
 
-            exportClicked := 0
             try {
                 dlgRoot := UIA.ElementFromHandle(saveDialogHwnd)
                 exportBtn := dlgRoot.FindFirst({ Type: "Button", Name: "Export", AutomationId: "1" })
@@ -10144,21 +10120,11 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
                     exportBtn := dlgRoot.FindFirst({ Type: "Button", Name: "Export" })
                 if exportBtn {
                     exportBtn.Invoke()
-                    exportClicked := 1
                 }
             } catch {
             }
 
             Sleep slowStepMs
-            stillThere2 := WinExist("ahk_id " saveDialogHwnd) ? 1 : 0
-
-            ; #region agent log (debug-602d72)
-            try FileAppend(
-                "{`"sessionId`":`"602d72`",`"runId`":`"pre-fix`",`"hypothesisId`":`"H6`",`"location`":`"Shift keys.ahk:^6 export_click`",`"message`":`"fallback_click_export_end`",`"data`":{`"exportClicked`":" . exportClicked . ",`"saveDialogStillExists`":" . stillThere2 . "},`"timestamp`":" . A_TickCount . "}" . "`n"
-            , A_ScriptDir "\debug-602d72.log")
-            catch {
-            }
-            ; #endregion agent log
         }
 
         ; 3. Handle Confirm Save As / Replace dialog (ClassName #32770, Name: "Confirm Save As")
