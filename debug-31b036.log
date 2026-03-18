@@ -1,0 +1,4 @@
+{{sessionId:31b036,id:log_115109265_H1,timestamp:115109265,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_entry,data:{{hypothesisId:H1}},runId:initial}}
+{{sessionId:31b036,id:log_115110218_H2,timestamp:115110218,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_extension_match,data:{{hypothesisId:H2}},runId:initial}}
+{{sessionId:31b036,id:log_115117890_H1,timestamp:115117890,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_entry,data:{{hypothesisId:H1}},runId:initial}}
+{{sessionId:31b036,id:log_115118000_H4,timestamp:115118000,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_return_false,data:{{hypothesisId:H4}},runId:initial}}
