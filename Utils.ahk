@@ -2548,32 +2548,8 @@ ShowCenteredOverlay_Utils(text, duration := 1500, bgColor := BANNER_ACCENT_INTER
 ; Helper: Pre-movement warning (sound + 2s delay) before automated window changes.
 ; =============================================================================
 PlayPreMovementWarning(targetName) {
-    ; #region agent log
-    try FileAppend '{"sessionId":"dcaf70","runId":"pre","hypothesisId":"H0","location":"Utils.ahk:PlayPreMovementWarning:entry","message":"entry","data":{"targetName":"' targetName '","scriptDir":"' A_ScriptDir '"},"timestamp":' A_TickCount '}`n', A_ScriptDir "\debug-dcaf70.log"
-    ; #endregion
-
-    soundEnabled := false
-    try soundEnabled := IsSoundEnabled()
-    ; #region agent log
-    try FileAppend '{"sessionId":"dcaf70","runId":"pre","hypothesisId":"H1","location":"Utils.ahk:PlayPreMovementWarning:soundEnabled","message":"sound enabled?","data":{"soundEnabled":' (soundEnabled ? 1 : 0) '},"timestamp":' A_TickCount '}`n', A_ScriptDir "\debug-dcaf70.log"
-    ; #endregion
-
-    if (soundEnabled) {
-        soundPath := A_ScriptDir . "\sounds\pre-movement.wav"
-        exists := !!FileExist(soundPath)
-        ; #region agent log
-        try FileAppend '{"sessionId":"dcaf70","runId":"pre","hypothesisId":"H2","location":"Utils.ahk:PlayPreMovementWarning:beforeSoundPlay","message":"about to SoundPlay","data":{"soundPath":"' soundPath '","exists":' (exists ? 1 : 0) '},"timestamp":' A_TickCount '}`n', A_ScriptDir "\debug-dcaf70.log"
-        ; #endregion
-        try {
-            SoundPlay(soundPath)
-            ; #region agent log
-            try FileAppend '{"sessionId":"dcaf70","runId":"pre","hypothesisId":"H3","location":"Utils.ahk:PlayPreMovementWarning:afterSoundPlay","message":"SoundPlay returned without exception","data":{},"timestamp":' A_TickCount '}`n', A_ScriptDir "\debug-dcaf70.log"
-            ; #endregion
-        } catch as e {
-            ; #region agent log
-            try FileAppend '{"sessionId":"dcaf70","runId":"pre","hypothesisId":"H3","location":"Utils.ahk:PlayPreMovementWarning:SoundPlayException","message":"SoundPlay threw","data":{"what":"' e.What '","message":"' e.Message '"},"timestamp":' A_TickCount '}`n', A_ScriptDir "\debug-dcaf70.log"
-            ; #endregion
-        }
+    if (IsSoundEnabled()) {
+        try SoundPlay(A_ScriptDir . "\sounds\pre-movement.wav")
     }
     ShowCenteredOverlay_Utils("✋ Hands off! Moving to " . targetName . "...", 2000, BANNER_ACCENT_INTERMEDIATE)
     Sleep 2000
@@ -3116,9 +3092,6 @@ class D2C_FlowManager {
         HideDictationIndicator()
 
         ; Pre-movement warning before activating Gemini for paste (Original → Gemini).
-        ; #region agent log
-        try FileAppend '{"sessionId":"dcaf70","runId":"pre","hypothesisId":"H4","location":"Utils.ahk:D2C.ExecuteGeminiSubmit:preCue","message":"calling PlayPreMovementWarning","data":{"phase":"' this.CurrentPhase '","originHwnd":' this.OriginHwnd '},"timestamp":' A_TickCount '}`n', A_ScriptDir "\debug-dcaf70.log"
-        ; #endregion
         PlayPreMovementWarning("Gemini")
 
         ; Paste to Gemini (launches Chrome if needed); then capture active window as Gemini.
@@ -3357,9 +3330,6 @@ class D2C_FlowManager {
         ; #endregion
 
         ; Hands off cue before copying Gemini's last response (applies to both manual Y/R/C and timeout auto-copy).
-        ; #region agent log
-        try FileAppend '{"sessionId":"dcaf70","runId":"pre","hypothesisId":"H4","location":"Utils.ahk:D2C.DoCopyCore:preCue","message":"calling PlayPreMovementWarning","data":{"readAloud":' (readAloud ? 1 : 0) ',"skipRestoreFocus":' (skipRestoreFocus ? 1 : 0) ',"originHwnd":' this.OriginHwnd ',"geminiHwnd":' this.GeminiHwnd '},"timestamp":' A_TickCount '}`n', A_ScriptDir "\debug-dcaf70.log"
-        ; #endregion
         PlayPreMovementWarning("Gemini")
 
         if (!WinExist("ahk_id " this.GeminiHwnd)) {
