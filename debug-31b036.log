@@ -90,3 +90,5 @@
 {{sessionId:31b036,id:log_99342859_H4,timestamp:99342859,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_return_false,data:{{hypothesisId:H4}},runId:initial}}
 {{sessionId:31b036,id:log_99501125_H1,timestamp:99501125,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_entry,data:{{hypothesisId:H1}},runId:initial}}
 {{sessionId:31b036,id:log_99501312_H2,timestamp:99501312,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_extension_match,data:{{hypothesisId:H2}},runId:initial}}
+{{sessionId:31b036,id:log_108234000_H1,timestamp:108234000,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_entry,data:{{hypothesisId:H1}},runId:initial}}
+{{sessionId:31b036,id:log_108234656_H2,timestamp:108234656,location:Shift keys.ahk:78,message:IsChromePdfViewerActive_extension_match,data:{{hypothesisId:H2}},runId:initial}}

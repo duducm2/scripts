@@ -6080,10 +6080,13 @@ global g_StudyTopicSelectorActive := false
 ; PDF focus monitoring for automatic blackout cancellation (Win+Alt+Shift+X)
 global g_PdfFocusMonitorTimer := false
 global g_PdfFocusTrackedHwnd := 0
+global g_PdfFocusLossMode := "Immediate"      ; "Immediate" or "Debounced"
+global g_PdfFocusDebounceMs := 1200            ; Allow transient focus loss without un-blackouting
+global g_PdfFocusLostSinceTick := 0
 
 ; Monitor PDF (Peek) window focus and automatically disable focus mode when it loses focus
 MonitorPdfFocus() {
-    global g_PdfFocusTrackedHwnd
+    global g_PdfFocusTrackedHwnd, g_PdfFocusLossMode, g_PdfFocusDebounceMs, g_PdfFocusLostSinceTick
 
     ; Check if tracked window still exists
     if (g_PdfFocusTrackedHwnd && !WinExist("ahk_id " . g_PdfFocusTrackedHwnd)) {
@@ -6092,22 +6095,41 @@ MonitorPdfFocus() {
         return
     }
 
-    ; Check if PDF window is still the active window
+    ; Check if PDF/QuickLook window is still the active window
     if (!WinActive("ahk_id " . g_PdfFocusTrackedHwnd)) {
+        if (g_PdfFocusLossMode = "Debounced") {
+            ; Wait for focus loss to persist before canceling blackout.
+            if (!g_PdfFocusLostSinceTick)
+                g_PdfFocusLostSinceTick := A_TickCount
+
+            if ((A_TickCount - g_PdfFocusLostSinceTick) >= g_PdfFocusDebounceMs) {
+                DisableFocusMode()
+                StopPdfFocusMonitor()
+            }
+            return
+        }
+
+        ; Default: immediate cancellation (keeps behavior for Peek/PDF workflows)
         DisableFocusMode()
         StopPdfFocusMonitor()
+    } else {
+        ; Focus is stable again; reset debounce timer.
+        g_PdfFocusLostSinceTick := 0
     }
 }
 
 ; Start monitoring PDF window focus
-StartPdfFocusMonitor(hwnd := 0) {
-    global g_PdfFocusMonitorTimer, g_PdfFocusTrackedHwnd
+StartPdfFocusMonitor(hwnd := 0, focusLossMode := "Immediate") {
+    global g_PdfFocusMonitorTimer, g_PdfFocusTrackedHwnd, g_PdfFocusLossMode, g_PdfFocusLostSinceTick
 
     StopPdfFocusMonitor()
 
     g_PdfFocusTrackedHwnd := hwnd ? hwnd : WinExist("A")
     if (!g_PdfFocusTrackedHwnd)
         return
+
+    g_PdfFocusLossMode := focusLossMode
+    g_PdfFocusLostSinceTick := 0
 
     g_PdfFocusMonitorTimer := MonitorPdfFocus
     SetTimer(g_PdfFocusMonitorTimer, 200)
@@ -6390,10 +6412,150 @@ QuickLook_OpenPath(path) {
     if WinWait("ahk_exe QuickLook.exe", , 2) {
         hwnd := WinExist("ahk_exe QuickLook.exe")
         if (hwnd) {
-            MoveWindowToMonitor(hwnd, 2)
+            targetMon := 2
+            MoveWindowToMonitor(hwnd, targetMon)
             WinMaximize("ahk_id " hwnd)
+
+            ; Wait until QuickLook's window rect center is on the target monitor (move/maximize can be async).
+            ; (Condition-based wait; avoids relying on blind fixed delays.)
+            moveOk := false
+            deadline := A_TickCount + 1500
+            while (A_TickCount < deadline) {
+                try {
+                    rect := Buffer(16, 0)
+                    if (DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)) {
+                        wl := NumGet(rect, 0, "int"), wt := NumGet(rect, 4, "int")
+                        wr := NumGet(rect, 8, "int"), wb := NumGet(rect, 12, "int")
+                        cx := wl + (wr - wl) // 2
+                        cy := wt + (wb - wt) // 2
+                        MonitorGetWorkArea(targetMon, &ml, &mt, &mr, &mb)
+                        if (cx >= ml && cx <= mr && cy >= mt && cy <= mb) {
+                            moveOk := true
+                            break
+                        }
+                    }
+                } catch {
+                    ; ignore
+                }
+                Sleep 50
+            }
+
+            ; Ensure QuickLook is the active window before enabling blackout (blackout uses active window monitor).
+            try {
+                WinShow("ahk_id " hwnd)
+                WinActivate("ahk_id " hwnd)
+                WinWaitActive("ahk_id " hwnd, , 1)
+            } catch {
+                ; ignore
+            }
+
+            ; #region agent log: QuickLook before focus mode (H1/H2)
+            try {
+                activeBefore := GetActiveMonitorIndex()
+
+                rect := Buffer(16, 0)
+                winLeft := 0, winTop := 0, winRight := 0, winBottom := 0
+                quicklookMon := 0
+                if (DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)) {
+                    winLeft := NumGet(rect, 0, "int")
+                    winTop := NumGet(rect, 4, "int")
+                    winRight := NumGet(rect, 8, "int")
+                    winBottom := NumGet(rect, 12, "int")
+                    centerX := winLeft + (winRight - winLeft) // 2
+                    centerY := winTop + (winBottom - winTop) // 2
+                    monitorCount := MonitorGetCount()
+                    loop monitorCount {
+                        idx := A_Index
+                        MonitorGetWorkArea(idx, &ml, &mt, &mr, &mb)
+                        if (centerX >= ml && centerX <= mr && centerY >= mt && centerY <= mb) {
+                            quicklookMon := idx
+                            break
+                        }
+                    }
+                }
+
+                log := Format(
+                    '{\"sessionId\":\"692bc5\",\"runId\":\"pre-fix\",\"hypothesisId\":\"H1\",\"location\":\"Utils.ahk:QuickLook_OpenPath\",\"message\":\"QuickLook_Open_before_EnableFocusMode\",\"data\":{{\"targetMon\":{},\"moveOk\":{},\"activeBefore\":{},\"quicklookMon\":{}},\"timestamp\":{}}}',
+                    targetMon,
+                    moveOk ? "true" : "false",
+                    activeBefore,
+                    quicklookMon,
+                    A_TickCount
+                )
+                FileAppend(log "`n", "debug-692bc5.log", "UTF-8")
+            } catch {
+                ; ignore logging failures
+            }
+            ; #endregion
+
+            ; Execute blackout only after move is verified and QuickLook is active.
             EnableFocusMode()
-            StartPdfFocusMonitor(hwnd)
+            StartPdfFocusMonitor(hwnd, "Debounced")
+
+            ; Click inside QuickLook to ensure the markdown viewer control has keyboard focus.
+            try {
+                rect2 := Buffer(16, 0)
+                if (DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect2)) {
+                    wl2 := NumGet(rect2, 0, "int"), wt2 := NumGet(rect2, 4, "int")
+                    wr2 := NumGet(rect2, 8, "int"), wb2 := NumGet(rect2, 12, "int")
+                    clickX := wl2 + (wr2 - wl2) // 2
+                    clickY := wt2 + (wb2 - wt2) // 2
+                    CoordMode("Mouse", "Screen")
+                    Click clickX, clickY
+                }
+            } catch {
+                ; ignore
+            }
+
+            ; #region agent log: QuickLook before Ctrl+End (H3/H4/H5)
+            try {
+                isActive := WinActive("ahk_id " hwnd)
+                activeHwnd := WinExist("A")
+                activeTitle := ""
+                activeExe := ""
+                if (activeHwnd) {
+                    try activeTitle := WinGetTitle("ahk_id " activeHwnd)
+                    try activeExe := WinGetProcessName("ahk_id " activeHwnd)
+                }
+                log2 := Format(
+                    '{\"sessionId\":\"692bc5\",\"runId\":\"pre-fix\",\"hypothesisId\":\"H3\",\"location\":\"Utils.ahk:6430\",\"message\":\"QuickLook_before_CtrlEnd\",\"data\":{{\"isActive\":{},\"activeTitle\":\"{}\",\"activeExe\":\"{}\"},\"timestamp\":{}}}',
+                    isActive ? "true" : "false",
+                    activeTitle,
+                    activeExe,
+                    A_TickCount
+                )
+                FileAppend(log2 "`n", "debug-692bc5.log", "UTF-8")
+            } catch {
+                ; ignore logging failures
+            }
+            ; #endregion
+
+            ; Send navigation shortcuts in order: Ctrl+End, then Ctrl+Alt+End as fallback.
+            try {
+                ControlSend("^End", "ahk_id " hwnd)
+                Sleep 50
+                ControlSend("^!End", "ahk_id " hwnd)
+            } catch {
+                ; Fallback to active-window keystrokes if ControlSend fails
+                try {
+                    WinActivate("ahk_id " hwnd)
+                    WinWaitActive("ahk_id " hwnd, , 1)
+                    Send("^End")
+                    Sleep 50
+                    Send("^!End")
+                } catch {
+                    ; ignore
+                }
+            }
+
+            ; #region agent log: QuickLook navigation shortcuts sent (H4)
+            try {
+                navLog := '{\"sessionId\":\"692bc5\",\"runId\":\"pre-fix\",\"hypothesisId\":\"H4\",\"location\":\"Utils.ahk:QuickLook_OpenPath\",\"message\":\"QuickLook_navigation_shortcuts_sent\",\"data\":{{\"ctrlEnd\":true,\"ctrlAltEnd\":true},\"timestamp\":' A_TickCount '}}'
+                FileAppend(navLog "`n", "debug-692bc5.log", "UTF-8")
+            } catch {
+                ; ignore logging failures
+            }
+            ; #endregion
         }
     }
 }
@@ -6698,9 +6860,36 @@ PeekPdf_WaitAndConfigure(skipGoToLastPage := false) {
         try {
             WinShow("ahk_id " hwnd)
             WinActivate("ahk_id " hwnd)
+            WinWaitActive("ahk_id " hwnd, , 1)
         }
         EnableFocusMode()
-        StartPdfFocusMonitor(hwnd)
+        StartPdfFocusMonitor(hwnd, "Debounced")
+        ; Click inside QuickLook to ensure content receives keyboard focus
+        try {
+            rect := Buffer(16, 0)
+            if (DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)) {
+                wl := NumGet(rect, 0, "int"), wt := NumGet(rect, 4, "int")
+                wr := NumGet(rect, 8, "int"), wb := NumGet(rect, 12, "int")
+                clickX := wl + (wr - wl) // 2
+                clickY := wt + (wb - wt) // 2
+                CoordMode("Mouse", "Screen")
+                Click clickX, clickY
+            }
+        } catch {
+            ; ignore
+        }
+        try
+            ControlSend("^End", "ahk_id " hwnd)
+        catch {
+            ; Fallback to active-window keystroke if ControlSend fails
+            try {
+                WinActivate("ahk_id " hwnd)
+                WinWaitActive("ahk_id " hwnd, , 1)
+            } catch {
+                ; ignore
+            }
+            try Send("^End")
+        }
         return
     }
     ShowStudyTopicSelector()
@@ -8669,6 +8858,28 @@ EnableFocusMode() {
     }
 
     activeMon := GetActiveMonitorIndex()
+
+    ; #region agent log: EnableFocusMode entry (H1/H2)
+    try {
+        trackedHwnd := WinExist("A")
+        trackedTitle := ""
+        trackedExe := ""
+        if (trackedHwnd) {
+            try trackedTitle := WinGetTitle("ahk_id " trackedHwnd)
+            try trackedExe := WinGetProcessName("ahk_id " trackedHwnd)
+        }
+        log := Format(
+            '{\"sessionId\":\"692bc5\",\"runId\":\"pre-fix\",\"hypothesisId\":\"H2\",\"location\":\"Utils.ahk:8691\",\"message\":\"EnableFocusMode_entry\",\"data\":{{\"activeMon\":{},\"trackedTitle\":\"{}\",\"trackedExe\":\"{}\"},\"timestamp\":{}}}',
+            activeMon,
+            trackedTitle,
+            trackedExe,
+            A_TickCount
+        )
+        FileAppend(log "`n", "debug-692bc5.log", "UTF-8")
+    } catch {
+        ; ignore logging failures
+    }
+    ; #endregion
     if (!activeMon) {
         return
     }
