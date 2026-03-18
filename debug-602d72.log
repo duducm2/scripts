@@ -1,0 +1,7 @@
+{"sessionId":"602d72","runId":"pre-fix","hypothesisId":"H1","location":"Shift keys.ahk:^6 entry","message":"hotkey_start","data":{"ctrlP":1,"shiftP":0,"altP":0,"activeHwnd":"3869704"},"timestamp":95566375}
+{"sessionId":"602d72","runId":"pre-fix","hypothesisId":"H2","location":"Shift keys.ahk:^6 wait_dialog","message":"found_dialog_class_32770","data":{"hwnd":"1313082"},"timestamp":95567187}
+{"sessionId":"602d72","runId":"pre-fix","hypothesisId":"H5","location":"Shift keys.ahk:^6 uia_extract","message":"uia_extract_start","data":{"saveDialogHwnd":"1313082"},"timestamp":95568296}
+{"sessionId":"602d72","runId":"pre-fix","hypothesisId":"H5","location":"Shift keys.ahk:^6 uia_extract","message":"uia_extract_end","data":{"elapsedMs":297,"fileNameOnly":"rozy-03-19-26.pdf","filePathLen":17},"timestamp":95568593}
+{"sessionId":"602d72","runId":"pre-fix","hypothesisId":"H4","location":"Shift keys.ahk:^6 post_enter","message":"after_send_enter","data":{"saveDialogStillExists":1},"timestamp":95569625}
+{"sessionId":"602d72","runId":"pre-fix","hypothesisId":"H6","location":"Shift keys.ahk:^6 export_click","message":"fallback_click_export_start","data":{"saveDialogHwnd":"1313082"},"timestamp":95569625}
+{"sessionId":"602d72","runId":"pre-fix","hypothesisId":"H6","location":"Shift keys.ahk:^6 export_click","message":"fallback_click_export_end","data":{"exportClicked":1,"saveDialogStillExists":1},"timestamp":95570359}

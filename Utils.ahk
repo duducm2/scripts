@@ -2490,7 +2490,8 @@ SelectAiModelInHandy() {
 ; Helper: Show centered overlay banner (uses standard loading indicator; non-blocking).
 ; =============================================================================
 ShowCenteredOverlay_Utils(text, duration := 1500, bgColor := BANNER_ACCENT_INTERMEDIATE) {
-    centerOnHwnd := WinGetID("A")
+    centerOnHwnd := 0
+    try centerOnHwnd := WinGetID("A")
     if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
         centerOnHwnd := 0
     StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 500, fontSize: 17,
@@ -6353,14 +6354,7 @@ QuickLook_NormalizePath(path) {
     return Trim(path)
 }
 
-; Environment-specific QuickLook location (legacy/compat fallback).
-; Used when `quicklook.ini` doesn't specify an absolute path.
-GetQuickLookExePath() {
-    quickLookExe := "C:\QuickLook\QuickLook.exe"
-    if (FileExist(quickLookExe))
-        return quickLookExe
-    return ""
-}
+; Note: `GetQuickLookExePath()` is defined in `env.ahk` (environment-specific paths).
 
 QuickLook_ResolveExePath() {
     iniPath := QuickLook_GetIniPath()
