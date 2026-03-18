@@ -10295,9 +10295,9 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
 
     ; 2. Wait 15s; user can interact with any window
     Sleep 14000
-    if (IsSoundEnabled())
-        SoundPlay A_ScriptDir "\sounds\go-back-commit.wav"
-    Sleep 1000
+    ; Handoff Stop Sign: warn + play pre-movement cue right before we
+    ; regain focus on Cursor and finalize the commit submission.
+    PlayPreMovementWarning("Cursor")
 
     ; 3. Focus Cursor IDE (save current foreground to return later)
     prevHwnd := WinExist("A")
@@ -11785,7 +11785,8 @@ SwitchAIModel() {
                         "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:7675`",`"message`":`"Click() failed`",`"data`":{`"error`":`"{4}`"},`"sessionId`":`"debug-session`",`"runId`":`"run1`",`"hypothesisId`":`"A,E`"}`n",
                         A_TickCount, Random(1000, 9999), A_TickCount, clickErr.Message)
                     ; #endregion
-                    throw clickErr
+                    MsgBox "Error: " clickErr.Message
+                    return
                 }
             }
 
