@@ -509,460 +509,157 @@ GetScriptFiles() {
     ]
 }
 
-; Check which scripts have uncommitted changes or need updates (returns array of script names)
-CheckScriptsNeedingUpdates() {
-    scriptsDir := GetScriptsDirectory()
-    scriptsNeedingUpdates := []
-
+; #region agent log: QuickUpdate debug
+JsonEscapeForNDJSON(s) {
+    ; Escape strings safely for a simple JSON string (best-effort).
+    ; We avoid logging full paths to reduce the chance of malformed JSON.
     try {
-        ; Change to scripts directory
-        SetWorkingDir(scriptsDir)
-
-        ; Check git status for modified files using temp file
-        tempFile := A_Temp "\git_status_" A_TickCount ".txt"
-        try {
-            RunWait('git status --porcelain > "' tempFile '"', scriptsDir, "Hide")
-            if (FileExist(tempFile)) {
-                gitOutput := FileRead(tempFile)
-                FileDelete(tempFile)
-
-                if (gitOutput && StrLen(gitOutput) > 0) {
-                    ; Parse git status output to find modified .ahk files
-                    lines := StrSplit(gitOutput, "`n")
-                    for line in lines {
-                        if (InStr(line, ".ahk")) {
-                            ; Extract filename from git status line (format: " M filename" or "M  filename")
-                            parts := StrSplit(Trim(line), " ")
-                            if (parts.Length > 0) {
-                                fileName := parts[parts.Length]
-                                ; Extract just the script name without path
-                                if (InStr(fileName, "\")) {
-                                    parts := StrSplit(fileName, "\")
-                                    fileName := parts[parts.Length]
-                                }
-                                scriptsNeedingUpdates.Push(fileName)
-                            }
-                        }
-                    }
-                }
-            }
-        } catch {
-            ; Ignore temp file errors
-        }
-
-        ; Also check if there are remote updates available
-        RunWait("git fetch", scriptsDir, "Hide")
-        tempStatusFile := A_Temp "\git_status_sb_" A_TickCount ".txt"
-        try {
-            RunWait('git status -sb > "' tempStatusFile '"', scriptsDir, "Hide")
-            if (FileExist(tempStatusFile)) {
-                gitStatusOutput := FileRead(tempStatusFile)
-                FileDelete(tempStatusFile)
-                if (gitStatusOutput && InStr(gitStatusOutput, "behind")) {
-                    ; There are remote updates, add all scripts to the list
-                    allScripts := GetScriptFiles()
-                    for scriptPath in allScripts {
-                        fileName := ""
-                        if (InStr(scriptPath, "\")) {
-                            parts := StrSplit(scriptPath, "\")
-                            fileName := parts[parts.Length]
-                        } else {
-                            fileName := scriptPath
-                        }
-                        ; Only add if not already in list
-                        if (!scriptsNeedingUpdates.Has(fileName)) {
-                            scriptsNeedingUpdates.Push(fileName)
-                        }
-                    }
-                }
-            }
-        } catch {
-            ; Ignore temp file errors
-        }
-    } catch Error as e {
-        ; If git commands fail, return empty array (scripts may not be in git repo)
-    }
-
-    return scriptsNeedingUpdates
-}
-
-; Terminate all running AutoHotkey script processes except this one so file locks are released before update.
-; Returns true if all other AHK processes closed; false otherwise (and shows a specific error overlay).
-QuickUpdate_ShutdownRunningScripts() {
-    scriptsDir := GetScriptsDirectory()
-    files := GetScriptFiles()
-    ourPID := DllCall("kernel32\GetCurrentProcessId", "UInt")
-    WM_CLOSE := 0x10
-    closeWaitMs := 8000
-    killWaitMs := 3000
-    intervalMs := 400
-    targetPathsLow := []
-    for file in files {
-        try targetPathsLow.Push(StrLower(file))
-        catch
-            continue
-    }
-
-    ; Collect all AHK window hwnds excluding this process
-    otherHwnds := []
-    for exe in ["AutoHotkey64.exe", "AutoHotkey32.exe"] {
-        try {
-            for hwnd in WinGetList("ahk_exe " exe) {
-                try {
-                    pid := WinGetPID("ahk_id " hwnd)
-                    if (pid != ourPID)
-                        otherHwnds.Push(hwnd)
-                } catch {
-                    continue
-                }
-            }
-        } catch {
-            continue
-        }
-    }
-    if (otherHwnds.Length = 0)
-        return true
-
-    ; Request graceful close
-    for hwnd in otherHwnds {
-        try PostMessage(WM_CLOSE, 0, 0, , "ahk_id " hwnd)
-        catch {
-            continue
-        }
-    }
-
-    ; Wait for windows to go away
-    deadline := A_TickCount + closeWaitMs
-    while (A_TickCount < deadline) {
-        remaining := []
-        for exe in ["AutoHotkey64.exe", "AutoHotkey32.exe"] {
-            try {
-                for hwnd in WinGetList("ahk_exe " exe) {
-                    try {
-                        if (WinGetPID("ahk_id " hwnd) = ourPID)
-                            continue
-                        if (WinExist("ahk_id " hwnd))
-                            remaining.Push(hwnd)
-                    } catch {
-                        continue
-                    }
-                }
-            } catch {
-                continue
-            }
-        }
-        if (remaining.Length = 0)
-            return true
-        Sleep intervalMs
-    }
-
-    ; Force kill remaining
-    for exe in ["AutoHotkey64.exe", "AutoHotkey32.exe"] {
-        try {
-            for hwnd in WinGetList("ahk_exe " exe) {
-                try {
-                    pid := WinGetPID("ahk_id " hwnd)
-                    if (pid = ourPID)
-                        continue
-                    try ProcessClose(pid)
-                    catch {
-                        continue
-                    }
-                } catch {
-                    continue
-                }
-            }
-        } catch {
-            continue
-        }
-    }
-    ; Additional kill pass: headless/background scripts may have no windows.
-    ; Target by process command-line containing one of our script paths.
-    try {
-        locator := ComObject("WbemScripting.SWbemLocator")
-        svc := locator.ConnectServer(".", "root\cimv2")
-        query :=
-            "SELECT ProcessId, Name, CommandLine FROM Win32_Process WHERE Name='AutoHotkey64.exe' OR Name='AutoHotkey32.exe' OR Name='AutoHotkey.exe'"
-        for proc in svc.ExecQuery(query) {
-            try {
-                pid := proc.ProcessId
-                if (!pid || pid = ourPID)
-                    continue
-                cmd := ""
-                try cmd := proc.CommandLine
-                cmdLow := cmd ? StrLower(cmd) : ""
-                if (cmdLow = "")
-                    continue
-                isTarget := false
-                for pLow in targetPathsLow {
-                    if (pLow != "" && InStr(cmdLow, pLow)) {
-                        isTarget := true
-                        break
-                    }
-                }
-                if (!isTarget)
-                    continue
-                try ProcessClose(pid)
-                catch {
-                    continue
-                }
-            } catch {
-                continue
-            }
-        }
+        bs := Chr(92) ; '\'
+        s := StrReplace(s, bs, bs . bs)
+        s := StrReplace(s, '"', '\"')
+        s := StrReplace(s, "`r", "\r")
+        s := StrReplace(s, "`n", "\n")
+        return s
     } catch {
+        return s
     }
-    Sleep Min(killWaitMs, 2000)
-    ; Re-check; build list of still-running script titles for error message
-    stuck := []
-    for exe in ["AutoHotkey64.exe", "AutoHotkey32.exe"] {
-        try {
-            for hwnd in WinGetList("ahk_exe " exe) {
-                try {
-                    if (WinGetPID("ahk_id " hwnd) = ourPID)
-                        continue
-                    if (WinExist("ahk_id " hwnd)) {
-                        title := WinGetTitle("ahk_id " hwnd)
-                        stuck.Push(title ? title : "AHK script")
-                    }
-                } catch {
-                    continue
-                }
-            }
-        } catch {
-            continue
-        }
-    }
-    if (stuck.Length > 0) {
-        list := ""
-        for t in stuck
-            list .= t "`n"
-        ShowCenteredOverlay_Utils("❌ Could not close these scripts:`n" list "Close them manually and retry.", 5000,
-            BANNER_ACCENT_ERROR)
-        return false
-    }
-    return true
 }
 
-; Quick Update Scripts macro: shutdown other AHK scripts, Git pull, sequential reload (Utils last), verification.
-; Success sound and banner only after all steps succeed; specific error messages on failure.
+DebugLogNDJSON_QuickUpdate(hypothesisId, message, dataInfo := "") {
+    static s_logPath := ""
+    static s_runId := ""
+    if (s_logPath = "") {
+        s_logPath := A_ScriptDir "\debug-8af983.log"
+        s_runId := "debugRun_" . A_TickCount
+    }
+    try {
+        if (dataInfo = "")
+            dataInfo := ""
+        safeMsg := JsonEscapeForNDJSON(message)
+        safeData := JsonEscapeForNDJSON(dataInfo)
+        ndjson :=
+            "{" "sessionId" ":" "8af983" "," "runId" ":" "" . s_runId . "" "," "hypothesisId" ":" "" . hypothesisId .
+            "" "," "location" ":" "Utils.ahk:QuickUpdate" "," "message" ":" "" . safeMsg . "" "," "data" ":{" "info" ":" "" .
+            safeData . "" "}," "timestamp" ":" . A_TickCount
+        FileAppend(ndjson . "`n", s_logPath, "UTF-8")
+    } catch {
+        ; Never fail the macro due to debug logging.
+    }
+}
+; #endregion
+
+; Quick Update Scripts macro: PowerShell handoff restart (local-only, no git).
 QuickUpdateScripts() {
     static s_isQuickUpdateRunning := false
-    if (s_isQuickUpdateRunning)
+    if (s_isQuickUpdateRunning) {
+        ; #region agent log: QuickUpdate guard
+        DebugLogNDJSON_QuickUpdate("H4_guard_loop", "Guard prevented re-entry", "s_isQuickUpdateRunning=true")
+        ; #endregion
         return
+    }
     s_isQuickUpdateRunning := true
+
     try {
-        scriptsDir := GetScriptsDirectory()
-        files := GetScriptFiles()
-        failedScripts := []
-        gitOk := true
+        ; #region agent log: QuickUpdate entry
+        scripts := GetScriptFiles()
+        scriptsNames := ""
+        for scriptPath in scripts {
+            parts := StrSplit(scriptPath, "\")
+            scriptsNames .= parts[parts.Length] . ";"
+        }
+        DebugLogNDJSON_QuickUpdate("H0_entry", "QuickUpdateScripts starting", scriptsNames)
+        ; #endregion
+
+        StandardLoadingBar_Show("⏳ Restarting scripts...", BANNER_ACCENT_INTERMEDIATE, { passive: false })
+        DebugLogNDJSON_QuickUpdate("H1_after_loadingbar", "StandardLoadingBar_Show returned", "")
+
         utilsPath := ""
-        otherFiles := []
-        for file in files {
-            if (InStr(file, "Utils.ahk"))
-                utilsPath := file
-            else
-                otherFiles.Push(file)
+        psPaths := []
+
+        for scriptPath in scripts {
+            if (InStr(scriptPath, "\Utils.ahk"))
+                utilsPath := scriptPath
+            psPaths.Push("'" . StrReplace(scriptPath, "'", "''") . "'")
         }
 
-        ; Process management: close all other AHK scripts so file locks are released
-        if (!QuickUpdate_ShutdownRunningScripts()) {
-            try {
-                if (FileExist(scriptsDir "\sounds\quick-update-failure.wav"))
-                    SoundPlay(scriptsDir "\sounds\quick-update-failure.wav")
-            } catch {
-            }
+        if (!utilsPath || utilsPath = "") {
+            StandardLoadingBar_Hide(0)
+            ShowCenteredOverlay_Utils("❌ Utils.ahk not found in script list", 2500, BANNER_ACCENT_ERROR)
             return
         }
 
-        ; Layer 1: Git synchronization
+        psUtils := StrReplace(utilsPath, "'", "''")
+
+        ; PowerShell contract (deterministic): sleep 500ms -> stop AutoHotkey* -> sleep 500ms -> Start-Process scripts.
+        ps := ""
+        ps .= "Start-Sleep -Milliseconds 500; "
+        ps .= "Stop-Process -Name 'AutoHotkey*' -Force -ErrorAction SilentlyContinue; "
+        ps .= "Start-Sleep -Milliseconds 500; "
+        ps .= "$utilsPath = '" . psUtils . "'; "
+        ; AHK Array.Join() isn't available in this environment; build a CSV manually.
+        psPathsJoined := ""
+        for i, p in psPaths {
+            if (i > 1)
+                psPathsJoined .= ","
+            psPathsJoined .= p
+        }
+        ps .= "$scripts = @(" . psPathsJoined . "); "
+        ps .= "foreach ($s in $scripts) { "
+        ps .= "  if ($s -eq $utilsPath) { Start-Process -FilePath $s -ArgumentList '/Updated' | Out-Null } "
+        ps .= "  else { Start-Process -FilePath $s | Out-Null } "
+        ps .= "}"
+
+        ; #region agent log: QuickUpdate PS built
+        DebugLogNDJSON_QuickUpdate("H1_build", "PowerShell command built", "psLen=" . StrLen(ps))
+        ; #endregion
+
+        ; Execute asynchronously, then terminate this AHK instance immediately.
+        ; We log the returned PID to determine if the PowerShell handoff actually started.
+        pid := 0
         try {
-            SetWorkingDir(scriptsDir)
-            fetchResult := RunWait("git fetch", scriptsDir, "Hide")
-            pullResult := RunWait("git pull", scriptsDir, "Hide")
-            if (fetchResult != 0 || pullResult != 0)
-                gitOk := false
-        } catch Error as e {
-            gitOk := false
+            pid := Run('powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "' . ps . '"', , "Hide")
+        } catch as e {
+            DebugLogNDJSON_QuickUpdate("H5_run_throw", "PowerShell Run threw", e.Message)
+            throw
         }
+        ; #region agent log: QuickUpdate PS started
+        DebugLogNDJSON_QuickUpdate("H2_ps_run", "PowerShell Run invoked", "pid=" . pid)
+        ; #endregion
 
-        ; Quality check 1: After Git, verify all script files exist (pre-flight so we know what we can run)
-        missingPre := []
-        for file in files {
-            if (!FileExist(file)) {
-                parts := StrSplit(file, "\")
-                missingPre.Push(parts[parts.Length])
-            }
-        }
-        if (missingPre.Length > 0) {
-            list := ""
-            for n in missingPre
-                list .= n "`n"
-            ShowCenteredOverlay_Utils("⚠ QC1: Missing after pull:`n" list, 3000, BANNER_ACCENT_INTERMEDIATE)
-        }
-
-        ; QC2: file exists and non-empty. (Pre-flight before relaunch.)
-        for index, file in files {
-            parts := StrSplit(file, "\")
-            fileName := parts[parts.Length]
-            if (!FileExist(file)) {
-                failedScripts.Push(fileName " (not found)")
-                continue
-            }
-            try {
-                if (FileGetSize(file) = 0) {
-                    failedScripts.Push(fileName " (empty file)")
-                    continue
-                }
-            } catch {
-                failedScripts.Push(fileName " (unreadable)")
-                continue
-            }
-        }
-
-        ; If QC2 found issues, show them, but still attempt to relaunch what we can.
-        if (failedScripts.Length > 0) {
-            failedList := ""
-            for script in failedScripts
-                failedList .= script "`n"
-            ShowCenteredOverlay_Utils("⚠ QC: Some scripts look wrong on disk:`n" failedList, 3000,
-                BANNER_ACCENT_INTERMEDIATE)
-        }
-
-        ; Relaunch + quality gate: ensure each script fully closed and started again (best-effort: process alive).
-        startFailures := []
-        startTimeoutMs := 3500
-        feedbackChimeToBannerDelayMs := 250
-        successBannerMs := 6500
-        warnBannerMs := 7500
-        errorBannerMs := 6500
-        beforeUtilsLaunchHoldMs := 2500
-
-        QuickUpdate_RelaunchAndVerify(file) {
-            pid := 0
-            try Run(file, , , &pid)
-            catch {
-                return { ok: false, pid: 0 }
-            }
-            if (!pid)
-                return { ok: false, pid: 0 }
-            deadline := A_TickCount + startTimeoutMs
-            while (A_TickCount < deadline) {
-                try {
-                    if (ProcessExist(pid)) {
-                        return { ok: true, pid: pid }
-                    }
-                } catch {
-                }
-                Sleep 120
-            }
-            return { ok: false, pid: pid }
-        }
-
-        for file in otherFiles {
-            if (!FileExist(file))
-                continue
-            res := QuickUpdate_RelaunchAndVerify(file)
-            if (!res.ok) {
-                parts := StrSplit(file, "\")
-                startFailures.Push(parts[parts.Length] " (failed to start)")
-            }
-            Sleep 250
-        }
-
-        ; Final notification should happen BEFORE launching Utils.ahk.
-        ; Launching Utils may replace this process (#SingleInstance Force) and kill the banner early.
-        if (startFailures.Length > 0) {
-            failedList := ""
-            for item in startFailures
-                failedList .= item "`n"
-            ShowCenteredOverlay_Utils("❌ Some scripts failed to relaunch:`n" failedList, errorBannerMs,
-                BANNER_ACCENT_ERROR)
-            try {
-                if (FileExist(scriptsDir "\sounds\quick-update-failure.wav"))
-                    SoundPlay(scriptsDir "\sounds\quick-update-failure.wav")
-            } catch {
-            }
-        } else {
-            try {
-                if (gitOk && FileExist(scriptsDir "\sounds\quick-update-success.wav"))
-                    SoundPlay(scriptsDir "\sounds\quick-update-success.wav")
-                else if (!gitOk && FileExist(scriptsDir "\sounds\quick-update-failure.wav"))
-                    SoundPlay(scriptsDir "\sounds\quick-update-failure.wav")
-            } catch {
-            }
-            Sleep feedbackChimeToBannerDelayMs
-            if (gitOk) {
-                ShowCenteredOverlay_Utils("✅ Scripts updated and relaunched", successBannerMs, BANNER_ACCENT_SUCCESS)
-            } else {
-                ShowCenteredOverlay_Utils("⚠ Git update failed; local scripts relaunched", warnBannerMs,
-                    BANNER_ACCENT_INTERMEDIATE)
-            }
-        }
-
-        ; Hold the UI long enough to read, then launch Utils last.
-        Sleep beforeUtilsLaunchHoldMs
-        if (utilsPath != "" && FileExist(utilsPath)) {
-            try Run(utilsPath)
-        } else if (utilsPath = "") {
-            ; If GetScriptFiles() was modified unexpectedly, at least report it.
-            ShowCenteredOverlay_Utils("⚠ Utils.ahk path missing from script list", warnBannerMs,
-                BANNER_ACCENT_INTERMEDIATE)
-        } else {
-            ShowCenteredOverlay_Utils("❌ Utils.ahk not found on disk", errorBannerMs, BANNER_ACCENT_ERROR)
-        }
+        ; #region agent log: QuickUpdate exit
+        DebugLogNDJSON_QuickUpdate("H3_exit", "About to ExitApp after PS handoff", "pid=" . pid)
+        ; #endregion
+        ExitApp
+    } catch as e {
+        ; #region agent log: QuickUpdate exception
+        DebugLogNDJSON_QuickUpdate("H6_exception", "QuickUpdateScripts exception", e.Message)
+        ; #endregion
+        try StandardLoadingBar_Hide(0)
+        ShowCenteredOverlay_Utils("❌ QuickUpdateScripts error: " . e.Message, 3500, BANNER_ACCENT_ERROR)
     } finally {
+        ; If we didn't ExitApp (error path), reset the guard.
         s_isQuickUpdateRunning := false
     }
 }
 
-; Update Gemini script specifically, checking other scripts first
+; Update Gemini script specifically (local-only): restart Gemini.ahk.
 UpdateGeminiScript() {
     scriptsDir := GetScriptsDirectory()
     geminiPath := scriptsDir "\Gemini.ahk"
 
-    ; Check which scripts need updates
-    scriptsNeedingUpdates := CheckScriptsNeedingUpdates()
-
-    ; Filter out Gemini.ahk from the list
-    otherScriptsNeedingUpdates := []
-    for script in scriptsNeedingUpdates {
-        if (script != "Gemini.ahk") {
-            otherScriptsNeedingUpdates.Push(script)
-        }
+    if (!FileExist(geminiPath)) {
+        ShowCenteredOverlay_Utils("❌ Gemini.ahk not found at: " geminiPath, 3000, BANNER_ACCENT_ERROR)
+        return
     }
 
-    ; Notify if other scripts need updates
-    if (otherScriptsNeedingUpdates.Length > 0) {
-        otherScriptsList := ""
-        for script in otherScriptsNeedingUpdates {
-            otherScriptsList .= script "`n"
-        }
-        response := MsgBox("Other scripts need updates before Gemini:`n`n" otherScriptsList "`nUpdate all scripts now, or update only Gemini?",
-            "Script Updates Available", "YesNo")
-        if (response = "Yes") {
-            ; Update all scripts
-            QuickUpdateScripts()
-            return
-        }
-    }
-
-    ; Update only Gemini
+    StandardLoadingBar_Show("⏳ Reloading Gemini...", BANNER_ACCENT_INTERMEDIATE, { passive: false })
     try {
-        ; Pull latest changes first
-        SetWorkingDir(scriptsDir)
-        RunWait("git fetch", scriptsDir, "Hide")
-        RunWait("git pull", scriptsDir, "Hide")
-
-        ; Run Gemini script
-        if (!FileExist(geminiPath)) {
-            MsgBox "Gemini.ahk not found at: " geminiPath, "Update Failed", "IconX"
-            return
-        }
-        Run geminiPath
+        Run(geminiPath)
+        StandardLoadingBar_Hide(0)
         ShowCenteredOverlay_Utils("✅ Gemini script updated!", 1500, BANNER_ACCENT_SUCCESS)
-    } catch Error as e {
-        MsgBox "Failed to update Gemini script: " e.Message, "Update Failed", "IconX"
+    } catch {
+        StandardLoadingBar_Hide(0)
+        ShowCenteredOverlay_Utils("❌ Failed to reload Gemini", 2000, BANNER_ACCENT_ERROR)
     }
 }
 
@@ -4636,6 +4333,28 @@ InitDpiAwareness() {
 }
 
 InitDpiAwareness()
+
+; Auto-execute: show success after QuickUpdateScripts relaunches Utils.ahk with "/Updated".
+if (A_Args.Length > 0 && A_Args[1] = "/Updated") {
+    try {
+        ; #region agent log: Updated hook entry
+        DebugLogNDJSON_QuickUpdate("H0_updated_entry", "/Updated hook triggered", "arg=" . A_Args[1])
+        ; #endregion
+
+        ShowCenteredOverlay_Utils("✅ Scripts updated and relaunched", 6500, BANNER_ACCENT_SUCCESS)
+        soundPath := A_ScriptDir "\sounds\quick-update-success.wav"
+        try {
+            if (FileExist(soundPath))
+                SoundPlay(soundPath)
+        } catch {
+        }
+
+        ; #region agent log: Updated hook done
+        DebugLogNDJSON_QuickUpdate("H3_updated_done", "Updated hook completed", "soundExists=" . FileExist(soundPath))
+        ; #endregion
+    } catch {
+    }
+}
 
 ; =============================================================================
 ; Jump Mouse to Middle of Active Window
