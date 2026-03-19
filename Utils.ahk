@@ -6230,53 +6230,6 @@ QuickLook_OpenPath(path) {
             ; Always prefer the configured physical display (\\.\DISPLAY2); fallback to primary.
             targetMon := GetQuickLookTargetMonitorIndex()
 
-            ; #region agent log
-            try {
-                logPath := A_ScriptDir "\debug-26e475.log"
-                q := Chr(34)
-                monitorCount := 0
-                try monitorCount := MonitorGetCount()
-                primaryIdx := 0
-                try primaryIdx := MonitorGetPrimary()
-                monitor2Connected := IsMonitorConnected(2) ? 1 : 0
-                monitorsStr := ""
-                loop monitorCount {
-                    idx := A_Index
-                    nm := ""
-                    l2 := 0, t2 := 0, r2 := 0, b2 := 0
-                    try nm := MonitorGetName(idx)
-                    try MonitorGetWorkArea(idx, &l2, &t2, &r2, &b2)
-                    if (monitorsStr != "")
-                        monitorsStr .= ","
-                    monitorsStr .= "{"
-                        . q "i" q ":" idx ","
-                        . q "name" q ":" q nm q ","
-                        . q "l" q ":" l2 ","
-                        . q "t" q ":" t2 ","
-                        . q "r" q ":" r2 ","
-                        . q "b" q ":" b2
-                        . "}"
-                }
-                line := "{"
-                    . q "sessionId" q ":" q "26e475" q ","
-                    . q "runId" q ":" q "preFix" q ","
-                    . q "hypothesisId" q ":" q "H1_monitorDetectionOrIndex" q ","
-                    . q "location" q ":" q "Utils.ahk:QuickLook_OpenPath:chooseTargetMon" q ","
-                    . q "message" q ":" q "targetMon chosen" q ","
-                    . q "timestamp" q ":" A_TickCount ","
-                    . q "data" q ":{"
-                    . q "monitorCount" q ":" monitorCount ","
-                    . q "primaryIdx" q ":" primaryIdx ","
-                    . q "targetMon" q ":" targetMon ","
-                    . q "monitor2Connected" q ":" monitor2Connected ","
-                    . q "monitors" q ":[" monitorsStr "]"
-                    . "}"
-                    . "}"
-                FileAppend line "`n", logPath
-            } catch as _ {
-            }
-            ; #endregion
-
             MoveWindowToMonitor(hwnd, targetMon)
             WinMaximize("ahk_id " hwnd)
 
@@ -6305,52 +6258,6 @@ QuickLook_OpenPath(path) {
                 remapIter++
                 Sleep 50
             }
-            ; No additional re-move here: we want evidence whether QuickLook later repositions.
-
-            ; #region agent log
-            try {
-                logPath := A_ScriptDir "\debug-26e475.log"
-                q := Chr(34)
-                ; Determine where the window center actually ended up.
-                rect := Buffer(16, 0)
-                cx := -1
-                cy := -1
-                centerMon := -1
-                if (DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)) {
-                    wl := NumGet(rect, 0, "int"), wt := NumGet(rect, 4, "int")
-                    wr := NumGet(rect, 8, "int"), wb := NumGet(rect, 12, "int")
-                    cx := wl + (wr - wl) // 2
-                    cy := wt + (wb - wt) // 2
-                    try monitorCount := MonitorGetCount()
-                    loop monitorCount {
-                        idx := A_Index
-                        MonitorGetWorkArea(idx, &ml, &mt, &mr, &mb)
-                        if (cx >= ml && cx <= mr && cy >= mt && cy <= mb) {
-                            centerMon := idx
-                            break
-                        }
-                    }
-                }
-                line := "{"
-                    . q "sessionId" q ":" q "26e475" q ","
-                    . q "runId" q ":" q "preFix" q ","
-                    . q "hypothesisId" q ":" q "H2_moveWindowNotStickOrWrongMonitorMapping" q ","
-                    . q "location" q ":" q "Utils.ahk:QuickLook_OpenPath:afterMoveVerification" q ","
-                    . q "message" q ":" q "move verification results" q ","
-                    . q "timestamp" q ":" A_TickCount ","
-                    . q "data" q ":{"
-                    . q "moveOk" q ":" (moveOk ? 1 : 0) ","
-                    . q "targetMon" q ":" targetMon ","
-                    . q "remapIter" q ":" remapIter ","
-                    . q "centerMon" q ":" centerMon ","
-                    . q "cx" q ":" cx ","
-                    . q "cy" q ":" cy
-                    . "}"
-                    . "}"
-                FileAppend line "`n", logPath
-            } catch as _ {
-            }
-            ; #endregion
 
             ; Ensure QuickLook is the active window before enabling blackout (blackout uses active window monitor).
             try {
@@ -6363,98 +6270,7 @@ QuickLook_OpenPath(path) {
 
             ; Execute blackout only after move is verified and QuickLook is active.
             EnableFocusMode()
-            ; #region agent log
-            try {
-                logPath := A_ScriptDir "\debug-26e475.log"
-                q := Chr(34)
-                rect := Buffer(16, 0)
-                cx := -1
-                cy := -1
-                centerMon := -1
-                activeMon := 0
-                activeHwnd := 0
-                activeMon := GetActiveMonitorIndex()
-                try activeHwnd := WinGetID("A")
-                if (DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)) {
-                    wl := NumGet(rect, 0, "int"), wt := NumGet(rect, 4, "int")
-                    wr := NumGet(rect, 8, "int"), wb := NumGet(rect, 12, "int")
-                    cx := wl + (wr - wl) // 2
-                    cy := wt + (wb - wt) // 2
-                    try monitorCount := MonitorGetCount()
-                    loop monitorCount {
-                        idx := A_Index
-                        MonitorGetWorkArea(idx, &ml, &mt, &mr, &mb)
-                        if (cx >= ml && cx <= mr && cy >= mt && cy <= mb) {
-                            centerMon := idx
-                            break
-                        }
-                    }
-                }
-                line := "{"
-                    . q "sessionId" q ":" q "26e475" q ","
-                    . q "runId" q ":" q "postInstrument1" q ","
-                    . q "hypothesisId" q ":" q "H4_focusModeRepositionsWindowLater" q ","
-                    . q "location" q ":" q "Utils.ahk:QuickLook_OpenPath:afterEnableFocusMode" q ","
-                    . q "message" q ":" q "center monitor after EnableFocusMode" q ","
-                    . q "timestamp" q ":" A_TickCount ","
-                    . q "data" q ":" q ":{"
-                    . q "targetMon" q ":" targetMon ","
-                    . q "activeMon" q ":" activeMon ","
-                    . q "activeHwnd" q ":" activeHwnd ","
-                    . q "centerMon" q ":" centerMon ","
-                    . q "cx" q ":" cx ","
-                    . q "cy" q ":" cy
-                    . "}"
-                    . "}"
-                FileAppend line "`n", logPath
-            } catch as _ {
-            }
-            ; #endregion
             StartPdfFocusMonitor(hwnd, "Debounced")
-            ; #region agent log
-            try {
-                logPath := A_ScriptDir "\debug-26e475.log"
-                q := Chr(34)
-                rect := Buffer(16, 0)
-                cx := -1
-                cy := -1
-                centerMon := -1
-                activeMon := 0
-                activeMon := GetActiveMonitorIndex()
-                if (DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)) {
-                    wl := NumGet(rect, 0, "int"), wt := NumGet(rect, 4, "int")
-                    wr := NumGet(rect, 8, "int"), wb := NumGet(rect, 12, "int")
-                    cx := wl + (wr - wl) // 2
-                    cy := wt + (wb - wt) // 2
-                    try monitorCount := MonitorGetCount()
-                    loop monitorCount {
-                        idx := A_Index
-                        MonitorGetWorkArea(idx, &ml, &mt, &mr, &mb)
-                        if (cx >= ml && cx <= mr && cy >= mt && cy <= mb) {
-                            centerMon := idx
-                            break
-                        }
-                    }
-                }
-                line := "{"
-                    . q "sessionId" q ":" q "26e475" q ","
-                    . q "runId" q ":" q "postInstrument1" q ","
-                    . q "hypothesisId" q ":" q "H4_focusModeRepositionsWindowLater" q ","
-                    . q "location" q ":" q "Utils.ahk:QuickLook_OpenPath:afterStartPdfFocusMonitor" q ","
-                    . q "message" q ":" q "center monitor after StartPdfFocusMonitor" q ","
-                    . q "timestamp" q ":" A_TickCount ","
-                    . q "data" q ":" q ":{"
-                    . q "targetMon" q ":" targetMon ","
-                    . q "activeMon" q ":" activeMon ","
-                    . q "centerMon" q ":" centerMon ","
-                    . q "cx" q ":" cx ","
-                    . q "cy" q ":" cy
-                    . "}"
-                    . "}"
-                FileAppend line "`n", logPath
-            } catch as _ {
-            }
-            ; #endregion
 
             ; Click inside QuickLook to ensure the markdown viewer control has keyboard focus.
             try {
@@ -6493,50 +6309,6 @@ QuickLook_OpenPath(path) {
                     }
                 }
             }
-            ; #region agent log
-            try {
-                logPath := A_ScriptDir "\debug-26e475.log"
-                q := Chr(34)
-                rect := Buffer(16, 0)
-                cx := -1
-                cy := -1
-                centerMon := -1
-                activeMon := 0
-                activeMon := GetActiveMonitorIndex()
-                if (DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)) {
-                    wl := NumGet(rect, 0, "int"), wt := NumGet(rect, 4, "int")
-                    wr := NumGet(rect, 8, "int"), wb := NumGet(rect, 12, "int")
-                    cx := wl + (wr - wl) // 2
-                    cy := wt + (wb - wt) // 2
-                    try monitorCount := MonitorGetCount()
-                    loop monitorCount {
-                        idx := A_Index
-                        MonitorGetWorkArea(idx, &ml, &mt, &mr, &mb)
-                        if (cx >= ml && cx <= mr && cy >= mt && cy <= mb) {
-                            centerMon := idx
-                            break
-                        }
-                    }
-                }
-                line := "{"
-                    . q "sessionId" q ":" q "26e475" q ","
-                    . q "runId" q ":" q "postInstrument1" q ","
-                    . q "hypothesisId" q ":" q "H5_navigationRepositionsWindowAfterCtrlEnd" q ","
-                    . q "location" q ":" q "Utils.ahk:QuickLook_OpenPath:afterCtrlEnd" q ","
-                    . q "message" q ":" q "center monitor after Ctrl+End navigation" q ","
-                    . q "timestamp" q ":" A_TickCount ","
-                    . q "data" q ":" q ":{"
-                    . q "targetMon" q ":" targetMon ","
-                    . q "activeMon" q ":" activeMon ","
-                    . q "centerMon" q ":" centerMon ","
-                    . q "cx" q ":" cx ","
-                    . q "cy" q ":" cy
-                    . "}"
-                    . "}"
-                FileAppend line "`n", logPath
-            } catch as _ {
-            }
-            ; #endregion
         }
     }
 }
@@ -6843,92 +6615,7 @@ PeekPdf_WaitAndConfigure(skipGoToLastPage := false) {
             WinActivate("ahk_id " hwnd)
             WinWaitActive("ahk_id " hwnd, , 1)
         }
-        ; Keep baseline behavior, but log using the same resolved target monitor.
-        targetMon := GetQuickLookTargetMonitorIndex()
-        if (targetMon != 0) {
-            ; #region agent log
-            try {
-                logPath := A_ScriptDir "\debug-26e475.log"
-                q := Chr(34)
-                rect := Buffer(16, 0)
-                centerMon := -1
-                if (DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)) {
-                    wl := NumGet(rect, 0, "int"), wt := NumGet(rect, 4, "int")
-                    wr := NumGet(rect, 8, "int"), wb := NumGet(rect, 12, "int")
-                    cx := wl + (wr - wl) // 2
-                    cy := wt + (wb - wt) // 2
-                    try monitorCount := MonitorGetCount()
-                    loop monitorCount {
-                        idx := A_Index
-                        MonitorGetWorkArea(idx, &ml, &mt, &mr, &mb)
-                        if (cx >= ml && cx <= mr && cy >= mt && cy <= mb) {
-                            centerMon := idx
-                            break
-                        }
-                    }
-                }
-                line := "{"
-                    . q "sessionId" q ":" q "26e475" q ","
-                    . q "runId" q ":" q "preFix" q ","
-                    . q "hypothesisId" q ":" q "H3_hotkeyPathAlreadyRunning" q ","
-                    . q "location" q ":" q "Utils.ahk:#!+x:afterMove" q ","
-                    . q "message" q ":" q "hotkey path baseline center monitor" q ","
-                    . q "timestamp" q ":" A_TickCount ","
-                    . q "data" q ":{"
-                    . q "targetMon" q ":" targetMon ","
-                    . q "centerMon" q ":" centerMon
-                    . "}"
-                    . "}"
-                FileAppend line "`n", logPath
-            } catch as _ {
-            }
-            ; #endregion
-        }
         EnableFocusMode()
-        ; #region agent log
-        try {
-            logPath := A_ScriptDir "\debug-26e475.log"
-            q := Chr(34)
-            rect := Buffer(16, 0)
-            cx := -1
-            cy := -1
-            centerMon := -1
-            activeMon := 0
-            activeMon := GetActiveMonitorIndex()
-            if (DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)) {
-                wl := NumGet(rect, 0, "int"), wt := NumGet(rect, 4, "int")
-                wr := NumGet(rect, 8, "int"), wb := NumGet(rect, 12, "int")
-                cx := wl + (wr - wl) // 2
-                cy := wt + (wb - wt) // 2
-                try monitorCount := MonitorGetCount()
-                loop monitorCount {
-                    idx := A_Index
-                    MonitorGetWorkArea(idx, &ml, &mt, &mr, &mb)
-                    if (cx >= ml && cx <= mr && cy >= mt && cy <= mb) {
-                        centerMon := idx
-                        break
-                    }
-                }
-            }
-            line := "{"
-                . q "sessionId" q ":" q "26e475" q ","
-                . q "runId" q ":" q "postInstrument1" q ","
-                . q "hypothesisId" q ":" q "H6_hotkeyPathAfterEnableFocusMode" q ","
-                . q "location" q ":" q "Utils.ahk:#!+x:afterEnableFocusMode" q ","
-                . q "message" q ":" q "center monitor after EnableFocusMode in hotkey path" q ","
-                . q "timestamp" q ":" A_TickCount ","
-                . q "data" q ":" q ":{"
-                . q "targetMon" q ":" targetMon ","
-                . q "activeMon" q ":" activeMon ","
-                . q "centerMon" q ":" centerMon ","
-                . q "cx" q ":" cx ","
-                . q "cy" q ":" cy
-                . "}"
-                . "}"
-            FileAppend line "`n", logPath
-        } catch as _ {
-        }
-        ; #endregion
         StartPdfFocusMonitor(hwnd, "Debounced")
         ; Click inside QuickLook to ensure content receives keyboard focus
         try {
@@ -6956,50 +6643,6 @@ PeekPdf_WaitAndConfigure(skipGoToLastPage := false) {
             }
             try Send("^End")
         }
-        ; #region agent log
-        try {
-            logPath := A_ScriptDir "\debug-26e475.log"
-            q := Chr(34)
-            rect := Buffer(16, 0)
-            cx := -1
-            cy := -1
-            centerMon := -1
-            activeMon := 0
-            activeMon := GetActiveMonitorIndex()
-            if (DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)) {
-                wl := NumGet(rect, 0, "int"), wt := NumGet(rect, 4, "int")
-                wr := NumGet(rect, 8, "int"), wb := NumGet(rect, 12, "int")
-                cx := wl + (wr - wl) // 2
-                cy := wt + (wb - wt) // 2
-                try monitorCount := MonitorGetCount()
-                loop monitorCount {
-                    idx := A_Index
-                    MonitorGetWorkArea(idx, &ml, &mt, &mr, &mb)
-                    if (cx >= ml && cx <= mr && cy >= mt && cy <= mb) {
-                        centerMon := idx
-                        break
-                    }
-                }
-            }
-            line := "{"
-                . q "sessionId" q ":" q "26e475" q ","
-                . q "runId" q ":" q "postInstrument1" q ","
-                . q "hypothesisId" q ":" q "H7_hotkeyPathAfterCtrlEndNavigation" q ","
-                . q "location" q ":" q "Utils.ahk:#!+x:afterCtrlEnd" q ","
-                . q "message" q ":" q "center monitor after Ctrl+End in hotkey path" q ","
-                . q "timestamp" q ":" A_TickCount ","
-                . q "data" q ":" q ":{"
-                . q "targetMon" q ":" targetMon ","
-                . q "activeMon" q ":" activeMon ","
-                . q "centerMon" q ":" centerMon ","
-                . q "cx" q ":" cx ","
-                . q "cy" q ":" cy
-                . "}"
-                . "}"
-            FileAppend line "`n", logPath
-        } catch as _ {
-        }
-        ; #endregion
         return
     }
     ShowStudyTopicSelector()
