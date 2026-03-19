@@ -681,7 +681,8 @@ QuickUpdate_ShutdownRunningScripts() {
     try {
         locator := ComObject("WbemScripting.SWbemLocator")
         svc := locator.ConnectServer(".", "root\cimv2")
-        query := "SELECT ProcessId, Name, CommandLine FROM Win32_Process WHERE Name='AutoHotkey64.exe' OR Name='AutoHotkey32.exe' OR Name='AutoHotkey.exe'"
+        query :=
+            "SELECT ProcessId, Name, CommandLine FROM Win32_Process WHERE Name='AutoHotkey64.exe' OR Name='AutoHotkey32.exe' OR Name='AutoHotkey.exe'"
         for proc in svc.ExecQuery(query) {
             try {
                 pid := proc.ProcessId
@@ -751,161 +752,165 @@ QuickUpdateScripts() {
         return
     s_isQuickUpdateRunning := true
     try {
-    scriptsDir := GetScriptsDirectory()
-    files := GetScriptFiles()
-    failedScripts := []
-    gitOk := true
-    utilsPath := ""
-    otherFiles := []
-    for file in files {
-        if (InStr(file, "Utils.ahk"))
-            utilsPath := file
-        else
-            otherFiles.Push(file)
-    }
-
-    ; Process management: close all other AHK scripts so file locks are released
-    if (!QuickUpdate_ShutdownRunningScripts()) {
-        try {
-            if (FileExist(scriptsDir "\sounds\quick-update-failure.wav"))
-                SoundPlay(scriptsDir "\sounds\quick-update-failure.wav")
-        } catch {
+        scriptsDir := GetScriptsDirectory()
+        files := GetScriptFiles()
+        failedScripts := []
+        gitOk := true
+        utilsPath := ""
+        otherFiles := []
+        for file in files {
+            if (InStr(file, "Utils.ahk"))
+                utilsPath := file
+            else
+                otherFiles.Push(file)
         }
-        return
-    }
 
-    ; Layer 1: Git synchronization
-    try {
-        SetWorkingDir(scriptsDir)
-        fetchResult := RunWait("git fetch", scriptsDir, "Hide")
-        pullResult := RunWait("git pull", scriptsDir, "Hide")
-        if (fetchResult != 0 || pullResult != 0)
-            gitOk := false
-    } catch Error as e {
-        gitOk := false
-    }
-
-    ; Quality check 1: After Git, verify all script files exist (pre-flight so we know what we can run)
-    missingPre := []
-    for file in files {
-        if (!FileExist(file)) {
-            parts := StrSplit(file, "\")
-            missingPre.Push(parts[parts.Length])
-        }
-    }
-    if (missingPre.Length > 0) {
-        list := ""
-        for n in missingPre
-            list .= n "`n"
-        ShowCenteredOverlay_Utils("⚠ QC1: Missing after pull:`n" list, 3000, BANNER_ACCENT_INTERMEDIATE)
-    }
-
-    ; QC2: file exists and non-empty. (Pre-flight before relaunch.)
-    for index, file in files {
-        parts := StrSplit(file, "\")
-        fileName := parts[parts.Length]
-        if (!FileExist(file)) {
-            failedScripts.Push(fileName " (not found)")
-            continue
-        }
-        try {
-            if (FileGetSize(file) = 0) {
-                failedScripts.Push(fileName " (empty file)")
-                continue
-            }
-        } catch {
-            failedScripts.Push(fileName " (unreadable)")
-            continue
-        }
-    }
-
-    ; If QC2 found issues, show them, but still attempt to relaunch what we can.
-    if (failedScripts.Length > 0) {
-        failedList := ""
-        for script in failedScripts
-            failedList .= script "`n"
-        ShowCenteredOverlay_Utils("⚠ QC: Some scripts look wrong on disk:`n" failedList, 3000, BANNER_ACCENT_INTERMEDIATE)
-    }
-
-    ; Relaunch + quality gate: ensure each script fully closed and started again (best-effort: process alive).
-    startFailures := []
-    startTimeoutMs := 3500
-    feedbackChimeToBannerDelayMs := 250
-    successBannerMs := 6500
-    warnBannerMs := 7500
-    errorBannerMs := 6500
-    beforeUtilsLaunchHoldMs := 2500
-
-    QuickUpdate_RelaunchAndVerify(file) {
-        pid := 0
-        try Run(file, , , &pid)
-        catch {
-            return { ok: false, pid: 0 }
-        }
-        if (!pid)
-            return { ok: false, pid: 0 }
-        deadline := A_TickCount + startTimeoutMs
-        while (A_TickCount < deadline) {
+        ; Process management: close all other AHK scripts so file locks are released
+        if (!QuickUpdate_ShutdownRunningScripts()) {
             try {
-                if (ProcessExist(pid)) {
-                    return { ok: true, pid: pid }
-                }
+                if (FileExist(scriptsDir "\sounds\quick-update-failure.wav"))
+                    SoundPlay(scriptsDir "\sounds\quick-update-failure.wav")
             } catch {
             }
-            Sleep 120
+            return
         }
-        return { ok: false, pid: pid }
-    }
 
-    for file in otherFiles {
-        if (!FileExist(file))
-            continue
-        res := QuickUpdate_RelaunchAndVerify(file)
-        if (!res.ok) {
+        ; Layer 1: Git synchronization
+        try {
+            SetWorkingDir(scriptsDir)
+            fetchResult := RunWait("git fetch", scriptsDir, "Hide")
+            pullResult := RunWait("git pull", scriptsDir, "Hide")
+            if (fetchResult != 0 || pullResult != 0)
+                gitOk := false
+        } catch Error as e {
+            gitOk := false
+        }
+
+        ; Quality check 1: After Git, verify all script files exist (pre-flight so we know what we can run)
+        missingPre := []
+        for file in files {
+            if (!FileExist(file)) {
+                parts := StrSplit(file, "\")
+                missingPre.Push(parts[parts.Length])
+            }
+        }
+        if (missingPre.Length > 0) {
+            list := ""
+            for n in missingPre
+                list .= n "`n"
+            ShowCenteredOverlay_Utils("⚠ QC1: Missing after pull:`n" list, 3000, BANNER_ACCENT_INTERMEDIATE)
+        }
+
+        ; QC2: file exists and non-empty. (Pre-flight before relaunch.)
+        for index, file in files {
             parts := StrSplit(file, "\")
-            startFailures.Push(parts[parts.Length] " (failed to start)")
+            fileName := parts[parts.Length]
+            if (!FileExist(file)) {
+                failedScripts.Push(fileName " (not found)")
+                continue
+            }
+            try {
+                if (FileGetSize(file) = 0) {
+                    failedScripts.Push(fileName " (empty file)")
+                    continue
+                }
+            } catch {
+                failedScripts.Push(fileName " (unreadable)")
+                continue
+            }
         }
-        Sleep 250
-    }
 
-    ; Final notification should happen BEFORE launching Utils.ahk.
-    ; Launching Utils may replace this process (#SingleInstance Force) and kill the banner early.
-    if (startFailures.Length > 0) {
-        failedList := ""
-        for item in startFailures
-            failedList .= item "`n"
-        ShowCenteredOverlay_Utils("❌ Some scripts failed to relaunch:`n" failedList, errorBannerMs, BANNER_ACCENT_ERROR)
-        try {
-            if (FileExist(scriptsDir "\sounds\quick-update-failure.wav"))
-                SoundPlay(scriptsDir "\sounds\quick-update-failure.wav")
-        } catch {
+        ; If QC2 found issues, show them, but still attempt to relaunch what we can.
+        if (failedScripts.Length > 0) {
+            failedList := ""
+            for script in failedScripts
+                failedList .= script "`n"
+            ShowCenteredOverlay_Utils("⚠ QC: Some scripts look wrong on disk:`n" failedList, 3000,
+                BANNER_ACCENT_INTERMEDIATE)
         }
-    } else {
-        try {
-            if (gitOk && FileExist(scriptsDir "\sounds\quick-update-success.wav"))
-                SoundPlay(scriptsDir "\sounds\quick-update-success.wav")
-            else if (!gitOk && FileExist(scriptsDir "\sounds\quick-update-failure.wav"))
-                SoundPlay(scriptsDir "\sounds\quick-update-failure.wav")
-        } catch {
+
+        ; Relaunch + quality gate: ensure each script fully closed and started again (best-effort: process alive).
+        startFailures := []
+        startTimeoutMs := 3500
+        feedbackChimeToBannerDelayMs := 250
+        successBannerMs := 6500
+        warnBannerMs := 7500
+        errorBannerMs := 6500
+        beforeUtilsLaunchHoldMs := 2500
+
+        QuickUpdate_RelaunchAndVerify(file) {
+            pid := 0
+            try Run(file, , , &pid)
+            catch {
+                return { ok: false, pid: 0 }
+            }
+            if (!pid)
+                return { ok: false, pid: 0 }
+            deadline := A_TickCount + startTimeoutMs
+            while (A_TickCount < deadline) {
+                try {
+                    if (ProcessExist(pid)) {
+                        return { ok: true, pid: pid }
+                    }
+                } catch {
+                }
+                Sleep 120
+            }
+            return { ok: false, pid: pid }
         }
-        Sleep feedbackChimeToBannerDelayMs
-        if (gitOk) {
-            ShowCenteredOverlay_Utils("✅ Scripts updated and relaunched", successBannerMs, BANNER_ACCENT_SUCCESS)
+
+        for file in otherFiles {
+            if (!FileExist(file))
+                continue
+            res := QuickUpdate_RelaunchAndVerify(file)
+            if (!res.ok) {
+                parts := StrSplit(file, "\")
+                startFailures.Push(parts[parts.Length] " (failed to start)")
+            }
+            Sleep 250
+        }
+
+        ; Final notification should happen BEFORE launching Utils.ahk.
+        ; Launching Utils may replace this process (#SingleInstance Force) and kill the banner early.
+        if (startFailures.Length > 0) {
+            failedList := ""
+            for item in startFailures
+                failedList .= item "`n"
+            ShowCenteredOverlay_Utils("❌ Some scripts failed to relaunch:`n" failedList, errorBannerMs,
+                BANNER_ACCENT_ERROR)
+            try {
+                if (FileExist(scriptsDir "\sounds\quick-update-failure.wav"))
+                    SoundPlay(scriptsDir "\sounds\quick-update-failure.wav")
+            } catch {
+            }
         } else {
-            ShowCenteredOverlay_Utils("⚠ Git update failed; local scripts relaunched", warnBannerMs, BANNER_ACCENT_INTERMEDIATE)
+            try {
+                if (gitOk && FileExist(scriptsDir "\sounds\quick-update-success.wav"))
+                    SoundPlay(scriptsDir "\sounds\quick-update-success.wav")
+                else if (!gitOk && FileExist(scriptsDir "\sounds\quick-update-failure.wav"))
+                    SoundPlay(scriptsDir "\sounds\quick-update-failure.wav")
+            } catch {
+            }
+            Sleep feedbackChimeToBannerDelayMs
+            if (gitOk) {
+                ShowCenteredOverlay_Utils("✅ Scripts updated and relaunched", successBannerMs, BANNER_ACCENT_SUCCESS)
+            } else {
+                ShowCenteredOverlay_Utils("⚠ Git update failed; local scripts relaunched", warnBannerMs,
+                    BANNER_ACCENT_INTERMEDIATE)
+            }
         }
-    }
 
-    ; Hold the UI long enough to read, then launch Utils last.
-    Sleep beforeUtilsLaunchHoldMs
-    if (utilsPath != "" && FileExist(utilsPath)) {
-        try Run(utilsPath)
-    } else if (utilsPath = "") {
-        ; If GetScriptFiles() was modified unexpectedly, at least report it.
-        ShowCenteredOverlay_Utils("⚠ Utils.ahk path missing from script list", warnBannerMs, BANNER_ACCENT_INTERMEDIATE)
-    } else {
-        ShowCenteredOverlay_Utils("❌ Utils.ahk not found on disk", errorBannerMs, BANNER_ACCENT_ERROR)
-    }
+        ; Hold the UI long enough to read, then launch Utils last.
+        Sleep beforeUtilsLaunchHoldMs
+        if (utilsPath != "" && FileExist(utilsPath)) {
+            try Run(utilsPath)
+        } else if (utilsPath = "") {
+            ; If GetScriptFiles() was modified unexpectedly, at least report it.
+            ShowCenteredOverlay_Utils("⚠ Utils.ahk path missing from script list", warnBannerMs,
+                BANNER_ACCENT_INTERMEDIATE)
+        } else {
+            ShowCenteredOverlay_Utils("❌ Utils.ahk not found on disk", errorBannerMs, BANNER_ACCENT_ERROR)
+        }
     } finally {
         s_isQuickUpdateRunning := false
     }
@@ -3510,7 +3515,8 @@ class D2C_FlowManager {
                 ; Single validation after sequence change.
                 clipOk := (changed && A_Clipboard != clipBefore && Trim(A_Clipboard) != "")
                 ; #region agent log
-                try FileAppend '{"sessionId":"7432d8","runId":"step2-verify","hypothesisId":"H12","location":"Utils.ahk:D2C.DoCopyCore","message":"copy IPC complete","data":{"targetHwnd":' targetHwnd ',"seqChanged":' (changed ? 1 : 0) ',"clipboardOk":' (clipOk ? 1 : 0) ',"ipcMs":' (A_TickCount - tDispatch) '},"timestamp":' A_TickCount '}`n',
+                try FileAppend '{"sessionId":"7432d8","runId":"step2-verify","hypothesisId":"H12","location":"Utils.ahk:D2C.DoCopyCore","message":"copy IPC complete","data":{"targetHwnd":' targetHwnd ',"seqChanged":' (
+                    changed ? 1 : 0) ',"clipboardOk":' (clipOk ? 1 : 0) ',"ipcMs":' (A_TickCount - tDispatch) '},"timestamp":' A_TickCount '}`n',
                 A_ScriptDir "\debug-7432d8.log"
                 ; #endregion
                 if (IsSoundEnabled())

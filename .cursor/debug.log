@@ -4430,3 +4430,7 @@
 {"location":"WindowManagement.ahk:ActivateCursorProject","message":"after FindAndActivate","data":{"targetHwnd":989692},"hypothesisId":"H3","timestamp":119104906}
 {"location":"WindowManagement.ahk:ActivateCursorProject","message":"after FocusCursorAITextField","data":{"focusOk":1},"hypothesisId":"H4","timestamp":119106078}
 {"location":"WindowManagement.ahk:ActivateCursorProject","message":"return true","data":{},"hypothesisId":"H3","timestamp":119106187}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"entry","data":{"pathLen":46,"dirExists":1},"hypothesisId":"H3","timestamp":280796703}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"after FindAndActivate","data":{"targetHwnd":133274},"hypothesisId":"H3","timestamp":280796953}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"after FocusCursorAITextField","data":{"focusOk":1},"hypothesisId":"H4","timestamp":280798000}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"return true","data":{},"hypothesisId":"H3","timestamp":280798093}
