@@ -10012,9 +10012,9 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
                 ; Likely a dialog: standard dialog class, or a Chromium modal whose TITLE indicates Save/Export.
                 ; IMPORTANT: Do NOT treat any Chrome_WidgetWin as dialog (Cursor itself is Chrome_WidgetWin_1).
                 isTitleDialogish := InStr(currTitle, "Save") || InStr(currTitle, "Save As")
-                    || InStr(currTitle, "Export") || InStr(currTitle, "Marp")
-                    || InStr(currTitle, "Confirm Save As") || InStr(currTitle, "Confirm")
-                    || InStr(currTitle, "Salvar") || InStr(currTitle, "Guardar")
+                || InStr(currTitle, "Export") || InStr(currTitle, "Marp")
+                || InStr(currTitle, "Confirm Save As") || InStr(currTitle, "Confirm")
+                || InStr(currTitle, "Salvar") || InStr(currTitle, "Guardar")
                 if InStr(currClass, "32770") || (InStr(currClass, "Chrome_WidgetWin") && isTitleDialogish) {
                     saveDialogHwnd := curr
                     break
@@ -10262,7 +10262,7 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
 }
 
 ; Shift + I : Paste Image - Image
-+i:: Send "+."
++i:: Send "!y"
 
 ; Shift + G : Fold Git repos (SCM) - Git Fold (implementation below)
 

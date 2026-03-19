@@ -1,2 +1,16 @@
 {"sessionId":"7e3dd7","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":6721906,"data":"keysCount=0","hypothesisId":"H2"}
 {"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":6721906,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":354385156,"data":"keysCount=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":354385156,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":354386109,"data":"keysCount=3","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":354386109,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":354386125,"data":"keysCount=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":354386125,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":354386140,"data":"delay=1500 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":354386156,"data":"keysCount=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":354387640,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:KeysTimeoutFired","message":"entry","timestamp":354391187,"data":"isKeysOverlay=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:KeysTimeoutFired","message":"skipped callback","timestamp":354391187,"data":"isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":354391203,"data":"keysCount=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":354432640,"data":"keysCount=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":354432640,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
