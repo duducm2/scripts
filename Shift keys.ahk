@@ -620,6 +620,8 @@ Cursor
 ⬇️ [Ctrl+Alt+↓] Add cursor [B]elow
 
 --- ALT Shortcuts (ahk = AutoHotkey) ---
+📉 [x] Shri[X]nk selection (ahk)
+📉 [,] Classical Markdown Preview
 📋 [M] Quick shortcut menu (ahk)
 📄 [N] Review [N]ext file (ahk)
 📄 [R] efresh preview
