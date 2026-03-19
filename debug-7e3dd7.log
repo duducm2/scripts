@@ -1,4 +1,2 @@
-{"sessionId":"7e3dd7","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":4862671,"data":"keysCount=0","hypothesisId":"H2"}
-{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":4862671,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
-{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":4862781,"data":"delay=2000 isKeys=0","hypothesisId":"H2"}
-{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":4864781,"data":"delay=0 isKeys=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:CloseKeysOverlay","message":"entry","timestamp":6721906,"data":"keysCount=0","hypothesisId":"H2"}
+{"sessionId":"7e3dd7","location":"Utils.ahk:StandardLoadingBar_Hide","message":"entry","timestamp":6721906,"data":"delay=0 isKeys=0","hypothesisId":"H2"}

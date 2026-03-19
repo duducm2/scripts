@@ -635,22 +635,12 @@ WaitForButtonAndShowSmallLoading(buttonNames, stateText := "⏳ Loading…", tim
 ; useTrashTab: when true, explicitly target the second Gemini tab (trash tab) instead of the main tab.
 GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false) {
     try {
-        ; #region agent log
-        try FileAppend '{"sessionId":"7432d8","runId":"r-debug","hypothesisId":"H13A","location":"Gemini.ahk:GeminiTriggerReadAloud","message":"entry","data":{"copyFirst":' (
-            copyFirst ? 1 : 0) ',"useTrashTab":' (useTrashTab ? 1 : 0) ',"activeTitle":"' StrReplace(WinGetTitle("A"), '"',
-            "'") '"},"timestamp":' A_TickCount '}`n',
-        A_ScriptDir "\debug-7432d8.log"
-        ; #endregion
         t0 := A_TickCount
         ; Ensure we never reuse a stale cached "last response" element.
         GeminiState.Invalidate()
         ; Step 1: Activate Gemini window globally
         SetTitleMatchMode(2)
         if hwnd := GetGeminiWindowHwnd() {
-            ; #region agent log
-            try FileAppend '{"sessionId":"7432d8","runId":"r-debug","hypothesisId":"H13C","location":"Gemini.ahk:GeminiTriggerReadAloud","message":"gemini hwnd resolved","data":{"hwnd":' hwnd '},"timestamp":' A_TickCount '}`n',
-                A_ScriptDir "\debug-7432d8.log"
-            ; #endregion
             try {
                 WinActivate("ahk_id " hwnd)
             } catch {
@@ -805,37 +795,20 @@ GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false) {
         }
 
         GeminiPerfLog("read_aloud", t0)
-        ; #region agent log
-        try FileAppend '{"sessionId":"7432d8","runId":"r-debug","hypothesisId":"H13C","location":"Gemini.ahk:GeminiTriggerReadAloud","message":"exit","data":{"copyFirst":' (
-            copyFirst ? 1 : 0) '},"timestamp":' A_TickCount '}`n',
-        A_ScriptDir "\debug-7432d8.log"
-        ; #endregion
         ShowNotification(copyFirst ? "Copied & Reading aloud" : "Reading aloud", 800, "FFFF00", "000000", 24)
         Send "!{Tab}"
     } catch Error as e {
         ; Log and fail gracefully instead of letting UIA COM errors kill the thread.
-        try FileAppend '{"sessionId":"7432d8","runId":"r-debug","hypothesisId":"H13E","location":"Gemini.ahk:GeminiTriggerReadAloud","message":"exception","data":{"error":"' StrReplace(e.Message, '"', "'") '"},"timestamp":' A_TickCount '}`n',
-        A_ScriptDir "\debug-7432d8.log"
         ShowNotification("Read aloud failed – Gemini UI not ready", 2000, "FF6666", "FFFFFF", 22)
     }
 }
 
 ; Win+Alt+Shift+O : Read aloud the last message in Gemini (or Pause/Resume if already reading)
 #!+o:: {
-    ; #region agent log
-    try FileAppend '{"sessionId":"7432d8","runId":"r-debug","hypothesisId":"H13B","location":"Gemini.ahk:#!+o","message":"hotkey received","data":{"activeTitle":"' StrReplace(
-        WinGetTitle("A"), '"', "'") '"},"timestamp":' A_TickCount '}`n',
-    A_ScriptDir "\debug-7432d8.log"
-    ; #endregion
     try {
         ; Standard behavior: operate on the currently active Gemini tab.
         GeminiTriggerReadAloud()
     } catch Error as e {
-        ; #region agent log
-        try FileAppend '{"sessionId":"7432d8","runId":"r-debug","hypothesisId":"H13B","location":"Gemini.ahk:#!+o","message":"hotkey exception","data":{"error":"' StrReplace(
-            e.Message, '"', "'") '"},"timestamp":' A_TickCount '}`n',
-        A_ScriptDir "\debug-7432d8.log"
-        ; #endregion
         ;
     }
 }
@@ -1480,11 +1453,6 @@ class GeminiDelayedSubmitMonitor {
     }
 
     ShowCopyDecisionBanner() {
-        ; #region agent log
-        try FileAppend '{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H5","location":"Gemini.ahk:GeminiDelayedSubmitMonitor.ShowCopyDecisionBanner","message":"legacy monitor banner request","data":{"alreadyShown":' (
-            this.CopyBannerShownForThisResponse ? 1 : 0) '},"timestamp":' A_TickCount '}`n',
-        A_ScriptDir "\debug-7432d8.log"
-        ; #endregion
         if (this.CopyBannerShownForThisResponse)
             return
         this.CopyBannerShownForThisResponse := true
@@ -1510,10 +1478,6 @@ class GeminiDelayedSubmitMonitor {
 
     ; N key: close overlay and stop (no copy/read/transfer). Explicitly close Utils overlay so cancel always takes effect.
     CancelCopy(*) {
-        ; #region agent log
-        try FileAppend '{"sessionId":"5cdde7","hypothesisId":"H4","location":"Gemini.ahk:CancelCopy","message":"CancelCopy entered","data":{},"timestamp":' A_TickCount '}`n',
-            A_ScriptDir "\debug-5cdde7.log"
-        ; #endregion
         try StandardLoadingBar_CloseKeysOverlay()
         catch {
         }
@@ -1521,10 +1485,6 @@ class GeminiDelayedSubmitMonitor {
         catch {
         }
         this.CleanupCopyBanner()
-        ; #region agent log
-        try FileAppend '{"sessionId":"5cdde7","hypothesisId":"H5","location":"Gemini.ahk:CancelCopy","message":"CancelCopy exit","data":{},"timestamp":' A_TickCount '}`n',
-            A_ScriptDir "\debug-5cdde7.log"
-        ; #endregion
     }
 
     DoCopyCore(readAloud := false, skipRestoreFocus := false) {
@@ -1569,10 +1529,6 @@ class GeminiDelayedSubmitMonitor {
     }
 
     DoCopyOnTimeout(*) {
-        ; #region agent log
-        try FileAppend '{"sessionId":"5cdde7","hypothesisId":"H8","location":"Gemini.ahk:DoCopyOnTimeout","message":"DoCopyOnTimeout entered","data":{},"timestamp":' A_TickCount '}`n',
-            A_ScriptDir "\debug-5cdde7.log"
-        ; #endregion
         this.CleanupCopyBanner()
         this.DoCopyCore(false)
     }

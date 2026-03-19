@@ -4,28 +4,16 @@
 
 ; #region agent log
 DebugBannerLog(location, message, dataStr := "", hypothesisId := "") {
-    logPath := A_ScriptDir "\debug-5ecf82.log"
-    q := Chr(34)
-    line := "{" q "sessionId" q ":" q "5ecf82" q "," q "location" q ":" q location q "," q "message" q ":" q message q "," q "timestamp" q ":" A_TickCount
-    if (dataStr != "")
-        line .= "," q "data" q ":" q dataStr q ""
-    if (hypothesisId != "")
-        line .= "," q "hypothesisId" q ":" q hypothesisId q ""
-    line .= "}"
-    try FileAppend line "`n", logPath
+    ; Intentionally no-op.
+    ; These agent debug logs are not required for runtime behavior.
+    return
 }
 
-; Dictation-Gemini flow debug (session 7e3dd7): NDJSON to debug-7e3dd7.log
+; Dictation-Gemini flow debug (session 7e3dd7): NDJSON log (disabled)
 DebugFlowLog(location, message, dataStr := "", hypothesisId := "") {
-    logPath := A_ScriptDir "\debug-7e3dd7.log"
-    q := Chr(34)
-    line := "{" q "sessionId" q ":" q "7e3dd7" q "," q "location" q ":" q location q "," q "message" q ":" q message q "," q "timestamp" q ":" A_TickCount
-    if (dataStr != "")
-        line .= "," q "data" q ":" q dataStr q ""
-    if (hypothesisId != "")
-        line .= "," q "hypothesisId" q ":" q hypothesisId q ""
-    line .= "}"
-    try FileAppend line "`n", logPath
+    ; Intentionally no-op.
+    ; These agent debug logs are not required for runtime behavior.
+    return
 }
 ; #endregion
 
@@ -1580,10 +1568,6 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
     } catch {
     }
     DetectHiddenWindows false
-    ; #region agent log
-    try FileAppend '{"sessionId":"7432d8","hypothesisId":"HC","location":"Utils.ahk:CursorTransfer_ShowWindowSelector","message":"after enum","data":{"listLen":' list
-        .Length '},"timestamp":' A_TickCount '}`n', A_ScriptDir "\debug-7432d8.log"
-    ; #endregion
     if (list.Length = 0) {
         ShowCenteredOverlay_Utils("❌ No Cursor windows found", 2000, BANNER_ACCENT_ERROR)
         return 0
@@ -1628,10 +1612,6 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
             hotkeyChar: ""
         })
     }
-    ; #region agent log
-    try FileAppend '{"sessionId":"7432d8","hypothesisId":"HC","location":"Utils.ahk:CursorTransfer_ShowWindowSelector","message":"enriched","data":{"enrichedLen":' enriched
-        .Length '},"timestamp":' A_TickCount '}`n', A_ScriptDir "\debug-7432d8.log"
-    ; #endregion
     if (enriched.Length = 0) {
         ShowCenteredOverlay_Utils("❌ No mapped Cursor projects found", 2000, BANNER_ACCENT_ERROR)
         return 0
@@ -1710,17 +1690,8 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
         mh := mb - mt
         cx := ml + (mw - gw) // 2
         cy := mt + (mh - gh) // 2
-        ; #region agent log
-        try FileAppend '{"sessionId":"7432d8","hypothesisId":"HC","location":"Utils.ahk:CursorTransfer_ShowWindowSelector","message":"showing GUI","data":{"cx":' cx ',"cy":' cy ',"gw":' gw ',"gh":' gh ',"listLen":' list
-            .Length '},"timestamp":' A_TickCount '}`n', A_ScriptDir "\debug-7432d8.log"
-        ; #endregion
         g_CursorTransferSelectorGui.Show("x" . cx . " y" . cy)
     } catch as err {
-        ; #region agent log
-        try FileAppend '{"sessionId":"7432d8","hypothesisId":"HC","location":"Utils.ahk:CursorTransfer_ShowWindowSelector","message":"exception","data":{"error":"' StrReplace(
-            err.Message, '"', "'") '","file":"' StrReplace(err.File, '"', "'") '","line":' err.Line '},"timestamp":' A_TickCount '}`n',
-        A_ScriptDir "\debug-7432d8.log"
-        ; #endregion
         ShowCenteredOverlay_Utils("❌ Selector error", 2000, BANNER_ACCENT_ERROR)
         return 0
     }
@@ -1748,18 +1719,6 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
         g_CursorTransferHotkeyHandlers.Push({ key: "*n", callback: CursorTransfer_SelectorEscape })
     } catch {
     }
-    ; #region agent log
-    try {
-        WinActivate("ahk_id " g_CursorTransferSelectorGui.Hwnd)
-        activeAfter := WinGetID("A")
-        try FileAppend '{"sessionId":"7432d8","hypothesisId":"HC","location":"Utils.ahk:CursorTransfer_ShowWindowSelector","message":"WinActivate","data":{"guiHwnd":' g_CursorTransferSelectorGui
-            .Hwnd ',"activeAfter":' activeAfter ',"hasFocus":' (activeAfter = g_CursorTransferSelectorGui.Hwnd ? 1 : 0) '},"timestamp":' A_TickCount '}`n',
-            A_ScriptDir "\debug-7432d8.log"
-    } catch as actErr {
-        try FileAppend '{"sessionId":"7432d8","hypothesisId":"HC","location":"Utils.ahk:CursorTransfer_ShowWindowSelector","message":"WinActivate exception","data":{"error":"' StrReplace(
-            actErr.Message, '"', "'") '},"timestamp":' A_TickCount '}`n', A_ScriptDir "\debug-7432d8.log"
-    }
-    ; #endregion
     start := A_TickCount
     timeoutMs := 30000
     try {
@@ -1769,15 +1728,10 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
             Sleep 50
         }
     } catch as loopErr {
-        try FileAppend '{"sessionId":"7432d8","hypothesisId":"HC","location":"Utils.ahk:CursorTransfer_ShowWindowSelector","message":"while-loop exception","data":{"error":"' StrReplace(
-            loopErr.Message, '"', "'") '},"timestamp":' A_TickCount '}`n', A_ScriptDir "\debug-7432d8.log"
+        ; ignore loop exceptions
     }
     durationMs := A_TickCount - start
     result := (g_CursorTransferSelectorResult = "") ? 0 : Integer(g_CursorTransferSelectorResult)
-    ; #region agent log
-    try FileAppend '{"sessionId":"7432d8","hypothesisId":"HC","location":"Utils.ahk:CursorTransfer_ShowWindowSelector","message":"loop exit","data":{"durationMs":' durationMs ',"result":' result '},"timestamp":' A_TickCount '}`n',
-        A_ScriptDir "\debug-7432d8.log"
-    ; #endregion
     CursorTransfer_SelectorClose()
     return result
 }
@@ -2540,12 +2494,6 @@ StandardLoadingBar_CloseKeysOverlay() {
     global g_StandardLoadingBarKeysHotkeys, g_StandardLoadingBarKeysTimeoutTimer
     global g_StandardLoadingBarGui, g_StandardLoadingBarValue, g_StandardLoadingBarIsKeysOverlay,
         g_StandardLoadingBarBorderGui
-    ; #region agent log
-    try FileAppend '{"sessionId":"5cdde7","hypothesisId":"H7","location":"Utils.ahk:CloseKeysOverlay","message":"cancelling timeout","data":{"hasTimer":' (
-        g_StandardLoadingBarKeysTimeoutTimer != "" ? "true" : "false") '},"timestamp":' A_TickCount '}`n',
-    A_ScriptDir "\debug-5cdde7.log"
-    DebugFlowLog("Utils.ahk:CloseKeysOverlay", "entry", "keysCount=" . g_StandardLoadingBarKeysHotkeys.Length, "H2")
-    ; #endregion
     g_StandardLoadingBarIsKeysOverlay := false
     try SetTimer(g_StandardLoadingBarKeysTimeoutTimer, 0)
     catch {
@@ -2613,10 +2561,6 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
     if (timeoutMs > 0) {
         g_StandardLoadingBarKeysTimeoutTimer := SetTimer(StandardLoadingBar_KeysTimeoutFired.Bind(timeoutCallback), -
         timeoutMs)
-        ; #region agent log
-        try FileAppend '{"sessionId":"5cdde7","hypothesisId":"H6","location":"Utils.ahk:ShowWithKeys","message":"timeout timer set","data":{"timeoutMs":' timeoutMs ',"timerId":' g_StandardLoadingBarKeysTimeoutTimer '},"timestamp":' A_TickCount '}`n',
-            A_ScriptDir "\debug-5cdde7.log"
-        ; #endregion
     }
 }
 
@@ -2635,50 +2579,24 @@ StandardLoadingBar_RegisterKeyHandler(key, cb) {
     try {
         Hotkey(keyToReg, fn, "On")
         g_StandardLoadingBarKeysHotkeys.Push(keyToReg)
-        ; #region agent log
-        try FileAppend '{"sessionId":"5cdde7","hypothesisId":"H1","location":"Utils.ahk:RegisterKeyHandler","message":"key registered","data":{"key":"' keyToReg '"},"timestamp":' A_TickCount '}`n',
-            A_ScriptDir "\debug-5cdde7.log"
-        ; #endregion
     } catch as err {
-        ; #region agent log
-        try FileAppend '{"sessionId":"5cdde7","hypothesisId":"H1","location":"Utils.ahk:RegisterKeyHandler","message":"Hotkey failed","data":{"key":"' keyToReg '","error":"' err
-            .Message '"},"timestamp":' A_TickCount '}`n', A_ScriptDir "\debug-5cdde7.log"
-        ; #endregion
     }
 }
 
 StandardLoadingBar_KeyWrapper(key, cb, *) {
-    ; #region agent log
-    try FileAppend '{"sessionId":"5cdde7","hypothesisId":"H2","location":"Utils.ahk:KeyWrapper","message":"KeyWrapper entered","data":{"key":"' key '"},"timestamp":' A_TickCount '}`n',
-        A_ScriptDir "\debug-5cdde7.log"
-    ; #endregion
     ; Run callback first so it can close the overlay (avoids destroying GUI from hotkey context before callback runs).
     if (cb) {
         try {
-            ; #region agent log
-            try FileAppend '{"sessionId":"5cdde7","hypothesisId":"H4","location":"Utils.ahk:KeyWrapper","message":"calling cb","data":{"key":"' key '"},"timestamp":' A_TickCount '}`n',
-                A_ScriptDir "\debug-5cdde7.log"
-            ; #endregion
             cb.Call()
         }
         catch {
         }
     }
     StandardLoadingBar_CloseKeysOverlay()
-    ; #region agent log
-    try FileAppend '{"sessionId":"5cdde7","hypothesisId":"H3","location":"Utils.ahk:KeyWrapper","message":"after CloseKeysOverlay","data":{"key":"' key '"},"timestamp":' A_TickCount '}`n',
-        A_ScriptDir "\debug-5cdde7.log"
-    ; #endregion
 }
 
 StandardLoadingBar_KeysTimeoutFired(timeoutCallback) {
     global g_StandardLoadingBarIsKeysOverlay
-    ; #region agent log
-    try FileAppend '{"sessionId":"5cdde7","hypothesisId":"H8","location":"Utils.ahk:KeysTimeoutFired","message":"timeout fired","data":{},"timestamp":' A_TickCount '}`n',
-        A_ScriptDir "\debug-5cdde7.log"
-    DebugFlowLog("Utils.ahk:KeysTimeoutFired", "entry", "isKeysOverlay=" . (g_StandardLoadingBarIsKeysOverlay ? 1 : 0),
-    "H2")
-    ; #endregion
     ; Only run timeout callback if overlay was not already dismissed (e.g. user pressed N); avoids copy when timer fires after cancel.
     if (g_StandardLoadingBarIsKeysOverlay && timeoutCallback) {
         DebugFlowLog("Utils.ahk:KeysTimeoutFired", "calling timeout callback", "", "H2")
@@ -2749,16 +2667,7 @@ class D2C_FlowManager {
     ; --- Entry Points ---
 
     StartFromDictation() {
-        ; #region agent log
-        try FileAppend '{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H1","location":"Utils.ahk:D2C.StartFromDictation","message":"flow start from dictation","data":{},"timestamp":' A_TickCount '}`n',
-            A_ScriptDir "\debug-7432d8.log"
-        ; #endregion
         if (this.CurrentPhase != "Idle") {
-            ; #region agent log
-            try FileAppend '{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:D2C.StartFromDictation","message":"reentry blocked","data":{"phase":"' this
-                .CurrentPhase '"},"timestamp":' A_TickCount '}`n',
-                A_ScriptDir "\debug-7432d8.log"
-            ; #endregion
             return
         }
         this.Reset()
@@ -2767,16 +2676,7 @@ class D2C_FlowManager {
     }
 
     StartFromHotstring() {
-        ; #region agent log
-        try FileAppend '{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H1","location":"Utils.ahk:D2C.StartFromHotstring","message":"flow start from hotstring","data":{},"timestamp":' A_TickCount '}`n',
-            A_ScriptDir "\debug-7432d8.log"
-        ; #endregion
         if (this.CurrentPhase != "Idle") {
-            ; #region agent log
-            try FileAppend '{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:D2C.StartFromHotstring","message":"reentry blocked","data":{"phase":"' this
-                .CurrentPhase '"},"timestamp":' A_TickCount '}`n',
-                A_ScriptDir "\debug-7432d8.log"
-            ; #endregion
             return
         }
         this.Reset()
@@ -2831,11 +2731,6 @@ class D2C_FlowManager {
     ; --- Phase 2: Submit Execute ---
 
     ExecuteGeminiSubmit(autoSubmit := true) {
-        ; #region agent log
-        try FileAppend '{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H2","location":"Utils.ahk:D2C.ExecuteGeminiSubmit","message":"entry","data":{"autoSubmit":' (
-            autoSubmit ? 1 : 0) ',"phase":"' this.CurrentPhase '"},"timestamp":' A_TickCount '}`n',
-        A_ScriptDir "\debug-7432d8.log"
-        ; #endregion
         this.CurrentPhase := "Submitting"
         StandardLoadingBar_CloseKeysOverlay()
         StandardLoadingBar_Hide(0)
@@ -2847,11 +2742,6 @@ class D2C_FlowManager {
         ; Paste to Gemini (launches Chrome if needed); then capture active window as Gemini.
         GeminiNavigateFocusAndPasteFirstSnippet("", false)
         this.GeminiHwnd := WinExist("A")
-        ; #region agent log
-        try FileAppend '{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H2","location":"Utils.ahk:D2C.ExecuteGeminiSubmit","message":"post paste hwnd captured","data":{"geminiHwnd":' this
-            .GeminiHwnd '},"timestamp":' A_TickCount '}`n',
-            A_ScriptDir "\debug-7432d8.log"
-        ; #endregion
 
         if (autoSubmit) {
             Sleep 1000 ; Pre-enter delay
@@ -2877,11 +2767,6 @@ class D2C_FlowManager {
     ; --- Phase 3: Monitor ---
 
     StartGeminiMonitor() {
-        ; #region agent log
-        try FileAppend '{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H3","location":"Utils.ahk:D2C.StartGeminiMonitor","message":"monitor start","data":{"geminiHwnd":' this
-            .GeminiHwnd '},"timestamp":' A_TickCount '}`n',
-            A_ScriptDir "\debug-7432d8.log"
-        ; #endregion
         this.CurrentPhase := "Monitoring"
         this.MonitorRetryCount := 0
         this.MonitorButtonEverFound := false
@@ -2892,12 +2777,6 @@ class D2C_FlowManager {
     CheckGeminiCompletion() {
         delta := this.MonitorLastCheckTick ? (A_TickCount - this.MonitorLastCheckTick) : -1
         this.MonitorLastCheckTick := A_TickCount
-        ; #region agent log
-        try FileAppend '{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H3","location":"Utils.ahk:D2C.CheckGeminiCompletion","message":"tick","data":{"phase":"' this
-            .CurrentPhase '","retry":' this.MonitorRetryCount ',"deltaMs":' delta ',"buttonEverFound":' (this.MonitorButtonEverFound ?
-                1 : 0) '},"timestamp":' A_TickCount '}`n',
-            A_ScriptDir "\debug-7432d8.log"
-        ; #endregion
         if (this.CurrentPhase != "Monitoring") {
             SetTimer(this.MonitorTimer, 0)
             return
@@ -2955,11 +2834,6 @@ class D2C_FlowManager {
 
             if (isTrulyGone) {
                 ; Timer is already stopped, proceed to next phase
-                ; #region agent log
-                try FileAppend '{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H3","location":"Utils.ahk:D2C.CheckGeminiCompletion","message":"stream ended -> prompt action","data":{"retry":' this
-                    .MonitorRetryCount '},"timestamp":' A_TickCount '}`n',
-                    A_ScriptDir "\debug-7432d8.log"
-                ; #endregion
                 try {
                     if (IsSoundEnabled())
                         SoundPlay(A_ScriptDir . "\sounds\gemini-completion.wav")
@@ -2977,17 +2851,8 @@ class D2C_FlowManager {
     ; --- Phase 4: Action Prompt ---
 
     PromptForResponseAction() {
-        ; #region agent log
-        try FileAppend '{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H4","location":"Utils.ahk:D2C.PromptForResponseAction","message":"entry","data":{"phase":"' this
-            .CurrentPhase '"},"timestamp":' A_TickCount '}`n',
-            A_ScriptDir "\debug-7432d8.log"
-        ; #endregion
         ; Prevent duplicate banner spawns from timer re-entrancy
         if (this.CurrentPhase = "PromptingAction") {
-            ; #region agent log
-            try FileAppend '{"sessionId":"7432d8","runId":"baseline","hypothesisId":"H4","location":"Utils.ahk:D2C.PromptForResponseAction","message":"guard return duplicate prompt","data":{},"timestamp":' A_TickCount '}`n',
-                A_ScriptDir "\debug-7432d8.log"
-            ; #endregion
             return
         }
         this.CurrentPhase := "PromptingAction"
@@ -3017,22 +2882,12 @@ class D2C_FlowManager {
     OnActionC(*) {
         if (this.CurrentPhase != "PromptingAction")
             return
-        ; #region agent log
-        try FileAppend '{"sessionId":"7432d8","runId":"step2-verify","hypothesisId":"H12","location":"Utils.ahk:D2C.OnActionC","message":"C pressed","data":{"phase":"' this
-            .CurrentPhase '"},"timestamp":' A_TickCount '}`n',
-            A_ScriptDir "\debug-7432d8.log"
-        ; #endregion
         this.PromptForCursorTransfer()
     }
 
     OnActionR(*) {
         if (this.CurrentPhase != "PromptingAction")
             return
-        ; #region agent log
-        try FileAppend '{"sessionId":"7432d8","runId":"step2-verify","hypothesisId":"H13","location":"Utils.ahk:D2C.OnActionR","message":"R pressed","data":{"phase":"' this
-            .CurrentPhase '"},"timestamp":' A_TickCount '}`n',
-            A_ScriptDir "\debug-7432d8.log"
-        ; #endregion
         this.ExecuteAction(true, false)
     }
 
@@ -3055,11 +2910,6 @@ class D2C_FlowManager {
     }
 
     ExecuteAction(readAloud := false, skipRestoreFocus := false) {
-        ; #region agent log
-        try FileAppend '{"sessionId":"7432d8","runId":"step2-debug","hypothesisId":"H10","location":"Utils.ahk:D2C.ExecuteAction","message":"entry","data":{"phase":"' this
-            .CurrentPhase '","readAloud":' (readAloud ? 1 : 0) ',"skipRestoreFocus":' (skipRestoreFocus ? 1 : 0) '},"timestamp":' A_TickCount '}`n',
-            A_ScriptDir "\debug-7432d8.log"
-        ; #endregion
         this.CleanupActionPrompt()
         try {
             this.DoCopyCore(readAloud, skipRestoreFocus)
@@ -3073,20 +2923,10 @@ class D2C_FlowManager {
             return
         this.HasCopiedForThisResponse := true
 
-        ; #region agent log
-        try FileAppend '{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H9","location":"Utils.ahk:D2C.DoCopyCore","message":"entry","data":{"readAloud":' (
-            readAloud ? 1 : 0) ',"skipRestoreFocus":' (skipRestoreFocus ? 1 : 0) '},"timestamp":' A_TickCount '}`n',
-        A_ScriptDir "\debug-7432d8.log"
-        ; #endregion
-
         ; Hands off cue before copying Gemini's last response (applies to both manual Y/R/C and timeout auto-copy).
         PlayPreMovementWarning("Gemini")
 
         if (!WinExist("ahk_id " this.GeminiHwnd)) {
-            ; #region agent log
-            try FileAppend '{"sessionId":"7432d8","hypothesisId":"HC","location":"Utils.ahk:D2C.DoCopyCore","message":"early return: no GeminiHwnd","data":{"geminiHwnd":' this
-                .GeminiHwnd '},"timestamp":' A_TickCount '}`n', A_ScriptDir "\debug-7432d8.log"
-            ; #endregion
             if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
                 WinActivate("ahk_id " this.OriginHwnd)
             return
@@ -3097,19 +2937,11 @@ class D2C_FlowManager {
         if (!WinActive("ahk_id " this.GeminiHwnd)) {
             try WinActivate("ahk_id " this.GeminiHwnd)
             catch {
-                ; #region agent log
-                try FileAppend '{"sessionId":"7432d8","hypothesisId":"HC","location":"Utils.ahk:D2C.DoCopyCore","message":"early return: WinActivate failed","data":{},"timestamp":' A_TickCount '}`n',
-                    A_ScriptDir "\debug-7432d8.log"
-                ; #endregion
                 if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
                     WinActivate("ahk_id " this.OriginHwnd)
                 return
             }
             if (!WinWaitActive("ahk_exe chrome.exe", , 0.5)) {
-                ; #region agent log
-                try FileAppend '{"sessionId":"7432d8","hypothesisId":"HC","location":"Utils.ahk:D2C.DoCopyCore","message":"early return: WinWaitActive chrome failed","data":{},"timestamp":' A_TickCount '}`n',
-                    A_ScriptDir "\debug-7432d8.log"
-                ; #endregion
                 if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
                     WinActivate("ahk_id " this.OriginHwnd)
                 return
@@ -3121,23 +2953,11 @@ class D2C_FlowManager {
             WM_TRIGGER_READ_ALOUD := 0x8004
             targetHwnd := GetGeminiScriptMsgTargetHwnd()
             if (targetHwnd) {
-                ; #region agent log
-                try FileAppend '{"sessionId":"7432d8","runId":"step2-verify","hypothesisId":"H13","location":"Utils.ahk:D2C.DoCopyCore","message":"dispatch read aloud IPC","data":{"targetHwnd":' targetHwnd '},"timestamp":' A_TickCount '}`n',
-                    A_ScriptDir "\debug-7432d8.log"
-                ; #endregion
                 try PostMessage(WM_TRIGGER_READ_ALOUD, 0, 0, , "ahk_id " targetHwnd)
             } else {
-                ; #region agent log
-                try FileAppend '{"sessionId":"7432d8","runId":"step2-verify","hypothesisId":"H13","location":"Utils.ahk:D2C.DoCopyCore","message":"gemini not found for read aloud IPC","data":{},"timestamp":' A_TickCount '}`n',
-                    A_ScriptDir "\debug-7432d8.log"
-                ; #endregion
                 ShowCenteredOverlay_Utils("❌ Gemini.ahk not running", 2000, BANNER_ACCENT_ERROR)
             }
         } else {
-            ; #region agent log
-            try FileAppend '{"sessionId":"7432d8","hypothesisId":"HC","location":"Utils.ahk:D2C.DoCopyCore","message":"copy path start","data":{},"timestamp":' A_TickCount '}`n',
-                A_ScriptDir "\debug-7432d8.log"
-            ; #endregion
             clipBefore := A_Clipboard
             seqBefore := Clipboard_GetSequenceNumber()
             WM_COPY_LAST_GEMINI := 0x8001
@@ -3149,18 +2969,9 @@ class D2C_FlowManager {
                 changed := Clipboard_WaitForSequenceChange(seqBefore, 2000, 850)
                 ; Single validation after sequence change.
                 clipOk := (changed && A_Clipboard != clipBefore && Trim(A_Clipboard) != "")
-                ; #region agent log
-                try FileAppend '{"sessionId":"7432d8","runId":"step2-verify","hypothesisId":"H12","location":"Utils.ahk:D2C.DoCopyCore","message":"copy IPC complete","data":{"targetHwnd":' targetHwnd ',"seqChanged":' (
-                    changed ? 1 : 0) ',"clipboardOk":' (clipOk ? 1 : 0) ',"ipcMs":' (A_TickCount - tDispatch) '},"timestamp":' A_TickCount '}`n',
-                A_ScriptDir "\debug-7432d8.log"
-                ; #endregion
                 if (IsSoundEnabled())
                     try SoundPlay(A_ScriptDir . "\sounds\copy.wav")
             } else {
-                ; #region agent log
-                try FileAppend '{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H9","location":"Utils.ahk:D2C.DoCopyCore","message":"gemini process not found for copy IPC","data":{},"timestamp":' A_TickCount '}`n',
-                    A_ScriptDir "\debug-7432d8.log"
-                ; #endregion
                 ShowCenteredOverlay_Utils("❌ Gemini.ahk not running", 2000, BANNER_ACCENT_ERROR)
             }
         }
@@ -3178,11 +2989,6 @@ class D2C_FlowManager {
     ; --- Phase 5: Cursor Transfer ---
 
     PromptForCursorTransfer() {
-        ; #region agent log
-        try FileAppend '{"sessionId":"7432d8","runId":"step2-debug","hypothesisId":"H11","location":"Utils.ahk:D2C.PromptForCursorTransfer","message":"entry","data":{"phase":"' this
-            .CurrentPhase '"},"timestamp":' A_TickCount '}`n',
-            A_ScriptDir "\debug-7432d8.log"
-        ; #endregion
         this.CurrentPhase := "Transferring"
         this.CleanupActionPrompt()
         try {
@@ -3214,11 +3020,6 @@ class D2C_FlowManager {
             tSelectorStart := A_TickCount
             this.CursorHwnd := CursorTransfer_ShowWindowSelector(this.OriginHwnd)
             tSelectorMs := A_TickCount - tSelectorStart
-            ; #region agent log
-            try FileAppend '{"sessionId":"7432d8","runId":"step2-verify","hypothesisId":"H12","location":"Utils.ahk:D2C.PromptForCursorTransfer","message":"selector result","data":{"cursorHwnd":' this
-                .CursorHwnd ',"clipLen":' StrLen(clip) ',"selectorMs":' tSelectorMs '},"timestamp":' A_TickCount '}`n',
-                A_ScriptDir "\debug-7432d8.log"
-            ; #endregion
             if (!this.CursorHwnd) {
                 if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
                     WinActivate("ahk_id " this.OriginHwnd)
@@ -9120,10 +8921,6 @@ SafePlayDictationSound(filePath) {
 
 ; Handler for clipboard changes during dictation completion
 DictationClipboardHandler(DataType) {
-    ; #region agent log
-    try FileAppend '{"sessionId":"7432d8","runId":"hypothesis-4","hypothesisId":"H5","location":"Utils.ahk:DictationClipboardHandler","message":"clipboard event","data":{"dataType":' DataType '},"timestamp":' A_TickCount '}`n',
-        A_ScriptDir "\debug-7432d8.log"
-    ; #endregion
     ; Remove handler immediately to prevent multiple triggers
     OnClipboardChange(DictationClipboardHandler, 0)
 
@@ -9220,10 +9017,6 @@ CheckDictationRecordingWindow() {
     ; Handle Start: window exists
     if (windowExists) {
         if (!g_DictationActive) {
-            ; #region agent log
-            try FileAppend '{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H8","location":"Utils.ahk:CheckDictationRecordingWindow","message":"start branch entered","data":{"windowExists":1,"dictationActiveBefore":0},"timestamp":' A_TickCount '}`n',
-                A_ScriptDir "\debug-7432d8.log"
-            ; #endregion
             g_DictationActive := true
             g_LastStateTransitionTick := A_TickCount
 
@@ -9237,17 +9030,8 @@ CheckDictationRecordingWindow() {
             try {
                 micVolumeScript := A_ScriptDir "\scripts\Set-MicVolume.ps1"
                 if (FileExist(micVolumeScript)) {
-                    ; #region agent log
                     micRunStart := A_TickCount
-                    try FileAppend '{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H7","location":"Utils.ahk:CheckDictationRecordingWindow","message":"mic script RunWait start","data":{"pathExists":1},"timestamp":' A_TickCount '}`n',
-                        A_ScriptDir "\debug-7432d8.log"
-                    ; #endregion
                     Run "powershell.exe -ExecutionPolicy Bypass -File `"" micVolumeScript "`"", , "Hide"
-                    ; #region agent log
-                    try FileAppend '{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H7","location":"Utils.ahk:CheckDictationRecordingWindow","message":"mic script Run dispatched","data":{"queueMs":' (
-                        A_TickCount - micRunStart) '},"timestamp":' A_TickCount '}`n',
-                    A_ScriptDir "\debug-7432d8.log"
-                    ; #endregion
                 }
             } catch Error as e {
                 ; Silently handle errors - don't interrupt dictation if script fails
@@ -9269,11 +9053,6 @@ CheckDictationRecordingWindow() {
     }
     ; Handle Stop: window gone and was active
     else if (!windowExists && g_DictationActive) {
-        ; #region agent log
-        try FileAppend '{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H8","location":"Utils.ahk:CheckDictationRecordingWindow","message":"stop candidate","data":{"deltaSinceTransition":' (
-            A_TickCount - g_LastStateTransitionTick) ',"chimeScheduled":' (g_DictationCompletionChimeScheduled ? 1 : 0) '},"timestamp":' A_TickCount '}`n',
-        A_ScriptDir "\debug-7432d8.log"
-        ; #endregion
         Critical "On"
         if (!g_DictationActive || g_DictationCompletionChimeScheduled) {
             Critical "Off"
@@ -9281,21 +9060,11 @@ CheckDictationRecordingWindow() {
         }
 
         if (g_LastStateTransitionTick && (A_TickCount - g_LastStateTransitionTick < 500)) {
-            ; #region agent log
-            try FileAppend '{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H8","location":"Utils.ahk:CheckDictationRecordingWindow","message":"stop blocked by grace","data":{"deltaSinceTransition":' (
-                A_TickCount - g_LastStateTransitionTick) '},"timestamp":' A_TickCount '}`n',
-            A_ScriptDir "\debug-7432d8.log"
-            ; #endregion
             Critical "Off"
             return
         }
 
         g_DictationCompletionChimeScheduled := true
-        ; #region agent log
-        try FileAppend '{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H8","location":"Utils.ahk:CheckDictationRecordingWindow","message":"stop scheduled","data":{"deltaSinceTransition":' (
-            A_TickCount - g_LastStateTransitionTick) '},"timestamp":' A_TickCount '}`n',
-        A_ScriptDir "\debug-7432d8.log"
-        ; #endregion
         g_LastStateTransitionTick := A_TickCount
         g_DictationActive := false
         Critical "Off"
@@ -9391,10 +9160,6 @@ OnExit(CleanupDictationIndicator)
     static isProcessing := false
 
     if (!g_DictationHotkeyIsOwner) {
-        ; #region agent log
-        try FileAppend '{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H1","location":"Utils.ahk:~#!+0","message":"non-owner process ignored hotkey","data":{"script":"' A_ScriptName '"},"timestamp":' A_TickCount '}`n',
-            A_ScriptDir "\debug-7432d8.log"
-        ; #endregion
         return
     }
 
@@ -9412,29 +9177,12 @@ OnExit(CleanupDictationIndicator)
         return
     lastHotkeyTick := currentTick
     isProcessing := true
-    ; #region agent log
-    try {
-        recordingNow := WinExist("Recording ahk_exe handy.exe") ? 1 : 0
-        handyRunning := ProcessExist("handy.exe") ? 1 : 0
-        FileAppend(
-            '{"sessionId":"7432d8","runId":"hypothesis-4","hypothesisId":"H4","location":"Utils.ahk:~#!+0","message":"post-debounce state snapshot","data":{"dictationActive":' (
-                g_DictationActive ? 1 : 0) ',"recordingWindow":' recordingNow ',"handyRunning":' handyRunning '},"timestamp":' A_TickCount '}`n',
-            A_ScriptDir "\debug-7432d8.log")
-    } catch {
-    }
-    ; #endregion
-
     ; Capture before KeyWait: check timer may clear g_DictationActive when Recording window closes,
     ; so by the time we reach if/else it can be false even when user intended to stop.
     dictationWasActiveOnKeyPress := g_DictationActive
 
     keyWaitStart := A_TickCount
     KeyWait("0", "L")
-    ; #region agent log
-    try FileAppend '{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H6","location":"Utils.ahk:~#!+0","message":"key released","data":{"keyWaitMs":' (
-        A_TickCount - keyWaitStart) ',"dictationWasActiveOnKeyPress":' (dictationWasActiveOnKeyPress ? 1 : 0) '},"timestamp":' A_TickCount '}`n',
-    A_ScriptDir "\debug-7432d8.log"
-    ; #endregion
 
     if (!g_DictationActive) {
         g_DictationActive := true
@@ -9446,17 +9194,8 @@ OnExit(CleanupDictationIndicator)
         try {
             micVolumeScript := A_ScriptDir "\scripts\Set-MicVolume.ps1"
             if (FileExist(micVolumeScript)) {
-                ; #region agent log
                 micRunStart := A_TickCount
-                try FileAppend '{"sessionId":"7432d8","runId":"hotkey-race","hypothesisId":"H7","location":"Utils.ahk:~#!+0","message":"mic script RunWait start","data":{"pathExists":1},"timestamp":' A_TickCount '}`n',
-                    A_ScriptDir "\debug-7432d8.log"
-                ; #endregion
                 Run "powershell.exe -ExecutionPolicy Bypass -File `"" micVolumeScript "`"", , "Hide"
-                ; #region agent log
-                try FileAppend '{"sessionId":"7432d8","runId":"post-fix","hypothesisId":"H7","location":"Utils.ahk:~#!+0","message":"mic script Run dispatched","data":{"queueMs":' (
-                    A_TickCount - micRunStart) '},"timestamp":' A_TickCount '}`n',
-                A_ScriptDir "\debug-7432d8.log"
-                ; #endregion
             }
         } catch {
         }
@@ -9464,32 +9203,12 @@ OnExit(CleanupDictationIndicator)
 
     ; User was stopping dictation (had been active when they pressed key) -> show Gemini confirm after completion
     if (dictationWasActiveOnKeyPress) {
-        ; #region agent log
-        try {
-            recordingNow := WinExist("Recording ahk_exe handy.exe") ? 1 : 0
-            FileAppend(
-                '{"sessionId":"7432d8","runId":"hypothesis-4","hypothesisId":"H3","location":"Utils.ahk:~#!+0","message":"stop intent detected","data":{"dictationWasActiveOnKeyPress":1,"recordingWindowNow":' recordingNow ',"dictationActiveNow":' (
-                    g_DictationActive ? 1 : 0) '},"timestamp":' A_TickCount '}`n',
-                A_ScriptDir "\debug-7432d8.log")
-        } catch {
-        }
-        ; #endregion
         g_PendingGeminiPromptAfterDictation := true
         g_DictationGeminiConfirmBannerVisible := false  ; Allow 6s banner to show for this cycle (reset from previous N cancel)
         ; #region agent log
         DebugBannerLog("Utils.ahk:~#!+0", "Set pending Gemini flag", "dictationWasActiveOnKeyPress=1", "H1")
         ; #endregion
     } else {
-        ; #region agent log
-        try {
-            recordingNow := WinExist("Recording ahk_exe handy.exe") ? 1 : 0
-            FileAppend(
-                '{"sessionId":"7432d8","runId":"hypothesis-4","hypothesisId":"H3","location":"Utils.ahk:~#!+0","message":"stop intent not detected","data":{"dictationWasActiveOnKeyPress":0,"recordingWindowNow":' recordingNow ',"dictationActiveNow":' (
-                    g_DictationActive ? 1 : 0) '},"timestamp":' A_TickCount '}`n',
-                A_ScriptDir "\debug-7432d8.log")
-        } catch {
-        }
-        ; #endregion
     }
 
     ToggleDictationMode()

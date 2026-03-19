@@ -30,8 +30,7 @@ global DEBUG_LOG_PATH := A_ScriptDir "\.cursor\debug.log"
 global DEBUG_SHIFTKEYS := false
 
 ; Debug mode agent logging (runtime evidence for this session only)
-global AGENT_DEBUG_LOG_PATH := A_ScriptDir "\debug-31b036.log"
-global AGENT_DEBUG_SESSION_ID := "31b036"
+; (disabled) agent log debug-31b036
 
 ; Helper function for safe debug logging with retry on file lock
 ; Handles file locking gracefully by retrying with exponential backoff
@@ -72,22 +71,8 @@ SafeDebugLog(text) {
 
 ; Helper: write NDJSON log line for debug agent (no-op on failure)
 AgentDebugLog(hypothesisId, message, runId := "initial") {
-    try {
-        ts := A_TickCount
-        id := "log_" ts "_" hypothesisId
-        payload := Format(
-            "{{" "sessionId" ":" "{1}" "," "id" ":" "{2}" "," "timestamp" ":{3}," "location" ":" "Shift keys.ahk:{4}" "," "message" ":" "{5}" "," "data" ":{{" "hypothesisId" ":" "{6}" "}}," "runId" ":" "{7}" "}}",
-            AGENT_DEBUG_SESSION_ID,
-            id,
-            ts,
-            A_LineNumber,
-            message,
-            hypothesisId,
-            runId
-        )
-        FileAppend payload "`n", AGENT_DEBUG_LOG_PATH
-    } catch {
-    }
+    ; Intentionally no-op.
+    return
 }
 
 ; Helper: find ChatGPT chrome window by case-insensitive contains match
@@ -4038,21 +4023,8 @@ ML_GetDocRoot() {
 
 ; #region agent log - debug helper
 ML_DebugLog(hypothesisId, message, detail, runId := "pre-fix") {
-    try {
-        filePath := "debug-22dd27.log"
-        ; Build a single JSON line using Format() with indexed placeholders.
-        line := Format(
-            '{{"sessionId":"22dd27","runId":"{1}","hypothesisId":"{2}","location":"Shift keys.ahk","message":"{3}","data":{{"detail":"{4}"}},"timestamp":{5}}}' .
-            "`n",
-            runId,
-            hypothesisId,
-            message,
-            detail,
-            A_TickCount
-        )
-        FileAppend(line, filePath, "UTF-8")
-    } catch {
-    }
+    ; Intentionally no-op.
+    return
 }
 ; #endregion agent log
 
@@ -9955,17 +9927,6 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
                 }
             }
 
-            ; #region agent log (debug-602d72)
-            try FileAppend(
-                "{`"sessionId`":`"602d72`",`"runId`":`"pre-fix`",`"hypothesisId`":`"H7`",`"location`":`"Shift keys.ahk:EnsureSingleChromePdfInstance`",`"message`":`"chrome_window_scan`",`"data`":{"
-                . "`"hwnd`":`"" . hwnd . "`",`"title`":`"" . title . "`",`"matchedTitle`":" . (matched?1:0) . ",`"matchedUia`":" . (matchedUia?1:0)
-                . ",`"docHasPdf`":" . ((docValue != "" && InStr(docValue, ".pdf"))?1:0) . "}"
-                . ",`"timestamp`":" . A_TickCount . "}" . "`n"
-            , A_ScriptDir "\debug-602d72.log")
-            catch {
-            }
-            ; #endregion agent log
-
             if (!matched && matchedUia)
                 matched := true
             if matched
@@ -9977,14 +9938,6 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
 
     ; Restore previous DetectHiddenWindows setting
     DetectHiddenWindows prevDetectHidden
-
-    ; #region agent log (debug-602d72)
-    try FileAppend(
-        "{`"sessionId`":`"602d72`",`"runId`":`"pre-fix`",`"hypothesisId`":`"H7`",`"location`":`"Shift keys.ahk:EnsureSingleChromePdfInstance`",`"message`":`"chrome_windows_to_close`",`"data`":{`"count`":" . toClose.Length . "},`"timestamp`":" . A_TickCount . "}" . "`n"
-    , A_ScriptDir "\debug-602d72.log")
-    catch {
-    }
-    ; #endregion agent log
 
     for hwnd in toClose {
         try {
