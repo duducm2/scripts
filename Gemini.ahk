@@ -166,9 +166,8 @@ GetLastGeminiCopyButton(uia) {
 ; options/geminiHwnd same as CopyLastGeminiMessageToClipboard. maxRetries includes first attempt.
 CopyLastGeminiMessageWithRetry(options := "", geminiHwnd := 0, maxRetries := GEMINI_COPY_MAX_RETRIES) {
     baseDelay := GEMINI_COPY_RETRY_SLEEP_MS
-    contentBefore := A_Clipboard
     loop maxRetries {
-        if (CopyLastGeminiMessageToClipboard(options, geminiHwnd) && A_Clipboard != "" && A_Clipboard != contentBefore)
+        if (CopyLastGeminiMessageToClipboard(options, geminiHwnd))
             return true
         if (A_Index < maxRetries)
             Sleep baseDelay * (1 << (A_Index - 1))
@@ -692,16 +691,15 @@ GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false) {
         }
 
         ; Step 3: Scroll to bottom so newest response controls are discoverable.
-        ; Prefer JS scroll (more deterministic in Chrome), with Ctrl+End fallback.
-        try uia.JSExecute("window.scrollTo(0, document.documentElement.scrollHeight);")
-        Sleep GEMINI_SCROLL_SETTLE_MS
         Send "^{End}"
         Sleep GEMINI_SCROLL_SETTLE_MS
 
         if (copyFirst) {
             lastCopyButton := GeminiState.GetLastCopyButtonCached(uia, hwnd)
             if (lastCopyButton) {
+                A_Clipboard := ""
                 try lastCopyButton.Click()
+                ClipWait(1)
                 PlayCopyCompletedChime()
             }
         }
@@ -876,9 +874,6 @@ CopyLastGeminiMessageToClipboard(options := "", geminiHwnd := 0) {
         Sleep GEMINI_UIA_SETTLE_MS
 
         ; Scroll to bottom so the newest response controls are discoverable.
-        ; Prefer JS scroll (more deterministic in Chrome), with Ctrl+End fallback.
-        try uia.JSExecute("window.scrollTo(0, document.documentElement.scrollHeight);")
-        Sleep GEMINI_SCROLL_SETTLE_MS
         Send "^{End}"
         Sleep GEMINI_SCROLL_SETTLE_MS
 
@@ -888,6 +883,7 @@ CopyLastGeminiMessageToClipboard(options := "", geminiHwnd := 0) {
             GeminiPerfLog("copy", t0)
             return false
         }
+            A_Clipboard := ""
         lastCopyButton.Click()
         if !ClipWait(2) {
             GeminiPerfLog("copy", t0)
