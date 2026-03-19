@@ -101,6 +101,7 @@ GetChatGPTWindowHwnd() {
 
 ; --- Config ---------------------------------------------------------------
 PROMPT_FILE := A_ScriptDir "\\ChatGPT_Prompt.txt"
+global USE_CHROME_PDF_PRESENT_FALLBACK := true
 
 ; ShiftKeys daemon IPC: bootstrap connection on load (non-blocking)
 ShiftKeysIPC_Bootstrap()
@@ -3803,6 +3804,77 @@ ChromePdf_FocusByAutomationId(automationId, controlType := 0) {
     return false
 }
 
+ChromePdf_TogglePresentMode() {
+    ; Deterministic primary path: open More actions and invoke Present item by selector.
+    ; Legacy directional-key fallback remains optional behind feature flag.
+    global USE_CHROME_PDF_PRESENT_FALLBACK
+
+    if !ChromePdf_ClickByAutomationId("more", ["More actions"])
+        return false
+
+    deadline := A_TickCount + 700
+    selectorNames := [
+        "Present",
+        "Presentation mode",
+        "Present mode",
+        "Apresentar",
+        "Modo de apresentação"
+    ]
+
+    while (A_TickCount <= deadline) {
+        try {
+            uia := UIA_Browser("ahk_exe chrome.exe")
+            root := ChromePdf_GetViewerRoot(uia)
+            if (root) {
+                presentItem := 0
+
+                ; Prefer stable attributes first, then localized names.
+                try presentItem := root.FindFirst({ Type: 50011, AutomationId: "present" })
+                if (!presentItem)
+                    try presentItem := root.FindFirst({ AutomationId: "present" })
+                if (!presentItem)
+                    try presentItem := root.FindFirst({ Type: 50000, AutomationId: "present" })
+
+                if (!presentItem) {
+                    for , candidateName in selectorNames {
+                        try presentItem := root.FindFirst({ Type: 50011, Name: candidateName })
+                        if (presentItem)
+                            break
+                        try presentItem := root.FindFirst({ Type: 50000, Name: candidateName })
+                        if (presentItem)
+                            break
+                    }
+                }
+
+                if (presentItem) {
+                    try presentItem.Invoke()
+                    catch {
+                        try presentItem.Click()
+                    }
+                    AgentDebugLog("H8", "ShiftE_presentmode_selector_success")
+                    return true
+                }
+            }
+        } catch {
+        }
+        Sleep 40
+    }
+
+    AgentDebugLog("H9", "ShiftE_presentmode_selector_timeout")
+
+    if (USE_CHROME_PDF_PRESENT_FALLBACK) {
+        Sleep 120
+        Send "{Up}"
+        Send "{Up}"
+        Sleep 40
+        Send "{Enter}"
+        AgentDebugLog("H10", "ShiftE_presentmode_fallback_used")
+        return true
+    }
+
+    return false
+}
+
 ; Shift + F : Fit to page (Zoom to Fit) - Fit
 +f::
 {
@@ -3859,14 +3931,7 @@ ChromePdf_FocusByAutomationId(automationId, controlType := 0) {
 ; Shift + E : Present mode (mnemonic: E from prEsent)
 +E::
 {
-    ; UIA: Button Type 50000, Name "More actions", AutomationId "more"
-    if ChromePdf_ClickByAutomationId("more", ["More actions"]) {
-        Sleep 150
-        Send "{Up}"
-        Send "{Up}"
-        Sleep 50
-        Send "{Enter}"
-    }
+    ChromePdf_TogglePresentMode()
 }
 
 #HotIf
