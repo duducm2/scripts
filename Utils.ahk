@@ -509,69 +509,23 @@ GetScriptFiles() {
     ]
 }
 
-; #region agent log: QuickUpdate debug
-JsonEscapeForNDJSON(s) {
-    ; Escape strings safely for a simple JSON string (best-effort).
-    ; We avoid logging full paths to reduce the chance of malformed JSON.
-    try {
-        bs := Chr(92) ; '\'
-        s := StrReplace(s, bs, bs . bs)
-        s := StrReplace(s, '"', '\"')
-        s := StrReplace(s, "`r", "\r")
-        s := StrReplace(s, "`n", "\n")
-        return s
-    } catch {
-        return s
-    }
-}
-
-DebugLogNDJSON_QuickUpdate(hypothesisId, message, dataInfo := "") {
-    static s_logPath := ""
-    static s_runId := ""
-    if (s_logPath = "") {
-        s_logPath := A_ScriptDir "\debug-8af983.log"
-        s_runId := "debugRun_" . A_TickCount
-    }
-    try {
-        if (dataInfo = "")
-            dataInfo := ""
-        safeMsg := JsonEscapeForNDJSON(message)
-        safeData := JsonEscapeForNDJSON(dataInfo)
-        ndjson :=
-            "{" "sessionId" ":" "8af983" "," "runId" ":" "" . s_runId . "" "," "hypothesisId" ":" "" . hypothesisId .
-            "" "," "location" ":" "Utils.ahk:QuickUpdate" "," "message" ":" "" . safeMsg . "" "," "data" ":{" "info" ":" "" .
-            safeData . "" "}," "timestamp" ":" . A_TickCount
-        FileAppend(ndjson . "`n", s_logPath, "UTF-8")
-    } catch {
-        ; Never fail the macro due to debug logging.
-    }
-}
-; #endregion
-
 ; Quick Update Scripts macro: PowerShell handoff restart (local-only, no git).
 QuickUpdateScripts() {
     static s_isQuickUpdateRunning := false
     if (s_isQuickUpdateRunning) {
-        ; #region agent log: QuickUpdate guard
-        DebugLogNDJSON_QuickUpdate("H4_guard_loop", "Guard prevented re-entry", "s_isQuickUpdateRunning=true")
-        ; #endregion
         return
     }
     s_isQuickUpdateRunning := true
 
     try {
-        ; #region agent log: QuickUpdate entry
         scripts := GetScriptFiles()
         scriptsNames := ""
         for scriptPath in scripts {
             parts := StrSplit(scriptPath, "\")
             scriptsNames .= parts[parts.Length] . ";"
         }
-        DebugLogNDJSON_QuickUpdate("H0_entry", "QuickUpdateScripts starting", scriptsNames)
-        ; #endregion
 
         StandardLoadingBar_Show("⏳ Restarting scripts...", BANNER_ACCENT_INTERMEDIATE, { passive: false })
-        DebugLogNDJSON_QuickUpdate("H1_after_loadingbar", "StandardLoadingBar_Show returned", "")
 
         utilsPath := ""
         psPaths := []
@@ -609,31 +563,15 @@ QuickUpdateScripts() {
         ps .= "  else { Start-Process -FilePath $s | Out-Null } "
         ps .= "}"
 
-        ; #region agent log: QuickUpdate PS built
-        DebugLogNDJSON_QuickUpdate("H1_build", "PowerShell command built", "psLen=" . StrLen(ps))
-        ; #endregion
-
         ; Execute asynchronously, then terminate this AHK instance immediately.
-        ; We log the returned PID to determine if the PowerShell handoff actually started.
         pid := 0
         try {
             pid := Run('powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "' . ps . '"', , "Hide")
         } catch as e {
-            DebugLogNDJSON_QuickUpdate("H5_run_throw", "PowerShell Run threw", e.Message)
             throw
         }
-        ; #region agent log: QuickUpdate PS started
-        DebugLogNDJSON_QuickUpdate("H2_ps_run", "PowerShell Run invoked", "pid=" . pid)
-        ; #endregion
-
-        ; #region agent log: QuickUpdate exit
-        DebugLogNDJSON_QuickUpdate("H3_exit", "About to ExitApp after PS handoff", "pid=" . pid)
-        ; #endregion
         ExitApp
     } catch as e {
-        ; #region agent log: QuickUpdate exception
-        DebugLogNDJSON_QuickUpdate("H6_exception", "QuickUpdateScripts exception", e.Message)
-        ; #endregion
         try StandardLoadingBar_Hide(0)
         ShowCenteredOverlay_Utils("❌ QuickUpdateScripts error: " . e.Message, 3500, BANNER_ACCENT_ERROR)
     } finally {
@@ -4337,10 +4275,6 @@ InitDpiAwareness()
 ; Auto-execute: show success after QuickUpdateScripts relaunches Utils.ahk with "/Updated".
 if (A_Args.Length > 0 && A_Args[1] = "/Updated") {
     try {
-        ; #region agent log: Updated hook entry
-        DebugLogNDJSON_QuickUpdate("H0_updated_entry", "/Updated hook triggered", "arg=" . A_Args[1])
-        ; #endregion
-
         ShowCenteredOverlay_Utils("✅ Scripts updated and relaunched", 6500, BANNER_ACCENT_SUCCESS)
         soundPath := A_ScriptDir "\sounds\quick-update-success.wav"
         try {
@@ -4348,10 +4282,6 @@ if (A_Args.Length > 0 && A_Args[1] = "/Updated") {
                 SoundPlay(soundPath)
         } catch {
         }
-
-        ; #region agent log: Updated hook done
-        DebugLogNDJSON_QuickUpdate("H3_updated_done", "Updated hook completed", "soundExists=" . FileExist(soundPath))
-        ; #endregion
     } catch {
     }
 }
