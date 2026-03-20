@@ -1584,53 +1584,6 @@ CursorTransfer_StripTrailingCursorAppSuffix(s) {
     return Trim(RegExReplace(t, "i)\s*[-–—]\s*Cursor\s*$", ""))
 }
 
-; #region agent log
-CursorTransfer_DebugEscapeJson(s) {
-    s := String(s)
-    s := StrReplace(s, "\", "\\")
-    s := StrReplace(s, '"', '\"')
-    s := StrReplace(s, "`n", "\n")
-    s := StrReplace(s, "`r", "")
-    return s
-}
-CursorTransfer_DebugLog_CursorTransferEnrich(hypothesisId, location, hwnd, winTitle, projName, cleanProjName,
-    shortTitleRaw, shortAfterParens, shortAfterLeadStrip, displayName, projectIndex, matchSource, uinf, idxCmd,
-    idxTitle) {
-    logPath := A_ScriptDir "\debug-3fdbe6.log"
-    ts := A_TickCount
-    dup2 := 0
-    try {
-        if (cleanProjName != "" && displayName != "")
-            dup2 := (InStr(displayName, "[" . cleanProjName . "]", false, 1, 2) > 0) ? 1 : 0
-    } catch {
-    }
-    bracketedProjPrefix := 0
-    try {
-        if (cleanProjName != "" && displayName != "" && InStr(displayName, "[" . cleanProjName . "]") = 1)
-            bracketedProjPrefix := 1
-    } catch {
-    }
-    wt := Trim(winTitle)
-    stBracket := (StrLen(wt) > 0 && SubStr(wt, 1, 1) = "[") ? 1 : 0
-    wHasBracket := InStr(winTitle, "[") ? 1 : 0
-    line := ""
-    line .= '{"sessionId":"3fdbe6","timestamp":' ts ',"runId":"hybrid-title-cmd","hypothesisId":"' hypothesisId '",'
-    line .= '"location":"' CursorTransfer_DebugEscapeJson(location) '","message":"cursor transfer enrich","data":{'
-    line .= '"hwnd":' Integer(hwnd) ',"winTitleHasBracket":' wHasBracket ',"winTitleStartsWithBracket":' stBracket
-    . ',"dupBracketCleanTwice":' dup2 ',"bracketedProjPrefixAtStart":' bracketedProjPrefix ','
-    line .= '"winTitle":"' CursorTransfer_DebugEscapeJson(winTitle) '",'
-    line .= '"projName":"' CursorTransfer_DebugEscapeJson(projName) '",'
-    line .= '"cleanProjName":"' CursorTransfer_DebugEscapeJson(cleanProjName) '",'
-    line .= '"shortTitleRaw":"' CursorTransfer_DebugEscapeJson(shortTitleRaw) '",'
-    line .= '"shortAfterParens":"' CursorTransfer_DebugEscapeJson(shortAfterParens) '",'
-    line .= '"shortAfterLeadStrip":"' CursorTransfer_DebugEscapeJson(shortAfterLeadStrip) '",'
-    line .= '"projectIndex":' Integer(projectIndex) ',"matchSource":"' CursorTransfer_DebugEscapeJson(matchSource) '","uninformativeTitle":' (
-        uinf ? 1 : 0) ',"idxCmd":' Integer(idxCmd) ',"idxTitle":' Integer(idxTitle) ','
-    line .= '"displayName":"' CursorTransfer_DebugEscapeJson(displayName) '"}}`n'
-    try FileAppend(line, logPath, "UTF-8")
-}
-; #endregion agent log
-
 Clipboard_GetSequenceNumber() {
     ; WinAPI: https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-getclipboardsequencenumber
     try {
@@ -1735,20 +1688,7 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
     enriched := []
     for w in list {
         winTitle := w.title ? w.title : ""
-        pid := 0
-        try pid := WinGetPID("ahk_id " w.hwnd)
-        cmdLine := CursorTransfer_GetProcessCommandLine(pid)
-        idxCmd := CursorTransfer_GetMatchingProjectIndexByCmdLine(cmdLine)
-        idxTitle := CursorTransfer_GetMatchingProjectIndexForTitle(winTitle)
-        uinf := CursorTransfer_IsUninformativeCursorTitle(winTitle)
         projectIndex := CursorTransfer_GetMatchingProjectIndex(w.hwnd, winTitle)
-        matchSource := "none"
-        if (projectIndex > 0) {
-            if (projectIndex = idxTitle && idxTitle > 0)
-                matchSource := "title"
-            else if (projectIndex = idxCmd && idxCmd > 0)
-                matchSource := "cmd"
-        }
         projectOrder := Integer(projectIndex > 0 ? projectIndex : 10000 + enriched.Length)
         projName := ""
         if (projectIndex > 0) {
@@ -1758,13 +1698,11 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
             }
         }
         displayName := ""
-        shortTitleRaw := ""
         shortAfterParens := ""
         shortAfterLeadStrip := ""
         cleanProjName := ""
         if (projName != "") {
             shortTitle := winTitle ? winTitle : ""
-            shortTitleRaw := shortTitle
             cleanProjName := CursorTransfer_StripStaticScriptTokenForDisplay(projName)
             if (shortTitle != "") {
                 shortTitle := CursorTransfer_StripDuplicateFilenameInParens(shortTitle)
@@ -1791,11 +1729,6 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
         displayName := CursorTransfer_StripTrailingCursorAppSuffix(displayName)
         if (displayName = "")
             displayName := "#" . w.hwnd
-        ; #region agent log
-        CursorTransfer_DebugLog_CursorTransferEnrich("H1-H5", "Utils.ahk:CursorTransfer_ShowWindowSelector", w.hwnd,
-            winTitle, projName, cleanProjName, shortTitleRaw, shortAfterParens, shortAfterLeadStrip, displayName,
-            projectIndex, matchSource, uinf, idxCmd, idxTitle)
-        ; #endregion agent log
         enriched.Push({
             hwnd: w.hwnd,
             title: winTitle,
