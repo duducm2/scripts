@@ -856,7 +856,7 @@ CopyLastGeminiMessageToClipboard(options := "", geminiHwnd := 0) {
             GeminiPerfLog("copy", t0)
             return false
         }
-            A_Clipboard := ""
+        A_Clipboard := ""
         lastCopyButton.Click()
         if !ClipWait(2) {
             GeminiPerfLog("copy", t0)
@@ -913,13 +913,20 @@ handleStopDelayedSubmitMonitor(*) {
 handleTriggerReadAloud(*) {
     GeminiTriggerReadAloud()
 }
-copyFromBridge(*) {
+copyFromBridge(wParam, lParam, msg, hwnd) {
+    t0 := A_TickCount
+    geminiHwnd := Integer(lParam)
+    D2C_CopyDebugLog("copyFromBridge ENTER lParam=" geminiHwnd " active=" WinGetTitle("A"))
     ; Guarantee layer: write result so bridge can confirm we copied Gemini's last response (same path as #!+p).
     try
         FileDelete(GEMINI_COPY_RESULT_PATH)
     try
         FileAppend("0", GEMINI_COPY_RESULT_PATH)
-    r := CopyLastGeminiMessageToClipboard({ restoreWindow: false, playChimeAndNotify: false })
+    opts := { restoreWindow: false, playChimeAndNotify: false }
+    if (geminiHwnd && WinActive("ahk_id " geminiHwnd))
+        opts.alreadyActive := true
+    r := CopyLastGeminiMessageToClipboard(opts, geminiHwnd)
+    D2C_CopyDebugLog("copyFromBridge EXIT r=" r " ms=" (A_TickCount - t0) " clipLen=" StrLen(A_Clipboard))
     try
         FileDelete(GEMINI_COPY_RESULT_PATH)
     try

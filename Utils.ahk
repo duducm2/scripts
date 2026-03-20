@@ -1498,6 +1498,29 @@ Clipboard_WaitForSequenceChange(seqBefore, totalTimeoutMs := 2000, fastPhaseMs :
     return false
 }
 
+; Dictation/Gemini IPC copy → .cursor\d2c_copy_debug.log (remove instrumentation when stable).
+D2C_CopyDebugLog(msg) {
+    try {
+        DirCreate(A_ScriptDir "\.cursor")
+        stamp := FormatTime(, "yyyy-MM-dd HH:mm:ss") " tick=" A_TickCount
+        FileAppend(stamp " | " msg "`n", A_ScriptDir "\.cursor\d2c_copy_debug.log", "UTF-8")
+    } catch {
+    }
+}
+
+; WinGetTitle throws for some targets if hidden detection is off; never throw from debug path.
+D2C_DebugSafeWinTitle(winCriteria) {
+    prev := A_DetectHiddenWindows
+    DetectHiddenWindows true
+    try {
+        return WinGetTitle(winCriteria)
+    } catch {
+        return "<title_error>"
+    } finally {
+        DetectHiddenWindows prev
+    }
+}
+
 GetGeminiScriptMsgTargetHwnd() {
     ; Cache-first resolver for Gemini.ahk AutoHotkey script window.
     static cached := 0
@@ -2919,14 +2942,20 @@ class D2C_FlowManager {
     }
 
     DoCopyCore(readAloud := false, skipRestoreFocus := false) {
-        if (this.HasCopiedForThisResponse)
+        D2C_CopyDebugLog("DoCopyCore enter readAloud=" readAloud " skipRestore=" skipRestoreFocus " hasCopied="
+            this.HasCopiedForThisResponse " geminiHwnd=" this.GeminiHwnd " originHwnd=" this.OriginHwnd)
+        if (this.HasCopiedForThisResponse) {
+            D2C_CopyDebugLog("DoCopyCore EXIT early (already copied this response)")
             return
+        }
         this.HasCopiedForThisResponse := true
 
         ; Hands off cue before copying Gemini's last response (applies to both manual Y/R/C and timeout auto-copy).
         PlayPreMovementWarning("Gemini")
+        D2C_CopyDebugLog("DoCopyCore post-HandsOff")
 
         if (!WinExist("ahk_id " this.GeminiHwnd)) {
+            D2C_CopyDebugLog("DoCopyCore EXIT no Gemini window")
             if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
                 WinActivate("ahk_id " this.OriginHwnd)
             return
@@ -2937,11 +2966,14 @@ class D2C_FlowManager {
         if (!WinActive("ahk_id " this.GeminiHwnd)) {
             try WinActivate("ahk_id " this.GeminiHwnd)
             catch {
+                D2C_CopyDebugLog("DoCopyCore EXIT WinActivate Gemini threw")
                 if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
                     WinActivate("ahk_id " this.OriginHwnd)
                 return
             }
             if (!WinWaitActive("ahk_exe chrome.exe", , 0.5)) {
+                D2C_CopyDebugLog("DoCopyCore EXIT WinWaitActive chrome 0.5s failed activeTitle="
+                    D2C_DebugSafeWinTitle("A"))
                 if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
                     WinActivate("ahk_id " this.OriginHwnd)
                 return
@@ -2953,7 +2985,10 @@ class D2C_FlowManager {
             WM_TRIGGER_READ_ALOUD := 0x8004
             targetHwnd := GetGeminiScriptMsgTargetHwnd()
             if (targetHwnd) {
+                prevDH := A_DetectHiddenWindows
+                DetectHiddenWindows true
                 try PostMessage(WM_TRIGGER_READ_ALOUD, 0, 0, , "ahk_id " targetHwnd)
+                finally DetectHiddenWindows prevDH
             } else {
                 ShowCenteredOverlay_Utils("❌ Gemini.ahk not running", 2000, BANNER_ACCENT_ERROR)
             }
@@ -2965,13 +3000,40 @@ class D2C_FlowManager {
 
             if (targetHwnd) {
                 tDispatch := A_TickCount
-                try PostMessage(WM_COPY_LAST_GEMINI, 0, 0, , "ahk_id " targetHwnd)
+                D2C_CopyDebugLog("DoCopyCore pre-SendMessage targetHwnd=" targetHwnd " targetTitle="
+                    D2C_DebugSafeWinTitle("ahk_id " targetHwnd) " seqBefore=" seqBefore " clipLenBefore=" StrLen(
+                        clipBefore)
+                    " activeA=" D2C_DebugSafeWinTitle("A") " geminiHwndParam=" this.GeminiHwnd)
+                ; lParam = Chrome Gemini hwnd: skip redundant activation in receiver. Timeout 20s (default 5s can abort mid-copy).
+                ; Hidden Gemini.ahk main window: SendMessage needs DetectHiddenWindows true or "Target window not found."
+                sendOk := false
+                prevDH := A_DetectHiddenWindows
+                DetectHiddenWindows true
+                try {
+                    SendMessage(WM_COPY_LAST_GEMINI, 0, this.GeminiHwnd, , "ahk_id " targetHwnd, , , , 20000)
+                    sendOk := true
+                    D2C_CopyDebugLog("DoCopyCore SendMessage returned ok ms=" (A_TickCount - tDispatch))
+                } catch as e {
+                    D2C_CopyDebugLog("DoCopyCore SendMessage THREW: " e.Message)
+                } finally {
+                    DetectHiddenWindows prevDH
+                }
+                seqAfterImmediate := Clipboard_GetSequenceNumber()
                 changed := Clipboard_WaitForSequenceChange(seqBefore, 2000, 850)
-                ; Single validation after sequence change.
-                clipOk := (changed && A_Clipboard != clipBefore && Trim(A_Clipboard) != "")
-                if (IsSoundEnabled())
+                clipOk := sendOk && changed && A_Clipboard != clipBefore && Trim(A_Clipboard) != ""
+                D2C_CopyDebugLog("DoCopyCore post-wait sendOk=" sendOk " seqAfterImmediate=" seqAfterImmediate " seqNow="
+                    Clipboard_GetSequenceNumber() " changed=" changed " clipOk=" clipOk " clipLen="
+                    StrLen(A_Clipboard) " preview=" SubStr(StrReplace(A_Clipboard, "`n", " "), 1, 100))
+                if (!sendOk)
+                    ShowCenteredOverlay_Utils("❌ Gemini copy timed out or IPC failed — see d2c_copy_debug.log", 3500,
+                        BANNER_ACCENT_ERROR)
+                else if (!clipOk)
+                    ShowCenteredOverlay_Utils("❌ Copy failed or clipboard empty — try again", 3000, BANNER_ACCENT_ERROR
+                    )
+                else if (IsSoundEnabled())
                     try SoundPlay(A_ScriptDir . "\sounds\copy.wav")
             } else {
+                D2C_CopyDebugLog("DoCopyCore FAIL GetGeminiScriptMsgTargetHwnd returned 0")
                 ShowCenteredOverlay_Utils("❌ Gemini.ahk not running", 2000, BANNER_ACCENT_ERROR)
             }
         }
@@ -2984,6 +3046,7 @@ class D2C_FlowManager {
             if (!WinActive("ahk_id " this.OriginHwnd))
                 WinWaitActive("ahk_id " this.OriginHwnd, , 0.5)
         }
+        D2C_CopyDebugLog("DoCopyCore END skipRestore=" skipRestoreFocus " activeNow=" D2C_DebugSafeWinTitle("A"))
     }
 
     ; --- Phase 5: Cursor Transfer ---
@@ -8501,6 +8564,46 @@ StopFocusModeWindowMonitor() {
 #!+Y::
 {
     ToggleFocusMode()
+}
+
+; Debug: Win+Alt+Shift+L — IPC copy self-test + .cursor\d2c_copy_debug.log (Gemini.ahk must be running).
+#!+l:: {
+    D2C_CopyDebugLog("=== HOTKEY #!+L self-test START ===")
+    WM_COPY_LAST_GEMINI := 0x8001
+    resultPath := A_ScriptDir "\.cursor\gemini_copy_result.txt"
+    targetHwnd := GetGeminiScriptMsgTargetHwnd()
+    D2C_CopyDebugLog("#!+L targetHwnd=" targetHwnd (targetHwnd ? " title=" D2C_DebugSafeWinTitle("ahk_id " targetHwnd) :
+        ""))
+    if !targetHwnd {
+        ShowCenteredOverlay_Utils("Debug #!+L: Gemini.ahk msg window not found", 2500, BANNER_ACCENT_ERROR)
+        D2C_CopyDebugLog("#!+L ABORT no target")
+        return
+    }
+    clipBefore := A_Clipboard
+    seqBefore := Clipboard_GetSequenceNumber()
+    t0 := A_TickCount
+    prevDH := A_DetectHiddenWindows
+    DetectHiddenWindows true
+    try {
+        ; lParam 0: receiver resolves Gemini window (debug hotkey may not know Chrome hwnd).
+        SendMessage(WM_COPY_LAST_GEMINI, 0, 0, , "ahk_id " targetHwnd, , , , 20000)
+        D2C_CopyDebugLog("#!+L SendMessage ok elapsedMs=" (A_TickCount - t0))
+    } catch as e {
+        D2C_CopyDebugLog("#!+L SendMessage THREW: " e.Message)
+        ShowCenteredOverlay_Utils("Debug #!+L: SendMessage failed — see d2c_copy_debug.log", 3000, BANNER_ACCENT_ERROR)
+        return
+    } finally {
+        DetectHiddenWindows prevDH
+    }
+    res := ""
+    try res := Trim(FileRead(resultPath, "UTF-8"))
+    preview := SubStr(StrReplace(A_Clipboard, "`n", " "), 1, 80)
+    D2C_CopyDebugLog("#!+L gemini_copy_result.txt=" (res != "" ? res : "<missing>") " clipLen=" StrLen(A_Clipboard) " preview=" preview
+    )
+    D2C_CopyDebugLog("=== HOTKEY #!+L self-test END ===")
+    ShowCenteredOverlay_Utils((res = "1" && StrLen(A_Clipboard) > 0 ? "Debug #!+L: OK (see log)" :
+        "Debug #!+L: check log — result=" (res != "" ? res : "?")) " len=" StrLen(A_Clipboard), 3500,
+    res = "1" ? BANNER_ACCENT_INTERMEDIATE : BANNER_ACCENT_ERROR)
 }
 
 ; =============================================================================

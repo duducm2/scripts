@@ -15,16 +15,17 @@
 
 ; Cursor executable paths (copied config)
 BRIDGE_CursorExePersonal := "C:\Users\eduev\AppData\Local\Programs\cursor\Cursor.exe"
-BRIDGE_CursorExeWork     := "C:\Users\fie7ca\AppData\Local\Programs\cursor\Cursor.exe"
-WM_COPY_LAST_GEMINI     := 0x8001
+BRIDGE_CursorExeWork := "C:\Users\fie7ca\AppData\Local\Programs\cursor\Cursor.exe"
+WM_COPY_LAST_GEMINI := 0x8001
 ; Path for guarantee layer: Gemini.ahk writes "1" here when Copy Last Response (same as #!+p) succeeds
 BRIDGE_GeminiCopyResultPath := A_ScriptDir "\.cursor\gemini_copy_result.txt"
-BRIDGE_MinClipboardLength   := 10
+BRIDGE_MinClipboardLength := 10
 
 ; #region agent log
 Bridge_Log(loc, msg, data, hypothesisId := "") {
     p := A_ScriptDir "\.cursor\debug.log"
-    j := '{"location":"' . loc . '","message":"' . msg . '","data":' . (data is String ? data : "{}") . ',"hypothesisId":"' . hypothesisId . '","timestamp":' . A_TickCount . '}'
+    j := '{"location":"' . loc . '","message":"' . msg . '","data":' . (data is String ? data : "{}") .
+    ',"hypothesisId":"' . hypothesisId . '","timestamp":' . A_TickCount . '}'
     try
         FileAppend j "`n", p
     catch
@@ -149,7 +150,9 @@ Bridge_FindAndActivateCursorWindow(projectPath) {
         t := SubStr(StrReplace(StrReplace(w.title, "\", " "), '"', "'"), 1, 45)
         titlesJson .= (i > 1 ? "|" : "") . t
     }
-    Bridge_Log("GeminiToCursorBridge.ahk:FindAndActivate", "match result", '{"pathLast":"' . lastSeg . '","matchCount":' . cursorWindows.Length . ',"segmentUsed":"' . segUsed . '","titles":"' . titlesJson . '"}', "H1")
+    Bridge_Log("GeminiToCursorBridge.ahk:FindAndActivate", "match result", '{"pathLast":"' . lastSeg .
+        '","matchCount":' . cursorWindows.Length . ',"segmentUsed":"' . segUsed . '","titles":"' . titlesJson . '"}',
+        "H1")
     ; #endregion
     if (cursorWindows.Length = 0)
         return 0
@@ -160,7 +163,8 @@ Bridge_FindAndActivateCursorWindow(projectPath) {
                 WinActivate("ahk_id " window.hwnd)
                 Bridge_MoveMouseToCenter(window.hwnd)
                 ; #region agent log
-                Bridge_Log("GeminiToCursorBridge.ahk:FindAndActivate", "picked active", '{"hwnd":' . window.hwnd . ',"titleStart":"' . SubStr(StrReplace(window.title, '"', "'"), 1, 50) . '"}', "H2")
+                Bridge_Log("GeminiToCursorBridge.ahk:FindAndActivate", "picked active", '{"hwnd":' . window.hwnd .
+                    ',"titleStart":"' . SubStr(StrReplace(window.title, '"', "'"), 1, 50) . '"}', "H2")
                 ; #endregion
                 return window.hwnd
             }
@@ -169,7 +173,8 @@ Bridge_FindAndActivateCursorWindow(projectPath) {
     }
     targetWindow := cursorWindows[1]
     ; #region agent log
-    Bridge_Log("GeminiToCursorBridge.ahk:FindAndActivate", "picked first", '{"hwnd":' . targetWindow.hwnd . ',"titleStart":"' . SubStr(StrReplace(targetWindow.title, '"', "'"), 1, 60) . '"}', "H2")
+    Bridge_Log("GeminiToCursorBridge.ahk:FindAndActivate", "picked first", '{"hwnd":' . targetWindow.hwnd .
+        ',"titleStart":"' . SubStr(StrReplace(targetWindow.title, '"', "'"), 1, 60) . '"}', "H2")
     ; #endregion
     try {
         WinActivate("ahk_id " targetWindow.hwnd)
@@ -236,7 +241,8 @@ Bridge_CopyGeminiLastMessageToClipboard() {
     DetectHiddenWindows false
     SetTitleMatchMode prevMatch
     ; #region agent log
-    Bridge_Log("GeminiToCursorBridge.ahk:Bridge_CopyGemini", "geminiScriptHwnd found", '{"hwnd":' . geminiScriptHwnd . '}', "H1")
+    Bridge_Log("GeminiToCursorBridge.ahk:Bridge_CopyGemini", "geminiScriptHwnd found", '{"hwnd":' . geminiScriptHwnd .
+        '}', "H1")
     ; #endregion
     if (!geminiScriptHwnd)
         return { ok: false, reason: "no_script" }
@@ -283,7 +289,7 @@ Bridge_CopyGeminiLastMessageToClipboard() {
     } catch {
     }
 
-    ; Re-find Gemini script window with DetectHiddenWindows so PostMessage target is findable (avoids "Target window not found").
+    ; Re-find Gemini script window; synchronous SendMessage + lParam = browser hwnd (same contract as Utils ↔ Gemini.ahk).
     DetectHiddenWindows true
     SetTitleMatchMode 2
     postTargetHwnd := 0
@@ -310,79 +316,27 @@ Bridge_CopyGeminiLastMessageToClipboard() {
         }
     }
     ; #region agent log
-    Bridge_Log("GeminiToCursorBridge.ahk:Bridge_CopyGemini", "before PostMessage", '{"hwnd":' . postTargetHwnd . '}', "H2")
+    Bridge_Log("GeminiToCursorBridge.ahk:Bridge_CopyGemini", "before SendMessage", '{"postTargetHwnd":' .
+        postTargetHwnd .
+        ',"geminiBrowserHwnd":' . geminiBrowserHwnd . '}', "H2")
     ; #endregion
     if (!postTargetHwnd) {
         DetectHiddenWindows false
         return { ok: false, reason: "no_script" }
     }
     try {
-        PostMessage(WM_COPY_LAST_GEMINI, 0, 0, , "ahk_id " postTargetHwnd)
+        SendMessage(WM_COPY_LAST_GEMINI, 0, geminiBrowserHwnd, , "ahk_id " postTargetHwnd, , , , 20000)
     } catch as err {
-        ; #region agent log
         em := err.HasProp("Message") ? StrReplace(StrReplace(err.Message, "\", " "), '"', "'") : ""
         ew := err.HasProp("What") ? err.What : ""
-        Bridge_Log("GeminiToCursorBridge.ahk:Bridge_CopyGemini", "PostMessage catch", '{"message":"' . em . '","what":"' . ew . '"}', "H3")
-        ; #endregion
+        Bridge_Log("GeminiToCursorBridge.ahk:Bridge_CopyGemini", "SendMessage catch", '{"message":"' . em .
+            '","what":"' . ew .
+            '"}', "H3")
         DetectHiddenWindows false
         return { ok: false, reason: "send_failed" }
     }
     DetectHiddenWindows false
 
-    copyWaitMax := 120
-    copyWaitMs := 150
-    copyDone := false
-    attempt := 1
-    loop 2 {
-        loop copyWaitMax {
-            Sleep copyWaitMs
-            if (A_Clipboard != "" && A_Clipboard != clipBefore) {
-                copyDone := true
-                break 2
-            }
-        }
-        if (copyDone)
-            break
-        if (attempt = 1) {
-            attempt := 2
-            DetectHiddenWindows true
-            postTargetHwnd := 0
-            for hwnd in WinGetList("ahk_exe AutoHotkey64.exe") {
-                try {
-                    if (InStr(WinGetTitle("ahk_id " hwnd), "Gemini.ahk")) {
-                        postTargetHwnd := hwnd
-                        break
-                    }
-                } catch {
-                    continue
-                }
-            }
-            if (!postTargetHwnd) {
-                for hwnd in WinGetList("ahk_exe AutoHotkey32.exe") {
-                    try {
-                        if (InStr(WinGetTitle("ahk_id " hwnd), "Gemini.ahk")) {
-                            postTargetHwnd := hwnd
-                            break
-                        }
-                    } catch {
-                        continue
-                    }
-                }
-            }
-            try {
-                if (postTargetHwnd)
-                    PostMessage(WM_COPY_LAST_GEMINI, 0, 0, , "ahk_id " postTargetHwnd)
-            } catch {
-                DetectHiddenWindows false
-                return { ok: false, reason: "timeout" }
-            }
-            DetectHiddenWindows false
-        } else {
-            return { ok: false, reason: "timeout" }
-        }
-    }
-    if (!copyDone)
-        return { ok: false, reason: "timeout" }
     clipNow := A_Clipboard
     if (clipNow = "" || clipNow = clipBefore)
         return { ok: false, reason: "validation_failed" }
@@ -407,7 +361,8 @@ Bridge_CopyGeminiLastMessageToClipboard() {
     clipStable := A_Clipboard
     if (clipStable = "" || clipStable = clipBefore || StrLen(Trim(clipStable)) < BRIDGE_MinClipboardLength) {
         ; #region agent log
-        Bridge_Log("GeminiToCursorBridge.ahk:Bridge_CopyGemini", "verify failed clipboard", '{"len":' . StrLen(clipStable) . '}', "V1")
+        Bridge_Log("GeminiToCursorBridge.ahk:Bridge_CopyGemini", "verify failed clipboard", '{"len":' . StrLen(
+            clipStable) . '}', "V1")
         ; #endregion
         return { ok: false, reason: "validation_failed" }
     }
@@ -422,7 +377,8 @@ Bridge_CopyGeminiLastMessageToClipboard() {
         return { ok: false, reason: "validation_failed" }
     }
     ; #region agent log
-    Bridge_Log("GeminiToCursorBridge.ahk:Bridge_CopyGemini", "verify passed", '{"clipLen":' . StrLen(clipStable) . '}', "V1")
+    Bridge_Log("GeminiToCursorBridge.ahk:Bridge_CopyGemini", "verify passed", '{"clipLen":' . StrLen(clipStable) . '}',
+    "V1")
     ; #endregion
     return { ok: true }
 }
@@ -452,7 +408,8 @@ Bridge_ActivateCursorProject(projectPath, isWorkEnvironment) {
                 break
         }
         ; #region agent log
-        Bridge_Log("GeminiToCursorBridge.ahk:ActivateProject", "after launch wait", '{"targetHwnd":' . targetHwnd . '}', "H4")
+        Bridge_Log("GeminiToCursorBridge.ahk:ActivateProject", "after launch wait", '{"targetHwnd":' . targetHwnd . '}',
+            "H4")
         ; #endregion
         if (!targetHwnd)
             return 0
@@ -469,7 +426,8 @@ Bridge_ActivateCursorProject(projectPath, isWorkEnvironment) {
     try {
         if (WinGetID("A") != targetHwnd) {
             ; #region agent log
-            Bridge_Log("GeminiToCursorBridge.ahk:ActivateProject", "verify active failed", '{"expected":' . targetHwnd . ',"got":' . WinGetID("A") . '}', "V2")
+            Bridge_Log("GeminiToCursorBridge.ahk:ActivateProject", "verify active failed", '{"expected":' . targetHwnd .
+                ',"got":' . WinGetID("A") . '}', "V2")
             ; #endregion
             WinActivate("ahk_id " targetHwnd)
             WinWaitActive("ahk_id " targetHwnd, , 2)
@@ -490,7 +448,8 @@ Bridge_ActivateCursorProject(projectPath, isWorkEnvironment) {
     try {
         if (WinGetID("A") != targetHwnd) {
             ; #region agent log
-            Bridge_Log("GeminiToCursorBridge.ahk:ActivateProject", "verify after focus failed", '{"expected":' . targetHwnd . ',"got":' . WinGetID("A") . '}', "V2")
+            Bridge_Log("GeminiToCursorBridge.ahk:ActivateProject", "verify after focus failed", '{"expected":' .
+                targetHwnd . ',"got":' . WinGetID("A") . '}', "V2")
             ; #endregion
             WinActivate("ahk_id " targetHwnd)
             WinWaitActive("ahk_id " targetHwnd, , 2)
@@ -503,7 +462,8 @@ Bridge_ActivateCursorProject(projectPath, isWorkEnvironment) {
         tTitle := SubStr(StrReplace(WinGetTitle("ahk_id " targetHwnd), Chr(34), "'"), 1, 60)
     catch
         tTitle := ""
-    Bridge_Log("GeminiToCursorBridge.ahk:ActivateProject", "return hwnd", '{"hwnd":' . targetHwnd . ',"titleStart":"' . tTitle . '"}', "H3")
+    Bridge_Log("GeminiToCursorBridge.ahk:ActivateProject", "return hwnd", '{"hwnd":' . targetHwnd . ',"titleStart":"' .
+        tTitle . '"}', "H3")
     ; #endregion
     return targetHwnd
 }
@@ -525,7 +485,8 @@ CopyFromGeminiToCursor(projectPath, isWorkEnvironment := false) {
     ; Verification: clipboard still has content before we switch away (nothing overwrote it).
     if (StrLen(Trim(A_Clipboard)) < BRIDGE_MinClipboardLength) {
         ; #region agent log
-        Bridge_Log("GeminiToCursorBridge.ahk:CopyFromGemini", "verify clipboard before activate", '{"len":' . StrLen(A_Clipboard) . '}', "V3")
+        Bridge_Log("GeminiToCursorBridge.ahk:CopyFromGemini", "verify clipboard before activate", '{"len":' . StrLen(
+            A_Clipboard) . '}', "V3")
         ; #endregion
         return { ok: false, reason: "validation_failed" }
     }
@@ -545,7 +506,8 @@ CopyFromGeminiToCursor(projectPath, isWorkEnvironment := false) {
         activeNow := WinGetID("A")
         if (activeNow != targetHwnd) {
             ; #region agent log
-            Bridge_Log("GeminiToCursorBridge.ahk:CopyFromGemini", "verify before paste active failed", '{"expected":' . targetHwnd . ',"got":' . activeNow . '}', "V3")
+            Bridge_Log("GeminiToCursorBridge.ahk:CopyFromGemini", "verify before paste active failed", '{"expected":' .
+                targetHwnd . ',"got":' . activeNow . '}', "V3")
             ; #endregion
             WinActivate("ahk_id " targetHwnd)
             WinWaitActive("ahk_id " targetHwnd, , 2)
@@ -561,7 +523,8 @@ CopyFromGeminiToCursor(projectPath, isWorkEnvironment := false) {
     }
     if (StrLen(Trim(A_Clipboard)) < BRIDGE_MinClipboardLength) {
         ; #region agent log
-        Bridge_Log("GeminiToCursorBridge.ahk:CopyFromGemini", "verify clipboard before paste", '{"len":' . StrLen(A_Clipboard) . '}', "V3")
+        Bridge_Log("GeminiToCursorBridge.ahk:CopyFromGemini", "verify clipboard before paste", '{"len":' . StrLen(
+            A_Clipboard) . '}', "V3")
         ; #endregion
         return { ok: false, reason: "validation_failed" }
     }
@@ -571,7 +534,8 @@ CopyFromGeminiToCursor(projectPath, isWorkEnvironment := false) {
         pasteTitle := SubStr(StrReplace(WinGetTitle("ahk_id " targetHwnd), Chr(34), "'"), 1, 60)
     catch
         pasteTitle := ""
-    Bridge_Log("GeminiToCursorBridge.ahk:CopyFromGemini", "before paste verify ok", '{"hwnd":' . targetHwnd . ',"titleStart":"' . pasteTitle . '"}', "V3")
+    Bridge_Log("GeminiToCursorBridge.ahk:CopyFromGemini", "before paste verify ok", '{"hwnd":' . targetHwnd .
+        ',"titleStart":"' . pasteTitle . '"}', "V3")
     ; #endregion
     Send "^v"
     Send "{Enter}"

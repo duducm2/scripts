@@ -50,11 +50,11 @@ flowchart TB
 
 ## Pre-movement cue behavior
 
-- **When the cue plays**:  
-  - A 2-second pre-movement cue (sound + centered overlay \"✋ Hands off!\" warning) plays when the flow first moves focus from the original trigger window to Gemini (Original → Gemini) to submit the prompt.  
+- **When the cue plays**:
+  - A 2-second pre-movement cue (sound + centered overlay \"✋ Hands off!\" warning) plays when the flow first moves focus from the original trigger window to Gemini (Original → Gemini) to submit the prompt.
   - The same 2-second cue also plays right before copying Gemini's last response, whether you press **Y** at **Copy response?** or the banner times out and `DoCopyOnTimeout` runs.
-- **When the cue does not play**:  
-  - **Returns** from Gemini or Cursor back to the original trigger window are **immediate** (no sound cue, no added delay).  
+- **When the cue does not play**:
+  - **Returns** from Gemini or Cursor back to the original trigger window are **immediate** (no sound cue, no added delay).
   - Transitions between non-original windows (e.g., Gemini → Cursor during transfer) also run **without** the pre-movement cue.
 
 These cues are synchronization guard rails that appear only when the script is about to take control of focus for a significant action (sending to Gemini or copying Gemini's response); they do **not** change which windows are ultimately activated or the order in which they are activated.
@@ -66,7 +66,7 @@ For a complete list of where Hand Off audio cues are used, see `docs/hand_off_wa
 | Step | Banner                                 | Actions                                                                       | Effect                                                                              |
 | ---- | -------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
 | 1    | **Send to Gemini?** (6s)               | **Y** or timeout = send. **S** = paste only. **N** = cancel.                  | N ends flow; S = paste only; Y/timeout = paste + Enter, then Copy response? banner. |
-| 2    | **Copy response?** (5s)                | **Y** = copy. **C** = transfer to Cursor. **R** = read aloud. **N** = cancel. **Timeout** = DoCopyOnTimeout. | N ends flow. Y/C/R/timeout perform their action.                                    |
+| 2    | **Copy response?** (5s)                | **Y** = copy. **C** = transfer to Cursor. **R** = read aloud. **N** = cancel. | N ends flow. Y/C/R/timeout perform their action.                                    |
 | 3    | **Transfer to Cursor** (window picker) | **N** or **Esc** = cancel. **1–9** = paste to that window.                    | Cancel = no paste to Cursor.                                                        |
 
 ## Hotkeys
