@@ -50,6 +50,30 @@ TryActivateWindow_WM(winSpec, errorMessage := "❌ Error: Target window not foun
     }
 }
 
+; Dictation / overlay windows: skip for per-monitor cycling, move-to-monitor, and auto-cursor centering.
+WM_IsExcludedIndicatorWindow(hwnd) {
+    if (!hwnd)
+        return false
+    try {
+        exe := StrLower(WinGetProcessName("ahk_id " hwnd))
+    } catch {
+        return false
+    }
+    if (exe = "autohotkey64.exe" || exe = "handy.exe" || exe = "screenclippinghost.exe"
+        || exe = "snippingtool.exe" || exe = "hap.exe")
+        return true
+    try {
+        title := WinGetTitle(hwnd)
+    } catch {
+        return false
+    }
+    ; "Recording" may match unrelated apps; narrow if needed.
+    tl := StrLower(title)
+    if (InStr(tl, "windowmanagement.ahk") || InStr(tl, "recording") || InStr(tl, "com.pais.handy-siw"))
+        return true
+    return false
+}
+
 ; --- Globals & Timers --------------------------------------------------------
 global g_LastActiveHwnd := 0
 global g_LastMouseClickTick := 0   ; Timestamp of the most recent mouse click (A_TickCount)
@@ -241,19 +265,8 @@ MonitorActiveWindow() {
     if (A_TickCount - g_LastMouseClickTick < 1000)
         return
 
-    if (WM_USE_DAEMON && state != "" && state.Has("exe")) {
-        exe := StrLower(state["exe"])
-        if (exe = "screenclippinghost.exe" || exe = "snippingtool.exe" || exe = "hap.exe")
-            return
-    } else {
-        try {
-            processName := WinGetProcessName("ahk_id " hwnd)
-        } catch {
-            return
-        }
-        if (processName = "ScreenClippingHost.exe" || processName = "SnippingTool.exe" || processName = "hap.exe")
-            return
-    }
+    if (WM_IsExcludedIndicatorWindow(hwnd))
+        return
 
     MoveMouseToCenter(hwnd)
 }
@@ -388,6 +401,11 @@ MoveWinToMonitor(mon) {
         return
     }
 
+    if (WM_IsExcludedIndicatorWindow(hwnd)) {
+        ShowNotification_WM("Cannot move this window (indicator / overlay).")
+        return
+    }
+
     ; Obtain monitor work area
     MonitorGet mon, &left, &top, &right, &bottom
 
@@ -442,7 +460,7 @@ CycleWindowsOnMonitor(order) {
         } catch {
             ; No active window available
         }
-        if (hwndCur)
+        if (hwndCur && !WM_IsExcludedIndicatorWindow(hwndCur))
             MoveMouseToCenter(hwndCur)
         return
     }
@@ -530,9 +548,13 @@ GetVisibleWindowsOnMonitor(mon) {
             winList := WMIPC_GetVisibleWindowsByMonitor(mon)
             if (winList.Length > 0) {
                 visible := []
-                for w in winList
-                    visible.Push({ hwnd: Integer(w["hwnd"]), left: Integer(w["left"]), top: Integer(w["top"]), right: Integer(
+                for w in winList {
+                    h := Integer(w["hwnd"])
+                    if (WM_IsExcludedIndicatorWindow(h))
+                        continue
+                    visible.Push({ hwnd: h, left: Integer(w["left"]), top: Integer(w["top"]), right: Integer(
                         w["right"]), bottom: Integer(w["bottom"]), z: Integer(w["z"]) })
+                }
                 return visible
             }
         } catch {
@@ -576,6 +598,8 @@ GetVisibleWindowsOnMonitor(mon) {
             title := WinGetTitle(hwnd)
             if (title = "")
                 continue            ; unnamed (often invisible) windows
+            if (WM_IsExcludedIndicatorWindow(hwnd))
+                continue
 
             ; --- geometry --------------------------------------------------
             rect := Buffer(16, 0)
