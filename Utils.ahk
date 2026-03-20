@@ -1558,6 +1558,8 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
                 title := WinGetTitle("ahk_id " hwnd)
                 if (title = "" || InStr(StrLower(title), "preview"))
                     continue
+                if (title = "MSCTFIME UI" || title = "Default IME")
+                    continue
                 list.Push({ hwnd: hwnd, title: title })
                 if (list.Length >= 9)
                     break
