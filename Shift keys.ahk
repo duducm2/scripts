@@ -1360,12 +1360,12 @@ ShowGlobalShortcutsHelp() {
 Letters available: B, C, G, H, I, J, K, M, N, O, P, T, U, V, X, Y, Z
 [Ctrl+Alt+Win+0] > Project Quick Selector (opens project folder in Cursor)
 [Ctrl+Alt+Win+1] > Cursor AI quick action (Project Selector + Selection Mode)
-[Ctrl+Alt+Win+2] > Available for future shortcut
-[Ctrl+Alt+Win+3] > Available for future shortcut
-[Ctrl+Alt+Win+5] > Available for future shortcut
-[Ctrl+Alt+Win+6] > Available for future shortcut
-[Ctrl+Alt+Win+7] > Available for future shortcut
-[Ctrl+Alt+Win+8] > Available for future shortcut
+[Ctrl+Alt+Win+2] > Quick Update to Your Scripts (HotStrings macro)
+[Ctrl+Alt+Win+3] > Toggle Outlook and Teams (HotStrings macro)
+[Ctrl+Alt+Win+5] > Clean the Clipboard (HotStrings macro)
+[Ctrl+Alt+Win+6] > AI working? Cursor + Gemini (HotStrings macro)
+[Ctrl+Alt+Win+7] > Mark Last Clip as Favorite (HotStrings macro)
+[Ctrl+Alt+Win+8] > Move Desktop to Recycle Bin (HotStrings macro)
 [Ctrl+Alt+Win+9] > Available for future shortcut
 
 === MAIN KEY COMBINATIONS ===
@@ -10993,8 +10993,8 @@ CancelCommit(ctrl, *) {
             return
         }
         root := UIA.ElementFromHandle(hwnd)
-        
-        chatContainer := root.FindFirst({ClassName: "composer-messages-container"})
+
+        chatContainer := root.FindFirst({ ClassName: "composer-messages-container" })
         if (chatContainer) {
             try {
                 if (chatContainer.GetPropertyValue(UIA.Property.IsScrollPatternAvailable)) {
@@ -11003,8 +11003,8 @@ CancelCommit(ctrl, *) {
                 }
             } catch {
             }
-            
-            messages := chatContainer.FindAll({ClassName: "composer-rendered-message", matchmode: "Substring"})
+
+            messages := chatContainer.FindAll({ ClassName: "composer-rendered-message", matchmode: "Substring" })
             if (messages && messages.Length > 0) {
                 messages[messages.Length].ScrollIntoView()
             }

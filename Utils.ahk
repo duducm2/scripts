@@ -8393,6 +8393,14 @@ ShowHotstringSelector() {
 ; Ctrl+Alt+Win+4 - Send AI Text Optimizer prompt to Gemini (same as Win+Alt+Shift+U then L, 4)
 ^!#4:: GeminiNavigateFocusAndPasteFirstSnippet(GetAioptPromptText())
 
+; Ctrl+Alt+Win+2..8 - same macros as HotStrings panel (Win+Alt+Shift+U); secondary triggers only
+^!#2:: QuickUpdateScripts()
+^!#3:: ToggleOutlookAndTeams()
+^!#5:: CleanClipboard()
+^!#6:: Cursor_FindComposerIconAcrossInstances()
+^!#7:: MarkLastClipAsFavorite()
+^!#8:: DesktopToRecycle_Trigger()
+
 ; =============================================================================
 ; Alt+Shift+W Shortcut
 ; Hotkey: Alt+Shift+W
