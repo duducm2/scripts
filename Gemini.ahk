@@ -915,9 +915,7 @@ handleTriggerReadAloud(wParam, lParam, msg, hwnd) {
     GeminiTriggerReadAloud(wParam = 0)
 }
 copyFromBridge(wParam, lParam, msg, hwnd) {
-    t0 := A_TickCount
     geminiHwnd := Integer(lParam)
-    D2C_CopyDebugLog("copyFromBridge ENTER lParam=" geminiHwnd " active=" WinGetTitle("A"))
     ; Guarantee layer: write result so bridge can confirm we copied Gemini's last response (same path as #!+p).
     try
         FileDelete(GEMINI_COPY_RESULT_PATH)
@@ -927,7 +925,6 @@ copyFromBridge(wParam, lParam, msg, hwnd) {
     if (geminiHwnd && WinActive("ahk_id " geminiHwnd))
         opts.alreadyActive := true
     r := CopyLastGeminiMessageToClipboard(opts, geminiHwnd)
-    D2C_CopyDebugLog("copyFromBridge EXIT r=" r " ms=" (A_TickCount - t0) " clipLen=" StrLen(A_Clipboard))
     try
         FileDelete(GEMINI_COPY_RESULT_PATH)
     try

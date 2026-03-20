@@ -1,10 +1,0 @@
-﻿2026-03-19 21:59:55 tick=368442484 | DoCopyCore enter readAloud=1 skipRestore=0 hasCopied=0 geminiHwnd=657694 originHwnd=983170
-2026-03-19 21:59:57 tick=368444546 | DoCopyCore post-HandsOff
-2026-03-19 21:59:57 tick=368444781 | DoCopyCore pre-SendMessage copy readAloud=1 targetHwnd=1311414 targetTitle=C:\Users\eduev\Meu Drive\17 - Projects\scripts\Gemini.ahk - AutoHotkey v2.0.11 seqBefore=837 clipLenBefore=15 activeA=Google Gemini - Google Chrome geminiHwndParam=657694
-2026-03-19 21:59:57 tick=368444781 | copyFromBridge ENTER lParam=657694 active=Google Gemini - Google Chrome
-2026-03-19 21:59:58 tick=368445984 | copyFromBridge EXIT r=1 ms=1203 clipLen=337
-2026-03-19 21:59:58 tick=368445984 | DoCopyCore SendMessage COPY returned ok ms=1203
-2026-03-19 21:59:58 tick=368446000 | DoCopyCore post-wait sendOk=1 seqAfterImmediate=846 seqNow=846 changed=1 clipOk=1 clipLen=337 preview=Tranquilo Edu kkkkkk fico no aguardo 🍻  Tô aqui de prontidão enquanto vc faz seus ajustes aí. Qua
-2026-03-19 21:59:58 tick=368446000 | DoCopyCore pre-SendMessage READ wParam=1
-2026-03-19 22:00:03 tick=368451062 | DoCopyCore SendMessage READ returned ok ms=5062
-2026-03-19 22:00:04 tick=368451281 | DoCopyCore END skipRestore=0 activeNow=(6) Philomena Cunk's most HILARIOUS interviews | Cunk on Earth - BBC - YouTube - Google Chrome
