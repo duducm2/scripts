@@ -38,6 +38,11 @@ RunWait("git pull", notesFolder, "Hide")
 StandardLoadingBar_Update("🚀 Launching apps...")
 Sleep 10000
 
+; Start QuickLook (study viewer) based on the current environment in env.ahk
+quicklookExe := GetQuickLookExePath()
+if (quicklookExe)
+    Run quicklookExe
+
 Run GetScriptPath("Shift keys.ahk")
 Run GetScriptPath("Gemini.ahk")
 Run GetScriptPath("AppLaunchers.ahk")
@@ -45,11 +50,6 @@ Run GetScriptPath("WindowManagement.ahk")
 Run GetScriptPath("Utils.ahk")
 
 if (IS_WORK_ENVIRONMENT) {
-
-    ; TODO: Configure QuickLook startup for work environment when installed
-    ; Example:
-    ; Run "C:\QuickLook\QuickLook.exe"
-
     Run "C:\Users\fie7ca\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Cursor\Cursor.lnk"
     Run "C:\Users\fie7ca\Documents\Shortcuts\Mobills.lnk"
     Run "C:\Users\fie7ca\Documents\Shortcuts\Settle Up.lnk"
@@ -57,9 +57,6 @@ if (IS_WORK_ENVIRONMENT) {
     Run GetScriptPath("Microsoft Teams.ahk")
     Run GetScriptPath("Outlook.ahk")
 } else {
-    ; Launch QuickLook on personal environment at startup
-    Run "C:\QuickLook\QuickLook.exe"
-
     Run "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Chrome Apps\Mobills.lnk"
     Run "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Chrome Apps\Settle Up.lnk"
     Run "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\apps do Chrome\WhatsApp Web.lnk"
