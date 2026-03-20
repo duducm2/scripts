@@ -1574,6 +1574,16 @@ CursorTransfer_StripLeadingProjectFromTitle(title, cleanProjName, projName) {
     return title
 }
 
+; Remove repetitive " - Cursor" suffix (and bare "Cursor") from list labels; every row is already Cursor.
+CursorTransfer_StripTrailingCursorAppSuffix(s) {
+    if (!s)
+        return ""
+    t := Trim(s)
+    if (StrLower(t) = "cursor")
+        return ""
+    return Trim(RegExReplace(t, "i)\s*[-–—]\s*Cursor\s*$", ""))
+}
+
 ; #region agent log
 CursorTransfer_DebugEscapeJson(s) {
     s := String(s)
@@ -1778,6 +1788,9 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
         } else {
             displayName := winTitle ? winTitle : ("Cursor Window " . w.hwnd)
         }
+        displayName := CursorTransfer_StripTrailingCursorAppSuffix(displayName)
+        if (displayName = "")
+            displayName := "#" . w.hwnd
         ; #region agent log
         CursorTransfer_DebugLog_CursorTransferEnrich("H1-H5", "Utils.ahk:CursorTransfer_ShowWindowSelector", w.hwnd,
             winTitle, projName, cleanProjName, shortTitleRaw, shortAfterParens, shortAfterLeadStrip, displayName,
