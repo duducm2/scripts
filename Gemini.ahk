@@ -910,8 +910,9 @@ handleStartDelayedSubmitMonitor(wParam, lParam, msg, hwnd) {
 handleStopDelayedSubmitMonitor(*) {
     GeminiDelayedSubmitMonitorStop()
 }
-handleTriggerReadAloud(*) {
-    GeminiTriggerReadAloud()
+handleTriggerReadAloud(wParam, lParam, msg, hwnd) {
+    ; wParam 1: D2C already ran WM_COPY_LAST_GEMINI; skip internal Copy click, open Listen only.
+    GeminiTriggerReadAloud(wParam = 0)
 }
 copyFromBridge(wParam, lParam, msg, hwnd) {
     t0 := A_TickCount

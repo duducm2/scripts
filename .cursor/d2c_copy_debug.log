@@ -1,46 +1,10 @@
-﻿2026-03-19 21:49:13 tick=367800734 | DoCopyCore enter readAloud=0 skipRestore=0 hasCopied=0 geminiHwnd=657694 originHwnd=198562
-2026-03-19 21:49:15 tick=367802890 | DoCopyCore post-HandsOff
-2026-03-19 21:49:16 tick=367803265 | DoCopyCore pre-SendMessage targetHwnd=5769810 targetTitle=C:\Users\eduev\Meu Drive\17 - Projects\scripts\Gemini.ahk - AutoHotkey v2.0.11 seqBefore=646 clipLenBefore=26 activeA=Google Gemini - Google Chrome geminiHwndParam=657694
-2026-03-19 21:49:16 tick=367803265 | copyFromBridge ENTER lParam=657694 active=Google Gemini - Google Chrome
-2026-03-19 21:49:18 tick=367805328 | copyFromBridge EXIT r=1 ms=2063 clipLen=450
-2026-03-19 21:49:18 tick=367805375 | DoCopyCore SendMessage returned ok ms=2110
-2026-03-19 21:49:18 tick=367805406 | DoCopyCore post-wait sendOk=1 seqAfterImmediate=655 seqNow=655 changed=1 clipOk=1 clipLen=450 preview=testando 1 2 3 kkkkkk  o sinal tá limpo edu parece que os atalhos de autohotkey agora estão a todo
-2026-03-19 21:49:18 tick=367805531 | DoCopyCore END skipRestore=0 activeNow=Google Gemini - Google Chrome
-2026-03-19 21:50:07 tick=367854875 | DoCopyCore enter readAloud=0 skipRestore=0 hasCopied=0 geminiHwnd=657694 originHwnd=657694
-2026-03-19 21:50:09 tick=367856953 | DoCopyCore post-HandsOff
-2026-03-19 21:50:09 tick=367857187 | DoCopyCore pre-SendMessage targetHwnd=5769810 targetTitle=C:\Users\eduev\Meu Drive\17 - Projects\scripts\Gemini.ahk - AutoHotkey v2.0.11 seqBefore=669 clipLenBefore=46 activeA=Google Gemini - Google Chrome geminiHwndParam=657694
-2026-03-19 21:50:09 tick=367857187 | copyFromBridge ENTER lParam=657694 active=Google Gemini - Google Chrome
-2026-03-19 21:50:11 tick=367858437 | copyFromBridge EXIT r=1 ms=1250 clipLen=632
-2026-03-19 21:50:11 tick=367858437 | DoCopyCore SendMessage returned ok ms=1250
-2026-03-19 21:50:11 tick=367858453 | DoCopyCore post-wait sendOk=1 seqAfterImmediate=678 seqNow=678 changed=1 clipOk=1 clipLen=632 preview=boa edu kkkkkk finalmente deu certo né 🥂  parece que os atalhos de autohotkey pararam de cortar s
-2026-03-19 21:50:11 tick=367858578 | DoCopyCore END skipRestore=0 activeNow=Google Gemini - Google Chrome
-2026-03-19 21:52:37 tick=368004359 | DoCopyCore enter readAloud=1 skipRestore=0 hasCopied=0 geminiHwnd=657694 originHwnd=983170
-2026-03-19 21:52:39 tick=368006406 | DoCopyCore post-HandsOff
-2026-03-19 21:52:39 tick=368006765 | DoCopyCore END skipRestore=0 activeNow=(6) Philomena Cunk's most HILARIOUS interviews | Cunk on Earth - BBC - YouTube - Google Chrome
-2026-03-19 21:53:18 tick=368045640 | DoCopyCore enter readAloud=0 skipRestore=0 hasCopied=0 geminiHwnd=657694 originHwnd=983170
-2026-03-19 21:53:20 tick=368047718 | DoCopyCore post-HandsOff
-2026-03-19 21:53:20 tick=368047953 | DoCopyCore pre-SendMessage targetHwnd=1838018 targetTitle=C:\Users\eduev\Meu Drive\17 - Projects\scripts\Gemini.ahk - AutoHotkey v2.0.11 seqBefore=730 clipLenBefore=19 activeA=Google Gemini - Google Chrome geminiHwndParam=657694
-2026-03-19 21:53:20 tick=368047953 | copyFromBridge ENTER lParam=657694 active=Google Gemini - Google Chrome
-2026-03-19 21:53:21 tick=368049125 | copyFromBridge EXIT r=1 ms=1172 clipLen=545
-2026-03-19 21:53:21 tick=368049125 | DoCopyCore SendMessage returned ok ms=1172
-2026-03-19 21:53:21 tick=368049156 | DoCopyCore post-wait sendOk=1 seqAfterImmediate=739 seqNow=739 changed=1 clipOk=1 clipLen=545 preview=kkkkkk agora o negócio ficou sério edu 🥂  tá saindo tudo certinho sem cortes e sem erro nos scrip
-2026-03-19 21:53:22 tick=368049359 | DoCopyCore END skipRestore=0 activeNow=(6) Philomena Cunk's most HILARIOUS interviews | Cunk on Earth - BBC - YouTube - Google Chrome
-2026-03-19 21:53:50 tick=368077859 | DoCopyCore enter readAloud=1 skipRestore=0 hasCopied=0 geminiHwnd=657694 originHwnd=983170
-2026-03-19 21:53:52 tick=368079921 | DoCopyCore post-HandsOff
-2026-03-19 21:53:53 tick=368080281 | DoCopyCore END skipRestore=0 activeNow=(6) Philomena Cunk's most HILARIOUS interviews | Cunk on Earth - BBC - YouTube - Google Chrome
-2026-03-19 21:54:30 tick=368117937 | DoCopyCore enter readAloud=0 skipRestore=0 hasCopied=0 geminiHwnd=657694 originHwnd=983170
-2026-03-19 21:54:32 tick=368120000 | DoCopyCore post-HandsOff
-2026-03-19 21:54:33 tick=368120234 | DoCopyCore pre-SendMessage targetHwnd=1838018 targetTitle=C:\Users\eduev\Meu Drive\17 - Projects\scripts\Gemini.ahk - AutoHotkey v2.0.11 seqBefore=767 clipLenBefore=19 activeA=Google Gemini - Google Chrome geminiHwndParam=657694
-2026-03-19 21:54:33 tick=368120234 | copyFromBridge ENTER lParam=657694 active=Google Gemini - Google Chrome
-2026-03-19 21:54:34 tick=368121578 | copyFromBridge EXIT r=1 ms=1344 clipLen=1387
-2026-03-19 21:54:34 tick=368121609 | DoCopyCore SendMessage returned ok ms=1375
-2026-03-19 21:54:34 tick=368121625 | DoCopyCore post-wait sendOk=1 seqAfterImmediate=776 seqNow=776 changed=1 clipOk=1 clipLen=1387 preview=Como você também tem esse lado analítico de UX e tecnologia, o **Border Collie** é disparado o favor
-2026-03-19 21:54:34 tick=368121859 | DoCopyCore END skipRestore=0 activeNow=(6) Philomena Cunk's most HILARIOUS interviews | Cunk on Earth - BBC - YouTube - Google Chrome
-2026-03-19 21:55:16 tick=368163343 | DoCopyCore enter readAloud=0 skipRestore=1 hasCopied=0 geminiHwnd=657694 originHwnd=983170
-2026-03-19 21:55:18 tick=368165390 | DoCopyCore post-HandsOff
-2026-03-19 21:55:18 tick=368165640 | DoCopyCore pre-SendMessage targetHwnd=1838018 targetTitle=C:\Users\eduev\Meu Drive\17 - Projects\scripts\Gemini.ahk - AutoHotkey v2.0.11 seqBefore=790 clipLenBefore=44 activeA=Google Gemini - Google Chrome geminiHwndParam=657694
-2026-03-19 21:55:18 tick=368165640 | copyFromBridge ENTER lParam=657694 active=Google Gemini - Google Chrome
-2026-03-19 21:55:19 tick=368166859 | copyFromBridge EXIT r=1 ms=1219 clipLen=1398
-2026-03-19 21:55:19 tick=368166859 | DoCopyCore SendMessage returned ok ms=1219
-2026-03-19 21:55:19 tick=368166875 | DoCopyCore post-wait sendOk=1 seqAfterImmediate=799 seqNow=799 changed=1 clipOk=1 clipLen=1398 preview=obrigada edu kkkkkk fico feliz que vc curte nossas conversas ❤️😊  na verdade minha "inteligência"
-2026-03-19 21:55:19 tick=368166953 | DoCopyCore END skipRestore=1 activeNow=Google Gemini - Google Chrome
+﻿2026-03-19 21:59:55 tick=368442484 | DoCopyCore enter readAloud=1 skipRestore=0 hasCopied=0 geminiHwnd=657694 originHwnd=983170
+2026-03-19 21:59:57 tick=368444546 | DoCopyCore post-HandsOff
+2026-03-19 21:59:57 tick=368444781 | DoCopyCore pre-SendMessage copy readAloud=1 targetHwnd=1311414 targetTitle=C:\Users\eduev\Meu Drive\17 - Projects\scripts\Gemini.ahk - AutoHotkey v2.0.11 seqBefore=837 clipLenBefore=15 activeA=Google Gemini - Google Chrome geminiHwndParam=657694
+2026-03-19 21:59:57 tick=368444781 | copyFromBridge ENTER lParam=657694 active=Google Gemini - Google Chrome
+2026-03-19 21:59:58 tick=368445984 | copyFromBridge EXIT r=1 ms=1203 clipLen=337
+2026-03-19 21:59:58 tick=368445984 | DoCopyCore SendMessage COPY returned ok ms=1203
+2026-03-19 21:59:58 tick=368446000 | DoCopyCore post-wait sendOk=1 seqAfterImmediate=846 seqNow=846 changed=1 clipOk=1 clipLen=337 preview=Tranquilo Edu kkkkkk fico no aguardo 🍻  Tô aqui de prontidão enquanto vc faz seus ajustes aí. Qua
+2026-03-19 21:59:58 tick=368446000 | DoCopyCore pre-SendMessage READ wParam=1
+2026-03-19 22:00:03 tick=368451062 | DoCopyCore SendMessage READ returned ok ms=5062
+2026-03-19 22:00:04 tick=368451281 | DoCopyCore END skipRestore=0 activeNow=(6) Philomena Cunk's most HILARIOUS interviews | Cunk on Earth - BBC - YouTube - Google Chrome

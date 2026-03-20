@@ -2980,62 +2980,65 @@ class D2C_FlowManager {
             }
         }
 
-        if (readAloud) {
-            ; IPC: trigger read aloud in Gemini.ahk (Send does not trigger hotkeys in another script).
-            WM_TRIGGER_READ_ALOUD := 0x8004
-            targetHwnd := GetGeminiScriptMsgTargetHwnd()
-            if (targetHwnd) {
-                prevDH := A_DetectHiddenWindows
-                DetectHiddenWindows true
-                try PostMessage(WM_TRIGGER_READ_ALOUD, 0, 0, , "ahk_id " targetHwnd)
-                finally DetectHiddenWindows prevDH
-            } else {
-                ShowCenteredOverlay_Utils("❌ Gemini.ahk not running", 2000, BANNER_ACCENT_ERROR)
-            }
-        } else {
-            clipBefore := A_Clipboard
-            seqBefore := Clipboard_GetSequenceNumber()
-            WM_COPY_LAST_GEMINI := 0x8001
-            targetHwnd := GetGeminiScriptMsgTargetHwnd()
+        ; Y / R / C / timeout: same synchronous copy first. R then blocks on read-aloud IPC (wParam=1 skips duplicate Copy in Gemini).
+        clipBefore := A_Clipboard
+        seqBefore := Clipboard_GetSequenceNumber()
+        WM_COPY_LAST_GEMINI := 0x8001
+        WM_TRIGGER_READ_ALOUD := 0x8004
+        targetHwnd := GetGeminiScriptMsgTargetHwnd()
+        sendOk := false
+        clipOk := false
 
-            if (targetHwnd) {
-                tDispatch := A_TickCount
-                D2C_CopyDebugLog("DoCopyCore pre-SendMessage targetHwnd=" targetHwnd " targetTitle="
-                    D2C_DebugSafeWinTitle("ahk_id " targetHwnd) " seqBefore=" seqBefore " clipLenBefore=" StrLen(
-                        clipBefore)
-                    " activeA=" D2C_DebugSafeWinTitle("A") " geminiHwndParam=" this.GeminiHwnd)
-                ; lParam = Chrome Gemini hwnd: skip redundant activation in receiver. Timeout 20s (default 5s can abort mid-copy).
-                ; Hidden Gemini.ahk main window: SendMessage needs DetectHiddenWindows true or "Target window not found."
-                sendOk := false
-                prevDH := A_DetectHiddenWindows
+        if (targetHwnd) {
+            tDispatch := A_TickCount
+            D2C_CopyDebugLog("DoCopyCore pre-SendMessage copy readAloud=" readAloud " targetHwnd=" targetHwnd " targetTitle="
+                D2C_DebugSafeWinTitle("ahk_id " targetHwnd) " seqBefore=" seqBefore " clipLenBefore=" StrLen(clipBefore
+                )
+                " activeA=" D2C_DebugSafeWinTitle("A") " geminiHwndParam=" this.GeminiHwnd)
+            ; lParam = Chrome Gemini hwnd: skip redundant activation in receiver. Timeout 20s (default 5s can abort mid-copy).
+            ; Hidden Gemini.ahk main window: SendMessage needs DetectHiddenWindows true or "Target window not found."
+            prevDH := A_DetectHiddenWindows
+            DetectHiddenWindows true
+            try {
+                SendMessage(WM_COPY_LAST_GEMINI, 0, this.GeminiHwnd, , "ahk_id " targetHwnd, , , , 20000)
+                sendOk := true
+                D2C_CopyDebugLog("DoCopyCore SendMessage COPY returned ok ms=" (A_TickCount - tDispatch))
+            } catch as e {
+                D2C_CopyDebugLog("DoCopyCore SendMessage COPY THREW: " e.Message)
+            } finally {
+                DetectHiddenWindows prevDH
+            }
+            seqAfterImmediate := Clipboard_GetSequenceNumber()
+            changed := Clipboard_WaitForSequenceChange(seqBefore, 2000, 850)
+            clipOk := sendOk && changed && A_Clipboard != clipBefore && Trim(A_Clipboard) != ""
+            D2C_CopyDebugLog("DoCopyCore post-wait sendOk=" sendOk " seqAfterImmediate=" seqAfterImmediate " seqNow="
+                Clipboard_GetSequenceNumber() " changed=" changed " clipOk=" clipOk " clipLen=" StrLen(A_Clipboard)
+                " preview=" SubStr(StrReplace(A_Clipboard, "`n", " "), 1, 100))
+            if (!sendOk)
+                ShowCenteredOverlay_Utils("❌ Gemini copy timed out or IPC failed — see d2c_copy_debug.log", 3500,
+                    BANNER_ACCENT_ERROR)
+            else if (!clipOk)
+                ShowCenteredOverlay_Utils("❌ Copy failed or clipboard empty — try again", 3000, BANNER_ACCENT_ERROR)
+            else if (readAloud) {
+                tRead := A_TickCount
+                D2C_CopyDebugLog("DoCopyCore pre-SendMessage READ wParam=1")
                 DetectHiddenWindows true
                 try {
-                    SendMessage(WM_COPY_LAST_GEMINI, 0, this.GeminiHwnd, , "ahk_id " targetHwnd, , , , 20000)
-                    sendOk := true
-                    D2C_CopyDebugLog("DoCopyCore SendMessage returned ok ms=" (A_TickCount - tDispatch))
+                    ; Blocks until Listen flow finishes; wParam 1 => GeminiTriggerReadAloud(false). PostMessage raced focus restore.
+                    SendMessage(WM_TRIGGER_READ_ALOUD, 1, 0, , "ahk_id " targetHwnd, , , , 120000)
+                    D2C_CopyDebugLog("DoCopyCore SendMessage READ returned ok ms=" (A_TickCount - tRead))
                 } catch as e {
-                    D2C_CopyDebugLog("DoCopyCore SendMessage THREW: " e.Message)
+                    D2C_CopyDebugLog("DoCopyCore SendMessage READ THREW: " e.Message)
+                    ShowCenteredOverlay_Utils("❌ Read aloud failed or timed out — see d2c_copy_debug.log", 4000,
+                        BANNER_ACCENT_ERROR)
                 } finally {
                     DetectHiddenWindows prevDH
                 }
-                seqAfterImmediate := Clipboard_GetSequenceNumber()
-                changed := Clipboard_WaitForSequenceChange(seqBefore, 2000, 850)
-                clipOk := sendOk && changed && A_Clipboard != clipBefore && Trim(A_Clipboard) != ""
-                D2C_CopyDebugLog("DoCopyCore post-wait sendOk=" sendOk " seqAfterImmediate=" seqAfterImmediate " seqNow="
-                    Clipboard_GetSequenceNumber() " changed=" changed " clipOk=" clipOk " clipLen="
-                    StrLen(A_Clipboard) " preview=" SubStr(StrReplace(A_Clipboard, "`n", " "), 1, 100))
-                if (!sendOk)
-                    ShowCenteredOverlay_Utils("❌ Gemini copy timed out or IPC failed — see d2c_copy_debug.log", 3500,
-                        BANNER_ACCENT_ERROR)
-                else if (!clipOk)
-                    ShowCenteredOverlay_Utils("❌ Copy failed or clipboard empty — try again", 3000, BANNER_ACCENT_ERROR
-                    )
-                else if (IsSoundEnabled())
-                    try SoundPlay(A_ScriptDir . "\sounds\copy.wav")
-            } else {
-                D2C_CopyDebugLog("DoCopyCore FAIL GetGeminiScriptMsgTargetHwnd returned 0")
-                ShowCenteredOverlay_Utils("❌ Gemini.ahk not running", 2000, BANNER_ACCENT_ERROR)
-            }
+            } else if (IsSoundEnabled())
+                try SoundPlay(A_ScriptDir . "\sounds\copy.wav")
+        } else {
+            D2C_CopyDebugLog("DoCopyCore FAIL GetGeminiScriptMsgTargetHwnd returned 0")
+            ShowCenteredOverlay_Utils("❌ Gemini.ahk not running", 2000, BANNER_ACCENT_ERROR)
         }
 
         ; Gemini/Clipboard → Original: return transitions are immediate (no warning).

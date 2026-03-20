@@ -6,7 +6,7 @@
    **Y** = paste and auto-send (Enter) to Gemini. **S** = paste only (no Enter). **N** = cancel (flow ends).  
    If no action is taken within 6 seconds, **Y** (yes) is selected by default. When the script moves focus from the original window to Gemini to perform this paste, it first shows a **2-second “✋ Hands off!” pre-movement cue** so you can stop typing before the automated transition.
 4. **If you chose Y**, after Gemini responds you see **Copy response?**  
-   **Y** = copy. **C** = send to Cursor. **R** = read aloud. **N** = cancel (flow ends).  
+   **Y** = copy. **C** = send to Cursor. **R** = same copy as **Y**, then read aloud (Listen); both steps use synchronous IPC so focus is not restored until the read-aloud flow finishes. **N** = cancel (flow ends).  
    If you press **Y**, a 2-second **“✋ Hands off!”** cue plays before the script copies the last Gemini response.  
    If no action is taken within 6 seconds, **N** (no) is selected by default and `DoCopyOnTimeout` will still copy Gemini's response after playing the same 2-second **“✋ Hands off!”** cue, because the script is about to take control of focus to complete the copy.
 
