@@ -1316,12 +1316,16 @@ CursorTransfer_BuildProjectIndexToChar() {
 }
 
 ; Return matching project index from g_Projects for a window title; 0 = no match.
+; Uses longest matching path segment so "user-scripts" wins over "scripts" when both match.
 CursorTransfer_GetMatchingProjectIndexForTitle(winTitle) {
     global g_Projects
     if (!winTitle || !IsObject(g_Projects))
         return 0
     try {
         isWork := (IsSet(IS_WORK_ENVIRONMENT) && IS_WORK_ENVIRONMENT)
+        winLow := StrLower(winTitle)
+        bestIdx := 0
+        bestScore := 0
         loop g_Projects.Length {
             project := g_Projects[A_Index]
             if (project.name = "" && project.path = "" && project.workPath = "")
@@ -1333,10 +1337,18 @@ CursorTransfer_GetMatchingProjectIndexForTitle(winTitle) {
                 continue
             matchSegments := ExtractProjectMatchSegments(projectPath)
             for segment in matchSegments {
-                if (InStr(winTitle, segment))
-                    return A_Index
+                if (segment = "")
+                    continue
+                if (InStr(winLow, StrLower(segment))) {
+                    len := StrLen(segment)
+                    if (len > bestScore) {
+                        bestScore := len
+                        bestIdx := A_Index
+                    }
+                }
             }
         }
+        return bestIdx
     } catch {
     }
     return 0
@@ -1349,6 +1361,51 @@ CursorTransfer_GetEffectiveProjectPath(project) {
     if (isWork && (projectPath = ""))
         projectPath := project.path
     return projectPath
+}
+
+; True when the OS title has no workspace/file segment (e.g. bare "Cursor" welcome screen).
+CursorTransfer_IsUninformativeCursorTitle(winTitle) {
+    t := Trim(winTitle)
+    if (t = "")
+        return true
+    tl := StrLower(t)
+    if (tl = "cursor")
+        return true
+    ; Strip trailing " - Cursor"; if nothing remains, title had no file/workspace name.
+    rest := RegExReplace(tl, "\s*[-–—]\s*cursor\s*$", "")
+    if (Trim(rest) = "")
+        return true
+    return false
+}
+
+; Longest project path wins when multiple g_Projects paths appear in the same command line.
+CursorTransfer_GetMatchingProjectIndexByCmdLine(cmdLine) {
+    global g_Projects
+    if (!cmdLine || !IsObject(g_Projects))
+        return 0
+    cmdLow := StrLower(cmdLine)
+    bestIdx := 0
+    bestLen := 0
+    try {
+        loop g_Projects.Length {
+            project := g_Projects[A_Index]
+            if (project.name = "" && project.path = "" && project.workPath = "")
+                continue
+            projectPath := CursorTransfer_GetEffectiveProjectPath(project)
+            if (projectPath = "")
+                continue
+            projLow := StrLower(RTrim(projectPath, "\"))
+            if (projLow != "" && InStr(cmdLow, projLow)) {
+                len := StrLen(projLow)
+                if (len > bestLen) {
+                    bestLen := len
+                    bestIdx := A_Index
+                }
+            }
+        }
+    } catch {
+    }
+    return bestIdx
 }
 
 ; Get process command line by PID (cached). Returns "" on failure.
@@ -1373,7 +1430,8 @@ CursorTransfer_GetProcessCommandLine(pid) {
     return g_CursorTransferPidCmdCache[pid]
 }
 
-; Primary: match project by process command-line path. Fallback: title segment matching.
+; Title match when the title lists workspace/file; cmd-line when title is bare "Cursor" etc.
+; (Same PID often shares one command line — use longest path in cmd for disambiguation.)
 CursorTransfer_GetMatchingProjectIndex(hwnd, winTitle := "") {
     global g_Projects
     if (!IsObject(g_Projects))
@@ -1381,21 +1439,16 @@ CursorTransfer_GetMatchingProjectIndex(hwnd, winTitle := "") {
     pid := 0
     try pid := WinGetPID("ahk_id " hwnd)
     cmdLine := CursorTransfer_GetProcessCommandLine(pid)
-    if (cmdLine != "") {
-        cmdLow := StrLower(cmdLine)
-        loop g_Projects.Length {
-            project := g_Projects[A_Index]
-            if (project.name = "" && project.path = "" && project.workPath = "")
-                continue
-            projectPath := CursorTransfer_GetEffectiveProjectPath(project)
-            if (projectPath = "")
-                continue
-            projLow := StrLower(RTrim(projectPath, "\"))
-            if (projLow != "" && InStr(cmdLow, projLow))
-                return A_Index
-        }
+    idxCmd := CursorTransfer_GetMatchingProjectIndexByCmdLine(cmdLine)
+    idxTitle := (winTitle != "") ? CursorTransfer_GetMatchingProjectIndexForTitle(winTitle) : 0
+    if (CursorTransfer_IsUninformativeCursorTitle(winTitle)) {
+        if (idxCmd > 0)
+            return idxCmd
+        return idxTitle
     }
-    return CursorTransfer_GetMatchingProjectIndexForTitle(winTitle)
+    if (idxTitle > 0)
+        return idxTitle
+    return idxCmd
 }
 
 ; Stable insertion sort for small arrays by project order, then by title.
@@ -1463,16 +1516,110 @@ CursorTransfer_GetProjectNameForTitle(winTitle) {
 ; centerOnHwnd: optional window to center the modal on (uses that window's monitor); 0 = primary monitor.
 CursorTransfer_StripStaticScriptTokenForDisplay(projectName) {
     ; Removes redundant static token(s) like "Script"/"Scripts" from the project label.
-    ; If the result is too short, return "" so the UI can omit the bracketed prefix.
+    ; If stripping would erase the whole name (e.g. folder is literally "Scripts"), keep the original.
     if (!projectName)
         return ""
+    orig := Trim(projectName)
     cleaned := projectName
     ; Match whole-word "Script" or "Scripts" (case-insensitive).
     cleaned := RegExReplace(cleaned, "(?i)\bscript(s)?\b", "")
     cleaned := RegExReplace(cleaned, "\s{2,}", " ")
     cleaned := Trim(cleaned)
-    return (StrLen(cleaned) < 2) ? "" : cleaned
+    if (StrLen(cleaned) < 2)
+        return orig
+    return cleaned
 }
+
+; Collapse "file.ext (Label) (file.ext)" in Cursor titles to a single filename + label.
+CursorTransfer_StripDuplicateFilenameInParens(title) {
+    if (!title)
+        return ""
+    return RegExReplace(title, "(\S+\.\w+)\s+(\([^)]+\))\s+\(\1\)", "$1 $2")
+}
+
+; If the window title starts with the project name (already shown in brackets), drop that prefix.
+CursorTransfer_StripLeadingProjectFromTitle(title, cleanProjName, projName) {
+    if (!title)
+        return ""
+    ; Longer label first so a shorter prefix cannot steal a match from a longer project name.
+    names := []
+    if (StrLen(cleanProjName) > StrLen(projName)) {
+        if (cleanProjName != "")
+            names.Push(cleanProjName)
+        if (projName != "")
+            names.Push(projName)
+    } else {
+        if (projName != "")
+            names.Push(projName)
+        if (cleanProjName != "" && cleanProjName != projName)
+            names.Push(cleanProjName)
+    }
+    for name in names {
+        if (StrLen(name) < 2)
+            continue
+        tl := StrLower(title)
+        nl := StrLower(name)
+        if (SubStr(tl, 1, StrLen(nl)) != nl)
+            continue
+        rest := SubStr(title, StrLen(name) + 1)
+        rest := Trim(rest)
+        if (rest = "")
+            return ""
+        if (SubStr(rest, 1, 1) = "-" || SubStr(rest, 1, 1) = "|" || SubStr(rest, 1, 1) = ":" || SubStr(rest, 1, 1) =
+        "–")
+            rest := Trim(SubStr(rest, 2))
+        rest := Trim(LTrim(rest, "- "))
+        return (rest != "") ? rest : title
+    }
+    return title
+}
+
+; #region agent log
+CursorTransfer_DebugEscapeJson(s) {
+    s := String(s)
+    s := StrReplace(s, "\", "\\")
+    s := StrReplace(s, '"', '\"')
+    s := StrReplace(s, "`n", "\n")
+    s := StrReplace(s, "`r", "")
+    return s
+}
+CursorTransfer_DebugLog_CursorTransferEnrich(hypothesisId, location, hwnd, winTitle, projName, cleanProjName,
+    shortTitleRaw, shortAfterParens, shortAfterLeadStrip, displayName, projectIndex, matchSource, uinf, idxCmd,
+    idxTitle) {
+    logPath := A_ScriptDir "\debug-3fdbe6.log"
+    ts := A_TickCount
+    dup2 := 0
+    try {
+        if (cleanProjName != "" && displayName != "")
+            dup2 := (InStr(displayName, "[" . cleanProjName . "]", false, 1, 2) > 0) ? 1 : 0
+    } catch {
+    }
+    bracketedProjPrefix := 0
+    try {
+        if (cleanProjName != "" && displayName != "" && InStr(displayName, "[" . cleanProjName . "]") = 1)
+            bracketedProjPrefix := 1
+    } catch {
+    }
+    wt := Trim(winTitle)
+    stBracket := (StrLen(wt) > 0 && SubStr(wt, 1, 1) = "[") ? 1 : 0
+    wHasBracket := InStr(winTitle, "[") ? 1 : 0
+    line := ""
+    line .= '{"sessionId":"3fdbe6","timestamp":' ts ',"runId":"hybrid-title-cmd","hypothesisId":"' hypothesisId '",'
+    line .= '"location":"' CursorTransfer_DebugEscapeJson(location) '","message":"cursor transfer enrich","data":{'
+    line .= '"hwnd":' Integer(hwnd) ',"winTitleHasBracket":' wHasBracket ',"winTitleStartsWithBracket":' stBracket
+    . ',"dupBracketCleanTwice":' dup2 ',"bracketedProjPrefixAtStart":' bracketedProjPrefix ','
+    line .= '"winTitle":"' CursorTransfer_DebugEscapeJson(winTitle) '",'
+    line .= '"projName":"' CursorTransfer_DebugEscapeJson(projName) '",'
+    line .= '"cleanProjName":"' CursorTransfer_DebugEscapeJson(cleanProjName) '",'
+    line .= '"shortTitleRaw":"' CursorTransfer_DebugEscapeJson(shortTitleRaw) '",'
+    line .= '"shortAfterParens":"' CursorTransfer_DebugEscapeJson(shortAfterParens) '",'
+    line .= '"shortAfterLeadStrip":"' CursorTransfer_DebugEscapeJson(shortAfterLeadStrip) '",'
+    line .= '"projectIndex":' Integer(projectIndex) ',"matchSource":"' CursorTransfer_DebugEscapeJson(matchSource) '","uninformativeTitle":' (
+        uinf ? 1 : 0) ',"idxCmd":' Integer(idxCmd) ',"idxTitle":' Integer(idxTitle) ','
+    line .= '"displayName":"' CursorTransfer_DebugEscapeJson(displayName) '"}}`n'
+    try FileAppend(line, logPath, "UTF-8")
+}
+; #endregion agent log
 
 Clipboard_GetSequenceNumber() {
     ; WinAPI: https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-getclipboardsequencenumber
@@ -1578,7 +1725,20 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
     enriched := []
     for w in list {
         winTitle := w.title ? w.title : ""
+        pid := 0
+        try pid := WinGetPID("ahk_id " w.hwnd)
+        cmdLine := CursorTransfer_GetProcessCommandLine(pid)
+        idxCmd := CursorTransfer_GetMatchingProjectIndexByCmdLine(cmdLine)
+        idxTitle := CursorTransfer_GetMatchingProjectIndexForTitle(winTitle)
+        uinf := CursorTransfer_IsUninformativeCursorTitle(winTitle)
         projectIndex := CursorTransfer_GetMatchingProjectIndex(w.hwnd, winTitle)
+        matchSource := "none"
+        if (projectIndex > 0) {
+            if (projectIndex = idxTitle && idxTitle > 0)
+                matchSource := "title"
+            else if (projectIndex = idxCmd && idxCmd > 0)
+                matchSource := "cmd"
+        }
         projectOrder := Integer(projectIndex > 0 ? projectIndex : 10000 + enriched.Length)
         projName := ""
         if (projectIndex > 0) {
@@ -1588,23 +1748,41 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
             }
         }
         displayName := ""
+        shortTitleRaw := ""
+        shortAfterParens := ""
+        shortAfterLeadStrip := ""
+        cleanProjName := ""
         if (projName != "") {
-            shortTitle := (winTitle != "") ? ((StrLen(winTitle) > 40) ? SubStr(winTitle, 1, 37) . "..." : winTitle) :
-                ""
+            shortTitle := winTitle ? winTitle : ""
+            shortTitleRaw := shortTitle
             cleanProjName := CursorTransfer_StripStaticScriptTokenForDisplay(projName)
-            if (cleanProjName != "") {
-                displayName := (shortTitle != "") ? ("[" . cleanProjName . "] " . shortTitle) : cleanProjName
-            } else {
-                ; Omit bracketed project prefix when the cleaned name is empty.
-                if (shortTitle != "")
-                    displayName := shortTitle
+            if (shortTitle != "") {
+                shortTitle := CursorTransfer_StripDuplicateFilenameInParens(shortTitle)
+                shortAfterParens := shortTitle
+                shortTitle := CursorTransfer_StripLeadingProjectFromTitle(shortTitle, cleanProjName, projName)
+                shortAfterLeadStrip := shortTitle
+            }
+            ; Label = window title only (no g_Projects name prefix). If stripping the duplicate workspace
+            ; segment would leave only "Cursor", keep the fuller line (e.g. "scripts - Cursor").
+            if (shortAfterParens != "") {
+                cand := shortAfterLeadStrip
+                if (cand = "" || CursorTransfer_IsUninformativeCursorTitle(cand))
+                    displayName := shortAfterParens
                 else
-                    displayName := ("Cursor Window " . w.hwnd)
+                    displayName := cand
+                if (CursorTransfer_IsUninformativeCursorTitle(displayName))
+                    displayName := displayName . " · #" . w.hwnd
+            } else {
+                displayName := winTitle ? winTitle : ("Cursor Window " . w.hwnd)
             }
         } else {
-            displayName := (winTitle != "") ? ((StrLen(winTitle) > 50) ? SubStr(winTitle, 1, 47) . "..." : winTitle) :
-                ("Cursor Window " . w.hwnd)
+            displayName := winTitle ? winTitle : ("Cursor Window " . w.hwnd)
         }
+        ; #region agent log
+        CursorTransfer_DebugLog_CursorTransferEnrich("H1-H5", "Utils.ahk:CursorTransfer_ShowWindowSelector", w.hwnd,
+            winTitle, projName, cleanProjName, shortTitleRaw, shortAfterParens, shortAfterLeadStrip, displayName,
+            projectIndex, matchSource, uinf, idxCmd, idxTitle)
+        ; #endregion agent log
         enriched.Push({
             hwnd: w.hwnd,
             title: winTitle,
@@ -1658,15 +1836,16 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
         g_CursorTransferSelectorGui.MarginY := 15
         g_CursorTransferSelectorGui.OnEvent("Escape", CursorTransfer_SelectorEscape)
         g_CursorTransferSelectorGui.SetFont("s14 cCDD6F4 Bold", "Segoe UI")
-        g_CursorTransferSelectorGui.Add("Text", "w320 Center", "📋 Transfer to Cursor")
-        g_CursorTransferSelectorGui.Add("Text", "w320 h1 Background45475A")
+        transferSelGuiW := 720
+        g_CursorTransferSelectorGui.Add("Text", "w" . transferSelGuiW . " Center", "📋 Transfer to Cursor")
+        g_CursorTransferSelectorGui.Add("Text", "w" . transferSelGuiW . " h1 Background45475A")
         g_CursorTransferSelectorGui.SetFont("s12 cCDD6F4", "Segoe UI")
         for w in list {
-            g_CursorTransferSelectorGui.Add("Text", "w320", "[" . w.hotkeyChar . "] " . w.displayName)
+            g_CursorTransferSelectorGui.Add("Text", "w" . transferSelGuiW, "[" . w.hotkeyChar . "] " . w.displayName)
         }
-        g_CursorTransferSelectorGui.Add("Text", "w320 h1 Background45475A y+10")
+        g_CursorTransferSelectorGui.Add("Text", "w" . transferSelGuiW . " h1 Background45475A y+10")
         g_CursorTransferSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
-        g_CursorTransferSelectorGui.Add("Text", "w320 Center", "Press 1-9 | N or Esc to cancel")
+        g_CursorTransferSelectorGui.Add("Text", "w" . transferSelGuiW . " Center", "Press 1-9 | N or Esc to cancel")
         g_CursorTransferSelectorGui.Show("AutoSize Hide")
         g_CursorTransferSelectorGui.GetPos(&gx, &gy, &gw, &gh)
         ; Center on the monitor containing centerOnHwnd so the anchored visual context stays consistent.
