@@ -623,6 +623,7 @@ Cursor
 📉 [x] Shri[X]nk selection (ahk)
 📉 [,] Classical Markdown Preview
 📉 [Y] Paste image to Markdown
+⬇️ [U] Scroll AI feed to bottom (ahk-based)
 📋 [M] Quick shortcut menu (ahk)
 📄 [N] Review [N]ext file (ahk)
 📄 [R] efresh preview
@@ -10586,7 +10587,7 @@ GetEmojiByNumber(numberText) {
     emojiMap[1] := "🔲"
     emojiMap[2] := "⏳"
     emojiMap[3] := "⚡"
-    emojiMap[4] := "2️⃣"
+    emojiMap[4] := "✅"
     emojiMap[5] := "❓"
     return (emojiMap.Has(number)) ? emojiMap[number] : ""
 }
@@ -10651,7 +10652,7 @@ CancelEmoji(ctrl, *) {
 
         ; Add instruction text
         emojiGui.AddText("w350 Center",
-            "Select emoji to insert:`n`n1. 🔲 Tasks/Checklist items`n2. ⏳ Time-sensitive tasks`n3. ⚡ First priority`n4. 2️⃣ Second priority`n5. ❓ Questions/Uncertain items`n`nType a number (1-5):"
+            "Select emoji to insert:`n`n1. 🔲 Tasks/Checklist items`n2. ⏳ Time-sensitive tasks`n3. ⚡ First priority`n4. ✅ Check`n5. ❓ Questions/Uncertain items`n`nType a number (1-5):"
         )
 
         ; Add input field with auto-submit functionality
@@ -10980,6 +10981,35 @@ CancelCommit(ctrl, *) {
         }
     } catch Error as e {
         ; If all else fails, silently fail (no fallback action defined)
+    }
+}
+
+; Alt + U : Scroll AI feed to bottom (AutoHotkey-based shortcut)
+!u::
+{
+    try {
+        hwnd := WinExist("A")
+        if (!hwnd) {
+            return
+        }
+        root := UIA.ElementFromHandle(hwnd)
+        
+        chatContainer := root.FindFirst({ClassName: "composer-messages-container"})
+        if (chatContainer) {
+            try {
+                if (chatContainer.GetPropertyValue(UIA.Property.IsScrollPatternAvailable)) {
+                    chatContainer.ScrollPattern.SetScrollPercent(-1, 100)
+                    return
+                }
+            } catch {
+            }
+            
+            messages := chatContainer.FindAll({ClassName: "composer-rendered-message", matchmode: "Substring"})
+            if (messages && messages.Length > 0) {
+                messages[messages.Length].ScrollIntoView()
+            }
+        }
+    } catch Error as e {
     }
 }
 
