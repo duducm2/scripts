@@ -5436,18 +5436,26 @@ ML_SortApply(idx) {
     try {
         root := UIA.ElementFromHandle(WinExist("A"))
 
-        ; Step 1: Click the "Mentions" element (TreeItem)
-        mentionsEl := root.FindFirst({ Name: "Mentions", Type: "50024" })
+        ; Step 1: Click the dynamic Mentions tree item (match by stable UIA fields, not Name)
+        mentionsEl := root.FindFirst({
+            Type: "50024",
+            LocalizedType: "tree item",
+            ClassName: "fui-TreeItem r15xhw3a ___1k0lugy f10bgyvd fy0dxe2 f1d2rq10"
+        })
         if !mentionsEl {
-            ; Fallback: try with ControlType instead of Type
-            mentionsEl := root.FindFirst({ Name: "Mentions", ControlType: "TreeItem" })
+            ; Fallback: keep the same stable attributes but use ControlType alias
+            mentionsEl := root.FindFirst({
+                ControlType: "TreeItem",
+                LocalizedType: "tree item",
+                ClassName: "fui-TreeItem r15xhw3a ___1k0lugy f10bgyvd fy0dxe2 f1d2rq10"
+            })
         }
         if (mentionsEl) {
             mentionsEl.SetFocus()
             Sleep 50
             mentionsEl.Click()
         } else {
-            MsgBox "Could not find the 'Mentions' element.", "Shift+O Error", "IconX"
+            MsgBox "Could not find the target Mentions tree item.", "Shift+O Error", "IconX"
             return
         }
 
