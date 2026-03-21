@@ -50,7 +50,7 @@ TryActivateWindow_WM(winSpec, errorMessage := "❌ Error: Target window not foun
     }
 }
 
-; Dictation / overlay windows: skip for per-monitor cycling, move-to-monitor, and auto-cursor centering.
+; Handy + WindowManagement script identity: skip for per-monitor cycling, move-to-monitor, and auto-cursor.
 WM_IsExcludedIndicatorWindow(hwnd) {
     if (!hwnd)
         return false
@@ -59,17 +59,14 @@ WM_IsExcludedIndicatorWindow(hwnd) {
     } catch {
         return false
     }
-    if (exe = "autohotkey64.exe" || exe = "handy.exe" || exe = "screenclippinghost.exe"
-        || exe = "snippingtool.exe" || exe = "hap.exe")
+    if (exe = "handy.exe")
         return true
     try {
         title := WinGetTitle(hwnd)
     } catch {
         return false
     }
-    ; "Recording" may match unrelated apps; narrow if needed.
-    tl := StrLower(title)
-    if (InStr(tl, "windowmanagement.ahk") || InStr(tl, "recording") || InStr(tl, "com.pais.handy-siw"))
+    if (InStr(StrLower(title), "windowmanagement.ahk"))
         return true
     return false
 }
