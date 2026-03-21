@@ -35,13 +35,14 @@ Three categories define how information is shown to users. Use the same API and 
 
 ## Semantic Colors (Colorblind Accessibility)
 
-Accent colors are applied to the **border** only; the overlay background stays dark (`1E1E2E`). Three global constants in `Utils.ahk` define semantic accent colors suitable for common color vision deficiencies:
+Accent colors are applied to the **border** only; the overlay background stays dark (`1E1E2E`). Global constants in `Utils.ahk` define semantic accent colors suitable for common color vision deficiencies:
 
 | Constant                     | Hex    | Meaning               | Use for                                                |
 | ---------------------------- | ------ | --------------------- | ------------------------------------------------------ |
 | `BANNER_ACCENT_SUCCESS`      | 27AE60 | Dark green (positive) | Success confirmations, "Done", "activated"             |
 | `BANNER_ACCENT_ERROR`        | C0392B | Red (negative)        | Errors, "not found", failures, activation failed       |
 | `BANNER_ACCENT_INTERMEDIATE` | F1C40F | Yellow (general)      | Loading, in-progress, actionable prompts, neutral info |
+| `BANNER_ACCENT_INFO`         | 2980B9 | Blue (distinct hue)   | Modes that must read differently from green/yellow (e.g. color-vision–friendly pairs with success) |
 
 - **Information Only:** Use **success** for success messages, **error** for error/warning messages, **intermediate** for neutral (e.g. "Selecting X", "Sound ON/OFF").
 - **Interactive Input:** Use **intermediate** (or neutral/dark `barColor` with `noBorder: true` for a minimal look).

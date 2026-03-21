@@ -2411,6 +2411,7 @@ PlayPreMovementWarning(targetName) {
 global BANNER_ACCENT_SUCCESS := "27AE60"      ; Dark green: positive / success
 global BANNER_ACCENT_ERROR := "C0392B"        ; Red: negative / error
 global BANNER_ACCENT_INTERMEDIATE := "F1C40F" ; Yellow: loading, actionable, neutral
+global BANNER_ACCENT_INFO := "2980B9"         ; Blue: distinct from green/yellow for color vision (info / alternate mode)
 global g_StandardLoadingBarGui := 0
 global g_StandardLoadingBarValue := 0
 global g_StandardLoadingBarIsKeysOverlay := false
