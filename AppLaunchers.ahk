@@ -626,8 +626,9 @@ AL_InputGuardMouseProc(nCode, wParam, lParam) {
 ; Wikipedia Scroll Position Storage Functions
 ; =============================================================================
 
-; Check if the active window is on Monitor 3
-IsWindowOnMonitor3() {
+; True when the active window is on an AHK monitor where Wikipedia fullscreen scroll restore runs.
+; Current layout: monitors 3 and 4 are portrait (1080x1920); both use the same restore path as M3.
+IsWindowOnWikipediaScrollRestoreMonitor() {
     hwnd := WinExist("A")
 
     if (!hwnd) {
@@ -651,8 +652,8 @@ IsWindowOnMonitor3() {
     loop monitorCount {
         MonitorGet(A_Index, &ml, &mt, &mr, &mb)
         if (centerX >= ml && centerX <= mr && centerY >= mt && centerY <= mb) {
-            isMonitor3 := (A_Index = 3)
-            return isMonitor3
+            idx := A_Index
+            return (idx = 3 || idx = 4)
         }
     }
 
@@ -1011,10 +1012,10 @@ HandleWikipediaChar(char) {
             ; Start monitoring Wikipedia focus for automatic blackout cancellation
             StartWikipediaFocusMonitor()
 
-            ; Try to restore scroll position (only if on Monitor 3)
+            ; Try to restore scroll position (only on configured portrait monitors: 3 and 4)
             restoreBanner := ""
             try {
-                if (!IsWindowOnMonitor3()) {
+                if (!IsWindowOnWikipediaScrollRestoreMonitor()) {
                     return
                 }
                 savedPercentage := LoadWikipediaScrollPosition(item.url)
@@ -1066,11 +1067,11 @@ HandleWikipediaChar(char) {
 
                     ; Wait longer for page to be ready and stabilize (critical for portrait orientation)
                     ; For new windows, the page needs more time to fully render and become interactive
-                    ; Portrait orientation (1080x1920) can cause layout shifts that affect document height
+                    ; Portrait monitors (3 and 4, 1080x1920) can cause layout shifts that affect document height
                     Sleep(2500)  ; Increased wait for new window page stabilization
 
                     ; Get current document height with retry logic and stabilization
-                    ; Monitor 3 is portrait (1080x1920), so we need to ensure layout is stable
+                    ; Portrait monitors (3 and 4, 1080x1920): ensure layout is stable
                     ; For new windows, we need more retries and longer waits
                     docHeight := ""
                     docHeightRetries := 8  ; Increased retries for new windows
@@ -1123,7 +1124,7 @@ HandleWikipediaChar(char) {
                     }
 
                     ; Execute scroll restoration
-                    ; For portrait orientation (1080x1920 on Monitor 3), use precise calculation
+                    ; For portrait orientation (1080x1920 on monitors 3 and 4), use precise calculation
                     targetScrollY := savedPercentage * docHeightFloat
                     try {
                         ; Use precise scrolling for portrait orientation (requires precise pixel positioning)

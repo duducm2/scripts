@@ -3357,7 +3357,7 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
         }
 
         ; Wait for page to stabilize before measuring (critical for portrait orientation)
-        ; Monitor 3 is portrait (1080x1920), layout may shift during measurement
+        ; Monitors 3 and 4 are portrait (1080x1920); layout may shift during measurement
         Sleep(500)  ; Brief stabilization wait
 
         ; Get scroll position with retry for stability
