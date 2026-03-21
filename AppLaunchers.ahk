@@ -25,7 +25,6 @@ AL_AppLaunchersExit(*) {
 #include %A_ScriptDir%\Utils.ahk
 
 ; --- Global Variables ---
-global DEBUG_LOG_PATH := A_ScriptDir "\.cursor\debug.log"
 
 ; Phase 3: WinEvent hook for foreground (replaces 200ms Wikipedia focus polling)
 global g_AL_WinEventHookHandle := 0
