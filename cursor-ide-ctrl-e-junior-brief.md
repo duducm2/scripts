@@ -8,7 +8,7 @@ Target **AutoHotkey v2** only (`#Requires AutoHotkey v2.0+`). Use the project’
 
 ## 1. State management
 
-- **Primary:** Script-global `g_CursorFocusMode` toggled on each **Ctrl+E** after running the enter/exit sequences. `false` = normal layout (State A), `true` = AI reading layout (State B).
+- **Primary:** Script-global `g_CursorFocusMode` toggled on each **Ctrl+E** after running the enter/exit sequences. `false` = **code-only** layout (State A), `true` = **AI-only** layout (State B).
 - **Limitation:** If the user changes sidebars/panel/editor manually, the flag can desync from the real UI. Recovery options (not required for v1): UIA probes (e.g. visibility of **Files Explorer** tree, **Toggle Panel** / **Toggle Primary Side Bar** control states, or `monaco-sash` layout) to resync before toggling.
 
 ---
@@ -22,12 +22,12 @@ Target **AutoHotkey v2** only (`#Requires AutoHotkey v2.0+`). Use the project’
 
 ## 3. Command sequences (implemented)
 
-Commands assume default VS Code–compatible bindings in Cursor (**Ctrl+B** primary side bar, **Ctrl+J** panel). Confirm in **Keyboard Shortcuts** if your keymap differs.
+Commands assume default VS Code–compatible bindings in Cursor (**Ctrl+B** primary side bar, **Ctrl+J** panel). **Ctrl+B** and **Ctrl+J** are sent **only when** UIA indicates the sidebar / panel is **visible** (avoids opening the left bar onto Git/SCM when it was already hidden). Confirm in **Keyboard Shortcuts** if your keymap differs.
 
 | Direction | Steps |
 |-----------|--------|
-| **A → B** | `Ctrl+B` (hide Explorer), `Ctrl+J` (hide Terminal/panel), Command Palette **View: Toggle Editor Area Visibility**, then `Cursor_FocusAITextField()` from [`Utils.ahk`](Utils.ahk) (opens/focuses AI via UIA / `^i` fallback). |
-| **B → A** | Command Palette **View: Toggle Editor Area Visibility** (show editor), `Ctrl+B`, `Ctrl+J`, Command Palette **Focus Active Editor Group**. |
+| **A → B (AI-only)** | Esc×2; **if** primary sidebar visible → `Ctrl+B`; **if** panel visible → `Ctrl+J`; **if** editor area visible → palette **View: Toggle Editor Area Visibility**; `Cursor_FocusAITextField()` from [`Utils.ahk`](Utils.ahk). |
+| **B → A (code-only)** | Palette **View: Toggle Editor Area Visibility** if editor hidden; **Focus Active Editor Group**; same sequence as **`^1`** (Esc×2, `^!n`, `^!,`, `#!o`); close AI/Agents via `Cursor_CloseAiOrAgentsIfOpen()`; **if** panel visible → `Ctrl+J`; **if** sidebar visible → `Ctrl+B`. |
 
 Palette helper: `Cursor_RunCursorCommandPalette(query)` sends **Ctrl+Shift+P**, types `query`, **Enter**.
 
@@ -48,7 +48,7 @@ Reference UIA labels from [`cursor-ide-tree.md`](cursor-ide-tree.md): **Toggle P
 
 ## 5. AHK script structure (as implemented)
 
-- Helpers live **above** the Cursor `#HotIf` block: `Cursor_RunCursorCommandPalette`, `Cursor_EnterFocusMode`, `Cursor_ExitFocusMode`, `Cursor_ToggleFocusMode`.
+- Helpers live **above** the Cursor `#HotIf` block: `Cursor_RunCursorCommandPalette`, `Cursor_EnterAiOnlyMode`, `Cursor_EnterCodeOnlyMode`, `Cursor_IsPanelVisible`, `Cursor_IsPrimarySidebarVisible`, `Cursor_ToggleFocusMode`, etc.
 - Hotkey: `^e::` calls `Cursor_ToggleFocusMode()` under `#HotIf IsEditorActive() && WinGetClass("A") != "#32770"`.
 - Global: `g_CursorFocusMode` next to other Cursor GUI globals in the same `#HotIf` section.
 
@@ -62,8 +62,8 @@ flowchart TD
   gate{HotIf Cursor and not dialog}
   readState[Read g_CursorFocusMode]
   branch{Focus mode off or on}
-  toB[EnterFocusMode: sidebar panel editor then AI focus]
-  toA[ExitFocusMode: editor sidebar panel then editor group]
+  toB[EnterAiOnlyMode: conditional sidebar panel hide editor then AI focus]
+  toA[EnterCodeOnlyMode: restore editor Ctrl+1 sequence close AI hide chrome]
   flip[Flip g_CursorFocusMode]
   start --> gate
   gate -->|no| pass[Hotkey not active]
