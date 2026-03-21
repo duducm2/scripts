@@ -311,8 +311,14 @@ YouTube_PlayWhenOpened() {
 {
     ; Preserve and restore title match mode (efficiency-canon: no leaked global state)
     prevTitleMode := A_TitleMatchMode
+    global g_YoutubeFocusSessionActive
     try {
         SetTitleMatchMode 2
+        if (g_YoutubeFocusSessionActive) {
+            YouTube_EndFocusSession()
+            return
+        }
+
         YouTube_PauseSpotifyBeforeYoutube()
 
         ; Prefer focusing an existing YouTube Chrome window to avoid duplicates.
@@ -323,6 +329,7 @@ YouTube_PlayWhenOpened() {
             YouTube_PlayWhenOpened()
             EnableFocusMode()
             StartYoutubeFocusMonitor(hwnd)
+            g_YoutubeFocusSessionActive := true
             return
         }
         ; No YouTube window detected: open History URL in a new Chrome window
@@ -335,6 +342,7 @@ YouTube_PlayWhenOpened() {
             if hwnd {
                 EnableFocusMode()
                 StartYoutubeFocusMonitor(hwnd)
+                g_YoutubeFocusSessionActive := true
             }
         }
     } finally {

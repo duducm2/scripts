@@ -19,6 +19,7 @@ DebugFlowLog(location, message, dataStr := "", hypothesisId := "") {
 
 #include UIA-v2\Lib\UIA.ahk
 #include UIA-v2\Lib\UIA_Browser.ahk
+#include %A_ScriptDir%\lib\Media.ahk
 
 ; Possible Gemini prompt field names (EN and PT) for work/personal env. Used by FindGeminiPromptField.
 global GEMINI_PROMPT_FIELD_NAMES := ["Enter a prompt for Gemini", "Enter a prompt here",
@@ -5873,43 +5874,60 @@ StopPdfFocusMonitor() {
     g_PdfFocusTrackedHwnd := 0
 }
 
-; YouTube focus monitoring for automatic blackout cancellation (Win+Alt+Shift+H)
+; YouTube focus session (Win+Alt+Shift+H): toggle on/off; SMTC for Spotify play/pause (not toggle).
 global g_YoutubeFocusMonitorTimer := false
 global g_YoutubeFocusTrackedHwnd := 0
-; True after we toggled Spotify with Media_Play_Pause for this session; resume on exit.
 global g_YoutubeSpotifyPausePending := false
+global g_YoutubeFocusSessionActive := false
 
-; Pause Spotify before focusing YouTube (Win+Alt+Shift+H). Uses Media_Play_Pause (toggle);
-; if Spotify was already paused, it may briefly start — no play-state API without WinRT/SMTC.
+; Find Spotify's Windows.Media.Control session (SourceAppUserModelId contains "Spotify").
+YouTube_FindSpotifyMediaSession() {
+    try {
+        for session in Media.GetSessions() {
+            try {
+                id := session.SourceAppUserModelId
+                if InStr(id, "Spotify")
+                    return session
+            } catch {
+                continue
+            }
+        }
+    } catch {
+        return 0
+    }
+    return 0
+}
+
+; Pause Spotify via SMTC only when status is Playing (avoids starting playback when already paused).
 YouTube_PauseSpotifyBeforeYoutube() {
     global g_YoutubeSpotifyPausePending
     if (g_YoutubeSpotifyPausePending)
         return
-    spotHwnd := WinExist("ahk_exe Spotify.exe")
-    if !spotHwnd
-        return
     try {
-        WinActivate("ahk_id " spotHwnd)
-        if WinWaitActive("ahk_id " spotHwnd, , 500) {
-            Send("{Media_Play_Pause}")
-            g_YoutubeSpotifyPausePending := true
-        }
+        session := YouTube_FindSpotifyMediaSession()
+        if !session
+            return
+        if (session.PlaybackStatus != Media.PlaybackStatus.Playing)
+            return
+        session.Pause()
+        g_YoutubeSpotifyPausePending := true
+    } catch {
+        ; WinRT/SMTC unavailable — do not fall back to Media_Play_Pause (toggle bug).
     }
 }
 
-; Resume Spotify if we paused it for the current YouTube focus session; then restore restoreHwnd.
+; Resume Spotify with SMTC Play() only when we paused it and session reports Paused.
 YouTube_ResumeSpotifyAfterYoutubeIfPending(restoreHwnd := 0) {
     global g_YoutubeSpotifyPausePending
     if (!g_YoutubeSpotifyPausePending)
         return
     g_YoutubeSpotifyPausePending := false
-    spotHwnd := WinExist("ahk_exe Spotify.exe")
-    if !spotHwnd
-        return
     try {
-        WinActivate("ahk_id " spotHwnd)
-        if WinWaitActive("ahk_id " spotHwnd, , 500)
-            Send("{Media_Play_Pause}")
+        session := YouTube_FindSpotifyMediaSession()
+        if (session && session.PlaybackStatus == Media.PlaybackStatus.Paused)
+            session.Play()
+    } catch {
+        ;
     }
     if (restoreHwnd && WinExist("ahk_id " restoreHwnd)) {
         try
@@ -5917,38 +5935,30 @@ YouTube_ResumeSpotifyAfterYoutubeIfPending(restoreHwnd := 0) {
     }
 }
 
-; Monitor YouTube window focus and automatically disable focus mode when it loses focus
+; End YouTube focus session: pause YouTube (k), resume Spotify if pending, remove blackout, stop window monitor.
+YouTube_EndFocusSession() {
+    global g_YoutubeFocusTrackedHwnd, g_YoutubeFocusSessionActive
+    restoreHwnd := WinExist("A")
+    if (g_YoutubeFocusTrackedHwnd && WinExist("ahk_id " . g_YoutubeFocusTrackedHwnd)) {
+        try {
+            WinActivate("ahk_id " . g_YoutubeFocusTrackedHwnd)
+            Sleep(50)
+            Send("k")
+            Sleep(100)
+        }
+    }
+    YouTube_ResumeSpotifyAfterYoutubeIfPending(restoreHwnd)
+    DisableFocusMode()
+    StopYoutubeFocusMonitor()
+    g_YoutubeFocusSessionActive := false
+}
+
+; Monitor tracked YouTube window: only when it is destroyed, run full session teardown (same as second hotkey).
 MonitorYoutubeFocus() {
     global g_YoutubeFocusTrackedHwnd
 
-    ; Check if tracked window still exists
-    if (g_YoutubeFocusTrackedHwnd && !WinExist("ahk_id " . g_YoutubeFocusTrackedHwnd)) {
-        YouTube_ResumeSpotifyAfterYoutubeIfPending(WinExist("A"))
-        DisableFocusMode()
-        StopYoutubeFocusMonitor()
-        return
-    }
-
-    ; Check if YouTube window is still the active window
-    if (!WinActive("ahk_id " . g_YoutubeFocusTrackedHwnd)) {
-        ; Pause video and restore focus before removing blackout (same pattern as Wikipedia on exit)
-        currentActiveHwnd := WinExist("A")
-        if (g_YoutubeFocusTrackedHwnd && WinExist("ahk_id " . g_YoutubeFocusTrackedHwnd)) {
-            try {
-                WinActivate("ahk_id " . g_YoutubeFocusTrackedHwnd)
-                Sleep(50)
-                Send("k")  ; YouTube play/pause toggle: pause when exiting
-                Sleep(100)
-            }
-            if (currentActiveHwnd && WinExist("ahk_id " . currentActiveHwnd)) {
-                try
-                    WinActivate("ahk_id " . currentActiveHwnd)
-            }
-        }
-        YouTube_ResumeSpotifyAfterYoutubeIfPending(currentActiveHwnd)
-        DisableFocusMode()
-        StopYoutubeFocusMonitor()
-    }
+    if (g_YoutubeFocusTrackedHwnd && !WinExist("ahk_id " . g_YoutubeFocusTrackedHwnd))
+        YouTube_EndFocusSession()
 }
 
 ; Start monitoring YouTube window focus
