@@ -9693,13 +9693,139 @@ FocusCursorFilesExplorer() {
     }
 }
 
+; UIA: find Type 50020 text by exact Name under scope. Prefer on-screen; if several, pick bottom-most (largest top Y).
+Cursor_FindPermissionText50020(scope, exactName, requireOnScreen := true) {
+    try
+        all := scope.FindAll({ Type: 50020 })
+    catch
+        return 0
+    best := 0
+    bestT := -0x7FFFFFFF
+    for t in all {
+        try
+            nm := t.Name
+        catch
+            continue
+        if (nm != exactName)
+            continue
+        if (requireOnScreen) {
+            try {
+                if t.GetPropertyValue(UIA.Property.IsOffscreen)
+                    continue
+            } catch {
+            }
+        }
+        try {
+            br := t.BoundingRectangle
+            if (br.t > bestT) {
+                bestT := br.t
+                best := t
+            }
+        } catch {
+            if (!best)
+                best := t
+        }
+    }
+    return best
+}
+
+; Click permission-style Text (50020): prefer parent Invoke/Click, same pattern as !n "Review next file".
+Cursor_ClickUiaTextOrParentInvoke(textEl) {
+    try {
+        parentBtn := UIA.TreeWalkerTrue.GetParentElement(textEl)
+        if (parentBtn) {
+            try {
+                if parentBtn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
+                    parentBtn.InvokePattern.Invoke()
+                    return true
+                }
+            } catch {
+            }
+            try {
+                parentBtn.Click()
+                return true
+            } catch {
+            }
+        }
+    } catch {
+    }
+    try {
+        if textEl.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
+            textEl.InvokePattern.Invoke()
+            return true
+        }
+    } catch {
+    }
+    try {
+        textEl.Click()
+        return true
+    } catch {
+    }
+    return false
+}
+
+; Try each name variant (e.g. straight vs curly quotes). Scope to workbench.parts.panel first, then full window.
+Cursor_ClickPermissionLabel(variantNames*) {
+    hwnd := WinExist("ahk_exe Cursor.exe")
+    if (!hwnd)
+        return false
+    try
+        WinActivate(hwnd)
+    catch {
+    }
+    try
+        root := UIA.ElementFromHandle(hwnd)
+    catch
+        return false
+    if (!root)
+        return false
+    Sleep 100
+    scope := root
+    try {
+        panel := root.FindFirst({ AutomationId: "workbench.parts.panel", Type: 50026 })
+        if (panel)
+            scope := panel
+    } catch {
+    }
+    el := 0
+    for name in variantNames {
+        el := Cursor_FindPermissionText50020(scope, name, true)
+        if (el)
+            break
+    }
+    if (!el) {
+        for name in variantNames {
+            el := Cursor_FindPermissionText50020(scope, name, false)
+            if (el)
+                break
+        }
+    }
+    if (!el) {
+        for name in variantNames {
+            el := Cursor_FindPermissionText50020(root, name, true)
+            if (el)
+                break
+        }
+    }
+    if (!el) {
+        for name in variantNames {
+            el := Cursor_FindPermissionText50020(root, name, false)
+            if (el)
+                break
+        }
+    }
+    if (!el)
+        return false
+    return Cursor_ClickUiaTextOrParentInvoke(el)
+}
+
 ;-------------------------------------------------------------------
 ; Cursor Shortcuts
 ;-------------------------------------------------------------------
 #HotIf IsEditorActive() && WinGetClass("A") != "#32770"
 
 ; Alt + M : Quick shortcut menu for Cursor
-; GUI styled like Select AI Model (Utils.ahk): dark theme, Press 1–2 | Esc to cancel.
+; GUI styled like Select AI Model (Utils.ahk): dark theme, Press 1–2 | R · A | Esc to cancel.
 global g_CursorShortcutMenuGui := false
 global g_CursorShortcutMenuActive := false
 
@@ -9719,16 +9845,23 @@ ShowCursorShortcutMenu() {
     g_CursorShortcutMenuGui.MarginY := 15
 
     g_CursorShortcutMenuGui.SetFont("s14 cCDD6F4 Bold", "Segoe UI")
-    g_CursorShortcutMenuGui.Add("Text", "w280 Center", "Select shortcut")
-    g_CursorShortcutMenuGui.Add("Text", "w280 h1 Background45475A")
+    g_CursorShortcutMenuGui.Add("Text", "w300 Center", "Select shortcut")
+    g_CursorShortcutMenuGui.Add("Text", "w300 h1 Background45475A")
 
     g_CursorShortcutMenuGui.SetFont("s12 cCDD6F4", "Segoe UI")
-    g_CursorShortcutMenuGui.Add("Text", "w280", "[1] hello world one")
-    g_CursorShortcutMenuGui.Add("Text", "w280", "[2] hello world two")
+    g_CursorShortcutMenuGui.Add("Text", "w300", "[1] hello world one")
+    g_CursorShortcutMenuGui.Add("Text", "w300", "[2] hello world two")
 
-    g_CursorShortcutMenuGui.Add("Text", "w280 h1 Background45475A y+10")
+    g_CursorShortcutMenuGui.Add("Text", "w300 h1 Background45475A y+8")
+    g_CursorShortcutMenuGui.SetFont("s10 c6C7086", "Segoe UI")
+    g_CursorShortcutMenuGui.Add("Text", "w300", "Terminal permissions")
+    g_CursorShortcutMenuGui.SetFont("s12 cCDD6F4", "Segoe UI")
+    g_CursorShortcutMenuGui.Add("Text", "w300", "[R] Run (terminal permission)")
+    g_CursorShortcutMenuGui.Add("Text", "w300", "[A] Allowlist 'Get-Command'")
+
+    g_CursorShortcutMenuGui.Add("Text", "w300 h1 Background45475A y+10")
     g_CursorShortcutMenuGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_CursorShortcutMenuGui.Add("Text", "w280 Center", "Press 1–2 | Esc to cancel")
+    g_CursorShortcutMenuGui.Add("Text", "w300 Center", "Press 1–2 | R · A | Esc to cancel")
 
     ; Center on same monitor as active window (same logic as Utils ShowAiModelSelector)
     activeWin := 0
@@ -9765,6 +9898,8 @@ ShowCursorShortcutMenu() {
     g_CursorShortcutMenuActive := true
     Hotkey("1", (*) => CursorShortcutMenu_HandleKey("1"), "On")
     Hotkey("2", (*) => CursorShortcutMenu_HandleKey("2"), "On")
+    Hotkey("r", (*) => CursorShortcutMenu_HandleKey("r"), "On")
+    Hotkey("a", (*) => CursorShortcutMenu_HandleKey("a"), "On")
     Hotkey("Escape", CursorShortcutMenu_Cancel, "On")
 }
 
@@ -9777,6 +9912,10 @@ CursorShortcutMenu_HandleKey(key) {
         CursorShortcutMenu_Action1()
     else if (key = "2")
         CursorShortcutMenu_Action2()
+    else if (key = "r")
+        CursorShortcutMenu_ActionRun()
+    else if (key = "a")
+        CursorShortcutMenu_ActionAllowlistGetCommand()
 }
 
 CursorShortcutMenu_Cancel(*) {
@@ -9790,6 +9929,8 @@ CursorShortcutMenu_Close() {
     g_CursorShortcutMenuActive := false
     try Hotkey("1", "Off")
     try Hotkey("2", "Off")
+    try Hotkey("r", "Off")
+    try Hotkey("a", "Off")
     try Hotkey("Escape", CursorShortcutMenu_Cancel, "Off")
     if (IsObject(g_CursorShortcutMenuGui) && g_CursorShortcutMenuGui.Hwnd) {
         try g_CursorShortcutMenuGui.Destroy()
@@ -9805,6 +9946,14 @@ CursorShortcutMenu_Action1(*) {
 CursorShortcutMenu_Action2(*) {
     ; Replace with your command for "hello world two"
     return
+}
+
+CursorShortcutMenu_ActionRun(*) {
+    Cursor_ClickPermissionLabel("Run")
+}
+
+CursorShortcutMenu_ActionAllowlistGetCommand(*) {
+    Cursor_ClickPermissionLabel("Allowlist 'Get-Command'", "Allowlist ‘Get-Command’")
 }
 
 ; Ctrl + H : Smart navigation - Editor → Explorer, Explorer → Reveal in Explorer
