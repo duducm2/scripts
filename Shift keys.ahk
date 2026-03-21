@@ -9926,15 +9926,17 @@ Cursor_ExitFocusMode() {
 
 Cursor_ToggleFocusMode() {
     global g_CursorFocusMode
-    ; Loading Indication — docs/standard_information_display.md (StandardLoadingBar_Show, passive: false)
+    ; Loading Indication — docs/standard_information_display.md (semantic border colors)
+    ; Enter AI-only: BANNER_ACCENT_INTERMEDIATE (yellow). Return to coding layout: BANNER_ACCENT_SUCCESS (green).
     centerHwnd := WinGetID("A")
-    loadingMsg := g_CursorFocusMode ? "⏳ Restoring normal layout..." : "⏳ Entering AI focus mode..."
-    StandardLoadingBar_Show(loadingMsg, BANNER_ACCENT_INTERMEDIATE, {
+    loadingMsg := g_CursorFocusMode ? "⏳ Restoring coding layout..." : "⏳ Entering AI-only layout..."
+    loadingAccent := g_CursorFocusMode ? BANNER_ACCENT_SUCCESS : BANNER_ACCENT_INTERMEDIATE
+    StandardLoadingBar_Show(loadingMsg, loadingAccent, {
         passive: false,
         centerOnHwnd: centerHwnd,
         textWidth: 420,
         fontSize: 17,
-        passiveBgColor: BANNER_ACCENT_INTERMEDIATE
+        passiveBgColor: loadingAccent
     })
     try {
         if (g_CursorFocusMode) {
