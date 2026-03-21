@@ -571,7 +571,7 @@ Cursor
 📉 [,] Fold all directories
 💬 [.] Toggle chat or agent
 📈 [Q]Unfold all directories (e[Q]ual)
-🤖 [E] Toggle normal / AI focus layout (ahk)
+🤖 [E] Maximize chat size — native Cursor (`workbench.action.maximizeChatSize`; user keybinding)
 📂 [R]File open [R]ecent
 🔍 [T]Go to [T]ype symbol in workspace
 💬 [N] [N]ew chat tab (replacing current)
@@ -9891,182 +9891,6 @@ Cursor_ClickPermissionLabelContains(substring) {
 }
 
 ;-------------------------------------------------------------------
-; Cursor: Code-only vs AI-only layout (Ctrl+E). See cursor-ide-ctrl-e-junior-brief.md
-;-------------------------------------------------------------------
-; codicon-panel-layout-icon-off => bottom panel hidden (VS Code / Cursor title bar checkbox)
-Cursor_IsPanelVisible() {
-    try {
-        hwnd := WinExist("ahk_exe Cursor.exe")
-        if !hwnd
-            return false
-        root := UIA.ElementFromHandle(hwnd)
-        if !root
-            return false
-        el := root.FindFirst({ Type: UIA.Type.CheckBox, Name: "Toggle Panel", matchmode: 2 })
-        if !el
-            return false
-        return !InStr(el.ClassName, "panel-layout-icon-off")
-    } catch {
-        return false
-    }
-}
-
-; Primary sidebar visible (Explorer / SCM / localized tree) — do NOT blind Send ^b when false or we open Git/Explorer.
-Cursor_IsPrimarySidebarVisible() {
-    hwnd := WinExist("ahk_exe Cursor.exe")
-    if !hwnd
-        return false
-    if Cursor_IsElementVisibleByName("Files Explorer", hwnd, UIA.Type.Tree)
-        return true
-    if Cursor_IsElementVisibleByName("Explorador de Arquivos", hwnd, UIA.Type.Tree)
-        return true
-    if Cursor_GetVisibleElementByName("Source Control", hwnd, "", 2)
-        return true
-    if Cursor_GetVisibleElementByName("Controle de Código Fonte", hwnd, "", 2)
-        return true
-    return false
-}
-
-Cursor_IsCursorEditorAreaVisible() {
-    try {
-        hwnd := WinExist("ahk_exe Cursor.exe")
-        if !hwnd
-            return true
-        root := UIA.ElementFromHandle(hwnd)
-        if !root
-            return true
-        ed := root.FindFirst({ AutomationId: "workbench.parts.editor", matchmode: 2 })
-        if !ed
-            return true
-        try isOff := ed.GetPropertyValue(UIA.Property.IsOffscreen)
-        catch {
-            isOff := false
-        }
-        return !isOff
-    } catch {
-        return true
-    }
-}
-
-Cursor_IsAiPaneCheckboxOn() {
-    try {
-        hwnd := WinExist("ahk_exe Cursor.exe")
-        if !hwnd
-            return false
-        root := UIA.ElementFromHandle(hwnd)
-        if !root
-            return false
-        el := root.FindFirst({ Type: UIA.Type.CheckBox, Name: "Toggle AI Pane", matchmode: 2 })
-        return el && InStr(el.ClassName, "checked")
-    } catch {
-        return false
-    }
-}
-
-Cursor_CloseAiOrAgentsIfOpen() {
-    try {
-        hwnd := WinExist("ahk_exe Cursor.exe")
-        if !hwnd
-            return
-        root := UIA.ElementFromHandle(hwnd)
-        if !root
-            return
-        ag := root.FindFirst({ Type: UIA.Type.Button, Name: "Toggle Agents", matchmode: 2 })
-        if ag && InStr(ag.ClassName, "titlebar-agents-icon-filled") {
-            ag.Click()
-            Sleep 180
-            return
-        }
-    } catch {
-    }
-    if Cursor_IsAiPaneCheckboxOn()
-        Send "^i"
-}
-
-Cursor_RunCursorCommandPalette(query) {
-    Send "^+p"
-    Sleep 220
-    SendText query
-    Sleep 280
-    Send "{Enter}"
-    Sleep 200
-}
-
-; State A -> B: AI-only — hide sidebar/panel only if visible; hide editor only if visible; focus AI.
-Cursor_EnterAiOnlyMode() {
-    SendEscape()
-    Sleep 40
-    SendEscape()
-    Sleep 80
-    if Cursor_IsPrimarySidebarVisible()
-        Send "^b"
-    Sleep 120
-    if Cursor_IsPanelVisible()
-        Send "^j"
-    Sleep 120
-    if Cursor_IsCursorEditorAreaVisible()
-        Cursor_RunCursorCommandPalette("view: toggle editor area visibility")
-    Sleep 250
-    Cursor_FocusAITextField()
-}
-
-; State B -> A: code-only — restore editor if hidden, same sequence as ^1 hotkey, then close AI and hide panel/sidebar if visible.
-Cursor_EnterCodeOnlyMode() {
-    if !Cursor_IsCursorEditorAreaVisible()
-        Cursor_RunCursorCommandPalette("view: toggle editor area visibility")
-    Sleep 250
-    Cursor_RunCursorCommandPalette("focus active editor group")
-    Sleep 150
-    SendEscape()
-    Sleep 50
-    SendEscape()
-    Sleep 100
-    Send "^!n"
-    Sleep 100
-    Send "^!,"
-    Sleep 100
-    Send "#!o"
-    Sleep 150
-    Cursor_CloseAiOrAgentsIfOpen()
-    Sleep 120
-    if Cursor_IsPanelVisible()
-        Send "^j"
-    Sleep 120
-    if Cursor_IsPrimarySidebarVisible()
-        Send "^b"
-    Sleep 80
-}
-
-Cursor_ToggleFocusMode() {
-    global g_CursorFocusMode
-    ; Loading Indication — docs/standard_information_display.md (semantic border colors)
-    ; Enter AI-only: BANNER_ACCENT_INFO (blue). Return to coding layout: BANNER_ACCENT_SUCCESS (green)—blue vs green, not red/green.
-    centerHwnd := WinGetID("A")
-    loadingMsg := g_CursorFocusMode ? "⏳ Restoring coding layout..." : "⏳ Entering AI-only layout..."
-    loadingAccent := g_CursorFocusMode ? BANNER_ACCENT_SUCCESS : BANNER_ACCENT_INFO
-    StandardLoadingBar_Show(loadingMsg, loadingAccent, {
-        passive: false,
-        centerOnHwnd: centerHwnd,
-        textWidth: 420,
-        fontSize: 17,
-        passiveBgColor: loadingAccent
-    })
-    try {
-        if (g_CursorFocusMode) {
-            Cursor_EnterCodeOnlyMode()
-            g_CursorFocusMode := false
-        } else {
-            Cursor_EnterAiOnlyMode()
-            g_CursorFocusMode := true
-        }
-    } finally {
-        try StandardLoadingBar_Hide(0)
-        catch {
-        }
-    }
-}
-
-;-------------------------------------------------------------------
 ; Cursor Shortcuts
 ;-------------------------------------------------------------------
 #HotIf IsEditorActive() && WinGetClass("A") != "#32770"
@@ -10075,7 +9899,6 @@ Cursor_ToggleFocusMode() {
 ; GUI styled like Select AI Model (Utils.ahk): dark theme, Press 1–2 | R · A · F · P | Esc to cancel.
 global g_CursorShortcutMenuGui := false
 global g_CursorShortcutMenuActive := false
-global g_CursorFocusMode := false
 
 !m::
 {
@@ -10249,11 +10072,6 @@ CursorShortcutMenu_ActionProceed(*) {
         ; User is NOT in main editor (likely in Explorer): trigger Reveal in File Explorer
         Send "^h"
     }
-}
-
-^e::
-{
-    Cursor_ToggleFocusMode()
 }
 
 ; Ctrl + 1 : Remove clustering and focus on the code
