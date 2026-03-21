@@ -48,6 +48,12 @@ flowchart TB
     SelectWin --> ActivatePaste["ActivateFocusPaste ^v Enter"]
 ```
 
+## Instructions for AIB
+
+- After paste + Enter into the selected Cursor window, the script waits briefly so Cursor can apply the paste and process Enter (`CURSOR_TRANSFER_POST_PASTE_BEFORE_ENTER_MS`, `CURSOR_TRANSFER_POST_ENTER_BEFORE_RESTORE_MS` in `Utils.ahk`) before **OS focus returns** to the **anchored window** from which the Transfer-to-Cursor picker was shown (`OriginHwnd` in `Utils.ahk`, `OriginalHwnd` in `Gemini.ahk`)—the window the user had when completing project/window selection for that step.
+- **Do not** assume the user stays in the target Cursor chat window.
+- Prefer **minimal** changes to automation code when adjusting this behavior; avoid broad refactors.
+
 ## Pre-movement cue behavior
 
 - **When the cue plays**:
@@ -79,7 +85,7 @@ For a complete list of where Hand Off audio cues are used, see `docs/hand_off_wa
 
 ## Files and entry points
 
-- **Utils.ahk**: `~#!+0`, `DictationGeminiConfirm_*`, `GeminiDelayedSubmitFlow`, `GeminiFinalizeSubmit`, `CursorTransfer_ShowWindowSelector`, `CursorTransfer_ActivateFocusPaste`.
+- **Utils.ahk**: `~#!+0`, `DictationGeminiConfirm_*`, `GeminiDelayedSubmitFlow`, `GeminiFinalizeSubmit`, `CursorTransfer_ShowWindowSelector`, `CursorTransfer_ActivateFocusPaste` (optional second arg restores focus to the anchored window after paste + Enter).
 - **Gemini.ahk**: `GeminiDelayedSubmitMonitor` (response done detection), “Copy response?” banner, Copy/Read/Transfer actions.
 
 ## Happy path (no cancel)

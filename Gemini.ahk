@@ -1579,7 +1579,7 @@ class GeminiDelayedSubmitMonitor {
         }
         ; Gemini → Cursor: no pre-movement warning (source is not Original).
         try A_Clipboard := clipRaw
-        CursorTransfer_ActivateFocusPaste(hwnd)
+        CursorTransfer_ActivateFocusPaste(hwnd, this.OriginalHwnd)
     }
 }
 

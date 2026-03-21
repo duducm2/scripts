@@ -1991,9 +1991,13 @@ Cursor_FocusAITextField(targetHwnd := 0) {
 
 ; Minimum clipboard length for transfer (match Gemini/bridge validation)
 CURSOR_TRANSFER_MIN_CLIPBOARD_LENGTH := 10
+; Electron/Cursor needs time after paste before Enter; after Enter before foreground changes or submit can drop.
+CURSOR_TRANSFER_POST_PASTE_BEFORE_ENTER_MS := 80
+CURSOR_TRANSFER_POST_ENTER_BEFORE_RESTORE_MS := 400
 
 ; Activate Cursor window, focus AI field, paste clipboard, send Enter. Non-blocking feedback on failure.
-CursorTransfer_ActivateFocusPaste(targetHwnd) {
+; restoreFocusHwnd: if set, WinActivate this window after Enter is processed (before success overlay) so focus does not stay on the target Cursor window.
+CursorTransfer_ActivateFocusPaste(targetHwnd, restoreFocusHwnd := 0) {
     if (!targetHwnd || !WinExist("ahk_id " targetHwnd)) {
         ShowCenteredOverlay_Utils("❌ Cursor window not found", 2000, BANNER_ACCENT_ERROR)
         return
@@ -2025,8 +2029,19 @@ CursorTransfer_ActivateFocusPaste(targetHwnd) {
             ShowCenteredOverlay_Utils("❌ Clipboard lost before paste", 2000, BANNER_ACCENT_ERROR)
             return
         }
-        Send "^v"
-        Send "{Enter}"
+        SendInput "^v"
+        Sleep CURSOR_TRANSFER_POST_PASTE_BEFORE_ENTER_MS
+        SendInput "{Enter}"
+        if (restoreFocusHwnd && WinExist("ahk_id " restoreFocusHwnd)) {
+            ; Wait so Cursor keeps foreground until paste + Enter are processed; restoring sooner drops Enter.
+            Sleep CURSOR_TRANSFER_POST_ENTER_BEFORE_RESTORE_MS
+            try {
+                WinActivate("ahk_id " restoreFocusHwnd)
+                if (!WinActive("ahk_id " restoreFocusHwnd))
+                    WinWaitActive("ahk_id " restoreFocusHwnd, , 0.5)
+            } catch {
+            }
+        }
         ShowCenteredOverlay_Utils("✅ Sent to Cursor", 1500, BANNER_ACCENT_SUCCESS)
     } catch as err {
         ShowCenteredOverlay_Utils("❌ Transfer failed", 2000, BANNER_ACCENT_ERROR)
@@ -3172,7 +3187,7 @@ class D2C_FlowManager {
 
             ; Gemini → Cursor: no pre-movement warning (source is not Original).
             try A_Clipboard := clipRaw
-            CursorTransfer_ActivateFocusPaste(this.CursorHwnd)
+            CursorTransfer_ActivateFocusPaste(this.CursorHwnd, this.OriginHwnd)
         } finally {
             this.Reset()
         }

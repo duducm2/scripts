@@ -82,5 +82,8 @@ When adding or modifying synchronization audio cues in this repository:
   - Keep all waits timeout-bounded and condition-driven.  
   - Do not use synthetic keystrokes to unknown windows; always validate `hwnd` and active window state before sending input.
 
+- **Cursor transfer (paste + Enter)**  
+  - Restore focus to the anchored window via `CursorTransfer_ActivateFocusPaste(targetHwnd, restoreFocusHwnd)` after Enter; **no** Hand Off cue on that return. Details: `docs/dictation-to-gemini-cursor-flow.md` (Instructions for AIB).
+
 For a narrative description of how these cues fit into the D2C flow, see `docs/dictation-to-gemini-cursor-flow.md`.
 
