@@ -9896,7 +9896,7 @@ Cursor_ClickPermissionLabelContains(substring) {
 #HotIf IsEditorActive() && WinGetClass("A") != "#32770"
 
 ; Alt + M : Quick shortcut menu for Cursor
-; GUI styled like Select AI Model (Utils.ahk): dark theme, Press 1–2 | R · A | Esc to cancel.
+; GUI styled like Select AI Model (Utils.ahk): dark theme, Press 1–2 | R · A · F · P | Esc to cancel.
 global g_CursorShortcutMenuGui := false
 global g_CursorShortcutMenuActive := false
 
@@ -9929,10 +9929,12 @@ ShowCursorShortcutMenu() {
     g_CursorShortcutMenuGui.SetFont("s12 cCDD6F4", "Segoe UI")
     g_CursorShortcutMenuGui.Add("Text", "w300", "[R] Run (terminal permission)")
     g_CursorShortcutMenuGui.Add("Text", "w300", "[A] Allowlist (any permission button)")
+    g_CursorShortcutMenuGui.Add("Text", "w300", "[F] Mark as fixed")
+    g_CursorShortcutMenuGui.Add("Text", "w300", "[P] Proceed")
 
     g_CursorShortcutMenuGui.Add("Text", "w300 h1 Background45475A y+10")
     g_CursorShortcutMenuGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_CursorShortcutMenuGui.Add("Text", "w300 Center", "Press 1–2 | R · A | Esc to cancel")
+    g_CursorShortcutMenuGui.Add("Text", "w300 Center", "Press 1–2 | R · A · F · P | Esc to cancel")
 
     ; Center on same monitor as active window (same logic as Utils ShowAiModelSelector)
     activeWin := 0
@@ -9971,6 +9973,8 @@ ShowCursorShortcutMenu() {
     Hotkey("2", (*) => CursorShortcutMenu_HandleKey("2"), "On")
     Hotkey("r", (*) => CursorShortcutMenu_HandleKey("r"), "On")
     Hotkey("a", (*) => CursorShortcutMenu_HandleKey("a"), "On")
+    Hotkey("f", (*) => CursorShortcutMenu_HandleKey("f"), "On")
+    Hotkey("p", (*) => CursorShortcutMenu_HandleKey("p"), "On")
     Hotkey("Escape", CursorShortcutMenu_Cancel, "On")
 }
 
@@ -9987,6 +9991,10 @@ CursorShortcutMenu_HandleKey(key) {
         CursorShortcutMenu_ActionRun()
     else if (key = "a")
         CursorShortcutMenu_ActionAllowlist()
+    else if (key = "f")
+        CursorShortcutMenu_ActionMarkAsFixed()
+    else if (key = "p")
+        CursorShortcutMenu_ActionProceed()
 }
 
 CursorShortcutMenu_Cancel(*) {
@@ -10002,6 +10010,8 @@ CursorShortcutMenu_Close() {
     try Hotkey("2", "Off")
     try Hotkey("r", "Off")
     try Hotkey("a", "Off")
+    try Hotkey("f", "Off")
+    try Hotkey("p", "Off")
     try Hotkey("Escape", CursorShortcutMenu_Cancel, "Off")
     if (IsObject(g_CursorShortcutMenuGui) && g_CursorShortcutMenuGui.Hwnd) {
         try g_CursorShortcutMenuGui.Destroy()
@@ -10025,6 +10035,14 @@ CursorShortcutMenu_ActionRun(*) {
 
 CursorShortcutMenu_ActionAllowlist(*) {
     Cursor_ClickPermissionLabelContains("Allowlist")
+}
+
+CursorShortcutMenu_ActionMarkAsFixed(*) {
+    Cursor_ClickPermissionLabel("Mark as fixed")
+}
+
+CursorShortcutMenu_ActionProceed(*) {
+    Cursor_ClickPermissionLabel("Proceed")
 }
 
 ; Ctrl + H : Smart navigation - Editor → Explorer, Explorer → Reveal in Explorer
