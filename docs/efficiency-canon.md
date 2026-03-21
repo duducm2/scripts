@@ -125,3 +125,14 @@ For each refactor or new automation path, confirm:
 - **Append, do not duplicate.** New evaluation or improvement documents should reference this canon and add only **new** findings or **refinements** that do not contradict sections 2–9. If a refinement conflicts (e.g. a new technology recommendation), document the exception and the rationale in the report; do not silently override the canon.
 - **Scoped overrides.** Script- or app-specific plans (e.g. “Teams: do not use Graph for core flow”) remain in their plans/reports; the canon states **general** principles. When a script’s constraints are stricter than the canon, the script-specific constraint wins for that script only.
 - **Vocabulary.** Use the canonical terms (e.g. _deterministic_, _bounded_, _cache-first_, _event-driven_, _typed-contract_) in new reports and implementation plans so that future AI runs can match intent without ambiguity.
+
+---
+
+## 11. Hot-path example: YouTube focus (Win+Alt+Shift+H, AppLaunchers)
+
+Illustrates **minimizing** UIA cost on a sub-second hotkey path:
+
+- **Bind** `UIA_Browser` to the **specific** window (`"ahk_id " hwnd`), not a generic `ahk_exe` match, so URL and document queries refer to the correct Chrome instance.
+- **Prefer** a **single** cheap call (`GetCurrentURL`) plus a **documented assumption** (e.g. user enters focus with the watch-page video **paused**) and **one** `Send("k")` over repeated `FindFirst` / subtree scans that can cost hundreds of milliseconds per key press.
+- **Trade-off** must be explicit in code comments: if the assumption is wrong (e.g. video already playing), the same key toggles playback — acceptable only when the workflow guarantees or accepts that state.
+- **Do not** add loading banners or NDJSON logging on the same hotkey path unless required for UX or diagnostics; they add latency and I/O.

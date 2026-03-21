@@ -129,6 +129,7 @@ These wrap `StandardLoadingBar_*` with preset styles:
 
 | Lines     | Context                          |
 | --------- | -------------------------------- |
+| `#!+h` YouTube focus | No banner on this hotkey (latency); `YouTube_PlayWhenOpened` uses `UIA_Browser("ahk_id " hwnd)` + `GetCurrentURL` then `Send("k")` when on a watch URL (assumes paused video on session start) |
 | 522–563   | Restore scroll (short path)      |
 | 842–1003  | Restore scroll (new window, UIA) |
 | 1296–1392 | Restore scroll (existing window) |

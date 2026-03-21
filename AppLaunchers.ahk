@@ -286,24 +286,25 @@ ShowCursorFallbackPanel() {
 ; Hotkey: Win+Alt+Shift+H
 ; Original File: Youtube - Activate.ahk
 ; =============================================================================
-; Play video when YouTube is opened: use UIA to click "Play (k)" if paused, else fallback Send "k"
-YouTube_PlayWhenOpened() {
+; Session start: **assumes** the watch-page video is paused/stopped. One Send("k") toggles play (YouTube shortcut).
+; Trade-off: if the video was already playing, k pauses — use when entering focus with a paused video, or press #!+h again to exit.
+; Fast path: one UIA_Browser bound to ytHwnd + GetCurrentURL only (no FindFirst / tree scans). See docs/efficiency-canon.md §11.
+YouTube_PlayWhenOpened(ytHwnd := 0) {
+    if !(ytHwnd is Integer) || ytHwnd <= 0
+        ytHwnd := WinExist("YouTube ahk_exe chrome.exe")
+    if !ytHwnd
+        return
+    if !WinActive("ahk_id " ytHwnd) {
+        WinActivate("ahk_id " ytHwnd)
+        WinWaitActive("ahk_id " ytHwnd, , 2)
+    }
     try {
-        Sleep(120)  ; Let activated window be the one UIA attaches to
-        uia := UIA_Browser("ahk_exe chrome.exe")
-        if (!uia)
-            throw Error("UIA_Browser failed")
-        url := uia.GetCurrentURL()
-        if (!InStr(url, "youtube.com/watch"))
-            return  ; Not a watch page; do not send "k"
-        doc := uia.GetCurrentDocumentElement()
-        playBtn := doc.FindFirst({ Type: "Button", Name: "Play (k)" })
-        if (playBtn)
-            playBtn.Click()
-        else
-            Send("k")
+        uia := UIA_Browser("ahk_id " ytHwnd)
+        if !InStr(uia.GetCurrentURL(), "youtube.com/watch")
+            return
+        Send("k")
     } catch {
-        Send("k")  ; Fallback: toggle play/pause
+        ; UIA/URL unavailable — do not Send(k) blind (wrong-focus risk).
     }
 }
 
@@ -325,8 +326,9 @@ YouTube_PlayWhenOpened() {
         hwnd := WinExist("YouTube ahk_exe chrome.exe")
         if hwnd {
             WinActivate("ahk_id " hwnd)
+            WinWaitActive("ahk_id " hwnd, , 2)
             CenterMouse()
-            YouTube_PlayWhenOpened()
+            YouTube_PlayWhenOpened(hwnd)
             EnableFocusMode()
             StartYoutubeFocusMonitor(hwnd)
             g_YoutubeFocusSessionActive := true
@@ -337,7 +339,7 @@ YouTube_PlayWhenOpened() {
         Run 'chrome.exe --new-window "https://www.youtube.com/feed/history"'
         if WinWaitActive("YouTube ahk_exe chrome.exe", , 10) {
             CenterMouse()
-            YouTube_PlayWhenOpened()
+            YouTube_PlayWhenOpened(WinExist("A"))
             hwnd := WinExist("A")
             if hwnd {
                 EnableFocusMode()
