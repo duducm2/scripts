@@ -23,6 +23,10 @@ All cues use the same asset and timing:
   - Waits **2 seconds**.
   - Performs the automated action.
 
+- **Exception — TTS from selection (`Win+Alt+Shift+7`, `GeminiAsyncTTS` in `Gemini.ahk`)**  
+  The **first** Original → Gemini transition (activate, paste “repeat exactly” prompt, submit, then return focus to the original window) does **not** play the Hand Off cue.  
+  After Gemini has **started** responding (streaming observed) and **finished** (Stop streaming button gone), the **second** Original → Gemini transition (activate trash tab and run read aloud) **does** play the cue **immediately before** that activation—same asset and **2-second** delay as other outbound moves.
+
 - **Inbound (target → trigger)**  
   Any transition that **returns** focus to the original trigger window happens **immediately**:
   - **No** sound.
@@ -33,7 +37,8 @@ All cues use the same asset and timing:
 
 - **Background processing**  
   While Gemini is generating a response, the original window stays in user control.  
-  No cue plays until **after the response is ready** and **immediately before** the outbound automated action (submit, copy, etc.).
+  For most D2C flows, no cue plays until **after the response is ready** and **immediately before** the outbound automated action (submit, copy, etc.).  
+  For **TTS from selection (`#!+7`)**, the **initial** submit to Gemini also runs **without** a cue; the cue applies only **before** the later outbound move to Gemini for **read aloud**, once the response has completed (see integration table).
 
 ---
 
@@ -48,6 +53,8 @@ All cues use the same asset and timing:
 | `Gemini.ahk` (`GeminiDelayedSubmitMonitor.DoCopyCore` via `DoCopyOnTimeout`) | Legacy monitor: **Copy response?** banner times out and `DoCopyOnTimeout` calls `DoCopyCore(false)` | Activate Gemini if needed, copy last Gemini response, then restore focus to the original window | **Outbound**: play `pre-movement.wav`, wait 2s, then copy |
 | `Utils.ahk` / `Gemini.ahk` (various return paths after copy) | Flow finished using Gemini’s response; script is returning focus to the original trigger window | Activate original window only | **Inbound**: **no** cue, immediate activation (no delay) |
 | `Utils.ahk` (`D2C_FlowManager.PromptForCursorTransfer`) and `Gemini.ahk` (`GeminiDelayedSubmitMonitor.CopyAndTransferToCursor`) | User presses **C** at **Copy response?**, then selects a Cursor window 1–9 | Show window picker, then activate Cursor and paste+Enter into its AI field | **Secondary → secondary**: **no** Hand Off cue; any delays are limited to normal focus and paste waits |
+| `Gemini.ahk` (`GeminiAsyncTTS.Start`) | **Win+Alt+Shift+7**: user triggers TTS from selection | First Original → Gemini: paste prompt, submit, restore focus to original | **No** Hand Off cue on this transition |
+| `Gemini.ahk` (`GeminiAsyncTTS.CheckCompletion` → `GeminiTriggerReadAloud`) | Same flow: streaming has been observed and has finished | Second Original → Gemini: activate trash tab, open Listen / read aloud | **Outbound**: play `pre-movement.wav`, wait 2s, then focus Gemini and read aloud |
 
 This table can be extended as new synchronization cues are added to other flows.
 
@@ -60,6 +67,7 @@ When adding or modifying synchronization audio cues in this repository:
 - **Honor the vector rule**  
   - Only **outbound** transitions from the original trigger window to a target window may play the 2-second Hand Off cue.  
   - Do **not** add cues to inbound (return) transitions or secondary-to-secondary transitions.
+  - **TTS from selection (`#!+7`)**: do **not** play the cue on the **first** outbound Original → Gemini (submit); **do** play it **immediately before** the **second** outbound Original → Gemini for read aloud **after** the response has finished (streaming stopped).
 
 - **Reuse the same contract**  
   - Always use `pre-movement.wav` (current implementation: `pre-movement.mp3`) and a **2-second delay**.  

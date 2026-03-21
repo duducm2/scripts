@@ -99,6 +99,8 @@ The Win+Alt+Shift+8 pronunciation workflow in `Gemini.ahk` follows this pattern:
 - **CheckCompletion():** Uses `UIA.ElementFromHandle(this.GeminiHwnd)` and `root.FindElement` / `root.ElementExist` only; no `WinActivate`, no `UIA_Browser` (to avoid its internal activation fallbacks). On completion: stops timer, plays sound, calls `RetrieveResponse()`.
 - **RetrieveResponse():** Activates Gemini once, runs copy (with optional retries using `alreadyActive: true`), then `WinActivate(OriginalHwnd)` once, hides loading, shows result banner.
 
+The **Win+Alt+Shift+7** TTS-from-selection workflow (`GeminiAsyncTTS` in `Gemini.ahk`) follows the same submit → monitor → retrieve shape: **no** `WinActivate` during monitoring, and retrieval only after completion. Unlike the first activation for submit, the **retrieval** activation (switch to Gemini for read aloud) is preceded by the shared **Hand Off** pre-movement cue (`PlayPreMovementWarning("Gemini")`) so you get a 2-second warning before focus leaves the original window again. See `docs/hand_off_warning_cues.md` for the exact cue rules.
+
 ---
 
 ## Summary

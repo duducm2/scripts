@@ -1752,8 +1752,9 @@ class GeminiAsyncTTS {
                 } catch {
                     PlayCopyCompletedChime()
                 }
-                ; Allow DOM to finish rendering, then activate trash tab and trigger read aloud (same pattern as #!+8 RetrieveResponse).
+                ; Allow DOM to finish rendering, then outbound Original→Gemini for read aloud (Hand Off: not on initial paste/submit).
                 Sleep(GeminiAsyncTTS.PostStreamingDelayMs)
+                PlayPreMovementWarning("Gemini")
                 try {
                     WinActivate("ahk_id " this.GeminiHwnd)
                 } catch {
