@@ -571,7 +571,7 @@ Cursor
 📉 [,] Fold all directories
 💬 [.] Toggle chat or agent
 📈 [Q]Unfold all directories (e[Q]ual)
-🤖 [E]Open [E]xpert Agent
+🤖 [E] Toggle normal / AI focus layout (ahk)
 📂 [R]File open [R]ecent
 🔍 [T]Go to [T]ype symbol in workspace
 💬 [N] [N]ew chat tab (replacing current)
@@ -9891,6 +9891,67 @@ Cursor_ClickPermissionLabelContains(substring) {
 }
 
 ;-------------------------------------------------------------------
+; Cursor: normal layout vs AI reading layout (Ctrl+E). See cursor-ide-ctrl-e-junior-brief.md
+;-------------------------------------------------------------------
+Cursor_RunCursorCommandPalette(query) {
+    Send "^+p"
+    Sleep 220
+    SendText query
+    Sleep 280
+    Send "{Enter}"
+    Sleep 200
+}
+
+; State A -> B: hide Explorer (Ctrl+B), Terminal/panel (Ctrl+J), editor area (command palette), focus AI.
+Cursor_EnterFocusMode() {
+    Send "^b"
+    Sleep 120
+    Send "^j"
+    Sleep 120
+    Cursor_RunCursorCommandPalette("view: toggle editor area visibility")
+    Sleep 250
+    Cursor_FocusAITextField()
+}
+
+; State B -> A: restore editor area, sidebar, panel; focus main editor group.
+Cursor_ExitFocusMode() {
+    Cursor_RunCursorCommandPalette("view: toggle editor area visibility")
+    Sleep 250
+    Send "^b"
+    Sleep 120
+    Send "^j"
+    Sleep 120
+    Cursor_RunCursorCommandPalette("focus active editor group")
+}
+
+Cursor_ToggleFocusMode() {
+    global g_CursorFocusMode
+    ; Loading Indication — docs/standard_information_display.md (StandardLoadingBar_Show, passive: false)
+    centerHwnd := WinGetID("A")
+    loadingMsg := g_CursorFocusMode ? "⏳ Restoring normal layout..." : "⏳ Entering AI focus mode..."
+    StandardLoadingBar_Show(loadingMsg, BANNER_ACCENT_INTERMEDIATE, {
+        passive: false,
+        centerOnHwnd: centerHwnd,
+        textWidth: 420,
+        fontSize: 17,
+        passiveBgColor: BANNER_ACCENT_INTERMEDIATE
+    })
+    try {
+        if (g_CursorFocusMode) {
+            Cursor_ExitFocusMode()
+            g_CursorFocusMode := false
+        } else {
+            Cursor_EnterFocusMode()
+            g_CursorFocusMode := true
+        }
+    } finally {
+        try StandardLoadingBar_Hide(0)
+        catch {
+        }
+    }
+}
+
+;-------------------------------------------------------------------
 ; Cursor Shortcuts
 ;-------------------------------------------------------------------
 #HotIf IsEditorActive() && WinGetClass("A") != "#32770"
@@ -9899,6 +9960,7 @@ Cursor_ClickPermissionLabelContains(substring) {
 ; GUI styled like Select AI Model (Utils.ahk): dark theme, Press 1–2 | R · A · F · P | Esc to cancel.
 global g_CursorShortcutMenuGui := false
 global g_CursorShortcutMenuActive := false
+global g_CursorFocusMode := false
 
 !m::
 {
@@ -10076,13 +10138,7 @@ CursorShortcutMenu_ActionProceed(*) {
 
 ^e::
 {
-    Send "^e"
-    Sleep 400
-    Send "!+e"
-    Sleep 300
-    SendEscape()  ; ESC
-    SendEscape()  ; ESC
-    Send "^i"
+    Cursor_ToggleFocusMode()
 }
 
 ; Ctrl + 1 : Remove clustering and focus on the code
