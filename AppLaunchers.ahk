@@ -313,6 +313,7 @@ YouTube_PlayWhenOpened() {
     prevTitleMode := A_TitleMatchMode
     try {
         SetTitleMatchMode 2
+        YouTube_PauseSpotifyBeforeYoutube()
 
         ; Prefer focusing an existing YouTube Chrome window to avoid duplicates.
         hwnd := WinExist("YouTube ahk_exe chrome.exe")

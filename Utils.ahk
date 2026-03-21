@@ -5861,6 +5861,46 @@ StopPdfFocusMonitor() {
 ; YouTube focus monitoring for automatic blackout cancellation (Win+Alt+Shift+H)
 global g_YoutubeFocusMonitorTimer := false
 global g_YoutubeFocusTrackedHwnd := 0
+; True after we toggled Spotify with Media_Play_Pause for this session; resume on exit.
+global g_YoutubeSpotifyPausePending := false
+
+; Pause Spotify before focusing YouTube (Win+Alt+Shift+H). Uses Media_Play_Pause (toggle);
+; if Spotify was already paused, it may briefly start — no play-state API without WinRT/SMTC.
+YouTube_PauseSpotifyBeforeYoutube() {
+    global g_YoutubeSpotifyPausePending
+    if (g_YoutubeSpotifyPausePending)
+        return
+    spotHwnd := WinExist("ahk_exe Spotify.exe")
+    if !spotHwnd
+        return
+    try {
+        WinActivate("ahk_id " spotHwnd)
+        if WinWaitActive("ahk_id " spotHwnd, , 500) {
+            Send("{Media_Play_Pause}")
+            g_YoutubeSpotifyPausePending := true
+        }
+    }
+}
+
+; Resume Spotify if we paused it for the current YouTube focus session; then restore restoreHwnd.
+YouTube_ResumeSpotifyAfterYoutubeIfPending(restoreHwnd := 0) {
+    global g_YoutubeSpotifyPausePending
+    if (!g_YoutubeSpotifyPausePending)
+        return
+    g_YoutubeSpotifyPausePending := false
+    spotHwnd := WinExist("ahk_exe Spotify.exe")
+    if !spotHwnd
+        return
+    try {
+        WinActivate("ahk_id " spotHwnd)
+        if WinWaitActive("ahk_id " spotHwnd, , 500)
+            Send("{Media_Play_Pause}")
+    }
+    if (restoreHwnd && WinExist("ahk_id " restoreHwnd)) {
+        try
+            WinActivate("ahk_id " restoreHwnd)
+    }
+}
 
 ; Monitor YouTube window focus and automatically disable focus mode when it loses focus
 MonitorYoutubeFocus() {
@@ -5868,6 +5908,7 @@ MonitorYoutubeFocus() {
 
     ; Check if tracked window still exists
     if (g_YoutubeFocusTrackedHwnd && !WinExist("ahk_id " . g_YoutubeFocusTrackedHwnd)) {
+        YouTube_ResumeSpotifyAfterYoutubeIfPending(WinExist("A"))
         DisableFocusMode()
         StopYoutubeFocusMonitor()
         return
@@ -5889,6 +5930,7 @@ MonitorYoutubeFocus() {
                     WinActivate("ahk_id " . currentActiveHwnd)
             }
         }
+        YouTube_ResumeSpotifyAfterYoutubeIfPending(currentActiveHwnd)
         DisableFocusMode()
         StopYoutubeFocusMonitor()
     }
