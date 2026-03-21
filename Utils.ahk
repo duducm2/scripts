@@ -7835,12 +7835,12 @@ ShowHotstringSelector() {
     ; =============================================================================
     ; Dynamic Modal UI Adaptation Based on Monitor Configuration
     ;
-    ; Monitor Dataset Structure (for reference):
+    ; Monitor dataset (reference only; UI uses live work area from the active window):
     ; {
     ;   "monitor_dataset": [
     ;     {
     ;       "id": 1,
-    ;       "resolution": "1920x1200",
+    ;       "resolution": "1920x1080",
     ;       "orientation": "landscape",
     ;       "scale": "125%",
     ;       "ui_strategy": "dual_column_wide"
@@ -7854,10 +7854,10 @@ ShowHotstringSelector() {
     ;     },
     ;     {
     ;       "id": 3,
-    ;       "resolution": "1920x1080",
-    ;       "orientation": "landscape",
+    ;       "resolution": "1080x1920",
+    ;       "orientation": "portrait",
     ;       "scale": "100%",
-    ;       "ui_strategy": "dual_column_wide"
+    ;       "ui_strategy": "single_column_vertical_stretch"
     ;     },
     ;     {
     ;       "id": 4,
