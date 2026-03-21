@@ -9729,6 +9729,42 @@ Cursor_FindPermissionText50020(scope, exactName, requireOnScreen := true) {
     return best
 }
 
+; Same as Cursor_FindPermissionText50020 but Name must contain substring (case-insensitive).
+Cursor_FindPermissionText50020Contains(scope, substring, requireOnScreen := true) {
+    try
+        all := scope.FindAll({ Type: 50020 })
+    catch
+        return 0
+    best := 0
+    bestT := -0x7FFFFFFF
+    for t in all {
+        try
+            nm := t.Name
+        catch
+            continue
+        if (!InStr(nm, substring, false))
+            continue
+        if (requireOnScreen) {
+            try {
+                if t.GetPropertyValue(UIA.Property.IsOffscreen)
+                    continue
+            } catch {
+            }
+        }
+        try {
+            br := t.BoundingRectangle
+            if (br.t > bestT) {
+                bestT := br.t
+                best := t
+            }
+        } catch {
+            if (!best)
+                best := t
+        }
+    }
+    return best
+}
+
 ; Click permission-style Text (50020): prefer parent Invoke/Click, same pattern as !n "Review next file".
 Cursor_ClickUiaTextOrParentInvoke(textEl) {
     try {
@@ -9819,6 +9855,41 @@ Cursor_ClickPermissionLabel(variantNames*) {
     return Cursor_ClickUiaTextOrParentInvoke(el)
 }
 
+; Like Cursor_ClickPermissionLabel but matches any Type 50020 label containing substring (e.g. "Allowlist").
+Cursor_ClickPermissionLabelContains(substring) {
+    hwnd := WinExist("ahk_exe Cursor.exe")
+    if (!hwnd)
+        return false
+    try
+        WinActivate(hwnd)
+    catch {
+    }
+    try
+        root := UIA.ElementFromHandle(hwnd)
+    catch
+        return false
+    if (!root)
+        return false
+    Sleep 100
+    scope := root
+    try {
+        panel := root.FindFirst({ AutomationId: "workbench.parts.panel", Type: 50026 })
+        if (panel)
+            scope := panel
+    } catch {
+    }
+    el := Cursor_FindPermissionText50020Contains(scope, substring, true)
+    if (!el)
+        el := Cursor_FindPermissionText50020Contains(scope, substring, false)
+    if (!el)
+        el := Cursor_FindPermissionText50020Contains(root, substring, true)
+    if (!el)
+        el := Cursor_FindPermissionText50020Contains(root, substring, false)
+    if (!el)
+        return false
+    return Cursor_ClickUiaTextOrParentInvoke(el)
+}
+
 ;-------------------------------------------------------------------
 ; Cursor Shortcuts
 ;-------------------------------------------------------------------
@@ -9857,7 +9928,7 @@ ShowCursorShortcutMenu() {
     g_CursorShortcutMenuGui.Add("Text", "w300", "Terminal permissions")
     g_CursorShortcutMenuGui.SetFont("s12 cCDD6F4", "Segoe UI")
     g_CursorShortcutMenuGui.Add("Text", "w300", "[R] Run (terminal permission)")
-    g_CursorShortcutMenuGui.Add("Text", "w300", "[A] Allowlist 'Get-Command'")
+    g_CursorShortcutMenuGui.Add("Text", "w300", "[A] Allowlist (any permission button)")
 
     g_CursorShortcutMenuGui.Add("Text", "w300 h1 Background45475A y+10")
     g_CursorShortcutMenuGui.SetFont("s9 c6C7086", "Segoe UI")
@@ -9915,7 +9986,7 @@ CursorShortcutMenu_HandleKey(key) {
     else if (key = "r")
         CursorShortcutMenu_ActionRun()
     else if (key = "a")
-        CursorShortcutMenu_ActionAllowlistGetCommand()
+        CursorShortcutMenu_ActionAllowlist()
 }
 
 CursorShortcutMenu_Cancel(*) {
@@ -9952,8 +10023,8 @@ CursorShortcutMenu_ActionRun(*) {
     Cursor_ClickPermissionLabel("Run")
 }
 
-CursorShortcutMenu_ActionAllowlistGetCommand(*) {
-    Cursor_ClickPermissionLabel("Allowlist 'Get-Command'", "Allowlist ‘Get-Command’")
+CursorShortcutMenu_ActionAllowlist(*) {
+    Cursor_ClickPermissionLabelContains("Allowlist")
 }
 
 ; Ctrl + H : Smart navigation - Editor → Explorer, Explorer → Reveal in Explorer
