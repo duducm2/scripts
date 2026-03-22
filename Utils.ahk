@@ -1043,17 +1043,40 @@ ActivateClipAngelWithFocusCorrection() {
 ; Clip Angel: Mark Last Clip as Favorite
 ; =============================================================================
 ; Open Clip Angel, mark current (last) clip as favorite, then close.
+; Uses Alt+B to open when closed (same as MergeNonFavoriteClips); if already open,
+; activates only — avoids Alt+V toggle closing the window before Alt+Q.
 MarkLastClipAsFavorite() {
-    ; Step 1: Open Clip Angel
-    Send "!v"
-    Sleep 600
-
-    ; Step 2: Mark current clip as favorite
-    Send "!q"
-    Sleep 600
-
-    ; Step 3: Close Clip Angel
-    Send "!v"
+    if WinExist("ClipAngel") {
+        try {
+            WinActivate("ClipAngel")
+        } catch {
+            ShowCenteredOverlay_Utils("❌ Could not activate Clip Angel.", 2000, BANNER_ACCENT_ERROR)
+            return
+        }
+        if !WinWaitActive("ClipAngel", , 2) {
+            ShowCenteredOverlay_Utils("❌ Clip Angel did not become active in time.", 2000, BANNER_ACCENT_ERROR)
+            return
+        }
+    } else {
+        Send "!b"
+        if !WinWait("ClipAngel", , 2) {
+            ShowCenteredOverlay_Utils("❌ Clip Angel did not appear. Is Clip Angel running?", 2500, BANNER_ACCENT_ERROR)
+            return
+        }
+        try {
+            WinActivate("ClipAngel")
+        } catch {
+            ShowCenteredOverlay_Utils("❌ Could not activate Clip Angel.", 2000, BANNER_ACCENT_ERROR)
+            return
+        }
+        if !WinWaitActive("ClipAngel", , 2) {
+            ShowCenteredOverlay_Utils("❌ Clip Angel did not become active in time.", 2000, BANNER_ACCENT_ERROR)
+            return
+        }
+    }
+    SendInput "!q"
+    Sleep 150
+    EnsureClipAngelClosed()
 }
 
 ; =============================================================================
@@ -8466,7 +8489,13 @@ ShowHotstringSelector() {
 ^!#3:: ToggleOutlookAndTeams()
 ^!#5:: CleanClipboard()
 ^!#6:: Cursor_FindComposerIconAcrossInstances()
+; Same macro; InputLevel 10 + hook so chord wins over other low-level handlers (optional ghosting fallback: ^!#j).
+#InputLevel 10
+#UseHook
 ^!#7:: MarkLastClipAsFavorite()
+^!#j:: MarkLastClipAsFavorite()
+#UseHook False
+#InputLevel 0
 ^!#8:: DesktopToRecycle_Trigger()
 
 ; =============================================================================

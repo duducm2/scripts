@@ -1358,14 +1358,15 @@ ShowGlobalShortcutsHelp() {
     [Ctrl+Alt+Win] - SECONDARY triple modifier
 
 === AVAILABLE SECONDARY (Ctrl+Alt+Win) SLOTS ===
-Letters available: B, C, G, H, I, J, K, M, N, O, P, T, U, V, X, Y, Z
+Letters available: B, C, G, H, I, K, M, N, O, P, T, U, V, X, Y, Z
 [Ctrl+Alt+Win+0] > Project Quick Selector (opens project folder in Cursor)
 [Ctrl+Alt+Win+1] > Cursor AI quick action (Project Selector + Selection Mode)
 [Ctrl+Alt+Win+2] > Quick Update to Your Scripts (HotStrings macro)
 [Ctrl+Alt+Win+3] > Toggle Outlook and Teams (HotStrings macro)
 [Ctrl+Alt+Win+5] > Clean the Clipboard (HotStrings macro)
 [Ctrl+Alt+Win+6] > AI working? Cursor + Gemini (HotStrings macro)
-[Ctrl+Alt+Win+7] > Mark Last Clip as Favorite (HotStrings macro)
+[Ctrl+Alt+Win+7] > Mark Last Clip as Favorite (HotStrings macro; same as Ctrl+Alt+Win+J if 7 chord fails on keyboard)
+[Ctrl+Alt+Win+J] > Mark Last Clip as Favorite (HotStrings macro; alternate for keyboards that ghost Ctrl+Alt+Win+7)
 [Ctrl+Alt+Win+8] > Move Desktop to Recycle Bin (HotStrings macro)
 [Ctrl+Alt+Win+9] > Available for future shortcut
 
