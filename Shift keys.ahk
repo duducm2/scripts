@@ -660,6 +660,7 @@ Explorer (Shift)
 📤 [R]Sha[R]e file
 📌 [P][P]inned item (first in sidebar)
 📌 [L][L]ast item (sidebar)
+📦 [X] WinRAR e[X]tract here (personal); work: stub MsgBox
 )"  ; end Explorer
 
 ; --- Microsoft Paint ------------------------------------------------------
@@ -7925,6 +7926,24 @@ EnsureItemsViewFocus() {
     Send "{Up}"
     Send "{Up}"
     Send "{Up}"
+}
+
+; Shift + X : WinRAR extract to current folder (personal); work PC stub
++x::
+{
+    global IS_WORK_ENVIRONMENT
+    if (IS_WORK_ENVIRONMENT) {
+        MsgBox("An extraction macro for the work environment still needs to be created.", "Shift+X", "Icon!")
+        return
+    }
+    EnsureItemsViewFocus()
+    Sleep 150
+    Send "{AppsKey}"
+    Sleep 250
+    ; WinRAR shell menu accelerators (English); adjust if UI language differs
+    Send "w"
+    Sleep 150
+    Send "x"
 }
 
 #HotIf
