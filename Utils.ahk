@@ -8486,19 +8486,28 @@ ShowHotstringSelector() {
 {
     global g_DictationActive, g_PendingGeminiPromptAfterDictation
     restoreHwnd := WinExist("A")
+    StandardLoadingBar_Show("⏳ Starting dictation and preparing Gemini prompt...", BANNER_ACCENT_INTERMEDIATE, { passive: false
+    })
+    try {
+        ; If dictation is not active, start it once via the canonical hotkey path.
+        if (!g_DictationActive) {
+            Send "#!+0"
+            StandardLoadingBar_Update("⏳ Dictation started. Pasting prompt in Gemini...")
+        } else {
+            StandardLoadingBar_Update("⏳ Dictation already active. Pasting prompt in Gemini...")
+        }
 
-    ; If dictation is not active, start it once via the canonical hotkey path.
-    if (!g_DictationActive) {
-        Send "#!+0"
-    }
+        ; New behavior: no post-stop auto-flow for this shortcut.
+        g_PendingGeminiPromptAfterDictation := false
+        GeminiNavigateFocusAndPasteFirstSnippet(GetAioptPromptText())
 
-    ; New behavior: no post-stop auto-flow for this shortcut.
-    g_PendingGeminiPromptAfterDictation := false
-    GeminiNavigateFocusAndPasteFirstSnippet(GetAioptPromptText())
-
-    if (restoreHwnd && WinExist("ahk_id " restoreHwnd)) {
-        WinActivate("ahk_id " restoreHwnd)
-        WinWaitActive("ahk_id " restoreHwnd, , 0.5)
+        StandardLoadingBar_Update("⏳ Restoring previous window...")
+        if (restoreHwnd && WinExist("ahk_id " restoreHwnd)) {
+            WinActivate("ahk_id " restoreHwnd)
+            WinWaitActive("ahk_id " restoreHwnd, , 0.5)
+        }
+    } finally {
+        StandardLoadingBar_Hide(0)
     }
 }
 
