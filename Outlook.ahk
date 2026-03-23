@@ -30,6 +30,9 @@ global OUTLOOK_ACTIVATE_WAIT_MS := 2000
 global OUTLOOK_VOICE_WAIT_MS := 1500
 global OUTLOOK_BANNER_MS := 2000
 global OUTLOOK_BANNER_FAIL_MS := 3000
+global OUTLOOK_ACTIVATE_PROMPT_TIMEOUT_MS := 6000
+
+global g_OutlookActivatePromptPending := false
 
 ; Voice Aloud option range
 global VOICE_ALOUD_OPTION_MIN := 1
@@ -254,7 +257,80 @@ ActivateOutlookWithFallback(primaryFn, secondaryFn, failureMsg) {
         return
     if secondaryFn()
         return
-    ShowCenteredOverlay_Utils(failureMsg, OUTLOOK_BANNER_FAIL_MS, BANNER_ACCENT_ERROR)
+    PromptActivateOutlookBanner(failureMsg)
+}
+
+GetOutlookLaunchPath() {
+    outlookPath := ""
+    if (IS_WORK_ENVIRONMENT) {
+        outlookPath := "C:\Users\fie7ca\Documents\Atalhos\Microsoft Outlook.lnk"
+        if (!FileExist(outlookPath))
+            outlookPath := ""
+    } else {
+        outlookPath :=
+            "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Microsoft Outlook.lnk"
+        if (!FileExist(outlookPath))
+            outlookPath := ""
+    }
+    return outlookPath
+}
+
+ActivateOrLaunchOutlook() {
+    if ProcessExist(OUTLOOK_EXE) {
+        try {
+            WinActivate("ahk_exe " OUTLOOK_EXE)
+            if WinWaitActive("ahk_exe " OUTLOOK_EXE, "", 2) {
+                ShowCenteredOverlay_Utils("✅ Outlook activated.", OUTLOOK_BANNER_MS, BANNER_ACCENT_SUCCESS)
+                return
+            }
+        } catch {
+        }
+    }
+
+    try {
+        outlookPath := GetOutlookLaunchPath()
+        if (outlookPath != "")
+            Run outlookPath
+        else
+            Run OUTLOOK_EXE
+        ShowCenteredOverlay_Utils("⏳ Activating Outlook...", OUTLOOK_BANNER_MS, BANNER_ACCENT_INTERMEDIATE)
+    } catch {
+        ShowCenteredOverlay_Utils("❌ Failed to activate Outlook.", OUTLOOK_BANNER_FAIL_MS, BANNER_ACCENT_ERROR)
+    }
+}
+
+PromptActivateOutlookBanner(failureMsg) {
+    global g_OutlookActivatePromptPending
+    if g_OutlookActivatePromptPending
+        return
+    g_OutlookActivatePromptPending := true
+
+    message := failureMsg "`n❓ Would you like to activate Outlook?"
+    keyCallbacks := Map(
+        "Y", OutlookActivatePrompt_OnYes,
+        "N", OutlookActivatePrompt_OnNo,
+        "Escape", OutlookActivatePrompt_OnNo
+    )
+    StandardLoadingBar_ShowWithKeys(message, keyCallbacks, OUTLOOK_ACTIVATE_PROMPT_TIMEOUT_MS, 0,
+        OutlookActivatePrompt_OnTimeout, "1E1E2E", 620, 17, "", true, "[Y] Activate Outlook  [N] Cancel")
+}
+
+OutlookActivatePrompt_OnYes(*) {
+    global g_OutlookActivatePromptPending
+    g_OutlookActivatePromptPending := false
+    ActivateOrLaunchOutlook()
+}
+
+OutlookActivatePrompt_OnNo(*) {
+    global g_OutlookActivatePromptPending
+    g_OutlookActivatePromptPending := false
+    ShowCenteredOverlay_Utils("ℹ Outlook activation cancelled.", OUTLOOK_BANNER_MS, BANNER_ACCENT_INTERMEDIATE)
+}
+
+OutlookActivatePrompt_OnTimeout(*) {
+    global g_OutlookActivatePromptPending
+    g_OutlookActivatePromptPending := false
+    ShowCenteredOverlay_Utils("ℹ Outlook activation prompt timed out.", OUTLOOK_BANNER_MS, BANNER_ACCENT_INTERMEDIATE)
 }
 
 ; =============================================================================

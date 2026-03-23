@@ -24,6 +24,7 @@ Three categories define how information is shown to users. Use the same API and 
 - **Loading Indication:** Call `Show` at start, `Update` at milestones, `Hide` in all exit paths. The animated progress bar indicates ongoing work.
 - **Information Only:** Short-lived message; use `ShowCenteredOverlay_Utils(text, duration, bgColor)` for the common case (show + auto-hide after `duration` ms), or `StandardLoadingBar_Show` with `passive: true` plus `Hide(duration)`.
 - **Interactive Input:** Use `StandardLoadingBar_ShowWithKeys`; pass `promptKeys` (e.g. `"[Y] Confirm  [N] Cancel"`) for a fixed bottom strip so the main message and key hints stay clearly separated. Interactive confirmations can use `noBorder: true` and a neutral/dark `barColor` (e.g. `"1E1E2E"`) for a single clean banner (see `DictationGeminiConfirm_ShowAndWait` in Utils.ahk).
+- **Outlook activation-failed prompts:** For mailbox/calendar failures such as `"Outlook mailbox and calendar are not open (activation failed)"`, do **not** use `MsgBox` buttons. Use a standard **Interactive Input** banner that asks whether to activate Outlook (for example: `❓ Would you like to activate Outlook?`) with `ShowWithKeys` + prompt strip (e.g. `"[Y] Activate Outlook  [N] Cancel"`).
 
 ### Banner Types (by category)
 
