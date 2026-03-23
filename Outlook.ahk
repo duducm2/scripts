@@ -34,7 +34,6 @@ global OUTLOOK_ACTIVATE_PROMPT_TIMEOUT_MS := 6000
 global OUTLOOK_SWITCH_VERIFY_TIMEOUT_MS := 700
 
 global g_OutlookActivatePromptPending := false
-global OUTLOOK_DEBUG_LOG_PATH := A_ScriptDir "\debug-3c2287.log"
 
 ; Voice Aloud option range
 global VOICE_ALOUD_OPTION_MIN := 1
@@ -208,15 +207,9 @@ ResolveOutlookReminderHwnd() {
 ; =============================================================================
 ActivateOutlookMailbox() {
     hwnd := ResolveOutlookMailboxHwnd()
-    ; #region agent log
-    DebugLog_Outlook("run2", "H1", "Outlook.ahk:ActivateOutlookMailbox:resolve", "resolved-mailbox-hwnd", "hwnd=" hwnd)
-    ; #endregion
     if (hwnd > 0) {
         try {
             WinActivate("ahk_id " hwnd)
-            ; #region agent log
-            DebugLog_Outlook("run2", "H1", "Outlook.ahk:ActivateOutlookMailbox:activate", "mailbox-activated", "hwnd=" hwnd)
-            ; #endregion
             return true
         } catch {
             OutlookHwndCache.InvalidateMailbox()
@@ -229,15 +222,9 @@ ActivateOutlookMailbox() {
 
 ActivateOutlookCalendar() {
     hwnd := ResolveOutlookCalendarHwnd()
-    ; #region agent log
-    DebugLog_Outlook("run2", "H1", "Outlook.ahk:ActivateOutlookCalendar:resolve", "resolved-calendar-hwnd", "hwnd=" hwnd)
-    ; #endregion
     if (hwnd > 0) {
         try {
             WinActivate("ahk_id " hwnd)
-            ; #region agent log
-            DebugLog_Outlook("run2", "H1", "Outlook.ahk:ActivateOutlookCalendar:activate", "calendar-activated", "hwnd=" hwnd)
-            ; #endregion
             return true
         } catch {
             OutlookHwndCache.InvalidateCalendar()
@@ -274,32 +261,7 @@ ActivateOutlookWithFallback(primaryFn, secondaryFn, failureMsg) {
     PromptActivateOutlookBanner(failureMsg)
 }
 
-DbgJsonEscape_Outlook(value) {
-    s := value ""
-    s := StrReplace(s, "\", "\\")
-    s := StrReplace(s, '"', '\"')
-    s := StrReplace(s, "`r", "\r")
-    s := StrReplace(s, "`n", "\n")
-    return s
-}
-
-DebugLog_Outlook(runId, hypothesisId, location, message, data := "") {
-    global OUTLOOK_DEBUG_LOG_PATH
-    ; #region agent log
-    line := '{"sessionId":"3c2287","runId":"' DbgJsonEscape_Outlook(runId)
-        . '","hypothesisId":"' DbgJsonEscape_Outlook(hypothesisId)
-        . '","location":"' DbgJsonEscape_Outlook(location)
-        . '","message":"' DbgJsonEscape_Outlook(message)
-        . '","data":"' DbgJsonEscape_Outlook(data)
-        . '","timestamp":' A_TickCount '}'
-    FileAppend(line "`n", OUTLOOK_DEBUG_LOG_PATH, "UTF-8")
-    ; #endregion
-}
-
 GetOutlookMainModuleState() {
-    ; #region agent log
-    DebugLog_Outlook("run1", "H1", "Outlook.ahk:GetOutlookMainModuleState:entry", "enter", "activeTitle=" WinGetTitle("A"))
-    ; #endregion
     try {
         if !WinActive("ahk_exe " OUTLOOK_EXE)
             return ""
@@ -315,28 +277,14 @@ GetOutlookMainModuleState() {
         if !calendarItem
             calendarItem := root.FindFirst({ Name: "Calendar", ClassName: "NetUIListViewItem" })
 
-        if (mailItem && mailItem.IsSelected)
-        {
-            ; #region agent log
-            DebugLog_Outlook("run1", "H1", "Outlook.ahk:GetOutlookMainModuleState:mail", "selected-state", "mail")
-            ; #endregion
+        if (mailItem && mailItem.IsSelected) {
             return "mail"
         }
-        if (calendarItem && calendarItem.IsSelected)
-        {
-            ; #region agent log
-            DebugLog_Outlook("run1", "H1", "Outlook.ahk:GetOutlookMainModuleState:calendar", "selected-state", "calendar")
-            ; #endregion
+        if (calendarItem && calendarItem.IsSelected) {
             return "calendar"
         }
     } catch {
-        ; #region agent log
-        DebugLog_Outlook("run1", "H2", "Outlook.ahk:GetOutlookMainModuleState:catch", "uia-error", "exception")
-        ; #endregion
     }
-    ; #region agent log
-    DebugLog_Outlook("run1", "H1", "Outlook.ahk:GetOutlookMainModuleState:unknown", "selected-state", "unknown")
-    ; #endregion
     return ""
 }
 
@@ -383,32 +331,20 @@ VerifyOutlookModuleReached(targetModule, timeoutMs := 700) {
     loop {
         state := GetOutlookMainModuleState()
         if (state = targetModule) {
-            ; #region agent log
-            DebugLog_Outlook("run3", "H6", "Outlook.ahk:VerifyOutlookModuleReached:state", "verified-by-state", "target=" targetModule)
-            ; #endregion
             return true
         }
         if (state = "" && IsOutlookTitleMatchingModule(targetModule)) {
-            ; #region agent log
-            DebugLog_Outlook("run3", "H6", "Outlook.ahk:VerifyOutlookModuleReached:title", "verified-by-title-fallback", "target=" targetModule)
-            ; #endregion
             return true
         }
         if (A_TickCount >= deadline)
             break
         Sleep 50
     }
-    ; #region agent log
-    DebugLog_Outlook("run3", "H6", "Outlook.ahk:VerifyOutlookModuleReached:timeout", "verify-timeout", "target=" targetModule)
-    ; #endregion
     return false
 }
 
 EnsureOutlookMainModule(targetModule) {
     currentModule := GetOutlookMainModuleState()
-    ; #region agent log
-    DebugLog_Outlook("run1", "H3", "Outlook.ahk:EnsureOutlookMainModule:state", "state-check", "target=" targetModule ",current=" currentModule)
-    ; #endregion
     if (currentModule = targetModule)
         return true
 
@@ -416,30 +352,18 @@ EnsureOutlookMainModule(targetModule) {
     if ((currentModule = "mail" && targetModule = "calendar") || (currentModule = "calendar" && targetModule = "mail")) {
         switched := ClickOutlookModuleNavItem(targetModule)
         verified := VerifyOutlookModuleReached(targetModule, OUTLOOK_SWITCH_VERIFY_TIMEOUT_MS)
-        ; #region agent log
-        DebugLog_Outlook("run1", "H4", "Outlook.ahk:EnsureOutlookMainModule:shiftm-semantic", "after-uia-switch", "target=" targetModule ",clicked=" switched ",verified=" verified)
-        ; #endregion
         return switched && verified
     }
 
     ; If selection state cannot be read, try direct UIA click on target module and verify.
     if ClickOutlookModuleNavItem(targetModule) {
         afterClickVerified := VerifyOutlookModuleReached(targetModule, OUTLOOK_SWITCH_VERIFY_TIMEOUT_MS)
-        ; #region agent log
-        DebugLog_Outlook("run1", "H5", "Outlook.ahk:EnsureOutlookMainModule:direct-click", "after-direct-click", "target=" targetModule ",verified=" afterClickVerified)
-        ; #endregion
         return afterClickVerified
     }
-    ; #region agent log
-    DebugLog_Outlook("run1", "H5", "Outlook.ahk:EnsureOutlookMainModule:fail", "switch-failed", "target=" targetModule ",current=" currentModule)
-    ; #endregion
     return false
 }
 
 NavigateOutlookToModule(targetModule, failureMsg) {
-    ; #region agent log
-    DebugLog_Outlook("run2", "H2", "Outlook.ahk:NavigateOutlookToModule:entry", "navigate-entry", "target=" targetModule)
-    ; #endregion
     targetLabel := (targetModule = "mail") ? "Mailbox" : "Calendar"
     StandardLoadingBar_Show("⏳ Outlook: opening " targetLabel "...", BANNER_ACCENT_INTERMEDIATE, { textWidth: 460, fontSize: 17 })
 
@@ -447,9 +371,6 @@ NavigateOutlookToModule(targetModule, failureMsg) {
     calendarActivated := false
     if !mailboxActivated
         calendarActivated := ActivateOutlookCalendar()
-    ; #region agent log
-    DebugLog_Outlook("run2", "H2", "Outlook.ahk:NavigateOutlookToModule:activation-result", "activation-result", "target=" targetModule ",mailboxActivated=" mailboxActivated ",calendarActivated=" calendarActivated)
-    ; #endregion
     if !(mailboxActivated || calendarActivated) {
         StandardLoadingBar_Hide(0)
         PromptActivateOutlookBanner(failureMsg)
@@ -458,9 +379,6 @@ NavigateOutlookToModule(targetModule, failureMsg) {
 
     StandardLoadingBar_Update("🔄 Outlook: switching to " targetLabel "...", BANNER_ACCENT_INTERMEDIATE)
     switched := EnsureOutlookMainModule(targetModule)
-    ; #region agent log
-    DebugLog_Outlook("run2", "H3", "Outlook.ahk:NavigateOutlookToModule:switch-result", "switch-result", "target=" targetModule ",switched=" switched)
-    ; #endregion
     if switched {
         StandardLoadingBar_Update("✅ Outlook: " targetLabel " ready", BANNER_ACCENT_SUCCESS)
         StandardLoadingBar_Hide(220)
