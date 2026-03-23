@@ -31,6 +31,7 @@ global OUTLOOK_VOICE_WAIT_MS := 1500
 global OUTLOOK_BANNER_MS := 2000
 global OUTLOOK_BANNER_FAIL_MS := 3000
 global OUTLOOK_ACTIVATE_PROMPT_TIMEOUT_MS := 6000
+global OUTLOOK_SWITCH_VERIFY_TIMEOUT_MS := 700
 
 global g_OutlookActivatePromptPending := false
 global OUTLOOK_DEBUG_LOG_PATH := A_ScriptDir "\debug-3c2287.log"
@@ -207,9 +208,15 @@ ResolveOutlookReminderHwnd() {
 ; =============================================================================
 ActivateOutlookMailbox() {
     hwnd := ResolveOutlookMailboxHwnd()
+    ; #region agent log
+    DebugLog_Outlook("run2", "H1", "Outlook.ahk:ActivateOutlookMailbox:resolve", "resolved-mailbox-hwnd", "hwnd=" hwnd)
+    ; #endregion
     if (hwnd > 0) {
         try {
             WinActivate("ahk_id " hwnd)
+            ; #region agent log
+            DebugLog_Outlook("run2", "H1", "Outlook.ahk:ActivateOutlookMailbox:activate", "mailbox-activated", "hwnd=" hwnd)
+            ; #endregion
             return true
         } catch {
             OutlookHwndCache.InvalidateMailbox()
@@ -222,9 +229,15 @@ ActivateOutlookMailbox() {
 
 ActivateOutlookCalendar() {
     hwnd := ResolveOutlookCalendarHwnd()
+    ; #region agent log
+    DebugLog_Outlook("run2", "H1", "Outlook.ahk:ActivateOutlookCalendar:resolve", "resolved-calendar-hwnd", "hwnd=" hwnd)
+    ; #endregion
     if (hwnd > 0) {
         try {
             WinActivate("ahk_id " hwnd)
+            ; #region agent log
+            DebugLog_Outlook("run2", "H1", "Outlook.ahk:ActivateOutlookCalendar:activate", "calendar-activated", "hwnd=" hwnd)
+            ; #endregion
             return true
         } catch {
             OutlookHwndCache.InvalidateCalendar()
@@ -351,6 +364,46 @@ ClickOutlookModuleNavItem(targetModule) {
     }
 }
 
+IsOutlookTitleMatchingModule(targetModule) {
+    try {
+        if !WinActive("ahk_exe " OUTLOOK_EXE)
+            return false
+        title := WinGetTitle("A")
+        if (targetModule = "calendar")
+            return InStr(title, "Calendar")
+        if (targetModule = "mail")
+            return !InStr(title, "Calendar")
+    } catch {
+    }
+    return false
+}
+
+VerifyOutlookModuleReached(targetModule, timeoutMs := 700) {
+    deadline := A_TickCount + timeoutMs
+    loop {
+        state := GetOutlookMainModuleState()
+        if (state = targetModule) {
+            ; #region agent log
+            DebugLog_Outlook("run3", "H6", "Outlook.ahk:VerifyOutlookModuleReached:state", "verified-by-state", "target=" targetModule)
+            ; #endregion
+            return true
+        }
+        if (state = "" && IsOutlookTitleMatchingModule(targetModule)) {
+            ; #region agent log
+            DebugLog_Outlook("run3", "H6", "Outlook.ahk:VerifyOutlookModuleReached:title", "verified-by-title-fallback", "target=" targetModule)
+            ; #endregion
+            return true
+        }
+        if (A_TickCount >= deadline)
+            break
+        Sleep 50
+    }
+    ; #region agent log
+    DebugLog_Outlook("run3", "H6", "Outlook.ahk:VerifyOutlookModuleReached:timeout", "verify-timeout", "target=" targetModule)
+    ; #endregion
+    return false
+}
+
 EnsureOutlookMainModule(targetModule) {
     currentModule := GetOutlookMainModuleState()
     ; #region agent log
@@ -362,22 +415,20 @@ EnsureOutlookMainModule(targetModule) {
     ; Reuse Shift+M semantics without key injection: click the target nav item directly.
     if ((currentModule = "mail" && targetModule = "calendar") || (currentModule = "calendar" && targetModule = "mail")) {
         switched := ClickOutlookModuleNavItem(targetModule)
-        Sleep 100
-        afterToggle := GetOutlookMainModuleState()
+        verified := VerifyOutlookModuleReached(targetModule, OUTLOOK_SWITCH_VERIFY_TIMEOUT_MS)
         ; #region agent log
-        DebugLog_Outlook("run1", "H4", "Outlook.ahk:EnsureOutlookMainModule:shiftm-semantic", "after-uia-switch", "target=" targetModule ",clicked=" switched ",after=" afterToggle)
+        DebugLog_Outlook("run1", "H4", "Outlook.ahk:EnsureOutlookMainModule:shiftm-semantic", "after-uia-switch", "target=" targetModule ",clicked=" switched ",verified=" verified)
         ; #endregion
-        return afterToggle = targetModule
+        return switched && verified
     }
 
     ; If selection state cannot be read, try direct UIA click on target module and verify.
     if ClickOutlookModuleNavItem(targetModule) {
-        Sleep 100
-        afterClick := GetOutlookMainModuleState()
+        afterClickVerified := VerifyOutlookModuleReached(targetModule, OUTLOOK_SWITCH_VERIFY_TIMEOUT_MS)
         ; #region agent log
-        DebugLog_Outlook("run1", "H5", "Outlook.ahk:EnsureOutlookMainModule:direct-click", "after-direct-click", "target=" targetModule ",after=" afterClick)
+        DebugLog_Outlook("run1", "H5", "Outlook.ahk:EnsureOutlookMainModule:direct-click", "after-direct-click", "target=" targetModule ",verified=" afterClickVerified)
         ; #endregion
-        return afterClick = targetModule
+        return afterClickVerified
     }
     ; #region agent log
     DebugLog_Outlook("run1", "H5", "Outlook.ahk:EnsureOutlookMainModule:fail", "switch-failed", "target=" targetModule ",current=" currentModule)
@@ -386,14 +437,37 @@ EnsureOutlookMainModule(targetModule) {
 }
 
 NavigateOutlookToModule(targetModule, failureMsg) {
-    if !(ActivateOutlookMailbox() || ActivateOutlookCalendar()) {
+    ; #region agent log
+    DebugLog_Outlook("run2", "H2", "Outlook.ahk:NavigateOutlookToModule:entry", "navigate-entry", "target=" targetModule)
+    ; #endregion
+    targetLabel := (targetModule = "mail") ? "Mailbox" : "Calendar"
+    StandardLoadingBar_Show("⏳ Outlook: opening " targetLabel "...", BANNER_ACCENT_INTERMEDIATE, { textWidth: 460, fontSize: 17 })
+
+    mailboxActivated := ActivateOutlookMailbox()
+    calendarActivated := false
+    if !mailboxActivated
+        calendarActivated := ActivateOutlookCalendar()
+    ; #region agent log
+    DebugLog_Outlook("run2", "H2", "Outlook.ahk:NavigateOutlookToModule:activation-result", "activation-result", "target=" targetModule ",mailboxActivated=" mailboxActivated ",calendarActivated=" calendarActivated)
+    ; #endregion
+    if !(mailboxActivated || calendarActivated) {
+        StandardLoadingBar_Hide(0)
         PromptActivateOutlookBanner(failureMsg)
         return
     }
 
-    if EnsureOutlookMainModule(targetModule)
+    StandardLoadingBar_Update("🔄 Outlook: switching to " targetLabel "...", BANNER_ACCENT_INTERMEDIATE)
+    switched := EnsureOutlookMainModule(targetModule)
+    ; #region agent log
+    DebugLog_Outlook("run2", "H3", "Outlook.ahk:NavigateOutlookToModule:switch-result", "switch-result", "target=" targetModule ",switched=" switched)
+    ; #endregion
+    if switched {
+        StandardLoadingBar_Update("✅ Outlook: " targetLabel " ready", BANNER_ACCENT_SUCCESS)
+        StandardLoadingBar_Hide(220)
         return
+    }
 
+    StandardLoadingBar_Hide(0)
     moduleLabel := (targetModule = "mail") ? "mailbox" : "calendar"
     ShowCenteredOverlay_Utils("❌ Outlook: Could not switch to " moduleLabel ".", OUTLOOK_BANNER_FAIL_MS, BANNER_ACCENT_ERROR)
 }
