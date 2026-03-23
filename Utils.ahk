@@ -2834,15 +2834,7 @@ class D2C_FlowManager {
     ; --- Entry Points ---
 
     StartFromDictation() {
-        ; #region agent log
-        LogDebugSession("run1", "H4", "Utils.ahk:D2C_FlowManager.StartFromDictation", "Entry",
-            "currentPhase=" . this.CurrentPhase)
-        ; #endregion
         if (this.CurrentPhase != "Idle") {
-            ; #region agent log
-            LogDebugSession("run1", "H4", "Utils.ahk:D2C_FlowManager.StartFromDictation", "Rejected non-idle phase",
-                "currentPhase=" . this.CurrentPhase)
-            ; #endregion
             return
         }
         this.Reset()
@@ -2880,18 +2872,12 @@ class D2C_FlowManager {
     }
 
     OnSubmitY(*) {
-        ; #region agent log
-        LogDebugSession("run2", "H6", "Utils.ahk:D2C_FlowManager.OnSubmitY", "User selected Y", "")
-        ; #endregion
         if (this.CurrentPhase != "PromptingSubmit")
             return
         this.ExecuteGeminiSubmit(true)
     }
 
     OnSubmitS(*) {
-        ; #region agent log
-        LogDebugSession("run2", "H6", "Utils.ahk:D2C_FlowManager.OnSubmitS", "User selected S (paste only)", "")
-        ; #endregion
         if (this.CurrentPhase != "PromptingSubmit")
             return
         this.ExecuteGeminiSubmit(false)
@@ -2904,9 +2890,6 @@ class D2C_FlowManager {
     }
 
     OnSubmitTimeout(*) {
-        ; #region agent log
-        LogDebugSession("run2", "H6", "Utils.ahk:D2C_FlowManager.OnSubmitTimeout", "Submit prompt timed out; defaulting to Y", "")
-        ; #endregion
         if (this.CurrentPhase != "PromptingSubmit")
             return
         this.ExecuteGeminiSubmit(true)
@@ -2926,10 +2909,6 @@ class D2C_FlowManager {
         ; Paste to Gemini (launches Chrome if needed); then capture active window as Gemini.
         GeminiNavigateFocusAndPasteFirstSnippet("", false)
         this.GeminiHwnd := WinExist("A")
-        ; #region agent log
-        LogDebugSession("run1", "H5", "Utils.ahk:D2C_FlowManager.ExecuteGeminiSubmit", "After Gemini paste",
-            "autoSubmit=" . (autoSubmit ? 1 : 0) . " geminiHwnd=" . this.GeminiHwnd)
-        ; #endregion
 
         if (autoSubmit) {
             Sleep 1000 ; Pre-enter delay
@@ -8508,37 +8487,18 @@ ShowHotstringSelector() {
     global g_DictationActive, g_PendingGeminiPromptAfterDictation
     restoreHwnd := WinExist("A")
 
-    ; #region agent log
-    LogDebugSession("run3", "H7", "Utils.ahk:^!#4", "Hotkey triggered",
-        "dictationActive=" . (g_DictationActive ? 1 : 0))
-    ; #endregion
-
     ; If dictation is not active, start it once via the canonical hotkey path.
     if (!g_DictationActive) {
-        ; #region agent log
-        LogDebugSession("run3", "H7", "Utils.ahk:^!#4", "Starting dictation via #!+0", "")
-        ; #endregion
         Send "#!+0"
     }
 
     ; New behavior: no post-stop auto-flow for this shortcut.
     g_PendingGeminiPromptAfterDictation := false
-    ; #region agent log
-    LogDebugSession("run3", "H8", "Utils.ahk:^!#4", "Navigating to Gemini and pasting AI prompt", "")
-    ; #endregion
     GeminiNavigateFocusAndPasteFirstSnippet(GetAioptPromptText())
 
     if (restoreHwnd && WinExist("ahk_id " restoreHwnd)) {
         WinActivate("ahk_id " restoreHwnd)
         WinWaitActive("ahk_id " restoreHwnd, , 0.5)
-        ; #region agent log
-        LogDebugSession("run3", "H9", "Utils.ahk:^!#4", "Restored focus to original window",
-            "restoreHwnd=" . restoreHwnd)
-        ; #endregion
-    } else {
-        ; #region agent log
-        LogDebugSession("run3", "H9", "Utils.ahk:^!#4", "Could not restore original window", "")
-        ; #endregion
     }
 }
 
@@ -9007,18 +8967,6 @@ LogDebug(sessionId, runId, hypothesisId, location, message, data := "") {
     }
 }
 
-LogDebugSession(runId, hypothesisId, location, message, data := "") {
-    logPath := A_ScriptDir "\debug-b6daec.log"
-    safeData := StrReplace(data, '"', "'")
-    entry := '{"sessionId":"b6daec","runId":"' . runId . '","hypothesisId":"' . hypothesisId
-        . '","location":"' . location . '","message":"' . message . '","data":"' . safeData
-        . '","timestamp":' . A_TickCount . '}'
-    try {
-        FileAppend(entry . "`n", logPath)
-    } catch {
-    }
-}
-
 ; Constants for dictation indicator
 global DICTATION_SQUARE_SIZE := 150  ; 3x bigger (was 50)
 global DICTATION_PULSE_MIN := 50      ; Minimum opacity (~20%)
@@ -9292,10 +9240,6 @@ PlayDictationCompletionChime(*) {
         g_PendingGeminiPromptAfterDictation := false  ; Claim atomically so only one invocation shows the banner
         Critical "Off"
         ; #region agent log
-        LogDebugSession("run1", "H3", "Utils.ahk:PlayDictationCompletionChime", "Post-claim pending Gemini state",
-            "pendingGemini=" . (pendingGemini ? 1 : 0) . " pendingAction=" . pendingAction)
-        ; #endregion
-        ; #region agent log
         DebugBannerLog("Utils.ahk:PlayDictationCompletionChime", "Completion chime branch",
             "chimeShouldPlay=1 pendingAction=" . pendingAction . " pendingGemini=" . (pendingGemini ? 1 : 0), "H2")
         ; #endregion
@@ -9482,18 +9426,12 @@ OnExit(CleanupDictationIndicator)
     static isProcessing := false
 
     if (!g_DictationHotkeyIsOwner) {
-        ; #region agent log
-        LogDebugSession("run1", "H2", "Utils.ahk:~#!+0", "Ignored because hotkey owner is false", "")
-        ; #endregion
         return
     }
 
     ; Skip when script sends #!+0 programmatically
     if (g_ProgrammaticDictationStop) {
         g_ProgrammaticDictationStop := false
-        ; #region agent log
-        LogDebugSession("run1", "H2", "Utils.ahk:~#!+0", "Ignored due to programmatic stop flag", "")
-        ; #endregion
         return
     }
 
@@ -9508,10 +9446,6 @@ OnExit(CleanupDictationIndicator)
     ; Capture before KeyWait: check timer may clear g_DictationActive when Recording window closes,
     ; so by the time we reach if/else it can be false even when user intended to stop.
     dictationWasActiveOnKeyPress := g_DictationActive
-    ; #region agent log
-    LogDebugSession("run1", "H2", "Utils.ahk:~#!+0", "Before key wait",
-        "dictationWasActiveOnKeyPress=" . (dictationWasActiveOnKeyPress ? 1 : 0))
-    ; #endregion
 
     keyWaitStart := A_TickCount
     KeyWait("0", "L")
