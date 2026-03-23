@@ -1119,7 +1119,7 @@ ClipAngel_FavoriteCellIsOn(cell) {
             return ts = UIA.ToggleState.On
     } catch {
     }
-    ; Value only for read-only grid cells — Legacy CHECKED (0x10) false-positives skip Alt+Q (debug a7d7e2).
+    ; Value only for read-only grid cells — Legacy CHECKED (0x10) often false-positives on DataGrid cells.
     try {
         v := cell.Value
         if (v = "true" || v = "True" || v = "1")
@@ -1151,83 +1151,35 @@ ClipAngel_WaitChordModifiersReleased() {
     KeyWait "RWin", tw
 }
 
-; #region agent log
-ClipAngel_DebugLog_a7d7e2(hypothesisId, message, dataJson := "{}") {
-    try {
-        SplitPath(A_LineFile, , &utilsDir)
-        payload := "{`"sessionId`":`"a7d7e2`",`"timestamp`":" . A_TickCount . ",`"hypothesisId`":`"" . DebugJsonEscape(
-            hypothesisId) . "`",`"location`":`"Utils.ahk MarkLastClipAsFavorite`",`"message`":`"" . DebugJsonEscape(
-                message) . "`",`"data`":`"" . DebugJsonEscape(dataJson) . "`"}"
-        seen := Map()
-        for logPath in [utilsDir "\debug-a7d7e2.log", A_ScriptDir "\debug-a7d7e2.log", A_Temp "\debug-a7d7e2.log"] {
-            lp := StrLower(logPath)
-            if seen.Has(lp)
-                continue
-            seen[lp] := true
-            try FileAppend(payload . "`n", logPath, "UTF-8")
-        }
-        OutputDebug "a7d7e2 " . message . " " . dataJson
-    } catch {
-    }
-}
-; #endregion
-
-ClipAngel_DebugKeyStatesSnapshot() {
-    return "LWin=" . GetKeyState("LWin", "P") . " RWin=" . GetKeyState("RWin", "P") . " LCtrl=" . GetKeyState(
-        "LControl", "P") . " RCtrl=" . GetKeyState("RControl", "P") . " LAlt=" . GetKeyState("LAlt", "P") . " RAlt=" .
-    GetKeyState("RAlt", "P")
-}
-
 ; target: "first" = top grid row (Row 0 / newest), "last" = last row returned by UIA FindAll
 ; (virtualized lists may only expose visible rows — use "first" for reliable top-clip behavior).
 MarkLastClipAsFavorite(target := "first") {
-    ; #region agent log
-    ClipAngel_DebugLog_a7d7e2("H_entry", "mark_start", "{`"target`":`"" . target . "`"}")
-    ; #endregion
     ActivateClipAngelWithFocusCorrection()
     hwnd := ClipAngel_MainHwnd()
     if !hwnd {
-        ; #region agent log
-        ClipAngel_DebugLog_a7d7e2("H_branch", "exit_no_hwnd", "{}")
-        ; #endregion
         ShowCenteredOverlay_Utils("❌ Clip Angel did not open.", 2000, BANNER_ACCENT_ERROR)
         return
     }
-    ; #region agent log
-    ClipAngel_DebugLog_a7d7e2("H_branch", "main_hwnd_ok", "{`"hwnd`":" . hwnd . "}")
-    ; #endregion
     try {
         try WinActivate("ahk_id " hwnd)
         catch {
-            ; #region agent log
-            ClipAngel_DebugLog_a7d7e2("H_branch", "exit_winactivate_fail", "{}")
-            ; #endregion
             ShowCenteredOverlay_Utils("❌ Clip Angel window not found.", 2000, BANNER_ACCENT_ERROR)
             EnsureClipAngelClosed()
             return
         }
         if !WinWaitActive("ahk_id " hwnd, , 2) {
-            ; #region agent log
-            ClipAngel_DebugLog_a7d7e2("H_branch", "exit_not_active", "{}")
-            ; #endregion
             ShowCenteredOverlay_Utils("❌ Clip Angel did not become active.", 2000, BANNER_ACCENT_ERROR)
             EnsureClipAngelClosed()
             return
         }
         el := UIA.ElementFromHandle(hwnd)
         if !el {
-            ; #region agent log
-            ClipAngel_DebugLog_a7d7e2("H_branch", "exit_no_uia_root", "{}")
-            ; #endregion
             ShowCenteredOverlay_Utils("❌ Clip Angel UI not available.", 2000, BANNER_ACCENT_ERROR)
             EnsureClipAngelClosed()
             return
         }
         dataGrid := ClipAngel_UiaFindFirst(el, { Type: 50036, AutomationId: "dataGridView" })
         if !dataGrid {
-            ; #region agent log
-            ClipAngel_DebugLog_a7d7e2("H_branch", "exit_no_datagrid", "{}")
-            ; #endregion
             ShowCenteredOverlay_Utils("❌ Clip list not found (Window tab may still have focus).", 2500,
                 BANNER_ACCENT_ERROR)
             EnsureClipAngelClosed()
@@ -1239,9 +1191,6 @@ MarkLastClipAsFavorite(target := "first") {
             rows := 0
         }
         if !rows || rows.Length < 1 {
-            ; #region agent log
-            ClipAngel_DebugLog_a7d7e2("H_branch", "exit_no_rows", "{}")
-            ; #endregion
             ShowCenteredOverlay_Utils("❌ No clips in list.", 2000, BANNER_ACCENT_ERROR)
             EnsureClipAngelClosed()
             return
@@ -1264,20 +1213,8 @@ MarkLastClipAsFavorite(target := "first") {
         } catch {
         }
         favCell := ClipAngel_FindFavoriteCell(rowTarget)
-        if !favCell {
-            ; #region agent log
-            ClipAngel_DebugLog_a7d7e2("H_fav", "cell_not_found_send_altq_anyway", "{}")
-            ; #endregion
-            ; Shortcut path: UIA names vary by locale; still send Alt+Q on focused row (Junior spec).
-        } else {
-            favOn := ClipAngel_FavoriteCellIsOn(favCell)
-            ; #region agent log
-            ClipAngel_DebugLog_a7d7e2("H_fav", "precheck", "{`"isOn`":`"" . (favOn ? "true" : "false") . "`"}")
-            ; #endregion
-            if favOn {
-                ; #region agent log
-                ClipAngel_DebugLog_a7d7e2("H_branch", "exit_already_favorite", "{}")
-                ; #endregion
+        if favCell {
+            if ClipAngel_FavoriteCellIsOn(favCell) {
                 ShowCenteredOverlay_Utils("✅ Selected clip is already a favorite.", 1500, BANNER_ACCENT_SUCCESS)
                 EnsureClipAngelClosed()
                 return
@@ -1286,35 +1223,17 @@ MarkLastClipAsFavorite(target := "first") {
         if !WinActive("ahk_id " hwnd) {
             try WinActivate("ahk_id " hwnd)
             if !WinWaitActive("ahk_id " hwnd, , 2) {
-                ; #region agent log
-                ClipAngel_DebugLog_a7d7e2("H_branch", "exit_lost_focus", "{}")
-                ; #endregion
                 ShowCenteredOverlay_Utils("❌ Clip Angel lost focus before Alt+Q.", 2000, BANNER_ACCENT_ERROR)
                 EnsureClipAngelClosed()
                 return
             }
         }
-        ; #region agent log
-        ClipAngel_DebugLog_a7d7e2("H_chord", "keys_before_keywait", ClipAngel_DebugKeyStatesSnapshot())
-        ; #endregion
         ClipAngel_WaitChordModifiersReleased()
-        ; #region agent log
-        ClipAngel_DebugLog_a7d7e2("H_chord", "keys_after_keywait", ClipAngel_DebugKeyStatesSnapshot())
-        ; #endregion
         ClipAngel_ReleaseChordModifiersForSend()
-        ; #region agent log
-        ClipAngel_DebugLog_a7d7e2("H_chord", "keys_after_release", ClipAngel_DebugKeyStatesSnapshot())
-        ; #endregion
         SendInput "!q"
-        ; #region agent log
-        ClipAngel_DebugLog_a7d7e2("H_chord", "sent_altq_sendinput", "{}")
-        ; #endregion
         ShowCenteredOverlay_Utils("✅ Sent Alt+Q — marked focused clip as favorite.", 1500, BANNER_ACCENT_SUCCESS)
         EnsureClipAngelClosed()
     } catch Error as e {
-        ; #region agent log
-        ClipAngel_DebugLog_a7d7e2("H_err", "exception", "{`"msg`":`"" . DebugJsonEscape(e.Message) . "`"}")
-        ; #endregion
         ShowCenteredOverlay_Utils("❌ Mark favorite failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
         EnsureClipAngelClosed()
     }
