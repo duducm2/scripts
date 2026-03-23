@@ -33,6 +33,7 @@ global OUTLOOK_BANNER_FAIL_MS := 3000
 global OUTLOOK_ACTIVATE_PROMPT_TIMEOUT_MS := 6000
 
 global g_OutlookActivatePromptPending := false
+global OUTLOOK_DEBUG_LOG_PATH := A_ScriptDir "\debug-3c2287.log"
 
 ; Voice Aloud option range
 global VOICE_ALOUD_OPTION_MIN := 1
@@ -260,6 +261,143 @@ ActivateOutlookWithFallback(primaryFn, secondaryFn, failureMsg) {
     PromptActivateOutlookBanner(failureMsg)
 }
 
+DbgJsonEscape_Outlook(value) {
+    s := value ""
+    s := StrReplace(s, "\", "\\")
+    s := StrReplace(s, '"', '\"')
+    s := StrReplace(s, "`r", "\r")
+    s := StrReplace(s, "`n", "\n")
+    return s
+}
+
+DebugLog_Outlook(runId, hypothesisId, location, message, data := "") {
+    global OUTLOOK_DEBUG_LOG_PATH
+    ; #region agent log
+    line := '{"sessionId":"3c2287","runId":"' DbgJsonEscape_Outlook(runId)
+        . '","hypothesisId":"' DbgJsonEscape_Outlook(hypothesisId)
+        . '","location":"' DbgJsonEscape_Outlook(location)
+        . '","message":"' DbgJsonEscape_Outlook(message)
+        . '","data":"' DbgJsonEscape_Outlook(data)
+        . '","timestamp":' A_TickCount '}'
+    FileAppend(line "`n", OUTLOOK_DEBUG_LOG_PATH, "UTF-8")
+    ; #endregion
+}
+
+GetOutlookMainModuleState() {
+    ; #region agent log
+    DebugLog_Outlook("run1", "H1", "Outlook.ahk:GetOutlookMainModuleState:entry", "enter", "activeTitle=" WinGetTitle("A"))
+    ; #endregion
+    try {
+        if !WinActive("ahk_exe " OUTLOOK_EXE)
+            return ""
+        root := UIA.ElementFromHandle(WinExist("A"))
+        if !root
+            return ""
+
+        mailItem := root.FindFirst({ Name: "Mail", Type: "50007" })
+        if !mailItem
+            mailItem := root.FindFirst({ Name: "Mail", ClassName: "NetUIListViewItem" })
+
+        calendarItem := root.FindFirst({ Name: "Calendar", Type: "50007" })
+        if !calendarItem
+            calendarItem := root.FindFirst({ Name: "Calendar", ClassName: "NetUIListViewItem" })
+
+        if (mailItem && mailItem.IsSelected)
+        {
+            ; #region agent log
+            DebugLog_Outlook("run1", "H1", "Outlook.ahk:GetOutlookMainModuleState:mail", "selected-state", "mail")
+            ; #endregion
+            return "mail"
+        }
+        if (calendarItem && calendarItem.IsSelected)
+        {
+            ; #region agent log
+            DebugLog_Outlook("run1", "H1", "Outlook.ahk:GetOutlookMainModuleState:calendar", "selected-state", "calendar")
+            ; #endregion
+            return "calendar"
+        }
+    } catch {
+        ; #region agent log
+        DebugLog_Outlook("run1", "H2", "Outlook.ahk:GetOutlookMainModuleState:catch", "uia-error", "exception")
+        ; #endregion
+    }
+    ; #region agent log
+    DebugLog_Outlook("run1", "H1", "Outlook.ahk:GetOutlookMainModuleState:unknown", "selected-state", "unknown")
+    ; #endregion
+    return ""
+}
+
+ClickOutlookModuleNavItem(targetModule) {
+    try {
+        if !WinActive("ahk_exe " OUTLOOK_EXE)
+            return false
+        root := UIA.ElementFromHandle(WinExist("A"))
+        if !root
+            return false
+
+        targetName := (targetModule = "mail") ? "Mail" : "Calendar"
+        targetItem := root.FindFirst({ Name: targetName, Type: "50007" })
+        if !targetItem
+            targetItem := root.FindFirst({ Name: targetName, ClassName: "NetUIListViewItem" })
+        if !targetItem
+            return false
+
+        targetItem.SetFocus()
+        Sleep 50
+        targetItem.Click()
+        return true
+    } catch {
+        return false
+    }
+}
+
+EnsureOutlookMainModule(targetModule) {
+    currentModule := GetOutlookMainModuleState()
+    ; #region agent log
+    DebugLog_Outlook("run1", "H3", "Outlook.ahk:EnsureOutlookMainModule:state", "state-check", "target=" targetModule ",current=" currentModule)
+    ; #endregion
+    if (currentModule = targetModule)
+        return true
+
+    ; Reuse Shift+M semantics without key injection: click the target nav item directly.
+    if ((currentModule = "mail" && targetModule = "calendar") || (currentModule = "calendar" && targetModule = "mail")) {
+        switched := ClickOutlookModuleNavItem(targetModule)
+        Sleep 100
+        afterToggle := GetOutlookMainModuleState()
+        ; #region agent log
+        DebugLog_Outlook("run1", "H4", "Outlook.ahk:EnsureOutlookMainModule:shiftm-semantic", "after-uia-switch", "target=" targetModule ",clicked=" switched ",after=" afterToggle)
+        ; #endregion
+        return afterToggle = targetModule
+    }
+
+    ; If selection state cannot be read, try direct UIA click on target module and verify.
+    if ClickOutlookModuleNavItem(targetModule) {
+        Sleep 100
+        afterClick := GetOutlookMainModuleState()
+        ; #region agent log
+        DebugLog_Outlook("run1", "H5", "Outlook.ahk:EnsureOutlookMainModule:direct-click", "after-direct-click", "target=" targetModule ",after=" afterClick)
+        ; #endregion
+        return afterClick = targetModule
+    }
+    ; #region agent log
+    DebugLog_Outlook("run1", "H5", "Outlook.ahk:EnsureOutlookMainModule:fail", "switch-failed", "target=" targetModule ",current=" currentModule)
+    ; #endregion
+    return false
+}
+
+NavigateOutlookToModule(targetModule, failureMsg) {
+    if !(ActivateOutlookMailbox() || ActivateOutlookCalendar()) {
+        PromptActivateOutlookBanner(failureMsg)
+        return
+    }
+
+    if EnsureOutlookMainModule(targetModule)
+        return
+
+    moduleLabel := (targetModule = "mail") ? "mailbox" : "calendar"
+    ShowCenteredOverlay_Utils("❌ Outlook: Could not switch to " moduleLabel ".", OUTLOOK_BANNER_FAIL_MS, BANNER_ACCENT_ERROR)
+}
+
 GetOutlookLaunchPath() {
     outlookPath := ""
     if (IS_WORK_ENVIRONMENT) {
@@ -340,7 +478,7 @@ OutlookActivatePrompt_OnTimeout(*) {
 ; =============================================================================
 #!+b::
 {
-    ActivateOutlookWithFallback(ActivateOutlookMailbox, ActivateOutlookCalendar,
+    NavigateOutlookToModule("mail",
         "⚠ Outlook: Mailbox and Calendar are not open (activation failed)")
 }
 
@@ -351,7 +489,7 @@ OutlookActivatePrompt_OnTimeout(*) {
 ; =============================================================================
 #!+g::
 {
-    ActivateOutlookWithFallback(ActivateOutlookCalendar, ActivateOutlookMailbox,
+    NavigateOutlookToModule("calendar",
         "⚠ Outlook: Calendar and Mailbox are not open (activation failed)")
 }
 
