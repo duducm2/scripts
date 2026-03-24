@@ -4660,3 +4660,11 @@
 {"id":"log_7660375_6815","timestamp":7660375,"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
 {"id":"log_7670546_8700","timestamp":7670546,"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
 {"id":"log_7670625_6794","timestamp":7670625,"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"entry","data":{"pathLen":102,"dirExists":1},"hypothesisId":"H3","timestamp":25782671}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"after FindAndActivate","data":{"targetHwnd":2886678},"hypothesisId":"H3","timestamp":25782812}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"after FocusCursorAITextField","data":{"focusOk":1},"hypothesisId":"H4","timestamp":25783875}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"return true","data":{},"hypothesisId":"H3","timestamp":25784015}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"entry","data":{"pathLen":33,"dirExists":1},"hypothesisId":"H3","timestamp":27171375}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"after FindAndActivate","data":{"targetHwnd":725148},"hypothesisId":"H3","timestamp":27171484}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"after FocusCursorAITextField","data":{"focusOk":1},"hypothesisId":"H4","timestamp":27172531}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"return true","data":{},"hypothesisId":"H3","timestamp":27172625}

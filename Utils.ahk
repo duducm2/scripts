@@ -2985,6 +2985,17 @@ HotstringGeminiBanner_Hide(*) {
     StandardLoadingBar_Hide(0)
 }
 
+; Dictation → Gemini: join preset prompt and dictated text for InsertText into Gemini prompt field.
+D2C_CombinePresetWithDictation(presetText, dictationText) {
+    p := Trim(presetText)
+    d := Trim(dictationText)
+    if (p = "")
+        return d
+    if (d = "")
+        return p
+    return p . "`n`n" . d
+}
+
 ; =============================================================================
 ; =============================================================================
 ; D2C_FlowManager: Unified state machine for Dictation → Gemini → Cursor flow.
@@ -3041,6 +3052,8 @@ class D2C_FlowManager {
     PromptForGeminiSubmit() {
         this.CurrentPhase := "PromptingSubmit"
         keyCallbacks := Map(
+            "G", this.OnSubmitG.Bind(this),
+            "A", this.OnSubmitA.Bind(this),
             "Y", this.OnSubmitY.Bind(this),
             "S", this.OnSubmitS.Bind(this),
             "N", this.OnSubmitN.Bind(this)
@@ -3052,8 +3065,20 @@ class D2C_FlowManager {
             this.OriginHwnd,
             this.OnSubmitTimeout.Bind(this),
             "1E1E2E", 380, 17, "", true,
-            "[Y] Send  [S] Paste only  [N] Cancel"
+            "[G] Grammar  [A] AI opt  [Y] Send  [S] Paste only  [N] Cancel"
         )
+    }
+
+    OnSubmitG(*) {
+        if (this.CurrentPhase != "PromptingSubmit")
+            return
+        this.ExecuteGeminiSubmit(true, "grammar")
+    }
+
+    OnSubmitA(*) {
+        if (this.CurrentPhase != "PromptingSubmit")
+            return
+        this.ExecuteGeminiSubmit(true, "aiopt")
     }
 
     OnSubmitY(*) {
@@ -3082,7 +3107,8 @@ class D2C_FlowManager {
 
     ; --- Phase 2: Submit Execute ---
 
-    ExecuteGeminiSubmit(autoSubmit := true) {
+    ; presetMode: "" = Clip Angel first snippet; "grammar" | "aiopt" = preset from prompt/*.txt + clipboard dictation via InsertText.
+    ExecuteGeminiSubmit(autoSubmit := true, presetMode := "") {
         this.CurrentPhase := "Submitting"
         StandardLoadingBar_CloseKeysOverlay()
         StandardLoadingBar_Hide(0)
@@ -3092,7 +3118,17 @@ class D2C_FlowManager {
         PlayPreMovementWarning("Gemini")
 
         ; Paste to Gemini (launches Chrome if needed); then capture active window as Gemini.
-        GeminiNavigateFocusAndPasteFirstSnippet("", false)
+        optionalSnippet := ""
+        if (presetMode = "grammar" || presetMode = "aiopt") {
+            dictation := ""
+            try dictation := A_Clipboard
+            preset := presetMode = "grammar" ? GetGrammarPromptText() : GetAioptPromptText()
+            optionalSnippet := D2C_CombinePresetWithDictation(preset, dictation)
+        }
+        if (optionalSnippet != "")
+            GeminiNavigateFocusAndPasteFirstSnippet(optionalSnippet, false)
+        else
+            GeminiNavigateFocusAndPasteFirstSnippet("", false)
         this.GeminiHwnd := WinExist("A")
 
         if (autoSubmit) {
@@ -7563,6 +7599,16 @@ GeminiNavigateFocusAndPasteFirstSnippet(optionalPromptText := "", switchToFirstT
     ; Same sound as when opening Gemini (focus/paste feedback)
     if (IsSoundEnabled())
         SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
+}
+
+; Returns grammar preset (from prompt/grammar.txt or fallback). Matches InitHotstringsCheatSheet catch for :o:cgrammar.
+GetGrammarPromptText() {
+    promptDir := A_ScriptDir "\prompt"
+    try {
+        return FileRead(promptDir "\grammar.txt")
+    } catch {
+        return "Correct grammar, spelling, punctuation, and casing. Give back only the text.`n"
+    }
 }
 
 ; Returns the AI Text Optimizer prompt text (from prompt/aiopt.txt or fallback). Used by Ctrl+Alt+Win+4 and L+4 flow.
