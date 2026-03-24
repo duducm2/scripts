@@ -6,7 +6,7 @@ A shared UI component for **loading indication**, **information-only messages**,
 
 - **Single shared component** for loading, information, and user-input feedback across all AHK scripts
 - **Replaces ad-hoc banners and overlays** with a consistent user experience
-- **Monitor-aware positioning** – centers on the active window's monitor or the primary monitor
+- **Monitor-aware positioning** – centers on the active window's monitor or the primary monitor; optional **active-monitor tracking** (`trackActiveMonitor` on interactive banners) recenters the bar when the foreground window moves to another display while the banner is open (dictation and Gemini transfer flows).
 - **Three display categories** – Loading Indication (progress bar), Information Only (static message), Interactive Input (key press + optional timeout)
 - **Standard font size** – 17px for all banners and loading indicators (except `ShowSingleCharTabBanner_Utils`, which keeps 72px)
 - **Emoji** – every banner message must start with an emoji (e.g. ⏳ loading, ✅ success, ❌ error, ❓ user input)
@@ -57,10 +57,10 @@ All new banner call sites should pass one of these constants (e.g. as `bgColor` 
 
 | Function                              | Signature                                                                                                                                  | Purpose                                                                                                                                 |
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `StandardLoadingBar_Show`             | `(state, barColor, options)`                                                                                                               | Show overlay; options: passive, centerOnHwnd, textWidth, fontSize, alpha, passiveBgColor, noBorder, **promptKeys** (fixed bottom strip) |
+| `StandardLoadingBar_Show`             | `(state, barColor, options)`                                                                                                               | Show overlay; options: passive, centerOnHwnd, textWidth, fontSize, alpha, passiveBgColor, noBorder, **promptKeys**, **trackActiveMonitor** |
 | `StandardLoadingBar_Update`           | `(state, barColor)`                                                                                                                        | Update text/progress of visible bar (main message only; prompt strip is not updated)                                                    |
 | `StandardLoadingBar_Hide`             | `(delayMs)`                                                                                                                                | Hide bar; `delayMs > 0` shows briefly before hiding                                                                                     |
-| `StandardLoadingBar_ShowWithKeys`     | `(state, keyCallbacks, timeoutMs, centerOnHwnd, timeoutCallback, barColor, textWidth, fontSize, passiveBgColor, noBorder, **promptKeys**)` | Show with hotkey handlers, optional timeout, and optional fixed bottom strip for key hints                                              |
+| `StandardLoadingBar_ShowWithKeys`     | `(state, keyCallbacks, timeoutMs, centerOnHwnd, timeoutCallback, barColor, textWidth, fontSize, passiveBgColor, noBorder, **promptKeys**, trackActiveMonitor)` | Show with hotkey handlers; optional **trackActiveMonitor** (default false) to follow the foreground window's monitor while visible |
 | `StandardLoadingBar_CloseKeysOverlay` | (internal)                                                                                                                                 | Unregister keys, cancel timeout, destroy overlay                                                                                        |
 
 ### Options Reference
@@ -75,6 +75,7 @@ All new banner call sites should pass one of these constants (e.g. as `bgColor` 
 | `passiveBgColor` | string  | ""      | Border accent color. Prefer `BANNER_ACCENT_SUCCESS` / `BANNER_ACCENT_ERROR` / `BANNER_ACCENT_INTERMEDIATE`. Overlay background stays dark. |
 | `noBorder`       | boolean | false   | Skip yellow border frame (single GUI); used for dictation confirm and other minimal interactive banners                                    |
 | `promptKeys`     | string  | ""      | Optional fixed bottom strip text (e.g. "[Y] Confirm [N] Cancel"); Interactive Input category                                               |
+| `trackActiveMonitor` | boolean | false | When true with `centerOnHwnd` 0, starts a short timer to reposition the overlay when the foreground window's monitor changes (dictation/Gemini/Cursor-transfer prompts). Stopped when the bar hides. |
 
 ## Helper Wrappers (Utils.ahk)
 

@@ -2003,7 +2003,7 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
         g_CursorTransferSelectorGui.Add("Text", "w" . transferSelGuiW . " Center", "Press 1-9 | N or Esc to cancel")
         g_CursorTransferSelectorGui.Show("AutoSize Hide")
         g_CursorTransferSelectorGui.GetPos(&gx, &gy, &gw, &gh)
-        ; Center on the monitor containing centerOnHwnd so the anchored visual context stays consistent.
+        ; Center on centerOnHwnd's monitor when provided; otherwise foreground window's monitor (dictation / transfer flow).
         monitorIndex := 1
         if (centerOnHwnd && WinExist("ahk_id " centerOnHwnd)) {
             rect := Buffer(16, 0)
@@ -2020,6 +2020,8 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
                     }
                 }
             }
+        } else {
+            monitorIndex := GetMonitorIndexForForeground_StandardBar()
         }
         MonitorGetWorkArea(monitorIndex, &ml, &mt, &mr, &mb)
         mw := mr - ml
@@ -2057,11 +2059,28 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
     }
     start := A_TickCount
     timeoutMs := 30000
+    lastCursorTransferMonitorIdx := monitorIndex
     try {
         while (g_CursorTransferSelectorResult = "") {
             if ((A_TickCount - start) >= timeoutMs)
                 break
             Sleep 50
+            if (IsObject(g_CursorTransferSelectorGui)) {
+                curIdx := GetMonitorIndexForForeground_StandardBar()
+                if (curIdx != lastCursorTransferMonitorIdx) {
+                    lastCursorTransferMonitorIdx := curIdx
+                    MonitorGetWorkArea(curIdx, &ml, &mt, &mr, &mb)
+                    mw := mr - ml
+                    mh := mb - mt
+                    try {
+                        g_CursorTransferSelectorGui.GetPos(&gxOld, &gyOld, &gw, &gh)
+                        cx := ml + (mw - gw) // 2
+                        cy := mt + (mh - gh) // 2
+                        g_CursorTransferSelectorGui.Show("x" . cx . " y" . cy)
+                    } catch {
+                    }
+                }
+            }
         }
     } catch as loopErr {
         ; ignore loop exceptions
@@ -2626,6 +2645,8 @@ global g_StandardLoadingBarIsKeysOverlay := false
 global g_StandardLoadingBarKeysHotkeys := []
 global g_StandardLoadingBarKeysTimeoutTimer := ""
 global g_StandardLoadingBarBorderGui := 0
+global g_StandardLoadingBarTrackTimer := ""
+global g_StandardLoadingBarLastForegroundMonitorIdx := 0
 
 ; Return work area { left, top, right, bottom } for the monitor containing hwnd, or "" on failure.
 GetWorkAreaForWindow_StandardBar(hwnd) {
@@ -2690,6 +2711,90 @@ GetActiveMonitorWorkArea_StandardBar(&left, &top, &right, &bottom) {
     bottom := mBottom
 }
 
+; 1-based monitor index for the monitor containing the center of the foreground window; 1 if unknown.
+GetMonitorIndexForForeground_StandardBar() {
+    activeWin := 0
+    try activeWin := WinGetID("A")
+    catch
+        activeWin := 0
+    if (!activeWin)
+        return 1
+    rect := Buffer(16, 0)
+    if (!DllCall("GetWindowRect", "ptr", activeWin, "ptr", rect))
+        return 1
+    winLeft := NumGet(rect, 0, "int")
+    winTop := NumGet(rect, 4, "int")
+    winRight := NumGet(rect, 8, "int")
+    winBottom := NumGet(rect, 12, "int")
+    centerX := winLeft + (winRight - winLeft) // 2
+    centerY := winTop + (winBottom - winTop) // 2
+    monitorCount := MonitorGetCount()
+    loop monitorCount {
+        idx := A_Index
+        MonitorGetWorkArea(idx, &l, &t, &r, &b)
+        if (centerX >= l && centerX <= r && centerY >= t && centerY <= b)
+            return idx
+    }
+    return 1
+}
+
+StandardLoadingBar_StopActiveMonitorTracking() {
+    global g_StandardLoadingBarTrackTimer, g_StandardLoadingBarLastForegroundMonitorIdx
+    try SetTimer(g_StandardLoadingBarTrackTimer, 0)
+    catch {
+    }
+    g_StandardLoadingBarTrackTimer := ""
+    g_StandardLoadingBarLastForegroundMonitorIdx := 0
+}
+
+StandardLoadingBar_RepositionToActiveMonitor() {
+    global g_StandardLoadingBarGui, g_StandardLoadingBarBorderGui
+    if !IsObject(g_StandardLoadingBarGui)
+        return
+    GetActiveMonitorWorkArea_StandardBar(&ml, &mt, &mr, &mb)
+    monitorWidth := mr - ml
+    try {
+        g_StandardLoadingBarGui.GetPos(, , &gw, &gh)
+    } catch {
+        return
+    }
+    guiX := Round(ml + (monitorWidth - gw) / 2)
+    if (guiX < ml)
+        guiX := ml
+    if (guiX + gw > mr)
+        guiX := mr - gw
+    guiY := mt + 40
+    if (IsObject(g_StandardLoadingBarBorderGui)) {
+        borderWidth := 6
+        try {
+            g_StandardLoadingBarBorderGui.Move(guiX - borderWidth, guiY - borderWidth, gw + 2 * borderWidth, gh + 2 *
+                borderWidth)
+        } catch {
+        }
+    }
+    try {
+        g_StandardLoadingBarGui.Move(guiX, guiY)
+        hwnd := g_StandardLoadingBarGui.Hwnd
+        if (hwnd)
+            DllCall("SetWindowPos", "Ptr", hwnd, "Ptr", 0, "Int", guiX, "Int", guiY, "Int", 0, "Int", 0, "UInt", 0x0015
+            )
+    } catch {
+    }
+}
+
+StandardLoadingBar_TrackActiveMonitorTick() {
+    global g_StandardLoadingBarGui, g_StandardLoadingBarLastForegroundMonitorIdx
+    if !IsObject(g_StandardLoadingBarGui) {
+        StandardLoadingBar_StopActiveMonitorTracking()
+        return
+    }
+    newIdx := GetMonitorIndexForForeground_StandardBar()
+    if (newIdx != g_StandardLoadingBarLastForegroundMonitorIdx) {
+        g_StandardLoadingBarLastForegroundMonitorIdx := newIdx
+        StandardLoadingBar_RepositionToActiveMonitor()
+    }
+}
+
 StandardLoadingBar_Show(state := "Working...", barColor := BANNER_ACCENT_INTERMEDIATE, options := "") {
     global g_StandardLoadingBarGui, g_StandardLoadingBarValue, g_StandardLoadingBarIsKeysOverlay,
         g_StandardLoadingBarBorderGui
@@ -2703,6 +2808,7 @@ StandardLoadingBar_Show(state := "Working...", barColor := BANNER_ACCENT_INTERME
     passiveBgColor := options && options.HasProp("passiveBgColor") ? options.passiveBgColor : ""
     noBorder := options && options.HasProp("noBorder") ? options.noBorder : false
     promptKeys := options && options.HasProp("promptKeys") ? options.promptKeys : ""
+    trackActiveMonitor := options && options.HasProp("trackActiveMonitor") && options.trackActiveMonitor
 
     if (centerOnHwnd) {
         workArea := GetWorkAreaForWindow_StandardBar(centerOnHwnd)
@@ -2775,6 +2881,11 @@ StandardLoadingBar_Show(state := "Working...", barColor := BANNER_ACCENT_INTERME
     g_StandardLoadingBarValue := 0
     if (!passive)
         SetTimer(StandardLoadingBar_Tick, 40)
+    if (trackActiveMonitor) {
+        StandardLoadingBar_StopActiveMonitorTracking()
+        g_StandardLoadingBarLastForegroundMonitorIdx := GetMonitorIndexForForeground_StandardBar()
+        g_StandardLoadingBarTrackTimer := SetTimer(StandardLoadingBar_TrackActiveMonitorTick, 115)
+    }
 }
 
 StandardLoadingBar_Tick() {
@@ -2821,6 +2932,7 @@ StandardLoadingBar_Hide(delayMs := 0) {
         SetTimer(() => StandardLoadingBar_Hide(0), -delayMs)
         return
     }
+    StandardLoadingBar_StopActiveMonitorTracking()
     if (g_StandardLoadingBarIsKeysOverlay) {
         StandardLoadingBar_CloseKeysOverlay()
         return
@@ -2851,6 +2963,7 @@ StandardLoadingBar_CloseKeysOverlay() {
     catch {
     }
     g_StandardLoadingBarKeysTimeoutTimer := ""
+    StandardLoadingBar_StopActiveMonitorTracking()
     for key in g_StandardLoadingBarKeysHotkeys {
         try Hotkey(key, "Off")
         catch {
@@ -2878,9 +2991,10 @@ StandardLoadingBar_CloseKeysOverlay() {
 ; passiveBgColor: optional; when set, used as border color. Prefer BANNER_ACCENT_SUCCESS / BANNER_ACCENT_ERROR / BANNER_ACCENT_INTERMEDIATE. Overlay background stays dark.
 ; noBorder: when true, do not create the yellow border (single banner only).
 ; promptKeys: optional; fixed bottom strip text (e.g. "[Y] Confirm  [N] Cancel"). Shown in uniform position below main message.
+; trackActiveMonitor: when true, reposition the bar to follow the foreground window's monitor while visible (dictation/Gemini flows).
 StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwnd := 0, timeoutCallback := "", barColor :=
     BANNER_ACCENT_INTERMEDIATE, textWidth := 500, fontSize := 17, passiveBgColor := "", noBorder := false, promptKeys :=
-    "") {
+    "", trackActiveMonitor := false) {
     global g_StandardLoadingBarIsKeysOverlay, g_StandardLoadingBarKeysHotkeys, g_StandardLoadingBarKeysTimeoutTimer
     opts := { passive: true, centerOnHwnd: centerOnHwnd, textWidth: textWidth, fontSize: fontSize }
     if (passiveBgColor != "")
@@ -2889,6 +3003,8 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
         opts.noBorder := true
     if (promptKeys != "")
         opts.promptKeys := promptKeys
+    if (trackActiveMonitor)
+        opts.trackActiveMonitor := true
     StandardLoadingBar_Show(state, barColor, opts)
     g_StandardLoadingBarIsKeysOverlay := true
     g_StandardLoadingBarKeysHotkeys := []
@@ -3062,10 +3178,11 @@ class D2C_FlowManager {
             "❓ Send to Gemini? (6s)",
             keyCallbacks,
             6000,
-            this.OriginHwnd,
+            0,
             this.OnSubmitTimeout.Bind(this),
             "1E1E2E", 380, 17, "", true,
-            "[G] Grammar  [A] AI opt  [Y] Send  [S] Paste only  [N] Cancel"
+            "[G] Grammar  [A] AI opt  [Y] Send  [S] Paste only  [N] Cancel",
+            true
         )
     }
 
@@ -3254,10 +3371,11 @@ class D2C_FlowManager {
             "❓ Copy response?",
             keyCallbacks,
             5000,
-            this.OriginHwnd,
+            0,
             this.OnActionTimeout.Bind(this),
             BANNER_ACCENT_INTERMEDIATE, 380, 17, "", false,
-            "[Y] Copy  [N] No  [R] Copy+Read  [C] Transfer"
+            "[Y] Copy  [N] No  [R] Copy+Read  [C] Transfer",
+            true
         )
     }
 
@@ -3422,7 +3540,7 @@ class D2C_FlowManager {
             try A_Clipboard := clipRaw
 
             tSelectorStart := A_TickCount
-            this.CursorHwnd := CursorTransfer_ShowWindowSelector(this.OriginHwnd)
+            this.CursorHwnd := CursorTransfer_ShowWindowSelector(0)
             tSelectorMs := A_TickCount - tSelectorStart
             if (!this.CursorHwnd) {
                 if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
@@ -3547,20 +3665,15 @@ DEPRECATED_DictationGeminiConfirm_ShowAndWait() {
     StandardLoadingBar_Hide(0)
     HideDictationIndicator()
     Sleep 50
-    centerOnHwnd := 0
-    try centerOnHwnd := WinGetID("A")
-    catch {
-    }
-    if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
-        centerOnHwnd := 0
     keyCallbacks := Map("Y", DEPRECATED_DictationGeminiConfirm_OnY, "S", DEPRECATED_DictationGeminiConfirm_OnS, "N",
         DEPRECATED_DictationGeminiConfirm_OnCancel)
     ; Official loading bar only; no blue; single banner (no border); fixed bottom strip for input.
     StandardLoadingBar_ShowWithKeys("❓ Send to Gemini? (6s)", keyCallbacks,
         6000,
-        centerOnHwnd,
+        0,
         DEPRECATED_DictationGeminiConfirm_OnTimeout, "1E1E2E", 380, 17, "", true,
-        "[Y] Send  [S] Paste only  [N] Cancel")
+        "[Y] Send  [S] Paste only  [N] Cancel",
+        true)
 }
 
 ; =============================================================================

@@ -1354,10 +1354,11 @@ class GeminiAsyncLookup {
         closeNoOp(*) {
         }
         closeKeys := Map("Enter", closeNoOp, "Escape", closeNoOp, "E", closeNoOp)
-        StandardLoadingBar_ShowWithKeys(state, closeKeys, GEMINI_PRONUNCIATION_BANNER_TIMEOUT_MS, this.OriginalHwnd, "",
+        StandardLoadingBar_ShowWithKeys(state, closeKeys, GEMINI_PRONUNCIATION_BANNER_TIMEOUT_MS, 0, "",
             BANNER_ACCENT_INTERMEDIATE, 600,
             17, "", false,
-            "[Enter] [E] Close")
+            "[Enter] [E] Close",
+            true)
     }
 }
 
@@ -1465,9 +1466,10 @@ class GeminiDelayedSubmitMonitor {
         this.CopyTimeoutTimer := ""
         copyKeyCallbacks := Map("N", this.CancelCopy.Bind(this), "Y", this.DoCopyOnly.Bind(this), "R", this.CopyAndReadAloud
         .Bind(this), "C", this.CopyAndTransferToCursor.Bind(this))
-        StandardLoadingBar_ShowWithKeys("❓ Copy response?", copyKeyCallbacks, 5000, this.OriginalHwnd, this.DoCopyOnTimeout
+        StandardLoadingBar_ShowWithKeys("❓ Copy response?", copyKeyCallbacks, 5000, 0, this.DoCopyOnTimeout
             .Bind(this), BANNER_ACCENT_INTERMEDIATE, 380, 17, "", false,
-            "[Y] Copy  [N] No  [R] Copy+Read  [C] Transfer")
+            "[Y] Copy  [N] No  [R] Copy+Read  [C] Transfer",
+            true)
     }
 
     ; Y key: copy latest response only (same as timeout default), then close banner and restore focus.
@@ -1570,7 +1572,7 @@ class GeminiDelayedSubmitMonitor {
         }
         try A_Clipboard := clipRaw
 
-        hwnd := CursorTransfer_ShowWindowSelector(this.OriginalHwnd)
+        hwnd := CursorTransfer_ShowWindowSelector(0)
         if (!hwnd) {
             if (WinExist("ahk_id " this.OriginalHwnd))
                 WinActivate("ahk_id " this.OriginalHwnd)

@@ -12,6 +12,8 @@
 
 Pressing **N** at any banner terminates the whole flow.
 
+**Multi-monitor UI:** While **Send to Gemini?**, **Copy response?**, or the **Transfer to Cursor** window picker is open, banners and the picker stay on the monitor that contains the **current foreground window**. If you switch focus to a window on another screen, the visible prompt moves to that monitor so it remains in view (implemented via `trackActiveMonitor` on standard bars and foreground-based placement for the Cursor selector in `Utils.ahk` / `Gemini.ahk`).
+
 ## High-level flow
 
 ```mermaid
