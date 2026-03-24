@@ -1721,8 +1721,6 @@ CursorTransfer_GetProjectNameForTitle(winTitle) {
     return ""
 }
 
-; Returns selected Cursor window HWND or 0 on cancel/timeout/no windows. Blocking with timeout.
-; centerOnHwnd: optional window to center the modal on (uses that window's monitor); 0 = primary monitor.
 CursorTransfer_StripStaticScriptTokenForDisplay(projectName) {
     ; Removes redundant static token(s) like "Script"/"Scripts" from the project label.
     ; If stripping would erase the whole name (e.g. folder is literally "Scripts"), keep the original.
@@ -1864,6 +1862,9 @@ GetGeminiScriptMsgTargetHwnd() {
         cached := found
     return found
 }
+
+; Returns selected Cursor window HWND or 0 on cancel/timeout/no windows. Blocking with timeout.
+; centerOnHwnd: optional window to center the modal on (uses that window's monitor); 0 = foreground monitor.
 CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
     global g_CursorTransferSelectorGui, g_CursorTransferSelectorActive, g_CursorTransferSelectorResult
     global g_CursorTransferWindowList, g_CursorTransferHotkeyHandlers
@@ -2280,13 +2281,7 @@ CursorTransfer_ActivateFocusPaste(targetHwnd, restoreFocusHwnd := 0) {
 ; Status Banner Functions (non-blocking; use standard loading indicator)
 ; =============================================================================
 AiModelBanner_Show(text, bgColor := BANNER_ACCENT_INTERMEDIATE) {
-    centerOnHwnd := 0
-    try centerOnHwnd := WinGetID("A")
-    catch {
-    }
-    if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
-        centerOnHwnd := 0
-    StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 450, fontSize: 17,
+    StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: 0, textWidth: 450, fontSize: 17,
         passiveBgColor: bgColor, alpha: 200 })
 }
 
@@ -2296,13 +2291,7 @@ AiModelBanner_Hide() {
 
 ; Small banner for Clip Angel (uses standard loading indicator).
 ClipAngelBanner_Show(text, bgColor := BANNER_ACCENT_INTERMEDIATE) {
-    centerOnHwnd := 0
-    try centerOnHwnd := WinGetID("A")
-    catch {
-    }
-    if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
-        centerOnHwnd := 0
-    StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 200, fontSize: 17,
+    StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: 0, textWidth: 200, fontSize: 17,
         passiveBgColor: bgColor, alpha: 220 })
 }
 
@@ -2316,13 +2305,7 @@ ClipAngelBanner_Hide() {
 ShowSingleCharTabBanner_Utils(tabNumber) {
     msg := String(tabNumber)
     bgColor := (tabNumber = 1) ? "0000FF" : "FFFF00"
-    centerOnHwnd := 0
-    try centerOnHwnd := WinGetID("A")
-    catch {
-    }
-    if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
-        centerOnHwnd := 0
-    StandardLoadingBar_Show(msg, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 120, fontSize: 72,
+    StandardLoadingBar_Show(msg, bgColor, { passive: true, centerOnHwnd: 0, textWidth: 120, fontSize: 72,
         passiveBgColor: bgColor, alpha: 178 })
     StandardLoadingBar_Hide(700)
 }
@@ -2609,11 +2592,8 @@ SelectAiModelInHandy() {
 ; Helper: Show centered overlay banner (uses standard loading indicator; non-blocking).
 ; =============================================================================
 ShowCenteredOverlay_Utils(text, duration := 1500, bgColor := BANNER_ACCENT_INTERMEDIATE) {
-    centerOnHwnd := 0
-    try centerOnHwnd := WinGetID("A")
-    if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
-        centerOnHwnd := 0
-    StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 500, fontSize: 17,
+    ; centerOnHwnd 0 = foreground monitor (GetActiveMonitorWorkArea_StandardBar); same intent as prior WinGetID("A") path.
+    StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: 0, textWidth: 500, fontSize: 17,
         passiveBgColor: bgColor })
     StandardLoadingBar_Hide(duration)
 }
@@ -3086,13 +3066,7 @@ HotstringGeminiBanner_Show(text := "📤 Gemini: inserting prompt...") {
     ; #endregion
     StandardLoadingBar_CloseKeysOverlay()
     Sleep 50
-    centerOnHwnd := 0
-    try centerOnHwnd := WinGetID("A")
-    catch {
-    }
-    if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
-        centerOnHwnd := 0
-    StandardLoadingBar_Show(text, BANNER_ACCENT_INTERMEDIATE, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 280,
+    StandardLoadingBar_Show(text, BANNER_ACCENT_INTERMEDIATE, { passive: true, centerOnHwnd: 0, textWidth: 280,
         fontSize: 17,
         alpha: 204 })
 }

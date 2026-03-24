@@ -696,9 +696,8 @@ GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false) {
 
         ; Step 4: Find the final "More options" / "Show more options" in the Gemini response tree (bottom-up).
         ; We target only the most recent Gemini response to avoid reading older messages. See gemini-tree.txt for tree structure.
-        centerHwnd := WinExist("A")
         StandardLoadingBar_Show(copyFirst ? "🔍 Finding read aloud button and copying..." :
-            "🔍 Finding read aloud button...", BANNER_ACCENT_INTERMEDIATE, { passive: true, centerOnHwnd: centerHwnd })
+            "🔍 Finding read aloud button...", BANNER_ACCENT_INTERMEDIATE, { passive: true, centerOnHwnd: 0 })
         Sleep GEMINI_WAIT_BUTTON_POLL_MS
 
         allMoreOptionsButtons := GetGeminiMoreOptionsButtonsScoped(uia)

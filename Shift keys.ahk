@@ -3198,9 +3198,8 @@ RestoreWikipediaScrollPosition(scrollPercentage, bannerText := "📜 Restoring s
             return false
         }
 
-        ; Show banner
-        centerOnHwnd := WinGetID("A")
-        StandardLoadingBar_Show(bannerText, BANNER_ACCENT_INTERMEDIATE, { passive: true, centerOnHwnd: centerOnHwnd,
+        ; Show banner (foreground monitor)
+        StandardLoadingBar_Show(bannerText, BANNER_ACCENT_INTERMEDIATE, { passive: true, centerOnHwnd: 0,
             textWidth: 500,
             fontSize: 17, passiveBgColor: BANNER_ACCENT_INTERMEDIATE })
 
@@ -3315,10 +3314,9 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
     Send("{F11}")
     Sleep(300)  ; Allow time for fullscreen exit (increased for reliability)
 
-    ; Show banner to inform user that scroll position is being saved
-    centerOnHwnd := WinGetID("A")
+    ; Show banner to inform user that scroll position is being saved (foreground monitor)
     StandardLoadingBar_Show("💾 Saving scroll position... Please wait", BANNER_ACCENT_INTERMEDIATE, { passive: true,
-        centerOnHwnd: centerOnHwnd,
+        centerOnHwnd: 0,
         textWidth: 500, fontSize: 17, passiveBgColor: BANNER_ACCENT_INTERMEDIATE })
     fullscreenRestored := false  ; Track if we've re-entered fullscreen
     try {
@@ -4594,11 +4592,7 @@ ML_SortSelect(idx) {
 }
 
 ML_SortApply(idx) {
-    centerOnHwnd := 0
-    try centerOnHwnd := WinGetID("A")
-    catch {
-    }
-    StandardLoadingBar_Show("⏳ Ordenando...", BANNER_ACCENT_INTERMEDIATE, { passive: false, centerOnHwnd: centerOnHwnd,
+    StandardLoadingBar_Show("⏳ Ordenando...", BANNER_ACCENT_INTERMEDIATE, { passive: false, centerOnHwnd: 0,
         textWidth: 380, fontSize: 17 })
     try {
         root := ML_GetDocRoot()
@@ -16372,8 +16366,7 @@ SettleUp_GetNewExpenseDialog() {
 
 ; --- Unified banner helpers for ChatGPT indicators (use Utils standard loading bar) ---
 ShowSmallLoadingIndicator_ChatGPT(state := "Loading…", bgColor := BANNER_ACCENT_INTERMEDIATE) {
-    centerOnHwnd := WinGetID("A")
-    StandardLoadingBar_Show(state, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 500, fontSize: 17,
+    StandardLoadingBar_Show(state, bgColor, { passive: true, centerOnHwnd: 0, textWidth: 500, fontSize: 17,
         passiveBgColor: bgColor })  ; callers pass BANNER_ACCENT_INTERMEDIATE or other semantic constant
 }
 

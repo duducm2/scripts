@@ -197,10 +197,8 @@ IsTeamsChatTitle(title) {
 
 ; --- Standard overlay (uses Utils) -------------------------------------------
 ShowCenteredOverlay(hwndTarget, text, duration := 1500, bgColor := BANNER_ACCENT_INTERMEDIATE) {
-    centerOnHwnd := (hwndTarget && WinExist("ahk_id " hwndTarget)) ? hwndTarget : WinGetID("A")
-    if (!centerOnHwnd || !WinExist("ahk_id " centerOnHwnd))
-        centerOnHwnd := 0
-    StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: centerOnHwnd, textWidth: 500, fontSize: 17,
+    ; hwndTarget kept for API compatibility; placement uses foreground monitor (centerOnHwnd 0) after WinActivate patterns.
+    StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: 0, textWidth: 500, fontSize: 17,
         passiveBgColor: bgColor })
     StandardLoadingBar_Hide(duration)
 }

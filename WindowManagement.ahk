@@ -1178,7 +1178,7 @@ FocusCursorAITextField(targetHwnd := 0) {
         ; Show loading indicator while navigating to the AI text field.
         ; Center on the Cursor window and use the standard intermediate accent color.
         stateText := "⏳ Focando campo de texto da IA..."
-        StandardLoadingBar_Show(stateText, BANNER_ACCENT_INTERMEDIATE, { centerOnHwnd: targetHwnd, passive: false })
+        StandardLoadingBar_Show(stateText, BANNER_ACCENT_INTERMEDIATE, { centerOnHwnd: 0, passive: false })
         barShown := true
 
         ; Track whether AI pane was detected as open so we only ever send Ctrl+I to open it (never to close it).

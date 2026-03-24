@@ -365,7 +365,8 @@ EnsureOutlookMainModule(targetModule) {
 
 NavigateOutlookToModule(targetModule, failureMsg) {
     targetLabel := (targetModule = "mail") ? "Mailbox" : "Calendar"
-    StandardLoadingBar_Show("⏳ Outlook: opening " targetLabel "...", BANNER_ACCENT_INTERMEDIATE, { textWidth: 460, fontSize: 17 })
+    StandardLoadingBar_Show("⏳ Outlook: opening " targetLabel "...", BANNER_ACCENT_INTERMEDIATE,
+        { passive: false, centerOnHwnd: 0, textWidth: 460, fontSize: 17 })
 
     mailboxActivated := ActivateOutlookMailbox()
     calendarActivated := false
