@@ -9222,9 +9222,9 @@ Escape::
 #InputLevel 0
 
 ; =============================================================================
-; Dictation Indicator - Red Pulsing Square
-; Shows a red pulsing square at the top center of the active monitor when
-; dictation is active with handy.exe. Toggles with Win+Alt+Shift+0.
+; Dictation Indicator - Red pulsing inner square with yellow border
+; Anchored to the top-center of the active window (clamped inside); falls back to
+; active monitor work area. Follows focus/window moves via pulse timer. Toggles with Win+Alt+Shift+0.
 ; =============================================================================
 
 ; Global variables for dictation indicator
@@ -9235,7 +9235,7 @@ global g_DictationPulseTimer := false
 global g_DictationCheckTimer := false  ; Timer to check if Recording window still exists
 global g_DictationPulseDirection := 1  ; 1 = fading in, -1 = fading out
 global g_DictationPulseOpacity := 128  ; Current opacity (50-255)
-global g_LastActiveMonitor := 0  ; Track last monitor to detect changes
+global g_DictationFollowCache := ""  ; "x,y,w,h" when unchanged skip redundant Move (follow active window)
 global g_DictationCompletionChimeScheduled := false  ; Flag to prevent multiple completion chimes
 global g_LastDictationSoundTick := 0  ; Timestamp of last dictation sound to throttle audio output
 global g_DictationStartSound := A_ScriptDir . "\sounds\speach-start.wav"
@@ -9295,7 +9295,9 @@ LogDebug(sessionId, runId, hypothesisId, location, message, data := "") {
 }
 
 ; Constants for dictation indicator
-global DICTATION_SQUARE_SIZE := 150  ; 3x bigger (was 50)
+global DICTATION_SQUARE_SIZE := 150  ; Inner red area (was 50 base scaled up)
+global DICTATION_BORDER_PX := 2      ; Yellow border for colorblind visibility (outside red)
+global DICTATION_YELLOW_BORDER := "F1C40F"  ; Same hue family as BANNER_ACCENT_INTERMEDIATE
 global DICTATION_PULSE_MIN := 50      ; Minimum opacity (~20%)
 global DICTATION_PULSE_MAX := 255     ; Maximum opacity (100%)
 global DICTATION_PULSE_STEP := 15     ; Opacity change per tick
@@ -9333,29 +9335,98 @@ GetDictationActiveMonitor() {
     return 1  ; Default to primary monitor
 }
 
-; Show or update the dictation indicator at the top center of the active monitor
+; Outer indicator size: yellow border + inner red square.
+GetDictationIndicatorOuterSize() {
+    global DICTATION_SQUARE_SIZE, DICTATION_BORDER_PX
+    return DICTATION_SQUARE_SIZE + 2 * DICTATION_BORDER_PX
+}
+
+; Screen rect for the dictation indicator: prefer top-center inside the active window; else top-center of active monitor work area.
+GetDictationIndicatorScreenRect(&outX, &outY, &outW, &outH) {
+    global DICTATION_SQUARE_SIZE, DICTATION_BORDER_PX
+    outW := GetDictationIndicatorOuterSize()
+    outH := outW
+    marginTop := 8
+    hwnd := WinExist("A")
+    if (hwnd) {
+        try {
+            if (WinGetMinMax("ahk_id " hwnd) = -1)
+                hwnd := 0
+        } catch {
+            hwnd := 0
+        }
+    }
+    if (hwnd) {
+        rect := Buffer(16, 0)
+        if (DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)) {
+            wl := NumGet(rect, 0, "int")
+            wt := NumGet(rect, 4, "int")
+            wr := NumGet(rect, 8, "int")
+            wb := NumGet(rect, 12, "int")
+            winW := wr - wl
+            winH := wb - wt
+            if (winW >= 8 && winH >= 8) {
+                outX := wl + (winW - outW) // 2
+                outY := wt + marginTop
+                if (outX < wl + 2)
+                    outX := wl + 2
+                if (outY < wt + 2)
+                    outY := wt + 2
+                if (outX + outW > wr - 2)
+                    outX := wr - outW - 2
+                if (outY + outH > wb - 2)
+                    outY := wb - outH - 2
+                if (outX < wl)
+                    outX := wl
+                if (outY < wt)
+                    outY := wt
+                return true
+            }
+        }
+    }
+    mon := GetDictationActiveMonitor()
+    MonitorGetWorkArea(mon, &ml, &mt, &mr, &mb)
+    mw := mr - ml
+    outX := ml + (mw - outW) // 2
+    outY := mt + 12
+    if (outX < ml)
+        outX := ml
+    if (outY < mt)
+        outY := mt
+    if (outX + outW > mr)
+        outX := mr - outW
+    if (outY + outH > mb)
+        outY := mb - outH
+    return true
+}
+
+; Reposition indicator when the active window moves or focus changes (called from pulse timer).
+DictationIndicator_SyncPosition() {
+    global g_DictationIndicatorGui, g_DictationFollowCache
+    if (!IsObject(g_DictationIndicatorGui) || !g_DictationIndicatorGui.Hwnd)
+        return
+    GetDictationIndicatorScreenRect(&sx, &sy, &sw, &sh)
+    key := sx . "," . sy . "," . sw . "," . sh
+    if (key = g_DictationFollowCache)
+        return
+    g_DictationFollowCache := key
+    try {
+        g_DictationIndicatorGui.Show("NA x" . sx . " y" . sy . " w" . sw . " h" . sh)
+    } catch {
+    }
+}
+
+; Show or update the dictation indicator: yellow border + red inner, anchored to active window (or work area fallback).
 ShowDictationIndicator() {
-    global g_DictationIndicatorGui, g_DictationPulseOpacity, g_LastActiveMonitor
-    global DICTATION_SQUARE_SIZE
+    global g_DictationIndicatorGui, g_DictationPulseOpacity, g_DictationFollowCache
+    global DICTATION_SQUARE_SIZE, DICTATION_BORDER_PX, DICTATION_YELLOW_BORDER
 
-    ; Get active monitor bounds
-    monitorIndex := GetDictationActiveMonitor()
-    MonitorGet(monitorIndex, &monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
-    monitorWidth := monitorRight - monitorLeft
-
-    ; Calculate position: top center of monitor with small offset from top
-    squareX := monitorLeft + (monitorWidth - DICTATION_SQUARE_SIZE) // 2
-    squareY := monitorTop + 20  ; 20 pixels from top
+    GetDictationIndicatorScreenRect(&squareX, &squareY, &outerW, &outerH)
 
     ; Check if indicator already exists
     if (IsObject(g_DictationIndicatorGui) && g_DictationIndicatorGui.Hwnd) {
-        ; Indicator exists - just reposition it if monitor changed
-        if (monitorIndex != g_LastActiveMonitor) {
-            g_DictationIndicatorGui.Show("NA x" . squareX . " y" . squareY . " w" . DICTATION_SQUARE_SIZE . " h" .
-                DICTATION_SQUARE_SIZE)
-            g_LastActiveMonitor := monitorIndex
-        }
-        ; Clear any status text when starting new dictation
+        g_DictationFollowCache := ""
+        DictationIndicator_SyncPosition()
         UpdateDictationIndicatorText("")
         return
     }
@@ -9368,21 +9439,26 @@ ShowDictationIndicator() {
     ; -DPIScale: use raw screen coordinates
     g_DictationIndicatorGui := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x20")
     g_DictationIndicatorGui.Opt("-DPIScale")
-    g_DictationIndicatorGui.BackColor := "FF0000"  ; Red
+    g_DictationIndicatorGui.BackColor := DICTATION_YELLOW_BORDER
+    g_DictationIndicatorGui.MarginX := 0
+    g_DictationIndicatorGui.MarginY := 0
 
-    ; Add text control for status messages (centered, white text, bold)
+    ; Inner red fill, then status text on top (transparent over red)
+    g_DictationIndicatorGui.Add("Text",
+        "x" . DICTATION_BORDER_PX . " y" . DICTATION_BORDER_PX . " w" . DICTATION_SQUARE_SIZE . " h" . DICTATION_SQUARE_SIZE .
+        " BackgroundFF0000", "")
     g_DictationIndicatorGui.SetFont("s14 cFFFFFF Bold", "Segoe UI")
-    g_DictationIndicatorGui.MarginX := 10
-    g_DictationIndicatorGui.MarginY := 10
-    g_DictationIndicatorText := g_DictationIndicatorGui.Add("Text", "w" . (DICTATION_SQUARE_SIZE - 20) . " Center", "")
+    g_DictationIndicatorText := g_DictationIndicatorGui.Add("Text",
+        "x" . DICTATION_BORDER_PX . " y" . DICTATION_BORDER_PX . " w" . DICTATION_SQUARE_SIZE . " h" . DICTATION_SQUARE_SIZE .
+        " Center +BackgroundTrans", "")
 
     ; Reset pulse opacity
     g_DictationPulseOpacity := 128
-    g_LastActiveMonitor := monitorIndex
+    g_DictationFollowCache := ""
 
     ; Show the indicator without activating it
-    g_DictationIndicatorGui.Show("NA x" . squareX . " y" . squareY . " w" . DICTATION_SQUARE_SIZE . " h" .
-        DICTATION_SQUARE_SIZE)
+    g_DictationIndicatorGui.Show("NA x" . squareX . " y" . squareY . " w" . outerW . " h" . outerH)
+    DictationIndicator_SyncPosition()
     ; Apply initial transparency defensively (GUI may have been destroyed concurrently)
     try {
         if (g_DictationIndicatorGui.Hwnd)
@@ -9407,8 +9483,9 @@ UpdateDictationIndicatorText(message := "") {
 
 ; Hide and destroy the dictation indicator
 HideDictationIndicator() {
-    global g_DictationIndicatorGui, g_DictationIndicatorText
+    global g_DictationIndicatorGui, g_DictationIndicatorText, g_DictationFollowCache
 
+    g_DictationFollowCache := ""
     if (IsObject(g_DictationIndicatorGui)) {
         try {
             if (g_DictationIndicatorGui.Hwnd) {
@@ -9431,6 +9508,8 @@ UpdateDictationIndicatorPulse() {
     if (!IsObject(g_DictationIndicatorGui) || !g_DictationIndicatorGui.Hwnd) {
         return
     }
+
+    DictationIndicator_SyncPosition()
 
     ; Update opacity based on direction
     g_DictationPulseOpacity += DICTATION_PULSE_STEP * g_DictationPulseDirection
