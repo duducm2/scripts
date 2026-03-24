@@ -12718,6 +12718,32 @@ Mobills_IsButton(el) {
     }
 }
 
+Mobills_FindElementByCandidates(uia, candidates) {
+    if !uia
+        return ""
+    for , c in candidates {
+        try {
+            el := uia.FindElement(c)
+            if el
+                return el
+        } catch {
+        }
+    }
+    return ""
+}
+
+Mobills_FindOpenButton(uia, index := 1) {
+    if !uia
+        return ""
+    try {
+        openButtons := uia.FindAll({ Name: "Open", Type: 50000 })
+        if (openButtons && openButtons.Length >= index)
+            return openButtons[index]
+    } catch {
+    }
+    return ""
+}
+
 ; Budgets: resolve BOTH arrows by index, then pick by dir.
 ; Target:
 ;   Prev => {T:30}, {T:26}, {T:0, i:7}
@@ -12763,8 +12789,8 @@ Mobills_GetBudgetsPrevNext(uia, &prevBtn, &nextBtn) {
 
 Mobills_FindPagerByName(uia, dir) {
     ; Try common labels (EN/PT). Substring match.
-    namesPrev := ["Go to previous page", "Previous", "Prev", "Anterior", "Página anterior", "Ir para a página anterior"]
-    namesNext := ["Go to next page", "Next", "Próximo", "Proximo", "Página seguinte", "Ir para a próxima página",
+    namesPrev := ["Go to previous page", "previous page", "Previous", "Prev", "Anterior", "Página anterior", "Ir para a página anterior"]
+    namesNext := ["Go to next page", "next page", "Next", "Próximo", "Proximo", "Página seguinte", "Ir para a próxima página",
         "Ir para a proxima página"]
     names := (dir = "Prev") ? namesPrev : namesNext
 
@@ -13169,163 +13195,117 @@ FocusViaOpenButton(tabs, pressSpace := false) {
             return
         }
 
-        ; Find anchor and start tabbing
-        anchor := ""
+        ignoreToggle := ""
         try {
-            anchor := uia.FindElement({ Type: "Button", Name: "More details", matchmode: "Substring" })
+            label := uia.FindElement({ Name: "Ignore transaction", Type: 50020, matchmode: "Substring" })
+            if label {
+                parent := UIA.TreeWalkerTrue.GetParentElement(label)
+                if parent {
+                    for , cb in parent.FindAll({ Type: 50002 }) {
+                        ignoreToggle := cb
+                        break
+                    }
+                }
+            }
         } catch {
+        }
+        if !ignoreToggle {
+            ; Fallback: pick the last checkbox in the dialog, which is the ignore toggle in current forms.
             try {
-                anchor := uia.FindElement({ Type: "Button" })
+                checkboxes := uia.FindAll({ Type: 50002 })
+                if (checkboxes && checkboxes.Length > 0)
+                    ignoreToggle := checkboxes[checkboxes.Length]
             } catch {
-                anchor := uia.FindFirst()
             }
         }
-
-        if (!anchor) {
-            MsgBox "Could not find anchor element.", "Mobills Navigation", "IconX"
+        if !ignoreToggle {
+            MsgBox "Could not find the Ignore transaction toggle.", "Mobills Navigation", "IconX"
             return
         }
 
-        ; Focus anchor
-        try {
-            anchor.SetFocus()
-        } catch {
-            anchor.Click()
-        }
-        Sleep(200)
-
-        ; Tab through elements
-        maxTabs := 30
-        found := false
-        ignoreToggleCount := 0 ; Counter for ignore toggles
-
-        loop maxTabs {
-            try {
-                focused := UIA.GetFocusedElement()
-                if (focused) {
-                    name := focused.Name
-                    type := focused.Type
-                    className := focused.ClassName
-
-                    ; Check for ignore-related elements
-                    if (InStr(StrLower(name), "ignore") || InStr(StrLower(name), "ignorar") ||
-                    InStr(StrLower(className), "switch") || InStr(StrLower(className), "toggle")) {
-
-                        ignoreToggleCount++
-                        if (ignoreToggleCount == 2) { ; Target the second toggle
-                            Send("{Space}")
-                            found := true
-                            break
-                        }
-                    }
-
-                    ; Check checkbox with ignore text nearby
-                    if (type = 50002) {
-                        try {
-                            parent := UIA.TreeWalkerTrue.GetParentElement(focused)
-                            if (parent) {
-                                parentChildren := parent.FindAll({ Type: "Text" })
-                                for child in parentChildren {
-                                    try {
-                                        if (InStr(StrLower(child.Name), "ignore") || InStr(StrLower(child.Name),
-                                        "ignorar")) {
-                                            ignoreToggleCount++
-                                            if (ignoreToggleCount == 2) { ; Target the second toggle
-                                                Send("{Space}")
-                                                found := true
-                                                break 2
-                                            }
-                                        }
-                                    } catch {
-                                        ; Skip
-                                    }
-                                }
-                            }
-                        } catch {
-                            ; Continue
-                        }
-                    }
-                }
-            } catch {
-                ; Continue
-            }
-
-            Send("{Tab}")
-            Sleep(80)
-        }
-
-        if (!found) {
-            MsgBox "Could not find the second Ignore transaction toggle.", "Mobills Navigation", "IconX"
-        }
+        try ignoreToggle.SetFocus()
+        Sleep 80
+        Send "{Space}"
 
     } catch Error as e {
-        MsgBox "Error: " e.Message, "Mobills Error", "IconX"
+        MsgBox "Error toggling Ignore transaction: " e.Message, "Mobills Error", "IconX"
     }
 }
 
-; ---- Helper to focus the Description field directly ----y
+; Click "New" and select the requested creation menu item.
+Mobills_SelectNewMenuItem(itemName) {
+    try {
+        uia := TryAttachBrowser()
+        if !uia
+            return false
+
+        actionBtn := Mobills_FindElementByCandidates(uia, [
+            { Type: 50000, AutomationId: "action-button" },
+            { Type: 50000, Name: "New", matchmode: "Substring" }
+        ])
+        if !actionBtn
+            return false
+        actionBtn.Click()
+        Sleep 250
+
+        menuItem := Mobills_FindElementByCandidates(uia, [
+            { Type: 50011, Name: itemName, matchmode: "Substring" },
+            { Type: 50000, Name: itemName, matchmode: "Substring" }
+        ])
+        if !menuItem
+            return false
+        menuItem.Click()
+        return true
+    } catch {
+        return false
+    }
+}
+
+; ---- Helper to focus the Description field directly ----
 FocusDescriptionField() {
     try {
         uia := TryAttachBrowser()
         if !uia
             return false
 
-        ; Try multiple simple approaches
-        descriptionElement := ""
-
-        ; Method 1: Just AutomationId
-        try {
-            descriptionElement := uia.FindElement({ AutomationId: "mui-66475" })
-        } catch {
-        }
-
-        ; Method 2: Name "Description"
-        if !descriptionElement {
-            try {
-                descriptionElement := uia.FindElement({ Name: "Description" })
-            } catch {
-            }
-        }
-
-        ; Method 3: Partial ClassName match
-        if !descriptionElement {
-            try {
-                descriptionElement := uia.FindElement({ ClassName: "MuiAutocomplete-input", matchmode: "Substring" })
-            } catch {
-            }
-        }
-
-        ; Method 4: Any input with "Description" in name
-        if !descriptionElement {
-            try {
-                allInputs := uia.FindAll({ Type: "Edit" })
-                for input in allInputs {
-                    if InStr(input.Name, "Description") {
-                        descriptionElement := input
-                        break
-                    }
-                }
-            } catch {
-            }
-        }
+        descriptionElement := Mobills_FindElementByCandidates(uia, [
+            { Name: "Description", Type: 50004, matchmode: "Substring" },
+            { Name: "Description", Type: "Edit", matchmode: "Substring" },
+            { ClassName: "MuiAutocomplete-input", Type: "Edit", matchmode: "Substring" }
+        ])
 
         if !descriptionElement {
             MsgBox "Could not find the Description field.", "Mobills Navigation", "IconX"
             return false
         }
 
-        ; Try to click first, then set focus
-        try {
-            descriptionElement.Click()
-            Sleep 100
-        } catch {
-        }
-
+        try descriptionElement.Click()
+        Sleep 100
         descriptionElement.SetFocus()
         return true
-
     } catch Error as e {
         MsgBox "Error focusing Description field: " e.Message, "Mobills Error", "IconX"
+        return false
+    }
+}
+
+; Focuses the first account/category "Open" picker and types MAIN.
+Mobills_TypeMainInOpenPicker() {
+    try {
+        uia := TryAttachBrowser()
+        if !uia
+            return false
+
+        openBtn := Mobills_FindOpenButton(uia, 1)
+        if !openBtn
+            return false
+
+        try openBtn.Click()
+        try openBtn.SetFocus()
+        Sleep 120
+        Send "MAIN"
+        return true
+    } catch {
         return false
     }
 }
@@ -13336,29 +13316,8 @@ FocusDescriptionField() {
 ; Shift + E : Click action button then Expense menu item
 +e:: {
     try {
-        uia := TryAttachBrowser()
-        if !uia {
-            MsgBox "Could not attach to the browser window.", "Mobills Navigation", "IconX"
-            return
-        }
-
-        ; First, click the action button
-        actionBtn := uia.FindElement({ Type: "Button", AutomationId: "action-button" })
-        if !actionBtn {
-            MsgBox "Could not find the action button.", "Mobills Navigation", "IconX"
-            return
-        }
-        actionBtn.Click()
-        Sleep(300)  ; Wait for menu to appear
-
-        ; Then click on the Expense menu item
-        expenseItem := uia.FindElement({ Type: "MenuItem", Name: "Expense" })
-        if !expenseItem {
-            MsgBox "Could not find the Expense menu item.", "Mobills Navigation", "IconX"
-            return
-        }
-        expenseItem.Click()
-
+        if !Mobills_SelectNewMenuItem("Expense")
+            MsgBox "Could not open New > Expense.", "Mobills Navigation", "IconX"
     } catch Error as e {
         MsgBox "Error clicking action button and Expense menu: " e.Message, "Mobills Error", "IconX"
     }
@@ -13367,29 +13326,8 @@ FocusDescriptionField() {
 ; Shift + Y : Click action button then Income menu item
 +y:: {
     try {
-        uia := TryAttachBrowser()
-        if !uia {
-            MsgBox "Could not attach to the browser window.", "Mobills Navigation", "IconX"
-            return
-        }
-
-        ; First, click the action button
-        actionBtn := uia.FindElement({ Type: "Button", AutomationId: "action-button" })
-        if !actionBtn {
-            MsgBox "Could not find the action button.", "Mobills Navigation", "IconX"
-            return
-        }
-        actionBtn.Click()
-        Sleep(300)  ; Wait for menu to appear
-
-        ; Then click on the Income menu item
-        incomeItem := uia.FindElement({ Type: "MenuItem", Name: "Income" })
-        if !incomeItem {
-            MsgBox "Could not find the Income menu item.", "Mobills Navigation", "IconX"
-            return
-        }
-        incomeItem.Click()
-
+        if !Mobills_SelectNewMenuItem("Income")
+            MsgBox "Could not open New > Income.", "Mobills Navigation", "IconX"
     } catch Error as e {
         MsgBox "Error clicking action button and Income menu: " e.Message, "Mobills Error", "IconX"
     }
@@ -13398,29 +13336,8 @@ FocusDescriptionField() {
 ; Shift + X : Click action button then Credit card expense menu item
 +x:: {
     try {
-        uia := TryAttachBrowser()
-        if !uia {
-            MsgBox "Could not attach to the browser window.", "Mobills Navigation", "IconX"
-            return
-        }
-
-        ; First, click the action button
-        actionBtn := uia.FindElement({ Type: "Button", AutomationId: "action-button" })
-        if !actionBtn {
-            MsgBox "Could not find the action button.", "Mobills Navigation", "IconX"
-            return
-        }
-        actionBtn.Click()
-        Sleep(300)  ; Wait for menu to appear
-
-        ; Then click on the Credit card expense menu item
-        creditItem := uia.FindElement({ Type: "MenuItem", Name: "Credit card expense" })
-        if !creditItem {
-            MsgBox "Could not find the Credit card expense menu item.", "Mobills Navigation", "IconX"
-            return
-        }
-        creditItem.Click()
-
+        if !Mobills_SelectNewMenuItem("Credit card expense")
+            MsgBox "Could not open New > Credit card expense.", "Mobills Navigation", "IconX"
     } catch Error as e {
         MsgBox "Error clicking action button and Credit card expense menu: " e.Message, "Mobills Error", "IconX"
     }
@@ -13429,73 +13346,20 @@ FocusDescriptionField() {
 ; Shift + F : Click action button then Transfer menu item
 +f:: {
     try {
-        uia := TryAttachBrowser()
-        if !uia {
-            MsgBox "Could not attach to the browser window.", "Mobills Navigation", "IconX"
-            return
-        }
-
-        ; First, click the action button
-        actionBtn := uia.FindElement({ Type: "Button", AutomationId: "action-button" })
-        if !actionBtn {
-            MsgBox "Could not find the action button.", "Mobills Navigation", "IconX"
-            return
-        }
-        actionBtn.Click()
-        Sleep(300)  ; Wait for menu to appear
-
-        ; Then click on the Transfer menu item
-        transferItem := uia.FindElement({ Type: "MenuItem", Name: "Transfer" })
-        if !transferItem {
-            MsgBox "Could not find the Transfer menu item.", "Mobills Navigation", "IconX"
-            return
-        }
-        transferItem.Click()
-
+        if !Mobills_SelectNewMenuItem("Transfer")
+            MsgBox "Could not open New > Transfer.", "Mobills Navigation", "IconX"
     } catch Error as e {
         MsgBox "Error clicking action button and Transfer menu: " e.Message, "Mobills Error", "IconX"
     }
 }
 
-; Shift + W : Click "Open" button and type "MAIN"
+; Shift + W : Focus "Open" picker and type "MAIN"
 +w:: {
     try {
-        uia := TryAttachBrowser()
-        if !uia {
-            MsgBox "Could not attach to the browser window.", "Mobills Navigation", "IconX"
-            return
-        }
-
-        ; Find "Attach File" button as anchor
-        anchor := uia.FindElement({ Name: "Attach File" })
-        if !anchor {
-            MsgBox "Could not find the Attach File button (anchor).", "Mobills Navigation", "IconX"
-            return
-        }
-
-        ; Focus the anchor
-        anchor.SetFocus()
-        Sleep(200)  ; Wait for focus to settle
-
-        ; Tab backwards once to reach the "Open" button
-        Send("+{Tab}")  ; Shift+Tab to go backwards once
-        Sleep(200)      ; Wait for focus to settle
-
-        ; Click the "Open" button
-        ; Send("{Enter}")
-        ; Sleep(200)  ; Wait for any dropdown/menu to appear
-
-        ; Type "MAIN" letter by letter for better performance
-        Send("M")
-        Sleep(50)
-        Send("A")
-        Sleep(50)
-        Send("I")
-        Sleep(50)
-        Send("N")
-
+        if !Mobills_TypeMainInOpenPicker()
+            MsgBox "Could not find the Open picker.", "Mobills Navigation", "IconX"
     } catch Error as e {
-        MsgBox "Error finding and clicking Open button: " e.Message, "Mobills Error", "IconX"
+        MsgBox "Error finding Open picker: " e.Message, "Mobills Error", "IconX"
     }
 }
 
