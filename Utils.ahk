@@ -465,6 +465,7 @@ InitQuickOpenFiles()
 global g_Macros := []
 global g_MacroCharMap := Map()  ; Maps character to macro function
 global g_ProgrammaticDictationStop := false  ; Skip ~#!+0 when script sends #!+0 programmatically
+global g_GeminiToggleTab := 1  ; Alternates ^1/^2 for Gemini Chrome tabs (no UIA; may desync if user switches tabs manually)
 
 ; Register a macro
 RegisterMacro(func, title, char := "") {
@@ -8799,34 +8800,69 @@ ShowHotstringSelector() {
 ; Ctrl+Alt+Win+L - direct D2C submit path (paste + Enter, then monitor)
 ^!#L:: D2C_FlowManager.GetInstance().StartFromHotstring()
 
-; Ctrl+Alt+Win+4 - Start dictation, paste AI prompt in Gemini, then restore previous window
+; #region agent log (debug session edd35a)
+DebugEdd35a_Log(hypothesisId, location, message, dataJson := "", runId := "pre-fix") {
+    logPath := A_ScriptDir "\debug-edd35a.log"
+    esc(s) => StrReplace(StrReplace(s, "\", "\\"), '"', '\"')
+    line := '{"sessionId":"edd35a","runId":"' . esc(runId) . '","hypothesisId":"' . esc(hypothesisId) . '","location":"' . esc(location)
+        . '","message":"' . esc(message) . '","timestamp":' . A_TickCount
+    if (dataJson != "")
+        line .= ',"data":' . dataJson
+    line .= '}`n'
+    try FileAppend(line, logPath, "UTF-8")
+}
+; #endregion
+
+; Ctrl+Alt+Win+4 - Start dictation first (~#!+0), then Gemini tab 1/2 toggle + banner (user can speak while tab switches)
 ^!#4::
 {
-    global g_DictationActive, g_PendingGeminiPromptAfterDictation
-    restoreHwnd := WinExist("A")
-    StandardLoadingBar_Show("⏳ Starting dictation and preparing Gemini prompt...", BANNER_ACCENT_INTERMEDIATE, { passive: false
-    })
-    try {
-        ; If dictation is not active, start it once via the canonical hotkey path.
-        if (!g_DictationActive) {
-            Send "#!+0"
-            StandardLoadingBar_Update("⏳ Dictation started. Pasting prompt in Gemini...")
-        } else {
-            StandardLoadingBar_Update("⏳ Dictation already active. Pasting prompt in Gemini...")
-        }
+    global g_GeminiToggleTab, g_DictationActive
 
-        ; New behavior: no post-stop auto-flow for this shortcut.
-        g_PendingGeminiPromptAfterDictation := false
-        GeminiNavigateFocusAndPasteFirstSnippet(GetAioptPromptText())
+    ; #region agent log
+    DebugEdd35a_Log("H3", "Utils.ahk:^!#4", "entry", '{"g_DictationActive":' . (g_DictationActive ? "true" : "false") . '}')
+    ; #endregion
 
-        StandardLoadingBar_Update("⏳ Restoring previous window...")
-        if (restoreHwnd && WinExist("ahk_id " restoreHwnd)) {
-            WinActivate("ahk_id " restoreHwnd)
-            WinWaitActive("ahk_id " restoreHwnd, , 0.5)
-        }
-    } finally {
-        StandardLoadingBar_Hide(0)
+    ; Primary: begin capture immediately so dictation runs while Gemini tab logic executes afterward.
+    if (!g_DictationActive) {
+        ; #region agent log
+        DebugEdd35a_Log("H1", "Utils.ahk:^!#4", "before_Send_hashbang")
+        ; #endregion
+        Send("#!+0")
+        ; #region agent log
+        DebugEdd35a_Log("H1", "Utils.ahk:^!#4", "after_Send_hashbang")
+        ; #endregion
     }
+
+    geminiHwnd := 0
+    try {
+        for hwnd in WinGetList("ahk_exe chrome.exe") {
+            try {
+                if InStr(WinGetTitle("ahk_id " hwnd), "gemini", false) {
+                    geminiHwnd := hwnd
+                    break
+                }
+            } catch {
+            }
+        }
+    } catch {
+    }
+
+    if (!geminiHwnd)
+        return
+
+    WinActivate("ahk_id " geminiHwnd)
+    if (!WinWaitActive("ahk_id " geminiHwnd, , 2))
+        return
+
+    if (g_GeminiToggleTab == 1) {
+        g_GeminiToggleTab := 2
+        Send("^2")
+    } else {
+        g_GeminiToggleTab := 1
+        Send("^1")
+    }
+    Sleep(120)
+    ShowSingleCharTabBanner_Utils(g_GeminiToggleTab)
 }
 
 ; Ctrl+Alt+Win+2..8 - same macros as HotStrings panel (Win+Alt+Shift+U); secondary triggers only
@@ -9831,22 +9867,40 @@ OnExit(CleanupDictationIndicator)
     static lastHotkeyTick := 0
     static isProcessing := false
 
+    ; #region agent log
+    DebugEdd35a_Log("H1", "Utils.ahk:~#!+0", "handler_entered", '{"isOwner":' . (g_DictationHotkeyIsOwner ? "true" : "false") . ',"progStop":' . (g_ProgrammaticDictationStop ? "true" : "false") . ',"isProcessing":' . (isProcessing ? "true" : "false") . '}')
+    ; #endregion
+
     if (!g_DictationHotkeyIsOwner) {
+        ; #region agent log
+        DebugEdd35a_Log("H4", "Utils.ahk:~#!+0", "early_exit", '{"reason":"not_owner"}')
+        ; #endregion
         return
     }
 
     ; Skip when script sends #!+0 programmatically
     if (g_ProgrammaticDictationStop) {
+        ; #region agent log
+        DebugEdd35a_Log("H1", "Utils.ahk:~#!+0", "early_exit", '{"reason":"programmatic_stop"}')
+        ; #endregion
         g_ProgrammaticDictationStop := false
         return
     }
 
-    if (isProcessing)
+    if (isProcessing) {
+        ; #region agent log
+        DebugEdd35a_Log("H5", "Utils.ahk:~#!+0", "early_exit", '{"reason":"is_processing"}')
+        ; #endregion
         return
+    }
 
     currentTick := A_TickCount
-    if (currentTick - lastHotkeyTick < 200)
+    if (currentTick - lastHotkeyTick < 200) {
+        ; #region agent log
+        DebugEdd35a_Log("H5", "Utils.ahk:~#!+0", "early_exit", '{"reason":"debounce"}')
+        ; #endregion
         return
+    }
     lastHotkeyTick := currentTick
     isProcessing := true
     ; Capture before KeyWait: check timer may clear g_DictationActive when Recording window closes,
@@ -9855,6 +9909,7 @@ OnExit(CleanupDictationIndicator)
 
     keyWaitStart := A_TickCount
     KeyWait("0", "L")
+    keyWaitMs := A_TickCount - keyWaitStart
 
     if (!g_DictationActive) {
         g_DictationActive := true
@@ -9884,6 +9939,11 @@ OnExit(CleanupDictationIndicator)
     }
 
     ToggleDictationMode()
+    ; #region agent log
+    handyRec := 0
+    try handyRec := WinExist("Recording ahk_exe handy.exe")
+    DebugEdd35a_Log("H2", "Utils.ahk:~#!+0", "after_ToggleDictationMode", '{"keyWaitMs":' . keyWaitMs . ',"dictationWasActiveOnKeyPress":' . (dictationWasActiveOnKeyPress ? "true" : "false") . ',"g_DictationActive":' . (g_DictationActive ? "true" : "false") . ',"handyRecordingWinExists":' . (handyRec ? "true" : "false") . '}')
+    ; #endregion
     isProcessing := false
 }
 
