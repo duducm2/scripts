@@ -8800,38 +8800,14 @@ ShowHotstringSelector() {
 ; Ctrl+Alt+Win+L - direct D2C submit path (paste + Enter, then monitor)
 ^!#L:: D2C_FlowManager.GetInstance().StartFromHotstring()
 
-; #region agent log (debug session edd35a)
-DebugEdd35a_Log(hypothesisId, location, message, dataJson := "", runId := "pre-fix") {
-    logPath := A_ScriptDir "\debug-edd35a.log"
-    esc(s) => StrReplace(StrReplace(s, "\", "\\"), '"', '\"')
-    line := '{"sessionId":"edd35a","runId":"' . esc(runId) . '","hypothesisId":"' . esc(hypothesisId) . '","location":"' . esc(location)
-        . '","message":"' . esc(message) . '","timestamp":' . A_TickCount
-    if (dataJson != "")
-        line .= ',"data":' . dataJson
-    line .= '}`n'
-    try FileAppend(line, logPath, "UTF-8")
-}
-; #endregion
-
 ; Ctrl+Alt+Win+4 - Start dictation first (~#!+0), then Gemini tab 1/2 toggle + banner (user can speak while tab switches)
 ^!#4::
 {
     global g_GeminiToggleTab, g_DictationActive
 
-    ; #region agent log
-    DebugEdd35a_Log("H3", "Utils.ahk:^!#4", "entry", '{"g_DictationActive":' . (g_DictationActive ? "true" : "false") . '}')
-    ; #endregion
-
     ; Primary: begin capture immediately so dictation runs while Gemini tab logic executes afterward.
-    if (!g_DictationActive) {
-        ; #region agent log
-        DebugEdd35a_Log("H1", "Utils.ahk:^!#4", "before_Send_hashbang")
-        ; #endregion
+    if (!g_DictationActive)
         Send("#!+0")
-        ; #region agent log
-        DebugEdd35a_Log("H1", "Utils.ahk:^!#4", "after_Send_hashbang")
-        ; #endregion
-    }
 
     geminiHwnd := 0
     try {
@@ -9867,40 +9843,22 @@ OnExit(CleanupDictationIndicator)
     static lastHotkeyTick := 0
     static isProcessing := false
 
-    ; #region agent log
-    DebugEdd35a_Log("H1", "Utils.ahk:~#!+0", "handler_entered", '{"isOwner":' . (g_DictationHotkeyIsOwner ? "true" : "false") . ',"progStop":' . (g_ProgrammaticDictationStop ? "true" : "false") . ',"isProcessing":' . (isProcessing ? "true" : "false") . '}')
-    ; #endregion
-
     if (!g_DictationHotkeyIsOwner) {
-        ; #region agent log
-        DebugEdd35a_Log("H4", "Utils.ahk:~#!+0", "early_exit", '{"reason":"not_owner"}')
-        ; #endregion
         return
     }
 
     ; Skip when script sends #!+0 programmatically
     if (g_ProgrammaticDictationStop) {
-        ; #region agent log
-        DebugEdd35a_Log("H1", "Utils.ahk:~#!+0", "early_exit", '{"reason":"programmatic_stop"}')
-        ; #endregion
         g_ProgrammaticDictationStop := false
         return
     }
 
-    if (isProcessing) {
-        ; #region agent log
-        DebugEdd35a_Log("H5", "Utils.ahk:~#!+0", "early_exit", '{"reason":"is_processing"}')
-        ; #endregion
+    if (isProcessing)
         return
-    }
 
     currentTick := A_TickCount
-    if (currentTick - lastHotkeyTick < 200) {
-        ; #region agent log
-        DebugEdd35a_Log("H5", "Utils.ahk:~#!+0", "early_exit", '{"reason":"debounce"}')
-        ; #endregion
+    if (currentTick - lastHotkeyTick < 200)
         return
-    }
     lastHotkeyTick := currentTick
     isProcessing := true
     ; Capture before KeyWait: check timer may clear g_DictationActive when Recording window closes,
@@ -9909,7 +9867,6 @@ OnExit(CleanupDictationIndicator)
 
     keyWaitStart := A_TickCount
     KeyWait("0", "L")
-    keyWaitMs := A_TickCount - keyWaitStart
 
     if (!g_DictationActive) {
         g_DictationActive := true
@@ -9939,11 +9896,6 @@ OnExit(CleanupDictationIndicator)
     }
 
     ToggleDictationMode()
-    ; #region agent log
-    handyRec := 0
-    try handyRec := WinExist("Recording ahk_exe handy.exe")
-    DebugEdd35a_Log("H2", "Utils.ahk:~#!+0", "after_ToggleDictationMode", '{"keyWaitMs":' . keyWaitMs . ',"dictationWasActiveOnKeyPress":' . (dictationWasActiveOnKeyPress ? "true" : "false") . ',"g_DictationActive":' . (g_DictationActive ? "true" : "false") . ',"handyRecordingWinExists":' . (handyRec ? "true" : "false") . '}')
-    ; #endregion
     isProcessing := false
 }
 
