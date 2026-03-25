@@ -751,7 +751,7 @@ GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false) {
                 ;
             }
             if (A_Index < GEMINI_LISTEN_MENU_MAX_ATTEMPTS) {
-                Send "{Escape}"
+                SendEscape()
                 Sleep GEMINI_MENU_OPEN_MS
             }
         }
@@ -767,7 +767,7 @@ GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false) {
 
         if (!isReading && listenClicked) {
             ShowNotification("Retrying read aloud...", 800, "FFFF00", "000000", 24)
-            Send "{Escape}"
+            SendEscape()
             Sleep GEMINI_MENU_OPEN_MS
             loop GEMINI_LISTEN_MENU_MAX_ATTEMPTS {
                 try {
@@ -787,7 +787,7 @@ GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false) {
                     ;
                 }
                 if (A_Index < GEMINI_LISTEN_MENU_MAX_ATTEMPTS) {
-                    Send "{Escape}"
+                    SendEscape()
                     Sleep GEMINI_MENU_OPEN_MS
                 }
             }

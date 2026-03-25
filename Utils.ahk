@@ -9227,11 +9227,18 @@ SafePlayPrintScreenSound() {
 }
 #InputLevel 0
 
-; Helper to send Escape while respecting dictation state.
-; When dictation is active, this becomes a no-op so Handy is not closed.
-SendEscape(count := 1) {
+; True when physical or synthetic Escape must not be sent (matches Escape:: Handy block).
+IsHandyDictationEscapeSuppressed() {
     global g_DictationActive
-    if (g_DictationActive) {
+    return g_DictationActive || WinActive("Recording ahk_exe handy.exe") || WinActive(
+        "Recording Overlay ahk_exe handy.exe") || WinExist("Recording ahk_exe handy.exe") || WinExist(
+            "Recording Overlay ahk_exe handy.exe")
+}
+
+; Helper to send Escape while respecting dictation state.
+; No-op when Handy recording is active or its Recording/Overlay windows exist (same as Escape::).
+SendEscape(count := 1) {
+    if (IsHandyDictationEscapeSuppressed()) {
         return
     }
     if (count > 1)
@@ -9310,9 +9317,7 @@ Escape::
 
     ; Block Escape when dictation is active, or Handy Recording/Overlay exists or is focused.
     ; WinExist covers unfocused tool windows (WinActive alone missed: session 7982c6 log showed winExistRecording=1, winActiveRecording=0).
-    if (g_DictationActive || WinActive("Recording ahk_exe handy.exe") || WinActive(
-        "Recording Overlay ahk_exe handy.exe") || WinExist("Recording ahk_exe handy.exe") || WinExist(
-            "Recording Overlay ahk_exe handy.exe")) {
+    if (IsHandyDictationEscapeSuppressed()) {
         ; #region agent log
         dbg["branch"] := "blocked_handy"
         Debug7982c6EscapeLog(Map("message", "escape_branch", "hypothesisId", "H1-H2", "data", dbg))

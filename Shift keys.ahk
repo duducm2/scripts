@@ -4084,7 +4084,7 @@ ML_EnsureHotkeyReceptivity(force := false) {
         prevMode := A_CoordModeMouse
         CoordMode("Mouse", "Screen")
         MouseClick("Right", x, y)
-        Send("{Escape}")
+        SendEscape()
         CoordMode("Mouse", prevMode)
         g_ML_ReceptivityHwnd := hwnd
     } catch {

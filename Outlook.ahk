@@ -365,8 +365,8 @@ EnsureOutlookMainModule(targetModule) {
 
 NavigateOutlookToModule(targetModule, failureMsg) {
     targetLabel := (targetModule = "mail") ? "Mailbox" : "Calendar"
-    StandardLoadingBar_Show("⏳ Outlook: opening " targetLabel "...", BANNER_ACCENT_INTERMEDIATE,
-        { passive: false, centerOnHwnd: 0, textWidth: 460, fontSize: 17 })
+    StandardLoadingBar_Show("⏳ Outlook: opening " targetLabel "...", BANNER_ACCENT_INTERMEDIATE, { passive: false,
+        centerOnHwnd: 0, textWidth: 460, fontSize: 17 })
 
     mailboxActivated := ActivateOutlookMailbox()
     calendarActivated := false
@@ -388,7 +388,8 @@ NavigateOutlookToModule(targetModule, failureMsg) {
 
     StandardLoadingBar_Hide(0)
     moduleLabel := (targetModule = "mail") ? "mailbox" : "calendar"
-    ShowCenteredOverlay_Utils("❌ Outlook: Could not switch to " moduleLabel ".", OUTLOOK_BANNER_FAIL_MS, BANNER_ACCENT_ERROR)
+    ShowCenteredOverlay_Utils("❌ Outlook: Could not switch to " moduleLabel ".", OUTLOOK_BANNER_FAIL_MS,
+        BANNER_ACCENT_ERROR)
 }
 
 GetOutlookLaunchPath() {
@@ -601,7 +602,7 @@ ExecuteVoiceAloudOption(option) {
             Sleep(80)
         else
             Sleep(200)
-        Send "{Escape}"
+        SendEscape()
     } else if (option = "from_beginning") {
         Send "{Right}"
         if OUTLOOK_USE_STATE_WAITS
@@ -618,7 +619,7 @@ ExecuteVoiceAloudOption(option) {
             Sleep(80)
         else
             Sleep(200)
-        Send "{Escape}"
+        SendEscape()
     }
 }
 
