@@ -1559,6 +1559,10 @@ r=== CLIP ANGEL ===
 ;         While mode on: press finishes and pastes N clips (Ctrl+C / PrtSc / Alt+PrtSc counted).
 ; =============================================================================
 global FAST_COPY_HOLD_REPEAT_MS := 700
+; Set true to write FastCopyMode_DebugLog NDJSON (development only).
+global FAST_COPY_DEBUG := false
+global FAST_COPY_CLIPBOARD_READ_CYCLE_MS := 1200
+global FAST_COPY_GEMINI_UPLOAD_IDLE_MS := 5000
 global gFastCopyModeActive := false
 global gFastCopyCount := 0
 global gFastCopyPasteTargetHwnd := 0
@@ -1568,6 +1572,9 @@ global gFastCopyLastScreenshotQueue := []
 
 FastCopyMode_DebugLog(hypothesisId, location, message, data := "") {
     ; #region agent log
+    global FAST_COPY_DEBUG
+    if (!FAST_COPY_DEBUG)
+        return
     ; Writes NDJSON to debug-1bed80.log (Debug session: 1bed80)
     try {
         runId := "pre-fix"
@@ -1675,7 +1682,7 @@ FastCopyMode_WaitForClipboardUnlocked(timeoutMs := 2000) {
     ; #endregion agent log
 }
 
-FastCopyMode_WaitForClipboardReadCycle(timeoutMs := 2500) {
+FastCopyMode_WaitForClipboardReadCycle(timeoutMs := 1200) {
     ; #region agent log
     ; Wait until we observe some other process reading/locking the clipboard (OpenClipboard fails)
     ; and then wait until it becomes unlocked again. This reduces the risk of overwriting the
@@ -1685,19 +1692,19 @@ FastCopyMode_WaitForClipboardReadCycle(timeoutMs := 2500) {
     failCount := 0
     okCount := 0
 
-    ; Phase 1: a short, tight sampling window to catch very brief locks.
+    ; Phase 1: short window with Sleep 1 (avoid busy-spinning the hotkey thread).
     sampleUntil := start + 120
     while (A_TickCount < sampleUntil) {
-        if (FastCopyMode_CanOpenClipboardNow())
-            okCount += 1
-        else {
+        if (!FastCopyMode_CanOpenClipboardNow()) {
             failCount += 1
             sawLock := true
             break
         }
+        okCount += 1
+        Sleep 1
     }
 
-    ; Phase 2: regular polling until timeout (handles longer locks).
+    ; Phase 2: regular polling until timeout budget (handles longer locks).
     if (!sawLock) {
         while ((A_TickCount - start) < timeoutMs) {
             if (!FastCopyMode_CanOpenClipboardNow()) {
@@ -1710,7 +1717,8 @@ FastCopyMode_WaitForClipboardReadCycle(timeoutMs := 2500) {
         }
     }
     if (sawLock) {
-        if (FastCopyMode_WaitForClipboardUnlocked(timeoutMs))
+        unlockMs := Min(1500, Max(100, timeoutMs - (A_TickCount - start)))
+        if (FastCopyMode_WaitForClipboardUnlocked(unlockMs))
             return "lock_then_unlock(fails=" failCount ",oks=" okCount ")"
         return "lock_timeout(fails=" failCount ",oks=" okCount ")"
     }
@@ -1721,22 +1729,171 @@ FastCopyMode_WaitForClipboardReadCycle(timeoutMs := 2500) {
 
 FastCopyMode_SendPasteAndWaitForReadCycle(maxAttempts := 2) {
     ; #region agent log
+    global FAST_COPY_CLIPBOARD_READ_CYCLE_MS
     attempt := 0
     cycle := ""
     while (attempt < maxAttempts) {
         attempt += 1
+        seqBefore := Clipboard_GetSequenceNumber()
         Send "^v"
-        cycle := FastCopyMode_WaitForClipboardReadCycle(3000)
+        ; Fast path (Utils.ahk): sequence changes when another process reads/updates clipboard.
+        if (Clipboard_WaitForSequenceChange(seqBefore, 1200, 600)) {
+            cycle := "seq_changed"
+            FastCopyMode_DebugLog("H4", "Shift keys.ahk:FastCopyMode_SendPasteAndWaitForReadCycle", "paste_attempt", Map(
+                "attempt", attempt,
+                "cycle", cycle
+            ))
+            return cycle
+        }
+        cycle := FastCopyMode_WaitForClipboardReadCycle(FAST_COPY_CLIPBOARD_READ_CYCLE_MS)
         FastCopyMode_DebugLog("H4", "Shift keys.ahk:FastCopyMode_SendPasteAndWaitForReadCycle", "paste_attempt", Map(
             "attempt", attempt,
             "cycle", cycle
         ))
-        if (cycle != "no_lock_seen")
+        if (InStr(cycle, "no_lock_seen") != 1)
             return cycle
         ; If we didn't observe any clipboard read/lock, try once more (some targets debounce).
         Sleep 60
     }
     return cycle
+    ; #endregion agent log
+}
+
+FastCopyMode_IsGeminiActiveInChrome() {
+    ; #region agent log
+    try {
+        return (WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "gemini", false))
+    } catch {
+        return false
+    }
+    ; #endregion agent log
+}
+
+FastCopyMode_GetActiveChromeHwnd() {
+    ; #region agent log
+    try {
+        hwnd := WinGetID("A")
+        if (hwnd && WinExist("ahk_id " hwnd) && WinActive("ahk_id " hwnd))
+            return hwnd
+    } catch {
+    }
+    return 0
+    ; #endregion agent log
+}
+
+FastCopyMode_UiaForActiveChrome() {
+    ; #region agent log
+    hwnd := FastCopyMode_GetActiveChromeHwnd()
+    if (!hwnd)
+        throw Error("no_active_hwnd")
+    return UIA_Browser("ahk_id " hwnd)
+    ; #endregion agent log
+}
+
+FastCopyMode_GetGeminiSearchRoot(uia) {
+    ; #region agent log
+    ; Same pattern as GetGeminiSearchRoot in Gemini.ahk — smaller UIA subtree than full document.
+    try {
+        root := uia.GetCurrentMainPaneElement()
+        if (root)
+            return root
+    } catch {
+    }
+    return uia
+    ; #endregion agent log
+}
+
+FastCopyMode_FocusGeminiPromptField(uia := "") {
+    ; #region agent log
+    ; Optional uia: reuse cached UIA_Browser for the whole paste loop (efficiency).
+    if (uia = "") {
+        try {
+            uia := FastCopyMode_UiaForActiveChrome()
+        } catch Error as e {
+            FastCopyMode_DebugLog("H6", "Shift keys.ahk:FastCopyMode_FocusGeminiPromptField", "uia_attach_error", Map(
+                "msg", SubStr(e.Message, 1, 120)
+            ))
+            return false
+        }
+    }
+
+    try {
+        ; Use shared helper from Utils.ahk (Gemini.ahk uses the same).
+        promptField := FindGeminiPromptField(uia)
+
+        if (promptField && IsObject(promptField)) {
+            try {
+                promptField.SetFocus()
+            } catch {
+                try promptField.Click()
+                catch {
+                }
+            }
+            Sleep 80
+            try {
+                if (promptField.HasKeyboardFocus)
+                    return true
+            } catch {
+                return true
+            }
+        }
+    } catch Error as e {
+        FastCopyMode_DebugLog("H6", "Shift keys.ahk:FastCopyMode_FocusGeminiPromptField", "focus_error", Map(
+            "msg", SubStr(e.Message, 1, 120)
+        ))
+    }
+    return false
+    ; #endregion agent log
+}
+
+FastCopyMode_GeminiIsUploadingImage(uia) {
+    ; #region agent log
+    ; Heuristic: look for common uploading labels in Gemini UI (English + PT-BR).
+    ; Scoped to main pane only; do not treat every ProgressBar as upload (false positives).
+    try {
+        root := FastCopyMode_GetGeminiSearchRoot(uia)
+        texts := root.FindAll({ Type: 50020 }) ; Text
+        for t in texts {
+            name := t.Name
+            if (!name)
+                continue
+            low := StrLower(name)
+            if (InStr(low, "open upload file menu"))
+                continue
+            if (InStr(low, "upload") || InStr(low, "sending") || InStr(low, "carreg") || InStr(low, "enviando")) {
+                return true
+            }
+        }
+    } catch {
+    }
+    return false
+    ; #endregion agent log
+}
+
+FastCopyMode_WaitForGeminiUploadIdle(uia := "", timeoutMs := 0) {
+    ; #region agent log
+    global FAST_COPY_GEMINI_UPLOAD_IDLE_MS
+    if (timeoutMs <= 0)
+        timeoutMs := FAST_COPY_GEMINI_UPLOAD_IDLE_MS
+    ; Wait until Gemini is no longer showing an upload-in-progress indicator.
+    start := A_TickCount
+    if (uia = "") {
+        try {
+            uia := FastCopyMode_UiaForActiveChrome()
+        } catch Error as e {
+            FastCopyMode_DebugLog("H6", "Shift keys.ahk:FastCopyMode_WaitForGeminiUploadIdle", "uia_browser_error", Map(
+                "msg", SubStr(e.Message, 1, 120)
+            ))
+            return "uia_fail"
+        }
+    }
+
+    while ((A_TickCount - start) < timeoutMs) {
+        if (!FastCopyMode_GeminiIsUploadingImage(uia))
+            return "idle"
+        Sleep 150
+    }
+    return "timeout"
     ; #endregion agent log
 }
 
@@ -1792,6 +1949,13 @@ FastCopyMode_PasteScreenshotQueue(queue) {
     if (!IsObject(queue) || queue.Length < 1)
         return
 
+    total := queue.Length
+    try {
+        StandardLoadingBar_Show("⏳ Pasting screenshots…", BANNER_ACCENT_INTERMEDIATE, { passive: false, centerOnHwnd: 0,
+            fontSize: 17 })
+    } catch {
+    }
+
     clipSave := ""
     try clipSave := ClipboardAll()
 
@@ -1799,18 +1963,49 @@ FastCopyMode_PasteScreenshotQueue(queue) {
         try {
             proc := WinGetProcessName("A")
             cls := WinGetClass("A")
+            title := WinGetTitle("A")
         } catch {
             proc := ""
             cls := ""
+            title := ""
+        }
+        isGeminiSession := (proc = "chrome.exe" && InStr(title, "gemini", false))
+        cachedGeminiUia := ""
+        if (isGeminiSession) {
+            try {
+                hwndGem := FastCopyMode_GetActiveChromeHwnd()
+                if (hwndGem)
+                    cachedGeminiUia := UIA_Browser("ahk_id " hwndGem)
+            } catch {
+                cachedGeminiUia := ""
+            }
         }
         FastCopyMode_DebugLog("H3", "Shift keys.ahk:FastCopyMode_PasteScreenshotQueue", "paste_enter", Map(
             "queueLen", queue.Length,
             "hasImageAtEnter", FastCopyMode_ClipboardHasImage() ? "1" : "0",
             "proc", proc,
-            "class", cls
+            "class", cls,
+            "title", SubStr(title, 1, 120),
+            "isGeminiSession", isGeminiSession ? "1" : "0"
         ))
         for idx, snap in queue {
             try {
+                try StandardLoadingBar_Update("⏳ Pasting image " idx " / " total " …")
+                catch {
+                }
+                ; Gemini: ensure prompt is focused BEFORE each paste.
+                if (isGeminiSession) {
+                    try {
+                        focusedPre := FastCopyMode_FocusGeminiPromptField(cachedGeminiUia) ? "1" : "0"
+                    } catch {
+                        focusedPre := "0"
+                    }
+                    FastCopyMode_DebugLog("H6", "Shift keys.ahk:FastCopyMode_PasteScreenshotQueue", "gemini_before_paste", Map(
+                        "idx", idx,
+                        "focusedPrompt", focusedPre
+                    ))
+                }
+
                 A_Clipboard := snap
                 ClipWait 0.6, 1
                 snapSize := ""
@@ -1826,6 +2021,15 @@ FastCopyMode_PasteScreenshotQueue(queue) {
                     "idx", idx,
                     "cycle", cycle
                 ))
+
+                ; Gemini-specific: images require upload + prompt field focus for subsequent pastes.
+                if (isGeminiSession) {
+                    idleStatus := FastCopyMode_WaitForGeminiUploadIdle(cachedGeminiUia)
+                    FastCopyMode_DebugLog("H6", "Shift keys.ahk:FastCopyMode_PasteScreenshotQueue", "gemini_after_paste", Map(
+                        "idx", idx,
+                        "uploadIdle", idleStatus
+                    ))
+                }
             } catch {
                 ; continue to next screenshot
                 FastCopyMode_DebugLog("H4", "Shift keys.ahk:FastCopyMode_PasteScreenshotQueue", "paste_iter_failed", Map(
@@ -1836,6 +2040,7 @@ FastCopyMode_PasteScreenshotQueue(queue) {
     } finally {
         if (clipSave != "")
             try A_Clipboard := clipSave
+        try StandardLoadingBar_Hide(0)
         FastCopyMode_DebugLog("H3", "Shift keys.ahk:FastCopyMode_PasteScreenshotQueue", "paste_exit", Map(
             "restoredClipboard", clipSave != "" ? "1" : "0"
         ))
@@ -1848,13 +2053,28 @@ ExecuteSequentialPaste(actionCount) {
     n := Integer(actionCount)
     if (n < 1)
         return
-    Send "!v"
-    Sleep 50
-    Send "^!b"
-    remaining := n - 1
-    loop remaining {
-        Sleep 300
+    try {
+        StandardLoadingBar_Show("⏳ Pasting from clipboard…", BANNER_ACCENT_INTERMEDIATE, { passive: false, centerOnHwnd: 0,
+            fontSize: 17 })
+    } catch {
+    }
+    try {
+        try StandardLoadingBar_Update("⏳ Pasting clip 1 / " n " …")
+        catch {
+        }
+        Send "!v"
+        Sleep 50
         Send "^!b"
+        remaining := n - 1
+        loop remaining {
+            try StandardLoadingBar_Update("⏳ Pasting clip " (A_Index + 1) " / " n " …")
+            catch {
+            }
+            Sleep 300
+            Send "^!b"
+        }
+    } finally {
+        try StandardLoadingBar_Hide(0)
     }
 }
 
