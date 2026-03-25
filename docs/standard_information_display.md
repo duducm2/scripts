@@ -85,6 +85,7 @@ These wrap `StandardLoadingBar_*` with preset styles:
 | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `AiModelBanner_Show` / `AiModelBanner_Hide`                 | AI model selection (textWidth 450, fontSize 17)                                                                                                                  |
 | `ClipAngelBanner_Show` / `ClipAngelBanner_Hide`             | Clip Angel (textWidth 200, fontSize 17)                                                                                                                          |
+| `FastCopyModeBanner_Show` / `FastCopyModeBanner_Update` / `FastCopyModeBanner_Hide` | Fast Copy Mode in Shift keys (textWidth 480, fontSize 17, `BANNER_ACCENT_INFO`, `promptKeys`, `trackActiveMonitor`)                                              |
 | `ShowSingleCharTabBanner_Utils(tabNumber)`                  | Tab number (1 or 2); auto-hides after 700 ms; **fontSize 72** (excluded from 17px standard)                                                                      |
 | `ShowCenteredOverlay_Utils(text, duration, bgColor)`        | Short message with duration; Show + Hide(duration); fontSize 17; message should start with emoji                                                                 |
 | `HotstringGeminiBanner_Show` / `HotstringGeminiBanner_Hide` | Gemini redirect (textWidth 280, fontSize 17); default text with emoji                                                                                            |
@@ -102,6 +103,7 @@ These wrap `StandardLoadingBar_*` with preset styles:
 | 1929–1972 | `StandardLoadingBar_Update`, `StandardLoadingBar_Hide`, `StandardLoadingBar_CloseKeysOverlay`                                                                                                                                                       |
 | 2010–2076 | `StandardLoadingBar_ShowWithKeys`, `StandardLoadingBar_RegisterKeyHandler`, `StandardLoadingBar_KeyWrapper`, `StandardLoadingBar_KeysTimeoutFired`                                                                                                  |
 | 1409–1454 | `AiModelBanner_Show`/`Hide`, `ClipAngelBanner_Show`/`Hide`, `ShowSingleCharTabBanner_Utils`                                                                                                                                                         |
+| 2303–2316 | `FastCopyModeBanner_Show` / `FastCopyModeBanner_Update` / `FastCopyModeBanner_Hide` (Shift keys Fast Copy Mode)                                                                                                                                     |
 | 1738–1745 | `ShowCenteredOverlay_Utils`                                                                                                                                                                                                                         |
 | 2081–2152 | `HotstringGeminiBanner_Show`/`Hide`, `DictationGeminiConfirm_ShowAndWait` (uses `StandardLoadingBar_ShowWithKeys` with `promptKeys` `"[Y] Confirm  [N] Cancel"`, `noBorder: true`, `barColor` `"1E1E2E"`)                                           |
 | 5493–5500 | Peek PDF flow                                                                                                                                                                                                                                       |
@@ -127,6 +129,7 @@ These wrap `StandardLoadingBar_*` with preset styles:
 | 3248–3463   | Wikipedia save scroll (Loading Indication)       |
 | 9936–10336  | Fold/Unfold Explorer                             |
 | 15034–15038 | `ShowCenteredOverlay` wrapper (Information Only) |
+| ~1556–1647  | Fast Copy Mode (`#!+j`, `FastCopyModeBanner_*`, `#HotIf` copy hooks) |
 
 ### AppLaunchers.ahk
 

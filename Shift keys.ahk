@@ -1380,7 +1380,7 @@ Letters available: B, C, G, H, I, K, M, N, O, P, T, U, V, X, Y, Z
 === CURSOR ===
 [Win+Alt+Shift+N] > Opens or activates Cursor (habits, home, punctual, or work windows)
 
-[Win+Alt+Shift+J] > Available
+[Win+Alt+Shift+J] > Fast Copy Mode: toggle on (counts Ctrl+C / PrtSc / Alt+PrtSc); toggle off to paste N clips (Clip Angel)
 
 === SPOTIFY ===
 [Win+Alt+Shift+S] > Opens or activates Spotify
@@ -1552,6 +1552,99 @@ r=== CLIP ANGEL ===
     Sleep 50
     Send "^!b"
 }
+
+; =============================================================================
+; Clip Angel: Fast Copy Mode + sequential paste (multiple clips in order)
+; Hotkey: Win+Alt+Shift+J — first press arms mode and counts Ctrl+C / PrtSc / Alt+PrtSc; second press pastes N clips.
+; =============================================================================
+global gFastCopyModeActive := false
+global gFastCopyCount := 0
+global gFastCopyPasteTargetHwnd := 0
+
+ExecuteSequentialPaste(actionCount) {
+    if (!IsInteger(actionCount))
+        return
+    n := Integer(actionCount)
+    if (n < 1)
+        return
+    Send "!v"
+    Sleep 50
+    Send "^!b"
+    remaining := n - 1
+    loop remaining {
+        Sleep 300
+        Send "^!b"
+    }
+}
+
+FastCopyMode_IsActive() {
+    global gFastCopyModeActive
+    return gFastCopyModeActive
+}
+
+FastCopyMode_OnCopy() {
+    global gFastCopyCount
+    gFastCopyCount += 1
+    FastCopyModeBanner_Update(gFastCopyCount)
+}
+
+FastCopyMode_Start() {
+    global gFastCopyModeActive, gFastCopyCount, gFastCopyPasteTargetHwnd
+    try {
+        gFastCopyPasteTargetHwnd := WinGetID("A")
+    } catch {
+        gFastCopyPasteTargetHwnd := 0
+    }
+    gFastCopyCount := 0
+    gFastCopyModeActive := true
+    try {
+        FastCopyModeBanner_Show()
+    } catch Error {
+        gFastCopyModeActive := false
+        ShowCenteredOverlay_Utils("❌ Could not start Fast Copy Mode", 2000, BANNER_ACCENT_ERROR)
+    }
+}
+
+FastCopyMode_Finish() {
+    global gFastCopyModeActive, gFastCopyCount, gFastCopyPasteTargetHwnd
+    count := gFastCopyCount
+    target := gFastCopyPasteTargetHwnd
+    try {
+        FastCopyModeBanner_Hide()
+    } finally {
+        gFastCopyModeActive := false
+        gFastCopyCount := 0
+    }
+    try {
+        if (target && WinExist("ahk_id " target)) {
+            WinActivate "ahk_id " target
+            WinWaitActive("ahk_id " target, , 2)
+            Sleep 150
+        }
+        if (count > 0)
+            ExecuteSequentialPaste(count)
+        else
+            ShowCenteredOverlay_Utils("⚠ No copies recorded — nothing to paste", 2500, BANNER_ACCENT_INTERMEDIATE)
+    } catch Error as e {
+        ShowCenteredOverlay_Utils("❌ Fast Copy Mode: " SubStr(e.Message, 1, 80), 2500, BANNER_ACCENT_ERROR)
+    }
+}
+
+FastCopyMode_Toggle() {
+    global gFastCopyModeActive
+    if (!gFastCopyModeActive)
+        FastCopyMode_Start()
+    else
+        FastCopyMode_Finish()
+}
+
+#!+j:: FastCopyMode_Toggle()
+
+#HotIf FastCopyMode_IsActive()
+~^c:: FastCopyMode_OnCopy()
+~PrintScreen:: FastCopyMode_OnCopy()
+~!PrintScreen:: FastCopyMode_OnCopy()
+#HotIf
 
 ;-------------------------------------------------------------------
 ; Environment paths (unchanged)
@@ -12783,8 +12876,10 @@ Mobills_GetBudgetsPrevNext(uia, &prevBtn, &nextBtn) {
 
 Mobills_FindPagerByName(uia, dir) {
     ; Try common labels (EN/PT). Substring match.
-    namesPrev := ["Go to previous page", "previous page", "Previous", "Prev", "Anterior", "Página anterior", "Ir para a página anterior"]
-    namesNext := ["Go to next page", "next page", "Next", "Próximo", "Proximo", "Página seguinte", "Ir para a próxima página",
+    namesPrev := ["Go to previous page", "previous page", "Previous", "Prev", "Anterior", "Página anterior",
+        "Ir para a página anterior"]
+    namesNext := ["Go to next page", "next page", "Next", "Próximo", "Proximo", "Página seguinte",
+        "Ir para a próxima página",
         "Ir para a proxima página"]
     names := (dir = "Prev") ? namesPrev : namesNext
 
@@ -13233,19 +13328,15 @@ Mobills_SelectNewMenuItem(itemName) {
         if !uia
             return false
 
-        actionBtn := Mobills_FindElementByCandidates(uia, [
-            { Type: 50000, AutomationId: "action-button" },
-            { Type: 50000, Name: "New", matchmode: "Substring" }
-        ])
+        actionBtn := Mobills_FindElementByCandidates(uia, [{ Type: 50000, AutomationId: "action-button" }, { Type: 50000,
+            Name: "New", matchmode: "Substring" }])
         if !actionBtn
             return false
         actionBtn.Click()
         Sleep 250
 
-        menuItem := Mobills_FindElementByCandidates(uia, [
-            { Type: 50011, Name: itemName, matchmode: "Substring" },
-            { Type: 50000, Name: itemName, matchmode: "Substring" }
-        ])
+        menuItem := Mobills_FindElementByCandidates(uia, [{ Type: 50011, Name: itemName, matchmode: "Substring" }, { Type: 50000,
+            Name: itemName, matchmode: "Substring" }])
         if !menuItem
             return false
         menuItem.Click()
@@ -13262,10 +13353,8 @@ FocusDescriptionField() {
         if !uia
             return false
 
-        descriptionElement := Mobills_FindElementByCandidates(uia, [
-            { Name: "Description", Type: 50004, matchmode: "Substring" },
-            { Name: "Description", Type: "Edit", matchmode: "Substring" },
-            { ClassName: "MuiAutocomplete-input", Type: "Edit", matchmode: "Substring" }
+        descriptionElement := Mobills_FindElementByCandidates(uia, [{ Name: "Description", Type: 50004, matchmode: "Substring" }, { Name: "Description",
+            Type: "Edit", matchmode: "Substring" }, { ClassName: "MuiAutocomplete-input", Type: "Edit", matchmode: "Substring" }
         ])
 
         if !descriptionElement {

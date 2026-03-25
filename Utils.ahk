@@ -2300,6 +2300,21 @@ ClipAngelBanner_Hide() {
     StandardLoadingBar_Hide(0)
 }
 
+; Fast Copy Mode (Shift keys — Clip Angel sequential paste): persistent banner with live copy count.
+FastCopyModeBanner_Show() {
+    StandardLoadingBar_Show("📋 Fast Copy Mode — copies: 0", BANNER_ACCENT_INFO, { passive: true, centerOnHwnd: 0,
+        textWidth: 480, fontSize: 17, passiveBgColor: BANNER_ACCENT_INFO, alpha: 220,
+        promptKeys: "[Win+Alt+Shift+J] Finish and paste", trackActiveMonitor: true })
+}
+
+FastCopyModeBanner_Update(copyCount) {
+    StandardLoadingBar_Update("📋 Fast Copy Mode — copies: " copyCount)
+}
+
+FastCopyModeBanner_Hide() {
+    StandardLoadingBar_Hide(0)
+}
+
 ; =============================================================================
 ; Single-character tab banner (uses standard loading indicator). tabNumber 1 = blue, 2 = yellow. Auto-hides after 700 ms.
 ; =============================================================================
@@ -9457,11 +9472,13 @@ ShowDictationIndicator() {
 
     ; Inner red fill, then status text on top (transparent over red)
     g_DictationIndicatorGui.Add("Text",
-        "x" . DICTATION_BORDER_PX . " y" . DICTATION_BORDER_PX . " w" . DICTATION_SQUARE_SIZE . " h" . DICTATION_SQUARE_SIZE .
+        "x" . DICTATION_BORDER_PX . " y" . DICTATION_BORDER_PX . " w" . DICTATION_SQUARE_SIZE . " h" .
+        DICTATION_SQUARE_SIZE .
         " BackgroundFF0000", "")
     g_DictationIndicatorGui.SetFont("s14 cFFFFFF Bold", "Segoe UI")
     g_DictationIndicatorText := g_DictationIndicatorGui.Add("Text",
-        "x" . DICTATION_BORDER_PX . " y" . DICTATION_BORDER_PX . " w" . DICTATION_SQUARE_SIZE . " h" . DICTATION_SQUARE_SIZE .
+        "x" . DICTATION_BORDER_PX . " y" . DICTATION_BORDER_PX . " w" . DICTATION_SQUARE_SIZE . " h" .
+        DICTATION_SQUARE_SIZE .
         " Center +BackgroundTrans", "")
 
     ; Reset pulse opacity
