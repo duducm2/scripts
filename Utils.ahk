@@ -15,54 +15,6 @@ DebugFlowLog(location, message, dataStr := "", hypothesisId := "") {
     ; These agent debug logs are not required for runtime behavior.
     return
 }
-
-; Session 7982c6: Escape / Handy NDJSON (debug-7982c6.log)
-Debug7982c6JsonStr(s) {
-    s := String(s)
-    s := StrReplace(s, "\", "\\")
-    s := StrReplace(s, '"', '\"')
-    s := StrReplace(s, "`n", "\n")
-    s := StrReplace(s, "`r", "")
-    return '"' s '"'
-}
-
-Debug7982c6JoinComma(arr) {
-    out := ""
-    for i, x in arr
-        out .= (i > 1 ? "," : "") x
-    return out
-}
-
-Debug7982c6EscapeLog(data) {
-    logPath := A_ScriptDir "\debug-7982c6.log"
-    pairs := []
-    pairs.Push('"sessionId":' Debug7982c6JsonStr("7982c6"))
-    pairs.Push('"timestamp":' A_TickCount)
-    pairs.Push('"location":' Debug7982c6JsonStr("Utils.ahk:Escape::"))
-    pairs.Push('"message":' Debug7982c6JsonStr(data.Has("message") ? data["message"] : "escape"))
-    pairs.Push('"hypothesisId":' Debug7982c6JsonStr(data.Has("hypothesisId") ? data["hypothesisId"] : "H1-H5"))
-    pairs.Push('"runId":' Debug7982c6JsonStr(data.Has("runId") ? data["runId"] : "pre"))
-    d := data.Has("data") ? data["data"] : Map()
-    inner := []
-    for k, v in d {
-        if (v is Array) {
-            parts := []
-            for x in v
-                parts.Push(Debug7982c6JsonStr(x))
-            inner.Push(Debug7982c6JsonStr(k) ":[" Debug7982c6JoinComma(parts) "]")
-        } else if (v is Integer || v is Float) {
-            inner.Push(Debug7982c6JsonStr(k) ":" v)
-        } else if (v = true || v = false) {
-            inner.Push(Debug7982c6JsonStr(k) ":" (v ? "true" : "false"))
-        } else {
-            inner.Push(Debug7982c6JsonStr(k) ":" Debug7982c6JsonStr(v))
-        }
-    }
-    pairs.Push('"data":{' Debug7982c6JoinComma(inner) "}")
-    try FileAppend "{" Debug7982c6JoinComma(pairs) "}`n", logPath, "UTF-8"
-    catch {
-    }
-}
 ; #endregion
 
 #include UIA-v2\Lib\UIA.ahk
@@ -9266,31 +9218,8 @@ Escape::
     ; This ensures Esc remains restricted for the entire duration of dictation
     global g_DictationActive, g_OnEscapePressed
 
-    ; #region agent log (session 7982c6: H1 focus vs WinExist, H2 titles, H3 SendInput path, H5 sentinel)
-    dbg := Map()
-    handyTitles := []
-    try {
-        for hwnd in WinGetList("ahk_exe handy.exe")
-            handyTitles.Push(WinGetTitle(hwnd))
-    } catch {
-    }
-    dbg["g_DictationActive"] := g_DictationActive ? true : false
-    dbg["winActiveRecording"] := WinActive("Recording ahk_exe handy.exe") ? true : false
-    dbg["winActiveOverlay"] := WinActive("Recording Overlay ahk_exe handy.exe") ? true : false
-    dbg["winExistRecording"] := WinExist("Recording ahk_exe handy.exe") ? true : false
-    dbg["winExistOverlay"] := WinExist("Recording Overlay ahk_exe handy.exe") ? true : false
-    dbg["activeTitle"] := WinGetTitle("A")
-    dbg["handyTitles"] := handyTitles
-    dbg["wmSentinelExists"] := FileExist(A_ScriptDir "\.cursor\wm_selector_open") ? true : false
-    dbg["onEscapeRegistered"] := g_OnEscapePressed ? true : false
-    ; #endregion
-
     ; If a consumer (e.g. project selector) registered an escape handler, run it and consume the key
     if (g_OnEscapePressed) {
-        ; #region agent log
-        dbg["branch"] := "on_escape_callback"
-        Debug7982c6EscapeLog(Map("message", "escape_branch", "hypothesisId", "H5", "data", dbg))
-        ; #endregion
         try {
             g_OnEscapePressed.Call()
         } catch {
@@ -9302,10 +9231,6 @@ Escape::
     try {
         sentinel := A_ScriptDir "\.cursor\wm_selector_open"
         if (FileExist(sentinel)) {
-            ; #region agent log
-            dbg["branch"] := "wm_selector_sentinel"
-            Debug7982c6EscapeLog(Map("message", "escape_branch", "hypothesisId", "H5", "data", dbg))
-            ; #endregion
             closeReq := A_ScriptDir "\.cursor\wm_selector_close_request"
             try FileAppend "", closeReq
             catch {
@@ -9316,12 +9241,8 @@ Escape::
     }
 
     ; Block Escape when dictation is active, or Handy Recording/Overlay exists or is focused.
-    ; WinExist covers unfocused tool windows (WinActive alone missed: session 7982c6 log showed winExistRecording=1, winActiveRecording=0).
+    ; WinExist covers unfocused tool windows that do not hold foreground focus.
     if (IsHandyDictationEscapeSuppressed()) {
-        ; #region agent log
-        dbg["branch"] := "blocked_handy"
-        Debug7982c6EscapeLog(Map("message", "escape_branch", "hypothesisId", "H1-H2", "data", dbg))
-        ; #endregion
         ; Block Escape from reaching handy.exe - do nothing
         ; This prevents the dictation software from closing
         return
@@ -9329,10 +9250,6 @@ Escape::
 
     ; Otherwise, forward Escape to the system
     ; Use SendInput for more reliable key forwarding
-    ; #region agent log
-    dbg["branch"] := "forward_sendinput"
-    Debug7982c6EscapeLog(Map("message", "escape_branch", "hypothesisId", "H1-H3", "data", dbg))
-    ; #endregion
     SendInput "{Escape}"
 }
 #InputLevel 0
