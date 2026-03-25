@@ -1563,12 +1563,283 @@ global gFastCopyModeActive := false
 global gFastCopyCount := 0
 global gFastCopyPasteTargetHwnd := 0
 global gFastCopyLastSuccessfulCount := 0
+global gFastCopyScreenshotQueue := []
+global gFastCopyLastScreenshotQueue := []
+
+FastCopyMode_DebugLog(hypothesisId, location, message, data := "") {
+    ; #region agent log
+    ; Writes NDJSON to debug-1bed80.log (Debug session: 1bed80)
+    try {
+        runId := "pre-fix"
+        logPath := "C:\Users\fie7ca\Documents\scripts\debug-1bed80.log"
+        ; Keep data small and non-sensitive; accept either a string or a Map-like object.
+        dataJson := "{}"
+        if (IsObject(data)) {
+            parts := []
+            for k, v in data {
+                try parts.Push('"' FastCopyMode_JsonEscape(k) '":"' FastCopyMode_JsonEscape(v) '"')
+            }
+            joined := ""
+            if (parts.Length) {
+                for i, p in parts {
+                    joined .= (i = 1 ? "" : ",") p
+                }
+            }
+            dataJson := "{" joined "}"
+        } else if (data != "") {
+            dataJson := '{"value":"' FastCopyMode_JsonEscape(data) '"}'
+        }
+        line := '{'
+            . '"sessionId":"1bed80",'
+            . '"timestamp":' A_TickCount + 0 ','
+            . '"runId":"' runId '",'
+            . '"hypothesisId":"' FastCopyMode_JsonEscape(hypothesisId) '",'
+            . '"location":"' FastCopyMode_JsonEscape(location) '",'
+            . '"message":"' FastCopyMode_JsonEscape(message) '",'
+            . '"data":' dataJson
+            . '}'
+        FileAppend(line "`n", logPath, "UTF-8")
+    } catch {
+        ; never break user flow
+    }
+    ; #endregion agent log
+}
+
+FastCopyMode_JsonEscape(s) {
+    ; #region agent log
+    try {
+        if (s = "")
+            return ""
+    } catch {
+        return ""
+    }
+    s := "" s
+    s := StrReplace(s, "\", "\\")
+    s := StrReplace(s, '"', '\"')
+    s := StrReplace(s, "`r", "\r")
+    s := StrReplace(s, "`n", "\n")
+    return s
+    ; #endregion agent log
+}
+
+FastCopyMode_ClipboardHasImage() {
+    ; #region agent log
+    ; CF_DIB=8, CF_DIBV5=17, CF_BITMAP=2
+    try {
+        return !!(DllCall("IsClipboardFormatAvailable", "UInt", 8, "Int")
+            || DllCall("IsClipboardFormatAvailable", "UInt", 17, "Int")
+            || DllCall("IsClipboardFormatAvailable", "UInt", 2, "Int"))
+    } catch {
+        return false
+    }
+    ; #endregion agent log
+}
+
+FastCopyMode_WaitForClipboardImage(timeoutMs := 1200) {
+    ; #region agent log
+    start := A_TickCount
+    while ((A_TickCount - start) < timeoutMs) {
+        if (FastCopyMode_ClipboardHasImage())
+            return true
+        Sleep 15
+    }
+    return false
+    ; #endregion agent log
+}
+
+FastCopyMode_CanOpenClipboardNow() {
+    ; #region agent log
+    ; Returns true if clipboard can be opened immediately (no long lock).
+    ok := false
+    try {
+        if (DllCall("OpenClipboard", "ptr", 0, "int")) {
+            ok := true
+            DllCall("CloseClipboard")
+        }
+    } catch {
+        ok := false
+    }
+    return ok
+    ; #endregion agent log
+}
+
+FastCopyMode_WaitForClipboardUnlocked(timeoutMs := 2000) {
+    ; #region agent log
+    start := A_TickCount
+    while ((A_TickCount - start) < timeoutMs) {
+        if (FastCopyMode_CanOpenClipboardNow())
+            return true
+        Sleep 15
+    }
+    return false
+    ; #endregion agent log
+}
+
+FastCopyMode_WaitForClipboardReadCycle(timeoutMs := 2500) {
+    ; #region agent log
+    ; Wait until we observe some other process reading/locking the clipboard (OpenClipboard fails)
+    ; and then wait until it becomes unlocked again. This reduces the risk of overwriting the
+    ; clipboard before the target app has actually consumed the bitmap.
+    start := A_TickCount
+    sawLock := false
+    failCount := 0
+    okCount := 0
+
+    ; Phase 1: a short, tight sampling window to catch very brief locks.
+    sampleUntil := start + 120
+    while (A_TickCount < sampleUntil) {
+        if (FastCopyMode_CanOpenClipboardNow())
+            okCount += 1
+        else {
+            failCount += 1
+            sawLock := true
+            break
+        }
+    }
+
+    ; Phase 2: regular polling until timeout (handles longer locks).
+    if (!sawLock) {
+        while ((A_TickCount - start) < timeoutMs) {
+            if (!FastCopyMode_CanOpenClipboardNow()) {
+                failCount += 1
+                sawLock := true
+                break
+            }
+            okCount += 1
+            Sleep 10
+        }
+    }
+    if (sawLock) {
+        if (FastCopyMode_WaitForClipboardUnlocked(timeoutMs))
+            return "lock_then_unlock(fails=" failCount ",oks=" okCount ")"
+        return "lock_timeout(fails=" failCount ",oks=" okCount ")"
+    }
+    ; Never saw the clipboard get locked (target might not read immediately or at all).
+    return "no_lock_seen(fails=" failCount ",oks=" okCount ")"
+    ; #endregion agent log
+}
+
+FastCopyMode_SendPasteAndWaitForReadCycle(maxAttempts := 2) {
+    ; #region agent log
+    attempt := 0
+    cycle := ""
+    while (attempt < maxAttempts) {
+        attempt += 1
+        Send "^v"
+        cycle := FastCopyMode_WaitForClipboardReadCycle(3000)
+        FastCopyMode_DebugLog("H4", "Shift keys.ahk:FastCopyMode_SendPasteAndWaitForReadCycle", "paste_attempt", Map(
+            "attempt", attempt,
+            "cycle", cycle
+        ))
+        if (cycle != "no_lock_seen")
+            return cycle
+        ; If we didn't observe any clipboard read/lock, try once more (some targets debounce).
+        Sleep 60
+    }
+    return cycle
+    ; #endregion agent log
+}
 
 FastCopyMode_ReleaseHotkeyModifiers() {
     ; Ensure the Win+Alt+Shift hotkey modifiers can't leak into paste keys.
     ; Releasing modifiers does not activate or focus any other window.
     Send "{LWin up}{RWin up}{Alt up}{Shift up}{Ctrl up}"
     Sleep 30
+}
+
+FastCopyMode_CaptureScreenshotToQueue() {
+    global gFastCopyScreenshotQueue
+
+    FastCopyMode_DebugLog("H1", "Shift keys.ahk:FastCopyMode_CaptureScreenshotToQueue", "capture_enter", Map(
+        "queueLenBefore", gFastCopyScreenshotQueue.Length,
+        "hasImageBefore", FastCopyMode_ClipboardHasImage() ? "1" : "0"
+    ))
+
+    ; Give the OS a moment to push the screenshot into the clipboard.
+    ; Alt+PrintScreen updates the clipboard with an image; rapid captures can overwrite each other
+    ; unless we snapshot the clipboard right away.
+    ; Wait for a real *image* to appear (not just "clipboard has something").
+    try A_Clipboard := ""
+    ok := FastCopyMode_WaitForClipboardImage(1500)
+    FastCopyMode_DebugLog("H2", "Shift keys.ahk:FastCopyMode_CaptureScreenshotToQueue", "wait_image_done", Map(
+        "ok", ok ? "1" : "0",
+        "hasImageAfter", FastCopyMode_ClipboardHasImage() ? "1" : "0"
+    ))
+    if (!ok)
+        return
+
+    try {
+        snap := ClipboardAll()
+        gFastCopyScreenshotQueue.Push(snap)
+        snapSize := ""
+        try snapSize := snap.Size
+        FastCopyMode_DebugLog("H1", "Shift keys.ahk:FastCopyMode_CaptureScreenshotToQueue", "capture_pushed", Map(
+            "queueLenAfter", gFastCopyScreenshotQueue.Length,
+            "hasImageAfter", FastCopyMode_ClipboardHasImage() ? "1" : "0",
+            "snapType", Type(snap),
+            "snapSize", snapSize
+        ))
+    } catch {
+        ; If clipboard snapshot fails, just skip (count still increments).
+        FastCopyMode_DebugLog("H2", "Shift keys.ahk:FastCopyMode_CaptureScreenshotToQueue", "clipboardall_failed", Map(
+            "queueLenAfter", gFastCopyScreenshotQueue.Length,
+            "hasImageAfter", FastCopyMode_ClipboardHasImage() ? "1" : "0"
+        ))
+    }
+}
+
+FastCopyMode_PasteScreenshotQueue(queue) {
+    if (!IsObject(queue) || queue.Length < 1)
+        return
+
+    clipSave := ""
+    try clipSave := ClipboardAll()
+
+    try {
+        try {
+            proc := WinGetProcessName("A")
+            cls := WinGetClass("A")
+        } catch {
+            proc := ""
+            cls := ""
+        }
+        FastCopyMode_DebugLog("H3", "Shift keys.ahk:FastCopyMode_PasteScreenshotQueue", "paste_enter", Map(
+            "queueLen", queue.Length,
+            "hasImageAtEnter", FastCopyMode_ClipboardHasImage() ? "1" : "0",
+            "proc", proc,
+            "class", cls
+        ))
+        for idx, snap in queue {
+            try {
+                A_Clipboard := snap
+                ClipWait 0.6, 1
+                snapSize := ""
+                try snapSize := snap.Size
+                FastCopyMode_DebugLog("H3", "Shift keys.ahk:FastCopyMode_PasteScreenshotQueue", "paste_iter_ready", Map(
+                    "idx", idx,
+                    "snapType", Type(snap),
+                    "snapSize", snapSize,
+                    "hasImageNow", FastCopyMode_ClipboardHasImage() ? "1" : "0"
+                ))
+                cycle := FastCopyMode_SendPasteAndWaitForReadCycle(2)
+                FastCopyMode_DebugLog("H4", "Shift keys.ahk:FastCopyMode_PasteScreenshotQueue", "paste_iter_clipboard_cycle", Map(
+                    "idx", idx,
+                    "cycle", cycle
+                ))
+            } catch {
+                ; continue to next screenshot
+                FastCopyMode_DebugLog("H4", "Shift keys.ahk:FastCopyMode_PasteScreenshotQueue", "paste_iter_failed", Map(
+                    "idx", idx
+                ))
+            }
+        }
+    } finally {
+        if (clipSave != "")
+            try A_Clipboard := clipSave
+        FastCopyMode_DebugLog("H3", "Shift keys.ahk:FastCopyMode_PasteScreenshotQueue", "paste_exit", Map(
+            "restoredClipboard", clipSave != "" ? "1" : "0"
+        ))
+    }
 }
 
 ExecuteSequentialPaste(actionCount) {
@@ -1599,13 +1870,14 @@ FastCopyMode_OnCopy() {
 }
 
 FastCopyMode_Start() {
-    global gFastCopyModeActive, gFastCopyCount, gFastCopyPasteTargetHwnd
+    global gFastCopyModeActive, gFastCopyCount, gFastCopyPasteTargetHwnd, gFastCopyScreenshotQueue
     try {
         gFastCopyPasteTargetHwnd := WinGetID("A")
     } catch {
         gFastCopyPasteTargetHwnd := 0
     }
     gFastCopyCount := 0
+    gFastCopyScreenshotQueue := []
     gFastCopyModeActive := true
     try {
         FastCopyModeBanner_Show()
@@ -1617,7 +1889,9 @@ FastCopyMode_Start() {
 
 FastCopyMode_Finish() {
     global gFastCopyModeActive, gFastCopyCount, gFastCopyPasteTargetHwnd
+    global gFastCopyScreenshotQueue, gFastCopyLastScreenshotQueue
     count := gFastCopyCount
+    shotCount := IsObject(gFastCopyScreenshotQueue) ? gFastCopyScreenshotQueue.Length : 0
     try {
         FastCopyModeBanner_Hide()
     } finally {
@@ -1628,7 +1902,27 @@ FastCopyMode_Finish() {
         ; Paste exclusively into the *currently active* window without activating anything else.
         FastCopyMode_ReleaseHotkeyModifiers()
         if (count > 0) {
-            ExecuteSequentialPaste(count)
+            FastCopyMode_DebugLog("H5", "Shift keys.ahk:FastCopyMode_Finish", "finish_paste_start", Map(
+                "count", count,
+                "shotCount", shotCount
+            ))
+            if (shotCount > 0) {
+                FastCopyMode_PasteScreenshotQueue(gFastCopyScreenshotQueue)
+                ; Save for hold-to-repeat behavior.
+                gFastCopyLastScreenshotQueue := gFastCopyScreenshotQueue.Clone()
+            } else {
+                gFastCopyLastScreenshotQueue := []
+            }
+
+            remaining := count - shotCount
+            FastCopyMode_DebugLog("H5", "Shift keys.ahk:FastCopyMode_Finish", "finish_remaining", Map(
+                "remaining", remaining
+            ))
+            if (remaining > 0) {
+                ; For non-screenshot copies, fall back to Clip Angel sequential paste.
+                ExecuteSequentialPaste(remaining)
+            }
+
             global gFastCopyLastSuccessfulCount
             gFastCopyLastSuccessfulCount := count
         } else
@@ -1640,6 +1934,7 @@ FastCopyMode_Finish() {
 
 FastCopyMode_RepeatLastPaste() {
     global gFastCopyLastSuccessfulCount
+    global gFastCopyLastScreenshotQueue
     if (gFastCopyLastSuccessfulCount < 1) {
         ShowCenteredOverlay_Utils("⚠ No previous Fast Copy paste to repeat", 2500, BANNER_ACCENT_INTERMEDIATE)
         return
@@ -1647,7 +1942,14 @@ FastCopyMode_RepeatLastPaste() {
     try {
         ; Repeat paste into the *currently active* window without activating anything else.
         FastCopyMode_ReleaseHotkeyModifiers()
-        ExecuteSequentialPaste(gFastCopyLastSuccessfulCount)
+        if (IsObject(gFastCopyLastScreenshotQueue) && gFastCopyLastScreenshotQueue.Length > 0) {
+            FastCopyMode_PasteScreenshotQueue(gFastCopyLastScreenshotQueue)
+            remaining := gFastCopyLastSuccessfulCount - gFastCopyLastScreenshotQueue.Length
+            if (remaining > 0)
+                ExecuteSequentialPaste(remaining)
+        } else {
+            ExecuteSequentialPaste(gFastCopyLastSuccessfulCount)
+        }
     } catch Error as e {
         ShowCenteredOverlay_Utils("❌ Repeat paste: " SubStr(e.Message, 1, 80), 2500, BANNER_ACCENT_ERROR)
     }
@@ -1671,7 +1973,10 @@ FastCopyMode_RepeatLastPaste() {
 #HotIf FastCopyMode_IsActive()
 ~^c:: FastCopyMode_OnCopy()
 ~PrintScreen:: FastCopyMode_OnCopy()
-~!PrintScreen:: FastCopyMode_OnCopy()
+~!PrintScreen:: {
+    FastCopyMode_OnCopy()
+    FastCopyMode_CaptureScreenshotToQueue()
+}
 #HotIf
 
 ;-------------------------------------------------------------------
