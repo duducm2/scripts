@@ -1564,6 +1564,13 @@ global gFastCopyCount := 0
 global gFastCopyPasteTargetHwnd := 0
 global gFastCopyLastSuccessfulCount := 0
 
+FastCopyMode_ReleaseHotkeyModifiers() {
+    ; Ensure the Win+Alt+Shift hotkey modifiers can't leak into paste keys.
+    ; Releasing modifiers does not activate or focus any other window.
+    Send "{LWin up}{RWin up}{Alt up}{Shift up}{Ctrl up}"
+    Sleep 30
+}
+
 ExecuteSequentialPaste(actionCount) {
     if (!IsInteger(actionCount))
         return
@@ -1611,7 +1618,6 @@ FastCopyMode_Start() {
 FastCopyMode_Finish() {
     global gFastCopyModeActive, gFastCopyCount, gFastCopyPasteTargetHwnd
     count := gFastCopyCount
-    target := gFastCopyPasteTargetHwnd
     try {
         FastCopyModeBanner_Hide()
     } finally {
@@ -1619,11 +1625,8 @@ FastCopyMode_Finish() {
         gFastCopyCount := 0
     }
     try {
-        if (target && WinExist("ahk_id " target)) {
-            WinActivate "ahk_id " target
-            WinWaitActive("ahk_id " target, , 2)
-            Sleep 150
-        }
+        ; Paste exclusively into the *currently active* window without activating anything else.
+        FastCopyMode_ReleaseHotkeyModifiers()
         if (count > 0) {
             ExecuteSequentialPaste(count)
             global gFastCopyLastSuccessfulCount
@@ -1642,12 +1645,8 @@ FastCopyMode_RepeatLastPaste() {
         return
     }
     try {
-        hwnd := WinGetID("A")
-        if (hwnd && WinExist("ahk_id " hwnd)) {
-            WinActivate "ahk_id " hwnd
-            WinWaitActive("ahk_id " hwnd, , 2)
-            Sleep 150
-        }
+        ; Repeat paste into the *currently active* window without activating anything else.
+        FastCopyMode_ReleaseHotkeyModifiers()
         ExecuteSequentialPaste(gFastCopyLastSuccessfulCount)
     } catch Error as e {
         ShowCenteredOverlay_Utils("❌ Repeat paste: " SubStr(e.Message, 1, 80), 2500, BANNER_ACCENT_ERROR)
