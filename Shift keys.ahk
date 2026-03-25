@@ -7972,56 +7972,158 @@ EnsureItemsViewFocus() {
 ; Shift + R : Share file via context menu workflow - shaRe
 +r::
 {
-    ; Ensure the focus is in the items view so the context menu targets a file
+    Explorer_CopyOneDriveShareLink_BoschGroup()
+}
+
+Explorer_CopyOneDriveShareLink_BoschGroup() {
+    ; Reliable flow using classic Explorer context menu + UIA (no fixed Tab counts).
+    ; Workflow:
+    ;   1) Classic context menu -> S -> Enter (Share)
+    ;   2) Wait for Share dialog main view
+    ;   3) Open Link settings
+    ;   4) Select "People in Bosch Group" and Apply
+    ;   5) Copy link and confirm clipboard changed
+
+    ; Ensure the focus is in the items view so the context menu targets the selected file.
     EnsureItemsViewFocus()
-    Sleep 200
+    Sleep 150
     ShowSmallLoadingIndicator_ChatGPT("Sharing file…")
 
-    preStepDelay := 350
-    postStepDelay := 700
+    try {
+        ; 1) Open classic context menu and trigger Share via accelerator.
+        ; Shift+F10 is the canonical "classic menu" key, more reliable than AppsKey on some keyboards.
+        Send "+{F10}"
+        Sleep 200
+        Send "s"
+        Sleep 80
+        Send "{Enter}"
 
-    ; ; Steps 1-4 with 120ms between each
-    Send "{AppsKey}" ; 1. open context menu
-    Sleep 2000
-    Send "s1"         ; 2. W
+        ; 2) Wait for OneDrive Share dialog (WebView2 host) to appear and load main controls.
+        shareHwnd := OneDriveShare_WaitForShareDialogHwnd(20000)
+        if !shareHwnd
+            throw Error("Timed out waiting for the OneDrive Share dialog window.")
 
-    ; ; Step 5: Shift+Tab with a longer wait (1s)
-    Sleep 6500
+        shareRoot := UIA.ElementFromHandle(shareHwnd)
 
-    ; Steps 6-10 with 400ms between each
-    Send "+{Tab}"
-    Sleep postStepDelay
-    Send "+{Tab}"
-    Sleep postStepDelay
-    Send "+{Tab}"
-    Sleep postStepDelay
-    Send "{Enter}"                     ; 7. Enter
-    Sleep postStepDelay
-    Send "{Up}"                        ; 8. Up
-    Sleep postStepDelay
-    Send "{Up}"                        ; 9. Up
-    Sleep postStepDelay
-    Send "{Up}"                        ; 10. Up
-    Sleep postStepDelay
+        ; Wait until main footer controls exist (indicates main share view is loaded).
+        OneDriveShare_WaitForAutomationId(shareRoot, "Footer-button-settings", 20000)
+        OneDriveShare_WaitForAutomationId(shareRoot, "copy-button", 20000)
 
-    ; 11. Shift+Tab (3x) with 400ms between
-    loop 3 {
-        Send "+{Tab}"
-        Sleep postStepDelay
+        ; 3) Open Link settings (gear).
+        settingsBtn := OneDriveShare_WaitForAutomationId(shareRoot, "Footer-button-settings", 5000)
+        OneDriveShare_Click(settingsBtn)
+
+        ; 4) In Link settings, select People in Bosch Group and Apply.
+        applyBtn := OneDriveShare_WaitForAutomationId(shareRoot, "od-ModifyPermissions-apply-id", 20000)
+        OneDriveShare_SelectRadioByNameContains(shareRoot, "People in Bosch Group", 5000)
+        OneDriveShare_Click(applyBtn)
+
+        ; After Apply, the dialog navigates back to main view.
+        OneDriveShare_WaitForAutomationId(shareRoot, "copy-button", 20000)
+
+        ; 5) Copy link and verify clipboard changed.
+        copyBtn := OneDriveShare_WaitForAutomationId(shareRoot, "copy-button", 5000)
+        oldClip := A_Clipboard
+        A_Clipboard := ""
+        OneDriveShare_Click(copyBtn)
+        if !OneDriveShare_WaitForClipboardChange(oldClip, 10000)
+            throw Error("Clipboard did not update after 'Copy link'.")
+    } catch Error as e {
+        MsgBox("Share macro failed:`n" e.Message, "Shift+R (Share file)", "IconX")
+    } finally {
+        HideSmallLoadingIndicator_ChatGPT()
     }
+}
 
-    ; 12. Enter
-    Send "{Enter}"
-    Sleep 1000
+OneDriveShare_WaitForShareDialogHwnd(timeout := 20000) {
+    deadline := A_TickCount + timeout
+    while (A_TickCount < deadline) {
+        for hwnd in WinGetList("ahk_class WebView2") {
+            try {
+                title := WinGetTitle("ahk_id " hwnd)
+                if RegExMatch(title, "i)^Share\b") {
+                    return hwnd
+                }
+            } catch {
+            }
+        }
+        Sleep 100
+    }
+    return 0
+}
 
-    ; 15. Enter
-    Send "{Enter}"
+OneDriveShare_WaitForAutomationId(root, automationId, timeout := 5000) {
+    if !IsObject(root)
+        return 0
 
-    Sleep 3000
+    deadline := A_TickCount + timeout
+    while (A_TickCount < deadline) {
+        try {
+            el := root.FindFirst({ AutomationId: automationId })
+            if el
+                return el
+        } catch {
+        }
+        Sleep 80
+    }
+    return 0
+}
 
-    Send "!{F4}"  ; Alt+F4 closes the current window
-    HideSmallLoadingIndicator_ChatGPT()
+OneDriveShare_Click(el) {
+    if !IsObject(el)
+        return false
+    try {
+        if el.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
+            el.Invoke()
+            return true
+        }
+    } catch {
+    }
+    try {
+        el.Click()
+        return true
+    } catch {
+    }
+    return false
+}
 
+OneDriveShare_SelectRadioByNameContains(root, nameNeedle, timeout := 5000) {
+    deadline := A_TickCount + timeout
+    while (A_TickCount < deadline) {
+        try {
+            radios := root.FindAll({ Type: "RadioButton" })
+            for radio in radios {
+                n := ""
+                try n := radio.Name
+                if (n != "" && InStr(n, nameNeedle)) {
+                    try {
+                        if radio.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable) {
+                            if !radio.SelectionItemPattern.IsSelected
+                                radio.SelectionItemPattern.Select()
+                            return true
+                        }
+                    } catch {
+                    }
+                    ; Fallback: invoke/click the radio if SelectionItem isn't available.
+                    OneDriveShare_Click(radio)
+                    return true
+                }
+            }
+        } catch {
+        }
+        Sleep 80
+    }
+    return false
+}
+
+OneDriveShare_WaitForClipboardChange(oldClip, timeout := 5000) {
+    deadline := A_TickCount + timeout
+    while (A_TickCount < deadline) {
+        if (A_Clipboard != "" && A_Clipboard != oldClip)
+            return true
+        Sleep 80
+    }
+    return false
 }
 
 ; Shift + P : Select first pinned item in Explorer sidebar - Pinned
@@ -16133,7 +16235,7 @@ SettleUp_GetNewExpenseDialog() {
 ;-------------------------------------------------------------------
 ; Miro Shortcuts
 ;-------------------------------------------------------------------
-#HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "Miro")
+#HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "Miro", false)
 
 ; (removed) Shift + Y : Command palette (Ctrl+K)
 
@@ -16144,7 +16246,42 @@ SettleUp_GetNewExpenseDialog() {
 +g:: Send "^g"
 
 ; Shift + U : Ungroup (Ctrl+Shift+G)
-+u:: Send "^+g"
++u:: {
+    ; #region agent log (6169a3)
+    try {
+        title := WinGetTitle("A")
+        exe := WinGetProcessName("A")
+        cls := WinGetClass("A")
+        shiftP := GetKeyState("Shift", "P")
+        titleEsc := StrReplace(StrReplace(title, "\", "\\"), '"', '\"')
+        exeEsc := StrReplace(StrReplace(exe, "\", "\\"), '"', '\"')
+        clsEsc := StrReplace(StrReplace(cls, "\", "\\"), '"', '\"')
+        FileAppend(
+            '{"sessionId":"6169a3","runId":"run1","hypothesisId":"H1-H4","location":"Shift keys.ahk:miro:+u","message":"Miro +u fired (pre-send)","data":{"title":"' titleEsc '","exe":"' exeEsc '","class":"' clsEsc '","shiftPhysical":' (shiftP ? "true" : "false") '},"timestamp":' A_TickCount '}'
+            "`n",
+            "debug-6169a3.log",
+            "UTF-8"
+        )
+    } catch {
+    }
+    ; #endregion agent log (6169a3)
+
+    ; Using {Blind} so the physical Shift from +u contributes to Ctrl+Shift+G.
+    Send "{Blind}^g"
+
+    ; #region agent log (6169a3)
+    try {
+        shiftP2 := GetKeyState("Shift", "P")
+        FileAppend(
+            '{"sessionId":"6169a3","runId":"run1","hypothesisId":"H2-H3","location":"Shift keys.ahk:miro:+u","message":"Miro +u sent {Blind}^g (post-send)","data":{"shiftPhysicalAfter":' (shiftP2 ? "true" : "false") '},"timestamp":' A_TickCount '}'
+            "`n",
+            "debug-6169a3.log",
+            "UTF-8"
+        )
+    } catch {
+    }
+    ; #endregion agent log (6169a3)
+}
 
 ; Shift + L : Lock/Unlock (Ctrl+Shift+L)
 +l:: Send "^+l"
