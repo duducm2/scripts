@@ -1380,7 +1380,7 @@ Letters available: B, C, G, H, I, K, M, N, O, P, T, U, V, X, Y, Z
 === CURSOR ===
 [Win+Alt+Shift+N] > Opens or activates Cursor (habits, home, punctual, or work windows)
 
-[Win+Alt+Shift+J] > Fast Copy Mode: toggle on (counts Ctrl+C / PrtSc / Alt+PrtSc); toggle off to paste N clips (Clip Angel)
+[Win+Alt+Shift+J] > Fast Copy: tap on/off (count Ctrl+C / PrtSc / Alt+PrtSc, then paste N); hold 700ms+ repeats last N (Clip Angel)
 
 === SPOTIFY ===
 [Win+Alt+Shift+S] > Opens or activates Spotify
@@ -1555,11 +1555,14 @@ r=== CLIP ANGEL ===
 
 ; =============================================================================
 ; Clip Angel: Fast Copy Mode + sequential paste (multiple clips in order)
-; Hotkey: Win+Alt+Shift+J — first press arms mode and counts Ctrl+C / PrtSc / Alt+PrtSc; second press pastes N clips.
+; Hotkey: Win+Alt+Shift+J — while mode off: tap starts mode; hold 700ms+ repeats last paste count.
+;         While mode on: press finishes and pastes N clips (Ctrl+C / PrtSc / Alt+PrtSc counted).
 ; =============================================================================
+global FAST_COPY_HOLD_REPEAT_MS := 700
 global gFastCopyModeActive := false
 global gFastCopyCount := 0
 global gFastCopyPasteTargetHwnd := 0
+global gFastCopyLastSuccessfulCount := 0
 
 ExecuteSequentialPaste(actionCount) {
     if (!IsInteger(actionCount))
@@ -1621,24 +1624,50 @@ FastCopyMode_Finish() {
             WinWaitActive("ahk_id " target, , 2)
             Sleep 150
         }
-        if (count > 0)
+        if (count > 0) {
             ExecuteSequentialPaste(count)
-        else
+            global gFastCopyLastSuccessfulCount
+            gFastCopyLastSuccessfulCount := count
+        } else
             ShowCenteredOverlay_Utils("⚠ No copies recorded — nothing to paste", 2500, BANNER_ACCENT_INTERMEDIATE)
     } catch Error as e {
         ShowCenteredOverlay_Utils("❌ Fast Copy Mode: " SubStr(e.Message, 1, 80), 2500, BANNER_ACCENT_ERROR)
     }
 }
 
-FastCopyMode_Toggle() {
-    global gFastCopyModeActive
-    if (!gFastCopyModeActive)
-        FastCopyMode_Start()
-    else
-        FastCopyMode_Finish()
+FastCopyMode_RepeatLastPaste() {
+    global gFastCopyLastSuccessfulCount
+    if (gFastCopyLastSuccessfulCount < 1) {
+        ShowCenteredOverlay_Utils("⚠ No previous Fast Copy paste to repeat", 2500, BANNER_ACCENT_INTERMEDIATE)
+        return
+    }
+    try {
+        hwnd := WinGetID("A")
+        if (hwnd && WinExist("ahk_id " hwnd)) {
+            WinActivate "ahk_id " hwnd
+            WinWaitActive("ahk_id " hwnd, , 2)
+            Sleep 150
+        }
+        ExecuteSequentialPaste(gFastCopyLastSuccessfulCount)
+    } catch Error as e {
+        ShowCenteredOverlay_Utils("❌ Repeat paste: " SubStr(e.Message, 1, 80), 2500, BANNER_ACCENT_ERROR)
+    }
 }
 
-#!+j:: FastCopyMode_Toggle()
+#!+j:: {
+    global gFastCopyModeActive, FAST_COPY_HOLD_REPEAT_MS
+    if (gFastCopyModeActive) {
+        FastCopyMode_Finish()
+        return
+    }
+    pressTime := A_TickCount
+    KeyWait "j", "T1"
+    holdTime := A_TickCount - pressTime
+    if (holdTime >= FAST_COPY_HOLD_REPEAT_MS)
+        FastCopyMode_RepeatLastPaste()
+    else
+        FastCopyMode_Start()
+}
 
 #HotIf FastCopyMode_IsActive()
 ~^c:: FastCopyMode_OnCopy()
