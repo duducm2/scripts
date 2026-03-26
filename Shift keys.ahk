@@ -16813,6 +16813,29 @@ IsFileDialogActive() {
                 ; Optional: Scroll into view and set focus
                 matchingItem.ScrollIntoView()
                 matchingItem.SetFocus()
+
+                ; Workaround: force UIA Tree Inspector to refresh the right-side UIA tree
+                ; by "jiggling" selection Down then Up after selection via search.
+                inspectorHwnd := WinExist("UIATreeInspector")
+                if (!inspectorHwnd)
+                    inspectorHwnd := WinExist("ahk_exe UIATreeInspectorAutoHotkey64.exe")
+
+                if (inspectorHwnd) {
+                    if !WinActive("ahk_id " inspectorHwnd) {
+                        WinActivate "ahk_id " inspectorHwnd
+                        WinWaitActive "ahk_id " inspectorHwnd, , 1
+                    }
+
+                    if WinActive("ahk_id " inspectorHwnd) {
+                        ; Ensure the list/tree has focus before sending arrow keys
+                        try matchingItem.SetFocus()
+
+                        Sleep 500
+                        Send "{Down}"
+                        Sleep 1000
+                        Send "{Up}"
+                    }
+                }
             } catch Error as e {
                 MsgBox "Error selecting tree item:`n" e.Message, "UIA Tree Inspector", "IconX"
             }
