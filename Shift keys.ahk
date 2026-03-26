@@ -10688,19 +10688,26 @@ global g_CursorShortcutMenuActive := false
 
         ; Open context menu for the selected file in Explorer, then navigate to the target item.
         StandardLoadingBar_Update("⏳ Opening context menu...")
-        if (Cursor_ContextMenuSelectByDownAndVerify("Add File to Cursor Chat")) {
+        result := Cursor_ContextMenuSelectByDownAndVerify("Add File to Cursor Chat")
+        if (result.ok) {
             StandardLoadingBar_Update("✅ File added to Cursor Chat")
             return
         }
 
         ; Fallback: Shift+F10 is often more reliable than AppsKey on some keyboards.
         StandardLoadingBar_Update("⏳ Retrying menu open...")
-        if (Cursor_ContextMenuSelectByDownAndVerify("Add File to Cursor Chat", "+{F10}")) {
+        result := Cursor_ContextMenuSelectByDownAndVerify("Add File to Cursor Chat", "+{F10}")
+        if (result.ok) {
             StandardLoadingBar_Update("✅ File added to Cursor Chat")
             return
         }
 
-        StandardLoadingBar_Update("❌ Could not select 'Add File to Cursor Chat'")
+        failureReason := result.reason
+        if (failureReason = "")
+            failureReason := Cursor_DetectAddFileFailureSignal()
+        if (failureReason = "")
+            failureReason := "Could not verify add-file action"
+        StandardLoadingBar_Update("❌ Failed: " . failureReason)
     } finally {
         StandardLoadingBar_Hide(600)
     }
@@ -10724,15 +10731,15 @@ Cursor_ContextMenuSelectByDownAndVerify(targetText, openKey := "{AppsKey}", maxS
 
         if (name = targetText) {
             StandardLoadingBar_Update("⏳ Activating 'Add File to Cursor Chat'...")
-            ok := Cursor_ContextMenuActivateHighlightedItem(highlightedEl, targetText)
-            return ok
+            result := Cursor_ContextMenuActivateHighlightedItem(highlightedEl, targetText)
+            return result
         }
 
         Send "{Down}"
         Sleep 55
     }
 
-    return false
+    return { ok: false, reason: "Menu item not found" }
 }
 
 Cursor_ContextMenuGetHighlightedElement() {
@@ -10853,7 +10860,94 @@ Cursor_ContextMenuActivateHighlightedItem(menuItemEl, targetText, settleMs := 22
         closed := Cursor_WaitForContextMenuItemGone(targetText, verifyTimeoutMs)
     }
 
-    return ok && closed
+    if (!closed) {
+        return { ok: false, reason: "Context menu did not close" }
+    }
+
+    verified := Cursor_WaitForAddFileToChatSuccess(1000)
+    if (verified)
+        return { ok: true, reason: "" }
+
+    ; Controlled retry when menu action likely did not trigger composer state.
+    if (menuItemEl) {
+        try {
+            menuItemEl.SetFocus()
+            Sleep 70
+            Send "{Enter}"
+        } catch {
+        }
+        verified := Cursor_WaitForAddFileToChatSuccess(1000)
+        if (verified)
+            return { ok: true, reason: "" }
+    }
+
+    reason := Cursor_DetectAddFileFailureSignal()
+    if (reason = "")
+        reason := "Add-file success signal not detected"
+    return { ok: false, reason: reason }
+}
+
+Cursor_DetectAddFileFailureSignal() {
+    hwnd := WinExist("ahk_exe Cursor.exe")
+    if (!hwnd)
+        return "Target window closed"
+
+    try root := UIA.ElementFromHandle(hwnd)
+    catch
+        return "UIA unreachable"
+
+    if (!root)
+        return "UIA unreachable"
+
+    return ""
+}
+
+Cursor_WaitForAddFileToChatSuccess(timeoutMs := 1800) {
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        hwnd := WinExist("ahk_exe Cursor.exe")
+        if (!hwnd)
+            break
+
+        try root := UIA.ElementFromHandle(hwnd)
+        catch {
+            Sleep 80
+            continue
+        }
+        if (!root) {
+            Sleep 80
+            continue
+        }
+
+        try edits := root.FindAll({ Type: UIA.Type.Edit })
+        catch {
+            Sleep 80
+            continue
+        }
+
+        for editEl in edits {
+            className := ""
+            try className := editEl.ClassName
+            if (!InStr(className, "aislash-editor-input"))
+                continue
+
+            try isOffscreen := editEl.GetPropertyValue(UIA.Property.IsOffscreen)
+            catch {
+                isOffscreen := 1
+            }
+            if (isOffscreen = 0)
+                return true
+        }
+
+        Sleep 80
+    }
+
+    reason := Cursor_DetectAddFileFailureSignal()
+    if (reason != "")
+        SafeDebugLog("Cursor_WaitForAddFileToChatSuccess failed: " . reason)
+    else
+        SafeDebugLog("Cursor_WaitForAddFileToChatSuccess timed out waiting for aislash-editor-input")
+    return false
 }
 
 Cursor_WaitForContextMenuHighlightStable(targetText, timeoutMs := 250, requiredConsecutive := 3) {
