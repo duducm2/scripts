@@ -10673,18 +10673,24 @@ global g_CursorShortcutMenuActive := false
 {
     StandardLoadingBar_Show("⏳ Add file to Cursor Chat...", BANNER_ACCENT_INTERMEDIATE, { passive: false, centerOnHwnd: 0 })
     try {
-        ; If invoked from the main editor, move focus to Explorer so the active file is highlighted there.
-        if (IsCursorMainEditorFocused()) {
-            StandardLoadingBar_Update("⏳ Focusing Explorer...")
-            Send "^+e"
-            Sleep 350
+        ; Always move to Cursor primary sidebar Explorer, regardless of current focus/caret.
+        StandardLoadingBar_Update("⏳ Focusing Explorer...")
+        Send "^+e"
+        Sleep 350
+        okFocus := FocusCursorFilesExplorer()
+        if (!okFocus) {
+            Sleep 150
             okFocus := FocusCursorFilesExplorer()
-            if (!okFocus) {
-                Sleep 150
-                okFocus := FocusCursorFilesExplorer()
-            }
-            Sleep 120
         }
+        if (!okFocus) {
+            Sleep 150
+            okFocus := FocusCursorFilesExplorer()
+        }
+        if (!okFocus) {
+            StandardLoadingBar_Update("❌ Failed: Could not focus Explorer sidebar")
+            return
+        }
+        Sleep 120
 
         ; Open context menu for the selected file in Explorer, then navigate to the target item.
         StandardLoadingBar_Update("⏳ Opening context menu...")
