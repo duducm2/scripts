@@ -16906,7 +16906,7 @@ IsFileDialogActive() {
 
         ; Select matching item in left tree (AutomationId="4") (same as Shift+S)
         root := UIA.ElementFromHandle(inspectorHwnd)
-        Sleep 200
+        Sleep 500
         treeContainer := root.FindFirst({ Type: "Tree", AutomationId: "4" })
         if (!treeContainer)
             return
@@ -16936,7 +16936,7 @@ IsFileDialogActive() {
         matchingItem.Select()
         matchingItem.ScrollIntoView()
         matchingItem.SetFocus()
-        Sleep 700
+        Sleep 1500
 
         ; Refresh workaround (force correct UIA Tree load)
         StandardLoadingBar_Update("🔄 Refreshing UIA Tree…")
@@ -16947,13 +16947,13 @@ IsFileDialogActive() {
         if WinActive("ahk_id " inspectorHwnd) {
             try matchingItem.SetFocus()
             Send "{Down}"
-            Sleep 1200
+            Sleep 2000
             Send "{Up}"
         }
 
         ; Focus UIA Tree panel (right-side tree) and select root
         StandardLoadingBar_Update("🌳 Focusing UIA Tree panel…")
-        Sleep 600
+        Sleep 1500
         rightTree := 0
         bestL := -0x7FFFFFFF
         trees := root.FindAll({ Type: "Tree" })
@@ -16987,18 +16987,18 @@ IsFileDialogActive() {
         } else {
             try rightTree.SetFocus()
         }
-        Sleep 600
+        Sleep 1500
 
         ; Copy complete UI tree to clipboard via context menu
         StandardLoadingBar_Update("📋 Copying full tree to clipboard…")
         A_Clipboard := ""
-        Sleep 150
-        Send "{AppsKey}"
-        Sleep 250
-        Send "{Up}"
-        Sleep 150
-        Send "{Enter}"
         Sleep 400
+        Send "{AppsKey}"
+        Sleep 600
+        Send "{Up}"
+        Sleep 400
+        Send "{Enter}"
+        Sleep 1200
     } catch Error as e {
         try StandardLoadingBar_Update("❌ Copy failed: " . SubStr(e.Message, 1, 60))
         try StandardLoadingBar_Hide(2000)
