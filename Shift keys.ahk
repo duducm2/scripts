@@ -2248,6 +2248,18 @@ FastCopyMode_OnCopy() {
     FastCopyModeBanner_Update(gFastCopyCount)
 }
 
+FastCopyMode_PlayCueSound(fileName) {
+    if (!IsSoundEnabled())
+        return
+    path := A_ScriptDir "\sounds\" fileName
+    if (!FileExist(path))
+        return
+    try {
+        SoundPlay(path)
+    } catch {
+    }
+}
+
 FastCopyMode_Start() {
     global gFastCopyModeActive, gFastCopyCount, gFastCopyPasteTargetHwnd, gFastCopyScreenshotQueue
     try {
@@ -2260,6 +2272,7 @@ FastCopyMode_Start() {
     gFastCopyModeActive := true
     try {
         FastCopyModeBanner_Show()
+        FastCopyMode_PlayCueSound("fastcopy-start.mp3")
     } catch Error {
         gFastCopyModeActive := false
         ShowCenteredOverlay_Utils("❌ Could not start Fast Copy Mode", 2000, BANNER_ACCENT_ERROR)
@@ -2281,6 +2294,7 @@ FastCopyMode_Finish() {
         ; Paste exclusively into the *currently active* window without activating anything else.
         FastCopyMode_ReleaseHotkeyModifiers()
         if (count > 0) {
+            FastCopyMode_PlayCueSound("fastcopy-finish.mp3")
             FastCopyMode_DebugLog("H5", "Shift keys.ahk:FastCopyMode_Finish", "finish_paste_start", Map(
                 "count", count,
                 "shotCount", shotCount
@@ -2324,6 +2338,7 @@ FastCopyMode_RepeatLastPaste() {
     try {
         ; Repeat paste into the *currently active* window without activating anything else.
         FastCopyMode_ReleaseHotkeyModifiers()
+        FastCopyMode_PlayCueSound("fastcopy-finish.mp3")
         if (IsObject(gFastCopyLastScreenshotQueue) && gFastCopyLastScreenshotQueue.Length > 0) {
             FastCopyMode_PasteScreenshotQueue(gFastCopyLastScreenshotQueue)
             remaining := gFastCopyLastSuccessfulCount - gFastCopyLastScreenshotQueue.Length
