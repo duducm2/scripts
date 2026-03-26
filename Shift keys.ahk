@@ -10692,9 +10692,15 @@ global g_CursorShortcutMenuActive := false
         }
         Sleep 120
 
+        expectedFileName := Cursor_GetFocusedExplorerItemName()
+        if (expectedFileName = "") {
+            StandardLoadingBar_Update("❌ Failed: Could not read selected file name")
+            return
+        }
+
         ; Open context menu for the selected file in Explorer, then navigate to the target item.
         StandardLoadingBar_Update("⏳ Opening context menu...")
-        result := Cursor_ContextMenuSelectByDownAndVerify("Add File to Cursor Chat")
+        result := Cursor_ContextMenuSelectByDownAndVerify("Add File to Cursor Chat", "{AppsKey}", 28, expectedFileName)
         if (result.ok) {
             StandardLoadingBar_Update("✅ File added to Cursor Chat")
             return
@@ -10702,7 +10708,7 @@ global g_CursorShortcutMenuActive := false
 
         ; Fallback: Shift+F10 is often more reliable than AppsKey on some keyboards.
         StandardLoadingBar_Update("⏳ Retrying menu open...")
-        result := Cursor_ContextMenuSelectByDownAndVerify("Add File to Cursor Chat", "+{F10}")
+        result := Cursor_ContextMenuSelectByDownAndVerify("Add File to Cursor Chat", "+{F10}", 28, expectedFileName)
         if (result.ok) {
             StandardLoadingBar_Update("✅ File added to Cursor Chat")
             return
@@ -10719,7 +10725,7 @@ global g_CursorShortcutMenuActive := false
     }
 }
 
-Cursor_ContextMenuSelectByDownAndVerify(targetText, openKey := "{AppsKey}", maxSteps := 28) {
+Cursor_ContextMenuSelectByDownAndVerify(targetText, openKey := "{AppsKey}", maxSteps := 28, expectedFileName := "") {
     ; Open context menu.
     Send openKey
     Sleep 240
@@ -10737,7 +10743,7 @@ Cursor_ContextMenuSelectByDownAndVerify(targetText, openKey := "{AppsKey}", maxS
 
         if (name = targetText) {
             StandardLoadingBar_Update("⏳ Activating 'Add File to Cursor Chat'...")
-            result := Cursor_ContextMenuActivateHighlightedItem(highlightedEl, targetText)
+            result := Cursor_ContextMenuActivateHighlightedItem(highlightedEl, targetText, 220, 900, expectedFileName)
             return result
         }
 
@@ -10797,7 +10803,7 @@ Cursor_ContextMenuGetHighlightedElement() {
     return 0
 }
 
-Cursor_ContextMenuActivateHighlightedItem(menuItemEl, targetText, settleMs := 220, verifyTimeoutMs := 900) {
+Cursor_ContextMenuActivateHighlightedItem(menuItemEl, targetText, settleMs := 220, verifyTimeoutMs := 900, expectedFileName := "") {
     ; Requirement: add a short pause before activation to improve reliability.
     Sleep settleMs
 
@@ -10870,9 +10876,9 @@ Cursor_ContextMenuActivateHighlightedItem(menuItemEl, targetText, settleMs := 22
         return { ok: false, reason: "Context menu did not close" }
     }
 
-    verified := Cursor_WaitForAddFileToChatSuccess(1000)
-    if (verified)
-        return { ok: true, reason: "" }
+    verifyResult := Cursor_WaitForAddFileChipSuccess(expectedFileName, 1200)
+    if (verifyResult.ok)
+        return verifyResult
 
     ; Controlled retry when menu action likely did not trigger composer state.
     if (menuItemEl) {
@@ -10882,18 +10888,20 @@ Cursor_ContextMenuActivateHighlightedItem(menuItemEl, targetText, settleMs := 22
             Send "{Enter}"
         } catch {
         }
-        verified := Cursor_WaitForAddFileToChatSuccess(1000)
-        if (verified)
-            return { ok: true, reason: "" }
+        verifyResult := Cursor_WaitForAddFileChipSuccess(expectedFileName, 1200)
+        if (verifyResult.ok)
+            return verifyResult
     }
 
-    reason := Cursor_DetectAddFileFailureSignal()
+    reason := verifyResult.reason
     if (reason = "")
-        reason := "Add-file success signal not detected"
+        reason := Cursor_DetectAddFileFailureSignal(expectedFileName)
+    if (reason = "")
+        reason := "Chat context signal missing after action"
     return { ok: false, reason: reason }
 }
 
-Cursor_DetectAddFileFailureSignal() {
+Cursor_DetectAddFileFailureSignal(expectedFileName := "") {
     hwnd := WinExist("ahk_exe Cursor.exe")
     if (!hwnd)
         return "Target window closed"
@@ -10905,10 +10913,16 @@ Cursor_DetectAddFileFailureSignal() {
     if (!root)
         return "UIA unreachable"
 
+    if (expectedFileName != "")
+        return "Chat context signal missing for '" . expectedFileName . "'"
+
     return ""
 }
 
-Cursor_WaitForAddFileToChatSuccess(timeoutMs := 1800) {
+Cursor_WaitForAddFileChipSuccess(expectedFileName := "", timeoutMs := 1800) {
+    if (expectedFileName = "")
+        return { ok: false, reason: "Selected file name unavailable for verification" }
+
     deadline := A_TickCount + timeoutMs
     while (A_TickCount < deadline) {
         hwnd := WinExist("ahk_exe Cursor.exe")
@@ -10925,34 +10939,132 @@ Cursor_WaitForAddFileToChatSuccess(timeoutMs := 1800) {
             continue
         }
 
-        try edits := root.FindAll({ Type: UIA.Type.Edit })
-        catch {
-            Sleep 80
-            continue
-        }
-
-        for editEl in edits {
-            className := ""
-            try className := editEl.ClassName
-            if (!InStr(className, "aislash-editor-input"))
-                continue
-
-            try isOffscreen := editEl.GetPropertyValue(UIA.Property.IsOffscreen)
-            catch {
-                isOffscreen := 1
-            }
-            if (isOffscreen = 0)
-                return true
-        }
+        if (Cursor_IsChatFileContextVisible(root, expectedFileName))
+            return { ok: true, reason: "" }
 
         Sleep 80
     }
 
-    reason := Cursor_DetectAddFileFailureSignal()
+    reason := Cursor_DetectAddFileFailureSignal(expectedFileName)
     if (reason != "")
-        SafeDebugLog("Cursor_WaitForAddFileToChatSuccess failed: " . reason)
+        SafeDebugLog("Cursor_WaitForAddFileChipSuccess failed: " . reason)
     else
-        SafeDebugLog("Cursor_WaitForAddFileToChatSuccess timed out waiting for aislash-editor-input")
+        SafeDebugLog("Cursor_WaitForAddFileChipSuccess timed out waiting for chat context chip")
+    return { ok: false, reason: reason }
+}
+
+Cursor_GetFocusedExplorerItemName() {
+    try {
+        fe := UIA.GetFocusedElement()
+        if (fe) {
+            name := ""
+            try name := fe.Name
+            if (name != "")
+                return name
+        }
+    } catch {
+    }
+
+    try {
+        hwnd := WinExist("ahk_exe Cursor.exe")
+        if (!hwnd)
+            return ""
+        root := UIA.ElementFromHandle(hwnd)
+        if (!root)
+            return ""
+        items := root.FindAll({ Type: UIA.Type.TreeItem })
+        for item in items {
+            try {
+                if (!item.GetPropertyValue(UIA.Property.IsSelected))
+                    continue
+                if (item.GetPropertyValue(UIA.Property.IsOffscreen))
+                    continue
+                nm := item.Name
+                if (nm != "")
+                    return nm
+            } catch {
+            }
+        }
+    } catch {
+    }
+    return ""
+}
+
+Cursor_FindVisibleComposerInput(root) {
+    try edits := root.FindAll({ Type: UIA.Type.Edit })
+    catch
+        return 0
+    for editEl in edits {
+        className := ""
+        try className := editEl.ClassName
+        if (!InStr(className, "aislash-editor-input"))
+            continue
+        try {
+            if editEl.GetPropertyValue(UIA.Property.IsOffscreen)
+                continue
+        } catch {
+            continue
+        }
+        return editEl
+    }
+    return 0
+}
+
+Cursor_IsNameNearComposer(root, controlType, needleName) {
+    composer := Cursor_FindVisibleComposerInput(root)
+    if (!composer)
+        return false
+    try compBr := composer.BoundingRectangle
+    catch
+        return false
+
+    try all := root.FindAll({ Type: controlType })
+    catch
+        return false
+
+    for el in all {
+        nm := ""
+        try nm := el.Name
+        if (nm = "")
+            continue
+        if (!InStr(nm, needleName, false))
+            continue
+        try {
+            if el.GetPropertyValue(UIA.Property.IsOffscreen)
+                continue
+        } catch {
+            continue
+        }
+        try {
+            br := el.BoundingRectangle
+            ; Keep only elements close to the composer area to avoid Explorer false positives.
+            if (Abs(br.t - compBr.t) > 260)
+                continue
+            if (Abs(br.l - compBr.l) > 520)
+                continue
+            return true
+        } catch {
+        }
+    }
+    return false
+}
+
+Cursor_IsChatFileContextVisible(root, expectedFileName) {
+    needle := expectedFileName
+    if (InStr(needle, "\") || InStr(needle, "/"))
+        needle := RegExReplace(needle, "^.*[\\/]")
+    needleNoExt := RegExReplace(needle, "\.[^.]+$")
+
+    if (Cursor_IsNameNearComposer(root, UIA.Type.Text, needle))
+        return true
+    if (Cursor_IsNameNearComposer(root, UIA.Type.Button, needle))
+        return true
+    if (needleNoExt != "" && needleNoExt != needle) {
+        if (Cursor_IsNameNearComposer(root, UIA.Type.Text, needleNoExt))
+            return true
+        if (Cursor_IsNameNearComposer(root, UIA.Type.Button, needleNoExt))
+            return true
+    }
     return false
 }
 
