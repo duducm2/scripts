@@ -10719,7 +10719,9 @@ Cursor_ContextMenuSelectByDownAndVerify(targetText, runId := "", openKey := "{Ap
     step := 0
     while (step <= maxSteps) {
         step += 1
-        name := Cursor_ContextMenuGetHighlightedName()
+        highlightedEl := Cursor_ContextMenuGetHighlightedElement()
+        name := ""
+        try name := highlightedEl ? highlightedEl.Name : ""
 
         ; #region agent log
         if (runId != "" && step <= 10)
@@ -10727,14 +10729,14 @@ Cursor_ContextMenuSelectByDownAndVerify(targetText, runId := "", openKey := "{Ap
         ; #endregion agent log
 
         if (name = targetText) {
-            Send "{Enter}"
+            ok := Cursor_ContextMenuActivateHighlightedItem(highlightedEl, targetText, runId)
 
             ; #region agent log
             if (runId != "")
-                AgentDebugLog_c605fb(runId, "H2", "Shift keys.ahk:Cursor_ContextMenuSelectByDownAndVerify", "Matched target; sent Enter", 0)
+                AgentDebugLog_c605fb(runId, "H2", "Shift keys.ahk:Cursor_ContextMenuSelectByDownAndVerify", "Matched target; activated ok=" ok, 0)
             ; #endregion agent log
 
-            return true
+            return ok
         }
 
         Send "{Down}"
@@ -10749,14 +10751,14 @@ Cursor_ContextMenuSelectByDownAndVerify(targetText, runId := "", openKey := "{Ap
     return false
 }
 
-Cursor_ContextMenuGetHighlightedName() {
+Cursor_ContextMenuGetHighlightedElement() {
     ; Strategy A: focused element is a MenuItem
     try {
         fe := UIA.GetFocusedElement()
         if (fe) {
             try {
                 if (fe.ControlType = UIA.Type.MenuItem)
-                    return fe.Name
+                    return fe
             } catch {
             }
         }
@@ -10771,7 +10773,7 @@ Cursor_ContextMenuGetHighlightedName() {
         for mi in all {
             try {
                 if (mi.GetPropertyValue(UIA.Property.IsSelected)) {
-                    return mi.Name
+                    return mi
                 }
             } catch {
             }
@@ -10787,7 +10789,7 @@ Cursor_ContextMenuGetHighlightedName() {
         for mi in all {
             try {
                 if (mi.GetPropertyValue(UIA.Property.HasKeyboardFocus)) {
-                    return mi.Name
+                    return mi
                 }
             } catch {
             }
@@ -10795,7 +10797,124 @@ Cursor_ContextMenuGetHighlightedName() {
     } catch {
     }
 
-    return ""
+    return 0
+}
+
+Cursor_ContextMenuActivateHighlightedItem(menuItemEl, targetText, runId := "", settleMs := 220, verifyTimeoutMs := 900) {
+    ; Requirement: add a short pause before activation to improve reliability.
+    Sleep settleMs
+
+    ; Extra stabilization: ensure the highlighted item stays on the target briefly.
+    stableOk := Cursor_WaitForContextMenuHighlightStable(targetText, 260)
+    ; #region agent log
+    if (runId != "")
+        AgentDebugLog_c605fb(runId, "H1", "Shift keys.ahk:Cursor_ContextMenuActivateHighlightedItem", "Highlight stable=" stableOk, 0)
+    ; #endregion agent log
+
+    activatedVia := ""
+    ok := false
+
+    ; Prefer invoking the element directly (more reliable than raw Enter).
+    if (menuItemEl) {
+        ; Make sure it really has focus before activation (helps Enter/registering).
+        try menuItemEl.SetFocus()
+        Sleep 80
+
+        try {
+            invAvail := menuItemEl.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)
+            if (invAvail = 1) {
+                activatedVia := "invokePattern"
+                menuItemEl.InvokePattern.Invoke()
+                ok := true
+            }
+        } catch {
+        }
+
+        if (!ok) {
+            try {
+                activatedVia := "click"
+                menuItemEl.Click()
+                ok := true
+            } catch {
+                ok := false
+            }
+        }
+
+        if (!ok) {
+            try {
+                activatedVia := "focus+enter"
+                menuItemEl.SetFocus()
+                Sleep 40
+                Send "{Enter}"
+                ok := true
+            } catch {
+                ok := false
+            }
+        }
+    } else {
+        activatedVia := "enterOnly"
+        Send "{Enter}"
+        ok := true
+    }
+
+    ; Requirement: quality check - verify the menu action actually took effect.
+    ; Best available signal: the menu disappears (target menu item no longer present).
+    closed := Cursor_WaitForContextMenuItemGone(targetText, verifyTimeoutMs)
+
+    ; Retry once if it didn't close (covers intermittent Enter not registering).
+    if (!closed && menuItemEl) {
+        try {
+            activatedVia .= "+retryEnter"
+            menuItemEl.SetFocus()
+            Sleep 80
+            Send "{Enter}"
+        } catch {
+        }
+        closed := Cursor_WaitForContextMenuItemGone(targetText, verifyTimeoutMs)
+    }
+
+    ; #region agent log
+    if (runId != "")
+        AgentDebugLog_c605fb(runId, "H1", "Shift keys.ahk:Cursor_ContextMenuActivateHighlightedItem", "via=" activatedVia " ok=" ok " menuClosed=" closed, 0)
+    ; #endregion agent log
+
+    return ok && closed
+}
+
+Cursor_WaitForContextMenuHighlightStable(targetText, timeoutMs := 250, requiredConsecutive := 3) {
+    ; Consider highlight stable if we observe the target highlighted N consecutive times.
+    deadline := A_TickCount + timeoutMs
+    consec := 0
+    while (A_TickCount < deadline) {
+        el := Cursor_ContextMenuGetHighlightedElement()
+        nm := ""
+        try nm := el ? el.Name : ""
+        if (nm = targetText) {
+            consec += 1
+            if (consec >= requiredConsecutive)
+                return true
+        } else {
+            consec := 0
+        }
+        Sleep 40
+    }
+    return false
+}
+
+Cursor_WaitForContextMenuItemGone(itemName, timeoutMs := 800) {
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        try {
+            mi := UIA.GetRootElement().FindFirst({ Type: 50011, Name: itemName })
+            if (!mi)
+                return true
+        } catch {
+            ; If searching fails (menu destroyed), treat as gone.
+            return true
+        }
+        Sleep 40
+    }
+    return false
 }
 
 Cursor_ClickContextMenuItemByName(itemName, timeout := 1200, runId := "") {
