@@ -10706,6 +10706,8 @@ global g_CursorShortcutMenuActive := false
 }
 
 Cursor_ContextMenuSelectByDownAndVerify(targetText, runId := "", openKey := "{AppsKey}", maxSteps := 28) {
+    tStart := A_TickCount
+
     ; Open context menu.
     Send openKey
     Sleep 240
@@ -10729,11 +10731,21 @@ Cursor_ContextMenuSelectByDownAndVerify(targetText, runId := "", openKey := "{Ap
         ; #endregion agent log
 
         if (name = targetText) {
+            tFound := A_TickCount
             ok := Cursor_ContextMenuActivateHighlightedItem(highlightedEl, targetText, runId)
+            tEnd := A_TickCount
 
             ; #region agent log
-            if (runId != "")
+            if (runId != "") {
                 AgentDebugLog_c605fb(runId, "H2", "Shift keys.ahk:Cursor_ContextMenuSelectByDownAndVerify", "Matched target; activated ok=" ok, 0)
+                AgentDebugLog_c605fb(
+                    runId,
+                    "H2",
+                    "Shift keys.ahk:Cursor_ContextMenuSelectByDownAndVerify timing",
+                    "steps=" step " openToFoundMs=" (tFound - tStart) " activateTotalMs=" (tEnd - tFound) " totalMs=" (tEnd - tStart),
+                    0
+                )
+            }
             ; #endregion agent log
 
             return ok
@@ -10903,7 +10915,10 @@ Cursor_WaitForContextMenuHighlightStable(targetText, timeoutMs := 250, requiredC
 
 Cursor_WaitForContextMenuItemGone(itemName, timeoutMs := 800) {
     deadline := A_TickCount + timeoutMs
+    loops := 0
+    t0 := A_TickCount
     while (A_TickCount < deadline) {
+        loops += 1
         try {
             mi := UIA.GetRootElement().FindFirst({ Type: 50011, Name: itemName })
             if (!mi)
@@ -10914,6 +10929,9 @@ Cursor_WaitForContextMenuItemGone(itemName, timeoutMs := 800) {
         }
         Sleep 40
     }
+    ; #region agent log
+    ; runId not available in this helper; timing is inferred by surrounding logs.
+    ; #endregion agent log
     return false
 }
 
