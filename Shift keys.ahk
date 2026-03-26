@@ -13411,6 +13411,12 @@ ContainsWord(norm, word) {
 ; Shift + L : Next month
 +l:: Mobills_Navigate("Next")
 
+; K : Previous month
+k:: Mobills_Navigate("Prev")
+
+; L : Next month
+l:: Mobills_Navigate("Next")
+
 ; =============================================================================
 ; Mobills pagination (unified)
 ; =============================================================================
@@ -13600,6 +13606,77 @@ Mobills_FindPagerByMonthHeader(uia, dir) {
     return best
 }
 
+; Transactions month navigation: click the arrows adjacent to the month/year display
+; (e.g. "<  February 2026  >"), NOT the table pagination ("previous page / next page").
+Mobills_FindMonthNavByMonthYear(uia, dir) {
+    if !uia
+        return ""
+
+    ; Find the visible month label (Text) in any supported language
+    months := ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November",
+        "December",
+        "Janeiro", "Fevereiro", "Março", "Marco", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro",
+        "Novembro", "Dezembro"]
+
+    monthEl := ""
+    for , m in months {
+        try {
+            el := uia.FindElement({ Name: m, Type: "Text", mm: 1, cs: false })
+            if el {
+                monthEl := el
+                break
+            }
+        } catch {
+        }
+    }
+    if !monthEl
+        return ""
+
+    ; Header container is usually a Group near the month label.
+    header := ""
+    try header := monthEl.WalkTree("p", { Type: "Group" })
+    if !header
+        return ""
+
+    ; Use the month element bounds as the anchor; choose closest button left/right on the same row.
+    try mPos := monthEl.Location
+    buttons := ""
+    try buttons := header.FindAll({ Type: "Button" })
+    if !buttons
+        return ""
+
+    best := ""
+    bestDist := ""
+    try {
+        for , b in buttons {
+            if Mobills_IsDisabled(b)
+                continue
+            pos := b.Location
+            ; same row as the month label
+            if !(pos.y <= (mPos.y + mPos.h + 12) && (pos.y + pos.h) >= (mPos.y - 12))
+                continue
+
+            if (dir = "Prev") {
+                if (pos.x + pos.w) >= mPos.x
+                    continue
+                dist := mPos.x - (pos.x + pos.w)
+            } else {
+                if pos.x <= (mPos.x + mPos.w)
+                    continue
+                dist := pos.x - (mPos.x + mPos.w)
+            }
+
+            if (best = "" || dist < bestDist) {
+                best := b
+                bestDist := dist
+            }
+        }
+    } catch {
+    }
+
+    return best
+}
+
 Mobills_FindPagerByPath(uia, dir, context) {
     ; Budgets page: force the known arrow BUTTONs and avoid adjacent Text elements.
     ; Target:
@@ -13783,9 +13860,12 @@ Mobills_FindPagerOnce(uia, dir, context) {
     btn := ""
     ; Context-specific ordering (per plan)
     if (context = "transactions") {
-        btn := Mobills_FindPagerByName(uia, dir)
+        ; Prefer the arrows next to the month/year header (mobile/desktop), avoid table pagination.
+        btn := Mobills_FindMonthNavByMonthYear(uia, dir)
         if !btn
             btn := Mobills_FindPagerByMonthHeader(uia, dir)
+        if !btn
+            btn := Mobills_FindPagerByName(uia, dir)
     } else if (context = "accounts") {
         btn := Mobills_FindPagerByPath(uia, dir, context)
         if !btn
@@ -14100,6 +14180,55 @@ Mobills_TypeMainInOpenPicker() {
         MsgBox "Error finding Open picker: " e.Message, "Mobills Error", "IconX"
     }
 }
+
+; =============================================================================
+; Mobills hotkeys fallback for mobile/device mode
+; - Some Chrome "mobile device" views do not keep "Mobills" in the window title,
+;   which prevents the WinActive("Mobills") context from matching.
+; - This fallback scopes K/L (+Shift variants) to the Mobills Transactions URL only.
+; =============================================================================
+global g_MobillsUrlCacheTick := 0
+global g_MobillsUrlCacheUrl := ""
+
+Mobills_IsTransactionsUrlActive(cacheMs := 250) {
+    global g_MobillsUrlCacheTick, g_MobillsUrlCacheUrl
+    now := A_TickCount
+
+    if (g_MobillsUrlCacheTick && (now - g_MobillsUrlCacheTick) < cacheMs) {
+        return InStr(g_MobillsUrlCacheUrl, "/transactions")
+    }
+
+    g_MobillsUrlCacheTick := now
+    g_MobillsUrlCacheUrl := ""
+
+    try {
+        ; Prefer Chrome if active, else try Edge.
+        if WinActive("ahk_exe chrome.exe")
+            uia := UIA_Browser("ahk_exe chrome.exe")
+        else if WinActive("ahk_exe msedge.exe")
+            uia := UIA_Browser("ahk_exe msedge.exe")
+        else
+            uia := ""
+
+        if uia {
+            try g_MobillsUrlCacheUrl := StrLower(uia.GetCurrentURL())
+        }
+    } catch {
+        g_MobillsUrlCacheUrl := ""
+    }
+
+    return InStr(g_MobillsUrlCacheUrl, "/transactions")
+}
+
+#HotIf (WinActive("ahk_exe chrome.exe") || WinActive("ahk_exe msedge.exe")) && Mobills_IsTransactionsUrlActive()
+
+; K/L and Shift+K/L: Previous/Next month (Transactions) even when title doesn't match
+k:: Mobills_Navigate("Prev")
+l:: Mobills_Navigate("Next")
++k:: Mobills_Navigate("Prev")
++l:: Mobills_Navigate("Next")
+
+#HotIf
 
 #HotIf
 
