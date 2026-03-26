@@ -10671,25 +10671,39 @@ global g_CursorShortcutMenuActive := false
 ; Alt + A : Add File to AI Context (Add File to Cursor Chat)
 !a::
 {
-    ; If invoked from the main editor, move focus to Explorer so the active file is highlighted there.
-    if (IsCursorMainEditorFocused()) {
-        Send "^+e"
-        Sleep 350
-        okFocus := FocusCursorFilesExplorer()
-        if (!okFocus) {
-            Sleep 150
+    StandardLoadingBar_Show("⏳ Add file to Cursor Chat...", BANNER_ACCENT_INTERMEDIATE, { passive: false, centerOnHwnd: 0 })
+    try {
+        ; If invoked from the main editor, move focus to Explorer so the active file is highlighted there.
+        if (IsCursorMainEditorFocused()) {
+            StandardLoadingBar_Update("⏳ Focusing Explorer...")
+            Send "^+e"
+            Sleep 350
             okFocus := FocusCursorFilesExplorer()
+            if (!okFocus) {
+                Sleep 150
+                okFocus := FocusCursorFilesExplorer()
+            }
+            Sleep 120
         }
-        Sleep 120
+
+        ; Open context menu for the selected file in Explorer, then navigate to the target item.
+        StandardLoadingBar_Update("⏳ Opening context menu...")
+        if (Cursor_ContextMenuSelectByDownAndVerify("Add File to Cursor Chat")) {
+            StandardLoadingBar_Update("✅ File added to Cursor Chat")
+            return
+        }
+
+        ; Fallback: Shift+F10 is often more reliable than AppsKey on some keyboards.
+        StandardLoadingBar_Update("⏳ Retrying menu open...")
+        if (Cursor_ContextMenuSelectByDownAndVerify("Add File to Cursor Chat", "+{F10}")) {
+            StandardLoadingBar_Update("✅ File added to Cursor Chat")
+            return
+        }
+
+        StandardLoadingBar_Update("❌ Could not select 'Add File to Cursor Chat'")
+    } finally {
+        StandardLoadingBar_Hide(600)
     }
-
-    ; Open context menu for the selected file in Explorer, then navigate to the target item.
-    if (Cursor_ContextMenuSelectByDownAndVerify("Add File to Cursor Chat"))
-        return
-
-    ; Fallback: Shift+F10 is often more reliable than AppsKey on some keyboards.
-    if (Cursor_ContextMenuSelectByDownAndVerify("Add File to Cursor Chat", "+{F10}"))
-        return
 }
 
 Cursor_ContextMenuSelectByDownAndVerify(targetText, openKey := "{AppsKey}", maxSteps := 28) {
@@ -10705,7 +10719,11 @@ Cursor_ContextMenuSelectByDownAndVerify(targetText, openKey := "{AppsKey}", maxS
         name := ""
         try name := highlightedEl ? highlightedEl.Name : ""
 
+        if (Mod(step, 3) = 0)
+            StandardLoadingBar_Update("⏳ Searching menu item... (" step "/" maxSteps ")")
+
         if (name = targetText) {
+            StandardLoadingBar_Update("⏳ Activating 'Add File to Cursor Chat'...")
             ok := Cursor_ContextMenuActivateHighlightedItem(highlightedEl, targetText)
             return ok
         }
