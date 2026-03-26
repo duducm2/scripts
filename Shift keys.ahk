@@ -961,7 +961,7 @@ Power BI (Shift)
 
 ; --- UIA Tree Inspector -------------------------------------------------
 cheatSheets["UIATreeInspector"] :=
-"(UIA Tree Inspector (Shift))`r`n🔄 [R][R]efresh List`r`n🔍 [F]ocus [F]ilter field`r`n🔍 [S]elect [S]earch tree item"
+"(UIA Tree Inspector (Shift))`r`n🔄 [R][R]efresh List`r`n🔍 [F]ocus [F]ilter field`r`n🔍 [S]elect [S]earch tree item`r`n📋 [C]Copy full UI tree"
 ; --- SettleUp Shortcuts -----------------------------------------------------
 cheatSheets["Settle Up"] := "
 (
@@ -16845,6 +16845,154 @@ IsFileDialogActive() {
 
     } catch Error as e {
         MsgBox "Error in tree item search:`n" e.Message, "UIA Tree Inspector", "IconX"
+    }
+}
+
+; Shift + C : Search window/control and copy full UIA tree to clipboard
++c:: {
+    try {
+        ; Global variable to store user input
+        global g_TreeItemSearchInput := ""
+
+        ; Create GUI dialog (same as Shift+S)
+        searchGui := Gui("+AlwaysOnTop +ToolWindow", "Select Tree Item")
+        searchGui.SetFont("s10", "Segoe UI")
+        searchGui.AddText("w350 Center", "Enter text to search for tree item (starts with):")
+        searchGui.AddEdit("w300 Center vTreeItemInput")
+
+        SubmitTreeItemSearch(ctrl, *) {
+            global g_TreeItemSearchInput
+            g_TreeItemSearchInput := ctrl.Gui["TreeItemInput"].Text
+            ctrl.Gui.Destroy()
+        }
+        CancelTreeItemSearch(ctrl, *) {
+            global g_TreeItemSearchInput
+            g_TreeItemSearchInput := ""
+            ctrl.Gui.Destroy()
+        }
+
+        okBtn := searchGui.AddButton("w80 xp-40 y+10 Default", "OK")
+        okBtn.OnEvent("Click", SubmitTreeItemSearch)
+        cancelBtn := searchGui.AddButton("w80 xp+90", "Cancel")
+        cancelBtn.OnEvent("Click", CancelTreeItemSearch)
+
+        searchGui.Show("w350 h150")
+        searchGui["TreeItemInput"].Focus()
+        WinWaitClose("ahk_id " searchGui.Hwnd)
+
+        global g_TreeItemSearchInput
+        searchText := g_TreeItemSearchInput
+        g_TreeItemSearchInput := ""
+        if (searchText = "")
+            return
+
+        inspectorHwnd := WinExist("UIATreeInspector")
+        if (!inspectorHwnd)
+            inspectorHwnd := WinExist("ahk_exe UIATreeInspectorAutoHotkey64.exe")
+        if (!inspectorHwnd)
+            return
+
+        if !WinActive("ahk_id " inspectorHwnd) {
+            WinActivate "ahk_id " inspectorHwnd
+            WinWaitActive "ahk_id " inspectorHwnd, , 1
+        }
+        if !WinActive("ahk_id " inspectorHwnd)
+            return
+
+        ; Select matching item in left tree (AutomationId="4") (same as Shift+S)
+        root := UIA.ElementFromHandle(inspectorHwnd)
+        Sleep 200
+        treeContainer := root.FindFirst({ Type: "Tree", AutomationId: "4" })
+        if (!treeContainer)
+            return
+
+        treeItems := treeContainer.FindAll({ Type: "TreeItem" })
+        if (!treeItems)
+            return
+
+        matchingItem := ""
+        searchTextLower := StrLower(searchText)
+        for item in treeItems {
+            if (!item)
+                continue
+            try {
+                itemName := item.Name
+                if (StrLower(SubStr(itemName, 1, StrLen(searchText))) = searchTextLower) {
+                    matchingItem := item
+                    break
+                }
+            } catch {
+                continue
+            }
+        }
+        if (!matchingItem)
+            return
+
+        matchingItem.Select()
+        matchingItem.ScrollIntoView()
+        matchingItem.SetFocus()
+        Sleep 700
+
+        ; Refresh workaround (force correct UIA Tree load)
+        if !WinActive("ahk_id " inspectorHwnd) {
+            WinActivate "ahk_id " inspectorHwnd
+            WinWaitActive "ahk_id " inspectorHwnd, , 1
+        }
+        if WinActive("ahk_id " inspectorHwnd) {
+            try matchingItem.SetFocus()
+            Send "{Down}"
+            Sleep 1200
+            Send "{Up}"
+        }
+
+        ; Focus UIA Tree panel (right-side tree) and select root
+        Sleep 600
+        rightTree := 0
+        bestL := -0x7FFFFFFF
+        trees := root.FindAll({ Type: "Tree" })
+        for t in trees {
+            if (!t)
+                continue
+            try {
+                if (t.AutomationId = "4")
+                    continue
+            } catch {
+            }
+            try {
+                br := t.BoundingRectangle
+                if (br.l > bestL) {
+                    bestL := br.l
+                    rightTree := t
+                }
+            } catch {
+                if (!rightTree)
+                    rightTree := t
+            }
+        }
+        if (!rightTree)
+            return
+
+        rootItem := rightTree.FindFirst({ Type: "TreeItem" })
+        if (rootItem) {
+            try rootItem.Select()
+            try rootItem.ScrollIntoView()
+            try rootItem.SetFocus()
+        } else {
+            try rightTree.SetFocus()
+        }
+        Sleep 600
+
+        ; Copy complete UI tree to clipboard via context menu
+        A_Clipboard := ""
+        Sleep 150
+        Send "{AppsKey}"
+        Sleep 250
+        Send "{Up}"
+        Sleep 150
+        Send "{Enter}"
+        Sleep 400
+    } catch Error as e {
+        MsgBox "Error in Shift+C UIA Tree copy:`n" e.Message, "UIA Tree Inspector", "IconX"
     }
 }
 #HotIf
