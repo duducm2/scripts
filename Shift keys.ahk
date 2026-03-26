@@ -16850,9 +16850,13 @@ IsFileDialogActive() {
 
 ; Shift + C : Search window/control and copy full UIA tree to clipboard
 +c:: {
+    barShown := false
     try {
         ; Global variable to store user input
         global g_TreeItemSearchInput := ""
+
+        StandardLoadingBar_Show("⏳ UIA Tree Inspector: preparing copy…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
+        barShown := true
 
         ; Create GUI dialog (same as Shift+S)
         searchGui := Gui("+AlwaysOnTop +ToolWindow", "Select Tree Item")
@@ -16886,6 +16890,7 @@ IsFileDialogActive() {
         if (searchText = "")
             return
 
+        StandardLoadingBar_Update("🔎 Selecting window/control…")
         inspectorHwnd := WinExist("UIATreeInspector")
         if (!inspectorHwnd)
             inspectorHwnd := WinExist("ahk_exe UIATreeInspectorAutoHotkey64.exe")
@@ -16934,6 +16939,7 @@ IsFileDialogActive() {
         Sleep 700
 
         ; Refresh workaround (force correct UIA Tree load)
+        StandardLoadingBar_Update("🔄 Refreshing UIA Tree…")
         if !WinActive("ahk_id " inspectorHwnd) {
             WinActivate "ahk_id " inspectorHwnd
             WinWaitActive "ahk_id " inspectorHwnd, , 1
@@ -16946,6 +16952,7 @@ IsFileDialogActive() {
         }
 
         ; Focus UIA Tree panel (right-side tree) and select root
+        StandardLoadingBar_Update("🌳 Focusing UIA Tree panel…")
         Sleep 600
         rightTree := 0
         bestL := -0x7FFFFFFF
@@ -16983,6 +16990,7 @@ IsFileDialogActive() {
         Sleep 600
 
         ; Copy complete UI tree to clipboard via context menu
+        StandardLoadingBar_Update("📋 Copying full tree to clipboard…")
         A_Clipboard := ""
         Sleep 150
         Send "{AppsKey}"
@@ -16992,7 +17000,13 @@ IsFileDialogActive() {
         Send "{Enter}"
         Sleep 400
     } catch Error as e {
+        try StandardLoadingBar_Update("❌ Copy failed: " . SubStr(e.Message, 1, 60))
+        try StandardLoadingBar_Hide(2000)
         MsgBox "Error in Shift+C UIA Tree copy:`n" e.Message, "UIA Tree Inspector", "IconX"
+        return
+    } finally {
+        if (barShown)
+            try StandardLoadingBar_Hide(0)
     }
 }
 #HotIf
