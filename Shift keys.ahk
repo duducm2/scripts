@@ -10700,23 +10700,31 @@ global g_CursorShortcutMenuActive := false
 
         ; Open context menu for the selected file in Explorer, then navigate to the target item.
         StandardLoadingBar_Update("⏳ Opening context menu...")
-        result := Cursor_ContextMenuSelectByDownAndVerify("Add File to Cursor Chat", "{AppsKey}", 28, expectedFileName)
+        result := Cursor_ContextMenuSelectByDownAndVerifyAny(
+            ["Add file to Gemini context", "Add File to Cursor Chat"],
+            "{AppsKey}",
+            34,
+            expectedFileName
+        )
         if (result.ok) {
             StandardLoadingBar_Update("✅ File added to Cursor Chat")
             return
         }
 
-        ; Fallback: Shift+F10 is often more reliable than AppsKey on some keyboards.
-        StandardLoadingBar_Update("⏳ Retrying menu open...")
-        result := Cursor_ContextMenuSelectByDownAndVerify("Add File to Cursor Chat", "+{F10}", 28, expectedFileName)
-        if (result.ok) {
+        ; Deterministic fallback for Cursor menu ID issues:
+        ; copy selected file name via rename mode and insert @filename in AI field.
+        StandardLoadingBar_Update("⏳ Fallback: @filename from Explorer selection...")
+        fallbackResult := Cursor_FallbackAddFileByAtMention(expectedFileName)
+        if (fallbackResult.ok) {
             StandardLoadingBar_Update("✅ File added to Cursor Chat")
             return
         }
 
         failureReason := result.reason
         if (failureReason = "")
-            failureReason := Cursor_DetectAddFileFailureSignal()
+            failureReason := fallbackResult.reason
+        if (failureReason = "")
+            failureReason := Cursor_DetectAddFileFailureSignal(expectedFileName)
         if (failureReason = "")
             failureReason := "Could not verify add-file action"
         StandardLoadingBar_Update("❌ Failed: " . failureReason)
@@ -10745,6 +10753,35 @@ Cursor_ContextMenuSelectByDownAndVerify(targetText, openKey := "{AppsKey}", maxS
             StandardLoadingBar_Update("⏳ Activating 'Add File to Cursor Chat'...")
             result := Cursor_ContextMenuActivateHighlightedItem(highlightedEl, targetText, 220, 900, expectedFileName)
             return result
+        }
+
+        Send "{Down}"
+        Sleep 55
+    }
+
+    return { ok: false, reason: "Menu item not found" }
+}
+
+Cursor_ContextMenuSelectByDownAndVerifyAny(targetTexts, openKey := "{AppsKey}", maxSteps := 28, expectedFileName := "") {
+    ; Open context menu.
+    Send openKey
+    Sleep 240
+
+    step := 0
+    while (step <= maxSteps) {
+        step += 1
+        highlightedEl := Cursor_ContextMenuGetHighlightedElement()
+        name := ""
+        try name := highlightedEl ? highlightedEl.Name : ""
+
+        if (Mod(step, 3) = 0)
+            StandardLoadingBar_Update("⏳ Searching menu item... (" step "/" maxSteps ")")
+
+        for targetText in targetTexts {
+            if (name = targetText) {
+                StandardLoadingBar_Update("⏳ Activating '" . targetText . "'...")
+                return Cursor_ContextMenuActivateHighlightedItem(highlightedEl, targetText, 220, 900, expectedFileName)
+            }
         }
 
         Send "{Down}"
@@ -11064,6 +11101,188 @@ Cursor_IsChatFileContextVisible(root, expectedFileName) {
             return true
         if (Cursor_IsNameNearComposer(root, UIA.Type.Button, needleNoExt))
             return true
+    }
+    return false
+}
+
+Cursor_FallbackAddFileByAtMention(expectedFileName := "") {
+    copiedName := Cursor_CopySelectedFileNameFromExplorerRename()
+    if (copiedName = "") {
+        SafeDebugLog("Cursor_FallbackAddFileByAtMention failed: copy-name phase")
+        return { ok: false, reason: "Could not copy selected file name" }
+    }
+
+    if (!Cursor_FocusAITextFieldForAddFallback()) {
+        SafeDebugLog("Cursor_FallbackAddFileByAtMention failed: focus-input phase")
+        return { ok: false, reason: "Could not focus AI text field" }
+    }
+
+    SendInput "@" . copiedName
+    mentionDropdown := Cursor_WaitForMentionDropdownSignal(copiedName, 1200)
+    if (!mentionDropdown.ok) {
+        SafeDebugLog("Cursor_FallbackAddFileByAtMention failed: dropdown-missing for " . copiedName)
+        return mentionDropdown
+    }
+
+    Send "{Enter}"
+    verifyResult := Cursor_WaitForAddFileChipSuccess(copiedName, 1400)
+    if (verifyResult.ok)
+        return verifyResult
+
+    SafeDebugLog("Cursor_FallbackAddFileByAtMention failed: confirm-failed for " . copiedName)
+    return { ok: false, reason: "Confirm failed after @filename" }
+}
+
+Cursor_CopySelectedFileNameFromExplorerRename() {
+    oldClip := A_Clipboard
+    copied := ""
+    try {
+        A_Clipboard := ""
+        Send "{F2}"
+        Sleep 120
+        Send "^a"
+        Sleep 40
+        Send "^c"
+        if (ClipWait(0.8))
+            copied := A_Clipboard
+        ; Exit rename mode safely without changing file name.
+        Send "{Esc}"
+        Sleep 70
+    } catch {
+        try Send "{Esc}"
+    } finally {
+        A_Clipboard := oldClip
+    }
+
+    copied := Trim(StrReplace(StrReplace(copied, "`r", ""), "`n", ""))
+    return copied
+}
+
+Cursor_FocusAITextFieldForAddFallback() {
+    hwnd := WinExist("ahk_exe Cursor.exe")
+    if (!hwnd)
+        return false
+    try WinActivate("ahk_id " hwnd)
+    catch
+        return false
+    Sleep 120
+
+    try root := UIA.ElementFromHandle(hwnd)
+    catch
+        return false
+    if (!root)
+        return false
+
+    editEl := Cursor_FindVisibleComposerInput(root)
+    if (editEl) {
+        try editEl.SetFocus()
+        Sleep 60
+        try {
+            if editEl.HasKeyboardFocus
+                return true
+        } catch {
+        }
+        try editEl.Click()
+        Sleep 60
+        try return editEl.HasKeyboardFocus
+        catch
+            return false
+    }
+
+    ; Pane may be hidden. Open AI pane, then retry composer search.
+    Send "^i"
+    Sleep 250
+    loop 8 {
+        try root := UIA.ElementFromHandle(hwnd)
+        catch {
+            Sleep 120
+            continue
+        }
+        if (!root) {
+            Sleep 120
+            continue
+        }
+        editEl := Cursor_FindVisibleComposerInput(root)
+        if (editEl) {
+            try editEl.SetFocus()
+            Sleep 60
+            try {
+                if editEl.HasKeyboardFocus
+                    return true
+            } catch {
+            }
+            try editEl.Click()
+            Sleep 60
+            try return editEl.HasKeyboardFocus
+            catch
+                return false
+        }
+        Sleep 120
+    }
+    return false
+}
+
+Cursor_WaitForMentionDropdownSignal(expectedFileName, timeoutMs := 1200) {
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        hwnd := WinExist("ahk_exe Cursor.exe")
+        if (!hwnd)
+            break
+        try root := UIA.ElementFromHandle(hwnd)
+        catch {
+            Sleep 80
+            continue
+        }
+        if (!root) {
+            Sleep 80
+            continue
+        }
+
+        if (Cursor_HasMentionCandidateNearComposer(root, expectedFileName))
+            return { ok: true, reason: "" }
+        Sleep 80
+    }
+    return { ok: false, reason: "Symbol dropdown not detected for @" . expectedFileName }
+}
+
+Cursor_HasMentionCandidateNearComposer(root, expectedFileName) {
+    composer := Cursor_FindVisibleComposerInput(root)
+    if (!composer)
+        return false
+    try compBr := composer.BoundingRectangle
+    catch
+        return false
+
+    needle := expectedFileName
+    needleNoExt := RegExReplace(needle, "\.[^.]+$")
+
+    try allText := root.FindAll({ Type: UIA.Type.Text })
+    catch
+        return false
+
+    for t in allText {
+        nm := ""
+        try nm := t.Name
+        if (nm = "")
+            continue
+        if (!InStr(nm, needle, false) && !(needleNoExt != "" && InStr(nm, needleNoExt, false)))
+            continue
+        try {
+            if t.GetPropertyValue(UIA.Property.IsOffscreen)
+                continue
+        } catch {
+            continue
+        }
+        try {
+            br := t.BoundingRectangle
+            ; Mention dropdown generally appears near/below composer.
+            if (Abs(br.l - compBr.l) > 650)
+                continue
+            if (br.t < compBr.t - 120 || br.t > compBr.t + 520)
+                continue
+            return true
+        } catch {
+        }
     }
     return false
 }
