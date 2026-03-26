@@ -1635,8 +1635,8 @@ FastCopyMode_ClipboardHasImage() {
     ; CF_DIB=8, CF_DIBV5=17, CF_BITMAP=2
     try {
         return !!(DllCall("IsClipboardFormatAvailable", "UInt", 8, "Int")
-            || DllCall("IsClipboardFormatAvailable", "UInt", 17, "Int")
-            || DllCall("IsClipboardFormatAvailable", "UInt", 2, "Int"))
+        || DllCall("IsClipboardFormatAvailable", "UInt", 17, "Int")
+        || DllCall("IsClipboardFormatAvailable", "UInt", 2, "Int"))
     } catch {
         return false
     }
@@ -1728,35 +1728,16 @@ FastCopyMode_WaitForClipboardReadCycle(timeoutMs := 1200) {
     ; #endregion agent log
 }
 
-FastCopyMode_SendPasteAndWaitForReadCycle(maxAttempts := 2) {
+FastCopyMode_SendPasteAndWaitForReadCycle(isGeminiSession := false) {
     ; #region agent log
-    global FAST_COPY_CLIPBOARD_READ_CYCLE_MS
-    attempt := 0
-    cycle := ""
-    while (attempt < maxAttempts) {
-        attempt += 1
-        seqBefore := Clipboard_GetSequenceNumber()
-        Send "^v"
-        ; Fast path (Utils.ahk): sequence changes when another process reads/updates clipboard.
-        if (Clipboard_WaitForSequenceChange(seqBefore, 1200, 600)) {
-            cycle := "seq_changed"
-            FastCopyMode_DebugLog("H4", "Shift keys.ahk:FastCopyMode_SendPasteAndWaitForReadCycle", "paste_attempt", Map(
-                "attempt", attempt,
-                "cycle", cycle
-            ))
-            return cycle
-        }
-        cycle := FastCopyMode_WaitForClipboardReadCycle(FAST_COPY_CLIPBOARD_READ_CYCLE_MS)
-        FastCopyMode_DebugLog("H4", "Shift keys.ahk:FastCopyMode_SendPasteAndWaitForReadCycle", "paste_attempt", Map(
-            "attempt", attempt,
-            "cycle", cycle
-        ))
-        if (InStr(cycle, "no_lock_seen") != 1)
-            return cycle
-        ; If we didn't observe any clipboard read/lock, try once more (some targets debounce).
-        Sleep 60
+    Send "^v"
+    if (isGeminiSession) {
+        Sleep 200
+        return "gemini_delay"
+    } else {
+        Sleep 400
+        return "baseline_delay"
     }
-    return cycle
     ; #endregion agent log
 }
 
@@ -2001,10 +1982,11 @@ FastCopyMode_PasteScreenshotQueue(queue) {
                     } catch {
                         focusedPre := "0"
                     }
-                    FastCopyMode_DebugLog("H6", "Shift keys.ahk:FastCopyMode_PasteScreenshotQueue", "gemini_before_paste", Map(
-                        "idx", idx,
-                        "focusedPrompt", focusedPre
-                    ))
+                    FastCopyMode_DebugLog("H6", "Shift keys.ahk:FastCopyMode_PasteScreenshotQueue",
+                        "gemini_before_paste", Map(
+                            "idx", idx,
+                            "focusedPrompt", focusedPre
+                        ))
                 }
 
                 A_Clipboard := snap
@@ -2017,25 +1999,30 @@ FastCopyMode_PasteScreenshotQueue(queue) {
                     "snapSize", snapSize,
                     "hasImageNow", FastCopyMode_ClipboardHasImage() ? "1" : "0"
                 ))
-                cycle := FastCopyMode_SendPasteAndWaitForReadCycle(2)
-                FastCopyMode_DebugLog("H4", "Shift keys.ahk:FastCopyMode_PasteScreenshotQueue", "paste_iter_clipboard_cycle", Map(
-                    "idx", idx,
-                    "cycle", cycle
-                ))
+                cycle := FastCopyMode_SendPasteAndWaitForReadCycle(isGeminiSession)
+                FastCopyMode_DebugLog("H4", "Shift keys.ahk:FastCopyMode_PasteScreenshotQueue",
+                    "paste_iter_clipboard_cycle", Map(
+                        "idx", idx,
+                        "cycle", cycle
+                    ))
 
                 ; Gemini-specific: images require upload + prompt field focus for subsequent pastes.
                 if (isGeminiSession) {
-                    idleStatus := FastCopyMode_WaitForGeminiUploadIdle(cachedGeminiUia)
-                    FastCopyMode_DebugLog("H6", "Shift keys.ahk:FastCopyMode_PasteScreenshotQueue", "gemini_after_paste", Map(
-                        "idx", idx,
-                        "uploadIdle", idleStatus
-                    ))
+                    ; Gemini can queue sequential pastes quickly; avoid polling the UI tree.
+                    Sleep 100
+                    idleStatus := "optimized_idle"
+                    FastCopyMode_DebugLog("H6", "Shift keys.ahk:FastCopyMode_PasteScreenshotQueue",
+                        "gemini_after_paste", Map(
+                            "idx", idx,
+                            "uploadIdle", idleStatus
+                        ))
                 }
             } catch {
                 ; continue to next screenshot
-                FastCopyMode_DebugLog("H4", "Shift keys.ahk:FastCopyMode_PasteScreenshotQueue", "paste_iter_failed", Map(
-                    "idx", idx
-                ))
+                FastCopyMode_DebugLog("H4", "Shift keys.ahk:FastCopyMode_PasteScreenshotQueue", "paste_iter_failed",
+                    Map(
+                        "idx", idx
+                    ))
             }
         }
     } finally {
@@ -10840,7 +10827,8 @@ Cursor_ContextMenuGetHighlightedElement() {
     return 0
 }
 
-Cursor_ContextMenuActivateHighlightedItem(menuItemEl, targetText, settleMs := 220, verifyTimeoutMs := 900, expectedFileName := "") {
+Cursor_ContextMenuActivateHighlightedItem(menuItemEl, targetText, settleMs := 220, verifyTimeoutMs := 900,
+    expectedFileName := "") {
     ; Requirement: add a short pause before activation to improve reliability.
     Sleep settleMs
 
@@ -11322,7 +11310,6 @@ Cursor_WaitForContextMenuItemGone(itemName, timeoutMs := 800) {
     }
     return false
 }
-
 
 ShowCursorShortcutMenu() {
     global g_CursorShortcutMenuGui, g_CursorShortcutMenuActive
@@ -14270,7 +14257,8 @@ Mobills_FindMonthNavByMonthYear(uia, dir) {
         return ""
 
     ; Find the visible month label (Text) in any supported language
-    months := ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November",
+    months := ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October",
+        "November",
         "December",
         "Janeiro", "Fevereiro", "Março", "Marco", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro",
         "Novembro", "Dezembro"]
@@ -17752,7 +17740,8 @@ SettleUp_GetNewExpenseDialog() {
         exeEsc := StrReplace(StrReplace(exe, "\", "\\"), '"', '\"')
         clsEsc := StrReplace(StrReplace(cls, "\", "\\"), '"', '\"')
         FileAppend(
-            '{"sessionId":"6169a3","runId":"run1","hypothesisId":"H1-H4","location":"Shift keys.ahk:miro:+u","message":"Miro +u fired (pre-send)","data":{"title":"' titleEsc '","exe":"' exeEsc '","class":"' clsEsc '","shiftPhysical":' (shiftP ? "true" : "false") '},"timestamp":' A_TickCount '}'
+            '{"sessionId":"6169a3","runId":"run1","hypothesisId":"H1-H4","location":"Shift keys.ahk:miro:+u","message":"Miro +u fired (pre-send)","data":{"title":"' titleEsc '","exe":"' exeEsc '","class":"' clsEsc '","shiftPhysical":' (
+                shiftP ? "true" : "false") '},"timestamp":' A_TickCount '}'
             "`n",
             "debug-6169a3.log",
             "UTF-8"
@@ -17768,7 +17757,8 @@ SettleUp_GetNewExpenseDialog() {
     try {
         shiftP2 := GetKeyState("Shift", "P")
         FileAppend(
-            '{"sessionId":"6169a3","runId":"run1","hypothesisId":"H2-H3","location":"Shift keys.ahk:miro:+u","message":"Miro +u sent {Blind}^g (post-send)","data":{"shiftPhysicalAfter":' (shiftP2 ? "true" : "false") '},"timestamp":' A_TickCount '}'
+            '{"sessionId":"6169a3","runId":"run1","hypothesisId":"H2-H3","location":"Shift keys.ahk:miro:+u","message":"Miro +u sent {Blind}^g (post-send)","data":{"shiftPhysicalAfter":' (
+                shiftP2 ? "true" : "false") '},"timestamp":' A_TickCount '}'
             "`n",
             "debug-6169a3.log",
             "UTF-8"
