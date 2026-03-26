@@ -10671,15 +10671,6 @@ global g_CursorShortcutMenuActive := false
 ; Alt + A : Add File to AI Context (Add File to Cursor Chat)
 !a::
 {
-    ; #region agent log
-    global g_AgentDebugRunCounter
-    if (!IsSet(g_AgentDebugRunCounter))
-        g_AgentDebugRunCounter := 0
-    g_AgentDebugRunCounter += 1
-    runId := "altA-" g_AgentDebugRunCounter "-" A_TickCount
-    AgentDebugLog_c605fb(runId, "H0", "Shift keys.ahk:!a entry", "Alt+A invoked", { win: WinGetTitle("A"), editorFocused: IsCursorMainEditorFocused() })
-    ; #endregion agent log
-
     ; If invoked from the main editor, move focus to Explorer so the active file is highlighted there.
     if (IsCursorMainEditorFocused()) {
         Send "^+e"
@@ -10690,32 +10681,21 @@ global g_CursorShortcutMenuActive := false
             okFocus := FocusCursorFilesExplorer()
         }
         Sleep 120
-    } else {
-        ; #region agent log
-        AgentDebugLog_c605fb(runId, "H4", "Shift keys.ahk:!a skip focus", "Not main editor; assume Explorer/other", {})
-        ; #endregion agent log
     }
 
     ; Open context menu for the selected file in Explorer, then navigate to the target item.
-    if (Cursor_ContextMenuSelectByDownAndVerify("Add File to Cursor Chat", runId))
+    if (Cursor_ContextMenuSelectByDownAndVerify("Add File to Cursor Chat"))
         return
 
     ; Fallback: Shift+F10 is often more reliable than AppsKey on some keyboards.
-    if (Cursor_ContextMenuSelectByDownAndVerify("Add File to Cursor Chat", runId, "+{F10}"))
+    if (Cursor_ContextMenuSelectByDownAndVerify("Add File to Cursor Chat", "+{F10}"))
         return
 }
 
-Cursor_ContextMenuSelectByDownAndVerify(targetText, runId := "", openKey := "{AppsKey}", maxSteps := 28) {
-    tStart := A_TickCount
-
+Cursor_ContextMenuSelectByDownAndVerify(targetText, openKey := "{AppsKey}", maxSteps := 28) {
     ; Open context menu.
     Send openKey
     Sleep 240
-
-    ; #region agent log
-    if (runId != "")
-        AgentDebugLog_c605fb(runId, "H1", "Shift keys.ahk:Cursor_ContextMenuSelectByDownAndVerify", "Opened context menu via=" openKey, 0)
-    ; #endregion agent log
 
     ; Try to detect and read currently highlighted item and then walk down.
     step := 0
@@ -10725,40 +10705,14 @@ Cursor_ContextMenuSelectByDownAndVerify(targetText, runId := "", openKey := "{Ap
         name := ""
         try name := highlightedEl ? highlightedEl.Name : ""
 
-        ; #region agent log
-        if (runId != "" && step <= 10)
-            AgentDebugLog_c605fb(runId, "H2", "Shift keys.ahk:Cursor_ContextMenuSelectByDownAndVerify", "Step=" step " highlighted=" name, 0)
-        ; #endregion agent log
-
         if (name = targetText) {
-            tFound := A_TickCount
-            ok := Cursor_ContextMenuActivateHighlightedItem(highlightedEl, targetText, runId)
-            tEnd := A_TickCount
-
-            ; #region agent log
-            if (runId != "") {
-                AgentDebugLog_c605fb(runId, "H2", "Shift keys.ahk:Cursor_ContextMenuSelectByDownAndVerify", "Matched target; activated ok=" ok, 0)
-                AgentDebugLog_c605fb(
-                    runId,
-                    "H2",
-                    "Shift keys.ahk:Cursor_ContextMenuSelectByDownAndVerify timing",
-                    "steps=" step " openToFoundMs=" (tFound - tStart) " activateTotalMs=" (tEnd - tFound) " totalMs=" (tEnd - tStart),
-                    0
-                )
-            }
-            ; #endregion agent log
-
+            ok := Cursor_ContextMenuActivateHighlightedItem(highlightedEl, targetText)
             return ok
         }
 
         Send "{Down}"
         Sleep 55
     }
-
-    ; #region agent log
-    if (runId != "")
-        AgentDebugLog_c605fb(runId, "H3", "Shift keys.ahk:Cursor_ContextMenuSelectByDownAndVerify", "Failed to find target within steps=" maxSteps, 0)
-    ; #endregion agent log
 
     return false
 }
@@ -10812,16 +10766,12 @@ Cursor_ContextMenuGetHighlightedElement() {
     return 0
 }
 
-Cursor_ContextMenuActivateHighlightedItem(menuItemEl, targetText, runId := "", settleMs := 220, verifyTimeoutMs := 900) {
+Cursor_ContextMenuActivateHighlightedItem(menuItemEl, targetText, settleMs := 220, verifyTimeoutMs := 900) {
     ; Requirement: add a short pause before activation to improve reliability.
     Sleep settleMs
 
     ; Extra stabilization: ensure the highlighted item stays on the target briefly.
     stableOk := Cursor_WaitForContextMenuHighlightStable(targetText, 260)
-    ; #region agent log
-    if (runId != "")
-        AgentDebugLog_c605fb(runId, "H1", "Shift keys.ahk:Cursor_ContextMenuActivateHighlightedItem", "Highlight stable=" stableOk, 0)
-    ; #endregion agent log
 
     activatedVia := ""
     ok := false
@@ -10885,11 +10835,6 @@ Cursor_ContextMenuActivateHighlightedItem(menuItemEl, targetText, runId := "", s
         closed := Cursor_WaitForContextMenuItemGone(targetText, verifyTimeoutMs)
     }
 
-    ; #region agent log
-    if (runId != "")
-        AgentDebugLog_c605fb(runId, "H1", "Shift keys.ahk:Cursor_ContextMenuActivateHighlightedItem", "via=" activatedVia " ok=" ok " menuClosed=" closed, 0)
-    ; #endregion agent log
-
     return ok && closed
 }
 
@@ -10915,10 +10860,7 @@ Cursor_WaitForContextMenuHighlightStable(targetText, timeoutMs := 250, requiredC
 
 Cursor_WaitForContextMenuItemGone(itemName, timeoutMs := 800) {
     deadline := A_TickCount + timeoutMs
-    loops := 0
-    t0 := A_TickCount
     while (A_TickCount < deadline) {
-        loops += 1
         try {
             mi := UIA.GetRootElement().FindFirst({ Type: 50011, Name: itemName })
             if (!mi)
@@ -10929,219 +10871,8 @@ Cursor_WaitForContextMenuItemGone(itemName, timeoutMs := 800) {
         }
         Sleep 40
     }
-    ; #region agent log
-    ; runId not available in this helper; timing is inferred by surrounding logs.
-    ; #endregion agent log
     return false
 }
-
-Cursor_ClickContextMenuItemByName(itemName, timeout := 1200, runId := "") {
-    deadline := A_TickCount + timeout
-    didEntryLog := false
-    while (A_TickCount < deadline) {
-        hwnd := WinExist("ahk_exe Cursor.exe")
-        if (!hwnd)
-            return false
-
-        root := 0
-        try root := UIA.ElementFromHandle(hwnd)
-
-        ; #region agent log
-        if (runId != "" && !didEntryLog) {
-            didEntryLog := true
-            AgentDebugLog_c605fb(runId, "H2", "Shift keys.ahk:Cursor_ClickContextMenuItemByName entry", "Searching for menu item", { itemName: itemName, hwnd: hwnd, haveRoot: !!root })
-        }
-        ; #endregion agent log
-
-        menuItem := 0
-        try menuItem := root ? root.FindFirst({ Type: 50011, Name: itemName }) : 0
-        if (!menuItem) {
-            try menuItem := UIA.GetRootElement().FindFirst({ Type: 50011, Name: itemName })
-        }
-        if (!menuItem) {
-            try menuItem := root ? root.FindFirst({ Type: 50011, Name: itemName, matchmode: "Substring" }) : 0
-        }
-        if (!menuItem) {
-            try menuItem := UIA.GetRootElement().FindFirst({ Type: 50011, Name: itemName, matchmode: "Substring" })
-        }
-
-        if (menuItem) {
-            clickedVia := "click"
-            clickOk := false
-            wasEnabled := ""
-            wasOffscreen := ""
-            invAvail := ""
-            try wasEnabled := menuItem.GetPropertyValue(UIA.Property.IsEnabled)
-            try wasOffscreen := menuItem.GetPropertyValue(UIA.Property.IsOffscreen)
-            try invAvail := menuItem.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)
-
-            ; Prefer InvokePattern when available (often more reliable than Click for menu actions).
-            if (invAvail = 1) {
-                clickedVia := "invokePattern"
-                try {
-                    menuItem.InvokePattern.Invoke()
-                    clickOk := true
-                } catch {
-                    clickOk := false
-                }
-            }
-
-            if (!clickOk) {
-                clickedVia := "click"
-                try {
-                    menuItem.Click()
-                    clickOk := true
-                } catch {
-                    clickedVia := "invoke"
-                    try {
-                        menuItem.Invoke()
-                        clickOk := true
-                    } catch {
-                        clickOk := false
-                    }
-                }
-            }
-
-            ; #region agent log
-            if (runId != "") {
-                nm := ""
-                cn := ""
-                try nm := menuItem.Name
-                try cn := menuItem.ClassName
-                AgentDebugLog_c605fb(
-                    runId,
-                    "H2",
-                    "Shift keys.ahk:Cursor_ClickContextMenuItemByName success",
-                    "MenuItem pre enabled=" wasEnabled " offscreen=" wasOffscreen " invAvail=" invAvail " | via=" clickedVia " ok=" clickOk " name=" nm " class=" cn,
-                    0
-                )
-            }
-            ; #endregion agent log
-
-            if (!clickOk)
-                return false
-
-            ; #region agent log
-            if (runId != "") {
-                stillThere := ""
-                errMsg := ""
-                try {
-                    ; If the menu closes, this usually fails to find the item again.
-                    stillThere := UIA.GetRootElement().FindFirst({ Type: 50011, Name: itemName }) ? 1 : 0
-                } catch Error as e {
-                    stillThere := "err"
-                    try errMsg := e.Message
-                }
-                AgentDebugLog_c605fb(
-                    runId,
-                    "H1",
-                    "Shift keys.ahk:Cursor_ClickContextMenuItemByName post",
-                    "Post-click menuItemStillFindable=" stillThere " err=" errMsg,
-                    0
-                )
-
-                ; If the menu is still open after invoke/click, try the classic activation path:
-                ; focus the menu item and press Enter.
-                if (stillThere = 1) {
-                    enterOk := 0
-                    try {
-                        menuItem.SetFocus()
-                        Sleep 40
-                        Send "{Enter}"
-                        enterOk := 1
-                    } catch {
-                        enterOk := 0
-                    }
-                    AgentDebugLog_c605fb(
-                        runId,
-                        "H1",
-                        "Shift keys.ahk:Cursor_ClickContextMenuItemByName enterFallback",
-                        "Menu stayed open; sent Enter fallback ok=" enterOk,
-                        0
-                    )
-                }
-            }
-            ; #endregion agent log
-
-            return true
-        }
-        Sleep 80
-    }
-
-    ; #region agent log
-    if (runId != "") {
-        names := []
-        try {
-            hwnd2 := WinExist("ahk_exe Cursor.exe")
-            root2 := UIA.ElementFromHandle(hwnd2)
-            all := 0
-            try all := root2.FindAll({ Type: 50011 })
-            if (all) {
-                i := 0
-                for mi in all {
-                    i += 1
-                    if (i > 12)
-                        break
-                    try names.Push(mi.Name)
-                }
-            }
-        } catch {
-        }
-        AgentDebugLog_c605fb(runId, "H3", "Shift keys.ahk:Cursor_ClickContextMenuItemByName timeout", "Menu item not found before timeout", { itemName: itemName, sampleMenuItemNames: names })
-    }
-    ; #endregion agent log
-
-    return false
-}
-
-; #region agent log
-AgentDebugLog_c605fb(runId, hypothesisId, location, message, dataObj := 0) {
-    ; NDJSON log for debug mode (no secrets).
-    try {
-        ; Minimal JSON escaper for strings we control.
-        q := "`""
-        ; Keep `data` empty for robustness (avoid enumeration errors).
-        dataJson := "{}"
-        r := "" runId
-        h := "" hypothesisId
-        loc := "" location
-        msg := "" message
-        r := StrReplace(r, "\", "/")
-        r := StrReplace(r, q, "'")
-        r := StrReplace(r, "`r`n", "\n")
-        r := StrReplace(r, "`n", "\n")
-        r := StrReplace(r, "`r", "\n")
-        h := StrReplace(h, "\", "/")
-        h := StrReplace(h, q, "'")
-        h := StrReplace(h, "`r`n", "\n")
-        h := StrReplace(h, "`n", "\n")
-        h := StrReplace(h, "`r", "\n")
-        loc := StrReplace(loc, "\", "/")
-        loc := StrReplace(loc, q, "'")
-        loc := StrReplace(loc, "`r`n", "\n")
-        loc := StrReplace(loc, "`n", "\n")
-        loc := StrReplace(loc, "`r", "\n")
-        msg := StrReplace(msg, "\", "/")
-        msg := StrReplace(msg, q, "'")
-        msg := StrReplace(msg, "`r`n", "\n")
-        msg := StrReplace(msg, "`n", "\n")
-        msg := StrReplace(msg, "`r", "\n")
-        line := "{"
-            . q "sessionId" q ":" q "c605fb" q
-            . "," q "runId" q ":" q r q
-            . "," q "hypothesisId" q ":" q h q
-            . "," q "location" q ":" q loc q
-            . "," q "message" q ":" q msg q
-            . "," q "data" q ":" dataJson
-            . "," q "timestamp" q ":" A_TickCount
-            . "}`n"
-        FileAppend line, "C:\Users\fie7ca\Documents\scripts\debug-c605fb.log", "UTF-8"
-    } catch Error as e {
-        ; Failsafe: surface why logging failed (avoid silent failure).
-        try MsgBox("Debug log write failed:`n" e.Message, "Alt+A debug", "IconX")
-    }
-}
-; #endregion agent log
 
 ShowCursorShortcutMenu() {
     global g_CursorShortcutMenuGui, g_CursorShortcutMenuActive
