@@ -1879,6 +1879,175 @@ FastCopyMode_WaitForGeminiUploadIdle(uia := "", timeoutMs := 0) {
     ; #endregion agent log
 }
 
+; --- Gemini + Clip Angel: sequential paste with upload-aware pacing (same prompt focus as Gemini.ahk #!+i) ---
+
+FastCopyMode_IsGeminiHwnd(hwnd) {
+    try {
+        if (!hwnd)
+            return false
+        proc := WinGetProcessName("ahk_id " hwnd)
+        if (proc != "chrome.exe")
+            return false
+        title := ""
+        try title := WinGetTitle("ahk_id " hwnd)
+        if (InStr(title, "gemini", false))
+            return true
+        ; Fallback: title can be generic; verify by finding the Gemini prompt field via UIA.
+        try {
+            uia := UIA_Browser("ahk_id " hwnd)
+            pf := FindGeminiPromptField(uia)
+            if (pf)
+                return true
+        } catch {
+        }
+    } catch {
+    }
+    return false
+}
+
+FastCopyMode_IsGeminiForeground() {
+    try {
+        return FastCopyMode_IsGeminiHwnd(WinGetID("A"))
+    } catch {
+        return false
+    }
+}
+
+Gemini_GetUiaForActiveGeminiChrome() {
+    try {
+        hwnd := WinGetID("A")
+        if (!FastCopyMode_IsGeminiHwnd(hwnd))
+            return ""
+        if (!hwnd)
+            return ""
+        return UIA_Browser("ahk_id " hwnd)
+    } catch {
+        return ""
+    }
+}
+
+; Mirror Gemini.ahk #!+i: anchor on "Open upload file menu", Shift+Tab, then FindGeminiPromptField + focus.
+Gemini_FocusPromptSameAsOpenHotkey(uia) {
+    if (!IsObject(uia))
+        return false
+    localSettleMs := 120
+    try {
+        Sleep localSettleMs
+        anchorButton := 0
+        try {
+            anchorButton := uia.FindFirst({ Type: UIA.Type.Button, Name: "Open upload file menu", ControlType: "Button" })
+            if (!anchorButton)
+                anchorButton := uia.FindFirst({ Type: UIA.Type.Button, Name: "Open upload file menu", cs: false })
+        } catch {
+        }
+        if (!anchorButton) {
+            try {
+                allButtons := uia.FindAll({ Type: UIA.Type.Button })
+                for button in allButtons {
+                    try {
+                        if (InStr(button.Name, "Open upload file menu", false)) {
+                            anchorButton := button
+                            break
+                        }
+                    } catch {
+                        continue
+                    }
+                }
+            } catch {
+            }
+        }
+        if (anchorButton) {
+            try {
+                anchorButton.SetFocus()
+                Sleep 25
+                SendInput "+{Tab}"
+                Sleep 15
+            } catch {
+            }
+        }
+        promptField := FindGeminiPromptField(uia)
+        if (promptField) {
+            try {
+                promptField.SetFocus()
+                Sleep 100
+                if (!promptField.HasKeyboardFocus)
+                    try promptField.Click()
+                Sleep 40
+            } catch {
+            }
+            return true
+        }
+    } catch {
+    }
+    return false
+}
+
+; After each Clip Angel paste: wait until upload UI clears; refocus prompt while uploading.
+Gemini_WaitForUploadIdleWithRefocus(uia) {
+    global FAST_COPY_GEMINI_UPLOAD_IDLE_MS
+    if (!IsObject(uia))
+        return "uia_fail"
+    tStart := A_TickCount
+    sawUploading := false
+    minNoIndicatorMs := 500
+    while ((A_TickCount - tStart) < FAST_COPY_GEMINI_UPLOAD_IDLE_MS) {
+        up := FastCopyMode_GeminiIsUploadingImage(uia)
+        if (up)
+            sawUploading := true
+        if (!up) {
+            if (sawUploading || (A_TickCount - tStart) >= minNoIndicatorMs)
+                return "idle"
+        } else
+            FastCopyMode_FocusGeminiPromptField(uia)
+        Sleep 150
+    }
+    return "timeout"
+}
+
+; One Clip Angel item per iteration: !v/^!b then ^!b with 300ms gaps; upload wait between images.
+Gemini_PasteFromClipAngelSequential(count, uia := "") {
+    if (!IsInteger(count))
+        return
+    n := Integer(count)
+    if (n < 1)
+        return
+    if (uia = "") {
+        uia := Gemini_GetUiaForActiveGeminiChrome()
+        if (!IsObject(uia))
+            return
+    }
+    try {
+        StandardLoadingBar_Show("⏳ Pasting clips in Gemini…", BANNER_ACCENT_INTERMEDIATE, { passive: false,
+            centerOnHwnd: 0,
+            fontSize: 17 })
+    } catch {
+    }
+    try {
+        loop n {
+            try StandardLoadingBar_Update("⏳ Pasting clip " A_Index " / " n " …")
+            catch {
+            }
+            Gemini_FocusPromptSameAsOpenHotkey(uia)
+            if (A_Index = 1) {
+                Send "!v"
+                Sleep 50
+                Send "^!b"
+            } else {
+                Sleep 300
+                Send "^!b"
+            }
+            ; Fixed pacing for Gemini: allow upload to complete.
+            ; While waiting, keep the prompt focus warm so Gemini is ready for the next paste.
+            Sleep 400
+            try FastCopyMode_FocusGeminiPromptField(uia)
+            Sleep 2600
+            try FastCopyMode_FocusGeminiPromptField(uia)
+        }
+    } finally {
+        try StandardLoadingBar_Hide(0)
+    }
+}
+
 FastCopyMode_ReleaseHotkeyModifiers() {
     ; Ensure the Win+Alt+Shift hotkey modifiers can't leak into paste keys.
     ; Releasing modifiers does not activate or focus any other window.
@@ -2006,11 +2175,13 @@ FastCopyMode_PasteScreenshotQueue(queue) {
                         "cycle", cycle
                     ))
 
-                ; Gemini-specific: images require upload + prompt field focus for subsequent pastes.
+                ; Gemini-specific: strict pacing between image pastes.
                 if (isGeminiSession) {
-                    ; Gemini can queue sequential pastes quickly; avoid polling the UI tree.
-                    Sleep 100
-                    idleStatus := "optimized_idle"
+                    Sleep 400
+                    try FastCopyMode_FocusGeminiPromptField(cachedGeminiUia)
+                    Sleep 2600
+                    try FastCopyMode_FocusGeminiPromptField(cachedGeminiUia)
+                    idleStatus := "fixed_delay_3s"
                     FastCopyMode_DebugLog("H6", "Shift keys.ahk:FastCopyMode_PasteScreenshotQueue",
                         "gemini_after_paste", Map(
                             "idx", idx,
@@ -2127,8 +2298,11 @@ FastCopyMode_Finish() {
                 "remaining", remaining
             ))
             if (remaining > 0) {
-                ; For non-screenshot copies, fall back to Clip Angel sequential paste.
-                ExecuteSequentialPaste(remaining)
+                ; Non-screenshot copies: Clip Angel sequential paste (Gemini uses upload-aware loop).
+                if (FastCopyMode_IsGeminiForeground())
+                    Gemini_PasteFromClipAngelSequential(remaining)
+                else
+                    ExecuteSequentialPaste(remaining)
             }
 
             global gFastCopyLastSuccessfulCount
@@ -2153,10 +2327,17 @@ FastCopyMode_RepeatLastPaste() {
         if (IsObject(gFastCopyLastScreenshotQueue) && gFastCopyLastScreenshotQueue.Length > 0) {
             FastCopyMode_PasteScreenshotQueue(gFastCopyLastScreenshotQueue)
             remaining := gFastCopyLastSuccessfulCount - gFastCopyLastScreenshotQueue.Length
-            if (remaining > 0)
-                ExecuteSequentialPaste(remaining)
+            if (remaining > 0) {
+                if (FastCopyMode_IsGeminiForeground())
+                    Gemini_PasteFromClipAngelSequential(remaining)
+                else
+                    ExecuteSequentialPaste(remaining)
+            }
         } else {
-            ExecuteSequentialPaste(gFastCopyLastSuccessfulCount)
+            if (FastCopyMode_IsGeminiForeground())
+                Gemini_PasteFromClipAngelSequential(gFastCopyLastSuccessfulCount)
+            else
+                ExecuteSequentialPaste(gFastCopyLastSuccessfulCount)
         }
     } catch Error as e {
         ShowCenteredOverlay_Utils("❌ Repeat paste: " SubStr(e.Message, 1, 80), 2500, BANNER_ACCENT_ERROR)
