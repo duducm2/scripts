@@ -336,11 +336,11 @@ Outlook (Shift)
 cheatSheets["OutlookReminder"] := "
 (
 Outlook - Reminders (Shift)
-⏰ [H]Snooze 1 [H]our
-⏰ [F]Snooze [F]our hours
-⏰ [D]Snooze 1 [D]ay
+⏰ [H]Snooze 1 [H]our (Not available in New Outlook)
+⏰ [F]Snooze [F]our hours (Not available in New Outlook)
+⏰ [D]Snooze 1 [D]ay (Not available in New Outlook)
 ❌ [X]E[X]it all reminders (Dismiss)
-🌐 [J][J]oin Online
+🌐 [J][J]oin Online (Not available in New Outlook)
 
 ⌨️ [Ctrl+1] Move down once and select
 ⌨️ [Ctrl+2] Move down twice and select
@@ -353,17 +353,17 @@ Outlook - Reminders (Shift)
 cheatSheets["OutlookAppointment"] := "
 (
 Outlook - Appointment (Shift)
-📅 [S][S]tart date (combo)
-📅 [P]Date [P]icker (start)
-🕐 [T]Start [T]ime (combo)
-📅 [E][E]nd date (combo)
-🕐 [H]End [H]our (time combo)
-☑️ [A][A]ll-day toggle
+📅 [S][S]tart date (combo) (Not available in New Outlook)
+📅 [P]Date [P]icker (start) (Not available in New Outlook)
+🕐 [T]Start [T]ime (combo) (Not available in New Outlook)
+📅 [E][E]nd date (combo) (Not available in New Outlook)
+🕐 [H]End [H]our (time combo) (Not available in New Outlook)
+☑️ [A][A]ll-day toggle (Not available in New Outlook)
 📝 [I]T[I]tle field
 👥 [R][R]equired / To
 📍 [L][L]ocation
 📝 [B][B]ody
-🔄 [C]Make Re[C]urring
+🔄 [C]Make Re[C]urring (Not available in New Outlook)
 🧙 [W][W]izard (configure)
 
 ⌨️ [Ctrl+1] Move down once and select
@@ -6462,11 +6462,71 @@ IsOutlookMainActive() {
     return true
 }
 
+IsNewOutlookActive() {
+    if !WinActive("ahk_exe OUTLOOK.EXE")
+        return false
+    cls := ""
+    title := ""
+    try cls := WinGetClass("A")
+    try title := WinGetTitle("A")
+    return InStr(cls, "Outlook Host")
+        || InStr(title, " - Outlook")
+        || RegExMatch(title, "i)^(New event|Reminders?)")
+}
+
+OutlookFindFirst(criteriaList) {
+    try {
+        root := UIA.ElementFromHandle(WinExist("A"))
+        for criteria in criteriaList {
+            el := root.FindFirst(criteria)
+            if el
+                return el
+        }
+    } catch Error {
+    }
+    return ""
+}
+
+OutlookFocusFirst(criteriaList) {
+    el := OutlookFindFirst(criteriaList)
+    if !el
+        return false
+    try el.SetFocus()
+    return true
+}
+
+OutlookClickFirst(criteriaList) {
+    el := OutlookFindFirst(criteriaList)
+    if !el
+        return false
+    try el.SetFocus()
+    Sleep 50
+    try el.Click()
+    catch Error {
+        try el.Invoke()
+        catch Error {
+            return false
+        }
+    }
+    return true
+}
+
 #HotIf IsOutlookMainActive()
 
 ; Shift + G : Send to General - General
 +G::
 {
+    if IsNewOutlookActive() {
+        if OutlookClickFirst([
+            { Name: "Move to Gerais", ControlType: "RadioButton" },
+            { Name: "Move to general", ControlType: "RadioButton" },
+            { Name: "Move to Gerais", ControlType: "Button" },
+            { Name: "Move to general", ControlType: "Button" },
+            { Name: "Move to Gerais", matchmode: "Substring" },
+            { Name: "Move to general", matchmode: "Substring" }
+        ])
+            return
+    }
     Send "!5"
     Send "O"
     Send "{Home}"
@@ -6477,6 +6537,15 @@ IsOutlookMainActive() {
 ; Shift + N : Send to Newsletter - Newsletter
 +N::
 {
+    if IsNewOutlookActive() {
+        if OutlookClickFirst([
+            { Name: "Move to newsletter", ControlType: "RadioButton" },
+            { Name: "Move to Newsletter", ControlType: "RadioButton" },
+            { Name: "newsletter", matchmode: "Substring", ControlType: "RadioButton" },
+            { Name: "newsletter", matchmode: "Substring", ControlType: "Button" }
+        ])
+            return
+    }
     Send "!5"
     Send "O"
     Send "{Home}"
@@ -6487,6 +6556,14 @@ IsOutlookMainActive() {
 ; Shift + I : Go to Inbox - Inbox
 +I::
 {
+    if IsNewOutlookActive() {
+        if OutlookClickFirst([
+            { Name: "Inbox selected", ControlType: "TreeItem" },
+            { Name: "Inbox", ControlType: "TreeItem" },
+            { Name: "Inbox", matchmode: "Substring", ControlType: "TreeItem" }
+        ])
+            return
+    }
     Send "{Alt}"
     Sleep 60
     Send "6"
@@ -6539,12 +6616,11 @@ IsOutlookMainActive() {
     static nextOutlookButton := "Other"
 
     try {
-        win := WinExist("A")
-        root := UIA.ElementFromHandle(win)
-
-        btn := root.FindFirst({
-            Name: nextOutlookButton, Type: "Button"
-        })
+        btn := OutlookFindFirst([
+            { Name: nextOutlookButton, ControlType: "TabItem" },
+            { Name: nextOutlookButton, ControlType: "Button" },
+            { Name: nextOutlookButton, Type: "Button" }
+        ])
 
         if btn {
             btn.Click()
@@ -6588,6 +6664,13 @@ IsOutlookMainActive() {
 ; Shift+W : Calendar [W]eek view
 +W:: {
     try {
+        if IsNewOutlookActive() {
+            if OutlookClickFirst([
+                { AutomationId: "2519", ControlType: "Button" },
+                { Name: "Week", ControlType: "Button" }
+            ])
+                return
+        }
         if !ClickOutlookByIdThenNameClass("WeeklyView", "Week", "NetUIRibbonButton", 50000)
             Send "^!3"
     } catch {
@@ -6598,6 +6681,13 @@ IsOutlookMainActive() {
 ; Shift+O : Calendar m[O]nth view
 +O:: {
     try {
+        if IsNewOutlookActive() {
+            if OutlookClickFirst([
+                { AutomationId: "2505", ControlType: "Button" },
+                { Name: "Month", ControlType: "Button" }
+            ])
+                return
+        }
         if !ClickOutlookByIdThenNameClass("MonthlyView", "Month", "NetUIRibbonButton", 50000)
             Send "^!4"
     } catch {
@@ -6791,6 +6881,22 @@ SelectExplorerSidebarFirstPinned() {
 ; Shift + M : Toggle Mail / Calendar - Mail/Calendar
 +M:: {
     try {
+        if IsNewOutlookActive() {
+            t := WinGetTitle("A")
+            if RegExMatch(t, "i)Calendar") {
+                if OutlookClickFirst([
+                    { Name: "Mail", ControlType: "Button" },
+                    { Name: "Mail", Type: "Button" }
+                ])
+                    return
+            } else {
+                if OutlookClickFirst([
+                    { Name: "Calendar", ControlType: "Button" },
+                    { Name: "Calendar", Type: "Button" }
+                ])
+                    return
+            }
+        }
         root := UIA.ElementFromHandle(WinExist("A"))
 
         ; Find Mail and Calendar list items
@@ -7048,6 +7154,8 @@ Outlook_ClickEndTime_1200PM() {
 
 ; Shift + I : Title field - Title
 +I:: {
+    if FocusOutlookField({ Name: "Add title", ControlType: "Edit" })
+        return
     if FocusOutlookField({ AutomationId: "4100" }) ; Title
         return
     if FocusOutlookField({ Name: "Title", ControlType: "Edit" })
@@ -7056,6 +7164,10 @@ Outlook_ClickEndTime_1200PM() {
 
 ; Shift + R : Required / To field - Required
 +R:: {
+    if FocusOutlookField({ Name: "Invite required attendees", ControlType: "Group" })
+        return
+    if FocusOutlookField({ Name: "Invite required attendees", ControlType: "Text" })
+        return
     if FocusOutlookField({ AutomationId: "4109" }) ; Required
         return
     if FocusOutlookField({ Name: "Required", ControlType: "Edit" })
@@ -7064,6 +7176,16 @@ Outlook_ClickEndTime_1200PM() {
 
 ; Shift + L : Location -> Body - Location
 +L:: {
+    if FocusOutlookField({ AutomationId: "location-suggestions-picker-input", ControlType: "ComboBox" }) {
+        Sleep 100
+        Send "{Tab}"
+        return
+    }
+    if FocusOutlookField({ Name: "Add a room or location", ControlType: "ComboBox" }) {
+        Sleep 100
+        Send "{Tab}"
+        return
+    }
     if FocusOutlookField({ AutomationId: "4111" }) { ; Location
         Sleep 100
         Send "{Tab}"
@@ -7078,6 +7200,16 @@ Outlook_ClickEndTime_1200PM() {
 
 ; Shift + B : Body (from Location) - Body
 +B:: {
+    if FocusOutlookField({ AutomationId: "location-suggestions-picker-input", ControlType: "ComboBox" }) {
+        Sleep 100
+        Send "{Tab}"
+        return
+    }
+    if FocusOutlookField({ Name: "Add a room or location", ControlType: "ComboBox" }) {
+        Sleep 100
+        Send "{Tab}"
+        return
+    }
     if FocusOutlookField({ AutomationId: "4111" }) { ; Location
         Sleep 100
         Send "{Tab}"
@@ -15196,6 +15328,8 @@ DismissAllReminders() {
         ; Fallback: search by name
         if !btn
             btn := root.FindFirst({ Name: "Dismiss All", ControlType: "Button" })
+        if !btn
+            btn := root.FindFirst({ Name: "Dismiss all", ControlType: "Button" })
         if btn {
             btn.Click()
         } else {
