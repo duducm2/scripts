@@ -4826,3 +4826,11 @@
 {"location":"WindowManagement.ahk:ActivateCursorProject","message":"after FindAndActivate","data":{"targetHwnd":2298112},"hypothesisId":"H3","timestamp":15068765}
 {"location":"WindowManagement.ahk:ActivateCursorProject","message":"after FocusCursorAITextField","data":{"focusOk":1},"hypothesisId":"H4","timestamp":15069796}
 {"location":"WindowManagement.ahk:ActivateCursorProject","message":"return true","data":{},"hypothesisId":"H3","timestamp":15070000}
+{"id":"log_4797578_7363","timestamp":4797578,"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"id":"log_4798781_5551","timestamp":4798781,"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"id":"log_4799078_2244","timestamp":4799078,"location":"Shift keys.ahk:9848","message":"FindMonthGroup entry","data":{"uia":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_4799078_1226","timestamp":4799078,"location":"Shift keys.ahk:9855","message":"FindMonthGroup Strategy 1 attempt","data":{"className":"sc-kAyceB"},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_4799312_9448","timestamp":4799312,"location":"Shift keys.ahk:9876","message":"FindMonthGroup Strategy 1 exception","data":{"error":"An element matching the condition was not found"},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"id":"log_4799312_9048","timestamp":4799312,"location":"Shift keys.ahk:9883","message":"FindMonthGroup Strategy 2 attempt","data":{"monthCount":14},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}
+{"id":"log_4799593_7457","timestamp":4799593,"location":"Shift keys.ahk:9897","message":"FindMonthGroup found month text","data":{"month":"March"},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}
+{"id":"log_4799593_6986","timestamp":4799593,"location":"Shift keys.ahk:9904","message":"FindMonthGroup Strategy 2 success","data":{"month":"March","found":true},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}
