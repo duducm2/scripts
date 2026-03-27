@@ -2055,7 +2055,7 @@ FastCopyMode_ReleaseHotkeyModifiers() {
     Sleep 30
 }
 
-FastCopyMode_CaptureScreenshotToQueue() {
+FastCopyMode_CaptureScreenshotToQueue(clipboardAlreadyHasImage := false) {
     global gFastCopyScreenshotQueue
 
     FastCopyMode_DebugLog("H1", "Shift keys.ahk:FastCopyMode_CaptureScreenshotToQueue", "capture_enter", Map(
@@ -2067,8 +2067,13 @@ FastCopyMode_CaptureScreenshotToQueue() {
     ; Alt+PrintScreen updates the clipboard with an image; rapid captures can overwrite each other
     ; unless we snapshot the clipboard right away.
     ; Wait for a real *image* to appear (not just "clipboard has something").
-    try A_Clipboard := ""
-    ok := FastCopyMode_WaitForClipboardImage(1500)
+    ; Some callers (e.g. Win+Shift+S) already waited for the image and just want to snapshot.
+    if (!clipboardAlreadyHasImage) {
+        try A_Clipboard := ""
+        ok := FastCopyMode_WaitForClipboardImage(1500)
+    } else {
+        ok := FastCopyMode_ClipboardHasImage()
+    }
     FastCopyMode_DebugLog("H2", "Shift keys.ahk:FastCopyMode_CaptureScreenshotToQueue", "wait_image_done", Map(
         "ok", ok ? "1" : "0",
         "hasImageAfter", FastCopyMode_ClipboardHasImage() ? "1" : "0"
@@ -2094,6 +2099,17 @@ FastCopyMode_CaptureScreenshotToQueue() {
             "hasImageAfter", FastCopyMode_ClipboardHasImage() ? "1" : "0"
         ))
     }
+}
+
+FastCopyMode_OnWinShiftS() {
+    ; Win+Shift+S region snip: count only on successful clipboard image.
+    try A_Clipboard := ""
+    Send "#+s"
+    ok := FastCopyMode_WaitForClipboardImage(30000)
+    if (!ok)
+        return
+    FastCopyMode_OnCopy()
+    FastCopyMode_CaptureScreenshotToQueue(true)
 }
 
 FastCopyMode_PasteScreenshotQueue(queue) {
@@ -2381,6 +2397,7 @@ FastCopyMode_RepeatLastPaste() {
     FastCopyMode_OnCopy()
     FastCopyMode_CaptureScreenshotToQueue()
 }
+$#+s:: FastCopyMode_OnWinShiftS()
 #HotIf
 
 ;-------------------------------------------------------------------
