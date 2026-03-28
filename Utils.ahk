@@ -248,9 +248,9 @@ GetPromptText(key) {
     InsertText(GetPromptText("cplant"))
 }
 
-:o:canonaib::
+:o:aibrapid::
 {
-    InsertText(GetPromptText("canonaib"))
+    InsertText(GetPromptText("aib-rapid-fire-template"))
 }
 
 ; ----------------------
@@ -399,12 +399,12 @@ InitHotstringsCheatSheet() {
         RegisterHotstring("", "", "Prompts", "Reserved 7")
     }
     try {
-        canonAibPrompt := FileRead(promptDir "\canon-aib.txt")
-        RegisterHotstring(":o:canonaib", canonAibPrompt, "Prompts", "📜 Junior AI: Canon-style layout")
+        aibRapidFireTpl := FileRead(promptDir "\aib-rapid-fire-template.txt")
+        RegisterHotstring(":o:aibrapid", aibRapidFireTpl, "Prompts", "📜 Junior AI: ⚡ rapid-fire template")
     } catch {
-        RegisterHotstring(":o:canonaib",
-            "Junior AI (AIB): maintain CANON.md / PROJECT_STATE.md with ⚡ separator; history above, rapid-fire below.`n",
-            "Prompts", "📜 Junior AI: Canon-style layout")
+        RegisterHotstring(":o:aibrapid",
+            "Junior AI (AIB): planning doc with ⚡ — conceptual above, execution steps below.`n", "Prompts",
+            "📜 Junior AI: ⚡ rapid-fire template")
     }
 
     ; General Information (2 items) - Second category
