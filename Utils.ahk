@@ -248,6 +248,11 @@ GetPromptText(key) {
     InsertText(GetPromptText("cplant"))
 }
 
+:o:canonaib::
+{
+    InsertText(GetPromptText("canonaib"))
+}
+
 ; ----------------------
 ; Register hotstrings for cheat sheet display
 ; ----------------------
@@ -392,6 +397,14 @@ InitHotstringsCheatSheet() {
         RegisterHotstring(":o:storyreduction", storyReductionPrompt, "Prompts", "📝 Story reduction", "a")
     } catch {
         RegisterHotstring("", "", "Prompts", "Reserved 7")
+    }
+    try {
+        canonAibPrompt := FileRead(promptDir "\canon-aib.txt")
+        RegisterHotstring(":o:canonaib", canonAibPrompt, "Prompts", "📜 Junior AI: Canon-style layout")
+    } catch {
+        RegisterHotstring(":o:canonaib",
+            "Junior AI (AIB): maintain CANON.md / PROJECT_STATE.md with ⚡ separator; history above, rapid-fire below.`n",
+            "Prompts", "📜 Junior AI: Canon-style layout")
     }
 
     ; General Information (2 items) - Second category

@@ -1,0 +1,34 @@
+## Prompt for Junior AI (AIB): Canon-style script repository layout
+
+**Role:** You maintain and update the primary planning document for this repository (e.g. `CANON.md` or `PROJECT_STATE.md`). Your goal is to make the technology task finishable with clear human verification and no ambiguity about what is historical versus what must still be done.
+
+**Mandatory document structure**
+
+1. **Visual separator: present moment** Insert a single horizontal rule of three lines, with the thunderbolt emoji alone on the middle line, exactly like this:
+   ---
+   
+   ⚡
+   
+   ---
+   This separator is the ruler of the present. Everything above it is past or reference; everything below it is current execution.
+
+2. **Above ⚡: frozen history and context (read-only for execution)** Include, in a fixed order suitable for onboarding and audit:
+   * **Completed work:** numbered list of deliverables already verified (e.g. pipelines run, imports bound, pages populated). Each item must name the artifact (script, table, report tab) and status in one line where possible.
+   * **Legacy / archived rapid-fire:** short note if an earlier task was completed and superseded; point to the numbered item in Completed work instead of duplicating steps.
+   * **Conceptual and reference material:** constraints (no new data, CI rules, naming), index of linked docs, data pipelines, backlog sections, measures index, diagrams. This is anything an operator reads for understanding but does not execute as the next click-path.
+
+3. **Below ⚡: only what remains to close the technology task** Under the heading Rapid Fire Activities, list only atomic, UI-sequenced or CLI-sequenced steps needed to finish the stack (e.g. Power BI pages, visuals, script invocations in order).  
+   * Number tasks 1 to N in execution order.  
+   * Each task must have: Objective, Prerequisites (tools, visuals, measures), Execution steps (numbered sub-steps).  
+   * Do not place long methodology essays below ⚡; link upward instead.
+
+4. **Linear verification for humans** Organize so a human can walk the document top-to-bottom once for context, then jump to ⚡ and check off Task 1 to Task N in order without backtracking. After each task, add a one-line Verification cue when useful (e.g. "Report tab name matches canon Section 1.5", "row count matches import").
+
+5. **Performance history rule** When a rapid-fire task moves from "next" to "done", move its summary into Completed work above ⚡, add a Legacy one-liner if the task numbering changed, and renumber only the section below ⚡. Never leave obsolete step-by-step instructions below ⚡.
+
+**Forbidden:** Mixing "already shipped" and "do this next" in the same subsection without the ⚡ boundary. Duplicating full specs that live in linked files (update the link and add one sentence instead).
+
+### Optional: map to this repo's current Canon (for AIB calibration)
+
+* **Above ⚡ in infoVis/canon.md:** Constraints, Completed work items 1 to 4 (including Initial T-Test Visualization), Also in place, Sections 1 to 9 (ecosystem map, data artifacts, backlog, variance plan, visuals, t-test plan, mermaid, assumptions, measures).  
+* **Below ⚡:** Rapid Fire Activities Tasks 1 to 5 (Trust box plots -> Non-Trust table -> Trust dashboard -> All-attributes line + error bars -> Deneb spread plot).
