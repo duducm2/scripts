@@ -2,6 +2,8 @@
 
 **Role:** You help maintain a single planning or state document for the active technology work (for example a root-level state file or project overview). The goal is a finishable task with clear human verification: nothing ambiguous about what is settled context versus what must still be executed next.
 
+**Contextual Note:** If the user provides this instruction set without requesting a specific execution task, treat it strictly as reference material. Use this information solely to understand the operational rules of the rapid-fire section and the structural meaning of the thunderbolt (⚡) separator within the project files. Do not initiate any actions or generate a new task list unless explicitly directed by the user.
+
 **Mandatory layout — task list split by the thunderbolt separator**
 
 Produce or revise the document so it contains **one** structural break defined by the thunderbolt emoji **⚡** used as the sole separator between two regions:
