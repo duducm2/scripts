@@ -6470,8 +6470,8 @@ IsNewOutlookActive() {
     try cls := WinGetClass("A")
     try title := WinGetTitle("A")
     return InStr(cls, "Outlook Host")
-        || InStr(title, " - Outlook")
-        || RegExMatch(title, "i)^(New event|Reminders?)")
+    || InStr(title, " - Outlook")
+    || RegExMatch(title, "i)^(New event|Reminders?)")
 }
 
 OutlookFindFirst(criteriaList) {
@@ -6517,13 +6517,10 @@ OutlookClickFirst(criteriaList) {
 +G::
 {
     if IsNewOutlookActive() {
-        if OutlookClickFirst([
-            { Name: "Move to Gerais", ControlType: "RadioButton" },
-            { Name: "Move to general", ControlType: "RadioButton" },
-            { Name: "Move to Gerais", ControlType: "Button" },
-            { Name: "Move to general", ControlType: "Button" },
-            { Name: "Move to Gerais", matchmode: "Substring" },
-            { Name: "Move to general", matchmode: "Substring" }
+        if OutlookClickFirst([{ Name: "Move to Gerais", ControlType: "RadioButton" }, { Name: "Move to general",
+            ControlType: "RadioButton" }, { Name: "Move to Gerais", ControlType: "Button" }, { Name: "Move to general",
+                ControlType: "Button" }, { Name: "Move to Gerais", matchmode: "Substring" }, { Name: "Move to general",
+                    matchmode: "Substring" }
         ])
             return
     }
@@ -6538,11 +6535,9 @@ OutlookClickFirst(criteriaList) {
 +N::
 {
     if IsNewOutlookActive() {
-        if OutlookClickFirst([
-            { Name: "Move to newsletter", ControlType: "RadioButton" },
-            { Name: "Move to Newsletter", ControlType: "RadioButton" },
-            { Name: "newsletter", matchmode: "Substring", ControlType: "RadioButton" },
-            { Name: "newsletter", matchmode: "Substring", ControlType: "Button" }
+        if OutlookClickFirst([{ Name: "Move to newsletter", ControlType: "RadioButton" }, { Name: "Move to Newsletter",
+            ControlType: "RadioButton" }, { Name: "newsletter", matchmode: "Substring", ControlType: "RadioButton" }, { Name: "newsletter",
+                matchmode: "Substring", ControlType: "Button" }
         ])
             return
     }
@@ -6557,11 +6552,8 @@ OutlookClickFirst(criteriaList) {
 +I::
 {
     if IsNewOutlookActive() {
-        if OutlookClickFirst([
-            { Name: "Inbox selected", ControlType: "TreeItem" },
-            { Name: "Inbox", ControlType: "TreeItem" },
-            { Name: "Inbox", matchmode: "Substring", ControlType: "TreeItem" }
-        ])
+        if OutlookClickFirst([{ Name: "Inbox selected", ControlType: "TreeItem" }, { Name: "Inbox", ControlType: "TreeItem" }, { Name: "Inbox",
+            matchmode: "Substring", ControlType: "TreeItem" }])
             return
     }
     Send "{Alt}"
@@ -6616,10 +6608,8 @@ OutlookClickFirst(criteriaList) {
     static nextOutlookButton := "Other"
 
     try {
-        btn := OutlookFindFirst([
-            { Name: nextOutlookButton, ControlType: "TabItem" },
-            { Name: nextOutlookButton, ControlType: "Button" },
-            { Name: nextOutlookButton, Type: "Button" }
+        btn := OutlookFindFirst([{ Name: nextOutlookButton, ControlType: "TabItem" }, { Name: nextOutlookButton,
+            ControlType: "Button" }, { Name: nextOutlookButton, Type: "Button" }
         ])
 
         if btn {
@@ -6665,10 +6655,7 @@ OutlookClickFirst(criteriaList) {
 +W:: {
     try {
         if IsNewOutlookActive() {
-            if OutlookClickFirst([
-                { AutomationId: "2519", ControlType: "Button" },
-                { Name: "Week", ControlType: "Button" }
-            ])
+            if OutlookClickFirst([{ AutomationId: "2519", ControlType: "Button" }, { Name: "Week", ControlType: "Button" }])
                 return
         }
         if !ClickOutlookByIdThenNameClass("WeeklyView", "Week", "NetUIRibbonButton", 50000)
@@ -6682,10 +6669,7 @@ OutlookClickFirst(criteriaList) {
 +O:: {
     try {
         if IsNewOutlookActive() {
-            if OutlookClickFirst([
-                { AutomationId: "2505", ControlType: "Button" },
-                { Name: "Month", ControlType: "Button" }
-            ])
+            if OutlookClickFirst([{ AutomationId: "2505", ControlType: "Button" }, { Name: "Month", ControlType: "Button" }])
                 return
         }
         if !ClickOutlookByIdThenNameClass("MonthlyView", "Month", "NetUIRibbonButton", 50000)
@@ -6884,16 +6868,10 @@ SelectExplorerSidebarFirstPinned() {
         if IsNewOutlookActive() {
             t := WinGetTitle("A")
             if RegExMatch(t, "i)Calendar") {
-                if OutlookClickFirst([
-                    { Name: "Mail", ControlType: "Button" },
-                    { Name: "Mail", Type: "Button" }
-                ])
+                if OutlookClickFirst([{ Name: "Mail", ControlType: "Button" }, { Name: "Mail", Type: "Button" }])
                     return
             } else {
-                if OutlookClickFirst([
-                    { Name: "Calendar", ControlType: "Button" },
-                    { Name: "Calendar", Type: "Button" }
-                ])
+                if OutlookClickFirst([{ Name: "Calendar", ControlType: "Button" }, { Name: "Calendar", Type: "Button" }])
                     return
             }
         }
@@ -11682,10 +11660,11 @@ ShowCursorShortcutMenu() {
     g_CursorShortcutMenuGui.Add("Text", "w300", "[A] Allowlist (any permission button)")
     g_CursorShortcutMenuGui.Add("Text", "w300", "[F] Mark as fixed")
     g_CursorShortcutMenuGui.Add("Text", "w300", "[P] Proceed")
+    g_CursorShortcutMenuGui.Add("Text", "w300", "[E] Fetch")
 
     g_CursorShortcutMenuGui.Add("Text", "w300 h1 Background45475A y+10")
     g_CursorShortcutMenuGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_CursorShortcutMenuGui.Add("Text", "w300 Center", "Press 1–2 | R · A · F · P | Esc to cancel")
+    g_CursorShortcutMenuGui.Add("Text", "w300 Center", "Press 1–2 | R · A · F · P · E | Esc to cancel")
 
     ; Center on same monitor as active window (same logic as Utils ShowAiModelSelector)
     activeWin := 0
@@ -11726,6 +11705,7 @@ ShowCursorShortcutMenu() {
     Hotkey("a", (*) => CursorShortcutMenu_HandleKey("a"), "On")
     Hotkey("f", (*) => CursorShortcutMenu_HandleKey("f"), "On")
     Hotkey("p", (*) => CursorShortcutMenu_HandleKey("p"), "On")
+    Hotkey("e", (*) => CursorShortcutMenu_HandleKey("e"), "On")
     Hotkey("Escape", CursorShortcutMenu_Cancel, "On")
 }
 
@@ -11746,6 +11726,8 @@ CursorShortcutMenu_HandleKey(key) {
         CursorShortcutMenu_ActionMarkAsFixed()
     else if (key = "p")
         CursorShortcutMenu_ActionProceed()
+    else if (key = "e")
+        CursorShortcutMenu_ActionFetch()
 }
 
 CursorShortcutMenu_Cancel(*) {
@@ -11763,6 +11745,7 @@ CursorShortcutMenu_Close() {
     try Hotkey("a", "Off")
     try Hotkey("f", "Off")
     try Hotkey("p", "Off")
+    try Hotkey("e", "Off")
     try Hotkey("Escape", CursorShortcutMenu_Cancel, "Off")
     if (IsObject(g_CursorShortcutMenuGui) && g_CursorShortcutMenuGui.Hwnd) {
         try g_CursorShortcutMenuGui.Destroy()
@@ -11794,6 +11777,11 @@ CursorShortcutMenu_ActionMarkAsFixed(*) {
 
 CursorShortcutMenu_ActionProceed(*) {
     Cursor_ClickPermissionLabel("Proceed")
+}
+
+CursorShortcutMenu_ActionFetch(*) {
+    ; UIA: Type 50020 (Text), Name "Fetch", LocalizedType "text"
+    Cursor_ClickPermissionLabel("Fetch")
 }
 
 ; Ctrl + H : Smart navigation - Editor → Explorer, Explorer → Reveal in Explorer
