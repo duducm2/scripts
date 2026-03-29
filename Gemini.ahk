@@ -1219,9 +1219,14 @@ class GeminiAsyncLookup {
             try promptField.Click()
             Sleep 100
         }
-        ; Switch to Fast model before the prompt (enough for this task)
-        Send("@fast ")
-        Sleep 200
+        ; Switch to Fast model via mode picker menu (Gemini 3 MenuItem list), not @ text
+        if (!EnsureGeminiModelViaMenu("Fast"))
+            ShowCenteredOverlay_Utils("❌ Could not switch Gemini to Fast model.", 2200, BANNER_ACCENT_ERROR)
+        try {
+            promptField.SetFocus()
+            Sleep 80
+        } catch {
+        }
         searchString := GeminiAsyncLookup.PronunciationPrompt
         A_Clipboard := searchString . "`n`nContent: " . A_Clipboard
         Sleep 100

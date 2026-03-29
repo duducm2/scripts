@@ -15978,59 +15978,7 @@ ToggleGeminiModel() {
 
         ; Helper to grab a button by pattern with shorter timeout for speed
         FindBtn(p) => WaitForButton(uia, p, 1500)
-        ; Find all model buttons to see which ones are available
-        allButtons := uia.FindAll({ Type: "Button" })
-        modelButtons := []
-        for btnCandidate in allButtons {
-            try {
-                btnName := btnCandidate.Name
-                if (RegExMatch(btnName, modelPattern)) {
-                    ; Get className first to check for disabled state
-                    className := ""
-                    try {
-                        className := btnCandidate.ClassName
-                    } catch {
-                    }
-
-                    ; Check if button is disabled
-                    isDisabled := false
-                    try {
-                        ; Check if button has "disabled" in class name
-                        if (InStr(className, "disabled") || InStr(className, "mat-mdc-button-disabled")) {
-                            isDisabled := true
-                        }
-                        ; Also check IsEnabled property
-                        try {
-                            if (!btnCandidate.GetPropertyValue(UIA.Property.IsEnabled)) {
-                                isDisabled := true
-                            }
-                        } catch {
-                        }
-                    } catch {
-                    }
-
-                    ; Check if button is selected/active
-                    isSelected := false
-                    try {
-                        isSelected := btnCandidate.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable) &&
-                        btnCandidate.SelectionItemPattern.IsSelected
-                    } catch {
-                        ; Try alternative way to check if selected
-                        try {
-                            ; Check if button has "selected" in class name or other properties
-                            if (InStr(className, "selected") || InStr(className, "active") || InStr(className,
-                                "mdc-selected")) {
-                                isSelected := true
-                            }
-                        } catch {
-                        }
-                    }
-                    modelButtons.Push({ btn: btnCandidate, name: btnName, isSelected: isSelected, isDisabled: isDisabled,
-                        className: className })
-                }
-            } catch {
-            }
-        }
+        modelButtons := GeminiCollectModelOptionButtons(uia)
 
         ; Strategy: Find a button that is NOT the current one (to actually toggle)
         ; If we have multiple buttons, click one that's different from current state
@@ -16170,17 +16118,16 @@ ToggleGeminiModel() {
                 }
             }
 
-            ; Update state based on which button we actually clicked
-            ; Use case-insensitive comparison since button names may vary in casing
-            btnNameLower := StrLower(btnName)
+            ; Update state (Gemini 3 menu items use composite Accessible names, e.g. "Fast Answers quickly")
+            resolved := GeminiNormalizeModelLabel(btnName)
             if (clicked) {
-                if (btnNameLower = "fast") {
+                if (resolved = "Fast") {
                     isGeminiFastModel := "Fast"
                     ShowSmallLoadingIndicator_ChatGPT("Fast model active")
-                } else if (btnNameLower = "thinking") {
+                } else if (resolved = "Thinking") {
                     isGeminiFastModel := "Thinking"
                     ShowSmallLoadingIndicator_ChatGPT("Thinking model active")
-                } else if (btnNameLower = "pro") {
+                } else if (resolved = "Pro") {
                     isGeminiFastModel := "Pro"
                     ShowSmallLoadingIndicator_ChatGPT("Pro model active")
                 }
@@ -16345,21 +16292,30 @@ HandleGeminiModelSelection(char) {
         ; Small settle time for window activation
         Sleep 50
 
-        ; Focus the Gemini prompt field so we can edit the current prompt in-place
-        if (FocusGeminiPromptField()) {
-            ; 1) Move caret to beginning, 2) insert @model name, 3) move back to end of prompt, 4) add a trailing space
-            Send "^{Home}"
-            Sleep 120
-            modelCommand := "@" . modelName . " "
-            SendText modelCommand
-            Sleep 120
-            Send "^{End}"
-            Sleep 120
-            Send " "
+        ShowSmallLoadingIndicator_ChatGPT("Switching model...")
+        try {
+            ; Open mode picker and select target via Gemini 3 menu (MenuItem), not @ text — see gemini-tree-model-menu-open.md
+            verified := EnsureGeminiModelViaMenu(modelName)
+            if (verified) {
+                isGeminiFastModel := modelName
+                ShowSmallLoadingIndicator_ChatGPT(modelName . " model active (verified)")
+                try FocusGeminiPromptField()
+            } else {
+                try {
+                    uia := UIA_Browser()
+                    if (IsObject(uia)) {
+                        cur := GetGeminiActiveModelFromPickerOnly(uia)
+                        if (cur != "")
+                            isGeminiFastModel := cur
+                    }
+                } catch {
+                }
+                ShowCenteredOverlay_Utils("❌ Could not switch Gemini model to " . modelName, 2800,
+                    BANNER_ACCENT_ERROR)
+            }
+        } finally {
+            SetTimer(() => HideSmallLoadingIndicator_ChatGPT(), -900)
         }
-
-        ; Update global state (tracks which model is conceptually active)
-        isGeminiFastModel := modelName
     } catch Error as err {
         ; Silently fail if anything goes wrong
     }

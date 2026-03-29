@@ -80,6 +80,362 @@ FindGeminiPromptField(uia) {
     return 0
 }
 
+; --- Gemini mode picker (Fast / Thinking / Pro), UIA ---------------------------------
+
+FindGeminiModePickerButton(uia) {
+    if !IsObject(uia)
+        return 0
+    try {
+        b := uia.FindFirst({ Name: "Open mode picker", Type: 50000 })
+        if (b)
+            return b
+    } catch {
+    }
+    try {
+        b := uia.FindFirst({ Type: "Button", Name: "Open mode picker" })
+        if (b)
+            return b
+    } catch {
+    }
+    try {
+        all := uia.FindAll({ Type: 50000 })
+        for btn in all {
+            try {
+                if InStr(btn.ClassName, "input-area-switch")
+                    return btn
+            } catch {
+            }
+        }
+    } catch {
+    }
+    return 0
+}
+
+GeminiNormalizeModelName(name) {
+    if (name = "")
+        return ""
+    nl := StrLower(Trim(name))
+    if (nl = "fast")
+        return "Fast"
+    if (nl = "thinking")
+        return "Thinking"
+    if (nl = "pro")
+        return "Pro"
+    return ""
+}
+
+; Gemini 3 mode menu uses composite Accessible names, e.g. "Fast Answers quickly" (see gemini-tree-model-menu-open.md).
+GeminiNormalizeModelLabel(name) {
+    if (name = "")
+        return ""
+    n := GeminiNormalizeModelName(name)
+    if (n != "")
+        return n
+    if RegExMatch(name, "i)^Fast(\s|$)")
+        return "Fast"
+    if RegExMatch(name, "i)^Thinking(\s|$)")
+        return "Thinking"
+    if RegExMatch(name, "i)^Pro(\s|$)")
+        return "Pro"
+    return ""
+}
+
+GetGeminiActiveModelFromPickerOnly(uia) {
+    picker := FindGeminiModePickerButton(uia)
+    if !picker
+        return ""
+    texts := []
+    try {
+        texts := picker.FindAll({ Type: 50020 })
+    } catch {
+    }
+    if (!IsObject(texts) || texts.Length = 0) {
+        try {
+            texts := picker.FindAll({ Type: "Text" })
+        } catch {
+            texts := []
+        }
+    }
+    for t in texts {
+        try {
+            tn := t.Name
+        } catch {
+            continue
+        }
+        norm := GeminiNormalizeModelLabel(tn)
+        if (norm != "") {
+            return norm
+        }
+    }
+    return ""
+}
+
+GeminiCollectModelOptionButtons(uia) {
+    modelPattern := "i)^(Fast|Thinking|Pro)$"
+    modelButtons := []
+    ; Gemini 3: Material menu uses MenuItem (50011), Name like "Fast Answers quickly" (gemini-tree-model-menu-open.md).
+    try {
+        menuItems := uia.FindAll({ Type: 50011 })
+    } catch {
+        menuItems := []
+    }
+    if (!IsObject(menuItems) || menuItems.Length = 0) {
+        try {
+            menuItems := uia.FindAll({ Type: "MenuItem" })
+        } catch {
+            menuItems := []
+        }
+    }
+    for mi in menuItems {
+        try {
+            fullName := mi.Name
+            shortName := GeminiNormalizeModelLabel(fullName)
+            if (shortName = "")
+                continue
+            className := ""
+            try {
+                className := mi.ClassName
+            } catch {
+                className := ""
+            }
+            if (!InStr(className, "bard-mode-list-button"))
+                continue
+            isDisabled := false
+            try {
+                if (InStr(className, "disabled") || InStr(className, "mat-mdc-button-disabled"))
+                    isDisabled := true
+                try {
+                    if (!mi.GetPropertyValue(UIA.Property.IsEnabled))
+                        isDisabled := true
+                } catch {
+                }
+            } catch {
+            }
+            isSelected := false
+            try {
+                if (mi.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable))
+                    isSelected := mi.SelectionItemPattern.IsSelected
+            } catch {
+            }
+            if (!isSelected) {
+                try {
+                    if (InStr(className, "is-selected") || InStr(className, "selected") || InStr(className, "active") ||
+                    InStr(className, "mdc-selected"))
+                        isSelected := true
+                } catch {
+                }
+            }
+            modelButtons.Push({ btn: mi, name: shortName, isSelected: isSelected, isDisabled: isDisabled,
+                className: className })
+        } catch {
+        }
+    }
+    if (modelButtons.Length > 0)
+        return modelButtons
+    try {
+        allButtons := uia.FindAll({ Type: "Button" })
+    } catch {
+        return modelButtons
+    }
+    for btnCandidate in allButtons {
+        try {
+            btnName := btnCandidate.Name
+            if (!RegExMatch(btnName, modelPattern))
+                continue
+            className := ""
+            try {
+                className := btnCandidate.ClassName
+            } catch {
+                className := ""
+            }
+            isDisabled := false
+            try {
+                if (InStr(className, "disabled") || InStr(className, "mat-mdc-button-disabled"))
+                    isDisabled := true
+                try {
+                    if (!btnCandidate.GetPropertyValue(UIA.Property.IsEnabled))
+                        isDisabled := true
+                } catch {
+                }
+            } catch {
+            }
+            isSelected := false
+            try {
+                if (btnCandidate.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable))
+                    isSelected := btnCandidate.SelectionItemPattern.IsSelected
+            } catch {
+            }
+            if (!isSelected) {
+                try {
+                    if (InStr(className, "selected") || InStr(className, "active") || InStr(className, "mdc-selected"))
+                        isSelected := true
+                } catch {
+                }
+            }
+            modelButtons.Push({ btn: btnCandidate, name: btnName, isSelected: isSelected, isDisabled: isDisabled,
+                className: className })
+        } catch {
+        }
+    }
+    return modelButtons
+}
+
+GetGeminiActiveModelViaMenuRead(uia) {
+    picker := FindGeminiModePickerButton(uia)
+    if !picker
+        return ""
+    try {
+        picker.Click()
+    } catch {
+        try {
+            if (picker.GetPropertyValue(UIA.Property.IsInvokePatternAvailable))
+                picker.Invoke()
+        } catch {
+        }
+    }
+    Sleep 220
+    modelButtons := GeminiCollectModelOptionButtons(uia)
+    chosen := ""
+    for modelBtn in modelButtons {
+        if (modelBtn.isSelected && !modelBtn.isDisabled) {
+            chosen := GeminiNormalizeModelLabel(modelBtn.name)
+            if (chosen != "")
+                break
+        }
+    }
+    if (chosen = "") {
+        for modelBtn in modelButtons {
+            if (modelBtn.isSelected) {
+                chosen := GeminiNormalizeModelLabel(modelBtn.name)
+                if (chosen != "")
+                    break
+            }
+        }
+    }
+    Send "{Escape}"
+    Sleep 80
+    return chosen
+}
+
+GeminiInvokeModelButton(btn) {
+    if !IsObject(btn)
+        return false
+    clicked := false
+    try {
+        btn.SetFocus()
+        Sleep 40
+    } catch {
+    }
+    supportsInvoke := false
+    try {
+        supportsInvoke := btn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)
+    } catch {
+    }
+    if (supportsInvoke) {
+        try {
+            btn.Invoke()
+            clicked := true
+        } catch {
+        }
+    }
+    if (!clicked) {
+        try {
+            btn.Click()
+            clicked := true
+        } catch {
+        }
+    }
+    return clicked
+}
+
+WaitUntilGeminiModel(expected, timeoutMs := 2000, pollMs := 150) {
+    exp := GeminiNormalizeModelLabel(expected)
+    if (exp = "")
+        return false
+    Sleep 200
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        try {
+            uia := UIA_Browser()
+        } catch {
+            uia := ""
+        }
+        if !IsObject(uia) {
+            Sleep pollMs
+            continue
+        }
+        cur := GetGeminiActiveModelFromPickerOnly(uia)
+        if (cur = exp)
+            return true
+        Sleep pollMs
+    }
+    try {
+        uia := UIA_Browser()
+    } catch {
+        return false
+    }
+    if !IsObject(uia)
+        return false
+    cur := GetGeminiActiveModelViaMenuRead(uia)
+    return (cur = exp)
+}
+
+EnsureGeminiModelViaMenu(expected) {
+    exp := GeminiNormalizeModelLabel(expected)
+    if (exp = "")
+        return false
+    try {
+        uia := UIA_Browser()
+    } catch {
+        return false
+    }
+    if !IsObject(uia)
+        return false
+    if (GetGeminiActiveModelFromPickerOnly(uia) = exp)
+        return true
+    picker := FindGeminiModePickerButton(uia)
+    if !picker
+        return false
+    try {
+        picker.Click()
+    } catch {
+        try {
+            if (picker.GetPropertyValue(UIA.Property.IsInvokePatternAvailable))
+                picker.Invoke()
+        } catch {
+        }
+    }
+    Sleep 250
+    try {
+        uia := UIA_Browser()
+    } catch {
+        Send "{Escape}"
+        return false
+    }
+    if !IsObject(uia) {
+        Send "{Escape}"
+        return false
+    }
+    modelButtons := GeminiCollectModelOptionButtons(uia)
+    targetBtn := 0
+    for modelBtn in modelButtons {
+        if (GeminiNormalizeModelLabel(modelBtn.name) = exp && !modelBtn.isDisabled) {
+            targetBtn := modelBtn.btn
+            break
+        }
+    }
+    if !targetBtn {
+        Send "{Escape}"
+        return false
+    }
+    if !GeminiInvokeModelButton(targetBtn)
+        return false
+    Sleep 200
+    Send "{Escape}"
+    Sleep 80
+    return WaitUntilGeminiModel(exp, 2500, 120)
+}
+
 ; -----------------------------------------------------------------------------
 ; This script consolidates various utility hotkeys.
 ; -----------------------------------------------------------------------------
