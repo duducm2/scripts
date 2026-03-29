@@ -105,7 +105,7 @@ else
 
 ; =============================================================================
 ; Move Active Window to Monitor by POSITION (left-to-right order)
-; Hotkeys: Ctrl+Alt+Shift+A/S/D/F correspond to 1st/2nd/3rd/4th monitors
+; Hotkeys: Ctrl+Alt+Win+A/S/D/F move active window to 1st–4th monitors (left-to-right)
 ; =============================================================================
 ^!#a:: MoveWinToOrderedMonitor(1)  ; Left-most
 ^!#s:: MoveWinToOrderedMonitor(2)  ; 2nd from the left
@@ -438,7 +438,7 @@ MoveWinToMonitor(mon) {
 
 ; =============================================================================
 ; Cycle through visible windows on a monitor (top-to-bottom rows, left-to-right)
-; Hotkeys: Ctrl+Alt+Shift+Q/W/E/R map to monitors 1-4 (left-to-right order)
+; Hotkeys: Ctrl+Alt+Win+Q/W/E/R map to monitors 1-4 (left-to-right order)
 ; =============================================================================
 CycleWindowsOnMonitor(order) {
     global g_WindowCycleIndices
