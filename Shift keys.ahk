@@ -23,6 +23,7 @@ SetTitleMatchMode 2
 #include UIA-v2\Lib\UIA_Browser.ahk
 #include %A_ScriptDir%\Utils.ahk
 #include %A_ScriptDir%\aux\ShiftKeysIPC.ahk
+#include %A_ScriptDir%\CheatSheetRich.ahk
 
 ; --- Global Variables ---
 global DEBUG_LOG_PATH := A_ScriptDir "\.cursor\debug.log"
@@ -120,11 +121,11 @@ JoinLines(lines, sep := "`n") {
     return out
 }
 
-; Strip >>>/--- and all [...] groups so search matches description/title text only (not chord/mnemonic letters).
+; Strip >>>/---; unwrap each [...] to inner text so search matches visible words (same as RichEdit plain text).
 CheatSheet_LineSearchHaystack(line) {
     s := RegExReplace(line, "^>>>\s*|^---\s*", "")
     loop 40 {
-        s2 := RegExReplace(s, "\[[^\]]*\]", "")
+        s2 := RegExReplace(s, "\[([^\]]*)\]", "$1")
         if (s2 = s)
             break
         s := s2
@@ -148,25 +149,6 @@ CheatSheet_LineMatchesQuery(line, query) {
     return true
 }
 
-; #region agent log
-CheatSheet_DbgCs(data) {
-    path := A_ScriptDir "\debug-338fbf.log"
-    ts := A_TickCount
-    j := '{"sessionId":"338fbf","timestamp":' ts
-    for k, v in data {
-        j .= ',"' k '":'
-        if (v is String)
-            j .= '"' StrReplace(StrReplace(v, "\", "\\"), '"', '\"') '"'
-        else
-            j .= v
-    }
-    j .= "}`n"
-    try
-        FileAppend(j, path, "UTF-8")
-}
-
-; #endregion
-
 CheatSheet_FocusSearchEdit(ctrl) {
     if (!IsObject(ctrl))
         return
@@ -174,30 +156,19 @@ CheatSheet_FocusSearchEdit(ctrl) {
         gw := ctrl.Gui.Hwnd
         fcn := ControlGetFocus("ahk_id " gw)
         fh := ControlGetHwnd(fcn, "ahk_id " gw)
-        if (fh = ctrl.Hwnd) {
-            ; #region agent log
-            CheatSheet_DbgCs(Map("hypothesisId", "H1", "msg", "skip_focus_hwnd_match", "targetHwnd", ctrl.Hwnd))
-            ; #endregion
+        if (fh = ctrl.Hwnd)
             return
-        }
-        ; #region agent log
-        CheatSheet_DbgCs(Map("hypothesisId", "H2", "msg", "refocus_from", "focusHwnd", fh, "targetHwnd", ctrl.Hwnd,
-            "fcn", fcn))
-        ; #endregion
     } catch {
     }
     ctrl.Focus()
     len := StrLen(ctrl.Value)
     ; EM_SETSEL: caret at end without selection (programmatic Focus() often selects all; next key would replace).
     SendMessage(0xB1, len, len, ctrl)
-    ; #region agent log
-    CheatSheet_DbgCs(Map("hypothesisId", "H3", "msg", "after_em_setsel", "len", len))
-    ; #endregion
 }
 
 ; Updating the multiline body can steal focus from the filter Edit; refocus after resize.
 ; Do not use SetTimer(() => ..., -50): each keystroke created a new timer object and stacked Focus() calls
-; (select-all + next key replaced text). Immediate refocus + skip when already focused avoids that.
+; (select-all + next key replaced text). Skip redundant Focus via HWND match; EM_SETSEL after real refocus.
 CheatSheet_DeferFocusSearch(ctrl) {
     if (IsObject(ctrl))
         CheatSheet_FocusSearchEdit(ctrl)
@@ -1553,8 +1524,8 @@ SearchCheatSheets(query, includeGlobal := true) {
     return results
 }
 
-CheatSheet_ResizeBody(editCtrl, gui, fontLinePx := 20, minH := 220) {
-    text := editCtrl.Value
+CheatSheet_ResizeBody(editCtrl, gui, fontLinePx := 20, minH := 220, lineCountSource := "") {
+    text := lineCountSource != "" ? lineCountSource : editCtrl.Value
     lineCnt := StrLen(text) ? StrSplit(text, "`n").Length : 1
     controlHeight := lineCnt * fontLinePx + 10
     if (controlHeight < minH)
@@ -1575,8 +1546,9 @@ CheatSheet_OnAppFilterChanged(*) {
         return
     q := Trim(g_helpSearchEdit.Value)
     body := g_cheatSheetAppFullProcessed
+    displayBody := ""
     if (q = "") {
-        g_helpCheatCtrl.Value := body
+        displayBody := body
     } else {
         lines := StrSplit(body, "`n")
         filtered := []
@@ -1584,9 +1556,14 @@ CheatSheet_OnAppFilterChanged(*) {
             if CheatSheet_LineMatchesQuery(line, q)
                 filtered.Push(line)
         }
-        g_helpCheatCtrl.Value := filtered.Length ? JoinLines(filtered) : "(no matches)"
+        displayBody := filtered.Length ? JoinLines(filtered) : "(no matches)"
     }
-    CheatSheet_ResizeBody(g_helpCheatCtrl, g_helpGui, 20, 220)
+    ; #region agent log
+    CheatSheet_AgentDebugLog("A", "CheatSheet_OnAppFilterChanged", "caller_before_rich", Map("displayLen", StrLen(
+        displayBody), "qEmpty", (q = "") ? 1 : 0, "overlay", "app"))
+    ; #endregion
+    CheatSheet_RichSetProcessedBody(g_helpCheatCtrl, displayBody)
+    CheatSheet_ResizeBody(g_helpCheatCtrl, g_helpGui, 20, 220, displayBody)
     CheatSheet_DeferFocusSearch(g_helpSearchEdit)
 }
 
@@ -1596,8 +1573,9 @@ CheatSheet_OnGlobalFilterChanged(*) {
         return
     q := Trim(g_globalSearchEdit.Value)
     body := g_cheatSheetGlobalFullProcessed
+    displayBody := ""
     if (q = "") {
-        g_globalCheatCtrl.Value := body
+        displayBody := body
     } else {
         lines := StrSplit(body, "`n")
         filtered := []
@@ -1605,9 +1583,14 @@ CheatSheet_OnGlobalFilterChanged(*) {
             if CheatSheet_LineMatchesQuery(line, q)
                 filtered.Push(line)
         }
-        g_globalCheatCtrl.Value := filtered.Length ? JoinLines(filtered) : "(no matches)"
+        displayBody := filtered.Length ? JoinLines(filtered) : "(no matches)"
     }
-    CheatSheet_ResizeBody(g_globalCheatCtrl, g_globalGui, 18, 200)
+    ; #region agent log
+    CheatSheet_AgentDebugLog("A", "CheatSheet_OnGlobalFilterChanged", "caller_before_rich", Map("displayLen", StrLen(
+        displayBody), "qEmpty", (q = "") ? 1 : 0, "overlay", "global"))
+    ; #endregion
+    CheatSheet_RichSetProcessedBody(g_globalCheatCtrl, displayBody)
+    CheatSheet_ResizeBody(g_globalCheatCtrl, g_globalGui, 18, 200, displayBody)
     CheatSheet_DeferFocusSearch(g_globalSearchEdit)
 }
 
@@ -1677,12 +1660,13 @@ ToggleShortcutHelp() {
     }
 
     if !IsObject(g_helpGui) {
+        CheatSheet_EnsureRichDll()
         g_helpGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Border +Owner +LastFound")
         g_helpGui.BackColor := "000000"
         g_helpGui.SetFont("s12 cFFFF00", "Consolas")
         g_helpSearchEdit := g_helpGui.Add("Edit", "xm w1000 Section Limit20", "")
-        g_helpCheatCtrl := g_helpGui.Add("Edit",
-            "xs+0 y+4 ReadOnly +Multi -E0x200 +VScroll -HScroll -Border Background000000 w1000 r1")
+        g_helpCheatCtrl := g_helpGui.Add("Custom",
+            "ClassRichEdit20W xs+0 y+4 +Multi -E0x200 +VScroll -HScroll -Border Background000000 w1000 r12")
         g_helpSearchEdit.OnEvent("Change", CheatSheet_OnAppFilterChanged)
         g_helpGui.OnEvent("Escape", CheatSheet_OnEscapeApp)
     }
@@ -1690,20 +1674,12 @@ ToggleShortcutHelp() {
     processedText := ProcessCheatSheetText(text)
     g_cheatSheetAppFullProcessed := processedText
     g_helpSearchEdit.Value := ""
-    g_helpCheatCtrl.Value := processedText
-    lineCnt := StrLen(processedText) ? StrSplit(processedText, "`n").Length : 1
-    controlHeight := lineCnt * 20 + 10
-    minHeight := 220
-    MonitorGetWorkArea(1, &ml, &mt, &mr, &mb)
-    maxHeight := Floor((mb - mt) * 0.7)
-    if (controlHeight < minHeight)
-        controlHeight := minHeight
-    if (controlHeight > maxHeight)
-        controlHeight := maxHeight
-    g_helpCheatCtrl.Move(, , 1000, controlHeight)
-    g_helpGui.Show("AutoSize Hide")
-    CenterGuiOnActiveMonitor(g_helpGui)
-    g_helpGui.Show()
+    ; #region agent log
+    CheatSheet_AgentDebugLog("A", "ToggleShortcutHelp", "caller_initial", Map("processedLen", StrLen(processedText),
+    "overlay", "app"))
+    ; #endregion
+    CheatSheet_RichSetProcessedBody(g_helpCheatCtrl, processedText)
+    CheatSheet_ResizeBody(g_helpCheatCtrl, g_helpGui, 20, 220, processedText)
     g_helpShown := true
     CheatSheet_DeferFocusSearch(g_helpSearchEdit)
 }
@@ -1720,12 +1696,13 @@ ShowGlobalShortcutsHelp() {
     }
 
     if !IsObject(g_globalGui) {
+        CheatSheet_EnsureRichDll()
         g_globalGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Border +Owner +LastFound")
         g_globalGui.BackColor := "000000"
         g_globalGui.SetFont("s10 c00BFFF", "Consolas")
         g_globalSearchEdit := g_globalGui.Add("Edit", "xm w1000 Section Limit20", "")
-        g_globalCheatCtrl := g_globalGui.Add("Edit",
-            "xs+0 y+4 ReadOnly +Multi +VScroll -HScroll -Border Background000000 w1000 r1")
+        g_globalCheatCtrl := g_globalGui.Add("Custom",
+            "ClassRichEdit20W xs+0 y+4 +Multi +VScroll -HScroll -Border Background000000 w1000 r12")
         g_globalSearchEdit.OnEvent("Change", CheatSheet_OnGlobalFilterChanged)
         g_globalGui.OnEvent("Escape", CheatSheet_OnEscapeGlobal)
     }
@@ -1734,20 +1711,12 @@ ShowGlobalShortcutsHelp() {
     processedText := ProcessCheatSheetText(normalizedText)
     g_cheatSheetGlobalFullProcessed := processedText
     g_globalSearchEdit.Value := ""
-    g_globalCheatCtrl.Value := processedText
-    lineCnt := StrLen(processedText) ? StrSplit(processedText, "`n").Length : 1
-    controlHeight := lineCnt * 18 + 10
-    minHeight := 200
-    MonitorGetWorkArea(1, &ml, &mt, &mr, &mb)
-    maxHeight := Floor((mb - mt) * 0.7)
-    if (controlHeight < minHeight)
-        controlHeight := minHeight
-    if (controlHeight > maxHeight)
-        controlHeight := maxHeight
-    g_globalCheatCtrl.Move(, , 1000, controlHeight)
-    g_globalGui.Show("AutoSize Hide")
-    CenterGuiOnActiveMonitor(g_globalGui)
-    g_globalGui.Show()
+    ; #region agent log
+    CheatSheet_AgentDebugLog("A", "ShowGlobalShortcutsHelp", "caller_initial", Map("processedLen", StrLen(processedText
+    ), "overlay", "global"))
+    ; #endregion
+    CheatSheet_RichSetProcessedBody(g_globalCheatCtrl, processedText)
+    CheatSheet_ResizeBody(g_globalCheatCtrl, g_globalGui, 18, 200, processedText)
     g_globalShown := true
     CheatSheet_DeferFocusSearch(g_globalSearchEdit)
 }

@@ -20,14 +20,14 @@ Closing:
 - **Win+Alt+Shift+A** again toggles off the app or global sheet, and also closes the **Search cheat sheets** window if it is open.
 - Otherwise close the search window normally (e.g. title bar).
 
-On open, the **search/filter field is focused** so you can type immediately. The body area below is read-only.
+On open, the **search/filter field is focused** so you can type immediately. The body area below is read-only **RichEdit** text (mnemonic letters are shown **bold** and slightly **larger** than the rest; square brackets from the source are **not** drawn).
 
 ---
 
 ## Search behavior (filter and cross-context search)
 
 - The filter box is limited to **20 characters** per field.
-- Matching is **case-insensitive** and runs on a **description-only haystack**: the line is stripped of leading `>>>` / `---`, then **every** `[...]` segment (chords, mnemonics, padded keys) is removed. What remains is the visible **title / action text**; terms must appear there, not inside shortcut brackets.
+- Matching is **case-insensitive** and runs on a **description haystack** aligned with what you read on screen: the line is stripped of leading `>>>` / `---`, then **each** `[...]` segment is replaced by its **inner text** (brackets removed, content kept). That yields the same words as the overlay’s plain text (e.g. `Toggle theDrawer` matches `drawer`).
 - **Multiple words** (separated by spaces) use **AND** semantics: every term must appear in that haystack (e.g. `copy mail` requires both substrings in the description text).
 - **`SearchCheatSheets(query, includeGlobal := true)`** uses the same rules and returns full **processed** lines for display. An empty query returns an empty map.
 
@@ -58,8 +58,9 @@ Within each section, keep the existing line format (emoji + `[KEY]` + descriptio
 1. **`GetCheatSheetText()`** picks raw text for the active context (process, window title, Chrome site, Teams mode, etc.).
 2. **`NormalizeMojibake()`** fixes common UTF-8→ANSI display glitches (arrows, dashes).
 3. **`ProcessCheatSheetText()`** pads the first `[shortcut]` on each line where applicable, and prefixes lines with `>>>` (custom/remapped) or `---` (built-in style chords).
+4. **`CheatSheet_RichSetProcessedBody()`** in [`CheatSheetRich.ahk`](../CheatSheetRich.ahk) renders the processed lines in a **RichEdit** control: brackets are stripped for display; mnemonic characters (first column and inline `[KEY]` segments) are shown in **bold** and a **larger** font (default body ~12 pt, mnemonics ~15 pt, yellow on black).
 
-Filter and **Search all sheets** operate on this **processed** text so the query matches what you see.
+Filter and **Search all sheets** operate on this **processed** text (with haystack rules above) so the query matches readable words, not bracket notation.
 
 ---
 
@@ -246,15 +247,13 @@ The `ProcessCheatSheetText()` function (with `PadShortcut()` in [`Shift keys.ahk
 - Add `--- ` prefix for built-in shortcuts (detected via `IsBuiltInShortcut()`)
 - Leave additional mnemonic brackets in the rest of the line unchanged (no padding)
 
-### Display result (example)
+### Display result (conceptual)
 
-```
->>> 📂 [ D ] Toggle the[D]rawer
->>> 💬 [ N ] [N]ew chat
->>> 🔍 [ S ] [S]earch
-```
+The overlay does **not** show square brackets. After processing, a line is rendered roughly like:
 
-Only the first bracket group on each line is padded; mnemonic brackets in the action text stay as written in source.
+- `>>> 📂` then a padded key column (spaces + **bold** mnemonic letter(s)), then the action text with inline mnemonic letters also **bold** / larger (e.g. **D**rawer, **S**earch).
+
+Authoring still uses `[KEY]` in source strings; padding still applies to the **first** bracket group only (`PadShortcut()`). Inline mnemonic brackets in the rest of the line are stripped visually; emphasis is formatting only.
 
 ---
 
