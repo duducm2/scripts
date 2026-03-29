@@ -80,6 +80,30 @@ FindGeminiPromptField(uia) {
     return 0
 }
 
+; 1-based active Chrome tab index via UIA (tab bar). Returns { index, count } or 0. Shared with Gemini.ahk.
+GetChromeActiveTabIndex(uia) {
+    try {
+        uia.GetCurrentMainPaneElement()
+        tabs := uia.GetTabs()
+        if (!tabs.Length)
+            return 0
+        current := uia.GetTab("")
+        if (!current)
+            return 0
+        rid := current.RuntimeId
+        for i, tab in tabs {
+            try {
+                if (tab.RuntimeId = rid)
+                    return { index: i, count: tabs.Length }
+            } catch {
+                continue
+            }
+        }
+    } catch {
+    }
+    return 0
+}
+
 ; --- Gemini mode picker (Fast / Thinking / Pro), UIA ---------------------------------
 
 FindGeminiModePickerButton(uia) {
@@ -764,7 +788,7 @@ InitQuickOpenFiles()
 global g_Macros := []
 global g_MacroCharMap := Map()  ; Maps character to macro function
 global g_ProgrammaticDictationStop := false  ; Skip ~#!+0 when script sends #!+0 programmatically
-global g_GeminiToggleTab := 1  ; Alternates ^1/^2 for Gemini Chrome tabs (no UIA; may desync if user switches tabs manually)
+global g_GeminiToggleTab := 1  ; Last Gemini tab chosen by ^!#4 (UIA-synced); other code may still assume 1/2 toggle state
 
 ; Register a macro
 RegisterMacro(func, title, char := "") {
@@ -9119,9 +9143,12 @@ ShowHotstringSelector() {
 {
     global g_GeminiToggleTab, g_DictationActive
 
-    ; Primary: begin capture immediately so dictation runs while Gemini tab logic executes afterward.
-    if (!g_DictationActive)
-        Send("#!+0")
+    ; SendLevel 1 so generated #!+0 is processed as a hotkey and reaches ~#!+0.
+    if (!g_DictationActive) {
+        SendLevel 1
+        Send "#!+0"
+        SendLevel 0
+    }
 
     geminiHwnd := 0
     try {
@@ -9144,15 +9171,28 @@ ShowHotstringSelector() {
     if (!WinWaitActive("ahk_id " geminiHwnd, , 2))
         return
 
-    if (g_GeminiToggleTab == 1) {
-        g_GeminiToggleTab := 2
-        Send("^2")
-    } else {
-        g_GeminiToggleTab := 1
-        Send("^1")
-    }
     Sleep(120)
-    ShowSingleCharTabBanner_Utils(g_GeminiToggleTab)
+    uia := UIA_Browser("ahk_id " geminiHwnd)
+    tabInfo := GetChromeActiveTabIndex(uia)
+    if (!tabInfo) {
+        Sleep(150)
+        tabInfo := GetChromeActiveTabIndex(uia)
+    }
+    targetTab := (tabInfo && tabInfo.index == 1) ? 2 : 1
+    g_GeminiToggleTab := targetTab
+    Send("^" . targetTab)
+    ShowSingleCharTabBanner_Utils(targetTab)
+    Sleep(200)
+
+    dictationOk := g_DictationActive
+    tabInfoAfter := GetChromeActiveTabIndex(uia)
+    if (!tabInfoAfter) {
+        Sleep(100)
+        tabInfoAfter := GetChromeActiveTabIndex(uia)
+    }
+    tabOk := tabInfoAfter && tabInfoAfter.index == targetTab
+    if (!dictationOk || !tabOk)
+        ShowCenteredOverlay_Utils("❌ Shortcut execution failed", 2000, BANNER_ACCENT_ERROR)
 }
 
 ; Ctrl+Alt+Win+2..8 - same macros as HotStrings panel (Win+Alt+Shift+U); secondary triggers only

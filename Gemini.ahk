@@ -482,43 +482,6 @@ GeminiWinEventProc(hWinEventHook, event, hwnd, idObject, idChild, idEventThread,
 }
 
 ; =============================================================================
-; Get 1-based active tab index and tab count in Chrome via UIA (tab bar TabItem elements).
-; Returns {index: n, count: c} on success; 0 if detection fails. Used when #!+i is triggered
-; on an existing Gemini window (banner shown only when count >= 2).
-;
-; Implementation proposals for Chrome tab identification (for testing/verification):
-;   A) UIA (current): Use UIA_Browser.GetTabs() and GetTab("") with SelectionItemIsSelected,
-;      then match selected tab by RuntimeId in the tab list to get 1-based index. Reliable for
-;      Chrome/Edge when the tab bar is exposed to UIA.
-;   B) Window title: WinGetTitle() often includes the active tab's page title; does not give
-;      tab index, but could be used to show "current tab title" in a text banner instead of a number.
-;   C) Chrome DevTools Protocol (CDP): Requires Chrome started with --remote-debugging-port;
-;      can query tabs via HTTP/json. More setup, not used here.
-; =============================================================================
-GetChromeActiveTabIndex(uia) {
-    try {
-        uia.GetCurrentMainPaneElement()
-        tabs := uia.GetTabs()
-        if (!tabs.Length)
-            return 0
-        current := uia.GetTab("")
-        if (!current)
-            return 0
-        rid := current.RuntimeId
-        for i, tab in tabs {
-            try {
-                if (tab.RuntimeId = rid)
-                    return { index: i, count: tabs.Length }
-            } catch {
-                continue
-            }
-        }
-    } catch {
-    }
-    return 0
-}
-
-; =============================================================================
 ; Show tab indicator banner (1 = blue, 2 = yellow): square, center of active-window monitor.
 ; Delegates to Utils for identical behavior as #!+U tab-switching in Utils.ahk. Auto-hides after 700 ms.
 ; =============================================================================
