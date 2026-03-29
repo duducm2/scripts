@@ -114,11 +114,11 @@ CheatSheet_RichSetProcessedBody(ctrl, processedText) {
     hwnd := ctrl.Hwnd
     SendMessage(0x443, 0, 0x000000, ctrl.Hwnd) ; EM_SETBKGNDCOLOR black (before char format)
     ; Base yellow on full body: select entire document via EM_EXSETSEL, then SCF_SELECTION
-    baseCf := CheatSheet_RichCharFormat2(12, 12, false)
+    baseCf := CheatSheet_RichCharFormat2(11, 11, false)
     CheatSheet_RichExSetSel(hwnd, 0, -1)
     CheatSheet_RichApplyCharFormat(ctrl, false, baseCf) ; SCF_SELECTION
     ; Mnemonic spans (bold + slightly larger) — reuse one CHARFORMAT buffer
-    mnCf := CheatSheet_RichCharFormat2(12, 15, true)
+    mnCf := CheatSheet_RichCharFormat2(11, 14, true)
     for sp in spans {
         if (sp.u16Len <= 0)
             continue

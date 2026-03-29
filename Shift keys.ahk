@@ -1549,15 +1549,16 @@ SearchCheatSheets(query, includeGlobal := true) {
     return results
 }
 
-CheatSheet_ResizeBody(editCtrl, gui, fontLinePx := 20, minH := 220, lineCountSource := "", chromeAboveBodyPx := 44) {
+CheatSheet_ResizeBody(editCtrl, gui, fontLinePx := 18, minH := 200, lineCountSource := "", chromeAboveBodyPx := 48) {
     text := lineCountSource != "" ? lineCountSource : editCtrl.Value
     lineCnt := StrLen(text) ? StrSplit(text, "`n").Length : 1
     controlHeight := lineCnt * fontLinePx + 10
     if (controlHeight < minH)
         controlHeight := minH
-    CheatSheet_GetOverlayMonitorWorkRect(&ml, &mt, &mr, &mb)
+    ; Same work-rect as standard banners (Utils.GetActiveMonitorWorkArea_StandardBar).
+    GetActiveMonitorWorkArea_StandardBar(&ml, &mt, &mr, &mb)
     workH := mb - mt
-    margin := 8
+    margin := 6
     maxHeight := workH - chromeAboveBodyPx - margin
     if (maxHeight < 80)
         maxHeight := 80
@@ -1566,6 +1567,16 @@ CheatSheet_ResizeBody(editCtrl, gui, fontLinePx := 20, minH := 220, lineCountSou
     ; Pixel height for body; Custom RichEdit50W may not use rN row metrics like a built-in Edit.
     editCtrl.Move(, , 1000, controlHeight)
     gui.Show("AutoSize Hide")
+    ; If chrome estimate was low, total GUI height can still exceed work area — shrink body once.
+    gui.GetPos(, , &gw, &gh)
+    maxGuiH := workH - margin
+    if (gh > maxGuiH) {
+        newH := controlHeight - (gh - maxGuiH)
+        if (newH < 80)
+            newH := 80
+        editCtrl.Move(, , 1000, newH)
+        gui.Show("AutoSize Hide")
+    }
     CenterGuiOnActiveMonitor(gui)
     gui.Show()
 }
@@ -1583,7 +1594,7 @@ CheatSheet_OnAppFilterChanged(*) {
         displayBody := CheatSheet_BuildFilteredBodyWithSections(body, q)
     }
     CheatSheet_RichSetProcessedBody(g_helpCheatCtrl, displayBody)
-    CheatSheet_ResizeBody(g_helpCheatCtrl, g_helpGui, 20, 220, displayBody, 46)
+    CheatSheet_ResizeBody(g_helpCheatCtrl, g_helpGui, 18, 200, displayBody, 48)
     CheatSheet_DeferFocusSearch(g_helpSearchEdit)
 }
 
@@ -1600,7 +1611,7 @@ CheatSheet_OnGlobalFilterChanged(*) {
         displayBody := CheatSheet_BuildFilteredBodyWithSections(body, q)
     }
     CheatSheet_RichSetProcessedBody(g_globalCheatCtrl, displayBody)
-    CheatSheet_ResizeBody(g_globalCheatCtrl, g_globalGui, 18, 200, displayBody, 44)
+    CheatSheet_ResizeBody(g_globalCheatCtrl, g_globalGui, 16, 180, displayBody, 46)
     CheatSheet_DeferFocusSearch(g_globalSearchEdit)
 }
 
@@ -1673,7 +1684,7 @@ ToggleShortcutHelp() {
         CheatSheet_EnsureRichDll()
         g_helpGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Border +Owner +LastFound")
         g_helpGui.BackColor := "000000"
-        g_helpGui.SetFont("s12 cFFFF00", "Consolas")
+        g_helpGui.SetFont("s11 cFFFF00", "Consolas")
         g_helpSearchEdit := g_helpGui.Add("Edit", "xm w1000 Section Limit20", "")
         g_helpCheatCtrl := g_helpGui.Add("Custom",
             "ClassRichEdit50W xs+0 y+4 +0x44 +Multi -E0x200 +VScroll -HScroll -Border Background000000 w1000 r12")
@@ -1685,7 +1696,7 @@ ToggleShortcutHelp() {
     g_cheatSheetAppFullProcessed := processedText
     g_helpSearchEdit.Value := ""
     CheatSheet_RichSetProcessedBody(g_helpCheatCtrl, processedText)
-    CheatSheet_ResizeBody(g_helpCheatCtrl, g_helpGui, 20, 220, processedText, 46)
+    CheatSheet_ResizeBody(g_helpCheatCtrl, g_helpGui, 18, 200, processedText, 48)
     g_helpShown := true
     CheatSheet_DeferFocusSearch(g_helpSearchEdit)
 }
@@ -1705,7 +1716,7 @@ ShowGlobalShortcutsHelp() {
         CheatSheet_EnsureRichDll()
         g_globalGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Border +Owner +LastFound")
         g_globalGui.BackColor := "000000"
-        g_globalGui.SetFont("s10 c00BFFF", "Consolas")
+        g_globalGui.SetFont("s9 c00BFFF", "Consolas")
         g_globalSearchEdit := g_globalGui.Add("Edit", "xm w1000 Section Limit20", "")
         g_globalCheatCtrl := g_globalGui.Add("Custom",
             "ClassRichEdit50W xs+0 y+4 +0x44 +Multi +VScroll -HScroll -Border Background000000 w1000 r12")
@@ -1718,7 +1729,7 @@ ShowGlobalShortcutsHelp() {
     g_cheatSheetGlobalFullProcessed := processedText
     g_globalSearchEdit.Value := ""
     CheatSheet_RichSetProcessedBody(g_globalCheatCtrl, processedText)
-    CheatSheet_ResizeBody(g_globalCheatCtrl, g_globalGui, 18, 200, processedText, 44)
+    CheatSheet_ResizeBody(g_globalCheatCtrl, g_globalGui, 16, 180, processedText, 46)
     g_globalShown := true
     CheatSheet_DeferFocusSearch(g_globalSearchEdit)
 }
@@ -2644,78 +2655,20 @@ ShowErr(err) {
 }
 
 ; ---------------------------------------------------------------------------
-; Work area of the monitor under the cursor (hotkey trigger), else foreground
-; window center, else primary. Used for cheat sheet sizing and centering.
-; ---------------------------------------------------------------------------
-CheatSheet_GetOverlayMonitorWorkRect(&wl, &wt, &wr, &wb) {
-    pt := Buffer(8, 0)
-    if (DllCall("user32\GetCursorPos", "ptr", pt)) {
-        cx := NumGet(pt, 0, "int")
-        cy := NumGet(pt, 4, "int")
-        count := MonitorGetCount()
-        loop count {
-            idx := A_Index
-            MonitorGetWorkArea(idx, &l, &t, &r, &b)
-            if (cx >= l && cx <= r && cy >= t && cy <= b) {
-                wl := l, wt := t, wr := r, wb := b
-                return
-            }
-        }
-    }
-
-    activeWin := 0
-    try {
-        activeWin := WinGetID("A")
-    } catch {
-        activeWin := DllCall("GetForegroundWindow", "ptr")
-    }
-
-    MonitorGetWorkArea(1, &wl, &wt, &wr, &wb)
-    if (activeWin && activeWin != 0) {
-        rect := Buffer(16, 0)
-        if (DllCall("GetWindowRect", "ptr", activeWin, "ptr", rect)) {
-            winLeft := NumGet(rect, 0, "int")
-            winTop := NumGet(rect, 4, "int")
-            winRight := NumGet(rect, 8, "int")
-            winBottom := NumGet(rect, 12, "int")
-            cx := winLeft + (winRight - winLeft) // 2
-            cy := winTop + (winBottom - winTop) // 2
-            count := MonitorGetCount()
-            loop count {
-                idx := A_Index
-                MonitorGetWorkArea(idx, &l, &t, &r, &b)
-                if (cx >= l && cx <= r && cy >= t && cy <= b) {
-                    wl := l, wt := t, wr := r, wb := b
-                    return
-                }
-            }
-        }
-    }
-}
-
-; ---------------------------------------------------------------------------
-; Helper: centre a GUI on CheatSheet_GetOverlayMonitorWorkRect work area
+; Centre cheat sheet on the same monitor as StandardLoadingBar / banners
+; (GetActiveMonitorWorkArea_StandardBar in Utils.ahk). Do not clamp to (0,0):
+; that pulls the window onto the primary display when wx/wy are negative and
+; causes multi-monitor spanning / wrong placement.
 ; ---------------------------------------------------------------------------
 CenterGuiOnActiveMonitor(guiObj) {
-    ; Ensure GUI has its final size
     guiObj.GetPos(, , &guiW, &guiH)
-
-    CheatSheet_GetOverlayMonitorWorkRect(&wx, &wy, &wr, &wb)
+    GetActiveMonitorWorkArea_StandardBar(&wx, &wy, &wr, &wb)
     ww := wr - wx
     wh := wb - wy
-
-    ; Calculate center position with bounds checking
     guiX := wx + (ww - guiW) / 2
     guiY := wy + (wh - guiH) / 2
-
-    ; Ensure the GUI stays within monitor bounds
     guiX := Max(wx, Min(guiX, wx + ww - guiW))
     guiY := Max(wy, Min(guiY, wy + wh - guiH))
-
-    ; Ensure minimum position (avoid negative coordinates)
-    guiX := Max(0, guiX)
-    guiY := Max(0, guiY)
-
     guiObj.Show("NoActivate x" Round(guiX) " y" Round(guiY))
 }
 
