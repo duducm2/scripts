@@ -20,7 +20,7 @@ Closing:
 - **Win+Alt+Shift+A** again toggles off the app or global sheet, and also closes the **Search cheat sheets** window if it is open.
 - Otherwise close the search window normally (e.g. title bar).
 
-On open, the **search/filter field is focused** so you can type immediately. The body area below is read-only **RichEdit 5** text (`ClassRichEdit50W` with `msftedit.dll` loaded first) in a **Custom** control. The control uses explicit **`ES_MULTILINE | ES_AUTOVSCROLL` (`+0x44`)** because `+Multi` may not apply to Custom controls in AutoHotkey. Display text joins lines with **CR** (`\r`) only so UTF-16 indices match RichEdit’s stored text for mnemonic formatting. Mnemonic letters are shown **bold** and slightly **larger** than the rest; square brackets from the source are **not** drawn.
+On open, the **search/filter field is focused** so you can type immediately. The body area below is read-only **RichEdit 5** text (`ClassRichEdit50W` with `msftedit.dll` loaded first) in a **Custom** control. The control uses explicit **`ES_MULTILINE | ES_AUTOVSCROLL` (`+0x44`)** because `+Multi` may not apply to Custom controls in AutoHotkey. Display text joins lines with **CR** (`\r`) only so UTF-16 indices match RichEdit’s stored text for mnemonic formatting. Mnemonic letters are shown **bold** and slightly **larger** than the rest; square brackets from the source are **not** drawn. The overlay is **centered** on the monitor under the **mouse cursor** when possible (otherwise the foreground window’s monitor), and the window **height is capped** to that monitor’s work area so long content scrolls inside the RichEdit with a vertical scrollbar.
 
 ---
 
@@ -29,6 +29,7 @@ On open, the **search/filter field is focused** so you can type immediately. The
 - The filter box is limited to **20 characters** per field.
 - Matching is **case-insensitive** and runs on a **description haystack** aligned with what you read on screen: the line is stripped of leading `>>>` / `---`, then **each** `[...]` segment is replaced by its **inner text** (brackets removed, content kept). That yields the same words as the overlay’s plain text (e.g. `Toggle theDrawer` matches `drawer`).
 - **Multiple words** (separated by spaces) use **AND** semantics: every term must appear in that haystack (e.g. `copy mail` requires both substrings in the description text).
+- While the filter text is **non-empty**, each matching line is shown with a **`[Cluster label]`** prefix taken from the nearest preceding `=== Cluster label ===` header (same rules as modifier sections), so you can see which modifier group a hit belongs to without scrolling the full sheet.
 - **`SearchCheatSheets(query, includeGlobal := true)`** uses the same rules and returns full **processed** lines for display. An empty query returns an empty map.
 
 ---
