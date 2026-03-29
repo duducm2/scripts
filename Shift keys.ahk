@@ -16294,25 +16294,14 @@ HandleGeminiModelSelection(char) {
 
         ShowSmallLoadingIndicator_ChatGPT("Switching model...")
         try {
-            ; Open mode picker and select target via Gemini 3 menu (MenuItem), not @ text — see gemini-tree-model-menu-open.md
-            verified := EnsureGeminiModelViaMenu(modelName)
-            if (verified) {
+            ; Open mode picker and select via Gemini 3 MenuItem list (gemini-tree-model-menu-open.md)
+            if (EnsureGeminiModelViaMenu(modelName)) {
                 isGeminiFastModel := modelName
-                ShowSmallLoadingIndicator_ChatGPT(modelName . " model active (verified)")
+                ShowSmallLoadingIndicator_ChatGPT(modelName . " model active")
                 try FocusGeminiPromptField()
-            } else {
-                try {
-                    uia := UIA_Browser()
-                    if (IsObject(uia)) {
-                        cur := GetGeminiActiveModelFromPickerOnly(uia)
-                        if (cur != "")
-                            isGeminiFastModel := cur
-                    }
-                } catch {
-                }
+            } else
                 ShowCenteredOverlay_Utils("❌ Could not switch Gemini model to " . modelName, 2800,
                     BANNER_ACCENT_ERROR)
-            }
         } finally {
             SetTimer(() => HideSmallLoadingIndicator_ChatGPT(), -900)
         }

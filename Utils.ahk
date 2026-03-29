@@ -280,43 +280,6 @@ GeminiCollectModelOptionButtons(uia) {
     return modelButtons
 }
 
-GetGeminiActiveModelViaMenuRead(uia) {
-    picker := FindGeminiModePickerButton(uia)
-    if !picker
-        return ""
-    try {
-        picker.Click()
-    } catch {
-        try {
-            if (picker.GetPropertyValue(UIA.Property.IsInvokePatternAvailable))
-                picker.Invoke()
-        } catch {
-        }
-    }
-    Sleep 220
-    modelButtons := GeminiCollectModelOptionButtons(uia)
-    chosen := ""
-    for modelBtn in modelButtons {
-        if (modelBtn.isSelected && !modelBtn.isDisabled) {
-            chosen := GeminiNormalizeModelLabel(modelBtn.name)
-            if (chosen != "")
-                break
-        }
-    }
-    if (chosen = "") {
-        for modelBtn in modelButtons {
-            if (modelBtn.isSelected) {
-                chosen := GeminiNormalizeModelLabel(modelBtn.name)
-                if (chosen != "")
-                    break
-            }
-        }
-    }
-    Send "{Escape}"
-    Sleep 80
-    return chosen
-}
-
 GeminiInvokeModelButton(btn) {
     if !IsObject(btn)
         return false
@@ -346,38 +309,6 @@ GeminiInvokeModelButton(btn) {
         }
     }
     return clicked
-}
-
-WaitUntilGeminiModel(expected, timeoutMs := 2000, pollMs := 150) {
-    exp := GeminiNormalizeModelLabel(expected)
-    if (exp = "")
-        return false
-    Sleep 200
-    deadline := A_TickCount + timeoutMs
-    while (A_TickCount < deadline) {
-        try {
-            uia := UIA_Browser()
-        } catch {
-            uia := ""
-        }
-        if !IsObject(uia) {
-            Sleep pollMs
-            continue
-        }
-        cur := GetGeminiActiveModelFromPickerOnly(uia)
-        if (cur = exp)
-            return true
-        Sleep pollMs
-    }
-    try {
-        uia := UIA_Browser()
-    } catch {
-        return false
-    }
-    if !IsObject(uia)
-        return false
-    cur := GetGeminiActiveModelViaMenuRead(uia)
-    return (cur = exp)
 }
 
 EnsureGeminiModelViaMenu(expected) {
@@ -430,10 +361,9 @@ EnsureGeminiModelViaMenu(expected) {
     }
     if !GeminiInvokeModelButton(targetBtn)
         return false
-    Sleep 200
+    Sleep 100
     Send "{Escape}"
-    Sleep 80
-    return WaitUntilGeminiModel(exp, 2500, 120)
+    return true
 }
 
 ; -----------------------------------------------------------------------------
