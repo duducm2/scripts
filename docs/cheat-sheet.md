@@ -50,6 +50,8 @@ App-specific sheets should group shortcuts **by modifier family** so scanning an
 
 Within each section, keep the existing line format (emoji + `[KEY]` + description). When a chord fits multiple clusters (e.g. `Alt+F12`), place it under the **most specific** cluster you use in that sheet (e.g. `Alt (other chords)`), and document that rule here once.
 
+**Display merge:** [`ProcessCheatSheetText()`](../Shift%20keys.ahk) expands the **first** `[KEY]` on each shortcut line using the active modifier cluster: the nearest preceding `=== Cluster label ===` header (or a leading **`AppName (Modifier)`** line such as `Explorer (Shift)`) supplies an implied prefix (`Shift+`, `Ctrl+`, etc.), so the overlay shows **`[Shift+M]`** instead of bare **`[M]`** when the section implies Shift. Brackets that already list a full chord (`+`, `/`, `...`, or parenthetical keys) are left unchanged. The **`>>>` / `---`** classification still uses the **original** first bracket (before merge) so built-in detection matches prior behavior.
+
 **Reference implementation:** `cheatSheets["Cursor.exe"]` in [`Shift keys.ahk`](../Shift%20keys.ahk) is the **template** for modifier clustering (Cursor-first, complex). New app sheets should mirror this structure before adding one-off sections.
 
 ---
@@ -58,7 +60,7 @@ Within each section, keep the existing line format (emoji + `[KEY]` + descriptio
 
 1. **`GetCheatSheetText()`** picks raw text for the active context (process, window title, Chrome site, Teams mode, etc.).
 2. **`NormalizeMojibake()`** fixes common UTF-8→ANSI display glitches (arrows, dashes).
-3. **`ProcessCheatSheetText()`** pads the first `[shortcut]` on each line where applicable, and prefixes lines with `>>>` (custom/remapped) or `---` (built-in style chords).
+3. **`ProcessCheatSheetText()`** merges the active section (or `AppName (Modifier)` context line) into the **first** `[shortcut]` when the key is implied (e.g. `[M]` under `=== Shift ===` becomes `[Shift+M]`), pads that bracket, and prefixes lines with `>>>` (custom/remapped) or `---` (built-in style chords; classification uses the **unmerged** bracket).
 4. **`CheatSheet_RichSetProcessedBody()`** in [`CheatSheetRich.ahk`](../CheatSheetRich.ahk) renders the processed lines in a **RichEdit 5** control (`msftedit.dll`): brackets are stripped for display; mnemonic characters (first column and inline `[KEY]` segments) are shown in **bold** and a **larger** font (default body ~11 pt, mnemonics ~14 pt, yellow on black). Line breaks in the RichEdit buffer use **CR** between logical lines for index alignment with `EM_SETTEXTEX` / `EM_SETCHARFORMAT`.
 
 Filter and **Search all sheets** operate on this **processed** text (with haystack rules above) so the query matches readable words, not bracket notation.

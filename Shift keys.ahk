@@ -221,17 +221,104 @@ CheatSheet_OnEscapeSearchAll(*) {
         g_searchAllGui.Hide()
 }
 
+; Map "=== section label ===" to a modifier prefix for implied chords (first [key] only).
+CheatSheet_SectionLabelToModifierPrefix(label) {
+    s := Trim(StrLower(label))
+    if (s = "")
+        return ""
+    if InStr(s, "function") && InStr(s, "misc")
+        return ""
+    if InStr(s, "ctrl+alt+win")
+        return ""
+    if InStr(s, "ctrl+shift")
+        return "Ctrl+Shift+"
+    if InStr(s, "ctrl+alt")
+        return "Ctrl+Alt+"
+    if InStr(s, "alt+shift")
+        return "Alt+Shift+"
+    if RegExMatch(s, "^alt \(other")
+        return "Alt+"
+    if RegExMatch(s, "^alt \(ahk")
+        return "Alt+"
+    if RegExMatch(s, "^ctrl \(no other")
+        return "Ctrl+"
+    if (s = "shift")
+        return "Shift+"
+    if (s = "alt")
+        return "Alt+"
+    if (s = "ctrl")
+        return "Ctrl+"
+    if (s = "win")
+        return "Win+"
+    return ""
+}
+
+; First line like "Explorer (Shift)" — single parenthetical modifier.
+CheatSheet_ContextParensToModifierPrefix(inner) {
+    w := Trim(StrLower(inner))
+    if (w = "shift")
+        return "Shift+"
+    if (w = "ctrl")
+        return "Ctrl+"
+    if (w = "alt")
+        return "Alt+"
+    if (w = "win")
+        return "Win+"
+    return ""
+}
+
+; True if the bracket inner already lists a full chord or should not be prefixed.
+CheatSheet_BracketInnerHasExplicitChord(inner) {
+    if (inner = "")
+        return true
+    if InStr(inner, "+")
+        return true
+    if InStr(inner, "/") || InStr(inner, "...")
+        return true
+    if InStr(inner, "(") ; e.g. Esc (bulk)
+        return true
+    return false
+}
+
+; Combine section/cluster prefix with first [inner], e.g. Shift+ + M -> [Shift+M].
+CheatSheet_MergeClusterIntoBracket(bracket, clusterPrefix) {
+    if (clusterPrefix = "")
+        return bracket
+    if !RegExMatch(bracket, "^\[(.+)\]$", &m)
+        return bracket
+    inner := m[1]
+    if CheatSheet_BracketInnerHasExplicitChord(inner)
+        return bracket
+    return "[" . clusterPrefix . inner . "]"
+}
+
 ; Function to process cheat sheet text and pad all shortcuts
 ProcessCheatSheetText(text) {
     lines := StrSplit(text, "`n")
     processedLines := []
+    clusterPrefix := ""
+    contextParsed := false
 
     for line in lines {
+        if RegExMatch(line, "^\s*===\s*(.+?)\s*===\s*$", &hm) {
+            clusterPrefix := CheatSheet_SectionLabelToModifierPrefix(Trim(hm[1]))
+            processedLines.Push(line)
+            continue
+        }
+        if (!contextParsed && !InStr(line, "[") && RegExMatch(line, "^\s*(.+)\s*\(([^)]+)\)\s*$", &cm)) {
+            pfx := CheatSheet_ContextParensToModifierPrefix(cm[2])
+            if (pfx != "") {
+                clusterPrefix := pfx
+                contextParsed := true
+            }
+        }
+
         if RegExMatch(line, "^([^\[\]]*?)(\[.*?\])(.*)$", &match) {
             emoji := match[1]
             bracket := match[2]
             restOfLine := match[3]
-            paddedShortcut := PadShortcut(bracket)
+            displayBracket := CheatSheet_MergeClusterIntoBracket(bracket, clusterPrefix)
+            paddedShortcut := PadShortcut(displayBracket)
 
             if (emoji != "") {
                 processedLine := emoji . " " . paddedShortcut . " " . restOfLine
