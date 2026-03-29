@@ -13190,7 +13190,7 @@ FoldAllDirectoriesInExplorer() {
 
         ; Ensure Explorer is focused if not already
         Send "^+e"
-        Sleep 150
+        Sleep 280
 
         ; Find the Explorer container (EN/PT names) and then the Tree control inside it
         expEn := UIA.CreatePropertyConditionEx(UIA.Property.Name, "Explorer", UIA.PropertyConditionFlags.IgnoreCaseMatchSubstring
@@ -13269,8 +13269,8 @@ FoldAllDirectoriesInExplorer() {
         ; Combine conditions: TreeItem AND CanExpand AND IsExpanded
         dirCond := UIA.CreateAndCondition(itemType, UIA.CreateAndCondition(canExpand, isExpanded))
 
-        ; Loop 2 times to ensure all nested directories are collapsed (reduced from 3)
-        loop 2 {
+        ; Loop 3 times to ensure all nested directories are collapsed (slower pacing below)
+        loop 3 {
             ; Re-find items each iteration as tree structure may change after collapsing
             items := fileTree.FindElements(dirCond, UIA.TreeScope.Descendants)
 
@@ -13288,7 +13288,7 @@ FoldAllDirectoriesInExplorer() {
                     ; Method 2: UIA Collapse Pattern (Primary method) – slowed down to reduce UI stress
                     try {
                         pat.Collapse()
-                        Sleep 40
+                        Sleep 90
                     } catch {
                     }
 
@@ -13311,7 +13311,7 @@ FoldAllDirectoriesInExplorer() {
                             else
                                 item.SetFocus()
                             Send "{Left}"
-                            Sleep 40
+                            Sleep 90
                         } catch {
                         }
                     }
@@ -13342,11 +13342,11 @@ FoldAllDirectoriesInExplorer() {
                     }
                 } catch Error as e {
                 }
-                Sleep 5
+                Sleep 30
             }
 
             ; Brief pause between iterations to allow UI to update
-            Sleep 20
+            Sleep 80
         }
 
         ; Restore scroll position if it changed

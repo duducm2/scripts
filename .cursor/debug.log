@@ -5319,3 +5319,5 @@
 {"id":"log_528037171_7376","timestamp":528037171,"location":"Shift keys.ahk:9940","message":"FindMonthGroup text sample","data":{"index":8,"text":"R$ 6,071.08"},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}
 {"id":"log_528037171_5762","timestamp":528037171,"location":"Shift keys.ahk:9940","message":"FindMonthGroup text sample","data":{"index":9,"text":"Expenses"},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}
 {"id":"log_528037187_1085","timestamp":528037187,"location":"Shift keys.ahk:9940","message":"FindMonthGroup text sample","data":{"index":10,"text":"R$ 8,363.39"},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}
+{"location":"WindowManagement.ahk:HandleCopyFromGeminiModeTrigger","message":"K pressed","data":{"selectorActive":1},"hypothesisId":"H0","timestamp":544457593}
+{"location":"WindowManagement.ahk:HandleCopyFromGeminiProjectSelection","message":"entry","data":{"index":14},"hypothesisId":"H1","timestamp":544457687}
