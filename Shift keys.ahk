@@ -14382,17 +14382,7 @@ ContainsWord(norm, word) {
     }
 }
 
-; Shift + K : Previous month
-+k:: Mobills_Navigate("Prev")
-
-; Shift + L : Next month
-+l:: Mobills_Navigate("Next")
-
-; K : Previous month
-k:: Mobills_Navigate("Prev")
-
-; L : Next month
-l:: Mobills_Navigate("Next")
+; K/L month navigation: see #HotIf Mobills_ShouldHandleMonthNavKeys() below (single definition; skips text fields).
 
 ; =============================================================================
 ; Mobills pagination (unified)
@@ -15198,15 +15188,43 @@ Mobills_IsTransactionsUrlActive(cacheMs := 250) {
     return InStr(g_MobillsUrlCacheUrl, "/transactions")
 }
 
-#HotIf (WinActive("ahk_exe chrome.exe") || WinActive("ahk_exe msedge.exe")) && Mobills_IsTransactionsUrlActive()
+; True when Chrome/Edge UIA focus is in a text-editable control (typing must not trigger month nav).
+; Omit ControlType Document: the web root is often Document and would block K/L when the list has focus.
+Mobills_IsWebTextInputFocused() {
+    try {
+        fe := UIA.GetFocusedElement()
+        if !fe
+            return false
+        ct := fe.GetPropertyValue(UIA.Property.ControlType)
+        if (ct = UIA.Type.Edit || ct = 50004)
+            return true
+        if (ct = UIA.Type.ComboBox || ct = 50003)
+            return true
+        if (ct = 50023) ; UIA Type Spinner (number inputs)
+            return true
+    } catch {
+    }
+    return false
+}
 
-; K/L and Shift+K/L: Previous/Next month (Transactions) even when title doesn't match
+; Previous/Next month: WinActive("Mobills") OR mobile fallback (transactions URL). Never while typing in a field
+; (fixes bare k/l stealing keys and +k/+l from long-press on mobile keyboards).
+Mobills_ShouldHandleMonthNavKeys() {
+    if Mobills_IsWebTextInputFocused()
+        return false
+    if WinActive("Mobills")
+        return true
+    if (WinActive("ahk_exe chrome.exe") || WinActive("ahk_exe msedge.exe")) && Mobills_IsTransactionsUrlActive()
+        return true
+    return false
+}
+
+#HotIf Mobills_ShouldHandleMonthNavKeys()
+
 k:: Mobills_Navigate("Prev")
 l:: Mobills_Navigate("Next")
 +k:: Mobills_Navigate("Prev")
 +l:: Mobills_Navigate("Next")
-
-#HotIf
 
 #HotIf
 
