@@ -1534,6 +1534,7 @@ CheatSheet_ResizeBody(editCtrl, gui, fontLinePx := 20, minH := 220, lineCountSou
     maxHeight := Floor((mb - mt) * 0.7)
     if (controlHeight > maxHeight)
         controlHeight := maxHeight
+    ; Pixel height for body; Custom RichEdit50W may not use rN row metrics like a built-in Edit.
     editCtrl.Move(, , 1000, controlHeight)
     gui.Show("AutoSize Hide")
     CenterGuiOnActiveMonitor(gui)
@@ -1558,10 +1559,6 @@ CheatSheet_OnAppFilterChanged(*) {
         }
         displayBody := filtered.Length ? JoinLines(filtered) : "(no matches)"
     }
-    ; #region agent log
-    CheatSheet_AgentDebugLog("A", "CheatSheet_OnAppFilterChanged", "caller_before_rich", Map("displayLen", StrLen(
-        displayBody), "qEmpty", (q = "") ? 1 : 0, "overlay", "app"))
-    ; #endregion
     CheatSheet_RichSetProcessedBody(g_helpCheatCtrl, displayBody)
     CheatSheet_ResizeBody(g_helpCheatCtrl, g_helpGui, 20, 220, displayBody)
     CheatSheet_DeferFocusSearch(g_helpSearchEdit)
@@ -1585,10 +1582,6 @@ CheatSheet_OnGlobalFilterChanged(*) {
         }
         displayBody := filtered.Length ? JoinLines(filtered) : "(no matches)"
     }
-    ; #region agent log
-    CheatSheet_AgentDebugLog("A", "CheatSheet_OnGlobalFilterChanged", "caller_before_rich", Map("displayLen", StrLen(
-        displayBody), "qEmpty", (q = "") ? 1 : 0, "overlay", "global"))
-    ; #endregion
     CheatSheet_RichSetProcessedBody(g_globalCheatCtrl, displayBody)
     CheatSheet_ResizeBody(g_globalCheatCtrl, g_globalGui, 18, 200, displayBody)
     CheatSheet_DeferFocusSearch(g_globalSearchEdit)
@@ -1666,7 +1659,7 @@ ToggleShortcutHelp() {
         g_helpGui.SetFont("s12 cFFFF00", "Consolas")
         g_helpSearchEdit := g_helpGui.Add("Edit", "xm w1000 Section Limit20", "")
         g_helpCheatCtrl := g_helpGui.Add("Custom",
-            "ClassRichEdit20W xs+0 y+4 +Multi -E0x200 +VScroll -HScroll -Border Background000000 w1000 r12")
+            "ClassRichEdit50W xs+0 y+4 +0x44 +Multi -E0x200 +VScroll -HScroll -Border Background000000 w1000 r12")
         g_helpSearchEdit.OnEvent("Change", CheatSheet_OnAppFilterChanged)
         g_helpGui.OnEvent("Escape", CheatSheet_OnEscapeApp)
     }
@@ -1674,10 +1667,6 @@ ToggleShortcutHelp() {
     processedText := ProcessCheatSheetText(text)
     g_cheatSheetAppFullProcessed := processedText
     g_helpSearchEdit.Value := ""
-    ; #region agent log
-    CheatSheet_AgentDebugLog("A", "ToggleShortcutHelp", "caller_initial", Map("processedLen", StrLen(processedText),
-    "overlay", "app"))
-    ; #endregion
     CheatSheet_RichSetProcessedBody(g_helpCheatCtrl, processedText)
     CheatSheet_ResizeBody(g_helpCheatCtrl, g_helpGui, 20, 220, processedText)
     g_helpShown := true
@@ -1702,7 +1691,7 @@ ShowGlobalShortcutsHelp() {
         g_globalGui.SetFont("s10 c00BFFF", "Consolas")
         g_globalSearchEdit := g_globalGui.Add("Edit", "xm w1000 Section Limit20", "")
         g_globalCheatCtrl := g_globalGui.Add("Custom",
-            "ClassRichEdit20W xs+0 y+4 +Multi +VScroll -HScroll -Border Background000000 w1000 r12")
+            "ClassRichEdit50W xs+0 y+4 +0x44 +Multi +VScroll -HScroll -Border Background000000 w1000 r12")
         g_globalSearchEdit.OnEvent("Change", CheatSheet_OnGlobalFilterChanged)
         g_globalGui.OnEvent("Escape", CheatSheet_OnEscapeGlobal)
     }
@@ -1711,10 +1700,6 @@ ShowGlobalShortcutsHelp() {
     processedText := ProcessCheatSheetText(normalizedText)
     g_cheatSheetGlobalFullProcessed := processedText
     g_globalSearchEdit.Value := ""
-    ; #region agent log
-    CheatSheet_AgentDebugLog("A", "ShowGlobalShortcutsHelp", "caller_initial", Map("processedLen", StrLen(processedText
-    ), "overlay", "global"))
-    ; #endregion
     CheatSheet_RichSetProcessedBody(g_globalCheatCtrl, processedText)
     CheatSheet_ResizeBody(g_globalCheatCtrl, g_globalGui, 18, 200, processedText)
     g_globalShown := true

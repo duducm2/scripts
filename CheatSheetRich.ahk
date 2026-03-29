@@ -3,33 +3,11 @@
 
 global g_cheatSheetRichDll := 0
 
-; #region agent log
-CheatSheet_AgentDebugLog(hypothesisId, location, message, data) {
-    logPath := A_ScriptDir "\debug-338fbf.log"
-    ts := DllCall("GetTickCount64", "int64")
-    if !IsObject(data)
-        data := Map()
-    data["ptrSize"] := A_PtrSize
-    inner := ""
-    first := true
-    for k, v in data {
-        inner .= (first ? "" : ",")
-        first := false
-        inner .= '"' k '":'
-        if IsNumber(v)
-            inner .= v
-        else
-            inner .= '"' StrReplace(StrReplace(String(v), "\", "\\"), '"', '\"') '"'
-    }
-    line := '{"sessionId":"338fbf","timestamp":' ts ',"hypothesisId":"' hypothesisId '","location":"' location '","message":"' message '","data":{' inner '}}`n'
-    FileAppend line, logPath, "UTF-8"
-}
-; #endregion
-
 CheatSheet_EnsureRichDll() {
     global g_cheatSheetRichDll
+    ; msftedit.dll must be loaded before creating RichEdit50W controls (Shift keys.ahk Custom Class).
     if (!g_cheatSheetRichDll)
-        g_cheatSheetRichDll := DllCall("LoadLibrary", "str", "riched20.dll", "ptr")
+        g_cheatSheetRichDll := DllCall("LoadLibrary", "str", "msftedit.dll", "ptr")
 }
 
 ; UTF-16 code unit count for RichEdit character indices (BMP = 1, supplementary = 2).
@@ -52,29 +30,12 @@ CheatSheet_RichSetPlainUtf16(ctrl, plain) {
     NumPut("uint", cp, settextex, 4)
     if (plain = "") {
         emptyBuf := Buffer(2, 0)
-        emRet := SendMessage(0x461, settextex.Ptr, emptyBuf.Ptr, hwnd)
-        ; #region agent log
-        CheatSheet_AgentDebugLog("B", "CheatSheet_RichSetPlainUtf16", "em_settextex_empty", Map("emRet", emRet,
-            "hwnd", hwnd))
-        ; #endregion
+        SendMessage(0x461, settextex.Ptr, emptyBuf.Ptr, hwnd)
         return
     }
     textBuf := Buffer((StrLen(plain) + 1) * 2)
     StrPut(plain, textBuf, "UTF-16")
-    emRet := SendMessage(0x461, settextex.Ptr, textBuf.Ptr, hwnd)
-    ; #region agent log
-    CheatSheet_AgentDebugLog("B", "CheatSheet_RichSetPlainUtf16", "em_settextex_plain", Map("emRet", emRet,
-        "plainLen", StrLen(plain), "hwnd", hwnd))
-    ; #endregion
-}
-
-; Small WM_GETTEXT sample (fixed cap) — do not use WM_GETTEXTLENGTH on RichEdit (can block).
-CheatSheet_RichPeekPrefix(hwnd, maxTchars := 10) {
-    cap := maxTchars + 1
-    buf := Buffer(cap * 2, 0)
-    copied := SendMessage(0xD, cap, buf.Ptr, hwnd)
-    s := StrGet(buf.Ptr, maxTchars, "UTF-16")
-    return Map("copied", copied, "prefix", SubStr(s, 1, maxTchars))
+    SendMessage(0x461, settextex.Ptr, textBuf.Ptr, hwnd)
 }
 
 ; EM_EXSETSEL = WM_USER + 55 — use CHARRANGE; EM_SETSEL(0,-1) via SendMessage can fail to select whole doc in AHK x64.
@@ -124,22 +85,20 @@ CheatSheet_RichThemingOff(ctrl) {
 CheatSheet_RichSetProcessedBody(ctrl, processedText) {
     CheatSheet_RichThemingOff(ctrl)
     if (processedText = "") {
-        ; #region agent log
-        CheatSheet_AgentDebugLog("A", "CheatSheet_RichSetProcessedBody", "processedText_empty_early_exit", Map("hwnd",
-            ctrl.Hwnd))
-        ; #endregion
         CheatSheet_RichSetPlainUtf16(ctrl, "")
-        SendMessage(0x4CF, 1, 0, ctrl.Hwnd) ; EM_SETREADONLY = WM_USER+207 (control created without ES_READONLY so CHARFORMAT colors apply)
+        SendMessage(0x4CF, 1, 0, ctrl.Hwnd) ; EM_SETREADONLY = WM_USER+207
+        SendMessage(0x443, 0, 0x000000, ctrl.Hwnd) ; EM_SETBKGNDCOLOR black (after readonly on RichEdit 5 if gray bg)
         return
     }
     plain := ""
     spans := [] ; { u16Start, u16Len } mnemonic ranges in UTF-16 units
     u16Pos := 0
     first := true
+    ; Join lines with CR only so u16Pos matches RichEdit’s stored text (CRLF in source normalizes vs EM_SETTEXTEX).
     for line in StrSplit(processedText, "`n", "`r") {
         if (!first) {
-            plain .= "`r`n"
-            u16Pos += 2
+            plain .= "`r"
+            u16Pos += 1
         }
         first := false
         segs := CheatSheet_ParseProcessedLine(line)
@@ -151,39 +110,14 @@ CheatSheet_RichSetProcessedBody(ctrl, processedText) {
             u16Pos += slen
         }
     }
-    ; #region agent log
-    CheatSheet_AgentDebugLog("A", "CheatSheet_RichSetProcessedBody", "after_parse", Map("plainLen", StrLen(plain),
-    "processedLen", StrLen(processedText), "spanCount", spans.Length, "hwnd", ctrl.Hwnd))
-    ; #endregion
     CheatSheet_RichSetPlainUtf16(ctrl, plain)
     hwnd := ctrl.Hwnd
-    ; #region agent log
-    peekA := CheatSheet_RichPeekPrefix(hwnd)
-    CheatSheet_AgentDebugLog("F", "CheatSheet_RichSetProcessedBody", "wmgettext_after_plain", Map("peekCopied",
-        peekA["copied"], "peekPrefix", peekA["prefix"]))
-    ; #endregion
-    ; Do not call WM_GETTEXTLENGTH / EM_GETTEXTLENGTHEX here — on RichEdit20W they can block the UI thread for a long time.
-    rc := Buffer(16, 0)
-    DllCall("GetClientRect", "ptr", hwnd, "ptr", rc.Ptr)
-    clientW := NumGet(rc, 8, "int") - NumGet(rc, 0, "int")
-    clientH := NumGet(rc, 12, "int") - NumGet(rc, 4, "int")
-    isVis := DllCall("IsWindowVisible", "ptr", hwnd)
-    ; #region agent log
-    CheatSheet_AgentDebugLog("C", "CheatSheet_RichSetProcessedBody", "after_settext_metrics", Map("expectedPlainLen",
-        StrLen(plain), "clientW", clientW, "clientH", clientH, "hwnd", hwnd, "isVisible", isVis))
-    ; #endregion
-    SendMessage(0x443, 0, 0x000000, ctrl.Hwnd) ; EM_SETBKGNDCOLOR black (before char format so text is not default black on black)
-    ; Base yellow on full body: select entire document via EM_EXSETSEL, then SCF_SELECTION (reliable vs EM_SETSEL 0,-1).
+    SendMessage(0x443, 0, 0x000000, ctrl.Hwnd) ; EM_SETBKGNDCOLOR black (before char format)
+    ; Base yellow on full body: select entire document via EM_EXSETSEL, then SCF_SELECTION
     baseCf := CheatSheet_RichCharFormat2(12, 12, false)
     CheatSheet_RichExSetSel(hwnd, 0, -1)
-    emCfBase := CheatSheet_RichApplyCharFormat(ctrl, false, baseCf) ; SCF_SELECTION
-    ; #region agent log
-    rng := Buffer(8, 0)
-    SendMessage(0x434, 0, rng.Ptr, hwnd) ; EM_EXGETSEL = WM_USER+52 — verify selection spans document
-    CheatSheet_AgentDebugLog("D", "CheatSheet_RichSetProcessedBody", "em_setcharformat_base", Map("emCfBase", emCfBase,
-        "cfBufSize", NumGet(baseCf, 0, "uint"), "exSelMin", NumGet(rng, 0, "int"), "exSelMax", NumGet(rng, 4, "int")))
-    ; #endregion
-    ; Mnemonic spans (bold + slightly larger) — reuse one CHARFORMAT buffer (many spans × alloc was slow).
+    CheatSheet_RichApplyCharFormat(ctrl, false, baseCf) ; SCF_SELECTION
+    ; Mnemonic spans (bold + slightly larger) — reuse one CHARFORMAT buffer
     mnCf := CheatSheet_RichCharFormat2(12, 15, true)
     for sp in spans {
         if (sp.u16Len <= 0)
@@ -191,17 +125,12 @@ CheatSheet_RichSetProcessedBody(ctrl, processedText) {
         SendMessage(0xB1, sp.u16Start, sp.u16Start + sp.u16Len, ctrl.Hwnd) ; EM_SETSEL
         CheatSheet_RichApplyCharFormat(ctrl, false, mnCf)
     }
-    ; #region agent log
-    peekB := CheatSheet_RichPeekPrefix(hwnd)
-    CheatSheet_AgentDebugLog("F", "CheatSheet_RichSetProcessedBody", "wmgettext_after_spans", Map("peekCopied",
-        peekB["copied"], "peekPrefix", peekB["prefix"]))
-    ; #endregion
-    ; Collapse selection to start (read-only display), then scroll caret into view + repaint
     SendMessage(0xB1, 0, 0, ctrl.Hwnd)
     SendMessage(0xB7, 0, 0, hwnd) ; EM_SCROLLCARET
     DllCall("InvalidateRect", "ptr", hwnd, "ptr", 0, "int", 1)
     DllCall("RedrawWindow", "ptr", hwnd, "ptr", 0, "ptr", 0, "uint", 0x105) ; RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE
-    SendMessage(0x4CF, 1, 0, hwnd) ; EM_SETREADONLY TRUE — use message instead of ES_READONLY to avoid gray read-only text on black
+    SendMessage(0x4CF, 1, 0, hwnd) ; EM_SETREADONLY TRUE
+    SendMessage(0x443, 0, 0x000000, ctrl.Hwnd) ; EM_SETBKGNDCOLOR black again (RichEdit 5 can reset bg after readonly)
 }
 
 ; Split processed line into display segments (no brackets in output).
