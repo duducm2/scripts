@@ -41,7 +41,7 @@ scripts/
 ├── UIA-v2/       — Lib/UIA.ahk, Lib/UIA_Browser.ahk; UIATreeInspector.ahk
 ├── python/       — Daemons (wm_daemon, applauncher_daemon, shiftkeys_daemon, gemini_daemon) and protocols
 ├── data/         — settings.ini, wikipedia_scroll_positions.ini, peek_pdf.ini, Gemini_Prompt.txt, *.csv
-├── docs/         — Standards (efficiency-canon, asynchronous_workflow_standards, standard_information_display, cheat-sheet-standard)
+├── docs/         — Standards (efficiency-canon, asynchronous_workflow_standards, standard_information_display, cheat-sheet)
 ├── sounds/       — quick-update-success.wav, quick-update-failure.wav
 └── prompt/       — Text files for prompts/hotstrings
 ```
@@ -85,7 +85,7 @@ For **new hotkeys that only need AHK + UIA**, IPC is not required.
 ### Hotkey allocation and where to add hotkeys
 
 - **Primary set:** Shift+[Y U I O P H J K L N M , . W E R T D F G C V B]. When full, use **Win+Alt+Shift (MEH)** in the same order.
-- **Domain → script:** Window management → WindowManagement.ahk. Gemini → Gemini.ahk. Spotify / ChatGPT / Outlook / Teams / WhatsApp → Shift keys.ahk. App launch, Wikipedia, Pomodoro, Cursor → AppLaunchers.ahk. Shared/global utilities, cursor halo, MEH misc → Utils.ahk. Cheat sheet format: [docs/cheat-sheet-standard.md](docs/cheat-sheet-standard.md).
+- **Domain → script:** Window management → WindowManagement.ahk. Gemini → Gemini.ahk. Spotify / ChatGPT / Outlook / Teams / WhatsApp → Shift keys.ahk. App launch, Wikipedia, Pomodoro, Cursor → AppLaunchers.ahk. Shared/global utilities, cursor halo, MEH misc → Utils.ahk. Cheat sheet: [docs/cheat-sheet.md](docs/cheat-sheet.md).
 
 **Checklist for adding a hotkey:**
 
@@ -106,7 +106,7 @@ For **new hotkeys that only need AHK + UIA**, IPC is not required.
 - **docs/efficiency-canon.md** — Strategic guidelines and bottleneck taxonomy; AI agents should read before refactors; preserve behavior parity and use bounded timeouts.
 - **docs/asynchronous_workflow_standards.md** — Submit → monitor → retrieve pattern; context retention and focus restoration.
 - **docs/standard_information_display.md** — Banner and information display API (StandardLoadingBar, ShowCenteredOverlay_Utils), display categories, semantic colors.
-- **docs/cheat-sheet-standard.md** — Mnemonic key format for shortcut documentation.
+- **docs/cheat-sheet.md** — ShiftKeys cheat sheet: authoring format, registry, search UI, and programmatic API.
 - **docs/windowmanagement-daemon-verify.md** — WindowManagement daemon verification.
 
 ```mermaid

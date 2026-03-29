@@ -5321,3 +5321,7 @@
 {"id":"log_528037187_1085","timestamp":528037187,"location":"Shift keys.ahk:9940","message":"FindMonthGroup text sample","data":{"index":10,"text":"R$ 8,363.39"},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}
 {"location":"WindowManagement.ahk:HandleCopyFromGeminiModeTrigger","message":"K pressed","data":{"selectorActive":1},"hypothesisId":"H0","timestamp":544457593}
 {"location":"WindowManagement.ahk:HandleCopyFromGeminiProjectSelection","message":"entry","data":{"index":14},"hypothesisId":"H1","timestamp":544457687}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"entry","data":{"pathLen":52,"dirExists":1},"hypothesisId":"H3","timestamp":551450765}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"after FindAndActivate","data":{"targetHwnd":4524344},"hypothesisId":"H3","timestamp":551450890}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"after FocusCursorAITextField","data":{"focusOk":1},"hypothesisId":"H4","timestamp":551451984}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"return true","data":{},"hypothesisId":"H3","timestamp":551452078}

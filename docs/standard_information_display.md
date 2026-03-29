@@ -180,4 +180,4 @@ This document is the single source of truth for banner and information-display b
 
 - [efficiency-canon.md](efficiency-canon.md) – Strategic guidelines; AI agents should read before refactors.
 - [asynchronous_workflow_standards.md](asynchronous_workflow_standards.md) – Submit → monitor → retrieve pattern.
-- [cheat-sheet-standard.md](cheat-sheet-standard.md) – Mnemonic key format for shortcut documentation.
+- [cheat-sheet.md](cheat-sheet.md) – ShiftKeys cheat sheet (authoring format, registry, search).

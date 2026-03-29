@@ -91,44 +91,161 @@ global USE_CHROME_PDF_PRESENT_FALLBACK := true
 ; ShiftKeys daemon IPC: bootstrap connection on load (non-blocking)
 ShiftKeysIPC_Bootstrap()
 
-; Function to pad shortcuts to consistent width for alignment
-PadShortcut(shortcut, targetWidth := 24) {
-    ; Return shortcut without padding (spaces removed)
-    return shortcut
+; Pad first bracket group to a stable display width (inner text centered with spaces).
+CheatSheet_StrRepeat(s, count) {
+    r := ""
+    loop count
+        r .= s
+    return r
+}
+
+PadShortcut(shortcut, targetWidth := 18) {
+    if !RegExMatch(shortcut, "^\[(.+)\]$", &m)
+        return shortcut
+    inner := m[1]
+    bracketLen := 2 + StrLen(inner)
+    if (bracketLen >= targetWidth)
+        return shortcut
+    pad := targetWidth - bracketLen
+    left := Floor(pad / 2)
+    right := pad - left
+    return "[" . CheatSheet_StrRepeat(" ", left) . inner . CheatSheet_StrRepeat(" ", right) . "]"
+}
+
+JoinLines(lines, sep := "`n") {
+    out := ""
+    for i, line in lines {
+        out .= (i = 1 ? "" : sep) . line
+    }
+    return out
+}
+
+; Strip >>>/--- and all [...] groups so search matches description/title text only (not chord/mnemonic letters).
+CheatSheet_LineSearchHaystack(line) {
+    s := RegExReplace(line, "^>>>\s*|^---\s*", "")
+    loop 40 {
+        s2 := RegExReplace(s, "\[[^\]]*\]", "")
+        if (s2 = s)
+            break
+        s := s2
+    }
+    return StrLower(Trim(s))
+}
+
+; Multi-word AND on description haystack only (see CheatSheet_LineSearchHaystack).
+CheatSheet_LineMatchesQuery(line, query) {
+    q := Trim(query)
+    if (q = "")
+        return true
+    hay := CheatSheet_LineSearchHaystack(line)
+    terms := StrSplit(StrLower(q), " ", " `t")
+    for term in terms {
+        if (term = "")
+            continue
+        if !InStr(hay, term)
+            return false
+    }
+    return true
+}
+
+; #region agent log
+CheatSheet_DbgCs(data) {
+    path := A_ScriptDir "\debug-338fbf.log"
+    ts := A_TickCount
+    j := '{"sessionId":"338fbf","timestamp":' ts
+    for k, v in data {
+        j .= ',"' k '":'
+        if (v is String)
+            j .= '"' StrReplace(StrReplace(v, "\", "\\"), '"', '\"') '"'
+        else
+            j .= v
+    }
+    j .= "}`n"
+    try
+        FileAppend(j, path, "UTF-8")
+}
+
+; #endregion
+
+CheatSheet_FocusSearchEdit(ctrl) {
+    if (!IsObject(ctrl))
+        return
+    try {
+        gw := ctrl.Gui.Hwnd
+        fcn := ControlGetFocus("ahk_id " gw)
+        fh := ControlGetHwnd(fcn, "ahk_id " gw)
+        if (fh = ctrl.Hwnd) {
+            ; #region agent log
+            CheatSheet_DbgCs(Map("hypothesisId", "H1", "msg", "skip_focus_hwnd_match", "targetHwnd", ctrl.Hwnd))
+            ; #endregion
+            return
+        }
+        ; #region agent log
+        CheatSheet_DbgCs(Map("hypothesisId", "H2", "msg", "refocus_from", "focusHwnd", fh, "targetHwnd", ctrl.Hwnd,
+            "fcn", fcn))
+        ; #endregion
+    } catch {
+    }
+    ctrl.Focus()
+    len := StrLen(ctrl.Value)
+    ; EM_SETSEL: caret at end without selection (programmatic Focus() often selects all; next key would replace).
+    SendMessage(0xB1, len, len, ctrl)
+    ; #region agent log
+    CheatSheet_DbgCs(Map("hypothesisId", "H3", "msg", "after_em_setsel", "len", len))
+    ; #endregion
+}
+
+; Updating the multiline body can steal focus from the filter Edit; refocus after resize.
+; Do not use SetTimer(() => ..., -50): each keystroke created a new timer object and stacked Focus() calls
+; (select-all + next key replaced text). Immediate refocus + skip when already focused avoids that.
+CheatSheet_DeferFocusSearch(ctrl) {
+    if (IsObject(ctrl))
+        CheatSheet_FocusSearchEdit(ctrl)
+}
+
+CheatSheet_OnEscapeApp(*) {
+    global g_helpGui, g_helpShown
+    if (IsObject(g_helpGui) && g_helpShown) {
+        g_helpGui.Hide()
+        g_helpShown := false
+    }
+}
+
+CheatSheet_OnEscapeGlobal(*) {
+    global g_globalGui, g_globalShown
+    if (IsObject(g_globalGui) && g_globalShown) {
+        g_globalGui.Hide()
+        g_globalShown := false
+    }
+}
+
+CheatSheet_OnEscapeSearchAll(*) {
+    global g_searchAllGui
+    if IsObject(g_searchAllGui)
+        g_searchAllGui.Hide()
 }
 
 ; Function to process cheat sheet text and pad all shortcuts
 ProcessCheatSheetText(text) {
-    ; Split into lines
     lines := StrSplit(text, "`n")
     processedLines := []
 
     for line in lines {
-        ; Check if line contains a shortcut pattern at the start (before any mnemonic brackets in text)
-        ; Match emoji (if present) and the first bracket pattern: emoji + bracket
-        ; Pattern: optional emoji/characters (non-bracket chars), then bracket, then rest of line
         if RegExMatch(line, "^([^\[\]]*?)(\[.*?\])(.*)$", &match) {
-            emoji := match[1]  ; Emoji or empty
-            bracket := match[2]  ; First bracket [KEY]
-            restOfLine := match[3]  ; Rest of the line after bracket
-
-            ; Pad the bracket content to align all brackets
+            emoji := match[1]
+            bracket := match[2]
+            restOfLine := match[3]
             paddedShortcut := PadShortcut(bracket)
 
-            ; Reconstruct line with spacing: emoji + space + padded bracket + space + rest
-            ; Add space after emoji (if present) and space after bracket
             if (emoji != "") {
                 processedLine := emoji . " " . paddedShortcut . " " . restOfLine
             } else {
                 processedLine := paddedShortcut . " " . restOfLine
             }
 
-            ; Check if this is a built-in shortcut (contains common built-in patterns)
             if (IsBuiltInShortcut(bracket)) {
-                ; Add visual distinction for built-in shortcuts with dashes and brackets
                 processedLine := "--- " . processedLine
             } else {
-                ; Add visual distinction for custom shortcuts
                 processedLine := ">>> " . processedLine
             }
 
@@ -138,77 +255,32 @@ ProcessCheatSheetText(text) {
         }
     }
 
-    ; Join lines back together manually
-    result := ""
-    for i, line in processedLines {
-        if (i = 1) {
-            result := line
-        } else {
-            result := result . "`n" . line
-        }
-    }
-
-    return result
+    return JoinLines(processedLines)
 }
 
-; Function to detect if a shortcut is a built-in shortcut
+; Single alternation (same semantics as former per-pattern loop).
 IsBuiltInShortcut(shortcut) {
-    ; Remove brackets for easier matching
-    content := RegExReplace(shortcut, "\[|\]", "")
-
-    ; Common built-in shortcut patterns
-    builtInPatterns := [
-        "Ctrl \+ [A-Z]",           ; Ctrl + Letter
-        "Ctrl \+ [0-9]",           ; Ctrl + Number
-        "Ctrl \+ [F1-F12]",        ; Ctrl + Function keys
-        "Alt \+ [A-Z]",            ; Alt + Letter
-        "Alt \+ [0-9]",            ; Alt + Number
-        "Alt \+ [F1-F12]",         ; Alt + Function keys
-        "Alt \+ [↑↓←→]",           ; Alt + Arrow keys
-        "Ctrl \+ Shift \+ [A-Z]",  ; Ctrl + Shift + Letter
-        "Ctrl \+ Shift \+ [0-9]",  ; Ctrl + Shift + Number
-        "Ctrl \+ Enter",           ; Ctrl + Enter
-        "Ctrl \+ Space",           ; Ctrl + Space
-        "Ctrl \+ Tab",             ; Ctrl + Tab
-        "Ctrl \+ Esc",             ; Ctrl + Esc
-        "Ctrl \+ Home",            ; Ctrl + Home
-        "Ctrl \+ End",             ; Ctrl + End
-        "Ctrl \+ PageUp",          ; Ctrl + PageUp
-        "Ctrl \+ PageDown",        ; Ctrl + PageDown
-        "Ctrl \+ Insert",          ; Ctrl + Insert
-        "Ctrl \+ Delete",          ; Ctrl + Delete
-        "Ctrl \+ Backspace",       ; Ctrl + Backspace
-        "Shift \+ [A-Z]",          ; Shift + Letter
-        "Shift \+ [0-9]",          ; Shift + Number
-        "Shift \+ [F1-F12]",       ; Shift + Function keys
-        "Shift \+ [↑↓←→]",         ; Shift + Arrow keys
-        "Shift \+ Enter",          ; Shift + Enter
-        "Shift \+ Delete",         ; Shift + Delete
-        "Shift \+ Tab",            ; Shift + Tab
-        "Shift \+ Esc",            ; Shift + Esc
-        "F[1-9]|F1[0-2]",         ; Function keys F1-F12
-        "Esc",                     ; Escape key
-        "Enter",                   ; Enter key
-        "Space",                   ; Space key
-        "Tab",                     ; Tab key
-        "Backspace",               ; Backspace key
-        "Delete",                  ; Delete key
-        "Insert",                  ; Insert key
-        "Home",                    ; Home key
-        "End",                     ; End key
-        "PageUp",                  ; PageUp key
-        "PageDown",                ; PageDown key
-        "↑|↓|←|→"                  ; Arrow keys
-    ]
-
-    ; Check against built-in patterns
-    for pattern in builtInPatterns {
-        if RegExMatch(content, "i)^" . pattern . "$") {
-            return true
+    static builtinRe := ""
+    if (builtinRe = "") {
+        sub := [
+            "Ctrl \+ [A-Z]", "Ctrl \+ [0-9]", "Ctrl \+ [F1-F12]", "Alt \+ [A-Z]", "Alt \+ [0-9]", "Alt \+ [F1-F12]",
+            "Alt \+ [↑↓←→]", "Ctrl \+ Shift \+ [A-Z]", "Ctrl \+ Shift \+ [0-9]", "Ctrl \+ Enter", "Ctrl \+ Space",
+            "Ctrl \+ Tab", "Ctrl \+ Esc", "Ctrl \+ Home", "Ctrl \+ End", "Ctrl \+ PageUp", "Ctrl \+ PageDown",
+            "Ctrl \+ Insert", "Ctrl \+ Delete", "Ctrl \+ Backspace", "Shift \+ [A-Z]", "Shift \+ [0-9]",
+            "Shift \+ [F1-F12]", "Shift \+ [↑↓←→]", "Shift \+ Enter", "Shift \+ Delete", "Shift \+ Tab", "Shift \+ Esc",
+            "F[1-9]|F1[0-2]", "Esc", "Enter", "Space", "Tab", "Backspace", "Delete", "Insert", "Home", "End",
+            "PageUp", "PageDown", "↑|↓|←|→"
+        ]
+        builtinRe := "^(?i)(?:"
+        for i, p in sub {
+            if (i > 1)
+                builtinRe .= "|"
+            builtinRe .= "(?:" . p . ")"
         }
+        builtinRe .= ")$"
     }
-
-    return false
+    content := RegExReplace(shortcut, "\[|\]", "")
+    return RegExMatch(content, builtinRe)
 }
 
 ; Helper: normalize common UTF-8→CP1252 mojibake so arrows and punctuation display correctly
@@ -551,7 +623,7 @@ cheatSheets["Cursor.exe"] := "
 (
 Cursor
 
---- CTRL Shortcuts (Cursor-defined) ---
+=== Ctrl (no other modifiers) ===
 🎯 [1] Remove clustering and focus on the code (ahk)
 📁 [2] Copy path (cursor)
 📊 [3] CSV: Edit CSV
@@ -584,7 +656,7 @@ Cursor
 ↩️ [Z]Undo (common [Z])
 📊 [B]Toggle [B]ar (primary sidebar)
 
---- SHIFT Shortcuts (Shift) (ahk = AutoHotkey) ---
+=== Shift ===
 📉 [F][F]old (ahk)
 📈 [U][U]nfold (ahk)
 📄 [M][M]arkdown preview (cursor)
@@ -610,16 +682,7 @@ Cursor
 ✅ [V]Commit (Git sa[V]e) (cursor)
 ⬆️ [B]Push (Git pu[B]lish) (cursor)
 
---- CTRL+ALT Shortcuts (Cursor-defined) ---
-📄 [Ctrl+Alt+L] Markdown Preview Enhanced: Toggle Live Update
-📄 [Ctrl+Alt+T] Markdown Preview Enhanced: Toggle Scroll Sync
-⬆️ [Ctrl+Alt+Up] Go to [P]arent Fold
-⬅️ [Ctrl+Alt+Left] Go to sibling fold [P]revious
-➡️ [Ctrl+Alt+Right] Go to sibling fold [N]ext
-⬆️ [Ctrl+Alt+↑] Add cursor [A]bove
-⬇️ [Ctrl+Alt+↓] Add cursor [B]elow
-
---- ALT Shortcuts (ahk = AutoHotkey) ---
+=== Alt (ahk = AutoHotkey) ===
 📉 [x] Shri[X]nk selection (ahk)
 📉 [,] Classical Markdown Preview
 📉 [Y] Paste image to Markdown
@@ -631,21 +694,36 @@ Cursor
 📄 [F] File: New [F]ile
 📂 [O] File: New F[O]lder
 
---- Additional Shortcuts ---
-👁️ [Alt+F12] [P]eek Definition
+=== Ctrl+Shift ===
 📝 [Ctrl+Shift+L] Select all identical words ([L]ines)
-✏️ [F2] [R]ename symbol
-🔍 [F8] [N]avigate problems
-🗑️ [Shift+Delete] [D]elete line
+🐛 [Ctrl+Shift+D] [D]ebugging
+
+=== Ctrl+Alt ===
+📄 [Ctrl+Alt+L] Markdown Preview Enhanced: Toggle Live Update
+📄 [Ctrl+Alt+T] Markdown Preview Enhanced: Toggle Scroll Sync
+⬆️ [Ctrl+Alt+Up] Go to [P]arent Fold
+⬅️ [Ctrl+Alt+Left] Go to sibling fold [P]revious
+➡️ [Ctrl+Alt+Right] Go to sibling fold [N]ext
+⬆️ [Ctrl+Alt+↑] Add cursor [A]bove
+⬇️ [Ctrl+Alt+↓] Add cursor [B]elow
+
+=== Alt+Shift ===
+⬆️ [Shift+Alt+↑] [C]opy line Up
+⬇️ [Shift+Alt+↓] [C]opy line Down
+
+=== Alt (other chords) ===
+👁️ [Alt+F12] [P]eek Definition
 ⬆️ [Alt+↑] [M]ove line Up
 ⬇️ [Alt+↓] [M]ove line Down
 👆 [Alt+Click] [M]ulti-cursor by click
-⬆️ [Shift+Alt+↑] [C]opy line Up
-⬇️ [Shift+Alt+↓] [C]opy line Down
 🔄 [Alt+Z] Toggle word [W]rap
-🐛 [Ctrl+Shift+D] [D]ebugging
 ⬇️ [Alt+J] Jump to [N]ext review
 ⬆️ [Alt+K] [P]revious review (bac[K])
+
+=== Function keys & misc ===
+✏️ [F2] [R]ename symbol
+🔍 [F8] [N]avigate problems
+🗑️ [Shift+Delete] [D]elete line
 )"  ; end Cursor
 
 ; --- Windows Explorer ------------------------------------------------------
@@ -1102,6 +1180,23 @@ ChatGPT (Shift)
 🤖 [L]Send and show AI P[L]anner
 )"
 
+; --- Gemini (web, Chrome) -----------------------------------------------
+cheatSheets["Gemini"] := "
+(
+Gemini (Shift)
+📂 [D]Toggle the[D]rawer
+💬 [N][N]ew chat
+🔍 [S][S]earch
+🔄 [M]Change[M]odel
+🛠️ [T][T]ools
+⌨️ [P]Focus[P]rompt field
+📋 [C][C]opy last message
+🔊 [R][R]ead aloud last message
+🤖 [G]Send[G]emini prompt text
+⛶ [F][F]ullscreen input
+🔔 [Ctrl+Enter]Send and notify on completion
+)"
+
 ; --- Mobills ---------------------------------------------------------------
 cheatSheets["Mobills"] := "
 (
@@ -1127,6 +1222,42 @@ Mobills (Shift)
 🔄 [F]Funds trans[F]er
 🔘 [W][W]indow (Open button + type MAIN)
 )"
+
+; Mirrors the former sequential if-chain: later assignments override earlier ones; Shopee/Google only when still unset.
+PickChromeAppSheetKey(chromeTitle) {
+    key := ""
+    if IsChromePdfViewerActive()
+        key := "Chrome PDF Viewer"
+    if InStr(chromeTitle, "WhatsApp")
+        key := "WhatsApp"
+    if InStr(chromeTitle, "Gmail")
+        key := "Gmail"
+    if InStr(chromeTitle, "chatgpt")
+        key := "ChatGPT"
+    if InStr(chromeTitle, "Mobills")
+        key := "Mobills"
+    if InStr(chromeTitle, "Google Keep") || InStr(chromeTitle, "keep.google.com")
+        key := "Google Keep"
+    if InStr(chromeTitle, "YouTube")
+        key := "YouTube"
+    if InStr(chromeTitle, "UIATreeInspector")
+        key := "UIATreeInspector"
+    if InStr(chromeTitle, "Settle Up")
+        key := "Settle Up"
+    if InStr(chromeTitle, "Miro")
+        key := "Miro"
+    if InStr(chromeTitle, "Wikipedia", false) || InStr(chromeTitle, "wikipedia.org", false)
+        key := "Wikipedia"
+    if IsMercadoLivreActive()
+        key := "Mercado Livre"
+    if (key = "" && IsShopeeActive())
+        key := "Shopee"
+    if InStr(chromeTitle, "gemini", false)
+        key := "Gemini"
+    if (key = "" && (chromeTitle = "Google" || InStr(chromeTitle, " - Google Search")))
+        key := "Google"
+    return key
+}
 
 ; ========== Helper to decide which sheet applies ===========================
 GetCheatSheetText() {
@@ -1175,42 +1306,12 @@ GetCheatSheetText() {
         ; Normalize Chrome window title by removing the trailing " - Google Chrome"
         chromeTitle := RegExReplace(title, "i) - Google Chrome$", "")
 
-        ; Chrome PDF Viewer: detect via UIA (more reliable than title substring matching)
-        if IsChromePdfViewerActive()
-            appShortcuts := cheatSheets.Has("Chrome PDF Viewer") ? cheatSheets["Chrome PDF Viewer"] : ""
-
-        if InStr(chromeTitle, "WhatsApp")
-            appShortcuts := cheatSheets.Has("WhatsApp") ? cheatSheets["WhatsApp"] : ""
-        if InStr(chromeTitle, "Gmail")
-            appShortcuts := cheatSheets.Has("Gmail") ? cheatSheets["Gmail"] : ""
-        if InStr(chromeTitle, "chatgpt")
-            appShortcuts := cheatSheets.Has("ChatGPT") ? cheatSheets["ChatGPT"] : ""
-        if InStr(chromeTitle, "Mobills")
-            appShortcuts := cheatSheets.Has("Mobills") ? cheatSheets["Mobills"] : ""
-        if InStr(chromeTitle, "Google Keep") || InStr(chromeTitle, "keep.google.com")
-            appShortcuts := cheatSheets.Has("Google Keep") ? cheatSheets["Google Keep"] : ""
-        if InStr(chromeTitle, "YouTube")
-            appShortcuts := cheatSheets.Has("YouTube") ? cheatSheets["YouTube"] : ""
-        if InStr(chromeTitle, "UIATreeInspector")
-            appShortcuts := cheatSheets["UIATreeInspector"]
-        if InStr(chromeTitle, "Settle Up")
-            appShortcuts := cheatSheets.Has("Settle Up") ? cheatSheets["Settle Up"] : ""
-        if InStr(chromeTitle, "Miro")
-            appShortcuts := cheatSheets.Has("Miro") ? cheatSheets["Miro"] : ""
-        if InStr(chromeTitle, "Wikipedia", false) || InStr(chromeTitle, "wikipedia.org", false)
-            appShortcuts := cheatSheets.Has("Wikipedia") ? cheatSheets["Wikipedia"] : ""
-        ; Mercado Livre & Shopee: platform identification by URL only (no window title; it changes to product name). See shopping uia3.md.
-        if IsMercadoLivreActive()
-            appShortcuts := cheatSheets.Has("Mercado Livre") ? cheatSheets["Mercado Livre"] : ""
-        if (appShortcuts = "" && IsShopeeActive())
-            appShortcuts := cheatSheets.Has("Shopee") ? cheatSheets["Shopee"] : ""
-        if InStr(chromeTitle, "gemini", false)
-            appShortcuts :=
-                "Gemini (Shift)`r`n📂 [D]Toggle the[D]rawer`r`n💬 [N][N]ew chat`r`n🔍 [S][S]earch`r`n🔄 [M]Change[M]odel`r`n🛠️ [T][T]ools`r`n⌨️ [P]Focus[P]rompt field`r`n📋 [C][C]opy last message`r`n🔊 [R][R]ead aloud last message`r`n🤖 [G]Send[G]emini prompt text`r`n⛶ [F][F]ullscreen input`r`n🔔 [Ctrl+Enter]Send and notify on completion"
-        ; Only set generic Google sheet if nothing else matched and title clearly indicates Google site
-        if (appShortcuts = "") {
-            if (chromeTitle = "Google" || InStr(chromeTitle, " - Google Search"))
-                appShortcuts := cheatSheets.Has("Google") ? cheatSheets["Google"] : ""
+        siteKey := PickChromeAppSheetKey(chromeTitle)
+        if (siteKey != "") {
+            if cheatSheets.Has(siteKey)
+                appShortcuts := cheatSheets[siteKey]
+            else
+                appShortcuts := ""
         }
 
         ; Combine Chrome general + app-specific shortcuts
@@ -1275,85 +1376,21 @@ global g_helpGui := 0
 global g_helpShown := false
 global g_globalGui := 0
 global g_globalShown := false
+global g_helpSearchEdit := 0
+global g_helpCheatCtrl := 0
+global g_globalSearchEdit := 0
+global g_globalCheatCtrl := 0
+global g_cheatSheetAppFullProcessed := ""
+global g_cheatSheetGlobalFullProcessed := ""
+global g_searchAllGui := 0
 
-; ========== GUI creation & showing ========================================
-ToggleShortcutHelp() {
-    global g_helpGui, g_helpShown
-
-    ; Toggle off if currently shown
-    if (IsObject(g_helpGui) && g_helpShown) {
-        g_helpGui.Hide()
-        g_helpShown := false
-        ; Hotkey "Esc", "Off"  ; (disabled)
-        return
-    }
-
-    ; Ensure text for current context
-    text := NormalizeMojibake(GetCheatSheetText())
-    if (text = "") {
-        exe := WinGetProcessName("A")
-        text := "No cheat-sheet registered for:`n" exe
-    }
-
-    static cheatCtrl
-
-    if !IsObject(g_helpGui) {
-        g_helpGui := Gui(
-            "+AlwaysOnTop -Caption +ToolWindow +Border +Owner +LastFound"
-        )
-        g_helpGui.BackColor := "000000"
-        g_helpGui.SetFont("s12 cFFFF00", "Consolas")
-        ; Enable vertical scroll so oversized cheat sheets remain usable
-        cheatCtrl := g_helpGui.Add("Edit",
-            "ReadOnly +Multi -E0x200 +VScroll -HScroll -Border Background000000 w1000 r1"
-        )
-
-        ; Esc also hides  ; (disabled â€" use Win+Alt+Shift+A to hide)
-        ; Hotkey "Esc", (*) => (g_helpGui.Hide(), g_helpShown := false), "Off"
-    }
-
-    ; Update cheat-sheet text and resize height to fit
-    ; Process the text to pad shortcuts for alignment
-    processedText := ProcessCheatSheetText(text)
-    cheatCtrl.Value := processedText
-    lineCnt := StrLen(processedText) ? StrSplit(processedText, "`n").Length : 1
-
-    ; Calculate height based on line count (font size 12 â‰ˆ 20px per line + margins)
-    ; Apply min/max so content scrolls instead of being cut off
-    controlHeight := lineCnt * 20 + 10
-    minHeight := 220  ; ensure a decent minimum height
-    MonitorGetWorkArea(1, &ml, &mt, &mr, &mb)
-    maxHeight := Floor((mb - mt) * 0.7)  ; cap to 70% of monitor work area
-    if (controlHeight < minHeight)
-        controlHeight := minHeight
-    if (controlHeight > maxHeight)
-        controlHeight := maxHeight
-
-    ; Resize the control and GUI explicitly
-    cheatCtrl.Move(, , 1000, controlHeight)
-    ; Show > measure > centre
-    g_helpGui.Show("AutoSize Hide")
-    CenterGuiOnActiveMonitor(g_helpGui)
-    g_helpGui.Show("NoActivate")  ; ensure visible after centring
-    g_helpShown := true
-    ; Hotkey "Esc", "On"  ; (disabled)
+GetGlobalCheatSheetRawText() {
+    global GLOBAL_CHEAT_SHEET_RAW
+    return GLOBAL_CHEAT_SHEET_RAW
 }
 
-; ========== Global shortcuts cheat sheet (Win+Alt+Shift+key) ===============
-ShowGlobalShortcutsHelp() {
-    global g_globalGui, g_globalShown
-
-    ; Toggle off if currently shown
-    if (IsObject(g_globalGui) && g_globalShown) {
-        g_globalGui.Hide()
-        g_globalShown := false
-        ; Hotkey "Esc", "Off"  ; (disabled)
-        return
-    }
-
-    ; Create the global shortcuts text with categories
-
-    globalText := "
+; Raw text for long-hold global cheat sheet (also used by SearchCheatSheets).
+GLOBAL_CHEAT_SHEET_RAW := "
 (
 [Win+Alt+Shift] - PRIMARY triple modifier (most used for system-wide shortcuts)
     [Ctrl+Alt+Win] - SECONDARY triple modifier
@@ -1386,7 +1423,7 @@ Letters available: B, C, G, H, I, K, M, N, O, P, T, U, V, X, Y, Z
 === SPOTIFY ===
 [Win+Alt+Shift+S] > Opens or activates Spotify
 
-r=== CLIP ANGEL ===
+=== CLIP ANGEL ===
 [Win+Alt+Shift+1] > Send top list item from Clip Angel
 
 === GEMINI ===
@@ -1474,54 +1511,268 @@ r=== CLIP ANGEL ===
 === SHORTCUTS ===
 [Win+Alt+Shift+A] > Show app-specific shortcuts (quick press)
 [Win+Alt+Shift+A] > Show global shortcuts (hold 700ms+)
+[Win+Alt+Shift+/] > Search all cheat sheets (cross-context)
 
 === WIKIPEDIA ===
 [Win+Alt+Shift+K] > Opens or activates Wikipedia
 )"
 
-    static globalCtrl
+; Returns Map of context label -> array of matching processed lines. Empty query => empty map.
+SearchCheatSheets(query, includeGlobal := true) {
+    global cheatSheets, GLOBAL_CHEAT_SHEET_RAW
+    q := Trim(query)
+    results := Map()
+    if (q = "")
+        return results
 
-    if !IsObject(g_globalGui) {
-        g_globalGui := Gui(
-            "+AlwaysOnTop -Caption +ToolWindow +Border +Owner +LastFound"
-        )
-        g_globalGui.BackColor := "000000"
-        g_globalGui.SetFont("s10 c00BFFF", "Consolas")  ; Smaller font for more content, blue color to distinguish from specific shortcuts
-        globalCtrl := g_globalGui.Add("Edit", "ReadOnly +Multi +VScroll -HScroll -Border Background000000 w1000 h540")
-
-        ; Esc also hides  ; (disabled â€" use Win+Alt+Shift+A to hide)
-        ; Hotkey "Esc", (*) => (g_globalGui.Hide(), g_globalShown := false), "Off"
+    for key, text in cheatSheets {
+        if (text = "")
+            continue
+        proc := ProcessCheatSheetText(NormalizeMojibake(text))
+        lines := StrSplit(proc, "`n")
+        hits := []
+        for line in lines {
+            if CheatSheet_LineMatchesQuery(line, q)
+                hits.Push(line)
+        }
+        if (hits.Length)
+            results[key] := hits
     }
 
-    ; Fix mojibake (arrows, punctuation), pad shortcuts, then update text and show
-    normalizedText := NormalizeMojibake(globalText)
+    if includeGlobal {
+        proc := ProcessCheatSheetText(NormalizeMojibake(GLOBAL_CHEAT_SHEET_RAW))
+        lines := StrSplit(proc, "`n")
+        hits := []
+        for line in lines {
+            if CheatSheet_LineMatchesQuery(line, q)
+                hits.Push(line)
+        }
+        if (hits.Length)
+            results["(Global shortcuts)"] := hits
+    }
+    return results
+}
+
+CheatSheet_ResizeBody(editCtrl, gui, fontLinePx := 20, minH := 220) {
+    text := editCtrl.Value
+    lineCnt := StrLen(text) ? StrSplit(text, "`n").Length : 1
+    controlHeight := lineCnt * fontLinePx + 10
+    if (controlHeight < minH)
+        controlHeight := minH
+    MonitorGetWorkArea(1, &ml, &mt, &mr, &mb)
+    maxHeight := Floor((mb - mt) * 0.7)
+    if (controlHeight > maxHeight)
+        controlHeight := maxHeight
+    editCtrl.Move(, , 1000, controlHeight)
+    gui.Show("AutoSize Hide")
+    CenterGuiOnActiveMonitor(gui)
+    gui.Show()
+}
+
+CheatSheet_OnAppFilterChanged(*) {
+    global g_helpSearchEdit, g_helpCheatCtrl, g_cheatSheetAppFullProcessed, g_helpGui, g_helpShown
+    if (!IsObject(g_helpCheatCtrl) || !IsObject(g_helpSearchEdit))
+        return
+    q := Trim(g_helpSearchEdit.Value)
+    body := g_cheatSheetAppFullProcessed
+    if (q = "") {
+        g_helpCheatCtrl.Value := body
+    } else {
+        lines := StrSplit(body, "`n")
+        filtered := []
+        for line in lines {
+            if CheatSheet_LineMatchesQuery(line, q)
+                filtered.Push(line)
+        }
+        g_helpCheatCtrl.Value := filtered.Length ? JoinLines(filtered) : "(no matches)"
+    }
+    CheatSheet_ResizeBody(g_helpCheatCtrl, g_helpGui, 20, 220)
+    CheatSheet_DeferFocusSearch(g_helpSearchEdit)
+}
+
+CheatSheet_OnGlobalFilterChanged(*) {
+    global g_globalSearchEdit, g_globalCheatCtrl, g_cheatSheetGlobalFullProcessed, g_globalGui, g_globalShown
+    if (!IsObject(g_globalCheatCtrl) || !IsObject(g_globalSearchEdit))
+        return
+    q := Trim(g_globalSearchEdit.Value)
+    body := g_cheatSheetGlobalFullProcessed
+    if (q = "") {
+        g_globalCheatCtrl.Value := body
+    } else {
+        lines := StrSplit(body, "`n")
+        filtered := []
+        for line in lines {
+            if CheatSheet_LineMatchesQuery(line, q)
+                filtered.Push(line)
+        }
+        g_globalCheatCtrl.Value := filtered.Length ? JoinLines(filtered) : "(no matches)"
+    }
+    CheatSheet_ResizeBody(g_globalCheatCtrl, g_globalGui, 18, 200)
+    CheatSheet_DeferFocusSearch(g_globalSearchEdit)
+}
+
+ShowSearchAllCheatSheetsGui() {
+    global g_searchAllGui
+    static filterEdit := 0, lv := 0
+
+    if !IsObject(g_searchAllGui) {
+        g_searchAllGui := Gui("+AlwaysOnTop +Resize +MinSize800x400", "Search cheat sheets")
+        g_searchAllGui.SetFont("s10", "Consolas")
+        g_searchAllGui.Add("Text", "xm Section",
+            "Filter (description text only; space = AND; max 20 chars):")
+        filterEdit := g_searchAllGui.Add("Edit", "xs w780 Limit20")
+        lv := g_searchAllGui.Add("ListView", "xm w780 h520 Grid", ["Context", "Line"])
+        filterEdit.OnEvent("Change", (*) => CheatSheet_RefreshSearchAllList(filterEdit, lv))
+        lv.OnEvent("DoubleClick", (ctrl, guiEvent) => CheatSheet_OnSearchAllCopy(ctrl, guiEvent))
+        g_searchAllGui.Add("Text", "xm", "Double-click a row to copy the line.")
+        g_searchAllGui.OnEvent("Escape", CheatSheet_OnEscapeSearchAll)
+    }
+    filterEdit.Value := ""
+    CheatSheet_RefreshSearchAllList(filterEdit, lv)
+    g_searchAllGui.Show("w800 h620")
+    CheatSheet_DeferFocusSearch(filterEdit)
+}
+
+CheatSheet_RefreshSearchAllList(filterEdit, lv) {
+    lv.Delete()
+    q := Trim(filterEdit.Value)
+    if (q = "") {
+        return
+    }
+    m := SearchCheatSheets(q, true)
+    for ctx, lines in m {
+        for line in lines {
+            lv.Add("", ctx, line)
+        }
+    }
+}
+
+CheatSheet_OnSearchAllCopy(lv, guiEvent) {
+    row := 0
+    try
+        row := guiEvent.EventInfo
+    if !row
+        row := lv.GetNext(0, "F")
+    if !row
+        return
+    line := lv.GetText(row, 2)
+    A_Clipboard := line
+}
+
+; ========== GUI creation & showing ========================================
+ToggleShortcutHelp() {
+    global g_helpGui, g_helpShown, g_helpSearchEdit, g_helpCheatCtrl, g_cheatSheetAppFullProcessed
+
+    ; Toggle off if currently shown
+    if (IsObject(g_helpGui) && g_helpShown) {
+        g_helpGui.Hide()
+        g_helpShown := false
+        return
+    }
+
+    text := NormalizeMojibake(GetCheatSheetText())
+    if (text = "") {
+        exe := WinGetProcessName("A")
+        text := "No cheat-sheet registered for:`n" exe
+    }
+
+    if !IsObject(g_helpGui) {
+        g_helpGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Border +Owner +LastFound")
+        g_helpGui.BackColor := "000000"
+        g_helpGui.SetFont("s12 cFFFF00", "Consolas")
+        g_helpSearchEdit := g_helpGui.Add("Edit", "xm w1000 Section Limit20", "")
+        g_helpCheatCtrl := g_helpGui.Add("Edit",
+            "xs+0 y+4 ReadOnly +Multi -E0x200 +VScroll -HScroll -Border Background000000 w1000 r1")
+        g_helpSearchEdit.OnEvent("Change", CheatSheet_OnAppFilterChanged)
+        g_helpGui.OnEvent("Escape", CheatSheet_OnEscapeApp)
+    }
+
+    processedText := ProcessCheatSheetText(text)
+    g_cheatSheetAppFullProcessed := processedText
+    g_helpSearchEdit.Value := ""
+    g_helpCheatCtrl.Value := processedText
+    lineCnt := StrLen(processedText) ? StrSplit(processedText, "`n").Length : 1
+    controlHeight := lineCnt * 20 + 10
+    minHeight := 220
+    MonitorGetWorkArea(1, &ml, &mt, &mr, &mb)
+    maxHeight := Floor((mb - mt) * 0.7)
+    if (controlHeight < minHeight)
+        controlHeight := minHeight
+    if (controlHeight > maxHeight)
+        controlHeight := maxHeight
+    g_helpCheatCtrl.Move(, , 1000, controlHeight)
+    g_helpGui.Show("AutoSize Hide")
+    CenterGuiOnActiveMonitor(g_helpGui)
+    g_helpGui.Show()
+    g_helpShown := true
+    CheatSheet_DeferFocusSearch(g_helpSearchEdit)
+}
+
+; ========== Global shortcuts cheat sheet (Win+Alt+Shift+key) ===============
+ShowGlobalShortcutsHelp() {
+    global g_globalGui, g_globalShown, g_globalSearchEdit, g_globalCheatCtrl, g_cheatSheetGlobalFullProcessed,
+        GLOBAL_CHEAT_SHEET_RAW
+
+    if (IsObject(g_globalGui) && g_globalShown) {
+        g_globalGui.Hide()
+        g_globalShown := false
+        return
+    }
+
+    if !IsObject(g_globalGui) {
+        g_globalGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Border +Owner +LastFound")
+        g_globalGui.BackColor := "000000"
+        g_globalGui.SetFont("s10 c00BFFF", "Consolas")
+        g_globalSearchEdit := g_globalGui.Add("Edit", "xm w1000 Section Limit20", "")
+        g_globalCheatCtrl := g_globalGui.Add("Edit",
+            "xs+0 y+4 ReadOnly +Multi +VScroll -HScroll -Border Background000000 w1000 r1")
+        g_globalSearchEdit.OnEvent("Change", CheatSheet_OnGlobalFilterChanged)
+        g_globalGui.OnEvent("Escape", CheatSheet_OnEscapeGlobal)
+    }
+
+    normalizedText := NormalizeMojibake(GLOBAL_CHEAT_SHEET_RAW)
     processedText := ProcessCheatSheetText(normalizedText)
-    globalCtrl.Value := processedText
+    g_cheatSheetGlobalFullProcessed := processedText
+    g_globalSearchEdit.Value := ""
+    g_globalCheatCtrl.Value := processedText
+    lineCnt := StrLen(processedText) ? StrSplit(processedText, "`n").Length : 1
+    controlHeight := lineCnt * 18 + 10
+    minHeight := 200
+    MonitorGetWorkArea(1, &ml, &mt, &mr, &mb)
+    maxHeight := Floor((mb - mt) * 0.7)
+    if (controlHeight < minHeight)
+        controlHeight := minHeight
+    if (controlHeight > maxHeight)
+        controlHeight := maxHeight
+    g_globalCheatCtrl.Move(, , 1000, controlHeight)
     g_globalGui.Show("AutoSize Hide")
     CenterGuiOnActiveMonitor(g_globalGui)
-    g_globalGui.Show("NoActivate")
+    g_globalGui.Show()
     g_globalShown := true
-    ; Hotkey "Esc", "On"  ; (disabled)
+    CheatSheet_DeferFocusSearch(g_globalSearchEdit)
 }
 
 ; ========== Hotkey with hold detection ====================================
 ; Win + Alt + Shift + A with hold detection
 #!+a::
 {
-    global g_helpGui, g_helpShown, g_globalGui, g_globalShown
+    global g_helpGui, g_helpShown, g_globalGui, g_globalShown, g_searchAllGui
 
     ; First check if any cheat sheet is currently open - if so, close it
     if (IsObject(g_helpGui) && g_helpShown) {
         g_helpGui.Hide()
         g_helpShown := false
-        ; Hotkey "Esc", "Off"  ; (disabled)
         return
     }
 
     if (IsObject(g_globalGui) && g_globalShown) {
         g_globalGui.Hide()
         g_globalShown := false
-        ; Hotkey "Esc", "Off"  ; (disabled)
+        return
+    }
+
+    if (IsObject(g_searchAllGui)) {
+        g_searchAllGui.Hide()
         return
     }
 
@@ -1541,6 +1792,12 @@ r=== CLIP ANGEL ===
         ; Quick press - show app-specific shortcuts
         ToggleShortcutHelp()
     }
+}
+
+; Win+Alt+Shift+/ — search all registered cheat sheets (ListView; double-click row copies line)
+#!+/::
+{
+    ShowSearchAllCheatSheetsGui()
 }
 
 ; =============================================================================
