@@ -479,12 +479,6 @@ Outlook (Shift)
 📅 [W]eek view
 📅 M[o]nth view
 🪟 [P][P]op Out (Type 50000, Name Pop Out, LocalizedType button, Path {T:33,CN:rctrl_renwnd32}, {T:33}, {T:33}, {T:21}, {T:0, i:-1})
-
-⌨️ [Ctrl+1] Move down once and select
-⌨️ [Ctrl+2] Move down twice and select
-⌨️ [Ctrl+3] Move down three times and select
-⌨️ [Ctrl+4] Move down four times and select
-⌨️ [Ctrl+5] Move down five times and select
 )"  ; end Outlook
 
 ; --- Outlook Reminder window -------------------------------------------------
@@ -496,12 +490,6 @@ Outlook - Reminders (Shift)
 ⏰ [D]Snooze 1 [D]ay (Not available in New Outlook)
 ❌ [X]E[X]it all reminders (Dismiss)
 🌐 [J][J]oin Online (Not available in New Outlook)
-
-⌨️ [Ctrl+1] Move down once and select
-⌨️ [Ctrl+2] Move down twice and select
-⌨️ [Ctrl+3] Move down three times and select
-⌨️ [Ctrl+4] Move down four times and select
-⌨️ [Ctrl+5] Move down five times and select
 )"  ; end Outlook Reminder
 
 ; --- Outlook Appointment window ---------------------------------------------
@@ -520,12 +508,6 @@ Outlook - Appointment (Shift)
 📝 [B][B]ody
 🔄 [C]Make Re[C]urring (Not available in New Outlook)
 🧙 [W][W]izard (configure)
-
-⌨️ [Ctrl+1] Move down once and select
-⌨️ [Ctrl+2] Move down twice and select
-⌨️ [Ctrl+3] Move down three times and select
-⌨️ [Ctrl+4] Move down four times and select
-⌨️ [Ctrl+5] Move down five times and select
 )"  ; end Outlook Appointment
 
 ; --- Outlook Message window ---------------------------------------------------
@@ -535,12 +517,6 @@ Outlook - Message (Shift)
 📝 [S][S]ubject / Title
 👥 [T][T]o / Required
 📝 [B][B]ody (Location → Body)
-
-⌨️ [Ctrl+1] Move down once and select
-⌨️ [Ctrl+2] Move down twice and select
-⌨️ [Ctrl+3] Move down three times and select
-⌨️ [Ctrl+4] Move down four times and select
-⌨️ [Ctrl+5] Move down five times and select
 )"  ; end Outlook Message
 
 ; --- Microsoft Teams â€" meeting window --------------------------------------
@@ -3792,46 +3768,6 @@ Confirm(t) {
     catch Error as e {
         ; No message box as requested - fail silently
     }
-}
-
-; Ctrl + 1 : Move down once and select (Command Palette)
-^1:: {
-    Send "{Down}"
-    Send "{Enter}"
-}
-
-; Ctrl + 2 : Move down twice and select (Command Palette)
-^2:: {
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Enter}"
-}
-
-; Ctrl + 3 : Move down three times and select (Command Palette)
-^3:: {
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Enter}"
-}
-
-; Ctrl + 4 : Move down four times and select (Command Palette)
-^4:: {
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Enter}"
-}
-
-; Ctrl + 5 : Move down five times and select (Command Palette)
-^5:: {
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Enter}"
 }
 
 #HotIf
@@ -7207,46 +7143,6 @@ SelectExplorerSidebarFirstPinned() {
     }
 }
 
-; Ctrl + 1 : Move down once and select (Command Palette)
-^1:: {
-    Send "{Down}"
-    Send "{Enter}"
-}
-
-; Ctrl + 2 : Move down twice and select (Command Palette)
-^2:: {
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Enter}"
-}
-
-; Ctrl + 3 : Move down three times and select (Command Palette)
-^3:: {
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Enter}"
-}
-
-; Ctrl + 4 : Move down four times and select (Command Palette)
-^4:: {
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Enter}"
-}
-
-; Ctrl + 5 : Move down five times and select (Command Palette)
-^5:: {
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Enter}"
-}
-
 ; Message inspector-specific hotkeys (Subject/To/DatePicker/Body)
 #HotIf IsOutlookMessageActive()
 
@@ -7282,46 +7178,6 @@ SelectExplorerSidebarFirstPinned() {
         Send "{Tab}"
         return
     }
-}
-
-; Ctrl + 1 : Move down once and select (Command Palette)
-^1:: {
-    Send "{Down}"
-    Send "{Enter}"
-}
-
-; Ctrl + 2 : Move down twice and select (Command Palette)
-^2:: {
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Enter}"
-}
-
-; Ctrl + 3 : Move down three times and select (Command Palette)
-^3:: {
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Enter}"
-}
-
-; Ctrl + 4 : Move down four times and select (Command Palette)
-^4:: {
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Enter}"
-}
-
-; Ctrl + 5 : Move down five times and select (Command Palette)
-^5:: {
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Enter}"
 }
 
 #HotIf
@@ -8376,46 +8232,6 @@ RunOutlookAppointmentWizard() {
         return
     }
     RunOutlookAppointmentWizard()
-}
-
-; Ctrl + 1 : Move down once and select (Command Palette)
-^1:: {
-    Send "{Down}"
-    Send "{Enter}"
-}
-
-; Ctrl + 2 : Move down twice and select (Command Palette)
-^2:: {
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Enter}"
-}
-
-; Ctrl + 3 : Move down three times and select (Command Palette)
-^3:: {
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Enter}"
-}
-
-; Ctrl + 4 : Move down four times and select (Command Palette)
-^4:: {
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Enter}"
-}
-
-; Ctrl + 5 : Move down five times and select (Command Palette)
-^5:: {
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Enter}"
 }
 
 #HotIf
