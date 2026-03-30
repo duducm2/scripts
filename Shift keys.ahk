@@ -1479,7 +1479,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Ctrl+Alt+Win] - SECONDARY triple modifier
 
 === AVAILABLE SECONDARY (Ctrl+Alt+Win) SLOTS ===
-Letters available: B, C, G, H, I, K, M, N, O, P, T, U, V, X, Y, Z
+Letters available: C, G, H, I, K, M, N, O, P, T, U, V, X, Y, Z
 [Ctrl+Alt+Win+0] > Project Quick Selector (opens project folder in Cursor)
 [Ctrl+Alt+Win+1] > Cursor AI quick action (Project Selector + Selection Mode)
 [Ctrl+Alt+Win+2] > Quick Update to Your Scripts (HotStrings macro)
@@ -1489,7 +1489,8 @@ Letters available: B, C, G, H, I, K, M, N, O, P, T, U, V, X, Y, Z
 [Ctrl+Alt+Win+7] > Mark Last Clip as Favorite (HotStrings macro; same as Ctrl+Alt+Win+J if 7 chord fails on keyboard)
 [Ctrl+Alt+Win+J] > Mark Last Clip as Favorite (HotStrings macro; alternate for keyboards that ghost Ctrl+Alt+Win+7)
 [Ctrl+Alt+Win+8] > Move Desktop to Recycle Bin (HotStrings macro)
-[Ctrl+Alt+Win+9] > Available for future shortcut
+[Ctrl+Alt+Win+9] > Handy: Parakeet V3 (model slot 5)
+[Ctrl+Alt+Win+B] > Handy: Parakeet V2 (model slot 6)
 
 === MAIN KEY COMBINATIONS ===
 [Symbol Layer] Win+Alt+Shift - Primary combination
@@ -1518,6 +1519,8 @@ Letters available: B, C, G, H, I, K, M, N, O, P, T, U, V, X, Y, Z
 
 === HANDY DICTATION ===
 [Win+Alt+Shift+0] > Start/stop dictation (transcription to clipboard)
+[Ctrl+Alt+Win+9] > Handy: Parakeet V3 (picker slot 5; same automation as Win+Alt+Shift+C then 5)
+[Ctrl+Alt+Win+B] > Handy: Parakeet V2 (picker slot 6; same automation as Win+Alt+Shift+C then 6)
 
 === YOUTUBE ===
 [Win+Alt+Shift+H] > Activates Youtube
