@@ -4032,7 +4032,7 @@ OutlookGetOlkExePath() {
     if FileExist(candidate)
         return candidate
     try {
-        Loop Files "C:\Program Files\WindowsApps\Microsoft.OutlookForWindows_*_x64__8wekyb3d8bbwe\olk.exe", "F" {
+        loop files "C:\Program Files\WindowsApps\Microsoft.OutlookForWindows_*_x64__8wekyb3d8bbwe\olk.exe", "F" {
             return A_LoopFileFullPath
         }
     } catch {
@@ -6468,29 +6468,29 @@ HandleLoopModeUp() {
     }
 }
 
-; Jump mouse right (short distance) - now shows square selector
+; Win+Alt+Shift+Arrow: send that arrow key five times
 #!+Right::
 {
-    HandleDirectionHotkey("Right")
+    Send("{Right 5}")
     return
 }
 
-; Jump mouse left (short distance) - now shows square selector
 #!+Left::
 {
-    HandleDirectionHotkey("Left")
+    Send("{Left 5}")
+    return
 }
 
-; Jump mouse down (short distance) - now shows square selector
 #!+Down::
 {
-    HandleDirectionHotkey("Down")
+    Send("{Down 5}")
+    return
 }
 
-; Jump mouse up (short distance) - now shows square selector
 #!+Up::
 {
-    HandleDirectionHotkey("Up")
+    Send("{Up 5}")
+    return
 }
 
 ; =============================================================================
