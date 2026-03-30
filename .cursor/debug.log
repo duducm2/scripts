@@ -5358,3 +5358,7 @@
 {"location":"WindowManagement.ahk:HandleCopyFromGeminiModeTrigger","message":"K pressed","data":{"selectorActive":1},"hypothesisId":"H0","timestamp":3971734}
 {"location":"WindowManagement.ahk:HandleCopyFromGeminiModeTrigger","message":"K pressed","data":{"selectorActive":1},"hypothesisId":"H0","timestamp":3977500}
 >>>>>>> 0baaacf0534ee128231b2b5dc70cf7a96ba9694e
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"entry","data":{"pathLen":33,"dirExists":1},"hypothesisId":"H3","timestamp":11632328}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"after FindAndActivate","data":{"targetHwnd":1902404},"hypothesisId":"H3","timestamp":11632609}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"after FocusCursorAITextField","data":{"focusOk":1},"hypothesisId":"H4","timestamp":11633687}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"return true","data":{},"hypothesisId":"H3","timestamp":11633828}

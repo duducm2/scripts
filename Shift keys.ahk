@@ -1350,6 +1350,10 @@ GetCheatSheetText() {
     title := WinGetTitle("A")
     hwnd := WinExist("A")
 
+    ; Microsoft Store "new Outlook" runs as olk.exe; use same cheat sheets as OUTLOOK.EXE.
+    if (StrLower(exe) = "olk.exe")
+        exe := "OUTLOOK.EXE"
+
     ; (removed temporary tooltip debugging)
 
     ; Prefer Outlook Reminders over generic File Dialog detection
@@ -17843,9 +17847,9 @@ IsFileDialogActive() {
         return false
     }
 
-    ; Exclude Outlook Reminders which can share dialog-like traits
+    ; Exclude Outlook Reminders which can share dialog-like traits (classic + new Outlook / olk.exe)
     try {
-        if (winExe = "OUTLOOK.EXE") {
+        if (winExe = "OUTLOOK.EXE" || StrLower(winExe) = "olk.exe") {
             if RegExMatch(winTitle, "i)Reminder") {
                 return false
             }
