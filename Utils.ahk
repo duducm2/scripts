@@ -4020,6 +4020,27 @@ ToggleSoundState() {
 }
 
 ; =============================================================================
+; Outlook: classic OUTLOOK.EXE and Microsoft Store "new" Outlook (olk.exe)
+; =============================================================================
+OutlookGetOlkExePath() {
+    candidate :=
+        "C:\Program Files\WindowsApps\Microsoft.OutlookForWindows_1.2026.317.100_x64__8wekyb3d8bbwe\olk.exe"
+    if FileExist(candidate)
+        return candidate
+    try {
+        Loop Files "C:\Program Files\WindowsApps\Microsoft.OutlookForWindows_*_x64__8wekyb3d8bbwe\olk.exe", "F" {
+            return A_LoopFileFullPath
+        }
+    } catch {
+    }
+    return ""
+}
+
+OutlookProcessRunning() {
+    return ProcessExist("OUTLOOK.EXE") || ProcessExist("olk.exe")
+}
+
+; =============================================================================
 ; Toggle Outlook and Teams
 ; Toggles Outlook and Teams applications to manage RAM usage.
 ; If both are open: Closes Outlook and minimizes Teams to system tray.
@@ -4028,7 +4049,7 @@ ToggleSoundState() {
 ToggleOutlookAndTeams() {
     try {
         ; Check if both applications are running
-        outlookRunning := ProcessExist("OUTLOOK.EXE")
+        outlookRunning := OutlookProcessRunning()
         teamsRunning := ProcessExist("ms-teams.exe")
 
         ; Show start banner
@@ -4040,9 +4061,12 @@ ToggleOutlookAndTeams() {
 
         if (outlookRunning && teamsRunning) {
             ; Both are open: Close Outlook and minimize Teams to system tray
-            ; Close Outlook process
+            ; Close Outlook process(es) — classic and/or Store (olk.exe)
             try {
-                ProcessClose("OUTLOOK.EXE")
+                if ProcessExist("OUTLOOK.EXE")
+                    ProcessClose("OUTLOOK.EXE")
+                if ProcessExist("olk.exe")
+                    ProcessClose("olk.exe")
             } catch Error as e {
                 MsgBox "Error closing Outlook: " e.Message
             }
@@ -4084,11 +4108,15 @@ ToggleOutlookAndTeams() {
                         }
                     }
 
-                    ; Launch using shortcut if available, otherwise use executable
+                    ; Launch using shortcut if available, otherwise olk.exe or OUTLOOK.EXE
                     if (outlookPath != "") {
                         Run outlookPath
                     } else {
-                        Run "OUTLOOK.EXE"
+                        olkPath := OutlookGetOlkExePath()
+                        if (olkPath != "")
+                            Run olkPath
+                        else
+                            Run "OUTLOOK.EXE"
                     }
                 } catch Error as e {
                     MsgBox "Error launching Outlook: " e.Message
@@ -4129,17 +4157,15 @@ ToggleOutlookAndTeams() {
 
             ; Second: Activate Outlook last (so it gets final focus)
             try {
-                if (ProcessExist("OUTLOOK.EXE")) {
-                    ; Wait for Outlook window to appear (up to 5 seconds)
-                    WinWait("ahk_exe OUTLOOK.EXE", , 5)
-
-                    if (!WinExist("ahk_exe OUTLOOK.EXE")) {
+                if (OutlookProcessRunning()) {
+                    ex := ProcessExist("OUTLOOK.EXE") ? "OUTLOOK.EXE" : "olk.exe"
+                    WinWait("ahk_exe " ex, , 5)
+                    if (!WinExist("ahk_exe " ex)) {
                         ShowCenteredOverlay_Utils("❌ Outlook not running.", 2000, BANNER_ACCENT_ERROR)
                         return
                     } else {
-                        ; Activate Outlook (this will bring it to foreground, overriding Teams)
-                        WinActivate("ahk_exe OUTLOOK.EXE")
-                        WinWaitActive("ahk_exe OUTLOOK.EXE", , 2)
+                        WinActivate("ahk_exe " ex)
+                        WinWaitActive("ahk_exe " ex, , 2)
                     }
                 }
             } catch Error as e {
@@ -4166,9 +4192,9 @@ CheckAndOpenOutlookTeams(checkOutlook := false, checkTeams := false) {
     outlookClosed := false
     teamsClosed := false
 
-    ; Check Outlook status
+    ; Check Outlook status (classic OUTLOOK.EXE or Store new Outlook olk.exe)
     if (checkOutlook) {
-        outlookRunning := ProcessExist("OUTLOOK.EXE")
+        outlookRunning := OutlookProcessRunning()
         if (!outlookRunning) {
             outlookClosed := true
         }
@@ -4223,7 +4249,11 @@ CheckAndOpenOutlookTeams(checkOutlook := false, checkTeams := false) {
                 if (outlookPath != "") {
                     Run outlookPath
                 } else {
-                    Run "OUTLOOK.EXE"
+                    olkPath := OutlookGetOlkExePath()
+                    if (olkPath != "")
+                        Run olkPath
+                    else
+                        Run "OUTLOOK.EXE"
                 }
             }
 

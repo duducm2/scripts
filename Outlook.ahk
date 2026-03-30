@@ -10,20 +10,70 @@
 #include %A_ScriptDir%\Utils.ahk
 
 ; --- Configuration -----------------------------------------------------------
-; Process-bound targeting: ahk_class rctrl_renwnd32 ahk_exe OUTLOOK.EXE
+; Classic: rctrl_renwnd32. New Outlook (Monarch): Outlook Host.
 global OUTLOOK_EXE := "OUTLOOK.EXE"
+; New Outlook (Microsoft Store / Monarch) runs as olk.exe — same windows as "Outlook Host".
+global OUTLOOK_OLK_EXE := "olk.exe"
 global OUTLOOK_CLASS := "rctrl_renwnd32"
+global OUTLOOK_CLASS_HOST := "Outlook Host"
 global OUTLOOK_BASE_CRIT := "ahk_class " OUTLOOK_CLASS " ahk_exe " OUTLOOK_EXE
 
-; Mailbox: window title must contain this (and not contain exclusion)
+; Mailbox: classic titles may contain this (and not OUTLOOK_MAILBOX_TITLE_EXCLUDE). New Outlook uses
+; "Mail - … - Outlook" / "Inbox - … - Outlook" (see OutlookTitleIsMailModule).
 global OUTLOOK_MAILBOX_TITLE_CONTAINS := "Eduardo.Figueiredo@br.bosch.com"
 global OUTLOOK_MAILBOX_TITLE_EXCLUDE := "Calendar"
 
-; Calendar: exact or partial title match (locale-specific; add fallbacks to array if needed)
+; Calendar: legacy partial needles plus "Calendar - … - Outlook" handled in OutlookTitleIsCalendarModule.
 global OUTLOOK_CALENDAR_TITLES := ["Calendar - Eduardo"]
 
-; Reminders: partial title match
+; Reminders: substring match (classic "Reminder(s)"; new "Reminders - …")
 global OUTLOOK_REMINDER_TITLE := "Reminder"
+
+OutlookIsMainFrameClass(cls) {
+    return cls = OUTLOOK_CLASS || cls = OUTLOOK_CLASS_HOST
+}
+
+OutlookTitleIsExcludedMainSurface(title) {
+    if RegExMatch(title, "i)^(Calendar|Reminders|Copilot)\s-")
+        return true
+    if RegExMatch(title, "i)^(New event)\b")
+        return true
+    return false
+}
+
+; Classic mailbox window title, or new Outlook (Mail / Inbox / …) top-level window.
+OutlookTitleIsMailModule(title) {
+    if InStr(title, OUTLOOK_MAILBOX_TITLE_CONTAINS) && !InStr(title, OUTLOOK_MAILBOX_TITLE_EXCLUDE)
+        return true
+    if !InStr(title, " - Outlook")
+        return false
+    if OutlookTitleIsExcludedMainSurface(title)
+        return false
+    return RegExMatch(title, "i)^(Mail|Inbox|Drafts|Sent Items|Deleted Items|Junk Email|Outbox|Archive)\s-\s")
+}
+
+OutlookTitleIsCalendarModule(title) {
+    if InStr(title, "Calendar -") && InStr(title, " - Outlook")
+        return true
+    for _, needle in OUTLOOK_CALENDAR_TITLES {
+        if InStr(title, needle)
+            return true
+    }
+    return false
+}
+
+OutlookProcessNameIsOutlook(procName) {
+    switch StrLower(procName) {
+        case "outlook.exe", "olk.exe":
+            return true
+        default:
+            return false
+    }
+}
+
+OutlookWinActive() {
+    return WinActive("ahk_exe " OUTLOOK_EXE) || WinActive("ahk_exe " OUTLOOK_OLK_EXE)
+}
 
 ; Timeouts (ms)
 global OUTLOOK_ACTIVATE_WAIT_MS := 2000
@@ -91,7 +141,7 @@ class OutlookHwndCache {
         if !WinExist("ahk_id " hwnd)
             return false
         try {
-            return WinGetProcessName("ahk_id " hwnd) = OUTLOOK_EXE
+            return OutlookProcessNameIsOutlook(WinGetProcessName("ahk_id " hwnd))
         } catch {
             return false
         }
@@ -131,40 +181,50 @@ class OutlookHwndCache {
     }
 
     static _ResolveMailbox() {
-        base := OUTLOOK_BASE_CRIT
-        for hwnd in WinGetList(base) {
-            title := WinGetTitle(hwnd)
-            if InStr(title, OUTLOOK_MAILBOX_TITLE_CONTAINS) && !InStr(title, OUTLOOK_MAILBOX_TITLE_EXCLUDE)
-                return (hwnd is Integer) && (hwnd > 0) ? hwnd : 0
+        for _, exe in [OUTLOOK_EXE, OUTLOOK_OLK_EXE] {
+            for hwnd in WinGetList("ahk_exe " exe) {
+                try {
+                    if !OutlookIsMainFrameClass(WinGetClass("ahk_id " hwnd))
+                        continue
+                    title := WinGetTitle("ahk_id " hwnd)
+                    if OutlookTitleIsMailModule(title)
+                        return (hwnd is Integer) && (hwnd > 0) ? hwnd : 0
+                } catch {
+                }
+            }
         }
         return 0
     }
 
     static _ResolveCalendar() {
-        base := OUTLOOK_BASE_CRIT
-        for hwnd in WinGetList(base) {
-            title := WinGetTitle(hwnd)
-            for _, needle in OUTLOOK_CALENDAR_TITLES {
-                if InStr(title, needle)
-                    return (hwnd is Integer) && (hwnd > 0) ? hwnd : 0
+        for _, exe in [OUTLOOK_EXE, OUTLOOK_OLK_EXE] {
+            for hwnd in WinGetList("ahk_exe " exe) {
+                try {
+                    if !OutlookIsMainFrameClass(WinGetClass("ahk_id " hwnd))
+                        continue
+                    title := WinGetTitle("ahk_id " hwnd)
+                    if OutlookTitleIsCalendarModule(title)
+                        return (hwnd is Integer) && (hwnd > 0) ? hwnd : 0
+                } catch {
+                }
             }
         }
         return 0
     }
 
     static _ResolveReminder() {
-        ; Reminders use a different window class (#32770) than the main Outlook frame (rctrl_renwnd32),
-        ; so we cannot reuse OUTLOOK_BASE_CRIT here.
-        for hwnd in WinGetList("ahk_exe " OUTLOOK_EXE) {
-            try {
-                if (WinGetClass("ahk_id " hwnd) != "#32770")
-                    continue
-                title := WinGetTitle("ahk_id " hwnd)
-                ; Matches e.g. "14 Reminder(s)" and other localized variants containing "Reminder".
-                if InStr(title, OUTLOOK_REMINDER_TITLE)
-                    return (hwnd is Integer) && (hwnd > 0) ? hwnd : 0
-            } catch {
-                ; Ignore windows that disappear during enumeration
+        ; Classic: dialog #32770. New Outlook: top-level "Outlook Host" (e.g. "Reminders - … - Outlook").
+        for _, exe in [OUTLOOK_EXE, OUTLOOK_OLK_EXE] {
+            for hwnd in WinGetList("ahk_exe " exe) {
+                try {
+                    cls := WinGetClass("ahk_id " hwnd)
+                    if (cls != "#32770" && cls != OUTLOOK_CLASS_HOST)
+                        continue
+                    title := WinGetTitle("ahk_id " hwnd)
+                    if InStr(title, OUTLOOK_REMINDER_TITLE)
+                        return (hwnd is Integer) && (hwnd > 0) ? hwnd : 0
+                } catch {
+                }
             }
         }
         return 0
@@ -263,25 +323,37 @@ ActivateOutlookWithFallback(primaryFn, secondaryFn, failureMsg) {
 
 GetOutlookMainModuleState() {
     try {
-        if !WinActive("ahk_exe " OUTLOOK_EXE)
+        if !OutlookWinActive()
             return ""
         root := UIA.ElementFromHandle(WinExist("A"))
         if !root
             return ""
 
-        mailItem := root.FindFirst({ Name: "Mail", Type: "50007" })
+        mailItem := root.FindFirst({ Name: "Mail", Type: 50000 })
+        if !mailItem
+            mailItem := root.FindFirst({ Name: "Mail", Type: "50007" })
         if !mailItem
             mailItem := root.FindFirst({ Name: "Mail", ClassName: "NetUIListViewItem" })
 
-        calendarItem := root.FindFirst({ Name: "Calendar", Type: "50007" })
+        calendarItem := root.FindFirst({ Name: "Calendar", Type: 50000 })
+        if !calendarItem
+            calendarItem := root.FindFirst({ Name: "Calendar", Type: "50007" })
         if !calendarItem
             calendarItem := root.FindFirst({ Name: "Calendar", ClassName: "NetUIListViewItem" })
 
-        if (mailItem && mailItem.IsSelected) {
-            return "mail"
+        if mailItem {
+            if mailItem.IsTogglePatternAvailable {
+                if mailItem.TogglePattern.CurrentToggleState = UIA.ToggleState.On
+                    return "mail"
+            } else if mailItem.IsSelected
+                return "mail"
         }
-        if (calendarItem && calendarItem.IsSelected) {
-            return "calendar"
+        if calendarItem {
+            if calendarItem.IsTogglePatternAvailable {
+                if calendarItem.TogglePattern.CurrentToggleState = UIA.ToggleState.On
+                    return "calendar"
+            } else if calendarItem.IsSelected
+                return "calendar"
         }
     } catch {
     }
@@ -290,14 +362,16 @@ GetOutlookMainModuleState() {
 
 ClickOutlookModuleNavItem(targetModule) {
     try {
-        if !WinActive("ahk_exe " OUTLOOK_EXE)
+        if !OutlookWinActive()
             return false
         root := UIA.ElementFromHandle(WinExist("A"))
         if !root
             return false
 
         targetName := (targetModule = "mail") ? "Mail" : "Calendar"
-        targetItem := root.FindFirst({ Name: targetName, Type: "50007" })
+        targetItem := root.FindFirst({ Name: targetName, Type: 50000 })
+        if !targetItem
+            targetItem := root.FindFirst({ Name: targetName, Type: "50007" })
         if !targetItem
             targetItem := root.FindFirst({ Name: targetName, ClassName: "NetUIListViewItem" })
         if !targetItem
@@ -305,7 +379,14 @@ ClickOutlookModuleNavItem(targetModule) {
 
         targetItem.SetFocus()
         Sleep 50
-        targetItem.Click()
+        try {
+            targetItem.Click()
+        } catch {
+            try targetItem.Invoke()
+            catch {
+                return false
+            }
+        }
         return true
     } catch {
         return false
@@ -314,13 +395,13 @@ ClickOutlookModuleNavItem(targetModule) {
 
 IsOutlookTitleMatchingModule(targetModule) {
     try {
-        if !WinActive("ahk_exe " OUTLOOK_EXE)
+        if !OutlookWinActive()
             return false
         title := WinGetTitle("A")
         if (targetModule = "calendar")
-            return InStr(title, "Calendar")
+            return OutlookTitleIsCalendarModule(title)
         if (targetModule = "mail")
-            return !InStr(title, "Calendar")
+            return OutlookTitleIsMailModule(title)
     } catch {
     }
     return false
@@ -408,12 +489,16 @@ GetOutlookLaunchPath() {
 }
 
 ActivateOrLaunchOutlook() {
-    if ProcessExist(OUTLOOK_EXE) {
+    if OutlookProcessRunning() {
         try {
-            WinActivate("ahk_exe " OUTLOOK_EXE)
-            if WinWaitActive("ahk_exe " OUTLOOK_EXE, "", 2) {
-                ShowCenteredOverlay_Utils("✅ Outlook activated.", OUTLOOK_BANNER_MS, BANNER_ACCENT_SUCCESS)
-                return
+            for _, exe in [OUTLOOK_EXE, OUTLOOK_OLK_EXE] {
+                if !ProcessExist(exe)
+                    continue
+                WinActivate("ahk_exe " exe)
+                if WinWaitActive("ahk_exe " exe, "", 2) {
+                    ShowCenteredOverlay_Utils("✅ Outlook activated.", OUTLOOK_BANNER_MS, BANNER_ACCENT_SUCCESS)
+                    return
+                }
             }
         } catch {
         }
@@ -423,8 +508,13 @@ ActivateOrLaunchOutlook() {
         outlookPath := GetOutlookLaunchPath()
         if (outlookPath != "")
             Run outlookPath
-        else
-            Run OUTLOOK_EXE
+        else {
+            olkPath := OutlookGetOlkExePath()
+            if (olkPath != "")
+                Run olkPath
+            else
+                Run OUTLOOK_EXE
+        }
         ShowCenteredOverlay_Utils("⏳ Activating Outlook...", OUTLOOK_BANNER_MS, BANNER_ACCENT_INTERMEDIATE)
     } catch {
         ShowCenteredOverlay_Utils("❌ Failed to activate Outlook.", OUTLOOK_BANNER_FAIL_MS, BANNER_ACCENT_ERROR)
