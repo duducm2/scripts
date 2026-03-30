@@ -1604,6 +1604,10 @@ global g_HandyAiModels := Map(
     7, { name: "Moonshine Base", desc: "Very fast, English only. Handles accents well." }
 )
 
+; Picker indices for ^!#9 / ^!#b; update g_HandyAiModels names if Handy renames models.
+global HANDY_AI_SLOT_PARAKEET_V3 := 5
+global HANDY_AI_SLOT_PARAKEET_V2 := 6
+
 ; GUI state for AI model selector
 global g_AiModelSelectorGui := false
 global g_AiModelSelectorActive := false
@@ -9208,6 +9212,9 @@ ShowHotstringSelector() {
 #UseHook False
 #InputLevel 0
 ^!#8:: DesktopToRecycle_Trigger()
+; Ctrl+Alt+Win+9 / +B — Handy Parakeet V3 / V2 (g_HandyAiModels slots 5 and 6)
+^!#9:: ExecuteHandyAiModelSelection(HANDY_AI_SLOT_PARAKEET_V3)
+^!#b:: ExecuteHandyAiModelSelection(HANDY_AI_SLOT_PARAKEET_V2)
 
 ; =============================================================================
 ; Alt+Shift+W Shortcut
