@@ -28,7 +28,10 @@ This plan reframes the existing Outlook shortcuts around **only** those three wi
 
 - **Shift+H**: Snooze 1 hour
 - **Shift+F**: Snooze 4 hours
-- **Shift+D**: Snooze 1 day
+- **Shift+T**: Snooze 10 minutes
+- **Shift+Y**: Snooze 1 day
+- **Shift+W**: Snooze 1 week
+- **Shift+D**: Dismiss reminder (selected item)
 - **Shift+X**: Dismiss all reminders
 - **Shift+J**: Join Online
 
@@ -67,26 +70,84 @@ This plan reframes the existing Outlook shortcuts around **only** those three wi
 
 ### 3) Appointment window
 
-#### Date/time fields
+#### General layout changes (new assessment)
 
-- **Shift+S**: Start date (combo)
-- **Shift+P**: Start date picker
-- **Shift+T**: Start time (combo)
-- **Shift+E**: End date (combo)
-- **Shift+H**: End time (combo)
+- The classic “Date Picker” button/flow is no longer a standalone concept. The previous `Shift+P` “date picker” shortcut is removed.
+- The date/time controls are now surfaced via a compact header area and a clock/calendar affordance that opens a **popover/context menu** (UIA `Window`/`dialog`) containing:
+  - Start date (combo)
+  - Start time (combo)
+  - End time (combo)
+  - Time zone
+  - All day toggle
+  - Make recurring toggle/button
+  - Time suggestions list (list items)
+- Any shortcut that targets items inside this popover must be resilient:
+  - If popover is closed: open it first.
+  - If popover is already open: reuse it and focus the target control.
+
+#### Context menu / popover (clock icon field)
+
+- **Shift+S**: Start date (combo) (in popover)
+- **Shift+T**: Start time (combo) (in popover)
+- **Shift+E**: End time (combo) (in popover)
+- **Shift+A**: All day toggle (in popover)
+- **Shift+C**: Recurring / Make recurring toggle (in popover) (new: replaces “Make recurring” classic flow)
+- **(new mnemonic)**: Time suggestions — select 1st suggestion
+- **(new mnemonic)**: Time suggestions — select 2nd suggestion
 
 #### Appointment fields
 
-- **Shift+A**: All-day toggle
 - **Shift+I**: Title field
 - **Shift+R**: Required / To
-- **Shift+L**: Location (then tab forward)
 - **Shift+B**: Body (from Location → Body)
 
-#### Recurrence / configuration
+#### Confirmed working (no changes)
 
-- **Shift+C**: Make recurring
-- **Shift+W**: Wizard (configure)
+- **Shift+I**: Title field
+- **Shift+R**: Required attendees
+- **Shift+L**: Location/Add a room
+
+#### Requires fixes/updates
+
+- **Shift+B**: Focus the main message body (large empty text field) (currently broken)
+- **Shift+W**: Wizard (configure) — should use Standard Information Display modals to apply presets quickly
+
+#### New shortcuts (top command bar)
+
+- **(new mnemonic)**: Create a Teams meeting
+- **(new mnemonic)**: Series (recurring) (equivalent to recurring toggle)
+- **(new mnemonic)**: Status/Busy selection modal (Free / Working elsewhere / Tentative / Busy / Out of office)
+- **(new mnemonic)**: Reminder selection modal:
+  - Don't remind me
+  - 15 minutes before
+  - 1 hour before
+  - 12 hours before
+  - 1 day before
+  - 1 week before
+- **(new mnemonic)**: Category selection modal (Aniversário / Importante / Pessoal)
+- **(new mnemonic)**: Private toggle (Private / Not private)
+
+#### Right sidebar (Attendee schedules)
+
+- **Shift+L**: Previous/Back day (navigate schedule arrows) (per updated requirement)
+- **Shift+K**: Next/Forward day (navigate schedule arrows) (per updated requirement)
+- **(new mnemonic)**: Today button
+- **(new mnemonic)**: Current date (button showing date/month/year)
+- **(new mnemonic)**: Scheduling assistant button (opens Scheduling Assistant view)
+
+#### Scheduling Assistant view (separate sub-mode)
+
+- **(new mnemonic)**: Back button
+- **(new mnemonic)**: Options menu (show all options)
+- **Shift+L**: Previous/Back (time suggestions navigation fallback)
+- **Shift+K**: Next/Forward (time suggestions navigation fallback)
+- **(new mnemonic)**: Start date
+- **(new mnemonic)**: Start time
+- **(new mnemonic)**: End time
+- **(new mnemonic)**: All day toggle
+- **(new mnemonic)**: Time zone
+- **(new mnemonic)**: Add required attendee
+- **(new mnemonic)**: Add optional attendee
 
 ---
 
