@@ -9,32 +9,6 @@ DebugBannerLog(location, message, dataStr := "", hypothesisId := "") {
     return
 }
 
-; NDJSON debug logger for session 350b7a (writes to workspace file).
-DebugNdjson_350b7a(location, message, data := "", hypothesisId := "", runId := "pre-fix") {
-    try {
-        logPath := A_ScriptDir "\debug-350b7a.log"
-        esc(v) {
-            v := "" v
-            v := StrReplace(v, "\", "\\")
-            v := StrReplace(v, "`"", "\`"")
-            v := StrReplace(v, "`r", "\r")
-            v := StrReplace(v, "`n", "\n")
-            return v
-        }
-        payload := "{"
-            . "`"sessionId`":`"350b7a`","
-            . "`"timestamp`":" . (A_TickCount + 0) . ","
-            . "`"location`":`"" . esc(location) . "`","
-            . "`"message`":`"" . esc(message) . "`","
-            . "`"runId`":`"" . esc(runId) . "`","
-            . "`"hypothesisId`":`"" . esc(hypothesisId) . "`","
-            . "`"data`":`"" . esc(data) . "`""
-            . "}`n"
-        FileAppend(payload, logPath, "UTF-8")
-    } catch {
-    }
-}
-
 ; Dictation-Gemini flow debug (session 7e3dd7): NDJSON log (disabled)
 DebugFlowLog(location, message, dataStr := "", hypothesisId := "") {
     ; Intentionally no-op.
@@ -5020,7 +4994,6 @@ global g_DesktopToRecyclePath := ""  ; Set from GetDesktopToRecyclePath() when m
 global g_DesktopToRecycleCloseHwnd := 0
 
 DesktopToRecycle_OnConfirm(*) {
-    DebugNdjson_350b7a("Utils.ahk:DesktopToRecycle_OnConfirm", "Confirm pressed (Y)", "", "H1")
     DesktopToRecycle_Run()
 }
 
@@ -5029,7 +5002,6 @@ DesktopToRecycle_OnCancel(*) {
 }
 
 DesktopToRecycle_OnTimeout(*) {
-    DebugNdjson_350b7a("Utils.ahk:DesktopToRecycle_OnTimeout", "Timed out (auto-run)", "", "H1")
     DesktopToRecycle_Run()
 }
 
@@ -5071,24 +5043,12 @@ DesktopToRecycle_CloseDesktopExplorer(targetPath) {
 
 DesktopToRecycle_Run() {
     global g_DesktopToRecyclePath, g_DesktopToRecycleCloseHwnd
-    DebugNdjson_350b7a("Utils.ahk:DesktopToRecycle_Run", "Run started", "g_DesktopToRecyclePath=" g_DesktopToRecyclePath,
-        "H1")
     ; Play "cleaning desktop" sound immediately when the cleaning starts.
     try {
-        soundPath := A_ScriptDir "\sounds\cleaning-desktop.wav"
-        exists := FileExist(soundPath) ? "1" : "0"
-        DebugNdjson_350b7a("Utils.ahk:DesktopToRecycle_Run", "Sound path checked", "soundPath=" soundPath " exists=" exists,
-            "H3")
-        if (FileExist(soundPath)) {
-            try {
-                SoundPlay(soundPath)
-                DebugNdjson_350b7a("Utils.ahk:DesktopToRecycle_Run", "SoundPlay called", "soundPath=" soundPath, "H2")
-            } catch as e {
-                DebugNdjson_350b7a("Utils.ahk:DesktopToRecycle_Run", "SoundPlay error", "msg=" e.Message, "H2")
-            }
-        }
-    } catch as e {
-        DebugNdjson_350b7a("Utils.ahk:DesktopToRecycle_Run", "Sound block error", "msg=" e.Message, "H2")
+        soundPath := A_ScriptDir "\sounds\cleaning-desktop.ogg"
+        if (FileExist(soundPath))
+            SoundPlay(soundPath)
+    } catch {
     }
     ; Resolve path: use configured path; if empty or missing, fall back to A_Desktop (works on any PC)
     path := g_DesktopToRecyclePath
@@ -5120,10 +5080,7 @@ DesktopToRecycle_Run() {
 ; Entry point when "N" is pressed in Win+Alt+Shift+U selector
 DesktopToRecycle_Trigger() {
     global g_DesktopToRecycleCloseHwnd, g_DesktopToRecyclePath
-    DebugNdjson_350b7a("Utils.ahk:DesktopToRecycle_Trigger", "Trigger invoked", "hotkey=Ctrl+Alt+Win+8", "H1")
     g_DesktopToRecyclePath := GetDesktopToRecyclePath()
-    DebugNdjson_350b7a("Utils.ahk:DesktopToRecycle_Trigger", "Resolved target path", "g_DesktopToRecyclePath=" g_DesktopToRecyclePath,
-        "H3")
     ; Remember active window if it's Explorer showing Desktop - close it after cleaning
     hwnd := WinExist("A")
     g_DesktopToRecycleCloseHwnd := 0
