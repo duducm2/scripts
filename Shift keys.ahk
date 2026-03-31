@@ -3736,6 +3736,20 @@ Confirm(t) {
 global g_RemindersPickKey := ""
 global g_DebugBe11ecLogPath := "C:\Users\fie7ca\Documents\scripts\debug-be11ec.log"
 
+Reminders_LoadingShow(text) {
+    try {
+        StandardLoadingBar_Show(text, BANNER_ACCENT_INTERMEDIATE, { passive: false, centerOnHwnd: 0, textWidth: 560,
+            fontSize: 17 })
+    } catch {
+    }
+}
+
+Reminders_LoadingHide(delayMs := 0) {
+    try StandardLoadingBar_Hide(delayMs)
+    catch {
+    }
+}
+
 Reminders_DebugLog(location, message, data := "", hypothesisId := "A", runId := "pre-fix") {
     try {
         Debug_Escape(s) => StrReplace(StrReplace(StrReplace(String(s), "\", "\\"), "`"", "\`""), "`n", "\n")
@@ -4295,149 +4309,164 @@ Reminders_TryInvokeJoinOnlineMenuItem() {
 }
 
 Reminders_ExecuteItemAction(action) {
-    ; #region agent log
-    try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Enter ExecuteItemAction", Map(
-        "action", action,
-        "title", WinGetTitle("A"),
-        "class", WinGetClass("A")
-    ), "J1", "pre-fix")
-    ; #endregion
-    items := Reminders_GetItems()
-    ; #region agent log
-    try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Items extracted", Map(
-        "action", action,
-        "itemsCount", items.Length
-    ), "J2", "pre-fix")
-    ; #endregion
-    actionLabel := ""
-    if (action = "snooze_1h")
-        actionLabel := "Snooze 1 hour"
-    else if (action = "snooze_4h")
-        actionLabel := "Snooze 4 hours"
-    else if (action = "snooze_10m")
-        actionLabel := "Snooze 10 minutes"
-    else if (action = "snooze_1d")
-        actionLabel := "Snooze 1 day"
-    else if (action = "snooze_1w")
-        actionLabel := "Snooze 1 week"
-    else if (action = "dismiss_item")
-        actionLabel := "Dismiss reminder"
-    else if (action = "join_online")
-        actionLabel := "Join online"
-    else
-        actionLabel := action
-
-    idx := Reminders_SelectItem(actionLabel, items)
-    ; #region agent log
-    try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Selection result", Map(
-        "action", action,
-        "selectedIndex", idx
-    ), "J3", "pre-fix")
-    ; #endregion
-    if (!idx)
-        return false
-
-    el := items[idx].el
-    ; #region agent log
-    try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Selected reminder item", Map(
-        "action", action,
-        "selectedIndex", idx,
-        "itemsCount", items.Length,
-        "title", WinGetTitle("A")
-    ), "A", "pre-fix")
-    ; #endregion
-    Reminders_OpenContextMenuForItem(el)
-    ; #region agent log
-    try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Context menu open attempt sent AppsKey", Map(
-        "action", action
-    ), "B", "pre-fix")
-    ; #endregion
-
-    ; Assume first menu item is highlighted (Snooze reminder) as per screenshots.
-    if (action = "dismiss_item") {
-        ; Menu order varies by reminder item (e.g. meeting reminders show Join/Chat first),
-        ; so locate "Dismiss reminder" by focused UIA name instead of fixed offsets.
+    ; Always hide the loading indicator, even on early returns or exceptions.
+    ; (Prevents a stuck indicator if UIA/menu calls throw.)
+    try {
         ; #region agent log
-        try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Dynamic dismiss requested", Map(), "DZ0", "pre-fix")
+        try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Enter ExecuteItemAction", Map(
+            "action", action,
+            "title", WinGetTitle("A"),
+            "class", WinGetClass("A")
+        ), "J1", "pre-fix")
         ; #endregion
-        ok := Reminders_MenuFindItemContains("dismiss", 20, "dismiss")
-        if ok {
-            Send "{Enter}"
-            Sleep 60
-            ; #region agent log
-            try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Dismiss invoked", Map(), "DZ1", "pre-fix")
-            ; #endregion
-            return true
-        }
+        items := Reminders_GetItems()
         ; #region agent log
-        try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Dismiss not found in menu scan", Map(), "DZ2", "pre-fix")
+        try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Items extracted", Map(
+            "action", action,
+            "itemsCount", items.Length
+        ), "J2", "pre-fix")
         ; #endregion
-        return false
-    }
-
-    if (action = "snooze_1h" || action = "snooze_4h" || action = "snooze_10m" || action = "snooze_1d" || action = "snooze_1w") {
-        desired := ""
+        actionLabel := ""
         if (action = "snooze_1h")
-            desired := "1 hour"
+            actionLabel := "Snooze 1 hour"
         else if (action = "snooze_4h")
-            desired := "4 hours"
+            actionLabel := "Snooze 4 hours"
         else if (action = "snooze_10m")
-            desired := "10 minutes"
+            actionLabel := "Snooze 10 minutes"
         else if (action = "snooze_1d")
-            desired := "1 day"
+            actionLabel := "Snooze 1 day"
         else if (action = "snooze_1w")
-            desired := "1 week"
+            actionLabel := "Snooze 1 week"
+        else if (action = "dismiss_item")
+            actionLabel := "Dismiss reminder"
+        else if (action = "join_online")
+            actionLabel := "Join online"
+        else
+            actionLabel := action
+
+        Reminders_LoadingShow("⏳ Reminders: " actionLabel "…")
+
+        ; The selection modal is interactive; hide loading before it shows.
+        Reminders_LoadingHide(0)
+        idx := Reminders_SelectItem(actionLabel, items)
         ; #region agent log
-        try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Dynamic snooze requested", Map(
-            "desired", desired
-        ), "SZ0", "pre-fix")
+        try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Selection result", Map(
+            "action", action,
+            "selectedIndex", idx
+        ), "J3", "pre-fix")
         ; #endregion
-        if !Reminders_MenuFindAndOpenSnooze(20)
+        if (!idx)
             return false
-        return Reminders_MenuFindAndSelectDuration(desired, 60)
-    }
 
-    if (action = "join_online") {
-        ; Preferred: direct UIA invoke (menu items are usually under UIA root).
-        ok := false
-        ; #region agent log
-        try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Attempting UIA root Join invoke", Map(), "C",
-            "pre-fix")
-        ; #endregion
-        ok := Reminders_TryInvokeJoinOnlineMenuItem()
-        ; #region agent log
-        try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "UIA root Join invoke result", Map("ok", ok), "C",
-            "pre-fix")
-        ; #endregion
-        if ok
-            return true
+        ; Resume loading while executing the chosen action.
+        Reminders_LoadingShow("⏳ Reminders: " actionLabel "…")
 
-        ; Fallback 1: first-letter navigation (if supported)
+        el := items[idx].el
         ; #region agent log
-        try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Fallback: type 'j' then Enter", Map(), "D",
-            "pre-fix")
+        try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Selected reminder item", Map(
+            "action", action,
+            "selectedIndex", idx,
+            "itemsCount", items.Length,
+            "title", WinGetTitle("A")
+        ), "A", "pre-fix")
         ; #endregion
-        Send "j"
-        Sleep 60
-        Send "{Enter}"
-        Sleep 80
+        Reminders_OpenContextMenuForItem(el)
+        ; #region agent log
+        try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Context menu open attempt sent AppsKey", Map(
+            "action", action
+        ), "B", "pre-fix")
+        ; #endregion
 
-        ; Fallback 2: bounded arrow scan (best-effort, no UIA reads)
-        ; #region agent log
-        try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Fallback: bounded arrow scan then Enter", Map(),
-            "E", "pre-fix")
-        ; #endregion
-        Send "{Home}"
-        loop 12 {
-            Send "{Down}"
-            Sleep 40
+        ; Assume first menu item is highlighted (Snooze reminder) as per screenshots.
+        if (action = "dismiss_item") {
+            ; Menu order varies by reminder item (e.g. meeting reminders show Join/Chat first),
+            ; so locate "Dismiss reminder" by focused UIA name instead of fixed offsets.
+            ; #region agent log
+            try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Dynamic dismiss requested", Map(), "DZ0",
+                "pre-fix")
+            ; #endregion
+            ok := Reminders_MenuFindItemContains("dismiss", 20, "dismiss")
+            if ok {
+                Send "{Enter}"
+                Sleep 60
+                ; #region agent log
+                try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Dismiss invoked", Map(), "DZ1", "pre-fix")
+                ; #endregion
+                return true
+            }
+            ; #region agent log
+            try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Dismiss not found in menu scan", Map(), "DZ2",
+                "pre-fix")
+            ; #endregion
+            return false
         }
-        Send "{Enter}"
+
+        if (action = "snooze_1h" || action = "snooze_4h" || action = "snooze_10m" || action = "snooze_1d" || action = "snooze_1w") {
+            desired := ""
+            if (action = "snooze_1h")
+                desired := "1 hour"
+            else if (action = "snooze_4h")
+                desired := "4 hours"
+            else if (action = "snooze_10m")
+                desired := "10 minutes"
+            else if (action = "snooze_1d")
+                desired := "1 day"
+            else if (action = "snooze_1w")
+                desired := "1 week"
+            ; #region agent log
+            try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Dynamic snooze requested", Map(
+                "desired", desired
+            ), "SZ0", "pre-fix")
+            ; #endregion
+            if !Reminders_MenuFindAndOpenSnooze(20)
+                return false
+            return Reminders_MenuFindAndSelectDuration(desired, 60)
+        }
+
+        if (action = "join_online") {
+            ; Preferred: direct UIA invoke (menu items are usually under UIA root).
+            ok := false
+            ; #region agent log
+            try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Attempting UIA root Join invoke", Map(), "C",
+                "pre-fix")
+            ; #endregion
+            ok := Reminders_TryInvokeJoinOnlineMenuItem()
+            ; #region agent log
+            try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "UIA root Join invoke result", Map("ok", ok), "C",
+                "pre-fix")
+            ; #endregion
+            if ok
+                return true
+
+            ; Fallback 1: first-letter navigation (if supported)
+            ; #region agent log
+            try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Fallback: type 'j' then Enter", Map(), "D",
+                "pre-fix")
+            ; #endregion
+            Send "j"
+            Sleep 60
+            Send "{Enter}"
+            Sleep 80
+
+            ; Fallback 2: bounded arrow scan (best-effort, no UIA reads)
+            ; #region agent log
+            try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Fallback: bounded arrow scan then Enter", Map(),
+                "E", "pre-fix")
+            ; #endregion
+            Send "{Home}"
+            loop 12 {
+                Send "{Down}"
+                Sleep 40
+            }
+            Send "{Enter}"
+
+            return false
+        }
 
         return false
+    } finally {
+        Reminders_LoadingHide(0)
     }
-
-    return false
 }
 
 ; Shift + H : Snooze 1 hour - Hour
@@ -4509,19 +4538,25 @@ Reminders_ExecuteItemAction(action) {
 ; Shift + X : Dismiss all reminders - Dismiss
 +X:: {
     if Reminders_IsNewOutlookWindow() {
-        ; Global action: click "Dismiss all" button (UIA)
+        ; Ensure loading indicator can't get stuck on exceptions.
         try {
-            root := UIA.ElementFromHandle(WinExist("A"))
-            btn := root.FindFirst({ Name: "Dismiss all", ControlType: "Button" })
-            if !btn
-                btn := root.FindFirst({ Name: "Dismiss All", ControlType: "Button" })
-            if btn {
-                btn.Click()
-                return
+            Reminders_LoadingShow("⏳ Reminders: Dismiss all…")
+            ; Global action: click "Dismiss all" button (UIA)
+            try {
+                root := UIA.ElementFromHandle(WinExist("A"))
+                btn := root.FindFirst({ Name: "Dismiss all", ControlType: "Button" })
+                if !btn
+                    btn := root.FindFirst({ Name: "Dismiss All", ControlType: "Button" })
+                if btn {
+                    btn.Click()
+                    return
+                }
+            } catch {
             }
-        } catch {
+            return
+        } finally {
+            Reminders_LoadingHide(0)
         }
-        return
     }
     ConfirmDismissAll()
 }
