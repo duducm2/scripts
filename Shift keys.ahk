@@ -3819,12 +3819,51 @@ Reminders_GetItems() {
 
 Reminders_PickKey(key) {
     global g_RemindersPickKey
+    ; #region agent log
+    try Reminders_DebugLog("Shift keys.ahk:Reminders_PickKey", "PickKey called", Map(
+        "key", key,
+        "priorKey", A_PriorKey,
+        "thisHotkey", A_ThisHotkey
+    ), "P1", "pre-fix")
+    ; #endregion
+
+    ; Guard: ignore accidental selection when Windows key (or other modifiers) is involved.
+    ; This prevents the selection modal from disappearing due to unrelated Win-key chords.
+    try {
+        if (GetKeyState("LWin", "P") || GetKeyState("RWin", "P")
+            || GetKeyState("Ctrl", "P") || GetKeyState("Alt", "P")) {
+            ; #region agent log
+            try Reminders_DebugLog("Shift keys.ahk:Reminders_PickKey", "Ignored pick due to modifier down", Map(
+                "key", key,
+                "lwin", GetKeyState("LWin", "P"),
+                "rwin", GetKeyState("RWin", "P"),
+                "ctrl", GetKeyState("Ctrl", "P"),
+                "alt", GetKeyState("Alt", "P")
+            ), "P3", "pre-fix")
+            ; #endregion
+            return
+        }
+        if (A_PriorKey = "LWin" || A_PriorKey = "RWin") {
+            ; #region agent log
+            try Reminders_DebugLog("Shift keys.ahk:Reminders_PickKey", "Ignored pick due to priorKey Win", Map(
+                "key", key,
+                "priorKey", A_PriorKey
+            ), "P4", "pre-fix")
+            ; #endregion
+            return
+        }
+    } catch {
+    }
+
     g_RemindersPickKey := key
     try StandardLoadingBar_CloseKeysOverlay()
     try StandardLoadingBar_Hide(0)
 }
 
 Reminders_PickTimeout() {
+    ; #region agent log
+    try Reminders_DebugLog("Shift keys.ahk:Reminders_PickTimeout", "Timeout fired", Map(), "P2", "pre-fix")
+    ; #endregion
     Reminders_PickKey("TIMEOUT")
 }
 
@@ -3843,10 +3882,15 @@ Reminders_SelectItem(actionLabel, items, maxItems := 35) {
     for c in StrSplit("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
         keys.Push(c)
 
-    ; Min() can return Float; range loops require a true Integer (bitwise op coerces).
-    count := (Min(items.Length, maxItems, keys.Length) | 0)
+    ; Derive count using integer-only operations (avoid Float issues in ranges/loops).
+    count := items.Length
+    if (count > maxItems)
+        count := maxItems
+    if (count > keys.Length)
+        count := keys.Length
     msg := "❓ Select reminder to " actionLabel ":`n`n"
-    for i in 1..count {
+    Loop count {
+        i := A_Index
         k := keys[i]
         label := items[i].label
         msg .= k ") " label "`n"
@@ -3855,41 +3899,114 @@ Reminders_SelectItem(actionLabel, items, maxItems := 35) {
         msg .= "`n⚠ Showing first " count " of " items.Length " reminders"
 
     keyCallbacks := Map()
-    for i in 1..count {
+    Loop count {
+        i := A_Index
         k := keys[i]
-        keyCallbacks.Set(k, Func("Reminders_PickKey").Bind(k))
+        keyCallbacks.Set(k, Reminders_PickKey.Bind(k))
     }
-    keyCallbacks.Set("Escape", Func("Reminders_PickKey").Bind("ESC"))
+    keyCallbacks.Set("Escape", Reminders_PickKey.Bind("ESC"))
+
+    ; #region agent log
+    try Reminders_DebugLog("Shift keys.ahk:Reminders_SelectItem", "About to show selection modal", Map(
+        "actionLabel", actionLabel,
+        "count", count,
+        "priorKey", A_PriorKey,
+        "thisHotkey", A_ThisHotkey
+    ), "S1", "pre-fix")
+    ; #endregion
+
+    ; Prevent immediate auto-selection when the trigger hotkey includes a letter (e.g. Shift+J),
+    ; and that same letter is also a valid choice key.
+    try {
+        if (A_ThisHotkey != "") {
+            hk := A_ThisHotkey
+            hk := StrReplace(hk, "+", "")
+            hk := StrReplace(hk, "^", "")
+            hk := StrReplace(hk, "!", "")
+            hk := StrReplace(hk, "#", "")
+            if (StrLen(hk) = 1) {
+                KeyWait hk
+                KeyWait "Shift"
+            }
+        }
+    } catch {
+    }
 
     StandardLoadingBar_CloseKeysOverlay()
-    StandardLoadingBar_ShowWithKeys(
-        msg,
-        keyCallbacks,
-        45000,
-        0,
-        Reminders_PickTimeout,
-        "1E1E2E",
-        760,
-        17,
-        BANNER_ACCENT_INTERMEDIATE,
-        false,
-        "[1-9/A-Z] Select  [Esc] Cancel",
-        true
-    )
+    ShowModal() {
+        StandardLoadingBar_ShowWithKeys(
+            msg,
+            keyCallbacks,
+            45000,
+            0,
+            Reminders_PickTimeout,
+            "1E1E2E",
+            760,
+            17,
+            BANNER_ACCENT_INTERMEDIATE,
+            false,
+            "[1-9/A-Z] Select  [Esc] Cancel",
+            true
+        )
+    }
+    ShowModal()
+    ; #region agent log
+    try Reminders_DebugLog("Shift keys.ahk:Reminders_SelectItem", "Selection modal shown", Map(
+        "count", count
+    ), "S3", "pre-fix")
+    ; #endregion
 
     deadline := A_TickCount + 45000
+    reopens := 0
     while (A_TickCount < deadline) {
         if (g_RemindersPickKey != "")
             break
+        ; Detect unexpected overlay dismissal (another script/banner replaced it).
+        try {
+            global g_StandardLoadingBarIsKeysOverlay, g_StandardLoadingBarGui
+            if (!g_StandardLoadingBarIsKeysOverlay || !IsObject(g_StandardLoadingBarGui)) {
+                ; #region agent log
+                try Reminders_DebugLog("Shift keys.ahk:Reminders_SelectItem", "Selection modal disappeared unexpectedly", Map(
+                    "isKeys", g_StandardLoadingBarIsKeysOverlay ? 1 : 0,
+                    "hasGui", IsObject(g_StandardLoadingBarGui) ? 1 : 0,
+                    "priorKey", A_PriorKey
+                ), "S4", "pre-fix")
+                ; #endregion
+                reopens++
+                if (reopens >= 3) {
+                    ; #region agent log
+                    try Reminders_DebugLog("Shift keys.ahk:Reminders_SelectItem", "Too many unexpected closes; giving up",
+                        Map("reopens", reopens), "S6", "pre-fix")
+                    ; #endregion
+                    break
+                }
+                ; Re-show the modal; another overlay likely replaced it.
+                ; #region agent log
+                try Reminders_DebugLog("Shift keys.ahk:Reminders_SelectItem", "Reopening selection modal after close",
+                    Map("reopens", reopens), "S5", "pre-fix")
+                ; #endregion
+                try StandardLoadingBar_CloseKeysOverlay()
+                try StandardLoadingBar_Hide(0)
+                Sleep 50
+                ShowModal()
+            }
+        } catch {
+        }
         Sleep 50
     }
 
     picked := g_RemindersPickKey
+    ; #region agent log
+    try Reminders_DebugLog("Shift keys.ahk:Reminders_SelectItem", "Selection modal resolved", Map(
+        "picked", picked
+    ), "S2", "pre-fix")
+    ; #endregion
     if (picked = "" || picked = "ESC" || picked = "TIMEOUT")
         return 0
 
     ; Resolve key to index
-    for i in 1..count {
+    Loop count {
+        i := A_Index
         if (keys[i] = picked)
             return i
     }
@@ -3909,24 +4026,80 @@ Reminders_TryInvokeJoinOnlineMenuItem() {
     ; Context menus are often hosted outside the window subtree,
     ; so search from the UIA root element (desktop).
     try {
-        root := UIA.GetRootElement()
-        if !root
-            return false
+        rootDesktop := UIA.GetRootElement()
+        rootWin := UIA.ElementFromHandle(WinExist("A"))
 
-        candidates := [
-            { Name: "Join online", ControlType: "MenuItem" },
-            { Name: "Join Online", ControlType: "MenuItem" },
-            { Name: "Join", matchmode: "Substring", ControlType: "MenuItem", cs: false }
-        ]
+        roots := []
+        if rootDesktop
+            roots.Push({ root: rootDesktop, label: "desktop" })
+        if rootWin
+            roots.Push({ root: rootWin, label: "window" })
 
-        for crit in candidates {
-            mi := root.FindFirst(crit)
-            if mi {
-                try mi.Click()
-                catch Error {
-                    try mi.Invoke()
+        for r in roots {
+            root := r.root
+
+            ; #region agent log
+            try {
+                menuItems := root.FindAll({ ControlType: "MenuItem" })
+                cnt := menuItems ? menuItems.Length : 0
+                sample := ""
+                if menuItems {
+                    maxSample := Min(20, menuItems.Length)
+                    Loop maxSample {
+                        i := A_Index
+                        n := ""
+                        try n := menuItems[i].Name
+                        if (n = "")
+                            continue
+                        if (sample != "")
+                            sample .= " | "
+                        sample .= n
+                    }
                 }
-                return true
+                Reminders_DebugLog("Shift keys.ahk:Reminders_TryInvokeJoinOnlineMenuItem", "MenuItems snapshot", Map(
+                    "root", r.label,
+                    "count", cnt,
+                    "sample", sample
+                ), "C1", "pre-fix")
+            } catch {
+            }
+            ; #endregion
+
+            candidates := [
+                { Name: "Join online", ControlType: "MenuItem" },
+                { Name: "Join Online", ControlType: "MenuItem" },
+                { Name: "Join online", ControlType: "Button" },
+                { Name: "Join Online", ControlType: "Button" },
+                { Name: "Join", matchmode: "Substring", ControlType: "MenuItem", cs: false },
+                { Name: "Join", matchmode: "Substring", ControlType: "Button", cs: false }
+            ]
+
+            for crit in candidates {
+                mi := root.FindFirst(crit)
+                if mi {
+                    ; #region agent log
+                    try Reminders_DebugLog("Shift keys.ahk:Reminders_TryInvokeJoinOnlineMenuItem", "Found Join candidate", Map(
+                        "root", r.label,
+                        "name", mi.Name,
+                        "type", mi.ControlType
+                    ), "C2", "pre-fix")
+                    ; #endregion
+                    try {
+                        if mi.GetPropertyValue(UIA.Property.IsOffscreen)
+                            continue
+                    } catch {
+                    }
+                    try {
+                        if !mi.GetPropertyValue(UIA.Property.IsEnabled)
+                            continue
+                    } catch {
+                    }
+                    try mi.Click()
+                    catch Error {
+                        try mi.Invoke()
+                    }
+                    return true
+                }
             }
         }
     } catch {
@@ -3935,7 +4108,20 @@ Reminders_TryInvokeJoinOnlineMenuItem() {
 }
 
 Reminders_ExecuteItemAction(action) {
+    ; #region agent log
+    try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Enter ExecuteItemAction", Map(
+        "action", action,
+        "title", WinGetTitle("A"),
+        "class", WinGetClass("A")
+    ), "J1", "pre-fix")
+    ; #endregion
     items := Reminders_GetItems()
+    ; #region agent log
+    try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Items extracted", Map(
+        "action", action,
+        "itemsCount", items.Length
+    ), "J2", "pre-fix")
+    ; #endregion
     actionLabel := ""
     if (action = "snooze_1h")
         actionLabel := "Snooze 1 hour"
@@ -3949,6 +4135,12 @@ Reminders_ExecuteItemAction(action) {
         actionLabel := action
 
     idx := Reminders_SelectItem(actionLabel, items)
+    ; #region agent log
+    try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Selection result", Map(
+        "action", action,
+        "selectedIndex", idx
+    ), "J3", "pre-fix")
+    ; #endregion
     if (!idx)
         return false
 
