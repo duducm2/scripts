@@ -3801,6 +3801,9 @@ Reminders_GetItems() {
             return items
 
         btns := listGroup.FindAll({ Type: "Button" })
+        kept := 0
+        dropped := 0
+        dropSample := ""
         for b in btns {
             n := ""
             try n := b.Name
@@ -3809,8 +3812,47 @@ Reminders_GetItems() {
             ; Exclude global/window controls
             if (n = "Settings" || n = "Dismiss all" || n = "Dismiss All" || n = "Minimize" || n = "Maximize" || n = "Close")
                 continue
+            ; Exclude action/menu-like items that can appear while context UI is open
+            if RegExMatch(n, "i)^(Snooze reminder|Dismiss reminder|Join Teams meeting|Chat with participants)$")
+                continue
+
+            ; Keep only actual reminder rows. In our UIA tree, these names include time/all-day + a relative marker.
+            ; Examples: "Stretch All day Today", "CIM Journey 3:00 PM Microsoft Teams Meeting 18 hrs ago"
+            ; Relative-age tokens vary (e.g. "1 hour ago", "7 days", "4 wks ago", "Today").
+            ; NOTE: single backslash in regex. Using \\b would match literal "\b".
+            isLikelyRow := RegExMatch(n, "i)(\bAll day\b|\bAM\b|\bPM\b)") && RegExMatch(n,
+                "i)\b(Today|\d+\s*(min|mins|minute|minutes|hr|hrs|hour|hours|day|days|wk|wks|week|weeks)\b(\s+ago)?)\b")
+            if !isLikelyRow {
+                dropped++
+                if (dropSample != "" && dropped <= 8)
+                    dropSample .= " | "
+                if (dropped <= 8)
+                    dropSample .= n
+                continue
+            }
             items.Push({ el: b, label: n })
+            kept++
         }
+        ; #region agent log
+        try {
+            sample := ""
+            maxSample := Min(12, items.Length)
+            Loop maxSample {
+                i := A_Index
+                if (sample != "")
+                    sample .= " | "
+                sample .= items[i].label
+            }
+            Reminders_DebugLog("Shift keys.ahk:Reminders_GetItems", "Extracted reminders sample", Map(
+                "count", items.Length,
+                "sample", sample,
+                "totalButtons", btns ? btns.Length : 0,
+                "dropped", dropped,
+                "dropSample", dropSample
+            ), "X1", "pre-fix")
+        } catch {
+        }
+        ; #endregion
     } catch {
         return items
     }
