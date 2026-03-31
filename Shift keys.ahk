@@ -1410,7 +1410,7 @@ GetCheatSheetText() {
             return cheatSheets.Has("OutlookReminder") ? cheatSheets["OutlookReminder"] : cheatSheets["OUTLOOK.EXE"]
         }
         ; Detect Message inspector windows â€" e.g., " - Message (HTML)"
-        if RegExMatch(title, "i) - Message \\(") {
+        if RegExMatch(title, "i) - Message \(") {
             return cheatSheets.Has("OutlookMessage") ? cheatSheets["OutlookMessage"] : cheatSheets["OUTLOOK.EXE"]
         }
         ; Detect Appointment, Meeting, or Event inspector windows
