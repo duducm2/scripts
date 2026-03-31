@@ -47,9 +47,21 @@ todos:
     status: pending
     dependencies: [add_new_uia_lookup_wrappers]
   - id: migrate_reminder_actions
-    content: Update reminder shortcuts: Shift+X to `Dismiss all`, and rework snooze/join logic for Shift+H/Shift+F/Shift+D/Shift+J to New Outlook reminder UI; mark any unsupported interval or join behavior when no exact element exists.
+    content: Complete revision of New Outlook Reminders shortcuts to be keyboard-only. Implement (1) global `Dismiss all` via UIA button click; (2) item-level actions via a Standard Information Display selection modal populated from the UIA tree, then execute actions by opening the selected item’s context menu with the Apps/Menu key and navigating with Up/Down/Right/Left arrows to the desired command (Snooze submenu durations, Dismiss reminder, Join online when present).
     status: pending
     dependencies: [add_new_uia_lookup_wrappers]
+  - id: reminders_extract_items_from_uia_tree
+    content: Define the canonical “Reminder item” extraction rules from `reminder-window-tree.md`: enumerate descendants under the list container group (`There are N reminders in the list.`) and collect the `Button` elements representing reminders (exclude `Settings`, `Dismiss all`, and window caption buttons). Store a stable display label per item (derived from the element Name, e.g. `Title • Time • RelativeAge`).
+    status: pending
+    dependencies: [add_new_uia_lookup_wrappers]
+  - id: reminders_selection_modal_standard_display
+    content: Implement a Standard Information Display Interactive Input modal that lists reminders extracted from UIA, with selection keys in this order: `1–9`, then `A–Z` (up to 35 items shown); include `Esc` cancel. The modal must follow `docs/standard_information_display.md` (emoji prefix, font size 17, promptKeys strip with key hints).
+    status: pending
+    dependencies: [reminders_extract_items_from_uia_tree]
+  - id: reminders_item_level_action_execution
+    content: After selection, execute item-level actions (Snooze 10 min / 1 hour / 4 hours, Dismiss reminder, Join online) by focusing the chosen reminder’s UIA button, sending the Apps/Menu key to open the context menu, and then using arrow keys to reach the exact option as shown in screenshots (Snooze reminder → Right arrow to submenu → Down to duration → Enter). Include bounded retries and a safe fallback to do nothing if the menu does not appear.
+    status: pending
+    dependencies: [reminders_selection_modal_standard_display]
   - id: migrate_new_event_field_shortcuts
     content: Replace old appointment field IDs and names for Shift+S/P/T/E/H/A/I/R/L/B/C in event compose context using New Outlook controls (`Add title`, `Invite required attendees`, `Add a room or location`, `Teams meeting`, `Response options`, etc.).
     status: pending
@@ -86,7 +98,7 @@ todos:
 - Introduce New Outlook-aware detection and UIA helper wrappers to avoid repeating brittle lookup logic.
 - Migrate shortcut handlers in focused groups:
   - Main window shortcuts (`+G`, `+N`, `+I`, `+F`, `+M`, `+W`, `+O`, and other Outlook-main actions).
-  - Reminder shortcuts (`+H`, `+F`, `+D`, `+X`, `+J`).
+  - Reminder shortcuts (`+H`, `+F`, `+D`, `+X`, `+J`) — redesigned for keyboard-only operation using a selection modal + context-menu arrow navigation.
   - Event/appointment shortcuts (`+S`, `+P`, `+T`, `+E`, `+H`, `+A`, `+I`, `+R`, `+L`, `+B`, `+C`).
 - Keep working generic shortcuts unchanged when they still map cleanly (for example F6-based pane cycling).
 - Update cheat sheet text only where exact parity is not possible, and generate a dedicated gap report file for transparency.
@@ -105,6 +117,11 @@ todos:
   - `new-outlook/new-event 3_27_2026 1_30_09 PM.txt`
   - `new-outlook/Reminders 3_27_2026 1_35_40 PM.txt`
   - `new-outlook/copilot 3_27_2026 1_28_09 PM.txt`
+  - `reminder-window-tree.md` (Reminders window UIA tree for keyboard-only redesign)
+  - Reminders screenshots (context-menu and snooze submenu navigation)
+    - `C:\Users\fie7ca\.cursor\projects\c-Users-fie7ca-Documents-scripts\assets\c__Users_fie7ca_AppData_Roaming_Cursor_User_workspaceStorage_4a5d95debaa390318d2cb64cd459e3a0_images_image-201d41a6-5c82-4d19-a99c-5ab6dcfd0634.png`
+    - `C:\Users\fie7ca\.cursor\projects\c-Users-fie7ca-Documents-scripts\assets\c__Users_fie7ca_AppData_Roaming_Cursor_User_workspaceStorage_4a5d95debaa390318d2cb64cd459e3a0_images_image-01517712-31c4-4a2a-83e4-dc6a0eb1965d.png`
+    - `C:\Users\fie7ca\.cursor\projects\c-Users-fie7ca-Documents-scripts\assets\c__Users_fie7ca_AppData_Roaming_Cursor_User_workspaceStorage_4a5d95debaa390318d2cb64cd459e3a0_images_image-ea90775a-eb19-465b-ab2c-ef259651296b.png`
 
 ## Implementation Strategy:
 1. Inventory every Outlook shortcut and classify by window context.
@@ -117,3 +134,50 @@ todos:
 8. Create `new-outlook/shortcut-gap-report.md` with failure rationale and fallback guidance.
 9. Run a full shortcut validation matrix across all four captured window types and capture results.
 10. Perform cleanup and consistency pass in `Shift keys.ahk` without removing needed compatibility fallbacks.
+
+## Reminders Window (New Outlook) — Keyboard-only Design Details
+
+### UIA evidence and extraction rules (from `reminder-window-tree.md`)
+
+- **Reminders list container**: Group named `There are 24 reminders in the list.` (see lines ~32–35).
+- **Reminder items**: Descendant `Button` elements whose Name is of the form:
+  - `"<Title> <TimeOrAllDay> <RelativeAge>"` (examples: `Stretch All day Today`, `CIM Journey 3:00 PM Microsoft Teams Meeting 18 hrs ago`)
+  - Evidence: lines ~36–105 contain repeated `Type: 50000 (Button)` entries, each representing one reminder row.
+- **Global actions**:
+  - `Dismiss all`: `Button` Name `Dismiss all` (line ~107).
+  - `Settings`: `Button` Name `Settings` (line ~106) — must be excluded from reminder items.
+
+### Global Action: `Shift+X` → Dismiss all
+
+- Use UIA to find and click the **global** `Dismiss all` button (Name match `Dismiss all` / `Dismiss All` tolerant).
+- No mouse actions required; this must work from anywhere inside the Reminders window.
+
+### Item-level actions: `Shift+H`, `Shift+F`, `Shift+D`, `Shift+J`
+
+Goal: Replace mouse-heavy UI with a consistent keyboard-only flow:
+
+1. **Show selection modal** using the Standard Information Display Interactive Input API (`docs/standard_information_display.md`).
+   - Modal lists reminder items extracted from UIA at runtime.
+   - **Selection keys**: `1–9` then `A–Z` (up to 35 visible items).
+   - Must include `Esc` cancel and a `promptKeys` strip (e.g. `"[1-9/A-Z] Select  [Esc] Cancel"`).
+2. **Focus the chosen reminder item** (UIA `SetFocus()` on the item’s `Button`).
+3. **Open context menu** with the **Apps/Menu key** (keyboard-only).
+4. **Navigate context menu** with arrow keys per screenshots:
+   - Menu contains at least:
+     - `Snooze reminder` (first item in screenshot)
+     - `Dismiss reminder` (second item in screenshot)
+   - For Snooze durations:
+     - Highlight `Snooze reminder` → press `Right` to open submenu
+     - Use `Down` to select the duration and `Enter` to apply
+     - Durations visible in screenshot include `5 minutes`, `10 minutes`, `15 minutes`, `30 minutes`, `1 hour`, `2 hours`, `4 hours`, `8 hours`, `12 hours`, `1 day`
+5. **Command mappings** (initial, based on screenshots; adjust after validation):
+   - `Shift+H`: Snooze `1 hour`
+   - `Shift+F`: Snooze `4 hours`
+   - `Shift+D`: `Dismiss reminder` (item-level)
+   - `Shift+J`: If `Join online` exists in the context menu for a Teams meeting reminder, navigate to it; otherwise mark as No Reliable Match and document workaround.
+
+### Reliability / fallback expectations
+
+- If context menu does not open (Apps key ignored) or submenu navigation fails:
+  - Fail silently (no disruptive MsgBox); optionally show a short Information Only banner (`❌ Could not open reminder menu`) depending on your existing UX conventions.
+- All loops must be bounded (max steps) to avoid stuck key-spam if UI state is unexpected.

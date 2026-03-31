@@ -1407,7 +1407,7 @@ GetCheatSheetText() {
             return cheatSheets.Has("OutlookReminder") ? cheatSheets["OutlookReminder"] : cheatSheets["OUTLOOK.EXE"]
         }
         ; Detect Message inspector windows â€" e.g., " - Message (HTML)"
-        if RegExMatch(title, "i) - Message \(") {
+        if RegExMatch(title, "i) - Message \\(") {
             return cheatSheets.Has("OutlookMessage") ? cheatSheets["OutlookMessage"] : cheatSheets["OUTLOOK.EXE"]
         }
         ; Detect Appointment, Meeting, or Event inspector windows
@@ -3692,7 +3692,7 @@ WaitForButton(root, pattern, timeout := 5000) {
 ;-------------------------------------------------------------------
 ; Outlook Reminder Window Shortcuts
 ;-------------------------------------------------------------------
-#HotIf WinActive("ahk_exe OUTLOOK.EXE") && RegExMatch(WinGetTitle("A"), "i)Reminder") && !IsFileDialogActive()
+#HotIf (WinActive("ahk_exe OUTLOOK.EXE") || WinActive("ahk_exe olk.exe")) && RegExMatch(WinGetTitle("A"), "i)Reminders?") && !IsFileDialogActive()
 
 ; ativa a janela de lembretes do Outlook
 ActivateReminder() {
@@ -3725,48 +3725,409 @@ Confirm(t) {
         QuickSnooze(t)
 }
 
+; ---------------------------------------------------------------------------
+; New Outlook Reminders (keyboard-only)
+; - Uses UIA list extraction + Standard Information Display selection banner
+; - Executes item actions via Apps/Menu key + arrow navigation (per screenshots)
+; ---------------------------------------------------------------------------
+global g_RemindersPickKey := ""
+global g_DebugBe11ecLogPath := "C:\Users\fie7ca\Documents\scripts\debug-be11ec.log"
+
+Reminders_DebugLog(location, message, data := "", hypothesisId := "A", runId := "pre-fix") {
+    try {
+        Debug_Escape(s) => StrReplace(StrReplace(StrReplace(String(s), "\", "\\"), "`"", "\`""), "`n", "\n")
+        Debug_MapToJson(m) {
+            out := ""
+            for k, v in m {
+                if (out != "")
+                    out .= ","
+                out .= "`"" Debug_Escape(k) "`":"
+                if (v is Integer || v is Float)
+                    out .= String(v)
+                else
+                    out .= "`"" Debug_Escape(v) "`""
+            }
+            return "{" out "}"
+        }
+
+        payload := Map()
+        payload["sessionId"] := "be11ec"
+        payload["id"] := "log_" A_TickCount "_" Random(1000, 9999)
+        payload["timestamp"] := A_TickCount
+        payload["location"] := location
+        payload["message"] := message
+        payload["runId"] := runId
+        payload["hypothesisId"] := hypothesisId
+
+        d := IsObject(data) ? data : Map("value", data)
+        ; Encode only scalar data safely (stringify non-numeric as strings)
+        payloadJson := Debug_MapToJson(payload)
+        dataJson := Debug_MapToJson(d)
+        line := SubStr(payloadJson, 1, StrLen(payloadJson) - 1) . ",`"data`":" . dataJson . "}"
+        global g_DebugBe11ecLogPath
+        FileAppend(line "`n", g_DebugBe11ecLogPath, "UTF-8")
+    } catch {
+    }
+}
+
+Reminders_IsNewOutlookWindow() {
+    try {
+        ; Reminders window can run under classic OUTLOOK.EXE or Store olk.exe.
+        if !(WinActive("ahk_exe OUTLOOK.EXE") || WinActive("ahk_exe olk.exe"))
+            return false
+        t := WinGetTitle("A")
+        ; NOTE: single backslash in regex. Using \\b would match literal "\b".
+        ok := RegExMatch(t, "i)\bReminders\b")
+        ; #region agent log
+        try Reminders_DebugLog("Shift keys.ahk:Reminders_IsNewOutlookWindow", "Computed isNewReminders", Map(
+            "ok", ok,
+            "title", t
+        ), "H1", "pre-fix")
+        ; #endregion
+        return ok
+    } catch {
+        return false
+    }
+}
+
+Reminders_GetItems() {
+    items := []
+    try {
+        root := UIA.ElementFromHandle(WinExist("A"))
+        listGroup := root.FindFirst({ ControlType: "Group", Name: "There are", matchmode: "Substring" })
+        if !listGroup
+            listGroup := root.FindFirst({ Name: "There are", matchmode: "Substring" })
+        if !listGroup
+            return items
+
+        btns := listGroup.FindAll({ Type: "Button" })
+        for b in btns {
+            n := ""
+            try n := b.Name
+            if (n = "")
+                continue
+            ; Exclude global/window controls
+            if (n = "Settings" || n = "Dismiss all" || n = "Dismiss All" || n = "Minimize" || n = "Maximize" || n = "Close")
+                continue
+            items.Push({ el: b, label: n })
+        }
+    } catch {
+        return items
+    }
+    return items
+}
+
+Reminders_PickKey(key) {
+    global g_RemindersPickKey
+    g_RemindersPickKey := key
+    try StandardLoadingBar_CloseKeysOverlay()
+    try StandardLoadingBar_Hide(0)
+}
+
+Reminders_PickTimeout() {
+    Reminders_PickKey("TIMEOUT")
+}
+
+Reminders_SelectItem(actionLabel, items, maxItems := 35) {
+    global g_RemindersPickKey
+    g_RemindersPickKey := ""
+
+    if (items.Length = 0) {
+        ShowCenteredOverlay_Utils("❌ No reminders found", 1600, BANNER_ACCENT_ERROR)
+        return 0
+    }
+
+    keys := []
+    loop 9
+        keys.Push(A_Index)
+    for c in StrSplit("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+        keys.Push(c)
+
+    ; Min() can return Float; range loops require a true Integer (bitwise op coerces).
+    count := (Min(items.Length, maxItems, keys.Length) | 0)
+    msg := "❓ Select reminder to " actionLabel ":`n`n"
+    for i in 1..count {
+        k := keys[i]
+        label := items[i].label
+        msg .= k ") " label "`n"
+    }
+    if (items.Length > count)
+        msg .= "`n⚠ Showing first " count " of " items.Length " reminders"
+
+    keyCallbacks := Map()
+    for i in 1..count {
+        k := keys[i]
+        keyCallbacks.Set(k, Func("Reminders_PickKey").Bind(k))
+    }
+    keyCallbacks.Set("Escape", Func("Reminders_PickKey").Bind("ESC"))
+
+    StandardLoadingBar_CloseKeysOverlay()
+    StandardLoadingBar_ShowWithKeys(
+        msg,
+        keyCallbacks,
+        45000,
+        0,
+        Reminders_PickTimeout,
+        "1E1E2E",
+        760,
+        17,
+        BANNER_ACCENT_INTERMEDIATE,
+        false,
+        "[1-9/A-Z] Select  [Esc] Cancel",
+        true
+    )
+
+    deadline := A_TickCount + 45000
+    while (A_TickCount < deadline) {
+        if (g_RemindersPickKey != "")
+            break
+        Sleep 50
+    }
+
+    picked := g_RemindersPickKey
+    if (picked = "" || picked = "ESC" || picked = "TIMEOUT")
+        return 0
+
+    ; Resolve key to index
+    for i in 1..count {
+        if (keys[i] = picked)
+            return i
+    }
+    return 0
+}
+
+Reminders_OpenContextMenuForItem(itemEl) {
+    try itemEl.SetFocus()
+    Sleep 80
+    EnsureFocus()
+    ; Apps/Menu key (keyboard-only)
+    Send "{AppsKey}"
+    Sleep 140
+}
+
+Reminders_TryInvokeJoinOnlineMenuItem() {
+    ; Context menus are often hosted outside the window subtree,
+    ; so search from the UIA root element (desktop).
+    try {
+        root := UIA.GetRootElement()
+        if !root
+            return false
+
+        candidates := [
+            { Name: "Join online", ControlType: "MenuItem" },
+            { Name: "Join Online", ControlType: "MenuItem" },
+            { Name: "Join", matchmode: "Substring", ControlType: "MenuItem", cs: false }
+        ]
+
+        for crit in candidates {
+            mi := root.FindFirst(crit)
+            if mi {
+                try mi.Click()
+                catch Error {
+                    try mi.Invoke()
+                }
+                return true
+            }
+        }
+    } catch {
+    }
+    return false
+}
+
+Reminders_ExecuteItemAction(action) {
+    items := Reminders_GetItems()
+    actionLabel := ""
+    if (action = "snooze_1h")
+        actionLabel := "Snooze 1 hour"
+    else if (action = "snooze_4h")
+        actionLabel := "Snooze 4 hours"
+    else if (action = "dismiss_item")
+        actionLabel := "Dismiss reminder"
+    else if (action = "join_online")
+        actionLabel := "Join online"
+    else
+        actionLabel := action
+
+    idx := Reminders_SelectItem(actionLabel, items)
+    if (!idx)
+        return false
+
+    el := items[idx].el
+    ; #region agent log
+    try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Selected reminder item", Map(
+        "action", action,
+        "selectedIndex", idx,
+        "itemsCount", items.Length,
+        "title", WinGetTitle("A")
+    ), "A", "pre-fix")
+    ; #endregion
+    Reminders_OpenContextMenuForItem(el)
+    ; #region agent log
+    try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Context menu open attempt sent AppsKey", Map(
+        "action", action
+    ), "B", "pre-fix")
+    ; #endregion
+
+    ; Assume first menu item is highlighted (Snooze reminder) as per screenshots.
+    if (action = "dismiss_item") {
+        Send "{Home}{Down}{Enter}"
+        return true
+    }
+
+    if (action = "snooze_1h" || action = "snooze_4h") {
+        Send "{Home}{Right}"
+        Sleep 80
+        downCount := (action = "snooze_1h") ? 4 : 6
+        loop downCount {
+            Send "{Down}"
+            Sleep 40
+        }
+        Send "{Enter}"
+        return true
+    }
+
+    if (action = "join_online") {
+        ; Preferred: direct UIA invoke (menu items are usually under UIA root).
+        ok := false
+        ; #region agent log
+        try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Attempting UIA root Join invoke", Map(), "C",
+            "pre-fix")
+        ; #endregion
+        ok := Reminders_TryInvokeJoinOnlineMenuItem()
+        ; #region agent log
+        try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "UIA root Join invoke result", Map("ok", ok), "C",
+            "pre-fix")
+        ; #endregion
+        if ok
+            return true
+
+        ; Fallback 1: first-letter navigation (if supported)
+        ; #region agent log
+        try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Fallback: type 'j' then Enter", Map(), "D",
+            "pre-fix")
+        ; #endregion
+        Send "j"
+        Sleep 60
+        Send "{Enter}"
+        Sleep 80
+
+        ; Fallback 2: bounded arrow scan (best-effort, no UIA reads)
+        ; #region agent log
+        try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Fallback: bounded arrow scan then Enter", Map(),
+            "E", "pre-fix")
+        ; #endregion
+        Send "{Home}"
+        loop 12 {
+            Send "{Down}"
+            Sleep 40
+        }
+        Send "{Enter}"
+
+        return false
+    }
+
+    return false
+}
+
 ; Shift + H : Snooze 1 hour - Hour
-+H:: Confirm("1 hour")
++H:: {
+    isNewRem := Reminders_IsNewOutlookWindow()
+    ; #region agent log
+    try Reminders_DebugLog("Shift keys.ahk:+H", "Shift+H pressed", Map(
+        "isNewReminders", isNewRem,
+        "title", WinGetTitle("A"),
+        "class", WinGetClass("A")
+    ), "H2", "pre-fix")
+    ; #endregion
+    if isNewRem {
+        try ShowCenteredOverlay_Utils("ℹ️ Reminders debug: Shift+H", 700, BANNER_ACCENT_INFO)
+        Reminders_ExecuteItemAction("snooze_1h")
+        return
+    }
+    ; #region agent log
+    try Reminders_DebugLog("Shift keys.ahk:+H", "Falling back to classic Confirm(1 hour)", Map(), "H3", "pre-fix")
+    ; #endregion
+    Confirm("1 hour")
+}
 
 ; Shift + F : Snooze 4 hours - Four
-+F:: Confirm("4 hours")
++F:: {
+    if Reminders_IsNewOutlookWindow() {
+        Reminders_ExecuteItemAction("snooze_4h")
+        return
+    }
+    Confirm("4 hours")
+}
 
-; Shift + D : Snooze 1 day - Day
-+D:: Confirm("1 day")
+; Shift + D : Dismiss reminder (New Outlook) / Snooze 1 day (classic)
++D:: {
+    if Reminders_IsNewOutlookWindow() {
+        Reminders_ExecuteItemAction("dismiss_item")
+        return
+    }
+    Confirm("1 day")
+}
 
 ; Shift + X : Dismiss all reminders - Dismiss
-+X:: ConfirmDismissAll()
++X:: {
+    if Reminders_IsNewOutlookWindow() {
+        ; Global action: click "Dismiss all" button (UIA)
+        try {
+            root := UIA.ElementFromHandle(WinExist("A"))
+            btn := root.FindFirst({ Name: "Dismiss all", ControlType: "Button" })
+            if !btn
+                btn := root.FindFirst({ Name: "Dismiss All", ControlType: "Button" })
+            if btn {
+                btn.Click()
+                return
+            }
+        } catch {
+        }
+        return
+    }
+    ConfirmDismissAll()
+}
 
 ; Shift + J : Join Online - Join
-+J::
-{
++J:: {
+    isNewRem := Reminders_IsNewOutlookWindow()
+    ; #region agent log
+    try {
+        global g_DebugBe11ecLogPath
+        FileAppend(
+            "{`"sessionId`":`"be11ec`",`"id`":`"raw_" A_TickCount "_" Random(1000, 9999) "`",`"timestamp`":" A_TickCount
+            ",`"location`":`"Shift keys.ahk:+J(raw)`",`"message`":`"Shift+J entry reached`",`"data`":{},`"runId`":`"pre-fix`",`"hypothesisId`":`"Z`"}`n",
+            g_DebugBe11ecLogPath,
+            "UTF-8"
+        )
+    } catch {
+    }
+    ; Visual cue to confirm this instrumented script is running
+    try ShowCenteredOverlay_Utils("ℹ️ Reminders debug: Shift+J", 700, BANNER_ACCENT_INFO)
+    try Reminders_DebugLog("Shift keys.ahk:+J", "Shift+J pressed", Map(
+        "isNewReminders", isNewRem,
+        "title", WinGetTitle("A"),
+        "class", WinGetClass("A")
+    ), "F", "pre-fix")
+    ; #endregion
+    if isNewRem {
+        Reminders_ExecuteItemAction("join_online")
+        return
+    }
     try {
         win := WinExist("A")
         root := UIA.ElementFromHandle(win)
 
-        ; Find the "Join Online" button
-        ; Type: 50000 (Button), Name: "Join Online", AutomationId: "8346", ClassName: "Button"
+        ; Find the "Join Online" button (classic reminder UI)
         joinButton := root.FindFirst({ Name: "Join Online", Type: "50000", AutomationId: "8346" })
-
-        ; Fallback: try finding by name only
-        if !joinButton {
+        if !joinButton
             joinButton := root.FindFirst({ Name: "Join Online", ControlType: "Button" })
-        }
-
-        ; Fallback: try finding by AutomationId only
-        if !joinButton {
+        if !joinButton
             joinButton := root.FindFirst({ AutomationId: "8346" })
-        }
 
-        if joinButton {
+        if joinButton
             joinButton.Click()
-        }
-        else {
-            ; No message box as requested - fail silently
-        }
-    }
-    catch Error as e {
-        ; No message box as requested - fail silently
+    } catch {
     }
 }
 
@@ -6658,7 +7019,6 @@ ML_SortApply(idx) {
 ; Outlook Shortcuts
 ;-------------------------------------------------------------------
 
-; Helper predicates for Outlook window types
 IsOutlookMessageActive() {
     return WinActive("ahk_exe OUTLOOK.EXE")
     && RegExMatch(WinGetTitle("A"), "i) - Message \(")
@@ -6670,8 +7030,8 @@ IsOutlookAppointmentActive() {
 }
 
 IsOutlookReminderActive() {
-    return WinActive("ahk_exe OUTLOOK.EXE")
-    && RegExMatch(WinGetTitle("A"), "i)Reminder")
+    return (WinActive("ahk_exe OUTLOOK.EXE") || WinActive("ahk_exe olk.exe"))
+    && RegExMatch(WinGetTitle("A"), "i)Reminders?")
 }
 
 IsOutlookMainActive() {
@@ -7143,7 +7503,7 @@ SelectExplorerSidebarFirstPinned() {
     }
 }
 
-; Message inspector-specific hotkeys (Subject/To/DatePicker/Body)
+; Message inspector-specific hotkeys (Subject/To/Body)
 #HotIf IsOutlookMessageActive()
 
 ; Shift + S : Subject / Title - Subject
