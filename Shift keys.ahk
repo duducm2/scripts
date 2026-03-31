@@ -499,17 +499,36 @@ Outlook - Reminders (Shift)
 cheatSheets["OutlookAppointment"] := "
 (
 Outlook - Appointment (Shift)
-📅 [S][S]tart date (combo) (Not available in New Outlook)
-📅 [P]Date [P]icker (start) (Not available in New Outlook)
-🕐 [T]Start [T]ime (combo) (Not available in New Outlook)
-📅 [E][E]nd date (combo) (Not available in New Outlook)
-🕐 [H]End [H]our (time combo) (Not available in New Outlook)
-☑️ [A][A]ll-day toggle (Not available in New Outlook)
+📅 [S][S]tart date (popover)
+🕐 [T]Start [T]ime (popover)
+🕐 [E][E]nd time (popover)
+☑️ [A][A]ll-day toggle (popover)
+🔄 [C]Re[C]urring / Series (popover)
+🕒 [1]Time suggestion 1
+🕒 [2]Time suggestion 2
+
 📝 [I]T[I]tle field
-👥 [R][R]equired / To
-📍 [L][L]ocation
-📝 [B][B]ody
-🔄 [C]Make Re[C]urring (Not available in New Outlook)
+👥 [R][R]equired attendees
+📍 [O]L[o]cation / Add a room
+📝 [B][B]ody (main details)
+
+🎥 [M]Tea[M]s meeting
+🧬 [U]Series (recurring)
+📶 A[V]ailability (Free/Busy...)
+⏰ Reminder (fre[Q]uency)
+🏷️ Cate[G]ory
+🔒 [P]rivate / Not private
+
+🗓️ Prev day [L] / Next day [K]
+🧭 [Y]Today
+📆 [D]ate header
+🧑‍🤝‍🧑 Sc[H]eduler / Scheduling assistant
+⚙️ Optio[N]s (scheduler view)
+🌐 Time [Z]one
+➕ [J]Add required attendee
+➕ [;]Add optional attendee
+
+↩️ [Backspace] Back (scheduler view)
 🧙 [W][W]izard (configure)
 )"  ; end Outlook Appointment
 
@@ -8041,6 +8060,401 @@ SelectExplorerSidebarFirstPinned() {
 ; Appointment/Meeting inspector-specific hotkeys
 #HotIf IsOutlookAppointmentActive()
 
+; -------------------------------------------------------------------
+; New Outlook Appointment (New event) popover helpers
+; - The date/time area opens a popover (fui-PopoverSurface) containing Start date/time, End time, All day, Recurring, Time suggestions.
+; - Shortcuts must work whether the popover is open or closed.
+; -------------------------------------------------------------------
+Appt_LoadingShow(text) {
+    try StandardLoadingBar_Show(text, BANNER_ACCENT_INTERMEDIATE, { passive: false, centerOnHwnd: 0, textWidth: 560, fontSize: 17 })
+    catch {
+    }
+}
+
+Appt_LoadingHide(delayMs := 0) {
+    try StandardLoadingBar_Hide(delayMs)
+    catch {
+    }
+}
+
+Appt_RunWithLoading(label, fn) {
+    Appt_LoadingShow("⏳ Appointment: " label "…")
+    try {
+        return fn.Call()
+    } finally {
+        Appt_LoadingHide(0)
+    }
+}
+
+Appt_GetRootActive() {
+    try return UIA.ElementFromHandle(WinExist("A"))
+    catch {
+        return 0
+    }
+}
+
+Appt_IsPopoverSurface(el) {
+    if !el
+        return false
+    cn := ""
+    try cn := el.ClassName
+    if !InStr(cn, "fui-PopoverSurface")
+        return false
+    try {
+        ; Confirm it's the right popover by checking for Start date/time presence.
+        if el.FindFirst({ Name: "Start date", ControlType: "ComboBox" })
+            return true
+        if el.FindFirst({ Name: "Start time", ControlType: "ComboBox" })
+            return true
+    } catch {
+    }
+    return false
+}
+
+Appt_FindOpenPopover() {
+    ; Popovers can be hosted outside the window subtree, so search desktop root first.
+    roots := []
+    try roots.Push(UIA.GetRootElement())
+    catch {
+    }
+    try roots.Push(Appt_GetRootActive())
+    catch {
+    }
+
+    for root in roots {
+        if !root
+            continue
+        try {
+            pop := root.FindFirst({ ClassName: "fui-PopoverSurface", matchmode: "Substring" })
+            if (Appt_IsPopoverSurface(pop))
+                return pop
+        } catch {
+        }
+        ; Fallback: search for any dialog window that contains Start date/time combo.
+        try {
+            w := root.FindFirst({ ControlType: "Window", LocalizedType: "dialog" })
+            if (w && (w.FindFirst({ Name: "Start date", ControlType: "ComboBox" }) || w.FindFirst({ Name: "Start time", ControlType: "ComboBox" })))
+                return w
+        } catch {
+        }
+    }
+    return 0
+}
+
+Appt_OpenPopoverIfNeeded() {
+    pop := Appt_FindOpenPopover()
+    if pop
+        return pop
+
+    root := Appt_GetRootActive()
+    if !root
+        return 0
+
+    ; Best trigger: click the Start time combo (or its caret button) to open the popover.
+    try {
+        trigger := root.FindFirst({ Name: "Start time", ControlType: "ComboBox" })
+        if trigger {
+            try trigger.SetFocus()
+            Sleep 40
+            try trigger.Click()
+        } else {
+            btn := root.FindFirst({ Name: "Start time", ControlType: "Button" })
+            if btn {
+                try btn.SetFocus()
+                Sleep 40
+                try btn.Click()
+            }
+        }
+    } catch {
+    }
+
+    deadline := A_TickCount + 1200
+    while (A_TickCount < deadline) {
+        pop := Appt_FindOpenPopover()
+        if pop
+            return pop
+        Sleep 60
+    }
+    return 0
+}
+
+Appt_PopoverFocusFirst(criteriaList) {
+    pop := Appt_OpenPopoverIfNeeded()
+    if !pop
+        return false
+    for crit in criteriaList {
+        try {
+            el := pop.FindFirst(crit)
+            if el {
+                el.SetFocus()
+                return true
+            }
+        } catch {
+        }
+    }
+    return false
+}
+
+Appt_PopoverInvokeFirst(criteriaList) {
+    pop := Appt_OpenPopoverIfNeeded()
+    if !pop
+        return false
+    for crit in criteriaList {
+        try {
+            el := pop.FindFirst(crit)
+            if el {
+                try el.Click()
+                catch {
+                    try el.Invoke()
+                }
+                return true
+            }
+        } catch {
+        }
+    }
+    return false
+}
+
+Appt_PopoverSelectTimeSuggestion(idx) {
+    pop := Appt_OpenPopoverIfNeeded()
+    if !pop
+        return false
+    try {
+        list := pop.FindFirst({ Name: "Time suggestions", ControlType: "List" })
+        if !list
+            list := pop.FindFirst({ Name: "Time suggestions", Type: 50008 })
+        if !list
+            return false
+        items := ""
+        try items := list.FindAll({ ControlType: "ListItem" })
+        catch {
+            try items := list.FindAll({ Type: 50007 })
+        }
+        if (!IsObject(items) || items.Length < idx)
+            return false
+        li := items[idx]
+        try li.Click()
+        catch {
+            try li.Invoke()
+        }
+        return true
+    } catch {
+        return false
+    }
+}
+
+Appt_FocusBodyField_NewOutlook() {
+    root := Appt_GetRootActive()
+    if !root
+        return false
+
+    ; Prefer common body placeholders (best effort).
+    needles := ["Add details", "Add description", "Description", "Message", "Details"]
+    for n in needles {
+        try {
+            el := root.FindFirst({ Name: n, ControlType: "Edit" })
+            if el {
+                el.SetFocus()
+                return true
+            }
+        } catch {
+        }
+        try {
+            el := root.FindFirst({ Name: n, Type: 50004 })
+            if el {
+                el.SetFocus()
+                return true
+            }
+        } catch {
+        }
+    }
+
+    ; Fallback: pick the largest Edit/Document region and focus it.
+    best := 0
+    bestArea := 0
+    candidates := []
+    try candidates := root.FindAll({ ControlType: "Edit" })
+    catch {
+        candidates := []
+    }
+    if (!IsObject(candidates) || candidates.Length = 0) {
+        try candidates := root.FindAll({ ControlType: "Document" })
+        catch {
+            candidates := []
+        }
+    }
+    for c in candidates {
+        try {
+            rect := c.BoundingRectangle
+            ; UIA-v2 typically returns {l,t,r,b} or an array-like; handle both.
+            l := rect.l, t := rect.t, r := rect.r, b := rect.b
+            area := Abs((r - l) * (b - t))
+            if (area > bestArea) {
+                bestArea := area
+                best := c
+            }
+        } catch {
+        }
+    }
+    if best {
+        try best.SetFocus()
+        return true
+    }
+    return false
+}
+
+; -------------------------------------------------------------------
+; New Outlook Appointment command bar + selection modals
+; -------------------------------------------------------------------
+global g_ApptPickKey := ""
+
+Appt_PickKey(key) {
+    global g_ApptPickKey
+    g_ApptPickKey := key
+    try StandardLoadingBar_CloseKeysOverlay()
+    try StandardLoadingBar_Hide(0)
+}
+
+Appt_PickTimeout() {
+    Appt_PickKey("TIMEOUT")
+}
+
+Appt_SelectFromModal(title, options, promptKeys := "[1-9] Select  [Esc] Cancel", timeoutMs := 45000) {
+    global g_ApptPickKey
+    g_ApptPickKey := ""
+
+    ; Ensure any loading indicator is cleared before showing interactive modal.
+    try StandardLoadingBar_Hide(0)
+    catch {
+    }
+
+    keyCallbacks := Map()
+    msg := "❓ " title ":`n`n"
+    Loop options.Length {
+        i := A_Index
+        opt := options[i]
+        k := opt.k
+        label := opt.label
+        msg .= k ") " label "`n"
+        keyCallbacks.Set(k, Appt_PickKey.Bind(k))
+    }
+    keyCallbacks.Set("Escape", Appt_PickKey.Bind("ESC"))
+
+    StandardLoadingBar_CloseKeysOverlay()
+    StandardLoadingBar_ShowWithKeys(
+        msg,
+        keyCallbacks,
+        timeoutMs,
+        0,
+        Appt_PickTimeout,
+        "1E1E2E",
+        760,
+        17,
+        BANNER_ACCENT_INTERMEDIATE,
+        false,
+        promptKeys,
+        true
+    )
+
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        if (g_ApptPickKey != "")
+            break
+        Sleep 40
+    }
+
+    picked := g_ApptPickKey
+    if (picked = "" || picked = "ESC" || picked = "TIMEOUT")
+        return ""
+    return picked
+}
+
+Appt_FindCommandBar() {
+    root := Appt_GetRootActive()
+    if !root
+        return 0
+    try {
+        tb := root.FindFirst({ Name: "Event form commands", ControlType: "ToolBar" })
+        if tb
+            return tb
+    } catch {
+    }
+    try {
+        tb := root.FindFirst({ ControlType: "ToolBar" })
+        if tb {
+            ; Prefer a toolbar that contains Save.
+            if tb.FindFirst({ Name: "Save", ControlType: "Button" })
+                return tb
+        }
+    } catch {
+    }
+    return 0
+}
+
+Appt_ClickInCommandBar(criteriaList) {
+    tb := Appt_FindCommandBar()
+    if !tb
+        return false
+    for crit in criteriaList {
+        try {
+            el := tb.FindFirst(crit)
+            if el {
+                try el.Click()
+                catch {
+                    try el.Invoke()
+                }
+                return true
+            }
+        } catch {
+        }
+    }
+    return false
+}
+
+Appt_ClickAny(criteriaList) {
+    root := Appt_GetRootActive()
+    if !root
+        return false
+    for crit in criteriaList {
+        try {
+            el := root.FindFirst(crit)
+            if el {
+                try el.Click()
+                catch {
+                    try el.Invoke()
+                }
+                return true
+            }
+        } catch {
+        }
+    }
+    return false
+}
+
+Appt_OpenMenuAndPick(menuButtonCriteriaList, menuItemName) {
+    ; Open menu (button), then pick the menu item from desktop root (menus are often hosted outside subtree).
+    if !Appt_ClickAny(menuButtonCriteriaList)
+        return false
+    Sleep 120
+    try {
+        desktop := UIA.GetRootElement()
+        if !desktop
+            return false
+        mi := desktop.FindFirst({ Name: menuItemName, ControlType: "MenuItem" })
+        if !mi
+            mi := desktop.FindFirst({ Name: menuItemName, Type: 50011 })
+        if mi {
+            try mi.Click()
+            catch {
+                try mi.Invoke()
+            }
+            return true
+        }
+    } catch {
+    }
+    return false
+}
+
 ; ----- Outlook Appointment: Date/Time helpers -----
 Outlook_ClickStartDate() {
     ClickOutlookByIdThenNameClass("4098", "Start date, combo", "RichEdit20WPT", "Edit")
@@ -8089,46 +8503,110 @@ Outlook_ClickEndTime_1200PM() {
 
 ; Shift + S : Start date (combo) - Start Date
 +S:: {
-    Outlook_ClickStartDate()
+    Appt_RunWithLoading("Start date", (*) => (
+        IsNewOutlookActive()
+            ? (Appt_PopoverFocusFirst([
+                { Name: "Start date", ControlType: "ComboBox" },
+                { Name: "Start date", Type: 50003 },
+                { AutomationId: "DatePicker", matchmode: "Substring" }
+            ]) || (ShowCenteredOverlay_Utils("❌ Appointment: Start date not found", 1400, BANNER_ACCENT_ERROR), false))
+            : (Outlook_ClickStartDate(), true)
+    ))
 }
 
 ; Shift + P : Start date picker - Picker
 +P:: {
+    ; New Outlook: repurpose Shift+P to Private toggle modal (date picker concept removed).
+    if IsNewOutlookActive() {
+        Appt_RunWithLoading("Private", (*) => (
+            (choice := Appt_SelectFromModal("Appointment privacy", [
+                { k: "1", label: "Private" },
+                { k: "2", label: "Not private" }
+            ], "[1-2] Select  [Esc] Cancel"))
+                ? (
+                    (choice = "1")
+                        ? Appt_OpenMenuAndPick([
+                            { Name: "Private", ControlType: "Button" },
+                            { Name: "Not private", ControlType: "Button" },
+                            { Name: "Private", matchmode: "Substring", ControlType: "Button" },
+                            { Name: "Not private", matchmode: "Substring", ControlType: "Button" }
+                        ], "Private")
+                        : Appt_OpenMenuAndPick([
+                            { Name: "Private", ControlType: "Button" },
+                            { Name: "Not private", ControlType: "Button" },
+                            { Name: "Private", matchmode: "Substring", ControlType: "Button" },
+                            { Name: "Not private", matchmode: "Substring", ControlType: "Button" }
+                        ], "Not private")
+                )
+                : false
+        ))
+        return
+    }
     Outlook_ClickStartDatePicker()
 }
 
 ; Shift + T : Start time (combo) - Time
 +T:: {
-    Outlook_ClickStartTime()
+    Appt_RunWithLoading("Start time", (*) => (
+        IsNewOutlookActive()
+            ? (Appt_PopoverFocusFirst([
+                { Name: "Start time", ControlType: "ComboBox" },
+                { Name: "Start time", Type: 50003 },
+                { AutomationId: "ComboBox", matchmode: "Substring" }
+            ]) || (ShowCenteredOverlay_Utils("❌ Appointment: Start time not found", 1400, BANNER_ACCENT_ERROR), false))
+            : (Outlook_ClickStartTime(), true)
+    ))
 }
 
 ; Shift + E : End date (combo) - End Date
 +E:: {
-    Outlook_ClickEndDate()
+    Appt_RunWithLoading("End time", (*) => (
+        IsNewOutlookActive()
+            ? (Appt_PopoverFocusFirst([
+                { Name: "End time", ControlType: "ComboBox" },
+                { Name: "End time", Type: 50003 }
+            ]) || (ShowCenteredOverlay_Utils("❌ Appointment: End time not found", 1400, BANNER_ACCENT_ERROR), false))
+            : (Outlook_ClickEndDate(), true)
+    ))
 }
 
-; Shift + H : End time (combo) - End Hour
+; Shift + H : Scheduler / Scheduling assistant (New Outlook) or End time (classic)
 +H:: {
+    if IsNewOutlookActive() {
+        Appt_RunWithLoading("Scheduler", (*) => (
+            Appt_ClickAny([
+                { Name: "Scheduler", ControlType: "Button" },
+                { Name: "Scheduling assistant", matchmode: "Substring", ControlType: "Button" },
+                { Name: "Scheduling", matchmode: "Substring", ControlType: "Button" }
+            ]) || (ShowCenteredOverlay_Utils("❌ Appointment: Scheduler not found", 1400, BANNER_ACCENT_ERROR), false)
+        ))
+        return
+    }
     Outlook_ClickEndTime()
 }
 
 ; Shift + A : All day checkbox - All Day
 +A:: {
+    if IsNewOutlookActive() {
+        Appt_RunWithLoading("All day", (*) => (
+            Appt_PopoverInvokeFirst([
+                { Name: "All day", ControlType: "CheckBox" },
+                { Name: "All day", Type: 50002 },
+                { Name: "All day", ControlType: "Button" }
+            ]) || (ShowCenteredOverlay_Utils("❌ Appointment: All day not found", 1400, BANNER_ACCENT_ERROR), false)
+        ))
+        return
+    }
+    ; Classic fallback (existing behavior)
     try {
         win := WinExist("A")
         root := UIA.ElementFromHandle(win)
-
         checkbox := root.FindFirst({ AutomationId: "4226", ControlType: "CheckBox" })
         if !checkbox
             checkbox := root.FindFirst({ Name: "All day", ControlType: "CheckBox" })
-
-        if checkbox {
+        if checkbox
             checkbox.Invoke()
-        } else {
-            MsgBox "Couldn't find the All day checkbox.", "Control not found", "IconX"
-        }
-    } catch Error as err {
-        ShowErr(err)
+    } catch {
     }
 }
 
@@ -8154,8 +8632,8 @@ Outlook_ClickEndTime_1200PM() {
         return
 }
 
-; Shift + L : Location -> Body - Location
-+L:: {
+; Shift + O : Location -> Body - lOcation (moved off Shift+L)
++O:: {
     if FocusOutlookField({ AutomationId: "location-suggestions-picker-input", ControlType: "ComboBox" }) {
         Sleep 100
         Send "{Tab}"
@@ -8178,8 +8656,202 @@ Outlook_ClickEndTime_1200PM() {
     }
 }
 
+Appt_IsSchedulerView() {
+    root := Appt_GetRootActive()
+    if !root
+        return false
+    try {
+        if root.FindFirst({ Name: "Scheduling grid", matchmode: "Substring" })
+            return true
+        if root.FindFirst({ AutomationId: "Jump to Scheduling grid-region", matchmode: "Substring" })
+            return true
+    } catch {
+    }
+    return false
+}
+
+Appt_ClickSchedulerSuggestionNav(isNext) {
+    root := Appt_GetRootActive()
+    if !root
+        return false
+    needle := isNext ? "Selects the next time suggestion" : "Selects the previous time suggestion"
+    try {
+        btn := root.FindFirst({ Name: needle, matchmode: "Substring", ControlType: "Button" })
+        if btn {
+            try btn.Click()
+            catch {
+                try btn.Invoke()
+            }
+            return true
+        }
+    } catch {
+    }
+    return false
+}
+
+Appt_ClickDayNav(isNext) {
+    ; Best-effort: look for previous/next day arrow buttons in the schedule header.
+    root := Appt_GetRootActive()
+    if !root
+        return false
+    candidates := isNext
+        ? [
+            { Name: "Next", matchmode: "Substring", ControlType: "Button" },
+            { Name: "Forward", matchmode: "Substring", ControlType: "Button" },
+            { Name: "Next day", matchmode: "Substring", ControlType: "Button" }
+        ]
+        : [
+            { Name: "Previous", matchmode: "Substring", ControlType: "Button" },
+            { Name: "Back", matchmode: "Substring", ControlType: "Button" },
+            { Name: "Previous day", matchmode: "Substring", ControlType: "Button" }
+        ]
+    for crit in candidates {
+        try {
+            btn := root.FindFirst(crit)
+            if btn {
+                try btn.Click()
+                catch {
+                    try btn.Invoke()
+                }
+                return true
+            }
+        } catch {
+        }
+    }
+    return false
+}
+
+Appt_SchedulerClickBack() {
+    return Appt_ClickInCommandBar([{ Name: "Back", ControlType: "Button" }])
+        || Appt_ClickAny([{ Name: "Back", ControlType: "Button" }])
+}
+
+Appt_SchedulerClickOptions() {
+    return Appt_ClickInCommandBar([{ Name: "Options", ControlType: "Button" }, { Name: "Options", matchmode: "Substring", ControlType: "Button" }])
+        || Appt_ClickAny([{ Name: "Options", ControlType: "Button" }, { Name: "Options", matchmode: "Substring", ControlType: "Button" }])
+}
+
+Appt_SchedulerClickAddAttendee(isOptional) {
+    name := isOptional ? "Add optional attendee" : "Add required attendee"
+    return Appt_ClickAny([{ Name: name, ControlType: "Button" }, { Name: name, matchmode: "Substring", ControlType: "Button" }])
+}
+
+Appt_SchedulerFocusDateTimeControl(kind) {
+    ; Focus core controls in scheduler/editor view by visible names.
+    if (kind = "start_date")
+        return Appt_PopoverFocusFirst([{ Name: "Start date", ControlType: "ComboBox" }, { Name: "Start date", Type: 50003 }])
+    if (kind = "start_time")
+        return Appt_PopoverFocusFirst([{ Name: "Start time", ControlType: "ComboBox" }, { Name: "Start time", Type: 50003 }])
+    if (kind = "end_time")
+        return Appt_PopoverFocusFirst([{ Name: "End time", ControlType: "ComboBox" }, { Name: "End time", Type: 50003 }])
+    if (kind = "all_day")
+        return Appt_PopoverInvokeFirst([{ Name: "All day", ControlType: "CheckBox" }, { Name: "All day", Type: 50002 }, { Name: "All day", ControlType: "Button" }])
+    if (kind = "time_zone")
+        return Appt_PopoverInvokeFirst([{ Name: "Time zone", ControlType: "Button" }, { Name: "Show event time zones", matchmode: "Substring", ControlType: "Button" }])
+    return false
+}
+
+; Shift + L / Shift + K : Previous/Next navigation (day in editor, suggestions in scheduler view)
++L:: {
+    if !IsNewOutlookActive()
+        return
+    Appt_RunWithLoading("Prev", (*) => (
+        (Appt_IsSchedulerView() ? (Appt_ClickSchedulerSuggestionNav(false) || Appt_ClickDayNav(false)) : Appt_ClickDayNav(false))
+            || (ShowCenteredOverlay_Utils("❌ Appointment: Previous not found", 1400, BANNER_ACCENT_ERROR), false)
+    ))
+}
+
++K:: {
+    if !IsNewOutlookActive()
+        return
+    Appt_RunWithLoading("Next", (*) => (
+        (Appt_IsSchedulerView() ? (Appt_ClickSchedulerSuggestionNav(true) || Appt_ClickDayNav(true)) : Appt_ClickDayNav(true))
+            || (ShowCenteredOverlay_Utils("❌ Appointment: Next not found", 1400, BANNER_ACCENT_ERROR), false)
+    ))
+}
+
+; Shift + Y : Today
++Y:: {
+    if !IsNewOutlookActive()
+        return
+    Appt_RunWithLoading("Today", (*) => (
+        Appt_ClickAny([{ Name: "Today", ControlType: "Button" }, { Name: "Today", matchmode: "Substring", ControlType: "Button" }])
+            || (ShowCenteredOverlay_Utils("❌ Appointment: Today not found", 1400, BANNER_ACCENT_ERROR), false)
+    ))
+}
+
+; Shift + D : Current date header button
++D:: {
+    if !IsNewOutlookActive()
+        return
+    Appt_RunWithLoading("Date", (*) => (
+        Appt_ClickAny([
+            { Name: "Thu", matchmode: "Substring", ControlType: "Button" },
+            { Name: "Apr", matchmode: "Substring", ControlType: "Button" },
+            { Name: "Week", matchmode: "Substring", ControlType: "Button" }
+        ]) || (ShowCenteredOverlay_Utils("❌ Appointment: Date header not found", 1400, BANNER_ACCENT_ERROR), false)
+    ))
+}
+
+; Scheduling Assistant view controls (work in scheduler view; safe no-ops otherwise)
+; Shift + Backspace : Back (avoid collision with Shift+B = Body)
++Backspace:: {
+    if !IsNewOutlookActive()
+        return
+    Appt_RunWithLoading("Back", (*) => (
+        Appt_SchedulerClickBack() || (ShowCenteredOverlay_Utils("❌ Appointment: Back not found", 1400, BANNER_ACCENT_ERROR), false)
+    ))
+}
+
+; Shift + N : Options
++N:: {
+    if !IsNewOutlookActive()
+        return
+    Appt_RunWithLoading("Options", (*) => (
+        Appt_SchedulerClickOptions() || (ShowCenteredOverlay_Utils("❌ Appointment: Options not found", 1400, BANNER_ACCENT_ERROR), false)
+    ))
+}
+
+; Shift + T : Start date (scheduler quick focus) (doesn't override existing popover binding, since it's same key)
+; (No extra binding needed.)
+
+; Shift + Z : Time zone
++Z:: {
+    if !IsNewOutlookActive()
+        return
+    Appt_RunWithLoading("Time zone", (*) => (
+        Appt_SchedulerFocusDateTimeControl("time_zone") || (ShowCenteredOverlay_Utils("❌ Appointment: Time zone not found", 1400, BANNER_ACCENT_ERROR), false)
+    ))
+}
+
+; Shift + J : Add required attendee
++J:: {
+    if !IsNewOutlookActive()
+        return
+    Appt_RunWithLoading("Add required", (*) => (
+        Appt_SchedulerClickAddAttendee(false) || (ShowCenteredOverlay_Utils("❌ Appointment: Add required not found", 1400, BANNER_ACCENT_ERROR), false)
+    ))
+}
+
+; Shift + ; : Add optional attendee
++;:: {
+    if !IsNewOutlookActive()
+        return
+    Appt_RunWithLoading("Add optional", (*) => (
+        Appt_SchedulerClickAddAttendee(true) || (ShowCenteredOverlay_Utils("❌ Appointment: Add optional not found", 1400, BANNER_ACCENT_ERROR), false)
+    ))
+}
+
 ; Shift + B : Body (from Location) - Body
 +B:: {
+    Appt_RunWithLoading("Body", (*) => (
+        IsNewOutlookActive()
+            ? (Appt_FocusBodyField_NewOutlook() || (ShowCenteredOverlay_Utils("❌ Appointment: Body not found", 1400, BANNER_ACCENT_ERROR), false))
+            : (true)
+    ))
+    if IsNewOutlookActive()
+        return
+    ; Classic fallback: tab from Location into body
     if FocusOutlookField({ AutomationId: "location-suggestions-picker-input", ControlType: "ComboBox" }) {
         Sleep 100
         Send "{Tab}"
@@ -8204,22 +8876,172 @@ Outlook_ClickEndTime_1200PM() {
 
 ; Shift + C : Make Recurring - Recurring
 +C:: {
+    Appt_RunWithLoading("Recurring", (*) => (
+        IsNewOutlookActive()
+            ? (Appt_PopoverInvokeFirst([
+                { Name: "Make recurring", ControlType: "Button" },
+                { Name: "recurring", matchmode: "Substring", ControlType: "Button" }
+            ]) || (ShowCenteredOverlay_Utils("❌ Appointment: Recurring not found", 1400, BANNER_ACCENT_ERROR), false))
+            : (false)
+    ))
+    if IsNewOutlookActive()
+        return
     try {
         win := WinExist("A")
         root := UIA.ElementFromHandle(win)
-
         btn := root.FindFirst({ AutomationId: "4364", ControlType: "Button" })
         if !btn
             btn := root.FindFirst({ Name: "Make Recurring", ControlType: "Button" })
-
-        if btn {
+        if btn
             btn.Invoke()
-        } else {
-            MsgBox "Couldn't find the Make Recurring button.", "Control not found", "IconX"
-        }
-    } catch Error as err {
-        ShowErr(err)
+    } catch {
     }
+}
+
+; -------------------------------------------------------------------
+; New Outlook Appointment command bar shortcuts + modals
+; -------------------------------------------------------------------
+
+; Shift + M : Teams meeting - Meeting
++M:: {
+    if !IsNewOutlookActive()
+        return
+    Appt_RunWithLoading("Teams meeting", (*) => (
+        Appt_ClickInCommandBar([
+            { Name: "Teams meeting", matchmode: "Substring", ControlType: "Button" },
+            { Name: "Teams", matchmode: "Substring", ControlType: "Button" }
+        ]) || Appt_ClickAny([
+            { Name: "Teams meeting", matchmode: "Substring", ControlType: "Button" },
+            { Name: "Teams", matchmode: "Substring", ControlType: "Button" }
+        ]) || (ShowCenteredOverlay_Utils("❌ Appointment: Teams meeting not found", 1400, BANNER_ACCENT_ERROR), false)
+    ))
+}
+
+; Shift + U : Series (recurring) - sUper series
++U:: {
+    if !IsNewOutlookActive()
+        return
+    Appt_RunWithLoading("Series", (*) => (
+        Appt_ClickInCommandBar([
+            { Name: "Series", ControlType: "Button" },
+            { Name: "Series", ControlType: "TabItem" }
+        ]) || Appt_ClickAny([
+            { Name: "Series", ControlType: "Button" },
+            { Name: "Series", ControlType: "TabItem" }
+        ]) || Appt_PopoverInvokeFirst([
+            { Name: "Make recurring", ControlType: "Button" },
+            { Name: "recurring", matchmode: "Substring", ControlType: "Button" }
+        ]) || (ShowCenteredOverlay_Utils("❌ Appointment: Series/Recurring not found", 1400, BANNER_ACCENT_ERROR), false)
+    ))
+}
+
+; Shift + V : Status/Busy selection modal - aVailability
++V:: {
+    if !IsNewOutlookActive()
+        return
+    Appt_RunWithLoading("Status", (*) => (
+        (choice := Appt_SelectFromModal("Appointment status", [
+            { k: "1", label: "Free" },
+            { k: "2", label: "Working elsewhere" },
+            { k: "3", label: "Tentative" },
+            { k: "4", label: "Busy" },
+            { k: "5", label: "Out of office" }
+        ], "[1-5] Select  [Esc] Cancel"))
+            ? (
+                (target := (choice = "1") ? "Free"
+                    : (choice = "2") ? "Working elsewhere"
+                    : (choice = "3") ? "Tentative"
+                    : (choice = "4") ? "Busy"
+                    : "Out of office"),
+                Appt_OpenMenuAndPick([
+                    { Name: "Free", ControlType: "Button" },
+                    { Name: "Busy", ControlType: "Button" },
+                    { Name: "Tentative", ControlType: "Button" },
+                    { Name: "Working elsewhere", ControlType: "Button" },
+                    { Name: "Out of office", ControlType: "Button" },
+                    { Name: "Free", matchmode: "Substring", ControlType: "Button" },
+                    { Name: "Busy", matchmode: "Substring", ControlType: "Button" }
+                ], target)
+            )
+            : false
+    ))
+}
+
+; Shift + Q : Reminder selection modal - Q for reminder freQuency
++Q:: {
+    if !IsNewOutlookActive()
+        return
+    Appt_RunWithLoading("Reminder", (*) => (
+        (choice := Appt_SelectFromModal("Appointment reminder", [
+            { k: "1", label: "Don't remind me" },
+            { k: "2", label: "15 minutes before" },
+            { k: "3", label: "1 hour before" },
+            { k: "4", label: "12 hours before" },
+            { k: "5", label: "1 day before" },
+            { k: "6", label: "1 week before" }
+        ], "[1-6] Select  [Esc] Cancel"))
+            ? (
+                (target := (choice = "1") ? "Don't remind me"
+                    : (choice = "2") ? "15 minutes before"
+                    : (choice = "3") ? "1 hour before"
+                    : (choice = "4") ? "12 hours before"
+                    : (choice = "5") ? "1 day before"
+                    : "1 week before"),
+                Appt_OpenMenuAndPick([
+                    { Name: "Don't remind me", ControlType: "Button" },
+                    { Name: "15 minutes before", ControlType: "Button" },
+                    { Name: "1 hour before", ControlType: "Button" },
+                    { Name: "12 hours before", ControlType: "Button" },
+                    { Name: "1 day before", ControlType: "Button" },
+                    { Name: "1 week before", ControlType: "Button" },
+                    { Name: "Reminder", matchmode: "Substring", ControlType: "Button" }
+                ], target)
+            )
+            : false
+    ))
+}
+
+; Shift + G : Category selection modal - cateGory
++G:: {
+    if !IsNewOutlookActive()
+        return
+    Appt_RunWithLoading("Category", (*) => (
+        (choice := Appt_SelectFromModal("Appointment category", [
+            { k: "1", label: "Aniversário" },
+            { k: "2", label: "Importante" },
+            { k: "3", label: "Pessoal" }
+        ], "[1-3] Select  [Esc] Cancel"))
+            ? (
+                (target := (choice = "1") ? "Aniversário"
+                    : (choice = "2") ? "Importante"
+                    : "Pessoal"),
+                Appt_OpenMenuAndPick([
+                    { Name: "Aniversário", ControlType: "Button" },
+                    { Name: "Importante", ControlType: "Button" },
+                    { Name: "Pessoal", ControlType: "Button" },
+                    { Name: "Category", matchmode: "Substring", ControlType: "Button" },
+                    { Name: "Categories", matchmode: "Substring", ControlType: "Button" }
+                ], target)
+            )
+            : false
+    ))
+}
+
+; Shift + 1 / Shift + 2 : Select time suggestions (New Outlook popover)
++1:: {
+    Appt_RunWithLoading("Time suggestion 1", (*) => (
+        IsNewOutlookActive()
+            ? (Appt_PopoverSelectTimeSuggestion(1) || (ShowCenteredOverlay_Utils("❌ Appointment: Suggestion 1 not found", 1400, BANNER_ACCENT_ERROR), false))
+            : (false)
+    ))
+}
+
++2:: {
+    Appt_RunWithLoading("Time suggestion 2", (*) => (
+        IsNewOutlookActive()
+            ? (Appt_PopoverSelectTimeSuggestion(2) || (ShowCenteredOverlay_Utils("❌ Appointment: Suggestion 2 not found", 1400, BANNER_ACCENT_ERROR), false))
+            : (false)
+    ))
 }
 
 ; =============================================================================

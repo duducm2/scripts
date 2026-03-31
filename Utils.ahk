@@ -21,6 +21,16 @@ DebugFlowLog(location, message, dataStr := "", hypothesisId := "") {
 #include UIA-v2\Lib\UIA_Browser.ahk
 #include %A_ScriptDir%\lib\Media.ahk
 
+; =============================================================================
+; Semantic banner accents (must be defined early)
+; Some startup/update helpers call ShowCenteredOverlay_Utils / StandardLoadingBar_Show
+; before the later globals block is reached.
+; =============================================================================
+global BANNER_ACCENT_SUCCESS := "27AE60"      ; Dark green: positive / success
+global BANNER_ACCENT_ERROR := "C0392B"        ; Red: negative / error
+global BANNER_ACCENT_INTERMEDIATE := "F1C40F" ; Yellow: loading, actionable, neutral
+global BANNER_ACCENT_INFO := "2980B9"         ; Blue: info / alternate mode
+
 ; Possible Gemini prompt field names (EN and PT) for work/personal env. Used by FindGeminiPromptField.
 global GEMINI_PROMPT_FIELD_NAMES := ["Enter a prompt for Gemini", "Enter a prompt here",
     "Digite um prompt para o Gemini", "Digite um prompt aqui"]
