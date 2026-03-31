@@ -4064,6 +4064,102 @@ Reminders_OpenContextMenuForItem(itemEl) {
     Sleep 140
 }
 
+Reminders_MenuGetFocusedName() {
+    try {
+        fe := UIA.GetFocusedElement()
+        if !fe
+            return ""
+        return fe.Name
+    } catch {
+        return ""
+    }
+}
+
+Reminders_MenuFindItemContains(needle, maxSteps := 20, logId := "SN") {
+    ; Sequentially navigate the context menu looking for an item whose focused text contains needle.
+    ; Returns true when found (focus rests on that item).
+    needle := StrLower(needle)
+    Send "{Home}"
+    Sleep 60
+    Loop maxSteps {
+        name := Reminders_MenuGetFocusedName()
+        if (Mod(A_Index, 5) = 0) {
+            ; #region agent log
+            try Reminders_DebugLog("Shift keys.ahk:Reminders_MenuFindItemContains", "Menu scan step", Map(
+                "logId", logId,
+                "step", A_Index,
+                "name", name
+            ), "SN1", "pre-fix")
+            ; #endregion
+        }
+        if (name != "" && InStr(StrLower(name), needle)) {
+            ; #region agent log
+            try Reminders_DebugLog("Shift keys.ahk:Reminders_MenuFindItemContains", "Menu item matched", Map(
+                "logId", logId,
+                "step", A_Index,
+                "name", name,
+                "needle", needle
+            ), "SN2", "pre-fix")
+            ; #endregion
+            return true
+        }
+        Send "{Down}"
+        Sleep 50
+    }
+    ; #region agent log
+    try Reminders_DebugLog("Shift keys.ahk:Reminders_MenuFindItemContains", "Menu item not found", Map(
+        "logId", logId,
+        "needle", needle,
+        "maxSteps", maxSteps
+    ), "SN3", "pre-fix")
+    ; #endregion
+    return false
+}
+
+Reminders_MenuOpenSubmenuRight() {
+    ; Expand focused menu item.
+    Send "{Right}"
+    Sleep 80
+}
+
+Reminders_MenuFindAndOpenSnooze(maxSteps := 20) {
+    ; Find "Snooze reminder" regardless of position, then open its submenu.
+    if !Reminders_MenuFindItemContains("snooze", maxSteps, "snooze")
+        return false
+    Reminders_MenuOpenSubmenuRight()
+    return true
+}
+
+Reminders_NormalizeDurationNeedle(d) {
+    d := StrLower(Trim(d))
+    if (d = "30m" || d = "30 min" || d = "30 mins" || d = "30 minutes")
+        return "30 minutes"
+    if (d = "1h" || d = "1 hr" || d = "1 hour" || d = "one hour")
+        return "1 hour"
+    if (d = "4h" || d = "4 hrs" || d = "4 hours")
+        return "4 hours"
+    if (d = "1d" || d = "1 day")
+        return "1 day"
+    if (d = "1w" || d = "1 week")
+        return "1 week"
+    return d
+}
+
+Reminders_MenuFindAndSelectDuration(durationNeedle, maxSteps := 50) {
+    durationNeedle := Reminders_NormalizeDurationNeedle(durationNeedle)
+    ; After snooze submenu is open, scan items by focused text and press Enter on match.
+    if !Reminders_MenuFindItemContains(durationNeedle, maxSteps, "dur:" durationNeedle)
+        return false
+    Send "{Enter}"
+    Sleep 60
+    ; #region agent log
+    try Reminders_DebugLog("Shift keys.ahk:Reminders_MenuFindAndSelectDuration", "Duration selected", Map(
+        "duration", durationNeedle
+    ), "SD1", "pre-fix")
+    ; #endregion
+    return true
+}
+
 Reminders_TryInvokeJoinOnlineMenuItem() {
     ; Context menus are often hosted outside the window subtree,
     ; so search from the UIA root element (desktop).
@@ -4209,15 +4305,15 @@ Reminders_ExecuteItemAction(action) {
     }
 
     if (action = "snooze_1h" || action = "snooze_4h") {
-        Send "{Home}{Right}"
-        Sleep 80
-        downCount := (action = "snooze_1h") ? 4 : 6
-        loop downCount {
-            Send "{Down}"
-            Sleep 40
-        }
-        Send "{Enter}"
-        return true
+        desired := (action = "snooze_1h") ? "1 hour" : "4 hours"
+        ; #region agent log
+        try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Dynamic snooze requested", Map(
+            "desired", desired
+        ), "SZ0", "pre-fix")
+        ; #endregion
+        if !Reminders_MenuFindAndOpenSnooze(20)
+            return false
+        return Reminders_MenuFindAndSelectDuration(desired, 60)
     }
 
     if (action = "join_online") {
