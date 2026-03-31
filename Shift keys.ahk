@@ -7498,8 +7498,31 @@ IsOutlookMessageActive() {
 }
 
 IsOutlookAppointmentActive() {
-    return WinActive("ahk_exe OUTLOOK.EXE")
-    && RegExMatch(WinGetTitle("A"), "i)(Appointment|Meeting|Event)")
+    ; Classic Outlook inspector windows use titles like " - Appointment/Meeting/Event".
+    ; New Outlook editors often use titles like "New event - Outlook" and run under OUTLOOK.EXE or olk.exe.
+    if !(WinActive("ahk_exe OUTLOOK.EXE") || WinActive("ahk_exe olk.exe"))
+        return false
+
+    t := ""
+    try t := WinGetTitle("A")
+    if RegExMatch(t, "i)(Appointment|Meeting|Event)")
+        return true
+
+    ; New Outlook: detect by UIA presence of the title field.
+    if IsNewOutlookActive() {
+        try {
+            root := UIA.ElementFromHandle(WinExist("A"))
+            if root.FindFirst({ Name: "Add title", ControlType: "Edit" })
+                return true
+            if root.FindFirst({ Name: "Add title", Type: 50004 })
+                return true
+            if root.FindFirst({ AutomationId: "4100" })
+                return true
+        } catch {
+        }
+    }
+
+    return false
 }
 
 IsOutlookReminderActive() {
