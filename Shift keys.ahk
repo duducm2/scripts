@@ -4310,8 +4310,24 @@ Reminders_ExecuteItemAction(action) {
 
     ; Assume first menu item is highlighted (Snooze reminder) as per screenshots.
     if (action = "dismiss_item") {
-        Send "{Home}{Down}{Enter}"
-        return true
+        ; Menu order varies by reminder item (e.g. meeting reminders show Join/Chat first),
+        ; so locate "Dismiss reminder" by focused UIA name instead of fixed offsets.
+        ; #region agent log
+        try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Dynamic dismiss requested", Map(), "DZ0", "pre-fix")
+        ; #endregion
+        ok := Reminders_MenuFindItemContains("dismiss", 20, "dismiss")
+        if ok {
+            Send "{Enter}"
+            Sleep 60
+            ; #region agent log
+            try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Dismiss invoked", Map(), "DZ1", "pre-fix")
+            ; #endregion
+            return true
+        }
+        ; #region agent log
+        try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Dismiss not found in menu scan", Map(), "DZ2", "pre-fix")
+        ; #endregion
+        return false
     }
 
     if (action = "snooze_1h" || action = "snooze_4h" || action = "snooze_10m" || action = "snooze_1d" || action = "snooze_1w") {
