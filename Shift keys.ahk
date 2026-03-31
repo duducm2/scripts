@@ -3938,7 +3938,8 @@ Reminders_SelectItem(actionLabel, items, maxItems := 35) {
         i := A_Index
         k := keys[i]
         label := items[i].label
-        msg .= k ") " label "`n"
+        ; Readability: smaller text blocks, more vertical spacing, clear separation.
+        msg .= k ")    " label "`n`n"
     }
     if (items.Length > count)
         msg .= "`n⚠ Showing first " count " of " items.Length " reminders"
@@ -3987,7 +3988,7 @@ Reminders_SelectItem(actionLabel, items, maxItems := 35) {
             Reminders_PickTimeout,
             "1E1E2E",
             760,
-            17,
+            14,
             BANNER_ACCENT_INTERMEDIATE,
             false,
             "[1-9/A-Z] Select  [Esc] Cancel",
