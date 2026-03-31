@@ -485,11 +485,14 @@ Outlook (Shift)
 cheatSheets["OutlookReminder"] := "
 (
 Outlook - Reminders (Shift)
-⏰ [H]Snooze 1 [H]our (Not available in New Outlook)
-⏰ [F]Snooze [F]our hours (Not available in New Outlook)
-⏰ [D]Snooze 1 [D]ay (Not available in New Outlook)
-❌ [X]E[X]it all reminders (Dismiss)
-🌐 [J][J]oin Online (Not available in New Outlook)
+⏰ [H]Snooze 1 [H]our
+⏰ [F]Snooze [F]our hours
+⏰ [T]Snooze 10 minu[T]es
+⏰ [Y]Snooze 1 da[Y]
+⏰ [W]Snooze 1 [W]eek
+✅ [D][D]ismiss reminder (selected item)
+❌ [X]Dismiss all reminders
+🌐 [J][J]oin online (selected item)
 )"  ; end Outlook Reminder
 
 ; --- Outlook Appointment window ---------------------------------------------
@@ -4265,6 +4268,12 @@ Reminders_ExecuteItemAction(action) {
         actionLabel := "Snooze 1 hour"
     else if (action = "snooze_4h")
         actionLabel := "Snooze 4 hours"
+    else if (action = "snooze_10m")
+        actionLabel := "Snooze 10 minutes"
+    else if (action = "snooze_1d")
+        actionLabel := "Snooze 1 day"
+    else if (action = "snooze_1w")
+        actionLabel := "Snooze 1 week"
     else if (action = "dismiss_item")
         actionLabel := "Dismiss reminder"
     else if (action = "join_online")
@@ -4304,8 +4313,18 @@ Reminders_ExecuteItemAction(action) {
         return true
     }
 
-    if (action = "snooze_1h" || action = "snooze_4h") {
-        desired := (action = "snooze_1h") ? "1 hour" : "4 hours"
+    if (action = "snooze_1h" || action = "snooze_4h" || action = "snooze_10m" || action = "snooze_1d" || action = "snooze_1w") {
+        desired := ""
+        if (action = "snooze_1h")
+            desired := "1 hour"
+        else if (action = "snooze_4h")
+            desired := "4 hours"
+        else if (action = "snooze_10m")
+            desired := "10 minutes"
+        else if (action = "snooze_1d")
+            desired := "1 day"
+        else if (action = "snooze_1w")
+            desired := "1 week"
         ; #region agent log
         try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Dynamic snooze requested", Map(
             "desired", desired
@@ -4387,6 +4406,33 @@ Reminders_ExecuteItemAction(action) {
         return
     }
     Confirm("4 hours")
+}
+
+; Shift + T : Snooze 10 minutes - Ten
++T:: {
+    if Reminders_IsNewOutlookWindow() {
+        Reminders_ExecuteItemAction("snooze_10m")
+        return
+    }
+    Confirm("10 minutes")
+}
+
+; Shift + Y : Snooze 1 day - daY
++Y:: {
+    if Reminders_IsNewOutlookWindow() {
+        Reminders_ExecuteItemAction("snooze_1d")
+        return
+    }
+    Confirm("1 day")
+}
+
+; Shift + W : Snooze 1 week - Week
++W:: {
+    if Reminders_IsNewOutlookWindow() {
+        Reminders_ExecuteItemAction("snooze_1w")
+        return
+    }
+    Confirm("1 week")
 }
 
 ; Shift + D : Dismiss reminder (New Outlook) / Snooze 1 day (classic)
