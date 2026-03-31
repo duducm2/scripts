@@ -3921,31 +3921,45 @@ Reminders_SelectItem(actionLabel, items, maxItems := 35) {
         return 0
     }
 
+    ; Stable key set (we'll keep callbacks stable and just refresh the displayed list).
     keys := []
     loop 9
         keys.Push(A_Index)
     for c in StrSplit("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
         keys.Push(c)
 
-    ; Derive count using integer-only operations (avoid Float issues in ranges/loops).
-    count := items.Length
-    if (count > maxItems)
-        count := maxItems
-    if (count > keys.Length)
-        count := keys.Length
-    msg := "❓ Select reminder to " actionLabel ":`n`n"
-    Loop count {
-        i := A_Index
-        k := keys[i]
-        label := items[i].label
-        ; Readability: smaller text blocks, more vertical spacing, clear separation.
-        msg .= k ")    " label "`n`n"
+    ClampCount(itemsLen) {
+        c := itemsLen
+        if (c > maxItems)
+            c := maxItems
+        if (c > keys.Length)
+            c := keys.Length
+        return c
     }
-    if (items.Length > count)
-        msg .= "`n⚠ Showing first " count " of " items.Length " reminders"
+
+    BuildMsg(currentItems, currentCount) {
+        m := "❓ Select reminder to " actionLabel ":`n`n"
+        Loop currentCount {
+            i := A_Index
+            k := keys[i]
+            label := currentItems[i].label
+            m .= k ")`n    " label "`n`n"
+        }
+        if (currentItems.Length > currentCount)
+            m .= "`n⚠ Showing first " currentCount " of " currentItems.Length " reminders"
+        return m
+    }
+
+    ; Derive count using integer-only operations (avoid Float issues in ranges/loops).
+    count := ClampCount(items.Length)
+    msg := BuildMsg(items, count)
 
     keyCallbacks := Map()
-    Loop count {
+    ; Register all potential selection keys once (prevents needing to rebuild callbacks on refresh).
+    maxKeyCount := maxItems
+    if (maxKeyCount > keys.Length)
+        maxKeyCount := keys.Length
+    Loop maxKeyCount {
         i := A_Index
         k := keys[i]
         keyCallbacks.Set(k, Reminders_PickKey.Bind(k))
@@ -4004,9 +4018,40 @@ Reminders_SelectItem(actionLabel, items, maxItems := 35) {
 
     deadline := A_TickCount + 45000
     reopens := 0
+    lastRefreshTick := A_TickCount
+    lastSig := ""
     while (A_TickCount < deadline) {
         if (g_RemindersPickKey != "")
             break
+
+        ; Live refresh: if reminders change while the modal is open, update the displayed list.
+        if (A_TickCount - lastRefreshTick >= 1000) {
+            lastRefreshTick := A_TickCount
+            try {
+                latest := Reminders_GetItems()
+                latestCount := ClampCount(latest.Length)
+                sig := latest.Length
+                maxSig := Min(8, latest.Length)
+                Loop maxSig {
+                    sig .= "|" latest[A_Index].label
+                }
+                if (sig != lastSig) {
+                    lastSig := sig
+                    items := latest
+                    count := latestCount
+                    msg := BuildMsg(items, count)
+                    try StandardLoadingBar_Update(msg)
+                    ; #region agent log
+                    try Reminders_DebugLog("Shift keys.ahk:Reminders_SelectItem", "Live-refreshed reminder list", Map(
+                        "itemsCount", items.Length,
+                        "showing", count
+                    ), "SR1", "pre-fix")
+                    ; #endregion
+                }
+            } catch {
+            }
+        }
+
         ; Detect unexpected overlay dismissal (another script/banner replaced it).
         try {
             global g_StandardLoadingBarIsKeysOverlay, g_StandardLoadingBarGui
