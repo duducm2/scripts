@@ -727,14 +727,13 @@ InitHotstringsCheatSheet() {
             "📜 Junior AI: ⚡ rapid-fire template")
     }
 
-    ; General Information (2 items) - Second category
-    RegisterHotstring(":o:ebosch", "eduardo.figueiredo@br.bosch.com", "General", "💼 Bosch Email")
-    RegisterHotstring(":o:egoogle", "edu.evangelista.figueiredo@gmail.com", "General", "📧 Gmail")
+    ; Hotstrings: emails
+    RegisterHotstring(":o:ebosch", "eduardo.figueiredo@br.bosch.com", "Hotstrings", "💼 Bosch Email")
+    RegisterHotstring(":o:egoogle", "edu.evangelista.figueiredo@gmail.com", "Hotstrings", "📧 Gmail")
 
     ; Projects (Cursor workspaces) — keys align with Project Selector 2
     RegisterHotstring(":o:gintegra", "GS_UX core team_UX and CIP Integration", "Projects", "🔄 UX and CIP Integration", "u")
     RegisterHotstring(":o:gdash", "GS_E&S_CIP Dashboard research and design", "Projects", "📊 CIP Dashboard", "d")
-    RegisterHotstring(":o:14notes", "14-my-notes", "Projects", "📝 14-my-Notes", "n")
     RegisterHotstring(":o:boiler-plate", "boiler-plate", "Projects", "🧱 boiler-plate", "0")
     RegisterHotstring(":o:astra", "astra", "Projects", "⭐ astrA", "a")
 
@@ -743,7 +742,6 @@ InitHotstringsCheatSheet() {
     RegisterHotstring(":o:gpm", "GS_UX_Project_Management_Activities_LA", "Hotstrings", "📋 Project Management LA", "p")
     RegisterHotstring(":o:guxcip", "GS_UX_and_CIP", "Hotstrings", "🔗 UX and CIP", "x")
     RegisterHotstring(":o:gtrain", "GS_UX core team_Trainings Management", "Hotstrings", "🎓 Trainings Management", "t")
-    RegisterHotstring(":o:26ai", "26-ai-experiment", "Hotstrings", "🤖 26-ai-experiment", "i")
 }
 InitHotstringsCheatSheet()
 
@@ -7419,8 +7417,9 @@ global g_UtilitySelectorMode := "top"           ; "top" | "category"
 global g_UtilitySelectorCategory := ""          ; One of g_UtilityTopCategories
 
 ; Top-level categories (numbers 1-6 select these)
-global g_UtilityTopCategories := ["Prompts", "Projects", "Macros", "General", "Hotstrings"]
-global g_UtilityTopCategoryById := Map("1", "Prompts", "2", "Projects", "3", "Macros", "4", "General", "5", "Hotstrings")
+global g_UtilityTopCategories := ["Prompts", "Projects", "Macros", "General", "Links", "Hotstrings"]
+; Top-level trigger keys (lowercase so UtilitySelector_RebindHotkeys auto-binds uppercase too)
+global g_UtilityTopCategoryById := Map("r", "Prompts", "p", "Projects", "m", "Macros", "g", "General", "l", "Links", "h", "Hotstrings")
 
 ; Utility selector cached UI data (rebuilt each time ShowHotstringSelector() runs)
 global g_UtilitySelectorAllItems := []          ; Array of {category, char, text, isEmpty, [explicitIndex]}
@@ -7691,6 +7690,7 @@ GetCategorizedHotstrings() {
     categorized["Prompts"] := []
     categorized["General"] := []
     categorized["Hotstrings"] := []
+    categorized["Links"] := []
     categorized["Files & Links"] := []
     categorized["Macros"] := []
 
@@ -7706,7 +7706,7 @@ GetCategorizedHotstrings() {
         }
     }
 
-    ; Add quick open files
+    ; Add quick open files (rendered under Links in Utility selector)
     if (IsSet(g_QuickOpenFiles) && g_QuickOpenFiles.Length > 0) {
         for fileEntry in g_QuickOpenFiles {
             categorized["Files & Links"].Push(fileEntry)
@@ -8305,8 +8305,9 @@ HandleHotstringChar(char) {
 
     ; Top-level category selection (1-6)
     if (g_UtilitySelectorMode = "top") {
-        if (g_UtilityTopCategoryById.Has(char)) {
-            UtilitySelector_SwitchToCategory(g_UtilityTopCategoryById[char])
+        ch := StrLower(char)
+        if (g_UtilityTopCategoryById.Has(ch)) {
+            UtilitySelector_SwitchToCategory(g_UtilityTopCategoryById[ch])
         }
         return
     }
@@ -8617,9 +8618,11 @@ UtilitySelector_SwitchToCategory(category) {
 
 UtilitySelector_MapInternalCategoryToTop(internalCategory) {
     if (internalCategory = "Files & Links")
-        return "General"
+        return "Links"
     if (internalCategory = "General")
         return "General"
+    if (internalCategory = "Links")
+        return "Links"
     if (internalCategory = "Hotstrings")
         return "Hotstrings"
     ; Unknown/legacy categories are folded into General now that top-level "Hot Strings" is removed.
@@ -8723,12 +8726,13 @@ UtilitySelector_BuildTopLevelText() {
     }
 
     text := ""
-    text .= "[1] Prompts (" . counts["Prompts"] . ")`n"
-    text .= "[2] Projects (" . counts["Projects"] . ")`n"
-    text .= "[3] Macros (" . counts["Macros"] . ")`n"
-    text .= "[4] General (" . counts["General"] . ")`n"
-    text .= "[5] Hotstrings (" . counts["Hotstrings"] . ")`n"
-    text .= "`nPress 1–5 to open a category.`n"
+    text .= "[R] Prompts (" . counts["Prompts"] . ")`n"
+    text .= "[P] Projects (" . counts["Projects"] . ")`n"
+    text .= "[M] Macros (" . counts["Macros"] . ")`n"
+    text .= "[G] General (" . counts["General"] . ")`n"
+    text .= "[L] Links (" . counts["Links"] . ")`n"
+    text .= "[H] Hotstrings (" . counts["Hotstrings"] . ")`n"
+    text .= "`nPress R/P/M/G/L/H to open a category.`n"
     return text
 }
 
@@ -9313,7 +9317,7 @@ ShowHotstringSelector() {
             }
         }
 
-        ; Files & Links show under General in Utility menu
+        ; Files & Links show under Links in Utility menu
         filePathToChar := Map()
         try {
             for ch, fp in g_QuickOpenFileCharMap
@@ -9329,7 +9333,7 @@ ShowHotstringSelector() {
                     titleText := fileEntry.HasProp("title") ? fileEntry.title : ""
                     if (titleText = "")
                         titleText := fileEntry.filePath
-                    AddItem("General", ch, titleText, seen, rebuilt)
+                    AddItem("Links", ch, titleText, seen, rebuilt)
                 } catch {
                 }
             }
