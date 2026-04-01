@@ -7584,6 +7584,27 @@ IsOutlookReminderActive() {
     && RegExMatch(WinGetTitle("A"), "i)Reminders?")
 }
 
+IsOutlookComposeActive() {
+    ; New Outlook compose runs inside the main window and doesn't match the classic " - Message (" title.
+    if !IsNewOutlookActive()
+        return false
+    try {
+        root := UIA.ElementFromHandle(WinExist("A"))
+        ; Prefer compose-only anchors seen in outlook-mail.md compose capture.
+        if root.FindFirst({ AutomationId: "popoutCompose" })
+            return true
+        if root.FindFirst({ AutomationId: "discardCompose" })
+            return true
+        if root.FindFirst({ AutomationId: "splitButton-ram0__primaryActionButton" }) ; Send
+            return true
+        ; Fallback: presence of the compose Subject edit (MSG_*_SUBJECT) + Message body edit
+        if root.FindFirst({ Name: "Subject", ControlType: "Edit" }) && root.FindFirst({ Name: "Message body", ControlType: "Edit" })
+            return true
+    } catch {
+    }
+    return false
+}
+
 IsOutlookMainActive() {
     if !(WinActive("ahk_exe OUTLOOK.EXE") || WinActive("ahk_exe olk.exe"))
         return false
@@ -7755,6 +7776,136 @@ OutlookMail_ClickInboxFolder() {
             try inbox.Click()
             catch {
                 try inbox.Invoke()
+            }
+            return true
+        }
+    } catch {
+    }
+    return false
+}
+
+OutlookCompose_FocusToRecipientsField() {
+    Outlook_ActivateMainWindow()
+    try {
+        root := UIA.ElementFromHandle(WinExist("A"))
+
+        ; #region agent log
+        OC_ToLog(msg, data := "{}", hypo := "OC_To") {
+            try {
+                line := "{"
+                    . '"sessionId":"b96502",'
+                    . '"runId":"shiftT",'
+                    . '"hypothesisId":"' hypo '",'
+                    . '"timestamp":' A_TickCount ','
+                    . '"location":"Shift keys.ahk:OutlookCompose_FocusToRecipientsField",'
+                    . '"message":"' StrReplace(msg, '"', '\"') '",'
+                    . '"data":' data
+                    . "}"
+                FileAppend(line "`n", "debug-b96502.log", "UTF-8")
+            } catch {
+            }
+        }
+        ; #endregion
+
+        try {
+            hwnd := WinExist("A")
+            t := WinGetTitle("A")
+            c := WinGetClass("A")
+            p := WinGetProcessName("A")
+            OC_ToLog("entry", '{"hwnd":' hwnd ',"proc":"' StrReplace(p, '"', '\"') '","class":"' StrReplace(c, '"', '\"') '","title":"' StrReplace(SubStr(t, 1, 120), '"', '\"') '"}', "OC_To_A")
+        } catch {
+        }
+
+        ; Step 1: click the To: row (reactive UI may expand recipients editor)
+        okTo := OutlookClickFirst([{ AutomationId: "134", ControlType: "Group" }, { AutomationId: "134" }, { Name: "To:", matchmode: "Substring" }])
+        try OC_ToLog("after_to_click", '{"ok":' (okTo ? 1 : 0) '}', "OC_To_B")
+        catch {
+        }
+        if !okTo
+            return false
+        Sleep 80
+
+        ; Step 2: click the recipient entity group (AutomationId looks like REK000070; can change)
+        recipGroup := 0
+        try recipGroup := root.FindFirst({ AutomationId: "REK", matchmode: "Substring", ControlType: "Group" })
+        if !recipGroup
+            try recipGroup := root.FindFirst({ AutomationId: "REK", matchmode: "Substring" })
+        if !recipGroup {
+            ; Broad fallback: find any group that looks like a recipient entity (class contains _EType_RECIPIENT_ENTITY)
+            try recipGroup := root.FindFirst({ ClassName: "_EType_RECIPIENT_ENTITY", matchmode: "Substring", ControlType: "Group" })
+        }
+        if recipGroup {
+            n := "", aid := "", cn := "", ct := "", off := "", en := ""
+            try n := recipGroup.Name
+            try aid := recipGroup.AutomationId
+            try cn := recipGroup.ClassName
+            try ct := recipGroup.ControlType
+            try off := recipGroup.IsOffscreen
+            try en := recipGroup.IsEnabled
+            try OC_ToLog("recip_group_found", '{"name":"' StrReplace(SubStr(n, 1, 80), '"', '\"') '","automationId":"' StrReplace(SubStr(aid, 1, 80), '"', '\"') '","className":"' StrReplace(SubStr(cn, 1, 80), '"', '\"') '","controlType":"' StrReplace(ct, '"', '\"') '","isOffscreen":' (off ? 1 : 0) ',"isEnabled":' (en ? 1 : 0) '}', "OC_To_C")
+            catch {
+            }
+        } else {
+            try OC_ToLog("recip_group_not_found", "{}", "OC_To_C")
+            catch {
+            }
+        }
+        if recipGroup {
+            try recipGroup.ScrollIntoView()
+            try recipGroup.SetFocus()
+            Sleep 30
+            try recipGroup.Click()
+            catch {
+                try recipGroup.Invoke()
+            }
+            Sleep 60
+
+            ; Step 3: focus the editable field inside the recipient group (if exposed)
+            edit := 0
+            try edit := recipGroup.FindFirst({ ControlType: "Edit" })
+            if !edit
+                try edit := recipGroup.FindFirst({ Type: 50004 })
+            if edit {
+                try OC_ToLog("inner_edit_found", "{}", "OC_To_D")
+                catch {
+                }
+                try edit.SetFocus()
+                Sleep 20
+                try edit.Click()
+                try {
+                    fe := UIA.GetFocusedElement()
+                    fn := "", fa := "", ft := ""
+                    try fn := fe.Name
+                    try fa := fe.AutomationId
+                    try ft := fe.Type
+                    OC_ToLog("focused_after_edit", '{"name":"' StrReplace(SubStr(fn, 1, 80), '"', '\"') '","automationId":"' StrReplace(SubStr(fa, 1, 80), '"', '\"') '","type":' (ft = "" ? -1 : ft) '}', "OC_To_E")
+                } catch {
+                }
+                return true
+            }
+            ; Fallback: click the hover target wrapper (often the direct text/caret host)
+            wrap := 0
+            try wrap := recipGroup.FindFirst({ ClassName: "lpcWrapper", matchmode: "Substring" })
+            if wrap {
+                try OC_ToLog("wrapper_found", "{}", "OC_To_D")
+                catch {
+                }
+                try wrap.SetFocus()
+                Sleep 20
+                try wrap.Click()
+                try {
+                    fe := UIA.GetFocusedElement()
+                    fn := "", fa := "", ft := ""
+                    try fn := fe.Name
+                    try fa := fe.AutomationId
+                    try ft := fe.Type
+                    OC_ToLog("focused_after_wrapper", '{"name":"' StrReplace(SubStr(fn, 1, 80), '"', '\"') '","automationId":"' StrReplace(SubStr(fa, 1, 80), '"', '\"') '","type":' (ft = "" ? -1 : ft) '}', "OC_To_E")
+                } catch {
+                }
+                return true
+            }
+            try OC_ToLog("no_inner_target", "{}", "OC_To_D")
+            catch {
             }
             return true
         }
@@ -7990,8 +8141,63 @@ OutlookClickFirst(criteriaList) {
 ; Shift + T : Required / To - To
 +T:: {
     ; New Outlook compose: “To:” row is a Group (AutomationId 134) that may be collapsed/hidden.
-    if IsNewOutlookActive() {
-        ; Prefer stable AutomationId from outlook-mail.md (compose surface).
+    if IsNewOutlookActive() && IsOutlookComposeActive() {
+        ; #region agent log
+        OC_STLog(msg, data := "{}", hypo := "OC_ST") {
+            try {
+                line := "{"
+                    . '"sessionId":"b96502",'
+                    . '"runId":"shiftT",'
+                    . '"hypothesisId":"' hypo '",'
+                    . '"timestamp":' A_TickCount ','
+                    . '"location":"Shift keys.ahk:+T(compose)",'
+                    . '"message":"' StrReplace(msg, '"', '\"') '",'
+                    . '"data":' data
+                    . "}"
+                FileAppend(line "`n", "debug-b96502.log", "UTF-8")
+            } catch {
+            }
+        }
+        ; #endregion
+
+        try {
+            hwnd := WinExist("A")
+            t := WinGetTitle("A")
+            OC_STLog("compose_gate_passed", '{"hwnd":' hwnd ',"title":"' StrReplace(SubStr(t, 1, 120), '"', '\"') '"}', "OC_ST_A")
+        } catch {
+        }
+
+        ; Prefer recipient focus flow (reactive UI): To row -> recipient entity group -> inner field.
+        ok := OutlookCompose_FocusToRecipientsField()
+        try OC_STLog("after_focus_flow", '{"ok":' (ok ? 1 : 0) '}', "OC_ST_B")
+        catch {
+        }
+        if ok
+            return
+
+        ; Fallback experiment (logged): select Bcc then Shift+Tab once.
+        try {
+            bccOk := OutlookClickFirst([
+                { Name: "Bcc", matchmode: "Substring", ControlType: "Button" },
+                { Name: "Bcc", matchmode: "Substring" },
+                { Name: "Show Bcc", matchmode: "Substring", ControlType: "Button" }
+            ])
+            OC_STLog("bcc_click", '{"ok":' (bccOk ? 1 : 0) '}', "OC_ST_C")
+            if bccOk {
+                Send "{Tab}"
+                Sleep 40
+                fe := UIA.GetFocusedElement()
+                fn := "", fa := "", ft := ""
+                try fn := fe.Name
+                try fa := fe.AutomationId
+                try ft := fe.Type
+                OC_STLog("focused_after_bcc_shift_tab", '{"name":"' StrReplace(SubStr(fn, 1, 80), '"', '\"') '","automationId":"' StrReplace(SubStr(fa, 1, 80), '"', '\"') '","type":' (ft = "" ? -1 : ft) '}', "OC_ST_D")
+                return
+            }
+        } catch {
+        }
+
+        ; Fallback: click the To row only.
         if OutlookClickFirst([{ AutomationId: "134", ControlType: "Group" }, { AutomationId: "134" }])
             return
         ; Fallback: any element whose name begins with “To:”.
