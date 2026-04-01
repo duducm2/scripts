@@ -8083,12 +8083,7 @@ SelectExplorerSidebarFirstPinned() {
 ; -------------------------------------------------------------------
 Appt_LoadingShow(text) {
     try StandardLoadingBar_Show(text, BANNER_ACCENT_INTERMEDIATE, { passive: false, centerOnHwnd: 0, textWidth: 560, fontSize: 17 })
-    catch as err {
-        ; #region agent log
-        try FileAppend('{"sessionId":"b96502","runId":"run2","hypothesisId":"Load_A","timestamp":' A_TickCount ',"location":"Shift keys.ahk:Appt_LoadingShow","message":"StandardLoadingBar_Show threw","data":{"error":"' StrReplace(SubStr(err.Message, 1, 140), '"', '\"') '"}}' "`n", "debug-b96502.log", "UTF-8")
-        catch {
-        }
-        ; #endregion
+    catch {
     }
 }
 
@@ -8316,65 +8311,24 @@ Appt_PopoverFocusFirst(criteriaList) {
 }
 
 Appt_PopoverInvokeFirst(criteriaList) {
-    ; #region agent log
-    ApptDbg_AllDay(msg, data := "{}", hypo := "AllDay") {
-        try {
-            line := "{"
-                . '"sessionId":"b96502",'
-                . '"runId":"run1",'
-                . '"hypothesisId":"' hypo '",'
-                . '"timestamp":' A_TickCount ','
-                . '"location":"Shift keys.ahk:Appt_PopoverInvokeFirst",'
-                . '"message":"' StrReplace(msg, '"', '\"') '",'
-                . '"data":' data
-                . "}"
-            FileAppend(line "`n", "debug-b96502.log", "UTF-8")
-        } catch {
-        }
-    }
-    ; #endregion
-
     pop := Appt_OpenPopoverIfNeeded()
     if !pop
     {
-        ApptDbg_AllDay("no popover", "{}", "AllDay_A")
         return false
     }
     for crit in criteriaList {
         try {
             el := pop.FindFirst(crit)
             if el {
-                n := "", aid := "", t := "", enabled := "", off := "", inv := 0, tog := 0
-                try n := el.Name
-                try aid := el.AutomationId
-                try t := el.Type
-                try enabled := el.IsEnabled
-                try off := el.IsOffscreen
-                try inv := el.IsInvokePatternAvailable
-                try tog := el.IsTogglePatternAvailable
-                ApptDbg_AllDay("match found", '{'
-                    . '"name":"' StrReplace(n, '"', '\"') '",'
-                    . '"automationId":"' StrReplace(aid, '"', '\"') '",'
-                    . '"type":' t ','
-                    . '"isEnabled":' (enabled ? 1 : 0) ','
-                    . '"isOffscreen":' (off ? 1 : 0) ','
-                    . '"invokeAvail":' (inv ? 1 : 0) ','
-                    . '"toggleAvail":' (tog ? 1 : 0)
-                    . '}', "AllDay_B")
-
                 ok := false
                 try {
                     el.Click()
                     ok := true
-                    ApptDbg_AllDay("click ok", "{}", "AllDay_C")
                 } catch as err1 {
-                    ApptDbg_AllDay("click failed", '{"error":"' StrReplace(err1.Message, '"', '\"') '"}', "AllDay_C")
                     try {
                         el.Invoke()
                         ok := true
-                        ApptDbg_AllDay("invoke ok", "{}", "AllDay_D")
                     } catch as err2 {
-                        ApptDbg_AllDay("invoke failed", '{"error":"' StrReplace(err2.Message, '"', '\"') '"}', "AllDay_D")
                     }
                 }
                 if ok
@@ -8383,32 +8337,12 @@ Appt_PopoverInvokeFirst(criteriaList) {
         } catch {
         }
     }
-    ApptDbg_AllDay("no match", "{}", "AllDay_E")
     return false
 }
 
 Appt_PopoverToggleFirst(criteriaList) {
-    ; #region agent log
-    ApptDbg_AllDayToggle(msg, data := "{}", hypo := "AllDayT") {
-        try {
-            line := "{"
-                . '"sessionId":"b96502",'
-                . '"runId":"run1",'
-                . '"hypothesisId":"' hypo '",'
-                . '"timestamp":' A_TickCount ','
-                . '"location":"Shift keys.ahk:Appt_PopoverToggleFirst",'
-                . '"message":"' StrReplace(msg, '"', '\"') '",'
-                . '"data":' data
-                . "}"
-            FileAppend(line "`n", "debug-b96502.log", "UTF-8")
-        } catch {
-        }
-    }
-    ; #endregion
-
     pop := Appt_OpenPopoverIfNeeded()
     if !pop {
-        ApptDbg_AllDayToggle("no popover", "{}", "AllDayT_A")
         return false
     }
     for crit in criteriaList {
@@ -8416,51 +8350,30 @@ Appt_PopoverToggleFirst(criteriaList) {
             el := pop.FindFirst(crit)
             if !el
                 continue
-            n := "", aid := "", t := "", enabled := "", off := "", tog := 0
-            try n := el.Name
-            try aid := el.AutomationId
-            try t := el.Type
-            try enabled := el.IsEnabled
-            try off := el.IsOffscreen
+            tog := 0
             try tog := el.IsTogglePatternAvailable
-            ApptDbg_AllDayToggle("match found", '{'
-                . '"name":"' StrReplace(n, '"', '\"') '",'
-                . '"automationId":"' StrReplace(aid, '"', '\"') '",'
-                . '"type":' t ','
-                . '"isEnabled":' (enabled ? 1 : 0) ','
-                . '"isOffscreen":' (off ? 1 : 0) ','
-                . '"toggleAvail":' (tog ? 1 : 0)
-                . '}', "AllDayT_B")
-
             if tog {
                 try {
                     el.TogglePattern.Toggle()
-                    ApptDbg_AllDayToggle("toggle ok", "{}", "AllDayT_C")
                     return true
                 } catch as errT {
-                    ApptDbg_AllDayToggle("toggle failed", '{"error":"' StrReplace(errT.Message, '"', '\"') '"}', "AllDayT_C")
                 }
             }
 
             ; Fallback: click/invoke if TogglePattern not available.
             try {
                 el.Click()
-                ApptDbg_AllDayToggle("click ok", "{}", "AllDayT_D")
                 return true
             } catch as errC {
-                ApptDbg_AllDayToggle("click failed", '{"error":"' StrReplace(errC.Message, '"', '\"') '"}', "AllDayT_D")
                 try {
                     el.Invoke()
-                    ApptDbg_AllDayToggle("invoke ok", "{}", "AllDayT_E")
                     return true
                 } catch as errI {
-                    ApptDbg_AllDayToggle("invoke failed", '{"error":"' StrReplace(errI.Message, '"', '\"') '"}', "AllDayT_E")
                 }
             }
         } catch {
         }
     }
-    ApptDbg_AllDayToggle("no match", "{}", "AllDayT_F")
     return false
 }
 
@@ -8681,29 +8594,10 @@ Appt_ClickAny(criteriaList) {
 }
 
 Appt_OpenMenuAndPick(menuButtonCriteriaList, menuItemName, preClickDelayMs := 0) {
-    ; #region agent log
-    AvailLog(msg, data := "{}", hypo := "Avail") {
-        try {
-            line := "{"
-                . '"sessionId":"b96502",'
-                . '"runId":"run1",'
-                . '"hypothesisId":"' hypo '",'
-                . '"timestamp":' A_TickCount ','
-                . '"location":"Shift keys.ahk:Appt_OpenMenuAndPick",'
-                . '"message":"' StrReplace(msg, '"', '\"') '",'
-                . '"data":' data
-                . "}"
-            FileAppend(line "`n", "debug-b96502.log", "UTF-8")
-        } catch {
-        }
-    }
-    ; #endregion
-
     ; Open menu (button), then pick the menu item.
     ; IMPORTANT: Searching the desktop root can be extremely expensive and can freeze the PC.
     if !Appt_ClickAny(menuButtonCriteriaList)
         return false
-    AvailLog("menu click done", '{"target":"' StrReplace(menuItemName, '"', '\"') '","hwnd":' WinExist("A") '}', "Avail_A")
     try StandardLoadingBar_Update("🔄 Appointment: opening status menu…", BANNER_ACCENT_INTERMEDIATE)
     try {
         rootWin := Appt_GetRootActive()
@@ -8714,32 +8608,32 @@ Appt_OpenMenuAndPick(menuButtonCriteriaList, menuItemName, preClickDelayMs := 0)
         ; Try within the active appointment window first (fast).
         mi := 0
         try mi := rootWin.FindFirst({ Name: menuItemName, ControlType: "MenuItem" })
-        catch as e1
-            AvailLog("findfirst threw", '{"scope":"win","step":"MenuItem","error":"' StrReplace(e1.Message, '"', '\"') '"}', "Avail_E1")
+        catch {
+        }
         if !mi {
             try mi := rootWin.FindFirst({ Name: menuItemName, ControlType: "RadioButton" })
-            catch as e2
-                AvailLog("findfirst threw", '{"scope":"win","step":"RadioButton","error":"' StrReplace(e2.Message, '"', '\"') '"}', "Avail_E2")
+            catch {
+            }
         }
         if !mi {
             try mi := rootWin.FindFirst({ Name: menuItemName, ControlType: "Button" })
-            catch as e3
-                AvailLog("findfirst threw", '{"scope":"win","step":"Button","error":"' StrReplace(e3.Message, '"', '\"') '"}', "Avail_E3")
+            catch {
+            }
         }
         if !mi {
             try mi := rootWin.FindFirst({ Name: menuItemName, ControlType: "ListItem" })
-            catch as e3b
-                AvailLog("findfirst threw", '{"scope":"win","step":"ListItem","error":"' StrReplace(e3b.Message, '"', '\"') '"}', "Avail_E3b")
+            catch {
+            }
         }
         if !mi {
             try mi := rootWin.FindFirst({ Name: menuItemName, ControlType: "CheckBox" })
-            catch as e3c
-                AvailLog("findfirst threw", '{"scope":"win","step":"CheckBox","error":"' StrReplace(e3c.Message, '"', '\"') '"}', "Avail_E3c")
+            catch {
+            }
         }
         if !mi {
             try mi := rootWin.FindFirst({ Name: menuItemName })
-            catch as e4
-                AvailLog("findfirst threw", '{"scope":"win","step":"NameOnly","error":"' StrReplace(e4.Message, '"', '\"') '"}', "Avail_E4")
+            catch {
+            }
         }
 
         ; Fallback: ONE desktop attempt (avoid freezing the machine).
@@ -8749,8 +8643,7 @@ Appt_OpenMenuAndPick(menuButtonCriteriaList, menuItemName, preClickDelayMs := 0)
                 if desktop {
                     try mi := desktop.FindFirst({ Name: menuItemName })
                 }
-            } catch as e5 {
-                AvailLog("findfirst threw", '{"scope":"desktop","step":"NameOnly","error":"' StrReplace(e5.Message, '"', '\"') '"}', "Avail_E5")
+            } catch {
             }
         }
         if !mi {
@@ -8760,39 +8653,24 @@ Appt_OpenMenuAndPick(menuButtonCriteriaList, menuItemName, preClickDelayMs := 0)
                 if desktop {
                     try mi := desktop.FindFirst({ Name: menuItemName, matchmode: "Substring" })
                 }
-            } catch as e5b {
-                AvailLog("findfirst threw", '{"scope":"desktop","step":"SubstringName","error":"' StrReplace(e5b.Message, '"', '\"') '"}', "Avail_E5b")
+            } catch {
             }
         }
         if mi {
-            aid := "", ct := "", t := ""
-            try aid := mi.AutomationId
-            try ct := mi.ControlType
-            try t := mi.Type
-            AvailLog("match found", '{"name":"' StrReplace(menuItemName, '"', '\"') '","automationId":"' StrReplace(aid, '"', '\"') '","controlType":"' StrReplace(ct, '"', '\"') '","type":' t '}', "Avail_B")
             if (preClickDelayMs > 0) {
                 try StandardLoadingBar_Update("👁️ Appointment: about to click → " menuItemName, BANNER_ACCENT_INTERMEDIATE)
                 catch {
                 }
-                ; #region agent log
-                AvailLog("pre-click pause begin", '{"ms":' preClickDelayMs '}', "Delay_A")
-                ; #endregion
                 Sleep preClickDelayMs
-                ; #region agent log
-                AvailLog("pre-click pause end", '{"ms":' preClickDelayMs '}', "Delay_B")
-                ; #endregion
             }
             try mi.Click()
             catch {
                 try mi.Invoke()
             }
             StandardLoadingBar_Update("✅ Appointment: " menuItemName, BANNER_ACCENT_SUCCESS)
-            AvailLog("selected", "{}", "Avail_C")
             return true
         }
-        AvailLog("no match", '{"name":"' StrReplace(menuItemName, '"', '\"') '"}', "Avail_D")
     } catch as err {
-        AvailLog("exception", '{"error":"' StrReplace(err.Message, '"', '\"') '"}', "Avail_E")
     }
     return false
 }
@@ -8935,11 +8813,6 @@ Outlook_ClickEndTime_1200PM() {
 ; Shift + A : All day checkbox - All Day
 +A:: {
     if IsNewOutlookActive() {
-        ; #region agent log
-        try FileAppend('{"sessionId":"b96502","runId":"run1","hypothesisId":"AllDay_Z","timestamp":' A_TickCount ',"location":"Shift keys.ahk:+A(appointment)","message":"hotkey entry","data":{}}' "`n", "debug-b96502.log", "UTF-8")
-        catch {
-        }
-        ; #endregion
         Appt_RunWithLoading("All day", (*) => (
             Appt_PopoverToggleFirst([
                 { Name: "All day", ControlType: "CheckBox" },
@@ -9330,11 +9203,6 @@ Appt_ToggleOrClickAny(criteriaList) {
 +V:: {
     if !IsNewOutlookActive()
         return
-    ; #region agent log
-    try FileAppend('{"sessionId":"b96502","runId":"run1","hypothesisId":"Avail_A","timestamp":' A_TickCount ',"location":"Shift keys.ahk:+V(appointment)","message":"hotkey entry","data":{}}' "`n", "debug-b96502.log", "UTF-8")
-    catch {
-    }
-    ; #endregion
     Appt_RunWithLoading("Status", (*) => (
         (choice := Appt_SelectFromModal("Appointment status", [
             { k: "1", label: "Free" },
@@ -9349,7 +9217,6 @@ Appt_ToggleOrClickAny(criteriaList) {
                     : (choice = "3") ? "Tentative"
                     : (choice = "4") ? "Busy"
                     : "Out of office"),
-                (Avail_DebugPicked(choice, target), true),
                 Appt_OpenMenuAndPick([
                     { Name: "Free", ControlType: "Button" },
                     { Name: "Busy", ControlType: "Button" },
@@ -9363,14 +9230,6 @@ Appt_ToggleOrClickAny(criteriaList) {
             : false
     ))
 }
-
-; #region agent log
-Avail_DebugPicked(choice, target) {
-    try FileAppend('{"sessionId":"b96502","runId":"run1","hypothesisId":"Avail_A","timestamp":' A_TickCount ',"location":"Shift keys.ahk:Avail_DebugPicked","message":"picked","data":{"choice":"' choice '","target":"' target '"}}' "`n", "debug-b96502.log", "UTF-8")
-    catch {
-    }
-}
-; #endregion
 
 ; Shift + Q : Reminder selection modal - Q for reminder freQuency
 +Q:: {
@@ -9400,7 +9259,6 @@ RemQ_Run() {
         : (choice = "5") ? "1 day before"
         : "1 week before"
 
-    RemQ_DebugPicked(choice, target)
     RemQ_VisualizeSelection("Reminder", target)
     return Appt_OpenMenuAndPick([
         { Name: "Don't remind me", ControlType: "Button" },
@@ -9413,15 +9271,6 @@ RemQ_Run() {
         { Name: "Reminder", matchmode: "Substring", ControlType: "Button" }
     ], target, 300)
 }
-
-; #region agent log
-RemQ_DebugPicked(choice, target) {
-    try FileAppend('{"sessionId":"b96502","runId":"run2","hypothesisId":"RemQ_A","timestamp":' A_TickCount ',"location":"Shift keys.ahk:RemQ_DebugPicked","message":"picked","data":{"choice":"' choice '","target":"' StrReplace(target, '"', '\"') '"}}' "`n", "debug-b96502.log", "UTF-8")
-    catch {
-    }
-    return true
-}
-; #endregion
 
 RemQ_VisualizeSelection(label, target) {
     try StandardLoadingBar_Update("👁️ Appointment: selecting " label " → " target, BANNER_ACCENT_INTERMEDIATE)
@@ -10055,24 +9904,6 @@ ApptWizard_ApplySelection(status, privacy, allDayOn, category, reminder) {
 }
 
 ApptWizard_FocusTitleField() {
-    ; #region agent log
-    WizTitleLog(msg, data := "{}", hypo := "Title") {
-        try {
-            line := "{"
-                . '"sessionId":"b96502",'
-                . '"runId":"runTitle",'
-                . '"hypothesisId":"' hypo '",'
-                . '"timestamp":' A_TickCount ','
-                . '"location":"Shift keys.ahk:ApptWizard_FocusTitleField",'
-                . '"message":"' StrReplace(msg, '"', '\"') '",'
-                . '"data":' data
-                . "}"
-            FileAppend(line "`n", "debug-b96502.log", "UTF-8")
-        } catch {
-        }
-    }
-    ; #endregion
-
     try {
         ; Clear any overlay that might keep focus.
         StandardLoadingBar_Hide(0)
@@ -10084,26 +9915,12 @@ ApptWizard_FocusTitleField() {
     global g_ApptWizardMainHwnd
     if IsSet(g_ApptWizardMainHwnd) && g_ApptWizardMainHwnd
         try WinActivate("ahk_id " g_ApptWizardMainHwnd)
-    try {
-        hwnd := WinExist("A")
-        t := WinGetTitle("A")
-        c := WinGetClass("A")
-        p := WinGetProcessName("A")
-        WizTitleLog("entry", '{"hwnd":' hwnd ',"proc":"' StrReplace(p, '"', '\"') '","class":"' StrReplace(c, '"', '\"') '","title":"' StrReplace(SubStr(t, 1, 80), '"', '\"') '","wizardHwnd":' (IsSet(g_ApptWizardMainHwnd) ? g_ApptWizardMainHwnd : 0) '}', "Title_A")
-    } catch {
-    }
     ok := false
     try ok := FocusOutlookFieldOnHwnd(g_ApptWizardMainHwnd, { Name: "Add title", ControlType: "Edit" })
     catch {
     }
-    try WizTitleLog("attempt", '{"crit":"Add title/Edit","ok":' (ok ? 1 : 0) '}', "Title_B")
-    catch {
-    }
     if !ok {
         try ok := FocusOutlookFieldOnHwnd(g_ApptWizardMainHwnd, { Name: "Add title", Type: 50004 })
-        catch {
-        }
-        try WizTitleLog("attempt", '{"crit":"Add title/Type50004","ok":' (ok ? 1 : 0) '}', "Title_C")
         catch {
         }
     }
@@ -10112,78 +9929,16 @@ ApptWizard_FocusTitleField() {
         try ok := FocusOutlookFieldOnHwnd(g_ApptWizardMainHwnd, { Name: "Title", ControlType: "Edit" })
         catch {
         }
-        try WizTitleLog("attempt", '{"crit":"Title/Edit","ok":' (ok ? 1 : 0) '}', "Title_D")
-        catch {
-        }
     }
     if !ok {
         try ok := FocusOutlookFieldOnHwnd(g_ApptWizardMainHwnd, { AutomationId: "4100" })
         catch {
         }
-        try WizTitleLog("attempt", '{"crit":"AutomationId4100","ok":' (ok ? 1 : 0) '}', "Title_E")
-        catch {
-        }
-    }
-
-    ; Snapshot what UIA sees (whether or not focus succeeded).
-    try {
-        root := UIA.ElementFromHandle(IsSet(g_ApptWizardMainHwnd) && g_ApptWizardMainHwnd ? g_ApptWizardMainHwnd : WinExist("A"))
-        el := 0
-        try el := root.FindFirst({ Name: "Add title", ControlType: "Edit" })
-        catch {
-        }
-        if !el {
-            try el := root.FindFirst({ Name: "Add title", Type: 50004 })
-            catch {
-            }
-        }
-        if !el {
-            try el := root.FindFirst({ Name: "Title", ControlType: "Edit" })
-            catch {
-            }
-        }
-        if el {
-            n := "", aid := "", ty := "", ct := "", off := "", en := ""
-            try n := el.Name
-            try aid := el.AutomationId
-            try ty := el.Type
-            try ct := el.ControlType
-            try off := el.IsOffscreen
-            try en := el.IsEnabled
-            WizTitleLog("uia_found", '{"name":"' StrReplace(n, '"', '\"') '","automationId":"' StrReplace(aid, '"', '\"') '","type":' ty ',"controlType":"' StrReplace(ct, '"', '\"') '","isOffscreen":' (off ? 1 : 0) ',"isEnabled":' (en ? 1 : 0) '}', "Title_F")
-        } else {
-            WizTitleLog("uia_not_found", "{}", "Title_F")
-            ; Enumerate a few Edit controls so we can learn the new title field identity.
-            try {
-                edits := root.FindAll({ ControlType: "Edit" })
-                nEd := 0
-                try nEd := edits.Length
-                WizTitleLog("edits_count", '{"n":' nEd '}', "Title_G")
-                if (nEd > 0) {
-                    Loop Min(5, nEd) {
-                        e := edits[A_Index]
-                        n2 := "", aid2 := "", ty2 := "", off2 := "", en2 := ""
-                        try n2 := e.Name
-                        try aid2 := e.AutomationId
-                        try ty2 := e.Type
-                        try off2 := e.IsOffscreen
-                        try en2 := e.IsEnabled
-                        WizTitleLog("edit_sample", '{"i":' A_Index ',"name":"' StrReplace(SubStr(n2, 1, 60), '"', '\"') '","automationId":"' StrReplace(SubStr(aid2, 1, 60), '"', '\"') '","type":' ty2 ',"isOffscreen":' (off2 ? 1 : 0) ',"isEnabled":' (en2 ? 1 : 0) '}', "Title_H")
-                    }
-                }
-            } catch as errEnum {
-                WizTitleLog("edits_enum_failed", '{"error":"' StrReplace(SubStr(errEnum.Message, 1, 120), '"', '\"') '"}', "Title_G")
-            }
-        }
-    } catch {
     }
 
     ; Last-resort: keyboard focus traversal (some builds expose no Edit controls).
     if !ok {
         ok := ApptWizard_FocusTitleField_ByTabbing(28)
-        try WizTitleLog("tab_traversal_done", '{"ok":' (ok ? 1 : 0) '}', "Title_I")
-        catch {
-        }
     }
 
     if !ok {
@@ -10210,24 +9965,6 @@ FocusOutlookFieldOnHwnd(hwnd, criteria) {
 }
 
 ApptWizard_FocusTitleField_ByTabbing(maxSteps := 24) {
-    ; #region agent log
-    WizTitleTabLog(msg, data := "{}", hypo := "TitleTab") {
-        try {
-            line := "{"
-                . '"sessionId":"b96502",'
-                . '"runId":"runTitle",'
-                . '"hypothesisId":"' hypo '",'
-                . '"timestamp":' A_TickCount ','
-                . '"location":"Shift keys.ahk:ApptWizard_FocusTitleField_ByTabbing",'
-                . '"message":"' StrReplace(msg, '"', '\"') '",'
-                . '"data":' data
-                . "}"
-            FileAppend(line "`n", "debug-b96502.log", "UTF-8")
-        } catch {
-        }
-    }
-    ; #endregion
-
     try {
         ; Anchor: focus Save in command bar (stable) then tab forward.
         tb := Appt_FindCommandBar()
@@ -10249,9 +9986,6 @@ ApptWizard_FocusTitleField_ByTabbing(maxSteps := 24) {
             try name := fe.Name
             try aid := fe.AutomationId
             try ty := fe.Type
-        }
-        try WizTitleTabLog("step", '{"i":' A_Index ',"name":"' StrReplace(SubStr(name, 1, 60), '"', '\"') '","automationId":"' StrReplace(SubStr(aid, 1, 60), '"', '\"') '","type":' (ty = "" ? -1 : ty) '}', "TitleTab_A")
-        catch {
         }
 
         ; Match both EN/PT variants.
