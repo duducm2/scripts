@@ -7419,8 +7419,8 @@ global g_UtilitySelectorMode := "top"           ; "top" | "category"
 global g_UtilitySelectorCategory := ""          ; One of g_UtilityTopCategories
 
 ; Top-level categories (numbers 1-6 select these)
-global g_UtilityTopCategories := ["Prompts", "Projects", "Macros", "Hot Strings", "General", "Unassigned"]
-global g_UtilityTopCategoryById := Map("1", "Prompts", "2", "Projects", "3", "Macros", "4", "Hot Strings", "5", "General", "6", "Unassigned")
+global g_UtilityTopCategories := ["Prompts", "Projects", "Macros", "General"]
+global g_UtilityTopCategoryById := Map("1", "Prompts", "2", "Projects", "3", "Macros", "4", "General")
 
 ; Utility selector cached UI data (rebuilt each time ShowHotstringSelector() runs)
 global g_UtilitySelectorAllItems := []          ; Array of {category, char, text, isEmpty, [explicitIndex]}
@@ -7437,8 +7437,8 @@ global g_HotstringCharSequence := ["1", "2", "3", "4", "5", "q", "w", "e", "r", 
 
 ; Category display order: defines the sequence in which action categories appear in the GUI
 ; Order: Prompts → General → Projects → Files & Links → Macros
-; Note: Keep legacy ordering for stable character assignments; "Hot Strings" is appended so it doesn't shift existing slots.
-global g_HotstringCategories := ["Prompts", "General", "Projects", "Files & Links", "Macros", "Hot Strings"]
+; Note: Utility-only views are not included here.
+global g_HotstringCategories := ["Prompts", "General", "Projects", "Files & Links", "Macros"]
 
 ; Reserved empty character: never assigned to any action; always shows as (empty) in selector
 ; Set to "" to disable reservation
@@ -7472,7 +7472,6 @@ BuildHotstringCharMap() {
     categorized["Projects"] := []
     categorized["Prompts"] := []
     categorized["General"] := []
-    categorized["Hot Strings"] := []
 
     if (IsSet(g_hotstrings) && g_hotstrings.Length > 0) {
         for hs in g_hotstrings {
@@ -7480,7 +7479,7 @@ BuildHotstringCharMap() {
             if (category = "Projects" || category = "Prompts" || category = "General") {
                 categorized[category].Push(hs)
             } else {
-                categorized["Hot Strings"].Push(hs)
+                categorized["General"].Push(hs)
             }
         }
     }
@@ -7640,7 +7639,6 @@ GetCategorizedHotstrings() {
     categorized["Projects"] := []
     categorized["Prompts"] := []
     categorized["General"] := []
-    categorized["Hot Strings"] := []
     categorized["Files & Links"] := []
     categorized["Macros"] := []
 
@@ -7651,7 +7649,7 @@ GetCategorizedHotstrings() {
             if (category = "Projects" || category = "Prompts" || category = "General") {
                 categorized[category].Push(hs)
             } else {
-                categorized["Hot Strings"].Push(hs)
+                categorized["General"].Push(hs)
             }
         }
     }
@@ -8557,6 +8555,9 @@ UtilitySelector_MapInternalCategoryToTop(internalCategory) {
         return "General"
     if (internalCategory = "General")
         return "General"
+    ; Unknown/legacy categories are folded into General now that top-level "Hot Strings" is removed.
+    if (internalCategory != "Prompts" && internalCategory != "Projects" && internalCategory != "Macros")
+        return "General"
     return internalCategory
 }
 
@@ -8658,10 +8659,8 @@ UtilitySelector_BuildTopLevelText() {
     text .= "[1] Prompts (" . counts["Prompts"] . ")`n"
     text .= "[2] Projects (" . counts["Projects"] . ")`n"
     text .= "[3] Macros (" . counts["Macros"] . ")`n"
-    text .= "[4] Hot Strings (" . counts["Hot Strings"] . ")`n"
-    text .= "[5] General (" . counts["General"] . ")`n"
-    text .= "[6] Unassigned (" . counts["Unassigned"] . ")`n"
-    text .= "`nPress 1–6 to open a category.`n"
+    text .= "[4] General (" . counts["General"] . ")`n"
+    text .= "`nPress 1–4 to open a category.`n"
     return text
 }
 
@@ -9173,66 +9172,13 @@ ShowHotstringSelector() {
 
     allItems := sortedItems
 
-    ; Ensure reserved empty char always appears as (empty) if set
-    if (g_ReservedEmptyChar != "") {
-        hasReservedEmpty := false
-        for item in allItems {
-            if (item.char = g_ReservedEmptyChar) {
-                hasReservedEmpty := true
-                break
-            }
-        }
-        if (!hasReservedEmpty)
-            allItems.Push({ category: "Unassigned", char: g_ReservedEmptyChar, text: "[" . g_ReservedEmptyChar .
-                "] > (empty)", isEmpty: true })
+    ; Remove empty placeholder slots (no Unassigned category in the revised hierarchy)
+    filtered := []
+    for item in allItems {
+        if (!item.isEmpty)
+            filtered.Push(item)
     }
-
-    ; Show any remaining unassigned character slots
-    if (currentCharIndex <= g_HotstringCharSequence.Length) {
-        while (currentCharIndex <= g_HotstringCharSequence.Length) {
-            char := g_HotstringCharSequence[currentCharIndex]
-            if (char = "l") {
-                allItems.Push({ category: "Unassigned", char: char, text: "[L] > Gemini: L = arm; L+L = open Gemini + paste first snippet (or Ctrl+Alt+Win+L)",
-                    isEmpty: false })
-            } else if (g_ReservedEmptyChar != "" && char = g_ReservedEmptyChar) {
-                ; Already added above; skip to avoid duplicate
-            } else {
-                allItems.Push({ category: "Unassigned", char: char, text: "[" . char . "] > (empty)", isEmpty: true })
-            }
-            currentCharIndex++
-        }
-    }
-
-    ; Re-sort so explicit "u" (empty) is in sequence order
-    sortedItems := []
-    for idx, seqChar in g_HotstringCharSequence {
-        found := false
-        for item in allItems {
-            if (item.HasProp("explicitIndex") && item.explicitIndex = idx) {
-                sortedItems.Push(item)
-                found := true
-                break
-            }
-        }
-        if (!found) {
-            for item in allItems {
-                if (!item.HasProp("explicitIndex") && item.char = seqChar) {
-                    alreadyAdded := false
-                    for added in sortedItems {
-                        if (added.char = item.char && added.text = item.text) {
-                            alreadyAdded := true
-                            break
-                        }
-                    }
-                    if (!alreadyAdded) {
-                        sortedItems.Push(item)
-                        break
-                    }
-                }
-            }
-        }
-    }
-    allItems := sortedItems
+    allItems := filtered
 
     ; Helper function to pad string to specified width
     PadString(str, width) {
