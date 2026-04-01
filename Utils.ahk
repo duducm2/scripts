@@ -7427,6 +7427,7 @@ global g_UtilitySelectorIsPortrait := false
 global g_UtilitySelectorMonitor := Map()        ; {left, top, width, height}
 global g_UtilitySelectorTitleCtrl := false
 global g_UtilitySelectorEditCtrl := false
+global g_UtilitySelectorFontSize := 9           ; Base point size for RichEdit rendering (set on ShowHotstringSelector)
 
 ; Character assignment sequence: defines order in which characters are assigned to actions
 ; Format: ["1", "2", "3", "4", "5", "q", "w", "e", "r", "t", "a", "s", "d", "f", "g", "z", "x",
@@ -7443,6 +7444,167 @@ global g_HotstringCategories := ["Prompts", "General", "Projects", "Files & Link
 ; Reserved empty character: never assigned to any action; always shows as (empty) in selector
 ; Set to "" to disable reservation
 global g_ReservedEmptyChar := ""
+
+; =============================================================================
+; RichEdit helpers (mnemonic emphasis for selectors)
+; =============================================================================
+global g_MnemonicRichDll := 0
+
+MnemonicRich_EnsureDll() {
+    global g_MnemonicRichDll
+    ; msftedit.dll must be loaded before creating RichEdit50W controls (ClassRichEdit50W).
+    if (!g_MnemonicRichDll)
+        g_MnemonicRichDll := DllCall("LoadLibrary", "str", "msftedit.dll", "ptr")
+}
+
+; UTF-16 code unit count for RichEdit character indices (BMP = 1, supplementary = 2).
+MnemonicRich_Utf16Units(s) {
+    n := 0
+    for c in StrSplit(s, "") {
+        o := Ord(c)
+        n += (o > 0xFFFF) ? 2 : 1
+    }
+    return n
+}
+
+; EM_SETTEXTEX = 0x461, ST_UNICODE = 8 — RichEdit’s native UTF-16 path.
+MnemonicRich_SetPlainUtf16(ctrl, plain) {
+    hwnd := ctrl.Hwnd
+    flags := 8 ; ST_UNICODE
+    cp := 1200
+    settextex := Buffer(8, 0)
+    NumPut("uint", flags, settextex, 0)
+    NumPut("uint", cp, settextex, 4)
+    if (plain = "") {
+        emptyBuf := Buffer(2, 0)
+        SendMessage(0x461, settextex.Ptr, emptyBuf.Ptr, hwnd)
+        return
+    }
+    textBuf := Buffer((StrLen(plain) + 1) * 2)
+    StrPut(plain, textBuf, "UTF-16")
+    SendMessage(0x461, settextex.Ptr, textBuf.Ptr, hwnd)
+}
+
+MnemonicRich_ThemingOff(ctrl) {
+    hwnd := ctrl.Hwnd
+    DllCall("uxtheme\SetWindowTheme", "ptr", hwnd, "wstr", "", "wstr", "")
+    parent := DllCall("GetParent", "ptr", hwnd, "ptr")
+    if (parent)
+        DllCall("uxtheme\SetWindowTheme", "ptr", parent, "wstr", "", "wstr", "")
+}
+
+; CHARFORMAT2W buffer (116 bytes). textColor is COLORREF (0x00BBGGRR).
+MnemonicRich_CharFormat2(faceName, pt, textColor, bold := false) {
+    yh := Round(pt * 20)
+    cf := Buffer(116, 0)
+    NumPut("uint", 116, cf, 0) ; cbSize
+    mask := 0x40000000 | 0x80000000 | 0x20000000 | 0x1 ; CFM_COLOR | CFM_SIZE | CFM_FACE | CFM_BOLD
+    NumPut("uint", mask, cf, 4) ; dwMask
+    NumPut("uint", bold ? 0x1 : 0, cf, 8) ; dwEffects
+    NumPut("int", yh, cf, 12) ; yHeight (twips)
+    NumPut("int", 0, cf, 16) ; yOffset
+    NumPut("uint", textColor, cf, 20) ; crTextColor
+    NumPut("uchar", 1, cf, 24) ; bCharSet DEFAULT_CHARSET
+    NumPut("uchar", 0, cf, 25) ; bPitchAndFamily
+    StrPut(faceName, cf.Ptr + 26, 64, "UTF-16")
+    return cf
+}
+
+MnemonicRich_ApplyCharFormat(ctrl, scopeAll, cfBuf) {
+    w := scopeAll ? 4 : 1 ; SCF_ALL = 4, SCF_SELECTION = 1
+    return SendMessage(0x444, w, cfBuf.Ptr, ctrl.Hwnd) ; EM_SETCHARFORMAT
+}
+
+MnemonicRich_SetSel(hwnd, cpMin, cpMax) {
+    return SendMessage(0xB1, cpMin, cpMax, hwnd) ; EM_SETSEL
+}
+
+; Render lines (joined by CR only) and emphasize mnemonic letter (bumpPx) in [key] and first title occurrence.
+MnemonicRich_Render(ctrl, lines, basePt, bumpPx := 6, faceName := "Segoe UI", rgbHex := "CDD6F4", bgHex := "1E1E2E") {
+    MnemonicRich_EnsureDll()
+    MnemonicRich_ThemingOff(ctrl)
+
+    ; Convert RGB hex (RRGGBB) to COLORREF (0x00BBGGRR).
+    rr := Integer("0x" . SubStr(rgbHex, 1, 2))
+    gg := Integer("0x" . SubStr(rgbHex, 3, 2))
+    bb := Integer("0x" . SubStr(rgbHex, 5, 2))
+    textColor := (bb << 16) | (gg << 8) | rr
+
+    br := Integer("0x" . SubStr(bgHex, 1, 2))
+    bg := Integer("0x" . SubStr(bgHex, 3, 2))
+    bb2 := Integer("0x" . SubStr(bgHex, 5, 2))
+    bgColor := (bb2 << 16) | (bg << 8) | br
+
+    bumpPt := bumpPx * 72 / 96
+    bigPt := basePt + bumpPt
+
+    plain := ""
+    spans := [] ; {start,len} in UTF-16 units
+    u16Pos := 0
+    first := true
+
+    RenderTitleKey(lineText, key, baseU16) {
+        if (key = "")
+            return
+        rb := InStr(lineText, "]")
+        if (!rb)
+            return
+        after := SubStr(lineText, rb + 1)
+        tpos := InStr(after, key, false)
+        if (!tpos)
+            tpos := InStr(after, StrUpper(key), false)
+        if (!tpos)
+            return
+        preNoLast := SubStr(lineText, 1, rb + tpos - 1)
+        spans.Push({ start: baseU16 + MnemonicRich_Utf16Units(preNoLast), len: 1 })
+    }
+
+    for ln in lines {
+        if (!first) {
+            plain .= "`r"
+            u16Pos += 1
+        }
+        first := false
+
+        lineText := ln.text
+        key := ln.HasProp("key") ? ln.key : ""
+        RenderTitleKey(lineText, key, u16Pos)
+
+        ; Optional right-side key emphasis for two-column layouts.
+        if (ln.HasProp("keyRight") && ln.keyRight != "" && ln.HasProp("rightStartCharPos") && ln.rightStartCharPos > 1) {
+            rightStart := ln.rightStartCharPos
+            prefix := SubStr(lineText, 1, rightStart - 1)
+            rightText := SubStr(lineText, rightStart)
+            baseRightU16 := u16Pos + MnemonicRich_Utf16Units(prefix)
+            RenderTitleKey(rightText, ln.keyRight, baseRightU16)
+        }
+
+        plain .= lineText
+        u16Pos += MnemonicRich_Utf16Units(lineText)
+    }
+
+    MnemonicRich_SetPlainUtf16(ctrl, plain)
+
+    hwnd := ctrl.Hwnd
+    SendMessage(0x4CF, 0, 0, hwnd) ; EM_SETREADONLY FALSE while formatting
+    SendMessage(0x443, 0, bgColor, hwnd) ; EM_SETBKGNDCOLOR
+
+    baseCf := MnemonicRich_CharFormat2(faceName, basePt, textColor, false)
+    MnemonicRich_SetSel(hwnd, 0, -1)
+    MnemonicRich_ApplyCharFormat(ctrl, false, baseCf)
+
+    bigCf := MnemonicRich_CharFormat2(faceName, bigPt, textColor, false)
+    for sp in spans {
+        if (sp.len <= 0)
+            continue
+        MnemonicRich_SetSel(hwnd, sp.start, sp.start + sp.len)
+        MnemonicRich_ApplyCharFormat(ctrl, false, bigCf)
+    }
+    MnemonicRich_SetSel(hwnd, 0, 0)
+    SendMessage(0xB7, 0, 0, hwnd) ; EM_SCROLLCARET
+    SendMessage(0x4CF, 1, 0, hwnd) ; EM_SETREADONLY TRUE
+    SendMessage(0x443, 0, bgColor, hwnd) ; RichEdit can reset bg after readonly
+}
 
 ; =============================================================================
 ; BuildHotstringCharMap()
@@ -8758,6 +8920,29 @@ UtilitySelector_BuildTopLevelText() {
     return text
 }
 
+UtilitySelector_BuildTopLevelRich() {
+    global g_UtilityTopCategories, g_UtilitySelectorAllItems
+    counts := Map()
+    for cat in g_UtilityTopCategories
+        counts[cat] := 0
+    for item in g_UtilitySelectorAllItems {
+        if (!item.isEmpty && counts.Has(item.category)) {
+            counts[item.category] := counts[item.category] + 1
+        }
+    }
+
+    lines := []
+    lines.Push({ text: "[R] Prompts (" . counts["Prompts"] . ")", key: "r" })
+    lines.Push({ text: "[P] Projects (" . counts["Projects"] . ")", key: "p" })
+    lines.Push({ text: "[M] Macros (" . counts["Macros"] . ")", key: "m" })
+    lines.Push({ text: "[G] General (" . counts["General"] . ")", key: "g" })
+    lines.Push({ text: "[L] Links (" . counts["Links"] . ")", key: "l" })
+    lines.Push({ text: "[H] Hotstrings (" . counts["Hotstrings"] . ")", key: "h" })
+    lines.Push({ text: "" })
+    lines.Push({ text: "Press R/P/M/G/L/H to open a category." })
+    return lines
+}
+
 UtilitySelector_BuildCategoryText(isPortrait) {
     global g_UtilitySelectorCategory, g_UtilitySelectorAllItems
     ; Filter items for this category
@@ -8824,11 +9009,97 @@ UtilitySelector_BuildCategoryText(isPortrait) {
     return text
 }
 
+UtilitySelector_BuildCategoryRich(isPortrait) {
+    global g_UtilitySelectorCategory, g_UtilitySelectorAllItems
+    items := []
+    for item in g_UtilitySelectorAllItems {
+        if (item.category = g_UtilitySelectorCategory)
+            items.Push(item)
+    }
+
+    lines := []
+    lines.Push({ text: "— " . g_UtilitySelectorCategory . " —" })
+    if (items.Length = 0) {
+        lines.Push({ text: "(no items)" })
+        lines.Push({ text: "" })
+        lines.Push({ text: "Backspace = back | Esc = close" })
+        return lines
+    }
+
+    if (isPortrait) {
+        for item in items
+            lines.Push({ text: item.text, key: item.isEmpty ? "" : item.char })
+        lines.Push({ text: "" })
+        lines.Push({ text: "Backspace = back | Esc = close" })
+        return lines
+    }
+
+    ; Landscape: two columns (mirror text layout; emphasize both columns)
+    maxItemLength := 0
+    for item in items {
+        if (StrLen(item.text) > maxItemLength)
+            maxItemLength := StrLen(item.text)
+    }
+    columnWidth := maxItemLength + 2
+    if (columnWidth < 36)
+        columnWidth := 36
+    columnSpacing := "  "
+
+    midPoint := Ceil(items.Length / 2)
+    maxLines := items.Length - midPoint
+    if (midPoint > maxLines)
+        maxLines := midPoint
+
+    PadString(str, width) {
+        len := StrLen(str)
+        if (len >= width)
+            return str
+        padding := width - len
+        spaces := ""
+        loop padding
+            spaces .= " "
+        return str . spaces
+    }
+
+    loop maxLines {
+        leftText := ""
+        rightText := ""
+        leftKey := ""
+        rightKey := ""
+        if (A_Index <= midPoint) {
+            leftItem := items[A_Index]
+            leftText := PadString(leftItem.text, columnWidth)
+            leftKey := leftItem.isEmpty ? "" : leftItem.char
+        } else {
+            leftText := PadString("", columnWidth)
+        }
+        rightIdx := A_Index + midPoint
+        if (rightIdx <= items.Length) {
+            rightItem := items[rightIdx]
+            rightText := rightItem.text
+            rightKey := rightItem.isEmpty ? "" : rightItem.char
+        }
+        lineText := leftText . columnSpacing . rightText
+        rightStartCharPos := StrLen(leftText . columnSpacing) + 1
+        lines.Push({ text: lineText, key: leftKey, keyRight: rightKey, rightStartCharPos: rightStartCharPos })
+    }
+    lines.Push({ text: "" })
+    lines.Push({ text: "Backspace = back | Esc = close" })
+    return lines
+}
+
 UtilitySelector_BuildDisplayText(isPortrait) {
     global g_UtilitySelectorMode
     if (g_UtilitySelectorMode = "top")
         return UtilitySelector_BuildTopLevelText()
     return UtilitySelector_BuildCategoryText(isPortrait)
+}
+
+UtilitySelector_BuildDisplayRich(isPortrait) {
+    global g_UtilitySelectorMode
+    if (g_UtilitySelectorMode = "top")
+        return UtilitySelector_BuildTopLevelRich()
+    return UtilitySelector_BuildCategoryRich(isPortrait)
 }
 
 UtilitySelector_RefreshUiAndHotkeys() {
@@ -8846,8 +9117,11 @@ UtilitySelector_RefreshUiAndHotkeys() {
     if (IsObject(g_UtilitySelectorTitleCtrl))
         try g_UtilitySelectorTitleCtrl.Text := title
 
+    global g_UtilitySelectorFontSize
     displayText := UtilitySelector_BuildDisplayText(g_UtilitySelectorIsPortrait)
-    try g_UtilitySelectorEditCtrl.Value := displayText
+    displayLines := UtilitySelector_BuildDisplayRich(g_UtilitySelectorIsPortrait)
+    try MnemonicRich_Render(g_UtilitySelectorEditCtrl, displayLines, g_UtilitySelectorFontSize, 6, "Segoe UI", "CDD6F4",
+        "1E1E2E")
 
     ; Resize based on new content (reuse existing sizing rules)
     lineCount := 1
@@ -9501,11 +9775,18 @@ ShowHotstringSelector() {
     g_HotstringSelectorGui.Add("Text", "w" . textControlWidth . " h1 Background45475A")
     g_HotstringSelectorGui.SetFont("s" . fontSize . " cCDD6F4", "Segoe UI")
 
-    ; Enable vertical scrolling for long content
+    ; Cache base font size for RichEdit rendering in refresh
+    global g_UtilitySelectorFontSize
+    g_UtilitySelectorFontSize := fontSize
+
+    ; Enable vertical scrolling for long content (RichEdit so we can style mnemonic letters)
     global g_UtilitySelectorEditCtrl
-    g_UtilitySelectorEditCtrl := g_HotstringSelectorGui.AddEdit("w" . textControlWidth . " h" . textControlHeight .
-        " ReadOnly VScroll Background1E1E2E", displayText
-    )
+    MnemonicRich_EnsureDll()
+    g_UtilitySelectorEditCtrl := g_HotstringSelectorGui.Add("Custom",
+        "ClassRichEdit50W w" . textControlWidth . " h" . textControlHeight
+        . " +0x44 -E0x200 +VScroll -HScroll -Border Background1E1E2E")
+    try MnemonicRich_Render(g_UtilitySelectorEditCtrl, UtilitySelector_BuildDisplayRich(isPortrait), fontSize, 6, "Segoe UI",
+        "CDD6F4", "1E1E2E")
     g_HotstringSelectorGui.SetFont("s9 c89B4FA", "Segoe UI")
     g_HotstringSelectorGui.Add("Text", "w" . textControlWidth . " Center", "Press Escape to close.")
 

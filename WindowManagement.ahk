@@ -2463,7 +2463,9 @@ ShowProjectSelector() {
     projectIndexToCategory := resolved.projectIndexToCategory
 
     ; Build display text with category headers (match Hotstring U: single-line "— Category —")
+    ; Also build RichEdit lines so we can emphasize mnemonic letters in both [key] and title.
     displayText := ""
+    richLines := []
 
     ; Display each category with header
     for category in g_ProjectCategories {
@@ -2482,6 +2484,7 @@ ShowProjectSelector() {
 
         ; Add category header (compact single line)
         displayText .= "— " . category . " —`n"
+        richLines.Push({ text: "— " . category . " —" })
 
         ; Display projects in this category
         for projectIndex in categoryProjectIndices {
@@ -2496,10 +2499,12 @@ ShowProjectSelector() {
             if (projectIndexToChar.Has(projectIndex)) {
                 char := projectIndexToChar[projectIndex]
                 displayText .= "[" . char . "] " . project.name . "`n"
+                richLines.Push({ text: "[" . char . "] " . project.name, key: char })
             }
         }
 
         displayText .= "`n"  ; Space between categories
+        richLines.Push({ text: "" })
     }
 
     ; Commands section so [c], [3], [L], [K], [ESC] are always visible and grouped
@@ -2509,6 +2514,13 @@ ShowProjectSelector() {
     displayText .= "[L] Selection Mode`n"
     displayText .= "[K] Copy from Gemini`n"
     displayText .= "[ESC] Close"
+
+    richLines.Push({ text: "— Commands —" })
+    richLines.Push({ text: "[c] Focus Cursor Window", key: "c" })
+    richLines.Push({ text: "[3] Activate Preview Windows", key: "3" })
+    richLines.Push({ text: "[L] Selection Mode", key: "L" })
+    richLines.Push({ text: "[K] Copy from Gemini", key: "K" })
+    richLines.Push({ text: "[ESC] Close", key: "E" })
 
     ; Calculate text dimensions: use 18px per line so Edit control fits all lines without scroll (14px was too small for font)
     baseWidth := 400
@@ -2527,9 +2539,12 @@ ShowProjectSelector() {
     g_ProjectSelectorGui.Add("Text", "w" . textControlWidth . " h1 Background45475A")
     g_ProjectSelectorGui.SetFont("s" . fontSize . " cCDD6F4", "Segoe UI")
 
-    ; Content: scrollable Edit (match U)
-    g_ProjectSelectorGui.AddEdit("w" . textControlWidth . " h" . textControlHeight .
-        " ReadOnly VScroll Background1E1E2E", displayText)
+    ; Content: scrollable RichEdit (so mnemonic letter can be larger)
+    MnemonicRich_EnsureDll()
+    richCtrl := g_ProjectSelectorGui.Add("Custom",
+        "ClassRichEdit50W w" . textControlWidth . " h" . textControlHeight
+        . " +0x44 -E0x200 +VScroll -HScroll -Border Background1E1E2E")
+    try MnemonicRich_Render(richCtrl, richLines, fontSize, 6, "Segoe UI", "CDD6F4", "1E1E2E")
 
     ; Footer hint (match U)
     g_ProjectSelectorGui.SetFont("s9 c89B4FA", "Segoe UI")
