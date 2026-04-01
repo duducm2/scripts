@@ -8311,22 +8311,74 @@ Appt_PopoverFocusFirst(criteriaList) {
 }
 
 Appt_PopoverInvokeFirst(criteriaList) {
+    ; #region agent log
+    ApptDbg_AllDay(msg, data := "{}", hypo := "AllDay") {
+        try {
+            line := "{"
+                . '"sessionId":"b96502",'
+                . '"runId":"run1",'
+                . '"hypothesisId":"' hypo '",'
+                . '"timestamp":' A_TickCount ','
+                . '"location":"Shift keys.ahk:Appt_PopoverInvokeFirst",'
+                . '"message":"' StrReplace(msg, '"', '\"') '",'
+                . '"data":' data
+                . "}"
+            FileAppend(line "`n", "debug-b96502.log", "UTF-8")
+        } catch {
+        }
+    }
+    ; #endregion
+
     pop := Appt_OpenPopoverIfNeeded()
     if !pop
+    {
+        ApptDbg_AllDay("no popover", "{}", "AllDay_A")
         return false
+    }
     for crit in criteriaList {
         try {
             el := pop.FindFirst(crit)
             if el {
-                try el.Click()
-                catch {
-                    try el.Invoke()
+                n := "", aid := "", t := "", enabled := "", off := "", inv := 0, tog := 0
+                try n := el.Name
+                try aid := el.AutomationId
+                try t := el.Type
+                try enabled := el.IsEnabled
+                try off := el.IsOffscreen
+                try inv := el.IsInvokePatternAvailable
+                try tog := el.IsTogglePatternAvailable
+                ApptDbg_AllDay("match found", '{'
+                    . '"name":"' StrReplace(n, '"', '\"') '",'
+                    . '"automationId":"' StrReplace(aid, '"', '\"') '",'
+                    . '"type":' t ','
+                    . '"isEnabled":' (enabled ? 1 : 0) ','
+                    . '"isOffscreen":' (off ? 1 : 0) ','
+                    . '"invokeAvail":' (inv ? 1 : 0) ','
+                    . '"toggleAvail":' (tog ? 1 : 0)
+                    . '}', "AllDay_B")
+
+                ok := false
+                try {
+                    el.Click()
+                    ok := true
+                    ApptDbg_AllDay("click ok", "{}", "AllDay_C")
+                } catch as err1 {
+                    ApptDbg_AllDay("click failed", '{"error":"' StrReplace(err1.Message, '"', '\"') '"}', "AllDay_C")
+                    try {
+                        el.Invoke()
+                        ok := true
+                        ApptDbg_AllDay("invoke ok", "{}", "AllDay_D")
+                    } catch as err2 {
+                        ApptDbg_AllDay("invoke failed", '{"error":"' StrReplace(err2.Message, '"', '\"') '"}', "AllDay_D")
+                    }
                 }
+                if ok
                 return true
             }
         } catch {
         }
     }
+    ApptDbg_AllDay("no match", "{}", "AllDay_E")
     return false
 }
 
@@ -8708,11 +8760,20 @@ Outlook_ClickEndTime_1200PM() {
 ; Shift + A : All day checkbox - All Day
 +A:: {
     if IsNewOutlookActive() {
+        ; #region agent log
+        try FileAppend('{"sessionId":"b96502","runId":"run1","hypothesisId":"AllDay_Z","timestamp":' A_TickCount ',"location":"Shift keys.ahk:+A(appointment)","message":"hotkey entry","data":{}}' "`n", "debug-b96502.log", "UTF-8")
+        catch {
+        }
+        ; #endregion
         Appt_RunWithLoading("All day", (*) => (
             Appt_PopoverInvokeFirst([
                 { Name: "All day", ControlType: "CheckBox" },
                 { Name: "All day", Type: 50002 },
-                { Name: "All day", ControlType: "Button" }
+                ; New Outlook exposes this as a switch (button) with a stable AutomationId (e.g. Toggle9777).
+                { AutomationId: "Toggle", matchmode: "Substring", ControlType: "Button" },
+                { AutomationId: "Toggle", matchmode: "Substring", Type: 50000 },
+                { Name: "All day", ControlType: "Button" },
+                { Name: "All day", Type: 50000 }
             ]) || (ShowCenteredOverlay_Utils("❌ Appointment: All day not found", 1400, BANNER_ACCENT_ERROR), false)
         ))
         return
