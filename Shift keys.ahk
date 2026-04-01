@@ -479,6 +479,27 @@ Outlook (Shift)
 📅 [W]eek view
 📅 M[o]nth view
 🪟 [P][P]op Out (Type 50000, Name Pop Out, LocalizedType button, Path {T:33,CN:rctrl_renwnd32}, {T:33}, {T:33}, {T:21}, {T:0, i:-1})
+
+Outlook (Ctrl+Alt)
+🔎 [F]Search
+📮 [M]ail view
+📅 [G]Calendar view
+📃 [L]Focus message list
+📖 [P]Focus reading pane
+
+↩️ [R]Reply
+👥 [A]Reply all
+➡️ [W]Forward
+🗑️ [D]Delete
+🗄️ [E]Archive
+✅ [U]Read/Unread
+🏷️ [C]Categorize
+📁 Mo[V]e
+🧪 F[I]lter menu
+↕️ [S]Sort menu
+
+🆕 [N]New (Calendar: New event / Mail: new message)
+🧭 [T]Today (Calendar)
 )"  ; end Outlook
 
 ; --- Outlook Reminder window -------------------------------------------------
