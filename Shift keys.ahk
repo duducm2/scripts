@@ -9087,7 +9087,37 @@ Appt_SchedulerFocusDateTimeControl(kind) {
     if (kind = "all_day")
         return Appt_PopoverInvokeFirst([{ Name: "All day", ControlType: "CheckBox" }, { Name: "All day", Type: 50002 }, { Name: "All day", ControlType: "Button" }])
     if (kind = "time_zone")
-        return Appt_PopoverInvokeFirst([{ Name: "Time zone", ControlType: "Button" }, { Name: "Show event time zones", matchmode: "Substring", ControlType: "Button" }])
+        return Appt_ToggleOrClickAny([
+            { Name: "Show event time zones", matchmode: "Substring", ControlType: "Button" },
+            { Name: "Time zone", matchmode: "Substring", ControlType: "Button" }
+        ])
+    return false
+}
+
+Appt_ToggleOrClickAny(criteriaList) {
+    root := Appt_GetRootActive()
+    if !root
+        return false
+    for crit in criteriaList {
+        try {
+            el := root.FindFirst(crit)
+            if !el
+                continue
+            try {
+                if el.IsTogglePatternAvailable {
+                    el.TogglePattern.Toggle()
+                    return true
+                }
+            } catch {
+            }
+            try el.Click()
+            catch {
+                try el.Invoke()
+            }
+            return true
+        } catch {
+        }
+    }
     return false
 }
 
