@@ -7414,6 +7414,21 @@ global g_HotstringGeminiAutoSubmit := true      ; During delayed flow: true = se
 global g_HotstringGeminiSubmitTimer := false   ; Timer reference for 4s delayed submit (for cleanup if needed)
 global g_HotstringGeminiRestoreHwnd := 0        ; Window to restore focus to after paste (set at start of GeminiDelayedSubmitFlow)
 
+; Utility selector hierarchy state
+global g_UtilitySelectorMode := "top"           ; "top" | "category"
+global g_UtilitySelectorCategory := ""          ; One of g_UtilityTopCategories
+
+; Top-level categories (numbers 1-6 select these)
+global g_UtilityTopCategories := ["Prompts", "Projects", "Macros", "Hot Strings", "General", "Unassigned"]
+global g_UtilityTopCategoryById := Map("1", "Prompts", "2", "Projects", "3", "Macros", "4", "Hot Strings", "5", "General", "6", "Unassigned")
+
+; Utility selector cached UI data (rebuilt each time ShowHotstringSelector() runs)
+global g_UtilitySelectorAllItems := []          ; Array of {category, char, text, isEmpty, [explicitIndex]}
+global g_UtilitySelectorIsPortrait := false
+global g_UtilitySelectorMonitor := Map()        ; {left, top, width, height}
+global g_UtilitySelectorTitleCtrl := false
+global g_UtilitySelectorEditCtrl := false
+
 ; Character assignment sequence: defines order in which characters are assigned to actions
 ; Format: ["1", "2", "3", "4", "5", "q", "w", "e", "r", "t", "a", "s", "d", "f", "g", "z", "x",
 ;          "c", "v", "b", "6", "7", "8", "9", "0", "y", "u", "i", "o", "p", "h", "j", "k", "l", "n", "m", ",", "."]
@@ -7422,7 +7437,8 @@ global g_HotstringCharSequence := ["1", "2", "3", "4", "5", "q", "w", "e", "r", 
 
 ; Category display order: defines the sequence in which action categories appear in the GUI
 ; Order: Prompts → General → Projects → Files & Links → Macros
-global g_HotstringCategories := ["Prompts", "General", "Projects", "Files & Links", "Macros"]
+; Note: Keep legacy ordering for stable character assignments; "Hot Strings" is appended so it doesn't shift existing slots.
+global g_HotstringCategories := ["Prompts", "General", "Projects", "Files & Links", "Macros", "Hot Strings"]
 
 ; Reserved empty character: never assigned to any action; always shows as (empty) in selector
 ; Set to "" to disable reservation
@@ -7456,12 +7472,15 @@ BuildHotstringCharMap() {
     categorized["Projects"] := []
     categorized["Prompts"] := []
     categorized["General"] := []
+    categorized["Hot Strings"] := []
 
     if (IsSet(g_hotstrings) && g_hotstrings.Length > 0) {
         for hs in g_hotstrings {
             category := hs.category
             if (category = "Projects" || category = "Prompts" || category = "General") {
                 categorized[category].Push(hs)
+            } else {
+                categorized["Hot Strings"].Push(hs)
             }
         }
     }
@@ -7621,6 +7640,7 @@ GetCategorizedHotstrings() {
     categorized["Projects"] := []
     categorized["Prompts"] := []
     categorized["General"] := []
+    categorized["Hot Strings"] := []
     categorized["Files & Links"] := []
     categorized["Macros"] := []
 
@@ -7630,6 +7650,8 @@ GetCategorizedHotstrings() {
             category := hs.category
             if (category = "Projects" || category = "Prompts" || category = "General") {
                 categorized[category].Push(hs)
+            } else {
+                categorized["Hot Strings"].Push(hs)
             }
         }
     }
@@ -7860,6 +7882,7 @@ CleanupHotstringSelector() {
     global g_HotstringPromptCharMap, g_HotstringGeminiArmed
     global g_HotstringCharMap
     global g_HS_SelectorOpenFile, g_HS_SelectorCloseRequestFile, g_HS_SelectorCloseCheckTimer
+    global g_UtilitySelectorMode, g_UtilitySelectorCategory
 
     ; Disable active flag
     g_HotstringSelectorActive := false
@@ -7867,18 +7890,15 @@ CleanupHotstringSelector() {
     ; Disable all character hotkeys
     for handler in g_HotstringHotkeyHandlers {
         try {
-            char := handler.char
+            key := handler.HasProp("key") ? handler.key : handler.char
+            char := handler.HasProp("char") ? handler.char : key
             ; Handle special VK codes
-            if (char = ",") {
+            if (key = "vkBC" || char = ",") {
                 Hotkey("vkBC", "Off")
-            } else if (char = ".") {
+            } else if (key = "vkBE" || char = ".") {
                 Hotkey("vkBE", "Off")
             } else {
-                Hotkey(char, "Off")
-                ; Also disable uppercase for lowercase letters
-                if (RegExMatch(char, "^[a-z]$")) {
-                    Hotkey(StrUpper(char), "Off")
-                }
+                Hotkey(key, "Off")
             }
         } catch {
             ; Silently ignore errors
@@ -7888,6 +7908,13 @@ CleanupHotstringSelector() {
     ; Disable Escape hotkey
     try {
         Hotkey("Escape", "Off")
+    } catch {
+        ; Ignore
+    }
+
+    ; Disable Backspace hotkey (menu back)
+    try {
+        Hotkey("Backspace", "Off")
     } catch {
         ; Ignore
     }
@@ -7906,6 +7933,8 @@ CleanupHotstringSelector() {
     g_HotstringHotkeyHandlers := []
     g_HotstringPromptCharMap := Map()
     g_HotstringGeminiArmed := false
+    g_UtilitySelectorMode := "top"
+    g_UtilitySelectorCategory := ""
 
     ; Close and destroy GUI
     if (IsObject(g_HotstringSelectorGui)) {
@@ -8217,9 +8246,18 @@ GeminiFinalizeSubmit() {
 HandleHotstringChar(char) {
     global g_HotstringSelectorActive, g_HotstringCharMap, g_QuickOpenFileCharMap, g_MacroCharMap
     global g_HotstringPromptCharMap, g_HotstringGeminiArmed
+    global g_UtilitySelectorMode, g_UtilityTopCategoryById
 
     ; Only process if selector is active
     if (!g_HotstringSelectorActive) {
+        return
+    }
+
+    ; Top-level category selection (1-6)
+    if (g_UtilitySelectorMode = "top") {
+        if (g_UtilityTopCategoryById.Has(char)) {
+            UtilitySelector_SwitchToCategory(g_UtilityTopCategoryById[char])
+        }
         return
     }
 
@@ -8248,19 +8286,18 @@ HandleHotstringChar(char) {
     }
 
     ; Special handling for Miro boards (characters "9" and "0")
-    ; Check these first before checking the char maps
-    if (char = "9") {
-        ; Cleanup first (closes GUI, disables hotkeys)
-        CleanupHotstringSelector()
-        ; CIP & UX Integration mini workshop - Miro
-        FindAndActivateMiroWindow("https://miro.com/app/board/uXjVJdbNFkA=/", "CIP & UX Integration")
-        return
-    } else if (char = "0") {
-        ; Cleanup first (closes GUI, disables hotkeys)
-        CleanupHotstringSelector()
-        ; CIP Dashboard - Workspace - Miro
-        FindAndActivateMiroWindow("https://miro.com/app/board/uXjVJVZSXvk=/", "CIP Dashboard")
-        return
+    ; Gate to General category so other views can't trigger it.
+    global g_UtilitySelectorCategory
+    if (g_UtilitySelectorCategory = "General") {
+        if (char = "9") {
+            CleanupHotstringSelector()
+            FindAndActivateMiroWindow("https://miro.com/app/board/uXjVJdbNFkA=/", "CIP & UX Integration")
+            return
+        } else if (char = "0") {
+            CleanupHotstringSelector()
+            FindAndActivateMiroWindow("https://miro.com/app/board/uXjVJVZSXvk=/", "CIP Dashboard")
+            return
+        }
     }
 
     ; First check if character maps to a file path (quick open files)
@@ -8488,6 +8525,300 @@ HandleHotstringEscape(*) {
     }
 }
 
+HandleUtilitySelectorBack(*) {
+    global g_HotstringSelectorActive, g_UtilitySelectorMode
+    if (!g_HotstringSelectorActive)
+        return
+    if (g_UtilitySelectorMode = "category") {
+        UtilitySelector_SwitchToTop()
+    }
+}
+
+UtilitySelector_SwitchToTop() {
+    global g_UtilitySelectorMode, g_UtilitySelectorCategory
+    g_UtilitySelectorMode := "top"
+    g_UtilitySelectorCategory := ""
+    try UtilitySelector_RefreshUiAndHotkeys()
+    catch {
+    }
+}
+
+UtilitySelector_SwitchToCategory(category) {
+    global g_UtilitySelectorMode, g_UtilitySelectorCategory
+    g_UtilitySelectorMode := "category"
+    g_UtilitySelectorCategory := category
+    try UtilitySelector_RefreshUiAndHotkeys()
+    catch {
+    }
+}
+
+UtilitySelector_MapInternalCategoryToTop(internalCategory) {
+    if (internalCategory = "Files & Links")
+        return "General"
+    if (internalCategory = "General")
+        return "General"
+    return internalCategory
+}
+
+UtilitySelector_GetAllowedCharsForCurrentView() {
+    global g_UtilitySelectorMode, g_UtilitySelectorCategory
+    global g_UtilityTopCategoryById, g_UtilitySelectorAllItems
+    allowed := Map()
+
+    if (g_UtilitySelectorMode = "top") {
+        for id, category in g_UtilityTopCategoryById {
+            allowed[id] := true
+        }
+        return allowed
+    }
+
+    ; Category view: enable only actionable items in the selected category.
+    ; (Empty placeholders are displayed but not bound.)
+    for item in g_UtilitySelectorAllItems {
+        if (item.category = g_UtilitySelectorCategory && !item.isEmpty) {
+            allowed[item.char] := true
+        }
+    }
+
+    ; Prompts view: enable Gemini modifier key 'L' workflow
+    if (g_UtilitySelectorCategory = "Prompts") {
+        allowed["l"] := true
+        allowed["L"] := true
+    }
+
+    return allowed
+}
+
+UtilitySelector_RebindHotkeys() {
+    global g_HotstringHotkeyHandlers, g_UtilitySelectorMode
+    allowed := UtilitySelector_GetAllowedCharsForCurrentView()
+
+    ; Disable previously-bound hotkeys
+    for handler in g_HotstringHotkeyHandlers {
+        try {
+            key := handler.key
+            if (key = "vkBC") {
+                Hotkey("vkBC", "Off")
+            } else if (key = "vkBE") {
+                Hotkey("vkBE", "Off")
+            } else {
+                Hotkey(key, "Off")
+            }
+        } catch {
+        }
+    }
+    g_HotstringHotkeyHandlers := []
+
+    ; Bind allowed character hotkeys
+    for char, _ in allowed {
+        handler := CreateHotstringCharHandler(char)
+        try {
+            if (char = ",") {
+                Hotkey("vkBC", handler, "On")
+                g_HotstringHotkeyHandlers.Push({ key: "vkBC", char: char, handler: handler })
+            } else if (char = ".") {
+                Hotkey("vkBE", handler, "On")
+                g_HotstringHotkeyHandlers.Push({ key: "vkBE", char: char, handler: handler })
+            } else {
+                Hotkey(char, handler, "On")
+                g_HotstringHotkeyHandlers.Push({ key: char, char: char, handler: handler })
+                if (RegExMatch(char, "^[a-z]$")) {
+                    Hotkey(StrUpper(char), handler, "On")
+                    g_HotstringHotkeyHandlers.Push({ key: StrUpper(char), char: char, handler: handler })
+                }
+            }
+        } catch {
+        }
+    }
+
+    ; Back navigation
+    if (g_UtilitySelectorMode = "category") {
+        try Hotkey("Backspace", HandleUtilitySelectorBack, "On")
+    } else {
+        try Hotkey("Backspace", "Off")
+    }
+
+    ; Escape always closes
+    Hotkey("Escape", HandleHotstringEscape, "On")
+}
+
+UtilitySelector_BuildTopLevelText() {
+    global g_UtilityTopCategories, g_UtilitySelectorAllItems
+    ; Count actionable items per category
+    counts := Map()
+    for cat in g_UtilityTopCategories
+        counts[cat] := 0
+    for item in g_UtilitySelectorAllItems {
+        if (!item.isEmpty && counts.Has(item.category)) {
+            counts[item.category] := counts[item.category] + 1
+        }
+    }
+
+    text := ""
+    text .= "[1] Prompts (" . counts["Prompts"] . ")`n"
+    text .= "[2] Projects (" . counts["Projects"] . ")`n"
+    text .= "[3] Macros (" . counts["Macros"] . ")`n"
+    text .= "[4] Hot Strings (" . counts["Hot Strings"] . ")`n"
+    text .= "[5] General (" . counts["General"] . ")`n"
+    text .= "[6] Unassigned (" . counts["Unassigned"] . ")`n"
+    text .= "`nPress 1–6 to open a category.`n"
+    return text
+}
+
+UtilitySelector_BuildCategoryText(isPortrait) {
+    global g_UtilitySelectorCategory, g_UtilitySelectorAllItems
+    ; Filter items for this category
+    items := []
+    for item in g_UtilitySelectorAllItems {
+        if (item.category = g_UtilitySelectorCategory)
+            items.Push(item)
+    }
+
+    header := "— " . g_UtilitySelectorCategory . " —`n"
+    if (items.Length = 0) {
+        return header . "(no items)`n`nBackspace = back | Esc = close"
+    }
+
+    if (isPortrait) {
+        text := header
+        for item in items
+            text .= item.text . "`n"
+        text .= "`nBackspace = back | Esc = close"
+        return text
+    }
+
+    ; Landscape: two columns
+    maxItemLength := 0
+    for item in items {
+        if (StrLen(item.text) > maxItemLength)
+            maxItemLength := StrLen(item.text)
+    }
+    columnWidth := maxItemLength + 2
+    if (columnWidth < 36)
+        columnWidth := 36
+    columnSpacing := "  "
+
+    midPoint := Ceil(items.Length / 2)
+    maxLines := items.Length - midPoint
+    if (midPoint > maxLines)
+        maxLines := midPoint
+
+    PadString(str, width) {
+        len := StrLen(str)
+        if (len >= width)
+            return str
+        padding := width - len
+        spaces := ""
+        loop padding
+            spaces .= " "
+        return str . spaces
+    }
+
+    text := header
+    loop maxLines {
+        leftText := ""
+        rightText := ""
+        if (A_Index <= midPoint)
+            leftText := PadString(items[A_Index].text, columnWidth)
+        else
+            leftText := PadString("", columnWidth)
+        rightIdx := A_Index + midPoint
+        if (rightIdx <= items.Length)
+            rightText := items[rightIdx].text
+        text .= leftText . columnSpacing . rightText . "`n"
+    }
+    text .= "`nBackspace = back | Esc = close"
+    return text
+}
+
+UtilitySelector_BuildDisplayText(isPortrait) {
+    global g_UtilitySelectorMode
+    if (g_UtilitySelectorMode = "top")
+        return UtilitySelector_BuildTopLevelText()
+    return UtilitySelector_BuildCategoryText(isPortrait)
+}
+
+UtilitySelector_RefreshUiAndHotkeys() {
+    global g_HotstringSelectorGui, g_UtilitySelectorTitleCtrl, g_UtilitySelectorEditCtrl
+    global g_UtilitySelectorIsPortrait, g_UtilitySelectorMonitor
+    global g_UtilitySelectorMode, g_UtilitySelectorCategory
+
+    if (!IsObject(g_HotstringSelectorGui) || !IsObject(g_UtilitySelectorEditCtrl))
+        return
+
+    title := "Utility Shortcuts"
+    if (g_UtilitySelectorMode = "category" && g_UtilitySelectorCategory != "")
+        title := title . " — " . g_UtilitySelectorCategory
+
+    if (IsObject(g_UtilitySelectorTitleCtrl))
+        try g_UtilitySelectorTitleCtrl.Text := title
+
+    displayText := UtilitySelector_BuildDisplayText(g_UtilitySelectorIsPortrait)
+    try g_UtilitySelectorEditCtrl.Value := displayText
+
+    ; Resize based on new content (reuse existing sizing rules)
+    lineCount := 1
+    loop parse, displayText, "`n"
+        lineCount++
+    lineHeight := 14
+    textControlHeight := lineCount * lineHeight
+    minHeight := 150
+
+    monitorWidth := g_UtilitySelectorMonitor["width"]
+    monitorHeight := g_UtilitySelectorMonitor["height"]
+    monitorLeft := g_UtilitySelectorMonitor["left"]
+    monitorTop := g_UtilitySelectorMonitor["top"]
+
+    if (g_UtilitySelectorIsPortrait) {
+        maxHeightPercent := 0.85
+        maxHeight := Floor(monitorHeight * maxHeightPercent)
+        if (textControlHeight < minHeight)
+            textControlHeight := minHeight
+        if (textControlHeight > maxHeight)
+            textControlHeight := maxHeight
+        baseWidth := (monitorWidth < 800) ? 400 : (monitorWidth < 1200) ? 500 : 500
+        if (baseWidth > monitorWidth - 40)
+            baseWidth := monitorWidth - 40
+    } else {
+        maxHeightPercent := (monitorHeight < 800) ? 0.90 : 0.75
+        maxHeight := Floor(monitorHeight * maxHeightPercent)
+        if (textControlHeight < minHeight)
+            textControlHeight := minHeight
+        if (textControlHeight > maxHeight)
+            textControlHeight := maxHeight
+        baseWidth := (monitorWidth < 1200) ? 650 : (monitorWidth < 1920) ? 800 : 1000
+        if (baseWidth > monitorWidth - 40)
+            baseWidth := monitorWidth - 40
+    }
+
+    textControlWidth := baseWidth - 20
+    try {
+        g_UtilitySelectorTitleCtrl.Move(, , textControlWidth)
+        g_UtilitySelectorEditCtrl.Move(, , textControlWidth, textControlHeight)
+    } catch {
+    }
+
+    totalHeight := 10 + 20 + 1 + 4 + textControlHeight + 6 + 18 + 10
+    guiWidth := baseWidth
+
+    marginX := 20
+    marginY := 20
+    guiX := monitorLeft + (monitorWidth - guiWidth) // 2
+    guiY := monitorTop + (monitorHeight - totalHeight) // 2
+    if (guiX < monitorLeft + marginX)
+        guiX := monitorLeft + marginX
+    if (guiY < monitorTop + marginY)
+        guiY := monitorTop + marginY
+    if (guiX + guiWidth > monitorLeft + monitorWidth - marginX)
+        guiX := monitorLeft + monitorWidth - guiWidth - marginX
+    if (guiY + totalHeight > monitorTop + monitorHeight - marginY)
+        guiY := monitorTop + monitorHeight - totalHeight - marginY
+
+    try g_HotstringSelectorGui.Show("NA w" . guiWidth . " h" . totalHeight . " x" . guiX . " y" . guiY)
+
+    UtilitySelector_RebindHotkeys()
+}
+
 ; =============================================================================
 ; ShowHotstringSelector()
 ; =============================================================================
@@ -8556,7 +8887,7 @@ ShowHotstringSelector() {
     hasItems := (g_HotstringCharMap.Count > 0) || (g_QuickOpenFileCharMap.Count > 0) || (g_MacroCharMap.Count > 0)
     if (!hasItems) {
         ; Use tray notification to avoid stealing focus/closing other palettes
-        TrayTip("Hotstring Selector", "No hotstrings, files, or macros found.", "IconX")
+        TrayTip("Utility Selector", "No items found.", "IconX")
         SetTimer(() => TrayTip(), -5000)  ; Auto-hide after ~5s
         return
     }
@@ -8655,7 +8986,7 @@ ShowHotstringSelector() {
 
     ; Create GUI (match Win+Alt+Shift+C AI Model Selector visual style)
     ; Create non-activating GUI so PowerToys Command Palette stays open
-    g_HotstringSelectorGui := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x08000000", "Hotstring Shortcuts")
+    g_HotstringSelectorGui := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x08000000", "Utility Shortcuts")
     g_HotstringSelectorGui.BackColor := "1E1E2E"
     g_HotstringSelectorGui.MarginX := 14
     g_HotstringSelectorGui.MarginY := 10
@@ -8798,7 +9129,8 @@ ShowHotstringSelector() {
                         }
                     }
 
-                    allItems.Push({ category: category, char: char, text: itemText, isEmpty: isEmpty })
+                    topCategory := UtilitySelector_MapInternalCategoryToTop(category)
+                    allItems.Push({ category: topCategory, char: char, text: itemText, isEmpty: isEmpty })
                     currentCharIndex++
                 }
             }
@@ -8941,94 +9273,18 @@ ShowHotstringSelector() {
         return separator
     }
 
-    ; Build display text based on monitor orientation
-    displayText := ""
+    ; Cache UI data for hierarchical selector refresh
+    global g_UtilitySelectorAllItems, g_UtilitySelectorIsPortrait, g_UtilitySelectorMonitor
+    g_UtilitySelectorAllItems := allItems
+    g_UtilitySelectorIsPortrait := isPortrait
+    g_UtilitySelectorMonitor := Map("left", monitorLeft, "top", monitorTop, "width", monitorWidth, "height", monitorHeight)
 
-    if (isPortrait) {
-        ; PORTRAIT MODE: Single-column layout optimized for vertical space
-        currentCategory := ""
-        for item in allItems {
-            if (item.category != currentCategory) {
-                if (currentCategory != "")
-                    displayText .= "`n"
-                currentCategory := item.category
-                displayText .= "— " . currentCategory . " —`n"
-            }
-            displayText .= item.text . "`n"
-        }
-        displayText .= "`n"
-    } else {
-        ; LANDSCAPE MODE: Two-column layout optimized for horizontal space
-        ; Calculate maximum item text length to determine column width
-        maxItemLength := 0
-        for item in allItems {
-            if (StrLen(item.text) > maxItemLength)
-                maxItemLength := StrLen(item.text)
-        }
-        columnWidth := maxItemLength + 2
-        if (columnWidth < 36)
-            columnWidth := 36
-        totalWidth := columnWidth * 2 + 6
-        columnSpacing := "  "
+    ; Always open in top-level category screen
+    global g_UtilitySelectorMode, g_UtilitySelectorCategory
+    g_UtilitySelectorMode := "top"
+    g_UtilitySelectorCategory := ""
 
-        currentCategory := ""
-        categoryItems := []
-
-        for item in allItems {
-            if (item.category != currentCategory) {
-                if (currentCategory != "" && categoryItems.Length > 0) {
-                    displayText .= "— " . currentCategory . " —`n"
-                    midPoint := Ceil(categoryItems.Length / 2)
-                    maxLines := categoryItems.Length - midPoint
-                    if (midPoint > maxLines)
-                        maxLines := midPoint
-                    loop maxLines {
-                        leftText := ""
-                        rightText := ""
-                        if (A_Index <= midPoint)
-                            leftText := PadString(categoryItems[A_Index].text, columnWidth)
-                        else
-                            leftText := PadString("", columnWidth)
-                        rightIdx := A_Index + midPoint
-                        if (rightIdx <= categoryItems.Length)
-                            rightText := categoryItems[rightIdx].text
-                        else
-                            rightText := ""
-                        displayText .= leftText . columnSpacing . rightText . "`n"
-                    }
-                    displayText .= "`n"
-                }
-                currentCategory := item.category
-                categoryItems := []
-            }
-            categoryItems.Push(item)
-        }
-
-        if (currentCategory != "" && categoryItems.Length > 0) {
-            displayText .= "— " . currentCategory . " —`n"
-            midPoint := Ceil(categoryItems.Length / 2)
-            maxLines := categoryItems.Length - midPoint
-            if (midPoint > maxLines)
-                maxLines := midPoint
-            loop maxLines {
-                leftText := ""
-                rightText := ""
-                if (A_Index <= midPoint)
-                    leftText := PadString(categoryItems[A_Index].text, columnWidth)
-                else
-                    leftText := PadString("", columnWidth)
-                rightIdx := A_Index + midPoint
-                if (rightIdx <= categoryItems.Length)
-                    rightText := categoryItems[rightIdx].text
-                else
-                    rightText := ""
-                displayText .= leftText . columnSpacing . rightText . "`n"
-            }
-            displayText .= "`n"
-        }
-    }
-
-    displayText .= "Press Escape to close."
+    displayText := UtilitySelector_BuildDisplayText(isPortrait)
     ; Calculate text control height based on actual content (number of lines)
     ; Count actual lines in displayText (including empty lines for spacing)
     lineCount := 1  ; Start at 1 (first line doesn't have a newline before it)
@@ -9078,12 +9334,14 @@ ShowHotstringSelector() {
 
     ; Title and separator (compact)
     g_HotstringSelectorGui.SetFont("s11 cCDD6F4 Bold", "Segoe UI")
-    g_HotstringSelectorGui.Add("Text", "w" . textControlWidth . " Center", "Hotstring Shortcuts")
+    global g_UtilitySelectorTitleCtrl
+    g_UtilitySelectorTitleCtrl := g_HotstringSelectorGui.Add("Text", "w" . textControlWidth . " Center", "Utility Shortcuts")
     g_HotstringSelectorGui.Add("Text", "w" . textControlWidth . " h1 Background45475A")
     g_HotstringSelectorGui.SetFont("s" . fontSize . " cCDD6F4", "Segoe UI")
 
     ; Enable vertical scrolling for long content
-    g_HotstringSelectorGui.AddEdit("w" . textControlWidth . " h" . textControlHeight .
+    global g_UtilitySelectorEditCtrl
+    g_UtilitySelectorEditCtrl := g_HotstringSelectorGui.AddEdit("w" . textControlWidth . " h" . textControlHeight .
         " ReadOnly VScroll Background1E1E2E", displayText
     )
     g_HotstringSelectorGui.SetFont("s9 c89B4FA", "Segoe UI")
@@ -9123,42 +9381,8 @@ ShowHotstringSelector() {
     }
     g_HS_SelectorCloseCheckTimer := SetTimer(Utils_CheckHotstringSelectorCloseRequest, 120)
 
-    ; Clear handlers array
-    g_HotstringHotkeyHandlers := []
-
-    ; Enable hotkeys for all assigned characters (hotstrings, quick open files, macros),
-    ; plus the reserved modifier key 'L' (Gemini redirect mode).
-    for char in g_HotstringCharSequence {
-        if (char = "l" || char = "L" || g_HotstringCharMap.Has(char) || g_QuickOpenFileCharMap.Has(char) ||
-        g_MacroCharMap.Has(char)) {
-            ; Use factory function to create handler with properly captured char value
-            handler := CreateHotstringCharHandler(char)
-
-            ; Store handler for cleanup
-            g_HotstringHotkeyHandlers.Push({ char: char, handler: handler })
-
-            ; Enable hotkey (both uppercase and lowercase)
-            try {
-                ; Handle special characters that need VK codes
-                if (char = ",") {
-                    Hotkey("vkBC", handler, "On")  ; VK code for comma
-                } else if (char = ".") {
-                    Hotkey("vkBE", handler, "On")  ; VK code for period
-                } else {
-                    Hotkey(char, handler, "On")
-                    ; Also enable uppercase for lowercase letters
-                    if (RegExMatch(char, "^[a-z]$")) {
-                        Hotkey(StrUpper(char), handler, "On")
-                    }
-                }
-            } catch {
-                ; Silently ignore if we can't create hotkey for this character
-            }
-        }
-    }
-
-    ; Enable Escape hotkey
-    Hotkey("Escape", HandleHotstringEscape, "On")
+    ; Bind top-level hotkeys (1-6) + Escape; category view binds are applied when user selects a category.
+    UtilitySelector_RebindHotkeys()
 }
 
 ; =============================================================================
