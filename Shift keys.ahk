@@ -526,7 +526,7 @@ Outlook - Appointment (Shift)
 ⚙️ Optio[N]s (scheduler view)
 🌐 Time [Z]one
 ➕ [J]Add required attendee
-➕ [;]Add optional attendee
+➕ [Alt+O]Add optional attendee
 
 ↩️ [Backspace] Back (scheduler view)
 🧙 [W][W]izard (configure)
@@ -9203,8 +9203,8 @@ Appt_ToggleOrClickAny(criteriaList) {
     ))
 }
 
-; Shift + ; : Add optional attendee
-+;:: {
+; Alt + O : Add optional attendee
+!o:: {
     if !IsNewOutlookActive()
         return
     Appt_RunWithLoading("Add optional", (*) => (
