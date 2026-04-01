@@ -1595,23 +1595,6 @@ DebugLog_0ec0ba(runId, hypothesisId, message, dataJson := "{}") {
     }
 }
 
-; #region agent log
-; Debug session 4440f1 (Utility Shortcuts / Hotstrings)
-DebugLog_4440f1(runId, hypothesisId, location, message, dataStr := "") {
-    try {
-        logPath := A_ScriptDir "\debug-4440f1.log"
-        payload := "{`"sessionId`":`"4440f1`",`"runId`":`"" . DebugJsonEscape(runId)
-        . "`",`"hypothesisId`":`"" . DebugJsonEscape(hypothesisId)
-        . "`",`"location`":`"" . DebugJsonEscape(location)
-        . "`",`"message`":`"" . DebugJsonEscape(message)
-        . "`",`"data`":`"" . DebugJsonEscape(dataStr)
-        . "`",`"timestamp`":" . A_TickCount . "}"
-        FileAppend(payload . "`n", logPath, "UTF-8")
-    } catch {
-    }
-}
-; #endregion
-
 ; =============================================================================
 ; AI Model Selection System for Handy
 ; =============================================================================
@@ -7626,25 +7609,6 @@ BuildHotstringCharMap() {
                     }
                 }
 
-                ; #region agent log
-                ; Session 4440f1: capture Hotstrings category map after build
-                try {
-                    if (category = "Hotstrings") {
-                        keys := ""
-                        lens := ""
-                        for k, v in g_UtilityHotstringCharMapByCategory["Hotstrings"] {
-                            if (StrLen(keys) < 80)
-                                keys .= k
-                            if (StrLen(lens) < 200)
-                                lens .= k . ":" . StrLen(v) . " "
-                        }
-                        DebugLog_4440f1("pre-fix", "H2", "Utils.ahk:BuildHotstringCharMap", "hotstringsMapBuilt",
-                            "keys=" . keys . " lens=" . Trim(lens))
-                    }
-                } catch {
-                }
-                ; #endregion
-
                 ; First pass: assign hotstrings with explicit character assignments
                 for hs in categorized[category] {
                     if (hs.HasProp("char") && hs.char != "" && (g_ReservedEmptyChar = "" || hs.char !=
@@ -8340,11 +8304,6 @@ HandleHotstringChar(char) {
         return
     }
 
-    ; #region agent log
-    try DebugLog_4440f1("pre-fix", "H1", "Utils.ahk:HandleHotstringChar", "keypress",
-        "mode=" . g_UtilitySelectorMode . " category=" . g_UtilitySelectorCategory . " char=" . char)
-    ; #endregion
-
     ; Top-level category selection (1-6)
     if (g_UtilitySelectorMode = "top") {
         ch := StrLower(char)
@@ -8407,16 +8366,6 @@ HandleHotstringChar(char) {
         } catch {
             exp := ""
         }
-        ; #region agent log
-        try {
-            if (g_UtilitySelectorCategory = "Hotstrings" && (char = "m" || char = "p" || char = "x" || char = "t"
-                || char = "M" || char = "P" || char = "X" || char = "T")) {
-                DebugLog_4440f1("pre-fix", "H2", "Utils.ahk:ResolveExpansion", "lookup",
-                    "char=" . char . " lower=" . StrLower(char) . " expLen=" . StrLen(exp))
-            }
-        } catch {
-        }
-        ; #endregion
         if (exp = "") {
             exp := g_HotstringCharMap.Get(char, "")
             if (exp = "")
@@ -8492,16 +8441,6 @@ HandleHotstringChar(char) {
                 return
         }
     }
-
-    ; #region agent log
-    try DebugLog_4440f1("pre-fix", "H2", "Utils.ahk:HandleHotstringChar", "resolved",
-        "mode=" . g_UtilitySelectorMode . " category=" . g_UtilitySelectorCategory
-        . " char=" . char
-        . " expLen=" . StrLen(expansion)
-        . " hasCatMap=" . (IsObject(g_UtilityHotstringCharMapByCategory) && g_UtilityHotstringCharMapByCategory.Has(g_UtilitySelectorCategory) ? "true" : "false")
-        . " file=" . (filePath != "" ? "1" : "0")
-        . " macro=" . (macroFunc != "" ? "1" : "0"))
-    ; #endregion
 
     if (expansion != "") {
         ; Cleanup first (closes GUI, disables hotkeys)
@@ -8685,9 +8624,6 @@ UtilitySelector_SwitchToTop() {
     global g_UtilitySelectorMode, g_UtilitySelectorCategory
     g_UtilitySelectorMode := "top"
     g_UtilitySelectorCategory := ""
-    ; #region agent log
-    try DebugLog_4440f1("pre-fix", "H3", "Utils.ahk:UtilitySelector_SwitchToTop", "switch", "mode=top category=")
-    ; #endregion
     try UtilitySelector_RefreshUiAndHotkeys()
     catch {
     }
@@ -8697,10 +8633,6 @@ UtilitySelector_SwitchToCategory(category) {
     global g_UtilitySelectorMode, g_UtilitySelectorCategory
     g_UtilitySelectorMode := "category"
     g_UtilitySelectorCategory := category
-    ; #region agent log
-    try DebugLog_4440f1("pre-fix", "H3", "Utils.ahk:UtilitySelector_SwitchToCategory", "switch",
-        "mode=category category=" . category)
-    ; #endregion
     try UtilitySelector_RefreshUiAndHotkeys()
     catch {
     }
@@ -8753,25 +8685,6 @@ UtilitySelector_GetAllowedCharsForCurrentView() {
 UtilitySelector_RebindHotkeys() {
     global g_HotstringHotkeyHandlers, g_UtilitySelectorMode
     allowed := UtilitySelector_GetAllowedCharsForCurrentView()
-
-    ; #region agent log
-    try {
-        keys := ""
-        for k, _ in allowed {
-            if (StrLen(keys) < 120)
-                keys .= k
-        }
-        DebugLog_4440f1("pre-fix", "H4", "Utils.ahk:UtilitySelector_RebindHotkeys", "allowed",
-            "mode=" . g_UtilitySelectorMode . " category=" . g_UtilitySelectorCategory
-            . " allowedCount=" . allowed.Count
-            . " sampleKeys=" . keys
-            . " hasM=" . (allowed.Has("m") || allowed.Has("M") ? "1" : "0")
-            . " hasP=" . (allowed.Has("p") || allowed.Has("P") ? "1" : "0")
-            . " hasX=" . (allowed.Has("x") || allowed.Has("X") ? "1" : "0")
-            . " hasT=" . (allowed.Has("t") || allowed.Has("T") ? "1" : "0"))
-    } catch {
-    }
-    ; #endregion
 
     ; Disable previously-bound hotkeys
     for handler in g_HotstringHotkeyHandlers {
