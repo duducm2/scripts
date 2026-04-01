@@ -8382,6 +8382,83 @@ Appt_PopoverInvokeFirst(criteriaList) {
     return false
 }
 
+Appt_PopoverToggleFirst(criteriaList) {
+    ; #region agent log
+    ApptDbg_AllDayToggle(msg, data := "{}", hypo := "AllDayT") {
+        try {
+            line := "{"
+                . '"sessionId":"b96502",'
+                . '"runId":"run1",'
+                . '"hypothesisId":"' hypo '",'
+                . '"timestamp":' A_TickCount ','
+                . '"location":"Shift keys.ahk:Appt_PopoverToggleFirst",'
+                . '"message":"' StrReplace(msg, '"', '\"') '",'
+                . '"data":' data
+                . "}"
+            FileAppend(line "`n", "debug-b96502.log", "UTF-8")
+        } catch {
+        }
+    }
+    ; #endregion
+
+    pop := Appt_OpenPopoverIfNeeded()
+    if !pop {
+        ApptDbg_AllDayToggle("no popover", "{}", "AllDayT_A")
+        return false
+    }
+    for crit in criteriaList {
+        try {
+            el := pop.FindFirst(crit)
+            if !el
+                continue
+            n := "", aid := "", t := "", enabled := "", off := "", tog := 0
+            try n := el.Name
+            try aid := el.AutomationId
+            try t := el.Type
+            try enabled := el.IsEnabled
+            try off := el.IsOffscreen
+            try tog := el.IsTogglePatternAvailable
+            ApptDbg_AllDayToggle("match found", '{'
+                . '"name":"' StrReplace(n, '"', '\"') '",'
+                . '"automationId":"' StrReplace(aid, '"', '\"') '",'
+                . '"type":' t ','
+                . '"isEnabled":' (enabled ? 1 : 0) ','
+                . '"isOffscreen":' (off ? 1 : 0) ','
+                . '"toggleAvail":' (tog ? 1 : 0)
+                . '}', "AllDayT_B")
+
+            if tog {
+                try {
+                    el.TogglePattern.Toggle()
+                    ApptDbg_AllDayToggle("toggle ok", "{}", "AllDayT_C")
+                    return true
+                } catch as errT {
+                    ApptDbg_AllDayToggle("toggle failed", '{"error":"' StrReplace(errT.Message, '"', '\"') '"}', "AllDayT_C")
+                }
+            }
+
+            ; Fallback: click/invoke if TogglePattern not available.
+            try {
+                el.Click()
+                ApptDbg_AllDayToggle("click ok", "{}", "AllDayT_D")
+                return true
+            } catch as errC {
+                ApptDbg_AllDayToggle("click failed", '{"error":"' StrReplace(errC.Message, '"', '\"') '"}', "AllDayT_D")
+                try {
+                    el.Invoke()
+                    ApptDbg_AllDayToggle("invoke ok", "{}", "AllDayT_E")
+                    return true
+                } catch as errI {
+                    ApptDbg_AllDayToggle("invoke failed", '{"error":"' StrReplace(errI.Message, '"', '\"') '"}', "AllDayT_E")
+                }
+            }
+        } catch {
+        }
+    }
+    ApptDbg_AllDayToggle("no match", "{}", "AllDayT_F")
+    return false
+}
+
 Appt_PopoverSelectTimeSuggestion(idx) {
     pop := Appt_OpenPopoverIfNeeded()
     if !pop
@@ -8766,7 +8843,7 @@ Outlook_ClickEndTime_1200PM() {
         }
         ; #endregion
         Appt_RunWithLoading("All day", (*) => (
-            Appt_PopoverInvokeFirst([
+            Appt_PopoverToggleFirst([
                 { Name: "All day", ControlType: "CheckBox" },
                 { Name: "All day", Type: 50002 },
                 ; New Outlook exposes this as a switch (button) with a stable AutomationId (e.g. Toggle9777).
