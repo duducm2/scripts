@@ -519,7 +519,7 @@ Outlook - Appointment (Shift)
 🏷️ Cate[G]ory
 🔒 [P]rivate / Not private
 
-🗓️ Prev day [L] / Next day [K]
+🗓️ Prev day [K] / Next day [L]
 🧭 [Y]Today
 📆 [D]ate header
 🧑‍🤝‍🧑 Sc[H]eduler / Scheduling assistant
@@ -9029,13 +9029,18 @@ Appt_ClickDayNav(isNext) {
     root := Appt_GetRootActive()
     if !root
         return false
+    ; Primary targeting (New Outlook): "Go to previous day <date>" / "Go to next day <date>"
     candidates := isNext
         ? [
+            { Name: "Go to next", matchmode: "Substring", ControlType: "Button" },
+            { Name: "go to next", matchmode: "Substring", ControlType: "Button" },
             { Name: "Next", matchmode: "Substring", ControlType: "Button" },
             { Name: "Forward", matchmode: "Substring", ControlType: "Button" },
             { Name: "Next day", matchmode: "Substring", ControlType: "Button" }
         ]
         : [
+            { Name: "Go to previous", matchmode: "Substring", ControlType: "Button" },
+            { Name: "go to previous", matchmode: "Substring", ControlType: "Button" },
             { Name: "Previous", matchmode: "Substring", ControlType: "Button" },
             { Name: "Back", matchmode: "Substring", ControlType: "Button" },
             { Name: "Previous day", matchmode: "Substring", ControlType: "Button" }
@@ -9087,7 +9092,7 @@ Appt_SchedulerFocusDateTimeControl(kind) {
 }
 
 ; Shift + L / Shift + K : Previous/Next navigation (day in editor, suggestions in scheduler view)
-+L:: {
++K:: {
     if !IsNewOutlookActive()
         return
     Appt_RunWithLoading("Prev", (*) => (
@@ -9096,7 +9101,7 @@ Appt_SchedulerFocusDateTimeControl(kind) {
     ))
 }
 
-+K:: {
++L:: {
     if !IsNewOutlookActive()
         return
     Appt_RunWithLoading("Next", (*) => (
