@@ -840,7 +840,7 @@ global g_Projects := [
                                                     category: "Work", char: "o" }, { name: "boiler-plate", path: "",
                                                         workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\boiler-plate",
                                                         category: "Work", char: "0" }, { name: "astra", path: "",
-                                                            workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\astra",
+                                                            workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\SO UX - LA (Internal) - Projeto Astra",
                                                             category: "Work", char: "a" }
 ]
 ; TODO: Fill in workPath for each project above when configuring work environment
