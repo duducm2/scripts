@@ -7989,6 +7989,15 @@ OutlookClickFirst(criteriaList) {
 
 ; Shift + T : Required / To - To
 +T:: {
+    ; New Outlook compose: “To:” row is a Group (AutomationId 134) that may be collapsed/hidden.
+    if IsNewOutlookActive() {
+        ; Prefer stable AutomationId from outlook-mail.md (compose surface).
+        if OutlookClickFirst([{ AutomationId: "134", ControlType: "Group" }, { AutomationId: "134" }])
+            return
+        ; Fallback: any element whose name begins with “To:”.
+        if OutlookClickFirst([{ Name: "To:", matchmode: "Substring" }, { Name: "To", matchmode: "Substring", ControlType: "Group" }])
+            return
+    }
     if FocusOutlookField({ AutomationId: "4109" }) ; Required
         return
     if FocusOutlookField({ Name: "Required", ControlType: "Edit" })
