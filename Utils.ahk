@@ -731,20 +731,19 @@ InitHotstringsCheatSheet() {
     RegisterHotstring(":o:ebosch", "eduardo.figueiredo@br.bosch.com", "General", "💼 Bosch Email")
     RegisterHotstring(":o:egoogle", "edu.evangelista.figueiredo@gmail.com", "General", "📧 Gmail")
 
-    ; Project Names (Projects category)
-    ; Order here defines character assignment within the Projects segment of g_HotstringCharSequence.
-    ; First three keep their current slots, then we introduce "14-my-notes" at the former X slot,
-    ; and drop the previous X/C/7 entries so later projects shift left by one as needed.
-    RegisterHotstring(":o:myl", "My Links", "Projects", "🔗 My Links")
-    RegisterHotstring(":o:gintegra", "GS_UX core team_UX and CIP Integration", "Projects", "🔄 UX and CIP Integration")
-    RegisterHotstring(":o:gdash", "GS_E&S_CIP Dashboard research and design", "Projects", "📊 CIP Dashboard")
-    ; New project for the X slot in the selector
-    RegisterHotstring(":o:14notes", "14-my-notes", "Projects", "📝 14-my-notes")
-    ; Remaining projects (previously after X/C/7) shift left one character each
-    RegisterHotstring(":o:gpm", "GS_UX_Project_Management_Activities_LA", "Projects", "📋 Project Management LA", "c")
-    RegisterHotstring(":o:guxcip", "GS_UX_and_CIP", "Projects", "🔗 UX and CIP")
-    RegisterHotstring(":o:gtrain", "GS_UX core team_Trainings Management", "Projects", "🎓 Trainings Management")
-    RegisterHotstring(":o:26ai", "26-ai-experiment", "Projects", "🤖 26-ai-experiment")
+    ; Projects (Cursor workspaces) — keys align with Project Selector 2
+    RegisterHotstring(":o:gintegra", "GS_UX core team_UX and CIP Integration", "Projects", "🔄 UX and CIP Integration", "u")
+    RegisterHotstring(":o:gdash", "GS_E&S_CIP Dashboard research and design", "Projects", "📊 CIP Dashboard", "d")
+    RegisterHotstring(":o:14notes", "14-my-notes", "Projects", "📝 14-my-Notes", "n")
+    RegisterHotstring(":o:boiler-plate", "boiler-plate", "Projects", "🧱 boiler-plate", "0")
+    RegisterHotstring(":o:astra", "astra", "Projects", "⭐ astrA", "a")
+
+    ; Hotstrings (non-workspace “project-like” names)
+    RegisterHotstring(":o:myl", "My Links", "Hotstrings", "🔗 My Links", "m")
+    RegisterHotstring(":o:gpm", "GS_UX_Project_Management_Activities_LA", "Hotstrings", "📋 Project Management LA", "p")
+    RegisterHotstring(":o:guxcip", "GS_UX_and_CIP", "Hotstrings", "🔗 UX and CIP", "x")
+    RegisterHotstring(":o:gtrain", "GS_UX core team_Trainings Management", "Hotstrings", "🎓 Trainings Management", "t")
+    RegisterHotstring(":o:26ai", "26-ai-experiment", "Hotstrings", "🤖 26-ai-experiment", "i")
 }
 InitHotstringsCheatSheet()
 
@@ -7407,6 +7406,7 @@ PeekPdf_WaitAndConfigure(skipGoToLastPage := false) {
 global g_HotstringSelectorGui := false          ; GUI object reference (false when not initialized)
 global g_HotstringSelectorActive := false       ; Boolean flag indicating selector is currently displayed
 global g_HotstringCharMap := Map()              ; Character-to-text-expansion mapping for hotstrings
+global g_UtilityHotstringCharMapByCategory := Map() ; Category -> Map(char -> expansion) used by Utility Shortcuts
 global g_HotstringHotkeyHandlers := []          ; Array of hotkey handler objects for cleanup on close
 global g_HotstringPromptCharMap := Map()        ; Map of prompt-assigned chars => true (rebuilt on each ShowHotstringSelector)
 global g_HotstringGeminiArmed := false          ; When true, next Prompts selection is redirected to Gemini
@@ -7419,8 +7419,8 @@ global g_UtilitySelectorMode := "top"           ; "top" | "category"
 global g_UtilitySelectorCategory := ""          ; One of g_UtilityTopCategories
 
 ; Top-level categories (numbers 1-6 select these)
-global g_UtilityTopCategories := ["Prompts", "Projects", "Macros", "General"]
-global g_UtilityTopCategoryById := Map("1", "Prompts", "2", "Projects", "3", "Macros", "4", "General")
+global g_UtilityTopCategories := ["Prompts", "Projects", "Macros", "General", "Hotstrings"]
+global g_UtilityTopCategoryById := Map("1", "Prompts", "2", "Projects", "3", "Macros", "4", "General", "5", "Hotstrings")
 
 ; Utility selector cached UI data (rebuilt each time ShowHotstringSelector() runs)
 global g_UtilitySelectorAllItems := []          ; Array of {category, char, text, isEmpty, [explicitIndex]}
@@ -7466,17 +7466,27 @@ BuildHotstringCharMap() {
     charMap := Map()
     global g_QuickOpenFileCharMap := Map()
     global g_MacroCharMap := Map()
+    global g_UtilityHotstringCharMapByCategory
+
+    ; Category-scoped hotstring maps used by Utility Shortcuts selector.
+    ; This allows the same char to exist in multiple categories (e.g. Prompts 'a' and Projects 'a').
+    g_UtilityHotstringCharMapByCategory := Map()
+    g_UtilityHotstringCharMapByCategory["Prompts"] := Map()
+    g_UtilityHotstringCharMapByCategory["Projects"] := Map()
+    g_UtilityHotstringCharMapByCategory["General"] := Map()
+    g_UtilityHotstringCharMapByCategory["Hotstrings"] := Map()
 
     ; Group hotstrings by category
     categorized := Map()
     categorized["Projects"] := []
     categorized["Prompts"] := []
     categorized["General"] := []
+    categorized["Hotstrings"] := []
 
     if (IsSet(g_hotstrings) && g_hotstrings.Length > 0) {
         for hs in g_hotstrings {
             category := hs.category
-            if (category = "Projects" || category = "Prompts" || category = "General") {
+            if (category = "Projects" || category = "Prompts" || category = "General" || category = "Hotstrings") {
                 categorized[category].Push(hs)
             } else {
                 categorized["General"].Push(hs)
@@ -7558,6 +7568,47 @@ BuildHotstringCharMap() {
         } else {
             ; Handle hotstring categories
             if (categorized.Has(category)) {
+                ; Utility Shortcuts: assign within-category (independent) to avoid cross-category collisions.
+                utilCharIndex := 1
+                utilTaken := Map()
+
+                ; Explicit assignments first
+                for hs in categorized[category] {
+                    if (hs.HasProp("char") && hs.char != "" && (g_ReservedEmptyChar = "" || hs.char != g_ReservedEmptyChar)) {
+                        if (hs.expansion != "" && !utilTaken.Has(hs.char)) {
+                            g_UtilityHotstringCharMapByCategory[category][hs.char] := hs.expansion
+                            utilTaken[hs.char] := true
+                        }
+                    }
+                }
+
+                ; Sequential assignments for remaining hotstrings in this category
+                for hs in categorized[category] {
+                    alreadyAssigned := false
+                    for assignedChar, assignedExpansion in g_UtilityHotstringCharMapByCategory[category] {
+                        if (assignedExpansion = hs.expansion) {
+                            alreadyAssigned := true
+                            break
+                        }
+                    }
+                    if (alreadyAssigned)
+                        continue
+
+                    while (utilCharIndex <= g_HotstringCharSequence.Length) {
+                        ch := g_HotstringCharSequence[utilCharIndex]
+                        utilCharIndex++
+                        if (g_ReservedEmptyChar != "" && ch = g_ReservedEmptyChar)
+                            continue
+                        if (!utilTaken.Has(ch)) {
+                            if (hs.expansion != "") {
+                                g_UtilityHotstringCharMapByCategory[category][ch] := hs.expansion
+                                utilTaken[ch] := true
+                            }
+                            break
+                        }
+                    }
+                }
+
                 ; First pass: assign hotstrings with explicit character assignments
                 for hs in categorized[category] {
                     if (hs.HasProp("char") && hs.char != "" && (g_ReservedEmptyChar = "" || hs.char !=
@@ -7639,6 +7690,7 @@ GetCategorizedHotstrings() {
     categorized["Projects"] := []
     categorized["Prompts"] := []
     categorized["General"] := []
+    categorized["Hotstrings"] := []
     categorized["Files & Links"] := []
     categorized["Macros"] := []
 
@@ -7646,7 +7698,7 @@ GetCategorizedHotstrings() {
     if (IsSet(g_hotstrings) && g_hotstrings.Length > 0) {
         for hs in g_hotstrings {
             category := hs.category
-            if (category = "Projects" || category = "Prompts" || category = "General") {
+            if (category = "Projects" || category = "Prompts" || category = "General" || category = "Hotstrings") {
                 categorized[category].Push(hs)
             } else {
                 categorized["General"].Push(hs)
@@ -8348,10 +8400,23 @@ HandleHotstringChar(char) {
     }
 
     ; Check if character maps to a hotstring expansion
-    expansion := g_HotstringCharMap.Get(char, "")
+    global g_UtilityHotstringCharMapByCategory, g_UtilitySelectorCategory
+    expansion := ""
+    try {
+        if (IsObject(g_UtilityHotstringCharMapByCategory) && g_UtilityHotstringCharMapByCategory.Has(g_UtilitySelectorCategory)) {
+            expansion := g_UtilityHotstringCharMapByCategory[g_UtilitySelectorCategory].Get(char, "")
+            if (expansion = "")
+                expansion := g_UtilityHotstringCharMapByCategory[g_UtilitySelectorCategory].Get(StrLower(char), "")
+        }
+    } catch {
+        expansion := ""
+    }
     if (expansion = "") {
-        ; Try lowercase if uppercase
-        expansion := g_HotstringCharMap.Get(StrLower(char), "")
+        ; Fallback to legacy global map
+        expansion := g_HotstringCharMap.Get(char, "")
+        if (expansion = "") {
+            expansion := g_HotstringCharMap.Get(StrLower(char), "")
+        }
     }
 
     if (expansion != "") {
@@ -8555,6 +8620,8 @@ UtilitySelector_MapInternalCategoryToTop(internalCategory) {
         return "General"
     if (internalCategory = "General")
         return "General"
+    if (internalCategory = "Hotstrings")
+        return "Hotstrings"
     ; Unknown/legacy categories are folded into General now that top-level "Hot Strings" is removed.
     if (internalCategory != "Prompts" && internalCategory != "Projects" && internalCategory != "Macros")
         return "General"
@@ -8660,7 +8727,8 @@ UtilitySelector_BuildTopLevelText() {
     text .= "[2] Projects (" . counts["Projects"] . ")`n"
     text .= "[3] Macros (" . counts["Macros"] . ")`n"
     text .= "[4] General (" . counts["General"] . ")`n"
-    text .= "`nPress 1–4 to open a category.`n"
+    text .= "[5] Hotstrings (" . counts["Hotstrings"] . ")`n"
+    text .= "`nPress 1–5 to open a category.`n"
     return text
 }
 
@@ -8993,7 +9061,7 @@ ShowHotstringSelector() {
     fontSize := (monitorHeight < 800) ? 9 : 9
     g_HotstringSelectorGui.SetFont("s" . fontSize . " cCDD6F4", "Segoe UI")
 
-    ; Build reverse map: expansion -> character
+    ; Build reverse map: expansion -> character (legacy global mapping; still used elsewhere)
     expansionToChar := Map()
     for char, expansion in g_HotstringCharMap {
         expansionToChar[expansion] := char
@@ -9004,14 +9072,13 @@ ShowHotstringSelector() {
     global g_HotstringPromptCharMap
     g_HotstringPromptCharMap := Map()
     try {
-        if (categorized.Has("Prompts")) {
-            for hs in categorized["Prompts"] {
+        global g_UtilityHotstringCharMapByCategory
+        if (IsObject(g_UtilityHotstringCharMapByCategory) && g_UtilityHotstringCharMapByCategory.Has("Prompts")) {
+            for ch, exp in g_UtilityHotstringCharMapByCategory["Prompts"] {
                 try {
-                    if (hs.HasProp("expansion") && hs.expansion != "" && expansionToChar.Has(hs.expansion)) {
-                        g_HotstringPromptCharMap[expansionToChar[hs.expansion]] := true
-                    }
+                    if (exp != "")
+                        g_HotstringPromptCharMap[ch] := true
                 } catch {
-                    ; Ignore malformed entries
                 }
             }
         }
@@ -9179,6 +9246,129 @@ ShowHotstringSelector() {
             filtered.Push(item)
     }
     allItems := filtered
+
+    ; -------------------------------------------------------------------------
+    ; Utility Shortcuts rendering: build items using explicit/per-category maps
+    ; -------------------------------------------------------------------------
+    ; The legacy block above assigns display chars by sequential slot, which can
+    ; differ from mnemonic explicit chars (e.g., Projects 'a' / '0'). For the
+    ; hierarchical selector, rebuild the item list from the category-scoped
+    ; mapping so display + hotkeys match the selected category.
+    try {
+        global g_UtilityHotstringCharMapByCategory, g_QuickOpenFileCharMap, g_MacroCharMap, g_HotstringCharSequence
+
+        charOrder := Map()
+        for idx, c in g_HotstringCharSequence
+            charOrder[c] := idx
+
+        rebuilt := []
+        seen := Map() ; key = category "|" char
+
+        BuildExpansionToChar(catMap) {
+            m := Map()
+            try {
+                for ch, exp in catMap
+                    m[exp] := ch
+            } catch {
+            }
+            return m
+        }
+
+        AddItem(cat, ch, titleText, seenRef, rebuiltRef) {
+            if (ch = "" || titleText = "")
+                return
+            key := cat . "|" . ch
+            if (seenRef.Has(key))
+                return
+            seenRef[key] := true
+            rebuiltRef.Push({ category: cat, char: ch, text: "[" . ch . "] > " . titleText, isEmpty: false })
+        }
+
+        ; Hotstrings (text expansions) by category using category-scoped maps
+        for cat in ["Prompts", "Projects", "General", "Hotstrings"] {
+            if (!categorized.Has(cat))
+                continue
+            catMap := (IsObject(g_UtilityHotstringCharMapByCategory) && g_UtilityHotstringCharMapByCategory.Has(cat)) ?
+                g_UtilityHotstringCharMapByCategory[cat] : Map()
+            expToChar := BuildExpansionToChar(catMap)
+
+            for hs in categorized[cat] {
+                try {
+                    if (!hs.HasProp("expansion") || hs.expansion = "")
+                        continue
+
+                    ch := (hs.HasProp("char") && hs.char != "") ? hs.char : expToChar.Get(hs.expansion, "")
+                    if (ch = "")
+                        continue
+
+                    titleText := ""
+                    if (hs.HasProp("title") && hs.title != "")
+                        titleText := hs.title
+                    else
+                        titleText := GetPreviewText(hs.expansion)
+
+                    AddItem(cat, ch, titleText, seen, rebuilt)
+                } catch {
+                }
+            }
+        }
+
+        ; Files & Links show under General in Utility menu
+        filePathToChar := Map()
+        try {
+            for ch, fp in g_QuickOpenFileCharMap
+                filePathToChar[fp] := ch
+        } catch {
+        }
+        if (categorized.Has("Files & Links")) {
+            for fileEntry in categorized["Files & Links"] {
+                try {
+                    ch := filePathToChar.Get(fileEntry.filePath, "")
+                    if (ch = "")
+                        continue
+                    titleText := fileEntry.HasProp("title") ? fileEntry.title : ""
+                    if (titleText = "")
+                        titleText := fileEntry.filePath
+                    AddItem("General", ch, titleText, seen, rebuilt)
+                } catch {
+                }
+            }
+        }
+
+        ; Macros
+        funcToChar := Map()
+        try {
+            for ch, fn in g_MacroCharMap
+                funcToChar[fn] := ch
+        } catch {
+        }
+        if (categorized.Has("Macros")) {
+            for macroEntry in categorized["Macros"] {
+                try {
+                    ch := (macroEntry.HasProp("char") && macroEntry.char != "") ? macroEntry.char : funcToChar.Get(macroEntry.func, "")
+                    if (ch = "")
+                        continue
+                    titleText := macroEntry.HasProp("title") ? macroEntry.title : ""
+                    if (titleText = "")
+                        titleText := "(macro)"
+                    AddItem("Macros", ch, titleText, seen, rebuilt)
+                } catch {
+                }
+            }
+        }
+
+        ; Sort by character order for a consistent layout
+        try {
+            rebuilt.Sort((a, b) => (charOrder.Get(a.char, 9999) = charOrder.Get(b.char, 9999)) ?
+                (a.category < b.category ? -1 : 1) :
+                (charOrder.Get(a.char, 9999) < charOrder.Get(b.char, 9999) ? -1 : 1))
+        } catch {
+        }
+
+        allItems := rebuilt
+    } catch {
+        ; Fallback to legacy list if rebuild fails
+    }
 
     ; Helper function to pad string to specified width
     PadString(str, width) {

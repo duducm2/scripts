@@ -734,34 +734,115 @@ global g_ProjectCharSequence := ["1", "2", "3", "4", "5", "q", "w", "e", "r", "t
 ; Category display order (General first, Personal second, Work last)
 global g_ProjectCategories := ["General", "Personal", "Work"]
 
+ProjectSelector_IsValidChar(char) {
+    global g_ProjectCharSequence
+    if (char = "" || !IsObject(g_ProjectCharSequence))
+        return false
+    for c in g_ProjectCharSequence {
+        if (c = char)
+            return true
+    }
+    return false
+}
+
+ProjectSelector_ResolveProjectCharMap() {
+    global g_Projects, g_ProjectCategories, g_ProjectCharSequence
+    projectIndexToChar := Map()
+    taken := Map()
+
+    projectIndexToCategory := Map()
+    loop g_Projects.Length {
+        idx := A_Index
+        project := g_Projects[idx]
+        category := project.HasProp("category") ? project.category : "Personal"
+        projectIndexToCategory[idx] := category
+    }
+
+    ; Pass 1: explicit hotkeys
+    for category in g_ProjectCategories {
+        for projectIndex, cat in projectIndexToCategory {
+            if (cat != category)
+                continue
+            project := g_Projects[projectIndex]
+            if (project.name = "" && project.path = "" && project.workPath = "")
+                continue
+            if (project.HasProp("char") && project.char != "") {
+                ch := project.char
+                if (ch = "3")
+                    continue
+                if (ProjectSelector_IsValidChar(ch) && !taken.Has(ch)) {
+                    projectIndexToChar[projectIndex] := ch
+                    taken[ch] := true
+                }
+            }
+        }
+    }
+
+    ; Pass 2: sequential assignment for remaining projects
+    charIndex := 1
+    for category in g_ProjectCategories {
+        for projectIndex, cat in projectIndexToCategory {
+            if (cat != category)
+                continue
+            if (projectIndexToChar.Has(projectIndex))
+                continue
+            project := g_Projects[projectIndex]
+
+            ; Skip empty placeholders but keep charIndex aligned with placeholders
+            if (project.name = "" && project.path = "" && project.workPath = "") {
+                charIndex++
+                continue
+            }
+
+            while (charIndex <= g_ProjectCharSequence.Length) {
+                ch := g_ProjectCharSequence[charIndex]
+                charIndex++
+                if (ch = "3")
+                    continue
+                if (taken.Has(ch))
+                    continue
+                projectIndexToChar[projectIndex] := ch
+                taken[ch] := true
+                break
+            }
+        }
+    }
+
+    return { projectIndexToChar: projectIndexToChar, projectIndexToCategory: projectIndexToCategory }
+}
+
 ; Global project list - add your projects here
 ; Each project should have: name, path, workPath, and category ("General", "Personal", or "Work")
 global g_Projects := [
     ; General category
     { name: "Scripts", path: "C:\Users\eduev\Meu Drive\17 - Projects\scripts", workPath: "C:\Users\fie7ca\Documents\scripts",
-        category: "General" }, { name: "14-my-notes", path: "C:\Users\eduev\Meu Drive\17 - Projects\notes", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes",
-            category: "General" }, { name: "", path: "", workPath: "", category: "General" }, { name: "", path: "",
+        category: "General", char: "s" }, { name: "14-my-Notes", path: "C:\Users\eduev\Meu Drive\17 - Projects\notes", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes",
+            category: "General", char: "n" }, { name: "", path: "", workPath: "", category: "General" }, { name: "", path: "",
                 workPath: "", category: "General" }, { name: "", path: "", workPath: "", category: "General" },
                 ; Personal category
-                { name: "ZMK Sofle", path: "C:\Users\eduev\Documents\ZMK\zmk-sofle", workPath: "", category: "Personal" }, { name: "AI Experiment",
+                { name: "ZMK Sofle", path: "C:\Users\eduev\Documents\ZMK\zmk-sofle", workPath: "", category: "Personal", char: "z" }, { name: "AI ExperIment",
                     path: "C:\Users\eduev\Documents\Web projects\ai-experiments", workPath: "",
-                    category: "Personal" }, { name: "my-personal-repo", path: "C:\Users\eduev\Meu Drive\17 - Projects\my-personal-repo",
+                    category: "Personal", char: "i" }, { name: "my-personal-rePo", path: "C:\Users\eduev\Meu Drive\17 - Projects\my-personal-repo",
                         workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\my-personal-repo",
-                        category: "Personal" }, { name: "",
+                        category: "Personal", char: "p" }, { name: "",
                             path: "", workPath: "", category: "Personal" }, { name: "", path: "", workPath: "",
                                 category: "Personal" },
                             ; Work category
                             { name: "GS_E&S_CIP Dashboard research and design workspace folder", path: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_E&S_CIP Dashboard research and design workspace folder",
                                 workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_E&S_CIP Dashboard research and design workspace folder",
-                                category: "Work" }, { name: "GS_UX core team_UX and CIP Integration", path: "",
+                                category: "Work", char: "d" }, { name: "GS_UX core team_UX and CIP Integration", path: "",
                                     workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_UX core team_UX and CIP Integration",
-                                    category: "Work" }, { name: "PT_Project", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\PT_Project",
-                                        category: "Work" }, { name: "🪂 Avante", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\General - GS_BDU_Team\00_UX_GS_Team\AM_Planning\Avante",
-                                            category: "Work" }, { name: "🪂 Avante – Capacity", path: "",
+                                    category: "Work", char: "u" }, { name: "PT_ProjecT", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\PT_Project",
+                                        category: "Work", char: "t" }, { name: "🪂 A vante", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\General - GS_BDU_Team\00_UX_GS_Team\AM_Planning\Avante",
+                                            category: "Work", char: "v" }, { name: "🪂 Avante – CapacitY", path: "",
                                                 workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\General - GS_BDU_Team\00_UX_GS_Team\AM_Planning\Avante\Capacity",
-                                                category: "Work" }, { name: "E&S OPEX CIM Journey Mapping", path: "",
+                                                category: "Work", char: "y" }, { name: "E&S Opex CIM Journey Mapping", path: "",
                                                     workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\opex-cim-journey-mapping",
-                                                    category: "Work" }
+                                                    category: "Work", char: "o" }, { name: "boiler-plate", path: "",
+                                                        workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\boiler-plate",
+                                                        category: "Work", char: "0" }, { name: "astra", path: "",
+                                                            workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\astra",
+                                                            category: "Work", char: "a" }
 ]
 ; TODO: Fill in workPath for each project above when configuring work environment
 ; Global variables for project selector
@@ -1361,60 +1442,8 @@ HandleSelectionModeTrigger(*) {
         }
     }
 
-    ; Build project index to character mapping (same logic as ShowProjectSelector)
-    projectIndexToChar := Map()
-    projectIndexToCategory := Map()
-
-    ; Build map of project index to category
-    loop g_Projects.Length {
-        projectIndex := A_Index
-        project := g_Projects[projectIndex]
-        category := project.HasProp("category") ? project.category : "Personal"
-        projectIndexToCategory[projectIndex] := category
-    }
-
-    charIndex := 1
-
-    ; Assign characters sequentially within each category
-    for category in g_ProjectCategories {
-        ; Find all project indices in this category
-        categoryProjectIndices := []
-        for projectIndex, cat in projectIndexToCategory {
-            if (cat = category) {
-                categoryProjectIndices.Push(projectIndex)
-            }
-        }
-
-        ; Assign characters to projects in this category
-        for projectIndex in categoryProjectIndices {
-            project := g_Projects[projectIndex]
-
-            ; Skip empty placeholders
-            if (project.name = "" && project.path = "" && project.workPath = "") {
-                charIndex++
-                continue
-            }
-
-            ; Check if we have a character available
-            if (charIndex > g_ProjectCharSequence.Length) {
-                break
-            }
-
-            char := g_ProjectCharSequence[charIndex]
-
-            ; Skip character "3" - it's reserved for preview window activation
-            if (char = "3") {
-                charIndex++
-                if (charIndex > g_ProjectCharSequence.Length) {
-                    break
-                }
-                char := g_ProjectCharSequence[charIndex]
-            }
-
-            projectIndexToChar[projectIndex] := char
-            charIndex++
-        }
-    }
+    resolved := ProjectSelector_ResolveProjectCharMap()
+    projectIndexToChar := resolved.projectIndexToChar
 
     ; Clear selection mode handlers array
     g_SelectionModeHotkeyHandlers := []
@@ -1612,44 +1641,8 @@ HandleCopyFromGeminiModeTrigger(*) {
         }
     }
 
-    ; Build projectIndexToChar (same logic as ShowProjectSelector)
-    projectIndexToChar := Map()
-    projectIndexToCategory := Map()
-    loop g_Projects.Length {
-        projectIndex := A_Index
-        project := g_Projects[projectIndex]
-        category := project.HasProp("category") ? project.category : "Personal"
-        projectIndexToCategory[projectIndex] := category
-    }
-    charIndex := 1
-    for category in g_ProjectCategories {
-        categoryProjectIndices := []
-        for projectIndex, cat in projectIndexToCategory {
-            if (cat = category) {
-                categoryProjectIndices.Push(projectIndex)
-            }
-        }
-        for projectIndex in categoryProjectIndices {
-            project := g_Projects[projectIndex]
-            if (project.name = "" && project.path = "" && project.workPath = "") {
-                charIndex++
-                continue
-            }
-            if (charIndex > g_ProjectCharSequence.Length) {
-                break
-            }
-            char := g_ProjectCharSequence[charIndex]
-            if (char = "3") {
-                charIndex++
-                if (charIndex > g_ProjectCharSequence.Length) {
-                    break
-                }
-                char := g_ProjectCharSequence[charIndex]
-            }
-            projectIndexToChar[projectIndex] := char
-            charIndex++
-        }
-    }
+    resolved := ProjectSelector_ResolveProjectCharMap()
+    projectIndexToChar := resolved.projectIndexToChar
 
     g_CopyFromGeminiHotkeyHandlers := []
     for projectIndex, char in projectIndexToChar {
@@ -2466,61 +2459,9 @@ ShowProjectSelector() {
     ; Get categorized projects
     categorized := GetCategorizedProjects()
 
-    ; Build a map of project index to character assignment
-    ; This allows us to track which character is assigned to which project index
-    projectIndexToChar := Map()
-    charIndex := 1
-
-    ; Build a map of project index to category for easier lookup
-    projectIndexToCategory := Map()
-    loop g_Projects.Length {
-        projectIndex := A_Index
-        project := g_Projects[projectIndex]
-        category := project.HasProp("category") ? project.category : "Personal"
-        projectIndexToCategory[projectIndex] := category
-    }
-
-    ; Assign characters sequentially within each category
-    for category in g_ProjectCategories {
-        ; Find all project indices in this category
-        categoryProjectIndices := []
-        for projectIndex, cat in projectIndexToCategory {
-            if (cat = category) {
-                categoryProjectIndices.Push(projectIndex)
-            }
-        }
-
-        ; Sort by index to maintain order
-        ; Assign characters to projects in this category
-        for projectIndex in categoryProjectIndices {
-            project := g_Projects[projectIndex]
-
-            ; Skip empty placeholders
-            if (project.name = "" && project.path = "" && project.workPath = "") {
-                charIndex++
-                continue
-            }
-
-            ; Check if we have a character available
-            if (charIndex > g_ProjectCharSequence.Length) {
-                break
-            }
-
-            char := g_ProjectCharSequence[charIndex]
-
-            ; Skip character "3" - it's reserved for preview window activation
-            if (char = "3") {
-                charIndex++
-                if (charIndex > g_ProjectCharSequence.Length) {
-                    break
-                }
-                char := g_ProjectCharSequence[charIndex]
-            }
-
-            projectIndexToChar[projectIndex] := char
-            charIndex++
-        }
-    }
+    resolved := ProjectSelector_ResolveProjectCharMap()
+    projectIndexToChar := resolved.projectIndexToChar
+    projectIndexToCategory := resolved.projectIndexToCategory
 
     ; Build display text with category headers (match Hotstring U: single-line "— Category —")
     displayText := ""
