@@ -8337,9 +8337,9 @@ HandleHotstringChar(char) {
     }
 
     ; Special handling for Miro boards (characters "9" and "0")
-    ; Gate to General category so other views can't trigger it.
+    ; Gate to Links category so other views can't trigger it.
     global g_UtilitySelectorCategory
-    if (g_UtilitySelectorCategory = "General") {
+    if (g_UtilitySelectorCategory = "Links") {
         if (char = "9") {
             CleanupHotstringSelector()
             FindAndActivateMiroWindow("https://miro.com/app/board/uXjVJdbNFkA=/", "CIP & UX Integration")
@@ -8351,72 +8351,93 @@ HandleHotstringChar(char) {
         }
     }
 
-    ; First check if character maps to a file path (quick open files)
-    filePath := g_QuickOpenFileCharMap.Get(char, "")
-    if (filePath = "") {
-        ; Try lowercase if uppercase
-        filePath := g_QuickOpenFileCharMap.Get(StrLower(char), "")
+    ; Category-scoped dispatch (prevents cross-menu execution when chars overlap)
+    global g_UtilityHotstringCharMapByCategory, g_UtilitySelectorCategory
+
+    ResolveExpansion() {
+        exp := ""
+        try {
+            if (IsObject(g_UtilityHotstringCharMapByCategory) && g_UtilityHotstringCharMapByCategory.Has(g_UtilitySelectorCategory)) {
+                exp := g_UtilityHotstringCharMapByCategory[g_UtilitySelectorCategory].Get(char, "")
+                if (exp = "")
+                    exp := g_UtilityHotstringCharMapByCategory[g_UtilitySelectorCategory].Get(StrLower(char), "")
+            }
+        } catch {
+            exp := ""
+        }
+        if (exp = "") {
+            exp := g_HotstringCharMap.Get(char, "")
+            if (exp = "")
+                exp := g_HotstringCharMap.Get(StrLower(char), "")
+        }
+        return exp
     }
 
-    if (filePath != "") {
-        ; Cleanup first (closes GUI, disables hotkeys)
+    ResolveFilePath() {
+        fp := g_QuickOpenFileCharMap.Get(char, "")
+        if (fp = "")
+            fp := g_QuickOpenFileCharMap.Get(StrLower(char), "")
+        return fp
+    }
+
+    ResolveMacro() {
+        fn := g_MacroCharMap.Get(char, "")
+        if (fn = "")
+            fn := g_MacroCharMap.Get(StrLower(char), "")
+        return fn
+    }
+
+    TryRunFile(fp) {
+        if (fp = "")
+            return false
         CleanupHotstringSelector()
-
-        ; Determine file type and open accordingly
-        SplitPath(filePath, , , &ext)
+        SplitPath(fp, , , &ext)
         ext := StrLower(ext)
-
         if (ext = "pbix") {
-            ; Power BI file
-            FindAndActivatePowerBIFile(filePath)
+            FindAndActivatePowerBIFile(fp)
         } else {
-            ; Generic file opening (fallback)
-            try {
-                Run(filePath)
-            } catch {
-                ; File opening failed
+            try Run(fp)
+            catch {
             }
         }
-        return
+        return true
     }
 
-    ; Check if character maps to a macro function
-    macroFunc := g_MacroCharMap.Get(char, "")
-    if (macroFunc = "") {
-        ; Try lowercase if uppercase
-        macroFunc := g_MacroCharMap.Get(StrLower(char), "")
-    }
-
-    if (macroFunc != "") {
-        ; Cleanup first (closes GUI, disables hotkeys)
+    TryRunMacro(fn) {
+        if (fn = "")
+            return false
         CleanupHotstringSelector()
-
-        ; Execute the macro function
-        try {
-            macroFunc()
-        } catch Error as e {
-            ; Macro execution failed
+        try fn()
+        catch {
         }
-        return
+        return true
     }
 
-    ; Check if character maps to a hotstring expansion
-    global g_UtilityHotstringCharMapByCategory, g_UtilitySelectorCategory
     expansion := ""
-    try {
-        if (IsObject(g_UtilityHotstringCharMapByCategory) && g_UtilityHotstringCharMapByCategory.Has(g_UtilitySelectorCategory)) {
-            expansion := g_UtilityHotstringCharMapByCategory[g_UtilitySelectorCategory].Get(char, "")
-            if (expansion = "")
-                expansion := g_UtilityHotstringCharMapByCategory[g_UtilitySelectorCategory].Get(StrLower(char), "")
-        }
-    } catch {
-        expansion := ""
-    }
-    if (expansion = "") {
-        ; Fallback to legacy global map
-        expansion := g_HotstringCharMap.Get(char, "")
+    filePath := ""
+    macroFunc := ""
+
+    if (g_UtilitySelectorCategory = "Links") {
+        filePath := ResolveFilePath()
+        if (TryRunFile(filePath))
+            return
+        ; fallback for unexpected collisions
+        expansion := ResolveExpansion()
+    } else if (g_UtilitySelectorCategory = "Macros") {
+        macroFunc := ResolveMacro()
+        if (TryRunMacro(macroFunc))
+            return
+        expansion := ResolveExpansion()
+    } else {
+        ; Projects / Prompts / Hotstrings / General: hotstring-first
+        expansion := ResolveExpansion()
         if (expansion = "") {
-            expansion := g_HotstringCharMap.Get(StrLower(char), "")
+            macroFunc := ResolveMacro()
+            if (TryRunMacro(macroFunc))
+                return
+            filePath := ResolveFilePath()
+            if (TryRunFile(filePath))
+                return
         }
     }
 
