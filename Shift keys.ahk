@@ -8727,6 +8727,16 @@ Appt_OpenMenuAndPick(menuButtonCriteriaList, menuItemName, preClickDelayMs := 0)
                 AvailLog("findfirst threw", '{"scope":"win","step":"Button","error":"' StrReplace(e3.Message, '"', '\"') '"}', "Avail_E3")
         }
         if !mi {
+            try mi := rootWin.FindFirst({ Name: menuItemName, ControlType: "ListItem" })
+            catch as e3b
+                AvailLog("findfirst threw", '{"scope":"win","step":"ListItem","error":"' StrReplace(e3b.Message, '"', '\"') '"}', "Avail_E3b")
+        }
+        if !mi {
+            try mi := rootWin.FindFirst({ Name: menuItemName, ControlType: "CheckBox" })
+            catch as e3c
+                AvailLog("findfirst threw", '{"scope":"win","step":"CheckBox","error":"' StrReplace(e3c.Message, '"', '\"') '"}', "Avail_E3c")
+        }
+        if !mi {
             try mi := rootWin.FindFirst({ Name: menuItemName })
             catch as e4
                 AvailLog("findfirst threw", '{"scope":"win","step":"NameOnly","error":"' StrReplace(e4.Message, '"', '\"') '"}', "Avail_E4")
@@ -8741,6 +8751,17 @@ Appt_OpenMenuAndPick(menuButtonCriteriaList, menuItemName, preClickDelayMs := 0)
                 }
             } catch as e5 {
                 AvailLog("findfirst threw", '{"scope":"desktop","step":"NameOnly","error":"' StrReplace(e5.Message, '"', '\"') '"}', "Avail_E5")
+            }
+        }
+        if !mi {
+            ; Last resort: Portuguese category names may have extra state text; allow substring match.
+            try {
+                desktop := UIA.GetRootElement()
+                if desktop {
+                    try mi := desktop.FindFirst({ Name: menuItemName, matchmode: "Substring" })
+                }
+            } catch as e5b {
+                AvailLog("findfirst threw", '{"scope":"desktop","step":"SubstringName","error":"' StrReplace(e5b.Message, '"', '\"') '"}', "Avail_E5b")
             }
         }
         if mi {
@@ -9883,444 +9904,195 @@ Outlook_CheckReminderState() {
     return ""
 }
 
-; =============================================================================
-; Outlook Appointment Control Application Functions
-; =============================================================================
-
-ApplyPrivacy(desiredState) {
-    if (desiredState = "Off") {
-        return  ; Do nothing if Private Off is desired
-    }
-
-    try {
-        ; Check current state
-        currentState := Outlook_CheckPrivacyState()
-        if (currentState = "On") {
-            return  ; Already set to On, skip
-        }
-
-        ; Ensure Outlook window is active
-        if (!IsOutlookAppointmentActive()) {
-            return
-        }
-
-        ; Apply Private On: Alt+7
-        ; Use ! prefix for Alt key combination
-        Send "!7"
-        Sleep 200
-    } catch Error {
-        ; Silently continue
-    }
-}
-
-ApplyAllDay(desiredState) {
-    try {
-        ; Check current state
-        currentState := Outlook_CheckAllDayState()
-        if ((desiredState = "No (timed)" && currentState = "No") ||
-        (desiredState = "Yes" && currentState = "Yes")) {
-            return  ; Already set correctly, skip
-        }
-
-        ; Ensure Outlook window is active
-        if (!IsOutlookAppointmentActive()) {
-            return
-        }
-
-        ; Use existing UIA checkbox click logic
-        win := WinExist("A")
-        root := UIA.ElementFromHandle(win)
-
-        checkbox := root.FindFirst({ AutomationId: "4226", ControlType: "CheckBox" })
-        if (!checkbox) {
-            checkbox := root.FindFirst({ Name: "All day", ControlType: "CheckBox" })
-        }
-
-        if (checkbox) {
-            checkbox.Invoke()
-            Sleep 200
-        }
-    } catch Error {
-        ; Silently continue
-    }
-}
-
-ApplyStatus(desiredState) {
-    try {
-        ; Check current state
-        currentState := Outlook_CheckStatusState()
-        if (currentState = desiredState) {
-            return  ; Already set correctly, skip
-        }
-
-        ; Ensure Outlook window is active
-        if (!IsOutlookAppointmentActive()) {
-            return
-        }
-
-        ; Map status to first letter
-        statusLetter := ""
-        if (desiredState = "Free") {
-            statusLetter := "F"
-        } else if (desiredState = "Tentative") {
-            statusLetter := "T"
-        } else if (desiredState = "Busy") {
-            statusLetter := "B"
-        } else if (desiredState = "Out of office") {
-            statusLetter := "O"
-        } else {
-            return  ; Unknown status
-        }
-
-        ; Sequence: Alt (down and up), then 5, then first letter, then Enter
-        Send "{Alt down}{Alt up}"  ; Press Alt (down and up)
-        Sleep 200  ; Wait for menu to open
-        Send "5"  ; Press number 5
-        Sleep 200  ; Wait for submenu
-        Send statusLetter  ; Press first letter of status
-        Sleep 200  ; Wait before confirming
-        Send "{Enter}"  ; Confirm selection
-        Sleep 200
-    } catch Error {
-        ; Silently continue
-    }
-}
-
-ApplyCategory(desiredState) {
-    try {
-        ; Check current state
-        currentState := Outlook_CheckCategoryState()
-        if (currentState = desiredState) {
-            return  ; Already set correctly, skip
-        }
-
-        ; Ensure Outlook window is active
-        if (!IsOutlookAppointmentActive()) {
-            return
-        }
-
-        ; Open Category menu: Alt+6
-        Send "!6"
-        Sleep 300  ; Wait for menu to open
-
-        ; Navigate based on desired state
-        if (desiredState = "Important") {
-            ; Down 1-4 times, use 2 as default
-            Send "{Down}"
-            Sleep 200
-            Send "{Down}"
-            Sleep 200
-            Send "{Down}"
-            Sleep 200
-            Send "{Down}"
-        } else if (desiredState = "Personal") {
-            ; Down 6 times
-            loop 6 {
-                Send "{Down}"
-                Sleep 200
-            }
-        }
-
-        Sleep 200  ; Wait before confirming
-        Send "{Enter}"
-        Sleep 200
-    } catch Error {
-        ; Silently continue
-    }
-}
-
-ApplyReminder(desiredState) {
-    try {
-        ; Check current state
-        currentState := Outlook_CheckReminderState()
-        ; Normalize current state for comparison
-        normalizedCurrent := ""
-        if (InStr(currentState, "4 hours", false) || InStr(currentState, "4 hour", false)) {
-            normalizedCurrent := "4 hours"
-        } else if (InStr(currentState, "1 day", false) || InStr(currentState, "one day", false)) {
-            normalizedCurrent := "1 day"
-        } else if (InStr(currentState, "4 days", false) || InStr(currentState, "four days", false)) {
-            normalizedCurrent := "4 days"
-        } else if (InStr(currentState, "1 week", false) || InStr(currentState, "one week", false)) {
-            normalizedCurrent := "1 week"
-        }
-
-        if (normalizedCurrent = desiredState) {
-            return  ; Already set correctly, skip
-        }
-
-        ; Ensure Outlook window is active
-        if (!IsOutlookAppointmentActive()) {
-            return
-        }
-
-        ; Open Reminder field: Alt+8
-        Send "!8"
-        Sleep 200
-
-        ; Clear existing text and type new value
-        Send "^a"  ; Select all
-        Sleep 100
-        SendText desiredState  ; Type the reminder text
-        Sleep 200
-        Send "{Enter}"
-        Sleep 200
-    } catch Error {
-        ; Silently continue
-    }
-}
-
-; =============================================================================
-; Main Function: Apply All Outlook Appointment Settings
-; =============================================================================
-
-ApplyOutlookAppointmentSettings(privacy, allDay, status, category, reminder) {
-    ; Ensure Outlook appointment window is active before applying settings
-    foundWindow := false
-    targetHwnd := 0
-
-    ; First, check if current window is an Outlook appointment/meeting/event
-    currentHwnd := WinExist("A")
-    if (currentHwnd) {
-        currentTitle := WinGetTitle("A")
-        if (WinGetProcessName("A") = "OUTLOOK.EXE" && RegExMatch(currentTitle, "i)(Appointment|Meeting|Event)")) {
-            targetHwnd := currentHwnd
-            foundWindow := true
-        }
-    }
-
-    ; If not found in current window, search all Outlook windows
-    if (!foundWindow) {
-        for hwnd in WinGetList("ahk_exe OUTLOOK.EXE") {
-            title := WinGetTitle("ahk_id " hwnd)
-            ; Match Appointment, Meeting, or Event windows (including "Untitled - Event")
-            if RegExMatch(title, "i)(Appointment|Meeting|Event)") {
-                targetHwnd := hwnd
-                foundWindow := true
-                break
-            }
-        }
-    }
-
-    ; If no window found, show error and exit
-    if (!foundWindow || !targetHwnd) {
-        MsgBox "Outlook appointment/meeting/event window not found. Please open an appointment window first.", "Error",
-            "IconX"
-        return
-    }
-
-    ; Forcefully activate the window
-    if (!WinExist("ahk_id " targetHwnd)) {
-        ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
-        return
-    }
-    WinActivate("ahk_id " targetHwnd)
-    WinShow("ahk_id " targetHwnd)  ; Ensure window is visible
-    WinRestore("ahk_id " targetHwnd)  ; Restore if minimized
-    ; Wait for window to become active
-    WinWaitActive("ahk_id " targetHwnd, , 2)
-    Sleep 300  ; Additional wait for stability and focus
-
-    ; Show loading banner
-    ShowSmallLoadingIndicator_ChatGPT("Applying settings...")
-
-    try {
-        ; Apply each setting in sequence
-        ApplyPrivacy(privacy.Private)
-        Sleep 100
-
-        ApplyAllDay(allDay.AllDay)
-        Sleep 100
-
-        ApplyStatus(status.Status)
-        Sleep 100
-
-        ; If user chose to skip category, do nothing
-        if (category.Category != "") {
-            ApplyCategory(category.Category)
-            Sleep 100
-        }
-
-        ApplyReminder(reminder.Reminder)
-
-        ; Update loading banner to show completion
-        ShowSmallLoadingIndicator_ChatGPT("Settings applied")
-        Sleep 1000
-    } catch Error as e {
-        ShowSmallLoadingIndicator_ChatGPT("Error applying settings")
-        Sleep 1000
-    } finally {
-        ; Always hide loading banner
-        HideSmallLoadingIndicator_ChatGPT()
-    }
-}
-
 RunOutlookAppointmentWizard() {
-    ; Always find and activate Outlook appointment window before starting wizard
-    foundWindow := false
-    targetHwnd := 0
-
-    ; First, check if current window is an Outlook appointment/meeting/event
-    currentHwnd := WinExist("A")
-    if (currentHwnd) {
-        currentTitle := WinGetTitle("A")
-        if (WinGetProcessName("A") = "OUTLOOK.EXE" && RegExMatch(currentTitle, "i)(Appointment|Meeting|Event)")) {
-            targetHwnd := currentHwnd
-            foundWindow := true
-        }
-    }
-
-    ; If not found in current window, search all Outlook windows
-    if (!foundWindow) {
-        for hwnd in WinGetList("ahk_exe OUTLOOK.EXE") {
-            title := WinGetTitle("ahk_id " hwnd)
-            ; Match Appointment, Meeting, or Event windows (including "Untitled - Event")
-            if RegExMatch(title, "i)(Appointment|Meeting|Event)") {
-                targetHwnd := hwnd
-                foundWindow := true
-                break
-            }
-        }
-    }
-
-    ; If no window found, show error and exit
-    if (!foundWindow || !targetHwnd) {
-        MsgBox "Outlook appointment/meeting/event window not found. Please open an appointment window first.",
-            "Wizard Error", "IconX"
+    ; New Outlook only. Requires an active New Outlook appointment window.
+    if !IsNewOutlookActive() || !IsOutlookAppointmentActive() {
+        ShowCenteredOverlay_Utils("❌ Appointment Wizard: open a New event window first", 1700, BANNER_ACCENT_ERROR)
         return
     }
 
-    ; Forcefully activate the window
-    if (!WinExist("ahk_id " targetHwnd)) {
-        ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
+    ; STEP 1/5 – Status
+    c1 := Appt_SelectFromModal("Wizard 1/5: status", [
+        { k: "1", label: "🟢 Free" },
+        { k: "2", label: "🟡 Tentative" },
+        { k: "3", label: "🔴 Busy" },
+        { k: "4", label: "🔴 Out of office" }
+    ], "[1-4] Select  [Esc] Cancel")
+    if (c1 = "")
         return
-    }
-    WinActivate("ahk_id " targetHwnd)
-    WinShow("ahk_id " targetHwnd)  ; Ensure window is visible
-    WinRestore("ahk_id " targetHwnd)  ; Restore if minimized
-    ; Wait for window to become active
-    WinWaitActive("ahk_id " targetHwnd, , 2)
-    Sleep 300  ; Additional wait for stability and focus
+    status := (c1 = "1") ? "Free" : (c1 = "2") ? "Tentative" : (c1 = "3") ? "Busy" : "Out of office"
 
-    ; STEP 1 – Status (4 options)
-    step1Options := Map()
-    step1Options["1"] := { Label: "🟢 Free", Status: "Free" }
-    step1Options["2"] := { Label: "🟡 Tentative", Status: "Tentative" }
-    step1Options["3"] := { Label: "🔴 Busy", Status: "Busy" }
-    step1Options["4"] := { Label: "🔴 Out of office", Status: "Out of office" }
-
-    choice1 := Outlook_SelectOptionByInputBox(
-        "📅 Outlook Appointment – Step 1 of 6",
-        "Choose status:",
-        step1Options
-    )
-    if (choice1 = "") {
-        return  ; user cancelled
-    }
-    selStatus := step1Options[choice1]
-
-    ; STEP 2 – Privacy (2 options)
-    step2Options := Map()
-    step2Options["1"] := { Label: "🔓 Private OFF", Private: "Off" }
-    step2Options["2"] := { Label: "🔒 Private ON", Private: "On" }
-
-    choice2 := Outlook_SelectOptionByInputBox(
-        "📅 Outlook Appointment – Step 2 of 6",
-        "Choose privacy:",
-        step2Options
-    )
-    if (choice2 = "") {
+    ; STEP 2/5 – Privacy
+    c2 := Appt_SelectFromModal("Wizard 2/5: privacy", [
+        { k: "1", label: "🔓 Not private" },
+        { k: "2", label: "🔒 Private" }
+    ], "[1-2] Select  [Esc] Cancel")
+    if (c2 = "")
         return
-    }
-    selPrivacy := step2Options[choice2]
+    privacy := (c2 = "2") ? "Private" : "Not private"
 
-    ; STEP 3 – All-day (2 options)
-    step3Options := Map()
-    step3Options["1"] := { Label: "⏰ All-day NO (timed)", AllDay: "No (timed)" }
-    step3Options["2"] := { Label: "📅 All-day YES", AllDay: "Yes" }
-
-    choice3 := Outlook_SelectOptionByInputBox(
-        "📅 Outlook Appointment – Step 3 of 6",
-        "Choose duration:",
-        step3Options
-    )
-    if (choice3 = "") {
+    ; STEP 3/5 – Category
+    c4 := Appt_SelectFromModal("Wizard 3/5: category", [
+        { k: "1", label: "🚫 None" },
+        { k: "2", label: "⭐ Important" },
+        { k: "3", label: "👤 Personal" }
+    ], "[1-3] Select  [Esc] Cancel")
+    if (c4 = "")
         return
-    }
-    selAllDay := step3Options[choice3]
+    ; New Outlook UI is localized (PT-BR) for categories in this setup.
+    category := (c4 = "1") ? "" : (c4 = "2") ? "Importante" : "Pessoal"
 
-    ; STEP 4 – Category (3 options, including none)
-    step4Options := Map()
-    step4Options["1"] := { Label: "🚫 No category", Category: "" }
-    step4Options["2"] := { Label: "⭐ Important", Category: "Important" }
-    step4Options["3"] := { Label: "👤 Personal", Category: "Personal" }
-
-    choice4 := Outlook_SelectOptionByInputBox(
-        "📅 Outlook Appointment – Step 4 of 6",
-        "Choose category:",
-        step4Options
-    )
-    if (choice4 = "") {
+    ; STEP 4/5 – Reminder (align with new Appointment menu labels we already use)
+    c5 := Appt_SelectFromModal("Wizard 4/5: reminder", [
+        { k: "1", label: "🔕 Don't remind me" },
+        { k: "2", label: "⏰ 15 minutes before" },
+        { k: "3", label: "⏰ 1 hour before" },
+        { k: "4", label: "⏰ 12 hours before" },
+        { k: "5", label: "🗓️ 1 day before" },
+        { k: "6", label: "📅 1 week before" }
+    ], "[1-6] Select  [Esc] Cancel")
+    if (c5 = "")
         return
-    }
-    selCategory := step4Options[choice4]
+    reminder := (c5 = "1") ? "Don't remind me"
+        : (c5 = "2") ? "15 minutes before"
+        : (c5 = "3") ? "1 hour before"
+        : (c5 = "4") ? "12 hours before"
+        : (c5 = "5") ? "1 day before"
+        : "1 week before"
 
-    ; STEP 5 – Reminder (7 options)
-    step5Options := Map()
-    step5Options["0"] := { Label: "🔕 None", Reminder: "0 minutes" }
-    step5Options["1"] := { Label: "⏰ 15 minutes", Reminder: "15 minutes" }
-    step5Options["2"] := { Label: "⏰ 4 hours", Reminder: "4 hours" }
-    step5Options["3"] := { Label: "🗓️ 1 day", Reminder: "1 day" }
-    step5Options["4"] := { Label: "📆 2 days", Reminder: "2 days" }
-    step5Options["5"] := { Label: "📅 1 week", Reminder: "1 week" }
-    step5Options["6"] := { Label: "📅 2 weeks", Reminder: "2 weeks" }
-
-    choice5 := Outlook_SelectOptionByInputBox(
-        "📅 Outlook Appointment – Step 5 of 6",
-        "Choose reminder:",
-        step5Options
-    )
-    if (choice5 = "") {
+    ; STEP 5/5 – All-day (final)
+    c3 := Appt_SelectFromModal("Wizard 5/5: all-day", [
+        { k: "1", label: "⏰ Timed (All-day OFF)" },
+        { k: "2", label: "📅 All-day ON" }
+    ], "[1-2] Select  [Esc] Cancel")
+    if (c3 = "")
         return
-    }
-    selReminder := step5Options[choice5]
+    allDayOn := (c3 = "2")
 
-    ; STEP 6 – Note marker (boolean)
-    step6Options := Map()
-    step6Options["1"] := { Label: "📝 Mark as NOTE", IsNote: true }
-    step6Options["2"] := { Label: "✖️ No note", IsNote: false }
-
-    choice6 := Outlook_SelectOptionByInputBox(
-        "📅 Outlook Appointment – Step 6 of 6",
-        "Is this a note?",
-        step6Options
-    )
-    if (choice6 = "") {
-        return
-    }
-    selNote := step6Options[choice6]
-
-    ; Apply all settings at the end of the wizard
-    ApplyOutlookAppointmentSettings(selPrivacy, selAllDay, selStatus, selCategory, selReminder)
-
-    ; If flagged as note, append NOTE at cursor (title should already be focused)
-    if (selNote.IsNote) {
-        try {
-            if (IsOutlookAppointmentActive()) {
-                SendText " NOTE"
-            }
-        } catch Error {
-            ; Silently ignore failures
-        }
-    }
+    ApptWizard_ApplySelection(status, privacy, allDayOn, category, reminder)
 }
 
 ; Shift + w → Cascaded text wizard for Outlook Appointment
 +w:: {
-    if (!IsOutlookAppointmentActive()) {
+    if !IsOutlookAppointmentActive() || !IsNewOutlookActive() {
+        ShowCenteredOverlay_Utils("❌ Appointment Wizard: open a New event window first", 1700, BANNER_ACCENT_ERROR)
         return
     }
     RunOutlookAppointmentWizard()
+}
+
+ApptWizard_ApplySelection(status, privacy, allDayOn, category, reminder) {
+    global APPT_WIZARD_STEP_DELAY_MS
+    if !IsSet(APPT_WIZARD_STEP_DELAY_MS)
+        APPT_WIZARD_STEP_DELAY_MS := 1000
+
+    try StandardLoadingBar_Show("⏳ Wizard: applying…", BANNER_ACCENT_INTERMEDIATE, { passive: false, centerOnHwnd: 0, textWidth: 640, fontSize: 17 })
+    catch {
+    }
+    try {
+        try StandardLoadingBar_Update("🔄 Wizard: Status → " status, BANNER_ACCENT_INTERMEDIATE)
+        Appt_OpenMenuAndPick([
+            { Name: "Free", ControlType: "Button" },
+            { Name: "Busy", ControlType: "Button" },
+            { Name: "Tentative", ControlType: "Button" },
+            { Name: "Working elsewhere", ControlType: "Button" },
+            { Name: "Out of office", ControlType: "Button" },
+            { Name: "Free", matchmode: "Substring", ControlType: "Button" },
+            { Name: "Busy", matchmode: "Substring", ControlType: "Button" }
+        ], status)
+        Sleep APPT_WIZARD_STEP_DELAY_MS
+
+        try StandardLoadingBar_Update("🔄 Wizard: Privacy → " privacy, BANNER_ACCENT_INTERMEDIATE)
+        Appt_OpenMenuAndPick([
+            { Name: "Private", ControlType: "Button" },
+            { Name: "Not private", ControlType: "Button" },
+            { Name: "Private", matchmode: "Substring", ControlType: "Button" },
+            { Name: "Not private", matchmode: "Substring", ControlType: "Button" }
+        ], privacy)
+        Sleep APPT_WIZARD_STEP_DELAY_MS
+
+        if (category != "") {
+            try StandardLoadingBar_Update("🔄 Wizard: Category → " category, BANNER_ACCENT_INTERMEDIATE)
+            Appt_OpenMenuAndPick([
+                { Name: "Aniversário", ControlType: "Button" },
+                { Name: "Importante", ControlType: "Button" },
+                { Name: "Pessoal", ControlType: "Button" },
+                { Name: "Important", ControlType: "Button" },
+                { Name: "Personal", ControlType: "Button" },
+                { Name: "Category", matchmode: "Substring", ControlType: "Button" },
+                { Name: "Categories", matchmode: "Substring", ControlType: "Button" }
+            ], category)
+            Sleep APPT_WIZARD_STEP_DELAY_MS
+        }
+
+        try StandardLoadingBar_Update("🔄 Wizard: Reminder → " reminder, BANNER_ACCENT_INTERMEDIATE)
+        Appt_OpenMenuAndPick([
+            { Name: "Don't remind me", ControlType: "Button" },
+            { Name: "15 minutes before", ControlType: "Button" },
+            { Name: "1 week before", ControlType: "Button" },
+            { Name: "15 minutes", matchmode: "Substring", ControlType: "Button" },
+            { Name: "1 hour", matchmode: "Substring", ControlType: "Button" },
+            { Name: "12 hours", matchmode: "Substring", ControlType: "Button" },
+            { Name: "1 day", matchmode: "Substring", ControlType: "Button" },
+            { Name: "Reminder", matchmode: "Substring", ControlType: "Button" }
+        ], reminder)
+        Sleep APPT_WIZARD_STEP_DELAY_MS
+
+        try StandardLoadingBar_Update("🔄 Wizard: All-day → " (allDayOn ? "On" : "Off"), BANNER_ACCENT_INTERMEDIATE)
+        ApptWizard_SetAllDay(allDayOn)
+        Sleep APPT_WIZARD_STEP_DELAY_MS
+
+        try StandardLoadingBar_Update("✅ Wizard: applied", BANNER_ACCENT_SUCCESS)
+        try StandardLoadingBar_Hide(700)
+    } catch {
+        try StandardLoadingBar_Update("❌ Wizard: failed", BANNER_ACCENT_ERROR)
+        try StandardLoadingBar_Hide(1200)
+    }
+}
+
+ApptWizard_SetAllDay(desiredOn) {
+    pop := Appt_OpenPopoverIfNeeded()
+    if !pop
+        return false
+    el := 0
+    try el := pop.FindFirst({ Name: "All day", Type: 50002 })
+    catch {
+    }
+    if !el {
+        try el := pop.FindFirst({ Name: "All day", Type: 50000 })
+        catch {
+        }
+    }
+    if !el {
+        try el := pop.FindFirst({ Name: "All day", matchmode: "Substring" })
+        catch {
+        }
+    }
+    if !el
+        return false
+
+    state := ""
+    try {
+        if el.IsTogglePatternAvailable
+            state := el.TogglePattern.CurrentToggleState
+    } catch {
+    }
+    ; ToggleState: 0=Off, 1=On (typical)
+    if (state != "" && ((state = 1) = desiredOn))
+        return true
+
+    try {
+        if el.IsTogglePatternAvailable {
+            el.TogglePattern.Toggle()
+            return true
+        }
+    } catch {
+    }
+    try el.Click()
+    catch {
+        try el.Invoke()
+    }
+    return true
 }
 
 #HotIf

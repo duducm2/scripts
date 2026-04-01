@@ -63,6 +63,14 @@ The appointment hotkeys include logic to:
 
 If New Outlook updates the UIA structure/labels/AutomationIds, capture a fresh UIA tree and update criteria in the appointment helpers.
 
+### Appointment Wizard (Shift+W)
+
+The Appointment “Wizard” (`Shift+W`) was updated to support **New Outlook** only and to follow the shared banner standards in `docs/standard_information_display.md`:
+
+- **Interactive steps**: Each step uses `StandardLoadingBar_ShowWithKeys` (via `Appt_SelectFromModal`) to pick options with number keys and `Esc` to cancel.
+- **Apply phase**: Uses `StandardLoadingBar_Show` / `StandardLoadingBar_Update` / `StandardLoadingBar_Hide` to show progress while applying Status, Privacy, All-day, Category, and Reminder using the same UIA selection helpers as the individual shortcuts (e.g., `Shift+V`, `Shift+P`, `Shift+A`, `Shift+G`, `Shift+Q`).
+- **Flow**: 5 numbered steps (Status → Privacy → Category → Reminder → All-day). The prior NOTE step was removed.
+
 ## Troubleshooting / maintenance notes
 
 - If a shortcut suddenly stops working after an Outlook update:
