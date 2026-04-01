@@ -8676,25 +8676,95 @@ Appt_ClickAny(criteriaList) {
 }
 
 Appt_OpenMenuAndPick(menuButtonCriteriaList, menuItemName) {
+    ; #region agent log
+    AvailLog(msg, data := "{}", hypo := "Avail") {
+        try {
+            line := "{"
+                . '"sessionId":"b96502",'
+                . '"runId":"run1",'
+                . '"hypothesisId":"' hypo '",'
+                . '"timestamp":' A_TickCount ','
+                . '"location":"Shift keys.ahk:Appt_OpenMenuAndPick",'
+                . '"message":"' StrReplace(msg, '"', '\"') '",'
+                . '"data":' data
+                . "}"
+            FileAppend(line "`n", "debug-b96502.log", "UTF-8")
+        } catch {
+        }
+    }
+    ; #endregion
+
     ; Open menu (button), then pick the menu item from desktop root (menus are often hosted outside subtree).
     if !Appt_ClickAny(menuButtonCriteriaList)
         return false
+    AvailLog("menu opened", '{"target":"' StrReplace(menuItemName, '"', '\"') '"}', "Avail_A")
+    StandardLoadingBar_Update("🔄 Appointment: opening status menu…", BANNER_ACCENT_INTERMEDIATE)
     Sleep 120
     try {
         desktop := UIA.GetRootElement()
         if !desktop
             return false
-        mi := desktop.FindFirst({ Name: menuItemName, ControlType: "MenuItem" })
-        if !mi
-            mi := desktop.FindFirst({ Name: menuItemName, Type: 50011 })
+        StandardLoadingBar_Update("🔄 Appointment: selecting " menuItemName "…", BANNER_ACCENT_INTERMEDIATE)
+        ; New Outlook status menus often expose items as Button/RadioButton instead of MenuItem.
+        mi := 0
+        try mi := desktop.FindFirst({ Name: menuItemName, ControlType: "MenuItem" })
+        catch as err1 {
+            AvailLog("findfirst threw", '{"step":"MenuItem","error":"' StrReplace(err1.Message, '"', '\"') '"}', "Avail_E1")
+        }
+        if !mi {
+            try mi := desktop.FindFirst({ Name: menuItemName, Type: 50011 })
+            catch as err2 {
+                AvailLog("findfirst threw", '{"step":"Type50011","error":"' StrReplace(err2.Message, '"', '\"') '"}', "Avail_E2")
+            }
+        }
+        if !mi {
+            try mi := desktop.FindFirst({ Name: menuItemName, ControlType: "RadioButton" })
+            catch as err3 {
+                AvailLog("findfirst threw", '{"step":"RadioButton","error":"' StrReplace(err3.Message, '"', '\"') '"}', "Avail_E3")
+            }
+        }
+        if !mi {
+            try mi := desktop.FindFirst({ Name: menuItemName, Type: 50013 })
+            catch as err4 {
+                AvailLog("findfirst threw", '{"step":"Type50013","error":"' StrReplace(err4.Message, '"', '\"') '"}', "Avail_E4")
+            }
+        }
+        if !mi {
+            try mi := desktop.FindFirst({ Name: menuItemName, ControlType: "Button" })
+            catch as err5 {
+                AvailLog("findfirst threw", '{"step":"Button","error":"' StrReplace(err5.Message, '"', '\"') '"}', "Avail_E5")
+            }
+        }
+        if !mi {
+            try mi := desktop.FindFirst({ Name: menuItemName, Type: 50000 })
+            catch as err6 {
+                AvailLog("findfirst threw", '{"step":"Type50000","error":"' StrReplace(err6.Message, '"', '\"') '"}', "Avail_E6")
+            }
+        }
+        if !mi {
+            ; Last resort: name-only search (any control type)
+            try mi := desktop.FindFirst({ Name: menuItemName })
+            catch as err7 {
+                AvailLog("findfirst threw", '{"step":"NameOnly","error":"' StrReplace(err7.Message, '"', '\"') '"}', "Avail_E7")
+            }
+        }
         if mi {
+            aid := "", ct := "", t := ""
+            try aid := mi.AutomationId
+            try ct := mi.ControlType
+            try t := mi.Type
+            AvailLog("match found", '{"name":"' StrReplace(menuItemName, '"', '\"') '","automationId":"' StrReplace(aid, '"', '\"') '","controlType":"' StrReplace(ct, '"', '\"') '","type":' t '}', "Avail_B")
             try mi.Click()
             catch {
                 try mi.Invoke()
             }
+            StandardLoadingBar_Update("✅ Appointment: " menuItemName, BANNER_ACCENT_SUCCESS)
+            AvailLog("selected", "{}", "Avail_C")
             return true
         }
-    } catch {
+        AvailLog("no match", '{"name":"' StrReplace(menuItemName, '"', '\"') '"}', "Avail_D")
+    } catch as err {
+        AvailLog("exception", '{"error":"' StrReplace(err.Message, '"', '\"') '"}', "Avail_E")
     }
     return false
 }
@@ -9197,6 +9267,11 @@ Appt_SchedulerFocusDateTimeControl(kind) {
 +V:: {
     if !IsNewOutlookActive()
         return
+    ; #region agent log
+    try FileAppend('{"sessionId":"b96502","runId":"run1","hypothesisId":"Avail_A","timestamp":' A_TickCount ',"location":"Shift keys.ahk:+V(appointment)","message":"hotkey entry","data":{}}' "`n", "debug-b96502.log", "UTF-8")
+    catch {
+    }
+    ; #endregion
     Appt_RunWithLoading("Status", (*) => (
         (choice := Appt_SelectFromModal("Appointment status", [
             { k: "1", label: "Free" },
@@ -9211,6 +9286,7 @@ Appt_SchedulerFocusDateTimeControl(kind) {
                     : (choice = "3") ? "Tentative"
                     : (choice = "4") ? "Busy"
                     : "Out of office"),
+                (Avail_DebugPicked(choice, target), true),
                 Appt_OpenMenuAndPick([
                     { Name: "Free", ControlType: "Button" },
                     { Name: "Busy", ControlType: "Button" },
@@ -9224,6 +9300,14 @@ Appt_SchedulerFocusDateTimeControl(kind) {
             : false
     ))
 }
+
+; #region agent log
+Avail_DebugPicked(choice, target) {
+    try FileAppend('{"sessionId":"b96502","runId":"run1","hypothesisId":"Avail_A","timestamp":' A_TickCount ',"location":"Shift keys.ahk:Avail_DebugPicked","message":"picked","data":{"choice":"' choice '","target":"' target '"}}' "`n", "debug-b96502.log", "UTF-8")
+    catch {
+    }
+}
+; #endregion
 
 ; Shift + Q : Reminder selection modal - Q for reminder freQuency
 +Q:: {
