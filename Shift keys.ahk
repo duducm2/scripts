@@ -7564,17 +7564,114 @@ IsOutlookReminderActive() {
 }
 
 IsOutlookMainActive() {
-    if !WinActive("ahk_exe OUTLOOK.EXE")
+    if !(WinActive("ahk_exe OUTLOOK.EXE") || WinActive("ahk_exe olk.exe"))
         return false
-    t := WinGetTitle("A")
+    t := ""
+    cls := ""
+    try t := WinGetTitle("A")
+    try cls := WinGetClass("A")
     ; Exclude inspectors and reminders
     if RegExMatch(t, "i) - Message \(")
         return false
     if RegExMatch(t, "i)(Appointment|Meeting|Event)")
         return false
+    if RegExMatch(t, "i)^New event")
+        return false
     if RegExMatch(t, "i)Reminder")
         return false
+    ; Prefer the New Outlook shell window.
+    if (cls != "" && InStr(cls, "Outlook Host"))
+        return true
+    if (t != "" && InStr(t, " - Outlook"))
+        return true
     return true
+}
+
+Outlook_ActivateMainWindow() {
+    ; Bring the main Outlook shell (Mail/Calendar) to front.
+    try {
+        wins := WinGetList("ahk_class Outlook Host")
+        for hwnd in wins {
+            t := ""
+            try t := WinGetTitle("ahk_id " hwnd)
+            if RegExMatch(t, "i)^(Mail|Calendar) - .* - Outlook") {
+                try WinActivate("ahk_id " hwnd)
+                try WinWaitActive("ahk_id " hwnd, , 1)
+                return hwnd
+            }
+        }
+    } catch {
+    }
+    ; Fallback: best-effort activate any Outlook process window.
+    try {
+        if WinExist("ahk_exe olk.exe")
+            return WinActivate("ahk_exe olk.exe")
+    } catch {
+    }
+    try {
+        if WinExist("ahk_exe OUTLOOK.EXE")
+            return WinActivate("ahk_exe OUTLOOK.EXE")
+    } catch {
+    }
+    return 0
+}
+
+Outlook_FocusMainSearch() {
+    Outlook_ActivateMainWindow()
+    return OutlookFocusFirst([{ AutomationId: "topSearchInput", ControlType: "ComboBox" }, { AutomationId: "topSearchInput" }])
+}
+
+Outlook_SwitchToMail() {
+    Outlook_ActivateMainWindow()
+    return OutlookClickFirst([{ Name: "Mail", ControlType: "Button" }, { Name: "Mail", Type: 50000 }])
+}
+
+Outlook_SwitchToCalendar() {
+    Outlook_ActivateMainWindow()
+    return OutlookClickFirst([{ Name: "Calendar", ControlType: "Button" }, { Name: "Calendar", Type: 50000 }])
+}
+
+Outlook_FocusMailMessageList() {
+    Outlook_ActivateMainWindow()
+    if OutlookFocusFirst([{ AutomationId: "Skip to message list-region" }, { Name: "Message list", matchmode: "Substring" }]) {
+        try EnsureFocus()
+        return true
+    }
+    return false
+}
+
+Outlook_FocusMailReadingPane() {
+    Outlook_ActivateMainWindow()
+    if OutlookFocusFirst([{ AutomationId: "Skip to message-region" }, { Name: "Reading Pane", matchmode: "Substring" }]) {
+        try EnsureFocus()
+        return true
+    }
+    return false
+}
+
+OutlookMail_ClickReadingPaneCommand(cmdName) {
+    Outlook_ActivateMainWindow()
+    try {
+        root := UIA.ElementFromHandle(WinExist("A"))
+        pane := root.FindFirst({ AutomationId: "Skip to message-region" })
+        if !pane
+            return false
+        el := 0
+        try el := pane.FindFirst({ Name: cmdName, ControlType: "MenuItem" })
+        if !el
+            try el := pane.FindFirst({ Name: cmdName, ControlType: "Button" })
+        if el {
+            try el.SetFocus()
+            Sleep 40
+            try el.Click()
+            catch {
+                try el.Invoke()
+            }
+            return true
+        }
+    } catch {
+    }
+    return false
 }
 
 IsNewOutlookActive() {
@@ -7629,6 +7726,101 @@ OutlookClickFirst(criteriaList) {
 }
 
 #HotIf IsOutlookMainActive()
+
+; -------------------------------------------------------------------
+; Outlook main window (New Outlook) overflow layer: Ctrl+Alt+…
+; -------------------------------------------------------------------
+
+^!f:: {  ; Focus Search
+    if !Outlook_FocusMainSearch()
+        ShowCenteredOverlay_Utils("❌ Outlook: Search not found", 1200, BANNER_ACCENT_ERROR)
+}
+
+^!m:: {  ; Switch to Mail
+    if !Outlook_SwitchToMail()
+        ShowCenteredOverlay_Utils("❌ Outlook: Mail not found", 1200, BANNER_ACCENT_ERROR)
+}
+
+^!g:: {  ; Switch to Calendar
+    if !Outlook_SwitchToCalendar()
+        ShowCenteredOverlay_Utils("❌ Outlook: Calendar not found", 1200, BANNER_ACCENT_ERROR)
+}
+
+^!l:: {  ; Focus message list
+    if !Outlook_FocusMailMessageList()
+        ShowCenteredOverlay_Utils("❌ Outlook: Message list not found", 1200, BANNER_ACCENT_ERROR)
+}
+
+^!p:: {  ; Focus reading pane
+    if !Outlook_FocusMailReadingPane()
+        ShowCenteredOverlay_Utils("❌ Outlook: Reading pane not found", 1200, BANNER_ACCENT_ERROR)
+}
+
+; Mail triage (Reading Pane / Ribbon)
+^!r:: {  ; Reply
+    if !OutlookMail_ClickReadingPaneCommand("Reply") && !OutlookClickFirst([{ Name: "Reply", ControlType: "Button" }, { Name: "Reply", ControlType: "MenuItem" }])
+        ShowCenteredOverlay_Utils("❌ Outlook: Reply not found", 1200, BANNER_ACCENT_ERROR)
+}
+
+^!a:: {  ; Reply all
+    if !OutlookMail_ClickReadingPaneCommand("Reply all") && !OutlookClickFirst([{ Name: "Reply all", ControlType: "Button" }, { Name: "Reply all", ControlType: "MenuItem" }])
+        ShowCenteredOverlay_Utils("❌ Outlook: Reply all not found", 1200, BANNER_ACCENT_ERROR)
+}
+
+^!w:: {  ; Forward
+    if !OutlookMail_ClickReadingPaneCommand("Forward") && !OutlookClickFirst([{ Name: "Forward", ControlType: "Button" }, { Name: "Forward", ControlType: "MenuItem" }])
+        ShowCenteredOverlay_Utils("❌ Outlook: Forward not found", 1200, BANNER_ACCENT_ERROR)
+}
+
+^!d:: {  ; Delete
+    if !OutlookClickFirst([{ AutomationId: "519", ControlType: "Button" }, { Name: "Delete", ControlType: "Button" }])
+        ShowCenteredOverlay_Utils("❌ Outlook: Delete not found", 1200, BANNER_ACCENT_ERROR)
+}
+
+^!e:: {  ; Archive
+    if !OutlookClickFirst([{ AutomationId: "505", ControlType: "Button" }, { Name: "Archive", ControlType: "Button" }])
+        ShowCenteredOverlay_Utils("❌ Outlook: Archive not found", 1200, BANNER_ACCENT_ERROR)
+}
+
+^!u:: {  ; Read/Unread toggle
+    if !OutlookClickFirst([{ AutomationId: "552", ControlType: "Button" }, { Name: "Read / Unread", ControlType: "Button" }])
+        ShowCenteredOverlay_Utils("❌ Outlook: Read/Unread not found", 1200, BANNER_ACCENT_ERROR)
+}
+
+^!c:: {  ; Categorize
+    if !OutlookClickFirst([{ AutomationId: "509", ControlType: "Button" }, { Name: "Categorize", ControlType: "Button" }])
+        ShowCenteredOverlay_Utils("❌ Outlook: Categorize not found", 1200, BANNER_ACCENT_ERROR)
+}
+
+^!v:: {  ; Move
+    if !OutlookClickFirst([{ AutomationId: "540", ControlType: "Button" }, { Name: "Move", ControlType: "Button" }])
+        ShowCenteredOverlay_Utils("❌ Outlook: Move not found", 1200, BANNER_ACCENT_ERROR)
+}
+
+^!i:: {  ; Mail Filter menu
+    if !OutlookClickFirst([{ AutomationId: "mailListFilterMenu", ControlType: "Button" }, { Name: "Filter", ControlType: "Button" }])
+        ShowCenteredOverlay_Utils("❌ Outlook: Filter not found", 1200, BANNER_ACCENT_ERROR)
+}
+
+^!s:: {  ; Mail Sort menu
+    if !OutlookClickFirst([{ AutomationId: "mailListSortMenu", ControlType: "Button" }, { Name: "Sorted", matchmode: "Substring", ControlType: "Button" }])
+        ShowCenteredOverlay_Utils("❌ Outlook: Sort not found", 1200, BANNER_ACCENT_ERROR)
+}
+
+; Calendar (main view)
+^!n:: {  ; New item (Mail: new message, Calendar: new event)
+    Outlook_ActivateMainWindow()
+    ; Calendar capture exposes "New event".
+    if OutlookClickFirst([{ Name: "New event", matchmode: "Substring", ControlType: "Button" }])
+        return
+    ; Mail: fall back to built-in new message.
+    Send "^n"
+}
+
+^!t:: {  ; Today (Calendar)
+    if !OutlookClickFirst([{ Name: "Today", ControlType: "Button" }, { Name: "Today", matchmode: "Substring", ControlType: "Button" }])
+        ShowCenteredOverlay_Utils("❌ Outlook: Today not found", 1200, BANNER_ACCENT_ERROR)
+}
 
 ; Shift + G : Send to General - General
 +G::
