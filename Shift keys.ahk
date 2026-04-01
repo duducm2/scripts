@@ -8083,7 +8083,12 @@ SelectExplorerSidebarFirstPinned() {
 ; -------------------------------------------------------------------
 Appt_LoadingShow(text) {
     try StandardLoadingBar_Show(text, BANNER_ACCENT_INTERMEDIATE, { passive: false, centerOnHwnd: 0, textWidth: 560, fontSize: 17 })
-    catch {
+    catch as err {
+        ; #region agent log
+        try FileAppend('{"sessionId":"b96502","runId":"run2","hypothesisId":"Load_A","timestamp":' A_TickCount ',"location":"Shift keys.ahk:Appt_LoadingShow","message":"StandardLoadingBar_Show threw","data":{"error":"' StrReplace(SubStr(err.Message, 1, 140), '"', '\"') '"}}' "`n", "debug-b96502.log", "UTF-8")
+        catch {
+        }
+        ; #endregion
     }
 }
 
@@ -8694,58 +8699,48 @@ Appt_OpenMenuAndPick(menuButtonCriteriaList, menuItemName) {
     }
     ; #endregion
 
-    ; Open menu (button), then pick the menu item from desktop root (menus are often hosted outside subtree).
+    ; Open menu (button), then pick the menu item.
+    ; IMPORTANT: Searching the desktop root can be extremely expensive and can freeze the PC.
     if !Appt_ClickAny(menuButtonCriteriaList)
         return false
-    AvailLog("menu opened", '{"target":"' StrReplace(menuItemName, '"', '\"') '"}', "Avail_A")
-    StandardLoadingBar_Update("🔄 Appointment: opening status menu…", BANNER_ACCENT_INTERMEDIATE)
-    Sleep 120
+    AvailLog("menu click done", '{"target":"' StrReplace(menuItemName, '"', '\"') '","hwnd":' WinExist("A") '}', "Avail_A")
+    try StandardLoadingBar_Update("🔄 Appointment: opening status menu…", BANNER_ACCENT_INTERMEDIATE)
     try {
-        desktop := UIA.GetRootElement()
-        if !desktop
+        rootWin := Appt_GetRootActive()
+        if !rootWin
             return false
-        StandardLoadingBar_Update("🔄 Appointment: selecting " menuItemName "…", BANNER_ACCENT_INTERMEDIATE)
-        ; New Outlook status menus often expose items as Button/RadioButton instead of MenuItem.
+        try StandardLoadingBar_Update("🔄 Appointment: selecting " menuItemName "…", BANNER_ACCENT_INTERMEDIATE)
+
+        ; Try within the active appointment window first (fast).
         mi := 0
-        try mi := desktop.FindFirst({ Name: menuItemName, ControlType: "MenuItem" })
-        catch as err1 {
-            AvailLog("findfirst threw", '{"step":"MenuItem","error":"' StrReplace(err1.Message, '"', '\"') '"}', "Avail_E1")
+        try mi := rootWin.FindFirst({ Name: menuItemName, ControlType: "MenuItem" })
+        catch as e1
+            AvailLog("findfirst threw", '{"scope":"win","step":"MenuItem","error":"' StrReplace(e1.Message, '"', '\"') '"}', "Avail_E1")
+        if !mi {
+            try mi := rootWin.FindFirst({ Name: menuItemName, ControlType: "RadioButton" })
+            catch as e2
+                AvailLog("findfirst threw", '{"scope":"win","step":"RadioButton","error":"' StrReplace(e2.Message, '"', '\"') '"}', "Avail_E2")
         }
         if !mi {
-            try mi := desktop.FindFirst({ Name: menuItemName, Type: 50011 })
-            catch as err2 {
-                AvailLog("findfirst threw", '{"step":"Type50011","error":"' StrReplace(err2.Message, '"', '\"') '"}', "Avail_E2")
-            }
+            try mi := rootWin.FindFirst({ Name: menuItemName, ControlType: "Button" })
+            catch as e3
+                AvailLog("findfirst threw", '{"scope":"win","step":"Button","error":"' StrReplace(e3.Message, '"', '\"') '"}', "Avail_E3")
         }
         if !mi {
-            try mi := desktop.FindFirst({ Name: menuItemName, ControlType: "RadioButton" })
-            catch as err3 {
-                AvailLog("findfirst threw", '{"step":"RadioButton","error":"' StrReplace(err3.Message, '"', '\"') '"}', "Avail_E3")
-            }
+            try mi := rootWin.FindFirst({ Name: menuItemName })
+            catch as e4
+                AvailLog("findfirst threw", '{"scope":"win","step":"NameOnly","error":"' StrReplace(e4.Message, '"', '\"') '"}', "Avail_E4")
         }
+
+        ; Fallback: ONE desktop attempt (avoid freezing the machine).
         if !mi {
-            try mi := desktop.FindFirst({ Name: menuItemName, Type: 50013 })
-            catch as err4 {
-                AvailLog("findfirst threw", '{"step":"Type50013","error":"' StrReplace(err4.Message, '"', '\"') '"}', "Avail_E4")
-            }
-        }
-        if !mi {
-            try mi := desktop.FindFirst({ Name: menuItemName, ControlType: "Button" })
-            catch as err5 {
-                AvailLog("findfirst threw", '{"step":"Button","error":"' StrReplace(err5.Message, '"', '\"') '"}', "Avail_E5")
-            }
-        }
-        if !mi {
-            try mi := desktop.FindFirst({ Name: menuItemName, Type: 50000 })
-            catch as err6 {
-                AvailLog("findfirst threw", '{"step":"Type50000","error":"' StrReplace(err6.Message, '"', '\"') '"}', "Avail_E6")
-            }
-        }
-        if !mi {
-            ; Last resort: name-only search (any control type)
-            try mi := desktop.FindFirst({ Name: menuItemName })
-            catch as err7 {
-                AvailLog("findfirst threw", '{"step":"NameOnly","error":"' StrReplace(err7.Message, '"', '\"') '"}', "Avail_E7")
+            try {
+                desktop := UIA.GetRootElement()
+                if desktop {
+                    try mi := desktop.FindFirst({ Name: menuItemName })
+                }
+            } catch as e5 {
+                AvailLog("findfirst threw", '{"scope":"desktop","step":"NameOnly","error":"' StrReplace(e5.Message, '"', '\"') '"}', "Avail_E5")
             }
         }
         if mi {
