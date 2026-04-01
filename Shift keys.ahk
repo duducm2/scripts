@@ -9910,6 +9910,8 @@ RunOutlookAppointmentWizard() {
         ShowCenteredOverlay_Utils("❌ Appointment Wizard: open a New event window first", 1700, BANNER_ACCENT_ERROR)
         return
     }
+    global g_ApptWizardMainHwnd
+    g_ApptWizardMainHwnd := WinExist("A")
 
     ; STEP 1/5 – Status
     c1 := Appt_SelectFromModal("Wizard 1/5: status", [
@@ -10044,10 +10046,228 @@ ApptWizard_ApplySelection(status, privacy, allDayOn, category, reminder) {
 
         try StandardLoadingBar_Update("✅ Wizard: applied", BANNER_ACCENT_SUCCESS)
         try StandardLoadingBar_Hide(700)
+        ; Finish by focusing the Title field so the user can type.
+        ApptWizard_FocusTitleField()
     } catch {
         try StandardLoadingBar_Update("❌ Wizard: failed", BANNER_ACCENT_ERROR)
         try StandardLoadingBar_Hide(1200)
     }
+}
+
+ApptWizard_FocusTitleField() {
+    ; #region agent log
+    WizTitleLog(msg, data := "{}", hypo := "Title") {
+        try {
+            line := "{"
+                . '"sessionId":"b96502",'
+                . '"runId":"runTitle",'
+                . '"hypothesisId":"' hypo '",'
+                . '"timestamp":' A_TickCount ','
+                . '"location":"Shift keys.ahk:ApptWizard_FocusTitleField",'
+                . '"message":"' StrReplace(msg, '"', '\"') '",'
+                . '"data":' data
+                . "}"
+            FileAppend(line "`n", "debug-b96502.log", "UTF-8")
+        } catch {
+        }
+    }
+    ; #endregion
+
+    try {
+        ; Clear any overlay that might keep focus.
+        StandardLoadingBar_Hide(0)
+    } catch {
+    }
+    ; Close any open context menu/popover that may be holding focus.
+    try Send "{Esc}"
+    try Send "{Esc}"
+    global g_ApptWizardMainHwnd
+    if IsSet(g_ApptWizardMainHwnd) && g_ApptWizardMainHwnd
+        try WinActivate("ahk_id " g_ApptWizardMainHwnd)
+    try {
+        hwnd := WinExist("A")
+        t := WinGetTitle("A")
+        c := WinGetClass("A")
+        p := WinGetProcessName("A")
+        WizTitleLog("entry", '{"hwnd":' hwnd ',"proc":"' StrReplace(p, '"', '\"') '","class":"' StrReplace(c, '"', '\"') '","title":"' StrReplace(SubStr(t, 1, 80), '"', '\"') '","wizardHwnd":' (IsSet(g_ApptWizardMainHwnd) ? g_ApptWizardMainHwnd : 0) '}', "Title_A")
+    } catch {
+    }
+    ok := false
+    try ok := FocusOutlookFieldOnHwnd(g_ApptWizardMainHwnd, { Name: "Add title", ControlType: "Edit" })
+    catch {
+    }
+    try WizTitleLog("attempt", '{"crit":"Add title/Edit","ok":' (ok ? 1 : 0) '}', "Title_B")
+    catch {
+    }
+    if !ok {
+        try ok := FocusOutlookFieldOnHwnd(g_ApptWizardMainHwnd, { Name: "Add title", Type: 50004 })
+        catch {
+        }
+        try WizTitleLog("attempt", '{"crit":"Add title/Type50004","ok":' (ok ? 1 : 0) '}', "Title_C")
+        catch {
+        }
+    }
+    if !ok {
+        ; Try alternate label (some builds expose Title vs Add title).
+        try ok := FocusOutlookFieldOnHwnd(g_ApptWizardMainHwnd, { Name: "Title", ControlType: "Edit" })
+        catch {
+        }
+        try WizTitleLog("attempt", '{"crit":"Title/Edit","ok":' (ok ? 1 : 0) '}', "Title_D")
+        catch {
+        }
+    }
+    if !ok {
+        try ok := FocusOutlookFieldOnHwnd(g_ApptWizardMainHwnd, { AutomationId: "4100" })
+        catch {
+        }
+        try WizTitleLog("attempt", '{"crit":"AutomationId4100","ok":' (ok ? 1 : 0) '}', "Title_E")
+        catch {
+        }
+    }
+
+    ; Snapshot what UIA sees (whether or not focus succeeded).
+    try {
+        root := UIA.ElementFromHandle(IsSet(g_ApptWizardMainHwnd) && g_ApptWizardMainHwnd ? g_ApptWizardMainHwnd : WinExist("A"))
+        el := 0
+        try el := root.FindFirst({ Name: "Add title", ControlType: "Edit" })
+        catch {
+        }
+        if !el {
+            try el := root.FindFirst({ Name: "Add title", Type: 50004 })
+            catch {
+            }
+        }
+        if !el {
+            try el := root.FindFirst({ Name: "Title", ControlType: "Edit" })
+            catch {
+            }
+        }
+        if el {
+            n := "", aid := "", ty := "", ct := "", off := "", en := ""
+            try n := el.Name
+            try aid := el.AutomationId
+            try ty := el.Type
+            try ct := el.ControlType
+            try off := el.IsOffscreen
+            try en := el.IsEnabled
+            WizTitleLog("uia_found", '{"name":"' StrReplace(n, '"', '\"') '","automationId":"' StrReplace(aid, '"', '\"') '","type":' ty ',"controlType":"' StrReplace(ct, '"', '\"') '","isOffscreen":' (off ? 1 : 0) ',"isEnabled":' (en ? 1 : 0) '}', "Title_F")
+        } else {
+            WizTitleLog("uia_not_found", "{}", "Title_F")
+            ; Enumerate a few Edit controls so we can learn the new title field identity.
+            try {
+                edits := root.FindAll({ ControlType: "Edit" })
+                nEd := 0
+                try nEd := edits.Length
+                WizTitleLog("edits_count", '{"n":' nEd '}', "Title_G")
+                if (nEd > 0) {
+                    Loop Min(5, nEd) {
+                        e := edits[A_Index]
+                        n2 := "", aid2 := "", ty2 := "", off2 := "", en2 := ""
+                        try n2 := e.Name
+                        try aid2 := e.AutomationId
+                        try ty2 := e.Type
+                        try off2 := e.IsOffscreen
+                        try en2 := e.IsEnabled
+                        WizTitleLog("edit_sample", '{"i":' A_Index ',"name":"' StrReplace(SubStr(n2, 1, 60), '"', '\"') '","automationId":"' StrReplace(SubStr(aid2, 1, 60), '"', '\"') '","type":' ty2 ',"isOffscreen":' (off2 ? 1 : 0) ',"isEnabled":' (en2 ? 1 : 0) '}', "Title_H")
+                    }
+                }
+            } catch as errEnum {
+                WizTitleLog("edits_enum_failed", '{"error":"' StrReplace(SubStr(errEnum.Message, 1, 120), '"', '\"') '"}', "Title_G")
+            }
+        }
+    } catch {
+    }
+
+    ; Last-resort: keyboard focus traversal (some builds expose no Edit controls).
+    if !ok {
+        ok := ApptWizard_FocusTitleField_ByTabbing(28)
+        try WizTitleLog("tab_traversal_done", '{"ok":' (ok ? 1 : 0) '}', "Title_I")
+        catch {
+        }
+    }
+
+    if !ok {
+        try ShowCenteredOverlay_Utils("⚠️ Wizard: Title field not found", 1200, BANNER_ACCENT_INTERMEDIATE)
+        catch {
+        }
+    }
+    return ok
+}
+
+FocusOutlookFieldOnHwnd(hwnd, criteria) {
+    try {
+        if !hwnd
+            hwnd := WinExist("A")
+        root := UIA.ElementFromHandle(hwnd)
+        ctrl := root.FindFirst(criteria)
+        if ctrl {
+            ctrl.SetFocus()
+            return true
+        }
+    } catch {
+    }
+    return false
+}
+
+ApptWizard_FocusTitleField_ByTabbing(maxSteps := 24) {
+    ; #region agent log
+    WizTitleTabLog(msg, data := "{}", hypo := "TitleTab") {
+        try {
+            line := "{"
+                . '"sessionId":"b96502",'
+                . '"runId":"runTitle",'
+                . '"hypothesisId":"' hypo '",'
+                . '"timestamp":' A_TickCount ','
+                . '"location":"Shift keys.ahk:ApptWizard_FocusTitleField_ByTabbing",'
+                . '"message":"' StrReplace(msg, '"', '\"') '",'
+                . '"data":' data
+                . "}"
+            FileAppend(line "`n", "debug-b96502.log", "UTF-8")
+        } catch {
+        }
+    }
+    ; #endregion
+
+    try {
+        ; Anchor: focus Save in command bar (stable) then tab forward.
+        tb := Appt_FindCommandBar()
+        if tb {
+            btn := 0
+            try btn := tb.FindFirst({ Name: "Save", ControlType: "Button" })
+            if btn {
+                try btn.SetFocus()
+                Sleep 60
+            }
+        }
+    } catch {
+    }
+
+    Loop maxSteps {
+        fe := 0, name := "", aid := "", ty := ""
+        try fe := UIA.GetFocusedElement()
+        if fe {
+            try name := fe.Name
+            try aid := fe.AutomationId
+            try ty := fe.Type
+        }
+        try WizTitleTabLog("step", '{"i":' A_Index ',"name":"' StrReplace(SubStr(name, 1, 60), '"', '\"') '","automationId":"' StrReplace(SubStr(aid, 1, 60), '"', '\"') '","type":' (ty = "" ? -1 : ty) '}', "TitleTab_A")
+        catch {
+        }
+
+        ; Match both EN/PT variants.
+        if (name != "") {
+            if InStr(name, "Add title", false) || InStr(name, "Title", false) || InStr(name, "Adicionar título", false) || InStr(name, "Adicionar titulo", false) {
+                ; Ensure caret by clicking focused element if possible.
+                try fe.Click()
+                catch {
+                }
+                return true
+            }
+        }
+        Send "{Tab}"
+        Sleep 60
+    }
+    return false
 }
 
 ApptWizard_SetAllDay(desiredOn) {
