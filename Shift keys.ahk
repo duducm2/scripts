@@ -7695,6 +7695,74 @@ OutlookMail_ClickReadingPaneCommand(cmdName) {
     return false
 }
 
+OutlookMail_EnsureNavigationPaneVisible() {
+    Outlook_ActivateMainWindow()
+    try {
+        root := UIA.ElementFromHandle(WinExist("A"))
+        ; If the navigation pane exists (or at least the folder tree), we’re good.
+        try {
+            if root.FindFirst({ Name: "Navigation pane", matchmode: "Substring" })
+                return true
+            if root.FindFirst({ ControlType: "Tree" })
+                return true
+        } catch {
+        }
+
+        ; Otherwise toggle the nav pane (label may be "Show…" or "Hide…", depending on state).
+        if OutlookClickFirst([
+            { Name: "navigation pane", matchmode: "Substring", ControlType: "Button" },
+            { Name: "Navigation pane", matchmode: "Substring", ControlType: "Button" },
+            { Name: "Hide navigation pane", ControlType: "Button" },
+            { Name: "Show navigation pane", ControlType: "Button" }
+        ]) {
+            Sleep 120
+            try {
+                if root.FindFirst({ ControlType: "Tree" })
+                    return true
+            } catch {
+            }
+        }
+    } catch {
+    }
+    return false
+}
+
+OutlookMail_ClickInboxFolder() {
+    Outlook_ActivateMainWindow()
+    if !OutlookMail_EnsureNavigationPaneVisible()
+        return false
+    try {
+        root := UIA.ElementFromHandle(WinExist("A"))
+
+        ; Scope search to the Navigation pane subtree to avoid colliding with other “Inbox” elements.
+        nav := 0
+        try nav := root.FindFirst({ Name: "Navigation pane", matchmode: "Substring" })
+        if !nav
+            nav := root
+
+        inbox := 0
+        ; Prefer the uniquely-named selected variant.
+        try inbox := nav.FindFirst({ Name: "Inbox selected", ControlType: "TreeItem" })
+        if !inbox
+            try inbox := nav.FindFirst({ Name: "Inbox", ControlType: "TreeItem" })
+        if !inbox
+            try inbox := nav.FindFirst({ Name: "Inbox", matchmode: "Substring", ControlType: "TreeItem" })
+
+        if inbox {
+            try inbox.ScrollIntoView()
+            try inbox.SetFocus()
+            Sleep 40
+            try inbox.Click()
+            catch {
+                try inbox.Invoke()
+            }
+            return true
+        }
+    } catch {
+    }
+    return false
+}
+
 IsNewOutlookActive() {
     if !(WinActive("ahk_exe OUTLOOK.EXE") || WinActive("ahk_exe olk.exe"))
         return false
@@ -7893,8 +7961,9 @@ OutlookClickFirst(criteriaList) {
 +I::
 {
     if IsNewOutlookActive() {
-        if OutlookClickFirst([{ Name: "Inbox selected", ControlType: "TreeItem" }, { Name: "Inbox", ControlType: "TreeItem" }, { Name: "Inbox",
-            matchmode: "Substring", ControlType: "TreeItem" }])
+        Outlook_ActivateMainWindow()
+        ; New Outlook: click Inbox in the Navigation pane (unique scope).
+        if OutlookMail_ClickInboxFolder()
             return
     }
     Send "{Alt}"
