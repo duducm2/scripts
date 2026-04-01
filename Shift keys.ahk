@@ -2742,7 +2742,21 @@ global PERSONAL_SCRIPTS_PATH := "C:\Users\eduev\Meu Drive\17 - Projects\scripts"
 ; ShowErr(msgOrErr)  â€" uniform MsgBox for any thrown value
 ; ---------------------------------------------------------------------------
 ShowErr(err) {
-    text := (Type(err) = "Error") ? err.Message : err
+    text := ""
+    try {
+        if (err is Error) {
+            text := err.Message
+            if (HasProp(err, "Extra") && err.Extra != "")
+                text .= "`n`nExtra:`n" err.Extra
+        } else if (err is String) {
+            text := err
+        } else {
+            ; Covers TargetError and other thrown objects/values.
+            text := Format("{}", err)
+        }
+    } catch {
+        text := "<unprintable error value>"
+    }
     MsgBox("Error:`n" text, "Error", "IconX")
 }
 
@@ -7564,12 +7578,19 @@ IsOutlookMainActive() {
 }
 
 IsNewOutlookActive() {
-    if !WinActive("ahk_exe OUTLOOK.EXE")
+    if !(WinActive("ahk_exe OUTLOOK.EXE") || WinActive("ahk_exe olk.exe"))
         return false
     cls := ""
     title := ""
+    exe := ""
     try cls := WinGetClass("A")
     try title := WinGetTitle("A")
+    try exe := WinGetProcessName("A")
+    ; #region agent log
+    try FileAppend('{"sessionId":"b96502","runId":"run1","hypothesisId":"Appt_F","timestamp":' A_TickCount ',"location":"Shift keys.ahk:IsNewOutlookActive","message":"env","data":{"exe":"' exe '","class":"' cls '","title":"' StrReplace(title, '"', '\"') '"}}' "`n", "C:\Users\fie7ca\Documents\scripts\debug-b96502.log", "UTF-8")
+    catch {
+    }
+    ; #endregion
     return InStr(cls, "Outlook Host")
     || InStr(title, " - Outlook")
     || RegExMatch(title, "i)^(New event|Reminders?)")
@@ -8142,13 +8163,41 @@ Appt_FindOpenPopover() {
 }
 
 Appt_OpenPopoverIfNeeded() {
+    ; #region agent log
+    Appt_DebugLog(msg, data := "", hypothesisId := "Appt") {
+        try {
+            if (data = "")
+                data := "{}"
+            safeMsg := StrReplace(msg, '"', '\"')
+            line := "{"
+                . '"sessionId":"b96502",'
+                . '"runId":"run1",'
+                . '"hypothesisId":"' hypothesisId '",'
+                . '"timestamp":' A_TickCount ','
+                . '"location":"Shift keys.ahk:Appt_OpenPopoverIfNeeded",'
+                . '"message":"' safeMsg '",'
+                . '"data":' data
+                . "}"
+            FileAppend(line "`n", "C:\Users\fie7ca\Documents\scripts\debug-b96502.log", "UTF-8")
+        } catch {
+        }
+    }
+    ; #endregion
+
+    Appt_DebugLog("entry")
     pop := Appt_FindOpenPopover()
     if pop
+    {
+        Appt_DebugLog("already open; returning", '{"open":true}')
         return pop
+    }
 
     root := Appt_GetRootActive()
     if !root
+    {
+        Appt_DebugLog("no root; returning 0", '{"open":false}')
         return 0
+    }
 
     ; Best trigger: click the Start time combo (or its caret button) to open the popover.
     try {
@@ -8157,24 +8206,152 @@ Appt_OpenPopoverIfNeeded() {
             try trigger.SetFocus()
             Sleep 40
             try trigger.Click()
+            Appt_DebugLog("trigger: start time combobox click attempted")
         } else {
             btn := root.FindFirst({ Name: "Start time", ControlType: "Button" })
             if btn {
                 try btn.SetFocus()
                 Sleep 40
                 try btn.Click()
+                Appt_DebugLog("trigger: start time button click attempted")
             }
         }
     } catch {
+        Appt_DebugLog("trigger: start time click threw", '{"where":"start-time"}', "Appt_A")
+    }
+
+    ; Fallback trigger: click the date/time range summary button (e.g. "Wed 4/1/2026 2:00 PM - 2:30 PM …")
+    ; This is required in Scheduler view where Start time controls may not be present until expanded.
+    try {
+        days := ["Mon ", "Tue ", "Wed ", "Thu ", "Fri ", "Sat ", "Sun "]
+        for _, d in days {
+            rangeBtn := root.FindFirst({ Type: 50000, Name: d, matchmode: "Substring" })
+            if rangeBtn {
+                name := ""
+                try name := rangeBtn.Name
+                if (name != "" && InStr(name, " - ") && (InStr(name, " AM") || InStr(name, " PM"))) {
+                    try rangeBtn.SetFocus()
+                    Sleep 40
+                    try rangeBtn.Click()
+                    Appt_DebugLog("trigger: weekday range click attempted", '{"strategy":"weekday-substring"}', "Appt_B")
+                    break
+                }
+            }
+        }
+    } catch {
+        Appt_DebugLog("trigger: weekday substring threw", '{"where":"weekday-substring"}', "Appt_B")
+    }
+
+    ; Anchor-based fallback: focus a stable neighbor, Tab to the dynamic "Wed …" button, then Enter.
+    ; In the captured tree, "Response options" immediately precedes the date/time range button.
+    try {
+        anchor := root.FindFirst({ AutomationId: "menur1qn" }) ; "Response options"
+        if !anchor
+            anchor := root.FindFirst({ Name: "Response options", ControlType: "Button" })
+        if anchor {
+            try anchor.SetFocus()
+            Sleep 40
+            Send "{Tab}"
+            Sleep 40
+            Send "{Enter}"
+            Appt_DebugLog("trigger: anchor tab+enter attempted", '{"anchor":"response-options"}', "Appt_C")
+        }
+    } catch {
+        Appt_DebugLog("trigger: anchor tab+enter threw", '{"where":"anchor-tab"}', "Appt_C")
+    }
+
+    ; Strategy A (advanced): sibling traversal from stable "Open scheduler" button to locate the dynamic date-range button.
+    try {
+        schedulerBtn := root.WaitElement({ Name: "Open scheduler", Type: 50000 }, 600)
+        if schedulerBtn {
+            Appt_DebugLog("strategyA: found open scheduler", '{"found":true}', "Appt_D")
+            dateBtn := ""
+            try {
+                ; Walk backwards among siblings until a button that looks like a time range is found.
+                walker := UIA.RawViewWalker
+                sib := walker.TryGetPreviousSiblingElement(schedulerBtn)
+                tries := 0
+                while (sib && tries < 8) {
+                    tries += 1
+                    n := ""
+                    t := ""
+                    try n := sib.Name
+                    try t := sib.Type
+                    if (t = UIA.Type.Button && n != "" && InStr(n, " - ") && (InStr(n, " AM") || InStr(n, " PM"))) {
+                        dateBtn := sib
+                        break
+                    }
+                    sib := walker.TryGetPreviousSiblingElement(sib)
+                }
+                Appt_DebugLog("strategyA: sibling scan done", '{"tries":' tries '}', "Appt_D")
+            } catch {
+                Appt_DebugLog("strategyA: sibling scan threw", '{"where":"treewalker"}', "Appt_D")
+            }
+
+            if dateBtn {
+                try dateBtn.SetFocus()
+                try dateBtn.Invoke()
+                catch {
+                    try dateBtn.Click()
+                }
+                Appt_DebugLog("strategyA: invoked date range button", '{"invoked":true}', "Appt_D")
+                ; If the popover opens, stop here (avoid toggling it closed with later strategies).
+                Sleep 60
+                popNow := Appt_FindOpenPopover()
+                if popNow {
+                    Appt_DebugLog("strategyA: popover detected after invoke", '{"open":true}', "Appt_D")
+                    return popNow
+                } else {
+                    Appt_DebugLog("strategyA: no popover yet after invoke", '{"open":false}', "Appt_D")
+                }
+            } else {
+                Appt_DebugLog("strategyA: no candidate sibling found", '{"invoked":false}', "Appt_D")
+            }
+        } else {
+            Appt_DebugLog("strategyA: open scheduler not found", '{"found":false}', "Appt_D")
+        }
+    } catch {
+        Appt_DebugLog("strategyA: outer threw", '{"where":"strategyA-outer"}', "Appt_D")
+    }
+
+    ; Strategy B (advanced): regex match button by time range (works even if day/date varies).
+    try {
+        ; Match e.g. "Wed 4/1/2026 2:00 PM - 2:30 PM" or "2:00 PM - 2:30 PM".
+        re := "\d{1,2}:\d{2}\s*(AM|PM)?\s*-\s*\d{1,2}:\d{2}\s*(AM|PM)?"
+        el := root.WaitElement({ Type: 50000, Name: re, matchmode: "RegEx" }, 600)
+        if el {
+            try el.SetFocus()
+            try el.Invoke()
+            catch {
+                try el.Click()
+            }
+            Appt_DebugLog("strategyB: regex time-range invoked", '{"found":true}', "Appt_E")
+            Sleep 60
+            popNow := Appt_FindOpenPopover()
+            if popNow {
+                Appt_DebugLog("strategyB: popover detected after invoke", '{"open":true}', "Appt_E")
+                return popNow
+            } else {
+                Appt_DebugLog("strategyB: no popover yet after invoke", '{"open":false}', "Appt_E")
+            }
+        } else {
+            Appt_DebugLog("strategyB: regex time-range not found", '{"found":false}', "Appt_E")
+        }
+    } catch {
+        Appt_DebugLog("strategyB: threw", '{"where":"strategyB"}', "Appt_E")
     }
 
     deadline := A_TickCount + 1200
     while (A_TickCount < deadline) {
         pop := Appt_FindOpenPopover()
         if pop
+        {
+            Appt_DebugLog("popover appeared; returning", '{"open":true}', "Appt")
             return pop
+        }
         Sleep 60
     }
+    Appt_DebugLog("timeout waiting popover", '{"open":false}', "Appt")
     return 0
 }
 
@@ -8196,9 +8373,21 @@ Appt_PopoverFocusFirst(criteriaList) {
 }
 
 Appt_PopoverInvokeFirst(criteriaList) {
+    ; #region agent log
+    try FileAppend('{"sessionId":"b96502","runId":"run1","hypothesisId":"Appt_Y","timestamp":' A_TickCount ',"location":"Shift keys.ahk:Appt_PopoverInvokeFirst","message":"entry","data":{}}' "`n", "C:\Users\fie7ca\Documents\scripts\debug-b96502.log", "UTF-8")
+    catch {
+    }
+    ; #endregion
     pop := Appt_OpenPopoverIfNeeded()
     if !pop
+    {
+        ; #region agent log
+        try FileAppend('{"sessionId":"b96502","runId":"run1","hypothesisId":"Appt_Y","timestamp":' A_TickCount ',"location":"Shift keys.ahk:Appt_PopoverInvokeFirst","message":"no popover","data":{}}' "`n", "C:\Users\fie7ca\Documents\scripts\debug-b96502.log", "UTF-8")
+        catch {
+        }
+        ; #endregion
         return false
+    }
     for crit in criteriaList {
         try {
             el := pop.FindFirst(crit)
@@ -8503,11 +8692,26 @@ Outlook_ClickEndTime_1200PM() {
 
 ; Shift + S : Start date (combo) - Start Date
 +S:: {
+    ; #region agent log
+    try FileAppend('{"sessionId":"b96502","runId":"run1","hypothesisId":"Appt_Z","timestamp":' A_TickCount ',"location":"Shift keys.ahk:+S(appointment)","message":"hotkey entry","data":{}}' "`n", "C:\Users\fie7ca\Documents\scripts\debug-b96502.log", "UTF-8")
+    catch {
+    }
+    ; #endregion
+    isNew := false
+    try isNew := IsNewOutlookActive()
+    ; #region agent log
+    try FileAppend('{"sessionId":"b96502","runId":"run1","hypothesisId":"Appt_Z","timestamp":' A_TickCount ',"location":"Shift keys.ahk:+S(appointment)","message":"IsNewOutlookActive","data":{"isNew":' (isNew ? 1 : 0) '}}' "`n", "C:\Users\fie7ca\Documents\scripts\debug-b96502.log", "UTF-8")
+    catch {
+    }
+    ; #endregion
+
     Appt_RunWithLoading("Start date", (*) => (
-        IsNewOutlookActive()
-            ? (Appt_PopoverFocusFirst([
+        isNew
+            ? (Appt_PopoverInvokeFirst([
                 { Name: "Start date", ControlType: "ComboBox" },
                 { Name: "Start date", Type: 50003 },
+                { Name: "Start date", ControlType: "Button" },
+                { Name: "Start date", Type: 50000 },
                 { AutomationId: "DatePicker", matchmode: "Substring" }
             ]) || (ShowCenteredOverlay_Utils("❌ Appointment: Start date not found", 1400, BANNER_ACCENT_ERROR), false))
             : (Outlook_ClickStartDate(), true)
