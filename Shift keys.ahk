@@ -8680,7 +8680,7 @@ Appt_ClickAny(criteriaList) {
     return false
 }
 
-Appt_OpenMenuAndPick(menuButtonCriteriaList, menuItemName) {
+Appt_OpenMenuAndPick(menuButtonCriteriaList, menuItemName, preClickDelayMs := 0) {
     ; #region agent log
     AvailLog(msg, data := "{}", hypo := "Avail") {
         try {
@@ -8749,6 +8749,18 @@ Appt_OpenMenuAndPick(menuButtonCriteriaList, menuItemName) {
             try ct := mi.ControlType
             try t := mi.Type
             AvailLog("match found", '{"name":"' StrReplace(menuItemName, '"', '\"') '","automationId":"' StrReplace(aid, '"', '\"') '","controlType":"' StrReplace(ct, '"', '\"') '","type":' t '}', "Avail_B")
+            if (preClickDelayMs > 0) {
+                try StandardLoadingBar_Update("👁️ Appointment: about to click → " menuItemName, BANNER_ACCENT_INTERMEDIATE)
+                catch {
+                }
+                ; #region agent log
+                AvailLog("pre-click pause begin", '{"ms":' preClickDelayMs '}', "Delay_A")
+                ; #endregion
+                Sleep preClickDelayMs
+                ; #region agent log
+                AvailLog("pre-click pause end", '{"ms":' preClickDelayMs '}', "Delay_B")
+                ; #endregion
+            }
             try mi.Click()
             catch {
                 try mi.Invoke()
@@ -9309,33 +9321,60 @@ Avail_DebugPicked(choice, target) {
     if !IsNewOutlookActive()
         return
     Appt_RunWithLoading("Reminder", (*) => (
-        (choice := Appt_SelectFromModal("Appointment reminder", [
-            { k: "1", label: "Don't remind me" },
-            { k: "2", label: "15 minutes before" },
-            { k: "3", label: "1 hour before" },
-            { k: "4", label: "12 hours before" },
-            { k: "5", label: "1 day before" },
-            { k: "6", label: "1 week before" }
-        ], "[1-6] Select  [Esc] Cancel"))
-            ? (
-                (target := (choice = "1") ? "Don't remind me"
-                    : (choice = "2") ? "15 minutes before"
-                    : (choice = "3") ? "1 hour before"
-                    : (choice = "4") ? "12 hours before"
-                    : (choice = "5") ? "1 day before"
-                    : "1 week before"),
-                Appt_OpenMenuAndPick([
-                    { Name: "Don't remind me", ControlType: "Button" },
-                    { Name: "15 minutes before", ControlType: "Button" },
-                    { Name: "1 hour before", ControlType: "Button" },
-                    { Name: "12 hours before", ControlType: "Button" },
-                    { Name: "1 day before", ControlType: "Button" },
-                    { Name: "1 week before", ControlType: "Button" },
-                    { Name: "Reminder", matchmode: "Substring", ControlType: "Button" }
-                ], target)
-            )
-            : false
+        RemQ_Run()
     ))
+}
+
+RemQ_Run() {
+    choice := Appt_SelectFromModal("Appointment reminder", [
+        { k: "1", label: "Don't remind me" },
+        { k: "2", label: "15 minutes before" },
+        { k: "3", label: "1 hour before" },
+        { k: "4", label: "12 hours before" },
+        { k: "5", label: "1 day before" },
+        { k: "6", label: "1 week before" }
+    ], "[1-6] Select  [Esc] Cancel")
+    if !choice
+        return false
+
+    target := (choice = "1") ? "Don't remind me"
+        : (choice = "2") ? "15 minutes before"
+        : (choice = "3") ? "1 hour before"
+        : (choice = "4") ? "12 hours before"
+        : (choice = "5") ? "1 day before"
+        : "1 week before"
+
+    RemQ_DebugPicked(choice, target)
+    RemQ_VisualizeSelection("Reminder", target)
+    return Appt_OpenMenuAndPick([
+        { Name: "Don't remind me", ControlType: "Button" },
+        { Name: "15 minutes before", ControlType: "Button" },
+        { Name: "1 week before", ControlType: "Button" },
+        { Name: "15 minutes", matchmode: "Substring", ControlType: "Button" },
+        { Name: "1 hour", matchmode: "Substring", ControlType: "Button" },
+        { Name: "12 hours", matchmode: "Substring", ControlType: "Button" },
+        { Name: "1 day", matchmode: "Substring", ControlType: "Button" },
+        { Name: "Reminder", matchmode: "Substring", ControlType: "Button" }
+    ], target, 300)
+}
+
+; #region agent log
+RemQ_DebugPicked(choice, target) {
+    try FileAppend('{"sessionId":"b96502","runId":"run2","hypothesisId":"RemQ_A","timestamp":' A_TickCount ',"location":"Shift keys.ahk:RemQ_DebugPicked","message":"picked","data":{"choice":"' choice '","target":"' StrReplace(target, '"', '\"') '"}}' "`n", "debug-b96502.log", "UTF-8")
+    catch {
+    }
+    return true
+}
+; #endregion
+
+RemQ_VisualizeSelection(label, target) {
+    try StandardLoadingBar_Update("👁️ Appointment: selecting " label " → " target, BANNER_ACCENT_INTERMEDIATE)
+    catch {
+    }
+    try ShowCenteredOverlay_Utils("👁️ Selecting " label ": " target, 900, BANNER_ACCENT_INTERMEDIATE)
+    catch {
+    }
+    return true
 }
 
 ; Shift + G : Category selection modal - cateGory
