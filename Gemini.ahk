@@ -919,17 +919,9 @@ SendPromptToActiveGeminiTab(promptText) {
         uia := UIA_Browser()
         Sleep 300
 
-        promptField := FindGeminiPromptField(uia)
+        promptField := Gemini_FocusPromptSameAsOpenHotkey(uia)
         if (!promptField)
             return false
-
-        promptField.SetFocus()
-        Sleep 100
-        if (!promptField.HasKeyboardFocus) {
-            try
-                promptField.Click()
-            Sleep 100
-        }
 
         oldClip := A_Clipboard
         A_Clipboard := ""
@@ -1097,11 +1089,8 @@ InitializeGeminiFirstTime() {
                     ; Anchor strategy failed; will use direct prompt field below
                 }
             }
-            ; Ensure the prompt field actually has keyboard focus (same as SendPromptToActiveGeminiTab)
-            if (Gemini_FocusPromptSameAsOpenHotkey(uia)) {
-                if (IsSoundEnabled())
-                    SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
-            }
+            ; Ensure the prompt field actually has keyboard focus (ready-to-type chime plays inside helper)
+            Gemini_FocusPromptSameAsOpenHotkey(uia)
             GeminiPerfLog("activation", t0)
         }
     } else {
@@ -1110,6 +1099,18 @@ InitializeGeminiFirstTime() {
 }
 
 ; Direct focus to prompt text field (refactored for maximum efficiency)
+Gemini_PlayReadyChime(minIntervalMs := 400) {
+    static lastChimeTick := 0
+    if (!IsSoundEnabled())
+        return false
+    now := A_TickCount
+    if (lastChimeTick && (now - lastChimeTick) < minIntervalMs)
+        return false
+    lastChimeTick := now
+    try SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
+    return true
+}
+
 Gemini_FocusPromptSameAsOpenHotkey(uia) {
     if (!IsObject(uia)) {
         try {
@@ -1124,11 +1125,27 @@ Gemini_FocusPromptSameAsOpenHotkey(uia) {
         Sleep localSettleMs
         promptField := FindGeminiPromptField(uia)
         if (promptField) {
+            ; Condition B: already focused/active (play immediately)
+            try {
+                if (promptField.HasKeyboardFocus) {
+                    Gemini_PlayReadyChime()
+                    return promptField
+                }
+            } catch {
+            }
+
+            ; Condition A: focus it now, then chime once caret is active
             try promptField.SetFocus()
             Sleep 100
-            if (!promptField.HasKeyboardFocus)
+            if (!promptField.HasKeyboardFocus) {
                 try promptField.Click()
-            return promptField
+                Sleep 80
+            }
+            if (promptField.HasKeyboardFocus) {
+                Gemini_PlayReadyChime()
+                return promptField
+            }
+            return false
         }
     } catch {
         ; ignore and fall through
@@ -1188,16 +1205,10 @@ class GeminiAsyncLookup {
         ShowGeminiTabBanner(2, this.GeminiHwnd)
         uia := UIA_Browser()
         Sleep 300
-        promptField := FindGeminiPromptField(uia)
+        promptField := Gemini_FocusPromptSameAsOpenHotkey(uia)
         if (!promptField) {
             StandardLoadingBar_Hide(0)
             return
-        }
-        promptField.SetFocus()
-        Sleep 100
-        if (!promptField.HasKeyboardFocus) {
-            try promptField.Click()
-            Sleep 100
         }
         ; Switch to Fast model via mode picker menu (Gemini 3 MenuItem list), not @ text
         if (!EnsureGeminiModelViaMenu("Fast"))
@@ -1641,16 +1652,10 @@ class GeminiAsyncTTS {
         ShowGeminiTabBanner(2, this.GeminiHwnd)
         uia := UIA_Browser()
         Sleep 300
-        promptField := FindGeminiPromptField(uia)
+        promptField := Gemini_FocusPromptSameAsOpenHotkey(uia)
         if (!promptField) {
             StandardLoadingBar_Hide(0)
             return
-        }
-        promptField.SetFocus()
-        Sleep 100
-        if (!promptField.HasKeyboardFocus) {
-            try promptField.Click()
-            Sleep 100
         }
         ; Paste prompt + selected text and submit
         A_Clipboard := GeminiAsyncTTS.TTSPrompt . A_Clipboard
