@@ -494,6 +494,11 @@ InsertText(text) {
     InsertText("GS_E&S_CIP Dashboard research and design")
 }
 
+:o:opex-cim-journey-mapping::
+{
+    InsertText("opex-cim-journey-mapping")
+}
+
 :o:gb2c::
 {
     InsertText("GS_B2C_Credit_Management_Strategy_UI_Mentoring")
@@ -737,6 +742,8 @@ InitHotstringsCheatSheet() {
     RegisterHotstring(":o:gdash", "GS_E&S_CIP Dashboard research and design", "Projects", "📊 CIP Dashboard", "d")
     RegisterHotstring(":o:boiler-plate", "boiler-plate", "Projects", "🧱 boiler-plate", "0")
     RegisterHotstring(":o:astra", "astra", "Projects", "⭐ astrA", "a")
+    RegisterHotstring(":o:opex-cim-journey-mapping", "opex-cim-journey-mapping", "Projects", "E&S Opex CIM Journey Mapping",
+        "o")
 
     ; Hotstrings (non-workspace “project-like” names)
     RegisterHotstring(":o:myl", "my links", "Hotstrings", "🔗 my links", "m")
