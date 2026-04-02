@@ -732,7 +732,8 @@ InitHotstringsCheatSheet() {
     RegisterHotstring(":o:egoogle", "edu.evangelista.figueiredo@gmail.com", "Hotstrings", "📧 Gmail")
 
     ; Projects (Cursor workspaces) — keys align with Project Selector 2
-    RegisterHotstring(":o:gintegra", "GS_UX core team_UX and CIP Integration", "Projects", "🔄 UX and CIP Integration", "u")
+    RegisterHotstring(":o:gintegra", "GS_UX core team_UX and CIP Integration", "Projects", "🔄 UX and CIP Integration",
+        "u")
     RegisterHotstring(":o:gdash", "GS_E&S_CIP Dashboard research and design", "Projects", "📊 CIP Dashboard", "d")
     RegisterHotstring(":o:boiler-plate", "boiler-plate", "Projects", "🧱 boiler-plate", "0")
     RegisterHotstring(":o:astra", "astra", "Projects", "⭐ astrA", "a")
@@ -741,7 +742,8 @@ InitHotstringsCheatSheet() {
     RegisterHotstring(":o:myl", "my links", "Hotstrings", "🔗 my links", "m")
     RegisterHotstring(":o:gpm", "project management LA", "Hotstrings", "📋 project management LA", "p")
     RegisterHotstring(":o:guxcip", "UX and CIP", "Hotstrings", "🔗 UX and CIP", "x")
-    RegisterHotstring(":o:gtrain", "GS_UX core team_Trainings Management", "Hotstrings", "🎓 Trainings Management", "t")
+    RegisterHotstring(":o:gtrain", "GS_UX core team_Trainings Management", "Hotstrings", "🎓 Trainings Management", "t"
+    )
 }
 InitHotstringsCheatSheet()
 
@@ -3496,6 +3498,7 @@ class D2C_FlowManager {
             "A", this.OnSubmitA.Bind(this),
             "Y", this.OnSubmitY.Bind(this),
             "S", this.OnSubmitS.Bind(this),
+            "V", this.OnSubmitV.Bind(this),
             "N", this.OnSubmitN.Bind(this)
         )
         StandardLoadingBar_ShowWithKeys(
@@ -3505,7 +3508,7 @@ class D2C_FlowManager {
             0,
             this.OnSubmitTimeout.Bind(this),
             "1E1E2E", 380, 17, "", true,
-            "[G] Grammar  [A] AI opt  [Y] Send  [S] Paste only  [N] Cancel",
+            "[G] Grammar  [A] AI opt  [Y] Send  [S] Paste only  [V] Paste dictated  [N] Cancel",
             true
         )
     }
@@ -3532,6 +3535,23 @@ class D2C_FlowManager {
         if (this.CurrentPhase != "PromptingSubmit")
             return
         this.ExecuteGeminiSubmit(false)
+    }
+
+    OnSubmitV(*) {
+        if (this.CurrentPhase != "PromptingSubmit")
+            return
+
+        this.CurrentPhase := "PastingDictation"
+        StandardLoadingBar_CloseKeysOverlay()
+        StandardLoadingBar_Hide(0)
+        HideDictationIndicator()
+
+        if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+            WinActivate("ahk_id " this.OriginHwnd)
+        Sleep 60
+        Send("^v")
+
+        this.Reset()
     }
 
     OnSubmitN(*) {
@@ -7419,7 +7439,8 @@ global g_UtilitySelectorCategory := ""          ; One of g_UtilityTopCategories
 ; Top-level categories (numbers 1-6 select these)
 global g_UtilityTopCategories := ["Prompts", "Projects", "Macros", "General", "Links", "Hotstrings"]
 ; Top-level trigger keys (lowercase so UtilitySelector_RebindHotkeys auto-binds uppercase too)
-global g_UtilityTopCategoryById := Map("r", "Prompts", "p", "Projects", "m", "Macros", "g", "General", "l", "Links", "h", "Hotstrings")
+global g_UtilityTopCategoryById := Map("r", "Prompts", "p", "Projects", "m", "Macros", "g", "General", "l", "Links",
+    "h", "Hotstrings")
 
 ; Utility selector cached UI data (rebuilt each time ShowHotstringSelector() runs)
 global g_UtilitySelectorAllItems := []          ; Array of {category, char, text, isEmpty, [explicitIndex]}
@@ -7736,7 +7757,8 @@ BuildHotstringCharMap() {
 
                 ; Explicit assignments first
                 for hs in categorized[category] {
-                    if (hs.HasProp("char") && hs.char != "" && (g_ReservedEmptyChar = "" || hs.char != g_ReservedEmptyChar)) {
+                    if (hs.HasProp("char") && hs.char != "" && (g_ReservedEmptyChar = "" || hs.char !=
+                        g_ReservedEmptyChar)) {
                         if (hs.expansion != "" && !utilTaken.Has(hs.char)) {
                             g_UtilityHotstringCharMapByCategory[category][hs.char] := hs.expansion
                             utilTaken[hs.char] := true
@@ -8520,7 +8542,8 @@ HandleHotstringChar(char) {
     ResolveExpansion() {
         exp := ""
         try {
-            if (IsObject(g_UtilityHotstringCharMapByCategory) && g_UtilityHotstringCharMapByCategory.Has(g_UtilitySelectorCategory)) {
+            if (IsObject(g_UtilityHotstringCharMapByCategory) && g_UtilityHotstringCharMapByCategory.Has(
+                g_UtilitySelectorCategory)) {
                 exp := g_UtilityHotstringCharMapByCategory[g_UtilitySelectorCategory].Get(char, "")
                 if (exp = "")
                     exp := g_UtilityHotstringCharMapByCategory[g_UtilitySelectorCategory].Get(StrLower(char), "")
@@ -9645,7 +9668,8 @@ ShowHotstringSelector() {
         if (categorized.Has("Macros")) {
             for macroEntry in categorized["Macros"] {
                 try {
-                    ch := (macroEntry.HasProp("char") && macroEntry.char != "") ? macroEntry.char : funcToChar.Get(macroEntry.func, "")
+                    ch := (macroEntry.HasProp("char") && macroEntry.char != "") ? macroEntry.char : funcToChar.Get(
+                        macroEntry.func, "")
                     if (ch = "")
                         continue
                     titleText := macroEntry.HasProp("title") ? macroEntry.title : ""
@@ -9713,7 +9737,8 @@ ShowHotstringSelector() {
     global g_UtilitySelectorAllItems, g_UtilitySelectorIsPortrait, g_UtilitySelectorMonitor
     g_UtilitySelectorAllItems := allItems
     g_UtilitySelectorIsPortrait := isPortrait
-    g_UtilitySelectorMonitor := Map("left", monitorLeft, "top", monitorTop, "width", monitorWidth, "height", monitorHeight)
+    g_UtilitySelectorMonitor := Map("left", monitorLeft, "top", monitorTop, "width", monitorWidth, "height",
+        monitorHeight)
 
     ; Always open in top-level category screen
     global g_UtilitySelectorMode, g_UtilitySelectorCategory
@@ -9771,7 +9796,8 @@ ShowHotstringSelector() {
     ; Title and separator (compact)
     g_HotstringSelectorGui.SetFont("s11 cCDD6F4 Bold", "Segoe UI")
     global g_UtilitySelectorTitleCtrl
-    g_UtilitySelectorTitleCtrl := g_HotstringSelectorGui.Add("Text", "w" . textControlWidth . " Center", "Utility Shortcuts")
+    g_UtilitySelectorTitleCtrl := g_HotstringSelectorGui.Add("Text", "w" . textControlWidth . " Center",
+        "Utility Shortcuts")
     g_HotstringSelectorGui.Add("Text", "w" . textControlWidth . " h1 Background45475A")
     g_HotstringSelectorGui.SetFont("s" . fontSize . " cCDD6F4", "Segoe UI")
 
@@ -9785,8 +9811,9 @@ ShowHotstringSelector() {
     g_UtilitySelectorEditCtrl := g_HotstringSelectorGui.Add("Custom",
         "ClassRichEdit50W w" . textControlWidth . " h" . textControlHeight
         . " +0x44 -E0x200 +VScroll -HScroll -Border Background1E1E2E")
-    try MnemonicRich_Render(g_UtilitySelectorEditCtrl, UtilitySelector_BuildDisplayRich(isPortrait), fontSize, 6, "Segoe UI",
-        "CDD6F4", "1E1E2E")
+    try MnemonicRich_Render(g_UtilitySelectorEditCtrl, UtilitySelector_BuildDisplayRich(isPortrait), fontSize, 6,
+    "Segoe UI",
+    "CDD6F4", "1E1E2E")
     g_HotstringSelectorGui.SetFont("s9 c89B4FA", "Segoe UI")
     g_HotstringSelectorGui.Add("Text", "w" . textControlWidth . " Center", "Press Escape to close.")
 
