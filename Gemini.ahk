@@ -1098,17 +1098,7 @@ InitializeGeminiFirstTime() {
                 }
             }
             ; Ensure the prompt field actually has keyboard focus (same as SendPromptToActiveGeminiTab)
-            promptField := FindGeminiPromptField(uia)
-            if (promptField) {
-                try {
-                    promptField.SetFocus()
-                    Sleep 100
-                    if (!promptField.HasKeyboardFocus) {
-                        try promptField.Click()
-                        Sleep 100
-                    }
-                } catch {
-                }
+            if (Gemini_FocusPromptSameAsOpenHotkey(uia)) {
                 if (IsSoundEnabled())
                     SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
             }
@@ -1117,6 +1107,33 @@ InitializeGeminiFirstTime() {
     } else {
         InitializeGeminiFirstTime()
     }
+}
+
+; Direct focus to prompt text field (refactored for maximum efficiency)
+Gemini_FocusPromptSameAsOpenHotkey(uia) {
+    if (!IsObject(uia)) {
+        try {
+            uia := UIA_Browser()
+        } catch {
+            return false
+        }
+    }
+
+    localSettleMs := 120
+    try {
+        Sleep localSettleMs
+        promptField := FindGeminiPromptField(uia)
+        if (promptField) {
+            try promptField.SetFocus()
+            Sleep 100
+            if (!promptField.HasKeyboardFocus)
+                try promptField.Click()
+            return promptField
+        }
+    } catch {
+        ; ignore and fall through
+    }
+    return false
 }
 
 ; =============================================================================
