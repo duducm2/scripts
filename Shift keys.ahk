@@ -1512,8 +1512,8 @@ Letters available: C, G, H, I, K, M, N, O, P, T, U, V, X, Y, Z
 [Ctrl+Alt+Win+7] > Mark Last Clip as Favorite (HotStrings macro; same as Ctrl+Alt+Win+J if 7 chord fails on keyboard)
 [Ctrl+Alt+Win+J] > Mark Last Clip as Favorite (HotStrings macro; alternate for keyboards that ghost Ctrl+Alt+Win+7)
 [Ctrl+Alt+Win+8] > Move Desktop to Recycle Bin (HotStrings macro)
-[Ctrl+Alt+Win+9] > Handy: Parakeet V3 (model slot 5)
-[Ctrl+Alt+Win+B] > Handy: Parakeet V2 (model slot 6)
+[Ctrl+Alt+Win+9] > Handy: Parakeet V3 (model slot 2)
+[Ctrl+Alt+Win+B] > Handy: Parakeet V2 (model slot 1)
 
 === MAIN KEY COMBINATIONS ===
 [Symbol Layer] Win+Alt+Shift - Primary combination
@@ -1542,8 +1542,9 @@ Letters available: C, G, H, I, K, M, N, O, P, T, U, V, X, Y, Z
 
 === HANDY DICTATION ===
 [Win+Alt+Shift+0] > Start/stop dictation (transcription to clipboard)
-[Ctrl+Alt+Win+9] > Handy: Parakeet V3 (picker slot 5; same automation as Win+Alt+Shift+C then 5)
-[Ctrl+Alt+Win+B] > Handy: Parakeet V2 (picker slot 6; same automation as Win+Alt+Shift+C then 6)
+[Ctrl+Alt+Win+9] > Handy: Parakeet V3 (picker slot 2; same as Win+Alt+Shift+C then 2)
+[Ctrl+Alt+Win+B] > Handy: Parakeet V2 (picker slot 1; same as Win+Alt+Shift+C then 1)
+[Win+Alt+Shift+C] > AI model picker (Handy): 1 Parakeet V2, 2 Parakeet V3, 3 Cohere
 
 === YOUTUBE ===
 [Win+Alt+Shift+H] > Activates Youtube
@@ -1556,7 +1557,7 @@ Letters available: C, G, H, I, K, M, N, O, P, T, U, V, X, Y, Z
 
 === CURSOR ===
 [Win+Alt+Shift+,] > Opens or activates Cursor
-[Win+Alt+Shift+C] > Select AI model (Handy)
+[Win+Alt+Shift+C] > Handy AI model picker (see HANDY DICTATION)
 
 === OUTLOOK ===
 [Win+Alt+Shift+B] > Open mail
@@ -3749,7 +3750,8 @@ WaitForButton(root, pattern, timeout := 5000) {
 ;-------------------------------------------------------------------
 ; Outlook Reminder Window Shortcuts
 ;-------------------------------------------------------------------
-#HotIf (WinActive("ahk_exe OUTLOOK.EXE") || WinActive("ahk_exe olk.exe")) && RegExMatch(WinGetTitle("A"), "i)Reminders?") && !IsFileDialogActive()
+#HotIf (WinActive("ahk_exe OUTLOOK.EXE") || WinActive("ahk_exe olk.exe")) && RegExMatch(WinGetTitle("A"),
+"i)Reminders?") && !IsFileDialogActive()
 
 ; ativa a janela de lembretes do Outlook
 ActivateReminder() {
@@ -3881,7 +3883,8 @@ Reminders_GetItems() {
             if (n = "")
                 continue
             ; Exclude global/window controls
-            if (n = "Settings" || n = "Dismiss all" || n = "Dismiss All" || n = "Minimize" || n = "Maximize" || n = "Close")
+            if (n = "Settings" || n = "Dismiss all" || n = "Dismiss All" || n = "Minimize" || n = "Maximize" || n =
+                "Close")
                 continue
             ; Exclude action/menu-like items that can appear while context UI is open
             if RegExMatch(n, "i)^(Snooze reminder|Dismiss reminder|Join Teams meeting|Chat with participants)$")
@@ -3892,7 +3895,8 @@ Reminders_GetItems() {
             ; Relative-age tokens vary (e.g. "1 hour ago", "7 days", "4 wks ago", "Today").
             ; NOTE: single backslash in regex. Using \\b would match literal "\b".
             isLikelyRow := RegExMatch(n, "i)(\bAll day\b|\bAM\b|\bPM\b)") && RegExMatch(n,
-                "i)\b(Today|\d+\s*(min|mins|minute|minutes|hr|hrs|hour|hours|day|days|wk|wks|week|weeks)\b(\s+ago)?)\b")
+                "i)\b(Today|\d+\s*(min|mins|minute|minutes|hr|hrs|hour|hours|day|days|wk|wks|week|weeks)\b(\s+ago)?)\b"
+            )
             if !isLikelyRow {
                 dropped++
                 if (dropSample != "" && dropped <= 8)
@@ -3908,7 +3912,7 @@ Reminders_GetItems() {
         try {
             sample := ""
             maxSample := Min(12, items.Length)
-            Loop maxSample {
+            loop maxSample {
                 i := A_Index
                 if (sample != "")
                     sample .= " | "
@@ -3944,7 +3948,7 @@ Reminders_PickKey(key) {
     ; This prevents the selection modal from disappearing due to unrelated Win-key chords.
     try {
         if (GetKeyState("LWin", "P") || GetKeyState("RWin", "P")
-            || GetKeyState("Ctrl", "P") || GetKeyState("Alt", "P")) {
+        || GetKeyState("Ctrl", "P") || GetKeyState("Alt", "P")) {
             ; #region agent log
             try Reminders_DebugLog("Shift keys.ahk:Reminders_PickKey", "Ignored pick due to modifier down", Map(
                 "key", key,
@@ -4007,7 +4011,7 @@ Reminders_SelectItem(actionLabel, items, maxItems := 35) {
 
     BuildMsg(currentItems, currentCount) {
         m := "❓ Select reminder to " actionLabel ":`n`n"
-        Loop currentCount {
+        loop currentCount {
             i := A_Index
             k := keys[i]
             label := currentItems[i].label
@@ -4027,7 +4031,7 @@ Reminders_SelectItem(actionLabel, items, maxItems := 35) {
     maxKeyCount := maxItems
     if (maxKeyCount > keys.Length)
         maxKeyCount := keys.Length
-    Loop maxKeyCount {
+    loop maxKeyCount {
         i := A_Index
         k := keys[i]
         keyCallbacks.Set(k, Reminders_PickKey.Bind(k))
@@ -4100,7 +4104,7 @@ Reminders_SelectItem(actionLabel, items, maxItems := 35) {
                 latestCount := ClampCount(latest.Length)
                 sig := latest.Length
                 maxSig := Min(8, latest.Length)
-                Loop maxSig {
+                loop maxSig {
                     sig .= "|" latest[A_Index].label
                 }
                 if (sig != lastSig) {
@@ -4125,16 +4129,18 @@ Reminders_SelectItem(actionLabel, items, maxItems := 35) {
             global g_StandardLoadingBarIsKeysOverlay, g_StandardLoadingBarGui
             if (!g_StandardLoadingBarIsKeysOverlay || !IsObject(g_StandardLoadingBarGui)) {
                 ; #region agent log
-                try Reminders_DebugLog("Shift keys.ahk:Reminders_SelectItem", "Selection modal disappeared unexpectedly", Map(
-                    "isKeys", g_StandardLoadingBarIsKeysOverlay ? 1 : 0,
-                    "hasGui", IsObject(g_StandardLoadingBarGui) ? 1 : 0,
-                    "priorKey", A_PriorKey
-                ), "S4", "pre-fix")
+                try Reminders_DebugLog("Shift keys.ahk:Reminders_SelectItem",
+                    "Selection modal disappeared unexpectedly", Map(
+                        "isKeys", g_StandardLoadingBarIsKeysOverlay ? 1 : 0,
+                        "hasGui", IsObject(g_StandardLoadingBarGui) ? 1 : 0,
+                        "priorKey", A_PriorKey
+                    ), "S4", "pre-fix")
                 ; #endregion
                 reopens++
                 if (reopens >= 3) {
                     ; #region agent log
-                    try Reminders_DebugLog("Shift keys.ahk:Reminders_SelectItem", "Too many unexpected closes; giving up",
+                    try Reminders_DebugLog("Shift keys.ahk:Reminders_SelectItem",
+                        "Too many unexpected closes; giving up",
                         Map("reopens", reopens), "S6", "pre-fix")
                     ; #endregion
                     break
@@ -4164,7 +4170,7 @@ Reminders_SelectItem(actionLabel, items, maxItems := 35) {
         return 0
 
     ; Resolve key to index
-    Loop count {
+    loop count {
         i := A_Index
         if (keys[i] = picked)
             return i
@@ -4198,7 +4204,7 @@ Reminders_MenuFindItemContains(needle, maxSteps := 20, logId := "SN") {
     needle := StrLower(needle)
     Send "{Home}"
     Sleep 60
-    Loop maxSteps {
+    loop maxSteps {
         name := Reminders_MenuGetFocusedName()
         if (Mod(A_Index, 5) = 0) {
             ; #region agent log
@@ -4300,7 +4306,7 @@ Reminders_TryInvokeJoinOnlineMenuItem() {
                 sample := ""
                 if menuItems {
                     maxSample := Min(20, menuItems.Length)
-                    Loop maxSample {
+                    loop maxSample {
                         i := A_Index
                         n := ""
                         try n := menuItems[i].Name
@@ -4320,24 +4326,22 @@ Reminders_TryInvokeJoinOnlineMenuItem() {
             }
             ; #endregion
 
-            candidates := [
-                { Name: "Join online", ControlType: "MenuItem" },
-                { Name: "Join Online", ControlType: "MenuItem" },
-                { Name: "Join online", ControlType: "Button" },
-                { Name: "Join Online", ControlType: "Button" },
-                { Name: "Join", matchmode: "Substring", ControlType: "MenuItem", cs: false },
-                { Name: "Join", matchmode: "Substring", ControlType: "Button", cs: false }
+            candidates := [{ Name: "Join online", ControlType: "MenuItem" }, { Name: "Join Online", ControlType: "MenuItem" }, { Name: "Join online",
+                ControlType: "Button" }, { Name: "Join Online", ControlType: "Button" }, { Name: "Join", matchmode: "Substring",
+                    ControlType: "MenuItem", cs: false }, { Name: "Join", matchmode: "Substring", ControlType: "Button",
+                        cs: false }
             ]
 
             for crit in candidates {
                 mi := root.FindFirst(crit)
                 if mi {
                     ; #region agent log
-                    try Reminders_DebugLog("Shift keys.ahk:Reminders_TryInvokeJoinOnlineMenuItem", "Found Join candidate", Map(
-                        "root", r.label,
-                        "name", mi.Name,
-                        "type", mi.ControlType
-                    ), "C2", "pre-fix")
+                    try Reminders_DebugLog("Shift keys.ahk:Reminders_TryInvokeJoinOnlineMenuItem",
+                        "Found Join candidate", Map(
+                            "root", r.label,
+                            "name", mi.Name,
+                            "type", mi.ControlType
+                        ), "C2", "pre-fix")
                     ; #endregion
                     try {
                         if mi.GetPropertyValue(UIA.Property.IsOffscreen)
@@ -4426,9 +4430,10 @@ Reminders_ExecuteItemAction(action) {
         ; #endregion
         Reminders_OpenContextMenuForItem(el)
         ; #region agent log
-        try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Context menu open attempt sent AppsKey", Map(
-            "action", action
-        ), "B", "pre-fix")
+        try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Context menu open attempt sent AppsKey",
+            Map(
+                "action", action
+            ), "B", "pre-fix")
         ; #endregion
 
         ; Assume first menu item is highlighted (Snooze reminder) as per screenshots.
@@ -4436,26 +4441,30 @@ Reminders_ExecuteItemAction(action) {
             ; Menu order varies by reminder item (e.g. meeting reminders show Join/Chat first),
             ; so locate "Dismiss reminder" by focused UIA name instead of fixed offsets.
             ; #region agent log
-            try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Dynamic dismiss requested", Map(), "DZ0",
-                "pre-fix")
+            try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Dynamic dismiss requested", Map(),
+            "DZ0",
+            "pre-fix")
             ; #endregion
             ok := Reminders_MenuFindItemContains("dismiss", 20, "dismiss")
             if ok {
                 Send "{Enter}"
                 Sleep 60
                 ; #region agent log
-                try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Dismiss invoked", Map(), "DZ1", "pre-fix")
+                try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Dismiss invoked", Map(), "DZ1",
+                "pre-fix")
                 ; #endregion
                 return true
             }
             ; #region agent log
-            try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Dismiss not found in menu scan", Map(), "DZ2",
-                "pre-fix")
+            try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Dismiss not found in menu scan", Map(),
+            "DZ2",
+            "pre-fix")
             ; #endregion
             return false
         }
 
-        if (action = "snooze_1h" || action = "snooze_4h" || action = "snooze_10m" || action = "snooze_1d" || action = "snooze_1w") {
+        if (action = "snooze_1h" || action = "snooze_4h" || action = "snooze_10m" || action = "snooze_1d" || action =
+            "snooze_1w") {
             desired := ""
             if (action = "snooze_1h")
                 desired := "1 hour"
@@ -4481,21 +4490,24 @@ Reminders_ExecuteItemAction(action) {
             ; Preferred: direct UIA invoke (menu items are usually under UIA root).
             ok := false
             ; #region agent log
-            try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Attempting UIA root Join invoke", Map(), "C",
-                "pre-fix")
+            try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Attempting UIA root Join invoke", Map(),
+            "C",
+            "pre-fix")
             ; #endregion
             ok := Reminders_TryInvokeJoinOnlineMenuItem()
             ; #region agent log
-            try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "UIA root Join invoke result", Map("ok", ok), "C",
-                "pre-fix")
+            try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "UIA root Join invoke result", Map(
+                "ok", ok), "C",
+            "pre-fix")
             ; #endregion
             if ok
                 return true
 
             ; Fallback 1: first-letter navigation (if supported)
             ; #region agent log
-            try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Fallback: type 'j' then Enter", Map(), "D",
-                "pre-fix")
+            try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Fallback: type 'j' then Enter", Map(),
+            "D",
+            "pre-fix")
             ; #endregion
             Send "j"
             Sleep 60
@@ -4504,7 +4516,8 @@ Reminders_ExecuteItemAction(action) {
 
             ; Fallback 2: bounded arrow scan (best-effort, no UIA reads)
             ; #region agent log
-            try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Fallback: bounded arrow scan then Enter", Map(),
+            try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction",
+                "Fallback: bounded arrow scan then Enter", Map(),
                 "E", "pre-fix")
             ; #endregion
             Send "{Home}"
@@ -7598,7 +7611,8 @@ IsOutlookComposeActive() {
         if root.FindFirst({ AutomationId: "splitButton-ram0__primaryActionButton" }) ; Send
             return true
         ; Fallback: presence of the compose Subject edit (MSG_*_SUBJECT) + Message body edit
-        if root.FindFirst({ Name: "Subject", ControlType: "Edit" }) && root.FindFirst({ Name: "Message body", ControlType: "Edit" })
+        if root.FindFirst({ Name: "Subject", ControlType: "Edit" }) && root.FindFirst({ Name: "Message body",
+            ControlType: "Edit" })
             return true
     } catch {
     }
@@ -7730,11 +7744,9 @@ OutlookMail_EnsureNavigationPaneVisible() {
         }
 
         ; Otherwise toggle the nav pane (label may be "Show…" or "Hide…", depending on state).
-        if OutlookClickFirst([
-            { Name: "navigation pane", matchmode: "Substring", ControlType: "Button" },
-            { Name: "Navigation pane", matchmode: "Substring", ControlType: "Button" },
-            { Name: "Hide navigation pane", ControlType: "Button" },
-            { Name: "Show navigation pane", ControlType: "Button" }
+        if OutlookClickFirst([{ Name: "navigation pane", matchmode: "Substring", ControlType: "Button" }, { Name: "Navigation pane",
+            matchmode: "Substring", ControlType: "Button" }, { Name: "Hide navigation pane", ControlType: "Button" }, { Name: "Show navigation pane",
+                ControlType: "Button" }
         ]) {
             Sleep 120
             try {
@@ -7812,12 +7824,14 @@ OutlookCompose_FocusToRecipientsField() {
             t := WinGetTitle("A")
             c := WinGetClass("A")
             p := WinGetProcessName("A")
-            OC_ToLog("entry", '{"hwnd":' hwnd ',"proc":"' StrReplace(p, '"', '\"') '","class":"' StrReplace(c, '"', '\"') '","title":"' StrReplace(SubStr(t, 1, 120), '"', '\"') '"}', "OC_To_A")
+            OC_ToLog("entry", '{"hwnd":' hwnd ',"proc":"' StrReplace(p, '"', '\"') '","class":"' StrReplace(c, '"',
+                '\"') '","title":"' StrReplace(SubStr(t, 1, 120), '"', '\"') '"}', "OC_To_A")
         } catch {
         }
 
         ; Step 1: click the To: row (reactive UI may expand recipients editor)
-        okTo := OutlookClickFirst([{ AutomationId: "134", ControlType: "Group" }, { AutomationId: "134" }, { Name: "To:", matchmode: "Substring" }])
+        okTo := OutlookClickFirst([{ AutomationId: "134", ControlType: "Group" }, { AutomationId: "134" }, { Name: "To:",
+            matchmode: "Substring" }])
         try OC_ToLog("after_to_click", '{"ok":' (okTo ? 1 : 0) '}', "OC_To_B")
         catch {
         }
@@ -7832,7 +7846,8 @@ OutlookCompose_FocusToRecipientsField() {
             try recipGroup := root.FindFirst({ AutomationId: "REK", matchmode: "Substring" })
         if !recipGroup {
             ; Broad fallback: find any group that looks like a recipient entity (class contains _EType_RECIPIENT_ENTITY)
-            try recipGroup := root.FindFirst({ ClassName: "_EType_RECIPIENT_ENTITY", matchmode: "Substring", ControlType: "Group" })
+            try recipGroup := root.FindFirst({ ClassName: "_EType_RECIPIENT_ENTITY", matchmode: "Substring",
+                ControlType: "Group" })
         }
         if recipGroup {
             n := "", aid := "", cn := "", ct := "", off := "", en := ""
@@ -7842,7 +7857,9 @@ OutlookCompose_FocusToRecipientsField() {
             try ct := recipGroup.ControlType
             try off := recipGroup.IsOffscreen
             try en := recipGroup.IsEnabled
-            try OC_ToLog("recip_group_found", '{"name":"' StrReplace(SubStr(n, 1, 80), '"', '\"') '","automationId":"' StrReplace(SubStr(aid, 1, 80), '"', '\"') '","className":"' StrReplace(SubStr(cn, 1, 80), '"', '\"') '","controlType":"' StrReplace(ct, '"', '\"') '","isOffscreen":' (off ? 1 : 0) ',"isEnabled":' (en ? 1 : 0) '}', "OC_To_C")
+            try OC_ToLog("recip_group_found", '{"name":"' StrReplace(SubStr(n, 1, 80), '"', '\"') '","automationId":"' StrReplace(
+                SubStr(aid, 1, 80), '"', '\"') '","className":"' StrReplace(SubStr(cn, 1, 80), '"', '\"') '","controlType":"' StrReplace(
+                    ct, '"', '\"') '","isOffscreen":' (off ? 1 : 0) ',"isEnabled":' (en ? 1 : 0) '}', "OC_To_C")
             catch {
             }
         } else {
@@ -7878,7 +7895,8 @@ OutlookCompose_FocusToRecipientsField() {
                     try fn := fe.Name
                     try fa := fe.AutomationId
                     try ft := fe.Type
-                    OC_ToLog("focused_after_edit", '{"name":"' StrReplace(SubStr(fn, 1, 80), '"', '\"') '","automationId":"' StrReplace(SubStr(fa, 1, 80), '"', '\"') '","type":' (ft = "" ? -1 : ft) '}', "OC_To_E")
+                    OC_ToLog("focused_after_edit", '{"name":"' StrReplace(SubStr(fn, 1, 80), '"', '\"') '","automationId":"' StrReplace(
+                        SubStr(fa, 1, 80), '"', '\"') '","type":' (ft = "" ? -1 : ft) '}', "OC_To_E")
                 } catch {
                 }
                 return true
@@ -7899,7 +7917,8 @@ OutlookCompose_FocusToRecipientsField() {
                     try fn := fe.Name
                     try fa := fe.AutomationId
                     try ft := fe.Type
-                    OC_ToLog("focused_after_wrapper", '{"name":"' StrReplace(SubStr(fn, 1, 80), '"', '\"') '","automationId":"' StrReplace(SubStr(fa, 1, 80), '"', '\"') '","type":' (ft = "" ? -1 : ft) '}', "OC_To_E")
+                    OC_ToLog("focused_after_wrapper", '{"name":"' StrReplace(SubStr(fn, 1, 80), '"', '\"') '","automationId":"' StrReplace(
+                        SubStr(fa, 1, 80), '"', '\"') '","type":' (ft = "" ? -1 : ft) '}', "OC_To_E")
                 } catch {
                 }
                 return true
@@ -7998,17 +8017,20 @@ OutlookClickFirst(criteriaList) {
 
 ; Mail triage (Reading Pane / Ribbon)
 ^!r:: {  ; Reply
-    if !OutlookMail_ClickReadingPaneCommand("Reply") && !OutlookClickFirst([{ Name: "Reply", ControlType: "Button" }, { Name: "Reply", ControlType: "MenuItem" }])
+    if !OutlookMail_ClickReadingPaneCommand("Reply") && !OutlookClickFirst([{ Name: "Reply", ControlType: "Button" }, { Name: "Reply",
+        ControlType: "MenuItem" }])
         ShowCenteredOverlay_Utils("❌ Outlook: Reply not found", 1200, BANNER_ACCENT_ERROR)
 }
 
 ^!a:: {  ; Reply all
-    if !OutlookMail_ClickReadingPaneCommand("Reply all") && !OutlookClickFirst([{ Name: "Reply all", ControlType: "Button" }, { Name: "Reply all", ControlType: "MenuItem" }])
+    if !OutlookMail_ClickReadingPaneCommand("Reply all") && !OutlookClickFirst([{ Name: "Reply all", ControlType: "Button" }, { Name: "Reply all",
+        ControlType: "MenuItem" }])
         ShowCenteredOverlay_Utils("❌ Outlook: Reply all not found", 1200, BANNER_ACCENT_ERROR)
 }
 
 ^!w:: {  ; Forward
-    if !OutlookMail_ClickReadingPaneCommand("Forward") && !OutlookClickFirst([{ Name: "Forward", ControlType: "Button" }, { Name: "Forward", ControlType: "MenuItem" }])
+    if !OutlookMail_ClickReadingPaneCommand("Forward") && !OutlookClickFirst([{ Name: "Forward", ControlType: "Button" }, { Name: "Forward",
+        ControlType: "MenuItem" }])
         ShowCenteredOverlay_Utils("❌ Outlook: Forward not found", 1200, BANNER_ACCENT_ERROR)
 }
 
@@ -8043,7 +8065,8 @@ OutlookClickFirst(criteriaList) {
 }
 
 ^!s:: {  ; Mail Sort menu
-    if !OutlookClickFirst([{ AutomationId: "mailListSortMenu", ControlType: "Button" }, { Name: "Sorted", matchmode: "Substring", ControlType: "Button" }])
+    if !OutlookClickFirst([{ AutomationId: "mailListSortMenu", ControlType: "Button" }, { Name: "Sorted", matchmode: "Substring",
+        ControlType: "Button" }])
         ShowCenteredOverlay_Utils("❌ Outlook: Sort not found", 1200, BANNER_ACCENT_ERROR)
 }
 
@@ -8058,7 +8081,8 @@ OutlookClickFirst(criteriaList) {
 }
 
 ^!t:: {  ; Today (Calendar)
-    if !OutlookClickFirst([{ Name: "Today", ControlType: "Button" }, { Name: "Today", matchmode: "Substring", ControlType: "Button" }])
+    if !OutlookClickFirst([{ Name: "Today", ControlType: "Button" }, { Name: "Today", matchmode: "Substring",
+        ControlType: "Button" }])
         ShowCenteredOverlay_Utils("❌ Outlook: Today not found", 1200, BANNER_ACCENT_ERROR)
 }
 
@@ -8068,13 +8092,10 @@ OutlookClickFirst(criteriaList) {
     if IsNewOutlookActive() {
         ; New Outlook: prefer the Quick Step buttons (stable IDs from outlook-mail.md).
         Outlook_ActivateMainWindow()
-        if OutlookClickFirst([
-            { AutomationId: "c46846eb-0853-7b70-b484-4d7f31f5d9db", ControlType: "RadioButton" }, ; Move to General
-            { AutomationId: "c46846eb-0853-7b70-b484-4d7f31f5d9db" },
-            { Name: "Move to General", ControlType: "RadioButton" },
-            { Name: "Move to General", matchmode: "Substring" },
-            { Name: "Move to general", matchmode: "Substring" },
-            { Name: "Move to Gerais", matchmode: "Substring" }
+        if OutlookClickFirst([{ AutomationId: "c46846eb-0853-7b70-b484-4d7f31f5d9db", ControlType: "RadioButton" }, ; Move to General
+        { AutomationId: "c46846eb-0853-7b70-b484-4d7f31f5d9db" }, { Name: "Move to General", ControlType: "RadioButton" }, { Name: "Move to General",
+            matchmode: "Substring" }, { Name: "Move to general", matchmode: "Substring" }, { Name: "Move to Gerais",
+                matchmode: "Substring" }
         ])
             return
     }
@@ -8091,13 +8112,10 @@ OutlookClickFirst(criteriaList) {
     if IsNewOutlookActive() {
         ; New Outlook: prefer the Quick Step buttons (stable IDs from outlook-mail.md).
         Outlook_ActivateMainWindow()
-        if OutlookClickFirst([
-            { AutomationId: "91476b25-0fb7-4460-f695-8905582291db", ControlType: "RadioButton" }, ; Move to Newsletter
-            { AutomationId: "91476b25-0fb7-4460-f695-8905582291db" },
-            { Name: "Move to Newsletter", ControlType: "RadioButton" },
-            { Name: "Move to Newsletter", matchmode: "Substring" },
-            { Name: "Move to newsletter", matchmode: "Substring" },
-            { Name: "newsletter", matchmode: "Substring", ControlType: "RadioButton" }
+        if OutlookClickFirst([{ AutomationId: "91476b25-0fb7-4460-f695-8905582291db", ControlType: "RadioButton" }, ; Move to Newsletter
+        { AutomationId: "91476b25-0fb7-4460-f695-8905582291db" }, { Name: "Move to Newsletter", ControlType: "RadioButton" }, { Name: "Move to Newsletter",
+            matchmode: "Substring" }, { Name: "Move to newsletter", matchmode: "Substring" }, { Name: "newsletter",
+                matchmode: "Substring", ControlType: "RadioButton" }
         ])
             return
     }
@@ -8163,7 +8181,8 @@ OutlookClickFirst(criteriaList) {
         try {
             hwnd := WinExist("A")
             t := WinGetTitle("A")
-            OC_STLog("compose_gate_passed", '{"hwnd":' hwnd ',"title":"' StrReplace(SubStr(t, 1, 120), '"', '\"') '"}', "OC_ST_A")
+            OC_STLog("compose_gate_passed", '{"hwnd":' hwnd ',"title":"' StrReplace(SubStr(t, 1, 120), '"', '\"') '"}',
+            "OC_ST_A")
         } catch {
         }
 
@@ -8177,10 +8196,8 @@ OutlookClickFirst(criteriaList) {
 
         ; Fallback experiment (logged): select Bcc then Shift+Tab once.
         try {
-            bccOk := OutlookClickFirst([
-                { Name: "Bcc", matchmode: "Substring", ControlType: "Button" },
-                { Name: "Bcc", matchmode: "Substring" },
-                { Name: "Show Bcc", matchmode: "Substring", ControlType: "Button" }
+            bccOk := OutlookClickFirst([{ Name: "Bcc", matchmode: "Substring", ControlType: "Button" }, { Name: "Bcc",
+                matchmode: "Substring" }, { Name: "Show Bcc", matchmode: "Substring", ControlType: "Button" }
             ])
             OC_STLog("bcc_click", '{"ok":' (bccOk ? 1 : 0) '}', "OC_ST_C")
             if bccOk {
@@ -8191,7 +8208,8 @@ OutlookClickFirst(criteriaList) {
                 try fn := fe.Name
                 try fa := fe.AutomationId
                 try ft := fe.Type
-                OC_STLog("focused_after_bcc_shift_tab", '{"name":"' StrReplace(SubStr(fn, 1, 80), '"', '\"') '","automationId":"' StrReplace(SubStr(fa, 1, 80), '"', '\"') '","type":' (ft = "" ? -1 : ft) '}', "OC_ST_D")
+                OC_STLog("focused_after_bcc_shift_tab", '{"name":"' StrReplace(SubStr(fn, 1, 80), '"', '\"') '","automationId":"' StrReplace(
+                    SubStr(fa, 1, 80), '"', '\"') '","type":' (ft = "" ? -1 : ft) '}', "OC_ST_D")
                 return
             }
         } catch {
@@ -8201,7 +8219,8 @@ OutlookClickFirst(criteriaList) {
         if OutlookClickFirst([{ AutomationId: "134", ControlType: "Group" }, { AutomationId: "134" }])
             return
         ; Fallback: any element whose name begins with “To:”.
-        if OutlookClickFirst([{ Name: "To:", matchmode: "Substring" }, { Name: "To", matchmode: "Substring", ControlType: "Group" }])
+        if OutlookClickFirst([{ Name: "To:", matchmode: "Substring" }, { Name: "To", matchmode: "Substring",
+            ControlType: "Group" }])
             return
     }
     if FocusOutlookField({ AutomationId: "4109" }) ; Required
@@ -8590,7 +8609,8 @@ SelectExplorerSidebarFirstPinned() {
 ; - Shortcuts must work whether the popover is open or closed.
 ; -------------------------------------------------------------------
 Appt_LoadingShow(text) {
-    try StandardLoadingBar_Show(text, BANNER_ACCENT_INTERMEDIATE, { passive: false, centerOnHwnd: 0, textWidth: 560, fontSize: 17 })
+    try StandardLoadingBar_Show(text, BANNER_ACCENT_INTERMEDIATE, { passive: false, centerOnHwnd: 0, textWidth: 560,
+        fontSize: 17 })
     catch {
     }
 }
@@ -8657,7 +8677,8 @@ Appt_FindOpenPopover() {
         ; Fallback: search for any dialog window that contains Start date/time combo.
         try {
             w := root.FindFirst({ ControlType: "Window", LocalizedType: "dialog" })
-            if (w && (w.FindFirst({ Name: "Start date", ControlType: "ComboBox" }) || w.FindFirst({ Name: "Start time", ControlType: "ComboBox" })))
+            if (w && (w.FindFirst({ Name: "Start date", ControlType: "ComboBox" }) || w.FindFirst({ Name: "Start time",
+                ControlType: "ComboBox" })))
                 return w
         } catch {
         }
@@ -8820,8 +8841,7 @@ Appt_PopoverFocusFirst(criteriaList) {
 
 Appt_PopoverInvokeFirst(criteriaList) {
     pop := Appt_OpenPopoverIfNeeded()
-    if !pop
-    {
+    if !pop {
         return false
     }
     for crit in criteriaList {
@@ -8840,7 +8860,7 @@ Appt_PopoverInvokeFirst(criteriaList) {
                     }
                 }
                 if ok
-                return true
+                    return true
             }
         } catch {
         }
@@ -9000,7 +9020,7 @@ Appt_SelectFromModal(title, options, promptKeys := "[1-9] Select  [Esc] Cancel",
 
     keyCallbacks := Map()
     msg := "❓ " title ":`n`n"
-    Loop options.Length {
+    loop options.Length {
         i := A_Index
         opt := options[i]
         k := opt.k
@@ -9166,7 +9186,8 @@ Appt_OpenMenuAndPick(menuButtonCriteriaList, menuItemName, preClickDelayMs := 0)
         }
         if mi {
             if (preClickDelayMs > 0) {
-                try StandardLoadingBar_Update("👁️ Appointment: about to click → " menuItemName, BANNER_ACCENT_INTERMEDIATE)
+                try StandardLoadingBar_Update("👁️ Appointment: about to click → " menuItemName,
+                    BANNER_ACCENT_INTERMEDIATE)
                 catch {
                 }
                 Sleep preClickDelayMs
@@ -9236,12 +9257,8 @@ Outlook_ClickEndTime_1200PM() {
 
     Appt_RunWithLoading("Start date", (*) => (
         isNew
-            ? (Appt_PopoverInvokeFirst([
-                { Name: "Start date", ControlType: "ComboBox" },
-                { Name: "Start date", Type: 50003 },
-                { Name: "Start date", ControlType: "Button" },
-                { Name: "Start date", Type: 50000 },
-                { AutomationId: "DatePicker", matchmode: "Substring" }
+            ? (Appt_PopoverInvokeFirst([{ Name: "Start date", ControlType: "ComboBox" }, { Name: "Start date", Type: 50003 }, { Name: "Start date",
+                ControlType: "Button" }, { Name: "Start date", Type: 50000 }, { AutomationId: "DatePicker", matchmode: "Substring" }
             ]) || (ShowCenteredOverlay_Utils("❌ Appointment: Start date not found", 1400, BANNER_ACCENT_ERROR), false))
             : (Outlook_ClickStartDate(), true)
     ))
@@ -9252,23 +9269,17 @@ Outlook_ClickEndTime_1200PM() {
     ; New Outlook: repurpose Shift+P to Private toggle modal (date picker concept removed).
     if IsNewOutlookActive() {
         Appt_RunWithLoading("Private", (*) => (
-            (choice := Appt_SelectFromModal("Appointment privacy", [
-                { k: "1", label: "Private" },
-                { k: "2", label: "Not private" }
-            ], "[1-2] Select  [Esc] Cancel"))
+            (choice := Appt_SelectFromModal("Appointment privacy", [{ k: "1", label: "Private" }, { k: "2", label: "Not private" }],
+            "[1-2] Select  [Esc] Cancel"))
                 ? (
                     (choice = "1")
-                        ? Appt_OpenMenuAndPick([
-                            { Name: "Private", ControlType: "Button" },
-                            { Name: "Not private", ControlType: "Button" },
-                            { Name: "Private", matchmode: "Substring", ControlType: "Button" },
-                            { Name: "Not private", matchmode: "Substring", ControlType: "Button" }
+                        ? Appt_OpenMenuAndPick([{ Name: "Private", ControlType: "Button" }, { Name: "Not private",
+                            ControlType: "Button" }, { Name: "Private", matchmode: "Substring", ControlType: "Button" }, { Name: "Not private",
+                                matchmode: "Substring", ControlType: "Button" }
                         ], "Private")
-                        : Appt_OpenMenuAndPick([
-                            { Name: "Private", ControlType: "Button" },
-                            { Name: "Not private", ControlType: "Button" },
-                            { Name: "Private", matchmode: "Substring", ControlType: "Button" },
-                            { Name: "Not private", matchmode: "Substring", ControlType: "Button" }
+                        : Appt_OpenMenuAndPick([{ Name: "Private", ControlType: "Button" }, { Name: "Not private",
+                            ControlType: "Button" }, { Name: "Private", matchmode: "Substring", ControlType: "Button" }, { Name: "Not private",
+                                matchmode: "Substring", ControlType: "Button" }
                         ], "Not private")
                 )
                 : false
@@ -9282,11 +9293,9 @@ Outlook_ClickEndTime_1200PM() {
 +T:: {
     Appt_RunWithLoading("Start time", (*) => (
         IsNewOutlookActive()
-            ? (Appt_PopoverFocusFirst([
-                { Name: "Start time", ControlType: "ComboBox" },
-                { Name: "Start time", Type: 50003 },
-                { AutomationId: "ComboBox", matchmode: "Substring" }
-            ]) || (ShowCenteredOverlay_Utils("❌ Appointment: Start time not found", 1400, BANNER_ACCENT_ERROR), false))
+            ? (Appt_PopoverFocusFirst([{ Name: "Start time", ControlType: "ComboBox" }, { Name: "Start time", Type: 50003 }, { AutomationId: "ComboBox",
+                matchmode: "Substring" }]) || (ShowCenteredOverlay_Utils("❌ Appointment: Start time not found", 1400,
+                    BANNER_ACCENT_ERROR), false))
             : (Outlook_ClickStartTime(), true)
     ))
 }
@@ -9295,10 +9304,8 @@ Outlook_ClickEndTime_1200PM() {
 +E:: {
     Appt_RunWithLoading("End time", (*) => (
         IsNewOutlookActive()
-            ? (Appt_PopoverFocusFirst([
-                { Name: "End time", ControlType: "ComboBox" },
-                { Name: "End time", Type: 50003 }
-            ]) || (ShowCenteredOverlay_Utils("❌ Appointment: End time not found", 1400, BANNER_ACCENT_ERROR), false))
+            ? (Appt_PopoverFocusFirst([{ Name: "End time", ControlType: "ComboBox" }, { Name: "End time", Type: 50003 }]) ||
+            (ShowCenteredOverlay_Utils("❌ Appointment: End time not found", 1400, BANNER_ACCENT_ERROR), false))
             : (Outlook_ClickEndDate(), true)
     ))
 }
@@ -9307,10 +9314,8 @@ Outlook_ClickEndTime_1200PM() {
 +H:: {
     if IsNewOutlookActive() {
         Appt_RunWithLoading("Scheduler", (*) => (
-            Appt_ClickAny([
-                { Name: "Scheduler", ControlType: "Button" },
-                { Name: "Scheduling assistant", matchmode: "Substring", ControlType: "Button" },
-                { Name: "Scheduling", matchmode: "Substring", ControlType: "Button" }
+            Appt_ClickAny([{ Name: "Scheduler", ControlType: "Button" }, { Name: "Scheduling assistant", matchmode: "Substring",
+                ControlType: "Button" }, { Name: "Scheduling", matchmode: "Substring", ControlType: "Button" }
             ]) || (ShowCenteredOverlay_Utils("❌ Appointment: Scheduler not found", 1400, BANNER_ACCENT_ERROR), false)
         ))
         return
@@ -9322,14 +9327,11 @@ Outlook_ClickEndTime_1200PM() {
 +A:: {
     if IsNewOutlookActive() {
         Appt_RunWithLoading("All day", (*) => (
-            Appt_PopoverToggleFirst([
-                { Name: "All day", ControlType: "CheckBox" },
-                { Name: "All day", Type: 50002 },
-                ; New Outlook exposes this as a switch (button) with a stable AutomationId (e.g. Toggle9777).
-                { AutomationId: "Toggle", matchmode: "Substring", ControlType: "Button" },
-                { AutomationId: "Toggle", matchmode: "Substring", Type: 50000 },
-                { Name: "All day", ControlType: "Button" },
-                { Name: "All day", Type: 50000 }
+            Appt_PopoverToggleFirst([{ Name: "All day", ControlType: "CheckBox" }, { Name: "All day", Type: 50002 },
+            ; New Outlook exposes this as a switch (button) with a stable AutomationId (e.g. Toggle9777).
+            { AutomationId: "Toggle", matchmode: "Substring", ControlType: "Button" }, { AutomationId: "Toggle",
+                matchmode: "Substring", Type: 50000 }, { Name: "All day", ControlType: "Button" }, { Name: "All day",
+                    Type: 50000 }
             ]) || (ShowCenteredOverlay_Utils("❌ Appointment: All day not found", 1400, BANNER_ACCENT_ERROR), false)
         ))
         return
@@ -9433,20 +9435,16 @@ Appt_ClickDayNav(isNext) {
         return false
     ; Primary targeting (New Outlook): "Go to previous day <date>" / "Go to next day <date>"
     candidates := isNext
-        ? [
-            { Name: "Go to next", matchmode: "Substring", ControlType: "Button" },
-            { Name: "go to next", matchmode: "Substring", ControlType: "Button" },
-            { Name: "Next", matchmode: "Substring", ControlType: "Button" },
-            { Name: "Forward", matchmode: "Substring", ControlType: "Button" },
-            { Name: "Next day", matchmode: "Substring", ControlType: "Button" }
+        ? [{ Name: "Go to next", matchmode: "Substring", ControlType: "Button" }, { Name: "go to next", matchmode: "Substring",
+            ControlType: "Button" }, { Name: "Next", matchmode: "Substring", ControlType: "Button" }, { Name: "Forward",
+                matchmode: "Substring", ControlType: "Button" }, { Name: "Next day", matchmode: "Substring",
+                    ControlType: "Button" }
         ]
-        : [
-            { Name: "Go to previous", matchmode: "Substring", ControlType: "Button" },
-            { Name: "go to previous", matchmode: "Substring", ControlType: "Button" },
-            { Name: "Previous", matchmode: "Substring", ControlType: "Button" },
-            { Name: "Back", matchmode: "Substring", ControlType: "Button" },
-            { Name: "Previous day", matchmode: "Substring", ControlType: "Button" }
-        ]
+            : [{ Name: "Go to previous", matchmode: "Substring", ControlType: "Button" }, { Name: "go to previous",
+                matchmode: "Substring", ControlType: "Button" }, { Name: "Previous", matchmode: "Substring",
+                    ControlType: "Button" }, { Name: "Back", matchmode: "Substring", ControlType: "Button" }, { Name: "Previous day",
+                        matchmode: "Substring", ControlType: "Button" }
+            ]
     for crit in candidates {
         try {
             btn := root.FindFirst(crit)
@@ -9465,12 +9463,14 @@ Appt_ClickDayNav(isNext) {
 
 Appt_SchedulerClickBack() {
     return Appt_ClickInCommandBar([{ Name: "Back", ControlType: "Button" }])
-        || Appt_ClickAny([{ Name: "Back", ControlType: "Button" }])
+    || Appt_ClickAny([{ Name: "Back", ControlType: "Button" }])
 }
 
 Appt_SchedulerClickOptions() {
-    return Appt_ClickInCommandBar([{ Name: "Options", ControlType: "Button" }, { Name: "Options", matchmode: "Substring", ControlType: "Button" }])
-        || Appt_ClickAny([{ Name: "Options", ControlType: "Button" }, { Name: "Options", matchmode: "Substring", ControlType: "Button" }])
+    return Appt_ClickInCommandBar([{ Name: "Options", ControlType: "Button" }, { Name: "Options", matchmode: "Substring",
+        ControlType: "Button" }])
+    || Appt_ClickAny([{ Name: "Options", ControlType: "Button" }, { Name: "Options", matchmode: "Substring",
+        ControlType: "Button" }])
 }
 
 Appt_SchedulerClickAddAttendee(isOptional) {
@@ -9487,12 +9487,11 @@ Appt_SchedulerFocusDateTimeControl(kind) {
     if (kind = "end_time")
         return Appt_PopoverFocusFirst([{ Name: "End time", ControlType: "ComboBox" }, { Name: "End time", Type: 50003 }])
     if (kind = "all_day")
-        return Appt_PopoverInvokeFirst([{ Name: "All day", ControlType: "CheckBox" }, { Name: "All day", Type: 50002 }, { Name: "All day", ControlType: "Button" }])
+        return Appt_PopoverInvokeFirst([{ Name: "All day", ControlType: "CheckBox" }, { Name: "All day", Type: 50002 }, { Name: "All day",
+            ControlType: "Button" }])
     if (kind = "time_zone")
-        return Appt_ToggleOrClickAny([
-            { Name: "Show event time zones", matchmode: "Substring", ControlType: "Button" },
-            { Name: "Time zone", matchmode: "Substring", ControlType: "Button" }
-        ])
+        return Appt_ToggleOrClickAny([{ Name: "Show event time zones", matchmode: "Substring", ControlType: "Button" }, { Name: "Time zone",
+            matchmode: "Substring", ControlType: "Button" }])
     return false
 }
 
@@ -9528,8 +9527,9 @@ Appt_ToggleOrClickAny(criteriaList) {
     if !IsNewOutlookActive()
         return
     Appt_RunWithLoading("Prev", (*) => (
-        (Appt_IsSchedulerView() ? (Appt_ClickSchedulerSuggestionNav(false) || Appt_ClickDayNav(false)) : Appt_ClickDayNav(false))
-            || (ShowCenteredOverlay_Utils("❌ Appointment: Previous not found", 1400, BANNER_ACCENT_ERROR), false)
+        (Appt_IsSchedulerView() ? (Appt_ClickSchedulerSuggestionNav(false) || Appt_ClickDayNav(false)) :
+            Appt_ClickDayNav(false))
+        || (ShowCenteredOverlay_Utils("❌ Appointment: Previous not found", 1400, BANNER_ACCENT_ERROR), false)
     ))
 }
 
@@ -9537,8 +9537,9 @@ Appt_ToggleOrClickAny(criteriaList) {
     if !IsNewOutlookActive()
         return
     Appt_RunWithLoading("Next", (*) => (
-        (Appt_IsSchedulerView() ? (Appt_ClickSchedulerSuggestionNav(true) || Appt_ClickDayNav(true)) : Appt_ClickDayNav(true))
-            || (ShowCenteredOverlay_Utils("❌ Appointment: Next not found", 1400, BANNER_ACCENT_ERROR), false)
+        (Appt_IsSchedulerView() ? (Appt_ClickSchedulerSuggestionNav(true) || Appt_ClickDayNav(true)) : Appt_ClickDayNav(
+            true))
+        || (ShowCenteredOverlay_Utils("❌ Appointment: Next not found", 1400, BANNER_ACCENT_ERROR), false)
     ))
 }
 
@@ -9548,7 +9549,7 @@ Appt_ToggleOrClickAny(criteriaList) {
         return
     Appt_RunWithLoading("Today", (*) => (
         Appt_ClickAny([{ Name: "Today", ControlType: "Button" }, { Name: "Today", matchmode: "Substring", ControlType: "Button" }])
-            || (ShowCenteredOverlay_Utils("❌ Appointment: Today not found", 1400, BANNER_ACCENT_ERROR), false)
+        || (ShowCenteredOverlay_Utils("❌ Appointment: Today not found", 1400, BANNER_ACCENT_ERROR), false)
     ))
 }
 
@@ -9557,10 +9558,8 @@ Appt_ToggleOrClickAny(criteriaList) {
     if !IsNewOutlookActive()
         return
     Appt_RunWithLoading("Date", (*) => (
-        Appt_ClickAny([
-            { Name: "Thu", matchmode: "Substring", ControlType: "Button" },
-            { Name: "Apr", matchmode: "Substring", ControlType: "Button" },
-            { Name: "Week", matchmode: "Substring", ControlType: "Button" }
+        Appt_ClickAny([{ Name: "Thu", matchmode: "Substring", ControlType: "Button" }, { Name: "Apr", matchmode: "Substring",
+            ControlType: "Button" }, { Name: "Week", matchmode: "Substring", ControlType: "Button" }
         ]) || (ShowCenteredOverlay_Utils("❌ Appointment: Date header not found", 1400, BANNER_ACCENT_ERROR), false)
     ))
 }
@@ -9571,7 +9570,8 @@ Appt_ToggleOrClickAny(criteriaList) {
     if !IsNewOutlookActive()
         return
     Appt_RunWithLoading("Back", (*) => (
-        Appt_SchedulerClickBack() || (ShowCenteredOverlay_Utils("❌ Appointment: Back not found", 1400, BANNER_ACCENT_ERROR), false)
+        Appt_SchedulerClickBack() || (ShowCenteredOverlay_Utils("❌ Appointment: Back not found", 1400,
+            BANNER_ACCENT_ERROR), false)
     ))
 }
 
@@ -9580,7 +9580,8 @@ Appt_ToggleOrClickAny(criteriaList) {
     if !IsNewOutlookActive()
         return
     Appt_RunWithLoading("Options", (*) => (
-        Appt_SchedulerClickOptions() || (ShowCenteredOverlay_Utils("❌ Appointment: Options not found", 1400, BANNER_ACCENT_ERROR), false)
+        Appt_SchedulerClickOptions() || (ShowCenteredOverlay_Utils("❌ Appointment: Options not found", 1400,
+            BANNER_ACCENT_ERROR), false)
     ))
 }
 
@@ -9592,7 +9593,8 @@ Appt_ToggleOrClickAny(criteriaList) {
     if !IsNewOutlookActive()
         return
     Appt_RunWithLoading("Time zone", (*) => (
-        Appt_SchedulerFocusDateTimeControl("time_zone") || (ShowCenteredOverlay_Utils("❌ Appointment: Time zone not found", 1400, BANNER_ACCENT_ERROR), false)
+        Appt_SchedulerFocusDateTimeControl("time_zone") || (ShowCenteredOverlay_Utils(
+            "❌ Appointment: Time zone not found", 1400, BANNER_ACCENT_ERROR), false)
     ))
 }
 
@@ -9601,7 +9603,8 @@ Appt_ToggleOrClickAny(criteriaList) {
     if !IsNewOutlookActive()
         return
     Appt_RunWithLoading("Add required", (*) => (
-        Appt_SchedulerClickAddAttendee(false) || (ShowCenteredOverlay_Utils("❌ Appointment: Add required not found", 1400, BANNER_ACCENT_ERROR), false)
+        Appt_SchedulerClickAddAttendee(false) || (ShowCenteredOverlay_Utils("❌ Appointment: Add required not found",
+            1400, BANNER_ACCENT_ERROR), false)
     ))
 }
 
@@ -9610,7 +9613,8 @@ Appt_ToggleOrClickAny(criteriaList) {
     if !IsNewOutlookActive()
         return
     Appt_RunWithLoading("Add optional", (*) => (
-        Appt_SchedulerClickAddAttendee(true) || (ShowCenteredOverlay_Utils("❌ Appointment: Add optional not found", 1400, BANNER_ACCENT_ERROR), false)
+        Appt_SchedulerClickAddAttendee(true) || (ShowCenteredOverlay_Utils("❌ Appointment: Add optional not found",
+            1400, BANNER_ACCENT_ERROR), false)
     ))
 }
 
@@ -9618,7 +9622,8 @@ Appt_ToggleOrClickAny(criteriaList) {
 +B:: {
     Appt_RunWithLoading("Body", (*) => (
         IsNewOutlookActive()
-            ? (Appt_FocusBodyField_NewOutlook() || (ShowCenteredOverlay_Utils("❌ Appointment: Body not found", 1400, BANNER_ACCENT_ERROR), false))
+            ? (Appt_FocusBodyField_NewOutlook() || (ShowCenteredOverlay_Utils("❌ Appointment: Body not found", 1400,
+                BANNER_ACCENT_ERROR), false))
             : (true)
     ))
     if IsNewOutlookActive()
@@ -9650,10 +9655,9 @@ Appt_ToggleOrClickAny(criteriaList) {
 +C:: {
     Appt_RunWithLoading("Recurring", (*) => (
         IsNewOutlookActive()
-            ? (Appt_PopoverInvokeFirst([
-                { Name: "Make recurring", ControlType: "Button" },
-                { Name: "recurring", matchmode: "Substring", ControlType: "Button" }
-            ]) || (ShowCenteredOverlay_Utils("❌ Appointment: Recurring not found", 1400, BANNER_ACCENT_ERROR), false))
+            ? (Appt_PopoverInvokeFirst([{ Name: "Make recurring", ControlType: "Button" }, { Name: "recurring",
+                matchmode: "Substring", ControlType: "Button" }]) || (ShowCenteredOverlay_Utils(
+                    "❌ Appointment: Recurring not found", 1400, BANNER_ACCENT_ERROR), false))
             : (false)
     ))
     if IsNewOutlookActive()
@@ -9679,13 +9683,11 @@ Appt_ToggleOrClickAny(criteriaList) {
     if !IsNewOutlookActive()
         return
     Appt_RunWithLoading("Teams meeting", (*) => (
-        Appt_ClickInCommandBar([
-            { Name: "Teams meeting", matchmode: "Substring", ControlType: "Button" },
-            { Name: "Teams", matchmode: "Substring", ControlType: "Button" }
-        ]) || Appt_ClickAny([
-            { Name: "Teams meeting", matchmode: "Substring", ControlType: "Button" },
-            { Name: "Teams", matchmode: "Substring", ControlType: "Button" }
-        ]) || (ShowCenteredOverlay_Utils("❌ Appointment: Teams meeting not found", 1400, BANNER_ACCENT_ERROR), false)
+        Appt_ClickInCommandBar([{ Name: "Teams meeting", matchmode: "Substring", ControlType: "Button" }, { Name: "Teams",
+            matchmode: "Substring", ControlType: "Button" }]) || Appt_ClickAny([{ Name: "Teams meeting", matchmode: "Substring",
+                ControlType: "Button" }, { Name: "Teams", matchmode: "Substring", ControlType: "Button" }
+            ]) || (ShowCenteredOverlay_Utils("❌ Appointment: Teams meeting not found", 1400, BANNER_ACCENT_ERROR),
+            false)
     ))
 }
 
@@ -9694,16 +9696,11 @@ Appt_ToggleOrClickAny(criteriaList) {
     if !IsNewOutlookActive()
         return
     Appt_RunWithLoading("Series", (*) => (
-        Appt_ClickInCommandBar([
-            { Name: "Series", ControlType: "Button" },
-            { Name: "Series", ControlType: "TabItem" }
-        ]) || Appt_ClickAny([
-            { Name: "Series", ControlType: "Button" },
-            { Name: "Series", ControlType: "TabItem" }
-        ]) || Appt_PopoverInvokeFirst([
-            { Name: "Make recurring", ControlType: "Button" },
-            { Name: "recurring", matchmode: "Substring", ControlType: "Button" }
-        ]) || (ShowCenteredOverlay_Utils("❌ Appointment: Series/Recurring not found", 1400, BANNER_ACCENT_ERROR), false)
+        Appt_ClickInCommandBar([{ Name: "Series", ControlType: "Button" }, { Name: "Series", ControlType: "TabItem" }]) ||
+        Appt_ClickAny([{ Name: "Series", ControlType: "Button" }, { Name: "Series", ControlType: "TabItem" }]) ||
+        Appt_PopoverInvokeFirst([{ Name: "Make recurring", ControlType: "Button" }, { Name: "recurring", matchmode: "Substring",
+            ControlType: "Button" }]) || (ShowCenteredOverlay_Utils("❌ Appointment: Series/Recurring not found", 1400,
+                BANNER_ACCENT_ERROR), false)
     ))
 }
 
@@ -9712,27 +9709,19 @@ Appt_ToggleOrClickAny(criteriaList) {
     if !IsNewOutlookActive()
         return
     Appt_RunWithLoading("Status", (*) => (
-        (choice := Appt_SelectFromModal("Appointment status", [
-            { k: "1", label: "Free" },
-            { k: "2", label: "Working elsewhere" },
-            { k: "3", label: "Tentative" },
-            { k: "4", label: "Busy" },
-            { k: "5", label: "Out of office" }
+        (choice := Appt_SelectFromModal("Appointment status", [{ k: "1", label: "Free" }, { k: "2", label: "Working elsewhere" }, { k: "3",
+            label: "Tentative" }, { k: "4", label: "Busy" }, { k: "5", label: "Out of office" }
         ], "[1-5] Select  [Esc] Cancel"))
             ? (
                 (target := (choice = "1") ? "Free"
                     : (choice = "2") ? "Working elsewhere"
-                    : (choice = "3") ? "Tentative"
-                    : (choice = "4") ? "Busy"
-                    : "Out of office"),
-                Appt_OpenMenuAndPick([
-                    { Name: "Free", ControlType: "Button" },
-                    { Name: "Busy", ControlType: "Button" },
-                    { Name: "Tentative", ControlType: "Button" },
-                    { Name: "Working elsewhere", ControlType: "Button" },
-                    { Name: "Out of office", ControlType: "Button" },
-                    { Name: "Free", matchmode: "Substring", ControlType: "Button" },
-                    { Name: "Busy", matchmode: "Substring", ControlType: "Button" }
+                        : (choice = "3") ? "Tentative"
+                            : (choice = "4") ? "Busy"
+                                : "Out of office"),
+                Appt_OpenMenuAndPick([{ Name: "Free", ControlType: "Button" }, { Name: "Busy", ControlType: "Button" }, { Name: "Tentative",
+                    ControlType: "Button" }, { Name: "Working elsewhere", ControlType: "Button" }, { Name: "Out of office",
+                        ControlType: "Button" }, { Name: "Free", matchmode: "Substring", ControlType: "Button" }, { Name: "Busy",
+                            matchmode: "Substring", ControlType: "Button" }
                 ], target)
             )
             : false
@@ -9749,34 +9738,26 @@ Appt_ToggleOrClickAny(criteriaList) {
 }
 
 RemQ_Run() {
-    choice := Appt_SelectFromModal("Appointment reminder", [
-        { k: "1", label: "Don't remind me" },
-        { k: "2", label: "15 minutes before" },
-        { k: "3", label: "1 hour before" },
-        { k: "4", label: "12 hours before" },
-        { k: "5", label: "1 day before" },
-        { k: "6", label: "1 week before" }
+    choice := Appt_SelectFromModal("Appointment reminder", [{ k: "1", label: "Don't remind me" }, { k: "2", label: "15 minutes before" }, { k: "3",
+        label: "1 hour before" }, { k: "4", label: "12 hours before" }, { k: "5", label: "1 day before" }, { k: "6",
+            label: "1 week before" }
     ], "[1-6] Select  [Esc] Cancel")
     if !choice
         return false
 
     target := (choice = "1") ? "Don't remind me"
         : (choice = "2") ? "15 minutes before"
-        : (choice = "3") ? "1 hour before"
-        : (choice = "4") ? "12 hours before"
-        : (choice = "5") ? "1 day before"
-        : "1 week before"
+            : (choice = "3") ? "1 hour before"
+                : (choice = "4") ? "12 hours before"
+                    : (choice = "5") ? "1 day before"
+                        : "1 week before"
 
     RemQ_VisualizeSelection("Reminder", target)
-    return Appt_OpenMenuAndPick([
-        { Name: "Don't remind me", ControlType: "Button" },
-        { Name: "15 minutes before", ControlType: "Button" },
-        { Name: "1 week before", ControlType: "Button" },
-        { Name: "15 minutes", matchmode: "Substring", ControlType: "Button" },
-        { Name: "1 hour", matchmode: "Substring", ControlType: "Button" },
-        { Name: "12 hours", matchmode: "Substring", ControlType: "Button" },
-        { Name: "1 day", matchmode: "Substring", ControlType: "Button" },
-        { Name: "Reminder", matchmode: "Substring", ControlType: "Button" }
+    return Appt_OpenMenuAndPick([{ Name: "Don't remind me", ControlType: "Button" }, { Name: "15 minutes before",
+        ControlType: "Button" }, { Name: "1 week before", ControlType: "Button" }, { Name: "15 minutes", matchmode: "Substring",
+            ControlType: "Button" }, { Name: "1 hour", matchmode: "Substring", ControlType: "Button" }, { Name: "12 hours",
+                matchmode: "Substring", ControlType: "Button" }, { Name: "1 day", matchmode: "Substring", ControlType: "Button" }, { Name: "Reminder",
+                    matchmode: "Substring", ControlType: "Button" }
     ], target, 300)
 }
 
@@ -9795,21 +9776,15 @@ RemQ_VisualizeSelection(label, target) {
     if !IsNewOutlookActive()
         return
     Appt_RunWithLoading("Category", (*) => (
-        (choice := Appt_SelectFromModal("Appointment category", [
-            { k: "1", label: "Aniversário" },
-            { k: "2", label: "Importante" },
-            { k: "3", label: "Pessoal" }
-        ], "[1-3] Select  [Esc] Cancel"))
+        (choice := Appt_SelectFromModal("Appointment category", [{ k: "1", label: "Aniversário" }, { k: "2", label: "Importante" }, { k: "3",
+            label: "Pessoal" }], "[1-3] Select  [Esc] Cancel"))
             ? (
                 (target := (choice = "1") ? "Aniversário"
                     : (choice = "2") ? "Importante"
-                    : "Pessoal"),
-                Appt_OpenMenuAndPick([
-                    { Name: "Aniversário", ControlType: "Button" },
-                    { Name: "Importante", ControlType: "Button" },
-                    { Name: "Pessoal", ControlType: "Button" },
-                    { Name: "Category", matchmode: "Substring", ControlType: "Button" },
-                    { Name: "Categories", matchmode: "Substring", ControlType: "Button" }
+                        : "Pessoal"),
+                Appt_OpenMenuAndPick([{ Name: "Aniversário", ControlType: "Button" }, { Name: "Importante", ControlType: "Button" }, { Name: "Pessoal",
+                    ControlType: "Button" }, { Name: "Category", matchmode: "Substring", ControlType: "Button" }, { Name: "Categories",
+                        matchmode: "Substring", ControlType: "Button" }
                 ], target)
             )
             : false
@@ -9820,7 +9795,8 @@ RemQ_VisualizeSelection(label, target) {
 +1:: {
     Appt_RunWithLoading("Time suggestion 1", (*) => (
         IsNewOutlookActive()
-            ? (Appt_PopoverSelectTimeSuggestion(1) || (ShowCenteredOverlay_Utils("❌ Appointment: Suggestion 1 not found", 1400, BANNER_ACCENT_ERROR), false))
+            ? (Appt_PopoverSelectTimeSuggestion(1) || (ShowCenteredOverlay_Utils(
+                "❌ Appointment: Suggestion 1 not found", 1400, BANNER_ACCENT_ERROR), false))
             : (false)
     ))
 }
@@ -9828,7 +9804,8 @@ RemQ_VisualizeSelection(label, target) {
 +2:: {
     Appt_RunWithLoading("Time suggestion 2", (*) => (
         IsNewOutlookActive()
-            ? (Appt_PopoverSelectTimeSuggestion(2) || (ShowCenteredOverlay_Utils("❌ Appointment: Suggestion 2 not found", 1400, BANNER_ACCENT_ERROR), false))
+            ? (Appt_PopoverSelectTimeSuggestion(2) || (ShowCenteredOverlay_Utils(
+                "❌ Appointment: Suggestion 2 not found", 1400, BANNER_ACCENT_ERROR), false))
             : (false)
     ))
 }
@@ -10271,59 +10248,45 @@ RunOutlookAppointmentWizard() {
     g_ApptWizardMainHwnd := WinExist("A")
 
     ; STEP 1/5 – Status
-    c1 := Appt_SelectFromModal("Wizard 1/5: status", [
-        { k: "1", label: "🟢 Free" },
-        { k: "2", label: "🟡 Tentative" },
-        { k: "3", label: "🔴 Busy" },
-        { k: "4", label: "🔴 Out of office" }
+    c1 := Appt_SelectFromModal("Wizard 1/5: status", [{ k: "1", label: "🟢 Free" }, { k: "2", label: "🟡 Tentative" }, { k: "3",
+        label: "🔴 Busy" }, { k: "4", label: "🔴 Out of office" }
     ], "[1-4] Select  [Esc] Cancel")
     if (c1 = "")
         return
     status := (c1 = "1") ? "Free" : (c1 = "2") ? "Tentative" : (c1 = "3") ? "Busy" : "Out of office"
 
     ; STEP 2/5 – Privacy
-    c2 := Appt_SelectFromModal("Wizard 2/5: privacy", [
-        { k: "1", label: "🔓 Not private" },
-        { k: "2", label: "🔒 Private" }
-    ], "[1-2] Select  [Esc] Cancel")
+    c2 := Appt_SelectFromModal("Wizard 2/5: privacy", [{ k: "1", label: "🔓 Not private" }, { k: "2", label: "🔒 Private" }],
+    "[1-2] Select  [Esc] Cancel")
     if (c2 = "")
         return
     privacy := (c2 = "2") ? "Private" : "Not private"
 
     ; STEP 3/5 – Category
-    c4 := Appt_SelectFromModal("Wizard 3/5: category", [
-        { k: "1", label: "🚫 None" },
-        { k: "2", label: "⭐ Important" },
-        { k: "3", label: "👤 Personal" }
-    ], "[1-3] Select  [Esc] Cancel")
+    c4 := Appt_SelectFromModal("Wizard 3/5: category", [{ k: "1", label: "🚫 None" }, { k: "2", label: "⭐ Important" }, { k: "3",
+        label: "👤 Personal" }], "[1-3] Select  [Esc] Cancel")
     if (c4 = "")
         return
     ; New Outlook UI is localized (PT-BR) for categories in this setup.
     category := (c4 = "1") ? "" : (c4 = "2") ? "Importante" : "Pessoal"
 
     ; STEP 4/5 – Reminder (align with new Appointment menu labels we already use)
-    c5 := Appt_SelectFromModal("Wizard 4/5: reminder", [
-        { k: "1", label: "🔕 Don't remind me" },
-        { k: "2", label: "⏰ 15 minutes before" },
-        { k: "3", label: "⏰ 1 hour before" },
-        { k: "4", label: "⏰ 12 hours before" },
-        { k: "5", label: "🗓️ 1 day before" },
-        { k: "6", label: "📅 1 week before" }
+    c5 := Appt_SelectFromModal("Wizard 4/5: reminder", [{ k: "1", label: "🔕 Don't remind me" }, { k: "2", label: "⏰ 15 minutes before" }, { k: "3",
+        label: "⏰ 1 hour before" }, { k: "4", label: "⏰ 12 hours before" }, { k: "5", label: "🗓️ 1 day before" }, { k: "6",
+            label: "📅 1 week before" }
     ], "[1-6] Select  [Esc] Cancel")
     if (c5 = "")
         return
     reminder := (c5 = "1") ? "Don't remind me"
         : (c5 = "2") ? "15 minutes before"
-        : (c5 = "3") ? "1 hour before"
-        : (c5 = "4") ? "12 hours before"
-        : (c5 = "5") ? "1 day before"
-        : "1 week before"
+            : (c5 = "3") ? "1 hour before"
+                : (c5 = "4") ? "12 hours before"
+                    : (c5 = "5") ? "1 day before"
+                        : "1 week before"
 
     ; STEP 5/5 – All-day (final)
-    c3 := Appt_SelectFromModal("Wizard 5/5: all-day", [
-        { k: "1", label: "⏰ Timed (All-day OFF)" },
-        { k: "2", label: "📅 All-day ON" }
-    ], "[1-2] Select  [Esc] Cancel")
+    c3 := Appt_SelectFromModal("Wizard 5/5: all-day", [{ k: "1", label: "⏰ Timed (All-day OFF)" }, { k: "2", label: "📅 All-day ON" }],
+    "[1-2] Select  [Esc] Cancel")
     if (c3 = "")
         return
     allDayOn := (c3 = "2")
@@ -10345,55 +10308,41 @@ ApptWizard_ApplySelection(status, privacy, allDayOn, category, reminder) {
     if !IsSet(APPT_WIZARD_STEP_DELAY_MS)
         APPT_WIZARD_STEP_DELAY_MS := 1000
 
-    try StandardLoadingBar_Show("⏳ Wizard: applying…", BANNER_ACCENT_INTERMEDIATE, { passive: false, centerOnHwnd: 0, textWidth: 640, fontSize: 17 })
+    try StandardLoadingBar_Show("⏳ Wizard: applying…", BANNER_ACCENT_INTERMEDIATE, { passive: false, centerOnHwnd: 0,
+        textWidth: 640, fontSize: 17 })
     catch {
     }
     try {
         try StandardLoadingBar_Update("🔄 Wizard: Status → " status, BANNER_ACCENT_INTERMEDIATE)
-        Appt_OpenMenuAndPick([
-            { Name: "Free", ControlType: "Button" },
-            { Name: "Busy", ControlType: "Button" },
-            { Name: "Tentative", ControlType: "Button" },
-            { Name: "Working elsewhere", ControlType: "Button" },
-            { Name: "Out of office", ControlType: "Button" },
-            { Name: "Free", matchmode: "Substring", ControlType: "Button" },
-            { Name: "Busy", matchmode: "Substring", ControlType: "Button" }
+        Appt_OpenMenuAndPick([{ Name: "Free", ControlType: "Button" }, { Name: "Busy", ControlType: "Button" }, { Name: "Tentative",
+            ControlType: "Button" }, { Name: "Working elsewhere", ControlType: "Button" }, { Name: "Out of office",
+                ControlType: "Button" }, { Name: "Free", matchmode: "Substring", ControlType: "Button" }, { Name: "Busy",
+                    matchmode: "Substring", ControlType: "Button" }
         ], status)
         Sleep APPT_WIZARD_STEP_DELAY_MS
 
         try StandardLoadingBar_Update("🔄 Wizard: Privacy → " privacy, BANNER_ACCENT_INTERMEDIATE)
-        Appt_OpenMenuAndPick([
-            { Name: "Private", ControlType: "Button" },
-            { Name: "Not private", ControlType: "Button" },
-            { Name: "Private", matchmode: "Substring", ControlType: "Button" },
-            { Name: "Not private", matchmode: "Substring", ControlType: "Button" }
+        Appt_OpenMenuAndPick([{ Name: "Private", ControlType: "Button" }, { Name: "Not private", ControlType: "Button" }, { Name: "Private",
+            matchmode: "Substring", ControlType: "Button" }, { Name: "Not private", matchmode: "Substring", ControlType: "Button" }
         ], privacy)
         Sleep APPT_WIZARD_STEP_DELAY_MS
 
         if (category != "") {
             try StandardLoadingBar_Update("🔄 Wizard: Category → " category, BANNER_ACCENT_INTERMEDIATE)
-            Appt_OpenMenuAndPick([
-                { Name: "Aniversário", ControlType: "Button" },
-                { Name: "Importante", ControlType: "Button" },
-                { Name: "Pessoal", ControlType: "Button" },
-                { Name: "Important", ControlType: "Button" },
-                { Name: "Personal", ControlType: "Button" },
-                { Name: "Category", matchmode: "Substring", ControlType: "Button" },
-                { Name: "Categories", matchmode: "Substring", ControlType: "Button" }
+            Appt_OpenMenuAndPick([{ Name: "Aniversário", ControlType: "Button" }, { Name: "Importante", ControlType: "Button" }, { Name: "Pessoal",
+                ControlType: "Button" }, { Name: "Important", ControlType: "Button" }, { Name: "Personal", ControlType: "Button" }, { Name: "Category",
+                    matchmode: "Substring", ControlType: "Button" }, { Name: "Categories", matchmode: "Substring",
+                        ControlType: "Button" }
             ], category)
             Sleep APPT_WIZARD_STEP_DELAY_MS
         }
 
         try StandardLoadingBar_Update("🔄 Wizard: Reminder → " reminder, BANNER_ACCENT_INTERMEDIATE)
-        Appt_OpenMenuAndPick([
-            { Name: "Don't remind me", ControlType: "Button" },
-            { Name: "15 minutes before", ControlType: "Button" },
-            { Name: "1 week before", ControlType: "Button" },
-            { Name: "15 minutes", matchmode: "Substring", ControlType: "Button" },
-            { Name: "1 hour", matchmode: "Substring", ControlType: "Button" },
-            { Name: "12 hours", matchmode: "Substring", ControlType: "Button" },
-            { Name: "1 day", matchmode: "Substring", ControlType: "Button" },
-            { Name: "Reminder", matchmode: "Substring", ControlType: "Button" }
+        Appt_OpenMenuAndPick([{ Name: "Don't remind me", ControlType: "Button" }, { Name: "15 minutes before",
+            ControlType: "Button" }, { Name: "1 week before", ControlType: "Button" }, { Name: "15 minutes", matchmode: "Substring",
+                ControlType: "Button" }, { Name: "1 hour", matchmode: "Substring", ControlType: "Button" }, { Name: "12 hours",
+                    matchmode: "Substring", ControlType: "Button" }, { Name: "1 day", matchmode: "Substring",
+                        ControlType: "Button" }, { Name: "Reminder", matchmode: "Substring", ControlType: "Button" }
         ], reminder)
         Sleep APPT_WIZARD_STEP_DELAY_MS
 
@@ -10487,7 +10436,7 @@ ApptWizard_FocusTitleField_ByTabbing(maxSteps := 24) {
     } catch {
     }
 
-    Loop maxSteps {
+    loop maxSteps {
         fe := 0, name := "", aid := "", ty := ""
         try fe := UIA.GetFocusedElement()
         if fe {
@@ -10498,7 +10447,8 @@ ApptWizard_FocusTitleField_ByTabbing(maxSteps := 24) {
 
         ; Match both EN/PT variants.
         if (name != "") {
-            if InStr(name, "Add title", false) || InStr(name, "Title", false) || InStr(name, "Adicionar título", false) || InStr(name, "Adicionar titulo", false) {
+            if InStr(name, "Add title", false) || InStr(name, "Title", false) || InStr(name, "Adicionar título", false) ||
+            InStr(name, "Adicionar titulo", false) {
                 ; Ensure caret by clicking focused element if possible.
                 try fe.Click()
                 catch {

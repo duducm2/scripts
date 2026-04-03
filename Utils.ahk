@@ -742,7 +742,8 @@ InitHotstringsCheatSheet() {
     RegisterHotstring(":o:gdash", "GS_E&S_CIP Dashboard research and design", "Projects", "📊 CIP Dashboard", "d")
     RegisterHotstring(":o:boiler-plate", "boiler-plate", "Projects", "🧱 boiler-plate", "0")
     RegisterHotstring(":o:astra", "astra", "Projects", "⭐ astrA", "a")
-    RegisterHotstring(":o:opex-cim-journey-mapping", "opex-cim-journey-mapping", "Projects", "E&S Opex CIM Journey Mapping",
+    RegisterHotstring(":o:opex-cim-journey-mapping", "opex-cim-journey-mapping", "Projects",
+        "E&S Opex CIM Journey Mapping",
         "o")
 
     ; Hotstrings (non-workspace “project-like” names)
@@ -1607,22 +1608,18 @@ DebugLog_0ec0ba(runId, hypothesisId, message, dataJson := "{}") {
 ; =============================================================================
 ; AI Model Selection System for Handy
 ; =============================================================================
-; Configuration: Maps selection numbers (1–7) to AI model names.
+; Configuration: Maps selection numbers (1–3) to AI model names.
 ; These are partial name prefixes used to find buttons in the UIA tree (Type 50000, botão).
 ; Descriptions match Handy Transcription Models UI for quick verification.
 global g_HandyAiModels := Map(
-    1, { name: "Whisper Turbo", desc: "Balanced accuracy and speed. Multi-language." },
-    2, { name: "Whisper Small", desc: "Fast and fairly accurate. Multi-language, translate to English." },
-    3, { name: "Whisper Medium", desc: "Good accuracy, medium speed. Multi-language, translate to English." },
-    4, { name: "Whisper Large", desc: "Good accuracy, but slow. Multi-language, translate to English." },
-    5, { name: "Parakeet V3", desc: "Fast and accurate. Multi-language." },
-    6, { name: "Parakeet V2", desc: "English only. Best model for English speakers." },
-    7, { name: "Moonshine Base", desc: "Very fast, English only. Handles accents well." }
+    1, { name: "Parakeet V2", desc: "English only. Best model for English speakers." },
+    2, { name: "Parakeet V3", desc: "Fast and accurate. Multi-language." },
+    3, { name: "Cohere", desc: "Large, slower, very accurate multilingual model. Multi-language." }
 )
 
 ; Picker indices for ^!#9 / ^!#b; update g_HandyAiModels names if Handy renames models.
-global HANDY_AI_SLOT_PARAKEET_V3 := 5
-global HANDY_AI_SLOT_PARAKEET_V2 := 6
+global HANDY_AI_SLOT_PARAKEET_V3 := 2
+global HANDY_AI_SLOT_PARAKEET_V2 := 1
 
 ; GUI state for AI model selector
 global g_AiModelSelectorGui := false
@@ -1662,7 +1659,7 @@ ShowAiModelSelector() {
     ; Footer
     g_AiModelSelectorGui.Add("Text", "w280 h1 Background45475A y+10")
     g_AiModelSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_AiModelSelectorGui.Add("Text", "w280 Center", "Press 1–7 | Esc to cancel")
+    g_AiModelSelectorGui.Add("Text", "w280 Center", "Press 1–3 | Esc to cancel")
 
     ; Get active window to determine which monitor to center on
     activeWin := 0
@@ -1717,14 +1714,10 @@ ShowAiModelSelector() {
 
     g_AiModelSelectorActive := true
 
-    ; Enable hotkeys for 1–6 and Escape
+    ; Enable hotkeys for 1–3 and Escape
     Hotkey("1", AiModelSelector_HandleKey, "On")
     Hotkey("2", AiModelSelector_HandleKey, "On")
     Hotkey("3", AiModelSelector_HandleKey, "On")
-    Hotkey("4", AiModelSelector_HandleKey, "On")
-    Hotkey("5", AiModelSelector_HandleKey, "On")
-    Hotkey("6", AiModelSelector_HandleKey, "On")
-    Hotkey("7", AiModelSelector_HandleKey, "On")
     Hotkey("Escape", AiModelSelector_Cancel, "On")
 }
 
@@ -1765,10 +1758,6 @@ AiModelSelector_Close() {
     try Hotkey("1", "Off")
     try Hotkey("2", "Off")
     try Hotkey("3", "Off")
-    try Hotkey("4", "Off")
-    try Hotkey("5", "Off")
-    try Hotkey("6", "Off")
-    try Hotkey("7", "Off")
     try Hotkey("Escape", AiModelSelector_Cancel, "Off")
 
     ; Destroy GUI
@@ -9960,7 +9949,7 @@ ShowHotstringSelector() {
 #UseHook False
 #InputLevel 0
 ^!#8:: DesktopToRecycle_Trigger()
-; Ctrl+Alt+Win+9 / +B — Handy Parakeet V3 / V2 (g_HandyAiModels slots 5 and 6)
+; Ctrl+Alt+Win+9 / +B — Handy Parakeet V3 / V2 (g_HandyAiModels slots 2 and 1)
 ^!#9:: ExecuteHandyAiModelSelection(HANDY_AI_SLOT_PARAKEET_V3)
 ^!#b:: ExecuteHandyAiModelSelection(HANDY_AI_SLOT_PARAKEET_V2)
 
