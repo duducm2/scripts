@@ -26,7 +26,8 @@ For intermittent **monitor 1 / wrong-screen** behavior when the daemon is on, se
 
 ### Functional parity
 
-- **Monitor cycle / minimize / close** (e.g. hotkeys for monitor 1/2/3): same behavior as before; uses daemon `GetVisibleWindowsByMonitor` when flags on, else legacy `GetVisibleWindowsOnMonitor`.
+- **Monitor cycle / minimize** (e.g. hotkeys for monitor 1/2/3): uses daemon `GetVisibleWindowsByMonitor` when flags on, else legacy `GetVisibleWindowsOnMonitor`.
+- **Monitor close** (Shift+Ctrl+Alt+Win+A/S/D/F): always uses **legacy** `GetVisibleWindowsOnMonitor(..., skipDaemon)` so the window list matches AHK `MonitorGet` for that monitor (avoids daemon/Enum order drift when closing from other displays).
 - **Cursor project activation**: Activate by project path; same behavior; uses daemon `GetCursorWindows` / `ResolveProjectWindow` when flags on.
 - **Preview window activation**: Same behavior; uses daemon `GetPreviewWindows` when flags on.
 - **Cursor window selector sub-menu**: Same behavior; uses daemon `GetCursorWindows` when flags on.
