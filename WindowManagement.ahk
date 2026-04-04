@@ -32,68 +32,140 @@ _DebugLog_WM(loc, msg, data, hypothesisId := "") {
 ; #endregion
 
 ; #region agent log debug 2f65b1
-; WM_DEBUG_2F65B1=1 or empty file WM_DEBUG_2F65B1.flag next to script → append NDJSON to debug-2f65b1.log
+; WM_DEBUG_2F65B1=1 or WM_DEBUG_2F65B1.flag next to script → NDJSON in debug-2f65b1.log
 _WM_Dbg2Enabled() => EnvGet("WM_DEBUG_2F65B1") = "1" || FileExist(A_ScriptDir "\WM_DEBUG_2F65B1.flag")
-_WM_Dbg2Log(hypothesisId, location, message, dataJsonStr) {
+_WM_Dbg2EmitNdjson(j) {
+    ; LocalAppData first — Google Drive / OneDrive often break FileAppend under A_ScriptDir or Documents.
+    try {
+        dbgDir := EnvGet("LOCALAPPDATA") "\AHK_WM_debug"
+        if !DirExist(dbgDir)
+            DirCreate(dbgDir)
+        FileAppend j "`n", dbgDir "\debug-2f65b1.log"
+    } catch {
+    }
+    try
+        FileAppend j "`n", A_ScriptDir "\debug-2f65b1.log"
+    catch {
+    }
+    try
+        FileAppend j "`n", A_Temp "\debug-2f65b1.log"
+    catch {
+    }
+    try
+        FileAppend j "`n", A_Desktop "\debug-2f65b1.log"
+    catch {
+    }
+    try
+        FileAppend j "`n", A_MyDocuments "\debug-2f65b1.log"
+    catch {
+    }
+    try {
+        if !DirExist(A_ScriptDir "\.cursor")
+            DirCreate(A_ScriptDir "\.cursor")
+        FileAppend j "`n", A_ScriptDir "\.cursor\debug-2f65b1.log"
+    } catch {
+    }
+    try
+        OutputDebug "WM2F65B1 " j
+    catch {
+    }
+    try {
+        whr := ComObject("WinHttp.WinHttpRequest.5.1")
+        whr.Open("POST", "http://127.0.0.1:7627/ingest/0cf1595e-ec3a-4922-ae5e-c052e3d88868", false)
+        whr.SetRequestHeader("Content-Type", "application/json")
+        whr.SetRequestHeader("X-Debug-Session-Id", "2f65b1")
+        whr.Send(j)
+    } catch {
+    }
+}
+
+; Always written (close-M1 trace only) — survives missing WM_DEBUG flag / Google Drive FileAppend quirks; use DbgView for OutputDebug.
+_WM_Dbg2LogCloseTrace(hypothesisId, location, message, dataJsonStr, runId := "run1") {
+    ts := DllCall("kernel32\GetTickCount64", "UInt64")
+    j := '{"sessionId":"2f65b1","hypothesisId":"' . hypothesisId . '","location":"' . location . '","message":"' .
+        message . '","data":' . dataJsonStr . ',"timestamp":' . ts . ',"runId":"' . runId . '"}'
+    _WM_Dbg2EmitNdjson(j)
+}
+
+_WM_Dbg2Log(hypothesisId, location, message, dataJsonStr, runId := "run1") {
     if !_WM_Dbg2Enabled()
         return
     ts := DllCall("kernel32\GetTickCount64", "UInt64")
     j := '{"sessionId":"2f65b1","hypothesisId":"' . hypothesisId . '","location":"' . location . '","message":"' .
-        message .
-        '","data":' . dataJsonStr . ',"timestamp":' . ts . '}'
-    try
-        FileAppend j "`n", A_ScriptDir "\debug-2f65b1.log"
-    catch
-        return
+        message . '","data":' . dataJsonStr . ',"timestamp":' . ts . ',"runId":"' . runId . '"}'
+    _WM_Dbg2EmitNdjson(j)
 }
-_WM_MonitorIdxContainingPoint(px, py) {
+; Comma-separated JSON fields (no wrapping braces) for merging into log objects
+_WM_Dbg2CtxFields() {
+    MouseGetPos &mx, &my
+    curIdx := 0
     cnt := MonitorGetCount()
     loop cnt {
         i := A_Index
         MonitorGet i, &l, &t, &r, &b
-        if (px >= l && px <= r && py >= t && py <= b)
-            return i
-    }
-    return 0
-}
-_WM_OrderForMonAhkIdx(idx) {
-    if (!idx)
-        return 0
-    cnt := MonitorGetCount()
-    loop cnt {
-        o := A_Index
-        if (GetMonitorIndexByOrder(o) = idx)
-            return o
-    }
-    return 0
-}
-WM_CloseMonitor1Hotkey(source := "") {
-    ; #region agent log debug 2f65b1
-    if (_WM_Dbg2Enabled()) {
-        MouseGetPos &mx, &my
-        curIdx := _WM_MonitorIdxContainingPoint(mx, my)
-        act := 0
-        try {
-            act := WinExist("A")
-        } catch {
-            act := 0
+        if (mx >= l && mx <= r && my >= t && my <= b) {
+            curIdx := i
+            break
         }
-        actIdx := 0
-        if (act) {
-            rect := Buffer(16, 0)
-            if DllCall("GetWindowRect", "ptr", act, "ptr", rect) {
-                cx := (NumGet(rect, 0, "int") + NumGet(rect, 8, "int")) // 2
-                cy := (NumGet(rect, 4, "int") + NumGet(rect, 12, "int")) // 2
-                actIdx := _WM_MonitorIdxContainingPoint(cx, cy)
+    }
+    curOrd := 0
+    if (curIdx) {
+        loop cnt {
+            if (GetMonitorIndexByOrder(A_Index) = curIdx) {
+                curOrd := A_Index
+                break
             }
         }
-        _WM_Dbg2Log("H0", "WM_CloseMonitor1Hotkey", "fired",
-            Format(
-                '{"source":"%s","cursorOrder":%d,"cursorAhkIdx":%d,"activeOrder":%d,"activeAhkIdx":%d}', source,
-                _WM_OrderForMonAhkIdx(curIdx), curIdx, _WM_OrderForMonAhkIdx(actIdx), actIdx))
+    }
+    act := 0
+    try {
+        act := WinExist("A")
+    } catch {
+        act := 0
+    }
+    actIdx := 0
+    if (act) {
+        rect := Buffer(16, 0)
+        if DllCall("GetWindowRect", "ptr", act, "ptr", rect) {
+            cx := (NumGet(rect, 0, "int") + NumGet(rect, 8, "int")) // 2
+            cy := (NumGet(rect, 4, "int") + NumGet(rect, 12, "int")) // 2
+            loop cnt {
+                i := A_Index
+                MonitorGet i, &l, &t, &r, &b
+                if (cx >= l && cx <= r && cy >= t && cy <= b) {
+                    actIdx := i
+                    break
+                }
+            }
+        }
+    }
+    actOrd := 0
+    if (actIdx) {
+        loop cnt {
+            if (GetMonitorIndexByOrder(A_Index) = actIdx) {
+                actOrd := A_Index
+                break
+            }
+        }
+    }
+    return Format(
+        '"cursorMonOrd":%d,"cursorMonIdx":%d,"activeMonOrd":%d,"activeMonIdx":%d,"shiftP":%d', curOrd, curIdx, actOrd,
+        actIdx, GetKeyState("Shift", "P") ? 1 : 0)
+}
+WM_CloseM1Debug(source) {
+    global g_WM_Dbg2Close1Src
+    g_WM_Dbg2Close1Src := source
+    ; #region agent log debug 2f65b1
+    _WM_Dbg2LogCloseTrace("H0", "WM_CloseM1Debug", "close_m1_hotkey",
+        Format('{"source":"%s",%s}', source, _WM_Dbg2CtxFields()))
+    if (_WM_Dbg2Enabled()) {
+        try ShowNotification_WM("Dbg: CloseM1 " source, 700)
+        catch {
+        }
     }
     ; #endregion
     CloseWindowOnMonitor(1)
+    g_WM_Dbg2Close1Src := ""
 }
 ; #endregion
 
@@ -136,6 +208,68 @@ WM_IsExcludedIndicatorWindow(hwnd) {
     if (InStr(StrLower(title), "windowmanagement.ahk"))
         return true
     return false
+}
+
+; #HotIf: close-M1 fallbacks while a common IDE is foreground (Win+… chords often swallowed there).
+_WM_IdeLikelyActive() {
+    try {
+        exe := StrLower(WinGetProcessName("A"))
+    } catch {
+        return false
+    }
+    return exe = "cursor.exe" || exe = "code.exe" || exe = "devenv.exe" || exe = "rider64.exe" || exe = "pycharm64.exe"
+        || exe = "pycharm.exe" || exe = "idea64.exe"
+}
+
+; Left-to-right ordinal (1..n) for the foreground window — same ordering as GetMonitorIndexByOrder.
+; Uses MonitorFromWindow (HMONITOR) vs MonitorFromPoint on each work-area center; more reliable than rect bounds
+; under DPI / straddling windows (mis-ordered #HotIf would disable the no-Win close-M1 chords on some displays).
+_WM_ForegroundMonitorOrder() {
+    hwnd := WinExist("A")
+    if !hwnd
+        return 0
+    hMon := DllCall("user32\MonitorFromWindow", "ptr", hwnd, "uint", 2, "ptr")
+    if !hMon
+        return 0
+    cnt := MonitorGetCount()
+    monAhkIdx := 0
+    loop cnt {
+        i := A_Index
+        MonitorGet i, &l, &t, &r, &b
+        cx := (l + r) // 2
+        cy := (t + b) // 2
+        pt := (cy & 0xFFFFFFFF) << 32 | (cx & 0xFFFFFFFF)
+        hTest := DllCall("user32\MonitorFromPoint", "int64", pt, "uint", 2, "ptr")
+        if (Integer(hMon) = Integer(hTest)) {
+            monAhkIdx := i
+            break
+        }
+    }
+    if !monAhkIdx
+        return 0
+    loop cnt {
+        o := A_Index
+        if (GetMonitorIndexByOrder(o) = monAhkIdx)
+            return o
+    }
+    return 0
+}
+
+; Ctrl+Alt+Shift+1/G without Win — when Win+ chords are eaten (Electron/IDE). These hotkeys are always registered:
+; #HotIf + monitor-order gating could evaluate false (e.g. order 0) and unregister the chord entirely.
+; $ forces kbd hook (helps vs competing hooks). Comment out $^!+1/$^!+g if they conflict with another app.
+_WM_NoWin1DebugTag() {
+    if (_WM_IdeLikelyActive())
+        return "ide_ca1"
+    o := _WM_ForegroundMonitorOrder()
+    return "m" . o . "_ca1"
+}
+
+_WM_NoWinGDebugTag() {
+    if (_WM_IdeLikelyActive())
+        return "ide_cag"
+    o := _WM_ForegroundMonitorOrder()
+    return "m" . o . "_cag"
 }
 
 WM_UsesAutomationDaemon() {
@@ -190,11 +324,15 @@ global g_LastMouseClickTick := 0   ; Timestamp of the most recent mouse click (A
 global g_WindowCycleIndices := Map()  ; Keeps per-monitor cycling position
 global g_WMAutomationSuppressUntil := 0
 global g_WMAutomationSuppressReason := ""
+global g_WM_Dbg2Close1Src := ""  ; agent log debug 2f65b1: which hotkey invoked close-M1
 ; When daemon is used, foreground is driven by daemon cache (lower-frequency check); else legacy 100ms polling
 if (WM_UsesAutomationDaemon())
     SetTimer MonitorActiveWindow, 250
 else
     SetTimer MonitorActiveWindow, 100
+
+; Tray: bypass keyboard hooks (IDE/Electron) to verify CloseWindowOnMonitor(1) vs chord routing.
+A_TrayMenu.Add("Close top on monitor 1 (debug)", (*) => WM_CloseM1Debug("tray"))
 
 ; --- Hotkeys & Functions -----------------------------------------------------
 
@@ -222,19 +360,26 @@ else
 ; Move Active Window to Monitor by POSITION (left-to-right order)
 ; Hotkeys: Ctrl+Alt+Win+A/S/D/F move active window to 1st–4th monitors (left-to-right)
 ; =============================================================================
+; ^!#a is disabled while Shift is physically down so it cannot compete with ^!+#a (close M1). Some hosts (e.g. IDE on
+; a center monitor) otherwise resolve the chord as move or drop the close hotkey.
+#HotIf !GetKeyState("Shift", "P")
 ^!#a:: MoveWinToOrderedMonitor(1)  ; Left-most
+#HotIf
 ^!#s:: MoveWinToOrderedMonitor(2)  ; 2nd from the left
 ^!#d:: MoveWinToOrderedMonitor(3)  ; 3rd from the left
 ^!#f:: MoveWinToOrderedMonitor(4)  ; 4th from the left
 
 ; Shift variants: close the active window on the specified monitor
-; Note: ^!+#a shares the letter with ^!#a (move to M1). A missed Shift can trigger move instead of close.
-; ^!+#1 (close M1) shares the digit with ^!#1 (project selector); ^!#1 is registered under #HotIf so it never runs while Shift is held.
-; Numpad1: fallback if the top-row 1 chord is eaten by an app on a specific display.
-; Note: #InputLevel must be 0–100 (see AHK docs). A previous invalid level broke all hotkeys — do not use negative levels.
-^!+#a:: WM_CloseMonitor1Hotkey("a")  ; Close window on monitor 1
-^!+#1:: WM_CloseMonitor1Hotkey("1")  ; Same (main keyboard 1)
-^!+#Numpad1:: WM_CloseMonitor1Hotkey("np1")
+; Note: ^!+#a shares the letter with ^!#a (move to M1). With the #HotIf above, move-M1 cannot fire while Shift is held.
+; Top-row 1: *^!+#1 + *^!+#SC002 at end of script (wildcard); ^!+#g/^!+#z here if IDE on ordinal 2 ignores digit 1.
+; Numpad1 / Z / G: fallbacks when the top-row 1 chord fails on the IDE / ordinal-2 monitor (Ctrl+Alt+Win+Shift+G).
+^!+#a:: WM_CloseM1Debug("a")  ; Close window on monitor 1
+^!+#Numpad1:: WM_CloseM1Debug("np1")
+^!+#z:: WM_CloseM1Debug("z")  ; Alternate close-M1 (no digit 1 — avoids IDE / selector conflicts)
+^!+#g:: WM_CloseM1Debug("g")  ; Reliable close-M1 from center/IDE display when ^!+#1 is eaten
+; No-Win close-M1 (always active; see _WM_NoWin1DebugTag / _WM_NoWinGDebugTag for dbg labels).
+$^!+1:: WM_CloseM1Debug(_WM_NoWin1DebugTag())
+$^!+g:: WM_CloseM1Debug(_WM_NoWinGDebugTag())
 ^!+#s:: CloseWindowOnMonitor(2)  ; Close window on monitor 2
 ^!+#d:: CloseWindowOnMonitor(3)  ; Close window on monitor 3
 ^!+#f:: CloseWindowOnMonitor(4)  ; Close window on monitor 4
@@ -251,6 +396,10 @@ else
 ^!+#r:: MinimizeWindowOnMonitor(4)  ; Minimize window on monitor 4
 
 MoveWinToOrderedMonitor(order) {
+    ; #region agent log debug 2f65b1
+    if (_WM_Dbg2Enabled() && order = 1)
+        _WM_Dbg2Log("H4", "MoveWinToOrderedMonitor", "move_m1_fired", "{" . _WM_Dbg2CtxFields() . "}")
+    ; #endregion
     idx := GetMonitorIndexByOrder(order)
     if (idx)
         MoveWinToMonitor(idx)
@@ -854,45 +1003,24 @@ MinimizeWindowOnMonitor(order) {
 ; Function: CloseWindowOnMonitor(order)
 ; =============================================================================
 CloseWindowOnMonitor(order) {
+    global g_WM_Dbg2Close1Src
     idx := GetMonitorIndexByOrder(order)
     if (!idx) {
         ShowNotification_WM("Monitor " order " not available (only " MonitorGetCount() " detected).")
         return
     }
     ; #region agent log debug 2f65b1
-    if (_WM_Dbg2Enabled()) {
-        MouseGetPos &mcx, &mcy
-        curIdx := _WM_MonitorIdxContainingPoint(mcx, mcy)
-        act := 0
-        try {
-            act := WinExist("A")
-        } catch {
-            act := 0
-        }
-        actIdx := 0
-        if (act) {
-            rect := Buffer(16, 0)
-            if DllCall("GetWindowRect", "ptr", act, "ptr", rect) {
-                ax := (NumGet(rect, 0, "int") + NumGet(rect, 8, "int")) // 2
-                ay := (NumGet(rect, 4, "int") + NumGet(rect, 12, "int")) // 2
-                actIdx := _WM_MonitorIdxContainingPoint(ax, ay)
-            }
-        }
-        _WM_Dbg2Log("H1", "CloseWindowOnMonitor", "entry",
-            Format(
-                '{"order":%d,"targetAhkIdx":%d,"cursorAhkIdx":%d,"cursorOrder":%d,"activeAhkIdx":%d,"activeOrder":%d,"shiftP":%d}',
-                order, idx, curIdx, _WM_OrderForMonAhkIdx(curIdx), actIdx, _WM_OrderForMonAhkIdx(actIdx),
-                GetKeyState("Shift", "P") ? 1 : 0))
-    }
+    src := (order = 1) ? g_WM_Dbg2Close1Src : ""
+    _WM_Dbg2LogCloseTrace("H1", "CloseWindowOnMonitor", "entry",
+        Format('{"order":%d,"ahkIdx":%d,"close1Src":"%s",%s}', order, idx, src, _WM_Dbg2CtxFields()))
     ; #endregion
 
     ; Close always uses legacy WinGetList enumeration so the list matches MonitorGet(idx); daemon IPC can
     ; disagree with AHK monitor numbering when focus is on other displays.
     windows := GetVisibleWindowsOnMonitor(idx, true)
     ; #region agent log debug 2f65b1
-    if (_WM_Dbg2Enabled())
-        _WM_Dbg2Log("H2", "CloseWindowOnMonitor", "after_enum", Format('{"order":%d,"winCount":%d}', order, windows.Length
-        ))
+    _WM_Dbg2LogCloseTrace("H2", "CloseWindowOnMonitor", "after_enum",
+        Format('{"order":%d,"winCount":%d}', order, windows.Length))
     ; #endregion
     if (windows.Length = 0) {
         ShowNotification_WM("No windows found on monitor " order)
@@ -908,15 +1036,21 @@ CloseWindowOnMonitor(order) {
         ; Close without stealing focus first (works better when foreground is on another monitor); retry with
         ; activate if the window ignores background WM_CLOSE.
         WinClose "ahk_id " th
-        if (WinExist("ahk_id " th)) {
+        if !WinWaitClose("ahk_id " th, , 0.2) {
+            try WinShow "ahk_id " th
             WinActivate "ahk_id " th
-            WinWaitActive "ahk_id " th, , 0.4
+            WinWaitActive "ahk_id " th, , 1.2
             WinClose "ahk_id " th
+            if !WinWaitClose("ahk_id " th, , 0.35) {
+                PostMessage 0x0010, 0, 0, , "ahk_id " th  ; WM_CLOSE — some apps only honor async close
+                WinWaitClose "ahk_id " th, , 1.5
+            }
         }
-        if (WinExist("ahk_id " th)) {
-            PostMessage 0x0010, 0, 0, , "ahk_id " th  ; WM_CLOSE — some apps only honor async close
-            WinWaitClose "ahk_id " th, , 0.6
-        }
+        ; #region agent log debug 2f65b1
+        still := WinExist("ahk_id " th) ? 1 : 0
+        _WM_Dbg2LogCloseTrace("H3", "CloseWindowOnMonitor", "post_close",
+            Format('{"order":%d,"targetHwnd":%u,"stillExists":%d}', order, Integer(th), still))
+        ; #endregion
     } catch Error as e {
         ShowNotification_WM("Failed to close window on monitor " order ": " e.Message)
     }
@@ -2870,17 +3004,20 @@ ShowProjectSelector() {
     }
 }
 
-; Ctrl+Alt+Win+1: Cursor AI quick action (Project Selector + Selection Mode)
-; When Shift is held, this variant must not run — ^!+#1 is close-on-monitor-1 (see hotkeys near top).
-; InputLevel 1: if both could match, ^!+#1 (default level 0) wins — avoids project selector stealing close-M1.
-#InputLevel 1
-#HotIf !GetKeyState("Shift", "P")
+; Ctrl+Alt+Win+1: close-M1 (Shift) + project selector (no Shift). * allows extra modifiers (CapsLock, etc.) so the chord
+; still matches on picky stacks; use ^!+#g / ^!+#z from the IDE monitor if this still does not fire.
+*^!+#1:: WM_CloseM1Debug("1")
+*^!+#SC002:: WM_CloseM1Debug("1sc")  ; US QWERTY top-row 1 scan code if character "1" binding differs
 ^!#1:: {
     global g_ProjectSelectorActive, g_ProjectSelectorGui
     ; #region agent log debug 2f65b1
-    if (_WM_Dbg2Enabled())
-        _WM_Dbg2Log("H3", "hotkey^!#1", "project_selector_fired",
+    if (_WM_Dbg2Enabled()) {
+        _WM_Dbg2Log("H5", "hotkey^!#1", "project_selector",
             Format('{"shiftP":%d}', GetKeyState("Shift", "P") ? 1 : 0))
+        try ShowNotification_WM("Dbg: project ^!#1 (ShiftP=" . (GetKeyState("Shift", "P") ? "1" : "0") . ")", 700)
+        catch {
+        }
+    }
     ; #endregion
 
     if (!g_ProjectSelectorActive || !IsObject(g_ProjectSelectorGui)) {
@@ -2894,8 +3031,6 @@ ShowProjectSelector() {
 
     HandleSelectionModeTrigger()
 }
-#HotIf
-#InputLevel 0
 ; =============================================================================
 ; SCRIPT SUMMARY & OPTIMIZATION DOCUMENTATION
 ; =============================================================================
