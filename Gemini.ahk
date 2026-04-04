@@ -32,6 +32,7 @@ GEMINI_TITLE_POLL_MS := 250
 GEMINI_WAIT_BUTTON_POLL_MS := 250
 GEMINI_WAIT_BUTTON_TIMEOUT_MS := 15000
 GEMINI_ASYNC_POLL_MS := 500
+GEMINI_READ_ALOUD_START_POLL_MS := 150
 GEMINI_COPY_RETRY_SLEEP_MS := 400
 GEMINI_STREAM_GONE_VERIFY_MS := 200
 GEMINI_STREAM_GONE_LOOPS := 4
@@ -39,6 +40,7 @@ GEMINI_STREAM_GONE_LOOPS := 4
 GEMINI_ASYNC_LOOKUP_MAX_RETRIES := 60   ; 60 * 500ms = 30s
 GEMINI_DELAYED_SUBMIT_MAX_RETRIES := 300  ; 300 * 500ms = 150s
 GEMINI_ASYNC_TTS_MAX_RETRIES := 60
+GEMINI_READ_ALOUD_START_MAX_RETRIES := 10
 GEMINI_COPY_MAX_RETRIES := 3
 ; Pronunciation result banner: long timeout so user can read (ms)
 GEMINI_PRONUNCIATION_BANNER_TIMEOUT_MS := 50000
@@ -498,6 +500,135 @@ ShowNotification(message, durationMs := 500, bgColor := "FFFF00", fontColor := "
 }
 
 ; =============================================================================
+; Shared background helpers
+; =============================================================================
+GeminiBackgroundSetTimer(task, callback, periodMs := GEMINI_ASYNC_POLL_MS) {
+    GeminiBackgroundStopTimer(task)
+    task.TimerCallback := callback
+    SetTimer(task.TimerCallback, periodMs)
+}
+
+GeminiBackgroundStopTimer(task) {
+    cb := ""
+    try cb := task.TimerCallback
+    catch
+        cb := ""
+    if (cb)
+        SetTimer(cb, 0)
+    try task.TimerCallback := ""
+}
+
+GeminiActivateWindow(hwnd, waitMs := GEMINI_ACTIVATE_WAIT_MS) {
+    if (!hwnd)
+        return false
+    try {
+        WinActivate("ahk_id " hwnd)
+    } catch {
+        return false
+    }
+    if (WinActive("ahk_id " hwnd))
+        return true
+    return !!WinWaitActive("ahk_id " hwnd, , waitMs / 1000)
+}
+
+GeminiRestoreWindow(hwnd, waitMs := 1000) {
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return false
+    return GeminiActivateWindow(hwnd, waitMs)
+}
+
+GeminiGetStreamingButtonNames() {
+    static buttonNames := ["Stop streaming", "Interromper transmissão", "Stop response"]
+    return buttonNames
+}
+
+GeminiReadRootFromHwnd(hwnd) {
+    try
+        return UIA.ElementFromHandle(hwnd)
+    catch
+        return 0
+}
+
+GeminiFindStreamingStopButton(root) {
+    if (!IsObject(root))
+        return 0
+    for n in GeminiGetStreamingButtonNames() {
+        try {
+            btn := root.FindElement({ Name: n, Type: "Button" })
+        } catch {
+            btn := ""
+        }
+        if (btn)
+            return btn
+        try {
+            btn := root.FindElement({ Name: n, Type: UIA_ControlType_Button })
+        } catch {
+            btn := ""
+        }
+        if (btn)
+            return btn
+    }
+    return 0
+}
+
+GeminiVerifyStreamingStopped(geminiHwnd) {
+    loop GEMINI_STREAM_GONE_LOOPS {
+        Sleep GEMINI_STREAM_GONE_VERIFY_MS
+        root := GeminiReadRootFromHwnd(geminiHwnd)
+        if (!root)
+            return true
+        if (GeminiFindStreamingStopButton(root))
+            return false
+    }
+    return true
+}
+
+GeminiMonitorStreamingTransition(task, onCompleteCallback) {
+    task.RetryCount++
+    if (task.RetryCount > task.MaxRetries) {
+        GeminiBackgroundStopTimer(task)
+        return "timeout"
+    }
+    root := GeminiReadRootFromHwnd(task.GeminiHwnd)
+    if (!root)
+        return "unavailable"
+    if (GeminiFindStreamingStopButton(root)) {
+        task.ButtonEverFound := true
+        return "streaming"
+    }
+    if (!task.ButtonEverFound)
+        return "waiting"
+    if (!GeminiVerifyStreamingStopped(task.GeminiHwnd))
+        return "streaming"
+    GeminiBackgroundStopTimer(task)
+    onCompleteCallback.Call()
+    return "completed"
+}
+
+GetLastGeminiMoreOptionsButton(uia) {
+    allMoreOptionsButtons := GetGeminiMoreOptionsButtonsScoped(uia)
+    if (allMoreOptionsButtons.Length = 0)
+        return 0
+    lastMoreOptionsButton := 0
+    highestBottomY := -1
+    for moreOptionsButton in allMoreOptionsButtons {
+        try {
+            btnPos := moreOptionsButton.Location
+            bottomY := btnPos.y + btnPos.h
+            if (bottomY > highestBottomY) {
+                highestBottomY := bottomY
+                lastMoreOptionsButton := moreOptionsButton
+            }
+        } catch {
+            continue
+        }
+    }
+    if (!lastMoreOptionsButton && allMoreOptionsButtons.Length > 0)
+        lastMoreOptionsButton := allMoreOptionsButtons[allMoreOptionsButtons.Length]
+    return lastMoreOptionsButton
+}
+
+; =============================================================================
 ; Copy completed chime (single beep, debounced)
 ; =============================================================================
 PlayCopyCompletedChime() {
@@ -593,176 +724,10 @@ WaitForButtonAndShowSmallLoading(buttonNames, stateText := "⏳ Loading…", tim
 
 ; --- Hotkeys ----------------------------------------------------------------
 
-; Reusable: activate Gemini, handle Pause/Resume, then optionally copy last message and trigger "Text to speech".
-; copyFirst: true = copy last response then read aloud (#!+o); false = only read aloud (#!+7).
-; useTrashTab: when true, explicitly target the second Gemini tab (trash tab) instead of the main tab.
-GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false) {
-    try {
-        t0 := A_TickCount
-        ; Ensure we never reuse a stale cached "last response" element.
-        GeminiState.Invalidate()
-        ; Step 1: Activate Gemini window globally
-        SetTitleMatchMode(2)
-        if hwnd := GetGeminiWindowHwnd() {
-            try {
-                WinActivate("ahk_id " hwnd)
-            } catch {
-                ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
-                return
-            }
-        }
-        if !WinWaitActive("ahk_exe chrome.exe", , GEMINI_ACTIVATE_WAIT_MS // 1000)
-            return
-        Sleep GEMINI_TAB_SWITCH_MS
-
-        ; When requested (#!+o trash tab), explicitly switch to the second Gemini tab.
-        ; Chrome convention: Ctrl+2 selects the second tab in the window.
-        if (useTrashTab) {
-            Send("^2")
-            Sleep GEMINI_TAB_SWITCH_MS
-            ShowGeminiTabBanner(2, hwnd)
-        }
-
-        ; Step 2: Check if "Pause" button exists (if reading is active, pause it)
-        uia := UIA_Browser()
-        Sleep GEMINI_UIA_SETTLE_MS
-
-        pauseButton := FindGeminiPauseResumeButton(uia, "Pause")
-        if (pauseButton) {
-            try pauseButton.Click()
-            ShowNotification("Paused", 800, "FFFF00", "000000", 24)
-            Send "!{Tab}"
-            return
-        }
-
-        resumeButton := FindGeminiPauseResumeButton(uia, "Resume")
-        if (resumeButton) {
-            try resumeButton.Click()
-            ShowNotification("Resumed", 800, "FFFF00", "000000", 24)
-            Send "!{Tab}"
-            return
-        }
-
-        ; Step 3: Scroll to bottom so newest response controls are discoverable.
-        Send "^{End}"
-        Sleep GEMINI_SCROLL_SETTLE_MS
-
-        if (copyFirst) {
-            lastCopyButton := GeminiState.GetLastCopyButtonCached(uia, hwnd)
-            if (lastCopyButton) {
-                A_Clipboard := ""
-                try lastCopyButton.Click()
-                ClipWait(1)
-                PlayCopyCompletedChime()
-            }
-        }
-
-        ; Step 4: Find the final "More options" / "Show more options" in the Gemini response tree (bottom-up).
-        ; We target only the most recent Gemini response to avoid reading older messages. See gemini-tree.txt for tree structure.
-        StandardLoadingBar_Show(copyFirst ? "🔍 Finding read aloud button and copying..." :
-            "🔍 Finding read aloud button...", BANNER_ACCENT_INTERMEDIATE, { passive: true, centerOnHwnd: 0 })
-        Sleep GEMINI_WAIT_BUTTON_POLL_MS
-
-        allMoreOptionsButtons := GetGeminiMoreOptionsButtonsScoped(uia)
-
-        if (allMoreOptionsButtons.Length = 0) {
-            StandardLoadingBar_Hide(0)
-            return
-        }
-
-        ; Bottom-up: select the last instance in the response tree = most recent response only.
-        ; 1) Prefer button with the largest bottom Y (true bottom of page = final response).
-        ; 2) Fallback: last element in FindAll order (document/tree order = last in tree).
-        lastMoreOptionsButton := 0
-        highestBottomY := -1
-        for moreOptionsButton in allMoreOptionsButtons {
-            try {
-                btnPos := moreOptionsButton.Location
-                bottomY := btnPos.y + btnPos.h
-                if (bottomY > highestBottomY) {
-                    highestBottomY := bottomY
-                    lastMoreOptionsButton := moreOptionsButton
-                }
-            } catch {
-                continue
-            }
-        }
-        if (!lastMoreOptionsButton && allMoreOptionsButtons.Length > 0)
-            lastMoreOptionsButton := allMoreOptionsButtons[allMoreOptionsButtons.Length]
-        if (!lastMoreOptionsButton) {
-            StandardLoadingBar_Hide(0)
-            return
-        }
-
-        listenClicked := false
-        loop GEMINI_LISTEN_MENU_MAX_ATTEMPTS {
-            try {
-                lastMoreOptionsButton.Click()
-                Sleep GEMINI_MENU_OPEN_MS
-                listenMenuItem := WaitForListenMenuItem(uia, GEMINI_LISTEN_MENU_WAIT_MS)
-                if (listenMenuItem) {
-                    try {
-                        listenMenuItem.Click()
-                        Sleep GEMINI_MENU_OPEN_MS
-                        listenClicked := true
-                        break
-                    } catch {
-                        ;
-                    }
-                }
-            } catch {
-                ;
-            }
-            if (A_Index < GEMINI_LISTEN_MENU_MAX_ATTEMPTS) {
-                SendEscape()
-                Sleep GEMINI_MENU_OPEN_MS
-            }
-        }
-
-        StandardLoadingBar_Hide(0)
-
-        Sleep GEMINI_READ_ALOUD_SETTLE_MS
-
-        try
-            isReading := (FindGeminiPauseResumeButton(uia, "Pause") != 0)
-        catch
-            isReading := false
-
-        if (!isReading && listenClicked) {
-            ShowNotification("Retrying read aloud...", 800, "FFFF00", "000000", 24)
-            SendEscape()
-            Sleep GEMINI_MENU_OPEN_MS
-            loop GEMINI_LISTEN_MENU_MAX_ATTEMPTS {
-                try {
-                    lastMoreOptionsButton.Click()
-                    Sleep GEMINI_MENU_OPEN_MS
-                    listenMenuItem := WaitForListenMenuItem(uia, GEMINI_LISTEN_MENU_WAIT_MS)
-                    if (listenMenuItem) {
-                        try {
-                            listenMenuItem.Click()
-                            Sleep GEMINI_MENU_OPEN_MS
-                            break
-                        } catch {
-                            ;
-                        }
-                    }
-                } catch {
-                    ;
-                }
-                if (A_Index < GEMINI_LISTEN_MENU_MAX_ATTEMPTS) {
-                    SendEscape()
-                    Sleep GEMINI_MENU_OPEN_MS
-                }
-            }
-        }
-
-        GeminiPerfLog("read_aloud", t0)
-        ShowNotification(copyFirst ? "Copied & Reading aloud" : "Reading aloud", 800, "FFFF00", "000000", 24)
-        Send "!{Tab}"
-    } catch Error as e {
-        ; Log and fail gracefully instead of letting UIA COM errors kill the thread.
-        ShowNotification("Read aloud failed – Gemini UI not ready", 2000, "FF6666", "FFFFFF", 22)
-    }
+; Reusable launcher: activate Gemini asynchronously, handle Pause/Resume, then optionally
+; copy the last message and trigger read aloud without holding the hotkey thread open.
+GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false, options := "") {
+    return (GeminiAsyncReadAloud(copyFirst, useTrashTab, options)).Start()
 }
 
 ; Win+Alt+Shift+O : Read aloud the last message in Gemini (or Pause/Resume if already reading)
@@ -1154,6 +1119,193 @@ Gemini_FocusPromptSameAsOpenHotkey(uia) {
 }
 
 ; =============================================================================
+; GeminiAsyncReadAloud – async read aloud / pause / resume (Win+Alt+Shift+O)
+; =============================================================================
+class GeminiAsyncReadAloud {
+    __New(copyFirst := true, useTrashTab := false, options := "") {
+        this.CopyFirst := copyFirst
+        this.UseTrashTab := useTrashTab
+        this.OriginalHwnd := (options != "" && options.HasProp("originalHwnd")) ? options.originalHwnd : 0
+        this.GeminiHwnd := (options != "" && options.HasProp("geminiHwnd")) ? options.geminiHwnd : 0
+        this.AlreadyActive := (options != "" && options.HasProp("alreadyActive")) ? options.alreadyActive : false
+        this.TimerCallback := ""
+        this.StartCallback := ""
+        this.StartRetryAttempted := false
+        this.StartRetryCount := 0
+        this.StartTick := 0
+    }
+
+    Start() {
+        if (!this.OriginalHwnd)
+            this.OriginalHwnd := WinExist("A")
+        if (!this.StartTick)
+            this.StartTick := A_TickCount
+        SetTitleMatchMode(2)
+        if (!this.GeminiHwnd)
+            this.GeminiHwnd := GetGeminiWindowHwnd()
+        if (!this.GeminiHwnd) {
+            ShowNotification("Read aloud failed – Gemini is not open", 1800, "FF6666", "FFFFFF", 22)
+            return false
+        }
+        if (this.AlreadyActive && WinActive("ahk_id " this.GeminiHwnd))
+            return this.TryStartReadAloud(false)
+        this.StartCallback := this.Launch.Bind(this)
+        SetTimer(this.StartCallback, -1)
+        return true
+    }
+
+    Launch(*) {
+        this.StartCallback := ""
+        this.TryStartReadAloud(false)
+    }
+
+    RetryLaunch(*) {
+        this.StartCallback := ""
+        this.TryStartReadAloud(true)
+    }
+
+    TryStartReadAloud(skipCopy := false) {
+        try {
+            GeminiState.Invalidate()
+            if (!this.AlreadyActive || !WinActive("ahk_id " this.GeminiHwnd)) {
+                PlayPreMovementWarning("Gemini")
+                if !GeminiActivateWindow(this.GeminiHwnd, GEMINI_ACTIVATE_WAIT_MS) {
+                    ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
+                    return false
+                }
+                Sleep GEMINI_TAB_SWITCH_MS
+            }
+
+            if (this.UseTrashTab) {
+                Send("^2")
+                Sleep GEMINI_TAB_SWITCH_MS
+                ShowGeminiTabBanner(2, this.GeminiHwnd)
+            }
+
+            uia := UIA_Browser("ahk_id " this.GeminiHwnd)
+            Sleep GEMINI_UIA_SETTLE_MS
+
+            pauseButton := FindGeminiPauseResumeButton(uia, "Pause")
+            if (pauseButton) {
+                try pauseButton.Click()
+                ShowNotification("Paused", 800, "FFFF00", "000000", 24)
+                this.RestoreOriginalFocus()
+                return true
+            }
+
+            resumeButton := FindGeminiPauseResumeButton(uia, "Resume")
+            if (resumeButton) {
+                try resumeButton.Click()
+                ShowNotification("Resumed", 800, "FFFF00", "000000", 24)
+                this.RestoreOriginalFocus()
+                return true
+            }
+
+            Send "^{End}"
+            Sleep GEMINI_SCROLL_SETTLE_MS
+
+            if (this.CopyFirst && !skipCopy) {
+                copyOpt := { restoreWindow: false, playChimeAndNotify: false, alreadyActive: true }
+                if (CopyLastGeminiMessageWithRetry(copyOpt, this.GeminiHwnd))
+                    PlayCopyCompletedChime()
+            }
+
+            StandardLoadingBar_Show(this.CopyFirst && !skipCopy ? "🔍 Finding read aloud button and copying..." :
+                "🔍 Finding read aloud button...", BANNER_ACCENT_INTERMEDIATE, { passive: true, centerOnHwnd: 0 })
+            Sleep GEMINI_WAIT_BUTTON_POLL_MS
+
+            lastMoreOptionsButton := GetLastGeminiMoreOptionsButton(uia)
+            if (!lastMoreOptionsButton) {
+                StandardLoadingBar_Hide(0)
+                this.Fail()
+                return false
+            }
+
+            if (!this.ClickListenMenuItem(uia, lastMoreOptionsButton)) {
+                StandardLoadingBar_Hide(0)
+                this.Fail()
+                return false
+            }
+
+            StandardLoadingBar_Hide(0)
+            this.RestoreOriginalFocus()
+            this.StartRetryCount := 0
+            GeminiBackgroundSetTimer(this, this.CheckStarted.Bind(this), GEMINI_READ_ALOUD_START_POLL_MS)
+            return true
+        } catch {
+            try StandardLoadingBar_Hide(0)
+            this.Fail()
+            return false
+        }
+    }
+
+    ClickListenMenuItem(uia, lastMoreOptionsButton) {
+        loop GEMINI_LISTEN_MENU_MAX_ATTEMPTS {
+            try {
+                lastMoreOptionsButton.Click()
+                Sleep GEMINI_MENU_OPEN_MS
+                listenMenuItem := WaitForListenMenuItem(uia, GEMINI_LISTEN_MENU_WAIT_MS)
+                if (listenMenuItem) {
+                    try {
+                        listenMenuItem.Click()
+                        Sleep GEMINI_MENU_OPEN_MS
+                        return true
+                    } catch {
+                    }
+                }
+            } catch {
+            }
+            if (A_Index < GEMINI_LISTEN_MENU_MAX_ATTEMPTS) {
+                SendEscape()
+                Sleep GEMINI_MENU_OPEN_MS
+            }
+        }
+        return false
+    }
+
+    CheckStarted() {
+        this.StartRetryCount++
+        root := GeminiReadRootFromHwnd(this.GeminiHwnd)
+        if (root) {
+            try {
+                if (FindGeminiPauseResumeButton(root, "Pause")) {
+                    GeminiBackgroundStopTimer(this)
+                    GeminiPerfLog("read_aloud", this.StartTick)
+                    ShowNotification(this.CopyFirst ? "Copied & Reading aloud" : "Reading aloud", 800, "FFFF00",
+                        "000000", 24)
+                    return
+                }
+            } catch {
+            }
+        }
+
+        if (this.StartRetryCount < GEMINI_READ_ALOUD_START_MAX_RETRIES)
+            return
+
+        GeminiBackgroundStopTimer(this)
+        if (!this.StartRetryAttempted) {
+            this.StartRetryAttempted := true
+            ShowNotification("Retrying read aloud...", 800, "FFFF00", "000000", 24)
+            this.StartCallback := this.RetryLaunch.Bind(this)
+            SetTimer(this.StartCallback, -1)
+            return
+        }
+        this.Fail()
+    }
+
+    RestoreOriginalFocus() {
+        this.AlreadyActive := false
+        if (this.OriginalHwnd)
+            GeminiRestoreWindow(this.OriginalHwnd)
+    }
+
+    Fail() {
+        ShowNotification("Read aloud failed – Gemini UI not ready", 2000, "FF6666", "FFFFFF", 22)
+        this.RestoreOriginalFocus()
+    }
+}
+
+; =============================================================================
 ; GeminiAsyncLookup – async pronunciation lookup (Win+Alt+Shift+8)
 ; User keeps focus; timer polls for completion; result shown in banner.
 ; =============================================================================
@@ -1239,71 +1391,27 @@ class GeminiAsyncLookup {
                 WinActivate("ahk_id " origHwnd)
         }
         this.RetryCount := 0
-        this.TimerCallback := this.CheckCompletion.Bind(this)
-        SetTimer(this.TimerCallback, 500)
+        GeminiBackgroundSetTimer(this, this.CheckCompletion.Bind(this), GEMINI_ASYNC_POLL_MS)
     }
 
     CheckCompletion() {
-        this.RetryCount++
-        if (this.RetryCount > this.MaxRetries) {
-            SetTimer(this.TimerCallback, 0)
+        state := GeminiMonitorStreamingTransition(this, this.OnStreamingCompleted.Bind(this))
+        if (state = "timeout") {
             StandardLoadingBar_Hide(0)
             return
         }
-        ; Poll in background using raw UIA (no UIA_Browser) so the library never activates Gemini
-        btn := ""
-        buttonNames := ["Stop streaming", "Interromper transmissão", "Stop response"]
+    }
+
+    OnStreamingCompleted() {
+        ; Use the same sound as Shift keys.ahk for consistency
         try {
-            root := UIA.ElementFromHandle(this.GeminiHwnd)
-            for n in buttonNames {
-                try {
-                    btn := root.FindElement({ Name: n, Type: "Button" })
-                } catch {
-                    btn := ""
-                }
-                if btn
-                    break
+            if (IsSoundEnabled()) {
+                SoundPlay(A_ScriptDir . "\sounds\gemini-completion.wav")
             }
         } catch {
-            return
+            PlayCopyCompletedChime()
         }
-
-        if btn {
-            this.ButtonEverFound := true
-            return   ; Still streaming
-        }
-
-        ; If button was found and now is gone, verify it's truly finished (timeout-bounded)
-        if (this.ButtonEverFound) {
-            isTrulyGone := true
-            loop GEMINI_STREAM_GONE_LOOPS {
-                Sleep GEMINI_STREAM_GONE_VERIFY_MS
-                try {
-                    for n in buttonNames {
-                        if root.ElementExist({ Name: n, Type: "Button" }) {
-                            isTrulyGone := false
-                            break
-                        }
-                    }
-                } catch
-                    isTrulyGone := true
-                if !isTrulyGone
-                    break
-            }
-
-            if isTrulyGone {
-                SetTimer(this.TimerCallback, 0)
-                ; Use the same sound as Shift keys.ahk for consistency
-                try {
-                    if (IsSoundEnabled()) {
-                        SoundPlay(A_ScriptDir . "\sounds\gemini-completion.wav")
-                    }
-                } catch {
-                    PlayCopyCompletedChime()
-                }
-                this.RetrieveResponse()
-            }
-        }
+        this.RetrieveResponse()
     }
 
     RetrieveResponse() {
@@ -1384,73 +1492,28 @@ class GeminiDelayedSubmitMonitor {
         this.ButtonEverFound := false
         this.HasCopiedForThisResponse := false
         this.CopyBannerShownForThisResponse := false
-        this.TimerCallback := this.CheckCompletion.Bind(this)
-        SetTimer(this.TimerCallback, 500)
+        GeminiBackgroundSetTimer(this, this.CheckCompletion.Bind(this), GEMINI_ASYNC_POLL_MS)
     }
 
     ; Stop polling; used when user chose S or N at 6s so "Copy response?" is never shown for this flow.
     Stop() {
-        if (this.TimerCallback)
-            SetTimer(this.TimerCallback, 0)
-        this.TimerCallback := ""
+        GeminiBackgroundStopTimer(this)
     }
 
     CheckCompletion() {
-        this.RetryCount++
-        if (this.RetryCount > this.MaxRetries) {
-            SetTimer(this.TimerCallback, 0)
+        state := GeminiMonitorStreamingTransition(this, this.OnStreamingCompleted.Bind(this))
+        if (state = "timeout")
             return
-        }
-        btn := ""
-        buttonNames := ["Stop streaming", "Interromper transmissão", "Stop response"]
+    }
+
+    OnStreamingCompleted() {
         try {
-            root := UIA.ElementFromHandle(this.GeminiHwnd)
-            for n in buttonNames {
-                try {
-                    btn := root.FindElement({ Name: n, Type: "Button" })
-                } catch {
-                    btn := ""
-                }
-                if btn
-                    break
-            }
+            if (IsSoundEnabled())
+                SoundPlay(A_ScriptDir . "\sounds\gemini-completion.wav")
         } catch {
-            return
+            PlayCopyCompletedChime()
         }
-
-        if btn {
-            this.ButtonEverFound := true
-            return
-        }
-
-        if (this.ButtonEverFound) {
-            isTrulyGone := true
-            loop GEMINI_STREAM_GONE_LOOPS {
-                Sleep GEMINI_STREAM_GONE_VERIFY_MS
-                try {
-                    for n in buttonNames {
-                        if root.ElementExist({ Name: n, Type: "Button" }) {
-                            isTrulyGone := false
-                            break
-                        }
-                    }
-                } catch
-                    isTrulyGone := true
-                if !isTrulyGone
-                    break
-            }
-
-            if isTrulyGone {
-                SetTimer(this.TimerCallback, 0)
-                try {
-                    if (IsSoundEnabled())
-                        SoundPlay(A_ScriptDir . "\sounds\gemini-completion.wav")
-                } catch {
-                    PlayCopyCompletedChime()
-                }
-                this.ShowCopyDecisionBanner()
-            }
-        }
+        this.ShowCopyDecisionBanner()
     }
 
     ShowCopyDecisionBanner() {
@@ -1517,10 +1580,12 @@ class GeminiDelayedSubmitMonitor {
             }
         }
         copyOpt := { restoreWindow: false, playChimeAndNotify: false, alreadyActive: true }
-        if CopyLastGeminiMessageWithRetry(copyOpt, this.GeminiHwnd)
+        if CopyLastGeminiMessageWithRetry(copyOpt, this.GeminiHwnd) {
             PlayCopyCompletedChime()
+        }
         if (readAloud)
-            GeminiTriggerReadAloud(false, false)
+            GeminiTriggerReadAloud(false, false, { originalHwnd: this.OriginalHwnd, geminiHwnd: this.GeminiHwnd,
+                alreadyActive: true })
         ; Gemini/Clipboard → Original: return transitions are immediate (no warning).
         if (!skipRestoreFocus && WinExist("ahk_id " this.OriginalHwnd) && !WinActive("ahk_id " this.OriginalHwnd)) {
             WinActivate("ahk_id " this.OriginalHwnd)
@@ -1682,83 +1747,39 @@ class GeminiAsyncTTS {
                 WinActivate("ahk_id " origHwnd)
         }
         this.RetryCount := 0
-        this.TimerCallback := this.CheckCompletion.Bind(this)
-        SetTimer(this.TimerCallback, 500)
+        GeminiBackgroundSetTimer(this, this.CheckCompletion.Bind(this), GEMINI_ASYNC_POLL_MS)
     }
 
     CheckCompletion() {
-        this.RetryCount++
-        if (this.RetryCount > this.MaxRetries) {
-            SetTimer(this.TimerCallback, 0)
+        state := GeminiMonitorStreamingTransition(this, this.OnStreamingCompleted.Bind(this))
+        if (state = "timeout") {
             StandardLoadingBar_Hide(0)
             return
         }
-        btn := ""
-        buttonNames := ["Stop streaming", "Interromper transmissão", "Stop response"]
-        try {
-            root := UIA.ElementFromHandle(this.GeminiHwnd)
-            for n in buttonNames {
-                try {
-                    btn := root.FindElement({ Name: n, Type: "Button" })
-                } catch {
-                    btn := ""
-                }
-                if btn
-                    break
-            }
-        } catch {
-            return
-        }
-
-        if btn {
-            this.ButtonEverFound := true
-            return
-        }
-
-        ; Layer 1: streaming stopped
-        if (this.ButtonEverFound) {
-            isTrulyGone := true
-            loop GEMINI_STREAM_GONE_LOOPS {
-                Sleep GEMINI_STREAM_GONE_VERIFY_MS
-                try {
-                    for n in buttonNames {
-                        if root.ElementExist({ Name: n, Type: "Button" }) {
-                            isTrulyGone := false
-                            break
-                        }
-                    }
-                } catch
-                    isTrulyGone := true
-                if !isTrulyGone
-                    break
-            }
-
-            if isTrulyGone {
-                SetTimer(this.TimerCallback, 0)
-                StandardLoadingBar_Hide(0)
-                ; Completion detection matches GeminiAsyncLookup (#!+8): Layer 1 only (Stop button gone). No extra Layer 2 so we don't miss completion.
-                try {
-                    if (IsSoundEnabled())
-                        SoundPlay(A_ScriptDir . "\sounds\gemini-completion.wav")
-                } catch {
-                    PlayCopyCompletedChime()
-                }
-                ; Allow DOM to finish rendering, then outbound Original→Gemini for read aloud (Hand Off: not on initial paste/submit).
-                Sleep(GeminiAsyncTTS.PostStreamingDelayMs)
-                PlayPreMovementWarning("Gemini")
-                try {
-                    WinActivate("ahk_id " this.GeminiHwnd)
-                } catch {
-                    return
-                }
-                if !WinWaitActive("ahk_exe chrome.exe", , 2)
-                    return
-                Send("^2")
-                Sleep GEMINI_TAB_SWITCH_MS
-                ShowGeminiTabBanner(2, this.GeminiHwnd)
-                ; After TTS from selection (#!+7), read aloud from the trash tab (second Gemini tab).
-                GeminiTriggerReadAloud(false, true)   ; read aloud only, no copy (text was just sent via #!+7)
-            }
-        }
     }
+
+    OnStreamingCompleted() {
+        StandardLoadingBar_Hide(0)
+        ; Completion detection matches GeminiAsyncLookup (#!+8): Layer 1 only (Stop button gone). No extra Layer 2 so we don't miss completion.
+        try {
+            if (IsSoundEnabled())
+                SoundPlay(A_ScriptDir . "\sounds\gemini-completion.wav")
+        } catch {
+            PlayCopyCompletedChime()
+        }
+        ; Allow DOM to finish rendering, then hand off read aloud without keeping focus on Gemini.
+        Sleep(GeminiAsyncTTS.PostStreamingDelayMs)
+        GeminiTriggerReadAloud(false, true, { originalHwnd: this.OriginalHwnd, geminiHwnd: this.GeminiHwnd })
+    }
+}
+
+; Optional Python sidecar contract. AHK remains the default orchestration layer; if enabled later,
+; the helper should accept a lightweight task envelope such as:
+; { kind, geminiHwnd, originalHwnd, copyFirst, useTrashTab, requestedAt }
+GeminiQueueBackgroundTask(taskKind, payload := "") {
+    if (!GEMINI_USE_PYTHON_IPC)
+        return false
+    ; Reserved for a small localhost helper. Keep UIA/window orchestration in AHK unless a future
+    ; phase proves queueing or parsing work is better handled by Python.
+    return false
 }
