@@ -3495,6 +3495,7 @@ class D2C_FlowManager {
             "Y", this.OnSubmitY.Bind(this),
             "S", this.OnSubmitS.Bind(this),
             "V", this.OnSubmitV.Bind(this),
+            "E", this.OnSubmitE.Bind(this),
             "N", this.OnSubmitN.Bind(this)
         )
         StandardLoadingBar_ShowWithKeys(
@@ -3503,8 +3504,8 @@ class D2C_FlowManager {
             6000,
             0,
             this.OnSubmitTimeout.Bind(this),
-            "1E1E2E", 380, 17, "", true,
-            "[G] Grammar  [A] AI opt  [Y] Send  [S] Paste only  [V] Paste dictated  [N] Cancel",
+            "1E1E2E", 440, 17, "", true,
+            "[G] Grammar  [A] AI opt  [Y] Send  [S] Paste only  [V] Paste dictated  [E] Paste & send  [N] Cancel",
             true
         )
     }
@@ -3546,6 +3547,26 @@ class D2C_FlowManager {
             WinActivate("ahk_id " this.OriginHwnd)
         Sleep 60
         Send("^v")
+
+        this.Reset()
+    }
+
+    ; Paste clipboard at caret in the original window, then Enter (no Gemini). For chat-style fields confident transcription.
+    OnSubmitE(*) {
+        if (this.CurrentPhase != "PromptingSubmit")
+            return
+
+        this.CurrentPhase := "PastingSendHere"
+        StandardLoadingBar_CloseKeysOverlay()
+        StandardLoadingBar_Hide(0)
+        HideDictationIndicator()
+
+        if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+            WinActivate("ahk_id " this.OriginHwnd)
+        Sleep 60
+        Send("^v")
+        Sleep 150
+        Send("{Enter}")
 
         this.Reset()
     }
