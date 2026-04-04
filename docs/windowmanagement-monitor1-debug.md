@@ -72,18 +72,13 @@ Run **both** from the same machine state (no display topology change between run
 
 If ordinal 1’s AHK `idx` is `k` but Python’s `k`th monitor is a **different** rectangle or handle class, the daemon’s `GetVisibleWindowsByMonitor(k)` can target the wrong screen while legacy AHK path stays correct.
 
+**Mitigation in tree:** [WindowManagement.ahk](../WindowManagement.ahk) filters daemon window lists so each HWND’s `MonitorFromWindow` matches the `HMONITOR` from `MonitorGet(mon)` work-area center; on mismatch it falls back to legacy enumeration.
+
 ---
 
-## Step 3: NDJSON logging (optional)
+## Step 3: NDJSON logging
 
-Set environment variable **`WM_DEBUG_MONITOR_MAP=1`** before starting `WindowManagement.ahk`, then use per-monitor hotkeys (move/cycle/minimize/close) as usual.
-
-Logs append to [`.cursor/debug.log`](../.cursor/debug.log) (NDJSON):
-
-- **`GetMonitorIndexByOrder`:** sorted `{idx,cx,cy}` list, requested `order`, `resolvedIdx`.
-- **`GetVisibleWindowsOnMonitor`:** `mon`, `branch` (`daemon` | `daemon_empty_list` | `daemon_exception` | `legacy`), work rect / `hTarget` (legacy), `winCount`.
-
-Unset the variable when finished to avoid log noise.
+Optional `WM_DEBUG_MONITOR_MAP` / `debug-2f65b1.log` hooks were **removed** after the monitor-close fix. Use Steps 1–2 and temporary local logging if you need new evidence.
 
 ---
 
@@ -104,8 +99,9 @@ Unset the variable when finished to avoid log noise.
 |---------|------------|------|--------|----------------|
 | | | | | |
 
-**Suggested fix directions (do not implement until confirmed):**
+**Suggested fix directions:**
 
-- Align daemon monitor selection with AHK: same sort as `GetMonitorIndexByOrder`, or pass **HMONITOR** / rect from AHK in the IPC payload.
+- **Done in repo:** AHK-side validation + legacy fallback (see note above).
+- Further hardening: align Python `EnumDisplayMonitors` ordering with AHK, or pass **HMONITOR** / rect from AHK in the IPC payload.
 - Harden `MonitorFromPoint` packing for negative virtual-screen coordinates if legacy path mis-fires on the left monitor only.
 - Increase or replace fixed `Sleep` in `MoveWinToMonitor` with bounded condition waits if races correlate with animation.

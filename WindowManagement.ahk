@@ -30,26 +30,6 @@ _DebugLog_WM(loc, msg, data, hypothesisId := "") {
 }
 ; #endregion
 
-; #region agent log debug session 2f65b1
-; Enable logging: env WM_DEBUG_SESSION_2F65B1=1 and/or empty file WM_DEBUG_CLOSE_MONITOR.flag in script dir. Writes debug-2f65b1.log.
-global _WM_Debug_LastGVOM_Branch := ""
-_WM_DebugSession2Path() => A_ScriptDir "\debug-2f65b1.log"
-_WM_DebugSession2Enabled() => EnvGet("WM_DEBUG_SESSION_2F65B1") = "1" || FileExist(A_ScriptDir "\WM_DEBUG_CLOSE_MONITOR.flag"
-)
-_WM_DebugSession2Log(hypothesisId, location, message, dataJsonStr, runId := "pre-fix") {
-    if !_WM_DebugSession2Enabled()
-        return
-    ts := DllCall("kernel32\GetTickCount64", "UInt64")
-    j := '{"sessionId":"2f65b1","hypothesisId":"' . hypothesisId . '","location":"' . location . '","message":"' .
-        message .
-        '","data":' . dataJsonStr . ',"timestamp":' . ts . ',"runId":"' . runId . '"}'
-    try
-        FileAppend j "`n", _WM_DebugSession2Path()
-    catch
-        return
-}
-; #endregion
-
 ; --- Helper Functions --------------------------------------------------------
 ShowNotification_WM(message, durationMs := 1500) {
     ShowCenteredOverlay_Utils(message, durationMs, BANNER_ACCENT_ERROR)
@@ -93,11 +73,6 @@ WM_IsExcludedIndicatorWindow(hwnd) {
 
 WM_UsesAutomationDaemon() {
     return WM_USE_DAEMON && WM_USE_PIPE_IPC && WM_USE_EVENT_HOOK_CACHE
-}
-
-; Set env WM_DEBUG_MONITOR_MAP=1 before starting script to log monitor sort + GetVisibleWindowsOnMonitor branch to .cursor\debug.log
-WM_DebugMonitorMapEnabled() {
-    return EnvGet("WM_DEBUG_MONITOR_MAP") = "1"
 }
 
 WMAutomation_SuppressCursorCentering(reason := "", durationMs := 0) {
@@ -238,27 +213,6 @@ GetMonitorIndexByOrder(order) {
                 monitors[j + 1] := a
             }
         }
-    }
-
-    if (WM_DebugMonitorMapEnabled()) {
-        sortedJson := "["
-        for i, m in monitors {
-            if (i > 1)
-                sortedJson .= ","
-            sortedJson .= Format('{"idx":%d,"cx":%d,"cy":%d}', m.idx, m.cx, m.cy)
-        }
-        sortedJson .= "]"
-        ordMap := "["
-        loop monitors.Length {
-            if (A_Index > 1)
-                ordMap .= ","
-            ordMap .= Format('{"ordinal":%d,"ahkIdx":%d}', A_Index, monitors[A_Index].idx)
-        }
-        ordMap .= "]"
-        resolved := monitors[order].idx
-        _DebugLog_WM("GetMonitorIndexByOrder", "monitor_sort",
-            '{"sorted":' . sortedJson . ',"order":' . order . ',"resolvedIdx":' . resolved . ',"ordinalMap":' . ordMap .
-            "}", "WM-MON-MAP")
     }
 
     return monitors[order].idx
@@ -682,28 +636,14 @@ GetVisibleWindowsOnMonitor(mon) {
                             }
                         }
                     }
-                    if (WM_DebugMonitorMapEnabled()) {
-                        _DebugLog_WM("GetVisibleWindowsOnMonitor", "result",
-                            Format('{"mon":%d,"branch":"daemon","winCount":%d,"validated":%d}', mon, onMonitor.Length,
-                                visible.Length), "WM-MON-MAP")
-                    }
-                    global _WM_Debug_LastGVOM_Branch := "daemon"
                     return onMonitor
                 }
                 daemonFallback := "daemon_hmon_mismatch"
-                if (_WM_DebugSession2Enabled()) {
-                    _WM_DebugSession2Log("H2", "GetVisibleWindowsOnMonitor:mismatch", "daemon_vs_ahk",
-                        Format('{"mon":%d,"daemonCandidates":%d,"hExpected":"0x%X"}', mon, visible.Length, hExpected))
-                }
             }
             if (daemonFallback = "")
                 daemonFallback := "daemon_empty_list"
         } catch {
             daemonFallback := "daemon_exception"
-        }
-        if (daemonFallback != "" && WM_DebugMonitorMapEnabled()) {
-            _DebugLog_WM("GetVisibleWindowsOnMonitor", "fallback",
-                Format('{"mon":%d,"branch":"%s"}', mon, daemonFallback), "WM-MON-MAP")
         }
     }
     ; Step-1: determine target monitor handle --------------------------------
@@ -800,14 +740,6 @@ GetVisibleWindowsOnMonitor(mon) {
         }
     }
 
-    if (WM_DebugMonitorMapEnabled()) {
-        _DebugLog_WM("GetVisibleWindowsOnMonitor", "result",
-            Format(
-                '{"mon":%d,"branch":"legacy","ml":%d,"mt":%d,"mr":%d,"mb":%d,"cx":%d,"cy":%d,"hTarget":"0x%X","winCount":%d}',
-                mon, ml, mt, mr, mb, cx, cy, hTarget, visible.Length), "WM-MON-MAP")
-    }
-
-    global _WM_Debug_LastGVOM_Branch := "legacy"
     return visible
 }
 
@@ -849,104 +781,30 @@ MinimizeWindowOnMonitor(order) {
 ; Function: CloseWindowOnMonitor(order)
 ; =============================================================================
 CloseWindowOnMonitor(order) {
-    global _WM_Debug_LastGVOM_Branch := ""
-    ; #region agent log debug session 2f65b1
-    if (_WM_DebugSession2Enabled()) {
-        _WM_DebugSession2Log("H1", "CloseWindowOnMonitor:entry", "order",
-            Format('{"order":%d,"monitorCount":%d,"daemon":%d}', order, MonitorGetCount(), WM_UsesAutomationDaemon() ?
-                1 : 0))
-    }
-    ; #endregion
     idx := GetMonitorIndexByOrder(order)
     if (!idx) {
-        ; #region agent log debug session 2f65b1
-        if (_WM_DebugSession2Enabled()) {
-            _WM_DebugSession2Log("H1", "CloseWindowOnMonitor:no_idx", "fail",
-                '{"reason":"GetMonitorIndexByOrder returned 0"}')
-        }
-        ; #endregion
         ShowNotification_WM("Monitor " order " not available (only " MonitorGetCount() " detected).")
         return
     }
 
     ; Get the active window on the target monitor
     windows := GetVisibleWindowsOnMonitor(idx)
-    ; #region agent log debug session 2f65b1
-    if (_WM_DebugSession2Enabled()) {
-        branch := _WM_Debug_LastGVOM_Branch != "" ? _WM_Debug_LastGVOM_Branch : "unknown"
-        _WM_DebugSession2Log("H2", "CloseWindowOnMonitor:after_enum", "visible_list",
-            Format('{"order":%d,"ahkIdx":%d,"winCount":%d,"gvomBranch":"%s"}', order, idx, windows.Length, branch))
-        MonitorGet idx, &ml, &mt, &mr, &mb
-        cx := (ml + mr) // 2
-        cy := (mt + mb) // 2
-        point64 := (cy & 0xFFFFFFFF) << 32 | (cx & 0xFFFFFFFF)
-        hFromPoint := DllCall("MonitorFromPoint", "int64", point64, "uint", 2, "ptr")
-        _WM_DebugSession2Log("H5", "CloseWindowOnMonitor:monitor_geom", "legacy_point",
-            Format('{"ahkIdx":%d,"ml":%d,"mt":%d,"mr":%d,"mb":%d,"cx":%d,"cy":%d,"hFromPoint":"0x%X"}', idx, ml, mt, mr,
-                mb, cx, cy, hFromPoint))
-    }
-    ; #endregion
     if (windows.Length = 0) {
-        ; #region agent log debug session 2f65b1
-        if (_WM_DebugSession2Enabled()) {
-            _WM_DebugSession2Log("H2", "CloseWindowOnMonitor:empty", "fail", Format('{"order":%d,"ahkIdx":%d}', order,
-                idx))
-        }
-        ; #endregion
         ShowNotification_WM("No windows found on monitor " order)
         return
     }
 
     ; Get the topmost window on the monitor (first in the list)
     targetWindow := windows[1]
-    ; #region agent log debug session 2f65b1
-    th := targetWindow.hwnd
-    pid := 0
-    try {
-        pid := WinGetPID("ahk_id " th)
-    } catch {
-    }
-    if (_WM_DebugSession2Enabled()) {
-        _WM_DebugSession2Log("H3", "CloseWindowOnMonitor:target", "topmost_pick",
-            Format('{"hwnd":%u,"pid":%d}', Integer(th), pid))
-    }
-    ; #endregion
 
     try {
         ; Activate the window first
         WinActivate "ahk_id " targetWindow.hwnd
         ; Wait briefly for activation
         Sleep 100
-        fg := 0
-        try {
-            fg := WinExist("A")
-        } catch {
-        }
-        ; #region agent log debug session 2f65b1
-        if (_WM_DebugSession2Enabled()) {
-            _WM_DebugSession2Log("H3", "CloseWindowOnMonitor:after_activate", "focus",
-                Format('{"targetHwnd":%u,"foregroundHwnd":%u,"match":%d}', Integer(th), Integer(fg), (fg = th) ? 1 : 0)
-            )
-        }
-        ; #endregion
         ; Then close it
         WinClose "ahk_id " targetWindow.hwnd
-        Sleep 50
-        still := WinExist("ahk_id " targetWindow.hwnd) ? 1 : 0
-        ; #region agent log debug session 2f65b1
-        if (_WM_DebugSession2Enabled()) {
-            _WM_DebugSession2Log("H4", "CloseWindowOnMonitor:after_close", "winclose_result",
-                Format('{"hwnd":%u,"stillExists":%d}', Integer(targetWindow.hwnd), still))
-        }
-        ; #endregion
     } catch Error as e {
-        ; #region agent log debug session 2f65b1
-        if (_WM_DebugSession2Enabled()) {
-            esc := StrReplace(StrReplace(e.Message, "\", "\\"), '"', "'")
-            _WM_DebugSession2Log("H4", "CloseWindowOnMonitor:exception", "error",
-                Format('{"message":"%s"}', esc))
-        }
-        ; #endregion
         ShowNotification_WM("Failed to close window on monitor " order ": " e.Message)
     }
 }
