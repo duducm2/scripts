@@ -49,6 +49,15 @@ Bridge_MoveMouseToCenter(hwnd) {
     DllCall("SetCursorPos", "int", centerX, "int", centerY)
 }
 
+Bridge_MaybeCenterMouse(hwnd, reason := "") {
+    try {
+        return WM_MaybeCenterMouse(hwnd, reason)
+    } catch {
+        Bridge_MoveMouseToCenter(hwnd)
+        return true
+    }
+}
+
 ; Extract path segments for Cursor window title matching. More specific first so we prefer exact project.
 Bridge_ExtractProjectMatchSegments(projectPath) {
     normalizedPath := RTrim(projectPath, "\")
@@ -160,8 +169,9 @@ Bridge_FindAndActivateCursorWindow(projectPath) {
         activeHwnd := WinGetID("A")
         for window in cursorWindows {
             if (window.hwnd = activeHwnd) {
+                try WMAutomation_SuppressCursorCentering("bridge_activate_existing", 1600)
                 WinActivate("ahk_id " window.hwnd)
-                Bridge_MoveMouseToCenter(window.hwnd)
+                Bridge_MaybeCenterMouse(window.hwnd, "bridge_activate_existing")
                 ; #region agent log
                 Bridge_Log("GeminiToCursorBridge.ahk:FindAndActivate", "picked active", '{"hwnd":' . window.hwnd .
                     ',"titleStart":"' . SubStr(StrReplace(window.title, '"', "'"), 1, 50) . '"}', "H2")
@@ -177,9 +187,10 @@ Bridge_FindAndActivateCursorWindow(projectPath) {
         ',"titleStart":"' . SubStr(StrReplace(targetWindow.title, '"', "'"), 1, 60) . '"}', "H2")
     ; #endregion
     try {
+        try WMAutomation_SuppressCursorCentering("bridge_activate_target", 1600)
         WinActivate("ahk_id " targetWindow.hwnd)
         WinWaitActive("ahk_id " targetWindow.hwnd, , 2)
-        Bridge_MoveMouseToCenter(targetWindow.hwnd)
+        Bridge_MaybeCenterMouse(targetWindow.hwnd, "bridge_activate_target")
         return targetWindow.hwnd
     } catch {
         return 0
@@ -190,12 +201,14 @@ Bridge_FindAndActivateCursorWindow(projectPath) {
 Bridge_FocusCursorAITextField(targetHwnd := 0) {
     try {
         if (targetHwnd) {
+            try WMAutomation_SuppressCursorCentering("bridge_focus_textfield", 1800)
             WinActivate("ahk_id " targetHwnd)
             WinWaitActive("ahk_id " targetHwnd, , 2)
         } else {
             targetHwnd := WinExist("ahk_exe Cursor.exe")
             if (!targetHwnd)
                 return false
+            try WMAutomation_SuppressCursorCentering("bridge_focus_textfield", 1800)
             WinWaitActive("ahk_id " targetHwnd, , 2)
         }
         Sleep 200

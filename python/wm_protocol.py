@@ -33,6 +33,9 @@ OP_GET_CURSOR_WINDOWS = "GetCursorWindows"
 OP_GET_PREVIEW_WINDOWS = "GetPreviewWindows"
 OP_GET_VISIBLE_WINDOWS_BY_MONITOR = "GetVisibleWindowsByMonitor"
 OP_RESOLVE_PROJECT_WINDOW = "ResolveProjectWindow"
+OP_GET_AUTOMATION_CONTEXT = "GetAutomationContext"
+OP_BEGIN_AUTOMATION_SWITCH = "BeginAutomationSwitch"
+OP_END_AUTOMATION_SWITCH = "EndAutomationSwitch"
 
 REQUIRED_REQUEST_KEYS = (REQ_ID, REQ_OP)
 

@@ -4,7 +4,7 @@
 
 import json
 import struct
-import sys
+import time
 
 
 def encode_message(obj: dict) -> bytes:
@@ -19,7 +19,10 @@ def decode_message(data: bytes) -> dict | None:
     if len(data) < 4 + length:
         return None
     payload = data[4 : 4 + length].decode("utf-8")
-    return json.loads(payload)
+    try:
+        return json.loads(payload)
+    except json.JSONDecodeError:
+        return None
 
 
 def read_frame(stream):
@@ -44,13 +47,58 @@ def write_frame(stream, obj: dict) -> None:
     stream.buffer.flush()
 
 
-# Command IDs (AHK sends these; Python responds with same id in response)
-CMD_PING = "ping"
-CMD_PROCESS_TEXT = "process_text"
-CMD_VALIDATE = "validate"
+# Request envelope keys
+REQ_ID = "id"
+REQ_OP = "op"
+REQ_CONTEXT = "context"
+REQ_PAYLOAD = "payload"
+REQ_TS = "ts"
+REQ_DEADLINE_MS = "deadlineMs"
 
-# Required request keys
-REQUIRED_KEYS = ("id",)
+# Response envelope keys
+RESP_ID = "id"
+RESP_OK = "ok"
+RESP_RESULT = "result"
+RESP_ERROR = "error"
+
+# Operations
+OP_HEALTH_CHECK = "HealthCheck"
+OP_PING = "Ping"
+OP_QUEUE_TASK = "QueueTask"
+OP_GET_TASK_STATUS = "GetTaskStatus"
+
+REQUIRED_KEYS = (REQ_ID, REQ_OP)
+
+
+def make_request(
+    req_id: str,
+    op: str,
+    context: str = "",
+    payload: dict | None = None,
+    deadline_ms: int = 0,
+) -> dict:
+    return {
+        REQ_ID: req_id,
+        REQ_OP: op,
+        REQ_CONTEXT: context or "",
+        REQ_PAYLOAD: payload if payload is not None else {},
+        REQ_TS: int(time.time() * 1000),
+        REQ_DEADLINE_MS: deadline_ms,
+    }
+
+
+def make_response(
+    req_id: str,
+    ok: bool,
+    result=None,
+    error: str = "",
+) -> dict:
+    return {
+        RESP_ID: req_id,
+        RESP_OK: ok,
+        RESP_RESULT: result if result is not None else {},
+        RESP_ERROR: error or "",
+    }
 
 
 def validate_request(obj: dict) -> bool:

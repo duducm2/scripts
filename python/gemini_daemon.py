@@ -1,74 +1,210 @@
 #!/usr/bin/env python3
 """
-Persistent Gemini IPC daemon. Listens on a local TCP port (default 29512) for
-length-prefixed JSON frames. AHK connects once and streams requests; Python
-handles API/JSON/streaming. Boundary: AHK = hotkeys, UIA, clipboard; Python =
-network, JSON, text pipelines. No RunWait from AHK per shortcut.
+Persistent Gemini IPC daemon. Listens on Named Pipe \\\\.\\pipe\\gemini_automation
+for length-prefixed JSON frames. The daemon owns a lightweight background task
+queue so AHK hotkeys can enqueue Gemini work and return immediately.
 """
 
-import json
-import socket
 import struct
 import sys
-from protocol import encode_message, decode_message, validate_request, CMD_PING
+import time
+import uuid
+import signal
+import threading
+from protocol import (
+    encode_message,
+    decode_message,
+    validate_request,
+    make_response,
+    REQ_ID,
+    REQ_OP,
+    REQ_PAYLOAD,
+    OP_HEALTH_CHECK,
+    OP_PING,
+    OP_QUEUE_TASK,
+    OP_GET_TASK_STATUS,
+)
 
-DEFAULT_PORT = 29512
+PIPE_NAME = r"\\.\pipe\gemini_automation"
 MAX_FRAME = 1024 * 1024
+DEFAULT_READY_DELAY_MS = 60
+_shutdown = threading.Event()
+_tasks: dict[str, dict] = {}
+_tasks_lock = threading.Lock()
+
+try:
+    import win32pipe
+    import win32file
+    import pywintypes
+
+    HAS_WIN32 = True
+except ImportError:
+    HAS_WIN32 = False
+
+
+def _on_signal(signum, frame):
+    _shutdown.set()
+
+
+def _now_ms() -> int:
+    return int(time.time() * 1000)
+
+
+def _prune_finished_tasks() -> None:
+    cutoff = _now_ms() - 5 * 60 * 1000
+    with _tasks_lock:
+        stale = [
+            task_id
+            for task_id, task in _tasks.items()
+            if int(task.get("createdAt", 0)) < cutoff
+        ]
+        for task_id in stale:
+            _tasks.pop(task_id, None)
 
 
 def handle_request(req: dict) -> dict:
-    """Synchronous request handler. Extend for API/streaming work."""
+    """Dispatch by op; return response envelope."""
     if not validate_request(req):
-        return {"id": req.get("id", ""), "ok": False, "error": "invalid request"}
-    cmd = req.get("id")
-    if cmd == CMD_PING:
-        return {"id": cmd, "ok": True, "pong": True}
-    return {"id": cmd, "ok": False, "error": "unknown command"}
+        return make_response(req.get(REQ_ID, ""), False, error="invalid request")
+    req_id = req[REQ_ID]
+    op = req.get(REQ_OP, "")
+    payload = req.get(REQ_PAYLOAD, {})
+
+    if op == OP_HEALTH_CHECK:
+        return make_response(req_id, True, result={"alive": True, "ts": _now_ms()})
+
+    if op == OP_PING:
+        echo = dict(payload) if isinstance(payload, dict) else {}
+        echo["pong"] = True
+        echo["serverTs"] = _now_ms()
+        return make_response(req_id, True, result=echo)
+
+    if op == OP_QUEUE_TASK:
+        task_kind = str(payload.get("taskKind", "")).strip()
+        if not task_kind:
+            return make_response(req_id, False, error="missing taskKind")
+        ready_delay_ms = max(
+            0, int(payload.get("readyDelayMs", DEFAULT_READY_DELAY_MS))
+        )
+        created_at = _now_ms()
+        task_id = uuid.uuid4().hex
+        task = {
+            "taskId": task_id,
+            "taskKind": task_kind,
+            "status": "pending",
+            "createdAt": created_at,
+            "readyAt": created_at + ready_delay_ms,
+            "payload": dict(payload) if isinstance(payload, dict) else {},
+        }
+        with _tasks_lock:
+            _tasks[task_id] = task
+        return make_response(
+            req_id,
+            True,
+            result={
+                "taskId": task_id,
+                "taskKind": task_kind,
+                "status": "pending",
+                "createdAt": created_at,
+                "readyAt": task["readyAt"],
+            },
+        )
+
+    if op == OP_GET_TASK_STATUS:
+        task_id = str(payload.get("taskId", "")).strip()
+        if not task_id:
+            return make_response(req_id, False, error="missing taskId")
+        with _tasks_lock:
+            task = _tasks.get(task_id)
+            if not task:
+                return make_response(req_id, False, error="task not found")
+            if task["status"] == "pending" and _now_ms() >= int(task.get("readyAt", 0)):
+                task["status"] = "ready"
+            snapshot = {
+                "taskId": task["taskId"],
+                "taskKind": task.get("taskKind", ""),
+                "status": task.get("status", "pending"),
+                "createdAt": int(task.get("createdAt", 0)),
+                "readyAt": int(task.get("readyAt", 0)),
+                "payload": task.get("payload", {}),
+            }
+        return make_response(req_id, True, result=snapshot)
+
+    return make_response(req_id, False, error=f"unknown op: {op}")
 
 
-def read_frame_from_socket(conn: socket.socket) -> dict | None:
-    header = conn.recv(4)
-    if len(header) < 4:
+def read_frame(handle):
+    err, header = win32file.ReadFile(handle, 4)
+    if err or len(header) < 4:
         return None
     (length,) = struct.unpack(">I", header)
-    if length > MAX_FRAME:
+    if length > MAX_FRAME or length == 0:
         return None
-    payload = b""
-    while len(payload) < length:
-        chunk = conn.recv(length - len(payload))
-        if not chunk:
-            return None
-        payload += chunk
-    try:
-        return json.loads(payload.decode("utf-8"))
-    except (json.JSONDecodeError, UnicodeDecodeError):
+    err, payload = win32file.ReadFile(handle, length)
+    if err or len(payload) < length:
         return None
+    return decode_message(header + payload)
 
 
-def serve_connection(conn: socket.socket) -> None:
+def write_frame(handle, obj):
+    data = encode_message(obj)
+    win32file.WriteFile(handle, data)
+
+
+def serve_connection(handle) -> None:
     try:
-        while True:
-            msg = read_frame_from_socket(conn)
+        while not _shutdown.is_set():
+            msg = read_frame(handle)
             if msg is None:
                 break
             resp = handle_request(msg)
-            conn.sendall(encode_message(resp))
-    except (ConnectionResetError, BrokenPipeError, OSError):
+            write_frame(handle, resp)
+            _prune_finished_tasks()
+    except (BrokenPipeError, OSError):
         pass
     finally:
-        conn.close()
+        try:
+            win32file.CloseHandle(handle)
+        except OSError:
+            pass
 
 
-def run_tcp_server(port: int = DEFAULT_PORT) -> None:
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        s.bind(("127.0.0.1", port))
-        s.listen(1)
-        while True:
-            conn, _ = s.accept()
-            serve_connection(conn)
+def run_pipe_server() -> None:
+    if not HAS_WIN32:
+        print(
+            "gemini_daemon: pywin32 required for Named Pipe. Install: pip install pywin32",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    signal.signal(signal.SIGINT, _on_signal)
+    signal.signal(signal.SIGTERM, _on_signal)
+    while not _shutdown.is_set():
+        try:
+            pipe = win32pipe.CreateNamedPipe(
+                PIPE_NAME,
+                win32pipe.PIPE_ACCESS_DUPLEX,
+                win32pipe.PIPE_TYPE_BYTE
+                | win32pipe.PIPE_READMODE_BYTE
+                | win32pipe.PIPE_WAIT,
+                1,
+                65536,
+                65536,
+                0,
+                None,
+            )
+        except pywintypes.error as e:
+            print(f"gemini_daemon: CreateNamedPipe failed: {e}", file=sys.stderr)
+            sys.exit(1)
+        try:
+            win32pipe.ConnectNamedPipe(pipe, None)
+        except pywintypes.error as e:
+            win32file.CloseHandle(pipe)
+            if e.winerror == 535:
+                continue
+            time.sleep(0.5)
+            continue
+        serve_connection(pipe)
 
 
 if __name__ == "__main__":
-    port = int(sys.argv[1]) if len(sys.argv) > 1 else DEFAULT_PORT
-    run_tcp_server(port)
+    run_pipe_server()

@@ -30,6 +30,9 @@ from wm_protocol import (
     OP_GET_PREVIEW_WINDOWS,
     OP_GET_VISIBLE_WINDOWS_BY_MONITOR,
     OP_RESOLVE_PROJECT_WINDOW,
+    OP_GET_AUTOMATION_CONTEXT,
+    OP_BEGIN_AUTOMATION_SWITCH,
+    OP_END_AUTOMATION_SWITCH,
 )
 
 PIPE_NAME = r"\\.\pipe\wm_automation"
@@ -107,6 +110,55 @@ def handle_request(req: dict) -> dict:
             req_id,
             True,
             result={"hwnd": 0, "pid": 0, "title": "", "class": "", "exe": ""},
+        )
+
+    if op == OP_GET_AUTOMATION_CONTEXT:
+        if hooks:
+            return make_response(req_id, True, result=hooks.get_automation_context())
+        return make_response(
+            req_id,
+            True,
+            result={
+                "foregroundHwnd": 0,
+                "foregroundTitle": "",
+                "foregroundExe": "",
+                "lastNonGeminiHwnd": 0,
+                "lastNonGeminiTitle": "",
+                "cursorSuppressed": False,
+                "cursorSuppressedUntilMs": 0,
+                "cursorSuppressionReason": "",
+            },
+        )
+
+    if op == OP_BEGIN_AUTOMATION_SWITCH:
+        duration_ms = int(payload.get("durationMs", 1500))
+        reason = str(payload.get("reason", ""))
+        if hooks:
+            return make_response(
+                req_id, True, result=hooks.begin_automation_switch(duration_ms, reason)
+            )
+        return make_response(
+            req_id,
+            True,
+            result={
+                "cursorSuppressed": duration_ms > 0,
+                "cursorSuppressedUntilMs": int(time.time() * 1000)
+                + max(0, duration_ms),
+                "cursorSuppressionReason": reason,
+            },
+        )
+
+    if op == OP_END_AUTOMATION_SWITCH:
+        if hooks:
+            return make_response(req_id, True, result=hooks.end_automation_switch())
+        return make_response(
+            req_id,
+            True,
+            result={
+                "cursorSuppressed": False,
+                "cursorSuppressedUntilMs": 0,
+                "cursorSuppressionReason": "",
+            },
         )
 
     if op == OP_GET_CURSOR_WINDOWS:

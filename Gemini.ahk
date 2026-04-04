@@ -6,6 +6,8 @@
 #include UIA-v2\Lib\UIA_Browser.ahk
 #include %A_ScriptDir%\env.ahk
 #include %A_ScriptDir%\Utils.ahk
+#include %A_ScriptDir%\aux\WMIPC.ahk
+#include %A_ScriptDir%\aux\GeminiIPC.ahk
 
 ; --- Config ---------------------------------------------------------------
 ; Path to the file containing the initial prompt Gemini should receive.
@@ -58,8 +60,7 @@ GEMINI_PERF_LOG_PATH := A_ScriptDir "\.cursor\gemini_perf.log"
 GEMINI_USE_WIN_EVENT_HOOK := true
 GEMINI_USE_PYTHON_IPC := false
 
-; Phase 7: Python daemon IPC (local socket). Daemon must be started separately; AHK connects on demand.
-GEMINI_PYTHON_DAEMON_PORT := 29512
+; Phase 7: Python daemon IPC (Named Pipe). AHK starts the daemon on demand when enabled.
 GEMINI_PYTHON_IPC_TIMEOUT_MS := 5000
 
 ; --- Phase 4: WinEvent hook constants (user32) ---------------------------------
@@ -518,9 +519,48 @@ GeminiBackgroundStopTimer(task) {
     try task.TimerCallback := ""
 }
 
+GeminiCanUseWMAutomationContext() {
+    return WM_USE_DAEMON && WM_USE_PIPE_IPC && WM_USE_EVENT_HOOK_CACHE
+}
+
+GeminiBeginAutomationSwitch(reason := "", durationMs := 0) {
+    if (!GeminiCanUseWMAutomationContext())
+        return Map()
+    try
+        return WMIPC_BeginAutomationSwitch(reason, durationMs)
+    catch
+        return Map()
+}
+
+GeminiEndAutomationSwitch(reason := "") {
+    if (!GeminiCanUseWMAutomationContext())
+        return Map()
+    try
+        return WMIPC_EndAutomationSwitch(reason)
+    catch
+        return Map()
+}
+
+GeminiResolveOriginalHwnd(fallbackHwnd := 0) {
+    originalHwnd := fallbackHwnd ? fallbackHwnd : WinExist("A")
+    if (!GeminiCanUseWMAutomationContext())
+        return originalHwnd
+    try {
+        ctx := WMIPC_GetAutomationContext()
+        if (ctx.Has("foregroundHwnd") && Integer(ctx["foregroundHwnd"]) != 0)
+            originalHwnd := Integer(ctx["foregroundHwnd"])
+        title := ctx.Has("foregroundTitle") ? String(ctx["foregroundTitle"]) : ""
+        if (InStr(title, "gemini", false) && ctx.Has("lastNonGeminiHwnd") && Integer(ctx["lastNonGeminiHwnd"]) != 0)
+            return Integer(ctx["lastNonGeminiHwnd"])
+    } catch {
+    }
+    return originalHwnd
+}
+
 GeminiActivateWindow(hwnd, waitMs := GEMINI_ACTIVATE_WAIT_MS) {
     if (!hwnd)
         return false
+    GeminiBeginAutomationSwitch("gemini_activate_window", waitMs + GEMINI_TAB_SWITCH_MS + 1000)
     try {
         WinActivate("ahk_id " hwnd)
     } catch {
@@ -534,6 +574,7 @@ GeminiActivateWindow(hwnd, waitMs := GEMINI_ACTIVATE_WAIT_MS) {
 GeminiRestoreWindow(hwnd, waitMs := 1000) {
     if (!hwnd || !WinExist("ahk_id " hwnd))
         return false
+    GeminiBeginAutomationSwitch("gemini_restore_window", waitMs + 1000)
     return GeminiActivateWindow(hwnd, waitMs)
 }
 
@@ -1130,14 +1171,22 @@ class GeminiAsyncReadAloud {
         this.AlreadyActive := (options != "" && options.HasProp("alreadyActive")) ? options.alreadyActive : false
         this.TimerCallback := ""
         this.StartCallback := ""
+        this.StepCallback := ""
         this.StartRetryAttempted := false
         this.StartRetryCount := 0
         this.StartTick := 0
+        this.SkipCopy := false
+        this.CopyRetryCount := 0
+        this.MenuRetryCount := 0
+        this.MenuPollCount := 0
+        this.QueueTaskId := ""
+        this.QueuePollCount := 0
+        this.Uia := 0
     }
 
     Start() {
         if (!this.OriginalHwnd)
-            this.OriginalHwnd := WinExist("A")
+            this.OriginalHwnd := GeminiResolveOriginalHwnd()
         if (!this.StartTick)
             this.StartTick := A_TickCount
         SetTitleMatchMode(2)
@@ -1149,9 +1198,64 @@ class GeminiAsyncReadAloud {
         }
         if (this.AlreadyActive && WinActive("ahk_id " this.GeminiHwnd))
             return this.TryStartReadAloud(false)
+        queuedTask := GeminiQueueBackgroundTask("ReadAloud", Map("geminiHwnd", this.GeminiHwnd, "originalHwnd",
+            this.OriginalHwnd, "copyFirst", this.CopyFirst ? 1 : 0, "useTrashTab", this.UseTrashTab ? 1 : 0))
+        if (queuedTask is Map && queuedTask.Has("taskId")) {
+            this.QueueTaskId := String(queuedTask["taskId"])
+            this.QueuePollCount := 0
+            this.StartCallback := this.WaitForQueuedTask.Bind(this)
+            SetTimer(this.StartCallback, -1)
+            return true
+        }
         this.StartCallback := this.Launch.Bind(this)
         SetTimer(this.StartCallback, -1)
         return true
+    }
+
+    ScheduleStep(callback, delayMs := 1) {
+        this.ClearStep()
+        this.StepCallback := callback
+        SetTimer(this.StepCallback, -delayMs)
+    }
+
+    ClearStep() {
+        cb := ""
+        try cb := this.StepCallback
+        catch
+            cb := ""
+        if (cb)
+            SetTimer(cb, 0)
+        this.StepCallback := ""
+    }
+
+    WaitForQueuedTask(*) {
+        this.StartCallback := ""
+        if (!this.QueueTaskId) {
+            this.Launch()
+            return
+        }
+        resp := GeminiIPC_GetTaskStatus(this.QueueTaskId)
+        if (GeminiIPC_ResponseOk(resp)) {
+            result := GeminiIPC_ResponseResultMap(resp)
+            status := result.Has("status") ? String(result["status"]) : ""
+            if (status = "ready") {
+                this.QueueTaskId := ""
+                this.Launch()
+                return
+            }
+        } else {
+            this.QueueTaskId := ""
+            this.Launch()
+            return
+        }
+        this.QueuePollCount++
+        if (this.QueuePollCount >= 40) {
+            this.QueueTaskId := ""
+            this.Launch()
+            return
+        }
+        this.StartCallback := this.WaitForQueuedTask.Bind(this)
+        SetTimer(this.StartCallback, -50)
     }
 
     Launch(*) {
@@ -1166,6 +1270,11 @@ class GeminiAsyncReadAloud {
 
     TryStartReadAloud(skipCopy := false) {
         try {
+            this.SkipCopy := skipCopy
+            this.CopyRetryCount := 0
+            this.MenuRetryCount := 0
+            this.MenuPollCount := 0
+            this.Uia := 0
             GeminiState.Invalidate()
             if (!this.AlreadyActive || !WinActive("ahk_id " this.GeminiHwnd)) {
                 PlayPreMovementWarning("Gemini")
@@ -1173,94 +1282,151 @@ class GeminiAsyncReadAloud {
                     ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
                     return false
                 }
-                Sleep GEMINI_TAB_SWITCH_MS
-            }
-
-            if (this.UseTrashTab) {
-                Send("^2")
-                Sleep GEMINI_TAB_SWITCH_MS
-                ShowGeminiTabBanner(2, this.GeminiHwnd)
-            }
-
-            uia := UIA_Browser("ahk_id " this.GeminiHwnd)
-            Sleep GEMINI_UIA_SETTLE_MS
-
-            pauseButton := FindGeminiPauseResumeButton(uia, "Pause")
-            if (pauseButton) {
-                try pauseButton.Click()
-                ShowNotification("Paused", 800, "FFFF00", "000000", 24)
-                this.RestoreOriginalFocus()
+                this.ScheduleStep(this.AfterActivation.Bind(this), GEMINI_TAB_SWITCH_MS)
                 return true
             }
-
-            resumeButton := FindGeminiPauseResumeButton(uia, "Resume")
-            if (resumeButton) {
-                try resumeButton.Click()
-                ShowNotification("Resumed", 800, "FFFF00", "000000", 24)
-                this.RestoreOriginalFocus()
-                return true
-            }
-
-            Send "^{End}"
-            Sleep GEMINI_SCROLL_SETTLE_MS
-
-            if (this.CopyFirst && !skipCopy) {
-                copyOpt := { restoreWindow: false, playChimeAndNotify: false, alreadyActive: true }
-                if (CopyLastGeminiMessageWithRetry(copyOpt, this.GeminiHwnd))
-                    PlayCopyCompletedChime()
-            }
-
-            StandardLoadingBar_Show(this.CopyFirst && !skipCopy ? "🔍 Finding read aloud button and copying..." :
-                "🔍 Finding read aloud button...", BANNER_ACCENT_INTERMEDIATE, { passive: true, centerOnHwnd: 0 })
-            Sleep GEMINI_WAIT_BUTTON_POLL_MS
-
-            lastMoreOptionsButton := GetLastGeminiMoreOptionsButton(uia)
-            if (!lastMoreOptionsButton) {
-                StandardLoadingBar_Hide(0)
-                this.Fail()
-                return false
-            }
-
-            if (!this.ClickListenMenuItem(uia, lastMoreOptionsButton)) {
-                StandardLoadingBar_Hide(0)
-                this.Fail()
-                return false
-            }
-
-            StandardLoadingBar_Hide(0)
-            this.RestoreOriginalFocus()
-            this.StartRetryCount := 0
-            GeminiBackgroundSetTimer(this, this.CheckStarted.Bind(this), GEMINI_READ_ALOUD_START_POLL_MS)
+            this.ScheduleStep(this.AfterActivation.Bind(this), 1)
             return true
         } catch {
-            try StandardLoadingBar_Hide(0)
             this.Fail()
             return false
         }
     }
 
-    ClickListenMenuItem(uia, lastMoreOptionsButton) {
-        loop GEMINI_LISTEN_MENU_MAX_ATTEMPTS {
+    AfterActivation(*) {
+        this.ClearStep()
+        if (this.UseTrashTab) {
+            Send("^2")
+            ShowGeminiTabBanner(2, this.GeminiHwnd)
+            this.ScheduleStep(this.BuildUIA.Bind(this), GEMINI_TAB_SWITCH_MS)
+            return
+        }
+        this.ScheduleStep(this.BuildUIA.Bind(this), 1)
+    }
+
+    BuildUIA(*) {
+        this.ClearStep()
+        try
+            this.Uia := UIA_Browser("ahk_id " this.GeminiHwnd)
+        catch {
+            this.Fail()
+            return false
+        }
+        this.ScheduleStep(this.InspectControls.Bind(this), GEMINI_UIA_SETTLE_MS)
+        return true
+    }
+
+    InspectControls(*) {
+        this.ClearStep()
+        pauseButton := FindGeminiPauseResumeButton(this.Uia, "Pause")
+        if (pauseButton) {
+            try pauseButton.Click()
+            ShowNotification("Paused", 800, "FFFF00", "000000", 24)
+            this.RestoreOriginalFocus()
+            return true
+        }
+
+        resumeButton := FindGeminiPauseResumeButton(this.Uia, "Resume")
+        if (resumeButton) {
+            try resumeButton.Click()
+            ShowNotification("Resumed", 800, "FFFF00", "000000", 24)
+            this.RestoreOriginalFocus()
+            return true
+        }
+
+        Send "^{End}"
+        this.ScheduleStep(this.AfterScroll.Bind(this), GEMINI_SCROLL_SETTLE_MS)
+        return true
+    }
+
+    AfterScroll(*) {
+        this.ClearStep()
+        if (this.CopyFirst && !this.SkipCopy) {
+            this.ScheduleStep(this.RunCopyAttempt.Bind(this), 1)
+            return
+        }
+        this.BeginListenMenuPhase()
+    }
+
+    RunCopyAttempt(*) {
+        this.ClearStep()
+        copyOpt := { restoreWindow: false, playChimeAndNotify: false, alreadyActive: true }
+        if (CopyLastGeminiMessageToClipboard(copyOpt, this.GeminiHwnd)) {
+            PlayCopyCompletedChime()
+            this.BeginListenMenuPhase()
+            return true
+        }
+        this.CopyRetryCount++
+        if (this.CopyRetryCount < GEMINI_COPY_MAX_RETRIES) {
+            backoffMs := GEMINI_COPY_RETRY_SLEEP_MS * (1 << (this.CopyRetryCount - 1))
+            this.ScheduleStep(this.RunCopyAttempt.Bind(this), backoffMs)
+            return false
+        }
+        this.BeginListenMenuPhase()
+        return false
+    }
+
+    BeginListenMenuPhase() {
+        StandardLoadingBar_Show(this.CopyFirst && !this.SkipCopy ? "🔍 Finding read aloud button and copying..." :
+            "🔍 Finding read aloud button...", BANNER_ACCENT_INTERMEDIATE, { passive: true, centerOnHwnd: 0 })
+        this.ScheduleStep(this.OpenListenMenu.Bind(this), GEMINI_WAIT_BUTTON_POLL_MS)
+    }
+
+    OpenListenMenu(*) {
+        this.ClearStep()
+        lastMoreOptionsButton := GetLastGeminiMoreOptionsButton(this.Uia)
+        if (!lastMoreOptionsButton) {
+            StandardLoadingBar_Hide(0)
+            this.Fail()
+            return false
+        }
+        try lastMoreOptionsButton.Click()
+        catch {
+            this.HandleListenMenuRetry()
+            return false
+        }
+        this.MenuPollCount := 0
+        this.ScheduleStep(this.WaitForListenMenuReady.Bind(this), GEMINI_MENU_OPEN_MS)
+        return true
+    }
+
+    WaitForListenMenuReady(*) {
+        this.ClearStep()
+        listenMenuItem := GetLastGeminiListenMenuItem(this.Uia)
+        if (listenMenuItem) {
             try {
-                lastMoreOptionsButton.Click()
-                Sleep GEMINI_MENU_OPEN_MS
-                listenMenuItem := WaitForListenMenuItem(uia, GEMINI_LISTEN_MENU_WAIT_MS)
-                if (listenMenuItem) {
-                    try {
-                        listenMenuItem.Click()
-                        Sleep GEMINI_MENU_OPEN_MS
-                        return true
-                    } catch {
-                    }
-                }
+                listenMenuItem.Click()
+                StandardLoadingBar_Hide(0)
+                this.RestoreOriginalFocus()
+                this.StartRetryCount := 0
+                GeminiBackgroundSetTimer(this, this.CheckStarted.Bind(this), GEMINI_READ_ALOUD_START_POLL_MS)
+                return true
             } catch {
-            }
-            if (A_Index < GEMINI_LISTEN_MENU_MAX_ATTEMPTS) {
-                SendEscape()
-                Sleep GEMINI_MENU_OPEN_MS
+                this.HandleListenMenuRetry()
+                return false
             }
         }
+
+        this.MenuPollCount++
+        maxPolls := Ceil(GEMINI_LISTEN_MENU_WAIT_MS / GEMINI_WAIT_BUTTON_POLL_MS)
+        if (this.MenuPollCount < maxPolls) {
+            this.ScheduleStep(this.WaitForListenMenuReady.Bind(this), GEMINI_WAIT_BUTTON_POLL_MS)
+            return false
+        }
+        this.HandleListenMenuRetry()
         return false
+    }
+
+    HandleListenMenuRetry() {
+        this.ClearStep()
+        this.MenuRetryCount++
+        if (this.MenuRetryCount < GEMINI_LISTEN_MENU_MAX_ATTEMPTS) {
+            SendEscape()
+            this.ScheduleStep(this.OpenListenMenu.Bind(this), GEMINI_MENU_OPEN_MS)
+            return
+        }
+        try StandardLoadingBar_Hide(0)
+        this.Fail()
     }
 
     CheckStarted() {
@@ -1271,6 +1437,7 @@ class GeminiAsyncReadAloud {
                 if (FindGeminiPauseResumeButton(root, "Pause")) {
                     GeminiBackgroundStopTimer(this)
                     GeminiPerfLog("read_aloud", this.StartTick)
+                    GeminiEndAutomationSwitch("gemini_read_aloud_started")
                     ShowNotification(this.CopyFirst ? "Copied & Reading aloud" : "Reading aloud", 800, "FFFF00",
                         "000000", 24)
                     return
@@ -1294,12 +1461,15 @@ class GeminiAsyncReadAloud {
     }
 
     RestoreOriginalFocus() {
+        this.ClearStep()
         this.AlreadyActive := false
         if (this.OriginalHwnd)
             GeminiRestoreWindow(this.OriginalHwnd)
     }
 
     Fail() {
+        this.ClearStep()
+        try StandardLoadingBar_Hide(0)
         ShowNotification("Read aloud failed – Gemini UI not ready", 2000, "FF6666", "FFFFFF", 22)
         this.RestoreOriginalFocus()
     }
@@ -1779,7 +1949,14 @@ class GeminiAsyncTTS {
 GeminiQueueBackgroundTask(taskKind, payload := "") {
     if (!GEMINI_USE_PYTHON_IPC)
         return false
-    ; Reserved for a small localhost helper. Keep UIA/window orchestration in AHK unless a future
-    ; phase proves queueing or parsing work is better handled by Python.
-    return false
+    if (!GeminiIPC_EnsureReady(400))
+        return false
+    reqPayload := payload ? payload : Map()
+    if (!(reqPayload is Map))
+        reqPayload := Map()
+    reqPayload["requestedAt"] := A_TickCount
+    resp := GeminiIPC_QueueTask(taskKind, reqPayload)
+    if (!GeminiIPC_ResponseOk(resp))
+        return false
+    return GeminiIPC_ResponseResultMap(resp)
 }

@@ -71,12 +71,60 @@ WM_IsExcludedIndicatorWindow(hwnd) {
     return false
 }
 
+WM_UsesAutomationDaemon() {
+    return WM_USE_DAEMON && WM_USE_PIPE_IPC && WM_USE_EVENT_HOOK_CACHE
+}
+
+WMAutomation_SuppressCursorCentering(reason := "", durationMs := 0) {
+    global g_WMAutomationSuppressUntil, g_WMAutomationSuppressReason
+    durationMs := durationMs > 0 ? durationMs : WM_AUTOMATION_SWITCH_DEFAULT_MS
+    g_WMAutomationSuppressUntil := A_TickCount + durationMs
+    g_WMAutomationSuppressReason := reason
+    if (WM_UsesAutomationDaemon()) {
+        try WMIPC_BeginAutomationSwitch(reason, durationMs)
+    }
+    return g_WMAutomationSuppressUntil
+}
+
+WMAutomation_ClearCursorSuppression(reason := "") {
+    global g_WMAutomationSuppressUntil, g_WMAutomationSuppressReason
+    g_WMAutomationSuppressUntil := 0
+    g_WMAutomationSuppressReason := ""
+    if (WM_UsesAutomationDaemon()) {
+        try WMIPC_EndAutomationSwitch(reason)
+    }
+}
+
+WMAutomation_CursorCenteringSuppressed(hwnd := 0) {
+    global g_WMAutomationSuppressUntil
+    if (A_TickCount < g_WMAutomationSuppressUntil)
+        return true
+    if (WM_UsesAutomationDaemon()) {
+        try {
+            state := WMIPC_GetForegroundWindowState()
+            if (state.Has("suppressCursorCentering") && state["suppressCursorCentering"])
+                return true
+        } catch {
+        }
+    }
+    return false
+}
+
+WM_MaybeCenterMouse(hwnd, reason := "") {
+    if (!hwnd || WMAutomation_CursorCenteringSuppressed(hwnd))
+        return false
+    MoveMouseToCenter(hwnd)
+    return true
+}
+
 ; --- Globals & Timers --------------------------------------------------------
 global g_LastActiveHwnd := 0
 global g_LastMouseClickTick := 0   ; Timestamp of the most recent mouse click (A_TickCount)
 global g_WindowCycleIndices := Map()  ; Keeps per-monitor cycling position
+global g_WMAutomationSuppressUntil := 0
+global g_WMAutomationSuppressReason := ""
 ; When daemon is used, foreground is driven by daemon cache (lower-frequency check); else legacy 100ms polling
-if (WM_USE_DAEMON && WM_USE_PIPE_IPC && WM_USE_EVENT_HOOK_CACHE)
+if (WM_UsesAutomationDaemon())
     SetTimer MonitorActiveWindow, 250
 else
     SetTimer MonitorActiveWindow, 100
@@ -239,7 +287,7 @@ MonitorActiveWindow() {
     static lastHwnd := 0
     hwnd := 0
     state := ""
-    if (WM_USE_DAEMON && WM_USE_PIPE_IPC && WM_USE_EVENT_HOOK_CACHE) {
+    if (WM_UsesAutomationDaemon()) {
         try {
             state := WMIPC_GetForegroundWindowState()
             if (state.Has("hwnd"))
@@ -263,6 +311,9 @@ MonitorActiveWindow() {
         return
 
     if (WM_IsExcludedIndicatorWindow(hwnd))
+        return
+
+    if (WMAutomation_CursorCenteringSuppressed(hwnd))
         return
 
     MoveMouseToCenter(hwnd)
@@ -433,7 +484,7 @@ MoveWinToMonitor(mon) {
 
     ; Move mouse to the center of the window after the move
     Sleep 150 ; allow window animation to finish
-    MoveMouseToCenter(hwnd)
+    WM_MaybeCenterMouse(hwnd, "move_window_to_monitor")
 }
 
 ; =============================================================================
@@ -458,7 +509,7 @@ CycleWindowsOnMonitor(order) {
             ; No active window available
         }
         if (hwndCur && !WM_IsExcludedIndicatorWindow(hwndCur))
-            MoveMouseToCenter(hwndCur)
+            WM_MaybeCenterMouse(hwndCur, "cycle_windows_empty")
         return
     }
 
@@ -540,7 +591,7 @@ CycleWindowsOnMonitor(order) {
 
 GetVisibleWindowsOnMonitor(mon) {
     ; Daemon path: use O(1) cache when flags enabled (Phase 3)
-    if (WM_USE_DAEMON && WM_USE_PIPE_IPC && WM_USE_EVENT_HOOK_CACHE) {
+    if (WM_UsesAutomationDaemon()) {
         try {
             winList := WMIPC_GetVisibleWindowsByMonitor(mon)
             if (winList.Length > 0) {
@@ -816,26 +867,31 @@ ProjectSelector_ResolveProjectCharMap() {
 global g_Projects := [
     ; General category
     { name: "Scripts", path: "C:\Users\eduev\Meu Drive\17 - Projects\scripts", workPath: "C:\Users\fie7ca\Documents\scripts",
-        category: "General", char: "s" }, { name: "14-my-Notes", path: "C:\Users\eduev\Meu Drive\17 - Projects\notes", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes",
-            category: "General", char: "n" }, { name: "", path: "", workPath: "", category: "General" }, { name: "", path: "",
+        category: "General", char: "s" }, { name: "14-my-Notes", path: "C:\Users\eduev\Meu Drive\17 - Projects\notes",
+            workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes",
+            category: "General", char: "n" }, { name: "", path: "", workPath: "", category: "General" }, { name: "",
+                path: "",
                 workPath: "", category: "General" }, { name: "", path: "", workPath: "", category: "General" },
                 ; Personal category
-                { name: "ZMK Sofle", path: "C:\Users\eduev\Documents\ZMK\zmk-sofle", workPath: "", category: "Personal", char: "z" }, { name: "AI ExperIment",
-                    path: "C:\Users\eduev\Documents\Web projects\ai-experiments", workPath: "",
-                    category: "Personal", char: "i" }, { name: "my-personal-rePo", path: "C:\Users\eduev\Meu Drive\17 - Projects\my-personal-repo",
-                        workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\my-personal-repo",
-                        category: "Personal", char: "p" }, { name: "",
-                            path: "", workPath: "", category: "Personal" }, { name: "", path: "", workPath: "",
-                                category: "Personal" },
-                            ; Work category
-                            { name: "GS_E&S_CIP Dashboard research and design workspace folder", path: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_E&S_CIP Dashboard research and design workspace folder",
-                                workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_E&S_CIP Dashboard research and design workspace folder",
-                                category: "Work", char: "d" }, { name: "GS_UX core team_UX and CIP Integration", path: "",
-                                    workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_UX core team_UX and CIP Integration",
-                                    category: "Work", char: "u" }, { name: "🪂 A vante", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\General - GS_BDU_Team\00_UX_GS_Team\AM_Planning\Avante",
+                { name: "ZMK Sofle", path: "C:\Users\eduev\Documents\ZMK\zmk-sofle", workPath: "", category: "Personal",
+                    char: "z" }, { name: "AI ExperIment",
+                        path: "C:\Users\eduev\Documents\Web projects\ai-experiments", workPath: "",
+                        category: "Personal", char: "i" }, { name: "my-personal-rePo", path: "C:\Users\eduev\Meu Drive\17 - Projects\my-personal-repo",
+                            workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\my-personal-repo",
+                            category: "Personal", char: "p" }, { name: "",
+                                path: "", workPath: "", category: "Personal" }, { name: "", path: "", workPath: "",
+                                    category: "Personal" },
+                                ; Work category
+                                { name: "GS_E&S_CIP Dashboard research and design workspace folder", path: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_E&S_CIP Dashboard research and design workspace folder",
+                                    workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_E&S_CIP Dashboard research and design workspace folder",
+                                    category: "Work", char: "d" }, { name: "GS_UX core team_UX and CIP Integration",
+                                        path: "",
+                                        workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_UX core team_UX and CIP Integration",
+                                        category: "Work", char: "u" }, { name: "🪂 A vante", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\General - GS_BDU_Team\00_UX_GS_Team\AM_Planning\Avante",
                                             category: "Work", char: "v" }, { name: "🪂 Avante – CapacitY", path: "",
                                                 workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\General - GS_BDU_Team\00_UX_GS_Team\AM_Planning\Avante\Capacity",
-                                                category: "Work", char: "y" }, { name: "E&S Opex CIM Journey Mapping", path: "",
+                                                category: "Work", char: "y" }, { name: "E&S Opex CIM Journey Mapping",
+                                                    path: "",
                                                     workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\opex-cim-journey-mapping",
                                                     category: "Work", char: "o" }, { name: "boiler-plate", path: "",
                                                         workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\boiler-plate",
@@ -1030,7 +1086,7 @@ CleanupProjectSelector() {
 
 ; Return the hwnd of a Cursor window whose title matches the project path, or 0. Does not activate.
 GetCursorHwndForProject(projectPath) {
-    if (WM_USE_DAEMON && WM_USE_PIPE_IPC && WM_USE_EVENT_HOOK_CACHE) {
+    if (WM_UsesAutomationDaemon()) {
         try {
             r := WMIPC_ResolveProjectWindow(projectPath)
             if (r.Has("hwnd") && Integer(r["hwnd"]) != 0)
@@ -1064,7 +1120,7 @@ FindAndActivateCursorWindow(projectPath) {
     matchSegments := ExtractProjectMatchSegments(projectPath)
     cursorWindows := []
 
-    if (WM_USE_DAEMON && WM_USE_PIPE_IPC && WM_USE_EVENT_HOOK_CACHE) {
+    if (WM_UsesAutomationDaemon()) {
         try {
             for w in WMIPC_GetCursorWindows() {
                 title := w.Has("title") ? w["title"] : ""
@@ -1110,8 +1166,9 @@ FindAndActivateCursorWindow(projectPath) {
         activeHwnd := WinGetID("A")
         for window in cursorWindows {
             if (window.hwnd = activeHwnd) {
+                WMAutomation_SuppressCursorCentering("cursor_activate_existing", 1600)
                 WinActivate("ahk_id " window.hwnd)
-                MoveMouseToCenter(window.hwnd)
+                WM_MaybeCenterMouse(window.hwnd, "cursor_activate_existing")
                 return window.hwnd
             }
         }
@@ -1120,9 +1177,10 @@ FindAndActivateCursorWindow(projectPath) {
 
     targetWindow := cursorWindows[1]
     try {
+        WMAutomation_SuppressCursorCentering("cursor_activate_target", 1600)
         WinActivate("ahk_id " targetWindow.hwnd)
         WinWaitActive("ahk_id " targetWindow.hwnd, , 2)
-        MoveMouseToCenter(targetWindow.hwnd)
+        WM_MaybeCenterMouse(targetWindow.hwnd, "cursor_activate_target")
         return targetWindow.hwnd
     } catch {
         return 0
@@ -1230,6 +1288,7 @@ WM_EnsureComposerHasFocus(editEl) {
         editEl.ScrollIntoView()
     } catch {
     }
+    WMAutomation_SuppressCursorCentering("cursor_composer_click", 1200)
     try {
         editEl.Click()
     } catch {
@@ -1245,12 +1304,14 @@ WM_EnsureComposerHasFocus(editEl) {
 FocusCursorAITextField(targetHwnd := 0) {
     try {
         if (targetHwnd) {
+            WMAutomation_SuppressCursorCentering("cursor_focus_textfield", 1800)
             WinActivate("ahk_id " targetHwnd)
             WinWaitActive("ahk_id " targetHwnd, , 2)
         } else {
             targetHwnd := WinExist("ahk_exe Cursor.exe")
             if (!targetHwnd)
                 return false
+            WMAutomation_SuppressCursorCentering("cursor_focus_textfield", 1800)
             WinWaitActive("ahk_id " targetHwnd, , 2)
         }
         Sleep 200
@@ -1680,7 +1741,7 @@ HandlePreviewWindowSelection(*) {
 
     previewWindows := []
     previewSource := []  ; list of {hwnd, title} from daemon or legacy
-    if (WM_USE_DAEMON && WM_USE_PIPE_IPC && WM_USE_EVENT_HOOK_CACHE) {
+    if (WM_UsesAutomationDaemon()) {
         try {
             for w in WMIPC_GetPreviewWindows()
                 previewSource.Push({ hwnd: Integer(w["hwnd"]), title: w.Has("title") ? w["title"] : "" })
@@ -1825,8 +1886,9 @@ HandlePreviewWindowSelection(*) {
         for window in previewWindows {
             if (window.hwnd = activeHwnd) {
                 ; This window is already active, just center mouse
+                WMAutomation_SuppressCursorCentering("preview_activate_existing", 1600)
                 WinActivate("ahk_id " window.hwnd)
-                MoveMouseToCenter(window.hwnd)
+                WM_MaybeCenterMouse(window.hwnd, "preview_activate_existing")
                 return
             }
         }
@@ -1839,9 +1901,10 @@ HandlePreviewWindowSelection(*) {
     if (previewWindows.Length > 0) {
         targetWindow := previewWindows[1]
         try {
+            WMAutomation_SuppressCursorCentering("preview_activate_target", 1600)
             WinActivate("ahk_id " targetWindow.hwnd)
             WinWaitActive("ahk_id " targetWindow.hwnd, , 2)
-            MoveMouseToCenter(targetWindow.hwnd)
+            WM_MaybeCenterMouse(targetWindow.hwnd, "preview_activate_target")
         } catch {
             ShowNotification_WM("Failed to activate preview window.")
         }
@@ -1908,7 +1971,7 @@ HandleCursorWindowSelectionByChar(char) {
 
     if (targetHwnd != "") {
         allCursorWindows := []
-        if (WM_USE_DAEMON && WM_USE_PIPE_IPC && WM_USE_EVENT_HOOK_CACHE) {
+        if (WM_UsesAutomationDaemon()) {
             try {
                 for w in WMIPC_GetCursorWindows()
                     allCursorWindows.Push(Integer(w["hwnd"]))
@@ -2012,7 +2075,7 @@ ShowCursorWindowSelectorSubMenu() {
 
     ; Get all Cursor windows (daemon cache or legacy)
     cursorWindows := []
-    if (WM_USE_DAEMON && WM_USE_PIPE_IPC && WM_USE_EVENT_HOOK_CACHE) {
+    if (WM_UsesAutomationDaemon()) {
         try {
             for w in WMIPC_GetCursorWindows()
                 cursorWindows.Push(Integer(w["hwnd"]))

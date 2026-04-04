@@ -36,6 +36,7 @@ _lock = threading.Lock()
 _hwnd_to_info: dict = {}
 _pid_to_hwnds: dict = {}
 _foreground_hwnd: int = 0
+_last_non_gemini_foreground_hwnd: int = 0
 _z_sequence: int = 0
 _hook_thread = None
 _resync_thread = None
@@ -43,6 +44,8 @@ _shutdown = threading.Event()
 _resync_interval_sec = 30.0
 _last_resync_ts = 0.0
 _event_sequence = 0
+_cursor_suppressed_until_ms: int = 0
+_cursor_suppression_reason: str = ""
 
 
 def _get_process_exe(pid: int) -> str:
@@ -106,6 +109,20 @@ def _get_window_info(hwnd: int) -> dict | None:
         return None
 
 
+def _now_ms() -> int:
+    return int(time.time() * 1000)
+
+
+def _looks_like_gemini_window(info: dict | None) -> bool:
+    if not info:
+        return False
+    title = str(info.get("title", "") or "").lower()
+    if "gemini" in title:
+        return True
+    exe = str(info.get("exe", "") or "").lower()
+    return exe == "chrome.exe" and "gemini" in title
+
+
 def _is_visible_top_level(hwnd: int) -> bool:
     if not hwnd or not HAS_WIN32:
         return False
@@ -157,16 +174,64 @@ def _update_cache_remove(hwnd: int) -> None:
 
 
 def _update_foreground(hwnd: int) -> None:
-    global _foreground_hwnd, _z_sequence, _hwnd_to_info
+    global _foreground_hwnd, _last_non_gemini_foreground_hwnd, _z_sequence, _hwnd_to_info
     if not hwnd:
         return
+    if hwnd not in _hwnd_to_info:
+        _update_cache_add(hwnd)
     with _lock:
         _foreground_hwnd = hwnd
         _z_sequence += 1
         if hwnd in _hwnd_to_info:
             _hwnd_to_info[hwnd]["zHint"] = _z_sequence
-        else:
-            _update_cache_add(hwnd)
+        info = _hwnd_to_info.get(hwnd)
+        if info and not _looks_like_gemini_window(info):
+            _last_non_gemini_foreground_hwnd = hwnd
+
+
+def begin_automation_switch(duration_ms: int = 1500, reason: str = "") -> dict:
+    global _cursor_suppressed_until_ms, _cursor_suppression_reason
+    duration_ms = max(0, int(duration_ms or 0))
+    until_ms = _now_ms() + duration_ms
+    with _lock:
+        _cursor_suppressed_until_ms = until_ms
+        _cursor_suppression_reason = reason or ""
+    return {
+        "cursorSuppressed": duration_ms > 0,
+        "cursorSuppressedUntilMs": until_ms,
+        "cursorSuppressionReason": reason or "",
+    }
+
+
+def end_automation_switch() -> dict:
+    global _cursor_suppressed_until_ms, _cursor_suppression_reason
+    with _lock:
+        _cursor_suppressed_until_ms = 0
+        _cursor_suppression_reason = ""
+    return {
+        "cursorSuppressed": False,
+        "cursorSuppressedUntilMs": 0,
+        "cursorSuppressionReason": "",
+    }
+
+
+def get_automation_context() -> dict:
+    with _lock:
+        fg = _foreground_hwnd
+        last_non_gemini = _last_non_gemini_foreground_hwnd
+        fg_info = _hwnd_to_info.get(fg, {})
+        last_info = _hwnd_to_info.get(last_non_gemini, {})
+        suppressed = _cursor_suppressed_until_ms > _now_ms()
+        return {
+            "foregroundHwnd": fg,
+            "foregroundTitle": fg_info.get("title", ""),
+            "foregroundExe": fg_info.get("exe", ""),
+            "lastNonGeminiHwnd": last_non_gemini,
+            "lastNonGeminiTitle": last_info.get("title", ""),
+            "cursorSuppressed": suppressed,
+            "cursorSuppressedUntilMs": _cursor_suppressed_until_ms if suppressed else 0,
+            "cursorSuppressionReason": _cursor_suppression_reason if suppressed else "",
+        }
 
 
 def _get_cursor_windows() -> list:
@@ -412,14 +477,34 @@ def get_foreground_window_state() -> dict:
     with _lock:
         fg = _foreground_hwnd
         if not fg or fg not in _hwnd_to_info:
-            return {"hwnd": 0, "pid": 0, "title": "", "class": "", "exe": ""}
+            suppressed = _cursor_suppressed_until_ms > _now_ms()
+            return {
+                "hwnd": 0,
+                "pid": 0,
+                "title": "",
+                "class": "",
+                "exe": "",
+                "suppressCursorCentering": suppressed,
+                "cursorSuppressedUntilMs": (
+                    _cursor_suppressed_until_ms if suppressed else 0
+                ),
+                "cursorSuppressionReason": (
+                    _cursor_suppression_reason if suppressed else ""
+                ),
+                "lastNonGeminiHwnd": _last_non_gemini_foreground_hwnd,
+            }
         info = _hwnd_to_info[fg]
+        suppressed = _cursor_suppressed_until_ms > _now_ms()
         return {
             "hwnd": fg,
             "pid": info.get("pid", 0),
             "title": info.get("title", ""),
             "class": info.get("class", ""),
             "exe": info.get("exe", ""),
+            "suppressCursorCentering": suppressed,
+            "cursorSuppressedUntilMs": _cursor_suppressed_until_ms if suppressed else 0,
+            "cursorSuppressionReason": _cursor_suppression_reason if suppressed else "",
+            "lastNonGeminiHwnd": _last_non_gemini_foreground_hwnd,
         }
 
 

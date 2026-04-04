@@ -136,3 +136,27 @@ Illustrates **minimizing** UIA cost on a sub-second hotkey path:
 - **Prefer** a **single** cheap call (`GetCurrentURL`) plus a **documented assumption** (e.g. user enters focus with the watch-page video **paused**) and **one** `Send("k")` over repeated `FindFirst` / subtree scans that can cost hundreds of milliseconds per key press.
 - **Trade-off** must be explicit in code comments: if the assumption is wrong (e.g. video already playing), the same key toggles playback — acceptable only when the workflow guarantees or accepts that state.
 - **Do not** add loading banners or NDJSON logging on the same hotkey path unless required for UX or diagnostics; they add latency and I/O.
+
+---
+
+## 12. Findings: Gemini read-aloud + WindowManagement daemon (polyglot async, 2026)
+
+Interesting outcomes from integrating Python for `Gemini.ahk` / `WindowManagement.ahk` without moving fragile browser UIA into Python. Useful for later refactors and audits.
+
+- **AHK has no user threads for hotkeys.** “Async” means **return quickly from the hotkey** and continue work via `SetTimer(..., -delay)` (one-shot) or periodic timers. Splitting a former single function with chained `Sleep` into **phased callbacks** reduces how long any one timer callback holds the script; it does not parallelize UIA work across CPU cores.
+
+- **Hybrid boundary is deliberate.** **Python:** persistent named-pipe daemon for cheap state (foreground snapshot, optional task queue, cursor-suppression window). **AHK:** hotkeys, `WinActivate`, UIA for Gemini Chrome (“Read aloud”, copy last response). Rebuilding Gemini DOM automation in Python (Playwright/Selenium/UIA) trades latency and maintenance for little gain unless the UI contract is frozen.
+
+- **Small task queue vs. heavy offload.** A minimal `QueueTask` / `GetTaskStatus` pattern lets the hotkey enqueue intent and poll until `ready` without blocking the initial press; the daemon can later grow real work (prefetch, logging) behind the same contract. Avoid `RunWait` or per-keystroke Python spawn (already in anti-patterns §9).
+
+- **Cursor jumps are a policy problem, not only a timer frequency problem.** `MonitorActiveWindow` + `SetCursorPos` on foreground change will fight any automation that activates another window. Mitigations that compose well: (1) **local suppression** (`TickCount`-bounded “do not recenter”), (2) **daemon-backed suppression** so all scripts that call `WMIPC_GetForegroundWindowState` see `suppressCursorCentering`, (3) **gate explicit** `MoveMouseToCenter` behind `MaybeCenterMouse`-style helpers on Cursor/Gemini bridge paths.
+
+- **Restore-focus quality improves with hook cache.** Tracking **last non-Gemini foreground** in the WM hook cache helps pick a sane `OriginalHwnd` when the user’s true prior window is not `WinExist("A")` at hotkey time (e.g. focus already in Gemini).
+
+- **Feature flags must stay orthogonal.** `GEMINI_USE_PYTHON_IPC` gates the Gemini sidecar; WM daemon behavior uses `WM_USE_DAEMON`, `WM_USE_PIPE_IPC`, `WM_USE_EVENT_HOOK_CACHE`. Gemini can call `WMIPC_*` only when WM flags allow connection; otherwise fall back to AHK-only behavior.
+
+- **IPC framing must match on both ends.** If the AHK client speaks length-prefixed JSON over `\\.\pipe\...`, the Python daemon must use the same framing (not a different transport for the same script without updating the client).
+
+- **Repo hygiene:** This tree may **track** some `python/__pycache__/*.pyc` files. Running `python -m py_compile` in the workspace can dirty or create bytecode artifacts; prefer restoring tracked `.pyc` from git or avoiding compile-in-place when only validating syntax elsewhere.
+
+- **Verification reminder for this stack:** With daemons off, behavior should match legacy AHK paths; with daemons on, confirm no pointer recenter during Gemini→restore cycles, read-aloud still reaches the latest response, and IPC timeouts degrade without wedging the script.
