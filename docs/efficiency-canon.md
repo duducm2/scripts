@@ -160,3 +160,11 @@ Interesting outcomes from integrating Python for `Gemini.ahk` / `WindowManagemen
 - **Repo hygiene:** This tree may **track** some `python/__pycache__/*.pyc` files. Running `python -m py_compile` in the workspace can dirty or create bytecode artifacts; prefer restoring tracked `.pyc` from git or avoiding compile-in-place when only validating syntax elsewhere.
 
 - **Verification reminder for this stack:** With daemons off, behavior should match legacy AHK paths; with daemons on, confirm no pointer recenter during Gemini→restore cycles, read-aloud still reaches the latest response, and IPC timeouts degrade without wedging the script.
+
+---
+
+## 13. Shift keys: Gemini paste pacing (condition-based wait, 2026)
+
+- **Avoid fixed multi-second tails** after Clip Angel or screenshot paste into Gemini when the UI can signal “uploading” via `FastCopyMode_GeminiIsUploadingImage`. Prefer **`Gemini_WaitForUploadIdleWithRefocus`** (bounded loop, refocus while uploading) over `Sleep 2600` so fast uploads return early.
+- **Tune `minNoIndicatorMs` per flow:** Clip Angel mixes text and media — use a **high** minimum (e.g. 2600 ms) when no indicator appeared so behavior stays close to the old fixed delay; screenshot paste can use a **lower** minimum (e.g. 800 ms) because image uploads usually surface the heuristic quickly.
+- **Reuse cached `UIA_Browser` in `finally`:** when Gemini stays foreground, **`FastCopyMode_FocusGeminiPromptField(uia)`** avoids a second `UIA_Browser` attach versus always calling `FocusGeminiAskFieldForHwnd` (see `Shift keys.ahk`, `Gemini_PasteFromClipAngelSequential`).

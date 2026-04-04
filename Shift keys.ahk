@@ -2335,15 +2335,18 @@ Gemini_FocusPromptSameAsOpenHotkey(uia) {
     return false
 }
 
-; After each Clip Angel paste: wait until upload UI clears; refocus prompt while uploading.
-Gemini_WaitForUploadIdleWithRefocus(uia) {
+; After each Clip Angel / screenshot paste: bounded wait until upload UI clears; refocus prompt while uploading.
+; timeoutMs: max wait (default FAST_COPY_GEMINI_UPLOAD_IDLE_MS). minNoIndicatorMs: if we never see "uploading",
+; wait at least this long before returning idle (approximates legacy fixed tail when no indicator appears).
+Gemini_WaitForUploadIdleWithRefocus(uia, timeoutMs := 0, minNoIndicatorMs := 500) {
     global FAST_COPY_GEMINI_UPLOAD_IDLE_MS
     if (!IsObject(uia))
         return "uia_fail"
+    if (timeoutMs <= 0)
+        timeoutMs := FAST_COPY_GEMINI_UPLOAD_IDLE_MS
     tStart := A_TickCount
     sawUploading := false
-    minNoIndicatorMs := 500
-    while ((A_TickCount - tStart) < FAST_COPY_GEMINI_UPLOAD_IDLE_MS) {
+    while ((A_TickCount - tStart) < timeoutMs) {
         up := FastCopyMode_GeminiIsUploadingImage(uia)
         if (up)
             sawUploading := true
@@ -2389,20 +2392,24 @@ Gemini_PasteFromClipAngelSequential(count, uia := "") {
                 Sleep 300
                 Send "^!b"
             }
-            ; Fixed pacing for Gemini: allow upload to complete.
-            ; While waiting, keep the prompt focus warm so Gemini is ready for the next paste.
+            ; Brief settle after paste, then condition-based wait for upload UI (efficiency-canon: bounded
+            ; wait vs fixed 2.6s). minNoIndicatorMs 2600 preserves ~legacy tail when no upload indicator.
             Sleep 400
             try FastCopyMode_FocusGeminiPromptField(uia)
-            Sleep 2600
+            try Gemini_WaitForUploadIdleWithRefocus(uia, 4000, 2600)
             try FastCopyMode_FocusGeminiPromptField(uia)
         }
     } finally {
         try StandardLoadingBar_Hide(0)
         try {
             if (FastCopyMode_IsGeminiForeground()) {
-                aw := WinGetID("A")
-                if (aw)
-                    FocusGeminiAskFieldForHwnd(aw, false)
+                if (IsObject(uia)) {
+                    try FastCopyMode_FocusGeminiPromptField(uia)
+                } else {
+                    aw := WinGetID("A")
+                    if (aw)
+                        FocusGeminiAskFieldForHwnd(aw, false)
+                }
             }
         } catch {
         }
@@ -2552,13 +2559,17 @@ FastCopyMode_PasteScreenshotQueue(queue) {
                         "cycle", cycle
                     ))
 
-                ; Gemini-specific: strict pacing between image pastes.
+                ; Gemini: condition-based upload wait (early exit when UI idle) vs fixed 2.6s sleep.
                 if (isGeminiSession) {
                     Sleep 400
                     try FastCopyMode_FocusGeminiPromptField(cachedGeminiUia)
-                    Sleep 2600
+                    idleStatus := IsObject(cachedGeminiUia) ? Gemini_WaitForUploadIdleWithRefocus(cachedGeminiUia, 5000,
+                        800) : "no_uia"
+                    if (idleStatus = "no_uia") {
+                        Sleep 2600
+                        idleStatus := "fallback_fixed_delay"
+                    }
                     try FastCopyMode_FocusGeminiPromptField(cachedGeminiUia)
-                    idleStatus := "fixed_delay_3s"
                     FastCopyMode_DebugLog("H6", "Shift keys.ahk:FastCopyMode_PasteScreenshotQueue",
                         "gemini_after_paste", Map(
                             "idx", idx,

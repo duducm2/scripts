@@ -20,6 +20,8 @@ This document describes how to verify the polyglot refactor (daemon + IPC) and h
    - `WM_USE_EVENT_HOOK_CACHE := true`
 3. Reload `WindowManagement.ahk`.
 
+For intermittent **monitor 1 / wrong-screen** behavior when the daemon is on, see [windowmanagement-monitor1-debug.md](windowmanagement-monitor1-debug.md) (enumeration compare + `WM_DEBUG_MONITOR_MAP` logging).
+
 ## Verification checklist
 
 ### Functional parity
