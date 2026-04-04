@@ -2398,6 +2398,14 @@ Gemini_PasteFromClipAngelSequential(count, uia := "") {
         }
     } finally {
         try StandardLoadingBar_Hide(0)
+        try {
+            if (FastCopyMode_IsGeminiForeground()) {
+                aw := WinGetID("A")
+                if (aw)
+                    FocusGeminiAskFieldForHwnd(aw, false)
+            }
+        } catch {
+        }
     }
 }
 

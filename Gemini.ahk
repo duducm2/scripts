@@ -782,7 +782,8 @@ GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false, options := "") {
 }
 
 ; Copy last Gemini message to clipboard. Used by #!+p and by async pronunciation flow.
-; options.restoreWindow (default true): send !{Tab} after copy. options.playChimeAndNotify (default true): play chime and show "Copied!".
+; options.restoreWindow (default true): send !{Tab} after copy. When false, caret is moved to Ask Gemini via FocusGeminiAskFieldForHwnd (stays on Gemini tab).
+; options.playChimeAndNotify (default true): play chime and show "Copied!".
 ; options.alreadyActive (default false): when true, skip activation; assume Gemini is already the active window (use UIA_Browser() with no arg).
 ; geminiHwnd: optional; if 0, uses GetGeminiWindowHwnd(). Returns true if copy succeeded, false otherwise.
 CopyLastGeminiMessageToClipboard(options := "", geminiHwnd := 0) {
@@ -836,6 +837,8 @@ CopyLastGeminiMessageToClipboard(options := "", geminiHwnd := 0) {
         }
         if (restoreWindow)
             Send "!{Tab}"
+        else
+            FocusGeminiAskFieldForHwnd(geminiHwnd, false)
         GeminiPerfLog("copy", t0)
         return true
     } catch {
@@ -846,11 +849,14 @@ CopyLastGeminiMessageToClipboard(options := "", geminiHwnd := 0) {
 
 ; Win+Alt+Shift+P : Click the last Copy button in Gemini (activates Gemini, scrolls to bottom with Ctrl+End, then copies last response)
 ; Works in EN ("Copy") and PT ("Copiar") UI. Uses tree order: last Copy button in the UI tree = last response.
+; Stays on Gemini (no Alt+Tab); leaves caret in Ask field + ready chime after copy.
 #!+p:: {
     try {
         t0 := A_TickCount
-        if (!CopyLastGeminiMessageToClipboard())
+        if (!CopyLastGeminiMessageToClipboard({ restoreWindow: false, playChimeAndNotify: true }))
             ShowNotification("Copy failed – ensure Gemini is open and has a response", 2500, "FF6666", "FFFFFF", 22)
+        else if (hwnd := GetGeminiWindowHwnd())
+            FocusGeminiAskFieldForHwnd(hwnd, true)
         GeminiPerfLog("hotkey_copy", t0)
     } catch as err {
         ShowNotification("Copy error: " (err.Message ? err.Message : "unknown"), 2500, "FF6666", "FFFFFF", 22)
@@ -1440,6 +1446,8 @@ class GeminiAsyncReadAloud {
                     GeminiEndAutomationSwitch("gemini_read_aloud_started")
                     ShowNotification(this.CopyFirst ? "Copied & Reading aloud" : "Reading aloud", 800, "FFFF00",
                         "000000", 24)
+                    if (this.GeminiHwnd && WinActive("ahk_id " this.GeminiHwnd))
+                        FocusGeminiAskFieldForHwnd(this.GeminiHwnd, false)
                     return
                 }
             } catch {
@@ -1465,6 +1473,8 @@ class GeminiAsyncReadAloud {
         this.AlreadyActive := false
         if (this.OriginalHwnd)
             GeminiRestoreWindow(this.OriginalHwnd)
+        if (this.GeminiHwnd && WinActive("ahk_id " this.GeminiHwnd))
+            FocusGeminiAskFieldForHwnd(this.GeminiHwnd, false)
     }
 
     Fail() {
@@ -1615,6 +1625,8 @@ class GeminiAsyncLookup {
         }
         ; Use clipboard content only after change detected (or timeout) so the banner shows current content.
         bannerText := A_Clipboard
+        if (this.OriginalHwnd = this.GeminiHwnd)
+            FocusGeminiAskFieldForHwnd(this.GeminiHwnd, false)
         WinActivate("ahk_id " this.OriginalHwnd)
         StandardLoadingBar_Hide(0)
         this.ShowResultBanner(bannerText)
@@ -1756,6 +1768,8 @@ class GeminiDelayedSubmitMonitor {
         if (readAloud)
             GeminiTriggerReadAloud(false, false, { originalHwnd: this.OriginalHwnd, geminiHwnd: this.GeminiHwnd,
                 alreadyActive: true })
+        if (WinActive("ahk_id " this.GeminiHwnd))
+            FocusGeminiAskFieldForHwnd(this.GeminiHwnd, false)
         ; Gemini/Clipboard → Original: return transitions are immediate (no warning).
         if (!skipRestoreFocus && WinExist("ahk_id " this.OriginalHwnd) && !WinActive("ahk_id " this.OriginalHwnd)) {
             WinActivate("ahk_id " this.OriginalHwnd)

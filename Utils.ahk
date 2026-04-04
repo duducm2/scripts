@@ -90,6 +90,59 @@ FindGeminiPromptField(uia) {
     return 0
 }
 
+; Move keyboard focus to the main Ask Gemini field when that Chrome window is already foreground.
+; Does not WinActivate (avoids stealing focus from another app). Optional chime matches Gemini.ahk open-hotkey UX.
+Utils_PlayGeminiFocusedChime(minIntervalMs := 400) {
+    static lastChimeTick := 0
+    if (!IsSoundEnabled())
+        return false
+    now := A_TickCount
+    if (lastChimeTick && (now - lastChimeTick) < minIntervalMs)
+        return false
+    lastChimeTick := now
+    try SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
+    return true
+}
+
+FocusGeminiAskFieldForHwnd(geminiHwnd, playChime := false) {
+    if (!geminiHwnd)
+        return false
+    try {
+        if (!WinActive("ahk_id " geminiHwnd))
+            return false
+    } catch {
+        return false
+    }
+    try {
+        uia := UIA_Browser("ahk_id " geminiHwnd)
+        Sleep 120
+        promptField := FindGeminiPromptField(uia)
+        if (!promptField)
+            return false
+        try {
+            if (promptField.HasKeyboardFocus) {
+                if (playChime)
+                    Utils_PlayGeminiFocusedChime()
+                return true
+            }
+        } catch {
+        }
+        try promptField.SetFocus()
+        Sleep 100
+        if (!promptField.HasKeyboardFocus) {
+            try promptField.Click()
+            Sleep 80
+        }
+        if (promptField.HasKeyboardFocus) {
+            if (playChime)
+                Utils_PlayGeminiFocusedChime()
+            return true
+        }
+    } catch {
+    }
+    return false
+}
+
 ; 1-based active Chrome tab index via UIA (tab bar). Returns { index, count } or 0. Shared with Gemini.ahk.
 GetChromeActiveTabIndex(uia) {
     try {
