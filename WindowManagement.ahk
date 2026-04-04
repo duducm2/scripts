@@ -79,6 +79,8 @@ _WM_Dbg2EmitNdjson(j) {
     }
 }
 
+_WM_Dbg2Adm() => (DllCall("shell32\IsUserAnAdmin") ? 1 : 0)
+
 ; Always written (close-M1 trace only) — survives missing WM_DEBUG flag / Google Drive FileAppend quirks; use DbgView for OutputDebug.
 _WM_Dbg2LogCloseTrace(hypothesisId, location, message, dataJsonStr, runId := "run1") {
     ts := DllCall("kernel32\GetTickCount64", "UInt64")
@@ -156,8 +158,13 @@ WM_CloseM1Debug(source) {
     global g_WM_Dbg2Close1Src
     g_WM_Dbg2Close1Src := source
     ; #region agent log debug 2f65b1
+    try
+        ctx := _WM_Dbg2CtxFields()
+    catch {
+        ctx := '"ctxErr":1'
+    }
     _WM_Dbg2LogCloseTrace("H0", "WM_CloseM1Debug", "close_m1_hotkey",
-        Format('{"source":"%s",%s}', source, _WM_Dbg2CtxFields()))
+        Format('{"source":"%s","ahkAdmin":%d,%s}', StrReplace(source, '"', "'"), _WM_Dbg2Adm(), ctx))
     if (_WM_Dbg2Enabled()) {
         try ShowNotification_WM("Dbg: CloseM1 " source, 700)
         catch {
@@ -331,8 +338,8 @@ if (WM_UsesAutomationDaemon())
 else
     SetTimer MonitorActiveWindow, 100
 
-; Tray: bypass keyboard hooks (IDE/Electron) to verify CloseWindowOnMonitor(1) vs chord routing.
-A_TrayMenu.Add("Close top on monitor 1 (debug)", (*) => WM_CloseM1Debug("tray"))
+; Tray: no keyboard hooks — compare logs (trace=tray) vs hotkey path (H0 + close1Src).
+A_TrayMenu.Add("Test Close M1", (*) => CloseWindowOnMonitor(1, "tray"))
 
 ; --- Hotkeys & Functions -----------------------------------------------------
 
@@ -1001,18 +1008,30 @@ MinimizeWindowOnMonitor(order) {
 ; =============================================================================
 ; Close the active window on the specified monitor
 ; Function: CloseWindowOnMonitor(order)
+; traceSrc: optional; when order=1 and set (e.g. "tray"), logged as close1Src without WM_CloseM1Debug.
 ; =============================================================================
-CloseWindowOnMonitor(order) {
+CloseWindowOnMonitor(order, traceSrc := "") {
     global g_WM_Dbg2Close1Src
     idx := GetMonitorIndexByOrder(order)
     if (!idx) {
+        ; #region agent log debug 2f65b1
+        _WM_Dbg2LogCloseTrace("H1x", "CloseWindowOnMonitor", "no_monitor_idx",
+            Format('{"order":%d,"monCount":%d,"trace":"%s","ahkAdmin":%d}', order, MonitorGetCount(),
+            StrReplace(traceSrc, '"', "'"), _WM_Dbg2Adm()))
+        ; #endregion
         ShowNotification_WM("Monitor " order " not available (only " MonitorGetCount() " detected).")
         return
     }
     ; #region agent log debug 2f65b1
-    src := (order = 1) ? g_WM_Dbg2Close1Src : ""
+    src := (order = 1) ? (traceSrc != "" ? traceSrc : g_WM_Dbg2Close1Src) : ""
+    try
+        ctx := _WM_Dbg2CtxFields()
+    catch {
+        ctx := '"ctxErr":1'
+    }
     _WM_Dbg2LogCloseTrace("H1", "CloseWindowOnMonitor", "entry",
-        Format('{"order":%d,"ahkIdx":%d,"close1Src":"%s",%s}', order, idx, src, _WM_Dbg2CtxFields()))
+        Format('{"order":%d,"ahkIdx":%d,"close1Src":"%s","ahkAdmin":%d,%s}', order, idx, StrReplace(src, '"', "'"),
+        _WM_Dbg2Adm(), ctx))
     ; #endregion
 
     ; Close always uses legacy WinGetList enumeration so the list matches MonitorGet(idx); daemon IPC can
@@ -1020,9 +1039,14 @@ CloseWindowOnMonitor(order) {
     windows := GetVisibleWindowsOnMonitor(idx, true)
     ; #region agent log debug 2f65b1
     _WM_Dbg2LogCloseTrace("H2", "CloseWindowOnMonitor", "after_enum",
-        Format('{"order":%d,"winCount":%d}', order, windows.Length))
+        Format('{"order":%d,"ahkIdx":%d,"winCount":%d,"ahkAdmin":%d}', order, idx, windows.Length, _WM_Dbg2Adm()))
     ; #endregion
     if (windows.Length = 0) {
+        ; #region agent log debug 2f65b1
+        _WM_Dbg2LogCloseTrace("H2x", "CloseWindowOnMonitor", "no_windows_on_idx",
+            Format('{"order":%d,"ahkIdx":%d,"close1Src":"%s","ahkAdmin":%d}', order, idx, StrReplace(src, '"', "'"),
+            _WM_Dbg2Adm()))
+        ; #endregion
         ShowNotification_WM("No windows found on monitor " order)
         return
     }
@@ -1048,8 +1072,16 @@ CloseWindowOnMonitor(order) {
         }
         ; #region agent log debug 2f65b1
         still := WinExist("ahk_id " th) ? 1 : 0
+        tex := "?"
+        try
+            tex := WinGetProcessName("ahk_id " th)
+        catch {
+        }
+        tex := StrReplace(StrReplace(tex, '"', "'"), "\", "/")
         _WM_Dbg2LogCloseTrace("H3", "CloseWindowOnMonitor", "post_close",
-            Format('{"order":%d,"targetHwnd":%u,"stillExists":%d}', order, Integer(th), still))
+            Format('{"order":%d,"targetHwnd":%u,"stillExists":%d,"targetExe":"%s","close1Src":"%s","ahkAdmin":%d}',
+                order,
+                Integer(th), still, tex, StrReplace(src, '"', "'"), _WM_Dbg2Adm()))
         ; #endregion
     } catch Error as e {
         ShowNotification_WM("Failed to close window on monitor " order ": " e.Message)
