@@ -522,7 +522,7 @@ Outlook - Reminders (Shift)
 ⏰ [Y]Snooze 1 da[Y]
 ⏰ [W]Snooze 1 [W]eek
 ✅ [D][D]ismiss reminder (selected item)
-❌ [X]Dismiss all reminders
+❌ [X]Dismiss all reminders (confirm)
 🌐 [J][J]oin online (selected item)
 )"  ; end Outlook Reminder
 
@@ -4725,9 +4725,11 @@ Reminders_ExecuteItemAction(action) {
     Confirm("1 day")
 }
 
-; Shift + X : Dismiss all reminders - Dismiss
+; Shift + X : Dismiss all reminders - Dismiss (confirm first: New Outlook + classic)
 +X:: {
     if Reminders_IsNewOutlookWindow() {
+        if MsgBox("Dismiss all reminders?", "Confirm Dismiss", "YesNo Icon?") != "Yes"
+            return
         ; Ensure loading indicator can't get stuck on exceptions.
         try {
             Reminders_LoadingShow("⏳ Reminders: Dismiss all…")
