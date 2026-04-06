@@ -7859,10 +7859,31 @@ OutlookMail_EnsureNavigationPaneVisible() {
     return false
 }
 
-OutlookMail_ClickInboxFolder() {
+; Left folder list collapsed: ribbon shows "Show navigation pane" (outlook-mail.md: Ribbon … 8,1).
+OutlookMail_IsLeftSidePanelHidden() {
     Outlook_ActivateMainWindow()
-    if !OutlookMail_EnsureNavigationPaneVisible()
-        return false
+    try {
+        root := UIA.ElementFromHandle(WinExist("A"))
+        if !root
+            return false
+        if root.FindFirst({ Name: "Show navigation pane", ControlType: "Button", matchmode: "Substring" })
+            return true
+    } catch {
+    }
+    return false
+}
+
+; Ribbon "high navigation" toggle: show the left folder pane (same control as "Hide navigation pane" when open).
+OutlookMail_ClickHighNavigationShowPane() {
+    Outlook_ActivateMainWindow()
+    if OutlookClickFirst([{ Name: "Show navigation pane", ControlType: "Button", matchmode: "Substring" }])
+        return true
+    return OutlookMail_EnsureNavigationPaneVisible()
+}
+
+; Nav pane already visible: open Inbox via folder tree only (no ribbon toggle).
+OutlookMail_GoToInboxShortcut() {
+    Outlook_ActivateMainWindow()
     try {
         root := UIA.ElementFromHandle(WinExist("A"))
 
@@ -7893,6 +7914,17 @@ OutlookMail_ClickInboxFolder() {
     } catch {
     }
     return false
+}
+
+OutlookMail_ClickInboxFolder() {
+    Outlook_ActivateMainWindow()
+    if OutlookMail_IsLeftSidePanelHidden() {
+        if !OutlookMail_ClickHighNavigationShowPane()
+            return false
+        Sleep 120
+        return OutlookMail_GoToInboxShortcut()
+    }
+    return OutlookMail_GoToInboxShortcut()
 }
 
 OutlookCompose_FocusToRecipientsField() {
