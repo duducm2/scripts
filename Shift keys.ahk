@@ -481,6 +481,7 @@ Outlook (Shift)
 
 📅 Meeting request (reading pane or popped-out invitation - same shortcuts)
 ✅ [A][A]ccept meeting invitation
+❌ [D][D]ecline meeting
 📌 [Alt+F] Follow (updates from organizer)
 ❓ [T][T]entative (More options …) - when a meeting request is open, runs before [T]o / Required
 
@@ -563,6 +564,7 @@ cheatSheets["OutlookMessage"] := "
 Outlook - Message (Shift)
 📅 Meeting invitation (same shortcuts as main Mail reading pane)
 ✅ [A][A]ccept meeting invitation
+❌ [D][D]ecline meeting
 📌 [Alt+F] Follow (updates from organizer)
 ❓ [T][T]entative (More options …) - when a meeting request is open, runs before [T]o / Required
 📝 [S][S]ubject / Title
@@ -7926,6 +7928,10 @@ OutlookMeeting_ClickFollow() {
     return OutlookMeeting_ClickMenuItemInActiveWindow([{ Name: "Follow;", matchmode: "Substring", ControlType: "MenuItem" }])
 }
 
+OutlookMeeting_ClickDecline() {
+    return OutlookMeeting_ClickMenuItemInActiveWindow([{ Name: "Decline the meeting", ControlType: "MenuItem" }])
+}
+
 ; Opens "More options" (…) then clicks a MenuItem in the overflow menu (see mark-appointment-request.md).
 OutlookMeeting_ClickMoreOptionsThen(menuItemName) {
     try {
@@ -8923,6 +8929,11 @@ SelectExplorerSidebarFirstPinned() {
         ShowCenteredOverlay_Utils("❌ Outlook: Follow not found", 1200, BANNER_ACCENT_ERROR)
 }
 
++D:: {
+    if !OutlookMeeting_ClickDecline()
+        ShowCenteredOverlay_Utils("❌ Outlook: Decline the meeting not found", 1200, BANNER_ACCENT_ERROR)
+}
+
 ; Message inspector-specific hotkeys (Subject/To/Body)
 #HotIf IsOutlookMessageActive()
 
@@ -8976,6 +8987,11 @@ SelectExplorerSidebarFirstPinned() {
 +T:: {
     if !OutlookMeeting_ClickMoreOptionsThen("Tentative")
         ShowCenteredOverlay_Utils("❌ Outlook: Tentative not found", 1200, BANNER_ACCENT_ERROR)
+}
+
++D:: {
+    if !OutlookMeeting_ClickDecline()
+        ShowCenteredOverlay_Utils("❌ Outlook: Decline the meeting not found", 1200, BANNER_ACCENT_ERROR)
 }
 
 #HotIf
