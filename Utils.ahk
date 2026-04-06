@@ -4781,7 +4781,7 @@ DictationMerge_Tick() {
 }
 
 ; Clean the Clipboard macro function
-; Shows a non-modal 4s countdown; auto-continues unless user cancels with N.
+; Shows a non-modal 4s countdown; auto-continues unless user cancels with N; Y proceeds immediately.
 CleanClipboard() {
     CleanClipboard_ShowCountdown()
 }
@@ -4794,12 +4794,12 @@ CleanClipboard_ShowCountdown() {
     StandardLoadingBar_Hide(0)
     Sleep 50
 
-    state := "❓ Clean the clipboard? (removes stored clips, 4s)`nYou have 4 seconds to press [N] to cancel."
-    keyCallbacks := Map("N", CleanClipboard_OnCancel)
+    state := "❓ Clean the clipboard? (removes stored clips, 4s)`nPress [Y] to clean now, or [N] within 4s to cancel."
+    keyCallbacks := Map("N", CleanClipboard_OnCancel, "Y", CleanClipboard_OnTimeout)
 
     ; Center on active monitor (centerOnHwnd := 0), use red accent for destructive action.
     StandardLoadingBar_ShowWithKeys(state, keyCallbacks, 4000, 0, CleanClipboard_OnTimeout,
-        BANNER_ACCENT_ERROR, 0, 17, "", false, "[N] Cancel (auto-continue in 4s)")
+        BANNER_ACCENT_ERROR, 0, 17, "", false, "[Y] Clean now  [N] Cancel (auto-continue in 4s)")
 }
 
 CleanClipboard_OnCancel(*) {
