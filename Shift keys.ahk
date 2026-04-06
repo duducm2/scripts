@@ -561,26 +561,6 @@ Outlook - Message (Shift)
 📝 [B][B]ody (Location → Body)
 )"  ; end Outlook Message
 
-; --- Outlook meeting request (main Mail reading pane, New Outlook) ------------
-cheatSheets["OutlookMeetingRequest"] := "
-(
-Outlook - Meeting request - main window, reading pane (Shift / Alt+F)
-When a meeting request is open in the Mail reading pane (not a popped-out window): Tentative uses [Shift+T] (before To/Required); Follow uses [Alt+F] so [Shift+F] stays Focused/Other.
-✅ [A][A]ccept the meeting
-📌 [Alt+F] Follow (updates only)
-❓ [T][T]entative (More options …)
-)"  ; end Outlook Meeting Request
-
-; --- Outlook meeting invitation (popped-out message window, New Outlook) -------
-cheatSheets["OutlookMeetingInvitation"] := "
-(
-Outlook - Meeting invitation - separate window (Shift / Alt+F)
-Same actions as the reading-pane shortcuts, but for a meeting opened in its own window (Pop out). Not the main Mail shell.
-✅ [A][A]ccept the meeting
-📌 [Alt+F] Follow (updates only)
-❓ [T][T]entative (More options …)
-)"  ; end Outlook Meeting Invitation
-
 ; --- Microsoft Teams â€" meeting window --------------------------------------
 cheatSheets["TeamsMeeting"] := "
 (
@@ -1470,21 +1450,11 @@ GetCheatSheetText() {
         }
         ; Detect Message inspector windows â€" e.g., " - Message (HTML)"
         if RegExMatch(title, "i) - Message \(") {
-            ; Popped-out meeting invitation (same Accept/Decline UI as reading pane; not generic message compose)
-            if IsOutlookMeetingInvitationPopOutActive() {
-                return cheatSheets.Has("OutlookMeetingInvitation") ? cheatSheets["OutlookMeetingInvitation"] : cheatSheets[
-                    "OUTLOOK.EXE"]
-            }
             return cheatSheets.Has("OutlookMessage") ? cheatSheets["OutlookMessage"] : cheatSheets["OUTLOOK.EXE"]
         }
         ; Detect Appointment, Meeting, or Event inspector windows
         if RegExMatch(title, "i)(Appointment|Meeting|Event)") {
             return cheatSheets.Has("OutlookAppointment") ? cheatSheets["OutlookAppointment"] : cheatSheets[
-                "OUTLOOK.EXE"]
-        }
-        ; Main Mail window: meeting request visible in reading pane (Accept/Decline row)
-        if IsOutlookMeetingRequestReadingPaneActive() {
-            return cheatSheets.Has("OutlookMeetingRequest") ? cheatSheets["OutlookMeetingRequest"] : cheatSheets[
                 "OUTLOOK.EXE"]
         }
         ; Fallback to generic Outlook sheet
