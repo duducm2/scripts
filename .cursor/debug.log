@@ -5722,3 +5722,13 @@
 {"id":"log_9678406_1192","timestamp":9678406,"location":"Shift keys.ahk:9883","message":"FindMonthGroup Strategy 2 attempt","data":{"monthCount":14},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}
 {"id":"log_9678437_7751","timestamp":9678437,"location":"Shift keys.ahk:9897","message":"FindMonthGroup found month text","data":{"month":"January"},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}
 {"id":"log_9678437_8538","timestamp":9678437,"location":"Shift keys.ahk:9904","message":"FindMonthGroup Strategy 2 success","data":{"month":"January","found":true},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}
+{"id":"log_1725250_9181","timestamp":1725250,"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"id":"log_1725953_9262","timestamp":1725953,"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"id":"log_1734640_1942","timestamp":1734640,"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"id":"log_1735281_4960","timestamp":1735281,"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"id":"log_1741703_6216","timestamp":1741703,"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"id":"log_1742375_8862","timestamp":1742375,"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"id":"log_1748390_2252","timestamp":1748390,"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"id":"log_1749046_9789","timestamp":1749046,"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"id":"log_1759171_5915","timestamp":1759171,"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"id":"log_1759890_2958","timestamp":1759890,"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
