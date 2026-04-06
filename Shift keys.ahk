@@ -6,7 +6,8 @@
      *   AVAILABLE WIN+ALT+SHIFT COMBINATIONS
      *   The following combinations are not currently in use:
      *
-     *   Letters: P, U
+     *   Letters still free: P, U
+     *   Win+Alt+Shift+L: Outlook Copilot shortcut modal (only when Outlook main is active; #HotIf)
      *   Numbers: (all numbers 0-9 are used)
      *   Symbols: ; ' [ ] \ | ` ~ @ # $ % ^ & * ( ) - _ = + { } : " < > ? /
      *
@@ -7857,6 +7858,345 @@ OutlookCalendar_ClickGoToToday() {
     return ok
 }
 
+; Left-rail Copilot app (copilot.md). AutomationId may vary by tenant; name fallback "Copilot".
+global OUTLOOK_COPILOT_RAIL_AID := "b5abf2ae-c16b-4310-8f8a-d3bcdb52f162"
+
+; Win+Alt+Shift+L modal: same pattern as Utils ShowAiModelSelector (1–9 + Esc).
+global g_OutlookCopilotSelectorGui := false
+global g_OutlookCopilotSelectorActive := false
+global g_OutlookCopilotShortcuts := [
+    { name: "Toggle Copilot voice chat", desc: "Voice chat / new voice session" },
+    { name: "New chat", desc: "Start a new Copilot chat" },
+    { name: "Focus Copilot input", desc: "Message Copilot composer" },
+    { name: "Open navigation panel", desc: "Expand Copilot nav drawer" },
+    { name: "Work scope", desc: "Toggle Work (grounded) scope" },
+    { name: "Web scope", desc: "Toggle Web scope" },
+    { name: "Model / mode (Auto…)", desc: "Open mode / model menu" },
+    { name: "Temporary chat", desc: "Temporary chat session" },
+    { name: "Chats and more", desc: "History and more options" }
+]
+
+OutlookCopilot_FindRailButton(root) {
+    if !root
+        return ""
+    searchRoot := root
+    try {
+        r := root.FindFirst({ Name: "left-rail-appbar", matchmode: "Substring", ControlType: "Group" })
+        if !r
+            r := root.FindFirst({ Name: "left-rail-appbar", matchmode: "Substring" })
+        if r
+            searchRoot := r
+    } catch {
+    }
+    el := ""
+    try el := searchRoot.FindFirst({ AutomationId: OUTLOOK_COPILOT_RAIL_AID, ControlType: "Button" })
+    if !el
+        try el := searchRoot.FindFirst({ AutomationId: OUTLOOK_COPILOT_RAIL_AID })
+    if !el
+        try el := searchRoot.FindFirst({ Name: "Copilot", ControlType: "Button" })
+    if !el
+        try el := root.FindFirst({ AutomationId: OUTLOOK_COPILOT_RAIL_AID, ControlType: "Button" })
+    if !el
+        try el := root.FindFirst({ Name: "Copilot", ControlType: "Button" })
+    return el
+}
+
+; Ensure left-rail Copilot is selected (WebView2 / Chromium root).
+OutlookCopilot_EnsureCopilotRailOn() {
+    Outlook_ActivateMainWindow()
+    root := OutlookMail_RootElement()
+    if !root
+        return false
+    copBtn := OutlookCopilot_FindRailButton(root)
+    if !copBtn
+        return false
+    if Outlook_RailToggleIsPressed(copBtn)
+        return true
+    try copBtn.ScrollIntoView()
+    Sleep 40
+    try copBtn.SetFocus()
+    Sleep 50
+    try copBtn.Click()
+    catch Error {
+        try copBtn.Invoke()
+        catch Error {
+            return false
+        }
+    }
+    return true
+}
+
+; Bounded wait until Copilot chat surface or voice control appears (copilot.md mainChat / buttons).
+OutlookCopilot_WaitCopilotChatSurface(timeoutMs := 2500) {
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        root := OutlookMail_RootElement()
+        if root {
+            try {
+                if root.FindFirst({ AutomationId: "mainChat" })
+                    return true
+            } catch {
+            }
+            try {
+                if root.FindFirst({ AutomationId: "iframe:" OUTLOOK_COPILOT_RAIL_AID })
+                    return true
+            } catch {
+            }
+            try {
+                if root.FindFirst({ Name: "Start a new voice chat", matchmode: "Substring" })
+                    return true
+            } catch {
+            }
+            try {
+                if root.FindFirst({ Name: "Message Copilot", ControlType: "Edit" })
+                    return true
+            } catch {
+            }
+        }
+        Sleep 80
+    }
+    return false
+}
+
+OutlookCopilot_ToggleVoiceChat() {
+    try {
+        StandardLoadingBar_Show("⏳ Outlook Copilot: voice chat…", BANNER_ACCENT_INTERMEDIATE, { passive: false,
+            centerOnHwnd: 0, textWidth: 480, fontSize: 17 })
+    } catch {
+    }
+    ok := false
+    try {
+        try StandardLoadingBar_Update("⏳ Outlook Copilot: opening Copilot…")
+        if !OutlookCopilot_EnsureCopilotRailOn() {
+            ShowCenteredOverlay_Utils("❌ Outlook Copilot: rail button not found", 1600, BANNER_ACCENT_ERROR)
+            return false
+        }
+        try StandardLoadingBar_Update("⏳ Outlook Copilot: loading surface…")
+        OutlookCopilot_WaitCopilotChatSurface(2800)
+        try StandardLoadingBar_Update("⏳ Outlook Copilot: voice chat control…")
+        el := OutlookMail_FindFirst([
+            { Name: "Start a new voice chat", matchmode: "Substring", ControlType: "Button" },
+            { Name: "Start a new voice chat", matchmode: "Substring", Type: 50000 },
+            { Name: "voice chat", matchmode: "Substring", ControlType: "Button" }
+        ])
+        if !el {
+            ShowCenteredOverlay_Utils("❌ Outlook Copilot: voice chat control not found", 1600, BANNER_ACCENT_ERROR)
+            return false
+        }
+        try el.ScrollIntoView()
+        Sleep 40
+        try el.SetFocus()
+        Sleep 50
+        try el.Click()
+        catch Error {
+            try el.Invoke()
+            catch Error {
+                ShowCenteredOverlay_Utils("❌ Outlook Copilot: voice chat click failed", 1600, BANNER_ACCENT_ERROR)
+                return false
+            }
+        }
+        ok := true
+    } finally {
+        try StandardLoadingBar_Hide(0)
+        catch {
+        }
+    }
+    return ok
+}
+
+OutlookCopilot_FocusComposer() {
+    el := OutlookMail_FindFirst([
+        { AutomationId: "m365-chat-editor-target-element", ControlType: "Edit" },
+        { AutomationId: "m365-chat-editor-target-element" },
+        { Name: "Message Copilot", ControlType: "Edit" }
+    ])
+    if !el
+        return false
+    try el.ScrollIntoView()
+    try el.SetFocus()
+    Sleep 40
+    try el.Click()
+    catch {
+        return true
+    }
+    return true
+}
+
+OutlookCopilot_RunSlot(slot) {
+    Outlook_ActivateMainWindow()
+    switch slot {
+        case 1:
+            return OutlookCopilot_ToggleVoiceChat()
+        case 2:
+            if OutlookMail_ClickFirst([
+                { AutomationId: "new-chat-button", ControlType: "Button" },
+                { Name: "New chat", matchmode: "Substring", ControlType: "Button" }
+            ])
+                return true
+            ShowCenteredOverlay_Utils("❌ Outlook Copilot: New chat not found", 1600, BANNER_ACCENT_ERROR)
+            return false
+        case 3:
+            if OutlookCopilot_FocusComposer()
+                return true
+            ShowCenteredOverlay_Utils("❌ Outlook Copilot: composer not found", 1600, BANNER_ACCENT_ERROR)
+            return false
+        case 4:
+            if OutlookMail_ClickFirst([
+                { AutomationId: "sidepaneExpandButton", ControlType: "Button" },
+                { Name: "Open navigation panel", matchmode: "Substring", ControlType: "Button" }
+            ])
+                return true
+            ShowCenteredOverlay_Utils("❌ Outlook Copilot: navigation panel control not found", 1600,
+                BANNER_ACCENT_ERROR)
+            return false
+        case 5:
+            if OutlookMail_ClickFirst([
+                { AutomationId: "toggle-work", ControlType: "Button" },
+                { Name: "Work", ControlType: "Button" }
+            ])
+                return true
+            ShowCenteredOverlay_Utils("❌ Outlook Copilot: Work scope not found", 1600, BANNER_ACCENT_ERROR)
+            return false
+        case 6:
+            if OutlookMail_ClickFirst([
+                { AutomationId: "toggle-web", ControlType: "Button" },
+                { Name: "Web", ControlType: "Button" }
+            ])
+                return true
+            ShowCenteredOverlay_Utils("❌ Outlook Copilot: Web scope not found", 1600, BANNER_ACCENT_ERROR)
+            return false
+        case 7:
+            if OutlookMail_ClickFirst([
+                { AutomationId: "gptModeSwitcher", ControlType: "Button" },
+                { Name: "Auto", matchmode: "Substring", ControlType: "Button" }
+            ])
+                return true
+            ShowCenteredOverlay_Utils("❌ Outlook Copilot: mode menu not found", 1600, BANNER_ACCENT_ERROR)
+            return false
+        case 8:
+            if OutlookMail_ClickFirst([
+                { AutomationId: "menura", ControlType: "Button" },
+                { Name: "Temporary chat", matchmode: "Substring", ControlType: "Button" }
+            ])
+                return true
+            ShowCenteredOverlay_Utils("❌ Outlook Copilot: Temporary chat not found", 1600, BANNER_ACCENT_ERROR)
+            return false
+        case 9:
+            if OutlookMail_ClickFirst([
+                { AutomationId: "moreButton", ControlType: "Button" },
+                { Name: "OpenCopilot chats and more", matchmode: "Substring", ControlType: "Button" },
+                { Name: "chats and more", matchmode: "Substring", ControlType: "Button" }
+            ])
+                return true
+            ShowCenteredOverlay_Utils("❌ Outlook Copilot: More menu not found", 1600, BANNER_ACCENT_ERROR)
+            return false
+        default:
+            return false
+    }
+}
+
+ShowOutlookCopilotSelector() {
+    global g_OutlookCopilotSelectorGui, g_OutlookCopilotSelectorActive, g_OutlookCopilotShortcuts
+    if g_OutlookCopilotSelectorActive
+        return
+    g_OutlookCopilotSelectorGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner")
+    g_OutlookCopilotSelectorGui.BackColor := "1E1E2E"
+    g_OutlookCopilotSelectorGui.MarginX := 20
+    g_OutlookCopilotSelectorGui.MarginY := 15
+    g_OutlookCopilotSelectorGui.SetFont("s14 cCDD6F4 Bold", "Segoe UI")
+    g_OutlookCopilotSelectorGui.Add("Text", "w320 Center", "🤖 Outlook Copilot")
+    g_OutlookCopilotSelectorGui.Add("Text", "w320 h1 Background45475A")
+    g_OutlookCopilotSelectorGui.SetFont("s12 cCDD6F4", "Segoe UI")
+    for num, item in g_OutlookCopilotShortcuts {
+        g_OutlookCopilotSelectorGui.Add("Text", "w320", "[" num "] " item.name)
+        g_OutlookCopilotSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
+        g_OutlookCopilotSelectorGui.Add("Text", "w320 y+2", "    " item.desc)
+        g_OutlookCopilotSelectorGui.SetFont("s12 cCDD6F4", "Segoe UI")
+    }
+    g_OutlookCopilotSelectorGui.Add("Text", "w320 h1 Background45475A y+10")
+    g_OutlookCopilotSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
+    g_OutlookCopilotSelectorGui.Add("Text", "w320 Center", "Press 1–9 | Esc to cancel")
+    activeWin := 0
+    try activeWin := WinGetID("A")
+    catch {
+        activeWin := 0
+    }
+    MonitorGetWorkArea(1, &monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
+    monitorWidth := monitorRight - monitorLeft
+    monitorHeight := monitorBottom - monitorTop
+    if activeWin {
+        rect := Buffer(16, 0)
+        if DllCall("GetWindowRect", "ptr", activeWin, "ptr", rect) {
+            winLeft := NumGet(rect, 0, "int")
+            winTop := NumGet(rect, 4, "int")
+            winRight := NumGet(rect, 8, "int")
+            winBottom := NumGet(rect, 12, "int")
+            centerX := winLeft + (winRight - winLeft) // 2
+            centerY := winTop + (winBottom - winTop) // 2
+            loop MonitorGetCount() {
+                MonitorGetWorkArea(A_Index, &l, &t, &r, &b)
+                if (centerX >= l && centerX <= r && centerY >= t && centerY <= b) {
+                    monitorLeft := l
+                    monitorTop := t
+                    monitorRight := r
+                    monitorBottom := b
+                    monitorWidth := r - l
+                    monitorHeight := b - t
+                    break
+                }
+            }
+        }
+    }
+    g_OutlookCopilotSelectorGui.Show("AutoSize Hide")
+    g_OutlookCopilotSelectorGui.GetPos(&gx, &gy, &gw, &gh)
+    cx := monitorLeft + (monitorWidth - gw) // 2
+    cy := monitorTop + (monitorHeight - gh) // 2
+    g_OutlookCopilotSelectorGui.Show("x" cx " y" cy " NA")
+    g_OutlookCopilotSelectorActive := true
+    loop 9 {
+        Hotkey(String(A_Index), OutlookCopilotSelector_HandleKey, "On")
+    }
+    Hotkey("Escape", OutlookCopilotSelector_Cancel, "On")
+}
+
+OutlookCopilotSelector_HandleKey(ThisHotkey, *) {
+    global g_OutlookCopilotSelectorActive
+    if !g_OutlookCopilotSelectorActive
+        return
+    sel := Integer(ThisHotkey)
+    if sel < 1 || sel > 9
+        return
+    OutlookCopilotSelector_Close()
+    OutlookCopilot_RunSlot(sel)
+}
+
+OutlookCopilotSelector_Cancel(*) {
+    OutlookCopilotSelector_Close()
+}
+
+OutlookCopilotSelector_Close() {
+    global g_OutlookCopilotSelectorGui, g_OutlookCopilotSelectorActive
+    if !g_OutlookCopilotSelectorActive
+        return
+    g_OutlookCopilotSelectorActive := false
+    loop 9 {
+        try Hotkey(String(A_Index), "Off")
+    }
+    try Hotkey("Escape", OutlookCopilotSelector_Cancel, "Off")
+    if IsObject(g_OutlookCopilotSelectorGui) && g_OutlookCopilotSelectorGui.Hwnd {
+        try g_OutlookCopilotSelectorGui.Destroy()
+    }
+    g_OutlookCopilotSelectorGui := false
+}
+
+SelectOutlookCopilotShortcut() {
+    global g_OutlookCopilotSelectorActive
+    if g_OutlookCopilotSelectorActive
+        OutlookCopilotSelector_Close()
+    else
+        ShowOutlookCopilotSelector()
+}
+
 ; True if toggle appears "on" (left-rail app bar toggle buttons).
 Outlook_RailToggleIsPressed(el) {
     if !el
@@ -8526,6 +8866,13 @@ OutlookClickFirst(criteriaList) {
 }
 
 #HotIf IsOutlookMainActive()
+
+; -------------------------------------------------------------------
+; Outlook main: Win+Alt+Shift+L — Copilot shortcut modal (1–9)
+; -------------------------------------------------------------------
+#!+l:: {
+    SelectOutlookCopilotShortcut()
+}
 
 ; -------------------------------------------------------------------
 ; Outlook main window (New Outlook) overflow layer: Ctrl+Alt+…
