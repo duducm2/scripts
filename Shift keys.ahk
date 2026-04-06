@@ -470,8 +470,6 @@ Outlook (Shift)
 ◧ [H]Toggle high [H] navigation pane
 📝 [S][S]ubject / Title
 👥 [T][T]o / Required
-🚫 [D][D]on't send response
-✅ [E]Send [E]vent response
 📝 [B][B]ody (Subject → Body)
 🎯 [F][F]ocused / Other
 🔀 [K]Cycle bac[K]ward pane
@@ -562,6 +560,19 @@ Outlook - Message (Shift)
 👥 [T][T]o / Required
 📝 [B][B]ody (Location → Body)
 )"  ; end Outlook Message
+
+; --- Outlook meeting request (main Mail reading pane, New Outlook) ------------
+cheatSheets["OutlookMeetingRequest"] := "
+(
+Outlook - Meeting request (reading pane) (Shift)
+When a meeting request is open in the reading pane, these override generic [F] / [T] where shown.
+✅ [A][A]ccept the meeting
+📌 [F][F]ollow (updates only)
+❓ [T][T]entative (More options …)
+📝 [R]RSVP with note to organizer (…)
+↩️ [U]Reply to organizer (…)
+👥 [Y]Reply to all attendees (…)
+)"  ; end Outlook Meeting Request
 
 ; --- Microsoft Teams â€" meeting window --------------------------------------
 cheatSheets["TeamsMeeting"] := "
@@ -1457,6 +1468,11 @@ GetCheatSheetText() {
         ; Detect Appointment, Meeting, or Event inspector windows
         if RegExMatch(title, "i)(Appointment|Meeting|Event)") {
             return cheatSheets.Has("OutlookAppointment") ? cheatSheets["OutlookAppointment"] : cheatSheets[
+                "OUTLOOK.EXE"]
+        }
+        ; Main Mail window: meeting request visible in reading pane (Accept/Decline row)
+        if IsOutlookMeetingRequestReadingPaneActive() {
+            return cheatSheets.Has("OutlookMeetingRequest") ? cheatSheets["OutlookMeetingRequest"] : cheatSheets[
                 "OUTLOOK.EXE"]
         }
         ; Fallback to generic Outlook sheet
@@ -7808,7 +7824,9 @@ Outlook_FocusMailReadingPane() {
 OutlookMail_ClickReadingPaneCommand(cmdName) {
     Outlook_ActivateMainWindow()
     try {
-        root := UIA.ElementFromHandle(WinExist("A"))
+        root := OutlookMail_RootElement()
+        if !root
+            root := UIA.ElementFromHandle(WinExist("A"))
         pane := root.FindFirst({ AutomationId: "Skip to message-region" })
         if !pane
             return false
@@ -7825,6 +7843,95 @@ OutlookMail_ClickReadingPaneCommand(cmdName) {
             }
             return true
         }
+    } catch {
+    }
+    return false
+}
+
+; Reading pane group (New Outlook WebView2 UI). Prefer Chromium root (see OutlookMail_RootElement).
+OutlookMail_GetReadingPaneElement() {
+    try {
+        root := OutlookMail_RootElement()
+        if root {
+            pane := root.FindFirst({ AutomationId: "Skip to message-region" })
+            if pane
+                return pane
+        }
+    } catch {
+    }
+    try {
+        root := UIA.ElementFromHandle(WinExist("A"))
+        if root {
+            pane := root.FindFirst({ AutomationId: "Skip to message-region" })
+            if pane
+                return pane
+        }
+    } catch {
+    }
+    return ""
+}
+
+; True when the main Mail window shows a meeting request in the reading pane (Accept/Decline row).
+IsOutlookMeetingRequestReadingPaneActive() {
+    if !IsOutlookMainActive()
+        return false
+    try {
+        pane := OutlookMail_GetReadingPaneElement()
+        if !pane
+            return false
+        return pane.FindFirst({ Name: "Accept the meeting", ControlType: "MenuItem" }) ? true : false
+    } catch {
+    }
+    return false
+}
+
+OutlookMeeting_ClickAccept() {
+    return OutlookMail_ClickFirst([{ Name: "Accept the meeting", ControlType: "MenuItem" }])
+}
+
+OutlookMeeting_ClickFollow() {
+    return OutlookMail_ClickFirst([{ Name: "Follow;", matchmode: "Substring", ControlType: "MenuItem" }])
+}
+
+; Opens "More options" (…) then clicks a MenuItem in the overflow menu (see mark-appointment-request.md).
+OutlookMeeting_ClickMoreOptionsThen(menuItemName) {
+    Outlook_ActivateMainWindow()
+    try {
+        root := OutlookMail_RootElement()
+        if !root
+            return false
+        pane := root.FindFirst({ AutomationId: "Skip to message-region" })
+        searchRoot := pane ? pane : root
+        moreBtn := ""
+        try moreBtn := searchRoot.FindFirst({ AutomationId: "menur7c4", ControlType: "Button" })
+        if !moreBtn
+            try moreBtn := searchRoot.FindFirst({ Name: "More options", ControlType: "Button", matchmode: "Substring" })
+        if !moreBtn
+            try moreBtn := root.FindFirst({ AutomationId: "menur7c4", ControlType: "Button" })
+        if !moreBtn
+            return false
+        try moreBtn.SetFocus()
+        Sleep 50
+        try moreBtn.Click()
+        catch {
+            try moreBtn.Invoke()
+        }
+        Sleep 120
+        el := ""
+        try el := root.FindFirst({ Name: menuItemName, ControlType: "MenuItem" })
+        if !el
+            try el := UIA.ElementFromHandle(WinExist("A")).FindFirst({ Name: menuItemName, ControlType: "MenuItem" })
+        if !el
+            try el := root.FindFirst({ Name: menuItemName, matchmode: "Substring", ControlType: "MenuItem" })
+        if !el
+            return false
+        try el.SetFocus()
+        Sleep 40
+        try el.Click()
+        catch {
+            try el.Invoke()
+        }
+        return true
     } catch {
     }
     return false
@@ -8491,32 +8598,6 @@ OutlookClickFirst(criteriaList) {
     }
 }
 
-; Shift + D : Don't send any response - Don't send
-+D::
-{
-    ShowSmallLoadingIndicator_ChatGPT("Don't send any response…")
-    Send "+{Tab}"
-    Sleep 1500
-    Send "d"
-    Sleep 450
-    Send "{Enter}"
-    Sleep 500
-    HideSmallLoadingIndicator_ChatGPT()
-}
-
-; Shift + E : Send response - Send
-+E::
-{
-    ShowSmallLoadingIndicator_ChatGPT("Send response…")
-    Send "+{Tab}"
-    Sleep 1500
-    Send "s"
-    Sleep 50
-    Send "{Enter}"
-    Sleep 500
-    HideSmallLoadingIndicator_ChatGPT()
-}
-
 ; Shift+W : Calendar [W]eek view
 +W:: {
     try {
@@ -8781,6 +8862,41 @@ SelectExplorerSidebarFirstPinned() {
     } catch Error as err {
         MsgBox "Error toggling Mail/Calendar:`n" err.Message, "Outlook Toggle", "IconX"
     }
+}
+
+; Meeting request in main Mail reading pane (overrides generic +F / +T; defined after base IsOutlookMainActive hotkeys).
+#HotIf IsOutlookMainActive() && IsOutlookMeetingRequestReadingPaneActive()
+
+; Accept / Follow (header row)
++A:: {
+    if !OutlookMeeting_ClickAccept()
+        ShowCenteredOverlay_Utils("❌ Outlook: Accept the meeting not found", 1200, BANNER_ACCENT_ERROR)
+}
+
++F:: {
+    if !OutlookMeeting_ClickFollow()
+        ShowCenteredOverlay_Utils("❌ Outlook: Follow not found", 1200, BANNER_ACCENT_ERROR)
+}
+
+; More options (…) submenu
++T:: {
+    if !OutlookMeeting_ClickMoreOptionsThen("Tentative")
+        ShowCenteredOverlay_Utils("❌ Outlook: Tentative not found", 1200, BANNER_ACCENT_ERROR)
+}
+
++R:: {
+    if !OutlookMeeting_ClickMoreOptionsThen("RSVP with note to organizer")
+        ShowCenteredOverlay_Utils("❌ Outlook: RSVP with note not found", 1200, BANNER_ACCENT_ERROR)
+}
+
++U:: {
+    if !OutlookMeeting_ClickMoreOptionsThen("Reply to organizer")
+        ShowCenteredOverlay_Utils("❌ Outlook: Reply to organizer not found", 1200, BANNER_ACCENT_ERROR)
+}
+
++Y:: {
+    if !OutlookMeeting_ClickMoreOptionsThen("Reply to all attendees")
+        ShowCenteredOverlay_Utils("❌ Outlook: Reply to all attendees not found", 1200, BANNER_ACCENT_ERROR)
 }
 
 ; Message inspector-specific hotkeys (Subject/To/Body)
