@@ -3882,10 +3882,48 @@ Reminders_IsNewOutlookWindow() {
     }
 }
 
-Reminders_GetItems() {
+Reminders_ItemsListSignature(items, maxLabels := 0) {
+    sig := String(items.Length)
+    n := (maxLabels > 0) ? Min(items.Length, maxLabels) : items.Length
+    loop n {
+        sig .= "`n" items[A_Index].label
+    }
+    return sig
+}
+
+; Two consecutive identical UIA snapshots (or maxPasses) — reduces races while Outlook refreshes the list.
+Reminders_GetItemsStable(targetHwnd, delayMs := 80, maxPasses := 5) {
+    lastSig := ""
+    lastItems := []
+    loop maxPasses {
+        cur := Reminders_GetItems(targetHwnd)
+        sig := Reminders_ItemsListSignature(cur, 0)
+        if (lastSig != "" && sig = lastSig) {
+            try Reminders_DebugLog("Shift keys.ahk:Reminders_GetItemsStable", "Stable snapshot matched", Map(
+                "pass", A_Index,
+                "count", cur.Length,
+                "remHwnd", targetHwnd
+            ), "ST1", "pre-fix")
+            return cur
+        }
+        lastSig := sig
+        lastItems := cur
+        Sleep delayMs
+    }
+    try Reminders_DebugLog("Shift keys.ahk:Reminders_GetItemsStable", "Stable snapshot max passes; using last read", Map(
+        "count", lastItems.Length,
+        "remHwnd", targetHwnd
+    ), "ST2", "pre-fix")
+    return lastItems
+}
+
+Reminders_GetItems(targetHwnd := 0) {
     items := []
+    hwnd := targetHwnd ? targetHwnd : WinExist("A")
+    if !hwnd
+        return items
     try {
-        root := UIA.ElementFromHandle(WinExist("A"))
+        root := UIA.ElementFromHandle(hwnd)
         listGroup := root.FindFirst({ ControlType: "Group", Name: "There are", matchmode: "Substring" })
         if !listGroup
             listGroup := root.FindFirst({ Name: "There are", matchmode: "Substring" })
@@ -3942,7 +3980,8 @@ Reminders_GetItems() {
                 "sample", sample,
                 "totalButtons", btns ? btns.Length : 0,
                 "dropped", dropped,
-                "dropSample", dropSample
+                "dropSample", dropSample,
+                "hwnd", hwnd
             ), "X1", "pre-fix")
         } catch {
         }
@@ -4003,7 +4042,7 @@ Reminders_PickTimeout() {
     Reminders_PickKey("TIMEOUT")
 }
 
-Reminders_SelectItem(actionLabel, items, maxItems := 35) {
+Reminders_SelectItem(actionLabel, &items, remHwnd, maxItems := 35) {
     global g_RemindersPickKey
     g_RemindersPickKey := ""
 
@@ -4062,7 +4101,8 @@ Reminders_SelectItem(actionLabel, items, maxItems := 35) {
         "actionLabel", actionLabel,
         "count", count,
         "priorKey", A_PriorKey,
-        "thisHotkey", A_ThisHotkey
+        "thisHotkey", A_ThisHotkey,
+        "remHwnd", remHwnd
     ), "S1", "pre-fix")
     ; #endregion
 
@@ -4100,32 +4140,50 @@ Reminders_SelectItem(actionLabel, items, maxItems := 35) {
             true
         )
     }
+    lastSig := Reminders_ItemsListSignature(items, maxItems)
     ShowModal()
+    try {
+        latest := Reminders_GetItems(remHwnd)
+        latestCount := ClampCount(latest.Length)
+        sig := Reminders_ItemsListSignature(latest, maxItems)
+        if (sig != lastSig) {
+            lastSig := sig
+            items := latest
+            count := latestCount
+            msg := BuildMsg(items, count)
+            try StandardLoadingBar_Update(msg)
+            ; #region agent log
+            try Reminders_DebugLog("Shift keys.ahk:Reminders_SelectItem", "Post-show reminder sync", Map(
+                "itemsCount", items.Length,
+                "showing", count,
+                "remHwnd", remHwnd
+            ), "SR0", "pre-fix")
+            ; #endregion
+        }
+    } catch {
+    }
     ; #region agent log
     try Reminders_DebugLog("Shift keys.ahk:Reminders_SelectItem", "Selection modal shown", Map(
-        "count", count
+        "count", count,
+        "remHwnd", remHwnd
     ), "S3", "pre-fix")
     ; #endregion
 
     deadline := A_TickCount + 45000
     reopens := 0
     lastRefreshTick := A_TickCount
-    lastSig := ""
+    pollMs := 300
     while (A_TickCount < deadline) {
         if (g_RemindersPickKey != "")
             break
 
         ; Live refresh: if reminders change while the modal is open, update the displayed list.
-        if (A_TickCount - lastRefreshTick >= 1000) {
+        if (A_TickCount - lastRefreshTick >= pollMs) {
             lastRefreshTick := A_TickCount
             try {
-                latest := Reminders_GetItems()
+                latest := Reminders_GetItems(remHwnd)
                 latestCount := ClampCount(latest.Length)
-                sig := latest.Length
-                maxSig := Min(8, latest.Length)
-                loop maxSig {
-                    sig .= "|" latest[A_Index].label
-                }
+                sig := Reminders_ItemsListSignature(latest, maxItems)
                 if (sig != lastSig) {
                     lastSig := sig
                     items := latest
@@ -4135,7 +4193,8 @@ Reminders_SelectItem(actionLabel, items, maxItems := 35) {
                     ; #region agent log
                     try Reminders_DebugLog("Shift keys.ahk:Reminders_SelectItem", "Live-refreshed reminder list", Map(
                         "itemsCount", items.Length,
-                        "showing", count
+                        "showing", count,
+                        "remHwnd", remHwnd
                     ), "SR1", "pre-fix")
                     ; #endregion
                 }
@@ -4173,6 +4232,24 @@ Reminders_SelectItem(actionLabel, items, maxItems := 35) {
                 try StandardLoadingBar_Hide(0)
                 Sleep 50
                 ShowModal()
+                try {
+                    latest := Reminders_GetItems(remHwnd)
+                    latestCount := ClampCount(latest.Length)
+                    sig := Reminders_ItemsListSignature(latest, maxItems)
+                    if (sig != lastSig) {
+                        lastSig := sig
+                        items := latest
+                        count := latestCount
+                        msg := BuildMsg(items, count)
+                        try StandardLoadingBar_Update(msg)
+                        try Reminders_DebugLog("Shift keys.ahk:Reminders_SelectItem", "Post-reopen reminder sync", Map(
+                            "itemsCount", items.Length,
+                            "showing", count,
+                            "remHwnd", remHwnd
+                        ), "SR0b", "pre-fix")
+                    }
+                } catch {
+                }
             }
         } catch {
         }
@@ -4393,14 +4470,17 @@ Reminders_ExecuteItemAction(action) {
         try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Enter ExecuteItemAction", Map(
             "action", action,
             "title", WinGetTitle("A"),
-            "class", WinGetClass("A")
+            "class", WinGetClass("A"),
+            "remHwnd", WinExist("A")
         ), "J1", "pre-fix")
         ; #endregion
-        items := Reminders_GetItems()
+        remHwnd := WinExist("A")
+        items := Reminders_GetItemsStable(remHwnd)
         ; #region agent log
         try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Items extracted", Map(
             "action", action,
-            "itemsCount", items.Length
+            "itemsCount", items.Length,
+            "remHwnd", remHwnd
         ), "J2", "pre-fix")
         ; #endregion
         actionLabel := ""
@@ -4425,7 +4505,7 @@ Reminders_ExecuteItemAction(action) {
 
         ; The selection modal is interactive; hide loading before it shows.
         Reminders_LoadingHide(0)
-        idx := Reminders_SelectItem(actionLabel, items)
+        idx := Reminders_SelectItem(actionLabel, &items, remHwnd)
         ; #region agent log
         try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Selection result", Map(
             "action", action,
