@@ -10513,7 +10513,7 @@ SafePlayPrintScreenSound() {
 }
 #InputLevel 0
 
-; True when physical or synthetic Escape must not be sent (matches Escape:: Handy block).
+; True when SendEscape() must not inject Escape (Handy dictation/recording UI). Physical Escape uses Escape:: below.
 IsHandyDictationEscapeSuppressed() {
     global g_DictationActive
     return g_DictationActive || WinActive("Recording ahk_exe handy.exe") || WinActive(
@@ -10521,8 +10521,7 @@ IsHandyDictationEscapeSuppressed() {
             "Recording Overlay ahk_exe handy.exe")
 }
 
-; Helper to send Escape while respecting dictation state.
-; No-op when Handy recording is active or its Recording/Overlay windows exist (same as Escape::).
+; Helper to send Escape while respecting dictation state (no-op when suppressed; see IsHandyDictationEscapeSuppressed).
 SendEscape(count := 1) {
     if (IsHandyDictationEscapeSuppressed()) {
         return
@@ -10534,9 +10533,9 @@ SendEscape(count := 1) {
 }
 
 ; =============================================================================
-; Block Escape Key from handy.exe
-; Prevents Escape key from closing handy.exe while still allowing
-; Escape to work normally in other applications
+; Global Escape hotkey (hook)
+; Forwards physical Escape to the active app (SendInput). Dictation/Handy no longer blocks this path;
+; SendEscape() still suppresses synthetic Escape during dictation when appropriate.
 ; =============================================================================
 
 ; Optional escape callback: when set (e.g. by WindowManagement for project selector), Utils runs it and consumes Escape.
@@ -10548,9 +10547,7 @@ global g_OnEscapePressed := ""
 #InputLevel 10
 Escape::
 {
-    ; Use state-based blocking: check g_DictationActive instead of checking window each time
-    ; This ensures Esc remains restricted for the entire duration of dictation
-    global g_DictationActive, g_OnEscapePressed
+    global g_OnEscapePressed
 
     ; If a consumer (e.g. project selector) registered an escape handler, run it and consume the key
     if (g_OnEscapePressed) {
@@ -10574,15 +10571,7 @@ Escape::
     } catch {
     }
 
-    ; Block Escape when dictation is active, or Handy Recording/Overlay exists or is focused.
-    ; WinExist covers unfocused tool windows that do not hold foreground focus.
-    if (IsHandyDictationEscapeSuppressed()) {
-        ; Block Escape from reaching handy.exe - do nothing
-        ; This prevents the dictation software from closing
-        return
-    }
-
-    ; Otherwise, forward Escape to the system
+    ; Forward Escape to the system
     ; Use SendInput for more reliable key forwarding
     SendInput "{Escape}"
 }
