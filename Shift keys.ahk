@@ -485,6 +485,9 @@ Outlook (Shift)
 📌 [Alt+F] Follow (updates from organizer)
 ❓ [T][T]entative (More options …) - when a meeting request is open, runs before [T]o / Required
 
+📅 Canceled meeting (organizer canceled — Remove event)
+🗑️ [E]Remove event (no confirmation)
+
 Outlook (Ctrl+Alt)
 🔎 [F]Search
 📮 [M]ail view
@@ -567,6 +570,8 @@ Outlook - Message (Shift)
 ❌ [D][D]ecline meeting (confirmation first)
 📌 [Alt+F] Follow (updates from organizer)
 ❓ [T][T]entative (More options …) - when a meeting request is open, runs before [T]o / Required
+📅 Canceled meeting (Remove event)
+🗑️ [E]Remove event (no confirmation)
 📝 [S][S]ubject / Title
 👥 [T][T]o / Required
 📝 [B][B]ody (Location → Body)
@@ -7899,6 +7904,35 @@ IsOutlookMeetingInvitationPopOutActive() {
     return false
 }
 
+; Organizer canceled: primary action is Button "Remove event" (not Accept/Decline).
+IsOutlookRemoveEventReadingPaneActive() {
+    if !IsOutlookMainActive()
+        return false
+    try {
+        root := OutlookMail_RootElementForHwnd(WinExist("A"))
+        if !root
+            return false
+        return root.FindFirst({ Name: "Remove event", ControlType: "Button" }) ? true : false
+    } catch {
+    }
+    return false
+}
+
+IsOutlookRemoveEventPopOutActive() {
+    if !(WinActive("ahk_exe OUTLOOK.EXE") || WinActive("ahk_exe olk.exe"))
+        return false
+    if !RegExMatch(WinGetTitle("A"), "i) - Message \(")
+        return false
+    try {
+        root := OutlookMail_RootElementForHwnd(WinExist("A"))
+        if !root
+            return false
+        return root.FindFirst({ Name: "Remove event", ControlType: "Button" }) ? true : false
+    } catch {
+    }
+    return false
+}
+
 OutlookMeeting_ClickMenuItemInActiveWindow(criteriaList) {
     hwnd := WinExist("A")
     root := OutlookMail_RootElementForHwnd(hwnd)
@@ -7937,6 +7971,11 @@ OutlookMeeting_ClickDecline() {
 ; True if user confirms (Yes). Default button is No (Enter cancels).
 OutlookMeeting_ConfirmDecline() {
     return MsgBox("Decline this meeting invitation?", "Confirm decline", "Icon? YesNo Default2") = "Yes"
+}
+
+; Canceled meeting: Button "Remove event" (see outlook-remove-evet.md). No confirmation in script.
+OutlookMeeting_ClickRemoveEvent() {
+    return OutlookMeeting_ClickMenuItemInActiveWindow([{ Name: "Remove event", ControlType: "Button" }])
 }
 
 ; Opens "More options" (…) then clicks a MenuItem in the overflow menu (see mark-appointment-request.md).
@@ -9003,6 +9042,21 @@ SelectExplorerSidebarFirstPinned() {
         return
     if !OutlookMeeting_ClickDecline()
         ShowCenteredOverlay_Utils("❌ Outlook: Decline the meeting not found", 1200, BANNER_ACCENT_ERROR)
+}
+
+; Canceled meeting — Button "Remove event" (Shift+E); no confirmation (see outlook-remove-evet.md).
+#HotIf IsOutlookMainActive() && IsOutlookRemoveEventReadingPaneActive()
+
++E:: {
+    if !OutlookMeeting_ClickRemoveEvent()
+        ShowCenteredOverlay_Utils("❌ Outlook: Remove event not found", 1200, BANNER_ACCENT_ERROR)
+}
+
+#HotIf IsOutlookRemoveEventPopOutActive()
+
++E:: {
+    if !OutlookMeeting_ClickRemoveEvent()
+        ShowCenteredOverlay_Utils("❌ Outlook: Remove event not found", 1200, BANNER_ACCENT_ERROR)
 }
 
 #HotIf
