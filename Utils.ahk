@@ -1661,13 +1661,18 @@ DebugLog_0ec0ba(runId, hypothesisId, message, dataJson := "{}") {
 ; =============================================================================
 ; AI Model Selection System for Handy
 ; =============================================================================
-; Configuration: Maps selection numbers (1–3) to AI model names.
+; Configuration: Maps selection numbers (1–5) to AI model names.
 ; These are partial name prefixes used to find buttons in the UIA tree (Type 50000, botão).
 ; Descriptions match Handy Transcription Models UI for quick verification.
+; Slots 4–5: set Cohere Language on General tab before selecting the Cohere model (modelClickName).
 global g_HandyAiModels := Map(
     1, { name: "Parakeet V2", desc: "English only. Best model for English speakers." },
     2, { name: "Parakeet V3", desc: "Fast and accurate. Multi-language." },
-    3, { name: "Cohere", desc: "Large, slower, very accurate multilingual model. Multi-language." }
+    3, { name: "Cohere", desc: "Large, slower, very accurate multilingual model. Multi-language." },
+    4, { name: "Cohere English", desc: "Sets Cohere language to English (General), then activates Cohere.",
+        cohereLanguage: "English", modelClickName: "Cohere" },
+    5, { name: "Cohere Portuguese", desc: "Sets Cohere language to Portuguese (General), then activates Cohere.",
+        cohereLanguage: "Portuguese", modelClickName: "Cohere" }
 )
 
 ; Picker indices for ^!#9 / ^!#b; update g_HandyAiModels names if Handy renames models.
@@ -1712,7 +1717,7 @@ ShowAiModelSelector() {
     ; Footer
     g_AiModelSelectorGui.Add("Text", "w280 h1 Background45475A y+10")
     g_AiModelSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_AiModelSelectorGui.Add("Text", "w280 Center", "Press 1–3 | Esc to cancel")
+    g_AiModelSelectorGui.Add("Text", "w280 Center", "Press 1–5 | Esc to cancel")
 
     ; Get active window to determine which monitor to center on
     activeWin := 0
@@ -1767,10 +1772,12 @@ ShowAiModelSelector() {
 
     g_AiModelSelectorActive := true
 
-    ; Enable hotkeys for 1–3 and Escape
+    ; Enable hotkeys for 1–5 and Escape
     Hotkey("1", AiModelSelector_HandleKey, "On")
     Hotkey("2", AiModelSelector_HandleKey, "On")
     Hotkey("3", AiModelSelector_HandleKey, "On")
+    Hotkey("4", AiModelSelector_HandleKey, "On")
+    Hotkey("5", AiModelSelector_HandleKey, "On")
     Hotkey("Escape", AiModelSelector_Cancel, "On")
 }
 
@@ -1811,6 +1818,8 @@ AiModelSelector_Close() {
     try Hotkey("1", "Off")
     try Hotkey("2", "Off")
     try Hotkey("3", "Off")
+    try Hotkey("4", "Off")
+    try Hotkey("5", "Off")
     try Hotkey("Escape", AiModelSelector_Cancel, "Off")
 
     ; Destroy GUI
@@ -2718,7 +2727,8 @@ ExecuteHandyAiModelSelection(selection) {
     global g_HandyAiModels
 
     modelInfo := g_HandyAiModels[selection]
-    modelName := modelInfo.name
+    modelDisplayName := modelInfo.name
+    modelClickName := modelInfo.HasProp("modelClickName") ? modelInfo.modelClickName : modelInfo.name
 
     try {
         ; Step 1: Launch/activate Handy
@@ -2732,6 +2742,18 @@ ExecuteHandyAiModelSelection(selection) {
         }
         Sleep 500
 
+        ; Step 1b: Optional — set Cohere language on General (explicit English / Portuguese)
+        if (modelInfo.HasProp("cohereLanguage") && modelInfo.cohereLanguage != "") {
+            AiModelBanner_Show("🌐 Setting Cohere language: " . modelInfo.cohereLanguage . "...")
+            if (!Handy_SetCohereLanguage(handyHwnd, modelInfo.cohereLanguage)) {
+                AiModelBanner_Show("❌ Could not set Cohere language", "E74C3C")
+                Sleep 2000
+                AiModelBanner_Hide()
+                return
+            }
+            Sleep 400
+        }
+
         ; Step 2: Open AI model menu
         AiModelBanner_Show("📋 Opening AI model menu...")
         if (!Handy_OpenAiModelMenu(handyHwnd)) {
@@ -2743,9 +2765,9 @@ ExecuteHandyAiModelSelection(selection) {
         Sleep 800
 
         ; Step 3: Select the model
-        AiModelBanner_Show("🎯 Selecting " . modelName . "...")
-        if (!Handy_ClickAiModel(handyHwnd, modelName)) {
-            AiModelBanner_Show("❌ Model not found: " . modelName, "E74C3C")
+        AiModelBanner_Show("🎯 Selecting " . modelDisplayName . "...")
+        if (!Handy_ClickAiModel(handyHwnd, modelClickName)) {
+            AiModelBanner_Show("❌ Model not found: " . modelClickName, "E74C3C")
             Sleep 2000
             AiModelBanner_Hide()
             return
@@ -2835,6 +2857,164 @@ Handy_ActivateOrLaunch() {
         }
     }
     return 0
+}
+
+; True when General tab content (COHERE SETTINGS) is visible.
+Handy_GeneralTabVisible(el) {
+    if !el
+        return false
+    try {
+        return el.FindFirst({ Type: 50020, Name: "COHERE SETTINGS" }) != 0
+    } catch {
+        return false
+    }
+}
+
+; Click sidebar "General" so COHERE SETTINGS is shown (needed from Models/About/etc.).
+Handy_EnsureGeneralTab(hwnd) {
+    el := UIA.ElementFromHandle(hwnd)
+    if !el
+        return false
+    if (Handy_GeneralTabVisible(el))
+        return true
+    try {
+        gen := el.FindFirst({ Type: 50020, Name: "General" })
+        if gen {
+            try gen.Click()
+            catch {
+                try gen.Invoke()
+            }
+            Sleep 450
+            el2 := UIA.ElementFromHandle(hwnd)
+            return Handy_GeneralTabVisible(el2)
+        }
+    } catch {
+    }
+    return false
+}
+
+; Language dropdown under COHERE SETTINGS: class uses "rounded min-w-[200px]" (Microphone uses rounded-md).
+Handy_FindHandyLanguageButton(el) {
+    if !el
+        return 0
+    try {
+        buttons := el.FindAll({ Type: 50000 })
+        for btn in buttons {
+            cn := ""
+            try cn := btn.ClassName
+            if (cn != "" && InStr(cn, "rounded min-w-[200px]"))
+                return btn
+        }
+    } catch {
+    }
+    return 0
+}
+
+; With language dropdown open: focus search, type langName, choose row or Enter.
+Handy_SetCohereLanguage_PickFromOpenDropdown(hwnd, langName) {
+    el := UIA.ElementFromHandle(hwnd)
+    if !el
+        return
+    searchEl := 0
+    try {
+        for ed in el.FindAll({ Type: UIA.Type.Edit }) {
+            searchEl := ed
+            break
+        }
+    } catch {
+    }
+    if (searchEl) {
+        try {
+            searchEl.SetFocus()
+        } catch {
+            try searchEl.Click()
+        }
+        Sleep 80
+    }
+    Send "^a"
+    SendText langName
+    Sleep 280
+    picked := false
+    try {
+        for btn in el.FindAll({ Type: 50000 }) {
+            n := ""
+            try n := btn.Name
+            if (n != langName)
+                continue
+            cn := ""
+            try cn := btn.ClassName
+            if (InStr(cn, "w-full px-3 py-2 text-left") || InStr(cn, "w-full px-3 py-2 text-start")) {
+                try btn.Click()
+                picked := true
+                break
+            }
+        }
+    } catch {
+    }
+    if !picked
+        Send "{Enter}"
+    Sleep 300
+}
+
+; Set Cohere transcription language on General tab (explicit list pick, not Auto Detect).
+Handy_SetCohereLanguage(hwnd, langName) {
+    el := UIA.ElementFromHandle(hwnd)
+    if !el || langName = ""
+        return false
+    if !Handy_EnsureGeneralTab(hwnd)
+        return false
+    el := UIA.ElementFromHandle(hwnd)
+    langBtn := Handy_FindHandyLanguageButton(el)
+    if !langBtn
+        return false
+    cur := ""
+    try cur := langBtn.Name
+    if (cur = langName)
+        return true
+
+    try langBtn.Click()
+    catch {
+        try langBtn.Invoke()
+    }
+    Sleep 400
+    Handy_SetCohereLanguage_PickFromOpenDropdown(hwnd, langName)
+
+    el := UIA.ElementFromHandle(hwnd)
+    if !el
+        return false
+    langBtn2 := Handy_FindHandyLanguageButton(el)
+    if !langBtn2
+        return false
+    n2 := ""
+    try n2 := langBtn2.Name
+    if (n2 = langName)
+        return true
+
+    ; Retry once: close stray popup then reopen
+    Send "{Escape}"
+    Sleep 200
+    el := UIA.ElementFromHandle(hwnd)
+    if !el
+        return false
+    langBtn3 := Handy_FindHandyLanguageButton(el)
+    if !langBtn3
+        return false
+    try langBtn3.Click()
+    catch {
+        try langBtn3.Invoke()
+    }
+    Sleep 400
+    Handy_SetCohereLanguage_PickFromOpenDropdown(hwnd, langName)
+
+    el := UIA.ElementFromHandle(hwnd)
+    if !el
+        return false
+    langBtn4 := Handy_FindHandyLanguageButton(el)
+    if !langBtn4
+        return false
+    n4 := ""
+    try n4 := langBtn4.Name
+    return n4 = langName
 }
 
 ; Open the AI model dropdown menu using keyboard navigation
