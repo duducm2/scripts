@@ -7814,31 +7814,47 @@ Outlook_SwitchToCalendar() {
 }
 
 ; Calendar toolbar: "Go to today April 6, 2026" (dynamic date; caledar.md). WebView2 — use Chromium root.
+; Loading bar during UIA work: docs/standard_information_display.md (Show → Update → Hide).
 OutlookCalendar_ClickGoToToday() {
-    Outlook_ActivateMainWindow()
-    if !Outlook_SwitchToCalendar()
-        return false
-    Sleep 150
-    el := OutlookMail_FindFirst([
-        { Name: "Go to today", matchmode: "Substring", ControlType: "Button" },
-        { Name: "Go to today", matchmode: "Substring", Type: 50000 },
-        { Name: "Today", ControlType: "Button" },
-        { Name: "Today", matchmode: "Substring", ControlType: "Button" }
-    ])
-    if !el
-        return false
-    try el.ScrollIntoView()
-    Sleep 40
-    try el.SetFocus()
-    Sleep 50
-    try el.Click()
-    catch Error {
-        try el.Invoke()
-        catch Error {
+    try {
+        StandardLoadingBar_Show("⏳ Outlook: Go to today…", BANNER_ACCENT_INTERMEDIATE, { passive: false, centerOnHwnd: 0,
+            textWidth: 480, fontSize: 17 })
+    } catch {
+    }
+    ok := false
+    try {
+        Outlook_ActivateMainWindow()
+        try StandardLoadingBar_Update("⏳ Outlook: Opening Calendar…")
+        if !Outlook_SwitchToCalendar()
             return false
+        Sleep 150
+        try StandardLoadingBar_Update("⏳ Outlook: Finding Go to today…")
+        el := OutlookMail_FindFirst([
+            { Name: "Go to today", matchmode: "Substring", ControlType: "Button" },
+            { Name: "Go to today", matchmode: "Substring", Type: 50000 },
+            { Name: "Today", ControlType: "Button" },
+            { Name: "Today", matchmode: "Substring", ControlType: "Button" }
+        ])
+        if !el
+            return false
+        try el.ScrollIntoView()
+        Sleep 40
+        try el.SetFocus()
+        Sleep 50
+        try el.Click()
+        catch Error {
+            try el.Invoke()
+            catch Error {
+                return false
+            }
+        }
+        ok := true
+    } finally {
+        try StandardLoadingBar_Hide(0)
+        catch {
         }
     }
-    return true
+    return ok
 }
 
 ; True if toggle appears "on" (left-rail app bar toggle buttons).
