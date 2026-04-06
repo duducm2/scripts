@@ -1661,17 +1661,16 @@ DebugLog_0ec0ba(runId, hypothesisId, message, dataJson := "{}") {
 ; =============================================================================
 ; AI Model Selection System for Handy
 ; =============================================================================
-; Configuration: Maps selection numbers (1–5) to AI model names.
+; Configuration: Maps selection numbers (1–4) to AI model names.
 ; These are partial name prefixes used to find buttons in the UIA tree (Type 50000, botão).
 ; Descriptions match Handy Transcription Models UI for quick verification.
-; Slots 4–5: set Cohere Language on General tab before selecting the Cohere model (modelClickName).
+; Slots 3–4: set Cohere Language on General tab before selecting the Cohere model (modelClickName).
 global g_HandyAiModels := Map(
     1, { name: "Parakeet V2", desc: "English only. Best model for English speakers." },
     2, { name: "Parakeet V3", desc: "Fast and accurate. Multi-language." },
-    3, { name: "Cohere", desc: "Large, slower, very accurate multilingual model. Multi-language." },
-    4, { name: "Cohere English", desc: "Sets Cohere language to English (General), then activates Cohere.",
+    3, { name: "Cohere English", desc: "Sets Cohere language to English (General), then activates Cohere.",
         cohereLanguage: "English", modelClickName: "Cohere" },
-    5, { name: "Cohere Portuguese", desc: "Sets Cohere language to Portuguese (General), then activates Cohere.",
+    4, { name: "Cohere Portuguese", desc: "Sets Cohere language to Portuguese (General), then activates Cohere.",
         cohereLanguage: "Portuguese", modelClickName: "Cohere" }
 )
 
@@ -1717,7 +1716,7 @@ ShowAiModelSelector() {
     ; Footer
     g_AiModelSelectorGui.Add("Text", "w280 h1 Background45475A y+10")
     g_AiModelSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_AiModelSelectorGui.Add("Text", "w280 Center", "Press 1–5 | Esc to cancel")
+    g_AiModelSelectorGui.Add("Text", "w280 Center", "Press 1–4 | Esc to cancel")
 
     ; Get active window to determine which monitor to center on
     activeWin := 0
@@ -1772,12 +1771,11 @@ ShowAiModelSelector() {
 
     g_AiModelSelectorActive := true
 
-    ; Enable hotkeys for 1–5 and Escape
+    ; Enable hotkeys for 1–4 and Escape
     Hotkey("1", AiModelSelector_HandleKey, "On")
     Hotkey("2", AiModelSelector_HandleKey, "On")
     Hotkey("3", AiModelSelector_HandleKey, "On")
     Hotkey("4", AiModelSelector_HandleKey, "On")
-    Hotkey("5", AiModelSelector_HandleKey, "On")
     Hotkey("Escape", AiModelSelector_Cancel, "On")
 }
 
@@ -1819,7 +1817,6 @@ AiModelSelector_Close() {
     try Hotkey("2", "Off")
     try Hotkey("3", "Off")
     try Hotkey("4", "Off")
-    try Hotkey("5", "Off")
     try Hotkey("Escape", AiModelSelector_Cancel, "Off")
 
     ; Destroy GUI

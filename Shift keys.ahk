@@ -1563,7 +1563,7 @@ Letters available: C, H, I, K, M, N, O, P, T, U, V, X, Y, Z
 [Ctrl+Alt+Win+G] > Cancel dictation (Handy — user-defined; reserved in cheat sheet, not in AHK)
 [Ctrl+Alt+Win+9] > Handy: Parakeet V3 (picker slot 2; same as Win+Alt+Shift+C then 2)
 [Ctrl+Alt+Win+B] > Handy: Parakeet V2 (picker slot 1; same as Win+Alt+Shift+C then 1)
-[Win+Alt+Shift+C] > AI model picker (Handy): 1 Parakeet V2, 2 Parakeet V3, 3 Cohere, 4 Cohere English, 5 Cohere Portuguese
+[Win+Alt+Shift+C] > AI model picker (Handy): 1 Parakeet V2, 2 Parakeet V3, 3 Cohere English, 4 Cohere Portuguese
 
 === YOUTUBE ===
 [Win+Alt+Shift+H] > Activates Youtube

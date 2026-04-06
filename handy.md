@@ -106,7 +106,7 @@ Type: 50032 (Window) Name: "Handy" LocalizedType: "window" ClassName: "Tauri Win
 
 ## Automation notes (Utils.ahk — Win+Alt+Shift+C picker)
 
-Slots **4** and **5** (**Cohere English**, **Cohere Portuguese**) set the **Language** control under **COHERE SETTINGS** on the **General** tab before opening the **model** menu and choosing **Cohere** (same as slot 3). This avoids relying on Auto Detect for transcription language.
+Slots **3** and **4** (**Cohere English**, **Cohere Portuguese**) set the **Language** control under **COHERE SETTINGS** on the **General** tab before opening the **model** menu and choosing **Cohere**. This avoids relying on Auto Detect for transcription language.
 
 **Order of operations:** activate Handy → ensure General (sidebar **General**) → open the Language dropdown (`rounded min-w-[200px]`, not `rounded-md` used by Microphone) → use the **Search languages…** field and pick **English** or **Portuguese** → then open the footer model control (**Shift+Tab** from **Check for updates**, **Enter**) and select **Cohere** → wait until loading finishes.
 
