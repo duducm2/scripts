@@ -7,7 +7,7 @@
      *   The following combinations are not currently in use:
      *
      *   Letters still free: P, U
-     *   Win+Alt+Shift+L: Outlook Copilot shortcut modal (only when Outlook main is active; #HotIf)
+     *   Win+Alt+Shift+L: Outlook Copilot shortcut modal (global; actions target New Outlook)
      *   Numbers: (all numbers 0-9 are used)
      *   Symbols: ; ' [ ] \ | ` ~ @ # $ % ^ & * ( ) - _ = + { } : " < > ? /
      *
@@ -1538,7 +1538,7 @@ Letters available: C, H, I, K, M, N, O, P, T, U, V, X, Y, Z
 [Window Management] Ctrl+Alt+Win - Secondary combination
 
 
-[Win+Alt+Shift+L] > Available for future shortcut
+[Win+Alt+Shift+L] > Outlook Copilot shortcut modal (1–9); global hotkey
 
 === CURSOR ===
 [Win+Alt+Shift+N] > Opens or activates Cursor (habits, home, punctual, or work windows)
@@ -2779,6 +2779,11 @@ FastCopyMode_RepeatLastPaste() {
         FastCopyMode_RepeatLastPaste()
     else
         FastCopyMode_Start()
+}
+
+; Win+Alt+Shift+L — Outlook Copilot shortcut modal (1–9). Global: works from any app; actions activate Outlook.
+#!+l:: {
+    SelectOutlookCopilotShortcut()
 }
 
 #HotIf FastCopyMode_IsActive()
@@ -8866,13 +8871,6 @@ OutlookClickFirst(criteriaList) {
 }
 
 #HotIf IsOutlookMainActive()
-
-; -------------------------------------------------------------------
-; Outlook main: Win+Alt+Shift+L — Copilot shortcut modal (1–9)
-; -------------------------------------------------------------------
-#!+l:: {
-    SelectOutlookCopilotShortcut()
-}
 
 ; -------------------------------------------------------------------
 ; Outlook main window (New Outlook) overflow layer: Ctrl+Alt+…

@@ -153,7 +153,7 @@ Type: 50032 (Window) Name: "Mail - Figueiredo Eduardo (SO/BDO-UX-LA GS/BDU) - Ou
 
 ## Shift keys: Outlook Copilot modal (maintainer)
 
-**Hotkey:** `Win+Alt+Shift+L` (`#!+l` in AHK). **Scope:** New Outlook main window only (`#HotIf IsOutlookMainActive()` in `Shift keys.ahk`).
+**Hotkey:** `Win+Alt+Shift+L` (`#!+l` in AHK). **Scope:** **Global** (works from any foreground app). Copilot actions call `Outlook_ActivateMainWindow()` and UIA against the New Outlook shell.
 
 **Implementation:** `SelectOutlookCopilotShortcut` / `ShowOutlookCopilotSelector` — modal styling matches the Handy AI model picker (`ShowAiModelSelector` in `Utils.ahk`). **WebView2:** use `OutlookMail_RootElement` / `OutlookMail_ClickFirst` for Copilot UI, not top-level `OutlookClickFirst` alone.
 
