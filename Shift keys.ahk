@@ -564,10 +564,10 @@ Outlook - Message (Shift)
 ; --- Outlook meeting request (main Mail reading pane, New Outlook) ------------
 cheatSheets["OutlookMeetingRequest"] := "
 (
-Outlook - Meeting request (reading pane) (Shift)
-When a meeting request is open in the reading pane, these override generic [F] / [T] where shown.
+Outlook - Meeting request (reading pane) (Shift / Alt+F)
+When a meeting request is open in the reading pane: Tentative uses [Shift+T] (before To/Required); Follow uses [Alt+F] so [Shift+F] stays Focused/Other.
 ✅ [A][A]ccept the meeting
-📌 [F][F]ollow (updates only)
+📌 [Alt+F] Follow (updates only)
 ❓ [T][T]entative (More options …)
 📝 [R]RSVP with note to organizer (…)
 ↩️ [U]Reply to organizer (…)
@@ -8485,8 +8485,13 @@ OutlookClickFirst(criteriaList) {
         return
 }
 
-; Shift + T : Required / To - To
+; Shift + T : Required / To - To (meeting request in reading pane: Tentative via More options)
 +T:: {
+    if IsOutlookMeetingRequestReadingPaneActive() {
+        if !OutlookMeeting_ClickMoreOptionsThen("Tentative")
+            ShowCenteredOverlay_Utils("❌ Outlook: Tentative not found", 1200, BANNER_ACCENT_ERROR)
+        return
+    }
     ; New Outlook compose: “To:” row is a Group (AutomationId 134) that may be collapsed/hidden.
     if IsNewOutlookActive() && IsOutlookComposeActive() {
         ; #region agent log
@@ -8864,24 +8869,18 @@ SelectExplorerSidebarFirstPinned() {
     }
 }
 
-; Meeting request in main Mail reading pane (overrides generic +F / +T; defined after base IsOutlookMainActive hotkeys).
+; Meeting request in main Mail reading pane (Shift+R/U/Y; Alt+F Follow — avoids Shift+F vs Focused/Other).
 #HotIf IsOutlookMainActive() && IsOutlookMeetingRequestReadingPaneActive()
 
-; Accept / Follow (header row)
+; Accept / Follow (header row). Alt+F = Follow (Shift+F stays Focused / Other in the base hotkey above).
 +A:: {
     if !OutlookMeeting_ClickAccept()
         ShowCenteredOverlay_Utils("❌ Outlook: Accept the meeting not found", 1200, BANNER_ACCENT_ERROR)
 }
 
-+F:: {
+!f:: {
     if !OutlookMeeting_ClickFollow()
         ShowCenteredOverlay_Utils("❌ Outlook: Follow not found", 1200, BANNER_ACCENT_ERROR)
-}
-
-; More options (…) submenu
-+T:: {
-    if !OutlookMeeting_ClickMoreOptionsThen("Tentative")
-        ShowCenteredOverlay_Utils("❌ Outlook: Tentative not found", 1200, BANNER_ACCENT_ERROR)
 }
 
 +R:: {

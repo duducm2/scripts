@@ -1,4 +1,4 @@
-[Maintainer - Shift keys.ahk meeting reading-pane shortcuts] Reading pane: `AutomationId` `Skip to message-region`. Header row: MenuItems `Accept the meeting`, `Decline the meeting`, `Follow;…`. Overflow: Button `More options` (`menur7c4` in this capture; may change). Menu: `Tentative`, `RSVP with note to organizer`, `Reply to organizer`, `Reply to all attendees`.
+[Maintainer - Shift keys.ahk meeting reading-pane shortcuts] Reading pane: `AutomationId` `Skip to message-region`. Header row: MenuItems `Accept the meeting`, `Decline the meeting`, `Follow;…`. Overflow: Button `More options` (`menur7c4` in this capture; may change). Menu: `Tentative`, `RSVP with note to organizer`, `Reply to organizer`, `Reply to all attendees`. Hotkeys: Follow = Alt+F (Shift+F stays Focused/Other); Tentative = Shift+T (handled before To/Required).
 
 Type: 50032 (Window) Name: "Mail - Figueiredo Eduardo (SO/BDO-UX-LA GS/BDU) - Outlook" LocalizedType: "window" ClassName: "Outlook Host"
 1: Type: 50033 (Pane) LocalizedType: "pane" ClassName: "WebViewCaptionButton"
