@@ -157,6 +157,8 @@ Type: 50032 (Window) Name: "Mail - Figueiredo Eduardo (SO/BDO-UX-LA GS/BDU) - Ou
 
 **Implementation:** `SelectOutlookCopilotShortcut` / `ShowOutlookCopilotSelector` — modal styling matches the Handy AI model picker (`ShowAiModelSelector` in `Utils.ahk`). **WebView2:** use `OutlookMail_RootElement` / `OutlookMail_ClickFirst` for Copilot UI, not top-level `OutlookClickFirst` alone.
 
+**Voice chat (slot 1) — quality gates:** `OutlookCopilot_WaitMainOutlookForeground` brings the main Outlook shell to the foreground with a bounded wait after switching from other apps. `OutlookCopilot_WaitVoiceChatButtonReady` polls until the **Start a new voice chat** control passes `OutlookCopilot_ElementIsRenderedAndClickable` (not off-screen, enabled, non-zero `BoundingRectangle`), with `ScrollIntoView` while waiting. Only then is click/invoke attempted (`docs/efficiency-canon.md`).
+
 **AutomationIds and names may change by tenant, language, or Outlook build.** If a slot fails, recapture UIA and update `OutlookCopilot_RunSlot` / `OutlookCopilot_ToggleVoiceChat` / `OUTLOOK_COPILOT_RAIL_AID` in `Shift keys.ahk`.
 
 | Slot | Label | Primary UIA anchors (see tree above) |

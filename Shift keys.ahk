@@ -7906,6 +7906,124 @@ OutlookCopilot_FindRailButton(root) {
     return el
 }
 
+; Bounded wait: main Outlook shell is foreground (efficiency-canon; Alt-Tab from other apps).
+OutlookCopilot_WaitMainOutlookForeground(timeoutMs := 2200) {
+    hwnd := 0
+    try {
+        for h in WinGetList("ahk_class Outlook Host") {
+            t := ""
+            try t := WinGetTitle("ahk_id " h)
+            if RegExMatch(t, "i)^(Mail|Calendar) - .* - Outlook") {
+                hwnd := h
+                break
+            }
+        }
+    } catch {
+    }
+    if !hwnd {
+        Outlook_ActivateMainWindow()
+        deadline := A_TickCount + timeoutMs
+        while (A_TickCount < deadline) {
+            try {
+                p := WinGetProcessName("A")
+                if (p = "OUTLOOK.EXE" || p = "olk.exe")
+                    return true
+            } catch {
+            }
+            Outlook_ActivateMainWindow()
+            Sleep 55
+        }
+        return false
+    }
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        try {
+            if (WinGetID("A") = hwnd)
+                return true
+        } catch {
+        }
+        try WinActivate("ahk_id " hwnd)
+        try WinWaitActive("ahk_id " hwnd, , 0.35)
+        Sleep 45
+    }
+    return false
+}
+
+OutlookCopilot_VoiceChatCriteriaList() {
+    return [
+        { Name: "Start a new voice chat", matchmode: "Substring", ControlType: "Button" },
+        { Name: "Start a new voice chat", matchmode: "Substring", Type: 50000 },
+        { Name: "voice chat", matchmode: "Substring", ControlType: "Button" }
+    ]
+}
+
+OutlookCopilot_FindVoiceChatButtonInRoot(root) {
+    if !root
+        return ""
+    for criteria in OutlookCopilot_VoiceChatCriteriaList() {
+        try {
+            el := root.FindFirst(criteria)
+            if el
+                return el
+        } catch {
+        }
+    }
+    return ""
+}
+
+; Quality gate: element exists in UIA tree, is on-screen, enabled, and has non-zero bounds (rendered + clickable).
+OutlookCopilot_ElementIsRenderedAndClickable(el) {
+    if !IsObject(el)
+        return false
+    try {
+        if el.GetPropertyValue(UIA.Property.IsOffscreen)
+            return false
+    } catch {
+        try {
+            if el.IsOffscreen
+                return false
+        } catch {
+        }
+    }
+    try {
+        if !el.GetPropertyValue(UIA.Property.IsEnabled)
+            return false
+    } catch {
+        try {
+            if !el.IsEnabled
+                return false
+        } catch {
+            return false
+        }
+    }
+    try {
+        rect := el.BoundingRectangle
+        l := rect.l, t := rect.t, r := rect.r, b := rect.b
+        if (Abs((r - l) * (b - t)) < 4)
+            return false
+    } catch {
+    }
+    return true
+}
+
+; Wait until voice chat button passes quality gates OR timeout (poll + optional ScrollIntoView when stuck offscreen).
+OutlookCopilot_WaitVoiceChatButtonReady(timeoutMs := 12000, pollMs := 120) {
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        root := OutlookMail_RootElement()
+        if root {
+            el := OutlookCopilot_FindVoiceChatButtonInRoot(root)
+            if el {
+                if OutlookCopilot_ElementIsRenderedAndClickable(el)
+                    return el
+                try el.ScrollIntoView()
+            }
+        }
+        Sleep pollMs
+    }
+    return ""
+}
+
 ; Ensure left-rail Copilot is selected (WebView2 / Chromium root).
 OutlookCopilot_EnsureCopilotRailOn() {
     Outlook_ActivateMainWindow()
@@ -7971,22 +8089,33 @@ OutlookCopilot_ToggleVoiceChat() {
     }
     ok := false
     try {
+        try StandardLoadingBar_Update("⏳ Outlook Copilot: activating Outlook…")
+        if !OutlookCopilot_WaitMainOutlookForeground(2200) {
+            ShowCenteredOverlay_Utils("❌ Outlook Copilot: Outlook window not in foreground", 2000, BANNER_ACCENT_ERROR)
+            return false
+        }
         try StandardLoadingBar_Update("⏳ Outlook Copilot: opening Copilot…")
         if !OutlookCopilot_EnsureCopilotRailOn() {
             ShowCenteredOverlay_Utils("❌ Outlook Copilot: rail button not found", 1600, BANNER_ACCENT_ERROR)
             return false
         }
         try StandardLoadingBar_Update("⏳ Outlook Copilot: loading surface…")
-        OutlookCopilot_WaitCopilotChatSurface(2800)
-        try StandardLoadingBar_Update("⏳ Outlook Copilot: voice chat control…")
-        el := OutlookMail_FindFirst([
-            { Name: "Start a new voice chat", matchmode: "Substring", ControlType: "Button" },
-            { Name: "Start a new voice chat", matchmode: "Substring", Type: 50000 },
-            { Name: "voice chat", matchmode: "Substring", ControlType: "Button" }
-        ])
+        OutlookCopilot_WaitCopilotChatSurface(4000)
+        try StandardLoadingBar_Update("⏳ Outlook Copilot: waiting for voice button (quality gate)…")
+        el := OutlookCopilot_WaitVoiceChatButtonReady(12000, 120)
         if !el {
-            ShowCenteredOverlay_Utils("❌ Outlook Copilot: voice chat control not found", 1600, BANNER_ACCENT_ERROR)
+            ShowCenteredOverlay_Utils("❌ Outlook Copilot: voice chat button not ready (timeout)", 2200,
+                BANNER_ACCENT_ERROR)
             return false
+        }
+        if !OutlookCopilot_ElementIsRenderedAndClickable(el) {
+            root := OutlookMail_RootElement()
+            el := root ? OutlookCopilot_FindVoiceChatButtonInRoot(root) : ""
+            if !el || !OutlookCopilot_ElementIsRenderedAndClickable(el) {
+                ShowCenteredOverlay_Utils("❌ Outlook Copilot: voice chat button not actionable", 2000,
+                    BANNER_ACCENT_ERROR)
+                return false
+            }
         }
         try el.ScrollIntoView()
         Sleep 40
