@@ -564,15 +564,22 @@ Outlook - Message (Shift)
 ; --- Outlook meeting request (main Mail reading pane, New Outlook) ------------
 cheatSheets["OutlookMeetingRequest"] := "
 (
-Outlook - Meeting request (reading pane) (Shift / Alt+F)
-When a meeting request is open in the reading pane: Tentative uses [Shift+T] (before To/Required); Follow uses [Alt+F] so [Shift+F] stays Focused/Other.
+Outlook - Meeting request - main window, reading pane (Shift / Alt+F)
+When a meeting request is open in the Mail reading pane (not a popped-out window): Tentative uses [Shift+T] (before To/Required); Follow uses [Alt+F] so [Shift+F] stays Focused/Other.
 ✅ [A][A]ccept the meeting
 📌 [Alt+F] Follow (updates only)
 ❓ [T][T]entative (More options …)
-📝 [R]RSVP with note to organizer (…)
-↩️ [U]Reply to organizer (…)
-👥 [Y]Reply to all attendees (…)
 )"  ; end Outlook Meeting Request
+
+; --- Outlook meeting invitation (popped-out message window, New Outlook) -------
+cheatSheets["OutlookMeetingInvitation"] := "
+(
+Outlook - Meeting invitation - separate window (Shift / Alt+F)
+Same actions as the reading-pane shortcuts, but for a meeting opened in its own window (Pop out). Not the main Mail shell.
+✅ [A][A]ccept the meeting
+📌 [Alt+F] Follow (updates only)
+❓ [T][T]entative (More options …)
+)"  ; end Outlook Meeting Invitation
 
 ; --- Microsoft Teams â€" meeting window --------------------------------------
 cheatSheets["TeamsMeeting"] := "
@@ -1463,6 +1470,11 @@ GetCheatSheetText() {
         }
         ; Detect Message inspector windows â€" e.g., " - Message (HTML)"
         if RegExMatch(title, "i) - Message \(") {
+            ; Popped-out meeting invitation (same Accept/Decline UI as reading pane; not generic message compose)
+            if IsOutlookMeetingInvitationPopOutActive() {
+                return cheatSheets.Has("OutlookMeetingInvitation") ? cheatSheets["OutlookMeetingInvitation"] : cheatSheets[
+                    "OUTLOOK.EXE"]
+            }
             return cheatSheets.Has("OutlookMessage") ? cheatSheets["OutlookMessage"] : cheatSheets["OUTLOOK.EXE"]
         }
         ; Detect Appointment, Meeting, or Event inspector windows
@@ -7676,7 +7688,7 @@ ML_SortApply(idx) {
 ;-------------------------------------------------------------------
 
 IsOutlookMessageActive() {
-    return WinActive("ahk_exe OUTLOOK.EXE")
+    return (WinActive("ahk_exe OUTLOOK.EXE") || WinActive("ahk_exe olk.exe"))
     && RegExMatch(WinGetTitle("A"), "i) - Message \(")
 }
 
@@ -7848,10 +7860,13 @@ OutlookMail_ClickReadingPaneCommand(cmdName) {
     return false
 }
 
-; Reading pane group (New Outlook WebView2 UI). Prefer Chromium root (see OutlookMail_RootElement).
+; Reading pane group (New Outlook WebView2 UI). Uses the active window only — no Outlook_ActivateMainWindow (see IsOutlookMeetingRequestReadingPaneActive vs pop-out invitation).
 OutlookMail_GetReadingPaneElement() {
     try {
-        root := OutlookMail_RootElement()
+        hwnd := WinExist("A")
+        if !hwnd
+            return ""
+        root := OutlookMail_RootElementForHwnd(hwnd)
         if root {
             pane := root.FindFirst({ AutomationId: "Skip to message-region" })
             if pane
@@ -7871,7 +7886,7 @@ OutlookMail_GetReadingPaneElement() {
     return ""
 }
 
-; True when the main Mail window shows a meeting request in the reading pane (Accept/Decline row).
+; True when the main Mail/Calendar shell shows a meeting request in the reading pane (not a popped-out invitation window).
 IsOutlookMeetingRequestReadingPaneActive() {
     if !IsOutlookMainActive()
         return false
@@ -7885,19 +7900,58 @@ IsOutlookMeetingRequestReadingPaneActive() {
     return false
 }
 
+; Popped-out meeting invitation: " - Message (" inspector with Accept/Decline row (same UI as reading pane, different host window).
+IsOutlookMeetingInvitationPopOutActive() {
+    if !(WinActive("ahk_exe OUTLOOK.EXE") || WinActive("ahk_exe olk.exe"))
+        return false
+    if !RegExMatch(WinGetTitle("A"), "i) - Message \(")
+        return false
+    try {
+        root := OutlookMail_RootElementForHwnd(WinExist("A"))
+        if !root
+            return false
+        return root.FindFirst({ Name: "Accept the meeting", ControlType: "MenuItem" }) ? true : false
+    } catch {
+    }
+    return false
+}
+
+OutlookMeeting_ClickMenuItemInActiveWindow(criteriaList) {
+    hwnd := WinExist("A")
+    root := OutlookMail_RootElementForHwnd(hwnd)
+    if !root
+        return false
+    for criteria in criteriaList {
+        try {
+            el := root.FindFirst(criteria)
+            if el {
+                try el.SetFocus()
+                Sleep 50
+                try el.Click()
+                catch {
+                    try el.Invoke()
+                }
+                return true
+            }
+        } catch {
+        }
+    }
+    return false
+}
+
 OutlookMeeting_ClickAccept() {
-    return OutlookMail_ClickFirst([{ Name: "Accept the meeting", ControlType: "MenuItem" }])
+    return OutlookMeeting_ClickMenuItemInActiveWindow([{ Name: "Accept the meeting", ControlType: "MenuItem" }])
 }
 
 OutlookMeeting_ClickFollow() {
-    return OutlookMail_ClickFirst([{ Name: "Follow;", matchmode: "Substring", ControlType: "MenuItem" }])
+    return OutlookMeeting_ClickMenuItemInActiveWindow([{ Name: "Follow;", matchmode: "Substring", ControlType: "MenuItem" }])
 }
 
 ; Opens "More options" (…) then clicks a MenuItem in the overflow menu (see mark-appointment-request.md).
 OutlookMeeting_ClickMoreOptionsThen(menuItemName) {
-    Outlook_ActivateMainWindow()
     try {
-        root := OutlookMail_RootElement()
+        hwnd := WinExist("A")
+        root := OutlookMail_RootElementForHwnd(hwnd)
         if !root
             return false
         pane := root.FindFirst({ AutomationId: "Skip to message-region" })
@@ -8004,6 +8058,13 @@ OutlookMail_CriteriaToggleNavigationPaneRibbon() {
 OutlookMail_RootElement() {
     Outlook_ActivateMainWindow()
     hwnd := WinExist("A")
+    if !hwnd
+        return ""
+    return OutlookMail_RootElementForHwnd(hwnd)
+}
+
+; Chromium root for a specific top-level hwnd — does not activate another window (reading pane vs pop-out invitation).
+OutlookMail_RootElementForHwnd(hwnd) {
     if !hwnd
         return ""
     try {
@@ -8869,7 +8930,7 @@ SelectExplorerSidebarFirstPinned() {
     }
 }
 
-; Meeting request in main Mail reading pane (Shift+R/U/Y; Alt+F Follow — avoids Shift+F vs Focused/Other).
+; Meeting request - main Mail window reading pane only (not popped-out invitation window).
 #HotIf IsOutlookMainActive() && IsOutlookMeetingRequestReadingPaneActive()
 
 ; Accept / Follow (header row). Alt+F = Follow (Shift+F stays Focused / Other in the base hotkey above).
@@ -8881,21 +8942,6 @@ SelectExplorerSidebarFirstPinned() {
 !f:: {
     if !OutlookMeeting_ClickFollow()
         ShowCenteredOverlay_Utils("❌ Outlook: Follow not found", 1200, BANNER_ACCENT_ERROR)
-}
-
-+R:: {
-    if !OutlookMeeting_ClickMoreOptionsThen("RSVP with note to organizer")
-        ShowCenteredOverlay_Utils("❌ Outlook: RSVP with note not found", 1200, BANNER_ACCENT_ERROR)
-}
-
-+U:: {
-    if !OutlookMeeting_ClickMoreOptionsThen("Reply to organizer")
-        ShowCenteredOverlay_Utils("❌ Outlook: Reply to organizer not found", 1200, BANNER_ACCENT_ERROR)
-}
-
-+Y:: {
-    if !OutlookMeeting_ClickMoreOptionsThen("Reply to all attendees")
-        ShowCenteredOverlay_Utils("❌ Outlook: Reply to all attendees not found", 1200, BANNER_ACCENT_ERROR)
 }
 
 ; Message inspector-specific hotkeys (Subject/To/Body)
@@ -8933,6 +8979,24 @@ SelectExplorerSidebarFirstPinned() {
         Send "{Tab}"
         return
     }
+}
+
+; Popped-out meeting invitation (same Accept/Follow/Tentative as reading pane; overrides generic message Shift+T / Alt+F when both match).
+#HotIf IsOutlookMeetingInvitationPopOutActive()
+
++A:: {
+    if !OutlookMeeting_ClickAccept()
+        ShowCenteredOverlay_Utils("❌ Outlook: Accept the meeting not found", 1200, BANNER_ACCENT_ERROR)
+}
+
+!f:: {
+    if !OutlookMeeting_ClickFollow()
+        ShowCenteredOverlay_Utils("❌ Outlook: Follow not found", 1200, BANNER_ACCENT_ERROR)
+}
+
++T:: {
+    if !OutlookMeeting_ClickMoreOptionsThen("Tentative")
+        ShowCenteredOverlay_Utils("❌ Outlook: Tentative not found", 1200, BANNER_ACCENT_ERROR)
 }
 
 #HotIf
