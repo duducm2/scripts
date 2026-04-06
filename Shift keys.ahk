@@ -479,6 +479,11 @@ Outlook (Shift)
 📅 M[o]nth view
 🪟 [P][P]op Out (Type 50000, Name Pop Out, LocalizedType button, Path {T:33,CN:rctrl_renwnd32}, {T:33}, {T:33}, {T:21}, {T:0, i:-1})
 
+📅 Meeting request (reading pane or popped-out invitation - same shortcuts)
+✅ [A][A]ccept meeting invitation
+📌 [Alt+F] Follow (updates from organizer)
+❓ [T][T]entative (More options …) - when a meeting request is open, runs before [T]o / Required
+
 Outlook (Ctrl+Alt)
 🔎 [F]Search
 📮 [M]ail view
@@ -556,6 +561,10 @@ Outlook - Appointment (Shift)
 cheatSheets["OutlookMessage"] := "
 (
 Outlook - Message (Shift)
+📅 Meeting invitation (same shortcuts as main Mail reading pane)
+✅ [A][A]ccept meeting invitation
+📌 [Alt+F] Follow (updates from organizer)
+❓ [T][T]entative (More options …) - when a meeting request is open, runs before [T]o / Required
 📝 [S][S]ubject / Title
 👥 [T][T]o / Required
 📝 [B][B]ody (Location → Body)
