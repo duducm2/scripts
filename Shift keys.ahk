@@ -481,7 +481,7 @@ Outlook (Shift)
 
 📅 Meeting request (reading pane or popped-out invitation - same shortcuts)
 ✅ [A][A]ccept meeting invitation
-❌ [D][D]ecline meeting
+❌ [D][D]ecline meeting (confirmation first)
 📌 [Alt+F] Follow (updates from organizer)
 ❓ [T][T]entative (More options …) - when a meeting request is open, runs before [T]o / Required
 
@@ -564,7 +564,7 @@ cheatSheets["OutlookMessage"] := "
 Outlook - Message (Shift)
 📅 Meeting invitation (same shortcuts as main Mail reading pane)
 ✅ [A][A]ccept meeting invitation
-❌ [D][D]ecline meeting
+❌ [D][D]ecline meeting (confirmation first)
 📌 [Alt+F] Follow (updates from organizer)
 ❓ [T][T]entative (More options …) - when a meeting request is open, runs before [T]o / Required
 📝 [S][S]ubject / Title
@@ -7932,6 +7932,11 @@ OutlookMeeting_ClickDecline() {
     return OutlookMeeting_ClickMenuItemInActiveWindow([{ Name: "Decline the meeting", ControlType: "MenuItem" }])
 }
 
+; True if user confirms (Yes). Default button is No (Enter cancels).
+OutlookMeeting_ConfirmDecline() {
+    return MsgBox("Decline this meeting invitation?", "Confirm decline", "Icon? YesNo Default2") = "Yes"
+}
+
 ; Opens "More options" (…) then clicks a MenuItem in the overflow menu (see mark-appointment-request.md).
 OutlookMeeting_ClickMoreOptionsThen(menuItemName) {
     try {
@@ -8930,6 +8935,8 @@ SelectExplorerSidebarFirstPinned() {
 }
 
 +D:: {
+    if !OutlookMeeting_ConfirmDecline()
+        return
     if !OutlookMeeting_ClickDecline()
         ShowCenteredOverlay_Utils("❌ Outlook: Decline the meeting not found", 1200, BANNER_ACCENT_ERROR)
 }
@@ -8990,6 +8997,8 @@ SelectExplorerSidebarFirstPinned() {
 }
 
 +D:: {
+    if !OutlookMeeting_ConfirmDecline()
+        return
     if !OutlookMeeting_ClickDecline()
         ShowCenteredOverlay_Utils("❌ Outlook: Decline the meeting not found", 1200, BANNER_ACCENT_ERROR)
 }
