@@ -1512,7 +1512,8 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Ctrl+Alt+Win] - SECONDARY triple modifier
 
 === AVAILABLE SECONDARY (Ctrl+Alt+Win) SLOTS ===
-Letters available: C, G, H, I, K, M, N, O, P, T, U, V, X, Y, Z
+Letters available: C, H, I, K, M, N, O, P, T, U, V, X, Y, Z
+[Ctrl+Alt+Win+G] > RESERVED — Handy: cancel dictation (define in Handy only; not bound in AHK)
 [Ctrl+Alt+Win+0] > Project Quick Selector (opens project folder in Cursor)
 [Ctrl+Alt+Win+1] > Cursor AI quick action (Project Selector + Selection Mode)
 [Ctrl+Alt+Win+2] > Quick Update to Your Scripts (HotStrings macro)
@@ -1552,6 +1553,7 @@ Letters available: C, G, H, I, K, M, N, O, P, T, U, V, X, Y, Z
 
 === HANDY DICTATION ===
 [Win+Alt+Shift+0] > Start/stop dictation (transcription to clipboard)
+[Ctrl+Alt+Win+G] > Cancel dictation (Handy — user-defined; reserved in cheat sheet, not in AHK)
 [Ctrl+Alt+Win+9] > Handy: Parakeet V3 (picker slot 2; same as Win+Alt+Shift+C then 2)
 [Ctrl+Alt+Win+B] > Handy: Parakeet V2 (picker slot 1; same as Win+Alt+Shift+C then 1)
 [Win+Alt+Shift+C] > AI model picker (Handy): 1 Parakeet V2, 2 Parakeet V3, 3 Cohere
