@@ -10130,17 +10130,10 @@ ShowHotstringSelector() {
 ; Ctrl+Alt+Win+L - direct D2C submit path (paste + Enter, then monitor)
 ^!#L:: D2C_FlowManager.GetInstance().StartFromHotstring()
 
-; Ctrl+Alt+Win+4 - Start dictation first (~#!+0), then Gemini tab 1/2 toggle + banner (user can speak while tab switches)
+; Ctrl+Alt+Win+4 - Gemini tab 1/2 toggle + banner
 ^!#4::
 {
-    global g_GeminiToggleTab, g_DictationActive
-
-    ; SendLevel 1 so generated #!+0 is processed as a hotkey and reaches ~#!+0.
-    if (!g_DictationActive) {
-        SendLevel 1
-        Send "#!+0"
-        SendLevel 0
-    }
+    global g_GeminiToggleTab
 
     geminiHwnd := 0
     try {
@@ -10176,14 +10169,13 @@ ShowHotstringSelector() {
     ShowSingleCharTabBanner_Utils(targetTab)
     Sleep(200)
 
-    dictationOk := g_DictationActive
     tabInfoAfter := GetChromeActiveTabIndex(uia)
     if (!tabInfoAfter) {
         Sleep(100)
         tabInfoAfter := GetChromeActiveTabIndex(uia)
     }
     tabOk := tabInfoAfter && tabInfoAfter.index == targetTab
-    if (!dictationOk || !tabOk)
+    if (!tabOk)
         ShowCenteredOverlay_Utils("❌ Shortcut execution failed", 2000, BANNER_ACCENT_ERROR)
 }
 
