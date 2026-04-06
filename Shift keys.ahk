@@ -7813,6 +7813,34 @@ Outlook_SwitchToCalendar() {
     ])
 }
 
+; Calendar toolbar: "Go to today April 6, 2026" (dynamic date; caledar.md). WebView2 — use Chromium root.
+OutlookCalendar_ClickGoToToday() {
+    Outlook_ActivateMainWindow()
+    if !Outlook_SwitchToCalendar()
+        return false
+    Sleep 150
+    el := OutlookMail_FindFirst([
+        { Name: "Go to today", matchmode: "Substring", ControlType: "Button" },
+        { Name: "Go to today", matchmode: "Substring", Type: 50000 },
+        { Name: "Today", ControlType: "Button" },
+        { Name: "Today", matchmode: "Substring", ControlType: "Button" }
+    ])
+    if !el
+        return false
+    try el.ScrollIntoView()
+    Sleep 40
+    try el.SetFocus()
+    Sleep 50
+    try el.Click()
+    catch Error {
+        try el.Invoke()
+        catch Error {
+            return false
+        }
+    }
+    return true
+}
+
 ; True if toggle appears "on" (left-rail app bar toggle buttons).
 Outlook_RailToggleIsPressed(el) {
     if !el
@@ -8577,9 +8605,8 @@ OutlookClickFirst(criteriaList) {
     Send "^n"
 }
 
-^!t:: {  ; Today (Calendar)
-    if !OutlookClickFirst([{ Name: "Today", ControlType: "Button" }, { Name: "Today", matchmode: "Substring",
-        ControlType: "Button" }])
+^!t:: {  ; Today (Calendar) — toolbar "Go to today …" (Chromium; not ElementFromHandle-only)
+    if !OutlookCalendar_ClickGoToToday()
         ShowCenteredOverlay_Utils("❌ Outlook: Today not found", 1200, BANNER_ACCENT_ERROR)
 }
 
