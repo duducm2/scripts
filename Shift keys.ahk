@@ -256,8 +256,11 @@ CheatSheet_SectionLabelToModifierPrefix(label) {
 ; First line like "Explorer (Shift)" — single parenthetical modifier.
 CheatSheet_ContextParensToModifierPrefix(inner) {
     w := Trim(StrLower(inner))
+    wCompact := RegExReplace(w, "\s+", "")
     if (w = "shift")
         return "Shift+"
+    if (wCompact = "ctrl+alt")
+        return "Ctrl+Alt+"
     if (w = "ctrl")
         return "Ctrl+"
     if (w = "alt")
@@ -297,7 +300,6 @@ ProcessCheatSheetText(text) {
     lines := StrSplit(text, "`n")
     processedLines := []
     clusterPrefix := ""
-    contextParsed := false
 
     for line in lines {
         if RegExMatch(line, "^\s*===\s*(.+?)\s*===\s*$", &hm) {
@@ -305,12 +307,11 @@ ProcessCheatSheetText(text) {
             processedLines.Push(line)
             continue
         }
-        if (!contextParsed && !InStr(line, "[") && RegExMatch(line, "^\s*(.+)\s*\(([^)]+)\)\s*$", &cm)) {
+        ; Subsections like "Outlook (Shift)" then "Outlook (Ctrl+Alt)" must each update clusterPrefix (do not stop after first).
+        if (!InStr(line, "[") && RegExMatch(line, "^\s*(.+)\s*\(([^)]+)\)\s*$", &cm)) {
             pfx := CheatSheet_ContextParensToModifierPrefix(cm[2])
-            if (pfx != "") {
+            if (pfx != "")
                 clusterPrefix := pfx
-                contextParsed := true
-            }
         }
 
         if RegExMatch(line, "^([^\[\]]*?)(\[.*?\])(.*)$", &match) {
@@ -489,25 +490,25 @@ Outlook (Shift)
 🗑️ [E]Remove event (no confirmation)
 
 Outlook (Ctrl+Alt)
-🔎 [F]Search
-📮 [M]ail view
-📅 [G]Calendar view
-📃 [L]Focus message list
-📖 [P]Focus reading pane
+🔎 [Ctrl+Alt+F] Search
+📮 [Ctrl+Alt+M] Mail view
+📅 [Ctrl+Alt+G] Calendar view
+📃 [Ctrl+Alt+L] Focus message list
+📖 [Ctrl+Alt+P] Focus reading pane
 
-↩️ [R]Reply
-👥 [A]Reply all
-➡️ [W]Forward
-🗑️ [D]Delete
-🗄️ [E]Archive
-✅ [U]Read/Unread
-🏷️ [C]Categorize
-📁 Mo[V]e
-🧪 F[I]lter menu
-↕️ [S]Sort menu
+↩️ [Ctrl+Alt+R] Reply
+👥 [Ctrl+Alt+A] Reply all
+➡️ [Ctrl+Alt+W] Forward
+🗑️ [Ctrl+Alt+D] Delete
+🗄️ [Ctrl+Alt+E] Archive
+✅ [Ctrl+Alt+U] Read/Unread
+🏷️ [Ctrl+Alt+C] Categorize
+📁 [Ctrl+Alt+V] Move
+🧪 [Ctrl+Alt+I] Filter menu
+↕️ [Ctrl+Alt+S] Sort menu
 
-🆕 [N]New (Calendar: New event / Mail: new message)
-🧭 [T]Today (Calendar)
+🆕 [Ctrl+Alt+N] New (Calendar: New event / Mail: new message)
+🧭 [Ctrl+Alt+T] Today (Calendar)
 )"  ; end Outlook
 
 ; --- Outlook Reminder window -------------------------------------------------
