@@ -7941,101 +7941,16 @@ OutlookMail_ClickFirst(criteriaList) {
     return true
 }
 
-; #region agent log
-OutlookMail_DebugJsonEscape(s) {
-    if !IsSet(s) || s = ""
-        return ""
-    return StrReplace(StrReplace(StrReplace(s, "\", "\\"), '"', '\"'), "`n", " ")
-}
-
-OutlookMail_DebugLog338f2c(hypothesisId, location, message, data := "") {
-    if (data = "")
-        data := "{}"
-    line := '{"sessionId":"338f2c","hypothesisId":"' hypothesisId '","location":"' OutlookMail_DebugJsonEscape(location) '","message":"' OutlookMail_DebugJsonEscape(message) '","data":' data ',"timestamp":' A_TickCount '}`n'
-    for p in [A_ScriptDir "\debug-338f2c.log", "C:\Users\fie7ca\Documents\scripts\debug-338f2c.log"] {
-        try
-            FileAppend(line, p, "UTF-8")
-        catch {
-        }
-    }
-}
-; #endregion
-
 ; Left folder list collapsed: ribbon shows "Show navigation pane" (outlook-mail.md: Ribbon … 8,1).
 OutlookMail_IsLeftSidePanelHidden() {
     Outlook_ActivateMainWindow()
-    ; #region agent log
-    hwnd := 0, title := "", cls := "", exe := ""
-    try hwnd := WinExist("A")
-    try title := WinGetTitle("A")
-    try cls := WinGetClass("A")
-    try exe := WinGetProcessName("A")
-    OutlookMail_DebugLog338f2c("A", "OutlookMail_IsLeftSidePanelHidden:entry", "active window", '{"hwnd":' (hwnd ? hwnd : 0) ',"title":"' OutlookMail_DebugJsonEscape(SubStr(title, 1, 160)) '","class":"' OutlookMail_DebugJsonEscape(cls) '","exe":"' OutlookMail_DebugJsonEscape(exe) '"}')
-    rootHwnd := ""
-    try rootHwnd := UIA.ElementFromHandle(hwnd)
-    OutlookMail_DebugLog338f2c("A", "OutlookMail_IsLeftSidePanelHidden:rootHwnd", "ElementFromHandle only", '{"rootExists":' (rootHwnd ? "true" : "false") '}')
-    root := OutlookMail_RootElement()
-    OutlookMail_DebugLog338f2c("F", "OutlookMail_IsLeftSidePanelHidden:rootMail", "OutlookMail_RootElement (Chromium preferred)", '{"rootExists":' (root ? "true" : "false") '}')
-    crit := OutlookMail_CriteriaShowNavigationPaneRibbon()
-    if root {
-        idx := 0
-        for c in crit {
-            idx++
-            try {
-                el := root.FindFirst(c)
-                n := ""
-                if el
-                    try n := el.Name
-                OutlookMail_DebugLog338f2c("B", "OutlookMail_IsLeftSidePanelHidden:criterion", "FindFirst", '{"idx":' idx ',"found":' (el ? "true" : "false") ',"name":"' OutlookMail_DebugJsonEscape(n) '"}')
-            } catch Error as e {
-                OutlookMail_DebugLog338f2c("B", "OutlookMail_IsLeftSidePanelHidden:criterion", "FindFirst threw", '{"idx":' idx ',"err":"' OutlookMail_DebugJsonEscape(e.Message) '"}')
-            }
-        }
-    }
-    try {
-        droot := UIA.GetRootElement()
-        elD := droot.FindFirst({ Name: "Show navigation pane", matchmode: "Substring", Type: 50000 })
-        nd := ""
-        if elD
-            try nd := elD.Name
-        OutlookMail_DebugLog338f2c("C", "OutlookMail_IsLeftSidePanelHidden:desktopRoot", "FindFirst Show+Type50000", '{"found":' (elD ? "true" : "false") ',"name":"' OutlookMail_DebugJsonEscape(nd) '"}')
-    } catch Error as e2 {
-        OutlookMail_DebugLog338f2c("C", "OutlookMail_IsLeftSidePanelHidden:desktopRoot", "exception", '{"err":"' OutlookMail_DebugJsonEscape(e2.Message) '"}')
-    }
-    if root {
-        try {
-            loose := root.FindAll({ Name: "navigation pane", matchmode: "Substring", Type: 50000 })
-            cnt := 0
-            sample := ""
-            for eln in loose {
-                cnt++
-                if (cnt <= 6) {
-                    nm := ""
-                    try nm := eln.Name
-                    sample .= (cnt > 1 ? "|" : "") OutlookMail_DebugJsonEscape(nm)
-                }
-            }
-            OutlookMail_DebugLog338f2c("D", "OutlookMail_IsLeftSidePanelHidden:looseFindAll", "Type50000 name contains navigation pane", '{"count":' cnt ',"sample":"' sample '"}')
-        } catch Error as e3 {
-            OutlookMail_DebugLog338f2c("D", "OutlookMail_IsLeftSidePanelHidden:looseFindAll", "exception", '{"err":"' OutlookMail_DebugJsonEscape(e3.Message) '"}')
-        }
-    } else {
-        OutlookMail_DebugLog338f2c("D", "OutlookMail_IsLeftSidePanelHidden:looseFindAll", "skipped no root", "{}")
-    }
-    ; #endregion
-    return OutlookMail_FindFirst(crit) != ""
+    return OutlookMail_FindFirst(OutlookMail_CriteriaShowNavigationPaneRibbon()) != ""
 }
 
 ; Ribbon "high navigation" toggle: show the left folder pane (same control as "Hide navigation pane" when open).
 OutlookMail_ClickHighNavigationShowPane() {
     Outlook_ActivateMainWindow()
-    ok := false
     if OutlookMail_ClickFirst(OutlookMail_CriteriaShowNavigationPaneRibbon())
-        ok := true
-    ; #region agent log
-    OutlookMail_DebugLog338f2c("E", "OutlookMail_ClickHighNavigationShowPane", "OutlookMail_ClickFirst Show criteria", '{"ok":' (ok ? "true" : "false") '}')
-    ; #endregion
-    if ok
         return true
     return OutlookMail_EnsureNavigationPaneVisible()
 }
