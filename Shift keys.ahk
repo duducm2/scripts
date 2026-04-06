@@ -7795,12 +7795,96 @@ Outlook_FocusMainSearch() {
 
 Outlook_SwitchToMail() {
     Outlook_ActivateMainWindow()
-    return OutlookClickFirst([{ Name: "Mail", ControlType: "Button" }, { Name: "Mail", Type: 50000 }])
+    ; Left-rail toggle (see outlook-mail.md): Chromium tree via OutlookMail_* — not OutlookClickFirst (ElementFromHandle misses WebView2).
+    return OutlookMail_ClickFirst([
+        { AutomationId: "ddea774c-382b-47d7-aab5-adc2139a802b", ControlType: "Button" },
+        { Name: "Mail", ControlType: "Button" },
+        { Name: "Mail", Type: 50000 }
+    ])
 }
 
 Outlook_SwitchToCalendar() {
     Outlook_ActivateMainWindow()
-    return OutlookClickFirst([{ Name: "Calendar", ControlType: "Button" }, { Name: "Calendar", Type: 50000 }])
+    return OutlookMail_ClickFirst([
+        { AutomationId: "8cbeb86f-83e1-43b5-aaba-cd3514322f0b", ControlType: "Button" },
+        { Name: "Calendar", ControlType: "Button" },
+        { Name: "Calendar", Type: 50000 }
+    ])
+}
+
+; True if toggle appears "on" (left-rail app bar toggle buttons).
+Outlook_RailToggleIsPressed(el) {
+    if !el
+        return false
+    try {
+        if el.IsTogglePatternAvailable
+            return (el.TogglePattern.CurrentToggleState = 1)
+    } catch {
+    }
+    try {
+        return (el.GetCurrentPropertyValue(UIA.Property.ToggleToggleState) = 1)
+    } catch {
+    }
+    return false
+}
+
+; Shift+M: switch between Mail and Calendar using rail toggle state (not window title). See outlook-mail.md left-rail-appbar.
+Outlook_ToggleMailCalendarRail() {
+    Outlook_ActivateMainWindow()
+    root := OutlookMail_RootElement()
+    if !root
+        return false
+    searchRoot := root
+    try {
+        r := root.FindFirst({ Name: "left-rail-appbar", matchmode: "Substring", ControlType: "Group" })
+        if !r
+            r := root.FindFirst({ Name: "left-rail-appbar", matchmode: "Substring" })
+        if r
+            searchRoot := r
+    } catch {
+    }
+    mailBtn := ""
+    calBtn := ""
+    try mailBtn := searchRoot.FindFirst({ AutomationId: "ddea774c-382b-47d7-aab5-adc2139a802b", ControlType: "Button" })
+    if !mailBtn
+        try mailBtn := searchRoot.FindFirst({ Name: "Mail", ControlType: "Button" })
+    try calBtn := searchRoot.FindFirst({ AutomationId: "8cbeb86f-83e1-43b5-aaba-cd3514322f0b", ControlType: "Button" })
+    if !calBtn
+        try calBtn := searchRoot.FindFirst({ Name: "Calendar", ControlType: "Button" })
+    ; If rail group scope missed (build differences), search full Chromium root
+    if !mailBtn
+        try mailBtn := root.FindFirst({ AutomationId: "ddea774c-382b-47d7-aab5-adc2139a802b", ControlType: "Button" })
+    if !calBtn
+        try calBtn := root.FindFirst({ AutomationId: "8cbeb86f-83e1-43b5-aaba-cd3514322f0b", ControlType: "Button" })
+    if !mailBtn || !calBtn
+        return false
+
+    mailOn := Outlook_RailToggleIsPressed(mailBtn)
+    calOn := Outlook_RailToggleIsPressed(calBtn)
+    target := ""
+
+    if (mailOn && !calOn)
+        target := calBtn
+    else if (calOn && !mailOn)
+        target := mailBtn
+    else {
+        ; Both off, both on, or no toggle pattern: infer from title
+        t := WinGetTitle("A")
+        if RegExMatch(t, "i)Calendar")
+            target := mailBtn
+        else
+            target := calBtn
+    }
+
+    if !target
+        return false
+    try target.SetFocus()
+    Sleep 50
+    try target.Click()
+    catch {
+        try target.Invoke()
+    }
+    return true
 }
 
 Outlook_FocusMailMessageList() {
@@ -8910,12 +8994,15 @@ SelectExplorerSidebarFirstPinned() {
 +M:: {
     try {
         if IsNewOutlookActive() {
+            if Outlook_ToggleMailCalendarRail()
+                return
+            ; Fallback if rail toggles not found / no toggle pattern
             t := WinGetTitle("A")
             if RegExMatch(t, "i)Calendar") {
-                if OutlookClickFirst([{ Name: "Mail", ControlType: "Button" }, { Name: "Mail", Type: "Button" }])
+                if Outlook_SwitchToMail()
                     return
             } else {
-                if OutlookClickFirst([{ Name: "Calendar", ControlType: "Button" }, { Name: "Calendar", Type: "Button" }])
+                if Outlook_SwitchToCalendar()
                     return
             }
         }
