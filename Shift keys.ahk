@@ -8566,10 +8566,78 @@ Outlook_ToggleMailCalendarRail() {
     return true
 }
 
-Outlook_FocusMailMessageList() {
+Outlook_MailList_GetFirstListItem(root) {
+    if !root
+        return 0
+    listEl := 0
+    try {
+        g := root.FindFirst({ AutomationId: "MailList" })
+        if g
+            listEl := g.FindFirst({ ControlType: "List" })
+    } catch {
+    }
+    if !listEl {
+        try listEl := root.FindFirst({ Name: "Message list", ControlType: "List" })
+    }
+    if !listEl {
+        try listEl := root.FindFirst({ Name: "Message list", Type: 50008 })
+    }
+    if !listEl
+        return 0
+    item := 0
+    try item := listEl.FindFirst({ ControlType: "ListItem" })
+    if !item {
+        try item := listEl.FindFirst({ Type: 50007 })
+    }
+    return item ? item : 0
+}
+
+Outlook_MailList_TrySelectFirstItem(root) {
+    item := Outlook_MailList_GetFirstListItem(root)
+    if !item
+        return false
+    try item.ScrollIntoView()
+    catch {
+    }
+    Sleep 40
+    try item.Select()
+    catch {
+        try item.Click()
+        catch {
+            try item.Invoke()
+            catch {
+                return false
+            }
+        }
+    }
+    try item.SetFocus()
+    try EnsureFocus()
+    return true
+}
+
+; selectFirst: when true, select the first message row in the list (if any) for faster triage after moves.
+Outlook_FocusMailMessageList(selectFirst := false) {
     Outlook_ActivateMainWindow()
+    hwnd := WinExist("A")
+    if !hwnd
+        return false
+    if selectFirst {
+        try {
+            root := UIA.ElementFromHandle(hwnd)
+            if Outlook_MailList_TrySelectFirstItem(root)
+                return true
+        } catch {
+        }
+    }
     if OutlookFocusFirst([{ AutomationId: "Skip to message list-region" }, { Name: "Message list", matchmode: "Substring" }]) {
         try EnsureFocus()
+        if selectFirst {
+            try {
+                root := UIA.ElementFromHandle(WinExist("A"))
+                Outlook_MailList_TrySelectFirstItem(root)
+            } catch {
+            }
+        }
         return true
     }
     return false
@@ -9270,8 +9338,11 @@ OutlookClickFirst(criteriaList) {
         { AutomationId: "c46846eb-0853-7b70-b484-4d7f31f5d9db" }, { Name: "Move to General", ControlType: "RadioButton" }, { Name: "Move to General",
             matchmode: "Substring" }, { Name: "Move to general", matchmode: "Substring" }, { Name: "Move to Gerais",
                 matchmode: "Substring" }
-        ])
+        ]) {
+            Sleep 120
+            Outlook_FocusMailMessageList(true)
             return
+        }
     }
     Send "!5"
     Send "O"
@@ -9290,8 +9361,11 @@ OutlookClickFirst(criteriaList) {
         { AutomationId: "91476b25-0fb7-4460-f695-8905582291db" }, { Name: "Move to Newsletter", ControlType: "RadioButton" }, { Name: "Move to Newsletter",
             matchmode: "Substring" }, { Name: "Move to newsletter", matchmode: "Substring" }, { Name: "newsletter",
                 matchmode: "Substring", ControlType: "RadioButton" }
-        ])
+        ]) {
+            Sleep 120
+            Outlook_FocusMailMessageList(true)
             return
+        }
     }
     Send "!5"
     Send "O"
