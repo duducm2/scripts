@@ -130,6 +130,14 @@ These wrap `StandardLoadingBar_*` with preset styles:
 | 9936–10336  | Fold/Unfold Explorer                             |
 | 15034–15038 | `ShowCenteredOverlay` wrapper (Information Only) |
 | ~1556–1647  | Fast Copy Mode (`#!+j`, `FastCopyModeBanner_*`, `#HotIf` copy hooks) |
+| Outlook Reminders (`Reminders_SelectItem`) | **Interactive Input** (`StandardLoadingBar_ShowWithKeys`) for picking a reminder row. The main message may begin with an **Information Only**–style ℹ️ preamble (workaround when UI automation may not match on-screen rows), followed by the ❓ selection prompt and the numbered list. Do not use a second overlay on top of the keys modal for the same tip—embed the copy in the `ShowWithKeys` body so one surface stays readable. |
+
+#### Outlook Reminders selection (Shift keys)
+
+- **Category:** Interactive Input (`ShowWithKeys`, `promptKeys` e.g. `"[1-9/A-Z] Select  [Esc] Cancel"`).
+- **Optional user guidance:** Prefix the main `state` text with a short ℹ️ line explaining that the list is derived from the Reminders window and what to do if rows look incomplete (focus/move window, retry). Keeps parity with the “emoji first” rule for the first line users read.
+- **Pre-modal nudge:** Before opening the selection modal, Shift keys may apply a one-pixel `WinMove` and restore on the Reminders HWND so Outlook refreshes its accessible tree; the ℹ️ preamble can mention this so users are not surprised. Do not repeat the nudge on modal live-refresh timers.
+- **Standalone information:** Use `ShowCenteredOverlay_Utils(..., BANNER_ACCENT_INFO)` only when there is no interactive banner yet (e.g. debug-only notices); avoid stacking two full-screen banners with `ShowWithKeys`.
 
 ### AppLaunchers.ahk
 
