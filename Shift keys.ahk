@@ -3888,6 +3888,62 @@ Reminders_DebugLog(location, message, data := "", hypothesisId := "A", runId := 
     }
 }
 
+; #region agent log (debug session 6dacac — NDJSON to workspace; do not remove until verified)
+Debug6dacac_Log(location, message, data := "", hypothesisId := "A", runId := "run1") {
+    try {
+        Esc(s) => StrReplace(StrReplace(StrReplace(String(s), "\", "\\"), "`"", "\`""), "`n", "\n")
+        MapToJson(m) {
+            out := ""
+            for k, v in m {
+                if (out != "")
+                    out .= ","
+                out .= "`"" Esc(k) "`":"
+                if (v is Integer || v is Float)
+                    out .= String(v)
+                else
+                    out .= "`"" Esc(v) "`""
+            }
+            return "{" out "}"
+        }
+        d := IsObject(data) ? data : Map("value", data)
+        id := "log_" A_TickCount "_" Random(1000, 9999)
+        ts := A_TickCount
+        payload := Map()
+        payload["sessionId"] := "6dacac"
+        payload["id"] := id
+        payload["timestamp"] := ts
+        payload["location"] := location
+        payload["message"] := message
+        payload["runId"] := runId
+        payload["hypothesisId"] := hypothesisId
+        payloadJson := MapToJson(payload)
+        dataJson := MapToJson(d)
+        line := SubStr(payloadJson, 1, StrLen(payloadJson) - 1) . ",`"data`":" . dataJson . "}`n"
+        FileAppend(line, A_ScriptDir "\debug-6dacac.log", "UTF-8")
+    } catch {
+    }
+}
+
+; Why a reminder row failed the current filter (hypothesis H1)
+Reminders_RowFilterWhy(n) {
+    if (n = "")
+        return "empty_name"
+    if (n = "Settings" || n = "Dismiss all" || n = "Dismiss All" || n = "Minimize" || n = "Maximize" || n = "Close")
+        return "excluded_chrome"
+    if RegExMatch(n, "i)^(Snooze reminder|Dismiss reminder|Join Teams meeting|Chat with participants)$")
+        return "excluded_menu_action"
+    hasTime := RegExMatch(n, "i)(\bAll day\b|\bAM\b|\bPM\b)")
+    isAllDay := RegExMatch(n, "i)\bAll day\b")
+    hasRel := RegExMatch(n,
+        "i)\b(Today|\d+\s*(min|mins|minute|minutes|hr|hrs|hour|hours|day|days|wk|wks|week|weeks)\b(\s+ago)?)\b")
+    if !hasTime
+        return "no_am_pm_allday"
+    if (!hasRel && !isAllDay)
+        return "no_relative_token"
+    return "match_row"
+}
+; #endregion
+
 Reminders_IsNewOutlookWindow() {
     try {
         ; Reminders window can run under classic OUTLOOK.EXE or Store olk.exe.
@@ -3924,6 +3980,18 @@ Reminders_GetItemsStable(targetHwnd, delayMs := 80, maxPasses := 5) {
     loop maxPasses {
         cur := Reminders_GetItems(targetHwnd)
         sig := Reminders_ItemsListSignature(cur, 0)
+        ; #region agent log (debug session 6dacac — hypothesis H4)
+        try {
+            Debug6dacac_Log("Shift keys.ahk:Reminders_GetItemsStable", "pass", Map(
+                "pass", A_Index,
+                "count", cur.Length,
+                "sigLen", StrLen(sig),
+                "remHwnd", targetHwnd,
+                "matchedStable", (lastSig != "" && sig = lastSig) ? 1 : 0
+            ), "H4", "run1")
+        } catch {
+        }
+        ; #endregion
         if (lastSig != "" && sig = lastSig) {
             try Reminders_DebugLog("Shift keys.ahk:Reminders_GetItemsStable", "Stable snapshot matched", Map(
                 "pass", A_Index,
@@ -3940,6 +4008,15 @@ Reminders_GetItemsStable(targetHwnd, delayMs := 80, maxPasses := 5) {
         "count", lastItems.Length,
         "remHwnd", targetHwnd
     ), "ST2", "pre-fix")
+    ; #region agent log (debug session 6dacac — hypothesis H4)
+    try {
+        Debug6dacac_Log("Shift keys.ahk:Reminders_GetItemsStable", "max_passes_return", Map(
+            "count", lastItems.Length,
+            "remHwnd", targetHwnd
+        ), "H4", "run1")
+    } catch {
+    }
+    ; #endregion
     return lastItems
 }
 
@@ -3950,47 +4027,97 @@ Reminders_GetItems(targetHwnd := 0) {
         return items
     try {
         root := UIA.ElementFromHandle(hwnd)
+
+        CollectFromButtons(btns) {
+            out := []
+            dropped := 0
+            dropSample := ""
+            dropWhySample := ""  ; first N filter rejections with Reminders_RowFilterWhy
+            dropWhyN := 0
+            for b in btns {
+                n := ""
+                try n := b.Name
+                if (n = "")
+                    continue
+                ; Exclude global/window controls
+                if (n = "Settings" || n = "Dismiss all" || n = "Dismiss All" || n = "Minimize" || n = "Maximize" || n =
+                    "Close")
+                    continue
+                ; Exclude action/menu-like items that can appear while context UI is open
+                if RegExMatch(n, "i)^(Snooze reminder|Dismiss reminder|Join Teams meeting|Chat with participants)$")
+                    continue
+
+                ; Keep only actual reminder rows. In our UIA tree, these names include time/all-day + a relative marker.
+                ; Examples: "Stretch All day Today", "CIM Journey 3:00 PM Microsoft Teams Meeting 18 hrs ago"
+                ; Relative-age tokens vary (e.g. "1 hour ago", "7 days", "4 wks ago", "Today").
+                ; NOTE: single backslash in regex. Using \\b would match literal "\b".
+                hasTime := RegExMatch(n, "i)(\bAll day\b|\bAM\b|\bPM\b)")
+                isAllDay := RegExMatch(n, "i)\bAll day\b")
+                hasRel := RegExMatch(n,
+                    "i)\b(Today|\d+\s*(min|mins|minute|minutes|hr|hrs|hour|hours|day|days|wk|wks|week|weeks)\b(\s+ago)?)\b"
+                )
+                ; Allow all-day reminders even when Outlook omits relative tokens in the accessible name.
+                isLikelyRow := hasTime && (hasRel || isAllDay)
+                if !isLikelyRow {
+                    dropped++
+                    if (dropSample != "" && dropped <= 8)
+                        dropSample .= " | "
+                    if (dropped <= 8)
+                        dropSample .= n
+                    why := Reminders_RowFilterWhy(n)
+                    if (why != "excluded_chrome" && why != "excluded_menu_action" && dropWhyN < 18) {
+                        if (dropWhySample != "")
+                            dropWhySample .= "`n"
+                        snip := StrLen(n) > 140 ? (SubStr(n, 1, 140) "...") : n
+                        dropWhySample .= why ": " snip
+                        dropWhyN++
+                    }
+                    continue
+                }
+                out.Push({ el: b, label: n })
+            }
+            return Map("items", out, "dropped", dropped, "dropSample", dropSample, "totalButtons", btns ? btns.Length : 0,
+                "dropWhySample", dropWhySample)
+        }
+
+        ; Primary anchor: the "There are X reminders" group.
         listGroup := root.FindFirst({ ControlType: "Group", Name: "There are", matchmode: "Substring" })
         if !listGroup
             listGroup := root.FindFirst({ Name: "There are", matchmode: "Substring" })
-        if !listGroup
-            return items
 
-        btns := listGroup.FindAll({ Type: "Button" })
-        kept := 0
-        dropped := 0
-        dropSample := ""
-        for b in btns {
-            n := ""
-            try n := b.Name
-            if (n = "")
-                continue
-            ; Exclude global/window controls
-            if (n = "Settings" || n = "Dismiss all" || n = "Dismiss All" || n = "Minimize" || n = "Maximize" || n =
-                "Close")
-                continue
-            ; Exclude action/menu-like items that can appear while context UI is open
-            if RegExMatch(n, "i)^(Snooze reminder|Dismiss reminder|Join Teams meeting|Chat with participants)$")
-                continue
-
-            ; Keep only actual reminder rows. In our UIA tree, these names include time/all-day + a relative marker.
-            ; Examples: "Stretch All day Today", "CIM Journey 3:00 PM Microsoft Teams Meeting 18 hrs ago"
-            ; Relative-age tokens vary (e.g. "1 hour ago", "7 days", "4 wks ago", "Today").
-            ; NOTE: single backslash in regex. Using \\b would match literal "\b".
-            isLikelyRow := RegExMatch(n, "i)(\bAll day\b|\bAM\b|\bPM\b)") && RegExMatch(n,
-                "i)\b(Today|\d+\s*(min|mins|minute|minutes|hr|hrs|hour|hours|day|days|wk|wks|week|weeks)\b(\s+ago)?)\b"
-            )
-            if !isLikelyRow {
-                dropped++
-                if (dropSample != "" && dropped <= 8)
-                    dropSample .= " | "
-                if (dropped <= 8)
-                    dropSample .= n
-                continue
-            }
-            items.Push({ el: b, label: n })
-            kept++
+        rootBtns := root.FindAll({ Type: "Button" })
+        rootBtnLen := rootBtns ? rootBtns.Length : 0
+        listBtns := 0
+        listBtnLen := 0
+        if listGroup {
+            try listBtns := listGroup.FindAll({ Type: "Button" })
+            listBtnLen := listBtns ? listBtns.Length : 0
         }
+
+        btns := 0
+        source := ""
+        listSmallerThanRoot := (listGroup && listBtnLen > 0 && rootBtnLen > listBtnLen)
+        ; Evidence-based fix (H6): when listGroup is a strict subset of root buttons,
+        ; using listGroup guarantees we miss reminders. Prefer root in that case.
+        if (listGroup && listBtnLen > 0 && !listSmallerThanRoot) {
+            btns := listBtns
+            source := "listGroup"
+        } else {
+            btns := rootBtns
+            source := "root"
+        }
+
+        listItemLen := 0
+        try {
+            lis := root.FindAll({ ControlType: "ListItem" })
+            listItemLen := lis ? lis.Length : 0
+        } catch {
+        }
+
+        r := CollectFromButtons(btns)
+        items := r["items"]
+        dropped := r["dropped"]
+        dropSample := r["dropSample"]
         ; #region agent log
         try {
             sample := ""
@@ -4004,11 +4131,28 @@ Reminders_GetItems(targetHwnd := 0) {
             Reminders_DebugLog("Shift keys.ahk:Reminders_GetItems", "Extracted reminders sample", Map(
                 "count", items.Length,
                 "sample", sample,
-                "totalButtons", btns ? btns.Length : 0,
+                "source", source,
+                "totalButtons", r["totalButtons"],
                 "dropped", dropped,
                 "dropSample", dropSample,
                 "hwnd", hwnd
             ), "X1", "pre-fix")
+        } catch {
+        }
+        ; #endregion
+        ; #region agent log (debug session 6dacac)
+        try {
+            Debug6dacac_Log("Shift keys.ahk:Reminders_GetItems", "UIA scan + filter outcome", Map(
+                "source", source,
+                "keptCount", items.Length,
+                "rootBtnLen", rootBtnLen,
+                "listBtnLen", listBtnLen,
+                "listSmallerThanRoot", listSmallerThanRoot ? 1 : 0,
+                "listItemLen", listItemLen,
+                "droppedFiltered", dropped,
+                "dropWhySample", r.Has("dropWhySample") ? r["dropWhySample"] : "",
+                "title", WinGetTitle(hwnd)
+            ), listSmallerThanRoot ? "H6" : "H1", "run1")
         } catch {
         }
         ; #endregion
@@ -4072,10 +4216,29 @@ Reminders_SelectItem(actionLabel, &items, remHwnd, maxItems := 35) {
     global g_RemindersPickKey
     g_RemindersPickKey := ""
 
+    ; Volatile window: refresh once right before showing the modal so we don't start with a stale/partial snapshot.
+    try items := Reminders_GetItemsStable(remHwnd)
+
     if (items.Length = 0) {
-        ShowCenteredOverlay_Utils("❌ No reminders found", 1600, BANNER_ACCENT_ERROR)
-        return 0
+        ; One more try (UIA can briefly return empty during refresh).
+        try items := Reminders_GetItemsStable(remHwnd, 90, 7)
+        if (items.Length = 0) {
+            ShowCenteredOverlay_Utils("❌ No reminders found", 1600, BANNER_ACCENT_ERROR)
+            return 0
+        }
     }
+
+    ; #region agent log (debug session 6dacac — hypothesis H5)
+    try {
+        Debug6dacac_Log("Shift keys.ahk:Reminders_SelectItem", "items after stable for modal", Map(
+            "actionLabel", actionLabel,
+            "itemCount", items.Length,
+            "maxItems", maxItems,
+            "remHwnd", remHwnd
+        ), "H5", "run1")
+    } catch {
+    }
+    ; #endregion
 
     ; Stable key set (we'll keep callbacks stable and just refresh the displayed list).
     keys := []
@@ -4169,7 +4332,7 @@ Reminders_SelectItem(actionLabel, &items, remHwnd, maxItems := 35) {
     lastSig := Reminders_ItemsListSignature(items, maxItems)
     ShowModal()
     try {
-        latest := Reminders_GetItems(remHwnd)
+        latest := Reminders_GetItemsStable(remHwnd)
         latestCount := ClampCount(latest.Length)
         sig := Reminders_ItemsListSignature(latest, maxItems)
         if (sig != lastSig) {
@@ -4207,7 +4370,7 @@ Reminders_SelectItem(actionLabel, &items, remHwnd, maxItems := 35) {
         if (A_TickCount - lastRefreshTick >= pollMs) {
             lastRefreshTick := A_TickCount
             try {
-                latest := Reminders_GetItems(remHwnd)
+                latest := Reminders_GetItemsStable(remHwnd)
                 latestCount := ClampCount(latest.Length)
                 sig := Reminders_ItemsListSignature(latest, maxItems)
                 if (sig != lastSig) {
