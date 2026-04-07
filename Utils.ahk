@@ -3773,9 +3773,7 @@ class D2C_FlowManager {
         StandardLoadingBar_Hide(0)
         HideDictationIndicator()
 
-        if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
-            WinActivate("ahk_id " this.OriginHwnd)
-        Sleep 60
+        ; [V] Paste dictated: target the current foreground window only — do not WinActivate OriginHwnd (dictation start).
         Send("^v")
 
         this.Reset()
