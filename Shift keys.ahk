@@ -3965,6 +3965,7 @@ Reminders_NudgeWindowForUiRefresh(hwnd) {
             return
         WinGetPos(&x, &y, &w, &h, "ahk_id " hwnd)
         WinMove(x + 1, y, w, h, "ahk_id " hwnd)
+        Sleep 20  ; brief beat so the shell/UIA sees the move before restore
         WinMove(x, y, w, h, "ahk_id " hwnd)
     } catch {
     }
@@ -4173,6 +4174,7 @@ Reminders_SelectItem(actionLabel, &items, remHwnd, maxItems := 35) {
 
     ; Workaround: one-pixel nudge refreshes UIA before enumeration (not repeated in the modal refresh loop).
     Reminders_NudgeWindowForUiRefresh(remHwnd)
+    Sleep 40  ; let UIA settle after nudge before reading the list (modal → shortcut chains)
 
     ; Volatile window: refresh once right before showing the modal so we don't start with a stale/partial snapshot.
     try items := Reminders_GetItemsStable(remHwnd)
@@ -4419,9 +4421,11 @@ Reminders_OpenContextMenuForItem(itemEl) {
     try itemEl.SetFocus()
     Sleep 80
     EnsureFocus()
+    Sleep 25  ; focus → menu open
     ; Apps/Menu key (keyboard-only)
     Send "{AppsKey}"
     Sleep 140
+    Sleep 45  ; context menu rendered before Home/scan (dismiss / snooze / join online)
 }
 
 Reminders_MenuGetFocusedName() {
@@ -4660,6 +4664,7 @@ Reminders_ExecuteItemAction(action) {
         Reminders_LoadingShow("⏳ Reminders: " actionLabel "…")
 
         el := items[idx].el
+        Sleep 35  ; modal closed → row target ready before context menu (join / dismiss / snooze)
         ; #region agent log
         try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Selected reminder item", Map(
             "action", action,
