@@ -139,6 +139,16 @@ A_TrayMenu.Add("Test Cycle M1", (*) => CycleWindowsOnMonitor(1))
 
 ; --- Hotkeys & Functions -----------------------------------------------------
 
+; Maximize foreground window via Win API (reliable vs simulating Win+Up / system menu).
+; If WinMaximize fails for a stubborn window, fall back to WM_SYSCOMMAND SC_MAXIMIZE (see AutoHotkey WinMaximize docs).
+WM_MaximizeActiveWindow() {
+    try {
+        WinMaximize "A"
+    } catch {
+        try PostMessage 0x0112, 0xF030, , , "A"  ; WM_SYSCOMMAND, SC_MAXIMIZE
+    }
+}
+
 ; =============================================================================
 ; Minimize Active Window
 ; Hotkey: Win+Alt+Shift+6
@@ -152,11 +162,17 @@ A_TrayMenu.Add("Test Cycle M1", (*) => CycleWindowsOnMonitor(1))
 ; =============================================================================
 ; Maximize Active Window
 ; Hotkey: Win+Alt+Shift+M
+; Hotkey: Ctrl+Alt+Win+V (ZMK / hardware — same handler)
 ; Original File: Maximize window.ahk
 ; =============================================================================
 #!+M::
 {
-    WinMaximize "A"
+    WM_MaximizeActiveWindow()
+}
+
+^!#v::
+{
+    WM_MaximizeActiveWindow()
 }
 
 ; =============================================================================
@@ -2855,6 +2871,7 @@ ShowProjectSelector() {
 ; 5. BASIC WINDOW OPERATIONS
 ;    - Win+Alt+Shift+6: Minimize active window
 ;    - Win+Alt+Shift+M: Maximize active window
+;    - Ctrl+Alt+Win+V: Maximize active window (same as above; for ZMK / external keyboards)
 ;
 ; 6. ALT-TAB ALTERNATIVES
 ;    - Ctrl+Alt+Shift+B: Switch to previous window (Alt+Tab once)

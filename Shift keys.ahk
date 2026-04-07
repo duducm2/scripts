@@ -8,6 +8,9 @@
      *
      *   Letters still free: P, U
      *   Win+Alt+Shift+L: Outlook Copilot shortcut modal (global; actions target New Outlook)
+     *
+     *   Ctrl+Alt+Win+V: RESERVED — maximize active window (handled in WindowManagement.ahk;
+     *   used by ZMK hold on minimize/close key). Do not bind another global ^!#v action here.
      *   Numbers: (all numbers 0-9 are used)
      *   Symbols: ; ' [ ] \ | ` ~ @ # $ % ^ & * ( ) - _ = + { } : " < > ? /
      *
@@ -3990,10 +3993,11 @@ Reminders_GetItemsStable(targetHwnd, delayMs := 60, maxPasses := 3) {
         lastItems := cur
         Sleep delayMs
     }
-    try Reminders_DebugLog("Shift keys.ahk:Reminders_GetItemsStable", "Stable snapshot max passes; using last read", Map(
-        "count", lastItems.Length,
-        "remHwnd", targetHwnd
-    ), "ST2", "pre-fix")
+    try Reminders_DebugLog("Shift keys.ahk:Reminders_GetItemsStable", "Stable snapshot max passes; using last read",
+        Map(
+            "count", lastItems.Length,
+            "remHwnd", targetHwnd
+        ), "ST2", "pre-fix")
     return lastItems
 }
 
@@ -4043,7 +4047,8 @@ Reminders_GetItems(targetHwnd := 0) {
                 }
                 out.Push({ el: b, label: n })
             }
-            return Map("items", out, "dropped", dropped, "dropSample", dropSample, "totalButtons", btns ? btns.Length : 0)
+            return Map("items", out, "dropped", dropped, "dropSample", dropSample, "totalButtons", btns ? btns.Length :
+                0)
         }
 
         ; Primary anchor: the "There are X reminders" group.
@@ -4206,7 +4211,8 @@ Reminders_SelectItem(actionLabel, &items, remHwnd, maxItems := 35) {
 
     BuildMsg(currentItems, currentCount) {
         ; Information-only copy inside the interactive banner (see docs/standard_information_display.md).
-        m := "ℹ️ The script nudges this window by one pixel before listing (Outlook UIA quirk). If a row is still missing, focus or move the window, then use the shortcut again.`n`n"
+        m :=
+            "ℹ️ The script nudges this window by one pixel before listing (Outlook UIA quirk). If a row is still missing, focus or move the window, then use the shortcut again.`n`n"
         m .= "❓ Select reminder to " actionLabel ":`n`n"
         loop currentCount {
             i := A_Index
@@ -7963,19 +7969,15 @@ Outlook_FocusMainSearch() {
 Outlook_SwitchToMail() {
     Outlook_ActivateMainWindow()
     ; Left-rail toggle (see outlook-mail.md): Chromium tree via OutlookMail_* — not OutlookClickFirst (ElementFromHandle misses WebView2).
-    return OutlookMail_ClickFirst([
-        { AutomationId: "ddea774c-382b-47d7-aab5-adc2139a802b", ControlType: "Button" },
-        { Name: "Mail", ControlType: "Button" },
-        { Name: "Mail", Type: 50000 }
+    return OutlookMail_ClickFirst([{ AutomationId: "ddea774c-382b-47d7-aab5-adc2139a802b", ControlType: "Button" }, { Name: "Mail",
+        ControlType: "Button" }, { Name: "Mail", Type: 50000 }
     ])
 }
 
 Outlook_SwitchToCalendar() {
     Outlook_ActivateMainWindow()
-    return OutlookMail_ClickFirst([
-        { AutomationId: "8cbeb86f-83e1-43b5-aaba-cd3514322f0b", ControlType: "Button" },
-        { Name: "Calendar", ControlType: "Button" },
-        { Name: "Calendar", Type: 50000 }
+    return OutlookMail_ClickFirst([{ AutomationId: "8cbeb86f-83e1-43b5-aaba-cd3514322f0b", ControlType: "Button" }, { Name: "Calendar",
+        ControlType: "Button" }, { Name: "Calendar", Type: 50000 }
     ])
 }
 
@@ -7995,11 +7997,9 @@ OutlookCalendar_ClickGoToToday() {
             return false
         Sleep 150
         try StandardLoadingBar_Update("⏳ Outlook: Finding Go to today…")
-        el := OutlookMail_FindFirst([
-            { Name: "Go to today", matchmode: "Substring", ControlType: "Button" },
-            { Name: "Go to today", matchmode: "Substring", Type: 50000 },
-            { Name: "Today", ControlType: "Button" },
-            { Name: "Today", matchmode: "Substring", ControlType: "Button" }
+        el := OutlookMail_FindFirst([{ Name: "Go to today", matchmode: "Substring", ControlType: "Button" }, { Name: "Go to today",
+            matchmode: "Substring", Type: 50000 }, { Name: "Today", ControlType: "Button" }, { Name: "Today", matchmode: "Substring",
+                ControlType: "Button" }
         ])
         if !el
             return false
@@ -8029,16 +8029,11 @@ global OUTLOOK_COPILOT_RAIL_AID := "b5abf2ae-c16b-4310-8f8a-d3bcdb52f162"
 ; Win+Alt+Shift+L modal: same pattern as Utils ShowAiModelSelector (1–9 + Esc).
 global g_OutlookCopilotSelectorGui := false
 global g_OutlookCopilotSelectorActive := false
-global g_OutlookCopilotShortcuts := [
-    { name: "Toggle Copilot voice chat", desc: "Voice chat / new voice session" },
-    { name: "New chat", desc: "Start a new Copilot chat" },
-    { name: "Focus Copilot input", desc: "Message Copilot composer" },
-    { name: "Open navigation panel", desc: "Expand Copilot nav drawer" },
-    { name: "Work scope", desc: "Toggle Work (grounded) scope" },
-    { name: "Web scope", desc: "Toggle Web scope" },
-    { name: "Model / mode (Auto…)", desc: "Open mode / model menu" },
-    { name: "Temporary chat", desc: "Temporary chat session" },
-    { name: "Chats and more", desc: "History and more options" }
+global g_OutlookCopilotShortcuts := [{ name: "Toggle Copilot voice chat", desc: "Voice chat / new voice session" }, { name: "New chat",
+    desc: "Start a new Copilot chat" }, { name: "Focus Copilot input", desc: "Message Copilot composer" }, { name: "Open navigation panel",
+        desc: "Expand Copilot nav drawer" }, { name: "Work scope", desc: "Toggle Work (grounded) scope" }, { name: "Web scope",
+            desc: "Toggle Web scope" }, { name: "Model / mode (Auto…)", desc: "Open mode / model menu" }, { name: "Temporary chat",
+                desc: "Temporary chat session" }, { name: "Chats and more", desc: "History and more options" }
 ]
 
 OutlookCopilot_FindRailButton(root) {
@@ -8110,10 +8105,8 @@ OutlookCopilot_WaitMainOutlookForeground(timeoutMs := 2200) {
 }
 
 OutlookCopilot_VoiceChatCriteriaList() {
-    return [
-        { Name: "Start a new voice chat", matchmode: "Substring", ControlType: "Button" },
-        { Name: "Start a new voice chat", matchmode: "Substring", Type: 50000 },
-        { Name: "voice chat", matchmode: "Substring", ControlType: "Button" }
+    return [{ Name: "Start a new voice chat", matchmode: "Substring", ControlType: "Button" }, { Name: "Start a new voice chat",
+        matchmode: "Substring", Type: 50000 }, { Name: "voice chat", matchmode: "Substring", ControlType: "Button" }
     ]
 }
 
@@ -8299,11 +8292,8 @@ OutlookCopilot_ToggleVoiceChat() {
 }
 
 OutlookCopilot_FocusComposer() {
-    el := OutlookMail_FindFirst([
-        { AutomationId: "m365-chat-editor-target-element", ControlType: "Edit" },
-        { AutomationId: "m365-chat-editor-target-element" },
-        { Name: "Message Copilot", ControlType: "Edit" }
-    ])
+    el := OutlookMail_FindFirst([{ AutomationId: "m365-chat-editor-target-element", ControlType: "Edit" }, { AutomationId: "m365-chat-editor-target-element" }, { Name: "Message Copilot",
+        ControlType: "Edit" }])
     if !el
         return false
     try el.ScrollIntoView()
@@ -8322,10 +8312,8 @@ OutlookCopilot_RunSlot(slot) {
         case 1:
             return OutlookCopilot_ToggleVoiceChat()
         case 2:
-            if OutlookMail_ClickFirst([
-                { AutomationId: "new-chat-button", ControlType: "Button" },
-                { Name: "New chat", matchmode: "Substring", ControlType: "Button" }
-            ])
+            if OutlookMail_ClickFirst([{ AutomationId: "new-chat-button", ControlType: "Button" }, { Name: "New chat",
+                matchmode: "Substring", ControlType: "Button" }])
                 return true
             ShowCenteredOverlay_Utils("❌ Outlook Copilot: New chat not found", 1600, BANNER_ACCENT_ERROR)
             return false
@@ -8335,51 +8323,40 @@ OutlookCopilot_RunSlot(slot) {
             ShowCenteredOverlay_Utils("❌ Outlook Copilot: composer not found", 1600, BANNER_ACCENT_ERROR)
             return false
         case 4:
-            if OutlookMail_ClickFirst([
-                { AutomationId: "sidepaneExpandButton", ControlType: "Button" },
-                { Name: "Open navigation panel", matchmode: "Substring", ControlType: "Button" }
-            ])
+            if OutlookMail_ClickFirst([{ AutomationId: "sidepaneExpandButton", ControlType: "Button" }, { Name: "Open navigation panel",
+                matchmode: "Substring", ControlType: "Button" }])
                 return true
             ShowCenteredOverlay_Utils("❌ Outlook Copilot: navigation panel control not found", 1600,
                 BANNER_ACCENT_ERROR)
             return false
         case 5:
-            if OutlookMail_ClickFirst([
-                { AutomationId: "toggle-work", ControlType: "Button" },
-                { Name: "Work", ControlType: "Button" }
-            ])
+            if OutlookMail_ClickFirst([{ AutomationId: "toggle-work", ControlType: "Button" }, { Name: "Work",
+                ControlType: "Button" }])
                 return true
             ShowCenteredOverlay_Utils("❌ Outlook Copilot: Work scope not found", 1600, BANNER_ACCENT_ERROR)
             return false
         case 6:
-            if OutlookMail_ClickFirst([
-                { AutomationId: "toggle-web", ControlType: "Button" },
-                { Name: "Web", ControlType: "Button" }
-            ])
+            if OutlookMail_ClickFirst([{ AutomationId: "toggle-web", ControlType: "Button" }, { Name: "Web",
+                ControlType: "Button" }])
                 return true
             ShowCenteredOverlay_Utils("❌ Outlook Copilot: Web scope not found", 1600, BANNER_ACCENT_ERROR)
             return false
         case 7:
-            if OutlookMail_ClickFirst([
-                { AutomationId: "gptModeSwitcher", ControlType: "Button" },
-                { Name: "Auto", matchmode: "Substring", ControlType: "Button" }
-            ])
+            if OutlookMail_ClickFirst([{ AutomationId: "gptModeSwitcher", ControlType: "Button" }, { Name: "Auto",
+                matchmode: "Substring", ControlType: "Button" }])
                 return true
             ShowCenteredOverlay_Utils("❌ Outlook Copilot: mode menu not found", 1600, BANNER_ACCENT_ERROR)
             return false
         case 8:
-            if OutlookMail_ClickFirst([
-                { AutomationId: "menura", ControlType: "Button" },
-                { Name: "Temporary chat", matchmode: "Substring", ControlType: "Button" }
-            ])
+            if OutlookMail_ClickFirst([{ AutomationId: "menura", ControlType: "Button" }, { Name: "Temporary chat",
+                matchmode: "Substring", ControlType: "Button" }])
                 return true
             ShowCenteredOverlay_Utils("❌ Outlook Copilot: Temporary chat not found", 1600, BANNER_ACCENT_ERROR)
             return false
         case 9:
-            if OutlookMail_ClickFirst([
-                { AutomationId: "moreButton", ControlType: "Button" },
-                { Name: "OpenCopilot chats and more", matchmode: "Substring", ControlType: "Button" },
-                { Name: "chats and more", matchmode: "Substring", ControlType: "Button" }
+            if OutlookMail_ClickFirst([{ AutomationId: "moreButton", ControlType: "Button" }, { Name: "OpenCopilot chats and more",
+                matchmode: "Substring", ControlType: "Button" }, { Name: "chats and more", matchmode: "Substring",
+                    ControlType: "Button" }
             ])
                 return true
             ShowCenteredOverlay_Utils("❌ Outlook Copilot: More menu not found", 1600, BANNER_ACCENT_ERROR)
@@ -8869,10 +8846,8 @@ OutlookMail_EnsureNavigationPaneVisible() {
         }
 
         ; Otherwise toggle the nav pane (label may be "Show…" or "Hide…", depending on state).
-        navToggleCriteria := [
-            { Name: "navigation pane", matchmode: "Substring", ControlType: "Button" },
-            { Name: "Navigation pane", matchmode: "Substring", ControlType: "Button" }
-        ]
+        navToggleCriteria := [{ Name: "navigation pane", matchmode: "Substring", ControlType: "Button" }, { Name: "Navigation pane",
+            matchmode: "Substring", ControlType: "Button" }]
         for x in OutlookMail_CriteriaToggleNavigationPaneRibbon()
             navToggleCriteria.Push(x)
         if OutlookMail_ClickFirst(navToggleCriteria) {
@@ -8891,18 +8866,16 @@ OutlookMail_EnsureNavigationPaneVisible() {
 ; Ribbon folder-pane control: Type 50000 (Button), Fluent className prefix fui-Button …
 ; Name is "Show navigation pane" when the folder pane is collapsed, "Hide navigation pane" when expanded.
 OutlookMail_CriteriaShowNavigationPaneRibbon() {
-    return [
-        { Name: "Show navigation pane", Type: 50000, matchmode: "Substring" },
-        { Name: "Show navigation pane", ControlType: "Button", matchmode: "Substring" },
-        { Name: "Show navigation pane", ClassName: "fui-Button", matchmode: "Substring" }
+    return [{ Name: "Show navigation pane", Type: 50000, matchmode: "Substring" }, { Name: "Show navigation pane",
+        ControlType: "Button", matchmode: "Substring" }, { Name: "Show navigation pane", ClassName: "fui-Button",
+            matchmode: "Substring" }
     ]
 }
 
 OutlookMail_CriteriaHideNavigationPaneRibbon() {
-    return [
-        { Name: "Hide navigation pane", Type: 50000, matchmode: "Substring" },
-        { Name: "Hide navigation pane", ControlType: "Button", matchmode: "Substring" },
-        { Name: "Hide navigation pane", ClassName: "fui-Button", matchmode: "Substring" }
+    return [{ Name: "Hide navigation pane", Type: 50000, matchmode: "Substring" }, { Name: "Hide navigation pane",
+        ControlType: "Button", matchmode: "Substring" }, { Name: "Hide navigation pane", ClassName: "fui-Button",
+            matchmode: "Substring" }
     ]
 }
 
