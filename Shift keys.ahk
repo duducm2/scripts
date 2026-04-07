@@ -594,6 +594,8 @@ Teams - Meeting (Shift)
 cheatSheets["TeamsChat"] := "
 (
 Teams - Chat (Shift)
+🔙 [K]Back (toolbar)
+⏩ [L]Forward (toolbar)
 ↩️ [R][R]eply
 📬 [U]View all [U]nread items
 📌 [P][P]in chat
@@ -608,7 +610,7 @@ Teams - Chat (Shift)
 👥 [T][T]eam / Add participants
 📞 [V][V]ideo call
 🩶 [F][F]old chat sections
-👍 [L][L]ike reaction
+👍 [Y] Like reaction
 ❤️ [G][G]ive heart reaction
 😂 [J][J]oke reaction (😂)
 🏠 [O][O]pen home panel
@@ -7174,6 +7176,42 @@ ML_SortApply(idx) {
 ;-------------------------------------------------------------------
 #HotIf IsTeamsChatActive()
 
+; Shift + K : Toolbar Back (UIA; fallback Alt+Left — see teams.md menur75)
++k::
+{
+    try {
+        root := UIA.ElementFromHandle(WinExist("A"))
+        if !root
+            return
+        backBtn := root.FindFirst({ Name: "Back", Type: "50000", AutomationId: "menur75" })
+        if !backBtn
+            backBtn := root.FindFirst({ Name: "Back", Type: "50000" })
+        if (backBtn) {
+            backBtn.Click()
+            return
+        }
+    } catch {
+    }
+    Send "!{Left}"
+}
+
+; Shift + L : Toolbar Forward (UIA; fallback Alt+Right). Like reaction moved to Shift+Y.
++l::
+{
+    try {
+        root := UIA.ElementFromHandle(WinExist("A"))
+        if !root
+            return
+        fwdBtn := root.FindFirst({ Name: "Forward", Type: "50000" })
+        if (fwdBtn) {
+            fwdBtn.Click()
+            return
+        }
+    } catch {
+    }
+    Send "!{Right}"
+}
+
 ; Shift + R : Reply - Reply
 +r::
 {
@@ -7581,8 +7619,8 @@ ML_SortApply(idx) {
     }
 }
 
-; Shift + L : Like reaction - Like
-+l::
+; Shift + Y : Like reaction (moved from Shift+L — now Shift+L is Forward)
++y::
 {
     Send "{Enter}"
     Send "{Enter}"
