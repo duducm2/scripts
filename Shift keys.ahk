@@ -1319,7 +1319,9 @@ Gemini (Shift)
 🤖 [G]Send[G]emini prompt text
 ⛶ [F][F]ullscreen input
 🔔 [Ctrl+Enter]Send and notify on completion
-)"
+
+=== Alt (ahk) ===
+⬇️ [U] Scroll AI feed to bottom (ahk — same idea as Cursor)"
 
 ; --- Mobills ---------------------------------------------------------------
 cheatSheets["Mobills"] := "
@@ -16602,32 +16604,140 @@ CancelCommit(ctrl, *) {
     }
 }
 
-; Alt + U : Scroll AI feed to bottom (AutoHotkey-based shortcut)
-!u::
-{
-    try {
-        hwnd := WinExist("A")
-        if (!hwnd) {
-            return
-        }
-        root := UIA.ElementFromHandle(hwnd)
+; Gemini (Chrome): scroll the conversation pane to the bottom (last assistant block or prompt field).
+; Uses UIA AutomationId prefix from the page tree (model-response-message-content*); see gemini-tree.md.
+; #region agent log (debug 942bf8 — NDJSON; remove after verification)
+Debug942bf8_Esc(s) {
+    s := String(s ?? "")
+    return StrReplace(StrReplace(s, "\", "/"), '"', "'")
+}
 
-        chatContainer := root.FindFirst({ ClassName: "composer-messages-container" })
-        if (chatContainer) {
+Debug942bf8_Log(location, hypothesisId, message) {
+    line := Format('{"sessionId":"942bf8","timestamp":{},"location":"{}","hypothesisId":"{}","message":"{}"}`n', A_TickCount,
+        Debug942bf8_Esc(location), Debug942bf8_Esc(hypothesisId), Debug942bf8_Esc(message))
+    ; Not gitignored (debug-*.log is), so tooling can read evidence from the workspace.
+    try DirCreate(A_ScriptDir "\.cursor")
+    try FileAppend(line, A_ScriptDir "\.cursor\gemini-u-942.ndjson", "UTF-8")
+    try FileAppend(line, A_ScriptDir "\debug-942bf8.log", "UTF-8")
+    try FileAppend(line, A_ScriptDir "\gemini-u-942.trace.ndjson", "UTF-8")
+}
+; #endregion
+
+; After ScrollIntoView on a message node, still scroll the real viewport (nested scroller / Chrome).
+; UIA SetScrollPercent: first arg is vertical %, second horizontal (see UIA.ahk); vertical bottom = (100, -1).
+; Keys must go to Chrome_RenderWidgetHostHWND1 so they hit the page, not the top-level frame.
+GeminiScroll_ApplyGeminiViewportBottom(uia, scope, hwnd) {
+    did := ""
+    try {
+        doc := scope.FindFirst({ Type: UIA.Type.Document, Name: "Google Gemini" })
+        if (!doc)
+            doc := scope.FindFirst({ Type: "Document" })
+        if (!doc)
+            doc := uia.FindFirst({ Type: "Document" })
+        if (doc) {
             try {
-                if (chatContainer.GetPropertyValue(UIA.Property.IsScrollPatternAvailable)) {
-                    chatContainer.ScrollPattern.SetScrollPercent(-1, 100)
-                    return
+                if (doc.GetPropertyValue(UIA.Property.IsScrollPatternAvailable)) {
+                    doc.ScrollPattern.SetScrollPercent(100, -1)
+                    did := "document_SetScrollPercent_v100"
                 }
             } catch {
             }
+        }
+    } catch {
+    }
+    if (did = "") {
+        try {
+            rw := ControlGetHwnd("Chrome_RenderWidgetHostHWND1", "ahk_id " hwnd)
+            if (rw) {
+                ControlSend "{Blind}^{End}",, "ahk_id " rw
+                did := "ControlSend_RenderWidget_CtrlEnd"
+            }
+        } catch {
+        }
+    }
+    if (did = "") {
+        try {
+            ControlSend "{Blind}^{End}",, "ahk_id " hwnd
+            did := "ControlSend_Root_CtrlEnd"
+        } catch {
+            did := "ControlSend_failed"
+        }
+    }
+    ; Overflow divs often ignore UIA + Ctrl+End. NA ControlClick does not reliably move focus, so `Send` wheel
+    ; would hit the wrong target — send wheel directly to the Chromium control.
+    wheel := false
+    try {
+        ControlClick "Chrome_RenderWidgetHostHWND1", "ahk_id " hwnd,,,, "NA"
+        Sleep 40
+        ControlSend "{WheelDown 120}", "Chrome_RenderWidgetHostHWND1", "ahk_id " hwnd
+        wheel := true
+    } catch {
+    }
+    ; #region agent log
+    Debug942bf8_Log("GeminiScroll_ApplyGeminiViewportBottom", "H5", "viewport|pri=" did "|wheel=" (wheel ? "120" : "0"))
+    ; #endregion
+}
 
-            messages := chatContainer.FindAll({ ClassName: "composer-rendered-message", matchmode: "Substring" })
-            if (messages && messages.Length > 0) {
-                messages[messages.Length].ScrollIntoView()
+GeminiScrollFeedToBottom_Chrome(hwnd) {
+    ; #region agent log
+    Debug942bf8_Log("GeminiScrollFeedToBottom_Chrome", "H2", "entry|hwnd=" hwnd)
+    ; #endregion
+    try {
+        uia := UIA_Browser("ahk_id " hwnd)
+        scope := FastCopyMode_GetGeminiSearchRoot(uia)
+        blocks := scope.FindAll({ AutomationId: "model-response-message-content", matchmode: "Substring" })
+        ; #region agent log
+        n := blocks ? blocks.Length : 0
+        nFull := -1
+        try {
+            bf := uia.FindAll({ AutomationId: "model-response-message-content", matchmode: "Substring" })
+            nFull := bf ? bf.Length : 0
+        } catch as _e0
+            nFull := -2
+        lastAid := ""
+        if (n > 0) {
+            try lastAid := blocks[n].AutomationId
+            catch as _e1
+                lastAid := "(err)"
+        }
+        Debug942bf8_Log("GeminiScrollFeedToBottom_Chrome", "H3",
+            "findall|scope_n=" n "|full_uia_n=" nFull "|lastAid=" lastAid)
+        ; #endregion
+        if (blocks && blocks.Length > 0) {
+            try {
+                blocks[blocks.Length].ScrollIntoView()
+                ; #region agent log
+                Debug942bf8_Log("GeminiScrollFeedToBottom_Chrome", "H5", "path|used_blocks_scrollIntoView")
+                ; #endregion
+            } catch as eSiv {
+                ; #region agent log
+                Debug942bf8_Log("GeminiScrollFeedToBottom_Chrome", "H5", "ScrollIntoView_err|" eSiv.Message)
+                ; #endregion
             }
         }
-    } catch Error as e {
+        GeminiScroll_ApplyGeminiViewportBottom(uia, scope, hwnd)
+        if (!blocks || blocks.Length = 0) {
+            pf := FindGeminiPromptField(uia)
+            ; #region agent log
+            Debug942bf8_Log("GeminiScrollFeedToBottom_Chrome", "H3", "fallback|promptField=" (pf ? "1" : "0"))
+            ; #endregion
+            if (pf) {
+                try {
+                    pf.ScrollIntoView()
+                    ; #region agent log
+                    Debug942bf8_Log("GeminiScrollFeedToBottom_Chrome", "H5", "path|used_prompt_scrollIntoView")
+                    ; #endregion
+                } catch as ePf {
+                    ; #region agent log
+                    Debug942bf8_Log("GeminiScrollFeedToBottom_Chrome", "H5", "prompt_ScrollIntoView_err|" ePf.Message)
+                    ; #endregion
+                }
+            }
+        }
+    } catch as e {
+        ; #region agent log
+        Debug942bf8_Log("GeminiScrollFeedToBottom_Chrome", "H2", "outer_catch|" e.Message)
+        ; #endregion
     }
 }
 
@@ -16673,6 +16783,73 @@ CancelCommit(ctrl, *) {
 }
 
 #HotIf
+
+; Alt + U : Scroll AI feed to bottom — must live outside #HotIf IsEditorActive() so Gemini (Chrome) receives it.
+!u::
+{
+    loadingBarShown := false
+    try {
+        hwnd := WinExist("A")
+        if (!hwnd) {
+            ; #region agent log
+            Debug942bf8_Log("!u", "H1", "no_hwnd")
+            ; #endregion
+            return
+        }
+        StandardLoadingBar_Show("⏳ Scrolling AI feed to bottom…", BANNER_ACCENT_INTERMEDIATE,
+            { passive: false, centerOnHwnd: hwnd, textWidth: 480, fontSize: 17 })
+        loadingBarShown := true
+
+        root := UIA.ElementFromHandle(hwnd)
+
+        ; FindFirst throws if missing — normal for Chrome/Gemini (no composer-messages-container).
+        chatContainer := 0
+        try chatContainer := root.FindFirst({ ClassName: "composer-messages-container" })
+        catch
+            chatContainer := 0
+        proc := ""
+        try proc := StrLower(WinGetProcessName("ahk_id " hwnd))
+        title := ""
+        try title := WinGetTitle("ahk_id " hwnd)
+        geminiGate := (proc = "chrome.exe" && InStr(title, "gemini", false))
+        ; #region agent log
+        Debug942bf8_Log("!u", "H1",
+            "route|proc=" proc "|geminiGate=" (geminiGate ? "1" : "0") "|cc=" (chatContainer ? "1" : "0") "|title=" SubStr(
+                title, 1, 80))
+        ; #endregion
+        if (chatContainer) {
+            try {
+                if (chatContainer.GetPropertyValue(UIA.Property.IsScrollPatternAvailable)) {
+                    chatContainer.ScrollPattern.SetScrollPercent(-1, 100)
+                    return
+                }
+            } catch {
+            }
+
+            messages := chatContainer.FindAll({ ClassName: "composer-rendered-message", matchmode: "Substring" })
+            if (messages && messages.Length > 0) {
+                messages[messages.Length].ScrollIntoView()
+            }
+            return
+        }
+
+        if (geminiGate)
+            GeminiScrollFeedToBottom_Chrome(hwnd)
+        else {
+            ; #region agent log
+            Debug942bf8_Log("!u", "H1", "skipped_gemini_branch|not_chrome_or_no_gemini_title")
+            ; #endregion
+        }
+    } catch Error as e {
+        ; #region agent log
+        Debug942bf8_Log("!u", "H2", "outer_catch|" e.Message)
+        ; #endregion
+    } finally {
+        if (loadingBarShown) {
+            try StandardLoadingBar_Hide(0)
+        }
+    }
+}
 
 Cursor_IsElementVisibleByName(name, hwnd := 0, typeList := "", matchmode := "") {
     return !!Cursor_GetVisibleElementByName(name, hwnd, typeList, matchmode)
