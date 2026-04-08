@@ -815,7 +815,7 @@ Cursor
 📋 [M] Quick shortcut menu (ahk)
 🤖 [A] Add file to AI Context (Cursor Chat) (ahk)
 📄 [N] Review [N]ext file (ahk)
-📄 [R] efresh preview
+📄 [R] Refresh preview
 📄 [F] File: New [F]ile
 📂 [O] File: New F[O]lder
 
@@ -850,6 +850,9 @@ Cursor
 🔍 [F8] [N]avigate problems
 🗑️ [Shift+Delete] [D]elete line
 )"  ; end Cursor
+
+; VS Code mirror of Cursor sheet (shared source to avoid drift while keeping separate identity).
+cheatSheets["Code.exe"] := cheatSheets["Cursor.exe"]
 
 ; --- Windows Explorer ------------------------------------------------------
 cheatSheets["explorer.exe"] := "
@@ -14417,7 +14420,7 @@ PowerBI_AttemptExpand(element) {
 ;  Detect which editor is active
 ;-----------------------------------------
 IsEditorActive() {
-    return WinActive("ahk_exe Cursor.exe")
+    return WinActive("ahk_exe Cursor.exe") || WinActive("ahk_exe Code.exe")
 }
 
 ;-----------------------------------------
@@ -14427,7 +14430,10 @@ IsEditorActive() {
 ;-----------------------------------------
 IsCursorMainEditorFocused() {
     try {
-        winHandle := WinExist("ahk_exe Cursor.exe")
+        if !(WinActive("ahk_exe Cursor.exe") || WinActive("ahk_exe Code.exe"))
+            return false
+
+        winHandle := WinExist("A")
         if (!winHandle)
             return false
 
@@ -14454,7 +14460,10 @@ IsCursorMainEditorFocused() {
 ; Focus the Cursor "Files Explorer" tree using UIA
 FocusCursorFilesExplorer() {
     try {
-        hwnd := WinExist("ahk_exe Cursor.exe")
+        if !(WinActive("ahk_exe Cursor.exe") || WinActive("ahk_exe Code.exe"))
+            return false
+
+        hwnd := WinExist("A")
         if (!hwnd)
             return false
 
