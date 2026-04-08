@@ -494,6 +494,7 @@ Outlook (Shift)
 🗑️ [E]Remove event (no confirmation)
 
 Outlook (Ctrl+Alt)
+📌 Ribbon actions select the Home tab first when needed (e.g. View or Help was active).
 🔎 [Ctrl+Alt+F] Search
 📮 [Ctrl+Alt+M] Mail view
 📅 [Ctrl+Alt+G] Calendar view
@@ -8946,6 +8947,46 @@ OutlookMail_ClickFirst(criteriaList) {
     return true
 }
 
+; New Outlook: ribbon command buttons (Delete, Move, …) live on the Home tab panel only (outlook.md: TabItem Home, AutomationId "1").
+; Call before UIA clicks that target AutomationIds on that panel when View/Help might be active.
+OutlookMail_EnsureHomeTab() {
+    Outlook_ActivateMainWindow()
+    homeTab := OutlookMail_FindFirst([{ Name: "Home", ControlType: "TabItem", AutomationId: "1" }, { AutomationId: "1",
+        ControlType: "TabItem" }, { Name: "Home", ControlType: "TabItem" }
+    ])
+    if !homeTab {
+        try {
+            Send "!h"
+            Sleep 100
+        } catch {
+        }
+        return true
+    }
+    try {
+        if homeTab.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable) && homeTab.SelectionItemPattern.IsSelected {
+            Sleep 30
+            return true
+        }
+    } catch {
+    }
+    try homeTab.SetFocus()
+    Sleep 30
+    try homeTab.Click()
+    catch Error {
+        try homeTab.Invoke()
+        catch Error {
+            try {
+                Send "!h"
+                Sleep 100
+            } catch {
+            }
+            return true
+        }
+    }
+    Sleep 100
+    return true
+}
+
 ; Left folder list collapsed: ribbon shows "Show navigation pane" (outlook-mail.md: Ribbon … 8,1).
 OutlookMail_IsLeftSidePanelHidden() {
     Outlook_ActivateMainWindow()
@@ -9235,44 +9276,58 @@ OutlookClickFirst(criteriaList) {
 
 ; Mail triage (Reading Pane / Ribbon)
 ^!r:: {  ; Reply
-    if !OutlookMail_ClickReadingPaneCommand("Reply") && !OutlookClickFirst([{ Name: "Reply", ControlType: "Button" }, { Name: "Reply",
+    if OutlookMail_ClickReadingPaneCommand("Reply")
+        return
+    OutlookMail_EnsureHomeTab()
+    if !OutlookClickFirst([{ Name: "Reply", ControlType: "Button" }, { Name: "Reply",
         ControlType: "MenuItem" }])
         ShowCenteredOverlay_Utils("❌ Outlook: Reply not found", 1200, BANNER_ACCENT_ERROR)
 }
 
 ^!a:: {  ; Reply all
-    if !OutlookMail_ClickReadingPaneCommand("Reply all") && !OutlookClickFirst([{ Name: "Reply all", ControlType: "Button" }, { Name: "Reply all",
+    if OutlookMail_ClickReadingPaneCommand("Reply all")
+        return
+    OutlookMail_EnsureHomeTab()
+    if !OutlookClickFirst([{ Name: "Reply all", ControlType: "Button" }, { Name: "Reply all",
         ControlType: "MenuItem" }])
         ShowCenteredOverlay_Utils("❌ Outlook: Reply all not found", 1200, BANNER_ACCENT_ERROR)
 }
 
 ^!w:: {  ; Forward
-    if !OutlookMail_ClickReadingPaneCommand("Forward") && !OutlookClickFirst([{ Name: "Forward", ControlType: "Button" }, { Name: "Forward",
+    if OutlookMail_ClickReadingPaneCommand("Forward")
+        return
+    OutlookMail_EnsureHomeTab()
+    if !OutlookClickFirst([{ Name: "Forward", ControlType: "Button" }, { Name: "Forward",
         ControlType: "MenuItem" }])
         ShowCenteredOverlay_Utils("❌ Outlook: Forward not found", 1200, BANNER_ACCENT_ERROR)
 }
 
 ^!d:: {  ; Delete
+    OutlookMail_EnsureHomeTab()
     if !OutlookClickFirst([{ AutomationId: "519", ControlType: "Button" }, { Name: "Delete", ControlType: "Button" }])
         ShowCenteredOverlay_Utils("❌ Outlook: Delete not found", 1200, BANNER_ACCENT_ERROR)
 }
 
 ^!e:: {  ; Archive
+    OutlookMail_EnsureHomeTab()
     if !OutlookClickFirst([{ AutomationId: "505", ControlType: "Button" }, { Name: "Archive", ControlType: "Button" }])
         ShowCenteredOverlay_Utils("❌ Outlook: Archive not found", 1200, BANNER_ACCENT_ERROR)
 }
 
 ^!u:: {  ; Read/Unread toggle
+    OutlookMail_EnsureHomeTab()
     if !OutlookClickFirst([{ AutomationId: "552", ControlType: "Button" }, { Name: "Read / Unread", ControlType: "Button" }])
         ShowCenteredOverlay_Utils("❌ Outlook: Read/Unread not found", 1200, BANNER_ACCENT_ERROR)
 }
 
 ^!c:: {  ; Categorize
+    OutlookMail_EnsureHomeTab()
     if !OutlookClickFirst([{ AutomationId: "509", ControlType: "Button" }, { Name: "Categorize", ControlType: "Button" }])
         ShowCenteredOverlay_Utils("❌ Outlook: Categorize not found", 1200, BANNER_ACCENT_ERROR)
 }
 
 ^!v:: {  ; Move
+    OutlookMail_EnsureHomeTab()
     if !OutlookClickFirst([{ AutomationId: "540", ControlType: "Button" }, { Name: "Move", ControlType: "Button" }])
         ShowCenteredOverlay_Utils("❌ Outlook: Move not found", 1200, BANNER_ACCENT_ERROR)
 }
@@ -9309,6 +9364,7 @@ OutlookClickFirst(criteriaList) {
     if IsNewOutlookActive() {
         ; New Outlook: prefer the Quick Step buttons (stable IDs from outlook-mail.md).
         Outlook_ActivateMainWindow()
+        OutlookMail_EnsureHomeTab()
         if OutlookClickFirst([{ AutomationId: "c46846eb-0853-7b70-b484-4d7f31f5d9db", ControlType: "RadioButton" }, ; Move to General
         { AutomationId: "c46846eb-0853-7b70-b484-4d7f31f5d9db" }, { Name: "Move to General", ControlType: "RadioButton" }, { Name: "Move to General",
             matchmode: "Substring" }, { Name: "Move to general", matchmode: "Substring" }, { Name: "Move to Gerais",
@@ -9332,6 +9388,7 @@ OutlookClickFirst(criteriaList) {
     if IsNewOutlookActive() {
         ; New Outlook: prefer the Quick Step buttons (stable IDs from outlook-mail.md).
         Outlook_ActivateMainWindow()
+        OutlookMail_EnsureHomeTab()
         if OutlookClickFirst([{ AutomationId: "91476b25-0fb7-4460-f695-8905582291db", ControlType: "RadioButton" }, ; Move to Newsletter
         { AutomationId: "91476b25-0fb7-4460-f695-8905582291db" }, { Name: "Move to Newsletter", ControlType: "RadioButton" }, { Name: "Move to Newsletter",
             matchmode: "Substring" }, { Name: "Move to newsletter", matchmode: "Substring" }, { Name: "newsletter",
