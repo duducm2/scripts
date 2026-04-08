@@ -213,68 +213,39 @@ Mousemaster_Deactivate() {
 }
 
 ; ==============================================================================
-; Phase 5: Action Execution (Bulletproof Click Logic)
+; Phase 5: Action Execution (Raw Windows API Click)
 ; ==============================================================================
 Mousemaster_PerformAction(elementObject) {
     global ActiveWinID
-    OutputDebug("Mousemaster_PerformAction: Attempting to click element: " elementObject.hint)
     
-    ; 0. DESTRÓI A GUI PRIMEIRO. Absolutamente crítico para não interceptar o próprio clique.
+    ; 0. Destrói a interface gráfica para limpar o caminho
     Mousemaster_Deactivate() 
-    Sleep(100) ; Aguarda o Windows limpar a tela visualmente e devolver o foco.
+    Sleep(80) 
     
-    ; Garante que a janela alvo está focada
+    ; 1. Garante que a janela correta está ativa e recebendo comandos
     if (ActiveWinID) {
         try WinActivate("ahk_id " ActiveWinID)
-        Sleep(50)
+        Sleep(40)
     }
 
-    ; 1. Tenta o método Click() interno da biblioteca UIA-v2
-    ; Este método é altamente otimizado por especialistas para contornar problemas de AHK.
-    try {
-        elementObject.uiaElement.Click()
-        OutputDebug("Mousemaster_PerformAction: UIA-v2 Click() succeeded.")
-        ToolTip("✅ Clique UIA Nativo realizado!", 200, 200)
-        SetTimer(() => ToolTip(), -2000)
-        return
-    } catch as e {
-        OutputDebug("Mousemaster_PerformAction: UIA-v2 Click() failed: " e.Message)
-    }
+    cx := elementObject.cx
+    cy := elementObject.cy
+    
+    ; 2. API Nativa do Windows: Move o cursor para as coordenadas físicas exatas.
+    ; Ignora completamente a escala de DPI do Windows ou do AutoHotkey.
+    DllCall("SetCursorPos", "int", cx, "int", cy)
+    
+    ; Pequena pausa para os listeners Javascript ('hover') da página web ou app detectarem o cursor
+    Sleep(40) 
+    
+    ; 3. API Nativa do Windows: Envia o evento de clique físico.
+    ; 0x0002 = MOUSEEVENTF_LEFTDOWN
+    ; 0x0004 = MOUSEEVENTF_LEFTUP
+    DllCall("mouse_event", "uint", 0x0002, "int", 0, "int", 0, "uint", 0, "uptr", 0)
+    Sleep(25) ; Duração realística da pressão de um dedo
+    DllCall("mouse_event", "uint", 0x0004, "int", 0, "int", 0, "uint", 0, "uptr", 0)
 
-    ; 2. Fallback 1: InvokePattern (Para elementos que preferem invocação lógica)
-    try {
-        if (elementObject.uiaElement.IsInvokePatternAvailable) {
-            elementObject.uiaElement.Invoke()
-            OutputDebug("Mousemaster_PerformAction: InvokePattern succeeded.")
-            ToolTip("✅ Elemento invocado (InvokePattern)!", 200, 200)
-            SetTimer(() => ToolTip(), -2000)
-            return
-        }
-    } catch as e {
-        OutputDebug("Mousemaster_PerformAction: InvokePattern failed: " e.Message)
-    }
-
-    ; 3. Fallback 2: Clique Extremo de Baixo Nível (SendEvent)
-    OutputDebug("Mousemaster_PerformAction: Falling back to SendEvent robust click.")
-    
-    CoordMode("Mouse", "Screen")
-    
-    ; Usa SendEvent para simular interrupções de hardware, contornando bloqueios de SendInput
-    local oldSendMode := A_SendMode
-    SendMode("Event")
-    SetMouseDelay(30) ; Dá tempo ao SO para registrar o movimento antes do clique
-    
-    MouseMove(elementObject.cx, elementObject.cy)
-    Sleep(50) ; Pausa para acionar animações de 'hover' do CSS/JS
-    
-    Click("Down")
-    Sleep(30) ; Tempo da pressão do botão do mouse
-    Click("Up")
-    
-    SendMode(oldSendMode) ; Restaura o modo original do AHK
-
-    OutputDebug("Mousemaster_PerformAction: SendEvent physical click completed.")
-    ToolTip("✅ Clique físico extremo realizado.", 200, 200)
+    ToolTip("✅ Clique hardware nativo via DllCall.", 200, 200)
     SetTimer(() => ToolTip(), -2000)
 }
 
