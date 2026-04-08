@@ -23,7 +23,7 @@ Source: `Shift keys.ahk` Cursor sheet (`cheatSheets["Cursor.exe"]`).
 | Ctrl (no other modifiers) | 7 | Build LaTeX project | Extension |  |  | TBD | Yes | Pending |  |
 | Ctrl (no other modifiers) | 8 | View LaTeX PDF file | Extension |  |  | TBD | Yes | Pending |  |
 | Ctrl (no other modifiers) | 9 | Markdown Preview Enhanced: Insert Page Break | Extension |  |  | TBD | Yes | Pending |  |
-| Ctrl (no other modifiers) | M | Ask [M]essage, wait 6s, then paste (ahk) | AHK |  |  | TBD | Yes | Pending |  |
+| Ctrl (no other modifiers) | M | Generate commit message (ahk) | AHK | Copilot-generated message + Shift+V/+B workflow | Cursor: `Ctrl+Alt+.` trigger + banner + commit+push flow; VS Code: native "Generate Commit Message" button + same banner + commit+push flow via Shift+V/+B | Yes | Yes | Implemented | Fully mirrored workflows: both show 5-sec don't-push banner, wait 14s, return to commit/push. Cursor: trigger via Ctrl+Alt+.; VS Code: invoke native button via UIA. Both support opt-out (press N). Post-push: stay in IDE to review. |
 | Ctrl (no other modifiers) | G | Kill terminal ([G]o away) | Native |  |  | TBD | Yes | Pending |  |
 | Ctrl (no other modifiers) | Y | Fold all (tuck awa[Y]) | Native |  |  | TBD | Yes | Pending |  |
 | Ctrl (no other modifiers) | U | [U]nfold all | Native |  |  | TBD | Yes | Pending |  |

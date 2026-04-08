@@ -14877,6 +14877,74 @@ global g_CursorShortcutMenuActive := false
     }
 }
 
+; Ctrl + M : Trigger commit message generation (Cursor-specific: Ctrl+Alt+. flow + commit/push banner)
+^M:: {
+    global gCommitPushTargetWin
+    global gCommitPushDecision
+    hwnd := WinExist("A")
+    if !hwnd
+        return
+    gCommitPushTargetWin := hwnd
+    ; Default behavior is now: commit + push, unless user opts out.
+    gCommitPushDecision := "push"
+
+    ; 1. Trigger generation immediately (Ctrl+Alt+A)
+    SoundPlay A_ScriptDir "\sounds\commit-start.wav"
+    Send "^!."
+    ShowCommitPushBanner()
+
+    ; 2. Wait 15s; user can interact with any window
+    Sleep 14000
+    ; Handoff Stop Sign: warn + play pre-movement cue right before we
+    ; regain focus on Cursor and finalize the commit submission.
+    PlayPreMovementWarning("Cursor")
+
+    ; 3. Focus Cursor IDE (save current foreground to return later)
+    prevHwnd := WinExist("A")
+    WinActivate("ahk_id " hwnd)
+    if !WinWaitActive("ahk_id " hwnd, , 3)
+        return
+
+    ; 4. Execute commit and push if necessary (default: push; user can opt out)
+    Send "+v"
+    didPush := (gCommitPushDecision = "push")
+    if (didPush) {
+        Sleep 500
+        Send "+b"
+    }
+
+    ; 5. Wait for git operations to complete, then open Git panel to verify
+    if (didPush) {
+        Sleep 4000
+    } else {
+        Sleep 1500
+    }
+    ; Send "+d"
+
+    ; Decide whether to return to previous window: stay in Cursor if we pushed
+    shouldReturn := !didPush
+    gCommitPushDecision := ""
+
+    ; 6. Return to previous screen (graceful error if window no longer exists)
+    if (shouldReturn && prevHwnd && prevHwnd != hwnd) {
+        if (!WinExist("ahk_id " prevHwnd)) {
+            TrayTip("Commit Push", "Previous window no longer available; staying in Cursor.", "Iconi")
+            SetTimer(() => TrayTip(), -5000)
+        } else {
+            try {
+                WinActivate("ahk_id " prevHwnd)
+                if (!WinWaitActive("ahk_id " prevHwnd, , 2)) {
+                    TrayTip("Commit Push", "Could not switch back to previous window.", "Iconi")
+                    SetTimer(() => TrayTip(), -5000)
+                }
+            } catch {
+                TrayTip("Commit Push", "Previous window no longer available; staying in Cursor.", "Iconi")
+                SetTimer(() => TrayTip(), -5000)
+            }
+        }
+    }
+}
+
 #HotIf
 
 ; Shared Editor Shortcuts (Cursor + VS Code)
@@ -16109,77 +16177,7 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
 ; Shift + B : Git Push - Push
 +b:: Send "+b"
 
-; ---------------------------------------------------------------------------
-; Ctrl + M : 1) Generate immediately. 2) Yellow banner 5s (N to avoid push). 3) Wait 15s.
-; 4) Focus Cursor, commit, push by default (skip push only if N pressed). 5) Open Git panel to verify.
-; 6) Return to previous window (skipped if push so you can review). Little test
-; ---------------------------------------------------------------------------
-^M:: {
-    global gCommitPushTargetWin
-    global gCommitPushDecision
-    hwnd := WinExist("A")
-    if !hwnd
-        return
-    gCommitPushTargetWin := hwnd
-    ; Default behavior is now: commit + push, unless user opts out.
-    gCommitPushDecision := "push"
 
-    ; 1. Trigger generation immediately (Ctrl+Alt+A)
-    SoundPlay A_ScriptDir "\sounds\commit-start.wav"
-    Send "^!."
-    ShowCommitPushBanner()
-
-    ; 2. Wait 15s; user can interact with any window
-    Sleep 14000
-    ; Handoff Stop Sign: warn + play pre-movement cue right before we
-    ; regain focus on Cursor and finalize the commit submission.
-    PlayPreMovementWarning("Cursor")
-
-    ; 3. Focus Cursor IDE (save current foreground to return later)
-    prevHwnd := WinExist("A")
-    WinActivate("ahk_id " hwnd)
-    if !WinWaitActive("ahk_id " hwnd, , 3)
-        return
-
-    ; 4. Execute commit and push if necessary (default: push; user can opt out)
-    Send "+v"
-    didPush := (gCommitPushDecision = "push")
-    if (didPush) {
-        Sleep 500
-        Send "+b"
-    }
-
-    ; 5. Wait for git operations to complete, then open Git panel to verify
-    if (didPush) {
-        Sleep 4000
-    } else {
-        Sleep 1500
-    }
-    ; Send "+d"
-
-    ; Decide whether to return to previous window: stay in Cursor if we pushed
-    shouldReturn := !didPush
-    gCommitPushDecision := ""
-
-    ; 6. Return to previous screen (graceful error if window no longer exists)
-    if (shouldReturn && prevHwnd && prevHwnd != hwnd) {
-        if (!WinExist("ahk_id " prevHwnd)) {
-            TrayTip("Commit Push", "Previous window no longer available; staying in Cursor.", "Iconi")
-            SetTimer(() => TrayTip(), -5000)
-        } else {
-            try {
-                WinActivate("ahk_id " prevHwnd)
-                if (!WinWaitActive("ahk_id " prevHwnd, , 2)) {
-                    TrayTip("Commit Push", "Could not switch back to previous window.", "Iconi")
-                    SetTimer(() => TrayTip(), -5000)
-                }
-            } catch {
-                TrayTip("Commit Push", "Could not switch back to previous window.", "Iconi")
-                SetTimer(() => TrayTip(), -5000)
-            }
-        }
-    }
-}
 
 ; Global variable for commit push selector target window
 global gCommitPushTargetWin := 0
@@ -16916,6 +16914,108 @@ GeminiScrollFeedToBottom_Chrome(hwnd) {
     Send "{Down}"
     Send "{Down}"
     Send "{Enter}"
+}
+
+#HotIf
+
+; VS Code IDE — VS Code-specific Shortcuts
+;-------------------------------------------------------------------
+#HotIf IsCodeActive() && WinGetClass("A") != "#32770"
+
+; Ctrl + M : Trigger commit message generation + commit/push flow (VS Code: native button + Shift+V/+B)
+; Mirrors Cursor workflow: generate → wait with banner → commit → push (if user allows) → return
+^M:: {
+    global gCommitPushTargetWin
+    global gCommitPushDecision
+    hwnd := WinExist("A")
+    if !hwnd
+        return
+    
+    gCommitPushTargetWin := hwnd
+    ; Default behavior: commit + push, unless user presses N
+    gCommitPushDecision := "push"
+    
+    ; 1. Trigger generation by clicking the native "Generate Commit Message" button
+    try {
+        root := UIA.ElementFromHandle(hwnd)
+        if !root {
+            return
+        }
+        
+        ; Find the "Generate Commit Message" button
+        genBtn := 0
+        try {
+            genBtn := root.FindFirst({ Type: 50000, Name: "Generate Commit Message" })
+        } catch {
+            genBtn := 0
+        }
+        
+        if genBtn {
+            try {
+                ; Invoke the button to trigger generation
+                if genBtn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
+                    genBtn.InvokePattern.Invoke()
+                } else {
+                    genBtn.Click()
+                }
+            } catch {
+            }
+        }
+    } catch {
+    }
+    
+    SoundPlay A_ScriptDir "\sounds\commit-start.wav"
+    ShowCommitPushBanner()
+    
+    ; 2. Wait 14s for message generation to complete; user can interact with any window
+    Sleep 14000
+    
+    ; Handoff Stop Sign: warn + play pre-movement cue before returning to VS Code
+    PlayPreMovementWarning("VS Code")
+    
+    ; 3. Focus back to VS Code (save current foreground to return later)
+    prevHwnd := WinExist("A")
+    WinActivate("ahk_id " hwnd)
+    if !WinWaitActive("ahk_id " hwnd, , 3)
+        return
+    
+    ; 4. Execute commit (Shift+V) and push (Shift+B) if user didn't press N
+    Send "+v"
+    didPush := (gCommitPushDecision = "push")
+    if (didPush) {
+        Sleep 500
+        Send "+b"
+    }
+    
+    ; 5. Wait for git operations to complete
+    if (didPush) {
+        Sleep 4000
+    } else {
+        Sleep 1500
+    }
+    
+    ; Decide whether to return: stay in VS Code if we pushed so user can review
+    shouldReturn := !didPush
+    gCommitPushDecision := ""
+    
+    ; 6. Return to previous window (if user opted out of push)
+    if (shouldReturn && prevHwnd && prevHwnd != hwnd) {
+        if (!WinExist("ahk_id " prevHwnd)) {
+            TrayTip("Commit Push", "Previous window no longer available; staying in VS Code.", "Iconi")
+            SetTimer(() => TrayTip(), -5000)
+        } else {
+            try {
+                WinActivate("ahk_id " prevHwnd)
+                if (!WinWaitActive("ahk_id " prevHwnd, , 2)) {
+                    TrayTip("Commit Push", "Could not switch back to previous window.", "Iconi")
+                    SetTimer(() => TrayTip(), -5000)
+                }
+            } catch {
+                TrayTip("Commit Push", "Could not switch back to previous window.", "Iconi")
+                SetTimer(() => TrayTip(), -5000)
+            }
+        }
+    }
 }
 
 #HotIf
