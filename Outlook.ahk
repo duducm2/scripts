@@ -449,6 +449,24 @@ NavigateOutlookToModule(targetModule, failureMsg) {
     StandardLoadingBar_Show("⏳ Outlook: opening " targetLabel "...", BANNER_ACCENT_INTERMEDIATE, { passive: false,
         centerOnHwnd: 0, textWidth: 460, fontSize: 17 })
 
+    ; If Outlook is already the foreground app (including Copilot surface), we can switch modules directly.
+    ; This avoids false "activation failed" when the active Outlook title starts with "Copilot - ...".
+    try {
+        if OutlookWinActive() {
+            activeHwnd := WinGetID("A")
+            if (activeHwnd > 0) && OutlookIsMainFrameClass(WinGetClass("ahk_id " activeHwnd)) {
+                WinActivate("ahk_id " activeHwnd)
+                StandardLoadingBar_Update("🔄 Outlook: switching to " targetLabel "...", BANNER_ACCENT_INTERMEDIATE)
+                if EnsureOutlookMainModule(targetModule) {
+                    StandardLoadingBar_Update("✅ Outlook: " targetLabel " ready", BANNER_ACCENT_SUCCESS)
+                    StandardLoadingBar_Hide(220)
+                    return
+                }
+            }
+        }
+    } catch {
+    }
+
     mailboxActivated := ActivateOutlookMailbox()
     calendarActivated := false
     if !mailboxActivated
