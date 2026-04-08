@@ -1721,6 +1721,40 @@ global g_AiModelSelectorGui := false
 global g_AiModelSelectorActive := false
 global g_AiModelBannerGui := false
 
+Handy_GetHandyAiModelIniPath() {
+    return A_ScriptDir "\data\handy_ai_model.ini"
+}
+
+; Returns persisted slot 1–4, or 0 if missing / invalid / not in g_HandyAiModels.
+Handy_GetPersistedAiModelSlot() {
+    global g_HandyAiModels
+    path := Handy_GetHandyAiModelIniPath()
+    s := ""
+    try s := IniRead(path, "Handy", "Slot", "")
+    if (s = "")
+        return 0
+    if !IsInteger(s)
+        return 0
+    n := Integer(s)
+    if !g_HandyAiModels.Has(n)
+        return 0
+    return n
+}
+
+Handy_SetPersistedAiModelSlot(slot) {
+    global g_HandyAiModels
+    if !g_HandyAiModels.Has(slot)
+        return
+    path := Handy_GetHandyAiModelIniPath()
+    try {
+        dataDir := A_ScriptDir "\data"
+        if !DirExist(dataDir)
+            DirCreate(dataDir)
+        IniWrite(String(slot), path, "Handy", "Slot")
+    } catch {
+    }
+}
+
 ; =============================================================================
 ; ShowAiModelSelector() - Display selection GUI with immediate key capture
 ; =============================================================================
@@ -1730,6 +1764,8 @@ ShowAiModelSelector() {
     ; Don't show if already active
     if (g_AiModelSelectorActive)
         return
+
+    currentSlot := Handy_GetPersistedAiModelSlot()
 
     ; Create selection GUI
     g_AiModelSelectorGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner")
@@ -1742,19 +1778,28 @@ ShowAiModelSelector() {
     g_AiModelSelectorGui.Add("Text", "w280 Center", "🎙️ Select AI Model")
     g_AiModelSelectorGui.Add("Text", "w280 h1 Background45475A")  ; separator
 
-    ; Model options
+    ; Model options (green row = last saved slot from data\handy_ai_model.ini)
     g_AiModelSelectorGui.SetFont("s12 cCDD6F4", "Segoe UI")
     for num, model in g_HandyAiModels {
-        g_AiModelSelectorGui.Add("Text", "w280", "[" . num . "] " . model.name)
-        g_AiModelSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
-        g_AiModelSelectorGui.Add("Text", "w280 y+2", "    " . model.desc)
+        if (num = currentSlot) {
+            g_AiModelSelectorGui.SetFont("s12 cA6E3A1 Bold", "Segoe UI")
+            g_AiModelSelectorGui.Add("Text", "w280 Background313244", "[" . num . "] " . model.name)
+            g_AiModelSelectorGui.SetFont("s9 cA6E3A1", "Segoe UI")
+            g_AiModelSelectorGui.Add("Text", "w280 y+2 Background313244", "    " . model.desc)
+        } else {
+            g_AiModelSelectorGui.SetFont("s12 cCDD6F4", "Segoe UI")
+            g_AiModelSelectorGui.Add("Text", "w280", "[" . num . "] " . model.name)
+            g_AiModelSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
+            g_AiModelSelectorGui.Add("Text", "w280 y+2", "    " . model.desc)
+        }
         g_AiModelSelectorGui.SetFont("s12 cCDD6F4", "Segoe UI")
     }
 
     ; Footer
     g_AiModelSelectorGui.Add("Text", "w280 h1 Background45475A y+10")
     g_AiModelSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_AiModelSelectorGui.Add("Text", "w280 Center", "Press 1–4 | Esc to cancel")
+    g_AiModelSelectorGui.Add("Text", "w280 Center", "Green row = last saved model")
+    g_AiModelSelectorGui.Add("Text", "w280 Center y+4", "Press 1–4 | Esc to cancel")
 
     ; Get active window to determine which monitor to center on
     activeWin := 0
@@ -2807,6 +2852,7 @@ ExecuteHandyAiModelSelection(selection) {
             AiModelBanner_Hide()
             return
         }
+        Handy_SetPersistedAiModelSlot(selection)
 
         ; Step 4: Wait for model to finish loading (poll button name until "loading" disappears)
         AiModelBanner_Show("⏳ Waiting for model...", BANNER_ACCENT_INTERMEDIATE)
