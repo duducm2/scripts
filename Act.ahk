@@ -48,6 +48,7 @@ Run GetScriptPath("Gemini.ahk")
 Run GetScriptPath("AppLaunchers.ahk")
 Run GetScriptPath("WindowManagement.ahk")
 Run GetScriptPath("Utils.ahk")
+Run GetScriptPath("Mousemaster.ahk")
 
 if (IS_WORK_ENVIRONMENT) {
     Run "C:\Users\fie7ca\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Cursor\Cursor.lnk"
