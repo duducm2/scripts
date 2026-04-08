@@ -1,0 +1,102 @@
+﻿# Cursor -> VS Code Migration Matrix (Execution Artifact)
+
+Source: `Shift keys.ahk` Cursor sheet (`cheatSheets["Cursor.exe"]`).
+
+## Legend
+- `CurrentType`: Native | Extension | AHK | Cursor-specific | Ambiguous
+- `Status`: Pending | Mapped | Implemented | Verified | Blocked
+
+## Known Defects To Resolve First
+- Collision in sheet: `Ctrl+Alt+Up` and `Ctrl+Alt+↑` represent the same physical chord with different actions.
+- Typo fixed in source: `efresh preview` -> `Refresh preview`.
+
+## Rows
+
+| Section | Source chord | Source action label | CurrentType | Target in VS Code | Command ID / AHK function | Keep chord | Keep mnemonic | Status | Notes |
+|---|---|---|---|---|---|---|---|---|---|
+| Ctrl (no other modifiers) | 1 | Remove clustering and focus on the code (ahk) | AHK |  |  | TBD | Yes | Pending |  |
+| Ctrl (no other modifiers) | 2 | Copy path (cursor) | Cursor-specific |  |  | TBD | Yes | Pending |  |
+| Ctrl (no other modifiers) | 3 | CSV: Edit CSV | Extension |  |  | TBD | Yes | Pending |  |
+| Ctrl (no other modifiers) | 4 | CSV: Apply changes to source file and save | Extension |  |  | TBD | Yes | Pending |  |
+| Ctrl (no other modifiers) | 5 | MarkDown Enhanced: Export in PDF format. | Extension |  |  | TBD | Yes | Pending |  |
+| Ctrl (no other modifiers) | 6 | Marp export (PDF) | Extension |  |  | TBD | Yes | Pending |  |
+| Ctrl (no other modifiers) | 7 | Build LaTeX project | Extension |  |  | TBD | Yes | Pending |  |
+| Ctrl (no other modifiers) | 8 | View LaTeX PDF file | Extension |  |  | TBD | Yes | Pending |  |
+| Ctrl (no other modifiers) | 9 | Markdown Preview Enhanced: Insert Page Break | Extension |  |  | TBD | Yes | Pending |  |
+| Ctrl (no other modifiers) | M | Ask [M]essage, wait 6s, then paste (ahk) | AHK |  |  | TBD | Yes | Pending |  |
+| Ctrl (no other modifiers) | G | Kill terminal ([G]o away) | Native |  |  | TBD | Yes | Pending |  |
+| Ctrl (no other modifiers) | Y | Fold all (tuck awa[Y]) | Native |  |  | TBD | Yes | Pending |  |
+| Ctrl (no other modifiers) | U | [U]nfold all | Native |  |  | TBD | Yes | Pending |  |
+| Ctrl (no other modifiers) | O | Open Paste As... ([O]pen) | Native |  |  | TBD | Yes | Pending |  |
+| Ctrl (no other modifiers) | H | Smart nav: Editorâ†’Explorer / Explorerâ†’Reveal (s[H]ow) | Native |  |  | TBD | Yes | Pending |  |
+| Ctrl (no other modifiers) | J | Select to Bracket (ad[J]acent) | Native |  |  | TBD | Yes | Pending |  |
+| Ctrl (no other modifiers) | , | Fold all directories | Native |  |  | TBD | Yes | Pending |  |
+| Ctrl (no other modifiers) | . | Toggle chat or agent | Cursor-specific |  |  | TBD | Yes | Pending |  |
+| Ctrl (no other modifiers) | Q | Unfold all directories (e[Q]ual) | Native |  |  | TBD | Yes | Pending |  |
+| Ctrl (no other modifiers) | E | Maximize chat size â€” native Cursor (`workbench.action.maximizeChatSize`; user keybinding) | Cursor-specific |  |  | TBD | Yes | Pending |  |
+| Ctrl (no other modifiers) | R | File open [R]ecent | Native |  |  | TBD | Yes | Pending |  |
+| Ctrl (no other modifiers) | T | Go to [T]ype symbol in workspace | Native |  |  | TBD | Yes | Pending |  |
+| Ctrl (no other modifiers) | N | [N]ew chat tab (replacing current) | Cursor-specific |  |  | TBD | Yes | Pending |  |
+| Ctrl (no other modifiers) | Enter | [I]nsert line below | Native |  |  | TBD | Yes | Pending |  |
+| Ctrl (no other modifiers) | P | Open [P]roject | Cursor-specific |  |  | TBD | Yes | Pending |  |
+| Ctrl (no other modifiers) | 1/2/3... | Switch tabs | Native |  |  | TBD | Yes | Pending |  |
+| Ctrl (no other modifiers) | ; | Insert comment | Native |  |  | TBD | Yes | Pending |  |
+| Ctrl (no other modifiers) | D | Duplicate selection to next find match | Native |  |  | TBD | Yes | Pending |  |
+| Ctrl (no other modifiers) | F | [F]ind | Native |  |  | TBD | Yes | Pending |  |
+| Ctrl (no other modifiers) | Z | Undo (common [Z]) | Native |  |  | TBD | Yes | Pending |  |
+| Ctrl (no other modifiers) | B | Toggle [B]ar (primary sidebar) | Native |  |  | TBD | Yes | Pending |  |
+| Shift | F | [F]old (ahk) | AHK |  |  | TBD | Yes | Pending |  |
+| Shift | U | [U]nfold (ahk) | AHK |  |  | TBD | Yes | Pending |  |
+| Shift | M | [M]arkdown preview (cursor) | Cursor-specific |  |  | TBD | Yes | Pending |  |
+| Shift | W | [W]indow (move editor) (cursor) | Cursor-specific |  |  | TBD | Yes | Pending |  |
+| Shift | T | [T]erminal (ahk) | AHK |  |  | TBD | Yes | Pending |  |
+| Shift | N | [N]ew Terminal (ahk) | AHK |  |  | TBD | Yes | Pending |  |
+| Shift | E | [E]xplorer (ahk) | AHK |  |  | TBD | Yes | Pending |  |
+| Shift | K | Mar[K]down + window (ahk) | AHK |  |  | TBD | Yes | Pending |  |
+| Shift | C | [C]ommand palette (ahk) | AHK |  |  | TBD | Yes | Pending |  |
+| Shift | X | E[X]pand selection (ahk) | AHK |  |  | TBD | Yes | Pending |  |
+| Shift | S | [S]ymbol in access view (cursor) | Cursor-specific |  |  | TBD | Yes | Pending |  |
+| Shift | H | [H]istory (chat) (ahk) | AHK |  |  | TBD | Yes | Pending |  |
+| Shift | I | [I]mage (paste) (cursor) | Cursor-specific |  |  | TBD | Yes | Pending |  |
+| Shift | G | [G]it repos fold (SCM) (ahk) | AHK |  |  | TBD | Yes | Pending |  |
+| Shift | Q | [Q]uery Search (ahk) | AHK |  |  | TBD | Yes | Pending |  |
+| Shift | R | B[R]eadcrumbs menu (ahk) | AHK |  |  | TBD | Yes | Pending |  |
+| Shift | O | Emoji selector (em[O]ji) (ahk) | AHK |  |  | TBD | Yes | Pending |  |
+| Shift | D | Git section ([D]iff) (ahk) | AHK |  |  | TBD | Yes | Pending |  |
+| Shift | Z | Close all editors (end [Z]one) (ahk) | AHK |  |  | TBD | Yes | Pending |  |
+| Shift | A | [A]I models switch (ahk) | AHK |  |  | TBD | Yes | Pending |  |
+| Shift | Y | Zen mode (tranquilit[Y]) (cursor) | Cursor-specific |  |  | TBD | Yes | Pending |  |
+| Shift | P | [P]ull (Git) (cursor) | Cursor-specific |  |  | TBD | Yes | Pending |  |
+| Shift | V | Commit (Git sa[V]e) (cursor) | Cursor-specific |  |  | TBD | Yes | Pending |  |
+| Shift | B | Push (Git pu[B]lish) (cursor) | Cursor-specific |  |  | TBD | Yes | Pending |  |
+| Alt (ahk = AutoHotkey) | x | Shri[X]nk selection (ahk) | AHK |  |  | TBD | Yes | Pending |  |
+| Alt (ahk = AutoHotkey) | , | Classical Markdown Preview | Extension |  |  | TBD | Yes | Pending |  |
+| Alt (ahk = AutoHotkey) | Y | Paste image to Markdown | Extension |  |  | TBD | Yes | Pending |  |
+| Alt (ahk = AutoHotkey) | U | Scroll AI feed to bottom (ahk-based) | AHK |  |  | TBD | Yes | Pending |  |
+| Alt (ahk = AutoHotkey) | M | Quick shortcut menu (ahk) | AHK |  |  | TBD | Yes | Pending |  |
+| Alt (ahk = AutoHotkey) | A | Add file to AI Context (Cursor Chat) (ahk) | AHK |  |  | TBD | Yes | Pending |  |
+| Alt (ahk = AutoHotkey) | N | Review [N]ext file (ahk) | AHK |  |  | TBD | Yes | Pending |  |
+| Alt (ahk = AutoHotkey) | R | Refresh preview | Native |  |  | TBD | Yes | Pending |  |
+| Alt (ahk = AutoHotkey) | F | File: New [F]ile | Native |  |  | TBD | Yes | Pending |  |
+| Alt (ahk = AutoHotkey) | O | File: New F[O]lder | Native |  |  | TBD | Yes | Pending |  |
+| Ctrl+Shift | Ctrl+Shift+L | Select all identical words ([L]ines) | Native |  |  | TBD | Yes | Pending |  |
+| Ctrl+Shift | Ctrl+Shift+D | [D]ebugging | Native |  |  | TBD | Yes | Pending |  |
+| Ctrl+Alt | Ctrl+Alt+L | Markdown Preview Enhanced: Toggle Live Update | Extension |  |  | TBD | Yes | Pending |  |
+| Ctrl+Alt | Ctrl+Alt+T | Markdown Preview Enhanced: Toggle Scroll Sync | Extension |  |  | TBD | Yes | Pending |  |
+| Ctrl+Alt | Ctrl+Alt+Up | Go to [P]arent Fold | Native |  |  | TBD | Yes | Pending |  |
+| Ctrl+Alt | Ctrl+Alt+Left | Go to sibling fold [P]revious | Native |  |  | TBD | Yes | Pending |  |
+| Ctrl+Alt | Ctrl+Alt+Right | Go to sibling fold [N]ext | Native |  |  | TBD | Yes | Pending |  |
+| Ctrl+Alt | Ctrl+Alt+â†‘ | Add cursor [A]bove | Native |  |  | TBD | Yes | Pending |  |
+| Ctrl+Alt | Ctrl+Alt+â†“ | Add cursor [B]elow | Native |  |  | TBD | Yes | Pending |  |
+| Alt+Shift | Shift+Alt+â†‘ | [C]opy line Up | Native |  |  | TBD | Yes | Pending |  |
+| Alt+Shift | Shift+Alt+â†“ | [C]opy line Down | Native |  |  | TBD | Yes | Pending |  |
+| Alt (other chords) | Alt+F12 | [P]eek Definition | Native |  |  | TBD | Yes | Pending |  |
+| Alt (other chords) | Alt+â†‘ | [M]ove line Up | Native |  |  | TBD | Yes | Pending |  |
+| Alt (other chords) | Alt+â†“ | [M]ove line Down | Native |  |  | TBD | Yes | Pending |  |
+| Alt (other chords) | Alt+Click | [M]ulti-cursor by click | Native |  |  | TBD | Yes | Pending |  |
+| Alt (other chords) | Alt+Z | Toggle word [W]rap | Native |  |  | TBD | Yes | Pending |  |
+| Alt (other chords) | Alt+J | Jump to [N]ext review | Native |  |  | TBD | Yes | Pending |  |
+| Alt (other chords) | Alt+K | [P]revious review (bac[K]) | Native |  |  | TBD | Yes | Pending |  |
+| Function keys & misc | F2 | [R]ename symbol | Native |  |  | TBD | Yes | Pending |  |
+| Function keys & misc | F8 | [N]avigate problems | Native |  |  | TBD | Yes | Pending |  |
+| Function keys & misc | Shift+Delete | [D]elete line | Native |  |  | TBD | Yes | Pending |  |
