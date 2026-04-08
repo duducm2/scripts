@@ -3931,44 +3931,6 @@ Debug6dacac_Log(location, message, data := "", hypothesisId := "H1", runId := "p
 
 ; #endregion
 
-; #region agent log (session 7cca0d — NDJSON to debug-7cca0d.log; remove after verification)
-Debug7cca0d_Log(location, message, data := "", hypothesisId := "H1", runId := "initial") {
-    try {
-        Esc(s) => StrReplace(StrReplace(StrReplace(String(s), "\", "\\"), "`"", "\`""), "`n", "\n")
-        MapToJson(m) {
-            out := ""
-            for k, v in m {
-                if (out != "")
-                    out .= ","
-                out .= "`"" Esc(k) "`":"
-                if (v is Integer || v is Float)
-                    out .= String(v)
-                else
-                    out .= "`"" Esc(v) "`""
-            }
-            return "{" out "}"
-        }
-        d := IsObject(data) ? data : Map("value", data)
-        id := "log_" A_TickCount "_" Random(1000, 9999)
-        ts := A_TickCount
-        payload := Map()
-        payload["sessionId"] := "7cca0d"
-        payload["id"] := id
-        payload["timestamp"] := ts
-        payload["location"] := location
-        payload["message"] := message
-        payload["runId"] := runId
-        payload["hypothesisId"] := hypothesisId
-        payloadJson := MapToJson(payload)
-        dataJson := MapToJson(d)
-        line := SubStr(payloadJson, 1, StrLen(payloadJson) - 1) . ",`"data`":" . dataJson . "}`n"
-        FileAppend(line, A_ScriptDir "\debug-7cca0d.log", "UTF-8")
-    } catch {
-    }
-}
-
-; #endregion
-
 Reminders_IsNewOutlookWindow() {
     try {
         ; Reminders window can run under classic OUTLOOK.EXE or Store olk.exe.
@@ -21613,12 +21575,7 @@ UIATreeInspector_JiggleLeftTree(leftHwnd, winHwnd, downDelayMs) {
             ControlSend "{Down}", "ahk_id " leftHwnd, "ahk_id " winHwnd
             Sleep downDelayMs
             ControlSend "{Up}", "ahk_id " leftHwnd, "ahk_id " winHwnd
-        } catch Error as e {
-            ; #region agent log
-            try
-                Debug7cca0d_Log("Shift keys.ahk:JiggleLeftTree fallback", "ControlSend failed, using Send",
-                    Map("msg", e.Message), "H7")
-            ; #endregion
+        } catch {
             Send "{Down}"
             Sleep downDelayMs
             Send "{Up}"
@@ -21804,23 +21761,6 @@ UIATreeInspector_JiggleLeftTree(leftHwnd, winHwnd, downDelayMs) {
 
 ; Shift + C : Search window/control and copy full UIA tree to clipboard
 +c:: {
-    ; #region agent log
-    try {
-        wt := WinGetTitle("A")
-        ex := WinGetProcessName("A")
-        wcl := WinGetClass("A")
-        mTitle := WinActive("UIATreeInspector")
-        mBadExe := WinActive("ahk_exe UIATreeInspectorAutoHotkey64.exe")
-        mAhk64Title := (WinActive("ahk_exe AutoHotkey64.exe") && InStr(wt, "UIATreeInspector"))
-        fc := ""
-        try
-            fc := ControlGetFocus("A")
-        Debug7cca0d_Log("Shift keys.ahk:UIATreeInspector +c entry", "handler entered",
-            Map("title", wt, "exe", ex, "winClass", wcl, "WinActive_UIATreeInspector", mTitle,
-                "WinActive_badExeLine", mBadExe, "AHK64_exe_and_title_contains", mAhk64Title, "focusControl", fc), "H1")
-    } catch {
-    }
-    ; #endregion
     barShown := false
     try {
         ; Global variable to store user input
@@ -21858,11 +21798,6 @@ UIATreeInspector_JiggleLeftTree(leftHwnd, winHwnd, downDelayMs) {
         global g_TreeItemSearchInput
         searchText := g_TreeItemSearchInput
         g_TreeItemSearchInput := ""
-        ; #region agent log
-        try
-            Debug7cca0d_Log("Shift keys.ahk:UIATreeInspector +c after dialog", "dialog closed",
-                Map("searchLen", StrLen(searchText), "cancelledEmpty", (searchText = "")), "H2")
-        ; #endregion
         if (searchText = "")
             return
 
@@ -21884,14 +21819,8 @@ UIATreeInspector_JiggleLeftTree(leftHwnd, winHwnd, downDelayMs) {
             inspectorHwnd := WinExist("UIATreeInspector")
         if (!inspectorHwnd)
             inspectorHwnd := WinExist("ahk_exe UIATreeInspectorAutoHotkey64.exe")
-        if (!inspectorHwnd) {
-            ; #region agent log
-            try
-                Debug7cca0d_Log("Shift keys.ahk:UIATreeInspector +c no hwnd", "WinExist inspector failed",
-                    Map("hint", "title or exe mismatch"), "H4")
-            ; #endregion
+        if (!inspectorHwnd)
             return
-        }
 
         ; AHK v2 WinActivate throws if the window does not exist; wrap so a bad/stale hwnd does not abort +c.
         loop 6 {
@@ -21902,21 +21831,11 @@ UIATreeInspector_JiggleLeftTree(leftHwnd, winHwnd, downDelayMs) {
                     break
                 WinActivate "ahk_id " inspectorHwnd
                 WinWaitActive "ahk_id " inspectorHwnd, , 0.35
-            } catch Error as e {
-                ; #region agent log
-                try
-                    Debug7cca0d_Log("Shift keys.ahk:UIATreeInspector +c activate iter", "WinActivate/WaitActive",
-                        Map("msg", e.Message, "inspectorHwnd", inspectorHwnd), "H9")
-                ; #endregion
+            } catch {
                 Sleep 50
             }
         }
         if !WinActive("ahk_id " inspectorHwnd) {
-            ; #region agent log
-            try
-                Debug7cca0d_Log("Shift keys.ahk:UIATreeInspector +c activate failed", "inspector not active after dialog",
-                    Map("inspectorHwnd", inspectorHwnd), "H6")
-            ; #endregion
             MsgBox "Could not activate UIATreeInspector after the search dialog. Try again.", "UIA Tree Inspector",
                 "IconX"
             return
@@ -21935,11 +21854,6 @@ UIATreeInspector_JiggleLeftTree(leftHwnd, winHwnd, downDelayMs) {
             catch {
             }
         }
-        ; #region agent log
-        try
-            Debug7cca0d_Log("Shift keys.ahk:UIATreeInspector +c post-banner", "StandardLoadingBar_Show ok",
-                Map("inspectorHwnd", inspectorHwnd), "H8")
-        ; #endregion
 
         ; Select matching item in left tree (AutomationId="4") (same as Shift+S)
         root := UIA.ElementFromHandle(inspectorHwnd)
@@ -21951,11 +21865,6 @@ UIATreeInspector_JiggleLeftTree(leftHwnd, winHwnd, downDelayMs) {
         }
 
         leftHwnd := UIATreeInspector_FocusLeftWindowsTree(treeContainer, inspectorHwnd)
-        ; #region agent log
-        try
-            Debug7cca0d_Log("Shift keys.ahk:UIATreeInspector +c leftHwnd", "after FocusLeftWindowsTree",
-                Map("leftHwnd", leftHwnd), "H3")
-        ; #endregion
 
         treeItems := treeContainer.FindAll({ Type: "TreeItem" })
         if (!treeItems) {
@@ -21979,11 +21888,6 @@ UIATreeInspector_JiggleLeftTree(leftHwnd, winHwnd, downDelayMs) {
             }
         }
         if (!matchingItem) {
-            ; #region agent log
-            try
-                Debug7cca0d_Log("Shift keys.ahk:UIATreeInspector +c no match", "no TreeItem prefix match",
-                    Map("searchText", searchText), "H3")
-            ; #endregion
             MsgBox Format("No tree item found starting with '{}'.", searchText), "UIA Tree Inspector", "IconX"
             return
         }
