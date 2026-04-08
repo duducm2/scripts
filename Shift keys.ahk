@@ -17296,6 +17296,10 @@ GeminiScrollFeedToBottom_Chrome(hwnd) {
             GeminiScrollFeedToBottom_Chrome(hwnd)
             return
         }
+        if (proc = "code.exe") {
+            if (VSCodeScrollCopilotFeedToBottom(hwnd))
+                return
+        }
 
         root := UIA.ElementFromHandle(hwnd)
 
@@ -17324,6 +17328,80 @@ GeminiScrollFeedToBottom_Chrome(hwnd) {
         if (loadingBarShown) {
             try StandardLoadingBar_Hide(0)
         }
+    }
+}
+
+; VS Code (Code.exe): scroll Copilot chat feed to bottom using Chat list container.
+VSCodeScrollCopilotFeedToBottom(hwnd) {
+    try {
+        if (!hwnd)
+            return false
+
+        root := UIA.ElementFromHandle(hwnd)
+        if (!root)
+            return false
+
+        chatList := 0
+        try {
+            lists := root.FindAll({ Type: 50008 })
+            if (lists) {
+                for lst in lists {
+                    try {
+                        nm := ""
+                        cls := ""
+                        try nm := lst.Name
+                        try cls := lst.ClassName
+                        if (!InStr(cls, "monaco-list"))
+                            continue
+                        if (!InStr(nm, "Chat"))
+                            continue
+                        off := false
+                        try off := !!lst.GetPropertyValue(UIA.Property.IsOffscreen)
+                        if (off)
+                            continue
+                        chatList := lst
+                        break
+                    } catch {
+                        continue
+                    }
+                }
+            }
+        } catch {
+            chatList := 0
+        }
+
+        if (!chatList)
+            return false
+
+        ; Prefer structural scroll first.
+        try {
+            if (chatList.GetPropertyValue(UIA.Property.IsScrollPatternAvailable)) {
+                try chatList.ScrollPattern.SetScrollPercent(-1, 100)
+                try chatList.ScrollPattern.SetScrollPercent(100, -1)
+            }
+        } catch {
+        }
+
+        ; Then anchor on the last chat row and ensure keyboard scroll lands at end.
+        try {
+            rows := chatList.FindAll({ Type: 50007 })
+            if (rows && rows.Length > 0)
+                rows[rows.Length].ScrollIntoView()
+        } catch {
+        }
+
+        try {
+            chatList.SetFocus()
+            Sleep 40
+            Send "{End}"
+            Sleep 30
+            Send "^{End}"
+        } catch {
+        }
+
+        return true
+    } catch {
+        return false
     }
 }
 
