@@ -26,12 +26,12 @@ global MM_InputHook := ""
     try {
         ActiveWinID := WinGetID("A")
         if (!ActiveWinID) {
-            ToolTip("No active window found!", 200, 200)
+            ToolTip("❌ Nenhuma janela ativa encontrada!", 200, 200)
             SetTimer(() => ToolTip(), -2000)
             return
         }
     } catch as e {
-        ToolTip("Error getting active window! " e.Message, 200, 200)
+        ToolTip("❌ Erro ao obter janela ativa: " e.Message, 200, 200)
         SetTimer(() => ToolTip(), -2000)
         return
     }
@@ -56,7 +56,7 @@ Mousemaster_Activate(ActiveWinID) {
         RootElement := UIA.ElementFromHandle(ActiveWinID)
 
         if (!RootElement) {
-            ToolTip("UIA: Não foi possível obter o RootElement da janela.", 200, 200)
+            ToolTip("❌ UIA: Não foi possível obter o RootElement da janela.", 200, 200)
             SetTimer(() => ToolTip(), -2000)
             Mousemaster_Deactivate()
             return
@@ -66,7 +66,7 @@ Mousemaster_Activate(ActiveWinID) {
         allElements := RootElement.FindElements({IsOffscreen: false, IsEnabled: true})
 
         if (allElements.Length = 0) {
-            ToolTip("UIA: Nenhum elemento interativo encontrado.", 200, 200)
+            ToolTip("❌ UIA: Nenhum elemento interativo encontrado.", 200, 200)
             SetTimer(() => ToolTip(), -2000)
             Mousemaster_Deactivate()
             return
@@ -101,14 +101,14 @@ Mousemaster_Activate(ActiveWinID) {
         }
 
         if (MousemasterElements.Length = 0) {
-            ToolTip("UIA: Nenhum elemento válido/clicável encontrado.", 200, 200)
+            ToolTip("❌ UIA: Nenhum elemento válido/clicável encontrado.", 200, 200)
             SetTimer(() => ToolTip(), -2000)
             Mousemaster_Deactivate()
             return
         }
 
     } catch as e {
-        ToolTip("UIA Error: " e.Message, 200, 200)
+        ToolTip("❌ UIA Erro (Ativação): " e.Message, 200, 200)
         SetTimer(() => ToolTip(), -2000)
         Mousemaster_Deactivate()
         return
@@ -186,13 +186,13 @@ Mousemaster_OnChar(hook, char) {
         Mousemaster_PerformAction(exactElement)
     } else if (!foundPartialMatch) {
         ; Dica digitada incorretamente
-        ToolTip("No match for: " UserInputBuffer, 200, 200)
+        ToolTip("❌ Não há correspondência para: " UserInputBuffer, 200, 200)
         SetTimer(() => ToolTip(), -2000)
         hook.Stop()
         Mousemaster_Deactivate() ; Desativa se não houver correspondência
     } else {
         ; Correspondência parcial, continua bufferizando.
-        ToolTip("Partial match: " UserInputBuffer, 200, 200)
+        ToolTip("❓ Correspondência parcial para: " UserInputBuffer, 200, 200)
         SetTimer(() => ToolTip(), -2000)
     }
 }
@@ -200,10 +200,10 @@ Mousemaster_OnChar(hook, char) {
 Mousemaster_OnEnd(hook) {
     OutputDebug("Mousemaster_OnEnd: EndReason=" hook.EndReason ", EndKey=" hook.EndKey)
     if (hook.EndReason = "EndKey" && hook.EndKey = "Escape") {
-        ToolTip("Mousemaster Cancelled", 200, 200)
+        ToolTip("❌ Mousemaster Cancelado", 200, 200)
         SetTimer(() => ToolTip(), -2000)
     } else if (hook.EndReason = "Timeout") {
-        ToolTip("Mousemaster Timeout", 200, 200)
+        ToolTip("❌ Mousemaster Expirou", 200, 200)
         SetTimer(() => ToolTip(), -2000)
     }
     Mousemaster_Deactivate()
@@ -245,21 +245,27 @@ Mousemaster_PerformAction(elementObject) {
         if (elementObject.uiaElement.IsInvokePatternAvailable) {
             elementObject.uiaElement.Invoke()
             OutputDebug("Mousemaster_PerformAction: InvokePattern succeeded for " elementObject.hint)
+            ToolTip("✅ Elemento '" elementObject.hint "' invocado com sucesso!", 200, 200)
+            SetTimer(() => ToolTip(), -2000)
             Mousemaster_Deactivate()
             return
         }
     } catch as e {
         OutputDebug("Mousemaster_PerformAction: InvokePattern failed for " elementObject.hint ": " e.Message)
+        ToolTip("❌ InvokePattern falhou para '" elementObject.hint "'. Tentando clique físico...", 200, 200)
+        SetTimer(() => ToolTip(), -2000)
     }
 
-    ; Se InvokePattern não estiver disponível ou falhar, tenta o clique físico
+    ; Fallback para clique físico
     OutputDebug("Mousemaster_PerformAction: Falling back to physical click for " elementObject.hint " at coords: " elementObject.cx ", " elementObject.cy)
-    Mousemaster_Deactivate()
-    Sleep(50) 
+    Mousemaster_Deactivate() ; Desativa a GUI e InputHook ANTES do clique físico
+    Sleep(50) ; Pequena pausa para garantir que a GUI sumiu
     CoordMode("Mouse", "Screen")
     MouseMove(elementObject.cx, elementObject.cy, 0)
     Click()
     OutputDebug("Mousemaster_PerformAction: Physical click attempted.")
+    ToolTip("✅ Clique físico em '" elementObject.hint "' realizado.", 200, 200)
+    SetTimer(() => ToolTip(), -2000)
 }
 
 ; ==============================================================================
