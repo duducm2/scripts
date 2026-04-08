@@ -918,7 +918,7 @@ VS Code
 📉 [Y] Paste image to Markdown
 ⬇️ [U] Scroll AI feed to bottom (ahk-based)
 📋 [M] Quick shortcut menu (ahk)
-🤖 [A] Add file to AI Context (VS Code migration pending) (ahk)
+🤖 [A] Add file to AI Context (VS Code chat) (ahk)
 📄 [N] Review [N]ext file (ahk)
 📄 [I] Toggle Second Sidebar Visibility
 📄 [R] Refresh preview
@@ -17182,6 +17182,11 @@ GeminiScrollFeedToBottom_Chrome(hwnd) {
     ShowVSCodeShortcutMenu()
 }
 
+; Alt + A : Add file to AI Context (VS Code Copilot chat)
+!a:: {
+    VSCode_AddFileToAIContext()
+}
+
 ; Ctrl + M : Trigger commit message generation + commit/push flow (VS Code: native button + Shift+V/+B)
 ; Mirrors Cursor workflow: generate → wait with banner → commit → push (if user allows) → return
 ^M:: {
@@ -17408,6 +17413,166 @@ VSCodeScrollCopilotFeedToBottom(hwnd) {
     } catch {
         return false
     }
+}
+
+VSCode_AddFileToAIContext() {
+    StandardLoadingBar_Show("⏳ Add file to VS Code chat...", BANNER_ACCENT_INTERMEDIATE, { passive: false, centerOnHwnd: 0 })
+    try {
+        if (!IsCodeActive()) {
+            StandardLoadingBar_Update("❌ Failed: VS Code is not active")
+            return
+        }
+
+        StandardLoadingBar_Update("⏳ Focusing Explorer...")
+        Send "^+e"
+        Sleep 350
+        okFocus := FocusCursorFilesExplorer()
+        if (!okFocus) {
+            Sleep 150
+            okFocus := FocusCursorFilesExplorer()
+        }
+        if (!okFocus) {
+            Sleep 150
+            okFocus := FocusCursorFilesExplorer()
+        }
+        if (!okFocus) {
+            StandardLoadingBar_Update("❌ Failed: Could not focus Explorer sidebar")
+            return
+        }
+
+        StandardLoadingBar_Update("⏳ Opening context menu...")
+        result := VSCode_ContextMenuSelectByDownAndActivateAny(
+            ["Add file to chat", "Add File to Chat", "Add file to Chat"],
+            "{AppsKey}",
+            42
+        )
+
+        if (result.ok) {
+            StandardLoadingBar_Update("✅ File added to chat")
+            return
+        }
+
+        StandardLoadingBar_Update("❌ Failed: " . result.reason)
+    } finally {
+        StandardLoadingBar_Hide(600)
+    }
+}
+
+VSCode_ContextMenuSelectByDownAndActivateAny(targetTexts, openKey := "{AppsKey}", maxSteps := 36) {
+    Send openKey
+    Sleep 240
+
+    targetMap := Map()
+    for t in targetTexts
+        targetMap[StrLower(t)] := true
+
+    step := 0
+    while (step <= maxSteps) {
+        step += 1
+        highlightedEl := VSCode_ContextMenuGetHighlightedElement()
+        name := ""
+        try name := highlightedEl ? highlightedEl.Name : ""
+
+        if (Mod(step, 3) = 0)
+            StandardLoadingBar_Update("⏳ Searching menu item... (" step "/" maxSteps ")")
+
+        if (name != "") {
+            nameLower := StrLower(name)
+            if (targetMap.Has(nameLower)) {
+                StandardLoadingBar_Update("⏳ Activating '" . name . "'...")
+                if (VSCode_ContextMenuActivateHighlightedItem(highlightedEl))
+                    return { ok: true, reason: "" }
+                return { ok: false, reason: "Could not activate menu item" }
+            }
+        }
+
+        Send "{Down}"
+        Sleep 55
+    }
+
+    return { ok: false, reason: "Menu item not found" }
+}
+
+VSCode_ContextMenuGetHighlightedElement() {
+    ; Strategy A: focused element is a MenuItem
+    try {
+        fe := UIA.GetFocusedElement()
+        if (fe) {
+            try {
+                if (fe.ControlType = UIA.Type.MenuItem)
+                    return fe
+            } catch {
+            }
+        }
+    } catch {
+    }
+
+    ; Strategy B: selected MenuItem in VS Code window
+    try {
+        hwnd := WinExist("ahk_exe Code.exe")
+        if (!hwnd)
+            return 0
+        root := UIA.ElementFromHandle(hwnd)
+        all := root.FindAll({ Type: 50011 })
+        for mi in all {
+            try {
+                if (mi.GetPropertyValue(UIA.Property.IsSelected))
+                    return mi
+            } catch {
+            }
+        }
+    } catch {
+    }
+
+    ; Strategy C: menu item with keyboard focus
+    try {
+        hwnd := WinExist("ahk_exe Code.exe")
+        if (!hwnd)
+            return 0
+        root := UIA.ElementFromHandle(hwnd)
+        all := root.FindAll({ Type: 50011 })
+        for mi in all {
+            try {
+                if (mi.GetPropertyValue(UIA.Property.HasKeyboardFocus))
+                    return mi
+            } catch {
+            }
+        }
+    } catch {
+    }
+
+    return 0
+}
+
+VSCode_ContextMenuActivateHighlightedItem(menuItemEl) {
+    if (!menuItemEl) {
+        Send "{Enter}"
+        return true
+    }
+
+    try {
+        menuItemEl.SetFocus()
+        Sleep 40
+        Send "{Enter}"
+        return true
+    } catch {
+    }
+
+    try {
+        if (menuItemEl.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)) {
+            menuItemEl.InvokePattern.Invoke()
+            return true
+        }
+    } catch {
+    }
+
+    try {
+        menuItemEl.Click()
+        return true
+    } catch {
+    }
+
+    return false
 }
 
 Cursor_IsElementVisibleByName(name, hwnd := 0, typeList := "", matchmode := "") {
