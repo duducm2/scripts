@@ -16325,6 +16325,75 @@ OpenCopilotChatHistory() {
     }
 }
 
+; Click the VS Code Copilot model picker button in the chat input toolbar.
+; Targets names like "Pick Model, Auto" and scopes to chat-input-toolbars.
+ClickVSCodeCopilotModelButton() {
+    try {
+        hwnd := WinExist("A")
+        if (!hwnd)
+            return false
+
+        root := UIA.ElementFromHandle(hwnd)
+        if (!root)
+            return false
+
+        chatToolbars := 0
+        try {
+            groups := root.FindAll({ Type: 50026 })
+            if (groups) {
+                for grp in groups {
+                    try {
+                        cls := grp.ClassName
+                        if (InStr(cls, "chat-input-toolbars")) {
+                            chatToolbars := grp
+                            break
+                        }
+                    } catch {
+                        continue
+                    }
+                }
+            }
+        } catch {
+            chatToolbars := 0
+        }
+
+        if (!chatToolbars)
+            return false
+
+        try {
+            btns := chatToolbars.FindAll({ Type: 50000 })
+            if (btns) {
+                for btn in btns {
+                    try {
+                        nm := btn.Name
+                        if (InStr(nm, "Pick Model,")) {
+                            try {
+                                btn.SetFocus()
+                                Sleep 40
+                                Send "{Enter}"
+                                return true
+                            } catch {
+                            }
+                            try {
+                                btn.Click()
+                                return true
+                            } catch {
+                            }
+                        }
+                    } catch {
+                        continue
+                    }
+                }
+            }
+        } catch {
+        }
+
+        return false
+    } catch {
+        return false
+    }
+}
+
 ; Shift + I : Paste Image - Image
 +i:: Send "!y"
 
@@ -16791,7 +16860,13 @@ ExecuteAIModelSelection(choice) {
 ; }
 
 ; Shift + A : Switch AI models - AI
-+a::^;
++a:: {
+    if (IsCodeActive()) {
+        if (ClickVSCodeCopilotModelButton())
+            return
+    }
+    Send "^;"
+}
 
 ; Shift + G : Fold all Git directories in Source Control (Cursor) - Git Fold
 +g:: FoldAllGitDirectoriesInCursor()
