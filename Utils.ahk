@@ -169,48 +169,6 @@ GetChromeActiveTabIndex(uia) {
 
 ; --- Gemini mode picker (Fast / Thinking / Pro), UIA ---------------------------------
 
-; #region agent log
-DbgLog_GeminiModelQC_Utils(hypothesisId, message, data := "") {
-    ; NDJSON logger for debug mode (session a94802). Avoid secrets/PII.
-    try {
-        ms := A_TickCount
-        loc := "Utils.ahk:GeminiModelQC"
-        sid := "a94802"
-        runId := "baseline"
-        q := "`""
-        quoteChar := q
-        if !IsObject(data)
-            data := Map("note", data)
-        msg := StrReplace(StrReplace(message, "\", "\\"), quoteChar, "\`"")
-        h := StrReplace(StrReplace(hypothesisId, "\", "\\"), quoteChar, "\`"")
-        json := "{" q "sessionId" q ":" q sid q "," q "timestamp" q ":" ms "," q "location" q ":" q loc q "," q "message" q ":" q msg q "," q "runId" q ":" q runId q "," q "hypothesisId" q ":" q h q "," q "data" q ":{"
-        first := true
-        for k, v in data {
-            try {
-                kk := StrReplace(StrReplace(k, "\", "\\"), quoteChar, "\`"")
-                if IsNumber(v) {
-                    pair := q kk q ":" v
-                } else {
-                    sv := "" v
-                    sv := StrReplace(StrReplace(sv, "\", "\\"), quoteChar, "\`"")
-                    pair := q kk q ":" q sv q
-                }
-                if (first) {
-                    json .= pair
-                    first := false
-                } else {
-                    json .= "," pair
-                }
-            } catch {
-            }
-        }
-        json .= "}}`n"
-        FileAppend(json, A_ScriptDir "\debug-a94802.log", "UTF-8")
-    } catch {
-    }
-}
-; #endregion
-
 FindGeminiModePickerButton(uia) {
     if !IsObject(uia)
         return 0
@@ -315,9 +273,6 @@ GeminiCollectModelOptionButtons(uia) {
     } catch {
         menuItems := []
     }
-    ; #region agent log
-    try DbgLog_GeminiModelQC_Utils("H8_collect_menuItems", "GeminiCollectModelOptionButtons: raw menuItems", Map("count", IsObject(menuItems) ? menuItems.Length : -1))
-    ; #endregion
     if (!IsObject(menuItems) || menuItems.Length = 0) {
         try {
             menuItems := uia.FindAll({ Type: "MenuItem" })
@@ -325,21 +280,6 @@ GeminiCollectModelOptionButtons(uia) {
             menuItems := []
         }
     }
-    ; #region agent log
-    try DbgLog_GeminiModelQC_Utils("H8_collect_menuItems2", "GeminiCollectModelOptionButtons: raw MenuItem type", Map("count", IsObject(menuItems) ? menuItems.Length : -1))
-    ; #endregion
-
-    ; Also sample Buttons in case Gemini exposes options differently.
-    btnCount := -1
-    try {
-        bs := uia.FindAll({ Type: 50000 })
-        btnCount := IsObject(bs) ? bs.Length : -1
-    } catch {
-        btnCount := -1
-    }
-    ; #region agent log
-    try DbgLog_GeminiModelQC_Utils("H8_collect_buttons", "GeminiCollectModelOptionButtons: raw buttons", Map("count", btnCount))
-    ; #endregion
 
     for mi in menuItems {
         try {
@@ -372,34 +312,22 @@ GeminiCollectModelOptionButtons(uia) {
                     isSelected := mi.SelectionItemPattern.IsSelected
             } catch {
             }
-            ; #region agent log
+            hasLegacy := false
+            legacyState := -1
             try {
-                hasSel := 0
-                try hasSel := mi.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable) ? 1 : 0
-                hasLegacy := 0
-                legacyState := -1
-                try hasLegacy := mi.GetPropertyValue(UIA.Property.IsLegacyIAccessiblePatternAvailable) ? 1 : 0
-                if (hasLegacy) {
-                    try legacyState := mi.LegacyIAccessiblePattern.State
+                hasLegacy := mi.GetPropertyValue(UIA.Property.IsLegacyIAccessiblePatternAvailable)
+            } catch {
+                hasLegacy := false
+            }
+            if (hasLegacy) {
+                try legacyState := mi.LegacyIAccessiblePattern.State
+                catch {
+                    try legacyState := mi.LegacyIAccessiblePattern.CurrentState
                     catch {
-                        try legacyState := mi.LegacyIAccessiblePattern.CurrentState
-                        catch {
-                            legacyState := -1
-                        }
+                        legacyState := -1
                     }
                 }
-                DbgLog_GeminiModelQC_Utils("H9_item_state", "Model option state", Map(
-                    "name", shortName,
-                    "fullName", SubStr(fullName, 1, 60),
-                    "class", className,
-                    "isDisabled", isDisabled ? 1 : 0,
-                    "hasSelectionPattern", hasSel,
-                    "isSelected", isSelected ? 1 : 0,
-                    "hasLegacyIAccessible", hasLegacy,
-                    "legacyState", legacyState))
-            } catch {
             }
-            ; #endregion
             if (!isSelected) {
                 try {
                     if (InStr(className, "is-selected") || InStr(className, "selected") || InStr(className, "active") ||
@@ -507,40 +435,21 @@ EnsureGeminiModelViaMenu(expected) {
     exp := GeminiNormalizeModelLabel(expected)
     if (exp = "")
         return false
-    ; #region agent log
-    try DbgLog_GeminiModelQC_Utils("H1_utils_entry", "EnsureGeminiModelViaMenu entry", Map("expected", expected, "exp", exp))
-    ; #endregion
     try {
         uia := UIA_Browser()
     } catch {
-        ; #region agent log
-        try DbgLog_GeminiModelQC_Utils("H2_uia_attach", "UIA_Browser attach failed", "")
-        ; #endregion
         return false
     }
     if !IsObject(uia)
         return false
     active := ""
     try active := GetGeminiActiveModelFromPickerOnly(uia)
-    ; #region agent log
-    try DbgLog_GeminiModelQC_Utils("H3_active", "Active model from picker-only", Map("active", active))
-    ; #endregion
     if (active = exp)
         return true
     picker := FindGeminiModePickerButton(uia)
     if !picker {
-        ; #region agent log
-        try DbgLog_GeminiModelQC_Utils("H4_picker_missing", "Picker NOT found", "")
-        ; #endregion
         return false
     }
-    ; #region agent log
-    try {
-        try DbgLog_GeminiModelQC_Utils("H4_picker_found", "Picker found", Map("type", picker.ControlType, "name", picker.Name, "class", picker.ClassName))
-    } catch {
-        try DbgLog_GeminiModelQC_Utils("H4_picker_found", "Picker found (props unavailable)", "")
-    }
-    ; #endregion
     try {
         picker.Click()
     } catch {
@@ -562,9 +471,6 @@ EnsureGeminiModelViaMenu(expected) {
         return false
     }
     modelButtons := GeminiCollectModelOptionButtons(uia)
-    ; #region agent log
-    try DbgLog_GeminiModelQC_Utils("H5_menu_count", "Collected model option buttons", Map("count", IsObject(modelButtons) ? modelButtons.Length : -1))
-    ; #endregion
     targetBtn := 0
     for modelBtn in modelButtons {
         if (GeminiNormalizeModelLabel(modelBtn.name) = exp && !modelBtn.isDisabled) {
@@ -574,15 +480,9 @@ EnsureGeminiModelViaMenu(expected) {
     }
     if !targetBtn {
         Send "{Escape}"
-        ; #region agent log
-        try DbgLog_GeminiModelQC_Utils("H6_target", "Target model button not found/enabled", "")
-        ; #endregion
         return false
     }
     ok := GeminiInvokeModelButton(targetBtn)
-    ; #region agent log
-    try DbgLog_GeminiModelQC_Utils("H7_invoke", "Invoked target model button", Map("ok", ok ? 1 : 0))
-    ; #endregion
     if !ok
         return false
     Sleep 100

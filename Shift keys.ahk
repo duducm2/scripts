@@ -20028,50 +20028,6 @@ HandleGeminiModelSelection(char) {
     global g_GeminiModelSelectorActive, g_GeminiModels, g_GeminiModelCharSequence
     global isGeminiFastModel
 
-    ; #region agent log
-    DbgLog_GeminiModelQC(hypothesisId, message, data := "") {
-        ; NDJSON logger for debug mode (session a94802). Avoid secrets/PII.
-        try {
-            ms := A_TickCount
-            loc := "Shift keys.ahk:GeminiModelQC"
-            sid := "a94802"
-            runId := "baseline"
-            q := "`""
-            quoteChar := q
-            if !IsObject(data)
-                data := Map("note", data)
-            ; Minimal JSON escaping for quotes/backslashes in strings we control.
-            msg := StrReplace(StrReplace(message, "\", "\\"), quoteChar, "\`"")
-            h := StrReplace(StrReplace(hypothesisId, "\", "\\"), quoteChar, "\`"")
-            json := "{" q "sessionId" q ":" q sid q "," q "timestamp" q ":" ms "," q "location" q ":" q loc q "," q "message" q ":" q msg q "," q "runId" q ":" q runId q "," q "hypothesisId" q ":" q h q "," q "data" q ":{"
-            first := true
-            for k, v in data {
-                try {
-                    kk := StrReplace(StrReplace(k, "\", "\\"), quoteChar, "\`"")
-                    if IsNumber(v) {
-                        vv := v
-                        pair := q kk q ":" vv
-                    } else {
-                        sv := "" v
-                        sv := StrReplace(StrReplace(sv, "\", "\\"), quoteChar, "\`"")
-                        pair := q kk q ":" q sv q
-                    }
-                    if (first) {
-                        json .= pair
-                        first := false
-                    } else {
-                        json .= "," pair
-                    }
-                } catch {
-                }
-            }
-            json .= "}}`n"
-            FileAppend(json, A_ScriptDir "\debug-a94802.log", "UTF-8")
-        } catch {
-        }
-    }
-    ; #endregion
-
     ; Only process if selector is active
     if (!g_GeminiModelSelectorActive) {
         return
@@ -20166,36 +20122,18 @@ HandleGeminiModelSelection(char) {
             attempt := 1
             loop 2 {
                 attempt := A_Index
-                ; #region agent log
-                try DbgLog_GeminiModelQC("H1_entry", "Attempt start", Map("attempt", attempt, "modelName", modelName, "char", char))
-                ; #endregion
                 StandardLoadingBar_Update("🔄 Switching to " . modelName . " (attempt " . attempt . "/2)…",
                     BANNER_ACCENT_INTERMEDIATE)
 
                 ; Keep the existing selection flow unchanged: open picker + select via menu items
-                ; #region agent log
-                try DbgLog_GeminiModelQC("H2_call", "Calling EnsureGeminiModelViaMenu", Map("attempt", attempt))
-                ; #endregion
                 switched := EnsureGeminiModelViaMenu(modelName)
-                ; #region agent log
-                try DbgLog_GeminiModelQC("H2_ret", "EnsureGeminiModelViaMenu returned", Map("attempt", attempt, "switched", switched ? 1 : 0))
-                ; #endregion
 
                 StandardLoadingBar_Update("🔎 Verifying model (mode picker)…", BANNER_ACCENT_INTERMEDIATE)
-                ; #region agent log
-                try DbgLog_GeminiModelQC("H3_verify_call", "Calling VerifyGeminiModelSelectedInOpenPicker", Map("attempt", attempt))
-                ; #endregion
                 verified := switched && VerifyGeminiModelSelectedInOpenPicker(modelName)
-                ; #region agent log
-                try DbgLog_GeminiModelQC("H3_verify_ret", "Verify returned", Map("attempt", attempt, "verified", verified ? 1 : 0))
-                ; #endregion
                 if (verified)
                     break
 
                 if (attempt < 2) {
-                    ; #region agent log
-                    try DbgLog_GeminiModelQC("H4_refresh", "Refreshing before retry", Map("attempt", attempt))
-                    ; #endregion
                     StandardLoadingBar_Update("🔄 Model not confirmed. Refreshing and retrying…", BANNER_ACCENT_INTERMEDIATE)
                     Send "^r"
                     Sleep 1200
@@ -20218,9 +20156,6 @@ HandleGeminiModelSelection(char) {
         }
     } catch Error as err {
         ; Silently fail if anything goes wrong
-        ; #region agent log
-        try DbgLog_GeminiModelQC("H5_catch", "Caught error in HandleGeminiModelSelection", Map("msg", SubStr(err.Message, 1, 120)))
-        ; #endregion
     }
 }
 
