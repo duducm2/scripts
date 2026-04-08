@@ -3931,6 +3931,44 @@ Debug6dacac_Log(location, message, data := "", hypothesisId := "H1", runId := "p
 
 ; #endregion
 
+; #region agent log (session 7cca0d — NDJSON to debug-7cca0d.log; remove after verification)
+Debug7cca0d_Log(location, message, data := "", hypothesisId := "H1", runId := "initial") {
+    try {
+        Esc(s) => StrReplace(StrReplace(StrReplace(String(s), "\", "\\"), "`"", "\`""), "`n", "\n")
+        MapToJson(m) {
+            out := ""
+            for k, v in m {
+                if (out != "")
+                    out .= ","
+                out .= "`"" Esc(k) "`":"
+                if (v is Integer || v is Float)
+                    out .= String(v)
+                else
+                    out .= "`"" Esc(v) "`""
+            }
+            return "{" out "}"
+        }
+        d := IsObject(data) ? data : Map("value", data)
+        id := "log_" A_TickCount "_" Random(1000, 9999)
+        ts := A_TickCount
+        payload := Map()
+        payload["sessionId"] := "7cca0d"
+        payload["id"] := id
+        payload["timestamp"] := ts
+        payload["location"] := location
+        payload["message"] := message
+        payload["runId"] := runId
+        payload["hypothesisId"] := hypothesisId
+        payloadJson := MapToJson(payload)
+        dataJson := MapToJson(d)
+        line := SubStr(payloadJson, 1, StrLen(payloadJson) - 1) . ",`"data`":" . dataJson . "}`n"
+        FileAppend(line, A_ScriptDir "\debug-7cca0d.log", "UTF-8")
+    } catch {
+    }
+}
+
+; #endregion
+
 Reminders_IsNewOutlookWindow() {
     try {
         ; Reminders window can run under classic OUTLOOK.EXE or Store olk.exe.
@@ -21467,6 +21505,131 @@ IsFileDialogActive() {
 ;-------------------------------------------------------------------
 ; UIA Tree Inspector Shortcuts
 ;-------------------------------------------------------------------
+
+; FindFirst/FindElement throw TargetError when no match; FindAll returns []. Use FindAll fallback for reliability.
+UIATreeInspector_FindTreeByAutomationId(root, automationId) {
+    if (!root)
+        return 0
+    aid := String(automationId)
+    try
+        return root.FindFirst({ Type: UIA.Type.Tree, AutomationId: aid })
+    catch TargetError {
+    }
+    try {
+        trees := root.FindAll({ Type: UIA.Type.Tree })
+        for t in trees {
+            if !t
+                continue
+            try {
+                if (String(t.AutomationId) = aid)
+                    return t
+            } catch {
+            }
+        }
+    } catch {
+    }
+    return 0
+}
+
+UIATreeInspector_FindRightDumpTree(root) {
+    t := UIATreeInspector_FindTreeByAutomationId(root, "17")
+    if (t)
+        return t
+    try {
+        trees := root.FindAll({ Type: UIA.Type.Tree })
+        for x in trees {
+            if !x
+                continue
+            try {
+                if (x.Name = "UIA Tree")
+                    return x
+            } catch {
+            }
+        }
+    } catch {
+    }
+    bestL := -0x7FFFFFFF
+    bestT := 0
+    try {
+        trees := root.FindAll({ Type: UIA.Type.Tree })
+        for t in trees {
+            if (!t)
+                continue
+            try {
+                if (String(t.AutomationId) = "4")
+                    continue
+            } catch {
+                continue
+            }
+            try {
+                br := t.BoundingRectangle
+                if (br.l > bestL) {
+                    bestL := br.l
+                    bestT := t
+                }
+            } catch {
+                if (!bestT)
+                    bestT := t
+            }
+        }
+    } catch {
+    }
+    return bestT
+}
+
+; Win32 focus on left SysTreeView32 (AutomationId 4, TVWins) so UIA selection and arrow keys stay in sync.
+UIATreeInspector_FocusLeftWindowsTree(treeContainer, winHwnd) {
+    leftHwnd := 0
+    if (!treeContainer || !winHwnd)
+        return 0
+    try
+        leftHwnd := treeContainer.NativeWindowHandle
+    catch {
+        leftHwnd := 0
+    }
+    if (leftHwnd) {
+        try
+            ControlFocus "ahk_id " leftHwnd, "ahk_id " winHwnd
+        catch {
+            ; Invalid HWND pair or control not targetable; SetFocus below may still work.
+        }
+    }
+    try
+        treeContainer.SetFocus()
+    catch {
+        ; UIA SetFocus can surface COM/Win32 errors (e.g. "Target window not found"); non-fatal.
+    }
+    return leftHwnd
+}
+
+; Jiggle selection with keys guaranteed to go to the windows list TreeView (not filter / middle panels).
+UIATreeInspector_JiggleLeftTree(leftHwnd, winHwnd, downDelayMs) {
+    if (!WinExist("ahk_id " winHwnd))
+        return
+    if (!WinActive("ahk_id " winHwnd))
+        return
+    if (leftHwnd) {
+        try {
+            ControlSend "{Down}", "ahk_id " leftHwnd, "ahk_id " winHwnd
+            Sleep downDelayMs
+            ControlSend "{Up}", "ahk_id " leftHwnd, "ahk_id " winHwnd
+        } catch Error as e {
+            ; #region agent log
+            try
+                Debug7cca0d_Log("Shift keys.ahk:JiggleLeftTree fallback", "ControlSend failed, using Send",
+                    Map("msg", e.Message), "H7")
+            ; #endregion
+            Send "{Down}"
+            Sleep downDelayMs
+            Send "{Up}"
+        }
+    } else {
+        Send "{Down}"
+        Sleep downDelayMs
+        Send "{Up}"
+    }
+}
+
 #HotIf WinActive("UIATreeInspector") || WinActive("ahk_exe UIATreeInspectorAutoHotkey64.exe")
 
 ; Shift + R : Refresh list
@@ -21567,11 +21730,16 @@ IsFileDialogActive() {
         Sleep 200
 
         ; Find Tree container with AutomationId="4"
-        treeContainer := root.FindFirst({ Type: "Tree", AutomationId: "4" })
+        treeContainer := UIATreeInspector_FindTreeByAutomationId(root, "4")
         if (!treeContainer) {
             MsgBox "Could not find the tree container (AutomationId='4').", "UIA Tree Inspector", "IconX"
             return
         }
+
+        inspectorHwnd := WinExist("UIATreeInspector")
+        if (!inspectorHwnd)
+            inspectorHwnd := WinExist("ahk_exe UIATreeInspectorAutoHotkey64.exe")
+        leftHwnd := UIATreeInspector_FocusLeftWindowsTree(treeContainer, inspectorHwnd)
 
         ; Get all TreeItem children
         treeItems := treeContainer.FindAll({ Type: "TreeItem" })
@@ -21608,10 +21776,6 @@ IsFileDialogActive() {
 
                 ; Workaround: force UIA Tree Inspector to refresh the right-side UIA tree
                 ; by "jiggling" selection Down then Up after selection via search.
-                inspectorHwnd := WinExist("UIATreeInspector")
-                if (!inspectorHwnd)
-                    inspectorHwnd := WinExist("ahk_exe UIATreeInspectorAutoHotkey64.exe")
-
                 if (inspectorHwnd) {
                     if !WinActive("ahk_id " inspectorHwnd) {
                         WinActivate "ahk_id " inspectorHwnd
@@ -21619,13 +21783,11 @@ IsFileDialogActive() {
                     }
 
                     if WinActive("ahk_id " inspectorHwnd) {
-                        ; Ensure the list/tree has focus before sending arrow keys
+                        ; Ensure the windows TreeView has Win32 focus before jiggle (arrow keys)
+                        leftHwnd := UIATreeInspector_FocusLeftWindowsTree(treeContainer, inspectorHwnd)
                         try matchingItem.SetFocus()
-
                         Sleep 500
-                        Send "{Down}"
-                        Sleep 1000
-                        Send "{Up}"
+                        UIATreeInspector_JiggleLeftTree(leftHwnd, inspectorHwnd, 1000)
                     }
                 }
             } catch Error as e {
@@ -21642,6 +21804,23 @@ IsFileDialogActive() {
 
 ; Shift + C : Search window/control and copy full UIA tree to clipboard
 +c:: {
+    ; #region agent log
+    try {
+        wt := WinGetTitle("A")
+        ex := WinGetProcessName("A")
+        wcl := WinGetClass("A")
+        mTitle := WinActive("UIATreeInspector")
+        mBadExe := WinActive("ahk_exe UIATreeInspectorAutoHotkey64.exe")
+        mAhk64Title := (WinActive("ahk_exe AutoHotkey64.exe") && InStr(wt, "UIATreeInspector"))
+        fc := ""
+        try
+            fc := ControlGetFocus("A")
+        Debug7cca0d_Log("Shift keys.ahk:UIATreeInspector +c entry", "handler entered",
+            Map("title", wt, "exe", ex, "winClass", wcl, "WinActive_UIATreeInspector", mTitle,
+                "WinActive_badExeLine", mBadExe, "AHK64_exe_and_title_contains", mAhk64Title, "focusControl", fc), "H1")
+    } catch {
+    }
+    ; #endregion
     barShown := false
     try {
         ; Global variable to store user input
@@ -21679,33 +21858,110 @@ IsFileDialogActive() {
         global g_TreeItemSearchInput
         searchText := g_TreeItemSearchInput
         g_TreeItemSearchInput := ""
+        ; #region agent log
+        try
+            Debug7cca0d_Log("Shift keys.ahk:UIATreeInspector +c after dialog", "dialog closed",
+                Map("searchLen", StrLen(searchText), "cancelledEmpty", (searchText = "")), "H2")
+        ; #endregion
         if (searchText = "")
             return
 
-        StandardLoadingBar_Update("🔎 Selecting window/control…")
-        inspectorHwnd := WinExist("UIATreeInspector")
+        ; Always-on-top loading banner can keep focus after the modal closes; WinActivate(Inspector) then fails silently.
+        try
+            StandardLoadingBar_Hide(0)
+        catch {
+        }
+        Sleep 80
+
+        ; Prefer the real foreground window if it is already UIATreeInspector (avoids stale WinExist match).
+        inspectorHwnd := 0
+        try {
+            if (WinActive("ahk_exe AutoHotkey64.exe") && InStr(WinGetTitle("A"), "UIATreeInspector"))
+                inspectorHwnd := WinGetID("A")
+        } catch {
+        }
+        if (!inspectorHwnd)
+            inspectorHwnd := WinExist("UIATreeInspector")
         if (!inspectorHwnd)
             inspectorHwnd := WinExist("ahk_exe UIATreeInspectorAutoHotkey64.exe")
-        if (!inspectorHwnd)
+        if (!inspectorHwnd) {
+            ; #region agent log
+            try
+                Debug7cca0d_Log("Shift keys.ahk:UIATreeInspector +c no hwnd", "WinExist inspector failed",
+                    Map("hint", "title or exe mismatch"), "H4")
+            ; #endregion
             return
-
-        if !WinActive("ahk_id " inspectorHwnd) {
-            WinActivate "ahk_id " inspectorHwnd
-            WinWaitActive "ahk_id " inspectorHwnd, , 1
         }
-        if !WinActive("ahk_id " inspectorHwnd)
+
+        ; AHK v2 WinActivate throws if the window does not exist; wrap so a bad/stale hwnd does not abort +c.
+        loop 6 {
+            try {
+                if WinActive("ahk_id " inspectorHwnd)
+                    break
+                if !WinExist("ahk_id " inspectorHwnd)
+                    break
+                WinActivate "ahk_id " inspectorHwnd
+                WinWaitActive "ahk_id " inspectorHwnd, , 0.35
+            } catch Error as e {
+                ; #region agent log
+                try
+                    Debug7cca0d_Log("Shift keys.ahk:UIATreeInspector +c activate iter", "WinActivate/WaitActive",
+                        Map("msg", e.Message, "inspectorHwnd", inspectorHwnd), "H9")
+                ; #endregion
+                Sleep 50
+            }
+        }
+        if !WinActive("ahk_id " inspectorHwnd) {
+            ; #region agent log
+            try
+                Debug7cca0d_Log("Shift keys.ahk:UIATreeInspector +c activate failed", "inspector not active after dialog",
+                    Map("inspectorHwnd", inspectorHwnd), "H6")
+            ; #endregion
+            MsgBox "Could not activate UIATreeInspector after the search dialog. Try again.", "UIA Tree Inspector",
+                "IconX"
             return
+        }
+
+        ; Foreground HWND (avoids stale WinExist match when multiple windows match the title pattern).
+        inspectorHwnd := WinGetID("A")
+
+        try {
+            StandardLoadingBar_Show("🔎 Selecting window/control…", BANNER_ACCENT_INTERMEDIATE,
+                { passive: false, centerOnHwnd: inspectorHwnd })
+        } catch {
+            try
+                StandardLoadingBar_Show("🔎 Selecting window/control…", BANNER_ACCENT_INTERMEDIATE,
+                    { passive: false, centerOnHwnd: 0 })
+            catch {
+            }
+        }
+        ; #region agent log
+        try
+            Debug7cca0d_Log("Shift keys.ahk:UIATreeInspector +c post-banner", "StandardLoadingBar_Show ok",
+                Map("inspectorHwnd", inspectorHwnd), "H8")
+        ; #endregion
 
         ; Select matching item in left tree (AutomationId="4") (same as Shift+S)
         root := UIA.ElementFromHandle(inspectorHwnd)
         Sleep 500
-        treeContainer := root.FindFirst({ Type: "Tree", AutomationId: "4" })
-        if (!treeContainer)
+        treeContainer := UIATreeInspector_FindTreeByAutomationId(root, "4")
+        if (!treeContainer) {
+            MsgBox "Could not find the tree container (AutomationId='4').", "UIA Tree Inspector", "IconX"
             return
+        }
+
+        leftHwnd := UIATreeInspector_FocusLeftWindowsTree(treeContainer, inspectorHwnd)
+        ; #region agent log
+        try
+            Debug7cca0d_Log("Shift keys.ahk:UIATreeInspector +c leftHwnd", "after FocusLeftWindowsTree",
+                Map("leftHwnd", leftHwnd), "H3")
+        ; #endregion
 
         treeItems := treeContainer.FindAll({ Type: "TreeItem" })
-        if (!treeItems)
+        if (!treeItems) {
+            MsgBox "No tree items found in the tree container.", "UIA Tree Inspector", "IconX"
             return
+        }
 
         matchingItem := ""
         searchTextLower := StrLower(searchText)
@@ -21722,56 +21978,72 @@ IsFileDialogActive() {
                 continue
             }
         }
-        if (!matchingItem)
+        if (!matchingItem) {
+            ; #region agent log
+            try
+                Debug7cca0d_Log("Shift keys.ahk:UIATreeInspector +c no match", "no TreeItem prefix match",
+                    Map("searchText", searchText), "H3")
+            ; #endregion
+            MsgBox Format("No tree item found starting with '{}'.", searchText), "UIA Tree Inspector", "IconX"
             return
+        }
 
-        matchingItem.Select()
-        matchingItem.ScrollIntoView()
-        matchingItem.SetFocus()
+        try
+            matchingItem.Select()
+        catch {
+        }
+        try
+            matchingItem.ScrollIntoView()
+        catch {
+        }
+        try
+            matchingItem.SetFocus()
+        catch {
+        }
         Sleep 1500
 
         ; Refresh workaround (force correct UIA Tree load)
-        StandardLoadingBar_Update("🔄 Refreshing UIA Tree…")
+        try
+            StandardLoadingBar_Update("🔄 Refreshing UIA Tree…")
+        catch {
+        }
         if !WinActive("ahk_id " inspectorHwnd) {
-            WinActivate "ahk_id " inspectorHwnd
-            WinWaitActive "ahk_id " inspectorHwnd, , 1
+            try {
+                WinActivate "ahk_id " inspectorHwnd
+                WinWaitActive "ahk_id " inspectorHwnd, , 1
+            } catch {
+            }
         }
         if WinActive("ahk_id " inspectorHwnd) {
+            inspectorHwnd := WinGetID("A")
+            leftHwnd := UIATreeInspector_FocusLeftWindowsTree(treeContainer, inspectorHwnd)
             try matchingItem.SetFocus()
-            Send "{Down}"
-            Sleep 2000
-            Send "{Up}"
+            UIATreeInspector_JiggleLeftTree(leftHwnd, inspectorHwnd, 2000)
         }
 
         ; Focus UIA Tree panel (right-side tree) and select root
-        StandardLoadingBar_Update("🌳 Focusing UIA Tree panel…")
+        try
+            StandardLoadingBar_Update("🌳 Focusing UIA Tree panel…")
+        catch {
+        }
         Sleep 1500
-        rightTree := 0
-        bestL := -0x7FFFFFFF
-        trees := root.FindAll({ Type: "Tree" })
-        for t in trees {
-            if (!t)
-                continue
+        rightTree := UIATreeInspector_FindRightDumpTree(root)
+        if (!rightTree) {
+            MsgBox "Could not find the UIA Tree panel (AutomationId='17').", "UIA Tree Inspector", "IconX"
+            return
+        }
+
+        rootItem := 0
+        try
+            rootItem := rightTree.FindFirst({ Type: UIA.Type.TreeItem })
+        catch TargetError {
             try {
-                if (t.AutomationId = "4")
-                    continue
+                items := rightTree.FindAll({ Type: UIA.Type.TreeItem })
+                if (items.Length)
+                    rootItem := items[1]
             } catch {
-            }
-            try {
-                br := t.BoundingRectangle
-                if (br.l > bestL) {
-                    bestL := br.l
-                    rightTree := t
-                }
-            } catch {
-                if (!rightTree)
-                    rightTree := t
             }
         }
-        if (!rightTree)
-            return
-
-        rootItem := rightTree.FindFirst({ Type: "TreeItem" })
         if (rootItem) {
             try rootItem.Select()
             try rootItem.ScrollIntoView()
@@ -21782,18 +22054,30 @@ IsFileDialogActive() {
         Sleep 1500
 
         ; Copy complete UI tree to clipboard via context menu
-        StandardLoadingBar_Update("📋 Copying full tree to clipboard…")
+        try
+            StandardLoadingBar_Update("📋 Copying full tree to clipboard…")
+        catch {
+        }
         A_Clipboard := ""
         Sleep 400
-        Send "{AppsKey}"
-        Sleep 600
-        Send "{Up}"
-        Sleep 400
-        Send "{Enter}"
+        try {
+            Send "{AppsKey}"
+            Sleep 600
+            Send "{Up}"
+            Sleep 400
+            Send "{Enter}"
+        } catch {
+        }
         Sleep 1200
     } catch Error as e {
-        try StandardLoadingBar_Update("❌ Copy failed: " . SubStr(e.Message, 1, 60))
-        try StandardLoadingBar_Hide(2000)
+        try
+            StandardLoadingBar_Update("❌ Copy failed: " . SubStr(e.Message, 1, 60))
+        catch {
+        }
+        try
+            StandardLoadingBar_Hide(2000)
+        catch {
+        }
         MsgBox "Error in Shift+C UIA Tree copy:`n" e.Message, "UIA Tree Inspector", "IconX"
         return
     } finally {
