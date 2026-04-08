@@ -15,7 +15,7 @@ Source: `Shift keys.ahk` Cursor sheet (`cheatSheets["Cursor.exe"]`).
 | Section | Source chord | Source action label | CurrentType | Target in VS Code | Command ID / AHK function | Keep chord | Keep mnemonic | Status | Notes |
 |---|---|---|---|---|---|---|---|---|---|
 | Ctrl (no other modifiers) | 1 | Remove clustering and focus on the code (ahk) | AHK |  |  | TBD | Yes | Pending |  |
-| Ctrl (no other modifiers) | 2 | Copy path (cursor) | Cursor-specific |  |  | TBD | Yes | Pending |  |
+| Ctrl (no other modifiers) | 2 | Copy path (cursor) | Cursor-specific | Copy path of active file / focused search result | `workbench.action.files.copyPathOfActiveFile`; `copyFilePath`; `search.action.copyPath` | Yes | Yes | Implemented | Implemented in VS Code user keybindings for editor, active file, and search-result contexts. |
 | Ctrl (no other modifiers) | 3 | CSV: Edit CSV | Extension |  |  | TBD | Yes | Pending |  |
 | Ctrl (no other modifiers) | 4 | CSV: Apply changes to source file and save | Extension |  |  | TBD | Yes | Pending |  |
 | Ctrl (no other modifiers) | 5 | MarkDown Enhanced: Export in PDF format. | Extension |  |  | TBD | Yes | Pending |  |
@@ -31,14 +31,14 @@ Source: `Shift keys.ahk` Cursor sheet (`cheatSheets["Cursor.exe"]`).
 | Ctrl (no other modifiers) | H | Smart nav: Editorâ†’Explorer / Explorerâ†’Reveal (s[H]ow) | Native |  |  | TBD | Yes | Pending |  |
 | Ctrl (no other modifiers) | J | Select to Bracket (ad[J]acent) | Native |  |  | TBD | Yes | Pending |  |
 | Ctrl (no other modifiers) | , | Fold all directories | Native |  |  | TBD | Yes | Pending |  |
-| Ctrl (no other modifiers) | . | Toggle chat or agent | Cursor-specific |  |  | TBD | Yes | Pending |  |
+| Ctrl (no other modifiers) | . | Toggle chat or agent | Cursor-specific | Use official Copilot chat defaults instead of Cursor chat toggle | Default VS Code/Copilot chat entry points (`Ctrl+Alt+I` Chat view, `Ctrl+I` Inline Chat) | No | No | Implemented | No custom `Ctrl+.` binding kept; Cursor-specific chat toggle behavior intentionally dropped in favor of official VS Code chat surfaces. |
 | Ctrl (no other modifiers) | Q | Unfold all directories (e[Q]ual) | Native |  |  | TBD | Yes | Pending |  |
-| Ctrl (no other modifiers) | E | Maximize chat size â€” native Cursor (`workbench.action.maximizeChatSize`; user keybinding) | Cursor-specific |  |  | TBD | Yes | Pending |  |
+| Ctrl (no other modifiers) | E | Maximize chat size â€” native Cursor (`workbench.action.maximizeChatSize`; user keybinding) | Cursor-specific | Restore official VS Code default on `Ctrl+E` | Removed custom `workbench.action.maximizeChatSize` override | No | No | Implemented | Custom Cursor-era chat maximize binding removed so `Ctrl+E` falls back to official VS Code behavior instead of forcing chat UI behavior. |
 | Ctrl (no other modifiers) | R | File open [R]ecent | Native |  |  | TBD | Yes | Pending |  |
 | Ctrl (no other modifiers) | T | Go to [T]ype symbol in workspace | Native |  |  | TBD | Yes | Pending |  |
-| Ctrl (no other modifiers) | N | [N]ew chat tab (replacing current) | Cursor-specific |  |  | TBD | Yes | Pending |  |
+| Ctrl (no other modifiers) | N | [N]ew chat tab (replacing current) | Cursor-specific | Use official Copilot chat session workflow | Official Chat view session controls; no custom `Ctrl+N` override | No | Partial | Mapped | No 1:1 Cursor-equivalent chord added in VS Code; prefer default Copilot chat session creation flow over a custom replacement. |
 | Ctrl (no other modifiers) | Enter | [I]nsert line below | Native |  |  | TBD | Yes | Pending |  |
-| Ctrl (no other modifiers) | P | Open [P]roject | Cursor-specific |  |  | TBD | Yes | Pending |  |
+| Ctrl (no other modifiers) | P | Open [P]roject | Cursor-specific | Use official VS Code quick-open / go-to-file workflow | Default VS Code `Ctrl+P` behavior | No | Partial | Mapped | Prefer official VS Code file/project navigation instead of recreating the Cursor-specific project-opening command. |
 | Ctrl (no other modifiers) | 1/2/3... | Switch tabs | Native |  |  | TBD | Yes | Pending |  |
 | Ctrl (no other modifiers) | ; | Insert comment | Native |  |  | TBD | Yes | Pending |  |
 | Ctrl (no other modifiers) | D | Duplicate selection to next find match | Native |  |  | TBD | Yes | Pending |  |

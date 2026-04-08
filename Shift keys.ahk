@@ -851,8 +851,112 @@ Cursor
 🗑️ [Shift+Delete] [D]elete line
 )"  ; end Cursor
 
-; VS Code mirror of Cursor sheet (shared source to avoid drift while keeping separate identity).
-cheatSheets["Code.exe"] := cheatSheets["Cursor.exe"]
+cheatSheets["Code.exe"] := "
+(
+VS Code
+
+=== Ctrl (no other modifiers) ===
+🎯 [1] Remove clustering and focus on the code (ahk)
+📁 [2] Copy path (VS Code)
+📊 [3] CSV: Edit CSV
+💾 [4] CSV: Apply changes to source file and save
+📋 [5] MarkDown Enhanced: Export in PDF format. 
+📽️ [6] Marp export (PDF)
+🔨 [7] Build LaTeX project
+📄 [8] View LaTeX PDF file
+📄 [9] Markdown Preview Enhanced: Insert Page Break
+🤖 [M]Ask [M]essage, wait 6s, then paste (ahk)
+⚡ [G]Kill terminal ([G]o away)
+📉 [Y]Fold all (tuck awa[Y])
+📈 [U] [U]nfold all
+📋 [O]Open Paste As... ([O]pen)
+📁 [H]Smart nav: Editor→Explorer / Explorer→Reveal (s[H]ow)
+🔲 [J]Select to Bracket (ad[J]acent)
+📉 [,] Fold all directories
+💬 [.] Copilot chat entry points (Chat view Ctrl+Alt+I, Inline Ctrl+I)
+📈 [Q]Unfold all directories (e[Q]ual)
+🤖 [E] VS Code default behavior (Cursor custom maximize removed)
+📂 [R]File open [R]ecent
+🔍 [T]Go to [T]ype symbol in workspace
+💬 [N] Copilot chat session workflow (pending dedicated remap)
+➕ [Enter] [I]nsert line below
+🔍 [P]VS Code quick open / project search
+🔄 [1/2/3...] Switch tabs
+💬 [;] Insert comment
+📝 [D]Duplicate selection to next find match
+🔍 [F] [F]ind
+↩️ [Z]Undo (common [Z])
+📊 [B]Toggle [B]ar (primary sidebar)
+
+=== Shift ===
+📉 [F][F]old (ahk)
+📈 [U][U]nfold (ahk)
+📄 [M][M]arkdown preview (VS Code migration pending)
+🪟 [W][W]indow (move editor) (VS Code migration pending)
+💻 [T][T]erminal (ahk)
+💻 [N][N]ew Terminal (ahk)
+📁 [E][E]xplorer (ahk)
+📄🪟 [K] Mar[K]down + window (ahk)
+⌨️ [C][C]ommand palette (ahk)
+📈 [X] E[X]pand selection (ahk)
+⚡ [S][S]ymbol in access view (VS Code migration pending)
+💬 [H][H]istory (chat) (ahk)
+🖼️ [I][I]mage (paste) (VS Code migration pending)
+📁 [G][G]it repos fold (SCM) (ahk)
+🔍 [Q][Q]uery Search (ahk)
+🍞 [R]B[R]eadcrumbs menu (ahk)
+😀 [O]Emoji selector (em[O]ji) (ahk)
+🌿 [D]Git section ([D]iff) (ahk)
+❌ [Z]Close all editors (end [Z]one) (ahk)
+🤖 [A][A]I models switch (ahk)
+🧘 [Y]Zen mode (tranquilit[Y])
+⬇️ [P][P]ull (Git)
+✅ [V]Commit (Git)
+⬆️ [B]Push (Git)
+
+=== Alt (ahk = AutoHotkey) ===
+📉 [x] Shri[X]nk selection (ahk)
+📉 [,] Classical Markdown Preview
+📉 [Y] Paste image to Markdown
+⬇️ [U] Scroll AI feed to bottom (ahk-based)
+📋 [M] Quick shortcut menu (ahk)
+🤖 [A] Add file to AI Context (VS Code migration pending) (ahk)
+📄 [N] Review [N]ext file (ahk)
+📄 [R] Refresh preview
+📄 [F] File: New [F]ile
+📂 [O] File: New F[O]lder
+
+=== Ctrl+Shift ===
+📝 [Ctrl+Shift+L] Select all identical words ([L]ines)
+🐛 [Ctrl+Shift+D] [D]ebugging
+
+=== Ctrl+Alt ===
+📄 [Ctrl+Alt+L] Markdown Preview Enhanced: Toggle Live Update
+📄 [Ctrl+Alt+T] Markdown Preview Enhanced: Toggle Scroll Sync
+⬆️ [Ctrl+Alt+Up] Go to [P]arent Fold
+⬅️ [Ctrl+Alt+Left] Go to sibling fold [P]revious
+➡️ [Ctrl+Alt+Right] Go to sibling fold [N]ext
+⬆️ [Ctrl+Alt+↑] Add cursor [A]bove
+⬇️ [Ctrl+Alt+↓] Add cursor [B]elow
+
+=== Alt+Shift ===
+⬆️ [Shift+Alt+↑] [C]opy line Up
+⬇️ [Shift+Alt+↓] [C]opy line Down
+
+=== Alt (other chords) ===
+👁️ [Alt+F12] [P]eek Definition
+⬆️ [Alt+↑] [M]ove line Up
+⬇️ [Alt+↓] [M]ove line Down
+👆 [Alt+Click] [M]ulti-cursor by click
+🔄 [Alt+Z] Toggle word [W]rap
+⬇️ [Alt+J] Jump to [N]ext review
+⬆️ [Alt+K] [P]revious review (bac[K])
+
+=== Function keys & misc ===
+✏️ [F2] [R]ename symbol
+🔍 [F8] [N]avigate problems
+🗑️ [Shift+Delete] [D]elete line
+)"  ; end VS Code
 
 ; --- Windows Explorer ------------------------------------------------------
 cheatSheets["explorer.exe"] := "

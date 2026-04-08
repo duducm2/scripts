@@ -87,7 +87,7 @@ Each row is a key in `cheatSheets` in [`Shift keys.ahk`](../Shift%20keys.ahk). L
 | `chrome.exe` | Chrome: general browser shortcuts; often combined with a site-specific sheet. |
 | `Chrome PDF Viewer` | Chrome and `IsChromePdfViewerActive()`. |
 | `Cursor.exe` | Foreground Cursor. **Reference layout** for [modifier clusters](#modifier-clusters-standard-layout). |
-| `Code.exe` | Foreground VS Code. Mirrors `Cursor.exe` sheet via shared source to keep parity and reduce drift. |
+| `Code.exe` | Foreground VS Code. Separate sheet, initially derived from Cursor layout; diverges as migration proceeds to official VS Code and Copilot defaults. |
 | `explorer.exe` | File Explorer. |
 | `mspaint.exe` | Paint. |
 | `ClipAngel.exe` | Clip Angel. |
