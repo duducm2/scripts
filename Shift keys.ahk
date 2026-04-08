@@ -17177,6 +17177,11 @@ GeminiScrollFeedToBottom_Chrome(hwnd) {
 ;-------------------------------------------------------------------
 #HotIf IsCodeActive() && WinGetClass("A") != "#32770"
 
+; Alt + M : Quick shortcut menu for VS Code (empty placeholder for future actions)
+!m:: {
+    ShowVSCodeShortcutMenu()
+}
+
 ; Ctrl + M : Trigger commit message generation + commit/push flow (VS Code: native button + Shift+V/+B)
 ; Mirrors Cursor workflow: generate → wait with banner → commit → push (if user allows) → return
 ^M:: {
@@ -17407,6 +17412,81 @@ VSCodeScrollCopilotFeedToBottom(hwnd) {
 
 Cursor_IsElementVisibleByName(name, hwnd := 0, typeList := "", matchmode := "") {
     return !!Cursor_GetVisibleElementByName(name, hwnd, typeList, matchmode)
+}
+
+global g_VSCodeShortcutMenuGui := false
+global g_VSCodeShortcutMenuActive := false
+
+ShowVSCodeShortcutMenu() {
+    global g_VSCodeShortcutMenuGui, g_VSCodeShortcutMenuActive
+    if (g_VSCodeShortcutMenuActive)
+        return
+
+    g_VSCodeShortcutMenuGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner")
+    g_VSCodeShortcutMenuGui.BackColor := "1E1E2E"
+    g_VSCodeShortcutMenuGui.MarginX := 20
+    g_VSCodeShortcutMenuGui.MarginY := 15
+
+    g_VSCodeShortcutMenuGui.SetFont("s14 cCDD6F4 Bold", "Segoe UI")
+    g_VSCodeShortcutMenuGui.Add("Text", "w320 Center", "VS Code quick shortcuts")
+    g_VSCodeShortcutMenuGui.Add("Text", "w320 h1 Background45475A")
+    g_VSCodeShortcutMenuGui.SetFont("s12 cCDD6F4", "Segoe UI")
+    g_VSCodeShortcutMenuGui.Add("Text", "w320 Center", "(empty for future use)")
+    g_VSCodeShortcutMenuGui.Add("Text", "w320 h1 Background45475A y+10")
+    g_VSCodeShortcutMenuGui.SetFont("s9 c6C7086", "Segoe UI")
+    g_VSCodeShortcutMenuGui.Add("Text", "w320 Center", "Press Esc to close")
+
+    activeWin := 0
+    try
+        activeWin := WinGetID("A")
+    catch
+        activeWin := 0
+
+    MonitorGetWorkArea(1, &monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
+    monitorWidth := monitorRight - monitorLeft
+    monitorHeight := monitorBottom - monitorTop
+    if (activeWin && activeWin != 0) {
+        rect := Buffer(16, 0)
+        if (DllCall("GetWindowRect", "ptr", activeWin, "ptr", rect)) {
+            centerX := NumGet(rect, 0, "int") + (NumGet(rect, 8, "int") - NumGet(rect, 0, "int")) // 2
+            centerY := NumGet(rect, 4, "int") + (NumGet(rect, 12, "int") - NumGet(rect, 4, "int")) // 2
+            loop MonitorGetCount() {
+                MonitorGetWorkArea(A_Index, &l, &t, &r, &b)
+                if (centerX >= l && centerX <= r && centerY >= t && centerY <= b) {
+                    monitorLeft := l
+                    monitorTop := t
+                    monitorWidth := r - l
+                    monitorHeight := b - t
+                    break
+                }
+            }
+        }
+    }
+
+    g_VSCodeShortcutMenuGui.Show("AutoSize Hide")
+    g_VSCodeShortcutMenuGui.GetPos(&gx, &gy, &gw, &gh)
+    cx := monitorLeft + (monitorWidth - gw) // 2
+    cy := monitorTop + (monitorHeight - gh) // 2
+    g_VSCodeShortcutMenuGui.Show("x" . cx . " y" . cy . " NA")
+
+    g_VSCodeShortcutMenuActive := true
+    Hotkey("Escape", VSCodeShortcutMenu_Cancel, "On")
+}
+
+VSCodeShortcutMenu_Cancel(*) {
+    VSCodeShortcutMenu_Close()
+}
+
+VSCodeShortcutMenu_Close() {
+    global g_VSCodeShortcutMenuGui, g_VSCodeShortcutMenuActive
+    if (!g_VSCodeShortcutMenuActive)
+        return
+    g_VSCodeShortcutMenuActive := false
+    try Hotkey("Escape", VSCodeShortcutMenu_Cancel, "Off")
+    if (IsObject(g_VSCodeShortcutMenuGui) && g_VSCodeShortcutMenuGui.Hwnd) {
+        try g_VSCodeShortcutMenuGui.Destroy()
+    }
+    g_VSCodeShortcutMenuGui := false
 }
 
 Cursor_GetVisibleElementByName(name, hwnd := 0, typeList := "", matchmode := "") {
