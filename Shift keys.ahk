@@ -9330,6 +9330,10 @@ OutlookClickFirst(criteriaList) {
     OutlookMail_EnsureHomeTab()
     if !OutlookClickFirst([{ AutomationId: "540", ControlType: "Button" }, { Name: "Move", ControlType: "Button" }])
         ShowCenteredOverlay_Utils("❌ Outlook: Move not found", 1200, BANNER_ACCENT_ERROR)
+    else {
+        Sleep 80
+        Send "{Down 2}"
+    }
 }
 
 ^!i:: {  ; Mail Filter menu
