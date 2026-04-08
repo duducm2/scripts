@@ -924,6 +924,7 @@ GetScriptFiles() {
         scriptsDir "\Outlook.ahk",
         scriptsDir "\Microsoft Teams.ahk",
         scriptsDir "\Gemini.ahk",
+        scriptsDir "\mousemaster.ahk",
         scriptsDir "\AppLaunchers.ahk",
         scriptsDir "\Utils.ahk"
     ]
