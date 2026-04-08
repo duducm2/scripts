@@ -15,9 +15,10 @@ global MousemasterOverlayGui := ""
 global MousemasterElements := []
 global UserInputBuffer := ""
 global MM_InputHook := ""
+global ActiveWinID := "" 
 
 ^!#c:: {
-    global MousemasterActive
+    global MousemasterActive, ActiveWinID
     if (MousemasterActive) {
         Mousemaster_Deactivate()
         return
@@ -39,21 +40,20 @@ global MM_InputHook := ""
     Mousemaster_Activate(ActiveWinID)
 }
 
-Mousemaster_Activate(ActiveWinID) {
-    global MousemasterActive, MousemasterOverlayGui, MousemasterElements, UserInputBuffer, MM_InputHook
+Mousemaster_Activate(WinID) {
+    global MousemasterActive, MousemasterOverlayGui, MousemasterElements, UserInputBuffer, MM_InputHook, ActiveWinX, ActiveWinY
 
     MousemasterActive := true
     MousemasterElements := []
     UserInputBuffer := ""
 
-    WinGetPos(&ActiveWinX, &ActiveWinY, &ActiveWinW, &ActiveWinH, "ahk_id " ActiveWinID)
+    WinGetPos(&ActiveWinX, &ActiveWinY, &ActiveWinW, &ActiveWinH, "ahk_id " WinID)
 
     ; ==============================================================================
     ; Phase 2: UI Scanning and Element Detection (UIA-v2 Implementation)
     ; ==============================================================================
     try {
-        ; Inicializa o RootElement usando a biblioteca UIA-v2 nativa
-        RootElement := UIA.ElementFromHandle(ActiveWinID)
+        RootElement := UIA.ElementFromHandle(WinID)
 
         if (!RootElement) {
             ToolTip("❌ UIA: Não foi possível obter o RootElement da janela.", 200, 200)
@@ -62,7 +62,6 @@ Mousemaster_Activate(ActiveWinID) {
             return
         }
 
-        ; Busca TODOS os elementos que estão visíveis e habilitados
         allElements := RootElement.FindElements({IsOffscreen: false, IsEnabled: true})
 
         if (allElements.Length = 0) {
@@ -72,7 +71,6 @@ Mousemaster_Activate(ActiveWinID) {
             return
         }
 
-        ; Filtra os tipos de controles que nos interessam e extrai as coordenadas
         for uiaEl in allElements {
             try {
                 cType := uiaEl.ControlType
@@ -80,22 +78,18 @@ Mousemaster_Activate(ActiveWinID) {
                 ; 50000=Button, 50004=Edit, 50005=Hyperlink, 50009=MenuItem, 50002=CheckBox, 50003=RadioButton
                 if (cType == 50000 || cType == 50004 || cType == 50005 || cType == 50009 || cType == 50002 || cType == 50003) {
                     
-                    loc := uiaEl.Location ; Retorna um objeto com {x, y, w, h} absolutos na tela
+                    loc := uiaEl.Location 
                     
-                    ; Filtra elementos invisíveis com tamanho muito pequeno
                     if (loc.w > 5 && loc.h > 5) {
                         hint := Mousemaster_GenerateHint(MousemasterElements.Length + 1)
                         
-                        ; Calcula o centro do elemento para o clique físico ser preciso (coordenadas de tela absolutas)
                         centerX := loc.x + (loc.w // 2)
                         centerY := loc.y + (loc.h // 2)
                         
-                        ; Armazena o objeto uiaEl completo!
                         MousemasterElements.Push({hint: hint, uiaElement: uiaEl, x: loc.x, y: loc.y, w: loc.w, h: loc.h, cx: centerX, cy: centerY})
                     }
                 }
             } catch {
-                ; Ignora elementos que possam ter desaparecido durante a varredura
                 continue
             }
         }
@@ -123,21 +117,16 @@ Mousemaster_Activate(ActiveWinID) {
     }
 
     MousemasterOverlayGui := Gui("+ToolWindow +AlwaysOnTop -Caption +E0x20 -DPIScale", "MousemasterOverlay")
-    MousemasterOverlayGui.BackColor := "00FF00" ; Cor de fundo transparente para a GUI
+    MousemasterOverlayGui.BackColor := "00FF00" 
     WinSetTransColor("00FF00", MousemasterOverlayGui.Hwnd)
+    MousemasterOverlayGui.SetFont("s12 w700 cBlack", "Arial") 
 
-    MousemasterOverlayGui.SetFont("s12 w700 cBlack", "Arial") ; Fonte preta para as dicas
-
-    ; Desenha as dicas na tela
     for index, element in MousemasterElements {
-        ; Cria um campo de texto com fundo branco para a dica
-        ; As coordenadas são ajustadas para serem relativas à GUI
         local hintX := element.x - ActiveWinX + 2
         local hintY := element.y - ActiveWinY + 2
-        local hintW := 25 ; Largura aproximada para uma letra
-        local hintH := 20 ; Altura aproximada para uma letra
+        local hintW := 25 
+        local hintH := 20 
 
-        ; Se a dica for de 2 caracteres (AA), ajusta a largura
         if (StrLen(element.hint) > 1)
             hintW := 40
 
@@ -149,7 +138,7 @@ Mousemaster_Activate(ActiveWinID) {
     ; ==============================================================================
     ; Phase 4: Input Interception using InputHook
     ; ==============================================================================
-    MM_InputHook := InputHook("T10") ; 10 seconds timeout
+    MM_InputHook := InputHook("T10") 
     MM_InputHook.KeyOpt("{Escape}", "E")
     MM_InputHook.OnChar := Mousemaster_OnChar
     MM_InputHook.OnEnd := Mousemaster_OnEnd
@@ -177,28 +166,22 @@ Mousemaster_OnChar(hook, char) {
             }
         }
     }
-    OutputDebug("Mousemaster_OnChar: foundExactMatch=" foundExactMatch ", potentialCount=" potentialCount ", exactElement: " IsObject(exactElement) ? exactElement.hint : "N/A")
 
     if (foundExactMatch && potentialCount = 1) {
-        ; Única correspondência exata encontrada
         hook.Stop()
-        ; Passa o objeto do elemento UIA para a ação.
         Mousemaster_PerformAction(exactElement)
     } else if (!foundPartialMatch) {
-        ; Dica digitada incorretamente
         ToolTip("❌ Não há correspondência para: " UserInputBuffer, 200, 200)
         SetTimer(() => ToolTip(), -2000)
         hook.Stop()
-        Mousemaster_Deactivate() ; Desativa se não houver correspondência
+        Mousemaster_Deactivate() 
     } else {
-        ; Correspondência parcial, continua bufferizando.
         ToolTip("❓ Correspondência parcial para: " UserInputBuffer, 200, 200)
         SetTimer(() => ToolTip(), -2000)
     }
 }
 
 Mousemaster_OnEnd(hook) {
-    OutputDebug("Mousemaster_OnEnd: EndReason=" hook.EndReason ", EndKey=" hook.EndKey)
     if (hook.EndReason = "EndKey" && hook.EndKey = "Escape") {
         ToolTip("❌ Mousemaster Cancelado", 200, 200)
         SetTimer(() => ToolTip(), -2000)
@@ -212,10 +195,8 @@ Mousemaster_OnEnd(hook) {
 Mousemaster_Deactivate() {
     global MousemasterActive, MousemasterOverlayGui, UserInputBuffer, MM_InputHook
 
-    if (!MousemasterActive) {
-        OutputDebug("Mousemaster_Deactivate: Already inactive.")
+    if (!MousemasterActive)
         return
-    }
 
     MousemasterActive := false
     UserInputBuffer := ""
@@ -223,48 +204,77 @@ Mousemaster_Deactivate() {
     if (MM_InputHook) {
         MM_InputHook.Stop()
         MM_InputHook := ""
-        OutputDebug("Mousemaster_Deactivate: InputHook stopped.")
     }
 
     if (MousemasterOverlayGui) {
         MousemasterOverlayGui.Destroy()
         MousemasterOverlayGui := ""
-        OutputDebug("Mousemaster_Deactivate: Overlay GUI destroyed.")
     }
-    OutputDebug("Mousemaster_Deactivate: Mousemaster is now inactive.")
 }
 
 ; ==============================================================================
-; Phase 5: Action Execution
+; Phase 5: Action Execution (Bulletproof Click Logic)
 ; ==============================================================================
 Mousemaster_PerformAction(elementObject) {
+    global ActiveWinID
     OutputDebug("Mousemaster_PerformAction: Attempting to click element: " elementObject.hint)
     
-    ; Primeiramente, tenta o método InvokePattern da UIA, que é o mais robusto
+    ; 0. DESTRÓI A GUI PRIMEIRO. Absolutamente crítico para não interceptar o próprio clique.
+    Mousemaster_Deactivate() 
+    Sleep(100) ; Aguarda o Windows limpar a tela visualmente e devolver o foco.
+    
+    ; Garante que a janela alvo está focada
+    if (ActiveWinID) {
+        try WinActivate("ahk_id " ActiveWinID)
+        Sleep(50)
+    }
+
+    ; 1. Tenta o método Click() interno da biblioteca UIA-v2
+    ; Este método é altamente otimizado por especialistas para contornar problemas de AHK.
+    try {
+        elementObject.uiaElement.Click()
+        OutputDebug("Mousemaster_PerformAction: UIA-v2 Click() succeeded.")
+        ToolTip("✅ Clique UIA Nativo realizado!", 200, 200)
+        SetTimer(() => ToolTip(), -2000)
+        return
+    } catch as e {
+        OutputDebug("Mousemaster_PerformAction: UIA-v2 Click() failed: " e.Message)
+    }
+
+    ; 2. Fallback 1: InvokePattern (Para elementos que preferem invocação lógica)
     try {
         if (elementObject.uiaElement.IsInvokePatternAvailable) {
             elementObject.uiaElement.Invoke()
-            OutputDebug("Mousemaster_PerformAction: InvokePattern succeeded for " elementObject.hint)
-            ToolTip("✅ Elemento '" elementObject.hint "' invocado com sucesso!", 200, 200)
+            OutputDebug("Mousemaster_PerformAction: InvokePattern succeeded.")
+            ToolTip("✅ Elemento invocado (InvokePattern)!", 200, 200)
             SetTimer(() => ToolTip(), -2000)
-            Mousemaster_Deactivate()
             return
         }
     } catch as e {
-        OutputDebug("Mousemaster_PerformAction: InvokePattern failed for " elementObject.hint ": " e.Message)
-        ToolTip("❌ InvokePattern falhou para '" elementObject.hint "'. Tentando clique físico...", 200, 200)
-        SetTimer(() => ToolTip(), -2000)
+        OutputDebug("Mousemaster_PerformAction: InvokePattern failed: " e.Message)
     }
 
-    ; Fallback para clique físico
-    OutputDebug("Mousemaster_PerformAction: Falling back to physical click for " elementObject.hint " at coords: " elementObject.cx ", " elementObject.cy)
-    Mousemaster_Deactivate() ; Desativa a GUI e InputHook ANTES do clique físico
-    Sleep(50) ; Pequena pausa para garantir que a GUI sumiu
+    ; 3. Fallback 2: Clique Extremo de Baixo Nível (SendEvent)
+    OutputDebug("Mousemaster_PerformAction: Falling back to SendEvent robust click.")
+    
     CoordMode("Mouse", "Screen")
-    MouseMove(elementObject.cx, elementObject.cy, 0)
-    Click()
-    OutputDebug("Mousemaster_PerformAction: Physical click attempted.")
-    ToolTip("✅ Clique físico em '" elementObject.hint "' realizado.", 200, 200)
+    
+    ; Usa SendEvent para simular interrupções de hardware, contornando bloqueios de SendInput
+    local oldSendMode := A_SendMode
+    SendMode("Event")
+    SetMouseDelay(30) ; Dá tempo ao SO para registrar o movimento antes do clique
+    
+    MouseMove(elementObject.cx, elementObject.cy)
+    Sleep(50) ; Pausa para acionar animações de 'hover' do CSS/JS
+    
+    Click("Down")
+    Sleep(30) ; Tempo da pressão do botão do mouse
+    Click("Up")
+    
+    SendMode(oldSendMode) ; Restaura o modo original do AHK
+
+    OutputDebug("Mousemaster_PerformAction: SendEvent physical click completed.")
+    ToolTip("✅ Clique físico extremo realizado.", 200, 200)
     SetTimer(() => ToolTip(), -2000)
 }
 
