@@ -14,7 +14,7 @@ Source: `Shift keys.ahk` Cursor sheet (`cheatSheets["Cursor.exe"]`).
 
 | Section | Source chord | Source action label | CurrentType | Target in VS Code | Command ID / AHK function | Keep chord | Keep mnemonic | Status | Notes |
 |---|---|---|---|---|---|---|---|---|---|
-| Ctrl (no other modifiers) | 1 | Remove clustering and focus on the code (ahk) | AHK |  |  | TBD | Yes | Pending |  |
+| Ctrl (no other modifiers) | 1 | Remove clustering and focus on the code (ahk) | AHK | Same AHK operation (SendEscape×2 + ^!n + ^!,  + #!o) | AHK shared handler in `IsEditorActive()` scope | Yes | Yes | Shared | Behavior is editor-agnostic window-management; shared `#HotIf IsEditorActive()` handler fires for both Cursor and VS Code. No divergence needed. |
 | Ctrl (no other modifiers) | 2 | Copy path (cursor) | Cursor-specific | Copy path of active file / focused search result | `workbench.action.files.copyPathOfActiveFile`; `copyFilePath`; `search.action.copyPath` | Yes | Yes | Implemented | Implemented in VS Code user keybindings for editor, active file, and search-result contexts. |
 | Ctrl (no other modifiers) | 3 | CSV: Edit CSV | Extension |  |  | TBD | Yes | Pending |  |
 | Ctrl (no other modifiers) | 4 | CSV: Apply changes to source file and save | Extension |  |  | TBD | Yes | Pending |  |
@@ -73,8 +73,8 @@ Source: `Shift keys.ahk` Cursor sheet (`cheatSheets["Cursor.exe"]`).
 | Alt (ahk = AutoHotkey) | , | Classical Markdown Preview | Extension |  |  | TBD | Yes | Pending |  |
 | Alt (ahk = AutoHotkey) | Y | Paste image to Markdown | Extension |  |  | TBD | Yes | Pending |  |
 | Alt (ahk = AutoHotkey) | U | Scroll AI feed to bottom (ahk-based) | AHK |  |  | TBD | Yes | Pending |  |
-| Alt (ahk = AutoHotkey) | M | Quick shortcut menu (ahk) | AHK |  |  | TBD | Yes | Pending |  |
-| Alt (ahk = AutoHotkey) | A | Add file to AI Context (Cursor Chat) (ahk) | AHK |  |  | TBD | Yes | Pending |  |
+| Alt (ahk = AutoHotkey) | M | Quick shortcut menu (ahk) | AHK | Not applicable in VS Code (Cursor-specific menu) | `#HotIf IsCursorActive()` gate applied | No | Yes | Implemented | Moved to `IsCursorActive()` scope; does not fire in VS Code. VS Code equivalent TBD. |
+| Alt (ahk = AutoHotkey) | A | Add file to AI Context (Cursor Chat) (ahk) | AHK | Copilot equivalent TBD | `#HotIf IsCursorActive()` gate applied; VS Code handler pending | TBD | Yes | Implemented | Moved to `IsCursorActive()` scope; Cursor UIA automation no longer invoked in VS Code. VS Code implementation (Copilot workflow) deferred to Phase 4. |
 | Alt (ahk = AutoHotkey) | N | Review [N]ext file (ahk) | AHK |  |  | TBD | Yes | Pending |  |
 | Alt (ahk = AutoHotkey) | R | Refresh preview | Native |  |  | TBD | Yes | Pending |  |
 | Alt (ahk = AutoHotkey) | F | File: New [F]ile | Native |  |  | TBD | Yes | Pending |  |

@@ -774,7 +774,6 @@ Cursor
 💬 [N] [N]ew chat tab (replacing current)
 ➕ [Enter] [I]nsert line below
 🔍 [P]Open [P]roject
-🔄 [1/2/3...] Switch tabs
 💬 [;] Insert comment
 📝 [D]Duplicate selection to next find match
 🔍 [F] [F]ind
@@ -881,7 +880,6 @@ VS Code
 💬 [N] Copilot chat session workflow (pending dedicated remap)
 ➕ [Enter] [I]nsert line below
 🔍 [P]VS Code quick open / project search
-🔄 [1/2/3...] Switch tabs
 💬 [;] Insert comment
 📝 [D]Duplicate selection to next find match
 🔍 [F] [F]ind
@@ -14523,8 +14521,16 @@ PowerBI_AttemptExpand(element) {
 ;-----------------------------------------
 ;  Detect which editor is active
 ;-----------------------------------------
+IsCursorActive() {
+    return WinActive("ahk_exe Cursor.exe")
+}
+
+IsCodeActive() {
+    return WinActive("ahk_exe Code.exe")
+}
+
 IsEditorActive() {
-    return WinActive("ahk_exe Cursor.exe") || WinActive("ahk_exe Code.exe")
+    return IsCursorActive() || IsCodeActive()
 }
 
 ;-----------------------------------------
@@ -14792,9 +14798,9 @@ Cursor_ClickPermissionLabelContains(substring) {
 }
 
 ;-------------------------------------------------------------------
-; Cursor Shortcuts
+; Cursor IDE — Cursor-only Shortcuts
 ;-------------------------------------------------------------------
-#HotIf IsEditorActive() && WinGetClass("A") != "#32770"
+#HotIf IsCursorActive() && WinGetClass("A") != "#32770"
 
 ; Alt + M : Quick shortcut menu for Cursor
 ; GUI styled like Select AI Model (Utils.ahk): dark theme, Press 1–2 | R · A · F · P | Esc to cancel.
@@ -14870,6 +14876,12 @@ global g_CursorShortcutMenuActive := false
         StandardLoadingBar_Hide(600)
     }
 }
+
+#HotIf
+
+; Shared Editor Shortcuts (Cursor + VS Code)
+;-------------------------------------------------------------------
+#HotIf IsEditorActive() && WinGetClass("A") != "#32770"
 
 Cursor_ContextMenuSelectByDownAndVerify(targetText, openKey := "{AppsKey}", maxSteps := 28, expectedFileName := "") {
     ; Open context menu.
