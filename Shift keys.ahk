@@ -872,7 +872,7 @@ VS Code
 📁 [H]Smart nav: Editor→Explorer / Explorer→Reveal (s[H]ow)
 🔲 [J]Select to Bracket (ad[J]acent)
 📉 [,] Fold all directories
-💬 [.] Copilot chat entry points (Chat view Ctrl+Alt+I, Inline Ctrl+I)
+💬 [.] Copilot Agent Modes
 📈 [Q]Unfold all directories (e[Q]ual)
 🤖 [E] VS Code default behavior (Cursor custom maximize removed)
 📂 [R]File open [R]ecent
@@ -920,6 +920,7 @@ VS Code
 📋 [M] Quick shortcut menu (ahk)
 🤖 [A] Add file to AI Context (VS Code migration pending) (ahk)
 📄 [N] Review [N]ext file (ahk)
+📄 [I] Toggle Second Sidebar Visibility
 📄 [R] Refresh preview
 📄 [F] File: New [F]ile
 📂 [O] File: New F[O]lder
@@ -16135,14 +16136,193 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
 ; Shift + S : Go to symbol in access view - Symbol
 +s:: Send "+m"
 
-; Shift + H : Show chat history - History
+; Shift + H : Navigate to GitHub Copilot chat history - History
 +h::
 {
-    Send "^+p" ; Open command palette
-    Sleep 200
-    Send "show history"
-    Sleep 200
-    Send "{Enter}"
+    OpenCopilotChatHistory()
+}
+
+; Helper: Detect if the secondary sidebar (Copilot chat panel) is visible in VS Code
+; Checks the "checked" state of the "Toggle Secondary Side Bar (Alt+I)" button
+IsSecondarySidebarVisible() {
+    try {
+        hwnd := WinExist("A")
+        if (!hwnd)
+            return false
+        
+        root := UIA.ElementFromHandle(hwnd)
+        if (!root)
+            return false
+        
+        ; Find the "Toggle Secondary Side Bar (Alt+I)" button
+        ; It's in the toolbar at path: 2,1,1,2,1,1,1,1,1,1,6,4
+        toggleBtn := 0
+        
+        ; Strategy 1: Find by exact Name
+        try {
+            toggleBtn := root.FindFirst({ Name: "Toggle Secondary Side Bar (Alt+I)", Type: 50000 })
+        } catch {
+            toggleBtn := 0
+        }
+        
+        ; Strategy 2: Find by partial Name match
+        if (!toggleBtn) {
+            try {
+                allButtons := root.FindAll({ Type: 50000 })
+                if (allButtons) {
+                    for btn in allButtons {
+                        try {
+                            name := btn.Name
+                            if (InStr(name, "Toggle Secondary Side Bar")) {
+                                toggleBtn := btn
+                                break
+                            }
+                        } catch {
+                            continue
+                        }
+                    }
+                }
+            } catch {
+            }
+        }
+        
+        if (toggleBtn) {
+            try {
+                ; Check if the button has "checked" in its ClassName or other properties
+                className := toggleBtn.ClassName
+                if (InStr(className, "checked")) {
+                    return true
+                }
+            } catch {
+            }
+            
+            try {
+                ; Alternative: Check IsTogglePatternAvailable and ToggleState
+                if toggleBtn.GetPropertyValue(UIA.Property.IsTogglePatternAvailable) {
+                    toggleState := toggleBtn.TogglePattern.ToggleState
+                    ; ToggleState: 1 = On (checked), 2 = Off (unchecked), 3 = Indeterminate
+                    return (toggleState = 1)
+                }
+            } catch {
+            }
+        }
+        
+        return false
+    } catch Error as e {
+        return false
+    }
+}
+
+; Helper: Click the "Go Back" button in the GitHub Copilot chat view
+; Specifically targets the button ONLY within the chat-view-title-container to avoid clicking the main toolbar's back button
+ClickCopilotGoBackButton() {
+    try {
+        hwnd := WinExist("A")
+        if (!hwnd)
+            return false
+        
+        root := UIA.ElementFromHandle(hwnd)
+        if (!root)
+            return false
+        
+        ; First and foremost: Find the chat-view-title-container
+        ; We MUST scope our search to this container to avoid clicking the main toolbar's Go Back button
+        chatViewTitle := 0
+        
+        try {
+            ; Search for the chat-view-title-container by ClassName
+            allGroups := root.FindAll({ Type: 50026 })
+            if (allGroups) {
+                for grp in allGroups {
+                    try {
+                        className := grp.ClassName
+                        if (InStr(className, "chat-view-title-container")) {
+                            chatViewTitle := grp
+                            break
+                        }
+                    } catch {
+                        continue
+                    }
+                }
+            }
+        } catch {
+            chatViewTitle := 0
+        }
+        
+        ; If we found the chat view title container, ONLY search within it
+        if (chatViewTitle) {
+            try {
+                ; Find ALL buttons within this container
+                btns := chatViewTitle.FindAll({ Type: 50000 })
+                if (btns) {
+                    for btn in btns {
+                        try {
+                            name := btn.Name
+                            ; Look for button with "Go Back" in the name within the chat view
+                            if (InStr(name, "Go Back")) {
+                                ; Try Invoke pattern first
+                                try {
+                                    if btn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
+                                        btn.InvokePattern.Invoke()
+                                        return true
+                                    }
+                                } catch {
+                                }
+                                
+                                ; Fallback to Click
+                                try {
+                                    btn.Click()
+                                    return true
+                                } catch {
+                                }
+                            }
+                        } catch {
+                            continue
+                        }
+                    }
+                }
+            } catch {
+            }
+        }
+        
+        ; If we reach here, either chat view wasn't found or there's no Go Back button in it
+        ; This is fine - we're already on the history/sessions page
+        return false
+    } catch Error as e {
+        return false
+    }
+}
+
+; Main function: Navigate to GitHub Copilot chat history
+OpenCopilotChatHistory() {
+    try {
+        ; Step 1: Check if secondary sidebar is visible
+        isSidebarVisible := IsSecondarySidebarVisible()
+        
+        if (!isSidebarVisible) {
+            ; Step 2: Open the secondary sidebar using Alt+I
+            Send "!i"
+            Sleep 300  ; Wait for UI to stabilize
+        }
+        
+        ; Step 3: Try to click the "Go Back" button to navigate to chat history
+        ; If the button doesn't exist, we're already on the sessions page - that's fine, just return
+        buttonClicked := ClickCopilotGoBackButton()
+        
+        if (buttonClicked) {
+            ; Step 4: Verify the view updated
+            Sleep 200  ; Brief delay to allow UI update
+            ; The view should now display the chat history session
+            return
+        }
+        
+        ; If Go Back button doesn't exist, we're already on the sessions/history page
+        ; No need to do anything else or fall back to command palette
+        ; Just verify we're done
+        Sleep 100
+    } catch Error as e {
+        ; Silent error handling - avoid disrupting user workflow
+    }
 }
 
 ; Shift + I : Paste Image - Image
