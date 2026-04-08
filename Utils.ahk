@@ -3698,7 +3698,10 @@ class D2C_FlowManager {
     ; --- Entry Points ---
 
     StartFromDictation() {
-        if (this.CurrentPhase != "Idle") {
+        if (this.CurrentPhase = "PromptingSubmit") {
+            StandardLoadingBar_CloseKeysOverlay()
+            StandardLoadingBar_Hide(0)
+        } else if (this.CurrentPhase != "Idle") {
             return
         }
         this.Reset()
@@ -3779,7 +3782,7 @@ class D2C_FlowManager {
         this.Reset()
     }
 
-    ; Paste clipboard at caret in the original window, then Enter (no Gemini). For chat-style fields confident transcription.
+    ; Paste clipboard at caret in the current foreground window, then Enter (no Gemini). Same target as [V], plus Enter.
     OnSubmitE(*) {
         if (this.CurrentPhase != "PromptingSubmit")
             return
@@ -3789,8 +3792,6 @@ class D2C_FlowManager {
         StandardLoadingBar_Hide(0)
         HideDictationIndicator()
 
-        if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
-            WinActivate("ahk_id " this.OriginHwnd)
         Sleep 60
         Send("^v")
         Sleep 150
