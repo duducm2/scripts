@@ -1288,6 +1288,44 @@ FindAndActivateVSCodeWindow(projectPath) {
     }
 }
 
+; Asynchronously activate the VS Code window that opens after launching a folder.
+; This avoids blocking the hotkey handler on first-open.
+global g_VSCodeLaunchActivate := { active: false, projectPath: "", startedAt: 0, timeoutMs: 0 }
+
+VSCode_ScheduleActivateAfterLaunch(projectPath, timeoutMs := 8000) {
+    global g_VSCodeLaunchActivate
+    g_VSCodeLaunchActivate.active := true
+    g_VSCodeLaunchActivate.projectPath := projectPath
+    g_VSCodeLaunchActivate.startedAt := A_TickCount
+    g_VSCodeLaunchActivate.timeoutMs := timeoutMs
+    SetTimer(VSCode_TryActivateAfterLaunch, 150)
+}
+
+VSCode_TryActivateAfterLaunch() {
+    global g_VSCodeLaunchActivate
+    if (!g_VSCodeLaunchActivate.active) {
+        SetTimer(VSCode_TryActivateAfterLaunch, 0)
+        return
+    }
+    if ((A_TickCount - g_VSCodeLaunchActivate.startedAt) > g_VSCodeLaunchActivate.timeoutMs) {
+        g_VSCodeLaunchActivate.active := false
+        SetTimer(VSCode_TryActivateAfterLaunch, 0)
+        return
+    }
+    try {
+        hwnd := GetVSCodeHwndForProject(g_VSCodeLaunchActivate.projectPath)
+        if (hwnd && Integer(hwnd) != 0) {
+            WMAutomation_SuppressCursorCentering("vscode_activate_after_launch", 1600)
+            WinActivate("ahk_id " hwnd)
+            WM_MaybeCenterMouse(hwnd, "vscode_activate_after_launch")
+            g_VSCodeLaunchActivate.active := false
+            SetTimer(VSCode_TryActivateAfterLaunch, 0)
+            return
+        }
+    } catch {
+    }
+}
+
 ; Find and activate the last used Cursor window for a project path.
 ; Returns the activated window's hwnd, or 0 if not found / activation failed.
 FindAndActivateCursorWindow(projectPath) {
@@ -1412,6 +1450,7 @@ HandleProjectSelection(index) {
         }
         try {
             Run '"' . VS_CODE_EXE_WORK . '" "' . projectPath . '"'
+            VSCode_ScheduleActivateAfterLaunch(projectPath, 9000)
         } catch Error as e {
             ShowNotification_WM("Failed to launch VS Code: " . e.Message)
         }
