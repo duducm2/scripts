@@ -1212,6 +1212,82 @@ GetCursorHwndForProject(projectPath) {
     return 0
 }
 
+; Return the hwnd of a VS Code window whose title matches the project path, or 0. Does not activate.
+GetVSCodeHwndForProject(projectPath) {
+    matchSegments := ExtractProjectMatchSegments(projectPath)
+    try {
+        for hwnd in WinGetList("ahk_exe Code.exe") {
+            try {
+                winTitle := WinGetTitle("ahk_id " hwnd)
+                if (InStr(StrLower(winTitle), "preview"))
+                    continue
+                for segment in matchSegments {
+                    if (InStr(winTitle, segment))
+                        return hwnd
+                }
+            } catch {
+                continue
+            }
+        }
+    } catch {
+    }
+    return 0
+}
+
+; Find and activate the last used VS Code window for a project path.
+; Returns the activated window's hwnd, or 0 if not found / activation failed.
+FindAndActivateVSCodeWindow(projectPath) {
+    matchSegments := ExtractProjectMatchSegments(projectPath)
+    codeWindows := []
+
+    try {
+        for hwnd in WinGetList("ahk_exe Code.exe") {
+            try {
+                winTitle := WinGetTitle("ahk_id " hwnd)
+                winTitleLower := StrLower(winTitle)
+                if (InStr(winTitleLower, "preview"))
+                    continue
+                for segment in matchSegments {
+                    if (InStr(winTitle, segment)) {
+                        codeWindows.Push({ hwnd: hwnd, title: winTitle })
+                        break
+                    }
+                }
+            } catch {
+                continue
+            }
+        }
+    } catch {
+    }
+
+    if (codeWindows.Length = 0)
+        return 0
+
+    try {
+        activeHwnd := WinGetID("A")
+        for window in codeWindows {
+            if (window.hwnd = activeHwnd) {
+                WMAutomation_SuppressCursorCentering("vscode_activate_existing", 1600)
+                WinActivate("ahk_id " window.hwnd)
+                WM_MaybeCenterMouse(window.hwnd, "vscode_activate_existing")
+                return window.hwnd
+            }
+        }
+    } catch {
+    }
+
+    targetWindow := codeWindows[1]
+    try {
+        WMAutomation_SuppressCursorCentering("vscode_activate_target", 1600)
+        WinActivate("ahk_id " targetWindow.hwnd)
+        WinWaitActive("ahk_id " targetWindow.hwnd, , 2)
+        WM_MaybeCenterMouse(targetWindow.hwnd, "vscode_activate_target")
+        return targetWindow.hwnd
+    } catch {
+        return 0
+    }
+}
+
 ; Find and activate the last used Cursor window for a project path.
 ; Returns the activated window's hwnd, or 0 if not found / activation failed.
 FindAndActivateCursorWindow(projectPath) {
@@ -1288,6 +1364,7 @@ FindAndActivateCursorWindow(projectPath) {
 ; Handle project selection - activates existing Cursor window or launches new one
 HandleProjectSelection(index) {
     global g_ProjectSelectorActive, g_Projects
+    global IS_WORK_ENVIRONMENT, VS_CODE_EXE_WORK
 
     ; Only process if selector is active
     if (!g_ProjectSelectorActive) {
@@ -1324,21 +1401,28 @@ HandleProjectSelection(index) {
         return
     }
 
-    ; Try to find and activate an existing Cursor window for this project FIRST
-    ; This will ignore preview windows and activate the last used one
-    ; This check happens before launching to make the process faster
-    if (FindAndActivateCursorWindow(projectPath)) {
-        ; Successfully activated existing window
+    if (IS_WORK_ENVIRONMENT) {
+        ; Work: prefer VS Code
+        if (FindAndActivateVSCodeWindow(projectPath)) {
+            return
+        }
+        if (!IsSet(VS_CODE_EXE_WORK) || VS_CODE_EXE_WORK = "" || !FileExist(VS_CODE_EXE_WORK)) {
+            ShowNotification_WM("VS Code not found: " . (IsSet(VS_CODE_EXE_WORK) ? VS_CODE_EXE_WORK : ""))
+            return
+        }
+        try {
+            Run '"' . VS_CODE_EXE_WORK . '" "' . projectPath . '"'
+        } catch Error as e {
+            ShowNotification_WM("Failed to launch VS Code: " . e.Message)
+        }
         return
     }
 
-    ; No existing window found, launch a new Cursor window
-    ; Get Cursor executable path based on environment
-    cursorPath := IS_WORK_ENVIRONMENT ?
-        "C:\Users\fie7ca\AppData\Local\Programs\cursor\Cursor.exe" :
-            "C:\Users\eduev\AppData\Local\Programs\cursor\Cursor.exe"
-
-    ; Launch Cursor with the project path
+    ; Personal: keep Cursor behavior
+    if (FindAndActivateCursorWindow(projectPath)) {
+        return
+    }
+    cursorPath := "C:\Users\eduev\AppData\Local\Programs\cursor\Cursor.exe"
     try {
         Run cursorPath . ' "' . projectPath . '"'
     } catch Error as e {
