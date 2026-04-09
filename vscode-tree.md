@@ -26,7 +26,7 @@ Type: 50032 (Window) Name: "work.md - 14-my-notes - Visual Studio Code" Localize
 2,1,1,2,1,1,1,1,1,1,5: Type: 50021 (ToolBar) LocalizedType: "tool bar" ClassName: "actions-container"
 2,1,1,2,1,1,1,1,1,1,5,1: Type: 50000 (Button) Name: "Go Back (Alt+LeftArrow)" LocalizedType: "button" ClassName: "action-label codicon codicon-arrow-left"
 2,1,1,2,1,1,1,1,1,1,5,2: Type: 50000 (Button) Name: "Go Forward (Alt+RightArrow)" LocalizedType: "button" ClassName: "action-label disabled codicon codicon-arrow-right"
-2,1,1,2,1,1,1,1,1,1,5,3: Type: 50021 (ToolBar) LocalizedType: "tool bar" ClassName: "actions-container"
+2,1,1,2,1,1,1,1,1,1,5,3: Type: 50021 (ToolBar) LocalizeshifdType: "tool bar" ClassName: "actions-container"
 2,1,1,2,1,1,1,1,1,1,5,3,1: Type: 50000 (Button) Name: "14-my-notes" LocalizedType: "button" ClassName: "action-item command-center-quick-pick"
 2,1,1,2,1,1,1,1,1,1,5,4: Type: 50026 (Group) LocalizedType: "group" ClassName: "agent-status-badge-section sparkle monaco-dropdown-with-primary"
 2,1,1,2,1,1,1,1,1,1,5,4,1: Type: 50000 (Button) Name: "Toggle Chat" LocalizedType: "button" ClassName: "action-container menu-entry"
