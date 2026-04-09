@@ -773,7 +773,7 @@ Cursor
 🔍 [T]Go to [T]ype symbol in workspace
 💬 [N] [N]ew chat tab (replacing current)
 ➕ [Enter] [I]nsert line below
-🔍 [P]Open [P]roject
+🔍 [P]Open [P]roject (env-aware selector)
 💬 [;] Insert comment
 📝 [D]Duplicate selection to next find match
 🔍 [F] [F]ind
@@ -879,7 +879,7 @@ VS Code
 🔍 [T]Go to [T]ype symbol in workspace
 💬 [N] Copilot chat session workflow (pending dedicated remap)
 ➕ [Enter] [I]nsert line below
-🔍 [P]VS Code quick open / project search
+🔍 [P]Open [P]roject (env-aware selector)
 💬 [;] Insert comment
 📝 [D]Duplicate selection to next find match
 🔍 [F] [F]ind
@@ -15543,6 +15543,213 @@ Cursor_WaitForContextMenuItemGone(itemName, timeoutMs := 800) {
     return false
 }
 
+global g_ProjectSelectorGui := false
+global g_ProjectSelectorActive := false
+global g_ProjectSelectorItems := []
+
+ShowProjectSelector() {
+    global g_ProjectSelectorGui, g_ProjectSelectorActive, g_ProjectSelectorItems
+    if (g_ProjectSelectorActive)
+        return
+
+    rawProjects := GetProjectList()
+    items := []
+    for project in rawProjects {
+        if (items.Length >= 9)
+            break
+        name := ""
+        path := ""
+        try name := project["name"]
+        try path := project["path"]
+        if (name = "" || path = "")
+            continue
+        items.Push(Map("name", name, "path", path))
+    }
+
+    if (items.Length = 0) {
+        ShowCenteredOverlay_Utils("No projects configured for this environment.", 2200, BANNER_ACCENT_ERROR)
+        return
+    }
+
+    g_ProjectSelectorItems := items
+
+    g_ProjectSelectorGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner")
+    g_ProjectSelectorGui.BackColor := "1E1E2E"
+    g_ProjectSelectorGui.MarginX := 20
+    g_ProjectSelectorGui.MarginY := 15
+
+    title := IS_WORK_ENVIRONMENT ? "Project selector (work)" : "Project selector (personal)"
+    g_ProjectSelectorGui.SetFont("s14 cCDD6F4 Bold", "Segoe UI")
+    g_ProjectSelectorGui.Add("Text", "w420 Center", title)
+    g_ProjectSelectorGui.Add("Text", "w420 h1 Background45475A")
+
+    g_ProjectSelectorGui.SetFont("s12 cCDD6F4", "Segoe UI")
+    for idx, item in items {
+        g_ProjectSelectorGui.Add("Text", "w420", "[" idx "] " item["name"])
+    }
+
+    g_ProjectSelectorGui.Add("Text", "w420 h1 Background45475A y+10")
+    g_ProjectSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
+    g_ProjectSelectorGui.Add("Text", "w420 Center", "Press 1-9 | Esc to cancel")
+
+    activeWin := 0
+    try
+        activeWin := WinGetID("A")
+    catch
+        activeWin := 0
+    MonitorGetWorkArea(1, &monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
+    monitorWidth := monitorRight - monitorLeft
+    monitorHeight := monitorBottom - monitorTop
+    if (activeWin && activeWin != 0) {
+        rect := Buffer(16, 0)
+        if (DllCall("GetWindowRect", "ptr", activeWin, "ptr", rect)) {
+            centerX := NumGet(rect, 0, "int") + (NumGet(rect, 8, "int") - NumGet(rect, 0, "int")) // 2
+            centerY := NumGet(rect, 4, "int") + (NumGet(rect, 12, "int") - NumGet(rect, 4, "int")) // 2
+            loop MonitorGetCount() {
+                MonitorGetWorkArea(A_Index, &l, &t, &r, &b)
+                if (centerX >= l && centerX <= r && centerY >= t && centerY <= b) {
+                    monitorLeft := l
+                    monitorTop := t
+                    monitorWidth := r - l
+                    monitorHeight := b - t
+                    break
+                }
+            }
+        }
+    }
+    g_ProjectSelectorGui.Show("AutoSize Hide")
+    g_ProjectSelectorGui.GetPos(&gx, &gy, &gw, &gh)
+    cx := monitorLeft + (monitorWidth - gw) // 2
+    cy := monitorTop + (monitorHeight - gh) // 2
+    g_ProjectSelectorGui.Show("x" . cx . " y" . cy . " NA")
+
+    g_ProjectSelectorActive := true
+    Hotkey("1", ProjectSelector_NumberHandler, "On")
+    Hotkey("2", ProjectSelector_NumberHandler, "On")
+    Hotkey("3", ProjectSelector_NumberHandler, "On")
+    Hotkey("4", ProjectSelector_NumberHandler, "On")
+    Hotkey("5", ProjectSelector_NumberHandler, "On")
+    Hotkey("6", ProjectSelector_NumberHandler, "On")
+    Hotkey("7", ProjectSelector_NumberHandler, "On")
+    Hotkey("8", ProjectSelector_NumberHandler, "On")
+    Hotkey("9", ProjectSelector_NumberHandler, "On")
+    Hotkey("Escape", ProjectSelector_Cancel, "On")
+}
+
+ProjectSelector_NumberHandler(*) {
+    global g_ProjectSelectorItems, g_ProjectSelectorActive
+    if (!g_ProjectSelectorActive)
+        return
+
+    numberText := RegExReplace(A_ThisHotkey, "\D")
+    if (numberText = "")
+        return
+
+    idx := Integer(numberText)
+    if (idx < 1 || idx > g_ProjectSelectorItems.Length)
+        return
+
+    selected := g_ProjectSelectorItems[idx]
+    ProjectSelector_Close()
+    OpenProjectInActiveEditor(selected["path"], selected["name"])
+}
+
+ProjectSelector_Cancel(*) {
+    ProjectSelector_Close()
+}
+
+ProjectSelector_Close() {
+    global g_ProjectSelectorGui, g_ProjectSelectorActive, g_ProjectSelectorItems
+    if (!g_ProjectSelectorActive)
+        return
+    g_ProjectSelectorActive := false
+    g_ProjectSelectorItems := []
+    try Hotkey("1", "Off")
+    try Hotkey("2", "Off")
+    try Hotkey("3", "Off")
+    try Hotkey("4", "Off")
+    try Hotkey("5", "Off")
+    try Hotkey("6", "Off")
+    try Hotkey("7", "Off")
+    try Hotkey("8", "Off")
+    try Hotkey("9", "Off")
+    try Hotkey("Escape", ProjectSelector_Cancel, "Off")
+    if (IsObject(g_ProjectSelectorGui) && g_ProjectSelectorGui.Hwnd) {
+        try g_ProjectSelectorGui.Destroy()
+    }
+    g_ProjectSelectorGui := false
+}
+
+OpenProjectInActiveEditor(projectPath, projectName := "") {
+    if (projectPath = "")
+        return
+
+    if (!DirExist(projectPath)) {
+        ShowCenteredOverlay_Utils("Project path not found: " projectPath, 2600, BANNER_ACCENT_ERROR)
+        return
+    }
+
+    if (ProjectSelector_ActivateExistingWindow(projectName, projectPath))
+        return
+
+    editorExe := ProjectSelector_GetPreferredEditorExe()
+    cmd := '"' . editorExe . '" "' . projectPath . '"'
+    try {
+        Run cmd
+    } catch {
+        ShowCenteredOverlay_Utils("Failed to open project in editor.", 2200, BANNER_ACCENT_ERROR)
+    }
+}
+
+ProjectSelector_ActivateExistingWindow(projectName, projectPath) {
+    folderName := projectName
+    if (folderName = "") {
+        SplitPath projectPath, &leaf
+        folderName := leaf
+    }
+    if (folderName = "")
+        return false
+
+    for proc in ["ahk_exe Code.exe", "ahk_exe Cursor.exe"] {
+        for hwnd in WinGetList(proc) {
+            try {
+                title := WinGetTitle("ahk_id " hwnd)
+                if (title = "")
+                    continue
+                if (!InStr(title, folderName, false))
+                    continue
+                WinActivate("ahk_id " hwnd)
+                if (WinWaitActive("ahk_id " hwnd, , 1.5))
+                    return true
+            } catch {
+                continue
+            }
+        }
+    }
+    return false
+}
+
+ProjectSelector_GetPreferredEditorExe() {
+    if (IsCodeActive()) {
+        exe := GetVSCodeExePath()
+        if (exe != "")
+            return exe
+        return "Code.exe"
+    }
+
+    if (IsCursorActive()) {
+        exe := GetCursorExePath()
+        if (exe != "")
+            return exe
+        return "Cursor.exe"
+    }
+
+    exe := GetVSCodeExePath()
+    if (exe != "")
+        return exe
+    return "Code.exe"
+}
+
 ShowCursorShortcutMenu() {
     global g_CursorShortcutMenuGui, g_CursorShortcutMenuActive
     if (g_CursorShortcutMenuActive)
@@ -15720,6 +15927,12 @@ CursorShortcutMenu_ActionFetch(*) {
         ; User is NOT in main editor (likely in Explorer): trigger Reveal in File Explorer
         Send "^h"
     }
+}
+
+; Ctrl + P : Environment-aware project selector (work vs personal)
+^p::
+{
+    ShowProjectSelector()
 }
 
 ; Ctrl + 1 : Remove clustering and focus on the code
