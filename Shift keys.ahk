@@ -17386,6 +17386,69 @@ GeminiScrollFeedToBottom_Chrome(hwnd) {
 
 #HotIf
 
+VSCode_TriggerGenerateCommitMessage(hwnd := 0) {
+    if (!hwnd)
+        hwnd := WinExist("ahk_exe Code.exe")
+    if (!hwnd)
+        return false
+
+    try root := UIA.ElementFromHandle(hwnd)
+    catch
+        return false
+    if (!root)
+        return false
+
+    genBtn := 0
+    for name in ["Generate Commit Message (Ctrl+Alt+.)", "Generate Commit Message"] {
+        try {
+            genBtn := root.FindFirst({ Type: 50000, Name: name })
+        } catch {
+            genBtn := 0
+        }
+        if (genBtn)
+            break
+    }
+
+    if (!genBtn) {
+        try {
+            allButtons := root.FindAll({ Type: 50000 })
+            if (allButtons) {
+                for btn in allButtons {
+                    try {
+                        nm := btn.Name
+                        if (InStr(nm, "Generate Commit Message")) {
+                            genBtn := btn
+                            break
+                        }
+                    } catch {
+                        continue
+                    }
+                }
+            }
+        } catch {
+            genBtn := 0
+        }
+    }
+
+    if (!genBtn)
+        return false
+
+    try {
+        if (genBtn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)) {
+            genBtn.InvokePattern.Invoke()
+            return true
+        }
+    } catch {
+    }
+
+    try {
+        genBtn.Click()
+        return true
+    } catch {
+        return false
+    }
+}
+
 ; VS Code IDE — VS Code-specific Shortcuts
 ;-------------------------------------------------------------------
 #HotIf IsCodeActive() && WinGetClass("A") != "#32770"
@@ -17398,6 +17461,16 @@ GeminiScrollFeedToBottom_Chrome(hwnd) {
 ; Alt + A : Add file to AI Context (VS Code Copilot chat)
 !a:: {
     VSCode_AddFileToAIContext()
+}
+
+; Ctrl + Alt + . : Generate commit message in Source Control (explicit remap for reliability)
+^!.:: {
+    hwnd := WinExist("A")
+    if (!hwnd)
+        return
+    if (!VSCode_TriggerGenerateCommitMessage(hwnd)) {
+        ShowCenteredOverlay_Utils("Generate Commit Message button not found.", 2000, BANNER_ACCENT_ERROR)
+    }
 }
 
 ; Ctrl + M : Trigger commit message generation + commit/push flow (VS Code: native button + Shift+V/+B)
@@ -17413,33 +17486,10 @@ GeminiScrollFeedToBottom_Chrome(hwnd) {
     ; Default behavior: commit + push, unless user presses N
     gCommitPushDecision := "push"
     
-    ; 1. Trigger generation by clicking the native "Generate Commit Message" button
-    try {
-        root := UIA.ElementFromHandle(hwnd)
-        if !root {
-            return
-        }
-        
-        ; Find the "Generate Commit Message" button
-        genBtn := 0
-        try {
-            genBtn := root.FindFirst({ Type: 50000, Name: "Generate Commit Message" })
-        } catch {
-            genBtn := 0
-        }
-        
-        if genBtn {
-            try {
-                ; Invoke the button to trigger generation
-                if genBtn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
-                    genBtn.InvokePattern.Invoke()
-                } else {
-                    genBtn.Click()
-                }
-            } catch {
-            }
-        }
-    } catch {
+    ; 1. Trigger generation by clicking the native button (supports both plain and shortcut-suffixed names)
+    if (!VSCode_TriggerGenerateCommitMessage(hwnd)) {
+        ShowCenteredOverlay_Utils("Generate Commit Message button not found.", 2000, BANNER_ACCENT_ERROR)
+        return
     }
     
     SoundPlay A_ScriptDir "\sounds\commit-start.wav"
