@@ -3948,6 +3948,7 @@ Confirm(t) {
 ; ---------------------------------------------------------------------------
 global g_RemindersPickKey := ""
 global g_DebugBe11ecLogPath := "C:\Users\fie7ca\Documents\scripts\debug-be11ec.log"
+global g_RemindersDebugEnabled := false
 
 Reminders_LoadingShow(text) {
     try {
@@ -3964,6 +3965,8 @@ Reminders_LoadingHide(delayMs := 0) {
 }
 
 Reminders_DebugLog(location, message, data := "", hypothesisId := "A", runId := "pre-fix") {
+    if !g_RemindersDebugEnabled
+        return
     try {
         Debug_Escape(s) => StrReplace(StrReplace(StrReplace(String(s), "\", "\\"), "`"", "\`""), "`n", "\n")
         Debug_MapToJson(m) {
@@ -4002,6 +4005,8 @@ Reminders_DebugLog(location, message, data := "", hypothesisId := "A", runId := 
 
 ; #region agent log (session 6dacac — NDJSON to debug-6dacac.log; remove after verification)
 Debug6dacac_Log(location, message, data := "", hypothesisId := "H1", runId := "post-fix") {
+    if !g_RemindersDebugEnabled
+        return
     try {
         Esc(s) => StrReplace(StrReplace(StrReplace(String(s), "\", "\\"), "`"", "\`""), "`n", "\n")
         MapToJson(m) {
@@ -4037,6 +4042,65 @@ Debug6dacac_Log(location, message, data := "", hypothesisId := "H1", runId := "p
 }
 
 ; #endregion
+
+; Diagnostic-only raw UIA dump for reminder window.
+; Captures candidate counts and samples by control type so we can patch selectors based on facts.
+Reminders_DebugDumpWindowTree(hwnd, tag := "") {
+    if !g_RemindersDebugEnabled
+        return
+    if !hwnd
+        return
+    try {
+        rootSource := ""
+        root := Reminders_RootElementForHwnd(hwnd, &rootSource)
+        if !root {
+            try Reminders_DebugLog("Shift keys.ahk:Reminders_DebugDumpWindowTree", "Root not found", Map(
+                "hwnd", hwnd,
+                "tag", tag,
+                "rootSource", rootSource
+            ), "TREE0", "pre-fix")
+            return
+        }
+
+        DumpByType(typeName, hyp) {
+            arr := 0
+            try arr := root.FindAll({ ControlType: typeName })
+            cnt := arr ? arr.Length : 0
+            sample := ""
+            if arr {
+                maxSample := Min(25, arr.Length)
+                loop maxSample {
+                    i := A_Index
+                    n := ""
+                    try n := arr[i].Name
+                    if (n = "")
+                        continue
+                    if (sample != "")
+                        sample .= " | "
+                    sample .= n
+                }
+            }
+            try Reminders_DebugLog("Shift keys.ahk:Reminders_DebugDumpWindowTree", "Tree slice", Map(
+                "hwnd", hwnd,
+                "tag", tag,
+                "rootSource", rootSource,
+                "type", typeName,
+                "count", cnt,
+                "sample", sample
+            ), hyp, "pre-fix")
+        }
+
+        ; Types most likely to contain New Outlook reminder rows.
+        DumpByType("Group", "TREE-G")
+        DumpByType("Button", "TREE-B")
+        DumpByType("List", "TREE-L")
+        DumpByType("ListItem", "TREE-LI")
+        DumpByType("DataItem", "TREE-DI")
+        DumpByType("Text", "TREE-T")
+        DumpByType("Hyperlink", "TREE-H")
+    } catch {
+    }
+}
 
 Reminders_IsNewOutlookWindow() {
     try {
@@ -4084,6 +4148,8 @@ Reminders_NudgeWindowForUiRefresh(hwnd) {
 }
 
 ; Two consecutive identical UIA snapshots (or maxPasses) — reduces races while Outlook refreshes the list.
+; NOTE: If we get two consecutive EMPTY matches on early passes, keep trying instead of giving up,
+; since a newly-visible window might just have UIA that hasn't rendered reminders yet.
 Reminders_GetItemsStable(targetHwnd, delayMs := 60, maxPasses := 3) {
     lastSig := ""
     lastItems := []
@@ -4091,12 +4157,25 @@ Reminders_GetItemsStable(targetHwnd, delayMs := 60, maxPasses := 3) {
         cur := Reminders_GetItems(targetHwnd)
         sig := Reminders_ItemsListSignature(cur, 0)
         if (lastSig != "" && sig = lastSig) {
-            try Reminders_DebugLog("Shift keys.ahk:Reminders_GetItemsStable", "Stable snapshot matched", Map(
-                "pass", A_Index,
-                "count", cur.Length,
-                "remHwnd", targetHwnd
-            ), "ST1", "pre-fix")
-            return cur
+            ; Don't accept empty-empty match as stable on early passes (pass 1-2); window might still be rendering.
+            ; Only consider pass 3+ empty match as "stable" (window legitimately empty).
+            emptyMatch := (cur.Length = 0 && lastItems.Length = 0)
+            if (!emptyMatch || A_Index >= maxPasses) {
+                try Reminders_DebugLog("Shift keys.ahk:Reminders_GetItemsStable", "Stable snapshot matched", Map(
+                    "pass", A_Index,
+                    "count", cur.Length,
+                    "maxPasses", maxPasses,
+                    "emptyMatch", emptyMatch ? 1 : 0,
+                    "remHwnd", targetHwnd
+                ), "ST1", "pre-fix")
+                return cur
+            } else {
+                try Reminders_DebugLog("Shift keys.ahk:Reminders_GetItemsStable", "Empty-empty match ignored, continuing retry", Map(
+                    "pass", A_Index,
+                    "maxPasses", maxPasses,
+                    "remHwnd", targetHwnd
+                ), "ST-SKIP", "pre-fix")
+            }
         }
         lastSig := sig
         lastItems := cur
@@ -4110,19 +4189,51 @@ Reminders_GetItemsStable(targetHwnd, delayMs := 60, maxPasses := 3) {
     return lastItems
 }
 
+Reminders_RootElementForHwnd(hwnd, &source := "") {
+    source := ""
+    if !hwnd
+        return ""
+    ; New Outlook surfaces often live under WebView2/Chromium subtree.
+    try {
+        el := UIA.ElementFromChromium("ahk_id " hwnd, 500)
+        if el {
+            source := "chromium"
+            return el
+        }
+    } catch {
+    }
+    try {
+        el := UIA.ElementFromHandle(hwnd)
+        if el {
+            source := "handle"
+            return el
+        }
+    } catch {
+    }
+    return ""
+}
+
 Reminders_GetItems(targetHwnd := 0) {
     items := []
     hwnd := targetHwnd ? targetHwnd : WinExist("A")
     if !hwnd
         return items
     try {
-        root := UIA.ElementFromHandle(hwnd)
+        rootSource := ""
+        root := Reminders_RootElementForHwnd(hwnd, &rootSource)
+        if !root {
+            try Reminders_DebugLog("Shift keys.ahk:Reminders_GetItems", "ERROR: Root element null", Map(
+                "hwnd", hwnd,
+                "rootSource", rootSource
+            ), "X0-ERR", "pre-fix")
+            return items
+        }
 
-        CollectFromButtons(btns) {
+        CollectFromCandidates(cands) {
             out := []
             dropped := 0
             dropSample := ""
-            for b in btns {
+            for b in cands {
                 n := ""
                 try n := b.Name
                 if (n = "")
@@ -4144,8 +4255,13 @@ Reminders_GetItems(targetHwnd := 0) {
                 hasRel := RegExMatch(n,
                     "i)\b(Today|\d+\s*(min|mins|minute|minutes|hr|hrs|hour|hours|day|days|wk|wks|week|weeks)\b(\s+ago)?)\b"
                 )
-                ; Allow all-day reminders even when Outlook omits relative tokens in the accessible name.
-                isLikelyRow := hasTime && (hasRel || isAllDay)
+                hasClockTime := RegExMatch(n, "i)\b\d{1,2}:\d{2}\b")
+                hasEventCue := RegExMatch(n,
+                    "i)\b(Meeting|Teams|Appointment|Event|Call|Invite|Reminder)\b")
+                ; New reminders can be "in 15 minutes" without AM/PM; keep broader candidates
+                ; while still excluding known command/window controls above.
+                isLikelyRow := ((hasTime || hasClockTime || hasRel || hasEventCue) && !RegExMatch(n,
+                    "i)^(Snooze reminder|Dismiss reminder|Join Teams meeting|Chat with participants)$"))
                 if !isLikelyRow {
                     dropped++
                     if (dropSample != "" && dropped <= 8)
@@ -4156,26 +4272,44 @@ Reminders_GetItems(targetHwnd := 0) {
                 }
                 out.Push({ el: b, label: n })
             }
-            return Map("items", out, "dropped", dropped, "dropSample", dropSample, "totalButtons", btns ? btns.Length :
+            return Map("items", out, "dropped", dropped, "dropSample", dropSample, "totalCandidates", cands ? cands.Length :
                 0)
         }
 
-        ; Primary anchor: the "There are X reminders" group.
-        listGroup := root.FindFirst({ ControlType: "Group", Name: "There are", matchmode: "Substring" })
+        ; Primary anchor: reminder summary group text varies ("There are ..." / "There is only ...").
+        listGroup := root.FindFirst({ ControlType: "Group", Name: "reminder", matchmode: "Substring" })
         if !listGroup
-            listGroup := root.FindFirst({ Name: "There are", matchmode: "Substring" })
+            listGroup := root.FindFirst({ ControlType: "Group", Name: "There ", matchmode: "Substring" })
+        if !listGroup
+            listGroup := root.FindFirst({ Name: "reminder", matchmode: "Substring" })
+        
+        if !listGroup {
+            try Reminders_DebugLog("Shift keys.ahk:Reminders_GetItems", "WARNING: 'There are X reminders' group not found in UIA", Map(
+                "hwnd", hwnd,
+                "rootSource", rootSource
+            ), "X0-WRN", "pre-fix")
+        }
 
         ; Always re-evaluate source: a short-lived cache reused "listGroup" without re-checking
         ; listSmallerThanRoot and could omit reminders (same class of bug as scanning only the group).
         listBtns := 0
         listBtnLen := 0
         if listGroup {
-            try listBtns := listGroup.FindAll({ Type: "Button" })
+            try listBtns := listGroup.FindAll({ ControlType: "Button" })
             listBtnLen := listBtns ? listBtns.Length : 0
         }
-        rootBtns := root.FindAll({ Type: "Button" })
+        rootBtns := root.FindAll({ ControlType: "Button" })
         rootBtnLen := rootBtns ? rootBtns.Length : 0
         listSmallerThanRoot := (listGroup && listBtnLen > 0 && rootBtnLen > listBtnLen)
+        
+        ; Diagnostic logging for button search
+        try Reminders_DebugLog("Shift keys.ahk:Reminders_GetItems", "Button search results", Map(
+            "rootBtnLen", rootBtnLen,
+            "listBtnLen", listBtnLen,
+            "listGroupFound", listGroup ? 1 : 0,
+            "hwnd", hwnd,
+            "rootSource", rootSource
+        ), "GETITEMS-BTN", "pre-fix")
 
         btns := 0
         source := ""
@@ -4187,10 +4321,56 @@ Reminders_GetItems(targetHwnd := 0) {
             source := "root"
         }
 
-        r := CollectFromButtons(btns)
+        ; Debug: log if btns is empty before attempting to collect
+        if (!btns || btns.Length = 0) {
+            try Reminders_DebugLog("Shift keys.ahk:Reminders_GetItems", "No buttons found to process", Map(
+                "source", source,
+                "rootBtnLen", rootBtnLen,
+                "listBtnLen", listBtnLen,
+                "hwnd", hwnd,
+                "rootSource", rootSource
+            ), "GETITEMS-NOBTNS", "pre-fix")
+        }
+
+        r := CollectFromCandidates(btns)
         items := r["items"]
         dropped := r["dropped"]
         dropSample := r["dropSample"]
+
+        ; Fallback for New Outlook builds where reminder rows are exposed as ListItem/DataItem, not Button.
+        if (items.Length = 0) {
+            listItems := 0
+            dataItems := 0
+            try listItems := root.FindAll({ ControlType: "ListItem" })
+            try dataItems := root.FindAll({ ControlType: "DataItem" })
+            liLen := listItems ? listItems.Length : 0
+            diLen := dataItems ? dataItems.Length : 0
+            try Reminders_DebugLog("Shift keys.ahk:Reminders_GetItems", "Fallback candidate search", Map(
+                "listItemLen", liLen,
+                "dataItemLen", diLen,
+                "hwnd", hwnd,
+                "rootSource", rootSource
+            ), "GETITEMS-FB", "pre-fix")
+
+            if (liLen > 0) {
+                r := CollectFromCandidates(listItems)
+                if (r["items"].Length > 0) {
+                    items := r["items"]
+                    dropped := r["dropped"]
+                    dropSample := r["dropSample"]
+                    source := "fallback-listitem"
+                }
+            }
+            if (items.Length = 0 && diLen > 0) {
+                r := CollectFromCandidates(dataItems)
+                if (r["items"].Length > 0) {
+                    items := r["items"]
+                    dropped := r["dropped"]
+                    dropSample := r["dropSample"]
+                    source := "fallback-dataitem"
+                }
+            }
+        }
         ; #region agent log (session 6dacac — H1 source + row count)
         try {
             Debug6dacac_Log("Shift keys.ahk:Reminders_GetItems", "source chosen", Map(
@@ -4199,7 +4379,8 @@ Reminders_GetItems(targetHwnd := 0) {
                 "rootBtnLen", rootBtnLen,
                 "listBtnLen", listBtnLen,
                 "listSmallerThanRoot", listSmallerThanRoot ? 1 : 0,
-                "remHwnd", hwnd
+                "remHwnd", hwnd,
+                "rootSource", rootSource
             ), "H1", "post-fix")
         } catch {
         }
@@ -4218,10 +4399,11 @@ Reminders_GetItems(targetHwnd := 0) {
                 "count", items.Length,
                 "sample", sample,
                 "source", source,
-                "totalButtons", r["totalButtons"],
+                "totalCandidates", r["totalCandidates"],
                 "dropped", dropped,
                 "dropSample", dropSample,
-                "hwnd", hwnd
+                "hwnd", hwnd,
+                "rootSource", rootSource
             ), "X1", "pre-fix")
         } catch {
         }
@@ -4288,14 +4470,15 @@ Reminders_SelectItem(actionLabel, &items, remHwnd, maxItems := 35) {
 
     ; Workaround: one-pixel nudge refreshes UIA before enumeration (not repeated in the modal refresh loop).
     Reminders_NudgeWindowForUiRefresh(remHwnd)
-    Sleep 40  ; let UIA settle after nudge before reading the list (modal → shortcut chains)
+    Sleep 100  ; longer wait for reminder window to stabilize UIA after nudge (highly volatile window)
 
     ; Volatile window: refresh once right before showing the modal so we don't start with a stale/partial snapshot.
-    try items := Reminders_GetItemsStable(remHwnd)
+    ; Use longer delays (100ms between passes) to wait for Outlook to stabilize the reminder list in UIA.
+    try items := Reminders_GetItemsStable(remHwnd, 100, 5)
 
     if (items.Length = 0) {
-        ; One more try (UIA can briefly return empty during refresh).
-        try items := Reminders_GetItemsStable(remHwnd, 80, 4)
+        ; One more try with even longer wait (UIA can lag when reminders are being added rapidly).
+        try items := Reminders_GetItemsStable(remHwnd, 150, 6)
         if (items.Length = 0) {
             ShowCenteredOverlay_Utils("❌ No reminders found", 1600, BANNER_ACCENT_ERROR)
             return 0
@@ -4398,8 +4581,10 @@ Reminders_SelectItem(actionLabel, &items, remHwnd, maxItems := 35) {
     ShowModal()
     try {
         latest := Reminders_GetItems(remHwnd)
-        if (latest.Length = 0)
-            latest := Reminders_GetItemsStable(remHwnd)
+        if (latest.Length = 0) {
+            ; If empty immediately after show, use more aggressive retry
+            latest := Reminders_GetItemsStable(remHwnd, 100, 4)
+        }
         latestCount := ClampCount(latest.Length)
         sig := Reminders_ItemsListSignature(latest, maxItems)
         if (sig != lastSig) {
@@ -4438,8 +4623,10 @@ Reminders_SelectItem(actionLabel, &items, remHwnd, maxItems := 35) {
             lastRefreshTick := A_TickCount
             try {
                 latest := Reminders_GetItems(remHwnd)
-                if (latest.Length = 0)
-                    latest := Reminders_GetItemsStable(remHwnd)
+                if (latest.Length = 0) {
+                    ; If empty, try with stability check and longer waits (volatile window)
+                    latest := Reminders_GetItemsStable(remHwnd, 100, 4)
+                }
                 latestCount := ClampCount(latest.Length)
                 sig := Reminders_ItemsListSignature(latest, maxItems)
                 if (sig != lastSig) {
@@ -4492,6 +4679,10 @@ Reminders_SelectItem(actionLabel, &items, remHwnd, maxItems := 35) {
                 ShowModal()
                 try {
                     latest := Reminders_GetItems(remHwnd)
+                    if (latest.Length = 0) {
+                        ; If empty after reopen, use more aggressive retry
+                        latest := Reminders_GetItemsStable(remHwnd, 100, 4)
+                    }
                     latestCount := ClampCount(latest.Length)
                     sig := Reminders_ItemsListSignature(latest, maxItems)
                     if (sig != lastSig) {
@@ -4735,12 +4926,49 @@ Reminders_ExecuteItemAction(action) {
         ), "J1", "pre-fix")
         ; #endregion
         remHwnd := WinExist("A")
-        items := Reminders_GetItemsStable(remHwnd)
+        
+        ; Nudge window to refresh UIA before getting items (same as in SelectItem)
+        Reminders_NudgeWindowForUiRefresh(remHwnd)
+        Sleep 100
+        
+        ; Try 3 times with longer waits before accepting empty result
+        items := []
+        loop 3 {
+            attempt := A_Index
+            triedItems := Reminders_GetItemsStable(remHwnd, 100, 5)
+            try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", 
+                "Attempt " attempt " retrieval", Map(
+                "attempt", attempt,
+                "itemsCount", triedItems.Length
+            ), "J2-ATT", "pre-fix")
+            if (triedItems.Length > 0) {
+                items := triedItems
+                break
+            }
+            if (attempt < 3) {
+                Reminders_NudgeWindowForUiRefresh(remHwnd)
+                Sleep 150  ; longer wait before retry
+            }
+        }
+        
+        ; Final fallback if still empty
+        if (items.Length = 0) {
+            try items := Reminders_GetItemsStable(remHwnd, 150, 6)
+        }
+        
         ; #region agent log
+        remTitle := ""
+        remClass := ""
+        try remTitle := WinGetTitle("ahk_id " remHwnd)
+        try remClass := WinGetClass("ahk_id " remHwnd)
         try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Items extracted", Map(
             "action", action,
             "itemsCount", items.Length,
-            "remHwnd", remHwnd
+            "remHwnd", remHwnd,
+            "remTitle", remTitle,
+            "remClass", remClass,
+            "activeTitle", WinGetTitle("A"),
+            "activeClass", WinGetClass("A")
         ), "J2", "pre-fix")
         ; #endregion
         actionLabel := ""
@@ -4760,6 +4988,26 @@ Reminders_ExecuteItemAction(action) {
             actionLabel := "Join online"
         else
             actionLabel := action
+
+        ; Diagnostic: if items empty, show message and log more info
+        if (items.Length = 0) {
+            ; Capture raw UIA structure from the reminder window before returning.
+            try Reminders_DebugDumpWindowTree(remHwnd, "empty-extraction")
+            try {
+                global g_DebugBe11ecLogPath
+                FileAppend(
+                    "{`"sessionId`":`"be11ec`",`"id`":`"diagnostic_" A_TickCount "_" Random(1000, 9999) 
+                    "`",`"timestamp`":" A_TickCount ",`"location`":`"ExecuteItemAction:empty-items`",`"message`":`"No items found after stable retrieval`",`"data`":{"
+                    "`"action`":`"" action "`",`"remHwnd`":" remHwnd ",`"title`":`"" remTitle 
+                    "`",`"class`":`"" remClass "`",`"activeTitle`":`"" WinGetTitle("A") "`",`"activeClass`":`"" WinGetClass("A") "`"},`"runId`":`"pre-fix`",`"hypothesisId`":`"Z`"}`n",
+                    g_DebugBe11ecLogPath,
+                    "UTF-8"
+                )
+            } catch {
+            }
+            ShowCenteredOverlay_Utils("❌ No reminders found in window. Check debug log at C:\Users\fie7ca\Documents\scripts\debug-be11ec.log", 2500, BANNER_ACCENT_ERROR)
+            return false
+        }
 
         Reminders_LoadingShow("⏳ Reminders: " actionLabel "…")
 
@@ -4907,7 +5155,6 @@ Reminders_ExecuteItemAction(action) {
     ), "H2", "pre-fix")
     ; #endregion
     if isNewRem {
-        try ShowCenteredOverlay_Utils("ℹ️ Reminders debug: Shift+H", 700, BANNER_ACCENT_INFO)
         Reminders_ExecuteItemAction("snooze_1h")
         return
     }
@@ -4994,18 +5241,6 @@ Reminders_ExecuteItemAction(action) {
 +J:: {
     isNewRem := Reminders_IsNewOutlookWindow()
     ; #region agent log
-    try {
-        global g_DebugBe11ecLogPath
-        FileAppend(
-            "{`"sessionId`":`"be11ec`",`"id`":`"raw_" A_TickCount "_" Random(1000, 9999) "`",`"timestamp`":" A_TickCount
-            ",`"location`":`"Shift keys.ahk:+J(raw)`",`"message`":`"Shift+J entry reached`",`"data`":{},`"runId`":`"pre-fix`",`"hypothesisId`":`"Z`"}`n",
-            g_DebugBe11ecLogPath,
-            "UTF-8"
-        )
-    } catch {
-    }
-    ; Visual cue to confirm this instrumented script is running
-    try ShowCenteredOverlay_Utils("ℹ️ Reminders debug: Shift+J", 700, BANNER_ACCENT_INFO)
     try Reminders_DebugLog("Shift keys.ahk:+J", "Shift+J pressed", Map(
         "isNewReminders", isNewRem,
         "title", WinGetTitle("A"),
