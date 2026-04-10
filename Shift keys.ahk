@@ -8885,9 +8885,9 @@ OutlookMeeting_ClickDecline() {
     return OutlookMeeting_ClickMenuItemInActiveWindow([{ Name: "Decline the meeting", ControlType: "MenuItem" }])
 }
 
-; True if user confirms (Yes). Default button is No (Enter cancels).
+; True if user confirms (Yes). Default button is Yes (Enter confirms).
 OutlookMeeting_ConfirmDecline() {
-    return MsgBox("Decline this meeting invitation?", "Confirm decline", "Icon? YesNo Default2") = "Yes"
+    return MsgBox("Decline this meeting invitation?", "Confirm decline", "Icon? YesNo Default1") = "Yes"
 }
 
 ; Canceled meeting: Button "Remove event" (see outlook-remove-evet.md). No confirmation in script.
