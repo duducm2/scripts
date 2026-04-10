@@ -918,6 +918,7 @@ VS Code
 📉 [Y] Paste image to Markdown
 ⬇️ [U] Scroll AI feed to bottom (ahk-based)
 📋 [M] Quick shortcut menu (ahk)
+➕ [C] Add Context picker (VS Code chat) (ahk)
 🤖 [A] Add file to AI Context (VS Code chat) (ahk)
 📄 [N] Review [N]ext file (ahk)
 📄 [I] Toggle Second Sidebar Visibility
@@ -17491,6 +17492,11 @@ VSCode_TriggerGenerateCommitMessage(hwnd := 0) {
 ; Alt + M : Quick shortcut menu for VS Code (empty placeholder for future actions)
 !m:: {
     ShowVSCodeShortcutMenu()
+}
+
+; Alt + C : Open VS Code chat "Add Context" picker (native Ctrl+;)
+!c:: {
+    Send "^;"
 }
 
 ; Alt + A : Add file to AI Context (VS Code Copilot chat)
