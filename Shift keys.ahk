@@ -3720,6 +3720,10 @@ ToggleVoiceMessage() {
 ; ---------------------------------------------------------------------------
 ClickGenerateCommitMessageButton() {
     try {
+        ; Ensure Source Control view is focused so the Generate button is visible.
+        Send "+d"
+        Sleep 140
+
         ; Use UIA_Browser to get the root element (similar to other functions in the script)
         uia := UIA_Browser()
         if !IsObject(uia) {
@@ -17413,6 +17417,10 @@ VSCode_TriggerGenerateCommitMessage(hwnd := 0) {
         hwnd := WinExist("ahk_exe Code.exe")
     if (!hwnd)
         return false
+
+    ; Ensure Source Control view is focused so the Generate button is rendered.
+    Send "+d"
+    Sleep 140
 
     try root := UIA.ElementFromHandle(hwnd)
     catch
