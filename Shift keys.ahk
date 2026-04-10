@@ -3719,10 +3719,12 @@ ToggleVoiceMessage() {
 
 ; ---------------------------------------------------------------------------
 ClickGenerateCommitMessageButton() {
+    static sourceControlReadyDelayMs := 450
     try {
         ; Ensure Source Control view is focused so the Generate button is visible.
         Send "+d"
-        Sleep 140
+        ; Give the Source Control pane time to finish rendering the AI commit button.
+        Sleep sourceControlReadyDelayMs
 
         ; Use UIA_Browser to get the root element (similar to other functions in the script)
         uia := UIA_Browser()
