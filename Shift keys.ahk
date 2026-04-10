@@ -3718,13 +3718,17 @@ ToggleVoiceMessage() {
 }
 
 ; ---------------------------------------------------------------------------
+FocusSourceControlViewForCommitGeneration(delayMs := 450) {
+    ; Ensure Source Control has time to render commit actions before UIA lookup.
+    Send "+d"
+    Sleep delayMs
+}
+
+; ---------------------------------------------------------------------------
 ClickGenerateCommitMessageButton() {
-    static sourceControlReadyDelayMs := 450
     try {
         ; Ensure Source Control view is focused so the Generate button is visible.
-        Send "+d"
-        ; Give the Source Control pane time to finish rendering the AI commit button.
-        Sleep sourceControlReadyDelayMs
+        FocusSourceControlViewForCommitGeneration()
 
         ; Use UIA_Browser to get the root element (similar to other functions in the script)
         uia := UIA_Browser()
@@ -17421,8 +17425,7 @@ VSCode_TriggerGenerateCommitMessage(hwnd := 0) {
         return false
 
     ; Ensure Source Control view is focused so the Generate button is rendered.
-    Send "+d"
-    Sleep 140
+    FocusSourceControlViewForCommitGeneration()
 
     try root := UIA.ElementFromHandle(hwnd)
     catch
