@@ -682,7 +682,7 @@ GetTechniquePromptFilePath(fileName) {
 }
 
 InitTechniquePromptHotstrings() {
-    ; Six files live in MyNotes: studies\technique\prompts (see env.ahk GetMyNotesTechniquePromptsDir).
+    ; Seven files live in MyNotes: studies\technique\prompts (see env.ahk GetMyNotesTechniquePromptsDir).
     defs := [
         ["story-prompt.txt", ":o:mnemonic", "📖 Creating mnemonic stories", "", "Reserved 3"],
         ["video-transcription-prompt.txt", ":o:ytranscript", "🎬 Transcript Youtube Video", "", "Reserved 4"],
@@ -690,6 +690,7 @@ InitTechniquePromptHotstrings() {
         ["revision-prompt.txt", ":o:revision", "📝 Story revision", "t", "Reserved 6"],
         ["story-reduction-prompt.txt", ":o:storyreduction", "📝 Story reduction", "a", "Reserved 7"],
         ["mnemonic-image-prompts-prompt.txt", ":o:mnemonicimg", "🖼️ Mnemonic image prompts", "i", "Reserved 8"],
+        ["punctual-beast-append-prompt.txt", ":o:punctualbeast", "🧩 Punctual beast append", "p", "Reserved 9"],
     ]
     for row in defs {
         fileName := row[1]
@@ -9499,6 +9500,7 @@ UtilitySelector_IsMnemonicTechniquePrompt(trigger) {
         ":o:revision", true,
         ":o:storyreduction", true,
         ":o:mnemonicimg", true,
+        ":o:punctualbeast", true,
     )
     return mnemonic.Has(trigger)
 }
