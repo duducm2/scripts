@@ -35,11 +35,7 @@ StandardLoadingBar_Update("⏳ Updating notes...")
 SetWorkingDir(notesFolder)
 RunWait("git fetch", notesFolder, "Hide")
 RunWait("git pull", notesFolder, "Hide")
-StandardLoadingBar_Update("⏳ Syncing technique prompts mirror...")
-syncPs1 := scriptsFolder . "\aux\Sync-MyNotesTechniquePrompts.ps1"
-if FileExist(syncPs1)
-    RunWait('powershell.exe -NoProfile -ExecutionPolicy Bypass -File "' . syncPs1 . '" -ScriptsRoot "' .
-        scriptsFolder . '" -Commit', scriptsFolder, "Hide")
+; MyNotes technique prompts are read from disk when you use them in Utility Shortcuts (Utils.ahk), not by Act.
 StandardLoadingBar_Update("🚀 Launching apps...")
 Sleep 10000
 
