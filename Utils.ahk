@@ -9487,6 +9487,76 @@ UtilitySelector_RefreshUiAndHotkeys() {
     UtilitySelector_RebindHotkeys()
 }
 
+; Triggers for InitTechniquePromptHotstrings — used to group Utility Shortcuts Prompts submenu.
+UtilitySelector_IsMnemonicTechniquePrompt(trigger) {
+    if (trigger = "")
+        return false
+    static mnemonic := Map(
+        ":o:mnemonic", true,
+        ":o:ytranscript", true,
+        ":o:readaloud", true,
+        ":o:revision", true,
+        ":o:storyreduction", true,
+    )
+    return mnemonic.Has(trigger)
+}
+
+; After global char sort: keep non-Prompts order; replace Prompts subsequence with general, subsection row, mnemonic technique.
+UtilitySelector_ReorderPromptsMnemonicsSection(&rebuilt) {
+    promptItems := []
+    for it in rebuilt {
+        if (IsObject(it) && it.HasProp("category") && it.category = "Prompts")
+            promptItems.Push(it)
+    }
+    if (promptItems.Length = 0)
+        return
+
+    general := []
+    tech := []
+    for it in promptItems {
+        tr := it.HasProp("trigger") ? it.trigger : ""
+        if (UtilitySelector_IsMnemonicTechniquePrompt(tr))
+            tech.Push(it)
+        else
+            general.Push(it)
+    }
+
+    newPromptSlice := []
+    if (tech.Length = 0) {
+        for it in promptItems
+            newPromptSlice.Push(it)
+    } else if (general.Length = 0) {
+        newPromptSlice.Push({ category: "Prompts", char: "", text: "── Mnemonics technique ──", isEmpty: true,
+            isSectionHeader: true })
+        for it in tech
+            newPromptSlice.Push(it)
+    } else {
+        for it in general
+            newPromptSlice.Push(it)
+        newPromptSlice.Push({ category: "Prompts", char: "", text: "── Mnemonics technique ──", isEmpty: true,
+            isSectionHeader: true })
+        for it in tech
+            newPromptSlice.Push(it)
+    }
+
+    newRebuilt := []
+    inserted := false
+    for it in rebuilt {
+        if (!IsObject(it) || !it.HasProp("category") || it.category != "Prompts") {
+            newRebuilt.Push(it)
+            continue
+        }
+        if (!inserted) {
+            inserted := true
+            for np in newPromptSlice
+                newRebuilt.Push(np)
+        }
+    }
+    rebuilt.Length := 0
+    for x in newRebuilt
+        rebuilt.Push(x)
+}
+
 ; =============================================================================
 ; ShowHotstringSelector()
 ; =============================================================================
@@ -9875,14 +9945,15 @@ ShowHotstringSelector() {
             return m
         }
 
-        AddItem(cat, ch, titleText, seenRef, rebuiltRef) {
+        AddItem(cat, ch, titleText, seenRef, rebuiltRef, trigger := "") {
             if (ch = "" || titleText = "")
                 return
             key := cat . "|" . ch
             if (seenRef.Has(key))
                 return
             seenRef[key] := true
-            rebuiltRef.Push({ category: cat, char: ch, text: "[" . ch . "] > " . titleText, isEmpty: false })
+            row := { category: cat, char: ch, text: "[" . ch . "] > " . titleText, isEmpty: false, trigger: trigger }
+            rebuiltRef.Push(row)
         }
 
         ; Hotstrings (text expansions) by category using category-scoped maps
@@ -9908,7 +9979,8 @@ ShowHotstringSelector() {
                     else
                         titleText := GetPreviewText(hs.expansion)
 
-                    AddItem(cat, ch, titleText, seen, rebuilt)
+                    tr := hs.HasProp("trigger") ? hs.trigger : ""
+                    AddItem(cat, ch, titleText, seen, rebuilt, tr)
                 } catch {
                 }
             }
@@ -9964,6 +10036,11 @@ ShowHotstringSelector() {
             rebuilt.Sort((a, b) => (charOrder.Get(a.char, 9999) = charOrder.Get(b.char, 9999)) ?
                 (a.category < b.category ? -1 : 1) :
                 (charOrder.Get(a.char, 9999) < charOrder.Get(b.char, 9999) ? -1 : 1))
+        } catch {
+        }
+
+        try {
+            UtilitySelector_ReorderPromptsMnemonicsSection(&rebuilt)
         } catch {
         }
 
