@@ -668,6 +668,46 @@ GetPromptText(key) {
     InsertText(GetPromptText("aib-rapid-fire-template"))
 }
 
+; MyNotes technique prompts: live repo path first, then mirror under prompt\technique (synced by aux\Sync-MyNotesTechniquePrompts.ps1).
+GetTechniquePromptFilePath(fileName) {
+    dir := GetMyNotesTechniquePromptsDir()
+    if (dir != "" && FileExist(dir "\" fileName))
+        return dir "\" fileName
+    mirror := A_ScriptDir "\prompt\technique\" fileName
+    if FileExist(mirror)
+        return mirror
+    if (dir != "")
+        return dir "\" fileName
+    return mirror
+}
+
+InitTechniquePromptHotstrings() {
+    ; Five files live in MyNotes: studies\technique\prompts (see env.ahk GetMyNotesTechniquePromptsDir).
+    defs := [
+        ["story-prompt.txt", ":o:mnemonic", "📖 Creating mnemonic stories", "", "Reserved 3"],
+        ["video-transcription-prompt.txt", ":o:ytranscript", "🎬 Transcript Youtube Video", "", "Reserved 4"],
+        ["read-aloud-prompt.txt", ":o:readaloud", "📖 read aloud this story", "r", "Reserved 5"],
+        ["revision-prompt.txt", ":o:revision", "📝 Story revision", "t", "Reserved 6"],
+        ["story-reduction-prompt.txt", ":o:storyreduction", "📝 Story reduction", "a", "Reserved 7"],
+    ]
+    for row in defs {
+        fileName := row[1]
+        trigger := row[2]
+        title := row[3]
+        exChar := row[4]
+        reserved := row[5]
+        try {
+            body := FileRead(GetTechniquePromptFilePath(fileName))
+            if (exChar != "")
+                RegisterHotstring(trigger, body, "Prompts", title, exChar)
+            else
+                RegisterHotstring(trigger, body, "Prompts", title)
+        } catch {
+            RegisterHotstring("", "", "Prompts", reserved)
+        }
+    }
+}
+
 ; ----------------------
 ; Register hotstrings for cheat sheet display
 ; ----------------------
@@ -720,99 +760,7 @@ InitHotstringsCheatSheet() {
             "---`nname: [Title]`noverview: [Summary]`ntodos:`n  - id: x`n    content: [Step]`n    status: pending`n---`n",
             "Prompts", "📝 Plan File Template")
     }
-    ; Character w: creating mnemonic stories (content from notes/studies/technique/story-prompt.txt)
-    ; Supports personal (Google Drive) and work (OneDrive - Bosch Group) environments
-    mnemonicPromptPath := ""
-    mnemonicWorkPath := "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes\studies\technique\prompts\story-prompt.txt"
-    mnemonicPersonalPath := "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\technique\prompts\story-prompt.txt"
-    if FileExist(mnemonicWorkPath)
-        mnemonicPromptPath := mnemonicWorkPath
-    else if FileExist(mnemonicPersonalPath)
-        mnemonicPromptPath := mnemonicPersonalPath
-    else
-        mnemonicPromptPath := mnemonicWorkPath
-    try {
-        mnemonicPrompt := FileRead(mnemonicPromptPath)
-        RegisterHotstring(":o:mnemonic", mnemonicPrompt, "Prompts", "📖 Creating mnemonic stories")
-    } catch {
-        RegisterHotstring("", "", "Prompts", "Reserved 3")
-    }
-    ; Character e: transcript YouTube video (content from notes/studies/technique/video-transcription-prompt.txt)
-    ; Supports personal (Google Drive) and work (OneDrive - Bosch Group) environments
-    transcriptPromptPath := ""
-    transcriptWorkPath :=
-        "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes\studies\technique\prompts\video-transcription-prompt.txt"
-    transcriptPersonalPath :=
-        "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\technique\prompts\video-transcription-prompt.txt"
-    if FileExist(transcriptWorkPath)
-        transcriptPromptPath := transcriptWorkPath
-    else if FileExist(transcriptPersonalPath)
-        transcriptPromptPath := transcriptPersonalPath
-    else
-        transcriptPromptPath := transcriptWorkPath
-    try {
-        transcriptPrompt := FileRead(transcriptPromptPath)
-        RegisterHotstring(":o:ytranscript", transcriptPrompt, "Prompts", "🎬 Transcript Youtube Video")
-    } catch {
-        RegisterHotstring("", "", "Prompts", "Reserved 4")
-    }
-    ; Character r: read aloud this story (content from notes/studies/technique/prompts/read-aloud-prompt.txt)
-    ; Supports personal (Google Drive) and work (OneDrive - Bosch Group) environments
-    readAloudPromptPath := ""
-    readAloudWorkPath :=
-        "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes\studies\technique\prompts\read-aloud-prompt.txt"
-    readAloudPersonalPath :=
-        "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\technique\prompts\read-aloud-prompt.txt"
-    if FileExist(readAloudWorkPath)
-        readAloudPromptPath := readAloudWorkPath
-    else if FileExist(readAloudPersonalPath)
-        readAloudPromptPath := readAloudPersonalPath
-    else
-        readAloudPromptPath := readAloudWorkPath
-    try {
-        readAloudPrompt := FileRead(readAloudPromptPath)
-        RegisterHotstring(":o:readaloud", readAloudPrompt, "Prompts", "📖 read aloud this story", "r")
-    } catch {
-        RegisterHotstring("", "", "Prompts", "Reserved 5")
-    }
-    ; Character t: story revision (content from notes/studies/technique/prompts/revision-prompt.txt)
-    ; Supports personal (Google Drive) and work (OneDrive - Bosch Group) environments
-    revisionPromptPath := ""
-    revisionWorkPath :=
-        "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes\studies\technique\prompts\revision-prompt.txt"
-    revisionPersonalPath :=
-        "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\technique\prompts\revision-prompt.txt"
-    if FileExist(revisionWorkPath)
-        revisionPromptPath := revisionWorkPath
-    else if FileExist(revisionPersonalPath)
-        revisionPromptPath := revisionPersonalPath
-    else
-        revisionPromptPath := revisionWorkPath
-    try {
-        revisionPrompt := FileRead(revisionPromptPath)
-        RegisterHotstring(":o:revision", revisionPrompt, "Prompts", "📝 Story revision", "t")
-    } catch {
-        RegisterHotstring("", "", "Prompts", "Reserved 6")
-    }
-    ; Character a: story reduction (content from notes/studies/technique/prompts/story-reduction-prompt.txt)
-    ; Supports personal (Google Drive) and work (OneDrive - Bosch Group) environments
-    storyReductionPromptPath := ""
-    storyReductionWorkPath :=
-        "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes\studies\technique\prompts\story-reduction-prompt.txt"
-    storyReductionPersonalPath :=
-        "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\technique\prompts\story-reduction-prompt.txt"
-    if FileExist(storyReductionWorkPath)
-        storyReductionPromptPath := storyReductionWorkPath
-    else if FileExist(storyReductionPersonalPath)
-        storyReductionPromptPath := storyReductionPersonalPath
-    else
-        storyReductionPromptPath := storyReductionWorkPath
-    try {
-        storyReductionPrompt := FileRead(storyReductionPromptPath)
-        RegisterHotstring(":o:storyreduction", storyReductionPrompt, "Prompts", "📝 Story reduction", "a")
-    } catch {
-        RegisterHotstring("", "", "Prompts", "Reserved 7")
-    }
+    InitTechniquePromptHotstrings()
     try {
         aibRapidFireTpl := FileRead(promptDir "\aib-rapid-fire-template.txt")
         RegisterHotstring(":o:aibrapid", aibRapidFireTpl, "Prompts", "📜 Junior AI: ⚡ rapid-fire template")
