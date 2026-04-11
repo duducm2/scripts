@@ -44,13 +44,13 @@ Adjust in [`env.ahk`](../env.ahk) if your layout differs.
 
 | Mechanism | Role |
 |-----------|------|
-| [`aux/Sync-MyNotesTechniquePrompts.ps1`](../aux/Sync-MyNotesTechniquePrompts.ps1) | Copies the seven files into `prompt/technique/`. Use **`-Commit`** to commit the mirror in the scripts repo. |
+| [`aux/Sync-MyNotesTechniquePrompts.ps1`](../aux/Sync-MyNotesTechniquePrompts.ps1) | Copies the six files into `prompt/technique/`. Use **`-Commit`** to commit the mirror in the scripts repo. |
 | [`aux/Watch-MyNotesTechniquePrompts.ps1`](../aux/Watch-MyNotesTechniquePrompts.ps1) | Optional **debounced** watcher on the MyNotes prompts folder; re-runs sync when files change. |
 | [`Act.ahk`](../Act.ahk) | After **`git pull`** on the notes repo, runs the sync script with **`-Commit`** so the mirror stays aligned with MyNotes. |
 
 ---
 
-## The seven files and hotstring triggers
+## The six files and hotstring triggers
 
 | File | Hotstring | Role (short) |
 |------|-----------|----------------|
@@ -59,7 +59,6 @@ Adjust in [`env.ahk`](../env.ahk) if your layout differs.
 | `read-aloud-prompt.txt` | `:readaloud` | Read aloud this story |
 | `revision-prompt.txt` | `:revision` | Story revision |
 | `story-reduction-prompt.txt` | `:storyreduction` | Story reduction |
-| `mnemonic-image-prompts-prompt.txt` | `:mnemonicimg` | Mnemonic image prompts (mandatory after story final) |
 | `punctual-beast-append-prompt.txt` | `:punctualbeast` | Append isolated beasts or small punctual batches into open streets |
 
 Registration lives in `InitTechniquePromptHotstrings()` in [`Utils.ahk`](../Utils.ahk).
