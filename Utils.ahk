@@ -7841,6 +7841,7 @@ MnemonicRich_Render(ctrl, lines, basePt, bumpPx := 6, faceName := "Segoe UI", rg
 
     plain := ""
     spans := [] ; {start,len} in UTF-16 units
+    subsectionSpans := [] ; {start,len} for mnemonic subsection lines (distinct color)
     u16Pos := 0
     first := true
 
@@ -7868,6 +7869,7 @@ MnemonicRich_Render(ctrl, lines, basePt, bumpPx := 6, faceName := "Segoe UI", rg
         first := false
 
         lineText := ln.text
+        lineStartU16 := u16Pos
         key := ln.HasProp("key") ? ln.key : ""
         RenderTitleKey(lineText, key, u16Pos)
 
@@ -7882,6 +7884,9 @@ MnemonicRich_Render(ctrl, lines, basePt, bumpPx := 6, faceName := "Segoe UI", rg
 
         plain .= lineText
         u16Pos += MnemonicRich_Utf16Units(lineText)
+        if (ln.HasProp("isMnemonicSubsection") && ln.isMnemonicSubsection && lineText != "") {
+            subsectionSpans.Push({ start: lineStartU16, len: MnemonicRich_Utf16Units(lineText) })
+        }
     }
 
     MnemonicRich_SetPlainUtf16(ctrl, plain)
@@ -7893,6 +7898,22 @@ MnemonicRich_Render(ctrl, lines, basePt, bumpPx := 6, faceName := "Segoe UI", rg
     baseCf := MnemonicRich_CharFormat2(faceName, basePt, textColor, false)
     MnemonicRich_SetSel(hwnd, 0, -1)
     MnemonicRich_ApplyCharFormat(ctrl, false, baseCf)
+
+    ; Subsection headers inside Prompts (mnemonic technique): softer accent, bold
+    if (subsectionSpans.Length > 0) {
+        subRgb := "CBA6F7" ; mauve, distinct from body
+        srr := Integer("0x" . SubStr(subRgb, 1, 2))
+        sgg := Integer("0x" . SubStr(subRgb, 3, 2))
+        sbb := Integer("0x" . SubStr(subRgb, 5, 2))
+        subColor := (sbb << 16) | (sgg << 8) | srr
+        subCf := MnemonicRich_CharFormat2(faceName, basePt + 1, subColor, true)
+        for ss in subsectionSpans {
+            if (ss.len <= 0)
+                continue
+            MnemonicRich_SetSel(hwnd, ss.start, ss.start + ss.len)
+            MnemonicRich_ApplyCharFormat(ctrl, false, subCf)
+        }
+    }
 
     bigCf := MnemonicRich_CharFormat2(faceName, bigPt, textColor, false)
     for sp in spans {
@@ -9262,28 +9283,18 @@ UtilitySelector_BuildCategoryText(isPortrait) {
 
     if (isPortrait) {
         text := header
-        for item in items
+        for item in items {
+            if (item.HasProp("isSectionSpacer") && item.isSectionSpacer) {
+                text .= "`n"
+                continue
+            }
             text .= item.text . "`n"
+        }
         text .= "`nBackspace = back | Esc = close"
         return text
     }
 
-    ; Landscape: two columns
-    maxItemLength := 0
-    for item in items {
-        if (StrLen(item.text) > maxItemLength)
-            maxItemLength := StrLen(item.text)
-    }
-    columnWidth := maxItemLength + 2
-    if (columnWidth < 36)
-        columnWidth := 36
-    columnSpacing := "  "
-
-    midPoint := Ceil(items.Length / 2)
-    maxLines := items.Length - midPoint
-    if (midPoint > maxLines)
-        maxLines := midPoint
-
+    ; Landscape: two columns; full-width for mnemonic subsection rows (same as Rich path)
     PadString(str, width) {
         len := StrLen(str)
         if (len >= width)
@@ -9295,17 +9306,62 @@ UtilitySelector_BuildCategoryText(isPortrait) {
         return str . spaces
     }
 
+    maxItemLength := 0
+    for item in items {
+        if (item.HasProp("isSectionHeader") && item.isSectionHeader)
+            continue
+        if (item.HasProp("isSectionSpacer") && item.isSectionSpacer)
+            continue
+        if (StrLen(item.text) > maxItemLength)
+            maxItemLength := StrLen(item.text)
+    }
+    columnWidth := maxItemLength + 2
+    if (columnWidth < 36)
+        columnWidth := 36
+    columnSpacing := "  "
+    fullWidth := columnWidth * 2 + StrLen(columnSpacing)
+
+    CenterStringInWidth(str, width) {
+        len := StrLen(str)
+        if (len >= width)
+            return SubStr(str, 1, width)
+        pad := width - len
+        left := pad // 2
+        right := pad - left
+        ls := ""
+        rs := ""
+        loop left
+            ls .= " "
+        loop right
+            rs .= " "
+        return ls . str . rs
+    }
+
     text := header
-    loop maxLines {
-        leftText := ""
-        rightText := ""
-        if (A_Index <= midPoint)
-            leftText := PadString(items[A_Index].text, columnWidth)
-        else
-            leftText := PadString("", columnWidth)
-        rightIdx := A_Index + midPoint
-        if (rightIdx <= items.Length)
-            rightText := items[rightIdx].text
+    i := 1
+    while (i <= items.Length) {
+        it := items[i]
+        if (it.HasProp("isSectionSpacer") && it.isSectionSpacer) {
+            text .= "`n"
+            i++
+            continue
+        }
+        if (it.HasProp("isSectionHeader") && it.isSectionHeader) {
+            text .= CenterStringInWidth(it.text, fullWidth) . "`n"
+            i++
+            continue
+        }
+        leftItem := it
+        i++
+        rightItem := ""
+        if (i <= items.Length) {
+            rit := items[i]
+            if (!(rit.HasProp("isSectionHeader") && rit.isSectionHeader) && !(rit.HasProp("isSectionSpacer") && rit.isSectionSpacer
+            ))
+                rightItem := rit, i++
+        }
+        leftText := PadString(leftItem.text, columnWidth)
+        rightText := (IsObject(rightItem) && rightItem.HasProp("text")) ? rightItem.text : ""
         text .= leftText . columnSpacing . rightText . "`n"
     }
     text .= "`nBackspace = back | Esc = close"
@@ -9330,29 +9386,20 @@ UtilitySelector_BuildCategoryRich(isPortrait) {
     }
 
     if (isPortrait) {
-        for item in items
-            lines.Push({ text: item.text, key: item.isEmpty ? "" : item.char })
+        for item in items {
+            if (item.HasProp("isSectionSpacer") && item.isSectionSpacer) {
+                lines.Push({ text: "", key: "" })
+                continue
+            }
+            isSub := item.HasProp("isSectionHeader") && item.isSectionHeader
+            lines.Push({ text: item.text, key: item.isEmpty ? "" : item.char, isMnemonicSubsection: isSub })
+        }
         lines.Push({ text: "" })
         lines.Push({ text: "Backspace = back | Esc = close" })
         return lines
     }
 
-    ; Landscape: two columns (mirror text layout; emphasize both columns)
-    maxItemLength := 0
-    for item in items {
-        if (StrLen(item.text) > maxItemLength)
-            maxItemLength := StrLen(item.text)
-    }
-    columnWidth := maxItemLength + 2
-    if (columnWidth < 36)
-        columnWidth := 36
-    columnSpacing := "  "
-
-    midPoint := Ceil(items.Length / 2)
-    maxLines := items.Length - midPoint
-    if (midPoint > maxLines)
-        maxLines := midPoint
-
+    ; Landscape: two columns; full-width rows for mnemonic subsection spacer/header inside Prompts
     PadString(str, width) {
         len := StrLen(str)
         if (len >= width)
@@ -9364,24 +9411,64 @@ UtilitySelector_BuildCategoryRich(isPortrait) {
         return str . spaces
     }
 
-    loop maxLines {
-        leftText := ""
-        rightText := ""
-        leftKey := ""
-        rightKey := ""
-        if (A_Index <= midPoint) {
-            leftItem := items[A_Index]
-            leftText := PadString(leftItem.text, columnWidth)
-            leftKey := leftItem.isEmpty ? "" : leftItem.char
-        } else {
-            leftText := PadString("", columnWidth)
+    CenterStringInWidth(str, width) {
+        len := StrLen(str)
+        if (len >= width)
+            return SubStr(str, 1, width)
+        pad := width - len
+        left := pad // 2
+        right := pad - left
+        ls := ""
+        rs := ""
+        loop left
+            ls .= " "
+        loop right
+            rs .= " "
+        return ls . str . rs
+    }
+
+    maxItemLength := 0
+    for item in items {
+        if (item.HasProp("isSectionHeader") && item.isSectionHeader)
+            continue
+        if (item.HasProp("isSectionSpacer") && item.isSectionSpacer)
+            continue
+        if (StrLen(item.text) > maxItemLength)
+            maxItemLength := StrLen(item.text)
+    }
+    columnWidth := maxItemLength + 2
+    if (columnWidth < 36)
+        columnWidth := 36
+    columnSpacing := "  "
+    fullWidth := columnWidth * 2 + StrLen(columnSpacing)
+
+    i := 1
+    while (i <= items.Length) {
+        it := items[i]
+        if (it.HasProp("isSectionSpacer") && it.isSectionSpacer) {
+            lines.Push({ text: "", key: "", keyRight: "", rightStartCharPos: 0 })
+            i++
+            continue
         }
-        rightIdx := A_Index + midPoint
-        if (rightIdx <= items.Length) {
-            rightItem := items[rightIdx]
-            rightText := rightItem.text
-            rightKey := rightItem.isEmpty ? "" : rightItem.char
+        if (it.HasProp("isSectionHeader") && it.isSectionHeader) {
+            lines.Push({ text: CenterStringInWidth(it.text, fullWidth), key: "", keyRight: "", rightStartCharPos: 0,
+                isMnemonicSubsection: true })
+            i++
+            continue
         }
+        leftItem := it
+        i++
+        rightItem := ""
+        if (i <= items.Length) {
+            rit := items[i]
+            if (!(rit.HasProp("isSectionHeader") && rit.isSectionHeader) && !(rit.HasProp("isSectionSpacer") && rit.isSectionSpacer
+            ))
+                rightItem := rit, i++
+        }
+        leftText := PadString(leftItem.text, columnWidth)
+        rightText := rightItem ? rightItem.text : ""
+        leftKey := leftItem.isEmpty ? "" : leftItem.char
+        rightKey := (IsObject(rightItem) && rightItem != "") ? (rightItem.isEmpty ? "" : rightItem.char) : ""
         lineText := leftText . columnSpacing . rightText
         rightStartCharPos := StrLen(leftText . columnSpacing) + 1
         lines.Push({ text: lineText, key: leftKey, keyRight: rightKey, rightStartCharPos: rightStartCharPos })
@@ -9525,20 +9612,22 @@ UtilitySelector_ReorderPromptsMnemonicsSection(&rebuilt) {
             general.Push(it)
     }
 
+    ; Spacer + full-width header keep mnemonic prompts visually separate inside Prompts (same category).
+    mnemonicBanner := "  ━━━  Mnemonic technique (MyNotes)  ━━━"
     newPromptSlice := []
     if (tech.Length = 0) {
         for it in promptItems
             newPromptSlice.Push(it)
     } else if (general.Length = 0) {
-        newPromptSlice.Push({ category: "Prompts", char: "", text: "── Mnemonics technique ──", isEmpty: true,
-            isSectionHeader: true })
+        newPromptSlice.Push({ category: "Prompts", char: "", text: " ", isEmpty: true, isSectionSpacer: true })
+        newPromptSlice.Push({ category: "Prompts", char: "", text: mnemonicBanner, isEmpty: true, isSectionHeader: true })
         for it in tech
             newPromptSlice.Push(it)
     } else {
         for it in general
             newPromptSlice.Push(it)
-        newPromptSlice.Push({ category: "Prompts", char: "", text: "── Mnemonics technique ──", isEmpty: true,
-            isSectionHeader: true })
+        newPromptSlice.Push({ category: "Prompts", char: "", text: " ", isEmpty: true, isSectionSpacer: true })
+        newPromptSlice.Push({ category: "Prompts", char: "", text: mnemonicBanner, isEmpty: true, isSectionHeader: true })
         for it in tech
             newPromptSlice.Push(it)
     }
