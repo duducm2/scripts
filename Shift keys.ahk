@@ -972,6 +972,7 @@ Explorer (Shift)
 📌 [P][P]inned item (first in sidebar)
 📌 [L][L]ast item (sidebar)
 📦 [X] WinRAR e[X]tract here (personal); work: stub MsgBox
+📦 [W] WinRAR add to archive / compact ([W]inRAR menu; personal); work: stub
 )"  ; end Explorer
 
 ; --- Microsoft Paint ------------------------------------------------------
@@ -13098,6 +13099,26 @@ OneDriveShare_WaitForClipboardChange(oldClip, timeout := 5000) {
     Send "{Up}"
     Send "{Up}"
     Send "{Up}"
+}
+
+; Shift + W : WinRAR add to archive / compact (personal); work PC stub
++w::
+{
+    global IS_WORK_ENVIRONMENT
+    if (IS_WORK_ENVIRONMENT) {
+        MsgBox("A compress/add-to-archive macro for the work environment still needs to be created.", "Shift+W",
+            "Icon!")
+        return
+    }
+    EnsureItemsViewFocus()
+    Sleep 150
+    Send "{AppsKey}"
+    Sleep 250
+    Send "w"
+    Sleep 150
+    Send "{Enter}"
+    Sleep 400
+    Send "{Enter}"
 }
 
 ; Shift + X : WinRAR extract to current folder (personal); work PC stub
