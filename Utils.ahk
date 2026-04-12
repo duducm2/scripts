@@ -6813,12 +6813,12 @@ HandleLoopModeUp() {
 
 ; Study topics for Win+Alt+Shift+X selector. Paths are relative to notes repo (GetNotesRepoPath()).
 global g_StudyTopics := Map(
-    0, { name: "Technique (how to create studies)", path: "\studies\technique\README.pdf", skipLastPage: true },
-    1, { name: "English", path: "\studies\english\lists\1\1.pdf" },
-    2, { name: "Piano", path: "\studies\piano\lists\1\1.pdf" },
-    3, { name: "Communication", path: "\studies\communication\lists\1\1.pdf" },
-    4, { name: "Statistics", path: "\studies\statistics\lists\1\1.pdf" },
-    5, { name: "Mnemonics README", path: "\studies\technique\README.pdf" }
+    0, { name: "Technique (how to create studies)", path: "\studies\technique\README.md" },
+    1, { name: "Skills (mnemonics)", path: "\studies\skills\mnemonics-skills.md" },
+    2, { name: "Science (mnemonics)", path: "\studies\science\mnemonics-science.md" },
+    3, { name: "Piano (mnemonics)", path: "\studies\piano\mnemonics-piano.md" },
+    4, { name: "English (mnemonics)", path: "\studies\english\mnemonics-english.md" },
+    5, { name: "Communication (mnemonics)", path: "\studies\communication\mnemonics-communication.md" }
 )
 global g_StudyTopicSelectorGui := false
 global g_StudyTopicSelectorActive := false
