@@ -4601,6 +4601,16 @@ CheckAndOpenOutlookTeams(checkOutlook := false, checkTeams := false) {
     return false
 }
 
+; Chime for "clean now" confirmations (desktop recycle Y, clean clipboard Y). Not used on auto-timeout.
+PlayCleaningDesktopSound() {
+    try {
+        soundPath := A_ScriptDir "\sounds\cleaning-desktop.wav"
+        if (FileExist(soundPath))
+            SoundPlay(soundPath)
+    } catch {
+    }
+}
+
 ; Internal helper: Performs clipboard cleanup without showing prompt
 ; Used when user has already confirmed they want to clean clipboard
 CleanClipboardInternal() {
@@ -5004,7 +5014,7 @@ CleanClipboard_ShowCountdown() {
     Sleep 50
 
     state := "❓ Clean the clipboard? (removes stored clips, 4s)`nPress [Y] to clean now, or [N] within 4s to cancel."
-    keyCallbacks := Map("N", CleanClipboard_OnCancel, "Y", CleanClipboard_OnTimeout)
+    keyCallbacks := Map("N", CleanClipboard_OnCancel, "Y", CleanClipboard_OnYConfirm)
 
     ; Center on active monitor (centerOnHwnd := 0), use red accent for destructive action.
     StandardLoadingBar_ShowWithKeys(state, keyCallbacks, 4000, 0, CleanClipboard_OnTimeout,
@@ -5018,12 +5028,22 @@ CleanClipboard_OnCancel(*) {
     StandardLoadingBar_Hide(0)
 }
 
-CleanClipboard_OnTimeout(*) {
+CleanClipboard_Proceed() {
     try StandardLoadingBar_CloseKeysOverlay()
     catch {
     }
     StandardLoadingBar_Hide(0)
     CleanClipboardInternal()
+}
+
+CleanClipboard_OnYConfirm(*) {
+    PlayCleaningDesktopSound()
+    CleanClipboard_Proceed()
+}
+
+; Auto-continue when countdown ends (no chime; only Y plays the sound)
+CleanClipboard_OnTimeout(*) {
+    CleanClipboard_Proceed()
 }
 
 ; =============================================================================
@@ -5300,6 +5320,7 @@ global g_DesktopToRecyclePath := ""  ; Set from GetDesktopToRecyclePath() when m
 global g_DesktopToRecycleCloseHwnd := 0
 
 DesktopToRecycle_OnConfirm(*) {
+    PlayCleaningDesktopSound()
     DesktopToRecycle_Run()
 }
 
@@ -5349,13 +5370,6 @@ DesktopToRecycle_CloseDesktopExplorer(targetPath) {
 
 DesktopToRecycle_Run() {
     global g_DesktopToRecyclePath, g_DesktopToRecycleCloseHwnd
-    ; Play "cleaning desktop" sound immediately when the cleaning starts.
-    try {
-        soundPath := A_ScriptDir "\sounds\cleaning-desktop.ogg"
-        if (FileExist(soundPath))
-            SoundPlay(soundPath)
-    } catch {
-    }
     ; Resolve path: use configured path; if empty or missing, fall back to A_Desktop (works on any PC)
     path := g_DesktopToRecyclePath
     if (!path || path = "" || !DirExist(path))
