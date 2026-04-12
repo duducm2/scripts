@@ -4602,12 +4602,31 @@ CheckAndOpenOutlookTeams(checkOutlook := false, checkTeams := false) {
 }
 
 ; Chime for "clean now" confirmations (desktop recycle Y, clean clipboard Y). Not used on auto-timeout.
+; Plays at 70% level (~30% quieter than full); WMP keeps system master volume unchanged.
 PlayCleaningDesktopSound() {
+    static wmp := 0
+    soundPath := A_ScriptDir "\sounds\cleaning-desktop.wav"
+    if (!FileExist(soundPath))
+        return
     try {
-        soundPath := A_ScriptDir "\sounds\cleaning-desktop.wav"
-        if (FileExist(soundPath))
-            SoundPlay(soundPath)
+        if (!wmp)
+            wmp := ComObject("WMPlayer.OCX")
+        wmp.settings.volume := 10
+        wmp.URL := soundPath
+        return
     } catch {
+    }
+    prev := 100
+    try {
+        prev := SoundGetVolume()
+    } catch {
+    }
+    try {
+        try SoundSetVolume(Round(prev * 0.1))
+        SoundPlay(soundPath, true)
+    } catch {
+    } finally {
+        try SoundSetVolume(prev)
     }
 }
 
