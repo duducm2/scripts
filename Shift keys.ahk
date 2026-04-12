@@ -4181,11 +4181,12 @@ Reminders_GetItemsStable(targetHwnd, delayMs := 60, maxPasses := 3) {
                 ), "ST1", "pre-fix")
                 return cur
             } else {
-                try Reminders_DebugLog("Shift keys.ahk:Reminders_GetItemsStable", "Empty-empty match ignored, continuing retry", Map(
-                    "pass", A_Index,
-                    "maxPasses", maxPasses,
-                    "remHwnd", targetHwnd
-                ), "ST-SKIP", "pre-fix")
+                try Reminders_DebugLog("Shift keys.ahk:Reminders_GetItemsStable",
+                    "Empty-empty match ignored, continuing retry", Map(
+                        "pass", A_Index,
+                        "maxPasses", maxPasses,
+                        "remHwnd", targetHwnd
+                    ), "ST-SKIP", "pre-fix")
             }
         }
         lastSig := sig
@@ -4293,12 +4294,13 @@ Reminders_GetItems(targetHwnd := 0) {
             listGroup := root.FindFirst({ ControlType: "Group", Name: "There ", matchmode: "Substring" })
         if !listGroup
             listGroup := root.FindFirst({ Name: "reminder", matchmode: "Substring" })
-        
+
         if !listGroup {
-            try Reminders_DebugLog("Shift keys.ahk:Reminders_GetItems", "WARNING: 'There are X reminders' group not found in UIA", Map(
-                "hwnd", hwnd,
-                "rootSource", rootSource
-            ), "X0-WRN", "pre-fix")
+            try Reminders_DebugLog("Shift keys.ahk:Reminders_GetItems",
+                "WARNING: 'There are X reminders' group not found in UIA", Map(
+                    "hwnd", hwnd,
+                    "rootSource", rootSource
+                ), "X0-WRN", "pre-fix")
         }
 
         ; Always re-evaluate source: a short-lived cache reused "listGroup" without re-checking
@@ -4312,7 +4314,7 @@ Reminders_GetItems(targetHwnd := 0) {
         rootBtns := root.FindAll({ ControlType: "Button" })
         rootBtnLen := rootBtns ? rootBtns.Length : 0
         listSmallerThanRoot := (listGroup && listBtnLen > 0 && rootBtnLen > listBtnLen)
-        
+
         ; Diagnostic logging for button search
         try Reminders_DebugLog("Shift keys.ahk:Reminders_GetItems", "Button search results", Map(
             "rootBtnLen", rootBtnLen,
@@ -4937,21 +4939,21 @@ Reminders_ExecuteItemAction(action) {
         ), "J1", "pre-fix")
         ; #endregion
         remHwnd := WinExist("A")
-        
+
         ; Nudge window to refresh UIA before getting items (same as in SelectItem)
         Reminders_NudgeWindowForUiRefresh(remHwnd)
         Sleep 100
-        
+
         ; Try 3 times with longer waits before accepting empty result
         items := []
         loop 3 {
             attempt := A_Index
             triedItems := Reminders_GetItemsStable(remHwnd, 100, 5)
-            try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", 
+            try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction",
                 "Attempt " attempt " retrieval", Map(
-                "attempt", attempt,
-                "itemsCount", triedItems.Length
-            ), "J2-ATT", "pre-fix")
+                    "attempt", attempt,
+                    "itemsCount", triedItems.Length
+                ), "J2-ATT", "pre-fix")
             if (triedItems.Length > 0) {
                 items := triedItems
                 break
@@ -4961,12 +4963,12 @@ Reminders_ExecuteItemAction(action) {
                 Sleep 150  ; longer wait before retry
             }
         }
-        
+
         ; Final fallback if still empty
         if (items.Length = 0) {
             try items := Reminders_GetItemsStable(remHwnd, 150, 6)
         }
-        
+
         ; #region agent log
         remTitle := ""
         remClass := ""
@@ -5007,16 +5009,19 @@ Reminders_ExecuteItemAction(action) {
             try {
                 global g_DebugBe11ecLogPath
                 FileAppend(
-                    "{`"sessionId`":`"be11ec`",`"id`":`"diagnostic_" A_TickCount "_" Random(1000, 9999) 
+                    "{`"sessionId`":`"be11ec`",`"id`":`"diagnostic_" A_TickCount "_" Random(1000, 9999)
                     "`",`"timestamp`":" A_TickCount ",`"location`":`"ExecuteItemAction:empty-items`",`"message`":`"No items found after stable retrieval`",`"data`":{"
-                    "`"action`":`"" action "`",`"remHwnd`":" remHwnd ",`"title`":`"" remTitle 
-                    "`",`"class`":`"" remClass "`",`"activeTitle`":`"" WinGetTitle("A") "`",`"activeClass`":`"" WinGetClass("A") "`"},`"runId`":`"pre-fix`",`"hypothesisId`":`"Z`"}`n",
+                    "`"action`":`"" action "`",`"remHwnd`":" remHwnd ",`"title`":`"" remTitle
+                    "`",`"class`":`"" remClass "`",`"activeTitle`":`"" WinGetTitle("A") "`",`"activeClass`":`"" WinGetClass(
+                        "A") "`"},`"runId`":`"pre-fix`",`"hypothesisId`":`"Z`"}`n",
                     g_DebugBe11ecLogPath,
                     "UTF-8"
                 )
             } catch {
             }
-            ShowCenteredOverlay_Utils("❌ No reminders found in window. Check debug log at C:\Users\fie7ca\Documents\scripts\debug-be11ec.log", 2500, BANNER_ACCENT_ERROR)
+            ShowCenteredOverlay_Utils(
+                "❌ No reminders found in window. Check debug log at C:\Users\fie7ca\Documents\scripts\debug-be11ec.log",
+                2500, BANNER_ACCENT_ERROR)
             return false
         }
 
@@ -6347,6 +6352,52 @@ ChromePdf_ClickByAutomationId(automationId, fallbackNames := 0) {
     return false
 }
 
+; PDF toolbar: two buttons share AutomationId "save" (Save to Google Drive vs Download). Never use FindFirst(save) alone.
+ChromePdf_ClickDownload() {
+    try {
+        uia := UIA_Browser("ahk_exe chrome.exe")
+        Sleep 80
+
+        root := ChromePdf_GetViewerRoot(uia)
+        if (!root)
+            return false
+
+        downloadNames := ["Baixar", "Download"]
+        btn := 0
+        for , name in downloadNames {
+            try btn := root.FindFirst({ Type: 50000, Name: name, cs: false })
+            if (btn)
+                break
+        }
+
+        if (!btn) {
+            try saves := root.FindAll({ Type: 50000, AutomationId: "save" })
+            if (IsObject(saves)) {
+                for , cand in saves {
+                    n := ""
+                    try n := cand.Name
+                    if (n = "")
+                        continue
+                    if InStr(StrLower(n), "drive")
+                        continue
+                    btn := cand
+                    break
+                }
+            }
+        }
+
+        if (btn) {
+            try btn.Invoke()
+            catch {
+                try btn.Click()
+            }
+            return true
+        }
+    } catch {
+    }
+    return false
+}
+
 ChromePdf_FocusByAutomationId(automationId, controlType := 0) {
     try {
         uia := UIA_Browser("ahk_exe chrome.exe")
@@ -6483,8 +6534,8 @@ ChromePdf_TogglePresentMode() {
 ; Shift + D : Download PDF - Download
 +d::
 {
-    ; UIA tree: AutomationId "save" (button label is localized)
-    ChromePdf_ClickByAutomationId("save", ["Baixar", "Download"])
+    ; Toolbar duplicates AutomationId "save" (Drive save vs file download); use ChromePdf_ClickDownload.
+    ChromePdf_ClickDownload()
 }
 
 ; Shift + 2 : Two-page view (mnemonic: 2 = two pages)
@@ -16395,22 +16446,22 @@ IsSecondarySidebarVisible() {
         hwnd := WinExist("A")
         if (!hwnd)
             return false
-        
+
         root := UIA.ElementFromHandle(hwnd)
         if (!root)
             return false
-        
+
         ; Find the "Toggle Secondary Side Bar (Alt+I)" button
         ; It's in the toolbar at path: 2,1,1,2,1,1,1,1,1,1,6,4
         toggleBtn := 0
-        
+
         ; Strategy 1: Find by exact Name
         try {
             toggleBtn := root.FindFirst({ Name: "Toggle Secondary Side Bar (Alt+I)", Type: 50000 })
         } catch {
             toggleBtn := 0
         }
-        
+
         ; Strategy 2: Find by partial Name match
         if (!toggleBtn) {
             try {
@@ -16431,7 +16482,7 @@ IsSecondarySidebarVisible() {
             } catch {
             }
         }
-        
+
         if (toggleBtn) {
             try {
                 ; Check if the button has "checked" in its ClassName or other properties
@@ -16441,7 +16492,7 @@ IsSecondarySidebarVisible() {
                 }
             } catch {
             }
-            
+
             try {
                 ; Alternative: Check IsTogglePatternAvailable and ToggleState
                 if toggleBtn.GetPropertyValue(UIA.Property.IsTogglePatternAvailable) {
@@ -16452,7 +16503,7 @@ IsSecondarySidebarVisible() {
             } catch {
             }
         }
-        
+
         return false
     } catch Error as e {
         return false
@@ -16466,15 +16517,15 @@ ClickCopilotGoBackButton() {
         hwnd := WinExist("A")
         if (!hwnd)
             return false
-        
+
         root := UIA.ElementFromHandle(hwnd)
         if (!root)
             return false
-        
+
         ; First and foremost: Find the chat-view-title-container
         ; We MUST scope our search to this container to avoid clicking the main toolbar's Go Back button
         chatViewTitle := 0
-        
+
         try {
             ; Search for the chat-view-title-container by ClassName
             allGroups := root.FindAll({ Type: 50026 })
@@ -16494,7 +16545,7 @@ ClickCopilotGoBackButton() {
         } catch {
             chatViewTitle := 0
         }
-        
+
         ; If we found the chat view title container, ONLY search within it
         if (chatViewTitle) {
             try {
@@ -16514,7 +16565,7 @@ ClickCopilotGoBackButton() {
                                     }
                                 } catch {
                                 }
-                                
+
                                 ; Fallback to Click
                                 try {
                                     btn.Click()
@@ -16530,7 +16581,7 @@ ClickCopilotGoBackButton() {
             } catch {
             }
         }
-        
+
         ; If we reach here, either chat view wasn't found or there's no Go Back button in it
         ; This is fine - we're already on the history/sessions page
         return false
@@ -16544,24 +16595,24 @@ OpenCopilotChatHistory() {
     try {
         ; Step 1: Check if secondary sidebar is visible
         isSidebarVisible := IsSecondarySidebarVisible()
-        
+
         if (!isSidebarVisible) {
             ; Step 2: Open the secondary sidebar using Alt+I
             Send "!i"
             Sleep 300  ; Wait for UI to stabilize
         }
-        
+
         ; Step 3: Try to click the "Go Back" button to navigate to chat history
         ; If the button doesn't exist, we're already on the sessions page - that's fine, just return
         buttonClicked := ClickCopilotGoBackButton()
-        
+
         if (buttonClicked) {
             ; Step 4: Verify the view updated
             Sleep 200  ; Brief delay to allow UI update
             ; The view should now display the chat history session
             return
         }
-        
+
         ; If Go Back button doesn't exist, we're already on the sessions/history page
         ; No need to do anything else or fall back to command palette
         ; Just verify we're done
@@ -16671,8 +16722,6 @@ ClickVSCodeCopilotModelButton() {
 
 ; Shift + B : Git Push - Push
 +b:: Send "+b"
-
-
 
 ; Global variable for commit push selector target window
 global gCommitPushTargetWin := 0
@@ -17327,14 +17376,14 @@ GeminiScroll_ApplyGeminiViewportBottom(uia, scope, hwnd) {
         rw := 0
     if (did = "" && rw) {
         try {
-            ControlSend "{Blind}^{End}",, "ahk_id " rw
+            ControlSend "{Blind}^{End}", , "ahk_id " rw
             did := "ControlSend_RenderWidget_CtrlEnd"
         } catch {
         }
     }
     if (did = "") {
         try {
-            ControlSend "{Blind}^{End}",, "ahk_id " hwnd
+            ControlSend "{Blind}^{End}", , "ahk_id " hwnd
             did := "ControlSend_Root_CtrlEnd"
         } catch {
             did := "ControlSend_failed"
@@ -17343,9 +17392,9 @@ GeminiScroll_ApplyGeminiViewportBottom(uia, scope, hwnd) {
     ; Overflow divs often ignore UIA + Ctrl+End — wheel on Chromium surface (single HWND resolve).
     if (rw) {
         try {
-            ControlClick "Chrome_RenderWidgetHostHWND1", "ahk_id " hwnd,,,, "NA"
+            ControlClick "Chrome_RenderWidgetHostHWND1", "ahk_id " hwnd, , , , "NA"
             Sleep 40
-            ControlSend "{WheelDown 120}",, "ahk_id " rw
+            ControlSend "{WheelDown 120}", , "ahk_id " rw
         } catch {
         }
     }
@@ -17522,32 +17571,32 @@ VSCode_TriggerGenerateCommitMessage(hwnd := 0) {
     hwnd := WinExist("A")
     if !hwnd
         return
-    
+
     gCommitPushTargetWin := hwnd
     ; Default behavior: commit + push, unless user presses N
     gCommitPushDecision := "push"
-    
+
     ; 1. Trigger generation by clicking the native button (supports both plain and shortcut-suffixed names)
     if (!VSCode_TriggerGenerateCommitMessage(hwnd)) {
         ShowCenteredOverlay_Utils("Generate Commit Message button not found.", 2000, BANNER_ACCENT_ERROR)
         return
     }
-    
+
     SoundPlay A_ScriptDir "\sounds\commit-start.wav"
     ShowCommitPushBanner()
-    
+
     ; 2. Wait 14s for message generation to complete; user can interact with any window
     Sleep 14000
-    
+
     ; Handoff Stop Sign: warn + play pre-movement cue before returning to VS Code
     PlayPreMovementWarning("VS Code")
-    
+
     ; 3. Focus back to VS Code (save current foreground to return later)
     prevHwnd := WinExist("A")
     WinActivate("ahk_id " hwnd)
     if !WinWaitActive("ahk_id " hwnd, , 3)
         return
-    
+
     ; 4. Execute commit (Shift+V) and push (Shift+B) if user didn't press N
     Send "+v"
     didPush := (gCommitPushDecision = "push")
@@ -17555,18 +17604,18 @@ VSCode_TriggerGenerateCommitMessage(hwnd := 0) {
         Sleep 500
         Send "+b"
     }
-    
+
     ; 5. Wait for git operations to complete
     if (didPush) {
         Sleep 4000
     } else {
         Sleep 1500
     }
-    
+
     ; Decide whether to return: stay in VS Code if we pushed so user can review
     shouldReturn := !didPush
     gCommitPushDecision := ""
-    
+
     ; 6. Return to previous window (if user opted out of push)
     if (shouldReturn && prevHwnd && prevHwnd != hwnd) {
         if (!WinExist("ahk_id " prevHwnd)) {
@@ -17597,8 +17646,8 @@ VSCode_TriggerGenerateCommitMessage(hwnd := 0) {
         hwnd := WinExist("A")
         if (!hwnd)
             return
-        StandardLoadingBar_Show("⏳ Scrolling AI feed to bottom…", BANNER_ACCENT_INTERMEDIATE,
-            { passive: false, centerOnHwnd: hwnd, textWidth: 480, fontSize: 17 })
+        StandardLoadingBar_Show("⏳ Scrolling AI feed to bottom…", BANNER_ACCENT_INTERMEDIATE, { passive: false,
+            centerOnHwnd: hwnd, textWidth: 480, fontSize: 17 })
         loadingBarShown := true
 
         ; Cheap WinGet first — Gemini (Chrome) skips UIA root/composer scan (efficiency-canon: less COM on hot path).
@@ -21302,7 +21351,8 @@ HandleGeminiModelSelection(char) {
                     break
 
                 if (attempt < 2) {
-                    StandardLoadingBar_Update("🔄 Model not confirmed. Refreshing and retrying…", BANNER_ACCENT_INTERMEDIATE)
+                    StandardLoadingBar_Update("🔄 Model not confirmed. Refreshing and retrying…",
+                        BANNER_ACCENT_INTERMEDIATE)
                     Send "^r"
                     Sleep 1200
                 }
@@ -23013,12 +23063,12 @@ UIATreeInspector_JiggleLeftTree(leftHwnd, winHwnd, downDelayMs) {
         inspectorHwnd := WinGetID("A")
 
         try {
-            StandardLoadingBar_Show("🔎 Selecting window/control…", BANNER_ACCENT_INTERMEDIATE,
-                { passive: false, centerOnHwnd: inspectorHwnd })
+            StandardLoadingBar_Show("🔎 Selecting window/control…", BANNER_ACCENT_INTERMEDIATE, { passive: false,
+                centerOnHwnd: inspectorHwnd })
         } catch {
             try
-                StandardLoadingBar_Show("🔎 Selecting window/control…", BANNER_ACCENT_INTERMEDIATE,
-                    { passive: false, centerOnHwnd: 0 })
+                StandardLoadingBar_Show("🔎 Selecting window/control…", BANNER_ACCENT_INTERMEDIATE, { passive: false,
+                    centerOnHwnd: 0 })
             catch {
             }
         }
