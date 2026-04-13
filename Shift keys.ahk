@@ -13168,22 +13168,68 @@ OneDriveShare_WaitForClipboardChange(oldClip, timeout := 5000) {
     }
 }
 
-; Shift + X : WinRAR extract to current folder (personal); work PC stub
+; Shift + X : WinRAR extract to current folder (personal); work PC: 7-Zip extract
 +x::
 {
     global IS_WORK_ENVIRONMENT
+    
     if (IS_WORK_ENVIRONMENT) {
-        MsgBox("An extraction macro for the work environment still needs to be created.", "Shift+X", "Icon!")
+        StandardLoadingBar_Show("⏳ Preparing 7-Zip extraction...", BANNER_ACCENT_INTERMEDIATE, { passive: false })
+        
+        try {
+            StandardLoadingBar_Update("📁 Ensuring focus on items view...", BANNER_ACCENT_INTERMEDIATE)
+            EnsureItemsViewFocus()
+            Sleep 300
+            
+            StandardLoadingBar_Update("📋 Opening context menu...", BANNER_ACCENT_INTERMEDIATE)
+            Send "{AppsKey}"
+            Sleep 1000  ; Context menu takes time to appear
+            
+            StandardLoadingBar_Update("🔍 Locating 7-Zip option...", BANNER_ACCENT_INTERMEDIATE)
+            Send "7"
+            Sleep 800  ; 7-Zip menu needs time to respond
+            
+            StandardLoadingBar_Update("⬇️  Moving to extract option...", BANNER_ACCENT_INTERMEDIATE)
+            Send "{Down}"
+            Sleep 400
+            
+            StandardLoadingBar_Update("✍️  Extracting to current folder...", BANNER_ACCENT_INTERMEDIATE)
+            Send "{Enter}"
+            Sleep 800
+            
+            StandardLoadingBar_Hide(500)
+        } catch as e {
+            StandardLoadingBar_Hide(0)
+            ShowCenteredOverlay_Utils("❌ 7-Zip extract error: " . e.Message, 2000, BANNER_ACCENT_ERROR)
+        }
         return
     }
-    EnsureItemsViewFocus()
-    Sleep 150
-    Send "{AppsKey}"
-    Sleep 250
-    ; WinRAR shell menu accelerators (English); adjust if UI language differs
-    Send "w"
-    Sleep 150
-    Send "x"
+    
+    StandardLoadingBar_Show("⏳ Preparing WinRAR extraction...", BANNER_ACCENT_INTERMEDIATE, { passive: false })
+    
+    try {
+        StandardLoadingBar_Update("📁 Ensuring focus on items view...", BANNER_ACCENT_INTERMEDIATE)
+        EnsureItemsViewFocus()
+        Sleep 300
+        
+        StandardLoadingBar_Update("📋 Opening context menu...", BANNER_ACCENT_INTERMEDIATE)
+        Send "{AppsKey}"
+        Sleep 1000  ; Context menu takes time to appear
+        
+        StandardLoadingBar_Update("🔍 Locating WinRAR option...", BANNER_ACCENT_INTERMEDIATE)
+        ; WinRAR shell menu accelerators (English); adjust if UI language differs
+        Send "w"
+        Sleep 800
+        
+        StandardLoadingBar_Update("✍️  Extracting to current folder...", BANNER_ACCENT_INTERMEDIATE)
+        Send "x"
+        Sleep 800
+        
+        StandardLoadingBar_Hide(500)
+    } catch as e {
+        StandardLoadingBar_Hide(0)
+        ShowCenteredOverlay_Utils("❌ WinRAR extract error: " . e.Message, 2000, BANNER_ACCENT_ERROR)
+    }
 }
 
 #HotIf
