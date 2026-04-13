@@ -4358,16 +4358,27 @@ OutlookProcessRunning() {
 ; If one or both are closed: Launches both applications.
 ; =============================================================================
 ToggleOutlookAndTeams() {
+    loadingShown := false
     try {
         ; Check if both applications are running
         outlookRunning := OutlookProcessRunning()
         teamsRunning := ProcessExist("ms-teams.exe")
+        isOpeningFlow := !(outlookRunning && teamsRunning)
+        hadError := false
+        firstError := ""
 
         ; Show start banner
-        if (outlookRunning && teamsRunning) {
+        if (!isOpeningFlow) {
             ShowCenteredOverlay_Utils("📤 Closing Outlook and Teams...", 1500, BANNER_ACCENT_INTERMEDIATE)
         } else {
-            ShowCenteredOverlay_Utils("📤 Opening Outlook and Teams...", 1500, BANNER_ACCENT_INTERMEDIATE)
+            StandardLoadingBar_Show("⏳ Opening Outlook and Teams...", BANNER_ACCENT_INTERMEDIATE, {
+                passive: false,
+                centerOnHwnd: 0,
+                textWidth: 560,
+                fontSize: 17,
+                passiveBgColor: BANNER_ACCENT_INTERMEDIATE
+            })
+            loadingShown := true
         }
 
         if (outlookRunning && teamsRunning) {
@@ -4402,6 +4413,7 @@ ToggleOutlookAndTeams() {
             ; One or both are closed: Launch both applications
             ; Launch Outlook
             if (!outlookRunning) {
+                StandardLoadingBar_Update("⏳ Opening Outlook...")
                 try {
                     outlookPath := ""
                     if (IS_WORK_ENVIRONMENT) {
@@ -4430,12 +4442,15 @@ ToggleOutlookAndTeams() {
                             Run "OUTLOOK.EXE"
                     }
                 } catch Error as e {
-                    MsgBox "Error launching Outlook: " e.Message
+                    hadError := true
+                    if (firstError = "")
+                        firstError := "Outlook: " . e.Message
                 }
             }
 
             ; Launch/Activate Teams
             ; Simplified approach: Just run the executable. This handles both launching and bringing to front.
+            StandardLoadingBar_Update("⏳ Opening Teams...")
             try {
                 if (IS_WORK_ENVIRONMENT) {
                     teamsExePath :=
@@ -4458,35 +4473,61 @@ ToggleOutlookAndTeams() {
 
                 ; Wait for window to appear and become active
                 if (WinWaitActive("ahk_exe ms-teams.exe", , 10)) {
-                    ShowCenteredOverlay_Utils("✅ Teams activated", 1500, BANNER_ACCENT_SUCCESS)
                 } else {
-                    ShowCenteredOverlay_Utils("❌ Teams: Window not found", 2000, BANNER_ACCENT_ERROR)
+                    hadError := true
+                    if (firstError = "")
+                        firstError := "Teams window not found"
                 }
             } catch Error as e {
-                ShowCenteredOverlay_Utils("❌ Teams: Error - " . e.Message, 2000, BANNER_ACCENT_ERROR)
+                hadError := true
+                if (firstError = "")
+                    firstError := "Teams: " . e.Message
             }
 
             ; Second: Activate Outlook last (so it gets final focus)
+            StandardLoadingBar_Update("⏳ Activating Outlook...")
             try {
                 if (OutlookProcessRunning()) {
                     ex := ProcessExist("OUTLOOK.EXE") ? "OUTLOOK.EXE" : "olk.exe"
                     WinWait("ahk_exe " ex, , 5)
                     if (!WinExist("ahk_exe " ex)) {
-                        ShowCenteredOverlay_Utils("❌ Outlook not running.", 2000, BANNER_ACCENT_ERROR)
-                        return
+                        hadError := true
+                        if (firstError = "")
+                            firstError := "Outlook not running"
                     } else {
                         WinActivate("ahk_exe " ex)
                         WinWaitActive("ahk_exe " ex, , 2)
                     }
+                } else {
+                    hadError := true
+                    if (firstError = "")
+                        firstError := "Outlook process not detected"
                 }
             } catch Error as e {
-                ; Silently fail if activation doesn't work
+                hadError := true
+                if (firstError = "")
+                    firstError := "Outlook activation: " . e.Message
             }
+
+            if (loadingShown) {
+                StandardLoadingBar_Hide(0)
+                loadingShown := false
+            }
+
+            if (hadError) {
+                ShowCenteredOverlay_Utils("❌ Open completed with issues: " . firstError, 2500, BANNER_ACCENT_ERROR)
+            } else {
+                ShowCenteredOverlay_Utils("✅ Outlook and Teams opened", 1500, BANNER_ACCENT_SUCCESS)
+            }
+
+            return
         }
 
         ; Show finish banner
         ShowCenteredOverlay_Utils("✅ Done", 1500, BANNER_ACCENT_SUCCESS)
     } catch Error as e {
+        if (loadingShown)
+            StandardLoadingBar_Hide(0)
         MsgBox "Error in ToggleOutlookAndTeams macro: " e.Message
     }
 }
