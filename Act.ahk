@@ -52,7 +52,7 @@ Run GetScriptPath("Utils.ahk")
 Run GetScriptPath("Mousemaster.ahk")
 
 if (IS_WORK_ENVIRONMENT) {
-    Run "C:\Users\fie7ca\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Cursor\Cursor.lnk"
+    Run "C:\Users\fie7ca\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Visual Studio Code\Visual Studio Code.lnk"
     Run "C:\Users\fie7ca\Documents\Shortcuts\Mobills.lnk"
     Run "C:\Users\fie7ca\Documents\Shortcuts\Settle Up.lnk"
 
