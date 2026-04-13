@@ -670,7 +670,8 @@ GetPromptText(key) {
 
 ; MyNotes technique prompts: live repo path first, then mirror under prompt\technique (synced by aux\Sync-MyNotesTechniquePrompts.ps1).
 GetTechniquePromptFilePath(fileName) {
-    dir := GetMyNotesTechniquePromptsDir()
+    repo := GetNotesRepoPath()
+    dir := (repo != "") ? repo "\studies\technique\prompts" : ""
     if (dir != "" && FileExist(dir "\" fileName))
         return dir "\" fileName
     mirror := A_ScriptDir "\prompt\technique\" fileName
@@ -682,7 +683,7 @@ GetTechniquePromptFilePath(fileName) {
 }
 
 InitTechniquePromptHotstrings() {
-    ; Six files live in MyNotes: studies\technique\prompts (see env.ahk GetMyNotesTechniquePromptsDir).
+    ; Six files live in MyNotes: studies\technique\prompts (resolved via GetNotesRepoPath in env.ahk).
     defs := [
         ["story-prompt.txt", ":o:mnemonic", "📖 Creating mnemonic stories", "", "Reserved 3"],
         ["video-transcription-prompt.txt", ":o:ytranscript", "🎬 Transcript Youtube Video", "", "Reserved 4"],
