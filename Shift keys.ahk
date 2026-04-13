@@ -971,8 +971,8 @@ Explorer (Shift)
 📤 [R]Sha[R]e file
 📌 [P][P]inned item (first in sidebar)
 📌 [L][L]ast item (sidebar)
-📦 [X] WinRAR e[X]tract here (personal); work: stub MsgBox
-📦 [W] WinRAR add to archive / compact ([W]inRAR menu; personal); work: stub
+📦 [X] WinRAR e[X]tract here (personal); work: 7-Zip extract
+📦 [W] WinRAR add to archive / compact (personal); work: 7-Zip add to archive / compress
 )"  ; end Explorer
 
 ; --- Microsoft Paint ------------------------------------------------------
@@ -13101,24 +13101,71 @@ OneDriveShare_WaitForClipboardChange(oldClip, timeout := 5000) {
     Send "{Up}"
 }
 
-; Shift + W : WinRAR add to archive / compact (personal); work PC stub
+; Shift + W : WinRAR add to archive / compact (personal); work PC: 7-Zip add to archive / compress
 +w::
 {
     global IS_WORK_ENVIRONMENT
+    
     if (IS_WORK_ENVIRONMENT) {
-        MsgBox("A compress/add-to-archive macro for the work environment still needs to be created.", "Shift+W",
-            "Icon!")
+        StandardLoadingBar_Show("⏳ Preparing 7-Zip compress...", BANNER_ACCENT_INTERMEDIATE, { passive: false })
+        
+        try {
+            StandardLoadingBar_Update("📁 Ensuring focus on items view...", BANNER_ACCENT_INTERMEDIATE)
+            EnsureItemsViewFocus()
+            Sleep 300
+            
+            StandardLoadingBar_Update("📋 Opening context menu...", BANNER_ACCENT_INTERMEDIATE)
+            Send "{AppsKey}"
+            Sleep 1000  ; Context menu takes time to appear
+            
+            StandardLoadingBar_Update("🔍 Locating 7-Zip option...", BANNER_ACCENT_INTERMEDIATE)
+            Send "7"
+            Sleep 800  ; 7-Zip needs time to respond
+            
+            StandardLoadingBar_Update("✍️  Sending first confirmation...", BANNER_ACCENT_INTERMEDIATE)
+            Send "{Enter}"
+            Sleep 600
+            
+            StandardLoadingBar_Update("✍️  Sending second confirmation...", BANNER_ACCENT_INTERMEDIATE)
+            Send "{Enter}"
+            Sleep 800
+            
+            StandardLoadingBar_Hide(500)
+        } catch as e {
+            StandardLoadingBar_Hide(0)
+            ShowCenteredOverlay_Utils("❌ 7-Zip compress error: " . e.Message, 2000, BANNER_ACCENT_ERROR)
+        }
         return
     }
-    EnsureItemsViewFocus()
-    Sleep 150
-    Send "{AppsKey}"
-    Sleep 250
-    Send "w"
-    Sleep 150
-    Send "{Enter}"
-    Sleep 400
-    Send "{Enter}"
+    
+    StandardLoadingBar_Show("⏳ Preparing WinRAR compress...", BANNER_ACCENT_INTERMEDIATE, { passive: false })
+    
+    try {
+        StandardLoadingBar_Update("📁 Ensuring focus on items view...", BANNER_ACCENT_INTERMEDIATE)
+        EnsureItemsViewFocus()
+        Sleep 300
+        
+        StandardLoadingBar_Update("📋 Opening context menu...", BANNER_ACCENT_INTERMEDIATE)
+        Send "{AppsKey}"
+        Sleep 1000  ; Context menu takes time to appear
+        
+        StandardLoadingBar_Update("🔍 Locating WinRAR option...", BANNER_ACCENT_INTERMEDIATE)
+        Send "w"
+        Sleep 800
+        
+        StandardLoadingBar_Update("✍️  Sending first confirmation...", BANNER_ACCENT_INTERMEDIATE)
+        Send "{Enter}"
+        Sleep 600
+        
+        StandardLoadingBar_Update("✍️  Sending second confirmation...", BANNER_ACCENT_INTERMEDIATE)
+        Send "{Enter}"
+        Sleep 800
+        
+        StandardLoadingBar_Hide(500)
+    } catch as e {
+        StandardLoadingBar_Hide(0)
+        ShowCenteredOverlay_Utils("❌ WinRAR compress error: " . e.Message, 2000, BANNER_ACCENT_ERROR)
+    }
 }
 
 ; Shift + X : WinRAR extract to current folder (personal); work PC stub
