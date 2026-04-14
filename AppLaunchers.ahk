@@ -2037,27 +2037,170 @@ StartPomodoroTimer() {
 
 ; =============================================================================
 ; Pomodoro Timer - Hotkey: Win+Alt+Shift+9
-; Quick press: Start pomodoro timer
-; Long press (2 seconds): Check pomodoro status
+; Automation: Click "Allow (Ctrl+Enter)" in all open Cursor/VS Code windows
+; while showing a loading indicator.
 ; =============================================================================
 #!+9::
 {
-    ; Record press time
-    static pressTime := 0
-    pressTime := A_TickCount
+    AIB_ClickAllowButtonInAllIDEWindows()
+}
 
-    ; Wait for key release or timeout (1 second for long press)
-    KeyWait("9", "T1")
-
-    holdTime := A_TickCount - pressTime
-
-    if (holdTime >= 1000) {
-        ; Long press (1+ seconds) - check pomodoro status
-        CheckPomodoroStatus()
-    } else {
-        ; Quick press - start pomodoro timer
-        StartPomodoroTimer()
+AIB_ClickAllowButtonInAllIDEWindows() {
+    windows := AIB_GetAllIDEWindowHwnds()
+    if (windows.Length = 0) {
+        ShowCenteredOverlay_Utils("ℹ No open Cursor/VS Code windows", 1800, BANNER_ACCENT_INFO)
+        return 0
     }
+
+    clickedCount := 0
+    totalCount := windows.Length
+    centerHwnd := 0
+    try centerHwnd := WinGetID("A")
+
+    try {
+        StandardLoadingBar_Show(
+            "⏳ Scanning IDE windows for Allow button...",
+            BANNER_ACCENT_INTERMEDIATE,
+            { centerOnHwnd: centerHwnd, textWidth: 640 }
+        )
+
+        for hwnd in windows {
+            StandardLoadingBar_Update(
+                "⏳ Checking " . A_Index . "/" . totalCount . ": " . AIB_GetSafeWindowTitle(hwnd),
+                BANNER_ACCENT_INTERMEDIATE
+            )
+            if (AIB_ClickAllowButtonInWindow(hwnd))
+                clickedCount += 1
+        }
+    } finally {
+        StandardLoadingBar_Hide(0)
+    }
+
+    if (clickedCount > 0)
+        ShowCenteredOverlay_Utils("✅ Clicked Allow in " . clickedCount . " window(s)", 1800, BANNER_ACCENT_SUCCESS)
+    else
+        ShowCenteredOverlay_Utils("ℹ No Allow button found in open Cursor/VS Code windows", 2200, BANNER_ACCENT_INFO)
+
+    return clickedCount
+}
+
+AIB_GetAllIDEWindowHwnds() {
+    ; WinGetList() returns windows in z-order, so this keeps most-recent first.
+    windows := []
+    for hwnd in WinGetList() {
+        try {
+            procName := WinGetProcessName("ahk_id " hwnd)
+            if (procName != "Cursor.exe" && procName != "Code.exe")
+                continue
+
+            winTitle := WinGetTitle("ahk_id " hwnd)
+            if (!winTitle)
+                continue
+            if (InStr(StrLower(winTitle), "preview"))
+                continue
+
+            windows.Push(hwnd)
+        } catch {
+            continue
+        }
+    }
+    return windows
+}
+
+AIB_ClickAllowButtonInWindow(hwnd) {
+    global UIA
+
+    try {
+        WinActivate("ahk_id " hwnd)
+        WinWaitActive("ahk_id " hwnd, , 1.2)
+    } catch {
+        return false
+    }
+    Sleep(120)
+
+    allowBtn := AIB_FindAllowButtonInWindow(hwnd)
+    if (!allowBtn)
+        return false
+
+    try {
+        if (allowBtn.GetPropertyValue(UIA.Property.IsOffscreen))
+            return false
+    } catch {
+    }
+
+    try {
+        if (allowBtn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)) {
+            allowBtn.InvokePattern.Invoke()
+            return true
+        }
+    } catch {
+    }
+
+    try {
+        allowBtn.Click()
+        return true
+    } catch {
+        return false
+    }
+}
+
+AIB_GetSafeWindowTitle(hwnd) {
+    try {
+        t := WinGetTitle("ahk_id " hwnd)
+        t := Trim(t)
+        if (t = "")
+            return "Untitled"
+        if (StrLen(t) > 52)
+            return SubStr(t, 1, 49) . "..."
+        return t
+    } catch {
+        return "Unknown Window"
+    }
+}
+
+AIB_FindAllowButtonInWindow(hwnd) {
+    global UIA
+
+    try root := UIA.ElementFromHandle(hwnd)
+    catch
+        return 0
+    if (!root)
+        return 0
+
+    ; Primary selector from UIA tree reference.
+    for selector in [
+        { Type: 50000, Name: "Allow (Ctrl+Enter)" },
+        { Type: 50000, Name: "Allow" }
+    ] {
+        try {
+            btn := root.FindFirst(selector)
+            if (btn)
+                return btn
+        } catch {
+        }
+    }
+
+    ; Fallback: fuzzy match on button name/class.
+    try {
+        buttons := root.FindAll({ Type: 50000 })
+        for btn in buttons {
+            btnName := ""
+            btnClass := ""
+            try btnName := btn.Name
+            try btnClass := btn.ClassName
+            if (InStr(btnName, "Allow") && InStr(btnClass, "monaco-button"))
+                return btn
+        }
+        for btn in buttons {
+            btnName := ""
+            try btnName := btn.Name
+            if (InStr(btnName, "Allow"))
+                return btn
+        }
+    } catch {
+    }
+
+    return 0
 }
 
 ; =============================================================================
