@@ -2069,15 +2069,17 @@ AIB_ClickAllowButtonInAllIDEWindows() {
                 "⏳ Checking " . A_Index . "/" . totalCount . ": " . AIB_GetSafeWindowTitle(hwnd),
                 BANNER_ACCENT_INTERMEDIATE
             )
-            if (AIB_ClickAllowButtonInWindow(hwnd))
+            if (AIB_ClickAllowButtonInWindow(hwnd)) {
                 clickedCount += 1
+                break
+            }
         }
     } finally {
         StandardLoadingBar_Hide(0)
     }
 
     if (clickedCount > 0)
-        ShowCenteredOverlay_Utils("✅ Clicked Allow in " . clickedCount . " window(s)", 1800, BANNER_ACCENT_SUCCESS)
+        ShowCenteredOverlay_Utils("✅ Clicked Allow and stopped search", 1800, BANNER_ACCENT_SUCCESS)
     else
         ShowCenteredOverlay_Utils("ℹ No Allow button found in open Cursor/VS Code windows", 2200, BANNER_ACCENT_INFO)
 
