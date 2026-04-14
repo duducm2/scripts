@@ -3424,7 +3424,8 @@ StandardLoadingBar_Show(state := "Working...", barColor := BANNER_ACCENT_INTERME
     overlayGui.Add("Text", "w" . barWidth . (passive ? " Wrap Center" : " Center"), state)
     if (promptKeys != "") {
         overlayGui.SetFont("s" . fontSize . " cFFFFFF", "Segoe UI")
-        overlayGui.Add("Text", "xm w" . barWidth . " Center", promptKeys)
+        ; Wrap so long key strips (e.g. Gemini Copy response? + [F]) are not clipped at fixed width.
+        overlayGui.Add("Text", "xm w" . barWidth . " Center Wrap", promptKeys)
     }
     if (!passive) {
         progressOpts := "w" . barWidth . " h10 c" . barColor . " Background45475A Smooth vOverlayProg"
@@ -3697,6 +3698,9 @@ D2C_CombinePresetWithDictation(presetText, dictationText) {
         return p
     return p . "`n`n" . d
 }
+
+; After D2C copy of Gemini reply, before Clip Angel favorite (align with Gemini.ahk GEMINI_POST_COPY_FAVORITE_DELAY_MS).
+D2C_POST_COPY_FAVORITE_DELAY_MS := 150
 
 ; =============================================================================
 ; =============================================================================
@@ -3989,16 +3993,18 @@ class D2C_FlowManager {
             "Y", this.OnActionY.Bind(this),
             "C", this.OnActionC.Bind(this),
             "R", this.OnActionR.Bind(this),
-            "N", this.OnActionN.Bind(this)
+            "N", this.OnActionN.Bind(this),
+            "F", this.OnActionF.Bind(this)
         )
+        pk := "[Y] Copy  [N] No  [R] Copy+Read  [C] Transfer  [F] Copy+Favorite"
         StandardLoadingBar_ShowWithKeys(
             "❓ Copy response?",
             keyCallbacks,
             5000,
             0,
             this.OnActionTimeout.Bind(this),
-            BANNER_ACCENT_INTERMEDIATE, 380, 17, "", false,
-            "[Y] Copy  [N] No  [R] Copy+Read  [C] Transfer",
+            BANNER_ACCENT_INTERMEDIATE, 520, 17, "", false,
+            pk,
             true
         )
     }
@@ -4019,6 +4025,28 @@ class D2C_FlowManager {
         if (this.CurrentPhase != "PromptingAction")
             return
         this.ExecuteAction(true, false)
+    }
+
+    ; F: copy last Gemini reply, then mark newest Clip Angel clip as favorite (same as Gemini.ahk CopyAndFavorite).
+    OnActionF(*) {
+        if (this.CurrentPhase != "PromptingAction")
+            return
+        this.CleanupActionPrompt()
+        try {
+            this.DoCopyCore(false, false)
+            clipRaw := A_Clipboard
+            clip := Trim(clipRaw)
+            if (clip = "" || StrLen(clip) < 10) {
+                ShowCenteredOverlay_Utils("❌ Copy failed or empty – try again", 2000, BANNER_ACCENT_ERROR)
+                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                    WinActivate("ahk_id " this.OriginHwnd)
+                return
+            }
+            Sleep(D2C_POST_COPY_FAVORITE_DELAY_MS)
+            MarkLastClipAsFavorite()
+        } finally {
+            this.Reset()
+        }
     }
 
     OnActionN(*) {
@@ -5364,8 +5392,7 @@ if (A_Args.Length > 0 && A_Args[1] = "/Updated") {
 }
 
 ; =============================================================================
-; Select AI Model in Handy
-; Hotkey: Win+Alt+Shift+C
+; Select AI Model in Handyhift+C
 ; =============================================================================
 #!+C::
 {
