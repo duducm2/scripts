@@ -2035,19 +2035,153 @@ StartPomodoroTimer() {
     SetTimer(g_PomodoroTimer, -1500000)
 }
 
+; NOTE: Win+Alt+Shift+8 is reserved for Gemini pronunciation/translation.
+; Do not bind #!+8 in this file.
+
+AIB_ClickAllowButtonInAllIDEWindows() {
+    global UIA
+    sourceHwnd := 0
+    try sourceHwnd := WinGetID("A")
+
+    windows := AIB_GetAllIDEWindowHwnds()
+    if (windows.Length = 0) {
+        ShowCenteredOverlay_Utils("ℹ No open Cursor/VS Code windows", 1800, BANNER_ACCENT_INFO)
+        return 0
+    }
+
+    clickedCount := 0
+    totalCount := windows.Length
+    centerHwnd := sourceHwnd
+    debugReasons := []
+
+    try {
+        StandardLoadingBar_Show(
+            "⏳ Scanning IDE windows for Allow button...",
+            BANNER_ACCENT_INTERMEDIATE,
+            { centerOnHwnd: centerHwnd, textWidth: 640 }
+        )
+
+        for hwnd in windows {
+            StandardLoadingBar_Update(
+                "⏳ Checking " . A_Index . "/" . totalCount . ": " . AIB_GetSafeWindowTitle(hwnd),
+                BANNER_ACCENT_INTERMEDIATE
+            )
+            failReason := ""
+            if (AIB_ClickAllowButtonInWindow(hwnd, &failReason)) {
+                clickedCount += 1
+                break
+            }
+            if (failReason != "" && debugReasons.Length < 3)
+                debugReasons.Push(AIB_GetSafeWindowTitle(hwnd) . " => " . failReason)
+        }
+    } finally {
+        StandardLoadingBar_Hide(0)
+    }
+
+    if (clickedCount > 0)
+        ShowCenteredOverlay_Utils("✅ Clicked Allow and stopped search", 1800, BANNER_ACCENT_SUCCESS)
+    else {
+        msg := "ℹ No Allow button found in chat confirmation"
+        if (debugReasons.Length > 0) {
+            for reasonLine in debugReasons
+                msg .= "`n" . reasonLine
+        }
+        ShowCenteredOverlay_Utils(msg, 3200, BANNER_ACCENT_INFO)
+    }
+
+    return clickedCount
+}
+
+AIB_ClickAllowButtonInWindow(hwnd, &failReason := "") {
+    global UIA
+    failReason := ""
+
+    try {
+        WinActivate("ahk_id " hwnd)
+        WinWaitActive("ahk_id " hwnd, , 1.2)
+    } catch {
+        failReason := "activate failed"
+        return false
+    }
+    Sleep(120)
+
+    ; Find Allow button
+    try root := UIA.ElementFromHandle(hwnd)
+    catch {
+        failReason := "UIA failed"
+        return false
+    }
+    if (!root) {
+        failReason := "root not found"
+        return false
+    }
+
+    try {
+        allBtns := root.FindAll({ Type: 50000 })
+        for btn in allBtns {
+            btnName := ""
+            try btnName := btn.Name
+            if (!AIB_IsAllowButtonName(btnName))
+                continue
+            
+            ; Found Allow button - click it
+            try {
+                if (btn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)) {
+                    btn.InvokePattern.Invoke()
+                    Sleep(400)
+                    return true
+                }
+            } catch {
+            }
+
+            try {
+                btn.Click()
+                Sleep(400)
+                return true
+            } catch {
+                failReason := "invoke/click failed"
+                return false
+            }
+        }
+    } catch {
+        failReason := "button search failed"
+    }
+
+    failReason := "Allow button not found"
+    return false
+}
+
 ; =============================================================================
 ; Pomodoro Timer - Hotkey: Win+Alt+Shift+9
-; Hold trigger automation: Click "More Actions" (next to Allow) in Cursor/VS Code
-; chat confirmation dialog, then stop scanning.
+; Single tap: click "Allow". Double tap: click "More Actions" (next to Allow).
+; We wait a short window to disambiguate one-tap vs double-tap.
 ; =============================================================================
+global g_AIB_Hotkey9PendingSingleTap := false
+
 #!+9::
 {
-    pressTick := A_TickCount
-    KeyWait("9")
-    if ((A_TickCount - pressTick) < 300)
-        return
+    global g_AIB_Hotkey9PendingSingleTap
 
-    AIB_ClickMoreActionsInAllIDEWindows()
+    ; Second tap inside window => cancel single-tap action and run double-tap action.
+    if (A_PriorHotkey = "#!+9" && A_TimeSincePriorHotkey <= 450) {
+        g_AIB_Hotkey9PendingSingleTap := false
+        SetTimer(AIB_Hotkey9SingleTapHandler, 0)
+        AIB_ClickMoreActionsInAllIDEWindows()
+        return
+    }
+
+    ; First tap arms a delayed single-tap action (Allow).
+    g_AIB_Hotkey9PendingSingleTap := true
+    ShowCenteredOverlay_Utils("⏳ Win+Alt+Shift+9: tap again for More Actions", 500, BANNER_ACCENT_INFO)
+    SetTimer(AIB_Hotkey9SingleTapHandler, -450)
+}
+
+AIB_Hotkey9SingleTapHandler() {
+    global g_AIB_Hotkey9PendingSingleTap
+    if (!g_AIB_Hotkey9PendingSingleTap)
+        return
+    g_AIB_Hotkey9PendingSingleTap := false
+    AIB_ClickAllowButtonInAllIDEWindows()
 }
 
 AIB_ClickMoreActionsInAllIDEWindows() {
@@ -2088,7 +2222,6 @@ AIB_ClickMoreActionsInAllIDEWindows() {
         }
     } finally {
         StandardLoadingBar_Hide(0)
-        AIB_RestoreWindowFocus(sourceHwnd)
     }
 
     if (clickedCount > 0)
@@ -2164,6 +2297,8 @@ AIB_ClickMoreActionsButtonInWindow(hwnd, &failReason := "") {
     try {
         if (moreBtn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)) {
             moreBtn.InvokePattern.Invoke()
+            Sleep(400)  ; Let UI process the invoke
+            Send("{Down}")  ; Send down arrow to navigate menu
             return true
         }
     } catch {
@@ -2171,6 +2306,8 @@ AIB_ClickMoreActionsButtonInWindow(hwnd, &failReason := "") {
 
     try {
         moreBtn.Click()
+        Sleep(400)  ; Let UI process the click
+        Send("{Down}")  ; Send down arrow to navigate menu
         return true
     } catch {
         failReason := "invoke/click failed"
@@ -2215,7 +2352,7 @@ AIB_FindMoreActionsNearAllow(root) {
         for allowBtn in allBtns {
             allowName := ""
             try allowName := allowBtn.Name
-            if (!InStr(allowName, "Allow (Ctrl+Enter)"))
+            if (!AIB_IsAllowButtonName(allowName))
                 continue
 
             ; 1) Same immediate container as Allow.
@@ -2306,7 +2443,7 @@ AIB_FindMoreActionsInDialog(dlg) {
         ; Most reliable path: locate Allow, then search in the same local container.
         allowBtn := dlg.FindFirst({
             Type: 50000,
-            Name: "Allow (Ctrl+Enter)",
+            Name: "Allow",
             matchmode: "Substring"
         })
         if (allowBtn) {
@@ -2362,6 +2499,14 @@ AIB_IsMoreActionsName(btnName) {
     return false
 }
 
+AIB_IsAllowButtonName(btnName) {
+    n := StrLower(Trim(btnName))
+    if (n = "")
+        return false
+    ; Accept variants like "Allow", "Allow once", and "Allow (...)".
+    return InStr(n, "allow") > 0
+}
+
 AIB_IsPreferredDialogMoreActionsClass(className) {
     cn := Trim(className)
     if (cn = "")
@@ -2379,7 +2524,7 @@ AIB_ButtonHasAllowInNearbyContext(btn, maxDepth := 6) {
         try {
             allowBtn := cur.FindFirst({
                 Type: 50000,
-                Name: "Allow (Ctrl+Enter)",
+                Name: "Allow",
                 matchmode: "Substring"
             })
             if (allowBtn)
