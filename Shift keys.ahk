@@ -8969,12 +8969,109 @@ Outlook_MailList_GetFirstListItem(root) {
     }
     if !listEl
         return 0
+
+    ; New Outlook may expose date/header bars near the top of the list. Pick the first real
+    ; message row instead of UI chrome/header artifacts.
+    try {
+        items := listEl.FindAll({ ControlType: "ListItem" })
+        if IsObject(items) {
+            for item in items {
+                if !Outlook_MailList_IsNonMessageItem(item)
+                    return item
+            }
+        }
+    } catch {
+    }
+
+    try {
+        items := listEl.FindAll({ Type: 50007 })
+        if IsObject(items) {
+            for item in items {
+                if !Outlook_MailList_IsNonMessageItem(item)
+                    return item
+            }
+        }
+    } catch {
+    }
+
     item := 0
     try item := listEl.FindFirst({ ControlType: "ListItem" })
     if !item {
         try item := listEl.FindFirst({ Type: 50007 })
     }
-    return item ? item : 0
+    if item && !Outlook_MailList_IsNonMessageItem(item)
+        return item
+    return 0
+}
+
+Outlook_MailList_IsNonMessageItem(item) {
+    if !item
+        return true
+    aid := ""
+    name := ""
+    hasSelectionPattern := false
+    try aid := item.AutomationId
+    try name := Trim(item.Name)
+    try hasSelectionPattern := !!item.GetCurrentPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
+
+    ; Date group headers / list chrome can appear before the first actual mail row.
+    if (aid != "" && RegExMatch(aid, "i)^groupHeader"))
+        return true
+    if (name != "" && RegExMatch(name, "i)^((Today|Yesterday)\b|Header action menu)$"))
+        return true
+
+    ; Tiny unnamed bars without selection pattern are not message rows.
+    if (!hasSelectionPattern && StrLen(name) < 4)
+        return true
+
+    return false
+}
+
+Outlook_MailList_FocusedIsDrawerHeader() {
+    try {
+        fe := UIA.GetFocusedElement()
+        if !fe
+            return false
+        name := ""
+        aid := ""
+        try name := Trim(fe.Name)
+        try aid := fe.AutomationId
+        if (aid != "" && RegExMatch(aid, "i)^groupHeader"))
+            return true
+        if (name != "" && RegExMatch(name, "i)^(Today|Yesterday)\b"))
+            return true
+    } catch {
+    }
+    return false
+}
+
+Outlook_MailList_FocusedIsLikelyMessageRow() {
+    try {
+        fe := UIA.GetFocusedElement()
+        if !fe
+            return false
+        if Outlook_MailList_IsNonMessageItem(fe)
+            return false
+        ctlType := 0
+        hasSelectionPattern := false
+        try ctlType := fe.ControlType
+        try hasSelectionPattern := !!fe.GetCurrentPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
+        if (ctlType = UIA.ControlType.ListItem || ctlType = 50007)
+            return true
+        return hasSelectionPattern
+    } catch {
+    }
+    return false
+}
+
+Outlook_MailList_SkipDrawerHeadersByKeyboard(maxSteps := 5) {
+    loop maxSteps {
+        if Outlook_MailList_FocusedIsLikelyMessageRow()
+            return true
+        Send "{Down}"
+        Sleep 30
+    }
+    return Outlook_MailList_FocusedIsLikelyMessageRow()
 }
 
 Outlook_MailList_TrySelectFirstItem(root) {
@@ -8996,7 +9093,6 @@ Outlook_MailList_TrySelectFirstItem(root) {
         }
     }
     try item.SetFocus()
-    try EnsureFocus()
     return true
 }
 
@@ -9008,24 +9104,36 @@ Outlook_FocusMailMessageList(selectFirst := false) {
         return false
     if selectFirst {
         try {
-            root := UIA.ElementFromHandle(hwnd)
+            root := OutlookMail_RootElementForHwnd(hwnd)
+            if !root
+                root := UIA.ElementFromHandle(hwnd)
             if Outlook_MailList_TrySelectFirstItem(root)
                 return true
         } catch {
         }
     }
-    if OutlookFocusFirst([{ AutomationId: "Skip to message list-region" }, { Name: "Message list", matchmode: "Substring" }]) {
+    if !OutlookFocusFirst([{ AutomationId: "Skip to message list-region" }, { Name: "Message list", matchmode: "Substring" }])
+        return false
+
+    if !selectFirst {
         try EnsureFocus()
-        if selectFirst {
-            try {
-                root := UIA.ElementFromHandle(WinExist("A"))
-                Outlook_MailList_TrySelectFirstItem(root)
-            } catch {
-            }
-        }
         return true
     }
-    return false
+
+    ; Retry selection after focusing list container.
+    try {
+        root := OutlookMail_RootElementForHwnd(WinExist("A"))
+        if !root
+            root := UIA.ElementFromHandle(WinExist("A"))
+        if Outlook_MailList_TrySelectFirstItem(root)
+            return true
+    } catch {
+    }
+
+    ; Last fallback: Home may land on Today/Yesterday header; step down until a message row is focused.
+    Send "{Home}"
+    Sleep 40
+    return Outlook_MailList_SkipDrawerHeadersByKeyboard()
 }
 
 Outlook_FocusMailReadingPane() {
@@ -9848,10 +9956,15 @@ OutlookClickFirst(criteriaList) {
             return
     }
 
-    ; Classic / fallback: focus list and move selection to the first row.
-    if Outlook_FocusMailMessageList()
+    ; Classic / fallback: try UIA first-item selection (with non-message filter), then keyboard skip-header path.
+    if Outlook_FocusMailMessageList(true)
+        return
+    if Outlook_FocusMailMessageList() {
         Send "{Home}"
-    else
+        Sleep 40
+        if !Outlook_MailList_SkipDrawerHeadersByKeyboard()
+            ShowCenteredOverlay_Utils("❌ Outlook: Could not focus a message row", 1200, BANNER_ACCENT_ERROR)
+    } else
         ShowCenteredOverlay_Utils("❌ Outlook: Message list not found", 1200, BANNER_ACCENT_ERROR)
 }
 
