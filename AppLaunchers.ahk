@@ -2046,6 +2046,9 @@ StartPomodoroTimer() {
 }
 
 AIB_ClickAllowButtonInAllIDEWindows() {
+    sourceHwnd := 0
+    try sourceHwnd := WinGetID("A")
+
     windows := AIB_GetAllIDEWindowHwnds()
     if (windows.Length = 0) {
         ShowCenteredOverlay_Utils("ℹ No open Cursor/VS Code windows", 1800, BANNER_ACCENT_INFO)
@@ -2055,7 +2058,7 @@ AIB_ClickAllowButtonInAllIDEWindows() {
     clickedCount := 0
     totalCount := windows.Length
     centerHwnd := 0
-    try centerHwnd := WinGetID("A")
+    centerHwnd := sourceHwnd
 
     try {
         StandardLoadingBar_Show(
@@ -2076,6 +2079,7 @@ AIB_ClickAllowButtonInAllIDEWindows() {
         }
     } finally {
         StandardLoadingBar_Hide(0)
+        AIB_RestoreWindowFocus(sourceHwnd)
     }
 
     if (clickedCount > 0)
@@ -2084,6 +2088,20 @@ AIB_ClickAllowButtonInAllIDEWindows() {
         ShowCenteredOverlay_Utils("ℹ No Allow button found in open Cursor/VS Code windows", 2200, BANNER_ACCENT_INFO)
 
     return clickedCount
+}
+
+AIB_RestoreWindowFocus(hwnd) {
+    if (!hwnd)
+        return false
+    if !WinExist("ahk_id " hwnd)
+        return false
+    try {
+        WinActivate("ahk_id " hwnd)
+        WinWaitActive("ahk_id " hwnd, , 1.5)
+        return true
+    } catch {
+        return false
+    }
 }
 
 AIB_GetAllIDEWindowHwnds() {
