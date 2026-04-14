@@ -15,19 +15,6 @@ DebugFlowLog(location, message, dataStr := "", hypothesisId := "") {
     ; These agent debug logs are not required for runtime behavior.
     return
 }
-
-; Session 40d8f6: Copy-response banner — NDJSON to workspace (numeric data only)
-DebugSession40d8f6Log(hypothesisId, location, message, dataMap) {
-    logPath := A_ScriptDir "\debug-40d8f6.log"
-    parts := ""
-    for k, v in dataMap {
-        if (parts != "")
-            parts .= ","
-        parts .= '"' k '":' v
-    }
-    try FileAppend('{"sessionId":"40d8f6","hypothesisId":"' hypothesisId '","location":"' location '","message":"' message
-        '","data":{' parts '},"timestamp":' A_TickCount '}`n', logPath)
-}
 ; #endregion
 
 #include UIA-v2\Lib\UIA.ahk
@@ -3446,12 +3433,6 @@ StandardLoadingBar_Show(state := "Working...", barColor := BANNER_ACCENT_INTERME
     }
     overlayGui.Show("AutoSize Hide")
     overlayGui.GetPos(, , &gw, &gh)
-    ; #region agent log
-    if (promptKeys != "") {
-        DebugSession40d8f6Log("H3", "Utils_StandardLoadingBar_Show", "afterAutoSize", Map("barWidth", barWidth,
-            "promptLen", StrLen(promptKeys), "hasFSubstr", InStr(promptKeys, "[F]") ? 1 : 0, "gw", gw, "gh", gh))
-    }
-    ; #endregion
     guiX := Round(ml + (monitorWidth - gw) / 2)
     if (guiX < ml)
         guiX := ml
@@ -3617,11 +3598,6 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
         opts.promptKeys := promptKeys
     if (trackActiveMonitor)
         opts.trackActiveMonitor := true
-    ; #region agent log
-    pk := opts.HasProp("promptKeys") ? opts.promptKeys : ""
-    DebugSession40d8f6Log("H5", "Utils_ShowWithKeys", "beforeStandardLoadingBar_Show", Map("promptLen", StrLen(pk),
-    "hasFSubstr", (pk != "" && InStr(pk, "[F]")) ? 1 : 0, "textWidth", textWidth))
-    ; #endregion
     StandardLoadingBar_Show(state, barColor, opts)
     g_StandardLoadingBarIsKeysOverlay := true
     g_StandardLoadingBarKeysHotkeys := []
@@ -4021,11 +3997,6 @@ class D2C_FlowManager {
             "F", this.OnActionF.Bind(this)
         )
         pk := "[Y] Copy  [N] No  [R] Copy+Read  [C] Transfer  [F] Copy+Favorite"
-        ; #region agent log
-        DebugSession40d8f6Log("H4", "D2C_PromptForResponseAction", "banner_spawn", Map("mapHasF", keyCallbacks.Has("F") ?
-            1
-            : 0, "promptLen", StrLen(pk), "hasFSubstr", InStr(pk, "[F]") ? 1 : 0))
-        ; #endregion
         StandardLoadingBar_ShowWithKeys(
             "❓ Copy response?",
             keyCallbacks,

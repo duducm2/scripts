@@ -1708,14 +1708,9 @@ class GeminiDelayedSubmitMonitor {
         this.CopyTimeoutTimer := ""
         copyKeyCallbacks := Map("N", this.CancelCopy.Bind(this), "Y", this.DoCopyOnly.Bind(this), "R", this.CopyAndReadAloud
         .Bind(this), "C", this.CopyAndTransferToCursor.Bind(this), "F", this.CopyAndFavorite.Bind(this))
-        pk := "[Y] Copy  [N] No  [R] Copy+Read  [C] Transfer  [F] Copy+Favorite"
-        ; #region agent log
-        DebugSession40d8f6Log("H1", "Gemini_ShowCopyDecisionBanner", "banner_spawn", Map("mapHasF", copyKeyCallbacks.Has(
-            "F") ? 1 : 0, "promptLen", StrLen(pk), "hasFSubstr", InStr(pk, "[F]") ? 1 : 0))
-        ; #endregion
         StandardLoadingBar_ShowWithKeys("❓ Copy response?", copyKeyCallbacks, 5000, 0, this.DoCopyOnTimeout
             .Bind(this), BANNER_ACCENT_INTERMEDIATE, 520, 17, "", false,
-            pk,
+            "[Y] Copy  [N] No  [R] Copy+Read  [C] Transfer  [F] Copy+Favorite",
             true)
     }
 
