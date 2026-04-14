@@ -472,6 +472,7 @@ Outlook (Shift)
 📧 [G]Send to [G]eneral
 📰 [N]Send to [N]ewsletter
 📥 [I]Go to [I]nbox
+🥇 [J][J]ump to first mail
 ◧ [H]Toggle high [H] navigation pane
 📝 [S][S]ubject / Title
 👥 [T][T]o / Required
@@ -9834,6 +9835,24 @@ OutlookClickFirst(criteriaList) {
     Send "n"
     Sleep 50
     Send "{Enter}"
+}
+
+; Shift + J : Jump to first mail and select it
++J::
+{
+    if IsNewOutlookActive() {
+        Outlook_ActivateMainWindow()
+        ; Keep behavior mail-centric: if user is in Calendar, switch first.
+        Outlook_SwitchToMail()
+        if Outlook_FocusMailMessageList(true)
+            return
+    }
+
+    ; Classic / fallback: focus list and move selection to the first row.
+    if Outlook_FocusMailMessageList()
+        Send "{Home}"
+    else
+        ShowCenteredOverlay_Utils("❌ Outlook: Message list not found", 1200, BANNER_ACCENT_ERROR)
 }
 
 ; Shift + H : Toggle high navigation pane — ribbon Hide/Show folder pane
