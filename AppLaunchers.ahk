@@ -2037,15 +2037,20 @@ StartPomodoroTimer() {
 
 ; =============================================================================
 ; Pomodoro Timer - Hotkey: Win+Alt+Shift+9
-; Automation: Click "Allow (Ctrl+Enter)" in all open Cursor/VS Code windows
-; while showing a loading indicator.
+; Hold trigger automation: Click "More Actions" (next to Allow) in Cursor/VS Code
+; chat confirmation dialog, then stop scanning.
 ; =============================================================================
 #!+9::
 {
-    AIB_ClickAllowButtonInAllIDEWindows()
+    pressTick := A_TickCount
+    KeyWait("9")
+    if ((A_TickCount - pressTick) < 300)
+        return
+
+    AIB_ClickMoreActionsInAllIDEWindows()
 }
 
-AIB_ClickAllowButtonInAllIDEWindows() {
+AIB_ClickMoreActionsInAllIDEWindows() {
     sourceHwnd := 0
     try sourceHwnd := WinGetID("A")
 
@@ -2059,10 +2064,11 @@ AIB_ClickAllowButtonInAllIDEWindows() {
     totalCount := windows.Length
     centerHwnd := 0
     centerHwnd := sourceHwnd
+    debugReasons := []
 
     try {
         StandardLoadingBar_Show(
-            "⏳ Scanning IDE windows for Allow button...",
+            "⏳ Scanning IDE windows for More actions button...",
             BANNER_ACCENT_INTERMEDIATE,
             { centerOnHwnd: centerHwnd, textWidth: 640 }
         )
@@ -2072,10 +2078,13 @@ AIB_ClickAllowButtonInAllIDEWindows() {
                 "⏳ Checking " . A_Index . "/" . totalCount . ": " . AIB_GetSafeWindowTitle(hwnd),
                 BANNER_ACCENT_INTERMEDIATE
             )
-            if (AIB_ClickAllowButtonInWindow(hwnd)) {
+            failReason := ""
+            if (AIB_ClickMoreActionsButtonInWindow(hwnd, &failReason)) {
                 clickedCount += 1
                 break
             }
+            if (failReason != "" && debugReasons.Length < 3)
+                debugReasons.Push(AIB_GetSafeWindowTitle(hwnd) . " => " . failReason)
         }
     } finally {
         StandardLoadingBar_Hide(0)
@@ -2083,9 +2092,15 @@ AIB_ClickAllowButtonInAllIDEWindows() {
     }
 
     if (clickedCount > 0)
-        ShowCenteredOverlay_Utils("✅ Clicked Allow and stopped search", 1800, BANNER_ACCENT_SUCCESS)
-    else
-        ShowCenteredOverlay_Utils("ℹ No Allow button found in open Cursor/VS Code windows", 2200, BANNER_ACCENT_INFO)
+        ShowCenteredOverlay_Utils("✅ Clicked More actions and stopped search", 1800, BANNER_ACCENT_SUCCESS)
+    else {
+        msg := "ℹ No More actions button found in chat confirmation"
+        if (debugReasons.Length > 0) {
+            for reasonLine in debugReasons
+                msg .= "`n" . reasonLine
+        }
+        ShowCenteredOverlay_Utils(msg, 3200, BANNER_ACCENT_INFO)
+    }
 
     return clickedCount
 }
@@ -2127,39 +2142,38 @@ AIB_GetAllIDEWindowHwnds() {
     return windows
 }
 
-AIB_ClickAllowButtonInWindow(hwnd) {
+AIB_ClickMoreActionsButtonInWindow(hwnd, &failReason := "") {
     global UIA
+    failReason := ""
 
     try {
         WinActivate("ahk_id " hwnd)
         WinWaitActive("ahk_id " hwnd, , 1.2)
     } catch {
+        failReason := "activate failed"
         return false
     }
     Sleep(120)
 
-    allowBtn := AIB_FindAllowButtonInWindow(hwnd)
-    if (!allowBtn)
+    moreBtn := AIB_FindMoreActionsButtonInWindow(hwnd)
+    if (!moreBtn) {
+        failReason := "button not found"
         return false
-
-    try {
-        if (allowBtn.GetPropertyValue(UIA.Property.IsOffscreen))
-            return false
-    } catch {
     }
 
     try {
-        if (allowBtn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)) {
-            allowBtn.InvokePattern.Invoke()
+        if (moreBtn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)) {
+            moreBtn.InvokePattern.Invoke()
             return true
         }
     } catch {
     }
 
     try {
-        allowBtn.Click()
+        moreBtn.Click()
         return true
     } catch {
+        failReason := "invoke/click failed"
         return false
     }
 }
@@ -2178,7 +2192,7 @@ AIB_GetSafeWindowTitle(hwnd) {
     }
 }
 
-AIB_FindAllowButtonInWindow(hwnd) {
+AIB_FindMoreActionsButtonInWindow(hwnd) {
     global UIA
 
     try root := UIA.ElementFromHandle(hwnd)
@@ -2187,40 +2201,198 @@ AIB_FindAllowButtonInWindow(hwnd) {
     if (!root)
         return 0
 
-    ; Strict boundary: search only inside VS Code/Cursor chat confirmation container.
+    ; Hard constraint: More Actions must be adjacent to the Allow button.
+    ; No global/top-bar fallback to avoid wrong clicks.
+    return AIB_FindMoreActionsNearAllow(root)
+}
+
+AIB_FindMoreActionsNearAllow(root) {
+    if (!root)
+        return 0
+
     try {
-        dlg := root.FindFirst({
-            Type: 50026,
-            ClassName: "chat-confirmation-widget-container",
-            matchmode: "Substring"
-        })
-        if (dlg) {
-            btn := dlg.FindFirst({
-                Type: 50000,
-                Name: "Allow (Ctrl+Enter)",
-                ClassName: "monaco-button small monaco-text-button",
-                matchmode: "Substring"
-            })
-            if (btn)
-                return btn
+        allBtns := root.FindAll({ Type: 50000 })
+        for allowBtn in allBtns {
+            allowName := ""
+            try allowName := allowBtn.Name
+            if (!InStr(allowName, "Allow (Ctrl+Enter)"))
+                continue
+
+            ; 1) Same immediate container as Allow.
+            try p1 := allowBtn.GetParentElement()
+            catch {
+                p1 := 0
+            }
+            cand := AIB_FindMoreActionsInContainer(p1)
+            if (cand)
+                return cand
+
+            ; 2) One level above (some builds wrap each button inside its own group).
+            try p2 := p1 ? p1.GetParentElement() : 0
+            catch {
+                p2 := 0
+            }
+            cand := AIB_FindMoreActionsInContainer(p2)
+            if (cand && AIB_ButtonHasAllowInNearbyContext(cand, 2))
+                return cand
+        }
+
+        ; 3) Fallback: search directly in chat-confirmation-widget-container
+        try {
+            dlg := AIB_FindChatConfirmationDialog(root)
+            if (dlg) {
+                moreBtn := AIB_FindMoreActionsInContainer(dlg)
+                if (moreBtn)
+                    return moreBtn
+            }
+        } catch {
         }
     } catch {
     }
 
-    ; Secondary strict path: exact button match + parent-chain guard.
+    return 0
+}
+
+AIB_FindMoreActionsInContainer(containerEl) {
+    if (!containerEl)
+        return 0
     try {
-        btn := root.FindFirst({
-            Type: 50000,
-            Name: "Allow (Ctrl+Enter)",
-            ClassName: "monaco-button small monaco-text-button",
-            matchmode: "Substring"
-        })
-        if (btn && AIB_IsInChatConfirmationDialog(btn))
-            return btn
+        buttons := containerEl.FindAll({ Type: 50000 })
+        for btn in buttons {
+            nm := ""
+            try nm := btn.Name
+            if (!AIB_IsMoreActionsName(nm))
+                continue
+            cn := ""
+            try cn := btn.ClassName
+            ; Accept button if name matches "More Actions" (class check is secondary)
+            if (cn && AIB_IsPreferredDialogMoreActionsClass(cn))
+                return btn
+        }
+        ; Fallback: just return first "More Actions" button even if class doesn't match perfectly
+        buttons := containerEl.FindAll({ Type: 50000 })
+        for btn in buttons {
+            nm := ""
+            try nm := btn.Name
+            if (AIB_IsMoreActionsName(nm))
+                return btn
+        }
     } catch {
     }
-
     return 0
+}
+
+AIB_FindChatConfirmationDialog(root) {
+    if (!root)
+        return 0
+    try {
+        ; Search for chat-confirmation-widget-container
+        allGroups := root.FindAll({ Type: 50026 })
+        for grp in allGroups {
+            cn := ""
+            try cn := grp.ClassName
+            if (InStr(cn, "chat-confirmation-widget-container"))
+                return grp
+        }
+    } catch {
+    }
+    return 0
+}
+
+AIB_FindMoreActionsInDialog(dlg) {
+    if (!dlg)
+        return 0
+    try {
+        ; Most reliable path: locate Allow, then search in the same local container.
+        allowBtn := dlg.FindFirst({
+            Type: 50000,
+            Name: "Allow (Ctrl+Enter)",
+            matchmode: "Substring"
+        })
+        if (allowBtn) {
+            try localGroup := allowBtn.GetParentElement()
+            catch {
+                localGroup := 0
+            }
+            if (localGroup) {
+                try {
+                    btn := localGroup.FindFirst({
+                        Type: 50000,
+                        ClassName: "monaco-dropdown-button",
+                        matchmode: "Substring"
+                    })
+                    if (btn)
+                        return btn
+                } catch {
+                }
+            }
+        }
+
+        ; Primary path: exact class used by the chat confirmation dropdown button.
+        btn := dlg.FindFirst({
+            Type: 50000,
+            ClassName: "monaco-button small monaco-dropdown-button codicon codicon-drop-down-button",
+            matchmode: "Substring"
+        })
+        if (btn && AIB_ButtonHasAllowInNearbyContext(btn))
+            return btn
+
+        buttons := dlg.FindAll({ Type: 50000 })
+        for btn in buttons {
+            btnName := ""
+            try btnName := btn.Name
+            if (!AIB_IsMoreActionsName(btnName))
+                continue
+            cn := ""
+            try cn := btn.ClassName
+            if (!AIB_IsPreferredDialogMoreActionsClass(cn))
+                continue
+            if (AIB_ButtonHasAllowInNearbyContext(btn))
+                return btn
+        }
+    } catch {
+    }
+    return 0
+}
+
+AIB_IsMoreActionsName(btnName) {
+    n := Trim(btnName)
+    if (n = "More Actions" || n = "More Actions..." || InStr(n, "More Actions"))
+        return true
+    return false
+}
+
+AIB_IsPreferredDialogMoreActionsClass(className) {
+    cn := Trim(className)
+    if (cn = "")
+        return false
+    if (InStr(cn, "monaco-dropdown-button") && InStr(cn, "drop-down-button"))
+        return true
+    return false
+}
+
+AIB_ButtonHasAllowInNearbyContext(btn, maxDepth := 6) {
+    cur := btn
+    loop maxDepth {
+        if (!cur)
+            return false
+        try {
+            allowBtn := cur.FindFirst({
+                Type: 50000,
+                Name: "Allow (Ctrl+Enter)",
+                matchmode: "Substring"
+            })
+            if (allowBtn)
+                return true
+        } catch {
+        }
+
+        try cur := cur.GetParentElement()
+        catch {
+            return false
+        }
+    }
+    return false
 }
 
 AIB_IsInChatConfirmationDialog(el, maxDepth := 12) {
