@@ -15,6 +15,19 @@ DebugFlowLog(location, message, dataStr := "", hypothesisId := "") {
     ; These agent debug logs are not required for runtime behavior.
     return
 }
+
+; Session 40d8f6: Copy-response banner — NDJSON to workspace (numeric data only)
+DebugSession40d8f6Log(hypothesisId, location, message, dataMap) {
+    logPath := A_ScriptDir "\debug-40d8f6.log"
+    parts := ""
+    for k, v in dataMap {
+        if (parts != "")
+            parts .= ","
+        parts .= '"' k '":' v
+    }
+    try FileAppend('{"sessionId":"40d8f6","hypothesisId":"' hypothesisId '","location":"' location '","message":"' message
+        '","data":{' parts '},"timestamp":' A_TickCount '}`n', logPath)
+}
 ; #endregion
 
 #include UIA-v2\Lib\UIA.ahk
@@ -3424,7 +3437,8 @@ StandardLoadingBar_Show(state := "Working...", barColor := BANNER_ACCENT_INTERME
     overlayGui.Add("Text", "w" . barWidth . (passive ? " Wrap Center" : " Center"), state)
     if (promptKeys != "") {
         overlayGui.SetFont("s" . fontSize . " cFFFFFF", "Segoe UI")
-        overlayGui.Add("Text", "xm w" . barWidth . " Center", promptKeys)
+        ; Wrap so long key strips (e.g. Gemini Copy response? + [F]) are not clipped at fixed width.
+        overlayGui.Add("Text", "xm w" . barWidth . " Center Wrap", promptKeys)
     }
     if (!passive) {
         progressOpts := "w" . barWidth . " h10 c" . barColor . " Background45475A Smooth vOverlayProg"
@@ -3432,6 +3446,12 @@ StandardLoadingBar_Show(state := "Working...", barColor := BANNER_ACCENT_INTERME
     }
     overlayGui.Show("AutoSize Hide")
     overlayGui.GetPos(, , &gw, &gh)
+    ; #region agent log
+    if (promptKeys != "") {
+        DebugSession40d8f6Log("H3", "Utils_StandardLoadingBar_Show", "afterAutoSize", Map("barWidth", barWidth,
+            "promptLen", StrLen(promptKeys), "hasFSubstr", InStr(promptKeys, "[F]") ? 1 : 0, "gw", gw, "gh", gh))
+    }
+    ; #endregion
     guiX := Round(ml + (monitorWidth - gw) / 2)
     if (guiX < ml)
         guiX := ml
@@ -3597,6 +3617,11 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
         opts.promptKeys := promptKeys
     if (trackActiveMonitor)
         opts.trackActiveMonitor := true
+    ; #region agent log
+    pk := opts.HasProp("promptKeys") ? opts.promptKeys : ""
+    DebugSession40d8f6Log("H5", "Utils_ShowWithKeys", "beforeStandardLoadingBar_Show", Map("promptLen", StrLen(pk),
+    "hasFSubstr", (pk != "" && InStr(pk, "[F]")) ? 1 : 0, "textWidth", textWidth))
+    ; #endregion
     StandardLoadingBar_Show(state, barColor, opts)
     g_StandardLoadingBarIsKeysOverlay := true
     g_StandardLoadingBarKeysHotkeys := []
@@ -3697,6 +3722,9 @@ D2C_CombinePresetWithDictation(presetText, dictationText) {
         return p
     return p . "`n`n" . d
 }
+
+; After D2C copy of Gemini reply, before Clip Angel favorite (align with Gemini.ahk GEMINI_POST_COPY_FAVORITE_DELAY_MS).
+D2C_POST_COPY_FAVORITE_DELAY_MS := 150
 
 ; =============================================================================
 ; =============================================================================
@@ -3989,16 +4017,23 @@ class D2C_FlowManager {
             "Y", this.OnActionY.Bind(this),
             "C", this.OnActionC.Bind(this),
             "R", this.OnActionR.Bind(this),
-            "N", this.OnActionN.Bind(this)
+            "N", this.OnActionN.Bind(this),
+            "F", this.OnActionF.Bind(this)
         )
+        pk := "[Y] Copy  [N] No  [R] Copy+Read  [C] Transfer  [F] Copy+Favorite"
+        ; #region agent log
+        DebugSession40d8f6Log("H4", "D2C_PromptForResponseAction", "banner_spawn", Map("mapHasF", keyCallbacks.Has("F") ?
+            1
+            : 0, "promptLen", StrLen(pk), "hasFSubstr", InStr(pk, "[F]") ? 1 : 0))
+        ; #endregion
         StandardLoadingBar_ShowWithKeys(
             "❓ Copy response?",
             keyCallbacks,
             5000,
             0,
             this.OnActionTimeout.Bind(this),
-            BANNER_ACCENT_INTERMEDIATE, 380, 17, "", false,
-            "[Y] Copy  [N] No  [R] Copy+Read  [C] Transfer",
+            BANNER_ACCENT_INTERMEDIATE, 520, 17, "", false,
+            pk,
             true
         )
     }
@@ -4019,6 +4054,28 @@ class D2C_FlowManager {
         if (this.CurrentPhase != "PromptingAction")
             return
         this.ExecuteAction(true, false)
+    }
+
+    ; F: copy last Gemini reply, then mark newest Clip Angel clip as favorite (same as Gemini.ahk CopyAndFavorite).
+    OnActionF(*) {
+        if (this.CurrentPhase != "PromptingAction")
+            return
+        this.CleanupActionPrompt()
+        try {
+            this.DoCopyCore(false, false)
+            clipRaw := A_Clipboard
+            clip := Trim(clipRaw)
+            if (clip = "" || StrLen(clip) < 10) {
+                ShowCenteredOverlay_Utils("❌ Copy failed or empty – try again", 2000, BANNER_ACCENT_ERROR)
+                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                    WinActivate("ahk_id " this.OriginHwnd)
+                return
+            }
+            Sleep(D2C_POST_COPY_FAVORITE_DELAY_MS)
+            MarkLastClipAsFavorite()
+        } finally {
+            this.Reset()
+        }
     }
 
     OnActionN(*) {

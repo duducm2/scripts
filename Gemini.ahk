@@ -52,6 +52,8 @@ GEMINI_TRANSFER_MIN_CLIPBOARD_LENGTH := 10
 GEMINI_POST_COPY_SYNC_TIMEOUT_MS := 2000
 ; Poll interval when waiting for clipboard sequence number to change (ms). Low value = minimal latency.
 GEMINI_CLIPBOARD_POLL_MS := 10
+; After copy, before Clip Angel favorite — lets newest clip appear as row 0 (ms).
+GEMINI_POST_COPY_FAVORITE_DELAY_MS := 150
 ; Performance instrumentation (set to true to log latencies to script dir)
 GEMINI_PERF_LOG_ENABLED := false
 GEMINI_PERF_LOG_PATH := A_ScriptDir "\.cursor\gemini_perf.log"
@@ -1705,10 +1707,15 @@ class GeminiDelayedSubmitMonitor {
         this.CopyBannerGui := ""
         this.CopyTimeoutTimer := ""
         copyKeyCallbacks := Map("N", this.CancelCopy.Bind(this), "Y", this.DoCopyOnly.Bind(this), "R", this.CopyAndReadAloud
-        .Bind(this), "C", this.CopyAndTransferToCursor.Bind(this))
+        .Bind(this), "C", this.CopyAndTransferToCursor.Bind(this), "F", this.CopyAndFavorite.Bind(this))
+        pk := "[Y] Copy  [N] No  [R] Copy+Read  [C] Transfer  [F] Copy+Favorite"
+        ; #region agent log
+        DebugSession40d8f6Log("H1", "Gemini_ShowCopyDecisionBanner", "banner_spawn", Map("mapHasF", copyKeyCallbacks.Has(
+            "F") ? 1 : 0, "promptLen", StrLen(pk), "hasFSubstr", InStr(pk, "[F]") ? 1 : 0))
+        ; #endregion
         StandardLoadingBar_ShowWithKeys("❓ Copy response?", copyKeyCallbacks, 5000, 0, this.DoCopyOnTimeout
-            .Bind(this), BANNER_ACCENT_INTERMEDIATE, 380, 17, "", false,
-            "[Y] Copy  [N] No  [R] Copy+Read  [C] Transfer",
+            .Bind(this), BANNER_ACCENT_INTERMEDIATE, 520, 17, "", false,
+            pk,
             true)
     }
 
@@ -1788,6 +1795,22 @@ class GeminiDelayedSubmitMonitor {
     CopyAndReadAloud(*) {
         this.CleanupCopyBanner()
         this.DoCopyCore(true)
+    }
+
+    ; F key: copy last response, then mark the new top clip as favorite in Clip Angel (same as MarkLastClipAsFavorite).
+    CopyAndFavorite(*) {
+        this.CleanupCopyBanner()
+        this.DoCopyCore(false)
+        clipRaw := A_Clipboard
+        clip := Trim(clipRaw)
+        if (clip = "" || StrLen(clip) < GEMINI_TRANSFER_MIN_CLIPBOARD_LENGTH) {
+            ShowCenteredOverlay_Utils("❌ Copy failed or empty – try again", 2000, BANNER_ACCENT_ERROR)
+            if (WinExist("ahk_id " this.OriginalHwnd))
+                WinActivate("ahk_id " this.OriginalHwnd)
+            return
+        }
+        Sleep(GEMINI_POST_COPY_FAVORITE_DELAY_MS)
+        MarkLastClipAsFavorite()
     }
 
     ; C key: copy response, then show Cursor window selector (1–9), activate selected window, focus AI field, paste and send.
