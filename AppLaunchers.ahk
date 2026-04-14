@@ -2169,40 +2169,59 @@ AIB_FindAllowButtonInWindow(hwnd) {
     if (!root)
         return 0
 
-    ; Primary selector from UIA tree reference.
-    for selector in [
-        { Type: 50000, Name: "Allow (Ctrl+Enter)" },
-        { Type: 50000, Name: "Allow" }
-    ] {
-        try {
-            btn := root.FindFirst(selector)
-            if (btn)
-                return btn
-        } catch {
-        }
-    }
-
-    ; Fallback: fuzzy match on button name/class.
+    ; Strict boundary: search only inside VS Code/Cursor chat confirmation container.
     try {
-        buttons := root.FindAll({ Type: 50000 })
-        for btn in buttons {
-            btnName := ""
-            btnClass := ""
-            try btnName := btn.Name
-            try btnClass := btn.ClassName
-            if (InStr(btnName, "Allow") && InStr(btnClass, "monaco-button"))
-                return btn
-        }
-        for btn in buttons {
-            btnName := ""
-            try btnName := btn.Name
-            if (InStr(btnName, "Allow"))
+        dlg := root.FindFirst({
+            Type: 50026,
+            ClassName: "chat-confirmation-widget-container",
+            matchmode: "Substring"
+        })
+        if (dlg) {
+            btn := dlg.FindFirst({
+                Type: 50000,
+                Name: "Allow (Ctrl+Enter)",
+                ClassName: "monaco-button small monaco-text-button",
+                matchmode: "Substring"
+            })
+            if (btn)
                 return btn
         }
     } catch {
     }
 
+    ; Secondary strict path: exact button match + parent-chain guard.
+    try {
+        btn := root.FindFirst({
+            Type: 50000,
+            Name: "Allow (Ctrl+Enter)",
+            ClassName: "monaco-button small monaco-text-button",
+            matchmode: "Substring"
+        })
+        if (btn && AIB_IsInChatConfirmationDialog(btn))
+            return btn
+    } catch {
+    }
+
     return 0
+}
+
+AIB_IsInChatConfirmationDialog(el, maxDepth := 12) {
+    cur := el
+    loop maxDepth {
+        if (!cur)
+            return false
+        cls := ""
+        nm := ""
+        try cls := cur.ClassName
+        try nm := cur.Name
+        if (InStr(cls, "chat-confirmation-widget-container") || InStr(nm, "Chat Confirmation Dialog"))
+            return true
+        try cur := cur.GetParentElement()
+        catch {
+            return false
+        }
+    }
+    return false
 }
 
 ; =============================================================================
