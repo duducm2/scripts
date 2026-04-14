@@ -1246,10 +1246,13 @@ LoadCompletedArticles() {
 
 ; Cleanup Wikipedia selector
 CleanupWikipediaSelector() {
-    global g_WikipediaSelectorActive, g_WikipediaSelectorGui, g_WikipediaSelectorHandlers
+    global g_WikipediaSelectorActive, g_WikipediaSelectorGui, g_WikipediaSelectorHandlers, g_OnEscapePressed
 
     ; Disable active flag
     g_WikipediaSelectorActive := false
+
+    ; Unregister Escape callback so Utils global Escape:: forwards keys again (see Utils.ahk ~10842)
+    g_OnEscapePressed := ""
 
     ; Disable all character hotkeys
     for handler in g_WikipediaSelectorHandlers {
@@ -1259,13 +1262,6 @@ CleanupWikipediaSelector() {
         } catch {
             ; Silently ignore errors
         }
-    }
-
-    ; Disable Escape hotkey
-    try {
-        Hotkey("Escape", "Off")
-    } catch {
-        ; Ignore
     }
 
     ; Clear handlers array
@@ -1337,46 +1333,47 @@ ShowWikipediaSelector() {
         }
     }
 
-    ; Create GUI
-    ; Create non-activating GUI so PowerToys Command Palette stays open
-    g_WikipediaSelectorGui := Gui("+AlwaysOnTop +ToolWindow +E0x08000000", "Wikipedia Articles")
-    ; Use slightly smaller font for better fit on small monitors
-    fontSize := (monitorHeight < 800) ? 9 : 10
-    g_WikipediaSelectorGui.SetFont("s" . fontSize, "Segoe UI")
-    g_WikipediaSelectorGui.MarginX := 10
-    g_WikipediaSelectorGui.MarginY := 5
+    ; Create GUI — same dark modal styling as ShowAiModelSelector (#!+C) in Utils.ahk
+    ; +E0x08000000: non-activating so PowerToys Command Palette stays open
+    g_WikipediaSelectorGui := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x08000000")
+    g_WikipediaSelectorGui.BackColor := "1E1E2E"
+    g_WikipediaSelectorGui.MarginX := 20
+    g_WikipediaSelectorGui.MarginY := 15
 
     ; Load completed articles
     completedArticles := LoadCompletedArticles()
 
-    ; Build display text
+    ; Build display text (section headers: "— Label —" like Project Selector)
     displayText := ""
-    displayText .= "Available Articles:`n"
+    displayText .= "— Available Articles —`n"
     for i, item in g_WikipediaItems {
         displayText .= "[" . item.char . "] > " . item.title . "`n"
     }
 
     ; Add History section if there are completed articles
     if (completedArticles.Length > 0) {
-        displayText .= "`n─────────────────────────`n"
-        displayText .= "History (Read):`n"
+        displayText .= "`n"
+        displayText .= "— History (Read) —`n"
         for i, article in completedArticles {
             displayText .= "  • " . article . "`n"
         }
     }
 
-    displayText .= "`nPress Escape to cancel."
+    ; Title + separator (match Utils ShowAiModelSelector / CursorTransfer selectors)
+    baseWidth := (monitorWidth < 1200) ? 500 : 600
+    wikiContentW := baseWidth - 40
+    g_WikipediaSelectorGui.SetFont("s14 cCDD6F4 Bold", "Segoe UI")
+    g_WikipediaSelectorGui.Add("Text", "w" . wikiContentW . " Center", "📖 Wikipedia Articles")
+    g_WikipediaSelectorGui.Add("Text", "w" . wikiContentW . " h1 Background45475A")
 
-    ; Calculate text control height based on actual content (number of lines)
-    lineCount := 1  ; Start at 1 (first line doesn't have a newline before it)
+    ; Calculate Edit height from line count (footer hint is separate Text controls)
+    lineCount := 0
     loop parse, displayText, "`n" {
         lineCount++
     }
-    ; Calculate height: ~16 pixels per line
-    lineHeight := 16
+    lineHeight := 18
     textControlHeight := lineCount * lineHeight
-    ; Ensure minimum and maximum bounds
-    minHeight := 150
+    minHeight := 120
     maxHeightPercent := (monitorHeight < 800) ? 0.90 : 0.75
     maxHeight := Floor(monitorHeight * maxHeightPercent)
     if (textControlHeight < minHeight)
@@ -1384,43 +1381,25 @@ ShowWikipediaSelector() {
     if (textControlHeight > maxHeight)
         textControlHeight := maxHeight
 
-    ; Make width responsive to monitor size
-    baseWidth := (monitorWidth < 1200) ? 500 : 600
-    textControlWidth := baseWidth - 20  ; Account for margins
+    g_WikipediaSelectorGui.SetFont("s12 cCDD6F4", "Segoe UI")
+    g_WikipediaSelectorGui.AddEdit("w" . wikiContentW . " h" . textControlHeight . " ReadOnly VScroll Background313244",
+        displayText)
 
-    ; Enable vertical scrolling for long content
-    g_WikipediaSelectorGui.AddEdit("w" . textControlWidth . " h" . textControlHeight . " ReadOnly VScroll", displayText
-    )
+    g_WikipediaSelectorGui.Add("Text", "w" . wikiContentW . " h1 Background45475A y+10")
+    g_WikipediaSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
+    g_WikipediaSelectorGui.Add("Text", "w" . wikiContentW . " Center", "Press 1–5 | Esc to cancel")
 
-    ; Add Close button (set as default so it gets focus, not the Edit control)
-    closeBtn := g_WikipediaSelectorGui.AddButton("w100 Default Center", "Close")
-    closeBtn.OnEvent("Click", (*) => CleanupWikipediaSelector())
-
-    ; Calculate total height: margins + text control + button + spacing
-    totalHeight := 10 + textControlHeight + 40 + 10  ; margins + content + button + spacing
-    guiWidth := baseWidth
-
-    ; Calculate center position for the GUI with margins
-    marginX := 20  ; Horizontal margin from screen edges
-    marginY := 20  ; Vertical margin from screen edges
-    guiX := monitorLeft + (monitorWidth - guiWidth) // 2
-    guiY := monitorTop + (monitorHeight - totalHeight) // 2
-
-    ; Ensure the GUI stays within monitor bounds with margins
-    if (guiX < monitorLeft + marginX)
-        guiX := monitorLeft + marginX
-    if (guiY < monitorTop + marginY)
-        guiY := monitorTop + marginY
-    if (guiX + guiWidth > monitorLeft + monitorWidth - marginX)
-        guiX := monitorLeft + monitorWidth - guiWidth - marginX
-    if (guiY + totalHeight > monitorTop + monitorHeight - marginY)
-        guiY := monitorTop + monitorHeight - totalHeight - marginY
-
-    ; Show GUI centered on the active window's monitor
-    g_WikipediaSelectorGui.Show("NA w" . guiWidth . " h" . totalHeight . " x" . guiX . " y" . guiY)
-
-    ; Set active flag
+    ; Register before Show so Utils global Escape:: can close during AutoSize/center (see Utils.ahk ~10842)
+    global g_OnEscapePressed
     g_WikipediaSelectorActive := true
+    g_OnEscapePressed := HandleWikipediaEscape
+
+    ; Measure and center on the active window's monitor (same pattern as ShowAiModelSelector)
+    g_WikipediaSelectorGui.Show("AutoSize Hide")
+    g_WikipediaSelectorGui.GetPos(&gx, &gy, &gw, &gh)
+    cx := monitorLeft + (monitorWidth - gw) // 2
+    cy := monitorTop + (monitorHeight - gh) // 2
+    g_WikipediaSelectorGui.Show("x" . cx . " y" . cy . " NA")
 
     ; Clear handlers array
     g_WikipediaSelectorHandlers := []
@@ -1441,9 +1420,6 @@ ShowWikipediaSelector() {
             ; Silently ignore if we can't create hotkey for this character
         }
     }
-
-    ; Enable Escape hotkey
-    Hotkey("Escape", HandleWikipediaEscape, "On")
 }
 
 ; =============================================================================
@@ -1452,6 +1428,12 @@ ShowWikipediaSelector() {
 ; =============================================================================
 #!+k::
 {
+    global g_WikipediaSelectorActive
+    if (g_WikipediaSelectorActive) {
+        CleanupWikipediaSelector()
+        return
+    }
+
     SetTitleMatchMode 2
     if WinExist("Wikipedia") {
         ; Window already exists - use reduced delay for activation
