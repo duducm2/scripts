@@ -3961,6 +3961,58 @@ Confirm(t) {
 global g_RemindersPickKey := ""
 global g_DebugBe11ecLogPath := "C:\Users\fie7ca\Documents\scripts\debug-be11ec.log"
 global g_RemindersDebugEnabled := false
+global g_RemindersTimingProfile := "very_slow"
+global g_RemindersTimingProfiles := Map(
+    "normal", Map(
+        "context_focus_ms", 80,
+        "focus_to_menu_ms", 25,
+        "menu_render_ms", 45,
+        "menu_home_ms", 60,
+        "menu_scan_step_ms", 50,
+        "submenu_open_ms", 80,
+        "post_select_ms", 60,
+        "modal_to_row_ms", 35
+    ),
+    "slow", Map(
+        "context_focus_ms", 120,
+        "focus_to_menu_ms", 70,
+        "menu_render_ms", 170,
+        "menu_home_ms", 100,
+        "menu_scan_step_ms", 140,
+        "submenu_open_ms", 200,
+        "post_select_ms", 110,
+        "modal_to_row_ms", 80
+    ),
+    "very_slow", Map(
+        "context_focus_ms", 260,
+        "focus_to_menu_ms", 180,
+        "menu_render_ms", 420,
+        "menu_home_ms", 220,
+        "menu_scan_step_ms", 360,
+        "submenu_open_ms", 520,
+        "post_select_ms", 260,
+        "modal_to_row_ms", 220
+    )
+)
+
+Reminders_GetTimingProfile() {
+    global g_RemindersTimingProfile, g_RemindersTimingProfiles
+    p := "very_slow"
+    try p := StrLower(Trim(g_RemindersTimingProfile))
+    if !g_RemindersTimingProfiles.Has(p)
+        p := "very_slow"
+    return g_RemindersTimingProfiles[p]
+}
+
+Reminders_DelayValue(key, fallbackMs := 80) {
+    try {
+        profile := Reminders_GetTimingProfile()
+        if profile.Has(key)
+            return profile[key]
+    } catch {
+    }
+    return fallbackMs
+}
 
 Reminders_LoadingShow(text) {
     try {
@@ -4739,13 +4791,12 @@ Reminders_SelectItem(actionLabel, &items, remHwnd, maxItems := 35) {
 
 Reminders_OpenContextMenuForItem(itemEl) {
     try itemEl.SetFocus()
-    Sleep 80
+    Sleep Reminders_DelayValue("context_focus_ms", 80)
     EnsureFocus()
-    Sleep 25  ; focus → menu open
+    Sleep Reminders_DelayValue("focus_to_menu_ms", 25)  ; focus → menu open
     ; Apps/Menu key (keyboard-only)
     Send "{AppsKey}"
-    Sleep 140
-    Sleep 45  ; context menu rendered before Home/scan (dismiss / snooze / join online)
+    Sleep Reminders_DelayValue("menu_render_ms", 45)  ; context menu rendered before Home/scan (dismiss / snooze / join online)
 }
 
 Reminders_MenuGetFocusedName() {
@@ -4764,9 +4815,12 @@ Reminders_MenuFindItemContains(needle, maxSteps := 20, logId := "SN") {
     ; Returns true when found (focus rests on that item).
     needle := StrLower(needle)
     Send "{Home}"
-    Sleep 60
+    Sleep Reminders_DelayValue("menu_home_ms", 60)
     loop maxSteps {
         name := Reminders_MenuGetFocusedName()
+        shownName := (name != "") ? name : "(no focused text)"
+        try StandardLoadingBar_Update("👁️ Menu scan " A_Index "/" maxSteps ": " shownName,
+            BANNER_ACCENT_INTERMEDIATE)
         if (Mod(A_Index, 5) = 0) {
             ; #region agent log
             try Reminders_DebugLog("Shift keys.ahk:Reminders_MenuFindItemContains", "Menu scan step", Map(
@@ -4777,6 +4831,7 @@ Reminders_MenuFindItemContains(needle, maxSteps := 20, logId := "SN") {
             ; #endregion
         }
         if (name != "" && InStr(StrLower(name), needle)) {
+            try StandardLoadingBar_Update("✅ Menu selected: " name, BANNER_ACCENT_SUCCESS)
             ; #region agent log
             try Reminders_DebugLog("Shift keys.ahk:Reminders_MenuFindItemContains", "Menu item matched", Map(
                 "logId", logId,
@@ -4788,7 +4843,7 @@ Reminders_MenuFindItemContains(needle, maxSteps := 20, logId := "SN") {
             return true
         }
         Send "{Down}"
-        Sleep 50
+        Sleep Reminders_DelayValue("menu_scan_step_ms", 50)
     }
     ; #region agent log
     try Reminders_DebugLog("Shift keys.ahk:Reminders_MenuFindItemContains", "Menu item not found", Map(
@@ -4803,7 +4858,7 @@ Reminders_MenuFindItemContains(needle, maxSteps := 20, logId := "SN") {
 Reminders_MenuOpenSubmenuRight() {
     ; Expand focused menu item.
     Send "{Right}"
-    Sleep 80
+    Sleep Reminders_DelayValue("submenu_open_ms", 80)
 }
 
 Reminders_MenuFindAndOpenSnooze(maxSteps := 20) {
@@ -4835,7 +4890,7 @@ Reminders_MenuFindAndSelectDuration(durationNeedle, maxSteps := 50) {
     if !Reminders_MenuFindItemContains(durationNeedle, maxSteps, "dur:" durationNeedle)
         return false
     Send "{Enter}"
-    Sleep 60
+    Sleep Reminders_DelayValue("post_select_ms", 60)
     ; #region agent log
     try Reminders_DebugLog("Shift keys.ahk:Reminders_MenuFindAndSelectDuration", "Duration selected", Map(
         "duration", durationNeedle
@@ -5044,7 +5099,7 @@ Reminders_ExecuteItemAction(action) {
         Reminders_LoadingShow("⏳ Reminders: " actionLabel "…")
 
         el := items[idx].el
-        Sleep 35  ; modal closed → row target ready before context menu (join / dismiss / snooze)
+        Sleep Reminders_DelayValue("modal_to_row_ms", 35)  ; modal closed → row target ready before context menu (join / dismiss / snooze)
         ; #region agent log
         try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Selected reminder item", Map(
             "action", action,
@@ -5073,7 +5128,7 @@ Reminders_ExecuteItemAction(action) {
             ok := Reminders_MenuFindItemContains("dismiss", 20, "dismiss")
             if ok {
                 Send "{Enter}"
-                Sleep 60
+                Sleep Reminders_DelayValue("post_select_ms", 60)
                 ; #region agent log
                 try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Dismiss invoked", Map(), "DZ1",
                 "pre-fix")
@@ -10993,11 +11048,21 @@ Appt_ClickAny(criteriaList) {
 }
 
 Appt_OpenMenuAndPick(menuButtonCriteriaList, menuItemName, preClickDelayMs := 0) {
+    global APPT_MENU_OPEN_SETTLE_MS, APPT_MENU_ITEM_PRECLICK_MS
+    if !IsSet(APPT_MENU_OPEN_SETTLE_MS)
+        APPT_MENU_OPEN_SETTLE_MS := 520
+    if !IsSet(APPT_MENU_ITEM_PRECLICK_MS)
+        APPT_MENU_ITEM_PRECLICK_MS := 620
+
     ; Open menu (button), then pick the menu item.
     ; IMPORTANT: Searching the desktop root can be extremely expensive and can freeze the PC.
     if !Appt_ClickAny(menuButtonCriteriaList)
         return false
+    if (preClickDelayMs <= 0)
+        preClickDelayMs := APPT_MENU_ITEM_PRECLICK_MS
     try StandardLoadingBar_Update("🔄 Appointment: opening status menu…", BANNER_ACCENT_INTERMEDIATE)
+    if (APPT_MENU_OPEN_SETTLE_MS > 0)
+        Sleep APPT_MENU_OPEN_SETTLE_MS
     try {
         rootWin := Appt_GetRootActive()
         if !rootWin
@@ -12175,9 +12240,11 @@ RunOutlookAppointmentWizard() {
 }
 
 ApptWizard_ApplySelection(status, privacy, allDayOn, category, reminder) {
-    global APPT_WIZARD_STEP_DELAY_MS
+    global APPT_WIZARD_STEP_DELAY_MS, APPT_WIZARD_REMINDER_PRECLICK_DELAY_MS
     if !IsSet(APPT_WIZARD_STEP_DELAY_MS)
-        APPT_WIZARD_STEP_DELAY_MS := 1000
+        APPT_WIZARD_STEP_DELAY_MS := 2200
+    if !IsSet(APPT_WIZARD_REMINDER_PRECLICK_DELAY_MS)
+        APPT_WIZARD_REMINDER_PRECLICK_DELAY_MS := 820
 
     try StandardLoadingBar_Show("⏳ Wizard: applying…", BANNER_ACCENT_INTERMEDIATE, { passive: false, centerOnHwnd: 0,
         textWidth: 640, fontSize: 17 })
@@ -12214,7 +12281,7 @@ ApptWizard_ApplySelection(status, privacy, allDayOn, category, reminder) {
                 ControlType: "Button" }, { Name: "1 hour", matchmode: "Substring", ControlType: "Button" }, { Name: "12 hours",
                     matchmode: "Substring", ControlType: "Button" }, { Name: "1 day", matchmode: "Substring",
                         ControlType: "Button" }, { Name: "Reminder", matchmode: "Substring", ControlType: "Button" }
-        ], reminder)
+        ], reminder, APPT_WIZARD_REMINDER_PRECLICK_DELAY_MS)
         Sleep APPT_WIZARD_STEP_DELAY_MS
 
         try StandardLoadingBar_Update("🔄 Wizard: All-day → " (allDayOn ? "On" : "Off"), BANNER_ACCENT_INTERMEDIATE)
@@ -12240,26 +12307,27 @@ ApptWizard_FocusTitleField() {
     ; Close any open context menu/popover that may be holding focus.
     try Send "{Esc}"
     try Send "{Esc}"
+    Sleep 260
     global g_ApptWizardMainHwnd
     if IsSet(g_ApptWizardMainHwnd) && g_ApptWizardMainHwnd
         try WinActivate("ahk_id " g_ApptWizardMainHwnd)
     ok := false
-    try ok := FocusOutlookFieldOnHwnd(g_ApptWizardMainHwnd, { Name: "Add title", ControlType: "Edit" })
+    try ok := ApptWizard_TryFocusTitleByCriteria(g_ApptWizardMainHwnd, { Name: "Add title", ControlType: "Edit" })
     catch {
     }
     if !ok {
-        try ok := FocusOutlookFieldOnHwnd(g_ApptWizardMainHwnd, { Name: "Add title", Type: 50004 })
+        try ok := ApptWizard_TryFocusTitleByCriteria(g_ApptWizardMainHwnd, { Name: "Add title", Type: 50004 })
         catch {
         }
     }
     if !ok {
         ; Try alternate label (some builds expose Title vs Add title).
-        try ok := FocusOutlookFieldOnHwnd(g_ApptWizardMainHwnd, { Name: "Title", ControlType: "Edit" })
+        try ok := ApptWizard_TryFocusTitleByCriteria(g_ApptWizardMainHwnd, { Name: "Title", ControlType: "Edit" })
         catch {
         }
     }
     if !ok {
-        try ok := FocusOutlookFieldOnHwnd(g_ApptWizardMainHwnd, { AutomationId: "4100" })
+        try ok := ApptWizard_TryFocusTitleByCriteria(g_ApptWizardMainHwnd, { AutomationId: "4100" })
         catch {
         }
     }
@@ -12275,6 +12343,55 @@ ApptWizard_FocusTitleField() {
         }
     }
     return ok
+}
+
+ApptWizard_IsTitleName(name) {
+    if (name = "")
+        return false
+    n := StrLower(name)
+    return InStr(n, "add title") || InStr(n, "title") || InStr(n, "adicionar titulo") || InStr(n, "adicionar título")
+}
+
+ApptWizard_IsBodyEditorName(name) {
+    if (name = "")
+        return false
+    n := StrLower(name)
+    return InStr(n, "type {0} to insert files and more") || InStr(n, "insert files and more")
+}
+
+ApptWizard_IsTitleFocused() {
+    try {
+        fe := UIA.GetFocusedElement()
+        if !fe
+            return false
+        nm := ""
+        try nm := fe.Name
+        return ApptWizard_IsTitleName(nm) && !ApptWizard_IsBodyEditorName(nm)
+    } catch {
+    }
+    return false
+}
+
+ApptWizard_TryFocusTitleByCriteria(hwnd, criteria) {
+    try {
+        if !hwnd
+            hwnd := WinExist("A")
+        root := UIA.ElementFromHandle(hwnd)
+        if !root
+            return false
+        ctrl := root.FindFirst(criteria)
+        if !ctrl
+            return false
+        try ctrl.SetFocus()
+        Sleep 220
+        if ApptWizard_IsTitleFocused()
+            return true
+        try ctrl.Click()
+        Sleep 220
+        return ApptWizard_IsTitleFocused()
+    } catch {
+    }
+    return false
 }
 
 FocusOutlookFieldOnHwnd(hwnd, criteria) {
@@ -12301,7 +12418,7 @@ ApptWizard_FocusTitleField_ByTabbing(maxSteps := 24) {
             try btn := tb.FindFirst({ Name: "Save", ControlType: "Button" })
             if btn {
                 try btn.SetFocus()
-                Sleep 60
+                Sleep 220
             }
         }
     } catch {
@@ -12326,9 +12443,17 @@ ApptWizard_FocusTitleField_ByTabbing(maxSteps := 24) {
                 }
                 return true
             }
+            if ApptWizard_IsBodyEditorName(name) {
+                ; If we landed in the body editor, backtrack once to avoid typing spaces there.
+                Send "+{Tab}"
+                Sleep 240
+                if ApptWizard_IsTitleFocused()
+                    return true
+                continue
+            }
         }
         Send "{Tab}"
-        Sleep 60
+        Sleep 240
     }
     return false
 }
