@@ -600,10 +600,14 @@ AL_RemoveInputGuard() {
 }
 
 AL_InputGuardKeyboardProc(nCode, wParam, lParam) {
-    global g_AL_InputGuardEscaped, g_AL_hHookKbd
+    global g_AL_InputGuardEscaped, g_AL_hHookKbd, g_WikipediaSelectorActive
     if (nCode >= 0 && wParam = 0x100) {
         vkCode := NumGet(lParam, 0, "UInt")
         if (vkCode = 0x1B) {
+            ; Hook returns 1 below without CallNextHookEx — AHK hotkeys never see Esc. Wikipedia modal needs Esc.
+            if (g_WikipediaSelectorActive) {
+                return DllCall("user32\CallNextHookEx", "Ptr", 0, "Int", nCode, "Ptr", wParam, "Ptr", lParam, "Ptr")
+            }
             if (DllCall("user32\GetAsyncKeyState", "Int", 0x11) & 0x8000 && DllCall("user32\GetAsyncKeyState", "Int",
                 0x10) & 0x8000) {
                 g_AL_InputGuardEscaped := true
@@ -1204,12 +1208,19 @@ CreateWikipediaCharHandler(char) {
     return (*) => HandleWikipediaChar(char)
 }
 
-; Handler for Escape key
-HandleWikipediaEscape(*) {
-    global g_WikipediaSelectorActive
-    if (g_WikipediaSelectorActive) {
-        CleanupWikipediaSelector()
-    }
+; Used with g_OnEscapePressed so Utils_GlobalEscapeHandler (I10) closes the modal when *Escape (I0) never fires.
+WikipediaSelector_GlobalEscapeCallback(*) {
+    WikipediaSelector_Cancel()
+}
+
+; GUI message-path Escape (helps when Esc is delivered via the GUI message pump)
+WikipediaSelector_GuiEscape(*) {
+    WikipediaSelector_Cancel()
+}
+
+; Cancel Wikipedia selector (same pattern as AiModelSelector_Cancel in Utils.ahk)
+WikipediaSelector_Cancel(*) {
+    CleanupWikipediaSelector()
 }
 
 ; Load completed Wikipedia articles from CSV file
@@ -1244,27 +1255,35 @@ LoadCompletedArticles() {
     return completedArticles
 }
 
-; Cleanup Wikipedia selector
+; Cleanup Wikipedia selector (mirror AiModelSelector_Close in Utils.ahk)
 CleanupWikipediaSelector() {
-    global g_WikipediaSelectorActive, g_WikipediaSelectorGui, g_WikipediaSelectorHandlers, g_OnEscapePressed
+    global g_WikipediaSelectorActive, g_WikipediaSelectorGui, g_WikipediaSelectorHandlers
 
-    ; Disable active flag
+    if (!g_WikipediaSelectorActive)
+        return
+
     g_WikipediaSelectorActive := false
 
-    ; Unregister Escape callback so Utils global Escape:: forwards keys again (see Utils.ahk ~10842)
+    global g_OnEscapePressed
     g_OnEscapePressed := ""
 
-    ; Disable all character hotkeys
+    ; Disable hotkeys (same order as AiModelSelector_Close: digit keys, then Escape, then restore global Escape)
     for handler in g_WikipediaSelectorHandlers {
         try {
-            char := handler.char
-            Hotkey(char, "Off")
+            Hotkey(handler.char, "Off")
         } catch {
-            ; Silently ignore errors
         }
     }
+    try {
+        Hotkey("Escape", WikipediaSelector_Cancel, "Off")
+    } catch {
+    }
+    try {
+        Hotkey("*Escape", WikipediaSelector_Cancel, "Off")
+    } catch {
+    }
+    Utils_EnsureGlobalEscapeHotkey()
 
-    ; Clear handlers array
     g_WikipediaSelectorHandlers := []
 
     ; Close and destroy GUI
@@ -1272,22 +1291,22 @@ CleanupWikipediaSelector() {
         try {
             g_WikipediaSelectorGui.Destroy()
         } catch {
-            ; Ignore
         }
         g_WikipediaSelectorGui := false
     }
 }
 
-; Show Wikipedia selector GUI
+; Show Wikipedia selector GUI (mirror ShowAiModelSelector in Utils.ahk)
 ShowWikipediaSelector() {
     global g_WikipediaSelectorGui, g_WikipediaSelectorActive, g_WikipediaSelectorHandlers
     global g_WikipediaItems
 
-    ; Close existing GUI if open
-    if (g_WikipediaSelectorActive && IsObject(g_WikipediaSelectorGui)) {
-        CleanupWikipediaSelector()
-        Sleep 50
-    }
+    ; Don't show if already active (same as ShowAiModelSelector)
+    if (g_WikipediaSelectorActive)
+        return
+
+    ; LL keyboard hook may still be swallowing keys from a prior scroll-restore guard — Esc must reach hotkeys.
+    AL_RemoveInputGuard()
 
     ; Get monitor dimensions early for responsive sizing
     activeWin := 0
@@ -1389,10 +1408,10 @@ ShowWikipediaSelector() {
     g_WikipediaSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
     g_WikipediaSelectorGui.Add("Text", "w" . wikiContentW . " Center", "Press 1–5 | Esc to cancel")
 
-    ; Register before Show so Utils global Escape:: can close during AutoSize/center (see Utils.ahk ~10842)
-    global g_OnEscapePressed
-    g_WikipediaSelectorActive := true
-    g_OnEscapePressed := HandleWikipediaEscape
+    try {
+        g_WikipediaSelectorGui.OnEvent("Escape", WikipediaSelector_GuiEscape)
+    } catch {
+    }
 
     ; Measure and center on the active window's monitor (same pattern as ShowAiModelSelector)
     g_WikipediaSelectorGui.Show("AutoSize Hide")
@@ -1401,36 +1420,39 @@ ShowWikipediaSelector() {
     cy := monitorTop + (monitorHeight - gh) // 2
     g_WikipediaSelectorGui.Show("x" . cx . " y" . cy . " NA")
 
+    g_WikipediaSelectorActive := true
+
+    ; Enable hotkeys for 1–5 and Escape (same order as ShowAiModelSelector: digits first, then Escape)
     ; Clear handlers array
     g_WikipediaSelectorHandlers := []
 
     ; Enable hotkeys for characters 1-5
     for item in g_WikipediaItems {
         char := item.char
-        ; Use factory function to create handler with properly captured char value
         handler := CreateWikipediaCharHandler(char)
-
-        ; Store handler for cleanup
         g_WikipediaSelectorHandlers.Push({ char: char, handler: handler })
-
-        ; Enable hotkey
         try {
             Hotkey(char, handler, "On")
         } catch {
-            ; Silently ignore if we can't create hotkey for this character
         }
     }
+
+    ; *Escape: not removed by Utils Hotkey("Escape","Off") (square selector, etc.); CursorTransfer uses the same pattern.
+    Hotkey("*Escape", WikipediaSelector_Cancel, "On")
+
+    ; If I0 *Escape never receives the key, I10 Utils_GlobalEscapeHandler still runs — same hook as g_OnEscapePressed (Utils.ahk).
+    global g_OnEscapePressed
+    g_OnEscapePressed := WikipediaSelector_GlobalEscapeCallback
+    Utils_EnsureGlobalEscapeHotkey()
 }
 
 ; =============================================================================
-; Open/Activate Wikipedia
-; Hotkey: Win+Alt+Shift+K
+; SelectWikipediaInHandy() — Opens/closes selector or activates Wikipedia (same pattern as SelectAiModelInHandy in Utils.ahk)
 ; =============================================================================
-#!+k::
-{
+SelectWikipediaInHandy() {
     global g_WikipediaSelectorActive
     if (g_WikipediaSelectorActive) {
-        CleanupWikipediaSelector()
+        WikipediaSelector_Cancel()
         return
     }
 
@@ -1572,6 +1594,15 @@ ShowWikipediaSelector() {
     } else {
         ShowWikipediaSelector()
     }
+}
+
+; =============================================================================
+; Open/Activate Wikipedia
+; Hotkey: Win+Alt+Shift+K
+; =============================================================================
+#!+k::
+{
+    SelectWikipediaInHandy()
 }
 
 ; =============================================================================

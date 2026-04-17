@@ -864,7 +864,7 @@ GetScriptsDirectory() {
 }
 
 ; Get list of script files to update.
-; Utils.ahk must be last so QuickUpdateScripts can reload all other scripts before this instance is replaced.
+; AppLaunchers.ahk must be last so QuickUpdateScripts can relaunch it with /Updated (success overlay; includes Utils.ahk).
 GetScriptFiles() {
     scriptsDir := GetScriptsDirectory()
     return [
@@ -875,8 +875,7 @@ GetScriptFiles() {
         scriptsDir "\Microsoft Teams.ahk",
         scriptsDir "\Gemini.ahk",
         scriptsDir "\mousemaster.ahk",
-        scriptsDir "\AppLaunchers.ahk",
-        scriptsDir "\Utils.ahk"
+        scriptsDir "\AppLaunchers.ahk"
     ]
 }
 
@@ -898,29 +897,29 @@ QuickUpdateScripts() {
 
         StandardLoadingBar_Show("⏳ Restarting scripts...", BANNER_ACCENT_INTERMEDIATE, { passive: false })
 
-        utilsPath := ""
+        anchorPath := ""
         psPaths := []
 
         for scriptPath in scripts {
-            if (InStr(scriptPath, "\Utils.ahk"))
-                utilsPath := scriptPath
+            if (InStr(scriptPath, "\AppLaunchers.ahk"))
+                anchorPath := scriptPath
             psPaths.Push("'" . StrReplace(scriptPath, "'", "''") . "'")
         }
 
-        if (!utilsPath || utilsPath = "") {
+        if (!anchorPath || anchorPath = "") {
             StandardLoadingBar_Hide(0)
-            ShowCenteredOverlay_Utils("❌ Utils.ahk not found in script list", 2500, BANNER_ACCENT_ERROR)
+            ShowCenteredOverlay_Utils("❌ AppLaunchers.ahk not found in script list", 2500, BANNER_ACCENT_ERROR)
             return
         }
 
-        psUtils := StrReplace(utilsPath, "'", "''")
+        psAnchor := StrReplace(anchorPath, "'", "''")
 
         ; PowerShell contract (deterministic): sleep 500ms -> stop AutoHotkey* -> sleep 500ms -> Start-Process scripts.
         ps := ""
         ps .= "Start-Sleep -Milliseconds 500; "
         ps .= "Stop-Process -Name 'AutoHotkey*' -Force -ErrorAction SilentlyContinue; "
         ps .= "Start-Sleep -Milliseconds 500; "
-        ps .= "$utilsPath = '" . psUtils . "'; "
+        ps .= "$anchorPath = '" . psAnchor . "'; "
         ; AHK Array.Join() isn't available in this environment; build a CSV manually.
         psPathsJoined := ""
         for i, p in psPaths {
@@ -930,7 +929,7 @@ QuickUpdateScripts() {
         }
         ps .= "$scripts = @(" . psPathsJoined . "); "
         ps .= "foreach ($s in $scripts) { "
-        ps .= "  if ($s -eq $utilsPath) { Start-Process -FilePath $s -ArgumentList '/Updated' | Out-Null } "
+        ps .= "  if ($s -eq $anchorPath) { Start-Process -FilePath $s -ArgumentList '/Updated' | Out-Null } "
         ps .= "  else { Start-Process -FilePath $s | Out-Null } "
         ps .= "}"
 
@@ -1851,6 +1850,7 @@ AiModelSelector_Close() {
     try Hotkey("3", "Off")
     try Hotkey("4", "Off")
     try Hotkey("Escape", AiModelSelector_Cancel, "Off")
+    Utils_EnsureGlobalEscapeHotkey()
 
     ; Destroy GUI
     if (IsObject(g_AiModelSelectorGui) && g_AiModelSelectorGui.Hwnd) {
@@ -5352,7 +5352,7 @@ InitDpiAwareness() {
 
 InitDpiAwareness()
 
-; Auto-execute: show success after QuickUpdateScripts relaunches Utils.ahk with "/Updated".
+; Auto-execute: show success after QuickUpdateScripts relaunches AppLaunchers.ahk (includes this file) with "/Updated".
 if (A_Args.Length > 0 && A_Args[1] = "/Updated") {
     try {
         ShowCenteredOverlay_Utils("✅ Scripts updated and relaunched", 6500, BANNER_ACCENT_SUCCESS)
@@ -5392,7 +5392,7 @@ if (A_Args.Length > 0 && A_Args[1] = "/Updated") {
 }
 
 ; =============================================================================
-; Select AI Model in Handyhift+C
+; Select AI Model in Handyehift+C
 ; =============================================================================
 #!+C::
 {
@@ -5846,6 +5846,7 @@ ForceCleanupAllSquares() {
     } catch {
         ; Ignore
     }
+    Utils_EnsureGlobalEscapeHotkey()
 }
 
 ; Backup timer handler - guaranteed to fire after 7 seconds
@@ -5943,6 +5944,7 @@ CleanupSquareSelector() {
     } catch {
         ; Silently ignore if hotkey doesn't exist
     }
+    Utils_EnsureGlobalEscapeHotkey()
 
     ; Reset click mode flag
     global g_SquareSelectorClickMode
@@ -6449,6 +6451,7 @@ SelectSquareByIndex(index) {
         } catch {
             ; Ignore
         }
+        Utils_EnsureGlobalEscapeHotkey()
 
         ; STEP 3: Destroy all square GUIs immediately and aggressively
         ; This must happen BEFORE the click so squares don't block it
@@ -6603,6 +6606,7 @@ SelectSquareByIndex(index) {
         } catch {
             ; Ignore
         }
+        Utils_EnsureGlobalEscapeHotkey()
         ; Don't destroy squares - keep them visible
         g_SquareSelectorActive := false
         g_SquareSelectorLock := false
@@ -6828,6 +6832,7 @@ DisableLoopModeHotkeys() {
     } catch {
         ; Silently ignore if hotkey doesn't exist
     }
+    Utils_EnsureGlobalEscapeHotkey()
 
     ; Disable arrow key hotkeys
     try {
@@ -7230,6 +7235,7 @@ StudyTopicSelector_Close() {
     try Hotkey("4", "Off")
     try Hotkey("5", "Off")
     try Hotkey("Escape", StudyTopicSelector_Cancel, "Off")
+    Utils_EnsureGlobalEscapeHotkey()
     if (IsObject(g_StudyTopicSelectorGui) && g_StudyTopicSelectorGui.Hwnd) {
         try g_StudyTopicSelectorGui.Destroy()
     }
@@ -8548,6 +8554,7 @@ CleanupHotstringSelector() {
     } catch {
         ; Ignore
     }
+    Utils_EnsureGlobalEscapeHotkey()
 
     ; Disable Backspace hotkey (menu back)
     try {
@@ -10826,23 +10833,16 @@ SendEscape(count := 1) {
 }
 
 ; =============================================================================
-; Global Escape hotkey (hook)
-; Forwards physical Escape to the active app (SendInput). Dictation/Handy no longer blocks this path;
-; SendEscape() still suppresses synthetic Escape during dictation when appropriate.
+; Global Escape hotkey (registered via Hotkey(), not Escape:: label)
+; Modals use Hotkey("Escape", modalFn, "On") which replaces this binding; Hotkey("Escape", "Off") leaves Escape
+; unhandled until Utils_EnsureGlobalEscapeHotkey() runs (see AiModel cleanup, square selector, hotstring cleanup, etc.).
 ; =============================================================================
 
 ; Optional escape callback: when set (e.g. by WindowManagement for project selector), Utils runs it and consumes Escape.
 global g_OnEscapePressed := ""
-
-; Force hook-based hotkey to intercept Escape at a lower level
-; This should catch it before handy.exe's hook processes it
-#UseHook
-#InputLevel 10
-Escape::
-{
+Utils_GlobalEscapeHandler(*) {
     global g_OnEscapePressed
 
-    ; If a consumer (e.g. project selector) registered an escape handler, run it and consume the key
     if (g_OnEscapePressed) {
         try {
             g_OnEscapePressed.Call()
@@ -10851,7 +10851,6 @@ Escape::
         return
     }
 
-    ; Cross-process: if project selector is open (WM process), request close via file so WM's timer will run CleanupProjectSelector
     try {
         sentinel := A_ScriptDir "\.cursor\wm_selector_open"
         if (FileExist(sentinel)) {
@@ -10864,11 +10863,22 @@ Escape::
     } catch {
     }
 
-    ; Forward Escape to the system
-    ; Use SendInput for more reliable key forwarding
+    ; I10 hotkey: forward at send level 0 so this handler is not re-triggered by SendInput (SendLevel / #InputLevel).
+    SendLevel 0
     SendInput "{Escape}"
 }
-#InputLevel 0
+
+Utils_EnsureGlobalEscapeHotkey() {
+    ; I10: distinct from modals that use Hotkey("Escape", fn, "On") at default level; avoids replace ambiguity.
+    ; Forward path uses SendLevel 0 so synthetic Escape does not re-enter this handler.
+    try {
+        Hotkey("Escape", Utils_GlobalEscapeHandler, "I10 On")
+    } catch {
+    }
+}
+
+; Initial registration (replaces legacy Escape:: label)
+Utils_EnsureGlobalEscapeHotkey()
 
 ; =============================================================================
 ; Dictation Indicator - Red pulsing inner square with yellow border

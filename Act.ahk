@@ -48,7 +48,8 @@ Run GetScriptPath("Shift keys.ahk")
 Run GetScriptPath("Gemini.ahk")
 Run GetScriptPath("AppLaunchers.ahk")
 Run GetScriptPath("WindowManagement.ahk")
-Run GetScriptPath("Utils.ahk")
+; Do not Run Utils.ahk here: AppLaunchers.ahk already #includes Utils.ahk. A second Utils process duplicates
+; keyboard hooks (e.g. global Escape) and breaks modals that rely on g_OnEscapePressed / I10 in AppLaunchers.
 Run GetScriptPath("Mousemaster.ahk")
 
 if (IS_WORK_ENVIRONMENT) {

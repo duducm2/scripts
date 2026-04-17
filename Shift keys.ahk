@@ -8437,6 +8437,7 @@ global OUTLOOK_COPILOT_RAIL_AID := "b5abf2ae-c16b-4310-8f8a-d3bcdb52f162"
 ; Win+Alt+Shift+L modal: same pattern as Utils ShowAiModelSelector (1–9 + Esc).
 global g_OutlookCopilotSelectorGui := false
 global g_OutlookCopilotSelectorActive := false
+global g_OutlookCopilotEscPollPrev := false
 global g_OutlookCopilotShortcuts := [{ name: "Toggle Copilot voice chat", desc: "Voice chat / new voice session" }, { name: "New chat",
     desc: "Start a new Copilot chat" }, { name: "Focus Copilot input", desc: "Message Copilot composer" }, { name: "Open navigation panel",
         desc: "Expand Copilot nav drawer" }, { name: "Work scope", desc: "Toggle Work (grounded) scope" }, { name: "Web scope",
@@ -8795,6 +8796,10 @@ ShowOutlookCopilotSelector() {
     g_OutlookCopilotSelectorGui.Add("Text", "w320 h1 Background45475A y+10")
     g_OutlookCopilotSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
     g_OutlookCopilotSelectorGui.Add("Text", "w320 Center", "Press 1–9 | Esc to cancel")
+    try {
+        g_OutlookCopilotSelectorGui.OnEvent("Escape", OutlookCopilotSelector_GuiEscape)
+    } catch {
+    }
     activeWin := 0
     try activeWin := WinGetID("A")
     catch {
@@ -8830,12 +8835,54 @@ ShowOutlookCopilotSelector() {
     g_OutlookCopilotSelectorGui.GetPos(&gx, &gy, &gw, &gh)
     cx := monitorLeft + (monitorWidth - gw) // 2
     cy := monitorTop + (monitorHeight - gh) // 2
-    g_OutlookCopilotSelectorGui.Show("x" cx " y" cy " NA")
+    ; Avoid "NA": if focus stays in Outlook/Chromium, Esc is consumed there first. Activate so Esc reaches this Gui.
+    g_OutlookCopilotSelectorGui.Show("x" cx " y" cy)
+    try WinActivate(g_OutlookCopilotSelectorGui.Hwnd)
     g_OutlookCopilotSelectorActive := true
     loop 9 {
         Hotkey(String(A_Index), OutlookCopilotSelector_HandleKey, "On")
     }
-    Hotkey("Escape", OutlookCopilotSelector_Cancel, "On")
+    ; $*Escape: $ forces keyboard hook (ignores synthetic Esc from SendInput in same script). I10 uses g_OnEscapePressed.
+    Hotkey("$*Escape", OutlookCopilotSelector_EscapeFromHotkey, "On")
+    global g_OnEscapePressed
+    g_OnEscapePressed := OutlookCopilotSelector_GlobalEscapeCallback
+    Utils_EnsureGlobalEscapeHotkey()
+    ; Fallback when hook hotkeys miss Esc (e.g. another AHK process / hook order).
+    g_OutlookCopilotEscPollPrev := false
+    SetTimer(OutlookCopilotSelector_EscapePoll, 50)
+}
+
+; Poll Esc — fallback when $*Escape / g_OnEscapePressed miss. VK_ESCAPE 0x1B via GetAsyncKeyState.
+OutlookCopilotSelector_EscapePoll() {
+    global g_OutlookCopilotSelectorActive, g_OutlookCopilotEscPollPrev
+    if !g_OutlookCopilotSelectorActive {
+        SetTimer(OutlookCopilotSelector_EscapePoll, 0)
+        return
+    }
+    escSync := GetKeyState("Escape", "P")
+    escAsync := (DllCall("user32\GetAsyncKeyState", "int", 0x1B) & 0x8000) != 0
+    escDown := escSync || escAsync
+    if escDown {
+        if !g_OutlookCopilotEscPollPrev {
+            g_OutlookCopilotEscPollPrev := true
+            OutlookCopilotSelector_Cancel()
+        }
+    } else {
+        g_OutlookCopilotEscPollPrev := false
+    }
+}
+
+OutlookCopilotSelector_EscapeFromHotkey(*) {
+    OutlookCopilotSelector_Cancel()
+}
+
+; Used with g_OnEscapePressed when I0 *Escape does not fire
+OutlookCopilotSelector_GlobalEscapeCallback(*) {
+    OutlookCopilotSelector_Cancel()
+}
+
+OutlookCopilotSelector_GuiEscape(*) {
+    OutlookCopilotSelector_Cancel()
 }
 
 OutlookCopilotSelector_HandleKey(ThisHotkey, *) {
@@ -8857,11 +8904,19 @@ OutlookCopilotSelector_Close() {
     global g_OutlookCopilotSelectorGui, g_OutlookCopilotSelectorActive
     if !g_OutlookCopilotSelectorActive
         return
+    SetTimer(OutlookCopilotSelector_EscapePoll, 0)
+    global g_OutlookCopilotEscPollPrev
+    g_OutlookCopilotEscPollPrev := false
     g_OutlookCopilotSelectorActive := false
+    global g_OnEscapePressed
+    g_OnEscapePressed := ""
     loop 9 {
         try Hotkey(String(A_Index), "Off")
     }
     try Hotkey("Escape", OutlookCopilotSelector_Cancel, "Off")
+    try Hotkey("*Escape", OutlookCopilotSelector_Cancel, "Off")
+    try Hotkey("$*Escape", OutlookCopilotSelector_EscapeFromHotkey, "Off")
+    Utils_EnsureGlobalEscapeHotkey()
     if IsObject(g_OutlookCopilotSelectorGui) && g_OutlookCopilotSelectorGui.Hwnd {
         try g_OutlookCopilotSelectorGui.Destroy()
     }
@@ -8870,9 +8925,9 @@ OutlookCopilotSelector_Close() {
 
 SelectOutlookCopilotShortcut() {
     global g_OutlookCopilotSelectorActive
-    if g_OutlookCopilotSelectorActive
-        OutlookCopilotSelector_Close()
-    else
+    if g_OutlookCopilotSelectorActive {
+        OutlookCopilotSelector_Cancel()
+    } else
         ShowOutlookCopilotSelector()
 }
 
@@ -13237,31 +13292,31 @@ OneDriveShare_WaitForClipboardChange(oldClip, timeout := 5000) {
 +w::
 {
     global IS_WORK_ENVIRONMENT
-    
+
     if (IS_WORK_ENVIRONMENT) {
         StandardLoadingBar_Show("⏳ Preparing 7-Zip compress...", BANNER_ACCENT_INTERMEDIATE, { passive: false })
-        
+
         try {
             StandardLoadingBar_Update("📁 Ensuring focus on items view...", BANNER_ACCENT_INTERMEDIATE)
             EnsureItemsViewFocus()
             Sleep 300
-            
+
             StandardLoadingBar_Update("📋 Opening context menu...", BANNER_ACCENT_INTERMEDIATE)
             Send "{AppsKey}"
             Sleep 1000  ; Context menu takes time to appear
-            
+
             StandardLoadingBar_Update("🔍 Locating 7-Zip option...", BANNER_ACCENT_INTERMEDIATE)
             Send "7"
             Sleep 800  ; 7-Zip needs time to respond
-            
+
             StandardLoadingBar_Update("✍️  Sending first confirmation...", BANNER_ACCENT_INTERMEDIATE)
             Send "{Enter}"
             Sleep 600
-            
+
             StandardLoadingBar_Update("✍️  Sending second confirmation...", BANNER_ACCENT_INTERMEDIATE)
             Send "{Enter}"
             Sleep 800
-            
+
             StandardLoadingBar_Hide(500)
         } catch as e {
             StandardLoadingBar_Hide(0)
@@ -13269,30 +13324,30 @@ OneDriveShare_WaitForClipboardChange(oldClip, timeout := 5000) {
         }
         return
     }
-    
+
     StandardLoadingBar_Show("⏳ Preparing WinRAR compress...", BANNER_ACCENT_INTERMEDIATE, { passive: false })
-    
+
     try {
         StandardLoadingBar_Update("📁 Ensuring focus on items view...", BANNER_ACCENT_INTERMEDIATE)
         EnsureItemsViewFocus()
         Sleep 300
-        
+
         StandardLoadingBar_Update("📋 Opening context menu...", BANNER_ACCENT_INTERMEDIATE)
         Send "{AppsKey}"
         Sleep 1000  ; Context menu takes time to appear
-        
+
         StandardLoadingBar_Update("🔍 Locating WinRAR option...", BANNER_ACCENT_INTERMEDIATE)
         Send "w"
         Sleep 800
-        
+
         StandardLoadingBar_Update("✍️  Sending first confirmation...", BANNER_ACCENT_INTERMEDIATE)
         Send "{Enter}"
         Sleep 600
-        
+
         StandardLoadingBar_Update("✍️  Sending second confirmation...", BANNER_ACCENT_INTERMEDIATE)
         Send "{Enter}"
         Sleep 800
-        
+
         StandardLoadingBar_Hide(500)
     } catch as e {
         StandardLoadingBar_Hide(0)
@@ -13304,31 +13359,31 @@ OneDriveShare_WaitForClipboardChange(oldClip, timeout := 5000) {
 +x::
 {
     global IS_WORK_ENVIRONMENT
-    
+
     if (IS_WORK_ENVIRONMENT) {
         StandardLoadingBar_Show("⏳ Preparing 7-Zip extraction...", BANNER_ACCENT_INTERMEDIATE, { passive: false })
-        
+
         try {
             StandardLoadingBar_Update("📁 Ensuring focus on items view...", BANNER_ACCENT_INTERMEDIATE)
             EnsureItemsViewFocus()
             Sleep 300
-            
+
             StandardLoadingBar_Update("📋 Opening context menu...", BANNER_ACCENT_INTERMEDIATE)
             Send "{AppsKey}"
             Sleep 1000  ; Context menu takes time to appear
-            
+
             StandardLoadingBar_Update("🔍 Locating 7-Zip option...", BANNER_ACCENT_INTERMEDIATE)
             Send "7"
             Sleep 800  ; 7-Zip menu needs time to respond
-            
+
             StandardLoadingBar_Update("⬇️  Moving to extract option...", BANNER_ACCENT_INTERMEDIATE)
             Send "{Down}"
             Sleep 400
-            
+
             StandardLoadingBar_Update("✍️  Extracting to current folder...", BANNER_ACCENT_INTERMEDIATE)
             Send "{Enter}"
             Sleep 800
-            
+
             StandardLoadingBar_Hide(500)
         } catch as e {
             StandardLoadingBar_Hide(0)
@@ -13336,27 +13391,27 @@ OneDriveShare_WaitForClipboardChange(oldClip, timeout := 5000) {
         }
         return
     }
-    
+
     StandardLoadingBar_Show("⏳ Preparing WinRAR extraction...", BANNER_ACCENT_INTERMEDIATE, { passive: false })
-    
+
     try {
         StandardLoadingBar_Update("📁 Ensuring focus on items view...", BANNER_ACCENT_INTERMEDIATE)
         EnsureItemsViewFocus()
         Sleep 300
-        
+
         StandardLoadingBar_Update("📋 Opening context menu...", BANNER_ACCENT_INTERMEDIATE)
         Send "{AppsKey}"
         Sleep 1000  ; Context menu takes time to appear
-        
+
         StandardLoadingBar_Update("🔍 Locating WinRAR option...", BANNER_ACCENT_INTERMEDIATE)
         ; WinRAR shell menu accelerators (English); adjust if UI language differs
         Send "w"
         Sleep 800
-        
+
         StandardLoadingBar_Update("✍️  Extracting to current folder...", BANNER_ACCENT_INTERMEDIATE)
         Send "x"
         Sleep 800
-        
+
         StandardLoadingBar_Hide(500)
     } catch as e {
         StandardLoadingBar_Hide(0)
