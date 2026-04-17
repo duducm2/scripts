@@ -10,9 +10,6 @@
 #include %A_ScriptDir%\aux\GeminiIPC.ahk
 
 ; --- Config ---------------------------------------------------------------
-; Path to the file containing the initial prompt Gemini should receive.
-PROMPT_FILE := A_ScriptDir "\data\Gemini_Prompt.txt"
-
 ; Copy response button names (EN/PT). Excludes "Copy prompt" / "Copiar prompt" which are different controls.
 GEMINI_COPY_RESPONSE_NAMES := ["Copy", "Copiar"]
 
@@ -925,33 +922,6 @@ copyFromBridge(wParam, lParam, msg, hwnd) {
 ; =============================================================================
 ; Initialize Gemini window on first-time opening
 ; =============================================================================
-SendPromptToActiveGeminiTab(promptText) {
-    try {
-        if (StrLen(promptText) = 0)
-            return false
-
-        uia := UIA_Browser()
-        Sleep 300
-
-        promptField := Gemini_FocusPromptSameAsOpenHotkey(uia)
-        if (!promptField)
-            return false
-
-        oldClip := A_Clipboard
-        A_Clipboard := ""
-        A_Clipboard := promptText
-        ClipWait 1
-        Send("^v")
-        Sleep 100
-        Send("{Enter}")
-        Sleep 100
-        A_Clipboard := oldClip
-        return true
-    } catch {
-        return false
-    }
-}
-
 InitializeGeminiFirstTime() {
     try {
         ; Show banner to inform user
@@ -1002,27 +972,6 @@ InitializeGeminiFirstTime() {
         }
         Sleep 550   ; Give window and tabs time to fully settle
 
-        ; Read initial prompt from external file
-        promptText := ""
-        try promptText := FileRead(PROMPT_FILE, "UTF-8")
-        if (StrLen(promptText) = 0)
-            promptText := "hey, what's up?"
-
-        ; Update banner status
-        StandardLoadingBar_Show("📤 Sending prompt to Gemini tabs...", BANNER_ACCENT_INTERMEDIATE)
-
-        geminiHwnd := GetGeminiWindowHwnd()
-        ; Ensure first tab is active and send prompt (no tab banner during initial launch)
-        Send("^1")
-        Sleep 280
-        SendPromptToActiveGeminiTab(promptText)
-
-        ; Switch to second tab and send the same prompt
-        Send("^2")
-        Sleep 280
-        SendPromptToActiveGeminiTab(promptText)
-
-        ; Hide banner on success
         StandardLoadingBar_Hide(0)
     } catch Error as err {
         ; Hide banner on error
