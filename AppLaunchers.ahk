@@ -2295,8 +2295,6 @@ AIB_GetAllIDEWindowHwnds() {
             winTitle := WinGetTitle("ahk_id " hwnd)
             if (!winTitle)
                 continue
-            if (InStr(StrLower(winTitle), "preview"))
-                continue
 
             windows.Push(hwnd)
         } catch {
