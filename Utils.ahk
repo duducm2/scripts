@@ -888,6 +888,7 @@ QuickUpdateScripts() {
     s_isQuickUpdateRunning := true
 
     try {
+        ApplyScriptMasterVolumeTarget()
         scripts := GetScriptFiles()
         scriptsNames := ""
         for scriptPath in scripts {
@@ -4359,6 +4360,29 @@ ToggleSoundState() {
 }
 
 ; =============================================================================
+; Centralized audio levels (single source of truth; master playback vs mic capture)
+; =============================================================================
+global SCRIPT_MASTER_VOLUME_PERCENT := 70
+global CLEANING_CONFIRM_WMP_VOLUME_PERCENT := 10
+global SCRIPT_MIC_CAPTURE_VOLUME_PERCENT := 100
+global SCRIPT_MICROPHONE_INPUT_SLIDER_PERCENT := 100
+
+ApplyScriptMasterVolumeTarget() {
+    try SoundSetVolume(SCRIPT_MASTER_VOLUME_PERCENT)
+}
+
+RunSetMicVolumeScript() {
+    micVolumeScript := A_ScriptDir "\scripts\Set-MicVolume.ps1"
+    if (!FileExist(micVolumeScript))
+        return
+    try {
+        Run("powershell.exe -ExecutionPolicy Bypass -File `"" micVolumeScript "`" -Level " SCRIPT_MIC_CAPTURE_VOLUME_PERCENT, ,
+            "Hide")
+    } catch {
+    }
+}
+
+; =============================================================================
 ; Outlook: classic OUTLOOK.EXE and Microsoft Store "new" Outlook (olk.exe)
 ; =============================================================================
 OutlookGetOlkExePath() {
@@ -4672,7 +4696,7 @@ CheckAndOpenOutlookTeams(checkOutlook := false, checkTeams := false) {
 }
 
 ; Chime for "clean now" confirmations (desktop recycle Y, clean clipboard Y). Not used on auto-timeout.
-; Plays at 70% level (~30% quieter than full); WMP keeps system master volume unchanged.
+; Quiet playback via WMP internal volume only; does not change Windows master volume. Fallback: SoundPlay at current master.
 PlayCleaningDesktopSound() {
     static wmp := 0
     soundPath := A_ScriptDir "\sounds\cleaning-desktop.wav"
@@ -4681,23 +4705,12 @@ PlayCleaningDesktopSound() {
     try {
         if (!wmp)
             wmp := ComObject("WMPlayer.OCX")
-        wmp.settings.volume := 10
+        wmp.settings.volume := CLEANING_CONFIRM_WMP_VOLUME_PERCENT
         wmp.URL := soundPath
         return
     } catch {
     }
-    prev := 100
-    try {
-        prev := SoundGetVolume()
-    } catch {
-    }
-    try {
-        try SoundSetVolume(Round(prev * 0.1))
-        SoundPlay(soundPath, true)
-    } catch {
-    } finally {
-        try SoundSetVolume(prev)
-    }
+    try SoundPlay(soundPath, true)
 }
 
 ; Internal helper: Performs clipboard cleanup without showing prompt
@@ -11361,11 +11374,7 @@ CheckDictationRecordingWindow() {
             }
 
             try {
-                micVolumeScript := A_ScriptDir "\scripts\Set-MicVolume.ps1"
-                if (FileExist(micVolumeScript)) {
-                    micRunStart := A_TickCount
-                    Run "powershell.exe -ExecutionPolicy Bypass -File `"" micVolumeScript "`"", , "Hide"
-                }
+                RunSetMicVolumeScript()
             } catch Error as e {
                 ; Silently handle errors - don't interrupt dictation if script fails
             }
@@ -11525,11 +11534,7 @@ OnExit(CleanupDictationIndicator)
         ; Sound: monitoring loop plays when window detected (zero latency)
 
         try {
-            micVolumeScript := A_ScriptDir "\scripts\Set-MicVolume.ps1"
-            if (FileExist(micVolumeScript)) {
-                micRunStart := A_TickCount
-                Run "powershell.exe -ExecutionPolicy Bypass -File `"" micVolumeScript "`"", , "Hide"
-            }
+            RunSetMicVolumeScript()
         } catch {
         }
     }

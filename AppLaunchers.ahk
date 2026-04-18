@@ -24,6 +24,8 @@ AL_AppLaunchersExit(*) {
 #include UIA-v2\Lib\UIA_Browser.ahk
 #include %A_ScriptDir%\Utils.ahk
 
+ApplyScriptMasterVolumeTarget()
+
 ; --- Global Variables ---
 
 ; Phase 3: WinEvent hook for foreground (replaces 200ms Wikipedia focus polling)
@@ -2088,8 +2090,7 @@ AIB_ClickAllowButtonInAllIDEWindows() {
     try {
         StandardLoadingBar_Show(
             "⏳ Scanning IDE windows for Allow button...",
-            BANNER_ACCENT_INTERMEDIATE,
-            { centerOnHwnd: centerHwnd, textWidth: 640 }
+            BANNER_ACCENT_INTERMEDIATE, { centerOnHwnd: centerHwnd, textWidth: 640 }
         )
 
         for hwnd in windows {
@@ -2154,7 +2155,7 @@ AIB_ClickAllowButtonInWindow(hwnd, &failReason := "") {
             try btnName := btn.Name
             if (!AIB_IsAllowButtonName(btnName))
                 continue
-            
+
             ; Found Allow button - click it
             try {
                 if (btn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)) {
@@ -2234,8 +2235,7 @@ AIB_ClickMoreActionsInAllIDEWindows() {
     try {
         StandardLoadingBar_Show(
             "⏳ Scanning IDE windows for More actions button...",
-            BANNER_ACCENT_INTERMEDIATE,
-            { centerOnHwnd: centerHwnd, textWidth: 640 }
+            BANNER_ACCENT_INTERMEDIATE, { centerOnHwnd: centerHwnd, textWidth: 640 }
         )
 
         for hwnd in windows {

@@ -12988,7 +12988,7 @@ SubmitChatGPTMessage() {
 ;-------------------------------------------------------------------
 #HotIf WinActive("Settings") || WinActive("ConfiguraÃ§Ãµes")
 
-; Shift + V : Set input volume to 100% - Volume
+; Shift + V : Set input volume (see SCRIPT_MICROPHONE_INPUT_SLIDER_PERCENT in Utils.ahk)
 +V::
 {
     try {
@@ -13016,10 +13016,9 @@ SubmitChatGPTMessage() {
         }
 
         if volumeSlider {
-            ; Set slider value to maximum (100)
-            volumeSlider.SetValue(100)
+            volumeSlider.SetValue(SCRIPT_MICROPHONE_INPUT_SLIDER_PERCENT)
             ; Optional: Brief confirmation
-            ToolTip("Input volume set to 100%")
+            ToolTip("Input volume set to " SCRIPT_MICROPHONE_INPUT_SLIDER_PERCENT "%")
             SetTimer(() => ToolTip(), -1000)
 
             ; Close the Settings window
