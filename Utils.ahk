@@ -1613,6 +1613,7 @@ MarkLastClipAsFavorite(target := "first") {
         ClipAngel_WaitChordModifiersReleased()
         ClipAngel_ReleaseChordModifiersForSend()
         SendInput "!q"
+        ScriptSoundPlay(A_ScriptDir "\sounds\favorite-set.wav")
         ShowCenteredOverlay_Utils("✅ Sent Alt+Q — marked focused clip as favorite.", 1500, BANNER_ACCENT_SUCCESS)
         EnsureClipAngelClosed()
     } catch Error as e {

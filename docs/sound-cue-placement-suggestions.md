@@ -34,7 +34,8 @@ Fill in filenames you keep locally if they differ from the list.
 | `pomodo-start.wav` | Pomodoro start (AppLaunchers) |
 | `fastcopy-start.mp3` / `fastcopy-finish.mp3` | Fast Copy mode |
 | `commit-start.wav` | Commit flows (Shift keys) |
-| System `*16` / `*64` | AppLaunchers / diagnostics (not gated by `IsSoundEnabled` in all cases—verify before copying) |
+| `favorite-set.wav` | After Alt+Q marks focused Clip Angel clip as favorite (`MarkLastClipAsFavorite`) |
+| System `*16` / `*64` | Via `ScriptSoundPlaySystem` (gated) |
 
 `quick-update-failure.wav` exists in tree; confirm whether any path plays it—if not, candidate for failed Quick Update.
 
@@ -52,13 +53,13 @@ Check boxes when you add an asset and wire it.
 - [ ] **Clean clipboard** — differentiate: user pressed Y (already has cleaning chime path) vs timeout auto-run (`CleanClipboard_OnTimeout` has no chime—intentional; optional subtle cue).
 - [ ] **Toggle sound** — very short earcon when toggling (`ToggleSoundState`) so you hear mode even if UI is missed.
 - [ ] **AI working?** — already uses `PlayAiWorkingStateSound`; optional third “unknown/error” blip in catch.
-- [ ] **Mark last clip favorite** — success vs Clip Angel errors (`MarkLastClipAsFavorite` and helpers).
+- [x] **Mark last clip favorite** — `favorite-set.wav` after successful Alt+Q (`MarkLastClipAsFavorite`); errors stay banner-only; “already a favorite” has no chime.
 - [ ] **Desktop to Recycle** — success vs cancel vs error (`DesktopToRecycle_*`).
 
 ### Clip Angel & clipboard
 
 - [ ] Merge clips complete (`ShowCenteredOverlay_Utils` success paths in merge flow).
-- [ ] Favorite already set vs newly marked (Clip Angel UIA flow).
+- [x] Newly marked favorite — `favorite-set.wav` in `MarkLastClipAsFavorite` (already-favorite branch stays silent).
 
 ### Gemini & Cursor bridges
 
