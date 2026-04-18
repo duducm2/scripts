@@ -208,9 +208,7 @@ ShowCenteredOverlay(hwndTarget, text, duration := 1500, bgColor := BANNER_ACCENT
 ; --- Audio feedback helper ---
 PlayMicrophoneBeep() {
     ; Play a single short beep to indicate microphone action (if enabled)
-    if (IsSoundEnabled()) {
-        SoundBeep(800, 150)
-    }
+    ScriptSoundBeep(800, 150)
 }
 
 ; Phase 2.1/2.2: one cache request for toggle buttons; generic state resolver.

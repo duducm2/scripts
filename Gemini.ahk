@@ -678,9 +678,7 @@ PlayCopyCompletedChime() {
             return
         lastTick := A_TickCount
 
-        if (IsSoundEnabled()) {
-            SoundPlay(A_ScriptDir . "\sounds\copy.wav")
-        }
+        ScriptSoundPlay(A_ScriptDir . "\sounds\copy.wav")
     } catch {
         ; Silently ignore errors
     }
@@ -1070,7 +1068,7 @@ Gemini_PlayReadyChime(minIntervalMs := 400) {
     if (lastChimeTick && (now - lastChimeTick) < minIntervalMs)
         return false
     lastChimeTick := now
-    try SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
+    ScriptSoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
     return true
 }
 
@@ -1536,9 +1534,7 @@ class GeminiAsyncLookup {
     OnStreamingCompleted() {
         ; Use the same sound as Shift keys.ahk for consistency
         try {
-            if (IsSoundEnabled()) {
-                SoundPlay(A_ScriptDir . "\sounds\gemini-completion.wav")
-            }
+            ScriptSoundPlay(A_ScriptDir . "\sounds\gemini-completion.wav")
         } catch {
             PlayCopyCompletedChime()
         }
@@ -1641,8 +1637,7 @@ class GeminiDelayedSubmitMonitor {
 
     OnStreamingCompleted() {
         try {
-            if (IsSoundEnabled())
-                SoundPlay(A_ScriptDir . "\sounds\gemini-completion.wav")
+            ScriptSoundPlay(A_ScriptDir . "\sounds\gemini-completion.wav")
         } catch {
             PlayCopyCompletedChime()
         }
@@ -1913,8 +1908,7 @@ class GeminiAsyncTTS {
         StandardLoadingBar_Hide(0)
         ; Completion detection matches GeminiAsyncLookup (#!+8): Layer 1 only (Stop button gone). No extra Layer 2 so we don't miss completion.
         try {
-            if (IsSoundEnabled())
-                SoundPlay(A_ScriptDir . "\sounds\gemini-completion.wav")
+            ScriptSoundPlay(A_ScriptDir . "\sounds\gemini-completion.wav")
         } catch {
             PlayCopyCompletedChime()
         }

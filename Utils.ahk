@@ -100,7 +100,7 @@ Utils_PlayGeminiFocusedChime(minIntervalMs := 400) {
     if (lastChimeTick && (now - lastChimeTick) < minIntervalMs)
         return false
     lastChimeTick := now
-    try SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
+    ScriptSoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
     return true
 }
 
@@ -2810,12 +2810,9 @@ ExecuteHandyAiModelSelection(selection) {
         Handy_WaitForModelReady(handyHwnd, 20000)
 
         ; Step 4.5: Play confirmation sound when model is ready
-        if (IsSoundEnabled()) {
-            soundPath := A_ScriptDir . "\sounds\handy-model-chosen.mp3"
-            if (FileExist(soundPath)) {
-                try SoundPlay(soundPath)
-            }
-        }
+        soundPath := A_ScriptDir . "\sounds\handy-model-chosen.mp3"
+        if (FileExist(soundPath))
+            ScriptSoundPlay(soundPath)
 
         ; Step 5: Close Handy window
         AiModelBanner_Show("✅ Done! Closing Handy...", BANNER_ACCENT_SUCCESS)
@@ -3215,9 +3212,7 @@ ShowCenteredOverlay_Utils(text, duration := 1500, bgColor := BANNER_ACCENT_INTER
 ; Helper: Pre-movement warning (sound + 2s delay) before automated window changes.
 ; =============================================================================
 PlayPreMovementWarning(targetName) {
-    if (IsSoundEnabled()) {
-        try SoundPlay(A_ScriptDir . "\sounds\pre-movement.wav")
-    }
+    ScriptSoundPlay(A_ScriptDir . "\sounds\pre-movement.wav")
     ShowCenteredOverlay_Utils("✋ Hands off! Moving to " . targetName . "...", 2000, BANNER_ACCENT_INTERMEDIATE)
     Sleep 2000
 }
@@ -3968,10 +3963,8 @@ class D2C_FlowManager {
 
             if (isTrulyGone) {
                 ; Timer is already stopped, proceed to next phase
-                try {
-                    if (IsSoundEnabled())
-                        SoundPlay(A_ScriptDir . "\sounds\gemini-completion.wav")
-                } catch {
+                try ScriptSoundPlay(A_ScriptDir . "\sounds\gemini-completion.wav")
+                catch {
                     ; Ignore chime failures
                 }
                 this.PromptForResponseAction()
@@ -4145,8 +4138,8 @@ class D2C_FlowManager {
                 } finally {
                     DetectHiddenWindows prevDH
                 }
-            } else if (IsSoundEnabled())
-                try SoundPlay(A_ScriptDir . "\sounds\copy.wav")
+            } else
+                try ScriptSoundPlay(A_ScriptDir . "\sounds\copy.wav")
         } else {
             ShowCenteredOverlay_Utils("❌ Gemini.ahk not running", 2000, BANNER_ACCENT_ERROR)
         }
@@ -4340,6 +4333,55 @@ IsSoundEnabled() {
     ; Default to enabled (1) if file doesn't exist or key is missing
     soundEnabled := IniRead(settingsFile, "Settings", "SoundEnabled", "1")
     return (soundEnabled = "1")
+}
+
+; -----------------------------------------------------------------------------
+; Central gate for the global sound toggle: all script-triggered audio must use
+; these helpers (SoundPlay, WMP, SoundBeep, MessageBeep, system scheme sounds).
+; When IsSoundEnabled() is false, these are no-ops.
+; -----------------------------------------------------------------------------
+ScriptSoundPlay(path, wait := false) {
+    if (!IsSoundEnabled())
+        return false
+    try {
+        SoundPlay(path, wait)
+        return true
+    } catch {
+        return false
+    }
+}
+
+; System scheme sounds, e.g. *64 (asterisk), *16 (exclamation) — see SoundPlay docs.
+ScriptSoundPlaySystem(scheme) {
+    if (!IsSoundEnabled())
+        return false
+    try {
+        SoundPlay(scheme, false)
+        return true
+    } catch {
+        return false
+    }
+}
+
+ScriptSoundBeep(freq, duration) {
+    if (!IsSoundEnabled())
+        return false
+    try {
+        SoundBeep(freq, duration)
+        return true
+    } catch {
+        return false
+    }
+}
+
+ScriptMessageBeep(type := 0xFFFFFFFF) {
+    if (!IsSoundEnabled())
+        return false
+    try {
+        return DllCall("User32\MessageBeep", "UInt", type)
+    } catch {
+        return false
+    }
 }
 
 ; Toggle sound state and show visual feedback
@@ -4696,8 +4738,10 @@ CheckAndOpenOutlookTeams(checkOutlook := false, checkTeams := false) {
 }
 
 ; Chime for "clean now" confirmations (desktop recycle Y, clean clipboard Y). Not used on auto-timeout.
-; Quiet playback via WMP internal volume only; does not change Windows master volume. Fallback: SoundPlay at current master.
+; Quiet playback via WMP internal volume only; does not change Windows master volume. Fallback: ScriptSoundPlay at current master.
 PlayCleaningDesktopSound() {
+    if (!IsSoundEnabled())
+        return
     static wmp := 0
     soundPath := A_ScriptDir "\sounds\cleaning-desktop.wav"
     if (!FileExist(soundPath))
@@ -4710,7 +4754,7 @@ PlayCleaningDesktopSound() {
         return
     } catch {
     }
-    try SoundPlay(soundPath, true)
+    ScriptSoundPlay(soundPath, true)
 }
 
 ; Internal helper: Performs clipboard cleanup without showing prompt
@@ -5292,12 +5336,10 @@ IsAnyAiGenerating() {
 
 PlayAiWorkingStateSound(isWorking) {
     try {
-        if (!IsSoundEnabled())
-            return
         if (isWorking)
-            SoundPlay(A_ScriptDir . "\sounds\robots-are-working.wav")
+            ScriptSoundPlay(A_ScriptDir . "\sounds\robots-are-working.wav")
         else
-            SoundPlay(A_ScriptDir . "\sounds\no-robot-working.wav")
+            ScriptSoundPlay(A_ScriptDir . "\sounds\no-robot-working.wav")
     } catch {
     }
 }
@@ -5372,7 +5414,7 @@ if (A_Args.Length > 0 && A_Args[1] = "/Updated") {
         soundPath := A_ScriptDir "\sounds\quick-update-success.wav"
         try {
             if (FileExist(soundPath))
-                SoundPlay(soundPath)
+                ScriptSoundPlay(soundPath)
         } catch {
         }
     } catch {
@@ -8760,8 +8802,7 @@ GeminiNavigateFocusAndPasteFirstSnippet(optionalPromptText := "", switchToFirstT
     ; Brief delay so paste is received and UI/character limits register before any submit or focus change
     Sleep 250
     ; Same sound as when opening Gemini (focus/paste feedback)
-    if (IsSoundEnabled())
-        SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
+    ScriptSoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
 }
 
 ; Returns grammar preset (from prompt/grammar.txt or fallback). Matches InitHotstringsCheatSheet catch for :o:cgrammar.
@@ -9167,8 +9208,7 @@ HandleHotstringChar(char) {
                 ; Paste the text (do NOT send Enter)
                 InsertText(expansion)
                 ; Same sound as when opening Gemini (focus/paste feedback)
-                if (IsSoundEnabled())
-                    SoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
+                ScriptSoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
             } finally {
                 HotstringGeminiBanner_Hide()
             }
@@ -10792,9 +10832,7 @@ SafePlayPrintScreenSound() {
 
     ; Update timestamp and play sound (if enabled)
     g_LastPrintScreenSound := A_TickCount
-    if (IsSoundEnabled()) {
-        SoundPlay(A_ScriptDir . "\sounds\print-screen.wav")
-    }
+    ScriptSoundPlay(A_ScriptDir . "\sounds\print-screen.wav")
 }
 
 ; Set higher InputLevel to ensure our handler processes before others
@@ -11256,9 +11294,9 @@ SafePlayDictationSound(filePath) {
 
     ; Update timestamp and play sound (if enabled)
     g_LastDictationSoundTick := A_TickCount
-    if (IsSoundEnabled() && FileExist(filePath)) {
+    if (FileExist(filePath)) {
         try {
-            SoundPlay(filePath)
+            ScriptSoundPlay(filePath)
         } catch {
             ; Silently ignore playback failures (missing file, sync placeholder, format, etc.)
         }

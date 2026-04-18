@@ -1900,22 +1900,13 @@ PomodoroChimeCallback(*) {
     }
 
     ; Method 1: Primary - SoundBeep with high frequency and longer duration (most reliable and audible)
-    try {
-        SoundBeep(2000, 300)  ; High frequency (2000 Hz) and longer duration (300 ms) for better audibility
-    } catch {
-    }
+    ScriptSoundBeep(2000, 300)
 
     ; Method 2: Also try MessageBeep as additional sound
-    try {
-        DllCall("User32\MessageBeep", "UInt", 0xFFFFFFFF)
-    } catch {
-    }
+    ScriptMessageBeep(0xFFFFFFFF)
 
     ; Method 3: Also try system sound as additional alert
-    try {
-        SoundPlay("*16")  ; System asterisk sound
-    } catch {
-    }
+    ScriptSoundPlaySystem("*16")
 }
 
 ; Stop chime callback - stops both chime timers
@@ -2056,11 +2047,8 @@ StartPomodoroTimer() {
     g_PomodoroTinyIndicator := ShowTinyWaterBottleIndicator()
 
     ; Play start sound (if enabled)
-    try {
-        if (IsSoundEnabled()) {
-            SoundPlay(A_ScriptDir . "\sounds\pomodo-start.wav")
-        }
-    } catch {
+    try ScriptSoundPlay(A_ScriptDir . "\sounds\pomodo-start.wav")
+    catch {
     }
 
     ; Set up 25-minute completion timer (1,500,000 ms = 25 minutes)

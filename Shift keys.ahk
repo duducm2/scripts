@@ -2778,7 +2778,7 @@ FastCopyMode_PlayCueSound(fileName) {
     if (!FileExist(path))
         return
     try {
-        SoundPlay(path)
+        ScriptSoundPlay(path)
     } catch {
     }
 }
@@ -15556,7 +15556,7 @@ global g_CursorShortcutMenuActive := false
     gCommitPushDecision := "push"
 
     ; 1. Trigger generation immediately (Ctrl+Alt+A)
-    SoundPlay A_ScriptDir "\sounds\commit-start.wav"
+    ScriptSoundPlay(A_ScriptDir "\sounds\commit-start.wav")
     Send "^!."
     ShowCommitPushBanner()
 
@@ -17951,7 +17951,7 @@ VSCode_TriggerGenerateCommitMessage(hwnd := 0) {
         return
     }
 
-    SoundPlay A_ScriptDir "\sounds\commit-start.wav"
+    ScriptSoundPlay(A_ScriptDir "\sounds\commit-start.wav")
     ShowCommitPushBanner()
 
     ; 2. Wait 14s for message generation to complete; user can interact with any window
@@ -22569,9 +22569,7 @@ PlayCompletionChime_Gemini() {
             return
         lastTick := A_TickCount
 
-        if (IsSoundEnabled()) {
-            SoundPlay(A_ScriptDir . "\sounds\gemini-completion.wav")
-        }
+        ScriptSoundPlay(A_ScriptDir . "\sounds\gemini-completion.wav")
     } catch {
     }
 }
@@ -24044,33 +24042,19 @@ PlayCompletionChime_ChatGPT() {
             return
         lastTick := A_TickCount
 
-        if (!IsSoundEnabled()) {
-            return
-        }
-
         played := false
-        ; Prefer Windows MessageBeep (reliable through default output)
         try {
-            rc := DllCall("User32\\MessageBeep", "UInt", 0xFFFFFFFF)
+            rc := ScriptMessageBeep(0xFFFFFFFF)
             if (rc)
                 played := true
         } catch {
         }
 
-        ; Fallback to system asterisk sound
-        if !played {
-            try {
-                played := SoundPlay("*64", false)
-            } catch {
-            }
-        }
+        if !played
+            played := ScriptSoundPlaySystem("*64")
 
-        ; Last resort, attempt the classic beep
-        if !played {
-            try SoundBeep(1100, 130)
-            catch {
-            }
-        }
+        if !played
+            ScriptSoundBeep(1100, 130)
     } catch {
     }
 }
