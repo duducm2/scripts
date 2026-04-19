@@ -1,5 +1,5 @@
 param(
-    [int]$Level = 70
+    [int]$Level = 50
 )
 
 $source = @"

@@ -4408,24 +4408,14 @@ ToggleSoundState() {
 ; =============================================================================
 ; Centralized audio levels (AHK playback app volume vs mic capture - not Windows master)
 ; =============================================================================
-global SCRIPT_MASTER_VOLUME_PERCENT := 70
+global SCRIPT_MASTER_VOLUME_PERCENT := 40
 global SCRIPT_MIC_CAPTURE_VOLUME_PERCENT := 100
 global SCRIPT_MICROPHONE_INPUT_SLIDER_PERCENT := 100
 
 ; Per-process AutoHotkey playback volume via WASAPI (see ApplyAutoHotkeyAudioSessionsVolumePercent).
 ; Does not call SoundSetVolume - leaves the default device master volume unchanged.
 ApplyScriptMasterVolumeTarget() {
-    n := 0
-    try n := ApplyAutoHotkeyAudioSessionsVolumePercent(SCRIPT_MASTER_VOLUME_PERCENT)
-    catch {
-    }
-    
-    psScript := A_ScriptDir "\SetAutoHotkeyVolume.ps1"
-    if FileExist(psScript) {
-        try Run('powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "' psScript '" -Level ' SCRIPT_MASTER_VOLUME_PERCENT, , "Hide")
-    }
-    
-    return n
+    return 0 ; Only SetAutoHotkeyVolume.ps1 should set volume now.
 }
 
 ; Apply now and again after delays - audio sessions for new AutoHotkey processes often do not exist for hundreds of ms after Start-Process (Quick Update / multi-script startup).

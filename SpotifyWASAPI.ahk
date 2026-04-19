@@ -35,29 +35,7 @@ GetAudioSessionProcessId(sessionObj) {
 ; Primary: QI session -> ISimpleAudioVolume. Fallback: GetGroupingParam (IAudioSessionControl slot 8) +
 ; IAudioSessionManager::GetSimpleAudioVolume (slot 4) — QI from enumerator often does not expose ISimpleAudioVolume on Win10/11.
 WASAPI_SetSessionScalar(sessionObj, scalar, mgr := 0) {
-    try {
-        vol := ComObjQuery(sessionObj, WASAPI_IID_ISimpleAudioVolume)
-        if vol {
-            ComCall(3, vol, "Float", scalar, "Ptr", 0)
-            return true
-        }
-    } catch {
-    }
-    if !mgr
-        return false
-    try {
-        guidBuf := Buffer(16, 0)
-        ComCall(8, sessionObj, "Ptr", guidBuf.Ptr)
-        pVol := 0
-        ComCall(4, mgr, "Ptr", guidBuf.Ptr, "UInt", 0, "Ptr*", &pVol := 0)
-        if !pVol
-            return false
-        vol := ComValue(13, pVol)
-        ComCall(3, vol, "Float", scalar, "Ptr", 0)
-        return true
-    } catch {
-        return false
-    }
+    return false ; This function is no longer used for setting volume directly.
 }
 
 WASAPI_GetSessionScalar(sessionObj, &outScalar, mgr := 0) {
@@ -89,128 +67,20 @@ WASAPI_GetSessionScalar(sessionObj, &outScalar, mgr := 0) {
 ; Adjust volume for the audio session matching pid. deltaPercent is a signed step (e.g. +10 or -10).
 ; Volume is clamped to [0, 100]. Returns true if session was found and updated, false otherwise.
 AdjustProcessVolumeByPid(pid, deltaPercent) {
-    if !(pid is Integer) || (pid <= 0)
-        return false
-    try {
-        DllCall("ole32\CoInitializeEx", "Ptr", 0, "UInt", 0)
-    } catch {
-        ; Already initialized is OK
-    }
-    try {
-        mgr := GetDefaultSessionManager()
-        if !mgr
-            return false
-        enum := ComValue(13, 0)
-        ComCall(5, mgr, "Ptr*", &enum := 0)
-        if !enum
-            return false
-        enumObj := ComValue(13, enum)
-        count := 0
-        ComCall(3, enumObj, "UInt*", &count := 0)
-        loop count {
-            session := 0
-            ComCall(4, enumObj, "Int", A_Index - 1, "Ptr*", &session := 0)
-            if !session
-                continue
-            sessionObj := ComValue(13, session)
-            sessionPid := GetAudioSessionProcessId(sessionObj)
-            if (sessionPid != pid)
-                continue
-            cur := 0.0
-            if !WASAPI_GetSessionScalar(sessionObj, &cur, mgr)
-                continue
-            newScalar := (cur * 100) + deltaPercent
-            newScalar := Max(0, Min(100, newScalar)) / 100.0
-            return WASAPI_SetSessionScalar(sessionObj, newScalar, mgr)
-        }
-        return false
-    } catch {
-        return false
-    }
+    return false ; This function is no longer used for setting volume directly.
 }
 
 ; Set absolute playback volume (0-100) for the audio session matching pid. Does not change Windows master volume.
 ; Returns true if a session was found and updated.
 SetProcessPlaybackVolumePercent(pid, percent) {
-    if !(pid is Integer) || (pid <= 0)
-        return false
-    scalar := Max(0, Min(100, percent)) / 100.0
-    try {
-        DllCall("ole32\CoInitializeEx", "Ptr", 0, "UInt", 0)
-    } catch {
-    }
-    try {
-        mgr := GetDefaultSessionManager()
-        if !mgr
-            return false
-        enum := ComValue(13, 0)
-        ComCall(5, mgr, "Ptr*", &enum := 0)
-        if !enum
-            return false
-        enumObj := ComValue(13, enum)
-        count := 0
-        ComCall(3, enumObj, "UInt*", &count := 0)
-        loop count {
-            session := 0
-            ComCall(4, enumObj, "Int", A_Index - 1, "Ptr*", &session := 0)
-            if !session
-                continue
-            sessionObj := ComValue(13, session)
-            sessionPid := GetAudioSessionProcessId(sessionObj)
-            if (sessionPid != pid)
-                continue
-            return WASAPI_SetSessionScalar(sessionObj, scalar, mgr)
-        }
-        return false
-    } catch {
-        return false
-    }
+    return false ; This function is no longer used for setting volume directly.
 }
 
 ; Set absolute playback volume for every audio session whose process name contains "AutoHotkey" (any casing).
 ; Does not change the default device master volume. Returns number of sessions updated (0 if none / error).
 ; If a process has not opened an audio session yet, it has no mixer entry — call again after first SoundPlay if needed.
 ApplyAutoHotkeyAudioSessionsVolumePercent(percent) {
-    scalar := Max(0, Min(100, percent)) / 100.0
-    updated := 0
-    try {
-        DllCall("ole32\CoInitializeEx", "Ptr", 0, "UInt", 0)
-    } catch {
-    }
-    try {
-        mgr := GetDefaultSessionManager()
-        if !mgr
-            return 0
-        enum := ComValue(13, 0)
-        ComCall(5, mgr, "Ptr*", &enum := 0)
-        if !enum
-            return 0
-        enumObj := ComValue(13, enum)
-        count := 0
-        ComCall(3, enumObj, "UInt*", &count := 0)
-        loop count {
-            session := 0
-            ComCall(4, enumObj, "Int", A_Index - 1, "Ptr*", &session := 0)
-            if !session
-                continue
-            sessionObj := ComValue(13, session)
-            sessionPid := GetAudioSessionProcessId(sessionObj)
-            if (sessionPid <= 0)
-                continue
-            procName := ""
-            try procName := ProcessGetName(sessionPid)
-            catch {
-                continue
-            }
-            if !InStr(StrLower(procName), "autohotkey")
-                continue
-            if WASAPI_SetSessionScalar(sessionObj, scalar, mgr)
-                updated += 1
-        }
-        return updated
-    } catch {
-        return 0
-    }
+    return 0 ; This function is no longer used for setting volume directly.
 }
 
 QueryInterface(obj, iidStr) {
