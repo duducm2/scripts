@@ -24,7 +24,9 @@ AL_AppLaunchersExit(*) {
 #include UIA-v2\Lib\UIA_Browser.ahk
 #include %A_ScriptDir%\Utils.ahk
 
-ApplyScriptMasterVolumeTarget()
+; Quick Update relaunch: volume is scheduled from Utils.ahk /Updated block after success overlay + chime.
+if !(A_Args.Length > 0 && A_Args[1] = "/Updated")
+    ScheduleApplyScriptMasterVolumeTargetWithRetries()
 
 ; --- Global Variables ---
 

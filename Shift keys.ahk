@@ -26,6 +26,8 @@ SetTitleMatchMode 2
 #include UIA-v2\Lib\UIA.ahk
 #include UIA-v2\Lib\UIA_Browser.ahk
 #include %A_ScriptDir%\Utils.ahk
+; Volume: AppLaunchers also schedules retries; this catches Shift keys process when sessions register slightly later.
+SetTimer(() => ApplyScriptMasterVolumeTarget(), -3500)
 #include %A_ScriptDir%\aux\ShiftKeysIPC.ahk
 #include %A_ScriptDir%\CheatSheetRich.ahk
 
@@ -1643,7 +1645,7 @@ Letters available: C, H, I, K, M, N, O, P, T, U, V, X, Y, Z
 [Ctrl+Alt+Win+6] > AI working? Cursor + Gemini (HotStrings macro)
 [Ctrl+Alt+Win+7] > Mark Last Clip as Favorite (HotStrings macro; same as Ctrl+Alt+Win+J if 7 chord fails on keyboard)
 [Ctrl+Alt+Win+J] > Mark Last Clip as Favorite (HotStrings macro; alternate for keyboards that ghost Ctrl+Alt+Win+7)
-[Ctrl+Alt+Win+8] > Move Desktop to Recycle Bin (HotStrings macro)
+[Ctrl+Alt+Win+8] > Moves Desktop to Recycle Bin (HotStrings macro)
 [Ctrl+Alt+Win+9] > Handy: Parakeet V3 (model slot 2)
 [Ctrl+Alt+Win+B] > Handy: Parakeet V2 (model slot 1)
 

@@ -295,7 +295,7 @@ GeminiCollectModelOptionButtons(uia) {
                 className := ""
             }
             ; Do not require className filtering here. In some captures the model MenuItems have empty ClassName,
-            ; but the Name still contains "Fast …", "Thinking …", "Pro …" and is sufficient to identify.
+            ; but the Name still contains "Fast ...", "Thinking ...", "Pro ..." and is sufficient to identify.
             isDisabled := false
             try {
                 if (InStr(className, "disabled") || InStr(className, "mat-mdc-button-disabled"))
@@ -769,7 +769,7 @@ InitHotstringsCheatSheet() {
         RegisterHotstring(":o:aibrapid", aibRapidFireTpl, "Prompts", "📜 Junior AI: ⚡ rapid-fire template")
     } catch {
         RegisterHotstring(":o:aibrapid",
-            "Junior AI (AIB): planning doc with ⚡ — conceptual above, execution steps below.`n", "Prompts",
+            "Junior AI (AIB): planning doc with ⚡ - conceptual above, execution steps below.`n", "Prompts",
             "📜 Junior AI: ⚡ rapid-fire template")
     }
 
@@ -777,7 +777,7 @@ InitHotstringsCheatSheet() {
     RegisterHotstring(":o:ebosch", "eduardo.figueiredo@br.bosch.com", "Hotstrings", "💼 Bosch Email")
     RegisterHotstring(":o:egoogle", "edu.evangelista.figueiredo@gmail.com", "Hotstrings", "📧 Gmail")
 
-    ; Projects (Cursor workspaces) — keys align with Project Selector 2
+    ; Projects (Cursor workspaces) - keys align with Project Selector 2
     RegisterHotstring(":o:gintegra", "GS_UX core team_UX and CIP Integration", "Projects", "🔄 UX and CIP Integration",
         "u")
     RegisterHotstring(":o:gdash", "GS_E&S_CIP Dashboard research and design", "Projects", "📊 CIP Dashboard", "d")
@@ -787,7 +787,7 @@ InitHotstringsCheatSheet() {
         "E&S Opex CIM Journey Mapping",
         "o")
 
-    ; Hotstrings (non-workspace “project-like” names)
+    ; Hotstrings (non-workspace "project-like" names)
     RegisterHotstring(":o:myl", "my links", "Hotstrings", "🔗 my links", "m")
     RegisterHotstring(":o:gpm", "project management LA", "Hotstrings", "📋 project management LA", "p")
     RegisterHotstring(":o:guxcip", "UX and CIP", "Hotstrings", "🔗 UX and CIP", "x")
@@ -889,7 +889,8 @@ QuickUpdateScripts() {
     s_isQuickUpdateRunning := true
 
     try {
-        ApplyScriptMasterVolumeTarget()
+        ; Do not call ApplyScriptMasterVolumeTarget here - it only affects sessions that are about to be killed,
+        ; then ExitApp cancels timers; new processes need volume applied after relaunch (see /Updated in Utils).
         scripts := GetScriptFiles()
         scriptsNames := ""
         for scriptPath in scripts {
@@ -930,10 +931,11 @@ QuickUpdateScripts() {
             psPathsJoined .= p
         }
         ps .= "$scripts = @(" . psPathsJoined . "); "
-        ps .= "foreach ($s in $scripts) { "
-        ps .= "  if ($s -eq $anchorPath) { Start-Process -FilePath $s -ArgumentList '/Updated' | Out-Null } "
-        ps .= "  else { Start-Process -FilePath $s | Out-Null } "
-        ps .= "}"
+        ; Stagger launches so earlier scripts begin loading before the next; AppLaunchers stays last with /Updated.
+        ; Short pause after all Start-Process so audio sessions can register before the relaunched AppLaunchers runs its volume schedule.
+        ps .=
+            "foreach ($s in $scripts) { if ($s -eq $anchorPath) { Start-Process -FilePath $s -ArgumentList '/Updated' | Out-Null } else { Start-Process -FilePath $s | Out-Null }; Start-Sleep -Milliseconds 450 }; "
+        ps .= "Start-Sleep -Seconds 2; "
 
         ; Execute asynchronously, then terminate this AHK instance immediately.
         pid := 0
@@ -1384,7 +1386,7 @@ ActivateClipAngelWithFocusCorrection() {
         WinWaitActive("ClipAngel", , 2)
     }
     Sleep 50
-    ; Must use Clip Angel's HWND, not WinExist("A") — another app can be foreground and UIA targets the wrong tree.
+    ; Must use Clip Angel's HWND, not WinExist("A") - another app can be foreground and UIA targets the wrong tree.
     hwnd := WinExist("ClipAngel")
     if !hwnd {
         if needBanner
@@ -1441,7 +1443,7 @@ ActivateClipAngelWithFocusCorrection() {
 ; =============================================================================
 ; Shortcut flow (matches app): open Clip Angel, ensure list focus (not Window tab),
 ; select first or last grid row, Send Alt+Q. Optional: target "last" for bottom row.
-; UIA-v2 FindFirst throws TargetError when nothing matches — never chain with if !c without try.
+; UIA-v2 FindFirst throws TargetError when nothing matches - never chain with if !c without try.
 ClipAngel_UiaFindFirst(root, conditions) {
     if !root
         return 0
@@ -1502,7 +1504,7 @@ ClipAngel_FavoriteCellIsOn(cell) {
             return ts = UIA.ToggleState.On
     } catch {
     }
-    ; Value only for read-only grid cells — Legacy CHECKED (0x10) often false-positives on DataGrid cells.
+    ; Value only for read-only grid cells - Legacy CHECKED (0x10) often false-positives on DataGrid cells.
     try {
         v := cell.Value
         if (v = "true" || v = "True" || v = "1")
@@ -1519,12 +1521,12 @@ ClipAngel_MainHwnd() {
     return WinExist("ahk_exe ClipAngel.exe")
 }
 
-; Macro hotkeys use Ctrl+Alt+Win — if those keys are still down, Send "!q" is not plain Alt+Q (Win+Alt+… hijacks it).
+; Macro hotkeys use Ctrl+Alt+Win - if those keys are still down, Send "!q" is not plain Alt+Q (Win+Alt+... hijacks it).
 ClipAngel_ReleaseChordModifiersForSend() {
     SendInput "{LWin up}{RWin up}{LControl up}{RControl up}{LAlt up}{RAlt up}{LShift up}{RShift up}"
 }
 
-; Wait for physical release (KeyWait) then synthetic up — chord hotkeys often leave keys logically down.
+; Wait for physical release (KeyWait) then synthetic up - chord hotkeys often leave keys logically down.
 ClipAngel_WaitChordModifiersReleased() {
     tw := "T0.45"
     KeyWait "Ctrl", tw
@@ -1535,7 +1537,7 @@ ClipAngel_WaitChordModifiersReleased() {
 }
 
 ; target: "first" = top grid row (Row 0 / newest), "last" = last row returned by UIA FindAll
-; (virtualized lists may only expose visible rows — use "first" for reliable top-clip behavior).
+; (virtualized lists may only expose visible rows - use "first" for reliable top-clip behavior).
 MarkLastClipAsFavorite(target := "first") {
     ActivateClipAngelWithFocusCorrection()
     hwnd := ClipAngel_MainHwnd()
@@ -1615,7 +1617,7 @@ MarkLastClipAsFavorite(target := "first") {
         ClipAngel_ReleaseChordModifiersForSend()
         SendInput "!q"
         ScriptSoundPlay(A_ScriptDir "\sounds\favorite-set.wav")
-        ShowCenteredOverlay_Utils("✅ Sent Alt+Q — marked focused clip as favorite.", 1500, BANNER_ACCENT_SUCCESS)
+        ShowCenteredOverlay_Utils("✅ Sent Alt+Q - marked focused clip as favorite.", 1500, BANNER_ACCENT_SUCCESS)
         EnsureClipAngelClosed()
     } catch Error as e {
         ShowCenteredOverlay_Utils("❌ Mark favorite failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
@@ -1651,10 +1653,10 @@ DebugLog_0ec0ba(runId, hypothesisId, message, dataJson := "{}") {
 ; =============================================================================
 ; AI Model Selection System for Handy
 ; =============================================================================
-; Configuration: Maps selection numbers (1–4) to AI model names.
+; Configuration: Maps selection numbers (1-4) to AI model names.
 ; These are partial name prefixes used to find buttons in the UIA tree (Type 50000, botão).
 ; Descriptions match Handy Transcription Models UI for quick verification.
-; Slots 3–4: set Cohere Language on General tab before selecting the Cohere model (modelClickName).
+; Slots 3-4: set Cohere Language on General tab before selecting the Cohere model (modelClickName).
 global g_HandyAiModels := Map(
     1, { name: "Parakeet V2", desc: "English only. Best model for English speakers." },
     2, { name: "Parakeet V3", desc: "Fast and accurate. Multi-language." },
@@ -1677,7 +1679,7 @@ Handy_GetHandyAiModelIniPath() {
     return A_ScriptDir "\data\handy_ai_model.ini"
 }
 
-; Returns persisted slot 1–4, or 0 if missing / invalid / not in g_HandyAiModels.
+; Returns persisted slot 1-4, or 0 if missing / invalid / not in g_HandyAiModels.
 Handy_GetPersistedAiModelSlot() {
     global g_HandyAiModels
     path := Handy_GetHandyAiModelIniPath()
@@ -1751,7 +1753,7 @@ ShowAiModelSelector() {
     g_AiModelSelectorGui.Add("Text", "w280 h1 Background45475A y+10")
     g_AiModelSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
     g_AiModelSelectorGui.Add("Text", "w280 Center", "Green row = last saved model")
-    g_AiModelSelectorGui.Add("Text", "w280 Center y+4", "Press 1–4 | Esc to cancel")
+    g_AiModelSelectorGui.Add("Text", "w280 Center y+4", "Press 1-4 | Esc to cancel")
 
     ; Get active window to determine which monitor to center on
     activeWin := 0
@@ -1806,7 +1808,7 @@ ShowAiModelSelector() {
 
     g_AiModelSelectorActive := true
 
-    ; Enable hotkeys for 1–4 and Escape
+    ; Enable hotkeys for 1-4 and Escape
     Hotkey("1", AiModelSelector_HandleKey, "On")
     Hotkey("2", AiModelSelector_HandleKey, "On")
     Hotkey("3", AiModelSelector_HandleKey, "On")
@@ -1863,7 +1865,7 @@ AiModelSelector_Close() {
 }
 
 ; =============================================================================
-; Gemini-to-Cursor transfer: numeric Cursor window selector (1–9) and activate/focus/paste
+; Gemini-to-Cursor transfer: numeric Cursor window selector (1-9) and activate/focus/paste
 ; Used when user presses [C] Transfer in Gemini copy-decision banner.
 ; =============================================================================
 global g_CursorTransferSelectorGui := false
@@ -2009,7 +2011,7 @@ CursorTransfer_IsUninformativeCursorTitle(winTitle) {
     if (tl = "cursor")
         return true
     ; Strip trailing " - Cursor"; if nothing remains, title had no file/workspace name.
-    rest := RegExReplace(tl, "\s*[-–—]\s*cursor\s*$", "")
+    rest := RegExReplace(tl, "\s*[---]\s*cursor\s*$", "")
     if (Trim(rest) = "")
         return true
     return false
@@ -2068,7 +2070,7 @@ CursorTransfer_GetProcessCommandLine(pid) {
 }
 
 ; Title match when the title lists workspace/file; cmd-line when title is bare "Cursor" etc.
-; (Same PID often shares one command line — use longest path in cmd for disambiguation.)
+; (Same PID often shares one command line - use longest path in cmd for disambiguation.)
 CursorTransfer_GetMatchingProjectIndex(hwnd, winTitle := "") {
     global g_Projects
     if (!IsObject(g_Projects))
@@ -2201,7 +2203,7 @@ CursorTransfer_StripLeadingProjectFromTitle(title, cleanProjName, projName) {
         if (rest = "")
             return ""
         if (SubStr(rest, 1, 1) = "-" || SubStr(rest, 1, 1) = "|" || SubStr(rest, 1, 1) = ":" || SubStr(rest, 1, 1) =
-        "–")
+        "-")
             rest := Trim(SubStr(rest, 2))
         rest := Trim(LTrim(rest, "- "))
         return (rest != "") ? rest : title
@@ -2216,7 +2218,7 @@ CursorTransfer_StripTrailingCursorAppSuffix(s) {
     t := Trim(s)
     if (StrLower(t) = "cursor")
         return ""
-    return Trim(RegExReplace(t, "i)\s*[-–—]\s*Cursor\s*$", ""))
+    return Trim(RegExReplace(t, "i)\s*[---]\s*Cursor\s*$", ""))
 }
 
 Clipboard_GetSequenceNumber() {
@@ -2727,15 +2729,15 @@ ClipAngelBanner_Hide() {
     StandardLoadingBar_Hide(0)
 }
 
-; Fast Copy Mode (Shift keys — Clip Angel sequential paste): persistent banner with live copy count.
+; Fast Copy Mode (Shift keys - Clip Angel sequential paste): persistent banner with live copy count.
 FastCopyModeBanner_Show() {
-    StandardLoadingBar_Show("📋 Fast Copy Mode — copies: 0", BANNER_ACCENT_INFO, { passive: true, centerOnHwnd: 0,
+    StandardLoadingBar_Show("📋 Fast Copy Mode - copies: 0", BANNER_ACCENT_INFO, { passive: true, centerOnHwnd: 0,
         textWidth: 480, fontSize: 17, passiveBgColor: BANNER_ACCENT_INFO, alpha: 220,
         promptKeys: "[Win+Alt+Shift+J] Finish and paste", trackActiveMonitor: true })
 }
 
 FastCopyModeBanner_Update(copyCount) {
-    StandardLoadingBar_Update("📋 Fast Copy Mode — copies: " copyCount)
+    StandardLoadingBar_Update("📋 Fast Copy Mode - copies: " copyCount)
 }
 
 FastCopyModeBanner_Hide() {
@@ -2775,7 +2777,7 @@ ExecuteHandyAiModelSelection(selection) {
         }
         Sleep 500
 
-        ; Step 1b: Optional — set Cohere language on General (explicit English / Portuguese)
+        ; Step 1b: Optional - set Cohere language on General (explicit English / Portuguese)
         if (modelInfo.HasProp("cohereLanguage") && modelInfo.cohereLanguage != "") {
             AiModelBanner_Show("🌐 Setting Cohere language: " . modelInfo.cohereLanguage . "...")
             if (!Handy_SetCohereLanguage(handyHwnd, modelInfo.cohereLanguage)) {
@@ -3812,7 +3814,7 @@ class D2C_FlowManager {
         StandardLoadingBar_Hide(0)
         HideDictationIndicator()
 
-        ; [V] Paste dictated: target the current foreground window only — do not WinActivate OriginHwnd (dictation start).
+        ; [V] Paste dictated: target the current foreground window only - do not WinActivate OriginHwnd (dictation start).
         Send("^v")
 
         this.Reset()
@@ -4033,7 +4035,7 @@ class D2C_FlowManager {
             clipRaw := A_Clipboard
             clip := Trim(clipRaw)
             if (clip = "" || StrLen(clip) < 10) {
-                ShowCenteredOverlay_Utils("❌ Copy failed or empty – try again", 2000, BANNER_ACCENT_ERROR)
+                ShowCenteredOverlay_Utils("❌ Copy failed or empty - try again", 2000, BANNER_ACCENT_ERROR)
                 if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
                     WinActivate("ahk_id " this.OriginHwnd)
                 return
@@ -4129,7 +4131,7 @@ class D2C_FlowManager {
             if (!sendOk)
                 ShowCenteredOverlay_Utils("❌ Gemini copy timed out or IPC failed", 3500, BANNER_ACCENT_ERROR)
             else if (!clipOk)
-                ShowCenteredOverlay_Utils("❌ Copy failed or clipboard empty — try again", 3000, BANNER_ACCENT_ERROR)
+                ShowCenteredOverlay_Utils("❌ Copy failed or clipboard empty - try again", 3000, BANNER_ACCENT_ERROR)
             else if (readAloud) {
                 DetectHiddenWindows true
                 try {
@@ -4168,7 +4170,7 @@ class D2C_FlowManager {
             clipRaw := A_Clipboard
             clip := Trim(clipRaw)
             if (clip = "" || StrLen(clip) < 10) {
-                ShowCenteredOverlay_Utils("❌ Copy failed or empty – try again", 2000, BANNER_ACCENT_ERROR)
+                ShowCenteredOverlay_Utils("❌ Copy failed or empty - try again", 2000, BANNER_ACCENT_ERROR)
                 if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
                     WinActivate("ahk_id " this.OriginHwnd)
                 return
@@ -4353,7 +4355,7 @@ ScriptSoundPlay(path, wait := false) {
     }
 }
 
-; System scheme sounds, e.g. *64 (asterisk), *16 (exclamation) — see SoundPlay docs.
+; System scheme sounds, e.g. *64 (asterisk), *16 (exclamation) - see SoundPlay docs.
 ScriptSoundPlaySystem(scheme) {
     if (!IsSoundEnabled())
         return false
@@ -4404,18 +4406,45 @@ ToggleSoundState() {
 }
 
 ; =============================================================================
-; Centralized audio levels (AHK playback app volume vs mic capture — not Windows master)
+; Centralized audio levels (AHK playback app volume vs mic capture - not Windows master)
 ; =============================================================================
 global SCRIPT_MASTER_VOLUME_PERCENT := 70
-; WMP-only attenuation for cleaning chime (does not replace SCRIPT_MASTER_VOLUME_PERCENT for the AHK session).
-global CLEANING_CONFIRM_WMP_VOLUME_PERCENT := 10
 global SCRIPT_MIC_CAPTURE_VOLUME_PERCENT := 100
 global SCRIPT_MICROPHONE_INPUT_SLIDER_PERCENT := 100
 
 ; Per-process AutoHotkey playback volume via WASAPI (see ApplyAutoHotkeyAudioSessionsVolumePercent).
-; Does not call SoundSetVolume — leaves the default device master volume unchanged.
+; Does not call SoundSetVolume - leaves the default device master volume unchanged.
 ApplyScriptMasterVolumeTarget() {
-    try ApplyAutoHotkeyAudioSessionsVolumePercent(SCRIPT_MASTER_VOLUME_PERCENT)
+    n := 0
+    try n := ApplyAutoHotkeyAudioSessionsVolumePercent(SCRIPT_MASTER_VOLUME_PERCENT)
+    catch {
+    }
+    
+    psScript := A_ScriptDir "\SetAutoHotkeyVolume.ps1"
+    if FileExist(psScript) {
+        try Run('powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "' psScript '" -Level ' SCRIPT_MASTER_VOLUME_PERCENT, , "Hide")
+    }
+    
+    return n
+}
+
+; Apply now and again after delays - audio sessions for new AutoHotkey processes often do not exist for hundreds of ms after Start-Process (Quick Update / multi-script startup).
+; Use distinct timer callbacks (lambdas): SetTimer with the *same* function reference replaces the previous timer - two SetTimer(ApplyScriptMasterVolumeTarget, ...) would only keep the last delay.
+ScheduleApplyScriptMasterVolumeTargetWithRetries() {
+    ApplyScriptMasterVolumeTarget()
+    SetTimer(() => ApplyScriptMasterVolumeTarget(), -2500)
+    SetTimer(() => ApplyScriptMasterVolumeTarget(), -6000)
+}
+
+; Run after Quick Update relaunch only: AppLaunchers starts last with /Updated; other scripts need time to spawn audio sessions.
+ScheduleApplyScriptMasterVolumeTargetAfterQuickUpdate() {
+    ApplyScriptMasterVolumeTarget()
+    SetTimer(() => ApplyScriptMasterVolumeTarget(), -2000)
+    SetTimer(() => ApplyScriptMasterVolumeTarget(), -5000)
+    SetTimer(() => ApplyScriptMasterVolumeTarget(), -10000)
+    SetTimer(() => ApplyScriptMasterVolumeTarget(), -15000)
+    SetTimer(() => ApplyScriptMasterVolumeTarget(), -20000)
+    SetTimer(() => ApplyScriptMasterVolumeTarget(), -25000)
 }
 
 RunSetMicVolumeScript() {
@@ -4482,7 +4511,7 @@ ToggleOutlookAndTeams() {
 
         if (outlookRunning && teamsRunning) {
             ; Both are open: Close Outlook and minimize Teams to system tray
-            ; Close Outlook process(es) — classic and/or Store (olk.exe)
+            ; Close Outlook process(es) - classic and/or Store (olk.exe)
             try {
                 if ProcessExist("OUTLOOK.EXE")
                     ProcessClose("OUTLOOK.EXE")
@@ -4743,26 +4772,15 @@ CheckAndOpenOutlookTeams(checkOutlook := false, checkTeams := false) {
 }
 
 ; Chime for "clean now" confirmations (desktop recycle Y, clean clipboard Y). Not used on auto-timeout.
-; Quiet playback via WMP internal volume only; does not change Windows master volume. Fallback: ScriptSoundPlay.
-; WMP can leave the AutoHotkey session looking stuck low in the mixer — re-apply WASAPI target after playback.
+; Quiet: WASAPI attenuation + synchronous SoundPlay - no WMPlayer.OCX (its volume pins same-PID mixer ~10% despite later WASAPI). try/finally restores SCRIPT_MASTER_VOLUME_PERCENT deterministically.
+; One-shot timer re-applies target: a new session can appear right after SoundPlay returns; first enumeration may miss it (mixer stuck ~10%).
 PlayCleaningDesktopSound() {
     if (!IsSoundEnabled())
         return
-    static wmp := 0
     soundPath := A_ScriptDir "\sounds\cleaning-desktop.wav"
     if (!FileExist(soundPath))
         return
-    try {
-        if (!wmp)
-            wmp := ComObject("WMPlayer.OCX")
-        wmp.settings.volume := CLEANING_CONFIRM_WMP_VOLUME_PERCENT
-        wmp.URL := soundPath
-        SetTimer(() => ApplyScriptMasterVolumeTarget(), -2000)
-        return
-    } catch {
-    }
-    ScriptSoundPlay(soundPath, true)
-    ApplyScriptMasterVolumeTarget()
+    ScriptSoundPlay(soundPath, false)
 }
 
 ; Internal helper: Performs clipboard cleanup without showing prompt
@@ -4847,7 +4865,7 @@ DictationCleanup_ShowBanner() {
     ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
     ov.BackColor := "1E1E2E"
     ov.SetFont("s24 cFFFFFF Bold", "Segoe UI")
-    g_DictationCleanupTextCtrl := ov.Add("Text", "w650 Center", "Clearing clipboard in " g_DictationCleanupRemaining "… (press Y to proceed, N or End to cancel)"
+    g_DictationCleanupTextCtrl := ov.Add("Text", "w650 Center", "Clearing clipboard in " g_DictationCleanupRemaining "... (press Y to proceed, N or End to cancel)"
     )
     ov.Show("AutoSize Hide")
     ov.GetPos(&gx, &gy, &gw, &gh)
@@ -4902,7 +4920,7 @@ DictationCleanup_UpdateBannerText() {
     global g_DictationCleanupTextCtrl, g_DictationCleanupRemaining
     try {
         if IsObject(g_DictationCleanupTextCtrl) {
-            g_DictationCleanupTextCtrl.Text := "Clearing clipboard in " g_DictationCleanupRemaining "… (press Y to proceed, N or End to cancel)"
+            g_DictationCleanupTextCtrl.Text := "Clearing clipboard in " g_DictationCleanupRemaining "... (press Y to proceed, N or End to cancel)"
         }
     } catch {
     }
@@ -5034,7 +5052,7 @@ DictationMerge_ShowBanner() {
     ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
     ov.BackColor := "1E1E2E"
     ov.SetFont("s24 cFFFFFF Bold", "Segoe UI")
-    g_DictationMergeTextCtrl := ov.Add("Text", "w650 Center", "Merging non-favorite clips in " g_DictationMergeRemaining "… (press Y to proceed, N or End to cancel)"
+    g_DictationMergeTextCtrl := ov.Add("Text", "w650 Center", "Merging non-favorite clips in " g_DictationMergeRemaining "... (press Y to proceed, N or End to cancel)"
     )
     ov.Show("AutoSize Hide")
     ov.GetPos(&gx, &gy, &gw, &gh)
@@ -5085,7 +5103,7 @@ DictationMerge_UpdateBannerText() {
     global g_DictationMergeTextCtrl, g_DictationMergeRemaining
     try {
         if IsObject(g_DictationMergeTextCtrl) {
-            g_DictationMergeTextCtrl.Text := "Merging non-favorite clips in " g_DictationMergeRemaining "… (press Y to proceed, N or End to cancel)"
+            g_DictationMergeTextCtrl.Text := "Merging non-favorite clips in " g_DictationMergeRemaining "... (press Y to proceed, N or End to cancel)"
         }
     } catch {
     }
@@ -5389,7 +5407,7 @@ InitMacros() {
     RegisterMacro(Cursor_FindComposerIconAcrossInstances, "🔍 AI working? (Cursor + Gemini)", "u")
     ; Mark Last Clip as Favorite macro (assigned to "J")
     RegisterMacro(MarkLastClipAsFavorite, "⭐ Mark Last Clip as Favorite", "j")
-    ; Move Desktop to Recycle Bin (assigned to "N") — red banner, Y/N confirm
+    ; Move Desktop to Recycle Bin (assigned to "N") - red banner, Y/N confirm
     RegisterMacro(DesktopToRecycle_Trigger, "🗑️ Move Desktop to Recycle Bin", "n")
 }
 
@@ -5420,11 +5438,15 @@ if (A_Args.Length > 0 && A_Args[1] = "/Updated") {
     try {
         ShowCenteredOverlay_Utils("✅ Scripts updated and relaunched", 6500, BANNER_ACCENT_SUCCESS)
         soundPath := A_ScriptDir "\sounds\quick-update-success.wav"
+        ; Play success chime to completion before scheduling volume: async SoundPlay can register a new session after
+        ; the first Apply pass, leaving that session at a low default (~10% in the mixer) until something re-enumerates.
         try {
             if (FileExist(soundPath))
-                ScriptSoundPlay(soundPath)
+                ScriptSoundPlay(soundPath, true)
         } catch {
         }
+        ; After all scripts have been started (this block runs last in include order for AppLaunchers /Updated), apply AHK volume - not at Quick Update start (old sessions / dead timers).
+        ScheduleApplyScriptMasterVolumeTargetAfterQuickUpdate()
     } catch {
     }
 }
@@ -5574,7 +5596,7 @@ DesktopToRecycle_Trigger() {
 
 ; =============================================================================
 ; Clip Angel: Open/Activate with focus correction (Row 0)
-; Hotkey: Alt+V — when closed: open + focus Row 0; when open: pass Alt+V to close (toggle).
+; Hotkey: Alt+V - when closed: open + focus Row 0; when open: pass Alt+V to close (toggle).
 ; =============================================================================
 !v::
 {
@@ -6977,7 +6999,7 @@ HandleLoopModeUp() {
 }
 
 ; =============================================================================
-; Peek PDF – Win+Alt+Shift+X
+; Peek PDF - Win+Alt+Shift+X
 ; If Peek is open: activate it. Otherwise: show study-topic selector (same aesthetic as Win+Alt+Shift+C).
 ; =============================================================================
 
@@ -7100,7 +7122,7 @@ YouTube_PauseSpotifyBeforeYoutube() {
         session.Pause()
         g_YoutubeSpotifyPausePending := true
     } catch {
-        ; WinRT/SMTC unavailable — do not fall back to Media_Play_Pause (toggle bug).
+        ; WinRT/SMTC unavailable - do not fall back to Media_Play_Pause (toggle bug).
     }
 }
 
@@ -7196,7 +7218,7 @@ ShowStudyTopicSelector() {
 
     g_StudyTopicSelectorGui.Add("Text", "w280 h1 Background45475A y+10")
     g_StudyTopicSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_StudyTopicSelectorGui.Add("Text", "w280 Center", "Press 0–5 | Esc to cancel")
+    g_StudyTopicSelectorGui.Add("Text", "w280 Center", "Press 0-5 | Esc to cancel")
 
     activeWin := 0
     try {
@@ -7938,7 +7960,7 @@ MnemonicRich_Utf16Units(s) {
     return n
 }
 
-; EM_SETTEXTEX = 0x461, ST_UNICODE = 8 — RichEdit’s native UTF-16 path.
+; EM_SETTEXTEX = 0x461, ST_UNICODE = 8 - RichEdit's native UTF-16 path.
 MnemonicRich_SetPlainUtf16(ctrl, plain) {
     hwnd := ctrl.Hwnd
     flags := 8 ; ST_UNICODE
@@ -8683,7 +8705,7 @@ CleanupHotstringSelector() {
 ; =============================================================================
 
 ; Navigate to Gemini, focus the prompt field, then paste first clipboard snippet (same as Win+Alt+Shift+1).
-; Reference: "order called snippets" – Clip Angel top item sent via !v then ^!b.
+; Reference: "order called snippets" - Clip Angel top item sent via !v then ^!b.
 ; If optionalPromptText is non-empty, inserts that text into the prompt field instead (same as Win+Alt+Shift+U then L, prompt char).
 ; switchToFirstTab: when true (default), send Ctrl+1 and show tab-1 banner (AI Text Optimizer / ^!#4). When false, use currently active Gemini tab if any, else first Gemini window, without changing tab (delay-submit flow).
 GeminiNavigateFocusAndPasteFirstSnippet(optionalPromptText := "", switchToFirstTab := true) {
@@ -9445,7 +9467,7 @@ UtilitySelector_BuildCategoryText(isPortrait) {
             items.Push(item)
     }
 
-    header := "— " . g_UtilitySelectorCategory . " —`n"
+    header := "- " . g_UtilitySelectorCategory . " -`n"
     if (items.Length = 0) {
         return header . "(no items)`n`nBackspace = back | Esc = close"
     }
@@ -9546,7 +9568,7 @@ UtilitySelector_BuildCategoryRich(isPortrait) {
     }
 
     lines := []
-    lines.Push({ text: "— " . g_UtilitySelectorCategory . " —" })
+    lines.Push({ text: "- " . g_UtilitySelectorCategory . " -" })
     if (items.Length = 0) {
         lines.Push({ text: "(no items)" })
         lines.Push({ text: "" })
@@ -9671,7 +9693,7 @@ UtilitySelector_RefreshUiAndHotkeys() {
 
     title := "Utility Shortcuts"
     if (g_UtilitySelectorMode = "category" && g_UtilitySelectorCategory != "")
-        title := title . " — " . g_UtilitySelectorCategory
+        title := title . " - " . g_UtilitySelectorCategory
 
     if (IsObject(g_UtilitySelectorTitleCtrl))
         try g_UtilitySelectorTitleCtrl.Text := title
@@ -9745,7 +9767,7 @@ UtilitySelector_RefreshUiAndHotkeys() {
     UtilitySelector_RebindHotkeys()
 }
 
-; Triggers for InitTechniquePromptHotstrings — used to group Utility Shortcuts Prompts submenu.
+; Triggers for InitTechniquePromptHotstrings - used to group Utility Shortcuts Prompts submenu.
 UtilitySelector_IsMnemonicTechniquePrompt(trigger) {
     if (trigger = "")
         return false
@@ -9860,7 +9882,7 @@ ShowHotstringSelector() {
             Sleep 50
         }
     } catch {
-        ; Ignore failures – hotstring selector should still open
+        ; Ignore failures - hotstring selector should still open
     }
 
     ; Cross-process safety: if WindowManagement project selector is open in another process,
@@ -9875,7 +9897,7 @@ ShowHotstringSelector() {
             Sleep 50
         }
     } catch {
-        ; Ignore IPC failures – hotstring selector should still open
+        ; Ignore IPC failures - hotstring selector should still open
     }
 
     ; Build character mapping
@@ -10561,7 +10583,7 @@ ShowHotstringSelector() {
 #UseHook False
 #InputLevel 0
 ^!#8:: DesktopToRecycle_Trigger()
-; Ctrl+Alt+Win+9 / +B — Handy Parakeet V3 / V2 (g_HandyAiModels slots 2 and 1)
+; Ctrl+Alt+Win+9 / +B - Handy Parakeet V3 / V2 (g_HandyAiModels slots 2 and 1)
 ^!#9:: ExecuteHandyAiModelSelection(HANDY_AI_SLOT_PARAKEET_V3)
 ^!#b:: ExecuteHandyAiModelSelection(HANDY_AI_SLOT_PARAKEET_V2)
 

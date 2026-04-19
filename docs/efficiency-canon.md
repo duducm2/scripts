@@ -2,7 +2,7 @@
 
 **Purpose:** Foundational context for future AI executions. This document synthesizes prior Investigator AI deep technical investigations and establishes strategic guidelines, standardized best practices, and recommended technologies for automation development in this repository.
 
-**Scope:** Read-only reference. Source corpus: all `*-evaluation-report.md` and `*-improvement*.md` documents in this `docs/` directory (Gemini, Teams, Outlook, Spotify, ShiftKeys, WindowManagement, AppLaunchers). No modifications are made to scripts by this document.
+**Scope:** Evaluation and improvement reports under `docs/` are the read-only source corpus. **Sections 11+** record **proven in-repo hot-path patterns** (may be updated when those implementations change). This document does not modify scripts by itself.
 
 ---
 
@@ -78,7 +78,7 @@ Recurring issues identified across evaluation reports, normalized into a single 
   - **Shared Memory (Memory-Mapped File):** Lowest latency (~sub-millisecond), suitable for state arrays and FSM flags. Requires strict synchronization (named Mutex, optional EventWaitHandle for readiness). Define a fixed layout (version, seq, opCode, payload, status) and byte offsets.
   - **Named Pipes:** Duplex, kernel-managed; latency typically tens of microseconds. Use for request/response and streaming events when Shared Memory complexity is undesirable. Use length-prefixed or framed messages (e.g. 4-byte length + UTF-8 payload).
   - **Forbidden:** CLI execution (`RunWait`, spawning script per action), temp-file IPC, unbuffered HTTP/localhost for hot paths.
-- **WASAPI / audio.** For **per-application volume** control without touching the UI, use Windows Audio Session API (e.g. IAudioSessionManager2, IAudioSessionEnumerator, ISimpleAudioVolume) by PID. Do not use WASAPI to “mute” for UI features that must stay in sync with the app’s own mute state (e.g. Teams mic indicator); use for hardware or mixer-level control only where state sync is not required.
+- **WASAPI / audio.** For **per-application volume** control without touching the UI, use Windows Audio Session API (e.g. IAudioSessionManager2, IAudioSessionEnumerator, ISimpleAudioVolume) by PID. Do not use WASAPI to “mute” for UI features that must stay in sync with the app’s own mute state (e.g. Teams mic indicator); use for hardware or mixer-level control only where state sync is not required. For **quiet confirmation sounds in the same AHK process**, do not combine WMP OCX volume with WASAPI targets — see **§14**.
 - **Integration strategy for new shortcuts/workflows.** Prefer: (1) implement in AHK with the patterns above; (2) if bottlenecks are severe and localized, consider a small, focused daemon with a single IPC channel and feature-flagged cutover; (3) document rollout order and rollback (legacy path remains callable).
 
 ---
@@ -168,3 +168,13 @@ Interesting outcomes from integrating Python for `Gemini.ahk` / `WindowManagemen
 - **Avoid fixed multi-second tails** after Clip Angel or screenshot paste into Gemini when the UI can signal “uploading” via `FastCopyMode_GeminiIsUploadingImage`. Prefer **`Gemini_WaitForUploadIdleWithRefocus`** (bounded loop, refocus while uploading) over `Sleep 2600` so fast uploads return early.
 - **Tune `minNoIndicatorMs` per flow:** Clip Angel mixes text and media — use a **high** minimum (e.g. 2600 ms) when no indicator appeared so behavior stays close to the old fixed delay; screenshot paste can use a **lower** minimum (e.g. 800 ms) because image uploads usually surface the heuristic quickly.
 - **Reuse cached `UIA_Browser` in `finally`:** when Gemini stays foreground, **`FastCopyMode_FocusGeminiPromptField(uia)`** avoids a second `UIA_Browser` attach versus always calling `FocusGeminiAskFieldForHwnd` (see `Shift keys.ahk`, `Gemini_PasteFromClipAngelSequential`).
+
+---
+
+## 14. Same-process confirmation chimes (WASAPI + SoundPlay, 2026)
+
+- **Do not** use `WMPlayer.OCX` `settings.volume` for quiet confirmation sounds in the **same** AutoHotkey process that also sets per-session level via WASAPI (`SCRIPT_MASTER_VOLUME_PERCENT`) — the host’s per-app mixer can stay at the attenuation step (~10%) after playback.
+- **Do:** `ApplyAutoHotkeyAudioSessionsVolumePercent(lowPercent)` → `ScriptSoundPlay(path, true)` (or `SoundPlay` with wait) → **`ApplyScriptMasterVolumeTarget()` inside `try`/`finally`** so restore runs on success, failure, or early exit. If the mixer still shows the low step, add **one** short **one-shot** `SetTimer(..., -250)` to call the same restore again — not a blind multi-second sleep, but a second enumeration pass after the audio graph updates.
+- **Avoid** relying on a **fixed-delay** `SetTimer` alone to fix mixer level after embedded WMP — non-deterministic vs session lifetime and enumeration.
+- **Reference:** `PlayCleaningDesktopSound` in `Utils.ahk`; globals `SCRIPT_MASTER_VOLUME_PERCENT` and `CLEANING_CONFIRM_WMP_VOLUME_PERCENT` (name retained; level is applied via WASAPI, not WMP).
+- **Quick Update (`/Updated`):** play `quick-update-success.wav` with **wait** (`ScriptSoundPlay(..., true)`) **before** `ScheduleApplyScriptMasterVolumeTargetAfterQuickUpdate()`. If the chime runs **async**, a new audio session can appear **after** the first WASAPI pass and show ~10% in the mixer until the next enumeration.

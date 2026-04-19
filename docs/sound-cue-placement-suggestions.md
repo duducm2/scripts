@@ -10,7 +10,7 @@ Use this file as a scratchpad: which actions deserve a distinct chime, which ass
 |-----------|--------|
 | Global sound on/off | `IsSoundEnabled()` / `ToggleSoundState()` in [`../Utils.ahk`](../Utils.ahk) (`data/settings.ini`, `SoundEnabled`) |
 | AutoHotkey playback volume (per-app) | `ApplyScriptMasterVolumeTarget()` / `SCRIPT_MASTER_VOLUME_PERCENT` in Utils — WASAPI `ApplyAutoHotkeyAudioSessionsVolumePercent` in [`../SpotifyWASAPI.ahk`](../SpotifyWASAPI.ahk); does **not** change Windows master volume |
-| Quiet confirm chimes | `PlayCleaningDesktopSound()` pattern (WMP internal volume; no master ducking) |
+| Quiet confirm chimes | `PlayCleaningDesktopSound()` pattern (WASAPI attenuation; no master ducking) |
 
 ---
 

@@ -5,10 +5,86 @@
 
 ; IID_IAudioSessionManager2   = {77AA99A0-1BD6-484F-8BC7-2C654C9A9B6F}
 ; IID_IAudioSessionControl2   = {BFB7FF88-7239-4FC9-8FA2-07C950BE9C6D}
-; IID_ISimpleAudioVolume      = {BFB7FF88-7239-4FC9-8FA2-07C950BE9C6D}
+; IID_ISimpleAudioVolume      = {F8679F50-25A0-4E46-9F29-B28F71F0019C}  ; audioclient.h — not IAudioSessionControl2
 ; CLSID_MMDeviceEnumerator    = {BCDE0395-E52F-467C-8E3D-C4579291692E}
 ; IID_IMMDeviceEnumerator     = {A95664D2-9614-4F35-A746-DE8DB63617E6}
 ; IID_IMMDevice              = {D666063F-1587-4E43-81F1-B948E807363F}
+
+global WASAPI_IID_IAudioSessionControl2 := "{BFB7FF88-7239-4FC9-8FA2-07C950BE9C6D}"
+global WASAPI_IID_ISimpleAudioVolume := "{F8679F50-25A0-4E46-9F29-B28F71F0019C}"
+
+; IAudioSessionControl2::GetProcessId is vtable index 14 (IUnknown 0–2, IAudioSessionControl 3–11, IAudioSessionControl2 12–16).
+; Use ComObjQuery for QI — manual IUnknown::QueryInterface via ComCall throws E_NOINTERFACE (0x80004002) on failure.
+GetAudioSessionProcessId(sessionObj) {
+    try {
+        ctrl2 := ComObjQuery(sessionObj, WASAPI_IID_IAudioSessionControl2)
+        if !ctrl2
+            return 0
+        sessionPid := 0
+        try ComCall(14, ctrl2, "UInt*", &sessionPid := 0)
+        catch {
+            return 0
+        }
+        return sessionPid
+    } catch {
+        return 0
+    }
+}
+
+; ISimpleAudioVolume: SetMasterVolume = slot 3, GetMasterVolume = slot 4 (after IUnknown).
+; Primary: QI session -> ISimpleAudioVolume. Fallback: GetGroupingParam (IAudioSessionControl slot 8) +
+; IAudioSessionManager::GetSimpleAudioVolume (slot 4) — QI from enumerator often does not expose ISimpleAudioVolume on Win10/11.
+WASAPI_SetSessionScalar(sessionObj, scalar, mgr := 0) {
+    try {
+        vol := ComObjQuery(sessionObj, WASAPI_IID_ISimpleAudioVolume)
+        if vol {
+            ComCall(3, vol, "Float", scalar, "Ptr", 0)
+            return true
+        }
+    } catch {
+    }
+    if !mgr
+        return false
+    try {
+        guidBuf := Buffer(16, 0)
+        ComCall(8, sessionObj, "Ptr", guidBuf.Ptr)
+        pVol := 0
+        ComCall(4, mgr, "Ptr", guidBuf.Ptr, "UInt", 0, "Ptr*", &pVol := 0)
+        if !pVol
+            return false
+        vol := ComValue(13, pVol)
+        ComCall(3, vol, "Float", scalar, "Ptr", 0)
+        return true
+    } catch {
+        return false
+    }
+}
+
+WASAPI_GetSessionScalar(sessionObj, &outScalar, mgr := 0) {
+    try {
+        vol := ComObjQuery(sessionObj, WASAPI_IID_ISimpleAudioVolume)
+        if vol {
+            ComCall(4, vol, "Float*", &outScalar := 0.0)
+            return true
+        }
+    } catch {
+    }
+    if !mgr
+        return false
+    try {
+        guidBuf := Buffer(16, 0)
+        ComCall(8, sessionObj, "Ptr", guidBuf.Ptr)
+        pVol := 0
+        ComCall(4, mgr, "Ptr", guidBuf.Ptr, "UInt", 0, "Ptr*", &pVol := 0)
+        if !pVol
+            return false
+        vol := ComValue(13, pVol)
+        ComCall(4, vol, "Float*", &outScalar := 0.0)
+        return true
+    } catch {
+        return false
+    }
+}
 
 ; Adjust volume for the audio session matching pid. deltaPercent is a signed step (e.g. +10 or -10).
 ; Volume is clamped to [0, 100]. Returns true if session was found and updated, false otherwise.
@@ -37,20 +113,15 @@ AdjustProcessVolumeByPid(pid, deltaPercent) {
             if !session
                 continue
             sessionObj := ComValue(13, session)
-            ctrl2 := QueryInterface(sessionObj, "{BFB7FF88-7239-4FC9-8FA2-07C950BE9C6D}")
-            if !ctrl2
-                continue
-            sessionPid := 0
-            ComCall(7, ctrl2, "UInt*", &sessionPid := 0)
+            sessionPid := GetAudioSessionProcessId(sessionObj)
             if (sessionPid != pid)
                 continue
-            ; Same object implements ISimpleAudioVolume: GetMasterVolume at 9, SetMasterVolume at 8 (0.0-1.0)
             cur := 0.0
-            ComCall(9, ctrl2, "Float*", &cur := 0)
+            if !WASAPI_GetSessionScalar(sessionObj, &cur, mgr)
+                continue
             newScalar := (cur * 100) + deltaPercent
             newScalar := Max(0, Min(100, newScalar)) / 100.0
-            ComCall(8, ctrl2, "Float", newScalar, "Ptr", 0)
-            return true
+            return WASAPI_SetSessionScalar(sessionObj, newScalar, mgr)
         }
         return false
     } catch {
@@ -85,15 +156,10 @@ SetProcessPlaybackVolumePercent(pid, percent) {
             if !session
                 continue
             sessionObj := ComValue(13, session)
-            ctrl2 := QueryInterface(sessionObj, "{BFB7FF88-7239-4FC9-8FA2-07C950BE9C6D}")
-            if !ctrl2
-                continue
-            sessionPid := 0
-            ComCall(7, ctrl2, "UInt*", &sessionPid := 0)
+            sessionPid := GetAudioSessionProcessId(sessionObj)
             if (sessionPid != pid)
                 continue
-            ComCall(8, ctrl2, "Float", scalar, "Ptr", 0)
-            return true
+            return WASAPI_SetSessionScalar(sessionObj, scalar, mgr)
         }
         return false
     } catch {
@@ -128,11 +194,7 @@ ApplyAutoHotkeyAudioSessionsVolumePercent(percent) {
             if !session
                 continue
             sessionObj := ComValue(13, session)
-            ctrl2 := QueryInterface(sessionObj, "{BFB7FF88-7239-4FC9-8FA2-07C950BE9C6D}")
-            if !ctrl2
-                continue
-            sessionPid := 0
-            ComCall(7, ctrl2, "UInt*", &sessionPid := 0)
+            sessionPid := GetAudioSessionProcessId(sessionObj)
             if (sessionPid <= 0)
                 continue
             procName := ""
@@ -142,11 +204,8 @@ ApplyAutoHotkeyAudioSessionsVolumePercent(percent) {
             }
             if !InStr(StrLower(procName), "autohotkey")
                 continue
-            try {
-                ComCall(8, ctrl2, "Float", scalar, "Ptr", 0)
+            if WASAPI_SetSessionScalar(sessionObj, scalar, mgr)
                 updated += 1
-            } catch {
-            }
         }
         return updated
     } catch {
