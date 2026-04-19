@@ -767,7 +767,6 @@ Cursor
 🔲 [J]Select to Bracket (ad[J]acent)
 📉 [,] Fold all directories
 💬 [.] Toggle chat or agent
-📈 [Q]Unfold all directories (e[Q]ual)
 🤖 [E] Maximize chat size — native Cursor (`workbench.action.maximizeChatSize`; user keybinding)
 📂 [R]File open [R]ecent
 🔍 [T]Go to [T]ype symbol in workspace
@@ -873,7 +872,6 @@ VS Code
 🔲 [J]Select to Bracket (ad[J]acent)
 📉 [,] Fold all directories
 💬 [.] Copilot Agent Modes
-📈 [Q]Unfold all directories (e[Q]ual)
 🤖 [E] VS Code default behavior (Cursor custom maximize removed)
 📂 [R]File open [R]ecent
 🔍 [T]Go to [T]ype symbol in workspace
@@ -17618,8 +17616,7 @@ CancelCommit(ctrl, *) {
 ; Ctrl + Alt + I : Fold all directories in VS Code Explorer
 ^,:: FoldAllDirectoriesInExplorer()
 
-; Ctrl + Alt + O : Unfold all directories in VS Code Explorer
-^q:: UnfoldAllDirectoriesInExplorer()
+; Ctrl+Q : free (was UnfoldAllDirectoriesInExplorer; function kept below for reuse)
 
 ; Alt + N : Review next file - Click the button that contains "Review next file" (Type 50020 Text)
 ; Path from UIA tree: workbench.parts.editor -> editor-instance -> ... -> Group (anysphere-text-button) -> Text "Review next file"
@@ -18730,7 +18727,8 @@ FoldAllDirectoriesInExplorer() {
     }
 }
 
-; Expand all expandable directories in the Explorer (FileExplorer3) for all workspace roots
+; Expand all expandable directories in the Explorer (FileExplorer3) for all workspace roots.
+; No hotkey bound — Ctrl+Q used to call this (Cursor + VS Code); assign a hotkey again if needed.
 UnfoldAllDirectoriesInExplorer() {
     try {
         ; Show progress overlay immediately (yellow for unfolding)
