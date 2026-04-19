@@ -58,6 +58,102 @@ AdjustProcessVolumeByPid(pid, deltaPercent) {
     }
 }
 
+; Set absolute playback volume (0-100) for the audio session matching pid. Does not change Windows master volume.
+; Returns true if a session was found and updated.
+SetProcessPlaybackVolumePercent(pid, percent) {
+    if !(pid is Integer) || (pid <= 0)
+        return false
+    scalar := Max(0, Min(100, percent)) / 100.0
+    try {
+        DllCall("ole32\CoInitializeEx", "Ptr", 0, "UInt", 0)
+    } catch {
+    }
+    try {
+        mgr := GetDefaultSessionManager()
+        if !mgr
+            return false
+        enum := ComValue(13, 0)
+        ComCall(5, mgr, "Ptr*", &enum := 0)
+        if !enum
+            return false
+        enumObj := ComValue(13, enum)
+        count := 0
+        ComCall(3, enumObj, "UInt*", &count := 0)
+        loop count {
+            session := 0
+            ComCall(4, enumObj, "Int", A_Index - 1, "Ptr*", &session := 0)
+            if !session
+                continue
+            sessionObj := ComValue(13, session)
+            ctrl2 := QueryInterface(sessionObj, "{BFB7FF88-7239-4FC9-8FA2-07C950BE9C6D}")
+            if !ctrl2
+                continue
+            sessionPid := 0
+            ComCall(7, ctrl2, "UInt*", &sessionPid := 0)
+            if (sessionPid != pid)
+                continue
+            ComCall(8, ctrl2, "Float", scalar, "Ptr", 0)
+            return true
+        }
+        return false
+    } catch {
+        return false
+    }
+}
+
+; Set absolute playback volume for every audio session whose process name contains "AutoHotkey" (any casing).
+; Does not change the default device master volume. Returns number of sessions updated (0 if none / error).
+; If a process has not opened an audio session yet, it has no mixer entry — call again after first SoundPlay if needed.
+ApplyAutoHotkeyAudioSessionsVolumePercent(percent) {
+    scalar := Max(0, Min(100, percent)) / 100.0
+    updated := 0
+    try {
+        DllCall("ole32\CoInitializeEx", "Ptr", 0, "UInt", 0)
+    } catch {
+    }
+    try {
+        mgr := GetDefaultSessionManager()
+        if !mgr
+            return 0
+        enum := ComValue(13, 0)
+        ComCall(5, mgr, "Ptr*", &enum := 0)
+        if !enum
+            return 0
+        enumObj := ComValue(13, enum)
+        count := 0
+        ComCall(3, enumObj, "UInt*", &count := 0)
+        loop count {
+            session := 0
+            ComCall(4, enumObj, "Int", A_Index - 1, "Ptr*", &session := 0)
+            if !session
+                continue
+            sessionObj := ComValue(13, session)
+            ctrl2 := QueryInterface(sessionObj, "{BFB7FF88-7239-4FC9-8FA2-07C950BE9C6D}")
+            if !ctrl2
+                continue
+            sessionPid := 0
+            ComCall(7, ctrl2, "UInt*", &sessionPid := 0)
+            if (sessionPid <= 0)
+                continue
+            procName := ""
+            try procName := ProcessGetName(sessionPid)
+            catch {
+                continue
+            }
+            if !InStr(StrLower(procName), "autohotkey")
+                continue
+            try {
+                ComCall(8, ctrl2, "Float", scalar, "Ptr", 0)
+                updated += 1
+            } catch {
+            }
+        }
+        return updated
+    } catch {
+        return 0
+    }
+}
+
 QueryInterface(obj, iidStr) {
     iid := Buffer(16)
     DllCall("ole32\IIDFromString", "Str", iidStr, "Ptr", iid)

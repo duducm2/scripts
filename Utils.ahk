@@ -20,6 +20,7 @@ DebugFlowLog(location, message, dataStr := "", hypothesisId := "") {
 #include UIA-v2\Lib\UIA.ahk
 #include UIA-v2\Lib\UIA_Browser.ahk
 #include %A_ScriptDir%\lib\Media.ahk
+#include %A_ScriptDir%\SpotifyWASAPI.ahk
 
 ; =============================================================================
 ; Semantic banner accents (must be defined early)
@@ -4403,15 +4404,18 @@ ToggleSoundState() {
 }
 
 ; =============================================================================
-; Centralized audio levels (single source of truth; master playback vs mic capture)
+; Centralized audio levels (AHK playback app volume vs mic capture — not Windows master)
 ; =============================================================================
 global SCRIPT_MASTER_VOLUME_PERCENT := 70
+; WMP-only attenuation for cleaning chime (does not replace SCRIPT_MASTER_VOLUME_PERCENT for the AHK session).
 global CLEANING_CONFIRM_WMP_VOLUME_PERCENT := 10
 global SCRIPT_MIC_CAPTURE_VOLUME_PERCENT := 100
 global SCRIPT_MICROPHONE_INPUT_SLIDER_PERCENT := 100
 
+; Per-process AutoHotkey playback volume via WASAPI (see ApplyAutoHotkeyAudioSessionsVolumePercent).
+; Does not call SoundSetVolume — leaves the default device master volume unchanged.
 ApplyScriptMasterVolumeTarget() {
-    try SoundSetVolume(SCRIPT_MASTER_VOLUME_PERCENT)
+    try ApplyAutoHotkeyAudioSessionsVolumePercent(SCRIPT_MASTER_VOLUME_PERCENT)
 }
 
 RunSetMicVolumeScript() {
@@ -4739,7 +4743,8 @@ CheckAndOpenOutlookTeams(checkOutlook := false, checkTeams := false) {
 }
 
 ; Chime for "clean now" confirmations (desktop recycle Y, clean clipboard Y). Not used on auto-timeout.
-; Quiet playback via WMP internal volume only; does not change Windows master volume. Fallback: ScriptSoundPlay at current master.
+; Quiet playback via WMP internal volume only; does not change Windows master volume. Fallback: ScriptSoundPlay.
+; WMP can leave the AutoHotkey session looking stuck low in the mixer — re-apply WASAPI target after playback.
 PlayCleaningDesktopSound() {
     if (!IsSoundEnabled())
         return
@@ -4752,10 +4757,12 @@ PlayCleaningDesktopSound() {
             wmp := ComObject("WMPlayer.OCX")
         wmp.settings.volume := CLEANING_CONFIRM_WMP_VOLUME_PERCENT
         wmp.URL := soundPath
+        SetTimer(() => ApplyScriptMasterVolumeTarget(), -2000)
         return
     } catch {
     }
     ScriptSoundPlay(soundPath, true)
+    ApplyScriptMasterVolumeTarget()
 }
 
 ; Internal helper: Performs clipboard cleanup without showing prompt
