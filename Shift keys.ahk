@@ -1216,6 +1216,7 @@ Command Palette (Shift)
 ⌨️ [B]Go [H]ome
 ⌨️ [S]Precise [S]earch
 ⌨️ [I][I]nsert Favorite (Add)
+⌨️ [D][E]xclude Favorite (confirm)
 ⌨️ [Ctrl+1] [S]elect current item
 ⌨️ [Ctrl+2] [M]ove down once and select
 ⌨️ [Ctrl+3] [M]ove down twice and select
@@ -1752,6 +1753,7 @@ Letters available: C, H, I, K, M, N, O, P, T, U, V, X, Y, Z
 
 === COMMAND PALETTE ===
 [Win+Ctrl+Alt+Y] > Command Palette - File search
+[Shift+D] > Command Palette (active): exclude current bookmark (confirm)
 
 === SHORTCUTS ===
 [Win+Alt+Shift+A] > Show app-specific shortcuts (quick press)
@@ -23873,6 +23875,62 @@ SettleUp_GetNewExpenseDialog() {
 #HotIf
 
 ;-------------------------------------------------------------------
+; PowerToys Command Palette — bookmark exclude confirmation (Shift+D)
+; docs/standard_information_display.md — Interactive Input (ShowWithKeys)
+;-------------------------------------------------------------------
+global g_CommandPaletteBookmarkExcludeChoice := ""
+
+CommandPalette_BookmarkExclude_Pick(key) {
+    global g_CommandPaletteBookmarkExcludeChoice
+    g_CommandPaletteBookmarkExcludeChoice := key
+    try StandardLoadingBar_CloseKeysOverlay()
+    try StandardLoadingBar_Hide(0)
+}
+
+CommandPalette_BookmarkExclude_OnTimeout() {
+    CommandPalette_BookmarkExclude_Pick("N")
+}
+
+CommandPalette_BookmarkExclude_ShowAndWait() {
+    global g_CommandPaletteBookmarkExcludeChoice
+    g_CommandPaletteBookmarkExcludeChoice := ""
+    try StandardLoadingBar_Hide(0)
+    catch {
+    }
+    try StandardLoadingBar_CloseKeysOverlay()
+    catch {
+    }
+
+    keyCallbacks := Map()
+    keyCallbacks.Set("Y", CommandPalette_BookmarkExclude_Pick.Bind("Y"))
+    keyCallbacks.Set("N", CommandPalette_BookmarkExclude_Pick.Bind("N"))
+    keyCallbacks.Set("Escape", CommandPalette_BookmarkExclude_Pick.Bind("N"))
+
+    StandardLoadingBar_ShowWithKeys(
+        "❓ Exclude the current bookmark?",
+        keyCallbacks,
+        30000,
+        0,
+        CommandPalette_BookmarkExclude_OnTimeout,
+        "1E1E2E",
+        760,
+        17,
+        BANNER_ACCENT_INTERMEDIATE,
+        true,
+        "[Y] Yes  [N] No",
+        true
+    )
+
+    deadline := A_TickCount + 30000
+    while (A_TickCount < deadline) {
+        if (g_CommandPaletteBookmarkExcludeChoice != "")
+            break
+        Sleep 40
+    }
+    return g_CommandPaletteBookmarkExcludeChoice
+}
+
+;-------------------------------------------------------------------
 ; PowerToys Command Palette Shortcuts
 ;-------------------------------------------------------------------
 #HotIf WinActive("Command Palette")
@@ -23936,6 +23994,18 @@ SettleUp_GetNewExpenseDialog() {
 ; Shift + I : Trigger Command Palette Bookmark "add new bookmark" shortcut
 +i:: {
     Send "^!#m"
+}
+
+; Shift + D : Exclude current bookmark (confirm → Ctrl+Shift+Delete, Tab, Enter)
++d:: {
+    choice := CommandPalette_BookmarkExclude_ShowAndWait()
+    if (choice != "Y")
+        return
+    Send "^+{Delete}"
+    Sleep 50
+    Send "{Tab}"
+    Sleep 30
+    Send "{Enter}"
 }
 
 ; Ctrl + 1 : Trigger Enter
