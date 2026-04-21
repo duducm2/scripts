@@ -3702,6 +3702,46 @@ D2C_CombinePresetWithDictation(presetText, dictationText) {
 ; After D2C copy of Gemini reply, before Clip Angel favorite (align with Gemini.ahk GEMINI_POST_COPY_FAVORITE_DELAY_MS).
 D2C_POST_COPY_FAVORITE_DELAY_MS := 150
 
+; Buffer after dictation ends before "Send to Gemini?" (linear loading bar + accidental key buffer).
+D2C_SUBMIT_MENU_DELAY_MS := 2000
+D2C_SUBMIT_MENU_PROGRESS_TICK_MS := 50
+
+; Linear 0–100% loading bar for D2C_SUBMIT_MENU_DELAY_MS, then hide (no keys). Stops StandardLoadingBar_Tick spinner.
+D2C_RunSubmitMenuDelayBar() {
+    global g_StandardLoadingBarGui
+    delayMs := D2C_SUBMIT_MENU_DELAY_MS
+    tickMs := D2C_SUBMIT_MENU_PROGRESS_TICK_MS
+    StandardLoadingBar_CloseKeysOverlay()
+    StandardLoadingBar_Hide(0)
+    StandardLoadingBar_Show("⏳ Preparing menu…", BANNER_ACCENT_INTERMEDIATE, { textWidth: 520, fontSize: 17,
+        noBorder: true, trackActiveMonitor: true })
+    SetTimer(StandardLoadingBar_Tick, 0)
+    try {
+        if IsObject(g_StandardLoadingBarGui)
+            g_StandardLoadingBarGui["OverlayProg"].Value := 0
+    } catch {
+    }
+    steps := delayMs // tickMs
+    if (steps < 1)
+        steps := 1
+    loop steps {
+        Sleep(tickMs)
+        pct := Min(100, Round(100 * A_Index / steps))
+        try {
+            if IsObject(g_StandardLoadingBarGui)
+                g_StandardLoadingBarGui["OverlayProg"].Value := pct
+        } catch {
+            break
+        }
+    }
+    try {
+        if IsObject(g_StandardLoadingBarGui)
+            g_StandardLoadingBarGui["OverlayProg"].Value := 100
+    } catch {
+    }
+    StandardLoadingBar_Hide(0)
+}
+
 ; =============================================================================
 ; =============================================================================
 ; D2C_FlowManager: Unified state machine for Dictation → Gemini → Cursor flow.
@@ -3744,6 +3784,7 @@ class D2C_FlowManager {
         }
         this.Reset()
         this.OriginHwnd := WinActive("A")
+        D2C_RunSubmitMenuDelayBar()
         this.PromptForGeminiSubmit()
     }
 
@@ -11412,6 +11453,7 @@ PlayDictationCompletionChime(*) {
                 "H3"
             )
             ; #endregion
+            try ScriptSoundPlay(A_ScriptDir . "\sounds\dictation-selection-menu.wav")
             D2C_FlowManager.GetInstance().StartFromDictation()
         }
     }
