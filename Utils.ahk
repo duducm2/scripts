@@ -3767,6 +3767,7 @@ class D2C_FlowManager {
             "S", this.OnSubmitS.Bind(this),
             "V", this.OnSubmitV.Bind(this),
             "E", this.OnSubmitE.Bind(this),
+            "F", this.OnSubmitF.Bind(this),
             "N", this.OnSubmitN.Bind(this)
         )
         StandardLoadingBar_ShowWithKeys(
@@ -3775,8 +3776,8 @@ class D2C_FlowManager {
             6000,
             0,
             this.OnSubmitTimeout.Bind(this),
-            "1E1E2E", 440, 17, "", true,
-            "[G] Grammar  [A] AI opt  [Y] Send  [S] Paste only  [V] Paste dictated  [E] Paste & send  [N] Cancel",
+            "1E1E2E", 520, 17, "", true,
+            "[G] Grammar  [A] AI opt  [Y] Send  [S] Paste only  [V] Paste dictated  [E] Paste & send  [F] Favorite  [N] Cancel",
             true
         )
     }
@@ -3836,6 +3837,30 @@ class D2C_FlowManager {
         Send("{Enter}")
 
         this.Reset()
+    }
+
+    ; [F] Mark newest Clip Angel clip (dictation) as favorite; no Gemini.
+    OnSubmitF(*) {
+        if (this.CurrentPhase != "PromptingSubmit")
+            return
+        StandardLoadingBar_CloseKeysOverlay()
+        StandardLoadingBar_Hide(0)
+        HideDictationIndicator()
+        try {
+            clipRaw := A_Clipboard
+            clip := Trim(clipRaw)
+            if (clip = "" || StrLen(clip) < 10) {
+                ShowCenteredOverlay_Utils("❌ Nothing to favorite - clipboard empty or too short", 2000,
+                    BANNER_ACCENT_ERROR)
+                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                    WinActivate("ahk_id " this.OriginHwnd)
+                return
+            }
+            Sleep(D2C_POST_COPY_FAVORITE_DELAY_MS)
+            MarkLastClipAsFavorite()
+        } finally {
+            this.Reset()
+        }
     }
 
     OnSubmitN(*) {
