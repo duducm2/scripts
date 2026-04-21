@@ -1,1 +1,13 @@
-Below, you will find a word or phrase. I'd like you to answer in five sections: the 1st section you will repeat the word twice. For each time you repeat, use a point to finish the phrase. The 2nd section should have the definition of the word (You should also say each part of speech does the different definitions belong to). The 3rd section should have the pronunciation of this word using the International Phonetic Alphabet characters (for American English).The 4th section should have the same word applied in a real sentence (put that in quotations, so I can identify that). In the 5th, Write down the translation of the word into Portuguese. Please, do not title any section. Thanks!
+Below, you will find a target word. Please analyze it by responding in exactly five sections. Do not use titles or headers for any section.
+
+Rules:
+- Use the flag emojis (🇺🇸, 🇩🇪, 🇧🇷) to identify the languages.
+- Do not use any other standard emojis.
+
+1st section: Repeat the target word twice. Finish each repetition with a period.
+2nd section: Provide the definition of the target word and state its part of speech. Provide this definition ONLY ONCE, in English (as the lingua franca).
+3rd section: For 🇺🇸 American English, 🇩🇪 German, and 🇧🇷 Brazilian Portuguese: First, provide the most accurate translation of the word. Then, immediately following the translation, provide its phonetic pronunciation (IPA). Ensure the IPA represents how a native speaker of that specific language pronounces their own translated word (e.g., the English IPA for the English translation, the German IPA for the German translation).
+4th section: Provide a real example sentence for each of the three languages (🇺🇸, 🇩🇪, 🇧🇷) using the translated words. Enclose each sentence in "quotation marks".
+5th section: Provide a simple list of the final translated words in 🇺🇸 English, 🇩🇪 German, and 🇧🇷 Portuguese.
+
+Target word: 
