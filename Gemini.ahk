@@ -1439,9 +1439,6 @@ class GeminiAsyncReadAloud {
 ; User keeps focus; timer polls for completion; result shown in banner.
 ; =============================================================================
 class GeminiAsyncLookup {
-    static PronunciationPrompt :=
-        "Below, you will find a word or phrase. I'd like you to answer in five sections: the 1st section you will repeat the word twice. For each time you repeat, use a point to finish the phrase. The 2nd section should have the definition of the word (You should also say each part of speech does the different definitions belong to). The 3rd section should have the pronunciation of this word using the International Phonetic Alphabet characters (for American English).The 4th section should have the same word applied in a real sentence (put that in quotations, so I can identify that). In the 5th, Write down the translation of the word into Portuguese. Please, do not title any section. Thanks!"
-
     __New() {
         this.OriginalHwnd := 0
         this.GeminiHwnd := 0
@@ -1499,7 +1496,7 @@ class GeminiAsyncLookup {
             Sleep 80
         } catch {
         }
-        searchString := GeminiAsyncLookup.PronunciationPrompt
+        searchString := RTrim(GetPromptText("pronunciation-lookup"), "`r`n")
         A_Clipboard := searchString . "`n`nContent: " . A_Clipboard
         Sleep 100
         Send("^a")
