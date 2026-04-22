@@ -169,28 +169,18 @@ ShowCursorFallbackPanel() {
     StandardLoadingBar_Show("⏳ Opening Desktop and selecting first file...", BANNER_ACCENT_INTERMEDIATE)
     try {
         SetTitleMatchMode 2
-        targetHwnd := 0
-
-        ; Check for existing window (PT or EN)
-        if WinExist("Área de Trabalho ahk_class CabinetWClass")
-            targetHwnd := WinExist("Área de Trabalho ahk_class CabinetWClass")
-        else if WinExist("Desktop ahk_class CabinetWClass")
-            targetHwnd := WinExist("Desktop ahk_class CabinetWClass")
+        targetHwnd := AL_FindDesktopExplorerWindow()
 
         if (!targetHwnd) {
             target := IS_WORK_ENVIRONMENT ? "C:\Users\fie7ca\Desktop" : "C:\Users\eduev\OneDrive\Desktop"
             Run 'explorer.exe "' target '"'
 
-            ; Wait for window to appear
-            loop 40 { ; Wait up to 2 seconds
-                if WinExist("Área de Trabalho ahk_class CabinetWClass") {
-                    targetHwnd := WinExist("Área de Trabalho ahk_class CabinetWClass")
+            ; Wait for window to appear (bounded by deadline; no unbounded waits).
+            deadline := A_TickCount + 2000
+            while (A_TickCount < deadline) {
+                targetHwnd := AL_FindDesktopExplorerWindow()
+                if (targetHwnd)
                     break
-                }
-                if WinExist("Desktop ahk_class CabinetWClass") {
-                    targetHwnd := WinExist("Desktop ahk_class CabinetWClass")
-                    break
-                }
                 Sleep 50
             }
         }
@@ -230,6 +220,13 @@ ShowCursorFallbackPanel() {
     } finally {
         StandardLoadingBar_Hide(0)
     }
+}
+
+AL_FindDesktopExplorerWindow() {
+    hwnd := WinExist("Área de Trabalho ahk_class CabinetWClass")
+    if (hwnd)
+        return hwnd
+    return WinExist("Desktop ahk_class CabinetWClass")
 }
 
 AL_SelectFirstDesktopItem(targetHwnd) {
