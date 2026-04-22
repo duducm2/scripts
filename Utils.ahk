@@ -1874,6 +1874,23 @@ global g_CursorTransferSelectorResult := ""   ; "" = waiting, 0 = cancel, intege
 global g_CursorTransferWindowList := []      ; up to 9 { hwnd, title }
 global g_CursorTransferHotkeyHandlers := []
 global g_CursorTransferPidCmdCache := Map()
+global g_CursorTransferLastHandledIndex := 0 ; Diagnostic: track last selected index
+
+; === Environment-aware transfer target resolution ===
+
+; Return transfer target app executable based on IS_WORK_ENVIRONMENT: "Cursor.exe" or "Code.exe"
+CursorTransfer_GetTargetAppExecutable() {
+    if (IsSet(IS_WORK_ENVIRONMENT) && IS_WORK_ENVIRONMENT)
+        return "Code.exe"
+    return "Cursor.exe"
+}
+
+; Return display name for transfer target app: "Cursor" or "VS Code"
+CursorTransfer_GetTargetAppName() {
+    if (IsSet(IS_WORK_ENVIRONMENT) && IS_WORK_ENVIRONMENT)
+        return "VS Code"
+    return "Cursor"
+}
 
 CursorTransfer_SelectorClose() {
     global g_CursorTransferSelectorActive, g_CursorTransferSelectorGui, g_CursorTransferHotkeyHandlers
@@ -1895,9 +1912,33 @@ CursorTransfer_SelectorClose() {
 }
 
 CursorTransfer_SelectorHandleKey(index, *) {
-    global g_CursorTransferSelectorResult, g_CursorTransferWindowList
-    if (index >= 1 && index <= g_CursorTransferWindowList.Length)
-        g_CursorTransferSelectorResult := g_CursorTransferWindowList[index].hwnd
+    global g_CursorTransferSelectorResult, g_CursorTransferWindowList, g_CursorTransferLastHandledIndex
+    
+    ; Validate index bounds
+    if (!IsInteger(index) || index < 1 || index > g_CursorTransferWindowList.Length) {
+        ; Invalid index: keep selector open, log for diagnostics
+        g_CursorTransferLastHandledIndex := index
+        return
+    }
+    
+    ; Retrieve target hwnd
+    targetItem := g_CursorTransferWindowList[index]
+    if (!targetItem || !targetItem.HasProp("hwnd")) {
+        g_CursorTransferLastHandledIndex := index
+        return
+    }
+    
+    targetHwnd := targetItem.hwnd
+    
+    ; Verify hwnd still exists before accepting selection
+    if (!WinExist("ahk_id " targetHwnd)) {
+        g_CursorTransferLastHandledIndex := index
+        return
+    }
+    
+    ; Valid selection: set result and close
+    g_CursorTransferSelectorResult := targetHwnd
+    g_CursorTransferLastHandledIndex := index
     CursorTransfer_SelectorClose()
 }
 
@@ -2211,14 +2252,17 @@ CursorTransfer_StripLeadingProjectFromTitle(title, cleanProjName, projName) {
     return title
 }
 
-; Remove repetitive " - Cursor" suffix (and bare "Cursor") from list labels; every row is already Cursor.
+; Remove repetitive app suffix (e.g., " - Cursor", " - Visual Studio Code") from list labels; all windows are already from target app.
 CursorTransfer_StripTrailingCursorAppSuffix(s) {
     if (!s)
         return ""
     t := Trim(s)
-    if (StrLower(t) = "cursor")
+    targetApp := CursorTransfer_GetTargetAppName()
+    if (StrLower(t) = StrLower(targetApp))
         return ""
-    return Trim(RegExReplace(t, "i)\s*[---]\s*Cursor\s*$", ""))
+    ; Strip " - Cursor", " - VS Code", " - Visual Studio Code", and similar variants
+    result := Trim(RegExReplace(t, "i)\s*[---]\s*(?:Cursor|VS Code|Visual Studio Code)\s*$", ""))
+    return result
 }
 
 Clipboard_GetSequenceNumber() {
@@ -2302,8 +2346,13 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
     CursorTransfer_SelectorClose()
     list := []
     DetectHiddenWindows true
+    
+    ; Resolve target app executable based on environment
+    targetAppExe := CursorTransfer_GetTargetAppExecutable()
+    appDisplayName := CursorTransfer_GetTargetAppName()
+    
     try {
-        for hwnd in WinGetList("ahk_exe Cursor.exe") {
+        for hwnd in WinGetList("ahk_exe " targetAppExe) {
             try {
                 title := WinGetTitle("ahk_id " hwnd)
                 if (title = "" || InStr(StrLower(title), "preview"))
@@ -2321,7 +2370,8 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
     }
     DetectHiddenWindows false
     if (list.Length = 0) {
-        ShowCenteredOverlay_Utils("❌ No Cursor windows found", 2000, BANNER_ACCENT_ERROR)
+        msg := "❌ No " appDisplayName " windows found"
+        ShowCenteredOverlay_Utils(msg, 2000, BANNER_ACCENT_ERROR)
         return 0
     }
     ; Enrich list using path-first project identification, then sort by canonical project order.
@@ -2361,10 +2411,10 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
                 if (CursorTransfer_IsUninformativeCursorTitle(displayName))
                     displayName := displayName . " · #" . w.hwnd
             } else {
-                displayName := winTitle ? winTitle : ("Cursor Window " . w.hwnd)
+                displayName := winTitle ? winTitle : (appDisplayName . " Window " . w.hwnd)
             }
         } else {
-            displayName := winTitle ? winTitle : ("Cursor Window " . w.hwnd)
+            displayName := winTitle ? winTitle : (appDisplayName . " Window " . w.hwnd)
         }
         displayName := CursorTransfer_StripTrailingCursorAppSuffix(displayName)
         if (displayName = "")
@@ -2423,7 +2473,7 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
         g_CursorTransferSelectorGui.OnEvent("Escape", CursorTransfer_SelectorEscape)
         g_CursorTransferSelectorGui.SetFont("s14 cCDD6F4 Bold", "Segoe UI")
         transferSelGuiW := 720
-        g_CursorTransferSelectorGui.Add("Text", "w" . transferSelGuiW . " Center", "📋 Transfer to Cursor")
+        g_CursorTransferSelectorGui.Add("Text", "w" . transferSelGuiW . " Center", "📋 Transfer to " . appDisplayName)
         g_CursorTransferSelectorGui.Add("Text", "w" . transferSelGuiW . " h1 Background45475A")
         g_CursorTransferSelectorGui.SetFont("s12 cCDD6F4", "Segoe UI")
         for w in list {
@@ -2525,6 +2575,36 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
 ; =============================================================================
 ; Cursor AI text field focus (shared logic for Gemini transfer and WindowManagement)
 ; =============================================================================
+
+; Activate VS Code window and focus chat input. Returns true on success. Keyboard-first approach.
+VSCode_FocusChatInput(targetHwnd := 0) {
+    try {
+        if (targetHwnd) {
+            WinActivate("ahk_id " targetHwnd)
+            WinWaitActive("ahk_id " targetHwnd, , 2)
+        } else {
+            targetHwnd := WinExist("ahk_exe Code.exe")
+            if (!targetHwnd)
+                return false
+            WinActivate("ahk_id " targetHwnd)
+            WinWaitActive("ahk_id " targetHwnd, , 2)
+        }
+        Sleep 200
+        
+        ; Open chat pane if not already open: Ctrl+Alt+I
+        Send "^!i"
+        Sleep 500
+        
+        ; Focus the chat input field: Tab to navigate within chat pane
+        Send "{Tab}"
+        Sleep 100
+        
+        return true
+    } catch {
+        return false
+    }
+}
+
 Cursor_EnsureComposerHasFocus(editEl) {
     if (!editEl)
         return false
@@ -2654,11 +2734,12 @@ CURSOR_TRANSFER_MIN_CLIPBOARD_LENGTH := 10
 CURSOR_TRANSFER_POST_PASTE_BEFORE_ENTER_MS := 80
 CURSOR_TRANSFER_POST_ENTER_BEFORE_RESTORE_MS := 400
 
-; Activate Cursor window, focus AI field, paste clipboard, send Enter. Non-blocking feedback on failure.
-; restoreFocusHwnd: if set, WinActivate this window after Enter is processed (before success overlay) so focus does not stay on the target Cursor window.
+; Activate Cursor/VS Code window, focus AI field, paste clipboard, send Enter. Non-blocking feedback on failure.
+; restoreFocusHwnd: if set, WinActivate this window after Enter is processed (before success overlay) so focus does not stay on the target window.
 CursorTransfer_ActivateFocusPaste(targetHwnd, restoreFocusHwnd := 0) {
+    appDisplayName := CursorTransfer_GetTargetAppName()
     if (!targetHwnd || !WinExist("ahk_id " targetHwnd)) {
-        ShowCenteredOverlay_Utils("❌ Cursor window not found", 2000, BANNER_ACCENT_ERROR)
+        ShowCenteredOverlay_Utils("❌ " appDisplayName " window not found", 2000, BANNER_ACCENT_ERROR)
         return
     }
     clip := Trim(A_Clipboard)
@@ -2669,11 +2750,18 @@ CursorTransfer_ActivateFocusPaste(targetHwnd, restoreFocusHwnd := 0) {
     try {
         WinActivate("ahk_id " targetHwnd)
         if (!WinWaitActive("ahk_id " targetHwnd, , 2)) {
-            ShowCenteredOverlay_Utils("❌ Could not activate Cursor", 2000, BANNER_ACCENT_ERROR)
+            ShowCenteredOverlay_Utils("❌ Could not activate " appDisplayName, 2000, BANNER_ACCENT_ERROR)
             return
         }
         Sleep 100
-        if (!Cursor_FocusAITextField(targetHwnd)) {
+        ; Branch based on target app: VS Code or Cursor
+        focusSucceeded := false
+        if (CursorTransfer_GetTargetAppExecutable() = "Code.exe") {
+            focusSucceeded := VSCode_FocusChatInput(targetHwnd)
+        } else {
+            focusSucceeded := Cursor_FocusAITextField(targetHwnd)
+        }
+        if (!focusSucceeded) {
             ShowCenteredOverlay_Utils("❌ Could not focus AI field", 2000, BANNER_ACCENT_ERROR)
             return
         }
@@ -2692,7 +2780,7 @@ CursorTransfer_ActivateFocusPaste(targetHwnd, restoreFocusHwnd := 0) {
         Sleep CURSOR_TRANSFER_POST_PASTE_BEFORE_ENTER_MS
         SendInput "{Enter}"
         if (restoreFocusHwnd && WinExist("ahk_id " restoreFocusHwnd)) {
-            ; Wait so Cursor keeps foreground until paste + Enter are processed; restoring sooner drops Enter.
+            ; Wait so target editor keeps foreground until paste + Enter are processed; restoring sooner drops Enter.
             Sleep CURSOR_TRANSFER_POST_ENTER_BEFORE_RESTORE_MS
             try {
                 WinActivate("ahk_id " restoreFocusHwnd)
@@ -2701,7 +2789,8 @@ CursorTransfer_ActivateFocusPaste(targetHwnd, restoreFocusHwnd := 0) {
             } catch {
             }
         }
-        ShowCenteredOverlay_Utils("✅ Sent to Cursor", 1500, BANNER_ACCENT_SUCCESS)
+        appDisplayName := CursorTransfer_GetTargetAppName()
+        ShowCenteredOverlay_Utils("✅ Sent to " . appDisplayName, 1500, BANNER_ACCENT_SUCCESS)
     } catch as err {
         ShowCenteredOverlay_Utils("❌ Transfer failed", 2000, BANNER_ACCENT_ERROR)
     }
