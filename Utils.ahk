@@ -4564,13 +4564,14 @@ class D2C_FlowManager {
         )
         pk := "[Y] Copy  [N] No  [R] Copy+Read  [C] Transfer  [F] Copy+Favorite"
         StandardLoadingBar_ShowWithKeys(
-            "❓ Copy response?",
+            "❓ Copy response? (5s)",
             keyCallbacks,
-            5000,
+            D2C_SUBMIT_MENU_TIMEOUT_MS,
             0,
             this.OnActionTimeout.Bind(this),
-            BANNER_ACCENT_INTERMEDIATE, 520, 17, "", false,
+            BANNER_ACCENT_INTERMEDIATE, 520, 17, "", true,
             pk,
+            true,
             true
         )
     }
