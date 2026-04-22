@@ -3513,6 +3513,10 @@ global g_StandardLoadingBarKeysTimeoutTimer := ""
 global g_StandardLoadingBarBorderGui := 0
 global g_StandardLoadingBarTrackTimer := ""
 global g_StandardLoadingBarLastForegroundMonitorIdx := 0
+global g_StandardLoadingBarTimedProgressTimer := ""
+global g_StandardLoadingBarTimedProgressStartTick := 0
+global g_StandardLoadingBarTimedProgressDurationMs := 0
+global D2C_SUBMIT_MENU_TIMEOUT_MS := 5000
 
 ; Return work area { left, top, right, bottom } for the monitor containing hwnd, or "" on failure.
 GetWorkAreaForWindow_StandardBar(hwnd) {
@@ -3675,6 +3679,7 @@ StandardLoadingBar_Show(state := "Working...", barColor := BANNER_ACCENT_INTERME
     noBorder := options && options.HasProp("noBorder") ? options.noBorder : false
     promptKeys := options && options.HasProp("promptKeys") ? options.promptKeys : ""
     trackActiveMonitor := options && options.HasProp("trackActiveMonitor") && options.trackActiveMonitor
+    manualProgress := options && options.HasProp("manualProgress") && options.manualProgress
 
     if (centerOnHwnd) {
         workArea := GetWorkAreaForWindow_StandardBar(centerOnHwnd)
@@ -3746,7 +3751,7 @@ StandardLoadingBar_Show(state := "Working...", barColor := BANNER_ACCENT_INTERME
     WinSetTransparent(alpha, overlayGui)
     g_StandardLoadingBarGui := overlayGui
     g_StandardLoadingBarValue := 0
-    if (!passive)
+    if (!passive && !manualProgress)
         SetTimer(StandardLoadingBar_Tick, 40)
     if (trackActiveMonitor) {
         StandardLoadingBar_StopActiveMonitorTracking()
@@ -3769,6 +3774,64 @@ StandardLoadingBar_Tick() {
     } catch {
         SetTimer(StandardLoadingBar_Tick, 0)
     }
+}
+
+StandardLoadingBar_StopTimedProgress() {
+    global g_StandardLoadingBarTimedProgressTimer, g_StandardLoadingBarTimedProgressStartTick,
+        g_StandardLoadingBarTimedProgressDurationMs
+    try SetTimer(g_StandardLoadingBarTimedProgressTimer, 0)
+    catch {
+    }
+    g_StandardLoadingBarTimedProgressTimer := ""
+    g_StandardLoadingBarTimedProgressStartTick := 0
+    g_StandardLoadingBarTimedProgressDurationMs := 0
+}
+
+StandardLoadingBar_SetProgressValue(value) {
+    global g_StandardLoadingBarGui, g_StandardLoadingBarValue
+    if !IsObject(g_StandardLoadingBarGui)
+        return
+    clamped := Max(0, Min(100, Round(value)))
+    g_StandardLoadingBarValue := clamped
+    try g_StandardLoadingBarGui["OverlayProg"].Value := clamped
+    catch {
+    }
+}
+
+StandardLoadingBar_StartTimedProgress(durationMs) {
+    global g_StandardLoadingBarTimedProgressTimer, g_StandardLoadingBarTimedProgressStartTick,
+        g_StandardLoadingBarTimedProgressDurationMs
+    StandardLoadingBar_StopTimedProgress()
+    SetTimer(StandardLoadingBar_Tick, 0)
+    if (durationMs <= 0) {
+        StandardLoadingBar_SetProgressValue(100)
+        return
+    }
+    g_StandardLoadingBarTimedProgressStartTick := A_TickCount
+    g_StandardLoadingBarTimedProgressDurationMs := durationMs
+    StandardLoadingBar_SetProgressValue(0)
+    g_StandardLoadingBarTimedProgressTimer := SetTimer(StandardLoadingBar_TimedProgressTick, 40)
+}
+
+StandardLoadingBar_TimedProgressTick() {
+    global g_StandardLoadingBarGui, g_StandardLoadingBarTimedProgressStartTick, g_StandardLoadingBarTimedProgressDurationMs
+    if !IsObject(g_StandardLoadingBarGui) {
+        StandardLoadingBar_StopTimedProgress()
+        return
+    }
+    durationMs := g_StandardLoadingBarTimedProgressDurationMs
+    if (durationMs <= 0) {
+        StandardLoadingBar_SetProgressValue(100)
+        StandardLoadingBar_StopTimedProgress()
+        return
+    }
+    elapsedMs := A_TickCount - g_StandardLoadingBarTimedProgressStartTick
+    if (elapsedMs >= durationMs) {
+        StandardLoadingBar_SetProgressValue(100)
+        StandardLoadingBar_StopTimedProgress()
+        return
+    }
+    StandardLoadingBar_SetProgressValue((elapsedMs * 100.0) / durationMs)
 }
 
 StandardLoadingBar_Update(state := "", barColor := "") {
@@ -3800,6 +3863,7 @@ StandardLoadingBar_Hide(delayMs := 0) {
         return
     }
     StandardLoadingBar_StopActiveMonitorTracking()
+    StandardLoadingBar_StopTimedProgress()
     if (g_StandardLoadingBarIsKeysOverlay) {
         StandardLoadingBar_CloseKeysOverlay()
         return
@@ -3831,6 +3895,7 @@ StandardLoadingBar_CloseKeysOverlay() {
     }
     g_StandardLoadingBarKeysTimeoutTimer := ""
     StandardLoadingBar_StopActiveMonitorTracking()
+    StandardLoadingBar_StopTimedProgress()
     for key in g_StandardLoadingBarKeysHotkeys {
         try Hotkey(key, "Off")
         catch {
@@ -3859,12 +3924,14 @@ StandardLoadingBar_CloseKeysOverlay() {
 ; noBorder: when true, do not create the yellow border (single banner only).
 ; promptKeys: optional; fixed bottom strip text (e.g. "[Y] Confirm  [N] Cancel"). Shown in uniform position below main message.
 ; trackActiveMonitor: when true, reposition the bar to follow the foreground window's monitor while visible (dictation/Gemini flows).
-; showProgress: when true, keep the animated loading indicator visible while waiting for keys.
+; showProgress: when true, show a single timed 0-100 progress fill while waiting for keys.
 StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwnd := 0, timeoutCallback := "", barColor :=
     BANNER_ACCENT_INTERMEDIATE, textWidth := 500, fontSize := 17, passiveBgColor := "", noBorder := false, promptKeys :=
     "", trackActiveMonitor := false, showProgress := false) {
     global g_StandardLoadingBarIsKeysOverlay, g_StandardLoadingBarKeysHotkeys, g_StandardLoadingBarKeysTimeoutTimer
     opts := { passive: !showProgress, centerOnHwnd: centerOnHwnd, textWidth: textWidth, fontSize: fontSize }
+    if (showProgress)
+        opts.manualProgress := true
     if (passiveBgColor != "")
         opts.passiveBgColor := passiveBgColor
     if (noBorder)
@@ -3874,6 +3941,8 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
     if (trackActiveMonitor)
         opts.trackActiveMonitor := true
     StandardLoadingBar_Show(state, barColor, opts)
+    if (showProgress)
+        StandardLoadingBar_StartTimedProgress(timeoutMs)
     g_StandardLoadingBarIsKeysOverlay := true
     g_StandardLoadingBarKeysHotkeys := []
 
@@ -3935,6 +4004,7 @@ StandardLoadingBar_KeysTimeoutFired(timeoutCallback) {
     global g_StandardLoadingBarIsKeysOverlay
     ; Only run timeout callback if overlay was not already dismissed (e.g. user pressed N); avoids copy when timer fires after cancel.
     if (g_StandardLoadingBarIsKeysOverlay && timeoutCallback) {
+        StandardLoadingBar_SetProgressValue(100)
         DebugFlowLog("Utils.ahk:KeysTimeoutFired", "calling timeout callback", "", "H2")
         try timeoutCallback.Call()
         catch {
@@ -4087,9 +4157,9 @@ class D2C_FlowManager {
             "N", this.OnSubmitN.Bind(this)
         )
         StandardLoadingBar_ShowWithKeys(
-            "❓ Send to Gemini? (6s)",
+            "❓ Send to Gemini? (5s)",
             keyCallbacks,
-            6000,
+            D2C_SUBMIT_MENU_TIMEOUT_MS,
             0,
             this.OnSubmitTimeout.Bind(this),
             BANNER_ACCENT_INTERMEDIATE, 520, 17, "", true,
@@ -4559,7 +4629,7 @@ class D2C_FlowManager {
     }
 }
 
-; Dictation: "Send to Gemini?" confirmation banner (6s, Y to confirm; uses standard loading indicator)
+; Dictation: "Send to Gemini?" confirmation banner (5s, Y to confirm; uses standard loading indicator)
 ; =============================================================================
 ; DEPRECATED: Use D2C_FlowManager
 DEPRECATED_DictationGeminiConfirm_Show() {
@@ -4577,10 +4647,10 @@ DEPRECATED_DictationGeminiConfirm_CleanupAndMaybeSubmit(submitToGemini, pasteOnl
     DebugFlowLog("Utils.ahk:CleanupAndMaybeSubmit", "entry", "submit=" . (submitToGemini ? 1 : 0) . " pasteOnly=" . (
         pasteOnly ? 1 : 0), "H2")
     ; #endregion
-    ; Only clear banner-visible when proceeding (Y/S/timeout); leave true on N so a stray ShowAndWait does not re-show and register a second 6s timer (logs showed second timeout firing after N).
+    ; Only clear banner-visible when proceeding (Y/S/timeout); leave true on N so a stray ShowAndWait does not re-show and register a second 5s timer (logs showed second timeout firing after N).
     if (submitToGemini || pasteOnly)
         g_DictationGeminiConfirmBannerVisible := false
-    ; Unregister 6s banner keys (same * prefix as StandardLoadingBar_RegisterKeyHandler uses)
+    ; Unregister 5s banner keys (same * prefix as StandardLoadingBar_RegisterKeyHandler uses)
     try Hotkey("*y", "Off")
     try Hotkey("*Y", "Off")
     try Hotkey("*s", "Off")
@@ -4589,7 +4659,7 @@ DEPRECATED_DictationGeminiConfirm_CleanupAndMaybeSubmit(submitToGemini, pasteOnl
     try Hotkey("*N", "Off")
     SetTimer(DEPRECATED_DictationGeminiConfirm_OnTimeout, 0)
     DEPRECATED_DictationGeminiConfirm_Hide()
-    ; S or N at 6s: no submit flow, so stop any running "Copy response?" monitor so it never shows.
+    ; S or N at 5s: no submit flow, so stop any running "Copy response?" monitor so it never shows.
     if (!submitToGemini)
         GeminiDelayedSubmitMonitorStopFromUtils()
     if (pasteOnly) {
@@ -4622,10 +4692,10 @@ DEPRECATED_DictationGeminiConfirm_OnS(*) {
     DEPRECATED_DictationGeminiConfirm_CleanupAndMaybeSubmit(false, true)
 }
 
-; Default action on 6s timeout: proceed as Yes (DelayedSubmitFlow), same as user pressing Y.
+; Default action on 5s timeout: proceed as Yes (DelayedSubmitFlow), same as user pressing Y.
 DEPRECATED_DictationGeminiConfirm_OnTimeout(*) {
     ; #region agent log
-    DebugFlowLog("Utils.ahk:OnTimeout", "6s timeout fired", "", "H4")
+    DebugFlowLog("Utils.ahk:OnTimeout", "5s timeout fired", "", "H4")
     ; #endregion
     DEPRECATED_DictationGeminiConfirm_CleanupAndMaybeSubmit(true)
 }
@@ -4650,7 +4720,7 @@ DEPRECATED_DictationGeminiConfirm_ShowAndWait() {
     g_DictationGeminiConfirmBannerVisible := true
     Critical "Off"
     ; #region agent log
-    DebugFlowLog("Utils.ahk:ShowAndWait", "6s banner showing", "", "H1")
+    DebugFlowLog("Utils.ahk:ShowAndWait", "5s banner showing", "", "H1")
     ; #endregion
     ; Only the official loading bar (standard loading indicator) may show this content. Hide any other bar/overlay first.
     StandardLoadingBar_CloseKeysOverlay()
@@ -4660,8 +4730,8 @@ DEPRECATED_DictationGeminiConfirm_ShowAndWait() {
     keyCallbacks := Map("Y", DEPRECATED_DictationGeminiConfirm_OnY, "S", DEPRECATED_DictationGeminiConfirm_OnS, "N",
         DEPRECATED_DictationGeminiConfirm_OnCancel)
     ; Official loading bar only; no blue; single banner (no border); fixed bottom strip for input.
-    StandardLoadingBar_ShowWithKeys("❓ Send to Gemini? (6s)", keyCallbacks,
-        6000,
+    StandardLoadingBar_ShowWithKeys("❓ Send to Gemini? (5s)", keyCallbacks,
+        D2C_SUBMIT_MENU_TIMEOUT_MS,
         0,
         DEPRECATED_DictationGeminiConfirm_OnTimeout, BANNER_ACCENT_INTERMEDIATE, 380, 17, "", true,
         "[Y] Send  [S] Paste only  [N] Cancel",
@@ -9198,7 +9268,7 @@ GeminiDelayedSubmitMonitorStartFromUtils(originalHwnd, geminiChromeHwnd) {
     }
 }
 
-; Tell Gemini.ahk to stop the delayed-submit monitor so "Copy response?" is not shown (when user chose S or N at 6s).
+; Tell Gemini.ahk to stop the delayed-submit monitor so "Copy response?" is not shown (when user chose S or N at 5s).
 GeminiDelayedSubmitMonitorStopFromUtils() {
     WM_STOP_DELAYED_SUBMIT_MONITOR := 0x8003
     targetHwnd := GetGeminiScriptMsgTargetHwnd()
@@ -9207,7 +9277,7 @@ GeminiDelayedSubmitMonitorStopFromUtils() {
     }
 }
 
-; Paste transcription to Gemini prompt only (no Enter, no 4s banner). Used when user presses S at 6s dictation confirm.
+; Paste transcription to Gemini prompt only (no Enter, no 4s banner). Used when user presses S at 5s dictation confirm.
 DEPRECATED_GeminiDictationPasteOnlyFlow() {
     restoreHwnd := WinExist("A")
     GeminiNavigateFocusAndPasteFirstSnippet("", false)
@@ -11944,7 +12014,7 @@ OnExit(CleanupDictationIndicator)
     ; User was stopping dictation (had been active when they pressed key) -> show Gemini confirm after completion
     if (dictationWasActiveOnKeyPress) {
         g_PendingGeminiPromptAfterDictation := true
-        g_DictationGeminiConfirmBannerVisible := false  ; Allow 6s banner to show for this cycle (reset from previous N cancel)
+        g_DictationGeminiConfirmBannerVisible := false  ; Allow 5s banner to show for this cycle (reset from previous N cancel)
         ; #region agent log
         DebugBannerLog("Utils.ahk:~#!+0", "Set pending Gemini flag", "dictationWasActiveOnKeyPress=1", "H1")
         ; #endregion
