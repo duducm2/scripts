@@ -2345,12 +2345,16 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
     global g_Projects, g_ProjectCharSequence
     CursorTransfer_SelectorClose()
     list := []
-    DetectHiddenWindows true
-    
+
     ; Resolve target app executable based on environment
     targetAppExe := CursorTransfer_GetTargetAppExecutable()
     appDisplayName := CursorTransfer_GetTargetAppName()
-    
+
+    ; Only enumerate visible windows (DetectHiddenWindows off = default).
+    ; Hidden Cursor/VS Code renderer/worker processes can have non-empty titles, pass the
+    ; title filter, and end up at position 1 in the sorted list. Their hwnd cannot be found
+    ; by WinExist in the hotkey handler thread (which also runs with DetectHiddenWindows off),
+    ; causing the first-item selection to silently fail while all other items work fine.
     try {
         for hwnd in WinGetList("ahk_exe " targetAppExe) {
             try {
@@ -2368,7 +2372,6 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
         }
     } catch {
     }
-    DetectHiddenWindows false
     if (list.Length = 0) {
         msg := "❌ No " appDisplayName " windows found"
         ShowCenteredOverlay_Utils(msg, 2000, BANNER_ACCENT_ERROR)
@@ -2541,11 +2544,36 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
     start := A_TickCount
     timeoutMs := 30000
     lastCursorTransferMonitorIdx := monitorIndex
+    keyWasDownByIndex := []
+    loop list.Length
+        keyWasDownByIndex.Push(false)
+    cancelWasDown := false
     try {
         while (g_CursorTransferSelectorResult = "") {
             if ((A_TickCount - start) >= timeoutMs)
                 break
             Sleep 50
+
+            ; Fallback key polling (edge-triggered): survives global Hotkey("1") conflicts from other scripts.
+            loop list.Length {
+                if (g_CursorTransferSelectorResult != "")
+                    break
+                keyChar := list[A_Index].hotkeyChar
+                if (keyChar = "")
+                    continue
+                isDown := false
+                try isDown := GetKeyState(keyChar, "P") || GetKeyState("Numpad" . keyChar, "P")
+                if (isDown && !keyWasDownByIndex[A_Index])
+                    CursorTransfer_SelectorHandleKey(A_Index)
+                keyWasDownByIndex[A_Index] := isDown
+            }
+
+            isCancelDown := false
+            try isCancelDown := GetKeyState("Escape", "P") || GetKeyState("n", "P") || GetKeyState("N", "P")
+            if (isCancelDown && !cancelWasDown && g_CursorTransferSelectorResult = "")
+                CursorTransfer_SelectorEscape()
+            cancelWasDown := isCancelDown
+
             if (IsObject(g_CursorTransferSelectorGui)) {
                 curIdx := GetMonitorIndexForForeground_StandardBar()
                 if (curIdx != lastCursorTransferMonitorIdx) {
@@ -2576,13 +2604,21 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
 ; Cursor AI text field focus (shared logic for Gemini transfer and WindowManagement)
 ; =============================================================================
 
-; VS Code exposes both the main editor and the chat composer as visible Edit controls with the
-; same native-edit-context class. After opening chat, the composer is the last visible matching
-; Edit in the tree, so we focus that element directly and verify it before pasting.
+; VS Code exposes both the main editor and chat composer as native-edit-context Edit controls.
+; To avoid false positives, pick the lowest compact edit near the Send button region.
 VSCode_FindChatInputField(root) {
-    lastVisibleEdit := ""
+    bestEdit := ""
+    bestTop := -2147483647
+    sendBr := ""
     if (!root)
         return ""
+    try {
+        sendBtn := VSCode_FindChatSendButton(root)
+        if (sendBtn)
+            sendBr := sendBtn.BoundingRectangle
+    } catch {
+        sendBr := ""
+    }
     try {
         allEdits := root.FindAll({ Type: UIA.Type.Edit })
         for editEl in allEdits {
@@ -2592,14 +2628,40 @@ VSCode_FindChatInputField(root) {
                     continue
                 if (editEl.GetPropertyValue(UIA.Property.IsOffscreen))
                     continue
-                lastVisibleEdit := editEl
+                br := editEl.BoundingRectangle
+                h := br.b - br.t
+                w := br.r - br.l
+                if (h <= 0 || w <= 0)
+                    continue
+
+                ; Skip large editor surfaces; chat composer is typically compact.
+                if (h > 260)
+                    continue
+
+                ; When send button exists, require geometric proximity to chat footer area.
+                if (sendBr != "") {
+                    cx := (br.l + br.r) / 2
+                    cy := (br.t + br.b) / 2
+                    sendCx := (sendBr.l + sendBr.r) / 2
+                    sendCy := (sendBr.t + sendBr.b) / 2
+                    if (Abs(cx - sendCx) > 900)
+                        continue
+                    if (Abs(cy - sendCy) > 420)
+                        continue
+                }
+
+                ; Prefer the visually lowest eligible edit field.
+                if (br.t >= bestTop) {
+                    bestTop := br.t
+                    bestEdit := editEl
+                }
             } catch {
                 continue
             }
         }
     } catch {
     }
-    return lastVisibleEdit
+    return bestEdit
 }
 
 VSCode_EnsureChatInputHasFocus(editEl) {
@@ -2672,6 +2734,23 @@ VSCode_IsChatSendReady(targetHwnd) {
         }
         try {
             return !InStr(sendButton.ClassName, "disabled")
+        } catch {
+        }
+    } catch {
+    }
+    return false
+}
+
+VSCode_IsChatInputFocused(targetHwnd) {
+    if (!IsSet(UIA))
+        return true
+    try {
+        root := UIA.ElementFromHandle(targetHwnd)
+        editEl := VSCode_FindChatInputField(root)
+        if (!editEl)
+            return false
+        try {
+            return editEl.HasKeyboardFocus
         } catch {
         }
     } catch {
@@ -2936,6 +3015,20 @@ CursorTransfer_ActivateFocusPaste(targetHwnd, restoreFocusHwnd := 0) {
         pasteDetected := true
         pasteAttempts := targetIsVSCode ? VSCODE_TRANSFER_PASTE_RETRY_COUNT : 1
         loop pasteAttempts {
+            if (targetIsVSCode) {
+                ; Hard gate: never paste until the chat composer is confirmed focused.
+                if (!VSCode_IsChatInputFocused(targetHwnd)) {
+                    if (!VSCode_FocusChatInput(targetHwnd))
+                        break
+                    Sleep 160
+                    if (!VSCode_IsChatInputFocused(targetHwnd)) {
+                        DebugFlowLog("Utils.ahk:CursorTransfer_ActivateFocusPaste", "chat input not focused", "attempt=" . A_Index, "VSC4")
+                        if (A_Index < pasteAttempts)
+                            continue
+                        break
+                    }
+                }
+            }
             SendInput "^v"
             Sleep CURSOR_TRANSFER_POST_PASTE_BEFORE_ENTER_MS + (targetIsVSCode ? VSCODE_TRANSFER_POST_PASTE_SETTLE_MS : 0)
             if (!targetIsVSCode) {
