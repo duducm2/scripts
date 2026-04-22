@@ -3853,17 +3853,18 @@ StandardLoadingBar_CloseKeysOverlay() {
     g_StandardLoadingBarBorderGui := 0
 }
 
-; Show passive overlay and register hotkeys; optional timeout. keyCallbacks: Map/object key -> callback (e.g. "N" -> fn, "R" -> fn).
+; Show overlay and register hotkeys; optional timeout. keyCallbacks: Map/object key -> callback (e.g. "N" -> fn, "R" -> fn).
 ; timeoutCallback: called when timeout fires (can be empty). Registers both upper and lower case for letter keys.
 ; passiveBgColor: optional; when set, used as border color. Prefer BANNER_ACCENT_SUCCESS / BANNER_ACCENT_ERROR / BANNER_ACCENT_INTERMEDIATE. Overlay background stays dark.
 ; noBorder: when true, do not create the yellow border (single banner only).
 ; promptKeys: optional; fixed bottom strip text (e.g. "[Y] Confirm  [N] Cancel"). Shown in uniform position below main message.
 ; trackActiveMonitor: when true, reposition the bar to follow the foreground window's monitor while visible (dictation/Gemini flows).
+; showProgress: when true, keep the animated loading indicator visible while waiting for keys.
 StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwnd := 0, timeoutCallback := "", barColor :=
     BANNER_ACCENT_INTERMEDIATE, textWidth := 500, fontSize := 17, passiveBgColor := "", noBorder := false, promptKeys :=
-    "", trackActiveMonitor := false) {
+    "", trackActiveMonitor := false, showProgress := false) {
     global g_StandardLoadingBarIsKeysOverlay, g_StandardLoadingBarKeysHotkeys, g_StandardLoadingBarKeysTimeoutTimer
-    opts := { passive: true, centerOnHwnd: centerOnHwnd, textWidth: textWidth, fontSize: fontSize }
+    opts := { passive: !showProgress, centerOnHwnd: centerOnHwnd, textWidth: textWidth, fontSize: fontSize }
     if (passiveBgColor != "")
         opts.passiveBgColor := passiveBgColor
     if (noBorder)
@@ -4091,8 +4092,9 @@ class D2C_FlowManager {
             6000,
             0,
             this.OnSubmitTimeout.Bind(this),
-            "1E1E2E", 520, 17, "", true,
+            BANNER_ACCENT_INTERMEDIATE, 520, 17, "", true,
             "[G] Grammar  [A] AI opt  [Y] Send  [S] Paste only  [V] Paste dictated  [E] Paste & send  [F] Favorite  [N] Cancel",
+            true,
             true
         )
     }
@@ -4661,8 +4663,9 @@ DEPRECATED_DictationGeminiConfirm_ShowAndWait() {
     StandardLoadingBar_ShowWithKeys("❓ Send to Gemini? (6s)", keyCallbacks,
         6000,
         0,
-        DEPRECATED_DictationGeminiConfirm_OnTimeout, "1E1E2E", 380, 17, "", true,
+        DEPRECATED_DictationGeminiConfirm_OnTimeout, BANNER_ACCENT_INTERMEDIATE, 380, 17, "", true,
         "[Y] Send  [S] Paste only  [N] Cancel",
+        true,
         true)
 }
 
