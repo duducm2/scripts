@@ -166,62 +166,137 @@ ShowCursorFallbackPanel() {
 ; =============================================================================
 +#e::
 {
-    SetTitleMatchMode 2
-    targetHwnd := 0
+    StandardLoadingBar_Show("⏳ Opening Desktop and selecting first file...", BANNER_ACCENT_INTERMEDIATE)
+    try {
+        SetTitleMatchMode 2
+        targetHwnd := 0
 
-    ; Check for existing window (PT or EN)
-    if WinExist("Área de Trabalho ahk_class CabinetWClass")
-        targetHwnd := WinExist("Área de Trabalho ahk_class CabinetWClass")
-    else if WinExist("Desktop ahk_class CabinetWClass")
-        targetHwnd := WinExist("Desktop ahk_class CabinetWClass")
+        ; Check for existing window (PT or EN)
+        if WinExist("Área de Trabalho ahk_class CabinetWClass")
+            targetHwnd := WinExist("Área de Trabalho ahk_class CabinetWClass")
+        else if WinExist("Desktop ahk_class CabinetWClass")
+            targetHwnd := WinExist("Desktop ahk_class CabinetWClass")
 
-    if (!targetHwnd) {
-        target := IS_WORK_ENVIRONMENT ? "C:\Users\fie7ca\Desktop" : "C:\Users\eduev\OneDrive\Desktop"
-        Run 'explorer.exe "' target '"'
+        if (!targetHwnd) {
+            target := IS_WORK_ENVIRONMENT ? "C:\Users\fie7ca\Desktop" : "C:\Users\eduev\OneDrive\Desktop"
+            Run 'explorer.exe "' target '"'
 
-        ; Wait for window to appear
-        loop 40 { ; Wait up to 2 seconds
-            if WinExist("Área de Trabalho ahk_class CabinetWClass") {
-                targetHwnd := WinExist("Área de Trabalho ahk_class CabinetWClass")
-                break
+            ; Wait for window to appear
+            loop 40 { ; Wait up to 2 seconds
+                if WinExist("Área de Trabalho ahk_class CabinetWClass") {
+                    targetHwnd := WinExist("Área de Trabalho ahk_class CabinetWClass")
+                    break
+                }
+                if WinExist("Desktop ahk_class CabinetWClass") {
+                    targetHwnd := WinExist("Desktop ahk_class CabinetWClass")
+                    break
+                }
+                Sleep 50
             }
-            if WinExist("Desktop ahk_class CabinetWClass") {
-                targetHwnd := WinExist("Desktop ahk_class CabinetWClass")
-                break
+        }
+
+        if (targetHwnd) {
+            if (!WinExist("ahk_id " targetHwnd)) {
+                ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
+                return
             }
-            Sleep 50
-        }
-    }
+            ; Layer 1: Restore if minimized
+            if (WinGetMinMax("ahk_id " targetHwnd) = -1) {
+                WinRestore("ahk_id " targetHwnd)
+            }
 
-    if (targetHwnd) {
-        if (!WinExist("ahk_id " targetHwnd)) {
-            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
-            return
-        }
-        ; Layer 1: Restore if minimized
-        if (WinGetMinMax("ahk_id " targetHwnd) = -1) {
-            WinRestore("ahk_id " targetHwnd)
-        }
-
-        ; Layer 2: Standard Activation
-        WinActivate("ahk_id " targetHwnd)
-
-        ; Layer 3: Aggressive Activation if not active immediately
-        if !WinWaitActive("ahk_id " targetHwnd, , 0.2) {
-            DllCall("SwitchToThisWindow", "Ptr", targetHwnd, "Int", 1)
-            DllCall("SetForegroundWindow", "Ptr", targetHwnd)
+            ; Layer 2: Standard Activation
             WinActivate("ahk_id " targetHwnd)
+
+            ; Layer 3: Aggressive Activation if not active immediately
+            if !WinWaitActive("ahk_id " targetHwnd, , 0.2) {
+                DllCall("SwitchToThisWindow", "Ptr", targetHwnd, "Int", 1)
+                DllCall("SetForegroundWindow", "Ptr", targetHwnd)
+                WinActivate("ahk_id " targetHwnd)
+            }
+
+            WinMaximize("ahk_id " targetHwnd)
+
+            Sleep 350
+            Send "^{Up}"
+            Sleep 100
+            Send "{F5}"
+
+            ; Ensure first desktop item is selected (prefer bill.pdf when present).
+            AL_SelectFirstDesktopItem(targetHwnd)
+
+            CenterMouse()
+        }
+    } finally {
+        StandardLoadingBar_Hide(0)
+    }
+}
+
+AL_SelectFirstDesktopItem(targetHwnd) {
+    if !(targetHwnd is Integer) || targetHwnd <= 0
+        return false
+
+    ; Give Explorer a brief moment to finish rendering after activation/refresh.
+    Sleep 120
+
+    loop 10 {
+        try {
+            root := UIA.ElementFromHandle(targetHwnd)
+            listRoot := AL_FindExplorerItemsView(root)
+            if !listRoot {
+                Sleep 100
+                continue
+            }
+
+            try listRoot.SetFocus()
+
+            ; Requirement target: explicitly prefer bill.pdf when it is index 0.
+            firstItem := listRoot.FindFirst({ Type: "ListItem", Name: "bill.pdf" })
+            if !firstItem
+                firstItem := listRoot.FindFirst({ Type: "ListItem", AutomationId: "0" })
+            if !firstItem
+                firstItem := listRoot.FindFirst({ Type: "ListItem" })
+
+            if (firstItem) {
+                try firstItem.ScrollIntoView()
+                try firstItem.Select()
+                try firstItem.SetFocus()
+                return true
+            }
+        } catch {
         }
 
-        WinMaximize("ahk_id " targetHwnd)
-
-        Sleep 350
-        Send "^{Up}"
-        Sleep 100
-        Send "{F5}"
-
-        CenterMouse()
+        Sleep 120
     }
+
+    ; Keyboard fallback: if list already has focus, Home selects the first item.
+    Send "{Home}"
+    return false
+}
+
+AL_FindExplorerItemsView(root) {
+    if !root
+        return 0
+
+    try {
+        itemsView := root.FindFirst({ AutomationId: "ItemsView", Type: "List" })
+        if itemsView
+            return itemsView
+    }
+
+    try {
+        itemsView := root.FindFirst({ ClassName: "UIItemsView", Type: "List" })
+        if itemsView
+            return itemsView
+    }
+
+    try {
+        itemsView := root.FindFirst({ Name: "Items View", Type: "List", matchmode: "Substring" })
+        if itemsView
+            return itemsView
+    }
+
+    return 0
 }
 
 ; =============================================================================
