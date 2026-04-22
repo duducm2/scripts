@@ -2576,30 +2576,183 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
 ; Cursor AI text field focus (shared logic for Gemini transfer and WindowManagement)
 ; =============================================================================
 
-; Activate VS Code window and focus chat input. Returns true on success. Keyboard-first approach.
+; VS Code exposes both the main editor and the chat composer as visible Edit controls with the
+; same native-edit-context class. After opening chat, the composer is the last visible matching
+; Edit in the tree, so we focus that element directly and verify it before pasting.
+VSCode_FindChatInputField(root) {
+    lastVisibleEdit := ""
+    if (!root)
+        return ""
+    try {
+        allEdits := root.FindAll({ Type: UIA.Type.Edit })
+        for editEl in allEdits {
+            try {
+                className := editEl.ClassName
+                if (!InStr(className, "native-edit-context"))
+                    continue
+                if (editEl.GetPropertyValue(UIA.Property.IsOffscreen))
+                    continue
+                lastVisibleEdit := editEl
+            } catch {
+                continue
+            }
+        }
+    } catch {
+    }
+    return lastVisibleEdit
+}
+
+VSCode_EnsureChatInputHasFocus(editEl) {
+    if (!editEl)
+        return false
+    try {
+        editEl.SetFocus()
+    } catch {
+    }
+    loop 3 {
+        try {
+            if (editEl.HasKeyboardFocus)
+                return true
+        } catch {
+        }
+        Sleep 40
+    }
+    try {
+        editEl.ScrollIntoView()
+    } catch {
+    }
+    try {
+        editEl.Click()
+    } catch {
+    }
+    Sleep 80
+    try {
+        return editEl.HasKeyboardFocus
+    } catch {
+        return false
+    }
+}
+
+VSCode_FindChatSendButton(root) {
+    if (!root)
+        return ""
+    lastMatchingButton := ""
+    try {
+        buttons := root.FindAll({ Type: UIA.Type.Button })
+        for buttonEl in buttons {
+            try {
+                buttonName := buttonEl.Name
+                buttonClass := buttonEl.ClassName
+                if (!(InStr(buttonName, "Send ") || InStr(buttonName, "Send to New Chat")))
+                    continue
+                if (InStr(buttonClass, "arrow-up"))
+                    return buttonEl
+                lastMatchingButton := buttonEl
+            } catch {
+                continue
+            }
+        }
+    } catch {
+    }
+    return lastMatchingButton
+}
+
+VSCode_IsChatSendReady(targetHwnd) {
+    if (!IsSet(UIA))
+        return true
+    try {
+        root := UIA.ElementFromHandle(targetHwnd)
+        sendButton := VSCode_FindChatSendButton(root)
+        if (!sendButton)
+            return false
+        try {
+            if (sendButton.GetPropertyValue(UIA.Property.IsEnabled))
+                return true
+        } catch {
+        }
+        try {
+            return !InStr(sendButton.ClassName, "disabled")
+        } catch {
+        }
+    } catch {
+    }
+    return false
+}
+
+VSCode_SubmitChat(targetHwnd) {
+    if (IsSet(UIA)) {
+        try {
+            root := UIA.ElementFromHandle(targetHwnd)
+            sendButton := VSCode_FindChatSendButton(root)
+            if (sendButton && VSCode_IsChatSendReady(targetHwnd)) {
+                try {
+                    DebugFlowLog("Utils.ahk:VSCode_SubmitChat", "click send button", "hwnd=" . targetHwnd, "VSC5")
+                    sendButton.Click()
+                    return true
+                } catch {
+                }
+                try {
+                    DebugFlowLog("Utils.ahk:VSCode_SubmitChat", "enter on send button", "hwnd=" . targetHwnd, "VSC6")
+                    sendButton.SetFocus()
+                    Sleep 40
+                    SendInput "{Enter}"
+                    return true
+                } catch {
+                }
+            }
+        } catch {
+        }
+    }
+    DebugFlowLog("Utils.ahk:VSCode_SubmitChat", "fallback enter", "hwnd=" . targetHwnd, "VSC7")
+    SendInput "{Enter}"
+    return true
+}
+
+; Activate VS Code window and focus chat input. Returns true on success.
 VSCode_FocusChatInput(targetHwnd := 0) {
     try {
         if (targetHwnd) {
             WinActivate("ahk_id " targetHwnd)
-            WinWaitActive("ahk_id " targetHwnd, , 2)
+            if (!WinWaitActive("ahk_id " targetHwnd, , 2))
+                return false
         } else {
             targetHwnd := WinExist("ahk_exe Code.exe")
             if (!targetHwnd)
                 return false
             WinActivate("ahk_id " targetHwnd)
-            WinWaitActive("ahk_id " targetHwnd, , 2)
+            if (!WinWaitActive("ahk_id " targetHwnd, , 2))
+                return false
         }
-        Sleep 200
-        
-        ; Open chat pane if not already open: Ctrl+Alt+I
-        Send "^!i"
-        Sleep 500
-        
-        ; Focus the chat input field: Tab to navigate within chat pane
-        Send "{Tab}"
-        Sleep 100
-        
-        return true
+        Sleep 180
+
+        ; Ensure the chat surface exists first.
+        SendInput "^!i"
+        Sleep 350
+
+        if (!IsSet(UIA)) {
+            SendInput "{Tab}"
+            Sleep 120
+            return true
+        }
+
+        loop 2 {
+            try {
+                root := UIA.ElementFromHandle(targetHwnd)
+                editEl := VSCode_FindChatInputField(root)
+                if (editEl && VSCode_EnsureChatInputHasFocus(editEl)) {
+                    DebugFlowLog("Utils.ahk:VSCode_FocusChatInput", "chat input focused", "attempt=" . A_Index, "VSC1")
+                    return true
+                }
+            } catch {
+            }
+
+            ; Fallback nudge inside the chat view without clicking toolbar buttons.
+            SendInput "{Tab}"
+            Sleep 140
+        }
+
+        DebugFlowLog("Utils.ahk:VSCode_FocusChatInput", "chat input focus failed", "hwnd=" . targetHwnd, "VSC2")
+        return false
     } catch {
         return false
     }
@@ -2733,11 +2886,14 @@ CURSOR_TRANSFER_MIN_CLIPBOARD_LENGTH := 10
 ; Electron/Cursor needs time after paste before Enter; after Enter before foreground changes or submit can drop.
 CURSOR_TRANSFER_POST_PASTE_BEFORE_ENTER_MS := 80
 CURSOR_TRANSFER_POST_ENTER_BEFORE_RESTORE_MS := 400
+VSCODE_TRANSFER_POST_PASTE_SETTLE_MS := 180
+VSCODE_TRANSFER_PASTE_RETRY_COUNT := 2
 
 ; Activate Cursor/VS Code window, focus AI field, paste clipboard, send Enter. Non-blocking feedback on failure.
 ; restoreFocusHwnd: if set, WinActivate this window after Enter is processed (before success overlay) so focus does not stay on the target window.
 CursorTransfer_ActivateFocusPaste(targetHwnd, restoreFocusHwnd := 0) {
     appDisplayName := CursorTransfer_GetTargetAppName()
+    targetIsVSCode := (CursorTransfer_GetTargetAppExecutable() = "Code.exe")
     if (!targetHwnd || !WinExist("ahk_id " targetHwnd)) {
         ShowCenteredOverlay_Utils("❌ " appDisplayName " window not found", 2000, BANNER_ACCENT_ERROR)
         return
@@ -2754,17 +2910,18 @@ CursorTransfer_ActivateFocusPaste(targetHwnd, restoreFocusHwnd := 0) {
             return
         }
         Sleep 100
-        ; Branch based on target app: VS Code or Cursor
         focusSucceeded := false
-        if (CursorTransfer_GetTargetAppExecutable() = "Code.exe") {
+        if (targetIsVSCode) {
             focusSucceeded := VSCode_FocusChatInput(targetHwnd)
         } else {
             focusSucceeded := Cursor_FocusAITextField(targetHwnd)
         }
         if (!focusSucceeded) {
+            DebugFlowLog("Utils.ahk:CursorTransfer_ActivateFocusPaste", "focus failed", "app=" . appDisplayName . ", hwnd=" . targetHwnd, "VSC3")
             ShowCenteredOverlay_Utils("❌ Could not focus AI field", 2000, BANNER_ACCENT_ERROR)
             return
         }
+        Sleep(targetIsVSCode ? 220 : 100)
         try {
             if (WinGetID("A") != targetHwnd) {
                 WinActivate("ahk_id " targetHwnd)
@@ -2776,9 +2933,37 @@ CursorTransfer_ActivateFocusPaste(targetHwnd, restoreFocusHwnd := 0) {
             ShowCenteredOverlay_Utils("❌ Clipboard lost before paste", 2000, BANNER_ACCENT_ERROR)
             return
         }
-        SendInput "^v"
-        Sleep CURSOR_TRANSFER_POST_PASTE_BEFORE_ENTER_MS
-        SendInput "{Enter}"
+        pasteDetected := true
+        pasteAttempts := targetIsVSCode ? VSCODE_TRANSFER_PASTE_RETRY_COUNT : 1
+        loop pasteAttempts {
+            SendInput "^v"
+            Sleep CURSOR_TRANSFER_POST_PASTE_BEFORE_ENTER_MS + (targetIsVSCode ? VSCODE_TRANSFER_POST_PASTE_SETTLE_MS : 0)
+            if (!targetIsVSCode) {
+                pasteDetected := true
+                break
+            }
+            pasteDetected := VSCode_IsChatSendReady(targetHwnd)
+            DebugFlowLog("Utils.ahk:CursorTransfer_ActivateFocusPaste", "paste attempt", "attempt=" . A_Index . ", ready=" . pasteDetected, "VSC4")
+            if (pasteDetected)
+                break
+            if (A_Index < pasteAttempts) {
+                if (!VSCode_FocusChatInput(targetHwnd))
+                    break
+                Sleep 150
+            }
+        }
+        if (!pasteDetected) {
+            ShowCenteredOverlay_Utils("❌ Paste did not reach VS Code chat", 2200, BANNER_ACCENT_ERROR)
+            return
+        }
+        if (targetIsVSCode) {
+            if (!VSCode_SubmitChat(targetHwnd)) {
+                ShowCenteredOverlay_Utils("❌ Could not submit VS Code chat", 2200, BANNER_ACCENT_ERROR)
+                return
+            }
+        } else {
+            SendInput "{Enter}"
+        }
         if (restoreFocusHwnd && WinExist("ahk_id " restoreFocusHwnd)) {
             ; Wait so target editor keeps foreground until paste + Enter are processed; restoring sooner drops Enter.
             Sleep CURSOR_TRANSFER_POST_ENTER_BEFORE_RESTORE_MS
