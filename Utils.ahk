@@ -2758,6 +2758,65 @@ VSCode_IsChatInputFocused(targetHwnd) {
     return false
 }
 
+VSCode_IsSafeChatPasteTarget(targetHwnd) {
+    ; Conservative gate: if uncertain, do not paste.
+    if (!IsSet(UIA))
+        return false
+    if (!targetHwnd || !WinExist("ahk_id " targetHwnd))
+        return false
+    try {
+        root := UIA.ElementFromHandle(targetHwnd)
+        if (!root)
+            return false
+        editEl := VSCode_FindChatInputField(root)
+        sendBtn := VSCode_FindChatSendButton(root)
+        if (!editEl || !sendBtn)
+            return false
+
+        ; Must be keyboard-focused to avoid pasting into editor/other controls.
+        try {
+            if (!editEl.HasKeyboardFocus)
+                return false
+        } catch {
+            return false
+        }
+
+        editBr := editEl.BoundingRectangle
+        sendBr := sendBtn.BoundingRectangle
+        ew := editBr.r - editBr.l
+        eh := editBr.b - editBr.t
+        if (ew < 260 || eh <= 0 || eh > 260)
+            return false
+
+        ; Composer and send button must be in the same footer region.
+        editCx := (editBr.l + editBr.r) / 2
+        editCy := (editBr.t + editBr.b) / 2
+        sendCx := (sendBr.l + sendBr.r) / 2
+        sendCy := (sendBr.t + sendBr.b) / 2
+        if (Abs(editCx - sendCx) > 900)
+            return false
+        if (Abs(editCy - sendCy) > 260)
+            return false
+
+        ; Require right-side chat pane placement (avoids inline "Get comment" editors).
+        rect := Buffer(16, 0)
+        if (!DllCall("GetWindowRect", "ptr", targetHwnd, "ptr", rect))
+            return false
+        winLeft := NumGet(rect, 0, "int")
+        winRight := NumGet(rect, 8, "int")
+        winWidth := winRight - winLeft
+        if (winWidth <= 0)
+            return false
+        thresholdX := winLeft + (winWidth * 0.52)
+        if (editCx < thresholdX || sendCx < thresholdX)
+            return false
+
+        return true
+    } catch {
+    }
+    return false
+}
+
 VSCode_SubmitChat(targetHwnd) {
     if (IsSet(UIA)) {
         try {
@@ -3016,13 +3075,17 @@ CursorTransfer_ActivateFocusPaste(targetHwnd, restoreFocusHwnd := 0) {
         pasteAttempts := targetIsVSCode ? VSCODE_TRANSFER_PASTE_RETRY_COUNT : 1
         loop pasteAttempts {
             if (targetIsVSCode) {
-                ; Hard gate: never paste until the chat composer is confirmed focused.
-                if (!VSCode_IsChatInputFocused(targetHwnd)) {
+                ; Hard gate: never paste until strict chat-pane targeting is verified.
+                if (!VSCode_IsSafeChatPasteTarget(targetHwnd)) {
                     if (!VSCode_FocusChatInput(targetHwnd))
                         break
                     Sleep 160
-                    if (!VSCode_IsChatInputFocused(targetHwnd)) {
-                        DebugFlowLog("Utils.ahk:CursorTransfer_ActivateFocusPaste", "chat input not focused", "attempt=" . A_Index, "VSC4")
+                    ; Require stability across two checks to avoid transient focus races.
+                    if (!VSCode_IsSafeChatPasteTarget(targetHwnd)) {
+                        Sleep 90
+                    }
+                    if (!VSCode_IsSafeChatPasteTarget(targetHwnd)) {
+                        DebugFlowLog("Utils.ahk:CursorTransfer_ActivateFocusPaste", "unsafe chat target", "attempt=" . A_Index, "VSC4")
                         if (A_Index < pasteAttempts)
                             continue
                         break
@@ -3046,7 +3109,7 @@ CursorTransfer_ActivateFocusPaste(targetHwnd, restoreFocusHwnd := 0) {
             }
         }
         if (!pasteDetected) {
-            ShowCenteredOverlay_Utils("❌ Paste did not reach VS Code chat", 2200, BANNER_ACCENT_ERROR)
+            ShowCenteredOverlay_Utils("❌ Paste blocked: AI text field not confidently focused", 2600, BANNER_ACCENT_ERROR)
             return
         }
         if (targetIsVSCode) {
