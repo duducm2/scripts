@@ -1913,29 +1913,29 @@ CursorTransfer_SelectorClose() {
 
 CursorTransfer_SelectorHandleKey(index, *) {
     global g_CursorTransferSelectorResult, g_CursorTransferWindowList, g_CursorTransferLastHandledIndex
-    
+
     ; Validate index bounds
     if (!IsInteger(index) || index < 1 || index > g_CursorTransferWindowList.Length) {
         ; Invalid index: keep selector open, log for diagnostics
         g_CursorTransferLastHandledIndex := index
         return
     }
-    
+
     ; Retrieve target hwnd
     targetItem := g_CursorTransferWindowList[index]
     if (!targetItem || !targetItem.HasProp("hwnd")) {
         g_CursorTransferLastHandledIndex := index
         return
     }
-    
+
     targetHwnd := targetItem.hwnd
-    
+
     ; Verify hwnd still exists before accepting selection
     if (!WinExist("ahk_id " targetHwnd)) {
         g_CursorTransferLastHandledIndex := index
         return
     }
-    
+
     ; Valid selection: set result and close
     g_CursorTransferSelectorResult := targetHwnd
     g_CursorTransferLastHandledIndex := index
@@ -3055,7 +3055,8 @@ CursorTransfer_ActivateFocusPaste(targetHwnd, restoreFocusHwnd := 0) {
             focusSucceeded := Cursor_FocusAITextField(targetHwnd)
         }
         if (!focusSucceeded) {
-            DebugFlowLog("Utils.ahk:CursorTransfer_ActivateFocusPaste", "focus failed", "app=" . appDisplayName . ", hwnd=" . targetHwnd, "VSC3")
+            DebugFlowLog("Utils.ahk:CursorTransfer_ActivateFocusPaste", "focus failed", "app=" . appDisplayName .
+                ", hwnd=" . targetHwnd, "VSC3")
             ShowCenteredOverlay_Utils("❌ Could not focus AI field", 2000, BANNER_ACCENT_ERROR)
             return
         }
@@ -3085,7 +3086,8 @@ CursorTransfer_ActivateFocusPaste(targetHwnd, restoreFocusHwnd := 0) {
                         Sleep 90
                     }
                     if (!VSCode_IsSafeChatPasteTarget(targetHwnd)) {
-                        DebugFlowLog("Utils.ahk:CursorTransfer_ActivateFocusPaste", "unsafe chat target", "attempt=" . A_Index, "VSC4")
+                        DebugFlowLog("Utils.ahk:CursorTransfer_ActivateFocusPaste", "unsafe chat target", "attempt=" .
+                            A_Index, "VSC4")
                         if (A_Index < pasteAttempts)
                             continue
                         break
@@ -3093,13 +3095,15 @@ CursorTransfer_ActivateFocusPaste(targetHwnd, restoreFocusHwnd := 0) {
                 }
             }
             SendInput "^v"
-            Sleep CURSOR_TRANSFER_POST_PASTE_BEFORE_ENTER_MS + (targetIsVSCode ? VSCODE_TRANSFER_POST_PASTE_SETTLE_MS : 0)
+            Sleep CURSOR_TRANSFER_POST_PASTE_BEFORE_ENTER_MS + (targetIsVSCode ? VSCODE_TRANSFER_POST_PASTE_SETTLE_MS :
+                0)
             if (!targetIsVSCode) {
                 pasteDetected := true
                 break
             }
             pasteDetected := VSCode_IsChatSendReady(targetHwnd)
-            DebugFlowLog("Utils.ahk:CursorTransfer_ActivateFocusPaste", "paste attempt", "attempt=" . A_Index . ", ready=" . pasteDetected, "VSC4")
+            DebugFlowLog("Utils.ahk:CursorTransfer_ActivateFocusPaste", "paste attempt", "attempt=" . A_Index .
+                ", ready=" . pasteDetected, "VSC4")
             if (pasteDetected)
                 break
             if (A_Index < pasteAttempts) {
@@ -3109,7 +3113,8 @@ CursorTransfer_ActivateFocusPaste(targetHwnd, restoreFocusHwnd := 0) {
             }
         }
         if (!pasteDetected) {
-            ShowCenteredOverlay_Utils("❌ Paste blocked: AI text field not confidently focused", 2600, BANNER_ACCENT_ERROR)
+            ShowCenteredOverlay_Utils("❌ Paste blocked: AI text field not confidently focused", 2600,
+                BANNER_ACCENT_ERROR)
             return
         }
         if (targetIsVSCode) {
@@ -3673,6 +3678,10 @@ global g_StandardLoadingBarTimedProgressTimer := ""
 global g_StandardLoadingBarTimedProgressStartTick := 0
 global g_StandardLoadingBarTimedProgressDurationMs := 0
 global D2C_SUBMIT_MENU_TIMEOUT_MS := 5000
+; Keys overlay: same escape stack as Outlook Copilot selector (#!+l) — *Escape alone misses when the bar is NA/no focus.
+global g_StandardLoadingBarKeysEscapeUserCb := ""
+global g_StandardLoadingBarKeysEscapeActive := false
+global g_StandardLoadingBarEscPollPrev := false
 
 ; Return work area { left, top, right, bottom } for the monitor containing hwnd, or "" on failure.
 GetWorkAreaForWindow_StandardBar(hwnd) {
@@ -3970,7 +3979,8 @@ StandardLoadingBar_StartTimedProgress(durationMs) {
 }
 
 StandardLoadingBar_TimedProgressTick() {
-    global g_StandardLoadingBarGui, g_StandardLoadingBarTimedProgressStartTick, g_StandardLoadingBarTimedProgressDurationMs
+    global g_StandardLoadingBarGui, g_StandardLoadingBarTimedProgressStartTick,
+        g_StandardLoadingBarTimedProgressDurationMs
     if !IsObject(g_StandardLoadingBarGui) {
         StandardLoadingBar_StopTimedProgress()
         return
@@ -4045,7 +4055,15 @@ StandardLoadingBar_CloseKeysOverlay() {
     global g_StandardLoadingBarKeysHotkeys, g_StandardLoadingBarKeysTimeoutTimer
     global g_StandardLoadingBarGui, g_StandardLoadingBarValue, g_StandardLoadingBarIsKeysOverlay,
         g_StandardLoadingBarBorderGui
+    global g_StandardLoadingBarKeysEscapeActive, g_OnEscapePressed, g_StandardLoadingBarKeysEscapeUserCb
     g_StandardLoadingBarIsKeysOverlay := false
+    hadEscStack := g_StandardLoadingBarKeysEscapeActive
+    g_StandardLoadingBarKeysEscapeActive := false
+    g_StandardLoadingBarKeysEscapeUserCb := ""
+    g_StandardLoadingBarEscPollPrev := false
+    try SetTimer(StandardLoadingBar_KeysEscapePoll, 0)
+    catch {
+    }
     try SetTimer(g_StandardLoadingBarKeysTimeoutTimer, 0)
     catch {
     }
@@ -4058,6 +4076,10 @@ StandardLoadingBar_CloseKeysOverlay() {
         }
     }
     g_StandardLoadingBarKeysHotkeys := []
+    if (hadEscStack) {
+        g_OnEscapePressed := ""
+        Utils_EnsureGlobalEscapeHotkey()
+    }
     SetTimer(StandardLoadingBar_Tick, 0)
     try {
         if IsObject(g_StandardLoadingBarGui)
@@ -4074,6 +4096,61 @@ StandardLoadingBar_CloseKeysOverlay() {
     g_StandardLoadingBarBorderGui := 0
 }
 
+; Return the Escape cancel callback from keyCallbacks, if any (used for robust Esc handling).
+StandardLoadingBar_EscapeCallbackFromKeyCallbacks(keyCallbacks) {
+    if (keyCallbacks is Map) {
+        if keyCallbacks.Has("*Escape")
+            return keyCallbacks["*Escape"]
+        if keyCallbacks.Has("Escape")
+            return keyCallbacks["Escape"]
+        return ""
+    }
+    try {
+        for kn, cb in keyCallbacks {
+            if (!cb)
+                continue
+            k := StrLower(Trim(kn))
+            if (k = "*escape" || k = "escape")
+                return cb
+        }
+    } catch {
+    }
+    return ""
+}
+
+; Poll Esc — fallback when $*Escape / g_OnEscapePressed miss (same idea as OutlookCopilotSelector_EscapePoll).
+StandardLoadingBar_KeysEscapePoll() {
+    global g_StandardLoadingBarKeysEscapeActive, g_StandardLoadingBarIsKeysOverlay, g_StandardLoadingBarEscPollPrev
+    if (!g_StandardLoadingBarKeysEscapeActive || !g_StandardLoadingBarIsKeysOverlay) {
+        try SetTimer(StandardLoadingBar_KeysEscapePoll, 0)
+        catch {
+        }
+        return
+    }
+    escDown := GetKeyState("Escape", "P") || (DllCall("user32\GetAsyncKeyState", "int", 0x1B) & 0x8000)
+    if escDown {
+        if !g_StandardLoadingBarEscPollPrev {
+            g_StandardLoadingBarEscPollPrev := true
+            StandardLoadingBar_KeysEscapeDismiss()
+        }
+    } else
+        g_StandardLoadingBarEscPollPrev := false
+}
+
+; $*Escape, I10 g_OnEscapePressed, Gui Escape, and poll all route here (align with #!+l Outlook Copilot selector).
+StandardLoadingBar_KeysEscapeDismiss(*) {
+    global g_StandardLoadingBarIsKeysOverlay, g_StandardLoadingBarKeysEscapeUserCb
+    if !g_StandardLoadingBarIsKeysOverlay
+        return
+    cb := g_StandardLoadingBarKeysEscapeUserCb
+    if cb {
+        try cb.Call()
+        catch {
+        }
+    }
+    StandardLoadingBar_CloseKeysOverlay()
+}
+
 ; Show overlay and register hotkeys; optional timeout. keyCallbacks: Map/object key -> callback (e.g. "N" -> fn, "R" -> fn).
 ; timeoutCallback: called when timeout fires (can be empty). Registers both upper and lower case for letter keys.
 ; passiveBgColor: optional; when set, used as border color. Prefer BANNER_ACCENT_SUCCESS / BANNER_ACCENT_ERROR / BANNER_ACCENT_INTERMEDIATE. Overlay background stays dark.
@@ -4085,6 +4162,8 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
     BANNER_ACCENT_INTERMEDIATE, textWidth := 500, fontSize := 17, passiveBgColor := "", noBorder := false, promptKeys :=
     "", trackActiveMonitor := false, showProgress := false) {
     global g_StandardLoadingBarIsKeysOverlay, g_StandardLoadingBarKeysHotkeys, g_StandardLoadingBarKeysTimeoutTimer
+    global g_StandardLoadingBarGui, g_StandardLoadingBarKeysEscapeUserCb, g_StandardLoadingBarKeysEscapeActive,
+        g_StandardLoadingBarEscPollPrev, g_OnEscapePressed
     opts := { passive: !showProgress, centerOnHwnd: centerOnHwnd, textWidth: textWidth, fontSize: fontSize }
     if (showProgress)
         opts.manualProgress := true
@@ -4101,11 +4180,19 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
         StandardLoadingBar_StartTimedProgress(timeoutMs)
     g_StandardLoadingBarIsKeysOverlay := true
     g_StandardLoadingBarKeysHotkeys := []
+    escCb := StandardLoadingBar_EscapeCallbackFromKeyCallbacks(keyCallbacks)
+    g_StandardLoadingBarKeysEscapeUserCb := escCb ? escCb : ""
+    g_StandardLoadingBarKeysEscapeActive := false
 
     ; Register primary and case-variant keys (single letters get * prefix in RegisterKeyHandler for reliable firing).
     for keyName, cb in keyCallbacks {
         if (!cb)
             continue
+        if escCb {
+            knL := StrLower(Trim(keyName))
+            if (knL = "*escape" || knL = "escape")
+                continue
+        }
         StandardLoadingBar_RegisterKeyHandler(keyName, cb)
         if (StrLen(keyName) = 1) {
             o := Ord(keyName)
@@ -4117,6 +4204,29 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
             if (alt != "" && alt != keyName)
                 StandardLoadingBar_RegisterKeyHandler(alt, cb)
         }
+    }
+
+    if escCb {
+        try {
+            Hotkey("$*Escape", StandardLoadingBar_KeysEscapeDismiss, "On")
+            g_StandardLoadingBarKeysHotkeys.Push("$*Escape")
+        } catch {
+        }
+        g_OnEscapePressed := StandardLoadingBar_KeysEscapeDismiss
+        Utils_EnsureGlobalEscapeHotkey()
+        try {
+            if IsObject(g_StandardLoadingBarGui)
+                g_StandardLoadingBarGui.OnEvent("Escape", StandardLoadingBar_KeysEscapeDismiss)
+        } catch {
+        }
+        g_StandardLoadingBarEscPollPrev := false
+        SetTimer(StandardLoadingBar_KeysEscapePoll, 50)
+        try {
+            if IsObject(g_StandardLoadingBarGui) && g_StandardLoadingBarGui.Hwnd
+                WinActivate(g_StandardLoadingBarGui.Hwnd)
+        } catch {
+        }
+        g_StandardLoadingBarKeysEscapeActive := true
     }
 
     if (timeoutMs > 0) {
