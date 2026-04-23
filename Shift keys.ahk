@@ -1647,8 +1647,8 @@ Letters available: C, H, I, K, M, N, O, P, T, U, V, X, Y, Z
 [Ctrl+Alt+Win+7] > Mark Last Clip as Favorite (HotStrings macro; same as Ctrl+Alt+Win+J if 7 chord fails on keyboard)
 [Ctrl+Alt+Win+J] > Mark Last Clip as Favorite (HotStrings macro; alternate for keyboards that ghost Ctrl+Alt+Win+7)
 [Ctrl+Alt+Win+8] > Moves Desktop to Recycle Bin (HotStrings macro)
-[Ctrl+Alt+Win+9] > Handy: Parakeet V3 (model slot 2)
-[Ctrl+Alt+Win+B] > Handy: Parakeet V2 (model slot 1)
+[Ctrl+Alt+Win+9] > Handy: Cohere Portuguese (model slot 4)
+[Ctrl+Alt+Win+B] > Handy: Cohere English (model slot 3)
 
 === MAIN KEY COMBINATIONS ===
 [Symbol Layer] Win+Alt+Shift - Primary combination
@@ -1678,8 +1678,8 @@ Letters available: C, H, I, K, M, N, O, P, T, U, V, X, Y, Z
 === HANDY DICTATION ===
 [Win+Alt+Shift+0] > Start/stop dictation (transcription to clipboard)
 [Ctrl+Alt+Win+G] > Cancel dictation (Handy — user-defined; reserved in cheat sheet, not in AHK)
-[Ctrl+Alt+Win+9] > Handy: Parakeet V3 (picker slot 2; same as Win+Alt+Shift+C then 2)
-[Ctrl+Alt+Win+B] > Handy: Parakeet V2 (picker slot 1; same as Win+Alt+Shift+C then 1)
+[Ctrl+Alt+Win+9] > Handy: Cohere Portuguese (picker slot 4; same as Win+Alt+Shift+C then 4)
+[Ctrl+Alt+Win+B] > Handy: Cohere English (picker slot 3; same as Win+Alt+Shift+C then 3)
 [Win+Alt+Shift+C] > AI model picker (Handy): 1 Parakeet V2, 2 Parakeet V3, 3 Cohere English, 4 Cohere Portuguese
 
 === YOUTUBE ===

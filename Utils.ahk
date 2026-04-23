@@ -1667,8 +1667,8 @@ global g_HandyAiModels := Map(
 )
 
 ; Picker indices for ^!#9 / ^!#b; update g_HandyAiModels names if Handy renames models.
-global HANDY_AI_SLOT_PARAKEET_V3 := 2
-global HANDY_AI_SLOT_PARAKEET_V2 := 1
+global HANDY_AI_SLOT_COHERE_PORTUGUESE := 4
+global HANDY_AI_SLOT_COHERE_ENGLISH := 3
 
 ; GUI state for AI model selector
 global g_AiModelSelectorGui := false
@@ -6147,7 +6147,7 @@ if (A_Args.Length > 0 && A_Args[1] = "/Updated") {
 }
 
 ; =============================================================================
-; Select AI Model in Handyehift+C
+; Select AI Model in Handy (Win+Alt+Shift+C)
 ; =============================================================================
 #!+C::
 {
@@ -11253,9 +11253,9 @@ ShowHotstringSelector() {
 #UseHook False
 #InputLevel 0
 ^!#8:: DesktopToRecycle_Trigger()
-; Ctrl+Alt+Win+9 / +B - Handy Parakeet V3 / V2 (g_HandyAiModels slots 2 and 1)
-^!#9:: ExecuteHandyAiModelSelection(HANDY_AI_SLOT_PARAKEET_V3)
-^!#b:: ExecuteHandyAiModelSelection(HANDY_AI_SLOT_PARAKEET_V2)
+; Ctrl+Alt+Win+9 / +B - Handy Cohere Portuguese / English (g_HandyAiModels slots 4 and 3)
+^!#9:: ExecuteHandyAiModelSelection(HANDY_AI_SLOT_COHERE_PORTUGUESE)
+^!#b:: ExecuteHandyAiModelSelection(HANDY_AI_SLOT_COHERE_ENGLISH)
 
 ; =============================================================================
 ; Alt+Shift+W Shortcut
