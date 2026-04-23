@@ -8592,6 +8592,7 @@ global g_UtilitySelectorMonitor := Map()        ; {left, top, width, height}
 global g_UtilitySelectorTitleCtrl := false
 global g_UtilitySelectorEditCtrl := false
 global g_UtilitySelectorFontSize := 9           ; Base point size for RichEdit rendering (set on ShowHotstringSelector)
+global g_UtilitySelectorFooterCtrl := false     ; Footer ctrl ref; repositioned on each content refresh
 
 ; Character assignment sequence: defines order in which characters are assigned to actions
 ; Format: ["1", "2", "3", "4", "5", "q", "w", "e", "r", "t", "a", "s", "d", "f", "g", "z", "x",
@@ -10372,14 +10373,14 @@ UtilitySelector_RefreshUiAndHotkeys() {
     global g_UtilitySelectorFontSize
     displayText := UtilitySelector_BuildDisplayText(g_UtilitySelectorIsPortrait)
     displayLines := UtilitySelector_BuildDisplayRich(g_UtilitySelectorIsPortrait)
-    try MnemonicRich_Render(g_UtilitySelectorEditCtrl, displayLines, g_UtilitySelectorFontSize, 6, "Segoe UI", "CDD6F4",
+    try MnemonicRich_Render(g_UtilitySelectorEditCtrl, displayLines, g_UtilitySelectorFontSize, 6, "Consolas", "CDD6F4",
         "1E1E2E")
 
     ; Resize based on new content (reuse existing sizing rules)
     lineCount := 1
     loop parse, displayText, "`n"
         lineCount++
-    lineHeight := 14
+    lineHeight := 18
     textControlHeight := lineCount * lineHeight
     minHeight := 150
 
@@ -10399,7 +10400,7 @@ UtilitySelector_RefreshUiAndHotkeys() {
         if (baseWidth > monitorWidth - 40)
             baseWidth := monitorWidth - 40
     } else {
-        maxHeightPercent := (monitorHeight < 800) ? 0.90 : 0.75
+        maxHeightPercent := (monitorHeight < 800) ? 0.90 : 0.85
         maxHeight := Floor(monitorHeight * maxHeightPercent)
         if (textControlHeight < minHeight)
             textControlHeight := minHeight
@@ -10416,8 +10417,18 @@ UtilitySelector_RefreshUiAndHotkeys() {
         g_UtilitySelectorEditCtrl.Move(, , textControlWidth, textControlHeight)
     } catch {
     }
+    global g_UtilitySelectorFooterCtrl
+    if (IsObject(g_UtilitySelectorFooterCtrl)) {
+        try {
+            g_UtilitySelectorEditCtrl.GetPos(, &ftEditY)
+            if (ftEditY > 0)
+                g_UtilitySelectorFooterCtrl.Move(, ftEditY + textControlHeight + 10, textControlWidth)
+        } catch {
+        }
+    }
 
-    totalHeight := 10 + 20 + 1 + 4 + textControlHeight + 6 + 18 + 10
+    ; totalHeight: top-margin + title(s11) + gap + separator + gap + edit + gap + footer + bottom-margin
+    totalHeight := 10 + 24 + 10 + 1 + 10 + textControlHeight + 10 + 18 + 10
     guiWidth := baseWidth
 
     marginX := 20
@@ -10449,6 +10460,8 @@ UtilitySelector_IsMnemonicTechniquePrompt(trigger) {
         ":o:revision", true,
         ":o:storyreduction", true,
         ":o:punctualbeast", true,
+        ":o:imgreplicate", true,
+        ":o:imgpreserve", true,
     )
     return mnemonic.Has(trigger)
 }
@@ -11061,8 +11074,8 @@ ShowHotstringSelector() {
     loop parse, displayText, "`n" {
         lineCount++
     }
-    ; Calculate height: ~14 pixels per line (compact display)
-    lineHeight := 14
+    ; Calculate height: ~18 pixels per line (Consolas 9pt in RichEdit with internal line padding)
+    lineHeight := 18
     textControlHeight := lineCount * lineHeight
     ; Ensure minimum and maximum bounds
     minHeight := 150
@@ -11086,7 +11099,7 @@ ShowHotstringSelector() {
     } else {
         ; LANDSCAPE: Prioritize width expansion, use two-column layout
         ; Use adaptive max height: 85% for large monitors, 90% for small monitors
-        maxHeightPercent := (monitorHeight < 800) ? 0.90 : 0.75
+        maxHeightPercent := (monitorHeight < 800) ? 0.90 : 0.85
         maxHeight := Floor(monitorHeight * maxHeightPercent)
         if (textControlHeight < minHeight)
             textControlHeight := minHeight
@@ -11121,13 +11134,14 @@ ShowHotstringSelector() {
         "ClassRichEdit50W w" . textControlWidth . " h" . textControlHeight
         . " +0x44 -E0x200 +VScroll -HScroll -Border Background1E1E2E")
     try MnemonicRich_Render(g_UtilitySelectorEditCtrl, UtilitySelector_BuildDisplayRich(isPortrait), fontSize, 6,
-    "Segoe UI",
+    "Consolas",
     "CDD6F4", "1E1E2E")
     g_HotstringSelectorGui.SetFont("s9 c89B4FA", "Segoe UI")
-    g_HotstringSelectorGui.Add("Text", "w" . textControlWidth . " Center", "Press Escape to close.")
+    global g_UtilitySelectorFooterCtrl
+    g_UtilitySelectorFooterCtrl := g_HotstringSelectorGui.Add("Text", "w" . textControlWidth . " Center", "Press Escape to close.")
 
-    ; Total height: margins + title + separator + gap + content + hint + spacing (no button)
-    totalHeight := 10 + 20 + 1 + 4 + textControlHeight + 6 + 18 + 10
+    ; Total height: top-margin + title(s11) + gap + separator + gap + edit + gap + footer + bottom-margin
+    totalHeight := 10 + 24 + 10 + 1 + 10 + textControlHeight + 10 + 18 + 10
     guiWidth := baseWidth
 
     ; Calculate center position for the GUI with margins
