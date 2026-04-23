@@ -7681,7 +7681,8 @@ global g_StudyTopics := Map(
     2, { name: "Science (mnemonics)", path: "\studies\science\mnemonics-science.md" },
     3, { name: "Piano (mnemonics)", path: "\studies\piano\mnemonics-piano.md" },
     4, { name: "English (mnemonics)", path: "\studies\english\mnemonics-english.md" },
-    5, { name: "Communication (mnemonics)", path: "\studies\communication\mnemonics-communication.md" }
+    5, { name: "Communication (mnemonics)", path: "\studies\communication\mnemonics-communication.md" },
+    6, { name: "German (mnemonics)", path: "\studies\german\mnemonics-german.md" }
 )
 global g_StudyTopicSelectorGui := false
 global g_StudyTopicSelectorActive := false
@@ -7889,7 +7890,7 @@ ShowStudyTopicSelector() {
 
     g_StudyTopicSelectorGui.Add("Text", "w280 h1 Background45475A y+10")
     g_StudyTopicSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_StudyTopicSelectorGui.Add("Text", "w280 Center", "Press 0-5 | Esc to cancel")
+    g_StudyTopicSelectorGui.Add("Text", "w280 Center", "Press 0-6 | Esc to cancel")
 
     activeWin := 0
     try {
@@ -7941,6 +7942,7 @@ ShowStudyTopicSelector() {
     Hotkey("3", StudyTopicSelector_HandleKey, "On")
     Hotkey("4", StudyTopicSelector_HandleKey, "On")
     Hotkey("5", StudyTopicSelector_HandleKey, "On")
+    Hotkey("6", StudyTopicSelector_HandleKey, "On")
     Hotkey("Escape", StudyTopicSelector_Cancel, "On")
 }
 
@@ -7990,6 +7992,7 @@ StudyTopicSelector_Close() {
     try Hotkey("3", "Off")
     try Hotkey("4", "Off")
     try Hotkey("5", "Off")
+    try Hotkey("6", "Off")
     try Hotkey("Escape", StudyTopicSelector_Cancel, "Off")
     Utils_EnsureGlobalEscapeHotkey()
     if (IsObject(g_StudyTopicSelectorGui) && g_StudyTopicSelectorGui.Hwnd) {
