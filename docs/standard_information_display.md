@@ -3,7 +3,7 @@
 A shared UI component for **loading indication**, **information-only messages**, and **interactive input** across all AHK scripts. Defined in `Utils.ahk` and used by Act, AppLaunchers, Gemini, Shift keys, WindowManagement, Microsoft Teams, and any script that includes Utils. This document is the **single source of truth** for banner behavior and the canonical way to show loading, information, and interactive banners across all scripts.
 
 ## Overview and Purpose
-
+ll
 - **Single shared component** for loading, information, and user-input feedback across all AHK scripts
 - **Replaces ad-hoc banners and overlays** with a consistent user experience
 - **Monitor-aware positioning** – centers on the active window's monitor or the primary monitor; optional **active-monitor tracking** (`trackActiveMonitor` on interactive banners) recenters the bar when the foreground window moves to another display while the banner is open (dictation and Gemini transfer flows).

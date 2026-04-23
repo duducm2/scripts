@@ -914,6 +914,13 @@ copyFromBridge(wParam, lParam, msg, hwnd) {
 ; Hotkey: Win+Alt+Shift+8 — async: submit to Gemini, restore focus, show result in banner when ready
 ; =============================================================================
 #!+8:: {
+    global g_StandardLoadingBarIsKeysOverlay
+    if (g_StandardLoadingBarIsKeysOverlay) {
+        StandardLoadingBar_CloseKeysOverlay()
+        StandardLoadingBar_Hide(0)
+        return
+    }
+
     onSelect(lang) {
         StandardLoadingBar_CloseKeysOverlay()
         StandardLoadingBar_Hide(0)
@@ -925,7 +932,7 @@ copyFromBridge(wParam, lParam, msg, hwnd) {
         "1", (*) => onSelect("pt"),
         "2", (*) => onSelect("en"),
         "3", (*) => onSelect("de"),
-        "Escape", (*) => onSelect("")
+        "*Escape", (*) => onSelect("")
     )
     
     StandardLoadingBar_ShowWithKeys("❓ Select Translation Language", keyCallbacks, 0, 0, "", BANNER_ACCENT_INTERMEDIATE, 450, 17, "", false, "[1] Portuguese  [2] English  [3] German  [Esc] Cancel")
