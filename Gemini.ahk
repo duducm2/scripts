@@ -914,7 +914,11 @@ copyFromBridge(wParam, lParam, msg, hwnd) {
 ; Hotkey: Win+Alt+Shift+8 — async: submit to Gemini, restore focus, show result in banner when ready
 ; =============================================================================
 #!+8:: {
-    (GeminiAsyncLookup()).Start()
+    LookupMenu := Menu()
+    LookupMenu.Add("1: Portuguese", (ItemName, ItemPos, MyMenu) => (GeminiAsyncLookup("pt")).Start())
+    LookupMenu.Add("2: English", (ItemName, ItemPos, MyMenu) => (GeminiAsyncLookup("en")).Start())
+    LookupMenu.Add("3: German", (ItemName, ItemPos, MyMenu) => (GeminiAsyncLookup("de")).Start())
+    LookupMenu.Show()
 }
 
 ; =============================================================================
@@ -1439,7 +1443,8 @@ class GeminiAsyncReadAloud {
 ; User keeps focus; timer polls for completion; result shown in banner.
 ; =============================================================================
 class GeminiAsyncLookup {
-    __New() {
+    __New(lang := "") {
+        this.Lang := lang
         this.OriginalHwnd := 0
         this.GeminiHwnd := 0
         this.TimerCallback := ""
@@ -1496,7 +1501,8 @@ class GeminiAsyncLookup {
             Sleep 80
         } catch {
         }
-        searchString := RTrim(GetPromptText("pronunciation-lookup"), "`r`n")
+        promptName := this.Lang ? "pronunciation-lookup-" . this.Lang : "pronunciation-lookup"
+        searchString := RTrim(GetPromptText(promptName), "`r`n")
         A_Clipboard := searchString . "`n`nContent: " . A_Clipboard
         Sleep 100
         Send("^a")

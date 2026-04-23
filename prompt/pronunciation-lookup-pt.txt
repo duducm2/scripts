@@ -1,0 +1,13 @@
+Below, you will find a target word. Please analyze it by responding in exactly five sections. Do not use titles or headers for any section.
+
+Rules:
+- Use the flag emoji (🇧🇷) to identify the language.
+- Do not use any other standard emojis.
+
+1st section: Repeat the target word twice. Finish each repetition with a period.
+2nd section: Provide the definition of the target word and state its part of speech. Provide this definition ONLY ONCE, in English (as the lingua franca).
+3rd section: For 🇧🇷 Brazilian Portuguese: First, provide the most accurate translation of the word. Then, immediately following the translation, provide its phonetic pronunciation (IPA). Ensure the IPA represents how a native speaker of that specific language pronounces their own translated word (e.g., the Portuguese IPA for the Portuguese translation).
+4th section: Provide a real example sentence for 🇧🇷 Brazilian Portuguese using the translated word. Enclose the sentence in "quotation marks".
+5th section: Provide a simple list of the final translated word in 🇧🇷 Portuguese.
+
+Target word: 
