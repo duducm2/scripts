@@ -691,7 +691,8 @@ InitTechniquePromptHotstrings() {
         ["story-reduction-prompt.txt", ":o:storyreduction", "📝 Story reduction", "a", "Reserved 5"],
         ["punctual-beast-append-prompt.txt", ":o:punctualbeast", "🧩 Punctual beast append", "p", "Reserved 6"],
         ["image-exact-replication-prompt.txt", ":o:imgreplicate", "🖼️ Exact image replication", "i", "Reserved 7"],
-        ["image-background-preservation-prompt.txt", ":o:imgpreserve", "🛡️ Preserve background for image generation", "g", "Reserved 8"],
+        ["image-background-preservation-prompt.txt", ":o:imgpreserve", "🛡️ Preserve background for image generation",
+            "g", "Reserved 8"],
     ]
     for row in defs {
         fileName := row[1]
@@ -4420,6 +4421,7 @@ class D2C_FlowManager {
             "V", this.OnSubmitV.Bind(this),
             "E", this.OnSubmitE.Bind(this),
             "F", this.OnSubmitF.Bind(this),
+            "O", this.OnSubmitO.Bind(this),
             "N", this.OnSubmitN.Bind(this)
         )
         StandardLoadingBar_ShowWithKeys(
@@ -4428,8 +4430,8 @@ class D2C_FlowManager {
             D2C_SUBMIT_MENU_TIMEOUT_MS,
             0,
             this.OnSubmitTimeout.Bind(this),
-            BANNER_ACCENT_INTERMEDIATE, 520, 17, "", true,
-            "[G] Grammar  [A] AI opt  [Y] Send  [S] Paste only  [V] Paste dictated  [E] Paste & send  [F] Favorite  [N] Cancel",
+            BANNER_ACCENT_INTERMEDIATE, 560, 17, "", true,
+            "[G] Grammar  [A] AI opt  [Y] Send  [S] Paste only  [V] Paste dictated  [E] Paste & send  [F] Favorite  [O] Clip Angel  [N] Cancel",
             true,
             true
         )
@@ -4514,6 +4516,24 @@ class D2C_FlowManager {
         } finally {
             this.Reset()
         }
+    }
+
+    ; [O] Open Clip Angel (Row 0), then Edit text (F4 — same as Shift+E in Shift keys.ahk for ClipAngel). O avoids C = Transfer on Copy response? banner.
+    OnSubmitO(*) {
+        if (this.CurrentPhase != "PromptingSubmit")
+            return
+        StandardLoadingBar_CloseKeysOverlay()
+        StandardLoadingBar_Hide(0)
+        HideDictationIndicator()
+        ActivateClipAngelWithFocusCorrection()
+        if WinExist("ClipAngel") {
+            try WinActivate("ClipAngel")
+            if WinWaitActive("ClipAngel", , 1) {
+                Sleep 100
+                Send "{F4}"
+            }
+        }
+        this.Reset()
     }
 
     OnSubmitN(*) {
@@ -11141,7 +11161,8 @@ ShowHotstringSelector() {
     "CDD6F4", "1E1E2E")
     g_HotstringSelectorGui.SetFont("s9 c89B4FA", "Segoe UI")
     global g_UtilitySelectorFooterCtrl
-    g_UtilitySelectorFooterCtrl := g_HotstringSelectorGui.Add("Text", "w" . textControlWidth . " Center", "Press Escape to close.")
+    g_UtilitySelectorFooterCtrl := g_HotstringSelectorGui.Add("Text", "w" . textControlWidth . " Center",
+        "Press Escape to close.")
 
     ; Total height: top-margin + title(s11) + gap + separator + gap + edit + gap + footer + bottom-margin
     totalHeight := 10 + 24 + 10 + 1 + 10 + textControlHeight + 10 + 18 + 10

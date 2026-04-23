@@ -4,8 +4,9 @@
 2. **Finish dictating** (second press of `~#!+0` or stop manually).
 3. **After dictation stops (Gemini path):** `dictation-selection-menu.wav` plays, then a **2-second** standard loading bar fills **linearly from 0% to 100%** (buffer against accidental keys), then **Send to Gemini?** appears.
 4. **First banner — Send to Gemini?**  
-   **Y** = paste and auto-send (Enter) to Gemini (uses your Clip Angel first snippet, same as before). **G** = grammar-and-spelling preset from `prompt/grammar.txt` plus the dictated text (clipboard), then auto-send. **A** = AI text optimizer preset from `prompt/aiopt.txt` plus the dictated text, then auto-send. **S** = paste only to Gemini (no Enter). **V** = paste dictated text into the original window (**Ctrl+V**) and end the flow. **N** = cancel (flow ends).  
+   **Y** = paste and auto-send (Enter) to Gemini (uses your Clip Angel first snippet, same as before). **G** = grammar-and-spelling preset from `prompt/grammar.txt` plus the dictated text (clipboard), then auto-send. **A** = AI text optimizer preset from `prompt/aiopt.txt` plus the dictated text, then auto-send. **S** = paste only to Gemini (no Enter). **V** = paste dictated text into the original window (**Ctrl+V**) and end the flow. **O** = open Clip Angel with focus on the newest clip (Row 0), then open **Edit text** (**F4**, same as **Shift+E** when `Shift keys.ahk` Clip Angel hotkeys are active); flow ends. **N** = cancel (flow ends).  
    If no action is taken within 6 seconds, **Y** (yes) is selected by default—the same as pressing **Y** (first-snippet paste, not the **G** or **A** preset path). When the script moves fuocus from the original window to Gemini to perform this paste, it first shows a **2-second “✋ Hands off!” pre-movement cue** so you can stop typing before the automated transition.
+
 5. **If the flow sent your text to Gemini** (you chose **Y**, **G**, **A**, or let the first banner time out), after Gemini responds you see **Copy response?**  
    **Y** = copy. **C** = send to Cursor. **R** = same copy as **Y**, then read aloud (Listen); both steps use synchronous IPC so focus is not restored until the read-aloud flow finishes. **N** = cancel (flow ends).  
    If you press **Y**, a 2-second **“✋ Hands off!”** cue plays before the script copies the last Gemini response.  
@@ -30,8 +31,9 @@ flowchart TB
     Branch --> |"Paste"| PasteOnly["^v, hide indicator"]
     Branch --> |"pendingGemini"| PreMenu["Selection sound plus 2s linear loading bar"]
     PreMenu --> ShowAndWait["Send to Gemini? 6s"]
-    ShowAndWait --> User6s{"G / A / Y / S / V / N / timeout"}
+    ShowAndWait --> User6s{"G / A / Y / S / V / E / F / O / N / timeout"}
     User6s --> |"N"| Stop6s["Flow ends"]
+    User6s --> |"O"| ClipAngelOpen["Clip Angel Row0 plus Edit F4, flow ends"]
     User6s --> |"V"| PasteOrig["Activate original, ^v, flow ends"]
     User6s --> |"timeout"| Finalize["FinalizeSubmit like Y"]
     User6s --> |"Y"| Finalize
@@ -40,6 +42,8 @@ flowchart TB
     FinalizePreset --> PasteGemini
     FinalizeAiopt --> PasteGemini
     User6s --> |"S"| PasteOnly6s["Paste only, no Enter"]
+    User6s --> |"E"| PasteSendHere["Foreground paste Enter, flow ends"]
+    User6s --> |"F"| FavoriteClip["Favorite clip, flow ends"]
     Finalize --> PasteGemini["Focus Gemini, paste"]
     PasteGemini --> WaitContent["Wait content max 5s"]
     WaitContent --> SendEnter["Send Enter"]
@@ -80,7 +84,7 @@ For a complete list of where Hand Off audio cues are used, see `docs/hand_off_wa
 
 | Step | Banner                                 | Actions                                                                       | Effect                                                                              |
 | ---- | -------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| 1    | **Send to Gemini?** (6s)               | **Y** or timeout = send (first snippet). **G** / **A** = preset + dictated text, then send. **S** = paste only (no Enter). **V** = paste dictated text into original window (**Ctrl+V**) then end. **N** = cancel. | N ends flow; V ends flow after paste; S = paste only (Gemini, no Enter); Y/timeout = paste + Enter; G/A = preset + dictation + Enter; then Copy response? banner. |
+| 1    | **Send to Gemini?** (6s)               | **Y** or timeout = send (first snippet). **G** / **A** = preset + dictated text, then send. **S** = paste only (no Enter). **V** = paste dictated text into original window (**Ctrl+V**) then end. **O** = open Clip Angel (Row 0), **Edit text** (**F4**), flow ends. **N** = cancel. | N ends flow; O ends in Clip Angel editor; V ends flow after paste; S = paste only (Gemini, no Enter); Y/timeout = paste + Enter; G/A = preset + dictation + Enter; then Copy response? banner. |
 | 2    | **Copy response?** (5s)                | **Y** = copy. **C** = transfer to Cursor. **R** = read aloud. **N** = cancel. | N ends flow. Y/C/R/timeout perform their action.                                    |
 | 3    | **Transfer to Cursor** (window picker) | **N** or **Esc** = cancel. **1–9** = paste to that window.                    | Cancel = no paste to Cursor.                                                        |
 

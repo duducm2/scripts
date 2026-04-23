@@ -1013,7 +1013,7 @@ ClipAngel (Shift)
 🧹 [X]E[X]it filters (Clear)
 ⭐ [F]Mark as [F]avorite
 ⭐ [U][U]nmark as favorite
-✏️ [E][E]dit Text
+✏️ [E][E]dit Text (F4)
 💾 [S][S]ave as file
 🔗 [M][M]erge clips
 🔍 [Y]File t[Y]pe filter (Quick Wizard)
