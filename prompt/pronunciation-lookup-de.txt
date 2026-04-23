@@ -1,7 +1,7 @@
-Below, you will find a target word. Please analyze it by responding in exactly five sections. Do not use titles or headers for any section.
+Below, you will find a target word. Please analyze it by responding in exactly six sections. Do not use titles or headers for any section.
 
 Rules:
-- Use the flag emoji (🇩🇪) to identify the language.
+- Use the flag emojis (🇩🇪, 🇺🇸, 🇧🇷) to identify the languages.
 - Do not use any other standard emojis.
 
 1st section: Repeat the target word twice. Finish each repetition with a period.
@@ -9,5 +9,6 @@ Rules:
 3rd section: For 🇩🇪 German: First, provide the most accurate translation of the word. Then, immediately following the translation, provide its phonetic pronunciation (IPA). Ensure the IPA represents how a native speaker of that specific language pronounces their own translated word (e.g., the German IPA for the German translation).
 4th section: Provide a real example sentence for 🇩🇪 German using the translated word. Enclose the sentence in "quotation marks".
 5th section: Provide a simple list of the final translated word in 🇩🇪 German.
+6th section: Provide a short translation cross-reference for the same final word in 🇩🇪 German, 🇺🇸 English, and 🇧🇷 Brazilian Portuguese. Keep it simple and place each language on its own line so the equivalents are easy to compare.
 
 Target word: 
