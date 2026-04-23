@@ -23904,7 +23904,8 @@ CommandPalette_BookmarkExclude_ShowAndWait() {
     keyCallbacks := Map()
     keyCallbacks.Set("Y", CommandPalette_BookmarkExclude_Pick.Bind("Y"))
     keyCallbacks.Set("N", CommandPalette_BookmarkExclude_Pick.Bind("N"))
-    keyCallbacks.Set("Escape", CommandPalette_BookmarkExclude_Pick.Bind("N"))
+    ; Intentionally avoid Escape callback here: ShowWithKeys activates its overlay when Escape
+    ; is registered, which can deactivate transient UIs (e.g. Command Palette) and close them.
 
     StandardLoadingBar_ShowWithKeys(
         "❓ Exclude the current bookmark?",
