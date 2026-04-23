@@ -684,14 +684,12 @@ GetTechniquePromptFilePath(fileName) {
 }
 
 InitTechniquePromptHotstrings() {
-    ; Six files live in MyNotes: studies\technique\prompts (resolved via GetNotesRepoPath in env.ahk).
+    ; Four files live in MyNotes: studies\technique\prompts (resolved via GetNotesRepoPath in env.ahk).
     defs := [
         ["story-prompt.txt", ":o:mnemonic", "📖 Creating mnemonic stories", "", "Reserved 3"],
         ["video-transcription-prompt.txt", ":o:ytranscript", "🎬 Transcript Youtube Video", "", "Reserved 4"],
-        ["read-aloud-prompt.txt", ":o:readaloud", "📖 read aloud this story", "r", "Reserved 5"],
-        ["revision-prompt.txt", ":o:revision", "📝 Story revision", "t", "Reserved 6"],
-        ["story-reduction-prompt.txt", ":o:storyreduction", "📝 Story reduction", "a", "Reserved 7"],
-        ["punctual-beast-append-prompt.txt", ":o:punctualbeast", "🧩 Punctual beast append", "p", "Reserved 8"],
+        ["story-reduction-prompt.txt", ":o:storyreduction", "📝 Story reduction", "a", "Reserved 5"],
+        ["punctual-beast-append-prompt.txt", ":o:punctualbeast", "🧩 Punctual beast append", "p", "Reserved 6"],
     ]
     for row in defs {
         fileName := row[1]

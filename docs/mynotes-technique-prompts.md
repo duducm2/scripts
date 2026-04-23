@@ -1,6 +1,6 @@
 # MyNotes technique prompts (mnemonics)
 
-This document describes how the **seven mnemonic / study technique prompts** are loaded from the **MyNotes** repository, mirrored into this scripts repo, and exposed in AutoHotkey (hotstrings and **Win+Alt+Shift+U** Utility Shortcuts → **Prompts**).
+This document describes how the **four mnemonic / study technique prompts** are loaded from the **MyNotes** repository, mirrored into this scripts repo, and exposed in AutoHotkey (hotstrings and **Win+Alt+Shift+U** Utility Shortcuts → **Prompts**).
 
 The prompts are the single source of truth under the notes repo:
 
@@ -44,20 +44,18 @@ Adjust in [`env.ahk`](../env.ahk) if your layout differs.
 
 | Mechanism | Role |
 |-----------|------|
-| [`aux/Sync-MyNotesTechniquePrompts.ps1`](../aux/Sync-MyNotesTechniquePrompts.ps1) | Copies the six files into `prompt/technique/`. Use **`-Commit`** to commit the mirror in the scripts repo. |
+| [`aux/Sync-MyNotesTechniquePrompts.ps1`](../aux/Sync-MyNotesTechniquePrompts.ps1) | Copies the four files into `prompt/technique/`. Use **`-Commit`** to commit the mirror in the scripts repo. |
 | [`aux/Watch-MyNotesTechniquePrompts.ps1`](../aux/Watch-MyNotesTechniquePrompts.ps1) | Optional **debounced** watcher on the MyNotes prompts folder; re-runs sync when files change. |
 | [`Act.ahk`](../Act.ahk) | After **`git pull`** on the notes repo, runs the sync script with **`-Commit`** so the mirror stays aligned with MyNotes. |
 
 ---
 
-## The six files and hotstring triggers
+## The four files and hotstring triggers
 
 | File | Hotstring | Role (short) |
 |------|-----------|----------------|
 | `story-prompt.txt` | `:mnemonic` | Creating mnemonic stories |
 | `video-transcription-prompt.txt` | `:ytranscript` | YouTube transcript workflow |
-| `read-aloud-prompt.txt` | `:readaloud` | Read aloud this story |
-| `revision-prompt.txt` | `:revision` | Story revision |
 | `story-reduction-prompt.txt` | `:storyreduction` | Story reduction |
 | `punctual-beast-append-prompt.txt` | `:punctualbeast` | Append isolated beasts or small punctual batches into open streets |
 
@@ -73,4 +71,4 @@ After editing prompt files on disk, **reload** the AutoHotkey entry script (or r
 
 ## Utility Shortcuts (#!+U)
 
-Under **Prompts**, the seven mnemonic-technique entries are grouped under a **Mnemonics technique** subsection in the selector UI (see `UtilitySelector_IsMnemonicTechniquePrompt` / reorder logic in [`Utils.ahk`](../Utils.ahk)).
+Under **Prompts**, the four mnemonic-technique entries are grouped under a **Mnemonics technique** subsection in the selector UI (see `UtilitySelector_IsMnemonicTechniquePrompt` / reorder logic in [`Utils.ahk`](../Utils.ahk)).
