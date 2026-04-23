@@ -4525,7 +4525,7 @@ class D2C_FlowManager {
     OnSubmitTimeout(*) {
         if (this.CurrentPhase != "PromptingSubmit")
             return
-        this.ExecuteGeminiSubmit(true)
+        this.CancelFlow("Gemini submission cancelled")
     }
 
     ; --- Phase 2: Submit Execute ---
@@ -4736,7 +4736,8 @@ class D2C_FlowManager {
     OnActionTimeout(*) {
         if (this.CurrentPhase != "PromptingAction")
             return
-        this.ExecuteAction(false, false)
+        this.CleanupActionPrompt()
+        this.Reset()
     }
 
     CleanupActionPrompt() {
