@@ -914,11 +914,21 @@ copyFromBridge(wParam, lParam, msg, hwnd) {
 ; Hotkey: Win+Alt+Shift+8 — async: submit to Gemini, restore focus, show result in banner when ready
 ; =============================================================================
 #!+8:: {
-    LookupMenu := Menu()
-    LookupMenu.Add("1: Portuguese", (ItemName, ItemPos, MyMenu) => (GeminiAsyncLookup("pt")).Start())
-    LookupMenu.Add("2: English", (ItemName, ItemPos, MyMenu) => (GeminiAsyncLookup("en")).Start())
-    LookupMenu.Add("3: German", (ItemName, ItemPos, MyMenu) => (GeminiAsyncLookup("de")).Start())
-    LookupMenu.Show()
+    onSelect(lang) {
+        StandardLoadingBar_CloseKeysOverlay()
+        StandardLoadingBar_Hide(0)
+        if (lang != "")
+            (GeminiAsyncLookup(lang)).Start()
+    }
+    
+    keyCallbacks := Map(
+        "1", (*) => onSelect("pt"),
+        "2", (*) => onSelect("en"),
+        "3", (*) => onSelect("de"),
+        "Escape", (*) => onSelect("")
+    )
+    
+    StandardLoadingBar_ShowWithKeys("❓ Select Translation Language", keyCallbacks, 0, 0, "", BANNER_ACCENT_INTERMEDIATE, 450, 17, "", false, "[1] Portuguese  [2] English  [3] German  [Esc] Cancel")
 }
 
 ; =============================================================================
