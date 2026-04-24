@@ -927,15 +927,16 @@ copyFromBridge(wParam, lParam, msg, hwnd) {
         if (lang != "")
             (GeminiAsyncLookup(lang)).Start()
     }
-    
+
     keyCallbacks := Map(
         "1", (*) => onSelect("pt"),
         "2", (*) => onSelect("en"),
         "3", (*) => onSelect("de"),
         "*Escape", (*) => onSelect("")
     )
-    
-    StandardLoadingBar_ShowWithKeys("❓ Select Translation Language", keyCallbacks, 0, 0, "", BANNER_ACCENT_INTERMEDIATE, 450, 17, "", false, "[1] Portuguese  [2] English  [3] German  [Esc] Cancel")
+
+    StandardLoadingBar_ShowWithKeys("❓ Select Translation Language", keyCallbacks, 0, 0, "", BANNER_ACCENT_INTERMEDIATE,
+        450, 17, "", false, "[1] Portuguese  [2] English  [3] German  [Esc] Cancel")
 }
 
 ; =============================================================================
@@ -1594,7 +1595,18 @@ class GeminiAsyncLookup {
         bannerText := A_Clipboard
         if (this.OriginalHwnd = this.GeminiHwnd)
             FocusGeminiAskFieldForHwnd(this.GeminiHwnd, false)
-        WinActivate("ahk_id " this.OriginalHwnd)
+        ; Original may have been closed while we waited on Gemini — never WinActivate a stale HWND.
+        origHwnd := this.OriginalHwnd
+        if (origHwnd && WinExist("ahk_id " origHwnd)) {
+            try {
+                WinActivate("ahk_id " origHwnd)
+                if (!WinActive("ahk_id " origHwnd))
+                    WinWaitActive("ahk_id " origHwnd, , 0.5)
+            } catch {
+                if (WinExist("ahk_id " origHwnd))
+                    try WinActivate("ahk_id " origHwnd)
+            }
+        }
         StandardLoadingBar_Hide(0)
         this.ShowResultBanner(bannerText)
     }
