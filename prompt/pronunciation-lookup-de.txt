@@ -1,8 +1,9 @@
-Below, you will find a target word. Please analyze it by responding in exactly six sections. Do not use titles or headers for any section.
+Below, you will find a target word. Please analyze it by responding in exactly seven sections. Do not use titles or headers for any section.
 
 Rules:
 - Use the flag emojis (🇩🇪, 🇺🇸, 🇧🇷) to identify the languages.
 - Do not use any other standard emojis.
+- Instruction for AIB: Whenever you output a translation into 🇺🇸 English, 🇩🇪 German, or 🇧🇷 Brazilian Portuguese, the IPA for each form must use strictly that language’s native IPA phonology. Do not mix phonologies or apply one language’s pronunciation rules to another (e.g., do not output IPA as if a German speaker were pronouncing a Portuguese word).
 
 1st section: Repeat the target word twice. Finish each repetition with a period.
 2nd section: Provide the definition of the target word and state its part of speech. Provide this definition ONLY ONCE, in English (as the lingua franca).
@@ -10,5 +11,6 @@ Rules:
 4th section: Provide a real example sentence for 🇩🇪 German using the translated word. Enclose the sentence in "quotation marks".
 5th section: Provide a simple list of the final translated word in 🇩🇪 German.
 6th section: Provide a short translation cross-reference for the same final word in 🇩🇪 German, 🇺🇸 English, and 🇧🇷 Brazilian Portuguese. Keep it simple and place each language on its own line so the equivalents are easy to compare.
+7th section (final): Output the three translations one last time, each on its own line, with orthography and native IPA together for that line’s language only: 🇺🇸 English word/phrase — American-English IPA; 🇩🇪 German — German IPA; 🇧🇷 Brazilian Portuguese — Brazilian-Portuguese IPA. This section is the authoritative pairing of translated text and language-native IPA; obey the native-phonology-only rule above.
 
 Target word: 
