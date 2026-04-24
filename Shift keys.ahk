@@ -16562,25 +16562,15 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
 ; VS Code / Cursor: hide (toggle) bottom panel via UIA (no native shortcut)
 ; ---------------------------------------------------------------------------
 ClickHidePanelButton() {
-    ; #region agent log
-    __dbg_loc := "Shift keys.ahk:ClickHidePanelButton"
-    __dbg_prior := ""
-    __dbg_since := -1
-    __dbg_this := ""
-    try __dbg_prior := A_PriorHotkey
-    try __dbg_since := A_TimeSincePriorHotkey
-    try __dbg_this := A_ThisHotkey
-    ; Ensure numeric for JSON even if blank/unset
-    __dbg_since_num := (__dbg_since = "" ? -1 : (__dbg_since + 0))
-    __DbgLog("A", __dbg_loc, "entry"
-        , "{`"thisHotkey`":`"" __DbgEsc(__dbg_this) "`",`"priorHotkey`":`"" __DbgEsc(__dbg_prior) "`",`"timeSincePriorHotkeyMs`":" __dbg_since_num "}")
-    ; #endregion
-
     ; Debounce: if hotkey repeats while key is held, ignore fast repeats.
-    if (__dbg_prior = __dbg_this && __dbg_since_num >= 0 && __dbg_since_num < 350) {
-        ; #region agent log
-        __DbgLog("A", __dbg_loc, "debounced", "{`"ignored`":true}")
-        ; #endregion
+    prior := ""
+    since := -1
+    this := ""
+    try prior := A_PriorHotkey
+    try since := A_TimeSincePriorHotkey
+    try this := A_ThisHotkey
+    sinceNum := (since = "" ? -1 : (since + 0))
+    if (prior = this && sinceNum >= 0 && sinceNum < 350) {
         return false
     }
     try {
@@ -16612,128 +16602,41 @@ ClickHidePanelButton() {
         if (!foundAs && btn)
             foundAs := "Substring:Hide Panel"
 
-        ; #region agent log
-        __DbgLog("A", __dbg_loc, "found"
-            , "{`"found`":" (btn ? "true" : "false") ",`"foundAs`":`"" __DbgEsc(foundAs) "`"}")
-        ; #endregion
-
         if btn {
             clicked := false
             supportsInvoke := false
             supportsToggle := false
             try supportsInvoke := btn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)
             try supportsToggle := btn.GetPropertyValue(UIA.Property.IsTogglePatternAvailable)
-            ; #region agent log
-            __DbgLog("A", __dbg_loc, "pre-activate"
-                , "{`"supportsInvoke`":" (supportsInvoke ? "true" : "false") ",`"supportsToggle`":" (supportsToggle ? "true" : "false") "}")
-            ; #endregion
             if (supportsToggle) {
                 try {
                     btn.TogglePattern.Toggle()
                     clicked := true
-                    ; #region agent log
-                    __DbgLog("A", __dbg_loc, "toggle-ok", "{`"clicked`":true}")
-                    ; #endregion
                 } catch {
-                    ; #region agent log
-                    __DbgLog("A", __dbg_loc, "toggle-failed", "{`"clicked`":false}")
-                    ; #endregion
                 }
             }
             if (supportsInvoke) {
                 try {
                     btn.Invoke()
                     clicked := true
-                    ; #region agent log
-                    __DbgLog("A", __dbg_loc, "invoke-ok", "{`"clicked`":true}")
-                    ; #endregion
                 } catch {
-                    ; #region agent log
-                    __DbgLog("A", __dbg_loc, "invoke-failed", "{`"clicked`":false}")
-                    ; #endregion
                 }
             }
             if (!clicked) {
                 try {
                     btn.Click()
                     clicked := true
-                    ; #region agent log
-                    __DbgLog("A", __dbg_loc, "click-ok", "{`"clicked`":true}")
-                    ; #endregion
                 } catch {
-                    ; #region agent log
-                    __DbgLog("A", __dbg_loc, "click-failed", "{`"clicked`":false}")
-                    ; #endregion
                 }
             }
-
-            ; #region agent log
-            ; After activation, check whether UI now exposes Show/Hide (state hint).
-            try {
-                Sleep 80
-                afterHide := 0
-                afterShow := 0
-                try afterHide := uia.FindFirst({ Name: "Hide Panel", matchmode: "Substring" })
-                try afterShow := uia.FindFirst({ Name: "Show Panel", matchmode: "Substring" })
-                __DbgLog("A", __dbg_loc, "state-after"
-                    , "{`"hasHidePanel`":" (afterHide ? "true" : "false") ",`"hasShowPanel`":" (afterShow ? "true" : "false") "}")
-            } catch {
-            }
-            ; #endregion
-
-            ; #region agent log
-                    __DbgLog("A", __dbg_loc, "exit"
-                        , "{`"returnClicked`":" (clicked ? "true" : "false") "}")
-            ; #endregion
             return clicked
         }
     } catch {
-        ; #region agent log
-        __DbgLog("A", __dbg_loc, "exception", "{`"caught`":true}")
-        ; #endregion
     }
 
     ; Conservative fallback: keep the old behavior available if UIA fails.
-    ; #region agent log
-    __DbgLog("A", __dbg_loc, "fallback-send", "{`"keys`":`"^j`"}")
-    ; #endregion
     try Send "^j"
     return false
-}
-
-; ---------------------------------------------------------------------------
-; Debug NDJSON logging helpers (debug session 31a785)
-; Writes to: debug-31a785.log (workspace root)
-; ---------------------------------------------------------------------------
-__DbgEsc(s) {
-    try s := s ""
-    catch
-        s := ""
-    s := StrReplace(s, "\", "\\")
-    s := StrReplace(s, "`r", "\r")
-    s := StrReplace(s, "`n", "\n")
-    s := StrReplace(s, '"', "\`"")
-    return s
-}
-
-__DbgLog(hypothesisId, location, message, dataJson := "{}") {
-    try {
-        ts := A_NowUTC
-        ; A_NowUTC is YYYYMMDDHH24MISS; also include TickCount ms for ordering.
-        tick := A_TickCount
-        line := Format(
-            "{`"sessionId`":`"31a785`",`"runId`":`"pre-fix`",`"hypothesisId`":`"{1}`",`"location`":`"{2}`",`"message`":`"{3}`",`"data`":{4},`"timestamp`":{5}}",
-            __DbgEsc(hypothesisId),
-            __DbgEsc(location),
-            __DbgEsc(message),
-            (dataJson = "" ? "{}" : dataJson),
-            tick
-        )
-        ; #region agent log
-        FileAppend line "`n", "debug-31a785.log", "UTF-8"
-        ; #endregion
-    } catch {
-    }
 }
 
 ; Ctrl + 6 : Marp export - trigger export, handle Save As and Replace dialogs
