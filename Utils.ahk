@@ -787,6 +787,7 @@ InitHotstringsCheatSheet() {
     RegisterHotstring(":o:opex-cim-journey-mapping", "opex-cim-journey-mapping", "Projects",
         "E&S Opex CIM Journey Mapping",
         "o")
+    RegisterHotstring(":o:gpilotb2b", "Piloto PT B2B", "Projects", "🧪 Piloto PT B2B", "b")
 
     ; Hotstrings (non-workspace "project-like" names)
     RegisterHotstring(":o:myl", "my links", "Hotstrings", "🔗 my links", "m")
@@ -5942,7 +5943,8 @@ global g_Projects := [
                                 category: "Work" }, { name: "GS_UX core team_UX and CIP Integration", path: "",
                                     workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_UX core team_UX and CIP Integration",
                                     category: "Work" }, { name: "🪂 Avante", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\General - GS_BDU_Team\00_UX_GS_Team\AM_Planning\Avante",
-                                        category: "Work" }, { name: "", path: "", workPath: "", category: "Work" }, { name: "",
+                                        category: "Work" }, { name: "Piloto PT B2B", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\SO UX - LA (Internal) - Data Insights SO - Piloto PT B2B",
+                                            category: "Work" }, { name: "", path: "", workPath: "", category: "Work" }, { name: "",
                                             path: "", workPath: "", category: "Work" }
 ]
 
