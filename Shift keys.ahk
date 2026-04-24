@@ -5347,6 +5347,8 @@ Reminders_ExecuteItemAction(action) {
 ;-------------------------------------------------------------------
 ; Microsoft Teams Helper functions
 ;-------------------------------------------------------------------
+TEAMS_PROCESSES := ["ms-teams.exe", "Teams.exe", "MSTeams.exe"]
+
 IsTeamsMeetingTitle(title) {
     if InStr(title, "Chat |") || InStr(title, "Sharing control bar |")
         return false
@@ -7855,6 +7857,52 @@ ML_SortApply(idx) {
 +a::
 {
     Send "!+o"
+}
+
+; =============================================================================
+; Chat: Select "Quick Views" tree item in the chat rail
+; Hotkey: Shift+O
+; UIA path (relative to window): 2,1,2,3,2,1,1,1,1,1,1,1,1,9,1,4,1
+; Full tree path:                11,2,1,2,3,2,1,1,1,1,1,1,1,1,9,1,4,1
+; Uses SelectionItemPattern.Select() — no mouse click.
+; =============================================================================
++o::
+{
+    StandardLoadingBar_Show("⏳ Teams: Quick views…", BANNER_ACCENT_INTERMEDIATE, { centerOnHwnd: WinExist("A") })
+    try {
+        ; Create a new chat
+        Send "^n"
+        Sleep 500
+
+        hwnd := 0
+        for proc in TEAMS_PROCESSES {
+            for wnd in WinGetList("ahk_exe " proc) {
+                if IsTeamsChatTitle(WinGetTitle(wnd)) {
+                    hwnd := wnd
+                    break 2
+                }
+            }
+        }
+        if !hwnd {
+            ShowCenteredOverlay_Utils("⚠ NO TEAMS CHAT WINDOW", 2000, BANNER_ACCENT_ERROR)
+            return
+        }
+
+        root := UIA.ElementFromHandle(hwnd)
+        ; Path is relative to the window element (child 11 = Chrome_WidgetWin_1, the Chromium host pane)
+        quickViews := root.ElementFromPathExist("11,2,1,2,3,2,1,1,1,1,1,1,1,1,9,1,4,1")
+        if !quickViews
+            quickViews := root.FindFirst(UIA.CreateCondition({ Name: "Quick views", ControlType: "TreeItem" }))
+        if !quickViews {
+            ShowCenteredOverlay_Utils("❌ QUICK VIEWS NOT FOUND", 2000, BANNER_ACCENT_ERROR)
+            return
+        }
+        quickViews.SelectionItemPattern.Select()
+    } catch as e {
+        ShowCenteredOverlay_Utils("❌ QUICK VIEWS: " e.Message, 2000, BANNER_ACCENT_ERROR)
+    } finally {
+        StandardLoadingBar_Hide(0)
+    }
 }
 
 ; Shift + H : Open history menu - History
