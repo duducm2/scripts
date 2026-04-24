@@ -5347,6 +5347,8 @@ Reminders_ExecuteItemAction(action) {
 ;-------------------------------------------------------------------
 ; Microsoft Teams Helper functions
 ;-------------------------------------------------------------------
+TEAMS_PROCESSES := ["ms-teams.exe", "Teams.exe", "MSTeams.exe"]
+
 IsTeamsMeetingTitle(title) {
     if InStr(title, "Chat |") || InStr(title, "Sharing control bar |")
         return false
@@ -7855,6 +7857,52 @@ ML_SortApply(idx) {
 +a::
 {
     Send "!+o"
+}
+
+; =============================================================================
+; Chat: Select "Quick Views" tree item in the chat rail
+; Hotkey: Shift+O
+; UIA path (relative to window): 2,1,2,3,2,1,1,1,1,1,1,1,1,9,1,4,1
+; Full tree path:                11,2,1,2,3,2,1,1,1,1,1,1,1,1,9,1,4,1
+; Uses SelectionItemPattern.Select() — no mouse click.
+; =============================================================================
++o::
+{
+    StandardLoadingBar_Show("⏳ Teams: Quick views…", BANNER_ACCENT_INTERMEDIATE, { centerOnHwnd: WinExist("A") })
+    try {
+        ; Create a new chat
+        Send "^n"
+        Sleep 500
+
+        hwnd := 0
+        for proc in TEAMS_PROCESSES {
+            for wnd in WinGetList("ahk_exe " proc) {
+                if IsTeamsChatTitle(WinGetTitle(wnd)) {
+                    hwnd := wnd
+                    break 2
+                }
+            }
+        }
+        if !hwnd {
+            ShowCenteredOverlay_Utils("⚠ NO TEAMS CHAT WINDOW", 2000, BANNER_ACCENT_ERROR)
+            return
+        }
+
+        root := UIA.ElementFromHandle(hwnd)
+        ; Path is relative to the window element (child 11 = Chrome_WidgetWin_1, the Chromium host pane)
+        quickViews := root.ElementFromPathExist("11,2,1,2,3,2,1,1,1,1,1,1,1,1,9,1,4,1")
+        if !quickViews
+            quickViews := root.FindFirst(UIA.CreateCondition({ Name: "Quick views", ControlType: "TreeItem" }))
+        if !quickViews {
+            ShowCenteredOverlay_Utils("❌ QUICK VIEWS NOT FOUND", 2000, BANNER_ACCENT_ERROR)
+            return
+        }
+        quickViews.SelectionItemPattern.Select()
+    } catch as e {
+        ShowCenteredOverlay_Utils("❌ QUICK VIEWS: " e.Message, 2000, BANNER_ACCENT_ERROR)
+    } finally {
+        StandardLoadingBar_Hide(0)
+    }
 }
 
 ; Shift + H : Open history menu - History
@@ -16391,7 +16439,7 @@ CursorShortcutMenu_ActionFetch(*) {
 }
 
 ; Ctrl + 1 : Remove clustering and focus on the code
-^1::
+^1 up::
 {
     ; Send ESC two times
     SendEscape()  ; ESC
@@ -16401,8 +16449,8 @@ CursorShortcutMenu_ActionFetch(*) {
     Send "^!n"
     Sleep 100
     Send "^!,"
-    Sleep 100
-    Send "#!o"
+    Sleep 150
+    ClickHidePanelButton()
 }
 
 ; Ctrl + 5 : Context menu navigation sequence
@@ -16508,6 +16556,87 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
     ; Open a fresh, empty Chrome window. Marp will open the PDF itself
     ; in the last activated Chrome window after export completes.
     try Run "chrome.exe --new-window"
+}
+
+; ---------------------------------------------------------------------------
+; VS Code / Cursor: hide (toggle) bottom panel via UIA (no native shortcut)
+; ---------------------------------------------------------------------------
+ClickHidePanelButton() {
+    ; Debounce: if hotkey repeats while key is held, ignore fast repeats.
+    prior := ""
+    since := -1
+    this := ""
+    try prior := A_PriorHotkey
+    try since := A_TimeSincePriorHotkey
+    try this := A_ThisHotkey
+    sinceNum := (since = "" ? -1 : (since + 0))
+    if (prior = this && sinceNum >= 0 && sinceNum < 350) {
+        return false
+    }
+    try {
+        uia := UIA_Browser()
+        if !IsObject(uia)
+            return false
+
+        btn := 0
+        foundAs := ""
+
+        ; VS Code commonly exposes it as a Button with shortcut text.
+        try btn := uia.FindFirst({ Name: "Hide Panel (Ctrl+J)", ControlType: "Button" })
+        if btn
+            foundAs := "Button:Hide Panel (Ctrl+J)"
+        if !btn
+            try btn := uia.FindFirst({ Name: "Hide Panel", ControlType: "Button" })
+        if (!foundAs && btn)
+            foundAs := "Button:Hide Panel"
+
+        ; Cursor sometimes exposes it as a CheckBox-style action (still clickable).
+        if !btn
+            try btn := uia.FindFirst({ Name: "Hide Panel", ControlType: "CheckBox" })
+        if (!foundAs && btn)
+            foundAs := "CheckBox:Hide Panel"
+
+        ; Substring fallback across UI variants.
+        if !btn
+            try btn := uia.FindFirst({ Name: "Hide Panel", matchmode: "Substring" })
+        if (!foundAs && btn)
+            foundAs := "Substring:Hide Panel"
+
+        if btn {
+            clicked := false
+            supportsInvoke := false
+            supportsToggle := false
+            try supportsInvoke := btn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)
+            try supportsToggle := btn.GetPropertyValue(UIA.Property.IsTogglePatternAvailable)
+            if (supportsToggle) {
+                try {
+                    btn.TogglePattern.Toggle()
+                    clicked := true
+                } catch {
+                }
+            }
+            if (supportsInvoke) {
+                try {
+                    btn.Invoke()
+                    clicked := true
+                } catch {
+                }
+            }
+            if (!clicked) {
+                try {
+                    btn.Click()
+                    clicked := true
+                } catch {
+                }
+            }
+            return clicked
+        }
+    } catch {
+    }
+
+    ; Conservative fallback: keep the old behavior available if UIA fails.
+    try Send "^j"
+    return false
 }
 
 ; Ctrl + 6 : Marp export - trigger export, handle Save As and Replace dialogs
