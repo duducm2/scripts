@@ -41,8 +41,6 @@ GEMINI_DELAYED_SUBMIT_MAX_RETRIES := 300  ; 300 * 500ms = 150s
 GEMINI_ASYNC_TTS_MAX_RETRIES := 60
 GEMINI_READ_ALOUD_START_MAX_RETRIES := 10
 GEMINI_COPY_MAX_RETRIES := 3
-; Pronunciation result banner: long timeout so user can read (ms)
-GEMINI_PRONUNCIATION_BANNER_TIMEOUT_MS := 50000
 ; Minimum clipboard length for Gemini-to-Cursor transfer (same as bridge validation)
 GEMINI_TRANSFER_MIN_CLIPBOARD_LENGTH := 10
 ; Post-copy sync: max wait for clipboard change (sequence-number detection). Fallback if detection fails (ms).
@@ -1618,10 +1616,11 @@ class GeminiAsyncLookup {
         closeNoOp(*) {
         }
         closeKeys := Map("Enter", closeNoOp, "Escape", closeNoOp, "E", closeNoOp)
-        StandardLoadingBar_ShowWithKeys(state, closeKeys, GEMINI_PRONUNCIATION_BANNER_TIMEOUT_MS, 0, "",
+        ; timeoutMs 0 = no auto-dismiss; user closes with Enter, E, or Escape (Utils.ahk StandardLoadingBar_ShowWithKeys).
+        StandardLoadingBar_ShowWithKeys(state, closeKeys, 0, 0, "",
             BANNER_ACCENT_INTERMEDIATE, 600,
             17, "", false,
-            "[Enter] [E] Close",
+            "[Enter] [E] [Esc] Close",
             true)
     }
 }
