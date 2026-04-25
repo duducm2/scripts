@@ -5945,7 +5945,7 @@ global g_Projects := [
                                     category: "Work" }, { name: "🪂 Avante", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\General - GS_BDU_Team\00_UX_GS_Team\AM_Planning\Avante",
                                         category: "Work" }, { name: "Piloto PT B2B", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\SO UX - LA (Internal) - Data Insights SO - Piloto PT B2B",
                                             category: "Work" }, { name: "", path: "", workPath: "", category: "Work" }, { name: "",
-                                            path: "", workPath: "", category: "Work" }
+                                                path: "", workPath: "", category: "Work" }
 ]
 
 ; Extract matching segments from project path for window title matching
@@ -7770,6 +7770,10 @@ StartPdfFocusMonitor(hwnd := 0, focusLossMode := "Immediate") {
 ; Stop monitoring PDF window focus
 StopPdfFocusMonitor() {
     global g_PdfFocusMonitorTimer, g_PdfFocusTrackedHwnd
+
+    ; First-call safety: global may be unset
+    if (!IsSet(g_PdfFocusMonitorTimer))
+        g_PdfFocusMonitorTimer := false
 
     if (g_PdfFocusMonitorTimer) {
         SetTimer(g_PdfFocusMonitorTimer, 0)
@@ -11369,6 +11373,12 @@ GetActiveMonitorIndex() {
 EnableFocusMode() {
     global g_FocusModeOn, g_FocusModeActiveMonitor, g_FocusModeOverlays, g_FocusModeTrackedWindow
 
+    ; Ensure globals are initialized (avoid "variable has not been assigned" on first call)
+    if (!IsSet(g_FocusModeOverlays))
+        g_FocusModeOverlays := []
+    if (!IsSet(g_FocusModeOn))
+        g_FocusModeOn := false
+
     ; Check if focus mode is already active by verifying state and overlays
     hasActiveOverlays := false
     if (IsObject(g_FocusModeOverlays) && g_FocusModeOverlays.Length > 0) {
@@ -11535,6 +11545,10 @@ StartFocusModeWindowMonitor() {
 ; Stop monitoring window focus changes
 StopFocusModeWindowMonitor() {
     global g_FocusModeMonitorTimer
+
+    ; First-call safety: global may be unset
+    if (!IsSet(g_FocusModeMonitorTimer))
+        g_FocusModeMonitorTimer := false
 
     if (g_FocusModeMonitorTimer) {
         try {

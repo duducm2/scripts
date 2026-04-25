@@ -1470,30 +1470,72 @@ class GeminiAsyncLookup {
     }
 
     Start() {
+        ; #region agent log (debug-d75ab1)
+        __d75ab1_log := (hypothesisId, message, data := 0) => DebugLog_d75ab1(hypothesisId, "pre-fix",
+            "Gemini.ahk:1472", message, data)
+        __d75ab1_log("A", "Start() entry", Map(
+            "activeHwnd", WinExist("A"),
+            "activeTitle", SafeWinGetTitle_d75ab1("A"),
+            "activeProcess", SafeWinGetProcessName_d75ab1("A")
+        ))
+        ; #endregion agent log (debug-d75ab1)
+
         this.OriginalHwnd := WinExist("A")
-        if !this.OriginalHwnd
+        if !this.OriginalHwnd {
+            ; #region agent log (debug-d75ab1)
+            __d75ab1_log("E", "Early return: no OriginalHwnd", 0)
+            ; #endregion agent log (debug-d75ab1)
             return
+        }
         ; Show loading banner immediately, centered on the monitor where this window is (with warning)
         StandardLoadingBar_Show("⏳ Loading…", BANNER_ACCENT_INTERMEDIATE)
 
         A_Clipboard := ""
-        Send "^c"
-        if !ClipWait(2)
+        clipOk := TryCopySelectionToClipboard_d75ab1(__d75ab1_log)
+        ; #region agent log (debug-d75ab1)
+        __d75ab1_log("A", "ClipWait finished", Map(
+            "clipOk", clipOk ? 1 : 0,
+            "clipTextLen", StrLen(A_Clipboard),
+            "clipFormats", ClipboardFormatsSummary_d75ab1()
+        ))
+        ; #endregion agent log (debug-d75ab1)
+        if !clipOk {
+            ; #region agent log (debug-d75ab1)
+            __d75ab1_log("A", "Early return: ClipWait(2) failed (likely QuickLook copy)", 0)
+            ; #endregion agent log (debug-d75ab1)
+            try StandardLoadingBar_Hide(0)
+            ShowCenteredOverlay_Utils("❌ Copy failed (no clipboard text). QuickLook selection may not support Ctrl+C.",
+                2400,
+                BANNER_ACCENT_ERROR)
+            ; #region agent log (debug-d75ab1)
+            __d75ab1_log("A", "Handled ClipWait failure: hid loading bar and showed error banner", 0)
+            ; #endregion agent log (debug-d75ab1)
             return
+        }
         SetTitleMatchMode(2)
         this.GeminiHwnd := GetGeminiWindowHwnd()
         if !this.GeminiHwnd {
+            ; #region agent log (debug-d75ab1)
+            __d75ab1_log("C", "Early return: GetGeminiWindowHwnd() returned 0", 0)
+            ; #endregion agent log (debug-d75ab1)
             StandardLoadingBar_Hide(0)
             return
         }
         try {
             WinActivate("ahk_id " this.GeminiHwnd)
         } catch {
+            ; #region agent log (debug-d75ab1)
+            __d75ab1_log("C", "Early return: WinActivate Gemini threw", Map("geminiHwnd", this.GeminiHwnd))
+            ; #endregion agent log (debug-d75ab1)
             StandardLoadingBar_Hide(0)
             ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
             return
         }
         if !WinWaitActive("ahk_exe chrome.exe", , 2) {
+            ; #region agent log (debug-d75ab1)
+            __d75ab1_log("C", "Early return: WinWaitActive(chrome.exe,2s) failed after activation", Map("geminiHwnd",
+                this.GeminiHwnd))
+            ; #endregion agent log (debug-d75ab1)
             StandardLoadingBar_Hide(0)
             return
         }
@@ -1506,6 +1548,9 @@ class GeminiAsyncLookup {
         Sleep 300
         promptField := Gemini_FocusPromptSameAsOpenHotkey(uia)
         if (!promptField) {
+            ; #region agent log (debug-d75ab1)
+            __d75ab1_log("D", "Early return: Gemini_FocusPromptSameAsOpenHotkey() returned falsey", 0)
+            ; #endregion agent log (debug-d75ab1)
             StandardLoadingBar_Hide(0)
             return
         }
@@ -1520,6 +1565,14 @@ class GeminiAsyncLookup {
         promptName := this.Lang ? "pronunciation-lookup-" . this.Lang : "pronunciation-lookup"
         searchString := RTrim(GetPromptText(promptName), "`r`n")
         A_Clipboard := searchString . "`n`nContent: " . A_Clipboard
+        ; #region agent log (debug-d75ab1)
+        __d75ab1_log("B", "Prepared prompt+content for paste", Map(
+            "lang", this.Lang,
+            "promptName", promptName,
+            "promptLen", StrLen(searchString),
+            "contentLen", StrLen(A_Clipboard) - (StrLen(searchString) + StrLen("`n`nContent: "))
+        ))
+        ; #endregion agent log (debug-d75ab1)
         Sleep 100
         Send("^a")
         Sleep 500
@@ -1624,6 +1677,222 @@ class GeminiAsyncLookup {
             true)
     }
 }
+
+; #region agent log (debug-d75ab1)
+DebugLog_d75ab1(hypothesisId, runId, location, message, data := 0) {
+    static __logPath := A_ScriptDir "\debug-d75ab1.log"
+    payload := Map(
+        "sessionId", "d75ab1",
+        "runId", runId,
+        "hypothesisId", hypothesisId,
+        "location", location,
+        "message", message,
+        "timestamp", A_NowUTC
+    )
+    if (IsObject(data))
+        payload["data"] := data
+    else if (data != 0)
+        payload["data"] := data
+    try FileAppend(JsonStringify_d75ab1(payload) "`n", __logPath, "UTF-8")
+}
+
+TryCopySelectionToClipboard_d75ab1(loggerFn) {
+    ; Attempt 1: Ctrl+C
+    proc := ""
+    try {
+        proc := WinGetProcessName("A")
+    } catch {
+        proc := ""
+    }
+    ; #region agent log (debug-d75ab1)
+    loggerFn("A", "Copy attempt 1: Ctrl+C", Map("activeProcess", proc))
+    ; #endregion agent log (debug-d75ab1)
+    A_Clipboard := ""
+    Send "^c"
+    if ClipWait(0.7)
+        return true
+
+    ; Attempt 2: Ctrl+Insert (common alternative)
+    ; #region agent log (debug-d75ab1)
+    loggerFn("A", "Copy attempt 2: Ctrl+Insert", 0)
+    ; #endregion agent log (debug-d75ab1)
+    A_Clipboard := ""
+    Send "^{Insert}"
+    if ClipWait(0.7)
+        return true
+
+    ; Attempt 3: QuickLook context menu copy
+    if (proc = "QuickLook.exe") {
+        ; #region agent log (debug-d75ab1)
+        loggerFn("A", "Copy attempt 3: QuickLook context menu (AppsKey then C)", 0)
+        ; #endregion agent log (debug-d75ab1)
+        A_Clipboard := ""
+        Send "{AppsKey}"
+        Sleep 60
+        Send "c"
+        if ClipWait(0.9)
+            return true
+
+        ; Attempt 4: UIA selection extraction (no clipboard)
+        ; #region agent log (debug-d75ab1)
+        loggerFn("F", "Copy attempt 4: UIA selected-text extraction (QuickLook)", 0)
+        ; #endregion agent log (debug-d75ab1)
+        try {
+            txt := TryGetSelectedTextViaUIA_d75ab1(loggerFn)
+            if (txt != "" && StrLen(Trim(txt)) > 0) {
+                A_Clipboard := txt
+                ; #region agent log (debug-d75ab1)
+                loggerFn("F", "UIA extracted text; placing into clipboard variable", Map("len", StrLen(txt)))
+                ; #endregion agent log (debug-d75ab1)
+                return true
+            }
+        } catch {
+        }
+    }
+
+    return false
+}
+
+TryGetSelectedTextViaUIA_d75ab1(loggerFn) {
+    hwnd := WinExist("A")
+    ; Focused element is often the text host; try it first.
+    focused := 0
+    try {
+        focused := UIA.GetFocusedElement()
+    } catch {
+        focused := 0
+    }
+
+    if (focused) {
+        ; #region agent log (debug-d75ab1)
+        loggerFn("F", "UIA focused element snapshot", Map(
+            "name", focused.Name,
+            "type", focused.LocalizedControlType,
+            "hasFocus", focused.HasKeyboardFocus,
+            "isText", focused.IsTextPatternAvailable ? 1 : 0
+        ))
+        ; #endregion agent log (debug-d75ab1)
+        if (focused.IsTextPatternAvailable) {
+            try {
+                ranges := focused.TextPattern.GetSelection()
+                if (IsObject(ranges) && ranges.Length >= 1) {
+                    txt := ranges[1].GetText(512)
+                    return Trim(txt)
+                }
+            } catch {
+            }
+        }
+    }
+
+    ; Fallback: find a Document element under the window and read its selection/document range.
+    try {
+        root := UIA.ElementFromHandle(hwnd)
+        doc := root.FindFirst({ Type: UIA.ControlType.Document })
+        if (doc) {
+            ; #region agent log (debug-d75ab1)
+            loggerFn("F", "UIA document element found", Map(
+                "name", doc.Name,
+                "isText", doc.IsTextPatternAvailable ? 1 : 0
+            ))
+            ; #endregion agent log (debug-d75ab1)
+            if (doc.IsTextPatternAvailable) {
+                try {
+                    ranges := doc.TextPattern.GetSelection()
+                    if (IsObject(ranges) && ranges.Length >= 1) {
+                        txt := ranges[1].GetText(512)
+                        if (Trim(txt) != "")
+                            return Trim(txt)
+                    }
+                } catch {
+                }
+                try {
+                    txt := doc.TextPattern.DocumentRange.GetText(512)
+                    return Trim(txt)
+                } catch {
+                }
+            }
+        }
+    } catch {
+    }
+    return ""
+}
+
+SafeWinGetTitle_d75ab1(win) {
+    try {
+        return WinGetTitle(win)
+    } catch {
+        return ""
+    }
+}
+
+SafeWinGetProcessName_d75ab1(win) {
+    try {
+        return WinGetProcessName(win)
+    } catch {
+        return ""
+    }
+}
+
+ClipboardFormatsSummary_d75ab1() {
+    out := ""
+    try {
+        if !DllCall("OpenClipboard", "ptr", 0, "int")
+            return ""
+        fmt := 0
+        loop 32 {
+            fmt := DllCall("EnumClipboardFormats", "uint", fmt, "uint")
+            if (!fmt)
+                break
+            out .= (out = "" ? "" : ",") fmt
+        }
+    } catch {
+        out := out ? out : ""
+    }
+    try DllCall("CloseClipboard")
+    return out
+}
+
+JsonStringify_d75ab1(val) {
+    q := Chr(34)
+    if (!IsObject(val)) {
+        if (val is Number)
+            return val + 0
+        if (val = true)
+            return "true"
+        if (val = false)
+            return "false"
+        if (val = "")
+            return q q
+        return q JsonEscape_d75ab1(val) q
+    }
+    if (val is Map) {
+        s := "{"
+        first := true
+        for k, v in val {
+            if (!first)
+                s .= ","
+            first := false
+            s .= q JsonEscape_d75ab1(k) q ":" JsonStringify_d75ab1(v)
+        }
+        return s . "}"
+    }
+    ; Fallback: stringify unknown objects as their Type name
+    try {
+        return q JsonEscape_d75ab1(Type(val)) q
+    } catch {
+        return q q
+    }
+}
+
+JsonEscape_d75ab1(s) {
+    s := StrReplace(s, "\", "\\")
+    s := StrReplace(s, '"', '\"')
+    s := StrReplace(s, "`r", "\r")
+    s := StrReplace(s, "`n", "\n")
+    s := StrReplace(s, "`t", "\t")
+    return s
+}
+; #endregion agent log (debug-d75ab1)
 
 ; =============================================================================
 ; GeminiDelayedSubmitMonitor – background completion monitor for Ctrl+Alt+Win+L
