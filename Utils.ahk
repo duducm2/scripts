@@ -4526,14 +4526,27 @@ class D2C_FlowManager {
         StandardLoadingBar_CloseKeysOverlay()
         StandardLoadingBar_Hide(0)
         HideDictationIndicator()
+
+        ; Use the origin window (what the user was looking at) to decide the target monitor for ClipAngel.
+        originHwnd := this.OriginHwnd
+        if (!originHwnd)
+            try originHwnd := WinGetID("A")
+        originMon := GetAhkMonitorIndexFromHwnd(originHwnd)
+
         ActivateClipAngelWithFocusCorrection()
         if WinExist("ClipAngel") {
             try WinActivate("ClipAngel")
             if WinWaitActive("ClipAngel", , 1) {
+                clipHwnd := WinExist("ClipAngel")
+                if (originMon && clipHwnd)
+                    MoveWindowToMonitor(clipHwnd, originMon)
                 Sleep 100
                 Send "{F4}"
                 Sleep 80
-                try WinMaximize("ClipAngel")
+                if (clipHwnd)
+                    TryMaximizeWindow(clipHwnd)
+                else
+                    try WinMaximize("ClipAngel")
             }
         }
         this.Reset()
@@ -8323,7 +8336,70 @@ MoveWindowToMonitor(hwnd, monitorIndex := 2) {
     }
     w := r - l
     h := b - t
+    ; Restore before moving, otherwise some apps "teleport" as a 1px/tiny bar.
+    try {
+        mm := WinGetMinMax("ahk_id " hwnd) ; 1=min,2=max,0=normal
+        if (mm != 0) {
+            WinRestore("ahk_id " hwnd)
+            Sleep 80
+        }
+    } catch {
+    }
     try WinMove(l, t, w, h, "ahk_id " hwnd)
+}
+
+; Maximize by hwnd with WinAPI fallback (more reliable than keystrokes).
+TryMaximizeWindow(hwnd) {
+    if (!hwnd)
+        return false
+    try {
+        WinMaximize("ahk_id " hwnd)
+        return true
+    } catch {
+        try {
+            PostMessage 0x0112, 0xF030, , , "ahk_id " hwnd  ; WM_SYSCOMMAND, SC_MAXIMIZE
+            return true
+        } catch {
+            return false
+        }
+    }
+}
+
+; Map a window handle to an AutoHotkey monitor index (1..MonitorGetCount()).
+; Needed because MonitorFromWindow returns an HMONITOR handle, not an AHK index.
+GetAhkMonitorIndexFromHwnd(hwnd) {
+    if (!hwnd)
+        return 0
+    hMon := 0
+    try hMon := DllCall("user32\MonitorFromWindow", "ptr", hwnd, "uint", 2, "ptr") ; MONITOR_DEFAULTTONEAREST
+    catch
+        return 0
+    if (!hMon)
+        return 0
+
+    count := 0
+    try count := MonitorGetCount()
+    catch
+        return 0
+    if (count < 1)
+        return 0
+    loop count {
+        i := A_Index
+        try MonitorGet i, &l, &t, &r, &b
+        catch
+            continue
+        cx := (l + r) // 2
+        cy := (t + b) // 2
+        ; MonitorFromPoint takes a POINT passed by value (two 32-bit signed ints packed into an int64).
+        pt64 := ((cy & 0xFFFFFFFF) << 32) | (cx & 0xFFFFFFFF)
+        cur := 0
+        try cur := DllCall("user32\MonitorFromPoint", "int64", pt64, "uint", 2, "ptr") ; MONITOR_DEFAULTTONEAREST
+        catch
+            cur := 0
+        if (cur = hMon)
+            return i
+    }
+    return 0
 }
 
 ; Wait for Peek PDF toolbar to load (Page view button), click it, two-page view, focus; optionally go to last page.
