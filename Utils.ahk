@@ -4524,32 +4524,45 @@ class D2C_FlowManager {
         if (this.CurrentPhase != "PromptingSubmit")
             return
         StandardLoadingBar_CloseKeysOverlay()
-        StandardLoadingBar_Hide(0)
         HideDictationIndicator()
 
-        ; Use the origin window (what the user was looking at) to decide the target monitor for ClipAngel.
-        originHwnd := this.OriginHwnd
-        if (!originHwnd)
-            try originHwnd := WinGetID("A")
-        originMon := GetAhkMonitorIndexFromHwnd(originHwnd)
+        StandardLoadingBar_Show("⏳ Clip Angel: opening...", BANNER_ACCENT_INTERMEDIATE)
+        try {
+            ; Use the origin window (what the user was looking at) to decide the target monitor for ClipAngel.
+            originHwnd := this.OriginHwnd
+            if (!originHwnd)
+                try originHwnd := WinGetID("A")
+            originMon := GetAhkMonitorIndexFromHwnd(originHwnd)
 
-        ActivateClipAngelWithFocusCorrection()
-        if WinExist("ClipAngel") {
-            try WinActivate("ClipAngel")
-            if WinWaitActive("ClipAngel", , 1) {
-                clipHwnd := WinExist("ClipAngel")
-                if (originMon && clipHwnd)
-                    MoveWindowToMonitor(clipHwnd, originMon)
-                Sleep 100
-                Send "{F4}"
-                Sleep 80
-                if (clipHwnd)
-                    TryMaximizeWindow(clipHwnd)
-                else
-                    try WinMaximize("ClipAngel")
+            ActivateClipAngelWithFocusCorrection()
+            if WinExist("ClipAngel") {
+                try WinActivate("ClipAngel")
+                if WinWaitActive("ClipAngel", , 1) {
+                    clipHwnd := WinExist("ClipAngel")
+                    if (originMon && clipHwnd) {
+                        StandardLoadingBar_Update("⏳ Clip Angel: moving to your monitor...", BANNER_ACCENT_INTERMEDIATE)
+                        MoveWindowToMonitor(clipHwnd, originMon)
+                    }
+                    Sleep 100
+                    StandardLoadingBar_Update("⏳ Clip Angel: opening editor...", BANNER_ACCENT_INTERMEDIATE)
+                    Send "{F4}"
+                    Sleep 80
+                    StandardLoadingBar_Update("⏳ Clip Angel: maximizing...", BANNER_ACCENT_INTERMEDIATE)
+                    if (clipHwnd)
+                        TryMaximizeWindow(clipHwnd)
+                    else
+                        try WinMaximize("ClipAngel")
+                    StandardLoadingBar_Update("✅ Clip Angel: ready", BANNER_ACCENT_SUCCESS)
+                } else {
+                    StandardLoadingBar_Update("❌ Clip Angel: failed to activate", BANNER_ACCENT_ERROR)
+                }
+            } else {
+                StandardLoadingBar_Update("❌ Clip Angel: window not found", BANNER_ACCENT_ERROR)
             }
+        } finally {
+            StandardLoadingBar_Hide(350)
+            this.Reset()
         }
-        this.Reset()
     }
 
     OnSubmitN(*) {
