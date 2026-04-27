@@ -4166,6 +4166,16 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
     global g_StandardLoadingBarIsKeysOverlay, g_StandardLoadingBarKeysHotkeys, g_StandardLoadingBarKeysTimeoutTimer
     global g_StandardLoadingBarGui, g_StandardLoadingBarKeysEscapeUserCb, g_StandardLoadingBarKeysEscapeActive,
         g_StandardLoadingBarEscPollPrev, g_OnEscapePressed
+    ; #region agent log
+    try AgentDbg_Log("Utils.ahk:StandardLoadingBar_ShowWithKeys", "entry", Map(
+        "keyCallbacksType", (keyCallbacks is Map) ? "Map" : Type(keyCallbacks),
+        "timeoutMs", timeoutMs,
+        "centerOnHwnd", centerOnHwnd,
+        "promptKeysLen", StrLen(promptKeys),
+        "trackActiveMonitor", trackActiveMonitor ? 1 : 0,
+        "showProgress", showProgress ? 1 : 0
+    ), "H1", "pre-fix")
+    ; #endregion
     opts := { passive: !showProgress, centerOnHwnd: centerOnHwnd, textWidth: textWidth, fontSize: fontSize }
     if (showProgress)
         opts.manualProgress := true
@@ -4186,7 +4196,24 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
     g_StandardLoadingBarKeysEscapeUserCb := escCb ? escCb : ""
     g_StandardLoadingBarKeysEscapeActive := false
 
-    ; Register primary and case-variant keys (single letters get * prefix in RegisterKeyHandler for reliable firing).
+    ; Register hotkeys scoped to the overlay GUI being active.
+    ; Otherwise, if ShowWithKeys is called under a #HotIf (e.g. Outlook-only),
+    ; the created hotkeys inherit that context and won't fire once the overlay steals focus.
+    try {
+        if IsObject(g_StandardLoadingBarGui) && g_StandardLoadingBarGui.Hwnd {
+            HotIfWinActive("ahk_id " . g_StandardLoadingBarGui.Hwnd)
+            ; #region agent log
+            try AgentDbg_Log("Utils.ahk:StandardLoadingBar_ShowWithKeys", "HotIfWinActive applied", Map(
+                "hwnd", g_StandardLoadingBarGui.Hwnd
+            ), "H5", "post-fix")
+            ; #endregion
+        } else {
+            HotIf()
+        }
+    } catch {
+    }
+
+    ; Register primary and case-variant keys.
     for keyName, cb in keyCallbacks {
         if (!cb)
             continue
@@ -4231,32 +4258,59 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
         g_StandardLoadingBarKeysEscapeActive := true
     }
 
+    ; Reset any HotIf context so we don't leak it to unrelated hotkeys.
+    try HotIf()
+    catch {
+    }
+
     if (timeoutMs > 0) {
         g_StandardLoadingBarKeysTimeoutTimer := SetTimer(StandardLoadingBar_KeysTimeoutFired.Bind(timeoutCallback), -
         timeoutMs)
     }
+    ; #region agent log
+    try AgentDbg_Log("Utils.ahk:StandardLoadingBar_ShowWithKeys", "hotkeys registered", Map(
+        "isKeysOverlay", g_StandardLoadingBarIsKeysOverlay ? 1 : 0,
+        "hotkeysCount", IsObject(g_StandardLoadingBarKeysHotkeys) ? g_StandardLoadingBarKeysHotkeys.Length : -1,
+        "hasGui", IsObject(g_StandardLoadingBarGui) ? 1 : 0
+    ), "H2", "pre-fix")
+    ; #endregion
 }
 
 StandardLoadingBar_RegisterKeyHandler(key, cb) {
     global g_StandardLoadingBarKeysHotkeys
     if (!cb)
         return
-    ; Use * prefix for single letters so the hotkey fires even when overlay has focus or modifiers are held
+    ; Use * prefix for single-char selection keys so the hotkey fires even when modifiers are held
+    ; (critical for Shift-triggered menus where Shift may still be down when user presses 1-9/A-Z).
     keyToReg := key
     if (StrLen(key) = 1) {
-        o := Ord(key)
-        if ((o >= Ord("a") && o <= Ord("z")) || (o >= Ord("A") && o <= Ord("Z")))
-            keyToReg := "*" . key
+        keyToReg := "*" . key
     }
     fn := StandardLoadingBar_KeyWrapper.Bind(key, cb)
     try {
         Hotkey(keyToReg, fn, "On")
         g_StandardLoadingBarKeysHotkeys.Push(keyToReg)
     } catch as err {
+        ; #region agent log
+        try AgentDbg_Log("Utils.ahk:StandardLoadingBar_RegisterKeyHandler", "Hotkey registration FAILED", Map(
+            "key", key,
+            "keyToReg", keyToReg,
+            "err", SubStr(err.Message, 1, 180)
+        ), "H3", "pre-fix")
+        ; #endregion
     }
 }
 
 StandardLoadingBar_KeyWrapper(key, cb, *) {
+    global g_StandardLoadingBarIsKeysOverlay
+    ; #region agent log
+    try AgentDbg_Log("Utils.ahk:StandardLoadingBar_KeyWrapper", "hotkey fired", Map(
+        "key", key,
+        "priorKey", A_PriorKey,
+        "thisHotkey", A_ThisHotkey,
+        "isOverlay", g_StandardLoadingBarIsKeysOverlay ? 1 : 0
+    ), "H4", "pre-fix")
+    ; #endregion
     ; Run callback first so it can close the overlay (avoids destroying GUI from hotkey context before callback runs).
     if (cb) {
         try {
@@ -4266,6 +4320,67 @@ StandardLoadingBar_KeyWrapper(key, cb, *) {
         }
     }
     StandardLoadingBar_CloseKeysOverlay()
+}
+
+; =============================================================================
+; Agent debug logger (NDJSON → debug-d2d8a1.log)
+; =============================================================================
+AgentDbg_Log(location, message, data := "", hypothesisId := "A", runId := "pre-fix") {
+    ; Keep tiny and robust; never throw.
+    ; #region agent log
+    try {
+        logPath := A_ScriptDir . "\debug-d2d8a1.log"
+        AgentDbg_Escape(s) => StrReplace(StrReplace(StrReplace(String(s), "\", "\\"), "`"", "\`""), "`n", "\n")
+        AgentDbg_JsonVal(v) {
+            if (v is Integer || v is Float)
+                return String(v)
+            if (v is Map)
+                return AgentDbg_JsonMap(v)
+            if (v is Array)
+                return AgentDbg_JsonArray(v)
+            if (Type(v) = "String")
+                return "`"" . AgentDbg_Escape(v) . "`""
+            ; Fallback: stringify
+            return "`"" . AgentDbg_Escape(String(v)) . "`""
+        }
+        AgentDbg_JsonArray(a) {
+            out := ""
+            for _, v in a {
+                if (out != "")
+                    out .= ","
+                out .= AgentDbg_JsonVal(v)
+            }
+            return "[" . out . "]"
+        }
+        AgentDbg_JsonMap(m) {
+            out := ""
+            for k, v in m {
+                if (out != "")
+                    out .= ","
+                out .= "`"" . AgentDbg_Escape(k) . "`":" . AgentDbg_JsonVal(v)
+            }
+            return "{" . out . "}"
+        }
+        if !(data is Map) {
+            try data := Map("value", String(data))
+            catch
+                data := Map()
+        }
+        id := "log_" . A_TickCount . "_" . Random(1000, 9999)
+        line := "{"
+            . "`"sessionId`":`"d2d8a1`","
+            . "`"id`":`"" . id . "`","
+            . "`"timestamp`":" . A_TickCount . ","
+            . "`"location`":`"" . AgentDbg_Escape(location) . "`","
+            . "`"message`":`"" . AgentDbg_Escape(message) . "`","
+            . "`"runId`":`"" . AgentDbg_Escape(runId) . "`","
+            . "`"hypothesisId`":`"" . AgentDbg_Escape(hypothesisId) . "`","
+            . "`"data`":" . AgentDbg_JsonMap(data)
+            . "}`n"
+        FileAppend(line, logPath, "UTF-8")
+    } catch {
+    }
+    ; #endregion
 }
 
 StandardLoadingBar_KeysTimeoutFired(timeoutCallback) {
