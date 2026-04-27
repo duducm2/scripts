@@ -4532,6 +4532,8 @@ class D2C_FlowManager {
             if WinWaitActive("ClipAngel", , 1) {
                 Sleep 100
                 Send "{F4}"
+                Sleep 80
+                try WinMaximize("ClipAngel")
             }
         }
         this.Reset()
