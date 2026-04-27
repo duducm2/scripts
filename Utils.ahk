@@ -4235,12 +4235,15 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
         }
         g_StandardLoadingBarEscPollPrev := false
         SetTimer(StandardLoadingBar_KeysEscapePoll, 50)
-        try {
-            if IsObject(g_StandardLoadingBarGui) && g_StandardLoadingBarGui.Hwnd
-                WinActivate(g_StandardLoadingBarGui.Hwnd)
-        } catch {
-        }
         g_StandardLoadingBarKeysEscapeActive := true
+    }
+
+    ; Always activate the overlay so HotIfWinActive-scoped selection keys fire reliably.
+    ; Without this, keys can fall through to the underlying app (most visible for "N" cancel).
+    try {
+        if IsObject(g_StandardLoadingBarGui) && g_StandardLoadingBarGui.Hwnd
+            WinActivate(g_StandardLoadingBarGui.Hwnd)
+    } catch {
     }
 
     ; Reset any HotIf context so we don't leak it to unrelated hotkeys.
@@ -12404,6 +12407,11 @@ OnExit(CleanupDictationIndicator)
     global g_DictationHotkeyIsOwner
     static lastHotkeyTick := 0
     static isProcessing := false
+
+    ; Defensive: if Utils is included after a script-level auto-execute return, globals may be uninitialized.
+    ; Default to "not owner" to avoid double-handling dictation across processes.
+    if (!IsSet(g_DictationHotkeyIsOwner))
+        g_DictationHotkeyIsOwner := false
 
     if (!g_DictationHotkeyIsOwner) {
         return
