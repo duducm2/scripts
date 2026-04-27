@@ -4484,7 +4484,6 @@ Reminders_GetItems(targetHwnd := 0) {
 
 Reminders_PickKey(key) {
     global g_RemindersPickKey
-    global g_StandardLoadingBarIsKeysOverlay
     ; #region agent log
     try Reminders_DebugLog("Shift keys.ahk:Reminders_PickKey", "PickKey called", Map(
         "key", key,
@@ -4492,36 +4491,12 @@ Reminders_PickKey(key) {
         "thisHotkey", A_ThisHotkey
     ), "P1", "pre-fix")
     ; #endregion
-    ; #region agent log
-    try AgentDbg_Log("Shift keys.ahk:Reminders_PickKey", "PickKey called", Map(
-        "key", key,
-        "priorKey", A_PriorKey,
-        "thisHotkey", A_ThisHotkey,
-        "lwin", GetKeyState("LWin", "P") ? 1 : 0,
-        "rwin", GetKeyState("RWin", "P") ? 1 : 0,
-        "ctrl", GetKeyState("Ctrl", "P") ? 1 : 0,
-        "alt", GetKeyState("Alt", "P") ? 1 : 0,
-        "shift", GetKeyState("Shift", "P") ? 1 : 0
-    ), "P1", "pre-fix")
-    ; #endregion
 
-    ; Guard: ignore unrelated Win/Ctrl/Alt chords.
-    ; BUT if the keys overlay is currently active, allow picks even if modifiers appear down
-    ; (some environments report sticky modifiers; blocking makes the menu unusable).
+    ; Guard: ignore accidental selection when Windows key (or other modifiers) is involved.
+    ; This prevents the selection modal from disappearing due to unrelated Win-key chords.
     try {
         if (GetKeyState("LWin", "P") || GetKeyState("RWin", "P")
         || GetKeyState("Ctrl", "P") || GetKeyState("Alt", "P")) {
-            if (g_StandardLoadingBarIsKeysOverlay) {
-                ; #region agent log
-                try AgentDbg_Log("Shift keys.ahk:Reminders_PickKey", "Modifiers down but overlay active; accepting pick", Map(
-                    "key", key,
-                    "lwin", GetKeyState("LWin", "P") ? 1 : 0,
-                    "rwin", GetKeyState("RWin", "P") ? 1 : 0,
-                    "ctrl", GetKeyState("Ctrl", "P") ? 1 : 0,
-                    "alt", GetKeyState("Alt", "P") ? 1 : 0
-                ), "P5", "post-fix")
-                ; #endregion
-            } else {
             ; #region agent log
             try Reminders_DebugLog("Shift keys.ahk:Reminders_PickKey", "Ignored pick due to modifier down", Map(
                 "key", key,
@@ -4531,18 +4506,7 @@ Reminders_PickKey(key) {
                 "alt", GetKeyState("Alt", "P")
             ), "P3", "pre-fix")
             ; #endregion
-            ; #region agent log
-            try AgentDbg_Log("Shift keys.ahk:Reminders_PickKey", "Ignored pick due to modifier down", Map(
-                "key", key,
-                "lwin", GetKeyState("LWin", "P") ? 1 : 0,
-                "rwin", GetKeyState("RWin", "P") ? 1 : 0,
-                "ctrl", GetKeyState("Ctrl", "P") ? 1 : 0,
-                "alt", GetKeyState("Alt", "P") ? 1 : 0,
-                "shift", GetKeyState("Shift", "P") ? 1 : 0
-            ), "P3", "pre-fix")
-            ; #endregion
             return
-            }
         }
         if (A_PriorKey = "LWin" || A_PriorKey = "RWin") {
             ; #region agent log
@@ -4551,14 +4515,7 @@ Reminders_PickKey(key) {
                 "priorKey", A_PriorKey
             ), "P4", "pre-fix")
             ; #endregion
-            ; #region agent log
-            try AgentDbg_Log("Shift keys.ahk:Reminders_PickKey", "Ignored pick due to priorKey Win", Map(
-                "key", key,
-                "priorKey", A_PriorKey
-            ), "P4", "pre-fix")
-            ; #endregion
-            if (!g_StandardLoadingBarIsKeysOverlay)
-                return
+            return
         }
     } catch {
     }
