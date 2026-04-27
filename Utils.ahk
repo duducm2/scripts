@@ -4186,16 +4186,11 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
     g_StandardLoadingBarKeysEscapeUserCb := escCb ? escCb : ""
     g_StandardLoadingBarKeysEscapeActive := false
 
-    ; Register hotkeys scoped to the overlay GUI being active.
-    ; Otherwise, if ShowWithKeys is called under a #HotIf (e.g. Outlook-only),
-    ; the created hotkeys inherit that context and won't fire once the overlay steals focus.
-    try {
-        if IsObject(g_StandardLoadingBarGui) && g_StandardLoadingBarGui.Hwnd {
-            HotIfWinActive("ahk_id " . g_StandardLoadingBarGui.Hwnd)
-        } else {
-            HotIf()
-        }
-    } catch {
+    ; Register selection hotkeys as GLOBAL while the overlay is open.
+    ; Critical: the overlay may fail to activate immediately, and we still need the keys (e.g. "N") to be captured
+    ; instead of falling through to the underlying app. Also, clear any caller #HotIf context before registering.
+    try HotIf()
+    catch {
     }
 
     ; Register primary and case-variant keys.
