@@ -4535,30 +4535,33 @@ class D2C_FlowManager {
             originMon := GetAhkMonitorIndexFromHwnd(originHwnd)
 
             ActivateClipAngelWithFocusCorrection()
-            if WinExist("ClipAngel") {
-                try WinActivate("ClipAngel")
-                if WinWaitActive("ClipAngel", , 1) {
-                    clipHwnd := WinExist("ClipAngel")
-                    if (originMon && clipHwnd) {
-                        StandardLoadingBar_Update("⏳ Clip Angel: moving to your monitor...", BANNER_ACCENT_INTERMEDIATE)
-                        MoveWindowToMonitor(clipHwnd, originMon)
-                    }
-                    Sleep 100
-                    StandardLoadingBar_Update("⏳ Clip Angel: opening editor...", BANNER_ACCENT_INTERMEDIATE)
-                    Send "{F4}"
-                    Sleep 80
-                    StandardLoadingBar_Update("⏳ Clip Angel: maximizing...", BANNER_ACCENT_INTERMEDIATE)
-                    if (clipHwnd)
-                        TryMaximizeWindow(clipHwnd)
-                    else
-                        try WinMaximize("ClipAngel")
-                    StandardLoadingBar_Update("✅ Clip Angel: ready", BANNER_ACCENT_SUCCESS)
-                } else {
-                    StandardLoadingBar_Update("❌ Clip Angel: failed to activate", BANNER_ACCENT_ERROR)
-                }
-            } else {
+            clipHwnd := WinExist("ClipAngel")
+            if (!clipHwnd) {
                 StandardLoadingBar_Update("❌ Clip Angel: window not found", BANNER_ACCENT_ERROR)
+                return
             }
+
+            ; Activation is already handled inside ActivateClipAngelWithFocusCorrection(), but keep a short bounded wait
+            ; so we never inject keys into the wrong window.
+            if (!WinWaitActive("ahk_id " clipHwnd, , 0.6)) {
+                StandardLoadingBar_Update("❌ Clip Angel: failed to activate", BANNER_ACCENT_ERROR)
+                return
+            }
+
+            if (originMon) {
+                StandardLoadingBar_Update("⏳ Clip Angel: moving to your monitor...", BANNER_ACCENT_INTERMEDIATE)
+                MoveWindowToMonitor(clipHwnd, originMon)
+                ; If a move caused focus loss, reacquire quickly (bounded).
+                if (!WinActive("ahk_id " clipHwnd))
+                    WinWaitActive("ahk_id " clipHwnd, , 0.4)
+            }
+
+            StandardLoadingBar_Update("⏳ Clip Angel: opening editor...", BANNER_ACCENT_INTERMEDIATE)
+            Send "{F4}"
+
+            StandardLoadingBar_Update("⏳ Clip Angel: maximizing...", BANNER_ACCENT_INTERMEDIATE)
+            TryMaximizeWindow(clipHwnd)
+            StandardLoadingBar_Update("✅ Clip Angel: ready", BANNER_ACCENT_SUCCESS)
         } finally {
             StandardLoadingBar_Hide(350)
             this.Reset()
