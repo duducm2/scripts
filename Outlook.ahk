@@ -241,6 +241,56 @@ class OutlookHwndCache {
     }
 }
 
+; --- Optional WinEvent: invalidate Outlook HWND cache when cached window is destroyed ---
+; Default off: enables hook-driven invalidation without scanning WinExist on every cache hit path.
+; Enable after validating EVENT_OBJECT_DESTROY callback overhead on your machine.
+global OUTLOOK_USE_WINEVENT_INVALIDATE := false
+global OUTLOOK_WINEVENT_HOOK_HANDLE := 0
+global OUTLOOK_WINEVENT_CB := 0
+
+Outlook_WinEventDestroyProc(hWinEventHook, event, hwnd, idObject, idChild, idEventThread, dwmsEventTime) {
+    if (event != 0x8001) ; EVENT_OBJECT_DESTROY
+        return
+    if (idObject != 0) ; OBJID_WINDOW — ignore non-window objects
+        return
+    if !hwnd
+        return
+    try {
+        if (hwnd = OutlookHwndCache.MailboxHwnd)
+            OutlookHwndCache.InvalidateMailbox()
+        if (hwnd = OutlookHwndCache.CalendarHwnd)
+            OutlookHwndCache.InvalidateCalendar()
+        if (hwnd = OutlookHwndCache.ReminderHwnd)
+            OutlookHwndCache.InvalidateReminder()
+    } catch {
+    }
+}
+
+Outlook_RegisterDestroyWinEvent() {
+    global OUTLOOK_WINEVENT_HOOK_HANDLE, OUTLOOK_WINEVENT_CB
+    if OUTLOOK_WINEVENT_HOOK_HANDLE
+        return
+    OUTLOOK_WINEVENT_CB := CallbackCreate(Outlook_WinEventDestroyProc, "F", 7)
+    OUTLOOK_WINEVENT_HOOK_HANDLE := DllCall("user32\SetWinEventHook", "UInt", 0x8001, "UInt", 0x8001, "Ptr", 0,
+        "Ptr", OUTLOOK_WINEVENT_CB, "UInt", 0, "UInt", 0, "UInt", 0, "Ptr")
+}
+
+Outlook_UnregisterDestroyWinEvent() {
+    global OUTLOOK_WINEVENT_HOOK_HANDLE
+    if OUTLOOK_WINEVENT_HOOK_HANDLE {
+        DllCall("user32\UnhookWinEvent", "Ptr", OUTLOOK_WINEVENT_HOOK_HANDLE)
+        OUTLOOK_WINEVENT_HOOK_HANDLE := 0
+    }
+}
+
+Outlook_OnExitUnregisterWinEvent(*) {
+    Outlook_UnregisterDestroyWinEvent()
+}
+
+if OUTLOOK_USE_WINEVENT_INVALIDATE
+    Outlook_RegisterDestroyWinEvent()
+OnExit Outlook_OnExitUnregisterWinEvent, -1
+
 ; =============================================================================
 ; Outlook window resolution (strict HWND contract: success = positive HWND, failure = 0)
 ; =============================================================================

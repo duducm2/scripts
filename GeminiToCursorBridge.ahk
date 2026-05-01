@@ -20,9 +20,13 @@ WM_COPY_LAST_GEMINI := 0x8001
 ; Path for guarantee layer: Gemini.ahk writes "1" here when Copy Last Response (same as #!+p) succeeds
 BRIDGE_GeminiCopyResultPath := A_ScriptDir "\.cursor\gemini_copy_result.txt"
 BRIDGE_MinClipboardLength := 10
+; Agent NDJSON logging: default off (hot-path I/O). Set true only when diagnosing bridge failures.
+global BRIDGE_AGENT_LOG_ENABLED := false
 
 ; #region agent log
 Bridge_Log(loc, msg, data, hypothesisId := "") {
+    if (!BRIDGE_AGENT_LOG_ENABLED)
+        return
     p := A_ScriptDir "\.cursor\debug.log"
     j := '{"location":"' . loc . '","message":"' . msg . '","data":' . (data is String ? data : "{}") .
     ',"hypothesisId":"' . hypothesisId . '","timestamp":' . A_TickCount . '}'

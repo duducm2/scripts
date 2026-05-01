@@ -178,3 +178,46 @@ Interesting outcomes from integrating Python for `Gemini.ahk` / `WindowManagemen
 - **Avoid** relying on a **fixed-delay** `SetTimer` alone to fix mixer level after embedded WMP — non-deterministic vs session lifetime and enumeration.
 - **Reference:** `PlayCleaningDesktopSound` in `Utils.ahk`; globals `SCRIPT_MASTER_VOLUME_PERCENT` and `CLEANING_CONFIRM_WMP_VOLUME_PERCENT` (name retained; level is applied via WASAPI, not WMP).
 - **Quick Update (`/Updated`):** play `quick-update-success.wav` with **wait** (`ScriptSoundPlay(..., true)`) **before** `ScheduleApplyScriptMasterVolumeTargetAfterQuickUpdate()`. If the chime runs **async**, a new audio session can appear **after** the first WASAPI pass and show ~10% in the mixer until the next enumeration.
+
+---
+
+## 15. Efficiency iteration — 2026 (revision-aligned, non-parallelism)
+
+**Non-goal:** This wave did **not** target “type in one app while mouse/GUI automation runs elsewhere” (see [revision/revision.md](../revision/revision.md) for why that stays out of scope here). Focus: shorter hot paths, fewer redundant operations, optional event-driven cache invalidation.
+
+### Wave 1 — Quick wins
+
+| Item | Change | Rollback |
+| ---- | ------ | -------- |
+| **WASAPI volume** | [`SpotifyWASAPI.ahk`](../SpotifyWASAPI.ahk): implemented `WASAPI_SetSessionScalar`, `AdjustProcessVolumeByPid`, `SetProcessPlaybackVolumePercent`, `ApplyAutoHotkeyAudioSessionsVolumePercent` via `IAudioSessionManager2::GetSessionEnumerator` (session enum + `ISimpleAudioVolume`). Restores **Ctrl+Volume** silent path for Spotify when `AL_USE_WASAPI` is true in [`Spotify.ahk`](../Spotify.ahk). | Revert `SpotifyWASAPI.ahk` to stub returns if COM/session enumeration misbehaves on a specific audio stack. |
+| **Bridge log I/O** | [`GeminiToCursorBridge.ahk`](../GeminiToCursorBridge.ahk): `global BRIDGE_AGENT_LOG_ENABLED := false` — `Bridge_Log` is a no-op unless set true (reduces `FileAppend` on bridge paths). | Set `BRIDGE_AGENT_LOG_ENABLED := true` in that file (or a small include) for diagnosis. |
+
+**Patterns:** §3 “repeated enumeration” / anti hot-path I/O; §6 WASAPI per-process volume.
+
+### Wave 2 — Enumeration / cache
+
+| Item | Change | Rollback |
+| ---- | ------ | -------- |
+| **Outlook HWND cache** | [`Outlook.ahk`](../Outlook.ahk): optional `SetWinEventHook` for `EVENT_OBJECT_DESTROY` (0x8001) to call `InvalidateMailbox` / `InvalidateCalendar` / `InvalidateReminder` when the matching cached HWND is destroyed. **Default:** `OUTLOOK_USE_WINEVENT_INVALIDATE := false`. `OnExit` unregisters the hook. | Set `OUTLOOK_USE_WINEVENT_INVALIDATE := false` (default). |
+| **WindowManagement** | No code change: [`WindowManagement.ahk`](../WindowManagement.ahk) `MonitorActiveWindow` already early-returns when foreground `hwnd` equals `lastHwnd` (canon cache-first / avoid redundant work). | N/A. |
+
+**Patterns:** §4 event-driven hooks vs polling; §7 incremental cutover with flag.
+
+### Wave 3 — UIA / overlay cost
+
+| Item | Change | Rollback |
+| ---- | ------ | -------- |
+| **mousemaster** | [`mousemaster.ahk`](../mousemaster.ahk): `Mousemaster_MaxHints` (default 350) stops scanning after enough interactive elements; **trade-off** documented in file (fewer hints on huge trees). | Raise `Mousemaster_MaxHints` or remove the cap. |
+| **Gemini / Utils** | No structural change: further `CacheRequest` / scoped `FindAll` refactors left for a follow-up if profiling shows a hot path. | N/A. |
+
+**Patterns:** §3 full UIA tree scans; §11 explicit trade-off in comments.
+
+### Wave 4 — Shift keys split
+
+**Deferred:** No `#include` extract from `Shift keys.ahk` in this iteration (optional in plan; avoid load-order risk until a dedicated refactor task).
+
+**Pattern:** §7 one logical unit per cutover; defer monolith split until Waves 1–3 are stable in daily use.
+
+### Verification reminder
+
+Use §8 matrix after enabling `OUTLOOK_USE_WINEVENT_INVALIDATE` or toggling `BRIDGE_AGENT_LOG_ENABLED`: parity, latency, clipboard/state cleanup, hook teardown on exit.
