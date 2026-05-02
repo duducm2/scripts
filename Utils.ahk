@@ -8293,6 +8293,40 @@ GetQuickLookTargetMonitorIndex() {
         return 1
 }
 
+; Wait until QuickLook's title reflects the opened file (QL-Win shows basename) or timeout with graceful fallback.
+; Returns Map: ok (hwnd still valid), matched (title contained basename), fallback (timed out; caller may retry scroll).
+QuickLook_WaitForOpenReady(hwnd, path, timeoutMs := 8000) {
+    SplitPath path, &baseName
+    if (baseName = "")
+        return Map("ok", false, "matched", false, "fallback", false)
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        if (!WinExist("ahk_id " hwnd))
+            return Map("ok", false, "matched", false, "fallback", false)
+        try {
+            title := WinGetTitle("ahk_id " hwnd)
+        } catch {
+            Sleep 75
+            continue
+        }
+        tL := StrLower(title)
+        if InStr(tL, StrLower(baseName))
+            return Map("ok", true, "matched", true, "fallback", false)
+        ; Windows sometimes truncates long titles — try first 31 chars of basename
+        if (StrLen(baseName) > 31) {
+            shortNeedle := StrLower(SubStr(baseName, 1, 31))
+            if InStr(tL, shortNeedle)
+                return Map("ok", true, "matched", true, "fallback", false)
+        }
+        Sleep 75
+    }
+    ; Option A: proceed after extra delay when title never matched (atypical QuickLook build)
+    Sleep 300
+    if (!WinExist("ahk_id " hwnd))
+        return Map("ok", false, "matched", false, "fallback", false)
+    return Map("ok", true, "matched", false, "fallback", true)
+}
+
 ; scrollToEnd: after open, focus viewer and send Ctrl+End (mnemonics); false leaves viewport at top (plans).
 QuickLook_OpenPath(path, scrollToEnd := true) {
     quickLookExe := QuickLook_ResolveExePath()
@@ -8313,6 +8347,18 @@ QuickLook_OpenPath(path, scrollToEnd := true) {
     if WinWait("ahk_exe QuickLook.exe", , 2) {
         hwnd := WinExist("ahk_exe QuickLook.exe")
         if (hwnd) {
+            gate := QuickLook_WaitForOpenReady(hwnd, path)
+            if (!gate["ok"]) {
+                try ShowCenteredOverlay_Utils("⚠ QuickLook closed before the file finished loading.", 3200,
+                    BANNER_ACCENT_INTERMEDIATE)
+                return
+            }
+            if (gate["matched"])
+                Sleep 75
+            else
+                Sleep 50
+            gateUsedFallback := gate["fallback"]
+
             ; Always prefer the configured physical display (\\.\DISPLAY2); fallback to primary.
             targetMon := GetQuickLookTargetMonitorIndex()
 
@@ -8374,25 +8420,25 @@ QuickLook_OpenPath(path, scrollToEnd := true) {
             }
 
             if (scrollToEnd) {
-                ; Send Ctrl+End using a foreground SendInput sequence (manual Ctrl+End works, so method matters).
-                try {
-                    ; Ensure QuickLook is still active right before sending.
-                    WinActivate("ahk_id " hwnd)
-                    WinWaitActive("ahk_id " hwnd, , 1)
-
-                    ; Preferred: SendInput to foreground window.
-                    SendInput("^{End}")
-                } catch {
-                    ; Fallback: explicit down/up (some apps are picky about chord timing)
+                ; After load gate: send Ctrl+End; second attempt when title gate used timeout fallback (slow/atypical QL).
+                scrollAttempts := gateUsedFallback ? 2 : 1
+                loop scrollAttempts {
+                    if (A_Index > 1)
+                        Sleep 175
                     try {
                         WinActivate("ahk_id " hwnd)
                         WinWaitActive("ahk_id " hwnd, , 1)
-                        Send("{Ctrl down}{End}{Ctrl up}")
+                        SendInput("^{End}")
                     } catch {
-                        ; Last resort: ControlSend (often unreliable for WPF, but keep as backup)
                         try {
-                            ControlSend("^End", "ahk_id " hwnd)
+                            WinActivate("ahk_id " hwnd)
+                            WinWaitActive("ahk_id " hwnd, , 1)
+                            Send("{Ctrl down}{End}{Ctrl up}")
                         } catch {
+                            try {
+                                ControlSend("^End", "ahk_id " hwnd)
+                            } catch {
+                            }
                         }
                     }
                 }
