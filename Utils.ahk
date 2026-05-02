@@ -7956,7 +7956,8 @@ StudyTopic_GetRelPath(topic, category) {
 }
 
 ; Opens notes-repo-relative path in QuickLook (PDF sibling → .md). Returns false on failure.
-StudyTopic_OpenRepoRelativeMarkdown(relPath) {
+; scrollToEnd: mnemonics jump to bottom of long docs; plans stay at top.
+StudyTopic_OpenRepoRelativeMarkdown(relPath, scrollToEnd := true) {
     basePath := GetNotesRepoPath()
     if (basePath = "") {
         try ShowCenteredOverlay_Utils("⚠ Notes repo path not set (env.ahk).", 3000, BANNER_ACCENT_INTERMEDIATE)
@@ -7972,7 +7973,7 @@ StudyTopic_OpenRepoRelativeMarkdown(relPath) {
         try ShowCenteredOverlay_Utils("❌ Markdown not found: " mdPath, 3500, BANNER_ACCENT_ERROR)
         return false
     }
-    QuickLook_OpenPath(mdPath)
+    QuickLook_OpenPath(mdPath, scrollToEnd)
     return true
 }
 
@@ -8141,7 +8142,7 @@ StudyTopicSelector_HandleKey(key) {
 
     topic := g_StudyTopics[selection]
     relPath := StudyTopic_GetRelPath(topic, category)
-    StudyTopic_OpenRepoRelativeMarkdown(relPath)
+    StudyTopic_OpenRepoRelativeMarkdown(relPath, category != "plans")
 }
 
 StudyTopicSelector_Cancel(*) {
@@ -8270,7 +8271,8 @@ GetQuickLookTargetMonitorIndex() {
         return 1
 }
 
-QuickLook_OpenPath(path) {
+; scrollToEnd: after open, focus viewer and send Ctrl+End (mnemonics); false leaves viewport at top (plans).
+QuickLook_OpenPath(path, scrollToEnd := true) {
     quickLookExe := QuickLook_ResolveExePath()
     if (!FileExist(quickLookExe)) {
         try ShowCenteredOverlay_Utils("❌ QuickLook executable not found: " quickLookExe, 2500, BANNER_ACCENT_ERROR)
@@ -8349,25 +8351,27 @@ QuickLook_OpenPath(path) {
                 ; ignore
             }
 
-            ; Send Ctrl+End using a foreground SendInput sequence (manual Ctrl+End works, so method matters).
-            try {
-                ; Ensure QuickLook is still active right before sending.
-                WinActivate("ahk_id " hwnd)
-                WinWaitActive("ahk_id " hwnd, , 1)
-
-                ; Preferred: SendInput to foreground window.
-                SendInput("^{End}")
-            } catch {
-                ; Fallback: explicit down/up (some apps are picky about chord timing)
+            if (scrollToEnd) {
+                ; Send Ctrl+End using a foreground SendInput sequence (manual Ctrl+End works, so method matters).
                 try {
+                    ; Ensure QuickLook is still active right before sending.
                     WinActivate("ahk_id " hwnd)
                     WinWaitActive("ahk_id " hwnd, , 1)
-                    Send("{Ctrl down}{End}{Ctrl up}")
+
+                    ; Preferred: SendInput to foreground window.
+                    SendInput("^{End}")
                 } catch {
-                    ; Last resort: ControlSend (often unreliable for WPF, but keep as backup)
+                    ; Fallback: explicit down/up (some apps are picky about chord timing)
                     try {
-                        ControlSend("^End", "ahk_id " hwnd)
+                        WinActivate("ahk_id " hwnd)
+                        WinWaitActive("ahk_id " hwnd, , 1)
+                        Send("{Ctrl down}{End}{Ctrl up}")
                     } catch {
+                        ; Last resort: ControlSend (often unreliable for WPF, but keep as backup)
+                        try {
+                            ControlSend("^End", "ahk_id " hwnd)
+                        } catch {
+                        }
                     }
                 }
             }
