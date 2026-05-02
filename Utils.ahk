@@ -7742,17 +7742,27 @@ HandleLoopModeUp() {
 ; =============================================================================
 
 ; Study topics for Win+Alt+Shift+X selector. Paths are relative to notes repo (GetNotesRepoPath()).
+; plansPath values match filenames in the notes repo (see studies/*/ *-plan.md, plan-english.md, learning-techniques.md).
 global g_StudyTopics := Map(
-    0, { name: "Technique (how to create studies)", path: "\studies\technique\README.md" },
-    1, { name: "Skills (mnemonics)", path: "\studies\skills\mnemonics-skills.md" },
-    2, { name: "Science (mnemonics)", path: "\studies\science\mnemonics-science.md" },
-    3, { name: "Piano (mnemonics)", path: "\studies\piano\mnemonics-piano.md" },
-    4, { name: "English (mnemonics)", path: "\studies\english\mnemonics-english.md" },
-    5, { name: "Communication (mnemonics)", path: "\studies\communication\mnemonics-communication.md" },
-    6, { name: "German (mnemonics)", path: "\studies\german\mnemonics-german.md" }
+    0, { name: "Technique (how to create studies)", mnemonicsPath: "\studies\technique\README.md",
+        plansPath: "\studies\technique\plans.md" },
+    1, { name: "Skills", mnemonicsPath: "\studies\skills\mnemonics-skills.md",
+        plansPath: "\studies\skills\learning-techniques.md" },
+    2, { name: "Science", mnemonicsPath: "\studies\science\mnemonics-science.md",
+        plansPath: "\studies\science\science-plan.md" },
+    3, { name: "Piano", mnemonicsPath: "\studies\piano\mnemonics-piano.md",
+        plansPath: "\studies\piano\piano-plan.md" },
+    4, { name: "English", mnemonicsPath: "\studies\english\mnemonics-english.md",
+        plansPath: "\studies\english\plan-english.md" },
+    5, { name: "Communication", mnemonicsPath: "\studies\communication\mnemonics-communication.md",
+        plansPath: "\studies\communication\communication-plan.md" },
+    6, { name: "German", mnemonicsPath: "\studies\german\mnemonics-german.md",
+        plansPath: "\studies\german\german-plan.md" }
 )
 global g_StudyTopicSelectorGui := false
 global g_StudyTopicSelectorActive := false
+global g_StudyTopicSelectorPhase := ""           ; "category" | "topic"
+global g_StudyTopicSelectorCategory := ""        ; "mnemonics" | "plans"
 
 ; PDF focus monitoring for automatic blackout cancellation (Win+Alt+Shift+X)
 global g_PdfFocusMonitorTimer := false
@@ -7939,30 +7949,34 @@ StopYoutubeFocusMonitor() {
     g_YoutubeFocusTrackedHwnd := 0
 }
 
-ShowStudyTopicSelector() {
-    global g_StudyTopicSelectorGui, g_StudyTopicSelectorActive, g_StudyTopics
+StudyTopic_GetRelPath(topic, category) {
+    if (category = "plans")
+        return topic.plansPath
+    return topic.mnemonicsPath
+}
 
-    if (g_StudyTopicSelectorActive)
-        return
-
-    g_StudyTopicSelectorGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner")
-    g_StudyTopicSelectorGui.BackColor := "1E1E2E"
-    g_StudyTopicSelectorGui.MarginX := 20
-    g_StudyTopicSelectorGui.MarginY := 15
-
-    g_StudyTopicSelectorGui.SetFont("s14 cCDD6F4 Bold", "Segoe UI")
-    g_StudyTopicSelectorGui.Add("Text", "w280 Center", "📚 Study topic (QuickLook)")
-    g_StudyTopicSelectorGui.Add("Text", "w280 h1 Background45475A")
-
-    g_StudyTopicSelectorGui.SetFont("s12 cCDD6F4", "Segoe UI")
-    for num, topic in g_StudyTopics {
-        g_StudyTopicSelectorGui.Add("Text", "w280", "[" . num . "] " . topic.name)
+; Opens notes-repo-relative path in QuickLook (PDF sibling → .md). Returns false on failure.
+StudyTopic_OpenRepoRelativeMarkdown(relPath) {
+    basePath := GetNotesRepoPath()
+    if (basePath = "") {
+        try ShowCenteredOverlay_Utils("⚠ Notes repo path not set (env.ahk).", 3000, BANNER_ACCENT_INTERMEDIATE)
+        return false
     }
+    fullPath := RTrim(basePath, "\") . relPath
+    if (StrLower(SubStr(fullPath, -3)) = "pdf") {
+        mdPath := SubStr(fullPath, 1, StrLen(fullPath) - 3) . "md"
+    } else {
+        mdPath := fullPath
+    }
+    if (!FileExist(mdPath)) {
+        try ShowCenteredOverlay_Utils("❌ Markdown not found: " mdPath, 3500, BANNER_ACCENT_ERROR)
+        return false
+    }
+    QuickLook_OpenPath(mdPath)
+    return true
+}
 
-    g_StudyTopicSelectorGui.Add("Text", "w280 h1 Background45475A y+10")
-    g_StudyTopicSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_StudyTopicSelectorGui.Add("Text", "w280 Center", "Press 0-6 | Esc to cancel")
-
+StudyTopicSelector_PositionGuiCentered(gui) {
     activeWin := 0
     try {
         activeWin := WinGetID("A")
@@ -8000,13 +8014,95 @@ ShowStudyTopicSelector() {
         }
     }
 
-    g_StudyTopicSelectorGui.Show("AutoSize Hide")
-    g_StudyTopicSelectorGui.GetPos(&gx, &gy, &gw, &gh)
+    gui.Show("AutoSize Hide")
+    gui.GetPos(&gx, &gy, &gw, &gh)
     cx := monitorLeft + (monitorWidth - gw) // 2
     cy := monitorTop + (monitorHeight - gh) // 2
-    g_StudyTopicSelectorGui.Show("x" . cx . " y" . cy . " NA")
+    gui.Show("x" . cx . " y" . cy . " NA")
+}
+
+StudyTopicSelector_UnbindCategoryHotkeys() {
+    try Hotkey("1", "Off")
+    try Hotkey("2", "Off")
+}
+
+StudyTopicSelector_UnbindDigitHotkeys() {
+    loop 7 {
+        try Hotkey(String(A_Index - 1), "Off")
+    }
+}
+
+ShowStudyTopicSelector() {
+    global g_StudyTopicSelectorGui, g_StudyTopicSelectorActive, g_StudyTopics, g_StudyTopicSelectorPhase,
+        g_StudyTopicSelectorCategory
+
+    if (g_StudyTopicSelectorActive)
+        return
+
+    g_StudyTopicSelectorCategory := ""
+    g_StudyTopicSelectorPhase := "category"
+
+    g_StudyTopicSelectorGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner")
+    g_StudyTopicSelectorGui.BackColor := "1E1E2E"
+    g_StudyTopicSelectorGui.MarginX := 20
+    g_StudyTopicSelectorGui.MarginY := 15
+
+    g_StudyTopicSelectorGui.SetFont("s14 cCDD6F4 Bold", "Segoe UI")
+    g_StudyTopicSelectorGui.Add("Text", "w300 Center", "📚 Study material (QuickLook)")
+    g_StudyTopicSelectorGui.Add("Text", "w300 h1 Background45475A")
+
+    g_StudyTopicSelectorGui.SetFont("s12 cCDD6F4", "Segoe UI")
+    g_StudyTopicSelectorGui.Add("Text", "w300", "[1] Mnemonics")
+    g_StudyTopicSelectorGui.Add("Text", "w300", "[2] Plans")
+
+    g_StudyTopicSelectorGui.Add("Text", "w300 h1 Background45475A y+10")
+    g_StudyTopicSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
+    g_StudyTopicSelectorGui.Add("Text", "w300 Center", "Press 1 or 2 | Esc to cancel")
+
+    StudyTopicSelector_PositionGuiCentered(g_StudyTopicSelectorGui)
 
     g_StudyTopicSelectorActive := true
+    Hotkey("1", StudyTopicSelector_SelectMnemonics, "On")
+    Hotkey("2", StudyTopicSelector_SelectPlans, "On")
+    Hotkey("Escape", StudyTopicSelector_Cancel, "On")
+}
+
+StudyTopicSelector_ShowTopicPhase() {
+    global g_StudyTopicSelectorGui, g_StudyTopicSelectorActive, g_StudyTopics, g_StudyTopicSelectorPhase,
+        g_StudyTopicSelectorCategory
+
+    if (!g_StudyTopicSelectorActive || g_StudyTopicSelectorPhase != "category")
+        return
+
+    StudyTopicSelector_UnbindCategoryHotkeys()
+
+    catLabel := (g_StudyTopicSelectorCategory = "plans") ? "Plans" : "Mnemonics"
+    if (IsObject(g_StudyTopicSelectorGui) && g_StudyTopicSelectorGui.Hwnd) {
+        try g_StudyTopicSelectorGui.Destroy()
+    }
+    g_StudyTopicSelectorGui := false
+
+    g_StudyTopicSelectorGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner")
+    g_StudyTopicSelectorGui.BackColor := "1E1E2E"
+    g_StudyTopicSelectorGui.MarginX := 20
+    g_StudyTopicSelectorGui.MarginY := 15
+
+    g_StudyTopicSelectorGui.SetFont("s14 cCDD6F4 Bold", "Segoe UI")
+    g_StudyTopicSelectorGui.Add("Text", "w300 Center", "📚 " . catLabel . " — topic")
+    g_StudyTopicSelectorGui.Add("Text", "w300 h1 Background45475A")
+
+    g_StudyTopicSelectorGui.SetFont("s12 cCDD6F4", "Segoe UI")
+    for num, topic in g_StudyTopics {
+        g_StudyTopicSelectorGui.Add("Text", "w300", "[" . num . "] " . topic.name)
+    }
+
+    g_StudyTopicSelectorGui.Add("Text", "w300 h1 Background45475A y+10")
+    g_StudyTopicSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
+    g_StudyTopicSelectorGui.Add("Text", "w300 Center", "Press 0-6 | Esc to cancel")
+
+    StudyTopicSelector_PositionGuiCentered(g_StudyTopicSelectorGui)
+
+    g_StudyTopicSelectorPhase := "topic"
     Hotkey("0", StudyTopicSelector_HandleKey, "On")
     Hotkey("1", StudyTopicSelector_HandleKey, "On")
     Hotkey("2", StudyTopicSelector_HandleKey, "On")
@@ -8014,37 +8110,38 @@ ShowStudyTopicSelector() {
     Hotkey("4", StudyTopicSelector_HandleKey, "On")
     Hotkey("5", StudyTopicSelector_HandleKey, "On")
     Hotkey("6", StudyTopicSelector_HandleKey, "On")
-    Hotkey("Escape", StudyTopicSelector_Cancel, "On")
+}
+
+StudyTopicSelector_SelectMnemonics(*) {
+    global g_StudyTopicSelectorActive, g_StudyTopicSelectorPhase, g_StudyTopicSelectorCategory
+    if (!g_StudyTopicSelectorActive || g_StudyTopicSelectorPhase != "category")
+        return
+    g_StudyTopicSelectorCategory := "mnemonics"
+    StudyTopicSelector_ShowTopicPhase()
+}
+
+StudyTopicSelector_SelectPlans(*) {
+    global g_StudyTopicSelectorActive, g_StudyTopicSelectorPhase, g_StudyTopicSelectorCategory
+    if (!g_StudyTopicSelectorActive || g_StudyTopicSelectorPhase != "category")
+        return
+    g_StudyTopicSelectorCategory := "plans"
+    StudyTopicSelector_ShowTopicPhase()
 }
 
 StudyTopicSelector_HandleKey(key) {
-    global g_StudyTopicSelectorActive, g_StudyTopics
+    global g_StudyTopicSelectorActive, g_StudyTopics, g_StudyTopicSelectorPhase, g_StudyTopicSelectorCategory
 
-    if (!g_StudyTopicSelectorActive)
+    if (!g_StudyTopicSelectorActive || g_StudyTopicSelectorPhase != "topic")
         return
     selection := Integer(key)
+    category := g_StudyTopicSelectorCategory
     StudyTopicSelector_Close()
     if (!g_StudyTopics.Has(selection))
         return
 
     topic := g_StudyTopics[selection]
-    basePath := GetNotesRepoPath()
-    if (basePath = "") {
-        try ShowCenteredOverlay_Utils("⚠ Notes repo path not set (env.ahk).", 3000, BANNER_ACCENT_INTERMEDIATE)
-        return
-    }
-    fullPath := RTrim(basePath, "\") . topic.path
-    ; Derive Markdown path from the PDF path by replacing the extension.
-    if (StrLower(SubStr(fullPath, -3)) = "pdf") {
-        mdPath := SubStr(fullPath, 1, StrLen(fullPath) - 3) . "md"
-    } else {
-        mdPath := fullPath
-    }
-    if (!FileExist(mdPath)) {
-        try ShowCenteredOverlay_Utils("❌ Markdown not found: " mdPath, 3500, BANNER_ACCENT_ERROR)
-        return
-    }
-    QuickLook_OpenPath(mdPath)
+    relPath := StudyTopic_GetRelPath(topic, category)
+    StudyTopic_OpenRepoRelativeMarkdown(relPath)
 }
 
 StudyTopicSelector_Cancel(*) {
@@ -8052,18 +8149,16 @@ StudyTopicSelector_Cancel(*) {
 }
 
 StudyTopicSelector_Close() {
-    global g_StudyTopicSelectorGui, g_StudyTopicSelectorActive
+    global g_StudyTopicSelectorGui, g_StudyTopicSelectorActive, g_StudyTopicSelectorPhase, g_StudyTopicSelectorCategory
 
     if (!g_StudyTopicSelectorActive)
         return
     g_StudyTopicSelectorActive := false
-    try Hotkey("0", "Off")
-    try Hotkey("1", "Off")
-    try Hotkey("2", "Off")
-    try Hotkey("3", "Off")
-    try Hotkey("4", "Off")
-    try Hotkey("5", "Off")
-    try Hotkey("6", "Off")
+    g_StudyTopicSelectorPhase := ""
+    g_StudyTopicSelectorCategory := ""
+
+    StudyTopicSelector_UnbindCategoryHotkeys()
+    StudyTopicSelector_UnbindDigitHotkeys()
     try Hotkey("Escape", StudyTopicSelector_Cancel, "Off")
     Utils_EnsureGlobalEscapeHotkey()
     if (IsObject(g_StudyTopicSelectorGui) && g_StudyTopicSelectorGui.Hwnd) {
