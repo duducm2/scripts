@@ -8038,6 +8038,7 @@ StudyTopicSelector_TrackActiveMonitorTick() {
 }
 
 StudyTopicSelector_UnbindCategoryHotkeys() {
+    try Hotkey("0", "Off")
     try Hotkey("1", "Off")
     try Hotkey("2", "Off")
 }
@@ -8068,12 +8069,13 @@ ShowStudyTopicSelector() {
     g_StudyTopicSelectorGui.Add("Text", "w300 h1 Background45475A")
 
     g_StudyTopicSelectorGui.SetFont("s12 cCDD6F4", "Segoe UI")
+    g_StudyTopicSelectorGui.Add("Text", "w300", "[0] " . g_StudyTopics[0].name)
     g_StudyTopicSelectorGui.Add("Text", "w300", "[1] Mnemonics")
     g_StudyTopicSelectorGui.Add("Text", "w300", "[2] Plans")
 
     g_StudyTopicSelectorGui.Add("Text", "w300 h1 Background45475A y+10")
     g_StudyTopicSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_StudyTopicSelectorGui.Add("Text", "w300 Center", "Press 1 or 2 | Esc to cancel")
+    g_StudyTopicSelectorGui.Add("Text", "w300 Center", "Press 0-2 | Esc to cancel")
 
     StudyTopicSelector_PositionGuiCentered(g_StudyTopicSelectorGui)
 
@@ -8081,6 +8083,7 @@ ShowStudyTopicSelector() {
     StudyTopicSelector_StopActiveMonitorTracking()
     g_StudyTopicSelectorLastForegroundMonitorIdx := GetMonitorIndexForForeground_StandardBar()
     SetTimer(StudyTopicSelector_TrackActiveMonitorTick, 115)
+    Hotkey("0", StudyTopicSelector_SelectTechnique, "On")
     Hotkey("1", StudyTopicSelector_SelectMnemonics, "On")
     Hotkey("2", StudyTopicSelector_SelectPlans, "On")
     Hotkey("Escape", StudyTopicSelector_Cancel, "On")
@@ -8112,24 +8115,51 @@ StudyTopicSelector_ShowTopicPhase() {
 
     g_StudyTopicSelectorGui.SetFont("s12 cCDD6F4", "Segoe UI")
     for num, topic in g_StudyTopics {
+        n := Integer(num)
+        if (g_StudyTopicSelectorCategory = "mnemonics" && n = 0)
+            continue
         g_StudyTopicSelectorGui.Add("Text", "w300", "[" . num . "] " . topic.name)
     }
 
     g_StudyTopicSelectorGui.Add("Text", "w300 h1 Background45475A y+10")
     g_StudyTopicSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_StudyTopicSelectorGui.Add("Text", "w300 Center", "Press 0-6 | Esc to cancel")
+    footerHint := (g_StudyTopicSelectorCategory = "mnemonics") ? "Press 1-6 | Esc to cancel" :
+        "Press 0-6 | Esc to cancel"
+    g_StudyTopicSelectorGui.Add("Text", "w300 Center", footerHint)
 
     StudyTopicSelector_PositionGuiCentered(g_StudyTopicSelectorGui)
     g_StudyTopicSelectorLastForegroundMonitorIdx := GetMonitorIndexForForeground_StandardBar()
 
     g_StudyTopicSelectorPhase := "topic"
-    Hotkey("0", StudyTopicSelector_HandleKey, "On")
-    Hotkey("1", StudyTopicSelector_HandleKey, "On")
-    Hotkey("2", StudyTopicSelector_HandleKey, "On")
-    Hotkey("3", StudyTopicSelector_HandleKey, "On")
-    Hotkey("4", StudyTopicSelector_HandleKey, "On")
-    Hotkey("5", StudyTopicSelector_HandleKey, "On")
-    Hotkey("6", StudyTopicSelector_HandleKey, "On")
+    if (g_StudyTopicSelectorCategory = "plans") {
+        Hotkey("0", StudyTopicSelector_HandleKey, "On")
+        Hotkey("1", StudyTopicSelector_HandleKey, "On")
+        Hotkey("2", StudyTopicSelector_HandleKey, "On")
+        Hotkey("3", StudyTopicSelector_HandleKey, "On")
+        Hotkey("4", StudyTopicSelector_HandleKey, "On")
+        Hotkey("5", StudyTopicSelector_HandleKey, "On")
+        Hotkey("6", StudyTopicSelector_HandleKey, "On")
+    } else {
+        Hotkey("1", StudyTopicSelector_HandleKey, "On")
+        Hotkey("2", StudyTopicSelector_HandleKey, "On")
+        Hotkey("3", StudyTopicSelector_HandleKey, "On")
+        Hotkey("4", StudyTopicSelector_HandleKey, "On")
+        Hotkey("5", StudyTopicSelector_HandleKey, "On")
+        Hotkey("6", StudyTopicSelector_HandleKey, "On")
+    }
+}
+
+; First-menu shortcut: Technique README (mnemonics). Technique plans stay under [2] Plans then [0].
+StudyTopicSelector_SelectTechnique(*) {
+    global g_StudyTopicSelectorActive, g_StudyTopicSelectorPhase, g_StudyTopics
+    if (!g_StudyTopicSelectorActive || g_StudyTopicSelectorPhase != "category")
+        return
+    StudyTopicSelector_Close()
+    if (!g_StudyTopics.Has(0))
+        return
+    topic := g_StudyTopics[0]
+    relPath := StudyTopic_GetRelPath(topic, "mnemonics")
+    StudyTopic_OpenRepoRelativeMarkdown(relPath, true)
 }
 
 StudyTopicSelector_SelectMnemonics(*) {
