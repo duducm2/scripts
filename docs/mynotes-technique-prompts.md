@@ -1,6 +1,6 @@
 # MyNotes technique prompts (mnemonics)
 
-This document describes how the **six mnemonic / study technique prompt entries** are resolved from the **MyNotes** repository when available, mirrored into this scripts repo when desired, and exposed in AutoHotkey (hotstrings and **Win+Alt+Shift+U** Utility Shortcuts → **Prompts**).
+This document describes how the **five mnemonic / study technique prompt entries** are resolved from the **MyNotes** repository when available, mirrored into this scripts repo when desired, and exposed in AutoHotkey (hotstrings and **Win+Alt+Shift+U** Utility Shortcuts → **Prompts**).
 
 The prompts are the single source of truth under the notes repo:
 
@@ -50,7 +50,7 @@ Adjust in [`env.ahk`](../env.ahk) if your layout differs.
 
 ---
 
-## The six registered files and hotstring triggers
+## The five registered files and hotstring triggers
 
 | File | Hotstring | Role (short) |
 |------|-----------|----------------|
@@ -58,7 +58,6 @@ Adjust in [`env.ahk`](../env.ahk) if your layout differs.
 | `video-transcription-prompt.txt` | `:o:ytranscript` | YouTube transcript workflow |
 | `story-reduction-prompt.txt` | `:o:storyreduction` | Story reduction |
 | `punctual-beast-append-prompt.txt` | `:o:punctualbeast` | Append isolated beasts or small punctual batches into open streets |
-| `image-exact-replication-prompt.txt` | `:o:imgreplicate` | Faithful street-image replication before mnemonic overlays |
 | `image-background-preservation-prompt.txt` | `:o:imgpreserve` | Preserve the locked background while adding mnemonic foreground elements |
 
 Registration lives in `InitTechniquePromptHotstrings()` in [`Utils.ahk`](../Utils.ahk).
@@ -73,4 +72,4 @@ After editing prompt files on disk, **reload** the AutoHotkey entry script (or r
 
 ## Utility Shortcuts (#!+U)
 
-Under **Prompts**, the six mnemonic-technique entries are grouped under a **Mnemonics technique** subsection in the selector UI (see `UtilitySelector_IsMnemonicTechniquePrompt` / reorder logic in [`Utils.ahk`](../Utils.ahk)).
+Under **Prompts**, the five mnemonic-technique entries are grouped under a **Mnemonics technique** subsection in the selector UI (see `UtilitySelector_IsMnemonicTechniquePrompt` / reorder logic in [`Utils.ahk`](../Utils.ahk)).
