@@ -4283,8 +4283,22 @@ StandardLoadingBar_KeyWrapper(key, cb, *) {
 
 StandardLoadingBar_KeysTimeoutFired(timeoutCallback) {
     global g_StandardLoadingBarIsKeysOverlay
+    ; Nested Func refs from hotkey closures can fail a plain `if (timeoutCallback)` truth test in v2; use HasMethod.
+    cbCallable := false
+    try {
+        if (IsObject(timeoutCallback))
+            cbCallable := HasMethod(timeoutCallback, "Call")
+    } catch {
+        cbCallable := false
+    }
+    ; #region agent log
+    try FileAppend("DEBUG c8d42c TIMER Utils.KeysTimeoutFired isKeys=" . (g_StandardLoadingBarIsKeysOverlay ? 1 : 0) .
+    " cbCallable=" . (cbCallable ? 1 : 0) . " ts=" . A_TickCount . "`n", A_ScriptDir "\debug-c8d42c.log", "UTF-8")
+    catch {
+    }
+    ; #endregion
     ; Only run timeout callback if overlay was not already dismissed (e.g. user pressed N); avoids copy when timer fires after cancel.
-    if (g_StandardLoadingBarIsKeysOverlay && timeoutCallback) {
+    if (g_StandardLoadingBarIsKeysOverlay && cbCallable) {
         StandardLoadingBar_SetProgressValue(100)
         DebugFlowLog("Utils.ahk:KeysTimeoutFired", "calling timeout callback", "", "H2")
         try timeoutCallback.Call()

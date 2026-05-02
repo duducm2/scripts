@@ -23,6 +23,7 @@ from protocol import (
     OP_PING,
     OP_QUEUE_TASK,
     OP_GET_TASK_STATUS,
+    OP_DETECT_LANG,
 )
 
 PIPE_NAME = r"\\.\pipe\gemini_automation"
@@ -31,6 +32,8 @@ DEFAULT_READY_DELAY_MS = 60
 _shutdown = threading.Event()
 _tasks: dict[str, dict] = {}
 _tasks_lock = threading.Lock()
+_lang_detector = None
+_lang_detector_lock = threading.Lock()
 
 try:
     import win32pipe
@@ -48,6 +51,29 @@ def _on_signal(signum, frame):
 
 def _now_ms() -> int:
     return int(time.time() * 1000)
+
+
+def _get_lang_detector():
+    """Lazy singleton: Portuguese / English / German only (short-text friendly)."""
+    global _lang_detector
+    if _lang_detector is not None:
+        return _lang_detector
+    with _lang_detector_lock:
+        if _lang_detector is not None:
+            return _lang_detector
+        from lingua import Language, LanguageDetectorBuilder
+
+        det = (
+            LanguageDetectorBuilder.from_languages(
+                Language.PORTUGUESE,
+                Language.ENGLISH,
+                Language.GERMAN,
+            )
+            .with_preloaded_language_models()
+            .build()
+        )
+        _lang_detector = det
+        return _lang_detector
 
 
 def _prune_finished_tasks() -> None:
@@ -129,6 +155,26 @@ def handle_request(req: dict) -> dict:
                 "payload": task.get("payload", {}),
             }
         return make_response(req_id, True, result=snapshot)
+
+    if op == OP_DETECT_LANG:
+        text = str(payload.get("text", "")).strip()
+        if not text:
+            return make_response(
+                req_id,
+                True,
+                result={"language": "en", "confidence": 0.0, "fallback": True},
+            )
+        try:
+            detector = _get_lang_detector()
+        except Exception as e:
+            return make_response(req_id, False, error=f"detector unavailable: {e}")
+        result = detector.detect_language_of(text)
+        iso = result.iso_code_639_1.name.lower() if result is not None else "en"
+        return make_response(
+            req_id,
+            True,
+            result={"language": iso, "fallback": result is None},
+        )
 
     return make_response(req_id, False, error=f"unknown op: {op}")
 

@@ -66,6 +66,7 @@ OP_HEALTH_CHECK = "HealthCheck"
 OP_PING = "Ping"
 OP_QUEUE_TASK = "QueueTask"
 OP_GET_TASK_STATUS = "GetTaskStatus"
+OP_DETECT_LANG = "DetectLang"
 
 REQUIRED_KEYS = (REQ_ID, REQ_OP)
 

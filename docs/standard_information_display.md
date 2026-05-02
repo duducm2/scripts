@@ -3,7 +3,7 @@
 A shared UI component for **loading indication**, **information-only messages**, and **interactive input** across all AHK scripts. Defined in `Utils.ahk` and used by Act, AppLaunchers, Gemini, Shift keys, WindowManagement, Microsoft Teams, and any script that includes Utils. This document is the **single source of truth** for banner behavior and the canonical way to show loading, information, and interactive banners across all scripts.
 
 ## Overview and Purpose
-ll
+
 - **Single shared component** for loading, information, and user-input feedback across all AHK scripts
 - **Replaces ad-hoc banners and overlays** with a consistent user experience
 - **Monitor-aware positioning** – centers on the active window's monitor or the primary monitor; optional **active-monitor tracking** (`trackActiveMonitor` on interactive banners) recenters the bar when the foreground window moves to another display while the banner is open (dictation and Gemini transfer flows).
@@ -116,6 +116,7 @@ These wrap `StandardLoadingBar_*` with preset styles:
 | 235–264   | Async TTS state display                                                                                |
 | 390–500   | Read aloud flow                                                                                        |
 | 742–828   | First-time init (Opening Gemini, Sending prompt)                                                       |
+| 914–959   | `#!+8` pronunciation: Interactive Input (2s `ShowWithKeys` + progress); on auto-detect timeout, **Loading** `⏳ Detecting language…` during IPC/daemon; then `GeminiAsyncLookup` **Loading** `⏳ Loading…` |
 | 946–1107  | Async lookup/TTS loading                                                                               |
 | 1220      | `ShowWithKeys` for pronunciation completion (close keys)                                               |
 | 1317–1318 | `ShowWithKeys` "❓ Copy response?" with `promptKeys` `"[Y] Copy  [N] No  [R] Copy+Read  [C] Transfer"` |
@@ -179,6 +180,7 @@ These wrap `StandardLoadingBar_*` with preset styles:
 6. **Font size 17** – Use default `fontSize` 17 for all new banners; only `ShowSingleCharTabBanner_Utils` keeps 72.
 7. **Emoji** – Start every banner message with an appropriate emoji (e.g. ⏳ loading, ✅ done, ❌ error, ❓ user input).
 8. **Interactive Input** – When using `ShowWithKeys`, pass the 11th parameter `promptKeys` (e.g. `"[Y] Confirm  [N] Cancel"`) for a fixed bottom strip.
+9. **Background work** – Any step that can take noticeable time without direct user input (daemon or IPC startup, language detection, network, browser automation) must show **Loading Indication**: call `StandardLoadingBar_Show` (animated bar, default `passive: false`) before the work begins, then `Update` at milestones if helpful, and always reach `Hide` on failure branches. Do not leave the screen empty between closing an interactive banner (e.g. `ShowWithKeys`) and the next visible outcome unless the transition is instantaneous.
 
 ## Consumption by tools
 

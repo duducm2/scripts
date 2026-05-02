@@ -7,6 +7,24 @@
 #include %A_ScriptDir%\env.ahk
 #include %A_ScriptDir%\Utils.ahk
 #include %A_ScriptDir%\aux\WMIPC.ahk
+
+; #region agent log
+GeminiDebugNdjson(hypothesisId, location, message, dataJson := "") {
+    esc(s) {
+        if (s = "")
+            return ""
+        return StrReplace(StrReplace(s, "\", "\\"), "`"", "\`"")
+    }
+    ts := A_TickCount
+    line := '{"sessionId":"c8d42c","hypothesisId":"' . esc(hypothesisId) . '","location":"' . esc(location) .
+    '","message":"' . esc(message) . '","timestamp":' . ts
+    if (dataJson != "")
+        line .= ',"data":' . dataJson
+    line .= "}`n"
+    try FileAppend(line, A_ScriptDir "\debug-c8d42c.log", "UTF-8")
+}
+; #endregion
+
 #include %A_ScriptDir%\aux\GeminiIPC.ahk
 
 ; --- Config ---------------------------------------------------------------
@@ -55,7 +73,7 @@ GEMINI_PERF_LOG_PATH := A_ScriptDir "\.cursor\gemini_perf.log"
 
 ; Feature flags for refactor phases (set false to fall back to legacy behavior)
 GEMINI_USE_WIN_EVENT_HOOK := true
-GEMINI_USE_PYTHON_IPC := false
+GEMINI_USE_PYTHON_IPC := true
 
 ; Phase 7: Python daemon IPC (Named Pipe). AHK starts the daemon on demand when enabled.
 GEMINI_PYTHON_IPC_TIMEOUT_MS := 5000
@@ -908,22 +926,44 @@ copyFromBridge(wParam, lParam, msg, hwnd) {
 }
 
 ; =============================================================================
-; Get Pronunciation
-; Hotkey: Win+Alt+Shift+8 — async: submit to Gemini, restore focus, show result in banner when ready
+; Get Pronunciation — language picker + lookup (invoked off the #!+8 hotkey thread via timer)
 ; =============================================================================
-#!+8:: {
-    global g_StandardLoadingBarIsKeysOverlay
-    if (g_StandardLoadingBarIsKeysOverlay) {
-        StandardLoadingBar_CloseKeysOverlay()
-        StandardLoadingBar_Hide(0)
-        return
-    }
-
+GeminiHotkey_ShowPronunciationLanguagePicker(selectedText) {
+    ; #region agent log
+    GeminiDebugNdjson("C", "Gemini.ahk:GeminiHotkey_ShowPronunciationLanguagePicker", "picker_enter", "{}")
+    ; #endregion
     onSelect(lang) {
         StandardLoadingBar_CloseKeysOverlay()
         StandardLoadingBar_Hide(0)
+        ; #region agent log
+        GeminiDebugNdjson("D", "Gemini.ahk:#!+8:onSelect", "user_pick", '{"lang":"' . lang . '","activeHwnd":' .
+            WinExist("A") . '}')
+        ; #endregion
         if (lang != "")
-            (GeminiAsyncLookup(lang)).Start()
+            (GeminiAsyncLookup(lang, selectedText)
+            ).Start()
+    }
+
+    onTimeout() {
+        ; #region agent log
+        GeminiDebugNdjson("D", "Gemini.ahk:#!+8:onTimeout", "timeout_start", '{"activeHwnd":' . WinExist("A") . '}')
+        ; #endregion
+        StandardLoadingBar_CloseKeysOverlay()
+        StandardLoadingBar_Hide(0)
+        StandardLoadingBar_Show("⏳ Detecting language…", BANNER_ACCENT_INTERMEDIATE, { textWidth: 450, fontSize: 17 })
+        ; Do not call GeminiIPC_DetectLang here: EnsureReady/HealthCheck use synchronous pipe I/O (WriteFile/Connect)
+        ; that can block the main thread indefinitely; UI then freezes on this banner. Heuristic is same-thread-safe.
+        ; #region agent log
+        GeminiDebugNdjson("D", "Gemini.ahk:#!+8:onTimeout", "lang_via_heuristic_only", "{}")
+        ; #endregion
+        lang := DetectLang_AhkFallback(selectedText)
+        if !(lang = "pt" || lang = "en" || lang = "de")
+            lang := "en"
+        ; #region agent log
+        GeminiDebugNdjson("D", "Gemini.ahk:#!+8:onTimeout", "before_lookup", '{"langFinal":"' . lang . '"}')
+        ; #endregion
+        (GeminiAsyncLookup(lang, selectedText)
+        ).Start()
     }
 
     keyCallbacks := Map(
@@ -933,8 +973,58 @@ copyFromBridge(wParam, lParam, msg, hwnd) {
         "*Escape", (*) => onSelect("")
     )
 
-    StandardLoadingBar_ShowWithKeys("❓ Select Translation Language", keyCallbacks, 0, 0, "", BANNER_ACCENT_INTERMEDIATE,
-        450, 17, "", false, "[1] Portuguese  [2] English  [3] German  [Esc] Cancel")
+    ; #region agent log
+    GeminiDebugNdjson("C", "Gemini.ahk:#!+8", "before_show_with_keys", "{}")
+    ; #endregion
+    StandardLoadingBar_ShowWithKeys("❓ Auto-detect in 2s — press to override", keyCallbacks, 2000, 0, onTimeout,
+        BANNER_ACCENT_INTERMEDIATE,
+        450, 17, "", false, "[1] Portuguese  [2] English  [3] German  [Esc] Cancel", false, true)
+    ; #region agent log
+    GeminiDebugNdjson("C", "Gemini.ahk:#!+8", "after_show_with_keys_returned", "{}")
+    ; #endregion
+}
+
+; =============================================================================
+; Get Pronunciation
+; Hotkey: Win+Alt+Shift+8 — async: submit to Gemini, restore focus, show result in banner when ready
+; =============================================================================
+#!+8:: {
+    global g_StandardLoadingBarIsKeysOverlay
+    ; #region agent log
+    GeminiDebugNdjson("A", "Gemini.ahk:#!+8", "hotkey_enter", '{"keysOverlay":' . (g_StandardLoadingBarIsKeysOverlay ?
+        "true" : "false") . '}')
+    ; #endregion
+    if (g_StandardLoadingBarIsKeysOverlay) {
+        StandardLoadingBar_CloseKeysOverlay()
+        StandardLoadingBar_Hide(0)
+        ; #region agent log
+        GeminiDebugNdjson("A", "Gemini.ahk:#!+8", "early_exit_cancel_overlay", "{}")
+        ; #endregion
+        return
+    }
+
+    A_Clipboard := ""
+    if (!TryCopySelectionToClipboard_QuickLookAware()) {
+        ; #region agent log
+        GeminiDebugNdjson("B", "Gemini.ahk:#!+8", "copy_failed", "{}")
+        ; #endregion
+        ShowCenteredOverlay_Utils("❌ Copy failed (no selection).", 1800, BANNER_ACCENT_ERROR)
+        return
+    }
+    selectedText := A_Clipboard
+    ; #region agent log
+    GeminiDebugNdjson("B", "Gemini.ahk:#!+8", "copy_ok", '{"textLen":' . StrLen(selectedText) . '}')
+    ; #endregion
+
+    ; Run picker after hotkey returns — StandardLoadingBar_* registers/unregisters global hotkeys; doing that from
+    ; inside the same #!+8 thread can deadlock so the banner never appears (no after_show_with_keys_returned in logs).
+    ; Do NOT schedule GeminiIPC_EnsureReady here before the picker: timers run FIFO on the main thread; a blocking
+    ; HealthCheck/SendRequest can delay or starve the picker timer so picker_enter never logs.
+    ; Daemon warm-up happens inside GeminiIPC_DetectLang → EnsureReady on timeout path.
+    ; #region agent log
+    GeminiDebugNdjson("C", "Gemini.ahk:#!+8", "defer_picker_scheduled", "{}")
+    ; #endregion
+    SetTimer(GeminiHotkey_ShowPronunciationLanguagePicker.Bind(selectedText), -1)
 }
 
 ; =============================================================================
@@ -1455,12 +1545,73 @@ class GeminiAsyncReadAloud {
 }
 
 ; =============================================================================
+; Heuristic pt/en/de when Python daemon or lingua is unavailable (#!+8 auto-detect timeout path).
+; =============================================================================
+DetectLang_AhkFallback(text) {
+    static inited := false
+    static ptMap := Map()
+    static enMap := Map()
+    static deMap := Map()
+    if (!inited) {
+        inited := true
+        for w in StrSplit("que nao com para uma dos das por mas sao esta ser tem foi", " ") {
+            if (w != "")
+                ptMap[w] := true
+        }
+        for w in StrSplit("the and of to in is that it for on with as by this are", " ") {
+            if (w != "")
+                enMap[w] := true
+        }
+        for w in StrSplit("der die das und ist nicht ein eine mit auf fur sich von zu als", " ") {
+            if (w != "")
+                deMap[w] := true
+        }
+    }
+    t := Trim(text)
+    if (t = "")
+        return "en"
+    tl := StrLower(t)
+    if RegExMatch(tl, "[ãõçáàâéêíóôú]")
+        return "pt"
+    if RegExMatch(tl, "[äöüß]")
+        return "de"
+    clean := RegExReplace(tl, "[^a-zà-ÿ]+", " ")
+    scorePt := 0
+    scoreEn := 0
+    scoreDe := 0
+    for word in StrSplit(RegExReplace(clean, " +", " "), " ") {
+        if (word = "")
+            continue
+        if ptMap.Has(word)
+            scorePt++
+        if enMap.Has(word)
+            scoreEn++
+        if deMap.Has(word)
+            scoreDe++
+    }
+    m := Max(scorePt, scoreEn, scoreDe)
+    if (m = 0)
+        return "en"
+    wins := []
+    if (scorePt = m)
+        wins.Push("pt")
+    if (scoreEn = m)
+        wins.Push("en")
+    if (scoreDe = m)
+        wins.Push("de")
+    if (wins.Length = 1)
+        return wins[1]
+    return "en"
+}
+
+; =============================================================================
 ; GeminiAsyncLookup – async pronunciation lookup (Win+Alt+Shift+8)
 ; User keeps focus; timer polls for completion; result shown in banner.
 ; =============================================================================
 class GeminiAsyncLookup {
-    __New(lang := "") {
+    __New(lang := "", preCopiedText := "") {
         this.Lang := lang
+        this.PreCopiedText := preCopiedText
         this.OriginalHwnd := 0
         this.GeminiHwnd := 0
         this.TimerCallback := ""
@@ -1470,26 +1621,45 @@ class GeminiAsyncLookup {
     }
 
     Start() {
+        ; #region agent log
+        GeminiDebugNdjson("E", "Gemini.ahk:GeminiAsyncLookup.Start", "entry", '{"activeHwnd":' . WinExist("A") .
+        ',"hasPreCopy":' . (this.PreCopiedText != "" ? "true" : "false") . '}')
+        ; #endregion
         this.OriginalHwnd := WinExist("A")
         if !this.OriginalHwnd {
+            ; #region agent log
+            GeminiDebugNdjson("E", "Gemini.ahk:GeminiAsyncLookup.Start", "early_exit_no_active_hwnd", "{}")
+            ; #endregion
             return
         }
         ; Show loading banner immediately, centered on the monitor where this window is (with warning)
         StandardLoadingBar_Show("⏳ Loading…", BANNER_ACCENT_INTERMEDIATE)
 
-        A_Clipboard := ""
-        clipOk := TryCopySelectionToClipboard_QuickLookAware()
+        clipOk := false
+        if (this.PreCopiedText != "") {
+            A_Clipboard := this.PreCopiedText
+            clipOk := true
+        } else {
+            A_Clipboard := ""
+            clipOk := TryCopySelectionToClipboard_QuickLookAware()
+        }
         if !clipOk {
             try StandardLoadingBar_Hide(0)
             ShowCenteredOverlay_Utils("❌ Copy failed (no clipboard text). QuickLook selection may not support Ctrl+C.",
                 2400,
                 BANNER_ACCENT_ERROR)
+            ; #region agent log
+            GeminiDebugNdjson("E", "Gemini.ahk:GeminiAsyncLookup.Start", "early_exit_clip_failed", "{}")
+            ; #endregion
             return
         }
         SetTitleMatchMode(2)
         this.GeminiHwnd := GetGeminiWindowHwnd()
         if !this.GeminiHwnd {
             StandardLoadingBar_Hide(0)
+            ; #region agent log
+            GeminiDebugNdjson("E", "Gemini.ahk:GeminiAsyncLookup.Start", "early_exit_no_gemini_window", "{}")
+            ; #endregion
             return
         }
         try {
@@ -1497,10 +1667,16 @@ class GeminiAsyncLookup {
         } catch {
             StandardLoadingBar_Hide(0)
             ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
+            ; #region agent log
+            GeminiDebugNdjson("E", "Gemini.ahk:GeminiAsyncLookup.Start", "early_exit_activate_failed", "{}")
+            ; #endregion
             return
         }
         if !WinWaitActive("ahk_exe chrome.exe", , 2) {
             StandardLoadingBar_Hide(0)
+            ; #region agent log
+            GeminiDebugNdjson("E", "Gemini.ahk:GeminiAsyncLookup.Start", "early_exit_chrome_not_active", "{}")
+            ; #endregion
             return
         }
         ; For pronunciation lookup (#!+8), always use the trash tab (second Gemini tab).
@@ -1524,7 +1700,15 @@ class GeminiAsyncLookup {
         } catch {
         }
         promptName := this.Lang ? "pronunciation-lookup-" . this.Lang : "pronunciation-lookup"
-        searchString := RTrim(GetPromptText(promptName), "`r`n")
+        lookupLangTitle := Map("pt", "Português brasileiro", "en", "English", "de", "Deutsch")
+        lead := ""
+        if (this.Lang != "" && lookupLangTitle.Has(this.Lang))
+            lead :=
+                "Answer preamble (mandatory): The very first line of your reply must be exactly this language label (so the reader sees which lookup mode was used):`n"
+                . lookupLangTitle[this.Lang]
+                .
+                "`nThe second line must be blank. After that, follow every instruction below—including the seven sections—with no section titles or markdown headings for those sections (this preamble is the only allowed title line).`n`n"
+        searchString := lead . RTrim(GetPromptText(promptName), "`r`n")
         A_Clipboard := searchString . "`n`nContent: " . A_Clipboard
         Sleep 100
         Send("^a")
