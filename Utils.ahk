@@ -7763,6 +7763,7 @@ global g_StudyTopicSelectorGui := false
 global g_StudyTopicSelectorActive := false
 global g_StudyTopicSelectorPhase := ""           ; "category" | "topic"
 global g_StudyTopicSelectorCategory := ""        ; "mnemonics" | "plans"
+global g_StudyTopicSelectorLastForegroundMonitorIdx := 0   ; for trackActiveMonitor-style follow (standard_information_display.md)
 
 ; PDF focus monitoring for automatic blackout cancellation (Win+Alt+Shift+X)
 global g_PdfFocusMonitorTimer := false
@@ -7977,49 +7978,63 @@ StudyTopic_OpenRepoRelativeMarkdown(relPath, scrollToEnd := true) {
     return true
 }
 
+; Same work-area + foreground monitor resolution as StandardLoadingBar (GetActiveMonitorWorkArea_StandardBar).
 StudyTopicSelector_PositionGuiCentered(gui) {
-    activeWin := 0
-    try {
-        activeWin := WinGetID("A")
-    } catch {
-        activeWin := 0
-    }
-
-    MonitorGetWorkArea(1, &monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
+    GetActiveMonitorWorkArea_StandardBar(&monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
     monitorWidth := monitorRight - monitorLeft
     monitorHeight := monitorBottom - monitorTop
-
-    if (activeWin && activeWin != 0) {
-        rect := Buffer(16, 0)
-        if (DllCall("GetWindowRect", "ptr", activeWin, "ptr", rect)) {
-            winLeft := NumGet(rect, 0, "int")
-            winTop := NumGet(rect, 4, "int")
-            winRight := NumGet(rect, 8, "int")
-            winBottom := NumGet(rect, 12, "int")
-            centerX := winLeft + (winRight - winLeft) // 2
-            centerY := winTop + (winBottom - winTop) // 2
-            monitorCount := MonitorGetCount()
-            loop monitorCount {
-                idx := A_Index
-                MonitorGetWorkArea(idx, &l, &t, &r, &b)
-                if (centerX >= l && centerX <= r && centerY >= t && centerY <= b) {
-                    monitorLeft := l
-                    monitorTop := t
-                    monitorRight := r
-                    monitorBottom := b
-                    monitorWidth := r - l
-                    monitorHeight := b - t
-                    break
-                }
-            }
-        }
-    }
-
     gui.Show("AutoSize Hide")
     gui.GetPos(&gx, &gy, &gw, &gh)
     cx := monitorLeft + (monitorWidth - gw) // 2
     cy := monitorTop + (monitorHeight - gh) // 2
     gui.Show("x" . cx . " y" . cy . " NA")
+    try {
+        hwnd := gui.Hwnd
+        if (hwnd)
+            DllCall("SetWindowPos", "Ptr", hwnd, "Ptr", 0, "Int", cx, "Int", cy, "Int", 0, "Int", 0, "UInt", 0x0015)
+    } catch {
+    }
+}
+
+StudyTopicSelector_StopActiveMonitorTracking() {
+    try SetTimer(StudyTopicSelector_TrackActiveMonitorTick, 0)
+}
+
+StudyTopicSelector_RepositionToActiveMonitor() {
+    global g_StudyTopicSelectorGui
+    if (!IsObject(g_StudyTopicSelectorGui) || !g_StudyTopicSelectorGui.Hwnd)
+        return
+    GetActiveMonitorWorkArea_StandardBar(&ml, &mt, &mr, &mb)
+    monitorWidth := mr - ml
+    monitorHeight := mb - mt
+    try {
+        g_StudyTopicSelectorGui.GetPos(, , &gw, &gh)
+    } catch {
+        return
+    }
+    cx := ml + (monitorWidth - gw) // 2
+    cy := mt + (monitorHeight - gh) // 2
+    try {
+        g_StudyTopicSelectorGui.Move(cx, cy)
+        hwnd := g_StudyTopicSelectorGui.Hwnd
+        if (hwnd)
+            DllCall("SetWindowPos", "Ptr", hwnd, "Ptr", 0, "Int", cx, "Int", cy, "Int", 0, "Int", 0, "UInt", 0x0015)
+    } catch {
+    }
+}
+
+; Follow foreground window's monitor while the selector is open (parity with StandardLoadingBar trackActiveMonitor).
+StudyTopicSelector_TrackActiveMonitorTick() {
+    global g_StudyTopicSelectorGui, g_StudyTopicSelectorActive, g_StudyTopicSelectorLastForegroundMonitorIdx
+    if (!g_StudyTopicSelectorActive || !IsObject(g_StudyTopicSelectorGui)) {
+        StudyTopicSelector_StopActiveMonitorTracking()
+        return
+    }
+    newIdx := GetMonitorIndexForForeground_StandardBar()
+    if (newIdx != g_StudyTopicSelectorLastForegroundMonitorIdx) {
+        g_StudyTopicSelectorLastForegroundMonitorIdx := newIdx
+        StudyTopicSelector_RepositionToActiveMonitor()
+    }
 }
 
 StudyTopicSelector_UnbindCategoryHotkeys() {
@@ -8063,6 +8078,9 @@ ShowStudyTopicSelector() {
     StudyTopicSelector_PositionGuiCentered(g_StudyTopicSelectorGui)
 
     g_StudyTopicSelectorActive := true
+    StudyTopicSelector_StopActiveMonitorTracking()
+    g_StudyTopicSelectorLastForegroundMonitorIdx := GetMonitorIndexForForeground_StandardBar()
+    SetTimer(StudyTopicSelector_TrackActiveMonitorTick, 115)
     Hotkey("1", StudyTopicSelector_SelectMnemonics, "On")
     Hotkey("2", StudyTopicSelector_SelectPlans, "On")
     Hotkey("Escape", StudyTopicSelector_Cancel, "On")
@@ -8102,6 +8120,7 @@ StudyTopicSelector_ShowTopicPhase() {
     g_StudyTopicSelectorGui.Add("Text", "w300 Center", "Press 0-6 | Esc to cancel")
 
     StudyTopicSelector_PositionGuiCentered(g_StudyTopicSelectorGui)
+    g_StudyTopicSelectorLastForegroundMonitorIdx := GetMonitorIndexForForeground_StandardBar()
 
     g_StudyTopicSelectorPhase := "topic"
     Hotkey("0", StudyTopicSelector_HandleKey, "On")
@@ -8157,6 +8176,9 @@ StudyTopicSelector_Close() {
     g_StudyTopicSelectorActive := false
     g_StudyTopicSelectorPhase := ""
     g_StudyTopicSelectorCategory := ""
+
+    StudyTopicSelector_StopActiveMonitorTracking()
+    g_StudyTopicSelectorLastForegroundMonitorIdx := 0
 
     StudyTopicSelector_UnbindCategoryHotkeys()
     StudyTopicSelector_UnbindDigitHotkeys()
