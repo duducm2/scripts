@@ -1423,6 +1423,8 @@ Gemini (Shift)
 🔍 [S][S]earch
 🔄 [M]Change[M]odel
 🛠️ [T][T]ools
+🖼️ [I]Create [I]mage (Tools menu; opens if needed)
+🔬 [E]Deep r[E]search (Tools menu; opens if needed)
 ⌨️ [P]Focus[P]rompt field
 📋 [C][C]opy last message
 🔊 [R][R]ead aloud last message
@@ -22044,21 +22046,17 @@ ShowGeminiModelSelector() {
     Hotkey("Escape", HandleGeminiModelSelectorEscape, "On")
 }
 
-; Shift + T : Click the Tools button - Tools
-+t:: {
+; --- Gemini Tools drawer (shared by +t, +i, +e) --------------------------------
+GEMINI_TOOLBOX_CHECKBOX_TYPE := 50002
+
+Gemini_FindToolsButton(uia) {
+    if !IsObject(uia)
+        return 0
+    toolsButton := 0
     try {
-        uia := UIA_Browser()
-        Sleep 300
-
-        ; Primary strategy: Find by Name "Tools" with Type 50000 (Button)
         toolsButton := uia.FindFirst({ Name: "Tools", Type: 50000 })
-
-        ; Fallback 1: Try by Type "Button" and Name "Tools"
-        if !toolsButton {
+        if !toolsButton
             toolsButton := uia.FindFirst({ Type: "Button", Name: "Tools" })
-        }
-
-        ; Fallback 2: Try by ClassName containing "toolbox-drawer-button" (substring match)
         if !toolsButton {
             allButtons := uia.FindAll({ Type: 50000 })
             for button in allButtons {
@@ -22068,32 +22066,189 @@ ShowGeminiModelSelector() {
                 }
             }
         }
-
-        ; Fallback 3: Try finding by Name with substring match (in case of localization variations)
         if !toolsButton {
             allButtons := uia.FindAll({ Type: 50000 })
             for button in allButtons {
-                if InStr(button.Name, "Tools") || InStr(button.Name, "Ferramentas") {
-                    ; Additional check to ensure it's the tools button (has toolbox-drawer-button in className)
-                    if InStr(button.ClassName, "toolbox-drawer-button") {
-                        toolsButton := button
-                        break
-                    }
+                if (InStr(button.Name, "Tools") || InStr(button.Name, "Ferramentas")) && InStr(button.ClassName,
+                    "toolbox-drawer-button") {
+                    toolsButton := button
+                    break
                 }
             }
         }
+    } catch {
+        return 0
+    }
+    return toolsButton ? toolsButton : 0
+}
 
-        if (toolsButton) {
-            toolsButton.Click()
+Gemini_OpenToolsMenu(uia) {
+    btn := Gemini_FindToolsButton(uia)
+    if !btn
+        return false
+    try {
+        btn.Click()
+    } catch {
+        return false
+    }
+    Sleep 250
+    return true
+}
 
+; Open menu only when the toolbox drawer is not already in the tree (avoids toggling closed).
+Gemini_EnsureToolsMenuOpen(&uia) {
+    if Gemini_FindToolboxMenuPane(uia)
+        return true
+    if !Gemini_OpenToolsMenu(uia)
+        return false
+    ; Refresh UIA — stale element trees are common right after the Tools click.
+    try
+        uia := UIA_Browser()
+    catch
+        return false
+    deadline := A_TickCount + 3000
+    while (A_TickCount < deadline) {
+        if Gemini_FindToolboxMenuPane(uia)
+            return true
+        Sleep 80
+        try
+            uia := UIA_Browser()
+        catch
+            return false
+    }
+    return false
+}
+
+Gemini_FindToolboxMenuPane(uia) {
+    if !IsObject(uia)
+        return 0
+    try {
+        m := uia.FindFirst({ AutomationId: "toolbox-drawer-menu" })
+        if m
+            return m
+        m := uia.FindFirst({ Type: UIA.Type.Menu, AutomationId: "toolbox-drawer-menu" })
+        if m
+            return m
+    } catch {
+    }
+    return 0
+}
+
+; nameSubstrings: ordered list — first matching toolbox-drawer checkbox wins (EN/PT partial names).
+; Searches inside toolbox-drawer-menu when present (fast + reliable); falls back to full tree.
+Gemini_FindToolboxCheckBox(uia, nameSubstrings) {
+    if !IsObject(uia) || !IsObject(nameSubstrings) || nameSubstrings.Length = 0
+        return 0
+    scope := uia
+    try {
+        menu := Gemini_FindToolboxMenuPane(uia)
+        if menu
+            scope := menu
+    } catch {
+    }
+    return Gemini_FindToolboxCheckBoxInScope(scope, nameSubstrings)
+}
+
+Gemini_FindToolboxCheckBoxInScope(scope, nameSubstrings) {
+    if !IsObject(scope) || !IsObject(nameSubstrings) || nameSubstrings.Length = 0
+        return 0
+    try {
+        allCb := scope.FindAll({ Type: GEMINI_TOOLBOX_CHECKBOX_TYPE })
+        if !allCb || allCb.Length = 0
+            allCb := scope.FindAll({ Type: "CheckBox" })
+        if !allCb
+            return 0
+        for sub in nameSubstrings {
+            for cb in allCb {
+                try {
+                    nm := cb.Name
+                    cls := cb.ClassName
+                } catch {
+                    continue
+                }
+                if !InStr(cls, "toolbox-drawer-item", false)
+                    continue
+                if InStr(nm, sub, false)
+                    return cb
+            }
+        }
+    } catch {
+        return 0
+    }
+    return 0
+}
+
+; Material toolbox items expose Invoke + Toggle; Invoke alone often dismisses the menu without toggling.
+; Prefer Toggle; then physical center click (Click("left")) — not bare Click() which tries Invoke first.
+Gemini_ActivateToolboxItem(el) {
+    if !IsObject(el)
+        return
+    try {
+        if el.GetPropertyValue(UIA.Property.IsTogglePatternAvailable) {
+            el.TogglePattern.Toggle()
+            return
+        }
+    } catch {
+    }
+    try {
+        el.Click("left")
+    } catch {
+    }
+}
+
+; Shift + T : Click the Tools button - Tools
++t:: {
+    try {
+        uia := UIA_Browser()
+        Sleep 300
+
+        if (Gemini_OpenToolsMenu(uia)) {
             Sleep 100
-
             Send "{Tab}"
-        } else {
-            ; Last resort: Could not find Tools button
         }
     } catch Error as e {
         ; If all else fails, silently fail (no fallback action defined)
+    }
+}
+
+; Shift + I : Tools menu — Create image (opens Tools if needed)
+; $ = keyboard hook — reduces stray key passthrough to the prompt while this runs.
+$+i:: {
+    try {
+        uia := UIA_Browser()
+        if !IsObject(uia)
+            return
+        Sleep 150
+        subs := ["Create image", "Criar imagem"]
+        cb := Gemini_FindToolboxCheckBox(uia, subs)
+        if !cb {
+            if !Gemini_EnsureToolsMenuOpen(&uia)
+                return
+            cb := Gemini_FindToolboxCheckBox(uia, subs)
+        }
+        if (cb)
+            Gemini_ActivateToolboxItem(cb)
+    } catch Error as e {
+    }
+}
+
+; Shift + E : Tools menu — Deep research (opens Tools if needed)
+$+e:: {
+    try {
+        uia := UIA_Browser()
+        if !IsObject(uia)
+            return
+        Sleep 150
+        subs := ["Deep research", "Pesquisa aprofundada", "Investigação profunda", "Pesquisa profunda"]
+        cb := Gemini_FindToolboxCheckBox(uia, subs)
+        if !cb {
+            if !Gemini_EnsureToolsMenuOpen(&uia)
+                return
+            cb := Gemini_FindToolboxCheckBox(uia, subs)
+        }
+        if (cb)
+            Gemini_ActivateToolboxItem(cb)
+    } catch Error as e {
     }
 }
 
