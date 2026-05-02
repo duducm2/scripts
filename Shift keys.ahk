@@ -733,6 +733,14 @@ Chrome (Shift)
 🏷️ [Ctrl+Alt+Y] [N]ame ChatGPT Window as "ChatGPT"
 )"  ; end Chrome
 
+; --- Google Maps (Chrome) ---------------------------------------------------
+cheatSheets["Google Maps"] := "
+(
+Google Maps (Shift)
+🔍 [S][S]earch box (place / query)
+📍 [L][L]at/long (copy coordinates to clipboard)
+)"  ; end Google Maps
+
 ; --- Chrome PDF Viewer ------------------------------------------------------
 cheatSheets["Chrome PDF Viewer"] := "
 (
@@ -1492,6 +1500,8 @@ PickChromeAppSheetKey(chromeTitle) {
         key := "Shopee"
     if InStr(chromeTitle, "gemini", false)
         key := "Gemini"
+    if InStr(chromeTitle, "Google Maps")
+        key := "Google Maps"
     if (key = "" && (chromeTitle = "Google" || InStr(chromeTitle, " - Google Search")))
         key := "Google"
     return key
@@ -22873,9 +22883,109 @@ PlayCompletionChime_Gemini() {
 #HotIf
 
 ;-------------------------------------------------------------------
+; Google Maps Shortcuts (Chrome)
+;-------------------------------------------------------------------
+#HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "Google Maps")
+
+; Shift + S : Focus "Search Google Maps" field
++s:: {
+    try {
+        uia := UIA_Browser()
+        if !uia
+            return
+        Sleep 200
+        root := 0
+        try root := uia.GetCurrentDocumentElement()
+        catch {
+            try root := uia.BrowserElement
+        }
+        if !root
+            return
+
+        searchBox := 0
+        try searchBox := root.FindFirst({ AutomationId: "ucc-1" })
+        if !searchBox {
+            try searchBox := root.FindFirst({ Type: 50003, Name: "Search Google Maps", cs: false })
+        }
+        if !searchBox {
+            try searchBox := root.FindFirst({ Name: "Search Google Maps", cs: false })
+        }
+
+        if (searchBox) {
+            try searchBox.SetFocus()
+            catch {
+                try searchBox.Click()
+            }
+            Sleep 100
+            if searchBox.HasKeyboardFocus
+                return
+            try searchBox.Click()
+        }
+    } catch {
+    }
+}
+
+; Shift + L : Copy latitude, longitude (from place card button or Maps URL)
++l:: {
+    coordOut := ""
+    try {
+        uia := UIA_Browser()
+        if !uia {
+            ToolTip("Maps: could not attach to browser")
+            SetTimer(() => ToolTip(), -2000)
+            return
+        }
+        Sleep 150
+        root := 0
+        try root := uia.GetCurrentDocumentElement()
+        catch {
+            try root := uia.BrowserElement
+        }
+        if root {
+            try {
+                for btn in root.FindAll({ Type: 50000 }) {
+                    n := btn.Name
+                    if RegExMatch(n, "^-?\d+\.\d+\s*,\s*-?\d+\.\d+$") {
+                        if RegExMatch(n, "^(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)$", &m) {
+                            coordOut := m[1] . ", " . m[2]
+                        } else {
+                            coordOut := Trim(n)
+                        }
+                        break
+                    }
+                }
+            } catch {
+            }
+        }
+        if (coordOut = "") {
+            try {
+                url := uia.GetCurrentURL()
+                if RegExMatch(url, "i)google\.[^/]+/maps/@(-?\d+\.\d+),(-?\d+\.\d+)", &um) {
+                    coordOut := um[1] . ", " . um[2]
+                }
+            } catch {
+            }
+        }
+        if (coordOut != "") {
+            A_Clipboard := coordOut
+            ToolTip("Copied: " . coordOut)
+            SetTimer(() => ToolTip(), -1500)
+        } else {
+            ToolTip("Maps: coordinates not found")
+            SetTimer(() => ToolTip(), -2000)
+        }
+    } catch Error as e {
+        ToolTip("Maps: " . e.Message)
+        SetTimer(() => ToolTip(), -2000)
+    }
+}
+
+#HotIf
+
+;-------------------------------------------------------------------
 ; Google Search Shortcuts
 ;-------------------------------------------------------------------
-#HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "Google")
+#HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "Google") && !InStr(WinGetTitle("A"), "Google Maps")
 
 ; Shift + S : Focus Google search box
 +s:: {
