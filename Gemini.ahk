@@ -31,6 +31,10 @@ GeminiDebugNdjson(hypothesisId, location, message, dataJson := "") {
 ; Copy response button names (EN/PT). Excludes "Copy prompt" / "Copiar prompt" which are different controls.
 GEMINI_COPY_RESPONSE_NAMES := ["Copy", "Copiar"]
 
+; TTS Pause/Resume button names (EN/PT). Used by FindGeminiPauseResumeButton during read-aloud verification.
+GEMINI_TTS_PAUSE_NAMES := ["Pause", "Pausar"]
+GEMINI_TTS_RESUME_NAMES := ["Resume", "Retomar"]
+
 ; --- Refactor: threshold constants (no magic numbers) ---------------------------------
 ; Timeouts (ms)
 GEMINI_ACTIVATE_WAIT_MS := 2000
@@ -57,7 +61,7 @@ GEMINI_STREAM_GONE_LOOPS := 4
 GEMINI_ASYNC_LOOKUP_MAX_RETRIES := 60   ; 60 * 500ms = 30s
 GEMINI_DELAYED_SUBMIT_MAX_RETRIES := 300  ; 300 * 500ms = 150s
 GEMINI_ASYNC_TTS_MAX_RETRIES := 60
-GEMINI_READ_ALOUD_START_MAX_RETRIES := 10
+GEMINI_READ_ALOUD_START_MAX_RETRIES := 5
 GEMINI_COPY_MAX_RETRIES := 3
 ; Minimum clipboard length for Gemini-to-Cursor transfer (same as bridge validation)
 GEMINI_TRANSFER_MIN_CLIPBOARD_LENGTH := 10
@@ -193,24 +197,22 @@ CopyLastGeminiMessageWithRetry(options := "", geminiHwnd := 0, maxRetries := GEM
     return false
 }
 
-; Find Pause or Resume button (TTS). which = "Pause" or "Resume". Returns element or 0. Uses UIA_ControlType_Button.
+; Find Pause or Resume button (TTS). which = "Pause" or "Resume". Returns element or 0.
+; Resolves localized names (EN/PT) via GEMINI_TTS_PAUSE_NAMES / GEMINI_TTS_RESUME_NAMES and runs
+; cached FindFirstBuildCache per name. No FindAll fallback (canon §3 / §4): one cheap COM call per name.
 FindGeminiPauseResumeButton(uia, which) {
-    try {
-        btn := uia.FindFirst({ Name: which, Type: UIA_ControlType_Button })
-        if (btn)
-            return btn
-        btn := uia.FindFirst({ Type: "Button", Name: which })
-        if (btn)
-            return btn
-        allButtons := uia.FindAll({ Type: UIA_ControlType_Button })
-        for button in allButtons {
-            if (button.Name = which || InStr(button.Name, which, false) = 1) {
-                if (InStr(button.ClassName, "tts-button") || InStr(button.ClassName, "mdc-icon-button"))
-                    return button
-            }
+    static cacheRequest := ""
+    if (!cacheRequest)
+        cacheRequest := UIA.CreateCacheRequest(["Name", "ClassName"], , 5)
+    names := (which = "Resume") ? GEMINI_TTS_RESUME_NAMES : GEMINI_TTS_PAUSE_NAMES
+    for n in names {
+        try {
+            btn := uia.FindFirstBuildCache(cacheRequest, { Name: n, Type: UIA_ControlType_Button })
+            if (btn)
+                return btn
+        } catch {
+            continue
         }
-    } catch {
-        return 0
     }
     return 0
 }
@@ -1247,6 +1249,7 @@ class GeminiAsyncReadAloud {
         this.QueueTaskId := ""
         this.QueuePollCount := 0
         this.Uia := 0
+        this.Started := false
     }
 
     Start() {
@@ -1354,6 +1357,7 @@ class GeminiAsyncReadAloud {
             this.MenuRetryCount := 0
             this.MenuPollCount := 0
             this.Uia := 0
+            this.Started := false
             GeminiState.Invalidate()
             if (!this.AlreadyActive || !WinActive("ahk_id " this.GeminiHwnd)) {
                 PlayPreMovementWarning("Gemini")
@@ -1478,7 +1482,12 @@ class GeminiAsyncReadAloud {
                 StandardLoadingBar_Hide(0)
                 this.RestoreOriginalFocus()
                 this.StartRetryCount := 0
-                GeminiBackgroundSetTimer(this, this.CheckStarted.Bind(this), GEMINI_READ_ALOUD_START_POLL_MS)
+                this.Started := false
+                ; Common case (post-Gemini-reliability fix): Pause button is already present at click time.
+                ; Run one synchronous check before paying the first 150ms timer tick; only poll if it misses.
+                this.CheckStarted()
+                if (!this.Started)
+                    GeminiBackgroundSetTimer(this, this.CheckStarted.Bind(this), GEMINI_READ_ALOUD_START_POLL_MS)
                 return true
             } catch {
                 this.HandleListenMenuRetry()
@@ -1510,10 +1519,14 @@ class GeminiAsyncReadAloud {
 
     CheckStarted() {
         this.StartRetryCount++
-        root := GeminiReadRootFromHwnd(this.GeminiHwnd)
+        ; Reuse the UIA element attached in BuildUIA (canon §4 cache-first); only re-resolve once if it's gone.
+        root := IsObject(this.Uia) ? this.Uia : 0
+        if (!root)
+            root := GeminiReadRootFromHwnd(this.GeminiHwnd)
         if (root) {
             try {
                 if (FindGeminiPauseResumeButton(root, "Pause")) {
+                    this.Started := true
                     GeminiBackgroundStopTimer(this)
                     GeminiPerfLog("read_aloud", this.StartTick)
                     GeminiEndAutomationSwitch("gemini_read_aloud_started")
