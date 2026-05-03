@@ -25,6 +25,23 @@ GeminiDebugNdjson(hypothesisId, location, message, dataJson := "") {
 }
 ; #endregion
 
+; #region agent log
+AgentDebugLog096adb(hypothesisId, location, message, dataJson := "") {
+    esc(s) {
+        if (s = "")
+            return ""
+        return StrReplace(StrReplace(s, "\", "\\"), "`"", "\`"")
+    }
+    ts := A_TickCount
+    line := '{"sessionId":"096adb","hypothesisId":"' . esc(hypothesisId) . '","location":"' . esc(location) .
+    '","message":"' . esc(message) . '","timestamp":' . ts
+    if (dataJson != "")
+        line .= ',"data":' . dataJson
+    line .= "}`n"
+    try FileAppend(line, A_ScriptDir "\debug-096adb.log", "UTF-8")
+}
+; #endregion
+
 #include %A_ScriptDir%\aux\GeminiIPC.ahk
 
 ; --- Config ---------------------------------------------------------------
@@ -786,11 +803,21 @@ GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false, options := "") {
 
 ; Win+Alt+Shift+O : Read aloud the last message in Gemini (or Pause/Resume if already reading)
 #!+o:: {
+    ; #region agent log
+    AgentDebugLog096adb("H1", "Gemini.ahk:#!+o", "hotkey_enter", "{}")
+    ; #endregion
     try {
         ; Standard behavior: operate on the currently active Gemini tab.
-        GeminiTriggerReadAloud()
+        r := GeminiTriggerReadAloud()
+        ; #region agent log
+        AgentDebugLog096adb("H2", "Gemini.ahk:#!+o", "after_GeminiTriggerReadAloud",
+            '{"startReturned":' . (r ? 'true' : 'false') . '}')
+        ; #endregion
     } catch Error as e {
-        ;
+        ; #region agent log
+        em := StrReplace(StrReplace(e.Message, "\", "\\"), "`"", "\`"")
+        AgentDebugLog096adb("H2", "Gemini.ahk:#!+o", "catch_exception", '{"msg":"' . em . '"}')
+        ; #endregion
     }
 }
 
@@ -1257,24 +1284,53 @@ class GeminiAsyncReadAloud {
         SetTitleMatchMode(2)
         if (!this.GeminiHwnd)
             this.GeminiHwnd := GetGeminiWindowHwnd()
+        ; #region agent log
+        AgentDebugLog096adb("H4", "GeminiAsyncReadAloud.Start", "after_get_hwnd",
+            '{"geminiHwnd":' . (this.GeminiHwnd ? this.GeminiHwnd : 0) . '}')
+        ; #endregion
         if (!this.GeminiHwnd) {
             ShowNotification("Read aloud failed – Gemini is not open", 1800, "FF6666", "FFFFFF", 22)
             return false
         }
         if (this.AlreadyActive && WinActive("ahk_id " this.GeminiHwnd))
             return this.TryStartReadAloud(false)
-        queuedTask := GeminiQueueBackgroundTask("ReadAloud", Map("geminiHwnd", this.GeminiHwnd, "originalHwnd",
-            this.OriginalHwnd, "copyFirst", this.CopyFirst ? 1 : 0, "useTrashTab", this.UseTrashTab ? 1 : 0))
+        ; IPC queue + pipe connect can block the calling thread (CreateFile on pipe waits for server).
+        ; Defer so Win+Alt+Shift+O returns immediately like copy (#!+p); timers run the blocking work.
+        ; #region agent log
+        AgentDebugLog096adb("H3", "GeminiAsyncReadAloud.Start", "scheduled_deferred_queue", "{}")
+        ; #endregion
+        this.StartCallback := this.DeferredQueueAndLaunch.Bind(this)
+        SetTimer(this.StartCallback, -1)
+        return true
+    }
+
+    ; Runs GeminiQueueBackgroundTask off the hotkey thread — avoids indefinite pipe-client blocking.
+    DeferredQueueAndLaunch(*) {
+        this.StartCallback := ""
+        ; #region agent log
+        AgentDebugLog096adb("H6", "GeminiAsyncReadAloud.DeferredQueueAndLaunch", "defer_enter", "{}")
+        ; #endregion
+        ; EnsureReady/Connect block on CreateFile until a pipe server exists — stalls the main thread and never reaches Launch.
+        ; Only enqueue when IPC is enabled and we already have a pipe (#!+p and similar never touch this).
+        queuedTask := false
+        pipeOpen := GeminiIPC_HasOpenPipe()
+        if (GEMINI_USE_PYTHON_IPC && pipeOpen)
+            queuedTask := GeminiQueueBackgroundTask("ReadAloud", Map("geminiHwnd", this.GeminiHwnd, "originalHwnd",
+                this.OriginalHwnd, "copyFirst", this.CopyFirst ? 1 : 0, "useTrashTab", this.UseTrashTab ? 1 : 0))
+        ; #region agent log
+        AgentDebugLog096adb("H5", "GeminiAsyncReadAloud.DeferredQueueAndLaunch", "queue_ipc",
+            '{"queued":' . ((queuedTask is Map && queuedTask.Has("taskId")) ? 'true' : 'false') .
+            ',"pipeOpen":' . (pipeOpen ? 'true' : 'false') . '}')
+        ; #endregion
         if (queuedTask is Map && queuedTask.Has("taskId")) {
             this.QueueTaskId := String(queuedTask["taskId"])
             this.QueuePollCount := 0
             this.StartCallback := this.WaitForQueuedTask.Bind(this)
             SetTimer(this.StartCallback, -1)
-            return true
+            return
         }
         this.StartCallback := this.Launch.Bind(this)
         SetTimer(this.StartCallback, -1)
-        return true
     }
 
     ScheduleStep(callback, delayMs := 1) {
@@ -1325,6 +1381,9 @@ class GeminiAsyncReadAloud {
 
     Launch(*) {
         this.StartCallback := ""
+        ; #region agent log
+        AgentDebugLog096adb("H7", "GeminiAsyncReadAloud.Launch", "launch_enter", "{}")
+        ; #endregion
         this.TryStartReadAloud(false)
     }
 
