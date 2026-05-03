@@ -1681,10 +1681,9 @@ global g_LanguageFlagGui := false
 global g_LanguageFlagSlot := 0
 global g_LanguageFlagTrackTimer := ""
 global g_LanguageFlagLastForegroundMonitorIdx := 0
-global LANGUAGE_FLAG_WIDTH := 64                ; px; aspect kept via Picture h:-1
+global LANGUAGE_FLAG_WIDTH := 45                ; px (~30% smaller than 64); aspect kept via Picture h:-1
 global LANGUAGE_FLAG_MARGIN := 20               ; px from work-area right/bottom
 global LANGUAGE_FLAG_TRACK_INTERVAL := 115      ; ms; matches StandardLoadingBar tracker
-global LANGUAGE_FLAG_ALPHA := 153               ; ~60% opacity (153/255); window-level via WinSetTransparent
 
 ; Restore the persistent flag on script load (Reload-safe). Deferred so the GUI
 ; subsystem is ready and any concurrent auto-execute side-effects settle first.
@@ -3197,8 +3196,7 @@ LanguageFlag_GetImagePath(slot) {
 
 LanguageFlag_Show(slot) {
     global g_LanguageFlagGui, g_LanguageFlagSlot, g_LanguageFlagTrackTimer,
-        g_LanguageFlagLastForegroundMonitorIdx, LANGUAGE_FLAG_WIDTH, LANGUAGE_FLAG_TRACK_INTERVAL,
-        LANGUAGE_FLAG_ALPHA
+        g_LanguageFlagLastForegroundMonitorIdx, LANGUAGE_FLAG_WIDTH, LANGUAGE_FLAG_TRACK_INTERVAL
 
     if (slot != 3 && slot != 4) {
         LanguageFlag_Hide()
@@ -3226,9 +3224,9 @@ LanguageFlag_Show(slot) {
         }
     }
     if !usedPicture {
-        flagGui.SetFont("s18 cFFFFFF Bold", "Segoe UI")
+        flagGui.SetFont("s13 cFFFFFF Bold", "Segoe UI")
         label := (slot = 3) ? "EN" : "PT"
-        flagGui.Add("Text", "Center w" . LANGUAGE_FLAG_WIDTH . " h44 Background45475A", label)
+        flagGui.Add("Text", "Center w" . LANGUAGE_FLAG_WIDTH . " h31 Background45475A", label)
     }
 
     flagGui.Show("AutoSize Hide")
@@ -3238,7 +3236,6 @@ LanguageFlag_Show(slot) {
 
     LanguageFlag_RepositionToActiveMonitor()
     try flagGui.Show("NA")
-    try WinSetTransparent(LANGUAGE_FLAG_ALPHA, flagGui)
 
     g_LanguageFlagLastForegroundMonitorIdx := GetMonitorIndexForForeground_StandardBar()
     try SetTimer(g_LanguageFlagTrackTimer, 0)
