@@ -15,22 +15,6 @@ DebugFlowLog(location, message, dataStr := "", hypothesisId := "") {
     ; These agent debug logs are not required for runtime behavior.
     return
 }
-
-; Debug session e62b20: focus / foreground hwnd (NDJSON to debug-e62b20.log)
-D2C_DebugFocus_e62b20(hypothesisId, location, message, fgHwnd := 0, ovHwnd := 0, xtra := "") {
-    try {
-        ts := A_TickCount
-        fgs := fgHwnd ? Format("0x{:X}", fgHwnd) : "0"
-        ovs := ovHwnd ? Format("0x{:X}", ovHwnd) : "0"
-        xt := StrReplace(StrReplace(StrReplace(xtra, "\", "\\"), "`"", ""), "`n", " ")
-        q := Chr(34)
-        line := "{" q "sessionId" q ":" q "e62b20" q "," q "hypothesisId" q ":" q hypothesisId q "," q "location" q ":" .
-            q location q "," q "message" q ":" q message q "," q "data" q ":{" q "fgHwnd" q ":" q fgs q "," q "overlayHwnd" q ":" .
-            q ovs q "," q "xtra" q ":" q xt q "}," q "timestamp" q ":" ts "}`n"
-        FileAppend(line, A_ScriptDir . "\debug-e62b20.log", "UTF-8")
-    } catch {
-    }
-}
 ; #endregion
 
 #include UIA-v2\Lib\UIA.ahk
@@ -4019,14 +4003,6 @@ StandardLoadingBar_Show(state := "Working...", barColor := BANNER_ACCENT_INTERME
     promptKeys := options && options.HasProp("promptKeys") ? options.promptKeys : ""
     trackActiveMonitor := options && options.HasProp("trackActiveMonitor") && options.trackActiveMonitor
     manualProgress := options && options.HasProp("manualProgress") && options.manualProgress
-    ; #region agent log
-    if (trackActiveMonitor) {
-        fge := 0
-        try fge := WinGetID("A")
-        D2C_DebugFocus_e62b20("H5", "StandardLoadingBar_Show", "entry track path", fge, 0, "passive=" . (passive ? 1 :
-            0))
-    }
-    ; #endregion
 
     if (centerOnHwnd) {
         workArea := GetWorkAreaForWindow_StandardBar(centerOnHwnd)
@@ -4098,16 +4074,6 @@ StandardLoadingBar_Show(state := "Working...", barColor := BANNER_ACCENT_INTERME
     WinSetTransparent(alpha, overlayGui)
     g_StandardLoadingBarGui := overlayGui
     g_StandardLoadingBarValue := 0
-    ; #region agent log
-    if (trackActiveMonitor) {
-        fgx := 0
-        try fgx := WinGetID("A")
-        ovh := 0
-        try if IsObject(g_StandardLoadingBarGui)
-            ovh := g_StandardLoadingBarGui.Hwnd
-        D2C_DebugFocus_e62b20("H2", "StandardLoadingBar_Show", "afterShowNA", fgx, ovh, "passive=" . (passive ? 1 : 0))
-    }
-    ; #endregion
     if (!passive && !manualProgress)
         SetTimer(StandardLoadingBar_Tick, 40)
     if (trackActiveMonitor) {
@@ -4425,24 +4391,11 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
 
     ; Always activate the overlay so HotIfWinActive-scoped selection keys fire reliably.
     ; Without this, keys can fall through to the underlying app (most visible for "N" cancel).
-    ; #region agent log
-    fgB := 0
-    try fgB := WinGetID("A")
-    ovHw := 0
-    try if IsObject(g_StandardLoadingBarGui)
-        ovHw := g_StandardLoadingBarGui.Hwnd
-    D2C_DebugFocus_e62b20("H1", "StandardLoadingBar_ShowWithKeys", "before WinActivate overlay", fgB, ovHw, "")
-    ; #endregion
     try {
         if IsObject(g_StandardLoadingBarGui) && g_StandardLoadingBarGui.Hwnd
             WinActivate(g_StandardLoadingBarGui.Hwnd)
     } catch {
     }
-    ; #region agent log
-    fgA := 0
-    try fgA := WinGetID("A")
-    D2C_DebugFocus_e62b20("H1", "StandardLoadingBar_ShowWithKeys", "after WinActivate overlay", fgA, ovHw, "")
-    ; #endregion
 
     ; Reset any HotIf context so we don't leak it to unrelated hotkeys.
     try HotIf()
@@ -4628,18 +4581,9 @@ class D2C_FlowManager {
         if (this.CurrentPhase != "Idle")
             return
         this.Reset()
-        this.OriginHwnd := WinActive("A")
-        ; #region agent log
-        fgCap := 0
-        try fgCap := WinGetID("A")
-        D2C_DebugFocus_e62b20("H4", "D2C.StartFromDictation", "after OriginHwnd capture", fgCap, this.OriginHwnd, "")
-        ; #endregion
         D2C_RunSubmitMenuDelayBar()
-        ; #region agent log
-        fgDel := 0
-        try fgDel := WinGetID("A")
-        D2C_DebugFocus_e62b20("H3", "D2C.StartFromDictation", "after delay bar", fgDel, this.OriginHwnd, "")
-        ; #endregion
+        this.OriginHwnd := 0
+        try this.OriginHwnd := WinGetID("A")
         this.PromptForGeminiSubmit()
     }
 
@@ -4680,6 +4624,15 @@ class D2C_FlowManager {
         )
     }
 
+    ; OriginHwnd is set after the submit delay bar ends, before the keys overlay activates.
+    ActivateOriginForPaste() {
+        if (!this.OriginHwnd || !WinExist("ahk_id " this.OriginHwnd))
+            return
+        WinActivate("ahk_id " this.OriginHwnd)
+        if (!WinActive("ahk_id " this.OriginHwnd))
+            WinWaitActive("ahk_id " this.OriginHwnd, , 0.3)
+    }
+
     OnSubmitG(*) {
         if (this.CurrentPhase != "PromptingSubmit")
             return
@@ -4713,7 +4666,8 @@ class D2C_FlowManager {
         StandardLoadingBar_Hide(0)
         HideDictationIndicator()
 
-        ; [V] Paste dictated: target the current foreground window only - do not WinActivate OriginHwnd (dictation start).
+        ; [V] Paste dictated: hwnd captured when delay bar finished; activate before paste (keys overlay had focus).
+        this.ActivateOriginForPaste()
         Send("^v")
 
         global g_D2C_DictationSubmitMenuCycleFinished
@@ -4731,6 +4685,7 @@ class D2C_FlowManager {
         StandardLoadingBar_Hide(0)
         HideDictationIndicator()
 
+        this.ActivateOriginForPaste()
         Sleep 60
         Send("^v")
         Sleep 150
