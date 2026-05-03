@@ -25,6 +25,23 @@ GeminiDebugNdjson(hypothesisId, location, message, dataJson := "") {
 }
 ; #endregion
 
+; #region agent log
+AgentLog096adb(hypothesisId, location, message, dataJson := "") {
+    esc(s) {
+        if (s = "")
+            return ""
+        return StrReplace(StrReplace(s, "\", "\\"), "`"", "\`"")
+    }
+    ts := A_TickCount
+    line := '{"sessionId":"096adb","hypothesisId":"' . esc(hypothesisId) . '","location":"' . esc(location) .
+    '","message":"' . esc(message) . '","timestamp":' . ts
+    if (dataJson != "")
+        line .= ',"data":' . dataJson
+    line .= "}`n"
+    try FileAppend(line, A_ScriptDir "\debug-096adb.log", "UTF-8")
+}
+; #endregion
+
 #include %A_ScriptDir%\aux\GeminiIPC.ahk
 
 ; --- Config ---------------------------------------------------------------
@@ -61,7 +78,12 @@ GEMINI_STREAM_GONE_LOOPS := 4
 GEMINI_ASYNC_LOOKUP_MAX_RETRIES := 60   ; 60 * 500ms = 30s
 GEMINI_DELAYED_SUBMIT_MAX_RETRIES := 300  ; 300 * 500ms = 150s
 GEMINI_ASYNC_TTS_MAX_RETRIES := 60
-GEMINI_READ_ALOUD_START_MAX_RETRIES := 5
+; Minimum ~3 effective polls after immediate CheckStarted; extra margin for cold TTS while Gemini stays foreground.
+GEMINI_READ_ALOUD_START_MAX_RETRIES := 8
+; Dictation "Copy + Read" path: response just finished streaming, so TTS engine is cold.
+; Use the pre-optimization budget (10 * 150ms = 1500ms) so the Pause button has time to render
+; without triggering RetryLaunch (which would emit a second "Hands off!" cue).
+GEMINI_DICTATION_READ_ALOUD_MAX_RETRIES := 10
 GEMINI_COPY_MAX_RETRIES := 3
 ; Minimum clipboard length for Gemini-to-Cursor transfer (same as bridge validation)
 GEMINI_TRANSFER_MIN_CLIPBOARD_LENGTH := 10
@@ -1236,6 +1258,10 @@ class GeminiAsyncReadAloud {
         this.OriginalHwnd := (options != "" && options.HasProp("originalHwnd")) ? options.originalHwnd : 0
         this.GeminiHwnd := (options != "" && options.HasProp("geminiHwnd")) ? options.geminiHwnd : 0
         this.AlreadyActive := (options != "" && options.HasProp("alreadyActive")) ? options.alreadyActive : false
+        this.VerifyMaxRetries := (options != "" && options.HasProp("verifyMaxRetries")) ? options.verifyMaxRetries :
+            GEMINI_READ_ALOUD_START_MAX_RETRIES
+        this.RestoreOriginalAfterReadStarted := (options != "" && options.HasProp("restoreOriginalAfterReadStarted")) ?
+            options.restoreOriginalAfterReadStarted : false
         this.TimerCallback := ""
         this.StartCallback := ""
         this.StepCallback := ""
@@ -1359,9 +1385,37 @@ class GeminiAsyncReadAloud {
             this.Uia := 0
             this.Started := false
             GeminiState.Invalidate()
+            ; HWND can go stale after tab reload / window recreation; GetGeminiWindowHwnd re-resolves (H5).
+            if (!this.GeminiHwnd || !WinExist("ahk_id " this.GeminiHwnd)) {
+                nh := GetGeminiWindowHwnd()
+                if (nh)
+                    this.GeminiHwnd := nh
+                ; #region agent log
+                AgentLog096adb("H5", "GeminiAsyncReadAloud.TryStartReadAloud", "hwnd_resolve",
+                    '{"geminiHwnd":' . (this.GeminiHwnd ? this.GeminiHwnd : 0) . '}')
+                ; #endregion
+            }
+            if (!this.GeminiHwnd || !WinExist("ahk_id " this.GeminiHwnd)) {
+                ; #region agent log
+                AgentLog096adb("H5", "GeminiAsyncReadAloud.TryStartReadAloud", "no_gemini_abort", "{}")
+                ; #endregion
+                this.Fail()
+                return false
+            }
+            ; #region agent log
+            wa := WinActive("ahk_id " this.GeminiHwnd) ? 1 : 0
+            ex := WinExist("ahk_id " this.GeminiHwnd) ? 1 : 0
+            AgentLog096adb("H4", "GeminiAsyncReadAloud.TryStartReadAloud", "enter",
+                '{"skipCopy":' . (skipCopy ? "true" : "false") . ',"alreadyActive":' . (this.AlreadyActive ? "true" :
+                    "false") .
+                ',"winActiveGemini":' . wa . ',"winExistGemini":' . ex . '}')
+            ; #endregion
             if (!this.AlreadyActive || !WinActive("ahk_id " this.GeminiHwnd)) {
-                PlayPreMovementWarning("Gemini")
+                ; Loading Indication (not Hands off overlay): same component as dictation/Gemini flows per standard_information_display.md
+                StandardLoadingBar_Show("⏳ Switching to Gemini…", BANNER_ACCENT_INTERMEDIATE, { centerOnHwnd: this.GeminiHwnd ?
+                    this.GeminiHwnd : 0 })
                 if !GeminiActivateWindow(this.GeminiHwnd, GEMINI_ACTIVATE_WAIT_MS) {
+                    try StandardLoadingBar_Hide(0)
                     ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
                     return false
                 }
@@ -1401,6 +1455,7 @@ class GeminiAsyncReadAloud {
 
     InspectControls(*) {
         this.ClearStep()
+        try StandardLoadingBar_Hide(0) ; dismiss "⏳ Switching to Gemini…" before pause/scroll/listen paths
         pauseButton := FindGeminiPauseResumeButton(this.Uia, "Pause")
         if (pauseButton) {
             try pauseButton.Click()
@@ -1480,7 +1535,12 @@ class GeminiAsyncReadAloud {
             try {
                 listenMenuItem.Click()
                 StandardLoadingBar_Hide(0)
-                this.RestoreOriginalFocus()
+                ; Do not RestoreOriginalFocus here: keep Gemini foreground until CheckStarted confirms Pause (H2).
+                ; #region agent log
+                AgentLog096adb("H2", "GeminiAsyncReadAloud.WaitForListenMenuReady",
+                    "after_listen_click_no_early_restore",
+                    '{"geminiHwnd":' . (this.GeminiHwnd ? this.GeminiHwnd : 0) . '}')
+                ; #endregion
                 this.StartRetryCount := 0
                 this.Started := false
                 ; Common case (post-Gemini-reliability fix): Pause button is already present at click time.
@@ -1519,6 +1579,48 @@ class GeminiAsyncReadAloud {
 
     CheckStarted() {
         this.StartRetryCount++
+        ; Re-resolve HWND if Chrome replaced the window (H5); keeps RetryLaunch / verify from targeting a dead ahk_id.
+        if (!this.GeminiHwnd || !WinExist("ahk_id " this.GeminiHwnd)) {
+            prev := this.GeminiHwnd ? this.GeminiHwnd : 0
+            nh := GetGeminiWindowHwnd()
+            if (nh && nh != this.GeminiHwnd)
+                this.Uia := 0
+            this.GeminiHwnd := nh ? nh : this.GeminiHwnd
+            ; #region agent log
+            AgentLog096adb("H5", "GeminiAsyncReadAloud.CheckStarted", "hwnd_refresh",
+                '{"prev":' . prev . ',"now":' . (this.GeminiHwnd ? this.GeminiHwnd : 0) . '}')
+            ; #endregion
+        }
+        if (!this.GeminiHwnd || !WinExist("ahk_id " this.GeminiHwnd)) {
+            ; #region agent log
+            AgentLog096adb("H5", "GeminiAsyncReadAloud.CheckStarted", "gemini_lost_mid_verify", "{}")
+            ; #endregion
+            GeminiBackgroundStopTimer(this)
+            if (!this.StartRetryAttempted) {
+                this.StartRetryAttempted := true
+                ShowNotification("Retrying read aloud…", 800, "FFFF00", "000000", 24)
+                this.StartCallback := this.RetryLaunch.Bind(this)
+                SetTimer(this.StartCallback, -1)
+                return
+            }
+            this.Fail()
+            return
+        }
+        ; Keep Gemini foreground during Pause detection so UIA/DOM match what the user sees (H6); no overlay.
+        if (!WinActive("ahk_id " this.GeminiHwnd)) {
+            ; #region agent log
+            AgentLog096adb("H6", "GeminiAsyncReadAloud.CheckStarted", "refocus_for_verify",
+                '{"n":' . this.StartRetryCount . ',"geminiHwnd":' . this.GeminiHwnd . '}')
+            ; #endregion
+            try WinActivate("ahk_id " this.GeminiHwnd)
+            try WinWaitActive("ahk_id " this.GeminiHwnd, , 0.4)
+        }
+        ; #region agent log
+        wa := WinActive("ahk_id " this.GeminiHwnd) ? 1 : 0
+        AgentLog096adb("H3", "GeminiAsyncReadAloud.CheckStarted", "tick",
+            '{"n":' . this.StartRetryCount . ',"verifyMax":' . this.VerifyMaxRetries . ',"winActiveGemini":' . wa . '}'
+        )
+        ; #endregion
         ; Reuse the UIA element attached in BuildUIA (canon §4 cache-first); only re-resolve once if it's gone.
         root := IsObject(this.Uia) ? this.Uia : 0
         if (!root)
@@ -1534,16 +1636,25 @@ class GeminiAsyncReadAloud {
                         "000000", 24)
                     if (this.GeminiHwnd && WinActive("ahk_id " this.GeminiHwnd))
                         FocusGeminiAskFieldForHwnd(this.GeminiHwnd, false)
+                    ; #region agent log
+                    AgentLog096adb("H3", "GeminiAsyncReadAloud.CheckStarted", "pause_found",
+                        '{"restoreAfter":' . (this.RestoreOriginalAfterReadStarted ? "true" : "false") . '}')
+                    ; #endregion
+                    if (this.RestoreOriginalAfterReadStarted)
+                        this.RestoreOriginalFocus()
                     return
                 }
             } catch {
             }
         }
 
-        if (this.StartRetryCount < GEMINI_READ_ALOUD_START_MAX_RETRIES)
+        if (this.StartRetryCount < this.VerifyMaxRetries)
             return
 
         GeminiBackgroundStopTimer(this)
+        ; #region agent log
+        AgentLog096adb("H3", "GeminiAsyncReadAloud.CheckStarted", "verify_exhausted_retry_launch", "{}")
+        ; #endregion
         if (!this.StartRetryAttempted) {
             this.StartRetryAttempted := true
             ShowNotification("Retrying read aloud...", 800, "FFFF00", "000000", 24)
@@ -1718,9 +1829,6 @@ class GeminiAsyncLookup {
             StandardLoadingBar_Hide(0)
             return
         }
-        ; Switch to Fast model via mode picker menu (Gemini 3 MenuItem list), not @ text
-        if (!EnsureGeminiModelViaMenu("Fast"))
-            ShowCenteredOverlay_Utils("❌ Could not switch Gemini to Fast model.", 2200, BANNER_ACCENT_ERROR)
         try {
             promptField.SetFocus()
             Sleep 80
@@ -2043,13 +2151,23 @@ class GeminiDelayedSubmitMonitor {
         if CopyLastGeminiMessageWithRetry(copyOpt, this.GeminiHwnd) {
             PlayCopyCompletedChime()
         }
-        if (readAloud)
+        if (readAloud) {
+            ; #region agent log
+            AgentLog096adb("H1", "GeminiDelayedSubmitMonitor.DoCopyCore", "read_aloud_branch",
+                '{"skipRestoreTail":true,"geminiHwnd":' . (this.GeminiHwnd ? this.GeminiHwnd : 0) . '}')
+            ; #endregion
             GeminiTriggerReadAloud(false, false, { originalHwnd: this.OriginalHwnd, geminiHwnd: this.GeminiHwnd,
-                alreadyActive: true })
-        if (WinActive("ahk_id " this.GeminiHwnd))
+                alreadyActive: true, verifyMaxRetries: GEMINI_DICTATION_READ_ALOUD_MAX_RETRIES,
+                restoreOriginalAfterReadStarted: true })
+            ; Do not WinActivate(original) here: async read-aloud must keep Gemini foreground until Pause is found (H1).
+        } else if (WinActive("ahk_id " this.GeminiHwnd))
             FocusGeminiAskFieldForHwnd(this.GeminiHwnd, false)
         ; Gemini/Clipboard → Original: return transitions are immediate (no warning).
-        if (!skipRestoreFocus && WinExist("ahk_id " this.OriginalHwnd) && !WinActive("ahk_id " this.OriginalHwnd)) {
+        if (!skipRestoreFocus && !readAloud && WinExist("ahk_id " this.OriginalHwnd) && !WinActive("ahk_id " this.OriginalHwnd
+        )) {
+            ; #region agent log
+            AgentLog096adb("H1", "GeminiDelayedSubmitMonitor.DoCopyCore", "win_activate_original_tail", "{}")
+            ; #endregion
             WinActivate("ahk_id " this.OriginalHwnd)
             ; Fast-path: avoid WinWaitActive if we are already active.
             if (!WinActive("ahk_id " this.OriginalHwnd))
