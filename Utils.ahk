@@ -1684,6 +1684,7 @@ global g_LanguageFlagLastForegroundMonitorIdx := 0
 global LANGUAGE_FLAG_WIDTH := 64                ; px; aspect kept via Picture h:-1
 global LANGUAGE_FLAG_MARGIN := 20               ; px from work-area right/bottom
 global LANGUAGE_FLAG_TRACK_INTERVAL := 115      ; ms; matches StandardLoadingBar tracker
+global LANGUAGE_FLAG_ALPHA := 153               ; ~60% opacity (153/255); window-level via WinSetTransparent
 
 ; Restore the persistent flag on script load (Reload-safe). Deferred so the GUI
 ; subsystem is ready and any concurrent auto-execute side-effects settle first.
@@ -3196,7 +3197,8 @@ LanguageFlag_GetImagePath(slot) {
 
 LanguageFlag_Show(slot) {
     global g_LanguageFlagGui, g_LanguageFlagSlot, g_LanguageFlagTrackTimer,
-        g_LanguageFlagLastForegroundMonitorIdx, LANGUAGE_FLAG_WIDTH, LANGUAGE_FLAG_TRACK_INTERVAL
+        g_LanguageFlagLastForegroundMonitorIdx, LANGUAGE_FLAG_WIDTH, LANGUAGE_FLAG_TRACK_INTERVAL,
+        LANGUAGE_FLAG_ALPHA
 
     if (slot != 3 && slot != 4) {
         LanguageFlag_Hide()
@@ -3205,18 +3207,19 @@ LanguageFlag_Show(slot) {
 
     LanguageFlag_Hide()
 
-    ; Opaque always-on-top chip. Do NOT use WS_EX_TRANSPARENT (part of +E0x80020): that style makes
-    ; Windows skip painting the window, so the flag can be completely invisible.
-    flagGui := Gui("+AlwaysOnTop -Caption +ToolWindow -DPIScale +Border")
+    ; Borderless, zero-margin window so the GUI sizes exactly to the bitmap.
+    ; Do NOT use WS_EX_TRANSPARENT (part of +E0x80020): that style suppresses
+    ; window painting and the flag can disappear entirely.
+    flagGui := Gui("+AlwaysOnTop -Caption +ToolWindow -DPIScale")
     flagGui.BackColor := "313244"
-    flagGui.MarginX := 8
-    flagGui.MarginY := 8
+    flagGui.MarginX := 0
+    flagGui.MarginY := 0
 
     imagePath := LanguageFlag_GetImagePath(slot)
     usedPicture := false
     if (imagePath != "") {
         try {
-            flagGui.Add("Picture", "w" . LANGUAGE_FLAG_WIDTH . " h-1 Border", imagePath)
+            flagGui.Add("Picture", "w" . LANGUAGE_FLAG_WIDTH . " h-1", imagePath)
             usedPicture := true
         } catch {
             usedPicture := false
@@ -3225,7 +3228,7 @@ LanguageFlag_Show(slot) {
     if !usedPicture {
         flagGui.SetFont("s18 cFFFFFF Bold", "Segoe UI")
         label := (slot = 3) ? "EN" : "PT"
-        flagGui.Add("Text", "Center w80 h44 Background45475A Border", label)
+        flagGui.Add("Text", "Center w" . LANGUAGE_FLAG_WIDTH . " h44 Background45475A", label)
     }
 
     flagGui.Show("AutoSize Hide")
@@ -3235,6 +3238,7 @@ LanguageFlag_Show(slot) {
 
     LanguageFlag_RepositionToActiveMonitor()
     try flagGui.Show("NA")
+    try WinSetTransparent(LANGUAGE_FLAG_ALPHA, flagGui)
 
     g_LanguageFlagLastForegroundMonitorIdx := GetMonitorIndexForForeground_StandardBar()
     try SetTimer(g_LanguageFlagTrackTimer, 0)
