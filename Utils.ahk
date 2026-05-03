@@ -8062,15 +8062,14 @@ StudyTopicSelector_UnbindDigitHotkeys() {
     }
 }
 
-ShowStudyTopicSelector() {
-    global g_StudyTopicSelectorGui, g_StudyTopicSelectorActive, g_StudyTopics, g_StudyTopicSelectorPhase,
-        g_StudyTopicSelectorCategory
+; Category menu (Technique / Mnemonics / Plans). Bind Escape + Backspace to cancel; Backspace on topic menu goes back via StudyTopicSelector_BackFromTopic.
+StudyTopicSelector_ShowCategoryPhase() {
+    global g_StudyTopicSelectorGui, g_StudyTopics
 
-    if (g_StudyTopicSelectorActive)
-        return
-
-    g_StudyTopicSelectorCategory := ""
-    g_StudyTopicSelectorPhase := "category"
+    if (IsObject(g_StudyTopicSelectorGui) && g_StudyTopicSelectorGui.Hwnd) {
+        try g_StudyTopicSelectorGui.Destroy()
+    }
+    g_StudyTopicSelectorGui := false
 
     g_StudyTopicSelectorGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner")
     g_StudyTopicSelectorGui.BackColor := "1E1E2E"
@@ -8088,18 +8087,33 @@ ShowStudyTopicSelector() {
 
     g_StudyTopicSelectorGui.Add("Text", "w300 h1 Background45475A y+10")
     g_StudyTopicSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_StudyTopicSelectorGui.Add("Text", "w300 Center", "Press 0-2 | Esc to cancel")
+    g_StudyTopicSelectorGui.Add("Text", "w300 Center", "Press 0-2 | Backspace/Esc to cancel")
 
     StudyTopicSelector_PositionGuiCentered(g_StudyTopicSelectorGui)
+
+    Hotkey("0", StudyTopicSelector_SelectTechnique, "On")
+    Hotkey("1", StudyTopicSelector_SelectMnemonics, "On")
+    Hotkey("2", StudyTopicSelector_SelectPlans, "On")
+    Hotkey("Escape", StudyTopicSelector_Cancel, "On")
+    Hotkey("Backspace", StudyTopicSelector_Cancel, "On")
+}
+
+ShowStudyTopicSelector() {
+    global g_StudyTopicSelectorGui, g_StudyTopicSelectorActive, g_StudyTopics, g_StudyTopicSelectorPhase,
+        g_StudyTopicSelectorCategory
+
+    if (g_StudyTopicSelectorActive)
+        return
+
+    g_StudyTopicSelectorCategory := ""
+    g_StudyTopicSelectorPhase := "category"
+
+    StudyTopicSelector_ShowCategoryPhase()
 
     g_StudyTopicSelectorActive := true
     StudyTopicSelector_StopActiveMonitorTracking()
     g_StudyTopicSelectorLastForegroundMonitorIdx := GetMonitorIndexForForeground_StandardBar()
     SetTimer(StudyTopicSelector_TrackActiveMonitorTick, 115)
-    Hotkey("0", StudyTopicSelector_SelectTechnique, "On")
-    Hotkey("1", StudyTopicSelector_SelectMnemonics, "On")
-    Hotkey("2", StudyTopicSelector_SelectPlans, "On")
-    Hotkey("Escape", StudyTopicSelector_Cancel, "On")
 }
 
 StudyTopicSelector_ShowTopicPhase() {
@@ -8110,6 +8124,7 @@ StudyTopicSelector_ShowTopicPhase() {
         return
 
     StudyTopicSelector_UnbindCategoryHotkeys()
+    try Hotkey("Backspace", StudyTopicSelector_Cancel, "Off")
 
     catLabel := (g_StudyTopicSelectorCategory = "plans") ? "Plans" : "Mnemonics"
     if (IsObject(g_StudyTopicSelectorGui) && g_StudyTopicSelectorGui.Hwnd) {
@@ -8136,8 +8151,8 @@ StudyTopicSelector_ShowTopicPhase() {
 
     g_StudyTopicSelectorGui.Add("Text", "w300 h1 Background45475A y+10")
     g_StudyTopicSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
-    footerHint := (g_StudyTopicSelectorCategory = "mnemonics") ? "Press 1-6 | Esc to cancel" :
-        "Press 0-6 | Esc to cancel"
+    footerHint := (g_StudyTopicSelectorCategory = "mnemonics") ? "Press 1-6 | Backspace back | Esc cancel" :
+        "Press 0-6 | Backspace back | Esc cancel"
     g_StudyTopicSelectorGui.Add("Text", "w300 Center", footerHint)
 
     StudyTopicSelector_PositionGuiCentered(g_StudyTopicSelectorGui)
@@ -8160,6 +8175,25 @@ StudyTopicSelector_ShowTopicPhase() {
         Hotkey("5", StudyTopicSelector_HandleKey, "On")
         Hotkey("6", StudyTopicSelector_HandleKey, "On")
     }
+    Hotkey("Backspace", StudyTopicSelector_BackFromTopic, "On")
+}
+
+StudyTopicSelector_BackFromTopic(*) {
+    global g_StudyTopicSelectorGui, g_StudyTopicSelectorActive, g_StudyTopicSelectorPhase, g_StudyTopicSelectorCategory,
+        g_StudyTopicSelectorLastForegroundMonitorIdx
+
+    if (!g_StudyTopicSelectorActive || g_StudyTopicSelectorPhase != "topic")
+        return
+    StudyTopicSelector_UnbindDigitHotkeys()
+    try Hotkey("Backspace", StudyTopicSelector_BackFromTopic, "Off")
+    g_StudyTopicSelectorCategory := ""
+    g_StudyTopicSelectorPhase := "category"
+    if (IsObject(g_StudyTopicSelectorGui) && g_StudyTopicSelectorGui.Hwnd) {
+        try g_StudyTopicSelectorGui.Destroy()
+    }
+    g_StudyTopicSelectorGui := false
+    StudyTopicSelector_ShowCategoryPhase()
+    g_StudyTopicSelectorLastForegroundMonitorIdx := GetMonitorIndexForForeground_StandardBar()
 }
 
 ; First-menu shortcut: Technique README (mnemonics). Technique plans stay under [2] Plans then [0].
@@ -8226,6 +8260,7 @@ StudyTopicSelector_Close() {
     StudyTopicSelector_UnbindCategoryHotkeys()
     StudyTopicSelector_UnbindDigitHotkeys()
     try Hotkey("Escape", StudyTopicSelector_Cancel, "Off")
+    try Hotkey("Backspace", "Off")
     Utils_EnsureGlobalEscapeHotkey()
     if (IsObject(g_StudyTopicSelectorGui) && g_StudyTopicSelectorGui.Hwnd) {
         try g_StudyTopicSelectorGui.Destroy()

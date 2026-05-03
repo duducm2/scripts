@@ -1082,7 +1082,7 @@ InitializeGeminiFirstTime() {
 
         StandardLoadingBar_Hide(0)
     } catch Error as err {
-        ; Hide banner on error
+        ; Hide banner5 on error
         StandardLoadingBar_Hide(0)
     }
 }
