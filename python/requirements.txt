@@ -1,3 +1,5 @@
 # ShiftKeys daemon (Named Pipe server on Windows)
 pywin32>=306
 lingua-language-detector>=2.0
+orjson>=3.9
+pydantic>=2.5

@@ -4,9 +4,10 @@
 # Envelope: id, op, context, payload, ts, deadlineMs (request);
 #           id, ok, result, errorCode, errorMessage, telemetry (response).
 
-import json
 import struct
 import time
+
+from ipc_wire import json_dumps, json_loads_dict, validate_ipc_request_envelope
 
 # Request envelope keys
 REQ_ID = "id"
@@ -41,7 +42,7 @@ REQUIRED_REQUEST_KEYS = (REQ_ID, REQ_OP)
 
 
 def encode_message(obj: dict) -> bytes:
-    payload = json.dumps(obj, ensure_ascii=False).encode("utf-8")
+    payload = json_dumps(obj)
     return struct.pack(">I", len(payload)) + payload
 
 
@@ -53,11 +54,7 @@ def decode_message(data: bytes) -> dict | None:
         return None
     if len(data) < 4 + length:
         return None
-    payload = data[4 : 4 + length].decode("utf-8")
-    try:
-        return json.loads(payload)
-    except json.JSONDecodeError:
-        return None
+    return json_loads_dict(memoryview(data)[4 : 4 + length])
 
 
 def make_request(
@@ -98,6 +95,4 @@ def make_response(
 
 
 def validate_request(obj: dict) -> bool:
-    if not isinstance(obj, dict):
-        return False
-    return all(k in obj for k in REQUIRED_REQUEST_KEYS)
+    return validate_ipc_request_envelope(obj)

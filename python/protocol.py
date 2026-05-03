@@ -2,13 +2,14 @@
 # Used by the persistent Python daemon and the AHK client.
 # Frame format: length (4 bytes, big-endian) + UTF-8 JSON payload.
 
-import json
 import struct
 import time
 
+from ipc_wire import json_dumps, json_loads_dict, validate_ipc_request_envelope
+
 
 def encode_message(obj: dict) -> bytes:
-    payload = json.dumps(obj, ensure_ascii=False).encode("utf-8")
+    payload = json_dumps(obj)
     return struct.pack(">I", len(payload)) + payload
 
 
@@ -18,11 +19,7 @@ def decode_message(data: bytes) -> dict | None:
     (length,) = struct.unpack(">I", data[:4])
     if len(data) < 4 + length:
         return None
-    payload = data[4 : 4 + length].decode("utf-8")
-    try:
-        return json.loads(payload)
-    except json.JSONDecodeError:
-        return None
+    return json_loads_dict(memoryview(data)[4 : 4 + length])
 
 
 def read_frame(stream):
@@ -36,10 +33,7 @@ def read_frame(stream):
     payload = stream.buffer.read(length)
     if len(payload) < length:
         return None
-    try:
-        return json.loads(payload.decode("utf-8"))
-    except (json.JSONDecodeError, UnicodeDecodeError):
-        return None
+    return json_loads_dict(payload)
 
 
 def write_frame(stream, obj: dict) -> None:
@@ -103,6 +97,4 @@ def make_response(
 
 
 def validate_request(obj: dict) -> bool:
-    if not isinstance(obj, dict):
-        return False
-    return all(k in obj for k in REQUIRED_KEYS)
+    return validate_ipc_request_envelope(obj)
