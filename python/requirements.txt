@@ -3,3 +3,4 @@ pywin32>=306
 lingua-language-detector>=2.0
 orjson>=3.9
 pydantic>=2.5
+pywinauto>=0.6.8
