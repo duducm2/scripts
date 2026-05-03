@@ -4894,8 +4894,8 @@ class D2C_FlowManager {
             else if (readAloud) {
                 DetectHiddenWindows true
                 try {
-                    ; Blocks until Listen flow finishes; wParam 1 => GeminiTriggerReadAloud(false).
-                    SendMessage(WM_TRIGGER_READ_ALOUD, 1, 0, , "ahk_id " targetHwnd, , , , 120000)
+                    ; wParam 1 = skip duplicate Copy in Gemini.ahk; lParam = dictation anchor hwnd for post-read focus restore.
+                    SendMessage(WM_TRIGGER_READ_ALOUD, 1, this.OriginHwnd, , "ahk_id " targetHwnd, , , , 120000)
                 } catch {
                     ShowCenteredOverlay_Utils("❌ Read aloud failed or timed out", 4000, BANNER_ACCENT_ERROR)
                 } finally {

@@ -10,6 +10,23 @@
 
 #include %A_ScriptDir%\aux\GeminiIPC.ahk
 
+; #region agent log
+AgentLogFocusDbg(hypothesisId, location, message, dataJson := "") {
+    esc(s) {
+        if (s = "")
+            return ""
+        return StrReplace(StrReplace(s, "\", "\\"), "`"", "\`"")
+    }
+    ts := A_TickCount
+    line := '{"sessionId":"096adb","hypothesisId":"' . esc(hypothesisId) . '","location":"' . esc(location) .
+    '","message":"' . esc(message) . '","timestamp":' . ts
+    if (dataJson != "")
+        line .= ',"data":' . dataJson
+    line .= "}`n"
+    try FileAppend(line, A_ScriptDir "\debug-096adb.log", "UTF-8")
+}
+; #endregion
+
 ; --- Config ---------------------------------------------------------------
 ; Copy response button names (EN/PT). Excludes "Copy prompt" / "Copiar prompt" which are different controls.
 GEMINI_COPY_RESPONSE_NAMES := ["Copy", "Copiar"]
@@ -875,6 +892,7 @@ WM_START_DELAYED_SUBMIT_MONITOR := 0x8002
 ; Stop any running delayed-submit monitor (e.g. when user chose S or N at 6s dictation confirm). Sent from Utils.ahk.
 WM_STOP_DELAYED_SUBMIT_MONITOR := 0x8003
 ; Trigger read aloud from another script (e.g. D2C "Copy response?" R). Send does not trigger hotkeys in another script.
+; wParam: 1 = caller already copied (skip Copy in Gemini). lParam: anchored original hwnd for focus restore (0 = resolve like #!+o).
 WM_TRIGGER_READ_ALOUD := 0x8004
 ; Path for bridge to verify that Copy Last Response (same as #!+p) actually succeeded
 GEMINI_COPY_RESULT_PATH := A_ScriptDir "\.cursor\gemini_copy_result.txt"
@@ -891,7 +909,25 @@ handleStopDelayedSubmitMonitor(*) {
 }
 handleTriggerReadAloud(wParam, lParam, msg, hwnd) {
     ; wParam 1: D2C already ran WM_COPY_LAST_GEMINI; skip internal Copy click, open Listen only.
-    GeminiTriggerReadAloud(wParam = 0)
+    wp := Integer(wParam)
+    lp := Integer(lParam)
+    ; #region agent log
+    AgentLogFocusDbg("H1", "Gemini.ahk:handleTriggerReadAloud", "msg_recv",
+        '{"wp":' . wp . ',"lp":' . lp . '}')
+    ; #endregion
+    copyFirst := !(wp = 1)
+    gemHwnd := GetGeminiWindowHwnd()
+    if (lp && WinExist("ahk_id " lp)) {
+        ; #region agent log
+        AgentLogFocusDbg("H2", "Gemini.ahk:handleTriggerReadAloud", "opts_from_lp", "{}")
+        ; #endregion
+        return GeminiTriggerReadAloud(copyFirst, false, { originalHwnd: lp, geminiHwnd: gemHwnd ? gemHwnd : 0,
+            alreadyActive: true, verifyMaxRetries: GEMINI_DICTATION_READ_ALOUD_MAX_RETRIES })
+    }
+    ; #region agent log
+    AgentLogFocusDbg("H3", "Gemini.ahk:handleTriggerReadAloud", "no_lp_resolve_default", "{}")
+    ; #endregion
+    return GeminiTriggerReadAloud(copyFirst)
 }
 copyFromBridge(wParam, lParam, msg, hwnd) {
     geminiHwnd := Integer(lParam)
@@ -1188,8 +1224,6 @@ class GeminiAsyncReadAloud {
         this.AlreadyActive := (options != "" && options.HasProp("alreadyActive")) ? options.alreadyActive : false
         this.VerifyMaxRetries := (options != "" && options.HasProp("verifyMaxRetries")) ? options.verifyMaxRetries :
             GEMINI_READ_ALOUD_START_MAX_RETRIES
-        this.RestoreOriginalAfterReadStarted := (options != "" && options.HasProp("restoreOriginalAfterReadStarted")) ?
-            options.restoreOriginalAfterReadStarted : false
         this.TimerCallback := ""
         this.StartCallback := ""
         this.StepCallback := ""
@@ -1532,10 +1566,19 @@ class GeminiAsyncReadAloud {
                     GeminiEndAutomationSwitch("gemini_read_aloud_started")
                     ShowNotification(this.CopyFirst ? "Copied & Reading aloud" : "Reading aloud", 800, "FFFF00",
                         "000000", 24)
-                    if (this.GeminiHwnd && WinActive("ahk_id " this.GeminiHwnd))
-                        FocusGeminiAskFieldForHwnd(this.GeminiHwnd, false)
-                    if (this.RestoreOriginalAfterReadStarted)
+                    ; As soon as read-aloud is confirmed (Pause), return focus to the window that was active at hotkey
+                    ; time (#!+o, dictation R, TTS, …). Do not leave keyboard focus in Gemini unless there is nowhere else to go.
+                    orig := this.OriginalHwnd
+                    willRestore := (orig && orig != this.GeminiHwnd && WinExist("ahk_id " orig)) ? 1 : 0
+                    ; #region agent log
+                    AgentLogFocusDbg("H4", "GeminiAsyncReadAloud.CheckStarted", "pause_found_focus",
+                        '{"orig":' . (orig ? orig : 0) . ',"gem":' . (this.GeminiHwnd ? this.GeminiHwnd : 0) .
+                        ',"willRestore":' . willRestore . '}')
+                    ; #endregion
+                    if (willRestore)
                         this.RestoreOriginalFocus()
+                    else if (this.GeminiHwnd && WinActive("ahk_id " this.GeminiHwnd))
+                        FocusGeminiAskFieldForHwnd(this.GeminiHwnd, false)
                     return
                 }
             } catch {
@@ -2032,8 +2075,7 @@ class GeminiDelayedSubmitMonitor {
         }
         if (readAloud) {
             GeminiTriggerReadAloud(false, false, { originalHwnd: this.OriginalHwnd, geminiHwnd: this.GeminiHwnd,
-                alreadyActive: true, verifyMaxRetries: GEMINI_DICTATION_READ_ALOUD_MAX_RETRIES,
-                restoreOriginalAfterReadStarted: true })
+                alreadyActive: true, verifyMaxRetries: GEMINI_DICTATION_READ_ALOUD_MAX_RETRIES })
             ; Do not WinActivate(original) here: async read-aloud must keep Gemini foreground until Pause is found.
         } else if (WinActive("ahk_id " this.GeminiHwnd))
             FocusGeminiAskFieldForHwnd(this.GeminiHwnd, false)
