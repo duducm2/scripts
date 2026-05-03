@@ -80,6 +80,8 @@ GEMINI_DELAYED_SUBMIT_MAX_RETRIES := 300  ; 300 * 500ms = 150s
 GEMINI_ASYNC_TTS_MAX_RETRIES := 60
 ; Minimum ~3 effective polls after immediate CheckStarted; extra margin for cold TTS while Gemini stays foreground.
 GEMINI_READ_ALOUD_START_MAX_RETRIES := 8
+; Total Listen-menu attempts (Gemini often needs >1) before full RetryLaunch: 1 initial + (MAX-1) replays.
+GEMINI_READ_ALOUD_LISTEN_PHASE_MAX := 3
 ; Dictation "Copy + Read" path: response just finished streaming, so TTS engine is cold.
 ; Use the pre-optimization budget (10 * 150ms = 1500ms) so the Pause button has time to render
 ; without triggering RetryLaunch (which would emit a second "Hands off!" cue).
@@ -1276,6 +1278,7 @@ class GeminiAsyncReadAloud {
         this.QueuePollCount := 0
         this.Uia := 0
         this.Started := false
+        this.ListenPhaseReplays := 0
     }
 
     Start() {
@@ -1290,7 +1293,8 @@ class GeminiAsyncReadAloud {
             ShowNotification("Read aloud failed – Gemini is not open", 1800, "FF6666", "FFFFFF", 22)
             return false
         }
-        if (this.AlreadyActive && WinActive("ahk_id " this.GeminiHwnd))
+        ; If Gemini is already foreground, skip deferred IPC/Launch — same fast path as #!+p-style "already there".
+        if (this.GeminiHwnd && WinActive("ahk_id " this.GeminiHwnd))
             return this.TryStartReadAloud(false)
         ; IPC queue + pipe connect can block the calling thread (CreateFile on pipe waits for server).
         ; Defer so Win+Alt+Shift+O returns immediately like copy (#!+p); timers run the blocking work.
@@ -1368,11 +1372,13 @@ class GeminiAsyncReadAloud {
 
     Launch(*) {
         this.StartCallback := ""
+        this.ListenPhaseReplays := 0
         this.TryStartReadAloud(false)
     }
 
     RetryLaunch(*) {
         this.StartCallback := ""
+        this.ListenPhaseReplays := 0
         this.TryStartReadAloud(true)
     }
 
@@ -1410,8 +1416,9 @@ class GeminiAsyncReadAloud {
                     "false") .
                 ',"winActiveGemini":' . wa . ',"winExistGemini":' . ex . '}')
             ; #endregion
-            if (!this.AlreadyActive || !WinActive("ahk_id " this.GeminiHwnd)) {
-                ; Loading Indication (not Hands off overlay): same component as dictation/Gemini flows per standard_information_display.md
+            ; Only show "Switching to Gemini" when another window is foreground — not when already in Gemini (#!+o).
+            if (!WinActive("ahk_id " this.GeminiHwnd)) {
+                ; Loading Indication (not Hands off overlay): per standard_information_display.md
                 StandardLoadingBar_Show("⏳ Switching to Gemini…", BANNER_ACCENT_INTERMEDIATE, { centerOnHwnd: this.GeminiHwnd ?
                     this.GeminiHwnd : 0 })
                 if !GeminiActivateWindow(this.GeminiHwnd, GEMINI_ACTIVATE_WAIT_MS) {
@@ -1535,8 +1542,14 @@ class GeminiAsyncReadAloud {
             try {
                 listenMenuItem.Click()
                 StandardLoadingBar_Hide(0)
+                ; Listen mutates the DOM (TTS / Pause). Cached UIA_Browser from BuildUIA is stale — logs showed
+                ; 8 ticks with winActiveGemini=1 but no Pause until RetryLaunch rebuilt Uia (H8).
+                this.Uia := 0
                 ; Do not RestoreOriginalFocus here: keep Gemini foreground until CheckStarted confirms Pause (H2).
                 ; #region agent log
+                AgentLog096adb("H8", "GeminiAsyncReadAloud.WaitForListenMenuReady",
+                    "stale_uia_cleared_after_listen",
+                    '{"geminiHwnd":' . (this.GeminiHwnd ? this.GeminiHwnd : 0) . '}')
                 AgentLog096adb("H2", "GeminiAsyncReadAloud.WaitForListenMenuReady",
                     "after_listen_click_no_early_restore",
                     '{"geminiHwnd":' . (this.GeminiHwnd ? this.GeminiHwnd : 0) . '}')
@@ -1629,6 +1642,7 @@ class GeminiAsyncReadAloud {
             try {
                 if (FindGeminiPauseResumeButton(root, "Pause")) {
                     this.Started := true
+                    this.ListenPhaseReplays := 0
                     GeminiBackgroundStopTimer(this)
                     GeminiPerfLog("read_aloud", this.StartTick)
                     GeminiEndAutomationSwitch("gemini_read_aloud_started")
@@ -1652,6 +1666,17 @@ class GeminiAsyncReadAloud {
             return
 
         GeminiBackgroundStopTimer(this)
+        ; Gemini often ignores the first Listen — replay Listen (scroll + menu) up to LISTEN_PHASE_MAX times before full RetryLaunch.
+        if (this.ListenPhaseReplays < GEMINI_READ_ALOUD_LISTEN_PHASE_MAX - 1) {
+            this.ListenPhaseReplays++
+            this.StartRetryCount := 0
+            ; #region agent log
+            AgentLog096adb("H9", "GeminiAsyncReadAloud.CheckStarted", "listen_phase_replay",
+                '{"replay":' . this.ListenPhaseReplays . ',"max":' . GEMINI_READ_ALOUD_LISTEN_PHASE_MAX . '}')
+            ; #endregion
+            this.ScheduleStep(this.BuildUIA.Bind(this), GEMINI_UIA_SETTLE_MS)
+            return
+        }
         ; #region agent log
         AgentLog096adb("H3", "GeminiAsyncReadAloud.CheckStarted", "verify_exhausted_retry_launch", "{}")
         ; #endregion
