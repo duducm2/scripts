@@ -15,6 +15,22 @@ DebugFlowLog(location, message, dataStr := "", hypothesisId := "") {
     ; These agent debug logs are not required for runtime behavior.
     return
 }
+
+; Debug session e62b20: focus / foreground hwnd (NDJSON to debug-e62b20.log)
+D2C_DebugFocus_e62b20(hypothesisId, location, message, fgHwnd := 0, ovHwnd := 0, xtra := "") {
+    try {
+        ts := A_TickCount
+        fgs := fgHwnd ? Format("0x{:X}", fgHwnd) : "0"
+        ovs := ovHwnd ? Format("0x{:X}", ovHwnd) : "0"
+        xt := StrReplace(StrReplace(StrReplace(xtra, "\", "\\"), "`"", ""), "`n", " ")
+        q := Chr(34)
+        line := "{" q "sessionId" q ":" q "e62b20" q "," q "hypothesisId" q ":" q hypothesisId q "," q "location" q ":" .
+            q location q "," q "message" q ":" q message q "," q "data" q ":{" q "fgHwnd" q ":" q fgs q "," q "overlayHwnd" q ":" .
+            q ovs q "," q "xtra" q ":" q xt q "}," q "timestamp" q ":" ts "}`n"
+        FileAppend(line, A_ScriptDir . "\debug-e62b20.log", "UTF-8")
+    } catch {
+    }
+}
 ; #endregion
 
 #include UIA-v2\Lib\UIA.ahk
@@ -4003,6 +4019,14 @@ StandardLoadingBar_Show(state := "Working...", barColor := BANNER_ACCENT_INTERME
     promptKeys := options && options.HasProp("promptKeys") ? options.promptKeys : ""
     trackActiveMonitor := options && options.HasProp("trackActiveMonitor") && options.trackActiveMonitor
     manualProgress := options && options.HasProp("manualProgress") && options.manualProgress
+    ; #region agent log
+    if (trackActiveMonitor) {
+        fge := 0
+        try fge := WinGetID("A")
+        D2C_DebugFocus_e62b20("H5", "StandardLoadingBar_Show", "entry track path", fge, 0, "passive=" . (passive ? 1 :
+            0))
+    }
+    ; #endregion
 
     if (centerOnHwnd) {
         workArea := GetWorkAreaForWindow_StandardBar(centerOnHwnd)
@@ -4074,6 +4098,16 @@ StandardLoadingBar_Show(state := "Working...", barColor := BANNER_ACCENT_INTERME
     WinSetTransparent(alpha, overlayGui)
     g_StandardLoadingBarGui := overlayGui
     g_StandardLoadingBarValue := 0
+    ; #region agent log
+    if (trackActiveMonitor) {
+        fgx := 0
+        try fgx := WinGetID("A")
+        ovh := 0
+        try if IsObject(g_StandardLoadingBarGui)
+            ovh := g_StandardLoadingBarGui.Hwnd
+        D2C_DebugFocus_e62b20("H2", "StandardLoadingBar_Show", "afterShowNA", fgx, ovh, "passive=" . (passive ? 1 : 0))
+    }
+    ; #endregion
     if (!passive && !manualProgress)
         SetTimer(StandardLoadingBar_Tick, 40)
     if (trackActiveMonitor) {
@@ -4391,11 +4425,24 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
 
     ; Always activate the overlay so HotIfWinActive-scoped selection keys fire reliably.
     ; Without this, keys can fall through to the underlying app (most visible for "N" cancel).
+    ; #region agent log
+    fgB := 0
+    try fgB := WinGetID("A")
+    ovHw := 0
+    try if IsObject(g_StandardLoadingBarGui)
+        ovHw := g_StandardLoadingBarGui.Hwnd
+    D2C_DebugFocus_e62b20("H1", "StandardLoadingBar_ShowWithKeys", "before WinActivate overlay", fgB, ovHw, "")
+    ; #endregion
     try {
         if IsObject(g_StandardLoadingBarGui) && g_StandardLoadingBarGui.Hwnd
             WinActivate(g_StandardLoadingBarGui.Hwnd)
     } catch {
     }
+    ; #region agent log
+    fgA := 0
+    try fgA := WinGetID("A")
+    D2C_DebugFocus_e62b20("H1", "StandardLoadingBar_ShowWithKeys", "after WinActivate overlay", fgA, ovHw, "")
+    ; #endregion
 
     ; Reset any HotIf context so we don't leak it to unrelated hotkeys.
     try HotIf()
@@ -4573,15 +4620,26 @@ class D2C_FlowManager {
     ; --- Entry Points ---
 
     StartFromDictation() {
-        if (this.CurrentPhase = "PromptingSubmit") {
-            StandardLoadingBar_CloseKeysOverlay()
-            StandardLoadingBar_Hide(0)
-        } else if (this.CurrentPhase != "Idle") {
+        global g_D2C_DictationSubmitMenuCycleFinished
+        if (g_D2C_DictationSubmitMenuCycleFinished)
             return
-        }
+        if (this.CurrentPhase = "PromptingSubmit")
+            return
+        if (this.CurrentPhase != "Idle")
+            return
         this.Reset()
         this.OriginHwnd := WinActive("A")
+        ; #region agent log
+        fgCap := 0
+        try fgCap := WinGetID("A")
+        D2C_DebugFocus_e62b20("H4", "D2C.StartFromDictation", "after OriginHwnd capture", fgCap, this.OriginHwnd, "")
+        ; #endregion
         D2C_RunSubmitMenuDelayBar()
+        ; #region agent log
+        fgDel := 0
+        try fgDel := WinGetID("A")
+        D2C_DebugFocus_e62b20("H3", "D2C.StartFromDictation", "after delay bar", fgDel, this.OriginHwnd, "")
+        ; #endregion
         this.PromptForGeminiSubmit()
     }
 
@@ -4658,6 +4716,8 @@ class D2C_FlowManager {
         ; [V] Paste dictated: target the current foreground window only - do not WinActivate OriginHwnd (dictation start).
         Send("^v")
 
+        global g_D2C_DictationSubmitMenuCycleFinished
+        g_D2C_DictationSubmitMenuCycleFinished := true
         this.Reset()
     }
 
@@ -4676,6 +4736,8 @@ class D2C_FlowManager {
         Sleep 150
         Send("{Enter}")
 
+        global g_D2C_DictationSubmitMenuCycleFinished
+        g_D2C_DictationSubmitMenuCycleFinished := true
         this.Reset()
     }
 
@@ -4699,6 +4761,8 @@ class D2C_FlowManager {
             Sleep(D2C_POST_COPY_FAVORITE_DELAY_MS)
             MarkLastClipAsFavorite()
         } finally {
+            global g_D2C_DictationSubmitMenuCycleFinished
+            g_D2C_DictationSubmitMenuCycleFinished := true
             this.Reset()
         }
     }
@@ -4748,6 +4812,8 @@ class D2C_FlowManager {
             StandardLoadingBar_Update("✅ Clip Angel: ready", BANNER_ACCENT_SUCCESS)
         } finally {
             StandardLoadingBar_Hide(350)
+            global g_D2C_DictationSubmitMenuCycleFinished
+            g_D2C_DictationSubmitMenuCycleFinished := true
             this.Reset()
         }
     }
@@ -5129,6 +5195,8 @@ class D2C_FlowManager {
         StandardLoadingBar_CloseKeysOverlay()
         StandardLoadingBar_Hide(0)
         ShowCenteredOverlay_Utils("⚠ " . message, 1500, BANNER_ACCENT_INTERMEDIATE)
+        global g_D2C_DictationSubmitMenuCycleFinished
+        g_D2C_DictationSubmitMenuCycleFinished := true
         this.Reset()
     }
 }
@@ -12216,6 +12284,7 @@ global g_DictationStartSound := A_ScriptDir . "\sounds\speach-start.wav"
 global g_DictationStopSound := A_ScriptDir . "\sounds\speach-finished.wav"
 global g_PendingDictationAction := ""  ; Action to execute after transcription: "Paste" (reserved for future)
 global g_PendingGeminiPromptAfterDictation := false  ; When set by ~#!+0 stop, show "Send to Gemini? Y (4s)" after completion
+global g_D2C_DictationSubmitMenuCycleFinished := false  ; After V/E/N/timeout/F/O: block stray second StartFromDictation for this wave
 global g_DictationGeminiConfirmBannerVisible := false  ; Guard: only one "Send to Gemini?" banner at a time
 global g_KeepIndicatorVisible := false  ; Flag to keep indicator visible until paste action completes
 global g_LastStateTransitionTick := 0  ; Timestamp of last state transition to prevent rapid re-detection
@@ -12579,7 +12648,7 @@ DictationClipboardHandler(DataType) {
 ; Play completion chime after transcription finishes
 PlayDictationCompletionChime(*) {
     global g_DictationCompletionChimeScheduled, g_PendingDictationAction,
-        g_KeepIndicatorVisible, g_PendingGeminiPromptAfterDictation
+        g_KeepIndicatorVisible, g_PendingGeminiPromptAfterDictation, g_D2C_DictationSubmitMenuCycleFinished
 
     ; Ensure clipboard handler is removed (safe to call even if already removed)
     try {
@@ -12598,6 +12667,7 @@ PlayDictationCompletionChime(*) {
 
     ; Only play if flag was set (prevent duplicate execution)
     if (chimeShouldPlay) {
+        g_D2C_DictationSubmitMenuCycleFinished := false
         SafePlayDictationSound(g_DictationStopSound)
 
         ; Execute pending action if one was set (reserved for future use).
@@ -12799,7 +12869,7 @@ OnExit(CleanupDictationIndicator)
 ~#!+0::
 {
     global g_DictationActive, g_LastStateTransitionTick, g_DictationStartSound
-    global g_ProgrammaticDictationStop, g_PendingGeminiPromptAfterDictation
+    global g_ProgrammaticDictationStop, g_PendingGeminiPromptAfterDictation, g_D2C_DictationSubmitMenuCycleFinished
     global g_DictationHotkeyIsOwner
     static lastHotkeyTick := 0
     static isProcessing := false
@@ -12850,6 +12920,7 @@ OnExit(CleanupDictationIndicator)
     ; User was stopping dictation (had been active when they pressed key) -> show Gemini confirm after completion
     if (dictationWasActiveOnKeyPress) {
         g_PendingGeminiPromptAfterDictation := true
+        g_D2C_DictationSubmitMenuCycleFinished := false
         g_DictationGeminiConfirmBannerVisible := false  ; Allow 5s banner to show for this cycle (reset from previous N cancel)
         ; #region agent log
         DebugBannerLog("Utils.ahk:~#!+0", "Set pending Gemini flag", "dictationWasActiveOnKeyPress=1", "H1")
