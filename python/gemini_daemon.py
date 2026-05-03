@@ -11,6 +11,8 @@ import time
 import uuid
 import signal
 import threading
+
+from daemon_logging import configure_daemon_logging, get_logger
 from protocol import (
     encode_message,
     decode_message,
@@ -198,12 +200,30 @@ def write_frame(handle, obj):
 
 
 def serve_connection(handle) -> None:
+    log = get_logger()
     try:
         while not _shutdown.is_set():
             msg = read_frame(handle)
             if msg is None:
                 break
-            resp = handle_request(msg)
+            if not isinstance(msg, dict):
+                break
+            rid = str(msg.get(REQ_ID, ""))
+            op = str(msg.get(REQ_OP, ""))
+            t0 = time.perf_counter()
+            try:
+                resp = handle_request(msg)
+                ms = (time.perf_counter() - t0) * 1000.0
+                log.info(
+                    "ipc_request",
+                    req_id=rid,
+                    op=op,
+                    ok=bool(resp.get("ok", False)),
+                    ms_ms=round(ms, 3),
+                )
+            except Exception as e:
+                log.exception("ipc_request_error", req_id=rid, op=op)
+                resp = make_response(rid, False, error=str(e)[:500])
             write_frame(handle, resp)
             _prune_finished_tasks()
     except (BrokenPipeError, OSError):
@@ -253,4 +273,5 @@ def run_pipe_server() -> None:
 
 
 if __name__ == "__main__":
+    configure_daemon_logging("gemini_daemon")
     run_pipe_server()

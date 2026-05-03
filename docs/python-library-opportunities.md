@@ -15,14 +15,17 @@ The `python/` tree hosts **persistent IPC daemons** and shared protocol code:
 | Daemons | [wm_daemon.py](../python/wm_daemon.py), [applauncher_daemon.py](../python/applauncher_daemon.py), [shiftkeys_daemon.py](../python/shiftkeys_daemon.py), [gemini_daemon.py](../python/gemini_daemon.py) |
 | Protocols / framing | [protocol.py](../python/protocol.py), [wm_protocol.py](../python/wm_protocol.py), [al_protocol.py](../python/al_protocol.py), [shiftkeys_protocol.py](../python/shiftkeys_protocol.py) |
 | Window / hook helpers | [wm_hooks.py](../python/wm_hooks.py), [al_window_enum.py](../python/al_window_enum.py) |
-| ShiftKeys context / UIA | [shiftkeys_context.py](../python/shiftkeys_context.py), [shiftkeys_uia.py](../python/shiftkeys_uia.py) (UIA layer **stubbed**) |
+| ShiftKeys context / UIA | [shiftkeys_context.py](../python/shiftkeys_context.py), [shiftkeys_uia.py](../python/shiftkeys_uia.py) (UIA find/wait via **pywinauto** for daemon `FindElement` / `WaitElementState`) |
+| JSON + envelope validation | [ipc_wire.py](../python/ipc_wire.py) (**orjson** + **pydantic**) used by `*_protocol.py` |
+| Daemon logging | [daemon_logging.py](../python/daemon_logging.py) (**structlog**, JSON lines to stderr) |
+| Tests | [python/tests/](python/tests/) (**pytest**), protocol round-trips |
 | Harness / diagnostics | [wm_harness.py](../python/wm_harness.py), [compare_monitor_enumeration.py](../python/compare_monitor_enumeration.py) |
 
-Declared runtime dependencies are minimal: [requirements.txt](../python/requirements.txt) lists **pywin32** and **lingua-language-detector**. The latter is used in [gemini_daemon.py](../python/gemini_daemon.py) for language detection (`OP_DETECT_LANG`), which is already an example of pushing a non-trivial library task into Python while AHK stays on the UI path.
+Declared dependencies are in [requirements.txt](../python/requirements.txt): **pywin32**, **lingua-language-detector**, **orjson**, **pydantic**, **pywinauto**, **structlog**, **pytest** (pytest is primarily for development/CI; daemons do not require it at runtime). **lingua** is used in [gemini_daemon.py](../python/gemini_daemon.py) for `OP_DETECT_LANG`.
 
 ### 1.2 JSON and IPC
 
-On the Python side, messages use **stdlib `json`** inside the protocol modules (length-prefixed UTF-8 frames). On the AutoHotkey side, several IPC clients implement **hand-built JSON** and simplified decoders—for example [AppLauncherIPC.ahk](../aux/AppLauncherIPC.ahk) (`AL_IPC_JsonEncodeRequest`, `AL_IPC_DecodeResponse`). Similar patterns appear in [WMIPC.ahk](../aux/WMIPC.ahk) and [ShiftKeysIPC.ahk](../aux/ShiftKeysIPC.ahk). That keeps dependencies zero in AHK but increases the risk of edge-case bugs (escaping, nested objects, unicode) whenever the protocol evolves.
+On the Python side, framed payloads use **orjson** and minimal request validation via **pydantic** in [ipc_wire.py](../python/ipc_wire.py) (length-prefixed UTF-8 frames unchanged on the wire). On the AutoHotkey side, several IPC clients implement **hand-built JSON** and simplified decoders—for example [AppLauncherIPC.ahk](../aux/AppLauncherIPC.ahk) (`AL_IPC_JsonEncodeRequest`, `AL_IPC_DecodeResponse`). Similar patterns appear in [WMIPC.ahk](../aux/WMIPC.ahk) and [ShiftKeysIPC.ahk](../aux/ShiftKeysIPC.ahk). That keeps dependencies zero in AHK but increases the risk of edge-case bugs (escaping, nested objects, unicode) whenever the protocol evolves.
 
 ### 1.3 Where automation actually lives
 
@@ -37,25 +40,33 @@ On the Python side, messages use **stdlib `json`** inside the protocol modules (
 
 ### 2.1 IPC protocols: validation, speed, and safety
 
+**Shipped (Python):** [ipc_wire.py](../python/ipc_wire.py) already provides **orjson** serialization and **pydantic**-backed minimal request validation for all daemon `*_protocol.py` modules. Framing on the wire is unchanged.
+
+**Still open / next steps:**
+
 | Opportunity | Suggested libraries | Where it helps |
 |-------------|---------------------|----------------|
-| Faster UTF-8 JSON on encode/decode hot paths | **orjson** (or **msgspec** if you later want strict schemas or binary frames) | `encode_message` / `decode_message` in [protocol.py](../python/protocol.py), [wm_protocol.py](../python/wm_protocol.py), [al_protocol.py](../python/al_protocol.py), [shiftkeys_protocol.py](../python/shiftkeys_protocol.py) |
-| Typed request/response envelopes and clearer validation errors | **pydantic** v2 (`BaseModel`) | Replaces or tightens ad hoc `validate_request` / dict shapes shared with AHK |
-| Property-based tests for framing and unicode | **hypothesis** | Length-prefix boundaries, `ensure_ascii=False` parity with AHK consumers |
+| Binary or stricter schemas (optional) | **msgspec** (or richer **pydantic** models per op) | Only if you need smaller payloads or stronger response typing than today’s dict envelopes |
+| Property-based tests for framing and unicode | **hypothesis** | Length-prefix boundaries, parity with AHK hand-built JSON in [aux/AppLauncherIPC.ahk](../aux/AppLauncherIPC.ahk), [aux/WMIPC.ahk](../aux/WMIPC.ahk), [aux/ShiftKeysIPC.ahk](../aux/ShiftKeysIPC.ahk) |
 
 **Practical note:** You can keep AHK as the MMF writer and add a **small Python CLI used only in tests** to round-trip frames, instead of moving runtime JSON generation off AHK—unless profiling shows AHK string building is a bottleneck.
 
-### 2.2 ShiftKeys daemon: complete the UIA path
+### 2.2 ShiftKeys daemon: UIA path (implemented; integration follow-ups)
 
-[shiftkeys_uia.py](../python/shiftkeys_uia.py) is intentionally a stub; comments already point to **comtypes** + UI Automation, **pywinauto** (UIA backend), or similar. Implementing real `find_element` / `wait_element_state` there would match the README story of optional offload and could reduce fragile polling duplicated in AHK for the same operations.
+[shiftkeys_uia.py](../python/shiftkeys_uia.py) is **implemented** with **pywinauto** (UIA): `find_element`, `wait_element_state`, and `find_gemini_stop_button` back the daemon’s `FindElement` / `WaitElementState` ops. **Optional next steps:** (1) expose `FindElement` / `WaitElementState` from [aux/ShiftKeysIPC.ahk](../aux/ShiftKeysIPC.ahk) so hotkeys actually hit the Python path today; (2) replace the **timer stub** for `OP_WATCH_UI_STATE` in [shiftkeys_daemon.py](../python/shiftkeys_daemon.py) with real UIA polling if you want non-blocking Gemini watch to match AHK’s blocking `WaitForStopResponseButton_Gemini`; (3) tune descendant-walk limits or add a dedicated STA worker if COM threading on the pipe thread ever flakes.
 
 ### 2.3 Observability and developer experience
 
+**Shipped:** [daemon_logging.py](../python/daemon_logging.py) (**structlog**, JSON per line to stderr) on every IPC request in all four daemons; baseline **pytest** protocol round-trips in [python/tests/](python/tests/).
+
+**Still open:**
+
 | Opportunity | Suggested libraries | Notes |
 |-------------|---------------------|--------|
-| Structured daemon logs (level, request id, duration) | **structlog** or **loguru** | AHK already uses NDJSON-style debug in places ([GeminiToCursorBridge.ahk](../GeminiToCursorBridge.ahk) `Bridge_Log`, agent logs in [Shift keys.ahk](../Shift keys.ahk)); Python can align on the same fields for cross-process debugging. |
+| Cross-process log correlation | Same field names as AHK NDJSON ([GeminiToCursorBridge.ahk](../GeminiToCursorBridge.ahk) `Bridge_Log`, agent logs in [Shift keys.ahk](../Shift keys.ahk)) | Optional convention pass; daemons already emit `req_id`, `op`, `ok`, `ms_ms` |
 | Nicer CLI for harnesses | **typer** or **click** | [wm_harness.py](../python/wm_harness.py), [compare_monitor_enumeration.py](../python/compare_monitor_enumeration.py) |
-| Linting, typing, tests | **ruff**, **mypy** or **pyright**, **pytest** | Protocol modules are ideal for fast unit tests without a GUI |
+| Linting and static typing | **ruff**, **mypy** or **pyright** | Broader than the current small pytest suite |
+| More pytest coverage | **pytest** | Daemon `handle_request` with mocks, edge payloads, regression tests for [ipc_wire.py](../python/ipc_wire.py) |
 
 ### 2.4 Resilience and concurrency (optional)
 
@@ -97,18 +108,18 @@ Gemini workflows in this repo are **browser- and UIA-driven**, not REST clients.
 | [GeminiToCursorBridge.ahk](../GeminiToCursorBridge.ahk) | Bridge logic stays AHK; optional **structlog** correlation if daemons participate in debugging |
 | [Microsoft Teams.ahk](../Microsoft Teams.ahk), [Outlook.ahk](../Outlook.ahk) | UIA-first; Python COM automation only if you deliberately add a heavy service layer |
 | [mousemaster.ahk](../mousemaster.ahk) | Low-level input; **remain AHK** |
-| [Shift keys.ahk](../Shift keys.ahk) | Largest surface; best Python wins are **shiftkeys_uia** completion and optional fuzzy helpers in daemon |
+| [Shift keys.ahk](../Shift keys.ahk) | **shiftkeys_uia** is **done** in Python (daemon `FindElement` / `WaitElementState`); AHK does **not** yet call those ops over IPC—optional wiring in [aux/ShiftKeysIPC.ahk](../aux/ShiftKeysIPC.ahk). Optional **rapidfuzz** if fuzzy helpers move into the daemon |
 | [Spotify.ahk](../Spotify.ahk), [SpotifyWASAPI.ahk](../SpotifyWASAPI.ahk) | Current WASAPI approach is appropriate |
 | [Utils.ahk](../Utils.ahk) | Optional small Python CLIs with **typer** to replace scattered PowerShell where testability matters |
-| [WindowManagement.ahk](../WindowManagement.ahk) | Already integrated with [wm_daemon.py](../python/wm_daemon.py); strengthen protocols with **pydantic** / **orjson** |
+| [WindowManagement.ahk](../WindowManagement.ahk) | Already integrated with [wm_daemon.py](../python/wm_daemon.py); WM protocol uses **ipc_wire** (pydantic + orjson) |
 
 ---
 
 ## 4. Suggested priority order
 
-1. **pydantic** and **orjson** on shared protocol encode/decode (low behavioral risk, clear maintainability and performance upside).
-2. **Real implementation of [shiftkeys_uia.py](../python/shiftkeys_uia.py)** with comtypes, pywinauto, or an equivalent UIA binding—delivers on the existing daemon design.
-3. **structlog** (or loguru) plus **pytest** for the `python/` tree—improves confidence when changing IPC.
+1. **Done:** **pydantic** and **orjson** on shared protocol encode/decode ([ipc_wire.py](../python/ipc_wire.py)).
+2. **Done:** **Real [shiftkeys_uia.py](../python/shiftkeys_uia.py)** (pywinauto UIA) for daemon `FindElement` / `WaitElementState`.
+3. **Done:** **structlog** plus **pytest** — [daemon_logging.py](../python/daemon_logging.py) wired into all four daemons; [python/tests/](python/tests/) protocol round-trips (`python -m pytest python/tests`).
 4. **rapidfuzz** if you move more window matching into Python for a single source of truth.
 5. GitPython, openpyxl, httpx, and async refactors only when a **concrete feature** justifies the dependency and process boundary.
 
@@ -125,12 +136,18 @@ flowchart TB
   end
   subgraph py [Python daemons]
     Pipes[Named pipes / MMF]
-    Proto[JSON protocols]
+    JsonStack[ipc_wire orjson pydantic]
+    Proto[Op handlers]
+    Logs[structlog stderr]
     Lingua[lingua detect]
+    ShiftKeysUIA[shiftkeys_uia pywinauto]
   end
   ahk -->|IPC frames| Pipes
-  Pipes --> Proto
+  Pipes --> JsonStack
+  JsonStack --> Proto
+  Proto --> Logs
   Proto --> Lingua
+  Proto --> ShiftKeysUIA
 ```
 
 **Rule of thumb:** keep anything that must complete in tens of milliseconds on a keypress in AHK; use Python for caching, enumeration, background tasks, validation-heavy JSON, and library ecosystems that are painful to reimplement in AHK.
@@ -157,7 +174,8 @@ Supporting and library paths:
 
 | Module | Role |
 |--------|------|
-| [wm_daemon.py](../python/wm_daemon.py) | Named-pipe server for window-management IPC |
+| [wm_daemon.py](../python/wm_daemon.py) | Named-pipe server for window-management IPC (structlog per request) |
+| [daemon_logging.py](../python/daemon_logging.py) | Shared structlog JSON configuration for daemons |
 | [wm_protocol.py](../python/wm_protocol.py), [wm_hooks.py](../python/wm_hooks.py) | WM message schema and optional hook-backed cache |
 | [wm_harness.py](../python/wm_harness.py) | Client harness for latency / ping checks |
 | [applauncher_daemon.py](../python/applauncher_daemon.py) | MMF-based app launcher daemon |
@@ -165,7 +183,8 @@ Supporting and library paths:
 | [shiftkeys_daemon.py](../python/shiftkeys_daemon.py) | Named-pipe server for ShiftKeys automation offload |
 | [shiftkeys_protocol.py](../python/shiftkeys_protocol.py) | ShiftKeys message schema |
 | [shiftkeys_context.py](../python/shiftkeys_context.py) | Foreground / context hooks (pywin32 COM message pump) |
-| [shiftkeys_uia.py](../python/shiftkeys_uia.py) | UIA find/wait stubs (intended for real implementation) |
+| [shiftkeys_uia.py](../python/shiftkeys_uia.py) | UIA find/wait for daemon ops (pywinauto; COM init per call) |
+| [ipc_wire.py](../python/ipc_wire.py) | orjson + pydantic envelope validation for protocols |
 | [gemini_daemon.py](../python/gemini_daemon.py) | Gemini IPC daemon; task queue and **lingua** language detection |
 | [protocol.py](../python/protocol.py) | Gemini daemon JSON framing helpers |
 | [compare_monitor_enumeration.py](../python/compare_monitor_enumeration.py) | Diagnostic compare for monitor enumeration vs AHK |

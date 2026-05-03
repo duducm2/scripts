@@ -15,6 +15,7 @@ import ctypes
 from ctypes import wintypes
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from daemon_logging import configure_daemon_logging, get_logger
 from al_protocol import (
     MMF_HEADER_SIZE,
     MMF_VERSION,
@@ -195,6 +196,8 @@ def handle_request(req: dict) -> dict:
 def run_daemon() -> None:
     signal.signal(signal.SIGINT, _on_signal)
     signal.signal(signal.SIGTERM, _on_signal)
+    configure_daemon_logging("applauncher_daemon")
+    log = get_logger()
 
     # Create MMF (daemon creates; AHK opens with OpenFileMappingW)
     h_map = CreateFileMappingW(
@@ -269,7 +272,27 @@ def run_daemon() -> None:
                     ReleaseMutex(h_mutex)
                     ResetEvent(h_evt_request)
                     continue
-                resp = handle_request(req)
+                rid = str(req.get(REQ_ID, ""))
+                op = str(req.get(REQ_OP, ""))
+                t0 = time.perf_counter()
+                try:
+                    resp = handle_request(req)
+                    ms = (time.perf_counter() - t0) * 1000.0
+                    log.info(
+                        "ipc_request",
+                        req_id=rid,
+                        op=op,
+                        ok=bool(resp.get("ok", False)),
+                        ms_ms=round(ms, 3),
+                    )
+                except Exception as e:
+                    log.exception("ipc_request_error", req_id=rid, op=op)
+                    resp = make_response(
+                        rid,
+                        False,
+                        error_code=99,
+                        error_message=str(e)[:500],
+                    )
             finally:
                 ResetEvent(h_evt_request)
                 ReleaseMutex(h_mutex)

@@ -49,3 +49,7 @@ For intermittent **monitor 1 / wrong-screen** behavior when the daemon is on, se
 - **Daemon**: `python/wm_daemon.py`, `python/wm_protocol.py`, `python/wm_hooks.py`
 - **AHK client**: `aux/WMIPC.ahk`
 - **Harness**: `aux/WM_IPC_Harness.ahk`, `python/wm_harness.py`
+
+## Python IPC unit tests (all daemons)
+
+From the repo root: `pip install -r python/requirements.txt` then `python -m pytest python/tests`. This checks framed JSON for WM, ShiftKeys, AppLauncher, and Gemini protocols (no pipe server or AHK required). WM daemon verification above is separate (functional + harness).

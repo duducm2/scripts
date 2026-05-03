@@ -82,6 +82,8 @@ IPC is **optional** and controlled by feature flags in the aux modules. AHK clie
 
 For **new hotkeys that only need AHK + UIA**, IPC is not required.
 
+**Python daemon tests:** From the repo root, after `pip install -r python/requirements.txt`, run `python -m pytest python/tests` to verify IPC protocol encode/decode round-trips (no AHK or running daemons required). Daemons log each handled request as JSON lines on stderr via **structlog** ([python/daemon_logging.py](python/daemon_logging.py)).
+
 ### Hotkey allocation and where to add hotkeys
 
 - **Primary set:** Shift+[Y U I O P H J K L N M , . W E R T D F G C V B]. When full, use **Win+Alt+Shift (MEH)** in the same order.
