@@ -1676,6 +1676,19 @@ global g_AiModelSelectorGui := false
 global g_AiModelSelectorActive := false
 global g_AiModelBannerGui := false
 
+; Persistent language flag indicator (slot 3 = UK, slot 4 = Brazil); see docs/standard_information_display.md "Persistent Indicators".
+global g_LanguageFlagGui := false
+global g_LanguageFlagSlot := 0
+global g_LanguageFlagTrackTimer := ""
+global g_LanguageFlagLastForegroundMonitorIdx := 0
+global LANGUAGE_FLAG_WIDTH := 64                ; px; aspect kept via Picture h:-1
+global LANGUAGE_FLAG_MARGIN := 20               ; px from work-area right/bottom
+global LANGUAGE_FLAG_TRACK_INTERVAL := 115      ; ms; matches StandardLoadingBar tracker
+
+; Restore the persistent flag on script load (Reload-safe). Deferred so the GUI
+; subsystem is ready and any concurrent auto-execute side-effects settle first.
+SetTimer(LanguageFlag_InitFromPersistedSlot, -250)
+
 Handy_GetHandyAiModelIniPath() {
     return A_ScriptDir "\data\handy_ai_model.ini"
 }
@@ -3155,6 +3168,143 @@ AiModelBanner_Hide() {
     StandardLoadingBar_Hide(0)
 }
 
+; =============================================================================
+; Persistent Language Flag Indicator (slot 3 = UK, slot 4 = Brazil)
+; =============================================================================
+; An opaque, always-on-top flag chip pinned to the bottom-right of the active
+; monitor's work area. Reuses GetMonitorIndexForForeground_StandardBar /
+; GetActiveMonitorWorkArea_StandardBar so multi-monitor logic stays centralized.
+; Independent of g_StandardLoadingBarTrackTimer so it survives across transient
+; banner show/hide cycles (see docs/standard_information_display.md).
+; =============================================================================
+
+LanguageFlag_GetImagePath(slot) {
+    rel := (slot = 3) ? "\images\flags\united-kingdom.png" : (slot = 4) ? "\images\flags\brazil.png" : ""
+    if (rel = "")
+        return ""
+    ; Prefer the running script's folder, then the folder that contains Utils.ahk (covers odd layouts).
+    candidates := [A_ScriptDir . rel]
+    SplitPath(A_LineFile, , &utilsDir)
+    if (utilsDir != "" && utilsDir != A_ScriptDir)
+        candidates.Push(utilsDir . rel)
+    for p in candidates {
+        if FileExist(p)
+            return p
+    }
+    return ""
+}
+
+LanguageFlag_Show(slot) {
+    global g_LanguageFlagGui, g_LanguageFlagSlot, g_LanguageFlagTrackTimer,
+        g_LanguageFlagLastForegroundMonitorIdx, LANGUAGE_FLAG_WIDTH, LANGUAGE_FLAG_TRACK_INTERVAL
+
+    if (slot != 3 && slot != 4) {
+        LanguageFlag_Hide()
+        return
+    }
+
+    LanguageFlag_Hide()
+
+    ; Opaque always-on-top chip. Do NOT use WS_EX_TRANSPARENT (part of +E0x80020): that style makes
+    ; Windows skip painting the window, so the flag can be completely invisible.
+    flagGui := Gui("+AlwaysOnTop -Caption +ToolWindow -DPIScale +Border")
+    flagGui.BackColor := "313244"
+    flagGui.MarginX := 8
+    flagGui.MarginY := 8
+
+    imagePath := LanguageFlag_GetImagePath(slot)
+    usedPicture := false
+    if (imagePath != "") {
+        try {
+            flagGui.Add("Picture", "w" . LANGUAGE_FLAG_WIDTH . " h-1 Border", imagePath)
+            usedPicture := true
+        } catch {
+            usedPicture := false
+        }
+    }
+    if !usedPicture {
+        flagGui.SetFont("s18 cFFFFFF Bold", "Segoe UI")
+        label := (slot = 3) ? "EN" : "PT"
+        flagGui.Add("Text", "Center w80 h44 Background45475A Border", label)
+    }
+
+    flagGui.Show("AutoSize Hide")
+
+    g_LanguageFlagGui := flagGui
+    g_LanguageFlagSlot := slot
+
+    LanguageFlag_RepositionToActiveMonitor()
+    try flagGui.Show("NA")
+
+    g_LanguageFlagLastForegroundMonitorIdx := GetMonitorIndexForForeground_StandardBar()
+    try SetTimer(g_LanguageFlagTrackTimer, 0)
+    catch {
+    }
+    g_LanguageFlagTrackTimer := SetTimer(LanguageFlag_TrackTick, LANGUAGE_FLAG_TRACK_INTERVAL)
+}
+
+LanguageFlag_Hide() {
+    global g_LanguageFlagGui, g_LanguageFlagSlot, g_LanguageFlagTrackTimer,
+        g_LanguageFlagLastForegroundMonitorIdx
+    try SetTimer(g_LanguageFlagTrackTimer, 0)
+    catch {
+    }
+    g_LanguageFlagTrackTimer := ""
+    g_LanguageFlagLastForegroundMonitorIdx := 0
+    if (IsObject(g_LanguageFlagGui)) {
+        try g_LanguageFlagGui.Destroy()
+    }
+    g_LanguageFlagGui := false
+    g_LanguageFlagSlot := 0
+}
+
+LanguageFlag_RepositionToActiveMonitor() {
+    global g_LanguageFlagGui, LANGUAGE_FLAG_MARGIN
+    if !IsObject(g_LanguageFlagGui)
+        return
+    GetActiveMonitorWorkArea_StandardBar(&ml, &mt, &mr, &mb)
+    try {
+        g_LanguageFlagGui.GetPos(, , &gw, &gh)
+    } catch {
+        return
+    }
+    guiX := mr - gw - LANGUAGE_FLAG_MARGIN
+    guiY := mb - gh - LANGUAGE_FLAG_MARGIN
+    if (guiX < ml)
+        guiX := ml
+    if (guiY < mt)
+        guiY := mt
+    try {
+        g_LanguageFlagGui.Move(guiX, guiY)
+        hwnd := g_LanguageFlagGui.Hwnd
+        if (hwnd) {
+            ; SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE = 0x0001 | 0x0004 | 0x0010 = 0x0015
+            DllCall("SetWindowPos", "Ptr", hwnd, "Ptr", 0, "Int", guiX, "Int", guiY, "Int", 0, "Int", 0, "UInt", 0x0015
+            )
+        }
+    } catch {
+    }
+}
+
+LanguageFlag_TrackTick() {
+    global g_LanguageFlagGui, g_LanguageFlagLastForegroundMonitorIdx
+    if !IsObject(g_LanguageFlagGui) {
+        LanguageFlag_Hide()
+        return
+    }
+    newIdx := GetMonitorIndexForForeground_StandardBar()
+    if (newIdx != g_LanguageFlagLastForegroundMonitorIdx) {
+        g_LanguageFlagLastForegroundMonitorIdx := newIdx
+        LanguageFlag_RepositionToActiveMonitor()
+    }
+}
+
+LanguageFlag_InitFromPersistedSlot() {
+    slot := Handy_GetPersistedAiModelSlot()
+    if (slot = 3 || slot = 4)
+        LanguageFlag_Show(slot)
+}
+
 ; Small banner for Clip Angel (uses standard loading indicator).
 ClipAngelBanner_Show(text, bgColor := BANNER_ACCENT_INTERMEDIATE) {
     StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: 0, textWidth: 200, fontSize: 17,
@@ -3244,6 +3394,12 @@ ExecuteHandyAiModelSelection(selection) {
             return
         }
         Handy_SetPersistedAiModelSlot(selection)
+
+        ; Update persistent language flag indicator (slot 3 = UK, slot 4 = BR; hidden for slots 1/2).
+        if (selection = 3 || selection = 4)
+            LanguageFlag_Show(selection)
+        else
+            LanguageFlag_Hide()
 
         ; Step 4: Wait for model to finish loading (poll button name until "loading" disappears)
         AiModelBanner_Show("⏳ Waiting for model...", BANNER_ACCENT_INTERMEDIATE)

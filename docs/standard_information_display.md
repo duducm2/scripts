@@ -7,7 +7,7 @@ A shared UI component for **loading indication**, **information-only messages**,
 - **Single shared component** for loading, information, and user-input feedback across all AHK scripts
 - **Replaces ad-hoc banners and overlays** with a consistent user experience
 - **Monitor-aware positioning** – centers on the active window's monitor or the primary monitor; optional **active-monitor tracking** (`trackActiveMonitor` on interactive banners) recenters the bar when the foreground window moves to another display while the banner is open (dictation and Gemini transfer flows).
-- **Three display categories** – Loading Indication (progress bar), Information Only (static message), Interactive Input (key press + optional timeout)
+- **Four display categories** – Loading Indication (progress bar), Information Only (static message), Interactive Input (key press + optional timeout), Persistent Indicator (long-lived state pinned to a monitor corner)
 - **Standard font size** – 17px for all banners and loading indicators (except `ShowSingleCharTabBanner_Utils`, which keeps 72px)
 - **Emoji** – every banner message must start with an emoji (e.g. ⏳ loading, ✅ success, ❌ error, ❓ user input)
 
@@ -15,24 +15,39 @@ A shared UI component for **loading indication**, **information-only messages**,
 
 Three categories define how information is shown to users. Use the same API and semantics for all consumers (human and tooling).
 
-| Category               | Label / prefix   | Implementation                                                                                                                          | Purpose                                                                           |
-| ---------------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| **Loading Indication** | ⏳, 🔄           | `StandardLoadingBar_Show` with `passive: false` (default), optional `StandardLoadingBar_Update`; progress bar animates                  | Progress tracking; show → update → hide lifecycle                                 |
-| **Information Only**   | ✅, ℹ, 📋, ❌, ⚠ | `StandardLoadingBar_Show` with `passive: true` and immediate or delayed `Hide`; or `ShowCenteredOverlay_Utils(text, duration, bgColor)` | Static message; no user input; auto-hide by duration                              |
-| **Interactive Input**  | ❓, ⌨            | `StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs, …)` with optional `promptKeys` strip                                   | Wait for specific key presses; optional timeout; fixed bottom strip for key hints |
+| Category                  | Label / prefix   | Implementation                                                                                                                          | Purpose                                                                           |
+| ------------------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| **Loading Indication**    | ⏳, 🔄           | `StandardLoadingBar_Show` with `passive: false` (default), optional `StandardLoadingBar_Update`; progress bar animates                  | Progress tracking; show → update → hide lifecycle                                 |
+| **Information Only**      | ✅, ℹ, 📋, ❌, ⚠ | `StandardLoadingBar_Show` with `passive: true` and immediate or delayed `Hide`; or `ShowCenteredOverlay_Utils(text, duration, bgColor)` | Static message; no user input; auto-hide by duration                              |
+| **Interactive Input**     | ❓, ⌨            | `StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs, …)` with optional `promptKeys` strip                                   | Wait for specific key presses; optional timeout; fixed bottom strip for key hints |
+| **Persistent Indicator**  | 🇬🇧, 🇧🇷 (image)  | `LanguageFlag_Show(slot)` / `LanguageFlag_Hide()` (Utils.ahk); opaque chip, bottom-right of active monitor; independent monitor tracker | Long-lived state indicator (e.g. transcription language) that survives across transient banners and follows the foreground window |
 
 - **Loading Indication:** Call `Show` at start, `Update` at milestones, `Hide` in all exit paths. The animated progress bar indicates ongoing work.
 - **Information Only:** Short-lived message; use `ShowCenteredOverlay_Utils(text, duration, bgColor)` for the common case (show + auto-hide after `duration` ms), or `StandardLoadingBar_Show` with `passive: true` plus `Hide(duration)`.
 - **Interactive Input:** Use `StandardLoadingBar_ShowWithKeys`; pass `promptKeys` (e.g. `"[Y] Confirm  [N] Cancel"`) for a fixed bottom strip so the main message and key hints stay clearly separated. Interactive confirmations can use `noBorder: true` and a neutral/dark `barColor` (e.g. `"1E1E2E"`) for a single clean banner (see `DictationGeminiConfirm_ShowAndWait` in Utils.ahk).
+- **Persistent Indicator:** Long-lived, **opaque** overlay anchored to the bottom-right of the active monitor's work area. Does **not** auto-hide; remains visible until explicitly hidden or replaced. Uses an independent track timer so it does not collide with the centered `StandardLoadingBar_*` overlay (a transient banner showing/hiding never disturbs a persistent indicator). See dedicated subsection below.
 - **Outlook activation-failed prompts:** For mailbox/calendar failures such as `"Outlook mailbox and calendar are not open (activation failed)"`, do **not** use `MsgBox` buttons. Use a standard **Interactive Input** banner that asks whether to activate Outlook (for example: `❓ Would you like to activate Outlook?`) with `ShowWithKeys` + prompt strip (e.g. `"[Y] Activate Outlook  [N] Cancel"`).
 
 ### Banner Types (by category)
 
-| Category               | Emoji / prefix   | Use case                                      |
-| ---------------------- | ---------------- | --------------------------------------------- |
-| **Loading Indication** | ⏳, 🔄           | Progress bar + emoji; `passive: false`        |
-| **Information Only**   | ✅, ℹ, 📋, ❌, ⚠ | Passive text-only; emoji + message            |
-| **Interactive Input**  | ❓, ⌨            | `ShowWithKeys` + fixed bottom strip with keys |
+| Category                  | Emoji / prefix   | Use case                                      |
+| ------------------------- | ---------------- | --------------------------------------------- |
+| **Loading Indication**    | ⏳, 🔄           | Progress bar + emoji; `passive: false`        |
+| **Information Only**      | ✅, ℹ, 📋, ❌, ⚠ | Passive text-only; emoji + message            |
+| **Interactive Input**     | ❓, ⌨            | `ShowWithKeys` + fixed bottom strip with keys |
+| **Persistent Indicator**  | 🇬🇧, 🇧🇷 (image)  | Pinned image or text fallback in monitor corner; opaque; no auto-hide |
+
+### Persistent Indicators
+
+Persistent indicators are long-lived overlays that show **state** rather than transient progress or messages. The first instance is the language flag for the Handy transcription tool (slot 3 = Cohere English → 🇬🇧, slot 4 = Cohere Portuguese → 🇧🇷; slots 1/2 hide the flag).
+
+- **Anchor:** bottom-right corner of the active monitor's work area, with a 20 px margin from the right and bottom edges.
+- **Opaque rendering:** the GUI is a small `+ToolWindow +AlwaysOnTop -Caption +Border` window with a solid background. It must **not** use `WS_EX_TRANSPARENT` (formerly combined with layered as `+E0x80020`): that extended style tells Windows not to paint the window normally, which made the indicator invisible. Focus is not stolen because the window is tool-style and shown with `NA` (no activate); the chip is small and sits in a corner.
+- **Multi-monitor tracking:** reuses `GetMonitorIndexForForeground_StandardBar` and `GetActiveMonitorWorkArea_StandardBar` (the same helpers `StandardLoadingBar_*` uses) so the flag follows the foreground window across all monitors. The poll interval matches the standard bar (`LANGUAGE_FLAG_TRACK_INTERVAL`, 115 ms).
+- **Independent timer:** the indicator must own a **separate** track-timer global (e.g. `g_LanguageFlagTrackTimer`). Sharing `g_StandardLoadingBarTrackTimer` would let any transient `Show`/`Hide` cycle silently kill the persistent tracker.
+- **Reload-safe:** the active slot is persisted in `data\handy_ai_model.ini`. On script load, `LanguageFlag_InitFromPersistedSlot()` (deferred via `SetTimer(..., -250)`) reads `Handy_GetPersistedAiModelSlot()` and restores the correct flag.
+- **Image assets:** `images/flags/united-kingdom.png` and `images/flags/brazil.png` (downscaled by AHK's `Picture` control, aspect preserved with `h-1`). Paths are resolved from `A_ScriptDir` first, then from the directory containing `Utils.ahk` (`A_LineFile`). If no image loads, a bold **EN** / **PT** text label is shown on the same opaque panel.
+- **Code-switch hook:** `ExecuteHandyAiModelSelection` calls `LanguageFlag_Show(3)` / `LanguageFlag_Show(4)` on success for slots 3/4 and `LanguageFlag_Hide()` for slots 1/2, immediately after `Handy_SetPersistedAiModelSlot`.
 
 ## Semantic Colors (Colorblind Accessibility)
 
@@ -90,6 +105,7 @@ These wrap `StandardLoadingBar_*` with preset styles:
 | `ShowCenteredOverlay_Utils(text, duration, bgColor)`        | Short message with duration; Show + Hide(duration); fontSize 17; message should start with emoji                                                                 |
 | `HotstringGeminiBanner_Show` / `HotstringGeminiBanner_Hide` | Gemini redirect (textWidth 280, fontSize 17); default text with emoji                                                                                            |
 | `DictationGeminiConfirm_ShowAndWait()`                      | "❓ Send transcription to Gemini? (6s)" with Y/N keys, prompt strip `[Y] Confirm  [N] Cancel`, 6 s timeout; `noBorder: true`; `barColor` `"1E1E2E"`; fontSize 17 |
+| `LanguageFlag_Show(slot)` / `LanguageFlag_Hide()`           | **Persistent Indicator**: pinned, opaque flag (or EN/PT fallback) in the bottom-right of the active monitor (slot 3 = UK, slot 4 = Brazil); follows foreground window across monitors; independent of `StandardLoadingBar_*` |
 
 ## Implementation Instances
 
@@ -106,6 +122,9 @@ These wrap `StandardLoadingBar_*` with preset styles:
 | 2303–2316 | `FastCopyModeBanner_Show` / `FastCopyModeBanner_Update` / `FastCopyModeBanner_Hide` (Shift keys Fast Copy Mode)                                                                                                                                     |
 | 1738–1745 | `ShowCenteredOverlay_Utils`                                                                                                                                                                                                                         |
 | 2081–2152 | `HotstringGeminiBanner_Show`/`Hide`, `DictationGeminiConfirm_ShowAndWait` (uses `StandardLoadingBar_ShowWithKeys` with `promptKeys` `"[Y] Confirm  [N] Cancel"`, `noBorder: true`, `barColor` `"1E1E2E"`)                                           |
+| 1679–1690 | Persistent language flag globals (`g_LanguageFlagGui`, `g_LanguageFlagSlot`, `g_LanguageFlagTrackTimer`, `g_LanguageFlagLastForegroundMonitorIdx`) and constants (`LANGUAGE_FLAG_WIDTH`, `LANGUAGE_FLAG_MARGIN`, `LANGUAGE_FLAG_TRACK_INTERVAL`); deferred `SetTimer(LanguageFlag_InitFromPersistedSlot, -250)` for Reload-safe restoration |
+| 3171–3285 | `LanguageFlag_GetImagePath`, `LanguageFlag_Show`, `LanguageFlag_Hide`, `LanguageFlag_RepositionToActiveMonitor`, `LanguageFlag_TrackTick`, `LanguageFlag_InitFromPersistedSlot` (Persistent Indicator; opaque chip, bottom-right anchor, independent track timer, EN/PT fallback if images missing) |
+| 3375–3381 | `ExecuteHandyAiModelSelection` code-switch hook: after `Handy_SetPersistedAiModelSlot(selection)`, calls `LanguageFlag_Show(3)` / `LanguageFlag_Show(4)` for Cohere slots and `LanguageFlag_Hide()` for slots 1/2 |
 | 5493–5500 | Peek PDF flow                                                                                                                                                                                                                                       |
 
 ### Gemini.ahk
@@ -181,6 +200,7 @@ These wrap `StandardLoadingBar_*` with preset styles:
 7. **Emoji** – Start every banner message with an appropriate emoji (e.g. ⏳ loading, ✅ done, ❌ error, ❓ user input).
 8. **Interactive Input** – When using `ShowWithKeys`, pass the 11th parameter `promptKeys` (e.g. `"[Y] Confirm  [N] Cancel"`) for a fixed bottom strip.
 9. **Background work** – Any step that can take noticeable time without direct user input (daemon or IPC startup, language detection, network, browser automation) must show **Loading Indication**: call `StandardLoadingBar_Show` (animated bar, default `passive: false`) before the work begins, then `Update` at milestones if helpful, and always reach `Hide` on failure branches. Do not leave the screen empty between closing an interactive banner (e.g. `ShowWithKeys`) and the next visible outcome unless the transition is instantaneous.
+10. **Persistent indicators** – Each persistent indicator (e.g. `LanguageFlag_*`) must own a **separate** track-timer global; do not reuse `g_StandardLoadingBarTrackTimer` or any other transient banner's tracker. Sharing would let any `Show`/`Hide` cycle on a transient banner silently kill the persistent indicator's monitor-follow behavior. Prefer an **opaque** `+ToolWindow +AlwaysOnTop -Caption` chip shown with `NA` so it stays visible and does not activate the foreground app; do **not** use `WS_EX_TRANSPARENT` for visibility (it can suppress painting entirely). Click-through is optional only if implemented without breaking normal client-area painting.
 
 ## Consumption by tools
 
