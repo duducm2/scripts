@@ -8,40 +8,6 @@
 #include %A_ScriptDir%\Utils.ahk
 #include %A_ScriptDir%\aux\WMIPC.ahk
 
-; #region agent log
-GeminiDebugNdjson(hypothesisId, location, message, dataJson := "") {
-    esc(s) {
-        if (s = "")
-            return ""
-        return StrReplace(StrReplace(s, "\", "\\"), "`"", "\`"")
-    }
-    ts := A_TickCount
-    line := '{"sessionId":"c8d42c","hypothesisId":"' . esc(hypothesisId) . '","location":"' . esc(location) .
-    '","message":"' . esc(message) . '","timestamp":' . ts
-    if (dataJson != "")
-        line .= ',"data":' . dataJson
-    line .= "}`n"
-    try FileAppend(line, A_ScriptDir "\debug-c8d42c.log", "UTF-8")
-}
-; #endregion
-
-; #region agent log
-AgentLog096adb(hypothesisId, location, message, dataJson := "") {
-    esc(s) {
-        if (s = "")
-            return ""
-        return StrReplace(StrReplace(s, "\", "\\"), "`"", "\`"")
-    }
-    ts := A_TickCount
-    line := '{"sessionId":"096adb","hypothesisId":"' . esc(hypothesisId) . '","location":"' . esc(location) .
-    '","message":"' . esc(message) . '","timestamp":' . ts
-    if (dataJson != "")
-        line .= ',"data":' . dataJson
-    line .= "}`n"
-    try FileAppend(line, A_ScriptDir "\debug-096adb.log", "UTF-8")
-}
-; #endregion
-
 #include %A_ScriptDir%\aux\GeminiIPC.ahk
 
 ; --- Config ---------------------------------------------------------------
@@ -955,41 +921,23 @@ copyFromBridge(wParam, lParam, msg, hwnd) {
 ; Get Pronunciation — language picker + lookup (invoked off the #!+8 hotkey thread via timer)
 ; =============================================================================
 GeminiHotkey_ShowPronunciationLanguagePicker(selectedText) {
-    ; #region agent log
-    GeminiDebugNdjson("C", "Gemini.ahk:GeminiHotkey_ShowPronunciationLanguagePicker", "picker_enter", "{}")
-    ; #endregion
     onSelect(lang) {
         StandardLoadingBar_CloseKeysOverlay()
         StandardLoadingBar_Hide(0)
-        ; #region agent log
-        GeminiDebugNdjson("D", "Gemini.ahk:#!+8:onSelect", "user_pick", '{"lang":"' . lang . '","activeHwnd":' .
-            WinExist("A") . '}')
-        ; #endregion
         if (lang != "")
-            (GeminiAsyncLookup(lang, selectedText)
-            ).Start()
+            (GeminiAsyncLookup(lang, selectedText)).Start()
     }
 
     onTimeout() {
-        ; #region agent log
-        GeminiDebugNdjson("D", "Gemini.ahk:#!+8:onTimeout", "timeout_start", '{"activeHwnd":' . WinExist("A") . '}')
-        ; #endregion
         StandardLoadingBar_CloseKeysOverlay()
         StandardLoadingBar_Hide(0)
         StandardLoadingBar_Show("⏳ Detecting language…", BANNER_ACCENT_INTERMEDIATE, { textWidth: 450, fontSize: 17 })
         ; Do not call GeminiIPC_DetectLang here: EnsureReady/HealthCheck use synchronous pipe I/O (WriteFile/Connect)
         ; that can block the main thread indefinitely; UI then freezes on this banner. Heuristic is same-thread-safe.
-        ; #region agent log
-        GeminiDebugNdjson("D", "Gemini.ahk:#!+8:onTimeout", "lang_via_heuristic_only", "{}")
-        ; #endregion
         lang := DetectLang_AhkFallback(selectedText)
         if !(lang = "pt" || lang = "en" || lang = "de")
             lang := "en"
-        ; #region agent log
-        GeminiDebugNdjson("D", "Gemini.ahk:#!+8:onTimeout", "before_lookup", '{"langFinal":"' . lang . '"}')
-        ; #endregion
-        (GeminiAsyncLookup(lang, selectedText)
-        ).Start()
+        (GeminiAsyncLookup(lang, selectedText)).Start()
     }
 
     keyCallbacks := Map(
@@ -999,15 +947,9 @@ GeminiHotkey_ShowPronunciationLanguagePicker(selectedText) {
         "*Escape", (*) => onSelect("")
     )
 
-    ; #region agent log
-    GeminiDebugNdjson("C", "Gemini.ahk:#!+8", "before_show_with_keys", "{}")
-    ; #endregion
     StandardLoadingBar_ShowWithKeys("❓ Auto-detect in 2s — press to override", keyCallbacks, 2000, 0, onTimeout,
         BANNER_ACCENT_INTERMEDIATE,
         450, 17, "", false, "[1] Portuguese  [2] English  [3] German  [Esc] Cancel", false, true)
-    ; #region agent log
-    GeminiDebugNdjson("C", "Gemini.ahk:#!+8", "after_show_with_keys_returned", "{}")
-    ; #endregion
 }
 
 ; =============================================================================
@@ -1016,40 +958,24 @@ GeminiHotkey_ShowPronunciationLanguagePicker(selectedText) {
 ; =============================================================================
 #!+8:: {
     global g_StandardLoadingBarIsKeysOverlay
-    ; #region agent log
-    GeminiDebugNdjson("A", "Gemini.ahk:#!+8", "hotkey_enter", '{"keysOverlay":' . (g_StandardLoadingBarIsKeysOverlay ?
-        "true" : "false") . '}')
-    ; #endregion
     if (g_StandardLoadingBarIsKeysOverlay) {
         StandardLoadingBar_CloseKeysOverlay()
         StandardLoadingBar_Hide(0)
-        ; #region agent log
-        GeminiDebugNdjson("A", "Gemini.ahk:#!+8", "early_exit_cancel_overlay", "{}")
-        ; #endregion
         return
     }
 
     A_Clipboard := ""
     if (!TryCopySelectionToClipboard_QuickLookAware()) {
-        ; #region agent log
-        GeminiDebugNdjson("B", "Gemini.ahk:#!+8", "copy_failed", "{}")
-        ; #endregion
         ShowCenteredOverlay_Utils("❌ Copy failed (no selection).", 1800, BANNER_ACCENT_ERROR)
         return
     }
     selectedText := A_Clipboard
-    ; #region agent log
-    GeminiDebugNdjson("B", "Gemini.ahk:#!+8", "copy_ok", '{"textLen":' . StrLen(selectedText) . '}')
-    ; #endregion
 
     ; Run picker after hotkey returns — StandardLoadingBar_* registers/unregisters global hotkeys; doing that from
     ; inside the same #!+8 thread can deadlock so the banner never appears (no after_show_with_keys_returned in logs).
     ; Do NOT schedule GeminiIPC_EnsureReady here before the picker: timers run FIFO on the main thread; a blocking
-    ; HealthCheck/SendRequest can delay or starve the picker timer so picker_enter never logs.
+    ; HealthCheck/SendRequest can delay or starve the picker timer so the banner never appears.
     ; Daemon warm-up happens inside GeminiIPC_DetectLang → EnsureReady on timeout path.
-    ; #region agent log
-    GeminiDebugNdjson("C", "Gemini.ahk:#!+8", "defer_picker_scheduled", "{}")
-    ; #endregion
     SetTimer(GeminiHotkey_ShowPronunciationLanguagePicker.Bind(selectedText), -1)
 }
 
@@ -1391,31 +1317,16 @@ class GeminiAsyncReadAloud {
             this.Uia := 0
             this.Started := false
             GeminiState.Invalidate()
-            ; HWND can go stale after tab reload / window recreation; GetGeminiWindowHwnd re-resolves (H5).
+            ; HWND can go stale after tab reload / window recreation; GetGeminiWindowHwnd re-resolves.
             if (!this.GeminiHwnd || !WinExist("ahk_id " this.GeminiHwnd)) {
                 nh := GetGeminiWindowHwnd()
                 if (nh)
                     this.GeminiHwnd := nh
-                ; #region agent log
-                AgentLog096adb("H5", "GeminiAsyncReadAloud.TryStartReadAloud", "hwnd_resolve",
-                    '{"geminiHwnd":' . (this.GeminiHwnd ? this.GeminiHwnd : 0) . '}')
-                ; #endregion
             }
             if (!this.GeminiHwnd || !WinExist("ahk_id " this.GeminiHwnd)) {
-                ; #region agent log
-                AgentLog096adb("H5", "GeminiAsyncReadAloud.TryStartReadAloud", "no_gemini_abort", "{}")
-                ; #endregion
                 this.Fail()
                 return false
             }
-            ; #region agent log
-            wa := WinActive("ahk_id " this.GeminiHwnd) ? 1 : 0
-            ex := WinExist("ahk_id " this.GeminiHwnd) ? 1 : 0
-            AgentLog096adb("H4", "GeminiAsyncReadAloud.TryStartReadAloud", "enter",
-                '{"skipCopy":' . (skipCopy ? "true" : "false") . ',"alreadyActive":' . (this.AlreadyActive ? "true" :
-                    "false") .
-                ',"winActiveGemini":' . wa . ',"winExistGemini":' . ex . '}')
-            ; #endregion
             ; Only show "Switching to Gemini" when another window is foreground — not when already in Gemini (#!+o).
             if (!WinActive("ahk_id " this.GeminiHwnd)) {
                 ; Loading Indication (not Hands off overlay): per standard_information_display.md
@@ -1542,18 +1453,9 @@ class GeminiAsyncReadAloud {
             try {
                 listenMenuItem.Click()
                 StandardLoadingBar_Hide(0)
-                ; Listen mutates the DOM (TTS / Pause). Cached UIA_Browser from BuildUIA is stale — logs showed
-                ; 8 ticks with winActiveGemini=1 but no Pause until RetryLaunch rebuilt Uia (H8).
+                ; Listen mutates the DOM (TTS / Pause). Cached UIA_Browser from BuildUIA is stale.
                 this.Uia := 0
-                ; Do not RestoreOriginalFocus here: keep Gemini foreground until CheckStarted confirms Pause (H2).
-                ; #region agent log
-                AgentLog096adb("H8", "GeminiAsyncReadAloud.WaitForListenMenuReady",
-                    "stale_uia_cleared_after_listen",
-                    '{"geminiHwnd":' . (this.GeminiHwnd ? this.GeminiHwnd : 0) . '}')
-                AgentLog096adb("H2", "GeminiAsyncReadAloud.WaitForListenMenuReady",
-                    "after_listen_click_no_early_restore",
-                    '{"geminiHwnd":' . (this.GeminiHwnd ? this.GeminiHwnd : 0) . '}')
-                ; #endregion
+                ; Do not RestoreOriginalFocus here: keep Gemini foreground until CheckStarted confirms Pause.
                 this.StartRetryCount := 0
                 this.Started := false
                 ; Common case (post-Gemini-reliability fix): Pause button is already present at click time.
@@ -1592,22 +1494,14 @@ class GeminiAsyncReadAloud {
 
     CheckStarted() {
         this.StartRetryCount++
-        ; Re-resolve HWND if Chrome replaced the window (H5); keeps RetryLaunch / verify from targeting a dead ahk_id.
+        ; Re-resolve HWND if Chrome replaced the window; keeps RetryLaunch / verify from targeting a dead ahk_id.
         if (!this.GeminiHwnd || !WinExist("ahk_id " this.GeminiHwnd)) {
-            prev := this.GeminiHwnd ? this.GeminiHwnd : 0
             nh := GetGeminiWindowHwnd()
             if (nh && nh != this.GeminiHwnd)
                 this.Uia := 0
             this.GeminiHwnd := nh ? nh : this.GeminiHwnd
-            ; #region agent log
-            AgentLog096adb("H5", "GeminiAsyncReadAloud.CheckStarted", "hwnd_refresh",
-                '{"prev":' . prev . ',"now":' . (this.GeminiHwnd ? this.GeminiHwnd : 0) . '}')
-            ; #endregion
         }
         if (!this.GeminiHwnd || !WinExist("ahk_id " this.GeminiHwnd)) {
-            ; #region agent log
-            AgentLog096adb("H5", "GeminiAsyncReadAloud.CheckStarted", "gemini_lost_mid_verify", "{}")
-            ; #endregion
             GeminiBackgroundStopTimer(this)
             if (!this.StartRetryAttempted) {
                 this.StartRetryAttempted := true
@@ -1619,21 +1513,11 @@ class GeminiAsyncReadAloud {
             this.Fail()
             return
         }
-        ; Keep Gemini foreground during Pause detection so UIA/DOM match what the user sees (H6); no overlay.
+        ; Keep Gemini foreground during Pause detection so UIA/DOM match what the user sees; no overlay.
         if (!WinActive("ahk_id " this.GeminiHwnd)) {
-            ; #region agent log
-            AgentLog096adb("H6", "GeminiAsyncReadAloud.CheckStarted", "refocus_for_verify",
-                '{"n":' . this.StartRetryCount . ',"geminiHwnd":' . this.GeminiHwnd . '}')
-            ; #endregion
             try WinActivate("ahk_id " this.GeminiHwnd)
             try WinWaitActive("ahk_id " this.GeminiHwnd, , 0.4)
         }
-        ; #region agent log
-        wa := WinActive("ahk_id " this.GeminiHwnd) ? 1 : 0
-        AgentLog096adb("H3", "GeminiAsyncReadAloud.CheckStarted", "tick",
-            '{"n":' . this.StartRetryCount . ',"verifyMax":' . this.VerifyMaxRetries . ',"winActiveGemini":' . wa . '}'
-        )
-        ; #endregion
         ; Reuse the UIA element attached in BuildUIA (canon §4 cache-first); only re-resolve once if it's gone.
         root := IsObject(this.Uia) ? this.Uia : 0
         if (!root)
@@ -1650,10 +1534,6 @@ class GeminiAsyncReadAloud {
                         "000000", 24)
                     if (this.GeminiHwnd && WinActive("ahk_id " this.GeminiHwnd))
                         FocusGeminiAskFieldForHwnd(this.GeminiHwnd, false)
-                    ; #region agent log
-                    AgentLog096adb("H3", "GeminiAsyncReadAloud.CheckStarted", "pause_found",
-                        '{"restoreAfter":' . (this.RestoreOriginalAfterReadStarted ? "true" : "false") . '}')
-                    ; #endregion
                     if (this.RestoreOriginalAfterReadStarted)
                         this.RestoreOriginalFocus()
                     return
@@ -1670,16 +1550,9 @@ class GeminiAsyncReadAloud {
         if (this.ListenPhaseReplays < GEMINI_READ_ALOUD_LISTEN_PHASE_MAX - 1) {
             this.ListenPhaseReplays++
             this.StartRetryCount := 0
-            ; #region agent log
-            AgentLog096adb("H9", "GeminiAsyncReadAloud.CheckStarted", "listen_phase_replay",
-                '{"replay":' . this.ListenPhaseReplays . ',"max":' . GEMINI_READ_ALOUD_LISTEN_PHASE_MAX . '}')
-            ; #endregion
             this.ScheduleStep(this.BuildUIA.Bind(this), GEMINI_UIA_SETTLE_MS)
             return
         }
-        ; #region agent log
-        AgentLog096adb("H3", "GeminiAsyncReadAloud.CheckStarted", "verify_exhausted_retry_launch", "{}")
-        ; #endregion
         if (!this.StartRetryAttempted) {
             this.StartRetryAttempted := true
             ShowNotification("Retrying read aloud...", 800, "FFFF00", "000000", 24)
@@ -1784,15 +1657,8 @@ class GeminiAsyncLookup {
     }
 
     Start() {
-        ; #region agent log
-        GeminiDebugNdjson("E", "Gemini.ahk:GeminiAsyncLookup.Start", "entry", '{"activeHwnd":' . WinExist("A") .
-        ',"hasPreCopy":' . (this.PreCopiedText != "" ? "true" : "false") . '}')
-        ; #endregion
         this.OriginalHwnd := WinExist("A")
         if !this.OriginalHwnd {
-            ; #region agent log
-            GeminiDebugNdjson("E", "Gemini.ahk:GeminiAsyncLookup.Start", "early_exit_no_active_hwnd", "{}")
-            ; #endregion
             return
         }
         ; Show loading banner immediately, centered on the monitor where this window is (with warning)
@@ -1811,18 +1677,12 @@ class GeminiAsyncLookup {
             ShowCenteredOverlay_Utils("❌ Copy failed (no clipboard text). QuickLook selection may not support Ctrl+C.",
                 2400,
                 BANNER_ACCENT_ERROR)
-            ; #region agent log
-            GeminiDebugNdjson("E", "Gemini.ahk:GeminiAsyncLookup.Start", "early_exit_clip_failed", "{}")
-            ; #endregion
             return
         }
         SetTitleMatchMode(2)
         this.GeminiHwnd := GetGeminiWindowHwnd()
         if !this.GeminiHwnd {
             StandardLoadingBar_Hide(0)
-            ; #region agent log
-            GeminiDebugNdjson("E", "Gemini.ahk:GeminiAsyncLookup.Start", "early_exit_no_gemini_window", "{}")
-            ; #endregion
             return
         }
         try {
@@ -1830,16 +1690,10 @@ class GeminiAsyncLookup {
         } catch {
             StandardLoadingBar_Hide(0)
             ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
-            ; #region agent log
-            GeminiDebugNdjson("E", "Gemini.ahk:GeminiAsyncLookup.Start", "early_exit_activate_failed", "{}")
-            ; #endregion
             return
         }
         if !WinWaitActive("ahk_exe chrome.exe", , 2) {
             StandardLoadingBar_Hide(0)
-            ; #region agent log
-            GeminiDebugNdjson("E", "Gemini.ahk:GeminiAsyncLookup.Start", "early_exit_chrome_not_active", "{}")
-            ; #endregion
             return
         }
         ; For pronunciation lookup (#!+8), always use the trash tab (second Gemini tab).
@@ -2177,22 +2031,15 @@ class GeminiDelayedSubmitMonitor {
             PlayCopyCompletedChime()
         }
         if (readAloud) {
-            ; #region agent log
-            AgentLog096adb("H1", "GeminiDelayedSubmitMonitor.DoCopyCore", "read_aloud_branch",
-                '{"skipRestoreTail":true,"geminiHwnd":' . (this.GeminiHwnd ? this.GeminiHwnd : 0) . '}')
-            ; #endregion
             GeminiTriggerReadAloud(false, false, { originalHwnd: this.OriginalHwnd, geminiHwnd: this.GeminiHwnd,
                 alreadyActive: true, verifyMaxRetries: GEMINI_DICTATION_READ_ALOUD_MAX_RETRIES,
                 restoreOriginalAfterReadStarted: true })
-            ; Do not WinActivate(original) here: async read-aloud must keep Gemini foreground until Pause is found (H1).
+            ; Do not WinActivate(original) here: async read-aloud must keep Gemini foreground until Pause is found.
         } else if (WinActive("ahk_id " this.GeminiHwnd))
             FocusGeminiAskFieldForHwnd(this.GeminiHwnd, false)
         ; Gemini/Clipboard → Original: return transitions are immediate (no warning).
         if (!skipRestoreFocus && !readAloud && WinExist("ahk_id " this.OriginalHwnd) && !WinActive("ahk_id " this.OriginalHwnd
         )) {
-            ; #region agent log
-            AgentLog096adb("H1", "GeminiDelayedSubmitMonitor.DoCopyCore", "win_activate_original_tail", "{}")
-            ; #endregion
             WinActivate("ahk_id " this.OriginalHwnd)
             ; Fast-path: avoid WinWaitActive if we are already active.
             if (!WinActive("ahk_id " this.OriginalHwnd))
