@@ -1,12 +1,6 @@
-﻿2026-05-04 15:34:10 | session-start source=rapid_fire_hotkey scope=vscode pinned=8851420
-2026-05-04 15:34:10 | rearm source=rapid_fire_hotkey scope=vscode pinned=8851420 target=8851420
-2026-05-04 15:34:10 | tick allow-detected hwnd=8851420 title=Test - Visual Studio Code
-2026-05-04 15:34:14 | click-attempt hwnd=8851420 frameSource=none frame=none branch=uia-invoke btn='' class='' rect=(0,0)-(0,0)
-2026-05-04 15:34:19 | tick allow-detected hwnd=8851420 title=Test - Visual Studio Code
-2026-05-04 15:34:25 | click-attempt hwnd=8851420 frameSource=none frame=none branch=uia-invoke btn='Allow Once (Ctrl+Enter)' class='monaco-button small monaco-text-button' rect=(-988,1016)-(-886,1050)
-2026-05-04 15:34:29 | tick allow-detected hwnd=8851420 title=Settings - Test - Visual Studio Code
-2026-05-04 15:34:35 | click-attempt hwnd=8851420 frameSource=none frame=none branch=uia-invoke btn='' class='' rect=(0,0)-(0,0)
-2026-05-04 15:34:44 | tick allow-detected hwnd=8851420 title=Settings - Test - Visual Studio Code
-2026-05-04 15:34:49 | click-attempt hwnd=8851420 frameSource=none frame=none branch=uia-invoke btn='' class='' rect=(0,0)-(0,0)
-2026-05-04 15:34:59 | tick allow-detected hwnd=8851420 title=Settings - Test - Visual Studio Code
-2026-05-04 15:35:02 | stop reason=ℹ Allow watcher cancelled
+﻿2026-05-04 16:38:19 | session-start source=chat_submit scope=vscode pinned=8851420
+2026-05-04 16:38:19 | rearm source=chat_submit scope=vscode pinned=8851420 target=8851420
+2026-05-04 16:38:19 | trigger-accepted source=chat_submit scope=vscode target=8851420 pinned=1
+2026-05-04 16:38:19 | trigger-banner source=chat_submit text=⏳ Allow flow started from Enter send
+2026-05-04 16:38:28 | tick allow-detected hwnd=8851420 title=Test - Visual Studio Code
+2026-05-04 16:38:34 | click-attempt hwnd=8851420 frameSource=none frame=none branch=uia-invoke btn='' class='' rect=(0,0)-(0,0)

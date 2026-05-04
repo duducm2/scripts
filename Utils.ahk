@@ -2865,13 +2865,17 @@ VSCode_SubmitChat(targetHwnd) {
 
 VSCode_TryStartAibAllowWatcher(targetHwnd) {
     try {
-        if (!IsSet(AIB_StartAllowWatcher_Bridge))
-            return
         fn := Func("AIB_StartAllowWatcher_Bridge")
-        if (!HasMethod(fn, "Call"))
+        if (!IsObject(fn) || !HasMethod(fn, "Call")) {
+            DebugFlowLog("Utils.ahk:VSCode_TryStartAibAllowWatcher", "bridge missing call", "hwnd=" . targetHwnd, "VSC9")
             return
+        }
+
+        DebugFlowLog("Utils.ahk:VSCode_TryStartAibAllowWatcher", "bridge call", "hwnd=" . targetHwnd, "VSC10")
         fn.Call("chat_submit", targetHwnd)
-    } catch {
+        DebugFlowLog("Utils.ahk:VSCode_TryStartAibAllowWatcher", "bridge ok", "hwnd=" . targetHwnd, "VSC11")
+    } catch Error as e {
+        DebugFlowLog("Utils.ahk:VSCode_TryStartAibAllowWatcher", "bridge error", SubStr(e.Message, 1, 120), "VSC12")
     }
 }
 

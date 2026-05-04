@@ -2156,6 +2156,8 @@ global g_AIB_StartImplProbeTimer := ""
 global g_AIB_StartImplPrevPresentByHwnd := Map()
 global g_AIB_RapidFireTestSourceDir := ""
 global g_AIB_RapidFireTestTargetDir := ""
+global g_AIB_StartBannerCooldownMs := 900
+global g_AIB_LastStartBannerTickByKey := Map()
 
 ; Keep this lightweight timer always on so manual "Start implementation" clicks can arm the watcher.
 g_AIB_StartImplProbeTimer := AIB_StartImplementationProbeTick
@@ -2202,7 +2204,148 @@ AIB_StartAllowWatcher(triggerSource := "manual", targetHwnd := 0, windowScope :=
 
 ; Callable by name from Utils.ahk (avoids #Warn UseUnsetLocal for AIB_StartAllowWatcher).
 AIB_StartAllowWatcher_Bridge(triggerSource := "manual", targetHwnd := 0) {
-    return AIB_StartAllowWatcher(triggerSource, targetHwnd, "vscode", true)
+    return AIB_ArmAllowWatcher(triggerSource, targetHwnd, "vscode", true, true)
+}
+
+AIB_IsCursorComposerFocused(hwnd) {
+    global UIA
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return false
+
+    ; Fast path: current focused element is already the Cursor composer input.
+    try {
+        fe := UIA.GetFocusedElement()
+        if (fe) {
+            cls := ""
+            ctype := 0
+            try cls := fe.ClassName
+            try ctype := fe.ControlType
+            if (ctype = 50004 && InStr(cls, "aislash-editor-input"))
+                return true
+        }
+    } catch {
+    }
+
+    ; Fallback path: scan visible edit controls in the active Cursor window.
+    try {
+        root := UIA.ElementFromHandle(hwnd)
+        if (!root)
+            return false
+        edits := root.FindAll({ Type: 50004 })
+        for editEl in edits {
+            cls := ""
+            try cls := editEl.ClassName
+            if (!InStr(cls, "aislash-editor-input"))
+                continue
+            try {
+                if (editEl.HasKeyboardFocus)
+                    return true
+            } catch {
+            }
+        }
+    } catch {
+    }
+    return false
+}
+
+#HotIf WinActive("ahk_exe Code.exe") || WinActive("ahk_exe Cursor.exe")
+$Enter::
+{
+    ; Preserve modified-enter semantics (Shift/Ctrl/Alt/Win variants).
+    if (GetKeyState("Shift", "P") || GetKeyState("Ctrl", "P") || GetKeyState("Alt", "P") || GetKeyState("LWin", "P") || GetKeyState("RWin", "P")) {
+        SendInput "{Enter}"
+        return
+    }
+
+    hwnd := 0
+    proc := ""
+    try hwnd := WinGetID("A")
+    catch {
+        hwnd := 0
+    }
+    if (hwnd) {
+        try proc := StrLower(WinGetProcessName("ahk_id " hwnd))
+    }
+
+    if (proc = "code.exe") {
+        if (VSCode_IsChatInputFocused(hwnd)) {
+            AIB_AllowDebug_Write("enter-trigger detected proc=code hwnd=" hwnd)
+            if (VSCode_SubmitChat(hwnd)) {
+                if (!g_AIB_AllowWatcherActive) {
+                    AIB_AllowDebug_Write("enter-trigger fallback-arm proc=code hwnd=" hwnd)
+                    AIB_ArmAllowWatcher("chat_submit", hwnd, "vscode", true, true)
+                }
+                return
+            }
+            AIB_AllowDebug_Write("enter-trigger submit-failed proc=code hwnd=" hwnd)
+        }
+        SendInput "{Enter}"
+        return
+    }
+
+    if (proc = "cursor.exe") {
+        if (AIB_IsCursorComposerFocused(hwnd)) {
+            AIB_AllowDebug_Write("enter-trigger detected proc=cursor hwnd=" hwnd)
+            SendInput "{Enter}"
+            AIB_ArmAllowWatcher("chat_submit_cursor", hwnd, "cursor", true, true)
+            return
+        }
+        SendInput "{Enter}"
+        return
+    }
+
+    SendInput "{Enter}"
+}
+#HotIf
+
+AIB_BuildStartBannerText(triggerSource := "manual", windowScope := "ide") {
+    if (triggerSource = "chat_submit")
+        return "⏳ Allow flow started from Enter send"
+    if (triggerSource = "chat_submit_cursor")
+        return "⏳ Allow flow started from Enter send (Cursor)"
+    if (triggerSource = "start_implementation")
+        return "⏳ Allow flow started from Start Implementation"
+    if (triggerSource = "rapid_fire_hotkey")
+        return "✅ Allow flow started from #!+9"
+
+    if (windowScope = "cursor")
+        return "⏳ Allow flow started (Cursor)"
+    if (windowScope = "vscode")
+        return "⏳ Allow flow started (VS Code)"
+    return "⏳ Allow flow started"
+}
+
+AIB_ShouldShowStartBanner(triggerSource, targetHwnd := 0) {
+    global g_AIB_StartBannerCooldownMs, g_AIB_LastStartBannerTickByKey
+
+    key := triggerSource "|" String(targetHwnd ? targetHwnd : 0)
+    now := A_TickCount
+    lastTick := g_AIB_LastStartBannerTickByKey.Has(key) ? g_AIB_LastStartBannerTickByKey[key] : 0
+    if (now - lastTick < g_AIB_StartBannerCooldownMs)
+        return false
+
+    g_AIB_LastStartBannerTickByKey[key] := now
+    if (g_AIB_LastStartBannerTickByKey.Count > 200)
+        g_AIB_LastStartBannerTickByKey := Map()
+    return true
+}
+
+AIB_ArmAllowWatcher(triggerSource := "manual", targetHwnd := 0, windowScope := "ide", pinToTarget := false, showStartBanner := true, bannerText := "", bannerAccent := BANNER_ACCENT_INTERMEDIATE) {
+    AIB_StartAllowWatcher(triggerSource, targetHwnd, windowScope, pinToTarget)
+    AIB_AllowDebug_Write("trigger-accepted source=" triggerSource " scope=" windowScope " target=" targetHwnd " pinned=" pinToTarget)
+
+    if (!showStartBanner)
+        return true
+    if (!AIB_ShouldShowStartBanner(triggerSource, targetHwnd))
+        return true
+
+    if (bannerText = "")
+        bannerText := AIB_BuildStartBannerText(triggerSource, windowScope)
+    try ShowCenteredOverlay_Utils(bannerText, 1300, bannerAccent)
+    catch {
+    }
+    AIB_AllowDebug_Write("trigger-banner source=" triggerSource " text=" bannerText)
+    return true
 }
 
 AIB_StopAllowWatcher(reason := "", showInfo := false) {
@@ -2487,7 +2630,7 @@ AIB_StartImplementationProbeTick(*) {
 
         ; Transition in foreground window usually indicates the click just happened.
         if (wasPresent && !presentNow && WinActive("ahk_id " hwnd)) {
-            AIB_StartAllowWatcher("start_implementation", hwnd, "cursor", true)
+            AIB_ArmAllowWatcher("start_implementation", hwnd, "cursor", true, true)
         }
 
         g_AIB_StartImplPrevPresentByHwnd[key] := presentNow
@@ -3073,8 +3216,7 @@ global g_AIB_Hotkey9ToggleCooldownTick := 0
 
     ; Optional environment update for rapid-fire testing.
     AIB_RapidFireTrySwapTestFolderContent()
-    AIB_StartAllowWatcher("rapid_fire_hotkey", targetHwnd, "vscode", true)
-    ShowCenteredOverlay_Utils("✅ Rapid fire watcher active (VS Code)", 1500, BANNER_ACCENT_SUCCESS)
+    AIB_ArmAllowWatcher("rapid_fire_hotkey", targetHwnd, "vscode", true, true, "✅ Allow flow started from #!+9", BANNER_ACCENT_SUCCESS)
 }
 
 AIB_RapidFireTrySwapTestFolderContent() {
