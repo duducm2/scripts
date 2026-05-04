@@ -2840,6 +2840,7 @@ VSCode_SubmitChat(targetHwnd) {
                 try {
                     DebugFlowLog("Utils.ahk:VSCode_SubmitChat", "click send button", "hwnd=" . targetHwnd, "VSC5")
                     sendButton.Click()
+                    VSCode_TryStartAibAllowWatcher(targetHwnd)
                     return true
                 } catch {
                 }
@@ -2848,6 +2849,7 @@ VSCode_SubmitChat(targetHwnd) {
                     sendButton.SetFocus()
                     Sleep 40
                     SendInput "{Enter}"
+                    VSCode_TryStartAibAllowWatcher(targetHwnd)
                     return true
                 } catch {
                 }
@@ -2857,7 +2859,20 @@ VSCode_SubmitChat(targetHwnd) {
     }
     DebugFlowLog("Utils.ahk:VSCode_SubmitChat", "fallback enter", "hwnd=" . targetHwnd, "VSC7")
     SendInput "{Enter}"
+    VSCode_TryStartAibAllowWatcher(targetHwnd)
     return true
+}
+
+VSCode_TryStartAibAllowWatcher(targetHwnd) {
+    try {
+        if (!IsSet(AIB_StartAllowWatcher_Bridge))
+            return
+        fn := Func("AIB_StartAllowWatcher_Bridge")
+        if (!HasMethod(fn, "Call"))
+            return
+        fn.Call("chat_submit", targetHwnd)
+    } catch {
+    }
 }
 
 ; Activate VS Code window and focus chat input. Returns true on success.
