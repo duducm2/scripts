@@ -10,3 +10,6 @@
 2026-05-04 17:04:22 | decision-flow hwnd=8851420 anchor=459352
 2026-05-04 17:04:27 | click-attempt hwnd=8851420 frameSource=none frame=none branch=uia-invoke btn='' class='' rect=(0,0)-(0,0)
 2026-05-04 17:05:26 | enter-trigger detected proc=code hwnd=459352
+2026-05-04 17:08:08 | enter-trigger detected proc=code hwnd=459352
+2026-05-04 17:09:09 | enter-trigger detected proc=code hwnd=459352
+2026-05-04 17:10:17 | stop reason=ℹ Allow watcher timed out after 8 minutes

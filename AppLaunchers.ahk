@@ -2167,39 +2167,42 @@ AIB_StartAllowWatcher(triggerSource := "manual", targetHwnd := 0, windowScope :=
     global g_AIB_AllowWatcherActive, g_AIB_AllowWatcherStartedTick, g_AIB_AllowWatcherSource
     global g_AIB_AllowWatcherStateByHwnd, g_AIB_AllowWatcherTimer, g_AIB_AllowWatcherWindowScope
     global g_AIB_AllowWatcherPinnedHwnd
+    global g_AIB_AllowWatcherPromptLock, g_AIB_AllowWatcherRoundRobinOffset
 
     if (windowScope = "")
         windowScope := "ide"
 
+    wasActive := g_AIB_AllowWatcherActive
     if (!g_AIB_AllowWatcherActive) {
         g_AIB_AllowWatcherActive := true
         g_AIB_AllowWatcherStartedTick := A_TickCount
         g_AIB_AllowWatcherSource := triggerSource
         g_AIB_AllowWatcherWindowScope := windowScope
-        g_AIB_AllowWatcherPinnedHwnd := (pinToTarget && targetHwnd && WinExist("ahk_id " targetHwnd)) ? targetHwnd : 0
-        g_AIB_AllowWatcherStateByHwnd := Map()
+        g_AIB_AllowWatcherPinnedHwnd := 0
+        g_AIB_AllowWatcherPromptLock := false
+        g_AIB_AllowWatcherRoundRobinOffset := 0
+        if (g_AIB_AllowWatcherTimer)
+            SetTimer(g_AIB_AllowWatcherTimer, 0)
         g_AIB_AllowWatcherTimer := AIB_AllowWatcherTick
         SetTimer(g_AIB_AllowWatcherTimer, 350)
 
-        AIB_AllowDebug_StartSession(triggerSource, windowScope, g_AIB_AllowWatcherPinnedHwnd)
-    } else if (g_AIB_AllowWatcherWindowScope != windowScope) {
-        ; Keep the most specific scope when re-armed while active.
-        if (windowScope = "vscode")
-            g_AIB_AllowWatcherWindowScope := "vscode"
+        AIB_AllowDebug_StartSession(triggerSource, windowScope, 0)
     }
 
-    if (pinToTarget && targetHwnd && WinExist("ahk_id " targetHwnd))
-        g_AIB_AllowWatcherPinnedHwnd := targetHwnd
+    windows := []
+    if (targetHwnd && WinExist("ahk_id " targetHwnd)) {
+        windows.Push(targetHwnd)
+    } else {
+        windows := AIB_GetWatcherWindowHwnds(windowScope)
+    }
 
-    AIB_AllowDebug_Write("rearm source=" triggerSource " scope=" windowScope " pinned=" g_AIB_AllowWatcherPinnedHwnd " target=" targetHwnd)
-
-    if (targetHwnd && WinExist("ahk_id " targetHwnd))
-        AIB_AllowWatcherEnsureState(targetHwnd)
-
-    ; Prime state for all open IDE windows.
-    windows := AIB_GetWatcherWindowHwnds(g_AIB_AllowWatcherWindowScope, g_AIB_AllowWatcherPinnedHwnd)
     for hwnd in windows
-        AIB_AllowWatcherEnsureState(hwnd)
+        AIB_AllowWatcherEnsureState(hwnd, triggerSource, windowScope)
+
+    AIB_AllowDebug_Write("rearm source=" triggerSource " scope=" windowScope " target=" targetHwnd " sessions=" g_AIB_AllowWatcherStateByHwnd.Count)
+
+    if (g_AIB_AllowWatcherStateByHwnd.Count = 0 && wasActive)
+        AIB_StopAllowWatcher("", false)
 }
 
 ; Callable by name from Utils.ahk (avoids #Warn UseUnsetLocal for AIB_StartAllowWatcher).
@@ -2377,8 +2380,8 @@ AIB_StopAllowWatcher(reason := "", showInfo := false) {
     AIB_AllowDebug_Write("stop reason=" reason)
 }
 
-AIB_AllowWatcherEnsureState(hwnd) {
-    global g_AIB_AllowWatcherStateByHwnd
+AIB_AllowWatcherEnsureState(hwnd, source := "manual", scope := "ide") {
+    global g_AIB_AllowWatcherStateByHwnd, g_AIB_AllowWatcherTimeoutMs
     if (!hwnd)
         return
     key := String(hwnd)
@@ -2386,41 +2389,61 @@ AIB_AllowWatcherEnsureState(hwnd) {
         g_AIB_AllowWatcherStateByHwnd[key] := {
             seenAllow: false,
             absenceStreak: 0,
-            lastSeenTick: A_TickCount
+            lastSeenTick: A_TickCount,
+            startedTick: A_TickCount,
+            source: source,
+            scope: scope,
+            timeoutMs: g_AIB_AllowWatcherTimeoutMs
         }
+    } else {
+        st := g_AIB_AllowWatcherStateByHwnd[key]
+        st.source := source
+        st.scope := scope
+        st.startedTick := A_TickCount
+        st.timeoutMs := g_AIB_AllowWatcherTimeoutMs
+        g_AIB_AllowWatcherStateByHwnd[key] := st
     }
 }
 
 AIB_AllowWatcherTick(*) {
-    global g_AIB_AllowWatcherActive, g_AIB_AllowWatcherStartedTick, g_AIB_AllowWatcherTimeoutMs
+    global g_AIB_AllowWatcherActive, g_AIB_AllowWatcherTimeoutMs
     global g_AIB_AllowWatcherStateByHwnd, g_AIB_AllowWatcherPromptLock, g_AIB_AllowWatcherRoundRobinOffset
-    global g_AIB_AllowWatcherWindowScope, g_AIB_AllowWatcherPinnedHwnd, g_AIB_AllowWatcherSource
+    global g_AIB_AllowWatcherSource
 
     if (!g_AIB_AllowWatcherActive)
         return
 
-    if (A_TickCount - g_AIB_AllowWatcherStartedTick >= g_AIB_AllowWatcherTimeoutMs) {
-        AIB_StopAllowWatcher("ℹ Allow watcher timed out after 8 minutes", true)
+    if (g_AIB_AllowWatcherStateByHwnd.Count = 0) {
+        AIB_StopAllowWatcher("", false)
         return
     }
 
-    windows := AIB_GetWatcherWindowHwnds(g_AIB_AllowWatcherWindowScope, g_AIB_AllowWatcherPinnedHwnd)
-    for hwnd in windows
-        AIB_AllowWatcherEnsureState(hwnd)
-
-    if (windows.Length = 0)
+    keys := []
+    for key, _ in g_AIB_AllowWatcherStateByHwnd
+        keys.Push(key)
+    if (keys.Length = 0)
         return
 
     ; Fairness: rotate start index every tick.
-    g_AIB_AllowWatcherRoundRobinOffset := Mod(g_AIB_AllowWatcherRoundRobinOffset + 1, windows.Length)
+    g_AIB_AllowWatcherRoundRobinOffset := Mod(g_AIB_AllowWatcherRoundRobinOffset + 1, keys.Length)
 
-    loop windows.Length {
-        idx := Mod((A_Index - 1) + g_AIB_AllowWatcherRoundRobinOffset, windows.Length) + 1
-        hwnd := windows[idx]
-        key := String(hwnd)
+    loop keys.Length {
+        idx := Mod((A_Index - 1) + g_AIB_AllowWatcherRoundRobinOffset, keys.Length) + 1
+        key := keys[idx]
         if (!g_AIB_AllowWatcherStateByHwnd.Has(key))
             continue
+        hwnd := Integer(key)
+        if (!WinExist("ahk_id " hwnd)) {
+            g_AIB_AllowWatcherStateByHwnd.Delete(key)
+            continue
+        }
+
         st := g_AIB_AllowWatcherStateByHwnd[key]
+        if (A_TickCount - st.startedTick >= st.timeoutMs) {
+            AIB_AllowDebug_Write("tick session-timeout hwnd=" hwnd " source=" st.source)
+            g_AIB_AllowWatcherStateByHwnd.Delete(key)
+            continue
+        }
         st.lastSeenTick := A_TickCount
 
         failReason := ""
@@ -2437,8 +2460,9 @@ AIB_AllowWatcherTick(*) {
                 g_AIB_AllowWatcherPromptLock := false
 
                 if (decision = "N") {
-                    AIB_StopAllowWatcher("ℹ Allow watcher cancelled", false)
-                    return
+                    AIB_AllowDebug_Write("tick session-cancel hwnd=" hwnd)
+                    g_AIB_AllowWatcherStateByHwnd.Delete(key)
+                    continue
                 }
 
                 clickFail := ""
@@ -2452,10 +2476,10 @@ AIB_AllowWatcherTick(*) {
                 st.absenceStreak += 1
 
                 ; For non-rapid-fire sources, completion is when Send is ready again.
-                if (g_AIB_AllowWatcherSource != "rapid_fire_hotkey" && AIB_WindowHasSendReady(hwnd)) {
-                    AIB_AllowDebug_Write("tick send-ready-complete hwnd=" hwnd " source=" g_AIB_AllowWatcherSource)
-                    AIB_StopAllowWatcher("✓ Allow flow completed (Send ready)", true)
-                    return
+                if (st.source != "rapid_fire_hotkey" && AIB_WindowHasSendReady(hwnd)) {
+                    AIB_AllowDebug_Write("tick send-ready-complete hwnd=" hwnd " source=" st.source)
+                    g_AIB_AllowWatcherStateByHwnd.Delete(key)
+                    continue
                 }
 
                 ; Re-arm for next occurrence instead of permanently completing this window.
@@ -2468,6 +2492,9 @@ AIB_AllowWatcherTick(*) {
 
         g_AIB_AllowWatcherStateByHwnd[key] := st
     }
+
+    if (g_AIB_AllowWatcherStateByHwnd.Count = 0)
+        AIB_StopAllowWatcher("✓ Allow flow completed (all sessions)", true)
 }
 
 AIB_AllowDebug_StartSession(triggerSource, scope, pinnedHwnd) {
