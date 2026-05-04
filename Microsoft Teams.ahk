@@ -155,6 +155,26 @@ ActivateTeamsChatWindow() {
     return false
 }
 
+; Returns a visible Teams HWND suitable for generic navigation (chat/search), or 0.
+ResolveTeamsMainHwnd() {
+    for proc in TEAMS_PROCESSES {
+        for hwnd in WinGetList("ahk_exe " proc) {
+            try {
+                title := WinGetTitle(hwnd)
+                if (!title)
+                    continue
+                if InStr(title, "Sharing control bar |")
+                    continue
+                if (RegExMatch(title, "i)\| Microsoft Teams"))
+                    return hwnd
+            } catch {
+                continue
+            }
+        }
+    }
+    return 0
+}
+
 ; Phase 2.3: single list-item finder (string or array of strings).
 FindListItemByNames(root, nameOrNames) {
     names := Type(nameOrNames) = "Array" ? nameOrNames : [nameOrNames]
@@ -546,17 +566,32 @@ RunTeams() {
         SetWinDelay 0
         SetKeyDelay 0, 0
         SetControlDelay 0
-        teamsWindow := "Microsoft Teams"
-        if !WinExist("ahk_exe ms-teams.exe") && !WinExist("ahk_exe Teams.exe") {
-            Run "ms-teams:"
-            WinWait(teamsWindow, , 15)
+
+        ; Resolve an actual Teams hwnd and activate it robustly.
+        hwndTeams := ResolveTeamsMainHwnd()
+        if (hwndTeams <= 0) {
+            RunTeams()
+            waitStart := A_TickCount
+            while ((A_TickCount - waitStart) < 15000) {
+                hwndTeams := ResolveTeamsMainHwnd()
+                if (hwndTeams > 0)
+                    break
+                Sleep 150
+            }
         }
-        if (!WinExist(teamsWindow)) {
+        if (hwndTeams <= 0) {
             try ShowCenteredOverlay(WinGetID("A"), "❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
             return
         }
-        WinActivate(teamsWindow)
-        WinWaitActive(teamsWindow, , 5)
+
+        if !ActivateWindowWithRetry(hwndTeams, TEAMS_ACTIVATION_ATTEMPTS, TEAMS_ACTIVATION_WAIT_MS) {
+            ShowCenteredOverlay(WinGetID("A"), "❌ Could not activate Teams window.", 2500, BANNER_ACCENT_ERROR)
+            return
+        }
+
+        ; Hotkey modifiers can still be physically down; release them before navigation sends.
+        Send "{LWin Up}{RWin Up}{LAlt Up}{RAlt Up}{LShift Up}{RShift Up}"
+
         Send "^g"
         Sleep 100
         loop 5 {
@@ -573,8 +608,6 @@ RunTeams() {
         Sleep 200
         Sleep 600
         Send "{Enter}"
-        Sleep 300
-        Send "^r"
     } finally {
         A_Clipboard := clipSaved
         if (ClipWait(1)) {
