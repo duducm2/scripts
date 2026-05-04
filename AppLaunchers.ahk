@@ -2394,7 +2394,7 @@ AIB_AllowWatcherEnsureState(hwnd) {
 AIB_AllowWatcherTick(*) {
     global g_AIB_AllowWatcherActive, g_AIB_AllowWatcherStartedTick, g_AIB_AllowWatcherTimeoutMs
     global g_AIB_AllowWatcherStateByHwnd, g_AIB_AllowWatcherPromptLock, g_AIB_AllowWatcherRoundRobinOffset
-    global g_AIB_AllowWatcherWindowScope, g_AIB_AllowWatcherPinnedHwnd
+    global g_AIB_AllowWatcherWindowScope, g_AIB_AllowWatcherPinnedHwnd, g_AIB_AllowWatcherSource
 
     if (!g_AIB_AllowWatcherActive)
         return
@@ -2442,6 +2442,7 @@ AIB_AllowWatcherTick(*) {
                 }
 
                 clickFail := ""
+                AIB_PrepareWindowForAllowClick(hwnd)
                 AIB_ClickAllowButtonInWindow(hwnd, &clickFail)
                 if (clickFail != "")
                     AIB_AllowDebug_Write("tick click-fail hwnd=" hwnd " reason=" clickFail)
@@ -2449,6 +2450,14 @@ AIB_AllowWatcherTick(*) {
         } else {
             if (st.seenAllow) {
                 st.absenceStreak += 1
+
+                ; For non-rapid-fire sources, completion is when Send is ready again.
+                if (g_AIB_AllowWatcherSource != "rapid_fire_hotkey" && AIB_WindowHasSendReady(hwnd)) {
+                    AIB_AllowDebug_Write("tick send-ready-complete hwnd=" hwnd " source=" g_AIB_AllowWatcherSource)
+                    AIB_StopAllowWatcher("✓ Allow flow completed (Send ready)", true)
+                    return
+                }
+
                 ; Re-arm for next occurrence instead of permanently completing this window.
                 if (st.absenceStreak >= 2) {
                     st.seenAllow := false
@@ -2489,17 +2498,51 @@ AIB_AllowDebug_RectText(rect) {
     return "(" rect.l "," rect.t ")-(" rect.r "," rect.b ")"
 }
 
+AIB_PrepareWindowForAllowClick(hwnd) {
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return
+    try {
+        ; Ensure the target IDE is foreground before clicking Allow.
+        WinActivate("ahk_id " hwnd)
+        WinWaitActive("ahk_id " hwnd, , 0.35)
+    } catch {
+    }
+}
+
+AIB_WindowHasSendReady(hwnd) {
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return false
+
+    exeName := ""
+    try exeName := StrLower(WinGetProcessName("ahk_id " hwnd))
+    catch {
+    }
+
+    ; Only apply send-ready completion for IDE windows with chat send controls.
+    if (exeName != "code.exe" && exeName != "cursor.exe")
+        return false
+
+    try return VSCode_IsChatSendReady(hwnd)
+    catch {
+        return false
+    }
+}
+
 AIB_RunAllowDecisionFlow(hwnd) {
     global g_AIB_AllowWatcherDecision
 
     title := AIB_GetSafeWindowTitle(hwnd)
     g_AIB_AllowWatcherDecision := ""
+    anchorHwnd := WinActive("A")
+    if (!anchorHwnd)
+        anchorHwnd := hwnd
+    AIB_AllowDebug_Write("decision-flow hwnd=" hwnd " anchor=" anchorHwnd)
 
     ; Banner 1: exactly 2 seconds with progressive loading.
     StandardLoadingBar_Show(
         "⏳ Allow detected in " . title . ". Prepare to decide...",
         BANNER_ACCENT_INTERMEDIATE,
-        { textWidth: 640, noBorder: true, trackActiveMonitor: true, manualProgress: true }
+        { textWidth: 640, noBorder: true, trackActiveMonitor: true, manualProgress: true, centerOnHwnd: anchorHwnd }
     )
     StandardLoadingBar_StartTimedProgress(2000)
     Sleep(2000)
@@ -2516,7 +2559,7 @@ AIB_RunAllowDecisionFlow(hwnd) {
         "❓ Click Allow now? (3s)",
         keyCallbacks,
         3000,
-        hwnd,
+        anchorHwnd,
         AIB_AllowWatcherDecisionTimeout,
         BANNER_ACCENT_INTERMEDIATE,
         560,

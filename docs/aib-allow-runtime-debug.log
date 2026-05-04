@@ -1,6 +1,11 @@
-﻿2026-05-04 16:38:19 | session-start source=chat_submit scope=vscode pinned=8851420
-2026-05-04 16:38:19 | rearm source=chat_submit scope=vscode pinned=8851420 target=8851420
-2026-05-04 16:38:19 | trigger-accepted source=chat_submit scope=vscode target=8851420 pinned=1
-2026-05-04 16:38:19 | trigger-banner source=chat_submit text=⏳ Allow flow started from Enter send
-2026-05-04 16:38:28 | tick allow-detected hwnd=8851420 title=Test - Visual Studio Code
-2026-05-04 16:38:34 | click-attempt hwnd=8851420 frameSource=none frame=none branch=uia-invoke btn='' class='' rect=(0,0)-(0,0)
+﻿2026-05-04 17:02:17 | session-start source=chat_submit scope=vscode pinned=8851420
+2026-05-04 17:02:17 | rearm source=chat_submit scope=vscode pinned=8851420 target=8851420
+2026-05-04 17:02:17 | trigger-accepted source=chat_submit scope=vscode target=8851420 pinned=1
+2026-05-04 17:02:17 | trigger-banner source=chat_submit text=⏳ Allow flow started from Enter send
+2026-05-04 17:03:41 | enter-trigger detected proc=code hwnd=8851420
+2026-05-04 17:04:05 | tick allow-detected hwnd=8851420 title=Test - Visual Studio Code
+2026-05-04 17:04:05 | decision-flow hwnd=8851420 anchor=459352
+2026-05-04 17:04:11 | click-attempt hwnd=8851420 frameSource=none frame=none branch=uia-invoke btn='' class='' rect=(0,0)-(0,0)
+2026-05-04 17:04:22 | tick allow-detected hwnd=8851420 title=Test - Visual Studio Code
+2026-05-04 17:04:22 | decision-flow hwnd=8851420 anchor=459352
+2026-05-04 17:04:27 | click-attempt hwnd=8851420 frameSource=none frame=none branch=uia-invoke btn='' class='' rect=(0,0)-(0,0)
