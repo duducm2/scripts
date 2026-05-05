@@ -2894,7 +2894,8 @@ VSCode_TryStartAibAllowWatcher(targetHwnd) {
     try {
         fn := Func("AIB_StartAllowWatcher_Bridge")
         if (!IsObject(fn) || !HasMethod(fn, "Call")) {
-            DebugFlowLog("Utils.ahk:VSCode_TryStartAibAllowWatcher", "bridge missing call", "hwnd=" . targetHwnd, "VSC9")
+            DebugFlowLog("Utils.ahk:VSCode_TryStartAibAllowWatcher", "bridge missing call", "hwnd=" . targetHwnd,
+                "VSC9")
             return
         }
 
@@ -4766,8 +4767,11 @@ class D2C_FlowManager {
         StandardLoadingBar_Hide(0)
         HideDictationIndicator()
 
-        ; [V] Paste dictated: hwnd captured when delay bar finished; activate before paste (keys overlay had focus).
-        this.ActivateOriginForPaste()
+        ; [V] Paste dictated: paste at the user's current caret. If they didn't move,
+        ; Windows naturally restores the origin window after the overlay is destroyed.
+        ; If they clicked into another text field during the 5s, that window is already
+        ; foreground and gets the paste.
+        Sleep 60
         Send("^v")
 
         global g_D2C_DictationSubmitMenuCycleFinished
@@ -4775,7 +4779,10 @@ class D2C_FlowManager {
         this.Reset()
     }
 
-    ; Paste clipboard at caret in the current foreground window, then Enter (no Gemini). Same target as [V], plus Enter.
+    ; Paste clipboard at caret in the current foreground window, then Enter (no Gemini).
+    ; Pastes wherever the user's caret currently is: if they didn't move during the 5s,
+    ; Windows restores OriginHwnd after the overlay closes; if they clicked into another
+    ; field, that field is already foreground and gets the paste.
     OnSubmitE(*) {
         if (this.CurrentPhase != "PromptingSubmit")
             return
@@ -4785,7 +4792,6 @@ class D2C_FlowManager {
         StandardLoadingBar_Hide(0)
         HideDictationIndicator()
 
-        this.ActivateOriginForPaste()
         Sleep 60
         Send("^v")
         Sleep 150
