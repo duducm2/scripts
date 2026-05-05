@@ -1,15 +1,5 @@
-﻿2026-05-04 17:02:17 | session-start source=chat_submit scope=vscode pinned=8851420
-2026-05-04 17:02:17 | rearm source=chat_submit scope=vscode pinned=8851420 target=8851420
-2026-05-04 17:02:17 | trigger-accepted source=chat_submit scope=vscode target=8851420 pinned=1
-2026-05-04 17:02:17 | trigger-banner source=chat_submit text=⏳ Allow flow started from Enter send
-2026-05-04 17:03:41 | enter-trigger detected proc=code hwnd=8851420
-2026-05-04 17:04:05 | tick allow-detected hwnd=8851420 title=Test - Visual Studio Code
-2026-05-04 17:04:05 | decision-flow hwnd=8851420 anchor=459352
-2026-05-04 17:04:11 | click-attempt hwnd=8851420 frameSource=none frame=none branch=uia-invoke btn='' class='' rect=(0,0)-(0,0)
-2026-05-04 17:04:22 | tick allow-detected hwnd=8851420 title=Test - Visual Studio Code
-2026-05-04 17:04:22 | decision-flow hwnd=8851420 anchor=459352
-2026-05-04 17:04:27 | click-attempt hwnd=8851420 frameSource=none frame=none branch=uia-invoke btn='' class='' rect=(0,0)-(0,0)
-2026-05-04 17:05:26 | enter-trigger detected proc=code hwnd=459352
-2026-05-04 17:08:08 | enter-trigger detected proc=code hwnd=459352
-2026-05-04 17:09:09 | enter-trigger detected proc=code hwnd=459352
-2026-05-04 17:10:17 | stop reason=ℹ Allow watcher timed out after 8 minutes
+﻿2026-05-05 09:38:39 | session-start source=chat_submit scope=vscode pinned=0
+2026-05-05 09:38:39 | rearm source=chat_submit scope=vscode target=199542 sessions=1
+2026-05-05 09:38:39 | trigger-accepted source=chat_submit scope=vscode target=199542 pinned=1
+2026-05-05 09:38:39 | trigger-banner source=chat_submit text=⏳ Allow flow started from Enter send
+2026-05-05 09:38:49 | stop reason=✓ Allow flow completed (all sessions)

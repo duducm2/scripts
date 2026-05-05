@@ -2757,9 +2757,36 @@ VSCode_IsChatSendReady(targetHwnd) {
 
 VSCode_IsChatInputFocused(targetHwnd) {
     if (!IsSet(UIA))
-        return true
+        return false
     try {
         root := UIA.ElementFromHandle(targetHwnd)
+        ; Fast path: check which element currently has focus.
+        ; The main code editor uses native-edit-context but is far from the Send button.
+        try {
+            focusedEl := UIA.GetFocusedElement()
+            if (focusedEl) {
+                focusedClass := ""
+                try focusedClass := focusedEl.ClassName
+                if (InStr(focusedClass, "native-edit-context")) {
+                    sendBtn := VSCode_FindChatSendButton(root)
+                    if (!sendBtn)
+                        return false
+                    try {
+                        focusedBr := focusedEl.BoundingRectangle
+                        sendBr := sendBtn.BoundingRectangle
+                        if (Abs(((focusedBr.l + focusedBr.r) / 2) - ((sendBr.l + sendBr.r) / 2)) > 900)
+                            return false
+                        if (Abs(((focusedBr.t + focusedBr.b) / 2) - ((sendBr.t + sendBr.b) / 2)) > 420)
+                            return false
+                        return true
+                    } catch {
+                        return false
+                    }
+                }
+            }
+        } catch {
+        }
+        ; Fallback: scan for chat input and verify keyboard focus.
         editEl := VSCode_FindChatInputField(root)
         if (!editEl)
             return false
