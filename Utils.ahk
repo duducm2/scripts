@@ -4693,7 +4693,7 @@ class D2C_FlowManager {
         }
         this.Reset()
         this.OriginHwnd := WinActive("A")
-        this.ExecuteGeminiSubmit(true)
+        this.ExecuteGeminiSubmit(true, "", true)
     }
 
     ; --- Phase 1: Submit Prompt ---
@@ -4888,14 +4888,16 @@ class D2C_FlowManager {
     ; --- Phase 2: Submit Execute ---
 
     ; presetMode: "" = Clip Angel first snippet; "grammar" | "aiopt" = preset from prompt/*.txt + clipboard dictation via InsertText.
-    ExecuteGeminiSubmit(autoSubmit := true, presetMode := "") {
+    ; showPreMovementWarning: true only for non-banner-triggered submits (e.g., hotstring path).
+    ExecuteGeminiSubmit(autoSubmit := true, presetMode := "", showPreMovementWarning := false) {
         this.CurrentPhase := "Submitting"
         StandardLoadingBar_CloseKeysOverlay()
         StandardLoadingBar_Hide(0)
         HideDictationIndicator()
 
-        ; Pre-movement warning before activating Gemini for paste (Original → Gemini).
-        PlayPreMovementWarning("Gemini")
+        ; For explicit first-banner choices (Y/G/A/S), skip the handoff cue: user intentionally chose Gemini.
+        if (showPreMovementWarning)
+            PlayPreMovementWarning("Gemini")
 
         ; Paste to Gemini (launches Chrome if needed); then capture active window as Gemini.
         optionalSnippet := ""

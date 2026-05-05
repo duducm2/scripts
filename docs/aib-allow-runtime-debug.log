@@ -109808,3 +109808,943 @@
 2026-05-05 14:47:52 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
 2026-05-05 14:47:52 | start-impl-probe ide-windows=2
 2026-05-05 14:47:52 | start-impl-btn window-scan hwnd=3083458 total-btns=85
+2026-05-05 14:47:53 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:47:53 | start-impl-probe ide-windows=2
+2026-05-05 14:47:53 | start-impl-btn doc-scan hwnd=3083458 doc-btns=82
+2026-05-05 14:47:54 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:47:54 | start-impl-probe ide-windows=2
+2026-05-05 14:47:55 | start-impl-btn doc-scan hwnd=3083458 doc-btns=72
+2026-05-05 14:47:55 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:47:55 | start-impl-probe ide-windows=2
+2026-05-05 14:47:56 | start-impl-btn window-scan hwnd=3083458 total-btns=75
+2026-05-05 14:47:56 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:47:57 | start-impl-probe ide-windows=2
+2026-05-05 14:47:57 | start-impl-btn doc-scan hwnd=3083458 doc-btns=72
+2026-05-05 14:47:57 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:47:58 | start-impl-probe ide-windows=2
+2026-05-05 14:47:58 | start-impl-btn doc-scan hwnd=3083458 doc-btns=72
+2026-05-05 14:47:59 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:47:59 | start-impl-probe ide-windows=2
+2026-05-05 14:47:59 | start-impl-btn window-scan hwnd=3083458 total-btns=75
+2026-05-05 14:48:00 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:48:00 | start-impl-probe ide-windows=2
+2026-05-05 14:48:00 | start-impl-btn window-scan hwnd=3083458 total-btns=75
+2026-05-05 14:48:01 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:48:01 | start-impl-probe ide-windows=2
+2026-05-05 14:48:01 | start-impl-btn window-scan hwnd=3083458 total-btns=75
+2026-05-05 14:48:02 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:48:02 | start-impl-probe ide-windows=2
+2026-05-05 14:48:02 | start-impl-btn doc-scan hwnd=3083458 doc-btns=72
+2026-05-05 14:48:03 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:48:03 | start-impl-probe ide-windows=2
+2026-05-05 14:48:03 | start-impl-btn window-scan hwnd=3083458 total-btns=75
+2026-05-05 14:48:04 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:48:04 | start-impl-probe ide-windows=2
+2026-05-05 14:48:04 | start-impl-btn window-scan hwnd=3083458 total-btns=75
+2026-05-05 14:48:05 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:48:05 | start-impl-probe ide-windows=2
+2026-05-05 14:48:05 | start-impl-btn doc-scan hwnd=3083458 doc-btns=72
+2026-05-05 14:48:06 | start-impl-btn window-scan hwnd=3083458 total-btns=75
+2026-05-05 14:48:06 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:48:06 | start-impl-probe ide-windows=2
+2026-05-05 14:48:07 | start-impl-btn window-scan hwnd=3083458 total-btns=75
+2026-05-05 14:48:07 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:48:07 | start-impl-probe ide-windows=2
+2026-05-05 14:48:08 | start-impl-btn window-scan hwnd=3083458 total-btns=75
+2026-05-05 14:48:08 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:48:08 | start-impl-probe ide-windows=2
+2026-05-05 14:48:09 | start-impl-btn window-scan hwnd=3083458 total-btns=75
+2026-05-05 14:48:09 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:48:09 | start-impl-probe ide-windows=2
+2026-05-05 14:48:10 | start-impl-btn window-scan hwnd=3083458 total-btns=75
+2026-05-05 14:48:10 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:48:10 | start-impl-probe ide-windows=2
+2026-05-05 14:48:11 | start-impl-btn window-scan hwnd=3083458 total-btns=75
+2026-05-05 14:48:11 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:48:11 | start-impl-probe ide-windows=2
+2026-05-05 14:48:12 | start-impl-btn doc-scan hwnd=3083458 doc-btns=72
+2026-05-05 14:48:12 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:48:12 | start-impl-probe ide-windows=2
+2026-05-05 14:48:13 | start-impl-btn window-scan hwnd=3083458 total-btns=75
+2026-05-05 14:48:13 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:48:13 | start-impl-probe ide-windows=2
+2026-05-05 14:48:14 | start-impl-btn window-scan hwnd=3083458 total-btns=75
+2026-05-05 14:48:14 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:48:14 | start-impl-probe ide-windows=2
+2026-05-05 14:48:15 | start-impl-btn window-scan hwnd=3083458 total-btns=75
+2026-05-05 14:48:15 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:48:15 | start-impl-probe ide-windows=2
+2026-05-05 14:48:16 | start-impl-btn window-scan hwnd=3083458 total-btns=75
+2026-05-05 14:48:16 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:48:16 | start-impl-probe ide-windows=2
+2026-05-05 14:48:17 | start-impl-btn window-scan hwnd=3083458 total-btns=75
+2026-05-05 14:48:18 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:48:18 | start-impl-probe ide-windows=2
+2026-05-05 14:48:18 | start-impl-btn doc-scan hwnd=3083458 doc-btns=72
+2026-05-05 14:48:18 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:48:19 | start-impl-probe ide-windows=2
+2026-05-05 14:48:19 | start-impl-btn window-scan hwnd=3083458 total-btns=75
+2026-05-05 14:48:20 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:48:20 | start-impl-probe ide-windows=2
+2026-05-05 14:48:20 | start-impl-btn doc-scan hwnd=3083458 doc-btns=72
+2026-05-05 14:48:21 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:48:21 | start-impl-probe ide-windows=2
+2026-05-05 14:48:21 | start-impl-btn window-scan hwnd=3083458 total-btns=75
+2026-05-05 14:48:22 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:48:22 | start-impl-probe ide-windows=2
+2026-05-05 14:48:22 | start-impl-btn window-scan hwnd=3083458 total-btns=75
+2026-05-05 14:48:23 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:48:23 | start-impl-probe ide-windows=2
+2026-05-05 14:48:23 | start-impl-btn window-scan hwnd=3083458 total-btns=75
+2026-05-05 14:48:24 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:48:24 | start-impl-probe ide-windows=2
+2026-05-05 14:48:24 | start-impl-btn window-scan hwnd=3083458 total-btns=75
+2026-05-05 14:48:25 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:48:25 | start-impl-probe ide-windows=2
+2026-05-05 14:48:26 | start-impl-btn window-scan hwnd=3083458 total-btns=75
+2026-05-05 14:48:26 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:48:26 | start-impl-probe ide-windows=2
+2026-05-05 14:48:27 | start-impl-btn doc-scan hwnd=3083458 doc-btns=72
+2026-05-05 14:48:27 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:48:27 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:48:27 | start-impl-probe ide-windows=2
+2026-05-05 14:48:28 | start-impl-btn window-scan hwnd=3083458 total-btns=72
+2026-05-05 14:48:28 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:48:28 | start-impl-probe ide-windows=2
+2026-05-05 14:48:29 | start-impl-btn window-scan hwnd=3083458 total-btns=72
+2026-05-05 14:48:29 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:48:29 | start-impl-probe ide-windows=2
+2026-05-05 14:48:30 | start-impl-btn window-scan hwnd=3083458 total-btns=72
+2026-05-05 14:48:30 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:48:31 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:48:31 | start-impl-probe ide-windows=2
+2026-05-05 14:48:31 | start-impl-btn window-scan hwnd=3083458 total-btns=72
+2026-05-05 14:48:32 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:48:32 | start-impl-probe ide-windows=2
+2026-05-05 14:48:32 | start-impl-btn window-scan hwnd=3083458 total-btns=72
+2026-05-05 14:48:32 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:48:33 | start-impl-probe ide-windows=2
+2026-05-05 14:48:33 | start-impl-btn window-scan hwnd=3083458 total-btns=72
+2026-05-05 14:48:34 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:48:34 | start-impl-probe ide-windows=2
+2026-05-05 14:48:34 | start-impl-btn window-scan hwnd=3083458 total-btns=72
+2026-05-05 14:48:34 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:48:35 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:48:35 | start-impl-btn window-scan hwnd=3083458 total-btns=72
+2026-05-05 14:48:36 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:48:36 | start-impl-probe ide-windows=2
+2026-05-05 14:48:36 | start-impl-btn window-scan hwnd=3083458 total-btns=72
+2026-05-05 14:48:37 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:48:37 | start-impl-probe ide-windows=2
+2026-05-05 14:48:38 | start-impl-btn window-scan hwnd=3083458 total-btns=72
+2026-05-05 14:48:38 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:48:38 | start-impl-probe ide-windows=2
+2026-05-05 14:48:38 | start-impl-btn doc-scan hwnd=3083458 doc-btns=69
+2026-05-05 14:48:39 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:48:39 | start-impl-probe ide-windows=2
+2026-05-05 14:48:40 | start-impl-btn window-scan hwnd=3083458 total-btns=72
+2026-05-05 14:48:40 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:48:40 | start-impl-probe ide-windows=2
+2026-05-05 14:48:41 | start-impl-btn doc-scan hwnd=3083458 doc-btns=70
+2026-05-05 14:48:41 | start-impl-btn window-scan hwnd=3083458 total-btns=73
+2026-05-05 14:48:42 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:48:42 | start-impl-probe ide-windows=2
+2026-05-05 14:48:42 | start-impl-btn doc-scan hwnd=3083458 doc-btns=65
+2026-05-05 14:48:43 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:48:43 | start-impl-probe ide-windows=2
+2026-05-05 14:48:43 | start-impl-btn window-scan hwnd=3083458 total-btns=68
+2026-05-05 14:48:44 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:48:44 | start-impl-probe ide-windows=2
+2026-05-05 14:48:44 | start-impl-btn doc-scan hwnd=3083458 doc-btns=65
+2026-05-05 14:48:45 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:48:45 | start-impl-probe ide-windows=2
+2026-05-05 14:48:46 | start-impl-btn window-scan hwnd=3083458 total-btns=68
+2026-05-05 14:48:46 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:48:46 | start-impl-probe ide-windows=2
+2026-05-05 14:48:47 | start-impl-btn doc-scan hwnd=3083458 doc-btns=65
+2026-05-05 14:48:47 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:48:47 | start-impl-probe ide-windows=2
+2026-05-05 14:48:48 | start-impl-btn window-scan hwnd=3083458 total-btns=68
+2026-05-05 14:48:48 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:48:48 | start-impl-probe ide-windows=2
+2026-05-05 14:48:49 | start-impl-btn window-scan hwnd=3083458 total-btns=68
+2026-05-05 14:48:49 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:48:49 | start-impl-probe ide-windows=2
+2026-05-05 14:48:50 | start-impl-btn doc-scan hwnd=3083458 doc-btns=66
+2026-05-05 14:48:50 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:48:51 | start-impl-probe ide-windows=2
+2026-05-05 14:48:51 | start-impl-btn doc-scan hwnd=3083458 doc-btns=66
+2026-05-05 14:48:51 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:48:52 | start-impl-probe ide-windows=2
+2026-05-05 14:48:52 | start-impl-btn doc-scan hwnd=3083458 doc-btns=59
+2026-05-05 14:48:52 | start-impl-btn window-scan hwnd=3083458 total-btns=62
+2026-05-05 14:48:52 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:48:53 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:48:53 | start-impl-probe ide-windows=2
+2026-05-05 14:48:53 | start-impl-btn doc-scan hwnd=3083458 doc-btns=59
+2026-05-05 14:48:53 | start-impl-btn window-scan hwnd=3083458 total-btns=62
+2026-05-05 14:48:53 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:48:54 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:48:54 | start-impl-probe ide-windows=2
+2026-05-05 14:48:54 | start-impl-btn doc-scan hwnd=3083458 doc-btns=59
+2026-05-05 14:48:54 | start-impl-btn window-scan hwnd=3083458 total-btns=62
+2026-05-05 14:48:55 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:48:55 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:48:55 | start-impl-probe ide-windows=2
+2026-05-05 14:48:55 | start-impl-btn doc-scan hwnd=3083458 doc-btns=59
+2026-05-05 14:48:55 | start-impl-btn window-scan hwnd=3083458 total-btns=62
+2026-05-05 14:48:56 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:48:56 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:48:56 | start-impl-probe ide-windows=2
+2026-05-05 14:48:56 | start-impl-btn doc-scan hwnd=3083458 doc-btns=59
+2026-05-05 14:48:57 | start-impl-btn window-scan hwnd=3083458 total-btns=62
+2026-05-05 14:48:57 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:48:57 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:48:57 | start-impl-probe ide-windows=2
+2026-05-05 14:48:57 | start-impl-btn doc-scan hwnd=3083458 doc-btns=53
+2026-05-05 14:48:58 | start-impl-btn window-scan hwnd=3083458 total-btns=58
+2026-05-05 14:48:58 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:48:58 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:48:58 | start-impl-probe ide-windows=2
+2026-05-05 14:48:58 | start-impl-btn doc-scan hwnd=3083458 doc-btns=55
+2026-05-05 14:48:59 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:00 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:00 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:00 | start-impl-probe ide-windows=2
+2026-05-05 14:49:00 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:00 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:00 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:01 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:01 | start-impl-probe ide-windows=2
+2026-05-05 14:49:01 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:01 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:01 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:02 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:02 | start-impl-probe ide-windows=2
+2026-05-05 14:49:02 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:02 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:02 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:03 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:03 | start-impl-probe ide-windows=2
+2026-05-05 14:49:03 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:03 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:03 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:04 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:04 | start-impl-probe ide-windows=2
+2026-05-05 14:49:04 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:04 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:04 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:05 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:05 | start-impl-probe ide-windows=2
+2026-05-05 14:49:05 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:05 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:05 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:05 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:05 | start-impl-probe ide-windows=2
+2026-05-05 14:49:06 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:06 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:06 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:06 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:06 | start-impl-probe ide-windows=2
+2026-05-05 14:49:07 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:07 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:07 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:07 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:07 | start-impl-probe ide-windows=2
+2026-05-05 14:49:08 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:08 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:08 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:08 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:08 | start-impl-probe ide-windows=2
+2026-05-05 14:49:08 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:09 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:09 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:09 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:09 | start-impl-probe ide-windows=2
+2026-05-05 14:49:09 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:09 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:10 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:10 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:10 | start-impl-probe ide-windows=2
+2026-05-05 14:49:10 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:11 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:11 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:11 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:11 | start-impl-probe ide-windows=2
+2026-05-05 14:49:11 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:12 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:12 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:12 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:12 | start-impl-probe ide-windows=2
+2026-05-05 14:49:13 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:13 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:13 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:13 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:13 | start-impl-probe ide-windows=2
+2026-05-05 14:49:14 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:14 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:14 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:14 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:14 | start-impl-probe ide-windows=2
+2026-05-05 14:49:15 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:15 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:15 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:15 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:15 | start-impl-probe ide-windows=2
+2026-05-05 14:49:16 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:16 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:16 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:16 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:16 | start-impl-probe ide-windows=2
+2026-05-05 14:49:16 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:17 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:17 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:17 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:17 | start-impl-probe ide-windows=2
+2026-05-05 14:49:18 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:18 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:18 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:18 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:18 | start-impl-probe ide-windows=2
+2026-05-05 14:49:19 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:19 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:19 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:20 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:20 | start-impl-probe ide-windows=2
+2026-05-05 14:49:20 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:20 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:20 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:21 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:21 | start-impl-probe ide-windows=2
+2026-05-05 14:49:21 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:21 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:21 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:21 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:21 | start-impl-probe ide-windows=2
+2026-05-05 14:49:22 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:22 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:22 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:22 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:22 | start-impl-probe ide-windows=2
+2026-05-05 14:49:23 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:23 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:23 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:23 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:23 | start-impl-probe ide-windows=2
+2026-05-05 14:49:24 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:24 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:24 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:24 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:24 | start-impl-probe ide-windows=2
+2026-05-05 14:49:24 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:25 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:25 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:25 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:25 | start-impl-probe ide-windows=2
+2026-05-05 14:49:26 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:26 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:26 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:26 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:26 | start-impl-probe ide-windows=2
+2026-05-05 14:49:27 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:27 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:27 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:27 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:28 | start-impl-probe ide-windows=2
+2026-05-05 14:49:28 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:28 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:28 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:28 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:28 | start-impl-probe ide-windows=2
+2026-05-05 14:49:29 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:29 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:29 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:29 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:29 | start-impl-probe ide-windows=2
+2026-05-05 14:49:30 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:30 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:30 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:30 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:30 | start-impl-probe ide-windows=2
+2026-05-05 14:49:30 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:31 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:31 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:31 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:31 | start-impl-probe ide-windows=2
+2026-05-05 14:49:31 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:31 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:32 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:32 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:32 | start-impl-probe ide-windows=2
+2026-05-05 14:49:32 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:32 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:33 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:33 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:33 | start-impl-probe ide-windows=2
+2026-05-05 14:49:33 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:33 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:34 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:34 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:34 | start-impl-probe ide-windows=2
+2026-05-05 14:49:34 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:35 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:35 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:35 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:35 | start-impl-probe ide-windows=2
+2026-05-05 14:49:35 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:36 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:36 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:36 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:36 | start-impl-probe ide-windows=2
+2026-05-05 14:49:36 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:37 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:37 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:37 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:37 | start-impl-probe ide-windows=2
+2026-05-05 14:49:37 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:38 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:38 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:38 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:38 | start-impl-probe ide-windows=2
+2026-05-05 14:49:39 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:39 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:39 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:39 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:39 | start-impl-probe ide-windows=2
+2026-05-05 14:49:40 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:40 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:40 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:40 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:40 | start-impl-probe ide-windows=2
+2026-05-05 14:49:40 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:41 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:41 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:41 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:41 | start-impl-probe ide-windows=2
+2026-05-05 14:49:41 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:42 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:42 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:42 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:42 | start-impl-probe ide-windows=2
+2026-05-05 14:49:42 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:42 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:43 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:43 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:43 | start-impl-probe ide-windows=2
+2026-05-05 14:49:43 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:44 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:44 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:44 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:44 | start-impl-probe ide-windows=2
+2026-05-05 14:49:45 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:45 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:46 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:46 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:46 | start-impl-probe ide-windows=2
+2026-05-05 14:49:46 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:47 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:47 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:47 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:47 | start-impl-probe ide-windows=2
+2026-05-05 14:49:48 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:48 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:49 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:49 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:49 | start-impl-probe ide-windows=2
+2026-05-05 14:49:49 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:50 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:50 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:50 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:50 | start-impl-probe ide-windows=2
+2026-05-05 14:49:51 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:51 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:51 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:51 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:51 | start-impl-probe ide-windows=2
+2026-05-05 14:49:52 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:52 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:53 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:53 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:53 | start-impl-probe ide-windows=2
+2026-05-05 14:49:53 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:54 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:54 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:54 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:54 | start-impl-probe ide-windows=2
+2026-05-05 14:49:55 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:55 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:55 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:55 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:55 | start-impl-probe ide-windows=2
+2026-05-05 14:49:56 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:56 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:57 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:57 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:57 | start-impl-probe ide-windows=2
+2026-05-05 14:49:57 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:58 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:58 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:58 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:58 | start-impl-probe ide-windows=2
+2026-05-05 14:49:59 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:49:59 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:49:59 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:49:59 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:49:59 | start-impl-probe ide-windows=2
+2026-05-05 14:50:00 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:00 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:00 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:01 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:01 | start-impl-probe ide-windows=2
+2026-05-05 14:50:01 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:01 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:02 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:02 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:02 | start-impl-probe ide-windows=2
+2026-05-05 14:50:02 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:03 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:03 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:03 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:03 | start-impl-probe ide-windows=2
+2026-05-05 14:50:03 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:04 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:04 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:04 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:04 | start-impl-probe ide-windows=2
+2026-05-05 14:50:04 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:05 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:05 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:05 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:05 | start-impl-probe ide-windows=2
+2026-05-05 14:50:05 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:05 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:06 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:06 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:06 | start-impl-probe ide-windows=2
+2026-05-05 14:50:06 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:06 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:07 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:07 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:07 | start-impl-probe ide-windows=2
+2026-05-05 14:50:07 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:07 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:08 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:08 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:08 | start-impl-probe ide-windows=2
+2026-05-05 14:50:08 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:08 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:08 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:09 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:09 | start-impl-probe ide-windows=2
+2026-05-05 14:50:09 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:09 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:09 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:09 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:10 | start-impl-probe ide-windows=2
+2026-05-05 14:50:10 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:10 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:10 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:11 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:11 | start-impl-probe ide-windows=2
+2026-05-05 14:50:11 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:11 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:11 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:12 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:12 | start-impl-probe ide-windows=2
+2026-05-05 14:50:12 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:12 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:12 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:12 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:12 | start-impl-probe ide-windows=2
+2026-05-05 14:50:13 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:13 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:13 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:13 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:13 | start-impl-probe ide-windows=2
+2026-05-05 14:50:14 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:14 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:14 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:14 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:14 | start-impl-probe ide-windows=2
+2026-05-05 14:50:15 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:15 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:15 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:15 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:15 | start-impl-probe ide-windows=2
+2026-05-05 14:50:15 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:16 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:16 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:16 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:16 | start-impl-probe ide-windows=2
+2026-05-05 14:50:16 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:16 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:17 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:17 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:17 | start-impl-probe ide-windows=2
+2026-05-05 14:50:17 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:17 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:18 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:18 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:18 | start-impl-probe ide-windows=2
+2026-05-05 14:50:18 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:18 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:19 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:19 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:19 | start-impl-probe ide-windows=2
+2026-05-05 14:50:19 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:19 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:20 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:20 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:20 | start-impl-probe ide-windows=2
+2026-05-05 14:50:20 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:20 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:20 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:21 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:21 | start-impl-probe ide-windows=2
+2026-05-05 14:50:21 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:21 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:21 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:21 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:22 | start-impl-probe ide-windows=2
+2026-05-05 14:50:22 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:22 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:22 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:22 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:22 | start-impl-probe ide-windows=2
+2026-05-05 14:50:23 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:23 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:23 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:23 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:23 | start-impl-probe ide-windows=2
+2026-05-05 14:50:24 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:24 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:24 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:24 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:24 | start-impl-probe ide-windows=2
+2026-05-05 14:50:25 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:25 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:25 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:25 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:25 | start-impl-probe ide-windows=2
+2026-05-05 14:50:25 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:26 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:26 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:26 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:26 | start-impl-probe ide-windows=2
+2026-05-05 14:50:26 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:26 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:27 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:27 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:27 | start-impl-probe ide-windows=2
+2026-05-05 14:50:27 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:27 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:28 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:28 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:28 | start-impl-probe ide-windows=2
+2026-05-05 14:50:28 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:28 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:29 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:29 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:29 | start-impl-probe ide-windows=2
+2026-05-05 14:50:29 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:29 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:29 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:30 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:30 | start-impl-probe ide-windows=2
+2026-05-05 14:50:30 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:30 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:30 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:31 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:31 | start-impl-probe ide-windows=2
+2026-05-05 14:50:31 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:31 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:31 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:32 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:32 | start-impl-probe ide-windows=2
+2026-05-05 14:50:32 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:32 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:32 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:32 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:32 | start-impl-probe ide-windows=2
+2026-05-05 14:50:33 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:33 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:33 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:33 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:33 | start-impl-probe ide-windows=2
+2026-05-05 14:50:34 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:34 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:34 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:34 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:34 | start-impl-probe ide-windows=2
+2026-05-05 14:50:34 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:35 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:35 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:35 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:35 | start-impl-probe ide-windows=2
+2026-05-05 14:50:35 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:36 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:36 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:36 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:36 | start-impl-probe ide-windows=2
+2026-05-05 14:50:36 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:36 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:37 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:37 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:37 | start-impl-probe ide-windows=2
+2026-05-05 14:50:37 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:37 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:38 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:38 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:38 | start-impl-probe ide-windows=2
+2026-05-05 14:50:38 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:38 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:39 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:39 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:39 | start-impl-probe ide-windows=2
+2026-05-05 14:50:39 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:39 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:39 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:40 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:40 | start-impl-probe ide-windows=2
+2026-05-05 14:50:40 | start-impl-btn doc-scan hwnd=3083458 doc-btns=61
+2026-05-05 14:50:40 | start-impl-btn window-scan hwnd=3083458 total-btns=64
+2026-05-05 14:50:41 | enter-trigger inferred-submit proc=code hwnd=3083458
+2026-05-05 14:50:41 | --- session-start source=chat_submit scope=ide pinned=0 ---
+2026-05-05 14:50:41 | rearm source=chat_submit scope=ide target=3083458 sessions=1
+2026-05-05 14:50:41 | trigger-accepted source=chat_submit scope=ide target=3083458 pinned=0
+2026-05-05 14:50:41 | trigger-banner source=chat_submit text=⏳ Allow flow started from Enter send
+2026-05-05 14:50:41 | banner-created hwnd=3608538 x=-2860 y=1302 w=46 h=46
+2026-05-05 14:50:42 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:50:44 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:50:45 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:50:46 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:50:47 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:50:48 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:50:49 | banner-repositioned hwnd=3608538 monitor=3 x=20 y=2022
+2026-05-05 14:50:49 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:50:50 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:50:51 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:50:52 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:50:53 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:50:54 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:50:55 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:50:56 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:50:57 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:50:58 | banner-repositioned hwnd=3608538 monitor=2 x=5780 y=2742
+2026-05-05 14:50:58 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:50:59 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:51:00 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:51:01 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:51:02 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:51:03 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:51:04 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:51:04 | banner-repositioned hwnd=3608538 monitor=3 x=20 y=2022
+2026-05-05 14:51:05 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:51:06 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:51:07 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:51:08 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:51:09 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:51:10 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:51:11 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:51:12 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:51:13 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:51:13 | banner-repositioned hwnd=3608538 monitor=1 x=-2860 y=1302
+2026-05-05 14:51:14 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:51:15 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:51:15 | banner-repositioned hwnd=3608538 monitor=2 x=5780 y=2742
+2026-05-05 14:51:16 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:51:17 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:51:18 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:51:19 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:51:20 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:51:21 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:51:22 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:51:23 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:51:24 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:51:24 | banner-repositioned hwnd=3608538 monitor=3 x=20 y=2022
+2026-05-05 14:51:25 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:51:26 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:51:27 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:51:28 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:51:29 | banner-repositioned hwnd=3608538 monitor=1 x=-2860 y=1302
+2026-05-05 14:51:29 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:51:30 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:51:31 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:51:32 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:51:33 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:51:34 | start-impl-probe blocked watcher-active=1
+2026-05-05 14:51:49 | start-impl-probe ide-windows=2
+2026-05-05 14:51:49 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:51:49 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:51:49 | start-impl-btn doc-scan hwnd=3083458 doc-btns=85
+2026-05-05 14:51:50 | start-impl-btn window-scan hwnd=3083458 total-btns=88
+2026-05-05 14:51:50 | start-impl-probe ide-windows=2
+2026-05-05 14:51:50 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:51:50 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:51:51 | start-impl-btn doc-scan hwnd=3083458 doc-btns=85
+2026-05-05 14:51:51 | start-impl-btn window-scan hwnd=3083458 total-btns=88
+2026-05-05 14:51:51 | start-impl-probe ide-windows=2
+2026-05-05 14:51:51 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:51:51 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:51:52 | start-impl-btn doc-scan hwnd=3083458 doc-btns=85
+2026-05-05 14:51:52 | start-impl-btn window-scan hwnd=3083458 total-btns=88
+2026-05-05 14:51:52 | start-impl-probe ide-windows=2
+2026-05-05 14:51:52 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:51:52 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:51:53 | start-impl-btn doc-scan hwnd=3083458 doc-btns=85
+2026-05-05 14:51:53 | start-impl-btn window-scan hwnd=3083458 total-btns=88
+2026-05-05 14:51:53 | start-impl-probe ide-windows=2
+2026-05-05 14:51:53 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:51:53 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:51:54 | start-impl-btn doc-scan hwnd=3083458 doc-btns=85
+2026-05-05 14:51:54 | start-impl-btn window-scan hwnd=3083458 total-btns=88
+2026-05-05 14:51:54 | start-impl-probe ide-windows=2
+2026-05-05 14:51:54 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:51:54 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:51:55 | start-impl-btn doc-scan hwnd=3083458 doc-btns=85
+2026-05-05 14:51:55 | start-impl-btn window-scan hwnd=3083458 total-btns=88
+2026-05-05 14:51:55 | start-impl-probe ide-windows=2
+2026-05-05 14:51:55 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:51:55 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:51:56 | start-impl-btn doc-scan hwnd=3083458 doc-btns=85
+2026-05-05 14:51:56 | start-impl-btn window-scan hwnd=3083458 total-btns=88
+2026-05-05 14:51:56 | start-impl-probe ide-windows=2
+2026-05-05 14:51:56 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:51:56 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:51:57 | start-impl-btn doc-scan hwnd=3083458 doc-btns=85
+2026-05-05 14:51:57 | start-impl-btn window-scan hwnd=3083458 total-btns=88
+2026-05-05 14:51:57 | start-impl-probe ide-windows=2
+2026-05-05 14:51:57 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:51:57 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:51:58 | start-impl-btn doc-scan hwnd=3083458 doc-btns=85
+2026-05-05 14:51:58 | start-impl-btn window-scan hwnd=3083458 total-btns=88
+2026-05-05 14:51:58 | start-impl-probe ide-windows=2
+2026-05-05 14:51:58 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:51:59 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:51:59 | start-impl-btn doc-scan hwnd=3083458 doc-btns=85
+2026-05-05 14:51:59 | start-impl-btn window-scan hwnd=3083458 total-btns=88
+2026-05-05 14:51:59 | start-impl-probe ide-windows=2
+2026-05-05 14:52:00 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:52:00 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:52:00 | start-impl-btn doc-scan hwnd=3083458 doc-btns=85
+2026-05-05 14:52:01 | start-impl-btn window-scan hwnd=3083458 total-btns=88
+2026-05-05 14:52:01 | start-impl-probe ide-windows=2
+2026-05-05 14:52:01 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:52:02 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:52:02 | start-impl-btn doc-scan hwnd=3083458 doc-btns=85
+2026-05-05 14:52:02 | start-impl-btn window-scan hwnd=3083458 total-btns=88
+2026-05-05 14:52:02 | start-impl-probe ide-windows=2
+2026-05-05 14:52:03 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:52:03 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:52:03 | start-impl-btn doc-scan hwnd=3083458 doc-btns=85
+2026-05-05 14:52:04 | start-impl-btn window-scan hwnd=3083458 total-btns=88
+2026-05-05 14:52:04 | start-impl-probe ide-windows=2
+2026-05-05 14:52:04 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:52:04 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:52:05 | start-impl-btn doc-scan hwnd=3083458 doc-btns=85
+2026-05-05 14:52:05 | start-impl-btn window-scan hwnd=3083458 total-btns=88
+2026-05-05 14:52:05 | start-impl-probe ide-windows=2
+2026-05-05 14:52:05 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:52:06 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:52:06 | start-impl-btn doc-scan hwnd=3083458 doc-btns=85
+2026-05-05 14:52:06 | start-impl-btn window-scan hwnd=3083458 total-btns=88
+2026-05-05 14:52:06 | start-impl-probe ide-windows=2
+2026-05-05 14:52:06 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:52:07 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:52:07 | start-impl-btn doc-scan hwnd=3083458 doc-btns=85
+2026-05-05 14:52:07 | start-impl-btn window-scan hwnd=3083458 total-btns=88
+2026-05-05 14:52:07 | start-impl-probe ide-windows=2
+2026-05-05 14:52:07 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:52:08 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:52:08 | start-impl-btn doc-scan hwnd=3083458 doc-btns=85
+2026-05-05 14:52:08 | start-impl-btn window-scan hwnd=3083458 total-btns=88
+2026-05-05 14:52:08 | start-impl-probe ide-windows=2
+2026-05-05 14:52:09 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:52:09 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:52:09 | start-impl-btn doc-scan hwnd=3083458 doc-btns=85
+2026-05-05 14:52:09 | start-impl-btn window-scan hwnd=3083458 total-btns=88
+2026-05-05 14:52:09 | start-impl-probe ide-windows=2
+2026-05-05 14:52:10 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:52:10 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:52:10 | start-impl-btn doc-scan hwnd=3083458 doc-btns=85
+2026-05-05 14:52:10 | start-impl-btn window-scan hwnd=3083458 total-btns=88
+2026-05-05 14:52:10 | start-impl-probe ide-windows=2
+2026-05-05 14:52:11 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:52:11 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:52:11 | start-impl-btn doc-scan hwnd=3083458 doc-btns=85
+2026-05-05 14:52:11 | start-impl-btn window-scan hwnd=3083458 total-btns=88
+2026-05-05 14:52:12 | start-impl-probe ide-windows=2
+2026-05-05 14:52:12 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:52:12 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:52:12 | start-impl-btn doc-scan hwnd=3083458 doc-btns=85
+2026-05-05 14:52:13 | start-impl-btn window-scan hwnd=3083458 total-btns=88
+2026-05-05 14:52:13 | start-impl-probe ide-windows=2
+2026-05-05 14:52:13 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:52:13 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:52:13 | start-impl-btn doc-scan hwnd=3083458 doc-btns=85
+2026-05-05 14:52:14 | start-impl-btn window-scan hwnd=3083458 total-btns=88
+2026-05-05 14:52:14 | start-impl-probe ide-windows=2
+2026-05-05 14:52:14 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:52:14 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:52:15 | start-impl-btn doc-scan hwnd=3083458 doc-btns=85
+2026-05-05 14:52:15 | start-impl-btn window-scan hwnd=3083458 total-btns=88
+2026-05-05 14:52:15 | start-impl-probe ide-windows=2
+2026-05-05 14:52:15 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:52:16 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:52:16 | start-impl-btn doc-scan hwnd=3083458 doc-btns=88
+2026-05-05 14:52:16 | start-impl-btn window-scan hwnd=3083458 total-btns=91
+2026-05-05 14:52:16 | start-impl-probe ide-windows=2
+2026-05-05 14:52:16 | start-impl-btn doc-scan hwnd=3083458 doc-btns=85
+2026-05-05 14:52:17 | start-impl-btn window-scan hwnd=3083458 total-btns=88
+2026-05-05 14:52:17 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:52:17 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:52:17 | start-impl-probe ide-windows=2
+2026-05-05 14:52:18 | start-impl-btn doc-scan hwnd=3083458 doc-btns=88
+2026-05-05 14:52:18 | start-impl-btn window-scan hwnd=3083458 total-btns=91
+2026-05-05 14:52:18 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:52:18 | start-impl-probe ide-windows=2
+2026-05-05 14:52:19 | start-impl-btn doc-scan hwnd=3083458 doc-btns=88
+2026-05-05 14:52:20 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:52:20 | start-impl-probe ide-windows=2
+2026-05-05 14:52:20 | start-impl-btn doc-scan hwnd=3083458 doc-btns=88
+2026-05-05 14:52:21 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:52:21 | start-impl-probe ide-windows=2
+2026-05-05 14:52:21 | start-impl-btn doc-scan hwnd=3083458 doc-btns=88
+2026-05-05 14:52:22 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:52:22 | start-impl-probe ide-windows=2
+2026-05-05 14:52:23 | start-impl-btn window-scan hwnd=3083458 total-btns=91
+2026-05-05 14:52:23 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:52:23 | start-impl-probe ide-windows=2
+2026-05-05 14:52:24 | start-impl-btn doc-scan hwnd=3083458 doc-btns=88
+2026-05-05 14:52:24 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:52:24 | start-impl-probe ide-windows=2
+2026-05-05 14:52:25 | start-impl-btn window-scan hwnd=3083458 total-btns=91
+2026-05-05 14:52:25 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:52:25 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:52:25 | start-impl-probe ide-windows=2
+2026-05-05 14:52:26 | start-impl-btn window-scan hwnd=3083458 total-btns=91
+2026-05-05 14:52:27 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:52:27 | start-impl-probe ide-windows=2
+2026-05-05 14:52:27 | start-impl-btn window-scan hwnd=3083458 total-btns=91
+2026-05-05 14:52:28 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:52:28 | start-impl-probe ide-windows=2
+2026-05-05 14:52:28 | start-impl-btn doc-scan hwnd=3083458 doc-btns=85
+2026-05-05 14:52:29 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:52:29 | start-impl-probe ide-windows=2
+2026-05-05 14:52:30 | start-impl-btn window-scan hwnd=3083458 total-btns=88
+2026-05-05 14:52:30 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:52:31 | start-impl-probe ide-windows=2
+2026-05-05 14:52:31 | start-impl-btn window-scan hwnd=3083458 total-btns=88
+2026-05-05 14:52:32 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:52:32 | start-impl-probe ide-windows=2
+2026-05-05 14:52:32 | start-impl-btn doc-scan hwnd=3083458 doc-btns=85
+2026-05-05 14:52:33 | start-impl-btn window-scan hwnd=3083458 total-btns=88
+2026-05-05 14:52:33 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:52:33 | start-impl-probe ide-windows=2
+2026-05-05 14:52:34 | start-impl-btn window-scan hwnd=3083458 total-btns=88
+2026-05-05 14:52:34 | start-impl-btn window-scan hwnd=9767380 total-btns=34
+2026-05-05 14:52:34 | start-impl-probe ide-windows=2
+2026-05-05 14:52:35 | start-impl-btn doc-scan hwnd=3083458 doc-btns=85
+2026-05-05 14:52:35 | start-impl-btn window-scan hwnd=3083458 total-btns=88
+2026-05-05 14:52:35 | start-impl-btn doc-scan hwnd=9767380 doc-btns=31
+2026-05-05 14:52:36 | start-impl-probe ide-windows=2
