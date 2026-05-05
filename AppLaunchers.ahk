@@ -2835,6 +2835,7 @@ AIB_StartImplementationProbeTick(*) {
 
     for hwnd in windows {
         key := String(hwnd)
+        
         alive[key] := true
         presentNow := AIB_WindowHasStartImplementationButton(hwnd)
         wasPresent := g_AIB_StartImplPrevPresentByHwnd.Has(key) ? g_AIB_StartImplPrevPresentByHwnd[key] : false
@@ -3086,17 +3087,6 @@ AIB_SendAcceptShortcutToWindow(hwnd, &usedRoute := "") {
     } catch {
     }
 
-    ; Do not steal focus across windows; only Send when already active.
-    try {
-        if (WinActive("ahk_id " hwnd)) {
-            Send("^{Enter}")
-            Sleep(220)
-            usedRoute := "active-send"
-            return true
-        }
-    } catch {
-    }
-
     return false
 }
 
@@ -3227,6 +3217,22 @@ AIB_ClickAllowButtonElement(btn, ownerHwnd := 0, &usedBranch := "") {
     usedBranch := "none"
     if (!btn)
         return false
+
+    ; Ensure the target IDE window and UIA element have focus before trying click routes.
+    if (ownerHwnd && WinExist("ahk_id " ownerHwnd)) {
+        try {
+            if (!WinActive("ahk_id " ownerHwnd)) {
+                WinActivate("ahk_id " ownerHwnd)
+                WinWaitActive("ahk_id " ownerHwnd, , 0.35)
+            }
+        } catch {
+        }
+    }
+    try {
+        btn.SetFocus()
+        Sleep(70)
+    } catch {
+    }
 
     try {
         if (btn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)) {
