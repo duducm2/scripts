@@ -2148,6 +2148,8 @@ global g_AIB_AllowWatcherSource := ""
 global g_AIB_AllowWatcherWindowScope := "ide"
 global g_AIB_AllowWatcherPinnedHwnd := 0
 global g_AIB_AllowWatcherStartedTick := 0
+global g_AIB_FlowBannerHwnd := 0
+global g_AIB_FlowBannerLastMonitorIdx := 0
 global g_AIB_AllowWatcherTimeoutMs := 8 * 60 * 1000
 global g_AIB_AllowWatcherRoundRobinOffset := 0
 global g_AIB_AllowWatcherDebugTraceEnabled := true
@@ -2348,6 +2350,9 @@ AIB_ArmAllowWatcher(triggerSource := "manual", targetHwnd := 0, windowScope := "
     catch {
     }
     AIB_AllowDebug_Write("trigger-banner source=" triggerSource " text=" bannerText)
+    
+    ; Create persistent banner to indicate flow is active
+    AIB_PersistentBannerCreate()
     return true
 }
 
@@ -2369,6 +2374,9 @@ AIB_StopAllowWatcher(reason := "", showInfo := false) {
     g_AIB_AllowWatcherStartedTick := 0
     g_AIB_AllowWatcherRoundRobinOffset := 0
     g_AIB_AllowWatcherStateByHwnd := Map()
+
+    ; Destroy persistent banner
+    AIB_PersistentBannerDestroy()
 
     try StandardLoadingBar_CloseKeysOverlay()
     catch {
@@ -2493,6 +2501,9 @@ AIB_AllowWatcherTick(*) {
         g_AIB_AllowWatcherStateByHwnd[key] := st
     }
 
+    ; Update persistent banner position if monitor changed
+    AIB_PersistentBannerMonitorUpdate()
+
     if (g_AIB_AllowWatcherStateByHwnd.Count = 0)
         AIB_StopAllowWatcher("✓ Allow flow completed (all sessions)", true)
 }
@@ -2502,12 +2513,8 @@ AIB_AllowDebug_StartSession(triggerSource, scope, pinnedHwnd) {
     if (!g_AIB_AllowWatcherDebugTraceEnabled)
         return
 
-    try {
-        FileDelete(g_AIB_AllowWatcherDebugLogFile)
-    } catch {
-    }
-
-    AIB_AllowDebug_Write("session-start source=" triggerSource " scope=" scope " pinned=" pinnedHwnd)
+    ; Append a separator instead of clearing so probe entries before arm are preserved
+    AIB_AllowDebug_Write("--- session-start source=" triggerSource " scope=" scope " pinned=" pinnedHwnd " ---")
 }
 
 AIB_AllowDebug_Write(line) {
@@ -2670,26 +2677,141 @@ AIB_WindowHasStartImplementationButton(hwnd) {
     if (!root)
         return false
 
+    ; VS Code/Electron web content is inside a RootWebArea Document element
+    ; FindAll from window handle doesn't traverse into it, so navigate manually
+    try {
+        docs := root.FindAll({ Type: 50030 })  ; Type 50030 = Document
+        for doc in docs {
+            if (!doc)
+                continue
+            ; Search for buttons inside the document
+            try {
+                btns := doc.FindAll({ Type: 50000 })
+                AIB_AllowDebug_Write("start-impl-btn doc-scan hwnd=" hwnd " doc-btns=" btns.Length)
+                for btn in btns {
+                    nm := ""
+                    cls := ""
+                    try nm := btn.Name
+                    try cls := btn.ClassName
+                    if (InStr(cls, "chat-suggest") || InStr(cls, "chat-welcome"))
+                        AIB_AllowDebug_Write("start-impl-btn candidate hwnd=" hwnd " name='" nm "' class='" cls "'")
+                    if (InStr(StrLower(Trim(nm)), "start implementation")) {
+                        AIB_AllowDebug_Write("start-impl-btn found hwnd=" hwnd " name='" nm "'")
+                        return true
+                    }
+                }
+            } catch {
+            }
+        }
+    } catch {
+    }
+
+    ; Fallback: also try direct window scan (non-web windows)
     try {
         allBtns := root.FindAll({ Type: 50000 })
+        AIB_AllowDebug_Write("start-impl-btn window-scan hwnd=" hwnd " total-btns=" allBtns.Length)
         for btn in allBtns {
             nm := ""
             try nm := btn.Name
-            if (InStr(StrLower(Trim(nm)), "start implementation"))
+            if (InStr(StrLower(Trim(nm)), "start implementation")) {
+                AIB_AllowDebug_Write("start-impl-btn found-window hwnd=" hwnd " name='" nm "'")
                 return true
+            }
         }
     } catch {
     }
     return false
 }
 
+; =============================================================================
+; Persistent Flow Banner Functions
+; =============================================================================
+
+AIB_PersistentBannerCreate() {
+    global g_AIB_FlowBannerHwnd, g_AIB_FlowBannerLastMonitorIdx
+
+    ; Destroy any existing banner
+    AIB_PersistentBannerDestroy()
+
+    ; Get active monitor work area
+    GetActiveMonitorWorkArea_StandardBar(&ml, &mt, &mr, &mb)
+    g_AIB_FlowBannerLastMonitorIdx := GetMonitorIndexForForeground_StandardBar()
+
+    ; Create persistent banner GUI at bottom-left of active monitor
+    bannerGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
+    bannerGui.BackColor := "1F1F1F"  ; Dark background
+    bannerGui.SetFont("s11 c90EE90", "Segoe UI")  ; Light green text
+
+    ; Add text control
+    bannerGui.Add("Text", "w200 Center", "⏳ Allow Flow Active")
+
+    ; Show at bottom-left (20px from edges)
+    marginX := 20
+    marginY := 20
+    bannerX := ml + marginX
+    bannerY := mb - 60 - marginY  ; 60px height estimate for button + margins
+
+    bannerGui.Show("x" . bannerX . " y" . bannerY . " w200 h50 NA")
+
+    ; Set transparency for subtle appearance
+    WinSetTransparent(220, bannerGui)
+
+    g_AIB_FlowBannerHwnd := bannerGui.Hwnd
+    AIB_AllowDebug_Write("banner-created hwnd=" g_AIB_FlowBannerHwnd " x=" bannerX " y=" bannerY)
+    return g_AIB_FlowBannerHwnd
+}
+
+AIB_PersistentBannerMonitorUpdate() {
+    global g_AIB_FlowBannerHwnd, g_AIB_FlowBannerLastMonitorIdx
+
+    if (!g_AIB_FlowBannerHwnd || !WinExist("ahk_id " g_AIB_FlowBannerHwnd))
+        return
+
+    ; Check if monitor changed
+    currentMonitorIdx := GetMonitorIndexForForeground_StandardBar()
+    if (currentMonitorIdx = g_AIB_FlowBannerLastMonitorIdx)
+        return  ; No change, skip repositioning
+
+    ; Monitor changed, reposition banner
+    GetActiveMonitorWorkArea_StandardBar(&ml, &mt, &mr, &mb)
+    g_AIB_FlowBannerLastMonitorIdx := currentMonitorIdx
+
+    marginX := 20
+    marginY := 20
+    bannerX := ml + marginX
+    bannerY := mb - 60 - marginY
+
+    WinMove(bannerX, bannerY, , , "ahk_id " g_AIB_FlowBannerHwnd)
+    AIB_AllowDebug_Write("banner-repositioned hwnd=" g_AIB_FlowBannerHwnd " monitor=" currentMonitorIdx " x=" bannerX " y=" bannerY)
+}
+
+AIB_PersistentBannerDestroy() {
+    global g_AIB_FlowBannerHwnd
+
+    if (!g_AIB_FlowBannerHwnd)
+        return
+
+    try {
+        if (WinExist("ahk_id " g_AIB_FlowBannerHwnd)) {
+            WinClose("ahk_id " g_AIB_FlowBannerHwnd)
+        }
+    } catch {
+    }
+
+    AIB_AllowDebug_Write("banner-destroyed hwnd=" g_AIB_FlowBannerHwnd)
+    g_AIB_FlowBannerHwnd := 0
+}
+
 AIB_StartImplementationProbeTick(*) {
     global g_AIB_AllowWatcherActive, g_AIB_StartImplPrevPresentByHwnd
 
-    if (g_AIB_AllowWatcherActive)
+    if (g_AIB_AllowWatcherActive) {
+        AIB_AllowDebug_Write("start-impl-probe blocked watcher-active=1")
         return
+    }
 
-    windows := AIB_GetWatcherWindowHwnds("cursor")
+    windows := AIB_GetWatcherWindowHwnds("ide")
+    AIB_AllowDebug_Write("start-impl-probe ide-windows=" windows.Length)
     alive := Map()
 
     for hwnd in windows {
@@ -2698,9 +2820,16 @@ AIB_StartImplementationProbeTick(*) {
         presentNow := AIB_WindowHasStartImplementationButton(hwnd)
         wasPresent := g_AIB_StartImplPrevPresentByHwnd.Has(key) ? g_AIB_StartImplPrevPresentByHwnd[key] : false
 
+        if (wasPresent != presentNow)
+            AIB_AllowDebug_Write("start-impl-probe hwnd=" hwnd " was=" wasPresent " now=" presentNow " active=" (WinActive("ahk_id " hwnd) ? 1 : 0))
+
         ; Transition in foreground window usually indicates the click just happened.
         if (wasPresent && !presentNow && WinActive("ahk_id " hwnd)) {
-            AIB_ArmAllowWatcher("start_implementation", hwnd, "cursor", true, true)
+            proc := ""
+            try proc := StrLower(WinGetProcessName("ahk_id " hwnd))
+            scope := (proc = "code.exe") ? "vscode" : "cursor"
+            AIB_AllowDebug_Write("start-impl-probe arm scope=" scope " hwnd=" hwnd)
+            AIB_ArmAllowWatcher("start_implementation", hwnd, scope, true, true)
         }
 
         g_AIB_StartImplPrevPresentByHwnd[key] := presentNow

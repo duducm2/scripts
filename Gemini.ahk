@@ -527,6 +527,7 @@ GeminiBackgroundStopTimer(task) {
 }
 
 GeminiCanUseWMAutomationContext() {
+    global WM_USE_DAEMON, WM_USE_PIPE_IPC, WM_USE_EVENT_HOOK_CACHE
     return WM_USE_DAEMON && WM_USE_PIPE_IPC && WM_USE_EVENT_HOOK_CACHE
 }
 
