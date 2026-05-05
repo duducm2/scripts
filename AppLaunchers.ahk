@@ -2154,6 +2154,11 @@ global g_AIB_AllowWatcherTimeoutMs := 8 * 60 * 1000
 global g_AIB_AllowWatcherRoundRobinOffset := 0
 global g_AIB_AllowWatcherDebugTraceEnabled := true
 global g_AIB_AllowWatcherDebugLogFile := A_ScriptDir . "\\docs\\aib-allow-runtime-debug.log"
+global g_AIB_AllowWatcherRestrictToVSCode := true
+global g_AIB_AllowWatcherEnableOcrFallback := false
+global g_AIB_AllowWatcherOcrCooldownMs := 1800
+global g_AIB_AllowWatcherLastOcrTickByHwnd := Map()
+global g_AIB_AllowWatcherOcrScriptPath := A_ScriptDir . "\\tools\\Get-AllowPromptOcr.ps1"
 global g_AIB_StartImplProbeTimer := ""
 global g_AIB_StartImplPrevPresentByHwnd := Map()
 global g_AIB_RapidFireTestSourceDir := ""
@@ -2173,6 +2178,7 @@ AIB_StartAllowWatcher(triggerSource := "manual", targetHwnd := 0, windowScope :=
 
     if (windowScope = "")
         windowScope := "ide"
+    windowScope := AIB_NormalizeAllowWatcherScope(windowScope)
 
     wasActive := g_AIB_AllowWatcherActive
     if (!g_AIB_AllowWatcherActive) {
@@ -2210,6 +2216,22 @@ AIB_StartAllowWatcher(triggerSource := "manual", targetHwnd := 0, windowScope :=
 ; Callable by name from Utils.ahk (avoids #Warn UseUnsetLocal for AIB_StartAllowWatcher).
 AIB_StartAllowWatcher_Bridge(triggerSource := "manual", targetHwnd := 0) {
     return AIB_ArmAllowWatcher(triggerSource, targetHwnd, "vscode", true, true)
+}
+
+AIB_NormalizeAllowWatcherScope(windowScope := "ide") {
+    global g_AIB_AllowWatcherRestrictToVSCode
+
+    if (windowScope = "")
+        windowScope := "ide"
+
+    if (g_AIB_AllowWatcherRestrictToVSCode) {
+        if (windowScope = "cursor")
+            return "vscode"
+        if (windowScope = "ide")
+            return "vscode"
+    }
+
+    return windowScope
 }
 
 AIB_IsCursorComposerFocused(hwnd) {
@@ -2282,7 +2304,7 @@ $Enter::
             AIB_AllowDebug_Write("enter-trigger detected proc=code hwnd=" hwnd)
             if (VSCode_SubmitChat(hwnd)) {
                 AIB_AllowDebug_Write("enter-trigger fallback-arm proc=code hwnd=" hwnd)
-                AIB_ArmAllowWatcher("chat_submit", hwnd, "ide", false, true)
+                AIB_ArmAllowWatcher("chat_submit", hwnd, "vscode", false, true)
                 return
             }
             AIB_AllowDebug_Write("enter-trigger submit-failed proc=code hwnd=" hwnd)
@@ -2296,7 +2318,7 @@ $Enter::
         try postSendReady := VSCode_IsChatSendReady(hwnd)
         if (preSendReady && !postSendReady) {
             AIB_AllowDebug_Write("enter-trigger inferred-submit proc=code hwnd=" hwnd)
-            AIB_ArmAllowWatcher("chat_submit", hwnd, "ide", false, true)
+            AIB_ArmAllowWatcher("chat_submit", hwnd, "vscode", false, true)
             return
         }
         return
@@ -2306,7 +2328,6 @@ $Enter::
         if (AIB_IsCursorComposerFocused(hwnd)) {
             AIB_AllowDebug_Write("enter-trigger detected proc=cursor hwnd=" hwnd)
             SendInput "{Enter}"
-            AIB_ArmAllowWatcher("chat_submit_cursor", hwnd, "cursor", true, true)
             return
         }
         SendInput "{Enter}"
@@ -2350,6 +2371,7 @@ AIB_ShouldShowStartBanner(triggerSource, targetHwnd := 0) {
 }
 
 AIB_ArmAllowWatcher(triggerSource := "manual", targetHwnd := 0, windowScope := "ide", pinToTarget := false, showStartBanner := true, bannerText := "", bannerAccent := BANNER_ACCENT_INTERMEDIATE) {
+    windowScope := AIB_NormalizeAllowWatcherScope(windowScope)
     AIB_StartAllowWatcher(triggerSource, targetHwnd, windowScope, pinToTarget)
     AIB_AllowDebug_Write("trigger-accepted source=" triggerSource " scope=" windowScope " target=" targetHwnd " pinned=" pinToTarget)
 
@@ -2444,12 +2466,10 @@ AIB_AllowWatcherTick(*) {
     try {
         global g_AIB_AllowWatcherWindowScope
         scope := g_AIB_AllowWatcherWindowScope ? g_AIB_AllowWatcherWindowScope : "ide"
-        if (scope != "cursor") {
-            for hwnd in AIB_GetWatcherWindowHwnds("ide") {
-                key := String(hwnd)
-                if (!g_AIB_AllowWatcherStateByHwnd.Has(key))
-                    AIB_AllowWatcherEnsureState(hwnd, g_AIB_AllowWatcherSource, scope)
-            }
+        for hwnd in AIB_GetWatcherWindowHwnds(scope) {
+            key := String(hwnd)
+            if (!g_AIB_AllowWatcherStateByHwnd.Has(key))
+                AIB_AllowWatcherEnsureState(hwnd, g_AIB_AllowWatcherSource, scope)
         }
     } catch {
     }
@@ -2694,9 +2714,19 @@ AIB_WindowHasAllowButton(hwnd, &failReason := "") {
         if (AIB_HasChatConfirmationAcceptHint(root))
             return true
         frame := AIB_GetPreferredAllowSearchFrame(root, hwnd)
-        if (!frame)
+        if (frame) {
+            if (AIB_GetBestAllowButton(root, frame))
+                return true
+            if (AIB_FindAllowButtonInDocumentSubtree(root, frame))
+                return true
+            failReason := "Allow not found in confirmation frame"
             return false
-        return !!AIB_GetBestAllowButton(root, frame)
+        }
+
+        if (AIB_FindAllowButtonInDocumentSubtree(root))
+            return true
+        failReason := "Allow not found in AI chat confirmation context"
+        return false
     } catch {
         failReason := "button search failed"
         return false
@@ -2875,7 +2905,7 @@ AIB_StartImplementationProbeTick(*) {
             try proc := StrLower(WinGetProcessName("ahk_id " hwnd))
             scope := (proc = "code.exe") ? "vscode" : "cursor"
             AIB_AllowDebug_Write("start-impl-probe arm scope=" scope " hwnd=" hwnd)
-            AIB_ArmAllowWatcher("start_implementation", 0, "ide", false, true)
+            AIB_ArmAllowWatcher("start_implementation", 0, "vscode", false, true)
         }
 
         g_AIB_StartImplPrevPresentByHwnd[key] := presentNow
@@ -2888,6 +2918,8 @@ AIB_StartImplementationProbeTick(*) {
 }
 
 AIB_GetWatcherWindowHwnds(scope := "ide", pinnedHwnd := 0) {
+    scope := AIB_NormalizeAllowWatcherScope(scope)
+
     if (pinnedHwnd && WinExist("ahk_id " pinnedHwnd)) {
         proc := ""
         try proc := StrLower(WinGetProcessName("ahk_id " pinnedHwnd))
@@ -3030,6 +3062,14 @@ AIB_ClickAllowButtonInWindow(hwnd, &failReason := "") {
                 if (!AIB_WindowHasAllowButton(hwnd, &verifyReason))
                     return true
             }
+
+            ocrRoute := ""
+            if (AIB_TryOcrAllowClick(hwnd, root, &ocrRoute)) {
+                verifyReason := ""
+                if (!AIB_WindowHasAllowButton(hwnd, &verifyReason))
+                    return true
+            }
+
             AIB_AllowDebug_Write("click-hint-shortcut-failed hwnd=" hwnd " route=" route)
             failReason := "accept hint found but shortcut did not clear prompt"
             return false
@@ -3084,6 +3124,15 @@ AIB_ClickAllowButtonInWindow(hwnd, &failReason := "") {
     }
 
     AIB_AllowDebug_Write("click-action-failed hwnd=" hwnd)
+
+        ocrRoute := ""
+        if (AIB_TryOcrAllowClick(hwnd, root, &ocrRoute)) {
+            verifyReason := ""
+            if (!AIB_WindowHasAllowButton(hwnd, &verifyReason))
+                return true
+            AIB_AllowDebug_Write("click-ocr-still-present hwnd=" hwnd " route=" ocrRoute)
+        }
+
     failReason := "invoke/click failed"
     return false
 }
@@ -3140,8 +3189,6 @@ AIB_FindAllowButtonInChatConfirmation(root) {
             buttons := grp.FindAll({ Type: 50000 })
             best := 0
             bestScore := -2147483647
-            fallbackPrimary := 0
-            fallbackPrimaryScore := -2147483647
             buttonSnapshot := ""
             for btn in buttons {
                 nm := ""
@@ -3155,25 +3202,10 @@ AIB_FindAllowButtonInChatConfirmation(root) {
                     buttonSnapshot .= " | "
                 buttonSnapshot .= "name='" nm "' class='" bcls "'"
 
-                ; Strong class fallback for VS Code chat confirmation primary action.
-                ; This catches cases where the name is temporarily empty/unreliable.
-                fpScore := 0
-                if (InStr(bcls, "monaco-button"))
-                    fpScore += 40
-                if (InStr(bcls, "monaco-text-button"))
-                    fpScore += 70
-                if (InStr(bcls, "secondary"))
-                    fpScore -= 120
-                if (InStr(bcls, "dropdown") || InStr(bcls, "drop-down-button"))
-                    fpScore -= 200
-                if (!offscreen)
-                    fpScore += 20
-                if (fpScore > fallbackPrimaryScore) {
-                    fallbackPrimary := btn
-                    fallbackPrimaryScore := fpScore
-                }
-
                 if (!AIB_IsAllowButtonName(nm))
+                    continue
+
+                if (!AIB_IsInAiChatAllowContext(btn))
                     continue
 
                 score := 0
@@ -3197,9 +3229,6 @@ AIB_FindAllowButtonInChatConfirmation(root) {
 
             if (best)
                 return best
-
-            if (fallbackPrimary && fallbackPrimaryScore >= 70)
-                return fallbackPrimary
 
             AIB_AllowDebug_Write("confirm-container-no-candidate buttons=" buttonSnapshot)
         }
@@ -3319,6 +3348,9 @@ AIB_GetBestAllowButton(root, searchFrame := 0) {
             nm := ""
             try nm := btn.Name
             if (!AIB_IsAllowButtonName(nm))
+                continue
+
+            if (!AIB_IsInAiChatAllowContext(btn))
                 continue
 
             if (searchFrame && !AIB_IsElementCenterInsideFrame(btn, searchFrame))
@@ -3828,7 +3860,28 @@ AIB_IsAllowButtonName(btnName) {
         return false
     ; Accept variants like "Allow", "Allow once", and "Allow (...)" as a word token.
     ; This still matches larger labels but avoids accidental matches like "disallow".
-    return RegExMatch(n, "(^|\\W)allow(\\W|$)") > 0
+    if (RegExMatch(n, "(^|\\W)allow(\\W|$)") <= 0)
+        return false
+    if (AIB_IsAllowNegativeButtonName(n))
+        return false
+    return true
+}
+
+AIB_IsAllowNegativeButtonName(btnName) {
+    n := StrLower(Trim(btnName))
+    if (n = "")
+        return false
+
+    ; Explicitly reject known non-target actions that contain "allow" token.
+    if (InStr(n, "proceed without executing"))
+        return true
+    if (InStr(n, "do not allow"))
+        return true
+    if (InStr(n, "don't allow"))
+        return true
+    if (InStr(n, "deny") || InStr(n, "decline"))
+        return true
+    return false
 }
 
 AIB_IsPreferredDialogMoreActionsClass(className) {
@@ -3881,6 +3934,146 @@ AIB_IsInChatConfirmationDialog(el, maxDepth := 12) {
         }
     }
     return false
+}
+
+AIB_IsInAiChatAllowContext(btn) {
+    if (!btn)
+        return false
+
+    if (!AIB_IsInChatConfirmationDialog(btn))
+        return false
+
+    nm := ""
+    try nm := btn.Name
+    if (AIB_IsAllowNegativeButtonName(nm))
+        return false
+
+    return true
+}
+
+AIB_FindAllowButtonInDocumentSubtree(root, searchFrame := 0) {
+    if (!root)
+        return 0
+
+    try {
+        docs := root.FindAll({ Type: 50030 })
+        for doc in docs {
+            if (!doc)
+                continue
+            btn := AIB_GetBestAllowButton(doc, searchFrame)
+            if (btn)
+                return btn
+        }
+    } catch {
+    }
+
+    return 0
+}
+
+AIB_TryOcrAllowClick(hwnd, root := 0, &usedRoute := "") {
+    global g_AIB_AllowWatcherEnableOcrFallback, g_AIB_AllowWatcherOcrCooldownMs, g_AIB_AllowWatcherLastOcrTickByHwnd
+    global UIA
+    usedRoute := "none"
+
+    if (!g_AIB_AllowWatcherEnableOcrFallback)
+        return false
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return false
+
+    key := String(hwnd)
+    now := A_TickCount
+    lastTick := g_AIB_AllowWatcherLastOcrTickByHwnd.Has(key) ? g_AIB_AllowWatcherLastOcrTickByHwnd[key] : 0
+    if (now - lastTick < g_AIB_AllowWatcherOcrCooldownMs)
+        return false
+
+    if (!root) {
+        try root := UIA.ElementFromHandle(hwnd)
+        catch {
+            root := 0
+        }
+    }
+    if (!root)
+        return false
+
+    if (!AIB_HasChatConfirmationAcceptHint(root))
+        return false
+
+    frame := AIB_GetPreferredAllowSearchFrame(root, hwnd)
+    if (!frame)
+        return false
+
+    ocrText := ""
+    x := 0
+    y := 0
+    if (!AIB_RunAllowOcrProbe(frame, &ocrText, &x, &y))
+        return false
+
+    n := StrLower(ocrText)
+    if (RegExMatch(n, "(^|\\W)allow(\\W|$)") <= 0)
+        return false
+    if (InStr(n, "proceed without executing") || InStr(n, "do not allow") || InStr(n, "don't allow"))
+        return false
+    if (!InStr(n, "ctrl+enter") && !InStr(n, "control+enter") && !InStr(n, "chat confirmation required"))
+        return false
+
+    AIB_PrepareWindowForAllowClick(hwnd)
+    try {
+        ControlClick("x" x " y" y, "ahk_id " hwnd, , "Left", 1, "NA Pos")
+        g_AIB_AllowWatcherLastOcrTickByHwnd[key] := now
+        usedRoute := "ocr-controlclick"
+        AIB_AllowDebug_Write("click-ocr hwnd=" hwnd " x=" x " y=" y " text='" ocrText "'")
+        Sleep(220)
+        return true
+    } catch {
+        AIB_AllowDebug_Write("click-ocr-failed hwnd=" hwnd)
+    }
+
+    return false
+}
+
+AIB_RunAllowOcrProbe(frame, &ocrText := "", &clickX := 0, &clickY := 0) {
+    global g_AIB_AllowWatcherOcrScriptPath
+    ocrText := ""
+    clickX := 0
+    clickY := 0
+
+    if (!FileExist(g_AIB_AllowWatcherOcrScriptPath))
+        return false
+
+    w := Max(1, frame.r - frame.l)
+    h := Max(1, frame.b - frame.t)
+    tmpOut := A_Temp . "\\aib_allow_ocr_" . A_TickCount . ".txt"
+
+    cmd := "powershell.exe -NoProfile -ExecutionPolicy Bypass -File `"" g_AIB_AllowWatcherOcrScriptPath "`""
+    cmd .= " -X " frame.l " -Y " frame.t " -Width " w " -Height " h
+    cmd .= " -OutFile `"" tmpOut "`""
+
+    ok := false
+    try {
+        exitCode := RunWait(cmd, "", "Hide")
+        if (exitCode = 0 && FileExist(tmpOut)) {
+            content := Trim(FileRead(tmpOut, "UTF-8"))
+            if (content != "") {
+                parts := StrSplit(content, "|")
+                if (parts.Length >= 4 && parts[1] = "FOUND") {
+                    clickX := Integer(parts[2])
+                    clickY := Integer(parts[3])
+                    ocrText := parts[4]
+                    ok := true
+                }
+            }
+        }
+    } catch {
+        ok := false
+    }
+
+    try {
+        if (FileExist(tmpOut))
+            FileDelete(tmpOut)
+    } catch {
+    }
+
+    return ok
 }
 
 ; =============================================================================

@@ -1,10 +1,11 @@
+
 # AIB Allow Watcher — Architecture Reference
 
 > Last updated: 2026-05-05
 
 ## Overview
 
-The AIB Allow Watcher is a centralized background monitor that detects when VS Code or Cursor surfaces an "Allow" tool-call confirmation button and automatically clicks it after a brief user-confirmation window. A single global 350 ms timer polls all enrolled IDE windows simultaneously; stopping the watcher immediately terminates monitoring across all windows.
+The AIB Allow Watcher is a centralized background monitor that detects the AI chat tool-call confirmation **Allow** button in **VS Code** and automatically clicks it after a brief user-confirmation window. A single global 350 ms timer polls all enrolled windows simultaneously; stopping the watcher immediately terminates monitoring across all windows.
 
 ---
 
@@ -12,15 +13,15 @@ The AIB Allow Watcher is a centralized background monitor that detects when VS C
 
 | Source | Hotkey / Event | AHK Call |
 |--------|---------------|----------|
-| `chat_submit` | Enter in VS Code chat input | `AIB_ArmAllowWatcher("chat_submit", hwnd, "ide", false, true)` |
-| `chat_submit_cursor` | Enter in Cursor composer | `AIB_ArmAllowWatcher("chat_submit_cursor", hwnd, "cursor", true, true)` |
-| `start_implementation` | "Start Implementation" button disappears from UIA tree | `AIB_ArmAllowWatcher("start_implementation", 0, "ide", false, true)` |
+| `chat_submit` | Enter in VS Code chat input | `AIB_ArmAllowWatcher("chat_submit", hwnd, "vscode", false, true)` |
+| `chat_submit_cursor` | Enter in Cursor composer | Not armed (Enter is sent, watcher remains VS Code-only) |
+| `start_implementation` | "Start Implementation" button disappears from UIA tree | `AIB_ArmAllowWatcher("start_implementation", 0, "vscode", false, true)` |
 | `rapid_fire_hotkey` | Win+Alt+Shift+9 manual toggle | `AIB_ArmAllowWatcher("rapid_fire_hotkey", hwnd, "vscode", true, true)` |
 
 **Scope semantics:**
-- `"ide"` — enroll all open `code.exe` and `cursor.exe` windows (used by `chat_submit` and `start_implementation`)
+- `"ide"` — normalized to `"vscode"` when VS Code-only restriction is enabled
 - `"vscode"` — only `code.exe` windows
-- `"cursor"` — only `cursor.exe` windows, pinned to specific hwnd
+- `"cursor"` — normalized to `"vscode"` when VS Code-only restriction is enabled
 - `pinToTarget := false` — allow the tick loop to auto-enroll additional windows that open after arming
 
 ---
@@ -71,7 +72,7 @@ Each enrolled window has an independent session stored in `g_AIB_AllowWatcherSta
     lastSeenTick:   <tickcount> ; Last poll time
     startedTick:    <tickcount> ; When session was created
     source:         "chat_submit" | "start_implementation" | "rapid_fire_hotkey"
-    scope:          "ide" | "vscode" | "cursor"
+    scope:          "vscode"
     timeoutMs:      480000      ; 8 minutes (g_AIB_AllowWatcherTimeoutMs)
 }
 ```
@@ -94,6 +95,43 @@ Sessions are created by `AIB_AllowWatcherEnsureState()` and deleted on:
 | `g_AIB_AllowWatcherRoundRobinOffset` | int | Rotates per tick for polling fairness |
 
 **One timer, all windows** — the timer is started once when the first session is created and killed once all sessions are gone or the watcher is stopped. New windows opening after arming are auto-enrolled on the next tick.
+
+---
+
+## Allow Selector Guardrails
+
+The watcher only accepts an Allow candidate when **all** of the following are true:
+
+- Button name contains standalone token `allow` (word boundary check)
+- Button is inside AI chat confirmation context (`chat-confirmation-widget-container` and/or "Chat Confirmation Dialog" ancestry)
+- Button name does **not** match negative filters (`proceed without executing`, `do not allow`, `don't allow`, etc.)
+
+Search order:
+
+1. Exact confirmation container scan (`AIB_FindAllowButtonInChatConfirmation`)
+2. Framed button scan within confirmation bounds (`AIB_GetBestAllowButton`)
+3. Document-subtree fallback scan for Electron/WebView tree drift (`AIB_FindAllowButtonInDocumentSubtree`)
+4. Shortcut fallback (`Ctrl+Enter`) only when explicit confirmation hint exists
+5. Optional OCR fallback (feature-flagged)
+
+---
+
+## OCR Last Resort (Optional)
+
+An OCR fallback path is available but off by default:
+
+- Flag: `g_AIB_AllowWatcherEnableOcrFallback := false`
+- Helper script: `tools/Get-AllowPromptOcr.ps1`
+- Cooldown: per-window debounce via `g_AIB_AllowWatcherOcrCooldownMs`
+
+OCR path is allowed only when:
+
+- Chat confirmation hint is present
+- OCR text in the confirmation frame contains standalone `allow`
+- OCR text also includes confirmation markers (`ctrl+enter`, `control+enter`, or `chat confirmation required`)
+- OCR text does not match negative filters
+
+If accepted, watcher performs one guarded click at OCR hit coordinates, then re-verifies prompt state.
 
 ---
 
@@ -122,7 +160,7 @@ A tight emoji-only GUI (`⏳`) shows at the bottom-left of the **active monitor*
 
 ## Start Implementation Probe
 
-A separate 900 ms probe (`AIB_StartImplementationProbeTick`) scans all IDE windows for the "Start Implementation" UIA button. When a window transitions from button-present → button-absent in the foreground, it arms the watcher with `"ide"` scope (enrolling all open VS Code/Cursor windows).
+A separate 900 ms probe (`AIB_StartImplementationProbeTick`) scans IDE windows for the "Start Implementation" UIA button. When a window transitions from button-present → button-absent in the foreground, it arms the watcher with `"vscode"` scope.
 
 The probe is blocked while the watcher is active (`g_AIB_AllowWatcherActive = true`).
 
@@ -147,6 +185,10 @@ Button detection uses Document-level UIA traversal (VS Code embeds buttons insid
 | `AIB_PersistentBannerMonitorUpdate` | AppLaunchers.ahk | Reposition if monitor changed |
 | `AIB_PersistentBannerDestroy` | AppLaunchers.ahk | Destroy indicator |
 | `AIB_GetWatcherWindowHwnds` | AppLaunchers.ahk | Enumerate target IDE windows by scope |
+| `AIB_IsAllowNegativeButtonName` | AppLaunchers.ahk | Reject non-target labels containing allow |
+| `AIB_FindAllowButtonInDocumentSubtree` | AppLaunchers.ahk | Fallback search in Document nodes |
+| `AIB_TryOcrAllowClick` | AppLaunchers.ahk | OCR-backed last-resort click path |
+| `AIB_RunAllowOcrProbe` | AppLaunchers.ahk | Run PowerShell OCR helper and parse hit |
 
 ---
 
@@ -162,8 +204,9 @@ Key signal patterns:
 | `start-impl-probe ide-windows=N` | Probe running, N IDE windows visible |
 | `start-impl-btn doc-scan hwnd=... doc-btns=N` | Document traversal scanning N buttons |
 | `start-impl-btn found hwnd=...` | Start Implementation button detected |
-| `start-impl-probe arm scope=ide hwnd=...` | Button transition detected, arming watcher |
+| `start-impl-probe arm scope=vscode hwnd=...` | Button transition detected, arming watcher |
 | `tick allow-detected hwnd=...` | Allow button found in a window |
+| `click-ocr hwnd=... x=... y=... text='...'` | OCR fallback fired a guarded click |
 | `tick send-ready-complete hwnd=...` | Session completed (Send ready again) |
 | `tick session-timeout hwnd=...` | Session expired after 8 min |
 | `banner-created hwnd=... x=... y=...` | Persistent indicator placed |
