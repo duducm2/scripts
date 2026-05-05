@@ -2256,6 +2256,8 @@ AIB_IsCursorComposerFocused(hwnd) {
 #HotIf WinActive("ahk_exe Code.exe") || WinActive("ahk_exe Cursor.exe")
 $Enter::
 {
+    global g_AIB_AllowWatcherActive
+
     ; Preserve modified-enter semantics (Shift/Ctrl/Alt/Win variants).
     if (GetKeyState("Shift", "P") || GetKeyState("Ctrl", "P") || GetKeyState("Alt", "P") || GetKeyState("LWin", "P") || GetKeyState("RWin", "P")) {
         SendInput "{Enter}"
@@ -2273,18 +2275,30 @@ $Enter::
     }
 
     if (proc = "code.exe") {
+        preSendReady := false
+        try preSendReady := VSCode_IsChatSendReady(hwnd)
+
         if (VSCode_IsChatInputFocused(hwnd)) {
             AIB_AllowDebug_Write("enter-trigger detected proc=code hwnd=" hwnd)
             if (VSCode_SubmitChat(hwnd)) {
-                if (!g_AIB_AllowWatcherActive) {
-                    AIB_AllowDebug_Write("enter-trigger fallback-arm proc=code hwnd=" hwnd)
-                    AIB_ArmAllowWatcher("chat_submit", hwnd, "ide", false, true)
-                }
+                AIB_AllowDebug_Write("enter-trigger fallback-arm proc=code hwnd=" hwnd)
+                AIB_ArmAllowWatcher("chat_submit", hwnd, "ide", false, true)
                 return
             }
             AIB_AllowDebug_Write("enter-trigger submit-failed proc=code hwnd=" hwnd)
         }
+
+        ; Workspace-safe fallback: if send transitioned ready->not-ready after Enter,
+        ; infer chat submit and arm watcher even when focus gate misses.
         SendInput "{Enter}"
+        Sleep(80)
+        postSendReady := true
+        try postSendReady := VSCode_IsChatSendReady(hwnd)
+        if (preSendReady && !postSendReady) {
+            AIB_AllowDebug_Write("enter-trigger inferred-submit proc=code hwnd=" hwnd)
+            AIB_ArmAllowWatcher("chat_submit", hwnd, "ide", false, true)
+            return
+        }
         return
     }
 
@@ -2478,8 +2492,16 @@ AIB_AllowWatcherTick(*) {
             ; One decision overlay at a time; when approved, click once and resume monitoring.
             if (!g_AIB_AllowWatcherPromptLock) {
                 g_AIB_AllowWatcherPromptLock := true
-                decision := AIB_RunAllowDecisionFlow(hwnd)
-                g_AIB_AllowWatcherPromptLock := false
+                decision := ""
+                try {
+                    decision := AIB_RunAllowDecisionFlow(hwnd)
+                } catch as e {
+                    AIB_AllowDebug_Write("decision-flow-error hwnd=" hwnd " err=" e.Message)
+                    ; Fail open so a transient overlay error does not deadlock the watcher.
+                    decision := "Y"
+                } finally {
+                    g_AIB_AllowWatcherPromptLock := false
+                }
 
                 if (decision = "N") {
                     AIB_AllowDebug_Write("tick session-cancel hwnd=" hwnd)
@@ -2492,6 +2514,8 @@ AIB_AllowWatcherTick(*) {
                 AIB_ClickAllowButtonInWindow(hwnd, &clickFail)
                 if (clickFail != "")
                     AIB_AllowDebug_Write("tick click-fail hwnd=" hwnd " reason=" clickFail)
+            } else {
+                AIB_AllowDebug_Write("tick allow-detected prompt-locked hwnd=" hwnd)
             }
         } else {
             if (st.seenAllow) {
@@ -2670,6 +2694,8 @@ AIB_WindowHasAllowButton(hwnd, &failReason := "") {
         if (AIB_HasChatConfirmationAcceptHint(root))
             return true
         frame := AIB_GetPreferredAllowSearchFrame(root, hwnd)
+        if (!frame)
+            return false
         return !!AIB_GetBestAllowButton(root, frame)
     } catch {
         failReason := "button search failed"
@@ -2985,7 +3011,8 @@ AIB_ClickAllowButtonInWindow(hwnd, &failReason := "") {
         btn := AIB_FindAllowButtonInChatConfirmation(root)
         if (!btn) {
             frame := AIB_GetPreferredAllowSearchFrame(root, hwnd, &frameSource)
-            btn := AIB_GetBestAllowButton(root, frame)
+            if (frame)
+                btn := AIB_GetBestAllowButton(root, frame)
         }
     } catch {
         failReason := "button search failed"
@@ -3035,6 +3062,13 @@ AIB_ClickAllowButtonInWindow(hwnd, &failReason := "") {
         verifyReason := ""
         if (!AIB_WindowHasAllowButton(hwnd, &verifyReason))
             return true
+
+        ; Safety: only use shortcut fallback when confirmation context is explicit.
+        if (!AIB_HasChatConfirmationAcceptHint(root)) {
+            AIB_AllowDebug_Write("click-post-shortcut-skipped hwnd=" hwnd " reason=no-confirmation-hint")
+            failReason := "allow still present; shortcut skipped (no confirmation hint)"
+            return false
+        }
 
         route := ""
         AIB_SendAcceptShortcutToWindow(hwnd, &route)
@@ -3335,23 +3369,6 @@ AIB_GetPreferredAllowSearchFrame(root, hwnd := 0, &frameSource := "") {
     if (frame) {
         frameSource := "chat-confirmation-container"
         return frame
-    }
-
-    ; Fallback frame: right-lower area where chat confirmation usually renders.
-    if (hwnd && WinExist("ahk_id " hwnd)) {
-        try {
-            WinGetPos(&wx, &wy, &ww, &wh, "ahk_id " hwnd)
-            if (ww > 200 && wh > 200) {
-                frameSource := "window-lower-right-fallback"
-                return {
-                    l: wx + Floor(ww * 0.45),
-                    t: wy + Floor(wh * 0.35),
-                    r: wx + ww - 8,
-                    b: wy + wh - 8
-                }
-            }
-        } catch {
-        }
     }
 
     return 0
