@@ -2278,7 +2278,7 @@ $Enter::
             if (VSCode_SubmitChat(hwnd)) {
                 if (!g_AIB_AllowWatcherActive) {
                     AIB_AllowDebug_Write("enter-trigger fallback-arm proc=code hwnd=" hwnd)
-                    AIB_ArmAllowWatcher("chat_submit", hwnd, "vscode", true, true)
+                    AIB_ArmAllowWatcher("chat_submit", hwnd, "ide", false, true)
                 }
                 return
             }
@@ -2424,6 +2424,20 @@ AIB_AllowWatcherTick(*) {
     if (g_AIB_AllowWatcherStateByHwnd.Count = 0) {
         AIB_StopAllowWatcher("", false)
         return
+    }
+
+    ; Auto-enroll any new IDE windows that opened after arming
+    try {
+        global g_AIB_AllowWatcherWindowScope
+        scope := g_AIB_AllowWatcherWindowScope ? g_AIB_AllowWatcherWindowScope : "ide"
+        if (scope != "cursor") {
+            for hwnd in AIB_GetWatcherWindowHwnds("ide") {
+                key := String(hwnd)
+                if (!g_AIB_AllowWatcherStateByHwnd.Has(key))
+                    AIB_AllowWatcherEnsureState(hwnd, g_AIB_AllowWatcherSource, scope)
+            }
+        }
+    } catch {
     }
 
     keys := []
@@ -2737,27 +2751,28 @@ AIB_PersistentBannerCreate() {
     GetActiveMonitorWorkArea_StandardBar(&ml, &mt, &mr, &mb)
     g_AIB_FlowBannerLastMonitorIdx := GetMonitorIndexForForeground_StandardBar()
 
-    ; Create persistent banner GUI at bottom-left of active monitor
-    bannerGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
-    bannerGui.BackColor := "1F1F1F"  ; Dark background
-    bannerGui.SetFont("s11 c90EE90", "Segoe UI")  ; Light green text
+    ; Create tight emoji-only indicator — no caption, no margins, no fixed dimensions
+    bannerGui := Gui("+AlwaysOnTop -Caption +ToolWindow -DPIScale")
+    bannerGui.BackColor := "1F1F1F"
+    bannerGui.MarginX := 4
+    bannerGui.MarginY := 4
+    bannerGui.SetFont("s14 c90EE90", "Segoe UI")
+    bannerGui.Add("Text", "Center", "⏳")
 
-    ; Add text control
-    bannerGui.Add("Text", "w200 Center", "⏳ Allow Flow Active")
+    ; Auto-size first, then anchor to bottom-left
+    bannerGui.Show("AutoSize Hide")
+    bannerGui.GetPos(, , &bw, &bh)
 
-    ; Show at bottom-left (20px from edges)
     marginX := 20
     marginY := 20
     bannerX := ml + marginX
-    bannerY := mb - 60 - marginY  ; 60px height estimate for button + margins
+    bannerY := mb - bh - marginY
 
-    bannerGui.Show("x" . bannerX . " y" . bannerY . " w200 h50 NA")
-
-    ; Set transparency for subtle appearance
-    WinSetTransparent(220, bannerGui)
+    bannerGui.Show("x" . bannerX . " y" . bannerY . " NA")
+    WinSetTransparent(210, bannerGui)
 
     g_AIB_FlowBannerHwnd := bannerGui.Hwnd
-    AIB_AllowDebug_Write("banner-created hwnd=" g_AIB_FlowBannerHwnd " x=" bannerX " y=" bannerY)
+    AIB_AllowDebug_Write("banner-created hwnd=" g_AIB_FlowBannerHwnd " x=" bannerX " y=" bannerY " w=" bw " h=" bh)
     return g_AIB_FlowBannerHwnd
 }
 
@@ -2778,8 +2793,12 @@ AIB_PersistentBannerMonitorUpdate() {
 
     marginX := 20
     marginY := 20
+    bh := 0
+    try WinGetPos(, , , &bh, "ahk_id " g_AIB_FlowBannerHwnd)
+    if (bh <= 0)
+        bh := 30
     bannerX := ml + marginX
-    bannerY := mb - 60 - marginY
+    bannerY := mb - bh - marginY
 
     WinMove(bannerX, bannerY, , , "ahk_id " g_AIB_FlowBannerHwnd)
     AIB_AllowDebug_Write("banner-repositioned hwnd=" g_AIB_FlowBannerHwnd " monitor=" currentMonitorIdx " x=" bannerX " y=" bannerY)
@@ -2829,7 +2848,7 @@ AIB_StartImplementationProbeTick(*) {
             try proc := StrLower(WinGetProcessName("ahk_id " hwnd))
             scope := (proc = "code.exe") ? "vscode" : "cursor"
             AIB_AllowDebug_Write("start-impl-probe arm scope=" scope " hwnd=" hwnd)
-            AIB_ArmAllowWatcher("start_implementation", hwnd, scope, true, true)
+            AIB_ArmAllowWatcher("start_implementation", 0, "ide", false, true)
         }
 
         g_AIB_StartImplPrevPresentByHwnd[key] := presentNow
