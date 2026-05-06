@@ -1357,7 +1357,7 @@ Navigation:
 [G] > Toggle grid
 [Ctrl + F] > Search
 
-Text:
+Text: 
 [Ctrl + B] > Bold
 [Ctrl + I] > Italic
 [Ctrl + U] > Underline
