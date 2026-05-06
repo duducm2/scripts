@@ -2464,6 +2464,7 @@ AIB_AllowWatcherEnsureState(hwnd, source := "manual", scope := "ide") {
             absenceStreak: 0,
             lastSeenTick: A_TickCount,
             lastClickTick: 0,
+            ignoreUntilTick: 0,
             startedTick: A_TickCount,
             source: source,
             scope: scope,
@@ -2475,6 +2476,7 @@ AIB_AllowWatcherEnsureState(hwnd, source := "manual", scope := "ide") {
         st.scope := scope
         st.startedTick := A_TickCount
         st.lastClickTick := 0
+        st.ignoreUntilTick := 0
         st.timeoutMs := g_AIB_AllowWatcherTimeoutMs
         g_AIB_AllowWatcherStateByHwnd[key] := st
     }
@@ -2545,6 +2547,13 @@ AIB_AllowWatcherTick(*) {
             continue
         }
 
+        ; Ignore retries for 30 seconds when user chooses Ignore.
+        if (st.ignoreUntilTick && A_TickCount < st.ignoreUntilTick) {
+            continue
+        }
+        if (st.ignoreUntilTick && A_TickCount >= st.ignoreUntilTick)
+            st.ignoreUntilTick := 0
+
         failReason := ""
         hasAllow := AIB_WindowHasAllowButton(hwnd, &failReason)
         if (hasAllow) {
@@ -2572,6 +2581,16 @@ AIB_AllowWatcherTick(*) {
                     g_AIB_AllowWatcherPromptLock := false
                 }
 
+                if (decision = "I") {
+                    st.ignoreUntilTick := A_TickCount + 30000
+                    st.seenAllow := false
+                    st.absenceStreak := 0
+                    st.startedTick := A_TickCount
+                    AIB_AllowDebug_Write("tick allow-ignore-armed hwnd=" hwnd " ms=30000")
+                    g_AIB_AllowWatcherStateByHwnd[key] := st
+                    continue
+                }
+
                 if (decision = "N") {
                     if (AIB_IsPersistentAllowWatcherMode()) {
                         st.skipCurrentAllow := true
@@ -2588,7 +2607,6 @@ AIB_AllowWatcherTick(*) {
                 }
 
                 clickFail := ""
-                SoundPlay(A_ScriptDir . "\sounds\clicking-allow.wav")
                 prevForegroundHwnd := AIB_GetForegroundWindowForRestore()
                 AIB_PrepareWindowForAllowClick(hwnd)
                 AIB_ClickAllowButtonInWindow(hwnd, &clickFail)
@@ -2733,11 +2751,18 @@ AIB_RunAllowDecisionFlow(hwnd) {
         anchorHwnd := hwnd
     AIB_AllowDebug_Write("decision-flow hwnd=" hwnd " anchor=" anchorHwnd)
 
-    ; Banner 1: exactly 2 seconds with progressive loading.
+    cmdPreview := AIB_GetAllowCommandPreview(hwnd)
+    
+    ; Play sound at START to alert user
+    SoundPlay(A_ScriptDir . "\\sounds\\clicking-allow.wav")
+
+    ; Banner 1: exactly 2 seconds with progressive loading + command display.
+    ; Display command prominently with newlines for readability
+    banner1Text := "⏳ Allow detected in " . title . "`n`nCommand to execute:`n" . cmdPreview
     StandardLoadingBar_Show(
-        "⏳ Allow detected in " . title . ". Prepare to decide...",
+        banner1Text,
         BANNER_ACCENT_INTERMEDIATE,
-        { textWidth: 640, noBorder: true, trackActiveMonitor: true, manualProgress: true, centerOnHwnd: anchorHwnd }
+        { textWidth: 700, noBorder: true, trackActiveMonitor: true, manualProgress: true, centerOnHwnd: anchorHwnd, fontSize: 15 }
     )
     StandardLoadingBar_StartTimedProgress(2000)
     Sleep(2000)
@@ -2746,24 +2771,26 @@ AIB_RunAllowDecisionFlow(hwnd) {
     keyCallbacks := Map(
         "Y", AIB_AllowWatcherDecisionYes,
         "N", AIB_AllowWatcherDecisionNo,
+        "I", AIB_AllowWatcherDecisionIgnore,
         "Escape", AIB_AllowWatcherDecisionNo
     )
 
-    cmdPreview := AIB_GetAllowCommandPreview(hwnd)
-
-    ; Banner 2: exactly 5 seconds with progressive loading + decision input.
+    ; Banner 2: exactly 5 seconds with progressive loading + decision input + command.
+    ; Display command with emphasis for user approval, separated by big space
+    banner2Text := "❓ Click Allow now? (5s)"
+    commandDisplay := "📋 " . cmdPreview
     StandardLoadingBar_ShowWithKeys(
-        "❓ Click Allow now? (5s)",
+        banner2Text,
         keyCallbacks,
         5000,
         anchorHwnd,
         AIB_AllowWatcherDecisionTimeout,
         BANNER_ACCENT_INTERMEDIATE,
-        560,
+        700,
         17,
-        "Command: " . cmdPreview,
+        BANNER_ACCENT_INFO,
         true,
-        "[Y] Click Allow  [N] Stop watcher",
+        "`n`n`n`n" . commandDisplay . "`n`n`n`n[Y] Click Allow  [N] Stop watcher  [I] Ignore 30s",
         true,
         true
     )
@@ -2786,6 +2813,11 @@ AIB_AllowWatcherDecisionYes(*) {
 AIB_AllowWatcherDecisionNo(*) {
     global g_AIB_AllowWatcherDecision
     g_AIB_AllowWatcherDecision := "N"
+}
+
+AIB_AllowWatcherDecisionIgnore(*) {
+    global g_AIB_AllowWatcherDecision
+    g_AIB_AllowWatcherDecision := "I"
 }
 
 AIB_AllowWatcherDecisionTimeout(*) {
