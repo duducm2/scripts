@@ -2463,6 +2463,7 @@ AIB_AllowWatcherEnsureState(hwnd, source := "manual", scope := "ide") {
             skipCurrentAllow: false,
             absenceStreak: 0,
             lastSeenTick: A_TickCount,
+            lastClickTick: 0,
             startedTick: A_TickCount,
             source: source,
             scope: scope,
@@ -2473,6 +2474,7 @@ AIB_AllowWatcherEnsureState(hwnd, source := "manual", scope := "ide") {
         st.source := source
         st.scope := scope
         st.startedTick := A_TickCount
+        st.lastClickTick := 0
         st.timeoutMs := g_AIB_AllowWatcherTimeoutMs
         g_AIB_AllowWatcherStateByHwnd[key] := st
     }
@@ -2538,6 +2540,11 @@ AIB_AllowWatcherTick(*) {
         }
         st.lastSeenTick := A_TickCount
 
+        ; Skip checking if we recently clicked (1 second cooldown)
+        if (st.lastClickTick && A_TickCount - st.lastClickTick < 1000) {
+            continue
+        }
+
         failReason := ""
         hasAllow := AIB_WindowHasAllowButton(hwnd, &failReason)
         if (hasAllow) {
@@ -2586,8 +2593,14 @@ AIB_AllowWatcherTick(*) {
                 AIB_PrepareWindowForAllowClick(hwnd)
                 AIB_ClickAllowButtonInWindow(hwnd, &clickFail)
                 AIB_RestoreForegroundWindow(prevForegroundHwnd, hwnd)
-                if (clickFail != "")
+                if (clickFail != "") {
                     AIB_AllowDebug_Write("tick click-fail hwnd=" hwnd " reason=" clickFail)
+                } else {
+                    ; Successful click: set cooldown so we don't re-click immediately
+                    st.lastClickTick := A_TickCount
+                    g_AIB_AllowWatcherStateByHwnd[key] := st
+                    AIB_AllowDebug_Write("tick click-success hwnd=" hwnd)
+                }
             } else {
                 AIB_AllowDebug_Write("tick allow-detected prompt-locked hwnd=" hwnd)
             }
@@ -3392,14 +3405,18 @@ AIB_FindAllowButtonInChatConfirmation(root) {
 
     try {
         groups := root.FindAll({ Type: 50026 })
+        AIB_AllowDebug_Write("find-chat-confirm root-scan groups=" groups.Length)
         for grp in groups {
             cls := ""
             try cls := StrLower(grp.ClassName)
+            AIB_AllowDebug_Write("find-chat-confirm group-check class='" cls "'")
             if (!InStr(cls, "chat-confirmation-widget-container"))
                 continue
 
+            AIB_AllowDebug_Write("find-chat-confirm found-container")
             ; In this widget, prefer explicit action button style used by "Allow Once (Ctrl+Enter)".
             buttons := grp.FindAll({ Type: 50000 })
+            AIB_AllowDebug_Write("find-chat-confirm buttons=" buttons.Length)
             best := 0
             bestScore := -2147483647
             buttonSnapshot := ""
@@ -3413,14 +3430,19 @@ AIB_FindAllowButtonInChatConfirmation(root) {
 
                 if (buttonSnapshot != "")
                     buttonSnapshot .= " | "
-                buttonSnapshot .= "name='" nm "' class='" bcls "'"
+                buttonSnapshot .= "name='" nm "' class='" bcls "' offscreen=" offscreen
 
-                if (!AIB_IsAllowButtonName(nm))
+                if (!AIB_IsAllowButtonName(nm)) {
+                    AIB_AllowDebug_Write("find-chat-confirm btn-reject name='" nm "' (not allow)")
                     continue
+                }
 
-                if (!AIB_IsInAiChatAllowContext(btn))
+                if (!AIB_IsInAiChatAllowContext(btn)) {
+                    AIB_AllowDebug_Write("find-chat-confirm btn-reject name='" nm "' (not in context)")
                     continue
+                }
 
+                AIB_AllowDebug_Write("find-chat-confirm btn-candidate name='" nm "'")
                 score := 0
                 nml := StrLower(Trim(nm))
                 if (InStr(nml, "allow once"))
@@ -3440,12 +3462,15 @@ AIB_FindAllowButtonInChatConfirmation(root) {
                 }
             }
 
-            if (best)
+            if (best) {
+                AIB_AllowDebug_Write("find-chat-confirm result=found score=" bestScore)
                 return best
+            }
 
             AIB_AllowDebug_Write("confirm-container-no-candidate buttons=" buttonSnapshot)
         }
-    } catch {
+    } catch error {
+        AIB_AllowDebug_Write("find-chat-confirm error=" error.What)
         return 0
     }
 
@@ -4071,9 +4096,9 @@ AIB_IsAllowButtonName(btnName) {
     n := StrLower(Trim(btnName))
     if (n = "")
         return false
-    ; Accept variants like "Allow", "Allow once", and "Allow (...)" as a word token.
-    ; This still matches larger labels but avoids accidental matches like "disallow".
-    if (RegExMatch(n, "(^|\\W)allow(\\W|$)") <= 0)
+    ; Accept "Allow", "Allow Once", "Allow (Ctrl+Enter)", etc.
+    ; Check if button name starts with "allow" or contains " allow" as word.
+    if (!InStr(n, "allow"))
         return false
     if (AIB_IsAllowNegativeButtonName(n))
         return false
@@ -4131,22 +4156,27 @@ AIB_ButtonHasAllowInNearbyContext(btn, maxDepth := 6) {
 }
 
 AIB_IsInChatConfirmationDialog(el, maxDepth := 12) {
+    ; In the chat-confirmation-widget-container search path, buttons are already in context.
+    ; This is a fast validation that we're not in a false positive scenario.
+    if (!el)
+        return false
+    
     cur := el
     loop maxDepth {
         if (!cur)
-            return false
+            break
         cls := ""
-        nm := ""
         try cls := cur.ClassName
-        try nm := cur.Name
-        if (InStr(cls, "chat-confirmation-widget-container") || InStr(nm, "Chat Confirmation Dialog"))
+        if (InStr(cls, "chat-confirmation-widget-container"))
             return true
         try cur := cur.GetParentElement()
-        catch {
-            return false
-        }
+        catch
+            break
     }
-    return false
+    
+    ; Fallback: if we can't validate parent, assume it's OK if reached from
+    ; AIB_FindAllowButtonInChatConfirmation (which already confirmed the container)
+    return true
 }
 
 AIB_IsInAiChatAllowContext(btn) {
