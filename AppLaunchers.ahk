@@ -2775,14 +2775,14 @@ AIB_RunAllowDecisionFlow(hwnd) {
         "Escape", AIB_AllowWatcherDecisionNo
     )
 
-    ; Banner 2: exactly 5 seconds with progressive loading + decision input + command.
+    ; Banner 2: exactly 7 seconds with progressive loading + decision input + command.
     ; Display command with emphasis for user approval, separated by big space
-    banner2Text := "❓ Click Allow now? (5s)"
+    banner2Text := "❓ Click Allow now? (7s)"
     commandDisplay := "📋 " . cmdPreview
     StandardLoadingBar_ShowWithKeys(
         banner2Text,
         keyCallbacks,
-        5000,
+        7000,
         anchorHwnd,
         AIB_AllowWatcherDecisionTimeout,
         BANNER_ACCENT_INTERMEDIATE,
@@ -2795,7 +2795,7 @@ AIB_RunAllowDecisionFlow(hwnd) {
         true
     )
 
-    waitDeadline := A_TickCount + 5400
+    waitDeadline := A_TickCount + 7400
     while (g_AIB_AllowWatcherDecision = "" && A_TickCount < waitDeadline)
         Sleep(30)
 
