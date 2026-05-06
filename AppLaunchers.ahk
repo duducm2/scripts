@@ -2738,11 +2738,11 @@ AIB_RunAllowDecisionFlow(hwnd) {
 
     cmdPreview := AIB_GetAllowCommandPreview(hwnd)
 
-    ; Banner 2: exactly 3 seconds with progressive loading + decision input.
+    ; Banner 2: exactly 5 seconds with progressive loading + decision input.
     StandardLoadingBar_ShowWithKeys(
-        "❓ Click Allow now? (3s)",
+        "❓ Click Allow now? (5s)",
         keyCallbacks,
-        3000,
+        5000,
         anchorHwnd,
         AIB_AllowWatcherDecisionTimeout,
         BANNER_ACCENT_INTERMEDIATE,
@@ -2755,7 +2755,7 @@ AIB_RunAllowDecisionFlow(hwnd) {
         true
     )
 
-    waitDeadline := A_TickCount + 3400
+    waitDeadline := A_TickCount + 5400
     while (g_AIB_AllowWatcherDecision = "" && A_TickCount < waitDeadline)
         Sleep(30)
 
