@@ -2581,8 +2581,10 @@ AIB_AllowWatcherTick(*) {
                 }
 
                 clickFail := ""
+                prevForegroundHwnd := AIB_GetForegroundWindowForRestore()
                 AIB_PrepareWindowForAllowClick(hwnd)
                 AIB_ClickAllowButtonInWindow(hwnd, &clickFail)
+                AIB_RestoreForegroundWindow(prevForegroundHwnd, hwnd)
                 if (clickFail != "")
                     AIB_AllowDebug_Write("tick click-fail hwnd=" hwnd " reason=" clickFail)
             } else {
@@ -2663,6 +2665,28 @@ AIB_PrepareWindowForAllowClick(hwnd) {
         WinActivate("ahk_id " hwnd)
         WinWaitActive("ahk_id " hwnd, , 0.35)
     } catch {
+    }
+}
+
+AIB_GetForegroundWindowForRestore() {
+    hwnd := 0
+    try hwnd := WinGetID("A")
+    catch {
+        hwnd := 0
+    }
+    return hwnd
+}
+
+AIB_RestoreForegroundWindow(hwnd, skippedHwnd := 0) {
+    if (!hwnd || hwnd = skippedHwnd)
+        return false
+    if (!WinExist("ahk_id " hwnd))
+        return false
+    try {
+        WinActivate("ahk_id " hwnd)
+        return true
+    } catch {
+        return false
     }
 }
 
@@ -3179,10 +3203,13 @@ AIB_ClickAllowButtonInAllIDEWindows() {
                 BANNER_ACCENT_INTERMEDIATE
             )
             failReason := ""
+            prevForegroundHwnd := sourceHwnd ? sourceHwnd : AIB_GetForegroundWindowForRestore()
             if (AIB_ClickAllowButtonInWindow(hwnd, &failReason)) {
+                AIB_RestoreForegroundWindow(prevForegroundHwnd, hwnd)
                 clickedCount += 1
                 break
             }
+            AIB_RestoreForegroundWindow(prevForegroundHwnd, hwnd)
             if (failReason != "" && debugReasons.Length < 3)
                 debugReasons.Push(AIB_GetSafeWindowTitle(hwnd) . " => " . failReason)
         }
@@ -4200,6 +4227,7 @@ AIB_TryOcrAllowClick(hwnd, root := 0, &usedRoute := "") {
     if (!InStr(n, "ctrl+enter") && !InStr(n, "control+enter") && !InStr(n, "chat confirmation required"))
         return false
 
+    prevForegroundHwnd := AIB_GetForegroundWindowForRestore()
     AIB_PrepareWindowForAllowClick(hwnd)
     try {
         ControlClick("x" x " y" y, "ahk_id " hwnd, , "Left", 1, "NA Pos")
@@ -4207,10 +4235,13 @@ AIB_TryOcrAllowClick(hwnd, root := 0, &usedRoute := "") {
         usedRoute := "ocr-controlclick"
         AIB_AllowDebug_Write("click-ocr hwnd=" hwnd " x=" x " y=" y " text='" ocrText "'")
         Sleep(220)
+        AIB_RestoreForegroundWindow(prevForegroundHwnd, hwnd)
         return true
     } catch {
         AIB_AllowDebug_Write("click-ocr-failed hwnd=" hwnd)
     }
+
+    AIB_RestoreForegroundWindow(prevForegroundHwnd, hwnd)
 
     return false
 }
