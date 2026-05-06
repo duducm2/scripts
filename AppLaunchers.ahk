@@ -2155,6 +2155,7 @@ global g_AIB_AllowWatcherRoundRobinOffset := 0
 global g_AIB_AllowWatcherDebugTraceEnabled := true
 global g_AIB_AllowWatcherDebugLogFile := A_ScriptDir . "\\docs\\aib-allow-runtime-debug.log"
 global g_AIB_AllowWatcherRestrictToVSCode := true
+global g_AIB_AllowWatcherPersistentMode := false
 global g_AIB_AllowWatcherEnableOcrFallback := false
 global g_AIB_AllowWatcherOcrCooldownMs := 1800
 global g_AIB_AllowWatcherLastOcrTickByHwnd := Map()
@@ -2170,15 +2171,20 @@ global g_AIB_LastStartBannerTickByKey := Map()
 g_AIB_StartImplProbeTimer := AIB_StartImplementationProbeTick
 SetTimer(g_AIB_StartImplProbeTimer, 900)
 
+if (AIB_HasLaunchArg("/StartPersistentAllowWatcher"))
+    AIB_ArmAllowWatcher("persistent_startup", 0, "vscode", false, false)
+
 AIB_StartAllowWatcher(triggerSource := "manual", targetHwnd := 0, windowScope := "ide", pinToTarget := false) {
     global g_AIB_AllowWatcherActive, g_AIB_AllowWatcherStartedTick, g_AIB_AllowWatcherSource
     global g_AIB_AllowWatcherStateByHwnd, g_AIB_AllowWatcherTimer, g_AIB_AllowWatcherWindowScope
-    global g_AIB_AllowWatcherPinnedHwnd
+    global g_AIB_AllowWatcherPinnedHwnd, g_AIB_AllowWatcherPersistentMode
     global g_AIB_AllowWatcherPromptLock, g_AIB_AllowWatcherRoundRobinOffset
 
     if (windowScope = "")
         windowScope := "ide"
     windowScope := AIB_NormalizeAllowWatcherScope(windowScope)
+    if (AIB_IsPersistentAllowWatcherTrigger(triggerSource))
+        g_AIB_AllowWatcherPersistentMode := true
 
     wasActive := g_AIB_AllowWatcherActive
     if (!g_AIB_AllowWatcherActive) {
@@ -2209,7 +2215,7 @@ AIB_StartAllowWatcher(triggerSource := "manual", targetHwnd := 0, windowScope :=
 
     AIB_AllowDebug_Write("rearm source=" triggerSource " scope=" windowScope " target=" targetHwnd " sessions=" g_AIB_AllowWatcherStateByHwnd.Count)
 
-    if (g_AIB_AllowWatcherStateByHwnd.Count = 0 && wasActive)
+    if (g_AIB_AllowWatcherStateByHwnd.Count = 0 && wasActive && !AIB_IsPersistentAllowWatcherMode())
         AIB_StopAllowWatcher("", false)
 }
 
@@ -2232,6 +2238,23 @@ AIB_NormalizeAllowWatcherScope(windowScope := "ide") {
     }
 
     return windowScope
+}
+
+AIB_HasLaunchArg(argNeedle) {
+    for arg in A_Args {
+        if (arg = argNeedle)
+            return true
+    }
+    return false
+}
+
+AIB_IsPersistentAllowWatcherTrigger(triggerSource) {
+    return (triggerSource = "persistent_startup" || triggerSource = "persistent_hotkey")
+}
+
+AIB_IsPersistentAllowWatcherMode() {
+    global g_AIB_AllowWatcherPersistentMode
+    return !!g_AIB_AllowWatcherPersistentMode
 }
 
 AIB_IsCursorComposerFocused(hwnd) {
@@ -2339,6 +2362,10 @@ $Enter::
 #HotIf
 
 AIB_BuildStartBannerText(triggerSource := "manual", windowScope := "ide") {
+    if (triggerSource = "persistent_startup")
+        return "✅ Persistent Allow watcher enabled"
+    if (triggerSource = "persistent_hotkey")
+        return "✅ Persistent Allow watcher enabled"
     if (triggerSource = "chat_submit")
         return "⏳ Allow flow started from Enter send"
     if (triggerSource = "chat_submit_cursor")
@@ -2375,6 +2402,9 @@ AIB_ArmAllowWatcher(triggerSource := "manual", targetHwnd := 0, windowScope := "
     AIB_StartAllowWatcher(triggerSource, targetHwnd, windowScope, pinToTarget)
     AIB_AllowDebug_Write("trigger-accepted source=" triggerSource " scope=" windowScope " target=" targetHwnd " pinned=" pinToTarget)
 
+    ; Keep the persistent indicator visible even when the startup toast is suppressed.
+    AIB_PersistentBannerCreate()
+
     if (!showStartBanner)
         return true
     if (!AIB_ShouldShowStartBanner(triggerSource, targetHwnd))
@@ -2386,9 +2416,6 @@ AIB_ArmAllowWatcher(triggerSource := "manual", targetHwnd := 0, windowScope := "
     catch {
     }
     AIB_AllowDebug_Write("trigger-banner source=" triggerSource " text=" bannerText)
-    
-    ; Create persistent banner to indicate flow is active
-    AIB_PersistentBannerCreate()
     return true
 }
 
@@ -2396,7 +2423,7 @@ AIB_StopAllowWatcher(reason := "", showInfo := false) {
     global g_AIB_AllowWatcherActive, g_AIB_AllowWatcherTimer, g_AIB_AllowWatcherStateByHwnd
     global g_AIB_AllowWatcherPromptLock, g_AIB_AllowWatcherDecision, g_AIB_AllowWatcherSource
     global g_AIB_AllowWatcherStartedTick, g_AIB_AllowWatcherRoundRobinOffset, g_AIB_AllowWatcherWindowScope
-    global g_AIB_AllowWatcherPinnedHwnd
+    global g_AIB_AllowWatcherPinnedHwnd, g_AIB_AllowWatcherPersistentMode
 
     if (g_AIB_AllowWatcherTimer)
         SetTimer(g_AIB_AllowWatcherTimer, 0)
@@ -2407,6 +2434,7 @@ AIB_StopAllowWatcher(reason := "", showInfo := false) {
     g_AIB_AllowWatcherSource := ""
     g_AIB_AllowWatcherWindowScope := "ide"
     g_AIB_AllowWatcherPinnedHwnd := 0
+    g_AIB_AllowWatcherPersistentMode := false
     g_AIB_AllowWatcherStartedTick := 0
     g_AIB_AllowWatcherRoundRobinOffset := 0
     g_AIB_AllowWatcherStateByHwnd := Map()
@@ -2432,6 +2460,7 @@ AIB_AllowWatcherEnsureState(hwnd, source := "manual", scope := "ide") {
     if (!g_AIB_AllowWatcherStateByHwnd.Has(key)) {
         g_AIB_AllowWatcherStateByHwnd[key] := {
             seenAllow: false,
+            skipCurrentAllow: false,
             absenceStreak: 0,
             lastSeenTick: A_TickCount,
             startedTick: A_TickCount,
@@ -2457,7 +2486,7 @@ AIB_AllowWatcherTick(*) {
     if (!g_AIB_AllowWatcherActive)
         return
 
-    if (g_AIB_AllowWatcherStateByHwnd.Count = 0) {
+    if (g_AIB_AllowWatcherStateByHwnd.Count = 0 && !AIB_IsPersistentAllowWatcherMode()) {
         AIB_StopAllowWatcher("", false)
         return
     }
@@ -2497,8 +2526,15 @@ AIB_AllowWatcherTick(*) {
         st := g_AIB_AllowWatcherStateByHwnd[key]
         if (A_TickCount - st.startedTick >= st.timeoutMs) {
             AIB_AllowDebug_Write("tick session-timeout hwnd=" hwnd " source=" st.source)
-            g_AIB_AllowWatcherStateByHwnd.Delete(key)
-            continue
+            if (AIB_IsPersistentAllowWatcherMode()) {
+                st.seenAllow := false
+                st.absenceStreak := 0
+                st.startedTick := A_TickCount
+                st.lastSeenTick := A_TickCount
+            } else {
+                g_AIB_AllowWatcherStateByHwnd.Delete(key)
+                continue
+            }
         }
         st.lastSeenTick := A_TickCount
 
@@ -2508,6 +2544,12 @@ AIB_AllowWatcherTick(*) {
             AIB_AllowDebug_Write("tick allow-detected hwnd=" hwnd " title=" AIB_GetSafeWindowTitle(hwnd))
             st.seenAllow := true
             st.absenceStreak := 0
+
+            if (st.skipCurrentAllow) {
+                AIB_AllowDebug_Write("tick allow-skipped hwnd=" hwnd)
+                g_AIB_AllowWatcherStateByHwnd[key] := st
+                continue
+            }
 
             ; One decision overlay at a time; when approved, click once and resume monitoring.
             if (!g_AIB_AllowWatcherPromptLock) {
@@ -2524,8 +2566,17 @@ AIB_AllowWatcherTick(*) {
                 }
 
                 if (decision = "N") {
-                    AIB_AllowDebug_Write("tick session-cancel hwnd=" hwnd)
-                    g_AIB_AllowWatcherStateByHwnd.Delete(key)
+                    if (AIB_IsPersistentAllowWatcherMode()) {
+                        st.skipCurrentAllow := true
+                        st.seenAllow := true
+                        st.absenceStreak := 0
+                        st.startedTick := A_TickCount
+                        AIB_AllowDebug_Write("tick allow-skip-armed hwnd=" hwnd)
+                        g_AIB_AllowWatcherStateByHwnd[key] := st
+                    } else {
+                        AIB_AllowDebug_Write("tick session-cancel hwnd=" hwnd)
+                        g_AIB_AllowWatcherStateByHwnd.Delete(key)
+                    }
                     continue
                 }
 
@@ -2538,13 +2589,27 @@ AIB_AllowWatcherTick(*) {
                 AIB_AllowDebug_Write("tick allow-detected prompt-locked hwnd=" hwnd)
             }
         } else {
+            if (st.skipCurrentAllow) {
+                st.skipCurrentAllow := false
+                st.seenAllow := false
+                st.absenceStreak := 0
+                st.startedTick := A_TickCount
+                AIB_AllowDebug_Write("tick allow-skip-cleared hwnd=" hwnd)
+            }
+
             if (st.seenAllow) {
                 st.absenceStreak += 1
 
                 ; For non-rapid-fire sources, completion is when Send is ready again.
                 if (st.source != "rapid_fire_hotkey" && AIB_WindowHasSendReady(hwnd)) {
                     AIB_AllowDebug_Write("tick send-ready-complete hwnd=" hwnd " source=" st.source)
-                    g_AIB_AllowWatcherStateByHwnd.Delete(key)
+                    if (AIB_IsPersistentAllowWatcherMode()) {
+                        st.seenAllow := false
+                        st.absenceStreak := 0
+                        st.startedTick := A_TickCount
+                    } else {
+                        g_AIB_AllowWatcherStateByHwnd.Delete(key)
+                    }
                     continue
                 }
 
@@ -2562,7 +2627,7 @@ AIB_AllowWatcherTick(*) {
     ; Update persistent banner position if monitor changed
     AIB_PersistentBannerMonitorUpdate()
 
-    if (g_AIB_AllowWatcherStateByHwnd.Count = 0)
+    if (g_AIB_AllowWatcherStateByHwnd.Count = 0 && !AIB_IsPersistentAllowWatcherMode())
         AIB_StopAllowWatcher("✓ Allow flow completed (all sessions)", true)
 }
 
@@ -3455,8 +3520,8 @@ AIB_IsElementCenterInsideFrame(el, frame) {
 }
 
 ; =============================================================================
-; AIB Rapid Fire - Hotkey: Win+Alt+Shift+9
-; Toggle watcher loop for VS Code Allow monitoring.
+; AIB Persistent Allow Watcher - Hotkey: Win+Alt+Shift+9
+; Toggle persistent watcher loop for VS Code Allow monitoring.
 ; =============================================================================
 global g_AIB_Hotkey9ToggleCooldownTick := 0
 
@@ -3470,7 +3535,7 @@ global g_AIB_Hotkey9ToggleCooldownTick := 0
     g_AIB_Hotkey9ToggleCooldownTick := now
 
     if (g_AIB_AllowWatcherActive) {
-        AIB_StopAllowWatcher("ℹ Rapid fire watcher stopped", true)
+        AIB_StopAllowWatcher("ℹ Persistent Allow watcher stopped", true)
         return
     }
 
@@ -3489,7 +3554,7 @@ global g_AIB_Hotkey9ToggleCooldownTick := 0
 
     ; Optional environment update for rapid-fire testing.
     AIB_RapidFireTrySwapTestFolderContent()
-    AIB_ArmAllowWatcher("rapid_fire_hotkey", targetHwnd, "vscode", true, true, "✅ Allow flow started from #!+9", BANNER_ACCENT_SUCCESS)
+    AIB_ArmAllowWatcher("persistent_hotkey", targetHwnd, "vscode", true, true, "✅ Persistent Allow watcher enabled", BANNER_ACCENT_SUCCESS)
 }
 
 AIB_RapidFireTrySwapTestFolderContent() {

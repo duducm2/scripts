@@ -46,7 +46,7 @@ if (quicklookExe)
 
 Run GetScriptPath("Shift keys.ahk")
 Run GetScriptPath("Gemini.ahk")
-Run GetScriptPath("AppLaunchers.ahk")
+Run(GetScriptPath("AppLaunchers.ahk") . ' "/StartPersistentAllowWatcher"')
 Run GetScriptPath("WindowManagement.ahk")
 ; Do not Run Utils.ahk here: AppLaunchers.ahk already #includes Utils.ahk. A second Utils process duplicates
 ; keyboard hooks (e.g. global Escape) and breaks modals that rely on g_OnEscapePressed / I10 in AppLaunchers.
