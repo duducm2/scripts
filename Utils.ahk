@@ -935,7 +935,7 @@ QuickUpdateScripts() {
         ; Stagger launches so earlier scripts begin loading before the next; AppLaunchers stays last with /Updated.
         ; Short pause after all Start-Process so audio sessions can register before the relaunched AppLaunchers runs its volume schedule.
         ps .=
-            "foreach ($s in $scripts) { if ($s -eq $anchorPath) { Start-Process -FilePath $s -ArgumentList '/Updated' | Out-Null } else { Start-Process -FilePath $s | Out-Null }; Start-Sleep -Milliseconds 450 }; "
+            "foreach ($s in $scripts) { if ($s -eq $anchorPath) { Start-Process -FilePath $s -ArgumentList '/Updated','/StartPersistentAllowWatcher' | Out-Null } else { Start-Process -FilePath $s | Out-Null }; Start-Sleep -Milliseconds 450 }; "
         ps .= "Start-Sleep -Seconds 2; "
 
         ; Execute asynchronously, then terminate this AHK instance immediately.

@@ -18,6 +18,12 @@
 ; WM_USE_DAEMON, WM_USE_PIPE_IPC, WM_USE_SHM_IPC, WM_USE_EVENT_HOOK_CACHE (all default off)
 #include %A_ScriptDir%\aux\WMIPC.ahk
 
+; Defensive defaults in case WMIPC flag initialization is skipped in this process context.
+global WM_USE_DAEMON := false
+global WM_USE_PIPE_IPC := false
+global WM_USE_SHM_IPC := false
+global WM_USE_EVENT_HOOK_CACHE := false
+
 ; Default duration (ms) when WMAutomation_SuppressCursorCentering is called with durationMs := 0.
 ; Matches wm_daemon BeginAutomationSwitch default (python/wm_daemon.py).
 global WM_AUTOMATION_SWITCH_DEFAULT_MS := 1500

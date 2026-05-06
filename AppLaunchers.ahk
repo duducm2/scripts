@@ -2711,6 +2711,8 @@ AIB_RunAllowDecisionFlow(hwnd) {
         "Escape", AIB_AllowWatcherDecisionNo
     )
 
+    cmdPreview := AIB_GetAllowCommandPreview(hwnd)
+
     ; Banner 2: exactly 3 seconds with progressive loading + decision input.
     StandardLoadingBar_ShowWithKeys(
         "❓ Click Allow now? (3s)",
@@ -2721,7 +2723,7 @@ AIB_RunAllowDecisionFlow(hwnd) {
         BANNER_ACCENT_INTERMEDIATE,
         560,
         17,
-        "",
+        "Command: " . cmdPreview,
         true,
         "[Y] Click Allow  [N] Stop watcher",
         true,
@@ -2752,6 +2754,123 @@ AIB_AllowWatcherDecisionTimeout(*) {
     ; Requirement: timeout on Banner 2 is treated as Y.
     global g_AIB_AllowWatcherDecision
     g_AIB_AllowWatcherDecision := "Y"
+}
+
+AIB_GetAllowCommandPreview(hwnd) {
+    global UIA
+    placeholder := "<command not found>"
+
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return placeholder
+
+    try root := UIA.ElementFromHandle(hwnd)
+    catch {
+        return placeholder
+    }
+    if (!root)
+        return placeholder
+
+    cmd := AIB_ExtractAllowCommandFromRoot(root)
+    cmd := AIB_NormalizeAllowCommandPreview(cmd)
+    if (cmd = "")
+        return placeholder
+    return cmd
+}
+
+AIB_ExtractAllowCommandFromRoot(root) {
+    if (!root)
+        return ""
+
+    ; 1) Preferred source: confirmation group/container context.
+    try {
+        groups := root.FindAll({ Type: 50026 })
+        for grp in groups {
+            cls := ""
+            nm := ""
+            try cls := StrLower(grp.ClassName)
+            try nm := grp.Name
+            if (!InStr(cls, "chat-confirmation-widget-container") && !InStr(StrLower(nm), "chat confirmation dialog"))
+                continue
+
+            parsed := AIB_ParseAllowCommandText(nm)
+            if (parsed != "")
+                return parsed
+
+            try {
+                texts := grp.FindAll({ Type: 50020 })
+                for txt in texts {
+                    t := ""
+                    try t := txt.Name
+                    parsed := AIB_ParseAllowCommandText(t)
+                    if (parsed != "")
+                        return parsed
+                }
+            } catch {
+            }
+        }
+    } catch {
+    }
+
+    ; 2) Fallback source: chat list item body.
+    try {
+        items := root.FindAll({ Type: 50007 })
+        for item in items {
+            nm := ""
+            try nm := item.Name
+            if (!InStr(StrLower(nm), "chat confirmation required"))
+                continue
+            parsed := AIB_ParseAllowCommandText(nm)
+            if (parsed != "")
+                return parsed
+        }
+    } catch {
+    }
+
+    return ""
+}
+
+AIB_ParseAllowCommandText(rawText) {
+    txt := AIB_NormalizeAllowCommandPreview(rawText, 1200)
+    if (txt = "")
+        return ""
+
+    ; Prefer the text segment after "command?".
+    if (RegExMatch(txt, "i)command\?\s*:?\s*(.+)$", &m))
+        txt := m[1]
+    else
+        return ""
+
+    lower := StrLower(txt)
+    cutPos := 0
+    for marker in [" press control+enter", " press ctrl+enter", " alt+backspace", " to accept", " to cancel", " code blocks:"] {
+        p := InStr(lower, marker)
+        if (p && (!cutPos || p < cutPos))
+            cutPos := p
+    }
+
+    if (cutPos)
+        txt := SubStr(txt, 1, cutPos - 1)
+
+    return Trim(txt)
+}
+
+AIB_NormalizeAllowCommandPreview(text, maxLen := 150) {
+    if (text = "")
+        return ""
+
+    out := StrReplace(text, Chr(160), " ")
+    out := StrReplace(out, "`r", " ")
+    out := StrReplace(out, "`n", " ")
+    out := RegExReplace(out, "\s+", " ")
+    out := Trim(out)
+
+    if (out = "")
+        return ""
+
+    if (maxLen > 3 && StrLen(out) > maxLen)
+        out := SubStr(out, 1, maxLen - 3) . "..."
+
+    return out
 }
 
 AIB_WindowHasAllowButton(hwnd, &failReason := "") {
