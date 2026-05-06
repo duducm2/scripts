@@ -4417,9 +4417,10 @@ StandardLoadingBar_KeysEscapeDismiss(*) {
 ; promptKeys: optional; fixed bottom strip text (e.g. "[Y] Confirm  [N] Cancel"). Shown in uniform position below main message.
 ; trackActiveMonitor: when true, reposition the bar to follow the foreground window's monitor while visible (dictation/Gemini flows).
 ; showProgress: when true, show a single timed 0-100 progress fill while waiting for keys.
+; preserveUserFocus: when true, keep the current active window focused (do not activate overlay GUI).
 StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwnd := 0, timeoutCallback := "", barColor :=
     BANNER_ACCENT_INTERMEDIATE, textWidth := 500, fontSize := 17, passiveBgColor := "", noBorder := false, promptKeys :=
-    "", trackActiveMonitor := false, showProgress := false) {
+    "", trackActiveMonitor := false, showProgress := false, preserveUserFocus := false) {
     global g_StandardLoadingBarIsKeysOverlay, g_StandardLoadingBarKeysHotkeys, g_StandardLoadingBarKeysTimeoutTimer
     global g_StandardLoadingBarGui, g_StandardLoadingBarKeysEscapeUserCb, g_StandardLoadingBarKeysEscapeActive,
         g_StandardLoadingBarEscPollPrev, g_OnEscapePressed
@@ -4490,12 +4491,14 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
         g_StandardLoadingBarKeysEscapeActive := true
     }
 
-    ; Always activate the overlay so HotIfWinActive-scoped selection keys fire reliably.
-    ; Without this, keys can fall through to the underlying app (most visible for "N" cancel).
-    try {
-        if IsObject(g_StandardLoadingBarGui) && g_StandardLoadingBarGui.Hwnd
-            WinActivate(g_StandardLoadingBarGui.Hwnd)
-    } catch {
+    ; Default behavior keeps key capture reliable by activating the overlay.
+    ; Some flows (e.g. dictation E/V paste target) must preserve the user's current text-field focus.
+    if (!preserveUserFocus) {
+        try {
+            if IsObject(g_StandardLoadingBarGui) && g_StandardLoadingBarGui.Hwnd
+                WinActivate(g_StandardLoadingBarGui.Hwnd)
+        } catch {
+        }
     }
 
     ; Reset any HotIf context so we don't leak it to unrelated hotkeys.
@@ -4721,6 +4724,7 @@ class D2C_FlowManager {
             BANNER_ACCENT_INTERMEDIATE, 560, 17, "", true,
             "[G] Grammar  [A] AI opt  [Y] Send  [S] Paste only  [V] Paste dictated  [E] Paste & send  [F] Favorite  [O] Clip Angel  [N] Cancel",
             true,
+            true,
             true
         )
     }
@@ -4762,15 +4766,20 @@ class D2C_FlowManager {
         if (this.CurrentPhase != "PromptingSubmit")
             return
 
+        ; Lock target at keypress time: last text field the user selected before pressing V.
+        targetHwnd := 0
+        try targetHwnd := WinGetID("A")
+
         this.CurrentPhase := "PastingDictation"
         StandardLoadingBar_CloseKeysOverlay()
         StandardLoadingBar_Hide(0)
         HideDictationIndicator()
 
-        ; [V] Paste dictated: paste at the user's current caret. If they didn't move,
-        ; Windows naturally restores the origin window after the overlay is destroyed.
-        ; If they clicked into another text field during the 5s, that window is already
-        ; foreground and gets the paste.
+        if (targetHwnd && WinExist("ahk_id " targetHwnd)) {
+            try WinActivate("ahk_id " targetHwnd)
+            if (!WinActive("ahk_id " targetHwnd))
+                WinWaitActive("ahk_id " targetHwnd, , 0.2)
+        }
         Sleep 60
         Send("^v")
 
@@ -4779,19 +4788,25 @@ class D2C_FlowManager {
         this.Reset()
     }
 
-    ; Paste clipboard at caret in the current foreground window, then Enter (no Gemini).
-    ; Pastes wherever the user's caret currently is: if they didn't move during the 5s,
-    ; Windows restores OriginHwnd after the overlay closes; if they clicked into another
-    ; field, that field is already foreground and gets the paste.
+    ; Paste at the field that was focused when E was pressed, then Enter (no Gemini).
     OnSubmitE(*) {
         if (this.CurrentPhase != "PromptingSubmit")
             return
+
+        ; Lock target at keypress time: last text field the user selected before pressing E.
+        targetHwnd := 0
+        try targetHwnd := WinGetID("A")
 
         this.CurrentPhase := "PastingSendHere"
         StandardLoadingBar_CloseKeysOverlay()
         StandardLoadingBar_Hide(0)
         HideDictationIndicator()
 
+        if (targetHwnd && WinExist("ahk_id " targetHwnd)) {
+            try WinActivate("ahk_id " targetHwnd)
+            if (!WinActive("ahk_id " targetHwnd))
+                WinWaitActive("ahk_id " targetHwnd, , 0.2)
+        }
         Sleep 60
         Send("^v")
         Sleep 150
