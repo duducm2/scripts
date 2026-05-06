@@ -2581,6 +2581,7 @@ AIB_AllowWatcherTick(*) {
                 }
 
                 clickFail := ""
+                SoundPlay(A_ScriptDir . "\sounds\clicking-allow.wav")
                 prevForegroundHwnd := AIB_GetForegroundWindowForRestore()
                 AIB_PrepareWindowForAllowClick(hwnd)
                 AIB_ClickAllowButtonInWindow(hwnd, &clickFail)
@@ -3203,6 +3204,7 @@ AIB_ClickAllowButtonInAllIDEWindows() {
                 BANNER_ACCENT_INTERMEDIATE
             )
             failReason := ""
+            SoundPlay(A_ScriptDir . "\sounds\clicking-allow.wav")
             prevForegroundHwnd := sourceHwnd ? sourceHwnd : AIB_GetForegroundWindowForRestore()
             if (AIB_ClickAllowButtonInWindow(hwnd, &failReason)) {
                 AIB_RestoreForegroundWindow(prevForegroundHwnd, hwnd)
@@ -4227,6 +4229,7 @@ AIB_TryOcrAllowClick(hwnd, root := 0, &usedRoute := "") {
     if (!InStr(n, "ctrl+enter") && !InStr(n, "control+enter") && !InStr(n, "chat confirmation required"))
         return false
 
+    SoundPlay(A_ScriptDir . "\sounds\clicking-allow.wav")
     prevForegroundHwnd := AIB_GetForegroundWindowForRestore()
     AIB_PrepareWindowForAllowClick(hwnd)
     try {
