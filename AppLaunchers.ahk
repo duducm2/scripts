@@ -2881,13 +2881,13 @@ AIB_ExtractAllowCommandFromRoot(root) {
     } catch {
     }
 
-    ; 2) Fallback source: chat list item body.
+    ; 2) Fallback source: chat list item body (layout can vary).
     try {
         items := root.FindAll({ Type: 50007 })
         for item in items {
             nm := ""
             try nm := item.Name
-            if (!InStr(StrLower(nm), "chat confirmation required"))
+            if (!AIB_LooksLikeAllowCommandCarrier(nm))
                 continue
             parsed := AIB_ParseAllowCommandText(nm)
             if (parsed != "")
@@ -2899,14 +2899,34 @@ AIB_ExtractAllowCommandFromRoot(root) {
     return ""
 }
 
+AIB_LooksLikeAllowCommandCarrier(text) {
+    t := StrLower(Trim(text))
+    if (t = "")
+        return false
+
+    if (InStr(t, "chat confirmation required"))
+        return true
+    if (InStr(t, "press control+enter to accept") || InStr(t, "press ctrl+enter to accept"))
+        return true
+    if (InStr(t, " run ") && InStr(t, " command within ") && InStr(t, "?"))
+        return true
+    return false
+}
+
 AIB_ParseAllowCommandText(rawText) {
     txt := AIB_NormalizeAllowCommandPreview(rawText, 1200)
     if (txt = "")
         return ""
 
-    ; Prefer the text segment after "command?".
-    if (RegExMatch(txt, "i)command\?\s*:?\s*(.+)$", &m))
+    ; Support prompt variants such as:
+    ; "... Run `pwsh` command within `<path>`?: <cmd>. Press Control+Enter ..."
+    ; "... command?: <cmd>. Press Control+Enter ..."
+    if (RegExMatch(txt, "i)run\s+`?\w+`?\s+command(?:\s+within)?[^?]*\?\s*:?\s*(.+)$", &m))
         txt := m[1]
+    else if (RegExMatch(txt, "i)command(?:\s+within)?[^?]*\?\s*:?\s*(.+)$", &m))
+        txt := m[1]
+    else if (InStr(txt, "?:"))
+        txt := Trim(SubStr(txt, InStr(txt, "?:") + 2))
     else
         return ""
 
