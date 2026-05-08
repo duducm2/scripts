@@ -822,7 +822,8 @@ Cursor
 ⬇️ [U] Scroll AI feed to bottom (ahk-based)
 📋 [M] Quick shortcut menu (ahk)
 🤖 [A] Add file to AI Context (Cursor Chat) (ahk)
-📄 [N] Review [N]ext file (ahk)
+📌 [N] U[N]pin current tab
+📌 [P] [P]in current tab
 📄 [R] Refresh preview
 📄 [F] File: New [F]ile
 📂 [O] File: New F[O]lder
@@ -928,7 +929,8 @@ VS Code
 📋 [M] Quick shortcut menu (ahk)
 ➕ [C] Add Context picker (VS Code chat) (ahk)
 🤖 [A] Add file to AI Context (VS Code chat) (ahk)
-📄 [N] Review [N]ext file (ahk)
+📌 [N] U[N]pin current tab
+📌 [P] [P]in current tab
 📄 [I] Toggle Second Sidebar Visibility
 📄 [R] Refresh preview
 📄 [F] File: New [F]ile
