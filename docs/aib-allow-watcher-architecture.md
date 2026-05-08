@@ -5,7 +5,7 @@
 
 ## Overview
 
-The AIB Allow Watcher is a centralized background monitor that detects the AI chat tool-call confirmation **Allow** button in **VS Code** and automatically clicks it after a brief user-confirmation window. A single global 350 ms timer polls all enrolled windows simultaneously; stopping the watcher immediately terminates monitoring across all windows.
+The AIB Allow Watcher is a centralized background monitor that detects the AI chat tool-call confirmation **Allow** button in **VS Code** and automatically clicks it after a brief user-confirmation window. Act starts it in a persistent VS Code-only mode at launch, and a single global 350 ms timer polls all enrolled windows simultaneously until the user turns it off.
 
 ---
 
@@ -13,10 +13,11 @@ The AIB Allow Watcher is a centralized background monitor that detects the AI ch
 
 | Source | Hotkey / Event | AHK Call |
 |--------|---------------|----------|
+| `persistent_startup` | Act launches AppLaunchers with `/StartPersistentAllowWatcher` | `AIB_ArmAllowWatcher("persistent_startup", 0, "vscode", false, false)` |
 | `chat_submit` | Enter in VS Code chat input | `AIB_ArmAllowWatcher("chat_submit", hwnd, "vscode", false, true)` |
 | `chat_submit_cursor` | Enter in Cursor composer | Not armed (Enter is sent, watcher remains VS Code-only) |
 | `start_implementation` | "Start Implementation" button disappears from UIA tree | `AIB_ArmAllowWatcher("start_implementation", 0, "vscode", false, true)` |
-| `rapid_fire_hotkey` | Win+Alt+Shift+9 manual toggle | `AIB_ArmAllowWatcher("rapid_fire_hotkey", hwnd, "vscode", true, true)` |
+| `persistent_hotkey` | Win+Alt+Shift+9 manual toggle | `AIB_ArmAllowWatcher("persistent_hotkey", hwnd, "vscode", true, true)` |
 
 **Scope semantics:**
 - `"ide"` — normalized to `"vscode"` when VS Code-only restriction is enabled
@@ -41,16 +42,16 @@ AIB_AllowWatcherTick()  [every 350 ms]
     ├─ Auto-enrolls any new IDE windows opened after arming
     ├─ Round-robin across all enrolled windows (fairness)
     ├─ For each window:
-    │   ├─ Check 8-minute session timeout → remove if expired
+    │   ├─ Check 8-minute session timeout → refresh state instead of removing when persistent mode is on
     │   ├─ Detect Allow button (AIB_WindowHasAllowButton)
     │   │   ├─ FOUND: run decision flow (2 s prep + 3 s Y/N prompt)
     │   │   │   ├─ Y / timeout → click Allow, re-arm for next occurrence
-    │   │   │   └─ N → remove this window's session
+    │   │   │   └─ N → in persistent mode, skip this current Allow until it disappears
     │   │   └─ NOT FOUND (after seeing it): track absenceStreak
-    │   │       ├─ send-ready check (non-rapid-fire): remove session if Send button ready
+    │   │       ├─ send-ready check: reset session if Send button ready during persistent mode
     │   │       └─ absenceStreak ≥ 2: reset seenAllow, wait for next Allow
     │   └─ Reposition persistent banner if active monitor changed
-    └─ If all sessions empty → AIB_StopAllowWatcher()
+    └─ If all sessions empty and persistent mode is off → AIB_StopAllowWatcher()
     ↓
 AIB_StopAllowWatcher()
     ├─ Kills timer
@@ -68,20 +69,24 @@ Each enrolled window has an independent session stored in `g_AIB_AllowWatcherSta
 ```
 {
     seenAllow:      false       ; Has Allow button been spotted yet?
+    skipCurrentAllow: false     ; Suppress current Allow until it disappears after N
     absenceStreak:  0           ; Consecutive ticks without Allow after first sight
     lastSeenTick:   <tickcount> ; Last poll time
     startedTick:    <tickcount> ; When session was created
-    source:         "chat_submit" | "start_implementation" | "rapid_fire_hotkey"
+    source:         "persistent_startup" | "persistent_hotkey" | "chat_submit" | "start_implementation"
     scope:          "vscode"
     timeoutMs:      480000      ; 8 minutes (g_AIB_AllowWatcherTimeoutMs)
 }
 ```
 
 Sessions are created by `AIB_AllowWatcherEnsureState()` and deleted on:
-- Timeout (8 min from startedTick)
-- User presses N at decision prompt
-- Send button becomes ready again (non-rapid-fire sources)
+- Window close / disappearance from the current window list
+- Timeout when persistent mode is off
+- User presses N at decision prompt when persistent mode is off
+- Send button becomes ready again when persistent mode is off
 - Global stop (`AIB_StopAllowWatcher`)
+
+When persistent mode is on, timeout/send-ready events reset the window session instead of removing it, and `N` sets `skipCurrentAllow := true` until the current Allow prompt disappears.
 
 ---
 
@@ -139,10 +144,10 @@ If accepted, watcher performs one guarded click at OCR hit coordinates, then re-
 
 | Method | Behavior |
 |--------|----------|
-| Win+Alt+Shift+9 (toggle) | If active: calls `AIB_StopAllowWatcher` — kills ALL sessions immediately |
-| All sessions expire naturally | `AIB_AllowWatcherTick` calls `AIB_StopAllowWatcher` automatically |
-| User presses N | Removes only that window's session; other sessions continue |
-| 8-minute timeout per window | Session auto-removed; others unaffected |
+| Win+Alt+Shift+9 (toggle) | If active: calls `AIB_StopAllowWatcher`; if inactive: enables persistent mode immediately |
+| Act startup | Launches AppLaunchers with `/StartPersistentAllowWatcher`, enabling persistent mode quietly |
+| User presses N | In persistent mode, skips only the current Allow in that window until it disappears |
+| 8-minute timeout per window | In persistent mode, session is refreshed instead of removed |
 
 ---
 
@@ -178,6 +183,7 @@ Button detection uses Document-level UIA traversal (VS Code embeds buttons insid
 | `AIB_AllowWatcherTick` | AppLaunchers.ahk | Main 350 ms loop |
 | `AIB_AllowWatcherEnsureState` | AppLaunchers.ahk | Create/update per-window session |
 | `AIB_RunAllowDecisionFlow` | AppLaunchers.ahk | 2 s prep + 3 s Y/N decision overlay |
+| `AIB_IsPersistentAllowWatcherMode` | AppLaunchers.ahk | Report whether persistent mode is enabled |
 | `AIB_WindowHasAllowButton` | AppLaunchers.ahk | UIA scan for Allow button |
 | `AIB_WindowHasStartImplementationButton` | AppLaunchers.ahk | UIA Document scan for Start Implementation |
 | `AIB_StartImplementationProbeTick` | AppLaunchers.ahk | 900 ms probe for button transition |
@@ -201,6 +207,8 @@ Key signal patterns:
 | Pattern | Meaning |
 |---------|---------|
 | `trigger-accepted source=... sessions=N` | Watcher armed, N windows enrolled |
+| `tick allow-skip-armed hwnd=...` | User pressed N and current Allow will be ignored until it disappears |
+| `tick allow-skip-cleared hwnd=...` | Skipped Allow disappeared; future prompts can be handled again |
 | `start-impl-probe ide-windows=N` | Probe running, N IDE windows visible |
 | `start-impl-btn doc-scan hwnd=... doc-btns=N` | Document traversal scanning N buttons |
 | `start-impl-btn found hwnd=...` | Start Implementation button detected |

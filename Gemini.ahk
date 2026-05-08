@@ -33,6 +33,9 @@ GEMINI_FIRST_LAUNCH_POLL_MS := 300
 GEMINI_FIRST_LAUNCH_MAX_LOOPS := 35
 GEMINI_TITLE_READY_MS := 6000
 GEMINI_TITLE_POLL_MS := 250
+GEMINI_FIRST_LAUNCH_MODEL_READY_TIMEOUT_MS := 12000
+GEMINI_FIRST_LAUNCH_MODEL_READY_POLL_MS := 250
+GEMINI_FIRST_LAUNCH_TAB_SWITCH_SETTLE_MS := 350
 GEMINI_WAIT_BUTTON_POLL_MS := 250
 GEMINI_WAIT_BUTTON_TIMEOUT_MS := 15000
 GEMINI_ASYNC_POLL_MS := 500
@@ -497,6 +500,73 @@ GeminiWinEventProc(hWinEventHook, event, hwnd, idObject, idChild, idEventThread,
 ; =============================================================================
 ShowGeminiTabBanner(tabNumber, geminiHwnd := 0) {
     ShowSingleCharTabBanner_Utils(tabNumber)
+}
+
+GeminiWaitForModelPickerReady(geminiHwnd := 0, timeoutMs := GEMINI_FIRST_LAUNCH_MODEL_READY_TIMEOUT_MS) {
+    deadline := A_TickCount + (timeoutMs > 0 ? timeoutMs : GEMINI_FIRST_LAUNCH_MODEL_READY_TIMEOUT_MS)
+    while (A_TickCount < deadline) {
+        try {
+            uia := geminiHwnd ? UIA_Browser("ahk_id " geminiHwnd) : UIA_Browser()
+            if (FindGeminiModePickerButton(uia))
+                return true
+        } catch {
+        }
+        Sleep GEMINI_FIRST_LAUNCH_MODEL_READY_POLL_MS
+    }
+    return false
+}
+
+GeminiSetModelForActiveTabWhenReady(modelName, geminiHwnd := 0) {
+    if (!GeminiWaitForModelPickerReady(geminiHwnd))
+        return false
+    if (EnsureGeminiModelViaMenu(modelName))
+        return true
+    if (!GeminiWaitForModelPickerReady(geminiHwnd, GEMINI_FIRST_LAUNCH_MODEL_READY_POLL_MS * 4))
+        return false
+    return EnsureGeminiModelViaMenu(modelName)
+}
+
+GeminiConfigureFirstLaunchTabModels(geminiHwnd) {
+    if (!geminiHwnd || !WinExist("ahk_id " geminiHwnd))
+        return false
+
+    if (!WinActive("ahk_id " geminiHwnd)) {
+        try WinActivate("ahk_id " geminiHwnd)
+        if (!WinWaitActive("ahk_id " geminiHwnd, , GEMINI_ACTIVATE_WAIT_MS / 1000))
+            return false
+    }
+
+    StandardLoadingBar_Update("⚙️ Setting tab 1 model: Pro...", BANNER_ACCENT_INTERMEDIATE)
+
+    ; Ensure tab 1 is active before assigning Pro.
+    try {
+        uia := UIA_Browser("ahk_id " geminiHwnd)
+        tabInfo := GetChromeActiveTabIndex(uia)
+        if (tabInfo && tabInfo.index != 1) {
+            Send "^1"
+            Sleep GEMINI_FIRST_LAUNCH_TAB_SWITCH_SETTLE_MS
+        }
+    } catch {
+    }
+
+    proSet := GeminiSetModelForActiveTabWhenReady("Pro", geminiHwnd)
+
+    ; Move to tab 2, set Fast, then return to tab 1 as requested.
+    Send "^{Tab}"
+    Sleep GEMINI_FIRST_LAUNCH_TAB_SWITCH_SETTLE_MS
+
+    StandardLoadingBar_Update("⚙️ Setting tab 2 model: Fast...", BANNER_ACCENT_INTERMEDIATE)
+    fastSet := GeminiSetModelForActiveTabWhenReady("Fast", geminiHwnd)
+
+    Send "^+{Tab}"
+    Sleep GEMINI_FIRST_LAUNCH_TAB_SWITCH_SETTLE_MS
+
+    if (proSet && fastSet) {
+        StandardLoadingBar_Update("✅ Tab 1 Pro, Tab 2 Fast", BANNER_ACCENT_INTERMEDIATE)
+        Sleep 200
+        return true
+    }
+    return false
 }
 
 ; =============================================================================
@@ -1041,6 +1111,10 @@ InitializeGeminiFirstTime() {
             Sleep GEMINI_TITLE_POLL_MS
         }
         Sleep 550   ; Give window and tabs time to fully settle
+
+        ; First-launch bootstrap: tab 1 -> Pro, tab 2 -> Fast, then return to tab 1.
+        StandardLoadingBar_Update("⚙️ Configuring Gemini tabs...", BANNER_ACCENT_INTERMEDIATE)
+        GeminiConfigureFirstLaunchTabModels(geminiHwnd)
 
         StandardLoadingBar_Hide(0)
     } catch Error as err {

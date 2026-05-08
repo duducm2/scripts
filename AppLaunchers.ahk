@@ -2152,9 +2152,10 @@ global g_AIB_FlowBannerHwnd := 0
 global g_AIB_FlowBannerLastMonitorIdx := 0
 global g_AIB_AllowWatcherTimeoutMs := 8 * 60 * 1000
 global g_AIB_AllowWatcherRoundRobinOffset := 0
-global g_AIB_AllowWatcherDebugTraceEnabled := true
+global g_AIB_AllowWatcherDebugTraceEnabled := false
 global g_AIB_AllowWatcherDebugLogFile := A_ScriptDir . "\\docs\\aib-allow-runtime-debug.log"
 global g_AIB_AllowWatcherRestrictToVSCode := true
+global g_AIB_AllowWatcherPersistentMode := false
 global g_AIB_AllowWatcherEnableOcrFallback := false
 global g_AIB_AllowWatcherOcrCooldownMs := 1800
 global g_AIB_AllowWatcherLastOcrTickByHwnd := Map()
@@ -2170,15 +2171,20 @@ global g_AIB_LastStartBannerTickByKey := Map()
 g_AIB_StartImplProbeTimer := AIB_StartImplementationProbeTick
 SetTimer(g_AIB_StartImplProbeTimer, 900)
 
+if (AIB_HasLaunchArg("/StartPersistentAllowWatcher"))
+    AIB_ArmAllowWatcher("persistent_startup", 0, "vscode", false, false)
+
 AIB_StartAllowWatcher(triggerSource := "manual", targetHwnd := 0, windowScope := "ide", pinToTarget := false) {
     global g_AIB_AllowWatcherActive, g_AIB_AllowWatcherStartedTick, g_AIB_AllowWatcherSource
     global g_AIB_AllowWatcherStateByHwnd, g_AIB_AllowWatcherTimer, g_AIB_AllowWatcherWindowScope
-    global g_AIB_AllowWatcherPinnedHwnd
+    global g_AIB_AllowWatcherPinnedHwnd, g_AIB_AllowWatcherPersistentMode
     global g_AIB_AllowWatcherPromptLock, g_AIB_AllowWatcherRoundRobinOffset
 
     if (windowScope = "")
         windowScope := "ide"
     windowScope := AIB_NormalizeAllowWatcherScope(windowScope)
+    if (AIB_IsPersistentAllowWatcherTrigger(triggerSource))
+        g_AIB_AllowWatcherPersistentMode := true
 
     wasActive := g_AIB_AllowWatcherActive
     if (!g_AIB_AllowWatcherActive) {
@@ -2209,7 +2215,7 @@ AIB_StartAllowWatcher(triggerSource := "manual", targetHwnd := 0, windowScope :=
 
     AIB_AllowDebug_Write("rearm source=" triggerSource " scope=" windowScope " target=" targetHwnd " sessions=" g_AIB_AllowWatcherStateByHwnd.Count)
 
-    if (g_AIB_AllowWatcherStateByHwnd.Count = 0 && wasActive)
+    if (g_AIB_AllowWatcherStateByHwnd.Count = 0 && wasActive && !AIB_IsPersistentAllowWatcherMode())
         AIB_StopAllowWatcher("", false)
 }
 
@@ -2232,6 +2238,23 @@ AIB_NormalizeAllowWatcherScope(windowScope := "ide") {
     }
 
     return windowScope
+}
+
+AIB_HasLaunchArg(argNeedle) {
+    for arg in A_Args {
+        if (arg = argNeedle)
+            return true
+    }
+    return false
+}
+
+AIB_IsPersistentAllowWatcherTrigger(triggerSource) {
+    return (triggerSource = "persistent_startup" || triggerSource = "persistent_hotkey")
+}
+
+AIB_IsPersistentAllowWatcherMode() {
+    global g_AIB_AllowWatcherPersistentMode
+    return !!g_AIB_AllowWatcherPersistentMode
 }
 
 AIB_IsCursorComposerFocused(hwnd) {
@@ -2339,6 +2362,10 @@ $Enter::
 #HotIf
 
 AIB_BuildStartBannerText(triggerSource := "manual", windowScope := "ide") {
+    if (triggerSource = "persistent_startup")
+        return "✅ Persistent Allow watcher enabled"
+    if (triggerSource = "persistent_hotkey")
+        return "✅ Persistent Allow watcher enabled"
     if (triggerSource = "chat_submit")
         return "⏳ Allow flow started from Enter send"
     if (triggerSource = "chat_submit_cursor")
@@ -2375,6 +2402,9 @@ AIB_ArmAllowWatcher(triggerSource := "manual", targetHwnd := 0, windowScope := "
     AIB_StartAllowWatcher(triggerSource, targetHwnd, windowScope, pinToTarget)
     AIB_AllowDebug_Write("trigger-accepted source=" triggerSource " scope=" windowScope " target=" targetHwnd " pinned=" pinToTarget)
 
+    ; Keep the persistent indicator visible even when the startup toast is suppressed.
+    AIB_PersistentBannerCreate()
+
     if (!showStartBanner)
         return true
     if (!AIB_ShouldShowStartBanner(triggerSource, targetHwnd))
@@ -2386,9 +2416,6 @@ AIB_ArmAllowWatcher(triggerSource := "manual", targetHwnd := 0, windowScope := "
     catch {
     }
     AIB_AllowDebug_Write("trigger-banner source=" triggerSource " text=" bannerText)
-    
-    ; Create persistent banner to indicate flow is active
-    AIB_PersistentBannerCreate()
     return true
 }
 
@@ -2396,7 +2423,7 @@ AIB_StopAllowWatcher(reason := "", showInfo := false) {
     global g_AIB_AllowWatcherActive, g_AIB_AllowWatcherTimer, g_AIB_AllowWatcherStateByHwnd
     global g_AIB_AllowWatcherPromptLock, g_AIB_AllowWatcherDecision, g_AIB_AllowWatcherSource
     global g_AIB_AllowWatcherStartedTick, g_AIB_AllowWatcherRoundRobinOffset, g_AIB_AllowWatcherWindowScope
-    global g_AIB_AllowWatcherPinnedHwnd
+    global g_AIB_AllowWatcherPinnedHwnd, g_AIB_AllowWatcherPersistentMode
 
     if (g_AIB_AllowWatcherTimer)
         SetTimer(g_AIB_AllowWatcherTimer, 0)
@@ -2407,6 +2434,7 @@ AIB_StopAllowWatcher(reason := "", showInfo := false) {
     g_AIB_AllowWatcherSource := ""
     g_AIB_AllowWatcherWindowScope := "ide"
     g_AIB_AllowWatcherPinnedHwnd := 0
+    g_AIB_AllowWatcherPersistentMode := false
     g_AIB_AllowWatcherStartedTick := 0
     g_AIB_AllowWatcherRoundRobinOffset := 0
     g_AIB_AllowWatcherStateByHwnd := Map()
@@ -2432,8 +2460,11 @@ AIB_AllowWatcherEnsureState(hwnd, source := "manual", scope := "ide") {
     if (!g_AIB_AllowWatcherStateByHwnd.Has(key)) {
         g_AIB_AllowWatcherStateByHwnd[key] := {
             seenAllow: false,
+            skipCurrentAllow: false,
             absenceStreak: 0,
             lastSeenTick: A_TickCount,
+            lastClickTick: 0,
+            ignoreUntilTick: 0,
             startedTick: A_TickCount,
             source: source,
             scope: scope,
@@ -2444,6 +2475,8 @@ AIB_AllowWatcherEnsureState(hwnd, source := "manual", scope := "ide") {
         st.source := source
         st.scope := scope
         st.startedTick := A_TickCount
+        st.lastClickTick := 0
+        st.ignoreUntilTick := 0
         st.timeoutMs := g_AIB_AllowWatcherTimeoutMs
         g_AIB_AllowWatcherStateByHwnd[key] := st
     }
@@ -2457,7 +2490,7 @@ AIB_AllowWatcherTick(*) {
     if (!g_AIB_AllowWatcherActive)
         return
 
-    if (g_AIB_AllowWatcherStateByHwnd.Count = 0) {
+    if (g_AIB_AllowWatcherStateByHwnd.Count = 0 && !AIB_IsPersistentAllowWatcherMode()) {
         AIB_StopAllowWatcher("", false)
         return
     }
@@ -2497,10 +2530,29 @@ AIB_AllowWatcherTick(*) {
         st := g_AIB_AllowWatcherStateByHwnd[key]
         if (A_TickCount - st.startedTick >= st.timeoutMs) {
             AIB_AllowDebug_Write("tick session-timeout hwnd=" hwnd " source=" st.source)
-            g_AIB_AllowWatcherStateByHwnd.Delete(key)
-            continue
+            if (AIB_IsPersistentAllowWatcherMode()) {
+                st.seenAllow := false
+                st.absenceStreak := 0
+                st.startedTick := A_TickCount
+                st.lastSeenTick := A_TickCount
+            } else {
+                g_AIB_AllowWatcherStateByHwnd.Delete(key)
+                continue
+            }
         }
         st.lastSeenTick := A_TickCount
+
+        ; Skip checking if we recently clicked (1 second cooldown)
+        if (st.lastClickTick && A_TickCount - st.lastClickTick < 1000) {
+            continue
+        }
+
+        ; Ignore retries for 30 seconds when user chooses Ignore.
+        if (st.ignoreUntilTick && A_TickCount < st.ignoreUntilTick) {
+            continue
+        }
+        if (st.ignoreUntilTick && A_TickCount >= st.ignoreUntilTick)
+            st.ignoreUntilTick := 0
 
         failReason := ""
         hasAllow := AIB_WindowHasAllowButton(hwnd, &failReason)
@@ -2508,6 +2560,12 @@ AIB_AllowWatcherTick(*) {
             AIB_AllowDebug_Write("tick allow-detected hwnd=" hwnd " title=" AIB_GetSafeWindowTitle(hwnd))
             st.seenAllow := true
             st.absenceStreak := 0
+
+            if (st.skipCurrentAllow) {
+                AIB_AllowDebug_Write("tick allow-skipped hwnd=" hwnd)
+                g_AIB_AllowWatcherStateByHwnd[key] := st
+                continue
+            }
 
             ; One decision overlay at a time; when approved, click once and resume monitoring.
             if (!g_AIB_AllowWatcherPromptLock) {
@@ -2523,28 +2581,69 @@ AIB_AllowWatcherTick(*) {
                     g_AIB_AllowWatcherPromptLock := false
                 }
 
+                if (decision = "I") {
+                    st.ignoreUntilTick := A_TickCount + 30000
+                    st.seenAllow := false
+                    st.absenceStreak := 0
+                    st.startedTick := A_TickCount
+                    AIB_AllowDebug_Write("tick allow-ignore-armed hwnd=" hwnd " ms=30000")
+                    g_AIB_AllowWatcherStateByHwnd[key] := st
+                    continue
+                }
+
                 if (decision = "N") {
-                    AIB_AllowDebug_Write("tick session-cancel hwnd=" hwnd)
-                    g_AIB_AllowWatcherStateByHwnd.Delete(key)
+                    if (AIB_IsPersistentAllowWatcherMode()) {
+                        st.skipCurrentAllow := true
+                        st.seenAllow := true
+                        st.absenceStreak := 0
+                        st.startedTick := A_TickCount
+                        AIB_AllowDebug_Write("tick allow-skip-armed hwnd=" hwnd)
+                        g_AIB_AllowWatcherStateByHwnd[key] := st
+                    } else {
+                        AIB_AllowDebug_Write("tick session-cancel hwnd=" hwnd)
+                        g_AIB_AllowWatcherStateByHwnd.Delete(key)
+                    }
                     continue
                 }
 
                 clickFail := ""
+                prevForegroundHwnd := AIB_GetForegroundWindowForRestore()
                 AIB_PrepareWindowForAllowClick(hwnd)
                 AIB_ClickAllowButtonInWindow(hwnd, &clickFail)
-                if (clickFail != "")
+                AIB_RestoreForegroundWindow(prevForegroundHwnd, hwnd)
+                if (clickFail != "") {
                     AIB_AllowDebug_Write("tick click-fail hwnd=" hwnd " reason=" clickFail)
+                } else {
+                    ; Successful click: set cooldown so we don't re-click immediately
+                    st.lastClickTick := A_TickCount
+                    g_AIB_AllowWatcherStateByHwnd[key] := st
+                    AIB_AllowDebug_Write("tick click-success hwnd=" hwnd)
+                }
             } else {
                 AIB_AllowDebug_Write("tick allow-detected prompt-locked hwnd=" hwnd)
             }
         } else {
+            if (st.skipCurrentAllow) {
+                st.skipCurrentAllow := false
+                st.seenAllow := false
+                st.absenceStreak := 0
+                st.startedTick := A_TickCount
+                AIB_AllowDebug_Write("tick allow-skip-cleared hwnd=" hwnd)
+            }
+
             if (st.seenAllow) {
                 st.absenceStreak += 1
 
                 ; For non-rapid-fire sources, completion is when Send is ready again.
                 if (st.source != "rapid_fire_hotkey" && AIB_WindowHasSendReady(hwnd)) {
                     AIB_AllowDebug_Write("tick send-ready-complete hwnd=" hwnd " source=" st.source)
-                    g_AIB_AllowWatcherStateByHwnd.Delete(key)
+                    if (AIB_IsPersistentAllowWatcherMode()) {
+                        st.seenAllow := false
+                        st.absenceStreak := 0
+                        st.startedTick := A_TickCount
+                    } else {
+                        g_AIB_AllowWatcherStateByHwnd.Delete(key)
+                    }
                     continue
                 }
 
@@ -2562,7 +2661,7 @@ AIB_AllowWatcherTick(*) {
     ; Update persistent banner position if monitor changed
     AIB_PersistentBannerMonitorUpdate()
 
-    if (g_AIB_AllowWatcherStateByHwnd.Count = 0)
+    if (g_AIB_AllowWatcherStateByHwnd.Count = 0 && !AIB_IsPersistentAllowWatcherMode())
         AIB_StopAllowWatcher("✓ Allow flow completed (all sessions)", true)
 }
 
@@ -2601,6 +2700,28 @@ AIB_PrepareWindowForAllowClick(hwnd) {
     }
 }
 
+AIB_GetForegroundWindowForRestore() {
+    hwnd := 0
+    try hwnd := WinGetID("A")
+    catch {
+        hwnd := 0
+    }
+    return hwnd
+}
+
+AIB_RestoreForegroundWindow(hwnd, skippedHwnd := 0) {
+    if (!hwnd || hwnd = skippedHwnd)
+        return false
+    if (!WinExist("ahk_id " hwnd))
+        return false
+    try {
+        WinActivate("ahk_id " hwnd)
+        return true
+    } catch {
+        return false
+    }
+}
+
 AIB_WindowHasSendReady(hwnd) {
     if (!hwnd || !WinExist("ahk_id " hwnd))
         return false
@@ -2630,11 +2751,18 @@ AIB_RunAllowDecisionFlow(hwnd) {
         anchorHwnd := hwnd
     AIB_AllowDebug_Write("decision-flow hwnd=" hwnd " anchor=" anchorHwnd)
 
-    ; Banner 1: exactly 2 seconds with progressive loading.
+    cmdPreview := AIB_GetAllowCommandPreview(hwnd)
+    
+    ; Play sound at START to alert user
+    SoundPlay(A_ScriptDir . "\\sounds\\clicking-allow.wav")
+
+    ; Banner 1: exactly 2 seconds with progressive loading + command display.
+    ; Display command prominently with newlines for readability
+    banner1Text := "⏳ Allow detected in " . title . "`n`nCommand to execute:`n" . cmdPreview
     StandardLoadingBar_Show(
-        "⏳ Allow detected in " . title . ". Prepare to decide...",
+        banner1Text,
         BANNER_ACCENT_INTERMEDIATE,
-        { textWidth: 640, noBorder: true, trackActiveMonitor: true, manualProgress: true, centerOnHwnd: anchorHwnd }
+        { textWidth: 700, noBorder: true, trackActiveMonitor: true, manualProgress: true, centerOnHwnd: anchorHwnd, fontSize: 15 }
     )
     StandardLoadingBar_StartTimedProgress(2000)
     Sleep(2000)
@@ -2643,27 +2771,31 @@ AIB_RunAllowDecisionFlow(hwnd) {
     keyCallbacks := Map(
         "Y", AIB_AllowWatcherDecisionYes,
         "N", AIB_AllowWatcherDecisionNo,
+        "I", AIB_AllowWatcherDecisionIgnore,
         "Escape", AIB_AllowWatcherDecisionNo
     )
 
-    ; Banner 2: exactly 3 seconds with progressive loading + decision input.
+    ; Banner 2: exactly 7 seconds with progressive loading + decision input + command.
+    ; Display command with emphasis for user approval, separated by big space
+    banner2Text := "❓ Click Allow now? (7s)"
+    commandDisplay := "📋 " . cmdPreview
     StandardLoadingBar_ShowWithKeys(
-        "❓ Click Allow now? (3s)",
+        banner2Text,
         keyCallbacks,
-        3000,
+        7000,
         anchorHwnd,
         AIB_AllowWatcherDecisionTimeout,
         BANNER_ACCENT_INTERMEDIATE,
-        560,
+        700,
         17,
-        "",
+        BANNER_ACCENT_INFO,
         true,
-        "[Y] Click Allow  [N] Stop watcher",
+        "`n`n`n`n" . commandDisplay . "`n`n`n`n[Y] Click Allow  [N] Stop watcher  [I] Ignore 30s",
         true,
         true
     )
 
-    waitDeadline := A_TickCount + 3400
+    waitDeadline := A_TickCount + 7400
     while (g_AIB_AllowWatcherDecision = "" && A_TickCount < waitDeadline)
         Sleep(30)
 
@@ -2683,10 +2815,152 @@ AIB_AllowWatcherDecisionNo(*) {
     g_AIB_AllowWatcherDecision := "N"
 }
 
+AIB_AllowWatcherDecisionIgnore(*) {
+    global g_AIB_AllowWatcherDecision
+    g_AIB_AllowWatcherDecision := "I"
+}
+
 AIB_AllowWatcherDecisionTimeout(*) {
     ; Requirement: timeout on Banner 2 is treated as Y.
     global g_AIB_AllowWatcherDecision
     g_AIB_AllowWatcherDecision := "Y"
+}
+
+AIB_GetAllowCommandPreview(hwnd) {
+    global UIA
+    placeholder := "<command not found>"
+
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return placeholder
+
+    try root := UIA.ElementFromHandle(hwnd)
+    catch {
+        return placeholder
+    }
+    if (!root)
+        return placeholder
+
+    cmd := AIB_ExtractAllowCommandFromRoot(root)
+    cmd := AIB_NormalizeAllowCommandPreview(cmd)
+    if (cmd = "")
+        return placeholder
+    return cmd
+}
+
+AIB_ExtractAllowCommandFromRoot(root) {
+    if (!root)
+        return ""
+
+    ; 1) Preferred source: confirmation group/container context.
+    try {
+        groups := root.FindAll({ Type: 50026 })
+        for grp in groups {
+            cls := ""
+            nm := ""
+            try cls := StrLower(grp.ClassName)
+            try nm := grp.Name
+            if (!InStr(cls, "chat-confirmation-widget-container") && !InStr(StrLower(nm), "chat confirmation dialog"))
+                continue
+
+            parsed := AIB_ParseAllowCommandText(nm)
+            if (parsed != "")
+                return parsed
+
+            try {
+                texts := grp.FindAll({ Type: 50020 })
+                for txt in texts {
+                    t := ""
+                    try t := txt.Name
+                    parsed := AIB_ParseAllowCommandText(t)
+                    if (parsed != "")
+                        return parsed
+                }
+            } catch {
+            }
+        }
+    } catch {
+    }
+
+    ; 2) Fallback source: chat list item body (layout can vary).
+    try {
+        items := root.FindAll({ Type: 50007 })
+        for item in items {
+            nm := ""
+            try nm := item.Name
+            if (!AIB_LooksLikeAllowCommandCarrier(nm))
+                continue
+            parsed := AIB_ParseAllowCommandText(nm)
+            if (parsed != "")
+                return parsed
+        }
+    } catch {
+    }
+
+    return ""
+}
+
+AIB_LooksLikeAllowCommandCarrier(text) {
+    t := StrLower(Trim(text))
+    if (t = "")
+        return false
+
+    if (InStr(t, "chat confirmation required"))
+        return true
+    if (InStr(t, "press control+enter to accept") || InStr(t, "press ctrl+enter to accept"))
+        return true
+    if (InStr(t, " run ") && InStr(t, " command within ") && InStr(t, "?"))
+        return true
+    return false
+}
+
+AIB_ParseAllowCommandText(rawText) {
+    txt := AIB_NormalizeAllowCommandPreview(rawText, 1200)
+    if (txt = "")
+        return ""
+
+    ; Support prompt variants such as:
+    ; "... Run `pwsh` command within `<path>`?: <cmd>. Press Control+Enter ..."
+    ; "... command?: <cmd>. Press Control+Enter ..."
+    if (RegExMatch(txt, "i)run\s+`?\w+`?\s+command(?:\s+within)?[^?]*\?\s*:?\s*(.+)$", &m))
+        txt := m[1]
+    else if (RegExMatch(txt, "i)command(?:\s+within)?[^?]*\?\s*:?\s*(.+)$", &m))
+        txt := m[1]
+    else if (InStr(txt, "?:"))
+        txt := Trim(SubStr(txt, InStr(txt, "?:") + 2))
+    else
+        return ""
+
+    lower := StrLower(txt)
+    cutPos := 0
+    for marker in [" press control+enter", " press ctrl+enter", " alt+backspace", " to accept", " to cancel", " code blocks:"] {
+        p := InStr(lower, marker)
+        if (p && (!cutPos || p < cutPos))
+            cutPos := p
+    }
+
+    if (cutPos)
+        txt := SubStr(txt, 1, cutPos - 1)
+
+    return Trim(txt)
+}
+
+AIB_NormalizeAllowCommandPreview(text, maxLen := 150) {
+    if (text = "")
+        return ""
+
+    out := StrReplace(text, Chr(160), " ")
+    out := StrReplace(out, "`r", " ")
+    out := StrReplace(out, "`n", " ")
+    out := RegExReplace(out, "\s+", " ")
+    out := Trim(out)
+
+    if (out = "")
+        return ""
+
+    if (maxLen > 3 && StrLen(out) > maxLen)
+        out := SubStr(out, 1, maxLen - 3) . "..."
+
+    return out
 }
 
 AIB_WindowHasAllowButton(hwnd, &failReason := "") {
@@ -2995,10 +3269,14 @@ AIB_ClickAllowButtonInAllIDEWindows() {
                 BANNER_ACCENT_INTERMEDIATE
             )
             failReason := ""
+            SoundPlay(A_ScriptDir . "\sounds\clicking-allow.wav")
+            prevForegroundHwnd := sourceHwnd ? sourceHwnd : AIB_GetForegroundWindowForRestore()
             if (AIB_ClickAllowButtonInWindow(hwnd, &failReason)) {
+                AIB_RestoreForegroundWindow(prevForegroundHwnd, hwnd)
                 clickedCount += 1
                 break
             }
+            AIB_RestoreForegroundWindow(prevForegroundHwnd, hwnd)
             if (failReason != "" && debugReasons.Length < 3)
                 debugReasons.Push(AIB_GetSafeWindowTitle(hwnd) . " => " . failReason)
         }
@@ -3179,14 +3457,18 @@ AIB_FindAllowButtonInChatConfirmation(root) {
 
     try {
         groups := root.FindAll({ Type: 50026 })
+        AIB_AllowDebug_Write("find-chat-confirm root-scan groups=" groups.Length)
         for grp in groups {
             cls := ""
             try cls := StrLower(grp.ClassName)
+            AIB_AllowDebug_Write("find-chat-confirm group-check class='" cls "'")
             if (!InStr(cls, "chat-confirmation-widget-container"))
                 continue
 
+            AIB_AllowDebug_Write("find-chat-confirm found-container")
             ; In this widget, prefer explicit action button style used by "Allow Once (Ctrl+Enter)".
             buttons := grp.FindAll({ Type: 50000 })
+            AIB_AllowDebug_Write("find-chat-confirm buttons=" buttons.Length)
             best := 0
             bestScore := -2147483647
             buttonSnapshot := ""
@@ -3200,14 +3482,19 @@ AIB_FindAllowButtonInChatConfirmation(root) {
 
                 if (buttonSnapshot != "")
                     buttonSnapshot .= " | "
-                buttonSnapshot .= "name='" nm "' class='" bcls "'"
+                buttonSnapshot .= "name='" nm "' class='" bcls "' offscreen=" offscreen
 
-                if (!AIB_IsAllowButtonName(nm))
+                if (!AIB_IsAllowButtonName(nm)) {
+                    AIB_AllowDebug_Write("find-chat-confirm btn-reject name='" nm "' (not allow)")
                     continue
+                }
 
-                if (!AIB_IsInAiChatAllowContext(btn))
+                if (!AIB_IsInAiChatAllowContext(btn)) {
+                    AIB_AllowDebug_Write("find-chat-confirm btn-reject name='" nm "' (not in context)")
                     continue
+                }
 
+                AIB_AllowDebug_Write("find-chat-confirm btn-candidate name='" nm "'")
                 score := 0
                 nml := StrLower(Trim(nm))
                 if (InStr(nml, "allow once"))
@@ -3227,12 +3514,15 @@ AIB_FindAllowButtonInChatConfirmation(root) {
                 }
             }
 
-            if (best)
+            if (best) {
+                AIB_AllowDebug_Write("find-chat-confirm result=found score=" bestScore)
                 return best
+            }
 
             AIB_AllowDebug_Write("confirm-container-no-candidate buttons=" buttonSnapshot)
         }
-    } catch {
+    } catch error {
+        AIB_AllowDebug_Write("find-chat-confirm error=" error.What)
         return 0
     }
 
@@ -3455,8 +3745,8 @@ AIB_IsElementCenterInsideFrame(el, frame) {
 }
 
 ; =============================================================================
-; AIB Rapid Fire - Hotkey: Win+Alt+Shift+9
-; Toggle watcher loop for VS Code Allow monitoring.
+; AIB Persistent Allow Watcher - Hotkey: Win+Alt+Shift+9
+; Toggle persistent watcher loop for VS Code Allow monitoring.
 ; =============================================================================
 global g_AIB_Hotkey9ToggleCooldownTick := 0
 
@@ -3470,7 +3760,7 @@ global g_AIB_Hotkey9ToggleCooldownTick := 0
     g_AIB_Hotkey9ToggleCooldownTick := now
 
     if (g_AIB_AllowWatcherActive) {
-        AIB_StopAllowWatcher("ℹ Rapid fire watcher stopped", true)
+        AIB_StopAllowWatcher("ℹ Persistent Allow watcher stopped", true)
         return
     }
 
@@ -3489,7 +3779,7 @@ global g_AIB_Hotkey9ToggleCooldownTick := 0
 
     ; Optional environment update for rapid-fire testing.
     AIB_RapidFireTrySwapTestFolderContent()
-    AIB_ArmAllowWatcher("rapid_fire_hotkey", targetHwnd, "vscode", true, true, "✅ Allow flow started from #!+9", BANNER_ACCENT_SUCCESS)
+    AIB_ArmAllowWatcher("persistent_hotkey", targetHwnd, "vscode", true, true, "✅ Persistent Allow watcher enabled", BANNER_ACCENT_SUCCESS)
 }
 
 AIB_RapidFireTrySwapTestFolderContent() {
@@ -3858,9 +4148,9 @@ AIB_IsAllowButtonName(btnName) {
     n := StrLower(Trim(btnName))
     if (n = "")
         return false
-    ; Accept variants like "Allow", "Allow once", and "Allow (...)" as a word token.
-    ; This still matches larger labels but avoids accidental matches like "disallow".
-    if (RegExMatch(n, "(^|\\W)allow(\\W|$)") <= 0)
+    ; Accept "Allow", "Allow Once", "Allow (Ctrl+Enter)", etc.
+    ; Check if button name starts with "allow" or contains " allow" as word.
+    if (!InStr(n, "allow"))
         return false
     if (AIB_IsAllowNegativeButtonName(n))
         return false
@@ -3918,22 +4208,27 @@ AIB_ButtonHasAllowInNearbyContext(btn, maxDepth := 6) {
 }
 
 AIB_IsInChatConfirmationDialog(el, maxDepth := 12) {
+    ; In the chat-confirmation-widget-container search path, buttons are already in context.
+    ; This is a fast validation that we're not in a false positive scenario.
+    if (!el)
+        return false
+    
     cur := el
     loop maxDepth {
         if (!cur)
-            return false
+            break
         cls := ""
-        nm := ""
         try cls := cur.ClassName
-        try nm := cur.Name
-        if (InStr(cls, "chat-confirmation-widget-container") || InStr(nm, "Chat Confirmation Dialog"))
+        if (InStr(cls, "chat-confirmation-widget-container"))
             return true
         try cur := cur.GetParentElement()
-        catch {
-            return false
-        }
+        catch
+            break
     }
-    return false
+    
+    ; Fallback: if we can't validate parent, assume it's OK if reached from
+    ; AIB_FindAllowButtonInChatConfirmation (which already confirmed the container)
+    return true
 }
 
 AIB_IsInAiChatAllowContext(btn) {
@@ -4016,6 +4311,8 @@ AIB_TryOcrAllowClick(hwnd, root := 0, &usedRoute := "") {
     if (!InStr(n, "ctrl+enter") && !InStr(n, "control+enter") && !InStr(n, "chat confirmation required"))
         return false
 
+    SoundPlay(A_ScriptDir . "\sounds\clicking-allow.wav")
+    prevForegroundHwnd := AIB_GetForegroundWindowForRestore()
     AIB_PrepareWindowForAllowClick(hwnd)
     try {
         ControlClick("x" x " y" y, "ahk_id " hwnd, , "Left", 1, "NA Pos")
@@ -4023,10 +4320,13 @@ AIB_TryOcrAllowClick(hwnd, root := 0, &usedRoute := "") {
         usedRoute := "ocr-controlclick"
         AIB_AllowDebug_Write("click-ocr hwnd=" hwnd " x=" x " y=" y " text='" ocrText "'")
         Sleep(220)
+        AIB_RestoreForegroundWindow(prevForegroundHwnd, hwnd)
         return true
     } catch {
         AIB_AllowDebug_Write("click-ocr-failed hwnd=" hwnd)
     }
+
+    AIB_RestoreForegroundWindow(prevForegroundHwnd, hwnd)
 
     return false
 }
