@@ -8075,6 +8075,7 @@ global g_StudyTopicSelectorActive := false
 global g_StudyTopicSelectorPhase := ""           ; "category" | "topic"
 global g_StudyTopicSelectorCategory := ""        ; "mnemonics" | "plans"
 global g_StudyTopicSelectorLastForegroundMonitorIdx := 0   ; for trackActiveMonitor-style follow (standard_information_display.md)
+global STUDY_TOPIC_BLACKOUT_DELAY_MS := 3000
 
 ; PDF focus monitoring for automatic blackout cancellation (Win+Alt+Shift+X)
 global g_PdfFocusMonitorTimer := false
@@ -8147,6 +8148,56 @@ StopPdfFocusMonitor() {
         g_PdfFocusMonitorTimer := false
     }
     g_PdfFocusTrackedHwnd := 0
+}
+
+StudyTopic_GetBlackoutKeepMonitorIndex() {
+    try return MonitorGetPrimary()
+    catch
+        return 1
+}
+
+StudyTopic_CancelBlackoutCountdown(*) {
+    StandardLoadingBar_CloseKeysOverlay()
+    StandardLoadingBar_Hide(0)
+}
+
+StudyTopic_ApplyBlackoutCountdownTimeout(targetHwnd) {
+    if (!targetHwnd || !WinExist("ahk_id " . targetHwnd))
+        return
+    try {
+        WinShow("ahk_id " targetHwnd)
+        WinActivate("ahk_id " targetHwnd)
+        WinWaitActive("ahk_id " targetHwnd, , 1)
+    } catch {
+        ; ignore
+    }
+    EnableFocusMode(StudyTopic_GetBlackoutKeepMonitorIndex())
+    StartPdfFocusMonitor(targetHwnd, "Debounced")
+}
+
+StudyTopic_StartBlackoutCountdown(targetHwnd) {
+    if (!targetHwnd || !WinExist("ahk_id " . targetHwnd))
+        return
+    StandardLoadingBar_CloseKeysOverlay()
+    StandardLoadingBar_Hide(0)
+    Sleep 50
+    keyCallbacks := Map("N", StudyTopic_CancelBlackoutCountdown)
+    timeoutCb := StudyTopic_ApplyBlackoutCountdownTimeout.Bind(targetHwnd)
+    StandardLoadingBar_ShowWithKeys(
+        "⏳ Blacking out secondary monitors in 3s",
+        keyCallbacks,
+        STUDY_TOPIC_BLACKOUT_DELAY_MS,
+        0,
+        timeoutCb,
+        BANNER_ACCENT_INTERMEDIATE,
+        420,
+        17,
+        "",
+        true,
+        "[N] Cancel blackout",
+        true,
+        true,
+        true)
 }
 
 ; YouTube focus session (Win+Alt+Shift+H): toggle on/off; SMTC for Spotify play/pause (not toggle).
@@ -8776,10 +8827,6 @@ QuickLook_OpenPath(path, scrollToEnd := true) {
                 ; ignore
             }
 
-            ; Execute blackout only after move is verified and QuickLook is active.
-            EnableFocusMode()
-            StartPdfFocusMonitor(hwnd, "Debounced")
-
             ; Click inside QuickLook to ensure the markdown viewer control has keyboard focus.
             try {
                 rect2 := Buffer(16, 0)
@@ -8819,6 +8866,8 @@ QuickLook_OpenPath(path, scrollToEnd := true) {
                     }
                 }
             }
+
+            StudyTopic_StartBlackoutCountdown(hwnd)
         }
     }
 }
@@ -9188,8 +9237,6 @@ PeekPdf_WaitAndConfigure(skipGoToLastPage := false) {
             WinActivate("ahk_id " hwnd)
             WinWaitActive("ahk_id " hwnd, , 1)
         }
-        EnableFocusMode()
-        StartPdfFocusMonitor(hwnd, "Debounced")
         ; Click inside QuickLook to ensure content receives keyboard focus
         try {
             rect := Buffer(16, 0)
@@ -9216,6 +9263,7 @@ PeekPdf_WaitAndConfigure(skipGoToLastPage := false) {
             }
             try Send("^End")
         }
+        StudyTopic_StartBlackoutCountdown(hwnd)
         return
     }
     ShowStudyTopicSelector()
@@ -12020,7 +12068,7 @@ GetActiveMonitorIndex() {
     return 0
 }
 
-EnableFocusMode() {
+EnableFocusMode(keepMonitorIndex := 0) {
     global g_FocusModeOn, g_FocusModeActiveMonitor, g_FocusModeOverlays, g_FocusModeTrackedWindow
 
     ; Ensure globals are initialized (avoid "variable has not been assigned" on first call)
@@ -12053,7 +12101,9 @@ EnableFocusMode() {
         }
     }
 
-    activeMon := GetActiveMonitorIndex()
+    activeMon := keepMonitorIndex
+    if (!activeMon)
+        activeMon := GetActiveMonitorIndex()
     if (!activeMon) {
         return
     }
