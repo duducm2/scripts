@@ -8161,7 +8161,7 @@ StudyTopic_CancelBlackoutCountdown(*) {
     StandardLoadingBar_Hide(0)
 }
 
-StudyTopic_ApplyBlackoutCountdownTimeout(targetHwnd) {
+StudyTopic_ApplyBlackoutCountdownTimeout(targetHwnd, pdfFocusLossMode := "Debounced") {
     if (!targetHwnd || !WinExist("ahk_id " . targetHwnd))
         return
     try {
@@ -8172,7 +8172,7 @@ StudyTopic_ApplyBlackoutCountdownTimeout(targetHwnd) {
         ; ignore
     }
     EnableFocusMode(StudyTopic_GetBlackoutKeepMonitorIndex())
-    StartPdfFocusMonitor(targetHwnd, "Debounced")
+    StartPdfFocusMonitor(targetHwnd, pdfFocusLossMode)
 }
 
 StudyTopic_StartBlackoutCountdown(targetHwnd) {
@@ -8198,6 +8198,107 @@ StudyTopic_StartBlackoutCountdown(targetHwnd) {
         true,
         true,
         true)
+}
+
+; Focus dwell watcher: after continuous foreground on one window, offer same blackout banner as Study Topic (#!+X).
+global g_FocusBlackoutWatcherStarted := false
+global g_FocusBlackoutWatcherLastHwnd := 0
+global g_FocusBlackoutWatcherDwellStartTick := 0
+global g_FocusBlackoutWatcherDeniedHwnd := 0
+global g_FocusBlackoutWatcherCountdownActive := false
+global FOCUS_BLACKOUT_DWELL_MS := 20000
+
+FocusBlackoutWatcher_OnCancel(hwnd, *) {
+    global g_FocusBlackoutWatcherCountdownActive, g_FocusBlackoutWatcherDeniedHwnd
+    StudyTopic_CancelBlackoutCountdown()
+    g_FocusBlackoutWatcherCountdownActive := false
+    g_FocusBlackoutWatcherDeniedHwnd := hwnd
+}
+
+FocusBlackoutWatcher_OnBlackoutTimeout(hwnd, *) {
+    global g_FocusBlackoutWatcherCountdownActive
+    g_FocusBlackoutWatcherCountdownActive := false
+    StudyTopic_ApplyBlackoutCountdownTimeout(hwnd, "Immediate")
+}
+
+FocusBlackoutWatcher_StartCountdown(hwnd) {
+    global g_FocusBlackoutWatcherCountdownActive, g_FocusBlackoutWatcherDwellStartTick
+    if (!hwnd || !WinExist("ahk_id " . hwnd))
+        return
+    g_FocusBlackoutWatcherCountdownActive := true
+    g_FocusBlackoutWatcherDwellStartTick := A_TickCount
+    StandardLoadingBar_CloseKeysOverlay()
+    StandardLoadingBar_Hide(0)
+    Sleep 50
+    keyCallbacks := Map("N", FocusBlackoutWatcher_OnCancel.Bind(hwnd))
+    timeoutCb := FocusBlackoutWatcher_OnBlackoutTimeout.Bind(hwnd)
+    StandardLoadingBar_ShowWithKeys(
+        "⏳ Blacking out secondary monitors in 3s",
+        keyCallbacks,
+        STUDY_TOPIC_BLACKOUT_DELAY_MS,
+        0,
+        timeoutCb,
+        BANNER_ACCENT_INTERMEDIATE,
+        420,
+        17,
+        "",
+        true,
+        "[N] Cancel blackout",
+        true,
+        true,
+        true)
+}
+
+FocusBlackoutWatcher_Tick() {
+    global g_FocusBlackoutWatcherLastHwnd, g_FocusBlackoutWatcherDwellStartTick,
+        g_FocusBlackoutWatcherDeniedHwnd, g_FocusBlackoutWatcherCountdownActive, FOCUS_BLACKOUT_DWELL_MS
+
+    try {
+        if (MonitorGetCount() <= 1)
+            return
+    } catch {
+        return
+    }
+
+    hwnd := WinExist("A")
+    if (!hwnd) {
+        g_FocusBlackoutWatcherLastHwnd := 0
+        return
+    }
+
+    if (g_FocusBlackoutWatcherDeniedHwnd && hwnd != g_FocusBlackoutWatcherDeniedHwnd)
+        g_FocusBlackoutWatcherDeniedHwnd := 0
+
+    if (hwnd != g_FocusBlackoutWatcherLastHwnd) {
+        g_FocusBlackoutWatcherLastHwnd := hwnd
+        g_FocusBlackoutWatcherDwellStartTick := A_TickCount
+        return
+    }
+
+    if (g_FocusBlackoutWatcherCountdownActive)
+        return
+
+    if (g_FocusBlackoutWatcherDeniedHwnd && hwnd = g_FocusBlackoutWatcherDeniedHwnd)
+        return
+
+    if ((A_TickCount - g_FocusBlackoutWatcherDwellStartTick) >= FOCUS_BLACKOUT_DWELL_MS)
+        FocusBlackoutWatcher_StartCountdown(hwnd)
+}
+
+FocusBlackoutWatcher_Start() {
+    global g_FocusBlackoutWatcherStarted
+    if (g_FocusBlackoutWatcherStarted)
+        return
+    g_FocusBlackoutWatcherStarted := true
+    SetTimer(FocusBlackoutWatcher_Tick, 200)
+}
+
+FocusBlackoutWatcher_Stop() {
+    global g_FocusBlackoutWatcherStarted
+    if (!g_FocusBlackoutWatcherStarted)
+        return
+    SetTimer(FocusBlackoutWatcher_Tick, 0)
+    g_FocusBlackoutWatcherStarted := false
 }
 
 ; YouTube focus session (Win+Alt+Shift+H): toggle on/off; SMTC for Spotify play/pause (not toggle).

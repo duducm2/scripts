@@ -3080,3 +3080,5 @@ ShowProjectSelector() {
 ; - Compatible with multi-monitor setups (tested up to 4 monitors)
 ;
 ; =============================================================================
+
+FocusBlackoutWatcher_Start()
