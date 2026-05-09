@@ -8171,7 +8171,10 @@ StudyTopic_ApplyBlackoutCountdownTimeout(targetHwnd, pdfFocusLossMode := "Deboun
     } catch {
         ; ignore
     }
-    EnableFocusMode(StudyTopic_GetBlackoutKeepMonitorIndex())
+    keepIdx := GetActiveMonitorIndex()
+    if (!keepIdx)
+        keepIdx := StudyTopic_GetBlackoutKeepMonitorIndex()
+    EnableFocusMode(keepIdx)
     StartPdfFocusMonitor(targetHwnd, pdfFocusLossMode)
 }
 
@@ -8251,7 +8254,8 @@ FocusBlackoutWatcher_StartCountdown(hwnd) {
 
 FocusBlackoutWatcher_Tick() {
     global g_FocusBlackoutWatcherLastHwnd, g_FocusBlackoutWatcherDwellStartTick,
-        g_FocusBlackoutWatcherDeniedHwnd, g_FocusBlackoutWatcherCountdownActive, FOCUS_BLACKOUT_DWELL_MS
+        g_FocusBlackoutWatcherDeniedHwnd, g_FocusBlackoutWatcherCountdownActive, FOCUS_BLACKOUT_DWELL_MS,
+        g_FocusModeOn, g_FocusModeTrackedWindow
 
     try {
         if (MonitorGetCount() <= 1)
@@ -8279,6 +8283,9 @@ FocusBlackoutWatcher_Tick() {
         return
 
     if (g_FocusBlackoutWatcherDeniedHwnd && hwnd = g_FocusBlackoutWatcherDeniedHwnd)
+        return
+
+    if (g_FocusModeOn && g_FocusModeTrackedWindow && hwnd = g_FocusModeTrackedWindow)
         return
 
     if ((A_TickCount - g_FocusBlackoutWatcherDwellStartTick) >= FOCUS_BLACKOUT_DWELL_MS)
@@ -12278,6 +12285,7 @@ DisableFocusMode() {
     g_FocusModeActiveMonitor := 0
     g_FocusModeTrackedWindow := 0
     g_FocusModeOn := false
+    StopPdfFocusMonitor()
 }
 
 ToggleFocusMode() {
