@@ -8,6 +8,7 @@
 ; --- Includes ----------------------------------------------------------------
 #include UIA-v2\Lib\UIA.ahk
 #include %A_ScriptDir%\Utils.ahk
+try Hotkey("#!+Y", "Off")
 
 ; --- Configuration -----------------------------------------------------------
 ; Classic: rctrl_renwnd32. New Outlook (Monarch): Outlook Host.

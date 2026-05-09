@@ -8084,12 +8084,27 @@ global g_PdfFocusLossMode := "Immediate"      ; "Immediate" or "Debounced"
 global g_PdfFocusDebounceMs := 1200            ; Allow transient focus loss without un-blackouting
 global g_PdfFocusLostSinceTick := 0
 
+; #region agent log
+FocusMode_DebugNdjson(hypothesisId, location, message, dataJson := "{}") {
+    try FileAppend '{"sessionId":"a99f35","hypothesisId":"' . hypothesisId . '","location":"' . location .
+        '","message":"' .
+        message . '","timestamp":' . A_TickCount . ',"data":' . dataJson . '}`n', A_ScriptDir "\debug-a99f35.log",
+        "UTF-8"
+}
+; #endregion
+
 ; Monitor PDF (Peek) window focus and automatically disable focus mode when it loses focus
 MonitorPdfFocus() {
     global g_PdfFocusTrackedHwnd, g_PdfFocusLossMode, g_PdfFocusDebounceMs, g_PdfFocusLostSinceTick
 
+    if (!g_PdfFocusTrackedHwnd)
+        return
+
     ; Check if tracked window still exists
     if (g_PdfFocusTrackedHwnd && !WinExist("ahk_id " . g_PdfFocusTrackedHwnd)) {
+        ; #region agent log
+        FocusMode_DebugNdjson("E", "MonitorPdfFocus", "disable_dead_tracked", "{}")
+        ; #endregion
         DisableFocusMode()
         StopPdfFocusMonitor()
         return
@@ -8103,6 +8118,9 @@ MonitorPdfFocus() {
                 g_PdfFocusLostSinceTick := A_TickCount
 
             if ((A_TickCount - g_PdfFocusLostSinceTick) >= g_PdfFocusDebounceMs) {
+                ; #region agent log
+                FocusMode_DebugNdjson("E", "MonitorPdfFocus", "disable_debounced", "{}")
+                ; #endregion
                 DisableFocusMode()
                 StopPdfFocusMonitor()
             }
@@ -8110,6 +8128,9 @@ MonitorPdfFocus() {
         }
 
         ; Default: immediate cancellation (keeps behavior for Peek/PDF workflows)
+        ; #region agent log
+        FocusMode_DebugNdjson("E", "MonitorPdfFocus", "disable_focus_lost_immediate", "{}")
+        ; #endregion
         DisableFocusMode()
         StopPdfFocusMonitor()
     } else {
@@ -8176,6 +8197,10 @@ StudyTopic_ApplyBlackoutCountdownTimeout(targetHwnd, pdfFocusLossMode := "Deboun
         keepIdx := StudyTopic_GetBlackoutKeepMonitorIndex()
     EnableFocusMode(keepIdx)
     StartPdfFocusMonitor(targetHwnd, pdfFocusLossMode)
+    ; #region agent log
+    FocusMode_DebugNdjson("D", "StudyTopic_ApplyBlackoutCountdownTimeout", "after_apply",
+        '{"pdfMode":"' . pdfFocusLossMode . '","keepIdx":' . keepIdx . '}')
+    ; #endregion
 }
 
 StudyTopic_StartBlackoutCountdown(targetHwnd) {
@@ -12185,28 +12210,27 @@ EnableFocusMode(keepMonitorIndex := 0) {
     if (!IsSet(g_FocusModeOn))
         g_FocusModeOn := false
 
-    ; Check if focus mode is already active by verifying state and overlays
-    hasActiveOverlays := false
-    if (IsObject(g_FocusModeOverlays) && g_FocusModeOverlays.Length > 0) {
-        ; Verify at least one overlay window still exists
+    ; Flag plus overlay refs / WinExist: trust non-empty array like ToggleFocusMode (WinExist can miss fullscreen Gui overlays).
+    hasOverlayRefs := IsObject(g_FocusModeOverlays) && g_FocusModeOverlays.Length > 0
+    hasLiveOverlay := false
+    if (hasOverlayRefs) {
         for overlay in g_FocusModeOverlays {
             if (IsObject(overlay) && overlay.Hwnd && WinExist("ahk_id " . overlay.Hwnd)) {
-                hasActiveOverlays := true
+                hasLiveOverlay := true
                 break
             }
         }
     }
 
-    ; If already enabled (by flag or by existing overlays), clean up and return
-    if (g_FocusModeOn || hasActiveOverlays) {
-        ; If overlays exist but flag is wrong, fix the state
-        if (hasActiveOverlays && !g_FocusModeOn) {
-            ; Clean up the orphaned overlays first
+    if (g_FocusModeOn || hasOverlayRefs) {
+        if (hasOverlayRefs && !g_FocusModeOn) {
             DisableFocusMode()
-        } else {
-            ; Already properly enabled, just return
+        } else if (g_FocusModeOn && hasLiveOverlay) {
             return
+        } else if (g_FocusModeOn && hasOverlayRefs && !hasLiveOverlay) {
+            DisableFocusMode()
         }
+        ; g_FocusModeOn && !hasOverlayRefs: inconsistent — fall through and recreate overlays
     }
 
     activeMon := keepMonitorIndex
@@ -12262,14 +12286,25 @@ EnableFocusMode(keepMonitorIndex := 0) {
     }
 
     g_FocusModeOn := true
+    ; #region agent log
+    FocusMode_DebugNdjson("E", "EnableFocusMode", "after_enable",
+        '{"activeMon":' . g_FocusModeActiveMonitor . ',"overlayCount":' . g_FocusModeOverlays.Length . '}')
+    ; #endregion
 }
 
 DisableFocusMode() {
     global g_FocusModeOn, g_FocusModeActiveMonitor, g_FocusModeOverlays, g_FocusModeTrackedWindow,
         g_FocusModeMonitorTimer
 
+    ; #region agent log
+    FocusMode_DebugNdjson("C", "DisableFocusMode", "entry",
+        '{"g_FocusModeOn":' . (g_FocusModeOn ? 1 : 0) . ',"overlayLen":' . (IsObject(g_FocusModeOverlays) ?
+            g_FocusModeOverlays.Length : -1) . '}')
+    ; #endregion
+
     ; Stop monitoring window focus changes
     StopFocusModeWindowMonitor()
+    StopPdfFocusMonitor()
 
     for overlay in g_FocusModeOverlays {
         try {
@@ -12285,38 +12320,34 @@ DisableFocusMode() {
     g_FocusModeActiveMonitor := 0
     g_FocusModeTrackedWindow := 0
     g_FocusModeOn := false
-    StopPdfFocusMonitor()
+    ; #region agent log
+    FocusMode_DebugNdjson("C", "DisableFocusMode", "exit", "{}")
+    ; #endregion
 }
 
 ToggleFocusMode() {
     global g_FocusModeOn, g_FocusModeOverlays
 
-    ; Check if focus mode is actually active by verifying both state and overlays
-    ; This prevents adding layers when state is out of sync
-    hasActiveOverlays := false
-    if (IsObject(g_FocusModeOverlays) && g_FocusModeOverlays.Length > 0) {
-        ; Verify at least one overlay window still exists
-        for overlay in g_FocusModeOverlays {
-            if (IsObject(overlay) && overlay.Hwnd && WinExist("ahk_id " . overlay.Hwnd)) {
-                hasActiveOverlays := true
-                break
-            }
-        }
-    }
+    ; Treat non-empty overlay array as active even if WinExist fails on some setups (Dpi/multi-monitor),
+    ; so #!+Y always tears down auto-blackout state instead of calling EnableFocusMode() by mistake.
+    hasOverlayRefs := IsObject(g_FocusModeOverlays) && g_FocusModeOverlays.Length > 0
+    actualState := g_FocusModeOn || hasOverlayRefs
 
-    ; Determine actual state: if overlays exist OR flag is set, consider it ON
-    actualState := g_FocusModeOn || hasActiveOverlays
+    ; #region agent log
+    FocusMode_DebugNdjson("A", "ToggleFocusMode", "state",
+        '{"g_FocusModeOn":' . (g_FocusModeOn ? 1 : 0) . ',"overlayLen":' . (IsObject(g_FocusModeOverlays) ?
+            g_FocusModeOverlays.Length : -1) . ',"actualState":' . (actualState ? 1 : 0) . '}')
+    ; #endregion
 
     if (actualState) {
-        ; Focus mode is on - disable it
+        ; #region agent log
+        FocusMode_DebugNdjson("A", "ToggleFocusMode", "branch", '{"path":"disable"}')
+        ; #endregion
         DisableFocusMode()
     } else {
-        ; Focus mode is off - enable it
-        ; First ensure any stale overlays are cleaned up
-        if (hasActiveOverlays && !g_FocusModeOn) {
-            ; State mismatch: overlays exist but flag says off - clean up first
-            DisableFocusMode()
-        }
+        ; #region agent log
+        FocusMode_DebugNdjson("A", "ToggleFocusMode", "branch", '{"path":"enable"}')
+        ; #endregion
         EnableFocusMode()
     }
 }
@@ -12371,6 +12402,9 @@ StopFocusModeWindowMonitor() {
 
 #!+Y::
 {
+    ; #region agent log
+    FocusMode_DebugNdjson("B", "hotkey #!+Y", "fired", '{"script":"' . StrReplace(A_ScriptName, "\", "\\") . '"}')
+    ; #endregion
     ToggleFocusMode()
 }
 

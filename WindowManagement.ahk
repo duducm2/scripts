@@ -13,6 +13,9 @@
 #include %A_ScriptDir%\GeminiToCursorBridge.ahk
 
 #include %A_ScriptDir%\Utils.ahk
+; Focus blackout watcher runs in Shift keys.ahk (same process as primary Utils hotkeys). Unregister #!+Y here
+; so this process does not handle ToggleFocusMode with empty globals when other scripts are running.
+try Hotkey("#!+Y", "Off")
 
 ; --- WindowManagement daemon integration (Phase 1: feature flags in WMIPC.ahk; Phase 3: use daemon) ---
 ; WM_USE_DAEMON, WM_USE_PIPE_IPC, WM_USE_SHM_IPC, WM_USE_EVENT_HOOK_CACHE (all default off)
@@ -3080,5 +3083,3 @@ ShowProjectSelector() {
 ; - Compatible with multi-monitor setups (tested up to 4 monitors)
 ;
 ; =============================================================================
-
-FocusBlackoutWatcher_Start()

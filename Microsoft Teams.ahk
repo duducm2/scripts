@@ -16,6 +16,7 @@ WS_VISIBLE := 0x10000000
 ; --- Includes ----------------------------------------------------------------
 #include UIA-v2\Lib\UIA.ahk
 #include %A_ScriptDir%\Utils.ahk
+try Hotkey("#!+Y", "Off")
 
 ; --- Singleton HWND cache (Phase 1.3) ----------------------------------------
 class TeamsHwndCache {

@@ -26,6 +26,8 @@ SetTitleMatchMode 2
 #include UIA-v2\Lib\UIA.ahk
 #include UIA-v2\Lib\UIA_Browser.ahk
 #include %A_ScriptDir%\Utils.ahk
+; Focus dwell watcher + #!+Y (Utils) must share this process so ToggleFocusMode sees the same globals as EnableFocusMode.
+FocusBlackoutWatcher_Start()
 ; Volume: AppLaunchers also schedules retries; this catches Shift keys process when sessions register slightly later.
 SetTimer(() => ApplyScriptMasterVolumeTarget(), -3500)
 #include %A_ScriptDir%\aux\ShiftKeysIPC.ahk

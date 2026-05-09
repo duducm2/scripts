@@ -24,6 +24,15 @@ AL_AppLaunchersExit(*) {
 #include UIA-v2\Lib\UIA_Browser.ahk
 #include %A_ScriptDir%\Utils.ahk
 
+; Focus mode (#!+Y) uses globals in this process only. AppLaunchers runs separately from Shift keys /
+; WindowManagement; unregister here so the script that applied blackout handles ToggleFocusMode (logs showed AppLaunchers firing with overlayLen 0).
+try Hotkey("#!+Y", "Off")
+
+; #region agent log
+try FileAppend '{"sessionId":"a99f35","hypothesisId":"FIX","location":"AppLaunchers.ahk","message":"post_unregister_#!+Y","timestamp":'
+    . A_TickCount . ',"data":{"expectHotkeyOff":1}}`n', A_ScriptDir "\debug-a99f35.log", "UTF-8"
+; #endregion
+
 ; Quick Update relaunch: volume is scheduled from Utils.ahk /Updated block after success overlay + chime.
 if !(A_Args.Length > 0 && A_Args[1] = "/Updated")
     ScheduleApplyScriptMasterVolumeTargetWithRetries()
@@ -2213,7 +2222,8 @@ AIB_StartAllowWatcher(triggerSource := "manual", targetHwnd := 0, windowScope :=
     for hwnd in windows
         AIB_AllowWatcherEnsureState(hwnd, triggerSource, windowScope)
 
-    AIB_AllowDebug_Write("rearm source=" triggerSource " scope=" windowScope " target=" targetHwnd " sessions=" g_AIB_AllowWatcherStateByHwnd.Count)
+    AIB_AllowDebug_Write("rearm source=" triggerSource " scope=" windowScope " target=" targetHwnd " sessions=" g_AIB_AllowWatcherStateByHwnd
+        .Count)
 
     if (g_AIB_AllowWatcherStateByHwnd.Count = 0 && wasActive && !AIB_IsPersistentAllowWatcherMode())
         AIB_StopAllowWatcher("", false)
@@ -2304,7 +2314,8 @@ $Enter::
     global g_AIB_AllowWatcherActive
 
     ; Preserve modified-enter semantics (Shift/Ctrl/Alt/Win variants).
-    if (GetKeyState("Shift", "P") || GetKeyState("Ctrl", "P") || GetKeyState("Alt", "P") || GetKeyState("LWin", "P") || GetKeyState("RWin", "P")) {
+    if (GetKeyState("Shift", "P") || GetKeyState("Ctrl", "P") || GetKeyState("Alt", "P") || GetKeyState("LWin", "P") ||
+    GetKeyState("RWin", "P")) {
         SendInput "{Enter}"
         return
     }
@@ -2397,10 +2408,12 @@ AIB_ShouldShowStartBanner(triggerSource, targetHwnd := 0) {
     return true
 }
 
-AIB_ArmAllowWatcher(triggerSource := "manual", targetHwnd := 0, windowScope := "ide", pinToTarget := false, showStartBanner := true, bannerText := "", bannerAccent := BANNER_ACCENT_INTERMEDIATE) {
+AIB_ArmAllowWatcher(triggerSource := "manual", targetHwnd := 0, windowScope := "ide", pinToTarget := false,
+    showStartBanner := true, bannerText := "", bannerAccent := BANNER_ACCENT_INTERMEDIATE) {
     windowScope := AIB_NormalizeAllowWatcherScope(windowScope)
     AIB_StartAllowWatcher(triggerSource, targetHwnd, windowScope, pinToTarget)
-    AIB_AllowDebug_Write("trigger-accepted source=" triggerSource " scope=" windowScope " target=" targetHwnd " pinned=" pinToTarget)
+    AIB_AllowDebug_Write("trigger-accepted source=" triggerSource " scope=" windowScope " target=" targetHwnd " pinned=" pinToTarget
+    )
 
     ; Keep the persistent indicator visible even when the startup toast is suppressed.
     AIB_PersistentBannerCreate()
@@ -2752,7 +2765,7 @@ AIB_RunAllowDecisionFlow(hwnd) {
     AIB_AllowDebug_Write("decision-flow hwnd=" hwnd " anchor=" anchorHwnd)
 
     cmdPreview := AIB_GetAllowCommandPreview(hwnd)
-    
+
     ; Play sound at START to alert user
     SoundPlay(A_ScriptDir . "\\sounds\\clicking-allow.wav")
 
@@ -2761,8 +2774,8 @@ AIB_RunAllowDecisionFlow(hwnd) {
     banner1Text := "⏳ Allow detected in " . title . "`n`nCommand to execute:`n" . cmdPreview
     StandardLoadingBar_Show(
         banner1Text,
-        BANNER_ACCENT_INTERMEDIATE,
-        { textWidth: 700, noBorder: true, trackActiveMonitor: true, manualProgress: true, centerOnHwnd: anchorHwnd, fontSize: 15 }
+        BANNER_ACCENT_INTERMEDIATE, { textWidth: 700, noBorder: true, trackActiveMonitor: true, manualProgress: true,
+            centerOnHwnd: anchorHwnd, fontSize: 15 }
     )
     StandardLoadingBar_StartTimedProgress(2000)
     Sleep(2000)
@@ -2932,7 +2945,8 @@ AIB_ParseAllowCommandText(rawText) {
 
     lower := StrLower(txt)
     cutPos := 0
-    for marker in [" press control+enter", " press ctrl+enter", " alt+backspace", " to accept", " to cancel", " code blocks:"] {
+    for marker in [" press control+enter", " press ctrl+enter", " alt+backspace", " to accept", " to cancel",
+        " code blocks:"] {
         p := InStr(lower, marker)
         if (p && (!cutPos || p < cutPos))
             cutPos := p
@@ -3131,7 +3145,8 @@ AIB_PersistentBannerMonitorUpdate() {
     bannerY := mb - bh - marginY
 
     WinMove(bannerX, bannerY, , , "ahk_id " g_AIB_FlowBannerHwnd)
-    AIB_AllowDebug_Write("banner-repositioned hwnd=" g_AIB_FlowBannerHwnd " monitor=" currentMonitorIdx " x=" bannerX " y=" bannerY)
+    AIB_AllowDebug_Write("banner-repositioned hwnd=" g_AIB_FlowBannerHwnd " monitor=" currentMonitorIdx " x=" bannerX " y=" bannerY
+    )
 }
 
 AIB_PersistentBannerDestroy() {
@@ -3165,13 +3180,14 @@ AIB_StartImplementationProbeTick(*) {
 
     for hwnd in windows {
         key := String(hwnd)
-        
+
         alive[key] := true
         presentNow := AIB_WindowHasStartImplementationButton(hwnd)
         wasPresent := g_AIB_StartImplPrevPresentByHwnd.Has(key) ? g_AIB_StartImplPrevPresentByHwnd[key] : false
 
         if (wasPresent != presentNow)
-            AIB_AllowDebug_Write("start-impl-probe hwnd=" hwnd " was=" wasPresent " now=" presentNow " active=" (WinActive("ahk_id " hwnd) ? 1 : 0))
+            AIB_AllowDebug_Write("start-impl-probe hwnd=" hwnd " was=" wasPresent " now=" presentNow " active=" (
+                WinActive("ahk_id " hwnd) ? 1 : 0))
 
         ; Transition in foreground window usually indicates the click just happened.
         if (wasPresent && !presentNow && WinActive("ahk_id " hwnd)) {
@@ -3331,7 +3347,8 @@ AIB_ClickAllowButtonInWindow(hwnd, &failReason := "") {
     }
 
     if (!btn) {
-        AIB_AllowDebug_Write("click-no-btn hwnd=" hwnd " frameSource=" frameSource " frame=" AIB_AllowDebug_RectText(frame))
+        AIB_AllowDebug_Write("click-no-btn hwnd=" hwnd " frameSource=" frameSource " frame=" AIB_AllowDebug_RectText(
+            frame))
         ; Fallback: confirmation is present but button object may be inaccessible in this cycle.
         if (AIB_HasChatConfirmationAcceptHint(root)) {
             route := ""
@@ -3403,13 +3420,13 @@ AIB_ClickAllowButtonInWindow(hwnd, &failReason := "") {
 
     AIB_AllowDebug_Write("click-action-failed hwnd=" hwnd)
 
-        ocrRoute := ""
-        if (AIB_TryOcrAllowClick(hwnd, root, &ocrRoute)) {
-            verifyReason := ""
-            if (!AIB_WindowHasAllowButton(hwnd, &verifyReason))
-                return true
-            AIB_AllowDebug_Write("click-ocr-still-present hwnd=" hwnd " route=" ocrRoute)
-        }
+    ocrRoute := ""
+    if (AIB_TryOcrAllowClick(hwnd, root, &ocrRoute)) {
+        verifyReason := ""
+        if (!AIB_WindowHasAllowButton(hwnd, &verifyReason))
+            return true
+        AIB_AllowDebug_Write("click-ocr-still-present hwnd=" hwnd " route=" ocrRoute)
+    }
 
     failReason := "invoke/click failed"
     return false
@@ -3779,7 +3796,8 @@ global g_AIB_Hotkey9ToggleCooldownTick := 0
 
     ; Optional environment update for rapid-fire testing.
     AIB_RapidFireTrySwapTestFolderContent()
-    AIB_ArmAllowWatcher("persistent_hotkey", targetHwnd, "vscode", true, true, "✅ Persistent Allow watcher enabled", BANNER_ACCENT_SUCCESS)
+    AIB_ArmAllowWatcher("persistent_hotkey", targetHwnd, "vscode", true, true, "✅ Persistent Allow watcher enabled",
+        BANNER_ACCENT_SUCCESS)
 }
 
 AIB_RapidFireTrySwapTestFolderContent() {
@@ -4212,7 +4230,7 @@ AIB_IsInChatConfirmationDialog(el, maxDepth := 12) {
     ; This is a fast validation that we're not in a false positive scenario.
     if (!el)
         return false
-    
+
     cur := el
     loop maxDepth {
         if (!cur)
@@ -4225,7 +4243,7 @@ AIB_IsInChatConfirmationDialog(el, maxDepth := 12) {
         catch
             break
     }
-    
+
     ; Fallback: if we can't validate parent, assume it's OK if reached from
     ; AIB_FindAllowButtonInChatConfirmation (which already confirmed the container)
     return true
