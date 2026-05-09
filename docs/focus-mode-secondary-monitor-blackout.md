@@ -23,14 +23,14 @@ Related globals: `g_FocusModeOn`, `g_FocusModeOverlays`, `g_FocusModeTrackedWind
 When QuickLook is active, **`#!+X`** runs **`StudyTopic_StartBlackoutCountdown(hwnd)`**, which shows the standard interactive banner (see **`docs/standard_information_display.md`**) and on timeout calls **`StudyTopic_ApplyBlackoutCountdownTimeout`**.
 
 - **`StudyTopic_ApplyBlackoutCountdownTimeout`** activates the target window, computes **`keepIdx := GetActiveMonitorIndex()`** with fallback **`StudyTopic_GetBlackoutKeepMonitorIndex()`** (primary monitor), then **`EnableFocusMode(keepIdx)`** and **`StartPdfFocusMonitor(targetHwnd, pdfFocusLossMode)`**.
-- Default **`pdfFocusLossMode`** for this path is **`Debounced`** (bind passes one argument).
+- **`pdfFocusLossMode`** for this path is **`Immediate`**: switching to another window clears blackout on the next **`MonitorPdfFocus`** tick (200 ms) with no debounce.
 - **`MonitorPdfFocus`** clears focus mode when the tracked window is gone or loses foreground according to mode; **`if (!g_PdfFocusTrackedHwnd) return`** avoids acting when tracking is cleared.
 
 ### 3. Automatic dwell watcher (20 seconds)
 
 Started once via **`FocusBlackoutWatcher_Start()`** from **`Shift keys.ahk`** immediately after **`#include Utils.ahk`**.
 
-- Timer:\*\* **`FocusBlackoutWatcher_Tick`** every **200 ms**.
+- **Timer:** **`FocusBlackoutWatcher_Tick`** every **200 ms**.
 - **Gate:** does nothing if **`MonitorGetCount() <= 1`** (no secondary monitors).
 - **Dwell:** same foreground HWND for **`FOCUS_BLACKOUT_DWELL_MS`** (20000 ms); crossing triggers **`FocusBlackoutWatcher_StartCountdown(hwnd)`**.
 - **Banner:** same **`StandardLoadingBar_ShowWithKeys`** contract as **`StudyTopic_StartBlackoutCountdown`** (3 s, **[N] Cancel**, progress + track monitor + preserve focus).

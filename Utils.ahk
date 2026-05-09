@@ -8188,7 +8188,7 @@ StudyTopic_StartBlackoutCountdown(targetHwnd) {
     StandardLoadingBar_Hide(0)
     Sleep 50
     keyCallbacks := Map("N", StudyTopic_CancelBlackoutCountdown)
-    timeoutCb := StudyTopic_ApplyBlackoutCountdownTimeout.Bind(targetHwnd)
+    timeoutCb := StudyTopic_ApplyBlackoutCountdownTimeout.Bind(targetHwnd, "Immediate")
     StandardLoadingBar_ShowWithKeys(
         "⏳ Blacking out secondary monitors in 3s",
         keyCallbacks,
