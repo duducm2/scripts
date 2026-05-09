@@ -44,14 +44,15 @@ AutoHotkey **does not share globals between processes**. Each running script tha
 
 Therefore:
 
-- **`FocusBlackoutWatcher_Start()`** runs only in **`Shift keys.ahk`** so the **dwell timer**, **`EnableFocusMode`** from the watcher, and **`#!+Y`** run in the **same process** and see the same state.
-- Secondary launcher scripts unregister the duplicate hotkey after including Utils:
+- **`FocusBlackoutWatcher_Start()`** runs only in **`Shift keys.ahk`** so the **dwell timer**, **`EnableFocusMode`** from the watcher, **`#!+Y`**, and **`#!+X`** (Study Topic / QuickLook blackout) run in the **same process** and see the same state.
+- Secondary launcher scripts unregister duplicate Utils hotkeys after including Utils:
 
-  `try Hotkey("#!+Y", "Off")`
+  `try Hotkey("#!+Y", "Off")`  
+  `try Hotkey("#!+X", "Off")`
 
   **Implemented in:** `AppLaunchers.ahk`, `Gemini.ahk`, `Outlook.ahk`, `Microsoft Teams.ahk`, `WindowManagement.ahk`.
 
-If **`#!+Y`** were left registered in a script that never called **`EnableFocusMode`** for the current blackout (for example **AppLaunchers**), that instance would see **empty** globals and could call **`EnableFocusMode()`** instead of **`DisableFocusMode()`**, breaking the toggle.
+If those hotkeys were left registered in a script that did not apply the current blackout (for example **AppLaunchers**), that instance would see **empty** globals: **`#!+Y`** could call **`EnableFocusMode()`** instead of **`DisableFocusMode()`**, and **`#!+X`** could start **`StudyTopic_StartBlackoutCountdown`** in the wrong process so **`#!+Y`** in **Shift keys** would still not clear overlays owned elsewhere.
 
 ## Restoration and cleanup
 

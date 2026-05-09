@@ -7,6 +7,7 @@
 #include %A_ScriptDir%\env.ahk
 #include %A_ScriptDir%\Utils.ahk
 try Hotkey("#!+Y", "Off")
+try Hotkey("#!+X", "Off")
 #include %A_ScriptDir%\aux\WMIPC.ahk
 
 #include %A_ScriptDir%\aux\GeminiIPC.ahk

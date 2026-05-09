@@ -24,9 +24,9 @@ AL_AppLaunchersExit(*) {
 #include UIA-v2\Lib\UIA_Browser.ahk
 #include %A_ScriptDir%\Utils.ahk
 
-; Focus mode (#!+Y) uses globals in this process only. AppLaunchers runs separately from Shift keys /
-; WindowManagement; unregister here so the script that applied blackout handles ToggleFocusMode (logs showed AppLaunchers firing with overlayLen 0).
+; Focus mode (#!+Y) and Study Topic (#!+X) need the same process as EnableFocusMode; unregister duplicate Utils hotkeys here.
 try Hotkey("#!+Y", "Off")
+try Hotkey("#!+X", "Off")
 
 ; Quick Update relaunch: volume is scheduled from Utils.ahk /Updated block after success overlay + chime.
 if !(A_Args.Length > 0 && A_Args[1] = "/Updated")
