@@ -10097,6 +10097,13 @@ FindAndActivateMiroWindow(url, titleKeywords) {
     }
 }
 
+; One-shot: close Utility Shortcuts if still open (no expansion/macro chosen in time)
+HotstringSelector_AutoCloseIfIdle() {
+    global g_HotstringSelectorActive
+    if (g_HotstringSelectorActive)
+        CleanupHotstringSelector()
+}
+
 ; =============================================================================
 ; CleanupHotstringSelector()
 ; =============================================================================
@@ -10122,6 +10129,7 @@ CleanupHotstringSelector() {
     global g_HS_SelectorOpenFile, g_HS_SelectorCloseRequestFile, g_HS_SelectorCloseCheckTimer
     global g_UtilitySelectorMode, g_UtilitySelectorCategory
 
+    SetTimer(HotstringSelector_AutoCloseIfIdle, 0)
     ; Disable active flag
     g_HotstringSelectorActive := false
 
@@ -11285,6 +11293,7 @@ UtilitySelector_RefreshUiAndHotkeys() {
     try g_HotstringSelectorGui.Show("NA w" . guiWidth . " h" . totalHeight . " x" . guiX . " y" . guiY)
 
     UtilitySelector_RebindHotkeys()
+    SetTimer(HotstringSelector_AutoCloseIfIdle, -3000)
 }
 
 ; Triggers for InitTechniquePromptHotstrings - used to group Utility Shortcuts Prompts submenu.
@@ -12014,6 +12023,7 @@ ShowHotstringSelector() {
 
     ; Bind top-level hotkeys (1-6) + Escape; category view binds are applied when user selects a category.
     UtilitySelector_RebindHotkeys()
+    SetTimer(HotstringSelector_AutoCloseIfIdle, -3000)
 }
 
 ; =============================================================================

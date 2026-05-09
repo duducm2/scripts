@@ -1136,11 +1136,19 @@ GetCategorizedProjects() {
 
     return categorized
 }
+; One-shot: close project selector if still open (no project/command chosen in time)
+ProjectSelector_AutoCloseIfIdle() {
+    global g_ProjectSelectorActive
+    if (g_ProjectSelectorActive)
+        CleanupProjectSelector()
+}
+
 ; Cleanup project selector: destroy GUI, disable hotkeys, reset state
 CleanupProjectSelector() {
     global g_ProjectSelectorActive, g_ProjectSelectorGui, g_ProjectHotkeyHandlers, g_SelectionModeActive,
         g_CopyFromGeminiModeActive, g_WM_SelectorOpenFile, g_WM_SelectorCloseRequestFile, g_WM_SelectorCloseCheckTimer
 
+    SetTimer(ProjectSelector_AutoCloseIfIdle, 0)
     g_ProjectSelectorActive := false
     SetTimer(WM_CheckSelectorCloseRequest, 0)
     g_WM_SelectorCloseCheckTimer := ""
@@ -2943,6 +2951,8 @@ ShowProjectSelector() {
         Hotkey("K", copyFromGeminiHandler, "On")
     } catch {
     }
+
+    SetTimer(ProjectSelector_AutoCloseIfIdle, -3000)
 }
 ; Ctrl+Alt+Win+0: Project Quick Selector (toggle: close if open, open if closed)
 ^!#0:: {
