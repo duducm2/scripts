@@ -408,7 +408,6 @@ YouTube_PlayWhenOpened(ytHwnd := 0) {
             WinWaitActive("ahk_id " hwnd, , 2)
             CenterMouse()
             YouTube_PlayWhenOpened(hwnd)
-            EnableFocusMode()
             StartYoutubeFocusMonitor(hwnd)
             g_YoutubeFocusSessionActive := true
             return
@@ -421,7 +420,6 @@ YouTube_PlayWhenOpened(ytHwnd := 0) {
             YouTube_PlayWhenOpened(WinExist("A"))
             hwnd := WinExist("A")
             if hwnd {
-                EnableFocusMode()
                 StartYoutubeFocusMonitor(hwnd)
                 g_YoutubeFocusSessionActive := true
             }

@@ -8372,7 +8372,7 @@ YouTube_ResumeSpotifyAfterYoutubeIfPending(restoreHwnd := 0) {
     }
 }
 
-; End YouTube focus session: pause YouTube (k), resume Spotify if pending, remove blackout, stop window monitor.
+; End YouTube focus session: pause YouTube (k), resume Spotify if pending, stop window monitor.
 YouTube_EndFocusSession() {
     global g_YoutubeFocusTrackedHwnd, g_YoutubeFocusSessionActive
     restoreHwnd := WinExist("A")
@@ -8385,7 +8385,6 @@ YouTube_EndFocusSession() {
         }
     }
     YouTube_ResumeSpotifyAfterYoutubeIfPending(restoreHwnd)
-    DisableFocusMode()
     StopYoutubeFocusMonitor()
     g_YoutubeFocusSessionActive := false
 }
