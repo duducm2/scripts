@@ -28,11 +28,6 @@ AL_AppLaunchersExit(*) {
 ; WindowManagement; unregister here so the script that applied blackout handles ToggleFocusMode (logs showed AppLaunchers firing with overlayLen 0).
 try Hotkey("#!+Y", "Off")
 
-; #region agent log
-try FileAppend '{"sessionId":"a99f35","hypothesisId":"FIX","location":"AppLaunchers.ahk","message":"post_unregister_#!+Y","timestamp":'
-    . A_TickCount . ',"data":{"expectHotkeyOff":1}}`n', A_ScriptDir "\debug-a99f35.log", "UTF-8"
-; #endregion
-
 ; Quick Update relaunch: volume is scheduled from Utils.ahk /Updated block after success overlay + chime.
 if !(A_Args.Length > 0 && A_Args[1] = "/Updated")
     ScheduleApplyScriptMasterVolumeTargetWithRetries()

@@ -8084,15 +8084,6 @@ global g_PdfFocusLossMode := "Immediate"      ; "Immediate" or "Debounced"
 global g_PdfFocusDebounceMs := 1200            ; Allow transient focus loss without un-blackouting
 global g_PdfFocusLostSinceTick := 0
 
-; #region agent log
-FocusMode_DebugNdjson(hypothesisId, location, message, dataJson := "{}") {
-    try FileAppend '{"sessionId":"a99f35","hypothesisId":"' . hypothesisId . '","location":"' . location .
-        '","message":"' .
-        message . '","timestamp":' . A_TickCount . ',"data":' . dataJson . '}`n', A_ScriptDir "\debug-a99f35.log",
-        "UTF-8"
-}
-; #endregion
-
 ; Monitor PDF (Peek) window focus and automatically disable focus mode when it loses focus
 MonitorPdfFocus() {
     global g_PdfFocusTrackedHwnd, g_PdfFocusLossMode, g_PdfFocusDebounceMs, g_PdfFocusLostSinceTick
@@ -8102,9 +8093,6 @@ MonitorPdfFocus() {
 
     ; Check if tracked window still exists
     if (g_PdfFocusTrackedHwnd && !WinExist("ahk_id " . g_PdfFocusTrackedHwnd)) {
-        ; #region agent log
-        FocusMode_DebugNdjson("E", "MonitorPdfFocus", "disable_dead_tracked", "{}")
-        ; #endregion
         DisableFocusMode()
         StopPdfFocusMonitor()
         return
@@ -8118,9 +8106,6 @@ MonitorPdfFocus() {
                 g_PdfFocusLostSinceTick := A_TickCount
 
             if ((A_TickCount - g_PdfFocusLostSinceTick) >= g_PdfFocusDebounceMs) {
-                ; #region agent log
-                FocusMode_DebugNdjson("E", "MonitorPdfFocus", "disable_debounced", "{}")
-                ; #endregion
                 DisableFocusMode()
                 StopPdfFocusMonitor()
             }
@@ -8128,9 +8113,6 @@ MonitorPdfFocus() {
         }
 
         ; Default: immediate cancellation (keeps behavior for Peek/PDF workflows)
-        ; #region agent log
-        FocusMode_DebugNdjson("E", "MonitorPdfFocus", "disable_focus_lost_immediate", "{}")
-        ; #endregion
         DisableFocusMode()
         StopPdfFocusMonitor()
     } else {
@@ -8197,10 +8179,6 @@ StudyTopic_ApplyBlackoutCountdownTimeout(targetHwnd, pdfFocusLossMode := "Deboun
         keepIdx := StudyTopic_GetBlackoutKeepMonitorIndex()
     EnableFocusMode(keepIdx)
     StartPdfFocusMonitor(targetHwnd, pdfFocusLossMode)
-    ; #region agent log
-    FocusMode_DebugNdjson("D", "StudyTopic_ApplyBlackoutCountdownTimeout", "after_apply",
-        '{"pdfMode":"' . pdfFocusLossMode . '","keepIdx":' . keepIdx . '}')
-    ; #endregion
 }
 
 StudyTopic_StartBlackoutCountdown(targetHwnd) {
@@ -12286,21 +12264,11 @@ EnableFocusMode(keepMonitorIndex := 0) {
     }
 
     g_FocusModeOn := true
-    ; #region agent log
-    FocusMode_DebugNdjson("E", "EnableFocusMode", "after_enable",
-        '{"activeMon":' . g_FocusModeActiveMonitor . ',"overlayCount":' . g_FocusModeOverlays.Length . '}')
-    ; #endregion
 }
 
 DisableFocusMode() {
     global g_FocusModeOn, g_FocusModeActiveMonitor, g_FocusModeOverlays, g_FocusModeTrackedWindow,
         g_FocusModeMonitorTimer
-
-    ; #region agent log
-    FocusMode_DebugNdjson("C", "DisableFocusMode", "entry",
-        '{"g_FocusModeOn":' . (g_FocusModeOn ? 1 : 0) . ',"overlayLen":' . (IsObject(g_FocusModeOverlays) ?
-            g_FocusModeOverlays.Length : -1) . '}')
-    ; #endregion
 
     ; Stop monitoring window focus changes
     StopFocusModeWindowMonitor()
@@ -12320,9 +12288,6 @@ DisableFocusMode() {
     g_FocusModeActiveMonitor := 0
     g_FocusModeTrackedWindow := 0
     g_FocusModeOn := false
-    ; #region agent log
-    FocusMode_DebugNdjson("C", "DisableFocusMode", "exit", "{}")
-    ; #endregion
 }
 
 ToggleFocusMode() {
@@ -12333,23 +12298,10 @@ ToggleFocusMode() {
     hasOverlayRefs := IsObject(g_FocusModeOverlays) && g_FocusModeOverlays.Length > 0
     actualState := g_FocusModeOn || hasOverlayRefs
 
-    ; #region agent log
-    FocusMode_DebugNdjson("A", "ToggleFocusMode", "state",
-        '{"g_FocusModeOn":' . (g_FocusModeOn ? 1 : 0) . ',"overlayLen":' . (IsObject(g_FocusModeOverlays) ?
-            g_FocusModeOverlays.Length : -1) . ',"actualState":' . (actualState ? 1 : 0) . '}')
-    ; #endregion
-
-    if (actualState) {
-        ; #region agent log
-        FocusMode_DebugNdjson("A", "ToggleFocusMode", "branch", '{"path":"disable"}')
-        ; #endregion
+    if (actualState)
         DisableFocusMode()
-    } else {
-        ; #region agent log
-        FocusMode_DebugNdjson("A", "ToggleFocusMode", "branch", '{"path":"enable"}')
-        ; #endregion
+    else
         EnableFocusMode()
-    }
 }
 
 ; Monitor window focus changes and automatically disable focus mode when active window changes
@@ -12402,9 +12354,6 @@ StopFocusModeWindowMonitor() {
 
 #!+Y::
 {
-    ; #region agent log
-    FocusMode_DebugNdjson("B", "hotkey #!+Y", "fired", '{"script":"' . StrReplace(A_ScriptName, "\", "\\") . '"}')
-    ; #endregion
     ToggleFocusMode()
 }
 
