@@ -3920,6 +3920,9 @@ global BANNER_ACCENT_SUCCESS := "27AE60"      ; Dark green: positive / success
 global BANNER_ACCENT_ERROR := "C0392B"        ; Red: negative / error
 global BANNER_ACCENT_INTERMEDIATE := "F1C40F" ; Yellow: loading, actionable, neutral
 global BANNER_ACCENT_INFO := "2980B9"         ; Blue: distinct from green/yellow for color vision (info / alternate mode)
+; Monitor blackout countdown (Study Topic / focus dwell): unmistakable vs generic loading banners
+global BANNER_BLACKOUT_PANEL := "4A148C"       ; Purple panel fill
+global BANNER_BLACKOUT_BORDER := "FF9800"    ; Orange border + progress strip
 global g_StandardLoadingBarGui := 0
 global g_StandardLoadingBarValue := 0
 global g_StandardLoadingBarIsKeysOverlay := false
@@ -4099,6 +4102,8 @@ StandardLoadingBar_Show(state := "Working...", barColor := BANNER_ACCENT_INTERME
     promptKeys := options && options.HasProp("promptKeys") ? options.promptKeys : ""
     trackActiveMonitor := options && options.HasProp("trackActiveMonitor") && options.trackActiveMonitor
     manualProgress := options && options.HasProp("manualProgress") && options.manualProgress
+    overlayBgColor := options && options.HasProp("overlayBgColor") && options.overlayBgColor != "" ? options.overlayBgColor :
+        "1E1E2E"
 
     if (centerOnHwnd) {
         workArea := GetWorkAreaForWindow_StandardBar(centerOnHwnd)
@@ -4115,7 +4120,7 @@ StandardLoadingBar_Show(state := "Working...", barColor := BANNER_ACCENT_INTERME
     monitorHeight := mb - mt
     barWidth := textWidth > 0 ? textWidth : Min(900, Max(360, Floor(monitorWidth * 0.6)))
     overlayGui := Gui("+AlwaysOnTop -Caption +ToolWindow -DPIScale")
-    overlayGui.BackColor := "1E1E2E"
+    overlayGui.BackColor := overlayBgColor
     overlayGui.MarginX := 16
     overlayGui.MarginY := 10
     overlayGui.SetFont("s" . fontSize . " cFFFFFF", "Segoe UI")
@@ -4413,15 +4418,18 @@ StandardLoadingBar_KeysEscapeDismiss(*) {
 ; trackActiveMonitor: when true, reposition the bar to follow the foreground window's monitor while visible (dictation/Gemini flows).
 ; showProgress: when true, show a single timed 0-100 progress fill while waiting for keys.
 ; preserveUserFocus: when true, keep the current active window focused (do not activate overlay GUI).
+; overlayBgColor: optional main banner panel color (default dark 1E1E2E); use for themed banners e.g. blackout countdown.
 StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwnd := 0, timeoutCallback := "", barColor :=
     BANNER_ACCENT_INTERMEDIATE, textWidth := 500, fontSize := 17, passiveBgColor := "", noBorder := false, promptKeys :=
-    "", trackActiveMonitor := false, showProgress := false, preserveUserFocus := false) {
+    "", trackActiveMonitor := false, showProgress := false, preserveUserFocus := false, overlayBgColor := "") {
     global g_StandardLoadingBarIsKeysOverlay, g_StandardLoadingBarKeysHotkeys, g_StandardLoadingBarKeysTimeoutTimer
     global g_StandardLoadingBarGui, g_StandardLoadingBarKeysEscapeUserCb, g_StandardLoadingBarKeysEscapeActive,
         g_StandardLoadingBarEscPollPrev, g_OnEscapePressed
     opts := { passive: !showProgress, centerOnHwnd: centerOnHwnd, textWidth: textWidth, fontSize: fontSize }
     if (showProgress)
         opts.manualProgress := true
+    if (overlayBgColor != "")
+        opts.overlayBgColor := overlayBgColor
     if (passiveBgColor != "")
         opts.passiveBgColor := passiveBgColor
     if (noBorder)
@@ -8195,15 +8203,16 @@ StudyTopic_StartBlackoutCountdown(targetHwnd) {
         STUDY_TOPIC_BLACKOUT_DELAY_MS,
         0,
         timeoutCb,
-        BANNER_ACCENT_INTERMEDIATE,
+        BANNER_BLACKOUT_BORDER,
         420,
         17,
-        "",
-        true,
+        BANNER_BLACKOUT_BORDER,
+        false,
         "[N] Cancel blackout",
         true,
         true,
-        true)
+        true,
+        BANNER_BLACKOUT_PANEL)
 }
 
 ; Focus dwell watcher: after continuous foreground on one window, offer same blackout banner as Study Topic (#!+X).
@@ -8244,15 +8253,16 @@ FocusBlackoutWatcher_StartCountdown(hwnd) {
         STUDY_TOPIC_BLACKOUT_DELAY_MS,
         0,
         timeoutCb,
-        BANNER_ACCENT_INTERMEDIATE,
+        BANNER_BLACKOUT_BORDER,
         420,
         17,
-        "",
-        true,
+        BANNER_BLACKOUT_BORDER,
+        false,
         "[N] Cancel blackout",
         true,
         true,
-        true)
+        true,
+        BANNER_BLACKOUT_PANEL)
 }
 
 FocusBlackoutWatcher_Tick() {
