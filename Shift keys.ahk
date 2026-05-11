@@ -4818,13 +4818,51 @@ Reminders_SelectItem(actionLabel, &items, remHwnd, maxItems := 35) {
 }
 
 Reminders_OpenContextMenuForItem(itemEl) {
-    try itemEl.SetFocus()
+    remHwnd := WinExist("A")
+    try Reminders_DebugLog("Reminders_OpenContextMenuForItem", "Start", Map(
+        "remHwnd", remHwnd,
+        "activeTitle", WinGetTitle("A"),
+        "activeClass", WinGetClass("A"),
+        "isActive", WinActive("ahk_id " remHwnd)
+    ), "DBG1", "pre-fix")
+    if remHwnd {
+        WinActivate("ahk_id " remHwnd)
+        WinWaitActive("ahk_id " remHwnd, , 1)
+        Sleep 80  ; Give time for activation to settle
+        try Reminders_DebugLog("Reminders_OpenContextMenuForItem", "After WinActivate", Map(
+            "remHwnd", remHwnd,
+            "activeTitle", WinGetTitle("A"),
+            "activeClass", WinGetClass("A"),
+            "isActive", WinActive("ahk_id " remHwnd)
+        ), "DBG2", "pre-fix")
+    }
+    setFocusResult := ""
+    try setFocusResult := itemEl.SetFocus()
+    focusedName := ""
+    try focusedName := itemEl.Name
+    try Reminders_DebugLog("Reminders_OpenContextMenuForItem", "After SetFocus", Map(
+        "setFocusResult", setFocusResult,
+        "focusedName", focusedName,
+        "activeTitle", WinGetTitle("A"),
+        "activeClass", WinGetClass("A"),
+        "isActive", WinActive("ahk_id " remHwnd)
+    ), "DBG3", "pre-fix")
     Sleep Reminders_DelayValue("context_focus_ms", 80)
     EnsureFocus()
+    try Reminders_DebugLog("Reminders_OpenContextMenuForItem", "After EnsureFocus", Map(
+        "activeTitle", WinGetTitle("A"),
+        "activeClass", WinGetClass("A"),
+        "isActive", WinActive("ahk_id " remHwnd)
+    ), "DBG4", "pre-fix")
     Sleep Reminders_DelayValue("focus_to_menu_ms", 25)  ; focus → menu open
     ; Apps/Menu key (keyboard-only)
     Send "{AppsKey}"
-    Sleep Reminders_DelayValue("menu_render_ms", 45)  ; context menu rendered before Home/scan (dismiss / snooze / join online)
+    try Reminders_DebugLog("Reminders_OpenContextMenuForItem", "After AppsKey", Map(
+        "activeTitle", WinGetTitle("A"),
+        "activeClass", WinGetClass("A"),
+        "isActive", WinActive("ahk_id " remHwnd)
+    ), "DBG5", "pre-fix")
+    Sleep Reminders_DelayValue("menu_render_ms", 70)  ; context menu rendered before Home/scan (dismiss / snooze / join online)
 }
 
 Reminders_MenuGetFocusedName() {
