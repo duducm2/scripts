@@ -2523,7 +2523,7 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
         mh := mb - mt
         cx := ml + (mw - gw) // 2
         cy := mt + (mh - gh) // 2
-        g_CursorTransferSelectorGui.Show("x" . cx . " y" . cy)
+        g_CursorTransferSelectorGui.Show("x" . cx . " y" . cy . " NA")
     } catch as err {
         ShowCenteredOverlay_Utils("❌ Selector error", 2000, BANNER_ACCENT_ERROR)
         return 0
@@ -2596,7 +2596,7 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
                         g_CursorTransferSelectorGui.GetPos(&gxOld, &gyOld, &gw, &gh)
                         cx := ml + (mw - gw) // 2
                         cy := mt + (mh - gh) // 2
-                        g_CursorTransferSelectorGui.Show("x" . cx . " y" . cy)
+                        g_CursorTransferSelectorGui.Show("x" . cx . " y" . cy . " NA")
                     } catch {
                     }
                 }
@@ -6648,7 +6648,7 @@ DesktopToRecycle_Trigger() {
     keyCallbacks := Map("Y", DesktopToRecycle_OnConfirm, "N", DesktopToRecycle_OnCancel)
     ; Center on active monitor (centerOnHwnd := 0), use standard intermediate accent with border.
     StandardLoadingBar_ShowWithKeys(state, keyCallbacks, 4000, 0, DesktopToRecycle_OnTimeout,
-        BANNER_ACCENT_INTERMEDIATE, 0, 17, "", false, "[Y] Yes  [N] Cancel")
+        BANNER_ACCENT_INTERMEDIATE, 0, 17, "", false, "[Y] Yes  [N] Cancel", false, false, true)
 }
 
 ; =============================================================================
