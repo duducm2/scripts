@@ -6648,7 +6648,7 @@ DesktopToRecycle_Trigger() {
     keyCallbacks := Map("Y", DesktopToRecycle_OnConfirm, "N", DesktopToRecycle_OnCancel)
     ; Center on active monitor (centerOnHwnd := 0), use standard intermediate accent with border.
     StandardLoadingBar_ShowWithKeys(state, keyCallbacks, 4000, 0, DesktopToRecycle_OnTimeout,
-        BANNER_ACCENT_INTERMEDIATE, 0, 17, "", false, "[Y] Yes  [N] Cancel", false, false, true)
+        BANNER_ACCENT_INTERMEDIATE, 0, 17, "", false, "[Y] Yes  [N] Cancel", false, false, false, true)
 }
 
 ; =============================================================================
