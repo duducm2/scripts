@@ -8090,6 +8090,7 @@ global g_StudyTopicSelectorActive := false
 global g_StudyTopicSelectorPhase := ""           ; "category" | "topic"
 global g_StudyTopicSelectorCategory := ""        ; "mnemonics" | "plans"
 global g_StudyTopicSelectorLastForegroundMonitorIdx := 0   ; for trackActiveMonitor-style follow (standard_information_display.md)
+global g_StudyTopicEscPollPrev := false   ; edge-detect Esc for StudyTopicSelector_EscapePoll (parity with OutlookCopilotSelector)
 global STUDY_TOPIC_BLACKOUT_DELAY_MS := 3000
 
 ; PDF focus monitoring for automatic blackout cancellation (Win+Alt+Shift+X)
@@ -8200,7 +8201,6 @@ StudyTopic_ApplyBlackoutCountdownTimeout(targetHwnd, pdfFocusLossMode := "Deboun
     EnableFocusMode(keepIdx)
     StartPdfFocusMonitor(targetHwnd, pdfFocusLossMode)
 }
-
 
 ; --- Blackout suppression logic ---
 global g_BlackoutSuppressedUntil := 0
@@ -8485,47 +8485,58 @@ StudyTopic_OpenRepoRelativeMarkdown(relPath, scrollToEnd := true) {
     return true
 }
 
-; Same work-area + foreground monitor resolution as StandardLoadingBar (GetActiveMonitorWorkArea_StandardBar).
-StudyTopicSelector_PositionGuiCentered(gui) {
-    GetActiveMonitorWorkArea_StandardBar(&monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
-    monitorWidth := monitorRight - monitorLeft
-    monitorHeight := monitorBottom - monitorTop
+; Center in work-area rect using Round + clamp (horizontal matches StandardLoadingBar_RepositionToActiveMonitor; vertical added for true center).
+StudyTopicSelector_ComputeCenterTopLeftInWorkArea(ml, mt, mr, mb, gw, gh, &cx, &cy) {
+    monitorWidth := mr - ml
+    monitorHeight := mb - mt
+    cx := Round(ml + (monitorWidth - gw) / 2)
+    if (cx < ml)
+        cx := ml
+    if (cx + gw > mr)
+        cx := mr - gw
+    cy := Round(mt + (monitorHeight - gh) / 2)
+    if (cy < mt)
+        cy := mt
+    if (cy + gh > mb)
+        cy := mb - gh
+}
+
+; Initial placement: GetActiveMonitorWorkArea_StandardBar (same source as StandardLoadingBar / standard_information_display.md); Outlook Copilot uses an equivalent MonitorGetWorkArea loop in Shift keys.ahk.
+StudyTopicSelector_PositionGuiLikeOutlook(gui) {
+    GetActiveMonitorWorkArea_StandardBar(&ml, &mt, &mr, &mb)
     gui.Show("AutoSize Hide")
-    gui.GetPos(&gx, &gy, &gw, &gh)
-    cx := monitorLeft + (monitorWidth - gw) // 2
-    cy := monitorTop + (monitorHeight - gh) // 2
-    gui.Show("x" . cx . " y" . cy . " NA")
-    try {
-        hwnd := gui.Hwnd
-        if (hwnd)
-            DllCall("SetWindowPos", "Ptr", hwnd, "Ptr", 0, "Int", cx, "Int", cy, "Int", 0, "Int", 0, "UInt", 0x0015)
-    } catch {
-    }
+    gui.GetPos(, , &gw, &gh)
+    StudyTopicSelector_ComputeCenterTopLeftInWorkArea(ml, mt, mr, mb, gw, gh, &cx, &cy)
+    ; Avoid "NA": if focus stays in QuickLook, Esc is consumed there first (ShowOutlookCopilotSelector comment).
+    gui.Show("x" . cx . " y" . cy)
+    try WinActivate(gui.Hwnd)
 }
 
 StudyTopicSelector_StopActiveMonitorTracking() {
     try SetTimer(StudyTopicSelector_TrackActiveMonitorTick, 0)
 }
 
-StudyTopicSelector_RepositionToActiveMonitor() {
-    global g_StudyTopicSelectorGui
+; forMonitorIdx: 1-based index from StudyTopicSelector_TrackActiveMonitorTick (same as GetMonitorIndexForForeground_StandardBar).
+; Use Show("AutoSize Hide") then Show("x y") like StudyTopicSelector_PositionGuiLikeOutlook — Move() alone can mis-center across mixed-DPI monitors.
+StudyTopicSelector_RepositionToActiveMonitor(forMonitorIdx := 0) {
+    global g_StudyTopicSelectorGui, g_StudyTopicSelectorActive
     if (!IsObject(g_StudyTopicSelectorGui) || !g_StudyTopicSelectorGui.Hwnd)
         return
-    GetActiveMonitorWorkArea_StandardBar(&ml, &mt, &mr, &mb)
-    monitorWidth := mr - ml
-    monitorHeight := mb - mt
+    idx := forMonitorIdx
+    if (idx < 1 || idx > MonitorGetCount())
+        idx := GetMonitorIndexForForeground_StandardBar()
+    MonitorGetWorkArea(idx, &ml, &mt, &mr, &mb)
     try {
+        g_StudyTopicSelectorGui.Show("AutoSize Hide")
         g_StudyTopicSelectorGui.GetPos(, , &gw, &gh)
     } catch {
         return
     }
-    cx := ml + (monitorWidth - gw) // 2
-    cy := mt + (monitorHeight - gh) // 2
+    StudyTopicSelector_ComputeCenterTopLeftInWorkArea(ml, mt, mr, mb, gw, gh, &cx, &cy)
     try {
-        g_StudyTopicSelectorGui.Move(cx, cy)
-        hwnd := g_StudyTopicSelectorGui.Hwnd
-        if (hwnd)
-            DllCall("SetWindowPos", "Ptr", hwnd, "Ptr", 0, "Int", cx, "Int", cy, "Int", 0, "Int", 0, "UInt", 0x0015)
+        g_StudyTopicSelectorGui.Show("x" . cx . " y" . cy)
+        if (g_StudyTopicSelectorActive)
+            try WinActivate(g_StudyTopicSelectorGui.Hwnd)
     } catch {
     }
 }
@@ -8533,14 +8544,14 @@ StudyTopicSelector_RepositionToActiveMonitor() {
 ; Follow foreground window's monitor while the selector is open (parity with StandardLoadingBar trackActiveMonitor).
 StudyTopicSelector_TrackActiveMonitorTick() {
     global g_StudyTopicSelectorGui, g_StudyTopicSelectorActive, g_StudyTopicSelectorLastForegroundMonitorIdx
-    if (!g_StudyTopicSelectorActive || !IsObject(g_StudyTopicSelectorGui)) {
+    if (!g_StudyTopicSelectorActive || !IsObject(g_StudyTopicSelectorGui) || !g_StudyTopicSelectorGui.Hwnd) {
         StudyTopicSelector_StopActiveMonitorTracking()
         return
     }
     newIdx := GetMonitorIndexForForeground_StandardBar()
     if (newIdx != g_StudyTopicSelectorLastForegroundMonitorIdx) {
+        StudyTopicSelector_RepositionToActiveMonitor(newIdx)
         g_StudyTopicSelectorLastForegroundMonitorIdx := newIdx
-        StudyTopicSelector_RepositionToActiveMonitor()
     }
 }
 
@@ -8556,6 +8567,70 @@ StudyTopicSelector_UnbindDigitHotkeys() {
     }
 }
 
+; Poll Esc — fallback when $*Escape / g_OnEscapePressed miss (OutlookCopilotSelector_EscapePoll).
+StudyTopicSelector_EscapePoll() {
+    global g_StudyTopicSelectorActive, g_StudyTopicEscPollPrev
+    if (!g_StudyTopicSelectorActive) {
+        SetTimer(StudyTopicSelector_EscapePoll, 0)
+        return
+    }
+    escSync := GetKeyState("Escape", "P")
+    escAsync := (DllCall("user32\GetAsyncKeyState", "int", 0x1B) & 0x8000) != 0
+    escDown := escSync || escAsync
+    if (escDown) {
+        if (!g_StudyTopicEscPollPrev) {
+            g_StudyTopicEscPollPrev := true
+            StudyTopicSelector_Cancel()
+        }
+    } else {
+        g_StudyTopicEscPollPrev := false
+    }
+}
+
+StudyTopicSelector_EscapeFromHotkey(*) {
+    StudyTopicSelector_Cancel()
+}
+
+StudyTopicSelector_GlobalEscapeCallback(*) {
+    StudyTopicSelector_Cancel()
+}
+
+StudyTopicSelector_GuiEscape(*) {
+    StudyTopicSelector_Cancel()
+}
+
+; Same escape registration order as ShowOutlookCopilotSelector (after Gui.OnEvent registered at build time).
+StudyTopicSelector_BindRobustEscape() {
+    global g_StudyTopicSelectorGui, g_OnEscapePressed, g_StudyTopicEscPollPrev
+    SetTimer(StudyTopicSelector_EscapePoll, 0)
+    if (!IsObject(g_StudyTopicSelectorGui) || !g_StudyTopicSelectorGui.Hwnd)
+        return
+    Hotkey("$*Escape", StudyTopicSelector_EscapeFromHotkey, "On")
+    global g_OnEscapePressed
+    g_OnEscapePressed := StudyTopicSelector_GlobalEscapeCallback
+    Utils_EnsureGlobalEscapeHotkey()
+    g_StudyTopicEscPollPrev := false
+    SetTimer(StudyTopicSelector_EscapePoll, 50)
+}
+
+StudyTopicSelector_UnbindRobustEscape() {
+    global g_OnEscapePressed, g_StudyTopicEscPollPrev
+    SetTimer(StudyTopicSelector_EscapePoll, 0)
+    g_StudyTopicEscPollPrev := false
+    try Hotkey("Escape", StudyTopicSelector_Cancel, "Off")
+    catch {
+    }
+    try Hotkey("*Escape", StudyTopicSelector_Cancel, "Off")
+    catch {
+    }
+    try Hotkey("$*Escape", StudyTopicSelector_EscapeFromHotkey, "Off")
+    catch {
+    }
+    global g_OnEscapePressed
+    g_OnEscapePressed := ""
+    Utils_EnsureGlobalEscapeHotkey()
+}
+
 ; Category menu (Technique / Mnemonics / Plans). Bind Escape + Backspace to cancel; Backspace on topic menu goes back via StudyTopicSelector_BackFromTopic.
 StudyTopicSelector_ShowCategoryPhase() {
     global g_StudyTopicSelectorGui, g_StudyTopics
@@ -8565,7 +8640,7 @@ StudyTopicSelector_ShowCategoryPhase() {
     }
     g_StudyTopicSelectorGui := false
 
-    g_StudyTopicSelectorGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner")
+    g_StudyTopicSelectorGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner -DPIScale")
     g_StudyTopicSelectorGui.BackColor := "1E1E2E"
     g_StudyTopicSelectorGui.MarginX := 20
     g_StudyTopicSelectorGui.MarginY := 15
@@ -8583,28 +8658,50 @@ StudyTopicSelector_ShowCategoryPhase() {
     g_StudyTopicSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
     g_StudyTopicSelectorGui.Add("Text", "w300 Center", "Press 1-4 | Backspace/Esc to cancel")
 
-    StudyTopicSelector_PositionGuiCentered(g_StudyTopicSelectorGui)
+    try {
+        g_StudyTopicSelectorGui.OnEvent("Escape", StudyTopicSelector_GuiEscape)
+    } catch {
+    }
+    StudyTopicSelector_PositionGuiLikeOutlook(g_StudyTopicSelectorGui)
+    global g_StudyTopicSelectorActive
+    g_StudyTopicSelectorActive := true
 
     Hotkey("1", StudyTopicSelector_SelectTechnique, "On")
     Hotkey("2", StudyTopicSelector_SelectMnemonics, "On")
     Hotkey("3", StudyTopicSelector_SelectPlans, "On")
     Hotkey("4", StudyTopicSelector_ManageLinks, "On")
-    Hotkey("Escape", StudyTopicSelector_Cancel, "On")
     Hotkey("Backspace", StudyTopicSelector_Cancel, "On")
+    StudyTopicSelector_BindRobustEscape()
 
 }
 
+; After closing Manage Links GUI (Esc) or finishing Open Link from submenu — main category Gui still exists.
+StudyTopicSelector_ResumeSelectorEscapeAfterLinks(*) {
+    global g_StudyTopicSelectorActive, g_StudyTopicSelectorGui
+    if (g_StudyTopicSelectorActive && IsObject(g_StudyTopicSelectorGui) && g_StudyTopicSelectorGui.Hwnd)
+        StudyTopicSelector_BindRobustEscape()
+}
+
+StudyTopicSelector_ManageLinksEsc(*) {
+    global g_StudyLinksGui
+    if (IsObject(g_StudyLinksGui) && g_StudyLinksGui.Hwnd) {
+        try g_StudyLinksGui.Destroy()
+    }
+    g_StudyLinksGui := false
+    StudyTopicSelector_ResumeSelectorEscapeAfterLinks()
+}
 
 ; Persistent global GUI for link management submenu
 global g_StudyLinksGui := false
 StudyTopicSelector_ManageLinks(*) {
     global g_StudyLinksGui, g_StudyTopics
+    StudyTopicSelector_UnbindRobustEscape()
     if (IsObject(g_StudyLinksGui) && g_StudyLinksGui.Hwnd) {
         try g_StudyLinksGui.Destroy()
     }
-    g_StudyLinksGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner")
+    g_StudyLinksGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner -DPIScale")
     ; Unbind previous hotkeys to avoid conflicts
-    Loop 9 {
+    loop 9 {
         try Hotkey(String(A_Index), "Off")
     }
     try Hotkey("Escape", "Off")
@@ -8627,17 +8724,17 @@ StudyTopicSelector_ManageLinks(*) {
     }
     g_StudyLinksGui.Add("Text", "w400 h1 Background45475A y+10")
     g_StudyLinksGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_StudyLinksGui.Add("Text", "w400 Center", "Press 1-" (idx-1) " to select study | Esc to cancel")
-    StudyTopicSelector_PositionGuiCentered(g_StudyLinksGui)
+    g_StudyLinksGui.Add("Text", "w400 Center", "Press 1-" (idx - 1) " to select study | Esc to cancel")
+    StudyTopicSelector_PositionGuiLikeOutlook(g_StudyLinksGui)
     ; Bind hotkeys for each study
     for i, num in studyKeys {
         Hotkey(String(i), MakeStudyLinkHandler(num), "On")
     }
 
-MakeStudyLinkHandler(num) {
-    return (p*) => StudyLink_StudySubmenu(g_StudyLinksGui, g_StudyTopics[num], num)
-}
-    Hotkey("Escape", (*) => g_StudyLinksGui.Destroy(), "On")
+    MakeStudyLinkHandler(num) {
+        return (p*) => StudyLink_StudySubmenu(g_StudyLinksGui, g_StudyTopics[num], num)
+    }
+    Hotkey("Escape", StudyTopicSelector_ManageLinksEsc, "On")
     g_StudyLinksGui.Show()
 }
 
@@ -8649,7 +8746,7 @@ StudyLink_StudySubmenu(parentGui, topic, studyKey) {
         try g_StudyLinkSubmenuGui.Destroy()
         g_StudyLinkSubmenuGui := ""
     }
-    g_StudyLinkSubmenuGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner")
+    g_StudyLinkSubmenuGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner -DPIScale")
     g_StudyLinkSubmenuGui.BackColor := "1E1E2E"
     g_StudyLinkSubmenuGui.MarginX := 20
     g_StudyLinkSubmenuGui.MarginY := 15
@@ -8664,8 +8761,10 @@ StudyLink_StudySubmenu(parentGui, topic, studyKey) {
     g_StudyLinkSubmenuGui.Add("Text", "w400 h1 Background45475A y+10")
     g_StudyLinkSubmenuGui.SetFont("s9 c6C7086", "Segoe UI")
     g_StudyLinkSubmenuGui.Add("Text", "w400 Center", "Press 1-2 | Esc to go back")
-    StudyTopicSelector_PositionGuiCentered(g_StudyLinkSubmenuGui)
-    Hotkey("1", (*) => (StudyLink_Open(studyKey), g_StudyLinkSubmenuGui.Destroy()), "On")
+    StudyTopicSelector_PositionGuiLikeOutlook(g_StudyLinkSubmenuGui)
+    Hotkey("1", (*) => (StudyLink_Open(studyKey), g_StudyLinkSubmenuGui.Destroy(),
+    StudyTopicSelector_ResumeSelectorEscapeAfterLinks()),
+    "On")
     Hotkey("2", (*) => (g_StudyLinkSubmenuGui.Destroy(), StudyLink_DefineLink(topic, studyKey)), "On")
     Hotkey("Escape", (*) => (g_StudyLinkSubmenuGui.Destroy(), StudyTopicSelector_ManageLinks()), "On")
     g_StudyLinkSubmenuGui.Show()
@@ -8683,7 +8782,7 @@ StudyLink_DefineLink(topic, studyKey) {
 
 ShowStudyTopicSelector() {
     global g_StudyTopicSelectorGui, g_StudyTopicSelectorActive, g_StudyTopics, g_StudyTopicSelectorPhase,
-        g_StudyTopicSelectorCategory
+        g_StudyTopicSelectorCategory, g_StudyTopicSelectorLastForegroundMonitorIdx
 
     if (g_StudyTopicSelectorActive)
         return
@@ -8693,7 +8792,6 @@ ShowStudyTopicSelector() {
 
     StudyTopicSelector_ShowCategoryPhase()
 
-    g_StudyTopicSelectorActive := true
     StudyTopicSelector_StopActiveMonitorTracking()
     g_StudyTopicSelectorLastForegroundMonitorIdx := GetMonitorIndexForForeground_StandardBar()
     SetTimer(StudyTopicSelector_TrackActiveMonitorTick, 115)
@@ -8701,7 +8799,7 @@ ShowStudyTopicSelector() {
 
 StudyTopicSelector_ShowTopicPhase() {
     global g_StudyTopicSelectorGui, g_StudyTopicSelectorActive, g_StudyTopics, g_StudyTopicSelectorPhase,
-        g_StudyTopicSelectorCategory
+        g_StudyTopicSelectorCategory, g_StudyTopicSelectorLastForegroundMonitorIdx
 
     if (!g_StudyTopicSelectorActive || g_StudyTopicSelectorPhase != "category")
         return
@@ -8715,7 +8813,7 @@ StudyTopicSelector_ShowTopicPhase() {
     }
     g_StudyTopicSelectorGui := false
 
-    g_StudyTopicSelectorGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner")
+    g_StudyTopicSelectorGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner -DPIScale")
     g_StudyTopicSelectorGui.BackColor := "1E1E2E"
     g_StudyTopicSelectorGui.MarginX := 20
     g_StudyTopicSelectorGui.MarginY := 15
@@ -8738,7 +8836,11 @@ StudyTopicSelector_ShowTopicPhase() {
         "Press 0-6 | Backspace back | Esc cancel"
     g_StudyTopicSelectorGui.Add("Text", "w300 Center", footerHint)
 
-    StudyTopicSelector_PositionGuiCentered(g_StudyTopicSelectorGui)
+    try {
+        g_StudyTopicSelectorGui.OnEvent("Escape", StudyTopicSelector_GuiEscape)
+    } catch {
+    }
+    StudyTopicSelector_PositionGuiLikeOutlook(g_StudyTopicSelectorGui)
     g_StudyTopicSelectorLastForegroundMonitorIdx := GetMonitorIndexForForeground_StandardBar()
 
     g_StudyTopicSelectorPhase := "topic"
@@ -8759,6 +8861,7 @@ StudyTopicSelector_ShowTopicPhase() {
         Hotkey("6", StudyTopicSelector_HandleKey, "On")
     }
     Hotkey("Backspace", StudyTopicSelector_BackFromTopic, "On")
+    StudyTopicSelector_BindRobustEscape()
 }
 
 StudyTopicSelector_BackFromTopic(*) {
@@ -8824,11 +8927,14 @@ StudyTopicSelector_Cancel(*) {
     StudyTopicSelector_Close()
 }
 
+; Tear-down order aligned with OutlookCopilotSelector_Close (Shift keys.ahk).
 StudyTopicSelector_Close() {
-    global g_StudyTopicSelectorGui, g_StudyTopicSelectorActive, g_StudyTopicSelectorPhase, g_StudyTopicSelectorCategory
+    global g_StudyTopicSelectorGui, g_StudyTopicSelectorActive, g_StudyTopicSelectorPhase, g_StudyTopicSelectorCategory,
+        g_StudyTopicSelectorLastForegroundMonitorIdx
 
     if (!g_StudyTopicSelectorActive)
         return
+    StudyTopicSelector_UnbindRobustEscape()
     g_StudyTopicSelectorActive := false
     g_StudyTopicSelectorPhase := ""
     g_StudyTopicSelectorCategory := ""
@@ -8838,11 +8944,14 @@ StudyTopicSelector_Close() {
 
     StudyTopicSelector_UnbindCategoryHotkeys()
     StudyTopicSelector_UnbindDigitHotkeys()
-    try Hotkey("Escape", StudyTopicSelector_Cancel, "Off")
     try Hotkey("Backspace", "Off")
+    catch {
+    }
     Utils_EnsureGlobalEscapeHotkey()
     if (IsObject(g_StudyTopicSelectorGui) && g_StudyTopicSelectorGui.Hwnd) {
         try g_StudyTopicSelectorGui.Destroy()
+        catch {
+        }
     }
     g_StudyTopicSelectorGui := false
 }

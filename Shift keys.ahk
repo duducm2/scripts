@@ -33,7 +33,6 @@ SetTimer(() => ApplyScriptMasterVolumeTarget(), -3500)
 #include %A_ScriptDir%\aux\ShiftKeysIPC.ahk
 #include %A_ScriptDir%\CheatSheetRich.ahk
 
-
 ; --- Global Variables ---
 global DEBUG_LOG_PATH := A_ScriptDir "\.cursor\debug.log"
 ; Phase 5: Gate debug I/O; set to true only when diagnosing (avoids file I/O in hot paths).
