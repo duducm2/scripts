@@ -33,10 +33,25 @@ SetTimer(() => ApplyScriptMasterVolumeTarget(), -3500)
 #include %A_ScriptDir%\aux\ShiftKeysIPC.ahk
 #include %A_ScriptDir%\CheatSheetRich.ahk
 
+
 ; --- Global Variables ---
 global DEBUG_LOG_PATH := A_ScriptDir "\.cursor\debug.log"
 ; Phase 5: Gate debug I/O; set to true only when diagnosing (avoids file I/O in hot paths).
 global DEBUG_SHIFTKEYS := false
+global g_BlackoutSuppressedUntil
+
+; --- Blackout Banner Suppression Integration ---
+IsBlackoutSuppressed() {
+    global g_BlackoutSuppressedUntil
+    return (g_BlackoutSuppressedUntil && A_TickCount < g_BlackoutSuppressedUntil)
+}
+
+DisableBlackout5Min(*) {
+    global g_BlackoutSuppressedUntil
+    g_BlackoutSuppressedUntil := A_TickCount + 5 * 60 * 1000  ; 5 minutes
+    try StandardLoadingBar_CloseKeysOverlay()
+    try StandardLoadingBar_Hide(0)
+}
 
 ; Debug mode agent logging (runtime evidence for this session only)
 ; (disabled) agent log debug-31b036
@@ -4656,20 +4671,24 @@ Reminders_SelectItem(actionLabel, &items, remHwnd, maxItems := 35) {
 
     StandardLoadingBar_CloseKeysOverlay()
     ShowModal() {
-        StandardLoadingBar_ShowWithKeys(
-            msg,
-            keyCallbacks,
-            45000,
-            0,
-            Reminders_PickTimeout,
-            "1E1E2E",
-            760,
-            14,
-            BANNER_ACCENT_INTERMEDIATE,
-            false,
-            "[1-9/A-Z] Select  [Esc] Cancel",
-            true
-        )
+        if (!IsBlackoutSuppressed()) {
+            if (IsObject(keyCallbacks))
+                keyCallbacks["D"] := DisableBlackout5Min
+            StandardLoadingBar_ShowWithKeys(
+                msg,
+                keyCallbacks,
+                45000,
+                0,
+                Reminders_PickTimeout,
+                "1E1E2E",
+                760,
+                14,
+                BANNER_ACCENT_INTERMEDIATE,
+                false,
+                "[1-9/A-Z] Select  [Esc] Cancel",
+                true
+            )
+        }
     }
     lastSig := Reminders_ItemsListSignature(items, maxItems)
     ShowModal()
