@@ -8522,13 +8522,20 @@ StudyTopicSelector_UnbindRobustEscape() {
     Utils_EnsureGlobalEscapeHotkey()
 }
 
+; Study material (`#!+x`): Gui.Destroy() throws if the window never existed or was already destroyed — swallow and continue.
+StudyTopicSelector_SafeDestroyGui(gui) {
+    if (!IsObject(gui))
+        return
+    try gui.Destroy()
+    catch {
+    }
+}
+
 ; Category menu (Technique README / Mnemonics / Plans). Bind Escape + Backspace to cancel; Backspace on topic menu goes back via StudyTopicSelector_BackFromTopic.
 StudyTopicSelector_ShowCategoryPhase() {
     global g_StudyTopicSelectorGui, g_StudyTopics
 
-    if (IsObject(g_StudyTopicSelectorGui) && g_StudyTopicSelectorGui.Hwnd) {
-        try g_StudyTopicSelectorGui.Destroy()
-    }
+    StudyTopicSelector_SafeDestroyGui(g_StudyTopicSelectorGui)
     g_StudyTopicSelectorGui := false
 
     g_StudyTopicSelectorGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner -DPIScale")
@@ -8575,9 +8582,7 @@ StudyTopicSelector_ResumeSelectorEscapeAfterLinks(*) {
 
 StudyTopicSelector_ManageLinksEsc(*) {
     global g_StudyLinksGui
-    if (IsObject(g_StudyLinksGui) && g_StudyLinksGui.Hwnd) {
-        try g_StudyLinksGui.Destroy()
-    }
+    StudyTopicSelector_SafeDestroyGui(g_StudyLinksGui)
     g_StudyLinksGui := false
     StudyTopicSelector_ResumeSelectorEscapeAfterLinks()
 }
@@ -8587,9 +8592,7 @@ global g_StudyLinksGui := false
 StudyTopicSelector_ManageLinks(*) {
     global g_StudyLinksGui, g_StudyTopics
     StudyTopicSelector_UnbindRobustEscape()
-    if (IsObject(g_StudyLinksGui) && g_StudyLinksGui.Hwnd) {
-        try g_StudyLinksGui.Destroy()
-    }
+    StudyTopicSelector_SafeDestroyGui(g_StudyLinksGui)
     g_StudyLinksGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner -DPIScale")
     ; Unbind previous hotkeys to avoid conflicts
     loop 9 {
@@ -8629,14 +8632,52 @@ StudyTopicSelector_ManageLinks(*) {
     g_StudyLinksGui.Show()
 }
 
+StudyLink_SubmenuOnOpen(sKey, *) {
+    global g_StudyLinkSubmenuGui
+    StudyLink_Open(sKey)
+    StudyTopicSelector_SafeDestroyGui(g_StudyLinkSubmenuGui)
+    g_StudyLinkSubmenuGui := ""
+    try Hotkey("1", "Off")
+    try Hotkey("2", "Off")
+    try Hotkey("Escape", "Off")
+    StudyTopicSelector_ResumeSelectorEscapeAfterLinks()
+}
+
+StudyLink_SubmenuOnDefine(tp, sKey, *) {
+    global g_StudyLinkSubmenuGui
+    StudyTopicSelector_SafeDestroyGui(g_StudyLinkSubmenuGui)
+    g_StudyLinkSubmenuGui := ""
+    try Hotkey("1", "Off")
+    try Hotkey("2", "Off")
+    try Hotkey("Escape", "Off")
+    StudyLink_DefineLink(tp, sKey)
+}
+
+StudyLink_SubmenuOnEsc(*) {
+    global g_StudyLinkSubmenuGui
+    StudyTopicSelector_SafeDestroyGui(g_StudyLinkSubmenuGui)
+    g_StudyLinkSubmenuGui := ""
+    try Hotkey("1", "Off")
+    try Hotkey("2", "Off")
+    try Hotkey("Escape", "Off")
+    StudyTopicSelector_ManageLinks()
+}
+
 ; Submenu for a single study: open or define link
 StudyLink_StudySubmenu(parentGui, topic, studyKey) {
     global g_StudyLinkSubmenuGui
-    parentGui.Destroy()
-    if (IsObject(g_StudyLinkSubmenuGui) && g_StudyLinkSubmenuGui.Hwnd) {
-        try g_StudyLinkSubmenuGui.Destroy()
-        g_StudyLinkSubmenuGui := ""
+    try parentGui.Destroy()
+    catch {
+        try ShowCenteredOverlay_Utils("⚠ Could not close link list window (continuing).", 2000,
+            BANNER_ACCENT_INTERMEDIATE)
+        catch {
+        }
     }
+    try Hotkey("1", "Off")
+    try Hotkey("2", "Off")
+    try Hotkey("Escape", "Off")
+    StudyTopicSelector_SafeDestroyGui(g_StudyLinkSubmenuGui)
+    g_StudyLinkSubmenuGui := ""
     g_StudyLinkSubmenuGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner -DPIScale")
     g_StudyLinkSubmenuGui.BackColor := "1E1E2E"
     g_StudyLinkSubmenuGui.MarginX := 20
@@ -8653,11 +8694,9 @@ StudyLink_StudySubmenu(parentGui, topic, studyKey) {
     g_StudyLinkSubmenuGui.SetFont("s9 c6C7086", "Segoe UI")
     g_StudyLinkSubmenuGui.Add("Text", "w400 Center", "Press 1-2 | Esc to go back")
     StudyTopicSelector_PositionGuiLikeOutlook(g_StudyLinkSubmenuGui)
-    Hotkey("1", (*) => (StudyLink_Open(studyKey), g_StudyLinkSubmenuGui.Destroy(),
-    StudyTopicSelector_ResumeSelectorEscapeAfterLinks()),
-    "On")
-    Hotkey("2", (*) => (g_StudyLinkSubmenuGui.Destroy(), StudyLink_DefineLink(topic, studyKey)), "On")
-    Hotkey("Escape", (*) => (g_StudyLinkSubmenuGui.Destroy(), StudyTopicSelector_ManageLinks()), "On")
+    Hotkey("1", StudyLink_SubmenuOnOpen.Bind(studyKey), "On")
+    Hotkey("2", StudyLink_SubmenuOnDefine.Bind(topic, studyKey), "On")
+    Hotkey("Escape", StudyLink_SubmenuOnEsc, "On")
     g_StudyLinkSubmenuGui.Show()
 }
 
@@ -8699,9 +8738,7 @@ StudyTopicSelector_ShowTopicPhase() {
     try Hotkey("Backspace", StudyTopicSelector_Cancel, "Off")
 
     catLabel := (g_StudyTopicSelectorCategory = "plans") ? "Plans" : "Mnemonics"
-    if (IsObject(g_StudyTopicSelectorGui) && g_StudyTopicSelectorGui.Hwnd) {
-        try g_StudyTopicSelectorGui.Destroy()
-    }
+    StudyTopicSelector_SafeDestroyGui(g_StudyTopicSelectorGui)
     g_StudyTopicSelectorGui := false
 
     g_StudyTopicSelectorGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner -DPIScale")
@@ -8765,9 +8802,7 @@ StudyTopicSelector_BackFromTopic(*) {
     try Hotkey("Backspace", StudyTopicSelector_BackFromTopic, "Off")
     g_StudyTopicSelectorCategory := ""
     g_StudyTopicSelectorPhase := "category"
-    if (IsObject(g_StudyTopicSelectorGui) && g_StudyTopicSelectorGui.Hwnd) {
-        try g_StudyTopicSelectorGui.Destroy()
-    }
+    StudyTopicSelector_SafeDestroyGui(g_StudyTopicSelectorGui)
     g_StudyTopicSelectorGui := false
     StudyTopicSelector_ShowCategoryPhase()
     g_StudyTopicSelectorLastForegroundMonitorIdx := GetMonitorIndexForForeground_StandardBar()
@@ -8825,7 +8860,7 @@ StudyTopicSelector_Cancel(*) {
 ; Tear-down order aligned with OutlookCopilotSelector_Close (Shift keys.ahk).
 StudyTopicSelector_Close() {
     global g_StudyTopicSelectorGui, g_StudyTopicSelectorActive, g_StudyTopicSelectorPhase, g_StudyTopicSelectorCategory,
-        g_StudyTopicSelectorLastForegroundMonitorIdx
+        g_StudyTopicSelectorLastForegroundMonitorIdx, g_StudyLinksGui, g_StudyLinkSubmenuGui
 
     if (!g_StudyTopicSelectorActive)
         return
@@ -8843,12 +8878,16 @@ StudyTopicSelector_Close() {
     catch {
     }
     Utils_EnsureGlobalEscapeHotkey()
-    if (IsObject(g_StudyTopicSelectorGui) && g_StudyTopicSelectorGui.Hwnd) {
-        try g_StudyTopicSelectorGui.Destroy()
-        catch {
-        }
-    }
+    StudyTopicSelector_SafeDestroyGui(g_StudyTopicSelectorGui)
     g_StudyTopicSelectorGui := false
+    StudyTopicSelector_SafeDestroyGui(g_StudyLinksGui)
+    g_StudyLinksGui := false
+    StudyTopicSelector_SafeDestroyGui(g_StudyLinkSubmenuGui)
+    g_StudyLinkSubmenuGui := ""
+    loop 9 {
+        try Hotkey(String(A_Index), "Off")
+    }
+    try Hotkey("Escape", "Off")
 }
 
 PeekPdf_GetIniPath() {
