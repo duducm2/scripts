@@ -4,25 +4,6 @@
 #include %A_ScriptDir%\StudyLinkHelpers.ahk
 
 global g_StudyLinkSubmenuGui := ""
-#Requires AutoHotkey v2.0+
-#SingleInstance Force
-#include %A_ScriptDir%\env.ahk
-#include %A_ScriptDir%\StudyLinkHelpers.ahk
-
-; #region agent log
-DebugBannerLog(location, message, dataStr := "", hypothesisId := "") {
-    ; Intentionally no-op.
-    ; These agent debug logs are not required for runtime behavior.
-    return
-}
-
-; Dictation-Gemini flow debug (session 7e3dd7): NDJSON log (disabled)
-DebugFlowLog(location, message, dataStr := "", hypothesisId := "") {
-    ; Intentionally no-op.
-    ; These agent debug logs are not required for runtime behavior.
-    return
-}
-; #endregion
 
 #include UIA-v2\Lib\UIA.ahk
 #include UIA-v2\Lib\UIA_Browser.ahk
@@ -1129,10 +1110,6 @@ GetHandyProcessPath() {
 ; =============================================================================
 ; Ensure Clip Angel window is closed (Alt+V then WinClose fallback)
 EnsureClipAngelClosed() {
-    ; #region agent log
-    DebugLog_0ec0ba("run-clip-favorite", "H4", "EnsureClipAngelClosed enter", "clipAngelExistsBefore=" . DebugBool(!!
-        WinExist("ClipAngel")))
-    ; #endregion
     if !WinExist("ClipAngel")
         return
     Send "!v"
@@ -1144,10 +1121,6 @@ EnsureClipAngelClosed() {
     if WinExist("ClipAngel") {
         try WinClose("ClipAngel")
     }
-    ; #region agent log
-    DebugLog_0ec0ba("run-clip-favorite", "H4", "EnsureClipAngelClosed exit", "clipAngelExistsAfter=" . DebugBool(!!
-        WinExist("ClipAngel")))
-    ; #endregion
 }
 
 ; Extract title from first non-favorite clip in ClipAngel
@@ -1630,31 +1603,6 @@ MarkLastClipAsFavorite(target := "first") {
     } catch Error as e {
         ShowCenteredOverlay_Utils("❌ Mark favorite failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
         EnsureClipAngelClosed()
-    }
-}
-
-DebugBool(v) {
-    return v ? "true" : "false"
-}
-
-DebugJsonEscape(s) {
-    s := StrReplace(s, "\", "\\")
-    s := StrReplace(s, "`"", "\`"")
-    s := StrReplace(s, "`r", "\r")
-    s := StrReplace(s, "`n", "\n")
-    return s
-}
-
-DebugLog_0ec0ba(runId, hypothesisId, message, dataJson := "{}") {
-    try {
-        logPath := A_ScriptDir "\debug-0ec0ba.log"
-        payload := "{`"sessionId`":`"0ec0ba`",`"runId`":`"" . DebugJsonEscape(runId)
-        . "`",`"hypothesisId`":`"" . DebugJsonEscape(hypothesisId)
-        . "`",`"location`":`"Utils.ahk`",`"message`":`"" . DebugJsonEscape(message)
-        . "`",`"data`":`"" . DebugJsonEscape(dataJson)
-        . "`",`"timestamp`":" . A_TickCount . "}"
-        FileAppend(payload . "`n", logPath, "UTF-8")
-    } catch {
     }
 }
 
@@ -2869,14 +2817,12 @@ VSCode_SubmitChat(targetHwnd) {
             sendButton := VSCode_FindChatSendButton(root)
             if (sendButton && VSCode_IsChatSendReady(targetHwnd)) {
                 try {
-                    DebugFlowLog("Utils.ahk:VSCode_SubmitChat", "click send button", "hwnd=" . targetHwnd, "VSC5")
                     sendButton.Click()
                     VSCode_TryStartAibAllowWatcher(targetHwnd)
                     return true
                 } catch {
                 }
                 try {
-                    DebugFlowLog("Utils.ahk:VSCode_SubmitChat", "enter on send button", "hwnd=" . targetHwnd, "VSC6")
                     sendButton.SetFocus()
                     Sleep 40
                     SendInput "{Enter}"
@@ -2888,7 +2834,6 @@ VSCode_SubmitChat(targetHwnd) {
         } catch {
         }
     }
-    DebugFlowLog("Utils.ahk:VSCode_SubmitChat", "fallback enter", "hwnd=" . targetHwnd, "VSC7")
     SendInput "{Enter}"
     VSCode_TryStartAibAllowWatcher(targetHwnd)
     return true
@@ -2898,16 +2843,11 @@ VSCode_TryStartAibAllowWatcher(targetHwnd) {
     try {
         fn := Func("AIB_StartAllowWatcher_Bridge")
         if (!IsObject(fn) || !HasMethod(fn, "Call")) {
-            DebugFlowLog("Utils.ahk:VSCode_TryStartAibAllowWatcher", "bridge missing call", "hwnd=" . targetHwnd,
-                "VSC9")
             return
         }
 
-        DebugFlowLog("Utils.ahk:VSCode_TryStartAibAllowWatcher", "bridge call", "hwnd=" . targetHwnd, "VSC10")
         fn.Call("chat_submit", targetHwnd)
-        DebugFlowLog("Utils.ahk:VSCode_TryStartAibAllowWatcher", "bridge ok", "hwnd=" . targetHwnd, "VSC11")
     } catch Error as e {
-        DebugFlowLog("Utils.ahk:VSCode_TryStartAibAllowWatcher", "bridge error", SubStr(e.Message, 1, 120), "VSC12")
     }
 }
 
@@ -2943,7 +2883,6 @@ VSCode_FocusChatInput(targetHwnd := 0) {
                 root := UIA.ElementFromHandle(targetHwnd)
                 editEl := VSCode_FindChatInputField(root)
                 if (editEl && VSCode_EnsureChatInputHasFocus(editEl)) {
-                    DebugFlowLog("Utils.ahk:VSCode_FocusChatInput", "chat input focused", "attempt=" . A_Index, "VSC1")
                     return true
                 }
             } catch {
@@ -2954,7 +2893,6 @@ VSCode_FocusChatInput(targetHwnd := 0) {
             Sleep 140
         }
 
-        DebugFlowLog("Utils.ahk:VSCode_FocusChatInput", "chat input focus failed", "hwnd=" . targetHwnd, "VSC2")
         return false
     } catch {
         return false
@@ -3120,8 +3058,6 @@ CursorTransfer_ActivateFocusPaste(targetHwnd, restoreFocusHwnd := 0) {
             focusSucceeded := Cursor_FocusAITextField(targetHwnd)
         }
         if (!focusSucceeded) {
-            DebugFlowLog("Utils.ahk:CursorTransfer_ActivateFocusPaste", "focus failed", "app=" . appDisplayName .
-                ", hwnd=" . targetHwnd, "VSC3")
             ShowCenteredOverlay_Utils("❌ Could not focus AI field", 2000, BANNER_ACCENT_ERROR)
             return
         }
@@ -3151,8 +3087,6 @@ CursorTransfer_ActivateFocusPaste(targetHwnd, restoreFocusHwnd := 0) {
                         Sleep 90
                     }
                     if (!VSCode_IsSafeChatPasteTarget(targetHwnd)) {
-                        DebugFlowLog("Utils.ahk:CursorTransfer_ActivateFocusPaste", "unsafe chat target", "attempt=" .
-                            A_Index, "VSC4")
                         if (A_Index < pasteAttempts)
                             continue
                         break
@@ -3167,8 +3101,6 @@ CursorTransfer_ActivateFocusPaste(targetHwnd, restoreFocusHwnd := 0) {
                 break
             }
             pasteDetected := VSCode_IsChatSendReady(targetHwnd)
-            DebugFlowLog("Utils.ahk:CursorTransfer_ActivateFocusPaste", "paste attempt", "attempt=" . A_Index .
-                ", ready=" . pasteDetected, "VSC4")
             if (pasteDetected)
                 break
             if (A_Index < pasteAttempts) {
@@ -4286,10 +4218,6 @@ StandardLoadingBar_Update(state := "", barColor := "") {
 StandardLoadingBar_Hide(delayMs := 0) {
     global g_StandardLoadingBarGui, g_StandardLoadingBarValue, g_StandardLoadingBarIsKeysOverlay,
         g_StandardLoadingBarBorderGui
-    ; #region agent log
-    DebugFlowLog("Utils.ahk:StandardLoadingBar_Hide", "entry", "delay=" . delayMs . " isKeys=" . (
-        g_StandardLoadingBarIsKeysOverlay ? 1 : 0), "H2")
-    ; #endregion
     if (delayMs > 0) {
         SetTimer(() => StandardLoadingBar_Hide(0), -delayMs)
         return
@@ -4562,22 +4490,13 @@ StandardLoadingBar_KeysTimeoutFired(timeoutCallback) {
     } catch {
         cbCallable := false
     }
-    ; #region agent log
-    try FileAppend("DEBUG c8d42c TIMER Utils.KeysTimeoutFired isKeys=" . (g_StandardLoadingBarIsKeysOverlay ? 1 : 0) .
-    " cbCallable=" . (cbCallable ? 1 : 0) . " ts=" . A_TickCount . "`n", A_ScriptDir "\debug-c8d42c.log", "UTF-8")
-    catch {
-    }
-    ; #endregion
     ; Only run timeout callback if overlay was not already dismissed (e.g. user pressed N); avoids copy when timer fires after cancel.
     if (g_StandardLoadingBarIsKeysOverlay && cbCallable) {
         StandardLoadingBar_SetProgressValue(100)
-        DebugFlowLog("Utils.ahk:KeysTimeoutFired", "calling timeout callback", "", "H2")
         try timeoutCallback.Call()
         catch {
         }
-    } else
-        DebugFlowLog("Utils.ahk:KeysTimeoutFired", "skipped callback", "isKeys=" . (g_StandardLoadingBarIsKeysOverlay ?
-            1 : 0), "H2")
+    }
     StandardLoadingBar_CloseKeysOverlay()
 }
 
@@ -4585,9 +4504,6 @@ StandardLoadingBar_KeysTimeoutFired(timeoutCallback) {
 ; Hotstring Selector: Gemini Redirect Banner (non-blocking; uses standard loading indicator)
 ; =============================================================================
 HotstringGeminiBanner_Show(text := "📤 Gemini: inserting prompt...") {
-    ; #region agent log
-    DebugFlowLog("Utils.ahk:HotstringGeminiBanner_Show", "entry", "text=" . SubStr(text, 1, 40), "H3")
-    ; #endregion
     StandardLoadingBar_CloseKeysOverlay()
     Sleep 50
     StandardLoadingBar_Show(text, BANNER_ACCENT_INTERMEDIATE, { passive: true, centerOnHwnd: 0, textWidth: 280,
@@ -5303,10 +5219,6 @@ DEPRECATED_DictationGeminiConfirm_Hide(*) {
 ; submitToGemini=false (N or timeout): terminal. submitToGemini=true: delayed-submit (paste+Enter). pasteOnly=true: paste to Gemini only, no Enter.
 DEPRECATED_DictationGeminiConfirm_CleanupAndMaybeSubmit(submitToGemini, pasteOnly := false) {
     global g_DictationGeminiConfirmBannerVisible
-    ; #region agent log
-    DebugFlowLog("Utils.ahk:CleanupAndMaybeSubmit", "entry", "submit=" . (submitToGemini ? 1 : 0) . " pasteOnly=" . (
-        pasteOnly ? 1 : 0), "H2")
-    ; #endregion
     ; Only clear banner-visible when proceeding (Y/S/timeout); leave true on N so a stray ShowAndWait does not re-show and register a second 5s timer (logs showed second timeout firing after N).
     if (submitToGemini || pasteOnly)
         g_DictationGeminiConfirmBannerVisible := false
@@ -5323,48 +5235,30 @@ DEPRECATED_DictationGeminiConfirm_CleanupAndMaybeSubmit(submitToGemini, pasteOnl
     if (!submitToGemini)
         GeminiDelayedSubmitMonitorStopFromUtils()
     if (pasteOnly) {
-        ; #region agent log
-        DebugFlowLog("Utils.ahk:CleanupAndMaybeSubmit", "running pasteOnly flow", "", "H2")
-        ; #endregion
         Sleep 350
         DEPRECATED_GeminiDictationPasteOnlyFlow()
     } else if (submitToGemini) {
-        ; #region agent log
-        DebugFlowLog("Utils.ahk:CleanupAndMaybeSubmit", "running delayedSubmit flow", "", "H2")
-        ; #endregion
         Sleep 350
         DEPRECATED_GeminiDelayedSubmitFlow()
     }
 }
 
 DEPRECATED_DictationGeminiConfirm_OnY(*) {
-    ; #region agent log
-    DebugFlowLog("Utils.ahk:OnY", "Y pressed", "", "H1")
-    ; #endregion
     DEPRECATED_DictationGeminiConfirm_CleanupAndMaybeSubmit(true)
 }
 
 ; S = paste to Gemini only (no Enter, no 4s banner).
 DEPRECATED_DictationGeminiConfirm_OnS(*) {
-    ; #region agent log
-    DebugFlowLog("Utils.ahk:OnS", "S pressed", "", "H1")
-    ; #endregion
     DEPRECATED_DictationGeminiConfirm_CleanupAndMaybeSubmit(false, true)
 }
 
 ; Default action on 5s timeout: proceed as Yes (DelayedSubmitFlow), same as user pressing Y.
 DEPRECATED_DictationGeminiConfirm_OnTimeout(*) {
-    ; #region agent log
-    DebugFlowLog("Utils.ahk:OnTimeout", "5s timeout fired", "", "H4")
-    ; #endregion
     DEPRECATED_DictationGeminiConfirm_CleanupAndMaybeSubmit(true)
 }
 
 ; N = terminate flow: no paste, no Enter, no 4s, no copy; only cleanup and cancel overlay.
 DEPRECATED_DictationGeminiConfirm_OnCancel(*) {
-    ; #region agent log
-    DebugFlowLog("Utils.ahk:OnCancel", "N pressed", "", "H1")
-    ; #endregion
     DEPRECATED_DictationGeminiConfirm_CleanupAndMaybeSubmit(false)  ; submitToGemini=false, pasteOnly=false => no flow runs
     ShowCenteredOverlay_Utils("⚠ Gemini submission cancelled", 1500, BANNER_ACCENT_INTERMEDIATE)
 }
@@ -5379,9 +5273,6 @@ DEPRECATED_DictationGeminiConfirm_ShowAndWait() {
     }
     g_DictationGeminiConfirmBannerVisible := true
     Critical "Off"
-    ; #region agent log
-    DebugFlowLog("Utils.ahk:ShowAndWait", "5s banner showing", "", "H1")
-    ; #endregion
     ; Only the official loading bar (standard loading indicator) may show this content. Hide any other bar/overlay first.
     StandardLoadingBar_CloseKeysOverlay()
     StandardLoadingBar_Hide(0)
@@ -8631,7 +8522,7 @@ StudyTopicSelector_UnbindRobustEscape() {
     Utils_EnsureGlobalEscapeHotkey()
 }
 
-; Category menu (Technique / Mnemonics / Plans). Bind Escape + Backspace to cancel; Backspace on topic menu goes back via StudyTopicSelector_BackFromTopic.
+; Category menu (Technique README / Mnemonics / Plans). Bind Escape + Backspace to cancel; Backspace on topic menu goes back via StudyTopicSelector_BackFromTopic.
 StudyTopicSelector_ShowCategoryPhase() {
     global g_StudyTopicSelectorGui, g_StudyTopics
 
@@ -8650,7 +8541,7 @@ StudyTopicSelector_ShowCategoryPhase() {
     g_StudyTopicSelectorGui.Add("Text", "w300 h1 Background45475A")
 
     g_StudyTopicSelectorGui.SetFont("s12 cCDD6F4", "Segoe UI")
-    g_StudyTopicSelectorGui.Add("Text", "w300", "[1] Techniques")
+    g_StudyTopicSelectorGui.Add("Text", "w300", "[1] Technique")
     g_StudyTopicSelectorGui.Add("Text", "w300", "[2] " . g_StudyTopics[1].name)
     g_StudyTopicSelectorGui.Add("Text", "w300", "[3] Plans")
     g_StudyTopicSelectorGui.Add("Text", "w300", "[4] Manage Study Subtopic Link")
@@ -8882,13 +8773,17 @@ StudyTopicSelector_BackFromTopic(*) {
     g_StudyTopicSelectorLastForegroundMonitorIdx := GetMonitorIndexForForeground_StandardBar()
 }
 
-; First-menu shortcut: Technique README (mnemonics). Technique plans stay under [2] Plans then [0].
+; [1] Technique: open studies/technique/README.md in QuickLook (single file). Technique plans: [3] Plans then [0].
 StudyTopicSelector_SelectTechnique(*) {
     global g_StudyTopicSelectorActive, g_StudyTopicSelectorPhase, g_StudyTopics
     if (!g_StudyTopicSelectorActive || g_StudyTopicSelectorPhase != "category")
         return
-    g_StudyTopicSelectorCategory := "techniques"
-    StudyTopicSelector_ShowTopicPhase()
+    if (!g_StudyTopics.Has(0))
+        return
+    StudyTopicSelector_Close()
+    topic := g_StudyTopics[0]
+    relPath := StudyTopic_GetRelPath(topic, "mnemonics")
+    StudyTopic_OpenRepoRelativeMarkdown(relPath, true)
 }
 
 StudyTopicSelector_SelectMnemonics(*) {
@@ -10631,9 +10526,6 @@ DEPRECATED_GeminiDictationPasteOnlyFlow() {
 
 DEPRECATED_GeminiDelayedSubmitFlow() {
     global g_HotstringGeminiAutoSubmit, g_HotstringGeminiRestoreHwnd
-    ; #region agent log
-    DebugFlowLog("Utils.ahk:GeminiDelayedSubmitFlow", "entry", "", "H3")
-    ; #endregion
     g_HotstringGeminiRestoreHwnd := WinExist("A")
     g_HotstringGeminiAutoSubmit := true
     GeminiFinalizeSubmit()
@@ -10672,10 +10564,6 @@ GeminiFinalizeSubmit() {
     global g_HotstringGeminiAutoSubmit, g_HotstringGeminiRestoreHwnd, g_GeminiDelayedSubmit_PreEnterDelayMs,
         g_GeminiDelayedSubmit_WaitContentMaxMs
 
-    ; #region agent log
-    DebugFlowLog("Utils.ahk:GeminiFinalizeSubmit", "entry", "autoSubmit=" . (g_HotstringGeminiAutoSubmit ? 1 : 0), "H5"
-    )
-    ; #endregion
     try Hotkey("n", "Off")
     try Hotkey("N", "Off")
     try Hotkey("y", "Off")
@@ -13144,16 +13032,7 @@ PlayDictationCompletionChime(*) {
         pendingGemini := g_PendingGeminiPromptAfterDictation
         g_PendingGeminiPromptAfterDictation := false  ; Claim atomically so only one invocation shows the banner
         Critical "Off"
-        ; #region agent log
-        DebugBannerLog("Utils.ahk:PlayDictationCompletionChime", "Completion chime branch",
-            "chimeShouldPlay=1 pendingAction=" . pendingAction . " pendingGemini=" . (pendingGemini ? 1 : 0), "H2")
-        ; #endregion
         if (pendingGemini && pendingAction = "") {
-            ; #region agent log
-            DebugBannerLog("Utils.ahk:PlayDictationCompletionChime", "Calling D2C_FlowManager", "pendingAction empty",
-                "H3"
-            )
-            ; #endregion
             try ScriptSoundPlay(A_ScriptDir . "\sounds\dictation-selection-menu.wav")
             D2C_FlowManager.GetInstance().StartFromDictation()
         }
@@ -13375,9 +13254,6 @@ OnExit(CleanupDictationIndicator)
         g_PendingGeminiPromptAfterDictation := true
         g_D2C_DictationSubmitMenuCycleFinished := false
         g_DictationGeminiConfirmBannerVisible := false  ; Allow 5s banner to show for this cycle (reset from previous N cancel)
-        ; #region agent log
-        DebugBannerLog("Utils.ahk:~#!+0", "Set pending Gemini flag", "dictationWasActiveOnKeyPress=1", "H1")
-        ; #endregion
     } else {
     }
 
