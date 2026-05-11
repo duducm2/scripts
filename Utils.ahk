@@ -1,6 +1,13 @@
 #Requires AutoHotkey v2.0+
 #SingleInstance Force
 #include %A_ScriptDir%\env.ahk
+#include %A_ScriptDir%\StudyLinkHelpers.ahk
+
+global g_StudyLinkSubmenuGui := ""
+#Requires AutoHotkey v2.0+
+#SingleInstance Force
+#include %A_ScriptDir%\env.ahk
+#include %A_ScriptDir%\StudyLinkHelpers.ahk
 
 ; #region agent log
 DebugBannerLog(location, message, dataStr := "", hypothesisId := "") {
@@ -8568,21 +8575,110 @@ StudyTopicSelector_ShowCategoryPhase() {
     g_StudyTopicSelectorGui.Add("Text", "w300 h1 Background45475A")
 
     g_StudyTopicSelectorGui.SetFont("s12 cCDD6F4", "Segoe UI")
-    g_StudyTopicSelectorGui.Add("Text", "w300", "[0] " . g_StudyTopics[0].name)
-    g_StudyTopicSelectorGui.Add("Text", "w300", "[1] Mnemonics")
-    g_StudyTopicSelectorGui.Add("Text", "w300", "[2] Plans")
-
+    g_StudyTopicSelectorGui.Add("Text", "w300", "[1] Techniques")
+    g_StudyTopicSelectorGui.Add("Text", "w300", "[2] " . g_StudyTopics[1].name)
+    g_StudyTopicSelectorGui.Add("Text", "w300", "[3] Plans")
+    g_StudyTopicSelectorGui.Add("Text", "w300", "[4] Manage Study Subtopic Link")
     g_StudyTopicSelectorGui.Add("Text", "w300 h1 Background45475A y+10")
     g_StudyTopicSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_StudyTopicSelectorGui.Add("Text", "w300 Center", "Press 0-2 | Backspace/Esc to cancel")
+    g_StudyTopicSelectorGui.Add("Text", "w300 Center", "Press 1-4 | Backspace/Esc to cancel")
 
     StudyTopicSelector_PositionGuiCentered(g_StudyTopicSelectorGui)
 
-    Hotkey("0", StudyTopicSelector_SelectTechnique, "On")
-    Hotkey("1", StudyTopicSelector_SelectMnemonics, "On")
-    Hotkey("2", StudyTopicSelector_SelectPlans, "On")
+    Hotkey("1", StudyTopicSelector_SelectTechnique, "On")
+    Hotkey("2", StudyTopicSelector_SelectMnemonics, "On")
+    Hotkey("3", StudyTopicSelector_SelectPlans, "On")
+    Hotkey("4", StudyTopicSelector_ManageLinks, "On")
     Hotkey("Escape", StudyTopicSelector_Cancel, "On")
     Hotkey("Backspace", StudyTopicSelector_Cancel, "On")
+
+}
+
+
+; Persistent global GUI for link management submenu
+global g_StudyLinksGui := false
+StudyTopicSelector_ManageLinks(*) {
+    global g_StudyLinksGui, g_StudyTopics
+    if (IsObject(g_StudyLinksGui) && g_StudyLinksGui.Hwnd) {
+        try g_StudyLinksGui.Destroy()
+    }
+    g_StudyLinksGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner")
+    ; Unbind previous hotkeys to avoid conflicts
+    Loop 9 {
+        try Hotkey(String(A_Index), "Off")
+    }
+    try Hotkey("Escape", "Off")
+    g_StudyLinksGui.BackColor := "1E1E2E"
+    g_StudyLinksGui.MarginX := 20
+    g_StudyLinksGui.MarginY := 15
+    g_StudyLinksGui.SetFont("s14 cCDD6F4 Bold", "Segoe UI")
+    g_StudyLinksGui.Add("Text", "w400 Center", "🔗 Manage Study Subtopic Links")
+    g_StudyLinksGui.Add("Text", "w400 h1 Background45475A")
+    g_StudyLinksGui.SetFont("s11 cCDD6F4", "Segoe UI")
+    idx := 1
+    studyKeys := []
+    for num, topic in g_StudyTopics {
+        if (num = 0) ; skip if 0 is not a valid study
+            continue
+        label := "[" idx "] " topic.name
+        g_StudyLinksGui.Add("Text", "w400", label)
+        studyKeys.Push(num)
+        idx++
+    }
+    g_StudyLinksGui.Add("Text", "w400 h1 Background45475A y+10")
+    g_StudyLinksGui.SetFont("s9 c6C7086", "Segoe UI")
+    g_StudyLinksGui.Add("Text", "w400 Center", "Press 1-" (idx-1) " to select study | Esc to cancel")
+    StudyTopicSelector_PositionGuiCentered(g_StudyLinksGui)
+    ; Bind hotkeys for each study
+    for i, num in studyKeys {
+        Hotkey(String(i), MakeStudyLinkHandler(num), "On")
+    }
+
+MakeStudyLinkHandler(num) {
+    return (p*) => StudyLink_StudySubmenu(g_StudyLinksGui, g_StudyTopics[num], num)
+}
+    Hotkey("Escape", (*) => g_StudyLinksGui.Destroy(), "On")
+    g_StudyLinksGui.Show()
+}
+
+; Submenu for a single study: open or define link
+StudyLink_StudySubmenu(parentGui, topic, studyKey) {
+    global g_StudyLinkSubmenuGui
+    parentGui.Destroy()
+    if (IsObject(g_StudyLinkSubmenuGui) && g_StudyLinkSubmenuGui.Hwnd) {
+        try g_StudyLinkSubmenuGui.Destroy()
+        g_StudyLinkSubmenuGui := ""
+    }
+    g_StudyLinkSubmenuGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner")
+    g_StudyLinkSubmenuGui.BackColor := "1E1E2E"
+    g_StudyLinkSubmenuGui.MarginX := 20
+    g_StudyLinkSubmenuGui.MarginY := 15
+    g_StudyLinkSubmenuGui.SetFont("s13 cCDD6F4 Bold", "Segoe UI")
+    g_StudyLinkSubmenuGui.Add("Text", "w400 Center", "🔗 " topic.name)
+    g_StudyLinkSubmenuGui.Add("Text", "w400 h1 Background45475A")
+    g_StudyLinkSubmenuGui.SetFont("s11 cCDD6F4", "Segoe UI")
+    url := StudyLink_Get(studyKey)
+    g_StudyLinkSubmenuGui.Add("Text", "w400", "Current link: " (url != "" ? url : "(none)"))
+    g_StudyLinkSubmenuGui.Add("Text", "w400", "[1] Open Link")
+    g_StudyLinkSubmenuGui.Add("Text", "w400", "[2] Define Link")
+    g_StudyLinkSubmenuGui.Add("Text", "w400 h1 Background45475A y+10")
+    g_StudyLinkSubmenuGui.SetFont("s9 c6C7086", "Segoe UI")
+    g_StudyLinkSubmenuGui.Add("Text", "w400 Center", "Press 1-2 | Esc to go back")
+    StudyTopicSelector_PositionGuiCentered(g_StudyLinkSubmenuGui)
+    Hotkey("1", (*) => (StudyLink_Open(studyKey), g_StudyLinkSubmenuGui.Destroy()), "On")
+    Hotkey("2", (*) => (g_StudyLinkSubmenuGui.Destroy(), StudyLink_DefineLink(topic, studyKey)), "On")
+    Hotkey("Escape", (*) => (g_StudyLinkSubmenuGui.Destroy(), StudyTopicSelector_ManageLinks()), "On")
+    g_StudyLinkSubmenuGui.Show()
+}
+
+; Prompt user to define a new link for a study
+StudyLink_DefineLink(topic, studyKey) {
+    result := InputBox("Enter the URL for this study:", "Define Link for " topic.name, "w400 h120")
+    if (result.Result = "OK" && result.Value != "") {
+        StudyLink_Set(studyKey, result.Value)
+        MsgBox "Link saved."
+    }
+    StudyTopicSelector_ManageLinks()
 }
 
 ShowStudyTopicSelector() {
@@ -8688,12 +8784,8 @@ StudyTopicSelector_SelectTechnique(*) {
     global g_StudyTopicSelectorActive, g_StudyTopicSelectorPhase, g_StudyTopics
     if (!g_StudyTopicSelectorActive || g_StudyTopicSelectorPhase != "category")
         return
-    StudyTopicSelector_Close()
-    if (!g_StudyTopics.Has(0))
-        return
-    topic := g_StudyTopics[0]
-    relPath := StudyTopic_GetRelPath(topic, "mnemonics")
-    StudyTopic_OpenRepoRelativeMarkdown(relPath, true)
+    g_StudyTopicSelectorCategory := "techniques"
+    StudyTopicSelector_ShowTopicPhase()
 }
 
 StudyTopicSelector_SelectMnemonics(*) {
