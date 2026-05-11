@@ -8182,11 +8182,27 @@ StudyTopic_ApplyBlackoutCountdownTimeout(targetHwnd, pdfFocusLossMode := "Deboun
     } catch {
         ; ignore
     }
+    global g_BlackoutSuppressedUntil
+    if (g_BlackoutSuppressedUntil && A_TickCount < g_BlackoutSuppressedUntil) {
+        ; Suppressed: do not enable blackout
+        return
+    }
     keepIdx := GetActiveMonitorIndex()
     if (!keepIdx)
         keepIdx := StudyTopic_GetBlackoutKeepMonitorIndex()
     EnableFocusMode(keepIdx)
     StartPdfFocusMonitor(targetHwnd, pdfFocusLossMode)
+}
+
+
+; --- Blackout suppression logic ---
+global g_BlackoutSuppressedUntil := 0
+
+StudyTopic_DisableBlackout5Min(*) {
+    global g_BlackoutSuppressedUntil
+    g_BlackoutSuppressedUntil := A_TickCount + 5 * 60 * 1000  ; 5 minutes
+    StandardLoadingBar_CloseKeysOverlay()
+    StandardLoadingBar_Hide(0)
 }
 
 StudyTopic_StartBlackoutCountdown(targetHwnd) {
@@ -8196,6 +8212,7 @@ StudyTopic_StartBlackoutCountdown(targetHwnd) {
     StandardLoadingBar_Hide(0)
     Sleep 50
     keyCallbacks := Map("N", StudyTopic_CancelBlackoutCountdown)
+    keyCallbacks["D"] := StudyTopic_DisableBlackout5Min
     timeoutCb := StudyTopic_ApplyBlackoutCountdownTimeout.Bind(targetHwnd, "Immediate")
     StandardLoadingBar_ShowWithKeys(
         "⏳ Blacking out secondary monitors in 3s",
@@ -8208,7 +8225,7 @@ StudyTopic_StartBlackoutCountdown(targetHwnd) {
         17,
         BANNER_BLACKOUT_BORDER,
         false,
-        "[N] Cancel blackout",
+        "[N] Cancel blackout    [D] Disable for 5 min",
         true,
         true,
         true,
@@ -8246,6 +8263,7 @@ FocusBlackoutWatcher_StartCountdown(hwnd) {
     StandardLoadingBar_Hide(0)
     Sleep 50
     keyCallbacks := Map("N", FocusBlackoutWatcher_OnCancel.Bind(hwnd))
+    keyCallbacks["D"] := StudyTopic_DisableBlackout5Min
     timeoutCb := FocusBlackoutWatcher_OnBlackoutTimeout.Bind(hwnd)
     StandardLoadingBar_ShowWithKeys(
         "⏳ Blacking out secondary monitors in 3s",
@@ -8258,7 +8276,7 @@ FocusBlackoutWatcher_StartCountdown(hwnd) {
         17,
         BANNER_BLACKOUT_BORDER,
         false,
-        "[N] Cancel blackout",
+        "[N] Cancel blackout    [D] Disable for 5 min",
         true,
         true,
         true,
