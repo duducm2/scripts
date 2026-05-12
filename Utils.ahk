@@ -8394,14 +8394,43 @@ StudyTopicSelector_ComputeCenterTopLeftInWorkArea(ml, mt, mr, mb, gw, gh, &cx, &
 
 ; Initial placement: GetActiveMonitorWorkArea_StandardBar (same source as StandardLoadingBar / standard_information_display.md); Outlook Copilot uses an equivalent MonitorGetWorkArea loop in Shift keys.ahk.
 StudyTopicSelector_PositionGuiLikeOutlook(gui) {
+    global g_StudyLinkSubmenuGui, g_StudyTopicSelectorGui
+    subPos := IsObject(g_StudyLinkSubmenuGui) && (gui = g_StudyLinkSubmenuGui)
+    catH := (IsObject(g_StudyTopicSelectorGui) && g_StudyTopicSelectorGui.Hwnd) ? g_StudyTopicSelectorGui.Hwnd : 0
+    ; #region agent log
+    if (subPos) {
+        gh0 := gui.Hwnd
+        StudyLink_DebugNDJSON("H2", "posBeforeHideSize", gh0, catH, catH ? WinExist("ahk_id " catH) : 0)
+    }
+    ; #endregion
     GetActiveMonitorWorkArea_StandardBar(&ml, &mt, &mr, &mb)
     gui.Show("AutoSize Hide")
+    ; #region agent log
+    if (subPos) {
+        gh1 := gui.Hwnd
+        StudyLink_DebugNDJSON("H2", "posAfterHideSize", gh1, catH, catH ? WinExist("ahk_id " catH) : 0)
+    }
+    ; #endregion
     gui.GetPos(, , &gw, &gh)
     StudyTopicSelector_ComputeCenterTopLeftInWorkArea(ml, mt, mr, mb, gw, gh, &cx, &cy)
     ; Avoid "NA": if focus stays in QuickLook, Esc is consumed there first (ShowOutlookCopilotSelector comment).
     gui.Show("x" . cx . " y" . cy)
+    ; #region agent log
+    if (subPos) {
+        gh2 := gui.Hwnd
+        StudyLink_DebugNDJSON("H2", "posAfterVisibleXY", gh2, catH, gh2 ? WinExist("ahk_id " gh2) : 0)
+    }
+    ; #endregion
     try WinActivate(gui.Hwnd)
 }
+
+; #region agent log
+StudyLink_DebugNDJSON(hypothesisId, location, n1 := 0, n2 := 0, n3 := 0) {
+    line := '{"sessionId":"a3a0b8","timestamp":' . A_TickCount . ',"hypothesisId":"' . hypothesisId . '","location":"' .
+        location . '","n1":' . n1 . ',"n2":' . n2 . ',"n3":' . n3 . '}' "`n"
+    try FileAppend line, A_ScriptDir "\debug-a3a0b8.log", "UTF-8"
+}
+; #endregion
 
 StudyTopicSelector_StopActiveMonitorTracking() {
     try SetTimer(StudyTopicSelector_TrackActiveMonitorTick, 0)
@@ -8665,20 +8694,53 @@ StudyLink_SubmenuOnEsc(*) {
 
 ; Submenu for a single study: open or define link
 StudyLink_StudySubmenu(parentGui, topic, studyKey) {
-    global g_StudyLinkSubmenuGui
+    global g_StudyLinkSubmenuGui, g_StudyLinksGui, g_StudyTopicSelectorGui
+    phwnd := (IsObject(parentGui) && parentGui.Hwnd) ? parentGui.Hwnd : 0
+    oldSubHwnd := (IsObject(g_StudyLinkSubmenuGui) && g_StudyLinkSubmenuGui.Hwnd) ? g_StudyLinkSubmenuGui.Hwnd : 0
+    catH := (IsObject(g_StudyTopicSelectorGui) && g_StudyTopicSelectorGui.Hwnd) ? g_StudyTopicSelectorGui.Hwnd : 0
+    ; #region agent log
+    StudyLink_DebugNDJSON("H5", "submenu_entry", phwnd, studyKey, catH)
+    StudyLink_DebugNDJSON("H4", "submenu_oldSub_preDestroy", oldSubHwnd, oldSubHwnd ? WinExist("ahk_id " oldSubHwnd) :
+        0,
+    phwnd ? WinExist("ahk_id " phwnd) : 0)
+    ; #endregion
+    try Hotkey("1", "Off")
+    try Hotkey("2", "Off")
+    try Hotkey("Escape", "Off")
+    ; Remove any prior per-study panel first so it cannot sit under the new one.
+    StudyTopicSelector_SafeDestroyGui(g_StudyLinkSubmenuGui)
+    g_StudyLinkSubmenuGui := ""
+    ; #region agent log
+    StudyLink_DebugNDJSON("H4", "submenu_oldSub_postSafeDestroy", oldSubHwnd, oldSubHwnd ? WinExist("ahk_id " oldSubHwnd
+    ) : 0,
+        phwnd ? WinExist("ahk_id " phwnd) : 0)
+    ; #endregion
+    ; Hide list before destroy so the new modal never stacks visually on top of it (Destroy can fail or lag).
+    try parentGui.Hide()
+    catch {
+    }
+    ; #region agent log
+    StudyLink_DebugNDJSON("H1", "submenu_postHideParent", phwnd, phwnd ? WinExist("ahk_id " phwnd) : 0, catH)
+    ; #endregion
+    parentDestroyFailed := false
     try parentGui.Destroy()
     catch {
+        parentDestroyFailed := true
         try ShowCenteredOverlay_Utils("⚠ Could not close link list window (continuing).", 2000,
             BANNER_ACCENT_INTERMEDIATE)
         catch {
         }
     }
-    try Hotkey("1", "Off")
-    try Hotkey("2", "Off")
-    try Hotkey("Escape", "Off")
-    StudyTopicSelector_SafeDestroyGui(g_StudyLinkSubmenuGui)
-    g_StudyLinkSubmenuGui := ""
-    g_StudyLinkSubmenuGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner -DPIScale")
+    ; #region agent log
+    StudyLink_DebugNDJSON("H1", "submenu_postDestroyParent", phwnd, phwnd ? WinExist("ahk_id " phwnd) : 0,
+        parentDestroyFailed ? 1 : 0)
+    StudyLink_DebugNDJSON("H3", "submenu_postDestroy_catWinExist", catH, catH ? WinExist("ahk_id " catH) : 0, 0)
+    ; #endregion
+    g_StudyLinksGui := false
+    submenuOpts := "+AlwaysOnTop -Caption +ToolWindow -DPIScale"
+    if (IsObject(g_StudyTopicSelectorGui) && g_StudyTopicSelectorGui.Hwnd)
+        submenuOpts .= " +Owner" . g_StudyTopicSelectorGui.Hwnd
+    g_StudyLinkSubmenuGui := Gui(submenuOpts)
     g_StudyLinkSubmenuGui.BackColor := "1E1E2E"
     g_StudyLinkSubmenuGui.MarginX := 20
     g_StudyLinkSubmenuGui.MarginY := 15
@@ -8693,11 +8755,20 @@ StudyLink_StudySubmenu(parentGui, topic, studyKey) {
     g_StudyLinkSubmenuGui.Add("Text", "w400 h1 Background45475A y+10")
     g_StudyLinkSubmenuGui.SetFont("s9 c6C7086", "Segoe UI")
     g_StudyLinkSubmenuGui.Add("Text", "w400 Center", "Press 1-2 | Esc to go back")
+    newH := g_StudyLinkSubmenuGui.Hwnd
+    ; #region agent log
+    StudyLink_DebugNDJSON("H1", "submenu_prePosition", phwnd, phwnd ? WinExist("ahk_id " phwnd) : 0, newH)
+    ; #endregion
     StudyTopicSelector_PositionGuiLikeOutlook(g_StudyLinkSubmenuGui)
+    ; #region agent log
+    newH2 := g_StudyLinkSubmenuGui.Hwnd
+    StudyLink_DebugNDJSON("H1", "submenu_postPosition", phwnd, phwnd ? WinExist("ahk_id " phwnd) : 0, newH2)
+    StudyLink_DebugNDJSON("H3", "submenu_postPosition_cat", catH, catH ? WinExist("ahk_id " catH) : 0, newH2)
+    ; #endregion
     Hotkey("1", StudyLink_SubmenuOnOpen.Bind(studyKey), "On")
     Hotkey("2", StudyLink_SubmenuOnDefine.Bind(topic, studyKey), "On")
     Hotkey("Escape", StudyLink_SubmenuOnEsc, "On")
-    g_StudyLinkSubmenuGui.Show()
+    ; StudyTopicSelector_PositionGuiLikeOutlook already shows visible at x/y; avoid a second Show stacking frames.
 }
 
 ; Prompt user to define a new link for a study
