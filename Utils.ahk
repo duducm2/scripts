@@ -8096,9 +8096,11 @@ StudyTopic_ApplyBlackoutCountdownTimeout(targetHwnd, pdfFocusLossMode := "Deboun
 ; --- Blackout suppression logic ---
 global g_BlackoutSuppressedUntil := 0
 
-StudyTopic_DisableBlackout5Min(*) {
+; Disable blackout (D key handler): suppress all blackout banners for the delay duration.
+; Shared by StudyTopic_StartBlackoutCountdown and FocusBlackoutWatcher_StartCountdown.
+StudyTopic_DisableBlackout7Min(*) {
     global g_BlackoutSuppressedUntil
-    g_BlackoutSuppressedUntil := A_TickCount + 5 * 60 * 1000  ; 5 minutes
+    g_BlackoutSuppressedUntil := A_TickCount + 7 * 60 * 1000  ; 7 minutes
     StandardLoadingBar_CloseKeysOverlay()
     StandardLoadingBar_Hide(0)
 }
@@ -8106,11 +8108,16 @@ StudyTopic_DisableBlackout5Min(*) {
 StudyTopic_StartBlackoutCountdown(targetHwnd) {
     if (!targetHwnd || !WinExist("ahk_id " . targetHwnd))
         return
+    global g_BlackoutSuppressedUntil
+    if (g_BlackoutSuppressedUntil && A_TickCount < g_BlackoutSuppressedUntil) {
+        ; Suppressed: do not show the banner at all during the active delay period
+        return
+    }
     StandardLoadingBar_CloseKeysOverlay()
     StandardLoadingBar_Hide(0)
     Sleep 50
     keyCallbacks := Map("N", StudyTopic_CancelBlackoutCountdown)
-    keyCallbacks["D"] := StudyTopic_DisableBlackout5Min
+    keyCallbacks["D"] := StudyTopic_DisableBlackout7Min
     timeoutCb := StudyTopic_ApplyBlackoutCountdownTimeout.Bind(targetHwnd, "Immediate")
     StandardLoadingBar_ShowWithKeys(
         "⏳ Blacking out secondary monitors in 3s",
@@ -8123,7 +8130,7 @@ StudyTopic_StartBlackoutCountdown(targetHwnd) {
         17,
         BANNER_BLACKOUT_BORDER,
         false,
-        "[N] Cancel blackout    [D] Disable for 5 min",
+        "[N] Cancel blackout    [D] Disable for 7 min",
         true,
         true,
         true,
@@ -8151,17 +8158,33 @@ FocusBlackoutWatcher_OnBlackoutTimeout(hwnd, *) {
     StudyTopic_ApplyBlackoutCountdownTimeout(hwnd, "Immediate")
 }
 
+; D key handler for FocusBlackoutWatcher: suppress blackout AND reset watcher state
+; so the watcher can correctly re-trigger after the delay period expires.
+FocusBlackoutWatcher_DisableBlackout(*) {
+    global g_BlackoutSuppressedUntil, g_FocusBlackoutWatcherCountdownActive
+    g_BlackoutSuppressedUntil := A_TickCount + 7 * 60 * 1000  ; 7 minutes
+    g_FocusBlackoutWatcherCountdownActive := false
+    StandardLoadingBar_CloseKeysOverlay()
+    StandardLoadingBar_Hide(0)
+}
+
 FocusBlackoutWatcher_StartCountdown(hwnd) {
-    global g_FocusBlackoutWatcherCountdownActive, g_FocusBlackoutWatcherDwellStartTick
+    global g_FocusBlackoutWatcherCountdownActive, g_FocusBlackoutWatcherDwellStartTick,
+        g_BlackoutSuppressedUntil
     if (!hwnd || !WinExist("ahk_id " . hwnd))
         return
+    ; Suppressed: do not show the banner during the active delay period
+    if (g_BlackoutSuppressedUntil && A_TickCount < g_BlackoutSuppressedUntil) {
+        g_FocusBlackoutWatcherCountdownActive := false
+        return
+    }
     g_FocusBlackoutWatcherCountdownActive := true
     g_FocusBlackoutWatcherDwellStartTick := A_TickCount
     StandardLoadingBar_CloseKeysOverlay()
     StandardLoadingBar_Hide(0)
     Sleep 50
     keyCallbacks := Map("N", FocusBlackoutWatcher_OnCancel.Bind(hwnd))
-    keyCallbacks["D"] := StudyTopic_DisableBlackout5Min
+    keyCallbacks["D"] := FocusBlackoutWatcher_DisableBlackout
     timeoutCb := FocusBlackoutWatcher_OnBlackoutTimeout.Bind(hwnd)
     StandardLoadingBar_ShowWithKeys(
         "⏳ Blacking out secondary monitors in 3s",
@@ -8174,7 +8197,7 @@ FocusBlackoutWatcher_StartCountdown(hwnd) {
         17,
         BANNER_BLACKOUT_BORDER,
         false,
-        "[N] Cancel blackout    [D] Disable for 5 min",
+        "[N] Cancel blackout    [D] Disable for 7 min",
         true,
         true,
         true,
@@ -8184,7 +8207,7 @@ FocusBlackoutWatcher_StartCountdown(hwnd) {
 FocusBlackoutWatcher_Tick() {
     global g_FocusBlackoutWatcherLastHwnd, g_FocusBlackoutWatcherDwellStartTick,
         g_FocusBlackoutWatcherDeniedHwnd, g_FocusBlackoutWatcherCountdownActive, FOCUS_BLACKOUT_DWELL_MS,
-        g_FocusModeOn, g_FocusModeTrackedWindow
+        g_FocusModeOn, g_FocusModeTrackedWindow, g_BlackoutSuppressedUntil
 
     try {
         if (MonitorGetCount() <= 1)
@@ -8216,6 +8239,13 @@ FocusBlackoutWatcher_Tick() {
 
     if (g_FocusModeOn && g_FocusModeTrackedWindow && hwnd = g_FocusModeTrackedWindow)
         return
+
+    ; When blackout is suppressed, keep resetting the dwell timer so the 20-second
+    ; accumulation never completes and the countdown banner does not reappear.
+    if (g_BlackoutSuppressedUntil && A_TickCount < g_BlackoutSuppressedUntil) {
+        g_FocusBlackoutWatcherDwellStartTick := A_TickCount
+        return
+    }
 
     if ((A_TickCount - g_FocusBlackoutWatcherDwellStartTick) >= FOCUS_BLACKOUT_DWELL_MS)
         FocusBlackoutWatcher_StartCountdown(hwnd)

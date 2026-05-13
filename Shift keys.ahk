@@ -45,9 +45,9 @@ IsBlackoutSuppressed() {
     return (g_BlackoutSuppressedUntil && A_TickCount < g_BlackoutSuppressedUntil)
 }
 
-DisableBlackout5Min(*) {
+DisableBlackout7Min(*) {
     global g_BlackoutSuppressedUntil
-    g_BlackoutSuppressedUntil := A_TickCount + 5 * 60 * 1000  ; 5 minutes
+    g_BlackoutSuppressedUntil := A_TickCount + 7 * 60 * 1000  ; 7 minutes
     try StandardLoadingBar_CloseKeysOverlay()
     try StandardLoadingBar_Hide(0)
 }
@@ -4672,7 +4672,7 @@ Reminders_SelectItem(actionLabel, &items, remHwnd, maxItems := 35) {
     ShowModal() {
         if (!IsBlackoutSuppressed()) {
             if (IsObject(keyCallbacks))
-                keyCallbacks["D"] := DisableBlackout5Min
+                keyCallbacks["D"] := DisableBlackout7Min
             StandardLoadingBar_ShowWithKeys(
                 msg,
                 keyCallbacks,
