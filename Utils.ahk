@@ -8205,9 +8205,9 @@ FocusBlackoutWatcher_StartCountdown(hwnd) {
 }
 
 FocusBlackoutWatcher_Tick() {
-    global g_FocusBlackoutWatcherLastHwnd, g_FocusBlackoutWatcherDwellStartTick,
-        g_FocusBlackoutWatcherDeniedHwnd, g_FocusBlackoutWatcherCountdownActive, FOCUS_BLACKOUT_DWELL_MS,
-        g_FocusModeOn, g_FocusModeTrackedWindow, g_BlackoutSuppressedUntil
+    global g_FocusBlackoutWatcherLastHwnd, g_FocusBlackoutWatcherDwellStartTick
+    global g_FocusBlackoutWatcherDeniedHwnd, g_FocusBlackoutWatcherCountdownActive, FOCUS_BLACKOUT_DWELL_MS
+    global g_FocusModeOn, g_FocusModeTrackedWindow, g_BlackoutSuppressedUntil
 
     try {
         if (MonitorGetCount() <= 1)
@@ -8219,36 +8219,52 @@ FocusBlackoutWatcher_Tick() {
     hwnd := WinExist("A")
     if (!hwnd) {
         g_FocusBlackoutWatcherLastHwnd := 0
+        FileAppend "[FBW] No active window\n", A_ScriptDir "\\focus_blackout_debug.log", "UTF-8"
         return
     }
 
-    if (g_FocusBlackoutWatcherDeniedHwnd && hwnd != g_FocusBlackoutWatcherDeniedHwnd)
+    if (g_FocusBlackoutWatcherDeniedHwnd && hwnd != g_FocusBlackoutWatcherDeniedHwnd) {
+        FileAppend "[FBW] Reset denied hwnd (user switched window)\n", A_ScriptDir "\\focus_blackout_debug.log", "UTF-8"
         g_FocusBlackoutWatcherDeniedHwnd := 0
+    }
 
     if (hwnd != g_FocusBlackoutWatcherLastHwnd) {
+        FileAppend "[FBW] Window changed. Reset dwell timer.\n", A_ScriptDir "\\focus_blackout_debug.log", "UTF-8"
         g_FocusBlackoutWatcherLastHwnd := hwnd
         g_FocusBlackoutWatcherDwellStartTick := A_TickCount
         return
     }
 
-    if (g_FocusBlackoutWatcherCountdownActive)
+    if (g_FocusBlackoutWatcherCountdownActive) {
+        FileAppend "[FBW] Countdown already active\n", A_ScriptDir "\\focus_blackout_debug.log", "UTF-8"
         return
+    }
 
-    if (g_FocusBlackoutWatcherDeniedHwnd && hwnd = g_FocusBlackoutWatcherDeniedHwnd)
+    if (g_FocusBlackoutWatcherDeniedHwnd && hwnd = g_FocusBlackoutWatcherDeniedHwnd) {
+        FileAppend "[FBW] Blackout denied for this hwnd\n", A_ScriptDir "\\focus_blackout_debug.log", "UTF-8"
         return
+    }
 
-    if (g_FocusModeOn && g_FocusModeTrackedWindow && hwnd = g_FocusModeTrackedWindow)
+    if (g_FocusModeOn && g_FocusModeTrackedWindow && hwnd = g_FocusModeTrackedWindow) {
+        FileAppend "[FBW] Focus mode already on for this window\n", A_ScriptDir "\\focus_blackout_debug.log", "UTF-8"
         return
+    }
 
     ; When blackout is suppressed, keep resetting the dwell timer so the 20-second
     ; accumulation never completes and the countdown banner does not reappear.
     if (g_BlackoutSuppressedUntil && A_TickCount < g_BlackoutSuppressedUntil) {
+        FileAppend "[FBW] Blackout suppressed. Reset dwell timer.\n", A_ScriptDir "\\focus_blackout_debug.log", "UTF-8"
         g_FocusBlackoutWatcherDwellStartTick := A_TickCount
         return
     }
 
-    if ((A_TickCount - g_FocusBlackoutWatcherDwellStartTick) >= FOCUS_BLACKOUT_DWELL_MS)
+    elapsed := (A_TickCount - g_FocusBlackoutWatcherDwellStartTick)
+    if (elapsed >= FOCUS_BLACKOUT_DWELL_MS) {
+        FileAppend "[FBW] Dwell met (" . elapsed . " ms). Starting blackout countdown for hwnd " . hwnd . "\n", A_ScriptDir "\\focus_blackout_debug.log", "UTF-8"
         FocusBlackoutWatcher_StartCountdown(hwnd)
+        return
+    }
+    FileAppend "[FBW] Dwell not yet met: " . elapsed . " ms\n", A_ScriptDir "\\focus_blackout_debug.log", "UTF-8"
 }
 
 FocusBlackoutWatcher_Start() {
