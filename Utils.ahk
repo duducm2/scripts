@@ -7963,7 +7963,7 @@ HandleLoopModeUp() {
 global g_StudyTopics := Map(
     0, { name: "Technique (how to create studies)", mnemonicsPath: "\studies\technique\README.md",
         plansPath: "\studies\technique\plans.md" },
-    1, { name: "Skills", mnemonicsPath: "\studies\skills\mnemonics-skills.md",
+    1, { name: "Mnemonics", mnemonicsPath: "\studies\skills\mnemonics-skills.md",
         plansPath: "\studies\skills\learning-techniques.md" },
     2, { name: "Science", mnemonicsPath: "\studies\science\mnemonics-science.md",
         plansPath: "\studies\science\science-plan.md" },
@@ -8577,10 +8577,10 @@ StudyTopicSelector_ShowCategoryPhase() {
     g_StudyTopicSelectorGui.Add("Text", "w300 h1 Background45475A")
 
     g_StudyTopicSelectorGui.SetFont("s12 cCDD6F4", "Segoe UI")
-    g_StudyTopicSelectorGui.Add("Text", "w300", "[1] Technique")
-    g_StudyTopicSelectorGui.Add("Text", "w300", "[2] " . g_StudyTopics[1].name)
-    g_StudyTopicSelectorGui.Add("Text", "w300", "[3] Plans")
-    g_StudyTopicSelectorGui.Add("Text", "w300", "[4] Manage Study Subtopic Link")
+    g_StudyTopicSelectorGui.Add("Text", "w300", "[1] Mnemonics")
+    g_StudyTopicSelectorGui.Add("Text", "w300", "[2] Plans")
+    g_StudyTopicSelectorGui.Add("Text", "w300", "[3] Manage Study Subtopic Link")
+    g_StudyTopicSelectorGui.Add("Text", "w300", "[4] Technique")
     g_StudyTopicSelectorGui.Add("Text", "w300 h1 Background45475A y+10")
     g_StudyTopicSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
     g_StudyTopicSelectorGui.Add("Text", "w300 Center", "Press 1-4 | Backspace/Esc to cancel")
@@ -8593,10 +8593,10 @@ StudyTopicSelector_ShowCategoryPhase() {
     global g_StudyTopicSelectorActive
     g_StudyTopicSelectorActive := true
 
-    Hotkey("1", StudyTopicSelector_SelectTechnique, "On")
-    Hotkey("2", StudyTopicSelector_SelectMnemonics, "On")
-    Hotkey("3", StudyTopicSelector_SelectPlans, "On")
-    Hotkey("4", StudyTopicSelector_ManageLinks, "On")
+    Hotkey("1", StudyTopicSelector_SelectMnemonics, "On")
+    Hotkey("2", StudyTopicSelector_SelectPlans, "On")
+    Hotkey("3", StudyTopicSelector_ManageLinks, "On")
+    Hotkey("4", StudyTopicSelector_SelectTechnique, "On")
     Hotkey("Backspace", StudyTopicSelector_Cancel, "On")
     StudyTopicSelector_BindRobustEscape()
 
@@ -8619,7 +8619,7 @@ StudyTopicSelector_ManageLinksEsc(*) {
 ; Persistent global GUI for link management submenu
 global g_StudyLinksGui := false
 StudyTopicSelector_ManageLinks(*) {
-    global g_StudyLinksGui, g_StudyTopics
+    global g_StudyLinksGui
     StudyTopicSelector_UnbindRobustEscape()
     StudyTopicSelector_SafeDestroyGui(g_StudyLinksGui)
     g_StudyLinksGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner -DPIScale")
@@ -8632,153 +8632,79 @@ StudyTopicSelector_ManageLinks(*) {
     g_StudyLinksGui.MarginX := 20
     g_StudyLinksGui.MarginY := 15
     g_StudyLinksGui.SetFont("s14 cCDD6F4 Bold", "Segoe UI")
-    g_StudyLinksGui.Add("Text", "w400 Center", "🔗 Manage Study Subtopic Links")
+    g_StudyLinksGui.Add("Text", "w400 Center", "🔗 Manage Study Subtopic Link")
     g_StudyLinksGui.Add("Text", "w400 h1 Background45475A")
     g_StudyLinksGui.SetFont("s11 cCDD6F4", "Segoe UI")
-    idx := 1
-    studyKeys := []
-    for num, topic in g_StudyTopics {
-        if (num = 0) ; skip if 0 is not a valid study
-            continue
-        label := "[" idx "] " topic.name
-        g_StudyLinksGui.Add("Text", "w400", label)
-        studyKeys.Push(num)
-        idx++
-    }
+    url := StudyLink_Get("subtopic")
+    g_StudyLinksGui.Add("Text", "w400", "Current link: " (url != "" ? url : "(none)"))
+    g_StudyLinksGui.Add("Text", "w400", "[1] Open the link")
+    g_StudyLinksGui.Add("Text", "w400", "[2] Set the link")
     g_StudyLinksGui.Add("Text", "w400 h1 Background45475A y+10")
     g_StudyLinksGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_StudyLinksGui.Add("Text", "w400 Center", "Press 1-" (idx - 1) " to select study | Esc to cancel")
+    g_StudyLinksGui.Add("Text", "w400 Center", "Press 1-2 | Esc to cancel")
     StudyTopicSelector_PositionGuiLikeOutlook(g_StudyLinksGui)
-    ; Bind hotkeys for each study
-    for i, num in studyKeys {
-        Hotkey(String(i), MakeStudyLinkHandler(num), "On")
-    }
-
-    MakeStudyLinkHandler(num) {
-        return (p*) => StudyLink_StudySubmenu(g_StudyLinksGui, g_StudyTopics[num], num)
-    }
+    Hotkey("1", StudyTopicSelector_ManageLinks_Open, "On")
+    Hotkey("2", StudyTopicSelector_ManageLinks_Set, "On")
     Hotkey("Escape", StudyTopicSelector_ManageLinksEsc, "On")
     g_StudyLinksGui.Show()
 }
 
-StudyLink_SubmenuOnOpen(sKey, *) {
-    global g_StudyLinkSubmenuGui
-    StudyLink_Open(sKey)
-    StudyTopicSelector_SafeDestroyGui(g_StudyLinkSubmenuGui)
-    g_StudyLinkSubmenuGui := ""
+; [1] Open the saved subtopic link in Google Chrome
+StudyTopicSelector_ManageLinks_Open(*) {
+    global g_StudyLinksGui
+    StudyTopicSelector_SafeDestroyGui(g_StudyLinksGui)
+    g_StudyLinksGui := false
     try Hotkey("1", "Off")
     try Hotkey("2", "Off")
     try Hotkey("Escape", "Off")
+    url := StudyLink_Get("subtopic")
+    if (url != "") {
+        try Run('chrome.exe "' url '"')
+        catch
+            try Run(url)
+    } else {
+        MsgBox "No link stored for this study."
+    }
     StudyTopicSelector_ResumeSelectorEscapeAfterLinks()
 }
 
-StudyLink_SubmenuOnDefine(tp, sKey, *) {
-    global g_StudyLinkSubmenuGui
-    StudyTopicSelector_SafeDestroyGui(g_StudyLinkSubmenuGui)
-    g_StudyLinkSubmenuGui := ""
-    try Hotkey("1", "Off")
-    try Hotkey("2", "Off")
-    try Hotkey("Escape", "Off")
-    StudyLink_DefineLink(tp, sKey)
-}
-
-StudyLink_SubmenuOnEsc(*) {
-    global g_StudyLinkSubmenuGui
-    StudyTopicSelector_SafeDestroyGui(g_StudyLinkSubmenuGui)
-    g_StudyLinkSubmenuGui := ""
-    try Hotkey("1", "Off")
-    try Hotkey("2", "Off")
-    try Hotkey("Escape", "Off")
-    StudyTopicSelector_ManageLinks()
-}
-
-; Submenu for a single study: open or define link
-StudyLink_StudySubmenu(parentGui, topic, studyKey) {
-    global g_StudyLinkSubmenuGui, g_StudyLinksGui, g_StudyTopicSelectorGui
-    phwnd := (IsObject(parentGui) && parentGui.Hwnd) ? parentGui.Hwnd : 0
-    oldSubHwnd := (IsObject(g_StudyLinkSubmenuGui) && g_StudyLinkSubmenuGui.Hwnd) ? g_StudyLinkSubmenuGui.Hwnd : 0
-    catH := (IsObject(g_StudyTopicSelectorGui) && g_StudyTopicSelectorGui.Hwnd) ? g_StudyTopicSelectorGui.Hwnd : 0
-    ; #region agent log
-    StudyLink_DebugNDJSON("H5", "submenu_entry", phwnd, studyKey, catH)
-    StudyLink_DebugNDJSON("H4", "submenu_oldSub_preDestroy", oldSubHwnd, oldSubHwnd ? WinExist("ahk_id " oldSubHwnd) :
-        0,
-    phwnd ? WinExist("ahk_id " phwnd) : 0)
-    ; #endregion
-    try Hotkey("1", "Off")
-    try Hotkey("2", "Off")
-    try Hotkey("Escape", "Off")
-    ; Remove any prior per-study panel first so it cannot sit under the new one.
-    StudyTopicSelector_SafeDestroyGui(g_StudyLinkSubmenuGui)
-    g_StudyLinkSubmenuGui := ""
-    ; #region agent log
-    StudyLink_DebugNDJSON("H4", "submenu_oldSub_postSafeDestroy", oldSubHwnd, oldSubHwnd ? WinExist("ahk_id " oldSubHwnd
-    ) : 0,
-        phwnd ? WinExist("ahk_id " phwnd) : 0)
-    ; #endregion
-    ; Hide list before destroy so the new modal never stacks visually on top of it (Destroy can fail or lag).
-    try parentGui.Hide()
-    catch {
-    }
-    ; #region agent log
-    StudyLink_DebugNDJSON("H1", "submenu_postHideParent", phwnd, phwnd ? WinExist("ahk_id " phwnd) : 0, catH)
-    ; #endregion
-    parentDestroyFailed := false
-    try parentGui.Destroy()
-    catch {
-        parentDestroyFailed := true
-        try ShowCenteredOverlay_Utils("⚠ Could not close link list window (continuing).", 2000,
-            BANNER_ACCENT_INTERMEDIATE)
-        catch {
-        }
-    }
-    ; #region agent log
-    StudyLink_DebugNDJSON("H1", "submenu_postDestroyParent", phwnd, phwnd ? WinExist("ahk_id " phwnd) : 0,
-        parentDestroyFailed ? 1 : 0)
-    StudyLink_DebugNDJSON("H3", "submenu_postDestroy_catWinExist", catH, catH ? WinExist("ahk_id " catH) : 0, 0)
-    ; #endregion
+; [2] Set the link: while user is active in Chrome, send F6, copy URL, and save it
+StudyTopicSelector_ManageLinks_Set(*) {
+    global g_StudyLinksGui
+    StudyTopicSelector_SafeDestroyGui(g_StudyLinksGui)
     g_StudyLinksGui := false
-    submenuOpts := "+AlwaysOnTop -Caption +ToolWindow -DPIScale"
-    if (IsObject(g_StudyTopicSelectorGui) && g_StudyTopicSelectorGui.Hwnd)
-        submenuOpts .= " +Owner" . g_StudyTopicSelectorGui.Hwnd
-    g_StudyLinkSubmenuGui := Gui(submenuOpts)
-    g_StudyLinkSubmenuGui.BackColor := "1E1E2E"
-    g_StudyLinkSubmenuGui.MarginX := 20
-    g_StudyLinkSubmenuGui.MarginY := 15
-    g_StudyLinkSubmenuGui.SetFont("s13 cCDD6F4 Bold", "Segoe UI")
-    g_StudyLinkSubmenuGui.Add("Text", "w400 Center", "🔗 " topic.name)
-    g_StudyLinkSubmenuGui.Add("Text", "w400 h1 Background45475A")
-    g_StudyLinkSubmenuGui.SetFont("s11 cCDD6F4", "Segoe UI")
-    url := StudyLink_Get(studyKey)
-    g_StudyLinkSubmenuGui.Add("Text", "w400", "Current link: " (url != "" ? url : "(none)"))
-    g_StudyLinkSubmenuGui.Add("Text", "w400", "[1] Open Link")
-    g_StudyLinkSubmenuGui.Add("Text", "w400", "[2] Define Link")
-    g_StudyLinkSubmenuGui.Add("Text", "w400 h1 Background45475A y+10")
-    g_StudyLinkSubmenuGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_StudyLinkSubmenuGui.Add("Text", "w400 Center", "Press 1-2 | Esc to go back")
-    newH := g_StudyLinkSubmenuGui.Hwnd
-    ; #region agent log
-    StudyLink_DebugNDJSON("H1", "submenu_prePosition", phwnd, phwnd ? WinExist("ahk_id " phwnd) : 0, newH)
-    ; #endregion
-    StudyTopicSelector_PositionGuiLikeOutlook(g_StudyLinkSubmenuGui)
-    ; #region agent log
-    newH2 := g_StudyLinkSubmenuGui.Hwnd
-    StudyLink_DebugNDJSON("H1", "submenu_postPosition", phwnd, phwnd ? WinExist("ahk_id " phwnd) : 0, newH2)
-    StudyLink_DebugNDJSON("H3", "submenu_postPosition_cat", catH, catH ? WinExist("ahk_id " catH) : 0, newH2)
-    ; #endregion
-    Hotkey("1", StudyLink_SubmenuOnOpen.Bind(studyKey), "On")
-    Hotkey("2", StudyLink_SubmenuOnDefine.Bind(topic, studyKey), "On")
-    Hotkey("Escape", StudyLink_SubmenuOnEsc, "On")
-    ; StudyTopicSelector_PositionGuiLikeOutlook already shows visible at x/y; avoid a second Show stacking frames.
-}
-
-; Prompt user to define a new link for a study
-StudyLink_DefineLink(topic, studyKey) {
-    result := InputBox("Enter the URL for this study:", "Define Link for " topic.name, "w400 h120")
-    if (result.Result = "OK" && result.Value != "") {
-        StudyLink_Set(studyKey, result.Value)
-        MsgBox "Link saved."
+    try Hotkey("1", "Off")
+    try Hotkey("2", "Off")
+    try Hotkey("Escape", "Off")
+    try {
+        if WinExist("ahk_class Chrome_WidgetWin_1") {
+            WinActivate("ahk_class Chrome_WidgetWin_1")
+            if !WinWaitActive("ahk_class Chrome_WidgetWin_1", , 2) {
+                MsgBox "Chrome window did not become active."
+                StudyTopicSelector_ResumeSelectorEscapeAfterLinks()
+                return
+            }
+        } else {
+            MsgBox "Chrome window not found. Switch to Chrome and try again."
+            StudyTopicSelector_ResumeSelectorEscapeAfterLinks()
+            return
+        }
+        Sleep 200
+        Send "{F6}"
+        Sleep 300
+        Send "^c"
+        Sleep 200
+        url := A_Clipboard
+        if (url != "") {
+            StudyLink_Set("subtopic", url)
+            MsgBox "Link saved: " url
+        } else {
+            MsgBox "Could not copy the link."
+        }
+    } catch as e {
+        MsgBox "Error: " e.Message
     }
-    StudyTopicSelector_ManageLinks()
+    StudyTopicSelector_ResumeSelectorEscapeAfterLinks()
 }
 
 ShowStudyTopicSelector() {
