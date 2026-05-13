@@ -8651,42 +8651,32 @@ StudyTopicSelector_ManageLinks(*) {
 
 ; [1] Open the saved subtopic link in Google Chrome
 StudyTopicSelector_ManageLinks_Open(*) {
-    global g_StudyLinksGui
-    StudyTopicSelector_SafeDestroyGui(g_StudyLinksGui)
-    g_StudyLinksGui := false
-    try Hotkey("1", "Off")
-    try Hotkey("2", "Off")
-    try Hotkey("Escape", "Off")
+    StudyTopicSelector_Close()
     url := StudyLink_Get("subtopic")
     if (url != "") {
         try Run('chrome.exe "' url '"')
         catch
             try Run(url)
+        ShowCenteredOverlay_Utils("✅ Opening link in Chrome...", 2000, BANNER_ACCENT_SUCCESS)
     } else {
-        MsgBox "No link stored for this study."
+        ShowCenteredOverlay_Utils("⚠ No link stored for this study. Use [Set the link] first.", 2500,
+            BANNER_ACCENT_INTERMEDIATE)
     }
-    StudyTopicSelector_ResumeSelectorEscapeAfterLinks()
 }
 
 ; [2] Set the link: while user is active in Chrome, send F6, copy URL, and save it
 StudyTopicSelector_ManageLinks_Set(*) {
-    global g_StudyLinksGui
-    StudyTopicSelector_SafeDestroyGui(g_StudyLinksGui)
-    g_StudyLinksGui := false
-    try Hotkey("1", "Off")
-    try Hotkey("2", "Off")
-    try Hotkey("Escape", "Off")
+    StudyTopicSelector_Close()
     try {
         if WinExist("ahk_class Chrome_WidgetWin_1") {
             WinActivate("ahk_class Chrome_WidgetWin_1")
             if !WinWaitActive("ahk_class Chrome_WidgetWin_1", , 2) {
-                MsgBox "Chrome window did not become active."
-                StudyTopicSelector_ResumeSelectorEscapeAfterLinks()
+                ShowCenteredOverlay_Utils("❌ Chrome window did not become active.", 2500, BANNER_ACCENT_ERROR)
                 return
             }
         } else {
-            MsgBox "Chrome window not found. Switch to Chrome and try again."
-            StudyTopicSelector_ResumeSelectorEscapeAfterLinks()
+            ShowCenteredOverlay_Utils("❌ Chrome window not found. Switch to Chrome and try again.", 3000,
+                BANNER_ACCENT_ERROR)
             return
         }
         Sleep 200
@@ -8697,14 +8687,13 @@ StudyTopicSelector_ManageLinks_Set(*) {
         url := A_Clipboard
         if (url != "") {
             StudyLink_Set("subtopic", url)
-            MsgBox "Link saved: " url
+            ShowCenteredOverlay_Utils("✅ Link saved.", 2000, BANNER_ACCENT_SUCCESS)
         } else {
-            MsgBox "Could not copy the link."
+            ShowCenteredOverlay_Utils("❌ Could not copy the link.", 2500, BANNER_ACCENT_ERROR)
         }
     } catch as e {
-        MsgBox "Error: " e.Message
+        ShowCenteredOverlay_Utils("❌ Error: " . e.Message, 3000, BANNER_ACCENT_ERROR)
     }
-    StudyTopicSelector_ResumeSelectorEscapeAfterLinks()
 }
 
 ShowStudyTopicSelector() {
