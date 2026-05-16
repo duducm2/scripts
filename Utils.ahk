@@ -8742,79 +8742,24 @@ StudyTopicSelector_ManageLinks_Open(*) {
     }
 }
 
-; #region agent log
-StudyLink_Debug_befb2d(hypothesisId, location, message, data := "{}") {
-    try FileAppend '{"sessionId":"befb2d","timestamp":' . A_TickCount . ',"hypothesisId":"' . hypothesisId .
-        '","location":"' . location . '","message":"' . message . '","data":' . data . '}' "`n", A_ScriptDir .
-        "\debug-befb2d.log", "UTF-8"
-}
-
-StudyLink_DebugUiaElBrief(el) {
-    if !IsObject(el)
-        return '{"found":false}'
-    n := "", aid := "", cls := "", hasInvoke := false, hasClickable := false
-    try n := el.Name
-    catch {
-    }
-    try aid := el.AutomationId
-    catch {
-    }
-    try cls := el.ClassName
-    catch {
-    }
-    try hasInvoke := el.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)
-    catch {
-    }
-    try hasClickable := el.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) || el.GetPropertyValue(UIA
-        .Property.IsLegacyIAccessiblePatternAvailable)
-    catch {
-    }
-    return '{"name":"' . StrReplace(n, '"', '\"') . '","automationId":"' . StrReplace(aid, '"', '\"') .
-    '","className":"' . StrReplace(SubStr(cls, 1, 40), '"', '\"') . '","hasInvoke":' . (hasInvoke ? "true" :
-        "false") . '}'
-}
-
 StudyLink_SharePanelOpen(uia) {
     return ClipAngel_UiaFindFirst(uia, { AutomationId: "start-at-checkbox", Type: 50002 }) != 0
 }
-; #endregion
 
-StudyLink_UiaInvokeOrClick(el, logContext := "") {
+StudyLink_UiaInvokeOrClick(el) {
     if !IsObject(el)
         return false
     try {
         if el.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
             el.Invoke()
-            method := "invoke"
-            ; #region agent log
-            if (logContext != "")
-                StudyLink_Debug_befb2d("H2", "StudyLink_UiaInvokeOrClick", logContext, '{"method":"invoke","el":' .
-                    StudyLink_DebugUiaElBrief(el) . '}')
-            ; #endregion
             return true
         }
-    } catch as e1 {
-        ; #region agent log
-        if (logContext != "")
-            StudyLink_Debug_befb2d("H2", "StudyLink_UiaInvokeOrClick", logContext . "_invoke_err", '{"err":"' .
-                StrReplace(e1.Message, '"', '\"') . '"}')
-        ; #endregion
+    } catch {
     }
     try {
         el.Click()
-        method := "click"
-        ; #region agent log
-        if (logContext != "")
-            StudyLink_Debug_befb2d("H2", "StudyLink_UiaInvokeOrClick", logContext, '{"method":"click","el":' .
-                StudyLink_DebugUiaElBrief(el) . '}')
-        ; #endregion
         return true
-    } catch as e2 {
-        ; #region agent log
-        if (logContext != "")
-            StudyLink_Debug_befb2d("H2", "StudyLink_UiaInvokeOrClick", logContext . "_click_err", '{"err":"' .
-                StrReplace(e2.Message, '"', '\"') . '"}')
-        ; #endregion
+    } catch {
     }
     return false
 }
@@ -8938,42 +8883,19 @@ StudyLink_CaptureYoutubeTimestampUrl(uia, &errMsg := "") {
 StudyLink_CleanupYoutubeSharePanel(uia) {
     if !IsObject(uia)
         return
-    panelOpen := StudyLink_SharePanelOpen(uia)
-    ; #region agent log
-    StudyLink_Debug_befb2d("H4", "StudyLink_CleanupYoutubeSharePanel", "entry", '{"panelOpen":' . (panelOpen ? "true" :
-        "false") . '}')
-    ; #endregion
-    if !panelOpen
+    if !StudyLink_SharePanelOpen(uia)
         return
     cancelBtn := 0
     closeGroup := ClipAngel_UiaFindFirst(uia, { AutomationId: "close-button" })
     if closeGroup
         cancelBtn := ClipAngel_UiaFindFirst(closeGroup, { Type: 50000, Name: "Cancel" })
-    cancelGlobal := ClipAngel_UiaFindFirst(uia, { Type: 50000, Name: "Cancel" })
     if !cancelBtn
-        cancelBtn := cancelGlobal
-    ; #region agent log
-    StudyLink_Debug_befb2d("H1,H3", "StudyLink_CleanupYoutubeSharePanel", "cancel_lookup", '{"scopedFound":' . (
-        closeGroup && cancelBtn ? "true" : "false") . ',"globalFound":' . (cancelGlobal ? "true" : "false") .
-    ',"el":' . StudyLink_DebugUiaElBrief(cancelBtn) . '}')
-    ; #endregion
-    clicked := false
-    if cancelBtn
-        clicked := StudyLink_UiaInvokeOrClick(cancelBtn, "cancel_btn")
-    panelAfter := StudyLink_SharePanelOpen(uia)
-    ; #region agent log
-    StudyLink_Debug_befb2d("H2,H4", "StudyLink_CleanupYoutubeSharePanel", "after_invoke_click", '{"clicked":' . (
-        clicked ? "true" : "false") . ',"panelStillOpen":' . (panelAfter ? "true" : "false") . '}')
-    ; #endregion
-    if clicked && !panelAfter
+        cancelBtn := ClipAngel_UiaFindFirst(uia, { Type: 50000, Name: "Cancel" })
+    if cancelBtn && StudyLink_UiaInvokeOrClick(cancelBtn) && !StudyLink_SharePanelOpen(uia)
         return
     try Send "{Escape}"
     catch {
     }
-    ; #region agent log
-    StudyLink_Debug_befb2d("H5", "StudyLink_CleanupYoutubeSharePanel", "after_escape", '{"panelStillOpen":' . (
-        StudyLink_SharePanelOpen(uia) ? "true" : "false") . '}')
-    ; #endregion
 }
 
 ; [2] Set the link: YouTube Share + Start at + Copy, save via API
