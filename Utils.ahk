@@ -8742,13 +8742,218 @@ StudyTopicSelector_ManageLinks_Open(*) {
     }
 }
 
-; [2] Set the link: while user is active in Chrome, send F6, copy URL, and save it
+; #region agent log
+StudyLink_Debug_befb2d(hypothesisId, location, message, data := "") {
+    logPath := A_ScriptDir "\debug-befb2d.log"
+    if (data = "")
+        data := "{}"
+    line := '{"sessionId":"befb2d","timestamp":' . A_TickCount . ',"hypothesisId":"' . hypothesisId .
+        '","location":"' . location . '","message":"' . message . '","data":' . data . '}' "`n"
+    try FileAppend line, logPath, "UTF-8"
+}
+
+StudyLink_DebugUiaEl(el) {
+    if !IsObject(el)
+        return '{"found":false}'
+    n := "", t := "", aid := ""
+    try n := el.Name
+    catch {
+    }
+    try t := el.Type
+    catch {
+    }
+    try aid := el.AutomationId
+    catch {
+    }
+    return '{"name":"' . StrReplace(n, '"', '\"') . '","type":' . t . ',"automationId":"' . StrReplace(aid, '"', '\"') .
+    '"}'
+}
+; #endregion
+
+StudyLink_UiaInvokeOrClick(el) {
+    if !IsObject(el)
+        return false
+    method := ""
+    try {
+        if el.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
+            el.Invoke()
+            method := "invoke"
+            ; #region agent log
+            StudyLink_Debug_befb2d("H2,H5", "StudyLink_UiaInvokeOrClick", "uia_action", '{"method":"' . method .
+                '","el":' .
+                StudyLink_DebugUiaEl(el) . '}')
+            ; #endregion
+            return true
+        }
+    } catch {
+    }
+    try {
+        el.Click()
+        method := "click"
+        ; #region agent log
+        StudyLink_Debug_befb2d("H2,H5", "StudyLink_UiaInvokeOrClick", "uia_action", '{"method":"' . method . '","el":' .
+            StudyLink_DebugUiaEl(el) . '}')
+        ; #endregion
+        return true
+    } catch {
+    }
+    return false
+}
+
+StudyLink_UiaWaitFor(root, conditions, timeoutMs := 4000) {
+    if !IsObject(root)
+        return 0
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        el := ClipAngel_UiaFindFirst(root, conditions)
+        if el
+            return el
+        Sleep 80
+    }
+    return 0
+}
+
+StudyLink_CaptureYoutubeTimestampUrl(uia, &errMsg := "") {
+    errMsg := ""
+    ; #region agent log
+    StudyLink_Debug_befb2d("H1", "StudyLink_CaptureYoutubeTimestampUrl", "capture_start", "{}")
+    ; #endregion
+    if !IsObject(uia) {
+        errMsg := "Could not attach to Chrome."
+        return ""
+    }
+    try currentUrl := uia.GetCurrentURL()
+    catch {
+        errMsg := "Could not read the current page URL."
+        return ""
+    }
+    if !InStr(currentUrl, "youtube.com/watch") {
+        errMsg := "Open a YouTube video (watch page) and try again."
+        return ""
+    }
+    shareBtn := ClipAngel_UiaFindFirst(uia, { Type: 50000, Name: "Share" })
+    if !shareBtn {
+        errMsg := "Share button not found."
+        return ""
+    }
+    if !StudyLink_UiaInvokeOrClick(shareBtn) {
+        errMsg := "Could not open the Share panel."
+        return ""
+    }
+    Sleep 200
+    startAt := StudyLink_UiaWaitFor(uia, { AutomationId: "start-at-checkbox", Type: 50002 })
+    if !startAt {
+        errMsg := "Share panel did not open in time."
+        return ""
+    }
+    startAtOn := ClipAngel_FavoriteCellIsOn(startAt)
+    ; #region agent log
+    StudyLink_Debug_befb2d("H1", "StudyLink_CaptureYoutubeTimestampUrl", "start_at_state", '{"checked":' . (startAtOn ?
+        "true" :
+            "false") . '}')
+    ; #endregion
+    if !startAtOn {
+        toggled := false
+        try {
+            if startAt.GetPropertyValue(UIA.Property.IsTogglePatternAvailable) {
+                startAt.TogglePattern.Toggle()
+                toggled := true
+            }
+        } catch {
+        }
+        if (!toggled)
+            toggled := StudyLink_UiaInvokeOrClick(startAt)
+        if (!toggled) {
+            errMsg := "Could not enable Start at."
+            return ""
+        }
+        Sleep 150
+    }
+    deadline := A_TickCount + 2000
+    while (A_TickCount < deadline) {
+        shareUrlEl := ClipAngel_UiaFindFirst(uia, { AutomationId: "share-url", Type: 50004 })
+        if shareUrlEl {
+            try shareVal := Trim(shareUrlEl.Value)
+            catch
+                shareVal := ""
+            if (shareVal != "" && InStr(shareVal, "t="))
+                break
+        }
+        Sleep 80
+    }
+    shareUrlEl := StudyLink_UiaWaitFor(uia, { AutomationId: "share-url", Type: 50004 }, 2000)
+    if !shareUrlEl {
+        errMsg := "Share link field not found."
+        return ""
+    }
+    url := ""
+    try url := Trim(shareUrlEl.Value)
+    catch
+        url := ""
+    copyBtn := 0
+    copyGroup := ClipAngel_UiaFindFirst(uia, { AutomationId: "copy-button" })
+    if copyGroup
+        copyBtn := ClipAngel_UiaFindFirst(copyGroup, { Type: 50000, Name: "Copy" })
+    if !copyBtn
+        copyBtn := ClipAngel_UiaFindFirst(uia, { Type: 50000, Name: "Copy" })
+    ; #region agent log
+    StudyLink_Debug_befb2d("H6,H7", "StudyLink_CaptureYoutubeTimestampUrl", "pre_copy", '{"valueLen":' . StrLen(url) .
+    ',"valueHasT":' . (InStr(url, "t=") ? "true" : "false") . ',"copyBtnFound":' . (copyBtn ? "true" : "false") .
+    '}')
+    ; #endregion
+    if !copyBtn {
+        errMsg := "Copy button not found."
+        return ""
+    }
+    savedClip := A_Clipboard
+    if !StudyLink_UiaInvokeOrClick(copyBtn) {
+        errMsg := "Could not click Copy."
+        return ""
+    }
+    clipDeadline := A_TickCount + 2000
+    clipUrl := ""
+    while (A_TickCount < clipDeadline) {
+        clipUrl := Trim(A_Clipboard)
+        if (clipUrl != "" && clipUrl != savedClip && InStr(clipUrl, "t="))
+            break
+        Sleep 80
+    }
+    urlSource := "value"
+    if (url = "" || !InStr(url, "t=")) {
+        if (clipUrl != "" && InStr(clipUrl, "t="))
+            url := clipUrl
+        urlSource := "clipboard"
+    }
+    ; #region agent log
+    StudyLink_Debug_befb2d("H6,H7", "StudyLink_CaptureYoutubeTimestampUrl", "capture_result", '{"urlSource":"' .
+        urlSource . '","urlLen":' . StrLen(url) . ',"hasT":' . (InStr(url, "t=") ? "true" : "false") . ',"clipLen":' .
+        StrLen(clipUrl) . ',"clipHasT":' . (InStr(clipUrl, "t=") ? "true" : "false") . ',"branch":"copy-button"}')
+    ; #endregion
+    if (url = "" || !InStr(url, "youtu") || !InStr(url, "t=")) {
+        errMsg := "Could not read the timestamped share link."
+        return ""
+    }
+    return url
+}
+
+StudyLink_CleanupYoutubeSharePanel(uia) {
+    if !IsObject(uia)
+        return
+    try {
+        if ClipAngel_UiaFindFirst(uia, { AutomationId: "start-at-checkbox", Type: 50002 })
+            Send "{Escape}"
+    } catch {
+    }
+}
+
+; [2] Set the link: YouTube Share + Start at + Copy, save via API
 StudyTopicSelector_ManageLinks_Set(*) {
     StudyTopicSelector_Close()
     try {
-        if WinExist("ahk_class Chrome_WidgetWin_1") {
-            WinActivate("ahk_class Chrome_WidgetWin_1")
-            if !WinWaitActive("ahk_class Chrome_WidgetWin_1", , 2) {
+        chromeHwnd := WinExist("ahk_class Chrome_WidgetWin_1")
+        if chromeHwnd {
+            WinActivate("ahk_id " chromeHwnd)
+            if !WinWaitActive("ahk_id " chromeHwnd, , 2) {
                 ShowCenteredOverlay_Utils("❌ Chrome window did not become active.", 2500, BANNER_ACCENT_ERROR)
                 return
             }
@@ -8758,16 +8963,23 @@ StudyTopicSelector_ManageLinks_Set(*) {
             return
         }
         Sleep 200
-        Send "{F6}"
-        Sleep 300
-        Send "^c"
-        Sleep 200
-        url := A_Clipboard
+        uia := UIA_Browser("ahk_id " chromeHwnd)
+        errMsg := ""
+        url := StudyLink_CaptureYoutubeTimestampUrl(uia, &errMsg)
+        StudyLink_CleanupYoutubeSharePanel(uia)
         if (url != "") {
-            StudyLink_Set("subtopic", url)
-            ShowCenteredOverlay_Utils("✅ Link saved.", 2000, BANNER_ACCENT_SUCCESS)
+            setOk := StudyLink_Set("subtopic", url)
+            ; #region agent log
+            StudyLink_Debug_befb2d("H8", "StudyTopicSelector_ManageLinks_Set", "api_set_result", '{"ok":' . (setOk ?
+                "true" : "false") . ',"urlLen":' . StrLen(url) . '}')
+            ; #endregion
+            if setOk
+                ShowCenteredOverlay_Utils("✅ Link saved.", 2000, BANNER_ACCENT_SUCCESS)
+            else
+                ShowCenteredOverlay_Utils("❌ Could not save the link.", 2500, BANNER_ACCENT_ERROR)
         } else {
-            ShowCenteredOverlay_Utils("❌ Could not copy the link.", 2500, BANNER_ACCENT_ERROR)
+            ShowCenteredOverlay_Utils(errMsg != "" ? "❌ " errMsg : "❌ Could not capture the link.", 2500,
+                BANNER_ACCENT_ERROR)
         }
     } catch as e {
         ShowCenteredOverlay_Utils("❌ Error: " . e.Message, 3000, BANNER_ACCENT_ERROR)

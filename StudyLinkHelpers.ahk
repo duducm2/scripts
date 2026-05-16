@@ -1,6 +1,7 @@
 ; StudyLink helpers for per-study subtopic links via Google Apps Script API
 ; API endpoint: Google Apps Script web app (GET = read, POST = write)
-global STUDY_LINKS_API_URL := "https://script.google.com/macros/s/AKfycbzzkjpT_47W0TwcjwEulzkV9l5xTtqcwWJmF0h-B-11SwiL_49SPhKXnj3PTsgFUZcp/exec"
+global STUDY_LINKS_API_URL :=
+    "https://script.google.com/macros/s/AKfycbzzkjpT_47W0TwcjwEulzkV9l5xTtqcwWJmF0h-B-11SwiL_49SPhKXnj3PTsgFUZcp/exec"
 
 ; ────────────────────────────────────────────────────────────────────────────
 ; HTTP helpers (WinHttpRequest)
@@ -135,14 +136,41 @@ StudyLink_Get(studyKey) {
 ; Sends POST with key and url, expects URL-encoded response with status=ok
 ; Returns true on success, false otherwise.
 ; ────────────────────────────────────────────────────────────────────────────
+; #region agent log
+StudyLink_DebugApi_befb2d(message, data := "{}") {
+    logPath := A_ScriptDir "\debug-befb2d.log"
+    line := '{"sessionId":"befb2d","timestamp":' . A_TickCount .
+        ',"hypothesisId":"H8","location":"StudyLink_Set","message":"' .
+        message . '","data":' . data . '}' "`n"
+    try FileAppend line, logPath, "UTF-8"
+}
+; #endregion
+
 StudyLink_Set(studyKey, url) {
     data := "key=" . StudyLink_UrlEncode(studyKey) . "&url=" . StudyLink_UrlEncode(url)
+    ; #region agent log
+    rawAmp := false
+    if RegExMatch(data, "url=(.+)", &m)
+        rawAmp := InStr(m[1], "&") && !InStr(m[1], "%26")
+    StudyLink_DebugApi_befb2d("api_post_start", '{"urlLen":' . StrLen(url) . ',"hasT":' . (InStr(url, "t=") ? "true" :
+        "false") . ',"dataLen":' . StrLen(data) . ',"rawAmpInUrlValue":' . (rawAmp ? "true" : "false") . '}')
+    ; #endregion
     response := StudyLink_HttpPost(data)
+    ; #region agent log
+    respPreview := SubStr(StrReplace(response, '"', "'"), 1, 120)
+    StudyLink_DebugApi_befb2d("api_post_response", '{"respLen":' . StrLen(response) . ',"preview":"' . respPreview .
+    '"}')
+    ; #endregion
     if (SubStr(response, 1, 6) = "ERROR:") {
         return false
     }
     ; Parse response for status field
     parsed := StudyLink_ParseFormEncoded(response)
+    ; #region agent log
+    statusVal := parsed.Has("status") ? parsed["status"] : ""
+    StudyLink_DebugApi_befb2d("api_post_parsed", '{"hasStatus":' . (parsed.Has("status") ? "true" : "false") .
+    ',"status":"' . statusVal . '"}')
+    ; #endregion
     if (parsed.Has("status") && (parsed["status"] = "ok" || parsed["status"] = "OK"))
         return true
     ; Fallback: check if response text literally contains "ok"
