@@ -88,18 +88,25 @@ StudyLink_UrlDecode(str) {
 }
 
 ; ────────────────────────────────────────────────────────────────────────────
-; Parse a URL-encoded response string (key=value&key2=value2...) into a Map
+; Parse the API response into a Map.
+; WARNING: The `url` value may contain literal `&` characters (e.g. &t=435s).
+; StrSplit("&") would truncate those — instead we extract `url=` as the LAST
+; field by taking everything after its prefix (url is always the final field).
+; Simple scalar fields (key, status) use safe &-delimited extraction.
 ; ────────────────────────────────────────────────────────────────────────────
 StudyLink_ParseFormEncoded(response) {
     result := Map()
-    parts := StrSplit(response, "&")
-    for part in parts {
-        eqPos := InStr(part, "=")
-        if (eqPos = 0)
-            continue
-        key := SubStr(part, 1, eqPos - 1)
-        val := SubStr(part, eqPos + 1)
-        result[key] := val
+    ; Simple fields before url (safe to split by &)
+    if RegExMatch(response, "key=([^&]+)", &m)
+        result["key"] := m[1]
+    if RegExMatch(response, "status=([^&]+)", &m)
+        result["status"] := m[1]
+    ; url field: everything after "url=" — url is always the LAST field,
+    ; so it may contain literal & that must NOT be treated as delimiters.
+    urlPos := InStr(response, "url=")
+    if (urlPos) {
+        rawUrl := SubStr(response, urlPos + 4)
+        result["url"] := rawUrl
     }
     return result
 }
