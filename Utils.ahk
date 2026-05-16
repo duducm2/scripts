@@ -1626,6 +1626,15 @@ global g_HandyAiModels := Map(
 global HANDY_AI_SLOT_COHERE_PORTUGUESE := 4
 global HANDY_AI_SLOT_COHERE_ENGLISH := 3
 
+; Handy UI automation pacing (ms). Increase if language typing, model menu, or close races the UI.
+global HANDY_LAUNCH_SETTLE_MS := 550
+global HANDY_STEP_MS := 220
+global HANDY_TYPING_MS := 240
+global HANDY_DROPDOWN_MS := 380
+global HANDY_MENU_KEY_MS := 140
+global HANDY_POST_CLICK_MS := 350
+global HANDY_PRE_CLOSE_MS := 450
+
 ; GUI state for AI model selector
 global g_AiModelSelectorGui := false
 global g_AiModelSelectorActive := false
@@ -3343,6 +3352,7 @@ ExecuteHandyAiModelSelection(selection) {
             AiModelBanner_Hide()
             return
         }
+        Sleep HANDY_LAUNCH_SETTLE_MS
 
         ; Step 1b: Optional - set Cohere language on General (explicit English / Portuguese)
         if (modelInfo.HasProp("cohereLanguage") && modelInfo.cohereLanguage != "") {
@@ -3353,7 +3363,7 @@ ExecuteHandyAiModelSelection(selection) {
                 AiModelBanner_Hide()
                 return
             }
-            Sleep 120
+            Sleep HANDY_STEP_MS
         }
 
         ; Step 2: Open AI model menu
@@ -3364,6 +3374,7 @@ ExecuteHandyAiModelSelection(selection) {
             AiModelBanner_Hide()
             return
         }
+        Sleep HANDY_STEP_MS
 
         ; Step 3: Select the model
         AiModelBanner_Show("🎯 Selecting " . modelDisplayName . "...")
@@ -3373,6 +3384,7 @@ ExecuteHandyAiModelSelection(selection) {
             AiModelBanner_Hide()
             return
         }
+        Sleep HANDY_POST_CLICK_MS
         Handy_SetPersistedAiModelSlot(selection)
 
         ; Update persistent language flag indicator (slot 3 = UK, slot 4 = BR; hidden for slots 1/2).
@@ -3392,8 +3404,9 @@ ExecuteHandyAiModelSelection(selection) {
 
         ; Step 5: Close Handy window
         AiModelBanner_Show("✅ Done! Closing Handy...", BANNER_ACCENT_SUCCESS)
+        Sleep HANDY_PRE_CLOSE_MS
         try WinClose("ahk_id " . handyHwnd)
-        Sleep 150
+        Sleep HANDY_STEP_MS
 
         AiModelBanner_Hide()
 
@@ -3434,6 +3447,7 @@ Handy_ActivateOrLaunch() {
         WinActivate("ahk_id " . matchingHwnd)
         WinWaitActive("ahk_id " . matchingHwnd, , 2)
         Handy_WaitForMainUiReady(matchingHwnd, 2000)
+        Sleep HANDY_STEP_MS
         return matchingHwnd
     }
 
@@ -3454,6 +3468,7 @@ Handy_ActivateOrLaunch() {
                 WinWaitActive("ahk_id " . h, , 2)
                 if (!Handy_WaitForMainUiReady(h, 9000))
                     return 0
+                Sleep HANDY_LAUNCH_SETTLE_MS
                 return h
             }
         } catch {
@@ -3462,6 +3477,7 @@ Handy_ActivateOrLaunch() {
                 WinWaitActive("ahk_id " . h, , 2)
                 if (!Handy_WaitForMainUiReady(h, 9000))
                     return 0
+                Sleep HANDY_LAUNCH_SETTLE_MS
                 return h
             }
         }
@@ -3473,7 +3489,7 @@ Handy_ActivateOrLaunch() {
 Handy_WaitForMainUiReady(hwnd, maxWaitMs := 9000) {
     global UIA
     start := A_TickCount
-    pollMs := 120
+    pollMs := 150
     loop {
         if ((A_TickCount - start) >= maxWaitMs)
             return false
@@ -3521,7 +3537,7 @@ Handy_EnsureGeneralTab(hwnd) {
             catch {
                 try gen.Invoke()
             }
-            Sleep 220
+            Sleep HANDY_DROPDOWN_MS
             el2 := UIA.ElementFromHandle(hwnd)
             return Handy_GeneralTabVisible(el2)
         }
@@ -3566,11 +3582,11 @@ Handy_SetCohereLanguage_PickFromOpenDropdown(hwnd, langName) {
         } catch {
             try searchEl.Click()
         }
-        Sleep 50
+        Sleep HANDY_STEP_MS
     }
     Send "^a"
     SendText langName
-    Sleep 140
+    Sleep HANDY_TYPING_MS
     picked := false
     try {
         for btn in el.FindAll({ Type: 50000 }) {
@@ -3590,7 +3606,7 @@ Handy_SetCohereLanguage_PickFromOpenDropdown(hwnd, langName) {
     }
     if !picked
         Send "{Enter}"
-    Sleep 120
+    Sleep HANDY_DROPDOWN_MS
 }
 
 ; Set Cohere transcription language on General tab (explicit list pick, not Auto Detect).
@@ -3613,7 +3629,7 @@ Handy_SetCohereLanguage(hwnd, langName) {
     catch {
         try langBtn.Invoke()
     }
-    Sleep 220
+    Sleep HANDY_DROPDOWN_MS
     Handy_SetCohereLanguage_PickFromOpenDropdown(hwnd, langName)
 
     el := UIA.ElementFromHandle(hwnd)
@@ -3629,7 +3645,7 @@ Handy_SetCohereLanguage(hwnd, langName) {
 
     ; Retry once: close stray popup then reopen
     Send "{Escape}"
-    Sleep 120
+    Sleep HANDY_STEP_MS
     el := UIA.ElementFromHandle(hwnd)
     if !el
         return false
@@ -3640,7 +3656,7 @@ Handy_SetCohereLanguage(hwnd, langName) {
     catch {
         try langBtn3.Invoke()
     }
-    Sleep 220
+    Sleep HANDY_DROPDOWN_MS
     Handy_SetCohereLanguage_PickFromOpenDropdown(hwnd, langName)
 
     el := UIA.ElementFromHandle(hwnd)
@@ -3701,20 +3717,20 @@ Handy_OpenAiModelMenu(hwnd) {
     catch {
         try anchor.Click()
     }
-    Sleep 60
+    Sleep HANDY_MENU_KEY_MS
     Send "+{Tab}"
-    Sleep 60
+    Sleep HANDY_MENU_KEY_MS
     Send "{Enter}"
 
     ; Context menu can open slowly in Handy; wait for menu row(s) to actually exist.
-    return Handy_WaitForAiModelMenuOpen(hwnd, 2500)
+    return Handy_WaitForAiModelMenuOpen(hwnd, 4000)
 }
 
 ; Wait for AI model context menu rows to appear after opening the menu.
-Handy_WaitForAiModelMenuOpen(hwnd, maxWaitMs := 2500) {
+Handy_WaitForAiModelMenuOpen(hwnd, maxWaitMs := 4000) {
     global UIA
     start := A_TickCount
-    pollMs := 100
+    pollMs := 130
     loop {
         if ((A_TickCount - start) >= maxWaitMs)
             return false
@@ -3786,7 +3802,7 @@ Handy_ClickAiModel(hwnd, modelName) {
 ; Returns true when loading text disappeared, false on timeout or if button not found.
 Handy_WaitForModelReady(hwnd, maxWaitMs) {
     global UIA
-    pollInterval := 250
+    pollInterval := 300
     start := A_TickCount
     firstLog := true
     loop {
