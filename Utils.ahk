@@ -8742,58 +8742,18 @@ StudyTopicSelector_ManageLinks_Open(*) {
     }
 }
 
-; #region agent log
-StudyLink_Debug_befb2d(hypothesisId, location, message, data := "") {
-    logPath := A_ScriptDir "\debug-befb2d.log"
-    if (data = "")
-        data := "{}"
-    line := '{"sessionId":"befb2d","timestamp":' . A_TickCount . ',"hypothesisId":"' . hypothesisId .
-        '","location":"' . location . '","message":"' . message . '","data":' . data . '}' "`n"
-    try FileAppend line, logPath, "UTF-8"
-}
-
-StudyLink_DebugUiaEl(el) {
-    if !IsObject(el)
-        return '{"found":false}'
-    n := "", t := "", aid := ""
-    try n := el.Name
-    catch {
-    }
-    try t := el.Type
-    catch {
-    }
-    try aid := el.AutomationId
-    catch {
-    }
-    return '{"name":"' . StrReplace(n, '"', '\"') . '","type":' . t . ',"automationId":"' . StrReplace(aid, '"', '\"') .
-    '"}'
-}
-; #endregion
-
 StudyLink_UiaInvokeOrClick(el) {
     if !IsObject(el)
         return false
-    method := ""
     try {
         if el.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
             el.Invoke()
-            method := "invoke"
-            ; #region agent log
-            StudyLink_Debug_befb2d("H2,H5", "StudyLink_UiaInvokeOrClick", "uia_action", '{"method":"' . method .
-                '","el":' .
-                StudyLink_DebugUiaEl(el) . '}')
-            ; #endregion
             return true
         }
     } catch {
     }
     try {
         el.Click()
-        method := "click"
-        ; #region agent log
-        StudyLink_Debug_befb2d("H2,H5", "StudyLink_UiaInvokeOrClick", "uia_action", '{"method":"' . method . '","el":' .
-            StudyLink_DebugUiaEl(el) . '}')
-        ; #endregion
         return true
     } catch {
     }
@@ -8815,9 +8775,6 @@ StudyLink_UiaWaitFor(root, conditions, timeoutMs := 4000) {
 
 StudyLink_CaptureYoutubeTimestampUrl(uia, &errMsg := "") {
     errMsg := ""
-    ; #region agent log
-    StudyLink_Debug_befb2d("H1", "StudyLink_CaptureYoutubeTimestampUrl", "capture_start", "{}")
-    ; #endregion
     if !IsObject(uia) {
         errMsg := "Could not attach to Chrome."
         return ""
@@ -8847,11 +8804,6 @@ StudyLink_CaptureYoutubeTimestampUrl(uia, &errMsg := "") {
         return ""
     }
     startAtOn := ClipAngel_FavoriteCellIsOn(startAt)
-    ; #region agent log
-    StudyLink_Debug_befb2d("H1", "StudyLink_CaptureYoutubeTimestampUrl", "start_at_state", '{"checked":' . (startAtOn ?
-        "true" :
-            "false") . '}')
-    ; #endregion
     if !startAtOn {
         toggled := false
         try {
@@ -8896,11 +8848,6 @@ StudyLink_CaptureYoutubeTimestampUrl(uia, &errMsg := "") {
         copyBtn := ClipAngel_UiaFindFirst(copyGroup, { Type: 50000, Name: "Copy" })
     if !copyBtn
         copyBtn := ClipAngel_UiaFindFirst(uia, { Type: 50000, Name: "Copy" })
-    ; #region agent log
-    StudyLink_Debug_befb2d("H6,H7", "StudyLink_CaptureYoutubeTimestampUrl", "pre_copy", '{"valueLen":' . StrLen(url) .
-    ',"valueHasT":' . (InStr(url, "t=") ? "true" : "false") . ',"copyBtnFound":' . (copyBtn ? "true" : "false") .
-    '}')
-    ; #endregion
     if !copyBtn {
         errMsg := "Copy button not found."
         return ""
@@ -8918,17 +8865,10 @@ StudyLink_CaptureYoutubeTimestampUrl(uia, &errMsg := "") {
             break
         Sleep 80
     }
-    urlSource := "value"
     if (url = "" || !InStr(url, "t=")) {
         if (clipUrl != "" && InStr(clipUrl, "t="))
             url := clipUrl
-        urlSource := "clipboard"
     }
-    ; #region agent log
-    StudyLink_Debug_befb2d("H6,H7", "StudyLink_CaptureYoutubeTimestampUrl", "capture_result", '{"urlSource":"' .
-        urlSource . '","urlLen":' . StrLen(url) . ',"hasT":' . (InStr(url, "t=") ? "true" : "false") . ',"clipLen":' .
-        StrLen(clipUrl) . ',"clipHasT":' . (InStr(clipUrl, "t=") ? "true" : "false") . ',"branch":"copy-button"}')
-    ; #endregion
     if (url = "" || !InStr(url, "youtu") || !InStr(url, "t=")) {
         errMsg := "Could not read the timestamped share link."
         return ""
@@ -8939,10 +8879,13 @@ StudyLink_CaptureYoutubeTimestampUrl(uia, &errMsg := "") {
 StudyLink_CleanupYoutubeSharePanel(uia) {
     if !IsObject(uia)
         return
-    try {
-        if ClipAngel_UiaFindFirst(uia, { AutomationId: "start-at-checkbox", Type: 50002 })
-            Send "{Escape}"
-    } catch {
+    if !ClipAngel_UiaFindFirst(uia, { AutomationId: "start-at-checkbox", Type: 50002 })
+        return
+    cancelBtn := ClipAngel_UiaFindFirst(uia, { Type: 50000, Name: "Cancel" })
+    if cancelBtn && StudyLink_UiaInvokeOrClick(cancelBtn)
+        return
+    try Send "{Escape}"
+    catch {
     }
 }
 
@@ -8966,18 +8909,15 @@ StudyTopicSelector_ManageLinks_Set(*) {
         uia := UIA_Browser("ahk_id " chromeHwnd)
         errMsg := ""
         url := StudyLink_CaptureYoutubeTimestampUrl(uia, &errMsg)
-        StudyLink_CleanupYoutubeSharePanel(uia)
         if (url != "") {
             setOk := StudyLink_Set("subtopic", url)
-            ; #region agent log
-            StudyLink_Debug_befb2d("H8", "StudyTopicSelector_ManageLinks_Set", "api_set_result", '{"ok":' . (setOk ?
-                "true" : "false") . ',"urlLen":' . StrLen(url) . '}')
-            ; #endregion
+            StudyLink_CleanupYoutubeSharePanel(uia)
             if setOk
                 ShowCenteredOverlay_Utils("✅ Link saved.", 2000, BANNER_ACCENT_SUCCESS)
             else
                 ShowCenteredOverlay_Utils("❌ Could not save the link.", 2500, BANNER_ACCENT_ERROR)
         } else {
+            StudyLink_CleanupYoutubeSharePanel(uia)
             ShowCenteredOverlay_Utils(errMsg != "" ? "❌ " errMsg : "❌ Could not capture the link.", 2500,
                 BANNER_ACCENT_ERROR)
         }

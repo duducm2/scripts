@@ -133,47 +133,23 @@ StudyLink_Get(studyKey) {
 
 ; ────────────────────────────────────────────────────────────────────────────
 ; Public API: set a link for a study key
-; Sends POST with key and url, expects URL-encoded response with status=ok
+; Sends POST with key and url; accepts status=ok form data or plain-text "Saved"
 ; Returns true on success, false otherwise.
 ; ────────────────────────────────────────────────────────────────────────────
-; #region agent log
-StudyLink_DebugApi_befb2d(message, data := "{}") {
-    logPath := A_ScriptDir "\debug-befb2d.log"
-    line := '{"sessionId":"befb2d","timestamp":' . A_TickCount .
-        ',"hypothesisId":"H8","location":"StudyLink_Set","message":"' .
-        message . '","data":' . data . '}' "`n"
-    try FileAppend line, logPath, "UTF-8"
-}
-; #endregion
-
 StudyLink_Set(studyKey, url) {
     data := "key=" . StudyLink_UrlEncode(studyKey) . "&url=" . StudyLink_UrlEncode(url)
-    ; #region agent log
-    rawAmp := false
-    if RegExMatch(data, "url=(.+)", &m)
-        rawAmp := InStr(m[1], "&") && !InStr(m[1], "%26")
-    StudyLink_DebugApi_befb2d("api_post_start", '{"urlLen":' . StrLen(url) . ',"hasT":' . (InStr(url, "t=") ? "true" :
-        "false") . ',"dataLen":' . StrLen(data) . ',"rawAmpInUrlValue":' . (rawAmp ? "true" : "false") . '}')
-    ; #endregion
     response := StudyLink_HttpPost(data)
-    ; #region agent log
-    respPreview := SubStr(StrReplace(response, '"', "'"), 1, 120)
-    StudyLink_DebugApi_befb2d("api_post_response", '{"respLen":' . StrLen(response) . ',"preview":"' . respPreview .
-    '"}')
-    ; #endregion
     if (SubStr(response, 1, 6) = "ERROR:") {
         return false
     }
-    ; Parse response for status field
     parsed := StudyLink_ParseFormEncoded(response)
-    ; #region agent log
-    statusVal := parsed.Has("status") ? parsed["status"] : ""
-    StudyLink_DebugApi_befb2d("api_post_parsed", '{"hasStatus":' . (parsed.Has("status") ? "true" : "false") .
-    ',"status":"' . statusVal . '"}')
-    ; #endregion
     if (parsed.Has("status") && (parsed["status"] = "ok" || parsed["status"] = "OK"))
         return true
-    ; Fallback: check if response text literally contains "ok"
+    resp := Trim(response)
+    if (resp = "Saved" || resp = "saved" || resp = "OK" || resp = "ok")
+        return true
+    if (resp != "" && InStr(resp, "Saved", false))
+        return true
     if InStr(response, "ok") || InStr(response, "OK")
         return true
     return false
