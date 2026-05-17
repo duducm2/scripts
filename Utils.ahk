@@ -8205,9 +8205,10 @@ StudyTopic_StartBlackoutCountdown(targetHwnd) {
         BANNER_BLACKOUT_PANEL)
 }
 
-; Focus dwell watcher: after continuous foreground on one window, offer same blackout banner as Study Topic (#!+X).
+; Focus dwell watcher: after continuous foreground on one monitor, offer same blackout banner as Study Topic (#!+X).
 global g_FocusBlackoutWatcherStarted := false
 global g_FocusBlackoutWatcherLastHwnd := 0
+global g_FocusBlackoutWatcherLastMonitor := 0
 global g_FocusBlackoutWatcherDwellStartTick := 0
 global g_FocusBlackoutWatcherDeniedHwnd := 0
 global g_FocusBlackoutWatcherCountdownActive := false
@@ -8273,9 +8274,9 @@ FocusBlackoutWatcher_StartCountdown(hwnd) {
 }
 
 FocusBlackoutWatcher_Tick() {
-    global g_FocusBlackoutWatcherLastHwnd, g_FocusBlackoutWatcherDwellStartTick,
+    global g_FocusBlackoutWatcherLastHwnd, g_FocusBlackoutWatcherLastMonitor, g_FocusBlackoutWatcherDwellStartTick,
         g_FocusBlackoutWatcherDeniedHwnd, g_FocusBlackoutWatcherCountdownActive, FOCUS_BLACKOUT_DWELL_MS,
-        g_FocusModeOn, g_FocusModeTrackedWindow, g_BlackoutSuppressedUntil
+        g_FocusModeOn, g_FocusModeActiveMonitor, g_BlackoutSuppressedUntil
 
     try {
         if (MonitorGetCount() <= 1)
@@ -8285,19 +8286,21 @@ FocusBlackoutWatcher_Tick() {
     }
 
     hwnd := WinExist("A")
-    if (!hwnd) {
+    activeMon := hwnd ? GetActiveMonitorIndex() : 0
+    if (!hwnd || !activeMon) {
         g_FocusBlackoutWatcherLastHwnd := 0
+        g_FocusBlackoutWatcherLastMonitor := 0
         return
     }
 
     if (g_FocusBlackoutWatcherDeniedHwnd && hwnd != g_FocusBlackoutWatcherDeniedHwnd)
         g_FocusBlackoutWatcherDeniedHwnd := 0
 
-    if (hwnd != g_FocusBlackoutWatcherLastHwnd) {
-        g_FocusBlackoutWatcherLastHwnd := hwnd
+    if (activeMon != g_FocusBlackoutWatcherLastMonitor) {
+        g_FocusBlackoutWatcherLastMonitor := activeMon
         g_FocusBlackoutWatcherDwellStartTick := A_TickCount
-        return
     }
+    g_FocusBlackoutWatcherLastHwnd := hwnd
 
     if (g_FocusBlackoutWatcherCountdownActive)
         return
@@ -8305,7 +8308,7 @@ FocusBlackoutWatcher_Tick() {
     if (g_FocusBlackoutWatcherDeniedHwnd && hwnd = g_FocusBlackoutWatcherDeniedHwnd)
         return
 
-    if (g_FocusModeOn && g_FocusModeTrackedWindow && hwnd = g_FocusModeTrackedWindow)
+    if (g_FocusModeOn && g_FocusModeActiveMonitor && activeMon = g_FocusModeActiveMonitor)
         return
 
     ; When blackout is suppressed, keep resetting the dwell timer so the 20-second

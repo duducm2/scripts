@@ -33,11 +33,11 @@ Started once via **`FocusBlackoutWatcher_Start()`** from **`Shift keys.ahk`** im
 
 - **Timer:** **`FocusBlackoutWatcher_Tick`** every **200 ms**.
 - **Gate:** does nothing if **`MonitorGetCount() <= 1`** (no secondary monitors).
-- **Dwell:** same foreground HWND for **`FOCUS_BLACKOUT_DWELL_MS`** (20000 ms); crossing triggers **`FocusBlackoutWatcher_StartCountdown(hwnd)`**.
+- **Dwell:** same foreground **monitor** for **`FOCUS_BLACKOUT_DWELL_MS`** (20000 ms); switching windows on that display does **not** reset the timer. Moving focus to another monitor resets dwell. Crossing triggers **`FocusBlackoutWatcher_StartCountdown(hwnd)`** with the current foreground HWND.
 - **Banner:** same **`StandardLoadingBar_ShowWithKeys`** contract as **`StudyTopic_StartBlackoutCountdown`** (3 s, **[N] Cancel**, progress + track monitor + preserve focus).
-- **Cancel (N):** sets a **deny** HWND so the 20 s dwell does not restart until the user focuses another window and returns.
+- **Cancel (N):** sets a **deny** HWND so the countdown does not restart for that window until the user focuses another window (deny clears on HWND change; dwell on the monitor continues if still within the same 20 s window).
 - **Timeout:** **`StudyTopic_ApplyBlackoutCountdownTimeout(hwnd, "Immediate")`** so **`StartPdfFocusMonitor(..., "Immediate")`** ends blackout when foreground leaves the kept monitor (same-monitor window switches retarget tracking instead).
-- While **`g_FocusModeOn`** and the active HWND equals **`g_FocusModeTrackedWindow`**, the watcher does not accumulate another dwell (avoids stacking prompts during an active blackout).
+- While **`g_FocusModeOn`** and the foreground is on **`g_FocusModeActiveMonitor`**, the watcher does not accumulate another dwell (avoids stacking prompts during an active blackout, including same-monitor window switches).
 
 ## Multi-script behavior (critical)
 
