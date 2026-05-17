@@ -23,8 +23,9 @@ Related globals: `g_FocusModeOn`, `g_FocusModeOverlays`, `g_FocusModeTrackedWind
 When QuickLook is active, **`#!+X`** runs **`StudyTopic_StartBlackoutCountdown(hwnd)`**, which shows the standard interactive banner (see **`docs/standard_information_display.md`**) and on timeout calls **`StudyTopic_ApplyBlackoutCountdownTimeout`**.
 
 - **`StudyTopic_ApplyBlackoutCountdownTimeout`** activates the target window, computes **`keepIdx := GetActiveMonitorIndex()`** with fallback **`StudyTopic_GetBlackoutKeepMonitorIndex()`** (primary monitor), then **`EnableFocusMode(keepIdx)`** and **`StartPdfFocusMonitor(targetHwnd, pdfFocusLossMode)`**.
-- **`pdfFocusLossMode`** for this path is **`Immediate`**: switching to another window clears blackout on the next **`MonitorPdfFocus`** tick (200 ms) with no debounce.
-- **`MonitorPdfFocus`** clears focus mode when the tracked window is gone or loses foreground according to mode; **`if (!g_PdfFocusTrackedHwnd) return`** avoids acting when tracking is cleared.
+- **`pdfFocusLossMode`** for this path is **`Immediate`**: cross-monitor focus changes clear blackout on the next **`MonitorPdfFocus`** tick (200 ms) with no debounce.
+- **`MonitorPdfFocus`** clears focus mode when the tracked window is destroyed, or when foreground moves to a window on a **different** monitor than **`g_FocusModeActiveMonitor`**. If foreground moves to another window on the **same** kept monitor, **`MonitorPdfFocus_TryRetargetOnKeptMonitor()`** updates **`g_PdfFocusTrackedHwnd`** and **`g_FocusModeTrackedWindow`** without tearing down overlays.
+- **`if (!g_PdfFocusTrackedHwnd) return`** avoids acting when tracking is cleared.
 
 ### 3. Automatic dwell watcher (20 seconds)
 
@@ -35,7 +36,7 @@ Started once via **`FocusBlackoutWatcher_Start()`** from **`Shift keys.ahk`** im
 - **Dwell:** same foreground HWND for **`FOCUS_BLACKOUT_DWELL_MS`** (20000 ms); crossing triggers **`FocusBlackoutWatcher_StartCountdown(hwnd)`**.
 - **Banner:** same **`StandardLoadingBar_ShowWithKeys`** contract as **`StudyTopic_StartBlackoutCountdown`** (3 s, **[N] Cancel**, progress + track monitor + preserve focus).
 - **Cancel (N):** sets a **deny** HWND so the 20 s dwell does not restart until the user focuses another window and returns.
-- **Timeout:** **`StudyTopic_ApplyBlackoutCountdownTimeout(hwnd, "Immediate")`** so **`StartPdfFocusMonitor(..., "Immediate")`** restores as soon as the foreground leaves the tracked window.
+- **Timeout:** **`StudyTopic_ApplyBlackoutCountdownTimeout(hwnd, "Immediate")`** so **`StartPdfFocusMonitor(..., "Immediate")`** ends blackout when foreground leaves the kept monitor (same-monitor window switches retarget tracking instead).
 - While **`g_FocusModeOn`** and the active HWND equals **`g_FocusModeTrackedWindow`**, the watcher does not accumulate another dwell (avoids stacking prompts during an active blackout).
 
 ## Multi-script behavior (critical)
@@ -57,7 +58,8 @@ If those hotkeys were left registered in a script that did not apply the current
 ## Restoration and cleanup
 
 - **`DisableFocusMode()`** ends with **`StopPdfFocusMonitor()`** so manually clearing blackout (**`#!+Y`**) does not leave **`MonitorPdfFocus`** firing redundant teardown.
-- **`MonitorPdfFocus`** calls **`DisableFocusMode()`** when its rules fire; duplicate **`StopPdfFocusMonitor()`** after that is harmless.
+- **`MonitorPdfFocus`** calls **`DisableFocusMode()`** when the tracked window closes, when foreground is on another monitor, or after debounced cross-monitor loss; duplicate **`StopPdfFocusMonitor()`** after that is harmless.
+- Same-monitor foreground switches during active blackout do not call **`DisableFocusMode()`**; **`g_FocusModeTrackedWindow`** follows the new active window so the dwell watcher does not offer a second countdown for the retargeted HWND.
 
 ## Key symbols (quick reference)
 

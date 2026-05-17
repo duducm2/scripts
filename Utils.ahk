@@ -8039,6 +8039,22 @@ global g_PdfFocusLossMode := "Immediate"      ; "Immediate" or "Debounced"
 global g_PdfFocusDebounceMs := 1200            ; Allow transient focus loss without un-blackouting
 global g_PdfFocusLostSinceTick := 0
 
+; Foreground moved to another window on the kept monitor: retarget tracking, keep blackout.
+MonitorPdfFocus_TryRetargetOnKeptMonitor() {
+    global g_FocusModeOn, g_FocusModeActiveMonitor, g_PdfFocusTrackedHwnd, g_FocusModeTrackedWindow
+    if (!g_FocusModeOn || !g_FocusModeActiveMonitor)
+        return false
+    newHwnd := WinExist("A")
+    if (!newHwnd)
+        return false
+    activeMon := GetActiveMonitorIndex()
+    if (!activeMon || activeMon != g_FocusModeActiveMonitor)
+        return false
+    g_PdfFocusTrackedHwnd := newHwnd
+    g_FocusModeTrackedWindow := newHwnd
+    return true
+}
+
 ; Monitor PDF (Peek) window focus and automatically disable focus mode when it loses focus
 MonitorPdfFocus() {
     global g_PdfFocusTrackedHwnd, g_PdfFocusLossMode, g_PdfFocusDebounceMs, g_PdfFocusLostSinceTick
@@ -8055,6 +8071,10 @@ MonitorPdfFocus() {
 
     ; Check if PDF/QuickLook window is still the active window
     if (!WinActive("ahk_id " . g_PdfFocusTrackedHwnd)) {
+        if (MonitorPdfFocus_TryRetargetOnKeptMonitor()) {
+            g_PdfFocusLostSinceTick := 0
+            return
+        }
         if (g_PdfFocusLossMode = "Debounced") {
             ; Wait for focus loss to persist before canceling blackout.
             if (!g_PdfFocusLostSinceTick)
