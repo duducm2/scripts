@@ -172,20 +172,14 @@ ShowCursorFallbackPanel() {
 {
     StandardLoadingBar_Show("⏳ Opening Desktop and selecting first file...", BANNER_ACCENT_INTERMEDIATE)
     try {
-        SetTitleMatchMode 2
-        targetHwnd := AL_FindDesktopExplorerWindow()
+        targetPath := IS_WORK_ENVIRONMENT ? "C:\Users\fie7ca\Desktop" : "C:\Users\eduev\OneDrive\Desktop"
+        targetHwnd := AL_GetExplorerHwndByPath(targetPath)
 
         if (!targetHwnd) {
-            target := IS_WORK_ENVIRONMENT ? "C:\Users\fie7ca\Desktop" : "C:\Users\eduev\OneDrive\Desktop"
-            Run 'explorer.exe "' target '"'
-
-            ; Wait for window to appear (bounded by deadline; no unbounded waits).
-            deadline := A_TickCount + 2000
-            while (A_TickCount < deadline) {
-                targetHwnd := AL_FindDesktopExplorerWindow()
-                if (targetHwnd)
-                    break
+            Run('explorer.exe "' targetPath '"')
+            if WinWait("ahk_class CabinetWClass", , 2) {
                 Sleep 50
+                targetHwnd := AL_GetExplorerHwndByPath(targetPath)
             }
         }
 
@@ -194,110 +188,117 @@ ShowCursorFallbackPanel() {
                 ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
                 return
             }
-            ; Layer 1: Restore if minimized
-            if (WinGetMinMax("ahk_id " targetHwnd) = -1) {
+
+            if (WinGetMinMax("ahk_id " targetHwnd) = -1)
                 WinRestore("ahk_id " targetHwnd)
-            }
 
-            ; Layer 2: Standard Activation
-            WinActivate("ahk_id " targetHwnd)
-
-            ; Layer 3: Aggressive Activation if not active immediately
-            if !WinWaitActive("ahk_id " targetHwnd, , 0.2) {
-                DllCall("SwitchToThisWindow", "Ptr", targetHwnd, "Int", 1)
-                DllCall("SetForegroundWindow", "Ptr", targetHwnd)
+            if !WinActive("ahk_id " targetHwnd) {
                 WinActivate("ahk_id " targetHwnd)
+                if !WinWaitActive("ahk_id " targetHwnd, , 0.2) {
+                    DllCall("SwitchToThisWindow", "Ptr", targetHwnd, "Int", 1)
+                    DllCall("SetForegroundWindow", "Ptr", targetHwnd)
+                    WinActivate("ahk_id " targetHwnd)
+                }
             }
 
-            WinMaximize("ahk_id " targetHwnd)
+            if (WinGetMinMax("ahk_id " targetHwnd) != 1)
+                WinMaximize("ahk_id " targetHwnd)
 
-            Sleep 350
-            Send "^{Up}"
-            Sleep 100
-            Send "{F5}"
+            if !AL_SelectTargetFileInExplorer(targetHwnd, "bill.pdf")
+                Send "{Home}"
 
-            ; Ensure first desktop item is selected (prefer bill.pdf when present).
-            AL_SelectFirstDesktopItem(targetHwnd)
-
-            CenterMouse()
+            AL_MoveMouseToWindowCenter(targetHwnd)
+        } else {
+            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
         }
     } finally {
         StandardLoadingBar_Hide(0)
     }
 }
 
-AL_FindDesktopExplorerWindow() {
-    hwnd := WinExist("Área de Trabalho ahk_class CabinetWClass")
-    if (hwnd)
-        return hwnd
-    return WinExist("Desktop ahk_class CabinetWClass")
+AL_GetExplorerHwndByPath(targetPath) {
+    if (!targetPath || targetPath = "")
+        return 0
+    normTarget := DesktopToRecycle_NormalizePath(targetPath)
+    try {
+        for window in ComObject("Shell.Application").Windows {
+            try {
+                if (!window || !window.hwnd)
+                    continue
+                path := window.Document.Folder.Self.Path
+                if (DesktopToRecycle_NormalizePath(path) = normTarget)
+                    return window.hwnd
+            } catch
+                continue
+        }
+    } catch {
+    }
+    return 0
 }
 
-AL_SelectFirstDesktopItem(targetHwnd) {
+AL_GetExplorerComObject(targetHwnd) {
     if !(targetHwnd is Integer) || targetHwnd <= 0
-        return false
-
-    ; Give Explorer a brief moment to finish rendering after activation/refresh.
-    Sleep 120
-
-    loop 10 {
-        try {
-            root := UIA.ElementFromHandle(targetHwnd)
-            listRoot := AL_FindExplorerItemsView(root)
-            if !listRoot {
-                Sleep 100
+        return ""
+    matches := []
+    try {
+        for window in ComObject("Shell.Application").Windows {
+            try {
+                if (!window || Integer(window.hwnd) != targetHwnd)
+                    continue
+                _ := window.Document.Folder.Self.Path
+                matches.Push(window)
+            } catch
                 continue
-            }
-
-            try listRoot.SetFocus()
-
-            ; Requirement target: explicitly prefer bill.pdf when it is index 0.
-            firstItem := listRoot.FindFirst({ Type: "ListItem", Name: "bill.pdf" })
-            if !firstItem
-                firstItem := listRoot.FindFirst({ Type: "ListItem", AutomationId: "0" })
-            if !firstItem
-                firstItem := listRoot.FindFirst({ Type: "ListItem" })
-
-            if (firstItem) {
-                try firstItem.ScrollIntoView()
-                try firstItem.Select()
-                try firstItem.SetFocus()
-                return true
-            }
-        } catch {
         }
-
-        Sleep 120
+    } catch {
+        return ""
     }
+    if (matches.Length = 0)
+        return ""
+    if (matches.Length = 1)
+        return matches[1]
+    ; Win11: multiple Shell.Application entries per hwnd (tabs) — use first readable match.
+    return matches[1]
+}
 
-    ; Keyboard fallback: if list already has focus, Home selects the first item.
-    Send "{Home}"
+AL_SelectTargetFileInExplorer(targetHwnd, preferredFileName := "bill.pdf") {
+    shellWindow := AL_GetExplorerComObject(targetHwnd)
+    if (!shellWindow)
+        return false
+    try {
+        folderView := shellWindow.Document
+        targetItem := ""
+        try
+            targetItem := folderView.Folder.ParseName(preferredFileName)
+        catch {
+        }
+        if (!targetItem) {
+            itemsCollection := folderView.Folder.Items
+            if (itemsCollection.Count > 0)
+                targetItem := itemsCollection.Item(0)
+        }
+        if (targetItem) {
+            folderView.SelectItem(targetItem, 29)
+            return true
+        }
+    } catch {
+    }
     return false
 }
 
-AL_FindExplorerItemsView(root) {
-    if !root
-        return 0
-
-    try {
-        itemsView := root.FindFirst({ AutomationId: "ItemsView", Type: "List" })
-        if itemsView
-            return itemsView
-    }
-
-    try {
-        itemsView := root.FindFirst({ ClassName: "UIItemsView", Type: "List" })
-        if itemsView
-            return itemsView
-    }
-
-    try {
-        itemsView := root.FindFirst({ Name: "Items View", Type: "List", matchmode: "Substring" })
-        if itemsView
-            return itemsView
-    }
-
-    return 0
+AL_MoveMouseToWindowCenter(hwnd) {
+    if !(hwnd is Integer) || hwnd <= 0
+        return
+    rect := Buffer(16, 0)
+    if !DllCall("GetWindowRect", "Ptr", hwnd, "Ptr", rect)
+        return
+    left := NumGet(rect, 0, "Int")
+    top := NumGet(rect, 4, "Int")
+    right := NumGet(rect, 8, "Int")
+    bottom := NumGet(rect, 12, "Int")
+    centerX := left + (right - left) // 2
+    centerY := top + (bottom - top) // 2
+    DllCall("SetCursorPos", "Int", centerX, "Int", centerY)
 }
 
 ; =============================================================================
