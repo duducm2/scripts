@@ -8090,26 +8090,24 @@ StudyTopic_CancelBlackoutCountdown(*) {
     StandardLoadingBar_Hide(0)
 }
 
-StudyTopic_ApplyBlackoutCountdownTimeout(targetHwnd, pdfFocusLossMode := "Debounced") {
-    if (!targetHwnd || !WinExist("ahk_id " . targetHwnd))
-        return
-    try {
-        WinShow("ahk_id " targetHwnd)
-        WinActivate("ahk_id " targetHwnd)
-        WinWaitActive("ahk_id " targetHwnd, , 1)
-    } catch {
-        ; ignore
-    }
+; Apply blackout using foreground at timeout (user may juggle monitors during the 3s banner).
+StudyTopic_ApplyBlackoutCountdownTimeout(targetHwnd := 0, pdfFocusLossMode := "Debounced") {
     global g_BlackoutSuppressedUntil
-    if (g_BlackoutSuppressedUntil && A_TickCount < g_BlackoutSuppressedUntil) {
-        ; Suppressed: do not enable blackout
+
+    fg := WinExist("A")
+    if (!fg && targetHwnd && WinExist("ahk_id " . targetHwnd))
+        fg := targetHwnd
+    if (!fg)
         return
-    }
+
+    if (g_BlackoutSuppressedUntil && A_TickCount < g_BlackoutSuppressedUntil)
+        return
+
     keepIdx := GetActiveMonitorIndex()
     if (!keepIdx)
         keepIdx := StudyTopic_GetBlackoutKeepMonitorIndex()
     EnableFocusMode(keepIdx)
-    StartPdfFocusMonitor(targetHwnd, pdfFocusLossMode)
+    StartPdfFocusMonitor(fg, pdfFocusLossMode)
 }
 
 ; --- Blackout suppression logic ---
@@ -8137,7 +8135,7 @@ StudyTopic_StartBlackoutCountdown(targetHwnd) {
     Sleep 50
     keyCallbacks := Map("N", StudyTopic_CancelBlackoutCountdown)
     keyCallbacks["D"] := StudyTopic_DisableBlackout7Min
-    timeoutCb := StudyTopic_ApplyBlackoutCountdownTimeout.Bind(targetHwnd, "Immediate")
+    timeoutCb := StudyTopic_ApplyBlackoutCountdownTimeout.Bind(, "Immediate")
     StandardLoadingBar_ShowWithKeys(
         "⏳ Blacking out secondary monitors in 3s",
         keyCallbacks,
@@ -8185,7 +8183,7 @@ FocusBlackoutWatcher_OnCancel(hwnd, *) {
 FocusBlackoutWatcher_OnBlackoutTimeout(hwnd, *) {
     global g_FocusBlackoutWatcherCountdownActive
     g_FocusBlackoutWatcherCountdownActive := false
-    StudyTopic_ApplyBlackoutCountdownTimeout(hwnd, "Immediate")
+    StudyTopic_ApplyBlackoutCountdownTimeout(, "Immediate")
 }
 
 ; D key handler for FocusBlackoutWatcher: suppress blackout AND reset watcher state
@@ -8215,7 +8213,7 @@ FocusBlackoutWatcher_StartCountdown(hwnd) {
     Sleep 50
     keyCallbacks := Map("N", FocusBlackoutWatcher_OnCancel.Bind(hwnd))
     keyCallbacks["D"] := FocusBlackoutWatcher_DisableBlackout
-    timeoutCb := FocusBlackoutWatcher_OnBlackoutTimeout.Bind(hwnd)
+    timeoutCb := FocusBlackoutWatcher_OnBlackoutTimeout.Bind(hwnd)  ; hwnd unused at apply; foreground at timeout wins
     StandardLoadingBar_ShowWithKeys(
         "⏳ Blacking out secondary monitors in 3s",
         keyCallbacks,
