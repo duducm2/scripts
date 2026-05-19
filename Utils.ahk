@@ -7991,41 +7991,44 @@ global g_PdfFocusLossMode := "Immediate"      ; "Immediate" or "Debounced"
 global g_PdfFocusDebounceMs := 1200            ; Allow transient focus loss without un-blackouting
 global g_PdfFocusLostSinceTick := 0
 
-; Monitor PDF (Peek) window focus and automatically disable focus mode when it loses focus
+; Monitor foreground monitor vs keep-clear display; relocate blackout on cross-monitor focus.
 MonitorPdfFocus() {
-    global g_PdfFocusTrackedHwnd, g_PdfFocusLossMode, g_PdfFocusDebounceMs, g_PdfFocusLostSinceTick
+    global g_FocusModeOn, g_FocusModeActiveMonitor, g_PdfFocusTrackedHwnd, g_FocusModeTrackedWindow
+    global g_PdfFocusLossMode, g_PdfFocusDebounceMs, g_PdfFocusLostSinceTick
 
-    if (!g_PdfFocusTrackedHwnd)
-        return
-
-    ; Check if tracked window still exists
-    if (g_PdfFocusTrackedHwnd && !WinExist("ahk_id " . g_PdfFocusTrackedHwnd)) {
-        DisableFocusMode()
-        StopPdfFocusMonitor()
+    if (!g_FocusModeOn) {
+        if (g_PdfFocusTrackedHwnd)
+            StopPdfFocusMonitor()
         return
     }
 
-    ; Check if PDF/QuickLook window is still the active window
-    if (!WinActive("ahk_id " . g_PdfFocusTrackedHwnd)) {
+    fg := WinExist("A")
+    if (!fg)
+        return
+
+    fgMon := GetActiveMonitorIndex()
+    if (!fgMon)
+        return
+
+    keepMon := g_FocusModeActiveMonitor
+    if (keepMon && fgMon != keepMon) {
         if (g_PdfFocusLossMode = "Debounced") {
-            ; Wait for focus loss to persist before canceling blackout.
             if (!g_PdfFocusLostSinceTick)
                 g_PdfFocusLostSinceTick := A_TickCount
-
             if ((A_TickCount - g_PdfFocusLostSinceTick) >= g_PdfFocusDebounceMs) {
-                DisableFocusMode()
-                StopPdfFocusMonitor()
+                FocusMode_SetKeepMonitor(fgMon)
+                g_PdfFocusLostSinceTick := 0
             }
-            return
+        } else {
+            FocusMode_SetKeepMonitor(fgMon)
+            g_PdfFocusLostSinceTick := 0
         }
-
-        ; Default: immediate cancellation (keeps behavior for Peek/PDF workflows)
-        DisableFocusMode()
-        StopPdfFocusMonitor()
     } else {
-        ; Focus is stable again; reset debounce timer.
         g_PdfFocusLostSinceTick := 0
     }
+
+    g_FocusModeTrackedWindow := fg
+    g_PdfFocusTrackedHwnd := fg
 }
 
 ; Start monitoring PDF window focus
@@ -8207,7 +8210,7 @@ FocusBlackoutWatcher_StartCountdown(hwnd) {
 FocusBlackoutWatcher_Tick() {
     global g_FocusBlackoutWatcherLastHwnd, g_FocusBlackoutWatcherDwellStartTick
     global g_FocusBlackoutWatcherDeniedHwnd, g_FocusBlackoutWatcherCountdownActive, FOCUS_BLACKOUT_DWELL_MS
-    global g_FocusModeOn, g_FocusModeTrackedWindow, g_BlackoutSuppressedUntil
+    global g_FocusModeOn, g_FocusModeActiveMonitor, g_FocusModeTrackedWindow, g_BlackoutSuppressedUntil
 
     try {
         if (MonitorGetCount() <= 1)
@@ -8245,9 +8248,12 @@ FocusBlackoutWatcher_Tick() {
         return
     }
 
-    if (g_FocusModeOn && g_FocusModeTrackedWindow && hwnd = g_FocusModeTrackedWindow) {
-        FileAppend "[FBW] Focus mode already on for this window\n", A_ScriptDir "\\focus_blackout_debug.log", "UTF-8"
-        return
+    if (g_FocusModeOn && g_FocusModeActiveMonitor) {
+        curMon := GetActiveMonitorIndex()
+        if (curMon && curMon = g_FocusModeActiveMonitor) {
+            FileAppend "[FBW] Focus mode already on for this monitor\n", A_ScriptDir "\\focus_blackout_debug.log", "UTF-8"
+            return
+        }
     }
 
     ; When blackout is suppressed, keep resetting the dwell timer so the 20-second
@@ -12376,6 +12382,77 @@ GetActiveMonitorIndex() {
     return 0
 }
 
+FocusMode_DestroyOverlays() {
+    global g_FocusModeOverlays
+
+    if (!IsSet(g_FocusModeOverlays))
+        g_FocusModeOverlays := []
+    for overlay in g_FocusModeOverlays {
+        try {
+            if (IsObject(overlay) && overlay.Hwnd)
+                overlay.Destroy()
+        } catch {
+        }
+    }
+    g_FocusModeOverlays := []
+}
+
+FocusMode_BuildOverlays(keepMonitorIndex) {
+    global g_FocusModeOverlays
+
+    if (!keepMonitorIndex)
+        return
+    FocusMode_DestroyOverlays()
+
+    monitorCount := MonitorGetCount()
+    loop monitorCount {
+        i := A_Index
+        if (i = keepMonitorIndex)
+            continue
+
+        MonitorGet(i, &l, &t, &r, &b)
+        w := r - l
+        h := b - t
+        if (w <= 0 || h <= 0)
+            continue
+
+        overlay := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x20") ; WS_EX_TRANSPARENT => click-through
+        overlay.Opt("-DPIScale")
+        overlay.BackColor := "000000"
+        overlay.Show("NA x" l " y" t " w" w " h" h)
+        g_FocusModeOverlays.Push(overlay)
+    }
+}
+
+FocusMode_SetKeepMonitor(keepMonitorIndex) {
+    global g_FocusModeOn, g_FocusModeActiveMonitor, g_FocusModeOverlays, g_FocusModeTrackedWindow
+
+    if (!g_FocusModeOn || !keepMonitorIndex)
+        return
+    try {
+        if (keepMonitorIndex < 1 || keepMonitorIndex > MonitorGetCount())
+            return
+    } catch {
+        return
+    }
+
+    if (g_FocusModeActiveMonitor = keepMonitorIndex) {
+        hasLiveOverlay := false
+        for overlay in g_FocusModeOverlays {
+            if (IsObject(overlay) && overlay.Hwnd && WinExist("ahk_id " . overlay.Hwnd)) {
+                hasLiveOverlay := true
+                break
+            }
+        }
+        if (hasLiveOverlay)
+            return
+    }
+
+    g_FocusModeActiveMonitor := keepMonitorIndex
+    FocusMode_BuildOverlays(keepMonitorIndex)
+    g_FocusModeTrackedWindow := WinExist("A")
+}
+
 EnableFocusMode(keepMonitorIndex := 0) {
     global g_FocusModeOn, g_FocusModeActiveMonitor, g_FocusModeOverlays, g_FocusModeTrackedWindow
 
@@ -12416,50 +12493,9 @@ EnableFocusMode(keepMonitorIndex := 0) {
     }
 
     g_FocusModeActiveMonitor := activeMon
-    g_FocusModeOverlays := []
-
-    ; Store the active window handle when focus mode is enabled
     g_FocusModeTrackedWindow := WinExist("A")
-
-    ; Start monitoring for window focus changes
     StartFocusModeWindowMonitor()
-
-    monitorCount := MonitorGetCount()
-
-    loop monitorCount {
-        MonitorGet(A_Index, &ml, &mt, &mr, &mb)
-        name := ""
-        dx := "", dy := ""
-        try name := MonitorGetName(A_Index)
-    }
-
-    loop monitorCount {
-        i := A_Index
-        if (i = activeMon) {
-            continue
-        }
-
-        MonitorGet(i, &l, &t, &r, &b)
-        w := r - l
-        h := b - t
-        if (w <= 0 || h <= 0) {
-            continue
-        }
-
-        overlay := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x20") ; WS_EX_TRANSPARENT => click-through
-        ; Critical: disable GUI DPI scaling so x/y/w/h are interpreted in raw screen coords
-        ; Without this, AHK scales the overlay (e.g. 150%) and it spills into other monitors.
-        overlay.Opt("-DPIScale")
-        overlay.BackColor := "000000"
-        overlay.Show("NA x" l " y" t " w" w " h" h)
-        g_FocusModeOverlays.Push(overlay)
-
-        ; Query actual overlay window rect (physical pixels) to detect scaling/border issues
-        rect := Buffer(16, 0)
-        ok := 0
-        try ok := DllCall("GetWindowRect", "ptr", overlay.Hwnd, "ptr", rect)
-    }
-
+    FocusMode_BuildOverlays(activeMon)
     g_FocusModeOn := true
 }
 
@@ -12501,23 +12537,20 @@ ToggleFocusMode() {
         EnableFocusMode()
 }
 
-; Monitor window focus changes and automatically disable focus mode when active window changes
+; Keep tracked HWND in sync while foreground stays on the keep-clear monitor.
 FocusModeWindowMonitor(*) {
-    global g_FocusModeOn, g_FocusModeTrackedWindow
+    global g_FocusModeOn, g_FocusModeActiveMonitor, g_FocusModeTrackedWindow
 
-    ; Only monitor if focus mode is active
-    if (!g_FocusModeOn) {
+    if (!g_FocusModeOn)
         return
-    }
 
-    ; Check if tracked window still exists
-    if (g_FocusModeTrackedWindow && !WinExist("ahk_id " . g_FocusModeTrackedWindow)) {
-        ; Tracked window was closed - automatically disable focus mode
-        DisableFocusMode()
+    fg := WinExist("A")
+    if (!fg)
         return
-    }
 
-    ; Window activation monitoring removed - blackout now only disabled via manual toggle (#!+Y)
+    fgMon := GetActiveMonitorIndex()
+    if (fgMon && g_FocusModeActiveMonitor && fgMon = g_FocusModeActiveMonitor)
+        g_FocusModeTrackedWindow := fg
 }
 
 ; Start monitoring window focus changes
