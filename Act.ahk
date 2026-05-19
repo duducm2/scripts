@@ -10,11 +10,13 @@ if (IS_WORK_ENVIRONMENT) {
     if (response = "No") {
         return
     }
+}
 
-    ; TODO: Replace with the actual scripts folder path on the work laptop
-    scriptsFolder := "C:\Users\fie7ca\Documents\scripts"
-} else {
-    scriptsFolder := "C:\Users\eduev\Meu Drive\17 - Projects\scripts"
+scriptsFolder := GetScriptsRepoPath()
+if (!scriptsFolder) {
+    MsgBox("Scripts repo folder not found. Check WORK_SCRIPTS_PATH and PERSONAL_SCRIPTS_PATH in env.ahk.",
+        "Act automation", "Icon!")
+    return
 }
 
 StandardLoadingBar_Show("⏳ Updating scripts...", BANNER_ACCENT_INTERMEDIATE)
@@ -24,11 +26,11 @@ RunWait("git pull", scriptsFolder, "Hide")
 StandardLoadingBar_Update("⏳ Waiting...")
 Sleep 10000
 
-if (IS_WORK_ENVIRONMENT) {
-    ; TODO: Update with actual work environment path
-    notesFolder := "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes"
-} else {
-    notesFolder := "C:\Users\eduev\Meu Drive\17 - Projects\notes"
+notesFolder := GetNotesRepoPath()
+if (!notesFolder) {
+    StandardLoadingBar_Hide(0)
+    MsgBox("Notes repo folder not found. Check NOTES_REPO_PATH_* in env.ahk.", "Act automation", "Icon!")
+    return
 }
 
 StandardLoadingBar_Update("⏳ Updating notes...")
