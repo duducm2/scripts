@@ -648,6 +648,10 @@ CycleWindowsOnMonitor(order) {
     ; The MonitorActiveWindow timer will centre the cursor automatically, so avoid
     ; calling it here to prevent duplicate halo flashes.
     Sleep 100  ; small delay for animation/focus stability
+
+    keepMon := FocusMode_ReadKeepMonitorFromFile()
+    if (keepMon && idx != keepMon)
+        FocusMode_RequestDisableCrossProcess()
 }
 
 GetVisibleWindowsOnMonitor(mon, skipDaemon := false) {

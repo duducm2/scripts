@@ -7991,16 +7991,19 @@ global g_PdfFocusLossMode := "Immediate"      ; "Immediate" or "Debounced"
 global g_PdfFocusDebounceMs := 1200            ; Allow transient focus loss without un-blackouting
 global g_PdfFocusLostSinceTick := 0
 
-; Monitor foreground monitor vs keep-clear display; relocate blackout on cross-monitor focus.
+; Monitor foreground vs keep-clear display: relocate only when anchor HWND moves; else disable.
 MonitorPdfFocus() {
     global g_FocusModeOn, g_FocusModeActiveMonitor, g_PdfFocusTrackedHwnd, g_FocusModeTrackedWindow
-    global g_PdfFocusLossMode, g_PdfFocusDebounceMs, g_PdfFocusLostSinceTick
+    global g_FocusModeAnchorHwnd, g_PdfFocusLossMode, g_PdfFocusDebounceMs, g_PdfFocusLostSinceTick
 
     if (!g_FocusModeOn) {
         if (g_PdfFocusTrackedHwnd)
             StopPdfFocusMonitor()
         return
     }
+
+    if (FocusMode_CheckCrossProcessRequests())
+        return
 
     fg := WinExist("A")
     if (!fg)
@@ -8012,16 +8015,23 @@ MonitorPdfFocus() {
 
     keepMon := g_FocusModeActiveMonitor
     if (keepMon && fgMon != keepMon) {
-        if (g_PdfFocusLossMode = "Debounced") {
-            if (!g_PdfFocusLostSinceTick)
-                g_PdfFocusLostSinceTick := A_TickCount
-            if ((A_TickCount - g_PdfFocusLostSinceTick) >= g_PdfFocusDebounceMs) {
+        anchor := g_FocusModeAnchorHwnd
+        sameAnchor := anchor && fg = anchor && WinExist("ahk_id " . anchor)
+        if (sameAnchor) {
+            if (g_PdfFocusLossMode = "Debounced") {
+                if (!g_PdfFocusLostSinceTick)
+                    g_PdfFocusLostSinceTick := A_TickCount
+                if ((A_TickCount - g_PdfFocusLostSinceTick) >= g_PdfFocusDebounceMs) {
+                    FocusMode_SetKeepMonitor(fgMon)
+                    g_PdfFocusLostSinceTick := 0
+                }
+            } else {
                 FocusMode_SetKeepMonitor(fgMon)
                 g_PdfFocusLostSinceTick := 0
             }
         } else {
-            FocusMode_SetKeepMonitor(fgMon)
-            g_PdfFocusLostSinceTick := 0
+            DisableFocusMode()
+            return
         }
     } else {
         g_PdfFocusLostSinceTick := 0
@@ -8034,12 +8044,18 @@ MonitorPdfFocus() {
 ; Start monitoring PDF window focus
 StartPdfFocusMonitor(hwnd := 0, focusLossMode := "Immediate") {
     global g_PdfFocusMonitorTimer, g_PdfFocusTrackedHwnd, g_PdfFocusLossMode, g_PdfFocusLostSinceTick
+    global g_FocusModeAnchorHwnd
 
     StopPdfFocusMonitor()
 
     g_PdfFocusTrackedHwnd := hwnd ? hwnd : WinExist("A")
     if (!g_PdfFocusTrackedHwnd)
         return
+
+    if (hwnd)
+        g_FocusModeAnchorHwnd := hwnd
+    else if (!g_FocusModeAnchorHwnd || !WinExist("ahk_id " . g_FocusModeAnchorHwnd))
+        g_FocusModeAnchorHwnd := g_PdfFocusTrackedHwnd
 
     g_PdfFocusLossMode := focusLossMode
     g_PdfFocusLostSinceTick := 0
@@ -8147,6 +8163,17 @@ global g_FocusBlackoutWatcherDwellStartTick := 0
 global g_FocusBlackoutWatcherDeniedHwnd := 0
 global g_FocusBlackoutWatcherCountdownActive := false
 global FOCUS_BLACKOUT_DWELL_MS := 20000
+global FOCUS_BLACKOUT_DEBUG_LOG := false
+
+FocusBlackoutWatcher_DebugLog(message) {
+    global FOCUS_BLACKOUT_DEBUG_LOG
+    if (!FOCUS_BLACKOUT_DEBUG_LOG)
+        return
+    try {
+        FileAppend "[FBW] " . message . "`n", A_ScriptDir "\focus_blackout_debug.log", "UTF-8"
+    } catch {
+    }
+}
 
 FocusBlackoutWatcher_OnCancel(hwnd, *) {
     global g_FocusBlackoutWatcherCountdownActive, g_FocusBlackoutWatcherDeniedHwnd
@@ -8219,58 +8246,63 @@ FocusBlackoutWatcher_Tick() {
         return
     }
 
-    hwnd := WinExist("A")
-    if (!hwnd) {
-        g_FocusBlackoutWatcherLastHwnd := 0
-        FileAppend "[FBW] No active window\n", A_ScriptDir "\\focus_blackout_debug.log", "UTF-8"
-        return
-    }
-
-    if (g_FocusBlackoutWatcherDeniedHwnd && hwnd != g_FocusBlackoutWatcherDeniedHwnd) {
-        FileAppend "[FBW] Reset denied hwnd (user switched window)\n", A_ScriptDir "\\focus_blackout_debug.log", "UTF-8"
-        g_FocusBlackoutWatcherDeniedHwnd := 0
-    }
-
-    if (hwnd != g_FocusBlackoutWatcherLastHwnd) {
-        FileAppend "[FBW] Window changed. Reset dwell timer.\n", A_ScriptDir "\\focus_blackout_debug.log", "UTF-8"
-        g_FocusBlackoutWatcherLastHwnd := hwnd
-        g_FocusBlackoutWatcherDwellStartTick := A_TickCount
-        return
-    }
-
-    if (g_FocusBlackoutWatcherCountdownActive) {
-        FileAppend "[FBW] Countdown already active\n", A_ScriptDir "\\focus_blackout_debug.log", "UTF-8"
-        return
-    }
-
-    if (g_FocusBlackoutWatcherDeniedHwnd && hwnd = g_FocusBlackoutWatcherDeniedHwnd) {
-        FileAppend "[FBW] Blackout denied for this hwnd\n", A_ScriptDir "\\focus_blackout_debug.log", "UTF-8"
-        return
-    }
-
-    if (g_FocusModeOn && g_FocusModeActiveMonitor) {
-        curMon := GetActiveMonitorIndex()
-        if (curMon && curMon = g_FocusModeActiveMonitor) {
-            FileAppend "[FBW] Focus mode already on for this monitor\n", A_ScriptDir "\\focus_blackout_debug.log", "UTF-8"
+    try {
+        hwnd := WinExist("A")
+        if (!hwnd) {
+            g_FocusBlackoutWatcherLastHwnd := 0
+            FocusBlackoutWatcher_DebugLog("No active window")
             return
         }
-    }
 
-    ; When blackout is suppressed, keep resetting the dwell timer so the 20-second
-    ; accumulation never completes and the countdown banner does not reappear.
-    if (g_BlackoutSuppressedUntil && A_TickCount < g_BlackoutSuppressedUntil) {
-        FileAppend "[FBW] Blackout suppressed. Reset dwell timer.\n", A_ScriptDir "\\focus_blackout_debug.log", "UTF-8"
-        g_FocusBlackoutWatcherDwellStartTick := A_TickCount
-        return
-    }
+        if (g_FocusBlackoutWatcherDeniedHwnd && hwnd != g_FocusBlackoutWatcherDeniedHwnd) {
+            FocusBlackoutWatcher_DebugLog("Reset denied hwnd (user switched window)")
+            g_FocusBlackoutWatcherDeniedHwnd := 0
+        }
 
-    elapsed := (A_TickCount - g_FocusBlackoutWatcherDwellStartTick)
-    if (elapsed >= FOCUS_BLACKOUT_DWELL_MS) {
-        FileAppend "[FBW] Dwell met (" . elapsed . " ms). Starting blackout countdown for hwnd " . hwnd . "\n", A_ScriptDir "\\focus_blackout_debug.log", "UTF-8"
-        FocusBlackoutWatcher_StartCountdown(hwnd)
-        return
+        if (hwnd != g_FocusBlackoutWatcherLastHwnd) {
+            FocusBlackoutWatcher_DebugLog("Window changed. Reset dwell timer.")
+            g_FocusBlackoutWatcherLastHwnd := hwnd
+            g_FocusBlackoutWatcherDwellStartTick := A_TickCount
+            return
+        }
+
+        if (g_FocusBlackoutWatcherCountdownActive) {
+            FocusBlackoutWatcher_DebugLog("Countdown already active")
+            return
+        }
+
+        if (g_FocusBlackoutWatcherDeniedHwnd && hwnd = g_FocusBlackoutWatcherDeniedHwnd) {
+            FocusBlackoutWatcher_DebugLog("Blackout denied for this hwnd")
+            return
+        }
+
+        if (g_FocusModeOn && g_FocusModeActiveMonitor) {
+            curMon := GetActiveMonitorIndex()
+            if (curMon && curMon = g_FocusModeActiveMonitor) {
+                FocusBlackoutWatcher_DebugLog("Focus mode already on for this monitor")
+                return
+            }
+        }
+
+        ; When blackout is suppressed, keep resetting the dwell timer so the 20-second
+        ; accumulation never completes and the countdown banner does not reappear.
+        if (g_BlackoutSuppressedUntil && A_TickCount < g_BlackoutSuppressedUntil) {
+            FocusBlackoutWatcher_DebugLog("Blackout suppressed. Reset dwell timer.")
+            g_FocusBlackoutWatcherDwellStartTick := A_TickCount
+            return
+        }
+
+        elapsed := (A_TickCount - g_FocusBlackoutWatcherDwellStartTick)
+        if (elapsed >= FOCUS_BLACKOUT_DWELL_MS) {
+            FocusBlackoutWatcher_DebugLog("Dwell met (" . elapsed . " ms). Starting blackout countdown for hwnd " .
+                hwnd)
+            FocusBlackoutWatcher_StartCountdown(hwnd)
+            return
+        }
+        FocusBlackoutWatcher_DebugLog("Dwell not yet met: " . elapsed . " ms")
+    } catch as e {
+        FocusBlackoutWatcher_DebugLog("tick error: " . e.Message)
     }
-    FileAppend "[FBW] Dwell not yet met: " . elapsed . " ms\n", A_ScriptDir "\\focus_blackout_debug.log", "UTF-8"
 }
 
 FocusBlackoutWatcher_Start() {
@@ -12350,7 +12382,71 @@ global g_FocusModeOn := false
 global g_FocusModeActiveMonitor := 0
 global g_FocusModeOverlays := []  ; array of GUI overlays (one per covered monitor)
 global g_FocusModeTrackedWindow := 0  ; window handle that was active when focus mode was enabled
+global g_FocusModeAnchorHwnd := 0  ; window that may relocate blackout when it moves to another monitor
 global g_FocusModeMonitorTimer := false  ; timer for monitoring window focus changes
+global g_FocusModeKeepMonitorFile := A_ScriptDir "\.cursor\focus_mode_keep_monitor"
+global g_FocusModeDisableRequestFile := A_ScriptDir "\.cursor\focus_mode_disable_request"
+
+FocusMode_WriteKeepMonitorState(mon) {
+    global g_FocusModeKeepMonitorFile
+    if (!mon)
+        return
+    try {
+        cursorDir := A_ScriptDir "\.cursor"
+        if !DirExist(cursorDir)
+            DirCreate(cursorDir)
+        try FileDelete(g_FocusModeKeepMonitorFile)
+        FileAppend(String(mon), g_FocusModeKeepMonitorFile, "UTF-8")
+    } catch {
+    }
+}
+
+FocusMode_ClearKeepMonitorState() {
+    global g_FocusModeKeepMonitorFile, g_FocusModeDisableRequestFile
+    try FileDelete(g_FocusModeKeepMonitorFile)
+    catch {
+    }
+    try FileDelete(g_FocusModeDisableRequestFile)
+    catch {
+    }
+}
+
+FocusMode_ReadKeepMonitorFromFile() {
+    global g_FocusModeKeepMonitorFile
+    try {
+        if !FileExist(g_FocusModeKeepMonitorFile)
+            return 0
+        t := Trim(FileRead(g_FocusModeKeepMonitorFile, "UTF-8"))
+        if (t != "" && t is Integer)
+            return Integer(t)
+    } catch {
+    }
+    return 0
+}
+
+FocusMode_RequestDisableCrossProcess() {
+    global g_FocusModeDisableRequestFile
+    try {
+        cursorDir := A_ScriptDir "\.cursor"
+        if !DirExist(cursorDir)
+            DirCreate(cursorDir)
+        FileAppend("", g_FocusModeDisableRequestFile, "UTF-8")
+    } catch {
+    }
+}
+
+FocusMode_CheckCrossProcessRequests() {
+    global g_FocusModeDisableRequestFile
+    try {
+        if !FileExist(g_FocusModeDisableRequestFile)
+            return false
+        FileDelete(g_FocusModeDisableRequestFile)
+    } catch {
+        return false
+    }
+    DisableFocusMode()
+    return true
+}
 
 GetActiveMonitorIndex() {
     hwnd := WinExist("A")
@@ -12450,11 +12546,13 @@ FocusMode_SetKeepMonitor(keepMonitorIndex) {
 
     g_FocusModeActiveMonitor := keepMonitorIndex
     FocusMode_BuildOverlays(keepMonitorIndex)
+    FocusMode_WriteKeepMonitorState(keepMonitorIndex)
     g_FocusModeTrackedWindow := WinExist("A")
 }
 
 EnableFocusMode(keepMonitorIndex := 0) {
-    global g_FocusModeOn, g_FocusModeActiveMonitor, g_FocusModeOverlays, g_FocusModeTrackedWindow
+    global g_FocusModeOn, g_FocusModeActiveMonitor, g_FocusModeOverlays, g_FocusModeTrackedWindow,
+        g_FocusModeAnchorHwnd
 
     ; Ensure globals are initialized (avoid "variable has not been assigned" on first call)
     if (!IsSet(g_FocusModeOverlays))
@@ -12494,6 +12592,8 @@ EnableFocusMode(keepMonitorIndex := 0) {
 
     g_FocusModeActiveMonitor := activeMon
     g_FocusModeTrackedWindow := WinExist("A")
+    g_FocusModeAnchorHwnd := g_FocusModeTrackedWindow
+    FocusMode_WriteKeepMonitorState(activeMon)
     StartFocusModeWindowMonitor()
     FocusMode_BuildOverlays(activeMon)
     g_FocusModeOn := true
@@ -12501,11 +12601,12 @@ EnableFocusMode(keepMonitorIndex := 0) {
 
 DisableFocusMode() {
     global g_FocusModeOn, g_FocusModeActiveMonitor, g_FocusModeOverlays, g_FocusModeTrackedWindow,
-        g_FocusModeMonitorTimer
+        g_FocusModeMonitorTimer, g_FocusModeAnchorHwnd
 
     ; Stop monitoring window focus changes
     StopFocusModeWindowMonitor()
     StopPdfFocusMonitor()
+    FocusMode_ClearKeepMonitorState()
 
     for overlay in g_FocusModeOverlays {
         try {
@@ -12520,6 +12621,7 @@ DisableFocusMode() {
     g_FocusModeOverlays := []
     g_FocusModeActiveMonitor := 0
     g_FocusModeTrackedWindow := 0
+    g_FocusModeAnchorHwnd := 0
     g_FocusModeOn := false
 }
 
@@ -12531,10 +12633,19 @@ ToggleFocusMode() {
     hasOverlayRefs := IsObject(g_FocusModeOverlays) && g_FocusModeOverlays.Length > 0
     actualState := g_FocusModeOn || hasOverlayRefs
 
-    if (actualState)
+    if (actualState) {
         DisableFocusMode()
-    else
+    } else {
         EnableFocusMode()
+        try {
+            if (MonitorGetCount() > 1) {
+                hwnd := WinExist("A")
+                if (hwnd)
+                    StartPdfFocusMonitor(hwnd, "Immediate")
+            }
+        } catch {
+        }
+    }
 }
 
 ; Keep tracked HWND in sync while foreground stays on the keep-clear monitor.
