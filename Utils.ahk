@@ -8085,14 +8085,36 @@ StudyTopic_GetBlackoutKeepMonitorIndex() {
         return 1
 }
 
-StudyTopic_CancelBlackoutCountdown(*) {
+; Shared countdown flag for FocusBlackoutWatcher (Study Topic path clears without setting).
+BlackoutCountdown_Begin() {
+    global g_FocusBlackoutWatcherCountdownActive
+    g_FocusBlackoutWatcherCountdownActive := true
+}
+
+BlackoutCountdown_End() {
+    global g_FocusBlackoutWatcherCountdownActive
+    g_FocusBlackoutWatcherCountdownActive := false
+}
+
+StudyTopic_CancelBlackoutCountdown(targetHwnd := 0, *) {
+    global g_FocusBlackoutWatcherDeniedHwnd
+    BlackoutCountdown_End()
+    if (targetHwnd && WinExist("ahk_id " . targetHwnd))
+        g_FocusBlackoutWatcherDeniedHwnd := targetHwnd
+    else {
+        fg := WinExist("A")
+        if (fg)
+            g_FocusBlackoutWatcherDeniedHwnd := fg
+    }
     StandardLoadingBar_CloseKeysOverlay()
     StandardLoadingBar_Hide(0)
 }
 
 ; Apply blackout using foreground at timeout (user may juggle monitors during the 3s banner).
 StudyTopic_ApplyBlackoutCountdownTimeout(targetHwnd := 0, pdfFocusLossMode := "Debounced") {
-    global g_BlackoutSuppressedUntil
+    global g_BlackoutSuppressedUntil, g_FocusModeOn
+
+    BlackoutCountdown_End()
 
     fg := WinExist("A")
     if (!fg && targetHwnd && WinExist("ahk_id " . targetHwnd))
@@ -8106,7 +8128,10 @@ StudyTopic_ApplyBlackoutCountdownTimeout(targetHwnd := 0, pdfFocusLossMode := "D
     keepIdx := GetActiveMonitorIndex()
     if (!keepIdx)
         keepIdx := StudyTopic_GetBlackoutKeepMonitorIndex()
-    EnableFocusMode(keepIdx)
+    if (g_FocusModeOn)
+        FocusMode_SetKeepMonitor(keepIdx)
+    else
+        EnableFocusMode(keepIdx)
     StartPdfFocusMonitor(fg, pdfFocusLossMode)
 }
 
@@ -8118,6 +8143,7 @@ global g_BlackoutSuppressedUntil := 0
 StudyTopic_DisableBlackout7Min(*) {
     global g_BlackoutSuppressedUntil
     g_BlackoutSuppressedUntil := A_TickCount + 7 * 60 * 1000  ; 7 minutes
+    BlackoutCountdown_End()
     StandardLoadingBar_CloseKeysOverlay()
     StandardLoadingBar_Hide(0)
 }
@@ -8130,10 +8156,12 @@ StudyTopic_StartBlackoutCountdown(targetHwnd) {
         ; Suppressed: do not show the banner at all during the active delay period
         return
     }
+    ; Clear FBW countdown flag when preempting its banner (Study Topic does not call BlackoutCountdown_Begin).
+    BlackoutCountdown_End()
     StandardLoadingBar_CloseKeysOverlay()
     StandardLoadingBar_Hide(0)
     Sleep 50
-    keyCallbacks := Map("N", StudyTopic_CancelBlackoutCountdown)
+    keyCallbacks := Map("N", StudyTopic_CancelBlackoutCountdown.Bind(targetHwnd))
     keyCallbacks["D"] := StudyTopic_DisableBlackout7Min
     timeoutCb := StudyTopic_ApplyBlackoutCountdownTimeout.Bind(, "Immediate")
     StandardLoadingBar_ShowWithKeys(
@@ -8174,39 +8202,33 @@ FocusBlackoutWatcher_DebugLog(message) {
 }
 
 FocusBlackoutWatcher_OnCancel(hwnd, *) {
-    global g_FocusBlackoutWatcherCountdownActive, g_FocusBlackoutWatcherDeniedHwnd
-    StudyTopic_CancelBlackoutCountdown()
-    g_FocusBlackoutWatcherCountdownActive := false
-    g_FocusBlackoutWatcherDeniedHwnd := hwnd
+    StudyTopic_CancelBlackoutCountdown(hwnd)
 }
 
 FocusBlackoutWatcher_OnBlackoutTimeout(hwnd, *) {
-    global g_FocusBlackoutWatcherCountdownActive
-    g_FocusBlackoutWatcherCountdownActive := false
     StudyTopic_ApplyBlackoutCountdownTimeout(, "Immediate")
 }
 
 ; D key handler for FocusBlackoutWatcher: suppress blackout AND reset watcher state
 ; so the watcher can correctly re-trigger after the delay period expires.
 FocusBlackoutWatcher_DisableBlackout(*) {
-    global g_BlackoutSuppressedUntil, g_FocusBlackoutWatcherCountdownActive
+    global g_BlackoutSuppressedUntil
     g_BlackoutSuppressedUntil := A_TickCount + 7 * 60 * 1000  ; 7 minutes
-    g_FocusBlackoutWatcherCountdownActive := false
+    BlackoutCountdown_End()
     StandardLoadingBar_CloseKeysOverlay()
     StandardLoadingBar_Hide(0)
 }
 
 FocusBlackoutWatcher_StartCountdown(hwnd) {
-    global g_FocusBlackoutWatcherCountdownActive, g_FocusBlackoutWatcherDwellStartTick,
-        g_BlackoutSuppressedUntil
+    global g_FocusBlackoutWatcherDwellStartTick, g_BlackoutSuppressedUntil
     if (!hwnd || !WinExist("ahk_id " . hwnd))
         return
     ; Suppressed: do not show the banner during the active delay period
     if (g_BlackoutSuppressedUntil && A_TickCount < g_BlackoutSuppressedUntil) {
-        g_FocusBlackoutWatcherCountdownActive := false
+        BlackoutCountdown_End()
         return
     }
-    g_FocusBlackoutWatcherCountdownActive := true
+    BlackoutCountdown_Begin()
     g_FocusBlackoutWatcherDwellStartTick := A_TickCount
     StandardLoadingBar_CloseKeysOverlay()
     StandardLoadingBar_Hide(0)
@@ -9233,8 +9255,12 @@ PeekPdf_OpenPath(pdfPath, skipGoToLastPage := false) {
         MoveWindowToMonitor(hwnd, 2)
         WinMaximize("ahk_id " hwnd)
         PeekPdf_WaitAndConfigure(skipGoToLastPage)
-        EnableFocusMode()
-        StartPdfFocusMonitor()
+        try {
+            WinActivate("ahk_id " hwnd)
+            WinWaitActive("ahk_id " hwnd, , 1)
+        } catch {
+        }
+        StudyTopic_StartBlackoutCountdown(hwnd)
     }
 }
 
