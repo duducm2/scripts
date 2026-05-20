@@ -221,3 +221,12 @@ Interesting outcomes from integrating Python for `Gemini.ahk` / `WindowManagemen
 ### Verification reminder
 
 Use §8 matrix after enabling `OUTLOOK_USE_WINEVENT_INVALIDATE` or toggling `BRIDGE_AGENT_LOG_ENABLED`: parity, latency, clipboard/state cleanup, hook teardown on exit.
+
+---
+
+## 16. Study Topic QuickLook cold-start (Win+Alt+Shift+X, 2026)
+
+- **Do not** gate post-open layout on `WinWait(..., 2)` alone — cold `QuickLook.exe` launch often exceeds 2s; use **`QuickLook_WaitForHwnd`** (bounded poll, default 10s) and a user-visible timeout overlay instead of a silent skip.
+- **Single authority:** **`QuickLook_ApplyStudyLayout`** (move to target monitor, **`TryMaximizeWindow`**, layout-ready poll, focus click, scroll) shared by **`QuickLook_OpenPath`** and the **`#!+X`** fast path when QuickLook is already running.
+- **Readiness gates:** title basename match (`QuickLook_WaitForOpenReady`) plus UIA **`Document`** enabled on two consecutive polls (`QuickLook_WaitForViewerReady`); scroll via **`ScrollPattern`** first, **`^{End}`** fallback with vertical-% verification when available.
+- **Rollback:** `STUDY_TOPIC_QL_STRICT_LAYOUT := false` in [`Utils.ahk`](../Utils.ahk) restores legacy 2s `WinWait` + inline scroll; optional one-shot **`SetTimer(..., -800)`** deferred layout if the process appears just after the hwnd wait times out.
