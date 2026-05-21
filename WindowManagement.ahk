@@ -231,23 +231,16 @@ WM_WindowTools_OnMaximizeLonely(*) {
 }
 
 WM_WindowTools_OnShowMinimizedList(*) {
-    ; #region agent log
-    AgentDebugLog87("WindowManagement.ahk:OnShowMinimizedList", "entry", "{}", "H1")
-    ; #endregion
     StandardLoadingBar_CloseKeysOverlay()
     StandardLoadingBar_Hide(0)
     Sleep 50
     StandardLoadingBar_Show("⏳ Scanning background windows...", BANNER_ACCENT_INTERMEDIATE, { passive: false,
         centerOnHwnd: 0 })
     try {
-        StandardLoadingBar_WaitForTriggerKeyRelease()
         WM_ShowMinimizedBackgroundList()
     } finally {
         StandardLoadingBar_Hide(0)
     }
-    ; #region agent log
-    AgentDebugLog87("WindowManagement.ahk:OnShowMinimizedList", "exit", "{}", "H1")
-    ; #endregion
 }
 
 WM_WindowTools_OnCancel(*) {
@@ -256,9 +249,9 @@ WM_WindowTools_OnCancel(*) {
 }
 
 WM_WindowTools_ShowMenu() {
-    ; #region agent log
-    AgentDebugLog87("WindowManagement.ahk:WindowTools_ShowMenu", "entry", "{}", "H1")
-    ; #endregion
+    global g_WM_MinimizedListActive
+    if (g_WM_MinimizedListActive)
+        WM_MinimizedList_Cleanup()
     StandardLoadingBar_CloseKeysOverlay()
     StandardLoadingBar_Hide(0)
     Sleep 50
@@ -484,12 +477,10 @@ WM_BackgroundAddRow(&rows, &seen, hwnd, foreHwnd) {
 
 ; Minimized taskbar windows only (not visible on any monitor); excludes foreground hwnd.
 WM_CollectBackgroundWindows() {
-    t0 := A_TickCount
     foreHwnd := 0
     try foreHwnd := WinGetID("A")
     rows := []
     seen := Map()
-    minAdded := 0
     prevDetect := A_DetectHiddenWindows
     DetectHiddenWindows true
     try {
@@ -497,10 +488,7 @@ WM_CollectBackgroundWindows() {
             try {
                 if (WinGetMinMax(hwnd) != -1)
                     continue
-                nBefore := rows.Length
                 WM_BackgroundAddRow(&rows, &seen, hwnd, foreHwnd)
-                if (rows.Length > nBefore)
-                    minAdded++
             } catch {
             }
         }
@@ -508,10 +496,6 @@ WM_CollectBackgroundWindows() {
         DetectHiddenWindows prevDetect
     }
     WM_SortBackgroundRows(&rows)
-    ; #region agent log
-    AgentDebugLog87("WindowManagement.ahk:CollectBackground", "done", '{"foreHwnd":' . foreHwnd . ',"rows":' .
-        rows.Length . ',"minAdded":' . minAdded . ',"elapsedMs":' . (A_TickCount - t0) . '}', "H2,H5")
-    ; #endregion
     return rows
 }
 
@@ -608,7 +592,7 @@ WM_MinimizedList_StartKeysPoll(windows, forExcludePicker := false) {
         slotChar := w.char
         g_WM_MinimizedKeysPollCallbacks[slotChar] := forExcludePicker ?
             HandleMinimizedListExcludePickerByChar.Bind(slotChar) : HandleMinimizedListByChar.Bind(slotChar)
-        g_WM_MinimizedKeysPollPrev[slotChar] := false
+        g_WM_MinimizedKeysPollPrev[slotChar] := WM_MinimizedList_KeyDown(slotChar)
     }
     if (g_WM_MinimizedKeysPollCallbacks.Count > 0)
         g_WM_MinimizedKeysPollTimer := SetTimer(WM_MinimizedList_KeysPoll, 50)
@@ -1125,22 +1109,11 @@ WM_MinimizedList_Refresh(closedHwnd := 0) {
 
 WM_ShowMinimizedBackgroundList(rows := unset, refresh := false) {
     global g_WM_MinimizedListGui, g_WM_MinimizedListActive, g_WM_MinimizedListRows, g_WM_MinimizedCharSequence
-    ; #region agent log
-    AgentDebugLog87("WindowManagement.ahk:ShowMinimizedList", "entry", '{"listActive":' . (g_WM_MinimizedListActive ?
-        "true" : "false") . ',"refresh":' . (refresh ? "true" : "false") . '}', "H6")
-    ; #endregion
-    if (g_WM_MinimizedListActive && !refresh) {
-        ; #region agent log
-        AgentDebugLog87("WindowManagement.ahk:ShowMinimizedList", "already active skip", "{}", "H6")
-        ; #endregion
+    if (g_WM_MinimizedListActive && !refresh)
         return
-    }
     if (!IsSet(rows))
         rows := WM_CollectBackgroundWindows()
     if (rows.Length = 0) {
-        ; #region agent log
-        AgentDebugLog87("WindowManagement.ahk:ShowMinimizedList", "empty branch", "{}", "H3")
-        ; #endregion
         if (refresh)
             WM_MinimizedList_Cleanup()
         else
@@ -1172,12 +1145,6 @@ WM_ShowMinimizedBackgroundList(rows := unset, refresh := false) {
     WM_MinimizedList_BindHotkeys(windows)
     WM_MinimizedList_RepositionToActiveMonitor(0, g_WM_MinimizedListGui)
     WM_MinimizedList_StartActiveMonitorTracking()
-    ; #region agent log
-    guiHwnd := 0
-    try guiHwnd := g_WM_MinimizedListGui.Hwnd
-    AgentDebugLog87("WindowManagement.ahk:ShowMinimizedList", "gui shown", '{"rows":' . rows.Length . ',"guiHwnd":' .
-        guiHwnd . '}', "H4,H5")
-    ; #endregion
 }
 
 ; =============================================================================

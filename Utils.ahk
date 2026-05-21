@@ -20,19 +20,6 @@ global BANNER_ACCENT_ERROR := "C0392B"        ; Red: negative / error
 global BANNER_ACCENT_INTERMEDIATE := "F1C40F" ; Yellow: loading, actionable, neutral
 global BANNER_ACCENT_INFO := "2980B9"         ; Blue: info / alternate mode
 
-; #region agent log
-AgentDebugLog87(location, message, dataJson := "{}", hypothesisId := "", runId := "pre-fix") {
-    loc := StrReplace(location, "\", "/")
-    msg := StrReplace(message, '"', "'")
-    line := '{"sessionId":"87c1d1","timestamp":' . A_TickCount . ',"location":"' . loc . '","message":"' . msg .
-        '","data":' . (dataJson != "" ? dataJson : "{}") . ',"hypothesisId":"' . hypothesisId . '","runId":"' . runId . '"}'
-    try
-        FileAppend line "`n", A_ScriptDir "\debug-87c1d1.log"
-    catch {
-    }
-}
-; #endregion
-
 ; Possible Gemini prompt field names (EN and PT) for work/personal env. Used by FindGeminiPromptField.
 global GEMINI_PROMPT_FIELD_NAMES := ["Enter a prompt for Gemini", "Enter a prompt here",
     "Digite um prompt para o Gemini", "Digite um prompt aqui"]
@@ -4331,6 +4318,8 @@ StandardLoadingBar_EscapeCallbackFromKeyCallbacks(keyCallbacks) {
 
 StandardLoadingBar_KeysSelectionModifiersDown() {
     try {
+        ; Chord modifiers only (not Shift): WaitForTriggerKeyRelease already waits for Shift; including Shift here
+        ; blocked poll edges while Shift was still down after #!+… chords.
         return GetKeyState("LWin", "P") || GetKeyState("RWin", "P") || GetKeyState("Ctrl", "P") || GetKeyState("Alt", "P")
     } catch {
         return false
@@ -4370,7 +4359,7 @@ StandardLoadingBar_StartKeysSelectionPoll(keyCallbacks) {
             if (knL = "escape" || knL = "*escape")
                 continue
             g_StandardLoadingBarKeysPollCallbacks[keyName] := cb
-            g_StandardLoadingBarKeysPollPrev[keyName] := false
+            g_StandardLoadingBarKeysPollPrev[keyName] := StandardLoadingBar_KeysSelectionKeyDown(keyName)
         }
     } catch {
     }
@@ -4386,23 +4375,40 @@ StandardLoadingBar_KeysSelectionPoll() {
         StandardLoadingBar_StopKeysSelectionPoll()
         return
     }
-    if (StandardLoadingBar_KeysSelectionModifiersDown())
+    if (StandardLoadingBar_KeysSelectionModifiersDown()) {
+        for keyName, cb in g_StandardLoadingBarKeysPollCallbacks {
+            if (!cb)
+                continue
+            g_StandardLoadingBarKeysPollPrev[keyName] := StandardLoadingBar_KeysSelectionKeyDown(keyName)
+        }
         return
+    }
     for keyName, cb in g_StandardLoadingBarKeysPollCallbacks {
         if (!cb)
             continue
         isDown := StandardLoadingBar_KeysSelectionKeyDown(keyName)
         wasDown := g_StandardLoadingBarKeysPollPrev.Has(keyName) ? g_StandardLoadingBarKeysPollPrev[keyName] : false
         g_StandardLoadingBarKeysPollPrev[keyName] := isDown
-        if (isDown && !wasDown) {
-            ; #region agent log
-            if (keyName = "2")
-                AgentDebugLog87("Utils.ahk:KeysSelectionPoll", "key2 edge", '{"modsDown":' .
-                    (StandardLoadingBar_KeysSelectionModifiersDown() ? "true" : "false") . ',"overlay":' .
-                    (g_StandardLoadingBarIsKeysOverlay ? "true" : "false") . '}', "H1")
-            ; #endregion
+        if (isDown && !wasDown)
             StandardLoadingBar_KeyWrapper(keyName, cb)
+    }
+}
+
+; After chord release, wait until digit selection keys are up so poll arming does not treat a held key as wasDown.
+StandardLoadingBar_WaitForSelectionKeysRelease(keyCallbacks) {
+    try {
+        for keyName, cb in keyCallbacks {
+            if (!cb)
+                continue
+            knL := StrLower(Trim(keyName))
+            if (knL = "escape" || knL = "*escape")
+                continue
+            if (StrLen(keyName) = 1 && keyName >= "0" && keyName <= "9") {
+                while StandardLoadingBar_KeysSelectionKeyDown(keyName)
+                    KeyWait keyName
+            }
         }
+    } catch {
     }
 }
 
@@ -4506,6 +4512,7 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
     g_StandardLoadingBarKeysEscapeActive := false
 
     StandardLoadingBar_WaitForTriggerKeyRelease()
+    StandardLoadingBar_WaitForSelectionKeysRelease(keyCallbacks)
 
     ; Register selection hotkeys as GLOBAL while the overlay is open.
     ; Critical: the overlay may fail to activate immediately, and we still need the keys (e.g. "N") to be captured
@@ -4533,6 +4540,8 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
                 alt := StrLower(keyName)
             if (alt != "" && alt != keyName)
                 StandardLoadingBar_RegisterKeyHandler(alt, cb)
+            if (keyName >= "0" && keyName <= "9")
+                StandardLoadingBar_RegisterKeyHandler("Numpad" . keyName, cb)
         }
     }
 
@@ -4550,7 +4559,8 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
                 g_StandardLoadingBarGui.OnEvent("Escape", StandardLoadingBar_KeysEscapeDismiss)
         } catch {
         }
-        g_StandardLoadingBarEscPollPrev := false
+        g_StandardLoadingBarEscPollPrev := GetKeyState("Escape", "P") || (DllCall("user32\GetAsyncKeyState", "int", 0x1B) &
+            0x8000)
         SetTimer(StandardLoadingBar_KeysEscapePoll, 50)
         g_StandardLoadingBarKeysEscapeActive := true
     }
@@ -4584,9 +4594,8 @@ StandardLoadingBar_RegisterKeyHandler(key, cb) {
         return
     ; $* prefix: hook hotkey, ignore sent keys; * allows extra modifiers (Shift) still held.
     keyToReg := key
-    if (StrLen(key) = 1) {
+    if (StrLen(key) = 1 || RegExMatch(key, "i)^Numpad[0-9]$"))
         keyToReg := "$*" . key
-    }
     fn := StandardLoadingBar_KeyWrapper.Bind(key, cb)
     try {
         #InputLevel 10
@@ -4599,11 +4608,6 @@ StandardLoadingBar_RegisterKeyHandler(key, cb) {
 
 StandardLoadingBar_KeyWrapper(key, cb, *) {
     global g_StandardLoadingBarIsKeysOverlay
-    ; #region agent log
-    if (key = "2")
-        AgentDebugLog87("Utils.ahk:KeyWrapper", "entry", '{"overlay":' . (g_StandardLoadingBarIsKeysOverlay ? "true" :
-            "false") . '}', "H1")
-    ; #endregion
     if (!g_StandardLoadingBarIsKeysOverlay)
         return
     ; Run callback first so it can close the overlay (avoids destroying GUI from hotkey context before callback runs).
@@ -4611,19 +4615,10 @@ StandardLoadingBar_KeyWrapper(key, cb, *) {
         try {
             cb.Call()
         }
-        catch as err {
-            ; #region agent log
-            if (key = "2")
-                AgentDebugLog87("Utils.ahk:KeyWrapper", "callback error", '{"err":"' . StrReplace(err.Message, '"',
-                    "'") . '"}', "H4")
-            ; #endregion
+        catch {
         }
     }
     StandardLoadingBar_CloseKeysOverlay()
-    ; #region agent log
-    if (key = "2")
-        AgentDebugLog87("Utils.ahk:KeyWrapper", "exit after CloseKeysOverlay", "{}", "H1")
-    ; #endregion
 }
 
 StandardLoadingBar_KeysTimeoutFired(timeoutCallback) {
