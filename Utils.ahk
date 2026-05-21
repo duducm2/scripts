@@ -6143,8 +6143,21 @@ CleanClipboard_ShowCountdown() {
     keyCallbacks := Map("N", CleanClipboard_OnCancel, "Y", CleanClipboard_OnYConfirm)
 
     ; Center on active monitor (centerOnHwnd := 0), use red accent for destructive action.
-    StandardLoadingBar_ShowWithKeys(state, keyCallbacks, 4000, 0, CleanClipboard_OnTimeout,
-        BANNER_ACCENT_ERROR, 0, 17, "", false, "[Y] Clean now  [N] Cancel (auto-continue in 4s)")
+    StandardLoadingBar_ShowWithKeys(
+        state,
+        keyCallbacks,
+        4000,
+        0,
+        CleanClipboard_OnTimeout,
+        BANNER_ACCENT_ERROR,
+        0,
+        17,
+        "",
+        false,
+        "[Y] Clean now  [N] Cancel (auto-continue in 4s)",
+        true,
+        true,
+        true)
 }
 
 CleanClipboard_OnCancel(*) {
@@ -6545,8 +6558,21 @@ DesktopToRecycle_Trigger() {
     state := "🗑️ Move all items from:`n" . g_DesktopToRecyclePath . "`nto Recycle Bin? (4s)"
     keyCallbacks := Map("Y", DesktopToRecycle_OnConfirm, "N", DesktopToRecycle_OnCancel)
     ; Center on active monitor (centerOnHwnd := 0), use standard intermediate accent with border.
-    StandardLoadingBar_ShowWithKeys(state, keyCallbacks, 4000, 0, DesktopToRecycle_OnTimeout,
-        BANNER_ACCENT_INTERMEDIATE, 0, 17, "", false, "[Y] Yes  [N] Cancel", false, false, false, true)
+    StandardLoadingBar_ShowWithKeys(
+        state,
+        keyCallbacks,
+        4000,
+        0,
+        DesktopToRecycle_OnTimeout,
+        BANNER_ACCENT_INTERMEDIATE,
+        0,
+        17,
+        "",
+        false,
+        "[Y] Yes  [N] Cancel",
+        true,
+        true,
+        true)
 }
 
 ; =============================================================================
