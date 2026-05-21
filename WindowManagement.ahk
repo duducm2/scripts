@@ -157,6 +157,7 @@ global g_WM_MinimizedListExcludePickerActive := false
 global g_WM_MinimizedListExcludePickerRows := []
 global g_WM_MinimizedListExcludePickerMap := Map()
 global g_WM_MinimizedListExcludePickerDigitSequence := ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"]
+global g_WM_MinimizedListOpenModeArmed := false
 ; When daemon is used, foreground is driven by daemon cache (lower-frequency check); else legacy 100ms polling
 if (WM_UsesAutomationDaemon())
     SetTimer MonitorActiveWindow, 250
@@ -551,7 +552,7 @@ WM_MinimizedList_StopInputHook() {
     g_WM_MinimizedInputHook := ""
 }
 
-WM_MinimizedList_StartInputHook(windows, includeAddExcludeA := false) {
+WM_MinimizedList_StartInputHook(windows, includeCommandKeys := false) {
     global g_WM_MinimizedInputHook
     WM_MinimizedList_StopInputHook()
     if (windows.Length = 0)
@@ -563,8 +564,8 @@ WM_MinimizedList_StartInputHook(windows, includeAddExcludeA := false) {
         if (ch >= "0" && ch <= "9")
             keysToOpt .= "{Numpad" . ch . "}"
     }
-    if (includeAddExcludeA)
-        keysToOpt .= "{A}"
+    if (includeCommandKeys)
+        keysToOpt .= "{A}{O}"
     ih := InputHook("L0")
     ih.KeyOpt(keysToOpt, "+SN")
     ih.OnKeyDown := WM_MinimizedList_OnInputHookKeyDown
@@ -595,6 +596,10 @@ WM_MinimizedList_OnInputHookKeyDown(ih, vk, sc, *) {
     }
     if (keyName = "A") {
         HandleMinimizedListAddExcludeTrigger()
+        return
+    }
+    if (keyName = "O") {
+        HandleMinimizedListOpenModeArm()
         return
     }
     char := WM_MinimizedList_InputHookKeyToChar(keyName)
@@ -833,8 +838,34 @@ WM_MinimizedList_CloseHwnd(hwnd) {
     return WM_MinimizedList_WaitForHwndClosed(hwnd)
 }
 
+WM_MinimizedList_OpenHwnd(hwnd) {
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return false
+    try {
+        if (WinGetMinMax("ahk_id " hwnd) = -1)
+            WinRestore "ahk_id " hwnd
+        WinShow "ahk_id " hwnd
+        WinActivate "ahk_id " hwnd
+        WinWaitActive "ahk_id " hwnd, , 1.5
+    } catch {
+        return false
+    }
+    Sleep 50
+    return true
+}
+
+HandleMinimizedListOpenModeArm(*) {
+    global g_WM_MinimizedListActive, g_WM_MinimizedListRefreshing, g_WM_MinimizedListExcludePickerActive,
+        g_WM_MinimizedListOpenModeArmed
+    if (!g_WM_MinimizedListActive || g_WM_MinimizedListRefreshing || g_WM_MinimizedListExcludePickerActive)
+        return
+    g_WM_MinimizedListOpenModeArmed := true
+    WM_MinimizedList_RepaintMainList()
+}
+
 HandleMinimizedListByChar(char) {
-    global g_WM_MinimizedListActive, g_WM_MinimizedKeyMap, g_WM_MinimizedListRefreshing, g_WM_MinimizedListExcludePickerActive
+    global g_WM_MinimizedListActive, g_WM_MinimizedKeyMap, g_WM_MinimizedListRefreshing, g_WM_MinimizedListExcludePickerActive,
+        g_WM_MinimizedListOpenModeArmed
     if (!g_WM_MinimizedListActive || g_WM_MinimizedListRefreshing || g_WM_MinimizedListExcludePickerActive)
         return
     hwnd := g_WM_MinimizedKeyMap.Get(char, "")
@@ -842,19 +873,37 @@ HandleMinimizedListByChar(char) {
         hwnd := g_WM_MinimizedKeyMap.Get(StrLower(char), "")
     if (!hwnd)
         return
+    if (g_WM_MinimizedListOpenModeArmed) {
+        g_WM_MinimizedListOpenModeArmed := false
+        WM_MinimizedList_OpenHwnd(hwnd)
+        WM_MinimizedList_Cleanup()
+        return
+    }
     WM_MinimizedList_CloseHwnd(hwnd)
     WM_MinimizedList_Refresh(hwnd)
 }
 
 WM_MinimizedList_BuildDisplayText(rows, windows) {
-    global g_WM_MinimizedCharSequence
+    global g_WM_MinimizedCharSequence, g_WM_MinimizedListOpenModeArmed
     displayText := "=== MINIMIZED BACKGROUND WINDOWS ===`n`n"
     for w in windows
         displayText .= "[" . w.label . "] " . w.title . "`n"
     if (rows.Length > g_WM_MinimizedCharSequence.Length)
         displayText .= "`n(" . (rows.Length - g_WM_MinimizedCharSequence.Length) . " more — close some and reopen)`n"
-    displayText .= "`n[A] Add to exclude list  [ESC] Cancel"
+    if (g_WM_MinimizedListOpenModeArmed)
+        displayText .= "`n>>> Press a number to OPEN (closes this list) <<<`n"
+    displayText .= "`n[O] Open window  [A] Add to exclude list  [ESC] Cancel"
     return displayText
+}
+
+WM_MinimizedList_RepaintMainList() {
+    global g_WM_MinimizedListRows
+    if (g_WM_MinimizedListRows.Length = 0)
+        return
+    windows := WM_MinimizedList_AssignKeys(g_WM_MinimizedListRows)
+    displayText := WM_MinimizedList_BuildDisplayText(g_WM_MinimizedListRows, windows)
+    WM_MinimizedList_RebuildListGui(displayText)
+    WM_MinimizedList_BindHotkeys(windows)
 }
 
 WM_MinimizedList_BuildExcludePickerDisplayText(rows, pickerWindows) {
@@ -912,7 +961,8 @@ HandleMinimizedListAddExcludeTrigger(*) {
 
 WM_MinimizedList_ShowExcludePicker() {
     global g_WM_MinimizedListExcludePickerActive, g_WM_MinimizedListExcludePickerRows, g_WM_MinimizedListExcludePickerMap,
-        g_WM_MinimizedListExcludePickerDigitSequence
+        g_WM_MinimizedListExcludePickerDigitSequence, g_WM_MinimizedListOpenModeArmed
+    g_WM_MinimizedListOpenModeArmed := false
     WM_MinimizedList_UnbindHotkeys()
     allRows := WM_CollectMinimizedWindowsForExcludePicker()
     rows := []
@@ -942,7 +992,9 @@ WM_MinimizedList_ShowExcludePicker() {
 }
 
 WM_MinimizedList_CancelExcludePicker() {
-    global g_WM_MinimizedListExcludePickerActive, g_WM_MinimizedListExcludePickerRows, g_WM_MinimizedListExcludePickerMap
+    global g_WM_MinimizedListExcludePickerActive, g_WM_MinimizedListExcludePickerRows, g_WM_MinimizedListExcludePickerMap,
+        g_WM_MinimizedListOpenModeArmed
+    g_WM_MinimizedListOpenModeArmed := false
     g_WM_MinimizedListExcludePickerActive := false
     g_WM_MinimizedListExcludePickerRows := []
     g_WM_MinimizedListExcludePickerMap := Map()
@@ -952,11 +1004,12 @@ WM_MinimizedList_CancelExcludePicker() {
 WM_MinimizedList_Cleanup() {
     global g_WM_MinimizedListGui, g_WM_MinimizedListActive, g_WM_MinimizedListRows, g_WM_MinimizedKeyMap,
         g_WM_MinimizedListRefreshing, g_WM_MinimizedListExcludePickerActive,
-        g_WM_MinimizedListExcludePickerRows, g_WM_MinimizedListExcludePickerMap
+        g_WM_MinimizedListExcludePickerRows, g_WM_MinimizedListExcludePickerMap, g_WM_MinimizedListOpenModeArmed
     if (!g_WM_MinimizedListActive)
         return
     g_WM_MinimizedListActive := false
     g_WM_MinimizedListRefreshing := false
+    g_WM_MinimizedListOpenModeArmed := false
     g_WM_MinimizedListExcludePickerActive := false
     g_WM_MinimizedListExcludePickerRows := []
     g_WM_MinimizedListExcludePickerMap := Map()
@@ -983,10 +1036,11 @@ WM_MinimizedList_Cancel(*) {
 
 WM_MinimizedList_Refresh(closedHwnd := 0) {
     global g_WM_MinimizedListActive, g_WM_MinimizedListRefreshing, g_WM_MinimizedListExcludePickerActive,
-        g_WM_MinimizedListExcludePickerRows, g_WM_MinimizedListExcludePickerMap
+        g_WM_MinimizedListExcludePickerRows, g_WM_MinimizedListExcludePickerMap, g_WM_MinimizedListOpenModeArmed
     if (!g_WM_MinimizedListActive || g_WM_MinimizedListRefreshing)
         return
     g_WM_MinimizedListRefreshing := true
+    g_WM_MinimizedListOpenModeArmed := false
     g_WM_MinimizedListExcludePickerActive := false
     g_WM_MinimizedListExcludePickerRows := []
     g_WM_MinimizedListExcludePickerMap := Map()
