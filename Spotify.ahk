@@ -30,24 +30,163 @@ GroupAdd "YouTubeBrowsers", "ahk_exe brave.exe"
 ; =============================================================================
 #!+s:: OpenSpotify()
 
+; Minimum width/height for the main Spotify UI (skip hidden Electron helper windows).
+global SPOTIFY_MIN_WINDOW_SIZE := 200
+global SPOTIFY_OPEN_WAIT_SEC := 12
+
 OpenSpotify() {
-    ; 1) If Spotify is already running, just activate it. Exact process only; no title substring.
-    if WinExist("ahk_exe Spotify.exe") {
-        WinActivate("ahk_exe Spotify.exe")
-        WinWaitActive("ahk_exe Spotify.exe", , 2)
+    hwnd := GetSpotifyMainHwnd()
+    if hwnd > 0 {
+        if SpotifyActivateWindow(hwnd)
+            return
+        SpotifyLaunchRestore()
+        hwnd := SpotifyWaitForMainHwnd(SPOTIFY_OPEN_WAIT_SEC)
+        if hwnd > 0 && SpotifyActivateWindow(hwnd)
+            return
+        SpotifyShowOpenFailure()
         return
     }
 
-    ; 2) Resolve launch command: dynamic path then Store fallback.
-    link := GetSpotifyShortcutPath()
-    if (link != "") {
-        Run(link)
-        WinWaitActive("ahk_exe Spotify.exe", , 5)
+    if ProcessExist("Spotify.exe") {
+        SpotifyLaunchRestore()
+        hwnd := SpotifyWaitForMainHwnd(SPOTIFY_OPEN_WAIT_SEC)
+        if hwnd > 0 && SpotifyActivateWindow(hwnd)
+            return
+        SpotifyShowOpenFailure()
         return
     }
-    ; Store / UWP fallback
-    Run("explorer.exe shell:AppsFolder\SpotifyAB.SpotifyMusic_zpdnekdrzrea0!Spotify")
-    WinWaitActive("ahk_exe Spotify.exe", , 5)
+
+    SpotifyLaunchFresh()
+    hwnd := SpotifyWaitForMainHwnd(SPOTIFY_OPEN_WAIT_SEC)
+    if hwnd > 0 && SpotifyActivateWindow(hwnd)
+        return
+    SpotifyShowOpenFailure()
+}
+
+SpotifyLaunchFresh() {
+    link := GetSpotifyShortcutPath()
+    if (link != "")
+        Run(link)
+    else
+        Run("shell:AppsFolder\SpotifyAB.SpotifyMusic_zpdnekdrzrea0!Spotify")
+    try
+        ProcessWait("Spotify.exe", SPOTIFY_OPEN_WAIT_SEC)
+    catch {
+        ;
+    }
+}
+
+; Process running but no main window (tray-only / crashed UI): restore via shortcut or spotify: URI.
+SpotifyLaunchRestore() {
+    link := GetSpotifyShortcutPath()
+    if (link != "")
+        Run(link)
+    else
+        Run("spotify:")
+}
+
+SpotifyWaitForMainHwnd(timeoutSec := 12) {
+    deadline := A_TickCount + (timeoutSec * 1000)
+    loop {
+        hwnd := GetSpotifyMainHwnd()
+        if hwnd > 0
+            return hwnd
+        if (A_TickCount >= deadline)
+            break
+        Sleep 200
+    }
+    return 0
+}
+
+SpotifyShowOpenFailure() {
+    ToolTip("Could not open Spotify")
+    SetTimer(() => ToolTip(), -2000)
+}
+
+SpotifyActivateWindow(hwnd, attempts := 3, waitMs := 300) {
+    if !(hwnd is Integer) || hwnd <= 0 || !WinExist("ahk_id " hwnd)
+        return false
+    try {
+        pid := WinGetPID("ahk_id " hwnd)
+        if (pid is Integer) && pid > 0
+            DllCall("AllowSetForegroundWindow", "UInt", pid)
+    } catch {
+        ;
+    }
+    originalState := ""
+    try {
+        originalState := WinGetMinMax(hwnd)
+        if !(originalState = -1 || originalState = 0 || originalState = 1)
+            originalState := ""
+    } catch {
+        originalState := ""
+    }
+    loop attempts {
+        try {
+            if (originalState = -1) {
+                WinRestore(hwnd)
+                Sleep 100
+            }
+            WinActivate(hwnd)
+            if WinActive("ahk_id " hwnd) || WinWaitActive("ahk_id " hwnd, , waitMs / 1000)
+                return true
+        } catch {
+        }
+        try {
+            if (originalState = -1) {
+                DllCall("ShowWindow", "Ptr", hwnd, "Int", 9)
+                Sleep 100
+            }
+            DllCall("SetForegroundWindow", "Ptr", hwnd)
+            if WinActive("ahk_id " hwnd) || WinWaitActive("ahk_id " hwnd, , waitMs / 1000)
+                return true
+        } catch {
+        }
+        try {
+            DllCall("BringWindowToTop", "Ptr", hwnd)
+            Sleep 100
+            WinActivate(hwnd)
+            if WinActive("ahk_id " hwnd) || WinWaitActive("ahk_id " hwnd, , waitMs / 1000)
+                return true
+        } catch {
+        }
+        Sleep 200
+    }
+    return false
+}
+
+SpotifyIsUsableMainWindow(hwnd) {
+    if !(hwnd is Integer) || hwnd <= 0
+        return false
+    if !DllCall("IsWindowVisible", "Ptr", hwnd)
+        return false
+    try {
+        WinGetPos(, , &w, &h, "ahk_id " hwnd)
+        if (w < SPOTIFY_MIN_WINDOW_SIZE || h < SPOTIFY_MIN_WINDOW_SIZE)
+            return false
+    } catch {
+        return false
+    }
+    return true
+}
+
+; Main Spotify UI HWND (visible, sized); prefers title containing "Spotify". Returns 0 if none.
+GetSpotifyMainHwnd() {
+    bestWithTitle := 0
+    bestAny := 0
+    for hwnd in WinGetList("ahk_exe Spotify.exe") {
+        if !SpotifyIsUsableMainWindow(hwnd)
+            continue
+        try title := WinGetTitle(hwnd)
+        catch
+            title := ""
+        if InStr(title, "Spotify") {
+            if !bestWithTitle
+                bestWithTitle := hwnd
+        } else if !bestAny
+            bestAny := hwnd
+    }
+    return bestWithTitle ? bestWithTitle : bestAny
 }
 
 ; Returns path to Spotify shortcut (Start Menu or Programs) or "" for Store-only. No hardcoded user paths.
@@ -139,10 +278,9 @@ VerifiedMinimize(hwnd) {
         WinMinimize("ahk_id " hwnd)
 }
 
-; Returns Spotify window HWND (integer) or 0 if not found. Strict sentinel contract.
+; Returns Spotify main window HWND (integer) or 0 if not found. Strict sentinel contract.
 GetSpotifyHwnd() {
-    hwnd := WinExist("ahk_exe Spotify.exe")
-    return (hwnd) ? hwnd : 0
+    return GetSpotifyMainHwnd()
 }
 
 ; Returns first browser window HWND whose current tab URL is a YouTube domain, or 0. Uses UIA + ahk_group.
