@@ -141,8 +141,11 @@ global g_WMAutomationSuppressReason := ""
 global g_WM_MinimizedListGui := false
 global g_WM_MinimizedListActive := false
 global g_WM_MinimizedListRows := []
-global g_WM_MinimizedListLv := false
 global g_WM_MinimizedListEscPollPrev := false
+global g_WM_MinimizedCharSequence := ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "a", "b", "c", "d", "e", "f",
+    "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
+global g_WM_MinimizedKeyMap := Map()
+global g_WM_MinimizedHotkeyHandlers := []
 ; When daemon is used, foreground is driven by daemon cache (lower-frequency check); else legacy 100ms polling
 if (WM_UsesAutomationDaemon())
     SetTimer MonitorActiveWindow, 250
@@ -446,13 +449,110 @@ WM_CenterGuiOnActiveMonitor(gui) {
     gui.Show("x" . cx . " y" . cy . " NA")
 }
 
+WM_MinimizedList_KeyLabel(char) {
+    return (char = "0") ? "10" : char
+}
+
+WM_MinimizedList_AssignKeys(rows) {
+    global g_WM_MinimizedCharSequence, g_WM_MinimizedKeyMap
+    g_WM_MinimizedKeyMap := Map()
+    windows := []
+    maxSlots := g_WM_MinimizedCharSequence.Length
+    limit := Min(rows.Length, maxSlots)
+    loop limit {
+        ch := g_WM_MinimizedCharSequence[A_Index]
+        row := rows[A_Index]
+        g_WM_MinimizedKeyMap[ch] := row.hwnd
+        windows.Push({ hwnd: row.hwnd, title: row.title, char: ch, label: WM_MinimizedList_KeyLabel(ch) })
+    }
+    return windows
+}
+
+WM_MinimizedList_UnbindHotkeys() {
+    global g_WM_MinimizedHotkeyHandlers
+    for entry in g_WM_MinimizedHotkeyHandlers {
+        try {
+            ch := entry.char
+            Hotkey(ch, "Off")
+            if (RegExMatch(ch, "^[a-z]$"))
+                Hotkey(StrUpper(ch), "Off")
+        } catch {
+        }
+    }
+    g_WM_MinimizedHotkeyHandlers := []
+}
+
+WM_MinimizedList_BindHotkeys(windows) {
+    global g_WM_MinimizedHotkeyHandlers
+    WM_MinimizedList_UnbindHotkeys()
+    for w in windows {
+        handler := CreateMinimizedListHandler(w.char)
+        g_WM_MinimizedHotkeyHandlers.Push({ char: w.char, handler: handler })
+        try {
+            Hotkey(w.char, handler, "On")
+            if (RegExMatch(w.char, "^[a-z]$"))
+                Hotkey(StrUpper(w.char), handler, "On")
+        } catch {
+        }
+    }
+}
+
+WM_MinimizedList_CloseHwnd(hwnd) {
+    if (!hwnd)
+        return
+    try {
+        WinClose "ahk_id " hwnd
+        if !WinWaitClose("ahk_id " hwnd, , 0.2) {
+            try WinShow "ahk_id " hwnd
+            WinActivate "ahk_id " hwnd
+            WinWaitActive "ahk_id " hwnd, , 1.2
+            WinClose "ahk_id " hwnd
+            if !WinWaitClose("ahk_id " hwnd, , 0.35) {
+                PostMessage 0x0010, 0, 0, , "ahk_id " hwnd
+                WinWaitClose "ahk_id " hwnd, , 1.5
+            }
+        }
+    } catch {
+    }
+}
+
+CreateMinimizedListHandler(char) {
+    return (*) => HandleMinimizedListByChar(char)
+}
+
+HandleMinimizedListByChar(char) {
+    global g_WM_MinimizedListActive, g_WM_MinimizedKeyMap
+    if (!g_WM_MinimizedListActive)
+        return
+    hwnd := g_WM_MinimizedKeyMap.Get(char, "")
+    if (hwnd = "")
+        hwnd := g_WM_MinimizedKeyMap.Get(StrLower(char), "")
+    if (!hwnd)
+        return
+    WM_MinimizedList_CloseHwnd(hwnd)
+    WM_MinimizedList_Refresh()
+}
+
+WM_MinimizedList_BuildDisplayText(rows, windows) {
+    global g_WM_MinimizedCharSequence
+    displayText := "=== MINIMIZED BACKGROUND WINDOWS ===`n`n"
+    for w in windows
+        displayText .= "[" . w.label . "] " . w.title . "`n"
+    if (rows.Length > g_WM_MinimizedCharSequence.Length)
+        displayText .= "`n(" . (rows.Length - g_WM_MinimizedCharSequence.Length) . " more — close some and reopen)`n"
+    displayText .= "`n[ESC] Cancel"
+    return displayText
+}
+
 WM_MinimizedList_Cleanup() {
-    global g_WM_MinimizedListGui, g_WM_MinimizedListActive, g_WM_MinimizedListRows, g_WM_MinimizedListLv
+    global g_WM_MinimizedListGui, g_WM_MinimizedListActive, g_WM_MinimizedListRows, g_WM_MinimizedKeyMap,
+        g_WM_MinimizedHotkeyHandlers
     if (!g_WM_MinimizedListActive)
         return
     g_WM_MinimizedListActive := false
     g_WM_MinimizedListRows := []
-    g_WM_MinimizedListLv := false
+    g_WM_MinimizedKeyMap := Map()
+    WM_MinimizedList_UnbindHotkeys()
     WM_MinimizedList_UnbindEscape()
     try Utils_EnsureGlobalEscapeHotkey()
     if (IsObject(g_WM_MinimizedListGui) && g_WM_MinimizedListGui.Hwnd) {
@@ -465,78 +565,69 @@ WM_MinimizedList_Cancel(*) {
     WM_MinimizedList_Cleanup()
 }
 
-WM_MinimizedList_OnDoubleClick(*) {
-    global g_WM_MinimizedListLv, g_WM_MinimizedListRows
-    if (!IsObject(g_WM_MinimizedListLv))
+WM_MinimizedList_Refresh() {
+    global g_WM_MinimizedListActive
+    if (!g_WM_MinimizedListActive)
         return
-    rowIdx := g_WM_MinimizedListLv.GetNext(0, "F")
-    if (!rowIdx || rowIdx < 1 || rowIdx > g_WM_MinimizedListRows.Length)
+    WM_MinimizedList_UnbindHotkeys()
+    rows := WM_CollectBackgroundWindows()
+    g_WM_MinimizedListRows := rows
+    if (rows.Length = 0) {
+        WM_MinimizedList_Cleanup()
+        ShowCenteredOverlay_Utils("ℹ️ No minimized background windows", 2500, BANNER_ACCENT_INFO)
         return
-    hwnd := g_WM_MinimizedListRows[rowIdx].hwnd
-    WM_MinimizedList_Cleanup()
-    try {
-        WinRestore "ahk_id " hwnd
-        WinActivate "ahk_id " hwnd
-    } catch {
     }
+    WM_ShowMinimizedBackgroundList(rows, true)
 }
 
-WM_ApplyMinimizedListViewTheme(lv) {
-    hwnd := lv.Hwnd
-    headerHwnd := SendMessage(0x101F, 0, 0, hwnd) ; LVM_GETHEADER
-    if (!headerHwnd)
-        return
-    try DllCall("uxtheme\SetWindowTheme", "ptr", headerHwnd, "wstr", "DarkMode_Explorer", "ptr", 0)
-    SendMessage(0x1201, 0, 0x2E1E1E, headerHwnd) ; HDM_SETBKCOLOR (1E1E2E BGR)
-    SendMessage(0x1202, 0, 0xF4D6CD, headerHwnd) ; HDM_SETTEXTCOLOR (CDD6F4 BGR)
-}
-
-WM_ShowMinimizedBackgroundList() {
-    global g_WM_MinimizedListGui, g_WM_MinimizedListActive, g_WM_MinimizedListRows, g_WM_MinimizedListLv
+WM_ShowMinimizedBackgroundList(rows := unset, refresh := false) {
+    global g_WM_MinimizedListGui, g_WM_MinimizedListActive, g_WM_MinimizedListRows, g_WM_MinimizedCharSequence
     ; #region agent log
     AgentDebugLog87("WindowManagement.ahk:ShowMinimizedList", "entry", '{"listActive":' . (g_WM_MinimizedListActive ?
-        "true" : "false") . '}', "H6")
+        "true" : "false") . ',"refresh":' . (refresh ? "true" : "false") . '}', "H6")
     ; #endregion
-    if (g_WM_MinimizedListActive) {
+    if (g_WM_MinimizedListActive && !refresh) {
         ; #region agent log
         AgentDebugLog87("WindowManagement.ahk:ShowMinimizedList", "already active skip", "{}", "H6")
         ; #endregion
         return
     }
-    rows := WM_CollectBackgroundWindows()
+    if (!IsSet(rows))
+        rows := WM_CollectBackgroundWindows()
     if (rows.Length = 0) {
         ; #region agent log
         AgentDebugLog87("WindowManagement.ahk:ShowMinimizedList", "empty branch", "{}", "H3")
         ; #endregion
-        ShowCenteredOverlay_Utils("ℹ️ No minimized background windows", 2500, BANNER_ACCENT_INFO)
+        if (refresh)
+            WM_MinimizedList_Cleanup()
+        else
+            ShowCenteredOverlay_Utils("ℹ️ No minimized background windows", 2500, BANNER_ACCENT_INFO)
         return
     }
     g_WM_MinimizedListRows := rows
-    listH := Min(520, 40 + rows.Length * 22)
-    g_WM_MinimizedListGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner")
-    g_WM_MinimizedListGui.BackColor := "1E1E2E"
-    g_WM_MinimizedListGui.MarginX := 20
-    g_WM_MinimizedListGui.MarginY := 15
-    g_WM_MinimizedListGui.SetFont("s14 cCDD6F4 Bold", "Segoe UI")
-    g_WM_MinimizedListGui.Add("Text", "w720 Center", "📋 Minimized background windows")
-    g_WM_MinimizedListGui.Add("Text", "w720 h1 Background45475A")
-    g_WM_MinimizedListGui.SetFont("s11 cCDD6F4", "Segoe UI")
-    g_WM_MinimizedListLv := g_WM_MinimizedListGui.Add("ListView",
-        "xm w720 h" . listH . " Grid cCDD6F4 Background1E1E2E", ["Window", "Application"])
-    for row in rows {
-        g_WM_MinimizedListLv.Add("", WM_TruncateTitleForList(row.title, 120), row.exe)
+    if (refresh && IsObject(g_WM_MinimizedListGui)) {
+        try g_WM_MinimizedListGui.Destroy()
+        g_WM_MinimizedListGui := false
     }
-    g_WM_MinimizedListLv.ModifyCol(1, 440)
-    g_WM_MinimizedListLv.ModifyCol(2, 280)
-    WM_ApplyMinimizedListViewTheme(g_WM_MinimizedListLv)
-    g_WM_MinimizedListGui.Add("Text", "w720 h1 Background45475A y+8")
-    g_WM_MinimizedListGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_WM_MinimizedListGui.Add("Text", "w720 Center", "Double-click to restore & focus | Esc to close")
+    windows := WM_MinimizedList_AssignKeys(rows)
+    displayText := WM_MinimizedList_BuildDisplayText(rows, windows)
+    fontSize := 11
+    baseWidth := 480
+    lineHeight := fontSize + 6
+    lineCount := StrSplit(displayText, "`n").Length
+    textControlHeight := lineCount * lineHeight + 10
+    g_WM_MinimizedListGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner +E0x08000000")
+    g_WM_MinimizedListGui.BackColor := "1E1E2E"
+    g_WM_MinimizedListGui.MarginX := 15
+    g_WM_MinimizedListGui.MarginY := 10
+    g_WM_MinimizedListGui.SetFont("s" . fontSize . " cCDD6F4", "Segoe UI")
+    g_WM_MinimizedListGui.Add("Text", "w" . (baseWidth - 30), displayText)
     g_WM_MinimizedListGui.OnEvent("Escape", WM_MinimizedList_Cancel)
-    g_WM_MinimizedListLv.OnEvent("DoubleClick", WM_MinimizedList_OnDoubleClick)
     WM_CenterGuiOnActiveMonitor(g_WM_MinimizedListGui)
-    g_WM_MinimizedListActive := true
+    if (!refresh)
+        g_WM_MinimizedListActive := true
     WM_MinimizedList_BindEscape()
+    WM_MinimizedList_BindHotkeys(windows)
     ; #region agent log
     guiHwnd := 0
     try guiHwnd := g_WM_MinimizedListGui.Hwnd
