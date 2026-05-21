@@ -13223,6 +13223,14 @@ Utils_GlobalEscapeHandler(*) {
             }
             return
         }
+        minSentinel := A_ScriptDir "\.cursor\wm_minimized_list_open"
+        if (FileExist(minSentinel)) {
+            minCloseReq := A_ScriptDir "\.cursor\wm_minimized_list_close_request"
+            try FileAppend "", minCloseReq
+            catch {
+            }
+            return
+        }
     } catch {
     }
 

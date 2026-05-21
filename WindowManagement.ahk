@@ -146,6 +146,12 @@ global g_WM_MinimizedCharSequence := ["1", "2", "3", "4", "5", "6", "7", "8", "9
     "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
 global g_WM_MinimizedKeyMap := Map()
 global g_WM_MinimizedHotkeyHandlers := []
+global g_WM_MinimizedListOpenFile := A_ScriptDir "\.cursor\wm_minimized_list_open"
+global g_WM_MinimizedListCloseRequestFile := A_ScriptDir "\.cursor\wm_minimized_list_close_request"
+global g_WM_MinimizedListCloseCheckTimer := ""
+global g_WM_MinimizedKeysPollCallbacks := Map()
+global g_WM_MinimizedKeysPollPrev := Map()
+global g_WM_MinimizedKeysPollTimer := ""
 ; When daemon is used, foreground is driven by daemon cache (lower-frequency check); else legacy 100ms polling
 if (WM_UsesAutomationDaemon())
     SetTimer MonitorActiveWindow, 250
@@ -360,6 +366,81 @@ WM_CollectBackgroundWindows() {
     return rows
 }
 
+WM_CheckMinimizedListCloseRequest() {
+    global g_WM_MinimizedListActive, g_WM_MinimizedListCloseRequestFile
+    if (!g_WM_MinimizedListActive)
+        return
+    if (FileExist(g_WM_MinimizedListCloseRequestFile)) {
+        try FileDelete(g_WM_MinimizedListCloseRequestFile)
+        catch {
+        }
+        WM_MinimizedList_Cancel()
+    }
+}
+
+WM_MinimizedList_ModifiersDown() {
+    try {
+        return GetKeyState("LWin", "P") || GetKeyState("RWin", "P") || GetKeyState("Ctrl", "P") || GetKeyState("Alt", "P")
+    } catch {
+        return false
+    }
+}
+
+WM_MinimizedList_KeyDown(keyName) {
+    try {
+        if (StrLen(keyName) = 1 && keyName >= "0" && keyName <= "9")
+            return GetKeyState(keyName, "P") || GetKeyState("Numpad" . keyName, "P")
+        return GetKeyState(keyName, "P")
+    } catch {
+        return false
+    }
+}
+
+WM_MinimizedList_StopKeysPoll() {
+    global g_WM_MinimizedKeysPollTimer, g_WM_MinimizedKeysPollPrev, g_WM_MinimizedKeysPollCallbacks
+    try SetTimer(g_WM_MinimizedKeysPollTimer, 0)
+    catch {
+    }
+    g_WM_MinimizedKeysPollTimer := ""
+    g_WM_MinimizedKeysPollPrev := Map()
+    g_WM_MinimizedKeysPollCallbacks := Map()
+}
+
+WM_MinimizedList_KeysPoll() {
+    global g_WM_MinimizedListActive, g_WM_MinimizedKeysPollPrev, g_WM_MinimizedKeysPollCallbacks
+    if (!g_WM_MinimizedListActive) {
+        WM_MinimizedList_StopKeysPoll()
+        return
+    }
+    if (WM_MinimizedList_ModifiersDown())
+        return
+    for keyName, cb in g_WM_MinimizedKeysPollCallbacks {
+        if (!cb)
+            continue
+        isDown := WM_MinimizedList_KeyDown(keyName)
+        wasDown := g_WM_MinimizedKeysPollPrev.Has(keyName) ? g_WM_MinimizedKeysPollPrev[keyName] : false
+        g_WM_MinimizedKeysPollPrev[keyName] := isDown
+        if (isDown && !wasDown) {
+            try cb.Call()
+            catch {
+            }
+        }
+    }
+}
+
+WM_MinimizedList_StartKeysPoll(windows) {
+    global g_WM_MinimizedKeysPollCallbacks, g_WM_MinimizedKeysPollPrev, g_WM_MinimizedKeysPollTimer
+    WM_MinimizedList_StopKeysPoll()
+    g_WM_MinimizedKeysPollCallbacks := Map()
+    g_WM_MinimizedKeysPollPrev := Map()
+    for w in windows {
+        g_WM_MinimizedKeysPollCallbacks[w.char] := CreateMinimizedListHandler(w.char)
+        g_WM_MinimizedKeysPollPrev[w.char] := false
+    }
+    if (g_WM_MinimizedKeysPollCallbacks.Count > 0)
+        g_WM_MinimizedKeysPollTimer := SetTimer(WM_MinimizedList_KeysPoll, 50)
+}
+
 WM_MinimizedList_EscapePoll() {
     global g_WM_MinimizedListActive, g_WM_MinimizedListEscPollPrev
     if (!g_WM_MinimizedListActive) {
@@ -368,6 +449,8 @@ WM_MinimizedList_EscapePoll() {
         }
         return
     }
+    if (WM_MinimizedList_ModifiersDown())
+        return
     escDown := GetKeyState("Escape", "P") || (DllCall("user32\GetAsyncKeyState", "int", 0x1B) & 0x8000)
     if (escDown) {
         if (!g_WM_MinimizedListEscPollPrev) {
@@ -378,12 +461,20 @@ WM_MinimizedList_EscapePoll() {
         g_WM_MinimizedListEscPollPrev := false
 }
 
+HandleMinimizedListEscape(*) {
+    global g_WM_MinimizedListActive
+    if (g_WM_MinimizedListActive)
+        WM_MinimizedList_Cancel()
+}
+
 WM_MinimizedList_BindEscape() {
-    global g_WM_MinimizedListEscPollPrev
+    global g_WM_MinimizedListEscPollPrev, g_OnEscapePressed, g_WM_MinimizedListOpenFile, g_WM_MinimizedListCloseCheckTimer
     try SetTimer(WM_MinimizedList_EscapePoll, 0)
     catch {
     }
-    try Hotkey("Escape", WM_MinimizedList_Cancel, "Off")
+    g_OnEscapePressed := HandleMinimizedListEscape
+    Utils_EnsureGlobalEscapeHotkey()
+    try HotIf()
     catch {
     }
     try {
@@ -394,23 +485,44 @@ WM_MinimizedList_BindEscape() {
     }
     g_WM_MinimizedListEscPollPrev := false
     SetTimer(WM_MinimizedList_EscapePoll, 50)
+    try {
+        DirCreate(A_ScriptDir "\.cursor")
+        try FileDelete(g_WM_MinimizedListOpenFile)
+        FileAppend "", g_WM_MinimizedListOpenFile
+    } catch {
+    }
+    try SetTimer(WM_CheckMinimizedListCloseRequest, 0)
+    catch {
+    }
+    g_WM_MinimizedListCloseCheckTimer := SetTimer(WM_CheckMinimizedListCloseRequest, 120)
 }
 
 WM_MinimizedList_UnbindEscape() {
-    global g_WM_MinimizedListEscPollPrev
+    global g_WM_MinimizedListEscPollPrev, g_OnEscapePressed, g_WM_MinimizedListOpenFile, g_WM_MinimizedListCloseRequestFile,
+        g_WM_MinimizedListCloseCheckTimer
     try SetTimer(WM_MinimizedList_EscapePoll, 0)
     catch {
     }
-    g_WM_MinimizedListEscPollPrev := false
-    try Hotkey("Escape", WM_MinimizedList_Cancel, "Off")
+    try SetTimer(WM_CheckMinimizedListCloseRequest, 0)
     catch {
     }
+    g_WM_MinimizedListCloseCheckTimer := ""
+    g_WM_MinimizedListEscPollPrev := false
     try {
         #InputLevel 10
         Hotkey("$*Escape", WM_MinimizedList_Cancel, "Off")
         #InputLevel 0
     } catch {
     }
+    try FileDelete(g_WM_MinimizedListOpenFile)
+    catch {
+    }
+    try FileDelete(g_WM_MinimizedListCloseRequestFile)
+    catch {
+    }
+    if (g_OnEscapePressed = HandleMinimizedListEscape)
+        g_OnEscapePressed := ""
+    Utils_EnsureGlobalEscapeHotkey()
 }
 
 WM_CenterGuiOnActiveMonitor(gui) {
@@ -470,12 +582,11 @@ WM_MinimizedList_AssignKeys(rows) {
 
 WM_MinimizedList_UnbindHotkeys() {
     global g_WM_MinimizedHotkeyHandlers
+    WM_MinimizedList_StopKeysPoll()
     for entry in g_WM_MinimizedHotkeyHandlers {
         try {
-            ch := entry.char
+            ch := entry.hk
             Hotkey(ch, "Off")
-            if (RegExMatch(ch, "^[a-z]$"))
-                Hotkey(StrUpper(ch), "Off")
         } catch {
         }
     }
@@ -485,14 +596,29 @@ WM_MinimizedList_UnbindHotkeys() {
 WM_MinimizedList_BindHotkeys(windows) {
     global g_WM_MinimizedHotkeyHandlers
     WM_MinimizedList_UnbindHotkeys()
+    WM_MinimizedList_StartKeysPoll(windows)
+    try HotIf()
+    catch {
+    }
     for w in windows {
         handler := CreateMinimizedListHandler(w.char)
-        g_WM_MinimizedHotkeyHandlers.Push({ char: w.char, handler: handler })
+        hk := "$*" . w.char
+        g_WM_MinimizedHotkeyHandlers.Push({ char: w.char, hk: hk, handler: handler })
         try {
-            Hotkey(w.char, handler, "On")
-            if (RegExMatch(w.char, "^[a-z]$"))
-                Hotkey(StrUpper(w.char), handler, "On")
+            #InputLevel 10
+            Hotkey(hk, handler, "On")
+            #InputLevel 0
         } catch {
+        }
+        if (RegExMatch(w.char, "^[a-z]$")) {
+            hkU := "$*" . StrUpper(w.char)
+            g_WM_MinimizedHotkeyHandlers.Push({ char: StrUpper(w.char), hk: hkU, handler: handler })
+            try {
+                #InputLevel 10
+                Hotkey(hkU, handler, "On")
+                #InputLevel 0
+            } catch {
+            }
         }
     }
 }
@@ -623,11 +749,11 @@ WM_ShowMinimizedBackgroundList(rows := unset, refresh := false) {
     g_WM_MinimizedListGui.SetFont("s" . fontSize . " cCDD6F4", "Segoe UI")
     g_WM_MinimizedListGui.Add("Text", "w" . (baseWidth - 30), displayText)
     g_WM_MinimizedListGui.OnEvent("Escape", WM_MinimizedList_Cancel)
-    WM_CenterGuiOnActiveMonitor(g_WM_MinimizedListGui)
     if (!refresh)
         g_WM_MinimizedListActive := true
     WM_MinimizedList_BindEscape()
     WM_MinimizedList_BindHotkeys(windows)
+    WM_CenterGuiOnActiveMonitor(g_WM_MinimizedListGui)
     ; #region agent log
     guiHwnd := 0
     try guiHwnd := g_WM_MinimizedListGui.Hwnd
