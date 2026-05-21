@@ -3878,6 +3878,9 @@ global D2C_SUBMIT_MENU_TIMEOUT_MS := 5000
 global g_StandardLoadingBarKeysEscapeUserCb := ""
 global g_StandardLoadingBarKeysEscapeActive := false
 global g_StandardLoadingBarEscPollPrev := false
+global g_StandardLoadingBarKeysPollTimer := ""
+global g_StandardLoadingBarKeysPollPrev := Map()
+global g_StandardLoadingBarKeysPollCallbacks := Map()
 
 ; Return work area { left, top, right, bottom } for the monitor containing hwnd, or "" on failure.
 GetWorkAreaForWindow_StandardBar(hwnd) {
@@ -4251,6 +4254,7 @@ StandardLoadingBar_CloseKeysOverlay() {
         g_StandardLoadingBarBorderGui
     global g_StandardLoadingBarKeysEscapeActive, g_OnEscapePressed, g_StandardLoadingBarKeysEscapeUserCb
     g_StandardLoadingBarIsKeysOverlay := false
+    StandardLoadingBar_StopKeysSelectionPoll()
     hadEscStack := g_StandardLoadingBarKeysEscapeActive
     g_StandardLoadingBarKeysEscapeActive := false
     g_StandardLoadingBarKeysEscapeUserCb := ""
@@ -4312,6 +4316,104 @@ StandardLoadingBar_EscapeCallbackFromKeyCallbacks(keyCallbacks) {
     return ""
 }
 
+StandardLoadingBar_KeysSelectionModifiersDown() {
+    try {
+        return GetKeyState("LWin", "P") || GetKeyState("RWin", "P") || GetKeyState("Ctrl", "P") || GetKeyState("Alt", "P")
+    } catch {
+        return false
+    }
+}
+
+StandardLoadingBar_KeysSelectionKeyDown(keyName) {
+    try {
+        if (StrLen(keyName) = 1 && keyName >= "0" && keyName <= "9")
+            return GetKeyState(keyName, "P") || GetKeyState("Numpad" . keyName, "P")
+        return GetKeyState(keyName, "P")
+    } catch {
+        return false
+    }
+}
+
+StandardLoadingBar_StopKeysSelectionPoll() {
+    global g_StandardLoadingBarKeysPollTimer, g_StandardLoadingBarKeysPollPrev, g_StandardLoadingBarKeysPollCallbacks
+    try SetTimer(g_StandardLoadingBarKeysPollTimer, 0)
+    catch {
+    }
+    g_StandardLoadingBarKeysPollTimer := ""
+    g_StandardLoadingBarKeysPollPrev := Map()
+    g_StandardLoadingBarKeysPollCallbacks := Map()
+}
+
+StandardLoadingBar_StartKeysSelectionPoll(keyCallbacks) {
+    global g_StandardLoadingBarKeysPollTimer, g_StandardLoadingBarKeysPollPrev, g_StandardLoadingBarKeysPollCallbacks
+    StandardLoadingBar_StopKeysSelectionPoll()
+    g_StandardLoadingBarKeysPollCallbacks := Map()
+    g_StandardLoadingBarKeysPollPrev := Map()
+    try {
+        for keyName, cb in keyCallbacks {
+            if (!cb)
+                continue
+            knL := StrLower(Trim(keyName))
+            if (knL = "escape" || knL = "*escape")
+                continue
+            g_StandardLoadingBarKeysPollCallbacks[keyName] := cb
+            g_StandardLoadingBarKeysPollPrev[keyName] := false
+        }
+    } catch {
+    }
+    if (g_StandardLoadingBarKeysPollCallbacks.Count = 0)
+        return
+    g_StandardLoadingBarKeysPollTimer := SetTimer(StandardLoadingBar_KeysSelectionPoll, 50)
+}
+
+; Edge-triggered poll: survives Hotkey("1") conflicts from other scripts (see CursorTransfer selector loop).
+StandardLoadingBar_KeysSelectionPoll() {
+    global g_StandardLoadingBarIsKeysOverlay, g_StandardLoadingBarKeysPollPrev, g_StandardLoadingBarKeysPollCallbacks
+    if (!g_StandardLoadingBarIsKeysOverlay) {
+        StandardLoadingBar_StopKeysSelectionPoll()
+        return
+    }
+    if (StandardLoadingBar_KeysSelectionModifiersDown())
+        return
+    for keyName, cb in g_StandardLoadingBarKeysPollCallbacks {
+        if (!cb)
+            continue
+        isDown := StandardLoadingBar_KeysSelectionKeyDown(keyName)
+        wasDown := g_StandardLoadingBarKeysPollPrev.Has(keyName) ? g_StandardLoadingBarKeysPollPrev[keyName] : false
+        g_StandardLoadingBarKeysPollPrev[keyName] := isDown
+        if (isDown && !wasDown)
+            StandardLoadingBar_KeyWrapper(keyName, cb)
+    }
+}
+
+; After a chord hotkey (e.g. #!+w), wait until Win/Ctrl/Alt/Shift and the trigger key are released
+; so *1 / *2 selection hotkeys are not swallowed while modifiers are still held.
+StandardLoadingBar_WaitForTriggerKeyRelease() {
+    try {
+        if (A_ThisHotkey = "")
+            return
+        th := A_ThisHotkey
+        if InStr(th, "#") {
+            try KeyWait "LWin"
+            try KeyWait "RWin"
+        }
+        if InStr(th, "^")
+            try KeyWait "Ctrl"
+        if InStr(th, "!")
+            try KeyWait "Alt"
+        if InStr(th, "+")
+            try KeyWait "Shift"
+        hk := th
+        hk := StrReplace(hk, "+", "")
+        hk := StrReplace(hk, "^", "")
+        hk := StrReplace(hk, "!", "")
+        hk := StrReplace(hk, "#", "")
+        if (StrLen(hk) = 1)
+            KeyWait hk
+    } catch {
+    }
+}
+
 ; Poll Esc — fallback when $*Escape / g_OnEscapePressed miss (same idea as OutlookCopilotSelector_EscapePoll).
 StandardLoadingBar_KeysEscapePoll() {
     global g_StandardLoadingBarKeysEscapeActive, g_StandardLoadingBarIsKeysOverlay, g_StandardLoadingBarEscPollPrev
@@ -4354,9 +4456,11 @@ StandardLoadingBar_KeysEscapeDismiss(*) {
 ; showProgress: when true, show a single timed 0-100 progress fill while waiting for keys.
 ; preserveUserFocus: when true, keep the current active window focused (do not activate overlay GUI).
 ; overlayBgColor: optional main banner panel color (default dark 1E1E2E); use for themed banners e.g. blackout countdown.
+; skipEscapeDismiss: when true, do not register $*Escape / poll (fragile UIs e.g. Command Palette bookmark prompt).
 StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwnd := 0, timeoutCallback := "", barColor :=
     BANNER_ACCENT_INTERMEDIATE, textWidth := 500, fontSize := 17, passiveBgColor := "", noBorder := false, promptKeys :=
-    "", trackActiveMonitor := false, showProgress := false, preserveUserFocus := false, overlayBgColor := "") {
+    "", trackActiveMonitor := false, showProgress := false, preserveUserFocus := false, overlayBgColor := "",
+    skipEscapeDismiss := false) {
     global g_StandardLoadingBarIsKeysOverlay, g_StandardLoadingBarKeysHotkeys, g_StandardLoadingBarKeysTimeoutTimer
     global g_StandardLoadingBarGui, g_StandardLoadingBarKeysEscapeUserCb, g_StandardLoadingBarKeysEscapeActive,
         g_StandardLoadingBarEscPollPrev, g_OnEscapePressed
@@ -4379,8 +4483,9 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
     g_StandardLoadingBarIsKeysOverlay := true
     g_StandardLoadingBarKeysHotkeys := []
     escCb := StandardLoadingBar_EscapeCallbackFromKeyCallbacks(keyCallbacks)
-    g_StandardLoadingBarKeysEscapeUserCb := escCb ? escCb : ""
     g_StandardLoadingBarKeysEscapeActive := false
+
+    StandardLoadingBar_WaitForTriggerKeyRelease()
 
     ; Register selection hotkeys as GLOBAL while the overlay is open.
     ; Critical: the overlay may fail to activate immediately, and we still need the keys (e.g. "N") to be captured
@@ -4393,7 +4498,7 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
     for keyName, cb in keyCallbacks {
         if (!cb)
             continue
-        if escCb {
+        if (!skipEscapeDismiss) {
             knL := StrLower(Trim(keyName))
             if (knL = "*escape" || knL = "escape")
                 continue
@@ -4411,7 +4516,8 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
         }
     }
 
-    if escCb {
+    if (!skipEscapeDismiss) {
+        g_StandardLoadingBarKeysEscapeUserCb := escCb ? escCb : ""
         try {
             Hotkey("$*Escape", StandardLoadingBar_KeysEscapeDismiss, "On")
             g_StandardLoadingBarKeysHotkeys.Push("$*Escape")
@@ -4448,27 +4554,33 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
         g_StandardLoadingBarKeysTimeoutTimer := SetTimer(StandardLoadingBar_KeysTimeoutFired.Bind(timeoutCallback), -
         timeoutMs)
     }
+
+    StandardLoadingBar_StartKeysSelectionPoll(keyCallbacks)
 }
 
 StandardLoadingBar_RegisterKeyHandler(key, cb) {
     global g_StandardLoadingBarKeysHotkeys
     if (!cb)
         return
-    ; Use * prefix for single-char selection keys so the hotkey fires even when modifiers are held
-    ; (critical for Shift-triggered menus where Shift may still be down when user presses 1-9/A-Z).
+    ; $* prefix: hook hotkey, ignore sent keys; * allows extra modifiers (Shift) still held.
     keyToReg := key
     if (StrLen(key) = 1) {
-        keyToReg := "*" . key
+        keyToReg := "$*" . key
     }
     fn := StandardLoadingBar_KeyWrapper.Bind(key, cb)
     try {
+        #InputLevel 10
         Hotkey(keyToReg, fn, "On")
+        #InputLevel 0
         g_StandardLoadingBarKeysHotkeys.Push(keyToReg)
     } catch as err {
     }
 }
 
 StandardLoadingBar_KeyWrapper(key, cb, *) {
+    global g_StandardLoadingBarIsKeysOverlay
+    if (!g_StandardLoadingBarIsKeysOverlay)
+        return
     ; Run callback first so it can close the overlay (avoids destroying GUI from hotkey context before callback runs).
     if (cb) {
         try {

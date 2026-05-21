@@ -138,6 +138,10 @@ global g_LastMouseClickTick := 0   ; Timestamp of the most recent mouse click (A
 global g_WindowCycleIndices := Map()  ; Keeps per-monitor cycling position
 global g_WMAutomationSuppressUntil := 0
 global g_WMAutomationSuppressReason := ""
+global g_WM_MinimizedListGui := false
+global g_WM_MinimizedListActive := false
+global g_WM_MinimizedListRows := []
+global g_WM_MinimizedListLv := false
 ; When daemon is used, foreground is driven by daemon cache (lower-frequency check); else legacy 100ms polling
 if (WM_UsesAutomationDaemon())
     SetTimer MonitorActiveWindow, 250
@@ -190,9 +194,228 @@ WM_MaximizeLonelyVisibleOnAllMonitors() {
         }
     }
     if (maximized > 0) {
-        msg := (maximized = 1) ? "Maximized 1 window" : "Maximized " maximized " windows"
+        msg := (maximized = 1) ? "✅ Maximized 1 window" : "✅ Maximized " maximized " windows"
         ShowCenteredOverlay_Utils(msg, 1200, BANNER_ACCENT_SUCCESS)
     }
+}
+
+; =============================================================================
+; Win+Alt+Shift+W — window tools menu (Interactive Input) + minimized list GUI
+; =============================================================================
+
+WM_WindowTools_OnMaximizeLonely(*) {
+    StandardLoadingBar_CloseKeysOverlay()
+    StandardLoadingBar_Hide(0)
+    Sleep 50
+    WM_MaximizeLonelyVisibleOnAllMonitors()
+}
+
+WM_WindowTools_OnShowMinimizedList(*) {
+    StandardLoadingBar_CloseKeysOverlay()
+    StandardLoadingBar_Hide(0)
+    Sleep 50
+    WM_ShowMinimizedBackgroundList()
+}
+
+WM_WindowTools_OnCancel(*) {
+    StandardLoadingBar_CloseKeysOverlay()
+    StandardLoadingBar_Hide(0)
+}
+
+WM_WindowTools_ShowMenu() {
+    StandardLoadingBar_CloseKeysOverlay()
+    StandardLoadingBar_Hide(0)
+    Sleep 50
+    keyCallbacks := Map(
+        "1", WM_WindowTools_OnMaximizeLonely,
+        "2", WM_WindowTools_OnShowMinimizedList,
+        "Escape", WM_WindowTools_OnCancel)
+    StandardLoadingBar_ShowWithKeys(
+        "❓ Window tools — choose an action (8s)",
+        keyCallbacks,
+        8000,
+        0,
+        "",
+        BANNER_ACCENT_INTERMEDIATE,
+        480,
+        17,
+        "",
+        false,
+        "[1] Maximize lone windows  [2] Background windows  [Esc] Cancel",
+        true,
+        false,
+        false)
+}
+
+WM_TruncateTitleForList(s, maxLen := 80) {
+    if (StrLen(s) <= maxLen)
+        return s
+    return SubStr(s, 1, maxLen - 1) . "…"
+}
+
+WM_SortMinimizedRows(&rows) {
+    n := rows.Length
+    if (n < 2)
+        return
+    loop n - 1 {
+        loop n - A_Index {
+            j := A_Index
+            a := rows[j]
+            b := rows[j + 1]
+            swap := false
+            if (a.monitor != b.monitor) {
+                if (a.monitor > b.monitor)
+                    swap := true
+            } else if (StrCompare(a.title, b.title, true) > 0)
+                swap := true
+            if (swap) {
+                tmp := rows[j]
+                rows[j] := rows[j + 1]
+                rows[j + 1] := tmp
+            }
+        }
+    }
+}
+
+WM_CollectMinimizedBackgroundWindows() {
+    rows := []
+    GWL_EXSTYLE := -20
+    WS_EX_TOOLWINDOW := 0x00000080
+    for hwnd in WinGetList() {
+        try {
+            if (WinGetMinMax(hwnd) != -1)
+                continue
+            if !DllCall("IsWindowVisible", "ptr", hwnd)
+                continue
+            exStyle := DllCall("GetWindowLongPtr", "ptr", hwnd, "int", GWL_EXSTYLE, "ptr")
+            if (exStyle & WS_EX_TOOLWINDOW)
+                continue
+            class := WinGetClass(hwnd)
+            if (class = "Progman" || class = "WorkerW")
+                continue
+            title := WinGetTitle(hwnd)
+            if (title = "")
+                continue
+            if (WM_IsExcludedIndicatorWindow(hwnd))
+                continue
+            mon := 0
+            try mon := MonitorGet(hwnd)
+            exe := ""
+            try exe := WinGetProcessName("ahk_id " hwnd)
+            rows.Push({ hwnd: hwnd, title: title, exe: exe, monitor: mon })
+        } catch {
+        }
+    }
+    WM_SortMinimizedRows(rows)
+    return rows
+}
+
+WM_CenterGuiOnActiveMonitor(gui) {
+    monitorLeft := 0, monitorTop := 0, monitorRight := 0, monitorBottom := 0
+    MonitorGetWorkArea(1, &monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
+    monitorWidth := monitorRight - monitorLeft
+    monitorHeight := monitorBottom - monitorTop
+    activeWin := 0
+    try activeWin := WinGetID("A")
+    catch {
+        activeWin := 0
+    }
+    if (activeWin) {
+        rect := Buffer(16, 0)
+        if (DllCall("GetWindowRect", "ptr", activeWin, "ptr", rect)) {
+            centerX := NumGet(rect, 0, "int") + (NumGet(rect, 8, "int") - NumGet(rect, 0, "int")) // 2
+            centerY := NumGet(rect, 4, "int") + (NumGet(rect, 12, "int") - NumGet(rect, 4, "int")) // 2
+            loop MonitorGetCount() {
+                MonitorGetWorkArea(A_Index, &l, &t, &r, &b)
+                if (centerX >= l && centerX <= r && centerY >= t && centerY <= b) {
+                    monitorLeft := l
+                    monitorTop := t
+                    monitorRight := r
+                    monitorBottom := b
+                    monitorWidth := r - l
+                    monitorHeight := b - t
+                    break
+                }
+            }
+        }
+    }
+    gui.Show("AutoSize Hide")
+    gui.GetPos(, , &gw, &gh)
+    cx := monitorLeft + (monitorWidth - gw) // 2
+    cy := monitorTop + (monitorHeight - gh) // 2
+    gui.Show("x" . cx . " y" . cy . " NA")
+}
+
+WM_MinimizedList_Cleanup() {
+    global g_WM_MinimizedListGui, g_WM_MinimizedListActive, g_WM_MinimizedListRows, g_WM_MinimizedListLv
+    if (!g_WM_MinimizedListActive)
+        return
+    g_WM_MinimizedListActive := false
+    g_WM_MinimizedListRows := []
+    g_WM_MinimizedListLv := false
+    try Hotkey("Escape", WM_MinimizedList_Cancel, "Off")
+    try Utils_EnsureGlobalEscapeHotkey()
+    if (IsObject(g_WM_MinimizedListGui) && g_WM_MinimizedListGui.Hwnd) {
+        try g_WM_MinimizedListGui.Destroy()
+    }
+    g_WM_MinimizedListGui := false
+}
+
+WM_MinimizedList_Cancel(*) {
+    WM_MinimizedList_Cleanup()
+}
+
+WM_MinimizedList_OnDoubleClick(*) {
+    global g_WM_MinimizedListLv, g_WM_MinimizedListRows
+    if (!IsObject(g_WM_MinimizedListLv))
+        return
+    rowIdx := g_WM_MinimizedListLv.GetNext(0, "F")
+    if (!rowIdx || rowIdx < 1 || rowIdx > g_WM_MinimizedListRows.Length)
+        return
+    hwnd := g_WM_MinimizedListRows[rowIdx].hwnd
+    WM_MinimizedList_Cleanup()
+    try {
+        WinRestore "ahk_id " hwnd
+        WinActivate "ahk_id " hwnd
+    } catch {
+    }
+}
+
+WM_ShowMinimizedBackgroundList() {
+    global g_WM_MinimizedListGui, g_WM_MinimizedListActive, g_WM_MinimizedListRows, g_WM_MinimizedListLv
+    if (g_WM_MinimizedListActive) {
+        WM_MinimizedList_Cleanup()
+        return
+    }
+    rows := WM_CollectMinimizedBackgroundWindows()
+    if (rows.Length = 0) {
+        ShowCenteredOverlay_Utils("ℹ️ No minimized background windows", 2000, BANNER_ACCENT_INFO)
+        return
+    }
+    g_WM_MinimizedListRows := rows
+    listH := Min(520, 40 + rows.Length * 22)
+    g_WM_MinimizedListGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner")
+    g_WM_MinimizedListGui.BackColor := "1E1E2E"
+    g_WM_MinimizedListGui.MarginX := 20
+    g_WM_MinimizedListGui.MarginY := 15
+    g_WM_MinimizedListGui.SetFont("s14 cCDD6F4 Bold", "Segoe UI")
+    g_WM_MinimizedListGui.Add("Text", "w720 Center", "📋 Minimized background windows")
+    g_WM_MinimizedListGui.Add("Text", "w720 h1 Background45475A")
+    g_WM_MinimizedListGui.SetFont("s11 cCDD6F4", "Segoe UI")
+    g_WM_MinimizedListLv := g_WM_MinimizedListGui.Add("ListView", "xm w720 h" . listH . " Grid -Hdr",
+        ["Monitor", "Window", "Application"])
+    for row in rows {
+        monLabel := row.monitor ? ("M" . row.monitor) : "M?"
+        g_WM_MinimizedListLv.Add("", monLabel, WM_TruncateTitleForList(row.title), row.exe)
+    }
+    g_WM_MinimizedListGui.Add("Text", "w720 h1 Background45475A y+8")
+    g_WM_MinimizedListGui.SetFont("s9 c6C7086", "Segoe UI")
+    g_WM_MinimizedListGui.Add("Text", "w720 Center", "Double-click to restore & focus | Esc to close")
+    g_WM_MinimizedListGui.OnEvent("Escape", WM_MinimizedList_Cancel)
+    g_WM_MinimizedListLv.OnEvent("DoubleClick", WM_MinimizedList_OnDoubleClick)
+    WM_CenterGuiOnActiveMonitor(g_WM_MinimizedListGui)
+    g_WM_MinimizedListActive := true
+    Hotkey("Escape", WM_MinimizedList_Cancel, "On")
 }
 
 ; =============================================================================
@@ -222,10 +445,10 @@ WM_MaximizeLonelyVisibleOnAllMonitors() {
 }
 
 ; =============================================================================
-; Maximize lone visible window per monitor
+; Window tools menu (maximize lone / minimized background list)
 ; Hotkey: Win+Alt+Shift+W
 ; =============================================================================
-#!+w:: WM_MaximizeLonelyVisibleOnAllMonitors()
+#!+w:: WM_WindowTools_ShowMenu()
 
 ; =============================================================================
 ; Move Active Window to Monitor by POSITION (left-to-right order)

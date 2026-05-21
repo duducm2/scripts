@@ -1743,7 +1743,7 @@ Letters available: C, H, I, K, M, N, O, P, T, U, V, X, Y, Z
 === WINDOWS ===
 [Win+Alt+Shift+6] > Minimizes windows
 [Win+Alt+Shift+M] > Maximizes the current window
-[Win+Alt+Shift+W] > Maximize lone visible window on each monitor (non-minimized only)
+[Win+Alt+Shift+W] > Window tools menu: [1] maximize lone visible window per monitor; [2] list minimized background windows
 [Win+Alt+Shift+Y] > Focus Mode: Black out all monitors except the one with the active window (toggle)
 
 === WINDOW MANAGEMENT (Ctrl+Alt+Win) ===
@@ -24334,8 +24334,7 @@ CommandPalette_BookmarkExclude_ShowAndWait() {
     keyCallbacks := Map()
     keyCallbacks.Set("Y", CommandPalette_BookmarkExclude_Pick.Bind("Y"))
     keyCallbacks.Set("N", CommandPalette_BookmarkExclude_Pick.Bind("N"))
-    ; Intentionally avoid Escape callback here: ShowWithKeys activates its overlay when Escape
-    ; is registered, which can deactivate transient UIs (e.g. Command Palette) and close them.
+    ; skipEscapeDismiss: do not register $*Escape — activating the overlay / Esc stack can close Command Palette.
 
     StandardLoadingBar_ShowWithKeys(
         "❓ Exclude the current bookmark?",
@@ -24349,8 +24348,11 @@ CommandPalette_BookmarkExclude_ShowAndWait() {
         BANNER_ACCENT_INTERMEDIATE,
         true,
         "[Y] Yes  [N] No",
-        true
-    )
+        true,
+        false,
+        false,
+        "",
+        true)
 
     deadline := A_TickCount + 30000
     while (A_TickCount < deadline) {
