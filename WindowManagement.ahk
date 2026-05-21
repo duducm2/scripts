@@ -155,11 +155,13 @@ global g_WM_MinimizedKeysPollTimer := ""
 global g_WM_MinimizedListRefreshing := false
 global g_WM_MinimizedListTrackTimer := ""
 global g_WM_MinimizedListLastForegroundMonitorIdx := 0
+global g_WM_BackgroundTitleExcludes := []
 ; When daemon is used, foreground is driven by daemon cache (lower-frequency check); else legacy 100ms polling
 if (WM_UsesAutomationDaemon())
     SetTimer MonitorActiveWindow, 250
 else
     SetTimer MonitorActiveWindow, 100
+SetTimer(WM_BackgroundTitleExcludes_Init, -1)
 
 ; Tray: verify cycle logic without keyboard hooks (compare to ^!#q failures).
 A_TrayMenu.Add("Test Cycle M1", (*) => CycleWindowsOnMonitor(1))
@@ -302,6 +304,58 @@ WM_SortBackgroundRows(&rows) {
     }
 }
 
+WM_BackgroundTitleExcludes_IniPath() {
+    return A_ScriptDir "\data\wm_background_excludes.ini"
+}
+
+WM_BackgroundTitleExcludes_Register(&list, &seen, needle) {
+    n := Trim(needle)
+    if (n = "")
+        return
+    key := StrLower(n)
+    if (seen.Has(key))
+        return
+    seen[key] := true
+    list.Push(n)
+}
+
+WM_BackgroundTitleExcludes_Init() {
+    global g_WM_BackgroundTitleExcludes
+    list := []
+    seen := Map()
+    for needle in ["IT Workplace", "Drafts Monitor", "Form1", "Screenpresso"]
+        WM_BackgroundTitleExcludes_Register(&list, &seen, needle)
+    path := WM_BackgroundTitleExcludes_IniPath()
+    if (!FileExist(path)) {
+        try {
+            DirCreate(A_ScriptDir "\data")
+            IniWrite("IT Workplace|Drafts Monitor|Form1|Screenpresso", path, "Excludes", "TitleContains")
+        } catch {
+        }
+    }
+    try {
+        raw := IniRead(path, "Excludes", "TitleContains", "")
+        if (raw != "") {
+            for part in StrSplit(raw, ["|", "`n", "`r`n"], "`t ")
+                WM_BackgroundTitleExcludes_Register(&list, &seen, part)
+        }
+    } catch {
+    }
+    g_WM_BackgroundTitleExcludes := list
+}
+
+WM_BackgroundTitleIsExcluded(title) {
+    global g_WM_BackgroundTitleExcludes
+    if (title = "")
+        return false
+    t := StrLower(title)
+    for needle in g_WM_BackgroundTitleExcludes {
+        if (needle != "" && InStr(t, StrLower(needle)))
+            return true
+    }
+    return false
+}
+
 WM_BackgroundIsEligibleWindow(hwnd, foreHwnd) {
     if (!hwnd || hwnd = foreHwnd)
         return false
@@ -312,7 +366,10 @@ WM_BackgroundIsEligibleWindow(hwnd, foreHwnd) {
         class := WinGetClass(hwnd)
         if (WM_IsDesktopOrTaskbarClass(class))
             return false
-        if (WinGetTitle(hwnd) = "")
+        title := WinGetTitle(hwnd)
+        if (title = "")
+            return false
+        if (WM_BackgroundTitleIsExcluded(title))
             return false
         if (WM_IsExcludedIndicatorWindow(hwnd))
             return false
