@@ -145,13 +145,10 @@ global g_WM_MinimizedListEscPollPrev := false
 global g_WM_MinimizedCharSequence := ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "a", "b", "c", "d", "e", "f",
     "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
 global g_WM_MinimizedKeyMap := Map()
-global g_WM_MinimizedHotkeyHandlers := []
 global g_WM_MinimizedListOpenFile := A_ScriptDir "\.cursor\wm_minimized_list_open"
 global g_WM_MinimizedListCloseRequestFile := A_ScriptDir "\.cursor\wm_minimized_list_close_request"
 global g_WM_MinimizedListCloseCheckTimer := ""
-global g_WM_MinimizedKeysPollCallbacks := Map()
-global g_WM_MinimizedKeysPollPrev := Map()
-global g_WM_MinimizedKeysPollTimer := ""
+global g_WM_MinimizedInputHook := ""
 global g_WM_MinimizedListRefreshing := false
 global g_WM_MinimizedListTrackTimer := ""
 global g_WM_MinimizedListLastForegroundMonitorIdx := 0
@@ -239,6 +236,7 @@ WM_WindowTools_OnShowMinimizedList(*) {
     StandardLoadingBar_Show("⏳ Scanning background windows...", BANNER_ACCENT_INTERMEDIATE, { passive: false,
         centerOnHwnd: 0 })
     try {
+        StandardLoadingBar_WaitForTriggerKeyRelease()
         WM_ShowMinimizedBackgroundList()
     } finally {
         StandardLoadingBar_Hide(0)
@@ -533,60 +531,75 @@ WM_MinimizedList_ModifiersDown() {
     }
 }
 
-WM_MinimizedList_KeyDown(keyName) {
-    try {
-        if (StrLen(keyName) = 1 && keyName >= "0" && keyName <= "9")
-            return GetKeyState(keyName, "P") || GetKeyState("Numpad" . keyName, "P")
-        return GetKeyState(keyName, "P")
-    } catch {
-        return false
-    }
+WM_MinimizedList_InputHookKeyToChar(keyName) {
+    if (keyName = "Numpad0" || keyName = "NumpadIns")
+        return "0"
+    if RegExMatch(keyName, "^Numpad(\d)$", &m)
+        return m[1]
+    if (StrLen(keyName) = 1)
+        return keyName
+    return ""
 }
 
-WM_MinimizedList_StopKeysPoll() {
-    global g_WM_MinimizedKeysPollTimer, g_WM_MinimizedKeysPollPrev, g_WM_MinimizedKeysPollCallbacks
-    try SetTimer(g_WM_MinimizedKeysPollTimer, 0)
-    catch {
-    }
-    g_WM_MinimizedKeysPollTimer := ""
-    g_WM_MinimizedKeysPollPrev := Map()
-    g_WM_MinimizedKeysPollCallbacks := Map()
-}
-
-WM_MinimizedList_KeysPoll() {
-    global g_WM_MinimizedListActive, g_WM_MinimizedListExcludePickerActive, g_WM_MinimizedKeysPollPrev,
-        g_WM_MinimizedKeysPollCallbacks
-    if (!g_WM_MinimizedListActive || g_WM_MinimizedListExcludePickerActive) {
-        WM_MinimizedList_StopKeysPoll()
-        return
-    }
-    if (WM_MinimizedList_ModifiersDown())
-        return
-    for keyName, cb in g_WM_MinimizedKeysPollCallbacks {
-        if (!cb)
-            continue
-        isDown := WM_MinimizedList_KeyDown(keyName)
-        wasDown := g_WM_MinimizedKeysPollPrev.Has(keyName) ? g_WM_MinimizedKeysPollPrev[keyName] : false
-        g_WM_MinimizedKeysPollPrev[keyName] := isDown
-        if (isDown && !wasDown) {
-            try cb.Call()
-            catch {
-            }
+WM_MinimizedList_StopInputHook() {
+    global g_WM_MinimizedInputHook
+    if (IsObject(g_WM_MinimizedInputHook)) {
+        try g_WM_MinimizedInputHook.Stop()
+        catch {
         }
     }
+    g_WM_MinimizedInputHook := ""
 }
 
-WM_MinimizedList_StartKeysPoll(windows) {
-    global g_WM_MinimizedKeysPollCallbacks, g_WM_MinimizedKeysPollPrev, g_WM_MinimizedKeysPollTimer
-    WM_MinimizedList_StopKeysPoll()
-    g_WM_MinimizedKeysPollCallbacks := Map()
-    g_WM_MinimizedKeysPollPrev := Map()
+WM_MinimizedList_StartInputHook(windows, includeAddExcludeA := false) {
+    global g_WM_MinimizedInputHook
+    WM_MinimizedList_StopInputHook()
+    if (windows.Length = 0)
+        return
+    keysToOpt := "{Escape}"
     for w in windows {
-        g_WM_MinimizedKeysPollCallbacks[w.char] := CreateMinimizedListHandler(w.char)
-        g_WM_MinimizedKeysPollPrev[w.char] := false
+        ch := w.char
+        keysToOpt .= "{" . ch . "}"
+        if (ch >= "0" && ch <= "9")
+            keysToOpt .= "{Numpad" . ch . "}"
     }
-    if (g_WM_MinimizedKeysPollCallbacks.Count > 0)
-        g_WM_MinimizedKeysPollTimer := SetTimer(WM_MinimizedList_KeysPoll, 50)
+    if (includeAddExcludeA)
+        keysToOpt .= "{A}"
+    ih := InputHook("L0")
+    ih.KeyOpt(keysToOpt, "+SN")
+    ih.OnKeyDown := WM_MinimizedList_OnInputHookKeyDown
+    ih.Start()
+    g_WM_MinimizedInputHook := ih
+}
+
+WM_MinimizedList_OnInputHookKeyDown(ih, vk, sc, *) {
+    global g_WM_MinimizedListActive, g_WM_MinimizedListExcludePickerActive, g_WM_MinimizedListRefreshing
+    if (!g_WM_MinimizedListActive || g_WM_MinimizedListRefreshing)
+        return
+    if (WM_MinimizedList_ModifiersDown())
+        return
+    keyName := ""
+    try keyName := GetKeyName(Format("vk{:x}sc{:x}", vk, sc))
+    catch {
+        return
+    }
+    if (keyName = "Escape") {
+        WM_MinimizedList_Cancel()
+        return
+    }
+    if (g_WM_MinimizedListExcludePickerActive) {
+        char := WM_MinimizedList_InputHookKeyToChar(keyName)
+        if (char != "")
+            HandleMinimizedListExcludePickerByChar(char)
+        return
+    }
+    if (keyName = "A") {
+        HandleMinimizedListAddExcludeTrigger()
+        return
+    }
+    char := WM_MinimizedList_InputHookKeyToChar(keyName)
+    if (char != "")
+        HandleMinimizedListByChar(char)
 }
 
 WM_MinimizedList_EscapePoll() {
@@ -761,59 +774,17 @@ WM_MinimizedList_AssignKeys(rows) {
 }
 
 WM_MinimizedList_UnbindHotkeys() {
-    global g_WM_MinimizedHotkeyHandlers
-    WM_MinimizedList_StopKeysPoll()
-    for entry in g_WM_MinimizedHotkeyHandlers {
-        try {
-            ch := entry.hk
-            Hotkey(ch, "Off")
-        } catch {
-        }
-    }
-    g_WM_MinimizedHotkeyHandlers := []
+    WM_MinimizedList_StopInputHook()
 }
 
 WM_MinimizedList_BindHotkeys(windows) {
-    global g_WM_MinimizedHotkeyHandlers
     WM_MinimizedList_UnbindHotkeys()
-    WM_MinimizedList_StartKeysPoll(windows)
-    try HotIf()
-    catch {
-    }
-    for w in windows {
-        handler := CreateMinimizedListHandler(w.char)
-        hk := "$*" . w.char
-        g_WM_MinimizedHotkeyHandlers.Push({ char: w.char, hk: hk, handler: handler })
-        try {
-            #InputLevel 10
-            Hotkey(hk, handler, "On")
-            #InputLevel 0
-        } catch {
-        }
-    }
-    addExcludeHandler := HandleMinimizedListAddExcludeTrigger
-    g_WM_MinimizedHotkeyHandlers.Push({ char: "A", hk: "$*A", handler: addExcludeHandler })
-    try {
-        #InputLevel 10
-        Hotkey("$*A", addExcludeHandler, "On")
-        #InputLevel 0
-    } catch {
-    }
+    WM_MinimizedList_StartInputHook(windows, true)
 }
 
 WM_MinimizedList_BindPickerHotkeys(pickerWindows) {
-    global g_WM_MinimizedHotkeyHandlers
-    for w in pickerWindows {
-        handler := CreateMinimizedListExcludePickerHandler(w.char)
-        hk := "$*" . w.char
-        g_WM_MinimizedHotkeyHandlers.Push({ char: w.char, hk: hk, handler: handler })
-        try {
-            #InputLevel 10
-            Hotkey(hk, handler, "On")
-            #InputLevel 0
-        } catch {
-        }
-    }
+    WM_MinimizedList_UnbindHotkeys()
+    WM_MinimizedList_StartInputHook(pickerWindows, false)
 }
 
 WM_MinimizedList_WaitForHwndClosed(hwnd, timeoutMs := 2000) {
@@ -860,10 +831,6 @@ WM_MinimizedList_CloseHwnd(hwnd) {
     } catch {
     }
     return WM_MinimizedList_WaitForHwndClosed(hwnd)
-}
-
-CreateMinimizedListHandler(char) {
-    return (*) => HandleMinimizedListByChar(char)
 }
 
 HandleMinimizedListByChar(char) {
@@ -918,10 +885,6 @@ WM_MinimizedList_RebuildListGui(displayText) {
     g_WM_MinimizedListGui.Add("Text", "w" . (baseWidth - 30), displayText)
     g_WM_MinimizedListGui.OnEvent("Escape", WM_MinimizedList_Cancel)
     WM_MinimizedList_RepositionToActiveMonitor(0, g_WM_MinimizedListGui)
-}
-
-CreateMinimizedListExcludePickerHandler(char) {
-    return (*) => HandleMinimizedListExcludePickerByChar(char)
 }
 
 HandleMinimizedListExcludePickerByChar(char) {
@@ -988,7 +951,7 @@ WM_MinimizedList_CancelExcludePicker() {
 
 WM_MinimizedList_Cleanup() {
     global g_WM_MinimizedListGui, g_WM_MinimizedListActive, g_WM_MinimizedListRows, g_WM_MinimizedKeyMap,
-        g_WM_MinimizedHotkeyHandlers, g_WM_MinimizedListRefreshing, g_WM_MinimizedListExcludePickerActive,
+        g_WM_MinimizedListRefreshing, g_WM_MinimizedListExcludePickerActive,
         g_WM_MinimizedListExcludePickerRows, g_WM_MinimizedListExcludePickerMap
     if (!g_WM_MinimizedListActive)
         return
