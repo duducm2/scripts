@@ -156,6 +156,10 @@ global g_WM_MinimizedListRefreshing := false
 global g_WM_MinimizedListTrackTimer := ""
 global g_WM_MinimizedListLastForegroundMonitorIdx := 0
 global g_WM_BackgroundTitleExcludes := []
+global g_WM_MinimizedListExcludePickerActive := false
+global g_WM_MinimizedListExcludePickerRows := []
+global g_WM_MinimizedListExcludePickerMap := Map()
+global g_WM_MinimizedListExcludePickerDigitSequence := ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"]
 ; When daemon is used, foreground is driven by daemon cache (lower-frequency check); else legacy 100ms polling
 if (WM_UsesAutomationDaemon())
     SetTimer MonitorActiveWindow, 250
@@ -356,6 +360,89 @@ WM_BackgroundTitleIsExcluded(title) {
     return false
 }
 
+WM_BackgroundTitleExcludes_PersistAppend(needle) {
+    global g_WM_BackgroundTitleExcludes
+    needle := Trim(needle)
+    if (needle = "")
+        return false
+    if (WM_BackgroundTitleIsExcluded(needle)) {
+        ShowCenteredOverlay_Utils("ℹ️ Already in exclude list", 2000, BANNER_ACCENT_INFO)
+        return false
+    }
+    list := []
+    seen := Map()
+    for n in g_WM_BackgroundTitleExcludes
+        WM_BackgroundTitleExcludes_Register(&list, &seen, n)
+    WM_BackgroundTitleExcludes_Register(&list, &seen, needle)
+    g_WM_BackgroundTitleExcludes := list
+    serialized := ""
+    for n in g_WM_BackgroundTitleExcludes
+        serialized .= (serialized = "" ? "" : "|") . n
+    try {
+        IniWrite(serialized, WM_BackgroundTitleExcludes_IniPath(), "Excludes", "TitleContains")
+    } catch {
+        return false
+    }
+    return true
+}
+
+WM_BackgroundIsEligibleForExcludePicker(hwnd, foreHwnd) {
+    if (!hwnd || hwnd = foreHwnd)
+        return false
+    try {
+        exStyle := DllCall("GetWindowLongPtr", "ptr", hwnd, "int", -20, "ptr")
+        if (exStyle & 0x00000080)
+            return false
+        class := WinGetClass(hwnd)
+        if (WM_IsDesktopOrTaskbarClass(class))
+            return false
+        if (WinGetTitle(hwnd) = "")
+            return false
+        if (WM_IsExcludedIndicatorWindow(hwnd))
+            return false
+    } catch {
+        return false
+    }
+    return true
+}
+
+WM_BackgroundAddRowForExcludePicker(&rows, &seen, hwnd, foreHwnd) {
+    if (seen.Has(hwnd) || !WM_BackgroundIsEligibleForExcludePicker(hwnd, foreHwnd))
+        return
+    try {
+        rows.Push({
+            hwnd: hwnd,
+            title: WinGetTitle(hwnd),
+            exe: WinGetProcessName("ahk_id " hwnd)
+        })
+        seen[hwnd] := true
+    } catch {
+    }
+}
+
+WM_CollectMinimizedWindowsForExcludePicker() {
+    foreHwnd := 0
+    try foreHwnd := WinGetID("A")
+    rows := []
+    seen := Map()
+    prevDetect := A_DetectHiddenWindows
+    DetectHiddenWindows true
+    try {
+        for hwnd in WinGetList() {
+            try {
+                if (WinGetMinMax(hwnd) != -1)
+                    continue
+                WM_BackgroundAddRowForExcludePicker(&rows, &seen, hwnd, foreHwnd)
+            } catch {
+            }
+        }
+    } finally {
+        DetectHiddenWindows prevDetect
+    }
+    WM_SortBackgroundRows(&rows)
+    return rows
+}
+
 WM_BackgroundIsEligibleWindow(hwnd, foreHwnd) {
     if (!hwnd || hwnd = foreHwnd)
         return false
@@ -467,8 +554,9 @@ WM_MinimizedList_StopKeysPoll() {
 }
 
 WM_MinimizedList_KeysPoll() {
-    global g_WM_MinimizedListActive, g_WM_MinimizedKeysPollPrev, g_WM_MinimizedKeysPollCallbacks
-    if (!g_WM_MinimizedListActive) {
+    global g_WM_MinimizedListActive, g_WM_MinimizedListExcludePickerActive, g_WM_MinimizedKeysPollPrev,
+        g_WM_MinimizedKeysPollCallbacks
+    if (!g_WM_MinimizedListActive || g_WM_MinimizedListExcludePickerActive) {
         WM_MinimizedList_StopKeysPoll()
         return
     }
@@ -702,15 +790,28 @@ WM_MinimizedList_BindHotkeys(windows) {
             #InputLevel 0
         } catch {
         }
-        if (RegExMatch(w.char, "^[a-z]$")) {
-            hkU := "$*" . StrUpper(w.char)
-            g_WM_MinimizedHotkeyHandlers.Push({ char: StrUpper(w.char), hk: hkU, handler: handler })
-            try {
-                #InputLevel 10
-                Hotkey(hkU, handler, "On")
-                #InputLevel 0
-            } catch {
-            }
+    }
+    addExcludeHandler := HandleMinimizedListAddExcludeTrigger
+    g_WM_MinimizedHotkeyHandlers.Push({ char: "A", hk: "$*A", handler: addExcludeHandler })
+    try {
+        #InputLevel 10
+        Hotkey("$*A", addExcludeHandler, "On")
+        #InputLevel 0
+    } catch {
+    }
+}
+
+WM_MinimizedList_BindPickerHotkeys(pickerWindows) {
+    global g_WM_MinimizedHotkeyHandlers
+    for w in pickerWindows {
+        handler := CreateMinimizedListExcludePickerHandler(w.char)
+        hk := "$*" . w.char
+        g_WM_MinimizedHotkeyHandlers.Push({ char: w.char, hk: hk, handler: handler })
+        try {
+            #InputLevel 10
+            Hotkey(hk, handler, "On")
+            #InputLevel 0
+        } catch {
         }
     }
 }
@@ -766,8 +867,8 @@ CreateMinimizedListHandler(char) {
 }
 
 HandleMinimizedListByChar(char) {
-    global g_WM_MinimizedListActive, g_WM_MinimizedKeyMap, g_WM_MinimizedListRefreshing
-    if (!g_WM_MinimizedListActive || g_WM_MinimizedListRefreshing)
+    global g_WM_MinimizedListActive, g_WM_MinimizedKeyMap, g_WM_MinimizedListRefreshing, g_WM_MinimizedListExcludePickerActive
+    if (!g_WM_MinimizedListActive || g_WM_MinimizedListRefreshing || g_WM_MinimizedListExcludePickerActive)
         return
     hwnd := g_WM_MinimizedKeyMap.Get(char, "")
     if (hwnd = "")
@@ -785,17 +886,117 @@ WM_MinimizedList_BuildDisplayText(rows, windows) {
         displayText .= "[" . w.label . "] " . w.title . "`n"
     if (rows.Length > g_WM_MinimizedCharSequence.Length)
         displayText .= "`n(" . (rows.Length - g_WM_MinimizedCharSequence.Length) . " more — close some and reopen)`n"
-    displayText .= "`n[ESC] Cancel"
+    displayText .= "`n[A] Add to exclude list  [ESC] Cancel"
     return displayText
+}
+
+WM_MinimizedList_BuildExcludePickerDisplayText(rows, pickerWindows) {
+    displayText := "=== ADD TO EXCLUDE LIST ===`n`n"
+    for w in pickerWindows
+        displayText .= "[" . w.label . "] " . w.title . "`n"
+    if (rows.Length > pickerWindows.Length)
+        displayText .= "`n(" . (rows.Length - pickerWindows.Length) . " more — not shown)`n"
+    displayText .= "`n[ESC] Cancel — back to list"
+    return displayText
+}
+
+WM_MinimizedList_RebuildListGui(displayText) {
+    global g_WM_MinimizedListGui
+    if (IsObject(g_WM_MinimizedListGui)) {
+        try g_WM_MinimizedListGui.Destroy()
+        catch {
+        }
+        g_WM_MinimizedListGui := false
+    }
+    fontSize := 11
+    baseWidth := 480
+    g_WM_MinimizedListGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner +E0x08000000")
+    g_WM_MinimizedListGui.BackColor := "1E1E2E"
+    g_WM_MinimizedListGui.MarginX := 15
+    g_WM_MinimizedListGui.MarginY := 10
+    g_WM_MinimizedListGui.SetFont("s" . fontSize . " cCDD6F4", "Segoe UI")
+    g_WM_MinimizedListGui.Add("Text", "w" . (baseWidth - 30), displayText)
+    g_WM_MinimizedListGui.OnEvent("Escape", WM_MinimizedList_Cancel)
+    WM_MinimizedList_RepositionToActiveMonitor(0, g_WM_MinimizedListGui)
+}
+
+CreateMinimizedListExcludePickerHandler(char) {
+    return (*) => HandleMinimizedListExcludePickerByChar(char)
+}
+
+HandleMinimizedListExcludePickerByChar(char) {
+    global g_WM_MinimizedListExcludePickerActive, g_WM_MinimizedListExcludePickerMap, g_WM_MinimizedListRefreshing
+    if (!g_WM_MinimizedListExcludePickerActive || g_WM_MinimizedListRefreshing)
+        return
+    row := g_WM_MinimizedListExcludePickerMap.Get(char, "")
+    if (!IsObject(row) || !row.HasProp("title"))
+        return
+    if (!WM_BackgroundTitleExcludes_PersistAppend(row.title))
+        return
+    WM_BackgroundTitleExcludes_Init()
+    g_WM_MinimizedListExcludePickerActive := false
+    g_WM_MinimizedListExcludePickerMap := Map()
+    g_WM_MinimizedListExcludePickerRows := []
+    WM_MinimizedList_Refresh(0)
+}
+
+HandleMinimizedListAddExcludeTrigger(*) {
+    global g_WM_MinimizedListActive, g_WM_MinimizedListRefreshing, g_WM_MinimizedListExcludePickerActive
+    if (!g_WM_MinimizedListActive || g_WM_MinimizedListRefreshing || g_WM_MinimizedListExcludePickerActive)
+        return
+    WM_MinimizedList_ShowExcludePicker()
+}
+
+WM_MinimizedList_ShowExcludePicker() {
+    global g_WM_MinimizedListExcludePickerActive, g_WM_MinimizedListExcludePickerRows, g_WM_MinimizedListExcludePickerMap,
+        g_WM_MinimizedListExcludePickerDigitSequence
+    WM_MinimizedList_UnbindHotkeys()
+    allRows := WM_CollectMinimizedWindowsForExcludePicker()
+    rows := []
+    for row in allRows {
+        if (!WM_BackgroundTitleIsExcluded(row.title))
+            rows.Push(row)
+    }
+    if (rows.Length = 0) {
+        ShowCenteredOverlay_Utils("ℹ️ No minimized windows to add to exclude list", 2500, BANNER_ACCENT_INFO)
+        WM_MinimizedList_Refresh(0)
+        return
+    }
+    g_WM_MinimizedListExcludePickerActive := true
+    g_WM_MinimizedListExcludePickerRows := rows
+    g_WM_MinimizedListExcludePickerMap := Map()
+    pickerWindows := []
+    limit := Min(rows.Length, g_WM_MinimizedListExcludePickerDigitSequence.Length)
+    loop limit {
+        ch := g_WM_MinimizedListExcludePickerDigitSequence[A_Index]
+        row := rows[A_Index]
+        g_WM_MinimizedListExcludePickerMap[ch] := row
+        pickerWindows.Push({ char: ch, title: row.title, label: WM_MinimizedList_KeyLabel(ch) })
+    }
+    displayText := WM_MinimizedList_BuildExcludePickerDisplayText(rows, pickerWindows)
+    WM_MinimizedList_RebuildListGui(displayText)
+    WM_MinimizedList_BindPickerHotkeys(pickerWindows)
+}
+
+WM_MinimizedList_CancelExcludePicker() {
+    global g_WM_MinimizedListExcludePickerActive, g_WM_MinimizedListExcludePickerRows, g_WM_MinimizedListExcludePickerMap
+    g_WM_MinimizedListExcludePickerActive := false
+    g_WM_MinimizedListExcludePickerRows := []
+    g_WM_MinimizedListExcludePickerMap := Map()
+    WM_MinimizedList_Refresh(0)
 }
 
 WM_MinimizedList_Cleanup() {
     global g_WM_MinimizedListGui, g_WM_MinimizedListActive, g_WM_MinimizedListRows, g_WM_MinimizedKeyMap,
-        g_WM_MinimizedHotkeyHandlers, g_WM_MinimizedListRefreshing
+        g_WM_MinimizedHotkeyHandlers, g_WM_MinimizedListRefreshing, g_WM_MinimizedListExcludePickerActive,
+        g_WM_MinimizedListExcludePickerRows, g_WM_MinimizedListExcludePickerMap
     if (!g_WM_MinimizedListActive)
         return
     g_WM_MinimizedListActive := false
     g_WM_MinimizedListRefreshing := false
+    g_WM_MinimizedListExcludePickerActive := false
+    g_WM_MinimizedListExcludePickerRows := []
+    g_WM_MinimizedListExcludePickerMap := Map()
     WM_MinimizedList_StopActiveMonitorTracking()
     g_WM_MinimizedListRows := []
     g_WM_MinimizedKeyMap := Map()
@@ -809,14 +1010,23 @@ WM_MinimizedList_Cleanup() {
 }
 
 WM_MinimizedList_Cancel(*) {
+    global g_WM_MinimizedListExcludePickerActive
+    if (g_WM_MinimizedListExcludePickerActive) {
+        WM_MinimizedList_CancelExcludePicker()
+        return
+    }
     WM_MinimizedList_Cleanup()
 }
 
 WM_MinimizedList_Refresh(closedHwnd := 0) {
-    global g_WM_MinimizedListActive, g_WM_MinimizedListRefreshing
+    global g_WM_MinimizedListActive, g_WM_MinimizedListRefreshing, g_WM_MinimizedListExcludePickerActive,
+        g_WM_MinimizedListExcludePickerRows, g_WM_MinimizedListExcludePickerMap
     if (!g_WM_MinimizedListActive || g_WM_MinimizedListRefreshing)
         return
     g_WM_MinimizedListRefreshing := true
+    g_WM_MinimizedListExcludePickerActive := false
+    g_WM_MinimizedListExcludePickerRows := []
+    g_WM_MinimizedListExcludePickerMap := Map()
     try {
         if (closedHwnd)
             WM_MinimizedList_WaitForHwndClosed(closedHwnd)
