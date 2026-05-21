@@ -142,6 +142,7 @@ global g_WM_MinimizedListGui := false
 global g_WM_MinimizedListActive := false
 global g_WM_MinimizedListRows := []
 global g_WM_MinimizedListLv := false
+global g_WM_MinimizedListEscPollPrev := false
 ; When daemon is used, foreground is driven by daemon cache (lower-frequency check); else legacy 100ms polling
 if (WM_UsesAutomationDaemon())
     SetTimer MonitorActiveWindow, 250
@@ -211,10 +212,22 @@ WM_WindowTools_OnMaximizeLonely(*) {
 }
 
 WM_WindowTools_OnShowMinimizedList(*) {
+    ; #region agent log
+    AgentDebugLog87("WindowManagement.ahk:OnShowMinimizedList", "entry", "{}", "H1")
+    ; #endregion
     StandardLoadingBar_CloseKeysOverlay()
     StandardLoadingBar_Hide(0)
     Sleep 50
-    WM_ShowMinimizedBackgroundList()
+    StandardLoadingBar_Show("⏳ Scanning background windows...", BANNER_ACCENT_INTERMEDIATE, { passive: false,
+        centerOnHwnd: 0 })
+    try {
+        WM_ShowMinimizedBackgroundList()
+    } finally {
+        StandardLoadingBar_Hide(0)
+    }
+    ; #region agent log
+    AgentDebugLog87("WindowManagement.ahk:OnShowMinimizedList", "exit", "{}", "H1")
+    ; #endregion
 }
 
 WM_WindowTools_OnCancel(*) {
@@ -223,6 +236,9 @@ WM_WindowTools_OnCancel(*) {
 }
 
 WM_WindowTools_ShowMenu() {
+    ; #region agent log
+    AgentDebugLog87("WindowManagement.ahk:WindowTools_ShowMenu", "entry", "{}", "H1")
+    ; #endregion
     StandardLoadingBar_CloseKeysOverlay()
     StandardLoadingBar_Hide(0)
     Sleep 50
@@ -241,7 +257,7 @@ WM_WindowTools_ShowMenu() {
         17,
         "",
         false,
-        "[1] Maximize lone windows  [2] Background windows  [Esc] Cancel",
+        "[1] Maximize lone windows  [2] Minimized background  [Esc] Cancel",
         true,
         false,
         false)
@@ -253,7 +269,7 @@ WM_TruncateTitleForList(s, maxLen := 80) {
     return SubStr(s, 1, maxLen - 1) . "…"
 }
 
-WM_SortMinimizedRows(&rows) {
+WM_SortBackgroundRows(&rows) {
     n := rows.Length
     if (n < 2)
         return
@@ -277,37 +293,137 @@ WM_SortMinimizedRows(&rows) {
     }
 }
 
-WM_CollectMinimizedBackgroundWindows() {
-    rows := []
-    GWL_EXSTYLE := -20
-    WS_EX_TOOLWINDOW := 0x00000080
-    for hwnd in WinGetList() {
-        try {
-            if (WinGetMinMax(hwnd) != -1)
-                continue
-            if !DllCall("IsWindowVisible", "ptr", hwnd)
-                continue
-            exStyle := DllCall("GetWindowLongPtr", "ptr", hwnd, "int", GWL_EXSTYLE, "ptr")
-            if (exStyle & WS_EX_TOOLWINDOW)
-                continue
-            class := WinGetClass(hwnd)
-            if (class = "Progman" || class = "WorkerW")
-                continue
-            title := WinGetTitle(hwnd)
-            if (title = "")
-                continue
-            if (WM_IsExcludedIndicatorWindow(hwnd))
-                continue
-            mon := 0
-            try mon := MonitorGet(hwnd)
-            exe := ""
-            try exe := WinGetProcessName("ahk_id " hwnd)
-            rows.Push({ hwnd: hwnd, title: title, exe: exe, monitor: mon })
-        } catch {
-        }
+WM_BackgroundRowStateLabel(minMax) {
+    if (minMax = -1)
+        return "Minimized"
+    if (minMax = 1)
+        return "Maximized"
+    return "Normal"
+}
+
+WM_BackgroundIsEligibleWindow(hwnd, foreHwnd) {
+    if (!hwnd || hwnd = foreHwnd)
+        return false
+    try {
+        exStyle := DllCall("GetWindowLongPtr", "ptr", hwnd, "int", -20, "ptr")
+        if (exStyle & 0x00000080)
+            return false
+        class := WinGetClass(hwnd)
+        if (WM_IsDesktopOrTaskbarClass(class))
+            return false
+        if (WinGetTitle(hwnd) = "")
+            return false
+        if (WM_IsExcludedIndicatorWindow(hwnd))
+            return false
+    } catch {
+        return false
     }
-    WM_SortMinimizedRows(rows)
+    return true
+}
+
+WM_BackgroundAddRow(&rows, &seen, hwnd, foreHwnd) {
+    if (seen.Has(hwnd) || !WM_BackgroundIsEligibleWindow(hwnd, foreHwnd))
+        return
+    try {
+        minMax := WinGetMinMax(hwnd)
+        mon := 0
+        try mon := MonitorGet(hwnd)
+        rows.Push({
+            hwnd: hwnd,
+            title: WinGetTitle(hwnd),
+            exe: WinGetProcessName("ahk_id " hwnd),
+            monitor: mon,
+            state: WM_BackgroundRowStateLabel(minMax)
+        })
+        seen[hwnd] := true
+    } catch {
+    }
+}
+
+; Minimized taskbar windows only (not visible on any monitor); excludes foreground hwnd.
+WM_CollectBackgroundWindows() {
+    t0 := A_TickCount
+    foreHwnd := 0
+    try foreHwnd := WinGetID("A")
+    rows := []
+    seen := Map()
+    minAdded := 0
+    prevDetect := A_DetectHiddenWindows
+    DetectHiddenWindows true
+    try {
+        for hwnd in WinGetList() {
+            try {
+                if (WinGetMinMax(hwnd) != -1)
+                    continue
+                nBefore := rows.Length
+                WM_BackgroundAddRow(&rows, &seen, hwnd, foreHwnd)
+                if (rows.Length > nBefore)
+                    minAdded++
+            } catch {
+            }
+        }
+    } finally {
+        DetectHiddenWindows prevDetect
+    }
+    WM_SortBackgroundRows(&rows)
+    ; #region agent log
+    AgentDebugLog87("WindowManagement.ahk:CollectBackground", "done", '{"foreHwnd":' . foreHwnd . ',"rows":' .
+        rows.Length . ',"minAdded":' . minAdded . ',"elapsedMs":' . (A_TickCount - t0) . '}', "H2,H5")
+    ; #endregion
     return rows
+}
+
+WM_MinimizedList_EscapePoll() {
+    global g_WM_MinimizedListActive, g_WM_MinimizedListEscPollPrev
+    if (!g_WM_MinimizedListActive) {
+        try SetTimer(WM_MinimizedList_EscapePoll, 0)
+        catch {
+        }
+        return
+    }
+    escDown := GetKeyState("Escape", "P") || (DllCall("user32\GetAsyncKeyState", "int", 0x1B) & 0x8000)
+    if (escDown) {
+        if (!g_WM_MinimizedListEscPollPrev) {
+            g_WM_MinimizedListEscPollPrev := true
+            WM_MinimizedList_Cancel()
+        }
+    } else
+        g_WM_MinimizedListEscPollPrev := false
+}
+
+WM_MinimizedList_BindEscape() {
+    global g_WM_MinimizedListEscPollPrev
+    try SetTimer(WM_MinimizedList_EscapePoll, 0)
+    catch {
+    }
+    try Hotkey("Escape", WM_MinimizedList_Cancel, "Off")
+    catch {
+    }
+    try {
+        #InputLevel 10
+        Hotkey("$*Escape", WM_MinimizedList_Cancel, "On")
+        #InputLevel 0
+    } catch {
+    }
+    g_WM_MinimizedListEscPollPrev := false
+    SetTimer(WM_MinimizedList_EscapePoll, 50)
+}
+
+WM_MinimizedList_UnbindEscape() {
+    global g_WM_MinimizedListEscPollPrev
+    try SetTimer(WM_MinimizedList_EscapePoll, 0)
+    catch {
+    }
+    g_WM_MinimizedListEscPollPrev := false
+    try Hotkey("Escape", WM_MinimizedList_Cancel, "Off")
+    catch {
+    }
+    try {
+        #InputLevel 10
+        Hotkey("$*Escape", WM_MinimizedList_Cancel, "Off")
+        #InputLevel 0
+    } catch {
+    }
 }
 
 WM_CenterGuiOnActiveMonitor(gui) {
@@ -353,7 +469,7 @@ WM_MinimizedList_Cleanup() {
     g_WM_MinimizedListActive := false
     g_WM_MinimizedListRows := []
     g_WM_MinimizedListLv := false
-    try Hotkey("Escape", WM_MinimizedList_Cancel, "Off")
+    WM_MinimizedList_UnbindEscape()
     try Utils_EnsureGlobalEscapeHotkey()
     if (IsObject(g_WM_MinimizedListGui) && g_WM_MinimizedListGui.Hwnd) {
         try g_WM_MinimizedListGui.Destroy()
@@ -383,13 +499,22 @@ WM_MinimizedList_OnDoubleClick(*) {
 
 WM_ShowMinimizedBackgroundList() {
     global g_WM_MinimizedListGui, g_WM_MinimizedListActive, g_WM_MinimizedListRows, g_WM_MinimizedListLv
+    ; #region agent log
+    AgentDebugLog87("WindowManagement.ahk:ShowMinimizedList", "entry", '{"listActive":' . (g_WM_MinimizedListActive ?
+        "true" : "false") . '}', "H6")
+    ; #endregion
     if (g_WM_MinimizedListActive) {
-        WM_MinimizedList_Cleanup()
+        ; #region agent log
+        AgentDebugLog87("WindowManagement.ahk:ShowMinimizedList", "already active skip", "{}", "H6")
+        ; #endregion
         return
     }
-    rows := WM_CollectMinimizedBackgroundWindows()
+    rows := WM_CollectBackgroundWindows()
     if (rows.Length = 0) {
-        ShowCenteredOverlay_Utils("ℹ️ No minimized background windows", 2000, BANNER_ACCENT_INFO)
+        ; #region agent log
+        AgentDebugLog87("WindowManagement.ahk:ShowMinimizedList", "empty branch", "{}", "H3")
+        ; #endregion
+        ShowCenteredOverlay_Utils("ℹ️ No minimized background windows", 2500, BANNER_ACCENT_INFO)
         return
     }
     g_WM_MinimizedListRows := rows
@@ -402,11 +527,11 @@ WM_ShowMinimizedBackgroundList() {
     g_WM_MinimizedListGui.Add("Text", "w720 Center", "📋 Minimized background windows")
     g_WM_MinimizedListGui.Add("Text", "w720 h1 Background45475A")
     g_WM_MinimizedListGui.SetFont("s11 cCDD6F4", "Segoe UI")
-    g_WM_MinimizedListLv := g_WM_MinimizedListGui.Add("ListView", "xm w720 h" . listH . " Grid -Hdr",
-        ["Monitor", "Window", "Application"])
+    g_WM_MinimizedListLv := g_WM_MinimizedListGui.Add("ListView", "xm w720 h" . listH . " Grid",
+        ["Monitor", "Window", "Application", "State"])
     for row in rows {
         monLabel := row.monitor ? ("M" . row.monitor) : "M?"
-        g_WM_MinimizedListLv.Add("", monLabel, WM_TruncateTitleForList(row.title), row.exe)
+        g_WM_MinimizedListLv.Add("", monLabel, WM_TruncateTitleForList(row.title), row.exe, row.state)
     }
     g_WM_MinimizedListGui.Add("Text", "w720 h1 Background45475A y+8")
     g_WM_MinimizedListGui.SetFont("s9 c6C7086", "Segoe UI")
@@ -415,7 +540,13 @@ WM_ShowMinimizedBackgroundList() {
     g_WM_MinimizedListLv.OnEvent("DoubleClick", WM_MinimizedList_OnDoubleClick)
     WM_CenterGuiOnActiveMonitor(g_WM_MinimizedListGui)
     g_WM_MinimizedListActive := true
-    Hotkey("Escape", WM_MinimizedList_Cancel, "On")
+    WM_MinimizedList_BindEscape()
+    ; #region agent log
+    guiHwnd := 0
+    try guiHwnd := g_WM_MinimizedListGui.Hwnd
+    AgentDebugLog87("WindowManagement.ahk:ShowMinimizedList", "gui shown", '{"rows":' . rows.Length . ',"guiHwnd":' .
+        guiHwnd . '}', "H4,H5")
+    ; #endregion
 }
 
 ; =============================================================================
