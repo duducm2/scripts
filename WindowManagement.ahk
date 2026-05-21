@@ -279,10 +279,7 @@ WM_SortBackgroundRows(&rows) {
             a := rows[j]
             b := rows[j + 1]
             swap := false
-            if (a.monitor != b.monitor) {
-                if (a.monitor > b.monitor)
-                    swap := true
-            } else if (StrCompare(a.title, b.title, true) > 0)
+            if (StrCompare(a.title, b.title, true) > 0)
                 swap := true
             if (swap) {
                 tmp := rows[j]
@@ -291,14 +288,6 @@ WM_SortBackgroundRows(&rows) {
             }
         }
     }
-}
-
-WM_BackgroundRowStateLabel(minMax) {
-    if (minMax = -1)
-        return "Minimized"
-    if (minMax = 1)
-        return "Maximized"
-    return "Normal"
 }
 
 WM_BackgroundIsEligibleWindow(hwnd, foreHwnd) {
@@ -325,15 +314,10 @@ WM_BackgroundAddRow(&rows, &seen, hwnd, foreHwnd) {
     if (seen.Has(hwnd) || !WM_BackgroundIsEligibleWindow(hwnd, foreHwnd))
         return
     try {
-        minMax := WinGetMinMax(hwnd)
-        mon := 0
-        try mon := MonitorGet(hwnd)
         rows.Push({
             hwnd: hwnd,
             title: WinGetTitle(hwnd),
-            exe: WinGetProcessName("ahk_id " hwnd),
-            monitor: mon,
-            state: WM_BackgroundRowStateLabel(minMax)
+            exe: WinGetProcessName("ahk_id " hwnd)
         })
         seen[hwnd] := true
     } catch {
@@ -497,6 +481,16 @@ WM_MinimizedList_OnDoubleClick(*) {
     }
 }
 
+WM_ApplyMinimizedListViewTheme(lv) {
+    hwnd := lv.Hwnd
+    headerHwnd := SendMessage(0x101F, 0, 0, hwnd) ; LVM_GETHEADER
+    if (!headerHwnd)
+        return
+    try DllCall("uxtheme\SetWindowTheme", "ptr", headerHwnd, "wstr", "DarkMode_Explorer", "ptr", 0)
+    SendMessage(0x1201, 0, 0x2E1E1E, headerHwnd) ; HDM_SETBKCOLOR (1E1E2E BGR)
+    SendMessage(0x1202, 0, 0xF4D6CD, headerHwnd) ; HDM_SETTEXTCOLOR (CDD6F4 BGR)
+}
+
 WM_ShowMinimizedBackgroundList() {
     global g_WM_MinimizedListGui, g_WM_MinimizedListActive, g_WM_MinimizedListRows, g_WM_MinimizedListLv
     ; #region agent log
@@ -527,12 +521,14 @@ WM_ShowMinimizedBackgroundList() {
     g_WM_MinimizedListGui.Add("Text", "w720 Center", "📋 Minimized background windows")
     g_WM_MinimizedListGui.Add("Text", "w720 h1 Background45475A")
     g_WM_MinimizedListGui.SetFont("s11 cCDD6F4", "Segoe UI")
-    g_WM_MinimizedListLv := g_WM_MinimizedListGui.Add("ListView", "xm w720 h" . listH . " Grid",
-        ["Monitor", "Window", "Application", "State"])
+    g_WM_MinimizedListLv := g_WM_MinimizedListGui.Add("ListView",
+        "xm w720 h" . listH . " Grid cCDD6F4 Background1E1E2E", ["Window", "Application"])
     for row in rows {
-        monLabel := row.monitor ? ("M" . row.monitor) : "M?"
-        g_WM_MinimizedListLv.Add("", monLabel, WM_TruncateTitleForList(row.title), row.exe, row.state)
+        g_WM_MinimizedListLv.Add("", WM_TruncateTitleForList(row.title, 120), row.exe)
     }
+    g_WM_MinimizedListLv.ModifyCol(1, 440)
+    g_WM_MinimizedListLv.ModifyCol(2, 280)
+    WM_ApplyMinimizedListViewTheme(g_WM_MinimizedListLv)
     g_WM_MinimizedListGui.Add("Text", "w720 h1 Background45475A y+8")
     g_WM_MinimizedListGui.SetFont("s9 c6C7086", "Segoe UI")
     g_WM_MinimizedListGui.Add("Text", "w720 Center", "Double-click to restore & focus | Esc to close")
