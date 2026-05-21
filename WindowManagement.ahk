@@ -152,6 +152,7 @@ global g_WM_MinimizedListCloseCheckTimer := ""
 global g_WM_MinimizedKeysPollCallbacks := Map()
 global g_WM_MinimizedKeysPollPrev := Map()
 global g_WM_MinimizedKeysPollTimer := ""
+global g_WM_MinimizedListRefreshing := false
 ; When daemon is used, foreground is driven by daemon cache (lower-frequency check); else legacy 100ms polling
 if (WM_UsesAutomationDaemon())
     SetTimer MonitorActiveWindow, 250
@@ -623,9 +624,35 @@ WM_MinimizedList_BindHotkeys(windows) {
     }
 }
 
+WM_MinimizedList_WaitForHwndClosed(hwnd, timeoutMs := 2000) {
+    if (!hwnd)
+        return true
+    deadline := A_TickCount + timeoutMs
+    loop {
+        if !WinExist("ahk_id " hwnd)
+            break
+        if (A_TickCount >= deadline)
+            return false
+        Sleep 50
+    }
+    Sleep 50
+    return !WinExist("ahk_id " hwnd)
+}
+
+WM_MinimizedList_FilterExcludedHwnd(rows, excludeHwnd) {
+    if (!excludeHwnd)
+        return rows
+    filtered := []
+    for row in rows {
+        if (row.hwnd != excludeHwnd)
+            filtered.Push(row)
+    }
+    return filtered
+}
+
 WM_MinimizedList_CloseHwnd(hwnd) {
     if (!hwnd)
-        return
+        return true
     try {
         WinClose "ahk_id " hwnd
         if !WinWaitClose("ahk_id " hwnd, , 0.2) {
@@ -640,6 +667,7 @@ WM_MinimizedList_CloseHwnd(hwnd) {
         }
     } catch {
     }
+    return WM_MinimizedList_WaitForHwndClosed(hwnd)
 }
 
 CreateMinimizedListHandler(char) {
@@ -647,8 +675,8 @@ CreateMinimizedListHandler(char) {
 }
 
 HandleMinimizedListByChar(char) {
-    global g_WM_MinimizedListActive, g_WM_MinimizedKeyMap
-    if (!g_WM_MinimizedListActive)
+    global g_WM_MinimizedListActive, g_WM_MinimizedKeyMap, g_WM_MinimizedListRefreshing
+    if (!g_WM_MinimizedListActive || g_WM_MinimizedListRefreshing)
         return
     hwnd := g_WM_MinimizedKeyMap.Get(char, "")
     if (hwnd = "")
@@ -656,7 +684,7 @@ HandleMinimizedListByChar(char) {
     if (!hwnd)
         return
     WM_MinimizedList_CloseHwnd(hwnd)
-    WM_MinimizedList_Refresh()
+    WM_MinimizedList_Refresh(hwnd)
 }
 
 WM_MinimizedList_BuildDisplayText(rows, windows) {
@@ -672,10 +700,11 @@ WM_MinimizedList_BuildDisplayText(rows, windows) {
 
 WM_MinimizedList_Cleanup() {
     global g_WM_MinimizedListGui, g_WM_MinimizedListActive, g_WM_MinimizedListRows, g_WM_MinimizedKeyMap,
-        g_WM_MinimizedHotkeyHandlers
+        g_WM_MinimizedHotkeyHandlers, g_WM_MinimizedListRefreshing
     if (!g_WM_MinimizedListActive)
         return
     g_WM_MinimizedListActive := false
+    g_WM_MinimizedListRefreshing := false
     g_WM_MinimizedListRows := []
     g_WM_MinimizedKeyMap := Map()
     WM_MinimizedList_UnbindHotkeys()
@@ -691,19 +720,27 @@ WM_MinimizedList_Cancel(*) {
     WM_MinimizedList_Cleanup()
 }
 
-WM_MinimizedList_Refresh() {
-    global g_WM_MinimizedListActive
-    if (!g_WM_MinimizedListActive)
+WM_MinimizedList_Refresh(closedHwnd := 0) {
+    global g_WM_MinimizedListActive, g_WM_MinimizedListRefreshing
+    if (!g_WM_MinimizedListActive || g_WM_MinimizedListRefreshing)
         return
-    WM_MinimizedList_UnbindHotkeys()
-    rows := WM_CollectBackgroundWindows()
-    g_WM_MinimizedListRows := rows
-    if (rows.Length = 0) {
-        WM_MinimizedList_Cleanup()
-        ShowCenteredOverlay_Utils("ℹ️ No minimized background windows", 2500, BANNER_ACCENT_INFO)
-        return
+    g_WM_MinimizedListRefreshing := true
+    try {
+        if (closedHwnd)
+            WM_MinimizedList_WaitForHwndClosed(closedHwnd)
+        WM_MinimizedList_UnbindHotkeys()
+        rows := WM_CollectBackgroundWindows()
+        rows := WM_MinimizedList_FilterExcludedHwnd(rows, closedHwnd)
+        g_WM_MinimizedListRows := rows
+        if (rows.Length = 0) {
+            WM_MinimizedList_Cleanup()
+            ShowCenteredOverlay_Utils("ℹ️ No minimized background windows", 2500, BANNER_ACCENT_INFO)
+            return
+        }
+        WM_ShowMinimizedBackgroundList(rows, true)
+    } finally {
+        g_WM_MinimizedListRefreshing := false
     }
-    WM_ShowMinimizedBackgroundList(rows, true)
 }
 
 WM_ShowMinimizedBackgroundList(rows := unset, refresh := false) {
