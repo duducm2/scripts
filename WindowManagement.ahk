@@ -534,9 +534,17 @@ WM_MinimizedList_ShouldCapturePickerKey() {
     return !WM_MinimizedList_ModifiersDown()
 }
 
+; AHK v2: do not use c >= "0" on slot letters a–z — throws "Expected a Number but got a String".
+WM_IsDigitSlotChar(c) {
+    if (StrLen(c) != 1)
+        return false
+    o := Ord(c)
+    return o >= Ord("0") && o <= Ord("9")
+}
+
 WM_MinimizedList_KeyDown(keyName) {
     try {
-        if (StrLen(keyName) = 1 && keyName >= "0" && keyName <= "9")
+        if (WM_IsDigitSlotChar(keyName))
             return GetKeyState(keyName, "P") || GetKeyState("Numpad" . keyName, "P")
         return GetKeyState(keyName, "P")
     } catch {
@@ -636,7 +644,7 @@ WM_MinimizedList_BindHotkeys(windows) {
     for w in windows {
         slotChar := w.char
         WM_MinimizedList_RegisterHotkey("$*" . slotChar, HandleMinimizedListByChar.Bind(slotChar))
-        if (slotChar >= "0" && slotChar <= "9")
+        if (WM_IsDigitSlotChar(slotChar))
             WM_MinimizedList_RegisterHotkey("$*Numpad" . slotChar, HandleMinimizedListByChar.Bind(slotChar))
     }
     WM_MinimizedList_RegisterHotkey("$*A", HandleMinimizedListAddExcludeTrigger)
@@ -657,7 +665,7 @@ WM_MinimizedList_BindPickerHotkeys(pickerWindows) {
     for w in pickerWindows {
         slotChar := w.char
         WM_MinimizedList_RegisterHotkey("$*" . slotChar, HandleMinimizedListExcludePickerByChar.Bind(slotChar))
-        if (slotChar >= "0" && slotChar <= "9")
+        if (WM_IsDigitSlotChar(slotChar))
             WM_MinimizedList_RegisterHotkey("$*Numpad" . slotChar, HandleMinimizedListExcludePickerByChar.Bind(slotChar))
     }
     try HotIf()

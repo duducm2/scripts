@@ -4326,9 +4326,17 @@ StandardLoadingBar_KeysSelectionModifiersDown() {
     }
 }
 
+; AHK v2: do not use keyName >= "0" on letters — throws "Expected a Number but got a String".
+StandardLoadingBar_IsDigitKey(keyName) {
+    if (StrLen(keyName) != 1)
+        return false
+    o := Ord(keyName)
+    return o >= Ord("0") && o <= Ord("9")
+}
+
 StandardLoadingBar_KeysSelectionKeyDown(keyName) {
     try {
-        if (StrLen(keyName) = 1 && keyName >= "0" && keyName <= "9")
+        if (StandardLoadingBar_IsDigitKey(keyName))
             return GetKeyState(keyName, "P") || GetKeyState("Numpad" . keyName, "P")
         return GetKeyState(keyName, "P")
     } catch {
@@ -4403,7 +4411,7 @@ StandardLoadingBar_WaitForSelectionKeysRelease(keyCallbacks) {
             knL := StrLower(Trim(keyName))
             if (knL = "escape" || knL = "*escape")
                 continue
-            if (StrLen(keyName) = 1 && keyName >= "0" && keyName <= "9") {
+            if (StandardLoadingBar_IsDigitKey(keyName)) {
                 while StandardLoadingBar_KeysSelectionKeyDown(keyName)
                     KeyWait keyName
             }
@@ -4540,7 +4548,7 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
                 alt := StrLower(keyName)
             if (alt != "" && alt != keyName)
                 StandardLoadingBar_RegisterKeyHandler(alt, cb)
-            if (keyName >= "0" && keyName <= "9")
+            if (StandardLoadingBar_IsDigitKey(keyName))
                 StandardLoadingBar_RegisterKeyHandler("Numpad" . keyName, cb)
         }
     }
