@@ -431,26 +431,6 @@ YouTube_PlayWhenOpened(ytHwnd := 0) {
 }
 
 ; =============================================================================
-; Open/Activate Gmail
-; Hotkey: Win+Alt+Shift+W
-; =============================================================================
-#!+w::
-{
-    SetTitleMatchMode 2
-    if WinExist("Gmail ahk_exe chrome.exe") {
-        WinActivate
-        CenterMouse()
-    } else {
-        target := IS_WORK_ENVIRONMENT ?
-            "C:\Users\fie7ca\Documents\Shortcuts\Gmail.lnk" :
-                "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Chrome Apps\Gmail.lnk"
-        Run target
-        WinWaitActive("Gmail ahk_exe chrome.exe")
-        CenterMouse()
-    }
-}
-
-; =============================================================================
 ; Open/Activate Cursor
 ; Hotkey: Win+Alt+Shift+,
 ; =============================================================================

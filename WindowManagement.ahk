@@ -159,6 +159,42 @@ WM_MaximizeActiveWindow() {
     }
 }
 
+WM_MaximizeHwnd(hwnd) {
+    if !hwnd
+        return
+    try {
+        WinMaximize "ahk_id " hwnd
+    } catch {
+        try PostMessage 0x0112, 0xF030, , , "ahk_id " hwnd  ; WM_SYSCOMMAND, SC_MAXIMIZE
+    }
+}
+
+; Per monitor: if exactly one visible non-minimized window and not maximized, maximize it.
+WM_MaximizeLonelyVisibleOnAllMonitors() {
+    maximized := 0
+    loop MonitorGetCount() {
+        windows := GetVisibleWindowsOnMonitor(A_Index, true)
+        if (windows.Length != 1)
+            continue
+        hwnd := windows[1].hwnd
+        try {
+            if (WinGetMinMax("ahk_id " hwnd) = 1)
+                continue
+        } catch {
+            continue
+        }
+        try {
+            WM_MaximizeHwnd(hwnd)
+            maximized++
+        } catch {
+        }
+    }
+    if (maximized > 0) {
+        msg := (maximized = 1) ? "Maximized 1 window" : "Maximized " maximized " windows"
+        ShowCenteredOverlay_Utils(msg, 1200, BANNER_ACCENT_SUCCESS)
+    }
+}
+
 ; =============================================================================
 ; Minimize Active Window
 ; Hotkey: Win+Alt+Shift+6
@@ -184,6 +220,12 @@ WM_MaximizeActiveWindow() {
 {
     WM_MaximizeActiveWindow()
 }
+
+; =============================================================================
+; Maximize lone visible window per monitor
+; Hotkey: Win+Alt+Shift+W
+; =============================================================================
+#!+w:: WM_MaximizeLonelyVisibleOnAllMonitors()
 
 ; =============================================================================
 ; Move Active Window to Monitor by POSITION (left-to-right order)
