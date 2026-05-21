@@ -153,6 +153,8 @@ global g_WM_MinimizedKeysPollCallbacks := Map()
 global g_WM_MinimizedKeysPollPrev := Map()
 global g_WM_MinimizedKeysPollTimer := ""
 global g_WM_MinimizedListRefreshing := false
+global g_WM_MinimizedListTrackTimer := ""
+global g_WM_MinimizedListLastForegroundMonitorIdx := 0
 ; When daemon is used, foreground is driven by daemon cache (lower-frequency check); else legacy 100ms polling
 if (WM_UsesAutomationDaemon())
     SetTimer MonitorActiveWindow, 250
@@ -527,39 +529,71 @@ WM_MinimizedList_UnbindEscape() {
 }
 
 WM_CenterGuiOnActiveMonitor(gui) {
-    monitorLeft := 0, monitorTop := 0, monitorRight := 0, monitorBottom := 0
-    MonitorGetWorkArea(1, &monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
-    monitorWidth := monitorRight - monitorLeft
-    monitorHeight := monitorBottom - monitorTop
-    activeWin := 0
-    try activeWin := WinGetID("A")
+    WM_MinimizedList_RepositionToActiveMonitor(0, gui)
+}
+
+WM_MinimizedList_StopActiveMonitorTracking() {
+    global g_WM_MinimizedListTrackTimer
+    try SetTimer(WM_MinimizedList_TrackActiveMonitorTick, 0)
     catch {
-        activeWin := 0
     }
-    if (activeWin) {
-        rect := Buffer(16, 0)
-        if (DllCall("GetWindowRect", "ptr", activeWin, "ptr", rect)) {
-            centerX := NumGet(rect, 0, "int") + (NumGet(rect, 8, "int") - NumGet(rect, 0, "int")) // 2
-            centerY := NumGet(rect, 4, "int") + (NumGet(rect, 12, "int") - NumGet(rect, 4, "int")) // 2
-            loop MonitorGetCount() {
-                MonitorGetWorkArea(A_Index, &l, &t, &r, &b)
-                if (centerX >= l && centerX <= r && centerY >= t && centerY <= b) {
-                    monitorLeft := l
-                    monitorTop := t
-                    monitorRight := r
-                    monitorBottom := b
-                    monitorWidth := r - l
-                    monitorHeight := b - t
-                    break
-                }
-            }
-        }
+    g_WM_MinimizedListTrackTimer := ""
+}
+
+; Reposition modal to center of foreground monitor (parity with StandardLoadingBar trackActiveMonitor / StudyTopicSelector).
+WM_MinimizedList_RepositionToActiveMonitor(forMonitorIdx := 0, gui := unset) {
+    global g_WM_MinimizedListGui
+    if (!IsSet(gui))
+        gui := g_WM_MinimizedListGui
+    if (!IsObject(gui) || !gui.Hwnd)
+        return
+    idx := forMonitorIdx
+    if (idx < 1 || idx > MonitorGetCount())
+        idx := GetMonitorIndexForForeground_StandardBar()
+    MonitorGetWorkArea(idx, &ml, &mt, &mr, &mb)
+    monitorWidth := mr - ml
+    monitorHeight := mb - mt
+    try {
+        gui.Show("AutoSize Hide")
+        gui.GetPos(, , &gw, &gh)
+    } catch {
+        return
     }
-    gui.Show("AutoSize Hide")
-    gui.GetPos(, , &gw, &gh)
-    cx := monitorLeft + (monitorWidth - gw) // 2
-    cy := monitorTop + (monitorHeight - gh) // 2
-    gui.Show("x" . cx . " y" . cy . " NA")
+    marginX := 20
+    marginY := 20
+    cx := ml + (monitorWidth - gw) // 2
+    cy := mt + (monitorHeight - gh) // 2
+    if (cx < ml + marginX)
+        cx := ml + marginX
+    if (cy < mt + marginY)
+        cy := mt + marginY
+    if (cx + gw > mr - marginX)
+        cx := mr - gw - marginX
+    if (cy + gh > mb - marginY)
+        cy := mb - gh - marginY
+    try gui.Show("x" . cx . " y" . cy . " NA")
+    catch {
+    }
+}
+
+WM_MinimizedList_TrackActiveMonitorTick() {
+    global g_WM_MinimizedListActive, g_WM_MinimizedListGui, g_WM_MinimizedListLastForegroundMonitorIdx
+    if (!g_WM_MinimizedListActive || !IsObject(g_WM_MinimizedListGui) || !g_WM_MinimizedListGui.Hwnd) {
+        WM_MinimizedList_StopActiveMonitorTracking()
+        return
+    }
+    newIdx := GetMonitorIndexForForeground_StandardBar()
+    if (newIdx != g_WM_MinimizedListLastForegroundMonitorIdx) {
+        g_WM_MinimizedListLastForegroundMonitorIdx := newIdx
+        WM_MinimizedList_RepositionToActiveMonitor(newIdx)
+    }
+}
+
+WM_MinimizedList_StartActiveMonitorTracking() {
+    global g_WM_MinimizedListTrackTimer, g_WM_MinimizedListLastForegroundMonitorIdx
+    WM_MinimizedList_StopActiveMonitorTracking()
+    g_WM_MinimizedListLastForegroundMonitorIdx := GetMonitorIndexForForeground_StandardBar()
+    g_WM_MinimizedListTrackTimer := SetTimer(WM_MinimizedList_TrackActiveMonitorTick, 115)
 }
 
 WM_MinimizedList_KeyLabel(char) {
@@ -705,6 +739,7 @@ WM_MinimizedList_Cleanup() {
         return
     g_WM_MinimizedListActive := false
     g_WM_MinimizedListRefreshing := false
+    WM_MinimizedList_StopActiveMonitorTracking()
     g_WM_MinimizedListRows := []
     g_WM_MinimizedKeyMap := Map()
     WM_MinimizedList_UnbindHotkeys()
@@ -790,7 +825,8 @@ WM_ShowMinimizedBackgroundList(rows := unset, refresh := false) {
         g_WM_MinimizedListActive := true
     WM_MinimizedList_BindEscape()
     WM_MinimizedList_BindHotkeys(windows)
-    WM_CenterGuiOnActiveMonitor(g_WM_MinimizedListGui)
+    WM_MinimizedList_RepositionToActiveMonitor(0, g_WM_MinimizedListGui)
+    WM_MinimizedList_StartActiveMonitorTracking()
     ; #region agent log
     guiHwnd := 0
     try guiHwnd := g_WM_MinimizedListGui.Hwnd
