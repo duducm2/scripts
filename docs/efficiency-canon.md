@@ -78,6 +78,7 @@ Recurring issues identified across evaluation reports, normalized into a single 
   - **Shared Memory (Memory-Mapped File):** Lowest latency (~sub-millisecond), suitable for state arrays and FSM flags. Requires strict synchronization (named Mutex, optional EventWaitHandle for readiness). Define a fixed layout (version, seq, opCode, payload, status) and byte offsets.
   - **Named Pipes:** Duplex, kernel-managed; latency typically tens of microseconds. Use for request/response and streaming events when Shared Memory complexity is undesirable. Use length-prefixed or framed messages (e.g. 4-byte length + UTF-8 payload).
   - **Forbidden:** CLI execution (`RunWait`, spawning script per action), temp-file IPC, unbuffered HTTP/localhost for hot paths.
+- **Documents-folder sentinels:** For user-profile-local markers (no repo path), use zero-byte files in `A_MyDocuments` with literal comma-containing names; see [lightweight-api-sentinel-files.md](lightweight-api-sentinel-files.md) (`manage, study, set, top, link` for Study Subtopic Link).
 - **WASAPI / audio.** For **per-application volume** control without touching the UI, use Windows Audio Session API (e.g. IAudioSessionManager2, IAudioSessionEnumerator, ISimpleAudioVolume) by PID. Do not use WASAPI to “mute” for UI features that must stay in sync with the app’s own mute state (e.g. Teams mic indicator); use for hardware or mixer-level control only where state sync is not required. For **quiet confirmation sounds in the same AHK process**, do not combine WMP OCX volume with WASAPI targets — see **§14**.
 - **Integration strategy for new shortcuts/workflows.** Prefer: (1) implement in AHK with the patterns above; (2) if bottlenecks are severe and localized, consider a small, focused daemon with a single IPC channel and feature-flagged cutover; (3) document rollout order and rollback (legacy path remains callable).
 
@@ -187,28 +188,28 @@ Interesting outcomes from integrating Python for `Gemini.ahk` / `WindowManagemen
 
 ### Wave 1 — Quick wins
 
-| Item | Change | Rollback |
-| ---- | ------ | -------- |
-| **WASAPI volume** | [`SpotifyWASAPI.ahk`](../SpotifyWASAPI.ahk): implemented `WASAPI_SetSessionScalar`, `AdjustProcessVolumeByPid`, `SetProcessPlaybackVolumePercent`, `ApplyAutoHotkeyAudioSessionsVolumePercent` via `IAudioSessionManager2::GetSessionEnumerator` (session enum + `ISimpleAudioVolume`). Restores **Ctrl+Volume** silent path for Spotify when `AL_USE_WASAPI` is true in [`Spotify.ahk`](../Spotify.ahk). | Revert `SpotifyWASAPI.ahk` to stub returns if COM/session enumeration misbehaves on a specific audio stack. |
-| **Bridge log I/O** | [`GeminiToCursorBridge.ahk`](../GeminiToCursorBridge.ahk): `global BRIDGE_AGENT_LOG_ENABLED := false` — `Bridge_Log` is a no-op unless set true (reduces `FileAppend` on bridge paths). | Set `BRIDGE_AGENT_LOG_ENABLED := true` in that file (or a small include) for diagnosis. |
+| Item               | Change                                                                                                                                                                                                                                                                                                                                                                                                    | Rollback                                                                                                    |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| **WASAPI volume**  | [`SpotifyWASAPI.ahk`](../SpotifyWASAPI.ahk): implemented `WASAPI_SetSessionScalar`, `AdjustProcessVolumeByPid`, `SetProcessPlaybackVolumePercent`, `ApplyAutoHotkeyAudioSessionsVolumePercent` via `IAudioSessionManager2::GetSessionEnumerator` (session enum + `ISimpleAudioVolume`). Restores **Ctrl+Volume** silent path for Spotify when `AL_USE_WASAPI` is true in [`Spotify.ahk`](../Spotify.ahk). | Revert `SpotifyWASAPI.ahk` to stub returns if COM/session enumeration misbehaves on a specific audio stack. |
+| **Bridge log I/O** | [`GeminiToCursorBridge.ahk`](../GeminiToCursorBridge.ahk): `global BRIDGE_AGENT_LOG_ENABLED := false` — `Bridge_Log` is a no-op unless set true (reduces `FileAppend` on bridge paths).                                                                                                                                                                                                                   | Set `BRIDGE_AGENT_LOG_ENABLED := true` in that file (or a small include) for diagnosis.                     |
 
 **Patterns:** §3 “repeated enumeration” / anti hot-path I/O; §6 WASAPI per-process volume.
 
 ### Wave 2 — Enumeration / cache
 
-| Item | Change | Rollback |
-| ---- | ------ | -------- |
+| Item                   | Change                                                                                                                                                                                                                                                                                                        | Rollback                                                  |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
 | **Outlook HWND cache** | [`Outlook.ahk`](../Outlook.ahk): optional `SetWinEventHook` for `EVENT_OBJECT_DESTROY` (0x8001) to call `InvalidateMailbox` / `InvalidateCalendar` / `InvalidateReminder` when the matching cached HWND is destroyed. **Default:** `OUTLOOK_USE_WINEVENT_INVALIDATE := false`. `OnExit` unregisters the hook. | Set `OUTLOOK_USE_WINEVENT_INVALIDATE := false` (default). |
-| **WindowManagement** | No code change: [`WindowManagement.ahk`](../WindowManagement.ahk) `MonitorActiveWindow` already early-returns when foreground `hwnd` equals `lastHwnd` (canon cache-first / avoid redundant work). | N/A. |
+| **WindowManagement**   | No code change: [`WindowManagement.ahk`](../WindowManagement.ahk) `MonitorActiveWindow` already early-returns when foreground `hwnd` equals `lastHwnd` (canon cache-first / avoid redundant work).                                                                                                            | N/A.                                                      |
 
 **Patterns:** §4 event-driven hooks vs polling; §7 incremental cutover with flag.
 
 ### Wave 3 — UIA / overlay cost
 
-| Item | Change | Rollback |
-| ---- | ------ | -------- |
-| **mousemaster** | [`mousemaster.ahk`](../mousemaster.ahk): `Mousemaster_MaxHints` (default 350) stops scanning after enough interactive elements; **trade-off** documented in file (fewer hints on huge trees). | Raise `Mousemaster_MaxHints` or remove the cap. |
-| **Gemini / Utils** | No structural change: further `CacheRequest` / scoped `FindAll` refactors left for a follow-up if profiling shows a hot path. | N/A. |
+| Item               | Change                                                                                                                                                                                        | Rollback                                        |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| **mousemaster**    | [`mousemaster.ahk`](../mousemaster.ahk): `Mousemaster_MaxHints` (default 350) stops scanning after enough interactive elements; **trade-off** documented in file (fewer hints on huge trees). | Raise `Mousemaster_MaxHints` or remove the cap. |
+| **Gemini / Utils** | No structural change: further `CacheRequest` / scoped `FindAll` refactors left for a follow-up if profiling shows a hot path.                                                                 | N/A.                                            |
 
 **Patterns:** §3 full UIA tree scans; §11 explicit trade-off in comments.
 
