@@ -21548,6 +21548,7 @@ CreateGeminiModelCharHandler(char) {
 }
 
 ; ---------------------------------------------------------------------------
+; Read-only check: picker button name only (no second open/click of mode picker).
 VerifyGeminiModelSelectedInOpenPicker(expectedModel, geminiHwnd := 0) {
     exp := GeminiNormalizeModelLabel(expectedModel)
     if (exp = "")
@@ -21555,42 +21556,12 @@ VerifyGeminiModelSelectedInOpenPicker(expectedModel, geminiHwnd := 0) {
     uia := GeminiAttachBrowser(geminiHwnd)
     if !IsObject(uia)
         return false
-
-    picker := FindGeminiModePickerButton(uia)
-    if !picker
+    active := ""
+    try active := GetGeminiActiveModelFromPickerOnly(uia)
+    catch {
         return false
-
-    browserHwnd := geminiHwnd ? geminiHwnd : GeminiGetBrowserHwndFromUia(uia)
-    verified := false
-    try {
-        if (!GeminiMouseClickElement(picker, browserHwnd, uia))
-            return false
-        Sleep 250
-
-        uia := GeminiAttachBrowser(browserHwnd)
-        if !IsObject(uia)
-            return false
-
-        buttons := GeminiCollectModelMenuItems(uia)
-        for b in buttons {
-            try {
-                if (b.name = exp) {
-                    try {
-                        if (b.isSelected)
-                            verified := true
-                    } catch {
-                    }
-                    break
-                }
-            } catch {
-            }
-        }
-    } finally {
-        if IsObject(uia)
-            GeminiDismissModePickerMenu(uia)
-        Sleep 60
     }
-    return verified
+    return active = exp
 }
 
 ; ---------------------------------------------------------------------------
@@ -21701,26 +21672,15 @@ HandleGeminiModelSelection(char) {
                 }
             } else {
                 verified := false
-                switched := false
-
-                attempt := 1
                 loop 2 {
-                    attempt := A_Index
-                    StandardLoadingBar_Update("🔄 Switching to " . modelName . " (attempt " . attempt . "/2)…",
-                        BANNER_ACCENT_INTERMEDIATE)
-
+                    StandardLoadingBar_Update("🔄 Switching to " . modelName . (A_Index > 1 ? " (retry)…" : "…"),
+                    BANNER_ACCENT_INTERMEDIATE)
                     WinActivate("ahk_id " geminiHwnd)
                     WinWaitActive("ahk_id " geminiHwnd, , 1)
-                    switched := EnsureGeminiModelViaMenu(modelName, geminiHwnd)
-
-                    StandardLoadingBar_Update("🔎 Verifying model (mode picker)…", BANNER_ACCENT_INTERMEDIATE)
-                    WinActivate("ahk_id " geminiHwnd)
-                    WinWaitActive("ahk_id " geminiHwnd, , 1)
-                    verified := switched && VerifyGeminiModelSelectedInOpenPicker(modelName, geminiHwnd)
+                    verified := EnsureGeminiModelViaMenu(modelName, geminiHwnd)
                     if (verified)
                         break
-
-                    if (attempt < 2) {
+                    if (A_Index < 2) {
                         StandardLoadingBar_Update("🔄 Model not confirmed. Retrying…",
                             BANNER_ACCENT_INTERMEDIATE)
                         Sleep 300

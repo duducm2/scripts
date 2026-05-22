@@ -676,7 +676,13 @@ EnsureGeminiModelViaMenu(expected, geminiHwnd := 0) {
     if IsObject(uia)
         GeminiDismissModePickerMenu(uia)
     Sleep 80
-    return true
+    active := ""
+    try active := GetGeminiActiveModelFromPickerOnly(uia)
+    ; #region agent log
+    GeminiDebugLog("E", "Utils.ahk:EnsureGeminiModelViaMenu", "post-switch verify", Map(
+        "expected", exp, "active", active, "ok", active = exp))
+    ; #endregion
+    return active = exp
 }
 
 EnsureGeminiThinkingLevelMenuOpen(geminiHwnd := 0) {
