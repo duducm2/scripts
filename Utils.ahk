@@ -8789,43 +8789,14 @@ StudyTopicSelector_ComputeCenterTopLeftInWorkArea(ml, mt, mr, mb, gw, gh, &cx, &
 
 ; Initial placement: GetActiveMonitorWorkArea_StandardBar (same source as StandardLoadingBar / standard_information_display.md); Outlook Copilot uses an equivalent MonitorGetWorkArea loop in Shift keys.ahk.
 StudyTopicSelector_PositionGuiLikeOutlook(gui) {
-    global g_StudyLinkSubmenuGui, g_StudyTopicSelectorGui
-    subPos := IsObject(g_StudyLinkSubmenuGui) && (gui = g_StudyLinkSubmenuGui)
-    catH := (IsObject(g_StudyTopicSelectorGui) && g_StudyTopicSelectorGui.Hwnd) ? g_StudyTopicSelectorGui.Hwnd : 0
-    ; #region agent log
-    if (subPos) {
-        gh0 := gui.Hwnd
-        StudyLink_DebugNDJSON("H2", "posBeforeHideSize", gh0, catH, catH ? WinExist("ahk_id " catH) : 0)
-    }
-    ; #endregion
     GetActiveMonitorWorkArea_StandardBar(&ml, &mt, &mr, &mb)
     gui.Show("AutoSize Hide")
-    ; #region agent log
-    if (subPos) {
-        gh1 := gui.Hwnd
-        StudyLink_DebugNDJSON("H2", "posAfterHideSize", gh1, catH, catH ? WinExist("ahk_id " catH) : 0)
-    }
-    ; #endregion
     gui.GetPos(, , &gw, &gh)
     StudyTopicSelector_ComputeCenterTopLeftInWorkArea(ml, mt, mr, mb, gw, gh, &cx, &cy)
     ; Avoid "NA": if focus stays in QuickLook, Esc is consumed there first (ShowOutlookCopilotSelector comment).
     gui.Show("x" . cx . " y" . cy)
-    ; #region agent log
-    if (subPos) {
-        gh2 := gui.Hwnd
-        StudyLink_DebugNDJSON("H2", "posAfterVisibleXY", gh2, catH, gh2 ? WinExist("ahk_id " gh2) : 0)
-    }
-    ; #endregion
     try WinActivate(gui.Hwnd)
 }
-
-; #region agent log
-StudyLink_DebugNDJSON(hypothesisId, location, n1 := 0, n2 := 0, n3 := 0) {
-    line := '{"sessionId":"a3a0b8","timestamp":' . A_TickCount . ',"hypothesisId":"' . hypothesisId . '","location":"' .
-        location . '","n1":' . n1 . ',"n2":' . n2 . ',"n3":' . n3 . '}' "`n"
-    try FileAppend line, A_ScriptDir "\debug-a3a0b8.log", "UTF-8"
-}
-; #endregion
 
 StudyTopicSelector_StopActiveMonitorTracking() {
     try SetTimer(StudyTopicSelector_TrackActiveMonitorTick, 0)
@@ -9059,7 +9030,7 @@ StudyTopicSelector_ManageLinks_Open(*) {
     }
 }
 
-StudyLink_UiaInvokeOrClick(el, stepName := "", preferClick := false) {
+StudyLink_UiaInvokeOrClick(el, preferClick := false) {
     if !IsObject(el)
         return false
     global STUDYLINK_YT_MS_BEFORE_CLICK, STUDYLINK_YT_MS_AFTER_CLICK
@@ -9067,17 +9038,10 @@ StudyLink_UiaInvokeOrClick(el, stepName := "", preferClick := false) {
     try el.SetFocus()
     catch {
     }
-    method := ""
     if (preferClick) {
         try {
             el.Click()
-            method := "click"
             Sleep STUDYLINK_YT_MS_AFTER_CLICK
-            ; #region agent log
-            if (stepName != "")
-                StudyLink_DebugLog_d22874("H2", "StudyLink_UiaInvokeOrClick", "clicked", '{"step":"' . stepName .
-                    '","method":"click","preferClick":true}')
-            ; #endregion
             return true
         } catch {
         }
@@ -9085,33 +9049,17 @@ StudyLink_UiaInvokeOrClick(el, stepName := "", preferClick := false) {
     try {
         if el.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
             el.Invoke()
-            method := "invoke"
             Sleep STUDYLINK_YT_MS_AFTER_CLICK
-            ; #region agent log
-            if (stepName != "")
-                StudyLink_DebugLog_d22874("H2", "StudyLink_UiaInvokeOrClick", "clicked", '{"step":"' . stepName .
-                    '","method":"invoke"}')
-            ; #endregion
             return true
         }
     } catch {
     }
     try {
         el.Click()
-        method := "click"
         Sleep STUDYLINK_YT_MS_AFTER_CLICK
-        ; #region agent log
-        if (stepName != "")
-            StudyLink_DebugLog_d22874("H2", "StudyLink_UiaInvokeOrClick", "clicked", '{"step":"' . stepName .
-                '","method":"click"}')
-        ; #endregion
         return true
     } catch {
     }
-    ; #region agent log
-    if (stepName != "")
-        StudyLink_DebugLog_d22874("H2", "StudyLink_UiaInvokeOrClick", "click_failed", '{"step":"' . stepName . '"}')
-    ; #endregion
     return false
 }
 
@@ -9140,16 +9088,6 @@ global STUDYLINK_YT_MS_AFTER_SHARE_CLICK := 350
 global STUDYLINK_YT_MS_AFTER_START_AT := 250
 global STUDYLINK_YT_MS_AFTER_COPY := 450
 global STUDYLINK_YT_MS_BEFORE_CLOSE_PANEL := 280
-
-; #region agent log
-StudyLink_DebugLog_d22874(hypothesisId, location, message, data := "") {
-    if (data = "")
-        data := "{}"
-    line := '{"sessionId":"d22874","timestamp":' . A_TickCount . ',"hypothesisId":"' . hypothesisId .
-        '","location":"' . location . '","message":"' . message . '","data":' . data . '}' "`n"
-    try FileAppend line, A_ScriptDir "\debug-d22874.log", "UTF-8"
-}
-; #endregion
 
 StudyLink_UiaFindButtonByNames(root, nameList, timeoutMs := 0) {
     if !IsObject(root)
@@ -9184,10 +9122,6 @@ StudyLink_CaptureYoutubeTimestampUrl(uia, &errMsg := "") {
         errMsg := "Could not read the current page URL."
         return ""
     }
-    ; #region agent log
-    StudyLink_DebugLog_d22874("H5", "StudyLink_CaptureYoutubeTimestampUrl", "entry", '{"isYtPage":' .
-        (StudyLink_IsYoutubeVideoPageUrl(currentUrl) ? "true" : "false") . '}')
-    ; #endregion
     if !StudyLink_IsYoutubeVideoPageUrl(currentUrl) {
         errMsg := "Open a YouTube video page and try again."
         return ""
@@ -9195,20 +9129,9 @@ StudyLink_CaptureYoutubeTimestampUrl(uia, &errMsg := "") {
     shareBtn := StudyLink_UiaFindButtonByNames(uia, STUDYLINK_YT_BTN_SHARE, 3000)
     if !shareBtn {
         errMsg := "Share button not found."
-        ; #region agent log
-        StudyLink_DebugLog_d22874("H1", "StudyLink_CaptureYoutubeTimestampUrl", "share_not_found", "{}")
-        ; #endregion
         return ""
     }
-    ; #region agent log
-    shareName := ""
-    try shareName := shareBtn.Name
-    catch {
-    }
-    StudyLink_DebugLog_d22874("H1", "StudyLink_CaptureYoutubeTimestampUrl", "share_found", '{"name":"' .
-        StrReplace(shareName, '"', "'") . '"}')
-    ; #endregion
-    if !StudyLink_UiaInvokeOrClick(shareBtn, "share") {
+    if !StudyLink_UiaInvokeOrClick(shareBtn) {
         errMsg := "Could not open the Share panel."
         return ""
     }
@@ -9229,7 +9152,7 @@ StudyLink_CaptureYoutubeTimestampUrl(uia, &errMsg := "") {
         } catch {
         }
         if (!toggled)
-            toggled := StudyLink_UiaInvokeOrClick(startAt, "start_at")
+            toggled := StudyLink_UiaInvokeOrClick(startAt)
         if (!toggled) {
             errMsg := "Could not enable Start at."
             return ""
@@ -9273,7 +9196,7 @@ StudyLink_CaptureYoutubeTimestampUrl(uia, &errMsg := "") {
         return ""
     }
     savedClip := A_Clipboard
-    if !StudyLink_UiaInvokeOrClick(copyBtn, "copy") {
+    if !StudyLink_UiaInvokeOrClick(copyBtn) {
         errMsg := "Could not click Copy."
         return ""
     }
@@ -9291,16 +9214,8 @@ StudyLink_CaptureYoutubeTimestampUrl(uia, &errMsg := "") {
     }
     if (url = "" || !InStr(url, "youtu") || !InStr(url, "t=")) {
         errMsg := "Could not read the timestamped share link."
-        ; #region agent log
-        StudyLink_DebugLog_d22874("H3", "StudyLink_CaptureYoutubeTimestampUrl", "no_timestamp_url", '{"urlLen":' .
-            StrLen(url) . '}')
-        ; #endregion
         return ""
     }
-    ; #region agent log
-    StudyLink_DebugLog_d22874("H3", "StudyLink_CaptureYoutubeTimestampUrl", "capture_ok", '{"urlLen":' . StrLen(url) .
-        ',"hasT":true}')
-    ; #endregion
     global STUDYLINK_YT_MS_AFTER_COPY
     Sleep STUDYLINK_YT_MS_AFTER_COPY
     return url
@@ -9338,22 +9253,10 @@ StudyLink_CleanupYoutubeSharePanel(uia, chromeHwnd := 0) {
     }
     if !cancelBtn
         cancelBtn := StudyLink_UiaFindButtonByNames(uia, STUDYLINK_YT_BTN_CANCEL)
-    closed := false
     if cancelBtn
-        closed := StudyLink_UiaInvokeOrClick(cancelBtn, "cancel", true)
+        StudyLink_UiaInvokeOrClick(cancelBtn, true)
     Sleep 220
     panelStillOpen := !!ClipAngel_UiaFindFirst(uia, { AutomationId: "share-url", Type: 50004 })
-    ; #region agent log
-    cancelName := ""
-    if cancelBtn {
-        try cancelName := cancelBtn.Name
-        catch {
-        }
-    }
-    StudyLink_DebugLog_d22874("H6", "StudyLink_CleanupYoutubeSharePanel", "close_attempt", '{"found":' .
-        (cancelBtn ? "true" : "false") . ',"closed":' . (closed ? "true" : "false") . ',"panelStillOpen":' .
-        (panelStillOpen ? "true" : "false") . ',"btnName":"' . StrReplace(cancelName, '"', "'") . '"}')
-    ; #endregion
     if (!panelStillOpen)
         return
     if chromeHwnd {
@@ -9396,18 +9299,8 @@ StudyTopicSelector_ManageLinks_Set(*) {
             ; Close share panel while Chrome still has focus (before loading overlay steals it).
             StudyLink_CleanupYoutubeSharePanel(uia, chromeHwnd)
             StandardLoadingBar_Show("Saving link…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
-            ; #region agent log
-            StudyLink_DebugLog_d22874("H4", "StudyTopicSelector_ManageLinks_Set", "api_post_start", '{"urlLen":' .
-                StrLen(url) . '}')
-            ; #endregion
-            apiStart := A_TickCount
             setOk := StudyLink_Set("subtopic", url)
-            apiMs := A_TickCount - apiStart
             try StandardLoadingBar_Hide(0)
-            ; #region agent log
-            StudyLink_DebugLog_d22874("H4", "StudyTopicSelector_ManageLinks_Set", "api_post_done", '{"ok":' .
-                (setOk ? "true" : "false") . ',"ms":' . apiMs . '}')
-            ; #endregion
             if setOk
                 ShowCenteredOverlay_Utils("✅ Link saved to study notes.", 3000, BANNER_ACCENT_SUCCESS)
             else

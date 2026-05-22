@@ -8,20 +8,6 @@ global STUDY_LINKS_API_URL :=
 ; ServerXMLHTTP + WinHttp use WinHTTP (failed here with 0x80072EE7 DNS).
 ; XMLHTTP uses WinInet (browser/system proxy). PowerShell IWR is fallback.
 ; ────────────────────────────────────────────────────────────────────────────
-global StudyLink_LastHttpMeta := Map()
-
-StudyLink_HttpLogMeta(backend, status, elapsedMs, err := "") {
-    global StudyLink_LastHttpMeta
-    StudyLink_LastHttpMeta := Map("backend", backend, "status", status, "ms", elapsedMs, "err", err)
-    ; #region agent log
-    errEsc := StrReplace(SubStr(err, 1, 120), '"', "'")
-    try FileAppend('{"sessionId":"d22874","timestamp":' . A_TickCount .
-        ',"hypothesisId":"H7","location":"StudyLink_HttpSend","message":"http_done","data":{"backend":"' .
-        backend . '","status":' . status . ',"ms":' . elapsedMs . ',"err":"' . errEsc . '"}}' "`n",
-        A_ScriptDir "\debug-d22874.log", "UTF-8")
-    ; #endregion
-}
-
 StudyLink_HttpSendXmlHttp(method, url, body := "") {
     xhr := ComObject("MSXML2.XMLHTTP.6.0")
     xhr.open(method, url, false)
@@ -72,34 +58,21 @@ StudyLink_HttpSendPowerShell(method, url, body := "") {
 }
 
 StudyLink_HttpSend(method, url, body := "") {
-    t0 := A_TickCount
     try {
         r := StudyLink_HttpSendXmlHttp(method, url, body)
-        elapsed := A_TickCount - t0
-        if (r.status >= 200 && r.status < 300) {
-            StudyLink_HttpLogMeta("XMLHTTP", r.status, elapsed)
+        if (r.status >= 200 && r.status < 300)
             return r.text
-        }
-        if (r.text != "") {
-            StudyLink_HttpLogMeta("XMLHTTP", r.status, elapsed, "status " . r.status)
+        if (r.text != "")
             return r.text
-        }
         throw Error("XMLHTTP status " . r.status)
     } catch as e1 {
         err1 := e1.Message
-        elapsed1 := A_TickCount - t0
-        StudyLink_HttpLogMeta("XMLHTTP", 0, elapsed1, err1)
         if !(InStr(err1, "80072EE7") || InStr(err1, "could not be resolved") || InStr(err1, "status 0"))
             return "ERROR: " . err1
     }
-    t1 := A_TickCount
     try {
-        r2 := StudyLink_HttpSendPowerShell(method, url, body)
-        elapsed2 := A_TickCount - t1
-        StudyLink_HttpLogMeta("PowerShell", r2.status, elapsed2, SubStr(r2.text, 1, 6) = "ERROR:" ? r2.text : "")
-        return r2.text
+        return StudyLink_HttpSendPowerShell(method, url, body).text
     } catch as e2 {
-        StudyLink_HttpLogMeta("PowerShell", 0, A_TickCount - t1, e2.Message)
         return "ERROR: " . e2.Message
     }
 }
@@ -217,18 +190,6 @@ StudyLink_Set(studyKey, url) {
     ; Match MacroDroid Set_Video.macro: literal url in body (Apps Script reads everything after url=).
     data := "key=" . StudyLink_UrlEncode(studyKey) . "&url=" . url
     response := StudyLink_HttpPost(data)
-    ; #region agent log
-    respPreview := SubStr(StrReplace(response, '"', "'"), 1, 80)
-    global StudyLink_LastHttpMeta
-    httpBackend := StudyLink_LastHttpMeta.Has("backend") ? StudyLink_LastHttpMeta["backend"] : "?"
-    httpStatus := StudyLink_LastHttpMeta.Has("status") ? StudyLink_LastHttpMeta["status"] : 0
-    httpMs := StudyLink_LastHttpMeta.Has("ms") ? StudyLink_LastHttpMeta["ms"] : 0
-    try FileAppend('{"sessionId":"d22874","timestamp":' . A_TickCount .
-        ',"hypothesisId":"H4","location":"StudyLink_Set","message":"api_response","data":{"backend":"' .
-        httpBackend . '","httpStatus":' . httpStatus . ',"httpMs":' . httpMs . ',"respLen":' .
-        StrLen(response) . ',"preview":"' . respPreview . '","bodyLen":' . StrLen(data) . '}}' "`n",
-        A_ScriptDir "\debug-d22874.log", "UTF-8")
-    ; #endregion
     if (SubStr(response, 1, 6) = "ERROR:") {
         return false
     }
