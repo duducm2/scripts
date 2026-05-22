@@ -161,63 +161,43 @@ GetChromeActiveTabIndex(uia) {
 
 global GEMINI_MODEL_CANONICAL_NAMES := ["3.1 Flash-Lite", "3.5 Flash", "3.1 Pro"]
 global GEMINI_MODE_PICKER_NAME_SUBSTR := "Open mode picker"
+global GEMINI_MODE_MENU_WAIT_MS := 450
+global GEMINI_MODE_MENU_POLL_MS := 40
+global GEMINI_MODE_PICKER_LABEL_WAIT_MS := 500
 
-GeminiAttachBrowser(geminiHwnd := 0) {
-    if (!geminiHwnd) {
-        for hwnd in WinGetList("ahk_exe chrome.exe") {
-            try {
-                if InStr(WinGetTitle("ahk_id " hwnd), "gemini", false)
-                    geminiHwnd := hwnd
-            } catch {
-            }
-            if (geminiHwnd)
-                break
+FindGeminiChromeHwnd() {
+    for hwnd in WinGetList("ahk_exe chrome.exe") {
+        try {
+            if InStr(WinGetTitle("ahk_id " hwnd), "gemini", false)
+                return hwnd
+        } catch {
         }
     }
+    return 0
+}
+
+; One UIA_Browser bind per flow. lightAttach: skip activate/a11y when caller already focused Gemini.
+GeminiAttachBrowser(geminiHwnd := 0, lightAttach := false) {
+    if (!geminiHwnd)
+        geminiHwnd := FindGeminiChromeHwnd()
     if (!geminiHwnd || !WinExist("ahk_id " geminiHwnd))
         return 0
-    try WinActivate("ahk_id " geminiHwnd)
-    try WinWaitActive("ahk_id " geminiHwnd, , 2)
-    try UIA.ActivateChromiumAccessibility("ahk_id " geminiHwnd, 500)
-    catch {
+    winTitle := "ahk_id " geminiHwnd
+    if (!lightAttach) {
+        if (!WinActive(winTitle)) {
+            try WinActivate(winTitle)
+            try WinWaitActive(winTitle, , 1)
+        }
+        try UIA.ActivateChromiumAccessibility(winTitle, 300)
+        catch {
+        }
     }
     try {
-        return UIA_Browser("ahk_id " geminiHwnd)
+        return UIA_Browser(winTitle)
     } catch {
         return 0
     }
 }
-
-; #region agent log
-GeminiDebugLog(hypothesisId, location, message, data := "") {
-    try {
-        logPath := A_ScriptDir "\debug-d5542f.log"
-        parts := []
-        if (IsObject(data)) {
-            for k, v in data
-                parts.Push('"' . GeminiDebugLog_Escape(k) . '":"' . GeminiDebugLog_Escape(v) . '"')
-        }
-        joined := ""
-        for i, p in parts
-            joined .= (i = 1 ? "" : ",") . p
-        dataJson := parts.Length ? "{" joined "}" : "{}"
-        line := '{"sessionId":"d5542f","timestamp":' . A_TickCount . ',"hypothesisId":"' . GeminiDebugLog_Escape(
-            hypothesisId) . '","location":"' . GeminiDebugLog_Escape(location) . '","message":"' .
-        GeminiDebugLog_Escape(
-            message) . '","data":' . dataJson . '}'
-        FileAppend(line . "`n", logPath, "UTF-8")
-    } catch {
-    }
-}
-
-GeminiDebugLog_Escape(s) {
-    s := StrReplace(String(s), "\", "\\")
-    s := StrReplace(s, '"', '\"')
-    s := StrReplace(s, "`n", "\n")
-    s := StrReplace(s, "`r", "\r")
-    return s
-}
-; #endregion
 
 GeminiFindRenderWidgetControl(browserHwnd) {
     for ctrlName in ["Chrome_RenderWidgetHostHWND1", "Chrome_RenderWidgetHostHWND"] {
@@ -268,101 +248,53 @@ GeminiGetElementWindowClickCoords(el, browserHwnd, uia := 0) {
     return { cx: cx, cy: cy, docOffset: docOffset, elPosX: elPos.x, elPosY: elPos.y }
 }
 
-GeminiMouseClickElement(el, browserHwnd := 0, uia := 0) {
+; skipActivate: caller already activated Gemini (hot path for mode picker).
+GeminiMouseClickElement(el, browserHwnd := 0, uia := 0, skipActivate := false) {
     if !IsObject(el)
         return false
-    activeBefore := WinExist("A")
     winTitle := browserHwnd ? "ahk_id " browserHwnd : ""
-    if (browserHwnd) {
-        if (!WinExist(winTitle)) {
-            GeminiDebugLog("C", "Utils.ahk:GeminiMouseClickElement", "target hwnd missing", Map("browserHwnd",
-                browserHwnd))
+    if (browserHwnd && !skipActivate) {
+        if (!WinExist(winTitle))
             return false
+        if (!WinActive(winTitle)) {
+            WinActivate(winTitle)
+            WinWaitActive(winTitle, , 1)
         }
-        WinActivate(winTitle)
-        WinWaitActive(winTitle, , 1)
-        Sleep 50
     }
-    try el.ScrollIntoView()
-    catch {
-    }
-    offscreen := "", enabled := "", elName := ""
-    try offscreen := el.GetPropertyValue(UIA.Property.IsOffscreen)
-    try enabled := el.GetPropertyValue(UIA.Property.IsEnabled)
-    try elName := el.Name
-    coords := GeminiGetElementWindowClickCoords(el, browserHwnd, uia)
-    clicked := false
-    clickMethod := "none"
-    clickX := "", clickY := "", screenX := "", screenY := "", renderCtrl := "", ctrlErr := "", patternAction := ""
-    docOffset := IsObject(coords) ? coords.docOffset : ""
     if (browserHwnd) {
         try {
-            patternAction := el.Click()
-            if (patternAction) {
-                clicked := true
-                clickMethod := "uiaPattern:" . patternAction
-            }
-        } catch as e {
-            ctrlErr := e.HasProp("Message") ? e.Message : String(e)
+            el.ControlClick("left", 1, "", winTitle)
+            return true
+        } catch {
         }
-        if (!clicked) {
-            try {
-                el.ControlClick("left", 1, "", winTitle)
-                clicked := true
-                clickMethod := "uiaElementControlClick"
-                try {
-                    cpos := el.GetPos("client", browserHwnd)
-                    if IsObject(cpos)
-                        clickX := cpos.x + cpos.w // 2, clickY := cpos.y + cpos.h // 2
-                } catch {
-                }
-            } catch as e {
-                ctrlErr := e.HasProp("Message") ? e.Message : String(e)
-            }
+        try {
+            if (el.Click())
+                return true
+        } catch {
         }
-        if (!clicked) {
-            try {
-                pt := el.GetClickablePoint()
-                prevCoordMode := A_CoordModeMouse
-                CoordMode("Mouse", "Screen")
-                Click(pt.x, pt.y)
-                CoordMode("Mouse", prevCoordMode)
-                clicked := true
-                clickMethod := "getClickablePoint"
-                screenX := pt.x
-                screenY := pt.y
-            } catch as e {
-                ctrlErr := e.HasProp("Message") ? e.Message : String(e)
-            }
+        try {
+            pt := el.GetClickablePoint()
+            prevCoordMode := A_CoordModeMouse
+            CoordMode("Mouse", "Screen")
+            Click(pt.x, pt.y)
+            CoordMode("Mouse", prevCoordMode)
+            return true
+        } catch {
         }
-        if (!clicked && IsObject(coords)) {
+        coords := GeminiGetElementWindowClickCoords(el, browserHwnd, uia)
+        if IsObject(coords) {
             renderCtrl := GeminiFindRenderWidgetControl(browserHwnd)
             if (renderCtrl != "") {
                 try {
                     ControlGetPos(&rwx, &rwy, , , renderCtrl, winTitle)
-                    ccx := coords.cx - rwx
-                    ccy := coords.cy - rwy
-                    ControlClick("X" . ccx . " Y" . ccy, winTitle, renderCtrl)
-                    clicked := true
-                    clickMethod := "renderControlClient"
-                    clickX := ccx
-                    clickY := ccy
-                } catch as e {
-                    ctrlErr := e.HasProp("Message") ? e.Message : String(e)
+                    ControlClick("X" . (coords.cx - rwx) . " Y" . (coords.cy - rwy), winTitle, renderCtrl)
+                    return true
+                } catch {
                 }
             }
         }
     }
-    ; #region agent log
-    GeminiDebugLog("B,C,D,H", "Utils.ahk:GeminiMouseClickElement", "click attempt", Map(
-        "browserHwnd", browserHwnd, "activeBefore", activeBefore, "activeAfter", WinExist("A"),
-        "winActiveTarget", browserHwnd ? WinActive(winTitle) : "", "clickMethod", clickMethod,
-        "patternAction", patternAction, "clickX", clickX, "clickY", clickY, "screenX", screenX, "screenY",
-        screenY, "renderCtrl", renderCtrl, "ctrlErr", ctrlErr, "docOffset", docOffset, "elPosX",
-        IsObject(coords) ? coords.elPosX : "", "elPosY", IsObject(coords) ? coords.elPosY : "", "clicked",
-        clicked, "elName", elName, "offscreen", offscreen, "enabled", enabled))
-    ; #endregion
-    return clicked
+    return false
 }
 
 GeminiGetBrowserHwndFromUia(uia) {
@@ -377,56 +309,95 @@ GeminiGetBrowserHwndFromUia(uia) {
     return WinExist("ahk_exe chrome.exe") ? WinExist("ahk_exe chrome.exe") : 0
 }
 
-GeminiDismissModePickerMenu(uia) {
+GeminiDismissModePickerMenu(uia, browserHwnd := 0) {
     if !IsObject(uia)
         return false
+    if (!browserHwnd)
+        browserHwnd := GeminiGetBrowserHwndFromUia(uia)
     promptField := FindGeminiPromptField(uia)
     if !promptField
         return false
-    return GeminiMouseClickElement(promptField, GeminiGetBrowserHwndFromUia(uia), uia)
+    return GeminiMouseClickElement(promptField, browserHwnd, uia, true)
 }
 
 FindGeminiModePickerButton(uia) {
     if !IsObject(uia)
         return 0
-    needle := GEMINI_MODE_PICKER_NAME_SUBSTR
-    totalScanned := 0
-    modeNameHits := 0
-    pickerName := ""
     for typeSpec in [50000, "Button"] {
         try {
-            all := uia.FindAll({ Type: typeSpec })
+            el := uia.FindFirst({ Type: typeSpec, Name: GEMINI_MODE_PICKER_NAME_SUBSTR, mm: 2, cs: 0 })
+            if el
+                return el
         } catch {
-            continue
-        }
-        if (!IsObject(all))
-            continue
-        totalScanned += all.Length
-        for el in all {
-            try {
-                n := el.Name
-                if InStr(n, "mode") || InStr(n, "picker")
-                    modeNameHits++
-                if InStr(n, needle) {
-                    pickerName := n
-                    ; #region agent log
-                    GeminiDebugLog("A,F", "Utils.ahk:FindGeminiModePickerButton", "picker matched", Map(
-                        "typeSpec", typeSpec, "totalScanned", totalScanned, "pickerName", pickerName, "uiaBrowserId",
-                        IsObject(uia) && uia.HasProp("BrowserId") ? uia.BrowserId : ""))
-                    ; #endregion
-                    return el
-                }
-            } catch {
-            }
         }
     }
-    ; #region agent log
-    GeminiDebugLog("A,F", "Utils.ahk:FindGeminiModePickerButton", "picker not found", Map(
-        "totalScanned", totalScanned, "modeNameHits", modeNameHits, "needle", needle,
-        "uiaBrowserId", IsObject(uia) && uia.HasProp("BrowserId") ? uia.BrowserId : "",
-        "activeHwnd", WinExist("A"), "activeTitle", WinGetTitle("A")))
-    ; #endregion
     return 0
+}
+
+GeminiGetActiveModelFromPickerElement(picker) {
+    if !IsObject(picker)
+        return ""
+    try {
+        if RegExMatch(picker.Name, "i)currently\s+(.+)$", &m) {
+            norm := GeminiNormalizeModelLabel(Trim(m[1]))
+            if (norm != "")
+                return norm
+        }
+    } catch {
+    }
+    return ""
+}
+
+FindGeminiModelMenuItem(uia, modelName) {
+    if !IsObject(uia)
+        return 0
+    exp := GeminiNormalizeModelLabel(modelName)
+    if (exp = "")
+        return 0
+    for typeSpec in [50011, "MenuItem", 50008, "RadioButton", 50003, "ListItem"] {
+        try {
+            el := uia.FindFirst({ Type: typeSpec, Name: exp, mm: 3, cs: 0 })
+            if el
+                return el
+        } catch {
+        }
+        try {
+            el := uia.FindFirst({ Type: typeSpec, Name: exp, mm: 2, cs: 0 })
+            if el
+                return el
+        } catch {
+        }
+    }
+    return 0
+}
+
+GeminiWaitForModelMenuItem(uia, modelName, timeoutMs := 0) {
+    if (timeoutMs <= 0)
+        timeoutMs := GEMINI_MODE_MENU_WAIT_MS
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        el := FindGeminiModelMenuItem(uia, modelName)
+        if el
+            return el
+        Sleep GEMINI_MODE_MENU_POLL_MS
+    }
+    return 0
+}
+
+GeminiWaitForPickerShowsModel(uia, expected, timeoutMs := 0) {
+    if (timeoutMs <= 0)
+        timeoutMs := GEMINI_MODE_PICKER_LABEL_WAIT_MS
+    exp := GeminiNormalizeModelLabel(expected)
+    if (exp = "")
+        return false
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        picker := FindGeminiModePickerButton(uia)
+        if (picker && GeminiGetActiveModelFromPickerElement(picker) = exp)
+            return true
+        Sleep GEMINI_MODE_MENU_POLL_MS
+    }
+    return false
 }
 
 GeminiNormalizeModelLabel(name) {
@@ -447,41 +418,7 @@ GeminiNormalizeModelLabel(name) {
 }
 
 GetGeminiActiveModelFromPickerOnly(uia) {
-    picker := FindGeminiModePickerButton(uia)
-    if !picker
-        return ""
-    try {
-        pickerName := picker.Name
-        if RegExMatch(pickerName, "i)currently\s+(.+)$", &m) {
-            norm := GeminiNormalizeModelLabel(Trim(m[1]))
-            if (norm != "")
-                return norm
-        }
-    } catch {
-    }
-    texts := []
-    try {
-        texts := picker.FindAll({ Type: 50020 })
-    } catch {
-    }
-    if (!IsObject(texts) || texts.Length = 0) {
-        try {
-            texts := picker.FindAll({ Type: "Text" })
-        } catch {
-            texts := []
-        }
-    }
-    for t in texts {
-        try {
-            tn := t.Name
-        } catch {
-            continue
-        }
-        norm := GeminiNormalizeModelLabel(tn)
-        if (norm != "")
-            return norm
-    }
-    return ""
+    return GeminiGetActiveModelFromPickerElement(FindGeminiModePickerButton(uia))
 }
 
 GeminiCollectModelMenuItemState(mi) {
@@ -578,111 +515,45 @@ GeminiCollectModelOptionButtons(uia) {
     return GeminiCollectModelMenuItems(uia)
 }
 
-GeminiOpenModePickerMenu(uia) {
+GeminiOpenModePickerMenu(uia, picker := "", browserHwnd := 0) {
     if !IsObject(uia)
         return false
-    browserHwnd := GeminiGetBrowserHwndFromUia(uia)
-    if (browserHwnd) {
-        try UIA.ActivateChromiumAccessibility("ahk_id " browserHwnd, 500)
-        catch {
-        }
-    }
-    picker := FindGeminiModePickerButton(uia)
-    if !picker {
-        ; #region agent log
-        GeminiDebugLog("A", "Utils.ahk:GeminiOpenModePickerMenu", "abort no picker", Map())
-        ; #endregion
+    if (!browserHwnd)
+        browserHwnd := GeminiGetBrowserHwndFromUia(uia)
+    if !IsObject(picker)
+        picker := FindGeminiModePickerButton(uia)
+    if !picker
         return false
-    }
-    clicked := GeminiMouseClickElement(picker, browserHwnd, uia)
-    Sleep 250
-    menuCount := 0
-    menuCount := 0
-    menuSample := ""
-    try {
-        uia := GeminiAttachBrowser(browserHwnd)
-        items := GeminiCollectModelMenuItems(uia)
-        menuCount := items.Length
-        if (menuCount = 0) {
-            try {
-                raw := uia.FindAll({ Type: 50011 })
-                loop Min(5, raw.Length) {
-                    try menuSample .= (menuSample ? " | " : "") . SubStr(raw[A_Index].Name, 1, 40)
-                }
-            } catch {
-            }
-        }
-    } catch {
-    }
-    ; #region agent log
-    GeminiDebugLog("B,E,J", "Utils.ahk:GeminiOpenModePickerMenu", "after picker click", Map(
-        "clicked", clicked, "browserHwnd", browserHwnd, "menuItemCount", menuCount, "menuSample", menuSample))
-    ; #endregion
-    return clicked
+    return GeminiMouseClickElement(picker, browserHwnd, uia, true)
 }
 
 EnsureGeminiModelViaMenu(expected, geminiHwnd := 0) {
     exp := GeminiNormalizeModelLabel(expected)
     if (exp = "")
         return false
-    ; #region agent log
-    GeminiDebugLog("D,G", "Utils.ahk:EnsureGeminiModelViaMenu", "entry", Map(
-        "expected", expected, "geminiHwnd", geminiHwnd, "activeHwnd", WinExist("A"), "activeTitle", WinGetTitle("A")))
-    ; #endregion
     uia := GeminiAttachBrowser(geminiHwnd)
-    if !IsObject(uia) {
-        GeminiDebugLog("D", "Utils.ahk:EnsureGeminiModelViaMenu", "UIA_Browser failed", Map("geminiHwnd", geminiHwnd))
-        return false
-    }
-    browserHwnd := geminiHwnd ? geminiHwnd : GeminiGetBrowserHwndFromUia(uia)
-    ; #region agent log
-    GeminiDebugLog("D,G", "Utils.ahk:EnsureGeminiModelViaMenu", "uia attached", Map(
-        "uiaBrowserId", uia.BrowserId, "browserHwnd", browserHwnd, "activeHwnd", WinExist("A"),
-        "winActiveUia", WinActive("ahk_id " uia.BrowserId)))
-    ; #endregion
-    active := ""
-    try active := GetGeminiActiveModelFromPickerOnly(uia)
-    if (active = exp)
-        return true
-    opened := GeminiOpenModePickerMenu(uia)
-    ; #region agent log
-    GeminiDebugLog("E", "Utils.ahk:EnsureGeminiModelViaMenu", "open picker result", Map("opened", opened))
-    ; #endregion
-    if (!opened) {
-        GeminiDismissModePickerMenu(uia)
-        return false
-    }
-    uia := GeminiAttachBrowser(browserHwnd)
     if !IsObject(uia)
         return false
-    modelButtons := GeminiCollectModelMenuItems(uia)
-    targetBtn := 0
-    for modelBtn in modelButtons {
-        if (modelBtn.name = exp && !modelBtn.isDisabled) {
-            targetBtn := modelBtn.btn
-            break
-        }
+    browserHwnd := geminiHwnd ? geminiHwnd : GeminiGetBrowserHwndFromUia(uia)
+    picker := FindGeminiModePickerButton(uia)
+    if !picker
+        return false
+    if (GeminiGetActiveModelFromPickerElement(picker) = exp)
+        return true
+    if (!GeminiOpenModePickerMenu(uia, picker, browserHwnd)) {
+        GeminiDismissModePickerMenu(uia, browserHwnd)
+        return false
     }
+    targetBtn := GeminiWaitForModelMenuItem(uia, exp)
     if !targetBtn {
-        GeminiDismissModePickerMenu(uia)
+        GeminiDismissModePickerMenu(uia, browserHwnd)
         return false
     }
-    if (!GeminiMouseClickElement(targetBtn, browserHwnd, uia)) {
-        GeminiDismissModePickerMenu(uia)
+    if (!GeminiMouseClickElement(targetBtn, browserHwnd, uia, true)) {
+        GeminiDismissModePickerMenu(uia, browserHwnd)
         return false
     }
-    Sleep 150
-    uia := GeminiAttachBrowser(browserHwnd)
-    if IsObject(uia)
-        GeminiDismissModePickerMenu(uia)
-    Sleep 80
-    active := ""
-    try active := GetGeminiActiveModelFromPickerOnly(uia)
-    ; #region agent log
-    GeminiDebugLog("E", "Utils.ahk:EnsureGeminiModelViaMenu", "post-switch verify", Map(
-        "expected", exp, "active", active, "ok", active = exp))
-    ; #endregion
-    return active = exp
+    return GeminiWaitForPickerShowsModel(uia, exp)
 }
 
 EnsureGeminiThinkingLevelMenuOpen(geminiHwnd := 0) {
@@ -690,41 +561,31 @@ EnsureGeminiThinkingLevelMenuOpen(geminiHwnd := 0) {
     if !IsObject(uia)
         return false
     browserHwnd := geminiHwnd ? geminiHwnd : GeminiGetBrowserHwndFromUia(uia)
-    if (!GeminiOpenModePickerMenu(uia))
+    picker := FindGeminiModePickerButton(uia)
+    if (!picker || !GeminiOpenModePickerMenu(uia, picker, browserHwnd)) {
+        GeminiDismissModePickerMenu(uia, browserHwnd)
         return false
-    uia := GeminiAttachBrowser(browserHwnd)
-    if !IsObject(uia)
-        return false
+    }
+    deadline := A_TickCount + GEMINI_MODE_MENU_WAIT_MS
     thinkingItem := 0
-    try {
-        thinkingItem := uia.FindFirst({ Name: "Thinking level", mm: 2, cs: 0, Type: 50011 })
-    } catch {
-    }
-    if !thinkingItem {
+    while (A_TickCount < deadline) {
         try {
-            menuItems := uia.FindAll({ Type: 50011 })
-            for mi in menuItems {
-                try {
-                    if InStr(mi.Name, "Thinking level") {
-                        thinkingItem := mi
-                        break
-                    }
-                } catch {
-                }
-            }
+            thinkingItem := uia.FindFirst({ Name: "Thinking level", mm: 2, cs: 0, Type: 50011 })
         } catch {
+            thinkingItem := 0
         }
+        if thinkingItem
+            break
+        Sleep GEMINI_MODE_MENU_POLL_MS
     }
     if !thinkingItem {
-        GeminiDismissModePickerMenu(uia)
+        GeminiDismissModePickerMenu(uia, browserHwnd)
         return false
     }
-    ok := GeminiMouseClickElement(thinkingItem, browserHwnd, uia)
-    if (!ok) {
-        GeminiDismissModePickerMenu(uia)
+    if (!GeminiMouseClickElement(thinkingItem, browserHwnd, uia, true)) {
+        GeminiDismissModePickerMenu(uia, browserHwnd)
         return false
     }
-    Sleep 150
     return true
 }
 

@@ -21553,15 +21553,10 @@ VerifyGeminiModelSelectedInOpenPicker(expectedModel, geminiHwnd := 0) {
     exp := GeminiNormalizeModelLabel(expectedModel)
     if (exp = "")
         return false
-    uia := GeminiAttachBrowser(geminiHwnd)
+    uia := GeminiAttachBrowser(geminiHwnd, true)
     if !IsObject(uia)
         return false
-    active := ""
-    try active := GetGeminiActiveModelFromPickerOnly(uia)
-    catch {
-        return false
-    }
-    return active = exp
+    return GetGeminiActiveModelFromPickerOnly(uia) = exp
 }
 
 ; ---------------------------------------------------------------------------
@@ -21609,28 +21604,9 @@ HandleGeminiModelSelection(char) {
         ; Ignore cleanup errors
     }
 
-    ; Small delay to ensure GUI cleanup is complete
-    Sleep 100
-
     try {
-        ; Activate Gemini window
         SetTitleMatchMode(2)
-        geminiHwnd := 0
-        try {
-            ; Find Gemini window by searching Chrome windows with "gemini" in title
-            for hwnd in WinGetList("ahk_exe chrome.exe") {
-                try {
-                    if InStr(WinGetTitle("ahk_id " hwnd), "gemini", false) {
-                        geminiHwnd := hwnd
-                        break
-                    }
-                } catch {
-                    ; Silently skip invalid windows
-                }
-            }
-        } catch {
-            ; Silently handle WinGetList errors
-        }
+        geminiHwnd := FindGeminiChromeHwnd()
 
         if (geminiHwnd) {
             if (!WinExist("ahk_id " geminiHwnd)) {
@@ -21638,7 +21614,7 @@ HandleGeminiModelSelection(char) {
                 return
             }
             WinActivate("ahk_id " geminiHwnd)
-            if !WinWaitActive("ahk_id " geminiHwnd, , 2) {
+            if !WinWaitActive("ahk_id " geminiHwnd, , 1) {
                 return
             }
         } else {
@@ -21653,9 +21629,6 @@ HandleGeminiModelSelection(char) {
             }
         }
 
-        ; Small settle time for window activation
-        Sleep 50
-
         StandardLoadingBar_Show("🔄 Switching Gemini model…", BANNER_ACCENT_INTERMEDIATE, { centerOnHwnd: geminiHwnd })
         try {
             if (modelName = "Thinking level") {
@@ -21664,33 +21637,22 @@ HandleGeminiModelSelection(char) {
                 if (opened) {
                     StandardLoadingBar_Update("✅ Thinking level opened — set level manually",
                         BANNER_ACCENT_INTERMEDIATE)
-                    Sleep 150
                     StandardLoadingBar_Hide(700)
                 } else {
                     StandardLoadingBar_Hide(0)
                     ShowCenteredOverlay_Utils("❌ Could not open Thinking level menu", 2800, BANNER_ACCENT_ERROR)
                 }
             } else {
-                verified := false
-                loop 2 {
-                    StandardLoadingBar_Update("🔄 Switching to " . modelName . (A_Index > 1 ? " (retry)…" : "…"),
-                    BANNER_ACCENT_INTERMEDIATE)
-                    WinActivate("ahk_id " geminiHwnd)
-                    WinWaitActive("ahk_id " geminiHwnd, , 1)
+                verified := EnsureGeminiModelViaMenu(modelName, geminiHwnd)
+                if (!verified) {
+                    StandardLoadingBar_Update("🔄 Model not confirmed. Retrying…",
+                        BANNER_ACCENT_INTERMEDIATE)
                     verified := EnsureGeminiModelViaMenu(modelName, geminiHwnd)
-                    if (verified)
-                        break
-                    if (A_Index < 2) {
-                        StandardLoadingBar_Update("🔄 Model not confirmed. Retrying…",
-                            BANNER_ACCENT_INTERMEDIATE)
-                        Sleep 300
-                    }
                 }
 
                 if (verified) {
                     isGeminiFastModel := modelName
                     StandardLoadingBar_Update("✅ " . modelName . " model verified", BANNER_ACCENT_INTERMEDIATE)
-                    Sleep 150
                     try FocusGeminiPromptField()
                     StandardLoadingBar_Hide(700)
                 } else {

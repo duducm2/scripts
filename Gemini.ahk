@@ -506,6 +506,8 @@ ShowGeminiTabBanner(tabNumber, geminiHwnd := 0) {
 
 GeminiWaitForModelPickerReady(geminiHwnd := 0, timeoutMs := GEMINI_FIRST_LAUNCH_MODEL_READY_TIMEOUT_MS) {
     deadline := A_TickCount + (timeoutMs > 0 ? timeoutMs : GEMINI_FIRST_LAUNCH_MODEL_READY_TIMEOUT_MS)
+    if (!geminiHwnd)
+        geminiHwnd := FindGeminiChromeHwnd()
     while (A_TickCount < deadline) {
         try {
             uia := geminiHwnd ? UIA_Browser("ahk_id " geminiHwnd) : UIA_Browser()
