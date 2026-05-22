@@ -9059,13 +9059,324 @@ StudyTopicSelector_ManageLinks_Open(*) {
     }
 }
 
-; [2] Set the link: while user is active in Chrome, send F6, copy URL, and save it
+StudyLink_UiaInvokeOrClick(el, stepName := "", preferClick := false) {
+    if !IsObject(el)
+        return false
+    global STUDYLINK_YT_MS_BEFORE_CLICK, STUDYLINK_YT_MS_AFTER_CLICK
+    Sleep STUDYLINK_YT_MS_BEFORE_CLICK
+    try el.SetFocus()
+    catch {
+    }
+    method := ""
+    if (preferClick) {
+        try {
+            el.Click()
+            method := "click"
+            Sleep STUDYLINK_YT_MS_AFTER_CLICK
+            ; #region agent log
+            if (stepName != "")
+                StudyLink_DebugLog_d22874("H2", "StudyLink_UiaInvokeOrClick", "clicked", '{"step":"' . stepName .
+                    '","method":"click","preferClick":true}')
+            ; #endregion
+            return true
+        } catch {
+        }
+    }
+    try {
+        if el.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
+            el.Invoke()
+            method := "invoke"
+            Sleep STUDYLINK_YT_MS_AFTER_CLICK
+            ; #region agent log
+            if (stepName != "")
+                StudyLink_DebugLog_d22874("H2", "StudyLink_UiaInvokeOrClick", "clicked", '{"step":"' . stepName .
+                    '","method":"invoke"}')
+            ; #endregion
+            return true
+        }
+    } catch {
+    }
+    try {
+        el.Click()
+        method := "click"
+        Sleep STUDYLINK_YT_MS_AFTER_CLICK
+        ; #region agent log
+        if (stepName != "")
+            StudyLink_DebugLog_d22874("H2", "StudyLink_UiaInvokeOrClick", "clicked", '{"step":"' . stepName .
+                '","method":"click"}')
+        ; #endregion
+        return true
+    } catch {
+    }
+    ; #region agent log
+    if (stepName != "")
+        StudyLink_DebugLog_d22874("H2", "StudyLink_UiaInvokeOrClick", "click_failed", '{"step":"' . stepName . '"}')
+    ; #endregion
+    return false
+}
+
+StudyLink_UiaWaitFor(root, conditions, timeoutMs := 4000) {
+    if !IsObject(root)
+        return 0
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        el := ClipAngel_UiaFindFirst(root, conditions)
+        if el
+            return el
+        Sleep 80
+    }
+    return 0
+}
+
+; EN + PT-BR YouTube action-bar / share-panel button labels (Name property).
+global STUDYLINK_YT_BTN_SHARE := ["Share", "Compartilhar"]
+global STUDYLINK_YT_BTN_COPY := ["Copy", "Copiar"]
+global STUDYLINK_YT_BTN_CANCEL := ["Cancel", "Cancelar", "Close", "Fechar"]
+
+; UI pacing (ms) — modest gaps so focus/invoke/click registers on YouTube Web UI.
+global STUDYLINK_YT_MS_BEFORE_CLICK := 120
+global STUDYLINK_YT_MS_AFTER_CLICK := 80
+global STUDYLINK_YT_MS_AFTER_SHARE_CLICK := 350
+global STUDYLINK_YT_MS_AFTER_START_AT := 250
+global STUDYLINK_YT_MS_AFTER_COPY := 450
+global STUDYLINK_YT_MS_BEFORE_CLOSE_PANEL := 280
+
+; #region agent log
+StudyLink_DebugLog_d22874(hypothesisId, location, message, data := "") {
+    if (data = "")
+        data := "{}"
+    line := '{"sessionId":"d22874","timestamp":' . A_TickCount . ',"hypothesisId":"' . hypothesisId .
+        '","location":"' . location . '","message":"' . message . '","data":' . data . '}' "`n"
+    try FileAppend line, A_ScriptDir "\debug-d22874.log", "UTF-8"
+}
+; #endregion
+
+StudyLink_UiaFindButtonByNames(root, nameList, timeoutMs := 0) {
+    if !IsObject(root)
+        return 0
+    deadline := timeoutMs ? A_TickCount + timeoutMs : 0
+    loop {
+        for name in nameList {
+            el := ClipAngel_UiaFindFirst(root, { Type: 50000, Name: name })
+            if el
+                return el
+        }
+        if (!timeoutMs || A_TickCount >= deadline)
+            break
+        Sleep 80
+    }
+    return 0
+}
+
+StudyLink_IsYoutubeVideoPageUrl(url) {
+    return InStr(url, "youtube.com/watch") || InStr(url, "youtube.com/live") || InStr(url, "youtube.com/shorts")
+}
+
+StudyLink_CaptureYoutubeTimestampUrl(uia, &errMsg := "") {
+    errMsg := ""
+    global STUDYLINK_YT_MS_AFTER_SHARE_CLICK, STUDYLINK_YT_MS_AFTER_START_AT
+    if !IsObject(uia) {
+        errMsg := "Could not attach to Chrome."
+        return ""
+    }
+    try currentUrl := uia.GetCurrentURL()
+    catch {
+        errMsg := "Could not read the current page URL."
+        return ""
+    }
+    ; #region agent log
+    StudyLink_DebugLog_d22874("H5", "StudyLink_CaptureYoutubeTimestampUrl", "entry", '{"isYtPage":' .
+        (StudyLink_IsYoutubeVideoPageUrl(currentUrl) ? "true" : "false") . '}')
+    ; #endregion
+    if !StudyLink_IsYoutubeVideoPageUrl(currentUrl) {
+        errMsg := "Open a YouTube video page and try again."
+        return ""
+    }
+    shareBtn := StudyLink_UiaFindButtonByNames(uia, STUDYLINK_YT_BTN_SHARE, 3000)
+    if !shareBtn {
+        errMsg := "Share button not found."
+        ; #region agent log
+        StudyLink_DebugLog_d22874("H1", "StudyLink_CaptureYoutubeTimestampUrl", "share_not_found", "{}")
+        ; #endregion
+        return ""
+    }
+    ; #region agent log
+    shareName := ""
+    try shareName := shareBtn.Name
+    catch {
+    }
+    StudyLink_DebugLog_d22874("H1", "StudyLink_CaptureYoutubeTimestampUrl", "share_found", '{"name":"' .
+        StrReplace(shareName, '"', "'") . '"}')
+    ; #endregion
+    if !StudyLink_UiaInvokeOrClick(shareBtn, "share") {
+        errMsg := "Could not open the Share panel."
+        return ""
+    }
+    Sleep STUDYLINK_YT_MS_AFTER_SHARE_CLICK
+    startAt := StudyLink_UiaWaitFor(uia, { AutomationId: "start-at-checkbox", Type: 50002 })
+    if !startAt {
+        errMsg := "Share panel did not open in time."
+        return ""
+    }
+    startAtOn := ClipAngel_FavoriteCellIsOn(startAt)
+    if !startAtOn {
+        toggled := false
+        try {
+            if startAt.GetPropertyValue(UIA.Property.IsTogglePatternAvailable) {
+                startAt.TogglePattern.Toggle()
+                toggled := true
+            }
+        } catch {
+        }
+        if (!toggled)
+            toggled := StudyLink_UiaInvokeOrClick(startAt, "start_at")
+        if (!toggled) {
+            errMsg := "Could not enable Start at."
+            return ""
+        }
+        Sleep STUDYLINK_YT_MS_AFTER_START_AT
+    }
+    deadline := A_TickCount + 2000
+    while (A_TickCount < deadline) {
+        shareUrlEl := ClipAngel_UiaFindFirst(uia, { AutomationId: "share-url", Type: 50004 })
+        if shareUrlEl {
+            try shareVal := Trim(shareUrlEl.Value)
+            catch
+                shareVal := ""
+            if (shareVal != "" && InStr(shareVal, "t="))
+                break
+        }
+        Sleep 80
+    }
+    shareUrlEl := StudyLink_UiaWaitFor(uia, { AutomationId: "share-url", Type: 50004 }, 2000)
+    if !shareUrlEl {
+        errMsg := "Share link field not found."
+        return ""
+    }
+    url := ""
+    try url := Trim(shareUrlEl.Value)
+    catch
+        url := ""
+    copyBtn := 0
+    copyGroup := ClipAngel_UiaFindFirst(uia, { AutomationId: "copy-button" })
+    if copyGroup {
+        for name in STUDYLINK_YT_BTN_COPY {
+            copyBtn := ClipAngel_UiaFindFirst(copyGroup, { Type: 50000, Name: name })
+            if copyBtn
+                break
+        }
+    }
+    if !copyBtn
+        copyBtn := StudyLink_UiaFindButtonByNames(uia, STUDYLINK_YT_BTN_COPY)
+    if !copyBtn {
+        errMsg := "Copy button not found."
+        return ""
+    }
+    savedClip := A_Clipboard
+    if !StudyLink_UiaInvokeOrClick(copyBtn, "copy") {
+        errMsg := "Could not click Copy."
+        return ""
+    }
+    clipDeadline := A_TickCount + 2000
+    clipUrl := ""
+    while (A_TickCount < clipDeadline) {
+        clipUrl := Trim(A_Clipboard)
+        if (clipUrl != "" && clipUrl != savedClip && InStr(clipUrl, "t="))
+            break
+        Sleep 80
+    }
+    if (url = "" || !InStr(url, "t=")) {
+        if (clipUrl != "" && InStr(clipUrl, "t="))
+            url := clipUrl
+    }
+    if (url = "" || !InStr(url, "youtu") || !InStr(url, "t=")) {
+        errMsg := "Could not read the timestamped share link."
+        ; #region agent log
+        StudyLink_DebugLog_d22874("H3", "StudyLink_CaptureYoutubeTimestampUrl", "no_timestamp_url", '{"urlLen":' .
+            StrLen(url) . '}')
+        ; #endregion
+        return ""
+    }
+    ; #region agent log
+    StudyLink_DebugLog_d22874("H3", "StudyLink_CaptureYoutubeTimestampUrl", "capture_ok", '{"urlLen":' . StrLen(url) .
+        ',"hasT":true}')
+    ; #endregion
+    global STUDYLINK_YT_MS_AFTER_COPY
+    Sleep STUDYLINK_YT_MS_AFTER_COPY
+    return url
+}
+
+StudyLink_CleanupYoutubeSharePanel(uia, chromeHwnd := 0) {
+    global STUDYLINK_YT_MS_BEFORE_CLOSE_PANEL, STUDYLINK_YT_BTN_CANCEL
+    if !IsObject(uia)
+        return
+    if !ClipAngel_UiaFindFirst(uia, { AutomationId: "start-at-checkbox", Type: 50002 })
+        && !ClipAngel_UiaFindFirst(uia, { AutomationId: "share-url", Type: 50004 })
+        return
+    if chromeHwnd {
+        try {
+            WinActivate("ahk_id " chromeHwnd)
+            WinWaitActive("ahk_id " chromeHwnd, , 1)
+        } catch {
+        }
+    }
+    Sleep STUDYLINK_YT_MS_BEFORE_CLOSE_PANEL
+    cancelBtn := 0
+    closeGroup := ClipAngel_UiaFindFirst(uia, { AutomationId: "close-button" })
+    if closeGroup {
+        for name in STUDYLINK_YT_BTN_CANCEL {
+            cancelBtn := ClipAngel_UiaFindFirst(closeGroup, { Type: 50000, Name: name })
+            if cancelBtn
+                break
+        }
+        if !cancelBtn {
+            try cancelBtn := closeGroup.FindFirst({ Type: 50000, AutomationId: "button" })
+            catch {
+                cancelBtn := 0
+            }
+        }
+    }
+    if !cancelBtn
+        cancelBtn := StudyLink_UiaFindButtonByNames(uia, STUDYLINK_YT_BTN_CANCEL)
+    closed := false
+    if cancelBtn
+        closed := StudyLink_UiaInvokeOrClick(cancelBtn, "cancel", true)
+    Sleep 220
+    panelStillOpen := !!ClipAngel_UiaFindFirst(uia, { AutomationId: "share-url", Type: 50004 })
+    ; #region agent log
+    cancelName := ""
+    if cancelBtn {
+        try cancelName := cancelBtn.Name
+        catch {
+        }
+    }
+    StudyLink_DebugLog_d22874("H6", "StudyLink_CleanupYoutubeSharePanel", "close_attempt", '{"found":' .
+        (cancelBtn ? "true" : "false") . ',"closed":' . (closed ? "true" : "false") . ',"panelStillOpen":' .
+        (panelStillOpen ? "true" : "false") . ',"btnName":"' . StrReplace(cancelName, '"', "'") . '"}')
+    ; #endregion
+    if (!panelStillOpen)
+        return
+    if chromeHwnd {
+        try {
+            WinActivate("ahk_id " chromeHwnd)
+            WinWaitActive("ahk_id " chromeHwnd, , 1)
+        } catch {
+        }
+    }
+    try Send "{Escape}"
+    catch {
+    }
+    Sleep 250
+}
+
+; [2] Set the link: YouTube Share + Start at + Copy, save via API
 StudyTopicSelector_ManageLinks_Set(*) {
     StudyTopicSelector_Close()
     try {
-        if WinExist("ahk_class Chrome_WidgetWin_1") {
-            WinActivate("ahk_class Chrome_WidgetWin_1")
-            if !WinWaitActive("ahk_class Chrome_WidgetWin_1", , 2) {
+        chromeHwnd := WinExist("ahk_class Chrome_WidgetWin_1")
+        if chromeHwnd {
+            WinActivate("ahk_id " chromeHwnd)
+            if !WinWaitActive("ahk_id " chromeHwnd, , 2) {
                 ShowCenteredOverlay_Utils("❌ Chrome window did not become active.", 2500, BANNER_ACCENT_ERROR)
                 return
             }
@@ -9074,17 +9385,37 @@ StudyTopicSelector_ManageLinks_Set(*) {
                 BANNER_ACCENT_ERROR)
             return
         }
-        Sleep 200
-        Send "{F6}"
-        Sleep 300
-        Send "^c"
-        Sleep 200
-        url := A_Clipboard
+        Sleep 280
+        try UIA.ActivateChromiumAccessibility("ahk_id " chromeHwnd, 300)
+        catch {
+        }
+        uia := UIA_Browser("ahk_id " chromeHwnd)
+        errMsg := ""
+        url := StudyLink_CaptureYoutubeTimestampUrl(uia, &errMsg)
         if (url != "") {
-            StudyLink_Set("subtopic", url)
-            ShowCenteredOverlay_Utils("✅ Link saved.", 2000, BANNER_ACCENT_SUCCESS)
+            ; Close share panel while Chrome still has focus (before loading overlay steals it).
+            StudyLink_CleanupYoutubeSharePanel(uia, chromeHwnd)
+            StandardLoadingBar_Show("Saving link…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
+            ; #region agent log
+            StudyLink_DebugLog_d22874("H4", "StudyTopicSelector_ManageLinks_Set", "api_post_start", '{"urlLen":' .
+                StrLen(url) . '}')
+            ; #endregion
+            apiStart := A_TickCount
+            setOk := StudyLink_Set("subtopic", url)
+            apiMs := A_TickCount - apiStart
+            try StandardLoadingBar_Hide(0)
+            ; #region agent log
+            StudyLink_DebugLog_d22874("H4", "StudyTopicSelector_ManageLinks_Set", "api_post_done", '{"ok":' .
+                (setOk ? "true" : "false") . ',"ms":' . apiMs . '}')
+            ; #endregion
+            if setOk
+                ShowCenteredOverlay_Utils("✅ Link saved to study notes.", 3000, BANNER_ACCENT_SUCCESS)
+            else
+                ShowCenteredOverlay_Utils("❌ Could not save the link (API failed).", 3500, BANNER_ACCENT_ERROR)
         } else {
-            ShowCenteredOverlay_Utils("❌ Could not copy the link.", 2500, BANNER_ACCENT_ERROR)
+            StudyLink_CleanupYoutubeSharePanel(uia, chromeHwnd)
+            ShowCenteredOverlay_Utils(errMsg != "" ? "❌ " errMsg : "❌ Could not capture the link.", 2500,
+                BANNER_ACCENT_ERROR)
         }
     } catch as e {
         ShowCenteredOverlay_Utils("❌ Error: " . e.Message, 3000, BANNER_ACCENT_ERROR)
