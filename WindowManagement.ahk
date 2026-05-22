@@ -193,6 +193,78 @@ WM_MaximizeHwnd(hwnd) {
     }
 }
 
+; Native Windows 11 snap: 50/50 layout + pair recent window (Win+Z UI sequence from ZMK macro).
+WM_SNAP_HALF_PAIR_MAX_ATTEMPTS := 3
+WM_SNAP_HALF_PAIR_SETTLE_MS := 400
+
+WM_SendSnapHalfPairSequence() {
+    ClipAngel_WaitChordModifiersReleased()
+    ClipAngel_ReleaseChordModifiersForSend()
+    SendInput "{Esc}"
+    Sleep 100
+    SendInput "#z"
+    Sleep 100
+    SendInput "4"
+    Sleep 100
+    SendInput "{Enter}"
+    Sleep 100
+    SendInput "{Enter}"
+}
+
+WM_ValidateSnapHalfPair(monIdx, primaryHwnd) {
+    if (!primaryHwnd || monIdx < 1 || monIdx > MonitorGetCount())
+        return false
+    MonitorGetWorkArea(monIdx, &wl, &wt, &wr, &wb)
+    workW := wr - wl
+    workH := wb - wt
+    if (workW < 100 || workH < 100)
+        return false
+    halfW := workW // 2
+    tolW := Max(40, Round(workW * 0.08))
+    tolH := Max(40, Round(workH * 0.10))
+
+    halves := []
+    primaryInHalves := false
+    leftSnapped := false
+    rightSnapped := false
+
+    for win in GetVisibleWindowsOnMonitor(monIdx, true) {
+        w := win.right - win.left
+        h := win.bottom - win.top
+        if (Abs(w - halfW) > tolW || h < workH - tolH)
+            continue
+        halves.Push(win)
+        if (win.hwnd = primaryHwnd)
+            primaryInHalves := true
+        if (win.left <= wl + tolW)
+            leftSnapped := true
+        if (win.right >= wr - tolW)
+            rightSnapped := true
+    }
+
+    return halves.Length >= 2 && primaryInHalves && leftSnapped && rightSnapped
+}
+
+WM_SnapHalfPairActiveWindow() {
+    targetHwnd := 0
+    try targetHwnd := WinExist("A")
+    catch
+        targetHwnd := 0
+    if (!targetHwnd) {
+        ShowNotification_WM("No active window to snap.")
+        return
+    }
+    monIdx := GetMonitorIndexForForeground_StandardBar()
+
+    loop WM_SNAP_HALF_PAIR_MAX_ATTEMPTS {
+        WM_SendSnapHalfPairSequence()
+        Sleep WM_SNAP_HALF_PAIR_SETTLE_MS
+        if (WM_ValidateSnapHalfPair(monIdx, targetHwnd))
+            return
+    }
+    ShowNotification_WM("Snap 50/50 failed after 3 attempts")
+}
+
 ; Per monitor: if exactly one visible non-minimized window and not maximized, maximize it.
 WM_MaximizeLonelyVisibleOnAllMonitors() {
     maximized := 0
@@ -513,8 +585,9 @@ WM_CheckMinimizedListCloseRequest() {
 
 WM_MinimizedList_ModifiersDown() {
     try {
-        return GetKeyState("LWin", "P") || GetKeyState("RWin", "P") || GetKeyState("Ctrl", "P") || GetKeyState("Alt", "P") ||
-            GetKeyState("Shift", "P")
+        return GetKeyState("LWin", "P") || GetKeyState("RWin", "P") || GetKeyState("Ctrl", "P") || GetKeyState("Alt",
+            "P") ||
+        GetKeyState("Shift", "P")
     } catch {
         return false
     }
@@ -666,7 +739,8 @@ WM_MinimizedList_BindPickerHotkeys(pickerWindows) {
         slotChar := w.char
         WM_MinimizedList_RegisterHotkey("$*" . slotChar, HandleMinimizedListExcludePickerByChar.Bind(slotChar))
         if (WM_IsDigitSlotChar(slotChar))
-            WM_MinimizedList_RegisterHotkey("$*Numpad" . slotChar, HandleMinimizedListExcludePickerByChar.Bind(slotChar))
+            WM_MinimizedList_RegisterHotkey("$*Numpad" . slotChar, HandleMinimizedListExcludePickerByChar.Bind(slotChar
+            ))
     }
     try HotIf()
     catch {
@@ -701,7 +775,8 @@ HandleMinimizedListEscape(*) {
 }
 
 WM_MinimizedList_BindEscape() {
-    global g_WM_MinimizedListEscPollPrev, g_OnEscapePressed, g_WM_MinimizedListOpenFile, g_WM_MinimizedListCloseCheckTimer
+    global g_WM_MinimizedListEscPollPrev, g_OnEscapePressed, g_WM_MinimizedListOpenFile,
+        g_WM_MinimizedListCloseCheckTimer
     try SetTimer(WM_MinimizedList_EscapePoll, 0)
     catch {
     }
@@ -731,7 +806,8 @@ WM_MinimizedList_BindEscape() {
 }
 
 WM_MinimizedList_UnbindEscape() {
-    global g_WM_MinimizedListEscPollPrev, g_OnEscapePressed, g_WM_MinimizedListOpenFile, g_WM_MinimizedListCloseRequestFile,
+    global g_WM_MinimizedListEscPollPrev, g_OnEscapePressed, g_WM_MinimizedListOpenFile,
+        g_WM_MinimizedListCloseRequestFile,
         g_WM_MinimizedListCloseCheckTimer
     try SetTimer(WM_MinimizedList_EscapePoll, 0)
     catch {
@@ -917,7 +993,8 @@ HandleMinimizedListOpenModeArm(*) {
 }
 
 HandleMinimizedListByChar(char, *) {
-    global g_WM_MinimizedListActive, g_WM_MinimizedKeyMap, g_WM_MinimizedListRefreshing, g_WM_MinimizedListExcludePickerActive,
+    global g_WM_MinimizedListActive, g_WM_MinimizedKeyMap, g_WM_MinimizedListRefreshing,
+        g_WM_MinimizedListExcludePickerActive,
         g_WM_MinimizedListOpenModeArmed
     if (!g_WM_MinimizedListActive || g_WM_MinimizedListRefreshing || g_WM_MinimizedListExcludePickerActive)
         return
@@ -1013,7 +1090,8 @@ HandleMinimizedListAddExcludeTrigger(*) {
 }
 
 WM_MinimizedList_ShowExcludePicker() {
-    global g_WM_MinimizedListExcludePickerActive, g_WM_MinimizedListExcludePickerRows, g_WM_MinimizedListExcludePickerMap,
+    global g_WM_MinimizedListExcludePickerActive, g_WM_MinimizedListExcludePickerRows,
+        g_WM_MinimizedListExcludePickerMap,
         g_WM_MinimizedListExcludePickerDigitSequence, g_WM_MinimizedListOpenModeArmed
     g_WM_MinimizedListOpenModeArmed := false
     WM_MinimizedList_UnbindHotkeys()
@@ -1045,7 +1123,8 @@ WM_MinimizedList_ShowExcludePicker() {
 }
 
 WM_MinimizedList_CancelExcludePicker() {
-    global g_WM_MinimizedListExcludePickerActive, g_WM_MinimizedListExcludePickerRows, g_WM_MinimizedListExcludePickerMap,
+    global g_WM_MinimizedListExcludePickerActive, g_WM_MinimizedListExcludePickerRows,
+        g_WM_MinimizedListExcludePickerMap,
         g_WM_MinimizedListOpenModeArmed
     g_WM_MinimizedListOpenModeArmed := false
     g_WM_MinimizedListExcludePickerActive := false
@@ -1180,6 +1259,9 @@ WM_ShowMinimizedBackgroundList(rows := unset, refresh := false) {
 {
     WM_MaximizeActiveWindow()
 }
+
+; Hotkey: Ctrl+Alt+Win+X — native 50/50 snap + pair recent window (Win+Z UI sequence)
+^!#x:: WM_SnapHalfPairActiveWindow()
 
 ; =============================================================================
 ; Window tools menu (maximize lone / minimized background list)
@@ -4024,6 +4106,7 @@ ShowProjectSelector() {
 ;    - Win+Alt+Shift+6: Minimize active window
 ;    - Win+Alt+Shift+M: Maximize active window
 ;    - Ctrl+Alt+Win+V: Maximize active window (same as above; for ZMK / external keyboards)
+;    - Ctrl+Alt+Win+X: Snap 50/50 + pair recent window in other half (Win+Z UI sequence)
 ;
 ; 6. ALT-TAB ALTERNATIVES
 ;    - Ctrl+Alt+Shift+B: Switch to previous window (Alt+Tab once)

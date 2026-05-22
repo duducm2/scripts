@@ -1666,7 +1666,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Ctrl+Alt+Win] - SECONDARY triple modifier
 
 === AVAILABLE SECONDARY (Ctrl+Alt+Win) SLOTS ===
-Letters available: C, H, I, K, M, N, O, P, T, U, V, X, Y, Z
+Letters available: C, H, I, K, M, N, O, P, T, U, V, Y, Z
 [Ctrl+Alt+Win+G] > RESERVED — Handy: cancel dictation (define in Handy only; not bound in AHK)
 [Ctrl+Alt+Win+0] > Project Quick Selector (opens project folder in Cursor)
 [Ctrl+Alt+Win+1] > Cursor AI quick action (Project Selector + Selection Mode)
@@ -1747,6 +1747,7 @@ Letters available: C, H, I, K, M, N, O, P, T, U, V, X, Y, Z
 [Win+Alt+Shift+Y] > Focus Mode: Black out all monitors except the one with the active window (toggle)
 
 === WINDOW MANAGEMENT (Ctrl+Alt+Win) ===
+[Ctrl+Alt+Win+X] > Snap 50/50: half-width active window + pair recent window in other half
 [Ctrl+Alt+Win+A] > Move window to monitor 1 (left-most)
 [Ctrl+Alt+Win+S] > Move window to monitor 2
 [Ctrl+Alt+Win+D] > Move window to monitor 3
