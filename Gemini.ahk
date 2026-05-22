@@ -538,7 +538,7 @@ GeminiConfigureFirstLaunchTabModels(geminiHwnd) {
             return false
     }
 
-    StandardLoadingBar_Update("⚙️ Setting tab 1 model: Pro...", BANNER_ACCENT_INTERMEDIATE)
+    StandardLoadingBar_Update("⚙️ Setting tab 1 model: 3.1 Pro...", BANNER_ACCENT_INTERMEDIATE)
 
     ; Ensure tab 1 is active before assigning Pro.
     try {
@@ -551,20 +551,20 @@ GeminiConfigureFirstLaunchTabModels(geminiHwnd) {
     } catch {
     }
 
-    proSet := GeminiSetModelForActiveTabWhenReady("Pro", geminiHwnd)
+    proSet := GeminiSetModelForActiveTabWhenReady("3.1 Pro", geminiHwnd)
 
     ; Move to tab 2, set Fast, then return to tab 1 as requested.
     Send "^{Tab}"
     Sleep GEMINI_FIRST_LAUNCH_TAB_SWITCH_SETTLE_MS
 
-    StandardLoadingBar_Update("⚙️ Setting tab 2 model: Fast...", BANNER_ACCENT_INTERMEDIATE)
-    fastSet := GeminiSetModelForActiveTabWhenReady("Fast", geminiHwnd)
+    StandardLoadingBar_Update("⚙️ Setting tab 2 model: 3.1 Flash-Lite...", BANNER_ACCENT_INTERMEDIATE)
+    fastSet := GeminiSetModelForActiveTabWhenReady("3.1 Flash-Lite", geminiHwnd)
 
     Send "^+{Tab}"
     Sleep GEMINI_FIRST_LAUNCH_TAB_SWITCH_SETTLE_MS
 
     if (proSet && fastSet) {
-        StandardLoadingBar_Update("✅ Tab 1 Pro, Tab 2 Fast", BANNER_ACCENT_INTERMEDIATE)
+        StandardLoadingBar_Update("✅ Tab 1: 3.1 Pro, Tab 2: 3.1 Flash-Lite", BANNER_ACCENT_INTERMEDIATE)
         Sleep 200
         return true
     }

@@ -1427,7 +1427,7 @@ cheatSheets["Google"] := "
 Google (Shift)
 🔍 [S][S]earch box focus
 🥇 [U][U]se first result
-)"
+)" 44
 
 ; --- ChatGPT ---------------------------------------------------------------
 cheatSheets["ChatGPT"] := "
@@ -21363,16 +21363,17 @@ FindMonthGroup(uia) {
 ; Global state for Gemini drawer (main menu) – mirrors the state‑based toggle pattern
 isGeminiDrawerOpen := false
 
-; Global state for Gemini model toggle (Fast, Thinking, or Pro)
-isGeminiFastModel := "Fast"  ; Tracks current model: "Fast", "Thinking", or "Pro"
+; Global state for Gemini active model (3.1 Flash-Lite, 3.5 Flash, or 3.1 Pro)
+isGeminiFastModel := "3.1 Flash-Lite"
 
 ; Global variables for Gemini model selector wizard menu
 global g_GeminiModelSelectorGui := false
 global g_GeminiModelSelectorActive := false
 global g_GeminiModelHotkeyHandlers := []
-global g_GeminiModelCharSequence := ["1", "2", "3"]
-global g_GeminiModels := [{ name: "Fast", description: "Answers quickly" }, { name: "Thinking", description: "Solves complex problems" }, { name: "Pro",
-    description: "Thinks longer for advanced math & code" }]
+global g_GeminiModelCharSequence := ["1", "2", "3", "4"]
+global g_GeminiModels := [{ name: "3.1 Flash-Lite", description: "Fastest answers" }, { name: "3.5 Flash", description: "All-around help" }, { name: "3.1 Pro",
+    description: "Advanced math and code" }, { name: "Thinking level", description: "Open thinking submenu (set level manually)" }
+]
 
 ; Shift + D : Toggle the Main menu button (drawer) using fast state-based pattern
 +d:: {
@@ -21489,190 +21490,6 @@ ToggleGeminiDrawer() {
 }
 
 ; ---------------------------------------------------------------------------
-ToggleGeminiModel() {
-    global isGeminiFastModel
-
-    ; Show a small banner while toggling models
-    ShowSmallLoadingIndicator_ChatGPT("Switching model...")
-
-    try {
-        uia := UIA_Browser()
-        if !IsObject(uia) {
-            return
-        }
-
-        Sleep 100  ; Small settle time – keep this snappy
-
-        ; Combined pattern to find Fast, Thinking, or Pro button in one search
-        modelPattern := "i)^(Fast|Thinking|Pro)$"
-
-        ; Helper to grab a button by pattern with shorter timeout for speed
-        FindBtn(p) => WaitForButton(uia, p, 1500)
-        modelButtons := GeminiCollectModelOptionButtons(uia)
-
-        ; Strategy: Find a button that is NOT the current one (to actually toggle)
-        ; If we have multiple buttons, click one that's different from current state
-        btn := 0
-        currentModelLower := StrLower(isGeminiFastModel)
-
-        if (modelButtons.Length > 1) {
-            ; Multiple buttons available - find one that's different from current AND enabled
-            for modelBtn in modelButtons {
-                btnNameLower := StrLower(modelBtn.name)
-                if (btnNameLower != currentModelLower && !modelBtn.isDisabled) {
-                    btn := modelBtn.btn
-                    break
-                }
-            }
-
-            ; If no different enabled button found, try to find any enabled button (even if same name)
-            ; This handles cases where we want to click Pro but the disabled Pro button was found first
-            if (!btn) {
-                for modelBtn in modelButtons {
-                    if (!modelBtn.isDisabled) {
-                        btn := modelBtn.btn
-                        break
-                    }
-                }
-            }
-        }
-
-        ; If we couldn't find a different enabled button, or only one button available, use the first enabled one
-        ; (This handles the case where only one model button is visible at a time)
-        if (!btn && modelButtons.Length > 0) {
-            ; Try to find first enabled button
-            for modelBtn in modelButtons {
-                if (!modelBtn.isDisabled) {
-                    btn := modelBtn.btn
-                    break
-                }
-            }
-
-            ; If all buttons are disabled, still try the first one
-            if (!btn) {
-                btn := modelButtons[1].btn
-            }
-        }
-
-        ; Final fallback: if no buttons found in our scan, use the original method
-        if (!btn) {
-            btn := FindBtn(modelPattern)
-        }
-
-        if (btn) {
-            ; Check which button we found
-            btnName := ""
-            try btnName := btn.Name
-
-            ; Determine if this button supports Invoke
-            supportsInvoke := false
-            try {
-                supportsInvoke := btn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)
-            } catch {
-                supportsInvoke := false
-            }
-
-            ; Try multi-strategy activation: prefer Invoke when available, fallback to Click, then mouse coordinates
-            clicked := false
-
-            ; Strategy 1: Try to focus the button first (may help with COM errors)
-            try {
-                btn.SetFocus()
-                Sleep 50
-            } catch {
-                ; Ignore focus errors
-            }
-
-            if (supportsInvoke) {
-                try {
-                    btn.Invoke()
-                    clicked := true
-                } catch {
-                }
-            }
-            if (!clicked) {
-                try {
-                    btn.Click()
-                    clicked := true
-                } catch {
-                }
-            }
-
-            ; Strategy 3: Fallback to mouse coordinates if both Invoke and Click fail
-            if (!clicked) {
-                try {
-                    ; Get browser window handle to ensure we activate the correct window
-                    browserHwnd := 0
-                    try {
-                        browserHwnd := uia.BrowserId
-                    } catch {
-                        ; Fallback: try to find Chrome window with Gemini in title
-                        browserHwnd := WinExist("ahk_exe chrome.exe")
-                    }
-
-                    ; Activate the browser window BEFORE clicking to prevent activating wrong window
-                    if (browserHwnd) {
-                        if (!WinExist("ahk_id " browserHwnd)) {
-                            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
-                            return
-                        }
-                        WinActivate("ahk_id " browserHwnd)
-                        WinWaitActive("ahk_id " browserHwnd, , 1)
-                        Sleep 50  ; Brief pause after activation
-                    }
-
-                    ; Get button location and click using mouse coordinates
-                    btnLocation := btn.Location
-                    if (btnLocation && btnLocation.x >= 0 && btnLocation.y >= 0) {
-                        ; Save current mouse position and coordinate mode
-                        MouseGetPos(&prevX, &prevY)
-                        prevCoordMode := A_CoordModeMouse
-
-                        ; Set coordinate mode to Screen for absolute coordinates
-                        CoordMode("Mouse", "Screen")
-
-                        ; Calculate click position
-                        clickX := btnLocation.x + btnLocation.w // 2
-                        clickY := btnLocation.y + btnLocation.h // 2
-
-                        ; Click at button center
-                        Click(clickX, clickY)
-                        clicked := true
-
-                        ; Restore mouse position and coordinate mode after a brief delay
-                        Sleep 100
-                        CoordMode("Mouse", prevCoordMode)
-                        MouseMove(prevX, prevY)
-                    }
-                } catch {
-                }
-            }
-
-            ; Update state (Gemini 3 menu items use composite Accessible names, e.g. "Fast Answers quickly")
-            resolved := GeminiNormalizeModelLabel(btnName)
-            if (clicked) {
-                if (resolved = "Fast") {
-                    isGeminiFastModel := "Fast"
-                    ShowSmallLoadingIndicator_ChatGPT("Fast model active")
-                } else if (resolved = "Thinking") {
-                    isGeminiFastModel := "Thinking"
-                    ShowSmallLoadingIndicator_ChatGPT("Thinking model active")
-                } else if (resolved = "Pro") {
-                    isGeminiFastModel := "Pro"
-                    ShowSmallLoadingIndicator_ChatGPT("Pro model active")
-                }
-                Sleep 150  ; Minimal sleep – just enough for UI to register
-            }
-        }
-    } catch Error as err {
-        ; Silently fail if anything goes wrong
-    } finally {
-        ; Hide the banner shortly after finishing
-        SetTimer(() => HideSmallLoadingIndicator_ChatGPT(), -900)
-    }
-}
-
-; ---------------------------------------------------------------------------
 ; Cleanup function for Gemini model selector
 CleanupGeminiModelSelector() {
     global g_GeminiModelSelectorActive, g_GeminiModelSelectorGui, g_GeminiModelHotkeyHandlers
@@ -21731,16 +21548,11 @@ CreateGeminiModelCharHandler(char) {
 }
 
 ; ---------------------------------------------------------------------------
-VerifyGeminiModelSelectedInOpenPicker(expectedModel) {
+VerifyGeminiModelSelectedInOpenPicker(expectedModel, geminiHwnd := 0) {
     exp := GeminiNormalizeModelLabel(expectedModel)
     if (exp = "")
         return false
-    uia := ""
-    try {
-        uia := UIA_Browser()
-    } catch {
-        return false
-    }
+    uia := GeminiAttachBrowser(geminiHwnd)
     if !IsObject(uia)
         return false
 
@@ -21748,44 +21560,37 @@ VerifyGeminiModelSelectedInOpenPicker(expectedModel) {
     if !picker
         return false
 
+    browserHwnd := geminiHwnd ? geminiHwnd : GeminiGetBrowserHwndFromUia(uia)
+    verified := false
     try {
-        try picker.Click()
-        catch {
-            try {
-                if (picker.GetPropertyValue(UIA.Property.IsInvokePatternAvailable))
-                    picker.Invoke()
-            } catch {
-            }
-        }
+        if (!GeminiMouseClickElement(picker, browserHwnd, uia))
+            return false
         Sleep 250
 
-        try {
-            uia := UIA_Browser()
-        } catch {
-            return false
-        }
+        uia := GeminiAttachBrowser(browserHwnd)
         if !IsObject(uia)
             return false
 
-        buttons := GeminiCollectModelOptionButtons(uia)
+        buttons := GeminiCollectModelMenuItems(uia)
         for b in buttons {
             try {
-                if (GeminiNormalizeModelLabel(b.name) = exp) {
+                if (b.name = exp) {
                     try {
                         if (b.isSelected)
-                            return true
+                            verified := true
                     } catch {
                     }
-                    return false
+                    break
                 }
             } catch {
             }
         }
-        return false
     } finally {
-        Send "{Escape}"
+        if IsObject(uia)
+            GeminiDismissModePickerMenu(uia)
         Sleep 60
     }
+    return verified
 }
 
 ; ---------------------------------------------------------------------------
@@ -21882,40 +21687,57 @@ HandleGeminiModelSelection(char) {
 
         StandardLoadingBar_Show("🔄 Switching Gemini model…", BANNER_ACCENT_INTERMEDIATE, { centerOnHwnd: geminiHwnd })
         try {
-            verified := false
-            switched := false
-
-            attempt := 1
-            loop 2 {
-                attempt := A_Index
-                StandardLoadingBar_Update("🔄 Switching to " . modelName . " (attempt " . attempt . "/2)…",
-                    BANNER_ACCENT_INTERMEDIATE)
-
-                ; Keep the existing selection flow unchanged: open picker + select via menu items
-                switched := EnsureGeminiModelViaMenu(modelName)
-
-                StandardLoadingBar_Update("🔎 Verifying model (mode picker)…", BANNER_ACCENT_INTERMEDIATE)
-                verified := switched && VerifyGeminiModelSelectedInOpenPicker(modelName)
-                if (verified)
-                    break
-
-                if (attempt < 2) {
-                    StandardLoadingBar_Update("🔄 Model not confirmed. Refreshing and retrying…",
+            if (modelName = "Thinking level") {
+                StandardLoadingBar_Update("🔄 Opening Thinking level…", BANNER_ACCENT_INTERMEDIATE)
+                opened := EnsureGeminiThinkingLevelMenuOpen(geminiHwnd)
+                if (opened) {
+                    StandardLoadingBar_Update("✅ Thinking level opened — set level manually",
                         BANNER_ACCENT_INTERMEDIATE)
-                    Send "^r"
-                    Sleep 1200
+                    Sleep 150
+                    StandardLoadingBar_Hide(700)
+                } else {
+                    StandardLoadingBar_Hide(0)
+                    ShowCenteredOverlay_Utils("❌ Could not open Thinking level menu", 2800, BANNER_ACCENT_ERROR)
                 }
-            }
-
-            if (verified) {
-                isGeminiFastModel := modelName
-                StandardLoadingBar_Update("✅ " . modelName . " model verified", BANNER_ACCENT_INTERMEDIATE)
-                Sleep 150
-                try FocusGeminiPromptField()
-                StandardLoadingBar_Hide(700)
             } else {
-                StandardLoadingBar_Hide(0)
-                ShowCenteredOverlay_Utils("❌ Could not confirm Gemini model: " . modelName, 2800, BANNER_ACCENT_ERROR)
+                verified := false
+                switched := false
+
+                attempt := 1
+                loop 2 {
+                    attempt := A_Index
+                    StandardLoadingBar_Update("🔄 Switching to " . modelName . " (attempt " . attempt . "/2)…",
+                        BANNER_ACCENT_INTERMEDIATE)
+
+                    WinActivate("ahk_id " geminiHwnd)
+                    WinWaitActive("ahk_id " geminiHwnd, , 1)
+                    switched := EnsureGeminiModelViaMenu(modelName, geminiHwnd)
+
+                    StandardLoadingBar_Update("🔎 Verifying model (mode picker)…", BANNER_ACCENT_INTERMEDIATE)
+                    WinActivate("ahk_id " geminiHwnd)
+                    WinWaitActive("ahk_id " geminiHwnd, , 1)
+                    verified := switched && VerifyGeminiModelSelectedInOpenPicker(modelName, geminiHwnd)
+                    if (verified)
+                        break
+
+                    if (attempt < 2) {
+                        StandardLoadingBar_Update("🔄 Model not confirmed. Retrying…",
+                            BANNER_ACCENT_INTERMEDIATE)
+                        Sleep 300
+                    }
+                }
+
+                if (verified) {
+                    isGeminiFastModel := modelName
+                    StandardLoadingBar_Update("✅ " . modelName . " model verified", BANNER_ACCENT_INTERMEDIATE)
+                    Sleep 150
+                    try FocusGeminiPromptField()
+                    StandardLoadingBar_Hide(700)
+                } else {
+                    StandardLoadingBar_Hide(0)
+                    ShowCenteredOverlay_Utils("❌ Could not confirm Gemini model: " . modelName, 2800,
+                        BANNER_ACCENT_ERROR)
+                }
             }
         } finally {
             ; Ensure we never leave a stuck banner
