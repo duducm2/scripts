@@ -55,6 +55,7 @@ Run GetScriptPath("WindowManagement.ahk")
 Run GetScriptPath("Mousemaster.ahk")
 
 if (IS_WORK_ENVIRONMENT) {
+    Run "C:\Users\fie7ca\Documents\caffeine\caffeine64.exe"
     Run "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Visual Studio Code\Visual Studio Code.lnk"
     Run "C:\Users\fie7ca\Documents\Shortcuts\Mobills.lnk"
     Run "C:\Users\fie7ca\Documents\Shortcuts\Settle Up.lnk"
