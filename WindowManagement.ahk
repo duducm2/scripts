@@ -193,9 +193,15 @@ WM_MaximizeHwnd(hwnd) {
     }
 }
 
-; Native Windows 11 snap: 50/50 layout + pair recent window (Win+Z UI sequence from ZMK macro).
+; Native Windows 11 snap: layout + pair recent window (Win+Z UI sequence from ZMK macro).
+; Success: axis-aware work-area bipartition — two panes share the monitor (15–85%% each, >=85%% coverage).
 WM_SNAP_HALF_PAIR_MAX_ATTEMPTS := 3
-WM_SNAP_HALF_PAIR_SETTLE_MS := 400
+WM_SNAP_HALF_PAIR_VALIDATE_TIMEOUT_MS := 1200
+WM_SNAP_HALF_PAIR_VALIDATE_POLL_MS := 50
+WM_SNAP_PANE_MIN_FRAC := 0.15
+WM_SNAP_PANE_MAX_FRAC := 0.85
+WM_SNAP_COVERAGE_MIN_FRAC := 0.85
+WM_SNAP_ORTH_MIN_FRAC := 0.20
 
 WM_SendSnapHalfPairSequence() {
     ClipAngel_WaitChordModifiersReleased()
@@ -211,38 +217,159 @@ WM_SendSnapHalfPairSequence() {
     SendInput "{Enter}"
 }
 
-WM_ValidateSnapHalfPair(monIdx, primaryHwnd) {
-    if (!primaryHwnd || monIdx < 1 || monIdx > MonitorGetCount())
+; Absolute placement vs monitor work area (no before/after size comparison).
+WM_GetWindowRectHwnd(hwnd, &left, &top, &right, &bottom) {
+    rect := Buffer(16, 0)
+    if !DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)
         return false
+    left := NumGet(rect, 0, "int")
+    top := NumGet(rect, 4, "int")
+    right := NumGet(rect, 8, "int")
+    bottom := NumGet(rect, 12, "int")
+    return true
+}
+
+; "h" = left/right panes (landscape); "v" = top/bottom panes (portrait).
+WM_GetSnapSplitAxis(monIdx) {
     MonitorGetWorkArea(monIdx, &wl, &wt, &wr, &wb)
+    return (wr - wl >= wb - wt) ? "h" : "v"
+}
+
+; Classifies window into start/end pane on split axis; sets paneSize on that axis.
+WM_ClassifySnapPane(axis, wl, wt, wr, wb, left, top, right, bottom, &pane, &paneSize) {
+    pane := ""
+    paneSize := 0
     workW := wr - wl
     workH := wb - wt
     if (workW < 100 || workH < 100)
         return false
-    halfW := workW // 2
-    tolW := Max(40, Round(workW * 0.08))
-    tolH := Max(40, Round(workH * 0.10))
 
-    halves := []
-    primaryInHalves := false
-    leftSnapped := false
-    rightSnapped := false
-
-    for win in GetVisibleWindowsOnMonitor(monIdx, true) {
-        w := win.right - win.left
-        h := win.bottom - win.top
-        if (Abs(w - halfW) > tolW || h < workH - tolH)
-            continue
-        halves.Push(win)
-        if (win.hwnd = primaryHwnd)
-            primaryInHalves := true
-        if (win.left <= wl + tolW)
-            leftSnapped := true
-        if (win.right >= wr - tolW)
-            rightSnapped := true
+    if (axis = "h") {
+        tol := Max(40, Round(workW * 0.08))
+        orthTol := Max(40, Round(workH * 0.10))
+        minOrth := Max(200, Round(workH * WM_SNAP_ORTH_MIN_FRAC))
+        w := right - left
+        h := bottom - top
+        workDim := workW
+        paneSize := w
+        if (h < minOrth || top < wt - orthTol || bottom > wb + orthTol)
+            return false
+    } else {
+        tol := Max(40, Round(workH * 0.08))
+        orthTol := Max(40, Round(workW * 0.10))
+        minOrth := Max(200, Round(workW * WM_SNAP_ORTH_MIN_FRAC))
+        w := right - left
+        h := bottom - top
+        workDim := workH
+        paneSize := h
+        if (w < minOrth || left < wl - orthTol || right > wr + orthTol)
+            return false
     }
 
-    return halves.Length >= 2 && primaryInHalves && leftSnapped && rightSnapped
+    minPane := Round(workDim * WM_SNAP_PANE_MIN_FRAC)
+    maxPane := Round(workDim * WM_SNAP_PANE_MAX_FRAC)
+    if (paneSize < minPane || paneSize > maxPane)
+        return false
+
+    if (axis = "h") {
+        center := wl + workW // 2
+        onStart := (left <= wl + tol)
+        onEnd := (right >= wr - tol)
+        if (onStart && !onEnd) {
+            pane := "start"
+            return true
+        }
+        if (onEnd && !onStart) {
+            pane := "end"
+            return true
+        }
+        pane := ((left + right) // 2 < center) ? "start" : "end"
+        return true
+    }
+    center := wt + workH // 2
+    onStart := (top <= wt + tol)
+    onEnd := (bottom >= wb - tol)
+    if (onStart && !onEnd) {
+        pane := "start"
+        return true
+    }
+    if (onEnd && !onStart) {
+        pane := "end"
+        return true
+    }
+    pane := ((top + bottom) // 2 < center) ? "start" : "end"
+    return true
+}
+
+WM_ValidateSnapBipartition(monIdx, primaryHwnd, &failReason := "") {
+    failReason := ""
+    if (!primaryHwnd || monIdx < 1 || monIdx > MonitorGetCount()) {
+        failReason := "invalid_args"
+        return false
+    }
+    try {
+        if (WinGetMinMax("ahk_id " primaryHwnd) = 1) {
+            failReason := "primary_maximized"
+            return false
+        }
+    } catch {
+        failReason := "primary_minmax_error"
+        return false
+    }
+    axis := WM_GetSnapSplitAxis(monIdx)
+    MonitorGetWorkArea(monIdx, &wl, &wt, &wr, &wb)
+    workW := wr - wl
+    workH := wb - wt
+    workDim := (axis = "h") ? workW : workH
+    if (!WM_GetWindowRectHwnd(primaryHwnd, &pl, &pt, &pr, &pb)) {
+        failReason := "primary_no_rect"
+        return false
+    }
+    primaryPane := ""
+    primaryPaneSize := 0
+    if (!WM_ClassifySnapPane(axis, wl, wt, wr, wb, pl, pt, pr, pb, &primaryPane, &primaryPaneSize)) {
+        failReason := "primary_not_in_pane"
+        return false
+    }
+
+    oppPane := (primaryPane = "start") ? "end" : "start"
+    bestOppSize := 0
+    foundOpp := false
+    for win in GetVisibleWindowsOnMonitor(monIdx, true) {
+        if (win.hwnd = primaryHwnd)
+            continue
+        winL := 0, winT := 0, winR := 0, winB := 0
+        if (!WM_GetWindowRectHwnd(win.hwnd, &winL, &winT, &winR, &winB))
+            continue
+        pane := ""
+        paneSize := 0
+        if (!WM_ClassifySnapPane(axis, wl, wt, wr, wb, winL, winT, winR, winB, &pane, &paneSize))
+            continue
+        if (pane != oppPane)
+            continue
+        foundOpp := true
+        if (paneSize > bestOppSize)
+            bestOppSize := paneSize
+    }
+    if (!foundOpp) {
+        failReason := "no_opposite_pane"
+        return false
+    }
+    if ((primaryPaneSize + bestOppSize) / workDim < WM_SNAP_COVERAGE_MIN_FRAC) {
+        failReason := "insufficient_coverage"
+        return false
+    }
+    return true
+}
+
+WM_WaitValidateSnapBipartition(monIdx, primaryHwnd) {
+    deadline := A_TickCount + WM_SNAP_HALF_PAIR_VALIDATE_TIMEOUT_MS
+    while (A_TickCount < deadline) {
+        if (WM_ValidateSnapBipartition(monIdx, primaryHwnd))
+            return true
+        Sleep WM_SNAP_HALF_PAIR_VALIDATE_POLL_MS
+    }
+    return false
 }
 
 WM_SnapHalfPairActiveWindow() {
@@ -258,11 +385,10 @@ WM_SnapHalfPairActiveWindow() {
 
     loop WM_SNAP_HALF_PAIR_MAX_ATTEMPTS {
         WM_SendSnapHalfPairSequence()
-        Sleep WM_SNAP_HALF_PAIR_SETTLE_MS
-        if (WM_ValidateSnapHalfPair(monIdx, targetHwnd))
+        if (WM_WaitValidateSnapBipartition(monIdx, targetHwnd))
             return
     }
-    ShowNotification_WM("Snap 50/50 failed after 3 attempts")
+    ShowNotification_WM("Snap layout failed after 3 attempts")
 }
 
 ; Per monitor: if exactly one visible non-minimized window and not maximized, maximize it.
@@ -4106,7 +4232,7 @@ ShowProjectSelector() {
 ;    - Win+Alt+Shift+6: Minimize active window
 ;    - Win+Alt+Shift+M: Maximize active window
 ;    - Ctrl+Alt+Win+V: Maximize active window (same as above; for ZMK / external keyboards)
-;    - Ctrl+Alt+Win+X: Snap 50/50 + pair recent window in other half (Win+Z UI sequence)
+;    - Ctrl+Alt+Win+X: Snap layout + pair (Win+Z UI sequence; bipartition validation)
 ;
 ; 6. ALT-TAB ALTERNATIVES
 ;    - Ctrl+Alt+Shift+B: Switch to previous window (Alt+Tab once)
