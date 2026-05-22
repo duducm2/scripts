@@ -25,6 +25,8 @@ Open via Study Topic selector (QuickLook flow). Keys **1–5**:
 
 `https://script.google.com/macros/s/AKfycbzzkjpT_47W0TwcjwEulzkV9l5xTtqcwWJmF0h-B-11SwiL_49SPhKXnj3PTsgFUZcp/exec`
 
+**MacroDroid (same URL, two POST bodies):** see [study-link-macrodroid-same-url.md](study-link-macrodroid-same-url.md) — YouTube uses `key=subtopic&url=`; article uses `key=subtopic_article&url=` (both POST to the same `/exec`).
+
 **Contract**
 
 - **GET** `?key=<key>` → `key=<key>&url=<url>` (URL may contain literal `&`)
@@ -73,7 +75,7 @@ After adding article support (module 4), only add the two `if` lines at the top 
 
 ### Guide B — MacroDroid (YouTube)
 
-Use your existing **Set_Video** (or equivalent) macro: POST body `key=subtopic&url=` + clipboard URL (literal `&` in URL allowed).
+Use your existing **Set_Video** macro: **same** `/exec` URL, POST body `key=subtopic&url=` + clipboard. Details: [study-link-macrodroid-same-url.md](study-link-macrodroid-same-url.md).
 
 ### Code snippets — Module 3
 
@@ -163,16 +165,7 @@ Expect the text stored in **A2** (same shape as A1: full POST body or URL string
 
 ### Guide B — MacroDroid (article)
 
-1. New macro: e.g. `Study — Set article link`.
-2. Trigger: your choice.
-3. Read clipboard (URL already copied on device).
-4. POST to `/exec`, body:
-
-   ```
-   key=subtopic_article&url={clipUrl}
-   ```
-
-5. Optional: GET `?key=subtopic_article` + Open URL on phone.
+Duplicate your YouTube macro; keep the **same** URL; only change the POST body to `key=subtopic_article&url=` + clipboard. Full table: [study-link-macrodroid-same-url.md](study-link-macrodroid-same-url.md).
 
 ### Code snippets — Module 4
 
@@ -210,5 +203,6 @@ Study Topic → **`[5] Technique`** opens the technique README in QuickLook (`St
 - `StudyArticleLink.ahk` — module 4 GUI + F6 capture
 - `Utils.ahk` — module 3 GUI + YouTube UIA capture
 - `TestStudyLinkApi.ahk` — API smoke test
+- [study-link-macrodroid-same-url.md](study-link-macrodroid-same-url.md) — one `/exec` URL, YouTube vs article POST/GET
 - [lightweight-api-sentinel-files.md](lightweight-api-sentinel-files.md) — module 3 sentinel
 - [efficiency-canon.md](efficiency-canon.md) — clipboard restore patterns
