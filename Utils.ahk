@@ -9001,8 +9001,11 @@ StudyTopicSelector_ManageLinks(*) {
     g_StudyLinksGui.Add("Text", "w400 Center", "🔗 Manage Study Subtopic Link")
     g_StudyLinksGui.Add("Text", "w400 h1 Background45475A")
     g_StudyLinksGui.SetFont("s11 cCDD6F4", "Segoe UI")
-    url := StudyLink_Get("subtopic")
-    g_StudyLinksGui.Add("Text", "w400", "Current link: " (url != "" ? url : "(none)"))
+    linkResult := StudyLink_GetResult("subtopic")
+    linkLabel := linkResult["ok"]
+        ? (linkResult["url"] != "" ? linkResult["url"] : "(none)")
+            : "(API error — " . linkResult["err"] . ")"
+    g_StudyLinksGui.Add("Text", "w400", "Current link: " . linkLabel)
     g_StudyLinksGui.Add("Text", "w400", "[1] Open the link")
     g_StudyLinksGui.Add("Text", "w400", "[2] Set the link")
     g_StudyLinksGui.Add("Text", "w400 h1 Background45475A y+10")
@@ -9018,7 +9021,17 @@ StudyTopicSelector_ManageLinks(*) {
 ; [1] Open the saved subtopic link in Google Chrome
 StudyTopicSelector_ManageLinks_Open(*) {
     StudyTopicSelector_Close()
-    url := StudyLink_Get("subtopic")
+    linkResult := StudyLink_GetResult("subtopic")
+    if (!linkResult["ok"]) {
+        ShowCenteredOverlay_Utils("❌ Could not load link from API: " . linkResult["err"], 3500, BANNER_ACCENT_ERROR)
+        return
+    }
+    url := linkResult["url"]
+    if (!linkResult["ok"]) {
+        ShowCenteredOverlay_Utils("❌ Could not load link from API: " . linkResult["err"], 3500, BANNER_ACCENT_ERROR)
+        return
+    }
+    url := linkResult["url"]
     if (url != "") {
         try Run('chrome.exe "' url '"')
         catch
@@ -9226,7 +9239,7 @@ StudyLink_CleanupYoutubeSharePanel(uia, chromeHwnd := 0) {
     if !IsObject(uia)
         return
     if !ClipAngel_UiaFindFirst(uia, { AutomationId: "start-at-checkbox", Type: 50002 })
-        && !ClipAngel_UiaFindFirst(uia, { AutomationId: "share-url", Type: 50004 })
+    && !ClipAngel_UiaFindFirst(uia, { AutomationId: "share-url", Type: 50004 })
         return
     if chromeHwnd {
         try {

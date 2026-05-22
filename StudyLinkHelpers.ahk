@@ -8,10 +8,11 @@ global STUDY_LINKS_API_URL :=
 ; ServerXMLHTTP + WinHttp use WinHTTP (failed here with 0x80072EE7 DNS).
 ; XMLHTTP uses WinInet (browser/system proxy). PowerShell IWR is fallback.
 ; ────────────────────────────────────────────────────────────────────────────
-StudyLink_HttpSendXmlHttp(method, url, body := "") {
+StudyLink_HttpSendXmlHttp(method, url, body := "", useCustomUserAgent := false) {
     xhr := ComObject("MSXML2.XMLHTTP.6.0")
     xhr.open(method, url, false)
-    xhr.setRequestHeader("User-Agent", "AutoHotkey/2.0")
+    if (useCustomUserAgent)
+        xhr.setRequestHeader("User-Agent", "AutoHotkey/2.0")
     if (method = "POST")
         xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
     if (body != "")
@@ -34,16 +35,16 @@ StudyLink_HttpSendPowerShell(method, url, body := "") {
         ps := "try { "
             . "$u='" . StrReplace(url, "'", "''") . "'; "
             . (tmpBody != "" ? "$b=Get-Content -LiteralPath '" . StrReplace(tmpBody, "'", "''") .
-                "' -Raw; $r=Invoke-WebRequest -Uri $u -Method POST -Body $b -ContentType 'application/x-www-form-urlencoded' -UseBasicParsing; "
-            : "$r=Invoke-WebRequest -Uri $u -Method POST -UseBasicParsing; ")
+            "' -Raw; $r=Invoke-WebRequest -Uri $u -Method POST -Body $b -ContentType 'application/x-www-form-urlencoded' -UseBasicParsing; "
+                : "$r=Invoke-WebRequest -Uri $u -Method POST -UseBasicParsing; ")
             . "$r.Content | Out-File -LiteralPath '" . StrReplace(tmpOut, "'", "''") .
             "' -Encoding utf8 -NoNewline } catch { $_.Exception.Message | Out-File -LiteralPath '" .
             StrReplace(tmpOut, "'", "''") . "' -Encoding utf8 }"
     } else {
         ps := "try { (Invoke-WebRequest -Uri '" . StrReplace(url, "'", "''") .
-            "' -UseBasicParsing).Content | Out-File -LiteralPath '" . StrReplace(tmpOut, "'", "''") .
-            "' -Encoding utf8 -NoNewline } catch { $_.Exception.Message | Out-File -LiteralPath '" .
-            StrReplace(tmpOut, "'", "''") . "' -Encoding utf8 }"
+        "' -UseBasicParsing).Content | Out-File -LiteralPath '" . StrReplace(tmpOut, "'", "''") .
+        "' -Encoding utf8 -NoNewline } catch { $_.Exception.Message | Out-File -LiteralPath '" .
+        StrReplace(tmpOut, "'", "''") . "' -Encoding utf8 }"
     }
     RunWait('powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "' . ps . '"', , "Hide")
     if !FileExist(tmpOut)
@@ -57,31 +58,61 @@ StudyLink_HttpSendPowerShell(method, url, body := "") {
     return { status: 200, text: resp }
 }
 
+StudyLink_IsHttpErrorText(response) {
+    return (response = "" || SubStr(response, 1, 6) = "ERROR:")
+}
+
+StudyLink_IsValidGetResponse(response) {
+    if StudyLink_IsHttpErrorText(response)
+        return false
+    if (InStr(response, "<html") || InStr(response, "<!DOCTYPE"))
+        return false
+    return (InStr(response, "key=") || InStr(response, "url="))
+}
+
 StudyLink_HttpSend(method, url, body := "") {
     try {
-        r := StudyLink_HttpSendXmlHttp(method, url, body)
-        if (r.status >= 200 && r.status < 300)
+        r := StudyLink_HttpSendXmlHttp(method, url, body, false)
+        if (r.status >= 200 && r.status < 300 && r.text != "")
             return r.text
-        if (r.text != "")
-            return r.text
-        throw Error("XMLHTTP status " . r.status)
-    } catch as e1 {
-        err1 := e1.Message
-        if !(InStr(err1, "80072EE7") || InStr(err1, "could not be resolved") || InStr(err1, "status 0"))
-            return "ERROR: " . err1
+    } catch {
     }
     try {
-        return StudyLink_HttpSendPowerShell(method, url, body).text
+        r := StudyLink_HttpSendPowerShell(method, url, body)
+        if (r.text != "")
+            return r.text
+        return "ERROR: PowerShell produced no output"
     } catch as e2 {
         return "ERROR: " . e2.Message
     }
+}
+
+StudyLink_HttpSendGet(url) {
+    try {
+        r := StudyLink_HttpSendXmlHttp("GET", url, "", false)
+        if (r.status >= 200 && r.status < 300 && StudyLink_IsValidGetResponse(r.text))
+            return r.text
+    } catch {
+    }
+    try {
+        r := StudyLink_HttpSendPowerShell("GET", url)
+        if (StudyLink_IsValidGetResponse(r.text))
+            return r.text
+        if (r.text != "" && !StudyLink_IsHttpErrorText(r.text))
+            return r.text
+        if (StudyLink_IsHttpErrorText(r.text))
+            return r.text
+    } catch as e {
+        return "ERROR: " . e.Message
+    }
+    return "ERROR: Could not read link from API"
 }
 
 StudyLink_HttpGet(params) {
     fullUrl := STUDY_LINKS_API_URL
     if (params != "")
         fullUrl .= "?" . params
-    return StudyLink_HttpSend("GET", fullUrl)
+    return StudyLink_HttpSendGet(fullUrl)
 }
 
 StudyLink_HttpPost(data) {
@@ -162,16 +193,7 @@ StudyLink_ParseFormEncoded(response) {
     return result
 }
 
-; ────────────────────────────────────────────────────────────────────────────
-; Public API: get a stored link for a study key
-; API returns URL-encoded form data: key=subtopic&url=https%3A%2F%2F...
-; Returns the decoded URL string, or "" if not found / on error.
-; ────────────────────────────────────────────────────────────────────────────
-StudyLink_Get(studyKey) {
-    response := StudyLink_HttpGet("key=" . StudyLink_UrlEncode(studyKey))
-    if (SubStr(response, 1, 6) = "ERROR:") {
-        return ""
-    }
+StudyLink_ExtractUrlFromResponse(response) {
     parsed := StudyLink_ParseFormEncoded(response)
     if (parsed.Has("url")) {
         rawUrl := parsed["url"]
@@ -179,6 +201,32 @@ StudyLink_Get(studyKey) {
             return StudyLink_UrlDecode(rawUrl)
     }
     return ""
+}
+
+StudyLink_NormalizeApiError(response) {
+    if (SubStr(response, 1, 6) = "ERROR:")
+        return Trim(SubStr(response, 7))
+    if (response = "")
+        return "Empty API response"
+    if (InStr(response, "<html") || InStr(response, "<!DOCTYPE"))
+        return "Unexpected HTML response from API"
+    return "Could not read link from API"
+}
+
+; Returns Map: ok (true=HTTP+parse succeeded), url (decoded link or ""), err (failure message).
+StudyLink_GetResult(studyKey) {
+    response := StudyLink_HttpGet("key=" . StudyLink_UrlEncode(studyKey))
+    if StudyLink_IsHttpErrorText(response) || !StudyLink_IsValidGetResponse(response) {
+        return Map("ok", false, "url", "", "err", StudyLink_NormalizeApiError(response))
+    }
+    url := StudyLink_ExtractUrlFromResponse(response)
+    return Map("ok", true, "url", url, "err", "")
+}
+
+; Backward-compatible: returns URL string, or "" if not set or on error.
+StudyLink_Get(studyKey) {
+    r := StudyLink_GetResult(studyKey)
+    return (r["ok"] && r["url"] != "") ? r["url"] : ""
 }
 
 ; ────────────────────────────────────────────────────────────────────────────
@@ -221,10 +269,16 @@ StudyLink_RunFunctionalTest() {
     result["setOk"] := setOk
     result["setMsg"] := setOk ? "PASSED" : "FAILED"
 
-    retrieved := StudyLink_Get(testKey)
-    getOk := (retrieved = testUrl)
+    getResult := StudyLink_GetResult(testKey)
+    getOk := (getResult["ok"] && getResult["url"] = testUrl)
     result["getOk"] := getOk
-    result["getMsg"] := getOk ? "PASSED" : "FAILED (got: '" . retrieved . "')"
+    if getOk {
+        result["getMsg"] := "PASSED"
+    } else if !getResult["ok"] {
+        result["getMsg"] := "FAILED (" . getResult["err"] . ")"
+    } else {
+        result["getMsg"] := "FAILED (got: '" . getResult["url"] . "')"
+    }
 
     StudyLink_Set(testKey, "")
 
@@ -232,9 +286,11 @@ StudyLink_RunFunctionalTest() {
 }
 
 StudyLink_Open(studyKey) {
-    url := StudyLink_Get(studyKey)
-    if (url != "") {
-        try Run(url)
+    r := StudyLink_GetResult(studyKey)
+    if (r["ok"] && r["url"] != "") {
+        try Run(r["url"])
+    } else if !r["ok"] {
+        MsgBox "Could not load link: " . r["err"]
     } else {
         MsgBox "No link stored for this study."
     }
