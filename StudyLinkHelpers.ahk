@@ -3,6 +3,10 @@
 global STUDY_LINKS_API_URL :=
     "https://script.google.com/macros/s/AKfycbzzkjpT_47W0TwcjwEulzkV9l5xTtqcwWJmF0h-B-11SwiL_49SPhKXnj3PTsgFUZcp/exec"
 
+global STUDYLINK_KEY_YOUTUBE := "subtopic"
+global STUDYLINK_KEY_ARTICLE := "subtopic_article"
+global STUDYLINK_SENTINEL_NAME := "manage, study, set, top, link"
+
 ; ────────────────────────────────────────────────────────────────────────────
 ; HTTP helpers
 ; ServerXMLHTTP + WinHttp use WinHTTP (failed here with 0x80072EE7 DNS).
@@ -229,6 +233,21 @@ StudyLink_Get(studyKey) {
     return (r["ok"] && r["url"] != "") ? r["url"] : ""
 }
 
+StudyLink_FormatLinkLabel(linkResult) {
+    if !linkResult["ok"]
+        return "(API error — " . linkResult["err"] . ")"
+    return linkResult["url"] != "" ? linkResult["url"] : "(none)"
+}
+
+StudyLink_OpenUrlInChrome(url) {
+    if (Trim(url) = "")
+        return false
+    try Run('chrome.exe "' url '"')
+    catch
+        try Run(url)
+    return true
+}
+
 ; ────────────────────────────────────────────────────────────────────────────
 ; Public API: set a link for a study key
 ; Sends POST with key and url; accepts status=ok form data or plain-text "Saved"
@@ -259,30 +278,63 @@ StudyLink_IniPath() {
     return A_ScriptDir "\data\study_links.ini"
 }
 
-; Functional test: verifies both GET and SET operations against the live API.
-StudyLink_RunFunctionalTest() {
-    testKey := "subtopic_test"
-    testUrl := "https://example.com/api-test-link-" . A_TickCount
-    result := Map()
+StudyLink_ManageSubtopicSentinelPath() {
+    return A_MyDocuments "\" STUDYLINK_SENTINEL_NAME
+}
 
-    setOk := StudyLink_Set(testKey, testUrl)
-    result["setOk"] := setOk
-    result["setMsg"] := setOk ? "PASSED" : "FAILED"
-
-    getResult := StudyLink_GetResult(testKey)
-    getOk := (getResult["ok"] && getResult["url"] = testUrl)
-    result["getOk"] := getOk
-    if getOk {
-        result["getMsg"] := "PASSED"
-    } else if !getResult["ok"] {
-        result["getMsg"] := "FAILED (" . getResult["err"] . ")"
-    } else {
-        result["getMsg"] := "FAILED (got: '" . getResult["url"] . "')"
+StudyLink_EnsureManageSubtopicSentinel() {
+    path := StudyLink_ManageSubtopicSentinelPath()
+    if FileExist(path)
+        return path
+    try {
+        if !DirExist(A_MyDocuments)
+            return ""
+        f := FileOpen(path, "w")
+        if IsObject(f)
+            f.Close()
+    } catch {
+        return ""
     }
+    return FileExist(path) ? path : ""
+}
 
+StudyLink_RunKeyRoundTrip(testKey, testUrl, &setMsg := "", &getMsg := "") {
+    setOk := StudyLink_Set(testKey, testUrl)
+    setMsg := setOk ? "PASSED" : "FAILED"
+    getResult := StudyLink_GetResult(testKey)
+    getOk := false
+    if (getResult["ok"] && getResult["url"] = testUrl) {
+        getOk := true
+        getMsg := "PASSED"
+    } else if !getResult["ok"] {
+        getMsg := "FAILED (" . getResult["err"] . ")"
+    } else {
+        getMsg := "FAILED (got: '" . getResult["url"] . "')"
+    }
     StudyLink_Set(testKey, "")
+    return { setOk: setOk, getOk: getOk }
+}
 
-    return result
+; Functional test: verifies GET and SET for YouTube and article keys against the live API.
+StudyLink_RunFunctionalTest() {
+    tick := A_TickCount
+    result := Map()
+    yt := StudyLink_RunKeyRoundTrip("subtopic_test", "https://example.com/yt-test-" . tick, &ytSetMsg, &ytGetMsg)
+    art := StudyLink_RunKeyRoundTrip("subtopic_article_test", "https://example.com/article-test-" . tick, &artSetMsg,
+        &artGetMsg)
+    result["youtubeSetOk"] := yt.setOk
+    result["youtubeGetOk"] := yt.getOk
+    result["youtubeSetMsg"] := ytSetMsg
+    result["youtubeGetMsg"] := ytGetMsg
+    result["articleSetOk"] := art.setOk
+    result["articleGetOk"] := art.getOk
+    result["articleSetMsg"] := artSetMsg
+    result["articleGetMsg"] := artGetMsg
+    result["setOk"] := yt.setOk && art.setOk
+    result["getOk"] := yt.getOk && art.getOk
+    result["setMsg"] := result["setOk"] ? "PASSED (YouTube + article)" : "FAILED"
+        result["getMsg"] := result["getOk"] ? "PASSED (YouTube + article)" : "FAILED"
+            return result
 }
 
 StudyLink_Open(studyKey) {

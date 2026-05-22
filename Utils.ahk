@@ -8263,6 +8263,8 @@ global g_StudyTopics := Map(
     6, { name: "German", mnemonicsPath: "\studies\german\mnemonics-german.md",
         plansPath: "\studies\german\german-plan.md" }
 )
+#include %A_ScriptDir%\StudyArticleLink.ahk
+
 global g_StudyTopicSelectorGui := false
 global g_StudyTopicSelectorActive := false
 global g_StudyTopicSelectorPhase := ""           ; "category" | "topic"
@@ -8845,6 +8847,9 @@ StudyTopicSelector_UnbindCategoryHotkeys() {
     try Hotkey("0", "Off")
     try Hotkey("1", "Off")
     try Hotkey("2", "Off")
+    try Hotkey("3", "Off")
+    try Hotkey("4", "Off")
+    try Hotkey("5", "Off")
 }
 
 StudyTopicSelector_UnbindDigitHotkeys() {
@@ -8946,10 +8951,11 @@ StudyTopicSelector_ShowCategoryPhase() {
     g_StudyTopicSelectorGui.Add("Text", "w300", "[1] Mnemonics")
     g_StudyTopicSelectorGui.Add("Text", "w300", "[2] Plans")
     g_StudyTopicSelectorGui.Add("Text", "w300", "[3] Manage Study Subtopic Link")
-    g_StudyTopicSelectorGui.Add("Text", "w300", "[4] Technique")
+    g_StudyTopicSelectorGui.Add("Text", "w300", "[4] Manage Study Article Link")
+    g_StudyTopicSelectorGui.Add("Text", "w300", "[5] Technique")
     g_StudyTopicSelectorGui.Add("Text", "w300 h1 Background45475A y+10")
     g_StudyTopicSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_StudyTopicSelectorGui.Add("Text", "w300 Center", "Press 1-4 | Backspace/Esc to cancel")
+    g_StudyTopicSelectorGui.Add("Text", "w300 Center", "Press 1-5 | Backspace/Esc to cancel")
 
     try {
         g_StudyTopicSelectorGui.OnEvent("Escape", StudyTopicSelector_GuiEscape)
@@ -8962,7 +8968,8 @@ StudyTopicSelector_ShowCategoryPhase() {
     Hotkey("1", StudyTopicSelector_SelectMnemonics, "On")
     Hotkey("2", StudyTopicSelector_SelectPlans, "On")
     Hotkey("3", StudyTopicSelector_ManageLinks, "On")
-    Hotkey("4", StudyTopicSelector_SelectTechnique, "On")
+    Hotkey("4", StudyTopicSelector_ManageArticleLinks, "On")
+    Hotkey("5", StudyTopicSelector_SelectTechnique, "On")
     Hotkey("Backspace", StudyTopicSelector_Cancel, "On")
     StudyTopicSelector_BindRobustEscape()
 
@@ -8986,6 +8993,7 @@ StudyTopicSelector_ManageLinksEsc(*) {
 global g_StudyLinksGui := false
 StudyTopicSelector_ManageLinks(*) {
     global g_StudyLinksGui
+    StudyLink_EnsureManageSubtopicSentinel()
     StudyTopicSelector_UnbindRobustEscape()
     StudyTopicSelector_SafeDestroyGui(g_StudyLinksGui)
     g_StudyLinksGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner -DPIScale")
@@ -9001,13 +9009,10 @@ StudyTopicSelector_ManageLinks(*) {
     g_StudyLinksGui.Add("Text", "w400 Center", "🔗 Manage Study Subtopic Link")
     g_StudyLinksGui.Add("Text", "w400 h1 Background45475A")
     g_StudyLinksGui.SetFont("s11 cCDD6F4", "Segoe UI")
-    linkResult := StudyLink_GetResult("subtopic")
-    linkLabel := linkResult["ok"]
-        ? (linkResult["url"] != "" ? linkResult["url"] : "(none)")
-            : "(API error — " . linkResult["err"] . ")"
-    g_StudyLinksGui.Add("Text", "w400", "Current link: " . linkLabel)
-    g_StudyLinksGui.Add("Text", "w400", "[1] Open the link")
-    g_StudyLinksGui.Add("Text", "w400", "[2] Set the link")
+    ytResult := StudyLink_GetResult(STUDYLINK_KEY_YOUTUBE)
+    g_StudyLinksGui.Add("Text", "w400", "Current YouTube link: " . StudyLink_FormatLinkLabel(ytResult))
+    g_StudyLinksGui.Add("Text", "w400", "[1] Open YouTube link")
+    g_StudyLinksGui.Add("Text", "w400", "[2] Set YouTube link")
     g_StudyLinksGui.Add("Text", "w400 h1 Background45475A y+10")
     g_StudyLinksGui.SetFont("s9 c6C7086", "Segoe UI")
     g_StudyLinksGui.Add("Text", "w400 Center", "Press 1-2 | Esc to cancel")
@@ -9018,27 +9023,20 @@ StudyTopicSelector_ManageLinks(*) {
     g_StudyLinksGui.Show()
 }
 
-; [1] Open the saved subtopic link in Google Chrome
+; [1] Open the saved YouTube subtopic link in Google Chrome
 StudyTopicSelector_ManageLinks_Open(*) {
     StudyTopicSelector_Close()
-    linkResult := StudyLink_GetResult("subtopic")
-    if (!linkResult["ok"]) {
-        ShowCenteredOverlay_Utils("❌ Could not load link from API: " . linkResult["err"], 3500, BANNER_ACCENT_ERROR)
-        return
-    }
-    url := linkResult["url"]
+    linkResult := StudyLink_GetResult(STUDYLINK_KEY_YOUTUBE)
     if (!linkResult["ok"]) {
         ShowCenteredOverlay_Utils("❌ Could not load link from API: " . linkResult["err"], 3500, BANNER_ACCENT_ERROR)
         return
     }
     url := linkResult["url"]
     if (url != "") {
-        try Run('chrome.exe "' url '"')
-        catch
-            try Run(url)
-        ShowCenteredOverlay_Utils("✅ Opening link in Chrome...", 2000, BANNER_ACCENT_SUCCESS)
+        StudyLink_OpenUrlInChrome(url)
+        ShowCenteredOverlay_Utils("✅ Opening YouTube link in Chrome...", 2000, BANNER_ACCENT_SUCCESS)
     } else {
-        ShowCenteredOverlay_Utils("⚠ No link stored for this study. Use [Set the link] first.", 2500,
+        ShowCenteredOverlay_Utils("⚠ No YouTube link stored. Use [2] Set YouTube link first.", 2500,
             BANNER_ACCENT_INTERMEDIATE)
     }
 }
@@ -9312,7 +9310,7 @@ StudyTopicSelector_ManageLinks_Set(*) {
             ; Close share panel while Chrome still has focus (before loading overlay steals it).
             StudyLink_CleanupYoutubeSharePanel(uia, chromeHwnd)
             StandardLoadingBar_Show("Saving link…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
-            setOk := StudyLink_Set("subtopic", url)
+            setOk := StudyLink_Set(STUDYLINK_KEY_YOUTUBE, url)
             try StandardLoadingBar_Hide(0)
             if setOk
                 ShowCenteredOverlay_Utils("✅ Link saved to study notes.", 3000, BANNER_ACCENT_SUCCESS)
@@ -9478,7 +9476,7 @@ StudyTopicSelector_Cancel(*) {
 ; Tear-down order aligned with OutlookCopilotSelector_Close (Shift keys.ahk).
 StudyTopicSelector_Close() {
     global g_StudyTopicSelectorGui, g_StudyTopicSelectorActive, g_StudyTopicSelectorPhase, g_StudyTopicSelectorCategory,
-        g_StudyTopicSelectorLastForegroundMonitorIdx, g_StudyLinksGui, g_StudyLinkSubmenuGui
+        g_StudyTopicSelectorLastForegroundMonitorIdx, g_StudyLinksGui, g_StudyArticleLinksGui, g_StudyLinkSubmenuGui
 
     if (!g_StudyTopicSelectorActive)
         return
@@ -9500,6 +9498,8 @@ StudyTopicSelector_Close() {
     g_StudyTopicSelectorGui := false
     StudyTopicSelector_SafeDestroyGui(g_StudyLinksGui)
     g_StudyLinksGui := false
+    StudyTopicSelector_SafeDestroyGui(g_StudyArticleLinksGui)
+    g_StudyArticleLinksGui := false
     StudyTopicSelector_SafeDestroyGui(g_StudyLinkSubmenuGui)
     g_StudyLinkSubmenuGui := ""
     loop 9 {

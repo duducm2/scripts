@@ -6,13 +6,13 @@ This document records how to create and use **empty sentinel files** in the user
 
 ## Canonical sentinel: Manage Study Subtopic Link
 
-| Property         | Value                                                                                                  |
-| ---------------- | ------------------------------------------------------------------------------------------------------ |
-| **Feature**      | Manage Study Subtopic Link (`Utils.ahk`, Study Topic selector option `[3]`)                            |
-| **Filename**     | `manage, study, set, top, link` (comma-separated tokens from the UI label; no extension)               |
-| **Location**     | User Documents folder (`A_MyDocuments` in AHK; `%UserProfile%\Documents\` on typical Windows profiles) |
-| **Content**      | Empty (0 bytes)                                                                                        |
-| **Remote state** | `StudyLink_Get` / `StudyLink_Set` via `StudyLinkHelpers.ahk` (HTTP to Apps Script, key `subtopic`)     |
+| Property         | Value                                                                                                                                                                                                          |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Feature**      | Manage Study Subtopic Link — module 3 only (`Utils.ahk`, Study Topic `[3]`; article module 4 uses `StudyArticleLink.ahk` without this sentinel)                                                                |
+| **Filename**     | `manage, study, set, top, link` (comma-separated tokens from the UI label; no extension)                                                                                                                       |
+| **Location**     | User Documents folder (`A_MyDocuments` in AHK; `%UserProfile%\Documents\` on typical Windows profiles)                                                                                                         |
+| **Content**      | Empty (0 bytes)                                                                                                                                                                                                |
+| **Remote state** | `StudyLink_Get` / `StudyLink_Set` via `StudyLinkHelpers.ahk` — keys `subtopic` (YouTube) and `subtopic_article` (web articles); see [study-link-lightweight-api-setup.md](study-link-lightweight-api-setup.md) |
 
 The sentinel is a **local presence flag** only. It does not store the YouTube URL; the URL lives in the remote API. Scripts may check `FileExist` on this path in the future without a network round-trip.
 
@@ -130,12 +130,12 @@ ok := FileExist(path) && FileRead(path) = ""
 
 ## Future integration (optional)
 
-If hotkeys should auto-create the sentinel on first use, add helpers to `StudyLinkHelpers.ahk`:
+`StudyLinkHelpers.ahk` implements:
 
 - `StudyLink_ManageSubtopicSentinelPath()` → `A_MyDocuments "\manage, study, set, top, link"`
 - `StudyLink_EnsureManageSubtopicSentinel()` → create if missing; return path or `""`
 
-Wire only where a local marker is required; URL read/write stays on `StudyLink_GetResult` / `StudyLink_Set`.
+Called from `StudyTopicSelector_ManageLinks` in `Utils.ahk` (module 3). Module 4 (`StudyArticleLink.ahk`) uses the same HTTP helpers but does not create a separate sentinel. URL read/write: `StudyLink_GetResult` / `StudyLink_Set`.
 
 ---
 
@@ -143,7 +143,9 @@ Wire only where a local marker is required; URL read/write stays on `StudyLink_G
 
 - [focus-mode-secondary-monitor-blackout.md](focus-mode-secondary-monitor-blackout.md) — repo-local empty sentinels for cross-process focus mode
 - [efficiency-canon.md](efficiency-canon.md) — IPC and sentinel return-value patterns
-- `StudyLinkHelpers.ahk` — remote GET/POST for `subtopic` links
+- `StudyLinkHelpers.ahk` — remote GET/POST for `subtopic` and `subtopic_article`
+- `StudyArticleLink.ahk` — module 4 article GUI (no YouTube code)
+- [study-link-lightweight-api-setup.md](study-link-lightweight-api-setup.md) — Guide A (Apps Script) and Guide B (MacroDroid)
 
 ---
 
