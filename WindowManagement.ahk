@@ -203,11 +203,11 @@ WM_SendSnapHalfPairSequence() {
     SendInput "{Esc}"
     Sleep 100
     SendInput "#z"
-    Sleep 100
+    Sleep 400
     SendInput "4"
-    Sleep 100
+    Sleep 400
     SendInput "{Enter}"
-    Sleep 100
+    Sleep 400
     SendInput "{Enter}"
 }
 
