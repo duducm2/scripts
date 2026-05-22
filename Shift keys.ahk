@@ -13250,6 +13250,133 @@ EnsureItemsViewFocus() {
     }
 }
 
+Explorer_FindItemsView(root) {
+    if !root
+        return 0
+    try {
+        itemsView := root.FindFirst({ AutomationId: "ItemsView", Type: "List" })
+        if itemsView
+            return itemsView
+    }
+    try {
+        itemsView := root.FindFirst({ ClassName: "UIItemsView", Type: "List" })
+        if itemsView
+            return itemsView
+    }
+    try {
+        itemsView := root.FindFirst({ Name: "Items View", Type: "List", matchmode: "Substring" })
+        if itemsView
+            return itemsView
+    }
+    return 0
+}
+
+Explorer_GetItemsViewSelection(itemsView) {
+    if !itemsView
+        return []
+    try {
+        if itemsView.GetPropertyValue(UIA.Property.IsSelectionPatternAvailable)
+            return itemsView.SelectionPattern.GetSelection()
+    } catch {
+    }
+    selected := []
+    try {
+        for item in itemsView.FindAll({ Type: "ListItem" }) {
+            try {
+                if item.GetPropertyValue(UIA.Property.IsSelected)
+                    selected.Push(item)
+            } catch {
+            }
+        }
+    } catch {
+    }
+    return selected
+}
+
+Explorer_RestoreItemsViewSelection(itemsView, selected) {
+    if !itemsView || !selected || selected.Length = 0
+        return false
+    try {
+        first := selected[1]
+        try first.Select()
+        catch {
+            try first.SelectionItemPattern.Select()
+            catch
+                return false
+        }
+        if (selected.Length > 1) {
+            loop selected.Length - 1 {
+                item := selected[A_Index + 1]
+                try item.AddToSelection()
+                catch {
+                    try item.SelectionItemPattern.AddToSelection()
+                    catch {
+                    }
+                }
+            }
+        }
+        try first.SetFocus()
+        catch {
+        }
+        return true
+    } catch {
+    }
+    return false
+}
+
+Explorer_EnsureItemsViewFocusPreserveSelection() {
+    explorerHwnd := WinExist("A")
+    if !explorerHwnd
+        throw Error("No active Explorer window.")
+
+    root := UIA.ElementFromHandle(explorerHwnd)
+    if !root
+        throw Error("Could not read Explorer UI.")
+
+    itemsView := Explorer_FindItemsView(root)
+    if !itemsView
+        throw Error("Could not find Items View in Explorer.")
+
+    savedSelection := Explorer_GetItemsViewSelection(itemsView)
+
+    if itemsView.HasKeyboardFocus && savedSelection.Length > 0
+        return
+
+    if !itemsView.HasKeyboardFocus {
+        try itemsView.SetFocus()
+        Sleep 120
+        try {
+            root := UIA.ElementFromHandle(explorerHwnd)
+            refreshed := Explorer_FindItemsView(root)
+            if refreshed
+                itemsView := refreshed
+        } catch {
+        }
+    }
+
+    if !itemsView.HasKeyboardFocus {
+        loop 6 {
+            Send "{F6}"
+            Sleep 120
+            try {
+                root := UIA.ElementFromHandle(explorerHwnd)
+                refreshed := Explorer_FindItemsView(root)
+                if refreshed
+                    itemsView := refreshed
+            } catch {
+            }
+            if itemsView && itemsView.HasKeyboardFocus
+                break
+        }
+    }
+
+    if savedSelection.Length > 0
+        Explorer_RestoreItemsViewSelection(itemsView, savedSelection)
+
+    if Explorer_GetItemsViewSelection(itemsView).Length = 0
+        throw Error("No file selected in Explorer")
+}
+
 ; Shift + S : Focus search bar - Search
 +s:: Send "^e"
 
@@ -13292,12 +13419,12 @@ Explorer_CopyOneDriveShareLink_BoschGroup() {
     ;   4) Select "People in Bosch Group" and Apply
     ;   5) Copy link and confirm clipboard changed
 
-    ; Ensure the focus is in the items view so the context menu targets the selected file.
-    EnsureItemsViewFocus()
-    Sleep 150
-    ShowSmallLoadingIndicator_ChatGPT("Sharing file…")
-
     try {
+        ; Ensure focus and file selection in ItemsView before opening the context menu.
+        Explorer_EnsureItemsViewFocusPreserveSelection()
+        Sleep 200
+        ShowSmallLoadingIndicator_ChatGPT("Sharing file…")
+
         ; 1) Open classic context menu and trigger Share via accelerator.
         ; Shift+F10 is the canonical "classic menu" key, more reliable than AppsKey on some keyboards.
         Send "+{F10}"
@@ -13336,6 +13463,11 @@ Explorer_CopyOneDriveShareLink_BoschGroup() {
         OneDriveShare_Click(copyBtn)
         if !OneDriveShare_WaitForClipboardChange(oldClip, 10000)
             throw Error("Clipboard did not update after 'Copy link'.")
+
+        Sleep 1000
+        try WinClose("ahk_id " shareHwnd)
+        catch {
+        }
     } catch Error as e {
         MsgBox("Share macro failed:`n" e.Message, "Shift+R (Share file)", "IconX")
     } finally {
