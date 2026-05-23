@@ -1567,7 +1567,6 @@ HandleMinimizedListByChar(char, *) {
             return
         if (g_WM_MinimizedListOpenModeArmed) {
             g_WM_MinimizedListOpenModeArmed := false
-            g_WM_MinimizedListActive := false
             WM_MinimizedList_UnbindHotkeys()
             ; #region agent log
             WM_AgentDebugLog("O", "HandleMinimizedListByChar", "open_slot", '{"char":"' . char .
@@ -1714,7 +1713,7 @@ WM_MinimizedList_Cleanup() {
     global g_WM_MinimizedListGui, g_WM_MinimizedListActive, g_WM_MinimizedListRows, g_WM_MinimizedKeyMap,
         g_WM_MinimizedListRefreshing, g_WM_MinimizedListExcludePickerActive,
         g_WM_MinimizedListExcludePickerRows, g_WM_MinimizedListExcludePickerMap, g_WM_MinimizedListOpenModeArmed
-    if (!g_WM_MinimizedListActive)
+    if (!g_WM_MinimizedListActive && !(IsObject(g_WM_MinimizedListGui) && g_WM_MinimizedListGui.Hwnd))
         return
     g_WM_MinimizedListActive := false
     g_WM_MinimizedListRefreshing := false
@@ -1732,6 +1731,9 @@ WM_MinimizedList_Cleanup() {
         try g_WM_MinimizedListGui.Destroy()
     }
     g_WM_MinimizedListGui := false
+    ; #region agent log
+    WM_AgentDebugLog("O", "WM_MinimizedList_Cleanup", "modal_destroyed", "{}")
+    ; #endregion
 }
 
 WM_MinimizedList_Cancel(*) {
