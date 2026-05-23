@@ -161,6 +161,10 @@ global g_WM_MinimizedListExcludePickerRows := []
 global g_WM_MinimizedListExcludePickerMap := Map()
 global g_WM_MinimizedListExcludePickerDigitSequence := ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"]
 global g_WM_MinimizedListOpenModeArmed := false
+global g_WM_MinimizedListCharActionLock := false
+global g_WM_MinimizedListLastCharActionTick := 0
+global g_WM_MinimizedListLastCharActionKey := ""
+global g_WM_MinimizedListLastOpenArmTick := 0
 global g_WM_LastEnumerateStats := Map()
 global g_WM_LastBackgroundCollectStats := Map()
 ; When daemon is used, foreground is driven by daemon cache (lower-frequency check); else legacy 100ms polling
@@ -1127,6 +1131,41 @@ WM_IsDigitSlotChar(c) {
     return o >= Ord("0") && o <= Ord("9")
 }
 
+; [A] and [O] are command keys — never assign hidden-window slots to a/o (same physical key closes/opens).
+WM_MinimizedList_IsReservedSlotChar(char) {
+    c := StrLower(char)
+    return c = "a" || c = "o"
+}
+
+WM_MinimizedList_WindowSlotChars() {
+    global g_WM_MinimizedCharSequence
+    chars := []
+    for ch in g_WM_MinimizedCharSequence {
+        if (!WM_MinimizedList_IsReservedSlotChar(ch))
+            chars.Push(ch)
+    }
+    return chars
+}
+
+; Hotkey + keys poll both fire on one press — consume duplicate within debounce window.
+WM_MinimizedList_TryConsumeCharAction(char) {
+    global g_WM_MinimizedListCharActionLock, g_WM_MinimizedListLastCharActionTick, g_WM_MinimizedListLastCharActionKey
+    if (g_WM_MinimizedListCharActionLock)
+        return false
+    key := StrLower(char)
+    if (g_WM_MinimizedListLastCharActionKey = key && A_TickCount - g_WM_MinimizedListLastCharActionTick < 400)
+        return false
+    g_WM_MinimizedListCharActionLock := true
+    g_WM_MinimizedListLastCharActionKey := key
+    g_WM_MinimizedListLastCharActionTick := A_TickCount
+    return true
+}
+
+WM_MinimizedList_ReleaseCharActionLock() {
+    global g_WM_MinimizedListCharActionLock
+    g_WM_MinimizedListCharActionLock := false
+}
+
 WM_MinimizedList_KeyDown(keyName) {
     try {
         if (WM_IsDigitSlotChar(keyName))
@@ -1419,13 +1458,13 @@ WM_MinimizedList_KeyLabel(char) {
 }
 
 WM_MinimizedList_AssignKeys(rows) {
-    global g_WM_MinimizedCharSequence, g_WM_MinimizedKeyMap
+    global g_WM_MinimizedKeyMap
+    slotChars := WM_MinimizedList_WindowSlotChars()
     g_WM_MinimizedKeyMap := Map()
     windows := []
-    maxSlots := g_WM_MinimizedCharSequence.Length
-    limit := Min(rows.Length, maxSlots)
+    limit := Min(rows.Length, slotChars.Length)
     loop limit {
-        ch := g_WM_MinimizedCharSequence[A_Index]
+        ch := slotChars[A_Index]
         row := rows[A_Index]
         g_WM_MinimizedKeyMap[ch] := row.hwnd
         windows.Push({ hwnd: row.hwnd, title: row.title, char: ch, label: WM_MinimizedList_KeyLabel(ch) })
@@ -1497,10 +1536,16 @@ WM_MinimizedList_OpenHwnd(hwnd) {
 
 HandleMinimizedListOpenModeArm(*) {
     global g_WM_MinimizedListActive, g_WM_MinimizedListRefreshing, g_WM_MinimizedListExcludePickerActive,
-        g_WM_MinimizedListOpenModeArmed
+        g_WM_MinimizedListOpenModeArmed, g_WM_MinimizedListLastOpenArmTick
     if (!g_WM_MinimizedListActive || g_WM_MinimizedListRefreshing || g_WM_MinimizedListExcludePickerActive)
         return
+    if (A_TickCount - g_WM_MinimizedListLastOpenArmTick < 250)
+        return
+    g_WM_MinimizedListLastOpenArmTick := A_TickCount
     g_WM_MinimizedListOpenModeArmed := true
+    ; #region agent log
+    WM_AgentDebugLog("O", "HandleMinimizedListOpenModeArm", "open_mode_armed", "{}")
+    ; #endregion
     WM_MinimizedList_RepaintMainList()
 }
 
@@ -1510,31 +1555,51 @@ HandleMinimizedListByChar(char, *) {
         g_WM_MinimizedListOpenModeArmed
     if (!g_WM_MinimizedListActive || g_WM_MinimizedListRefreshing || g_WM_MinimizedListExcludePickerActive)
         return
-    hwnd := g_WM_MinimizedKeyMap.Get(char, "")
-    if (hwnd = "")
-        hwnd := g_WM_MinimizedKeyMap.Get(StrLower(char), "")
-    if (!hwnd)
+    if (WM_MinimizedList_IsReservedSlotChar(char))
         return
-    if (g_WM_MinimizedListOpenModeArmed) {
-        g_WM_MinimizedListOpenModeArmed := false
-        WM_MinimizedList_OpenHwnd(hwnd)
-        WM_MinimizedList_Cleanup()
+    if (!WM_MinimizedList_TryConsumeCharAction(char))
         return
+    try {
+        hwnd := g_WM_MinimizedKeyMap.Get(char, "")
+        if (hwnd = "")
+            hwnd := g_WM_MinimizedKeyMap.Get(StrLower(char), "")
+        if (!hwnd)
+            return
+        if (g_WM_MinimizedListOpenModeArmed) {
+            g_WM_MinimizedListOpenModeArmed := false
+            g_WM_MinimizedListActive := false
+            WM_MinimizedList_UnbindHotkeys()
+            ; #region agent log
+            WM_AgentDebugLog("O", "HandleMinimizedListByChar", "open_slot", '{"char":"' . char .
+                '","runId":"post-fix"}')
+            ; #endregion
+            WM_MinimizedList_OpenHwnd(hwnd)
+            WM_MinimizedList_Cleanup()
+            return
+        }
+        ; #region agent log
+        WM_AgentDebugLog("O", "HandleMinimizedListByChar", "close_slot", '{"char":"' . char . '","runId":"post-fix"}')
+        ; #endregion
+        WM_MinimizedList_CloseHwnd(hwnd)
+        WM_MinimizedList_Refresh(hwnd)
+    } finally {
+        WM_MinimizedList_ReleaseCharActionLock()
     }
-    WM_MinimizedList_CloseHwnd(hwnd)
-    WM_MinimizedList_Refresh(hwnd)
 }
 
 WM_MinimizedList_BuildDisplayText(rows, windows) {
-    global g_WM_MinimizedCharSequence, g_WM_MinimizedListOpenModeArmed
+    global g_WM_MinimizedListOpenModeArmed
+    slotCount := WM_MinimizedList_WindowSlotChars().Length
     displayText := "=== HIDDEN WINDOWS (NOT VISIBLE ON MONITORS) ===`n`n"
     for w in windows
         displayText .= "[" . w.label . "] " . w.title . "`n"
-    if (rows.Length > g_WM_MinimizedCharSequence.Length)
-        displayText .= "`n(" . (rows.Length - g_WM_MinimizedCharSequence.Length) . " more — close some and reopen)`n"
+    if (rows.Length > slotCount)
+        displayText .= "`n(" . (rows.Length - slotCount) . " more — close some and reopen)`n"
     if (g_WM_MinimizedListOpenModeArmed)
-        displayText .= "`n>>> Press a number to OPEN (closes this list) <<<`n"
-    displayText .= "`n[O] Open window  [A] Add to exclude list  [ESC] Cancel"
+        displayText .= "`n>>> Press a slot key to OPEN (closes this list) <<<`n"
+    else
+        displayText .= "`n>>> [O] then slot key = OPEN  |  slot key alone = CLOSE <<<`n"
+    displayText .= "`n[O] Arm open  [A] Add to exclude list  [ESC] Cancel"
     return displayText
 }
 
