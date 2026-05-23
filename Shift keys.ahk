@@ -19564,6 +19564,8 @@ SwitchAIModel() {
             }
         } else {
             ClickButton(enterFsBtn)
+            Sleep 300
+            Send "{Escape}"
         }
     }
 }
