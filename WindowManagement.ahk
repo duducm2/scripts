@@ -156,6 +156,8 @@ global g_WM_MinimizedListRefreshing := false
 global g_WM_MinimizedListTrackTimer := ""
 global g_WM_MinimizedListLastForegroundMonitorIdx := 0
 global g_WM_BackgroundTitleExcludes := []
+global g_WM_BackgroundTitleExcludesReady := false
+global g_WM_MinimizedListCollectForeHwnd := 0
 global g_WM_MinimizedListExcludePickerActive := false
 global g_WM_MinimizedListExcludePickerRows := []
 global g_WM_MinimizedListExcludePickerMap := Map()
@@ -438,8 +440,11 @@ WM_WindowTools_OnShowMinimizedList(*) {
     StandardLoadingBar_CloseKeysOverlay()
     StandardLoadingBar_Hide(0)
     Sleep 50
+    WM_BackgroundTitleExcludes_Init()
     foreBeforeScan := 0
     try foreBeforeScan := WinGetID("A")
+    global g_WM_MinimizedListCollectForeHwnd
+    g_WM_MinimizedListCollectForeHwnd := foreBeforeScan
     StandardLoadingBar_Show("⏳ Scanning hidden windows (z-order)...", BANNER_ACCENT_INTERMEDIATE, { passive: false,
         centerOnHwnd: 0 })
     try {
@@ -521,6 +526,13 @@ WM_SortBackgroundRows(&rows) {
     }
 }
 
+WM_ArrJoin(arr, sep := "`n") {
+    out := ""
+    for item in arr
+        out .= (out = "" ? "" : sep) . item
+    return out
+}
+
 WM_BackgroundTitleExcludes_IniPath() {
     return A_ScriptDir "\data\wm_background_excludes.ini"
 }
@@ -536,49 +548,144 @@ WM_BackgroundTitleExcludes_Register(&list, &seen, needle) {
     list.Push(n)
 }
 
+WM_BackgroundTitleExcludes_WriteList(list) {
+    path := WM_BackgroundTitleExcludes_IniPath()
+    try DirCreate(A_ScriptDir "\data")
+    lines := ["[Excludes]", "; One entry per line: title substring, or exe|title"]
+    for n in list
+        lines.Push(n)
+    try FileDelete(path)
+    FileAppend(WM_ArrJoin(lines, "`n") "`n", path, "UTF-8")
+}
+
+WM_BackgroundTitleExcludes_ParseDiskEntries(raw) {
+    entries := []
+    seen := Map()
+    for line in StrSplit(raw, "`n", "`r") {
+        line := Trim(line)
+        if (line = "" || SubStr(line, 1, 1) = ";" || line = "[Excludes]")
+            continue
+        if (SubStr(line, 1, 1) = "[")
+            continue
+        if RegExMatch(line, "i)^TitleContains=(.*)", &m)
+            line := Trim(m[1])
+        if (line = "")
+            continue
+        ; Legacy single-line pipe-separated values (no exe|title needles).
+        if (InStr(line, "|") && !RegExMatch(line, "\.exe\|")) {
+            for part in StrSplit(line, "|")
+                WM_BackgroundTitleExcludes_Register(&entries, &seen, part)
+            continue
+        }
+        WM_BackgroundTitleExcludes_Register(&entries, &seen, line)
+    }
+    return entries
+}
+
 WM_BackgroundTitleExcludes_Init() {
-    global g_WM_BackgroundTitleExcludes
+    global g_WM_BackgroundTitleExcludes, g_WM_BackgroundTitleExcludesReady
     list := []
     seen := Map()
     for needle in ["IT Workplace", "Drafts Monitor", "Form1", "Screenpresso"]
         WM_BackgroundTitleExcludes_Register(&list, &seen, needle)
     path := WM_BackgroundTitleExcludes_IniPath()
+    iniReadOk := true
+    rawLen := 0
     if (!FileExist(path)) {
         try {
-            DirCreate(A_ScriptDir "\data")
-            IniWrite("IT Workplace|Drafts Monitor|Form1|Screenpresso", path, "Excludes", "TitleContains")
+            WM_BackgroundTitleExcludes_WriteList(list)
         } catch {
+            iniReadOk := false
         }
     }
     try {
-        raw := IniRead(path, "Excludes", "TitleContains", "")
-        if (raw != "") {
-            for part in StrSplit(raw, ["|", "`n", "`r`n"], "`t ")
-                WM_BackgroundTitleExcludes_Register(&list, &seen, part)
-        }
+        raw := FileRead(path, "UTF-8")
+        rawLen := StrLen(raw)
+        for entry in WM_BackgroundTitleExcludes_ParseDiskEntries(raw)
+            WM_BackgroundTitleExcludes_Register(&list, &seen, entry)
     } catch {
+        iniReadOk := false
     }
     g_WM_BackgroundTitleExcludes := list
+    g_WM_BackgroundTitleExcludesReady := true
+    ; #region agent log
+    WM_AgentDebugLog("F", "WM_BackgroundTitleExcludes_Init", "loaded", '{"count":' . list.Length . ',"rawLen":' .
+        rawLen . ',"iniReadOk":' . (iniReadOk ? 1 : 0) . '}')
+    ; #endregion
 }
 
-WM_BackgroundTitleIsExcluded(title) {
+WM_BackgroundTitleExcludes_Ensure() {
+    global g_WM_BackgroundTitleExcludesReady
+    if (!g_WM_BackgroundTitleExcludesReady)
+        WM_BackgroundTitleExcludes_Init()
+}
+
+WM_BackgroundFilterRowsByTitleExcludes(rows) {
+    filtered := []
+    for row in rows {
+        exe := row.HasProp("exe") ? row.exe : ""
+        if (!WM_BackgroundTitleIsExcluded(row.title, exe))
+            filtered.Push(row)
+    }
+    return filtered
+}
+
+WM_BackgroundTitleIsExcluded(title, exe := "") {
     global g_WM_BackgroundTitleExcludes
-    if (title = "")
+    if (title = "" && exe = "")
         return false
     t := StrLower(title)
+    e := StrLower(exe)
     for needle in g_WM_BackgroundTitleExcludes {
-        if (needle != "" && InStr(t, StrLower(needle)))
+        n := Trim(needle)
+        if (n = "")
+            continue
+        if (InStr(n, "|")) {
+            parts := StrSplit(n, "|", , 2)
+            exeNeedle := StrLower(Trim(parts[1]))
+            titleNeedle := parts.Length > 1 ? StrLower(Trim(parts[2])) : ""
+            if (exeNeedle != "" && e != "" && InStr(e, exeNeedle)) {
+                if (titleNeedle = "" || (t != "" && InStr(t, titleNeedle)))
+                    return true
+            }
+            continue
+        }
+        nLower := StrLower(n)
+        if (t != "" && InStr(t, nLower))
+            return true
+        if (e != "" && InStr(e, nLower))
             return true
     }
     return false
 }
 
-WM_BackgroundTitleExcludes_PersistAppend(needle) {
-    global g_WM_BackgroundTitleExcludes
+WM_BackgroundTitleExcludes_FormatNeedle(title, exe := "") {
+    title := Trim(title)
+    exe := Trim(exe)
+    if (title = "" && exe = "")
+        return ""
+    if (exe != "" && title != "")
+        return exe . "|" . title
+    return title != "" ? title : exe
+}
+
+WM_BackgroundNeedleToTitleExe(needle) {
     needle := Trim(needle)
+    if (InStr(needle, "|")) {
+        parts := StrSplit(needle, "|", , 2)
+        return { title: Trim(parts[2]), exe: Trim(parts[1]) }
+    }
+    return { title: needle, exe: "" }
+}
+
+WM_BackgroundTitleExcludes_PersistAppend(needle, exe := "") {
+    global g_WM_BackgroundTitleExcludes
+    needle := WM_BackgroundTitleExcludes_FormatNeedle(needle, exe)
     if (needle = "")
         return false
-    if (WM_BackgroundTitleIsExcluded(needle)) {
+    parsed := WM_BackgroundNeedleToTitleExe(needle)
+    WM_BackgroundTitleExcludes_Init()
+    if (WM_BackgroundTitleIsExcluded(parsed.title, parsed.exe)) {
         ShowCenteredOverlay_Utils("ℹ️ Already in exclude list", 2000, BANNER_ACCENT_INFO)
         return false
     }
@@ -587,15 +694,23 @@ WM_BackgroundTitleExcludes_PersistAppend(needle) {
     for n in g_WM_BackgroundTitleExcludes
         WM_BackgroundTitleExcludes_Register(&list, &seen, n)
     WM_BackgroundTitleExcludes_Register(&list, &seen, needle)
-    g_WM_BackgroundTitleExcludes := list
-    serialized := ""
-    for n in g_WM_BackgroundTitleExcludes
-        serialized .= (serialized = "" ? "" : "|") . n
+    path := WM_BackgroundTitleExcludes_IniPath()
     try {
-        IniWrite(serialized, WM_BackgroundTitleExcludes_IniPath(), "Excludes", "TitleContains")
-    } catch {
+        WM_BackgroundTitleExcludes_WriteList(list)
+    } catch as err {
+        ShowCenteredOverlay_Utils("❌ Could not save exclude list: " . err.Message, 4000, BANNER_ACCENT_ERROR)
         return false
     }
+    WM_BackgroundTitleExcludes_Init()
+    if (!WM_BackgroundTitleIsExcluded(parsed.title, parsed.exe)) {
+        ; #region agent log
+        WM_AgentDebugLog("F", "WM_BackgroundTitleExcludes_PersistAppend", "verify_failed", '{"needle":"' .
+            StrReplace(needle, '"', '\"') . '","loadedCount":' . g_WM_BackgroundTitleExcludes.Length . '}')
+        ; #endregion
+        ShowCenteredOverlay_Utils("❌ Exclude saved but could not be loaded — check " . path, 4500, BANNER_ACCENT_ERROR)
+        return false
+    }
+    ShowCenteredOverlay_Utils("✅ Excluded: " . WM_TruncateTitleForList(needle, 50), 2200, BANNER_ACCENT_SUCCESS)
     return true
 }
 
@@ -780,9 +895,11 @@ WM_BackgroundExplainReject(hwnd, foreHwnd) {
         title := WinGetTitle(hwnd)
         if (title = "")
             return "empty_title"
+        exe := ""
+        try exe := WinGetProcessName("ahk_id " hwnd)
         if (WM_BackgroundIsSystemNoiseTitle(title))
             return "system_noise"
-        if (WM_BackgroundTitleIsExcluded(title))
+        if (WM_BackgroundTitleIsExcluded(title, exe))
             return "title_excluded"
         if (WM_IsExcludedIndicatorWindow(hwnd))
             return "indicator"
@@ -862,7 +979,7 @@ WM_FormatBackgroundCollectEmptyMessage() {
         parts := []
         for reason, count in rejects
             parts.Push(reason . ":" . count)
-        msg .= " Excluded: " . parts.Join(", ") . "."
+        msg .= " Excluded: " . WM_ArrJoin(parts, ", ") . "."
     } else
         msg .= " Check title excludes or foreground window."
     return msg
@@ -931,7 +1048,7 @@ WM_DebugBackgroundWindowScan() {
     } catch {
     }
     try {
-        FileAppend(lines.Join("`n") "`n", logPath, "UTF-8")
+        FileAppend(WM_ArrJoin(lines, "`n") "`n", logPath, "UTF-8")
         ShowCenteredOverlay_Utils("📋 Background scan: " collected.Length " listed — see wm_background_scan.log", 3500,
             BANNER_ACCENT_INFO)
     } catch as err {
@@ -974,18 +1091,13 @@ WM_BackgroundAddRowForExcludePicker(&rows, &seen, hwnd, foreHwnd) {
 }
 
 WM_CollectMinimizedWindowsForExcludePicker() {
-    foreHwnd := 0
-    try foreHwnd := WinGetID("A")
-    rows := []
-    seen := Map()
-    for hwnd in WM_BackgroundEnumerateHiddenHwnds() {
-        try
-            WM_BackgroundAddRowForExcludePicker(&rows, &seen, hwnd, foreHwnd)
-        catch {
-        }
+    global g_WM_MinimizedListCollectForeHwnd
+    WM_BackgroundTitleExcludes_Ensure()
+    collectForeHwnd := g_WM_MinimizedListCollectForeHwnd
+    if (!collectForeHwnd) {
+        try collectForeHwnd := WinGetID("A")
     }
-    WM_SortBackgroundRows(&rows)
-    return rows
+    return WM_BackgroundFilterRowsByTitleExcludes(WM_CollectBackgroundWindows(collectForeHwnd))
 }
 
 WM_BackgroundIsEligibleWindow(hwnd, foreHwnd) {
@@ -1001,7 +1113,9 @@ WM_BackgroundIsEligibleWindow(hwnd, foreHwnd) {
         title := WinGetTitle(hwnd)
         if (title = "")
             return false
-        if (WM_BackgroundTitleIsExcluded(title))
+        exe := ""
+        try exe := WinGetProcessName("ahk_id " hwnd)
+        if (WM_BackgroundTitleIsExcluded(title, exe))
             return false
         if (WM_IsExcludedIndicatorWindow(hwnd))
             return false
@@ -1021,9 +1135,12 @@ WM_BackgroundAddRow(&rows, &seen, hwnd, foreHwnd) {
         return false
     if (title = "")
         return false
+    exe := ""
     try exe := WinGetProcessName("ahk_id " hwnd)
     catch
         exe := ""
+    if (WM_BackgroundTitleIsExcluded(title, exe))
+        return false
     rows.Push({ hwnd: hwnd, title: title, exe: exe })
     seen[hwnd] := true
     return true
@@ -1031,6 +1148,8 @@ WM_BackgroundAddRow(&rows, &seen, hwnd, foreHwnd) {
 
 ; Hidden windows: not visible on any monitor (z-order covered and/or taskbar-minimized); excludes foreground hwnd.
 WM_CollectBackgroundWindows(foreHwndOverride := 0) {
+    global g_WM_BackgroundTitleExcludes
+    WM_BackgroundTitleExcludes_Init()
     foreHwnd := foreHwndOverride
     foreClass := ""
     foreTitle := ""
@@ -1048,12 +1167,21 @@ WM_CollectBackgroundWindows(foreHwndOverride := 0) {
     hiddenHwnds := WM_BackgroundEnumerateHiddenHwnds()
     rejectStats := Map()
     added := 0
+    leakedExcluded := 0
     for hwnd in hiddenHwnds {
         try {
             reason := WM_BackgroundExplainReject(hwnd, foreHwnd)
             if (reason != "") {
                 rejectStats[reason] := rejectStats.Has(reason) ? rejectStats[reason] + 1 : 1
                 continue
+            }
+            try {
+                t := WinGetTitle(hwnd)
+                x := ""
+                try x := WinGetProcessName("ahk_id " hwnd)
+                if (WM_BackgroundTitleIsExcluded(t, x))
+                    leakedExcluded++
+            } catch {
             }
             if (WM_BackgroundAddRow(&rows, &seen, hwnd, foreHwnd))
                 added++
@@ -1066,6 +1194,10 @@ WM_CollectBackgroundWindows(foreHwndOverride := 0) {
         }
     }
     WM_SortBackgroundRows(&rows)
+    rowsBeforeTitleFilter := rows.Length
+    rows := WM_BackgroundFilterRowsByTitleExcludes(rows)
+    if (rowsBeforeTitleFilter > rows.Length)
+        rejectStats["title_excluded_postfilter"] := rowsBeforeTitleFilter - rows.Length
     global g_WM_LastEnumerateStats, g_WM_LastBackgroundCollectStats
     g_WM_LastBackgroundCollectStats := Map(
         "visibleOnMonitors", g_WM_LastEnumerateStats.Get("visibleOnMonitors", 0),
@@ -1080,9 +1212,16 @@ WM_CollectBackgroundWindows(foreHwndOverride := 0) {
     rs := ""
     for k, v in rejectStats
         rs .= (rs = "" ? "" : ",") . '"' . k . '":' . v
+    sampleTitles := ""
+    loop Min(rows.Length, 6) {
+        row := rows[A_Index]
+        sampleTitles .= (sampleTitles = "" ? "" : ";") . WM_TruncateTitleForList(row.title, 28)
+    }
     WM_AgentDebugLog("B", "WM_CollectBackgroundWindows", "collect_done", '{"foreHwnd":"0x' . Format("{:X}", foreHwnd)
     . '","foreExe":"' . foreExe . '","foreClass":"' . foreClass . '","hiddenHwnds":' . hiddenHwnds.Length .
-    ',"added":' . added . ',"rows":' . rows.Length . ',"rejects":{' . rs . '},"runId":"post-fix"}')
+    ',"added":' . added . ',"rows":' . rows.Length . ',"rowsBeforeTitleFilter":' . rowsBeforeTitleFilter .
+    ',"leakedExcluded":' . leakedExcluded . ',"excludeCount":' . g_WM_BackgroundTitleExcludes.Length .
+    ',"sampleTitles":"' . StrReplace(sampleTitles, '"', '\"') . '","rejects":{' . rs . '},"runId":"post-fix2"}')
     ; #endregion
     return rows
 }
@@ -1397,12 +1536,41 @@ WM_MinimizedList_StopActiveMonitorTracking() {
     g_WM_MinimizedListTrackTimer := ""
 }
 
+WM_MinimizedList_GuiHasWindow(gui := unset) {
+    if (!IsSet(gui))
+        gui := g_WM_MinimizedListGui
+    if (!IsObject(gui))
+        return false
+    try return !!gui.Hwnd
+    catch
+        return false
+}
+
+WM_MinimizedList_ActivateGui(gui) {
+    if (!WM_MinimizedList_GuiHasWindow(gui))
+        return
+    try WinActivate("ahk_id " gui.Hwnd)
+    catch {
+    }
+    try DllCall("SetForegroundWindow", "ptr", gui.Hwnd)
+    catch {
+    }
+}
+
+WM_MinimizedList_ShowAt(gui, cx, cy) {
+    try gui.Show("x" . cx . " y" . cy)
+    catch {
+        return
+    }
+    WM_MinimizedList_ActivateGui(gui)
+}
+
 ; Reposition modal to center of foreground monitor (parity with StandardLoadingBar trackActiveMonitor / StudyTopicSelector).
 WM_MinimizedList_RepositionToActiveMonitor(forMonitorIdx := 0, gui := unset) {
     global g_WM_MinimizedListGui
     if (!IsSet(gui))
         gui := g_WM_MinimizedListGui
-    if (!IsObject(gui) || !gui.Hwnd)
+    if (!WM_MinimizedList_GuiHasWindow(gui))
         return
     idx := forMonitorIdx
     if (idx < 1 || idx > MonitorGetCount())
@@ -1428,14 +1596,12 @@ WM_MinimizedList_RepositionToActiveMonitor(forMonitorIdx := 0, gui := unset) {
         cx := mr - gw - marginX
     if (cy + gh > mb - marginY)
         cy := mb - gh - marginY
-    try gui.Show("x" . cx . " y" . cy . " NA")
-    catch {
-    }
+    WM_MinimizedList_ShowAt(gui, cx, cy)
 }
 
 WM_MinimizedList_TrackActiveMonitorTick() {
     global g_WM_MinimizedListActive, g_WM_MinimizedListGui, g_WM_MinimizedListLastForegroundMonitorIdx
-    if (!g_WM_MinimizedListActive || !IsObject(g_WM_MinimizedListGui) || !g_WM_MinimizedListGui.Hwnd) {
+    if (!g_WM_MinimizedListActive || !WM_MinimizedList_GuiHasWindow()) {
         WM_MinimizedList_StopActiveMonitorTracking()
         return
     }
@@ -1623,8 +1789,9 @@ WM_MinimizedList_BuildExcludePickerDisplayText(rows, pickerWindows) {
 }
 
 WM_MinimizedList_RebuildListGui(displayText) {
-    global g_WM_MinimizedListGui
-    if (IsObject(g_WM_MinimizedListGui)) {
+    global g_WM_MinimizedListGui, g_WM_MinimizedListActive
+    WM_MinimizedList_StopActiveMonitorTracking()
+    if (WM_MinimizedList_GuiHasWindow()) {
         try g_WM_MinimizedListGui.Destroy()
         catch {
         }
@@ -1632,7 +1799,7 @@ WM_MinimizedList_RebuildListGui(displayText) {
     }
     fontSize := 11
     baseWidth := 480
-    g_WM_MinimizedListGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner +E0x08000000")
+    g_WM_MinimizedListGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner")
     g_WM_MinimizedListGui.BackColor := "1E1E2E"
     g_WM_MinimizedListGui.MarginX := 15
     g_WM_MinimizedListGui.MarginY := 10
@@ -1640,6 +1807,9 @@ WM_MinimizedList_RebuildListGui(displayText) {
     g_WM_MinimizedListGui.Add("Text", "w" . (baseWidth - 30), displayText)
     g_WM_MinimizedListGui.OnEvent("Escape", WM_MinimizedList_Cancel)
     WM_MinimizedList_RepositionToActiveMonitor(0, g_WM_MinimizedListGui)
+    WM_MinimizedList_ActivateGui(g_WM_MinimizedListGui)
+    if (g_WM_MinimizedListActive)
+        WM_MinimizedList_StartActiveMonitorTracking()
 }
 
 HandleMinimizedListExcludePickerByChar(char, *) {
@@ -1649,9 +1819,8 @@ HandleMinimizedListExcludePickerByChar(char, *) {
     row := g_WM_MinimizedListExcludePickerMap.Get(char, "")
     if (!IsObject(row) || !row.HasProp("title"))
         return
-    if (!WM_BackgroundTitleExcludes_PersistAppend(row.title))
+    if (!WM_BackgroundTitleExcludes_PersistAppend(row.title, row.exe))
         return
-    WM_BackgroundTitleExcludes_Init()
     g_WM_MinimizedListExcludePickerActive := false
     g_WM_MinimizedListExcludePickerMap := Map()
     g_WM_MinimizedListExcludePickerRows := []
@@ -1668,15 +1837,17 @@ HandleMinimizedListAddExcludeTrigger(*) {
 WM_MinimizedList_ShowExcludePicker() {
     global g_WM_MinimizedListExcludePickerActive, g_WM_MinimizedListExcludePickerRows,
         g_WM_MinimizedListExcludePickerMap,
-        g_WM_MinimizedListExcludePickerDigitSequence, g_WM_MinimizedListOpenModeArmed
+        g_WM_MinimizedListExcludePickerDigitSequence, g_WM_MinimizedListOpenModeArmed,
+        g_WM_BackgroundTitleExcludes, g_WM_MinimizedListCollectForeHwnd
     g_WM_MinimizedListOpenModeArmed := false
     WM_MinimizedList_UnbindHotkeys()
-    allRows := WM_CollectMinimizedWindowsForExcludePicker()
-    rows := []
-    for row in allRows {
-        if (!WM_BackgroundTitleIsExcluded(row.title))
-            rows.Push(row)
-    }
+    WM_BackgroundTitleExcludes_Init()
+    allRows := WM_CollectBackgroundWindows(g_WM_MinimizedListCollectForeHwnd)
+    rows := WM_BackgroundFilterRowsByTitleExcludes(allRows)
+    ; #region agent log
+    WM_AgentDebugLog("G", "WM_MinimizedList_ShowExcludePicker", "picker_filter", '{"mainRows":' . allRows.Length .
+        ',"pickerRows":' . rows.Length . ',"excludeCount":' . g_WM_BackgroundTitleExcludes.Length . '}')
+    ; #endregion
     if (rows.Length = 0) {
         ShowCenteredOverlay_Utils("ℹ️ No hidden windows to add to exclude list", 2500, BANNER_ACCENT_INFO)
         WM_MinimizedList_Refresh(0)
@@ -1713,7 +1884,7 @@ WM_MinimizedList_Cleanup() {
     global g_WM_MinimizedListGui, g_WM_MinimizedListActive, g_WM_MinimizedListRows, g_WM_MinimizedKeyMap,
         g_WM_MinimizedListRefreshing, g_WM_MinimizedListExcludePickerActive,
         g_WM_MinimizedListExcludePickerRows, g_WM_MinimizedListExcludePickerMap, g_WM_MinimizedListOpenModeArmed
-    if (!g_WM_MinimizedListActive && !(IsObject(g_WM_MinimizedListGui) && g_WM_MinimizedListGui.Hwnd))
+    if (!g_WM_MinimizedListActive && !WM_MinimizedList_GuiHasWindow())
         return
     g_WM_MinimizedListActive := false
     g_WM_MinimizedListRefreshing := false
@@ -1727,7 +1898,7 @@ WM_MinimizedList_Cleanup() {
     WM_MinimizedList_UnbindHotkeys()
     WM_MinimizedList_UnbindEscape()
     try Utils_EnsureGlobalEscapeHotkey()
-    if (IsObject(g_WM_MinimizedListGui) && g_WM_MinimizedListGui.Hwnd) {
+    if (WM_MinimizedList_GuiHasWindow()) {
         try g_WM_MinimizedListGui.Destroy()
     }
     g_WM_MinimizedListGui := false
@@ -1747,10 +1918,12 @@ WM_MinimizedList_Cancel(*) {
 
 WM_MinimizedList_Refresh(closedHwnd := 0) {
     global g_WM_MinimizedListActive, g_WM_MinimizedListRefreshing, g_WM_MinimizedListExcludePickerActive,
-        g_WM_MinimizedListExcludePickerRows, g_WM_MinimizedListExcludePickerMap, g_WM_MinimizedListOpenModeArmed
+        g_WM_MinimizedListExcludePickerRows, g_WM_MinimizedListExcludePickerMap, g_WM_MinimizedListOpenModeArmed,
+        g_WM_MinimizedListCollectForeHwnd
     if (!g_WM_MinimizedListActive || g_WM_MinimizedListRefreshing)
         return
     g_WM_MinimizedListRefreshing := true
+    WM_BackgroundTitleExcludes_Init()
     g_WM_MinimizedListOpenModeArmed := false
     g_WM_MinimizedListExcludePickerActive := false
     g_WM_MinimizedListExcludePickerRows := []
@@ -1809,7 +1982,7 @@ WM_ShowMinimizedBackgroundList(rows := unset, refresh := false) {
     lineHeight := fontSize + 6
     lineCount := StrSplit(displayText, "`n").Length
     textControlHeight := lineCount * lineHeight + 10
-    g_WM_MinimizedListGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner +E0x08000000")
+    g_WM_MinimizedListGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner")
     g_WM_MinimizedListGui.BackColor := "1E1E2E"
     g_WM_MinimizedListGui.MarginX := 15
     g_WM_MinimizedListGui.MarginY := 10
@@ -1821,6 +1994,7 @@ WM_ShowMinimizedBackgroundList(rows := unset, refresh := false) {
     WM_MinimizedList_BindEscape()
     WM_MinimizedList_BindHotkeys(windows)
     WM_MinimizedList_RepositionToActiveMonitor(0, g_WM_MinimizedListGui)
+    WM_MinimizedList_ActivateGui(g_WM_MinimizedListGui)
     WM_MinimizedList_StartActiveMonitorTracking()
 }
 
