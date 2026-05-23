@@ -486,10 +486,24 @@ WM_TileHwndsOnMonitorWorkArea(mon, hwnds) {
     if (workW < 120 || workH < 80)
         return 0
     n := hwnds.Length
+    portrait := workH > workW
     tiled := 0
     if (n = 1) {
         if (WM_PrepareHwndForTile(hwnds[1]) && WM_MoveHwndToRect(hwnds[1], workLeft, workTop, workW, workH))
             tiled := 1
+        return tiled
+    }
+    if (portrait) {
+        ; Portrait: full-width bands stacked (wide, short tiles).
+        rowH := (workH - gap * (n - 1)) // n
+        if (rowH < 80)
+            return 0
+        loop Min(n, 3) {
+            i := A_Index
+            y := workTop + (i - 1) * (rowH + gap)
+            if (WM_PrepareHwndForTile(hwnds[i]) && WM_MoveHwndToRect(hwnds[i], workLeft, y, workW, rowH))
+                tiled++
+        }
         return tiled
     }
     if (n = 2) {
