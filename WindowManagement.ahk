@@ -452,9 +452,6 @@ WM_WindowTools_OnShowMinimizedList(*) {
         if (rows.Length = 0) {
             StandardLoadingBar_Update(WM_FormatBackgroundCollectEmptyMessage(), BANNER_ACCENT_INFO)
             StandardLoadingBar_Hide(4500)
-            ; #region agent log
-            WM_AgentDebugLog("E", "WM_WindowTools_OnShowMinimizedList", "empty_after_scan", '{"rows":0}')
-            ; #endregion
             return
         }
         StandardLoadingBar_Update("✅ Found " . rows.Length . " hidden window(s)", BANNER_ACCENT_SUCCESS)
@@ -589,29 +586,20 @@ WM_BackgroundTitleExcludes_Init() {
     for needle in ["IT Workplace", "Drafts Monitor", "Form1", "Screenpresso"]
         WM_BackgroundTitleExcludes_Register(&list, &seen, needle)
     path := WM_BackgroundTitleExcludes_IniPath()
-    iniReadOk := true
-    rawLen := 0
     if (!FileExist(path)) {
         try {
             WM_BackgroundTitleExcludes_WriteList(list)
         } catch {
-            iniReadOk := false
         }
     }
     try {
         raw := FileRead(path, "UTF-8")
-        rawLen := StrLen(raw)
         for entry in WM_BackgroundTitleExcludes_ParseDiskEntries(raw)
             WM_BackgroundTitleExcludes_Register(&list, &seen, entry)
     } catch {
-        iniReadOk := false
     }
     g_WM_BackgroundTitleExcludes := list
     g_WM_BackgroundTitleExcludesReady := true
-    ; #region agent log
-    WM_AgentDebugLog("F", "WM_BackgroundTitleExcludes_Init", "loaded", '{"count":' . list.Length . ',"rawLen":' .
-        rawLen . ',"iniReadOk":' . (iniReadOk ? 1 : 0) . '}')
-    ; #endregion
 }
 
 WM_BackgroundTitleExcludes_Ensure() {
@@ -703,10 +691,6 @@ WM_BackgroundTitleExcludes_PersistAppend(needle, exe := "") {
     }
     WM_BackgroundTitleExcludes_Init()
     if (!WM_BackgroundTitleIsExcluded(parsed.title, parsed.exe)) {
-        ; #region agent log
-        WM_AgentDebugLog("F", "WM_BackgroundTitleExcludes_PersistAppend", "verify_failed", '{"needle":"' .
-            StrReplace(needle, '"', '\"') . '","loadedCount":' . g_WM_BackgroundTitleExcludes.Length . '}')
-        ; #endregion
         ShowCenteredOverlay_Utils("❌ Exclude saved but could not be loaded — check " . path, 4500, BANNER_ACCENT_ERROR)
         return false
     }
@@ -717,23 +701,6 @@ WM_BackgroundTitleExcludes_PersistAppend(needle, exe := "") {
 WM_DebugBackground_LogPath() {
     return A_ScriptDir "\.cursor\wm_background_scan.log"
 }
-
-WM_AgentDebugLogPath() {
-    return A_ScriptDir "\debug-0a149c.log"
-}
-
-; #region agent log
-WM_AgentDebugLog(hypothesisId, location, message, data := "") {
-    logPath := WM_AgentDebugLogPath()
-    ts := A_TickCount
-    dataPart := (data = "") ? "{}" : data
-    escMsg := StrReplace(StrReplace(message, "\", "\\"), '"', '\"')
-    line := '{"sessionId":"0a149c","timestamp":' . ts . ',"hypothesisId":"' . hypothesisId . '","location":"' .
-        location
-        . '","message":"' . escMsg . '","data":' . dataPart . ',"runId":"pre-fix"}'
-    try FileAppend(line "`n", logPath, "UTF-8")
-}
-; #endregion
 
 WM_DebugBackgroundEnabled() {
     if (EnvGet("WM_DEBUG_BACKGROUND") = "1")
@@ -955,11 +922,6 @@ WM_BackgroundEnumerateHiddenHwnds() {
         "skippedVisible", skippedVisible,
         "deduped", hwnds.Length,
         "skippedEmptyKey", skippedEmptyKey)
-    ; #region agent log
-    WM_AgentDebugLog("A", "WM_BackgroundEnumerateHiddenHwnds", "enumerate_done", '{"winList":' . winListCount
-        . ',"visibleOnMonitors":' . visibleAll.Count . ',"hiddenCandidates":' . hiddenCandidates . ',"deduped":' .
-        hwnds.Length . ',"skippedVisible":' . skippedVisible . '}')
-    ; #endregion
     return hwnds
 }
 
@@ -1167,21 +1129,12 @@ WM_CollectBackgroundWindows(foreHwndOverride := 0) {
     hiddenHwnds := WM_BackgroundEnumerateHiddenHwnds()
     rejectStats := Map()
     added := 0
-    leakedExcluded := 0
     for hwnd in hiddenHwnds {
         try {
             reason := WM_BackgroundExplainReject(hwnd, foreHwnd)
             if (reason != "") {
                 rejectStats[reason] := rejectStats.Has(reason) ? rejectStats[reason] + 1 : 1
                 continue
-            }
-            try {
-                t := WinGetTitle(hwnd)
-                x := ""
-                try x := WinGetProcessName("ahk_id " hwnd)
-                if (WM_BackgroundTitleIsExcluded(t, x))
-                    leakedExcluded++
-            } catch {
             }
             if (WM_BackgroundAddRow(&rows, &seen, hwnd, foreHwnd))
                 added++
@@ -1208,21 +1161,6 @@ WM_CollectBackgroundWindows(foreHwndOverride := 0) {
         "foreExe", foreExe,
         "foreClass", foreClass,
         "rejects", rejectStats.Clone())
-    ; #region agent log
-    rs := ""
-    for k, v in rejectStats
-        rs .= (rs = "" ? "" : ",") . '"' . k . '":' . v
-    sampleTitles := ""
-    loop Min(rows.Length, 6) {
-        row := rows[A_Index]
-        sampleTitles .= (sampleTitles = "" ? "" : ";") . WM_TruncateTitleForList(row.title, 28)
-    }
-    WM_AgentDebugLog("B", "WM_CollectBackgroundWindows", "collect_done", '{"foreHwnd":"0x' . Format("{:X}", foreHwnd)
-    . '","foreExe":"' . foreExe . '","foreClass":"' . foreClass . '","hiddenHwnds":' . hiddenHwnds.Length .
-    ',"added":' . added . ',"rows":' . rows.Length . ',"rowsBeforeTitleFilter":' . rowsBeforeTitleFilter .
-    ',"leakedExcluded":' . leakedExcluded . ',"excludeCount":' . g_WM_BackgroundTitleExcludes.Length .
-    ',"sampleTitles":"' . StrReplace(sampleTitles, '"', '\"') . '","rejects":{' . rs . '},"runId":"post-fix2"}')
-    ; #endregion
     return rows
 }
 
@@ -1709,9 +1647,6 @@ HandleMinimizedListOpenModeArm(*) {
         return
     g_WM_MinimizedListLastOpenArmTick := A_TickCount
     g_WM_MinimizedListOpenModeArmed := true
-    ; #region agent log
-    WM_AgentDebugLog("O", "HandleMinimizedListOpenModeArm", "open_mode_armed", "{}")
-    ; #endregion
     WM_MinimizedList_RepaintMainList()
 }
 
@@ -1734,17 +1669,10 @@ HandleMinimizedListByChar(char, *) {
         if (g_WM_MinimizedListOpenModeArmed) {
             g_WM_MinimizedListOpenModeArmed := false
             WM_MinimizedList_UnbindHotkeys()
-            ; #region agent log
-            WM_AgentDebugLog("O", "HandleMinimizedListByChar", "open_slot", '{"char":"' . char .
-                '","runId":"post-fix"}')
-            ; #endregion
             WM_MinimizedList_OpenHwnd(hwnd)
             WM_MinimizedList_Cleanup()
             return
         }
-        ; #region agent log
-        WM_AgentDebugLog("O", "HandleMinimizedListByChar", "close_slot", '{"char":"' . char . '","runId":"post-fix"}')
-        ; #endregion
         WM_MinimizedList_CloseHwnd(hwnd)
         WM_MinimizedList_Refresh(hwnd)
     } finally {
@@ -1838,16 +1766,12 @@ WM_MinimizedList_ShowExcludePicker() {
     global g_WM_MinimizedListExcludePickerActive, g_WM_MinimizedListExcludePickerRows,
         g_WM_MinimizedListExcludePickerMap,
         g_WM_MinimizedListExcludePickerDigitSequence, g_WM_MinimizedListOpenModeArmed,
-        g_WM_BackgroundTitleExcludes, g_WM_MinimizedListCollectForeHwnd
+        g_WM_MinimizedListCollectForeHwnd
     g_WM_MinimizedListOpenModeArmed := false
     WM_MinimizedList_UnbindHotkeys()
     WM_BackgroundTitleExcludes_Init()
     allRows := WM_CollectBackgroundWindows(g_WM_MinimizedListCollectForeHwnd)
     rows := WM_BackgroundFilterRowsByTitleExcludes(allRows)
-    ; #region agent log
-    WM_AgentDebugLog("G", "WM_MinimizedList_ShowExcludePicker", "picker_filter", '{"mainRows":' . allRows.Length .
-        ',"pickerRows":' . rows.Length . ',"excludeCount":' . g_WM_BackgroundTitleExcludes.Length . '}')
-    ; #endregion
     if (rows.Length = 0) {
         ShowCenteredOverlay_Utils("ℹ️ No hidden windows to add to exclude list", 2500, BANNER_ACCENT_INFO)
         WM_MinimizedList_Refresh(0)
@@ -1902,9 +1826,6 @@ WM_MinimizedList_Cleanup() {
         try g_WM_MinimizedListGui.Destroy()
     }
     g_WM_MinimizedListGui := false
-    ; #region agent log
-    WM_AgentDebugLog("O", "WM_MinimizedList_Cleanup", "modal_destroyed", "{}")
-    ; #endregion
 }
 
 WM_MinimizedList_Cancel(*) {
@@ -1948,21 +1869,12 @@ WM_MinimizedList_Refresh(closedHwnd := 0) {
 
 WM_ShowMinimizedBackgroundList(rows := unset, refresh := false) {
     global g_WM_MinimizedListGui, g_WM_MinimizedListActive, g_WM_MinimizedListRows, g_WM_MinimizedCharSequence
-    if (g_WM_MinimizedListActive && !refresh) {
-        ; #region agent log
-        WM_AgentDebugLog("E", "WM_ShowMinimizedBackgroundList", "early_return_active", "{}")
-        ; #endregion
+    if (g_WM_MinimizedListActive && !refresh)
         return
-    }
     if (WM_DebugBackgroundEnabled())
         WM_DebugBackgroundWindowScan()
     if (!IsSet(rows))
         rows := WM_CollectBackgroundWindows()
-    ; #region agent log
-    WM_AgentDebugLog("E", "WM_ShowMinimizedBackgroundList", "after_collect", '{"rows":' . rows.Length . ',"refresh":' .
-        (refresh ? 1 : 0)
-        . '}')
-    ; #endregion
     if (rows.Length = 0) {
         if (refresh)
             WM_MinimizedList_Cleanup()
