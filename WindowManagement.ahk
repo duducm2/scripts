@@ -425,6 +425,145 @@ WM_MaximizeLonelyVisibleOnAllMonitors() {
     }
 }
 
+WM_GetHwndMonitorIndex(hwnd) {
+    if (!hwnd)
+        return 0
+    try {
+        hMon := DllCall("MonitorFromWindow", "ptr", hwnd, "uint", 2, "ptr")
+        loop MonitorGetCount() {
+            MonitorGet A_Index, &ml, &mt, &mr, &mb
+            cx := (ml + mr) // 2
+            cy := (mt + mb) // 2
+            point64 := (cy & 0xFFFFFFFF) << 32 | (cx & 0xFFFFFFFF)
+            if (Integer(DllCall("MonitorFromPoint", "int64", point64, "uint", 2, "ptr")) = Integer(hMon))
+                return A_Index
+        }
+    } catch {
+    }
+    return 0
+}
+
+WM_PrepareHwndForTile(hwnd) {
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return false
+    if (WM_IsExcludedIndicatorWindow(hwnd))
+        return false
+    try {
+        if (WM_WindowIsTaskbarMinimized(hwnd))
+            WinRestore "ahk_id " hwnd
+        else if (WinGetMinMax(hwnd) = 1)
+            WinRestore "ahk_id " hwnd
+        WinShow "ahk_id " hwnd
+    } catch {
+        return false
+    }
+    return true
+}
+
+WM_MoveHwndToRect(hwnd, left, top, width, height) {
+    if (!hwnd || width < 1 || height < 1)
+        return false
+    ok := 0
+    try ok := WinMove(hwnd, left, top, width, height)
+    catch
+        ok := 0
+    if !ok {
+        try DllCall("MoveWindow", "ptr", hwnd, "int", left, "int", top, "int", width, "int", height, "int", true)
+    }
+    return true
+}
+
+WM_TileHwndsOnMonitorWorkArea(mon, hwnds) {
+    if (!hwnds.Length || mon < 1)
+        return 0
+    MonitorGetWorkArea mon, &left, &top, &right, &bottom
+    margin := 8
+    gap := 4
+    workLeft := left + margin
+    workTop := top + margin
+    workW := (right - left) - margin * 2
+    workH := (bottom - top) - margin * 2
+    if (workW < 120 || workH < 80)
+        return 0
+    n := hwnds.Length
+    tiled := 0
+    if (n = 1) {
+        if (WM_PrepareHwndForTile(hwnds[1]) && WM_MoveHwndToRect(hwnds[1], workLeft, workTop, workW, workH))
+            tiled := 1
+        return tiled
+    }
+    if (n = 2) {
+        halfW := (workW - gap) // 2
+        loop 2 {
+            i := A_Index
+            x := workLeft + (i = 2 ? halfW + gap : 0)
+            if (WM_PrepareHwndForTile(hwnds[i]) && WM_MoveHwndToRect(hwnds[i], x, workTop, halfW, workH))
+                tiled++
+        }
+        return tiled
+    }
+    colW := (workW - gap * 2) // 3
+    loop Min(n, 3) {
+        i := A_Index
+        x := workLeft + (i - 1) * (colW + gap)
+        if (WM_PrepareHwndForTile(hwnds[i]) && WM_MoveHwndToRect(hwnds[i], x, workTop, colW, workH))
+            tiled++
+    }
+    return tiled
+}
+
+WM_TileBackgroundWindowsPerMonitor(maxPerMon := 3, foreHwndOverride := 0) {
+    rows := WM_CollectBackgroundWindows(foreHwndOverride)
+    if (rows.Length = 0)
+        return { ok: false, message: WM_FormatBackgroundCollectEmptyMessage() }
+    WMAutomation_SuppressCursorCentering("tile_background", 5000)
+    totalTiled := 0
+    monitorsTiled := 0
+    loop MonitorGetCount() {
+        mon := A_Index
+        hwndList := []
+        seen := Map()
+        for row in rows {
+            if (WM_GetHwndMonitorIndex(row.hwnd) != mon)
+                continue
+            if (seen.Has(row.hwnd))
+                continue
+            hwndList.Push(row.hwnd)
+            seen[row.hwnd] := true
+            if (hwndList.Length >= maxPerMon)
+                break
+        }
+        if (hwndList.Length < maxPerMon) {
+            try {
+                for win in GetVisibleWindowsOnMonitor(mon, true) {
+                    if (seen.Has(win.hwnd))
+                        continue
+                    if (WM_IsExcludedIndicatorWindow(win.hwnd))
+                        continue
+                    hwndList.Push(win.hwnd)
+                    seen[win.hwnd] := true
+                    if (hwndList.Length >= maxPerMon)
+                        break
+                }
+            } catch {
+            }
+        }
+        if (hwndList.Length = 0)
+            continue
+        count := WM_TileHwndsOnMonitorWorkArea(mon, hwndList)
+        if (count > 0) {
+            totalTiled += count
+            monitorsTiled++
+        }
+    }
+    WMAutomation_ClearCursorSuppression("tile_background")
+    if (totalTiled = 0)
+        return { ok: false, message: "Could not tile background windows." }
+    msg := (totalTiled = 1) ? "Tiled 1 window on " monitorsTiled " monitor(s)"
+        : "Tiled " totalTiled " windows on " monitorsTiled " monitor(s)"
+    return { ok: true, message: msg }
+}
+
 ; =============================================================================
 ; Win+Alt+Shift+W — window tools menu (Interactive Input) + minimized list GUI
 ; =============================================================================
@@ -434,6 +573,30 @@ WM_WindowTools_OnMaximizeLonely(*) {
     StandardLoadingBar_Hide(0)
     Sleep 50
     WM_MaximizeLonelyVisibleOnAllMonitors()
+}
+
+WM_WindowTools_OnTileBackground(*) {
+    StandardLoadingBar_CloseKeysOverlay()
+    StandardLoadingBar_Hide(0)
+    Sleep 50
+    WM_BackgroundTitleExcludes_Init()
+    foreBeforeScan := 0
+    try foreBeforeScan := WinGetID("A")
+    StandardLoadingBar_Show("Scanning hidden windows...", BANNER_ACCENT_INTERMEDIATE, { passive: false,
+        centerOnHwnd: 0 })
+    try {
+        result := WM_TileBackgroundWindowsPerMonitor(3, foreBeforeScan)
+        if (!result.ok) {
+            StandardLoadingBar_Update(result.message, BANNER_ACCENT_INFO)
+            StandardLoadingBar_Hide(4500)
+            return
+        }
+        StandardLoadingBar_Update(result.message, BANNER_ACCENT_SUCCESS)
+        StandardLoadingBar_Hide(2000)
+    } catch as err {
+        StandardLoadingBar_Update("Background tile failed: " err.Message, BANNER_ACCENT_ERROR)
+        StandardLoadingBar_Hide(4000)
+    }
 }
 
 WM_WindowTools_OnShowMinimizedList(*) {
@@ -478,6 +641,7 @@ WM_WindowTools_ShowMenu() {
     keyCallbacks := Map(
         "1", WM_WindowTools_OnMaximizeLonely,
         "2", WM_WindowTools_OnShowMinimizedList,
+        "3", WM_WindowTools_OnTileBackground,
         "Escape", WM_WindowTools_OnCancel)
     StandardLoadingBar_ShowWithKeys(
         "❓ Window tools — choose an action (8s)",
@@ -490,7 +654,7 @@ WM_WindowTools_ShowMenu() {
         17,
         "",
         false,
-        "[1] Maximize lone windows  [2] Hidden windows  [Esc] Cancel",
+        "[1] Maximize lone  [2] Hidden list  [3] Tile background (3/monitor)  [Esc] Cancel",
         true,
         false,
         false)

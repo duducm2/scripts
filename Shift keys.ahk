@@ -1743,7 +1743,7 @@ Letters available: C, H, I, K, M, N, O, P, T, U, V, Y, Z
 === WINDOWS ===
 [Win+Alt+Shift+6] > Minimizes windows
 [Win+Alt+Shift+M] > Maximizes the current window
-[Win+Alt+Shift+W] > Window tools menu: [1] maximize lone visible window per monitor; [2] list minimized background windows
+[Win+Alt+Shift+W] > Window tools menu: [1] maximize lone visible window per monitor; [2] list hidden background windows; [3] tile background windows (max 3 per monitor)
 [Win+Alt+Shift+Y] > Focus Mode: Black out all monitors except the one with the active window (toggle)
 
 === WINDOW MANAGEMENT (Ctrl+Alt+Win) ===
