@@ -161,6 +161,8 @@ global g_WM_MinimizedListExcludePickerRows := []
 global g_WM_MinimizedListExcludePickerMap := Map()
 global g_WM_MinimizedListExcludePickerDigitSequence := ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"]
 global g_WM_MinimizedListOpenModeArmed := false
+global g_WM_LastEnumerateStats := Map()
+global g_WM_LastBackgroundCollectStats := Map()
 ; When daemon is used, foreground is driven by daemon cache (lower-frequency check); else legacy 100ms polling
 if (WM_UsesAutomationDaemon())
     SetTimer MonitorActiveWindow, 250
@@ -432,12 +434,26 @@ WM_WindowTools_OnShowMinimizedList(*) {
     StandardLoadingBar_CloseKeysOverlay()
     StandardLoadingBar_Hide(0)
     Sleep 50
-    StandardLoadingBar_Show("⏳ Scanning background windows...", BANNER_ACCENT_INTERMEDIATE, { passive: false,
+    foreBeforeScan := 0
+    try foreBeforeScan := WinGetID("A")
+    StandardLoadingBar_Show("⏳ Scanning hidden windows (z-order)...", BANNER_ACCENT_INTERMEDIATE, { passive: false,
         centerOnHwnd: 0 })
     try {
-        WM_ShowMinimizedBackgroundList()
-    } finally {
-        StandardLoadingBar_Hide(0)
+        rows := WM_CollectBackgroundWindows(foreBeforeScan)
+        if (rows.Length = 0) {
+            StandardLoadingBar_Update(WM_FormatBackgroundCollectEmptyMessage(), BANNER_ACCENT_INFO)
+            StandardLoadingBar_Hide(4500)
+            ; #region agent log
+            WM_AgentDebugLog("E", "WM_WindowTools_OnShowMinimizedList", "empty_after_scan", '{"rows":0}')
+            ; #endregion
+            return
+        }
+        StandardLoadingBar_Update("✅ Found " . rows.Length . " hidden window(s)", BANNER_ACCENT_SUCCESS)
+        StandardLoadingBar_Hide(900)
+        WM_ShowMinimizedBackgroundList(rows)
+    } catch as err {
+        StandardLoadingBar_Update("❌ Background scan failed: " . err.Message, BANNER_ACCENT_ERROR)
+        StandardLoadingBar_Hide(4000)
     }
 }
 
@@ -468,7 +484,7 @@ WM_WindowTools_ShowMenu() {
         17,
         "",
         false,
-        "[1] Maximize lone windows  [2] Minimized background  [Esc] Cancel",
+        "[1] Maximize lone windows  [2] Hidden windows  [Esc] Cancel",
         true,
         false,
         false)
@@ -579,6 +595,346 @@ WM_BackgroundTitleExcludes_PersistAppend(needle) {
     return true
 }
 
+WM_DebugBackground_LogPath() {
+    return A_ScriptDir "\.cursor\wm_background_scan.log"
+}
+
+WM_AgentDebugLogPath() {
+    return A_ScriptDir "\debug-0a149c.log"
+}
+
+; #region agent log
+WM_AgentDebugLog(hypothesisId, location, message, data := "") {
+    logPath := WM_AgentDebugLogPath()
+    ts := A_TickCount
+    dataPart := (data = "") ? "{}" : data
+    escMsg := StrReplace(StrReplace(message, "\", "\\"), '"', '\"')
+    line := '{"sessionId":"0a149c","timestamp":' . ts . ',"hypothesisId":"' . hypothesisId . '","location":"' .
+        location
+        . '","message":"' . escMsg . '","data":' . dataPart . ',"runId":"pre-fix"}'
+    try FileAppend(line "`n", logPath, "UTF-8")
+}
+; #endregion
+
+WM_DebugBackgroundEnabled() {
+    if (EnvGet("WM_DEBUG_BACKGROUND") = "1")
+        return true
+    try {
+        return IniRead(A_ScriptDir "\data\wm_debug.ini", "Debug", "BackgroundScan", "0") = "1"
+    } catch {
+        return false
+    }
+}
+
+WM_WindowGetPlacementShowCmd(hwnd) {
+    if (!hwnd)
+        return 0
+    wp := Buffer(44, 0)
+    NumPut("UInt", 44, wp, 0)
+    try {
+        if !DllCall("GetWindowPlacement", "ptr", hwnd, "ptr", wp)
+            return 0
+        return NumGet(wp, 8, "UInt")
+    } catch {
+        return 0
+    }
+}
+
+; Taskbar-minimized: WinGetMinMax, IsIconic, or GetWindowPlacement showCmd=SW_SHOWMINIMIZED (2).
+WM_WindowIsTaskbarMinimized(hwnd) {
+    if (!hwnd)
+        return false
+    try {
+        if (WinGetMinMax(hwnd) = -1)
+            return true
+        if DllCall("IsIconic", "ptr", hwnd)
+            return true
+        if (WM_WindowGetPlacementShowCmd(hwnd) = 2)
+            return true
+    } catch {
+    }
+    return false
+}
+
+WM_BackgroundMinimizedPickScore(hwnd) {
+    score := 0
+    try {
+        if (WinGetMinMax(hwnd) = -1)
+            score += 100
+        if DllCall("IsIconic", "ptr", hwnd)
+            score += 50
+        title := WinGetTitle(hwnd)
+        score += Min(StrLen(title), 200)
+        exStyle := DllCall("GetWindowLongPtr", "ptr", hwnd, "int", -20, "ptr")
+        if !(exStyle & 0x00000080)
+            score += 40
+    } catch {
+    }
+    return score
+}
+
+WM_BackgroundMinimizedDedupeKey(hwnd) {
+    try {
+        return WinGetPID(hwnd) "|" WinGetTitle(hwnd)
+    } catch {
+        return ""
+    }
+}
+
+WM_BackgroundBuildVisibleHwndSet() {
+    visible := Map()
+    loop MonitorGetCount() {
+        try {
+            for win in GetVisibleWindowsOnMonitor(A_Index, true)
+                visible[win.hwnd] := true
+        } catch {
+        }
+    }
+    return visible
+}
+
+WM_BackgroundHwndOnAnyScriptMonitor(hwnd) {
+    try {
+        hMon := DllCall("MonitorFromWindow", "ptr", hwnd, "uint", 2, "ptr")
+        loop MonitorGetCount() {
+            MonitorGet A_Index, &ml, &mt, &mr, &mb
+            cx := (ml + mr) // 2
+            cy := (mt + mb) // 2
+            point64 := (cy & 0xFFFFFFFF) << 32 | (cx & 0xFFFFFFFF)
+            if (Integer(DllCall("MonitorFromPoint", "int64", point64, "uint", 2, "ptr")) = Integer(hMon))
+                return true
+        }
+    } catch {
+    }
+    return false
+}
+
+; Same pre-checks as GetVisibleWindowsOnMonitor (before z-order covered test); minimized allowed.
+WM_BackgroundPassesVisibleStackGates(hwnd) {
+    if (!hwnd)
+        return false
+    try {
+        isMinimized := (WinGetMinMax(hwnd) = -1)
+        if (!isMinimized && !DllCall("IsWindowVisible", "ptr", hwnd))
+            return false
+        exStyle := DllCall("GetWindowLongPtr", "ptr", hwnd, "int", -20, "ptr")
+        if (exStyle & 0x00000080)
+            return false
+        class := WinGetClass(hwnd)
+        if (class = "Progman" || class = "WorkerW")
+            return false
+        if (WM_IsDesktopOrTaskbarClass(class))
+            return false
+        if (WinGetTitle(hwnd) = "")
+            return false
+        if (WM_IsExcludedIndicatorWindow(hwnd))
+            return false
+        if (!WM_BackgroundHwndOnAnyScriptMonitor(hwnd))
+            return false
+        if (!isMinimized) {
+            rect := Buffer(16, 0)
+            if !DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)
+                return false
+            w := NumGet(rect, 8, "int") - NumGet(rect, 0, "int")
+            h := NumGet(rect, 12, "int") - NumGet(rect, 4, "int")
+            if (w < 120 || h < 80)
+                return false
+        }
+    } catch {
+        return false
+    }
+    return true
+}
+
+WM_BackgroundIsSystemNoiseTitle(title) {
+    if (title = "")
+        return false
+    t := StrLower(title)
+    for needle in [
+        "bluetooth", "notification", "notifications", "windows input experience", "toast",
+        "gdi+ hook", "msctfime", "cicero", "broadcastevent", "nvidia geforce", "widget",
+        "program manager", "default ime", "systray", "action center", "quick settings"
+    ] {
+        if (InStr(t, needle))
+            return true
+    }
+    return false
+}
+
+WM_BackgroundExplainReject(hwnd, foreHwnd) {
+    if (!hwnd)
+        return "no_hwnd"
+    if (hwnd = foreHwnd)
+        return "foreground"
+    try {
+        exStyle := DllCall("GetWindowLongPtr", "ptr", hwnd, "int", -20, "ptr")
+        if (exStyle & 0x00000080)
+            return "toolwindow"
+        class := WinGetClass(hwnd)
+        if (WM_IsDesktopOrTaskbarClass(class))
+            return "desktop_class"
+        title := WinGetTitle(hwnd)
+        if (title = "")
+            return "empty_title"
+        if (WM_BackgroundIsSystemNoiseTitle(title))
+            return "system_noise"
+        if (WM_BackgroundTitleIsExcluded(title))
+            return "title_excluded"
+        if (WM_IsExcludedIndicatorWindow(hwnd))
+            return "indicator"
+    } catch {
+        return "inspect_error"
+    }
+    return ""
+}
+
+; Open but not visible on any monitor: z-order covered and/or taskbar-minimized (inverse of GetVisibleWindowsOnMonitor per monitor).
+WM_BackgroundEnumerateHiddenHwnds() {
+    visibleAll := WM_BackgroundBuildVisibleHwndSet()
+    bestByKey := Map()
+    winListCount := 0
+    hiddenCandidates := 0
+    skippedVisible := 0
+    skippedEmptyKey := 0
+    prevDetect := A_DetectHiddenWindows
+    DetectHiddenWindows true
+    try {
+        for hwnd in WinGetList() {
+            winListCount++
+            try {
+                if (visibleAll.Has(hwnd)) {
+                    skippedVisible++
+                    continue
+                }
+                if (!WM_BackgroundPassesVisibleStackGates(hwnd))
+                    continue
+                hiddenCandidates++
+                key := WM_BackgroundMinimizedDedupeKey(hwnd)
+                if (key = "") {
+                    skippedEmptyKey++
+                    continue
+                }
+                score := WM_BackgroundMinimizedPickScore(hwnd)
+                if (!bestByKey.Has(key) || score > bestByKey[key].score)
+                    bestByKey[key] := { hwnd: hwnd, score: score }
+            } catch {
+            }
+        }
+    } finally {
+        DetectHiddenWindows prevDetect
+    }
+    hwnds := []
+    for , entry in bestByKey
+        hwnds.Push(entry.hwnd)
+    global g_WM_LastEnumerateStats
+    g_WM_LastEnumerateStats := Map(
+        "winList", winListCount,
+        "visibleOnMonitors", visibleAll.Count,
+        "hiddenCandidates", hiddenCandidates,
+        "skippedVisible", skippedVisible,
+        "deduped", hwnds.Length,
+        "skippedEmptyKey", skippedEmptyKey)
+    ; #region agent log
+    WM_AgentDebugLog("A", "WM_BackgroundEnumerateHiddenHwnds", "enumerate_done", '{"winList":' . winListCount
+        . ',"visibleOnMonitors":' . visibleAll.Count . ',"hiddenCandidates":' . hiddenCandidates . ',"deduped":' .
+        hwnds.Length . ',"skippedVisible":' . skippedVisible . '}')
+    ; #endregion
+    return hwnds
+}
+
+WM_FormatBackgroundCollectEmptyMessage() {
+    global g_WM_LastBackgroundCollectStats
+    st := g_WM_LastBackgroundCollectStats
+    if (!IsObject(st) || st.Count = 0)
+        return "ℹ️ No hidden windows found."
+    hidden := st.Get("hiddenCandidates", 0)
+    visible := st.Get("visibleOnMonitors", 0)
+    deduped := st.Get("deduped", 0)
+    if (hidden = 0)
+        return "ℹ️ All open windows are visible on your monitors (" . visible . " unobstructed)."
+    msg := "ℹ️ " . hidden . " hidden (" . visible . " visible on monitors), " . deduped . " unique — none listed."
+    rejects := st.Get("rejects", Map())
+    if (IsObject(rejects) && rejects.Count > 0) {
+        parts := []
+        for reason, count in rejects
+            parts.Push(reason . ":" . count)
+        msg .= " Excluded: " . parts.Join(", ") . "."
+    } else
+        msg .= " Check title excludes or foreground window."
+    return msg
+}
+
+WM_DebugBackgroundWindowScan() {
+    foreHwnd := 0
+    try foreHwnd := WinGetID("A")
+    collected := WM_CollectBackgroundWindows()
+    inList := Map()
+    for row in collected
+        inList[row.hwnd] := true
+    logPath := WM_DebugBackground_LogPath()
+    try DirCreate(A_ScriptDir "\.cursor")
+    catch {
+    }
+    lines := []
+    visibleAll := WM_BackgroundBuildVisibleHwndSet()
+    lines.Push("=== WM background scan " A_Now " foreHwnd=" foreHwnd " collected=" collected.Length
+        " visibleOnMonitors=" visibleAll.Count " ===")
+    prevDetect := A_DetectHiddenWindows
+    DetectHiddenWindows true
+    try {
+        for hwnd in WinGetList() {
+            line := ""
+            try {
+                exe := WinGetProcessName("ahk_id " hwnd)
+                class := WinGetClass(hwnd)
+                title := WM_TruncateTitleForList(WinGetTitle(hwnd), 60)
+                minMax := WinGetMinMax(hwnd)
+                iconic := DllCall("IsIconic", "ptr", hwnd) ? 1 : 0
+                showCmd := WM_WindowGetPlacementShowCmd(hwnd)
+                visible := DllCall("IsWindowVisible", "ptr", hwnd) ? 1 : 0
+                exStyle := DllCall("GetWindowLongPtr", "ptr", hwnd, "int", -20, "ptr")
+                toolWin := (exStyle & 0x00000080) ? 1 : 0
+                monIdx := 0
+                try {
+                    hMon := DllCall("MonitorFromWindow", "ptr", hwnd, "uint", 2, "ptr")
+                    loop MonitorGetCount() {
+                        MonitorGet A_Index, &ml, &mt, &mr, &mb
+                        cx := (ml + mr) // 2
+                        cy := (mt + mb) // 2
+                        point64 := (cy & 0xFFFFFFFF) << 32 | (cx & 0xFFFFFFFF)
+                        if (Integer(DllCall("MonitorFromPoint", "int64", point64, "uint", 2, "ptr")) = Integer(hMon)) {
+                            monIdx := A_Index
+                            break
+                        }
+                    }
+                }
+                reject := WM_BackgroundExplainReject(hwnd, foreHwnd)
+                inVisibleSet := visibleAll.Has(hwnd) ? 1 : 0
+                line := Format(
+                    "hwnd=0x{:X} exe={} class={} mon={} MinMax={} inVisibleSet={} visible={} toolWin={} inList={} reject={} title={}",
+                    hwnd, exe, class, monIdx, minMax, inVisibleSet, visible, toolWin, inList.Has(hwnd) ? 1 : 0,
+                    reject != "" ? reject : "ok", title)
+            } catch as err {
+                line := Format("hwnd=0x{:X} error={}", hwnd, err.Message)
+            }
+            lines.Push(line)
+        }
+    } finally {
+        DetectHiddenWindows prevDetect
+    }
+    try {
+        FileDelete(logPath)
+    } catch {
+    }
+    try {
+        FileAppend(lines.Join("`n") "`n", logPath, "UTF-8")
+        ShowCenteredOverlay_Utils("📋 Background scan: " collected.Length " listed — see wm_background_scan.log", 3500,
+            BANNER_ACCENT_INFO)
+    } catch as err {
+        ShowCenteredOverlay_Utils("❌ Background scan log failed: " err.Message, 3500, BANNER_ACCENT_ERROR)
+    }
+}
+
 WM_BackgroundIsEligibleForExcludePicker(hwnd, foreHwnd) {
     if (!hwnd || hwnd = foreHwnd)
         return false
@@ -618,19 +974,11 @@ WM_CollectMinimizedWindowsForExcludePicker() {
     try foreHwnd := WinGetID("A")
     rows := []
     seen := Map()
-    prevDetect := A_DetectHiddenWindows
-    DetectHiddenWindows true
-    try {
-        for hwnd in WinGetList() {
-            try {
-                if (WinGetMinMax(hwnd) != -1)
-                    continue
-                WM_BackgroundAddRowForExcludePicker(&rows, &seen, hwnd, foreHwnd)
-            } catch {
-            }
+    for hwnd in WM_BackgroundEnumerateHiddenHwnds() {
+        try
+            WM_BackgroundAddRowForExcludePicker(&rows, &seen, hwnd, foreHwnd)
+        catch {
         }
-    } finally {
-        DetectHiddenWindows prevDetect
     }
     WM_SortBackgroundRows(&rows)
     return rows
@@ -660,40 +1008,78 @@ WM_BackgroundIsEligibleWindow(hwnd, foreHwnd) {
 }
 
 WM_BackgroundAddRow(&rows, &seen, hwnd, foreHwnd) {
-    if (seen.Has(hwnd) || !WM_BackgroundIsEligibleWindow(hwnd, foreHwnd))
-        return
-    try {
-        rows.Push({
-            hwnd: hwnd,
-            title: WinGetTitle(hwnd),
-            exe: WinGetProcessName("ahk_id " hwnd)
-        })
-        seen[hwnd] := true
-    } catch {
-    }
+    if (seen.Has(hwnd))
+        return false
+    title := ""
+    exe := ""
+    try title := WinGetTitle(hwnd)
+    catch
+        return false
+    if (title = "")
+        return false
+    try exe := WinGetProcessName("ahk_id " hwnd)
+    catch
+        exe := ""
+    rows.Push({ hwnd: hwnd, title: title, exe: exe })
+    seen[hwnd] := true
+    return true
 }
 
-; Minimized taskbar windows only (not visible on any monitor); excludes foreground hwnd.
-WM_CollectBackgroundWindows() {
-    foreHwnd := 0
-    try foreHwnd := WinGetID("A")
+; Hidden windows: not visible on any monitor (z-order covered and/or taskbar-minimized); excludes foreground hwnd.
+WM_CollectBackgroundWindows(foreHwndOverride := 0) {
+    foreHwnd := foreHwndOverride
+    foreClass := ""
+    foreTitle := ""
+    foreExe := ""
+    try {
+        if (!foreHwnd)
+            foreHwnd := WinGetID("A")
+        foreClass := WinGetClass(foreHwnd)
+        foreTitle := WM_TruncateTitleForList(WinGetTitle(foreHwnd), 40)
+        foreExe := WinGetProcessName(foreHwnd)
+    } catch {
+    }
     rows := []
     seen := Map()
-    prevDetect := A_DetectHiddenWindows
-    DetectHiddenWindows true
-    try {
-        for hwnd in WinGetList() {
-            try {
-                if (WinGetMinMax(hwnd) != -1)
-                    continue
-                WM_BackgroundAddRow(&rows, &seen, hwnd, foreHwnd)
-            } catch {
+    hiddenHwnds := WM_BackgroundEnumerateHiddenHwnds()
+    rejectStats := Map()
+    added := 0
+    for hwnd in hiddenHwnds {
+        try {
+            reason := WM_BackgroundExplainReject(hwnd, foreHwnd)
+            if (reason != "") {
+                rejectStats[reason] := rejectStats.Has(reason) ? rejectStats[reason] + 1 : 1
+                continue
             }
+            if (WM_BackgroundAddRow(&rows, &seen, hwnd, foreHwnd))
+                added++
+            else
+                rejectStats["row_build_failed"] := rejectStats.Has("row_build_failed") ? rejectStats["row_build_failed"
+                    ] + 1 : 1
+        } catch {
+            rejectStats["addrow_exception"] := rejectStats.Has("addrow_exception") ? rejectStats["addrow_exception"] +
+                1 : 1
         }
-    } finally {
-        DetectHiddenWindows prevDetect
     }
     WM_SortBackgroundRows(&rows)
+    global g_WM_LastEnumerateStats, g_WM_LastBackgroundCollectStats
+    g_WM_LastBackgroundCollectStats := Map(
+        "visibleOnMonitors", g_WM_LastEnumerateStats.Get("visibleOnMonitors", 0),
+        "hiddenCandidates", g_WM_LastEnumerateStats.Get("hiddenCandidates", 0),
+        "deduped", hiddenHwnds.Length,
+        "rows", rows.Length,
+        "added", added,
+        "foreExe", foreExe,
+        "foreClass", foreClass,
+        "rejects", rejectStats.Clone())
+    ; #region agent log
+    rs := ""
+    for k, v in rejectStats
+        rs .= (rs = "" ? "" : ",") . '"' . k . '":' . v
+    WM_AgentDebugLog("B", "WM_CollectBackgroundWindows", "collect_done", '{"foreHwnd":"0x' . Format("{:X}", foreHwnd)
+    . '","foreExe":"' . foreExe . '","foreClass":"' . foreClass . '","hiddenHwnds":' . hiddenHwnds.Length .
+    ',"added":' . added . ',"rows":' . rows.Length . ',"rejects":{' . rs . '},"runId":"post-fix"}')
+    ; #endregion
     return rows
 }
 
@@ -1097,7 +1483,7 @@ WM_MinimizedList_OpenHwnd(hwnd) {
     if (!hwnd || !WinExist("ahk_id " hwnd))
         return false
     try {
-        if (WinGetMinMax("ahk_id " hwnd) = -1)
+        if (WM_WindowIsTaskbarMinimized(hwnd))
             WinRestore "ahk_id " hwnd
         WinShow "ahk_id " hwnd
         WinActivate "ahk_id " hwnd
@@ -1141,7 +1527,7 @@ HandleMinimizedListByChar(char, *) {
 
 WM_MinimizedList_BuildDisplayText(rows, windows) {
     global g_WM_MinimizedCharSequence, g_WM_MinimizedListOpenModeArmed
-    displayText := "=== MINIMIZED BACKGROUND WINDOWS ===`n`n"
+    displayText := "=== HIDDEN WINDOWS (NOT VISIBLE ON MONITORS) ===`n`n"
     for w in windows
         displayText .= "[" . w.label . "] " . w.title . "`n"
     if (rows.Length > g_WM_MinimizedCharSequence.Length)
@@ -1228,7 +1614,7 @@ WM_MinimizedList_ShowExcludePicker() {
             rows.Push(row)
     }
     if (rows.Length = 0) {
-        ShowCenteredOverlay_Utils("ℹ️ No minimized windows to add to exclude list", 2500, BANNER_ACCENT_INFO)
+        ShowCenteredOverlay_Utils("ℹ️ No hidden windows to add to exclude list", 2500, BANNER_ACCENT_INFO)
         WM_MinimizedList_Refresh(0)
         return
     }
@@ -1311,7 +1697,7 @@ WM_MinimizedList_Refresh(closedHwnd := 0) {
         g_WM_MinimizedListRows := rows
         if (rows.Length = 0) {
             WM_MinimizedList_Cleanup()
-            ShowCenteredOverlay_Utils("ℹ️ No minimized background windows", 2500, BANNER_ACCENT_INFO)
+            ShowCenteredOverlay_Utils(WM_FormatBackgroundCollectEmptyMessage(), 4500, BANNER_ACCENT_INFO)
             return
         }
         WM_ShowMinimizedBackgroundList(rows, true)
@@ -1322,15 +1708,26 @@ WM_MinimizedList_Refresh(closedHwnd := 0) {
 
 WM_ShowMinimizedBackgroundList(rows := unset, refresh := false) {
     global g_WM_MinimizedListGui, g_WM_MinimizedListActive, g_WM_MinimizedListRows, g_WM_MinimizedCharSequence
-    if (g_WM_MinimizedListActive && !refresh)
+    if (g_WM_MinimizedListActive && !refresh) {
+        ; #region agent log
+        WM_AgentDebugLog("E", "WM_ShowMinimizedBackgroundList", "early_return_active", "{}")
+        ; #endregion
         return
+    }
+    if (WM_DebugBackgroundEnabled())
+        WM_DebugBackgroundWindowScan()
     if (!IsSet(rows))
         rows := WM_CollectBackgroundWindows()
+    ; #region agent log
+    WM_AgentDebugLog("E", "WM_ShowMinimizedBackgroundList", "after_collect", '{"rows":' . rows.Length . ',"refresh":' .
+        (refresh ? 1 : 0)
+        . '}')
+    ; #endregion
     if (rows.Length = 0) {
         if (refresh)
             WM_MinimizedList_Cleanup()
         else
-            ShowCenteredOverlay_Utils("ℹ️ No minimized background windows", 2500, BANNER_ACCENT_INFO)
+            ShowCenteredOverlay_Utils(WM_FormatBackgroundCollectEmptyMessage(), 4500, BANNER_ACCENT_INFO)
         return
     }
     g_WM_MinimizedListRows := rows
@@ -1390,10 +1787,13 @@ WM_ShowMinimizedBackgroundList(rows := unset, refresh := false) {
 ^!#x:: WM_SnapHalfPairActiveWindow()
 
 ; =============================================================================
-; Window tools menu (maximize lone / minimized background list)
+; Window tools menu (maximize lone / hidden windows list)
 ; Hotkey: Win+Alt+Shift+W
 ; =============================================================================
 #!+w:: WM_WindowTools_ShowMenu()
+
+; Dev: log taskbar-minimized background scan (Ctrl+Alt+Win+Shift+B)
+^!+#b:: WM_DebugBackgroundWindowScan()
 
 ; =============================================================================
 ; Move Active Window to Monitor by POSITION (left-to-right order)
