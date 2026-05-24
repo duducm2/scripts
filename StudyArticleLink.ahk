@@ -98,8 +98,8 @@ StudyTopicSelector_ManageArticleLinks_Open(*) {
     }
     url := linkResult["url"]
     if (url != "") {
-        StudyLink_OpenUrlInChrome(url)
-        ShowCenteredOverlay_Utils("✅ Opening article link in Chrome...", 2000, BANNER_ACCENT_SUCCESS)
+        StudyLink_OpenUrlInChrome(url, true)
+        ShowCenteredOverlay_Utils("✅ Opening article link in a new Chrome window...", 2000, BANNER_ACCENT_SUCCESS)
     } else {
         ShowCenteredOverlay_Utils("⚠ No article link stored. Use [2] Set article link first.", 2500,
             BANNER_ACCENT_INTERMEDIATE)

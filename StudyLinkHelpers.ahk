@@ -239,10 +239,11 @@ StudyLink_FormatLinkLabel(linkResult) {
     return linkResult["url"] != "" ? linkResult["url"] : "(none)"
 }
 
-StudyLink_OpenUrlInChrome(url) {
+StudyLink_OpenUrlInChrome(url, newWindow := false) {
     if (Trim(url) = "")
         return false
-    try Run('chrome.exe "' url '"')
+    chromeCmd := newWindow ? 'chrome.exe --new-window "' url '"' : 'chrome.exe "' url '"'
+    try Run(chromeCmd)
     catch
         try Run(url)
     return true
