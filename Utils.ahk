@@ -9033,8 +9033,8 @@ StudyTopicSelector_ManageLinks_Open(*) {
     }
     url := linkResult["url"]
     if (url != "") {
-        StudyLink_OpenUrlInChrome(url)
-        ShowCenteredOverlay_Utils("✅ Opening YouTube link in Chrome...", 2000, BANNER_ACCENT_SUCCESS)
+        StudyLink_OpenUrlInChrome(url, true)
+        ShowCenteredOverlay_Utils("✅ Opening YouTube link in a new Chrome window...", 2000, BANNER_ACCENT_SUCCESS)
     } else {
         ShowCenteredOverlay_Utils("⚠ No YouTube link stored. Use [2] Set YouTube link first.", 2500,
             BANNER_ACCENT_INTERMEDIATE)
@@ -11596,8 +11596,13 @@ HandleHotstringChar(char) {
         if (ext = "pbix") {
             FindAndActivatePowerBIFile(fp)
         } else {
-            try Run(fp)
-            catch {
+            fpTrim := Trim(fp)
+            if (SubStr(fpTrim, 1, 8) = "https://" || SubStr(fpTrim, 1, 7) = "http://") {
+                StudyLink_OpenUrlInChrome(fpTrim, true)
+            } else {
+                try Run(fp)
+                catch {
+                }
             }
         }
         return true

@@ -341,7 +341,7 @@ StudyLink_RunFunctionalTest() {
 StudyLink_Open(studyKey) {
     r := StudyLink_GetResult(studyKey)
     if (r["ok"] && r["url"] != "") {
-        try Run(r["url"])
+        StudyLink_OpenUrlInChrome(r["url"], true)
     } else if !r["ok"] {
         MsgBox "Could not load link: " . r["err"]
     } else {
