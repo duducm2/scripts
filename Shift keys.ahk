@@ -1666,8 +1666,12 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Ctrl+Alt+Win] - SECONDARY triple modifier
 
 === AVAILABLE SECONDARY (Ctrl+Alt+Win) SLOTS ===
-Letters available: C, H, I, K, M, N, O, P, T, U, V, Y, Z
+Letters available: N, O, P, T, U, Y, Z
+Numbers available: (none — 0–9 assigned)
+Shift+CAW: A/S/D/F/Q/W/E/R (+B debug, +1/Z/G fallbacks) used for window management; other Shift+letters unassigned.
 [Ctrl+Alt+Win+G] > RESERVED — Handy: cancel dictation (define in Handy only; not bound in AHK)
+[Ctrl+Alt+Win+L] > Gemini D2C direct submit (Utils.ahk; ZMK hold on L key)
+[Ctrl+Alt+Win+V] > Maximize active window (WindowManagement.ahk; ZMK hold on minimize/close key)
 [Ctrl+Alt+Win+0] > Project Quick Selector (opens project folder in Cursor)
 [Ctrl+Alt+Win+1] > Cursor AI quick action (Project Selector + Selection Mode)
 [Ctrl+Alt+Win+2] > Quick Update to Your Scripts (HotStrings macro)
