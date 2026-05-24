@@ -489,8 +489,10 @@ WM_TileHwndsOnMonitorWorkArea(mon, hwnds) {
     portrait := workH > workW
     tiled := 0
     if (n = 1) {
-        if (WM_PrepareHwndForTile(hwnds[1]) && WM_MoveHwndToRect(hwnds[1], workLeft, workTop, workW, workH))
+        if (WM_PrepareHwndForTile(hwnds[1])) {
+            WM_MaximizeHwnd(hwnds[1])
             tiled := 1
+        }
         return tiled
     }
     if (portrait) {
