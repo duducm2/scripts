@@ -1664,7 +1664,8 @@ GLOBAL_CHEAT_SHEET_RAW := "
 
 === AVAILABLE SECONDARY (Ctrl+Alt+Win) SLOTS ===
 [Ctrl+Alt+Win+N] > TEMPORARY — M365 Copilot auto-continue: send "continue", wait for Stop generating, loop (toggle off with same chord)
-Letters available: O, P, T, U, Y, Z
+[Ctrl+Alt+Win+O] > Evidence search loop — text line → PDF find (VSCodeEvidenceSearch.ahk; loaded by Shift keys.ahk; toggle)
+Letters available: P, T, U, Y, Z
 Numbers available: (none — 0–9 assigned)
 Shift+CAW: A/S/D/F/Q/W/E/R (+B debug, +1/Z/G fallbacks) used for window management; other Shift+letters unassigned.
 [Ctrl+Alt+Win+G] > RESERVED — Handy: cancel dictation (define in Handy only; not bound in AHK)
@@ -24856,3 +24857,9 @@ M365CopilotContinue_Toggle(*) {
 
 ; TEMPORARY — toggle M365 Copilot auto-continue loop
 ^!#n:: M365CopilotContinue_Toggle()
+
+; VS Code evidence -> PDF search loop (^!#o) — see VSCodeEvidenceSearch.ahk
+global EVIDENCE_SEARCH_FROM_SHIFT_KEYS := true
+#include %A_ScriptDir%\VSCodeEvidenceSearch.ahk
+#InputLevel 10
+EvidenceSearch_BindHotkey()
