@@ -1,7 +1,8 @@
 #Requires AutoHotkey v2.0+
 
-; VS Code / Cursor evidence line -> PDF find loop.
-; Preconditions: Tab 1 = text evidence file, Tab 2 = PDF, Ctrl+Tab toggles between them.
+; VS Code / Cursor CSV row -> PDF substring search loop.
+; Read row via ^l ^c (read-only); extract from char 3, length Floor(len/4); search PDF; Escape; return; Down.
+; Preconditions: Tab 1 = CSV/text, Tab 2 = PDF, Ctrl+Tab toggles between them.
 ; Hotkey: Ctrl+Alt+Win+O — start/stop toggle (bound via EvidenceSearch_BindHotkey).
 
 global g_EvidenceSearchActive := false
@@ -41,11 +42,16 @@ EvidenceSearch_IsActive() {
     return g_EvidenceSearchActive
 }
 
-EvidenceSearch_FormatString(raw) {
-    s := raw
-    for q in ['"', "'", Chr(0x60), Chr(0x201C), Chr(0x201D), Chr(0x2018), Chr(0x2019)]
-        s := StrReplace(s, q, "")
-    return Trim(s)
+; Char 3 onward, length Floor(25% of trimmed row length). Returns "" if termLen < 1 or len < 3.
+EvidenceSearch_ExtractSearchTerm(original) {
+    s := Trim(original)
+    len := StrLen(s)
+    if (len < 3)
+        return ""
+    termLen := Floor(len / 4)
+    if (termLen < 1)
+        return ""
+    return SubStr(s, 3, termLen)
 }
 
 EvidenceSearch_ShowBanner(text := "Evidence search loop (Ctrl+Alt+Win+O to stop)") {
@@ -118,7 +124,7 @@ EvidenceSearch_Stop(reason := "", isError := false) {
         EvidenceSearch_NotifyUser(reason, 2200, isError)
 }
 
-EvidenceSearch_SearchInPdf(formatted) {
+EvidenceSearch_SearchSubstringInPdf(term) {
     if (!EvidenceSearch_IsActive())
         return false
 
@@ -130,7 +136,7 @@ EvidenceSearch_SearchInPdf(formatted) {
     if (!EvidenceSearch_Sleep(EVIDENCE_ACTION_MS))
         return false
 
-    SendText formatted
+    SendText term
     if (!EvidenceSearch_Sleep(EVIDENCE_ACTION_MS))
         return false
 
@@ -138,19 +144,10 @@ EvidenceSearch_SearchInPdf(formatted) {
     if (!EvidenceSearch_Sleep(EVIDENCE_TAB_MS))
         return false
 
-    halfLen := Floor(StrLen(formatted) / 2)
-    if (halfLen >= 1) {
-        half := SubStr(formatted, 1, halfLen)
-        SendInput "^a"
-        if (!EvidenceSearch_Sleep(EVIDENCE_ACTION_MS))
-            return false
-        SendText half
-        if (!EvidenceSearch_Sleep(EVIDENCE_ACTION_MS))
-            return false
-        SendInput "{Enter}"
-        if (!EvidenceSearch_Sleep(EVIDENCE_TAB_MS))
-            return false
-    }
+    SendInput "{Escape}"
+    if (!EvidenceSearch_Sleep(EVIDENCE_ACTION_MS))
+        return false
+
     return true
 }
 
@@ -186,19 +183,18 @@ EvidenceSearch_RunLoop() {
                 return
             }
 
-            formatted := EvidenceSearch_FormatString(line)
+            term := EvidenceSearch_ExtractSearchTerm(line)
 
-            if (formatted != "") {
+            if (term != "") {
                 SendInput "^{Tab}"
                 if (!EvidenceSearch_Sleep(EVIDENCE_TAB_MS))
                     break
-                if (!EvidenceSearch_SearchInPdf(formatted))
+                if (!EvidenceSearch_SearchSubstringInPdf(term))
+                    break
+                SendInput "^{Tab}"
+                if (!EvidenceSearch_Sleep(EVIDENCE_TAB_MS))
                     break
             }
-
-            SendInput "^{Tab}"
-            if (!EvidenceSearch_Sleep(EVIDENCE_TAB_MS))
-                break
 
             SendInput "{Down}"
             if (!EvidenceSearch_Sleep(EVIDENCE_ACTION_MS))
