@@ -9,6 +9,8 @@ global g_EvidenceSearchActive := false
 global g_EvidenceSearchBannerGui := 0
 global g_EvidenceSearchBannerBorderGui := 0
 global g_EvidenceSearchNotFoundRows := []
+global g_EvidenceSearchSessionCsvTab := ""
+global g_EvidenceSearchSessionPdfTab := ""
 global EVIDENCE_NOTFOUND_REPORT_MS := 10000
 
 EVIDENCE_ACTION_MS := 600
@@ -101,26 +103,103 @@ EvidenceSearch_TruncateForDisplay(s, maxLen := 55) {
 }
 
 EvidenceSearch_ResetNotFoundRows() {
-    global g_EvidenceSearchNotFoundRows
+    global g_EvidenceSearchNotFoundRows, g_EvidenceSearchSessionCsvTab, g_EvidenceSearchSessionPdfTab
     g_EvidenceSearchNotFoundRows := []
+    g_EvidenceSearchSessionCsvTab := ""
+    g_EvidenceSearchSessionPdfTab := ""
+}
+
+EvidenceSearch_TabNameFromTitle(title, extWithDot) {
+    pos := InStr(title, extWithDot, false)
+    if (!pos)
+        return ""
+    end := pos + StrLen(extWithDot) - 1
+    start := 1
+    loop {
+        i := InStr(SubStr(title, 1, end), "\", , start)
+        if (!i) {
+            i := InStr(SubStr(title, 1, end), "/", , start)
+            if (!i)
+                break
+        }
+        start := i + 1
+    }
+    return SubStr(title, start, end - start + 1)
+}
+
+EvidenceSearch_CaptureSessionTabNames() {
+    global g_EvidenceSearchSessionCsvTab, g_EvidenceSearchSessionPdfTab
+    title := EvidenceSearch_GetActiveTitle()
+    if (EvidenceSearch_TitleLooksCsv(title))
+        g_EvidenceSearchSessionCsvTab := EvidenceSearch_TabNameFromTitle(title, ".csv")
+    if (EvidenceSearch_TitleLooksPdf(title))
+        g_EvidenceSearchSessionPdfTab := EvidenceSearch_TabNameFromTitle(title, ".pdf")
 }
 
 EvidenceSearch_RecordNotFound(rowNum, line, term) {
     global g_EvidenceSearchNotFoundRows
-    preview := EvidenceSearch_TruncateForDisplay(line)
-    g_EvidenceSearchNotFoundRows.Push("Row " . rowNum . ": " . preview . "  (term: " . term . ")")
+    g_EvidenceSearchNotFoundRows.Push({ row: rowNum, term: term, line: line })
 }
 
-EvidenceSearch_ShowNotFoundReport() {
+EvidenceSearch_CsvEscapeField(s) {
+    s := String(s)
+    if (InStr(s, ",") || InStr(s, '"') || InStr(s, "`n") || InStr(s, "`r"))
+        return '"' . StrReplace(s, '"', '""') . '"'
+    return s
+}
+
+EvidenceSearch_GetNotFoundOutputPath() {
+    return A_ScriptDir . "\data\evidence_not_found.csv"
+}
+
+EvidenceSearch_WriteNotFoundFile() {
+    global g_EvidenceSearchNotFoundRows, g_EvidenceSearchSessionCsvTab, g_EvidenceSearchSessionPdfTab
+    if (g_EvidenceSearchNotFoundRows.Length = 0)
+        return ""
+
+    outPath := EvidenceSearch_GetNotFoundOutputPath()
+    try {
+        dataDir := A_ScriptDir . "\data"
+        if !DirExist(dataDir)
+            DirCreate(dataDir)
+
+        sessionTime := FormatTime(, "yyyy-MM-dd HH:mm:ss")
+        csvTab := g_EvidenceSearchSessionCsvTab
+        pdfTab := g_EvidenceSearchSessionPdfTab
+        content := "session_time,csv_tab,pdf_tab,row,search_term,line`n"
+        for entry in g_EvidenceSearchNotFoundRows {
+            content .= EvidenceSearch_CsvEscapeField(sessionTime) . ","
+                . EvidenceSearch_CsvEscapeField(csvTab) . ","
+                . EvidenceSearch_CsvEscapeField(pdfTab) . ","
+                . entry.row . ","
+                . EvidenceSearch_CsvEscapeField(entry.term) . ","
+                . EvidenceSearch_CsvEscapeField(entry.line) . "`n"
+        }
+        try FileDelete(outPath)
+        FileAppend(content, outPath, "UTF-8")
+        return outPath
+    } catch {
+        return ""
+    }
+}
+
+EvidenceSearch_ShowNotFoundReport(outPath := "", writeFailed := false) {
     global g_EvidenceSearchNotFoundRows
     n := g_EvidenceSearchNotFoundRows.Length
     if (n = 0)
         return
 
     body := "⚠ " . n . " phrase(s) not found in PDF:`n`n"
-    for entry in g_EvidenceSearchNotFoundRows
-        body .= "• " . entry . "`n"
+    for entry in g_EvidenceSearchNotFoundRows {
+        preview := EvidenceSearch_TruncateForDisplay(entry.line)
+        body .= "• Row " . entry.row . ": " . preview . "  (term: " . entry.term . ")`n"
+    }
     body .= "`n📸 Take a print screen now (Alt+PrintScreen)"
+    if (outPath != "") {
+        relPath := StrReplace(outPath, A_ScriptDir . "\", "")
+        body .= "`n`nSaved to: " . relPath
+    } else if (writeFailed)
+        body .= "`n`nCould not save output file"
 
     try {
         StandardLoadingBar_Show(body, BANNER_ACCENT_ERROR, { passive: true, centerOnHwnd: 0, textWidth: 720, fontSize: 17,
@@ -271,6 +350,7 @@ EvidenceSearch_SearchSubstringInPdf(term, rowNum := 0, line := "") {
         return false
     if (!EvidenceSearch_WaitForTitle(false))
         return false
+    EvidenceSearch_CaptureSessionTabNames()
 
     SendInput "^f"
     if (!EvidenceSearch_Sleep(EVIDENCE_ACTION_MS))
@@ -385,7 +465,8 @@ EvidenceSearch_Toggle(*) {
     if (g_EvidenceSearchActive) {
         if (g_EvidenceSearchNotFoundRows.Length > 0) {
             EvidenceSearch_Stop("", false)
-            EvidenceSearch_ShowNotFoundReport()
+            outPath := EvidenceSearch_WriteNotFoundFile()
+            EvidenceSearch_ShowNotFoundReport(outPath, outPath = "")
         } else
             EvidenceSearch_Stop("Evidence search loop stopped")
         return
@@ -403,6 +484,7 @@ EvidenceSearch_Toggle(*) {
         EvidenceSearch_NotifyUser("Start failed: focus CSV tab (Ctrl+1) first", 2600, true)
         return
     }
+    EvidenceSearch_CaptureSessionTabNames()
     EvidenceSearch_ShowBanner()
     EvidenceSearch_NotifyUser("Evidence search loop started", 1400)
     EvidenceSearch_RunLoop()
