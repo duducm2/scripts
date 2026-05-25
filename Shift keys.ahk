@@ -39,17 +39,13 @@ global DEBUG_LOG_PATH := A_ScriptDir "\.cursor\debug.log"
 global DEBUG_SHIFTKEYS := false
 global g_BlackoutSuppressedUntil
 
-; --- Blackout Banner Suppression Integration ---
+; --- Blackout Banner Suppression Integration (implementation in Utils.ahk) ---
 IsBlackoutSuppressed() {
-    global g_BlackoutSuppressedUntil
-    return (g_BlackoutSuppressedUntil && A_TickCount < g_BlackoutSuppressedUntil)
+    return Blackout_IsSuppressed()
 }
 
 DisableBlackout7Min(*) {
-    global g_BlackoutSuppressedUntil
-    g_BlackoutSuppressedUntil := A_TickCount + 7 * 60 * 1000  ; 7 minutes
-    try StandardLoadingBar_CloseKeysOverlay()
-    try StandardLoadingBar_Hide(0)
+    Blackout_Disable7Min()
 }
 
 ; Debug mode agent logging (runtime evidence for this session only)

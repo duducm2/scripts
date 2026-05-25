@@ -55,6 +55,7 @@ Started once via **`FocusBlackoutWatcher_Start()`** from **`Shift keys.ahk`** im
 - **Debug:** set **`FOCUS_BLACKOUT_DEBUG_LOG := true`** in **`Utils.ahk`** for best-effort **`FocusBlackoutWatcher_DebugLog`** output; failures are swallowed.
 - **Gate:** does nothing if **`MonitorGetCount() <= 1`**.
 - **Dwell:** same foreground HWND for **`FOCUS_BLACKOUT_DWELL_MS`** (20000 ms); crossing triggers the same **3 s** countdown banner (foreground at timeout sets the keep-clear monitor).
+- **Suppress (D on banner):** **`Blackout_Disable7Min()`** sets **`g_BlackoutSuppressedUntil`** for **`BLACKOUT_SUPPRESS_MS`** (7 minutes) and resets dwell; no banner until that expires, then a **new 20 s dwell** is required.
 - While **`g_FocusModeOn`** and foreground monitor equals **`g_FocusModeActiveMonitor`**, no new dwell prompt.
 
 ## Multi-script behavior (critical)
