@@ -3657,11 +3657,55 @@ Handy_FindHandyLanguageButton(el) {
     return 0
 }
 
+; Current Cohere language label on General tab ("" if unknown).
+Handy_ReadCohereLanguage(hwnd) {
+    el := UIA.ElementFromHandle(hwnd)
+    if !el
+        return ""
+    langBtn := Handy_FindHandyLanguageButton(el)
+    if !langBtn
+        return ""
+    try return langBtn.Name
+    return ""
+}
+
+; Poll until language button shows langName (short window; no-op if already correct).
+Handy_WaitCohereLanguage(hwnd, langName, maxWaitMs := 450) {
+    if (langName = "")
+        return false
+    pollMs := 50
+    start := A_TickCount
+    loop {
+        if (Handy_ReadCohereLanguage(hwnd) = langName)
+            return true
+        if ((A_TickCount - start) >= maxWaitMs)
+            break
+        Sleep pollMs
+    }
+    return Handy_ReadCohereLanguage(hwnd) = langName
+}
+
+; Open the COHERE language dropdown on General tab.
+Handy_OpenCohereLanguageDropdown(hwnd) {
+    el := UIA.ElementFromHandle(hwnd)
+    if !el
+        return false
+    langBtn := Handy_FindHandyLanguageButton(el)
+    if !langBtn
+        return false
+    try langBtn.Click()
+    catch {
+        try langBtn.Invoke()
+    }
+    Sleep 200
+    return true
+}
+
 ; With language dropdown open: focus search, type langName, choose row or Enter.
 Handy_SetCohereLanguage_PickFromOpenDropdown(hwnd, langName) {
     el := UIA.ElementFromHandle(hwnd)
     if !el
-        return
+        return false
     searchEl := 0
     try {
         for ed in el.FindAll({ Type: UIA.Type.Edit }) {
@@ -3680,7 +3724,7 @@ Handy_SetCohereLanguage_PickFromOpenDropdown(hwnd, langName) {
     }
     Send "^a"
     SendText langName
-    Sleep 140
+    Sleep 120
     picked := false
     try {
         for btn in el.FindAll({ Type: 50000 }) {
@@ -3700,68 +3744,37 @@ Handy_SetCohereLanguage_PickFromOpenDropdown(hwnd, langName) {
     }
     if !picked
         Send "{Enter}"
-    Sleep 120
+    Sleep 80
+    return true
 }
 
 ; Set Cohere transcription language on General tab (explicit list pick, not Auto Detect).
+; Retries with verify-after-pick until correct or max attempts (slots 3–4 / English & Portuguese).
 Handy_SetCohereLanguage(hwnd, langName) {
-    el := UIA.ElementFromHandle(hwnd)
-    if !el || langName = ""
+    if !hwnd || langName = ""
         return false
     if !Handy_EnsureGeneralTab(hwnd)
         return false
-    el := UIA.ElementFromHandle(hwnd)
-    langBtn := Handy_FindHandyLanguageButton(el)
-    if !langBtn
-        return false
-    cur := ""
-    try cur := langBtn.Name
-    if (cur = langName)
+    if (Handy_ReadCohereLanguage(hwnd) = langName)
         return true
 
-    try langBtn.Click()
-    catch {
-        try langBtn.Invoke()
+    maxAttempts := 3
+    loop maxAttempts {
+        if (A_Index > 1) {
+            Send "{Escape}"
+            Sleep 80
+            if !Handy_EnsureGeneralTab(hwnd)
+                continue
+        }
+        if !Handy_OpenCohereLanguageDropdown(hwnd)
+            continue
+        Handy_SetCohereLanguage_PickFromOpenDropdown(hwnd, langName)
+        if (Handy_WaitCohereLanguage(hwnd, langName))
+            return true
+        Send "{Escape}"
+        Sleep 80
     }
-    Sleep 220
-    Handy_SetCohereLanguage_PickFromOpenDropdown(hwnd, langName)
-
-    el := UIA.ElementFromHandle(hwnd)
-    if !el
-        return false
-    langBtn2 := Handy_FindHandyLanguageButton(el)
-    if !langBtn2
-        return false
-    n2 := ""
-    try n2 := langBtn2.Name
-    if (n2 = langName)
-        return true
-
-    ; Retry once: close stray popup then reopen
-    Send "{Escape}"
-    Sleep 120
-    el := UIA.ElementFromHandle(hwnd)
-    if !el
-        return false
-    langBtn3 := Handy_FindHandyLanguageButton(el)
-    if !langBtn3
-        return false
-    try langBtn3.Click()
-    catch {
-        try langBtn3.Invoke()
-    }
-    Sleep 220
-    Handy_SetCohereLanguage_PickFromOpenDropdown(hwnd, langName)
-
-    el := UIA.ElementFromHandle(hwnd)
-    if !el
-        return false
-    langBtn4 := Handy_FindHandyLanguageButton(el)
-    if !langBtn4
-        return false
-    n4 := ""
-    try n4 := langBtn4.Name
-    return n4 = langName
+    return false
 }
 
 ; Open the AI model dropdown menu using keyboard navigation
