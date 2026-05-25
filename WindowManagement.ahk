@@ -482,20 +482,6 @@ WM_MoveHwndToRect(hwnd, left, top, width, height) {
 WM_TILE_BG_MAX_TOTAL := 12
 WM_TILE_BG_MAX_PER_MON := 3
 
-; #region agent log
-WM_AgentDebugLog(hypothesisId, location, message, dataStr := "") {
-    path := A_ScriptDir "\debug-2aa535.log"
-    try {
-        msgEsc := StrReplace(StrReplace(message, "\", "\\"), '"', '\"')
-        dataEsc := StrReplace(StrReplace(dataStr, "\", "\\"), '"', '\"')
-        FileAppend(Format(
-            '{{"sessionId":"2aa535","hypothesisId":"{}","location":"{}","message":"{}","data":"{}","timestamp":{}}}',
-            hypothesisId, location, msgEsc, dataEsc, A_TickCount), path, "UTF-8")
-    } catch {
-    }
-}
-; #endregion
-
 WM_MonitorIsPortrait(mon) {
     MonitorGetWorkArea mon, &left, &top, &right, &bottom
     return (bottom - top) > (right - left)
@@ -854,15 +840,8 @@ WM_AssignTileHwndsToMonitors(selectedItems, maxPerMon := WM_TILE_BG_MAX_PER_MON)
             unassigned.Push(item.hwnd)
     }
     assigned := 0
-    planSnap := ""
-    loop monCount {
+    loop monCount
         assigned += assignment[A_Index].Length
-        planSnap .= (planSnap = "" ? "" : ",") . A_Index . ":" . assignment[A_Index].Length
-    }
-    ; #region agent log
-    WM_AgentDebugLog("C", "WM_AssignTileHwndsToMonitors", "assign_balanced",
-        "selected=" . selectedItems.Length . " unassigned=" . unassigned.Length . " plan=" . planSnap)
-    ; #endregion
     return { plan: assignment, assigned: assigned, unassigned: unassigned }
 }
 
@@ -1063,44 +1042,6 @@ WM_TileBackgroundWriteQualityLog(eligible, selected, assignResult, qc, passLabel
 WM_TileBackgroundWindowsPerMonitor(maxPerMon := WM_TILE_BG_MAX_PER_MON, foreHwndOverride := 0) {
     WM_BackgroundTitleExcludes_Init()
     eligible := WM_CollectTileEligibleHwnds(foreHwndOverride)
-    ; #region agent log
-    homeHist := ""
-    homeMap := Map()
-    for c in eligible.candidates {
-        k := String(c.homeMon)
-        homeMap[k] := homeMap.Has(k) ? homeMap[k] + 1 : 1
-    }
-    for k, v in homeMap
-        homeHist .= (homeHist = "" ? "" : ",") . k . ":" . v
-    visOnMon := ""
-    loop MonitorGetCount() {
-        nVis := 0
-        try nVis := GetVisibleWindowsOnMonitor(A_Index, true).Length
-        visOnMon .= (visOnMon = "" ? "" : ",") . A_Index . ":" . nVis
-    }
-    WM_AgentDebugLog("A", "WM_TileBackground:collect", "eligible",
-        "total=" . eligible.total . " hidden=" . eligible.hidden . " visible=" . eligible.visible
-        . " fore=" . eligible.foreground . " missedVis=" . eligible.missedVis . " openOnMon=" . eligible.openOnMon
-        . " winList=" . eligible.winList . " skipReject=" . eligible.skippedReject . " skipNoMon="
-        . eligible.skippedNoMon . " homeHist=" . homeHist . " visOnMon=" . visOnMon)
-    missedLog := ""
-    visibleAll := WM_BackgroundBuildVisibleHwndSet()
-    inCand := Map()
-    for c in eligible.candidates
-        inCand[c.hwnd] := true
-    for hwnd in visibleAll {
-        if (inCand.Has(hwnd))
-            continue
-        title := ""
-        try title := SubStr(WinGetTitle(hwnd), 1, 40)
-        catch {
-        }
-        reason := WM_BackgroundExplainReject(hwnd, foreHwndOverride)
-        missedLog .= (missedLog = "" ? "" : ";") . "0x" . Format("{:X}", hwnd) . ":" . title . ":" . reason
-    }
-    if (missedLog != "")
-        WM_AgentDebugLog("G", "WM_TileBackground:collect", "still_missed_vis", missedLog)
-    ; #endregion
     if (eligible.total = 0) {
         if (eligible.hidden = 0)
             return { ok: false, message: "ℹ️ No tile-eligible windows (hidden or visible)." }
@@ -1109,54 +1050,17 @@ WM_TileBackgroundWindowsPerMonitor(maxPerMon := WM_TILE_BG_MAX_PER_MON, foreHwnd
     maxSlots := MonitorGetCount() * maxPerMon
     limit := Min(eligible.total, WM_TILE_BG_MAX_TOTAL, maxSlots)
     selected := WM_SelectTileHwndsByPriority(eligible.candidates, limit)
-    ; #region agent log
-    WM_AgentDebugLog("B", "WM_TileBackground:select", "cap",
-        "limit=" . limit . " maxSlots=" . maxSlots . " selected=" . selected.Length
-        . " monCount=" . MonitorGetCount())
-    ; #endregion
     assignResult := WM_AssignTileHwndsToMonitors(selected, maxPerMon)
     plan := assignResult.plan
-    ; #region agent log
-    deskSnap := ""
-    loop MonitorGetCount() {
-        planN := plan.Has(A_Index) ? plan[A_Index].Length : 0
-        nVis := 0
-        try nVis := GetVisibleWindowsOnMonitor(A_Index, true).Length
-        freeSlots := maxPerMon - planN
-        deskSnap .= (deskSnap = "" ? "" : ",") . A_Index . ":plan=" . planN . ",vis=" . nVis . ",freePlan=" . freeSlots
-    }
-    WM_AgentDebugLog("D", "WM_TileBackground:plan", "per_mon",
-        "assigned=" . assignResult.assigned . " unassigned=" . assignResult.unassigned.Length . " " . deskSnap)
-    ; #endregion
     WMAutomation_SuppressCursorCentering("tile_background", 5000)
     tiledMap := Map()
     exec := WM_TileBackgroundExecutePlan(plan, &tiledMap)
     totalTiled := exec.totalTiled
     monitorsTiled := exec.monitorsTiled
     qc := WM_TileBackgroundQualityCheck(eligible, selected, assignResult, &tiledMap)
-    ; #region agent log
-    tileSnap := ""
-    loop MonitorGetCount() {
-        planN := plan.Has(A_Index) ? plan[A_Index].Length : 0
-        tiledN := 0
-        if (planN > 0) {
-            for hwnd in plan[A_Index]
-                if (tiledMap.Has(hwnd) && tiledMap[hwnd])
-                    tiledN++
-        }
-        tileSnap .= (tileSnap = "" ? "" : ",") . A_Index . ":plan=" . planN . ",tiled=" . tiledN
-    }
-    WM_AgentDebugLog("E", "WM_TileBackground:qc", "execute",
-        "totalTiled=" . totalTiled . " planned=" . assignResult.assigned . " qcOk=" . (qc.ok ? 1 : 0)
-        . " failed=" . qc.failed.Length . " " . tileSnap)
-    ; #endregion
     if (!qc.ok && qc.failed.Length > 0) {
         reserve := WM_TileBackgroundReserveCandidates(eligible, selected, foreHwndOverride)
         replaced := WM_TileBackgroundReplaceFailedWithReserve(&selected, qc.failed, reserve)
-        ; #region agent log
-        WM_AgentDebugLog("F", "WM_TileBackground:backfill", "replace",
-            "failed=" . qc.failed.Length . " reserve=" . reserve.Length . " replaced=" . replaced)
-        ; #endregion
         if (replaced > 0) {
             assignResult := WM_AssignTileHwndsToMonitors(selected, maxPerMon)
             plan := assignResult.plan
