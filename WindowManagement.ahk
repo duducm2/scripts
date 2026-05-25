@@ -473,6 +473,139 @@ WM_MoveHwndToRect(hwnd, left, top, width, height) {
     return true
 }
 
+WM_TILE_BG_MAX_TOTAL := 12
+WM_TILE_BG_MAX_PER_MON := 3
+
+WM_MonitorIsPortrait(mon) {
+    MonitorGetWorkArea mon, &left, &top, &right, &bottom
+    return (bottom - top) > (right - left)
+}
+
+WM_CollectTileEligibleHwnds(foreHwndOverride := 0) {
+    foreHwnd := foreHwndOverride
+    try {
+        if (!foreHwnd)
+            foreHwnd := WinGetID("A")
+    } catch {
+        foreHwnd := 0
+    }
+    seen := Map()
+    candidates := []
+    hiddenCount := 0
+    for row in WM_CollectBackgroundWindows(foreHwnd) {
+        if (seen.Has(row.hwnd))
+            continue
+        homeMon := WM_GetHwndMonitorIndex(row.hwnd)
+        if (homeMon < 1)
+            continue
+        seen[row.hwnd] := true
+        candidates.Push({ hwnd: row.hwnd, priority: 0, homeMon: homeMon, order: candidates.Length })
+        hiddenCount++
+    }
+    visibleOrder := candidates.Length
+    loop MonitorGetCount() {
+        mon := A_Index
+        try {
+            for win in GetVisibleWindowsOnMonitor(mon, true) {
+                if (win.hwnd = foreHwnd)
+                    continue
+                if (seen.Has(win.hwnd))
+                    continue
+                if (WM_IsExcludedIndicatorWindow(win.hwnd))
+                    continue
+                homeMon := WM_GetHwndMonitorIndex(win.hwnd)
+                if (homeMon < 1)
+                    homeMon := mon
+                seen[win.hwnd] := true
+                candidates.Push({ hwnd: win.hwnd, priority: 1, homeMon: homeMon, order: visibleOrder++ })
+            }
+        } catch {
+        }
+    }
+    return { total: candidates.Length, hidden: hiddenCount, candidates: candidates }
+}
+
+WM_SelectTileHwndsByPriority(candidates, limit) {
+    if (candidates.Length = 0 || limit <= 0)
+        return []
+    sorted := []
+    for c in candidates
+        sorted.Push(c)
+    n := sorted.Length
+    if (n > 1) {
+        loop n - 1 {
+            loop n - A_Index {
+                j := A_Index
+                a := sorted[j]
+                b := sorted[j + 1]
+                swap := false
+                if (a.priority > b.priority)
+                    swap := true
+                else if (a.priority = b.priority && a.order > b.order)
+                    swap := true
+                if (swap) {
+                    tmp := sorted[j]
+                    sorted[j] := sorted[j + 1]
+                    sorted[j + 1] := tmp
+                }
+            }
+        }
+    }
+    selected := []
+    loop Min(limit, sorted.Length)
+        selected.Push(sorted[A_Index])
+    return selected
+}
+
+WM_AssignTileHwndsToMonitors(selectedItems, maxPerMon := WM_TILE_BG_MAX_PER_MON) {
+    monCount := MonitorGetCount()
+    assignment := Map()
+    loop monCount
+        assignment[A_Index] := []
+    overflow := []
+    for item in selectedItems {
+        mon := item.homeMon
+        if (mon < 1 || mon > monCount)
+            overflow.Push(item)
+        else if (assignment[mon].Length < maxPerMon)
+            assignment[mon].Push(item.hwnd)
+        else
+            overflow.Push(item)
+    }
+    loop monCount {
+        mon := GetMonitorIndexByOrder(A_Index)
+        if (!mon)
+            continue
+        while (overflow.Length > 0 && assignment[mon].Length < maxPerMon) {
+            item := overflow.RemoveAt(1)
+            assignment[mon].Push(item.hwnd)
+        }
+        if (overflow.Length = 0)
+            break
+    }
+    return assignment
+}
+
+WM_RepositionHwndToMonitor(mon, hwnd) {
+    if (!hwnd || mon < 1 || !WinExist("ahk_id " hwnd))
+        return false
+    if (!WM_PrepareHwndForTile(hwnd))
+        return false
+    MonitorGetWorkArea mon, &left, &top, &right, &bottom
+    margin := 8
+    workLeft := left + margin
+    workTop := top + margin
+    workW := (right - left) - margin * 2
+    workH := (bottom - top) - margin * 2
+    if (workW < 120 || workH < 80)
+        return false
+    w := Max(200, workW // 4)
+    h := Max(150, workH // 4)
+    x := workLeft + (workW - w) // 2
+    y := workTop + (workH - h) // 2
+    return WM_MoveHwndToRect(hwnd, x, y, w, h)
+}
+
 WM_TileHwndsOnMonitorWorkArea(mon, hwnds) {
     if (!hwnds.Length || mon < 1)
         return 0
@@ -486,7 +619,7 @@ WM_TileHwndsOnMonitorWorkArea(mon, hwnds) {
     if (workW < 120 || workH < 80)
         return 0
     n := hwnds.Length
-    portrait := workH > workW
+    portrait := WM_MonitorIsPortrait(mon)
     tiled := 0
     if (n = 1) {
         if (WM_PrepareHwndForTile(hwnds[1])) {
@@ -528,44 +661,29 @@ WM_TileHwndsOnMonitorWorkArea(mon, hwnds) {
     return tiled
 }
 
-WM_TileBackgroundWindowsPerMonitor(maxPerMon := 3, foreHwndOverride := 0) {
-    rows := WM_CollectBackgroundWindows(foreHwndOverride)
-    if (rows.Length = 0)
+WM_TileBackgroundWindowsPerMonitor(maxPerMon := WM_TILE_BG_MAX_PER_MON, foreHwndOverride := 0) {
+    eligible := WM_CollectTileEligibleHwnds(foreHwndOverride)
+    if (eligible.total = 0) {
+        if (eligible.hidden = 0)
+            return { ok: false, message: "ℹ️ No tile-eligible windows (hidden or visible)." }
         return { ok: false, message: WM_FormatBackgroundCollectEmptyMessage() }
+    }
+    maxSlots := MonitorGetCount() * maxPerMon
+    limit := Min(eligible.total, WM_TILE_BG_MAX_TOTAL, maxSlots)
+    selected := WM_SelectTileHwndsByPriority(eligible.candidates, limit)
+    plan := WM_AssignTileHwndsToMonitors(selected, maxPerMon)
     WMAutomation_SuppressCursorCentering("tile_background", 5000)
     totalTiled := 0
     monitorsTiled := 0
     loop MonitorGetCount() {
         mon := A_Index
-        hwndList := []
-        seen := Map()
-        for row in rows {
-            if (WM_GetHwndMonitorIndex(row.hwnd) != mon)
-                continue
-            if (seen.Has(row.hwnd))
-                continue
-            hwndList.Push(row.hwnd)
-            seen[row.hwnd] := true
-            if (hwndList.Length >= maxPerMon)
-                break
-        }
-        if (hwndList.Length < maxPerMon) {
-            try {
-                for win in GetVisibleWindowsOnMonitor(mon, true) {
-                    if (seen.Has(win.hwnd))
-                        continue
-                    if (WM_IsExcludedIndicatorWindow(win.hwnd))
-                        continue
-                    hwndList.Push(win.hwnd)
-                    seen[win.hwnd] := true
-                    if (hwndList.Length >= maxPerMon)
-                        break
-                }
-            } catch {
-            }
-        }
+        hwndList := plan.Has(mon) ? plan[mon] : []
         if (hwndList.Length = 0)
             continue
+        for hwnd in hwndList {
+            if (WM_GetHwndMonitorIndex(hwnd) != mon)
+                WM_RepositionHwndToMonitor(mon, hwnd)
+        }
         count := WM_TileHwndsOnMonitorWorkArea(mon, hwndList)
         if (count > 0) {
             totalTiled += count
@@ -575,8 +693,11 @@ WM_TileBackgroundWindowsPerMonitor(maxPerMon := 3, foreHwndOverride := 0) {
     WMAutomation_ClearCursorSuppression("tile_background")
     if (totalTiled = 0)
         return { ok: false, message: "Could not tile background windows." }
+    skipped := eligible.total - totalTiled
     msg := (totalTiled = 1) ? "Tiled 1 window on " monitorsTiled " monitor(s)"
         : "Tiled " totalTiled " windows on " monitorsTiled " monitor(s)"
+    if (skipped > 0)
+        msg .= " (" skipped " not tiled, max " WM_TILE_BG_MAX_TOTAL " total)"
     return { ok: true, message: msg }
 }
 
@@ -670,7 +791,7 @@ WM_WindowTools_ShowMenu() {
         17,
         "",
         false,
-        "[1] Maximize lone  [2] Hidden list  [3] Tile background (3/monitor)  [Esc] Cancel",
+        "[1] Maximize lone  [2] Hidden list  [3] Tile background (≤12 total, ≤3/monitor)  [Esc] Cancel",
         true,
         false,
         false)
