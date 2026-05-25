@@ -468,17 +468,148 @@ WM_MoveHwndToRect(hwnd, left, top, width, height) {
     catch
         ok := 0
     if !ok {
-        try DllCall("MoveWindow", "ptr", hwnd, "int", left, "int", top, "int", width, "int", height, "int", true)
+        try ok := DllCall("MoveWindow", "ptr", hwnd, "int", left, "int", top, "int", width, "int", height, "int", true)
     }
-    return true
+    if (!ok)
+        return false
+    Sleep 30
+    if (!WM_GetWindowRectHwnd(hwnd, &rl, &rt, &rr, &rb))
+        return false
+    tol := 80
+    return (Abs(rl - left) <= tol && Abs(rt - top) <= tol && Abs((rr - rl) - width) <= tol && Abs((rb - rt) - height) <= tol)
 }
 
 WM_TILE_BG_MAX_TOTAL := 12
 WM_TILE_BG_MAX_PER_MON := 3
 
+; #region agent log
+WM_AgentDebugLog(hypothesisId, location, message, dataStr := "") {
+    path := A_ScriptDir "\debug-2aa535.log"
+    try {
+        msgEsc := StrReplace(StrReplace(message, "\", "\\"), '"', '\"')
+        dataEsc := StrReplace(StrReplace(dataStr, "\", "\\"), '"', '\"')
+        FileAppend(Format(
+            '{{"sessionId":"2aa535","hypothesisId":"{}","location":"{}","message":"{}","data":"{}","timestamp":{}}}',
+            hypothesisId, location, msgEsc, dataEsc, A_TickCount), path, "UTF-8")
+    } catch {
+    }
+}
+; #endregion
+
 WM_MonitorIsPortrait(mon) {
     MonitorGetWorkArea mon, &left, &top, &right, &bottom
     return (bottom - top) > (right - left)
+}
+
+WM_ResolveHwndMonitorIndex(hwnd, fallbackMon := 0) {
+    mon := WM_GetHwndMonitorIndex(hwnd)
+    if (mon >= 1)
+        return mon
+    if (WM_GetWindowRectHwnd(hwnd, &wl, &wt, &wr, &wb)) {
+        cx := (wl + wr) // 2
+        cy := (wt + wb) // 2
+        point64 := (cy & 0xFFFFFFFF) << 32 | (cx & 0xFFFFFFFF)
+        try {
+            hMon := DllCall("MonitorFromPoint", "int64", point64, "uint", 2, "ptr")
+            loop MonitorGetCount() {
+                MonitorGet A_Index, &ml, &mt, &mr, &mb
+                mcx := (ml + mr) // 2
+                mcy := (mt + mb) // 2
+                mpoint := (mcy & 0xFFFFFFFF) << 32 | (mcx & 0xFFFFFFFF)
+                if (Integer(DllCall("MonitorFromPoint", "int64", mpoint, "uint", 2, "ptr")) = Integer(hMon))
+                    return A_Index
+            }
+        } catch {
+        }
+    }
+    if (fallbackMon >= 1 && fallbackMon <= MonitorGetCount())
+        return fallbackMon
+    try {
+        return GetMonitorIndexForForeground_StandardBar()
+    } catch {
+        return 0
+    }
+}
+
+; Non-minimized windows on a monitor (includes z-order covered — not only unobstructed visible).
+WM_EnumerateOpenHwndsOnMonitor(mon, foreHwnd := 0) {
+    if (mon < 1 || mon > MonitorGetCount())
+        return []
+    MonitorGet mon, &ml, &mt, &mr, &mb
+    cx := (ml + mr) // 2
+    cy := (mt + mb) // 2
+    point64 := (cy & 0xFFFFFFFF) << 32 | (cx & 0xFFFFFFFF)
+    hTarget := DllCall("MonitorFromPoint", "int64", point64, "uint", 2, "ptr")
+    out := []
+    for hwnd in WinGetList() {
+        try {
+            if (hwnd = foreHwnd)
+                continue
+            if (WinGetMinMax(hwnd) = -1)
+                continue
+            if !DllCall("IsWindowVisible", "ptr", hwnd)
+                continue
+            exStyle := DllCall("GetWindowLongPtr", "ptr", hwnd, "int", -20, "ptr")
+            if (exStyle & 0x00000080)
+                continue
+            hMon := DllCall("MonitorFromWindow", "ptr", hwnd, "uint", 2, "ptr")
+            if (Integer(hMon) != Integer(hTarget))
+                continue
+            class := WinGetClass(hwnd)
+            if (class = "Progman" || class = "WorkerW")
+                continue
+            if (WinGetTitle(hwnd) = "")
+                continue
+            if (WM_IsExcludedIndicatorWindow(hwnd))
+                continue
+            out.Push(hwnd)
+        } catch {
+        }
+    }
+    return out
+}
+
+; Tile organize: user apps on script monitors; skip noise, indicators, and background exclude list.
+WM_TilePassesOrganizeGates(hwnd, foreHwnd) {
+    if (!hwnd || hwnd = foreHwnd)
+        return false
+    try {
+        exStyle := DllCall("GetWindowLongPtr", "ptr", hwnd, "int", -20, "ptr")
+        if (exStyle & 0x00000080)
+            return false
+        class := WinGetClass(hwnd)
+        if (WM_IsDesktopOrTaskbarClass(class))
+            return false
+        title := WinGetTitle(hwnd)
+        if (title = "")
+            return false
+        if (WM_BackgroundIsSystemNoiseTitle(title))
+            return false
+        exe := ""
+        try exe := WinGetProcessName("ahk_id " hwnd)
+        WM_BackgroundTitleExcludes_Ensure()
+        if (WM_BackgroundTitleIsExcluded(title, exe))
+            return false
+        if (WM_IsExcludedIndicatorWindow(hwnd))
+            return false
+        if (!WM_BackgroundHwndOnAnyScriptMonitor(hwnd))
+            return false
+    } catch {
+        return false
+    }
+    return true
+}
+
+WM_TileCandidateRegister(&seen, &candidates, hwnd, priority, homeMon, &counters, counterKey) {
+    if (!hwnd || seen.Has(hwnd) || homeMon < 1)
+        return false
+    seen[hwnd] := true
+    candidates.Push({ hwnd: hwnd, priority: priority, homeMon: homeMon, order: candidates.Length })
+    if (counters.Has(counterKey))
+        counters[counterKey]++
+    else
+        counters[counterKey] := 1
+    return true
 }
 
 WM_CollectTileEligibleHwnds(foreHwndOverride := 0) {
@@ -489,40 +620,95 @@ WM_CollectTileEligibleHwnds(foreHwndOverride := 0) {
     } catch {
         foreHwnd := 0
     }
+    fallbackMon := WM_ResolveHwndMonitorIndex(foreHwnd, 1)
     seen := Map()
     candidates := []
-    hiddenCount := 0
-    for row in WM_CollectBackgroundWindows(foreHwnd) {
-        if (seen.Has(row.hwnd))
-            continue
-        homeMon := WM_GetHwndMonitorIndex(row.hwnd)
-        if (homeMon < 1)
-            continue
-        seen[row.hwnd] := true
-        candidates.Push({ hwnd: row.hwnd, priority: 0, homeMon: homeMon, order: candidates.Length })
-        hiddenCount++
-    }
-    visibleOrder := candidates.Length
-    loop MonitorGetCount() {
-        mon := A_Index
-        try {
-            for win in GetVisibleWindowsOnMonitor(mon, true) {
-                if (win.hwnd = foreHwnd)
-                    continue
-                if (seen.Has(win.hwnd))
-                    continue
-                if (WM_IsExcludedIndicatorWindow(win.hwnd))
-                    continue
-                homeMon := WM_GetHwndMonitorIndex(win.hwnd)
-                if (homeMon < 1)
-                    homeMon := mon
-                seen[win.hwnd] := true
-                candidates.Push({ hwnd: win.hwnd, priority: 1, homeMon: homeMon, order: visibleOrder++ })
+    counters := Map()
+    counters["hidden"] := 0
+    counters["visible"] := 0
+    counters["openOnMon"] := 0
+    counters["skippedReject"] := 0
+    counters["skippedNoMon"] := 0
+    counters["winList"] := 0
+    visibleAll := WM_BackgroundBuildVisibleHwndSet()
+    prevDetect := A_DetectHiddenWindows
+    DetectHiddenWindows true
+    try {
+        loop MonitorGetCount() {
+            mon := A_Index
+            try {
+                for win in GetVisibleWindowsOnMonitor(mon, true) {
+                    if (win.hwnd = foreHwnd || seen.Has(win.hwnd))
+                        continue
+                    if (!WM_TilePassesOrganizeGates(win.hwnd, foreHwnd)) {
+                        counters["skippedReject"]++
+                        continue
+                    }
+                    homeMon := WM_ResolveHwndMonitorIndex(win.hwnd, mon)
+                    if (homeMon < 1) {
+                        counters["skippedNoMon"]++
+                        continue
+                    }
+                    WM_TileCandidateRegister(&seen, &candidates, win.hwnd, 1, homeMon, &counters, "visible")
+                }
+            } catch {
             }
-        } catch {
+            for hwnd in WM_EnumerateOpenHwndsOnMonitor(mon, foreHwnd) {
+                if (seen.Has(hwnd))
+                    continue
+                if (!WM_TilePassesOrganizeGates(hwnd, foreHwnd)) {
+                    counters["skippedReject"]++
+                    continue
+                }
+                homeMon := WM_ResolveHwndMonitorIndex(hwnd, mon)
+                if (homeMon < 1) {
+                    counters["skippedNoMon"]++
+                    continue
+                }
+                WM_TileCandidateRegister(&seen, &candidates, hwnd, 2, homeMon, &counters, "openOnMon")
+            }
         }
+        for hwnd in WinGetList() {
+            if (seen.Has(hwnd) || hwnd = foreHwnd)
+                continue
+            if (!WM_TilePassesOrganizeGates(hwnd, foreHwnd)) {
+                counters["skippedReject"]++
+                continue
+            }
+            isMin := false
+            try isMin := (WinGetMinMax(hwnd) = -1)
+            catch {
+            }
+            if (isMin) {
+                if (!WM_BackgroundPassesVisibleStackGates(hwnd))
+                    continue
+                priority := 0
+            } else {
+                if (!DllCall("IsWindowVisible", "ptr", hwnd))
+                    continue
+                priority := visibleAll.Has(hwnd) ? 1 : 2
+            }
+            homeMon := WM_ResolveHwndMonitorIndex(hwnd, fallbackMon)
+            if (homeMon < 1) {
+                counters["skippedNoMon"]++
+                continue
+            }
+            counterKey := (priority = 0) ? "hidden" : ((priority = 1) ? "visible" : "winList")
+            WM_TileCandidateRegister(&seen, &candidates, hwnd, priority, homeMon, &counters, counterKey)
+        }
+    } finally {
+        DetectHiddenWindows prevDetect
     }
-    return { total: candidates.Length, hidden: hiddenCount, candidates: candidates }
+    return {
+        total: candidates.Length,
+        hidden: counters.Get("hidden", 0),
+        visible: counters.Get("visible", 0),
+        openOnMon: counters.Get("openOnMon", 0),
+        winList: counters.Get("winList", 0),
+        skippedReject: counters.Get("skippedReject", 0),
+        skippedNoMon: counters.Get("skippedNoMon", 0),
+        candidates: candidates
+    }
 }
 
 WM_SelectTileHwndsByPriority(candidates, limit) {
@@ -552,9 +738,74 @@ WM_SelectTileHwndsByPriority(candidates, limit) {
         }
     }
     selected := []
-    loop Min(limit, sorted.Length)
-        selected.Push(sorted[A_Index])
+    for c in sorted {
+        if (selected.Length >= limit)
+            break
+        selected.Push(c)
+    }
     return selected
+}
+
+WM_TileBackgroundReserveCandidates(eligible, selected, foreHwnd := 0) {
+    used := Map()
+    for item in selected
+        used[item.hwnd] := true
+    reserve := []
+    pool := []
+    for c in eligible.candidates
+        pool.Push(c)
+    n := pool.Length
+    if (n > 1) {
+        loop n - 1 {
+            loop n - A_Index {
+                j := A_Index
+                a := pool[j]
+                b := pool[j + 1]
+                swap := false
+                if (a.priority > b.priority)
+                    swap := true
+                else if (a.priority = b.priority && a.order > b.order)
+                    swap := true
+                if (swap) {
+                    tmp := pool[j]
+                    pool[j] := pool[j + 1]
+                    pool[j + 1] := tmp
+                }
+            }
+        }
+    }
+    for c in pool {
+        if (used.Has(c.hwnd))
+            continue
+        if (!WM_TilePassesOrganizeGates(c.hwnd, foreHwnd))
+            continue
+        reserve.Push(c)
+    }
+    return reserve
+}
+
+WM_TileBackgroundReplaceFailedWithReserve(&selected, failedHwnds, reserve) {
+    if (failedHwnds.Length = 0 || reserve.Length = 0)
+        return 0
+    failedSet := Map()
+    for hwnd in failedHwnds
+        failedSet[hwnd] := true
+    replaced := 0
+    repIdx := 1
+    newSelected := []
+    for item in selected {
+        if (failedSet.Has(item.hwnd)) {
+            if (repIdx <= reserve.Length) {
+                newSelected.Push(reserve[repIdx++])
+                replaced++
+            }
+        } else
+            newSelected.Push(item)
+    }
+    selected.Length := 0
+    for item in newSelected
+        selected.Push(item)
+    return replaced
 }
 
 WM_AssignTileHwndsToMonitors(selectedItems, maxPerMon := WM_TILE_BG_MAX_PER_MON) {
@@ -562,28 +813,35 @@ WM_AssignTileHwndsToMonitors(selectedItems, maxPerMon := WM_TILE_BG_MAX_PER_MON)
     assignment := Map()
     loop monCount
         assignment[A_Index] := []
-    overflow := []
+    unassigned := []
+    ; Balance across monitors: always place on the monitor with the fewest planned windows (fills sparse monitors first).
     for item in selectedItems {
-        mon := item.homeMon
-        if (mon < 1 || mon > monCount)
-            overflow.Push(item)
-        else if (assignment[mon].Length < maxPerMon)
-            assignment[mon].Push(item.hwnd)
-        else
-            overflow.Push(item)
-    }
-    loop monCount {
-        mon := GetMonitorIndexByOrder(A_Index)
-        if (!mon)
-            continue
-        while (overflow.Length > 0 && assignment[mon].Length < maxPerMon) {
-            item := overflow.RemoveAt(1)
-            assignment[mon].Push(item.hwnd)
+        bestMon := 0
+        bestLen := 9999
+        loop monCount {
+            mon := A_Index
+            n := assignment[mon].Length
+            if (n < maxPerMon && n < bestLen) {
+                bestLen := n
+                bestMon := mon
+            }
         }
-        if (overflow.Length = 0)
-            break
+        if (bestMon >= 1)
+            assignment[bestMon].Push(item.hwnd)
+        else
+            unassigned.Push(item.hwnd)
     }
-    return assignment
+    assigned := 0
+    planSnap := ""
+    loop monCount {
+        assigned += assignment[A_Index].Length
+        planSnap .= (planSnap = "" ? "" : ",") . A_Index . ":" . assignment[A_Index].Length
+    }
+    ; #region agent log
+    WM_AgentDebugLog("C", "WM_AssignTileHwndsToMonitors", "assign_balanced",
+        "selected=" . selectedItems.Length . " unassigned=" . unassigned.Length . " plan=" . planSnap)
+    ; #endregion
+    return { plan: assignment, assigned: assigned, unassigned: unassigned }
 }
 
 WM_RepositionHwndToMonitor(mon, hwnd) {
@@ -606,7 +864,7 @@ WM_RepositionHwndToMonitor(mon, hwnd) {
     return WM_MoveHwndToRect(hwnd, x, y, w, h)
 }
 
-WM_TileHwndsOnMonitorWorkArea(mon, hwnds) {
+WM_TileHwndsOnMonitorWorkArea(mon, hwnds, &tiledMap := unset) {
     if (!hwnds.Length || mon < 1)
         return 0
     MonitorGetWorkArea mon, &left, &top, &right, &bottom
@@ -624,6 +882,8 @@ WM_TileHwndsOnMonitorWorkArea(mon, hwnds) {
     if (n = 1) {
         if (WM_PrepareHwndForTile(hwnds[1])) {
             WM_MaximizeHwnd(hwnds[1])
+            if (IsSet(tiledMap))
+                tiledMap[hwnds[1]] := true
             tiled := 1
         }
         return tiled
@@ -636,8 +896,11 @@ WM_TileHwndsOnMonitorWorkArea(mon, hwnds) {
         loop Min(n, 3) {
             i := A_Index
             y := workTop + (i - 1) * (rowH + gap)
-            if (WM_PrepareHwndForTile(hwnds[i]) && WM_MoveHwndToRect(hwnds[i], workLeft, y, workW, rowH))
+            if (WM_PrepareHwndForTile(hwnds[i]) && WM_MoveHwndToRect(hwnds[i], workLeft, y, workW, rowH)) {
+                if (IsSet(tiledMap))
+                    tiledMap[hwnds[i]] := true
                 tiled++
+            }
         }
         return tiled
     }
@@ -646,8 +909,11 @@ WM_TileHwndsOnMonitorWorkArea(mon, hwnds) {
         loop 2 {
             i := A_Index
             x := workLeft + (i = 2 ? halfW + gap : 0)
-            if (WM_PrepareHwndForTile(hwnds[i]) && WM_MoveHwndToRect(hwnds[i], x, workTop, halfW, workH))
+            if (WM_PrepareHwndForTile(hwnds[i]) && WM_MoveHwndToRect(hwnds[i], x, workTop, halfW, workH)) {
+                if (IsSet(tiledMap))
+                    tiledMap[hwnds[i]] := true
                 tiled++
+            }
         }
         return tiled
     }
@@ -655,24 +921,16 @@ WM_TileHwndsOnMonitorWorkArea(mon, hwnds) {
     loop Min(n, 3) {
         i := A_Index
         x := workLeft + (i - 1) * (colW + gap)
-        if (WM_PrepareHwndForTile(hwnds[i]) && WM_MoveHwndToRect(hwnds[i], x, workTop, colW, workH))
+        if (WM_PrepareHwndForTile(hwnds[i]) && WM_MoveHwndToRect(hwnds[i], x, workTop, colW, workH)) {
+            if (IsSet(tiledMap))
+                tiledMap[hwnds[i]] := true
             tiled++
+        }
     }
     return tiled
 }
 
-WM_TileBackgroundWindowsPerMonitor(maxPerMon := WM_TILE_BG_MAX_PER_MON, foreHwndOverride := 0) {
-    eligible := WM_CollectTileEligibleHwnds(foreHwndOverride)
-    if (eligible.total = 0) {
-        if (eligible.hidden = 0)
-            return { ok: false, message: "ℹ️ No tile-eligible windows (hidden or visible)." }
-        return { ok: false, message: WM_FormatBackgroundCollectEmptyMessage() }
-    }
-    maxSlots := MonitorGetCount() * maxPerMon
-    limit := Min(eligible.total, WM_TILE_BG_MAX_TOTAL, maxSlots)
-    selected := WM_SelectTileHwndsByPriority(eligible.candidates, limit)
-    plan := WM_AssignTileHwndsToMonitors(selected, maxPerMon)
-    WMAutomation_SuppressCursorCentering("tile_background", 5000)
+WM_TileBackgroundExecutePlan(plan, &tiledMap) {
     totalTiled := 0
     monitorsTiled := 0
     loop MonitorGetCount() {
@@ -684,21 +942,225 @@ WM_TileBackgroundWindowsPerMonitor(maxPerMon := WM_TILE_BG_MAX_PER_MON, foreHwnd
             if (WM_GetHwndMonitorIndex(hwnd) != mon)
                 WM_RepositionHwndToMonitor(mon, hwnd)
         }
-        count := WM_TileHwndsOnMonitorWorkArea(mon, hwndList)
+        Sleep 40
+        count := WM_TileHwndsOnMonitorWorkArea(mon, hwndList, &tiledMap)
         if (count > 0) {
             totalTiled += count
             monitorsTiled++
         }
     }
+    return { totalTiled: totalTiled, monitorsTiled: monitorsTiled }
+}
+
+WM_TileBackgroundQualityLogPath() {
+    return A_ScriptDir "\.cursor\wm_tile_quality.log"
+}
+
+WM_TileBackgroundQualityCheck(eligible, selected, assignResult, &tiledMap) {
+    planned := assignResult.assigned
+    tiled := 0
+    for , ok in tiledMap {
+        if (ok)
+            tiled++
+    }
+    failed := []
+    plannedHwnds := Map()
+    for mon, list in assignResult.plan {
+        for hwnd in list
+            plannedHwnds[hwnd] := mon
+    }
+    for hwnd in plannedHwnds {
+        if (!tiledMap.Has(hwnd) || !tiledMap[hwnd])
+            failed.Push(hwnd)
+    }
+    unassigned := assignResult.unassigned.Length
+    issues := []
+    if (unassigned > 0)
+        issues.Push("unassigned:" unassigned)
+    if (planned < selected.Length)
+        issues.Push("assign_short:" (selected.Length - planned))
+    if (tiled < planned)
+        issues.Push("tile_short:" (planned - tiled))
+    ok := (unassigned = 0 && planned = selected.Length && tiled = planned)
+    stats := Map(
+        "eligible", eligible.total,
+        "hidden", eligible.hidden,
+        "visible", eligible.visible,
+        "openOnMon", eligible.openOnMon,
+        "skippedReject", eligible.skippedReject,
+        "skippedNoMon", eligible.skippedNoMon,
+        "selected", selected.Length,
+        "planned", planned,
+        "tiled", tiled,
+        "unassigned", unassigned,
+        "failed", failed.Length,
+        "issues", issues,
+        "ok", ok)
+    global g_WM_LastTileQualityStats
+    g_WM_LastTileQualityStats := stats
+    return { ok: ok, failed: failed, plannedHwnds: plannedHwnds, stats: stats }
+}
+
+WM_TileBackgroundWriteQualityLog(eligible, selected, assignResult, qc, passLabel := "") {
+    try DirCreate(A_ScriptDir "\.cursor")
+    catch {
+    }
+    lines := ["=== WM tile quality " A_Now (passLabel != "" ? " " passLabel : "") " ==="]
+    st := qc.stats
+    lines.Push(Format("eligible={} hidden={} visible={} openOnMon={} skipReject={} skipNoMon={}",
+        st["eligible"], st["hidden"], st["visible"], st["openOnMon"], st["skippedReject"], st["skippedNoMon"]))
+    lines.Push(Format("selected={} planned={} tiled={} unassigned={} failed={}",
+        st["selected"], st["planned"], st["tiled"], st["unassigned"], st["failed"]))
+    if (st["issues"].Length)
+        lines.Push("issues: " WM_ArrJoin(st["issues"], ", "))
+    for hwnd in qc.failed {
+        title := ""
+        try title := WinGetTitle(hwnd)
+        catch {
+        }
+        mon := qc.plannedHwnds.Has(hwnd) ? qc.plannedHwnds[hwnd] : "?"
+        lines.Push(Format("  FAIL hwnd={} mon={} title={}", hwnd, mon, WM_TruncateTitleForList(title, 60)))
+    }
+    for hwnd in assignResult.unassigned {
+        title := ""
+        try title := WinGetTitle(hwnd)
+        catch {
+        }
+        lines.Push(Format("  UNASSIGNED hwnd={} title={}", hwnd, WM_TruncateTitleForList(title, 60)))
+    }
+    path := WM_TileBackgroundQualityLogPath()
+    try {
+        if FileExist(path)
+            FileAppend(WM_ArrJoin(lines, "`n") "`n", path, "UTF-8")
+        else
+            FileAppend(WM_ArrJoin(lines, "`n") "`n", path, "UTF-8")
+    } catch {
+    }
+}
+
+WM_TileBackgroundWindowsPerMonitor(maxPerMon := WM_TILE_BG_MAX_PER_MON, foreHwndOverride := 0) {
+    WM_BackgroundTitleExcludes_Init()
+    eligible := WM_CollectTileEligibleHwnds(foreHwndOverride)
+    ; #region agent log
+    homeHist := ""
+    homeMap := Map()
+    for c in eligible.candidates {
+        k := String(c.homeMon)
+        homeMap[k] := homeMap.Has(k) ? homeMap[k] + 1 : 1
+    }
+    for k, v in homeMap
+        homeHist .= (homeHist = "" ? "" : ",") . k . ":" . v
+    visOnMon := ""
+    loop MonitorGetCount() {
+        nVis := 0
+        try nVis := GetVisibleWindowsOnMonitor(A_Index, true).Length
+        visOnMon .= (visOnMon = "" ? "" : ",") . A_Index . ":" . nVis
+    }
+    WM_AgentDebugLog("A", "WM_TileBackground:collect", "eligible",
+        "total=" . eligible.total . " hidden=" . eligible.hidden . " visible=" . eligible.visible
+        . " openOnMon=" . eligible.openOnMon . " winList=" . eligible.winList . " skipReject="
+        . eligible.skippedReject . " skipNoMon=" . eligible.skippedNoMon . " homeHist=" . homeHist
+        . " visOnMon=" . visOnMon)
+    ; #endregion
+    if (eligible.total = 0) {
+        if (eligible.hidden = 0)
+            return { ok: false, message: "ℹ️ No tile-eligible windows (hidden or visible)." }
+        return { ok: false, message: WM_FormatBackgroundCollectEmptyMessage() }
+    }
+    maxSlots := MonitorGetCount() * maxPerMon
+    limit := Min(eligible.total, WM_TILE_BG_MAX_TOTAL, maxSlots)
+    selected := WM_SelectTileHwndsByPriority(eligible.candidates, limit)
+    ; #region agent log
+    WM_AgentDebugLog("B", "WM_TileBackground:select", "cap",
+        "limit=" . limit . " maxSlots=" . maxSlots . " selected=" . selected.Length
+        . " monCount=" . MonitorGetCount())
+    ; #endregion
+    assignResult := WM_AssignTileHwndsToMonitors(selected, maxPerMon)
+    plan := assignResult.plan
+    ; #region agent log
+    deskSnap := ""
+    loop MonitorGetCount() {
+        planN := plan.Has(A_Index) ? plan[A_Index].Length : 0
+        nVis := 0
+        try nVis := GetVisibleWindowsOnMonitor(A_Index, true).Length
+        freeSlots := maxPerMon - planN
+        deskSnap .= (deskSnap = "" ? "" : ",") . A_Index . ":plan=" . planN . ",vis=" . nVis . ",freePlan=" . freeSlots
+    }
+    WM_AgentDebugLog("D", "WM_TileBackground:plan", "per_mon",
+        "assigned=" . assignResult.assigned . " unassigned=" . assignResult.unassigned.Length . " " . deskSnap)
+    ; #endregion
+    WMAutomation_SuppressCursorCentering("tile_background", 5000)
+    tiledMap := Map()
+    exec := WM_TileBackgroundExecutePlan(plan, &tiledMap)
+    totalTiled := exec.totalTiled
+    monitorsTiled := exec.monitorsTiled
+    qc := WM_TileBackgroundQualityCheck(eligible, selected, assignResult, &tiledMap)
+    ; #region agent log
+    tileSnap := ""
+    loop MonitorGetCount() {
+        planN := plan.Has(A_Index) ? plan[A_Index].Length : 0
+        tiledN := 0
+        if (planN > 0) {
+            for hwnd in plan[A_Index]
+                if (tiledMap.Has(hwnd) && tiledMap[hwnd])
+                    tiledN++
+        }
+        tileSnap .= (tileSnap = "" ? "" : ",") . A_Index . ":plan=" . planN . ",tiled=" . tiledN
+    }
+    WM_AgentDebugLog("E", "WM_TileBackground:qc", "execute",
+        "totalTiled=" . totalTiled . " planned=" . assignResult.assigned . " qcOk=" . (qc.ok ? 1 : 0)
+        . " failed=" . qc.failed.Length . " " . tileSnap)
+    ; #endregion
+    if (!qc.ok && qc.failed.Length > 0) {
+        reserve := WM_TileBackgroundReserveCandidates(eligible, selected, foreHwndOverride)
+        replaced := WM_TileBackgroundReplaceFailedWithReserve(&selected, qc.failed, reserve)
+        ; #region agent log
+        WM_AgentDebugLog("F", "WM_TileBackground:backfill", "replace",
+            "failed=" . qc.failed.Length . " reserve=" . reserve.Length . " replaced=" . replaced)
+        ; #endregion
+        if (replaced > 0) {
+            assignResult := WM_AssignTileHwndsToMonitors(selected, maxPerMon)
+            plan := assignResult.plan
+            tiledMap := Map()
+            exec := WM_TileBackgroundExecutePlan(plan, &tiledMap)
+            totalTiled := 0
+            for , ok in tiledMap {
+                if (ok)
+                    totalTiled++
+            }
+            monitorsTiled := 0
+            for mon, list in plan {
+                for hwnd in list {
+                    if (tiledMap.Has(hwnd) && tiledMap[hwnd]) {
+                        monitorsTiled++
+                        break
+                    }
+                }
+            }
+            qc := WM_TileBackgroundQualityCheck(eligible, selected, assignResult, &tiledMap)
+            WM_TileBackgroundWriteQualityLog(eligible, selected, assignResult, qc, "backfill")
+        }
+    }
     WMAutomation_ClearCursorSuppression("tile_background")
+    if (WM_DebugBackgroundEnabled() || !qc.ok)
+        WM_TileBackgroundWriteQualityLog(eligible, selected, assignResult, qc, "final")
     if (totalTiled = 0)
-        return { ok: false, message: "Could not tile background windows." }
-    skipped := eligible.total - totalTiled
-    msg := (totalTiled = 1) ? "Tiled 1 window on " monitorsTiled " monitor(s)"
-        : "Tiled " totalTiled " windows on " monitorsTiled " monitor(s)"
-    if (skipped > 0)
-        msg .= " (" skipped " not tiled, max " WM_TILE_BG_MAX_TOTAL " total)"
-    return { ok: true, message: msg }
+        return { ok: false, message: "Could not tile background windows (" eligible.total " eligible)." }
+    planned := assignResult.assigned
+    msg := (monitorsTiled = 1)
+        ? ("Tiled " totalTiled "/" planned " on 1 monitor (" eligible.total " eligible)")
+        : ("Tiled " totalTiled "/" planned " on " monitorsTiled " monitors (" eligible.total " eligible)")
+    if (!qc.ok) {
+        msg .= " ⚠️ QC: "
+        if (qc.stats["unassigned"] > 0)
+            msg .= qc.stats["unassigned"] " unassigned "
+        if (qc.stats["failed"] > 0)
+            msg .= qc.stats["failed"] " failed"
+        msg .= " — see wm_tile_quality.log"
+    } else if (eligible.total > totalTiled) {
+        msg .= " (" (eligible.total - totalTiled) " not selected, cap " WM_TILE_BG_MAX_TOTAL ")"
+    }
+    return { ok: true, message: msg, quality: qc.stats }
 }
 
 ; =============================================================================

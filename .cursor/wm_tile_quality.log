@@ -1,0 +1,18 @@
+﻿=== WM tile quality 20260525091628 retry ===
+eligible=13 hidden=4 visible=5 openOnMon=4 skipReject=439 skipNoMon=0
+selected=12 planned=12 tiled=7 unassigned=0 failed=5
+issues: tile_short:5
+  FAIL hwnd=66822 mon=4 title=About IT Workplace Toolkit
+  FAIL hwnd=67596 mon=2 title=Drafts Monitor
+  FAIL hwnd=133204 mon=1 title=Form1
+  FAIL hwnd=197262 mon=2 title=Settings
+  FAIL hwnd=197264 mon=3 title=Screenpresso
+=== WM tile quality 20260525091628 final ===
+eligible=13 hidden=4 visible=5 openOnMon=4 skipReject=439 skipNoMon=0
+selected=12 planned=12 tiled=7 unassigned=0 failed=5
+issues: tile_short:5
+  FAIL hwnd=66822 mon=4 title=About IT Workplace Toolkit
+  FAIL hwnd=67596 mon=2 title=Drafts Monitor
+  FAIL hwnd=133204 mon=1 title=Form1
+  FAIL hwnd=197262 mon=2 title=Settings
+  FAIL hwnd=197264 mon=3 title=Screenpresso
