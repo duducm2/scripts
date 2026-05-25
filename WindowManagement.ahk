@@ -532,7 +532,7 @@ WM_ResolveHwndMonitorIndex(hwnd, fallbackMon := 0) {
 }
 
 ; Non-minimized windows on a monitor (includes z-order covered — not only unobstructed visible).
-WM_EnumerateOpenHwndsOnMonitor(mon, foreHwnd := 0) {
+WM_EnumerateOpenHwndsOnMonitor(mon) {
     if (mon < 1 || mon > MonitorGetCount())
         return []
     MonitorGet mon, &ml, &mt, &mr, &mb
@@ -543,8 +543,6 @@ WM_EnumerateOpenHwndsOnMonitor(mon, foreHwnd := 0) {
     out := []
     for hwnd in WinGetList() {
         try {
-            if (hwnd = foreHwnd)
-                continue
             if (WinGetMinMax(hwnd) = -1)
                 continue
             if !DllCall("IsWindowVisible", "ptr", hwnd)
@@ -570,8 +568,9 @@ WM_EnumerateOpenHwndsOnMonitor(mon, foreHwnd := 0) {
 }
 
 ; Tile organize: user apps on script monitors; skip noise, indicators, and background exclude list.
-WM_TilePassesOrganizeGates(hwnd, foreHwnd) {
-    if (!hwnd || hwnd = foreHwnd)
+; Does not skip the foreground window — organize should include every unobstructed app the user sees.
+WM_TilePassesOrganizeGates(hwnd) {
+    if (!hwnd)
         return false
     try {
         exStyle := DllCall("GetWindowLongPtr", "ptr", hwnd, "int", -20, "ptr")
@@ -630,17 +629,24 @@ WM_CollectTileEligibleHwnds(foreHwndOverride := 0) {
     counters["skippedReject"] := 0
     counters["skippedNoMon"] := 0
     counters["winList"] := 0
+    counters["missedVis"] := 0
+    counters["foreground"] := 0
     visibleAll := WM_BackgroundBuildVisibleHwndSet()
     prevDetect := A_DetectHiddenWindows
     DetectHiddenWindows true
     try {
+        if (foreHwnd && WM_TilePassesOrganizeGates(foreHwnd)) {
+            homeMon := WM_ResolveHwndMonitorIndex(foreHwnd, fallbackMon)
+            if (homeMon >= 1 && WM_TileCandidateRegister(&seen, &candidates, foreHwnd, 0, homeMon, &counters, "foreground"))
+                counters["foreground"] := 1
+        }
         loop MonitorGetCount() {
             mon := A_Index
             try {
                 for win in GetVisibleWindowsOnMonitor(mon, true) {
-                    if (win.hwnd = foreHwnd || seen.Has(win.hwnd))
+                    if (seen.Has(win.hwnd))
                         continue
-                    if (!WM_TilePassesOrganizeGates(win.hwnd, foreHwnd)) {
+                    if (!WM_TilePassesOrganizeGates(win.hwnd)) {
                         counters["skippedReject"]++
                         continue
                     }
@@ -653,10 +659,10 @@ WM_CollectTileEligibleHwnds(foreHwndOverride := 0) {
                 }
             } catch {
             }
-            for hwnd in WM_EnumerateOpenHwndsOnMonitor(mon, foreHwnd) {
+            for hwnd in WM_EnumerateOpenHwndsOnMonitor(mon) {
                 if (seen.Has(hwnd))
                     continue
-                if (!WM_TilePassesOrganizeGates(hwnd, foreHwnd)) {
+                if (!WM_TilePassesOrganizeGates(hwnd)) {
                     counters["skippedReject"]++
                     continue
                 }
@@ -668,10 +674,24 @@ WM_CollectTileEligibleHwnds(foreHwndOverride := 0) {
                 WM_TileCandidateRegister(&seen, &candidates, hwnd, 2, homeMon, &counters, "openOnMon")
             }
         }
-        for hwnd in WinGetList() {
-            if (seen.Has(hwnd) || hwnd = foreHwnd)
+        for hwnd in visibleAll {
+            if (seen.Has(hwnd))
                 continue
-            if (!WM_TilePassesOrganizeGates(hwnd, foreHwnd)) {
+            if (!WM_TilePassesOrganizeGates(hwnd)) {
+                counters["skippedReject"]++
+                continue
+            }
+            homeMon := WM_ResolveHwndMonitorIndex(hwnd, fallbackMon)
+            if (homeMon < 1) {
+                counters["skippedNoMon"]++
+                continue
+            }
+            WM_TileCandidateRegister(&seen, &candidates, hwnd, 1, homeMon, &counters, "missedVis")
+        }
+        for hwnd in WinGetList() {
+            if (seen.Has(hwnd))
+                continue
+            if (!WM_TilePassesOrganizeGates(hwnd)) {
                 counters["skippedReject"]++
                 continue
             }
@@ -705,6 +725,8 @@ WM_CollectTileEligibleHwnds(foreHwndOverride := 0) {
         visible: counters.Get("visible", 0),
         openOnMon: counters.Get("openOnMon", 0),
         winList: counters.Get("winList", 0),
+        missedVis: counters.Get("missedVis", 0),
+        foreground: counters.Get("foreground", 0),
         skippedReject: counters.Get("skippedReject", 0),
         skippedNoMon: counters.Get("skippedNoMon", 0),
         candidates: candidates
@@ -777,7 +799,7 @@ WM_TileBackgroundReserveCandidates(eligible, selected, foreHwnd := 0) {
     for c in pool {
         if (used.Has(c.hwnd))
             continue
-        if (!WM_TilePassesOrganizeGates(c.hwnd, foreHwnd))
+        if (!WM_TilePassesOrganizeGates(c.hwnd))
             continue
         reserve.Push(c)
     }
@@ -1058,9 +1080,26 @@ WM_TileBackgroundWindowsPerMonitor(maxPerMon := WM_TILE_BG_MAX_PER_MON, foreHwnd
     }
     WM_AgentDebugLog("A", "WM_TileBackground:collect", "eligible",
         "total=" . eligible.total . " hidden=" . eligible.hidden . " visible=" . eligible.visible
-        . " openOnMon=" . eligible.openOnMon . " winList=" . eligible.winList . " skipReject="
-        . eligible.skippedReject . " skipNoMon=" . eligible.skippedNoMon . " homeHist=" . homeHist
-        . " visOnMon=" . visOnMon)
+        . " fore=" . eligible.foreground . " missedVis=" . eligible.missedVis . " openOnMon=" . eligible.openOnMon
+        . " winList=" . eligible.winList . " skipReject=" . eligible.skippedReject . " skipNoMon="
+        . eligible.skippedNoMon . " homeHist=" . homeHist . " visOnMon=" . visOnMon)
+    missedLog := ""
+    visibleAll := WM_BackgroundBuildVisibleHwndSet()
+    inCand := Map()
+    for c in eligible.candidates
+        inCand[c.hwnd] := true
+    for hwnd in visibleAll {
+        if (inCand.Has(hwnd))
+            continue
+        title := ""
+        try title := SubStr(WinGetTitle(hwnd), 1, 40)
+        catch {
+        }
+        reason := WM_BackgroundExplainReject(hwnd, foreHwndOverride)
+        missedLog .= (missedLog = "" ? "" : ";") . "0x" . Format("{:X}", hwnd) . ":" . title . ":" . reason
+    }
+    if (missedLog != "")
+        WM_AgentDebugLog("G", "WM_TileBackground:collect", "still_missed_vis", missedLog)
     ; #endregion
     if (eligible.total = 0) {
         if (eligible.hidden = 0)

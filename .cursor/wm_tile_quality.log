@@ -16,3 +16,8 @@ issues: tile_short:5
   FAIL hwnd=133204 mon=1 title=Form1
   FAIL hwnd=197262 mon=2 title=Settings
   FAIL hwnd=197264 mon=3 title=Screenpresso
+=== WM tile quality 20260525092643 final ===
+eligible=9 hidden=2 visible=3 openOnMon=3 skipReject=459 skipNoMon=0
+selected=9 planned=9 tiled=8 unassigned=0 failed=1
+issues: tile_short:1
+  FAIL hwnd=1048776 mon=1 title=Calendar - Figueiredo Eduardo (SO/BDO-UX-LA) - Outlook
