@@ -8,6 +8,8 @@
 global g_EvidenceSearchActive := false
 global g_EvidenceSearchBannerGui := 0
 global g_EvidenceSearchBannerBorderGui := 0
+global g_EvidenceSearchNotFoundRows := []
+global EVIDENCE_NOTFOUND_REPORT_MS := 10000
 
 EVIDENCE_ACTION_MS := 450
 EVIDENCE_TAB_MS := 700
@@ -25,6 +27,19 @@ EvidenceSearch_TitleLooksCsv(title) {
 
 EvidenceSearch_TitleLooksPdf(title) {
     return InStr(title, ".pdf", false) > 0
+}
+
+; UIA: PDF find bar shows Type 50020 Text "Phrase not found" when search misses.
+EvidenceSearch_PdfPhraseNotFound() {
+    try {
+        hwnd := WinExist("A")
+        if (!hwnd)
+            return false
+        root := UIA.ElementFromHandle(hwnd)
+        return root.FindFirst({ Name: "Phrase not found", Type: 50020, cs: false }) != ""
+    } catch {
+        return false
+    }
 }
 
 EvidenceSearch_IsEditorActive() {
@@ -57,6 +72,44 @@ EvidenceSearch_IsActive() {
 }
 
 ; Char 3 onward, length Floor(25% of trimmed row length). Returns "" if termLen < 1 or len < 3.
+EvidenceSearch_TruncateForDisplay(s, maxLen := 55) {
+    s := Trim(s)
+    if (StrLen(s) <= maxLen)
+        return s
+    return SubStr(s, 1, maxLen - 1) . "…"
+}
+
+EvidenceSearch_ResetNotFoundRows() {
+    global g_EvidenceSearchNotFoundRows
+    g_EvidenceSearchNotFoundRows := []
+}
+
+EvidenceSearch_RecordNotFound(rowNum, line, term) {
+    global g_EvidenceSearchNotFoundRows
+    preview := EvidenceSearch_TruncateForDisplay(line)
+    g_EvidenceSearchNotFoundRows.Push("Row " . rowNum . ": " . preview . "  (term: " . term . ")")
+}
+
+EvidenceSearch_ShowNotFoundReport() {
+    global g_EvidenceSearchNotFoundRows
+    n := g_EvidenceSearchNotFoundRows.Length
+    if (n = 0)
+        return
+
+    body := "⚠ " . n . " phrase(s) not found in PDF:`n`n"
+    for entry in g_EvidenceSearchNotFoundRows
+        body .= "• " . entry . "`n"
+    body .= "`n📸 Take a print screen now (Alt+PrintScreen)"
+
+    try {
+        StandardLoadingBar_Show(body, BANNER_ACCENT_ERROR, { passive: true, centerOnHwnd: 0, textWidth: 720, fontSize: 17,
+            passiveBgColor: BANNER_ACCENT_ERROR })
+        StandardLoadingBar_Hide(EVIDENCE_NOTFOUND_REPORT_MS)
+    } catch {
+        EvidenceSearch_NotifyUser(body, EVIDENCE_NOTFOUND_REPORT_MS, true)
+    }
+}
+
 EvidenceSearch_ExtractSearchTerm(original) {
     s := Trim(original)
     len := StrLen(s)
@@ -185,7 +238,7 @@ EvidenceSearch_SwitchToCsvTab() {
     return EvidenceSearch_FocusEditorTab(true)
 }
 
-EvidenceSearch_SearchSubstringInPdf(term) {
+EvidenceSearch_SearchSubstringInPdf(term, rowNum := 0, line := "") {
     if (!EvidenceSearch_IsActive())
         return false
 
@@ -214,6 +267,11 @@ EvidenceSearch_SearchSubstringInPdf(term) {
     if (!EvidenceSearch_Sleep(EVIDENCE_TAB_MS))
         return false
 
+    if (EvidenceSearch_PdfPhraseNotFound()) {
+        if (rowNum > 0)
+            EvidenceSearch_RecordNotFound(rowNum, line, term)
+    }
+
     SendInput "{Escape}"
     if (!EvidenceSearch_Sleep(EVIDENCE_ACTION_MS))
         return false
@@ -238,10 +296,12 @@ EvidenceSearch_RunLoop() {
     global g_EvidenceSearchActive
     savedClip := A_Clipboard
     ClipSaved := true
+    rowNum := 0
 
     try {
         SendMode "Input"
         while (g_EvidenceSearchActive) {
+            rowNum += 1
             if (!EvidenceSearch_IsEditorActive()) {
                 EvidenceSearch_Stop("Evidence loop stopped: VS Code / Cursor not active", true)
                 return
@@ -260,7 +320,7 @@ EvidenceSearch_RunLoop() {
             if (term != "") {
                 if (!EvidenceSearch_SwitchToPdfTab())
                     break
-                if (!EvidenceSearch_SearchSubstringInPdf(term))
+                if (!EvidenceSearch_SearchSubstringInPdf(term, rowNum, line))
                     break
                 if (!EvidenceSearch_SwitchToCsvTab())
                     break
@@ -285,10 +345,14 @@ EvidenceSearch_RunLoop() {
 }
 
 EvidenceSearch_Toggle(*) {
-    global g_EvidenceSearchActive
+    global g_EvidenceSearchActive, g_EvidenceSearchNotFoundRows
 
     if (g_EvidenceSearchActive) {
-        EvidenceSearch_Stop("Evidence search loop stopped")
+        if (g_EvidenceSearchNotFoundRows.Length > 0) {
+            EvidenceSearch_Stop("", false)
+            EvidenceSearch_ShowNotFoundReport()
+        } else
+            EvidenceSearch_Stop("Evidence search loop stopped")
         return
     }
 
@@ -297,6 +361,7 @@ EvidenceSearch_Toggle(*) {
         return
     }
 
+    EvidenceSearch_ResetNotFoundRows()
     g_EvidenceSearchActive := true
     if (!EvidenceSearch_FocusEditorTab(true)) {
         g_EvidenceSearchActive := false

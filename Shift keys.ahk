@@ -1664,7 +1664,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
 
 === AVAILABLE SECONDARY (Ctrl+Alt+Win) SLOTS ===
 [Ctrl+Alt+Win+N] > TEMPORARY — M365 Copilot auto-continue: send "continue", wait for Stop generating, loop (toggle off with same chord)
-[Ctrl+Alt+Win+O] > Evidence search loop — CSV row substring (char 3, 25% len) → PDF find + Esc (VSCodeEvidenceSearch.ahk; toggle)
+[Ctrl+Alt+Win+O] > Evidence search loop — CSV row substring → PDF find; stop lists not-found rows + print-screen prompt 10s (VSCodeEvidenceSearch.ahk; toggle)
 Letters available: P, T, U, Y, Z
 Numbers available: (none — 0–9 assigned)
 Shift+CAW: A/S/D/F/Q/W/E/R (+B debug, +1/Z/G fallbacks) used for window management; other Shift+letters unassigned.
