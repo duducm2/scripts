@@ -13,15 +13,6 @@ EVIDENCE_ACTION_MS := 450
 EVIDENCE_TAB_MS := 700
 EVIDENCE_SLEEP_CHUNK_MS := 50
 
-; #region agent log
-EvidenceSearch_JsonEscape(s) {
-    s := StrReplace(String(s), "\", "\\")
-    s := StrReplace(s, '"', '\"')
-    s := StrReplace(s, "`n", "\n")
-    s := StrReplace(s, "`r", "")
-    return s
-}
-
 EvidenceSearch_GetActiveTitle() {
     try
         return WinGetTitle("A")
@@ -35,29 +26,6 @@ EvidenceSearch_TitleLooksCsv(title) {
 EvidenceSearch_TitleLooksPdf(title) {
     return InStr(title, ".pdf", false) > 0
 }
-
-EvidenceSearch_DebugLog(hypothesisId, location, message, extra := Map()) {
-    try {
-        title := EvidenceSearch_GetActiveTitle()
-        extraPairs := ""
-        for k, v in extra {
-            if (extraPairs != "")
-                extraPairs .= ","
-            extraPairs .= '"' . EvidenceSearch_JsonEscape(k) . '":"' . EvidenceSearch_JsonEscape(v) . '"'
-        }
-        if (extraPairs != "")
-            extraPairs .= "," . extraPairs
-        onCsv := EvidenceSearch_TitleLooksCsv(title) ? "true" : "false"
-        looksCsv := onCsv
-        looksPdf := EvidenceSearch_TitleLooksPdf(title) ? "true" : "false"
-        line := '{"sessionId":"a2415a","runId":"post-fix","timestamp":' . A_TickCount . ',"hypothesisId":"' . hypothesisId . '","location":"' . EvidenceSearch_JsonEscape(
-            location) . '","message":"' . EvidenceSearch_JsonEscape(message) . '","data":{"onCsv":' . onCsv . ',"looksCsv":' . looksCsv . ',"looksPdf":' . looksPdf . ',"title":"' . EvidenceSearch_JsonEscape(
-                title) . '"' . extraPairs . '}}'
-        FileAppend line . "`n", A_ScriptDir . "\debug-a2415a.log", "UTF-8"
-    } catch {
-    }
-}
-; #endregion
 
 EvidenceSearch_IsEditorActive() {
     return WinActive("ahk_exe Code.exe") || WinActive("ahk_exe Cursor.exe")
@@ -179,20 +147,11 @@ EvidenceSearch_ConfirmEditorPicker() {
 
 EvidenceSearch_FocusEditorTab(wantCsv) {
     title := EvidenceSearch_GetActiveTitle()
-    if (wantCsv && EvidenceSearch_TitleLooksCsv(title)) {
-        ; #region agent log
-        EvidenceSearch_DebugLog("H2", "FocusEditorTab", "already on csv", Map("want", "csv"))
-        ; #endregion
+    if (wantCsv && EvidenceSearch_TitleLooksCsv(title))
         return true
-    }
-    if (!wantCsv && EvidenceSearch_TitleLooksPdf(title)) {
-        ; #region agent log
-        EvidenceSearch_DebugLog("H2", "FocusEditorTab", "already on pdf", Map("want", "pdf"))
-        ; #endregion
+    if (!wantCsv && EvidenceSearch_TitleLooksPdf(title))
         return true
-    }
 
-    primary := "ctrlTab+enter"
     SendInput "^{Tab}"
     if (!EvidenceSearch_Sleep(EVIDENCE_ACTION_MS))
         return false
@@ -203,7 +162,6 @@ EvidenceSearch_FocusEditorTab(wantCsv) {
     ok := wantCsv ? EvidenceSearch_TitleLooksCsv(titleAfter) : EvidenceSearch_TitleLooksPdf(titleAfter)
 
     if (!ok) {
-        fallback := wantCsv ? "ctrl1+enter" : "ctrl2+enter"
         if (wantCsv)
             SendInput "^1"
         else
@@ -214,13 +172,8 @@ EvidenceSearch_FocusEditorTab(wantCsv) {
             return false
         titleAfter := EvidenceSearch_GetActiveTitle()
         ok := wantCsv ? EvidenceSearch_TitleLooksCsv(titleAfter) : EvidenceSearch_TitleLooksPdf(titleAfter)
-        primary := primary . "+fallback:" . fallback
     }
 
-    ; #region agent log
-    EvidenceSearch_DebugLog("H2", "FocusEditorTab", "after switch", Map("want", wantCsv ? "csv" : "pdf", "method", primary,
-        "ok", ok ? "true" : "false"))
-    ; #endregion
     return ok
 }
 
@@ -236,16 +189,8 @@ EvidenceSearch_SearchSubstringInPdf(term) {
     if (!EvidenceSearch_IsActive())
         return false
 
-    if (!EvidenceSearch_FocusEditorTab(false)) {
-        ; #region agent log
-        EvidenceSearch_DebugLog("H1", "SearchSubstringInPdf:block", "not on pdf before search", Map("termLen", StrLen(term)))
-        ; #endregion
+    if (!EvidenceSearch_FocusEditorTab(false))
         return false
-    }
-
-    ; #region agent log
-    EvidenceSearch_DebugLog("H1", "SearchSubstringInPdf:pre", "about to search", Map("termLen", StrLen(term)))
-    ; #endregion
 
     SendInput "^f"
     if (!EvidenceSearch_Sleep(EVIDENCE_ACTION_MS))
@@ -256,17 +201,11 @@ EvidenceSearch_SearchSubstringInPdf(term) {
         return false
 
     if (EvidenceSearch_TitleLooksCsv(EvidenceSearch_GetActiveTitle())) {
-        ; #region agent log
-        EvidenceSearch_DebugLog("H3", "SearchSubstringInPdf:blocked", "refusing SendText on csv", Map("termLen", StrLen(term)))
-        ; #endregion
         SendInput "{Escape}"
         EvidenceSearch_Sleep(EVIDENCE_ACTION_MS)
         return false
     }
 
-    ; #region agent log
-    EvidenceSearch_DebugLog("H3", "SearchSubstringInPdf:sendText", "SendText about to fire", Map("termLen", StrLen(term)))
-    ; #endregion
     SendText term
     if (!EvidenceSearch_Sleep(EVIDENCE_ACTION_MS))
         return false
@@ -279,9 +218,6 @@ EvidenceSearch_SearchSubstringInPdf(term) {
     if (!EvidenceSearch_Sleep(EVIDENCE_ACTION_MS))
         return false
 
-    ; #region agent log
-    EvidenceSearch_DebugLog("H5", "SearchSubstringInPdf:post", "search finished", Map("termLen", StrLen(term)))
-    ; #endregion
     return true
 }
 
@@ -302,21 +238,16 @@ EvidenceSearch_RunLoop() {
     global g_EvidenceSearchActive
     savedClip := A_Clipboard
     ClipSaved := true
-    rowNum := 0
 
     try {
         SendMode "Input"
         while (g_EvidenceSearchActive) {
-            rowNum += 1
             if (!EvidenceSearch_IsEditorActive()) {
                 EvidenceSearch_Stop("Evidence loop stopped: VS Code / Cursor not active", true)
                 return
             }
 
             line := EvidenceSearch_CopyCurrentLine()
-            ; #region agent log
-            EvidenceSearch_DebugLog("H1", "RunLoop:afterCopy", "copied row", Map("row", rowNum, "lineLen", StrLen(line)))
-            ; #endregion
             if (!g_EvidenceSearchActive)
                 break
             if (line = "") {
@@ -335,9 +266,6 @@ EvidenceSearch_RunLoop() {
                     break
             }
 
-            ; #region agent log
-            EvidenceSearch_DebugLog("H4", "RunLoop:beforeDown", "before Down key", Map("row", rowNum))
-            ; #endregion
             if (!EvidenceSearch_FocusEditorTab(true))
                 break
             SendInput "{Down}"
