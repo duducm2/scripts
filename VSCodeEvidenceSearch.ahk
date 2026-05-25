@@ -11,8 +11,11 @@ global g_EvidenceSearchBannerBorderGui := 0
 global g_EvidenceSearchNotFoundRows := []
 global EVIDENCE_NOTFOUND_REPORT_MS := 10000
 
-EVIDENCE_ACTION_MS := 450
-EVIDENCE_TAB_MS := 700
+EVIDENCE_ACTION_MS := 600
+EVIDENCE_TAB_MS := 900
+EVIDENCE_BEFORE_ENTER_MS := 1000
+EVIDENCE_TITLE_POLL_MS := 100
+EVIDENCE_TITLE_WAIT_MS := 3000
 EVIDENCE_SLEEP_CHUNK_MS := 50
 
 EvidenceSearch_GetActiveTitle() {
@@ -69,6 +72,24 @@ EvidenceSearch_Sleep(ms) {
 EvidenceSearch_IsActive() {
     global g_EvidenceSearchActive
     return g_EvidenceSearchActive
+}
+
+; Poll window title until CSV or PDF tab is active (avoids Enter while still on wrong tab).
+EvidenceSearch_WaitForTitle(wantCsv, maxMs := EVIDENCE_TITLE_WAIT_MS) {
+    deadline := A_TickCount + maxMs
+    while (A_TickCount < deadline) {
+        if (!EvidenceSearch_IsActive())
+            return false
+        title := EvidenceSearch_GetActiveTitle()
+        if (wantCsv && EvidenceSearch_TitleLooksCsv(title))
+            return true
+        if (!wantCsv && EvidenceSearch_TitleLooksPdf(title))
+            return true
+        if (!EvidenceSearch_Sleep(EVIDENCE_TITLE_POLL_MS))
+            return false
+    }
+    title := EvidenceSearch_GetActiveTitle()
+    return wantCsv ? EvidenceSearch_TitleLooksCsv(title) : EvidenceSearch_TitleLooksPdf(title)
 }
 
 ; Char 3 onward, length Floor(25% of trimmed row length). Returns "" if termLen < 1 or len < 3.
@@ -192,10 +213,14 @@ EvidenceSearch_Stop(reason := "", isError := false) {
 }
 
 ; Focus CSV or PDF tab; verify via window title (.csv / .pdf).
-; VS Code Ctrl+Tab opens the editor picker — Enter confirms and focuses the editor body.
-EvidenceSearch_ConfirmEditorPicker() {
+; VS Code Ctrl+Tab opens the editor picker — wait, then Enter confirms the tab.
+EvidenceSearch_ConfirmEditorPicker(wantCsv) {
+    if (!EvidenceSearch_Sleep(EVIDENCE_BEFORE_ENTER_MS))
+        return false
     SendInput "{Enter}"
-    return EvidenceSearch_Sleep(EVIDENCE_TAB_MS)
+    if (!EvidenceSearch_Sleep(EVIDENCE_TAB_MS))
+        return false
+    return EvidenceSearch_WaitForTitle(wantCsv)
 }
 
 EvidenceSearch_FocusEditorTab(wantCsv) {
@@ -208,7 +233,7 @@ EvidenceSearch_FocusEditorTab(wantCsv) {
     SendInput "^{Tab}"
     if (!EvidenceSearch_Sleep(EVIDENCE_ACTION_MS))
         return false
-    if (!EvidenceSearch_ConfirmEditorPicker())
+    if (!EvidenceSearch_ConfirmEditorPicker(wantCsv))
         return false
 
     titleAfter := EvidenceSearch_GetActiveTitle()
@@ -221,7 +246,7 @@ EvidenceSearch_FocusEditorTab(wantCsv) {
             SendInput "^2"
         if (!EvidenceSearch_Sleep(EVIDENCE_ACTION_MS))
             return false
-        if (!EvidenceSearch_ConfirmEditorPicker())
+        if (!EvidenceSearch_ConfirmEditorPicker(wantCsv))
             return false
         titleAfter := EvidenceSearch_GetActiveTitle()
         ok := wantCsv ? EvidenceSearch_TitleLooksCsv(titleAfter) : EvidenceSearch_TitleLooksPdf(titleAfter)
@@ -244,6 +269,8 @@ EvidenceSearch_SearchSubstringInPdf(term, rowNum := 0, line := "") {
 
     if (!EvidenceSearch_FocusEditorTab(false))
         return false
+    if (!EvidenceSearch_WaitForTitle(false))
+        return false
 
     SendInput "^f"
     if (!EvidenceSearch_Sleep(EVIDENCE_ACTION_MS))
@@ -262,6 +289,14 @@ EvidenceSearch_SearchSubstringInPdf(term, rowNum := 0, line := "") {
     SendText term
     if (!EvidenceSearch_Sleep(EVIDENCE_ACTION_MS))
         return false
+
+    if (!EvidenceSearch_Sleep(EVIDENCE_BEFORE_ENTER_MS))
+        return false
+    if (EvidenceSearch_TitleLooksCsv(EvidenceSearch_GetActiveTitle())) {
+        SendInput "{Escape}"
+        EvidenceSearch_Sleep(EVIDENCE_ACTION_MS)
+        return false
+    }
 
     SendInput "{Enter}"
     if (!EvidenceSearch_Sleep(EVIDENCE_TAB_MS))
