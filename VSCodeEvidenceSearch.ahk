@@ -341,6 +341,8 @@ EvidenceSearch_RunLoop() {
             if (!EvidenceSearch_FocusEditorTab(true))
                 break
             SendInput "{Down}"
+            Sleep 100
+            SendInput "{Up}"
             if (!EvidenceSearch_Sleep(EVIDENCE_ACTION_MS))
                 break
         }
