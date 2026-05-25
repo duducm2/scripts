@@ -5605,6 +5605,11 @@ ScriptSoundPlaySystem(scheme) {
     }
 }
 
+; Study subtopic / article link API save success (Manage Study Link flows).
+StudyLink_PlayApiSuccessSound() {
+    try ScriptSoundPlay(A_ScriptDir . "\sounds\api-success.mp3")
+}
+
 ScriptSoundBeep(freq, duration) {
     if (!IsSoundEnabled())
         return false
@@ -9026,6 +9031,8 @@ StudyTopicSelector_ManageLinks(*) {
     g_StudyLinksGui.Add("Text", "w400 h1 Background45475A")
     g_StudyLinksGui.SetFont("s11 cCDD6F4", "Segoe UI")
     ytResult := StudyLink_GetResult(STUDYLINK_KEY_YOUTUBE)
+    if (ytResult["ok"])
+        StudyLink_PlayApiSuccessSound()
     g_StudyLinksGui.Add("Text", "w400", "Current YouTube link: " . StudyLink_FormatLinkLabel(ytResult))
     g_StudyLinksGui.Add("Text", "w400", "[1] Open YouTube link")
     g_StudyLinksGui.Add("Text", "w400", "[2] Set YouTube link")
@@ -9047,6 +9054,7 @@ StudyTopicSelector_ManageLinks_Open(*) {
         ShowCenteredOverlay_Utils("❌ Could not load link from API: " . linkResult["err"], 3500, BANNER_ACCENT_ERROR)
         return
     }
+    StudyLink_PlayApiSuccessSound()
     url := linkResult["url"]
     if (url != "") {
         StudyLink_OpenUrlInChrome(url, true)

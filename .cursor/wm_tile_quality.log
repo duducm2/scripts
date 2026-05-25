@@ -21,3 +21,15 @@ eligible=9 hidden=2 visible=3 openOnMon=3 skipReject=459 skipNoMon=0
 selected=9 planned=9 tiled=8 unassigned=0 failed=1
 issues: tile_short:1
   FAIL hwnd=1048776 mon=1 title=Calendar - Figueiredo Eduardo (SO/BDO-UX-LA) - Outlook
+=== WM tile quality 20260525134621 final ===
+eligible=10 hidden=1 visible=3 openOnMon=5 skipReject=453 skipNoMon=0
+selected=10 planned=10 tiled=7 unassigned=0 failed=3
+issues: tile_short:3
+  FAIL hwnd=67430 mon=1 title=Microsoft 365 Copilot
+  FAIL hwnd=1641422 mon=2 title=test.edraw - opex-cim-journey-mapping - Visual Studio Code
+  FAIL hwnd=5177714 mon=1 title=Calendar - Figueiredo Eduardo (SO/BDO-UX-LA) - Outlook
+=== WM tile quality 20260525144547 final ===
+eligible=6 hidden=0 visible=5 openOnMon=0 skipReject=443 skipNoMon=0
+selected=6 planned=6 tiled=5 unassigned=0 failed=1
+issues: tile_short:1
+  FAIL hwnd=396462 mon=2 title=Spotify Premium

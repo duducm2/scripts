@@ -76,6 +76,8 @@ StudyTopicSelector_ManageArticleLinks(*) {
     g_StudyArticleLinksGui.Add("Text", "w400 h1 Background45475A")
     g_StudyArticleLinksGui.SetFont("s11 cCDD6F4", "Segoe UI")
     artResult := StudyLink_GetResult(STUDYLINK_KEY_ARTICLE)
+    if (artResult["ok"])
+        StudyLink_PlayApiSuccessSound()
     g_StudyArticleLinksGui.Add("Text", "w400", "Current article link: " . StudyLink_FormatLinkLabel(artResult))
     g_StudyArticleLinksGui.Add("Text", "w400", "[1] Open article link")
     g_StudyArticleLinksGui.Add("Text", "w400", "[2] Set article link (Chrome address bar)")
@@ -96,6 +98,7 @@ StudyTopicSelector_ManageArticleLinks_Open(*) {
         ShowCenteredOverlay_Utils("❌ Could not load link from API: " . linkResult["err"], 3500, BANNER_ACCENT_ERROR)
         return
     }
+    StudyLink_PlayApiSuccessSound()
     url := linkResult["url"]
     if (url != "") {
         StudyLink_OpenUrlInChrome(url, true)

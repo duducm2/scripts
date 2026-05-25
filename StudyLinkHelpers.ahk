@@ -249,18 +249,10 @@ StudyLink_OpenUrlInChrome(url, newWindow := false) {
     return true
 }
 
-; ────────────────────────────────────────────────────────────────────────────
-; Public API: set a link for a study key
-; Sends POST with key and url; accepts status=ok form data or plain-text "Saved"
-; Returns true on success, false otherwise.
-; ────────────────────────────────────────────────────────────────────────────
-StudyLink_Set(studyKey, url) {
-    ; Match MacroDroid Set_Video.macro: literal url in body (Apps Script reads everything after url=).
-    data := "key=" . StudyLink_UrlEncode(studyKey) . "&url=" . url
-    response := StudyLink_HttpPost(data)
-    if (SubStr(response, 1, 6) = "ERROR:") {
+; True when POST response indicates the link was saved (see StudyLink_Set).
+StudyLink_ResponseIndicatesSetSuccess(response) {
+    if (SubStr(response, 1, 6) = "ERROR:")
         return false
-    }
     parsed := StudyLink_ParseFormEncoded(response)
     if (parsed.Has("status") && (parsed["status"] = "ok" || parsed["status"] = "OK"))
         return true
@@ -272,6 +264,21 @@ StudyLink_Set(studyKey, url) {
     if InStr(response, "ok") || InStr(response, "OK")
         return true
     return false
+}
+
+; ────────────────────────────────────────────────────────────────────────────
+; Public API: set a link for a study key
+; Sends POST with key and url; accepts status=ok form data or plain-text "Saved"
+; Returns true on success, false otherwise.
+; ────────────────────────────────────────────────────────────────────────────
+StudyLink_Set(studyKey, url) {
+    ; Match MacroDroid Set_Video.macro: literal url in body (Apps Script reads everything after url=).
+    data := "key=" . StudyLink_UrlEncode(studyKey) . "&url=" . url
+    response := StudyLink_HttpPost(data)
+    if (!StudyLink_ResponseIndicatesSetSuccess(response))
+        return false
+    StudyLink_PlayApiSuccessSound()
+    return true
 }
 
 ; Legacy INI path (kept for reference — not used by new API code)
