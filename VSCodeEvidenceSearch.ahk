@@ -102,6 +102,20 @@ EvidenceSearch_TruncateForDisplay(s, maxLen := 55) {
     return SubStr(s, 1, maxLen - 1) . "…"
 }
 
+EvidenceSearch_Get3WordTerms(s) {
+    s := Trim(s)
+    s := RegExReplace(s, "\s+", " ")
+    if (s = "")
+        return { start: "", end: "" }
+    words := StrSplit(s, " ")
+    if (words.Length < 3)
+        return { start: "", end: "" }
+    start3 := words[1] . " " . words[2] . " " . words[3]
+    n := words.Length
+    end3 := words[n - 2] . " " . words[n - 1] . " " . words[n]
+    return { start: start3, end: end3 }
+}
+
 EvidenceSearch_ResetNotFoundRows() {
     global g_EvidenceSearchNotFoundRows, g_EvidenceSearchSessionCsvTab, g_EvidenceSearchSessionPdfTab
     g_EvidenceSearchNotFoundRows := []
@@ -139,6 +153,15 @@ EvidenceSearch_CaptureSessionTabNames() {
 EvidenceSearch_RecordNotFound(rowNum, line, term) {
     global g_EvidenceSearchNotFoundRows
     g_EvidenceSearchNotFoundRows.Push({ row: rowNum, term: term, line: line })
+}
+
+EvidenceSearch_RowAlreadyRecorded(rowNum) {
+    global g_EvidenceSearchNotFoundRows
+    for entry in g_EvidenceSearchNotFoundRows {
+        if (entry.row = rowNum)
+            return true
+    }
+    return false
 }
 
 EvidenceSearch_CsvEscapeField(s) {
@@ -210,6 +233,34 @@ EvidenceSearch_ShowNotFoundReport(outPath := "", writeFailed := false) {
     }
 }
 
+EvidenceSearch_MoveMouseToCenter(hwnd) {
+    if (!hwnd)
+        return false
+    rect := Buffer(16, 0)
+    if (!DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect))
+        return false
+    left := NumGet(rect, 0, "int")
+    top := NumGet(rect, 4, "int")
+    right := NumGet(rect, 8, "int")
+    bottom := NumGet(rect, 12, "int")
+    centerX := left + (right - left) // 2
+    centerY := top + (bottom - top) // 2
+    DllCall("SetCursorPos", "int", centerX, "int", centerY)
+    return true
+}
+
+EvidenceSearch_ClickWindowCenter() {
+    hwnd := 0
+    try hwnd := WinExist("A")
+    catch
+        hwnd := 0
+    if (!hwnd)
+        return false
+    EvidenceSearch_MoveMouseToCenter(hwnd)
+    Click
+    return EvidenceSearch_Sleep(EVIDENCE_ACTION_MS)
+}
+
 EvidenceSearch_ExtractSearchTerm(original) {
     s := Trim(original)
     len := StrLen(s)
@@ -225,15 +276,12 @@ EvidenceSearch_ShowBanner(text := "Evidence search loop (Ctrl+Alt+Win+O to stop)
     global g_EvidenceSearchBannerGui, g_EvidenceSearchBannerBorderGui
     EvidenceSearch_HideBanner()
 
-    target := WinExist("A")
-    hasWindow := false
-    if (target && WinExist("ahk_id " target)) {
-        try {
-            WinGetPos(&wx, &wy, &ww, &wh, target)
-            hasWindow := (ww > 0 && wh > 0)
-        } catch {
-            hasWindow := false
-        }
+    ; Position at top of the active monitor (like StandardLoadingBar_Show),
+    ; so center-click focuses the PDF viewer instead of this banner.
+    try {
+        GetActiveMonitorWorkArea_StandardBar(&ml, &mt, &mr, &mb)
+    } catch {
+        ml := SysGet(76), mt := SysGet(77), mr := SysGet(78), mb := SysGet(79)
     }
 
     ov := Gui("+AlwaysOnTop -Caption +ToolWindow")
@@ -243,17 +291,13 @@ EvidenceSearch_ShowBanner(text := "Evidence search loop (Ctrl+Alt+Win+O to stop)
     ov.Show("AutoSize Hide")
     ov.GetPos(, , &gw, &gh)
 
-    if (hasWindow) {
-        cx := wx + (ww - gw) // 2
-        cy := wy + (wh - gh) // 2
-    } else {
-        vx := SysGet(76)
-        vy := SysGet(77)
-        vw := SysGet(78)
-        vh := SysGet(79)
-        cx := vx + (vw - gw) // 2
-        cy := vy + (vh - gh) // 2
-    }
+    monitorWidth := mr - ml
+    cx := Round(ml + (monitorWidth - gw) / 2)
+    if (cx < ml)
+        cx := ml
+    if (cx + gw > mr)
+        cx := mr - gw
+    cy := mt + 40
 
     borderWidth := 6
     borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
@@ -352,6 +396,9 @@ EvidenceSearch_SearchSubstringInPdf(term, rowNum := 0, line := "") {
         return false
     EvidenceSearch_CaptureSessionTabNames()
 
+    if (!EvidenceSearch_ClickWindowCenter())
+        return false
+
     SendInput "^f"
     if (!EvidenceSearch_Sleep(EVIDENCE_ACTION_MS))
         return false
@@ -383,7 +430,7 @@ EvidenceSearch_SearchSubstringInPdf(term, rowNum := 0, line := "") {
         return false
 
     if (EvidenceSearch_PdfPhraseNotFound()) {
-        if (rowNum > 0)
+        if (rowNum > 0 && !EvidenceSearch_RowAlreadyRecorded(rowNum))
             EvidenceSearch_RecordNotFound(rowNum, line, term)
     }
 
@@ -391,6 +438,20 @@ EvidenceSearch_SearchSubstringInPdf(term, rowNum := 0, line := "") {
     if (!EvidenceSearch_Sleep(EVIDENCE_ACTION_MS))
         return false
 
+    return true
+}
+
+EvidenceSearch_SearchTwoTermsInPdf(start3, end3, rowNum, line) {
+    if (start3 = "" && end3 = "")
+        return true
+    if (start3 != "") {
+        if (!EvidenceSearch_SearchSubstringInPdf(start3, rowNum, line))
+            return false
+    }
+    if (end3 != "" && end3 != start3) {
+        if (!EvidenceSearch_SearchSubstringInPdf(end3, rowNum, line))
+            return false
+    }
     return true
 }
 
@@ -431,11 +492,12 @@ EvidenceSearch_RunLoop() {
             }
 
             term := EvidenceSearch_ExtractSearchTerm(line)
+            terms := EvidenceSearch_Get3WordTerms(term)
 
-            if (term != "") {
+            if (terms.start != "" || terms.end != "") {
                 if (!EvidenceSearch_SwitchToPdfTab())
                     break
-                if (!EvidenceSearch_SearchSubstringInPdf(term, rowNum, line))
+                if (!EvidenceSearch_SearchTwoTermsInPdf(terms.start, terms.end, rowNum, line))
                     break
                 if (!EvidenceSearch_SwitchToCsvTab())
                     break
