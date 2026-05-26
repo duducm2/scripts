@@ -386,7 +386,9 @@ EvidenceSearch_SwitchToCsvTab() {
     return EvidenceSearch_FocusEditorTab(true)
 }
 
-EvidenceSearch_SearchSubstringInPdf(term, rowNum := 0, line := "") {
+; Returns true if the phrase was found in the PDF (no "Phrase not found" UIA text).
+EvidenceSearch_SearchSubstringInPdf(term, &phraseFound) {
+    phraseFound := false
     if (!EvidenceSearch_IsActive())
         return false
 
@@ -429,10 +431,7 @@ EvidenceSearch_SearchSubstringInPdf(term, rowNum := 0, line := "") {
     if (!EvidenceSearch_Sleep(EVIDENCE_TAB_MS))
         return false
 
-    if (EvidenceSearch_PdfPhraseNotFound()) {
-        if (rowNum > 0 && !EvidenceSearch_RowAlreadyRecorded(rowNum))
-            EvidenceSearch_RecordNotFound(rowNum, line, term)
-    }
+    phraseFound := !EvidenceSearch_PdfPhraseNotFound()
 
     SendInput "{Escape}"
     if (!EvidenceSearch_Sleep(EVIDENCE_ACTION_MS))
@@ -441,17 +440,32 @@ EvidenceSearch_SearchSubstringInPdf(term, rowNum := 0, line := "") {
     return true
 }
 
-EvidenceSearch_SearchTwoTermsInPdf(start3, end3, rowNum, line) {
+; Valid evidence if either 3-word search finds a match; record not-found only when both miss.
+EvidenceSearch_SearchTwoTermsInPdf(start3, end3, rowNum, line, searchLabel := "") {
     if (start3 = "" && end3 = "")
         return true
+
+    anyFound := false
+
     if (start3 != "") {
-        if (!EvidenceSearch_SearchSubstringInPdf(start3, rowNum, line))
+        if (!EvidenceSearch_SearchSubstringInPdf(start3, &found))
             return false
+        if (found)
+            anyFound := true
     }
+
     if (end3 != "" && end3 != start3) {
-        if (!EvidenceSearch_SearchSubstringInPdf(end3, rowNum, line))
+        if (!EvidenceSearch_SearchSubstringInPdf(end3, &found))
             return false
+        if (found)
+            anyFound := true
     }
+
+    if (!anyFound && rowNum > 0 && !EvidenceSearch_RowAlreadyRecorded(rowNum)) {
+        label := searchLabel != "" ? searchLabel : (start3 . (end3 != start3 ? " | " . end3 : ""))
+        EvidenceSearch_RecordNotFound(rowNum, line, label)
+    }
+
     return true
 }
 
@@ -497,7 +511,7 @@ EvidenceSearch_RunLoop() {
             if (terms.start != "" || terms.end != "") {
                 if (!EvidenceSearch_SwitchToPdfTab())
                     break
-                if (!EvidenceSearch_SearchTwoTermsInPdf(terms.start, terms.end, rowNum, line))
+                if (!EvidenceSearch_SearchTwoTermsInPdf(terms.start, terms.end, rowNum, line, term))
                     break
                 if (!EvidenceSearch_SwitchToCsvTab())
                     break
