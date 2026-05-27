@@ -15502,170 +15502,61 @@ FocusCursorFilesExplorer() {
     }
 }
 
-; #region agent log
-EditorAltI_DebugLog(hypothesisId, location, message, data := "") {
-    try {
-        logPath := A_ScriptDir "\debug-29439a.log"
-        dataJson := "{}"
-        if (IsObject(data)) {
-            parts := []
-            for k, v in data {
-                try parts.Push('"' FastCopyMode_JsonEscape(k) '":"' FastCopyMode_JsonEscape(v) '"')
-            }
-            joined := ""
-            if (parts.Length) {
-                for i, p in parts {
-                    joined .= (i = 1 ? "" : ",") p
-                }
-            }
-            dataJson := "{" joined "}"
-        } else if (data != "") {
-            dataJson := '{"value":"' FastCopyMode_JsonEscape(data) '"}'
-        }
-        line := '{'
-            . '"sessionId":"29439a",'
-            . '"timestamp":' (A_TickCount + 0) ','
-            . '"runId":"pre-fix",'
-            . '"hypothesisId":"' FastCopyMode_JsonEscape(hypothesisId) '",'
-            . '"location":"' FastCopyMode_JsonEscape(location) '",'
-            . '"message":"' FastCopyMode_JsonEscape(message) '",'
-            . '"data":' dataJson
-            . '}'
-        FileAppend(line "`n", logPath, "UTF-8")
-    } catch {
-    }
-}
-
-EditorAltI_ExplorerHwndList() {
-    list := ""
-    for hwnd in WinGetList("ahk_exe explorer.exe") {
-        list .= (list = "" ? "" : ",") hwnd
-    }
-    return list
-}
-; #endregion agent log
-
 ; After Reveal in File Explorer: copy selected file in Windows Explorer, close window, return to editor.
-Editor_CopyFromWindowsExplorerAndReturn(editorHwnd, timeoutSec := 2.5, explorersBeforeReveal := "") {
-    prevExplorerHwnd := WinExist("ahk_exe explorer.exe")
-    ; #region agent log
-    EditorAltI_DebugLog("H2", "Editor_CopyFromWindowsExplorerAndReturn", "entry", Map(
-        "editorHwnd", editorHwnd,
-        "prevExplorerHwnd", prevExplorerHwnd,
-        "explorersBeforeReveal", explorersBeforeReveal,
-        "explorersNow", EditorAltI_ExplorerHwndList(),
-        "activeHwnd", WinExist("A"),
-        "timeoutSec", timeoutSec))
-    ; #endregion agent log
-
-    if !WinWait("ahk_exe explorer.exe", , timeoutSec) {
-        ; #region agent log
-        EditorAltI_DebugLog("H1", "Editor_CopyFromWindowsExplorerAndReturn", "winwait_timeout", Map(
-            "explorersNow", EditorAltI_ExplorerHwndList(),
-            "activeHwnd", WinExist("A")))
-        ; #endregion agent log
+Editor_CopyFromWindowsExplorerAndReturn(editorHwnd, timeoutSec := 2.5) {
+    ; Only proceed if an Explorer window actually comes up.
+    if !WinWait("ahk_exe explorer.exe", , timeoutSec)
         return false
-    }
 
     ; Prefer the *active* Explorer window (the one the reveal should have brought forward).
-    if !WinWaitActive("ahk_exe explorer.exe", , timeoutSec) {
-        ; #region agent log
-        EditorAltI_DebugLog("H1", "Editor_CopyFromWindowsExplorerAndReturn", "winwaitactive_timeout", Map(
-            "explorersNow", EditorAltI_ExplorerHwndList(),
-            "activeHwnd", WinExist("A")))
-        ; #endregion agent log
+    if !WinWaitActive("ahk_exe explorer.exe", , timeoutSec)
         return false
-    }
-    explorerHwnd := WinExist("A")
-    if (!explorerHwnd) {
-        ; #region agent log
-        EditorAltI_DebugLog("H6", "Editor_CopyFromWindowsExplorerAndReturn", "no_explorer_hwnd", Map(
-            "explorersNow", EditorAltI_ExplorerHwndList()))
-        ; #endregion agent log
-        return false
-    }
 
-    ; #region agent log
-    isNewVsBeforeReveal := (explorersBeforeReveal != "" && !InStr("," explorersBeforeReveal ",", "," explorerHwnd ","))
-    EditorAltI_DebugLog("H6", "Editor_CopyFromWindowsExplorerAndReturn", "picked_explorer", Map(
-        "explorerHwnd", explorerHwnd,
-        "explorerTitle", WinGetTitle("ahk_id " explorerHwnd),
-        "explorerClass", WinGetClass("ahk_id " explorerHwnd),
-        "isNewVsBeforeReveal", isNewVsBeforeReveal,
-        "sameAsPrevAtEntry", (explorerHwnd = prevExplorerHwnd)))
-    ; #endregion agent log
+    explorerHwnd := WinExist("A")
+    if (!explorerHwnd)
+        return false
 
     try WinActivate("ahk_id " explorerHwnd)
     Sleep 150
     Send "^c"
     Sleep 100
-
     try WinClose("ahk_id " explorerHwnd)
-    Sleep 200
-    stillOpen := WinExist("ahk_id " explorerHwnd)
-    ; #region agent log
-    EditorAltI_DebugLog("H3", "Editor_CopyFromWindowsExplorerAndReturn", "after_winclose", Map(
-        "explorerHwnd", explorerHwnd,
-        "stillOpen", stillOpen))
-    ; #endregion agent log
 
     if (editorHwnd) {
         try WinActivate("ahk_id " editorHwnd)
     }
-    ; #region agent log
-    EditorAltI_DebugLog("H4", "Editor_CopyFromWindowsExplorerAndReturn", "exit", Map(
-        "returnedOk", true,
-        "activeHwnd", WinExist("A")))
-    ; #endregion agent log
     return true
 }
 
 ; Smart navigation - Editor → Explorer, Explorer → Reveal in Explorer (optional copy+close in Windows Explorer).
 Editor_SmartNavReveal(copyInExplorer := false) {
     editorHwnd := WinExist("A")
-    ; #region agent log
-    EditorAltI_DebugLog("H4", "Editor_SmartNavReveal", "entry", Map(
-        "copyInExplorer", copyInExplorer,
-        "editorHwnd", editorHwnd,
-        "mainEditorFocused", IsCursorMainEditorFocused(),
-        "explorersBefore", EditorAltI_ExplorerHwndList()))
-    ; #endregion agent log
-
-    revealAndMaybeCopy(branch := "") {
-        explorersBefore := EditorAltI_ExplorerHwndList()
-        ; #region agent log
-        EditorAltI_DebugLog("H2", "Editor_SmartNavReveal", "before_send_h", Map(
-            "branch", branch,
-            "explorersBefore", explorersBefore,
-            "activeHwnd", WinExist("A")))
-        ; #endregion agent log
-        Send "^h"
-        if (copyInExplorer) {
-            ; #region agent log
-            EditorAltI_DebugLog("H4", "Editor_SmartNavReveal", "calling_copy", Map("branch", branch))
-            ; #endregion agent log
-            Editor_CopyFromWindowsExplorerAndReturn(editorHwnd, 2.5, explorersBefore)
-        }
-    }
-
     if (IsCursorMainEditorFocused()) {
         if (FocusCursorFilesExplorer()) {
             Sleep 150
-            revealAndMaybeCopy("main_focus_ok")
+            Send "^h"
+            if (copyInExplorer)
+                Editor_CopyFromWindowsExplorerAndReturn(editorHwnd)
         } else {
             Send "^+e"
             Sleep 350
             if (FocusCursorFilesExplorer()) {
                 Sleep 150
-                revealAndMaybeCopy("open_sidebar_focus_ok")
+                Send "^h"
+                if (copyInExplorer)
+                    Editor_CopyFromWindowsExplorerAndReturn(editorHwnd)
             } else {
                 Send "^!+e"
                 Sleep 200
-                revealAndMaybeCopy("fallback")
+                Send "^h"
+                if (copyInExplorer)
+                    Editor_CopyFromWindowsExplorerAndReturn(editorHwnd)
             }
         }
     } else {
-        revealAndMaybeCopy("sidebar_or_other")
+        Send "^h"
+        if (copyInExplorer)
+            Editor_CopyFromWindowsExplorerAndReturn(editorHwnd)
     }
 }
 
