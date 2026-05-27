@@ -19,7 +19,7 @@ if (!scriptsFolder) {
     return
 }
 
-StandardLoadingBar_Show("⏳ Updating scripts...", BANNER_ACCENT_INTERMEDIATE)
+StandardLoadingBar_Show("⏳ Updating scripts...", BANNER_ACCENTTINTERMEDIATE)
 SetWorkingDir(scriptsFolder)
 RunWait("git fetch", scriptsFolder, "Hide")
 RunWait("git pull", scriptsFolder, "Hide")
