@@ -15503,6 +15503,81 @@ FocusCursorFilesExplorer() {
 }
 
 ; After Reveal in File Explorer: copy selected file in Windows Explorer, close window, return to editor.
+Editor_ClipboardHasFiles() {
+    ; CF_HDROP = 15 (file copy in Explorer)
+    try {
+        return !!DllCall("IsClipboardFormatAvailable", "UInt", 15, "Int")
+    } catch {
+        return false
+    }
+}
+
+Editor_WaitForClipboardFiles(timeoutMs := 900) {
+    start := A_TickCount
+    while ((A_TickCount - start) < timeoutMs) {
+        if Editor_ClipboardHasFiles()
+            return true
+        Sleep 25
+    }
+    return false
+}
+
+Editor_WaitForExplorerFileSelection(explorerHwnd, timeoutMs := 2500) {
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        try {
+            root := UIA.ElementFromHandle(explorerHwnd)
+            itemsView := Explorer_FindItemsView(root)
+            if itemsView && Explorer_GetItemsViewSelection(itemsView).Length > 0
+                return itemsView
+        } catch {
+        }
+        Sleep 50
+    }
+    return 0
+}
+
+Editor_FocusExplorerItemsView(explorerHwnd) {
+    try {
+        Explorer_EnsureItemsViewFocusPreserveSelection()
+        return true
+    } catch {
+    }
+    try {
+        EnsureItemsViewFocus()
+    } catch {
+    }
+    try {
+        root := UIA.ElementFromHandle(explorerHwnd)
+        itemsView := Explorer_FindItemsView(root)
+        return itemsView && Explorer_GetItemsViewSelection(itemsView).Length > 0
+    } catch {
+        return false
+    }
+}
+
+Editor_CopyExplorerSelectionToClipboard(explorerHwnd) {
+    if !Editor_WaitForExplorerFileSelection(explorerHwnd)
+        return false
+    if !Editor_FocusExplorerItemsView(explorerHwnd)
+        return false
+
+    clipSave := ClipboardAll()
+    loop 3 {
+        try A_Clipboard := ""
+        Send "^c"
+        if Editor_WaitForClipboardFiles(900)
+            return true
+        Sleep 60
+        Editor_FocusExplorerItemsView(explorerHwnd)
+    }
+    try {
+        A_Clipboard := clipSave
+    } catch {
+    }
+    return false
+}
+
 Editor_CopyFromWindowsExplorerAndReturn(editorHwnd, timeoutSec := 2.5) {
     ; Only proceed if an Explorer window actually comes up.
     if !WinWait("ahk_exe explorer.exe", , timeoutSec)
@@ -15517,9 +15592,9 @@ Editor_CopyFromWindowsExplorerAndReturn(editorHwnd, timeoutSec := 2.5) {
         return false
 
     try WinActivate("ahk_id " explorerHwnd)
-    Sleep 150
-    Send "^c"
-    Sleep 100
+    if !Editor_CopyExplorerSelectionToClipboard(explorerHwnd)
+        return false
+
     try WinClose("ahk_id " explorerHwnd)
 
     if (editorHwnd) {
