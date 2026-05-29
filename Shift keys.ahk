@@ -838,6 +838,7 @@ Cursor
 📌 [Q] Unpin current tab
 📌 [P] [P]in current tab
 📋 [I] Reveal in Explorer + copy file (ahk)
+📂 [H] Reveal in Explorer + open file (ahk)
 📄 [R] Refresh preview
 📄 [F] File: New [F]ile
 📂 [O] File: New F[O]lder
@@ -946,6 +947,7 @@ VS Code
 📌 [Q] Unpin current tab
 📌 [P] [P]in current tab
 📋 [I] Reveal in Explorer + copy file (ahk)
+📂 [H] Reveal in Explorer + open file (ahk)
 📄 [R] Refresh preview
 📄 [F] File: New [F]ile
 📂 [O] File: New F[O]lder
@@ -15502,99 +15504,26 @@ FocusCursorFilesExplorer() {
     }
 }
 
-; After Reveal in File Explorer: copy selected file in Windows Explorer, close window, return to editor.
-Editor_ClipboardHasFiles() {
-    ; CF_HDROP = 15 (file copy in Explorer)
-    try {
-        return !!DllCall("IsClipboardFormatAvailable", "UInt", 15, "Int")
-    } catch {
-        return false
-    }
-}
-
-Editor_WaitForClipboardFiles(timeoutMs := 900) {
-    start := A_TickCount
-    while ((A_TickCount - start) < timeoutMs) {
-        if Editor_ClipboardHasFiles()
-            return true
-        Sleep 25
-    }
-    return false
-}
-
-Editor_WaitForExplorerFileSelection(explorerHwnd, timeoutMs := 2500) {
-    deadline := A_TickCount + timeoutMs
-    while (A_TickCount < deadline) {
-        try {
-            root := UIA.ElementFromHandle(explorerHwnd)
-            itemsView := Explorer_FindItemsView(root)
-            if itemsView && Explorer_GetItemsViewSelection(itemsView).Length > 0
-                return itemsView
-        } catch {
-        }
-        Sleep 50
-    }
-    return 0
-}
-
-Editor_FocusExplorerItemsView(explorerHwnd) {
-    try {
-        Explorer_EnsureItemsViewFocusPreserveSelection()
-        return true
-    } catch {
-    }
-    try {
-        EnsureItemsViewFocus()
-    } catch {
-    }
-    try {
-        root := UIA.ElementFromHandle(explorerHwnd)
-        itemsView := Explorer_FindItemsView(root)
-        return itemsView && Explorer_GetItemsViewSelection(itemsView).Length > 0
-    } catch {
-        return false
-    }
-}
-
-Editor_CopyExplorerSelectionToClipboard(explorerHwnd) {
-    if !Editor_WaitForExplorerFileSelection(explorerHwnd)
-        return false
-    if !Editor_FocusExplorerItemsView(explorerHwnd)
-        return false
-
-    clipSave := ClipboardAll()
-    loop 3 {
-        try A_Clipboard := ""
-        Send "^c"
-        if Editor_WaitForClipboardFiles(900)
-            return true
-        Sleep 60
-        Editor_FocusExplorerItemsView(explorerHwnd)
-    }
-    try {
-        A_Clipboard := clipSave
-    } catch {
-    }
-    return false
+; After Reveal in File Explorer: copy/open selected file in Windows Explorer, close window.
+Editor_WaitForActiveExplorerWindow(timeoutSec := 2.5) {
+    if !WinWait("ahk_exe explorer.exe", , timeoutSec)
+        return 0
+    if !WinWaitActive("ahk_exe explorer.exe", , timeoutSec)
+        return 0
+    explorerHwnd := WinExist("A")
+    if (!explorerHwnd)
+        return 0
+    try WinActivate("ahk_id " explorerHwnd)
+    Sleep 700   ; let Explorer finish opening and auto-select the revealed file
+    return explorerHwnd
 }
 
 Editor_CopyFromWindowsExplorerAndReturn(editorHwnd, timeoutSec := 2.5) {
-    ; Only proceed if an Explorer window actually comes up.
-    if !WinWait("ahk_exe explorer.exe", , timeoutSec)
-        return false
-
-    ; Prefer the *active* Explorer window (the one the reveal should have brought forward).
-    if !WinWaitActive("ahk_exe explorer.exe", , timeoutSec)
-        return false
-
-    explorerHwnd := WinExist("A")
+    explorerHwnd := Editor_WaitForActiveExplorerWindow(timeoutSec)
     if (!explorerHwnd)
         return false
 
-    try WinActivate("ahk_id " explorerHwnd)
-    if !Editor_CopyExplorerSelectionToClipboard(explorerHwnd)
-        return false
-
+    Send "^c"
     try WinClose("ahk_id " explorerHwnd)
 
     if (editorHwnd) {
@@ -15603,35 +15532,48 @@ Editor_CopyFromWindowsExplorerAndReturn(editorHwnd, timeoutSec := 2.5) {
     return true
 }
 
-; Smart navigation - Editor → Explorer, Explorer → Reveal in Explorer (optional copy+close in Windows Explorer).
-Editor_SmartNavReveal(copyInExplorer := false) {
+Editor_OpenFromWindowsExplorer(editorHwnd, timeoutSec := 2.5) {
+    explorerHwnd := Editor_WaitForActiveExplorerWindow(timeoutSec)
+    if (!explorerHwnd)
+        return false
+
+    Send "{Enter}"
+    try WinClose("ahk_id " explorerHwnd)
+    return true
+}
+
+Editor_SmartNavRevealAfterSendH(editorHwnd, explorerAction) {
+    if (explorerAction = "copy")
+        Editor_CopyFromWindowsExplorerAndReturn(editorHwnd)
+    else if (explorerAction = "open")
+        Editor_OpenFromWindowsExplorer(editorHwnd)
+}
+
+; Smart navigation - Editor → Explorer, Explorer → Reveal in Explorer (optional copy/open in Windows Explorer).
+Editor_SmartNavReveal(explorerAction := "") {
     editorHwnd := WinExist("A")
     if (IsCursorMainEditorFocused()) {
         if (FocusCursorFilesExplorer()) {
             Sleep 150
             Send "^h"
-            if (copyInExplorer)
-                Editor_CopyFromWindowsExplorerAndReturn(editorHwnd)
+            Editor_SmartNavRevealAfterSendH(editorHwnd, explorerAction)
         } else {
             Send "^+e"
             Sleep 350
             if (FocusCursorFilesExplorer()) {
                 Sleep 150
                 Send "^h"
-                if (copyInExplorer)
-                    Editor_CopyFromWindowsExplorerAndReturn(editorHwnd)
+                Editor_SmartNavRevealAfterSendH(editorHwnd, explorerAction)
             } else {
                 Send "^!+e"
                 Sleep 200
                 Send "^h"
-                if (copyInExplorer)
-                    Editor_CopyFromWindowsExplorerAndReturn(editorHwnd)
+                Editor_SmartNavRevealAfterSendH(editorHwnd, explorerAction)
             }
         }
     } else {
         Send "^h"
-        if (copyInExplorer)
-            Editor_CopyFromWindowsExplorerAndReturn(editorHwnd)
+        Editor_SmartNavRevealAfterSendH(editorHwnd, explorerAction)
     }
 }
 
@@ -16729,10 +16671,13 @@ CursorShortcutMenu_ActionFetch(*) {
 
 ; Ctrl + H : Smart navigation - Editor → Explorer, Explorer → Reveal in Explorer
 ; Works from main editor even when the left Explorer sidebar is closed (opens it first).
-^h:: Editor_SmartNavReveal(false)
+^h:: Editor_SmartNavReveal("")
 
 ; Alt + I : Same as Ctrl+H; when Windows Explorer opens, copy file and close Explorer
-!i:: Editor_SmartNavReveal(true)
+!i:: Editor_SmartNavReveal("copy")
+
+; Alt + H : Same as Ctrl+H; when Windows Explorer opens, open file and close Explorer
+!h:: Editor_SmartNavReveal("open")
 
 ; Ctrl + 1 : Remove clustering and focus on the code
 ^1 up::
