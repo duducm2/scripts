@@ -33,3 +33,15 @@ eligible=6 hidden=0 visible=5 openOnMon=0 skipReject=443 skipNoMon=0
 selected=6 planned=6 tiled=5 unassigned=0 failed=1
 issues: tile_short:1
   FAIL hwnd=396462 mon=2 title=Spotify Premium
+=== WM tile quality 20260529102702 final ===
+eligible=9 hidden=5 visible=2 openOnMon=1 skipReject=464 skipNoMon=0
+selected=9 planned=9 tiled=6 unassigned=0 failed=3
+issues: tile_short:3
+  FAIL hwnd=67244 mon=3 title=Chat | Tribo UX@SO - LA | Microsoft Teams
+  FAIL hwnd=134686 mon=1 title=Chat | M365 Copilot - Google Chrome
+  FAIL hwnd=2756734 mon=2 title=Calendar - Figueiredo Eduardo (SO/BDO-UX-LA) - Outlook
+=== WM tile quality 20260529134259 final ===
+eligible=9 hidden=0 visible=6 openOnMon=2 skipReject=465 skipNoMon=0
+selected=9 planned=9 tiled=8 unassigned=0 failed=1
+issues: tile_short:1
+  FAIL hwnd=3739382 mon=1 title=Gorillaz - The Hardest Thing (feat. Tony Allen)

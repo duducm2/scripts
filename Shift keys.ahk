@@ -15514,7 +15514,7 @@ Editor_WaitForActiveExplorerWindow(timeoutSec := 2.5) {
     if (!explorerHwnd)
         return 0
     try WinActivate("ahk_id " explorerHwnd)
-    Sleep 1100   ; let Explorer finish opening and auto-select the revealed file
+    Sleep 1600   ; let Explorer finish opening and auto-select the revealed file
     return explorerHwnd
 }
 
