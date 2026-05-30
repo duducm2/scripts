@@ -4751,17 +4751,6 @@ StandardLoadingBar_KeyWrapper(key, cb, *) {
         catch {
         }
     }
-    ; #region agent log
-    try {
-        j :=
-            '{"sessionId":"bcc0df","location":"StandardLoadingBar_KeyWrapper","message":"post_callback_close","data":{"key":"'
-            . key . '","hasGui":' . (IsObject(g_StandardLoadingBarGui) ? 1 : 0) . ',"isKeysOverlay":' . (
-                g_StandardLoadingBarIsKeysOverlay ? 1 : 0) . '},"hypothesisId":"A","timestamp":' . A_TickCount
-            . ',"runId":"post-fix"}'
-        FileAppend j "`n", A_ScriptDir "\debug-bcc0df.log"
-    } catch {
-    }
-    ; #endregion
     ; Callback may have closed the keys overlay and started a loading bar — do not destroy the replacement GUI.
     if (g_StandardLoadingBarIsKeysOverlay)
         StandardLoadingBar_CloseKeysOverlay()

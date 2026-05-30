@@ -34,7 +34,6 @@ global WM_AUTOMATION_SWITCH_DEFAULT_MS := 1500
 ; #region agent log
 ; Debug log path for Copy-from-Gemini instrumentation (NDJSON, one object per line)
 _DebugLogPath_WM() => A_ScriptDir "\.cursor\debug.log"
-_DebugLogPath_F11() => A_ScriptDir "\debug-bcc0df.log"
 _DebugLog_WM(loc, msg, data, hypothesisId := "") {
     j := '{"location":"' . loc . '","message":"' . msg . '","data":' . (data is String ? data : "{}") .
     ',"hypothesisId":"' . hypothesisId . '","timestamp":' . A_TickCount . '}'
@@ -42,14 +41,6 @@ _DebugLog_WM(loc, msg, data, hypothesisId := "") {
         FileAppend j "`n", _DebugLogPath_WM()
     catch
         return  ; File in use by another process — skip this log line
-}
-_DebugLog_F11(loc, msg, data := "{}", hypothesisId := "") {
-    j := '{"sessionId":"bcc0df","location":"' . loc . '","message":"' . msg . '","data":' . data .
-        ',"hypothesisId":"' . hypothesisId . '","timestamp":' . A_TickCount . ',"runId":"post-fix"}'
-    try
-        FileAppend j "`n", _DebugLogPath_F11()
-    catch
-        return
 }
 ; #endregion
 
@@ -1190,37 +1181,19 @@ WM_ExitF11FullscreenForHwnd(hwnd) {
         return false
     try {
         WinActivate "ahk_id " hwnd
-        activated := WinWaitActive("ahk_id " hwnd, , 1.5)
-        ; #region agent log
-        _DebugLog_F11("WM_ExitF11FullscreenForHwnd", "activate_result", '{"hwnd":' hwnd ',"activated":' (activated ? 1 :
-            0) '}',
-        activated ? "C" : "C")
-        ; #endregion
-        if !activated
+        if !WinWaitActive("ahk_id " hwnd, , 1.5)
             return false
         Sleep 50
         ClipAngel_ReleaseChordModifiersForSend()
         SendInput "{F11}"
         Sleep 150
-        stillFs := WM_WindowIsF11Fullscreen(hwnd)
-        ; #region agent log
-        _DebugLog_F11("WM_ExitF11FullscreenForHwnd", "after_f11", '{"hwnd":' hwnd ',"stillFullscreen":' (stillFs ? 1 :
-            0) '}',
-        "D")
-        ; #endregion
-        return !stillFs
-    } catch as err {
-        ; #region agent log
-        _DebugLog_F11("WM_ExitF11FullscreenForHwnd", "exception", '{"hwnd":' hwnd ',"err":"' err.Message '"}', "E")
-        ; #endregion
+        return !WM_WindowIsF11Fullscreen(hwnd)
+    } catch {
         return false
     }
 }
 
 WM_ExitF11FullscreenAllWindows() {
-    ; #region agent log
-    _DebugLog_F11("WM_ExitF11FullscreenAllWindows", "start", "{}", "B")
-    ; #endregion
     foreBefore := 0
     try foreBefore := WinGetID("A")
     WMAutomation_SuppressCursorCentering("exit_f11_fullscreen", 5000)
@@ -1233,24 +1206,8 @@ WM_ExitF11FullscreenAllWindows() {
                 continue
             seen[win.hwnd] := true
             scanned++
-            reason := WM_WindowIsF11FullscreenRejectReason(win.hwnd)
-            ; #region agent log
-            title := "?"
-            mm := -9
-            hc := -1
-            try title := SubStr(StrReplace(WinGetTitle(win.hwnd), '"', "'"), 1, 40)
-            try mm := WinGetMinMax(win.hwnd)
-            try hc := !!(DllCall("GetWindowLongPtr", "ptr", win.hwnd, "int", -16, "ptr") & 0x00C00000)
-            _DebugLog_F11("WM_ExitF11FullscreenAllWindows", "scan", '{"hwnd":' win.hwnd ',"reason":"' reason
-                '","minMax":' mm ',"hasCaption":' hc ',"title":"' title '"}', "B")
-            ; #endregion
-            if (reason = "") {
+            if (WM_WindowIsF11Fullscreen(win.hwnd))
                 candidates.Push(win.hwnd)
-                ; #region agent log
-                _DebugLog_F11("WM_ExitF11FullscreenAllWindows", "candidate", '{"hwnd":' win.hwnd ',"title":"' title '"}',
-                    "B")
-                ; #endregion
-            }
         }
     }
     if (candidates.Length > 0)
@@ -1273,10 +1230,6 @@ WM_ExitF11FullscreenAllWindows() {
     msg := (exited = 0)
         ? ("ℹ️ No F11 fullscreen windows found (" scanned " visible checked)")
         : ((exited = 1) ? "✅ Exited F11 fullscreen on 1 window" : "✅ Exited F11 fullscreen on " exited " windows")
-    ; #region agent log
-    _DebugLog_F11("WM_ExitF11FullscreenAllWindows", "done", '{"scanned":' scanned ',"candidates":' candidates.Length
-        ',"exited":' exited '}', "B")
-    ; #endregion
     return { ok: true, exited: exited, scanned: scanned, message: msg }
 }
 
@@ -1339,37 +1292,20 @@ WM_WindowTools_OnShowMinimizedList(*) {
 }
 
 WM_WindowTools_OnExitF11Fullscreen(*) {
-    ; #region agent log
-    _DebugLog_F11("WM_WindowTools_OnExitF11Fullscreen", "callback_start", "{}", "A")
-    ; #endregion
     StandardLoadingBar_CloseKeysOverlay()
     StandardLoadingBar_Hide(0)
     Sleep 50
     StandardLoadingBar_Show("⏳ Scanning for F11 fullscreen windows...", BANNER_ACCENT_INTERMEDIATE, { passive: false,
         centerOnHwnd: 0 })
-    ; #region agent log
-    _DebugLog_F11("WM_WindowTools_OnExitF11Fullscreen", "after_show", "{}", "A")
-    ; #endregion
     try {
         result := WM_ExitF11FullscreenAllWindows()
         accent := (result.exited > 0) ? BANNER_ACCENT_SUCCESS : BANNER_ACCENT_INFO
         StandardLoadingBar_Update(result.message, accent)
-        ; #region agent log
-        _DebugLog_F11("WM_WindowTools_OnExitF11Fullscreen", "before_hide_schedule", '{"hideMs":' (result.exited > 0 ?
-            2000
-                : 4500) ',"exited":' result.exited '}', "A")
-        ; #endregion
         StandardLoadingBar_Hide(result.exited > 0 ? 2000 : 4500)
     } catch as err {
         StandardLoadingBar_Update("❌ Exit F11 fullscreen failed: " err.Message, BANNER_ACCENT_ERROR)
         StandardLoadingBar_Hide(4000)
-        ; #region agent log
-        _DebugLog_F11("WM_WindowTools_OnExitF11Fullscreen", "exception", '{"err":"' err.Message '"}', "E")
-        ; #endregion
     }
-    ; #region agent log
-    _DebugLog_F11("WM_WindowTools_OnExitF11Fullscreen", "callback_end", "{}", "A")
-    ; #endregion
 }
 
 WM_WindowTools_OnCancel(*) {
