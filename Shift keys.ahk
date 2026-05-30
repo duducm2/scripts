@@ -1749,7 +1749,7 @@ Shift+CAW: A/S/D/F/Q/W/E/R (+B debug, +1/Z/G fallbacks) used for window manageme
 === WINDOWS ===
 [Win+Alt+Shift+6] > Minimizes windows
 [Win+Alt+Shift+M] > Maximizes the current window
-[Win+Alt+Shift+W] > Window tools menu: [1] maximize lone visible window per monitor; [2] list hidden background windows; [3] tile background windows (≤12 total, ≤3 per monitor, cross-monitor spill; hidden first when capped; lone window on a monitor is maximized)
+[Win+Alt+Shift+W] > Window tools menu: [1] maximize lone visible window per monitor; [2] list hidden background windows; [3] tile background windows (≤12 total, ≤3 per monitor, cross-monitor spill; hidden first when capped; lone window on a monitor is maximized); [4] exit F11 fullscreen on visible windows
 [Win+Alt+Shift+Y] > Focus Mode: Black out all monitors except the one with the active window (toggle)
 
 === WINDOW MANAGEMENT (Ctrl+Alt+Win) ===
@@ -24862,7 +24862,8 @@ M365CopilotContinue_Timer() {
             return
         }
         global g_M365CopilotContinueSubmitTick
-        if (!g_M365CopilotContinueSawStop && (A_TickCount - g_M365CopilotContinueSubmitTick) >= M365COPILOT_CONTINUE_IDLE_MS) {
+        if (!g_M365CopilotContinueSawStop && (A_TickCount - g_M365CopilotContinueSubmitTick) >=
+        M365COPILOT_CONTINUE_IDLE_MS) {
             SetTimer(M365CopilotContinue_DoSubmit, -1)
             return
         }

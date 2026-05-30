@@ -34,6 +34,7 @@ global WM_AUTOMATION_SWITCH_DEFAULT_MS := 1500
 ; #region agent log
 ; Debug log path for Copy-from-Gemini instrumentation (NDJSON, one object per line)
 _DebugLogPath_WM() => A_ScriptDir "\.cursor\debug.log"
+_DebugLogPath_F11() => A_ScriptDir "\debug-bcc0df.log"
 _DebugLog_WM(loc, msg, data, hypothesisId := "") {
     j := '{"location":"' . loc . '","message":"' . msg . '","data":' . (data is String ? data : "{}") .
     ',"hypothesisId":"' . hypothesisId . '","timestamp":' . A_TickCount . '}'
@@ -41,6 +42,14 @@ _DebugLog_WM(loc, msg, data, hypothesisId := "") {
         FileAppend j "`n", _DebugLogPath_WM()
     catch
         return  ; File in use by another process — skip this log line
+}
+_DebugLog_F11(loc, msg, data := "{}", hypothesisId := "") {
+    j := '{"sessionId":"bcc0df","location":"' . loc . '","message":"' . msg . '","data":' . data .
+        ',"hypothesisId":"' . hypothesisId . '","timestamp":' . A_TickCount . ',"runId":"post-fix"}'
+    try
+        FileAppend j "`n", _DebugLogPath_F11()
+    catch
+        return
 }
 ; #endregion
 
@@ -476,7 +485,8 @@ WM_MoveHwndToRect(hwnd, left, top, width, height) {
     if (!WM_GetWindowRectHwnd(hwnd, &rl, &rt, &rr, &rb))
         return false
     tol := 80
-    return (Abs(rl - left) <= tol && Abs(rt - top) <= tol && Abs((rr - rl) - width) <= tol && Abs((rb - rt) - height) <= tol)
+    return (Abs(rl - left) <= tol && Abs(rt - top) <= tol && Abs((rr - rl) - width) <= tol && Abs((rb - rt) - height) <=
+    tol)
 }
 
 WM_TILE_BG_MAX_TOTAL := 12
@@ -623,7 +633,8 @@ WM_CollectTileEligibleHwnds(foreHwndOverride := 0) {
     try {
         if (foreHwnd && WM_TilePassesOrganizeGates(foreHwnd)) {
             homeMon := WM_ResolveHwndMonitorIndex(foreHwnd, fallbackMon)
-            if (homeMon >= 1 && WM_TileCandidateRegister(&seen, &candidates, foreHwnd, 0, homeMon, &counters, "foreground"))
+            if (homeMon >= 1 && WM_TileCandidateRegister(&seen, &candidates, foreHwnd, 0, homeMon, &counters,
+                "foreground"))
                 counters["foreground"] := 1
         }
         loop MonitorGetCount() {
@@ -1110,6 +1121,165 @@ WM_TileBackgroundWindowsPerMonitor(maxPerMon := WM_TILE_BG_MAX_PER_MON, foreHwnd
 ; Win+Alt+Shift+W — window tools menu (Interactive Input) + minimized list GUI
 ; =============================================================================
 
+; F11 fullscreen: fills monitor (often past work area) or work area with no caption; not ordinary Win-maximize.
+WM_WindowIsF11FullscreenRejectReason(hwnd) {
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return "no_hwnd"
+    try {
+        minMax := WinGetMinMax(hwnd)
+        if (minMax = -1)
+            return "minimized"
+        if !DllCall("IsWindowVisible", "ptr", hwnd)
+            return "not_visible"
+        exStyle := DllCall("GetWindowLongPtr", "ptr", hwnd, "int", -20, "ptr")
+        if (exStyle & 0x00000080)
+            return "toolwindow"
+        class := WinGetClass(hwnd)
+        if (class = "Progman" || class = "WorkerW")
+            return "desktop_class"
+        if (WM_IsDesktopOrTaskbarClass(class))
+            return "taskbar_class"
+        if (WinGetTitle(hwnd) = "")
+            return "empty_title"
+        if (WM_IsExcludedIndicatorWindow(hwnd))
+            return "excluded_indicator"
+        if (!WM_BackgroundHwndOnAnyScriptMonitor(hwnd))
+            return "not_script_monitor"
+        mon := WM_GetHwndMonitorIndex(hwnd)
+        if (!mon)
+            return "no_monitor"
+        MonitorGet mon, &ml, &mt, &mr, &mb
+        MonitorGetWorkArea mon, &wl, &wt, &wr, &wb
+        if (!WM_GetWindowRectHwnd(hwnd, &left, &top, &right, &bottom))
+            return "no_rect"
+        tol := 24
+        fillsMonitor := (Abs(left - ml) <= tol && Abs(top - mt) <= tol && Abs(right - mr) <= tol && Abs(bottom - mb) <=
+        tol)
+        fillsWorkArea := (Abs(left - wl) <= tol && Abs(top - wt) <= tol && Abs(right - wr) <= tol && Abs(bottom - wb) <=
+        tol)
+        extendsPastWorkArea := (bottom > wb + tol || right > wr + tol || left < wl - tol || top < wt - tol)
+        style := DllCall("GetWindowLongPtr", "ptr", hwnd, "int", -16, "ptr")
+        hasCaption := !!(style & 0x00C00000)
+        ; Ordinary Win+Up maximize: work-area sized, reported maximized, caption bar still present.
+        if (minMax = 1 && fillsWorkArea && !extendsPastWorkArea && hasCaption)
+            return "win_maximized"
+        ; F11 pattern 1: full monitor including taskbar band.
+        if (fillsMonitor && extendsPastWorkArea)
+            return ""
+        ; F11 pattern 2: fills work area without caption (Chrome F11 often reports minMax=1).
+        if (fillsWorkArea && !hasCaption)
+            return ""
+        if (!fillsMonitor && !fillsWorkArea)
+            return "not_monitor_fill"
+        if (fillsMonitor && !extendsPastWorkArea)
+            return "within_work_area"
+        if (fillsWorkArea && hasCaption)
+            return "work_area_with_caption"
+        return "no_match"
+    } catch as err {
+        return "exception:" . err.Message
+    }
+}
+
+WM_WindowIsF11Fullscreen(hwnd) {
+    return WM_WindowIsF11FullscreenRejectReason(hwnd) = ""
+}
+
+WM_ExitF11FullscreenForHwnd(hwnd) {
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return false
+    try {
+        WinActivate "ahk_id " hwnd
+        activated := WinWaitActive("ahk_id " hwnd, , 1.5)
+        ; #region agent log
+        _DebugLog_F11("WM_ExitF11FullscreenForHwnd", "activate_result", '{"hwnd":' hwnd ',"activated":' (activated ? 1 :
+            0) '}',
+        activated ? "C" : "C")
+        ; #endregion
+        if !activated
+            return false
+        Sleep 50
+        ClipAngel_ReleaseChordModifiersForSend()
+        SendInput "{F11}"
+        Sleep 150
+        stillFs := WM_WindowIsF11Fullscreen(hwnd)
+        ; #region agent log
+        _DebugLog_F11("WM_ExitF11FullscreenForHwnd", "after_f11", '{"hwnd":' hwnd ',"stillFullscreen":' (stillFs ? 1 :
+            0) '}',
+        "D")
+        ; #endregion
+        return !stillFs
+    } catch as err {
+        ; #region agent log
+        _DebugLog_F11("WM_ExitF11FullscreenForHwnd", "exception", '{"hwnd":' hwnd ',"err":"' err.Message '"}', "E")
+        ; #endregion
+        return false
+    }
+}
+
+WM_ExitF11FullscreenAllWindows() {
+    ; #region agent log
+    _DebugLog_F11("WM_ExitF11FullscreenAllWindows", "start", "{}", "B")
+    ; #endregion
+    foreBefore := 0
+    try foreBefore := WinGetID("A")
+    WMAutomation_SuppressCursorCentering("exit_f11_fullscreen", 5000)
+    seen := Map()
+    candidates := []
+    scanned := 0
+    loop MonitorGetCount() {
+        for win in GetVisibleWindowsOnMonitor(A_Index, true) {
+            if (seen.Has(win.hwnd))
+                continue
+            seen[win.hwnd] := true
+            scanned++
+            reason := WM_WindowIsF11FullscreenRejectReason(win.hwnd)
+            ; #region agent log
+            title := "?"
+            mm := -9
+            hc := -1
+            try title := SubStr(StrReplace(WinGetTitle(win.hwnd), '"', "'"), 1, 40)
+            try mm := WinGetMinMax(win.hwnd)
+            try hc := !!(DllCall("GetWindowLongPtr", "ptr", win.hwnd, "int", -16, "ptr") & 0x00C00000)
+            _DebugLog_F11("WM_ExitF11FullscreenAllWindows", "scan", '{"hwnd":' win.hwnd ',"reason":"' reason
+                '","minMax":' mm ',"hasCaption":' hc ',"title":"' title '"}', "B")
+            ; #endregion
+            if (reason = "") {
+                candidates.Push(win.hwnd)
+                ; #region agent log
+                _DebugLog_F11("WM_ExitF11FullscreenAllWindows", "candidate", '{"hwnd":' win.hwnd ',"title":"' title '"}',
+                    "B")
+                ; #endregion
+            }
+        }
+    }
+    if (candidates.Length > 0)
+        StandardLoadingBar_Update("🔄 Exiting F11 fullscreen on " candidates.Length " window(s)...",
+            BANNER_ACCENT_INTERMEDIATE)
+    exited := 0
+    for i, hwnd in candidates {
+        if (candidates.Length > 1)
+            StandardLoadingBar_Update("🔄 Exiting F11 fullscreen (" i "/" candidates.Length ")...",
+                BANNER_ACCENT_INTERMEDIATE)
+        if (WM_ExitF11FullscreenForHwnd(hwnd))
+            exited++
+    }
+    if (foreBefore && WinExist("ahk_id " foreBefore)) {
+        try WinActivate("ahk_id " foreBefore)
+        catch {
+        }
+    }
+    WMAutomation_ClearCursorSuppression("exit_f11_fullscreen")
+    msg := (exited = 0)
+        ? ("ℹ️ No F11 fullscreen windows found (" scanned " visible checked)")
+        : ((exited = 1) ? "✅ Exited F11 fullscreen on 1 window" : "✅ Exited F11 fullscreen on " exited " windows")
+    ; #region agent log
+    _DebugLog_F11("WM_ExitF11FullscreenAllWindows", "done", '{"scanned":' scanned ',"candidates":' candidates.Length
+        ',"exited":' exited '}', "B")
+    ; #endregion
+    return { ok: true, exited: exited, scanned: scanned, message: msg }
+}
+
 WM_WindowTools_OnMaximizeLonely(*) {
     StandardLoadingBar_CloseKeysOverlay()
     StandardLoadingBar_Hide(0)
@@ -1168,6 +1338,40 @@ WM_WindowTools_OnShowMinimizedList(*) {
     }
 }
 
+WM_WindowTools_OnExitF11Fullscreen(*) {
+    ; #region agent log
+    _DebugLog_F11("WM_WindowTools_OnExitF11Fullscreen", "callback_start", "{}", "A")
+    ; #endregion
+    StandardLoadingBar_CloseKeysOverlay()
+    StandardLoadingBar_Hide(0)
+    Sleep 50
+    StandardLoadingBar_Show("⏳ Scanning for F11 fullscreen windows...", BANNER_ACCENT_INTERMEDIATE, { passive: false,
+        centerOnHwnd: 0 })
+    ; #region agent log
+    _DebugLog_F11("WM_WindowTools_OnExitF11Fullscreen", "after_show", "{}", "A")
+    ; #endregion
+    try {
+        result := WM_ExitF11FullscreenAllWindows()
+        accent := (result.exited > 0) ? BANNER_ACCENT_SUCCESS : BANNER_ACCENT_INFO
+        StandardLoadingBar_Update(result.message, accent)
+        ; #region agent log
+        _DebugLog_F11("WM_WindowTools_OnExitF11Fullscreen", "before_hide_schedule", '{"hideMs":' (result.exited > 0 ?
+            2000
+                : 4500) ',"exited":' result.exited '}', "A")
+        ; #endregion
+        StandardLoadingBar_Hide(result.exited > 0 ? 2000 : 4500)
+    } catch as err {
+        StandardLoadingBar_Update("❌ Exit F11 fullscreen failed: " err.Message, BANNER_ACCENT_ERROR)
+        StandardLoadingBar_Hide(4000)
+        ; #region agent log
+        _DebugLog_F11("WM_WindowTools_OnExitF11Fullscreen", "exception", '{"err":"' err.Message '"}', "E")
+        ; #endregion
+    }
+    ; #region agent log
+    _DebugLog_F11("WM_WindowTools_OnExitF11Fullscreen", "callback_end", "{}", "A")
+    ; #endregion
+}
+
 WM_WindowTools_OnCancel(*) {
     StandardLoadingBar_CloseKeysOverlay()
     StandardLoadingBar_Hide(0)
@@ -1184,6 +1388,7 @@ WM_WindowTools_ShowMenu() {
         "1", WM_WindowTools_OnMaximizeLonely,
         "2", WM_WindowTools_OnShowMinimizedList,
         "3", WM_WindowTools_OnTileBackground,
+        "4", WM_WindowTools_OnExitF11Fullscreen,
         "Escape", WM_WindowTools_OnCancel)
     StandardLoadingBar_ShowWithKeys(
         "❓ Window tools — choose an action (8s)",
@@ -1196,7 +1401,7 @@ WM_WindowTools_ShowMenu() {
         17,
         "",
         false,
-        "[1] Maximize lone  [2] Hidden list  [3] Tile background (≤12 total, ≤3/monitor)  [Esc] Cancel",
+        "[1] Maximize lone  [2] Hidden list  [3] Tile background (≤12 total, ≤3/monitor)  [4] Exit F11 fullscreen  [Esc] Cancel",
         true,
         false,
         false)
@@ -2646,7 +2851,7 @@ WM_ShowMinimizedBackgroundList(rows := unset, refresh := false) {
 ^!#x:: WM_SnapHalfPairActiveWindow()
 
 ; =============================================================================
-; Window tools menu (maximize lone / hidden windows list)
+; Window tools menu (maximize lone / hidden windows list / exit F11 fullscreen)
 ; Hotkey: Win+Alt+Shift+W
 ; =============================================================================
 #!+w:: WM_WindowTools_ShowMenu()
