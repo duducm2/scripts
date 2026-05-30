@@ -6021,32 +6021,12 @@ global g_CleanClipboardCanceled := false
 global g_CleanClipboardInProgress := false
 global g_CleanClipboardSessionId := 0
 global g_CleanClipboardProceedClaimed := false
-global g_CleanClipboardDbgSeq := 0
-global g_CleanClipboardInternalRunCount := 0
-
-; #region agent log
-CleanClipboard_AgentDebug(hypothesisId, location, message, data := "") {
-    global g_CleanClipboardDbgSeq, g_CleanClipboardCanceled, g_CleanClipboardInProgress, g_CleanClipboardSessionId
-    try {
-        g_CleanClipboardDbgSeq += 1
-        ts := DllCall("GetTickCount64", "UInt64")
-        line := Format(
-            '{{"sessionId":"5d42aa","timestamp":{},"hypothesisId":"{}","location":"{}","message":"{}","data":{{"seq":{},"sid":{},"canceled":{},"inProgress":{},"extra":"{}"}}}}',
-            ts, hypothesisId, location, message, g_CleanClipboardDbgSeq, g_CleanClipboardSessionId,
-            g_CleanClipboardCanceled ? 1 : 0, g_CleanClipboardInProgress ? 1 : 0, data)
-        FileAppend line "`n", A_ScriptDir "\debug-5d42aa.log", "UTF-8"
-    } catch {
-    }
-}
-; #endregion
 
 CleanClipboard_BeginSession() {
-    global g_CleanClipboardCanceled, g_CleanClipboardSessionId, g_CleanClipboardInternalRunCount,
-        g_CleanClipboardProceedClaimed
+    global g_CleanClipboardCanceled, g_CleanClipboardSessionId, g_CleanClipboardProceedClaimed
     g_CleanClipboardSessionId += 1
     g_CleanClipboardCanceled := false
     g_CleanClipboardProceedClaimed := false
-    g_CleanClipboardInternalRunCount := 0
     return g_CleanClipboardSessionId
 }
 
@@ -6091,12 +6071,6 @@ CleanClipboard_SetAbortHotkeys(enable := true) {
 ; Internal helper: Performs clipboard cleanup without showing prompt
 ; sessionId: macro session from CleanClipboard_ShowCountdown; 0 = dictation legacy path (no session guard)
 CleanClipboardInternal(sessionId := 0) {
-    global g_CleanClipboardInternalRunCount
-    g_CleanClipboardInternalRunCount += 1
-    ; #region agent log
-    CleanClipboard_AgentDebug("H7", "Internal", "enter", "run=" g_CleanClipboardInternalRunCount " sessionId=" sessionId
-    )
-    ; #endregion
     Sleep 200
     if (CleanClipboard_ShouldAbort(sessionId)) {
         CleanClipboard_UnwindClipAngel()
@@ -6126,9 +6100,6 @@ CleanClipboardInternal(sessionId := 0) {
 
     SendInput "!v"
     Sleep 400
-    ; #region agent log
-    CleanClipboard_AgentDebug("H7", "Internal", "complete", "run=" g_CleanClipboardInternalRunCount)
-    ; #endregion
 }
 
 ; =============================================================================
@@ -6498,11 +6469,7 @@ CleanClipboard() {
 }
 
 CleanClipboard_ShowCountdown() {
-    global g_CleanClipboardInProgress, g_CleanClipboardInternalRunCount
-
-    ; #region agent log
-    CleanClipboard_AgentDebug("H5", "ShowCountdown", "enter", "internalRunsSoFar=" g_CleanClipboardInternalRunCount)
-    ; #endregion
+    global g_CleanClipboardInProgress
 
     if (g_CleanClipboardInProgress) {
         ShowCenteredOverlay_Utils("Clipboard cleanup already running", 1500, BANNER_ACCENT_INTERMEDIATE)
@@ -6553,37 +6520,17 @@ CleanClipboard_OnCancel(*) {
 CleanClipboard_Proceed(sessionId := 0) {
     global g_CleanClipboardCanceled, g_CleanClipboardInProgress, g_CleanClipboardSessionId
 
-    ; #region agent log
-    CleanClipboard_AgentDebug("H3", "Proceed", "enter", "argSessionId=" sessionId)
-    ; #endregion
-
-    if (g_CleanClipboardCanceled) {
-        ; #region agent log
-        CleanClipboard_AgentDebug("H3", "Proceed", "reject", "reason=canceled")
-        ; #endregion
+    if (g_CleanClipboardCanceled)
         return
-    }
-    if (g_CleanClipboardInProgress) {
-        ; #region agent log
-        CleanClipboard_AgentDebug("H4", "Proceed", "reject", "reason=inProgress")
-        ; #endregion
+    if (g_CleanClipboardInProgress)
         return
-    }
-    if (sessionId && sessionId != g_CleanClipboardSessionId) {
-        ; #region agent log
-        CleanClipboard_AgentDebug("H3", "Proceed", "reject", "reason=staleSession")
-        ; #endregion
+    if (sessionId && sessionId != g_CleanClipboardSessionId)
         return
-    }
 
     g_CleanClipboardInProgress := true
     try {
-        if (g_CleanClipboardCanceled) {
-            ; #region agent log
-            CleanClipboard_AgentDebug("H3", "Proceed", "abort", "reason=canceledAfterClaim")
-            ; #endregion
+        if (g_CleanClipboardCanceled)
             return
-        }
         try StandardLoadingBar_CloseKeysOverlay()
         catch {
         }
@@ -6593,62 +6540,28 @@ CleanClipboard_Proceed(sessionId := 0) {
     } finally {
         CleanClipboard_SetAbortHotkeys(false)
         CleanClipboard_EndSession()
-        ; #region agent log
-        CleanClipboard_AgentDebug("H3", "Proceed", "finally", "sessionEnded")
-        ; #endregion
     }
 }
 
 CleanClipboard_OnYConfirm(*) {
     global g_CleanClipboardCanceled, g_CleanClipboardSessionId, g_CleanClipboardProceedClaimed
-    ; #region agent log
-    CleanClipboard_AgentDebug("H1", "OnYConfirm", "enter", "hotkey=" A_ThisHotkey)
-    ; #endregion
-    if (g_CleanClipboardCanceled) {
-        ; #region agent log
-        CleanClipboard_AgentDebug("H1", "OnYConfirm", "reject", "reason=canceled")
-        ; #endregion
+    if (g_CleanClipboardCanceled)
         return
-    }
-    ; Re-entrant second $*Y / poll edge before Proceed sets inProgress (see debug-5d42aa.log seq 2+6)
-    if (g_CleanClipboardProceedClaimed) {
-        ; #region agent log
-        CleanClipboard_AgentDebug("H1", "OnYConfirm", "reject", "reason=alreadyClaimed")
-        ; #endregion
+    ; Hotkey + poll can both fire Y before Proceed sets inProgress
+    if (g_CleanClipboardProceedClaimed)
         return
-    }
     g_CleanClipboardProceedClaimed := true
-    ; #region agent log
-    CleanClipboard_AgentDebug("H15", "OnYConfirm", "beforeSound", "")
-    ; #endregion
     PlayCleaningDesktopSound()
-    ; #region agent log
-    CleanClipboard_AgentDebug("H15", "OnYConfirm", "afterSound", "inProgress=" (g_CleanClipboardInProgress ? 1 : 0))
-    ; #endregion
     CleanClipboard_Proceed(g_CleanClipboardSessionId)
-    ; #region agent log
-    CleanClipboard_AgentDebug("H1", "OnYConfirm", "exit", "")
-    ; #endregion
 }
 
 ; Auto-continue when countdown ends (no chime; only Y plays the sound)
 CleanClipboard_OnTimeout(sessionId, *) {
     global g_CleanClipboardCanceled, g_CleanClipboardProceedClaimed
-    ; #region agent log
-    CleanClipboard_AgentDebug("H3", "OnTimeout", "enter", "sessionId=" sessionId)
-    ; #endregion
-    if (g_CleanClipboardCanceled) {
-        ; #region agent log
-        CleanClipboard_AgentDebug("H3", "OnTimeout", "reject", "reason=canceled")
-        ; #endregion
+    if (g_CleanClipboardCanceled)
         return
-    }
-    if (g_CleanClipboardProceedClaimed) {
-        ; #region agent log
-        CleanClipboard_AgentDebug("H3", "OnTimeout", "reject", "reason=alreadyClaimed")
-        ; #endregion
+    if (g_CleanClipboardProceedClaimed)
         return
-    }
     g_CleanClipboardProceedClaimed := true
     CleanClipboard_Proceed(sessionId)
 }
