@@ -2450,61 +2450,7 @@ Gemini_GetUiaForActiveGeminiChrome() {
     }
 }
 
-; Mirror Gemini.ahk #!+i: anchor on "Open upload file menu", Shift+Tab, then FindGeminiPromptField + focus.
-Gemini_FocusPromptSameAsOpenHotkey(uia) {
-    if (!IsObject(uia))
-        return false
-    localSettleMs := 120
-    try {
-        Sleep localSettleMs
-        anchorButton := 0
-        try {
-            anchorButton := uia.FindFirst({ Type: UIA.Type.Button, Name: "Open upload file menu", ControlType: "Button" })
-            if (!anchorButton)
-                anchorButton := uia.FindFirst({ Type: UIA.Type.Button, Name: "Open upload file menu", cs: false })
-        } catch {
-        }
-        if (!anchorButton) {
-            try {
-                allButtons := uia.FindAll({ Type: UIA.Type.Button })
-                for button in allButtons {
-                    try {
-                        if (InStr(button.Name, "Open upload file menu", false)) {
-                            anchorButton := button
-                            break
-                        }
-                    } catch {
-                        continue
-                    }
-                }
-            } catch {
-            }
-        }
-        if (anchorButton) {
-            try {
-                anchorButton.SetFocus()
-                Sleep 25
-                SendInput "+{Tab}"
-                Sleep 15
-            } catch {
-            }
-        }
-        promptField := FindGeminiPromptField(uia)
-        if (promptField) {
-            try {
-                promptField.SetFocus()
-                Sleep 100
-                if (!promptField.HasKeyboardFocus)
-                    try promptField.Click()
-                Sleep 40
-            } catch {
-            }
-            return true
-        }
-    } catch {
-    }
-    return false
-}
+; Gemini_FocusPromptSameAsOpenHotkey — see Utils.ahk (shared with Gemini.ahk #!+i).
 
 ; After each Clip Angel / screenshot paste: bounded wait until upload UI clears; refocus prompt while uploading.
 ; timeoutMs: max wait (default FAST_COPY_GEMINI_UPLOAD_IDLE_MS). minNoIndicatorMs: if we never see "uploading",
@@ -2554,7 +2500,7 @@ Gemini_PasteFromClipAngelSequential(count, uia := "") {
             try StandardLoadingBar_Update("⏳ Pasting clip " A_Index " / " n " …")
             catch {
             }
-            Gemini_FocusPromptSameAsOpenHotkey(uia)
+            Gemini_FocusPromptSameAsOpenHotkey(uia, false)
             if (A_Index = 1) {
                 Send "!v"
                 Sleep 50

@@ -25,6 +25,9 @@ GEMINI_TTS_RESUME_NAMES := ["Resume", "Retomar"]
 GEMINI_ACTIVATE_WAIT_MS := 2000
 GEMINI_SCROLL_SETTLE_MS := 350
 GEMINI_UIA_SETTLE_MS := 120
+GEMINI_PROMPT_FOCUS_POLL_MS := 25
+GEMINI_PROMPT_FOCUS_TIMEOUT_MS := 300
+GEMINI_OPEN_FAST_SETTLE_MS := 0
 GEMINI_TAB_SWITCH_MS := 150
 GEMINI_MENU_OPEN_MS := 200
 GEMINI_LISTEN_MENU_WAIT_MS := 1500   ; Bounded wait for Listen menu item after opening More options.
@@ -67,6 +70,7 @@ GEMINI_CLIPBOARD_POLL_MS := 10
 ; After copy, before Clip Angel favorite — lets newest clip appear as row 0 (ms).
 GEMINI_POST_COPY_FAVORITE_DELAY_MS := 150
 ; Performance instrumentation (set to true to log latencies to script dir)
+; Logs focus phase (fast_already_focused, direct_focus, anchor_fallback) and tab_banner_deferred.
 GEMINI_PERF_LOG_ENABLED := false
 GEMINI_PERF_LOG_PATH := A_ScriptDir "\.cursor\gemini_perf.log"
 
@@ -1135,81 +1139,49 @@ InitializeGeminiFirstTime() {
     t0 := A_TickCount
     SetTitleMatchMode(2)
     if hwnd := GetGeminiWindowHwnd() {
-        try {
-            WinActivate("ahk_id " hwnd)
-        } catch {
-            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
+        alreadyActive := false
+        try
+            alreadyActive := WinActive("ahk_id " hwnd)
+        catch {
+        }
+        if (!alreadyActive) {
+            try {
+                WinActivate("ahk_id " hwnd)
+            } catch {
+                ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
+                return
+            }
+            if !WinWaitActive("ahk_id " hwnd, , GEMINI_ACTIVATE_WAIT_MS // 1000)
+                return
+        }
+
+        if (alreadyActive && GEMINI_OPEN_FAST_SETTLE_MS > 0)
+            Sleep GEMINI_OPEN_FAST_SETTLE_MS
+
+        try
+            uia := UIA_Browser("ahk_id " hwnd)
+        catch {
+            ShowCenteredOverlay_Utils("❌ Error: Could not attach to Gemini window.", 2000, BANNER_ACCENT_ERROR)
             return
         }
-        if WinWaitActive("ahk_id " hwnd, , GEMINI_ACTIVATE_WAIT_MS // 1000) {
-            Sleep GEMINI_UIA_SETTLE_MS   ; Let the window and Chrome content settle before UIA attaches
-            ; Bind UIA to this window so we never attach to a different Chrome window
-            uia := UIA_Browser("ahk_id " hwnd)
-            Sleep GEMINI_UIA_SETTLE_MS   ; UIA settle time (align with CopyLastGeminiMessageToClipboard)
 
-            ; Show current active tab only when this window already has two Gemini tabs (not during initial launch).
-            ; Brief extra delay so Chrome tab bar is ready for UIA; retry once if first attempt fails (timing).
-            Sleep 80
-            tabInfo := GetChromeActiveTabIndex(uia)
-            if (!tabInfo) {
-                Sleep 150
-                tabInfo := GetChromeActiveTabIndex(uia)
-            }
-            ; Show tab-position banner: use UIA index when available, otherwise assume position 1 so banner always appears
-            tabPosition := (tabInfo && tabInfo.count >= 2 && tabInfo.index) ? tabInfo.index : 1
-            ShowSingleCharTabBanner_Utils(tabPosition)
+        if (!alreadyActive)
+            Gemini_WaitForPromptFieldDiscoverable(uia)
 
-            ; Find the anchor element: "Open upload file menu" button
-            ; Combined search: Try exact match first, then case-insensitive (most efficient)
-            anchorButton := 0
-            try {
-                anchorButton := uia.FindFirst({ Type: UIA_ControlType_Button, Name: "Open upload file menu",
-                    ControlType: "Button" })
-                if (!anchorButton) {
-                    anchorButton := uia.FindFirst({ Type: UIA_ControlType_Button, Name: "Open upload file menu", cs: false })
-                }
-            } catch {
-            }
-
-            ; Fallback: Only use expensive FindAll if first two strategies failed
-            if (!anchorButton) {
-                try {
-                    allButtons := uia.FindAll({ Type: UIA_ControlType_Button })
-                    for button in allButtons {
-                        try {
-                            if (InStr(button.Name, "Open upload file menu", false)) {
-                                anchorButton := button
-                                break
-                            }
-                        } catch {
-                            continue
-                        }
-                    }
-                } catch {
-                }
-            }
-
-            if (anchorButton) {
-                ; Focus the anchor button (do NOT click) and navigate back
-                try {
-                    anchorButton.SetFocus()
-                    Sleep 25   ; minimal wait for focus
-                    SendInput "+{Tab}"  ; Use SendInput for faster keystroke
-                    Sleep 15   ; minimal delay for navigation
-                } catch {
-                    ; Anchor strategy failed; will use direct prompt field below
-                }
-            }
-            ; Ensure the prompt field actually has keyboard focus (ready-to-type chime plays inside helper)
-            Gemini_FocusPromptSameAsOpenHotkey(uia)
-            GeminiPerfLog("activation", t0)
+        focusPhase := ""
+        promptField := Gemini_FocusPromptWithChime(uia, "", &focusPhase)
+        if (promptField) {
+            tBanner := A_TickCount
+            SetTimer(() => (Gemini_ShowDeferredTabBanner(uia), GeminiPerfLog("tab_banner_deferred", tBanner)), -1)
         }
+        GeminiPerfLog(focusPhase != "" ? focusPhase : "focus_failed", t0)
+        GeminiPerfLog("activation", t0)
     } else {
         InitializeGeminiFirstTime()
     }
 }
 
-; Direct focus to prompt text field (refactored for maximum efficiency)
+; Ready chime for flows that do not use Gemini_FocusPromptWithChime (e.g. legacy call sites).
 Gemini_PlayReadyChime(minIntervalMs := 400) {
     static lastChimeTick := 0
     if (!IsSoundEnabled())
@@ -1222,47 +1194,7 @@ Gemini_PlayReadyChime(minIntervalMs := 400) {
     return true
 }
 
-Gemini_FocusPromptSameAsOpenHotkey(uia) {
-    if (!IsObject(uia)) {
-        try {
-            uia := UIA_Browser()
-        } catch {
-            return false
-        }
-    }
-
-    localSettleMs := 120
-    try {
-        Sleep localSettleMs
-        promptField := FindGeminiPromptField(uia)
-        if (promptField) {
-            ; Condition B: already focused/active (play immediately)
-            try {
-                if (promptField.HasKeyboardFocus) {
-                    Gemini_PlayReadyChime()
-                    return promptField
-                }
-            } catch {
-            }
-
-            ; Condition A: focus it now, then chime once caret is active
-            try promptField.SetFocus()
-            Sleep 100
-            if (!promptField.HasKeyboardFocus) {
-                try promptField.Click()
-                Sleep 80
-            }
-            if (promptField.HasKeyboardFocus) {
-                Gemini_PlayReadyChime()
-                return promptField
-            }
-            return false
-        }
-    } catch {
-        ; ignore and fall through
-    }
-    return false
-}
+; Gemini_FocusPromptSameAsOpenHotkey lives in Utils.ahk (shared with Shift keys Fast Copy).
 
 ; =============================================================================
 ; GeminiAsyncReadAloud – async read aloud / pause / resume (Win+Alt+Shift+O)
