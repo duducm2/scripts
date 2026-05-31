@@ -353,12 +353,15 @@ WM_EnterF11FullscreenForHwnd(hwnd, settleMs := 1200) {
 }
 
 ; --- Chrome: detach active tab to new window (Shift+W) ---
-; PT-BR Chrome: context menu -> Mover guia para outra janela -> Nova janela (keyboard m, Right, n, Enter).
+; PT-BR Chrome: context menu -> Mover guia para outra janela -> Nova janela (UIA Invoke preferred; keyboard m, Enter, Enter).
 ; EN Chrome: single item Move tab to new window (keyboard m, Enter fallback).
 global CHROME_DETACH_USE_UIA := true
 global CHROME_DETACH_LEGACY_KEYS := false
 global CHROME_DETACH_VERIFY_TIMEOUT_MS := 2000
 global CHROME_DETACH_F11_SETTLE_MS := 2500
+global CHROME_DETACH_MENU_STEP_MS := 450
+global g_ChromeDetachBusy := false
+global g_ChromeDetachRunId := 0
 
 ; #region agent log
 Chrome_DetachDebugLog_Escape(s) {
@@ -392,7 +395,8 @@ Chrome_DetachDebugLog(location, message, hypothesisId := "", data := "") {
             dataPart := "{}"
         FileAppend('{"sessionId":"d15909","timestamp":' . A_TickCount . ',"location":"' . Chrome_DetachDebugLog_Escape(
             location) . '","message":"' . Chrome_DetachDebugLog_Escape(message) . '","hypothesisId":"' .
-        Chrome_DetachDebugLog_Escape(hypothesisId) . '","data":' . dataPart . '}`n', A_ScriptDir "\debug-d15909.log")
+        Chrome_DetachDebugLog_Escape(hypothesisId) . '","data":' . dataPart . '}`n', A_ScriptDir "\.cursor\debug-d15909.log"
+        )
     } catch {
     }
 }
@@ -409,34 +413,36 @@ Chrome_WindowHasCaption(hwnd) {
     }
 }
 
-; Windowed + caption visible — safe for F6 / tab context menu (F6 in F11 can open DevTools).
-Chrome_WaitUntilWindowedForDetach(hwnd, timeoutMs := 0) {
+; Safe for F6 / tab context menu when NOT in F11 (F6 in F11 can open DevTools).
+Chrome_WaitUntilNotF11ForDetach(hwnd, timeoutMs := 0) {
     settleMs := timeoutMs > 0 ? timeoutMs : CHROME_DETACH_F11_SETTLE_MS
     deadline := A_TickCount + settleMs
     loop {
         if (!hwnd || !WinExist("ahk_id " hwnd))
             return false
         isF11 := WM_WindowIsF11Fullscreen(hwnd)
-        hasCaption := Chrome_WindowHasCaption(hwnd)
-        if (!isF11 && hasCaption) {
+        if (!isF11) {
             fgOk := WM_EnsureForegroundForSend(hwnd, Min(800, Max(0, deadline - A_TickCount)))
             ; #region agent log
-            Chrome_DetachDebugLog("Utils.ahk:Chrome_WaitUntilWindowedForDetach", "windowed_check", "A,B", Map(
-                "hwnd", hwnd, "isF11", isF11, "hasCaption", hasCaption, "fgOk", fgOk, "reject",
-                WM_WindowIsF11FullscreenRejectReason(hwnd)))
+            Chrome_DetachDebugLog("Utils.ahk:Chrome_WaitUntilNotF11ForDetach", "ready", "H1", Map("hwnd", hwnd,
+                "isF11", isF11, "fgOk", fgOk, "reject", WM_WindowIsF11FullscreenRejectReason(hwnd)))
             ; #endregion
-            return fgOk
+            return true
         }
         if (A_TickCount >= deadline)
             break
         Sleep 50
     }
     ; #region agent log
-    Chrome_DetachDebugLog("Utils.ahk:Chrome_WaitUntilWindowedForDetach", "timeout", "A,B", Map("hwnd", hwnd,
-        "isF11", WM_WindowIsF11Fullscreen(hwnd), "hasCaption", Chrome_WindowHasCaption(hwnd), "reject",
-        WM_WindowIsF11FullscreenRejectReason(hwnd)))
+    Chrome_DetachDebugLog("Utils.ahk:Chrome_WaitUntilNotF11ForDetach", "timeout", "F,I", Map("hwnd", hwnd,
+        "isF11", WM_WindowIsF11Fullscreen(hwnd), "reject", WM_WindowIsF11FullscreenRejectReason(hwnd)))
     ; #endregion
     return false
+}
+
+; Legacy name used for new-window strip; only requires leaving F11, not caption.
+Chrome_WaitUntilWindowedForDetach(hwnd, timeoutMs := 0) {
+    return Chrome_WaitUntilNotF11ForDetach(hwnd, timeoutMs)
 }
 
 Chrome_WaitUntilF11ForHwnd(hwnd, timeoutMs := 0) {
@@ -450,7 +456,7 @@ Chrome_ExitF11ForDetach(hwnd) {
     loop 3 {
         if !WM_ExitF11FullscreenForHwnd(hwnd, CHROME_DETACH_F11_SETTLE_MS)
             continue
-        if Chrome_WaitUntilWindowedForDetach(hwnd)
+        if Chrome_WaitUntilNotF11ForDetach(hwnd)
             return true
     }
     return false
@@ -459,11 +465,30 @@ Chrome_ExitF11ForDetach(hwnd) {
 Chrome_EnsureNewWindowIsWindowed(newHwnd) {
     if (!newHwnd || !WinExist("ahk_id " newHwnd))
         return false
-    if Chrome_WaitUntilWindowedForDetach(newHwnd)
+    if (!WM_WindowIsF11Fullscreen(newHwnd))
         return true
-    if (WM_WindowIsF11Fullscreen(newHwnd))
-        WM_ExitF11FullscreenForHwnd(newHwnd, CHROME_DETACH_F11_SETTLE_MS)
-    return Chrome_WaitUntilWindowedForDetach(newHwnd)
+    WM_ExitF11FullscreenForHwnd(newHwnd, CHROME_DETACH_F11_SETTLE_MS)
+    return !WM_WindowIsF11Fullscreen(newHwnd)
+}
+
+Chrome_FocusDetachedWindow(newHwnd) {
+    if (!newHwnd || !WinExist("ahk_id " newHwnd))
+        return false
+    loop 5 {
+        try WinActivate("ahk_id " newHwnd)
+        catch {
+            return false
+        }
+        if WinWaitActive("ahk_id " newHwnd, , 0.8)
+            return true
+        Sleep 100
+    }
+    focused := WinActive("ahk_id " newHwnd)
+    ; #region agent log
+    Chrome_DetachDebugLog("Utils.ahk:Chrome_FocusDetachedWindow", "done", "G", Map("newHwnd", newHwnd, "focused",
+        focused, "activeHwnd", WinExist("A")))
+    ; #endregion
+    return focused
 }
 
 Chrome_RestoreF11OnOriginal(originalHwnd) {
@@ -484,19 +509,7 @@ Chrome_RestoreF11OnOriginal(originalHwnd) {
 }
 
 Chrome_ActivateDetachedWindow(newHwnd, originalHwnd, wasF11) {
-    if (!newHwnd || !WinExist("ahk_id " newHwnd))
-        return
-    try WinActivate("ahk_id " newHwnd)
-    catch {
-    }
-    if (!wasF11)
-        return
-    if (WM_WindowIsF11Fullscreen(newHwnd)) {
-        WM_ExitF11FullscreenForHwnd(newHwnd, CHROME_DETACH_F11_SETTLE_MS)
-        Chrome_WaitUntilWindowedForDetach(newHwnd)
-    }
-    if (WinExist("ahk_id " originalHwnd) && !WM_WindowIsF11Fullscreen(originalHwnd))
-        Chrome_RestoreF11OnOriginal(originalHwnd)
+    Chrome_FocusDetachedWindow(newHwnd)
 }
 
 Chrome_WaitForNewWindow(existingHwnds, timeoutMs := 0) {
@@ -537,21 +550,221 @@ Chrome_EnsureBrowserForeground(hwnd) {
 
 Chrome_SendTabContextMenuKeys() {
     Send "{F6}"
+    Sleep 50
     Send "{F6}"
-    Send "{AppsKey}"
+    Sleep 50
+    Send "+{F10}"
 }
 
-; PT-BR submenu: Mover guia para outra janela -> Nova janela
-Chrome_ActivateDetachViaPtKeyboard() {
+Chrome_OpenActiveTabContextMenuViaUIA(hwnd) {
+    try {
+        uia := UIA_Browser("ahk_id " hwnd)
+        uia.GetCurrentMainPaneElement()
+        tab := uia.GetTab("")
+        if (!IsObject(tab) || !tab)
+            return false
+        tab.Click("right")
+        return true
+    } catch as err {
+        ; #region agent log
+        Chrome_DetachDebugLog("Utils.ahk:Chrome_OpenActiveTabContextMenuViaUIA", "failed", "H6", Map("hwnd", hwnd,
+            "err", err.Message))
+        ; #endregion
+        return false
+    }
+}
+
+Chrome_FocusPageContent(hwnd) {
+    try {
+        for ctrlName in ["Chrome_RenderWidgetHostHWND1", "Chrome_RenderWidgetHostHWND"] {
+            try {
+                rw := ControlGetHwnd(ctrlName, "ahk_id " hwnd)
+                if (rw) {
+                    ControlFocus ctrlName, "ahk_id " hwnd
+                    return true
+                }
+            } catch {
+            }
+        }
+    } catch {
+    }
+    return false
+}
+
+; Dismiss overlays, focus page content, then F6×2 opens tab context menu (page → toolbar → tab strip).
+Chrome_NormalizeFocusToPage(hwnd) {
+    if !Chrome_EnsureBrowserForeground(hwnd)
+        return false
+    ClipAngel_ReleaseChordModifiersForSend()
+    Send "{Escape}"
+    Send "{Escape}"
+    Send "{Escape}"
+    Chrome_FocusPageContent(hwnd)
+    return WM_EnsureForegroundForSend(hwnd, 1000)
+}
+
+Chrome_OpenActiveTabContextMenu(hwnd) {
+    if !Chrome_EnsureBrowserForeground(hwnd)
+        return false
+    ClipAngel_ReleaseChordModifiersForSend()
+    Send "{Escape}"
+    Send "{Escape}"
+    if Chrome_OpenActiveTabContextMenuViaUIA(hwnd) {
+        ; #region agent log
+        Chrome_DetachDebugLog("Utils.ahk:Chrome_OpenActiveTabContextMenu", "uia_right_click", "H6", Map("hwnd", hwnd,
+            "activeHwnd", WinExist("A")))
+        ; #endregion
+        return true
+    }
+    if !Chrome_NormalizeFocusToPage(hwnd)
+        return false
+    ClipAngel_ReleaseChordModifiersForSend()
+    Chrome_SendTabContextMenuKeys()
+    ; #region agent log
+    Chrome_DetachDebugLog("Utils.ahk:Chrome_OpenActiveTabContextMenu", "f6_shiftf10_fallback", "H6", Map("hwnd", hwnd,
+        "activeHwnd", WinExist("A")))
+    ; #endregion
+    return true
+}
+
+Chrome_DetachCountTabs(hwnd) {
+    if !(hwnd is Integer && hwnd > 0)
+        return -1
+    try {
+        uia := UIA_Browser("ahk_id " hwnd)
+        return uia.GetAllTabs().Length
+    } catch {
+        return -1
+    }
+}
+
+Chrome_ContextMenuFindItem(names, timeoutMs := 800) {
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        for name in names {
+            try {
+                el := UIA.GetRootElement().FindElement({ Type: UIA.Type.MenuItem, Name: name, matchMode: 3 },
+                UIA.TreeScope.Subtree)
+                if el
+                    return el
+            } catch {
+            }
+            try {
+                chromeHwnd := WinExist("ahk_exe chrome.exe")
+                if chromeHwnd {
+                    el := UIA.ElementFromHandle(chromeHwnd).FindElement({ Type: UIA.Type.MenuItem, Name: name,
+                        matchMode: 3 }, UIA.TreeScope.Subtree)
+                    if el
+                        return el
+                }
+            } catch {
+            }
+        }
+        Sleep 40
+    }
+    return 0
+}
+
+; UIA: expand parent submenu and Invoke "Nova janela" — avoids keyboard 'n' (= Nova guia on main menu).
+Chrome_ActivateDetachViaPtUIA(hwnd) {
+    parentNames := ["Mover guia para outra janela", "Move tab to another window"]
+    childNames := ["Nova janela", "New window"]
+    tabsBefore := Chrome_DetachCountTabs(hwnd)
+
+    parent := Chrome_ContextMenuFindItem(parentNames, 700)
+    if !parent {
+        ; #region agent log
+        Chrome_DetachDebugLog("Utils.ahk:Chrome_ActivateDetachViaPtUIA", "parent_not_found", "H9", Map("hwnd", hwnd,
+            "tabsBefore", tabsBefore))
+        ; #endregion
+        return false
+    }
+
+    try StandardLoadingBar_Update("📋 Menu: Mover guia para outra janela…", BANNER_ACCENT_INTERMEDIATE)
+    expanded := false
+    try {
+        if parent.GetPropertyValue(UIA.Property.IsExpandCollapsePatternAvailable) {
+            ec := parent.ExpandCollapsePattern
+            if (ec.ExpandCollapseState = UIA.ExpandCollapseState.Collapsed)
+                ec.Expand()
+            expanded := true
+        }
+    } catch {
+    }
+    if (!expanded) {
+        try parent.SetFocus()
+        catch {
+            try parent.Click()
+        }
+        Sleep CHROME_DETACH_MENU_STEP_MS
+        Send "{Right}"
+        Sleep CHROME_DETACH_MENU_STEP_MS
+    } else {
+        Sleep CHROME_DETACH_MENU_STEP_MS
+    }
+
+    child := Chrome_ContextMenuFindItem(childNames, 900)
+    if !child {
+        ; #region agent log
+        Chrome_DetachDebugLog("Utils.ahk:Chrome_ActivateDetachViaPtUIA", "child_not_found", "H9", Map("hwnd", hwnd,
+            "tabsBefore", tabsBefore, "tabsNow", Chrome_DetachCountTabs(hwnd)))
+        ; #endregion
+        return false
+    }
+
+    try StandardLoadingBar_Update("📋 Menu: Nova janela…", BANNER_ACCENT_INTERMEDIATE)
+    try child.Invoke()
+    catch {
+        child.Click()
+    }
+    ; #region agent log
+    Chrome_DetachDebugLog("Utils.ahk:Chrome_ActivateDetachViaPtUIA", "invoked", "H9", Map("hwnd", hwnd, "tabsBefore",
+        tabsBefore, "tabsAfter", Chrome_DetachCountTabs(hwnd), "childName", child.Name))
+    ; #endregion
+    return true
+}
+
+; PT-BR keyboard fallback: m highlights parent; Enter opens submenu; Enter activates Nova janela. Never send 'n' (Nova guia).
+Chrome_ActivateDetachViaPtKeyboard(hwnd := 0) {
+    step := CHROME_DETACH_MENU_STEP_MS
+    tabsBefore := hwnd ? Chrome_DetachCountTabs(hwnd) : -1
+
+    try StandardLoadingBar_Update("📋 Menu: Mover guia para outra janela…", BANNER_ACCENT_INTERMEDIATE)
     Send "m"
-    Send "{Right}"
-    Send "n"
+    Sleep step
+    ; #region agent log
+    Chrome_DetachDebugLog("Utils.ahk:Chrome_ActivateDetachViaPtKeyboard", "after_m", "H7", Map("tabs", hwnd ?
+        Chrome_DetachCountTabs(hwnd) : -1))
+    ; #endregion
+
+    try StandardLoadingBar_Update("📋 Menu: abrindo submenu…", BANNER_ACCENT_INTERMEDIATE)
     Send "{Enter}"
+    Sleep step
+    ; #region agent log
+    Chrome_DetachDebugLog("Utils.ahk:Chrome_ActivateDetachViaPtKeyboard", "after_enter_submenu", "H7", Map("tabs", hwnd ?
+        Chrome_DetachCountTabs(hwnd) : -1))
+    ; #endregion
+
+    try StandardLoadingBar_Update("📋 Menu: Nova janela…", BANNER_ACCENT_INTERMEDIATE)
+    Send "{Enter}"
+    Sleep step
+    ; #region agent log
+    Chrome_DetachDebugLog("Utils.ahk:Chrome_ActivateDetachViaPtKeyboard", "after_enter_nova", "H7", Map("stepMs", step,
+        "tabsBefore", tabsBefore, "tabsAfter", hwnd ? Chrome_DetachCountTabs(hwnd) : -1))
+    ; #endregion
 }
 
 ; EN single-item menu fallback
-Chrome_ActivateDetachViaEnKeyboard() {
+Chrome_ActivateDetachViaEnKeyboard(hwnd := 0) {
+    step := CHROME_DETACH_MENU_STEP_MS
+    if (hwnd)
+        Chrome_OpenActiveTabContextMenu(hwnd)
+    else
+        Chrome_SendTabContextMenuKeys()
+    Sleep step
+    try StandardLoadingBar_Update("📋 Menu: Move tab to new window…", BANNER_ACCENT_INTERMEDIATE)
     Send "m"
+    Sleep step
     Send "{Enter}"
 }
 
@@ -571,12 +784,19 @@ Chrome_DetachActiveTabToNewWindow_Legacy() {
 
 Chrome_PrepareWindowForTabDetach(hwnd, &wasF11) {
     wasF11 := WM_WindowIsF11Fullscreen(hwnd)
-    if (!wasF11)
-        return Chrome_WaitUntilWindowedForDetach(hwnd)
-    StandardLoadingBar_Update("🔄 Exiting F11 fullscreen…", BANNER_ACCENT_INTERMEDIATE)
-    if !Chrome_ExitF11ForDetach(hwnd)
-        return false
-    return Chrome_WaitUntilWindowedForDetach(hwnd)
+    ; #region agent log
+    Chrome_DetachDebugLog("Utils.ahk:Chrome_PrepareWindowForTabDetach", "entry", "E,F", Map("hwnd", hwnd,
+        "wasF11", wasF11, "reject", WM_WindowIsF11FullscreenRejectReason(hwnd)))
+    ; #endregion
+    if (wasF11) {
+        StandardLoadingBar_Update("🔄 Exiting F11 fullscreen…", BANNER_ACCENT_INTERMEDIATE)
+        try StandardLoadingBar_Hide(0)
+        catch {
+        }
+        if !Chrome_ExitF11ForDetach(hwnd)
+            return false
+    }
+    return Chrome_WaitUntilNotF11ForDetach(hwnd)
 }
 
 Chrome_FinishTabDetach(originalHwnd, newHwnd, wasF11) {
@@ -585,29 +805,19 @@ Chrome_FinishTabDetach(originalHwnd, newHwnd, wasF11) {
     }
 
     if (!wasF11) {
-        Chrome_ActivateDetachedWindow(newHwnd, originalHwnd, false)
+        Chrome_FocusDetachedWindow(newHwnd)
         return
     }
 
     if (!WinExist("ahk_id " originalHwnd))
         return
 
-    ; Step 1: new window must be windowed before F11 is restored on the original.
-    newWindowed := true
-    if (newHwnd) {
-        newWindowed := Chrome_EnsureNewWindowIsWindowed(newHwnd)
-        ; #region agent log
-        Chrome_DetachDebugLog("Utils.ahk:Chrome_FinishTabDetach", "new_windowed", "C", Map("newHwnd", newHwnd,
-            "newWindowed", newWindowed, "newIsF11", WM_WindowIsF11Fullscreen(newHwnd), "newReject",
-            WM_WindowIsF11FullscreenRejectReason(newHwnd)))
-        ; #endregion
-    }
+    if (newHwnd)
+        Chrome_EnsureNewWindowIsWindowed(newHwnd)
 
-    ; Step 2: restore F11 on the original window only.
     Chrome_RestoreF11OnOriginal(originalHwnd)
 
-    ; Step 3: focus detached tab; never leave F11 on the new window.
-    Chrome_ActivateDetachedWindow(newHwnd, originalHwnd, true)
+    Chrome_FocusDetachedWindow(newHwnd)
     ; #region agent log
     Chrome_DetachDebugLog("Utils.ahk:Chrome_FinishTabDetach", "final_state", "C,D", Map("originalHwnd",
         originalHwnd, "originalIsF11", WM_WindowIsF11Fullscreen(originalHwnd), "newHwnd", newHwnd, "newIsF11",
@@ -615,19 +825,65 @@ Chrome_FinishTabDetach(originalHwnd, newHwnd, wasF11) {
     ; #endregion
 }
 
-Chrome_RunDetachMenuSequence() {
-    Chrome_SendTabContextMenuKeys()
-    Chrome_ActivateDetachViaPtKeyboard()
+Chrome_RunDetachMenuSequence(hwnd) {
+    try StandardLoadingBar_Hide(0)
+    catch {
+    }
+    if !Chrome_OpenActiveTabContextMenu(hwnd) {
+        ; #region agent log
+        Chrome_DetachDebugLog("Utils.ahk:Chrome_RunDetachMenuSequence", "menu_open_failed", "H4", Map("hwnd", hwnd))
+        ; #endregion
+        return false
+    }
+    Sleep CHROME_DETACH_MENU_STEP_MS
+    tabsBefore := Chrome_DetachCountTabs(hwnd)
+    ; #region agent log
+    Chrome_DetachDebugLog("Utils.ahk:Chrome_RunDetachMenuSequence", "menu_open", "H4", Map("hwnd", hwnd,
+        "activeHwnd", WinExist("A"), "tabsBefore", tabsBefore))
+    ; #endregion
+
+    if Chrome_ActivateDetachViaPtUIA(hwnd)
+        return true
+
+    Chrome_ActivateDetachViaPtKeyboard(hwnd)
+    tabsAfter := Chrome_DetachCountTabs(hwnd)
+    if (tabsAfter > tabsBefore && tabsBefore >= 0) {
+        ; #region agent log
+        Chrome_DetachDebugLog("Utils.ahk:Chrome_RunDetachMenuSequence", "nova_guia_opened", "H7", Map("hwnd", hwnd,
+            "tabsBefore", tabsBefore, "tabsAfter", tabsAfter))
+        ; #endregion
+        ClipAngel_ReleaseChordModifiersForSend()
+        Send "{Ctrl down}w{Ctrl up}"
+        return false
+    }
+    return true
 }
 
 Chrome_DetachActiveTabToNewWindow() {
-    hwnd := WinExist("A")
-    if !(hwnd is Integer && hwnd > 0)
+    global g_ChromeDetachBusy, g_ChromeDetachRunId
+    if (g_ChromeDetachBusy) {
+        ; #region agent log
+        Chrome_DetachDebugLog("Utils.ahk:Chrome_DetachActiveTabToNewWindow", "reentrant_skip", "H5", Map(
+            "runId", g_ChromeDetachRunId))
+        ; #endregion
         return false
+    }
+    g_ChromeDetachBusy := true
+    g_ChromeDetachRunId += 1
+    runId := g_ChromeDetachRunId
+
+    hwnd := WinExist("A")
+    if !(hwnd is Integer && hwnd > 0) {
+        g_ChromeDetachBusy := false
+        return false
+    }
     try {
-        if (WinGetProcessName("ahk_id " hwnd) != "chrome.exe")
+        if (WinGetProcessName("ahk_id " hwnd) != "chrome.exe") {
+            g_ChromeDetachBusy := false
             return false
+        }
     } catch {
+        g_ChromeDetachBusy := false
         return false
     }
 
@@ -642,21 +898,21 @@ Chrome_DetachActiveTabToNewWindow() {
             return false
         if !Chrome_PrepareWindowForTabDetach(hwnd, &wasF11) {
             ; #region agent log
-            Chrome_DetachDebugLog("Utils.ahk:Chrome_DetachActiveTabToNewWindow", "prepare_failed", "A,E", Map(
-                "hwnd", hwnd, "wasF11", wasF11))
+            Chrome_DetachDebugLog("Utils.ahk:Chrome_DetachActiveTabToNewWindow", "prepare_failed", "H1,H3", Map(
+                "hwnd", hwnd, "wasF11", wasF11, "isF11", WM_WindowIsF11Fullscreen(hwnd)))
             ; #endregion
             return false
         }
-        if !Chrome_WaitUntilWindowedForDetach(hwnd) {
+        if (WM_WindowIsF11Fullscreen(hwnd)) {
             ; #region agent log
-            Chrome_DetachDebugLog("Utils.ahk:Chrome_DetachActiveTabToNewWindow", "windowed_gate_failed", "A,B",
-                Map("hwnd", hwnd, "wasF11", wasF11))
+            Chrome_DetachDebugLog("Utils.ahk:Chrome_DetachActiveTabToNewWindow", "still_f11_before_menu", "H3", Map(
+                "hwnd", hwnd))
             ; #endregion
             return false
         }
         ; #region agent log
-        Chrome_DetachDebugLog("Utils.ahk:Chrome_DetachActiveTabToNewWindow", "detach_start", "E", Map("hwnd", hwnd,
-            "wasF11", wasF11))
+        Chrome_DetachDebugLog("Utils.ahk:Chrome_DetachActiveTabToNewWindow", "detach_start", "H2", Map("hwnd", hwnd,
+            "wasF11", wasF11, "runId", runId))
         ; #endregion
 
         if (!CHROME_DETACH_USE_UIA) {
@@ -682,7 +938,8 @@ Chrome_DetachActiveTabToNewWindow() {
         } catch {
         }
 
-        Chrome_RunDetachMenuSequence()
+        tabsBeforeDetach := Chrome_DetachCountTabs(hwnd)
+        Chrome_RunDetachMenuSequence(hwnd)
 
         newHwnd := Chrome_WaitForNewWindow(existingHwnds, CHROME_DETACH_VERIFY_TIMEOUT_MS)
         if (newHwnd) {
@@ -690,7 +947,24 @@ Chrome_DetachActiveTabToNewWindow() {
             return true
         }
 
-        Chrome_ActivateDetachViaEnKeyboard()
+        tabsAfterFail := Chrome_DetachCountTabs(hwnd)
+        if (tabsAfterFail > tabsBeforeDetach && tabsBeforeDetach >= 0) {
+            ; #region agent log
+            Chrome_DetachDebugLog("Utils.ahk:Chrome_DetachActiveTabToNewWindow", "skip_en_fallback_nova_guia", "H8",
+                Map("hwnd", hwnd, "tabsBefore", tabsBeforeDetach, "tabsAfter", tabsAfterFail))
+            ; #endregion
+            return false
+        }
+
+        ; #region agent log
+        Chrome_DetachDebugLog("Utils.ahk:Chrome_DetachActiveTabToNewWindow", "pt_path_failed", "H2", Map("hwnd", hwnd,
+            "activeHwnd", WinExist("A")))
+        ; #endregion
+        ; #region agent log
+        Chrome_DetachDebugLog("Utils.ahk:Chrome_DetachActiveTabToNewWindow", "en_fallback_start", "H8", Map("hwnd",
+            hwnd, "runId", runId))
+        ; #endregion
+        Chrome_ActivateDetachViaEnKeyboard(hwnd)
         newHwnd := Chrome_WaitForNewWindow(existingHwnds, 1200)
         if (newHwnd) {
             success := true
@@ -700,7 +974,7 @@ Chrome_DetachActiveTabToNewWindow() {
     } finally {
         ; #region agent log
         Chrome_DetachDebugLog("Utils.ahk:Chrome_DetachActiveTabToNewWindow", "finally", "C,D,E", Map("success",
-            success, "wasF11", wasF11, "newHwnd", newHwnd, "originalHwnd", hwnd))
+            success, "wasF11", wasF11, "newHwnd", newHwnd, "originalHwnd", hwnd, "runId", runId))
         ; #endregion
         if (wasF11) {
             try StandardLoadingBar_Update("🔄 Restoring F11 fullscreen…", BANNER_ACCENT_INTERMEDIATE)
@@ -708,11 +982,12 @@ Chrome_DetachActiveTabToNewWindow() {
             if (!success && WinExist("ahk_id " hwnd) && !WM_WindowIsF11Fullscreen(hwnd))
                 Chrome_RestoreF11OnOriginal(hwnd)
         } else if (success && newHwnd) {
-            try WinActivate("ahk_id " newHwnd)
+            Chrome_FocusDetachedWindow(newHwnd)
         }
         StandardLoadingBar_Hide(0)
         if (!success)
             try Send "{Escape}"
+        g_ChromeDetachBusy := false
     }
 }
 
