@@ -1033,7 +1033,7 @@ QuickUpdateScripts() {
         ; Stagger launches so earlier scripts begin loading before the next; AppLaunchers stays last with /Updated.
         ; Short pause after all Start-Process so audio sessions can register before the relaunched AppLaunchers runs its volume schedule.
         ps .=
-            "foreach ($s in $scripts) { if ($s -eq $anchorPath) { Start-Process -FilePath $s -ArgumentList '/Updated','/StartPersistentAllowWatcher' | Out-Null } else { Start-Process -FilePath $s | Out-Null }; Start-Sleep -Milliseconds 450 }; "
+            "foreach ($s in $scripts) { if ($s -eq $anchorPath) { Start-Process -FilePath $s -ArgumentList '/Updated' | Out-Null } else { Start-Process -FilePath $s | Out-Null }; Start-Sleep -Milliseconds 450 }; "
         ps .= "Start-Sleep -Seconds 2; "
 
         ; Execute asynchronously, then terminate this AHK instance immediately.
@@ -2928,7 +2928,6 @@ VSCode_SubmitChat(targetHwnd) {
             if (sendButton && VSCode_IsChatSendReady(targetHwnd)) {
                 try {
                     sendButton.Click()
-                    VSCode_TryStartAibAllowWatcher(targetHwnd)
                     return true
                 } catch {
                 }
@@ -2936,7 +2935,6 @@ VSCode_SubmitChat(targetHwnd) {
                     sendButton.SetFocus()
                     Sleep 40
                     SendInput "{Enter}"
-                    VSCode_TryStartAibAllowWatcher(targetHwnd)
                     return true
                 } catch {
                 }
@@ -2945,20 +2943,7 @@ VSCode_SubmitChat(targetHwnd) {
         }
     }
     SendInput "{Enter}"
-    VSCode_TryStartAibAllowWatcher(targetHwnd)
     return true
-}
-
-VSCode_TryStartAibAllowWatcher(targetHwnd) {
-    try {
-        fn := Func("AIB_StartAllowWatcher_Bridge")
-        if (!IsObject(fn) || !HasMethod(fn, "Call")) {
-            return
-        }
-
-        fn.Call("chat_submit", targetHwnd)
-    } catch Error as e {
-    }
 }
 
 ; Activate VS Code window and focus chat input. Returns true on success.

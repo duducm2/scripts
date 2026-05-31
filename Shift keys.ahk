@@ -12,7 +12,7 @@
      *   Ctrl+Alt+Win+V: RESERVED — maximize active window (handled in WindowManagement.ahk;
      *   used by ZMK hold on minimize/close key). Do not bind another global ^!#v action here.
      *   Ctrl+Alt+Win+N: TEMPORARY — M365 Copilot auto-continue loop (toggle; remove block at file end)
-     *   Numbers: (all numbers 0-9 are used)
+     *   Numbers: 9 is free; 0-8 are used
      *   Symbols: ; ' [ ] \ | ` ~ @ # $ % ^ & * ( ) - _ = + { } : " < > ? /
      *
      *   Note: Some combinations use Ctrl+Alt+Shift+Arrow keys for extended mouse movement
@@ -1783,7 +1783,6 @@ Shift+CAW: A/S/D/F/Q/W/E/R (+B debug, +1/Z/G fallbacks) used for window manageme
 [Win+Alt+Shift+←] > Show square selector (left direction)
 [Win+Alt+Shift+↓] > Show square selector (down direction)
 [Win+Alt+Shift+↑] > Show square selector (up direction)
-[Win+Alt+Shift+9 (hold)] > VS Code/Cursor chat: click More Actions (next to Allow)
 [Win+Alt+Shift+.] > Clip Angel (copy, paste, and quit)
 
 === COMMAND PALETTE ===
