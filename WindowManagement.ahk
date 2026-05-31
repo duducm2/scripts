@@ -1045,8 +1045,10 @@ WM_TileBackgroundWindowsPerMonitor(maxPerMon := WM_TILE_BG_MAX_PER_MON, foreHwnd
     WM_BackgroundTitleExcludes_Init()
     eligible := WM_CollectTileEligibleHwnds(foreHwndOverride)
     if (eligible.total = 0) {
-        if (eligible.hidden = 0)
+        if (eligible.hidden = 0) {
+            WM_PlayNoWindowSound()
             return { ok: false, message: "ℹ️ No tile-eligible windows (hidden or visible)." }
+        }
         return { ok: false, message: WM_FormatBackgroundCollectEmptyMessage() }
     }
     maxSlots := MonitorGetCount() * maxPerMon
@@ -1693,7 +1695,12 @@ WM_BackgroundEnumerateHiddenHwnds() {
     return hwnds
 }
 
+WM_PlayNoWindowSound() {
+    try ScriptSoundPlay(A_ScriptDir . "\sounds\no-window.wav")
+}
+
 WM_FormatBackgroundCollectEmptyMessage() {
+    WM_PlayNoWindowSound()
     global g_WM_LastBackgroundCollectStats
     st := g_WM_LastBackgroundCollectStats
     if (!IsObject(st) || st.Count = 0)
