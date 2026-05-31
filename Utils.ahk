@@ -369,39 +369,7 @@ global CHROME_DETACH_MENU_PARENT_NAMES := ["Mover guia para outra janela", "Move
     "Move tab to another window"]
 global CHROME_DETACH_MENU_PARENT_SUBSTR := ["Mover guia", "Move tab to another", "Move tab to a new"]
 global CHROME_DETACH_MENU_CHILD_NAMES := ["Nova janela", "New window"]
-global CHROME_DETACH_MENU_OPEN_SIGNATURES := ["Mover guia", "Move tab", "Nova guia", "New tab", "Recarregar",
-    "Reload", "Duplicar", "Duplicate"]
 global CHROME_DETACH_MENU_EN_NAMES := ["Move tab to new window", "Mover guia para nova janela"]
-
-; #region agent log
-Chrome_DetachDebugLog(location, message, hypothesisId := "", data := "") {
-    try {
-        dataPart := "{}"
-        if (IsObject(data)) {
-            parts := []
-            for k, v in data {
-                if (v is String)
-                    vk := '"' StrReplace(StrReplace(String(v), "\", "\\"), '"', '\"') '"'
-                else if (v is Integer || v is Float)
-                    vk := v
-                else
-                    vk := '"' StrReplace(StrReplace(String(v), "\", "\\"), '"', '\"') '"'
-                parts.Push('"' StrReplace(StrReplace(String(k), "\", "\\"), '"', '\"') '":' vk)
-            }
-            joined := ""
-            for i, p in parts
-                joined .= (i = 1 ? "" : ",") p
-            dataPart := "{" joined "}"
-        }
-        FileAppend('{"sessionId":"d15909","timestamp":' . A_TickCount . ',"location":"' .
-            StrReplace(StrReplace(String(location), "\", "\\"), '"', '\"') . '","message":"' .
-            StrReplace(StrReplace(String(message), "\", "\\"), '"', '\"') . '","hypothesisId":"' .
-            StrReplace(StrReplace(String(hypothesisId), "\", "\\"), '"', '\"') . '","data":' . dataPart . '}`n',
-            A_ScriptDir "\.cursor\debug-d15909.log")
-    } catch {
-    }
-}
-; #endregion
 
 Chrome_ContextMenuNameMatches(el, names, substrs := "") {
     try name := el.Name
@@ -468,45 +436,6 @@ Chrome_ContextMenuCollectItems(chromeHwnd := 0) {
     } catch {
     }
     return items
-}
-
-Chrome_ContextMenuSampleNames(chromeHwnd := 0, maxCount := 6) {
-    names := []
-    for el in Chrome_ContextMenuCollectItems(chromeHwnd) {
-        try name := el.Name
-        catch {
-            name := ""
-        }
-        if (name != "")
-            names.Push(name)
-        if (names.Length >= maxCount)
-            break
-    }
-    joined := ""
-    for i, n in names
-        joined .= (i = 1 ? "" : "|") n
-    return joined
-}
-
-; Fast signal that tab context menu is on screen (any known item or #32768 popup).
-Chrome_ContextMenuWaitOpen(chromeHwnd := 0, timeoutMs := 350) {
-    deadline := A_TickCount + timeoutMs
-    while (A_TickCount < deadline) {
-        for el in Chrome_ContextMenuCollectItems(chromeHwnd) {
-            try name := el.Name
-            catch {
-                continue
-            }
-            if (name = "")
-                continue
-            for sig in CHROME_DETACH_MENU_OPEN_SIGNATURES {
-                if InStr(name, sig, false)
-                    return true
-            }
-        }
-        Sleep CHROME_DETACH_MENU_POLL_MS
-    }
-    return false
 }
 
 ; Bounded poll: returns MenuItem when any name/substr matches.
@@ -897,51 +826,22 @@ Chrome_FinishTabDetach(originalHwnd, newHwnd, wasF11) {
 Chrome_RunDetachMenuSequence(hwnd) {
     try StandardLoadingBar_Update("📋 Opening tab context menu…", BANNER_ACCENT_INTERMEDIATE)
     loop 2 {
-        attempt := A_Index
         if !Chrome_OpenActiveTabContextMenu(hwnd) {
-            ; #region agent log
-            Chrome_DetachDebugLog("Utils.ahk:Chrome_RunDetachMenuSequence", "menu_open_failed", "H1", Map("hwnd",
-                hwnd, "attempt", attempt))
-            ; #endregion
             Chrome_ContextMenuDismiss()
             continue
         }
 
-        menuOpen := Chrome_ContextMenuWaitOpen(hwnd, 350)
-        sampleNames := Chrome_ContextMenuSampleNames(hwnd)
-        ; #region agent log
-        Chrome_DetachDebugLog("Utils.ahk:Chrome_RunDetachMenuSequence", "menu_opened", "H1,H2", Map("hwnd", hwnd,
-            "attempt", attempt, "uiaOpen", menuOpen, "sampleNames", sampleNames))
-        ; #endregion
-
         try StandardLoadingBar_Update("📋 Menu: detach active tab…", BANNER_ACCENT_INTERMEDIATE)
 
-        if Chrome_ActivateDetachViaPtKeyboard(hwnd) {
-            ; #region agent log
-            Chrome_DetachDebugLog("Utils.ahk:Chrome_RunDetachMenuSequence", "keyboard_ok", "H3", Map("hwnd", hwnd,
-                "attempt", attempt))
-            ; #endregion
+        if Chrome_ActivateDetachViaPtKeyboard(hwnd)
             return true
-        }
 
         parent := Chrome_ContextMenuWaitFor(CHROME_DETACH_MENU_PARENT_NAMES, hwnd, CHROME_DETACH_MENU_PHASE_MS)
-        if parent && Chrome_ActivateDetachViaPtUIA(hwnd, parent) {
-            ; #region agent log
-            Chrome_DetachDebugLog("Utils.ahk:Chrome_RunDetachMenuSequence", "uia_ok", "H2", Map("hwnd", hwnd,
-                "attempt", attempt, "name", parent.Name))
-            ; #endregion
+        if parent && Chrome_ActivateDetachViaPtUIA(hwnd, parent)
             return true
-        }
 
-        ; #region agent log
-        Chrome_DetachDebugLog("Utils.ahk:Chrome_RunDetachMenuSequence", "attempt_failed", "H1", Map("hwnd", hwnd,
-            "attempt", attempt, "sampleNames", Chrome_ContextMenuSampleNames(hwnd)))
-        ; #endregion
         Chrome_ContextMenuDismiss()
     }
-    ; #region agent log
-    Chrome_DetachDebugLog("Utils.ahk:Chrome_RunDetachMenuSequence", "all_attempts_failed", "H1", Map("hwnd", hwnd))
-    ; #endregion
     return false
 }
 
@@ -1004,20 +904,11 @@ Chrome_DetachActiveTabToNewWindow() {
         }
 
         tabsBeforeDetach := Chrome_DetachCountTabs(hwnd)
-        if !Chrome_RunDetachMenuSequence(hwnd) {
-            ; #region agent log
-            Chrome_DetachDebugLog("Utils.ahk:Chrome_DetachActiveTabToNewWindow", "menu_sequence_failed", "H1",
-                Map("hwnd", hwnd))
-            ; #endregion
-        }
+        Chrome_RunDetachMenuSequence(hwnd)
 
         try StandardLoadingBar_Update("⏳ Waiting for new window…", BANNER_ACCENT_INTERMEDIATE)
         newHwnd := Chrome_WaitForNewWindow(existingHwnds, CHROME_DETACH_VERIFY_TIMEOUT_MS)
         if (newHwnd) {
-            ; #region agent log
-            Chrome_DetachDebugLog("Utils.ahk:Chrome_DetachActiveTabToNewWindow", "new_window", "H4", Map("hwnd", hwnd,
-                "newHwnd", newHwnd))
-            ; #endregion
             success := true
             return true
         }
