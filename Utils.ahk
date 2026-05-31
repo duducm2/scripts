@@ -789,21 +789,37 @@ Chrome_PrepareWindowForTabDetach(hwnd, &wasF11) {
         "wasF11", wasF11, "reject", WM_WindowIsF11FullscreenRejectReason(hwnd)))
     ; #endregion
     if (wasF11) {
-        StandardLoadingBar_Update("🔄 Exiting F11 fullscreen…", BANNER_ACCENT_INTERMEDIATE)
-        try StandardLoadingBar_Hide(0)
-        catch {
-        }
+        try StandardLoadingBar_Update("🔄 Exiting F11 fullscreen…", BANNER_ACCENT_INTERMEDIATE)
         if !Chrome_ExitF11ForDetach(hwnd)
             return false
+        try StandardLoadingBar_Update("⏳ Detaching tab to new window…", BANNER_ACCENT_INTERMEDIATE)
     }
     return Chrome_WaitUntilNotF11ForDetach(hwnd)
 }
 
-Chrome_FinishTabDetach(originalHwnd, newHwnd, wasF11) {
-    try StandardLoadingBar_Hide(0)
-    catch {
-    }
+; Reliable Nova guia signal: baseline count must be known (>=1) and exactly +1 tab after menu keys.
+Chrome_DetachNovaGuiaLikely(tabsBefore, tabsAfter) {
+    return (tabsBefore >= 1 && tabsAfter = tabsBefore + 1)
+}
 
+; Close accidental Nova guia only when detach did NOT create a new window.
+Chrome_DetachCloseSpuriousNovaGuia(originalHwnd, tabsBefore, tabsAfter, existingHwnds) {
+    if !Chrome_DetachNovaGuiaLikely(tabsBefore, tabsAfter)
+        return false
+    if Chrome_WaitForNewWindow(existingHwnds, 350)
+        return false
+    if !Chrome_EnsureBrowserForeground(originalHwnd)
+        return false
+    ClipAngel_ReleaseChordModifiersForSend()
+    Send "{Ctrl down}w{Ctrl up}"
+    ; #region agent log
+    Chrome_DetachDebugLog("Utils.ahk:Chrome_DetachCloseSpuriousNovaGuia", "ctrl_w_sent", "H10", Map("hwnd",
+        originalHwnd, "tabsBefore", tabsBefore, "tabsAfter", tabsAfter, "activeHwnd", WinExist("A")))
+    ; #endregion
+    return true
+}
+
+Chrome_FinishTabDetach(originalHwnd, newHwnd, wasF11) {
     if (!wasF11) {
         Chrome_FocusDetachedWindow(newHwnd)
         return
@@ -826,9 +842,7 @@ Chrome_FinishTabDetach(originalHwnd, newHwnd, wasF11) {
 }
 
 Chrome_RunDetachMenuSequence(hwnd) {
-    try StandardLoadingBar_Hide(0)
-    catch {
-    }
+    try StandardLoadingBar_Update("📋 Opening tab context menu…", BANNER_ACCENT_INTERMEDIATE)
     if !Chrome_OpenActiveTabContextMenu(hwnd) {
         ; #region agent log
         Chrome_DetachDebugLog("Utils.ahk:Chrome_RunDetachMenuSequence", "menu_open_failed", "H4", Map("hwnd", hwnd))
@@ -842,19 +856,17 @@ Chrome_RunDetachMenuSequence(hwnd) {
         "activeHwnd", WinExist("A"), "tabsBefore", tabsBefore))
     ; #endregion
 
+    try StandardLoadingBar_Update("📋 Menu: detach active tab…", BANNER_ACCENT_INTERMEDIATE)
     if Chrome_ActivateDetachViaPtUIA(hwnd)
         return true
 
     Chrome_ActivateDetachViaPtKeyboard(hwnd)
     tabsAfter := Chrome_DetachCountTabs(hwnd)
-    if (tabsAfter > tabsBefore && tabsBefore >= 0) {
+    if Chrome_DetachNovaGuiaLikely(tabsBefore, tabsAfter) {
         ; #region agent log
-        Chrome_DetachDebugLog("Utils.ahk:Chrome_RunDetachMenuSequence", "nova_guia_opened", "H7", Map("hwnd", hwnd,
-            "tabsBefore", tabsBefore, "tabsAfter", tabsAfter))
+        Chrome_DetachDebugLog("Utils.ahk:Chrome_RunDetachMenuSequence", "nova_guia_suspected", "H7,H10", Map("hwnd",
+            hwnd, "tabsBefore", tabsBefore, "tabsAfter", tabsAfter, "note", "no_ctrl_w_here"))
         ; #endregion
-        ClipAngel_ReleaseChordModifiersForSend()
-        Send "{Ctrl down}w{Ctrl up}"
-        return false
     }
     return true
 }
@@ -941,6 +953,7 @@ Chrome_DetachActiveTabToNewWindow() {
         tabsBeforeDetach := Chrome_DetachCountTabs(hwnd)
         Chrome_RunDetachMenuSequence(hwnd)
 
+        try StandardLoadingBar_Update("⏳ Waiting for new window…", BANNER_ACCENT_INTERMEDIATE)
         newHwnd := Chrome_WaitForNewWindow(existingHwnds, CHROME_DETACH_VERIFY_TIMEOUT_MS)
         if (newHwnd) {
             success := true
@@ -948,7 +961,14 @@ Chrome_DetachActiveTabToNewWindow() {
         }
 
         tabsAfterFail := Chrome_DetachCountTabs(hwnd)
-        if (tabsAfterFail > tabsBeforeDetach && tabsBeforeDetach >= 0) {
+        if Chrome_DetachCloseSpuriousNovaGuia(hwnd, tabsBeforeDetach, tabsAfterFail, existingHwnds) {
+            ; #region agent log
+            Chrome_DetachDebugLog("Utils.ahk:Chrome_DetachActiveTabToNewWindow", "nova_guia_closed_retry", "H10",
+                Map("hwnd", hwnd, "tabsBefore", tabsBeforeDetach, "tabsAfter", tabsAfterFail))
+            ; #endregion
+            return false
+        }
+        if Chrome_DetachNovaGuiaLikely(tabsBeforeDetach, tabsAfterFail) {
             ; #region agent log
             Chrome_DetachDebugLog("Utils.ahk:Chrome_DetachActiveTabToNewWindow", "skip_en_fallback_nova_guia", "H8",
                 Map("hwnd", hwnd, "tabsBefore", tabsBeforeDetach, "tabsAfter", tabsAfterFail))
@@ -984,7 +1004,12 @@ Chrome_DetachActiveTabToNewWindow() {
         } else if (success && newHwnd) {
             Chrome_FocusDetachedWindow(newHwnd)
         }
-        StandardLoadingBar_Hide(0)
+        if (success && newHwnd)
+            try StandardLoadingBar_Update("✅ Tab detached to new window", BANNER_ACCENT_SUCCESS)
+        if (success)
+            StandardLoadingBar_Hide(700)
+        else
+            StandardLoadingBar_Hide(0)
         if (!success)
             try Send "{Escape}"
         g_ChromeDetachBusy := false
