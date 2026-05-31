@@ -353,14 +353,14 @@ WM_EnterF11FullscreenForHwnd(hwnd, settleMs := 1200) {
 }
 
 ; --- Chrome: detach active tab to new window (Shift+W) ---
-; PT-BR Chrome: context menu -> Mover guia para outra janela -> Nova janela (UIA Invoke preferred; keyboard m, Enter, Enter).
-; EN Chrome: single item Move tab to new window (keyboard m, Enter fallback).
+; PT-BR: tab context menu -> Mover guia -> Nova janela. UIA: tab right-click + optional child Invoke on #32768 popup.
+; Keyboard: m -> Enter -> Invoke or Enter (never 'n' = Nova guia). EN fallback: m -> Enter single item.
 global CHROME_DETACH_USE_UIA := true
 global CHROME_DETACH_LEGACY_KEYS := false
 global CHROME_DETACH_VERIFY_TIMEOUT_MS := 1500
 global CHROME_DETACH_F11_SETTLE_MS := 1500
-global CHROME_DETACH_MENU_WAIT_MS := 1200
-global CHROME_DETACH_MENU_PHASE_MS := 500
+global CHROME_DETACH_MENU_POPUP_MS := 300
+global CHROME_DETACH_MENU_CHILD_MS := 250
 global CHROME_DETACH_MENU_POLL_MS := 25
 global CHROME_DETACH_SUCCESS_HIDE_MS := 400
 global g_ChromeDetachBusy := false
@@ -370,6 +370,31 @@ global CHROME_DETACH_MENU_PARENT_NAMES := ["Mover guia para outra janela", "Move
 global CHROME_DETACH_MENU_PARENT_SUBSTR := ["Mover guia", "Move tab to another", "Move tab to a new"]
 global CHROME_DETACH_MENU_CHILD_NAMES := ["Nova janela", "New window"]
 global CHROME_DETACH_MENU_EN_NAMES := ["Move tab to new window", "Mover guia para nova janela"]
+
+Chrome_DetachListMenuPopups() {
+    popups := Map()
+    try {
+        for h in WinGetList("ahk_class #32768")
+            popups[h] := true
+    } catch {
+    }
+    return popups
+}
+
+Chrome_DetachSessionCreate(hwnd) {
+    existingSet := Map()
+    try {
+        for h in WinGetList("ahk_exe chrome.exe")
+            existingSet[h] := true
+    } catch {
+    }
+    uia := 0
+    try {
+        uia := UIA_Browser("ahk_id " hwnd)
+    } catch {
+    }
+    return { hwnd: hwnd, uia: uia, existingSet: existingSet, menuPopupHwnd: 0, baselinePopups: Chrome_DetachListMenuPopups() }
+}
 
 Chrome_ContextMenuNameMatches(el, names, substrs := "") {
     try name := el.Name
@@ -391,71 +416,95 @@ Chrome_ContextMenuNameMatches(el, names, substrs := "") {
     return false
 }
 
-Chrome_ContextMenuAppendItemsFromRoot(root, &items, &seen) {
+Chrome_ContextMenuFindInRoot(root, names, substrs := "") {
     if !IsObject(root)
-        return
-    try lists := [root.FindAll({ Type: UIA.Type.MenuItem }, UIA.TreeScope.Subtree)]
-    catch {
-        return
-    }
-    for list in lists {
-        if !IsObject(list)
-            continue
-        for el in list {
-            try id := el.RuntimeId
-            catch {
-                id := ObjPtr(el)
-            }
-            key := String(id)
-            if seen.Has(key)
-                continue
-            seen[key] := true
-            items.Push(el)
+        return 0
+    for name in names {
+        try {
+            el := root.FindElement({ Type: UIA.Type.MenuItem, Name: name, matchMode: 3 }, UIA.TreeScope.Subtree)
+            if el
+                return el
+        } catch {
         }
     }
+    if (substrs) {
+        try {
+            for el in root.FindAll({ Type: UIA.Type.MenuItem }, UIA.TreeScope.Subtree) {
+                if Chrome_ContextMenuNameMatches(el, [], substrs)
+                    return el
+            }
+        } catch {
+        }
+    }
+    return 0
 }
 
-Chrome_ContextMenuCollectItems(chromeHwnd := 0) {
-    items := []
-    seen := Map()
-    if (chromeHwnd) {
-        try Chrome_ContextMenuAppendItemsFromRoot(UIA.ElementFromHandle(chromeHwnd), &items, &seen)
-        catch {
+Chrome_ContextMenuFindFirst(session, names, useParentSubstr := true) {
+    substrs := useParentSubstr ? CHROME_DETACH_MENU_PARENT_SUBSTR : ""
+    if (session.menuPopupHwnd) {
+        try {
+            el := Chrome_ContextMenuFindInRoot(UIA.ElementFromHandle(session.menuPopupHwnd), names, substrs)
+            if el
+                return el
+        } catch {
         }
     }
-    try Chrome_ContextMenuAppendItemsFromRoot(UIA.GetRootElement(), &items, &seen)
-    catch {
-    }
-    ; Tab context menu often lives in a separate #32768 popup, not under the Chrome HWND tree.
     try {
-        for popupHwnd in WinGetList("ahk_class #32768") {
-            try Chrome_ContextMenuAppendItemsFromRoot(UIA.ElementFromHandle(popupHwnd), &items, &seen)
-            catch {
-            }
-        }
+        return Chrome_ContextMenuFindInRoot(UIA.ElementFromHandle(session.hwnd), names, substrs)
     } catch {
     }
-    return items
+    return 0
 }
 
-; Bounded poll: returns MenuItem when any name/substr matches.
-Chrome_ContextMenuWaitFor(names, chromeHwnd := 0, timeoutMs := 0, substrs := "") {
-    waitMs := timeoutMs > 0 ? timeoutMs : CHROME_DETACH_MENU_WAIT_MS
-    subs := substrs != "" ? substrs : CHROME_DETACH_MENU_PARENT_SUBSTR
+Chrome_ContextMenuWaitForSession(session, names, timeoutMs := 0, useParentSubstr := true) {
+    waitMs := timeoutMs > 0 ? timeoutMs : CHROME_DETACH_MENU_CHILD_MS
     deadline := A_TickCount + waitMs
     while (A_TickCount < deadline) {
-        for el in Chrome_ContextMenuCollectItems(chromeHwnd) {
-            if Chrome_ContextMenuNameMatches(el, names, subs)
-                return el
-        }
+        el := Chrome_ContextMenuFindFirst(session, names, useParentSubstr)
+        if el
+            return el
         Sleep CHROME_DETACH_MENU_POLL_MS
     }
     return 0
 }
 
+Chrome_ContextMenuCapturePopup(session, baselinePopups := "", timeoutMs := 0) {
+    waitMs := timeoutMs > 0 ? timeoutMs : CHROME_DETACH_MENU_POPUP_MS
+    base := IsObject(baselinePopups) ? baselinePopups : session.baselinePopups
+    deadline := A_TickCount + waitMs
+    while (A_TickCount < deadline) {
+        try {
+            for h in WinGetList("ahk_class #32768") {
+                if (IsObject(base) && base.Has(h))
+                    continue
+                session.menuPopupHwnd := h
+                return h
+            }
+        } catch {
+        }
+        if (session.menuPopupHwnd)
+            return session.menuPopupHwnd
+        Sleep CHROME_DETACH_MENU_POLL_MS
+    }
+    return session.menuPopupHwnd
+}
+
 Chrome_ContextMenuDismiss() {
     ClipAngel_ReleaseChordModifiersForSend()
     Send "{Escape}"
+}
+
+Chrome_ContextMenuActivateItem(item) {
+    if !item
+        return false
+    try item.Invoke()
+    catch {
+        try item.Click()
+        catch {
+            return false
+        }
+    }
+    return true
 }
 
 Chrome_WindowHasCaption(hwnd) {
@@ -550,7 +599,7 @@ Chrome_ActivateDetachedWindow(newHwnd, originalHwnd, wasF11) {
     Chrome_FocusDetachedWindow(newHwnd)
 }
 
-Chrome_WaitForNewWindow(existingHwnds, timeoutMs := 0) {
+Chrome_WaitForNewWindow(existingSet, timeoutMs := 0) {
     deadline := A_TickCount + (timeoutMs > 0 ? timeoutMs : CHROME_DETACH_VERIFY_TIMEOUT_MS)
     pollMs := CHROME_DETACH_MENU_POLL_MS
     loop {
@@ -558,15 +607,20 @@ Chrome_WaitForNewWindow(existingHwnds, timeoutMs := 0) {
             return 0
         try {
             for hwnd in WinGetList("ahk_exe chrome.exe") {
-                isNew := true
-                for existing in existingHwnds {
-                    if (existing = hwnd) {
-                        isNew := false
-                        break
+                if (existingSet is Map) {
+                    if !existingSet.Has(hwnd)
+                        return hwnd
+                } else {
+                    isNew := true
+                    for existing in existingSet {
+                        if (existing = hwnd) {
+                            isNew := false
+                            break
+                        }
                     }
+                    if (isNew)
+                        return hwnd
                 }
-                if (isNew)
-                    return hwnd
             }
         } catch {
         }
@@ -586,40 +640,50 @@ Chrome_EnsureBrowserForeground(hwnd) {
     return WinWaitActive("ahk_id " hwnd, , 1)
 }
 
-Chrome_SendTabContextMenuKeys() {
+Chrome_SendTabContextMenuKeys(session) {
     Send "{F6}"
-    Sleep 30
     Send "{F6}"
-    Sleep 30
     Send "+{F10}"
+    Chrome_ContextMenuCapturePopup(session, session.baselinePopups)
 }
 
-Chrome_OpenActiveTabContextMenuViaUIA(hwnd) {
+Chrome_DetachGetActiveTab(session) {
+    uia := session.uia
+    if !IsObject(uia) {
+        try {
+            uia := session.uia := UIA_Browser("ahk_id " session.hwnd)
+        } catch {
+            return 0
+        }
+    }
     try {
-        uia := UIA_Browser("ahk_id " hwnd)
         uia.GetCurrentMainPaneElement()
-        tab := 0
-        try tab := uia.GetTab("")
+        try return uia.GetTab("")
         catch {
             for t in uia.GetAllTabs() {
                 try {
                     if (t.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
-                    && t.SelectionItemPattern.IsSelected) {
-                        tab := t
-                        break
-                    }
+                    && t.SelectionItemPattern.IsSelected)
+                        return t
                 } catch {
                 }
             }
-            if (!tab) {
-                allTabs := uia.GetAllTabs()
-                if (allTabs.Length)
-                    tab := allTabs[allTabs.Length]
-            }
+            allTabs := uia.GetAllTabs()
+            if (allTabs.Length)
+                return allTabs[allTabs.Length]
         }
+    } catch {
+    }
+    return 0
+}
+
+Chrome_OpenActiveTabContextMenuViaUIA(session) {
+    try {
+        tab := Chrome_DetachGetActiveTab(session)
         if (!IsObject(tab) || !tab)
             return false
         tab.Click("right")
+        Chrome_ContextMenuCapturePopup(session, session.baselinePopups)
         return true
     } catch {
         return false
@@ -655,109 +719,53 @@ Chrome_NormalizeFocusToPage(hwnd) {
     return WM_EnsureForegroundForSend(hwnd, 1000)
 }
 
-Chrome_OpenActiveTabContextMenu(hwnd) {
+Chrome_OpenActiveTabContextMenu(session) {
+    hwnd := session.hwnd
     if !Chrome_EnsureBrowserForeground(hwnd)
         return false
     ClipAngel_ReleaseChordModifiersForSend()
     Send "{Escape}"
     Send "{Escape}"
-    if Chrome_OpenActiveTabContextMenuViaUIA(hwnd)
+    session.baselinePopups := Chrome_DetachListMenuPopups()
+    session.menuPopupHwnd := 0
+    if Chrome_OpenActiveTabContextMenuViaUIA(session)
         return true
     if !Chrome_NormalizeFocusToPage(hwnd)
         return false
     ClipAngel_ReleaseChordModifiersForSend()
-    Chrome_SendTabContextMenuKeys()
+    Chrome_SendTabContextMenuKeys(session)
     return true
 }
 
-Chrome_DetachCountTabs(hwnd) {
-    if !(hwnd is Integer && hwnd > 0)
+Chrome_DetachCountTabs(session) {
+    if !IsObject(session.uia)
         return -1
     try {
-        uia := UIA_Browser("ahk_id " hwnd)
-        return uia.GetAllTabs().Length
+        return session.uia.GetAllTabs().Length
     } catch {
         return -1
     }
 }
 
-Chrome_ContextMenuExpandParent(parent) {
-    try {
-        if parent.GetPropertyValue(UIA.Property.IsExpandCollapsePatternAvailable) {
-            ec := parent.ExpandCollapsePattern
-            if (ec.ExpandCollapseState = UIA.ExpandCollapseState.Collapsed)
-                ec.Expand()
-            return true
-        }
-    } catch {
-    }
-    try parent.SetFocus()
-    catch {
-        try parent.Click()
-    }
-    Send "{Right}"
-    return false
-}
-
-Chrome_ContextMenuActivateItem(item) {
-    if !item
-        return false
-    try item.Invoke()
-    catch {
-        try item.Click()
-        catch {
-            return false
-        }
-    }
-    return true
-}
-
-; UIA path: expand parent, wait for child by name, Invoke.
-Chrome_ActivateDetachViaPtUIA(hwnd, parent := 0) {
-    if !parent
-        parent := Chrome_ContextMenuWaitFor(CHROME_DETACH_MENU_PARENT_NAMES, hwnd, CHROME_DETACH_MENU_PHASE_MS)
-    if !parent
-        return false
-
-    try StandardLoadingBar_Update("📋 Menu: Mover guia para outra janela…", BANNER_ACCENT_INTERMEDIATE)
-    Chrome_ContextMenuExpandParent(parent)
-
-    child := Chrome_ContextMenuWaitFor(CHROME_DETACH_MENU_CHILD_NAMES, hwnd, CHROME_DETACH_MENU_PHASE_MS)
-    if !child
-        return false
-
-    try StandardLoadingBar_Update("📋 Menu: Nova janela…", BANNER_ACCENT_INTERMEDIATE)
-    return Chrome_ContextMenuActivateItem(child)
-}
-
-; Keyboard path: m -> Enter -> UIA Invoke child or Enter. Never send 'n' (Nova guia). No UIA gate after m.
-Chrome_ActivateDetachViaPtKeyboard(hwnd) {
-    try StandardLoadingBar_Update("📋 Menu: Mover guia para outra janela…", BANNER_ACCENT_INTERMEDIATE)
+; Keyboard: m -> Enter -> optional UIA Invoke on child in popup, else Enter. Never send 'n' (Nova guia).
+Chrome_ActivateDetachViaPtKeyboard(session) {
     Send "m"
-
-    try StandardLoadingBar_Update("📋 Menu: abrindo submenu…", BANNER_ACCENT_INTERMEDIATE)
     Send "{Enter}"
 
-    child := Chrome_ContextMenuWaitFor(CHROME_DETACH_MENU_CHILD_NAMES, hwnd, CHROME_DETACH_MENU_PHASE_MS, [])
-    if child {
-        try StandardLoadingBar_Update("📋 Menu: Nova janela…", BANNER_ACCENT_INTERMEDIATE)
-        return Chrome_ContextMenuActivateItem(child)
-    }
+    child := Chrome_ContextMenuWaitForSession(session, CHROME_DETACH_MENU_CHILD_NAMES, CHROME_DETACH_MENU_CHILD_MS,
+        false)
+    if child && Chrome_ContextMenuActivateItem(child)
+        return true
 
-    try StandardLoadingBar_Update("📋 Menu: Nova janela…", BANNER_ACCENT_INTERMEDIATE)
     Send "{Enter}"
     return true
 }
 
-; EN single-item menu fallback
-Chrome_ActivateDetachViaEnKeyboard(hwnd := 0) {
-    if (hwnd) {
-        if !Chrome_OpenActiveTabContextMenu(hwnd)
-            return false
-    } else {
-        Chrome_SendTabContextMenuKeys()
-    }
-    try StandardLoadingBar_Update("📋 Menu: Move tab to new window…", BANNER_ACCENT_INTERMEDIATE)
+Chrome_ActivateDetachViaEnKeyboard(session) {
+    session.baselinePopups := Chrome_DetachListMenuPopups()
+    session.menuPopupHwnd := 0
+    if !Chrome_OpenActiveTabContextMenu(session)
+        return false
     Send "m"
     Send "{Enter}"
     return true
@@ -794,10 +802,10 @@ Chrome_DetachNovaGuiaLikely(tabsBefore, tabsAfter) {
 }
 
 ; Close accidental Nova guia only when detach did NOT create a new window.
-Chrome_DetachCloseSpuriousNovaGuia(originalHwnd, tabsBefore, tabsAfter, existingHwnds) {
+Chrome_DetachCloseSpuriousNovaGuia(originalHwnd, tabsBefore, tabsAfter, existingSet) {
     if !Chrome_DetachNovaGuiaLikely(tabsBefore, tabsAfter)
         return false
-    if Chrome_WaitForNewWindow(existingHwnds, 200)
+    if Chrome_WaitForNewWindow(existingSet, 200)
         return false
     if !Chrome_EnsureBrowserForeground(originalHwnd)
         return false
@@ -823,21 +831,21 @@ Chrome_FinishTabDetach(originalHwnd, newHwnd, wasF11) {
     Chrome_FocusDetachedWindow(newHwnd)
 }
 
-Chrome_RunDetachMenuSequence(hwnd) {
+Chrome_RunDetachMenuSequence(session) {
+    session.tabsBeforeDetach := Chrome_DetachCountTabs(session)
     try StandardLoadingBar_Update("📋 Opening tab context menu…", BANNER_ACCENT_INTERMEDIATE)
     loop 2 {
-        if !Chrome_OpenActiveTabContextMenu(hwnd) {
+        session.menuPopupHwnd := 0
+        session.baselinePopups := Chrome_DetachListMenuPopups()
+        if !Chrome_OpenActiveTabContextMenu(session) {
             Chrome_ContextMenuDismiss()
             continue
         }
+        if !session.menuPopupHwnd
+            Chrome_ContextMenuCapturePopup(session, session.baselinePopups)
 
-        try StandardLoadingBar_Update("📋 Menu: detach active tab…", BANNER_ACCENT_INTERMEDIATE)
-
-        if Chrome_ActivateDetachViaPtKeyboard(hwnd)
-            return true
-
-        parent := Chrome_ContextMenuWaitFor(CHROME_DETACH_MENU_PARENT_NAMES, hwnd, CHROME_DETACH_MENU_PHASE_MS)
-        if parent && Chrome_ActivateDetachViaPtUIA(hwnd, parent)
+        try StandardLoadingBar_Update("📋 Detaching tab…", BANNER_ACCENT_INTERMEDIATE)
+        if Chrome_ActivateDetachViaPtKeyboard(session)
             return true
 
         Chrome_ContextMenuDismiss()
@@ -881,14 +889,14 @@ Chrome_DetachActiveTabToNewWindow() {
             return false
 
         if (!CHROME_DETACH_USE_UIA) {
-            existingHwnds := []
+            existingSet := Map()
             try {
                 for h in WinGetList("ahk_exe chrome.exe")
-                    existingHwnds.Push(h)
+                    existingSet[h] := true
             } catch {
             }
             Chrome_DetachActiveTabToNewWindow_Legacy()
-            newHwnd := Chrome_WaitForNewWindow(existingHwnds, CHROME_DETACH_VERIFY_TIMEOUT_MS)
+            newHwnd := Chrome_WaitForNewWindow(existingSet, CHROME_DETACH_VERIFY_TIMEOUT_MS)
             if (newHwnd) {
                 success := true
                 return true
@@ -896,31 +904,27 @@ Chrome_DetachActiveTabToNewWindow() {
             return false
         }
 
-        existingHwnds := []
-        try {
-            for h in WinGetList("ahk_exe chrome.exe")
-                existingHwnds.Push(h)
-        } catch {
+        session := Chrome_DetachSessionCreate(hwnd)
+        if !Chrome_RunDetachMenuSequence(session) {
+            return false
         }
 
-        tabsBeforeDetach := Chrome_DetachCountTabs(hwnd)
-        Chrome_RunDetachMenuSequence(hwnd)
-
         try StandardLoadingBar_Update("⏳ Waiting for new window…", BANNER_ACCENT_INTERMEDIATE)
-        newHwnd := Chrome_WaitForNewWindow(existingHwnds, CHROME_DETACH_VERIFY_TIMEOUT_MS)
+        newHwnd := Chrome_WaitForNewWindow(session.existingSet, CHROME_DETACH_VERIFY_TIMEOUT_MS)
         if (newHwnd) {
             success := true
             return true
         }
 
-        tabsAfterFail := Chrome_DetachCountTabs(hwnd)
-        if Chrome_DetachCloseSpuriousNovaGuia(hwnd, tabsBeforeDetach, tabsAfterFail, existingHwnds)
+        tabsAfterFail := Chrome_DetachCountTabs(session)
+        if Chrome_DetachCloseSpuriousNovaGuia(hwnd, session.tabsBeforeDetach, tabsAfterFail, session.existingSet)
             return false
-        if Chrome_DetachNovaGuiaLikely(tabsBeforeDetach, tabsAfterFail)
+        if Chrome_DetachNovaGuiaLikely(session.tabsBeforeDetach, tabsAfterFail)
             return false
 
-        Chrome_ActivateDetachViaEnKeyboard(hwnd)
-        newHwnd := Chrome_WaitForNewWindow(existingHwnds, CHROME_DETACH_VERIFY_TIMEOUT_MS)
+        try StandardLoadingBar_Update("📋 Retrying detach (EN menu)…", BANNER_ACCENT_INTERMEDIATE)
+        Chrome_ActivateDetachViaEnKeyboard(session)
+        newHwnd := Chrome_WaitForNewWindow(session.existingSet, CHROME_DETACH_VERIFY_TIMEOUT_MS)
         if (newHwnd) {
             success := true
             return true
