@@ -12615,19 +12615,13 @@ ApptWizard_SetAllDay(desiredOn) {
 #HotIf WinActive("ahk_exe chrome.exe")
 
 ; Shift + W : Pop current tab to new window - Window
-+w::
-{
-    Send "{F6}"                        ; Focus address bar (omnibox)
-    Sleep 100
-    Send "{F6}"                        ; Focus the tab strip (current tab)
-    Sleep 100
-    Send "{AppsKey}"                   ; Open the tab's context menu (AppsKey or Shift+F10)
-    Sleep 100                          ; Wait a moment for menu to open
-    Send "m"                           ; Select "Move tab to new window" (press 'm')
-    Sleep 100
-    Send "{Enter}"                     ; Confirm the action (detach tab)
-    Sleep 100
-    Send "{Enter}"                     ; Confirm the action (detach tab)
++w:: {
+    if !Chrome_DetachActiveTabToNewWindow() {
+        if (CHROME_DETACH_LEGACY_KEYS)
+            Chrome_DetachActiveTabToNewWindow_Legacy()
+        else
+            ShowCenteredOverlay_Utils("❌ Could not detach tab", 2000, BANNER_ACCENT_ERROR)
+    }
 }
 
 ; Function to rename ChatGPT window (can be called directly or via hotkey)

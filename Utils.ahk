@@ -156,6 +156,566 @@ GetChromeActiveTabIndex(uia) {
     return 0
 }
 
+; =============================================================================
+; F11 fullscreen detection / toggle (shared by WindowManagement + Chrome detach)
+; =============================================================================
+
+_WMF11_GetWindowRectHwnd(hwnd, &left, &top, &right, &bottom) {
+    rect := Buffer(16, 0)
+    if !DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)
+        return false
+    left := NumGet(rect, 0, "int")
+    top := NumGet(rect, 4, "int")
+    right := NumGet(rect, 8, "int")
+    bottom := NumGet(rect, 12, "int")
+    return true
+}
+
+_WMF11_GetHwndMonitorIndex(hwnd) {
+    if (!hwnd)
+        return 0
+    try {
+        hMon := DllCall("MonitorFromWindow", "ptr", hwnd, "uint", 2, "ptr")
+        loop MonitorGetCount() {
+            MonitorGet A_Index, &ml, &mt, &mr, &mb
+            cx := (ml + mr) // 2
+            cy := (mt + mb) // 2
+            point64 := (cy & 0xFFFFFFFF) << 32 | (cx & 0xFFFFFFFF)
+            if (Integer(DllCall("MonitorFromPoint", "int64", point64, "uint", 2, "ptr")) = Integer(hMon))
+                return A_Index
+        }
+    } catch {
+    }
+    return 0
+}
+
+_WMF11_IsDesktopOrTaskbarClass(cls) {
+    return cls = "Progman" || cls = "WorkerW" || cls = "Shell_TrayWnd" || cls = "Shell_SecondaryTrayWnd"
+}
+
+_WMF11_IsExcludedIndicatorWindow(hwnd) {
+    if (!hwnd)
+        return false
+    try {
+        exe := StrLower(WinGetProcessName("ahk_id " hwnd))
+    } catch {
+        return false
+    }
+    if (exe = "handy.exe")
+        return true
+    try {
+        title := WinGetTitle(hwnd)
+    } catch {
+        return false
+    }
+    if (InStr(StrLower(title), "windowmanagement.ahk"))
+        return true
+    return false
+}
+
+_WMF11_BackgroundHwndOnAnyScriptMonitor(hwnd) {
+    try {
+        hMon := DllCall("MonitorFromWindow", "ptr", hwnd, "uint", 2, "ptr")
+        loop MonitorGetCount() {
+            MonitorGet A_Index, &ml, &mt, &mr, &mb
+            cx := (ml + mr) // 2
+            cy := (mt + mb) // 2
+            point64 := (cy & 0xFFFFFFFF) << 32 | (cx & 0xFFFFFFFF)
+            if (Integer(DllCall("MonitorFromPoint", "int64", point64, "uint", 2, "ptr")) = Integer(hMon))
+                return true
+        }
+    } catch {
+    }
+    return false
+}
+
+; F11 fullscreen: fills monitor (often past work area) or work area with no caption; not ordinary Win-maximize.
+WM_WindowIsF11FullscreenRejectReason(hwnd) {
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return "no_hwnd"
+    try {
+        minMax := WinGetMinMax(hwnd)
+        if (minMax = -1)
+            return "minimized"
+        if !DllCall("IsWindowVisible", "ptr", hwnd)
+            return "not_visible"
+        exStyle := DllCall("GetWindowLongPtr", "ptr", hwnd, "int", -20, "ptr")
+        if (exStyle & 0x00000080)
+            return "toolwindow"
+        class := WinGetClass(hwnd)
+        if (class = "Progman" || class = "WorkerW")
+            return "desktop_class"
+        if (_WMF11_IsDesktopOrTaskbarClass(class))
+            return "taskbar_class"
+        if (WinGetTitle(hwnd) = "")
+            return "empty_title"
+        if (_WMF11_IsExcludedIndicatorWindow(hwnd))
+            return "excluded_indicator"
+        if (!_WMF11_BackgroundHwndOnAnyScriptMonitor(hwnd))
+            return "not_script_monitor"
+        mon := _WMF11_GetHwndMonitorIndex(hwnd)
+        if (!mon)
+            return "no_monitor"
+        MonitorGet mon, &ml, &mt, &mr, &mb
+        MonitorGetWorkArea mon, &wl, &wt, &wr, &wb
+        if (!_WMF11_GetWindowRectHwnd(hwnd, &left, &top, &right, &bottom))
+            return "no_rect"
+        tol := 24
+        fillsMonitor := (Abs(left - ml) <= tol && Abs(top - mt) <= tol && Abs(right - mr) <= tol && Abs(bottom - mb) <=
+        tol)
+        fillsWorkArea := (Abs(left - wl) <= tol && Abs(top - wt) <= tol && Abs(right - wr) <= tol && Abs(bottom - wb) <=
+        tol)
+        extendsPastWorkArea := (bottom > wb + tol || right > wr + tol || left < wl - tol || top < wt - tol)
+        style := DllCall("GetWindowLongPtr", "ptr", hwnd, "int", -16, "ptr")
+        hasCaption := !!(style & 0x00C00000)
+        if (minMax = 1 && fillsWorkArea && !extendsPastWorkArea && hasCaption)
+            return "win_maximized"
+        if (fillsMonitor && extendsPastWorkArea)
+            return ""
+        if (fillsWorkArea && !hasCaption)
+            return ""
+        if (!fillsMonitor && !fillsWorkArea)
+            return "not_monitor_fill"
+        if (fillsMonitor && !extendsPastWorkArea)
+            return "within_work_area"
+        if (fillsWorkArea && hasCaption)
+            return "work_area_with_caption"
+        return "no_match"
+    } catch as err {
+        return "exception:" . err.Message
+    }
+}
+
+WM_WindowIsF11Fullscreen(hwnd) {
+    return WM_WindowIsF11FullscreenRejectReason(hwnd) = ""
+}
+
+WM_WaitForF11State(hwnd, wantFullscreen, timeoutMs := 500) {
+    deadline := A_TickCount + timeoutMs
+    loop {
+        if (WM_WindowIsF11Fullscreen(hwnd) = wantFullscreen)
+            return true
+        if (A_TickCount >= deadline)
+            break
+        Sleep 50
+    }
+    return WM_WindowIsF11Fullscreen(hwnd) = wantFullscreen
+}
+
+WM_EnsureForegroundForSend(hwnd, timeoutMs := 2000) {
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return false
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        try WinActivate "ahk_id " hwnd
+        catch {
+            return false
+        }
+        if WinActive("ahk_id " hwnd)
+            return true
+        Sleep 50
+    }
+    return WinActive("ahk_id " hwnd)
+}
+
+WM_ExitF11FullscreenForHwnd(hwnd, settleMs := 1200) {
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return false
+    if (!WM_WindowIsF11Fullscreen(hwnd))
+        return true
+    try {
+        if !WM_EnsureForegroundForSend(hwnd)
+            return false
+        Sleep 80
+        ClipAngel_ReleaseChordModifiersForSend()
+        SendInput "{F11}"
+        return WM_WaitForF11State(hwnd, false, settleMs)
+    } catch {
+        return false
+    }
+}
+
+WM_EnterF11FullscreenForHwnd(hwnd, settleMs := 1200) {
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return false
+    if (WM_WindowIsF11Fullscreen(hwnd))
+        return true
+    try {
+        if !WM_EnsureForegroundForSend(hwnd)
+            return false
+        Sleep 80
+        ClipAngel_ReleaseChordModifiersForSend()
+        SendInput "{F11}"
+        return WM_WaitForF11State(hwnd, true, settleMs)
+    } catch {
+        return false
+    }
+}
+
+; --- Chrome: detach active tab to new window (Shift+W) ---
+; PT-BR Chrome: context menu -> Mover guia para outra janela -> Nova janela (keyboard m, Right, n, Enter).
+; EN Chrome: single item Move tab to new window (keyboard m, Enter fallback).
+global CHROME_DETACH_USE_UIA := true
+global CHROME_DETACH_LEGACY_KEYS := false
+global CHROME_DETACH_VERIFY_TIMEOUT_MS := 2000
+global CHROME_DETACH_F11_SETTLE_MS := 2500
+
+; #region agent log
+Chrome_DetachDebugLog_Escape(s) {
+    return StrReplace(StrReplace(String(s), "\", "\\"), '"', '\"')
+}
+
+Chrome_DetachDebugLog_MapToJson(data) {
+    parts := []
+    for k, v in data {
+        if (v is String)
+            vk := '"' Chrome_DetachDebugLog_Escape(v) '"'
+        else if (v is Integer || v is Float)
+            vk := v
+        else
+            vk := '"' Chrome_DetachDebugLog_Escape(String(v)) '"'
+        parts.Push('"' Chrome_DetachDebugLog_Escape(k) '":' vk)
+    }
+    joined := ""
+    for i, p in parts
+        joined .= (i = 1 ? "" : ",") p
+    return "{" joined "}"
+}
+
+Chrome_DetachDebugLog(location, message, hypothesisId := "", data := "") {
+    try {
+        if (IsObject(data))
+            dataPart := Chrome_DetachDebugLog_MapToJson(data)
+        else if (data != "")
+            dataPart := '{"value":"' Chrome_DetachDebugLog_Escape(data) '"}'
+        else
+            dataPart := "{}"
+        FileAppend('{"sessionId":"d15909","timestamp":' . A_TickCount . ',"location":"' . Chrome_DetachDebugLog_Escape(
+            location) . '","message":"' . Chrome_DetachDebugLog_Escape(message) . '","hypothesisId":"' .
+        Chrome_DetachDebugLog_Escape(hypothesisId) . '","data":' . dataPart . '}`n', A_ScriptDir "\debug-d15909.log")
+    } catch {
+    }
+}
+; #endregion
+
+Chrome_WindowHasCaption(hwnd) {
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return false
+    try {
+        style := DllCall("GetWindowLongPtr", "ptr", hwnd, "int", -16, "ptr")
+        return !!(style & 0x00C00000)
+    } catch {
+        return false
+    }
+}
+
+; Windowed + caption visible — safe for F6 / tab context menu (F6 in F11 can open DevTools).
+Chrome_WaitUntilWindowedForDetach(hwnd, timeoutMs := 0) {
+    settleMs := timeoutMs > 0 ? timeoutMs : CHROME_DETACH_F11_SETTLE_MS
+    deadline := A_TickCount + settleMs
+    loop {
+        if (!hwnd || !WinExist("ahk_id " hwnd))
+            return false
+        isF11 := WM_WindowIsF11Fullscreen(hwnd)
+        hasCaption := Chrome_WindowHasCaption(hwnd)
+        if (!isF11 && hasCaption) {
+            fgOk := WM_EnsureForegroundForSend(hwnd, Min(800, Max(0, deadline - A_TickCount)))
+            ; #region agent log
+            Chrome_DetachDebugLog("Utils.ahk:Chrome_WaitUntilWindowedForDetach", "windowed_check", "A,B", Map(
+                "hwnd", hwnd, "isF11", isF11, "hasCaption", hasCaption, "fgOk", fgOk, "reject",
+                WM_WindowIsF11FullscreenRejectReason(hwnd)))
+            ; #endregion
+            return fgOk
+        }
+        if (A_TickCount >= deadline)
+            break
+        Sleep 50
+    }
+    ; #region agent log
+    Chrome_DetachDebugLog("Utils.ahk:Chrome_WaitUntilWindowedForDetach", "timeout", "A,B", Map("hwnd", hwnd,
+        "isF11", WM_WindowIsF11Fullscreen(hwnd), "hasCaption", Chrome_WindowHasCaption(hwnd), "reject",
+        WM_WindowIsF11FullscreenRejectReason(hwnd)))
+    ; #endregion
+    return false
+}
+
+Chrome_WaitUntilF11ForHwnd(hwnd, timeoutMs := 0) {
+    settleMs := timeoutMs > 0 ? timeoutMs : CHROME_DETACH_F11_SETTLE_MS
+    return WM_WaitForF11State(hwnd, true, settleMs)
+}
+
+Chrome_ExitF11ForDetach(hwnd) {
+    if (!WM_WindowIsF11Fullscreen(hwnd))
+        return Chrome_WaitUntilWindowedForDetach(hwnd)
+    loop 3 {
+        if !WM_ExitF11FullscreenForHwnd(hwnd, CHROME_DETACH_F11_SETTLE_MS)
+            continue
+        if Chrome_WaitUntilWindowedForDetach(hwnd)
+            return true
+    }
+    return false
+}
+
+Chrome_EnsureNewWindowIsWindowed(newHwnd) {
+    if (!newHwnd || !WinExist("ahk_id " newHwnd))
+        return false
+    if Chrome_WaitUntilWindowedForDetach(newHwnd)
+        return true
+    if (WM_WindowIsF11Fullscreen(newHwnd))
+        WM_ExitF11FullscreenForHwnd(newHwnd, CHROME_DETACH_F11_SETTLE_MS)
+    return Chrome_WaitUntilWindowedForDetach(newHwnd)
+}
+
+Chrome_RestoreF11OnOriginal(originalHwnd) {
+    if (!WinExist("ahk_id " originalHwnd))
+        return false
+    loop 3 {
+        if !WM_EnterF11FullscreenForHwnd(originalHwnd, CHROME_DETACH_F11_SETTLE_MS)
+            continue
+        if Chrome_WaitUntilF11ForHwnd(originalHwnd)
+            return true
+    }
+    restored := WM_WindowIsF11Fullscreen(originalHwnd)
+    ; #region agent log
+    Chrome_DetachDebugLog("Utils.ahk:Chrome_RestoreF11OnOriginal", "done", "D", Map("hwnd", originalHwnd,
+        "restored", restored))
+    ; #endregion
+    return restored
+}
+
+Chrome_ActivateDetachedWindow(newHwnd, originalHwnd, wasF11) {
+    if (!newHwnd || !WinExist("ahk_id " newHwnd))
+        return
+    try WinActivate("ahk_id " newHwnd)
+    catch {
+    }
+    if (!wasF11)
+        return
+    if (WM_WindowIsF11Fullscreen(newHwnd)) {
+        WM_ExitF11FullscreenForHwnd(newHwnd, CHROME_DETACH_F11_SETTLE_MS)
+        Chrome_WaitUntilWindowedForDetach(newHwnd)
+    }
+    if (WinExist("ahk_id " originalHwnd) && !WM_WindowIsF11Fullscreen(originalHwnd))
+        Chrome_RestoreF11OnOriginal(originalHwnd)
+}
+
+Chrome_WaitForNewWindow(existingHwnds, timeoutMs := 0) {
+    deadline := A_TickCount + (timeoutMs > 0 ? timeoutMs : CHROME_DETACH_VERIFY_TIMEOUT_MS)
+    pollMs := 50
+    loop {
+        if (A_TickCount >= deadline)
+            return 0
+        try {
+            for hwnd in WinGetList("ahk_exe chrome.exe") {
+                isNew := true
+                for existing in existingHwnds {
+                    if (existing = hwnd) {
+                        isNew := false
+                        break
+                    }
+                }
+                if (isNew)
+                    return hwnd
+            }
+        } catch {
+        }
+        Sleep pollMs
+    }
+}
+
+Chrome_EnsureBrowserForeground(hwnd) {
+    if !(hwnd is Integer && hwnd > 0)
+        return false
+    if WinActive("ahk_id " hwnd)
+        return true
+    try WinActivate("ahk_id " hwnd)
+    catch {
+        return false
+    }
+    return WinWaitActive("ahk_id " hwnd, , 1)
+}
+
+Chrome_SendTabContextMenuKeys() {
+    Send "{F6}"
+    Send "{F6}"
+    Send "{AppsKey}"
+}
+
+; PT-BR submenu: Mover guia para outra janela -> Nova janela
+Chrome_ActivateDetachViaPtKeyboard() {
+    Send "m"
+    Send "{Right}"
+    Send "n"
+    Send "{Enter}"
+}
+
+; EN single-item menu fallback
+Chrome_ActivateDetachViaEnKeyboard() {
+    Send "m"
+    Send "{Enter}"
+}
+
+Chrome_DetachActiveTabToNewWindow_Legacy() {
+    Send "{F6}"
+    Sleep 100
+    Send "{F6}"
+    Sleep 100
+    Send "{AppsKey}"
+    Sleep 100
+    Send "m"
+    Sleep 100
+    Send "{Enter}"
+    Sleep 100
+    Send "{Enter}"
+}
+
+Chrome_PrepareWindowForTabDetach(hwnd, &wasF11) {
+    wasF11 := WM_WindowIsF11Fullscreen(hwnd)
+    if (!wasF11)
+        return Chrome_WaitUntilWindowedForDetach(hwnd)
+    StandardLoadingBar_Update("🔄 Exiting F11 fullscreen…", BANNER_ACCENT_INTERMEDIATE)
+    if !Chrome_ExitF11ForDetach(hwnd)
+        return false
+    return Chrome_WaitUntilWindowedForDetach(hwnd)
+}
+
+Chrome_FinishTabDetach(originalHwnd, newHwnd, wasF11) {
+    try StandardLoadingBar_Hide(0)
+    catch {
+    }
+
+    if (!wasF11) {
+        Chrome_ActivateDetachedWindow(newHwnd, originalHwnd, false)
+        return
+    }
+
+    if (!WinExist("ahk_id " originalHwnd))
+        return
+
+    ; Step 1: new window must be windowed before F11 is restored on the original.
+    newWindowed := true
+    if (newHwnd) {
+        newWindowed := Chrome_EnsureNewWindowIsWindowed(newHwnd)
+        ; #region agent log
+        Chrome_DetachDebugLog("Utils.ahk:Chrome_FinishTabDetach", "new_windowed", "C", Map("newHwnd", newHwnd,
+            "newWindowed", newWindowed, "newIsF11", WM_WindowIsF11Fullscreen(newHwnd), "newReject",
+            WM_WindowIsF11FullscreenRejectReason(newHwnd)))
+        ; #endregion
+    }
+
+    ; Step 2: restore F11 on the original window only.
+    Chrome_RestoreF11OnOriginal(originalHwnd)
+
+    ; Step 3: focus detached tab; never leave F11 on the new window.
+    Chrome_ActivateDetachedWindow(newHwnd, originalHwnd, true)
+    ; #region agent log
+    Chrome_DetachDebugLog("Utils.ahk:Chrome_FinishTabDetach", "final_state", "C,D", Map("originalHwnd",
+        originalHwnd, "originalIsF11", WM_WindowIsF11Fullscreen(originalHwnd), "newHwnd", newHwnd, "newIsF11",
+        newHwnd ? WM_WindowIsF11Fullscreen(newHwnd) : false, "activeHwnd", WinExist("A")))
+    ; #endregion
+}
+
+Chrome_RunDetachMenuSequence() {
+    Chrome_SendTabContextMenuKeys()
+    Chrome_ActivateDetachViaPtKeyboard()
+}
+
+Chrome_DetachActiveTabToNewWindow() {
+    hwnd := WinExist("A")
+    if !(hwnd is Integer && hwnd > 0)
+        return false
+    try {
+        if (WinGetProcessName("ahk_id " hwnd) != "chrome.exe")
+            return false
+    } catch {
+        return false
+    }
+
+    wasF11 := false
+    newHwnd := 0
+    success := false
+
+    StandardLoadingBar_Show("⏳ Detaching tab to new window…", BANNER_ACCENT_INTERMEDIATE, { passive: false,
+        centerOnHwnd: hwnd })
+    try {
+        if !Chrome_EnsureBrowserForeground(hwnd)
+            return false
+        if !Chrome_PrepareWindowForTabDetach(hwnd, &wasF11) {
+            ; #region agent log
+            Chrome_DetachDebugLog("Utils.ahk:Chrome_DetachActiveTabToNewWindow", "prepare_failed", "A,E", Map(
+                "hwnd", hwnd, "wasF11", wasF11))
+            ; #endregion
+            return false
+        }
+        if !Chrome_WaitUntilWindowedForDetach(hwnd) {
+            ; #region agent log
+            Chrome_DetachDebugLog("Utils.ahk:Chrome_DetachActiveTabToNewWindow", "windowed_gate_failed", "A,B",
+                Map("hwnd", hwnd, "wasF11", wasF11))
+            ; #endregion
+            return false
+        }
+        ; #region agent log
+        Chrome_DetachDebugLog("Utils.ahk:Chrome_DetachActiveTabToNewWindow", "detach_start", "E", Map("hwnd", hwnd,
+            "wasF11", wasF11))
+        ; #endregion
+
+        if (!CHROME_DETACH_USE_UIA) {
+            existingHwnds := []
+            try {
+                for h in WinGetList("ahk_exe chrome.exe")
+                    existingHwnds.Push(h)
+            } catch {
+            }
+            Chrome_DetachActiveTabToNewWindow_Legacy()
+            newHwnd := Chrome_WaitForNewWindow(existingHwnds, CHROME_DETACH_VERIFY_TIMEOUT_MS)
+            if (newHwnd) {
+                success := true
+                return true
+            }
+            return false
+        }
+
+        existingHwnds := []
+        try {
+            for h in WinGetList("ahk_exe chrome.exe")
+                existingHwnds.Push(h)
+        } catch {
+        }
+
+        Chrome_RunDetachMenuSequence()
+
+        newHwnd := Chrome_WaitForNewWindow(existingHwnds, CHROME_DETACH_VERIFY_TIMEOUT_MS)
+        if (newHwnd) {
+            success := true
+            return true
+        }
+
+        Chrome_ActivateDetachViaEnKeyboard()
+        newHwnd := Chrome_WaitForNewWindow(existingHwnds, 1200)
+        if (newHwnd) {
+            success := true
+            return true
+        }
+        return false
+    } finally {
+        ; #region agent log
+        Chrome_DetachDebugLog("Utils.ahk:Chrome_DetachActiveTabToNewWindow", "finally", "C,D,E", Map("success",
+            success, "wasF11", wasF11, "newHwnd", newHwnd, "originalHwnd", hwnd))
+        ; #endregion
+        if (wasF11) {
+            try StandardLoadingBar_Update("🔄 Restoring F11 fullscreen…", BANNER_ACCENT_INTERMEDIATE)
+            Chrome_FinishTabDetach(hwnd, success ? newHwnd : 0, wasF11)
+            if (!success && WinExist("ahk_id " hwnd) && !WM_WindowIsF11Fullscreen(hwnd))
+                Chrome_RestoreF11OnOriginal(hwnd)
+        } else if (success && newHwnd) {
+            try WinActivate("ahk_id " newHwnd)
+        }
+        StandardLoadingBar_Hide(0)
+        if (!success)
+            try Send "{Escape}"
+    }
+}
+
 ; --- Gemini mode picker (3.1 Flash-Lite / 3.5 Flash / 3.1 Pro), mouse + UIA ----
 ; UI tree reference: gemini-no-context-menu.md
 
