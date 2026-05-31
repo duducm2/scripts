@@ -1790,6 +1790,10 @@ class GeminiAsyncLookup {
         Send("^2")
         Sleep 150
         ShowGeminiTabBanner(2, this.GeminiHwnd)
+        StandardLoadingBar_Update("🔄 Switching to 3.1 Flash-Lite…", BANNER_ACCENT_INTERMEDIATE)
+        if (!GeminiSetModelForActiveTabWhenReady("3.1 Flash-Lite", this.GeminiHwnd))
+            GeminiSetModelForActiveTabWhenReady("3.1 Flash-Lite", this.GeminiHwnd)
+        StandardLoadingBar_Update("⏳ Loading…", BANNER_ACCENT_INTERMEDIATE)
         uia := UIA_Browser()
         Sleep 300
         promptField := Gemini_FocusPromptSameAsOpenHotkey(uia)
