@@ -1276,6 +1276,7 @@ Power BI (Shift)
 📊 [I]Report v[I]ew
 📊 [O]Table view ([O]verview)
 📊 [P]Model view ([P]lan)
+📊 [C]Get data ([C]onnect)
 📊 [T][T]ransform Data
 📊 [U][U]pdate (Close and Apply)
 📊 [E]New M[E]asure
@@ -13830,6 +13831,62 @@ Excel_RemoveRows(iterations := 8) {
 ; Power BI Shortcuts
 ;-------------------------------------------------------------------
 #HotIf (WinActive("ahk_exe PBIDesktop.exe") || InStr(WinGetTitle("A"), "powerbi", false)) && !IsFileDialogActive()
+
+; Shift + C : Get data (Click Home tab, then Get data primary button)
++c:: {
+    try {
+        win := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+
+        homeTab := root.FindFirst({ Type: "50019", Name: "Home", AutomationId: "home" })
+        if !homeTab {
+            homeTab := root.FindFirst({ Type: "50019", Name: "Home" })
+        }
+        if !homeTab {
+            homeTab := root.FindFirst({ Type: "50019", AutomationId: "home" })
+        }
+
+        if homeTab {
+            homeTab.Click()
+            Sleep 200
+        } else {
+            MsgBox "Could not find the 'Home' tab.", "Power BI", "IconX"
+            return
+        }
+
+        possibleNames := ["Get data", "Obter dados"]
+        getDataBtn := ""
+
+        for , name in possibleNames {
+            getDataBtn := root.FindFirst({ Name: name, Type: "50000", ClassName: "splitPrimaryButton", matchmode: "Substring"
+            })
+            if getDataBtn
+                break
+            getDataBtn := root.FindFirst({ Name: name, Type: "50000", ClassName: "splitPrimaryButton root-332" })
+            if getDataBtn
+                break
+            getDataBtn := root.FindFirst({ Name: name, Type: "50000", ClassName: "splitPrimaryButton root-320" })
+            if getDataBtn
+                break
+        }
+
+        if !getDataBtn {
+            for , name in possibleNames {
+                getDataBtn := root.FindFirst({ Name: name, Type: "50000" })
+                if getDataBtn
+                    break
+            }
+        }
+
+        if getDataBtn {
+            getDataBtn.Click()
+        } else {
+            MsgBox "Could not find the 'Get data' button.", "Power BI", "IconX"
+        }
+    } catch Error as e {
+        MsgBox "Error triggering Get data: " e.Message, "Power BI Error", "IconX"
+    }
+}
 
 ; Shift + T : Transform data (Click Home tab, then T, then UIA click)
 +t:: {
