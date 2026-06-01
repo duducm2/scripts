@@ -45,3 +45,8 @@ eligible=9 hidden=0 visible=6 openOnMon=2 skipReject=465 skipNoMon=0
 selected=9 planned=9 tiled=8 unassigned=0 failed=1
 issues: tile_short:1
   FAIL hwnd=3739382 mon=1 title=Gorillaz - The Hardest Thing (feat. Tony Allen)
+=== WM tile quality 20260601092346 final ===
+eligible=7 hidden=1 visible=3 openOnMon=2 skipReject=458 skipNoMon=0
+selected=7 planned=7 tiled=6 unassigned=0 failed=1
+issues: tile_short:1
+  FAIL hwnd=983916 mon=2 title=Calendar - Figueiredo Eduardo (SO/BDO-UX-LA) - Outlook

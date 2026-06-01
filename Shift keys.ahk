@@ -1234,27 +1234,27 @@ File Dialog (Shift)
 cheatSheets["Settings"] := "(Settings (Shift))`r`n🔊 [V]Set input [V]olume to 100%"
 
 ; --- Command Palette -------------------------------------------------
-cheatSheets["Command Palette"] := "
-(
-Command Palette (Shift)
-⌨️ [Ctrl+H] Reveal in file explorer
-⌨️ [C][C]opy file Path
-⌨️ [B]Go [H]ome
-⌨️ [S]Precise [S]earch
-⌨️ [I][I]nsert Favorite (Add)
-⌨️ [D][E]xclude Favorite (confirm)
-⌨️ [Ctrl+1] [S]elect current item
-⌨️ [Ctrl+2] [M]ove down once and select
-⌨️ [Ctrl+3] [M]ove down twice and select
-⌨️ [Ctrl+4] [M]ove down three times and select
-⌨️ [Ctrl+5] [M]ove down four times and select
-⌨️ [Ctrl+6] [M]ove down five times and select
-⌨️ [Alt+1] [S]elect current item
-⌨️ [Alt+2] [M]ove down once and select
-⌨️ [Alt+3] [M]ove down twice and select
-⌨️ [Alt+4] [M]ove down three times and select
-⌨️ [Alt+5] [M]ove down four times and select
-)"
+    cheatSheets["Command Palette"] := "
+    (
+    Command Palette (Shift)
+    ⌨️ [Ctrl+H] Reveal in file explorer
+    ⌨️ [C][C]opy file Path
+    ⌨️ [B]Go [H]ome
+    ⌨️ [S]Precise [S]earch
+    ⌨️ [I][I]nsert Favorite (Add)
+    ⌨️ [D][E]xclude Favorite
+    ⌨️ [Ctrl+1] [S]elect current item
+    ⌨️ [Ctrl+2] [M]ove down once and select
+    ⌨️ [Ctrl+3] [M]ove down twice and select
+    ⌨️ [Ctrl+4] [M]ove down three times and select
+    ⌨️ [Ctrl+5] [M]ove down four times and select
+    ⌨️ [Ctrl+6] [M]ove down five times and select
+    ⌨️ [Alt+1] [S]elect current item
+    ⌨️ [Alt+2] [M]ove down once and select
+    ⌨️ [Alt+3] [M]ove down twice and select
+    ⌨️ [Alt+4] [M]ove down three times and select
+    ⌨️ [Alt+5] [M]ove down four times and select
+    )"
 
 ; --- Excel ------------------------------------------------------------
 cheatSheets["EXCEL.EXE"] := "
@@ -24299,65 +24299,6 @@ SettleUp_GetNewExpenseDialog() {
 #HotIf
 
 ;-------------------------------------------------------------------
-; PowerToys Command Palette — bookmark exclude confirmation (Shift+D)
-; docs/standard_information_display.md — Interactive Input (ShowWithKeys)
-;-------------------------------------------------------------------
-global g_CommandPaletteBookmarkExcludeChoice := ""
-
-CommandPalette_BookmarkExclude_Pick(key) {
-    global g_CommandPaletteBookmarkExcludeChoice
-    g_CommandPaletteBookmarkExcludeChoice := key
-    try StandardLoadingBar_CloseKeysOverlay()
-    try StandardLoadingBar_Hide(0)
-}
-
-CommandPalette_BookmarkExclude_OnTimeout() {
-    CommandPalette_BookmarkExclude_Pick("N")
-}
-
-CommandPalette_BookmarkExclude_ShowAndWait() {
-    global g_CommandPaletteBookmarkExcludeChoice
-    g_CommandPaletteBookmarkExcludeChoice := ""
-    try StandardLoadingBar_Hide(0)
-    catch {
-    }
-    try StandardLoadingBar_CloseKeysOverlay()
-    catch {
-    }
-
-    keyCallbacks := Map()
-    keyCallbacks.Set("Y", CommandPalette_BookmarkExclude_Pick.Bind("Y"))
-    keyCallbacks.Set("N", CommandPalette_BookmarkExclude_Pick.Bind("N"))
-    ; skipEscapeDismiss: do not register $*Escape — activating the overlay / Esc stack can close Command Palette.
-
-    StandardLoadingBar_ShowWithKeys(
-        "❓ Exclude the current bookmark?",
-        keyCallbacks,
-        30000,
-        0,
-        CommandPalette_BookmarkExclude_OnTimeout,
-        "1E1E2E",
-        760,
-        17,
-        BANNER_ACCENT_INTERMEDIATE,
-        true,
-        "[Y] Yes  [N] No",
-        true,
-        false,
-        false,
-        "",
-        true)
-
-    deadline := A_TickCount + 30000
-    while (A_TickCount < deadline) {
-        if (g_CommandPaletteBookmarkExcludeChoice != "")
-            break
-        Sleep 40
-    }
-    return g_CommandPaletteBookmarkExcludeChoice
-}
-
-;-------------------------------------------------------------------
 ; PowerToys Command Palette Shortcuts
 ;-------------------------------------------------------------------
 #HotIf WinActive("Command Palette")
@@ -24423,11 +24364,8 @@ CommandPalette_BookmarkExclude_ShowAndWait() {
     Send "^!#m"
 }
 
-; Shift + D : Exclude current bookmark (confirm → Ctrl+Shift+Delete, Tab, Enter)
+; Shift + D : Exclude current bookmark (Ctrl+Shift+Delete, Tab, Enter)
 +d:: {
-    choice := CommandPalette_BookmarkExclude_ShowAndWait()
-    if (choice != "Y")
-        return
     Send "^+{Delete}"
     Sleep 50
     Send "{Tab}"
