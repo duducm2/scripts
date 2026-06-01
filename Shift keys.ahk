@@ -1275,6 +1275,7 @@ cheatSheets["Power BI"] := "
 Power BI (Shift)
 📊 [I]Report v[I]ew
 📊 [O]Table view ([O]verview)
+📋 [Z]Copy cell Val
 📊 [P]Model view ([P]lan)
 📊 [C]Get data ([C]onnect)
 📊 [T][T]ransform Data
@@ -15108,6 +15109,15 @@ Excel_RemoveRows(iterations := 8) {
     } catch Error as e {
         MsgBox "Error collapsing Power BI tables: " e.Message, "Power BI Error", "IconX"
     }
+}
+
+; Shift + Z : Copy table cell value (context menu → Enter ×2)
++z:: {
+    Send "{AppsKey}"
+    Sleep 200
+    Send "{Enter}"
+    Sleep 100
+    Send "{Enter}"
 }
 
 #HotIf
