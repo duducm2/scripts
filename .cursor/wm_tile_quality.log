@@ -96,3 +96,8 @@ eligible=6 hidden=1 visible=2 openOnMon=2 skipReject=476 skipNoMon=0
 selected=6 planned=6 tiled=5 unassigned=0 failed=1
 issues: tile_short:1
   FAIL hwnd=589972 mon=2 title=work.md - 14-my-notes - Visual Studio Code
+=== WM tile quality 20260603151332 final ===
+eligible=6 hidden=1 visible=2 openOnMon=2 skipReject=458 skipNoMon=0
+selected=6 planned=6 tiled=5 unassigned=0 failed=1
+issues: tile_short:1
+  FAIL hwnd=593190 mon=2 title=Mail - Figueiredo Eduardo (SO/BDO-UX-LA) - Outlook

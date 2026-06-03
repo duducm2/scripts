@@ -12342,8 +12342,6 @@ ApptWizard_ApplySelection(status, privacy, allDayOn, category, reminder) {
 
         try StandardLoadingBar_Update("✅ Wizard: applied", BANNER_ACCENT_SUCCESS)
         try StandardLoadingBar_Hide(700)
-        ; Finish by focusing the Title field so the user can type.
-        ApptWizard_FocusTitleField()
     } catch {
         try StandardLoadingBar_Update("❌ Wizard: failed", BANNER_ACCENT_ERROR)
         try StandardLoadingBar_Hide(1200)
