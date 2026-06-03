@@ -243,4 +243,5 @@ Use §8 matrix after enabling `OUTLOOK_USE_WINEVENT_INVALIDATE` or toggling `BRI
 - **Copy (Alt+I):** same wait + **`Editor_EnsureRevealItemSelected`** → `^c` + bounded **`ClipWait`**; restore saved clipboard only on failure; **`WinActivate`** editor in `finally`.
 - **Throttle:** `EDITOR_SMARTNAV_MIN_INTERVAL_MS` (~450 ms) in **`Editor_SmartNavReveal`** to ignore rapid double-presses.
 - **Rollback:** `EDITOR_USE_CONDITIONAL_EXPLORER_WAIT := false` in [`Shift keys.ahk`](../Shift%20keys.ahk) restores legacy `Sleep 2500` after Explorer activation.
-- **Failure:** `Editor_SmartNavRevealShowExplorerTimeout`; no NDJSON on hotkey path.
+- **Failure:** `Editor_SmartNavRevealShowExplorerTimeout` (hides loading bar first); no NDJSON on hotkey path.
+- **Loading UI:** `StandardLoadingBar_Show` / `Update` / `Hide` across `Editor_SmartNavReveal` and Explorer wait/copy/open (`BANNER_ACCENT_INTERMEDIATE`; `centerOnHwnd` = editor); see [standard_information_display.md](standard_information_display.md).

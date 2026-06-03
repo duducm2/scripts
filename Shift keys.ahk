@@ -15515,6 +15515,12 @@ global EDITOR_USE_CONDITIONAL_EXPLORER_WAIT := true
 global EDITOR_SMARTNAV_MIN_INTERVAL_MS := 450
 global g_EditorSmartNavLastTick := 0
 
+Editor_SmartNavLoadingUpdate(state, editorHwnd := 0) {
+    try StandardLoadingBar_Update(state, BANNER_ACCENT_INTERMEDIATE)
+    catch {
+    }
+}
+
 Editor_GetSelectedSidebarItemName(editorHwnd) {
     if !(editorHwnd is Integer) || editorHwnd <= 0
         return ""
@@ -15746,7 +15752,8 @@ Editor_WaitForShellDispatchedAfterOpen(explorerHwnd, timeoutMs := 2000) {
 }
 
 ; After Reveal in File Explorer: copy/open selected file in Windows Explorer, close window.
-Editor_WaitForActiveExplorerWindow(timeoutSec := 2.5, expectedBasename := "") {
+Editor_WaitForActiveExplorerWindow(timeoutSec := 2.5, expectedBasename := "", editorHwnd := 0) {
+    Editor_SmartNavLoadingUpdate("⏳ Waiting for Explorer window…", editorHwnd)
     if !WinWait("ahk_exe explorer.exe", , timeoutSec)
         return 0
     if !WinWaitActive("ahk_exe explorer.exe", , timeoutSec)
@@ -15755,8 +15762,10 @@ Editor_WaitForActiveExplorerWindow(timeoutSec := 2.5, expectedBasename := "") {
     if (!explorerHwnd)
         return 0
     try WinActivate("ahk_id " explorerHwnd)
+    Editor_SmartNavLoadingUpdate("⏳ Loading file list…", editorHwnd)
     Editor_WaitForExplorerItemsView(explorerHwnd, 600)
     if (EDITOR_USE_CONDITIONAL_EXPLORER_WAIT) {
+        Editor_SmartNavLoadingUpdate("⏳ Confirming file selection…", editorHwnd)
         revealMs := Max(3500, Round(timeoutSec * 1000))
         if !Editor_WaitForExplorerRevealReady(explorerHwnd, revealMs)
             return 0
@@ -15767,6 +15776,9 @@ Editor_WaitForActiveExplorerWindow(timeoutSec := 2.5, expectedBasename := "") {
 }
 
 Editor_SmartNavRevealShowExplorerTimeout(actionLabel := "") {
+    try StandardLoadingBar_Hide(0)
+    catch {
+    }
     msg := "Explorer opened but the file was not selected in time."
     if (actionLabel != "")
         msg := actionLabel ": " msg
@@ -15785,11 +15797,12 @@ Editor_CopyFromWindowsExplorerAndReturn(editorHwnd, expectedBasename := "", time
     copyOk := false
     explorerHwnd := 0
     try {
-        explorerHwnd := Editor_WaitForActiveExplorerWindow(timeoutSec, expectedBasename)
+        explorerHwnd := Editor_WaitForActiveExplorerWindow(timeoutSec, expectedBasename, editorHwnd)
         if (!explorerHwnd) {
             Editor_SmartNavRevealShowExplorerTimeout("Copy")
             return false
         }
+        Editor_SmartNavLoadingUpdate("⏳ Copying file to clipboard…", editorHwnd)
         if (!Editor_EnsureRevealItemSelected(explorerHwnd, "")) {
             try Explorer_EnsureItemsViewFocusPreserveSelection()
             catch {
@@ -15823,7 +15836,7 @@ Editor_CopyFromWindowsExplorerAndReturn(editorHwnd, expectedBasename := "", time
 
 Editor_OpenFromWindowsExplorer(editorHwnd, expectedBasename := "", timeoutSec := 2.5) {
     try {
-        explorerHwnd := Editor_WaitForActiveExplorerWindow(timeoutSec, expectedBasename)
+        explorerHwnd := Editor_WaitForActiveExplorerWindow(timeoutSec, expectedBasename, editorHwnd)
         if (!explorerHwnd) {
             Editor_SmartNavRevealShowExplorerTimeout("Open")
             if (editorHwnd) {
@@ -15837,6 +15850,7 @@ Editor_OpenFromWindowsExplorer(editorHwnd, expectedBasename := "", timeoutSec :=
         opened := false
 
         if (fullPath != "") {
+            Editor_SmartNavLoadingUpdate("⏳ Opening file…", editorHwnd)
             try {
                 Run '"' fullPath '"'
                 opened := true
@@ -15846,6 +15860,7 @@ Editor_OpenFromWindowsExplorer(editorHwnd, expectedBasename := "", timeoutSec :=
         }
 
         if (!opened) {
+            Editor_SmartNavLoadingUpdate("⏳ Opening file (Enter)…", editorHwnd)
             try Explorer_EnsureItemsViewFocusPreserveSelection()
             catch {
             }
@@ -15874,9 +15889,10 @@ Editor_OpenFromWindowsExplorer(editorHwnd, expectedBasename := "", timeoutSec :=
 
 Editor_SmartNavRevealAfterSendH(editorHwnd, explorerAction, expectedBasename := "") {
     if (explorerAction = "copy")
-        Editor_CopyFromWindowsExplorerAndReturn(editorHwnd, expectedBasename)
-    else if (explorerAction = "open")
-        Editor_OpenFromWindowsExplorer(editorHwnd, expectedBasename)
+        return Editor_CopyFromWindowsExplorerAndReturn(editorHwnd, expectedBasename)
+    if (explorerAction = "open")
+        return Editor_OpenFromWindowsExplorer(editorHwnd, expectedBasename)
+    return true
 }
 
 ; Smart navigation - Editor → Explorer, Explorer → Reveal in Explorer (optional copy/open in Windows Explorer).
@@ -15887,18 +15903,57 @@ Editor_SmartNavReveal(explorerAction := "") {
     g_EditorSmartNavLastTick := A_TickCount
 
     editorHwnd := WinExist("A")
-    expectedBasename := Editor_GetExpectedRevealBasename(editorHwnd)
-    if (IsCursorMainEditorFocused()) {
-        if (!FocusCursorFilesExplorer()) {
-            Send "^+e"
-            if (!Editor_WaitForSidebarExplorerFocus(800)) {
-                Send "^!+e"
-                Editor_WaitForSidebarExplorerFocus(400)
+    barOpts := { passive: false, centerOnHwnd: editorHwnd, textWidth: 480 }
+    startMsg := "⏳ Smart nav: show in Explorer…"
+    if (explorerAction = "copy")
+        startMsg := "⏳ Smart nav: copying file…"
+    else if (explorerAction = "open")
+        startMsg := "⏳ Smart nav: opening file…"
+
+    ok := false
+    barShown := false
+    try {
+        try {
+            StandardLoadingBar_Show(startMsg, BANNER_ACCENT_INTERMEDIATE, barOpts)
+            barShown := true
+        } catch {
+        }
+
+        expectedBasename := Editor_GetExpectedRevealBasename(editorHwnd)
+        if (IsCursorMainEditorFocused()) {
+            if (!FocusCursorFilesExplorer()) {
+                Editor_SmartNavLoadingUpdate("⏳ Opening file explorer sidebar…", editorHwnd)
+                Send "^+e"
+                if (!Editor_WaitForSidebarExplorerFocus(800)) {
+                    Send "^!+e"
+                    Editor_WaitForSidebarExplorerFocus(400)
+                }
+            }
+        }
+        Editor_SmartNavLoadingUpdate("⏳ Reveal in Explorer…", editorHwnd)
+        Send "^h"
+
+        if (explorerAction = "copy" || explorerAction = "open")
+            ok := Editor_SmartNavRevealAfterSendH(editorHwnd, explorerAction, expectedBasename)
+        else
+            ok := true
+
+        if (ok) {
+            try {
+                if (explorerAction = "copy")
+                    StandardLoadingBar_Update("✅ File copied to clipboard", BANNER_ACCENT_SUCCESS)
+                else if (explorerAction = "open")
+                    StandardLoadingBar_Update("✅ File opened", BANNER_ACCENT_SUCCESS)
+            } catch {
+            }
+        }
+    } finally {
+        if (barShown) {
+            try StandardLoadingBar_Hide(ok ? 500 : 0)
+            catch {
             }
         }
     }
-    Send "^h"
-    Editor_SmartNavRevealAfterSendH(editorHwnd, explorerAction, expectedBasename)
 }
 
 ; UIA: find Type 50020 text by exact Name under scope. Prefer on-screen; if several, pick bottom-most (largest top Y).
