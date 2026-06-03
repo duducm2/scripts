@@ -231,3 +231,13 @@ Use §8 matrix after enabling `OUTLOOK_USE_WINEVENT_INVALIDATE` or toggling `BRI
 - **Single authority:** **`QuickLook_ApplyStudyLayout`** (move to target monitor, **`TryMaximizeWindow`**, layout-ready poll, focus click, scroll) shared by **`QuickLook_OpenPath`** and the **`#!+X`** fast path when QuickLook is already running.
 - **Readiness gates:** title basename match (`QuickLook_WaitForOpenReady`) plus UIA **`Document`** enabled on two consecutive polls (`QuickLook_WaitForViewerReady`); scroll via **`ScrollPattern`** first, **`^{End}`** fallback with vertical-% verification when available.
 - **Rollback:** `STUDY_TOPIC_QL_STRICT_LAYOUT := false` in [`Utils.ahk`](../Utils.ahk) restores legacy 2s `WinWait` + inline scroll; optional one-shot **`SetTimer(..., -800)`** deferred layout if the process appears just after the hwnd wait times out.
+
+---
+
+## 17. Editor Smart Nav — Explorer reveal wait (Alt+H / Alt+I, 2026)
+
+- **Do not** use a fixed multi-second sleep after `WinWaitActive("ahk_exe explorer.exe")` when Alt+H/Alt+I need a selected file in ItemsView; use **`Editor_WaitForExplorerRevealReady`** (poll `Explorer_FindItemsView` + `Explorer_GetItemsViewSelection`, optional basename match, two stable polls) with bounded timeout (default 3500 ms).
+- **Basename hint:** capture before `Send "^h"` via **`Editor_GetExpectedRevealBasename`** (editor title segment before ` - `, else sidebar `TreeItem` selection); degrade to “any selection” when empty.
+- **Sidebar focus:** replace fixed sleeps after `^+e` with **`Editor_WaitForSidebarExplorerFocus`** (~800 ms poll on `FocusCursorFilesExplorer`).
+- **Rollback:** `EDITOR_USE_CONDITIONAL_EXPLORER_WAIT := false` in [`Shift keys.ahk`](../Shift%20keys.ahk) restores legacy `Sleep 2500` after Explorer activation.
+- **Failure:** `Editor_SmartNavRevealShowExplorerTimeout`; Alt+I copy path restores editor HWND in `finally`.

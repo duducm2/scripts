@@ -50,3 +50,49 @@ eligible=7 hidden=1 visible=3 openOnMon=2 skipReject=458 skipNoMon=0
 selected=7 planned=7 tiled=6 unassigned=0 failed=1
 issues: tile_short:1
   FAIL hwnd=983916 mon=2 title=Calendar - Figueiredo Eduardo (SO/BDO-UX-LA) - Outlook
+=== WM tile quality 20260601173521 final ===
+eligible=10 hidden=2 visible=3 openOnMon=4 skipReject=501 skipNoMon=0
+selected=10 planned=10 tiled=7 unassigned=0 failed=3
+issues: tile_short:3
+  FAIL hwnd=136734 mon=2 title=Mail - Figueiredo Eduardo (SO/BDO-UX-LA) - Outlook
+  FAIL hwnd=2690966 mon=2 title=Windows Shell Experience Host
+  FAIL hwnd=5639832 mon=3 title=VID_20260415_142103.mp4
+=== WM tile quality 20260601195418 final ===
+eligible=10 hidden=0 visible=4 openOnMon=5 skipReject=537 skipNoMon=0
+selected=10 planned=10 tiled=8 unassigned=0 failed=2
+issues: tile_short:2
+  FAIL hwnd=1184240 mon=1 title=visual-structures
+  FAIL hwnd=2690966 mon=2 title=Windows Shell Experience Host
+=== WM tile quality 20260602084802 backfill ===
+eligible=13 hidden=3 visible=3 openOnMon=6 skipReject=513 skipNoMon=0
+selected=11 planned=11 tiled=10 unassigned=0 failed=1
+issues: tile_short:1
+  FAIL hwnd=134296 mon=1 title=Calendar - Figueiredo Eduardo (SO/BDO-UX-LA) - Outlook
+=== WM tile quality 20260602084803 final ===
+eligible=13 hidden=3 visible=3 openOnMon=6 skipReject=513 skipNoMon=0
+selected=11 planned=11 tiled=10 unassigned=0 failed=1
+issues: tile_short:1
+  FAIL hwnd=134296 mon=1 title=Calendar - Figueiredo Eduardo (SO/BDO-UX-LA) - Outlook
+=== WM tile quality 20260602103147 backfill ===
+eligible=17 hidden=1 visible=2 openOnMon=13 skipReject=521 skipNoMon=0
+selected=12 planned=12 tiled=12 unassigned=0 failed=0
+=== WM tile quality 20260602103444 backfill ===
+eligible=13 hidden=0 visible=4 openOnMon=8 skipReject=500 skipNoMon=0
+selected=12 planned=12 tiled=11 unassigned=0 failed=1
+issues: tile_short:1
+  FAIL hwnd=201624 mon=1 title=Untitled - Paint
+=== WM tile quality 20260602103444 final ===
+eligible=13 hidden=0 visible=4 openOnMon=8 skipReject=500 skipNoMon=0
+selected=12 planned=12 tiled=11 unassigned=0 failed=1
+issues: tile_short:1
+  FAIL hwnd=201624 mon=1 title=Untitled - Paint
+=== WM tile quality 20260602104230 final ===
+eligible=4 hidden=0 visible=1 openOnMon=2 skipReject=405 skipNoMon=0
+selected=4 planned=4 tiled=3 unassigned=0 failed=1
+issues: tile_short:1
+  FAIL hwnd=132224 mon=3 title=Windows Shell Experience Host
+=== WM tile quality 20260602193837 final ===
+eligible=6 hidden=1 visible=2 openOnMon=2 skipReject=476 skipNoMon=0
+selected=6 planned=6 tiled=5 unassigned=0 failed=1
+issues: tile_short:1
+  FAIL hwnd=589972 mon=2 title=work.md - 14-my-notes - Visual Studio Code
