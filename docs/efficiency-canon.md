@@ -236,8 +236,11 @@ Use §8 matrix after enabling `OUTLOOK_USE_WINEVENT_INVALIDATE` or toggling `BRI
 
 ## 17. Editor Smart Nav — Explorer reveal wait (Alt+H / Alt+I, 2026)
 
-- **Do not** use a fixed multi-second sleep after `WinWaitActive("ahk_exe explorer.exe")` when Alt+H/Alt+I need a selected file in ItemsView; use **`Editor_WaitForExplorerRevealReady`** (poll `Explorer_FindItemsView` + `Explorer_GetItemsViewSelection`, optional basename match, two stable polls) with bounded timeout (default 3500 ms).
-- **Basename hint:** capture before `Send "^h"` via **`Editor_GetExpectedRevealBasename`** (editor title segment before ` - `, else sidebar `TreeItem` selection); degrade to “any selection” when empty.
+- **Do not** use a fixed multi-second sleep after `WinWaitActive("ahk_exe explorer.exe")` when Alt+H/Alt+I need a selected file in ItemsView; use **`Editor_WaitForExplorerItemsView`** then **`Editor_WaitForExplorerRevealReady`** (poll `Explorer_GetItemsViewSelection`; **any** highlighted item — IDE reveal pre-selects; **three** stable polls) with bounded timeout (default 3500 ms).
+- **Normalize only for hints:** **`Editor_NormalizeRevealBasename`** strips Cursor binary-tab placeholder text (comma suffix); wait does **not** gate on basename match.
 - **Sidebar focus:** replace fixed sleeps after `^+e` with **`Editor_WaitForSidebarExplorerFocus`** (~800 ms poll on `FocusCursorFilesExplorer`).
+- **Open (Alt+H):** **`Editor_EnsureRevealItemSelected`** → **`Editor_BuildRevealedFilePath`** → `Run` full path; `Enter` + **`Editor_WaitForShellDispatchedAfterOpen`** fallback; then `WinClose`.
+- **Copy (Alt+I):** same wait + **`Editor_EnsureRevealItemSelected`** → `^c` + bounded **`ClipWait`**; restore saved clipboard only on failure; **`WinActivate`** editor in `finally`.
+- **Throttle:** `EDITOR_SMARTNAV_MIN_INTERVAL_MS` (~450 ms) in **`Editor_SmartNavReveal`** to ignore rapid double-presses.
 - **Rollback:** `EDITOR_USE_CONDITIONAL_EXPLORER_WAIT := false` in [`Shift keys.ahk`](../Shift%20keys.ahk) restores legacy `Sleep 2500` after Explorer activation.
-- **Failure:** `Editor_SmartNavRevealShowExplorerTimeout`; Alt+I copy path restores editor HWND in `finally`.
+- **Failure:** `Editor_SmartNavRevealShowExplorerTimeout`; no NDJSON on hotkey path.

@@ -15512,88 +15512,8 @@ FocusCursorFilesExplorer() {
 
 ; Smart nav Explorer wait: conditional UIA poll vs legacy fixed sleep (efficiency-canon §2).
 global EDITOR_USE_CONDITIONAL_EXPLORER_WAIT := true
-global EDITOR_SMARTNAV_DEBUG_LOG := A_ScriptDir "\debug-7d502b.log"
 global EDITOR_SMARTNAV_MIN_INTERVAL_MS := 450
 global g_EditorSmartNavLastTick := 0
-
-Editor_SmartNavEscapeJson(s) {
-    s := StrReplace(s, "\", "\\")
-    s := StrReplace(s, '"', '\"')
-    s := StrReplace(s, "`r", "")
-    s := StrReplace(s, "`n", " ")
-    return s
-}
-
-Editor_SmartNavDebugLog(hypothesisId, location, message, dataJson := "{}") {
-    ; #region agent log
-    try {
-        line := '{"sessionId":"7d502b","hypothesisId":"' hypothesisId '","location":"' Editor_SmartNavEscapeJson(
-            location) '","message":"' Editor_SmartNavEscapeJson(message) '","data":' dataJson ',"timestamp":' A_TickCount '}`n'
-        FileAppend line, EDITOR_SMARTNAV_DEBUG_LOG, "UTF-8"
-    } catch {
-    }
-    ; #endregion
-}
-
-Editor_GetExplorerRevealDiagnostics(explorerHwnd, expectedBasename := "") {
-    diag := Map("hasWin", false, "hasRoot", false, "hasItemsView", false, "selCount", 0, "selNames", "", "basenameMatch",
-        false, "expectedBasename", expectedBasename, "explorerTitle", "")
-    if !(explorerHwnd is Integer) || explorerHwnd <= 0
-        return diag
-    diag["hasWin"] := WinExist("ahk_id " explorerHwnd) ? true : false
-    try diag["explorerTitle"] := WinGetTitle("ahk_id " explorerHwnd)
-    catch {
-    }
-    try {
-        root := UIA.ElementFromHandle(explorerHwnd)
-        if (!root)
-            return diag
-        diag["hasRoot"] := true
-        itemsView := Explorer_FindItemsView(root)
-        if (!itemsView)
-            return diag
-        diag["hasItemsView"] := true
-        selected := Explorer_GetItemsViewSelection(itemsView)
-        diag["selCount"] := selected.Length
-        names := []
-        selItemPatternCount := 0
-        for item in selected {
-            try names.Push(item.Name)
-            catch {
-            }
-            try {
-                if item.SelectionItemPattern.IsSelected
-                    selItemPatternCount++
-            } catch {
-            }
-        }
-        diag["selNames"] := ""
-        for i, nm in names
-            diag["selNames"] .= (i = 1 ? "" : "|") . nm
-        diag["selItemPatternSelected"] := selItemPatternCount
-        diag["basenameMatch"] := Editor_SelectionMatchesRevealBasename(selected, expectedBasename)
-    } catch {
-    }
-    return diag
-}
-
-Editor_DiagnosticsToJson(diag) {
-    if !IsObject(diag)
-        return "{}"
-    eb := diag.Has("expectedBasename") ? diag["expectedBasename"] : ""
-    et := diag.Has("explorerTitle") ? diag["explorerTitle"] : ""
-    sn := diag.Has("selNames") ? diag["selNames"] : ""
-    json := '{"hasWin":' (diag.Has("hasWin") && diag["hasWin"] ? "true" : "false")
-    json .= ',"hasRoot":' (diag.Has("hasRoot") && diag["hasRoot"] ? "true" : "false")
-    json .= ',"hasItemsView":' (diag.Has("hasItemsView") && diag["hasItemsView"] ? "true" : "false")
-    json .= ',"selCount":' (diag.Has("selCount") ? diag["selCount"] : 0)
-    json .= ',"selNames":"' Editor_SmartNavEscapeJson(sn) '"'
-    json .= ',"selItemPatternSelected":' (diag.Has("selItemPatternSelected") ? diag["selItemPatternSelected"] : 0)
-    json .= ',"basenameMatch":' (diag.Has("basenameMatch") && diag["basenameMatch"] ? "true" : "false")
-    json .= ',"expectedBasename":"' Editor_SmartNavEscapeJson(eb) '"'
-    json .= ',"explorerTitle":"' Editor_SmartNavEscapeJson(et) '"}'
-    return json
-}
 
 Editor_GetSelectedSidebarItemName(editorHwnd) {
     if !(editorHwnd is Integer) || editorHwnd <= 0
@@ -15671,39 +15591,11 @@ Editor_GetExpectedRevealBasename(editorHwnd) {
         } catch {
         }
     }
-    normalized := Editor_NormalizeRevealBasename(raw)
-    ; #region agent log
-    if (raw != "" && raw != normalized)
-        Editor_SmartNavDebugLog("G", "Editor_GetExpectedRevealBasename", "normalized basename", '{"raw":"' Editor_SmartNavEscapeJson(
-            SubStr(raw, 1, 120)) '","normalized":"' Editor_SmartNavEscapeJson(normalized) '"}')
-    ; #endregion
-    return normalized
-}
-
-Editor_SelectionMatchesRevealBasename(selected, expectedBasename) {
-    if (expectedBasename = "")
-        return true
-    if (!selected || selected.Length = 0)
-        return false
-    needle := StrLower(Editor_NormalizeRevealBasename(expectedBasename))
-    if (needle = "")
-        return true
-    for item in selected {
-        try {
-            nm := item.Name
-            if (nm = "")
-                continue
-            nmNorm := StrLower(Editor_NormalizeRevealBasename(nm))
-            if (nmNorm = needle || InStr(nmNorm, needle) || InStr(needle, nmNorm))
-                return true
-        } catch {
-        }
-    }
-    return false
+    return Editor_NormalizeRevealBasename(raw)
 }
 
 ; Single poll: ItemsView + at least one highlighted item (IDE reveal always pre-selects).
-Editor_ExplorerRevealReadyOnce(explorerHwnd, expectedBasename := "") {
+Editor_ExplorerRevealReadyOnce(explorerHwnd) {
     if !(explorerHwnd is Integer) || explorerHwnd <= 0 || !WinExist("ahk_id " explorerHwnd)
         return false
     try {
@@ -15736,42 +15628,25 @@ Editor_WaitForExplorerItemsView(explorerHwnd, timeoutMs := 600) {
     return false
 }
 
-; Bounded poll until reveal selection is stable (two consecutive OK polls).
-Editor_WaitForExplorerRevealReady(explorerHwnd, expectedBasename := "", timeoutMs := 3500) {
+; Bounded poll until reveal selection is stable (three consecutive OK polls).
+Editor_WaitForExplorerRevealReady(explorerHwnd, timeoutMs := 3500) {
     if !(explorerHwnd is Integer) || explorerHwnd <= 0
         return false
     deadline := A_TickCount + timeoutMs
     stableCount := 0
-    lastDiag := ""
     while (A_TickCount < deadline) {
-        if (!WinExist("ahk_id " explorerHwnd)) {
-            ; #region agent log
-            Editor_SmartNavDebugLog("D", "Editor_WaitForExplorerRevealReady", "explorer hwnd gone", '{"elapsedMs":' (
-                deadline - A_TickCount) '}')
-            ; #endregion
+        if (!WinExist("ahk_id " explorerHwnd))
             return false
-        }
-        if (Editor_ExplorerRevealReadyOnce(explorerHwnd, expectedBasename)) {
+        if (Editor_ExplorerRevealReadyOnce(explorerHwnd)) {
             stableCount++
-            if (stableCount >= 3) {
-                ; #region agent log
-                diag := Editor_GetExplorerRevealDiagnostics(explorerHwnd, expectedBasename)
-                Editor_SmartNavDebugLog("C", "Editor_WaitForExplorerRevealReady", "ready stable", Editor_DiagnosticsToJson(
-                    diag))
-                ; #endregion
+            if (stableCount >= 3)
                 return true
-            }
             Sleep 75
         } else {
             stableCount := 0
-            lastDiag := Editor_DiagnosticsToJson(Editor_GetExplorerRevealDiagnostics(explorerHwnd, expectedBasename))
             Sleep 50
         }
     }
-    ; #region agent log
-    Editor_SmartNavDebugLog("A", "Editor_WaitForExplorerRevealReady", "timeout", lastDiag != "" ? lastDiag :
-        Editor_DiagnosticsToJson(Editor_GetExplorerRevealDiagnostics(explorerHwnd, expectedBasename)))
-    ; #endregion
     return false
 }
 
@@ -15872,29 +15747,18 @@ Editor_WaitForShellDispatchedAfterOpen(explorerHwnd, timeoutMs := 2000) {
 
 ; After Reveal in File Explorer: copy/open selected file in Windows Explorer, close window.
 Editor_WaitForActiveExplorerWindow(timeoutSec := 2.5, expectedBasename := "") {
-    t0 := A_TickCount
-    winAppeared := WinWait("ahk_exe explorer.exe", , timeoutSec)
-    winActive := winAppeared ? WinWaitActive("ahk_exe explorer.exe", , timeoutSec) : 0
+    if !WinWait("ahk_exe explorer.exe", , timeoutSec)
+        return 0
+    if !WinWaitActive("ahk_exe explorer.exe", , timeoutSec)
+        return 0
     explorerHwnd := WinExist("A")
-    ; #region agent log
-    expTitle := ""
-    try expTitle := explorerHwnd ? WinGetTitle("ahk_id " explorerHwnd) : ""
-    Editor_SmartNavDebugLog("B", "Editor_WaitForActiveExplorerWindow", "after WinWait", '{"winAppeared":' (winAppeared ?
-        "true" : "false") ',"winActive":' (winActive ? "true" : "false") ',"explorerHwnd":' explorerHwnd ',"expectedBasename":"'
-        Editor_SmartNavEscapeJson(expectedBasename) '","explorerTitle":"' Editor_SmartNavEscapeJson(expTitle) '","elapsedMs":'
-        (A_TickCount - t0) '}')
-    ; #endregion
-    if (!winAppeared)
-        return 0
-    if (!winActive)
-        return 0
     if (!explorerHwnd)
         return 0
     try WinActivate("ahk_id " explorerHwnd)
     Editor_WaitForExplorerItemsView(explorerHwnd, 600)
     if (EDITOR_USE_CONDITIONAL_EXPLORER_WAIT) {
         revealMs := Max(3500, Round(timeoutSec * 1000))
-        if !Editor_WaitForExplorerRevealReady(explorerHwnd, expectedBasename, revealMs)
+        if !Editor_WaitForExplorerRevealReady(explorerHwnd, revealMs)
             return 0
     } else {
         Sleep 2500
@@ -15914,6 +15778,11 @@ Editor_SmartNavRevealShowExplorerTimeout(actionLabel := "") {
 }
 
 Editor_CopyFromWindowsExplorerAndReturn(editorHwnd, expectedBasename := "", timeoutSec := 2.5) {
+    savedClip := ""
+    try savedClip := A_Clipboard
+    catch {
+    }
+    copyOk := false
     explorerHwnd := 0
     try {
         explorerHwnd := Editor_WaitForActiveExplorerWindow(timeoutSec, expectedBasename)
@@ -15921,14 +15790,31 @@ Editor_CopyFromWindowsExplorerAndReturn(editorHwnd, expectedBasename := "", time
             Editor_SmartNavRevealShowExplorerTimeout("Copy")
             return false
         }
-        try Explorer_EnsureItemsViewFocusPreserveSelection()
-        catch {
+        if (!Editor_EnsureRevealItemSelected(explorerHwnd, "")) {
+            try Explorer_EnsureItemsViewFocusPreserveSelection()
+            catch {
+            }
         }
         Send "^c"
+        if !ClipWait(0.8, 1) && (A_Clipboard = "" || A_Clipboard = savedClip) {
+            Editor_SmartNavRevealShowExplorerTimeout("Copy")
+            return false
+        }
         try WinClose("ahk_id " explorerHwnd)
         explorerHwnd := 0
+        copyOk := true
         return true
+    } catch {
+        Editor_SmartNavRevealShowExplorerTimeout("Copy")
+        return false
     } finally {
+        if (!copyOk) {
+            try {
+                if (savedClip != "")
+                    A_Clipboard := savedClip
+            } catch {
+            }
+        }
         if (editorHwnd) {
             try WinActivate("ahk_id " editorHwnd)
         }
@@ -15939,10 +15825,6 @@ Editor_OpenFromWindowsExplorer(editorHwnd, expectedBasename := "", timeoutSec :=
     try {
         explorerHwnd := Editor_WaitForActiveExplorerWindow(timeoutSec, expectedBasename)
         if (!explorerHwnd) {
-            ; #region agent log
-            Editor_SmartNavDebugLog("A", "Editor_OpenFromWindowsExplorer", "failed wait", '{"expectedBasename":"'
-                Editor_SmartNavEscapeJson(expectedBasename) '"}')
-            ; #endregion
             Editor_SmartNavRevealShowExplorerTimeout("Open")
             if (editorHwnd) {
                 try WinActivate("ahk_id " editorHwnd)
@@ -15953,19 +15835,13 @@ Editor_OpenFromWindowsExplorer(editorHwnd, expectedBasename := "", timeoutSec :=
         Editor_EnsureRevealItemSelected(explorerHwnd, "")
         fullPath := Editor_BuildRevealedFilePath(explorerHwnd, "")
         opened := false
-        openMethod := ""
 
         if (fullPath != "") {
             try {
                 Run '"' fullPath '"'
                 opened := true
-                openMethod := "Run"
                 Editor_WaitForShellDispatchedAfterOpen(explorerHwnd, 2500)
-            } catch Error as e {
-                ; #region agent log
-                Editor_SmartNavDebugLog("H", "Editor_OpenFromWindowsExplorer", "Run failed", '{"err":"' Editor_SmartNavEscapeJson(
-                    SubStr(e.Message, 1, 80)) '","fullPath":"' Editor_SmartNavEscapeJson(fullPath) '"}')
-                ; #endregion
+            } catch {
             }
         }
 
@@ -15974,16 +15850,10 @@ Editor_OpenFromWindowsExplorer(editorHwnd, expectedBasename := "", timeoutSec :=
             catch {
             }
             Send "{Enter}"
-            openMethod := "Enter"
             opened := Editor_WaitForShellDispatchedAfterOpen(explorerHwnd, 2500)
         }
 
         try WinClose("ahk_id " explorerHwnd)
-
-        ; #region agent log
-        Editor_SmartNavDebugLog("F", "Editor_OpenFromWindowsExplorer", "open done", '{"openMethod":"' Editor_SmartNavEscapeJson(
-            openMethod) '","opened":' (opened ? "true" : "false") ',"fullPath":"' Editor_SmartNavEscapeJson(fullPath) '"}')
-        ; #endregion
 
         if (!opened) {
             Editor_SmartNavRevealShowExplorerTimeout("Open")
@@ -15993,11 +15863,7 @@ Editor_OpenFromWindowsExplorer(editorHwnd, expectedBasename := "", timeoutSec :=
             return false
         }
         return true
-    } catch Error as e {
-        ; #region agent log
-        Editor_SmartNavDebugLog("H", "Editor_OpenFromWindowsExplorer", "uncaught", '{"err":"' Editor_SmartNavEscapeJson(SubStr(
-            e.Message, 1, 80)) '"}')
-        ; #endregion
+    } catch {
         Editor_SmartNavRevealShowExplorerTimeout("Open")
         if (editorHwnd) {
             try WinActivate("ahk_id " editorHwnd)
@@ -16022,42 +15888,17 @@ Editor_SmartNavReveal(explorerAction := "") {
 
     editorHwnd := WinExist("A")
     expectedBasename := Editor_GetExpectedRevealBasename(editorHwnd)
-    inEditor := IsCursorMainEditorFocused()
-    branch := "explorerOnly"
-    if (inEditor) {
-        if (FocusCursorFilesExplorer())
-            branch := "editor_sidebarFocused"
-        else {
+    if (IsCursorMainEditorFocused()) {
+        if (!FocusCursorFilesExplorer()) {
             Send "^+e"
-            if (Editor_WaitForSidebarExplorerFocus(800))
-                branch := "editor_openSidebar"
-            else {
+            if (!Editor_WaitForSidebarExplorerFocus(800)) {
                 Send "^!+e"
                 Editor_WaitForSidebarExplorerFocus(400)
-                branch := "editor_secondarySidebar"
             }
         }
     }
-    ; #region agent log
-    Editor_SmartNavDebugLog("E", "Editor_SmartNavReveal", "start", '{"action":"' Editor_SmartNavEscapeJson(
-        explorerAction) '","branch":"' branch '","inEditor":' (inEditor ? "true" : "false") ',"expectedBasename":"'
-        Editor_SmartNavEscapeJson(expectedBasename) '","editorHwnd":' editorHwnd '}')
-    ; #endregion
-    if (inEditor) {
-        if (branch = "editor_sidebarFocused") {
-            Send "^h"
-            Editor_SmartNavRevealAfterSendH(editorHwnd, explorerAction, expectedBasename)
-        } else if (branch = "editor_openSidebar") {
-            Send "^h"
-            Editor_SmartNavRevealAfterSendH(editorHwnd, explorerAction, expectedBasename)
-        } else {
-            Send "^h"
-            Editor_SmartNavRevealAfterSendH(editorHwnd, explorerAction, expectedBasename)
-        }
-    } else {
-        Send "^h"
-        Editor_SmartNavRevealAfterSendH(editorHwnd, explorerAction, expectedBasename)
-    }
+    Send "^h"
+    Editor_SmartNavRevealAfterSendH(editorHwnd, explorerAction, expectedBasename)
 }
 
 ; UIA: find Type 50020 text by exact Name under scope. Prefer on-screen; if several, pick bottom-most (largest top Y).
