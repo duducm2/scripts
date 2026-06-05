@@ -30,7 +30,8 @@ global MM_DoubleTapTimer := 0
 global MM_DoubleTapOverlayGui := ""
 
 ^!#c:: {
-    global MousemasterActive, ActiveWinID, MM_DoubleTapArmed, MM_LastPressTick, MM_DoubleTapThresholdMs, MM_DoubleTapTimer
+    global MousemasterActive, ActiveWinID, MM_DoubleTapArmed, MM_LastPressTick, MM_DoubleTapThresholdMs,
+        MM_DoubleTapTimer
 
     if (MousemasterActive) {
         Mousemaster_Deactivate()
@@ -277,6 +278,20 @@ Mousemaster_Deactivate() {
 ; ==============================================================================
 ; Phase 3.5: Double-Tap Overlay Helpers
 ; ==============================================================================
+MM_GetTopCenterPos(&outX, &outY, width, height, topMargin := 8) {
+    local monLeft, monTop, monRight, monBottom
+    MonitorGetWorkArea(MonitorGetPrimary(), &monLeft, &monTop, &monRight, &monBottom)
+    outX := monLeft + ((monRight - monLeft) - width) // 2
+    outY := monTop + topMargin
+}
+
+MM_ShowTopInputBox(Prompt, Title) {
+    local ibW := 300, ibH := 88
+    local ibX, ibY
+    MM_GetTopCenterPos(&ibX, &ibY, ibW, ibH)
+    return InputBox(Prompt, Title, "x" ibX " y" ibY " w" ibW " h" ibH)
+}
+
 MM_DoubleTap_ShowOverlay() {
     global MM_DoubleTapOverlayGui
     if (MM_DoubleTapOverlayGui) {
@@ -286,13 +301,12 @@ MM_DoubleTap_ShowOverlay() {
     MM_DoubleTapOverlayGui := Gui("+ToolWindow +AlwaysOnTop -Caption +E0x20 -DPIScale", "MM_DoubleTapOverlay")
     MM_DoubleTapOverlayGui.BackColor := "2980B9"
     WinSetTransColor("2980B9", MM_DoubleTapOverlayGui.Hwnd)
-    MM_DoubleTapOverlayGui.SetFont("s14 w700 cWhite", "Segoe UI")
-    MM_DoubleTapOverlayGui.Add("Text", "x20 y10 w320 h40 0x200 Background2980B9 Center",
+    MM_DoubleTapOverlayGui.SetFont("s11 w700 cWhite", "Segoe UI")
+    local ovlW := 280, ovlH := 36
+    MM_DoubleTapOverlayGui.Add("Text", "x12 y8 w256 h20 0x200 Background2980B9 Center",
         "🔍 Double-tap for text selection")
-    MonitorGetWorkArea(MonitorGetPrimary(), &monLeft, &monTop, &monRight, &monBottom)
-    local ovlW := 360, ovlH := 60
-    local ovlX := monLeft + ((monRight - monLeft) - ovlW) // 2
-    local ovlY := monTop + 20
+    local ovlX, ovlY
+    MM_GetTopCenterPos(&ovlX, &ovlY, ovlW, ovlH)
     MM_DoubleTapOverlayGui.Show("NoActivate x" ovlX " y" ovlY " w" ovlW " h" ovlH)
 }
 
@@ -339,7 +353,7 @@ Mousemaster_ExecuteDoubleTapSearch() {
     local endSeq := ""
     local ibResult := 0
 
-    ibResult := InputBox("Enter the START letters of the target text range:", "Double-Tap — Start Text", "w400 h150")
+    ibResult := MM_ShowTopInputBox("Enter the START letters of the target text range:", "Double-Tap — Start Text")
     if (ibResult.Result = "Cancel")
         return
     startSeq := Trim(ibResult.Value)
@@ -349,7 +363,7 @@ Mousemaster_ExecuteDoubleTapSearch() {
         return
     }
 
-    ibResult := InputBox("Enter the END letters of the target text range:", "Double-Tap — End Text", "w400 h150")
+    ibResult := MM_ShowTopInputBox("Enter the END letters of the target text range:", "Double-Tap — End Text")
     if (ibResult.Result = "Cancel")
         return
     endSeq := Trim(ibResult.Value)
