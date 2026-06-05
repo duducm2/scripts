@@ -14,7 +14,7 @@ Deep technical investigations have already been completed on the automation scri
 - Architectural and remediation strategies (native AHK hardening, polyglot offload, COM/UIA usage).
 - Technology viability and constraints (e.g. deprecated APIs, latency requirements, state synchronization).
 
-Future AI runs must **ingest this canon and the referenced reports** before proposing changes. Do not re-audit from scratch unless the scope explicitly excludes prior findings. When in conflict, precedence is: determinism and safety first, then behavior parity, then latency and maintainability.
+Future AI runs must **ingest this canon and the referenced reports** before proposing changes. Do not re-audit from scratch unmless the scope explicitly excludes prior findings. When in conflict, precedence is: determinism and safety first, then behavior parity, then latency and maintainability.
 
 ---
 

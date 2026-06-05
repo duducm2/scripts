@@ -19,8 +19,18 @@ global ActiveWinID := ""
 ; Cap hints after UIA FindElements (trade-off: faster overlay build vs incomplete hint coverage on huge trees).
 global Mousemaster_MaxHints := 350
 
+; ==============================================================================
+; Phase 0.5: Double-Tap State (Ctrl+Alt+Win+C)
+; ==============================================================================
+global MM_DoubleTapArmed := false
+global MM_LastPressTick := 0
+global MM_DoubleTapThresholdMs := 330
+global MM_DoubleTapTimer := 0
+global MM_DoubleTapOverlayGui := ""
+
 ^!#c:: {
-    global MousemasterActive, ActiveWinID
+    global MousemasterActive, ActiveWinID, MM_DoubleTapArmed, MM_LastPressTick, MM_DoubleTapThresholdMs, MM_DoubleTapTimer
+
     if (MousemasterActive) {
         Mousemaster_Deactivate()
         return
@@ -39,7 +49,43 @@ global Mousemaster_MaxHints := 350
         return
     }
 
-    Mousemaster_Activate(ActiveWinID)
+    ; === Double-tap detection ===
+    local now := A_TickCount
+    local elapsed := (MM_LastPressTick > 0) ? (now - MM_LastPressTick) : 9999
+
+    if (MM_DoubleTapArmed && elapsed >= 0 && elapsed < MM_DoubleTapThresholdMs) {
+        ; SECOND PRESS within threshold → execute text selection macro
+        MM_DoubleTapArmed := false
+        MM_LastPressTick := 0
+        if (MM_DoubleTapTimer) {
+            SetTimer(MM_DoubleTapTimer, 0)
+            MM_DoubleTapTimer := 0
+        }
+        MM_DoubleTap_HideOverlay()
+        Mousemaster_ExecuteDoubleTapSearch()
+        return
+    }
+
+    ; FIRST PRESS → arm for double-tap, show overlay
+    MM_LastPressTick := now
+    MM_DoubleTapArmed := true
+    MM_DoubleTap_ShowOverlay()
+
+    ; Auto-disarm after threshold — fires Mousemaster_Activate if no second press
+    MM_DoubleTapTimer := ObjBindMethod(MM_DoubleTapTimerObj, "OnSingleTapTimeout")
+    SetTimer(MM_DoubleTapTimer, -MM_DoubleTapThresholdMs)
+}
+
+class MM_DoubleTapTimerObj {
+    static OnSingleTapTimeout() {
+        global MM_DoubleTapArmed, ActiveWinID, MM_DoubleTapTimer
+        if (!MM_DoubleTapArmed)
+            return
+        MM_DoubleTapArmed := false
+        MM_DoubleTapTimer := 0
+        MM_DoubleTap_HideOverlay()
+        Mousemaster_Activate(ActiveWinID)
+    }
 }
 
 Mousemaster_Activate(WinID) {
@@ -201,10 +247,17 @@ Mousemaster_OnEnd(hook) {
 }
 
 Mousemaster_Deactivate() {
-    global MousemasterActive, MousemasterOverlayGui, UserInputBuffer, MM_InputHook
+    global MousemasterActive, MousemasterOverlayGui, UserInputBuffer, MM_InputHook, MM_DoubleTapArmed
 
-    if (!MousemasterActive)
+    if (!MousemasterActive && !MM_DoubleTapArmed)
         return
+
+    if (!MousemasterActive) {
+        ; Only double-tap overlay cleanup needed
+        MM_DoubleTapArmed := false
+        MM_DoubleTap_HideOverlay()
+        return
+    }
 
     MousemasterActive := false
     UserInputBuffer := ""
@@ -221,8 +274,158 @@ Mousemaster_Deactivate() {
 }
 
 ; ==============================================================================
-; Phase 5: Action Execution (Raw Windows API Click)
+; Phase 3.5: Double-Tap Overlay Helpers
 ; ==============================================================================
+MM_DoubleTap_ShowOverlay() {
+    global MM_DoubleTapOverlayGui
+    if (MM_DoubleTapOverlayGui) {
+        MM_DoubleTapOverlayGui.Destroy()
+        MM_DoubleTapOverlayGui := ""
+    }
+    MM_DoubleTapOverlayGui := Gui("+ToolWindow +AlwaysOnTop -Caption +E0x20 -DPIScale", "MM_DoubleTapOverlay")
+    MM_DoubleTapOverlayGui.BackColor := "2980B9"
+    WinSetTransColor("2980B9", MM_DoubleTapOverlayGui.Hwnd)
+    MM_DoubleTapOverlayGui.SetFont("s14 w700 cWhite", "Segoe UI")
+    MM_DoubleTapOverlayGui.Add("Text", "x20 y10 w320 h40 0x200 Background2980B9 Center",
+        "🔍 Double-tap for text selection")
+    MonitorGetWorkArea(MonitorGetPrimary(), &monLeft, &monTop, &monRight, &monBottom)
+    local ovlW := 360, ovlH := 60
+    local ovlX := monLeft + ((monRight - monLeft) - ovlW) // 2
+    local ovlY := monTop + 20
+    MM_DoubleTapOverlayGui.Show("NoActivate x" ovlX " y" ovlY " w" ovlW " h" ovlH)
+}
+
+MM_DoubleTap_HideOverlay() {
+    global MM_DoubleTapOverlayGui
+    if (MM_DoubleTapOverlayGui) {
+        MM_DoubleTapOverlayGui.Destroy()
+        MM_DoubleTapOverlayGui := ""
+    }
+}
+
+; ==============================================================================
+; Phase 4.5: Double-Tap Text Selection Macro
+; ==============================================================================
+Mousemaster_ExecuteDoubleTapSearch() {
+    global ActiveWinID
+
+    ; 0. Validate target window still exists
+    if (!ActiveWinID || !WinExist("ahk_id " ActiveWinID)) {
+        ToolTip("❌ Target window no longer exists.", 200, 200)
+        SetTimer(() => ToolTip(), -2000)
+        return
+    }
+
+    ; 1. Prompt for start and end text
+    local startSeq := ""
+    local endSeq := ""
+    local ibResult := 0
+
+    ibResult := InputBox("Enter the START letters of the target text range:", "Double-Tap — Start Text", "w400 h150")
+    if (ibResult.Result = "Cancel")
+        return
+    startSeq := Trim(ibResult.Value)
+    if (startSeq = "") {
+        ToolTip("❌ Start text cannot be empty.", 200, 200)
+        SetTimer(() => ToolTip(), -2000)
+        return
+    }
+
+    ibResult := InputBox("Enter the END letters of the target text range:", "Double-Tap — End Text", "w400 h150")
+    if (ibResult.Result = "Cancel")
+        return
+    endSeq := Trim(ibResult.Value)
+    if (endSeq = "") {
+        ToolTip("❌ End text cannot be empty.", 200, 200)
+        SetTimer(() => ToolTip(), -2000)
+        return
+    }
+
+    ; 2. Save clipboard + capture full text via Ctrl+A → Ctrl+C
+    local clipSaved := ""
+    try clipSaved := ClipboardAll()
+
+    local foundResult := ""
+    local extractionSuccess := false
+
+    try {
+        WinActivate("ahk_id " ActiveWinID)
+        Sleep(60)
+        Send("^a")
+        Sleep(80)
+        local seqBefore := DllCall("GetClipboardSequenceNumber", "uint")
+        Send("^c")
+
+        ; Bounded wait for clipboard change
+        local deadline := A_TickCount + 2000
+        local changed := false
+        while (A_TickCount < deadline) {
+            local seqNow := DllCall("GetClipboardSequenceNumber", "uint")
+            if (seqNow && seqNow != seqBefore) {
+                changed := true
+                break
+            }
+            Sleep(20)
+        }
+        if (!changed) {
+            ToolTip("❌ Clipboard capture timed out.", 200, 200)
+            SetTimer(() => ToolTip(), -2000)
+            return
+        }
+
+        local fullText := A_Clipboard
+        if (Trim(fullText) = "") {
+            ToolTip("❌ No text content found in active window.", 200, 200)
+            SetTimer(() => ToolTip(), -2000)
+            return
+        }
+
+        ; 3. Search loop — up to 4 start-text occurrences
+        local searchPos := 1
+        local maxAttempts := 4
+        loop maxAttempts {
+            local startAt := InStr(fullText, startSeq, , searchPos)
+            if (!startAt) {
+                ToolTip("❌ Start text '" startSeq "' not found.", 200, 200)
+                SetTimer(() => ToolTip(), -2000)
+                return
+            }
+
+            local endAt := InStr(fullText, endSeq, , startAt + StrLen(startSeq))
+            if (endAt) {
+                foundResult := SubStr(fullText, startAt, endAt + StrLen(endSeq) - startAt)
+                break
+            }
+            searchPos := startAt + 1
+        }
+
+        if (foundResult = "") {
+            ToolTip("❌ End text '" endSeq "' not found after any start occurrence.", 200, 200)
+            SetTimer(() => ToolTip(), -2000)
+            return
+        }
+
+        if (StrLen(foundResult) < 3) {
+            ToolTip("❌ Extracted text too short (" StrLen(foundResult) " chars).", 200, 200)
+            SetTimer(() => ToolTip(), -2000)
+            return
+        }
+
+        ; Success — extraction passed all checks
+        extractionSuccess := true
+
+    } finally {
+        ; Restore original clipboard content
+        try A_Clipboard := clipSaved
+    }
+
+    ; 4. Success path (only reached if no return inside try)
+    if (extractionSuccess) {
+        A_Clipboard := foundResult
+        ToolTip("✅ Text copied! (" StrLen(foundResult) " chars)", 200, 200)
+        SetTimer(() => ToolTip(), -2000)
+    }
+}
 Mousemaster_PerformAction(elementObject) {
     global ActiveWinID
 
