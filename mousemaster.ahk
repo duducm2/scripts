@@ -5,6 +5,7 @@
 
 ; Incluindo a biblioteca UIA-v2 que você já possui instalada
 #Include %A_ScriptDir%\UIA-v2\Lib\UIA.ahk
+#Include %A_ScriptDir%\UIA-v2\Lib\UIA_Browser.ahk
 
 ; ==============================================================================
 ; Phase 1: Activation and Initialization
@@ -436,21 +437,62 @@ Mousemaster_ExecuteDoubleTapSearch() {
         try A_Clipboard := clipSaved
     }
 
-    ; 4. Visual selection — Ctrl+F with the captured text
+    ; 4. Visual selection — adaptive per app type
     if (extractionSuccess) {
         A_Clipboard := foundResult
-        ; Abre Ctrl+F e cola o texto copiado. O app encontra e seleciona
-        ; o trecho na tela — funciona em browsers, editores, word, etc.
         Sleep(80)
         WinActivate("ahk_id " ActiveWinID)
         Sleep(50)
         Send("{Escape}")
         Sleep(60)
-        Send("^f")
-        Sleep(80)
-        Send("^v")
-        Sleep(80)
-        Send("{Escape}")
+
+        ; Detecta se é Cursor ou VS Code
+        local isMonacoEditor := false
+        try {
+            local procName := WinGetProcessName("ahk_id " ActiveWinID)
+            if (procName = "Cursor.exe" || procName = "Code.exe")
+                isMonacoEditor := true
+        }
+
+        if (isMonacoEditor) {
+            ; VS Code/Cursor: Ctrl+F, cola texto, clica checkbox "Find in Selection"
+            ; via UIA (Alt+L tem bug no VS Code), depois Escape — seleção permanece.
+            Send("^f")
+            Sleep(80)
+            Send("^v")
+            Sleep(120)
+            try {
+                local mmUia := UIA_Browser("ahk_id " ActiveWinID)
+                if (mmUia) {
+                    local findCheckbox := mmUia.FindFirst({
+                        Type: 50002,
+                        Name: "Find in Selection (Alt+L)"
+                    })
+                    if (!findCheckbox) {
+                        ; Tenta nome alternativo (EN vs locale)
+                        findCheckbox := mmUia.FindFirst({
+                            Type: 50002,
+                            Name: "Find in Selection"
+                        })
+                    }
+                    if (findCheckbox) {
+                        findCheckbox.Click()
+                        Sleep(60)
+                    }
+                }
+            } catch {
+                ; Fallback se UIA falhar — tenta Alt+L
+                Send("!l")
+            }
+            Send("{Escape}")
+        } else {
+            ; Demais apps: Ctrl+F, cola o texto, mantém find bar aberta
+            Send("^f")
+            Sleep(80)
+            Send("^v")
+            Sleep(80)
+        }
+
         ToolTip("✅ Texto capturado (" StrLen(foundResult) " chars)", 200, 200)
         SetTimer(() => ToolTip(), -2000)
     }
