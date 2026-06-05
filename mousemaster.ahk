@@ -307,6 +307,23 @@ MM_DoubleTap_HideOverlay() {
 ; Phase 4.5: Double-Tap Text Selection Macro
 ; ==============================================================================
 Mousemaster_ExecuteDoubleTapSearch() {
+    ; Initialize logging (safe: creates dir, checks file exists, try/catch)
+    static logFile := A_AppData "\..\Local\AutoHotkey\logs\mousemaster.log"
+
+    ; 1. Dynamically extract the directory path from the logFile variable
+    SplitPath(logFile, , &logDir)
+
+    ; 2. If the folder structure doesn't exist, create it first
+    if (!DirExist(logDir))
+        DirCreate(logDir)
+
+    ; 3. Only attempt to delete the file if it actually exists on disk
+    if (FileExist(logFile))
+        FileDelete(logFile)
+
+    ; 4. Now line 313 can execute safely without throwing Error (3)
+    FileAppend("Starting Mousemaster_ExecuteDoubleTapSearch...`n", logFile)
+
     global ActiveWinID
 
     ; 0. Validate target window still exists
@@ -415,31 +432,26 @@ Mousemaster_ExecuteDoubleTapSearch() {
         extractionSuccess := true
 
     } finally {
-        ; Restore original clipboard content
+        ; Restore original clipboard content (only here, not duplicated after)
         try A_Clipboard := clipSaved
     }
 
-    ; 4. Visual selection on screen — place cursor at startSeq, extend to doc end
+    ; 4. Visual selection — Ctrl+F with the captured text
     if (extractionSuccess) {
         A_Clipboard := foundResult
-        ; Clear leftover UI, find startSeq to position cursor, then extend
-        ; selection to end of document. The visual highlight starts exactly
-        ; at startSeq and goes to document end (best keyboard-only approximation);
-        ; clipboard holds the exact startSeq→endSeq range from extraction.
+        ; Abre Ctrl+F e cola o texto copiado. O app encontra e seleciona
+        ; o trecho na tela — funciona em browsers, editores, word, etc.
         Sleep(80)
         WinActivate("ahk_id " ActiveWinID)
         Sleep(50)
-        Send("{Escape}")      ; dismiss stale find bar / Ctrl+A selection
-        Sleep(50)
-        Send("^f")            ; open find
+        Send("{Escape}")
+        Sleep(60)
+        Send("^f")
         Sleep(80)
-        Send(startSeq)        ; search → cursor lands at startSeq
-        Sleep(50)
-        Send("{Escape}")      ; close find (cursor stays at startSeq)
-        Sleep(50)
-        Send("^+{End}")       ; select from cursor (startSeq) to end of document
-        ; Clipboard still holds the exact extracted range from the extraction step.
-        ToolTip("✅ Range captured (" StrLen(foundResult) " chars)", 200, 200)
+        Send("^v")
+        Sleep(80)
+        Send("{Escape}")
+        ToolTip("✅ Texto capturado (" StrLen(foundResult) " chars)", 200, 200)
         SetTimer(() => ToolTip(), -2000)
     }
 }
