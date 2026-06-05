@@ -419,10 +419,27 @@ Mousemaster_ExecuteDoubleTapSearch() {
         try A_Clipboard := clipSaved
     }
 
-    ; 4. Success path (only reached if no return inside try)
+    ; 4. Visual selection on screen — place cursor at startSeq, extend to doc end
     if (extractionSuccess) {
         A_Clipboard := foundResult
-        ToolTip("✅ Text copied! (" StrLen(foundResult) " chars)", 200, 200)
+        ; Clear leftover UI, find startSeq to position cursor, then extend
+        ; selection to end of document. The visual highlight starts exactly
+        ; at startSeq and goes to document end (best keyboard-only approximation);
+        ; clipboard holds the exact startSeq→endSeq range from extraction.
+        Sleep(80)
+        WinActivate("ahk_id " ActiveWinID)
+        Sleep(50)
+        Send("{Escape}")      ; dismiss stale find bar / Ctrl+A selection
+        Sleep(50)
+        Send("^f")            ; open find
+        Sleep(80)
+        Send(startSeq)        ; search → cursor lands at startSeq
+        Sleep(50)
+        Send("{Escape}")      ; close find (cursor stays at startSeq)
+        Sleep(50)
+        Send("^+{End}")       ; select from cursor (startSeq) to end of document
+        ; Clipboard still holds the exact extracted range from the extraction step.
+        ToolTip("✅ Range captured (" StrLen(foundResult) " chars)", 200, 200)
         SetTimer(() => ToolTip(), -2000)
     }
 }
