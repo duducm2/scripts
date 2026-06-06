@@ -126,4 +126,3 @@ habitsFolder := notesFolder . "\habits"
 StandardLoadingBar_Update("✅ Done", BANNER_ACCENT_SUCCESS)
 StandardLoadingBar_Hide(500)
 Sleep 1000
-Run(excelFile)
