@@ -123,7 +123,6 @@ if (IS_WORK_ENVIRONMENT) {
 }
 
 habitsFolder := notesFolder . "\habits"
-excelFile := habitsFolder . "\habit_sleep_food_tracker.xlsx"
 StandardLoadingBar_Update("✅ Done", BANNER_ACCENT_SUCCESS)
 StandardLoadingBar_Hide(500)
 Sleep 1000

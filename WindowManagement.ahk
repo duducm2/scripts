@@ -167,6 +167,8 @@ global g_WM_MinimizedListCharActionLock := false
 global g_WM_MinimizedListLastCharActionTick := 0
 global g_WM_MinimizedListLastCharActionKey := ""
 global g_WM_MinimizedListLastCloseArmTick := 0
+global g_WM_WindowToolsShowListLock := false
+global g_WM_WindowToolsShowListLastTick := 0
 global g_WM_LastEnumerateStats := Map()
 global g_WM_LastBackgroundCollectStats := Map()
 ; When daemon is used, foreground is driven by daemon cache (lower-frequency check); else legacy 100ms polling
@@ -1045,11 +1047,8 @@ WM_TileBackgroundWindowsPerMonitor(maxPerMon := WM_TILE_BG_MAX_PER_MON, foreHwnd
     WM_BackgroundTitleExcludes_Init()
     eligible := WM_CollectTileEligibleHwnds(foreHwndOverride)
     if (eligible.total = 0) {
-        if (eligible.hidden = 0) {
-            WM_PlayNoWindowSound()
-            return { ok: false, message: "ℹ️ No tile-eligible windows (hidden or visible)." }
-        }
-        return { ok: false, message: WM_FormatBackgroundCollectEmptyMessage() }
+        WM_CollectBackgroundWindows(foreHwndOverride)
+        return { ok: false, message: WM_NotifyNoBackgroundWindowsFound() }
     }
     maxSlots := MonitorGetCount() * maxPerMon
     limit := Min(eligible.total, WM_TILE_BG_MAX_TOTAL, maxSlots)
@@ -1188,29 +1187,41 @@ WM_WindowTools_OnTileBackground(*) {
 }
 
 WM_WindowTools_OnShowMinimizedList(*) {
-    StandardLoadingBar_CloseKeysOverlay()
-    StandardLoadingBar_Hide(0)
-    Sleep 50
-    WM_BackgroundTitleExcludes_Init()
-    foreBeforeScan := 0
-    try foreBeforeScan := WinGetID("A")
-    global g_WM_MinimizedListCollectForeHwnd
-    g_WM_MinimizedListCollectForeHwnd := foreBeforeScan
-    StandardLoadingBar_Show("⏳ Scanning hidden windows (z-order)...", BANNER_ACCENT_INTERMEDIATE, { passive: false,
-        centerOnHwnd: 0 })
+    global g_WM_WindowToolsShowListLock, g_WM_WindowToolsShowListLastTick
+    if (g_WM_WindowToolsShowListLock)
+        return
+    if (A_TickCount - g_WM_WindowToolsShowListLastTick < 400)
+        return
+    g_WM_WindowToolsShowListLock := true
+    g_WM_WindowToolsShowListLastTick := A_TickCount
     try {
-        rows := WM_CollectBackgroundWindows(foreBeforeScan)
-        if (rows.Length = 0) {
-            StandardLoadingBar_Update(WM_FormatBackgroundCollectEmptyMessage(), BANNER_ACCENT_INFO)
-            StandardLoadingBar_Hide(4500)
-            return
+        StandardLoadingBar_CloseKeysOverlay()
+        StandardLoadingBar_Hide(0)
+        Sleep 50
+        WM_BackgroundTitleExcludes_Init()
+        foreBeforeScan := 0
+        try foreBeforeScan := WinGetID("A")
+        global g_WM_MinimizedListCollectForeHwnd
+        g_WM_MinimizedListCollectForeHwnd := foreBeforeScan
+        StandardLoadingBar_Show("⏳ Scanning hidden windows (z-order)...", BANNER_ACCENT_INTERMEDIATE, { passive: false,
+            centerOnHwnd: 0 })
+        try {
+            rows := WM_CollectBackgroundWindows(foreBeforeScan)
+            if (rows.Length = 0) {
+                StandardLoadingBar_Update(WM_NotifyNoBackgroundWindowsFound(), BANNER_ACCENT_INFO)
+                StandardLoadingBar_Hide(4500)
+                return
+            }
+            StandardLoadingBar_Update("✅ Found " . rows.Length . " hidden window(s)", BANNER_ACCENT_SUCCESS)
+            StandardLoadingBar_Hide(900)
+            WM_ShowMinimizedBackgroundList(rows)
+        } catch as err {
+            WM_PlayNoWindowSound()
+            StandardLoadingBar_Update("❌ Background scan failed: " . err.Message, BANNER_ACCENT_ERROR)
+            StandardLoadingBar_Hide(4000)
         }
-        StandardLoadingBar_Update("✅ Found " . rows.Length . " hidden window(s)", BANNER_ACCENT_SUCCESS)
-        StandardLoadingBar_Hide(900)
-        WM_ShowMinimizedBackgroundList(rows)
-    } catch as err {
-        StandardLoadingBar_Update("❌ Background scan failed: " . err.Message, BANNER_ACCENT_ERROR)
-        StandardLoadingBar_Hide(4000)
+    } finally {
+        g_WM_WindowToolsShowListLock := false
     }
 }
 
@@ -1696,11 +1707,16 @@ WM_BackgroundEnumerateHiddenHwnds() {
 }
 
 WM_PlayNoWindowSound() {
-    try ScriptSoundPlay(A_ScriptDir . "\sounds\no-window.wav")
+    try ScriptSoundPlay(A_ScriptDir . "\sounds\no-window.wav", true)
+}
+
+; Play no-window chime (wait=true so GUI teardown cannot cut async playback), then return empty-scan message.
+WM_NotifyNoBackgroundWindowsFound(foreHwnd := 0) {
+    WM_PlayNoWindowSound()
+    return WM_FormatBackgroundCollectEmptyMessage()
 }
 
 WM_FormatBackgroundCollectEmptyMessage() {
-    WM_PlayNoWindowSound()
     global g_WM_LastBackgroundCollectStats
     st := g_WM_LastBackgroundCollectStats
     if (!IsObject(st) || st.Count = 0)
@@ -2628,12 +2644,13 @@ WM_MinimizedList_Refresh(closedHwnd := 0) {
         if (closedHwnd)
             WM_MinimizedList_WaitForHwndClosed(closedHwnd)
         WM_MinimizedList_UnbindHotkeys()
-        rows := WM_CollectBackgroundWindows()
+        collectForeHwnd := g_WM_MinimizedListCollectForeHwnd
+        rows := WM_CollectBackgroundWindows(collectForeHwnd)
         rows := WM_MinimizedList_FilterExcludedHwnd(rows, closedHwnd)
         g_WM_MinimizedListRows := rows
         if (rows.Length = 0) {
             WM_MinimizedList_Cleanup()
-            ShowCenteredOverlay_Utils(WM_FormatBackgroundCollectEmptyMessage(), 4500, BANNER_ACCENT_INFO)
+            ShowCenteredOverlay_Utils(WM_NotifyNoBackgroundWindowsFound(), 4500, BANNER_ACCENT_INFO)
             return
         }
         WM_ShowMinimizedBackgroundList(rows, true)
@@ -2648,13 +2665,14 @@ WM_ShowMinimizedBackgroundList(rows := unset, refresh := false) {
         return
     if (WM_DebugBackgroundEnabled())
         WM_DebugBackgroundWindowScan()
-    if (!IsSet(rows))
-        rows := WM_CollectBackgroundWindows()
+    if (!IsSet(rows)) {
+        global g_WM_MinimizedListCollectForeHwnd
+        rows := WM_CollectBackgroundWindows(g_WM_MinimizedListCollectForeHwnd)
+    }
     if (rows.Length = 0) {
         if (refresh)
             WM_MinimizedList_Cleanup()
-        else
-            ShowCenteredOverlay_Utils(WM_FormatBackgroundCollectEmptyMessage(), 4500, BANNER_ACCENT_INFO)
+        ShowCenteredOverlay_Utils(WM_NotifyNoBackgroundWindowsFound(), 4500, BANNER_ACCENT_INFO)
         return
     }
     g_WM_MinimizedListRows := rows
