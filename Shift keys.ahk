@@ -2081,9 +2081,12 @@ ShowGlobalShortcutsHelp() {
 ; =============================================================================
 #!+1::
 {
-    Send "!v"
+    ; Win+Alt+Shift+1 leaves modifiers logically down — release before synthetic Alt+V / Ctrl+Alt+B.
+    ClipAngel_WaitChordModifiersReleased()
+    ClipAngel_ReleaseChordModifiersForSend()
+    SendInput "!v"
     Sleep 50
-    Send "^!b"
+    SendInput "^!b"
 }
 
 ; =============================================================================
