@@ -1671,19 +1671,20 @@ GLOBAL_CHEAT_SHEET_RAW := "
 [Ctrl+Alt+Win+N] > TEMPORARY — M365 Copilot auto-continue: send "continue", wait for Stop generating, loop (toggle off with same chord)
 [Ctrl+Alt+Win+O] > Evidence search loop — CSV row substring → PDF find; stop saves not-found rows to data/evidence_not_found.csv + 10s report (VSCodeEvidenceSearch.ahk; toggle)
 Letters available: P, T, U
-Numbers available: 6 (0–5, 7–9 assigned)
+Numbers available: (none — 0–5, 7–9 assigned)
 Shift+CAW: A/S/D/F/Q/W/E/R (+B debug, +1/Z/G fallbacks) used for window management; other Shift+letters unassigned.
 [Ctrl+Alt+Win+G] > RESERVED — Handy: cancel dictation (define in Handy only; not bound in AHK)
 [Ctrl+Alt+Win+L] > Gemini D2C direct submit (Utils.ahk; ZMK hold on L key)
 [Ctrl+Alt+Win+V] > Maximize active window (WindowManagement.ahk; ZMK hold on minimize/close key)
+[Ctrl+Alt+Win+X] > Snap 50/50: half-width active window + pair recent window in other half (WindowManagement.ahk)
+[Ctrl+Alt+Win+Z] > Window tools [1]: maximize lone visible window per monitor (WindowManagement.ahk; also Win+Alt+Shift+W → 1)
+[Ctrl+Alt+Win+6] > Window tools [2]: hidden background window list (WindowManagement.ahk; also Win+Alt+Shift+W → 2)
+[Ctrl+Alt+Win+Y] > Window tools [3]: tile background windows (WindowManagement.ahk; also Win+Alt+Shift+W → 3)
 [Ctrl+Alt+Win+0] > Project Quick Selector (opens project folder in Cursor)
 [Ctrl+Alt+Win+1] > Cursor AI quick action (Project Selector + Selection Mode)
 [Ctrl+Alt+Win+2] > Quick Update to Your Scripts (HotStrings macro)
 [Ctrl+Alt+Win+3] > Toggle Outlook and Teams (HotStrings macro)
 [Ctrl+Alt+Win+5] > Clean the Clipboard (HotStrings macro)
-[Ctrl+Alt+Win+Z] > Maximize lone visible window per monitor (Window tools; same as Win+Alt+Shift+W [1])
-[Ctrl+Alt+Win+X] > Hidden background windows list (Window tools; same as Win+Alt+Shift+W [2])
-[Ctrl+Alt+Win+Y] > Tile background windows (Window tools; same as Win+Alt+Shift+W [3])
 [Ctrl+Alt+Win+7] > Mark Last Clip as Favorite (HotStrings macro; same as Ctrl+Alt+Win+J if 7 chord fails on keyboard)
 [Ctrl+Alt+Win+J] > Mark Last Clip as Favorite (HotStrings macro; alternate for keyboards that ghost Ctrl+Alt+Win+7)
 [Ctrl+Alt+Win+8] > Moves Desktop to Recycle Bin (HotStrings macro)
@@ -1753,13 +1754,14 @@ Shift+CAW: A/S/D/F/Q/W/E/R (+B debug, +1/Z/G fallbacks) used for window manageme
 === WINDOWS ===
 [Win+Alt+Shift+6] > Minimizes windows
 [Win+Alt+Shift+M] > Maximizes the current window
-[Win+Alt+Shift+W] > Window tools menu: [1] maximize lone visible window per monitor; [2] list hidden background windows; [3] tile background windows (≤12 total, ≤3 per monitor, cross-monitor spill; hidden first when capped; lone window on a monitor is maximized); [4] exit F11 fullscreen on visible windows — or use Ctrl+Alt+Win+Z/X/Y for [1]/[2]/[3]
+[Win+Alt+Shift+W] > Window tools menu: [1] maximize lone; [2] hidden background list; [3] tile background (≤12 total, ≤3/monitor); [4] exit F11 fullscreen — direct CAW: Z=[1], 6=[2], Y=[3]
 [Win+Alt+Shift+Y] > Focus Mode: Black out all monitors except the one with the active window (toggle)
 
 === WINDOW MANAGEMENT (Ctrl+Alt+Win) ===
-[Ctrl+Alt+Win+Z] > Maximize lone visible window per monitor (Window tools; same as Win+Alt+Shift+W [1])
-[Ctrl+Alt+Win+X] > Hidden background windows list (Window tools; same as Win+Alt+Shift+W [2])
-[Ctrl+Alt+Win+Y] > Tile background windows (Window tools; same as Win+Alt+Shift+W [3])
+[Ctrl+Alt+Win+X] > Snap 50/50: half-width active window + pair recent window in other half
+[Ctrl+Alt+Win+Z] > Window tools [1]: maximize lone visible window per monitor (also Win+Alt+Shift+W → 1)
+[Ctrl+Alt+Win+6] > Window tools [2]: hidden background window list (also Win+Alt+Shift+W → 2)
+[Ctrl+Alt+Win+Y] > Window tools [3]: tile background windows (also Win+Alt+Shift+W → 3)
 [Ctrl+Alt+Win+A] > Move window to monitor 1 (left-most)
 [Ctrl+Alt+Win+S] > Move window to monitor 2
 [Ctrl+Alt+Win+D] > Move window to monitor 3
