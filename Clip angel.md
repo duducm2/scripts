@@ -1,31 +1,32 @@
-Clip angel
-
-    Today:
-    1 tap: down
-    2 taps: up
-    hold: 1st item
-
-    Tomorrow:
-
-    1 tap:o 1st item
-    2 taps: down
-    3 taps: up
-
-Window Tools
-Check for windows on the background
-Reorder all windows
-
 Available keys:
-Handy recording btn 3 taps
-Gemini printscreen btn 2 tap
+    &ht_lgshfte_ps_td LG(LA(LS(X))) 0  (go to Gemini) 3 taps
+     (after removed)
 
 Tasks
     AHK
-        Place the action inside Windows Tools to check hidden list number two inside the shortcut --X--.
+        Windows Tools
+            Place the action inside Windows Tools to "check hidden list" number two inside the shortcut --X--.
+            Place the action inside Windows Tools to "tile background" number three inside the shortcut --Y--.
+            Place the action inside Windows Tools to "maximize lone" number one inside the shortcut --Z--.
+        Remove unused shortcuts:
+            ^!#6
 
     ZMK
         ClipAngel
             &ht_was1_cabv_td LG(LA(LS(N1))) 0
             morph_mmv_up
+            1 tap: Windows + Alt + Shift + 1
+            2 taps: Ctrl + Alt + B
+            3 taps: Ctrl + Alt + V
+            Holding: Ctrl + Shift + V
 
-        On the double tap behavior inside layer 1, where &ht_lgshfte_ps_td LG(LA(LS(X))) 0 shortcut is placed now, I want you to remove the print screen and add the shortcut --X-- that we updated in AutoHotkey.What is the easiest way to detach the current tab from the current window within Google Chrome?
+            Ctrl + Alt + C: in Layer 2, row 3, column 6
+        Windows Tools
+            Place the action inside Windows Tools to "check hidden list" number two inside the shortcut --X--.
+                &ht_lgshfte_ps_td LG(LA(LS(X))) 0
+            Place the action inside Windows Tools to "tile background" number three inside the shortcut --Y--.
+            Place the action inside Windows Tools to "maximize lone" number one inside the shortcut --Z--.
+        Organization
+            Switch &kp LC(LA(LG(N7))) from its current position (leaving it empty with trans)
+             Add this here: Handy recording btn 3 taps (&ht_n0_td LC(LA(LG(L))) 0)
+            

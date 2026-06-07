@@ -14976,7 +14976,6 @@ ShowHotstringSelector() {
 ^!#2:: QuickUpdateScripts()
 ^!#3:: ToggleOutlookAndTeams()
 ^!#5:: CleanClipboard()
-^!#6:: Cursor_FindComposerIconAcrossInstances()
 ; Same macro; InputLevel 10 + hook so chord wins over other low-level handlers (optional ghosting fallback: ^!#j).
 #InputLevel 10
 #UseHook
