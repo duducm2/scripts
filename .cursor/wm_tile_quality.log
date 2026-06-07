@@ -101,3 +101,8 @@ eligible=6 hidden=1 visible=2 openOnMon=2 skipReject=458 skipNoMon=0
 selected=6 planned=6 tiled=5 unassigned=0 failed=1
 issues: tile_short:1
   FAIL hwnd=593190 mon=2 title=Mail - Figueiredo Eduardo (SO/BDO-UX-LA) - Outlook
+=== WM tile quality 20260607125010 final ===
+eligible=6 hidden=1 visible=4 openOnMon=0 skipReject=347 skipNoMon=0
+selected=6 planned=6 tiled=5 unassigned=0 failed=1
+issues: tile_short:1
+  FAIL hwnd=133494 mon=2 title=caw_window_tools_slots_1d1b89a0.plan.md - scripts - Cursor

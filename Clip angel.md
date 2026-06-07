@@ -1,6 +1,5 @@
 Available keys:
     &ht_lgshfte_ps_td LG(LA(LS(X))) 0  (go to Gemini) 3 taps
-     (after removed)
 
 Tasks
     AHK

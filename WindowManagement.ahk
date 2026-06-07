@@ -2729,13 +2729,13 @@ WM_ShowMinimizedBackgroundList(rows := unset, refresh := false) {
     WM_MaximizeActiveWindow()
 }
 
-; Hotkey: Ctrl+Alt+Win+X — native 50/50 snap + pair recent window (Win+Z UI sequence)
-^!#x:: WM_SnapHalfPairActiveWindow()
-
 ; =============================================================================
-; Window tools menu (maximize lone / hidden windows list / exit F11 fullscreen)
-; Hotkey: Win+Alt+Shift+W
+; Window tools (maximize lone / hidden list / tile background / exit F11 fullscreen)
+; Menu: Win+Alt+Shift+W — direct CAW shortcuts (ZMK): Z=[1], X=[2], Y=[3]
 ; =============================================================================
+^!#z:: WM_WindowTools_OnMaximizeLonely()
+^!#x:: WM_WindowTools_OnShowMinimizedList()
+^!#y:: WM_WindowTools_OnTileBackground()
 #!+w:: WM_WindowTools_ShowMenu()
 
 ; Dev: log taskbar-minimized background scan (Ctrl+Alt+Win+Shift+B)
