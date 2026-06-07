@@ -527,32 +527,181 @@ WM_EnterF11FullscreenForHwnd(hwnd, settleMs := 1200) {
 }
 
 ; --- Chrome: detach active tab to new window (Shift+W) ---
-; PT-BR: tab context menu -> Mover guia -> Nova janela. UIA: tab right-click + optional child Invoke on #32768 popup.
-; Keyboard: m -> Enter -> Invoke or Enter (never 'n' = Nova guia). EN fallback: m -> Enter single item.
+; PT-BR: tab context menu (AppsKey on focused tab) -> Mover guia -> Nova janela. UIA Invoke on #32768 popup.
+; Keyboard m -> Enter is last resort only (never 'n' = Nova guia). No mouse clicks.
 global CHROME_DETACH_USE_UIA := true
 global CHROME_DETACH_LEGACY_KEYS := false
-global CHROME_DETACH_VERIFY_TIMEOUT_MS := 1500
+global CHROME_DETACH_DEBUG_LOG_ENABLED := false
+; Tier 2: limited F6 + hover (no slow focus-wait path). Tier 3: normalize+F6 (slow).
+global CHROME_DETACH_F6_FALLBACK := true
+global CHROME_DETACH_DEEP_FALLBACK := false
+global CHROME_DETACH_VERIFY_TIMEOUT_MS := 2500
 global CHROME_DETACH_F11_SETTLE_MS := 1500
-global CHROME_DETACH_MENU_POPUP_MS := 300
-global CHROME_DETACH_MENU_CHILD_MS := 250
-global CHROME_DETACH_MENU_POLL_MS := 25
+global CHROME_DETACH_MENU_POPUP_MS := 420
+global CHROME_DETACH_MENU_CHILD_MS := 300
+global CHROME_DETACH_MENU_POLL_MS := 20
 global CHROME_DETACH_SUCCESS_HIDE_MS := 400
+global CHROME_DETACH_SEQUENCE_ATTEMPTS := 2
+global CHROME_DETACH_HOVER_ATTEMPTS := 2
+global CHROME_DETACH_F6_FOCUS_MAX := 4
+global CHROME_DETACH_F6_STEP_MS := 160
+global CHROME_DETACH_F6_REFOCUS_MS := 80
+global CHROME_DETACH_TAB_FOCUS_WAIT_MS := 500
+global CHROME_DETACH_TAB_FOCUS_STABLE_MS := 120
+global CHROME_DETACH_HOVER_SETTLE_MS := 120
+global CHROME_DETACH_APPSKEY_AFTER_MS := 50
+; Hover settle before AppsKey — Chrome hit-tests cursor; too low opens page menu.
+global CHROME_DETACH_HOVER_APPSKEY_SETTLE_MS := 420
+global CHROME_DETACH_HOVER_APPSKEY_RETRY_EXTRA_MS := 140
+global CHROME_DETACH_APPSKEY_SETTLE_MS := 80
 global g_ChromeDetachBusy := false
+global g_ChromeDetachDebugLogPath := ""
 
 global CHROME_DETACH_MENU_PARENT_NAMES := ["Mover guia para outra janela", "Mover guia para uma nova janela",
     "Move tab to another window"]
 global CHROME_DETACH_MENU_PARENT_SUBSTR := ["Mover guia", "Move tab to another", "Move tab to a new"]
 global CHROME_DETACH_MENU_CHILD_NAMES := ["Nova janela", "New window"]
 global CHROME_DETACH_MENU_EN_NAMES := ["Move tab to new window", "Mover guia para nova janela"]
+global CHROME_DETACH_MENU_TAB_MARKER_NAMES := ["Nova guia", "New tab"]
+global CHROME_DETACH_MENU_TAB_MARKER_SUBSTR := ["Mover guia", "Move tab", "Fechar guia", "Close tab", "Duplicar guia",
+    "Duplicate"]
+global CHROME_DETACH_MENU_PAGE_MARKER_NAMES := ["Voltar", "Back", "Avançar", "Forward"]
+global CHROME_DETACH_MENU_PAGE_MARKER_SUBSTR := ["Salvar como", "Save as", "Imprimir", "Print", "Ver código",
+    "View page source", "Inspecionar", "Inspect"]
 
-Chrome_DetachListMenuPopups() {
+; #region agent log
+Chrome_DetachGetDebugLogPath() {
+    global g_ChromeDetachDebugLogPath
+    if !g_ChromeDetachDebugLogPath
+        g_ChromeDetachDebugLogPath := RegExReplace(A_LineFile, "i)\\[^\\]+$", "") . "\debug-79854f.log"
+    return g_ChromeDetachDebugLogPath
+}
+
+Chrome_DetachDebugFocusedElement(session) {
+    info := "none"
+    try {
+        el := UIA.GetFocusedElement()
+        if el {
+            n := "", t := ""
+            try n := el.Name
+            try t := el.Type
+            info := "type=" t " name=" SubStr(n, 1, 32)
+        }
+    } catch {
+    }
+    return info
+}
+
+Chrome_DetachDebugLog(location, message, hypothesisId := "", data := unset) {
+    global CHROME_DETACH_DEBUG_LOG_ENABLED
+    if !CHROME_DETACH_DEBUG_LOG_ENABLED
+        return
+    try {
+        extra := ""
+        if IsSet(data) {
+            if (data is String)
+                extra := data
+            else if IsObject(data) {
+                for k, v in data
+                    extra .= (extra = "" ? "" : ";") . k . "=" . v
+            }
+        }
+        line := A_TickCount . "|" . hypothesisId . "|" . location . "|" . message . "|" . extra . "`n"
+        for logPath in [A_Temp . "\debug-79854f.log", Chrome_DetachGetDebugLogPath()] {
+            try {
+                FileAppend line, logPath, "UTF-8"
+                return
+            } catch {
+            }
+        }
+        OutputDebug line
+    } catch {
+    }
+}
+
+Chrome_DetachSampleMenuItemsForHwnd(hwnd, maxItems := 6) {
+    sample := ""
+    if !hwnd
+        return sample
+    try {
+        root := UIA.ElementFromHandle(hwnd)
+        n := 0
+        for el in root.FindAll({ Type: UIA.Type.MenuItem }, UIA.TreeScope.Subtree) {
+            try {
+                name := el.Name
+            } catch {
+                continue
+            }
+            if (name = "")
+                continue
+            sample .= (sample = "" ? "" : "|") . SubStr(name, 1, 36)
+            if (++n >= maxItems)
+                break
+        }
+    } catch {
+    }
+    return sample
+}
+
+Chrome_DetachDebugSampleMenuItems(session, maxItems := 6) {
+    return Chrome_DetachSampleMenuItemsForHwnd(session.menuPopupHwnd, maxItems)
+}
+; #endregion
+
+Chrome_DetachWindowLooksLikeContextPopup(hwnd) {
+    try {
+        WinGetPos(, , &w, &h, "ahk_id " hwnd)
+        if !(w > 40 && w < 750 && h > 40 && h < 950)
+            return false
+        class := WinGetClass("ahk_id " hwnd)
+        if (class = "#32768")
+            return true
+        if RegExMatch(class, "i)^Chrome_WidgetWin")
+            return true
+    } catch {
+    }
+    return false
+}
+
+Chrome_DetachListMenuPopups(chromeHwnd := 0) {
     popups := Map()
     try {
         for h in WinGetList("ahk_class #32768")
             popups[h] := true
     } catch {
     }
+    if chromeHwnd {
+        try {
+            for h in WinGetList("ahk_exe chrome.exe") {
+                if (h = chromeHwnd)
+                    continue
+                if Chrome_DetachWindowLooksLikeContextPopup(h)
+                    popups[h] := true
+            }
+        } catch {
+        }
+    }
     return popups
+}
+
+Chrome_DetachDebugListNewChromeWindows(session) {
+    info := ""
+    base := session.baselinePopups
+    try {
+        for h in WinGetList("ahk_exe chrome.exe") {
+            if (h = session.hwnd)
+                continue
+            if (IsObject(base) && base.Has(h))
+                continue
+            try {
+                WinGetPos(, , &w, &hgt, "ahk_id " h)
+                info .= (info = "" ? "" : "|") . h . ":" . WinGetClass("ahk_id " h) . "@" . w . "x" . hgt
+            } catch {
+            }
+        }
+    } catch {
+    }
+    return info
 }
 
 Chrome_DetachSessionCreate(hwnd) {
@@ -563,11 +712,17 @@ Chrome_DetachSessionCreate(hwnd) {
     } catch {
     }
     uia := 0
+    winTitle := "ahk_id " hwnd
+    try UIA.ActivateChromiumAccessibility(winTitle, 300)
+    catch {
+    }
     try {
-        uia := UIA_Browser("ahk_id " hwnd)
+        uia := UIA_Browser(winTitle)
+        uia.GetCurrentMainPaneElement()
     } catch {
     }
-    return { hwnd: hwnd, uia: uia, existingSet: existingSet, menuPopupHwnd: 0, baselinePopups: Chrome_DetachListMenuPopups() }
+    return { hwnd: hwnd, uia: uia, existingSet: existingSet, menuPopupHwnd: 0, menuPopupClassify: "",
+        activeTab: 0, newDetachedHwnd: 0, baselinePopups: Chrome_DetachListMenuPopups(hwnd) }
 }
 
 Chrome_ContextMenuNameMatches(el, names, substrs := "") {
@@ -595,7 +750,7 @@ Chrome_ContextMenuFindInRoot(root, names, substrs := "") {
         return 0
     for name in names {
         try {
-            el := root.FindElement({ Type: UIA.Type.MenuItem, Name: name, matchMode: 3 }, UIA.TreeScope.Subtree)
+            el := root.FindElement({ Type: UIA.Type.MenuItem, Name: name, matchMode: 2 }, UIA.TreeScope.Subtree)
             if el
                 return el
         } catch {
@@ -642,30 +797,208 @@ Chrome_ContextMenuWaitForSession(session, names, timeoutMs := 0, useParentSubstr
     return 0
 }
 
+Chrome_ContextMenuListNewPopupCandidates(session, baselinePopups := "") {
+    seen := Map()
+    list := []
+    base := IsObject(baselinePopups) ? baselinePopups : session.baselinePopups
+    try {
+        for h in WinGetList("ahk_class #32768") {
+            if (IsObject(base) && base.Has(h))
+                continue
+            if !seen.Has(h) {
+                seen[h] := true
+                list.Push(h)
+            }
+        }
+        for h in WinGetList("ahk_exe chrome.exe") {
+            if (h = session.hwnd)
+                continue
+            if (IsObject(base) && base.Has(h))
+                continue
+            if !Chrome_DetachWindowLooksLikeContextPopup(h)
+                continue
+            if !seen.Has(h) {
+                seen[h] := true
+                list.Push(h)
+            }
+        }
+    } catch {
+    }
+    return list
+}
+
+Chrome_ContextMenuSampleLooksLikePageMenu(sample) {
+    if (sample = "")
+        return false
+    for marker in CHROME_DETACH_MENU_PAGE_MARKER_SUBSTR {
+        if InStr(sample, marker, false)
+            return true
+    }
+    for marker in CHROME_DETACH_MENU_PAGE_MARKER_NAMES {
+        if InStr(sample, marker, false)
+            return true
+    }
+    return false
+}
+
+Chrome_ContextMenuInspectPopupHwnd(hwnd) {
+    info := { classify: "unknown", sample: "" }
+    if !hwnd
+        return info
+    try {
+        info.sample := Chrome_DetachSampleMenuItemsForHwnd(hwnd)
+        if Chrome_ContextMenuSampleLooksLikePageMenu(info.sample) {
+            info.classify := "page"
+            return info
+        }
+        if Chrome_ContextMenuSampleLooksLikeTabMenu(info.sample) {
+            info.classify := "tab"
+            return info
+        }
+        root := UIA.ElementFromHandle(hwnd)
+        if Chrome_ContextMenuFindInRoot(root, CHROME_DETACH_MENU_PAGE_MARKER_NAMES,
+            CHROME_DETACH_MENU_PAGE_MARKER_SUBSTR
+        ) {
+            info.classify := "page"
+            return info
+        }
+        if Chrome_ContextMenuFindInRoot(root, CHROME_DETACH_MENU_TAB_MARKER_NAMES,
+            CHROME_DETACH_MENU_TAB_MARKER_SUBSTR
+        )
+            info.classify := "tab"
+    } catch {
+    }
+    return info
+}
+
+Chrome_ContextMenuClassifyPopupHwnd(hwnd) {
+    return Chrome_ContextMenuInspectPopupHwnd(hwnd).classify
+}
+
+Chrome_DetachClearMenuPopup(session) {
+    session.menuPopupHwnd := 0
+    session.menuPopupClassify := ""
+}
+
 Chrome_ContextMenuCapturePopup(session, baselinePopups := "", timeoutMs := 0) {
     waitMs := timeoutMs > 0 ? timeoutMs : CHROME_DETACH_MENU_POPUP_MS
     base := IsObject(baselinePopups) ? baselinePopups : session.baselinePopups
     deadline := A_TickCount + waitMs
     while (A_TickCount < deadline) {
-        try {
-            for h in WinGetList("ahk_class #32768") {
-                if (IsObject(base) && base.Has(h))
-                    continue
+        for h in Chrome_ContextMenuListNewPopupCandidates(session, base) {
+            inspected := Chrome_ContextMenuInspectPopupHwnd(h)
+            ; #region agent log
+            Chrome_DetachDebugLog("Chrome_ContextMenuCapturePopup", "popup candidate", "G", "hwnd=" . h .
+                ";classify=" . inspected.classify . ";sample=" . inspected.sample)
+            ; #endregion
+            if (inspected.classify = "page")
+                continue
+            if (inspected.classify = "tab") {
                 session.menuPopupHwnd := h
+                session.menuPopupClassify := "tab"
+                ; #region agent log
+                Chrome_DetachDebugLog("Chrome_ContextMenuCapturePopup", "tab popup selected", "G", "hwnd=" . h)
+                ; #endregion
                 return h
             }
-        } catch {
         }
-        if (session.menuPopupHwnd)
-            return session.menuPopupHwnd
         Sleep CHROME_DETACH_MENU_POLL_MS
     }
-    return session.menuPopupHwnd
+    Chrome_DetachClearMenuPopup(session)
+    return 0
+}
+
+Chrome_ContextMenuPopupIsPageMenu(session) {
+    if !session.menuPopupHwnd
+        return false
+    if (session.menuPopupClassify = "page")
+        return true
+    if (session.menuPopupClassify = "tab")
+        return false
+    return Chrome_ContextMenuInspectPopupHwnd(session.menuPopupHwnd).classify = "page"
+}
+
+Chrome_ContextMenuFindTabMenuInBrowser(session) {
+    try {
+        root := UIA.ElementFromHandle(session.hwnd)
+        if Chrome_ContextMenuFindInRoot(root, CHROME_DETACH_MENU_PAGE_MARKER_NAMES,
+            CHROME_DETACH_MENU_PAGE_MARKER_SUBSTR
+        )
+            return false
+        if Chrome_ContextMenuFindInRoot(root, CHROME_DETACH_MENU_TAB_MARKER_NAMES,
+            CHROME_DETACH_MENU_TAB_MARKER_SUBSTR
+        )
+            return true
+        for el in root.FindAll({ Type: UIA.Type.MenuItem }, UIA.TreeScope.Subtree) {
+            if Chrome_ContextMenuNameMatches(el, CHROME_DETACH_MENU_TAB_MARKER_NAMES,
+                CHROME_DETACH_MENU_TAB_MARKER_SUBSTR
+            )
+                return true
+        }
+    } catch {
+    }
+    return false
+}
+
+Chrome_ContextMenuFocusedLooksLikeTabMenu() {
+    try {
+        el := UIA.GetFocusedElement()
+        if !el
+            return false
+        if (el.Type = UIA.Type.MenuItem || el.Type = UIA.Type.Menu) {
+            if Chrome_ContextMenuNameMatches(el, CHROME_DETACH_MENU_TAB_MARKER_NAMES,
+                CHROME_DETACH_MENU_TAB_MARKER_SUBSTR
+            )
+                return true
+            if Chrome_ContextMenuNameMatches(el, CHROME_DETACH_MENU_TAB_MARKER_NAMES, [])
+                return true
+        }
+    } catch {
+    }
+    return false
 }
 
 Chrome_ContextMenuDismiss() {
     ClipAngel_ReleaseChordModifiersForSend()
     Send "{Escape}"
+}
+
+Chrome_ContextMenuSampleLooksLikeTabMenu(sample) {
+    if (sample = "")
+        return false
+    for marker in CHROME_DETACH_MENU_TAB_MARKER_SUBSTR {
+        if InStr(sample, marker, false)
+            return true
+    }
+    for marker in CHROME_DETACH_MENU_TAB_MARKER_NAMES {
+        if InStr(sample, marker, false)
+            return true
+    }
+    return false
+}
+
+Chrome_ContextMenuFocusPopup(session) {
+    if !session.menuPopupHwnd
+        return false
+    try {
+        UIA.ElementFromHandle(session.menuPopupHwnd).SetFocus()
+        return true
+    } catch {
+    }
+    return false
+}
+
+Chrome_ContextMenuSendKeys(session, keys) {
+    ClipAngel_ReleaseChordModifiersForSend()
+    if session.menuPopupHwnd {
+        try {
+            ControlSend keys, , "ahk_id " session.menuPopupHwnd
+            return true
+        } catch {
+        }
+    }
+    SendInput keys
+    return true
 }
 
 Chrome_ContextMenuActivateItem(item) {
@@ -814,54 +1147,432 @@ Chrome_EnsureBrowserForeground(hwnd) {
     return WinWaitActive("ahk_id " hwnd, , 1)
 }
 
-Chrome_SendTabContextMenuKeys(session) {
-    Send "{F6}"
-    Send "{F6}"
-    Send "+{F10}"
-    Chrome_ContextMenuCapturePopup(session, session.baselinePopups)
+Chrome_IsValidTabElement(tab) {
+    if (!IsObject(tab) || !tab)
+        return false
+    try return tab.Type = UIA.Type.TabItem
+    catch {
+        return false
+    }
+}
+
+Chrome_DetachGetWindowTitleForMatch(hwnd) {
+    try title := WinGetTitle("ahk_id " hwnd)
+    catch {
+        return ""
+    }
+    return RegExReplace(title, "i) - Google Chrome$", "")
 }
 
 Chrome_DetachGetActiveTab(session) {
+    cached := session.activeTab
+    if Chrome_IsValidTabElement(cached) {
+        try {
+            if (cached.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
+            && cached.SelectionItemPattern.IsSelected)
+                return cached
+        } catch {
+        }
+    }
     uia := session.uia
+    method := "none"
+    tabCount := -1
     if !IsObject(uia) {
         try {
             uia := session.uia := UIA_Browser("ahk_id " session.hwnd)
         } catch {
+            ; #region agent log
+            Chrome_DetachDebugLog("Chrome_DetachGetActiveTab", "uia attach failed", "A", { tabCount: 0, method: "none" })
+            ; #endregion
             return 0
         }
     }
     try {
         uia.GetCurrentMainPaneElement()
-        try return uia.GetTab("")
-        catch {
-            for t in uia.GetAllTabs() {
-                try {
-                    if (t.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
-                    && t.SelectionItemPattern.IsSelected)
+        try {
+            tabCount := uia.GetAllTabs().Length
+        } catch {
+            tabCount := -1
+        }
+        try {
+            tab := uia.GetTab("")
+            if Chrome_IsValidTabElement(tab) {
+                method := "getTab"
+                session.activeTab := tab
+                ; #region agent log
+                Chrome_DetachDebugLog("Chrome_DetachGetActiveTab", "tab resolved", "A", { tabCount: tabCount,
+                    method: method })
+                ; #endregion
+                return tab
+            }
+        } catch {
+        }
+        for t in uia.GetAllTabs() {
+            try {
+                if (t.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
+                && t.SelectionItemPattern.IsSelected) {
+                    if Chrome_IsValidTabElement(t) {
+                        method := "selection"
+                        session.activeTab := t
+                        ; #region agent log
+                        Chrome_DetachDebugLog("Chrome_DetachGetActiveTab", "tab resolved", "A", { tabCount: tabCount,
+                            method: method })
+                        ; #endregion
                         return t
-                } catch {
+                    }
+                }
+            } catch {
+            }
+        }
+        chromeTitle := Chrome_DetachGetWindowTitleForMatch(session.hwnd)
+        if (chromeTitle != "") {
+            for t in uia.GetAllTabs() {
+                try tabName := t.Name
+                catch {
+                    continue
+                }
+                if (tabName = "" || !Chrome_IsValidTabElement(t))
+                    continue
+                if (tabName = chromeTitle || InStr(chromeTitle, tabName, false) || InStr(tabName, chromeTitle, false)) {
+                    method := "title"
+                    session.activeTab := t
+                    ; #region agent log
+                    Chrome_DetachDebugLog("Chrome_DetachGetActiveTab", "tab resolved", "A", { tabCount: tabCount,
+                        method: method, titleLen: StrLen(chromeTitle) })
+                    ; #endregion
+                    return t
                 }
             }
-            allTabs := uia.GetAllTabs()
-            if (allTabs.Length)
-                return allTabs[allTabs.Length]
         }
     } catch {
     }
+    ; #region agent log
+    Chrome_DetachDebugLog("Chrome_DetachGetActiveTab", "tab not found", "A", { tabCount: tabCount, method: method })
+    ; #endregion
     return 0
 }
 
-Chrome_OpenActiveTabContextMenuViaUIA(session) {
-    try {
-        tab := Chrome_DetachGetActiveTab(session)
-        if (!IsObject(tab) || !tab)
-            return false
-        tab.Click("right")
+Chrome_ContextMenuLooksLikeTabMenu(session) {
+    if !session.menuPopupHwnd
         Chrome_ContextMenuCapturePopup(session, session.baselinePopups)
+    if (session.menuPopupHwnd && session.menuPopupClassify = "tab") {
+        ; #region agent log
+        Chrome_DetachDebugLog("Chrome_ContextMenuLooksLikeTabMenu", "tab menu cached", "D", { isTabMenu: true,
+            popupHwnd: session.menuPopupHwnd })
+        ; #endregion
+        return true
+    }
+    if !session.menuPopupHwnd {
+        if Chrome_ContextMenuFindTabMenuInBrowser(session) {
+            ; #region agent log
+            Chrome_DetachDebugLog("Chrome_ContextMenuLooksLikeTabMenu", "tab menu in browser tree", "G", { isTabMenu: true })
+            ; #endregion
+            return true
+        }
+        if Chrome_ContextMenuFocusedLooksLikeTabMenu() {
+            ; #region agent log
+            Chrome_DetachDebugLog("Chrome_ContextMenuLooksLikeTabMenu", "tab menu focused", "G", { isTabMenu: true })
+            ; #endregion
+            return true
+        }
+        ; #region agent log
+        Chrome_DetachDebugLog("Chrome_ContextMenuLooksLikeTabMenu", "no popup hwnd", "D", { isTabMenu: false,
+            newWins: Chrome_DetachDebugListNewChromeWindows(session) })
+        ; #endregion
+        return false
+    }
+    inspected := Chrome_ContextMenuInspectPopupHwnd(session.menuPopupHwnd)
+    if (inspected.classify = "page") {
+        ; #region agent log
+        Chrome_DetachDebugLog("Chrome_ContextMenuLooksLikeTabMenu", "page menu rejected", "D", { isTabMenu: false,
+            popupHwnd: session.menuPopupHwnd, menuSample: inspected.sample })
+        ; #endregion
+        return false
+    }
+    if (inspected.classify = "tab") {
+        session.menuPopupClassify := "tab"
+        ; #region agent log
+        Chrome_DetachDebugLog("Chrome_ContextMenuLooksLikeTabMenu", "tab menu confirmed", "D", { isTabMenu: true,
+            popupHwnd: session.menuPopupHwnd })
+        ; #endregion
+        return true
+    }
+    deadline := A_TickCount + 150
+    sample := inspected.sample
+    while (A_TickCount < deadline) {
+        inspected := Chrome_ContextMenuInspectPopupHwnd(session.menuPopupHwnd)
+        sample := inspected.sample
+        if (inspected.classify = "page") {
+            ; #region agent log
+            Chrome_DetachDebugLog("Chrome_ContextMenuLooksLikeTabMenu", "page menu rejected", "D", { isTabMenu: false,
+                popupHwnd: session.menuPopupHwnd, menuSample: sample })
+            ; #endregion
+            return false
+        }
+        if (inspected.classify = "tab") {
+            session.menuPopupClassify := "tab"
+            ; #region agent log
+            Chrome_DetachDebugLog("Chrome_ContextMenuLooksLikeTabMenu", "tab menu confirmed", "D", { isTabMenu: true,
+                popupHwnd: session.menuPopupHwnd })
+            ; #endregion
+            return true
+        }
+        Sleep CHROME_DETACH_MENU_POLL_MS
+    }
+    ; #region agent log
+    Chrome_DetachDebugLog("Chrome_ContextMenuLooksLikeTabMenu", "not tab menu", "D", { isTabMenu: false,
+        popupHwnd: session.menuPopupHwnd, menuSample: sample })
+    ; #endregion
+    return false
+}
+
+Chrome_FocusedElementIsSelectedTab(session) {
+    try {
+        focused := UIA.GetFocusedElement()
+        if !focused
+            return false
+        if (focused.Type = UIA.Type.TabItem) {
+            try {
+                if (focused.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
+                && focused.SelectionItemPattern.IsSelected)
+                    return true
+            } catch {
+            }
+        }
+        uia := session.uia
+        if !IsObject(uia)
+            return false
+        try uia.GetCurrentMainPaneElement()
+        tab := uia.GetTab("")
+        if !Chrome_IsValidTabElement(tab)
+            return false
+        try {
+            if UIA.CompareElements(focused, tab)
+                return true
+        } catch {
+        }
+    } catch {
+    }
+    return false
+}
+
+; Poll until selected tab keeps keyboard focus (avoids AppsKey on wrong F6 stop).
+Chrome_WaitForSelectedTabFocus(session, timeoutMs := 0) {
+    waitMs := timeoutMs > 0 ? timeoutMs : CHROME_DETACH_TAB_FOCUS_WAIT_MS
+    stableNeed := CHROME_DETACH_TAB_FOCUS_STABLE_MS
+    deadline := A_TickCount + waitMs
+    stableSince := 0
+    while (A_TickCount < deadline) {
+        if Chrome_FocusedElementIsSelectedTab(session) {
+            if !stableSince
+                stableSince := A_TickCount
+            if (A_TickCount - stableSince >= stableNeed) {
+                ; #region agent log
+                Chrome_DetachDebugLog("Chrome_WaitForSelectedTabFocus", "stable tab focus", "I", { waitedMs: A_TickCount -
+                    (deadline - waitMs), stableMs: stableNeed })
+                ; #endregion
+                return true
+            }
+        } else {
+            stableSince := 0
+        }
+        Sleep CHROME_DETACH_MENU_POLL_MS
+    }
+    ; #region agent log
+    Chrome_DetachDebugLog("Chrome_WaitForSelectedTabFocus", "timeout", "I", { waitMs: waitMs })
+    ; #endregion
+    return false
+}
+
+; Hover tab (no click), settle, AppsKey — Chrome hit-tests cursor for context menu.
+Chrome_TryHoverAppsKeyTabMenu(session, tab, settleMs := 0) {
+    if !Chrome_HoverActiveTab(session, tab)
+        return false
+    waitMs := settleMs > 0 ? settleMs : CHROME_DETACH_HOVER_APPSKEY_SETTLE_MS
+    Sleep waitMs
+    ClipAngel_ReleaseChordModifiersForSend()
+    session.baselinePopups := Chrome_DetachListMenuPopups(session.hwnd)
+    Chrome_DetachClearMenuPopup(session)
+    ; #region agent log
+    Chrome_DetachDebugLog("Chrome_TryHoverAppsKeyTabMenu", "AppsKey after hover", "J", "focus=" .
+        Chrome_DetachDebugFocusedElement(session) . ";settleMs=" . waitMs)
+    ; #endregion
+    SendInput "{AppsKey}"
+    Sleep CHROME_DETACH_APPSKEY_AFTER_MS
+    Chrome_ContextMenuCapturePopup(session, session.baselinePopups)
+    if Chrome_ContextMenuLooksLikeTabMenu(session)
+        return true
+    if Chrome_ContextMenuFindTabMenuInBrowser(session) {
+        Chrome_DetachClearMenuPopup(session)
+        ; #region agent log
+        Chrome_DetachDebugLog("Chrome_TryHoverAppsKeyTabMenu", "tab menu in browser tree", "G", "")
+        ; #endregion
+        return true
+    }
+    ; #region agent log
+    Chrome_DetachDebugLog("Chrome_TryHoverAppsKeyTabMenu", "not tab menu", "D", "popup=" .
+        session.menuPopupHwnd . ";newWins=" . Chrome_DetachDebugListNewChromeWindows(session))
+    ; #endregion
+    Chrome_ContextMenuDismiss()
+    return false
+}
+
+; F6/SetFocus path: keyboard focus on tab, then AppsKey via ControlSend.
+Chrome_TryFocusAppsKeyTabMenu(session, tab) {
+    if !Chrome_DetachFocusActiveTab(session)
+        return false
+    Chrome_HoverActiveTab(session, tab)
+    Sleep CHROME_DETACH_HOVER_SETTLE_MS
+    if !Chrome_WaitForSelectedTabFocus(session)
+        return false
+    Sleep CHROME_DETACH_APPSKEY_SETTLE_MS
+    ClipAngel_ReleaseChordModifiersForSend()
+    session.baselinePopups := Chrome_DetachListMenuPopups(session.hwnd)
+    Chrome_DetachClearMenuPopup(session)
+    ; #region agent log
+    Chrome_DetachDebugLog("Chrome_TryFocusAppsKeyTabMenu", "AppsKey after focus", "J", "focus=" .
+        Chrome_DetachDebugFocusedElement(session))
+    ; #endregion
+    try session.uia.ControlSend("{AppsKey}")
+    catch {
+        SendInput "{AppsKey}"
+    }
+    Sleep CHROME_DETACH_APPSKEY_AFTER_MS
+    Chrome_ContextMenuCapturePopup(session, session.baselinePopups)
+    if Chrome_ContextMenuLooksLikeTabMenu(session)
+        return true
+    Chrome_ContextMenuDismiss()
+    return false
+}
+
+Chrome_OpenActiveTabContextMenuViaTabFocus(session) {
+    tab := Chrome_DetachGetActiveTab(session)
+    if !Chrome_IsValidTabElement(tab)
+        return false
+    if (session.menuPopupHwnd && Chrome_ContextMenuLooksLikeTabMenu(session))
+        return true
+    loop CHROME_DETACH_HOVER_ATTEMPTS {
+        settle := CHROME_DETACH_HOVER_APPSKEY_SETTLE_MS + (A_Index - 1) * CHROME_DETACH_HOVER_APPSKEY_RETRY_EXTRA_MS
+        if Chrome_TryHoverAppsKeyTabMenu(session, tab, settle)
+            return true
+    }
+    if !CHROME_DETACH_F6_FALLBACK
+        return false
+    ClipAngel_ReleaseChordModifiersForSend()
+    Send "{Escape}"
+    Sleep 40
+    loop CHROME_DETACH_F6_FOCUS_MAX {
+        if (session.menuPopupHwnd && Chrome_ContextMenuLooksLikeTabMenu(session))
+            return true
+        Send "{F6}"
+        Sleep CHROME_DETACH_F6_STEP_MS
+        ; #region agent log
+        Chrome_DetachDebugLog("Chrome_OpenActiveTabContextMenuViaTabFocus", "f6 step", "C", "i=" . A_Index .
+            " focus=" . Chrome_DetachDebugFocusedElement(session))
+        ; #endregion
+        if Chrome_TryHoverAppsKeyTabMenu(session, tab)
+            return true
+    }
+    return false
+}
+
+; Move pointer over tab strip target only (no click).
+Chrome_HoverActiveTab(session, tab) {
+    if !Chrome_IsValidTabElement(tab)
+        return false
+    try {
+        rect := tab.BoundingRectangle
+        if !(rect.r > rect.l && rect.b > rect.t)
+            return false
+        x := rect.l + (rect.r - rect.l) // 2
+        y := rect.t + (rect.b - rect.t) // 2
+        uia := session.uia
+        if IsObject(uia) {
+            try {
+                uia.GetCurrentMainPaneElement()
+                tbRect := uia.TabBarElement.BoundingRectangle
+                if (tbRect.b > tbRect.t)
+                    y := tbRect.t + (tbRect.b - tbRect.t) // 2
+            } catch {
+            }
+        }
+        saveMode := A_CoordModeMouse
+        CoordMode "Mouse", "Screen"
+        MouseMove x, y, 0
+        CoordMode "Mouse", saveMode
+        ; #region agent log
+        Chrome_DetachDebugLog("Chrome_HoverActiveTab", "hovered tab", "H", { x: x, y: y })
+        ; #endregion
         return true
     } catch {
         return false
     }
+}
+
+Chrome_DetachFocusActiveTab(session) {
+    tab := Chrome_DetachGetActiveTab(session)
+    if !Chrome_IsValidTabElement(tab)
+        return false
+    focused := false
+    try {
+        tab.SetFocus()
+        focused := true
+    } catch {
+    }
+    if !focused {
+        try {
+            if (tab.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable))
+                tab.SelectionItemPattern.Select()
+            focused := true
+        } catch {
+        }
+    }
+    ok := Chrome_WaitForSelectedTabFocus(session, 350)
+    ; #region agent log
+    Chrome_DetachDebugLog("Chrome_DetachFocusActiveTab", "focus tab", "H", { setFocus: focused ? 1 : 0,
+        tabFocused: ok ? 1 : 0 })
+    ; #endregion
+    return ok
+}
+
+Chrome_FocusTabStripAndOpenContextMenu(session) {
+    hwnd := session.hwnd
+    if !Chrome_NormalizeFocusToPage(hwnd) {
+        ; #region agent log
+        Chrome_DetachDebugLog("Chrome_FocusTabStripAndOpenContextMenu", "normalize page failed", "C", { result: 0 })
+        ; #endregion
+        return false
+    }
+    ClipAngel_ReleaseChordModifiersForSend()
+    loop CHROME_DETACH_F6_FOCUS_MAX {
+        if (session.menuPopupHwnd && Chrome_ContextMenuLooksLikeTabMenu(session))
+            return true
+        Send "{F6}"
+        Sleep CHROME_DETACH_F6_STEP_MS
+        tab := Chrome_DetachGetActiveTab(session)
+        if !Chrome_IsValidTabElement(tab)
+            continue
+        try tab.SetFocus()
+        catch {
+        }
+        Sleep CHROME_DETACH_F6_REFOCUS_MS
+        ; #region agent log
+        Chrome_DetachDebugLog("Chrome_FocusTabStripAndOpenContextMenu", "f6 iteration", "C", { iteration: A_Index,
+            stepMs: CHROME_DETACH_F6_STEP_MS, focus: Chrome_DetachDebugFocusedElement(session) })
+        ; #endregion
+        if Chrome_TryHoverAppsKeyTabMenu(session, tab) {
+            ; #region agent log
+            Chrome_DetachDebugLog("Chrome_FocusTabStripAndOpenContextMenu", "f6+hover AppsKey success", "C", { result: 1,
+                iteration: A_Index })
+            ; #endregion
+            return true
+        }
+        Chrome_ContextMenuDismiss()
+    }
+    ; #region agent log
+    Chrome_DetachDebugLog("Chrome_FocusTabStripAndOpenContextMenu", "all paths failed", "C", { result: 0 })
+    ; #endregion
+    return false
 }
 
 Chrome_FocusPageContent(hwnd) {
@@ -897,18 +1608,29 @@ Chrome_OpenActiveTabContextMenu(session) {
     hwnd := session.hwnd
     if !Chrome_EnsureBrowserForeground(hwnd)
         return false
-    ClipAngel_ReleaseChordModifiersForSend()
-    Send "{Escape}"
-    Send "{Escape}"
-    session.baselinePopups := Chrome_DetachListMenuPopups()
-    session.menuPopupHwnd := 0
-    if Chrome_OpenActiveTabContextMenuViaUIA(session)
+    if (session.menuPopupHwnd && Chrome_ContextMenuLooksLikeTabMenu(session)) {
+        ; #region agent log
+        Chrome_DetachDebugLog("Chrome_OpenActiveTabContextMenu", "reuse open tab menu", "E", "popup=" .
+            session.menuPopupHwnd)
+        ; #endregion
         return true
-    if !Chrome_NormalizeFocusToPage(hwnd)
+    }
+    session.baselinePopups := Chrome_DetachListMenuPopups(hwnd)
+    Chrome_DetachClearMenuPopup(session)
+    if Chrome_OpenActiveTabContextMenuViaTabFocus(session) {
+        ; #region agent log
+        Chrome_DetachDebugLog("Chrome_OpenActiveTabContextMenu", "opened via hover AppsKey", "H", { result: 1 })
+        ; #endregion
+        return true
+    }
+    if !CHROME_DETACH_DEEP_FALLBACK
         return false
-    ClipAngel_ReleaseChordModifiersForSend()
-    Chrome_SendTabContextMenuKeys(session)
-    return true
+    f6Ok := Chrome_FocusTabStripAndOpenContextMenu(session)
+    ; #region agent log
+    Chrome_DetachDebugLog("Chrome_OpenActiveTabContextMenu", "f6+AppsKey fallback result", "C", { path: "F6AppsKey",
+        result: f6Ok ? 1 : 0 })
+    ; #endregion
+    return f6Ok
 }
 
 Chrome_DetachCountTabs(session) {
@@ -921,28 +1643,95 @@ Chrome_DetachCountTabs(session) {
     }
 }
 
-; Keyboard: m -> Enter -> optional UIA Invoke on child in popup, else Enter. Never send 'n' (Nova guia).
-Chrome_ActivateDetachViaPtKeyboard(session) {
-    Send "m"
-    Send "{Enter}"
+; UIA Invoke first; PT keyboard m -> Enter -> n (Nova janela submenu). Never bare 'n' at top level.
+Chrome_ActivateDetachMenuItem(session) {
+    if !session.menuPopupHwnd
+        Chrome_ContextMenuCapturePopup(session, session.baselinePopups)
+    ; #region agent log
+    Chrome_DetachDebugLog("Chrome_ActivateDetachMenuItem", "start", "E", "popup=" . session.menuPopupHwnd .
+        " sample=" . Chrome_DetachDebugSampleMenuItems(session))
+    ; #endregion
+    if Chrome_ContextMenuPopupIsPageMenu(session) {
+        ; #region agent log
+        Chrome_DetachDebugLog("Chrome_ActivateDetachMenuItem", "abort page menu", "E", "popup=" .
+            session.menuPopupHwnd . ";sample=" . Chrome_DetachDebugSampleMenuItems(session))
+        ; #endregion
+        return false
+    }
+    focused := Chrome_ContextMenuFocusPopup(session)
+    ClipAngel_ReleaseChordModifiersForSend()
 
+    flat := Chrome_ContextMenuFindFirst(session, CHROME_DETACH_MENU_EN_NAMES, false)
+    if flat && Chrome_ContextMenuActivateItem(flat) {
+        ; #region agent log
+        Chrome_DetachDebugLog("Chrome_ActivateDetachMenuItem", "flat item invoked", "E", "path=flat")
+        ; #endregion
+        return true
+    }
+
+    parent := Chrome_ContextMenuFindFirst(session, CHROME_DETACH_MENU_PARENT_NAMES, true)
+    if parent && Chrome_ContextMenuActivateItem(parent) {
+        child := Chrome_ContextMenuWaitForSession(session, CHROME_DETACH_MENU_CHILD_NAMES, CHROME_DETACH_MENU_CHILD_MS,
+            false)
+        if child && Chrome_ContextMenuActivateItem(child) {
+            ; #region agent log
+            Chrome_DetachDebugLog("Chrome_ActivateDetachMenuItem", "parent+child invoked", "E", "path=submenu")
+            ; #endregion
+            return true
+        }
+    }
+
+    if Chrome_ContextMenuPopupIsPageMenu(session) {
+        ; #region agent log
+        Chrome_DetachDebugLog("Chrome_ActivateDetachMenuItem", "abort page menu", "E", "popup=" .
+            session.menuPopupHwnd . ";sample=" . Chrome_DetachDebugSampleMenuItems(session))
+        ; #endregion
+        return false
+    }
+    ; #region agent log
+    Chrome_DetachDebugLog("Chrome_ActivateDetachMenuItem", "UIA miss, keyboard PT", "E", "sample=" .
+        Chrome_DetachDebugSampleMenuItems(session) . ";popupFocus=" . (focused ? 1 : 0))
+    ; #endregion
+    Chrome_ContextMenuFocusPopup(session)
+    ClipAngel_ReleaseChordModifiersForSend()
+    Chrome_ContextMenuSendKeys(session, "m")
+    Sleep 100
+    ClipAngel_ReleaseChordModifiersForSend()
+    Chrome_ContextMenuSendKeys(session, "{Enter}")
+    Sleep 180
     child := Chrome_ContextMenuWaitForSession(session, CHROME_DETACH_MENU_CHILD_NAMES, CHROME_DETACH_MENU_CHILD_MS,
         false)
-    if child && Chrome_ContextMenuActivateItem(child)
+    if child && Chrome_ContextMenuActivateItem(child) {
+        ; #region agent log
+        Chrome_DetachDebugLog("Chrome_ActivateDetachMenuItem", "keyboard child invoked", "E", "path=keyboardChild")
+        ; #endregion
         return true
+    }
+    ; Submenu open: 'n' = Nova janela (safe here; top-level 'n' = Nova guia)
+    Chrome_ContextMenuFocusPopup(session)
+    ClipAngel_ReleaseChordModifiersForSend()
+    Chrome_ContextMenuSendKeys(session, "n")
+    Sleep 70
+    ClipAngel_ReleaseChordModifiersForSend()
+    Chrome_ContextMenuSendKeys(session, "{Enter}")
+    ; #region agent log
+    Chrome_DetachDebugLog("Chrome_ActivateDetachMenuItem", "keyboard attempted unverified", "E", "path=keyboardMN")
+    ; #endregion
+    return false
+}
 
-    Send "{Enter}"
-    return true
+Chrome_ActivateDetachViaPtKeyboard(session) {
+    return Chrome_ActivateDetachMenuItem(session)
 }
 
 Chrome_ActivateDetachViaEnKeyboard(session) {
-    session.baselinePopups := Chrome_DetachListMenuPopups()
-    session.menuPopupHwnd := 0
+    session.baselinePopups := Chrome_DetachListMenuPopups(session.hwnd)
+    Chrome_DetachClearMenuPopup(session)
     if !Chrome_OpenActiveTabContextMenu(session)
         return false
-    Send "m"
-    Send "{Enter}"
-    return true
+    if !Chrome_ContextMenuLooksLikeTabMenu(session)
+        return false
+    return Chrome_ActivateDetachMenuItem(session)
 }
 
 Chrome_DetachActiveTabToNewWindow_Legacy() {
@@ -1007,23 +1796,53 @@ Chrome_FinishTabDetach(originalHwnd, newHwnd, wasF11) {
 
 Chrome_RunDetachMenuSequence(session) {
     session.tabsBeforeDetach := Chrome_DetachCountTabs(session)
-    try StandardLoadingBar_Update("📋 Opening tab context menu…", BANNER_ACCENT_INTERMEDIATE)
-    loop 2 {
-        session.menuPopupHwnd := 0
-        session.baselinePopups := Chrome_DetachListMenuPopups()
-        if !Chrome_OpenActiveTabContextMenu(session) {
-            Chrome_ContextMenuDismiss()
-            continue
+    try StandardLoadingBar_Update("⏳ Detaching tab…", BANNER_ACCENT_INTERMEDIATE)
+    loop CHROME_DETACH_SEQUENCE_ATTEMPTS {
+        if !(session.menuPopupHwnd && Chrome_ContextMenuLooksLikeTabMenu(session)) {
+            if !session.menuPopupHwnd
+                Chrome_ContextMenuCapturePopup(session, session.baselinePopups)
+            if !(session.menuPopupHwnd && Chrome_ContextMenuLooksLikeTabMenu(session)) {
+                Chrome_DetachClearMenuPopup(session)
+                session.baselinePopups := Chrome_DetachListMenuPopups(session.hwnd)
+                opened := Chrome_OpenActiveTabContextMenu(session)
+            } else {
+                opened := true
+            }
+            if !opened {
+                ; #region agent log
+                Chrome_DetachDebugLog("Chrome_RunDetachMenuSequence", "open menu failed", "B", "attempt=" . A_Index)
+                ; #endregion
+                Chrome_ContextMenuDismiss()
+                continue
+            }
+            if !session.menuPopupHwnd
+                Chrome_ContextMenuCapturePopup(session, session.baselinePopups)
+            if !Chrome_ContextMenuLooksLikeTabMenu(session) {
+                ; #region agent log
+                Chrome_DetachDebugLog("Chrome_RunDetachMenuSequence", "reject non-tab menu", "D", "attempt=" . A_Index .
+                    " sample=" . Chrome_DetachDebugSampleMenuItems(session))
+                ; #endregion
+                Chrome_ContextMenuDismiss()
+                continue
+            }
         }
-        if !session.menuPopupHwnd
-            Chrome_ContextMenuCapturePopup(session, session.baselinePopups)
 
-        try StandardLoadingBar_Update("📋 Detaching tab…", BANNER_ACCENT_INTERMEDIATE)
-        if Chrome_ActivateDetachViaPtKeyboard(session)
+        Chrome_ActivateDetachMenuItem(session)
+        newHwnd := Chrome_WaitForNewWindow(session.existingSet, CHROME_DETACH_VERIFY_TIMEOUT_MS)
+        if newHwnd {
+            session.newDetachedHwnd := newHwnd
+            ; #region agent log
+            Chrome_DetachDebugLog("Chrome_RunDetachMenuSequence", "detach verified", "E", "attempt=" . A_Index .
+                ";newHwnd=" . newHwnd)
+            ; #endregion
             return true
+        }
 
         Chrome_ContextMenuDismiss()
     }
+    ; #region agent log
+    Chrome_DetachDebugLog("Chrome_RunDetachMenuSequence", "sequence failed", "E", { result: 0 })
+    ; #endregion
     return false
 }
 
@@ -1052,6 +1871,10 @@ Chrome_DetachActiveTabToNewWindow() {
     newHwnd := 0
     success := false
 
+    ; #region agent log
+    Chrome_DetachDebugLog("Chrome_DetachActiveTabToNewWindow", "start", "F", { hwnd: hwnd })
+    ; #endregion
+
     StandardLoadingBar_Show("⏳ Detaching tab to new window…", BANNER_ACCENT_INTERMEDIATE, { passive: false,
         centerOnHwnd: hwnd })
     try {
@@ -1079,26 +1902,30 @@ Chrome_DetachActiveTabToNewWindow() {
         }
 
         session := Chrome_DetachSessionCreate(hwnd)
-        if !Chrome_RunDetachMenuSequence(session) {
-            return false
+        session.tabsBeforeDetach := Chrome_DetachCountTabs(session)
+
+        if Chrome_RunDetachMenuSequence(session) {
+            newHwnd := session.newDetachedHwnd
+            if (newHwnd) {
+                success := true
+                return true
+            }
+            tabsAfterFail := Chrome_DetachCountTabs(session)
+            if Chrome_DetachCloseSpuriousNovaGuia(hwnd, session.tabsBeforeDetach, tabsAfterFail, session.existingSet)
+                return false
+            if Chrome_DetachNovaGuiaLikely(session.tabsBeforeDetach, tabsAfterFail)
+                return false
         }
 
-        try StandardLoadingBar_Update("⏳ Waiting for new window…", BANNER_ACCENT_INTERMEDIATE)
-        newHwnd := Chrome_WaitForNewWindow(session.existingSet, CHROME_DETACH_VERIFY_TIMEOUT_MS)
-        if (newHwnd) {
-            success := true
-            return true
+        try StandardLoadingBar_Update("📋 Retrying detach (menu)…", BANNER_ACCENT_INTERMEDIATE)
+        if (session.menuPopupHwnd && Chrome_ContextMenuLooksLikeTabMenu(session)) {
+            Chrome_ActivateDetachMenuItem(session)
+        } else {
+            Chrome_ActivateDetachViaEnKeyboard(session)
         }
-
-        tabsAfterFail := Chrome_DetachCountTabs(session)
-        if Chrome_DetachCloseSpuriousNovaGuia(hwnd, session.tabsBeforeDetach, tabsAfterFail, session.existingSet)
-            return false
-        if Chrome_DetachNovaGuiaLikely(session.tabsBeforeDetach, tabsAfterFail)
-            return false
-
-        try StandardLoadingBar_Update("📋 Retrying detach (EN menu)…", BANNER_ACCENT_INTERMEDIATE)
-        Chrome_ActivateDetachViaEnKeyboard(session)
         newHwnd := Chrome_WaitForNewWindow(session.existingSet, CHROME_DETACH_VERIFY_TIMEOUT_MS)
+        if newHwnd
+            session.newDetachedHwnd := newHwnd
         if (newHwnd) {
             success := true
             return true
@@ -1121,6 +1948,10 @@ Chrome_DetachActiveTabToNewWindow() {
             StandardLoadingBar_Hide(0)
         if (!success)
             try Send "{Escape}"
+        ; #region agent log
+        Chrome_DetachDebugLog("Chrome_DetachActiveTabToNewWindow", "finish", "F", { success: success ? 1 : 0,
+            newHwnd: newHwnd })
+        ; #endregion
         g_ChromeDetachBusy := false
     }
 }
