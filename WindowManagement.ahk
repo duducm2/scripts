@@ -171,6 +171,7 @@ global g_WM_WindowToolsShowListLock := false
 global g_WM_WindowToolsShowListLastTick := 0
 global g_WM_LastEnumerateStats := Map()
 global g_WM_LastBackgroundCollectStats := Map()
+global g_WM_BackgroundScanBannerTick := 0
 ; When daemon is used, foreground is driven by daemon cache (lower-frequency check); else legacy 100ms polling
 if (WM_UsesAutomationDaemon())
     SetTimer MonitorActiveWindow, 250
@@ -1048,7 +1049,7 @@ WM_TileBackgroundWindowsPerMonitor(maxPerMon := WM_TILE_BG_MAX_PER_MON, foreHwnd
     eligible := WM_CollectTileEligibleHwnds(foreHwndOverride)
     if (eligible.total = 0) {
         WM_CollectBackgroundWindows(foreHwndOverride)
-        return { ok: false, message: WM_NotifyNoBackgroundWindowsFound() }
+        return { ok: false, noBackground: true, message: WM_FormatBackgroundCollectEmptyMessage() }
     }
     maxSlots := MonitorGetCount() * maxPerMon
     limit := Min(eligible.total, WM_TILE_BG_MAX_TOTAL, maxSlots)
@@ -1169,13 +1170,19 @@ WM_WindowTools_OnTileBackground(*) {
     WM_BackgroundTitleExcludes_Init()
     foreBeforeScan := 0
     try foreBeforeScan := WinGetID("A")
+    global g_WM_BackgroundScanBannerTick
+    g_WM_BackgroundScanBannerTick := A_TickCount
     StandardLoadingBar_Show("Scanning hidden windows...", BANNER_ACCENT_INTERMEDIATE, { passive: false,
         centerOnHwnd: 0 })
     try {
         result := WM_TileBackgroundWindowsPerMonitor(3, foreBeforeScan)
         if (!result.ok) {
-            StandardLoadingBar_Update(result.message, BANNER_ACCENT_INFO)
-            StandardLoadingBar_Hide(4500)
+            if (result.HasProp("noBackground") && result.noBackground)
+                WM_PresentNoBackgroundWindowsEmpty(result.message)
+            else {
+                StandardLoadingBar_Update(result.message, BANNER_ACCENT_INFO)
+                StandardLoadingBar_Hide(4500)
+            }
             return
         }
         StandardLoadingBar_Update(result.message, BANNER_ACCENT_SUCCESS)
@@ -1203,13 +1210,14 @@ WM_WindowTools_OnShowMinimizedList(*) {
         try foreBeforeScan := WinGetID("A")
         global g_WM_MinimizedListCollectForeHwnd
         g_WM_MinimizedListCollectForeHwnd := foreBeforeScan
+        global g_WM_BackgroundScanBannerTick
+        g_WM_BackgroundScanBannerTick := A_TickCount
         StandardLoadingBar_Show("⏳ Scanning hidden windows (z-order)...", BANNER_ACCENT_INTERMEDIATE, { passive: false,
             centerOnHwnd: 0 })
         try {
             rows := WM_CollectBackgroundWindows(foreBeforeScan)
             if (rows.Length = 0) {
-                StandardLoadingBar_Update(WM_NotifyNoBackgroundWindowsFound(), BANNER_ACCENT_INFO)
-                StandardLoadingBar_Hide(4500)
+                WM_PresentNoBackgroundWindowsEmpty()
                 return
             }
             StandardLoadingBar_Update("✅ Found " . rows.Length . " hidden window(s)", BANNER_ACCENT_SUCCESS)
@@ -1710,9 +1718,33 @@ WM_PlayNoWindowSound() {
     try ScriptSoundPlay(A_ScriptDir . "\sounds\no-window.wav", true)
 }
 
-; Play no-window chime (wait=true so GUI teardown cannot cut async playback), then return empty-scan message.
-WM_NotifyNoBackgroundWindowsFound(foreHwnd := 0) {
+; Fast scans can finish before the banner repaints; keep "Scanning…" visible briefly so the no-window chime is not raced by GUI setup.
+WM_EnsureBackgroundScanMinimumDwell(minMs := 280) {
+    global g_WM_BackgroundScanBannerTick
+    if (!g_WM_BackgroundScanBannerTick)
+        return
+    elapsed := A_TickCount - g_WM_BackgroundScanBannerTick
+    if (elapsed < minMs)
+        Sleep(minMs - elapsed)
+}
+
+; Show empty-scan message, then play no-window chime (wait=true) so teardown cannot cut playback.
+WM_PresentNoBackgroundWindowsEmpty(message := "", useExistingLoadingBar := true) {
+    if (message = "")
+        message := WM_FormatBackgroundCollectEmptyMessage()
+    WM_EnsureBackgroundScanMinimumDwell()
+    if (useExistingLoadingBar)
+        StandardLoadingBar_Update(message, BANNER_ACCENT_INFO)
+    else
+        ShowCenteredOverlay_Utils(message, 4500, BANNER_ACCENT_INFO)
+    Sleep 80
     WM_PlayNoWindowSound()
+    if (useExistingLoadingBar)
+        StandardLoadingBar_Hide(4500)
+}
+
+; Empty-scan message only (sound via WM_PresentNoBackgroundWindowsEmpty).
+WM_NotifyNoBackgroundWindowsFound(foreHwnd := 0) {
     return WM_FormatBackgroundCollectEmptyMessage()
 }
 
@@ -2650,7 +2682,7 @@ WM_MinimizedList_Refresh(closedHwnd := 0) {
         g_WM_MinimizedListRows := rows
         if (rows.Length = 0) {
             WM_MinimizedList_Cleanup()
-            ShowCenteredOverlay_Utils(WM_NotifyNoBackgroundWindowsFound(), 4500, BANNER_ACCENT_INFO)
+            WM_PresentNoBackgroundWindowsEmpty(, false)
             return
         }
         WM_ShowMinimizedBackgroundList(rows, true)
@@ -2672,7 +2704,7 @@ WM_ShowMinimizedBackgroundList(rows := unset, refresh := false) {
     if (rows.Length = 0) {
         if (refresh)
             WM_MinimizedList_Cleanup()
-        ShowCenteredOverlay_Utils(WM_NotifyNoBackgroundWindowsFound(), 4500, BANNER_ACCENT_INFO)
+        WM_PresentNoBackgroundWindowsEmpty(, false)
         return
     }
     g_WM_MinimizedListRows := rows
