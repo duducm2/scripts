@@ -106,3 +106,8 @@ eligible=6 hidden=1 visible=4 openOnMon=0 skipReject=347 skipNoMon=0
 selected=6 planned=6 tiled=5 unassigned=0 failed=1
 issues: tile_short:1
   FAIL hwnd=133494 mon=2 title=caw_window_tools_slots_1d1b89a0.plan.md - scripts - Cursor
+=== WM tile quality 20260608075941 final ===
+eligible=9 hidden=0 visible=5 openOnMon=3 skipReject=464 skipNoMon=0
+selected=9 planned=9 tiled=8 unassigned=0 failed=1
+issues: tile_short:1
+  FAIL hwnd=393542 mon=1 title=Calendar - Figueiredo Eduardo (SO/BDO-UX-LA) - Outlook

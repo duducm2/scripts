@@ -12571,9 +12571,12 @@ ApptWizard_SetAllDay(desiredOn) {
 
 ; Shift + W : Pop current tab to new window - Window
 +w:: {
+    Chrome_Detach_PreSendSanitizeModifiers()
     if !Chrome_DetachActiveTabToNewWindow() {
         if (CHROME_DETACH_LEGACY_KEYS)
             Chrome_DetachActiveTabToNewWindow_Legacy()
+        else
+            ShowCenteredOverlay_Utils("❌ Could not detach tab", 2000, BANNER_ACCENT_ERROR)
     }
 }
 

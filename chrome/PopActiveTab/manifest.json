@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Pop Active Tab To New Window",
+  "version": "1.0.0",
+  "description": "Moves the active tab into a new focused window. Triggered by Ctrl+Shift+Y from AHK Shift+W fallback.",
+  "permissions": ["tabs", "windows"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "commands": {
+    "pop-active-tab": {
+      "suggested_key": {
+        "windows": "Ctrl+Shift+Y",
+        "mac": "Command+Shift+Y"
+      },
+      "description": "Move active tab to a new window"
+    }
+  }
+}
