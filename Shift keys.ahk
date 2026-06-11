@@ -414,6 +414,37 @@ NormalizeMojibake(str) {
 ; Cheat-sheet overlay (Win + Alt + Shift + A) â€" shows remapped shortcuts
 ;-------------------------------------------------------------------
 
+; #region agent log
+AgentDebugLog_CheatEsc(s) {
+    return StrReplace(StrReplace(s, "\", "\\"), '"', '\"')
+}
+
+AgentDebugLog_Cheat(hypothesisId, location, message, data := "") {
+    try {
+        ts := A_TickCount
+        sk := data.Has("siteKey") ? data["siteKey"] : ""
+        tl := data.Has("titleLen") ? data["titleLen"] : 0
+        cf := data.Has("copilotFast") ? data["copilotFast"] : -1
+        cfull := data.Has("copilotFull") ? data["copilotFull"] : -1
+        rawLen := data.Has("rawLen") ? data["rawLen"] : 0
+        procLen := data.Has("procLen") ? data["procLen"] : 0
+        plainLen := data.Has("plainLen") ? data["plainLen"] : 0
+        branch := data.Has("branch") ? data["branch"] : ""
+        appHas := data.Has("appHas") ? data["appHas"] : -1
+        appLen := data.Has("appLen") ? data["appLen"] : 0
+        copilotUia := data.Has("copilotUia") ? data["copilotUia"] : -1
+        line := (
+            '{"sessionId":"b24c7b","hypothesisId":"' AgentDebugLog_CheatEsc(hypothesisId) '","location":"' AgentDebugLog_CheatEsc(
+                location) '","message":"' AgentDebugLog_CheatEsc(message) '","data":{"siteKey":"' AgentDebugLog_CheatEsc(sk)
+            '","titleLen":' tl ',"copilotFast":' cf ',"copilotFull":' cfull ',"copilotUia":' copilotUia ',"rawLen":' rawLen
+            ',"procLen":' procLen ',"plainLen":' plainLen ',"branch":"' AgentDebugLog_CheatEsc(branch) '","appHas":' appHas
+            ',"appLen":' appLen '},"timestamp":' ts '}' "`n")
+        FileAppend line, A_ScriptDir "\debug-b24c7b.log", "UTF-8"
+    } catch {
+    }
+}
+; #endregion
+
 ; Map that stores the pop-up text for each application.  Extend freely.
 cheatSheets := Map()
 
@@ -1458,10 +1489,33 @@ Gemini (Shift)
 🔊 [R][R]ead aloud last message
 🤖 [G]Send[G]emini prompt text
 ⛶ [F][F]ullscreen input
-🔔 [Ctrl+Enter]Send and notify on completion
+🔔 [Enter / Ctrl+Enter]Send and notify on completion
 
 === Alt (ahk) ===
-⬇️ [U] Scroll AI feed to bottom (ahk — same idea as Cursor)"
+⬇️ [U] Scroll AI feed to bottom — same idea as Cursor
+)"
+
+; --- M365 Copilot web (Chrome) — same Shift keys as Gemini -----------------
+cheatSheets["Copilot Web"] := "
+(
+Copilot Web (Shift)
+📂 [D]Toggle nav [D]rawer
+💬 [N][N]ew chat
+🔍 [S][S]earch (nav drawer)
+🔄 [M]Change [M]odel (opens selector)
+🛠️ [T]Add/manage sources (Tools menu)
+🖼️ [I]Designer / create image (Sources menu)
+🔬 [E]Researcher / deep research (Sources menu)
+⌨️ [P]Focus [P]rompt field
+📋 [C][C]opy last response
+🔊 [R][R]ead aloud last message
+🤖 [G]Send prompt text (Gemini_Prompt.txt)
+⛶ [F]Fullscreen input — not in Copilot web UI
+🔔 [Enter / Ctrl+Enter]Send and notify on completion
+
+=== Alt (ahk) ===
+⬇️ [U] Scroll AI feed to bottom — same idea as Cursor
+)"
 
 ; --- Mobills ---------------------------------------------------------------
 cheatSheets["Mobills"] := "
@@ -1520,6 +1574,8 @@ PickChromeAppSheetKey(chromeTitle) {
         key := "Shopee"
     if InStr(chromeTitle, "gemini", false)
         key := "Gemini"
+    if (key = "" && (InStr(chromeTitle, "M365 Copilot", false) || InStr(chromeTitle, "Chat | M365 Copilot", false)))
+        key := "Copilot Web"
     if InStr(chromeTitle, "Google Maps")
         key := "Google Maps"
     if (key = "" && (chromeTitle = "Google" || InStr(chromeTitle, " - Google Search")))
@@ -1578,23 +1634,75 @@ GetCheatSheetText() {
         ; Normalize Chrome window title by removing the trailing " - Google Chrome"
         chromeTitle := RegExReplace(title, "i) - Google Chrome$", "")
 
-        siteKey := PickChromeAppSheetKey(chromeTitle)
+        siteKey := ""
+        copilotFast := 0
+        copilotFull := 0
+        copilotUia := 0
+        static cheatCopilotRegistryLogged := false
+        if (!cheatCopilotRegistryLogged) {
+            cheatCopilotRegistryLogged := true
+            ; #region agent log
+            AgentDebugLog_Cheat("H5", "GetCheatSheetText:registry", "cheatSheets Copilot Web", Map(
+                "appHas", cheatSheets.Has("Copilot Web") ? 1 : 0,
+                "appLen", cheatSheets.Has("Copilot Web") ? StrLen(cheatSheets["Copilot Web"]) : 0))
+            ; #endregion
+        }
+        if (hwnd) {
+            try {
+                copilotFast := CopilotWeb_IsCopilotHwnd(hwnd, "fast") ? 1 : 0
+            } catch {
+                copilotFast := -1
+            }
+            if (!copilotFast) {
+                try {
+                    copilotFull := CopilotWeb_IsCopilotHwnd(hwnd, "full") ? 1 : 0
+                } catch {
+                    copilotFull := -1
+                }
+            }
+            if (!copilotFast && !copilotFull) {
+                try {
+                    copilotUia := CopilotWeb_TryUiaFingerprint(hwnd) ? 1 : 0
+                } catch {
+                    copilotUia := -1
+                }
+            }
+            if (copilotFast = 1 || copilotFull = 1 || copilotUia = 1)
+                siteKey := "Copilot Web"
+        }
+        if (siteKey = "")
+            siteKey := PickChromeAppSheetKey(chromeTitle)
+        appHas := 0
         if (siteKey != "") {
-            if cheatSheets.Has(siteKey)
+            appHas := cheatSheets.Has(siteKey) ? 1 : 0
+            if (appHas)
                 appShortcuts := cheatSheets[siteKey]
             else
                 appShortcuts := ""
         }
 
         ; Combine Chrome general + app-specific shortcuts
-        if (appShortcuts != "" && chromeShortcuts != "")
-            return chromeShortcuts "`r`n`r`n" appShortcuts
-        else if (appShortcuts != "")
-            return appShortcuts
-        else if (chromeShortcuts != "")
-            return chromeShortcuts
-        else
-            return ""
+        result := ""
+        branch := ""
+        if (appShortcuts != "" && chromeShortcuts != "") {
+            result := chromeShortcuts "`r`n`r`n" appShortcuts
+            branch := "chrome+app"
+        } else if (appShortcuts != "") {
+            result := appShortcuts
+            branch := "appOnly"
+        } else if (chromeShortcuts != "") {
+            result := chromeShortcuts
+            branch := "chromeOnly"
+        } else {
+            branch := "empty"
+        }
+        ; #region agent log
+        AgentDebugLog_Cheat("H1", "GetCheatSheetText:chrome", "chrome branch result", Map(
+            "siteKey", siteKey, "titleLen", StrLen(title), "copilotFast", copilotFast, "copilotFull", copilotFull,
+            "copilotUia", copilotUia, "rawLen", StrLen(result), "branch", branch, "appHas", appHas,
+            "appLen", StrLen(appShortcuts)))
+        ; #endregion
+        return result
     }
 
     ; UIA Tree Inspector - check both process and window title
@@ -1658,7 +1766,8 @@ global g_searchAllGui := 0
 
 GetGlobalCheatSheetRawText() {
     global GLOBAL_CHEAT_SHEET_RAW
-    return GLOBAL_CHEAT_SHEET_RAW
+    provider := GetGlobalAIProviderLabel()
+    return StrReplace(GLOBAL_CHEAT_SHEET_RAW, "{AI_PROVIDER}", provider)
 }
 
 ; Raw text for long-hold global cheat sheet (also used by SearchCheatSheets).
@@ -1674,7 +1783,7 @@ Letters available: P, T, U
 Numbers available: (none — 0–5, 7–9 assigned)
 Shift+CAW: A/S/D/F/Q/W/E/R (+B debug, +1/Z/G fallbacks) used for window management; other Shift+letters unassigned.
 [Ctrl+Alt+Win+G] > RESERVED — Handy: cancel dictation (define in Handy only; not bound in AHK)
-[Ctrl+Alt+Win+L] > Gemini D2C direct submit (Utils.ahk; ZMK hold on L key)
+[Ctrl+Alt+Win+L] > {AI_PROVIDER} D2C direct submit (Utils.ahk; ZMK hold on L key)
 [Ctrl+Alt+Win+V] > Maximize active window (WindowManagement.ahk; ZMK hold on minimize/close key)
 [Ctrl+Alt+Win+X] > Snap 50/50: half-width active window + pair recent window in other half (WindowManagement.ahk)
 [Ctrl+Alt+Win+Z] > Window tools [1]: maximize lone visible window per monitor (WindowManagement.ahk; also Win+Alt+Shift+W → 1)
@@ -1709,12 +1818,12 @@ Shift+CAW: A/S/D/F/Q/W/E/R (+B debug, +1/Z/G fallbacks) used for window manageme
 === CLIP ANGEL ===
 [Win+Alt+Shift+1] > Send top list item from Clip Angel
 
-=== GEMINI ===
-[Win+Alt+Shift+I] > Opens Gemini
-[Win+Alt+Shift+8] > Get word pronunciation, definition, and Portuguese translation (Gemini)
-[Win+Alt+Shift+O] > Read aloud the last message in Gemini
-[Win+Alt+Shift+P] > Copy the last message in Gemini
-[Win+Alt+Shift+7] > Copy selected text and read aloud (Gemini)
+=== AI CHAT (Chrome) ===
+[Win+Alt+Shift+I] > Opens {AI_PROVIDER}
+[Win+Alt+Shift+8] > Get word pronunciation, definition, and Portuguese translation ({AI_PROVIDER})
+[Win+Alt+Shift+O] > Read aloud the last message in {AI_PROVIDER}
+[Win+Alt+Shift+P] > Copy the last message in {AI_PROVIDER}
+[Win+Alt+Shift+7] > Copy selected text and read aloud ({AI_PROVIDER})
 
 === HANDY DICTATION ===
 [Win+Alt+Shift+0] > Start/stop dictation (transcription to clipboard)
@@ -1784,7 +1893,7 @@ Shift+CAW: A/S/D/F/Q/W/E/R (+B debug, +1/Z/G fallbacks) used for window manageme
 
 === GENERAL ===
 [Win+Alt+Shift+U] > Quick string shortcuts
-[Ctrl+Alt+Win+4] > Send AI Text Optimizer prompt to Gemini (same as Win+Alt+Shift+U then L, 4)
+[Ctrl+Alt+Win+4] > Send AI Text Optimizer prompt to {AI_PROVIDER} (same as Win+Alt+Shift+U then L, 4)
 [Win+Alt+Shift+Q] > Jump mouse on the middle
 [Win+Alt+Shift+X] > Peek PDF (tap) / Set PDF path (hold 700ms+)
 [Win+Alt+Shift+→] > Show square selector (right direction)
@@ -1808,7 +1917,7 @@ Shift+CAW: A/S/D/F/Q/W/E/R (+B debug, +1/Z/G fallbacks) used for window manageme
 
 ; Returns Map of context label -> array of matching processed lines. Empty query => empty map.
 SearchCheatSheets(query, includeGlobal := true) {
-    global cheatSheets, GLOBAL_CHEAT_SHEET_RAW
+    global cheatSheets
     q := Trim(query)
     results := Map()
     if (q = "")
@@ -1829,7 +1938,7 @@ SearchCheatSheets(query, includeGlobal := true) {
     }
 
     if includeGlobal {
-        proc := ProcessCheatSheetText(NormalizeMojibake(GLOBAL_CHEAT_SHEET_RAW))
+        proc := ProcessCheatSheetText(NormalizeMojibake(GetGlobalCheatSheetRawText()))
         lines := StrSplit(proc, "`n")
         hits := []
         for line in lines {
@@ -1968,9 +2077,11 @@ ToggleShortcutHelp() {
     }
 
     text := NormalizeMojibake(GetCheatSheetText())
+    usedFallback := false
     if (text = "") {
         exe := WinGetProcessName("A")
         text := "No cheat-sheet registered for:`n" exe
+        usedFallback := true
     }
 
     if !IsObject(g_helpGui) {
@@ -1989,6 +2100,15 @@ ToggleShortcutHelp() {
     g_cheatSheetAppFullProcessed := processedText
     g_helpSearchEdit.Value := ""
     CheatSheet_RichSetProcessedBody(g_helpCheatCtrl, processedText)
+    plainProbe := ""
+    try plainProbe := g_helpCheatCtrl.Text
+    catch
+        plainProbe := ""
+    ; #region agent log
+    AgentDebugLog_Cheat("H3", "ToggleShortcutHelp", "after render", Map(
+        "rawLen", StrLen(text), "procLen", StrLen(processedText), "plainLen", StrLen(plainProbe),
+        "branch", usedFallback ? "fallbackMsg" : "normal"))
+    ; #endregion
     CheatSheet_ResizeBody(g_helpCheatCtrl, g_helpGui, 18, 200, processedText, 48)
     g_helpShown := true
     CheatSheet_DeferFocusSearch(g_helpSearchEdit)
@@ -1996,8 +2116,7 @@ ToggleShortcutHelp() {
 
 ; ========== Global shortcuts cheat sheet (Win+Alt+Shift+key) ===============
 ShowGlobalShortcutsHelp() {
-    global g_globalGui, g_globalShown, g_globalSearchEdit, g_globalCheatCtrl, g_cheatSheetGlobalFullProcessed,
-        GLOBAL_CHEAT_SHEET_RAW
+    global g_globalGui, g_globalShown, g_globalSearchEdit, g_globalCheatCtrl, g_cheatSheetGlobalFullProcessed
 
     if (IsObject(g_globalGui) && g_globalShown) {
         g_globalGui.Hide()
@@ -2017,7 +2136,7 @@ ShowGlobalShortcutsHelp() {
         g_globalGui.OnEvent("Escape", CheatSheet_OnEscapeGlobal)
     }
 
-    normalizedText := NormalizeMojibake(GLOBAL_CHEAT_SHEET_RAW)
+    normalizedText := NormalizeMojibake(GetGlobalCheatSheetRawText())
     processedText := ProcessCheatSheetText(normalizedText)
     g_cheatSheetGlobalFullProcessed := processedText
     g_globalSearchEdit.Value := ""
@@ -18779,6 +18898,10 @@ VSCode_TriggerGenerateCommitMessage(hwnd := 0) {
         try proc := StrLower(WinGetProcessName("ahk_id " hwnd))
         title := ""
         try title := WinGetTitle("ahk_id " hwnd)
+        if (proc = "chrome.exe" && CopilotWeb_IsCopilotHwnd(hwnd, "fast")) {
+            CopilotWeb_ScrollFeedToBottom(hwnd)
+            return
+        }
         if (proc = "chrome.exe" && InStr(title, "gemini", false)) {
             GeminiScrollFeedToBottom_Chrome(hwnd)
             return
@@ -23343,6 +23466,104 @@ PlayCompletionChime_Gemini() {
         ScriptSoundPlay(A_ScriptDir . "\sounds\gemini-completion.wav")
     } catch {
     }
+}
+
+#HotIf
+
+;-------------------------------------------------------------------
+; M365 Copilot web (Chrome) — same Shift shortcuts as Gemini
+;-------------------------------------------------------------------
+#HotIf IsCopilotWebChromeActiveForHotkey()
+
++d:: {
+    try {
+        CopilotWeb_ToggleNavDrawer()
+        Sleep 200
+    } catch {
+    }
+}
+
++n:: {
+    try CopilotWeb_ClickNewChat()
+    catch {
+    }
+}
+
++s:: {
+    try CopilotWeb_ClickNavSearch()
+    catch {
+    }
+}
+
++m:: {
+    try CopilotWeb_OpenModelSelector()
+    catch {
+    }
+}
+
++t:: {
+    try {
+        uia := CopilotWeb_GetActiveUia()
+        if CopilotWeb_OpenSourcesMenu(uia) {
+            Sleep 100
+            Send "{Tab}"
+        }
+    } catch {
+    }
+}
+
+$+i:: {
+    try CopilotWeb_ClickSourcesCapability("capability-id-imageGeneration", ["Designer", "Criar imagem"])
+    catch {
+    }
+}
+
+$+e:: {
+    try CopilotWeb_ClickSourcesCapability("capability-id-researcher", ["Researcher", "Pesquisador", "Pesquisa aprofundada"])
+    catch {
+    }
+}
+
++p:: {
+    try CopilotWeb_FocusComposer(CopilotWeb_GetActiveUia(), false)
+    catch {
+    }
+}
+
++c:: {
+    try CopilotWeb_ShiftCopyLastMessage()
+    catch {
+    }
+}
+
++r:: {
+    try CopilotWeb_ShiftReadAloud()
+    catch {
+    }
+}
+
++g:: {
+    try CopilotWeb_SendPromptFromFile()
+    catch {
+    }
+}
+
++f:: {
+    ShowCenteredOverlay_Utils("Fullscreen composer not found in Copilot web UI", 2200, BANNER_ACCENT_ERROR)
+}
+
+Enter:: {
+    if (GetKeyState("Shift", "P") || GetKeyState("Ctrl", "P")) {
+        Send "{Enter}"
+        return
+    }
+    Send "{Enter}"
+    SetTimer(() => CopilotWeb_WaitForGenerationComplete(300000), -1)
+}
+
+^Enter:: {
+    Send "{Enter}"
+    SetTimer(() => CopilotWeb_WaitForGenerationComplete(300000), -1)
 }
 
 #HotIf

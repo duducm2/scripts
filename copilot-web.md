@@ -127,10 +127,72 @@ Content: identificadora" LocalizedType: "text"
 2,1,1,2,2,1,1,1,1,1,5,2,4,1,5,4: Type: 50000 (Button) Name: "Edit in Pages" LocalizedType: "button" ClassName: "fui-Button r1f29ykk fai-next ___1t4al2m fhovq9v fkfq4zb f1t94bn6 f1s2uweq fr80ssc f1ukrpxl fecsdlb fnwyq0v ft1hn21 fuxngvv fy5bs14 f1q1yqic fhvnf4x fb6swo4 f1klyf7k f232fm2 fwga7ee f1nhwcv0 f1gm6xmp f1xxsver f1v3eptx fivsta0 fd4bjan f3m6zum fqtknz5 f17fgpbq f44c6la f3bhgqh f1kijzfu fm50zyk"
 2,1,1,2,2,1,1,1,1,1,5,2,4,1,5,5: Type: 50000 (Button) Name: "Pages options" LocalizedType: "button" AutomationId: "menurcd" ClassName: "fui-Button r1f29ykk fai-next ___zs6jt30 f3rmtva fkfq4zb f1t94bn6 f1s2uweq fr80ssc f1ukrpxl fecsdlb fnwyq0v ft1hn21 fuxngvv fy5bs14 f1q1yqic fhvnf4x fb6swo4 f1klyf7k f232fm2 fwga7ee f1nhwcv0 f1gm6xmp f1xxsver f1v3eptx fivsta0 fd4bjan f3m6zum fqtknz5 f17fgpbq f44c6la f3bhgqh f1kijzfu fm50zyk"
 2,1,1,2,2,1,1,1,1,1,5,2,4,1,5,6: Type: 50000 (Button) Name: "More options" LocalizedType: "button" AutomationId: "menurcg" ClassName: "fui-Button r1f29ykk fai-next ___19vaudi fhovq9v fkfq4zb f1t94bn6 f1s2uweq fr80ssc f1ukrpxl fecsdlb fnwyq0v ft1hn21 fuxngvv fy5bs14 f1q1yqic fhvnf4x fb6swo4 f1klyf7k f232fm2 fwga7ee f1nhwcv0 f1gm6xmp f1xxsver f1v3eptx fivsta0 fd4bjan f3m6zum fqtknz5 f17fgpbq f44c6la f3bhgqh fv6hcav f1kijzfu fm50zyk"
-2,1,1,2,2,1,1,1,1,1,5,2,5: Type: 50021 (ToolBar) Name: "suggestions" LocalizedType: "tool bar" ClassName: "fai-SuggestionList ___inbs740 f22iagw fni485r f9c4gz4 f1yhwmi5 fr3gje9 f1vx9l62 fly5x3f f1s184ao f1m1endh fgs5rwf f1898jlq f1line0j f19g0ac"
-2,1,1,2,2,1,1,1,1,1,5,2,5,1: Type: 50000 (Button) Name: "Give more examples using 'identificadora'" LocalizedType: "button" ClassName: "fai-Suggestion fui-Button r1f29ykk ___ibdbc00 fk6fouc fy9rknc figsok6 f1i3iumi f192inf7 f5tn483 f1vxd6vx f1ojsxk5 fzkkow9 fcdblym fg706s2 fjik90z f68mrw8 f7pw515 frpde29 fw35ms5 f1kijzfu f17eg4ws fkfq4zb fpgzoln f1m56mwy frhssjw f1c21dwh f106pmgz fesy4wo fil0yj2 f9xbgkc fnx31mg feiahij f1ytgj83 f16m5b8m f17ux6es fwlads5 f1kqxwtj f10o6k9l fjxutwb fkoldzo"
-2,1,1,2,2,1,1,1,1,1,5,2,5,2: Type: 50000 (Button) Name: "What is the origin of 'identificadora'?" LocalizedType: "button" ClassName: "fai-Suggestion fui-Button r1f29ykk ___ibdbc00 fk6fouc fy9rknc figsok6 f1i3iumi f192inf7 f5tn483 f1vxd6vx f1ojsxk5 fzkkow9 fcdblym fg706s2 fjik90z f68mrw8 f7pw515 frpde29 fw35ms5 f1kijzfu f17eg4ws fkfq4zb fpgzoln f1m56mwy frhssjw f1c21dwh f106pmgz fesy4wo fil0yj2 f9xbgkc fnx31mg feiahij f1ytgj83 f16m5b8m f17ux6es fwlads5 f1kqxwtj f10o6k9l fjxutwb fkoldzo"
-2,1,1,2,2,1,1,1,1,1,5,2,5,3: Type: 50000 (Button) Name: "How is 'identificadora' used in tech?" LocalizedType: "button" ClassName: "fai-Suggestion fui-Button r1f29ykk ___ibdbc00 fk6fouc fy9rknc figsok6 f1i3iumi f192inf7 f5tn483 f1vxd6vx f1ojsxk5 fzkkow9 fcdblym fg706s2 fjik90z f68mrw8 f7pw515 frpde29 fw35ms5 f1kijzfu f17eg4ws fkfq4zb fpgzoln f1m56mwy frhssjw f1c21dwh f106pmgz fesy4wo fil0yj2 f9xbgkc fnx31mg feiahij f1ytgj83 f16m5b8m f17ux6es fwlads5 f1kqxwtj f10o6k9l fjxutwb fkoldzo"
+2,1,1,2,2,1,1,1,1,1,5,2,5: Type: 50026 (Group) Name: "You said: Repeat the following text exactly as it is. Do not add any introduction, explanation, or markdown formatting. Just output the text itself: Group" LocalizedType: "article" ClassName: "fai-UserMessage rapge5l ___rxrhmb0 fjuset5 f1s184ao fkfq4zb f10kwr27 fmuwq92 f1hyfdyu fjksvth fpgzoln fibxuh5 f6dzj5z"
+2,1,1,2,2,1,1,1,1,1,5,2,5,1: Type: 50020 (Text) Name: "You said:" LocalizedType: "heading" AutomationId: "user-message-rfu-title" ClassName: "fai-UserMessage__accessibleHeading r183b29h"
+2,1,1,2,2,1,1,1,1,1,5,2,5,2: Type: 50000 (Button) Name: "More actions" LocalizedType: "button" ClassName: "fai-UserMessage__actionBarAccessibleButton rb330c"
+2,1,1,2,2,1,1,1,1,1,5,2,5,3: Type: 50020 (Text) Name: "Repeat the following text exactly as it is. Do not add any introduction, explanation, or markdown formatting. Just output the text itself:
+
+Group" LocalizedType: "text"
+2,1,1,2,2,1,1,1,1,1,5,2,6: Type: 50026 (Group) LocalizedType: "group" ClassName: "___19ip04d f1s184ao f6c99af"
+2,1,1,2,2,1,1,1,1,1,5,2,6,1: Type: 50026 (Group) Name: "Copilot said: Group" LocalizedType: "article" ClassName: "fai-CopilotMessage r1f6yzd6 ___1fjo9g7 f1g2tzg5 fgct6un fy77jfu f2c7lf3"
+2,1,1,2,2,1,1,1,1,1,5,2,6,1,1: Type: 50020 (Text) Name: "Copilot said:" LocalizedType: "heading" AutomationId: "copilot-message-rg2-title" ClassName: "fai-CopilotMessage__accessibleHeading rhgro0h"
+2,1,1,2,2,1,1,1,1,1,5,2,6,1,2: Type: 50006 (Image) Name: "Copilot's Logo" LocalizedType: "graphic"
+2,1,1,2,2,1,1,1,1,1,5,2,6,1,3: Type: 50020 (Text) Name: "Copilot" LocalizedType: "text"
+2,1,1,2,2,1,1,1,1,1,5,2,6,1,4: Type: 50026 (Group) LocalizedType: "group"
+2,1,1,2,2,1,1,1,1,1,5,2,6,1,4,1: Type: 50026 (Group) LocalizedType: "group" ClassName: "___1j4t0a1 f1lmfglv f1abmfm4"
+2,1,1,2,2,1,1,1,1,1,5,2,6,1,4,1,1: Type: 50020 (Text) Name: "Group" LocalizedType: "text"
+2,1,1,2,2,1,1,1,1,1,5,2,6,1,5: Type: 50021 (ToolBar) LocalizedType: "tool bar" ClassName: "fai-CopilotMessage__actions rmlvq19 ___7qar2c0 fcthzvy"
+2,1,1,2,2,1,1,1,1,1,5,2,6,1,5,1: Type: 50000 (Button) Name: "Copy Response" LocalizedType: "button" ClassName: "fui-Button r1f29ykk fai-next ___1t4al2m fhovq9v fkfq4zb f1t94bn6 f1s2uweq fr80ssc f1ukrpxl fecsdlb fnwyq0v ft1hn21 fuxngvv fy5bs14 f1q1yqic fhvnf4x fb6swo4 f1klyf7k f232fm2 fwga7ee f1nhwcv0 f1gm6xmp f1xxsver f1v3eptx fivsta0 fd4bjan f3m6zum fqtknz5 f17fgpbq f44c6la f3bhgqh f1kijzfu fm50zyk"
+2,1,1,2,2,1,1,1,1,1,5,2,6,1,5,2: Type: 50026 (Group) Name: "Provide your feedback on BizChat" LocalizedType: "group"
+2,1,1,2,2,1,1,1,1,1,5,2,6,1,5,3: Type: 50000 (Button) Name: "Share response" LocalizedType: "button" ClassName: "fui-Button r1f29ykk fai-next ___zs6jt30 f3rmtva fkfq4zb f1t94bn6 f1s2uweq fr80ssc f1ukrpxl fecsdlb fnwyq0v ft1hn21 fuxngvv fy5bs14 f1q1yqic fhvnf4x fb6swo4 f1klyf7k f232fm2 fwga7ee f1nhwcv0 f1gm6xmp f1xxsver f1v3eptx fivsta0 fd4bjan f3m6zum fqtknz5 f17fgpbq f44c6la f3bhgqh f1kijzfu fm50zyk"
+2,1,1,2,2,1,1,1,1,1,5,2,6,1,5,4: Type: 50000 (Button) Name: "Edit in Pages" LocalizedType: "button" ClassName: "fui-Button r1f29ykk fai-next ___1t4al2m fhovq9v fkfq4zb f1t94bn6 f1s2uweq fr80ssc f1ukrpxl fecsdlb fnwyq0v ft1hn21 fuxngvv fy5bs14 f1q1yqic fhvnf4x fb6swo4 f1klyf7k f232fm2 fwga7ee f1nhwcv0 f1gm6xmp f1xxsver f1v3eptx fivsta0 fd4bjan f3m6zum fqtknz5 f17fgpbq f44c6la f3bhgqh f1kijzfu fm50zyk"
+2,1,1,2,2,1,1,1,1,1,5,2,6,1,5,5: Type: 50000 (Button) Name: "Pages options" LocalizedType: "button" AutomationId: "menurgi" ClassName: "fui-Button r1f29ykk fai-next ___zs6jt30 f3rmtva fkfq4zb f1t94bn6 f1s2uweq fr80ssc f1ukrpxl fecsdlb fnwyq0v ft1hn21 fuxngvv fy5bs14 f1q1yqic fhvnf4x fb6swo4 f1klyf7k f232fm2 fwga7ee f1nhwcv0 f1gm6xmp f1xxsver f1v3eptx fivsta0 fd4bjan f3m6zum fqtknz5 f17fgpbq f44c6la f3bhgqh f1kijzfu fm50zyk"
+2,1,1,2,2,1,1,1,1,1,5,2,6,1,5,6: Type: 50000 (Button) Name: "Read aloud" LocalizedType: "button" ClassName: "fui-Button r1f29ykk fai-next ___1nnuqby f1c21dwh fkfq4zb fjxutwb f1s2uweq fr80ssc f1ukrpxl fecsdlb f139oj5f ft1hn21 fuxngvv fkoldzo fhvnf4x fb6swo4 f1klyf7k f232fm2 f1l983o9 f1nhwcv0 f1gm6xmp fxoo9op f1v3eptx f1i0gk12 fd4bjan fqtknz5 fgfkb25 f44c6la f3bhgqh f1kijzfu fm50zyk"
+2,1,1,2,2,1,1,1,1,1,5,2,6,1,5,7: Type: 50000 (Button) Name: "More options" LocalizedType: "button" AutomationId: "menurgl" ClassName: "fui-Button r1f29ykk fai-next ___19vaudi fhovq9v fkfq4zb f1t94bn6 f1s2uweq fr80ssc f1ukrpxl fecsdlb fnwyq0v ft1hn21 fuxngvv fy5bs14 f1q1yqic fhvnf4x fb6swo4 f1klyf7k f232fm2 fwga7ee f1nhwcv0 f1gm6xmp f1xxsver f1v3eptx fivsta0 fd4bjan f3m6zum fqtknz5 f17fgpbq f44c6la f3bhgqh fv6hcav f1kijzfu fm50zyk"
+2,1,1,2,2,1,1,1,1,1,5,2,7: Type: 50026 (Group) Name: "You said: Repeat the following text exactly as it is. Do not add any introduction, explanation, or markdown formatting. Just output the text itself: ⚡ Make things easier - Create an outline with the visuals, use mockup data and so on. 🔲 Identificar uma chave identificadora na chamada. Através da chave, o produto. 🔲 Check how the AI classified the data inside the phases. For instance, phase 3 is purchase and delivery. There are for sure some problems with delivery. 🔲 Transform the Lollipop chart into sub-phases of the journey. 🔲 Utilizar o catálogo da Bosch externa para identificadores de ferramentas ⚡ Estudar o BI do Edú e checar onde pode nos ajudar" LocalizedType: "article" ClassName: "fai-UserMessage rapge5l ___rxrhmb0 fjuset5 f1s184ao fkfq4zb f10kwr27 fmuwq92 f1hyfdyu fjksvth fpgzoln fibxuh5 f6dzj5z"
+2,1,1,2,2,1,1,1,1,1,5,2,7,1: Type: 50020 (Text) Name: "You said:" LocalizedType: "heading" AutomationId: "user-message-rh4-title" ClassName: "fai-UserMessage__accessibleHeading r183b29h"
+2,1,1,2,2,1,1,1,1,1,5,2,7,2: Type: 50000 (Button) Name: "More actions" LocalizedType: "button" ClassName: "fai-UserMessage__actionBarAccessibleButton rb330c"
+2,1,1,2,2,1,1,1,1,1,5,2,7,3: Type: 50020 (Text) Name: "Repeat the following text exactly as it is. Do not add any introduction, explanation, or markdown formatting. Just output the text itself:
+
+
+⚡ Make things easier 
+- Create an outline with the visuals, use mockup data and so on.
+
+🔲 Identificar uma chave identificadora na chamada. Através da chave, o produto.
+
+🔲 Check how the AI classified the data inside the phases. For instance, phase 3 is purchase and delivery. There are for sure some problems with delivery.
+
+🔲 Transform the Lollipop chart into sub-phases of the journey.
+
+🔲 Utilizar o catálogo da Bosch externa para identificadores de ferramentas 
+
+⚡ Estudar o BI do Edú e checar onde pode nos ajudar" LocalizedType: "text"
+2,1,1,2,2,1,1,1,1,1,5,2,8: Type: 50026 (Group) LocalizedType: "group" ClassName: "___19ip04d f1s184ao f6c99af"
+2,1,1,2,2,1,1,1,1,1,5,2,8,1: Type: 50026 (Group) Name: "Copilot said: ⚡ Make things easier Create an outline with the visuals, use mockup data and so on. 🔲 Identificar uma chave identificadora na chamada. Através da chave, o produto. 🔲 Check how the AI classified the data inside the phases. For instance, phase 3 is purchase and delivery. There are for sure some problems with delivery. 🔲 Transform the Lollipop chart into sub-phases of the journey. 🔲 Utilizar o catálogo da Bosch externa para identificadores de ferramentas ⚡ Estudar o BI do Edú e checar onde pode nos ajudar" LocalizedType: "article" ClassName: "fai-CopilotMessage r1f6yzd6 ___1fjo9g7 f1g2tzg5 fgct6un fy77jfu f2c7lf3"
+2,1,1,2,2,1,1,1,1,1,5,2,8,1,1: Type: 50020 (Text) Name: "Copilot said:" LocalizedType: "heading" AutomationId: "copilot-message-rh8-title" ClassName: "fai-CopilotMessage__accessibleHeading rhgro0h"
+2,1,1,2,2,1,1,1,1,1,5,2,8,1,2: Type: 50006 (Image) Name: "Copilot's Logo" LocalizedType: "graphic"
+2,1,1,2,2,1,1,1,1,1,5,2,8,1,3: Type: 50020 (Text) Name: "Copilot" LocalizedType: "text"
+2,1,1,2,2,1,1,1,1,1,5,2,8,1,4: Type: 50026 (Group) LocalizedType: "group"
+2,1,1,2,2,1,1,1,1,1,5,2,8,1,4,1: Type: 50026 (Group) LocalizedType: "group" ClassName: "___1j4t0a1 f1lmfglv f1abmfm4"
+2,1,1,2,2,1,1,1,1,1,5,2,8,1,4,1,1: Type: 50020 (Text) Name: "⚡ Make things easier" LocalizedType: "text"
+2,1,1,2,2,1,1,1,1,1,5,2,8,1,4,1,2: Type: 50008 (List) LocalizedType: "list"
+2,1,1,2,2,1,1,1,1,1,5,2,8,1,4,1,2,1: Type: 50007 (ListItem) Name: "Create an outline with the visuals, use mockup data and so on." LocalizedType: "list item"
+2,1,1,2,2,1,1,1,1,1,5,2,8,1,4,1,3: Type: 50020 (Text) Name: "🔲 Identificar uma chave identificadora na chamada. Através da chave, o produto." LocalizedType: "text"
+2,1,1,2,2,1,1,1,1,1,5,2,8,1,4,1,4: Type: 50020 (Text) Name: "🔲 Check how the AI classified the data inside the phases. For instance, phase 3 is purchase and delivery. There are for sure some problems with delivery." LocalizedType: "text"
+2,1,1,2,2,1,1,1,1,1,5,2,8,1,4,1,5: Type: 50020 (Text) Name: "🔲 Transform the Lollipop chart into sub-phases of the journey." LocalizedType: "text"
+2,1,1,2,2,1,1,1,1,1,5,2,8,1,4,1,6: Type: 50020 (Text) Name: "🔲 Utilizar o catálogo da Bosch externa para identificadores de ferramentas" LocalizedType: "text"
+2,1,1,2,2,1,1,1,1,1,5,2,8,1,4,1,7: Type: 50020 (Text) Name: "⚡ Estudar o BI do Edú e checar onde pode nos ajudar" LocalizedType: "text"
+2,1,1,2,2,1,1,1,1,1,5,2,8,1,5: Type: 50021 (ToolBar) LocalizedType: "tool bar" ClassName: "fai-CopilotMessage__actions rmlvq19 ___7qar2c0 fcthzvy"
+2,1,1,2,2,1,1,1,1,1,5,2,8,1,5,1: Type: 50000 (Button) Name: "Copy Response" LocalizedType: "button" ClassName: "fui-Button r1f29ykk fai-next ___1t4al2m fhovq9v fkfq4zb f1t94bn6 f1s2uweq fr80ssc f1ukrpxl fecsdlb fnwyq0v ft1hn21 fuxngvv fy5bs14 f1q1yqic fhvnf4x fb6swo4 f1klyf7k f232fm2 fwga7ee f1nhwcv0 f1gm6xmp f1xxsver f1v3eptx fivsta0 fd4bjan f3m6zum fqtknz5 f17fgpbq f44c6la f3bhgqh f1kijzfu fm50zyk"
+2,1,1,2,2,1,1,1,1,1,5,2,8,1,5,2: Type: 50026 (Group) Name: "Provide your feedback on BizChat" LocalizedType: "group"
+2,1,1,2,2,1,1,1,1,1,5,2,8,1,5,3: Type: 50000 (Button) Name: "Share response" LocalizedType: "button" ClassName: "fui-Button r1f29ykk fai-next ___zs6jt30 f3rmtva fkfq4zb f1t94bn6 f1s2uweq fr80ssc f1ukrpxl fecsdlb fnwyq0v ft1hn21 fuxngvv fy5bs14 f1q1yqic fhvnf4x fb6swo4 f1klyf7k f232fm2 fwga7ee f1nhwcv0 f1gm6xmp f1xxsver f1v3eptx fivsta0 fd4bjan f3m6zum fqtknz5 f17fgpbq f44c6la f3bhgqh f1kijzfu fm50zyk"
+2,1,1,2,2,1,1,1,1,1,5,2,8,1,5,4: Type: 50000 (Button) Name: "Edit in Pages" LocalizedType: "button" ClassName: "fui-Button r1f29ykk fai-next ___1t4al2m fhovq9v fkfq4zb f1t94bn6 f1s2uweq fr80ssc f1ukrpxl fecsdlb fnwyq0v ft1hn21 fuxngvv fy5bs14 f1q1yqic fhvnf4x fb6swo4 f1klyf7k f232fm2 fwga7ee f1nhwcv0 f1gm6xmp f1xxsver f1v3eptx fivsta0 fd4bjan f3m6zum fqtknz5 f17fgpbq f44c6la f3bhgqh f1kijzfu fm50zyk"
+2,1,1,2,2,1,1,1,1,1,5,2,8,1,5,5: Type: 50000 (Button) Name: "Pages options" LocalizedType: "button" AutomationId: "menurho" ClassName: "fui-Button r1f29ykk fai-next ___zs6jt30 f3rmtva fkfq4zb f1t94bn6 f1s2uweq fr80ssc f1ukrpxl fecsdlb fnwyq0v ft1hn21 fuxngvv fy5bs14 f1q1yqic fhvnf4x fb6swo4 f1klyf7k f232fm2 fwga7ee f1nhwcv0 f1gm6xmp f1xxsver f1v3eptx fivsta0 fd4bjan f3m6zum fqtknz5 f17fgpbq f44c6la f3bhgqh f1kijzfu fm50zyk"
+2,1,1,2,2,1,1,1,1,1,5,2,8,1,5,6: Type: 50000 (Button) Name: "More options" LocalizedType: "button" AutomationId: "menurhr" ClassName: "fui-Button r1f29ykk fai-next ___19vaudi fhovq9v fkfq4zb f1t94bn6 f1s2uweq fr80ssc f1ukrpxl fecsdlb fnwyq0v ft1hn21 fuxngvv fy5bs14 f1q1yqic fhvnf4x fb6swo4 f1klyf7k f232fm2 fwga7ee f1nhwcv0 f1gm6xmp f1xxsver f1v3eptx fivsta0 fd4bjan f3m6zum fqtknz5 f17fgpbq f44c6la f3bhgqh fv6hcav f1kijzfu fm50zyk"
+2,1,1,2,2,1,1,1,1,1,5,2,9: Type: 50021 (ToolBar) Name: "suggestions" LocalizedType: "tool bar" ClassName: "fai-SuggestionList ___inbs740 f22iagw fni485r f9c4gz4 f1yhwmi5 fr3gje9 f1vx9l62 fly5x3f f1s184ao f1m1endh fgs5rwf f1898jlq f1line0j f19g0ac"
+2,1,1,2,2,1,1,1,1,1,5,2,9,1: Type: 50000 (Button) Name: "Explain the Lollipop chart idea" LocalizedType: "button" ClassName: "fai-Suggestion fui-Button r1f29ykk ___ibdbc00 fk6fouc fy9rknc figsok6 f1i3iumi f192inf7 f5tn483 f1vxd6vx f1ojsxk5 fzkkow9 fcdblym fg706s2 fjik90z f68mrw8 f7pw515 frpde29 fw35ms5 f1kijzfu f17eg4ws fkfq4zb fpgzoln f1m56mwy frhssjw f1c21dwh f106pmgz fesy4wo fil0yj2 f9xbgkc fnx31mg feiahij f1ytgj83 f16m5b8m f17ux6es fwlads5 f1kqxwtj f10o6k9l fjxutwb fkoldzo"
+2,1,1,2,2,1,1,1,1,1,5,2,9,2: Type: 50000 (Button) Name: "What is a mockup data?" LocalizedType: "button" ClassName: "fai-Suggestion fui-Button r1f29ykk ___ibdbc00 fk6fouc fy9rknc figsok6 f1i3iumi f192inf7 f5tn483 f1vxd6vx f1ojsxk5 fzkkow9 fcdblym fg706s2 fjik90z f68mrw8 f7pw515 frpde29 fw35ms5 f1kijzfu f17eg4ws fkfq4zb fpgzoln f1m56mwy frhssjw f1c21dwh f106pmgz fesy4wo fil0yj2 f9xbgkc fnx31mg feiahij f1ytgj83 f16m5b8m f17ux6es fwlads5 f1kqxwtj f10o6k9l fjxutwb fkoldzo"
+2,1,1,2,2,1,1,1,1,1,5,2,9,3: Type: 50000 (Button) Name: "How to transform chart into sub-phases?" LocalizedType: "button" ClassName: "fai-Suggestion fui-Button r1f29ykk ___ibdbc00 fk6fouc fy9rknc figsok6 f1i3iumi f192inf7 f5tn483 f1vxd6vx f1ojsxk5 fzkkow9 fcdblym fg706s2 fjik90z f68mrw8 f7pw515 frpde29 fw35ms5 f1kijzfu f17eg4ws fkfq4zb fpgzoln f1m56mwy frhssjw f1c21dwh f106pmgz fesy4wo fil0yj2 f9xbgkc fnx31mg feiahij f1ytgj83 f16m5b8m f17ux6es fwlads5 f1kqxwtj f10o6k9l fjxutwb fkoldzo"
 2,1,1,2,2,1,1,1,1,1,6: Type: 50026 (Group) LocalizedType: "group" ClassName: "rrd10u0 fui-AriaLive__assertive"
 2,1,1,2,2,1,1,1,1,1,7: Type: 50026 (Group) LocalizedType: "group" ClassName: "rrd10u0 fui-AriaLive__polite"
 2,1,1,2,2,1,1,1,1,1,8: Type: 50021 (ToolBar) Name: "Attachments" LocalizedType: "tool bar" ClassName: "fui-Overflow fai-AttachmentList r168fwfa ___1uxmfwa fyfkpbf f10570jf fz7g6wx fjuset5"
@@ -139,7 +201,7 @@ Content: identificadora" LocalizedType: "text"
 2,1,1,2,2,1,1,1,1,1,9,1: Type: 50020 (Text) Name: "
 " LocalizedType: "text"
 2,1,1,2,2,1,1,1,1,1,10: Type: 50020 (Text) Name: "Message Copilot" LocalizedType: "text"
-2,1,1,2,2,1,1,1,1,1,11: Type: 50000 (Button) Name: "Add and manage sources" LocalizedType: "button" AutomationId: "menur5h" ClassName: "fui-Button r1f29ykk fui-MenuButton fai-next ___1uwv4t0 f1c21dwh f1p3nwhy f11589ue f1q5o8ev f1pdflbu fkfq4zb fjxutwb f1s2uweq fr80ssc f1ukrpxl fecsdlb f139oj5f ft1hn21 fuxngvv fkoldzo fhvnf4x fb6swo4 f1klyf7k f232fm2 f1l983o9 f1nhwcv0 f1gm6xmp fxoo9op f1v3eptx f1i0gk12 fd4bjan f12clzc2 f1hbd1aw f44lkw9 fod5ikn fl43uef faaz57k f1062rbf fjy1crr f1s184ao f1byxwk8"
+2,1,1,2,2,1,1,1,1,1,11: Type: 50000 (Button) Name: "Add and manage sources" LocalizedType: "button" AutomationId: "menur5h" ClassName: "fui-Button r1f29ykk fui-MenuButton fai-next ___gnkwgu0 f1q9pm1r f1p3nwhy f11589ue f1q5o8ev f1pdflbu f1qj7y59 fjxutwb f1s2uweq fr80ssc f1ukrpxl fecsdlb f139oj5f ft1hn21 fuxngvv fkoldzo fhvnf4x fb6swo4 f1klyf7k f232fm2 f1l983o9 f1nhwcv0 f1gm6xmp fxoo9op f1v3eptx f1i0gk12 fd4bjan f12clzc2 f1hbd1aw f44lkw9 fod5ikn fl43uef faaz57k f1062rbf fjy1crr fxoiby5 f15q0o9g f1s184ao f1byxwk8"
 2,1,1,2,2,1,1,1,1,1,12: Type: 50000 (Button) Name: "Start dictation" LocalizedType: "button" ClassName: "fui-Button r1f29ykk ___2twy7j0 fxugw4r fhh09w3 f1llp1o6 f71zf03 f1vjn2nj fkfq4zb fjxutwb f1s2uweq fr80ssc f1ukrpxl fecsdlb f139oj5f ft1hn21 fuxngvv fkoldzo fhvnf4x fb6swo4 f1klyf7k f232fm2 f1l983o9 f1nhwcv0 f1gm6xmp fxoo9op f1v3eptx f1i0gk12 fd4bjan f12clzc2 f1hbd1aw f44lkw9 fod5ikn fl43uef faaz57k f1062rbf fjy1crr fj9j8l8 f1b6djjb fo6xqva ffan7m3 fuftm34"
 2,1,1,2,2,1,1,1,1,1,12,1: Type: 50006 (Image) Name: "Mic-Regular" LocalizedType: "graphic" ClassName: "fui-Icon ___9ctc0p0 f1w7gpdv fez10in f1dd5bof"
 2,1,1,2,2,1,1,1,1,1,13: Type: 50026 (Group) Name: "Start a new voice chat" LocalizedType: "group" ClassName: "___1ty284h f10pi13n ftuwxu6 f122n59 f4d9j23"
@@ -152,9 +214,23 @@ Content: identificadora" LocalizedType: "text"
 2,1,1,2,2,1,1,1,5: Type: 50026 (Group) LocalizedType: "group" ClassName: "fui-FluentProviderr0 ___1uxlrft f1euv43f f15twtuk f1vgc2s3 f1e31b4d f494woh"
 2,1,1,2,2,1,1,1,6: Type: 50026 (Group) LocalizedType: "group" ClassName: "fui-FluentProviderr0 ___1uxlrft f1euv43f f15twtuk f1vgc2s3 f1e31b4d f494woh"
 2,1,1,2,2,1,1,1,7: Type: 50026 (Group) LocalizedType: "group"
-2,1,1,2,2,1,1,1,8: Type: 50026 (Group) LocalizedType: "group"
-2,1,1,2,2,1,1,1,9: Type: 50026 (Group) LocalizedType: "group" ClassName: "fui-FluentProviderr0 ___1uxlrft f1euv43f f15twtuk f1vgc2s3 f1e31b4d f494woh"
-2,1,1,2,2,1,1,1,10: Type: 50026 (Group) LocalizedType: "group" ClassName: "fui-FluentProviderrbc ___1uxlrft f1euv43f f15twtuk f1vgc2s3 f1e31b4d f494woh"
+2,1,1,2,2,1,1,1,8: Type: 50026 (Group) LocalizedType: "group" ClassName: "fui-FluentProviderr0 ___1uxlrft f1euv43f f15twtuk f1vgc2s3 f1e31b4d f494woh"
+2,1,1,2,2,1,1,1,9: Type: 50026 (Group) LocalizedType: "group" ClassName: "fui-FluentProviderrbc ___1uxlrft f1euv43f f15twtuk f1vgc2s3 f1e31b4d f494woh"
+2,1,1,2,2,1,1,1,10: Type: 50026 (Group) LocalizedType: "group"
+2,1,1,2,2,1,1,1,11: Type: 50026 (Group) LocalizedType: "group"
+2,1,1,2,2,1,1,1,12: Type: 50026 (Group) LocalizedType: "group" ClassName: "fui-FluentProviderrbc ___1uxlrft f1euv43f f15twtuk f1vgc2s3 f1e31b4d f494woh"
+2,1,1,2,2,1,1,1,13: Type: 50026 (Group) LocalizedType: "group"
+2,1,1,2,2,1,1,1,14: Type: 50026 (Group) LocalizedType: "group" ClassName: "fui-FluentProviderrbc ___1uxlrft f1euv43f f15twtuk f1vgc2s3 f1e31b4d f494woh"
+2,1,1,2,2,1,1,1,15: Type: 50026 (Group) LocalizedType: "group" ClassName: "fui-FluentProviderr0 ___1uxlrft f1euv43f f15twtuk f1vgc2s3 f1e31b4d f494woh"
+2,1,1,2,2,1,1,1,15,1: Type: 50009 (Menu) Name: "Add and manage sources" LocalizedType: "menu" ClassName: "fui-MenuList fai-next ___hnk7vf0 f22iagw f1vx9l62 f7e3wsx f1l02sjl"
+2,1,1,2,2,1,1,1,15,1,1: Type: 50011 (MenuItem) Name: "Add work content" LocalizedType: "menu item" ClassName: "fui-MenuItem rfoezjv fai-next ___lj24x80 fbhnoac f1ngh7ph f5o476b f1uw59to fw5db7e f1kijzfu f1eyhf9v f122n59 fk6fouc fkhj508 figsok6 f1i3iumi f14imaph f1ucrkgd f47sw1k f1j8xxfb f1ukmsra f84qbf7"
+2,1,1,2,2,1,1,1,15,1,2: Type: 50011 (MenuItem) Name: "Upload images and files" LocalizedType: "menu item" ClassName: "fui-MenuItem rfoezjv fai-next ___lj24x80 fbhnoac f1ngh7ph f5o476b f1uw59to fw5db7e f1kijzfu f1eyhf9v f122n59 fk6fouc fkhj508 figsok6 f1i3iumi f14imaph f1ucrkgd f47sw1k f1j8xxfb f1ukmsra f84qbf7"
+2,1,1,2,2,1,1,1,15,1,3: Type: 50011 (MenuItem) Name: "Attach cloud files" LocalizedType: "menu item" ClassName: "fui-MenuItem rfoezjv fai-next ___lj24x80 fbhnoac f1ngh7ph f5o476b f1uw59to fw5db7e f1kijzfu f1eyhf9v f122n59 fk6fouc fkhj508 figsok6 f1i3iumi f14imaph f1ucrkgd f47sw1k f1j8xxfb f1ukmsra f84qbf7"
+2,1,1,2,2,1,1,1,15,1,4: Type: 50026 (Group) LocalizedType: "group" ClassName: "fui-MenuGroup fai-next ___17ufc75 f15wmkqy"
+2,1,1,2,2,1,1,1,15,1,4,1: Type: 50011 (MenuItem) Name: "Researcher" LocalizedType: "menu item" AutomationId: "capability-id-researcher" ClassName: "fui-MenuItem rfoezjv fai-next ___lj24x80 fbhnoac f1ngh7ph f5o476b f1uw59to fw5db7e f1kijzfu f1eyhf9v f122n59 fk6fouc fkhj508 figsok6 f1i3iumi f14imaph f1ucrkgd f47sw1k f1j8xxfb f1ukmsra f84qbf7"
+2,1,1,2,2,1,1,1,15,1,4,2: Type: 50011 (MenuItem) Name: "Analyst" LocalizedType: "menu item" AutomationId: "capability-id-analyst" ClassName: "fui-MenuItem rfoezjv fai-next ___lj24x80 fbhnoac f1ngh7ph f5o476b f1uw59to fw5db7e f1kijzfu f1eyhf9v f122n59 fk6fouc fkhj508 figsok6 f1i3iumi f14imaph f1ucrkgd f47sw1k f1j8xxfb f1ukmsra f84qbf7"
+2,1,1,2,2,1,1,1,15,1,4,3: Type: 50011 (MenuItem) Name: "Designer" LocalizedType: "menu item" AutomationId: "capability-id-imageGeneration" ClassName: "fui-MenuItem rfoezjv fai-next ___lj24x80 fbhnoac f1ngh7ph f5o476b f1uw59to fw5db7e f1kijzfu f1eyhf9v f122n59 fk6fouc fkhj508 figsok6 f1i3iumi f14imaph f1ucrkgd f47sw1k f1j8xxfb f1ukmsra f84qbf7"
+2,1,1,2,2,1,1,1,15,1,4,4: Type: 50011 (MenuItem) Name: "More" LocalizedType: "menu item" AutomationId: "menurie" ClassName: "fui-MenuItem rfoezjv fai-next ___lj24x80 fbhnoac f1ngh7ph f5o476b f1uw59to fw5db7e f1kijzfu f1eyhf9v f122n59 fk6fouc fkhj508 figsok6 f1i3iumi f14imaph f1ucrkgd f47sw1k f1j8xxfb f1ukmsra f84qbf7"
 2,1,1,2,2,1,2: Type: 50033 (Pane) LocalizedType: "region" ClassName: "ContentsSeparator"
 2,1,1,2,3: Type: 50018 (Tab) LocalizedType: "tab" ClassName: "HorizontalTabStripRegionView"
 2,1,1,2,3,1: Type: 50033 (Pane) LocalizedType: "region" ClassName: "TabStripComboButton"
@@ -163,7 +239,7 @@ Content: identificadora" LocalizedType: "text"
 2,1,1,2,3,2,1: Type: 50033 (Pane) LocalizedType: "region" ClassName: "TabContainerImpl"
 2,1,1,2,3,2,1,1: Type: 50019 (TabItem) Name: "PowerPoint Slide Introduction Creation - Memory usage - 171 MB" LocalizedType: "tab item" AutomationId: "view_20" ClassName: "Tab"
 2,1,1,2,3,2,1,1,1: Type: 50000 (Button) Name: "Close" LocalizedType: "button" ClassName: "TabCloseButton"
-2,1,1,2,3,2,1,2: Type: 50019 (TabItem) Name: "Englishidentificadora. identificadora.The word "identificadora" is a noun in Spanish, meaning "identifier" or "identifying" in English, referring to something that identifies or serves as an identifier.🇺🇸 Identifier /aɪˈdɛntɪˌfaɪər/"The system uses a unique identifier to track each user."IdentifierEnglish: Identifier German: Identifikator Brazilian Portuguese: IdentificadoraIdentifier — /aɪˈdɛntɪˌfaɪər/ Identifikator — /ɪdɛntɪfɪˈkaːtoːɐ̯/ Identificadora — /idẽtʃifiˈkadoɾɐ/ - Memory usage - 152 MB" LocalizedType: "tab item" AutomationId: "view_20" ClassName: "Tab"
+2,1,1,2,3,2,1,2: Type: 50019 (TabItem) Name: "Englishidentificadora. identificadora.The word "identificadora" is a noun in Spanish, meaning "identifier" or "identifying" in English, referring to something that identifies or serves as an identifier.🇺🇸 Identifier /aɪˈdɛntɪˌfaɪər/"The system uses a unique identifier to track each user."IdentifierEnglish: Identifier German: Identifikator Brazilian Portuguese: IdentificadoraIdentifier — /aɪˈdɛntɪˌfaɪər/ Identifikator — /ɪdɛntɪfɪˈkaːtoːɐ̯/ Identificadora — /idẽtʃifiˈkadoɾɐ/ - Memory usage - 235 MB" LocalizedType: "tab item" AutomationId: "view_20" ClassName: "Tab"
 2,1,1,2,3,2,1,2,1: Type: 50000 (Button) Name: "Close" LocalizedType: "button" ClassName: "TabCloseButton"
 2,1,1,2,3,2,2: Type: 50033 (Pane) LocalizedType: "region" ClassName: "TabStrip::TabDragContextImpl"
 2,1,1,2,3,3: Type: 50000 (Button) Name: "New Tab" LocalizedType: "button" ClassName: "TabStripControlButton"
@@ -172,35 +248,23 @@ Content: identificadora" LocalizedType: "text"
 
 ---
 
-## Window identification (lib/CopilotWeb.ahk)
+## Shift shortcuts (Shift keys.ahk — mesmas teclas que Gemini)
 
-Chrome **title is not reliable** after the first message. Copilot replaces the tab/window title with a conversation summary.
+| Tecla | Controle Copilot | AutomationId / notas |
+|-------|------------------|----------------------|
+| Shift+D | Expand / Collapse navigation | Botão `Expand navigation` |
+| Shift+N | New chat | Botão ou nav `New chat` |
+| Shift+S | Search | `MenuItem` `Search` (abre drawer antes) |
+| Shift+M | Model selector | `gptModeSwitcher` |
+| Shift+T | Add and manage sources | Menu de fontes; depois `{Tab}` |
+| Shift+I | Designer (imagem) | `capability-id-imageGeneration` |
+| Shift+E | Researcher | `capability-id-researcher` |
+| Shift+P | Message Copilot | `m365-chat-editor-target-element` |
+| Shift+C | Copy Response | toolbar `fai-CopilotMessage__actions` |
+| Shift+R | Read aloud | botão direto ou More options |
+| Shift+G | `data/Gemini_Prompt.txt` + enviar | Composer + Send |
+| Shift+F | — | **Não existe** na árvore atual |
+| Enter / Ctrl+Enter | Aviso ao terminar | monitora `Stop generating` |
+| Alt+U | Scroll ao fim | `^{End}` + último `fai-CopilotMessage` |
 
-| State | Example title | Title match alone? |
-|-------|---------------|-------------------|
-| Empty chat | `Chat \| M365 Copilot - Google Chrome` | Yes |
-| Active conversation | `Englishidentificadora...Identificadora — /idẽtʃifiˈkadoɾɐ/ - Google Chrome` | No |
-
-**Use layered detection instead** (`CopilotWeb_IsCopilotHwnd`):
-
-1. **Title fast path**: contains `M365 Copilot` or `Chat | M365 Copilot`
-2. **Address bar URL** (primary for conversations): `m365.cloud.microsoft/chat` or `/chat/conversation/{uuid}` via `GetCurrentURL(true)`
-3. **Document URL** (full mode): `GetCurrentURL(false)` if address bar check fails
-4. **UIA fingerprint** (full mode): `m365-chat-editor-target-element` or `m365-copilot-app-layout-main`
-
-`GetCopilotWebWindowHwnd()` caches the last valid Chrome hwnd and re-validates with fast mode (title + address bar). Cache is cleared on new launch (`CopilotWeb_OpenOrFocus`) and when the window no longer exists.
-
-Config in env.ahk: `COPILOT_WEB_URL_NEEDLE`, `COPILOT_WEB_TITLE_NEEDLE`.
-
-## Response-state automation
-
-| Control | UIA | Used by |
-|---------|-----|---------|
-| Composer | `AutomationId: m365-chat-editor-target-element`, Name `Message Copilot` | Open/focus, paste, dictation submit |
-| Send | `fai-SendButton` / Name `Send ` | Submit after paste |
-| Streaming | Name `Stop generating`, Type Button | D2C monitor, async TTS/lookup |
-| Copy last response | Name **`Copy Response`** on `fai-CopilotMessage__actions` toolbar; lowest on screen after `Ctrl+End` | `#!+p`, D2C copy |
-| Read aloud | Name `Read aloud` / `Read Aloud`; fallback More options menu | `#!+o`, D2C `[R]` |
-| TTS pause/resume | `Pause`/`Pausar`, `Resume`/`Retomar` | `#!+o` toggle |
-
-If read-aloud controls are absent, scripts show: `Read aloud not available for Copilot web`.
+**Precisa de novo dump de UI:** fullscreen do composer (`Shift+F` no Gemini); wizard numerado de modelos (no Copilot, `Shift+M` só abre o seletor nativo). Confirmar nome do botão `Collapse navigation` com o drawer aberto.
