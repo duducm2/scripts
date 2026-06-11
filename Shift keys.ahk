@@ -414,37 +414,6 @@ NormalizeMojibake(str) {
 ; Cheat-sheet overlay (Win + Alt + Shift + A) â€" shows remapped shortcuts
 ;-------------------------------------------------------------------
 
-; #region agent log
-AgentDebugLog_CheatEsc(s) {
-    return StrReplace(StrReplace(s, "\", "\\"), '"', '\"')
-}
-
-AgentDebugLog_Cheat(hypothesisId, location, message, data := "") {
-    try {
-        ts := A_TickCount
-        sk := data.Has("siteKey") ? data["siteKey"] : ""
-        tl := data.Has("titleLen") ? data["titleLen"] : 0
-        cf := data.Has("copilotFast") ? data["copilotFast"] : -1
-        cfull := data.Has("copilotFull") ? data["copilotFull"] : -1
-        rawLen := data.Has("rawLen") ? data["rawLen"] : 0
-        procLen := data.Has("procLen") ? data["procLen"] : 0
-        plainLen := data.Has("plainLen") ? data["plainLen"] : 0
-        branch := data.Has("branch") ? data["branch"] : ""
-        appHas := data.Has("appHas") ? data["appHas"] : -1
-        appLen := data.Has("appLen") ? data["appLen"] : 0
-        copilotUia := data.Has("copilotUia") ? data["copilotUia"] : -1
-        line := (
-            '{"sessionId":"b24c7b","hypothesisId":"' AgentDebugLog_CheatEsc(hypothesisId) '","location":"' AgentDebugLog_CheatEsc(
-                location) '","message":"' AgentDebugLog_CheatEsc(message) '","data":{"siteKey":"' AgentDebugLog_CheatEsc(sk)
-            '","titleLen":' tl ',"copilotFast":' cf ',"copilotFull":' cfull ',"copilotUia":' copilotUia ',"rawLen":' rawLen
-            ',"procLen":' procLen ',"plainLen":' plainLen ',"branch":"' AgentDebugLog_CheatEsc(branch) '","appHas":' appHas
-            ',"appLen":' appLen '},"timestamp":' ts '}' "`n")
-        FileAppend line, A_ScriptDir "\debug-b24c7b.log", "UTF-8"
-    } catch {
-    }
-}
-; #endregion
-
 ; Map that stores the pop-up text for each application.  Extend freely.
 cheatSheets := Map()
 
@@ -1635,74 +1604,27 @@ GetCheatSheetText() {
         chromeTitle := RegExReplace(title, "i) - Google Chrome$", "")
 
         siteKey := ""
-        copilotFast := 0
-        copilotFull := 0
-        copilotUia := 0
-        static cheatCopilotRegistryLogged := false
-        if (!cheatCopilotRegistryLogged) {
-            cheatCopilotRegistryLogged := true
-            ; #region agent log
-            AgentDebugLog_Cheat("H5", "GetCheatSheetText:registry", "cheatSheets Copilot Web", Map(
-                "appHas", cheatSheets.Has("Copilot Web") ? 1 : 0,
-                "appLen", cheatSheets.Has("Copilot Web") ? StrLen(cheatSheets["Copilot Web"]) : 0))
-            ; #endregion
-        }
         if (hwnd) {
             try {
-                copilotFast := CopilotWeb_IsCopilotHwnd(hwnd, "fast") ? 1 : 0
+                if (CopilotWeb_IsCopilotHwnd(hwnd, "fast") || CopilotWeb_IsCopilotHwnd(hwnd, "full")
+                    || CopilotWeb_TryUiaFingerprint(hwnd))
+                    siteKey := "Copilot Web"
             } catch {
-                copilotFast := -1
             }
-            if (!copilotFast) {
-                try {
-                    copilotFull := CopilotWeb_IsCopilotHwnd(hwnd, "full") ? 1 : 0
-                } catch {
-                    copilotFull := -1
-                }
-            }
-            if (!copilotFast && !copilotFull) {
-                try {
-                    copilotUia := CopilotWeb_TryUiaFingerprint(hwnd) ? 1 : 0
-                } catch {
-                    copilotUia := -1
-                }
-            }
-            if (copilotFast = 1 || copilotFull = 1 || copilotUia = 1)
-                siteKey := "Copilot Web"
         }
         if (siteKey = "")
             siteKey := PickChromeAppSheetKey(chromeTitle)
-        appHas := 0
-        if (siteKey != "") {
-            appHas := cheatSheets.Has(siteKey) ? 1 : 0
-            if (appHas)
-                appShortcuts := cheatSheets[siteKey]
-            else
-                appShortcuts := ""
-        }
+        if (siteKey != "" && cheatSheets.Has(siteKey))
+            appShortcuts := cheatSheets[siteKey]
 
         ; Combine Chrome general + app-specific shortcuts
-        result := ""
-        branch := ""
-        if (appShortcuts != "" && chromeShortcuts != "") {
-            result := chromeShortcuts "`r`n`r`n" appShortcuts
-            branch := "chrome+app"
-        } else if (appShortcuts != "") {
-            result := appShortcuts
-            branch := "appOnly"
-        } else if (chromeShortcuts != "") {
-            result := chromeShortcuts
-            branch := "chromeOnly"
-        } else {
-            branch := "empty"
-        }
-        ; #region agent log
-        AgentDebugLog_Cheat("H1", "GetCheatSheetText:chrome", "chrome branch result", Map(
-            "siteKey", siteKey, "titleLen", StrLen(title), "copilotFast", copilotFast, "copilotFull", copilotFull,
-            "copilotUia", copilotUia, "rawLen", StrLen(result), "branch", branch, "appHas", appHas,
-            "appLen", StrLen(appShortcuts)))
-        ; #endregion
-        return result
+        if (appShortcuts != "" && chromeShortcuts != "")
+            return chromeShortcuts "`r`n`r`n" appShortcuts
+        if (appShortcuts != "")
+            return appShortcuts
+        if (chromeShortcuts != "")
+            return chromeShortcuts
+        return ""
     }
 
     ; UIA Tree Inspector - check both process and window title
@@ -2100,15 +2022,6 @@ ToggleShortcutHelp() {
     g_cheatSheetAppFullProcessed := processedText
     g_helpSearchEdit.Value := ""
     CheatSheet_RichSetProcessedBody(g_helpCheatCtrl, processedText)
-    plainProbe := ""
-    try plainProbe := g_helpCheatCtrl.Text
-    catch
-        plainProbe := ""
-    ; #region agent log
-    AgentDebugLog_Cheat("H3", "ToggleShortcutHelp", "after render", Map(
-        "rawLen", StrLen(text), "procLen", StrLen(processedText), "plainLen", StrLen(plainProbe),
-        "branch", usedFallback ? "fallbackMsg" : "normal"))
-    ; #endregion
     CheatSheet_ResizeBody(g_helpCheatCtrl, g_helpGui, 18, 200, processedText, 48)
     g_helpShown := true
     CheatSheet_DeferFocusSearch(g_helpSearchEdit)
@@ -23475,7 +23388,7 @@ PlayCompletionChime_Gemini() {
 ;-------------------------------------------------------------------
 #HotIf IsCopilotWebChromeActiveForHotkey()
 
-+d:: {
+$+d:: {
     try {
         CopilotWeb_ToggleNavDrawer()
         Sleep 200
@@ -23483,25 +23396,25 @@ PlayCompletionChime_Gemini() {
     }
 }
 
-+n:: {
+$+n:: {
     try CopilotWeb_ClickNewChat()
     catch {
     }
 }
 
-+s:: {
+$+s:: {
     try CopilotWeb_ClickNavSearch()
     catch {
     }
 }
 
-+m:: {
+$+m:: {
     try CopilotWeb_OpenModelSelector()
     catch {
     }
 }
 
-+t:: {
+$+t:: {
     try {
         uia := CopilotWeb_GetActiveUia()
         if CopilotWeb_OpenSourcesMenu(uia) {
@@ -23524,35 +23437,35 @@ $+e:: {
     }
 }
 
-+p:: {
+$+p:: {
     try CopilotWeb_FocusComposer(CopilotWeb_GetActiveUia(), false)
     catch {
     }
 }
 
-+c:: {
+$+c:: {
     try CopilotWeb_ShiftCopyLastMessage()
     catch {
     }
 }
 
-+r:: {
+$+r:: {
     try CopilotWeb_ShiftReadAloud()
     catch {
     }
 }
 
-+g:: {
+$+g:: {
     try CopilotWeb_SendPromptFromFile()
     catch {
     }
 }
 
-+f:: {
+$+f:: {
     ShowCenteredOverlay_Utils("Fullscreen composer not found in Copilot web UI", 2200, BANNER_ACCENT_ERROR)
 }
 
-Enter:: {
+$Enter:: {
     if (GetKeyState("Shift", "P") || GetKeyState("Ctrl", "P")) {
         Send "{Enter}"
         return
@@ -23561,7 +23474,7 @@ Enter:: {
     SetTimer(() => CopilotWeb_WaitForGenerationComplete(300000), -1)
 }
 
-^Enter:: {
+$^Enter:: {
     Send "{Enter}"
     SetTimer(() => CopilotWeb_WaitForGenerationComplete(300000), -1)
 }

@@ -18,6 +18,10 @@ COPILOT_WEB_FIRST_LAUNCH_WAIT_MS := 2500
 COPILOT_COPY_RESPONSE_NAMES := ["Copy Response", "Copy", "Copiar"]
 
 global g_CopilotWebCachedHwnd := 0
+global g_CopilotWebHotkeyActive := false
+global g_CopilotWebCachedTitle := ""
+global g_CopilotWeb_ForegroundHookHandle := 0
+global g_CopilotWeb_ForegroundHookCallback := 0
 COPILOT_READ_ALOUD_NAMES := ["Read aloud", "Read Aloud", "Ler em voz alta"]
 COPILOT_MORE_OPTIONS_NAMES := ["More options", "Show more options", "Mais opções"]
 COPILOT_TTS_PAUSE_NAMES := ["Pause", "Pausar"]
@@ -149,8 +153,10 @@ CopilotWeb_IsCopilotWindow(hwnd) {
 }
 
 CopilotWeb_InvalidateCache() {
-    global g_CopilotWebCachedHwnd
+    global g_CopilotWebCachedHwnd, g_CopilotWebHotkeyActive, g_CopilotWebCachedTitle
     g_CopilotWebCachedHwnd := 0
+    g_CopilotWebHotkeyActive := false
+    g_CopilotWebCachedTitle := ""
 }
 
 CopilotWeb_CacheHwnd(hwnd) {
@@ -1007,17 +1013,83 @@ class CopilotAsyncLookup {
 
 ; --- Shift keys.ahk helpers (same letter shortcuts as Gemini web) ---
 
+; Cache-first #HotIf context: full UIA/URL detect on foreground change only (efficiency-canon §3–§4).
+CopilotWeb_RefreshHotkeyContext(hwnd, useFull := false) {
+    global g_CopilotWebHotkeyActive, g_CopilotWebCachedHwnd, g_CopilotWebCachedTitle
+    if (!hwnd || !CopilotWeb_IsChromeHwnd(hwnd)) {
+        g_CopilotWebHotkeyActive := false
+        g_CopilotWebCachedTitle := ""
+        return false
+    }
+    mode := useFull ? "full" : "fast"
+    active := CopilotWeb_IsCopilotHwnd(hwnd, mode)
+    g_CopilotWebHotkeyActive := active
+    if (active) {
+        g_CopilotWebCachedHwnd := hwnd
+        CopilotWeb_CacheHwnd(hwnd)
+        try {
+            g_CopilotWebCachedTitle := WinGetTitle("ahk_id " hwnd)
+        } catch {
+            g_CopilotWebCachedTitle := ""
+        }
+    } else {
+        if (g_CopilotWebCachedHwnd = hwnd)
+            g_CopilotWebCachedHwnd := 0
+        g_CopilotWebCachedTitle := ""
+    }
+    return active
+}
+
+CopilotWeb_OnForegroundChanged(hwnd) {
+    if (!hwnd || !WinExist("ahk_id " hwnd)) {
+        global g_CopilotWebHotkeyActive, g_CopilotWebCachedTitle
+        g_CopilotWebHotkeyActive := false
+        g_CopilotWebCachedTitle := ""
+        return
+    }
+    if (!CopilotWeb_IsChromeHwnd(hwnd)) {
+        global g_CopilotWebHotkeyActive, g_CopilotWebCachedTitle
+        g_CopilotWebHotkeyActive := false
+        g_CopilotWebCachedTitle := ""
+        return
+    }
+    CopilotWeb_RefreshHotkeyContext(hwnd, true)
+}
+
+CopilotWeb_ForegroundHookProc(hHook, event, hwnd, idObject, idChild, idEventThread, dwmsEventTime) {
+    SetTimer(CopilotWeb_OnForegroundChanged.Bind(hwnd), -0)
+}
+
+CopilotWeb_EnsureForegroundHook() {
+    global g_CopilotWeb_ForegroundHookHandle, g_CopilotWeb_ForegroundHookCallback
+    if (g_CopilotWeb_ForegroundHookHandle)
+        return
+    cb := CallbackCreate(CopilotWeb_ForegroundHookProc, "F", 7)
+    h := DllCall("user32\SetWinEventHook", "UInt", 0x0003, "UInt", 0x0003, "Ptr", 0, "Ptr", cb, "UInt", 0, "UInt", 0,
+        "UInt", 0, "Ptr")
+    if (h) {
+        g_CopilotWeb_ForegroundHookHandle := h
+        g_CopilotWeb_ForegroundHookCallback := cb
+    }
+}
+
 IsCopilotWebChromeActiveForHotkey() {
-  hwnd := WinExist("A")
-  if (!hwnd)
-    return false
-  try {
-    if (StrLower(WinGetProcessName("ahk_id " hwnd)) != "chrome.exe")
-      return false
-  } catch {
-    return false
-  }
-  return CopilotWeb_IsCopilotHwnd(hwnd, "fast")
+    CopilotWeb_EnsureForegroundHook()
+    hwnd := WinExist("A")
+    if (!hwnd || !CopilotWeb_IsChromeHwnd(hwnd))
+        return false
+    global g_CopilotWebHotkeyActive, g_CopilotWebCachedHwnd, g_CopilotWebCachedTitle
+    if (g_CopilotWebHotkeyActive && hwnd = g_CopilotWebCachedHwnd) {
+        try {
+            title := WinGetTitle("ahk_id " hwnd)
+        } catch {
+            title := ""
+        }
+        if (title != g_CopilotWebCachedTitle)
+            return CopilotWeb_RefreshHotkeyContext(hwnd, false)
+        return true
+    }
+    return CopilotWeb_RefreshHotkeyContext(hwnd, true)
 }
 
 CopilotWeb_GetActiveUia() {
@@ -1347,3 +1419,5 @@ CopilotHotkey_ShowPronunciationLanguagePicker(selectedText) {
         BANNER_ACCENT_INTERMEDIATE,
         450, 17, "", false, "[1] Portuguese  [2] English  [3] German  [Esc] Cancel", false, true)
 }
+
+CopilotWeb_EnsureForegroundHook()
