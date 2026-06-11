@@ -47,6 +47,14 @@ COPILOT_SOURCES_MENU_MARKERS := [
     { Name: "Upload images and files", ControlType: "MenuItem" },
     { Name: "Add work content", ControlType: "MenuItem" }
 ]
+COPILOT_COMPOSER_EXPAND_NAMES := [
+    "Expand message copilot input box",
+    "Expand input to Fullscreen"
+]
+COPILOT_COMPOSER_COLLAPSE_NAMES := [
+    "Collapse message copilot input box",
+    "Collapse input from Fullscreen"
+]
 
 CopilotWeb_Notify(message, durationMs := 800, fontSize := 22) {
     StandardLoadingBar_Show(message, BANNER_ACCENT_INTERMEDIATE, { passive: true, fontSize: fontSize })
@@ -1128,6 +1136,43 @@ CopilotWeb_FindButtonByNames(uia, names) {
   for n in names
     criteria.Push({ Name: n, ControlType: "Button" })
   return CopilotWeb_FindFirstInUia(uia, criteria)
+}
+
+CopilotWeb_FindComposerExpandToggleButton(uia) {
+  if (!IsObject(uia))
+    return 0
+  collapse := CopilotWeb_FindButtonByNames(uia, COPILOT_COMPOSER_COLLAPSE_NAMES)
+  if (collapse)
+    return collapse
+  expand := CopilotWeb_FindButtonByNames(uia, COPILOT_COMPOSER_EXPAND_NAMES)
+  if (expand)
+    return expand
+  try {
+    for btn in uia.FindAll({ ControlType: "Button" }) {
+      cn := ""
+      name := ""
+      try cn := btn.ClassName
+      try name := btn.Name
+      if (InStr(cn, "fai-ChatInput__expandButton") || InStr(cn, "fui-ExpandButton")
+          || InStr(cn, "ExpandableChatInput__expandButton"))
+        return btn
+      if (InStr(name, "copilot input box", false) && (InStr(name, "Expand", false) || InStr(name, "Collapse", false)))
+        return btn
+    }
+  } catch {
+  }
+  return 0
+}
+
+CopilotWeb_ToggleComposerFullscreen(uia := 0) {
+  if (!uia)
+    uia := CopilotWeb_GetActiveUia()
+  if (!IsObject(uia))
+    return false
+  btn := CopilotWeb_FindComposerExpandToggleButton(uia)
+  if (!btn)
+    return false
+  return CopilotWeb_ClickUiaElement(btn)
 }
 
 CopilotWeb_ToggleNavDrawer(uia := 0) {

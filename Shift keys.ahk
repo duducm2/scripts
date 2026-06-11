@@ -1479,7 +1479,7 @@ Copilot Web (Shift)
 📋 [C][C]opy last response
 🔊 [R][R]ead aloud last message
 🤖 [G]Send prompt text (Gemini_Prompt.txt)
-⛶ [F]Fullscreen input — not in Copilot web UI
+⛶ [F][F]ullscreen input (expand composer)
 🔔 [Enter / Ctrl+Enter]Send and notify on completion
 
 === Alt (ahk) ===
@@ -23462,7 +23462,11 @@ $+g:: {
 }
 
 $+f:: {
-    ShowCenteredOverlay_Utils("Fullscreen composer not found in Copilot web UI", 2200, BANNER_ACCENT_ERROR)
+    try {
+        if !CopilotWeb_ToggleComposerFullscreen()
+            ShowCenteredOverlay_Utils("Fullscreen input button not found", 2200, BANNER_ACCENT_ERROR)
+    } catch {
+    }
 }
 
 $Enter:: {
