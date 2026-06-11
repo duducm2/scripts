@@ -34,18 +34,12 @@ COPILOT_NAV_EXPAND_NAMES := ["Expand navigation", "Expandir navegação"]
 COPILOT_NAV_COLLAPSE_NAMES := ["Collapse navigation", "Recolher navegação"]
 COPILOT_NEW_CHAT_NAMES := ["New chat", "Novo chat"]
 COPILOT_NAV_SEARCH_NAMES := ["Search", "Pesquisar", "Buscar"]
-COPILOT_MODEL_SELECTOR_CRITERIA := [
-    { AutomationId: "gptModeSwitcher", ControlType: "Button" },
-    { Name: "Model Selector", ControlType: "Button" }
-]
-COPILOT_SOURCES_BUTTON_CRITERIA := [
-    { Name: "Add and manage sources", ControlType: "Button" },
-    { Name: "Adicionar e gerenciar fontes", ControlType: "Button" }
-]
-COPILOT_SOURCES_MENU_MARKERS := [
-    { AutomationId: "capability-id-researcher", ControlType: "MenuItem" },
-    { Name: "Upload images and files", ControlType: "MenuItem" },
-    { Name: "Add work content", ControlType: "MenuItem" }
+COPILOT_MODEL_SELECTOR_CRITERIA := [{ AutomationId: "gptModeSwitcher", ControlType: "Button" }, { Name: "Model Selector",
+    ControlType: "Button" }]
+COPILOT_SOURCES_BUTTON_CRITERIA := [{ Name: "Add and manage sources", ControlType: "Button" }, { Name: "Adicionar e gerenciar fontes",
+    ControlType: "Button" }]
+COPILOT_SOURCES_MENU_MARKERS := [{ AutomationId: "capability-id-researcher", ControlType: "MenuItem" }, { Name: "Upload images and files",
+    ControlType: "MenuItem" }, { Name: "Add work content", ControlType: "MenuItem" }
 ]
 COPILOT_COMPOSER_EXPAND_NAMES := [
     "Expand message copilot input box",
@@ -56,6 +50,29 @@ COPILOT_COMPOSER_COLLAPSE_NAMES := [
     "Collapse input from Fullscreen"
 ]
 
+; Optional overrides in env.ahk (included before this file). Defaults silence #Warn Unset on load.
+if (!IsSet(COPILOT_WEB_URL))
+    global COPILOT_WEB_URL := "https://m365.cloud.microsoft/chat"
+if (!IsSet(COPILOT_WEB_URL_NEEDLE))
+    global COPILOT_WEB_URL_NEEDLE := "m365.cloud.microsoft/chat"
+if (!IsSet(COPILOT_WEB_TITLE_NEEDLE))
+    global COPILOT_WEB_TITLE_NEEDLE := ""
+
+; Personal rig: Gemini. Work rig: M365 Copilot web (IS_WORK_ENVIRONMENT from env.ahk).
+UseCopilotWebForGlobalAI() {
+    global IS_WORK_ENVIRONMENT
+    return IS_WORK_ENVIRONMENT
+}
+
+GetGlobalAIProviderLabel() {
+    return UseCopilotWebForGlobalAI() ? "Copilot" : "Gemini"
+}
+
+CopilotWeb_GetLaunchUrl() {
+    global COPILOT_WEB_URL
+    return (COPILOT_WEB_URL != "") ? COPILOT_WEB_URL : "https://m365.cloud.microsoft/chat"
+}
+
 CopilotWeb_Notify(message, durationMs := 800, fontSize := 22) {
     StandardLoadingBar_Show(message, BANNER_ACCENT_INTERMEDIATE, { passive: true, fontSize: fontSize })
     StandardLoadingBar_Hide(durationMs)
@@ -65,7 +82,7 @@ CopilotWeb_UrlIsChat(url) {
     global COPILOT_WEB_URL_NEEDLE
     if (!url)
         return false
-    needle := COPILOT_WEB_URL_NEEDLE ? COPILOT_WEB_URL_NEEDLE : "m365.cloud.microsoft/chat"
+    needle := (COPILOT_WEB_URL_NEEDLE != "") ? COPILOT_WEB_URL_NEEDLE : "m365.cloud.microsoft/chat"
     return InStr(url, needle)
 }
 
@@ -117,15 +134,9 @@ CopilotWeb_TryUiaFingerprint(hwnd) {
         uia := UIA_Browser("ahk_id " hwnd)
         if (CopilotWeb_FindComposer(uia))
             return true
-        for criteria in [
-            { AutomationId: "m365-copilot-app-layout-main" },
-            { AutomationId: "copilot-message-rbp-title" },
-            { AutomationId: "m365-chat-editor-target-element" },
-            { AutomationId: "gptModeSwitcher", ControlType: "Button" },
-            { Name: "Message Copilot" },
-            { Name: "Copilot said:" },
-            { Name: "Expand navigation", ControlType: "Button" },
-            { Name: "New chat", ControlType: "MenuItem" }
+        for criteria in [{ AutomationId: "m365-copilot-app-layout-main" }, { AutomationId: "copilot-message-rbp-title" }, { AutomationId: "m365-chat-editor-target-element" }, { AutomationId: "gptModeSwitcher",
+            ControlType: "Button" }, { Name: "Message Copilot" }, { Name: "Copilot said:" }, { Name: "Expand navigation",
+                ControlType: "Button" }, { Name: "New chat", ControlType: "MenuItem" }
         ] {
             try {
                 if (uia.FindFirst(criteria))
@@ -214,20 +225,15 @@ CopilotWeb_FindFirstInUia(uia, criteriaList) {
 }
 
 CopilotWeb_FindComposer(uia) {
-    return CopilotWeb_FindFirstInUia(uia, [
-        { AutomationId: "m365-chat-editor-target-element", ControlType: "Edit" },
-        { AutomationId: "m365-chat-editor-target-element" },
-        { Name: "Message Copilot", ControlType: "Edit" }
-    ])
+    return CopilotWeb_FindFirstInUia(uia, [{ AutomationId: "m365-chat-editor-target-element", ControlType: "Edit" }, { AutomationId: "m365-chat-editor-target-element" }, { Name: "Message Copilot",
+        ControlType: "Edit" }])
 }
 
 CopilotWeb_FindStopGenerating(uia) {
     if (!IsObject(uia))
         return 0
-    el := CopilotWeb_FindFirstInUia(uia, [
-        { Name: "Stop generating", ControlType: "Button" },
-        { Name: "Stop generating", Type: UIA_Copilot_ControlType_Button }
-    ])
+    el := CopilotWeb_FindFirstInUia(uia, [{ Name: "Stop generating", ControlType: "Button" }, { Name: "Stop generating",
+        Type: UIA_Copilot_ControlType_Button }])
     if (el)
         return el
     try {
@@ -238,10 +244,8 @@ CopilotWeb_FindStopGenerating(uia) {
 }
 
 CopilotWeb_FindSendButton(uia) {
-    return CopilotWeb_FindFirstInUia(uia, [
-        { Name: "Send ", matchmode: "Substring", ControlType: "Button" },
-        { ClassName: "fai-SendButton", matchmode: "Substring", ControlType: "Button" }
-    ])
+    return CopilotWeb_FindFirstInUia(uia, [{ Name: "Send ", matchmode: "Substring", ControlType: "Button" }, { ClassName: "fai-SendButton",
+        matchmode: "Substring", ControlType: "Button" }])
 }
 
 CopilotWeb_TrySubmit(uia) {
@@ -338,7 +342,6 @@ CopilotWeb_ActivateWindow(hwnd, timeoutMs := COPILOT_WEB_ACTIVATE_WAIT_MS) {
 }
 
 CopilotWeb_OpenOrFocus() {
-    global COPILOT_WEB_URL
     SetTitleMatchMode(2)
     hwnd := GetCopilotWebWindowHwnd()
     if (hwnd) {
@@ -362,7 +365,7 @@ CopilotWeb_OpenOrFocus() {
     CopilotWeb_InvalidateCache()
     try {
         StandardLoadingBar_Show("📤 Opening Copilot...", BANNER_ACCENT_INTERMEDIATE)
-        Run 'chrome.exe --new-window "' COPILOT_WEB_URL '"'
+        Run 'chrome.exe --new-window "' CopilotWeb_GetLaunchUrl() '"'
         if !WinWaitActive("ahk_exe chrome.exe", , 8) {
             StandardLoadingBar_Hide(0)
             return false
@@ -416,11 +419,10 @@ CopilotWeb_ComposerGetText(copilotHwnd := 0) {
 
 ; Navigate to Copilot, focus composer, paste snippet (optional text or Clip Angel first snippet).
 CopilotWeb_NavigateFocusAndPaste(optionalPromptText := "", autoSubmit := false) {
-    global COPILOT_WEB_URL
     SetTitleMatchMode(2)
     copilotHwnd := GetCopilotWebWindowHwnd()
     if (!copilotHwnd) {
-        Run 'chrome.exe --new-window "' COPILOT_WEB_URL '"'
+        Run 'chrome.exe --new-window "' CopilotWeb_GetLaunchUrl() '"'
         if !WinWaitActive("ahk_exe chrome.exe", , 5)
             return 0
         Sleep COPILOT_WEB_FIRST_LAUNCH_WAIT_MS
@@ -1101,341 +1103,342 @@ IsCopilotWebChromeActiveForHotkey() {
 }
 
 CopilotWeb_GetActiveUia() {
-  hwnd := WinExist("A")
-  if (!hwnd)
-    return 0
-  try {
-    return UIA_Browser("ahk_id " hwnd)
-  } catch {
-    return 0
-  }
+    hwnd := WinExist("A")
+    if (!hwnd)
+        return 0
+    try {
+        return UIA_Browser("ahk_id " hwnd)
+    } catch {
+        return 0
+    }
 }
 
 CopilotWeb_ClickUiaElement(el) {
-  if (!IsObject(el))
-    return false
-  try {
-    if (el.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)) {
-      el.InvokePattern.Invoke()
-      return true
+    if (!IsObject(el))
+        return false
+    try {
+        if (el.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)) {
+            el.InvokePattern.Invoke()
+            return true
+        }
+    } catch {
     }
-  } catch {
-  }
-  try {
-    el.Click()
-    return true
-  } catch {
-  }
-  return false
+    try {
+        el.Click()
+        return true
+    } catch {
+    }
+    return false
 }
 
 CopilotWeb_FindButtonByNames(uia, names) {
-  if (!IsObject(uia) || !IsObject(names))
-    return 0
-  criteria := []
-  for n in names
-    criteria.Push({ Name: n, ControlType: "Button" })
-  return CopilotWeb_FindFirstInUia(uia, criteria)
+    if (!IsObject(uia) || !IsObject(names))
+        return 0
+    criteria := []
+    for n in names
+        criteria.Push({ Name: n, ControlType: "Button" })
+    return CopilotWeb_FindFirstInUia(uia, criteria)
 }
 
 CopilotWeb_FindComposerExpandToggleButton(uia) {
-  if (!IsObject(uia))
-    return 0
-  collapse := CopilotWeb_FindButtonByNames(uia, COPILOT_COMPOSER_COLLAPSE_NAMES)
-  if (collapse)
-    return collapse
-  expand := CopilotWeb_FindButtonByNames(uia, COPILOT_COMPOSER_EXPAND_NAMES)
-  if (expand)
-    return expand
-  try {
-    for btn in uia.FindAll({ ControlType: "Button" }) {
-      cn := ""
-      name := ""
-      try cn := btn.ClassName
-      try name := btn.Name
-      if (InStr(cn, "fai-ChatInput__expandButton") || InStr(cn, "fui-ExpandButton")
-          || InStr(cn, "ExpandableChatInput__expandButton"))
-        return btn
-      if (InStr(name, "copilot input box", false) && (InStr(name, "Expand", false) || InStr(name, "Collapse", false)))
-        return btn
+    if (!IsObject(uia))
+        return 0
+    collapse := CopilotWeb_FindButtonByNames(uia, COPILOT_COMPOSER_COLLAPSE_NAMES)
+    if (collapse)
+        return collapse
+    expand := CopilotWeb_FindButtonByNames(uia, COPILOT_COMPOSER_EXPAND_NAMES)
+    if (expand)
+        return expand
+    try {
+        for btn in uia.FindAll({ ControlType: "Button" }) {
+            cn := ""
+            name := ""
+            try cn := btn.ClassName
+            try name := btn.Name
+            if (InStr(cn, "fai-ChatInput__expandButton") || InStr(cn, "fui-ExpandButton")
+            || InStr(cn, "ExpandableChatInput__expandButton"))
+                return btn
+            if (InStr(name, "copilot input box", false) && (InStr(name, "Expand", false) || InStr(name, "Collapse",
+                false)))
+                return btn
+        }
+    } catch {
     }
-  } catch {
-  }
-  return 0
+    return 0
 }
 
 CopilotWeb_ToggleComposerFullscreen(uia := 0) {
-  if (!uia)
-    uia := CopilotWeb_GetActiveUia()
-  if (!IsObject(uia))
-    return false
-  btn := CopilotWeb_FindComposerExpandToggleButton(uia)
-  if (!btn)
-    return false
-  return CopilotWeb_ClickUiaElement(btn)
+    if (!uia)
+        uia := CopilotWeb_GetActiveUia()
+    if (!IsObject(uia))
+        return false
+    btn := CopilotWeb_FindComposerExpandToggleButton(uia)
+    if (!btn)
+        return false
+    return CopilotWeb_ClickUiaElement(btn)
 }
 
 CopilotWeb_ToggleNavDrawer(uia := 0) {
-  if (!uia)
-    uia := CopilotWeb_GetActiveUia()
-  if (!IsObject(uia))
+    if (!uia)
+        uia := CopilotWeb_GetActiveUia()
+    if (!IsObject(uia))
+        return false
+    collapse := CopilotWeb_FindButtonByNames(uia, COPILOT_NAV_COLLAPSE_NAMES)
+    if (collapse)
+        return CopilotWeb_ClickUiaElement(collapse)
+    expand := CopilotWeb_FindButtonByNames(uia, COPILOT_NAV_EXPAND_NAMES)
+    if (expand)
+        return CopilotWeb_ClickUiaElement(expand)
     return false
-  collapse := CopilotWeb_FindButtonByNames(uia, COPILOT_NAV_COLLAPSE_NAMES)
-  if (collapse)
-    return CopilotWeb_ClickUiaElement(collapse)
-  expand := CopilotWeb_FindButtonByNames(uia, COPILOT_NAV_EXPAND_NAMES)
-  if (expand)
-    return CopilotWeb_ClickUiaElement(expand)
-  return false
 }
 
 CopilotWeb_EnsureNavDrawerOpen(uia := 0) {
-  if (!uia)
-    uia := CopilotWeb_GetActiveUia()
-  if (!IsObject(uia))
-    return false
-  if (!CopilotWeb_FindButtonByNames(uia, COPILOT_NAV_EXPAND_NAMES))
-    return true
-  return CopilotWeb_ToggleNavDrawer(uia)
+    if (!uia)
+        uia := CopilotWeb_GetActiveUia()
+    if (!IsObject(uia))
+        return false
+    if (!CopilotWeb_FindButtonByNames(uia, COPILOT_NAV_EXPAND_NAMES))
+        return true
+    return CopilotWeb_ToggleNavDrawer(uia)
 }
 
 CopilotWeb_ClickNewChat(uia := 0) {
-  if (!uia)
-    uia := CopilotWeb_GetActiveUia()
-  if (!IsObject(uia))
-    return false
-  criteria := []
-  for n in COPILOT_NEW_CHAT_NAMES {
-    criteria.Push({ Name: n, ControlType: "Button" })
-    criteria.Push({ Name: n, ControlType: "MenuItem" })
-  }
-  el := CopilotWeb_FindFirstInUia(uia, criteria)
-  return el && CopilotWeb_ClickUiaElement(el)
+    if (!uia)
+        uia := CopilotWeb_GetActiveUia()
+    if (!IsObject(uia))
+        return false
+    criteria := []
+    for n in COPILOT_NEW_CHAT_NAMES {
+        criteria.Push({ Name: n, ControlType: "Button" })
+        criteria.Push({ Name: n, ControlType: "MenuItem" })
+    }
+    el := CopilotWeb_FindFirstInUia(uia, criteria)
+    return el && CopilotWeb_ClickUiaElement(el)
 }
 
 CopilotWeb_ClickNavSearch(uia := 0) {
-  if (!uia)
-    uia := CopilotWeb_GetActiveUia()
-  if (!IsObject(uia))
-    return false
-  CopilotWeb_EnsureNavDrawerOpen(uia)
-  Sleep 150
-  try
-    uia := UIA_Browser()
-  catch
-    return false
-  criteria := []
-  for n in COPILOT_NAV_SEARCH_NAMES
-    criteria.Push({ Name: n, ControlType: "MenuItem", ClassName: "fai-CopilotNavItem" })
-  for n in COPILOT_NAV_SEARCH_NAMES
-    criteria.Push({ Name: n, ControlType: "MenuItem" })
-  el := CopilotWeb_FindFirstInUia(uia, criteria)
-  return el && CopilotWeb_ClickUiaElement(el)
+    if (!uia)
+        uia := CopilotWeb_GetActiveUia()
+    if (!IsObject(uia))
+        return false
+    CopilotWeb_EnsureNavDrawerOpen(uia)
+    Sleep 150
+    try
+        uia := UIA_Browser()
+    catch
+        return false
+    criteria := []
+    for n in COPILOT_NAV_SEARCH_NAMES
+        criteria.Push({ Name: n, ControlType: "MenuItem", ClassName: "fai-CopilotNavItem" })
+    for n in COPILOT_NAV_SEARCH_NAMES
+        criteria.Push({ Name: n, ControlType: "MenuItem" })
+    el := CopilotWeb_FindFirstInUia(uia, criteria)
+    return el && CopilotWeb_ClickUiaElement(el)
 }
 
 CopilotWeb_OpenModelSelector(uia := 0) {
-  if (!uia)
-    uia := CopilotWeb_GetActiveUia()
-  if (!IsObject(uia))
-    return false
-  el := CopilotWeb_FindFirstInUia(uia, COPILOT_MODEL_SELECTOR_CRITERIA)
-  return el && CopilotWeb_ClickUiaElement(el)
+    if (!uia)
+        uia := CopilotWeb_GetActiveUia()
+    if (!IsObject(uia))
+        return false
+    el := CopilotWeb_FindFirstInUia(uia, COPILOT_MODEL_SELECTOR_CRITERIA)
+    return el && CopilotWeb_ClickUiaElement(el)
 }
 
 CopilotWeb_FindSourcesButton(uia) {
-  return CopilotWeb_FindFirstInUia(uia, COPILOT_SOURCES_BUTTON_CRITERIA)
+    return CopilotWeb_FindFirstInUia(uia, COPILOT_SOURCES_BUTTON_CRITERIA)
 }
 
 CopilotWeb_IsSourcesMenuOpen(uia) {
-  if (!IsObject(uia))
-    return false
-  return !!CopilotWeb_FindFirstInUia(uia, COPILOT_SOURCES_MENU_MARKERS)
+    if (!IsObject(uia))
+        return false
+    return !!CopilotWeb_FindFirstInUia(uia, COPILOT_SOURCES_MENU_MARKERS)
 }
 
 CopilotWeb_OpenSourcesMenu(uia := 0) {
-  if (!uia)
-    uia := CopilotWeb_GetActiveUia()
-  if (!IsObject(uia))
-    return false
-  if (CopilotWeb_IsSourcesMenuOpen(uia))
+    if (!uia)
+        uia := CopilotWeb_GetActiveUia()
+    if (!IsObject(uia))
+        return false
+    if (CopilotWeb_IsSourcesMenuOpen(uia))
+        return true
+    btn := CopilotWeb_FindSourcesButton(uia)
+    if (!btn)
+        return false
+    if (!CopilotWeb_ClickUiaElement(btn))
+        return false
+    Sleep 250
     return true
-  btn := CopilotWeb_FindSourcesButton(uia)
-  if (!btn)
-    return false
-  if (!CopilotWeb_ClickUiaElement(btn))
-    return false
-  Sleep 250
-  return true
 }
 
 CopilotWeb_EnsureSourcesMenuOpen(&uia) {
-  if (!IsObject(uia))
-    uia := CopilotWeb_GetActiveUia()
-  if (!IsObject(uia))
-    return false
-  if (CopilotWeb_IsSourcesMenuOpen(uia))
-    return true
-  if (!CopilotWeb_OpenSourcesMenu(uia))
-    return false
-  deadline := A_TickCount + 3000
-  while (A_TickCount < deadline) {
-    try
-      uia := UIA_Browser()
-    catch
-      return false
+    if (!IsObject(uia))
+        uia := CopilotWeb_GetActiveUia()
+    if (!IsObject(uia))
+        return false
     if (CopilotWeb_IsSourcesMenuOpen(uia))
-      return true
-    Sleep 80
-  }
-  return CopilotWeb_IsSourcesMenuOpen(uia)
+        return true
+    if (!CopilotWeb_OpenSourcesMenu(uia))
+        return false
+    deadline := A_TickCount + 3000
+    while (A_TickCount < deadline) {
+        try
+            uia := UIA_Browser()
+        catch
+            return false
+        if (CopilotWeb_IsSourcesMenuOpen(uia))
+            return true
+        Sleep 80
+    }
+    return CopilotWeb_IsSourcesMenuOpen(uia)
 }
 
 CopilotWeb_ClickSourcesCapability(automationId, nameSubstrings, uia := 0) {
-  if (!uia)
-    uia := CopilotWeb_GetActiveUia()
-  if (!IsObject(uia))
-    return false
-  if (!CopilotWeb_EnsureSourcesMenuOpen(&uia))
-    return false
-  criteria := [{ AutomationId: automationId, ControlType: "MenuItem" }]
-  if (IsObject(nameSubstrings)) {
-    for n in nameSubstrings
-      criteria.Push({ Name: n, ControlType: "MenuItem" })
-  }
-  el := CopilotWeb_FindFirstInUia(uia, criteria)
-  return el && CopilotWeb_ClickUiaElement(el)
+    if (!uia)
+        uia := CopilotWeb_GetActiveUia()
+    if (!IsObject(uia))
+        return false
+    if (!CopilotWeb_EnsureSourcesMenuOpen(&uia))
+        return false
+    criteria := [{ AutomationId: automationId, ControlType: "MenuItem" }]
+    if (IsObject(nameSubstrings)) {
+        for n in nameSubstrings
+            criteria.Push({ Name: n, ControlType: "MenuItem" })
+    }
+    el := CopilotWeb_FindFirstInUia(uia, criteria)
+    return el && CopilotWeb_ClickUiaElement(el)
 }
 
 CopilotWeb_ScrollFeedToBottom(hwnd := 0) {
-  if (!hwnd)
-    hwnd := WinExist("A")
-  if (!hwnd)
-    return false
-  try {
-    uia := UIA_Browser("ahk_id " hwnd)
+    if (!hwnd)
+        hwnd := WinExist("A")
+    if (!hwnd)
+        return false
     try {
-      msgs := uia.FindAll({ ClassName: "fai-CopilotMessage", matchmode: "Substring" })
-      if (msgs && msgs.Length > 0) {
-        try msgs[msgs.Length].ScrollIntoView()
-        catch {
+        uia := UIA_Browser("ahk_id " hwnd)
+        try {
+            msgs := uia.FindAll({ ClassName: "fai-CopilotMessage", matchmode: "Substring" })
+            if (msgs && msgs.Length > 0) {
+                try msgs[msgs.Length].ScrollIntoView()
+                catch {
+                }
+            }
+        } catch {
         }
-      }
+        rw := 0
+        try rw := ControlGetHwnd("Chrome_RenderWidgetHostHWND1", "ahk_id " hwnd)
+        catch
+            rw := 0
+        if (rw) {
+            try ControlSend "{Blind}^{End}", , "ahk_id " rw
+            catch {
+                Send "^{End}"
+            }
+        } else {
+            Send "^{End}"
+        }
+        Sleep COPILOT_WEB_SCROLL_SETTLE_MS
+        pf := CopilotWeb_FindComposer(uia)
+        if (pf) {
+            try pf.ScrollIntoView()
+            catch {
+            }
+        }
+        return true
     } catch {
+        return false
     }
-    rw := 0
-    try rw := ControlGetHwnd("Chrome_RenderWidgetHostHWND1", "ahk_id " hwnd)
-    catch
-      rw := 0
-    if (rw) {
-      try ControlSend "{Blind}^{End}", , "ahk_id " rw
-      catch {
-        Send "^{End}"
-      }
-    } else {
-      Send "^{End}"
-    }
-    Sleep COPILOT_WEB_SCROLL_SETTLE_MS
-    pf := CopilotWeb_FindComposer(uia)
-    if (pf) {
-      try pf.ScrollIntoView()
-      catch {
-      }
-    }
-    return true
-  } catch {
-    return false
-  }
 }
 
 CopilotWeb_SendPromptFromFile(promptFilePath := "") {
-  if (promptFilePath = "")
-    promptFilePath := A_ScriptDir "\data\Gemini_Prompt.txt"
-  uia := CopilotWeb_GetActiveUia()
-  if (!IsObject(uia))
-    return false
-  if (!CopilotWeb_FocusComposer(uia, false))
-    return false
-  if (!FileExist(promptFilePath))
-    return false
-  oldClipboard := A_Clipboard
-  try {
-    promptText := FileRead(promptFilePath, "UTF-8")
-    if (!promptText)
-      return false
-    A_Clipboard := promptText
-    if !ClipWait(1, 1)
-      return false
-    Send "^a"
-    Sleep 50
-    Send "^v"
-    Sleep 100
-    A_Clipboard := oldClipboard
-    Sleep 400
-    CopilotWeb_TrySubmit(uia)
-    return true
-  } catch {
-    try A_Clipboard := oldClipboard
-    catch {
+    if (promptFilePath = "")
+        promptFilePath := A_ScriptDir "\data\Gemini_Prompt.txt"
+    uia := CopilotWeb_GetActiveUia()
+    if (!IsObject(uia))
+        return false
+    if (!CopilotWeb_FocusComposer(uia, false))
+        return false
+    if (!FileExist(promptFilePath))
+        return false
+    oldClipboard := A_Clipboard
+    try {
+        promptText := FileRead(promptFilePath, "UTF-8")
+        if (!promptText)
+            return false
+        A_Clipboard := promptText
+        if !ClipWait(1, 1)
+            return false
+        Send "^a"
+        Sleep 50
+        Send "^v"
+        Sleep 100
+        A_Clipboard := oldClipboard
+        Sleep 400
+        CopilotWeb_TrySubmit(uia)
+        return true
+    } catch {
+        try A_Clipboard := oldClipboard
+        catch {
+        }
+        return false
     }
-    return false
-  }
 }
 
 CopilotWeb_ShiftCopyLastMessage() {
-  return CopilotWeb_CopyLastMessageToClipboard({ restoreWindow: false, playChimeAndNotify: true, alreadyActive: true })
+    return CopilotWeb_CopyLastMessageToClipboard({ restoreWindow: false, playChimeAndNotify: true, alreadyActive: true })
 }
 
 CopilotWeb_ShiftReadAloud() {
-  return CopilotWeb_TriggerReadAloud(false, { alreadyActive: true })
+    return CopilotWeb_TriggerReadAloud(false, { alreadyActive: true })
 }
 
 CopilotWeb_PlayCompletionChime() {
-  try {
-    static lastTick := 0
-    if (A_TickCount - lastTick < 1500)
-      return
-    lastTick := A_TickCount
-    ScriptSoundPlay(A_ScriptDir . "\sounds\gemini-completion.wav")
-  } catch {
-  }
+    try {
+        static lastTick := 0
+        if (A_TickCount - lastTick < 1500)
+            return
+        lastTick := A_TickCount
+        ScriptSoundPlay(A_ScriptDir . "\sounds\gemini-completion.wav")
+    } catch {
+    }
 }
 
 CopilotWeb_WaitForGenerationComplete(timeout := 300000) {
-  hwnd := WinExist("A")
-  if (!hwnd || !CopilotWeb_IsCopilotHwnd(hwnd, "fast"))
-    return
-  try
-    uia := UIA_Browser("ahk_id " hwnd)
-  catch
-    return
-  deadline := (timeout > 0) ? (A_TickCount + timeout) : 0
-  found := false
-  while (timeout <= 0 || A_TickCount < deadline) {
-    if (CopilotWeb_FindStopGenerating(uia)) {
-      found := true
-      break
-    }
-    Sleep 250
-    try
-      uia := UIA_Browser("ahk_id " hwnd)
-    catch
-      return
-  }
-  if (!found)
-    return
-  while (timeout <= 0 || A_TickCount < deadline) {
-    while (CopilotWeb_FindStopGenerating(uia)) {
-      Sleep 250
-      try
-        uia := UIA_Browser("ahk_id " hwnd)
-      catch
+    hwnd := WinExist("A")
+    if (!hwnd || !CopilotWeb_IsCopilotHwnd(hwnd, "fast"))
         return
+    try
+        uia := UIA_Browser("ahk_id " hwnd)
+    catch
+        return
+    deadline := (timeout > 0) ? (A_TickCount + timeout) : 0
+    found := false
+    while (timeout <= 0 || A_TickCount < deadline) {
+        if (CopilotWeb_FindStopGenerating(uia)) {
+            found := true
+            break
+        }
+        Sleep 250
+        try
+            uia := UIA_Browser("ahk_id " hwnd)
+        catch
+            return
     }
-    if (CopilotWeb_VerifyStreamingStopped(hwnd)) {
-      CopilotWeb_PlayCompletionChime()
-      return
+    if (!found)
+        return
+    while (timeout <= 0 || A_TickCount < deadline) {
+        while (CopilotWeb_FindStopGenerating(uia)) {
+            Sleep 250
+            try
+                uia := UIA_Browser("ahk_id " hwnd)
+            catch
+                return
+        }
+        if (CopilotWeb_VerifyStreamingStopped(hwnd)) {
+            CopilotWeb_PlayCompletionChime()
+            return
+        }
     }
-  }
 }
 
 CopilotHotkey_ShowPronunciationLanguagePicker(selectedText) {
