@@ -561,9 +561,6 @@ global CHROME_DETACH_HOVER_APPSKEY_RETRY_EXTRA_MS := 140
 global CHROME_DETACH_APPSKEY_SETTLE_MS := 80
 global g_ChromeDetachBusy := false
 global g_ChromeDetachDebugLogPath := ""
-global g_ChromeDetachTraceStart := 0
-global g_ChromeDetachF6Count := 0
-global g_ChromeDetachRunId := "post-fix"
 
 global CHROME_DETACH_MENU_PARENT_NAMES := ["Mover guia para outra janela", "Mover guia para uma nova janela",
     "Move tab to another window"]
@@ -586,39 +583,6 @@ Chrome_Detach_PreSendSanitizeModifiers(timeoutMs := 220) {
     Sleep 40
 }
 
-; #region agent log
-Chrome_DetachAgentLog(location, message, hypothesisId := "", data := unset) {
-    global g_ChromeDetachRunId
-    try {
-        dataPart := ""
-        if IsSet(data) {
-            if (data is String)
-                dataPart := data
-            else if IsObject(data) {
-                for k, v in data
-                    dataPart .= (dataPart = "" ? "" : ",") . k . "=" . v
-            }
-        }
-        dataPart := StrReplace(dataPart, "\", "\\")
-        dataPart := StrReplace(dataPart, '"', '\"')
-        locEsc := StrReplace(location, "\", "\\")
-        msgEsc := StrReplace(message, "\", "\\")
-        line := Format(
-            '{{"sessionId":"9a8d47","timestamp":{},"location":"{}","message":"{}","hypothesisId":"{}","runId":"{}","data":"{}"}}`n',
-            A_TickCount, locEsc, msgEsc, hypothesisId, g_ChromeDetachRunId, dataPart)
-        for logPath in [A_ScriptDir . "\debug-9a8d47.log", A_Temp . "\chrome-detach-debug.log"] {
-            try {
-                FileAppend line, logPath, "UTF-8"
-            } catch {
-            }
-        }
-        try OutputDebug "ChromeDetach|9a8d47|" . location . "|" . message . "|" . dataPart
-    } catch {
-    }
-}
-; #endregion
-
-; #region agent log
 Chrome_DetachGetDebugLogPath() {
     global g_ChromeDetachDebugLogPath
     if !g_ChromeDetachDebugLogPath
@@ -958,8 +922,6 @@ Chrome_ContextMenuCapturePopup(session, baselinePopups := "", timeoutMs := 0) {
         ; #region agent log
         Chrome_DetachDebugLog("Chrome_ContextMenuCapturePopup", "tab menu in browser tree", "G", "hwnd=" .
             session.hwnd)
-        Chrome_DetachAgentLog("Chrome_ContextMenuCapturePopup", "browser-tree tab menu hit", "B",
-            "hwnd=" . session.hwnd . ";sample=" . Chrome_DetachSampleMenuItemsForHwnd(session.hwnd))
         ; #endregion
         return session.hwnd
     }
@@ -1518,11 +1480,6 @@ Chrome_UiaLooksLikeTabStripFocused(session) {
 
 ; Official keyboard path: F6 until tab strip focus, then AppsKey (no hover hit-test).
 Chrome_TryF6KeyboardTabMenu(session) {
-    global g_ChromeDetachF6Count
-    t0 := A_TickCount
-    ; #region agent log
-    Chrome_DetachAgentLog("Chrome_TryF6KeyboardTabMenu", "enter", "A", "f6CountBefore=" . g_ChromeDetachF6Count)
-    ; #endregion
     ClipAngel_ReleaseChordModifiersForSend()
     Send "{Escape}"
     Sleep 40
@@ -1530,15 +1487,11 @@ Chrome_TryF6KeyboardTabMenu(session) {
         if (session.menuPopupHwnd && Chrome_ContextMenuLooksLikeTabMenu(session))
             return true
         Send "{F6}"
-        g_ChromeDetachF6Count++
         Sleep CHROME_DETACH_F6_STEP_MS
         tabFocused := Chrome_UiaLooksLikeTabStripFocused(session)
         ; #region agent log
         Chrome_DetachDebugLog("Chrome_TryF6KeyboardTabMenu", "f6 step", "K", "i=" . A_Index .
-            " focus=" . Chrome_DetachDebugFocusedElement(session))
-        Chrome_DetachAgentLog("Chrome_TryF6KeyboardTabMenu", "f6 step", "C",
-            "i=" . A_Index . ";tabFocused=" . (tabFocused ? 1 : 0) . ";focus=" .
-            Chrome_DetachDebugFocusedElement(session))
+            " focus=" . Chrome_DetachDebugFocusedElement(session) . ";tabFocused=" . (tabFocused ? 1 : 0))
         ; #endregion
         if !tabFocused
             continue
@@ -1552,28 +1505,17 @@ Chrome_TryF6KeyboardTabMenu(session) {
         }
         Sleep CHROME_DETACH_APPSKEY_AFTER_MS
         Chrome_ContextMenuCapturePopup(session, session.baselinePopups)
-        if Chrome_ContextMenuLooksLikeTabMenu(session) {
-            ; #region agent log
-            Chrome_DetachAgentLog("Chrome_TryF6KeyboardTabMenu", "exit success", "A",
-                "ms=" . (A_TickCount - t0) . ";f6Total=" . g_ChromeDetachF6Count)
-            ; #endregion
+        if Chrome_ContextMenuLooksLikeTabMenu(session)
             return true
-        }
         if Chrome_ContextMenuFindTabMenuInBrowser(session) {
             Chrome_DetachClearMenuPopup(session)
             ; #region agent log
             Chrome_DetachDebugLog("Chrome_TryF6KeyboardTabMenu", "tab menu in browser tree", "K", "")
-            Chrome_DetachAgentLog("Chrome_TryF6KeyboardTabMenu", "browser-tree success", "B",
-                "i=" . A_Index . ";ms=" . (A_TickCount - t0))
             ; #endregion
             return true
         }
         Chrome_ContextMenuDismiss()
     }
-    ; #region agent log
-    Chrome_DetachAgentLog("Chrome_TryF6KeyboardTabMenu", "exit fail", "A",
-        "ms=" . (A_TickCount - t0) . ";f6Total=" . g_ChromeDetachF6Count)
-    ; #endregion
     return false
 }
 
@@ -1672,12 +1614,6 @@ Chrome_DetachFocusActiveTab(session) {
 }
 
 Chrome_FocusTabStripAndOpenContextMenu(session) {
-    global g_ChromeDetachF6Count
-    t0 := A_TickCount
-    ; #region agent log
-    Chrome_DetachAgentLog("Chrome_FocusTabStripAndOpenContextMenu", "enter", "A",
-        "f6CountBefore=" . g_ChromeDetachF6Count)
-    ; #endregion
     hwnd := session.hwnd
     if !Chrome_NormalizeFocusToPage(hwnd) {
         ; #region agent log
@@ -1690,7 +1626,6 @@ Chrome_FocusTabStripAndOpenContextMenu(session) {
         if (session.menuPopupHwnd && Chrome_ContextMenuLooksLikeTabMenu(session))
             return true
         Send "{F6}"
-        g_ChromeDetachF6Count++
         Sleep CHROME_DETACH_F6_STEP_MS
         tab := Chrome_DetachGetActiveTab(session)
         if !Chrome_IsValidTabElement(tab)
@@ -1733,8 +1668,6 @@ Chrome_FocusTabStripAndOpenContextMenu(session) {
         Chrome_ContextMenuDismiss()
     }
     ; #region agent log
-    Chrome_DetachAgentLog("Chrome_FocusTabStripAndOpenContextMenu", "all paths failed", "A",
-        "ms=" . (A_TickCount - t0) . ";f6Total=" . g_ChromeDetachF6Count)
     Chrome_DetachDebugLog("Chrome_FocusTabStripAndOpenContextMenu", "all paths failed", "C", { result: 0 })
     ; #endregion
     return false
@@ -1770,14 +1703,13 @@ Chrome_NormalizeFocusToPage(hwnd) {
 }
 
 Chrome_OpenActiveTabContextMenu(session) {
-    t0 := A_TickCount
     hwnd := session.hwnd
     if !Chrome_EnsureBrowserForeground(hwnd)
         return false
     if (session.menuPopupHwnd && Chrome_ContextMenuLooksLikeTabMenu(session)) {
         ; #region agent log
-        Chrome_DetachAgentLog("Chrome_OpenActiveTabContextMenu", "reuse cached menu", "A",
-            "ms=" . (A_TickCount - t0))
+        Chrome_DetachDebugLog("Chrome_OpenActiveTabContextMenu", "reuse open tab menu", "E", "popup=" .
+            session.menuPopupHwnd)
         ; #endregion
         return true
     }
@@ -1785,25 +1717,16 @@ Chrome_OpenActiveTabContextMenu(session) {
     Chrome_DetachClearMenuPopup(session)
     if Chrome_OpenActiveTabContextMenuViaTabFocus(session) {
         ; #region agent log
-        Chrome_DetachAgentLog("Chrome_OpenActiveTabContextMenu", "viaTabFocus ok", "A",
-            "ms=" . (A_TickCount - t0) . ";deep=" . (CHROME_DETACH_DEEP_FALLBACK ? 1 : 0))
+        Chrome_DetachDebugLog("Chrome_OpenActiveTabContextMenu", "opened via tab focus", "H", { result: 1 })
         ; #endregion
         return true
     }
-    if !CHROME_DETACH_DEEP_FALLBACK {
-        ; #region agent log
-        Chrome_DetachAgentLog("Chrome_OpenActiveTabContextMenu", "fail no deep", "A",
-            "ms=" . (A_TickCount - t0))
-        ; #endregion
+    if !CHROME_DETACH_DEEP_FALLBACK
         return false
-    }
-    ; #region agent log
-    Chrome_DetachAgentLog("Chrome_OpenActiveTabContextMenu", "enter deep fallback", "A", "")
-    ; #endregion
     f6Ok := Chrome_FocusTabStripAndOpenContextMenu(session)
     ; #region agent log
-    Chrome_DetachAgentLog("Chrome_OpenActiveTabContextMenu", f6Ok ? "deep ok" : "deep fail", "A",
-        "ms=" . (A_TickCount - t0))
+    Chrome_DetachDebugLog("Chrome_OpenActiveTabContextMenu", "f6+AppsKey fallback result", "C", { path: "F6AppsKey",
+        result: f6Ok ? 1 : 0 })
     ; #endregion
     return f6Ok
 }
@@ -1901,9 +1824,6 @@ Chrome_ActivateDetachViaPtKeyboard(session) {
 
 Chrome_ActivateDetachViaEnKeyboard(session) {
     ; Disabled: previously re-entered Chrome_OpenActiveTabContextMenu and doubled F6 stacks.
-    ; #region agent log
-    Chrome_DetachAgentLog("Chrome_ActivateDetachViaEnKeyboard", "disabled", "E", "")
-    ; #endregion
     return false
 }
 
@@ -1964,10 +1884,6 @@ Chrome_WaitForNewTopLevelChromeWindow(existingSet, timeoutMs := 0) {
                 if !Chrome_IsLikelyTopLevelBrowserWindow(hwnd)
                     continue
                 try WinActivate("ahk_id " hwnd)
-                ; #region agent log
-                Chrome_DetachAgentLog("Chrome_WaitForNewTopLevelChromeWindow", "new window", "D",
-                    "hwnd=" . hwnd)
-                ; #endregion
                 return hwnd
             }
         } catch {
@@ -1983,22 +1899,12 @@ Chrome_DetachActiveTabToNewWindow_ExtensionFast(timeoutMs := 0) {
         return 0
     waitMs := timeoutMs > 0 ? timeoutMs : CHROME_DETACH_EXTENSION_TIMEOUT_MS
     baseline := Chrome_GetChromeTopLevelHwndSet()
-    activeBefore := WinExist("A")
-    ; #region agent log
-    Chrome_DetachAgentLog("Chrome_DetachActiveTabToNewWindow_ExtensionFast", "send", "D",
-        "activeHwnd=" . activeBefore . ";baselineCount=" . baseline.Count)
-    ; #endregion
     Chrome_Detach_PreSendSanitizeModifiers()
     ClipAngel_ReleaseChordModifiersForSend()
     SendInput "{Ctrl down}{Shift down}y{Shift up}{Ctrl up}"
     Sleep 80
     Send "^+y"
-    newHwnd := Chrome_WaitForNewTopLevelChromeWindow(baseline, waitMs)
-    ; #region agent log
-    Chrome_DetachAgentLog("Chrome_DetachActiveTabToNewWindow_ExtensionFast", newHwnd ? "success" : "timeout",
-        "D", "newHwnd=" . newHwnd . ";waitMs=" . waitMs)
-    ; #endregion
-    return newHwnd
+    return Chrome_WaitForNewTopLevelChromeWindow(baseline, waitMs)
 }
 
 Chrome_DetachActiveTabToNewWindow_ExtensionFallback(existingSet) {
@@ -2007,35 +1913,19 @@ Chrome_DetachActiveTabToNewWindow_ExtensionFallback(existingSet) {
 
 ; One F6 pass (max 3 steps) + menu invoke — no deep/hover/retry stacks.
 Chrome_DetachActiveTabToNewWindow_UiaSingleShot(hwnd, &wasF11) {
-    global g_ChromeDetachF6Count
     wasF11 := false
-    newHwnd := 0
     if !Chrome_PrepareWindowForTabDetach(hwnd, &wasF11)
         return 0
     if (WM_WindowIsF11Fullscreen(hwnd))
         return 0
     baseline := Chrome_GetChromeTopLevelHwndSet()
     session := Chrome_DetachSessionCreate(hwnd)
-    tabCount := Chrome_DetachCountTabs(session)
-    ; #region agent log
-    Chrome_DetachAgentLog("Chrome_DetachUiaSingleShot", "start", "B",
-        "tabCount=" . tabCount . ";f6Before=" . g_ChromeDetachF6Count)
-    ; #endregion
-    if (tabCount = 1)
+    if (Chrome_DetachCountTabs(session) = 1)
         return 0
-    if !Chrome_TryF6KeyboardTabMenu(session) {
-        ; #region agent log
-        Chrome_DetachAgentLog("Chrome_DetachUiaSingleShot", "menu open fail", "B", "")
-        ; #endregion
+    if !Chrome_TryF6KeyboardTabMenu(session)
         return 0
-    }
     Chrome_ActivateDetachMenuItem(session)
-    newHwnd := Chrome_WaitForNewTopLevelChromeWindow(baseline, 1200)
-    ; #region agent log
-    Chrome_DetachAgentLog("Chrome_DetachUiaSingleShot", newHwnd ? "success" : "timeout", "B",
-        "newHwnd=" . newHwnd . ";f6After=" . g_ChromeDetachF6Count)
-    ; #endregion
-    return newHwnd
+    return Chrome_WaitForNewTopLevelChromeWindow(baseline, 1200)
 }
 
 ; Debug-only: legacy UIA menu stack (never used in normal Shift+W path).
@@ -2120,9 +2010,6 @@ Chrome_RunDetachMenuSequence(session) {
     session.tabsBeforeDetach := Chrome_DetachCountTabs(session)
     try StandardLoadingBar_Update("⏳ Detaching tab…", BANNER_ACCENT_INTERMEDIATE)
     loop CHROME_DETACH_SEQUENCE_ATTEMPTS {
-        ; #region agent log
-        Chrome_DetachAgentLog("Chrome_RunDetachMenuSequence", "attempt", "E", "n=" . A_Index)
-        ; #endregion
         if !(session.menuPopupHwnd && Chrome_ContextMenuLooksLikeTabMenu(session)) {
             if !session.menuPopupHwnd
                 Chrome_ContextMenuCapturePopup(session, session.baselinePopups)
@@ -2174,22 +2061,16 @@ Chrome_RunDetachMenuSequence(session) {
 Chrome_DetachActiveTabToNewWindow() {
     global g_ChromeDetachBusy, CHROME_DETACH_USE_EXTENSION, CHROME_DETACH_USE_UIA_SINGLE_SHOT
     global CHROME_DETACH_ALLOW_UIA_DEBUG_FALLBACK, CHROME_DETACH_USE_UIA
-    global CHROME_DETACH_TOTAL_TIMEOUT_MS, g_ChromeDetachTraceStart, g_ChromeDetachF6Count
+    global CHROME_DETACH_TOTAL_TIMEOUT_MS
     if (g_ChromeDetachBusy)
         return false
     g_ChromeDetachBusy := true
     opStart := A_TickCount
-    g_ChromeDetachTraceStart := opStart
-    g_ChromeDetachF6Count := 0
 
     hwnd := 0
     newHwnd := 0
     wasF11 := false
     success := false
-
-    ; #region agent log
-    Chrome_DetachAgentLog("Chrome_DetachActiveTabToNewWindow", "enter", "A", "hwnd=" . WinExist("A"))
-    ; #endregion
 
     StandardLoadingBar_Show("⏳ Detaching tab to new window…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
     try {
@@ -2215,19 +2096,11 @@ Chrome_DetachActiveTabToNewWindow() {
                 success := true
                 return true
             }
-            ; #region agent log
-            Chrome_DetachAgentLog("Chrome_DetachActiveTabToNewWindow", "extension failed", "D",
-                "elapsedMs=" . (A_TickCount - opStart))
-            ; #endregion
         }
 
         remaining := CHROME_DETACH_TOTAL_TIMEOUT_MS - (A_TickCount - opStart)
         if (CHROME_DETACH_USE_UIA_SINGLE_SHOT && remaining > 600) {
             try StandardLoadingBar_Update("⏳ Detaching tab (menu)…", BANNER_ACCENT_INTERMEDIATE)
-            ; #region agent log
-            Chrome_DetachAgentLog("Chrome_DetachActiveTabToNewWindow", "uia single-shot", "B",
-                "remainingMs=" . remaining)
-            ; #endregion
             newHwnd := Chrome_DetachActiveTabToNewWindow_UiaSingleShot(hwnd, &wasF11)
             if newHwnd {
                 success := true
@@ -2247,10 +2120,6 @@ Chrome_DetachActiveTabToNewWindow() {
             return false
 
         try StandardLoadingBar_Update("⏳ Detaching tab (UIA debug)…", BANNER_ACCENT_INTERMEDIATE)
-        ; #region agent log
-        Chrome_DetachAgentLog("Chrome_DetachActiveTabToNewWindow", "uia debug fallback", "A",
-            "remainingMs=" . remaining)
-        ; #endregion
         if Chrome_DetachActiveTabToNewWindow_UiaLegacyPath(hwnd, &newHwnd, &wasF11) {
             success := true
             return true
@@ -2276,9 +2145,6 @@ Chrome_DetachActiveTabToNewWindow() {
         ; #region agent log
         Chrome_DetachDebugLog("Chrome_DetachActiveTabToNewWindow", "finish", "F", { success: success ? 1 : 0,
             newHwnd: newHwnd })
-        Chrome_DetachAgentLog("Chrome_DetachActiveTabToNewWindow", "finish", "A",
-            "success=" . (success ? 1 : 0) . ";newHwnd=" . newHwnd . ";totalMs=" .
-            (A_TickCount - g_ChromeDetachTraceStart) . ";f6Total=" . g_ChromeDetachF6Count)
         ; #endregion
         g_ChromeDetachBusy := false
     }
@@ -6958,6 +6824,146 @@ D2C_RunSubmitMenuDelayBar() {
     StandardLoadingBar_Hide(0)
 }
 
+TryGetSelectedTextViaUIA_QuickLook() {
+    hwnd := WinExist("A")
+    focused := 0
+    try {
+        focused := UIA.GetFocusedElement()
+    } catch {
+        focused := 0
+    }
+
+    if (focused && focused.IsTextPatternAvailable) {
+        try {
+            ranges := focused.TextPattern.GetSelection()
+            if (IsObject(ranges) && ranges.Length >= 1) {
+                txt := ranges[1].GetText(512)
+                return Trim(txt)
+            }
+        } catch {
+        }
+    }
+
+    try {
+        root := UIA.ElementFromHandle(hwnd)
+        doc := root.FindFirst({ Type: UIA.ControlType.Document })
+        if (doc && doc.IsTextPatternAvailable) {
+            try {
+                ranges := doc.TextPattern.GetSelection()
+                if (IsObject(ranges) && ranges.Length >= 1) {
+                    txt := ranges[1].GetText(512)
+                    if (Trim(txt) != "")
+                        return Trim(txt)
+                }
+            } catch {
+            }
+            try {
+                txt := doc.TextPattern.DocumentRange.GetText(512)
+                return Trim(txt)
+            } catch {
+            }
+        }
+    } catch {
+    }
+    return ""
+}
+
+TryCopySelectionToClipboard_QuickLookAware() {
+    proc := ""
+    try {
+        proc := WinGetProcessName("A")
+    } catch {
+        proc := ""
+    }
+
+    A_Clipboard := ""
+    Send "^c"
+    if ClipWait(0.7)
+        return true
+
+    A_Clipboard := ""
+    Send "^{Insert}"
+    if ClipWait(0.7)
+        return true
+
+    if (proc = "QuickLook.exe") {
+        A_Clipboard := ""
+        Send "{AppsKey}"
+        Sleep 60
+        Send "c"
+        if ClipWait(0.9)
+            return true
+
+        txt := TryGetSelectedTextViaUIA_QuickLook()
+        if (txt != "" && StrLen(Trim(txt)) > 0) {
+            A_Clipboard := txt
+            return true
+        }
+    }
+
+    return false
+}
+
+; Heuristic pt/en/de when Python daemon or lingua is unavailable (#!+8 auto-detect timeout path).
+DetectLang_AhkFallback(text) {
+    static inited := false
+    static ptMap := Map()
+    static enMap := Map()
+    static deMap := Map()
+    if (!inited) {
+        inited := true
+        for w in StrSplit("que nao com para uma dos das por mas sao esta ser tem foi", " ") {
+            if (w != "")
+                ptMap[w] := true
+        }
+        for w in StrSplit("the and of to in is that it for on with as by this are", " ") {
+            if (w != "")
+                enMap[w] := true
+        }
+        for w in StrSplit("der die das und ist nicht ein eine mit auf fur sich von zu als", " ") {
+            if (w != "")
+                deMap[w] := true
+        }
+    }
+    t := Trim(text)
+    if (t = "")
+        return "en"
+    tl := StrLower(t)
+    if RegExMatch(tl, "[ãõçáàâéêíóôú]")
+        return "pt"
+    if RegExMatch(tl, "[äöüß]")
+        return "de"
+    clean := RegExReplace(tl, "[^a-zà-ÿ]+", " ")
+    scorePt := 0
+    scoreEn := 0
+    scoreDe := 0
+    for word in StrSplit(RegExReplace(clean, " +", " "), " ") {
+        if (word = "")
+            continue
+        if ptMap.Has(word)
+            scorePt++
+        if enMap.Has(word)
+            scoreEn++
+        if deMap.Has(word)
+            scoreDe++
+    }
+    m := Max(scorePt, scoreEn, scoreDe)
+    if (m = 0)
+        return "en"
+    wins := []
+    if (scorePt = m)
+        wins.Push("pt")
+    if (scoreEn = m)
+        wins.Push("en")
+    if (scoreDe = m)
+        wins.Push("de")
+    if (wins.Length = 1)
+        return wins[1]
+    return "en"
+}
+
+#include %A_ScriptDir%\lib\CopilotWeb.ahk
+
 ; =============================================================================
 ; =============================================================================
 ; D2C_FlowManager: Unified state machine for Dictation → Gemini → Cursor flow.
@@ -7030,8 +7036,9 @@ class D2C_FlowManager {
             "O", this.OnSubmitO.Bind(this),
             "N", this.OnSubmitN.Bind(this)
         )
+        aiLabel := GetGlobalAIProviderLabel()
         StandardLoadingBar_ShowWithKeys(
-            "❓ Send to Gemini? (5s)",
+            "❓ Send to " . aiLabel . "? (5s)",
             keyCallbacks,
             D2C_SUBMIT_MENU_TIMEOUT_MS,
             0,
@@ -7212,13 +7219,13 @@ class D2C_FlowManager {
     OnSubmitN(*) {
         if (this.CurrentPhase != "PromptingSubmit")
             return
-        this.CancelFlow("Gemini submission cancelled")
+        this.CancelFlow(GetGlobalAIProviderLabel() . " submission cancelled")
     }
 
     OnSubmitTimeout(*) {
         if (this.CurrentPhase != "PromptingSubmit")
             return
-        this.CancelFlow("Gemini submission cancelled")
+        this.CancelFlow(GetGlobalAIProviderLabel() . " submission cancelled")
     }
 
     ; --- Phase 2: Submit Execute ---
@@ -7231,11 +7238,11 @@ class D2C_FlowManager {
         StandardLoadingBar_Hide(0)
         HideDictationIndicator()
 
-        ; For explicit first-banner choices (Y/G/A/S), skip the handoff cue: user intentionally chose Gemini.
+        aiLabel := GetGlobalAIProviderLabel()
+        ; For explicit first-banner choices (Y/G/A/S), skip the handoff cue: user intentionally chose the AI target.
         if (showPreMovementWarning)
-            PlayPreMovementWarning("Gemini")
+            PlayPreMovementWarning(aiLabel)
 
-        ; Paste to Gemini (launches Chrome if needed); then capture active window as Gemini.
         optionalSnippet := ""
         if (presetMode = "grammar" || presetMode = "aiopt") {
             dictation := ""
@@ -7243,26 +7250,42 @@ class D2C_FlowManager {
             preset := presetMode = "grammar" ? GetGrammarPromptText() : GetAioptPromptText()
             optionalSnippet := D2C_CombinePresetWithDictation(preset, dictation)
         }
-        if (optionalSnippet != "")
-            GeminiNavigateFocusAndPasteFirstSnippet(optionalSnippet, false)
-        else
-            GeminiNavigateFocusAndPasteFirstSnippet("", false)
-        this.GeminiHwnd := WinExist("A")
+
+        if (UseCopilotWebForGlobalAI()) {
+            this.GeminiHwnd := CopilotWeb_NavigateFocusAndPaste(optionalSnippet, false)
+            if (!this.GeminiHwnd)
+                this.GeminiHwnd := GetCopilotWebWindowHwnd()
+        } else {
+            if (optionalSnippet != "")
+                GeminiNavigateFocusAndPasteFirstSnippet(optionalSnippet, false)
+            else
+                GeminiNavigateFocusAndPasteFirstSnippet("", false)
+            this.GeminiHwnd := WinExist("A")
+        }
 
         if (autoSubmit) {
             Sleep 1000 ; Pre-enter delay
-            ; Wait for content (guarantee layer)
             endTick := A_TickCount + 5000
             while (A_TickCount < endTick) {
-                if (GeminiPromptFieldGetText() != "")
+                hasContent := UseCopilotWebForGlobalAI()
+                    ? (CopilotWeb_ComposerGetText(this.GeminiHwnd) != "")
+                    : (GeminiPromptFieldGetText() != "")
+                if (hasContent)
                     break
                 Sleep 200
             }
-            Send("{Enter}")
+            if (UseCopilotWebForGlobalAI()) {
+                try {
+                    uia := UIA_Browser("ahk_id " this.GeminiHwnd)
+                    CopilotWeb_TrySubmit(uia)
+                } catch {
+                    Send("{Enter}")
+                }
+            } else
+                Send("{Enter}")
             this.StartGeminiMonitor()
         }
 
-        ; Return focus (Gemini → Original): no pre-movement warning on return.
         if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
             WinActivate("ahk_id " this.OriginHwnd)
 
@@ -7296,17 +7319,23 @@ class D2C_FlowManager {
         }
 
         btn := ""
-        buttonNames := ["Stop streaming", "Interromper transmissão", "Stop response"]
+        useCopilot := UseCopilotWebForGlobalAI()
+        buttonNames := useCopilot ? ["Stop generating"] : ["Stop streaming", "Interromper transmissão", "Stop response"]
         try {
-            root := UIA.ElementFromHandle(this.GeminiHwnd)
-            for n in buttonNames {
-                try {
-                    btn := root.FindElement({ Name: n, Type: "Button" })
-                } catch {
-                    btn := ""
+            if (useCopilot) {
+                uia := UIA_Browser("ahk_id " this.GeminiHwnd)
+                btn := CopilotWeb_FindStopGenerating(uia)
+            } else {
+                root := UIA.ElementFromHandle(this.GeminiHwnd)
+                for n in buttonNames {
+                    try {
+                        btn := root.FindElement({ Name: n, Type: "Button" })
+                    } catch {
+                        btn := ""
+                    }
+                    if (btn)
+                        break
                 }
-                if (btn)
-                    break
             }
         } catch {
             return
@@ -7325,10 +7354,16 @@ class D2C_FlowManager {
             loop 4 {
                 Sleep 200
                 try {
-                    for n in buttonNames {
-                        if root.ElementExist({ Name: n, Type: "Button" }) {
+                    if (useCopilot) {
+                        uia := UIA_Browser("ahk_id " this.GeminiHwnd)
+                        if (CopilotWeb_FindStopGenerating(uia))
                             isTrulyGone := false
-                            break
+                    } else {
+                        for n in buttonNames {
+                            if root.ElementExist({ Name: n, Type: "Button" }) {
+                                isTrulyGone := false
+                                break
+                            }
                         }
                     }
                 } catch {
@@ -7455,8 +7490,9 @@ class D2C_FlowManager {
         }
         this.HasCopiedForThisResponse := true
 
-        ; Hands off cue before copying Gemini's last response (applies to both manual Y/R/C and timeout auto-copy).
-        PlayPreMovementWarning("Gemini")
+        aiLabel := GetGlobalAIProviderLabel()
+        useCopilot := UseCopilotWebForGlobalAI()
+        PlayPreMovementWarning(aiLabel)
 
         if (!WinExist("ahk_id " this.GeminiHwnd)) {
             if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
@@ -7484,18 +7520,20 @@ class D2C_FlowManager {
         clipBefore := A_Clipboard
         seqBefore := Clipboard_GetSequenceNumber()
         WM_COPY_LAST_GEMINI := 0x8001
+        WM_COPY_LAST_COPILOT := 0x8005
         WM_TRIGGER_READ_ALOUD := 0x8004
+        WM_TRIGGER_COPILOT_READ_ALOUD := 0x8006
+        wmCopy := useCopilot ? WM_COPY_LAST_COPILOT : WM_COPY_LAST_GEMINI
+        wmRead := useCopilot ? WM_TRIGGER_COPILOT_READ_ALOUD : WM_TRIGGER_READ_ALOUD
         targetHwnd := GetGeminiScriptMsgTargetHwnd()
         sendOk := false
         clipOk := false
 
         if (targetHwnd) {
-            ; lParam = Chrome Gemini hwnd: skip redundant activation in receiver. Timeout 20s (default 5s can abort mid-copy).
-            ; Hidden Gemini.ahk main window: SendMessage needs DetectHiddenWindows true or "Target window not found."
             prevDH := A_DetectHiddenWindows
             DetectHiddenWindows true
             try {
-                SendMessage(WM_COPY_LAST_GEMINI, 0, this.GeminiHwnd, , "ahk_id " targetHwnd, , , , 20000)
+                SendMessage(wmCopy, 0, this.GeminiHwnd, , "ahk_id " targetHwnd, , , , 20000)
                 sendOk := true
             } catch {
             } finally {
@@ -7504,14 +7542,13 @@ class D2C_FlowManager {
             changed := Clipboard_WaitForSequenceChange(seqBefore, 2000, 850)
             clipOk := sendOk && changed && A_Clipboard != clipBefore && Trim(A_Clipboard) != ""
             if (!sendOk)
-                ShowCenteredOverlay_Utils("❌ Gemini copy timed out or IPC failed", 3500, BANNER_ACCENT_ERROR)
+                ShowCenteredOverlay_Utils("❌ " . aiLabel . " copy timed out or IPC failed", 3500, BANNER_ACCENT_ERROR)
             else if (!clipOk)
                 ShowCenteredOverlay_Utils("❌ Copy failed or clipboard empty - try again", 3000, BANNER_ACCENT_ERROR)
             else if (readAloud) {
                 DetectHiddenWindows true
                 try {
-                    ; wParam 1 = skip duplicate Copy in Gemini.ahk; lParam = dictation anchor hwnd for post-read focus restore.
-                    SendMessage(WM_TRIGGER_READ_ALOUD, 1, this.OriginHwnd, , "ahk_id " targetHwnd, , , , 120000)
+                    SendMessage(wmRead, 1, this.OriginHwnd, , "ahk_id " targetHwnd, , , , 120000)
                 } catch {
                     ShowCenteredOverlay_Utils("❌ Read aloud failed or timed out", 4000, BANNER_ACCENT_ERROR)
                 } finally {
@@ -7670,7 +7707,7 @@ DEPRECATED_DictationGeminiConfirm_ShowAndWait() {
     keyCallbacks := Map("Y", DEPRECATED_DictationGeminiConfirm_OnY, "S", DEPRECATED_DictationGeminiConfirm_OnS, "N",
         DEPRECATED_DictationGeminiConfirm_OnCancel)
     ; Official loading bar only; no blue; single banner (no border); fixed bottom strip for input.
-    StandardLoadingBar_ShowWithKeys("❓ Send to Gemini? (5s)", keyCallbacks,
+    StandardLoadingBar_ShowWithKeys("❓ Send to " . GetGlobalAIProviderLabel() . "? (5s)", keyCallbacks,
         D2C_SUBMIT_MENU_TIMEOUT_MS,
         0,
         DEPRECATED_DictationGeminiConfirm_OnTimeout, BANNER_ACCENT_INTERMEDIATE, 380, 17, "", true,

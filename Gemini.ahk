@@ -858,6 +858,8 @@ GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false, options := "") {
 ; Win+Alt+Shift+O : Read aloud the last message in Gemini (or Pause/Resume if already reading)
 #!+o:: {
     try {
+        if UseCopilotWebForGlobalAI()
+            return CopilotWeb_TriggerReadAloud()
         ; Standard behavior: operate on the currently active Gemini tab.
         GeminiTriggerReadAloud()
     } catch Error as e {
@@ -937,6 +939,13 @@ CopyLastGeminiMessageToClipboard(options := "", geminiHwnd := 0) {
 #!+p:: {
     try {
         t0 := A_TickCount
+        if UseCopilotWebForGlobalAI() {
+            if (!CopilotWeb_CopyLastMessageToClipboard({ restoreWindow: false, playChimeAndNotify: true }))
+                ShowNotification("Copy failed – ensure Copilot is open and has a response", 2500, "FF6666", "FFFFFF", 22)
+            else if (hwnd := GetCopilotWebWindowHwnd())
+                CopilotWeb_FocusComposerForHwnd(hwnd, true)
+            return
+        }
         if (!CopyLastGeminiMessageToClipboard({ restoreWindow: false, playChimeAndNotify: true }))
             ShowNotification("Copy failed – ensure Gemini is open and has a response", 2500, "FF6666", "FFFFFF", 22)
         else if (hwnd := GetGeminiWindowHwnd())
@@ -956,13 +965,18 @@ WM_STOP_DELAYED_SUBMIT_MONITOR := 0x8003
 ; Trigger read aloud from another script (e.g. D2C "Copy response?" R). Send does not trigger hotkeys in another script.
 ; wParam: 1 = caller already copied (skip Copy in Gemini). lParam: anchored original hwnd for focus restore (0 = resolve like #!+o).
 WM_TRIGGER_READ_ALOUD := 0x8004
+; Work environment: M365 Copilot web (Chrome) copy / read-aloud IPC from Utils D2C_FlowManager.
+WM_COPY_LAST_COPILOT := 0x8005
+WM_TRIGGER_COPILOT_READ_ALOUD := 0x8006
 ; Path for bridge to verify that Copy Last Response (same as #!+p) actually succeeded
 GEMINI_COPY_RESULT_PATH := A_ScriptDir "\.cursor\gemini_copy_result.txt"
 
 OnMessage(WM_COPY_LAST_GEMINI, copyFromBridge)
+OnMessage(WM_COPY_LAST_COPILOT, copyCopilotFromBridge)
 OnMessage(WM_START_DELAYED_SUBMIT_MONITOR, handleStartDelayedSubmitMonitor)
 OnMessage(WM_STOP_DELAYED_SUBMIT_MONITOR, handleStopDelayedSubmitMonitor)
 OnMessage(WM_TRIGGER_READ_ALOUD, handleTriggerReadAloud)
+OnMessage(WM_TRIGGER_COPILOT_READ_ALOUD, handleTriggerCopilotReadAloud)
 handleStartDelayedSubmitMonitor(wParam, lParam, msg, hwnd) {
     GeminiDelayedSubmitMonitorStart(wParam, lParam)
 }
@@ -998,10 +1012,39 @@ copyFromBridge(wParam, lParam, msg, hwnd) {
         FileAppend(r ? "1" : "0", GEMINI_COPY_RESULT_PATH)
 }
 
+copyCopilotFromBridge(wParam, lParam, msg, hwnd) {
+    copilotHwnd := Integer(lParam)
+    try
+        FileDelete(GEMINI_COPY_RESULT_PATH)
+    try
+        FileAppend("0", GEMINI_COPY_RESULT_PATH)
+    opts := { restoreWindow: false, playChimeAndNotify: false }
+    if (copilotHwnd && WinActive("ahk_id " copilotHwnd))
+        opts.alreadyActive := true
+    r := CopilotWeb_CopyLastMessageToClipboard(opts, copilotHwnd)
+    try
+        FileDelete(GEMINI_COPY_RESULT_PATH)
+    try
+        FileAppend(r ? "1" : "0", GEMINI_COPY_RESULT_PATH)
+}
+
+handleTriggerCopilotReadAloud(wParam, lParam, msg, hwnd) {
+    wp := Integer(wParam)
+    lp := Integer(lParam)
+    copyFirst := !(wp = 1)
+    copHwnd := GetCopilotWebWindowHwnd()
+    if (lp && WinExist("ahk_id " lp))
+        return CopilotWeb_TriggerReadAloud(copyFirst, { originalHwnd: lp, copilotHwnd: copHwnd ? copHwnd : 0,
+            alreadyActive: true })
+    return CopilotWeb_TriggerReadAloud(copyFirst)
+}
+
 ; =============================================================================
 ; TTS from selection – Win+Alt+Shift+7: copy selection, send "repeat exactly" to Gemini, then trigger read aloud
 ; =============================================================================
 #!+7:: {
+    if UseCopilotWebForGlobalAI()
+        return (CopilotAsyncTTS()).Start()
     (GeminiAsyncTTS()).Start()
 }
 
@@ -1064,7 +1107,10 @@ GeminiHotkey_ShowPronunciationLanguagePicker(selectedText) {
     ; Do NOT schedule GeminiIPC_EnsureReady here before the picker: timers run FIFO on the main thread; a blocking
     ; HealthCheck/SendRequest can delay or starve the picker timer so the banner never appears.
     ; Daemon warm-up happens inside GeminiIPC_DetectLang → EnsureReady on timeout path.
-    SetTimer(GeminiHotkey_ShowPronunciationLanguagePicker.Bind(selectedText), -1)
+    if UseCopilotWebForGlobalAI()
+        SetTimer(CopilotHotkey_ShowPronunciationLanguagePicker.Bind(selectedText), -1)
+    else
+        SetTimer(GeminiHotkey_ShowPronunciationLanguagePicker.Bind(selectedText), -1)
 }
 
 ; =============================================================================
@@ -1136,6 +1182,8 @@ InitializeGeminiFirstTime() {
 ; Hotkey: Win+Alt+Shift+I
 ; =============================================================================
 #!+i:: {
+    if UseCopilotWebForGlobalAI()
+        return CopilotWeb_OpenOrFocus()
     t0 := A_TickCount
     SetTitleMatchMode(2)
     if hwnd := GetGeminiWindowHwnd() {
@@ -1252,9 +1300,10 @@ class GeminiAsyncReadAloud {
         this.StartCallback := ""
         ; EnsureReady/Connect block on CreateFile until a pipe server exists — stalls the main thread and never reaches Launch.
         ; Only enqueue when IPC is enabled and we already have a pipe (#!+p and similar never touch this).
+        ; Skip Python IPC on work — global AI routes to Copilot web, not Gemini.
         queuedTask := false
         pipeOpen := GeminiIPC_HasOpenPipe()
-        if (GEMINI_USE_PYTHON_IPC && pipeOpen)
+        if (GEMINI_USE_PYTHON_IPC && pipeOpen && !UseCopilotWebForGlobalAI())
             queuedTask := GeminiQueueBackgroundTask("ReadAloud", Map("geminiHwnd", this.GeminiHwnd, "originalHwnd",
                 this.OriginalHwnd, "copyFirst", this.CopyFirst ? 1 : 0, "useTrashTab", this.UseTrashTab ? 1 : 0))
         if (queuedTask is Map && queuedTask.Has("taskId")) {
@@ -1602,66 +1651,6 @@ class GeminiAsyncReadAloud {
 }
 
 ; =============================================================================
-; Heuristic pt/en/de when Python daemon or lingua is unavailable (#!+8 auto-detect timeout path).
-; =============================================================================
-DetectLang_AhkFallback(text) {
-    static inited := false
-    static ptMap := Map()
-    static enMap := Map()
-    static deMap := Map()
-    if (!inited) {
-        inited := true
-        for w in StrSplit("que nao com para uma dos das por mas sao esta ser tem foi", " ") {
-            if (w != "")
-                ptMap[w] := true
-        }
-        for w in StrSplit("the and of to in is that it for on with as by this are", " ") {
-            if (w != "")
-                enMap[w] := true
-        }
-        for w in StrSplit("der die das und ist nicht ein eine mit auf fur sich von zu als", " ") {
-            if (w != "")
-                deMap[w] := true
-        }
-    }
-    t := Trim(text)
-    if (t = "")
-        return "en"
-    tl := StrLower(t)
-    if RegExMatch(tl, "[ãõçáàâéêíóôú]")
-        return "pt"
-    if RegExMatch(tl, "[äöüß]")
-        return "de"
-    clean := RegExReplace(tl, "[^a-zà-ÿ]+", " ")
-    scorePt := 0
-    scoreEn := 0
-    scoreDe := 0
-    for word in StrSplit(RegExReplace(clean, " +", " "), " ") {
-        if (word = "")
-            continue
-        if ptMap.Has(word)
-            scorePt++
-        if enMap.Has(word)
-            scoreEn++
-        if deMap.Has(word)
-            scoreDe++
-    }
-    m := Max(scorePt, scoreEn, scoreDe)
-    if (m = 0)
-        return "en"
-    wins := []
-    if (scorePt = m)
-        wins.Push("pt")
-    if (scoreEn = m)
-        wins.Push("en")
-    if (scoreDe = m)
-        wins.Push("de")
-    if (wins.Length = 1)
-        return wins[1]
-    return "en"
-}
-
-; =============================================================================
 ; GeminiAsyncLookup – async pronunciation lookup (Win+Alt+Shift+8)
 ; User keeps focus; timer polls for completion; result shown in banner.
 ; =============================================================================
@@ -1852,90 +1841,6 @@ class GeminiAsyncLookup {
             "[Enter] [E] [Esc] Close",
             true)
     }
-}
-
-TryCopySelectionToClipboard_QuickLookAware() {
-    proc := ""
-    try {
-        proc := WinGetProcessName("A")
-    } catch {
-        proc := ""
-    }
-
-    ; Attempt 1: Ctrl+C
-    A_Clipboard := ""
-    Send "^c"
-    if ClipWait(0.7)
-        return true
-
-    ; Attempt 2: Ctrl+Insert (common alternative)
-    A_Clipboard := ""
-    Send "^{Insert}"
-    if ClipWait(0.7)
-        return true
-
-    ; Attempt 3: QuickLook context menu copy
-    if (proc = "QuickLook.exe") {
-        A_Clipboard := ""
-        Send "{AppsKey}"
-        Sleep 60
-        Send "c"
-        if ClipWait(0.9)
-            return true
-
-        ; Attempt 4: UIA selection extraction (no clipboard)
-        txt := TryGetSelectedTextViaUIA_QuickLook()
-        if (txt != "" && StrLen(Trim(txt)) > 0) {
-            A_Clipboard := txt
-            return true
-        }
-    }
-
-    return false
-}
-
-TryGetSelectedTextViaUIA_QuickLook() {
-    hwnd := WinExist("A")
-    focused := 0
-    try {
-        focused := UIA.GetFocusedElement()
-    } catch {
-        focused := 0
-    }
-
-    if (focused && focused.IsTextPatternAvailable) {
-        try {
-            ranges := focused.TextPattern.GetSelection()
-            if (IsObject(ranges) && ranges.Length >= 1) {
-                txt := ranges[1].GetText(512)
-                return Trim(txt)
-            }
-        } catch {
-        }
-    }
-
-    try {
-        root := UIA.ElementFromHandle(hwnd)
-        doc := root.FindFirst({ Type: UIA.ControlType.Document })
-        if (doc && doc.IsTextPatternAvailable) {
-            try {
-                ranges := doc.TextPattern.GetSelection()
-                if (IsObject(ranges) && ranges.Length >= 1) {
-                    txt := ranges[1].GetText(512)
-                    if (Trim(txt) != "")
-                        return Trim(txt)
-                }
-            } catch {
-            }
-            try {
-                txt := doc.TextPattern.DocumentRange.GetText(512)
-                return Trim(txt)
-            } catch {
-            }
-        }
-    } catch {
-    }
-    return ""
 }
 
 ; =============================================================================

@@ -111,3 +111,20 @@ eligible=9 hidden=0 visible=5 openOnMon=3 skipReject=464 skipNoMon=0
 selected=9 planned=9 tiled=8 unassigned=0 failed=1
 issues: tile_short:1
   FAIL hwnd=393542 mon=1 title=Calendar - Figueiredo Eduardo (SO/BDO-UX-LA) - Outlook
+=== WM tile quality 20260608141207 final ===
+eligible=12 hidden=1 visible=3 openOnMon=7 skipReject=446 skipNoMon=0
+selected=12 planned=12 tiled=11 unassigned=0 failed=1
+issues: tile_short:1
+  FAIL hwnd=1968200 mon=4 title=analysis-result-wireframe.excalidraw - SO UX - LA (Internal…
+=== WM tile quality 20260608162610 final ===
+eligible=6 hidden=1 visible=3 openOnMon=1 skipReject=461 skipNoMon=0
+selected=6 planned=6 tiled=4 unassigned=0 failed=2
+issues: tile_short:2
+  FAIL hwnd=593886 mon=1 title=Frequentist vs Bayesian Thinking - YouTube - Google Chrome
+  FAIL hwnd=1968200 mon=2 title=Preview classification-step-by-step.md - SO UX - LA (Intern…
+=== WM tile quality 20260611112128 final ===
+eligible=10 hidden=0 visible=4 openOnMon=5 skipReject=463 skipNoMon=0
+selected=10 planned=10 tiled=8 unassigned=0 failed=2
+issues: tile_short:2
+  FAIL hwnd=199148 mon=1 title=Spotify Premium
+  FAIL hwnd=265226 mon=1 title=Mail - Figueiredo Eduardo (SO/BDO-UX-LA) - Outlook
