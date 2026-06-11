@@ -15,7 +15,9 @@ COPILOT_WEB_POST_COPY_SYNC_TIMEOUT_MS := 2000
 COPILOT_WEB_CLIPBOARD_POLL_MS := 10
 COPILOT_WEB_FIRST_LAUNCH_WAIT_MS := 2500
 
-COPILOT_COPY_RESPONSE_NAMES := ["Copy", "Copiar"]
+COPILOT_COPY_RESPONSE_NAMES := ["Copy Response", "Copy", "Copiar"]
+
+global g_CopilotWebCachedHwnd := 0
 COPILOT_READ_ALOUD_NAMES := ["Read aloud", "Read Aloud", "Ler em voz alta"]
 COPILOT_MORE_OPTIONS_NAMES := ["More options", "Show more options", "Mais opções"]
 COPILOT_TTS_PAUSE_NAMES := ["Pause", "Pausar"]
@@ -29,27 +31,121 @@ CopilotWeb_Notify(message, durationMs := 800, fontSize := 22) {
     StandardLoadingBar_Hide(durationMs)
 }
 
-CopilotWeb_IsCopilotWindow(hwnd) {
-    global COPILOT_WEB_TITLE_NEEDLE
+CopilotWeb_UrlIsChat(url) {
+    return url != "" && RegExMatch(url, "i)m365\.cloud\.microsoft/chat")
+}
+
+CopilotWeb_IsChromeHwnd(hwnd) {
     if (!hwnd || !WinExist("ahk_id " hwnd))
         return false
     try {
-        if (StrLower(WinGetProcessName("ahk_id " hwnd)) != "chrome.exe")
-            return false
-        return InStr(WinGetTitle("ahk_id " hwnd), COPILOT_WEB_TITLE_NEEDLE, false) > 0
+        return StrLower(WinGetProcessName("ahk_id " hwnd)) = "chrome.exe"
     } catch {
         return false
     }
 }
 
+CopilotWeb_TitleMatchesCopilot(title) {
+    global COPILOT_WEB_TITLE_NEEDLE
+    if (!title)
+        return false
+    if (InStr(title, COPILOT_WEB_TITLE_NEEDLE, false))
+        return true
+    if (InStr(title, "Chat | M365 Copilot", false))
+        return true
+    return false
+}
+
+CopilotWeb_TryUrlFromAddressBar(hwnd) {
+    try {
+        url := UIA_Browser("ahk_id " hwnd).GetCurrentURL(true)
+        return CopilotWeb_UrlIsChat(url)
+    } catch {
+        return false
+    }
+}
+
+CopilotWeb_TryUrlFromDocument(hwnd) {
+    try {
+        uia := UIA_Browser("ahk_id " hwnd)
+        if (!uia.IsBrowserVisible()) {
+            try WinActivate("ahk_id " hwnd)
+            Sleep 80
+        }
+        return CopilotWeb_UrlIsChat(uia.GetCurrentURL(false))
+    } catch {
+        return false
+    }
+}
+
+CopilotWeb_TryUiaFingerprint(hwnd) {
+    try {
+        uia := UIA_Browser("ahk_id " hwnd)
+        if (CopilotWeb_FindComposer(uia))
+            return true
+        try {
+            if (uia.FindFirst({ AutomationId: "m365-copilot-app-layout-main" }))
+                return true
+        } catch {
+        }
+    } catch {
+    }
+    return false
+}
+
+; mode: "fast" = title + address bar only; "full" = also document URL + UIA fingerprint
+CopilotWeb_IsCopilotHwnd(hwnd, mode := "full") {
+    if (!CopilotWeb_IsChromeHwnd(hwnd))
+        return false
+    try {
+        if (CopilotWeb_TitleMatchesCopilot(WinGetTitle("ahk_id " hwnd)))
+            return true
+    } catch {
+    }
+    if (CopilotWeb_TryUrlFromAddressBar(hwnd))
+        return true
+    if (mode = "fast")
+        return false
+    if (CopilotWeb_TryUrlFromDocument(hwnd))
+        return true
+    return CopilotWeb_TryUiaFingerprint(hwnd)
+}
+
+CopilotWeb_IsCopilotWindow(hwnd) {
+    return CopilotWeb_IsCopilotHwnd(hwnd, "full")
+}
+
+CopilotWeb_InvalidateCache() {
+    global g_CopilotWebCachedHwnd
+    g_CopilotWebCachedHwnd := 0
+}
+
+CopilotWeb_CacheHwnd(hwnd) {
+    global g_CopilotWebCachedHwnd
+    if (hwnd && CopilotWeb_IsChromeHwnd(hwnd))
+        g_CopilotWebCachedHwnd := hwnd
+    else
+        g_CopilotWebCachedHwnd := 0
+}
+
 GetCopilotWebWindowHwnd() {
+    global g_CopilotWebCachedHwnd
+    if (g_CopilotWebCachedHwnd && WinExist("ahk_id " g_CopilotWebCachedHwnd)) {
+        if (CopilotWeb_IsCopilotHwnd(g_CopilotWebCachedHwnd, "fast"))
+            return g_CopilotWebCachedHwnd
+    }
+    CopilotWeb_InvalidateCache()
     hwnd := WinExist("A")
-    if (CopilotWeb_IsCopilotWindow(hwnd))
+    if (CopilotWeb_IsCopilotHwnd(hwnd, "full")) {
+        CopilotWeb_CacheHwnd(hwnd)
         return hwnd
+    }
     try {
         for h in WinGetList("ahk_exe chrome.exe") {
-            if (CopilotWeb_IsCopilotWindow(h))
+            if (CopilotWeb_IsCopilotHwnd(h, "full")) {
+                CopilotWeb_CacheHwnd(h)
                 return h
+            }
         }
     } catch {
     }
@@ -213,8 +309,10 @@ CopilotWeb_OpenOrFocus() {
         if (!alreadyActive)
             CopilotWeb_WaitForComposerDiscoverable(uia)
         CopilotWeb_FocusComposer(uia, true)
+        CopilotWeb_CacheHwnd(hwnd)
         return true
     }
+    CopilotWeb_InvalidateCache()
     try {
         StandardLoadingBar_Show("📤 Opening Copilot...", BANNER_ACCENT_INTERMEDIATE)
         Run 'chrome.exe --new-window "' COPILOT_WEB_URL '"'
@@ -237,6 +335,7 @@ CopilotWeb_OpenOrFocus() {
         }
         CopilotWeb_WaitForComposerDiscoverable(uia, 4000)
         CopilotWeb_FocusComposer(uia, true)
+        CopilotWeb_CacheHwnd(hwnd)
         StandardLoadingBar_Hide(0)
         return true
     } catch {
@@ -315,18 +414,22 @@ CopilotWeb_NavigateFocusAndPaste(optionalPromptText := "", autoSubmit := false) 
             Send "{Enter}"
         }
     }
+    if (copilotHwnd)
+        CopilotWeb_CacheHwnd(copilotHwnd)
     return copilotHwnd
 }
 
 CopilotWeb_IsCopyResponseButton(name) {
     if (!name)
         return false
+    if (InStr(name, "Copy prompt", false) || InStr(name, "Copiar prompt", false))
+        return false
     for n in COPILOT_COPY_RESPONSE_NAMES {
         if (name = n)
             return true
     }
-    if (InStr(name, "Copy prompt", false) || InStr(name, "Copiar prompt", false))
-        return false
+    if (InStr(name, "Copy Response", false) = 1)
+        return true
     return false
 }
 
