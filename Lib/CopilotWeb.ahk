@@ -99,9 +99,28 @@ CopilotWeb_TitleMatchesCopilot(title) {
     return false
 }
 
+; Background-safe UIA root (no UIA_Browser init — avoids WinActivate side effects).
+CopilotWeb_ReadRootFromHwnd(hwnd) {
+    try
+        return UIA.ElementFromHandle(hwnd)
+    catch
+        return 0
+}
+
 CopilotWeb_TryUrlFromAddressBar(hwnd) {
     try {
-        url := UIA_Browser("ahk_id " hwnd).GetCurrentURL(true)
+        root := CopilotWeb_ReadRootFromHwnd(hwnd)
+        if (!root)
+            return false
+        edit := CopilotWeb_FindFirstInUia(root, [{ Name: "Address and search bar", ControlType: "Edit" }, { AutomationId: "view_1012",
+            ControlType: "Edit" }])
+        if (!edit)
+            return false
+        url := edit.Value
+        if (!url)
+            return false
+        if (!RegExMatch(url, "^https?://"))
+            url := "https://" url
         return CopilotWeb_UrlIsChat(url)
     } catch {
         return false
@@ -110,12 +129,13 @@ CopilotWeb_TryUrlFromAddressBar(hwnd) {
 
 CopilotWeb_TryUrlFromDocument(hwnd) {
     try {
-        uia := UIA_Browser("ahk_id " hwnd)
-        if (!uia.IsBrowserVisible()) {
-            try WinActivate("ahk_id " hwnd)
-            Sleep 80
-        }
-        return CopilotWeb_UrlIsChat(uia.GetCurrentURL(false))
+        root := CopilotWeb_ReadRootFromHwnd(hwnd)
+        if (!root)
+            return false
+        doc := root.FindFirst({ ControlType: "Document" })
+        if (!doc)
+            return false
+        return CopilotWeb_UrlIsChat(doc.Value)
     } catch {
         return false
     }
@@ -123,7 +143,9 @@ CopilotWeb_TryUrlFromDocument(hwnd) {
 
 CopilotWeb_TryUiaFingerprint(hwnd) {
     try {
-        uia := UIA_Browser("ahk_id " hwnd)
+        uia := CopilotWeb_ReadRootFromHwnd(hwnd)
+        if (!uia)
+            return false
         if (CopilotWeb_FindComposer(uia))
             return true
         for criteria in [{ AutomationId: "m365-copilot-app-layout-main" }, { AutomationId: "copilot-message-rbp-title" }, { AutomationId: "m365-chat-editor-target-element" }, { AutomationId: "gptModeSwitcher",
@@ -343,15 +365,17 @@ CopilotWeb_OpenOrFocus() {
             if !CopilotWeb_ActivateWindow(hwnd)
                 return false
         }
-        try uia := UIA_Browser("ahk_id " hwnd)
-        catch {
+        root := CopilotWeb_ReadRootFromHwnd(hwnd)
+        if (!root) {
             ShowCenteredOverlay_Utils("❌ Error: Could not attach to Copilot window.", 2000, BANNER_ACCENT_ERROR)
             return false
         }
-        if (!alreadyActive)
-            CopilotWeb_WaitForComposerDiscoverable(uia)
-        CopilotWeb_FocusComposer(uia, true)
+        if (!alreadyActive && WinActive("ahk_id " hwnd))
+            CopilotWeb_WaitForComposerDiscoverable(root)
+        if (WinActive("ahk_id " hwnd))
+            CopilotWeb_FocusComposer(root, true)
         CopilotWeb_CacheHwnd(hwnd)
+        CopilotWeb_RefreshHotkeyContext(hwnd, true)
         return true
     }
     CopilotWeb_InvalidateCache()
@@ -370,14 +394,16 @@ CopilotWeb_OpenOrFocus() {
             StandardLoadingBar_Hide(0)
             return false
         }
-        try uia := UIA_Browser("ahk_id " hwnd)
-        catch {
+        root := CopilotWeb_ReadRootFromHwnd(hwnd)
+        if (!root) {
             StandardLoadingBar_Hide(0)
             return false
         }
-        CopilotWeb_WaitForComposerDiscoverable(uia, 4000)
-        CopilotWeb_FocusComposer(uia, true)
+        CopilotWeb_WaitForComposerDiscoverable(root, 4000)
+        if (WinActive("ahk_id " hwnd))
+            CopilotWeb_FocusComposer(root, true)
         CopilotWeb_CacheHwnd(hwnd)
+        CopilotWeb_RefreshHotkeyContext(hwnd, true)
         StandardLoadingBar_Hide(0)
         return true
     } catch {
@@ -388,7 +414,13 @@ CopilotWeb_OpenOrFocus() {
 
 CopilotWeb_ComposerGetText(copilotHwnd := 0) {
     try {
-        uia := copilotHwnd ? UIA_Browser("ahk_id " copilotHwnd) : UIA_Browser()
+        if (copilotHwnd) {
+            uia := CopilotWeb_ReadRootFromHwnd(copilotHwnd)
+            if (!uia)
+                return ""
+        } else {
+            uia := UIA_Browser()
+        }
         pf := CopilotWeb_FindComposer(uia)
         if (!pf)
             return ""
@@ -624,9 +656,11 @@ CopilotBackgroundStopTimer(task) {
 CopilotWeb_VerifyStreamingStopped(copilotHwnd) {
     loop COPILOT_WEB_STREAM_GONE_LOOPS {
         Sleep COPILOT_WEB_STREAM_GONE_VERIFY_MS
+        root := CopilotWeb_ReadRootFromHwnd(copilotHwnd)
+        if (!root)
+            return true
         try {
-            uia := UIA_Browser("ahk_id " copilotHwnd)
-            if (!CopilotWeb_FindStopGenerating(uia))
+            if (!CopilotWeb_FindStopGenerating(root))
                 continue
             return false
         } catch {
@@ -646,11 +680,9 @@ CopilotWeb_MonitorStreamingTransition(task, onCompleteCallback) {
         CopilotBackgroundStopTimer(task)
         return "unavailable"
     }
-    try {
-        uia := UIA_Browser("ahk_id " task.CopilotHwnd)
-    } catch {
+    uia := CopilotWeb_ReadRootFromHwnd(task.CopilotHwnd)
+    if (!uia)
         return "unavailable"
-    }
     if (CopilotWeb_FindStopGenerating(uia)) {
         task.ButtonEverFound := true
         return "streaming"
@@ -1399,9 +1431,8 @@ CopilotWeb_WaitForGenerationComplete(timeout := 300000) {
     hwnd := WinExist("A")
     if (!hwnd || !CopilotWeb_IsCopilotHwnd(hwnd, "fast"))
         return
-    try
-        uia := UIA_Browser("ahk_id " hwnd)
-    catch
+    uia := CopilotWeb_ReadRootFromHwnd(hwnd)
+    if (!uia)
         return
     deadline := (timeout > 0) ? (A_TickCount + timeout) : 0
     found := false
@@ -1411,9 +1442,8 @@ CopilotWeb_WaitForGenerationComplete(timeout := 300000) {
             break
         }
         Sleep 250
-        try
-            uia := UIA_Browser("ahk_id " hwnd)
-        catch
+        uia := CopilotWeb_ReadRootFromHwnd(hwnd)
+        if (!uia)
             return
     }
     if (!found)
@@ -1421,9 +1451,8 @@ CopilotWeb_WaitForGenerationComplete(timeout := 300000) {
     while (timeout <= 0 || A_TickCount < deadline) {
         while (CopilotWeb_FindStopGenerating(uia)) {
             Sleep 250
-            try
-                uia := UIA_Browser("ahk_id " hwnd)
-            catch
+            uia := CopilotWeb_ReadRootFromHwnd(hwnd)
+            if (!uia)
                 return
         }
         if (CopilotWeb_VerifyStreamingStopped(hwnd)) {
@@ -1459,5 +1488,3 @@ CopilotHotkey_ShowPronunciationLanguagePicker(selectedText) {
         BANNER_ACCENT_INTERMEDIATE,
         450, 17, "", false, "[1] Portuguese  [2] English  [3] German  [Esc] Cancel", false, true)
 }
-
-CopilotWeb_EnsureForegroundHook()

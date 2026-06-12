@@ -7321,10 +7321,12 @@ class D2C_FlowManager {
         btn := ""
         useCopilot := UseCopilotWebForGlobalAI()
         buttonNames := useCopilot ? ["Stop generating"] : ["Stop streaming", "Interromper transmissão", "Stop response"]
+        root := 0
         try {
             if (useCopilot) {
-                uia := UIA_Browser("ahk_id " this.GeminiHwnd)
-                btn := CopilotWeb_FindStopGenerating(uia)
+                root := CopilotWeb_ReadRootFromHwnd(this.GeminiHwnd)
+                if (root)
+                    btn := CopilotWeb_FindStopGenerating(root)
             } else {
                 root := UIA.ElementFromHandle(this.GeminiHwnd)
                 for n in buttonNames {
@@ -7355,8 +7357,8 @@ class D2C_FlowManager {
                 Sleep 200
                 try {
                     if (useCopilot) {
-                        uia := UIA_Browser("ahk_id " this.GeminiHwnd)
-                        if (CopilotWeb_FindStopGenerating(uia))
+                        copRoot := CopilotWeb_ReadRootFromHwnd(this.GeminiHwnd)
+                        if (copRoot && CopilotWeb_FindStopGenerating(copRoot))
                             isTrulyGone := false
                     } else {
                         for n in buttonNames {
