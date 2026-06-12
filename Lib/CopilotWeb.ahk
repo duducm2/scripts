@@ -58,15 +58,7 @@ if (!IsSet(COPILOT_WEB_URL_NEEDLE))
 if (!IsSet(COPILOT_WEB_TITLE_NEEDLE))
     global COPILOT_WEB_TITLE_NEEDLE := ""
 
-; Personal rig: Gemini. Work rig: M365 Copilot web (IS_WORK_ENVIRONMENT from env.ahk).
-UseCopilotWebForGlobalAI() {
-    global IS_WORK_ENVIRONMENT
-    return IS_WORK_ENVIRONMENT
-}
-
-GetGlobalAIProviderLabel() {
-    return UseCopilotWebForGlobalAI() ? "Copilot" : "Gemini"
-}
+; UseCopilotWebForGlobalAI / GetGlobalAIProviderLabel — defined in env.ahk (included before Utils/CopilotWeb).
 
 CopilotWeb_GetLaunchUrl() {
     global COPILOT_WEB_URL
