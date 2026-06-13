@@ -58,7 +58,16 @@ if (!IsSet(COPILOT_WEB_URL_NEEDLE))
 if (!IsSet(COPILOT_WEB_TITLE_NEEDLE))
     global COPILOT_WEB_TITLE_NEEDLE := ""
 
-; UseCopilotWebForGlobalAI / GetGlobalAIProviderLabel — defined in env.ahk (included before Utils/CopilotWeb).
+; Provider routing (Gemini personal / Copilot work). env.ahk may override COPILOT_WEB_* URLs/needles only.
+
+UseCopilotWebForGlobalAI() {
+    global IS_WORK_ENVIRONMENT
+    return IS_WORK_ENVIRONMENT
+}
+
+GetGlobalAIProviderLabel() {
+    return UseCopilotWebForGlobalAI() ? "Copilot" : "Gemini"
+}
 
 CopilotWeb_GetLaunchUrl() {
     global COPILOT_WEB_URL

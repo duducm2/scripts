@@ -64,7 +64,8 @@ scripts/
 
 ### Dependencies and environment
 
-- **env.ahk (required, not in repo):** Must define `IS_WORK_ENVIRONMENT` (boolean). Scripts use it for paths and app sets (personal vs work). If you use `Act.ahk`, env.ahk must also define `GetScriptPath(scriptName)` returning a path or command to run that script (e.g. `GetScriptPath("Shift keys.ahk")`). env.ahk is listed in `.gitignore`.
+- **env.ahk (required, not in repo):** Copy from `env.ahk.example` on each machine. Must define `IS_WORK_ENVIRONMENT` (boolean). Scripts use it for paths and app sets (personal vs work). If you use `Act.ahk`, env.ahk must also define `GetScriptPath(scriptName)` returning a path or command to run that script (e.g. `GetScriptPath("Shift keys.ahk")`). env.ahk is listed in `.gitignore`. After `git pull`, diff your local `env.ahk` against `env.ahk.example` for new blocks.
+- **Global AI provider:** Auto-selected via `IS_WORK_ENVIRONMENT` in `lib/CopilotWeb.ahk` — Gemini on personal, M365 Copilot web on work. Optional `COPILOT_WEB_*` URL/title overrides in env.ahk if your tenant differs.
 - **Utils.ahk:** Shared core for overlays (`StandardLoadingBar_*`, `ShowCenteredOverlay_Utils`), hotstrings, `FindGeminiPromptField`, path/config helpers, and many MEH hotkeys. See [docs/standard_information_display.md](docs/standard_information_display.md) for the banner/loading API and [docs/efficiency-canon.md](docs/efficiency-canon.md) for strategic guidelines.
 - **UIA-v2:** [UIA-v2/README.md](UIA-v2/README.md). Use `UIA.ahk` and `UIA_Browser.ahk` for browser/window automation; no pixel/image matching for dynamic UIs.
 - **WaitForButton:** The canonical implementation lives in **Shift keys.ahk** (not Utils). Scripts that need similar behavior can copy the pattern or implement a local variant (e.g. Gemini.ahk has `WaitForButtonAndShowSmallLoading`). The README patterns below reference `WaitForButton(root, pattern, timeout)`; use that signature when reimplementing.
