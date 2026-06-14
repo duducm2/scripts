@@ -12,7 +12,7 @@ One deployment URL for all link types. MacroDroid and the PC scripts use the **s
 
 ## How the server picks YouTube vs article vs favorite
 
-After you add the wiring in [study-link-lightweight-api-setup.md](study-link-lightweight-api-setup.md):
+After you deploy [`study-link-api/Code.gs`](study-link-api/Code.gs) (see [study-link-lightweight-api-setup.md](study-link-lightweight-api-setup.md)):
 
 | Request                                    | Routed to          | Sheet cell |
 | ------------------------------------------ | ------------------ | ---------- |
@@ -125,17 +125,17 @@ Favorite POST: `key=subtopic_favorite&url=https://gemini.google.com/` → stored
 | Toast line 2 shows non-URL, line 1 shows `Saved`   | Same — wrong clipboard was POSTed    | Re-copy URL; toast shows exactly what was sent |
 | Article saved to A1 instead of A2                  | POST body missing `subtopic_article` | Use **Set Article (direct link)** macro export |
 
-| Symptom in Google Sheet cell A3                         | Cause                                                              | Fix                                                                                     |
-| ------------------------------------------------------- | ------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
-| `key=subtopic_favorite&url=<plain text, not a URL>`     | Clipboard had wrong content                                        | Copy the URL from the address bar                                                       |
-| Toast line 2 shows non-URL, line 1 shows `Saved`        | Same — wrong clipboard was POSTed                                  | Re-copy URL; toast shows exactly what was sent                                          |
-| Favorite saved to A1/A2 instead of A3                   | Favorite router **not in deployed web app** (editor save ≠ deploy) | Replace full `Code.gs` from setup guide; **New version** deploy; verify GET URLs differ |
-| A1 shows `key=subtopic_favorite&...` after Set Favorite | Same — default `doPost` wrote A1                                   | Redeploy; `GET ?key=subtopic_favorite` must not echo A1 when A3 empty                   |
+| Symptom in Google Sheet cell A3                         | Cause                                                              | Fix                                                                                                      |
+| ------------------------------------------------------- | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
+| `key=subtopic_favorite&url=<plain text, not a URL>`     | Clipboard had wrong content                                        | Copy the URL from the address bar                                                                        |
+| Toast line 2 shows non-URL, line 1 shows `Saved`        | Same — wrong clipboard was POSTed                                  | Re-copy URL; toast shows exactly what was sent                                                           |
+| Favorite saved to A1/A2 instead of A3                   | Favorite router **not in deployed web app** (editor save ≠ deploy) | Paste [`study-link-api/Code.gs`](study-link-api/Code.gs); **New version** deploy; verify GET URLs differ |
+| A1 shows `key=subtopic_favorite&...` after Set Favorite | Same — default `doPost` wrote A1                                   | Redeploy; `GET ?key=subtopic_favorite` must not echo A1 when A3 empty                                    |
 
-| Get macro symptom                                         | Cause                          | Fix                                                                   |
-| --------------------------------------------------------- | ------------------------------ | --------------------------------------------------------------------- |
-| Get Video / Article / Favorite opens script page, not URL | `open=1` redirect not deployed | Paste consolidated `Code.gs` from setup guide; **New version** deploy |
-| Get macro shows _No … link stored_ in browser             | Cell empty for that key        | Run the matching Set macro first                                      |
+| Get macro symptom                                         | Cause                          | Fix                                                                              |
+| --------------------------------------------------------- | ------------------------------ | -------------------------------------------------------------------------------- |
+| Get Video / Article / Favorite opens script page, not URL | `open=1` redirect not deployed | Paste [`study-link-api/Code.gs`](study-link-api/Code.gs); **New version** deploy |
+| Get macro shows _No … link stored_ in browser             | Cell empty for that key        | Run the matching Set macro first                                                 |
 
 ---
 
@@ -163,8 +163,8 @@ Full base: `https://script.google.com/macros/s/AKfycbzKDLbmzGF8iduyNpaUymONEkERi
 
 ## Quick checklist
 
-1. Apps Script: consolidated `Code.gs` with `openStoredLinkResponse` + `open=1` on all GET handlers — then **redeploy**.
+1. Apps Script: paste [`study-link-api/Code.gs`](study-link-api/Code.gs) → **New version** deploy.
 2. Import all six macros: Set + Get for Video, Article, and Favorite (links in [Canonical macro exports](#macrodroid--set-save-link-from-clipboard) above).
 3. Browser test: `?key=subtopic&open=1`, `?key=subtopic_article&open=1`, `?key=subtopic_favorite&open=1` each redirect to the stored URL (or show empty message).
 
-See also: [study-link-lightweight-api-setup.md](study-link-lightweight-api-setup.md), [`Set_Video_(direct_link).macro`](<macrodroid/Set_Video_(direct_link).macro>), [`Get_Video_(direct_link).macro`](<macrodroid/Get_Video_(direct_link).macro>), [`Set_Article_(direct_link).macro`](<macrodroid/Set_Article_(direct_link).macro>), [`Get_Article_(direct_link).macro`](<macrodroid/Get_Article_(direct_link).macro>), [`Set_Favorite_(direct_link).macro`](<macrodroid/Set_Favorite_(direct_link).macro>), [`Get_Favorite_(direct_link).macro`](<macrodroid/Get_Favorite_(direct_link).macro>).
+See also: [study-link-lightweight-api-setup.md](study-link-lightweight-api-setup.md), [`study-link-api/Code.gs`](study-link-api/Code.gs), [`Set_Video_(direct_link).macro`](<macrodroid/Set_Video_(direct_link).macro>), [`Get_Video_(direct_link).macro`](<macrodroid/Get_Video_(direct_link).macro>), [`Set_Article_(direct_link).macro`](<macrodroid/Set_Article_(direct_link).macro>), [`Get_Article_(direct_link).macro`](<macrodroid/Get_Article_(direct_link).macro>), [`Set_Favorite_(direct_link).macro`](<macrodroid/Set_Favorite_(direct_link).macro>), [`Get_Favorite_(direct_link).macro`](<macrodroid/Get_Favorite_(direct_link).macro>).

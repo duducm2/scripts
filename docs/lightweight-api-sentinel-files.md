@@ -145,7 +145,8 @@ Called from `StudyTopicSelector_ManageLinks` in `Utils.ahk` (module 3). Module 4
 - [efficiency-canon.md](efficiency-canon.md) — IPC and sentinel return-value patterns
 - `StudyLinkHelpers.ahk` — remote GET/POST for `subtopic` and `subtopic_article`
 - `StudyArticleLink.ahk` — module 4 article GUI (no YouTube code)
-- [study-link-lightweight-api-setup.md](study-link-lightweight-api-setup.md) — Guide A (Apps Script) and Guide B (MacroDroid)
+- [study-link-lightweight-api-setup.md](study-link-lightweight-api-setup.md) — setup, MacroDroid, verification
+- [study-link-api/Code.gs](study-link-api/Code.gs) — Apps Script source
 
 ---
 
