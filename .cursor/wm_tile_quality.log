@@ -128,3 +128,8 @@ selected=10 planned=10 tiled=8 unassigned=0 failed=2
 issues: tile_short:2
   FAIL hwnd=199148 mon=1 title=Spotify Premium
   FAIL hwnd=265226 mon=1 title=Mail - Figueiredo Eduardo (SO/BDO-UX-LA) - Outlook
+=== WM tile quality 20260612220102 final ===
+eligible=7 hidden=0 visible=1 openOnMon=5 skipReject=292 skipNoMon=0
+selected=7 planned=7 tiled=6 unassigned=0 failed=1
+issues: tile_short:1
+  FAIL hwnd=132256 mon=1 title=Host de Experiência do Windows Shell

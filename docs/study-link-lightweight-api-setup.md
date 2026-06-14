@@ -71,13 +71,17 @@ function doGet(e) {
 }
 ```
 
-
-
 After adding article support (module 4), only add the two `if` lines at the top of each function — see module 4 wiring below.
 
 ### Guide B — MacroDroid (YouTube)
 
-Use your existing **Set_Video** macro: **same** `/exec` URL, POST body `key=subtopic&url=` + clipboard. Details: [study-link-macrodroid-same-url.md](study-link-macrodroid-same-url.md).
+Import **[`docs/macrodroid/Set_Video_(direct_link).macro`](<macrodroid/Set_Video_(direct_link).macro>)** in MacroDroid. It uses the same `/exec` URL and POST shape (`key=subtopic&url=` + URL) as the PC helpers, with these additions:
+
+- **Workflow:** YouTube → **Share → Copy link** → run macro from drawer (macro polls clipboard ~20s).
+- **Validation:** Extract regex accepts only `youtube.com` / `youtu.be` URLs; single **If** checks `url` is not empty (no nested variable constraints).
+- **No blind POST:** Plain text (e.g. video title) is rejected — prevents sheet values like `key=subtopic&url=<title>`.
+
+Full MacroDroid table and troubleshooting: [study-link-macrodroid-same-url.md](study-link-macrodroid-same-url.md).
 
 ### Code snippets — Module 3
 
@@ -205,6 +209,7 @@ Study Topic → **`[5] Technique`** opens the technique README in QuickLook (`St
 - `StudyArticleLink.ahk` — module 4 GUI + F6 capture
 - `Utils.ahk` — module 3 GUI + YouTube UIA capture
 - `TestStudyLinkApi.ahk` — API smoke test
-- [study-link-macrodroid-same-url.md](study-link-macrodroid-same-url.md) — one `/exec` URL, YouTube vs article POST/GET
+- [`macrodroid/Set_Video_(direct_link).macro`](<macrodroid/Set_Video_(direct_link).macro>) — validated YouTube SET macro (import into MacroDroid)
+- [study-link-macrodroid-same-url.md](study-link-macrodroid-same-url.md) — one `/exec` URL, YouTube vs article POST/GET, Android workflow
 - [lightweight-api-sentinel-files.md](lightweight-api-sentinel-files.md) — module 3 sentinel
 - [efficiency-canon.md](efficiency-canon.md) — clipboard restore patterns
