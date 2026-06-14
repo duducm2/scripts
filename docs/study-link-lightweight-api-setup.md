@@ -77,11 +77,12 @@ After adding article support (module 4), only add the two `if` lines at the top 
 
 ### Guide B — MacroDroid (YouTube)
 
-Import **[`docs/macrodroid/Set_Video_(direct_link).macro`](<macrodroid/Set_Video_(direct_link).macro>)** in MacroDroid. Same `/exec` URL and POST shape as the PC helpers:
+Import both macros in MacroDroid:
 
-- **Workflow:** YouTube → **Share → Copy link** → run macro from drawer.
-- **Clipboard Refresh** action runs first (Android 10+ requirement), then POST body `key=subtopic&url=` + clip.
-- **No validation:** clip is POSTed as-is. Toast shows API reply + clip text so you can confirm it starts with `http`.
+- **[`docs/macrodroid/Set_Video_(direct_link).macro`](<macrodroid/Set_Video_(direct_link).macro>)** — copy link → Clipboard Refresh → POST `key=subtopic&url=` + clip → A1
+- **[`docs/macrodroid/Get_Video_(direct_link).macro`](<macrodroid/Get_Video_(direct_link).macro>)** — Open Web Page `?key=subtopic&open=1` (server redirects to stored URL; requires `doGet` `open=1` branch in consolidated script)
+
+**Set workflow:** YouTube → **Share → Copy link** → run Set macro from drawer. Clipboard Refresh runs first (Android 10+), then POST. Toast shows API reply + clip — confirm it starts with `http`.
 
 Full MacroDroid table and troubleshooting: [study-link-macrodroid-same-url.md](study-link-macrodroid-same-url.md).
 
@@ -173,11 +174,12 @@ Expect the text stored in **A2** (same shape as A1: full POST body or URL string
 
 ### Guide B — MacroDroid (article)
 
-Import **[`docs/macrodroid/Set_Article_(direct_link).macro`](<macrodroid/Set_Article_(direct_link).macro>)** in MacroDroid. Same `/exec` URL as YouTube; only the POST body key differs:
+Import both macros in MacroDroid:
 
-- **Workflow:** Browser → copy article URL → run macro from drawer.
-- **Clipboard Refresh** action runs first (Android 10+ requirement), then POST body `key=subtopic_article&url=` + clip.
-- **No validation:** clip is POSTed as-is. Toast shows API reply + clip text so you can confirm it starts with `http`.
+- **[`docs/macrodroid/Set_Article_(direct_link).macro`](<macrodroid/Set_Article_(direct_link).macro>)** — copy URL → Clipboard Refresh → POST `key=subtopic_article&url=` + clip → A2
+- **[`docs/macrodroid/Get_Article_(direct_link).macro`](<macrodroid/Get_Article_(direct_link).macro>)** — Open Web Page `?key=subtopic_article&open=1` (server redirects; requires `doGetArticle` `open=1` branch)
+
+**Set workflow:** Browser → copy article URL → run Set macro from drawer. Toast shows API reply + clip — confirm it starts with `http`.
 
 Full MacroDroid table and troubleshooting: [study-link-macrodroid-same-url.md](study-link-macrodroid-same-url.md).
 
@@ -243,6 +245,12 @@ function doGet(e) {
 
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   var link = sheet.getRange("A1").getValue();
+  if (e.parameter && e.parameter.open === "1") {
+    return openStoredLinkResponse(
+      link,
+      "No video link stored. Run Set Video on your phone first.",
+    );
+  }
   return ContentService.createTextOutput(link);
 }
 
@@ -255,6 +263,12 @@ function doPostArticle(e) {
 function doGetArticle(e) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   var link = sheet.getRange("A2").getValue();
+  if (e.parameter && e.parameter.open === "1") {
+    return openStoredLinkResponse(
+      link,
+      "No article link stored. Run Set Article on your phone first.",
+    );
+  }
   return ContentService.createTextOutput(link);
 }
 
@@ -264,9 +278,32 @@ function doPostFavorite(e) {
   return ContentService.createTextOutput("Saved");
 }
 
+function extractUrlFromStoredBody(stored) {
+  var s = String(stored || "");
+  var pos = s.indexOf("url=");
+  if (pos !== -1) return s.substring(pos + 4);
+  return s;
+}
+
+function openStoredLinkResponse(stored, emptyMessage) {
+  var url = extractUrlFromStoredBody(stored);
+  if (!url || url.indexOf("http") !== 0) {
+    return HtmlService.createHtmlOutput("<p>" + emptyMessage + "</p>");
+  }
+  return HtmlService.createHtmlOutput(
+    "<script>window.location.href=" + JSON.stringify(url) + ";</script>",
+  ).setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
 function doGetFavorite(e) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   var link = sheet.getRange("A3").getValue();
+  if (e.parameter && e.parameter.open === "1") {
+    return openStoredLinkResponse(
+      link,
+      "No favorite link stored. Run Set Favorite on your phone first.",
+    );
+  }
   return ContentService.createTextOutput(link);
 }
 ```
@@ -281,8 +318,9 @@ function doGetFavorite(e) {
 
 1. In Apps Script, press **Ctrl+F** and search `function doPost` — there must be **only one** definition.
 2. **Deploy → Manage deployments → Edit (pencil) → Version: New version → Deploy**
-3. Browser test: open `.../exec?key=subtopic_favorite` — should **not** match A1 when A3 is empty.
-4. Run Set Favorite on phone — only **A3** should change; A1 stays `key=subtopic&url=...`
+3. Browser test: `.../exec?key=subtopic&open=1` redirects to A1 URL; `?key=subtopic_article&open=1` → A2; `?key=subtopic_favorite&open=1` → A3.
+4. Plain GET (no `open=1`) still returns raw stored text for PC/AHK (`?key=subtopic`, etc.).
+5. Run Set Favorite on phone — only **A3** should change; A1 stays `key=subtopic&url=...`
 
 **POST body:** `key=subtopic_favorite&url=` + your URL (stored as-is in A3).
 
@@ -291,7 +329,7 @@ function doGetFavorite(e) {
 Import both macros:
 
 - **[`docs/macrodroid/Set_Favorite_(direct_link).macro`](<macrodroid/Set_Favorite_(direct_link).macro>)** — copy URL → Clipboard Refresh → POST `key=subtopic_favorite&url=` + clip → A3
-- **[`docs/macrodroid/Get_Favorite_(direct_link).macro`](<macrodroid/Get_Favorite_(direct_link).macro>)** — GET `?key=subtopic_favorite` → extract URL after `url=` → open in browser
+- **[`docs/macrodroid/Get_Favorite_(direct_link).macro`](<macrodroid/Get_Favorite_(direct_link).macro>)** — Open Web Page `?key=subtopic_favorite&open=1` (server redirects to stored URL; requires `doGetFavorite` `open=1` branch above)
 
 Full table and troubleshooting: [study-link-macrodroid-same-url.md](study-link-macrodroid-same-url.md).
 
@@ -317,10 +355,12 @@ Study Topic → **`[5] Technique`** opens the technique README in QuickLook (`St
 - `StudyArticleLink.ahk` — module 4 GUI + F6 capture
 - `Utils.ahk` — module 3 GUI + YouTube UIA capture
 - `TestStudyLinkApi.ahk` — API smoke test
-- [`macrodroid/Set_Video_(direct_link).macro`](<macrodroid/Set_Video_(direct_link).macro>) — YouTube SET macro (import into MacroDroid)
-- [`macrodroid/Set_Article_(direct_link).macro`](<macrodroid/Set_Article_(direct_link).macro>) — article SET macro (import into MacroDroid)
-- [`macrodroid/Set_Favorite_(direct_link).macro`](<macrodroid/Set_Favorite_(direct_link).macro>) — favorite SET macro (import into MacroDroid)
-- [`macrodroid/Get_Favorite_(direct_link).macro`](<macrodroid/Get_Favorite_(direct_link).macro>) — favorite GET macro (fetch + open in browser)
+- [`macrodroid/Set_Video_(direct_link).macro`](<macrodroid/Set_Video_(direct_link).macro>) — YouTube SET macro
+- [`macrodroid/Get_Video_(direct_link).macro`](<macrodroid/Get_Video_(direct_link).macro>) — YouTube GET macro (open via `open=1` redirect)
+- [`macrodroid/Set_Article_(direct_link).macro`](<macrodroid/Set_Article_(direct_link).macro>) — article SET macro
+- [`macrodroid/Get_Article_(direct_link).macro`](<macrodroid/Get_Article_(direct_link).macro>) — article GET macro (open via `open=1` redirect)
+- [`macrodroid/Set_Favorite_(direct_link).macro`](<macrodroid/Set_Favorite_(direct_link).macro>) — favorite SET macro
+- [`macrodroid/Get_Favorite_(direct_link).macro`](<macrodroid/Get_Favorite_(direct_link).macro>) — favorite GET macro (open via `open=1` redirect)
 - [study-link-macrodroid-same-url.md](study-link-macrodroid-same-url.md) — one `/exec` URL, YouTube vs article POST/GET, Android workflow
 - [lightweight-api-sentinel-files.md](lightweight-api-sentinel-files.md) — module 3 sentinel
 - [efficiency-canon.md](efficiency-canon.md) — clipboard restore patterns

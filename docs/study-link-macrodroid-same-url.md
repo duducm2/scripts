@@ -33,12 +33,14 @@ You do **not** need a second URL. Differentiate with the **key name in the POST 
 
 **Canonical macro exports:**
 
-- YouTube: [`macrodroid/Set_Video_(direct_link).macro`](<macrodroid/Set_Video_(direct_link).macro>)
-- Article: [`macrodroid/Set_Article_(direct_link).macro`](<macrodroid/Set_Article_(direct_link).macro>)
+- YouTube SET: [`macrodroid/Set_Video_(direct_link).macro`](<macrodroid/Set_Video_(direct_link).macro>)
+- YouTube GET: [`macrodroid/Get_Video_(direct_link).macro`](<macrodroid/Get_Video_(direct_link).macro>)
+- Article SET: [`macrodroid/Set_Article_(direct_link).macro`](<macrodroid/Set_Article_(direct_link).macro>)
+- Article GET: [`macrodroid/Get_Article_(direct_link).macro`](<macrodroid/Get_Article_(direct_link).macro>)
 - Favorite SET: [`macrodroid/Set_Favorite_(direct_link).macro`](<macrodroid/Set_Favorite_(direct_link).macro>)
 - Favorite GET: [`macrodroid/Get_Favorite_(direct_link).macro`](<macrodroid/Get_Favorite_(direct_link).macro>)
 
-Import all in MacroDroid (replaces older Set_Video / manual duplicates).
+Import all six in MacroDroid (replaces older Set_Video / manual duplicates).
 
 ### Android workflow (YouTube)
 
@@ -49,7 +51,9 @@ Import all in MacroDroid (replaces older Set_Video / manual duplicates).
 
 The macro **refreshes the clipboard** (required on Android 10+), stores it in `clip`, POSTs `key=subtopic&url={lv=clip}` — same shape as PC `StudyLink_Set`. No URL validation; you must copy the link yourself (**Share → Copy link**, not the title).
 
-**Macro actions (in order):** Clipboard Refresh → Set `clip` = `{clipboard}` → HTTP POST → Toast `{lv=resp}` + `{lv=clip}`.
+**Macro actions (Set, in order):** Clipboard Refresh → Set `clip` = `{clipboard}` → HTTP POST → Toast `{lv=resp}` + `{lv=clip}`.
+
+**Get:** run **Get Video (direct link)** → opens `?key=subtopic&open=1` in the browser → Apps Script reads A1 and redirects to the stored URL.
 
 **Android 10+:** MacroDroid cannot read the system clipboard from the background without the **Clipboard Refresh** action first ([MacroDroid wiki](https://macrodroidforum.com/wiki/index.php/Action:_Clipboard_Refresh)). Without it, `{clipboard}` may be empty or stale.
 
@@ -59,20 +63,24 @@ The macro **refreshes the clipboard** (required on Android 10+), stores it in `c
 2. **Verify:** paste in Notes — must start with `http`.
 3. Run **Set Article (direct link)** from your MacroDroid drawer.
 
-Same macro actions as YouTube; POST body is `key=subtopic_article&url={lv=clip}` → Apps Script routes to **A2**.
+Same macro actions as YouTube Set; POST body is `key=subtopic_article&url={lv=clip}` → Apps Script routes to **A2**.
+
+**Get:** run **Get Article (direct link)** → opens `?key=subtopic_article&open=1` → redirects to the URL in A2.
 
 ### Android workflow (Favorite)
 
 **Set:** copy any URL → verify in Notes (`http`) → run **Set Favorite (direct link)** → toast shows `Saved` + clip → **A3**.
 
-**Get:** run **Get Favorite (direct link)** → fetches A3 → extracts URL after `url=` → opens in browser. If A3 is empty, toast: _No favorite link stored_.
+**Get:** run **Get Favorite (direct link)** → opens `?key=subtopic_favorite&open=1` in the browser → Apps Script reads A3 and redirects to the stored URL. If A3 is empty, the browser shows _No favorite link stored_.
 
 | Macro                                   | HTTP | URL                      | Body / query                                                       |
 | --------------------------------------- | ---- | ------------------------ | ------------------------------------------------------------------ |
 | **YouTube** (Set Video direct link)     | POST | `/exec` (full URL above) | `key=subtopic&url=` + `{lv=clip}` after Clipboard Refresh          |
+| **YouTube** (Get Video direct link)     | GET  | **same** `/exec`         | Open Web Page `?key=subtopic&open=1` (server redirect)             |
 | **Article** (Set Article direct link)   | POST | **same** `/exec`         | `key=subtopic_article&url=` + `{lv=clip}` after Clipboard Refresh  |
+| **Article** (Get Article direct link)   | GET  | **same** `/exec`         | Open Web Page `?key=subtopic_article&open=1` (server redirect)     |
 | **Favorite** (Set Favorite direct link) | POST | **same** `/exec`         | `key=subtopic_favorite&url=` + `{lv=clip}` after Clipboard Refresh |
-| **Favorite** (Get Favorite direct link) | GET  | **same** `/exec`         | `?key=subtopic_favorite` → extract `url=` → Open Web Page          |
+| **Favorite** (Get Favorite direct link) | GET  | **same** `/exec`         | Open Web Page `?key=subtopic_favorite&open=1` (server redirect)    |
 
 MacroDroid settings (both macros):
 
@@ -123,31 +131,40 @@ Favorite POST: `key=subtopic_favorite&url=https://gemini.google.com/` → stored
 | Toast line 2 shows non-URL, line 1 shows `Saved`        | Same — wrong clipboard was POSTed                                  | Re-copy URL; toast shows exactly what was sent                                          |
 | Favorite saved to A1/A2 instead of A3                   | Favorite router **not in deployed web app** (editor save ≠ deploy) | Replace full `Code.gs` from setup guide; **New version** deploy; verify GET URLs differ |
 | A1 shows `key=subtopic_favorite&...` after Set Favorite | Same — default `doPost` wrote A1                                   | Redeploy; `GET ?key=subtopic_favorite` must not echo A1 when A3 empty                   |
-| Get Favorite toast: _No favorite link stored_           | A3 empty or GET failed                                             | Run Set Favorite first; redeploy Apps Script                                            |
-| Get Favorite does not open browser                      | Text extract failed on GET response                                | Rebuild extract step in MacroDroid UI and re-export                                     |
+
+| Get macro symptom                                         | Cause                          | Fix                                                                   |
+| --------------------------------------------------------- | ------------------------------ | --------------------------------------------------------------------- |
+| Get Video / Article / Favorite opens script page, not URL | `open=1` redirect not deployed | Paste consolidated `Code.gs` from setup guide; **New version** deploy |
+| Get macro shows _No … link stored_ in browser             | Cell empty for that key        | Run the matching Set macro first                                      |
 
 ---
 
 ## MacroDroid / browser — GET (read link)
 
-| Type     | Paste in browser (or MacroDroid GET action)                                                                                              |
-| -------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| YouTube  | `https://script.google.com/macros/s/AKfycbzKDLbmzGF8iduyNpaUymONEkERi089rBjW0jrYUX4a8K9ornfGwYIOsgQP1K_dfaj5/exec?key=subtopic`          |
-| Article  | `https://script.google.com/macros/s/AKfycbzKDLbmzGF8iduyNpaUymONEkERi089rBjW0jrYUX4a8K9ornfGwYIOsgQP1K_dfaj5/exec?key=subtopic_article`  |
-| Favorite | `https://script.google.com/macros/s/AKfycbzKDLbmzGF8iduyNpaUymONEkERi089rBjW0jrYUX4a8K9ornfGwYIOsgQP1K_dfaj5/exec?key=subtopic_favorite` |
+**PC / AHK** — plain text (no redirect):
 
-Opening the URL with **no** `?key=` reads **A1** (YouTube), which matches what you see today when the sheet returns something like:
+| Type     | URL                              |
+| -------- | -------------------------------- |
+| YouTube  | `.../exec?key=subtopic`          |
+| Article  | `.../exec?key=subtopic_article`  |
+| Favorite | `.../exec?key=subtopic_favorite` |
 
-`key=subtopic&url=https://youtube.com/live/...`
+**MacroDroid Get macros / phone browser** — append `&open=1` so Apps Script redirects to the stored URL:
+
+| Type     | URL                                     |
+| -------- | --------------------------------------- |
+| YouTube  | `.../exec?key=subtopic&open=1`          |
+| Article  | `.../exec?key=subtopic_article&open=1`  |
+| Favorite | `.../exec?key=subtopic_favorite&open=1` |
+
+Full base: `https://script.google.com/macros/s/AKfycbzKDLbmzGF8iduyNpaUymONEkERi089rBjW0jrYUX4a8K9ornfGwYIOsgQP1K_dfaj5/exec`
 
 ---
 
 ## Quick checklist
 
-1. Apps Script: `doPostFavorite` / `doGetFavorite` + router lines in `doPost` / `doGet` — then **redeploy**.
-2. YouTube macro: import [`macrodroid/Set_Video_(direct_link).macro`](<macrodroid/Set_Video_(direct_link).macro>).
-3. Article macro: import [`macrodroid/Set_Article_(direct_link).macro`](<macrodroid/Set_Article_(direct_link).macro>).
-4. Favorite macros: import [`Set_Favorite_(direct_link).macro`](<macrodroid/Set_Favorite_(direct_link).macro>) and [`Get_Favorite_(direct_link).macro`](<macrodroid/Get_Favorite_(direct_link).macro>).
-5. Test favorite GET in browser with `?key=subtopic_favorite` after saving once from Set Favorite.
+1. Apps Script: consolidated `Code.gs` with `openStoredLinkResponse` + `open=1` on all GET handlers — then **redeploy**.
+2. Import all six macros: Set + Get for Video, Article, and Favorite (links in [Canonical macro exports](#macrodroid--set-save-link-from-clipboard) above).
+3. Browser test: `?key=subtopic&open=1`, `?key=subtopic_article&open=1`, `?key=subtopic_favorite&open=1` each redirect to the stored URL (or show empty message).
 
-See also: [study-link-lightweight-api-setup.md](study-link-lightweight-api-setup.md), [`Set_Video_(direct_link).macro`](<macrodroid/Set_Video_(direct_link).macro>), [`Set_Article_(direct_link).macro`](<macrodroid/Set_Article_(direct_link).macro>), [`Set_Favorite_(direct_link).macro`](<macrodroid/Set_Favorite_(direct_link).macro>), [`Get_Favorite_(direct_link).macro`](<macrodroid/Get_Favorite_(direct_link).macro>).
+See also: [study-link-lightweight-api-setup.md](study-link-lightweight-api-setup.md), [`Set_Video_(direct_link).macro`](<macrodroid/Set_Video_(direct_link).macro>), [`Get_Video_(direct_link).macro`](<macrodroid/Get_Video_(direct_link).macro>), [`Set_Article_(direct_link).macro`](<macrodroid/Set_Article_(direct_link).macro>), [`Get_Article_(direct_link).macro`](<macrodroid/Get_Article_(direct_link).macro>), [`Set_Favorite_(direct_link).macro`](<macrodroid/Set_Favorite_(direct_link).macro>), [`Get_Favorite_(direct_link).macro`](<macrodroid/Get_Favorite_(direct_link).macro>).
