@@ -16,16 +16,17 @@ Open via Study Topic selector (QuickLook flow). Keys **1–5**:
 
 ## API keys (same web app URL)
 
-| Key                | Module      | PC file                |
-| ------------------ | ----------- | ---------------------- |
-| `subtopic`         | 3 — YouTube | `Utils.ahk`            |
-| `subtopic_article` | 4 — Article | `StudyArticleLink.ahk` |
+| Key                 | Module        | PC file                   |
+| ------------------- | ------------- | ------------------------- |
+| `subtopic`          | 3 — YouTube   | `Utils.ahk`               |
+| `subtopic_article`  | 4 — Article   | `StudyArticleLink.ahk`    |
+| `subtopic_favorite` | Favorite link | MacroDroid only (for now) |
 
 **Endpoint** (`STUDY_LINKS_API_URL` in `StudyLinkHelpers.ahk`):
 
-`https://script.google.com/macros/s/AKfycbzzkjpT_47W0TwcjwEulzkV9l5xTtqcwWJmF0h-B-11SwiL_49SPhKXnj3PTsgFUZcp/exec`
+`https://script.google.com/macros/s/AKfycbzKDLbmzGF8iduyNpaUymONEkERi089rBjW0jrYUX4a8K9ornfGwYIOsgQP1K_dfaj5/exec`
 
-**MacroDroid (same URL, two POST bodies):** see [study-link-macrodroid-same-url.md](study-link-macrodroid-same-url.md) — YouTube uses `key=subtopic&url=`; article uses `key=subtopic_article&url=` (both POST to the same `/exec`).
+**MacroDroid (same URL, three POST bodies):** see [study-link-macrodroid-same-url.md](study-link-macrodroid-same-url.md) — YouTube uses `key=subtopic&url=`; article uses `key=subtopic_article&url=`; favorite uses `key=subtopic_favorite&url=` (all POST to the same `/exec`).
 
 **Contract**
 
@@ -38,6 +39,7 @@ Open via Study Topic selector (QuickLook flow). Keys **1–5**:
 | ----------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
 | 3 YouTube   | `StudyLinkHelpers.ahk`, `Utils.ahk` (UIA Share capture)    | `StudyLink_GetResult(STUDYLINK_KEY_YOUTUBE)`, `StudyLink_Set(STUDYLINK_KEY_YOUTUBE, url)` |
 | 4 Article   | `StudyLinkHelpers.ahk`, `StudyArticleLink.ahk` (F6 + copy) | `StudyLink_GetResult(STUDYLINK_KEY_ARTICLE)`, `StudyLink_Set(STUDYLINK_KEY_ARTICLE, url)` |
+| Favorite    | MacroDroid SET/GET macros only                             | — (PC/AHK deferred)                                                                       |
 | 5 Technique | `Utils.ahk` (`StudyTopicSelector_SelectTechnique`)         | — (local repo markdown)                                                                   |
 
 ---
@@ -195,6 +197,106 @@ if (url != "")
 
 ---
 
+## Favorite link (`subtopic_favorite`) — Android only
+
+Stores a third link in sheet cell **A3**. Same `/exec` URL; PC/AHK support is deferred.
+
+### Guide A — Apps Script (favorite — copy/paste)
+
+**Important:** Your live web app must expose the favorite router. If Set Favorite overwrites **A1**, the deployed code still lacks the favorite branch (saving in the editor is not enough — you must **Deploy → Manage deployments → Edit → New version → Deploy**).
+
+**Verify routing before using the phone macro** (in a browser):
+
+| URL                              | Should read                            |
+| -------------------------------- | -------------------------------------- |
+| `.../exec?key=subtopic`          | A1 only                                |
+| `.../exec?key=subtopic_favorite` | A3 only (empty until you set favorite) |
+
+If both URLs return the **same** text, favorite GET routing is not deployed yet.
+
+**Recommended:** replace your entire `Code.gs` with this single file (one `doPost` / one `doGet` — delete any duplicate handlers):
+
+```javascript
+function doPost(e) {
+  var key = e.parameter && e.parameter.key ? String(e.parameter.key) : "";
+  var contents = e.postData && e.postData.contents ? e.postData.contents : "";
+
+  // Prefer parsed form key (MacroDroid POST); fall back to body substring
+  if (key === "subtopic_article" || contents.indexOf("subtopic_article") !== -1)
+    return doPostArticle(e);
+  if (
+    key === "subtopic_favorite" ||
+    contents.indexOf("subtopic_favorite") !== -1
+  )
+    return doPostFavorite(e);
+
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  sheet.getRange("A1").setValue(contents);
+  return ContentService.createTextOutput("Saved");
+}
+
+function doGet(e) {
+  var key = e.parameter && e.parameter.key ? String(e.parameter.key) : "";
+
+  if (key === "subtopic_article") return doGetArticle(e);
+  if (key === "subtopic_favorite") return doGetFavorite(e);
+
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var link = sheet.getRange("A1").getValue();
+  return ContentService.createTextOutput(link);
+}
+
+function doPostArticle(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  sheet.getRange("A2").setValue(e.postData.contents);
+  return ContentService.createTextOutput("Saved");
+}
+
+function doGetArticle(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var link = sheet.getRange("A2").getValue();
+  return ContentService.createTextOutput(link);
+}
+
+function doPostFavorite(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  sheet.getRange("A3").setValue(e.postData.contents);
+  return ContentService.createTextOutput("Saved");
+}
+
+function doGetFavorite(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var link = sheet.getRange("A3").getValue();
+  return ContentService.createTextOutput(link);
+}
+```
+
+| Cell | Key                 | Functions                           |
+| ---- | ------------------- | ----------------------------------- |
+| A1   | `subtopic`          | `doPost` / `doGet` (default branch) |
+| A2   | `subtopic_article`  | `doPostArticle` / `doGetArticle`    |
+| A3   | `subtopic_favorite` | `doPostFavorite` / `doGetFavorite`  |
+
+**Redeploy checklist:**
+
+1. In Apps Script, press **Ctrl+F** and search `function doPost` — there must be **only one** definition.
+2. **Deploy → Manage deployments → Edit (pencil) → Version: New version → Deploy**
+3. Browser test: open `.../exec?key=subtopic_favorite` — should **not** match A1 when A3 is empty.
+4. Run Set Favorite on phone — only **A3** should change; A1 stays `key=subtopic&url=...`
+
+**POST body:** `key=subtopic_favorite&url=` + your URL (stored as-is in A3).
+
+### Guide B — MacroDroid (favorite)
+
+Import both macros:
+
+- **[`docs/macrodroid/Set_Favorite_(direct_link).macro`](<macrodroid/Set_Favorite_(direct_link).macro>)** — copy URL → Clipboard Refresh → POST `key=subtopic_favorite&url=` + clip → A3
+- **[`docs/macrodroid/Get_Favorite_(direct_link).macro`](<macrodroid/Get_Favorite_(direct_link).macro>)** — GET `?key=subtopic_favorite` → extract URL after `url=` → open in browser
+
+Full table and troubleshooting: [study-link-macrodroid-same-url.md](study-link-macrodroid-same-url.md).
+
+---
+
 ## Module 5 — Technique
 
 Study Topic → **`[5] Technique`** opens the technique README in QuickLook (`StudyTopicSelector_SelectTechnique` in `Utils.ahk`). No StudyLink API.
@@ -217,6 +319,8 @@ Study Topic → **`[5] Technique`** opens the technique README in QuickLook (`St
 - `TestStudyLinkApi.ahk` — API smoke test
 - [`macrodroid/Set_Video_(direct_link).macro`](<macrodroid/Set_Video_(direct_link).macro>) — YouTube SET macro (import into MacroDroid)
 - [`macrodroid/Set_Article_(direct_link).macro`](<macrodroid/Set_Article_(direct_link).macro>) — article SET macro (import into MacroDroid)
+- [`macrodroid/Set_Favorite_(direct_link).macro`](<macrodroid/Set_Favorite_(direct_link).macro>) — favorite SET macro (import into MacroDroid)
+- [`macrodroid/Get_Favorite_(direct_link).macro`](<macrodroid/Get_Favorite_(direct_link).macro>) — favorite GET macro (fetch + open in browser)
 - [study-link-macrodroid-same-url.md](study-link-macrodroid-same-url.md) — one `/exec` URL, YouTube vs article POST/GET, Android workflow
 - [lightweight-api-sentinel-files.md](lightweight-api-sentinel-files.md) — module 3 sentinel
 - [efficiency-canon.md](efficiency-canon.md) — clipboard restore patterns

@@ -1,7 +1,7 @@
 ; StudyLink helpers for per-study subtopic links via Google Apps Script API
 ; API endpoint: Google Apps Script web app (GET = read, POST = write)
 global STUDY_LINKS_API_URL :=
-    "https://script.google.com/macros/s/AKfycbzzkjpT_47W0TwcjwEulzkV9l5xTtqcwWJmF0h-B-11SwiL_49SPhKXnj3PTsgFUZcp/exec"
+    "https://script.google.com/macros/s/AKfycbzKDLbmzGF8iduyNpaUymONEkERi089rBjW0jrYUX4a8K9ornfGwYIOsgQP1K_dfaj5/exec"
 
 global STUDYLINK_KEY_YOUTUBE := "subtopic"
 global STUDYLINK_KEY_ARTICLE := "subtopic_article"
