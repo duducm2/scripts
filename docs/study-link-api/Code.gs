@@ -10,7 +10,8 @@
  * Web app: Execute as Me, Who has access: Anyone
  *
  * GET ?key=<key>           → raw stored body (PC / AHK)
- * GET ?key=<key>&open=1    → HTML redirect to URL after url= (MacroDroid Get macros)
+ * GET ?key=<key>&plain=1   → URL only after url= (MacroDroid Get macros)
+ * GET ?key=<key>&open=1    → HTML jump page (browser only; do not use in MacroDroid)
  * POST body key=<key>&url= → stored verbatim in the matching cell
  */
 
@@ -39,13 +40,11 @@ function doGet(e) {
 
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   var link = sheet.getRange("A1").getValue();
-  if (e.parameter && e.parameter.open === "1") {
-    return openStoredLinkResponse(
-      link,
-      "No video link stored. Run Set Video on your phone first.",
-    );
-  }
-  return ContentService.createTextOutput(link);
+  return formatGetOutput(
+    e,
+    link,
+    "No video link stored. Run Set Video on your phone first.",
+  );
 }
 
 function doPostArticle(e) {
@@ -57,13 +56,11 @@ function doPostArticle(e) {
 function doGetArticle(e) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   var link = sheet.getRange("A2").getValue();
-  if (e.parameter && e.parameter.open === "1") {
-    return openStoredLinkResponse(
-      link,
-      "No article link stored. Run Set Article on your phone first.",
-    );
-  }
-  return ContentService.createTextOutput(link);
+  return formatGetOutput(
+    e,
+    link,
+    "No article link stored. Run Set Article on your phone first.",
+  );
 }
 
 function doPostFavorite(e) {
@@ -75,13 +72,21 @@ function doPostFavorite(e) {
 function doGetFavorite(e) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   var link = sheet.getRange("A3").getValue();
-  if (e.parameter && e.parameter.open === "1") {
-    return openStoredLinkResponse(
-      link,
-      "No favorite link stored. Run Set Favorite on your phone first.",
-    );
+  return formatGetOutput(
+    e,
+    link,
+    "No favorite link stored. Run Set Favorite on your phone first.",
+  );
+}
+
+function formatGetOutput(e, stored, emptyMessage) {
+  if (e.parameter && e.parameter.plain === "1") {
+    return ContentService.createTextOutput(extractUrlFromStoredBody(stored));
   }
-  return ContentService.createTextOutput(link);
+  if (e.parameter && e.parameter.open === "1") {
+    return openStoredLinkResponse(stored, emptyMessage);
+  }
+  return ContentService.createTextOutput(stored);
 }
 
 function extractUrlFromStoredBody(stored) {
@@ -96,7 +101,18 @@ function openStoredLinkResponse(stored, emptyMessage) {
   if (!url || url.indexOf("http") !== 0) {
     return HtmlService.createHtmlOutput("<p>" + emptyMessage + "</p>");
   }
-  return HtmlService.createHtmlOutput(
-    "<script>window.location.href=" + JSON.stringify(url) + ";</script>",
-  ).setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  // Do NOT use meta refresh — it loads the URL inside Google's sandbox iframe and
+  // YouTube (and most sites) refuse that ("connection refused" / X-Frame-Options).
+  var safeUrl = url.replace(/"/g, "&quot;");
+  var html =
+    '<!DOCTYPE html><html><head><base target="_top"></head><body>' +
+    '<p><a href="' +
+    safeUrl +
+    '" target="_top">Open link</a></p>' +
+    "<script>window.top.location.replace(" +
+    JSON.stringify(url) +
+    ");</script></body></html>";
+  return HtmlService.createHtmlOutput(html).setXFrameOptionsMode(
+    HtmlService.XFrameOptionsMode.ALLOWALL,
+  );
 }

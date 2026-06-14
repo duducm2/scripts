@@ -40,7 +40,7 @@ Open via Study Topic selector (QuickLook flow). Keys **1–5**:
 
 - **GET** `?key=<key>` → raw stored body (`key=<key>&url=<url>`; URL may contain literal `&`)
 
-- **GET** `?key=<key>&open=1` → browser redirect to URL after `url=` (MacroDroid Get macros)
+- **GET** `?key=<key>&plain=1` → URL only (MacroDroid Get macros — requires deployed `Code.gs`)
 
 - **POST** `key=<encoded_key>&url=<full url>` — full body stored verbatim in the matching cell
 
@@ -66,9 +66,9 @@ Open via Study Topic selector (QuickLook flow). Keys **1–5**:
 
 2. **Deploy → Manage deployments → Edit → Version: New version → Deploy** (editor save alone does not update the live URL).
 
-3. Browser: `?key=subtopic`, `?key=subtopic_article`, `?key=subtopic_favorite` return **different** cells when populated.
+3. Browser: `?key=subtopic_favorite&plain=1` returns **only** the URL (e.g. `https://youtu.be/...`) — required for Get macros.
 
-4. Browser: `?key=subtopic&open=1`, `?key=subtopic_article&open=1`, `?key=subtopic_favorite&open=1` redirect to stored URLs (or empty message).
+4. Browser: `?key=subtopic`, `?key=subtopic_article`, `?key=subtopic_favorite` (no `plain=1`) return full stored body for PC/AHK.
 
 If Set Favorite writes **A1** instead of **A3**, the deployed web app is still on old code — redeploy step 2.
 
@@ -106,7 +106,7 @@ Sentinel: `StudyLink_EnsureManageSubtopicSentinel()` runs on open (see [lightwei
 
 - **Set:** [`macrodroid/Set_Video_(direct_link).macro`](<macrodroid/Set_Video_(direct_link).macro>) — Clipboard Refresh → POST `key=subtopic&url=` + clip → **A1**
 
-- **Get:** [`macrodroid/Get_Video_(direct_link).macro`](<macrodroid/Get_Video_(direct_link).macro>) — Open Web Page `?key=subtopic&open=1`
+- **Get:** [`macrodroid/Get_Video_(direct_link).macro`](<macrodroid/Get_Video_(direct_link).macro>) — GET `?key=subtopic&plain=1` → Open Web Page `{lv=resp}`
 
 Workflow: YouTube → **Share → Copy link** → run Set from drawer. Toast must show clip starting with `http`.
 
@@ -146,7 +146,7 @@ All article UI and capture live in **`StudyArticleLink.ahk`** only.
 
 - **Set:** [`macrodroid/Set_Article_(direct_link).macro`](<macrodroid/Set_Article_(direct_link).macro>) — POST `key=subtopic_article&url=` + clip → **A2**
 
-- **Get:** [`macrodroid/Get_Article_(direct_link).macro`](<macrodroid/Get_Article_(direct_link).macro>) — Open Web Page `?key=subtopic_article&open=1`
+- **Get:** [`macrodroid/Get_Article_(direct_link).macro`](<macrodroid/Get_Article_(direct_link).macro>) — GET `?key=subtopic_article&plain=1` → Open Web Page `{lv=resp}`
 
 ### AHK snippets
 
@@ -178,7 +178,7 @@ Third slot in **A3**. PC/AHK deferred.
 
 - **Set:** [`macrodroid/Set_Favorite_(direct_link).macro`](<macrodroid/Set_Favorite_(direct_link).macro>) — POST `key=subtopic_favorite&url=` + clip → **A3**
 
-- **Get:** [`macrodroid/Get_Favorite_(direct_link).macro`](<macrodroid/Get_Favorite_(direct_link).macro>) — Open Web Page `?key=subtopic_favorite&open=1`
+- **Get:** [`macrodroid/Get_Favorite_(direct_link).macro`](<macrodroid/Get_Favorite_(direct_link).macro>) — GET `?key=subtopic_favorite&plain=1` → Open Web Page `{lv=resp}`
 
 Full Android table and troubleshooting: [study-link-macrodroid-same-url.md](study-link-macrodroid-same-url.md).
 
