@@ -75,11 +75,11 @@ After adding article support (module 4), only add the two `if` lines at the top 
 
 ### Guide B — MacroDroid (YouTube)
 
-Import **[`docs/macrodroid/Set_Video_(direct_link).macro`](<macrodroid/Set_Video_(direct_link).macro>)** in MacroDroid. It uses the same `/exec` URL and POST shape (`key=subtopic&url=` + URL) as the PC helpers, with these additions:
+Import **[`docs/macrodroid/Set_Video_(direct_link).macro`](<macrodroid/Set_Video_(direct_link).macro>)** in MacroDroid. Same `/exec` URL and POST shape as the PC helpers:
 
-- **Workflow:** YouTube → **Share → Copy link** → run macro from drawer (macro polls clipboard ~20s).
-- **Validation:** Extract regex accepts only `youtube.com` / `youtu.be` URLs; single **If** checks `url` is not empty (no nested variable constraints).
-- **No blind POST:** Plain text (e.g. video title) is rejected — prevents sheet values like `key=subtopic&url=<title>`.
+- **Workflow:** YouTube → **Share → Copy link** → run macro from drawer.
+- **Clipboard Refresh** action runs first (Android 10+ requirement), then POST body `key=subtopic&url=` + clip.
+- **No validation:** clip is POSTed as-is. Toast shows API reply + clip text so you can confirm it starts with `http`.
 
 Full MacroDroid table and troubleshooting: [study-link-macrodroid-same-url.md](study-link-macrodroid-same-url.md).
 
@@ -171,7 +171,13 @@ Expect the text stored in **A2** (same shape as A1: full POST body or URL string
 
 ### Guide B — MacroDroid (article)
 
-Duplicate your YouTube macro; keep the **same** URL; only change the POST body to `key=subtopic_article&url=` + clipboard. Full table: [study-link-macrodroid-same-url.md](study-link-macrodroid-same-url.md).
+Import **[`docs/macrodroid/Set_Article_(direct_link).macro`](<macrodroid/Set_Article_(direct_link).macro>)** in MacroDroid. Same `/exec` URL as YouTube; only the POST body key differs:
+
+- **Workflow:** Browser → copy article URL → run macro from drawer.
+- **Clipboard Refresh** action runs first (Android 10+ requirement), then POST body `key=subtopic_article&url=` + clip.
+- **No validation:** clip is POSTed as-is. Toast shows API reply + clip text so you can confirm it starts with `http`.
+
+Full MacroDroid table and troubleshooting: [study-link-macrodroid-same-url.md](study-link-macrodroid-same-url.md).
 
 ### Code snippets — Module 4
 
@@ -209,7 +215,8 @@ Study Topic → **`[5] Technique`** opens the technique README in QuickLook (`St
 - `StudyArticleLink.ahk` — module 4 GUI + F6 capture
 - `Utils.ahk` — module 3 GUI + YouTube UIA capture
 - `TestStudyLinkApi.ahk` — API smoke test
-- [`macrodroid/Set_Video_(direct_link).macro`](<macrodroid/Set_Video_(direct_link).macro>) — validated YouTube SET macro (import into MacroDroid)
+- [`macrodroid/Set_Video_(direct_link).macro`](<macrodroid/Set_Video_(direct_link).macro>) — YouTube SET macro (import into MacroDroid)
+- [`macrodroid/Set_Article_(direct_link).macro`](<macrodroid/Set_Article_(direct_link).macro>) — article SET macro (import into MacroDroid)
 - [study-link-macrodroid-same-url.md](study-link-macrodroid-same-url.md) — one `/exec` URL, YouTube vs article POST/GET, Android workflow
 - [lightweight-api-sentinel-files.md](lightweight-api-sentinel-files.md) — module 3 sentinel
 - [efficiency-canon.md](efficiency-canon.md) — clipboard restore patterns

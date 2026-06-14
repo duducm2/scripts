@@ -27,51 +27,79 @@ You do **not** need a second URL. Differentiate with the **key name in the POST 
 
 ## MacroDroid — SET (save link from clipboard)
 
-**Canonical YouTube macro export:** [`macrodroid/Set_Video_(direct_link).macro`](<macrodroid/Set_Video_(direct_link).macro>) — import this file in MacroDroid (replaces older Set_Video macros).
+**Canonical macro exports:**
+
+- YouTube: [`macrodroid/Set_Video_(direct_link).macro`](<macrodroid/Set_Video_(direct_link).macro>)
+- Article: [`macrodroid/Set_Article_(direct_link).macro`](<macrodroid/Set_Article_(direct_link).macro>)
+
+Import both in MacroDroid (replaces older Set_Video / manual duplicates).
 
 ### Android workflow (YouTube)
 
 1. In the **YouTube** app, open the video.
 2. Tap **Share** → **Copy link** (not the video title, description, or transcript).
-3. Run **Set Video (direct link)** from your MacroDroid drawer (within ~20 seconds).
+3. **Verify:** paste in Notes — must start with `http` (if you see the title, copy the link again).
+4. Run **Set Video (direct link)** from your MacroDroid drawer.
 
-The macro **polls the clipboard**, sets `url` to the **full clipboard text**, then validates with **Compare Values** wildcards (`*youtu.be*` / `*youtube.com*`). No regex extract (MacroDroid extract was unreliable). If validation fails, the error toast includes `Got: {lv=clip}` so you can see what MacroDroid actually read.
+The macro **refreshes the clipboard** (required on Android 10+), stores it in `clip`, POSTs `key=subtopic&url={lv=clip}` — same shape as PC `StudyLink_Set`. No URL validation; you must copy the link yourself (**Share → Copy link**, not the title).
 
-Use **two macros** for YouTube + article (duplicate the YouTube macro; change only the POST body key).
+**Macro actions (in order):** Clipboard Refresh → Set `clip` = `{clipboard}` → HTTP POST → Toast `{lv=resp}` + `{lv=clip}`.
 
-| Macro                               | HTTP | URL                      | Body (paste pattern)                    |
-| ----------------------------------- | ---- | ------------------------ | --------------------------------------- |
-| **YouTube** (Set Video direct link) | POST | `/exec` (full URL above) | `key=subtopic&url=` + validated URL     |
-| **Article** (duplicate)             | POST | **same** `/exec`         | `key=subtopic_article&url=` + clipboard |
+**Android 10+:** MacroDroid cannot read the system clipboard from the background without the **Clipboard Refresh** action first ([MacroDroid wiki](https://macrodroidforum.com/wiki/index.php/Action:_Clipboard_Refresh)). Without it, `{clipboard}` may be empty or stale.
+
+### Android workflow (Article)
+
+1. In your **browser** (or any app), copy the article URL from the address bar or **Share → Copy link**.
+2. **Verify:** paste in Notes — must start with `http`.
+3. Run **Set Article (direct link)** from your MacroDroid drawer.
+
+Same macro actions as YouTube; POST body is `key=subtopic_article&url={lv=clip}` → Apps Script routes to **A2**.
+
+| Macro                                 | HTTP | URL                      | Body (paste pattern)                                              |
+| ------------------------------------- | ---- | ------------------------ | ----------------------------------------------------------------- |
+| **YouTube** (Set Video direct link)   | POST | `/exec` (full URL above) | `key=subtopic&url=` + `{lv=clip}` after Clipboard Refresh         |
+| **Article** (Set Article direct link) | POST | **same** `/exec`         | `key=subtopic_article&url=` + `{lv=clip}` after Clipboard Refresh |
 
 MacroDroid settings (both macros):
 
 - Method: **POST**
 - Content-Type: `application/x-www-form-urlencoded`
-- Clipboard must hold the full `http(s)://…` URL (YouTube macro extracts and validates automatically)
+- Clipboard must hold the full link **before** you run the macro
 - Success response: `Saved`
-- YouTube macro success toast shows the saved URL; error toasts if clipboard has no URL or a non-YouTube link
+- Success toast: `{lv=resp}` then `{lv=clip}` — check the second line starts with `http`
 
 **Important:** The article body must include the text `subtopic_article` (not `subtopic`). That is what sends the request to cell A2.
 
-Example article body in MacroDroid:
+### API contract (Apps Script is working as designed)
 
-```
-key=subtopic_article&url={clipboard}
-```
+Your `doPost` stores **`e.postData.contents` verbatim** in A1 and returns `"Saved"`. That is correct.
 
-(`{clipboard}` = your variable for clipboard text.)
+| Step            | What happens                                                                                     |
+| --------------- | ------------------------------------------------------------------------------------------------ |
+| MacroDroid POST | Body must be `key=subtopic&url=<clipboard text>` in the **request body** (not query string only) |
+| Apps Script     | Writes full body string to A1, responds `Saved`                                                  |
+| PC GET          | Reads A1, parses everything after `url=` as the link                                             |
+
+If A1 shows `key=subtopic&url=Execute systematic literature reviews...`, the API **did save** — it saved the video **title** because that was the POST body. The toast `Saved` only means Apps Script accepted the request.
+
+Live check: POST `key=subtopic&url=https://youtu.be/test` → GET `?key=subtopic` should return that same string.
+
+Article POST: `key=subtopic_article&url=https://example.com/paper` → stored in **A2**; GET `?key=subtopic_article` returns that string.
 
 ### Troubleshooting
 
-| Symptom in Google Sheet cell A1                | Cause                                                                          | Fix                                                                                                                |
-| ---------------------------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
-| `key=subtopic&url=<video title or plain text>` | Clipboard had the **title**, not the link; old macro POSTed any clipboard text | Re-import [`Set_Video_(direct_link).macro`](<macrodroid/Set_Video_(direct_link).macro>); use **Share → Copy link** |
-| Macro toast: _Not YouTube. Got: …_             | Clipboard had text but not a YouTube URL                                       | **Share → Copy link**; check the `Got:` snippet in the toast                                                       |
-| Macro toast: _Clipboard empty_                 | MacroDroid read empty clipboard                                                | Copy link, then run macro within ~20s (or grant MacroDroid clipboard access)                                       |
-| Sheet unchanged, toast shows error             | Validation blocked POST (expected)                                             | Copy the correct YouTube link                                                                                      |
+| Symptom in Google Sheet cell A1                | Cause                                     | Fix                                                |
+| ---------------------------------------------- | ----------------------------------------- | -------------------------------------------------- |
+| `key=subtopic&url=<video title or plain text>` | Clipboard had the **title**, not the link | Use **Share → Copy link** before running the macro |
+| Toast line 2 shows title, line 1 shows `Saved` | Same — wrong clipboard content was POSTed | Re-copy link; toast shows exactly what was sent    |
+| Toast shows `Saved` but PC cannot open link    | API saved whatever was on the clipboard   | Paste clipboard in Notes first — must be a URL     |
+| Sheet shows wrong text                         | Wrong thing was copied to clipboard       | Copy the link, not the title                       |
 
-Filters and delays were **not** the root cause — the API accepted the POST; the clipboard simply did not contain a URL.
+| Symptom in Google Sheet cell A2                    | Cause                                | Fix                                            |
+| -------------------------------------------------- | ------------------------------------ | ---------------------------------------------- |
+| `key=subtopic_article&url=<plain text, not a URL>` | Clipboard had wrong content          | Copy the article URL from the address bar      |
+| Toast line 2 shows non-URL, line 1 shows `Saved`   | Same — wrong clipboard was POSTed    | Re-copy URL; toast shows exactly what was sent |
+| Article saved to A1 instead of A2                  | POST body missing `subtopic_article` | Use **Set Article (direct link)** macro export |
 
 ---
 
@@ -91,8 +119,8 @@ Opening the URL with **no** `?key=` reads **A1** (YouTube), which matches what y
 ## Quick checklist
 
 1. Apps Script: `doPostArticle` / `doGetArticle` + two `if` lines in `doPost` / `doGet` — then **redeploy**.
-2. YouTube macro: import [`macrodroid/Set_Video_(direct_link).macro`](<macrodroid/Set_Video_(direct_link).macro>); body `key=subtopic&url=` + validated YouTube URL.
-3. Article macro: **same URL**; body `key=subtopic_article&url=` + clipboard.
-4. Test article GET in browser with `?key=subtopic_article` after saving once from the new macro.
+2. YouTube macro: import [`macrodroid/Set_Video_(direct_link).macro`](<macrodroid/Set_Video_(direct_link).macro>).
+3. Article macro: import [`macrodroid/Set_Article_(direct_link).macro`](<macrodroid/Set_Article_(direct_link).macro>).
+4. Test article GET in browser with `?key=subtopic_article` after saving once from the article macro.
 
-See also: [study-link-lightweight-api-setup.md](study-link-lightweight-api-setup.md) (modules 3 and 4), [`macrodroid/Set_Video_(direct_link).macro`](<macrodroid/Set_Video_(direct_link).macro>).
+See also: [study-link-lightweight-api-setup.md](study-link-lightweight-api-setup.md) (modules 3 and 4), [`Set_Video_(direct_link).macro`](<macrodroid/Set_Video_(direct_link).macro>), [`Set_Article_(direct_link).macro`](<macrodroid/Set_Article_(direct_link).macro>).
