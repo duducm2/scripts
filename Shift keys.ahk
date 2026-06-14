@@ -1607,7 +1607,7 @@ GetCheatSheetText() {
         if (hwnd) {
             try {
                 if (CopilotWeb_IsCopilotHwnd(hwnd, "fast") || CopilotWeb_IsCopilotHwnd(hwnd, "full")
-                    || CopilotWeb_TryUiaFingerprint(hwnd))
+                || CopilotWeb_TryUiaFingerprint(hwnd))
                     siteKey := "Copilot Web"
             } catch {
             }
@@ -13277,6 +13277,126 @@ Explorer_GetItemsViewSelection(itemsView) {
     return selected
 }
 
+Editor_ClipboardHasFileDrop() {
+    try {
+        return !!DllCall("IsClipboardFormatAvailable", "UInt", 15, "Int") ; CF_HDROP
+    } catch {
+        return false
+    }
+}
+
+Editor_WaitForClipboardFileDrop(timeoutMs := 800) {
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        if (Editor_ClipboardHasFileDrop())
+            return true
+        Sleep 50
+    }
+    return Editor_ClipboardHasFileDrop()
+}
+
+Editor_NormalizeFileDropPath(path) {
+    if (path = "")
+        return ""
+    normalized := Trim(Trim(path), Chr(34))
+    normalized := StrReplace(normalized, "/", "\")
+    return StrLower(RTrim(normalized, "\"))
+}
+
+Editor_GetClipboardFilePaths() {
+    paths := []
+    opened := false
+    try {
+        if !DllCall("OpenClipboard", "Ptr", 0, "Int")
+            return paths
+        opened := true
+        hDrop := DllCall("GetClipboardData", "UInt", 15, "Ptr") ; CF_HDROP
+        if (!hDrop)
+            return paths
+        count := DllCall("shell32\DragQueryFileW", "Ptr", hDrop, "UInt", 0xFFFFFFFF, "Ptr", 0, "UInt", 0, "UInt")
+        loop count {
+            idx := A_Index - 1
+            chars := DllCall("shell32\DragQueryFileW", "Ptr", hDrop, "UInt", idx, "Ptr", 0, "UInt", 0, "UInt")
+            if (chars <= 0)
+                continue
+            buf := Buffer((chars + 1) * 2, 0)
+            if DllCall("shell32\DragQueryFileW", "Ptr", hDrop, "UInt", idx, "Ptr", buf, "UInt", chars + 1, "UInt")
+                paths.Push(StrGet(buf, "UTF-16"))
+        }
+    } catch {
+    } finally {
+        if (opened) {
+            try DllCall("CloseClipboard")
+        }
+    }
+    return paths
+}
+
+Editor_ClipboardContainsFilePath(expectedPath) {
+    expected := Editor_NormalizeFileDropPath(expectedPath)
+    if (expected = "")
+        return false
+    for path in Editor_GetClipboardFilePaths() {
+        if (Editor_NormalizeFileDropPath(path) = expected)
+            return true
+    }
+    return false
+}
+
+Editor_SetClipboardFiles(paths) {
+    if (!paths || paths.Length = 0)
+        return false
+
+    dropFilesOffset := 20
+    totalChars := 1 ; final extra NUL after the NUL-terminated file list.
+    for path in paths {
+        if (path = "")
+            return false
+        totalChars += StrLen(path) + 1
+    }
+
+    hMem := 0
+    opened := false
+    transferred := false
+    try {
+        hMem := DllCall("GlobalAlloc", "UInt", 0x42, "UPtr", dropFilesOffset + (totalChars * 2), "Ptr")
+        if (!hMem)
+            return false
+        pMem := DllCall("GlobalLock", "Ptr", hMem, "Ptr")
+        if (!pMem)
+            return false
+
+        NumPut("UInt", dropFilesOffset, pMem, 0) ; DROPFILES.pFiles
+        NumPut("Int", 1, pMem, 16) ; DROPFILES.fWide
+        charOffset := 0
+        for path in paths {
+            StrPut(path, pMem + dropFilesOffset + (charOffset * 2), StrLen(path) + 1, "UTF-16")
+            charOffset += StrLen(path) + 1
+        }
+        DllCall("GlobalUnlock", "Ptr", hMem)
+
+        if !DllCall("OpenClipboard", "Ptr", 0, "Int")
+            return false
+        opened := true
+        if !DllCall("EmptyClipboard", "Int")
+            return false
+        if !DllCall("SetClipboardData", "UInt", 15, "Ptr", hMem, "Ptr")
+            return false
+        transferred := true
+        hMem := 0
+        return true
+    } catch {
+        return false
+    } finally {
+        if (opened) {
+            try DllCall("CloseClipboard")
+        }
+        if (hMem && !transferred) {
+            try DllCall("GlobalFree", "Ptr", hMem)
+        }
+    }
+}
+
 Explorer_RestoreItemsViewSelection(itemsView, selected) {
     if !itemsView || !selected || selected.Length = 0
         return false
@@ -13308,6 +13428,30 @@ Explorer_RestoreItemsViewSelection(itemsView, selected) {
     return false
 }
 
+Explorer_RefreshItemsViewFromHwnd(explorerHwnd, itemsView := 0) {
+    try {
+        root := UIA.ElementFromHandle(explorerHwnd)
+        refreshed := Explorer_FindItemsView(root)
+        if refreshed
+            return refreshed
+    } catch {
+    }
+    return itemsView
+}
+
+Explorer_WaitItemsViewKeyboardFocus(explorerHwnd, itemsView, timeoutMs := 400) {
+    if !itemsView
+        return 0
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        itemsView := Explorer_RefreshItemsViewFromHwnd(explorerHwnd, itemsView)
+        if (itemsView && itemsView.HasKeyboardFocus)
+            return itemsView
+        Sleep 40
+    }
+    return itemsView
+}
+
 Explorer_EnsureItemsViewFocusPreserveSelection() {
     explorerHwnd := WinExist("A")
     if !explorerHwnd
@@ -13328,28 +13472,14 @@ Explorer_EnsureItemsViewFocusPreserveSelection() {
 
     if !itemsView.HasKeyboardFocus {
         try itemsView.SetFocus()
-        Sleep 120
-        try {
-            root := UIA.ElementFromHandle(explorerHwnd)
-            refreshed := Explorer_FindItemsView(root)
-            if refreshed
-                itemsView := refreshed
-        } catch {
-        }
+        itemsView := Explorer_WaitItemsViewKeyboardFocus(explorerHwnd, itemsView, 400)
     }
 
-    if !itemsView.HasKeyboardFocus {
+    if (!itemsView || !itemsView.HasKeyboardFocus) {
         loop 6 {
             Send "{F6}"
-            Sleep 120
-            try {
-                root := UIA.ElementFromHandle(explorerHwnd)
-                refreshed := Explorer_FindItemsView(root)
-                if refreshed
-                    itemsView := refreshed
-            } catch {
-            }
-            if itemsView && itemsView.HasKeyboardFocus
+            itemsView := Explorer_WaitItemsViewKeyboardFocus(explorerHwnd, itemsView, 400)
+            if (itemsView && itemsView.HasKeyboardFocus)
                 break
         }
     }
@@ -15549,8 +15679,64 @@ FocusCursorFilesExplorer() {
 
 ; Smart nav Explorer wait: conditional UIA poll vs legacy fixed sleep (efficiency-canon §2).
 global EDITOR_USE_CONDITIONAL_EXPLORER_WAIT := true
+global EDITOR_COPY_VERIFY_FILEDROP := true
+global EDITOR_COPY_USE_EDITOR_FASTPATH := true
+global EDITOR_COPY_PREFER_DIRECT_SET := true
+global EDITOR_REVEAL_STABLE_POLLS := 2
+global EDITOR_COPY_CLIP_WAIT_MS := 500
+global EDITOR_COPY_DIRECT_CLIP_WAIT_MS := 300
+global EDITOR_SMARTNAV_TIMING := false
 global EDITOR_SMARTNAV_MIN_INTERVAL_MS := 450
 global g_EditorSmartNavLastTick := 0
+
+Editor_SmartNav_TimingLog(phase, ms) {
+    global EDITOR_SMARTNAV_TIMING
+    if (!EDITOR_SMARTNAV_TIMING)
+        return
+    try FileAppend('{"phase":"' phase '","ms":' ms '}' "`n", A_ScriptDir "\.cursor\smartnav-timing.log", "UTF-8")
+    catch {
+    }
+}
+
+Editor_TryCopyFileFromActiveEditor(editorHwnd) {
+    if !(editorHwnd is Integer) || editorHwnd <= 0
+        return { ok: false, path: "" }
+    savedClip := 0
+    copyOk := false
+    pathText := ""
+    try savedClip := ClipboardAll()
+    catch {
+    }
+    try {
+        try WinActivate("ahk_id " editorHwnd)
+        A_Clipboard := ""
+        Send "^2"
+        if !ClipWait(0.4)
+            return { ok: false, path: "" }
+        pathText := Trim(Trim(A_Clipboard), Chr(34))
+        if (pathText = "" || !FileExist(pathText))
+            return { ok: false, path: "" }
+        verifyBasename := Editor_GetExpectedRevealBasename(editorHwnd)
+        if !(Editor_SetClipboardFiles([pathText])
+        && Editor_WaitForClipboardFileDrop(EDITOR_COPY_DIRECT_CLIP_WAIT_MS)
+        && Editor_ClipboardMatchesRevealTarget(pathText, verifyBasename))
+            return { ok: false, path: "" }
+        copyOk := true
+        return { ok: true, path: pathText }
+    } finally {
+        if (!copyOk && IsObject(savedClip)) {
+            try A_Clipboard := savedClip
+        }
+    }
+}
+
+Editor_CopyVerifiedFileToClipboard(fullPath, verifyBasename, clipWaitMs := 300) {
+    if (fullPath = "" || !FileExist(fullPath))
+        return false
+    return Editor_SetClipboardFiles([fullPath])
+    && Editor_WaitForClipboardFileDrop(clipWaitMs)
+    && Editor_ClipboardMatchesRevealTarget(fullPath, verifyBasename)
+}
 
 Editor_SmartNavLoadingUpdate(state, editorHwnd := 0) {
     try StandardLoadingBar_Update(state, BANNER_ACCENT_INTERMEDIATE)
@@ -15671,10 +15857,12 @@ Editor_WaitForExplorerItemsView(explorerHwnd, timeoutMs := 600) {
     return false
 }
 
-; Bounded poll until reveal selection is stable (three consecutive OK polls).
+; Bounded poll until reveal selection is stable (consecutive OK polls).
 Editor_WaitForExplorerRevealReady(explorerHwnd, timeoutMs := 3500) {
+    global EDITOR_REVEAL_STABLE_POLLS
     if !(explorerHwnd is Integer) || explorerHwnd <= 0
         return false
+    stableRequired := Max(1, EDITOR_REVEAL_STABLE_POLLS)
     deadline := A_TickCount + timeoutMs
     stableCount := 0
     while (A_TickCount < deadline) {
@@ -15682,7 +15870,7 @@ Editor_WaitForExplorerRevealReady(explorerHwnd, timeoutMs := 3500) {
             return false
         if (Editor_ExplorerRevealReadyOnce(explorerHwnd)) {
             stableCount++
-            if (stableCount >= 3)
+            if (stableCount >= stableRequired)
                 return true
             Sleep 75
         } else {
@@ -15713,6 +15901,40 @@ Editor_ParseExplorerFolderFromTitle(title) {
             return RTrim(SubStr(title, 1, pos - 1), "\")
     }
     return ""
+}
+
+Editor_GetExplorerFolderPathFromShell(explorerHwnd) {
+    if !(explorerHwnd is Integer) || explorerHwnd <= 0
+        return ""
+    try {
+        shell := ComObject("Shell.Application")
+        for window in shell.Windows {
+            try {
+                if (window.hwnd = explorerHwnd)
+                    return window.Document.Folder.Self.Path
+            } catch {
+            }
+        }
+    } catch {
+    }
+    return ""
+}
+
+Editor_ClipboardMatchesRevealTarget(fullPath, basename) {
+    paths := Editor_GetClipboardFilePaths()
+    if (paths.Length = 0)
+        return false
+    if (fullPath != "" && FileExist(fullPath))
+        return Editor_ClipboardContainsFilePath(fullPath)
+    targetBasename := Editor_NormalizeRevealBasename(basename)
+    if (targetBasename = "")
+        return true
+    for path in paths {
+        try SplitPath path, &name
+        if (Editor_NormalizeRevealBasename(name) = targetBasename)
+            return true
+    }
+    return false
 }
 
 Editor_GetRevealSelectedItemName(explorerHwnd, expectedBasename := "") {
@@ -15764,13 +15986,60 @@ Editor_BuildRevealedFilePath(explorerHwnd, expectedBasename := "") {
     if (fileName = "")
         return ""
     try {
-        folder := Editor_ParseExplorerFolderFromTitle(WinGetTitle("ahk_id " explorerHwnd))
+        folder := Editor_GetExplorerFolderPathFromShell(explorerHwnd)
+        if (folder = "")
+            folder := Editor_ParseExplorerFolderFromTitle(WinGetTitle("ahk_id " explorerHwnd))
         if (folder = "")
             return ""
         return RTrim(folder, "\") "\" fileName
     } catch {
         return ""
     }
+}
+
+Editor_ResolveRevealFullPath(explorerHwnd, expectedBasename := "") {
+    fullPath := Editor_BuildRevealedFilePath(explorerHwnd, expectedBasename)
+    if (fullPath != "" && FileExist(fullPath))
+        return fullPath
+    folderFromShell := Editor_GetExplorerFolderPathFromShell(explorerHwnd)
+    basename := Editor_GetRevealSelectedItemName(explorerHwnd, expectedBasename)
+    if (basename = "")
+        basename := Editor_NormalizeRevealBasename(expectedBasename)
+    if (folderFromShell != "" && basename != "")
+        return RTrim(folderFromShell, "\") "\" basename
+    return fullPath
+}
+
+Editor_GatherRevealContext(explorerHwnd, expectedBasename := "") {
+    ctx := Map()
+    ctx["folderFromShell"] := Editor_GetExplorerFolderPathFromShell(explorerHwnd)
+    ctx["selectedName"] := ""
+    try {
+        root := UIA.ElementFromHandle(explorerHwnd)
+        itemsView := Explorer_FindItemsView(root)
+        if (itemsView) {
+            selected := Explorer_GetItemsViewSelection(itemsView)
+            if (selected.Length > 0) {
+                try {
+                    nm := selected[1].Name
+                    if (nm != "")
+                        ctx["selectedName"] := Editor_NormalizeRevealBasename(nm)
+                } catch {
+                }
+            }
+        }
+    } catch {
+    }
+    verifyBasename := ctx["selectedName"] != "" ? ctx["selectedName"] : expectedBasename
+    ctx["verifyBasename"] := verifyBasename
+    folderFromShell := ctx["folderFromShell"]
+    fullPath := ""
+    if (folderFromShell != "" && verifyBasename != "")
+        fullPath := RTrim(folderFromShell, "\") "\" verifyBasename
+    if (fullPath = "" || !FileExist(fullPath))
+        fullPath := Editor_ResolveRevealFullPath(explorerHwnd, expectedBasename)
+    ctx["fullPath"] := fullPath
+    return ctx
 }
 
 ; After Enter/Run: wait until Explorer loses foreground or window closes (bounded poll, not fixed sleep).
@@ -15791,14 +16060,25 @@ Editor_WaitForShellDispatchedAfterOpen(explorerHwnd, timeoutMs := 2000) {
 ; After Reveal in File Explorer: copy/open selected file in Windows Explorer, close window.
 Editor_WaitForActiveExplorerWindow(timeoutSec := 2.5, expectedBasename := "", editorHwnd := 0) {
     Editor_SmartNavLoadingUpdate("⏳ Waiting for Explorer window…", editorHwnd)
-    if !WinWait("ahk_exe explorer.exe", , timeoutSec)
+    deadline := A_TickCount + Round(timeoutSec * 1000)
+    explorerHwnd := 0
+    while (A_TickCount < deadline) {
+        for hwnd in WinGetList("ahk_exe explorer.exe") {
+            try {
+                WinActivate("ahk_id " hwnd)
+                if WinActive("ahk_id " hwnd) {
+                    explorerHwnd := hwnd
+                    break
+                }
+            } catch {
+            }
+        }
+        if (explorerHwnd)
+            break
+        Sleep 50
+    }
+    if (!explorerHwnd || !WinExist("ahk_id " explorerHwnd))
         return 0
-    if !WinWaitActive("ahk_exe explorer.exe", , timeoutSec)
-        return 0
-    explorerHwnd := WinExist("A")
-    if (!explorerHwnd)
-        return 0
-    try WinActivate("ahk_id " explorerHwnd)
     Editor_SmartNavLoadingUpdate("⏳ Loading file list…", editorHwnd)
     Editor_WaitForExplorerItemsView(explorerHwnd, 600)
     if (EDITOR_USE_CONDITIONAL_EXPLORER_WAIT) {
@@ -15827,8 +16107,14 @@ Editor_SmartNavRevealShowExplorerTimeout(actionLabel := "") {
 }
 
 Editor_CopyFromWindowsExplorerAndReturn(editorHwnd, expectedBasename := "", timeoutSec := 2.5) {
-    savedClip := ""
-    try savedClip := A_Clipboard
+    global EDITOR_COPY_VERIFY_FILEDROP, EDITOR_COPY_PREFER_DIRECT_SET
+    global EDITOR_COPY_CLIP_WAIT_MS, EDITOR_COPY_DIRECT_CLIP_WAIT_MS
+    savedClip := 0
+    savedTextClip := ""
+    try savedClip := ClipboardAll()
+    catch {
+    }
+    try savedTextClip := A_Clipboard
     catch {
     }
     copyOk := false
@@ -15840,16 +16126,55 @@ Editor_CopyFromWindowsExplorerAndReturn(editorHwnd, expectedBasename := "", time
             return false
         }
         Editor_SmartNavLoadingUpdate("⏳ Copying file to clipboard…", editorHwnd)
-        if (!Editor_EnsureRevealItemSelected(explorerHwnd, "")) {
-            try Explorer_EnsureItemsViewFocusPreserveSelection()
-            catch {
+
+        if (!EDITOR_COPY_VERIFY_FILEDROP) {
+            if (!Editor_EnsureRevealItemSelected(explorerHwnd, expectedBasename)) {
+                try Explorer_EnsureItemsViewFocusPreserveSelection()
+                catch {
+                }
+            }
+            Send "^c"
+            if !ClipWait(0.8, 1) && (A_Clipboard = "" || A_Clipboard = savedTextClip) {
+                Editor_SmartNavRevealShowExplorerTimeout("Copy")
+                return false
+            }
+            try WinClose("ahk_id " explorerHwnd)
+            explorerHwnd := 0
+            copyOk := true
+            return true
+        }
+
+        ctx := Editor_GatherRevealContext(explorerHwnd, expectedBasename)
+        fullPath := ctx["fullPath"]
+        verifyBasename := ctx["verifyBasename"]
+
+        Editor_EnsureRevealItemSelected(explorerHwnd, expectedBasename)
+
+        if (EDITOR_COPY_PREFER_DIRECT_SET && fullPath != "" && FileExist(fullPath)) {
+            if Editor_CopyVerifiedFileToClipboard(fullPath, verifyBasename, EDITOR_COPY_DIRECT_CLIP_WAIT_MS) {
+                try WinClose("ahk_id " explorerHwnd)
+                explorerHwnd := 0
+                copyOk := true
+                return true
             }
         }
-        Send "^c"
-        if !ClipWait(0.8, 1) && (A_Clipboard = "" || A_Clipboard = savedClip) {
-            Editor_SmartNavRevealShowExplorerTimeout("Copy")
-            return false
+
+        try Explorer_EnsureItemsViewFocusPreserveSelection()
+        catch {
         }
+        A_Clipboard := ""
+        Send "^c"
+        if !(Editor_WaitForClipboardFileDrop(EDITOR_COPY_CLIP_WAIT_MS)
+        && Editor_ClipboardMatchesRevealTarget(fullPath, verifyBasename)) {
+            if (fullPath != "" && FileExist(fullPath)
+            && Editor_CopyVerifiedFileToClipboard(fullPath, verifyBasename, EDITOR_COPY_DIRECT_CLIP_WAIT_MS)) {
+                ; direct set succeeded after keyboard miss
+            } else {
+                Editor_SmartNavRevealShowExplorerTimeout("Copy")
+                return false
+            }
+        }
+
         try WinClose("ahk_id " explorerHwnd)
         explorerHwnd := 0
         copyOk := true
@@ -15860,7 +16185,7 @@ Editor_CopyFromWindowsExplorerAndReturn(editorHwnd, expectedBasename := "", time
     } finally {
         if (!copyOk) {
             try {
-                if (savedClip != "")
+                if (IsObject(savedClip))
                     A_Clipboard := savedClip
             } catch {
             }
@@ -15883,7 +16208,7 @@ Editor_OpenFromWindowsExplorer(editorHwnd, expectedBasename := "", timeoutSec :=
         }
 
         Editor_EnsureRevealItemSelected(explorerHwnd, "")
-        fullPath := Editor_BuildRevealedFilePath(explorerHwnd, "")
+        fullPath := Editor_ResolveRevealFullPath(explorerHwnd, expectedBasename)
         opened := false
 
         if (fullPath != "") {
@@ -15934,7 +16259,7 @@ Editor_SmartNavRevealAfterSendH(editorHwnd, explorerAction, expectedBasename := 
 
 ; Smart navigation - Editor → Explorer, Explorer → Reveal in Explorer (optional copy/open in Windows Explorer).
 Editor_SmartNavReveal(explorerAction := "") {
-    global g_EditorSmartNavLastTick, EDITOR_SMARTNAV_MIN_INTERVAL_MS
+    global g_EditorSmartNavLastTick, EDITOR_SMARTNAV_MIN_INTERVAL_MS, EDITOR_COPY_USE_EDITOR_FASTPATH
     if (g_EditorSmartNavLastTick && (A_TickCount - g_EditorSmartNavLastTick) < EDITOR_SMARTNAV_MIN_INTERVAL_MS)
         return
     g_EditorSmartNavLastTick := A_TickCount
@@ -15949,6 +16274,7 @@ Editor_SmartNavReveal(explorerAction := "") {
 
     ok := false
     barShown := false
+    hideDelay := 500
     try {
         try {
             StandardLoadingBar_Show(startMsg, BANNER_ACCENT_INTERMEDIATE, barOpts)
@@ -15957,36 +16283,53 @@ Editor_SmartNavReveal(explorerAction := "") {
         }
 
         expectedBasename := Editor_GetExpectedRevealBasename(editorHwnd)
-        if (IsCursorMainEditorFocused()) {
-            if (!FocusCursorFilesExplorer()) {
-                Editor_SmartNavLoadingUpdate("⏳ Opening file explorer sidebar…", editorHwnd)
-                Send "^+e"
-                if (!Editor_WaitForSidebarExplorerFocus(800)) {
-                    Send "^!+e"
-                    Editor_WaitForSidebarExplorerFocus(400)
+
+        if (explorerAction = "copy" && EDITOR_COPY_USE_EDITOR_FASTPATH) {
+            Editor_SmartNavLoadingUpdate("⏳ Copying file…", editorHwnd)
+            t0 := A_TickCount
+            result := Editor_TryCopyFileFromActiveEditor(editorHwnd)
+            Editor_SmartNav_TimingLog("editor_fastpath", A_TickCount - t0)
+            if (result.ok) {
+                ok := true
+                hideDelay := 200
+                try StandardLoadingBar_Update("✅ File copied to clipboard", BANNER_ACCENT_SUCCESS)
+                catch {
                 }
             }
         }
-        Editor_SmartNavLoadingUpdate("⏳ Reveal in Explorer…", editorHwnd)
-        Send "^h"
 
-        if (explorerAction = "copy" || explorerAction = "open")
-            ok := Editor_SmartNavRevealAfterSendH(editorHwnd, explorerAction, expectedBasename)
-        else
-            ok := true
+        if (!ok) {
+            if (IsCursorMainEditorFocused()) {
+                if (!FocusCursorFilesExplorer()) {
+                    Editor_SmartNavLoadingUpdate("⏳ Opening file explorer sidebar…", editorHwnd)
+                    Send "^+e"
+                    if (!Editor_WaitForSidebarExplorerFocus(800)) {
+                        Send "^!+e"
+                        Editor_WaitForSidebarExplorerFocus(400)
+                    }
+                }
+            }
+            Editor_SmartNavLoadingUpdate("⏳ Reveal in Explorer…", editorHwnd)
+            Send "^h"
 
-        if (ok) {
-            try {
-                if (explorerAction = "copy")
-                    StandardLoadingBar_Update("✅ File copied to clipboard", BANNER_ACCENT_SUCCESS)
-                else if (explorerAction = "open")
-                    StandardLoadingBar_Update("✅ File opened", BANNER_ACCENT_SUCCESS)
-            } catch {
+            if (explorerAction = "copy" || explorerAction = "open")
+                ok := Editor_SmartNavRevealAfterSendH(editorHwnd, explorerAction, expectedBasename)
+            else
+                ok := true
+
+            if (ok) {
+                try {
+                    if (explorerAction = "copy")
+                        StandardLoadingBar_Update("✅ File copied to clipboard", BANNER_ACCENT_SUCCESS)
+                    else if (explorerAction = "open")
+                        StandardLoadingBar_Update("✅ File opened", BANNER_ACCENT_SUCCESS)
+                } catch {
+                }
             }
         }
     } finally {
         if (barShown) {
-            try StandardLoadingBar_Hide(ok ? 500 : 0)
+            try StandardLoadingBar_Hide(ok ? hideDelay : 0)
             catch {
             }
         }
@@ -23432,7 +23775,8 @@ $+i:: {
 }
 
 $+e:: {
-    try CopilotWeb_ClickSourcesCapability("capability-id-researcher", ["Researcher", "Pesquisador", "Pesquisa aprofundada"])
+    try CopilotWeb_ClickSourcesCapability("capability-id-researcher", ["Researcher", "Pesquisador",
+        "Pesquisa aprofundada"])
     catch {
     }
 }
