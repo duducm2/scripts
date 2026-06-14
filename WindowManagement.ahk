@@ -2,6 +2,12 @@
 #SingleInstance Force
 #UseHook True
 
+; WM daemon flags — init before any #include auto-execute can call WM_UsesAutomationDaemon().
+global WM_USE_DAEMON := false
+global WM_USE_PIPE_IPC := false
+global WM_USE_SHM_IPC := false
+global WM_USE_EVENT_HOOK_CACHE := false
+
 ; -----------------------------------------------------------------------------
 ; This script consolidates all Window Management hotkeys.
 ; -----------------------------------------------------------------------------
@@ -20,12 +26,6 @@ try Hotkey("#!+X", "Off")
 ; --- WindowManagement daemon integration (Phase 1: feature flags in WMIPC.ahk; Phase 3: use daemon) ---
 ; WM_USE_DAEMON, WM_USE_PIPE_IPC, WM_USE_SHM_IPC, WM_USE_EVENT_HOOK_CACHE (all default off)
 #include %A_ScriptDir%\aux\WMIPC.ahk
-
-; Defensive defaults in case WMIPC flag initialization is skipped in this process context.
-global WM_USE_DAEMON := false
-global WM_USE_PIPE_IPC := false
-global WM_USE_SHM_IPC := false
-global WM_USE_EVENT_HOOK_CACHE := false
 
 ; Default duration (ms) when WMAutomation_SuppressCursorCentering is called with durationMs := 0.
 ; Matches wm_daemon BeginAutomationSwitch default (python/wm_daemon.py).
@@ -86,7 +86,7 @@ WM_IsExcludedIndicatorWindow(hwnd) {
 }
 
 WM_UsesAutomationDaemon() {
-    global WM_USE_DAEMON, WM_USE_PIPE_IPC, WM_USE_EVENT_HOOK_CACHE
+    global WM_USE_DAEMON := false, WM_USE_PIPE_IPC := false, WM_USE_EVENT_HOOK_CACHE := false
     return WM_USE_DAEMON && WM_USE_PIPE_IPC && WM_USE_EVENT_HOOK_CACHE
 }
 

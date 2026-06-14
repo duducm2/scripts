@@ -15681,20 +15681,14 @@ IsCursorMainEditorFocused() {
     }
 }
 
-Editor_FocusCursorMainEditor(editorHwnd) {
+Editor_EnsureCursorWindowActive(editorHwnd) {
     if !(editorHwnd is Integer) || editorHwnd <= 0
         return false
     try {
+        if (WinActive("ahk_exe Cursor.exe") || WinActive("ahk_exe Code.exe"))
+            return true
         WinActivate("ahk_id " editorHwnd)
-        root := UIA.ElementFromHandle(editorHwnd)
-        if (!root)
-            return false
-        editorEl := root.ElementFromPath({ T: 33, CN: "RootView" }, { T: 33 }, { T: 33 }, { T: 33, CN: "ClientView" }, { T: 33 }, { T: 33 }, { T: 33 }, { T: 30 }, { T: 26 }, { T: 33 }, { T: 26,
-            A: "workbench.parts.editor" }, { T: 26, CN: "editor-instance" }, { T: 20 }, { T: 4 })
-        if (!editorEl)
-            return false
-        editorEl.SetFocus()
-        return true
+        return WinActive("ahk_id " editorHwnd)
     } catch {
         return false
     }
@@ -15733,6 +15727,72 @@ FocusCursorFilesExplorer() {
     }
 }
 
+Editor_FindCursorFilesExplorerTree(root) {
+    if !root
+        return 0
+    treeType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Tree)
+    feEn := UIA.CreatePropertyCondition(UIA.Property.Name, "Files Explorer")
+    fePt := UIA.CreatePropertyCondition(UIA.Property.Name, "Explorador de Arquivos")
+    feName := UIA.CreateOrCondition(feEn, fePt)
+    feCond := UIA.CreateAndCondition(treeType, feName)
+    fileTree := 0
+    try fileTree := root.FindElement(feCond, UIA.TreeScope.Descendants)
+    if fileTree
+        return fileTree
+    for autoId in ["FileExplorer3", "FileExplorer2", "FileExplorer"] {
+        try {
+            cond := UIA.CreatePropertyCondition(UIA.Property.AutomationId, autoId)
+            fileTree := root.FindElement(cond, UIA.TreeScope.Descendants)
+            if fileTree
+                return fileTree
+        }
+    }
+    return 0
+}
+
+Editor_UiaElementHasAncestor(el, ancestor) {
+    if !el || !ancestor
+        return false
+    current := el
+    loop 40 {
+        if !current
+            break
+        try {
+            if UIA.CompareElements(ancestor, current)
+                return true
+        } catch {
+        }
+        try current := UIA.TreeWalkerTrue.GetParentElement(current)
+        catch
+            break
+    }
+    return false
+}
+
+; True when keyboard focus is in the sidebar Files Explorer tree (safe for Ctrl+2 Copy Path).
+Editor_FocusIsInFilesExplorer(editorHwnd := 0) {
+    try {
+        if !(WinActive("ahk_exe Cursor.exe") || WinActive("ahk_exe Code.exe"))
+            return false
+        if !editorHwnd
+            editorHwnd := WinExist("A")
+        if !editorHwnd
+            return false
+        root := UIA.ElementFromHandle(editorHwnd)
+        if !root
+            return false
+        fileTree := Editor_FindCursorFilesExplorerTree(root)
+        if !fileTree
+            return false
+        fe := UIA.GetFocusedElement()
+        if !fe
+            return false
+        return Editor_UiaElementHasAncestor(fe, fileTree)
+    } catch {
+        return false
+    }
+}
+
 ; Smart nav Explorer wait: conditional UIA poll vs legacy fixed sleep (efficiency-canon §2).
 global EDITOR_USE_CONDITIONAL_EXPLORER_WAIT := true
 global EDITOR_COPY_VERIFY_FILEDROP := true
@@ -15755,25 +15815,9 @@ Editor_SmartNav_TimingLog(phase, ms) {
     }
 }
 
-Editor_SmartNav_DebugLog(hypothesisId, location, message, d1 := "", d2 := "", d3 := "") {
-    ; #region agent log
-    try {
-        sd1 := StrReplace(StrReplace(String(d1), '\', '\\'), '"', '\"')
-        sd2 := StrReplace(StrReplace(String(d2), '\', '\\'), '"', '\"')
-        sd3 := StrReplace(StrReplace(String(d3), '\', '\\'), '"', '\"')
-        FileAppend('{"sessionId":"7ba0b2","hypothesisId":"' hypothesisId '","location":"' location '","message":"' message
-            '","d1":"' sd1 '","d2":"' sd2 '","d3":"' sd3 '","timestamp":' A_TickCount '}' "`n"
-            , A_ScriptDir "\debug-7ba0b2.log", "UTF-8")
-    } catch {
-    }
-    ; #endregion
-}
-
 Editor_TryCopyFileFromActiveEditor(editorHwnd, expectedBasename := "") {
-    if !(editorHwnd is Integer) || editorHwnd <= 0 {
-        Editor_SmartNav_DebugLog("F", "TryCopyFile", "fail", "no_hwnd", "", "")
+    if !(editorHwnd is Integer) || editorHwnd <= 0
         return { ok: false, path: "" }
-    }
     savedClip := 0
     copyOk := false
     pathText := ""
@@ -15781,8 +15825,9 @@ Editor_TryCopyFileFromActiveEditor(editorHwnd, expectedBasename := "") {
     catch {
     }
     try {
-        Editor_FocusCursorMainEditor(editorHwnd)
-        Sleep 40
+        ; Ctrl+2 = Copy Path only when Files Explorer has focus. In the code editor it opens editor group 2.
+        if !Editor_FocusIsInFilesExplorer(editorHwnd)
+            return { ok: false, path: "" }
         A_Clipboard := ""
         SendInput "^2"
         clipOk := ClipWait(0.6)
@@ -15792,25 +15837,17 @@ Editor_TryCopyFileFromActiveEditor(editorHwnd, expectedBasename := "") {
             SendInput "^2"
             clipOk := ClipWait(0.6)
         }
-        if !clipOk {
-            Editor_SmartNav_DebugLog("F", "TryCopyFile", "fail", "clip_timeout", expectedBasename, "")
+        if !clipOk
             return { ok: false, path: "" }
-        }
         pathText := Trim(Trim(A_Clipboard), Chr(34))
-        if !Editor_PathIsExistingFile(pathText) {
-            Editor_SmartNav_DebugLog("F", "TryCopyFile", "fail", "bad_path", pathText, "")
+        if !Editor_PathIsExistingFile(pathText)
             return { ok: false, path: "" }
-        }
         verifyBasename := expectedBasename != "" ? expectedBasename : Editor_GetBasenameFromEditorTitle(editorHwnd)
-        setOk := Editor_SetClipboardFiles([pathText])
-        waitOk := Editor_WaitForClipboardFileDrop(EDITOR_COPY_DIRECT_CLIP_WAIT_MS)
-        matchOk := Editor_ClipboardMatchesRevealTarget(pathText, verifyBasename)
-        if !(setOk && waitOk && matchOk) {
-            Editor_SmartNav_DebugLog("F", "TryCopyFile", "fail", "verify_fail", pathText, verifyBasename)
+        if !(Editor_SetClipboardFiles([pathText])
+        && Editor_WaitForClipboardFileDrop(EDITOR_COPY_DIRECT_CLIP_WAIT_MS)
+        && Editor_ClipboardMatchesRevealTarget(pathText, verifyBasename))
             return { ok: false, path: "" }
-        }
         copyOk := true
-        Editor_SmartNav_DebugLog("F", "TryCopyFile", "ok", pathText, verifyBasename, "")
         return { ok: true, path: pathText }
     } finally {
         if (!copyOk && IsObject(savedClip)) {
@@ -16192,7 +16229,6 @@ Editor_WaitForActiveExplorerWindow(timeoutSec := 2.5, expectedBasename := "", ed
     deadline := A_TickCount + Round(timeoutSec * 1000)
     explorerHwnd := 0
     bestScore := 0
-    explorerSummaries := ""
     while (A_TickCount < deadline) {
         bestHwnd := 0
         bestScore := 0
@@ -16224,30 +16260,14 @@ Editor_WaitForActiveExplorerWindow(timeoutSec := 2.5, expectedBasename := "", ed
         }
         Sleep 50
     }
-    for hwnd in WinGetList("ahk_exe explorer.exe") {
-        folder := Editor_GetExplorerFolderPathFromShell(hwnd)
-        sel := Editor_GetRevealSelectedItemName(hwnd, expectedBasename)
-        score := Editor_ScoreExplorerRevealWindow(hwnd, expectedBasename, preSet)
-        explorerSummaries .= hwnd "|" score "|" folder "|" sel ";"
-    }
-    if (!explorerHwnd || !WinExist("ahk_id " explorerHwnd)) {
-        Editor_SmartNav_DebugLog("B", "WaitExplorer", "no_hwnd", explorerSummaries, expectedBasename, String(bestScore))
+    if (!explorerHwnd || !WinExist("ahk_id " explorerHwnd))
         return 0
-    }
-    chosenFolder := Editor_GetExplorerFolderPathFromShell(explorerHwnd)
-    chosenSel := Editor_GetRevealSelectedItemName(explorerHwnd, expectedBasename)
-    Editor_SmartNav_DebugLog("B", "WaitExplorer", "chosen", String(explorerHwnd), chosenFolder, chosenSel "|score=" bestScore
-    )
-    Editor_SmartNav_DebugLog("B", "WaitExplorer", "all_windows", explorerSummaries, expectedBasename, "")
     Editor_SmartNavLoadingUpdate("⏳ Loading file list…", editorHwnd)
     Editor_WaitForExplorerItemsView(explorerHwnd, 600)
     if (EDITOR_USE_CONDITIONAL_EXPLORER_WAIT) {
         Editor_SmartNavLoadingUpdate("⏳ Confirming file selection…", editorHwnd)
         revealMs := Max(3500, Round(timeoutSec * 1000))
-        ready := Editor_WaitForExplorerRevealReady(explorerHwnd, revealMs)
-        Editor_SmartNav_DebugLog("D", "WaitExplorer", ready ? "reveal_ready" : "reveal_timeout", String(explorerHwnd),
-        chosenFolder, expectedBasename)
-        if !ready
+        if !Editor_WaitForExplorerRevealReady(explorerHwnd, revealMs)
             return 0
     } else {
         Sleep 2500
@@ -16310,7 +16330,6 @@ Editor_CopyFromWindowsExplorerAndReturn(editorHwnd, expectedBasename := "", time
         ctx := Editor_GatherRevealContext(explorerHwnd, expectedBasename)
         fullPath := ctx["fullPath"]
         verifyBasename := ctx["verifyBasename"]
-        Editor_SmartNav_DebugLog("E", "CopyFromExplorer", "context", fullPath, verifyBasename, ctx["folderFromShell"])
 
         Editor_EnsureRevealItemSelected(explorerHwnd, expectedBasename)
 
@@ -16432,21 +16451,14 @@ Editor_SmartNavReveal(explorerAction := "") {
     editorHwnd := WinExist("A")
     ok := false
     expectedBasename := Editor_GetExpectedRevealBasename(editorHwnd)
-    Editor_SmartNav_DebugLog("G", "SmartNavReveal", "start", expectedBasename, explorerAction, "")
 
     try {
         if (explorerAction = "copy" && EDITOR_COPY_USE_EDITOR_FASTPATH) {
-            Editor_FocusCursorMainEditor(editorHwnd)
-            Sleep 40
             t0 := A_TickCount
             result := Editor_TryCopyFileFromActiveEditor(editorHwnd, expectedBasename)
             Editor_SmartNav_TimingLog("editor_fastpath", A_TickCount - t0)
-            if (result.ok) {
+            if (result.ok)
                 ok := true
-                Editor_SmartNav_DebugLog("G", "SmartNavReveal", "fastpath_ok", result.path, "", "")
-            } else {
-                Editor_SmartNav_DebugLog("G", "SmartNavReveal", "fastpath_fail", expectedBasename, result.path, "")
-            }
         }
 
         if (!ok) {
@@ -16457,10 +16469,7 @@ Editor_SmartNavReveal(explorerAction := "") {
             for hwnd in WinGetList("ahk_exe explorer.exe")
                 preExplorers .= hwnd ","
 
-            Editor_FocusCursorMainEditor(editorHwnd)
-            Sleep 40
-
-            Editor_SmartNav_DebugLog("G", "SmartNavReveal", "before_reveal", expectedBasename, preExplorers, "")
+            Editor_EnsureCursorWindowActive(editorHwnd)
             SendInput "^h"
 
             if (explorerAction = "copy" || explorerAction = "open")
@@ -16688,7 +16697,8 @@ global g_CursorShortcutMenuActive := false
 ; Alt + A : Add File to AI Context (Add File to Cursor Chat)
 !a::
 {
-    StandardLoadingBar_Show("⏳ Add file to Cursor Chat...", BANNER_ACCENT_INTERMEDIATE, { passive: false, centerOnHwnd: 0 })
+    StandardLoadingBar_Show("⏳ Add file to Cursor Chat...", BANNER_ACCENT_INTERMEDIATE, { passive: false,
+        centerOnHwnd: 0 })
     try {
         ; Always move to Cursor primary sidebar Explorer, regardless of current focus/caret.
         StandardLoadingBar_Update("⏳ Focusing Explorer...")
@@ -16824,7 +16834,8 @@ global g_CursorShortcutMenuActive := false
 ;-------------------------------------------------------------------
 #HotIf IsEditorActive() && WinGetClass("A") != "#32770"
 
-Cursor_ContextMenuSelectByDownAndVerify(targetText, openKey := "{AppsKey}", maxSteps := 28, expectedFileName := "") {
+Cursor_ContextMenuSelectByDownAndVerify(targetText, openKey := "{AppsKey}", maxSteps := 28, expectedFileName :=
+    "") {
     ; Open context menu.
     Send openKey
     Sleep 240
@@ -16842,7 +16853,8 @@ Cursor_ContextMenuSelectByDownAndVerify(targetText, openKey := "{AppsKey}", maxS
 
         if (name = targetText) {
             StandardLoadingBar_Update("⏳ Activating 'Add File to Cursor Chat'...")
-            result := Cursor_ContextMenuActivateHighlightedItem(highlightedEl, targetText, 220, 900, expectedFileName)
+            result := Cursor_ContextMenuActivateHighlightedItem(highlightedEl, targetText, 220, 900,
+                expectedFileName)
             return result
         }
 
@@ -16853,7 +16865,8 @@ Cursor_ContextMenuSelectByDownAndVerify(targetText, openKey := "{AppsKey}", maxS
     return { ok: false, reason: "Menu item not found" }
 }
 
-Cursor_ContextMenuSelectByDownAndVerifyAny(targetTexts, openKey := "{AppsKey}", maxSteps := 28, expectedFileName := "") {
+Cursor_ContextMenuSelectByDownAndVerifyAny(targetTexts, openKey := "{AppsKey}", maxSteps := 28,
+    expectedFileName := "") {
     ; Open context menu.
     Send openKey
     Sleep 240
@@ -16871,7 +16884,8 @@ Cursor_ContextMenuSelectByDownAndVerifyAny(targetTexts, openKey := "{AppsKey}", 
         for targetText in targetTexts {
             if (name = targetText) {
                 StandardLoadingBar_Update("⏳ Activating '" . targetText . "'...")
-                return Cursor_ContextMenuActivateHighlightedItem(highlightedEl, targetText, 220, 900, expectedFileName)
+                return Cursor_ContextMenuActivateHighlightedItem(highlightedEl, targetText, 220, 900,
+                    expectedFileName)
             }
         }
 
@@ -17979,7 +17993,8 @@ ClickHidePanelButton() {
                     try {
                         WinActivate("ahk_id " replaceHwnd)
                     } catch {
-                        ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
+                        ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000,
+                            BANNER_ACCENT_ERROR)
                         break
                     }
                     Sleep 900  ; Delay for dialog to stabilize before confirming
@@ -19409,7 +19424,8 @@ VSCodeScrollCopilotFeedToBottom(hwnd) {
 }
 
 VSCode_AddFileToAIContext() {
-    StandardLoadingBar_Show("⏳ Add file to VS Code chat...", BANNER_ACCENT_INTERMEDIATE, { passive: false, centerOnHwnd: 0 })
+    StandardLoadingBar_Show("⏳ Add file to VS Code chat...", BANNER_ACCENT_INTERMEDIATE, { passive: false,
+        centerOnHwnd: 0 })
     try {
         if (!IsCodeActive()) {
             StandardLoadingBar_Update("❌ Failed: VS Code is not active")
@@ -19730,7 +19746,8 @@ FoldAllGitDirectoriesInCursor() {
         Sleep(350)
 
         ; Narrow to the Source Control (SCM) tree area to avoid unrelated matches
-        scmCond := UIA.CreatePropertyConditionEx(UIA.Property.Name, "Source Control", UIA.PropertyConditionFlags.IgnoreCaseMatchSubstring
+        scmCond := UIA.CreatePropertyConditionEx(UIA.Property.Name, "Source Control", UIA.PropertyConditionFlags
+            .IgnoreCaseMatchSubstring
         )
         scmCondPt := UIA.CreatePropertyConditionEx(UIA.Property.Name, "Controle de CÃ³digo", UIA.PropertyConditionFlags
             .IgnoreCaseMatchSubstring
@@ -19977,7 +19994,8 @@ FoldAllDirectoriesInExplorer() {
 
         ; Restore selection/focus if possible
         if focusedName {
-            nameCond := UIA.CreatePropertyConditionEx(UIA.Property.Name, focusedName, UIA.PropertyConditionFlags.IgnoreCase
+            nameCond := UIA.CreatePropertyConditionEx(UIA.Property.Name, focusedName, UIA.PropertyConditionFlags
+                .IgnoreCase
             )
             itemType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.TreeItem)
             focusedLookup := UIA.CreateAndCondition(itemType, nameCond)
@@ -20136,7 +20154,8 @@ UnfoldAllDirectoriesInExplorer() {
                         if item.ExpandCollapsePattern.ExpandCollapseState == UIA.ExpandCollapseState.Collapsed {
                             ; Method 4: Click Chevron (Moved from catch block)
                             try {
-                                btnType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Button)
+                                btnType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Button
+                                )
                                 txtType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Text)
                                 glyphName := UIA.CreatePropertyCondition(UIA.Property.Name, "îª´")
                                 dotName := UIA.CreatePropertyCondition(UIA.Property.Name, ".")
@@ -20241,7 +20260,8 @@ SendCtrlKeyBasedOnAgentAsk() {
 SwitchAIMode() {
     try {
         ; Get user input directly
-        userChoice := InputBox("Choose AI Mode:`n`n1. ask`n2. agent`n`nEnter choice (1 or 2):", "AI Mode Selection",
+        userChoice := InputBox("Choose AI Mode:`n`n1. ask`n2. agent`n`nEnter choice (1 or 2):",
+            "AI Mode Selection",
             "w250 h150")
         if userChoice.Result != "OK"
             return
@@ -20957,7 +20977,8 @@ ContainsWord(norm, word) {
         if (btn) {
             btn.Click()
         } else {
-            MsgBox "Could not find the CartÃµes de crÃ©dito/Credit cards button.", "Mobills Navigation", "IconX"
+            MsgBox "Could not find the CartÃµes de crÃ©dito/Credit cards button.", "Mobills Navigation",
+                "IconX"
         }
     } catch Error as e {
         MsgBox "Error navigating to CartÃµes de crÃ©dito/Credit cards: " e.Message, "Mobills Error", "IconX"
@@ -21207,7 +21228,8 @@ Mobills_FindMonthNavByMonthYear(uia, dir) {
     months := ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October",
         "November",
         "December",
-        "Janeiro", "Fevereiro", "Março", "Marco", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro",
+        "Janeiro", "Fevereiro", "Março", "Marco", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro",
+        "Outubro",
         "Novembro", "Dezembro"]
 
     monthEl := ""
@@ -21422,7 +21444,8 @@ Mobills_ShowRunningBanner(dir) {
     borderWidth := 6
     borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
     borderGui.BackColor := BANNER_ACCENT_INTERMEDIATE
-    borderGui.Show("NA x" . (cx - borderWidth) . " y" . (cy - borderWidth) . " w" . (gw + 2 * borderWidth) . " h" . (gh +
+    borderGui.Show("NA x" . (cx - borderWidth) . " y" . (cy - borderWidth) . " w" . (gw + 2 * borderWidth) .
+    " h" . (gh +
         2 * borderWidth))
     g_MobillsRunningBannerBorderGui := borderGui
 
@@ -21680,8 +21703,10 @@ FocusDescriptionField() {
         if !uia
             return false
 
-        descriptionElement := Mobills_FindElementByCandidates(uia, [{ Name: "Description", Type: 50004, matchmode: "Substring" }, { Name: "Description",
-            Type: "Edit", matchmode: "Substring" }, { ClassName: "MuiAutocomplete-input", Type: "Edit", matchmode: "Substring" }
+        descriptionElement := Mobills_FindElementByCandidates(uia, [{ Name: "Description", Type: 50004,
+            matchmode: "Substring" }, { Name: "Description",
+                Type: "Edit", matchmode: "Substring" }, { ClassName: "MuiAutocomplete-input", Type: "Edit",
+                    matchmode: "Substring" }
         ])
 
         if !descriptionElement {
@@ -21749,7 +21774,8 @@ Mobills_TypeMainInOpenPicker() {
         if !Mobills_SelectNewMenuItem("Credit card expense")
             MsgBox "Could not open New > Credit card expense.", "Mobills Navigation", "IconX"
     } catch Error as e {
-        MsgBox "Error clicking action button and Credit card expense menu: " e.Message, "Mobills Error", "IconX"
+        MsgBox "Error clicking action button and Credit card expense menu: " e.Message, "Mobills Error",
+            "IconX"
     }
 }
 
@@ -22033,9 +22059,11 @@ TryAttachBrowser() {
         if (result) {
             ; #region agent log
             try {
-                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' .
+                A_TickCount .
                 ',"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":' .
-                (result ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n', DEBUG_LOG_PATH
+                (result ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n',
+                DEBUG_LOG_PATH
             } catch {
             }
             ; #endregion
@@ -22049,7 +22077,8 @@ TryAttachBrowser() {
         try {
             FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
             ',"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":' .
-            (result ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n', DEBUG_LOG_PATH
+            (result ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n',
+            DEBUG_LOG_PATH
         } catch {
         }
         ; #endregion
@@ -22073,9 +22102,11 @@ TryAttachBrowser() {
             }
             ; #region agent log
             try {
-                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' .
+                A_TickCount .
                 ',"location":"Shift keys.ahk:9829","message":"TryAttachBrowser success","data":{"browser":"edge","result":' .
-                (result ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n', DEBUG_LOG_PATH
+                (result ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n',
+                DEBUG_LOG_PATH
             } catch {
             }
             ; #endregion
@@ -22084,9 +22115,11 @@ TryAttachBrowser() {
         catch {
             ; #region agent log
             try {
-                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' .
+                A_TickCount .
                 ',"location":"Shift keys.ahk:9837","message":"TryAttachBrowser failed both browsers","data":{"error":"' .
-                A_LastError . '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n', DEBUG_LOG_PATH
+                A_LastError . '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n',
+                DEBUG_LOG_PATH
             } catch {
             }
             ; #endregion
@@ -22118,7 +22151,8 @@ FindMonthGroup(uia) {
         if grp {
             ; #region agent log
             try {
-                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' .
+                A_TickCount .
                 ',"location":"Shift keys.ahk:9862","message":"FindMonthGroup Strategy 1 success","data":{"found":true},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}`n',
                 DEBUG_LOG_PATH
             } catch {
@@ -22139,7 +22173,8 @@ FindMonthGroup(uia) {
         ; #region agent log
         try {
             FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-            ',"location":"Shift keys.ahk:9876","message":"FindMonthGroup Strategy 1 exception","data":{"error":"' . e.Message .
+            ',"location":"Shift keys.ahk:9876","message":"FindMonthGroup Strategy 1 exception","data":{"error":"' .
+            e.Message .
             '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}`n', DEBUG_LOG_PATH
         } catch {
         }
@@ -22166,7 +22201,8 @@ FindMonthGroup(uia) {
             if el {
                 ; #region agent log
                 try {
-                    FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+                    FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' .
+                    A_TickCount .
                     ',"location":"Shift keys.ahk:9897","message":"FindMonthGroup found month text","data":{"month":"' .
                     m . '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}`n', DEBUG_LOG_PATH
                 } catch {
@@ -22195,7 +22231,8 @@ FindMonthGroup(uia) {
     try {
         FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
         ',"location":"Shift keys.ahk:9912","message":"FindMonthGroup Strategy 2 failed","data":{"foundMonths":' .
-        foundMonths.Length . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}`n', DEBUG_LOG_PATH
+        foundMonths.Length . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}`n',
+        DEBUG_LOG_PATH
     } catch {
     }
     ; #endregion
@@ -22217,7 +22254,8 @@ FindMonthGroup(uia) {
                     name := ""
                     try className := grp.GetPropertyValue(UIA.Property.ClassName)
                     try name := grp.GetPropertyValue(UIA.Property.Name)
-                    FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+                    FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' .
+                    A_TickCount .
                     ',"location":"Shift keys.ahk:9920","message":"FindMonthGroup Group sample","data":{"index":' .
                     A_Index . ',"className":"' . className . '","name":"' . name .
                     '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}`n', DEBUG_LOG_PATH
@@ -22230,7 +22268,8 @@ FindMonthGroup(uia) {
                 if !paginationBtns.Length {
                     paginationBtns := uia.FindAll({ Name: "Go to previous page", Type: 50000 })
                 }
-                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' .
+                A_TickCount .
                 ',"location":"Shift keys.ahk:9930","message":"FindMonthGroup pagination check","data":{"foundPagination":' .
                 (paginationBtns.Length > 0 ? 1 : 0) . ',"count":' . paginationBtns.Length .
                 '},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}`n', DEBUG_LOG_PATH
@@ -22240,9 +22279,11 @@ FindMonthGroup(uia) {
             try {
                 allTexts := uia.FindAll({ Type: "Text" })
                 textCount := allTexts.Length
-                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
+                FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' .
+                A_TickCount .
                 ',"location":"Shift keys.ahk:9935","message":"FindMonthGroup text elements","data":{"totalTexts":' .
-                textCount . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}`n', DEBUG_LOG_PATH
+                textCount . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}`n',
+                DEBUG_LOG_PATH
                 ; Sample first 10 text elements
                 sampleTextCount := textCount < 10 ? textCount : 10
                 loop sampleTextCount {
@@ -22251,11 +22292,13 @@ FindMonthGroup(uia) {
                         txtName := ""
                         try txtName := txt.GetPropertyValue(UIA.Property.Name)
                         if txtName && StrLen(txtName) > 0 {
-                            FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' .
+                            FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) .
+                            '","timestamp":' .
                             A_TickCount .
                             ',"location":"Shift keys.ahk:9940","message":"FindMonthGroup text sample","data":{"index":' .
                             A_Index . ',"text":"' . txtName .
-                            '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}`n', DEBUG_LOG_PATH
+                            '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}`n',
+                            DEBUG_LOG_PATH
                         }
                     } catch {
                     }
@@ -22264,7 +22307,8 @@ FindMonthGroup(uia) {
             }
         } catch Error as e2 {
             FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-            ',"location":"Shift keys.ahk:9918","message":"FindMonthGroup diagnostic failed","data":{"error":"' . e2.Message .
+            ',"location":"Shift keys.ahk:9918","message":"FindMonthGroup diagnostic failed","data":{"error":"' .
+            e2.Message .
             '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}`n', DEBUG_LOG_PATH
         }
     } catch {
@@ -22465,8 +22509,9 @@ global g_GeminiModelSelectorGui := false
 global g_GeminiModelSelectorActive := false
 global g_GeminiModelHotkeyHandlers := []
 global g_GeminiModelCharSequence := ["1", "2", "3", "4"]
-global g_GeminiModels := [{ name: "3.1 Flash-Lite", description: "Fastest answers" }, { name: "3.5 Flash", description: "All-around help" }, { name: "3.1 Pro",
-    description: "Advanced math and code" }, { name: "Thinking level", description: "Open thinking submenu (set level manually)" }
+global g_GeminiModels := [{ name: "3.1 Flash-Lite", description: "Fastest answers" }, { name: "3.5 Flash",
+    description: "All-around help" }, { name: "3.1 Pro",
+        description: "Advanced math and code" }, { name: "Thinking level", description: "Open thinking submenu (set level manually)" }
 ]
 
 ; Shift + D : Toggle the Main menu button (drawer) using fast state-based pattern
@@ -22557,7 +22602,8 @@ ToggleGeminiDrawer() {
         if !searchButton {
             allButtons := uia.FindAll({ Type: 50000 })
             for button in allButtons {
-                if InStr(button.Name, "Search") || InStr(button.Name, "Pesquisar") || InStr(button.Name, "Buscar") {
+                if InStr(button.Name, "Search") || InStr(button.Name, "Pesquisar") || InStr(button.Name,
+                    "Buscar") {
                     ; Additional check to ensure it's the search button (has search-button in className)
                     if InStr(button.ClassName, "search-button") {
                         searchButton := button
@@ -22734,7 +22780,8 @@ HandleGeminiModelSelection(char) {
                     StandardLoadingBar_Hide(700)
                 } else {
                     StandardLoadingBar_Hide(0)
-                    ShowCenteredOverlay_Utils("❌ Could not open Thinking level menu", 2800, BANNER_ACCENT_ERROR)
+                    ShowCenteredOverlay_Utils("❌ Could not open Thinking level menu", 2800, BANNER_ACCENT_ERROR
+                    )
                 }
             } else {
                 verified := EnsureGeminiModelViaMenu(modelName, geminiHwnd)
@@ -24069,7 +24116,8 @@ $^Enter:: {
 ;-------------------------------------------------------------------
 ; Google Search Shortcuts
 ;-------------------------------------------------------------------
-#HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "Google") && !InStr(WinGetTitle("A"), "Google Maps")
+#HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "Google") && !InStr(WinGetTitle("A"),
+"Google Maps")
 
 ; Shift + S : Focus Google search box
 +s:: {
@@ -24911,7 +24959,8 @@ UIATreeInspector_JiggleLeftTree(leftHwnd, winHwnd, downDelayMs) {
             }
         }
         if !WinActive("ahk_id " inspectorHwnd) {
-            MsgBox "Could not activate UIATreeInspector after the search dialog. Try again.", "UIA Tree Inspector",
+            MsgBox "Could not activate UIATreeInspector after the search dialog. Try again.",
+                "UIA Tree Inspector",
                 "IconX"
             return
         }
@@ -25837,7 +25886,8 @@ M365CopilotContinue_ShowBanner() {
     borderWidth := 6
     borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
     borderGui.BackColor := BANNER_ACCENT_INTERMEDIATE
-    borderGui.Show("NA x" . (cx - borderWidth) . " y" . (cy - borderWidth) . " w" . (gw + 2 * borderWidth) . " h" . (gh +
+    borderGui.Show("NA x" . (cx - borderWidth) . " y" . (cy - borderWidth) . " w" . (gw + 2 * borderWidth) .
+    " h" . (gh +
         2 * borderWidth))
     g_M365CopilotContinueBannerBorderGui := borderGui
     ov.Show("x" . cx . " y" . cy . " NA")

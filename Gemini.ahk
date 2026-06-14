@@ -605,7 +605,7 @@ GeminiBackgroundStopTimer(task) {
 }
 
 GeminiCanUseWMAutomationContext() {
-    global WM_USE_DAEMON, WM_USE_PIPE_IPC, WM_USE_EVENT_HOOK_CACHE
+    global WM_USE_DAEMON := false, WM_USE_PIPE_IPC := false, WM_USE_EVENT_HOOK_CACHE := false
     return WM_USE_DAEMON && WM_USE_PIPE_IPC && WM_USE_EVENT_HOOK_CACHE
 }
 
@@ -941,7 +941,8 @@ CopyLastGeminiMessageToClipboard(options := "", geminiHwnd := 0) {
         t0 := A_TickCount
         if UseCopilotWebForGlobalAI() {
             if (!CopilotWeb_CopyLastMessageToClipboard({ restoreWindow: false, playChimeAndNotify: true }))
-                ShowNotification("Copy failed – ensure Copilot is open and has a response", 2500, "FF6666", "FFFFFF", 22)
+                ShowNotification("Copy failed – ensure Copilot is open and has a response", 2500, "FF6666", "FFFFFF",
+                    22)
             else if (hwnd := GetCopilotWebWindowHwnd())
                 CopilotWeb_FocusComposerForHwnd(hwnd, true)
             return
