@@ -2771,6 +2771,16 @@ GetPromptText(key) {
     InsertText(GetPromptText("slide-creation-with-ref"))
 }
 
+:o:csvfill::
+{
+    InsertText(GetPromptText("unstructured-to-csv"))
+}
+
+:o:mdunesc::
+{
+    UnescapeMarkdownClipboard()
+}
+
 ; MyNotes technique prompts: live repo path first, then mirror under prompt\technique (synced by aux\Sync-MyNotesTechniquePrompts.ps1).
 GetTechniquePromptFilePath(fileName) {
     repo := GetNotesRepoPath()
@@ -2888,6 +2898,14 @@ InitHotstringsCheatSheet() {
         RegisterHotstring(":o:pptslideref",
             "Create one PowerPoint slide as an image using the attached reference as the main visual guide.`n", "Prompts",
             "📊 Create PowerPoint slide (reference)")
+    }
+    try {
+        RegisterHotstring(":o:csvfill", FileRead(promptDir "\unstructured-to-csv.txt"), "Prompts",
+            "📋 Fill CSV from unstructured text")
+    } catch {
+        RegisterHotstring(":o:csvfill",
+            "Extract information from unstructured text and fill/update CSV rows using the provided column schema.`n",
+            "Prompts", "📋 Fill CSV from unstructured text")
     }
 
     ; Hotstrings: emails
@@ -8648,6 +8666,48 @@ CleanClipboard() {
     CleanClipboard_ShowCountdown()
 }
 
+; Strip markdown escape backslashes chat UIs add on copy (e.g. meeting\_id → meeting_id).
+UnescapeMarkdownFromText(text) {
+    if (text = "")
+        return { text: "", count: 0 }
+    if RegExMatch(text, '^\s*```[^\R]*\R(.*?)\R```\s*$', &fence)
+        text := fence[1]
+    count := 0
+    for ch in ["*", "_", "{", "}", "[", "]", "(", ")", "#", "+", ".", "!", "-", Chr(96), Chr(34)] {
+        replaced := 0
+        text := StrReplace(text, '\' . ch, ch, , &replaced)
+        count += replaced
+    }
+    replaced := 0
+    text := StrReplace(text, '\\', '\', , &replaced)
+    count += replaced
+    return { text: text, count: count }
+}
+
+UnescapeMarkdownClipboard() {
+    clip := A_Clipboard
+    if (Trim(clip) = "") {
+        ShowCenteredOverlay_Utils("Clipboard empty", 1500, BANNER_ACCENT_INTERMEDIATE)
+        return
+    }
+    result := UnescapeMarkdownFromText(clip)
+    if (result.text = clip) {
+        ShowCenteredOverlay_Utils("No markdown escapes found", 1500, BANNER_ACCENT_INTERMEDIATE)
+        return
+    }
+    saved := ClipboardAll()
+    try {
+        A_Clipboard := result.text
+        ClipWait(0.3)
+    } finally {
+        if (A_Clipboard != result.text)
+            A_Clipboard := saved
+    }
+    msg := (result.count = 1) ? "Removed 1 markdown escape" : "Removed " result.count " markdown escapes"
+    ShowCenteredOverlay_Utils("📋 " msg, 1500, BANNER_ACCENT_SUCCESS)
+    try ScriptSoundPlay(A_ScriptDir . "\sounds\copy.wav")
+}
+
 CleanClipboard_ShowCountdown() {
     global g_CleanClipboardInProgress
 
@@ -8931,6 +8991,7 @@ InitMacros() {
     RegisterMacro(ToggleOutlookAndTeams, "🔄 Toggle Outlook & Teams")
     ; Clean the Clipboard macro (assigned to "P")
     RegisterMacro(CleanClipboard, "🧹 Clean the Clipboard", "p")
+    RegisterMacro(UnescapeMarkdownClipboard, "📋 Unescape markdown clipboard", "e")
     ; Toggle Sound macro
     RegisterMacro(ToggleSoundState, "🔊 Toggle Sound (Mute/Unmute)")
     ; Global AI generation state: Cursor + Gemini (assigned to "U")

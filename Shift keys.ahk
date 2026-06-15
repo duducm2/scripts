@@ -991,7 +991,7 @@ Explorer (Shift)
 📄 [F]Select first [F]ile
 🔍 [S][S]earch bar
 📍 [A][A]ddress bar
-📁 [N][N]ew Folder
+📁 [N][N]ew Folder²
 🔗 [H]Create s[H]ortcut
 📋 [C][C]opy as path
 📤 [R]Sha[R]e file

@@ -1,0 +1,51 @@
+Task:
+Extract information from unstructured text and fill/update CSV rows using the provided column schema.
+
+Before processing:
+
+1. Confirm BOTH inputs are present (unstructured text + CSV with headers).
+2. If either is missing, stop and ask the user to provide it.
+
+Inputs:
+
+- Unstructured data: <paste or attach here>
+- Structured CSV (headers + optional existing rows): <paste or attach here>
+
+Processing rules:
+
+1. Treat the CSV header row as the authoritative column schema.
+2. Map facts from the unstructured text to those columns only.
+3. Create new rows for distinct records found in the text.
+4. Update existing rows only when the unstructured text clearly adds or corrects them.
+5. Do not invent values; leave cells empty when information is absent or ambiguous.
+6. Preserve column order from the template.
+7. Use the same separator as the input CSV (comma or semicolon); default to semicolon if unclear.
+
+Output (CRITICAL — read before responding):
+
+Put the CSV inside a fenced code block labeled csv. Example:
+
+```csv
+meeting_id,meeting_date,participant
+2026-04-27,QMAI alignment,Rafael
+```
+
+Rules for the code block contents:
+1. Output ONLY the CSV (header + data rows). No commentary before or after the block.
+2. Inside the block: raw plain text only. Never escape characters with backslashes.
+3. Underscores are literal: write meeting_id, not meeting\_id.
+4. The backslash character must not appear unless it is real data in a cell.
+5. Copy column names exactly from the input schema.
+
+Optional task-specific instructions:
+
+<Add column-specific rules, date formats, enums, or merge logic here>
+
+---
+Reminder for the human (do not include in AI output):
+Before sending this prompt, attach or paste:
+
+1. Unstructured source text
+2. CSV file or CSV block with column headers
+
+After copying the CSV from the chat UI, run Unescape markdown clipboard (Utility Selector macro E, or type mdunesc) — chat sites often insert backslashes on copy (e.g. meeting\_id).
