@@ -2761,6 +2761,16 @@ GetPromptText(key) {
     InsertText(GetPromptText("aib-rapid-fire-template"))
 }
 
+:o:pptslide::
+{
+    InsertText(GetPromptText("slide-creation"))
+}
+
+:o:pptslideref::
+{
+    InsertText(GetPromptText("slide-creation-with-ref"))
+}
+
 ; MyNotes technique prompts: live repo path first, then mirror under prompt\technique (synced by aux\Sync-MyNotesTechniquePrompts.ps1).
 GetTechniquePromptFilePath(fileName) {
     repo := GetNotesRepoPath()
@@ -2863,6 +2873,21 @@ InitHotstringsCheatSheet() {
         RegisterHotstring(":o:aibrapid",
             "Junior AI (AIB): planning doc with ⚡ - conceptual above, execution steps below.`n", "Prompts",
             "📜 Junior AI: ⚡ rapid-fire template")
+    }
+    try {
+        RegisterHotstring(":o:pptslide", FileRead(promptDir "\slide-creation.txt"), "Prompts",
+            "📊 Create PowerPoint slide")
+    } catch {
+        RegisterHotstring(":o:pptslide", "Create one PowerPoint slide as an image.`n", "Prompts",
+            "📊 Create PowerPoint slide")
+    }
+    try {
+        RegisterHotstring(":o:pptslideref", FileRead(promptDir "\slide-creation-with-ref.txt"), "Prompts",
+            "📊 Create PowerPoint slide (reference)")
+    } catch {
+        RegisterHotstring(":o:pptslideref",
+            "Create one PowerPoint slide as an image using the attached reference as the main visual guide.`n", "Prompts",
+            "📊 Create PowerPoint slide (reference)")
     }
 
     ; Hotstrings: emails

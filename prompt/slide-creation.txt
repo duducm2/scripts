@@ -1,0 +1,21 @@
+Create one PowerPoint slide as an image.
+
+Requirements:
+
+1. Use standard PowerPoint widescreen aspect ratio: 16:9.
+2. Use a clean white background.
+3. Create a professional, human-made visual style.
+4. Make the slide look suitable for a business presentation.
+5. Ensure no reader can easily identify the slide as AI-generated.
+6. Use clear, consistent, high-quality icons.
+7. Use clear, readable, well-aligned text.
+8. Avoid distorted icons, unreadable text, inconsistent spacing, visual artifacts, or generic AI-generated aesthetics.
+9. Keep the layout clean, organized, and easy to edit or crop later.
+10. Apply style changes only if the user provides additional style instructions at the end of this prompt.
+11. If no additional style instructions are provided, strictly follow the rules above.
+
+User content for the slide:
+\[Insert slide content here]
+
+Optional additional styling instructions:
+\[Insert any extra visual style, color, layout, branding, or aesthetic requirements here]
