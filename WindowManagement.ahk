@@ -3598,10 +3598,13 @@ global g_Projects := [
                                                         workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\boiler-plate",
                                                         category: "Work", char: "0" }, { name: "astra", path: "",
                                                             workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\SO UX - LA (Internal) - Projeto Astra",
-                                                            category: "Work", char: "a" }, { name: "Piloto PT B2B",
+                                                            category: "Work", char: "a" },                                                             { name: "Piloto PT B2B",
                                                                 path: "C:\Users\fie7ca\OneDrive - Bosch Group\SO UX - LA (Internal) - Data Insights SO - Piloto PT B2B",
                                                                 workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\SO UX - LA (Internal) - Data Insights SO - Piloto PT B2B",
-                                                                category: "Work", char: "b" }
+                                                                category: "Work", char: "b" }, { name: "Python ScripTs",
+                                                                    path: "",
+                                                                    workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\17 - Python Scripts",
+                                                                    category: "Work", char: "t" }
 ]
 ; TODO: Fill in workPath for each project above when configuring work environment
 ; Global variables for project selector
