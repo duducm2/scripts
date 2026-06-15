@@ -133,3 +133,10 @@ eligible=7 hidden=0 visible=1 openOnMon=5 skipReject=292 skipNoMon=0
 selected=7 planned=7 tiled=6 unassigned=0 failed=1
 issues: tile_short:1
   FAIL hwnd=132256 mon=1 title=Host de Experiência do Windows Shell
+=== WM tile quality 20260615153126 final ===
+eligible=10 hidden=1 visible=4 openOnMon=4 skipReject=474 skipNoMon=0
+selected=10 planned=10 tiled=7 unassigned=0 failed=3
+issues: tile_short:3
+  FAIL hwnd=524782 mon=2 title=Windows Shell Experience Host
+  FAIL hwnd=855486 mon=2 title=Chat | The blend of topics for our meeting this week | Micr…
+  FAIL hwnd=987304 mon=1 title=Projetos 9868 [SO] Astra - Google Chrome

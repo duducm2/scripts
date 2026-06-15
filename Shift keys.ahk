@@ -13566,9 +13566,9 @@ Explorer_CopyOneDriveShareLink_BoschGroup() {
     ; Workflow:
     ;   1) Classic context menu -> S -> Enter (Share)
     ;   2) Wait for Share dialog main view
-    ;   3) Open Link settings
-    ;   4) Select "People in Bosch Group" and Apply
-    ;   5) Copy link and confirm clipboard changed
+    ;   3) Full permissions: Link settings -> "People in Bosch Group" -> Apply
+    ;      Limited sharing: skip settings (main banner) or Back from single-option Link settings
+    ;   4) Copy link and confirm clipboard changed
 
     try {
         ; Ensure focus and file selection in ItemsView before opening the context menu.
@@ -13595,24 +13595,79 @@ Explorer_CopyOneDriveShareLink_BoschGroup() {
         OneDriveShare_WaitForAutomationId(shareRoot, "Footer-button-settings", 20000)
         OneDriveShare_WaitForAutomationId(shareRoot, "copy-button", 20000)
 
-        ; 3) Open Link settings (gear).
-        settingsBtn := OneDriveShare_WaitForAutomationId(shareRoot, "Footer-button-settings", 5000)
-        OneDriveShare_Click(settingsBtn)
+        ; 3) Configure link scope when permitted; limited sharing copies the existing-access link as-is.
+        limited := OneDriveShare_IsLimitedSharingMainView(shareRoot)
+        ; #region agent log
+        textSample := ""
+        for i, t in OneDriveShare_SampleTextNames(shareRoot, 12)
+            textSample .= (i = 1 ? "" : " | ") t
+        OneDriveShare_DebugLog("A", "Explorer_CopyOneDriveShareLink_BoschGroup:mainView", "main view detection", Map(
+            "limitedMain", limited ? "true" : "false",
+            "textSample", textSample
+        ))
+        ; #endregion agent log
+        if !limited {
+            settingsBtn := OneDriveShare_WaitForAutomationId(shareRoot, "Footer-button-settings", 5000)
+            OneDriveShare_Click(settingsBtn)
+            OneDriveShare_WaitForAutomationId(shareRoot, "od-ModifyPermissions-apply-id", 20000)
+            linkSettingsReady := OneDriveShare_WaitForLinkSettingsReady(shareRoot, 10000)
 
-        ; 4) In Link settings, select People in Bosch Group and Apply.
-        applyBtn := OneDriveShare_WaitForAutomationId(shareRoot, "od-ModifyPermissions-apply-id", 20000)
-        OneDriveShare_SelectRadioByNameContains(shareRoot, "People in Bosch Group", 5000)
-        OneDriveShare_Click(applyBtn)
+            limitedLink := OneDriveShare_IsLimitedLinkSettings(shareRoot)
+            radioCount := 0
+            try radioCount := shareRoot.FindAll({ Type: "RadioButton" }).Length
+            ; #region agent log
+            linkTextSample := ""
+            for i, t in OneDriveShare_SampleTextNames(shareRoot, 8)
+                linkTextSample .= (i = 1 ? "" : " | ") t
+            OneDriveShare_DebugLog("B", "Explorer_CopyOneDriveShareLink_BoschGroup:linkSettings", "link settings detection", Map(
+                "limitedLink", limitedLink ? "true" : "false",
+                "linkSettingsReady", linkSettingsReady ? "true" : "false",
+                "radioCount", radioCount,
+                "hasBosch", OneDriveShare_HasRadioByNameContains(shareRoot, "People in Bosch Group") ? "true" : "false",
+                "hasExisting", OneDriveShare_HasRadioByNameContains(shareRoot, "existing access") ? "true" : "false",
+                "textSample", linkTextSample
+            ))
+            ; #endregion agent log
 
-        ; After Apply, the dialog navigates back to main view.
-        OneDriveShare_WaitForAutomationId(shareRoot, "copy-button", 20000)
+            if limitedLink {
+                ; #region agent log
+                OneDriveShare_DebugLog("C", "Explorer_CopyOneDriveShareLink_BoschGroup:branch", "taking limited link settings path (back)", Map("branch", "back"))
+                ; #endregion agent log
+                OneDriveShare_ClickBack(shareRoot)
+            } else {
+                ; #region agent log
+                OneDriveShare_DebugLog("B", "Explorer_CopyOneDriveShareLink_BoschGroup:branch", "taking full permissions path (bosch)", Map("branch", "bosch"))
+                ; #endregion agent log
+                if !OneDriveShare_SelectRadioByNameContains(shareRoot, "People in Bosch Group", 5000)
+                    throw Error("Could not find 'People in Bosch Group' in Link settings.")
+                applyBtn := OneDriveShare_WaitForAutomationId(shareRoot, "od-ModifyPermissions-apply-id", 5000)
+                OneDriveShare_Click(applyBtn)
+                OneDriveShare_WaitForAutomationId(shareRoot, "copy-button", 20000)
+            }
+        } else {
+            ; #region agent log
+            OneDriveShare_DebugLog("A", "Explorer_CopyOneDriveShareLink_BoschGroup:branch", "taking limited main view path (skip gear)", Map("branch", "limitedMain"))
+            ; #endregion agent log
+        }
 
-        ; 5) Copy link and verify clipboard changed.
+        ; 4) Copy link and verify clipboard changed.
         copyBtn := OneDriveShare_WaitForAutomationId(shareRoot, "copy-button", 5000)
+        ; #region agent log
+        OneDriveShare_DebugLog("D", "Explorer_CopyOneDriveShareLink_BoschGroup:copy", "before copy link", Map(
+            "copyBtnFound", IsObject(copyBtn) ? "true" : "false"
+        ))
+        ; #endregion agent log
         oldClip := A_Clipboard
         A_Clipboard := ""
         OneDriveShare_Click(copyBtn)
-        if !OneDriveShare_WaitForClipboardChange(oldClip, 10000)
+        clipOk := OneDriveShare_WaitForClipboardChange(oldClip, 10000)
+        ; #region agent log
+        OneDriveShare_DebugLog("D", "Explorer_CopyOneDriveShareLink_BoschGroup:copyResult", "after copy link", Map(
+            "clipOk", clipOk ? "true" : "false",
+            "clipLen", StrLen(A_Clipboard)
+        ))
+        ; #endregion agent log
+        if !clipOk
             throw Error("Clipboard did not update after 'Copy link'.")
 
         Sleep 1000
@@ -13620,10 +13675,69 @@ Explorer_CopyOneDriveShareLink_BoschGroup() {
         catch {
         }
     } catch Error as e {
+        ; #region agent log
+        OneDriveShare_DebugLog("E", "Explorer_CopyOneDriveShareLink_BoschGroup:catch", "macro failed", Map("error", e.Message))
+        ; #endregion agent log
         MsgBox("Share macro failed:`n" e.Message, "Shift+R (Share file)", "IconX")
     } finally {
         HideSmallLoadingIndicator_ChatGPT()
     }
+}
+
+OneDriveShare_DebugLog(hypothesisId, location, message, data := "", runId := "initial") {
+    ; #region agent log
+    try {
+        logPath := A_ScriptDir "\debug-8fffbf.log"
+        runId := runId
+        dataJson := "{}"
+        if (IsObject(data)) {
+            parts := []
+            for k, v in data {
+                try parts.Push('"' FastCopyMode_JsonEscape(k) '":"' FastCopyMode_JsonEscape(v) '"')
+            }
+            joined := ""
+            if (parts.Length) {
+                for i, p in parts
+                    joined .= (i = 1 ? "" : ",") p
+            }
+            dataJson := "{" joined "}"
+        } else if (data != "") {
+            dataJson := '{"value":"' FastCopyMode_JsonEscape(data) '"}'
+        }
+        line := '{'
+            . '"sessionId":"8fffbf",'
+            . '"timestamp":' A_TickCount + 0 ','
+            . '"runId":"' runId '",'
+            . '"hypothesisId":"' FastCopyMode_JsonEscape(hypothesisId) '",'
+            . '"location":"' FastCopyMode_JsonEscape(location) '",'
+            . '"message":"' FastCopyMode_JsonEscape(message) '",'
+            . '"data":' dataJson
+            . '}'
+        FileAppend(line "`n", logPath, "UTF-8")
+    } catch {
+    }
+    ; #endregion agent log
+}
+
+OneDriveShare_SampleTextNames(root, maxCount := 10) {
+    samples := []
+    if !IsObject(root)
+        return samples
+    try {
+        for el in root.FindAll({ Type: 50020 }) {
+            n := ""
+            try n := el.Name
+            if (n != "") {
+                if (StrLen(n) > 80)
+                    n := SubStr(n, 1, 80) "…"
+                samples.Push(n)
+                if (samples.Length >= maxCount)
+                    break
+            }
+        }
+    } catch {
+    }
+    return samples
 }
 
 OneDriveShare_WaitForShareDialogHwnd(timeout := 20000) {
@@ -13676,6 +13790,108 @@ OneDriveShare_Click(el) {
     } catch {
     }
     return false
+}
+
+OneDriveShare_LimitedSharingNeedles() {
+    return [
+        "Ask owner to share",
+        "Sharing is limited",
+        "can't invite anyone new",
+        "only copy links for people who have existing access",
+        "Options are limited",
+        "Only people with existing access"
+    ]
+}
+
+OneDriveShare_IsLimitedSharing(root) {
+    return OneDriveShare_TreeContainsText(root, OneDriveShare_LimitedSharingNeedles())
+}
+
+OneDriveShare_WaitForLinkSettingsReady(root, timeout := 10000) {
+    if !IsObject(root)
+        return false
+    deadline := A_TickCount + timeout
+    while (A_TickCount < deadline) {
+        try {
+            if (root.FindAll({ Type: "RadioButton" }).Length >= 1)
+                return true
+        } catch {
+        }
+        if OneDriveShare_TreeContainsText(root, ["The link works for", "Link settings"])
+            return true
+        Sleep 80
+    }
+    return false
+}
+
+OneDriveShare_TreeContainsText(root, needles) {
+    if !IsObject(root)
+        return false
+    try {
+        for el in root.FindAll({ Type: 50020 }) {
+            n := ""
+            try n := el.Name
+            if (n = "")
+                continue
+            for needle in needles {
+                if InStr(n, needle, false)
+                    return true
+            }
+        }
+    } catch {
+    }
+    return false
+}
+
+OneDriveShare_IsLimitedSharingMainView(root) {
+    return OneDriveShare_IsLimitedSharing(root)
+}
+
+OneDriveShare_HasRadioByNameContains(root, nameNeedle) {
+    if !IsObject(root)
+        return false
+    try {
+        for radio in root.FindAll({ Type: "RadioButton" }) {
+            n := ""
+            try n := radio.Name
+            if (n != "" && InStr(n, nameNeedle, false))
+                return true
+        }
+    } catch {
+    }
+    return false
+}
+
+OneDriveShare_IsLimitedLinkSettings(root) {
+    if OneDriveShare_IsLimitedSharing(root)
+        return true
+    try {
+        if (root.FindAll({ Type: "RadioButton" }).Length = 1)
+            return true
+    } catch {
+    }
+    if !OneDriveShare_HasRadioByNameContains(root, "People in Bosch Group")
+        && OneDriveShare_HasRadioByNameContains(root, "existing access")
+        return true
+    return false
+}
+
+OneDriveShare_ClickBack(root) {
+    backBtn := 0
+    try backBtn := root.FindFirst({ Name: "Back", Type: "50000" })
+    catch {
+    }
+    if !backBtn {
+        try backBtn := root.FindFirst({ Name: "Back", Type: "50000", matchmode: "Substring" })
+        catch {
+        }
+    }
+    if !backBtn
+        throw Error("Could not find Back button in Link settings.")
+    OneDriveShare_Click(backBtn)
+    if !OneDriveShare_WaitForAutomationId(root, "copy-button", 10000)
+        throw Error("Timed out returning to main Share view after Back.")
+    return true
 }
 
 OneDriveShare_SelectRadioByNameContains(root, nameNeedle, timeout := 5000) {
