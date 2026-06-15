@@ -16000,6 +16000,20 @@ Editor_WaitForSidebarExplorerFocus(timeoutMs := 800) {
     return false
 }
 
+; Switch to Files Explorer sidebar when focus is elsewhere (SCM, Search, editor, etc.).
+Editor_EnsureFilesExplorerSidebarFocused(editorHwnd := 0) {
+    if Editor_FocusIsInFilesExplorer(editorHwnd)
+        return true
+    if !editorHwnd
+        editorHwnd := WinExist("A")
+    Editor_EnsureCursorWindowActive(editorHwnd)
+    Send "^+e"
+    if Editor_WaitForSidebarExplorerFocus(800)
+        return true
+    Send "^!+e"
+    return Editor_WaitForSidebarExplorerFocus(400)
+}
+
 ; Folder path from Explorer window title (path before " - File Explorer" / localized suffix).
 Editor_ParseExplorerFolderFromTitle(title) {
     if (title = "")
@@ -16289,6 +16303,20 @@ Editor_SmartNavRevealShowExplorerTimeout(actionLabel := "") {
     }
 }
 
+Editor_SmartNavRevealShowSuccess(explorerAction, expectedBasename := "") {
+    msg := "✅ Revealed in Explorer"
+    if (explorerAction = "copy")
+        msg := "✅ File copied to clipboard"
+    else if (explorerAction = "open")
+        msg := "✅ File opened"
+    name := Editor_NormalizeRevealBasename(expectedBasename)
+    if (name != "" && Editor_IsPlausibleRevealBasename(name))
+        msg .= ": " name
+    try ShowCenteredOverlay_Utils(msg, 1400, BANNER_ACCENT_SUCCESS)
+    catch {
+    }
+}
+
 Editor_CopyFromWindowsExplorerAndReturn(editorHwnd, expectedBasename := "", timeoutSec := 2.5, preRevealHwnds := "") {
     global EDITOR_COPY_VERIFY_FILEDROP, EDITOR_COPY_PREFER_DIRECT_SET
     global EDITOR_COPY_CLIP_WAIT_MS, EDITOR_COPY_DIRECT_CLIP_WAIT_MS
@@ -16453,6 +16481,10 @@ Editor_SmartNavReveal(explorerAction := "") {
     expectedBasename := Editor_GetExpectedRevealBasename(editorHwnd)
 
     try {
+        Editor_EnsureCursorWindowActive(editorHwnd)
+        if !Editor_FocusIsInFilesExplorer(editorHwnd)
+            Editor_EnsureFilesExplorerSidebarFocused(editorHwnd)
+
         if (explorerAction = "copy" && EDITOR_COPY_USE_EDITOR_FASTPATH) {
             t0 := A_TickCount
             result := Editor_TryCopyFileFromActiveEditor(editorHwnd, expectedBasename)
@@ -16469,7 +16501,7 @@ Editor_SmartNavReveal(explorerAction := "") {
             for hwnd in WinGetList("ahk_exe explorer.exe")
                 preExplorers .= hwnd ","
 
-            Editor_EnsureCursorWindowActive(editorHwnd)
+            SendLevel 0
             SendInput "^h"
 
             if (explorerAction = "copy" || explorerAction = "open")
@@ -16480,6 +16512,8 @@ Editor_SmartNavReveal(explorerAction := "") {
     } catch {
         ok := false
     }
+    if (ok)
+        Editor_SmartNavRevealShowSuccess(explorerAction, expectedBasename)
 }
 
 ; UIA: find Type 50020 text by exact Name under scope. Prefer on-screen; if several, pick bottom-most (largest top Y).
