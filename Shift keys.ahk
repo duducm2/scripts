@@ -13597,77 +13597,29 @@ Explorer_CopyOneDriveShareLink_BoschGroup() {
 
         ; 3) Configure link scope when permitted; limited sharing copies the existing-access link as-is.
         limited := OneDriveShare_IsLimitedSharingMainView(shareRoot)
-        ; #region agent log
-        textSample := ""
-        for i, t in OneDriveShare_SampleTextNames(shareRoot, 12)
-            textSample .= (i = 1 ? "" : " | ") t
-        OneDriveShare_DebugLog("A", "Explorer_CopyOneDriveShareLink_BoschGroup:mainView", "main view detection", Map(
-            "limitedMain", limited ? "true" : "false",
-            "textSample", textSample
-        ))
-        ; #endregion agent log
         if !limited {
             settingsBtn := OneDriveShare_WaitForAutomationId(shareRoot, "Footer-button-settings", 5000)
             OneDriveShare_Click(settingsBtn)
             OneDriveShare_WaitForAutomationId(shareRoot, "od-ModifyPermissions-apply-id", 20000)
-            linkSettingsReady := OneDriveShare_WaitForLinkSettingsReady(shareRoot, 10000)
+            OneDriveShare_WaitForLinkSettingsReady(shareRoot, 10000)
 
-            limitedLink := OneDriveShare_IsLimitedLinkSettings(shareRoot)
-            radioCount := 0
-            try radioCount := shareRoot.FindAll({ Type: "RadioButton" }).Length
-            ; #region agent log
-            linkTextSample := ""
-            for i, t in OneDriveShare_SampleTextNames(shareRoot, 8)
-                linkTextSample .= (i = 1 ? "" : " | ") t
-            OneDriveShare_DebugLog("B", "Explorer_CopyOneDriveShareLink_BoschGroup:linkSettings", "link settings detection", Map(
-                "limitedLink", limitedLink ? "true" : "false",
-                "linkSettingsReady", linkSettingsReady ? "true" : "false",
-                "radioCount", radioCount,
-                "hasBosch", OneDriveShare_HasRadioByNameContains(shareRoot, "People in Bosch Group") ? "true" : "false",
-                "hasExisting", OneDriveShare_HasRadioByNameContains(shareRoot, "existing access") ? "true" : "false",
-                "textSample", linkTextSample
-            ))
-            ; #endregion agent log
-
-            if limitedLink {
-                ; #region agent log
-                OneDriveShare_DebugLog("C", "Explorer_CopyOneDriveShareLink_BoschGroup:branch", "taking limited link settings path (back)", Map("branch", "back"))
-                ; #endregion agent log
+            if OneDriveShare_IsLimitedLinkSettings(shareRoot) {
                 OneDriveShare_ClickBack(shareRoot)
             } else {
-                ; #region agent log
-                OneDriveShare_DebugLog("B", "Explorer_CopyOneDriveShareLink_BoschGroup:branch", "taking full permissions path (bosch)", Map("branch", "bosch"))
-                ; #endregion agent log
                 if !OneDriveShare_SelectRadioByNameContains(shareRoot, "People in Bosch Group", 5000)
                     throw Error("Could not find 'People in Bosch Group' in Link settings.")
                 applyBtn := OneDriveShare_WaitForAutomationId(shareRoot, "od-ModifyPermissions-apply-id", 5000)
                 OneDriveShare_Click(applyBtn)
                 OneDriveShare_WaitForAutomationId(shareRoot, "copy-button", 20000)
             }
-        } else {
-            ; #region agent log
-            OneDriveShare_DebugLog("A", "Explorer_CopyOneDriveShareLink_BoschGroup:branch", "taking limited main view path (skip gear)", Map("branch", "limitedMain"))
-            ; #endregion agent log
         }
 
         ; 4) Copy link and verify clipboard changed.
         copyBtn := OneDriveShare_WaitForAutomationId(shareRoot, "copy-button", 5000)
-        ; #region agent log
-        OneDriveShare_DebugLog("D", "Explorer_CopyOneDriveShareLink_BoschGroup:copy", "before copy link", Map(
-            "copyBtnFound", IsObject(copyBtn) ? "true" : "false"
-        ))
-        ; #endregion agent log
         oldClip := A_Clipboard
         A_Clipboard := ""
         OneDriveShare_Click(copyBtn)
-        clipOk := OneDriveShare_WaitForClipboardChange(oldClip, 10000)
-        ; #region agent log
-        OneDriveShare_DebugLog("D", "Explorer_CopyOneDriveShareLink_BoschGroup:copyResult", "after copy link", Map(
-            "clipOk", clipOk ? "true" : "false",
-            "clipLen", StrLen(A_Clipboard)
-        ))
-        ; #endregion agent log
-        if !clipOk
+        if !OneDriveShare_WaitForClipboardChange(oldClip, 10000)
             throw Error("Clipboard did not update after 'Copy link'.")
 
         Sleep 1000
@@ -13675,69 +13627,10 @@ Explorer_CopyOneDriveShareLink_BoschGroup() {
         catch {
         }
     } catch Error as e {
-        ; #region agent log
-        OneDriveShare_DebugLog("E", "Explorer_CopyOneDriveShareLink_BoschGroup:catch", "macro failed", Map("error", e.Message))
-        ; #endregion agent log
         MsgBox("Share macro failed:`n" e.Message, "Shift+R (Share file)", "IconX")
     } finally {
         HideSmallLoadingIndicator_ChatGPT()
     }
-}
-
-OneDriveShare_DebugLog(hypothesisId, location, message, data := "", runId := "initial") {
-    ; #region agent log
-    try {
-        logPath := A_ScriptDir "\debug-8fffbf.log"
-        runId := runId
-        dataJson := "{}"
-        if (IsObject(data)) {
-            parts := []
-            for k, v in data {
-                try parts.Push('"' FastCopyMode_JsonEscape(k) '":"' FastCopyMode_JsonEscape(v) '"')
-            }
-            joined := ""
-            if (parts.Length) {
-                for i, p in parts
-                    joined .= (i = 1 ? "" : ",") p
-            }
-            dataJson := "{" joined "}"
-        } else if (data != "") {
-            dataJson := '{"value":"' FastCopyMode_JsonEscape(data) '"}'
-        }
-        line := '{'
-            . '"sessionId":"8fffbf",'
-            . '"timestamp":' A_TickCount + 0 ','
-            . '"runId":"' runId '",'
-            . '"hypothesisId":"' FastCopyMode_JsonEscape(hypothesisId) '",'
-            . '"location":"' FastCopyMode_JsonEscape(location) '",'
-            . '"message":"' FastCopyMode_JsonEscape(message) '",'
-            . '"data":' dataJson
-            . '}'
-        FileAppend(line "`n", logPath, "UTF-8")
-    } catch {
-    }
-    ; #endregion agent log
-}
-
-OneDriveShare_SampleTextNames(root, maxCount := 10) {
-    samples := []
-    if !IsObject(root)
-        return samples
-    try {
-        for el in root.FindAll({ Type: 50020 }) {
-            n := ""
-            try n := el.Name
-            if (n != "") {
-                if (StrLen(n) > 80)
-                    n := SubStr(n, 1, 80) "…"
-                samples.Push(n)
-                if (samples.Length >= maxCount)
-                    break
-            }
-        }
-    } catch {
-    }
-    return samples
 }
 
 OneDriveShare_WaitForShareDialogHwnd(timeout := 20000) {
