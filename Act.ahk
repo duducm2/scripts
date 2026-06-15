@@ -3,6 +3,21 @@
 ;---------------------------------------- Scripts -------------------------------
 
 #Include env.ahk
+
+; Preflight: catch env.ahk drift before Utils loads lib/CopilotWeb.ahk
+verifyPs1 := A_ScriptDir "\aux\Verify-EnvAhk.ps1"
+if FileExist(verifyPs1) {
+    exitCode := RunWait(
+        'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "' verifyPs1 '" -ScriptsDir "' A_ScriptDir '"',
+        , "Hide")
+    if (exitCode != 0) {
+        MsgBox(
+            "env.ahk failed preflight (exit " exitCode ").`n`nRun:`n  powershell -File aux\Verify-EnvAhk.ps1`n`nCompare env.ahk with env.ahk.example.",
+            "Act automation", "Icon!")
+        ExitApp exitCode
+    }
+}
+
 #Include %A_ScriptDir%\Utils.ahk
 
 ; Run a command with a timeout.
