@@ -15908,6 +15908,7 @@ global EDITOR_COPY_VERIFY_FILEDROP := true
 global EDITOR_COPY_USE_EDITOR_FASTPATH := true
 global EDITOR_COPY_PREFER_DIRECT_SET := true
 global EDITOR_REVEAL_STABLE_POLLS := 2
+global EDITOR_REVEAL_FIND_ITEM_FALLBACK := true
 global EDITOR_COPY_CLIP_WAIT_MS := 500
 global EDITOR_COPY_DIRECT_CLIP_WAIT_MS := 300
 global EDITOR_SMARTNAV_TIMING := false
@@ -16213,6 +16214,141 @@ Editor_EnsureRevealItemSelected(explorerHwnd, expectedBasename := "") {
     }
 }
 
+Editor_SelectRevealListItem(explorerHwnd, itemsView, item) {
+    if (!item || !itemsView)
+        return false
+    try {
+        item.ScrollIntoView()
+        try item.Select()
+        catch {
+        }
+        try item.SetFocus()
+        catch {
+        }
+        try itemsView.SetFocus()
+        itemsView := Explorer_WaitItemsViewKeyboardFocus(explorerHwnd, itemsView, 400)
+        selected := Explorer_GetItemsViewSelection(itemsView)
+        return (selected && selected.Length > 0)
+    } catch {
+        return false
+    }
+}
+
+Editor_TryFindAndSelectRevealItemInExplorer(explorerHwnd, expectedBasename := "") {
+    expectedNorm := Editor_NormalizeRevealBasename(expectedBasename)
+    if !Editor_IsPlausibleRevealBasename(expectedNorm)
+        return false
+    if !(explorerHwnd is Integer) || explorerHwnd <= 0
+        return false
+    try {
+        root := UIA.ElementFromHandle(explorerHwnd)
+        itemsView := Explorer_FindItemsView(root)
+        if (!itemsView)
+            return false
+        targetItem := 0
+        try targetItem := itemsView.FindFirst({ Type: "ListItem", Name: expectedNorm })
+        catch {
+        }
+        if (!targetItem) {
+            for li in itemsView.FindAll({ Type: "ListItem" }) {
+                try {
+                    if (Editor_NormalizeRevealBasename(li.Name) = expectedNorm) {
+                        targetItem := li
+                        break
+                    }
+                } catch {
+                }
+            }
+        }
+        if (!targetItem)
+            return false
+        return Editor_SelectRevealListItem(explorerHwnd, itemsView, targetItem)
+    } catch {
+        return false
+    }
+}
+
+Editor_TryExplorerSearchSelectRevealItem(explorerHwnd, expectedBasename := "") {
+    expectedNorm := Editor_NormalizeRevealBasename(expectedBasename)
+    if !Editor_IsPlausibleRevealBasename(expectedNorm)
+        return false
+    if !(explorerHwnd is Integer) || explorerHwnd <= 0
+        return false
+    try {
+        WinActivate("ahk_id " explorerHwnd)
+        if !WinActive("ahk_id " explorerHwnd)
+            return false
+        Send "^e"
+        Sleep 120
+        SendText expectedNorm
+        deadline := A_TickCount + 1200
+        while (A_TickCount < deadline) {
+            root := UIA.ElementFromHandle(explorerHwnd)
+            itemsView := Explorer_FindItemsView(root)
+            if (itemsView) {
+                for li in itemsView.FindAll({ Type: "ListItem" }) {
+                    try {
+                        if (Editor_NormalizeRevealBasename(li.Name) = expectedNorm) {
+                            if Editor_SelectRevealListItem(explorerHwnd, itemsView, li)
+                                return true
+                        }
+                    } catch {
+                    }
+                }
+            }
+            Sleep 80
+        }
+    } catch {
+    }
+    return false
+}
+
+Editor_TryRecoverRevealTarget(explorerHwnd, expectedBasename := "") {
+    result := Map("ok", false, "fullPath", "", "selected", false)
+    if !(explorerHwnd is Integer) || explorerHwnd <= 0
+        return result
+    expectedNorm := Editor_NormalizeRevealBasename(expectedBasename)
+    if !Editor_IsPlausibleRevealBasename(expectedNorm)
+        return result
+
+    fullPath := Editor_ResolveRevealFullPath(explorerHwnd, expectedBasename)
+    if !Editor_PathIsExistingFile(fullPath) {
+        folder := Editor_GetExplorerFolderPathFromShell(explorerHwnd)
+        if (folder = "")
+            folder := Editor_ParseExplorerFolderFromTitle(WinGetTitle("ahk_id " explorerHwnd))
+        if (folder != "") {
+            candidate := RTrim(folder, "\") "\" expectedNorm
+            if Editor_PathIsExistingFile(candidate)
+                fullPath := candidate
+        }
+    }
+    if Editor_PathIsExistingFile(fullPath) {
+        result["fullPath"] := fullPath
+        result["ok"] := true
+        return result
+    }
+
+    if Editor_TryFindAndSelectRevealItemInExplorer(explorerHwnd, expectedBasename) {
+        result["selected"] := true
+        fullPath := Editor_ResolveRevealFullPath(explorerHwnd, expectedBasename)
+        if Editor_PathIsExistingFile(fullPath)
+            result["fullPath"] := fullPath
+        result["ok"] := true
+        return result
+    }
+
+    if Editor_TryExplorerSearchSelectRevealItem(explorerHwnd, expectedBasename) {
+        result["selected"] := true
+        fullPath := Editor_ResolveRevealFullPath(explorerHwnd, expectedBasename)
+        if Editor_PathIsExistingFile(fullPath)
+            result["fullPath"] := fullPath
+        result["ok"] := true
+        return result
+    }
+
+    return result
+}
+
 Editor_BuildRevealedFilePath(explorerHwnd, expectedBasename := "") {
     fileName := Editor_GetRevealSelectedItemName(explorerHwnd, expectedBasename)
     if (fileName = "")
@@ -16347,6 +16483,7 @@ Editor_WaitForShellDispatchedAfterOpen(explorerHwnd, timeoutMs := 2000) {
 
 ; After Reveal in File Explorer: copy/open selected file in Windows Explorer, close window.
 Editor_WaitForActiveExplorerWindow(timeoutSec := 2.5, expectedBasename := "", editorHwnd := 0, preRevealHwnds := "") {
+    global EDITOR_USE_CONDITIONAL_EXPLORER_WAIT, EDITOR_REVEAL_FIND_ITEM_FALLBACK
     Editor_SmartNavLoadingUpdate("⏳ Waiting for Explorer window…", editorHwnd)
     preSet := Editor_ParsePreRevealExplorerHwnds(preRevealHwnds)
     deadline := A_TickCount + Round(timeoutSec * 1000)
@@ -16390,8 +16527,15 @@ Editor_WaitForActiveExplorerWindow(timeoutSec := 2.5, expectedBasename := "", ed
     if (EDITOR_USE_CONDITIONAL_EXPLORER_WAIT) {
         Editor_SmartNavLoadingUpdate("⏳ Confirming file selection…", editorHwnd)
         revealMs := Max(3500, Round(timeoutSec * 1000))
-        if !Editor_WaitForExplorerRevealReady(explorerHwnd, revealMs)
+        if !Editor_WaitForExplorerRevealReady(explorerHwnd, revealMs) {
+            if (EDITOR_REVEAL_FIND_ITEM_FALLBACK) {
+                Editor_SmartNavLoadingUpdate("⏳ Finding file in Explorer…", editorHwnd)
+                recovered := Editor_TryRecoverRevealTarget(explorerHwnd, expectedBasename)
+                if (recovered.ok)
+                    return explorerHwnd
+            }
             return 0
+        }
     } else {
         Sleep 2500
     }
@@ -16468,6 +16612,16 @@ Editor_CopyFromWindowsExplorerAndReturn(editorHwnd, expectedBasename := "", time
         fullPath := ctx["fullPath"]
         verifyBasename := ctx["verifyBasename"]
 
+        if (!Editor_PathIsExistingFile(fullPath)) {
+            recovered := Editor_TryRecoverRevealTarget(explorerHwnd, expectedBasename)
+            if (recovered.ok) {
+                if (recovered.fullPath != "")
+                    fullPath := recovered.fullPath
+                if (recovered.selected)
+                    Editor_EnsureRevealItemSelected(explorerHwnd, expectedBasename)
+            }
+        }
+
         Editor_EnsureRevealItemSelected(explorerHwnd, expectedBasename)
 
         if (EDITOR_COPY_PREFER_DIRECT_SET && Editor_PathIsExistingFile(fullPath)) {
@@ -16490,8 +16644,20 @@ Editor_CopyFromWindowsExplorerAndReturn(editorHwnd, expectedBasename := "", time
             && Editor_CopyVerifiedFileToClipboard(fullPath, verifyBasename, EDITOR_COPY_DIRECT_CLIP_WAIT_MS)) {
                 ; direct set succeeded after keyboard miss
             } else {
-                Editor_SmartNavRevealShowExplorerTimeout("Copy")
-                return false
+                recovered := Editor_TryRecoverRevealTarget(explorerHwnd, expectedBasename)
+                if (recovered.ok) {
+                    if (recovered.fullPath != "")
+                        fullPath := recovered.fullPath
+                    if (recovered.selected)
+                        Editor_EnsureRevealItemSelected(explorerHwnd, expectedBasename)
+                }
+                if (Editor_PathIsExistingFile(fullPath)
+                && Editor_CopyVerifiedFileToClipboard(fullPath, verifyBasename, EDITOR_COPY_DIRECT_CLIP_WAIT_MS)) {
+                    ; recovered via find/select or direct path
+                } else {
+                    Editor_SmartNavRevealShowExplorerTimeout("Copy")
+                    return false
+                }
             }
         }
 
@@ -16527,8 +16693,17 @@ Editor_OpenFromWindowsExplorer(editorHwnd, expectedBasename := "", timeoutSec :=
             return false
         }
 
-        Editor_EnsureRevealItemSelected(explorerHwnd, "")
+        Editor_EnsureRevealItemSelected(explorerHwnd, expectedBasename)
         fullPath := Editor_ResolveRevealFullPath(explorerHwnd, expectedBasename)
+        if (!Editor_PathIsExistingFile(fullPath)) {
+            recovered := Editor_TryRecoverRevealTarget(explorerHwnd, expectedBasename)
+            if (recovered.ok) {
+                if (recovered.fullPath != "")
+                    fullPath := recovered.fullPath
+                if (recovered.selected)
+                    Editor_EnsureRevealItemSelected(explorerHwnd, expectedBasename)
+            }
+        }
         opened := false
 
         if (Editor_PathIsExistingFile(fullPath)) {
@@ -16542,6 +16717,11 @@ Editor_OpenFromWindowsExplorer(editorHwnd, expectedBasename := "", timeoutSec :=
         }
 
         if (!opened) {
+            if (!Editor_EnsureRevealItemSelected(explorerHwnd, expectedBasename)) {
+                recovered := Editor_TryRecoverRevealTarget(explorerHwnd, expectedBasename)
+                if (recovered.ok && recovered.selected)
+                    Editor_EnsureRevealItemSelected(explorerHwnd, expectedBasename)
+            }
             Editor_SmartNavLoadingUpdate("⏳ Opening file (Enter)…", editorHwnd)
             try Explorer_EnsureItemsViewFocusPreserveSelection()
             catch {
