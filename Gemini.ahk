@@ -67,8 +67,6 @@ GEMINI_TRANSFER_MIN_CLIPBOARD_LENGTH := 10
 GEMINI_POST_COPY_SYNC_TIMEOUT_MS := 2000
 ; Poll interval when waiting for clipboard sequence number to change (ms). Low value = minimal latency.
 GEMINI_CLIPBOARD_POLL_MS := 10
-; After copy, before Clip Angel favorite — lets newest clip appear as row 0 (ms).
-GEMINI_POST_COPY_FAVORITE_DELAY_MS := 150
 ; Performance instrumentation (set to true to log latencies to script dir)
 ; Logs focus phase (fast_already_focused, direct_focus, anchor_fallback) and tab_banner_deferred.
 GEMINI_PERF_LOG_ENABLED := false
@@ -2000,8 +1998,7 @@ class GeminiDelayedSubmitMonitor {
                 WinActivate("ahk_id " this.OriginalHwnd)
             return
         }
-        Sleep(GEMINI_POST_COPY_FAVORITE_DELAY_MS)
-        MarkLastClipAsFavorite()
+        MarkLastClipAsFavorite("first", true)
     }
 
     ; C key: copy response, then show Cursor window selector (1–9), activate selected window, focus AI field, paste and send.

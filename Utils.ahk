@@ -3570,6 +3570,10 @@ ActivateClipAngelWithFocusCorrection() {
 ; =============================================================================
 ; Clip Angel: Mark Last Clip as Favorite
 ; =============================================================================
+; Wait after clipboard change before favoriting newest clip (copy / dictation ingest).
+CLIPANGEL_PRE_FAVORITE_INGEST_DELAY_MS := 400
+; Settle after row focus, before Alt+Q (all favorite paths).
+CLIPANGEL_FAVORITE_UI_SETTLE_MS := 200
 ; Shortcut flow (matches app): open Clip Angel, ensure list focus (not Window tab),
 ; select first or last grid row, Send Alt+Q. Optional: target "last" for bottom row.
 ; UIA-v2 FindFirst throws TargetError when nothing matches - never chain with if !c without try.
@@ -3667,7 +3671,9 @@ ClipAngel_WaitChordModifiersReleased() {
 
 ; target: "first" = top grid row (Row 0 / newest), "last" = last row returned by UIA FindAll
 ; (virtualized lists may only expose visible rows - use "first" for reliable top-clip behavior).
-MarkLastClipAsFavorite(target := "first") {
+MarkLastClipAsFavorite(target := "first", waitForIngest := false) {
+    if waitForIngest
+        Sleep(CLIPANGEL_PRE_FAVORITE_INGEST_DELAY_MS)
     ActivateClipAngelWithFocusCorrection()
     hwnd := ClipAngel_MainHwnd()
     if !hwnd {
@@ -3742,6 +3748,7 @@ MarkLastClipAsFavorite(target := "first") {
                 return
             }
         }
+        Sleep(CLIPANGEL_FAVORITE_UI_SETTLE_MS)
         ClipAngel_WaitChordModifiersReleased()
         ClipAngel_ReleaseChordModifiersForSend()
         SendInput "!q"
@@ -6825,9 +6832,6 @@ D2C_CombinePresetWithDictation(presetText, dictationText) {
     return p . "`n`n" . d
 }
 
-; After D2C copy of Gemini reply, before Clip Angel favorite (align with Gemini.ahk GEMINI_POST_COPY_FAVORITE_DELAY_MS).
-D2C_POST_COPY_FAVORITE_DELAY_MS := 150
-
 ; Buffer after dictation ends before "Send to Gemini?" (linear loading bar + accidental key buffer).
 D2C_SUBMIT_MENU_DELAY_MS := 2000
 D2C_SUBMIT_MENU_PROGRESS_TICK_MS := 50
@@ -7200,8 +7204,7 @@ class D2C_FlowManager {
                     WinActivate("ahk_id " this.OriginHwnd)
                 return
             }
-            Sleep(D2C_POST_COPY_FAVORITE_DELAY_MS)
-            MarkLastClipAsFavorite()
+            MarkLastClipAsFavorite("first", true)
         } finally {
             global g_D2C_DictationSubmitMenuCycleFinished
             g_D2C_DictationSubmitMenuCycleFinished := true
@@ -7495,8 +7498,7 @@ class D2C_FlowManager {
                     WinActivate("ahk_id " this.OriginHwnd)
                 return
             }
-            Sleep(D2C_POST_COPY_FAVORITE_DELAY_MS)
-            MarkLastClipAsFavorite()
+            MarkLastClipAsFavorite("first", true)
         } finally {
             this.Reset()
         }
