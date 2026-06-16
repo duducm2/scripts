@@ -3573,7 +3573,7 @@ ActivateClipAngelWithFocusCorrection() {
 ; Wait after clipboard change before favoriting newest clip (copy / dictation ingest).
 CLIPANGEL_PRE_FAVORITE_INGEST_DELAY_MS := 400
 ; Settle after row focus, before Alt+Q (all favorite paths).
-CLIPANGEL_FAVORITE_UI_SETTLE_MS := 200
+CLIPANGEL_FAVORITE_UI_SETTLE_MS := 50
 ; Shortcut flow (matches app): open Clip Angel, ensure list focus (not Window tab),
 ; select first or last grid row, Send Alt+Q. Optional: target "last" for bottom row.
 ; UIA-v2 FindFirst throws TargetError when nothing matches - never chain with if !c without try.
