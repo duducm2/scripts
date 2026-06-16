@@ -10628,6 +10628,7 @@ global g_StudyTopics := Map(
         plansPath: "\studies\german\german-plan.md" }
 )
 #include %A_ScriptDir%\StudyArticleLink.ahk
+#include %A_ScriptDir%\StudyFavoriteLink.ahk
 
 global g_StudyTopicSelectorGui := false
 global g_StudyTopicSelectorActive := false
@@ -11217,6 +11218,7 @@ StudyTopicSelector_UnbindCategoryHotkeys() {
     try Hotkey("3", "Off")
     try Hotkey("4", "Off")
     try Hotkey("5", "Off")
+    try Hotkey("6", "Off")
 }
 
 StudyTopicSelector_UnbindDigitHotkeys() {
@@ -11319,10 +11321,11 @@ StudyTopicSelector_ShowCategoryPhase() {
     g_StudyTopicSelectorGui.Add("Text", "w300", "[2] Plans")
     g_StudyTopicSelectorGui.Add("Text", "w300", "[3] Manage Study Subtopic Link")
     g_StudyTopicSelectorGui.Add("Text", "w300", "[4] Manage Study Article Link")
-    g_StudyTopicSelectorGui.Add("Text", "w300", "[5] Technique")
+    g_StudyTopicSelectorGui.Add("Text", "w300", "[5] Manage Study Favorite Link")
+    g_StudyTopicSelectorGui.Add("Text", "w300", "[6] Technique")
     g_StudyTopicSelectorGui.Add("Text", "w300 h1 Background45475A y+10")
     g_StudyTopicSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_StudyTopicSelectorGui.Add("Text", "w300 Center", "Press 1-5 | Backspace/Esc to cancel")
+    g_StudyTopicSelectorGui.Add("Text", "w300 Center", "Press 1-6 | Backspace/Esc to cancel")
 
     try {
         g_StudyTopicSelectorGui.OnEvent("Escape", StudyTopicSelector_GuiEscape)
@@ -11336,7 +11339,8 @@ StudyTopicSelector_ShowCategoryPhase() {
     Hotkey("2", StudyTopicSelector_SelectPlans, "On")
     Hotkey("3", StudyTopicSelector_ManageLinks, "On")
     Hotkey("4", StudyTopicSelector_ManageArticleLinks, "On")
-    Hotkey("5", StudyTopicSelector_SelectTechnique, "On")
+    Hotkey("5", StudyTopicSelector_ManageFavoriteLinks, "On")
+    Hotkey("6", StudyTopicSelector_SelectTechnique, "On")
     Hotkey("Backspace", StudyTopicSelector_Cancel, "On")
     StudyTopicSelector_BindRobustEscape()
 
@@ -11846,7 +11850,8 @@ StudyTopicSelector_Cancel(*) {
 ; Tear-down order aligned with OutlookCopilotSelector_Close (Shift keys.ahk).
 StudyTopicSelector_Close() {
     global g_StudyTopicSelectorGui, g_StudyTopicSelectorActive, g_StudyTopicSelectorPhase, g_StudyTopicSelectorCategory,
-        g_StudyTopicSelectorLastForegroundMonitorIdx, g_StudyLinksGui, g_StudyArticleLinksGui, g_StudyLinkSubmenuGui
+        g_StudyTopicSelectorLastForegroundMonitorIdx, g_StudyLinksGui, g_StudyArticleLinksGui, g_StudyFavoriteLinksGui,
+        g_StudyLinkSubmenuGui
 
     if (!g_StudyTopicSelectorActive)
         return
@@ -11870,6 +11875,8 @@ StudyTopicSelector_Close() {
     g_StudyLinksGui := false
     StudyTopicSelector_SafeDestroyGui(g_StudyArticleLinksGui)
     g_StudyArticleLinksGui := false
+    StudyTopicSelector_SafeDestroyGui(g_StudyFavoriteLinksGui)
+    g_StudyFavoriteLinksGui := false
     StudyTopicSelector_SafeDestroyGui(g_StudyLinkSubmenuGui)
     g_StudyLinkSubmenuGui := ""
     loop 9 {

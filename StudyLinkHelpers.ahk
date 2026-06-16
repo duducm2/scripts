@@ -5,6 +5,7 @@ global STUDY_LINKS_API_URL :=
 
 global STUDYLINK_KEY_YOUTUBE := "subtopic"
 global STUDYLINK_KEY_ARTICLE := "subtopic_article"
+global STUDYLINK_KEY_FAVORITE := "subtopic_favorite"
 global STUDYLINK_SENTINEL_NAME := "manage, study, set, top, link"
 
 ; ────────────────────────────────────────────────────────────────────────────
@@ -323,13 +324,15 @@ StudyLink_RunKeyRoundTrip(testKey, testUrl, &setMsg := "", &getMsg := "") {
     return { setOk: setOk, getOk: getOk }
 }
 
-; Functional test: verifies GET and SET for YouTube and article keys against the live API.
+; Functional test: verifies GET and SET for YouTube, article, and favorite keys against the live API.
 StudyLink_RunFunctionalTest() {
     tick := A_TickCount
     result := Map()
     yt := StudyLink_RunKeyRoundTrip("subtopic_test", "https://example.com/yt-test-" . tick, &ytSetMsg, &ytGetMsg)
     art := StudyLink_RunKeyRoundTrip("subtopic_article_test", "https://example.com/article-test-" . tick, &artSetMsg,
         &artGetMsg)
+    fav := StudyLink_RunKeyRoundTrip(STUDYLINK_KEY_FAVORITE, "https://example.com/favorite-test-" . tick, &favSetMsg,
+        &favGetMsg)
     result["youtubeSetOk"] := yt.setOk
     result["youtubeGetOk"] := yt.getOk
     result["youtubeSetMsg"] := ytSetMsg
@@ -338,11 +341,15 @@ StudyLink_RunFunctionalTest() {
     result["articleGetOk"] := art.getOk
     result["articleSetMsg"] := artSetMsg
     result["articleGetMsg"] := artGetMsg
-    result["setOk"] := yt.setOk && art.setOk
-    result["getOk"] := yt.getOk && art.getOk
-    result["setMsg"] := result["setOk"] ? "PASSED (YouTube + article)" : "FAILED"
-        result["getMsg"] := result["getOk"] ? "PASSED (YouTube + article)" : "FAILED"
-            return result
+    result["favoriteSetOk"] := fav.setOk
+    result["favoriteGetOk"] := fav.getOk
+    result["favoriteSetMsg"] := favSetMsg
+    result["favoriteGetMsg"] := favGetMsg
+    result["setOk"] := yt.setOk && art.setOk && fav.setOk
+    result["getOk"] := yt.getOk && art.getOk && fav.getOk
+    result["setMsg"] := result["setOk"] ? "PASSED (YouTube + article + favorite)" : "FAILED"
+    result["getMsg"] := result["getOk"] ? "PASSED (YouTube + article + favorite)" : "FAILED"
+    return result
 }
 
 StudyLink_Open(studyKey) {

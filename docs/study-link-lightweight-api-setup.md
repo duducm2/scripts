@@ -1,10 +1,10 @@
 # Study Link lightweight API — setup guides
 
-Configure the **Google Apps Script** backend and **MacroDroid** for study links. PC code is split by module: YouTube in [`Utils.ahk`](../Utils.ahk), articles in [`StudyArticleLink.ahk`](../StudyArticleLink.ahk), shared HTTP in [`StudyLinkHelpers.ahk`](../StudyLinkHelpers.ahk).
+Configure the **Google Apps Script** backend and **MacroDroid** for study links. PC code is split by module: YouTube in [`Utils.ahk`](../Utils.ahk), articles in [`StudyArticleLink.ahk`](../StudyArticleLink.ahk), favorites in [`StudyFavoriteLink.ahk`](../StudyFavoriteLink.ahk), shared HTTP in [`StudyLinkHelpers.ahk`](../StudyLinkHelpers.ahk).
 
 ## Study material menu (main)
 
-Open via Study Topic selector (QuickLook flow). Keys **1–5**:
+Open via Study Topic selector (QuickLook flow). Keys **1–6**:
 
 | Key | Module | Action |
 
@@ -18,7 +18,9 @@ Open via Study Topic selector (QuickLook flow). Keys **1–5**:
 
 | 4 | Article link | Manage Study Article Link → inner 1–2 |
 
-| 5 | Technique | QuickLook `studies/technique/README.md` |
+| 5 | Favorite link | Manage Study Favorite Link → inner 1–2 |
+
+| 6 | Technique | QuickLook `studies/technique/README.md` |
 
 ## API keys (same web app URL)
 
@@ -30,7 +32,7 @@ Open via Study Topic selector (QuickLook flow). Keys **1–5**:
 
 | `subtopic_article` | 4 — Article | A2 | `StudyArticleLink.ahk` |
 
-| `subtopic_favorite` | Favorite link | A3 | MacroDroid only (for now) |
+| `subtopic_favorite` | 5 — Favorite | A3 | `StudyFavoriteLink.ahk` |
 
 **Endpoint** (`STUDY_LINKS_API_URL` in `StudyLinkHelpers.ahk`):
 
@@ -82,9 +84,9 @@ If Set Favorite writes **A1** instead of **A3**, the deployed web app is still o
 
 | 4 Article | `StudyLinkHelpers.ahk`, `StudyArticleLink.ahk` (F6 + copy) | `StudyLink_GetResult(STUDYLINK_KEY_ARTICLE)`, `StudyLink_Set(STUDYLINK_KEY_ARTICLE, url)` |
 
-| Favorite | MacroDroid SET/GET macros only | — (PC/AHK deferred) |
+| 5 Favorite | `StudyLinkHelpers.ahk`, `StudyFavoriteLink.ahk` (F6 + copy) | `StudyLink_GetResult(STUDYLINK_KEY_FAVORITE)`, `StudyLink_Set(STUDYLINK_KEY_FAVORITE, url)` |
 
-| 5 Technique | `Utils.ahk` (`StudyTopicSelector_SelectTechnique`) | — (local repo markdown) |
+| 6 Technique | `Utils.ahk` (`StudyTopicSelector_SelectTechnique`) | — (local repo markdown) |
 
 ---
 
@@ -170,9 +172,21 @@ if (url != "")
 
 ---
 
-## Favorite link (`subtopic_favorite`) — Android only
+## Module 5 — Favorite (`subtopic_favorite`)
 
-Third slot in **A3**. PC/AHK deferred.
+Third slot in **A3**. PC and MacroDroid share the same API key.
+
+### PC submenu (Study Topic → `[5]`)
+
+| Inner key | Action |
+
+| --------- | ---------------------------------------------------------- |
+
+| 1 | Open favorite link in Chrome |
+
+| 2 | Set favorite link — Chrome **F6**, **Ctrl+C**, POST to API |
+
+All favorite UI lives in **`StudyFavoriteLink.ahk`**; capture reuses `StudyArticleLink_CaptureChromeUrlFromAddressBar`.
 
 ### MacroDroid
 
@@ -182,11 +196,31 @@ Third slot in **A3**. PC/AHK deferred.
 
 Full Android table and troubleshooting: [study-link-macrodroid-same-url.md](study-link-macrodroid-same-url.md).
 
+### AHK snippets
+
+```ahk
+
+fav := StudyLink_GetResult(STUDYLINK_KEY_FAVORITE)
+
+if (fav["ok"] && fav["url"] != "")
+
+    StudyLink_OpenUrlInChrome(fav["url"])
+
+
+
+url := StudyArticleLink_CaptureChromeUrlFromAddressBar(&errMsg)
+
+if (url != "")
+
+    StudyLink_Set(STUDYLINK_KEY_FAVORITE, url)
+
+```
+
 ---
 
-## Module 5 — Technique
+## Module 6 — Technique
 
-Study Topic → **`[5] Technique`** opens the technique README in QuickLook (`StudyTopicSelector_SelectTechnique` in `Utils.ahk`). No StudyLink API.
+Study Topic → **`[6] Technique`** opens the technique README in QuickLook (`StudyTopicSelector_SelectTechnique` in `Utils.ahk`). No StudyLink API.
 
 ---
 
@@ -194,9 +228,9 @@ Study Topic → **`[5] Technique`** opens the technique README in QuickLook (`St
 
 1. **Quick Update Scripts** after any AHK change.
 
-2. Run `TestStudyLinkApi.ahk` — YouTube and article SET/GET.
+2. Run `TestStudyLinkApi.ahk` — YouTube, article, and favorite SET/GET.
 
-3. Manual: `[3]` inner 1–2, `[4]` inner 1–2, `[5]` (technique).
+3. Manual: `[3]` inner 1–2, `[4]` inner 1–2, `[5]` inner 1–2, `[6]` (technique).
 
 4. Phone: Set then Get for each link type after Apps Script redeploy.
 
@@ -209,6 +243,8 @@ Study Topic → **`[5] Technique`** opens the technique README in QuickLook (`St
 - `StudyLinkHelpers.ahk` — HTTP, keys, `StudyLink_OpenUrlInChrome`, sentinel, functional test
 
 - `StudyArticleLink.ahk` — module 4 GUI + F6 capture
+
+- `StudyFavoriteLink.ahk` — module 5 GUI + open/set (reuses F6 capture)
 
 - `Utils.ahk` — module 3 GUI + YouTube UIA capture
 
