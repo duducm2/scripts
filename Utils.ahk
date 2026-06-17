@@ -527,9 +527,16 @@ WM_EnterF11FullscreenForHwnd(hwnd, settleMs := 1200) {
 }
 
 ; --- Chrome: detach active tab to new window (Shift+W) ---
-; Primary: MV3 extension PopActiveTab (Ctrl+Shift+Y). Load chrome\PopActiveTab unpacked.
-; UIA menu path is debug-only (CHROME_DETACH_ALLOW_UIA_DEBUG_FALLBACK).
-global CHROME_DETACH_USE_EXTENSION := true
+; Primary UIA menu path (F6 + tab context menu). Optional: MV3 PopActiveTab (Ctrl+Shift+Y)
+; in chrome\PopActiveTab — set CHROME_DETACH_USE_EXTENSION := true when loaded in Chrome.
+; Success gates: top-level HWND + title match + SetWinEventHook (not fixed sleeps).
+global CHROME_DETACH_USE_EXTENSION := false
+global CHROME_DETACH_USE_WIN_EVENT_HOOK := true
+global CHROME_DETACH_USE_LIGHT_NORMALIZE := true
+global CHROME_DETACH_PREFLIGHT_TAB_COUNT := false
+global CHROME_DETACH_EVENT_OBJECT_CREATE := 0x8000
+global CHROME_DETACH_OBJID_WINDOW := 0
+global g_ChromeDetachCreatedHwnds := []
 global CHROME_DETACH_USE_UIA := false
 global CHROME_DETACH_USE_UIA_SINGLE_SHOT := true
 global CHROME_DETACH_ALLOW_UIA_DEBUG_FALLBACK := false
@@ -538,11 +545,11 @@ global CHROME_DETACH_DEBUG_LOG_ENABLED := false
 global CHROME_DETACH_DEEP_FALLBACK := false
 global CHROME_DETACH_F6_FALLBACK := true
 global CHROME_DETACH_EXTENSION_TIMEOUT_MS := 1400
-global CHROME_DETACH_TOTAL_TIMEOUT_MS := 4000
-global CHROME_DETACH_VERIFY_TIMEOUT_MS := 3500
+global CHROME_DETACH_TOTAL_TIMEOUT_MS := 4500
+global CHROME_DETACH_VERIFY_TIMEOUT_MS := 800
 global CHROME_DETACH_EXTENSION_VERIFY_MS := 1400
 global CHROME_DETACH_F11_SETTLE_MS := 1500
-global CHROME_DETACH_MENU_POPUP_MS := 420
+global CHROME_DETACH_MENU_POPUP_MS := 350
 global CHROME_DETACH_MENU_CHILD_MS := 300
 global CHROME_DETACH_MENU_POLL_MS := 20
 global CHROME_DETACH_SUCCESS_HIDE_MS := 400
@@ -550,6 +557,7 @@ global CHROME_DETACH_SEQUENCE_ATTEMPTS := 1
 global CHROME_DETACH_HOVER_ATTEMPTS := 2
 global CHROME_DETACH_F6_FOCUS_MAX := 3
 global CHROME_DETACH_F6_STEP_MS := 160
+global CHROME_DETACH_F6_FOCUS_POLL_MS := 200
 global CHROME_DETACH_F6_REFOCUS_MS := 80
 global CHROME_DETACH_TAB_FOCUS_WAIT_MS := 500
 global CHROME_DETACH_TAB_FOCUS_STABLE_MS := 120
@@ -580,7 +588,12 @@ Chrome_Detach_PreSendSanitizeModifiers(timeoutMs := 220) {
     KeyWait "LShift", tw
     KeyWait "RShift", tw
     ClipAngel_ReleaseChordModifiersForSend()
-    Sleep 40
+    deadline := A_TickCount + 120
+    while (A_TickCount < deadline) {
+        if !GetKeyState("Shift", "P") && !GetKeyState("Ctrl", "P") && !GetKeyState("Alt", "P")
+            break
+        Sleep 10
+    }
 }
 
 Chrome_DetachGetDebugLogPath() {
@@ -659,7 +672,6 @@ Chrome_DetachSampleMenuItemsForHwnd(hwnd, maxItems := 6) {
 Chrome_DetachDebugSampleMenuItems(session, maxItems := 6) {
     return Chrome_DetachSampleMenuItemsForHwnd(session.menuPopupHwnd, maxItems)
 }
-; #endregion
 
 Chrome_DetachWindowLooksLikeContextPopup(hwnd) {
     try {
@@ -726,7 +738,7 @@ Chrome_DetachSessionCreate(hwnd) {
     }
     uia := 0
     winTitle := "ahk_id " hwnd
-    try UIA.ActivateChromiumAccessibility(winTitle, 300)
+    try UIA.ActivateChromiumAccessibility(winTitle, 800)
     catch {
     }
     try {
@@ -735,7 +747,18 @@ Chrome_DetachSessionCreate(hwnd) {
     } catch {
     }
     return { hwnd: hwnd, uia: uia, existingSet: existingSet, menuPopupHwnd: 0, menuPopupClassify: "",
-        activeTab: 0, newDetachedHwnd: 0, baselinePopups: Chrome_DetachListMenuPopups(hwnd) }
+        activeTab: 0, newDetachedHwnd: 0, menuConfirmed: false, baselinePopups: Chrome_DetachListMenuPopups(hwnd) }
+}
+
+Chrome_SessionUiaUsable(session) {
+    if !IsObject(session.uia)
+        return false
+    try {
+        session.uia.GetCurrentMainPaneElement()
+        return true
+    } catch {
+        return false
+    }
 }
 
 Chrome_ContextMenuNameMatches(el, names, substrs := "") {
@@ -1035,6 +1058,100 @@ Chrome_ContextMenuActivateItem(item) {
     return true
 }
 
+; --- State-gated context menu phases (detach tab) ---
+Chrome_WaitForTabContextMenu(session, timeoutMs := 0) {
+    waitMs := timeoutMs > 0 ? timeoutMs : CHROME_DETACH_MENU_POPUP_MS
+    deadline := A_TickCount + waitMs
+    while (A_TickCount < deadline) {
+        if !session.menuPopupHwnd
+            Chrome_ContextMenuCapturePopup(session, session.baselinePopups)
+        if Chrome_ContextMenuLooksLikeTabMenu(session)
+            return true
+        if Chrome_ContextMenuFindTabMenuInBrowser(session) {
+            session.menuPopupClassify := "tab"
+            return true
+        }
+        Sleep CHROME_DETACH_MENU_POLL_MS
+    }
+    return false
+}
+
+Chrome_FindDetachMenuTarget(session) {
+    flat := Chrome_ContextMenuFindFirst(session, CHROME_DETACH_MENU_EN_NAMES, false)
+    if flat
+        return { type: "flat", item: flat }
+    parent := Chrome_ContextMenuFindFirst(session, CHROME_DETACH_MENU_PARENT_NAMES, true)
+    if parent
+        return { type: "parent", item: parent }
+    return 0
+}
+
+Chrome_WaitForDetachMenuTarget(session, timeoutMs := 0) {
+    waitMs := timeoutMs > 0 ? timeoutMs : CHROME_DETACH_MENU_CHILD_MS
+    deadline := A_TickCount + waitMs
+    while (A_TickCount < deadline) {
+        target := Chrome_FindDetachMenuTarget(session)
+        if target
+            return target
+        if !session.menuPopupHwnd
+            Chrome_ContextMenuCapturePopup(session, session.baselinePopups)
+        Sleep CHROME_DETACH_MENU_POLL_MS
+    }
+    return 0
+}
+
+Chrome_ContextMenuIsDismissed(session) {
+    if (session.menuPopupHwnd && WinExist("ahk_id " session.menuPopupHwnd))
+        return false
+    try {
+        if Chrome_ContextMenuFindTabMenuInBrowser(session)
+            return false
+    } catch {
+    }
+    try {
+        if Chrome_ContextMenuFocusedLooksLikeTabMenu()
+            return false
+    } catch {
+    }
+    return true
+}
+
+Chrome_WaitForContextMenuDismissed(session, timeoutMs := 0) {
+    waitMs := timeoutMs > 0 ? timeoutMs : CHROME_DETACH_MENU_POPUP_MS
+    deadline := A_TickCount + waitMs
+    while (A_TickCount < deadline) {
+        if Chrome_ContextMenuIsDismissed(session) {
+            Chrome_DetachClearMenuPopup(session)
+            return true
+        }
+        Sleep CHROME_DETACH_MENU_POLL_MS
+    }
+    return false
+}
+
+; Invoke detach menu item only after menu + target are visible; confirm menu dismissed before returning.
+Chrome_ActivateDetachMenuItemConfirmed(session) {
+    if !Chrome_WaitForTabContextMenu(session, CHROME_DETACH_MENU_POPUP_MS)
+        return false
+    target := Chrome_WaitForDetachMenuTarget(session, CHROME_DETACH_MENU_CHILD_MS)
+    if !target
+        return false
+    if (target.type = "flat") {
+        if !Chrome_ContextMenuActivateItem(target.item)
+            return false
+        return Chrome_WaitForContextMenuDismissed(session, CHROME_DETACH_MENU_POPUP_MS)
+    }
+    if !Chrome_ContextMenuActivateItem(target.item)
+        return false
+    child := Chrome_ContextMenuWaitForSession(session, CHROME_DETACH_MENU_CHILD_NAMES, CHROME_DETACH_MENU_CHILD_MS,
+        false)
+    if !child
+        return false
+    if !Chrome_ContextMenuActivateItem(child)
+        return false
+    return Chrome_WaitForContextMenuDismissed(session, CHROME_DETACH_MENU_POPUP_MS)
+}
+
 Chrome_WindowHasCaption(hwnd) {
     if (!hwnd || !WinExist("ahk_id " hwnd))
         return false
@@ -1127,33 +1244,8 @@ Chrome_ActivateDetachedWindow(newHwnd, originalHwnd, wasF11) {
     Chrome_FocusDetachedWindow(newHwnd)
 }
 
-Chrome_WaitForNewWindow(existingSet, timeoutMs := 0) {
-    deadline := A_TickCount + (timeoutMs > 0 ? timeoutMs : CHROME_DETACH_VERIFY_TIMEOUT_MS)
-    pollMs := CHROME_DETACH_MENU_POLL_MS
-    loop {
-        if (A_TickCount >= deadline)
-            return 0
-        try {
-            for hwnd in WinGetList("ahk_exe chrome.exe") {
-                if (existingSet is Map) {
-                    if !existingSet.Has(hwnd)
-                        return hwnd
-                } else {
-                    isNew := true
-                    for existing in existingSet {
-                        if (existing = hwnd) {
-                            isNew := false
-                            break
-                        }
-                    }
-                    if (isNew)
-                        return hwnd
-                }
-            }
-        } catch {
-        }
-        Sleep pollMs
-    }
+Chrome_WaitForNewWindow(existingSet, timeoutMs := 0, tabTitle := "") {
+    return Chrome_WaitForDetachNewWindow(existingSet, timeoutMs, tabTitle)
 }
 
 Chrome_EnsureBrowserForeground(hwnd) {
@@ -1478,24 +1570,41 @@ Chrome_UiaLooksLikeTabStripFocused(session) {
     return false
 }
 
+Chrome_WaitForTabStripFocus(session, timeoutMs := 0) {
+    global CHROME_DETACH_F6_FOCUS_POLL_MS, CHROME_DETACH_MENU_POLL_MS
+    waitMs := timeoutMs > 0 ? timeoutMs : CHROME_DETACH_F6_FOCUS_POLL_MS
+    deadline := A_TickCount + waitMs
+    pollMs := CHROME_DETACH_MENU_POLL_MS
+    while (A_TickCount < deadline) {
+        if Chrome_UiaLooksLikeTabStripFocused(session)
+            return true
+        Sleep pollMs
+    }
+    return false
+}
+
 ; Official keyboard path: F6 until tab strip focus, then AppsKey (no hover hit-test).
 Chrome_TryF6KeyboardTabMenu(session) {
     ClipAngel_ReleaseChordModifiersForSend()
     Send "{Escape}"
     Sleep 40
+    uiaUsable := Chrome_SessionUiaUsable(session)
     loop CHROME_DETACH_F6_FOCUS_MAX {
-        if (session.menuPopupHwnd && Chrome_ContextMenuLooksLikeTabMenu(session))
+        if (session.menuPopupHwnd && Chrome_ContextMenuLooksLikeTabMenu(session)) {
+            session.menuConfirmed := true
             return true
+        }
         Send "{F6}"
-        Sleep CHROME_DETACH_F6_STEP_MS
-        tabFocused := Chrome_UiaLooksLikeTabStripFocused(session)
+        tabFocused := Chrome_WaitForTabStripFocus(session, CHROME_DETACH_F6_FOCUS_POLL_MS)
         ; #region agent log
         Chrome_DetachDebugLog("Chrome_TryF6KeyboardTabMenu", "f6 step", "K", "i=" . A_Index .
             " focus=" . Chrome_DetachDebugFocusedElement(session) . ";tabFocused=" . (tabFocused ? 1 : 0))
         ; #endregion
-        if !tabFocused
+        tryAppsKey := tabFocused
+        if !tryAppsKey && !uiaUsable && A_Index >= 2
+            tryAppsKey := true  ; UIA dead: AppsKey from 2nd F6 onward, confirm via menu wait
+        if !tryAppsKey
             continue
-        Sleep CHROME_DETACH_APPSKEY_SETTLE_MS
         ClipAngel_ReleaseChordModifiersForSend()
         session.baselinePopups := Chrome_DetachListMenuPopups(session.hwnd)
         Chrome_DetachClearMenuPopup(session)
@@ -1503,14 +1612,10 @@ Chrome_TryF6KeyboardTabMenu(session) {
         catch {
             SendInput "{AppsKey}"
         }
-        Sleep CHROME_DETACH_APPSKEY_AFTER_MS
-        Chrome_ContextMenuCapturePopup(session, session.baselinePopups)
-        if Chrome_ContextMenuLooksLikeTabMenu(session)
-            return true
-        if Chrome_ContextMenuFindTabMenuInBrowser(session) {
-            Chrome_DetachClearMenuPopup(session)
+        if Chrome_WaitForTabContextMenu(session, CHROME_DETACH_MENU_POPUP_MS) {
+            session.menuConfirmed := true
             ; #region agent log
-            Chrome_DetachDebugLog("Chrome_TryF6KeyboardTabMenu", "tab menu in browser tree", "K", "")
+            Chrome_DetachDebugLog("Chrome_TryF6KeyboardTabMenu", "tab menu ready", "K", "i=" . A_Index)
             ; #endregion
             return true
         }
@@ -1521,10 +1626,10 @@ Chrome_TryF6KeyboardTabMenu(session) {
 
 Chrome_OpenActiveTabContextMenuViaTabFocus(session) {
     tab := Chrome_DetachGetActiveTab(session)
-    if !Chrome_IsValidTabElement(tab)
-        return false
     if (session.menuPopupHwnd && Chrome_ContextMenuLooksLikeTabMenu(session))
         return true
+    if !Chrome_IsValidTabElement(tab)
+        return false
     if Chrome_TryF6KeyboardTabMenu(session)
         return true
     if Chrome_TryFocusAppsKeyTabMenu(session, tab)
@@ -1702,11 +1807,22 @@ Chrome_NormalizeFocusToPage(hwnd) {
     return WM_EnsureForegroundForSend(hwnd, 1000)
 }
 
+; Detach hot path: caller already foregrounded — one Escape, skip page focus when UIA usable.
+Chrome_NormalizeFocusToPageLight(hwnd, session := unset) {
+    ClipAngel_ReleaseChordModifiersForSend()
+    Send "{Escape}"
+    if !(IsSet(session) && IsObject(session) && Chrome_SessionUiaUsable(session))
+        Chrome_FocusPageContent(hwnd)
+    return WM_EnsureForegroundForSend(hwnd, 200)
+}
+
 Chrome_OpenActiveTabContextMenu(session) {
+    global CHROME_DETACH_USE_LIGHT_NORMALIZE
     hwnd := session.hwnd
     if !Chrome_EnsureBrowserForeground(hwnd)
         return false
     if (session.menuPopupHwnd && Chrome_ContextMenuLooksLikeTabMenu(session)) {
+        session.menuConfirmed := true
         ; #region agent log
         Chrome_DetachDebugLog("Chrome_OpenActiveTabContextMenu", "reuse open tab menu", "E", "popup=" .
             session.menuPopupHwnd)
@@ -1715,6 +1831,18 @@ Chrome_OpenActiveTabContextMenu(session) {
     }
     session.baselinePopups := Chrome_DetachListMenuPopups(hwnd)
     Chrome_DetachClearMenuPopup(session)
+    if CHROME_DETACH_USE_LIGHT_NORMALIZE {
+        if !Chrome_NormalizeFocusToPageLight(hwnd, session)
+            return false
+    } else if !Chrome_NormalizeFocusToPage(hwnd) {
+        return false
+    }
+    if Chrome_TryF6KeyboardTabMenu(session) {
+        ; #region agent log
+        Chrome_DetachDebugLog("Chrome_OpenActiveTabContextMenu", "opened via f6", "H", { result: 1 })
+        ; #endregion
+        return true
+    }
     if Chrome_OpenActiveTabContextMenuViaTabFocus(session) {
         ; #region agent log
         Chrome_DetachDebugLog("Chrome_OpenActiveTabContextMenu", "opened via tab focus", "H", { result: 1 })
@@ -1793,10 +1921,6 @@ Chrome_ActivateDetachMenuItem(session) {
     Chrome_ContextMenuFocusPopup(session)
     ClipAngel_ReleaseChordModifiersForSend()
     Chrome_ContextMenuSendKeys(session, "m")
-    Sleep 100
-    ClipAngel_ReleaseChordModifiersForSend()
-    Chrome_ContextMenuSendKeys(session, "{Enter}")
-    Sleep 180
     child := Chrome_ContextMenuWaitForSession(session, CHROME_DETACH_MENU_CHILD_NAMES, CHROME_DETACH_MENU_CHILD_MS,
         false)
     if child && Chrome_ContextMenuActivateItem(child) {
@@ -1805,11 +1929,28 @@ Chrome_ActivateDetachMenuItem(session) {
         ; #endregion
         return true
     }
+    ClipAngel_ReleaseChordModifiersForSend()
+    Chrome_ContextMenuSendKeys(session, "{Enter}")
+    child := Chrome_ContextMenuWaitForSession(session, CHROME_DETACH_MENU_CHILD_NAMES, CHROME_DETACH_MENU_CHILD_MS,
+        false)
+    if child && Chrome_ContextMenuActivateItem(child) {
+        ; #region agent log
+        Chrome_DetachDebugLog("Chrome_ActivateDetachMenuItem", "keyboard child invoked", "E", "path=keyboardEnterChild")
+        ; #endregion
+        return true
+    }
     ; Submenu open: 'n' = Nova janela (safe here; top-level 'n' = Nova guia)
     Chrome_ContextMenuFocusPopup(session)
     ClipAngel_ReleaseChordModifiersForSend()
     Chrome_ContextMenuSendKeys(session, "n")
-    Sleep 70
+    child := Chrome_ContextMenuWaitForSession(session, CHROME_DETACH_MENU_CHILD_NAMES, CHROME_DETACH_MENU_CHILD_MS,
+        false)
+    if child && Chrome_ContextMenuActivateItem(child) {
+        ; #region agent log
+        Chrome_DetachDebugLog("Chrome_ActivateDetachMenuItem", "keyboard n child invoked", "E", "path=keyboardN")
+        ; #endregion
+        return true
+    }
     ClipAngel_ReleaseChordModifiersForSend()
     Chrome_ContextMenuSendKeys(session, "{Enter}")
     ; #region agent log
@@ -1872,60 +2013,212 @@ Chrome_GetChromeTopLevelHwndSet() {
     return existingSet
 }
 
-Chrome_WaitForNewTopLevelChromeWindow(existingSet, timeoutMs := 0) {
-    global CHROME_DETACH_EXTENSION_TIMEOUT_MS
-    deadline := A_TickCount + (timeoutMs > 0 ? timeoutMs : CHROME_DETACH_EXTENSION_TIMEOUT_MS)
-    pollMs := 40
-    while (A_TickCount < deadline) {
-        try {
-            for hwnd in WinGetList("ahk_exe chrome.exe") {
-                if (existingSet is Map && existingSet.Has(hwnd))
-                    continue
-                if !Chrome_IsLikelyTopLevelBrowserWindow(hwnd)
-                    continue
-                try WinActivate("ahk_id " hwnd)
-                return hwnd
-            }
-        } catch {
+Chrome_DetachTitleCore(title) {
+    title := RegExReplace(title, "i) - Google Chrome$", "")
+    title := RegExReplace(title, "i) - Chromium$", "")
+    return Trim(title)
+}
+
+Chrome_DetachTitleMatches(hwnd, expectedCore) {
+    if (expectedCore = "")
+        return true
+    if !(hwnd is Integer && hwnd > 0)
+        return false
+    try actual := Chrome_DetachTitleCore(WinGetTitle("ahk_id " hwnd))
+    catch {
+        return false
+    }
+    if (actual = "")
+        return false
+    return (actual = expectedCore) || InStr(actual, expectedCore, false) || InStr(expectedCore, actual, false)
+}
+
+Chrome_DetachCaptureBaseline(hwnd) {
+    return { existingSet: Chrome_GetChromeTopLevelHwndSet(), tabTitle: Chrome_DetachGetWindowTitleForMatch(hwnd) }
+}
+
+Chrome_DetachQuickTabCount(hwnd) {
+    if !(hwnd is Integer && hwnd > 0)
+        return -1
+    try {
+        winTitle := "ahk_id " hwnd
+        UIA.ActivateChromiumAccessibility(winTitle, 200)
+        uia := UIA_Browser(winTitle)
+        return uia.GetAllTabs().Length
+    } catch {
+        return -1
+    }
+}
+
+Chrome_FindNewTopLevelChromeCandidate(existingSet, tabTitle := "") {
+    titleCore := Chrome_DetachTitleCore(tabTitle)
+    if !(existingSet is Map)
+        existingSet := Map()
+    try {
+        for hwnd in WinGetList("ahk_exe chrome.exe") {
+            if existingSet.Has(hwnd)
+                continue
+            if !Chrome_IsLikelyTopLevelBrowserWindow(hwnd)
+                continue
+            if (titleCore != "" && !Chrome_DetachTitleMatches(hwnd, titleCore))
+                continue
+            return hwnd
         }
-        Sleep pollMs
+    } catch {
     }
     return 0
 }
 
-Chrome_DetachActiveTabToNewWindow_ExtensionFast(timeoutMs := 0) {
+Chrome_DetachPickValidatedNewHwnd(candidates, existingSet, tabTitle := "") {
+    titleCore := Chrome_DetachTitleCore(tabTitle)
+    if !(existingSet is Map)
+        existingSet := Map()
+    for hwnd in candidates {
+        if (existingSet.Has(hwnd))
+            continue
+        if !Chrome_IsLikelyTopLevelBrowserWindow(hwnd)
+            continue
+        if (titleCore != "" && !Chrome_DetachTitleMatches(hwnd, titleCore))
+            continue
+        return hwnd
+    }
+    return 0
+}
+
+Chrome_DetachWinEventProc(hWinEventHook, event, hwnd, idObject, idChild, idEventThread, dwmsEventTime) {
+    global g_ChromeDetachCreatedHwnds, CHROME_DETACH_EVENT_OBJECT_CREATE, CHROME_DETACH_OBJID_WINDOW
+    if (event = CHROME_DETACH_EVENT_OBJECT_CREATE && idObject = CHROME_DETACH_OBJID_WINDOW && hwnd)
+        g_ChromeDetachCreatedHwnds.Push(hwnd)
+}
+
+; Bounded wait: new top-level Chrome window not in baseline, optionally matching detached tab title.
+Chrome_WaitForDetachNewWindow(existingSet, timeoutMs := 0, tabTitle := "") {
+    global CHROME_DETACH_EXTENSION_TIMEOUT_MS, CHROME_DETACH_VERIFY_TIMEOUT_MS, CHROME_DETACH_MENU_POLL_MS
+    global CHROME_DETACH_USE_WIN_EVENT_HOOK, g_ChromeDetachCreatedHwnds
+    waitMs := timeoutMs > 0 ? timeoutMs : CHROME_DETACH_EXTENSION_TIMEOUT_MS
+    if (waitMs <= 0)
+        waitMs := CHROME_DETACH_VERIFY_TIMEOUT_MS
+    deadline := A_TickCount + waitMs
+    pollMs := CHROME_DETACH_MENU_POLL_MS
+    if !(existingSet is Map)
+        existingSet := Map()
+
+    if CHROME_DETACH_USE_WIN_EVENT_HOOK {
+        g_ChromeDetachCreatedHwnds := []
+        cb := CallbackCreate(Chrome_DetachWinEventProc, "F Fast", 7)
+        hHook := DllCall("user32\SetWinEventHook", "UInt", CHROME_DETACH_EVENT_OBJECT_CREATE,
+            "UInt", CHROME_DETACH_EVENT_OBJECT_CREATE, "Ptr", 0, "Ptr", cb, "UInt", 0, "UInt", 0, "UInt", 0, "Ptr")
+        try {
+            while (A_TickCount < deadline) {
+                hwnd := Chrome_DetachPickValidatedNewHwnd(g_ChromeDetachCreatedHwnds, existingSet, tabTitle)
+                if !hwnd
+                    hwnd := Chrome_FindNewTopLevelChromeCandidate(existingSet, tabTitle)
+                g_ChromeDetachCreatedHwnds := []
+                if hwnd {
+                    try WinActivate("ahk_id " hwnd)
+                    return hwnd
+                }
+                Sleep pollMs
+            }
+        } finally {
+            if (hHook)
+                DllCall("user32\UnhookWinEvent", "Ptr", hHook)
+        }
+        if (Chrome_DetachTitleCore(tabTitle) != "") {
+            hwnd := Chrome_FindNewTopLevelChromeCandidate(existingSet, "")
+            if hwnd {
+                try WinActivate("ahk_id " hwnd)
+                return hwnd
+            }
+        }
+        return 0
+    }
+
+    while (A_TickCount < deadline) {
+        hwnd := Chrome_FindNewTopLevelChromeCandidate(existingSet, tabTitle)
+        if hwnd {
+            try WinActivate("ahk_id " hwnd)
+            return hwnd
+        }
+        Sleep pollMs
+    }
+    ; HWND often appears before Chrome updates the window title — accept top-level without title gate.
+    if (Chrome_DetachTitleCore(tabTitle) != "") {
+        hwnd := Chrome_FindNewTopLevelChromeCandidate(existingSet, "")
+        if hwnd {
+            try WinActivate("ahk_id " hwnd)
+            return hwnd
+        }
+    }
+    return 0
+}
+
+Chrome_WaitForNewTopLevelChromeWindow(existingSet, timeoutMs := 0, tabTitle := "") {
+    return Chrome_WaitForDetachNewWindow(existingSet, timeoutMs, tabTitle)
+}
+
+Chrome_DetachRemainingMs(opStart, totalMs := 0) {
+    global CHROME_DETACH_TOTAL_TIMEOUT_MS
+    budget := totalMs > 0 ? totalMs : CHROME_DETACH_TOTAL_TIMEOUT_MS
+    return Max(0, budget - (A_TickCount - opStart))
+}
+
+Chrome_DetachExtensionBudgetMs(opStart) {
+    global CHROME_DETACH_EXTENSION_TIMEOUT_MS
+    return Max(0, Min(CHROME_DETACH_EXTENSION_TIMEOUT_MS, Chrome_DetachRemainingMs(opStart)))
+}
+
+Chrome_DetachActiveTabToNewWindow_ExtensionFast(baseline := unset, timeoutMs := 0) {
     global CHROME_DETACH_USE_EXTENSION, CHROME_DETACH_EXTENSION_TIMEOUT_MS
     if !CHROME_DETACH_USE_EXTENSION
         return 0
-    waitMs := timeoutMs > 0 ? timeoutMs : CHROME_DETACH_EXTENSION_TIMEOUT_MS
-    baseline := Chrome_GetChromeTopLevelHwndSet()
+    waitMs := timeoutMs > 0 ? Min(timeoutMs, CHROME_DETACH_EXTENSION_TIMEOUT_MS) : CHROME_DETACH_EXTENSION_TIMEOUT_MS
+    if !IsSet(baseline) || !IsObject(baseline)
+        baseline := Chrome_DetachCaptureBaseline(WinExist("A"))
+    existingSet := baseline.existingSet
+    tabTitle := baseline.tabTitle
     Chrome_Detach_PreSendSanitizeModifiers()
     ClipAngel_ReleaseChordModifiersForSend()
     SendInput "{Ctrl down}{Shift down}y{Shift up}{Ctrl up}"
-    Sleep 80
-    Send "^+y"
-    return Chrome_WaitForNewTopLevelChromeWindow(baseline, waitMs)
+    result := Chrome_WaitForDetachNewWindow(existingSet, waitMs, tabTitle)
+    if !result && waitMs > 400 {
+        ClipAngel_ReleaseChordModifiersForSend()
+        Send "^+y"
+        retryMs := Min(CHROME_DETACH_EXTENSION_TIMEOUT_MS // 2, Max(400, waitMs // 2))
+        result := Chrome_WaitForDetachNewWindow(existingSet, retryMs, tabTitle)
+    }
+    return result
 }
 
-Chrome_DetachActiveTabToNewWindow_ExtensionFallback(existingSet) {
-    return Chrome_DetachActiveTabToNewWindow_ExtensionFast()
+Chrome_DetachActiveTabToNewWindow_ExtensionFallback(baseline) {
+    return Chrome_DetachActiveTabToNewWindow_ExtensionFast(baseline)
 }
 
-; One F6 pass (max 3 steps) + menu invoke — no deep/hover/retry stacks.
-Chrome_DetachActiveTabToNewWindow_UiaSingleShot(hwnd, &wasF11) {
+; One F6 pass (max 3 steps) + menu invoke — phased state gates, no blind advance.
+Chrome_DetachActiveTabToNewWindow_UiaSingleShot(hwnd, &wasF11, baseline := unset, verifyTimeoutMs := 0) {
     wasF11 := false
     if !Chrome_PrepareWindowForTabDetach(hwnd, &wasF11)
         return 0
     if (WM_WindowIsF11Fullscreen(hwnd))
         return 0
-    baseline := Chrome_GetChromeTopLevelHwndSet()
+    if !IsSet(baseline) || !IsObject(baseline)
+        baseline := Chrome_DetachCaptureBaseline(hwnd)
     session := Chrome_DetachSessionCreate(hwnd)
-    if (Chrome_DetachCountTabs(session) = 1)
+    tabCount := Chrome_DetachCountTabs(session)
+    if (tabCount = 1)
         return 0
-    if !Chrome_TryF6KeyboardTabMenu(session)
+    if !Chrome_OpenActiveTabContextMenu(session)
         return 0
-    Chrome_ActivateDetachMenuItem(session)
-    return Chrome_WaitForNewTopLevelChromeWindow(baseline, 1200)
+    if !session.menuConfirmed && !Chrome_WaitForTabContextMenu(session, CHROME_DETACH_MENU_POPUP_MS) {
+        Chrome_ContextMenuDismiss()
+        return 0
+    }
+    if !Chrome_ActivateDetachMenuItemConfirmed(session) {
+        Chrome_ContextMenuDismiss()
+        return 0
+    }
+    verifyMs := verifyTimeoutMs > 0 ? verifyTimeoutMs : CHROME_DETACH_VERIFY_TIMEOUT_MS
+    return Chrome_WaitForDetachNewWindow(baseline.existingSet, verifyMs, baseline.tabTitle)
 }
 
 ; Debug-only: legacy UIA menu stack (never used in normal Shift+W path).
@@ -1952,11 +2245,12 @@ Chrome_DetachActiveTabToNewWindow_UiaLegacyPath(hwnd, &newHwnd, &wasF11) {
     }
     if (session.menuPopupHwnd && Chrome_ContextMenuLooksLikeTabMenu(session))
         Chrome_ActivateDetachMenuItem(session)
-    newHwnd := Chrome_WaitForNewWindow(session.existingSet, CHROME_DETACH_VERIFY_TIMEOUT_MS)
+    newHwnd := Chrome_WaitForNewWindow(session.existingSet, CHROME_DETACH_VERIFY_TIMEOUT_MS,
+        Chrome_DetachGetWindowTitleForMatch(hwnd))
     if newHwnd
         return true
     if CHROME_DETACH_USE_EXTENSION
-        newHwnd := Chrome_DetachActiveTabToNewWindow_ExtensionFast()
+        newHwnd := Chrome_DetachActiveTabToNewWindow_ExtensionFast(Chrome_DetachCaptureBaseline(hwnd))
     return newHwnd ? true : false
 }
 
@@ -2040,7 +2334,8 @@ Chrome_RunDetachMenuSequence(session) {
         }
 
         Chrome_ActivateDetachMenuItem(session)
-        newHwnd := Chrome_WaitForNewWindow(session.existingSet, CHROME_DETACH_VERIFY_TIMEOUT_MS)
+        newHwnd := Chrome_WaitForDetachNewWindow(session.existingSet, CHROME_DETACH_VERIFY_TIMEOUT_MS,
+            Chrome_DetachGetWindowTitleForMatch(session.hwnd))
         if newHwnd {
             session.newDetachedHwnd := newHwnd
             ; #region agent log
@@ -2060,7 +2355,7 @@ Chrome_RunDetachMenuSequence(session) {
 
 Chrome_DetachActiveTabToNewWindow() {
     global g_ChromeDetachBusy, CHROME_DETACH_USE_EXTENSION, CHROME_DETACH_USE_UIA_SINGLE_SHOT
-    global CHROME_DETACH_ALLOW_UIA_DEBUG_FALLBACK, CHROME_DETACH_USE_UIA
+    global CHROME_DETACH_ALLOW_UIA_DEBUG_FALLBACK, CHROME_DETACH_USE_UIA, CHROME_DETACH_PREFLIGHT_TAB_COUNT
     global CHROME_DETACH_TOTAL_TIMEOUT_MS
     if (g_ChromeDetachBusy)
         return false
@@ -2071,6 +2366,7 @@ Chrome_DetachActiveTabToNewWindow() {
     newHwnd := 0
     wasF11 := false
     success := false
+    baseline := unset
 
     StandardLoadingBar_Show("⏳ Detaching tab to new window…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
     try {
@@ -2089,19 +2385,34 @@ Chrome_DetachActiveTabToNewWindow() {
         if !Chrome_EnsureBrowserForeground(hwnd)
             return false
 
+        baseline := Chrome_DetachCaptureBaseline(hwnd)
+
+        if CHROME_DETACH_PREFLIGHT_TAB_COUNT {
+            tabCount := Chrome_DetachQuickTabCount(hwnd)
+            if (tabCount = 1) {
+                ShowCenteredOverlay_Utils(
+                    "❌ Cannot detach: only one tab in this window.",
+                    2800, BANNER_ACCENT_ERROR)
+                return false
+            }
+        }
+
         if CHROME_DETACH_USE_EXTENSION {
             try StandardLoadingBar_Update("⏳ Detaching tab (extension)…", BANNER_ACCENT_INTERMEDIATE)
-            newHwnd := Chrome_DetachActiveTabToNewWindow_ExtensionFast()
+            extBudget := Chrome_DetachExtensionBudgetMs(opStart)
+            if (extBudget >= 300)
+                newHwnd := Chrome_DetachActiveTabToNewWindow_ExtensionFast(baseline, extBudget)
             if newHwnd {
                 success := true
                 return true
             }
         }
 
-        remaining := CHROME_DETACH_TOTAL_TIMEOUT_MS - (A_TickCount - opStart)
-        if (CHROME_DETACH_USE_UIA_SINGLE_SHOT && remaining > 600) {
+        remaining := Chrome_DetachRemainingMs(opStart)
+        if CHROME_DETACH_USE_UIA_SINGLE_SHOT && remaining > 600 {
             try StandardLoadingBar_Update("⏳ Detaching tab (menu)…", BANNER_ACCENT_INTERMEDIATE)
-            newHwnd := Chrome_DetachActiveTabToNewWindow_UiaSingleShot(hwnd, &wasF11)
+            uiaVerifyMs := Min(remaining, CHROME_DETACH_VERIFY_TIMEOUT_MS)
+            newHwnd := Chrome_DetachActiveTabToNewWindow_UiaSingleShot(hwnd, &wasF11, baseline, uiaVerifyMs)
             if newHwnd {
                 success := true
                 return true
@@ -2109,9 +2420,10 @@ Chrome_DetachActiveTabToNewWindow() {
         }
 
         if !CHROME_DETACH_ALLOW_UIA_DEBUG_FALLBACK {
-            ShowCenteredOverlay_Utils(
-                "❌ Could not detach tab. Install PopActiveTab (Ctrl+Shift+Y) or use 2+ tabs.",
-                2800, BANNER_ACCENT_ERROR)
+            detachErr := CHROME_DETACH_USE_EXTENSION
+                ? "❌ Could not detach tab. Install PopActiveTab (Ctrl+Shift+Y) or use 2+ tabs."
+                : "❌ Could not detach tab. Use 2+ tabs in this Chrome window."
+            ShowCenteredOverlay_Utils(detachErr, 2800, BANNER_ACCENT_ERROR)
             return false
         }
 

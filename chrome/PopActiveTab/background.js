@@ -1,8 +1,13 @@
+async function resolveActiveTab() {
+  let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab?.id) {
+    [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+  }
+  return tab;
+}
+
 async function popActiveTabToNewWindow() {
-  const [tab] = await chrome.tabs.query({
-    active: true,
-    lastFocusedWindow: true,
-  });
+  const tab = await resolveActiveTab();
 
   if (!tab?.id) {
     return;
