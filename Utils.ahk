@@ -550,7 +550,10 @@ global CHROME_DETACH_VERIFY_TIMEOUT_MS := 800
 global CHROME_DETACH_EXTENSION_VERIFY_MS := 1400
 global CHROME_DETACH_F11_SETTLE_MS := 1500
 global CHROME_DETACH_MENU_POPUP_MS := 350
-global CHROME_DETACH_MENU_CHILD_MS := 300
+global CHROME_DETACH_MENU_CHILD_MS := 50
+global CHROME_DETACH_MENU_DISMISS_MS := 50
+global CHROME_DETACH_A11Y_MS := 50
+global CHROME_DETACH_A11Y_MS_FOREGROUND := 50
 global CHROME_DETACH_MENU_POLL_MS := 20
 global CHROME_DETACH_SUCCESS_HIDE_MS := 400
 global CHROME_DETACH_SEQUENCE_ATTEMPTS := 1
@@ -729,16 +732,19 @@ Chrome_DetachDebugListNewChromeWindows(session) {
     return info
 }
 
-Chrome_DetachSessionCreate(hwnd) {
-    existingSet := Map()
-    try {
-        for h in WinGetList("ahk_exe chrome.exe")
-            existingSet[h] := true
-    } catch {
+Chrome_DetachSessionCreate(hwnd, existingSet := unset) {
+    if !(existingSet is Map) {
+        existingSet := Map()
+        try {
+            for h in WinGetList("ahk_exe chrome.exe")
+                existingSet[h] := true
+        } catch {
+        }
     }
     uia := 0
     winTitle := "ahk_id " hwnd
-    try UIA.ActivateChromiumAccessibility(winTitle, 800)
+    a11yMs := WinActive("ahk_id " hwnd) ? CHROME_DETACH_A11Y_MS_FOREGROUND : CHROME_DETACH_A11Y_MS
+    try UIA.ActivateChromiumAccessibility(winTitle, a11yMs)
     catch {
     }
     try {
@@ -1129,27 +1135,24 @@ Chrome_WaitForContextMenuDismissed(session, timeoutMs := 0) {
     return false
 }
 
-; Invoke detach menu item only after menu + target are visible; confirm menu dismissed before returning.
-Chrome_ActivateDetachMenuItemConfirmed(session) {
-    if !Chrome_WaitForTabContextMenu(session, CHROME_DETACH_MENU_POPUP_MS)
+; Invoke detach item after menu is ready. Window wait is caller's job (dismiss wait removed — hook detects HWND faster).
+Chrome_ActivateDetachMenuItemConfirmed(session, menuReady := false) {
+    if !menuReady && !Chrome_WaitForTabContextMenu(session, CHROME_DETACH_MENU_POPUP_MS)
         return false
-    target := Chrome_WaitForDetachMenuTarget(session, CHROME_DETACH_MENU_CHILD_MS)
+    target := Chrome_FindDetachMenuTarget(session)
+    if !target
+        target := Chrome_WaitForDetachMenuTarget(session, CHROME_DETACH_MENU_CHILD_MS)
     if !target
         return false
-    if (target.type = "flat") {
-        if !Chrome_ContextMenuActivateItem(target.item)
-            return false
-        return Chrome_WaitForContextMenuDismissed(session, CHROME_DETACH_MENU_POPUP_MS)
-    }
+    if (target.type = "flat")
+        return Chrome_ContextMenuActivateItem(target.item)
     if !Chrome_ContextMenuActivateItem(target.item)
         return false
     child := Chrome_ContextMenuWaitForSession(session, CHROME_DETACH_MENU_CHILD_NAMES, CHROME_DETACH_MENU_CHILD_MS,
         false)
     if !child
         return false
-    if !Chrome_ContextMenuActivateItem(child)
-        return false
-    return Chrome_WaitForContextMenuDismissed(session, CHROME_DETACH_MENU_POPUP_MS)
+    return Chrome_ContextMenuActivateItem(child)
 }
 
 Chrome_WindowHasCaption(hwnd) {
@@ -1216,16 +1219,13 @@ Chrome_EnsureNewWindowIsWindowed(newHwnd) {
 Chrome_FocusDetachedWindow(newHwnd) {
     if (!newHwnd || !WinExist("ahk_id " newHwnd))
         return false
-    loop 3 {
-        try WinActivate("ahk_id " newHwnd)
-        catch {
-            return false
-        }
-        if WinWaitActive("ahk_id " newHwnd, , 0.4)
-            return true
-        Sleep 50
+    if WinActive("ahk_id " newHwnd)
+        return true
+    try WinActivate("ahk_id " newHwnd)
+    catch {
+        return false
     }
-    return WinActive("ahk_id " newHwnd)
+    return WinWaitActive("ahk_id " newHwnd, , 0.25) || WinActive("ahk_id " newHwnd)
 }
 
 Chrome_RestoreF11OnOriginal(originalHwnd) {
@@ -1587,7 +1587,12 @@ Chrome_WaitForTabStripFocus(session, timeoutMs := 0) {
 Chrome_TryF6KeyboardTabMenu(session) {
     ClipAngel_ReleaseChordModifiersForSend()
     Send "{Escape}"
-    Sleep 40
+    deadline := A_TickCount + 80
+    while (A_TickCount < deadline) {
+        if !GetKeyState("Shift", "P") && !GetKeyState("Ctrl", "P") && !GetKeyState("Alt", "P")
+            break
+        Sleep 10
+    }
     uiaUsable := Chrome_SessionUiaUsable(session)
     loop CHROME_DETACH_F6_FOCUS_MAX {
         if (session.menuPopupHwnd && Chrome_ContextMenuLooksLikeTabMenu(session)) {
@@ -1813,13 +1818,15 @@ Chrome_NormalizeFocusToPageLight(hwnd, session := unset) {
     Send "{Escape}"
     if !(IsSet(session) && IsObject(session) && Chrome_SessionUiaUsable(session))
         Chrome_FocusPageContent(hwnd)
+    if WinActive("ahk_id " hwnd)
+        return true
     return WM_EnsureForegroundForSend(hwnd, 200)
 }
 
 Chrome_OpenActiveTabContextMenu(session) {
     global CHROME_DETACH_USE_LIGHT_NORMALIZE
     hwnd := session.hwnd
-    if !Chrome_EnsureBrowserForeground(hwnd)
+    if !WinActive("ahk_id " hwnd) && !Chrome_EnsureBrowserForeground(hwnd)
         return false
     if (session.menuPopupHwnd && Chrome_ContextMenuLooksLikeTabMenu(session)) {
         session.menuConfirmed := true
@@ -2091,8 +2098,25 @@ Chrome_DetachWinEventProc(hWinEventHook, event, hwnd, idObject, idChild, idEvent
         g_ChromeDetachCreatedHwnds.Push(hwnd)
 }
 
+Chrome_DetachArmWindowCreateHook(&hookState) {
+    global g_ChromeDetachCreatedHwnds, CHROME_DETACH_EVENT_OBJECT_CREATE
+    hookState := { hHook: 0, cb: 0 }
+    g_ChromeDetachCreatedHwnds := []
+    hookState.cb := CallbackCreate(Chrome_DetachWinEventProc, "F Fast", 7)
+    hookState.hHook := DllCall("user32\SetWinEventHook", "UInt", CHROME_DETACH_EVENT_OBJECT_CREATE,
+        "UInt", CHROME_DETACH_EVENT_OBJECT_CREATE, "Ptr", 0, "Ptr", hookState.cb, "UInt", 0, "UInt", 0, "UInt", 0,
+        "Ptr")
+}
+
+Chrome_DetachDisarmWindowCreateHook(hookState) {
+    if IsObject(hookState) && hookState.hHook {
+        DllCall("user32\UnhookWinEvent", "Ptr", hookState.hHook)
+        hookState.hHook := 0
+    }
+}
+
 ; Bounded wait: new top-level Chrome window not in baseline, optionally matching detached tab title.
-Chrome_WaitForDetachNewWindow(existingSet, timeoutMs := 0, tabTitle := "") {
+Chrome_WaitForDetachNewWindow(existingSet, timeoutMs := 0, tabTitle := "", hookState := unset) {
     global CHROME_DETACH_EXTENSION_TIMEOUT_MS, CHROME_DETACH_VERIFY_TIMEOUT_MS, CHROME_DETACH_MENU_POLL_MS
     global CHROME_DETACH_USE_WIN_EVENT_HOOK, g_ChromeDetachCreatedHwnds
     waitMs := timeoutMs > 0 ? timeoutMs : CHROME_DETACH_EXTENSION_TIMEOUT_MS
@@ -2104,10 +2128,10 @@ Chrome_WaitForDetachNewWindow(existingSet, timeoutMs := 0, tabTitle := "") {
         existingSet := Map()
 
     if CHROME_DETACH_USE_WIN_EVENT_HOOK {
-        g_ChromeDetachCreatedHwnds := []
-        cb := CallbackCreate(Chrome_DetachWinEventProc, "F Fast", 7)
-        hHook := DllCall("user32\SetWinEventHook", "UInt", CHROME_DETACH_EVENT_OBJECT_CREATE,
-            "UInt", CHROME_DETACH_EVENT_OBJECT_CREATE, "Ptr", 0, "Ptr", cb, "UInt", 0, "UInt", 0, "UInt", 0, "Ptr")
+        ownsHook := !(IsSet(hookState) && IsObject(hookState) && hookState.hHook)
+        if ownsHook {
+            Chrome_DetachArmWindowCreateHook(&hookState)
+        }
         try {
             while (A_TickCount < deadline) {
                 hwnd := Chrome_DetachPickValidatedNewHwnd(g_ChromeDetachCreatedHwnds, existingSet, tabTitle)
@@ -2121,8 +2145,8 @@ Chrome_WaitForDetachNewWindow(existingSet, timeoutMs := 0, tabTitle := "") {
                 Sleep pollMs
             }
         } finally {
-            if (hHook)
-                DllCall("user32\UnhookWinEvent", "Ptr", hHook)
+            if ownsHook
+                Chrome_DetachDisarmWindowCreateHook(hookState)
         }
         if (Chrome_DetachTitleCore(tabTitle) != "") {
             hwnd := Chrome_FindNewTopLevelChromeCandidate(existingSet, "")
@@ -2203,7 +2227,7 @@ Chrome_DetachActiveTabToNewWindow_UiaSingleShot(hwnd, &wasF11, baseline := unset
         return 0
     if !IsSet(baseline) || !IsObject(baseline)
         baseline := Chrome_DetachCaptureBaseline(hwnd)
-    session := Chrome_DetachSessionCreate(hwnd)
+    session := Chrome_DetachSessionCreate(hwnd, baseline.existingSet)
     tabCount := Chrome_DetachCountTabs(session)
     if (tabCount = 1)
         return 0
@@ -2213,12 +2237,19 @@ Chrome_DetachActiveTabToNewWindow_UiaSingleShot(hwnd, &wasF11, baseline := unset
         Chrome_ContextMenuDismiss()
         return 0
     }
-    if !Chrome_ActivateDetachMenuItemConfirmed(session) {
-        Chrome_ContextMenuDismiss()
-        return 0
+    hookState := {}
+    if CHROME_DETACH_USE_WIN_EVENT_HOOK
+        Chrome_DetachArmWindowCreateHook(&hookState)
+    try {
+        if !Chrome_ActivateDetachMenuItemConfirmed(session, session.menuConfirmed) {
+            Chrome_ContextMenuDismiss()
+            return 0
+        }
+        verifyMs := verifyTimeoutMs > 0 ? verifyTimeoutMs : CHROME_DETACH_VERIFY_TIMEOUT_MS
+        return Chrome_WaitForDetachNewWindow(baseline.existingSet, verifyMs, baseline.tabTitle, hookState)
+    } finally {
+        Chrome_DetachDisarmWindowCreateHook(hookState)
     }
-    verifyMs := verifyTimeoutMs > 0 ? verifyTimeoutMs : CHROME_DETACH_VERIFY_TIMEOUT_MS
-    return Chrome_WaitForDetachNewWindow(baseline.existingSet, verifyMs, baseline.tabTitle)
 }
 
 ; Debug-only: legacy UIA menu stack (never used in normal Shift+W path).
@@ -2262,6 +2293,8 @@ Chrome_PrepareWindowForTabDetach(hwnd, &wasF11) {
             return false
         try StandardLoadingBar_Update("⏳ Detaching tab to new window…", BANNER_ACCENT_INTERMEDIATE)
     }
+    if WinActive("ahk_id " hwnd) && !WM_WindowIsF11Fullscreen(hwnd)
+        return true
     return Chrome_WaitUntilNotF11ForDetach(hwnd)
 }
 
@@ -2368,7 +2401,7 @@ Chrome_DetachActiveTabToNewWindow() {
     success := false
     baseline := unset
 
-    StandardLoadingBar_Show("⏳ Detaching tab to new window…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
+    StandardLoadingBar_Show("⏳ Detaching tab to new window…", BANNER_ACCENT_INTERMEDIATE, { passive: true })
     try {
         Chrome_Detach_PreSendSanitizeModifiers()
 
