@@ -54,9 +54,11 @@ global AL_WikiState := "Idle"
 ; --- Hotkeys & Functions -----------------------------------------------------
 
 ; =============================================================================
-; Win+Alt+Shift+N — available
+; Win+Alt+Shift+N — Context file browser (paste path into active input)
 ; =============================================================================
-#!+n::return
+#!+n:: {
+    ShowContextBrowser()
+}
 
 ; =============================================================================
 ; Open/Activate Desktop in Explorer

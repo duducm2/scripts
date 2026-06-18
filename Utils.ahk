@@ -13220,7 +13220,7 @@ global g_UtilitySelectorCategory := ""          ; One of g_UtilityTopCategories
 global g_UtilityTopCategories := ["Prompts", "Projects", "Macros", "General", "Links", "Hotstrings"]
 ; Top-level trigger keys (lowercase so UtilitySelector_RebindHotkeys auto-binds uppercase too)
 global g_UtilityTopCategoryById := Map("r", "Prompts", "p", "Projects", "m", "Macros", "g", "General", "l", "Links",
-    "h", "Hotstrings")
+    "h", "Hotstrings", "c", "Context")
 
 ; Utility selector cached UI data (rebuilt each time ShowHotstringSelector() runs)
 global g_UtilitySelectorAllItems := []          ; Array of {category, char, text, isEmpty, [explicitIndex]}
@@ -13896,6 +13896,440 @@ FindAndActivateMiroWindow(url, titleKeywords) {
     }
 }
 
+; =============================================================================
+; Context file browser — browse context/ and paste full local paths (Win+Alt+Shift+N)
+; =============================================================================
+ContextBrowser_EnsureGlobals() {
+    global CONTEXT_ROOT, g_ContextBrowserActive, g_ContextBrowserGui, g_ContextBrowserCurrentDir
+    global g_ContextBrowserEntries, g_ContextBrowserListView, g_ContextBrowserPathCtrl
+    if !IsSet(CONTEXT_ROOT)
+        CONTEXT_ROOT := A_ScriptDir "\context"
+    if !IsSet(g_ContextBrowserActive)
+        g_ContextBrowserActive := false
+    if !IsSet(g_ContextBrowserGui)
+        g_ContextBrowserGui := false
+    if !IsSet(g_ContextBrowserCurrentDir)
+        g_ContextBrowserCurrentDir := ""
+    if !IsSet(g_ContextBrowserEntries)
+        g_ContextBrowserEntries := []
+    if !IsSet(g_ContextBrowserListView)
+        g_ContextBrowserListView := false
+    if !IsSet(g_ContextBrowserPathCtrl)
+        g_ContextBrowserPathCtrl := false
+}
+ContextBrowser_EnsureGlobals()
+
+Context_GetRoot() {
+    ContextBrowser_EnsureGlobals()
+    global CONTEXT_ROOT
+    return CONTEXT_ROOT
+}
+
+Context_IsAtRoot(dir) {
+    root := Context_GetRoot()
+    return (StrLower(RTrim(dir, "\")) = StrLower(RTrim(root, "\")))
+}
+
+Context_IsExistingFile(path) {
+    if (path = "")
+        return false
+    attr := FileExist(path)
+    return (attr && !InStr(attr, "D"))
+}
+
+Context_ReadFirstNonemptyLine(path) {
+    try {
+        content := FileRead(path)
+    } catch {
+        return ""
+    }
+    for line in StrSplit(content, "`n", "`r") {
+        trimmed := Trim(line)
+        if (trimmed != "")
+            return trimmed
+    }
+    return ""
+}
+
+Context_IsAbsoluteFilePath(line) {
+    return (line != "" && RegExMatch(line, "^[A-Za-z]:\\"))
+}
+
+Context_ProbeReference(path) {
+    result := { isRef: false, targetPath: "", targetBasename: "" }
+    if !Context_IsExistingFile(path)
+        return result
+    SplitPath path, , , &ext
+    ext := StrLower(ext)
+    if (ext = "lnk") {
+        try {
+            target := ComObject("WScript.Shell").CreateShortcut(path).TargetPath
+            if (target != "" && Context_IsExistingFile(target)) {
+                result.isRef := true
+                result.targetPath := target
+                SplitPath target, &base
+                result.targetBasename := base
+            }
+        } catch {
+        }
+        return result
+    }
+    line := Context_ReadFirstNonemptyLine(path)
+    if !Context_IsAbsoluteFilePath(line)
+        return result
+    if Context_IsExistingFile(line) {
+        result.isRef := true
+        result.targetPath := line
+        SplitPath line, &base
+        result.targetBasename := base
+    }
+    return result
+}
+
+; Returns path to paste, or "" if a pointer/shortcut reference is broken (caller shows error).
+Context_ResolvePastePath(path) {
+    if (path = "")
+        return ""
+    SplitPath path, , , &ext
+    ext := StrLower(ext)
+    if (ext = "lnk") {
+        try {
+            target := ComObject("WScript.Shell").CreateShortcut(path).TargetPath
+            if (target != "" && Context_IsExistingFile(target))
+                return target
+        } catch {
+        }
+        return ""
+    }
+    line := Context_ReadFirstNonemptyLine(path)
+    if Context_IsAbsoluteFilePath(line) {
+        if Context_IsExistingFile(line)
+            return line
+        return ""
+    }
+    return path
+}
+
+Context_SortNames(names) {
+    if (names.Length < 2)
+        return names
+    list := ""
+    for n in names
+        list .= n "`n"
+    list := Sort(RTrim(list, "`n"), "P`n")
+    sorted := []
+    if (list != "") {
+        for line in StrSplit(list, "`n")
+            sorted.Push(line)
+    }
+    return sorted
+}
+
+Context_ListDirEntries(dir) {
+    folders := []
+    files := []
+    try {
+        Loop Files, dir "\*", "D" {
+            if (A_LoopFileAttrib ~= "[HS]")
+                continue
+            folders.Push(A_LoopFileName)
+        }
+        Loop Files, dir "\*", "F" {
+            if (A_LoopFileAttrib ~= "[HS]")
+                continue
+            files.Push(A_LoopFileName)
+        }
+    } catch {
+    }
+    folders := Context_SortNames(folders)
+    files := Context_SortNames(files)
+    entries := []
+    for name in folders
+        entries.Push({ type: "folder", name: name, path: dir "\" name })
+    for name in files
+        entries.Push({ type: "file", name: name, path: dir "\" name })
+    return entries
+}
+
+ContextBrowser_BuildViewEntries(dir) {
+    entries := []
+    if !Context_IsAtRoot(dir)
+        entries.Push({ type: "parent", name: "..", path: "" })
+    for entry in Context_ListDirEntries(dir)
+        entries.Push(entry)
+    return entries
+}
+
+Context_GetRelativeSubtitle(dir) {
+    root := Context_GetRoot()
+    rootNorm := RTrim(root, "\")
+    dirNorm := RTrim(dir, "\")
+    if (StrLower(dirNorm) = StrLower(rootNorm))
+        return rootNorm
+    rel := SubStr(dirNorm, StrLen(rootNorm) + 2)
+    return rootNorm "  »  " StrReplace(rel, "\", " » ")
+}
+
+ContextBrowser_FormatEntryLabel(entry) {
+    if (entry.type = "folder")
+        return entry.name
+    probe := Context_ProbeReference(entry.path)
+    if (probe.isRef && probe.targetBasename != "")
+        return entry.name "  →  " probe.targetBasename
+    return entry.name
+}
+
+ContextBrowser_EntryKindLabel(entry) {
+    if (entry.type = "parent")
+        return "Up"
+    if (entry.type = "folder")
+        return "Folder"
+    return "File"
+}
+
+ContextBrowser_GetActiveMonitorWorkArea(&left, &top, &right, &bottom) {
+    MonitorGetWorkArea(1, &left, &top, &right, &bottom)
+    activeWin := 0
+    try activeWin := WinGetID("A")
+    catch {
+        return
+    }
+    if !activeWin
+        return
+    rect := Buffer(16, 0)
+    if !DllCall("GetWindowRect", "ptr", activeWin, "ptr", rect)
+        return
+    centerX := NumGet(rect, 0, "int") + (NumGet(rect, 8, "int") - NumGet(rect, 0, "int")) // 2
+    centerY := NumGet(rect, 4, "int") + (NumGet(rect, 12, "int") - NumGet(rect, 4, "int")) // 2
+    loop MonitorGetCount() {
+        MonitorGetWorkArea(A_Index, &l, &t, &r, &b)
+        if (centerX >= l && centerX <= r && centerY >= t && centerY <= b) {
+            left := l
+            top := t
+            right := r
+            bottom := b
+            return
+        }
+    }
+}
+
+CleanupContextBrowser() {
+    ContextBrowser_EnsureGlobals()
+    global g_ContextBrowserActive, g_ContextBrowserGui, g_ContextBrowserCurrentDir
+    global g_ContextBrowserEntries, g_ContextBrowserListView, g_ContextBrowserPathCtrl
+
+    g_ContextBrowserActive := false
+    try Hotkey("Backspace", "Off")
+    try Hotkey("Enter", "Off")
+    catch {
+    }
+    g_ContextBrowserEntries := []
+    g_ContextBrowserCurrentDir := ""
+    g_ContextBrowserListView := false
+    g_ContextBrowserPathCtrl := false
+    if (IsObject(g_ContextBrowserGui)) {
+        try g_ContextBrowserGui.Destroy()
+        catch {
+        }
+        g_ContextBrowserGui := false
+    }
+}
+
+HandleContextBrowserEscape(*) {
+    ContextBrowser_EnsureGlobals()
+    global g_ContextBrowserActive
+    if (g_ContextBrowserActive)
+        CleanupContextBrowser()
+}
+
+ContextBrowser_HandleBack() {
+    ContextBrowser_EnsureGlobals()
+    global g_ContextBrowserActive, g_ContextBrowserCurrentDir
+    if (!g_ContextBrowserActive)
+        return
+    if Context_IsAtRoot(g_ContextBrowserCurrentDir)
+        return
+    SplitPath g_ContextBrowserCurrentDir, , &parentDir
+    if (parentDir = "" || !DirExist(parentDir))
+        return
+    g_ContextBrowserCurrentDir := parentDir
+    ContextBrowser_RefreshView()
+}
+
+ContextBrowser_ActivateEntry(entry) {
+    global g_ContextBrowserCurrentDir
+    if (!IsObject(entry))
+        return
+    if (entry.type = "parent") {
+        ContextBrowser_HandleBack()
+        return
+    }
+    if (entry.type = "folder") {
+        g_ContextBrowserCurrentDir := entry.path
+        ContextBrowser_RefreshView()
+        return
+    }
+    pastePath := Context_ResolvePastePath(entry.path)
+    if (pastePath = "") {
+        ShowCenteredOverlay_Utils("❌ Reference target not found for: " entry.name, 2500, BANNER_ACCENT_ERROR)
+        return
+    }
+    CleanupContextBrowser()
+    Sleep 50
+    InsertText(pastePath)
+}
+
+ContextBrowser_OnSelectRow(rowNum) {
+    ContextBrowser_EnsureGlobals()
+    global g_ContextBrowserActive, g_ContextBrowserEntries
+    if (!g_ContextBrowserActive)
+        return
+    if (rowNum < 1 || rowNum > g_ContextBrowserEntries.Length)
+        return
+    ContextBrowser_ActivateEntry(g_ContextBrowserEntries[rowNum])
+}
+
+ContextBrowser_OnListDoubleClick(lv, guiEvent, *) {
+    rowNum := 0
+    try rowNum := guiEvent.EventInfo
+    if !rowNum
+        rowNum := lv.GetNext(0, "F")
+    ContextBrowser_OnSelectRow(rowNum)
+}
+
+ContextBrowser_OnEnter(*) {
+    ContextBrowser_EnsureGlobals()
+    global g_ContextBrowserListView
+    if (!IsObject(g_ContextBrowserListView))
+        return
+    rowNum := g_ContextBrowserListView.GetNext(0, "F")
+    ContextBrowser_OnSelectRow(rowNum)
+}
+
+ContextBrowser_RefreshView() {
+    global g_ContextBrowserActive, g_ContextBrowserCurrentDir, g_ContextBrowserEntries
+    global g_ContextBrowserGui, g_ContextBrowserListView, g_ContextBrowserPathCtrl
+
+    dir := g_ContextBrowserCurrentDir
+    if (dir = "" || !DirExist(dir)) {
+        TrayTip("Context", "Folder not found.", "IconX")
+        SetTimer(() => TrayTip(), -5000)
+        CleanupContextBrowser()
+        return
+    }
+
+    g_ContextBrowserEntries := ContextBrowser_BuildViewEntries(dir)
+    if (IsObject(g_ContextBrowserPathCtrl))
+        g_ContextBrowserPathCtrl.Value := Context_GetRelativeSubtitle(dir)
+
+    if (!IsObject(g_ContextBrowserListView))
+        return
+
+    lv := g_ContextBrowserListView
+    lv.Opt("-Redraw")
+    lv.Delete()
+    for entry in g_ContextBrowserEntries
+        lv.Add("", ContextBrowser_FormatEntryLabel(entry), ContextBrowser_EntryKindLabel(entry))
+    lv.Opt("+Redraw")
+    if (g_ContextBrowserEntries.Length) {
+        lv.Modify(1, "Select Focus Vis")
+        try lv.Focus()
+        catch {
+        }
+    }
+    g_ContextBrowserActive := true
+}
+
+ContextBrowser_CreateGui() {
+    global g_ContextBrowserGui, g_ContextBrowserListView, g_ContextBrowserPathCtrl
+
+    g_ContextBrowserGui := Gui("+AlwaysOnTop +Resize +MinSize420x320", "Context")
+    g_ContextBrowserGui.SetFont("s10", "Segoe UI")
+    g_ContextBrowserPathCtrl := g_ContextBrowserGui.Add("Text", "xm w520", "")
+    g_ContextBrowserListView := g_ContextBrowserGui.Add("ListView", "xm w520 h380 Grid -Multi", ["Name", "Kind"])
+    g_ContextBrowserListView.OnEvent("DoubleClick", ContextBrowser_OnListDoubleClick)
+    g_ContextBrowserGui.Add("Text", "xm", "↑↓ move · Enter select · Backspace up · Esc close")
+    g_ContextBrowserGui.OnEvent("Escape", HandleContextBrowserEscape)
+    g_ContextBrowserGui.OnEvent("Close", (*) => CleanupContextBrowser())
+}
+
+ContextBrowser_ShowGui() {
+    global g_ContextBrowserGui
+
+    MonitorGetWorkArea(1, &monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
+    ContextBrowser_GetActiveMonitorWorkArea(&monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
+    monitorWidth := monitorRight - monitorLeft
+    monitorHeight := monitorBottom - monitorTop
+
+    g_ContextBrowserGui.Show("w540 h480")
+    g_ContextBrowserGui.GetPos(, , &gw, &gh)
+    guiX := monitorLeft + (monitorWidth - gw) // 2
+    guiY := monitorTop + (monitorHeight - gh) // 2
+    margin := 16
+    guiX := Max(monitorLeft + margin, Min(guiX, monitorRight - gw - margin))
+    guiY := Max(monitorTop + margin, Min(guiY, monitorBottom - gh - margin))
+    g_ContextBrowserGui.Show("x" guiX " y" guiY " w540 h480")
+
+    try Hotkey("Backspace", (*) => ContextBrowser_HandleBack(), "On")
+    try Hotkey("Enter", ContextBrowser_OnEnter, "On")
+    catch {
+    }
+    try g_ContextBrowserListView.Focus()
+    catch {
+    }
+}
+
+ContextBrowser_OpenAtCurrentDir() {
+    ContextBrowser_EnsureGlobals()
+    global g_ContextBrowserGui, g_ContextBrowserActive, g_ContextBrowserCurrentDir
+
+    dir := g_ContextBrowserCurrentDir
+    if (dir = "" || !DirExist(dir)) {
+        TrayTip("Context", "Folder not found.", "IconX")
+        SetTimer(() => TrayTip(), -5000)
+        CleanupContextBrowser()
+        return
+    }
+
+    if (!IsObject(g_ContextBrowserGui)) {
+        ContextBrowser_CreateGui()
+        ContextBrowser_ShowGui()
+    }
+    ContextBrowser_RefreshView()
+    g_ContextBrowserActive := true
+}
+
+ShowContextBrowser() {
+    ContextBrowser_EnsureGlobals()
+    global g_ContextBrowserActive, g_ContextBrowserCurrentDir
+
+    if (g_ContextBrowserActive) {
+        CleanupContextBrowser()
+        return
+    }
+
+    try {
+        if (IsSet(g_HotstringSelectorActive) && g_HotstringSelectorActive)
+            CleanupHotstringSelector()
+    } catch {
+    }
+    try {
+        if (IsSet(g_ProjectSelectorActive) && g_ProjectSelectorActive && IsSet(CleanupProjectSelector))
+            CleanupProjectSelector()
+    } catch {
+    }
+
+    root := Context_GetRoot()
+    if !DirExist(root) {
+        TrayTip("Context", "context folder not found at:`n" root, "IconX")
+        SetTimer(() => TrayTip(), -5000)
+        return
+    }
+
+    g_ContextBrowserCurrentDir := root
+    ContextBrowser_OpenAtCurrentDir()
+}
+
 ; One-shot: close Utility Shortcuts if still open (no expansion/macro chosen in time)
 HotstringSelector_AutoCloseIfIdle() {
     global g_HotstringSelectorActive
@@ -14291,11 +14725,19 @@ HandleHotstringChar(char) {
         return
     }
 
-    ; Top-level category selection (1-6)
+    ; Top-level category selection (R/P/M/G/L/H) or Context browser (C)
     if (g_UtilitySelectorMode = "top") {
         ch := StrLower(char)
+        if (ch = "c") {
+            CleanupHotstringSelector()
+            ShowContextBrowser()
+            return
+        }
         if (g_UtilityTopCategoryById.Has(ch)) {
-            UtilitySelector_SwitchToCategory(g_UtilityTopCategoryById[ch])
+            category := g_UtilityTopCategoryById[ch]
+            if (category = "Context")
+                return
+            UtilitySelector_SwitchToCategory(category)
         }
         return
     }
@@ -14694,7 +15136,8 @@ UtilitySelector_BuildTopLevelText() {
     text .= "[G] General (" . counts["General"] . ")`n"
     text .= "[L] Links (" . counts["Links"] . ")`n"
     text .= "[H] Hotstrings (" . counts["Hotstrings"] . ")`n"
-    text .= "`nPress R/P/M/G/L/H to open a category.`n"
+    text .= "[C] Context — paste file path`n"
+    text .= "`nPress R/P/M/G/L/H/C to open.`n"
     return text
 }
 
@@ -14716,8 +15159,9 @@ UtilitySelector_BuildTopLevelRich() {
     lines.Push({ text: "[G] General (" . counts["General"] . ")", key: "g" })
     lines.Push({ text: "[L] Links (" . counts["Links"] . ")", key: "l" })
     lines.Push({ text: "[H] Hotstrings (" . counts["Hotstrings"] . ")", key: "h" })
+    lines.Push({ text: "[C] Context — paste file path", key: "c" })
     lines.Push({ text: "" })
-    lines.Push({ text: "Press R/P/M/G/L/H to open a category." })
+    lines.Push({ text: "Press R/P/M/G/L/H/C to open." })
     return lines
 }
 
